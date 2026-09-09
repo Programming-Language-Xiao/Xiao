@@ -35,7 +35,7 @@
 | `sfloat` | 32 位浮点 | 超出表示范围时报错 |
 | `lint` | 不限位宽整数 | 仅受内存限制，超限报错 |
 | `lfloat` | 不限位宽浮点 | 仅受内存限制，超限报错 |
-| `string` | UTF-8 字符串 | 分配失败报错 |
+| `str` | UTF-8 字符串 | 分配失败报错 |
 | `bool` | 布尔值 | 不适用 |
 
 位宽和溢出行为必须跨平台一致。`int` 不能在 32 位平台悄悄变成 32 位；目标平台适配必须使用固定宽度底层类型。
@@ -76,11 +76,24 @@ next_flag = flag - offset
 ```xiao
 small = value as sint
 bool flag = raw_text as bool
+bool other_flag = bool(raw_text)
+str rendered = flag as str
 ```
 
 第一行表示“读取 `value`，转换成 `sint`，再把结果赋给 `small`”。`sint as value` 的方向是错误的；把转换结果写回原变量时，仍必须遵守该变量已经锁定的类型。
 
-窄化、截断或高精度到低精度的转换必须经过显式 `as`，并在运行时检查是否溢出。`bool(value)` 等类型构造写法是否与 `as` 并存，尚未定稿。
+窄化、截断或高精度到低精度的转换必须经过显式 `as`，并在运行时检查是否溢出。
+
+`bool(value)` 是 `value as bool` 的构造式等价写法，两者共享转换矩阵、成功条件和错误类型。两种写法都产生新的 `bool` 值，不会原地修改 `value` 的类型槽。当前已经冻结的 `str -> bool` 输入只有 `"true"`、`"True"`、`"false"` 和 `"False"`；转换结果是对应布尔值，其他字符串报错。不能仅凭 `bool(value)` 的外形推导 Python 的“非空即真”等规则，其他源类型能否转为 `bool` 仍待单独确定。`bool -> str` 始终产生小写 `"true"` 或 `"false"`。
+
+因此，读取字符串后转换布尔值应使用新的静态变量接收结果：
+
+```xiao
+str raw = input("请输入初始布尔值，true/false")
+bool flag = raw as bool
+bool same_flag = bool(raw)
+str result = flag as str
+```
 
 ### 动态值表示
 

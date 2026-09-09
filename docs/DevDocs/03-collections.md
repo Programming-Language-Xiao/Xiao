@@ -144,7 +144,7 @@ str list[1/keyname]
 
 | 类型 | 默认值 |
 | --- | --- |
-| `string` | `""` |
+| `str` | `""` |
 | `int`/`sint`/`lint` | `0` |
 | `float`/`sfloat`/`lfloat` | `0.0` |
 | `bool` | `false` |
