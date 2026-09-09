@@ -40,7 +40,7 @@
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 生成的跨平台原生二进制 | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置和目标平台适配 | 未开始 |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、共享包缓存、锁定和管理命令 | 未开始 |
-| 11B | [终端交互式解释器](11b-interactive-repl.md) | 单行会话、多行编辑、延迟包加载、运行和保存 | 未开始 |
+| 11B | [终端交互式解释器](11b-interactive-repl.md) | 单行会话、多行编辑、运行、保存、空命令面板和延迟包加载 | 未开始 |
 
 ## 当前最近里程碑
 
