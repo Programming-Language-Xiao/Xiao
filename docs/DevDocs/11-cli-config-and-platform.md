@@ -20,7 +20,7 @@ xiao --inLF
 xiao --inLF "<file.xiao>"
 xiao run <file.xiao>
 xiao build -o <output> <file.xiao>
-xiao build -xar "<config.xiao|main.xiao|任意.xiao>" -O<0|1|2|3>
+xiao build -xar "<config.xiao|main.xiao|任意.xiao>" [-O0|-O1|-O2|-O3]
 xiao -xar "<file.xar>"
 xiao test <project>
 xiao config [--global] <key.path> <value>
@@ -28,7 +28,9 @@ xiao config [--global] <key.path> <value>
 
 无参数 `xiao` 打开交互式解释器，`--inLF` 直接进入多行模式，并可加载一个现有 `.xiao` 文件用于编辑和运行。直接写 `xiao <file.xiao>` 仍是 `xiao run` 的脚本快捷方式，不进入编辑器。`xiao config` 修改结构化配置，不能把点分路径当作普通文本搜索替换。交互细则见 [11b-interactive-repl.md](11b-interactive-repl.md)。其他参数顺序、短参数和子命令错误提示需要在 CLI 实现时固定并写入帮助文本。
 
-`xiao build -xar "<源路径>" -O<级别>` 与 `xiao -xar "<归档路径>"` 是已经确定的后置命令入口，但其实现不进入本阶段核心 CLI 的退出条件。参数校验、归档路由和文件关联的 SOP 见 [18. 优化与产物 CLI 接入](18-optimization-cli.md)；在该阶段完成前，CLI 不能自行发明其他临时优化级别或归档语义。
+`xiao build -xar "<源路径>" [-O0|-O1|-O2|-O3]` 与 `xiao -xar "<归档路径>"` 是已经确定的后置命令入口；方括号表示优化参数可省略，不是需要输入的字符。其实现不进入本阶段核心 CLI 的退出条件。参数校验、归档路由和文件关联的 SOP 见 [18. 优化与产物 CLI 接入](18-optimization-cli.md)；在该阶段完成前，CLI 不能自行发明其他临时优化级别或归档语义。
+
+所有支持优化级别的执行与构建命令在命令行和配置均未指定时统一使用 `-O0`。字节码执行路径默认生成并缓存经过验证的 `.xiaoc`，但缓存写入由后端产物层负责，TypeScript CLI 不自行序列化字节码；普通原生 `build` 不为 LLVM 不使用的模块额外生成 `.xiaoc`。
 
 ### 配置修改命令
 

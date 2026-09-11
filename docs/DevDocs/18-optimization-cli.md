@@ -8,13 +8,13 @@
 
 - 先阅读 [11. CLI、项目配置与平台](11-cli-config-and-platform.md)、[14. 字节码优化与 `.xiaoc` 产物](14-bytecode-optimization.md)、[16. SHA-256 内容寻址与二进制索引](16-content-addressed-artifacts.md) 和 [17. `.xar` 字节码归档与启动](17-xar-archive.md)。
 - 后端已经提供优化、编解码、校验、内容寻址和归档库接口；本阶段不重新实现这些语义。
-- 已确认的用户入口是 `xiao build -xar "<源路径>" -O<级别>` 和 `xiao -xar "<归档路径>"`。`<源路径>` 可以是 `config.xiao`、包含 `[main]` 的 `.xiao` 文件或任意可打包 `.xiao`。
+- 已确认的用户入口是 `xiao build -xar "<源路径>" [-O0|-O1|-O2|-O3]` 和 `xiao -xar "<归档路径>"`。`<源路径>` 可以是 `config.xiao`、包含 `[main]` 的 `.xiao` 文件或任意可打包 `.xiao`；方括号只表示参数可省略。
 
 ### 本阶段交付与不负责事项
 
 - 交付：命令路由、参数诊断、配置覆盖、输入扩展名分派、文件关联安装接口和脚本化输出。
 - 不负责：决定新的语言语义、Pass 算法、Protobuf Schema 字段、归档成员格式或缓存淘汰策略。
-- `-O<级别>` 中的 `<级别>` 取已确认的 `0`、`1`、`2`、`3`；未确认的默认级别必须显式报为待定，而不是凭 CLI 习惯猜测。
+- `-O<级别>` 中的 `<级别>` 取已确认的 `0`、`1`、`2`、`3`；未提供命令行或配置级别时统一使用已经确认的 `-O0`。
 
 ### 交接检查
 
@@ -29,7 +29,7 @@
 ```text
 xiao run <file.xiao|file.xiaoc> [优化/运行选项]
 xiao build <file.xiao> [优化/目标选项]
-xiao build -xar "<config.xiao|main.xiao|任意.xiao>" -O<0|1|2|3>
+xiao build -xar "<config.xiao|main.xiao|任意.xiao>" [-O0|-O1|-O2|-O3]
 xiao -xar "<file.xar>"
 xiao optimize <file.xiao|file.xiaoc> [输出选项]
 xiao pack <输入或项目> -o <file.xar>
@@ -38,17 +38,20 @@ xiao verify <file.xiaoc|file.xar>
 xiao cache <list|verify|rebuild|clean>
 ```
 
-`xiao build -xar "<源路径>" -O<级别>` 和 `xiao -xar "<归档路径>"` 已是确定入口；`optimize`、`pack`、`inspect`、`verify`、`cache` 是否另保留为独立命令，仍需在本阶段冻结。已有 `xiao run`、`xiao build`、`xiao config` 的旧项目默认行为不能因新增命令而改变。
+`xiao build -xar "<源路径>" [-O0|-O1|-O2|-O3]` 和 `xiao -xar "<归档路径>"` 已是确定入口；省略 `-O` 后按配置或内建 `-O0` 执行。`optimize`、`pack`、`inspect`、`verify`、`cache` 是否另保留为独立命令，仍需在本阶段冻结。已有 `xiao run`、`xiao build`、`xiao config` 的旧项目默认行为不能因新增命令而改变。
+
+所有支持优化级别的入口在没有显式命令行参数和配置字段时都采用 `-O0`，包括 `xiao run`、脚本快捷入口、REPL、普通 `xiao build` 和 `xiao build -xar`。`-O0` 仍执行必要的编译、规范化、生命周期与安全验证。字节码执行路径默认生成并缓存已验证的 `.xiaoc`；普通原生 `xiao build` 直接消费类型化 IR，不为 LLVM 不使用的模块额外物化 `.xiaoc`。
 
 例如：
 
 ```text
 xiao build -xar "main.xiao" -O0
 xiao build -xar "config.xiao" -O2
+xiao build -xar "hello.xiao"
 xiao -xar "dist/app.xar"
 ```
 
-这里的 `-O<级别>` 不是一个可直接复制的字面参数，`<级别>` 必须替换为 `0`、`1`、`2` 或 `3`。
+第三个构建示例省略优化参数，因此在配置也未指定时使用 `-O0`。需要显式选择时直接写 `-O0`、`-O1`、`-O2` 或 `-O3`，不存在字面参数 `-Ox` 或 `-O<级别>`。
 
 ### 配置与优先级
 
@@ -62,6 +65,8 @@ CLI 读取 `config.xiao` 时继续使用声明式子集，不能执行项目代�
 
 CLI 应能清楚区分源码、临时字节码、公开 `.xiaoc`、内容寻址对象和 `.xar` 归档，并在每一步显示输入、输出、命中/失配原因和验证状态。优化失败、格式失配、索引损坏和平台不兼容必须落到稳定错误类别，不得自动运行未验证文件。
 
+普通源码模块的 `.xiaoc` 默认写入全局内容寻址缓存，不落在源码旁边。REPL 产生且依赖当前会话状态的片段只写入会话缓存；完整独立模块才可提升到全局缓存。`xiao build -xar` 从经过验证的缓存对象或新生成对象组装 ZIP/ZIP64，不允许因缓存命中跳过完整文件 SHA-256 校验。
+
 ### 平台发布
 
 文件关联安装、卸载和无关联退化路径由 TypeScript CLI 的平台适配层负责。Windows、Linux 和 macOS 的参数传递、工作目录、标准流、退出码和颜色/无颜色诊断需分别测试。CLI 本身仍打包为无需用户另装 Node.js 的独立可执行程序。
@@ -70,7 +75,7 @@ CLI 应能清楚区分源码、临时字节码、公开 `.xiaoc`、内容寻址�
 
 ### 参数与配置
 
-1. [18.1] 冻结 `-O0` 至 `-O3`、缓存、`.xiaoc`、`.xar` 和验证命令的参数语法。
+1. [18.1] 实现 `-O0` 至 `-O3` 参数，并验证所有相关入口在无配置时统一回落到 `-O0`。
 2. [18.2] 将项目配置、全局配置和命令行覆盖归一化为后端接口对象。
 3. [18.3] 对 `config.xiao`、`[main]` 文件、任意 `.xiao`、`.xiaoc` 和 `.xar` 的输入路由提供互斥/缺失诊断。
 4. [18.4] 生成稳定帮助文本和机器可读错误模式。
@@ -95,10 +100,12 @@ CLI 应能清楚区分源码、临时字节码、公开 `.xiaoc`、内容寻址�
 - CLI 与后端的错误边界、退出码和输入输出路径清晰，失败不执行未验证产物。
 - 配置、命令行和缓存命中使用同一规范化优化指纹。
 - 三平台独立 CLI 不依赖 Node.js，并能完成文件关联或可读退化。
+- `xiao run`、REPL 和 `.xar` 构建默认生成并缓存可验证 `.xiaoc`，而且不会污染源码目录。
 
 ## 待定决策
 
-1. `run`/REPL/普通 `build` 的默认优化级别、缓存默认开关和优先级。
+1. 命令行、项目 `config.xiao`、全局配置和内建 `-O0` 的完整覆盖优先级。
 2. `config.xiao` 优化/产物表名及字段白名单。
 3. `optimize`、`pack`、`inspect`、`verify`、`cache` 是否作为独立命令，以及其错误码。
-4. 文件关联安装器、权限和升级方式。
+4. 完整调试符号、源码正文和单文件额外资源的显式打包参数。
+5. 文件关联安装器、权限和升级方式。

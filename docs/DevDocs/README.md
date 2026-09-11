@@ -44,11 +44,11 @@
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、共享包缓存、锁定和管理命令 | 未开始 |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | 单行会话、多行编辑、运行、保存、空命令面板和延迟包加载 | 未开始 |
 | 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
-| 14 | [字节码优化与 `.xiaoc` 产物](14-bytecode-optimization.md) | 单模块优化字节码、`.xiaoc` 格式、加载验证和调试映射 | 未开始 |
+| 14 | [字节码优化与 `.xiaoc` 产物](14-bytecode-optimization.md) | 单模块分段字节码、默认缓存、加载验证和调试映射 | 未开始 |
 | 15 | [LLVM 原生优化与链接](15-native-optimization.md) | 原生优化级别、Runtime 裁剪、链接和跨平台基线 | 未开始 |
-| 16 | [SHA-256 内容寻址与二进制索引](16-content-addressed-artifacts.md) | SHA-256 不可变对象、Protobuf 索引和缓存维护 | 未开始 |
-| 17 | [`.xar` 字节码归档与启动](17-xar-archive.md) | 类 JAR 归档、第三方依赖、Xiao Runtime 启动和双击关联 | 未开始 |
-| 18 | [优化与产物 CLI 接入](18-optimization-cli.md) | TypeScript CLI、配置覆盖、缓存/验证/打包命令 | 未开始 |
+| 16 | [SHA-256 内容寻址与二进制索引](16-content-addressed-artifacts.md) | 整文件摘要、归档/全局 Protobuf 索引和缓存维护 | 未开始 |
+| 17 | [`.xar` 字节码归档与启动](17-xar-archive.md) | ZIP/ZIP64 归档、第三方依赖、资源与双击启动 | 未开始 |
+| 18 | [优化与产物 CLI 接入](18-optimization-cli.md) | TypeScript CLI、默认 `-O0`、缓存/验证/打包命令 | 未开始 |
 | 19 | [优化、兼容性与发布验收](19-optimization-release.md) | 性能基线、版本矩阵、跨平台和安全发布 | 未开始 |
 
 ## 当前最近里程碑
