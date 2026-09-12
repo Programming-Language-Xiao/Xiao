@@ -13,6 +13,8 @@
 | [00. 决策基线](00-decisions.md) | 汇总已经确认的语言边界、跨阶段约束和待定决策；每次设计确认后首先更新 | 进行中 |
 | [12. 测试与开发里程碑](12-tests-and-milestones.md) | 为每个实施阶段规定测试分层、子里程碑和退出条件；从第一阶段起同步执行，不是最后才实施的测试阶段 | 进行中 |
 
+实现边界速览：字节码 VM 与执行 Runtime 的 Rust 决策见 [00. 决策基线](00-decisions.md) 和 [09. 字节码运行模式](09-bytecode-runtime.md)；TypeScript CLI/REPL 边界见 [11. CLI、项目配置与平台](11-cli-config-and-platform.md)；Java 对照性能目标与验收口径见 [19. 优化、兼容性与发布验收](19-optimization-release.md)。
+
 ### 状态说明
 
 - **未开始**：尚未进入实现。
@@ -38,11 +40,11 @@
 | 06 | [内存与运行时语义](06-memory-and-runtime.md) | 确定性释放、逃逸分析和引用计数 | 未开始 |
 | 07 | [错误模型与并发安全边界](07-concurrency-and-errors.md) | 结构化错误传播、堆栈/日志诊断、数据竞争策略和并发模型边界 | 未开始 |
 | 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 未开始 |
-| 09 | [字节码运行模式](09-bytecode-runtime.md) | `xiao run` 使用的字节码和解释器 | 未开始 |
+| 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 未开始 |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 生成的跨平台原生二进制 | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 未开始 |
-| 11B | [终端交互式解释器](11b-interactive-repl.md) | 单行会话、多行编辑、运行、保存、空命令面板和延迟包加载 | 未开始 |
+| 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |
 | 11C | [国际化、系统提示与语言包插件](11c-localization.md) | `[language]` 配置、中英内置目录、统一错误文案和资源型语言包插件 | 未开始 |
 | 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
 | 14 | [字节码优化与 `.xiaoc` 产物](14-bytecode-optimization.md) | 单模块分段字节码、默认缓存、加载验证和调试映射 | 未开始 |
