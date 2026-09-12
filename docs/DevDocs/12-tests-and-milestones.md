@@ -36,12 +36,18 @@
 
 ### A0：工程骨架与文档门槛
 
+实现细则以 [A0. 工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) 为准；A0 至少拆成 A0.1 manifest 与骨架、A0.2 目录检查器、A0.3 覆盖率检查器、A0.4 CI 与交接四个二级任务。A0 不实现任何 Xiao 语言语义。
+
 退出条件：
 
 1. Rust 核心、TypeScript CLI、平台适配、测试、工具和资源目录按 [00A. 工程框架与目录布局](00a-project-layout.md) 创建；每个代码目录都有同级 README，能标识内容、工程期和模块归属。
-2. 依赖方向和 Rust/TypeScript 边界通过目录检查；CLI 不包含第二套 Xiao 语义实现。
-3. 文档覆盖率检查器能统计 Rust/TypeScript/测试辅助代码，公共 API 文档达到 100%，全仓库函数/方法/类/模块文档达到 90% 以上。
-4. 平台适配计划明确按 Windows → Linux → macOS 排列，性能验收明确以 `xiao build` LLVM 原生模式为标准。
+2. `Cargo.toml`、TypeScript workspace manifest、仓库政策清单和实际文件系统逐项一致；不使用未登记的宽泛 workspace glob。
+3. 目录检查器能报告缺失/多余 README、路径越界、符号链接逃逸、大小写冲突、重复包名和未登记源目录，并输出稳定错误码及 JSON/SARIF。
+4. 依赖方向和 Rust/TypeScript 边界通过目录检查；CLI 不包含第二套 Xiao 语义实现。
+5. 文档覆盖率检查器能统计 Rust/TypeScript/测试辅助代码，公共 API 文档达到 100%，全仓库函数/方法/类/模块文档达到 90% 以上；解析失败不得假通过。
+6. `docs/UseDocs` 具备根索引、主题索引和至少一层子主题；模块登记能关联代码、测试与 UseDocs，已完成模块没有缺失或非 `verified` 页面。
+7. 代码、测试和 UseDocs 的同步规则已接入本地检查与 CI；模块未同步文档时不能标记完成。
+8. 平台适配计划明确按 Windows → Linux → macOS 排列，性能验收明确以 `xiao build` LLVM 原生模式为标准。
 
 ### F0：源码工程与位置模型
 
