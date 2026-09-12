@@ -22,6 +22,10 @@
 
 ## 一级工程目标：定义归档模型
 
+### 运行前提与自解释边界
+
+`.xar` 不要求自解释，也不承诺脱离 `xiao` 和 Xiao Runtime 独立运行。它采用标准 ZIP/ZIP64 作为物理容器，通用 ZIP 工具可以列出、解压和检查成员；但 `META-INF/xiao/index.pb` 的 Protobuf Schema、入口解析、依赖约束、模块语义和字节码执行都由已安装的 `xiao`/Xiao Runtime 提供。归档不携带 Protobuf descriptor，不重复打包官方 Runtime，也不为没有 Xiao 的系统提供独立启动路径。
+
 ### 归档内容
 
 `.xar` 使用一个固定位置的 `META-INF/xiao/index.pb` 同时承担归档清单、入口描述和对象索引，不再并列维护第二份 manifest 或入口文件。这个唯一的 Protobuf 消息至少记录：归档格式/Schema 版本、入口模块与函数或脚本顶层入口、依赖锁摘要、最低/最高 Runtime ABI、平台约束，以及每个模块、资源和可选调试对象的逻辑身份与 SHA-256。
