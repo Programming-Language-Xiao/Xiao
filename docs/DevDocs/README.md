@@ -41,7 +41,7 @@
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | `xiao run` 使用的字节码和解释器 | 未开始 |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 生成的跨平台原生二进制 | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
-| 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、共享缓存、锁定和管理命令 | 未开始 |
+| 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 未开始 |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | 单行会话、多行编辑、运行、保存、空命令面板和延迟包加载 | 未开始 |
 | 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
 | 14 | [字节码优化与 `.xiaoc` 产物](14-bytecode-optimization.md) | 单模块分段字节码、默认缓存、加载验证和调试映射 | 未开始 |
