@@ -27,10 +27,10 @@
 以下命令用于讨论和验收拆分，尚未冻结为最终 CLI 语法：
 
 ```text
-xiao run <file.xiao|file.xiaoc> [优化/运行选项]
-xiao build <file.xiao> [优化/目标选项]
-xiao build -xar "<config.xiao|main.xiao|任意.xiao>" [-O0|-O1|-O2|-O3]
-xiao -xar "<file.xar>"
+xiao run <file.xiao|file.xiaoc> [优化/运行选项] [-debug]
+xiao build <file.xiao> [优化/目标选项] [-debug]
+xiao build -xar "<config.xiao|main.xiao|任意.xiao>" [-O0|-O1|-O2|-O3] [-debug]
+xiao -xar "<file.xar>" [-debug]
 xiao optimize <file.xiao|file.xiaoc> [输出选项]
 xiao pack <输入或项目> -o <file.xar>
 xiao inspect <file.xiaoc|file.xar>
@@ -52,6 +52,8 @@ xiao -xar "dist/app.xar"
 ```
 
 第三个构建示例省略优化参数，因此在配置也未指定时使用 `-O0`。需要显式选择时直接写 `-O0`、`-O1`、`-O2` 或 `-O3`，不存在字面参数 `-Ox` 或 `-O<级别>`。
+
+`-debug` 是显式诊断开关，不属于优化级别。它在 `run`、脚本快捷入口和 `.xar` 启动时打开运行时诊断会话；在 `build`/`build -xar` 时保留源码映射、诊断元数据和运行时钩子能力。诊断窗口、日志分级、模块/文件聚焦和固定指标栏遵守第 07 阶段契约，CLI 只负责归一化并传递配置。
 
 ### 配置与优先级
 
@@ -93,12 +95,14 @@ CLI 应能清楚区分源码、临时字节码、公开 `.xiaoc`、内容寻址�
 2. [18.10] 提供非交互模式、详细日志和机器可读结果，便于 CI 使用。
 3. [18.11] 验证中断、重复执行、只读目录和并发命令不会破坏缓存或索引。
 4. [18.12] 记录实际使用的优化指纹、对象摘要和归档版本。
+5. [18.13] 解析 `-debug` 并与 `[debug]` 配置合并，验证运行、构建和 `.xar` 启动使用同一诊断配置；调试窗口的自动开启策略未冻结前不得偷偷固化。
 
 ## 验收标准
 
 - 用户可通过稳定 CLI 生成、验证、检查和运行 `.xiaoc`/`.xar`；命令语法与旧核心命令无冲突。
 - CLI 与后端的错误边界、退出码和输入输出路径清晰，失败不执行未验证产物。
 - 配置、命令行和缓存命中使用同一规范化优化指纹。
+- `-debug` 能正确传递终端/文件等级、堆栈和聚焦规则，且诊断输出不会污染程序标准输出或改变错误退出语义。
 - 三平台独立 CLI 不依赖 Node.js，并能完成文件关联或可读退化。
 - `xiao run`、REPL 和 `.xar` 构建默认生成并缓存可验证 `.xiaoc`，而且不会污染源码目录。
 
@@ -109,3 +113,4 @@ CLI 应能清楚区分源码、临时字节码、公开 `.xiaoc`、内容寻址�
 3. `optimize`、`pack`、`inspect`、`verify`、`cache` 是否作为独立命令，以及其错误码。
 4. 完整调试符号、源码正文和单文件额外资源的显式打包参数。
 5. 文件关联安装器、权限和升级方式。
+6. `-debug` 在构建产物启动时的默认激活方式，以及无图形终端时的降级行为。

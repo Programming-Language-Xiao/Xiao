@@ -18,10 +18,10 @@ CLI 的发布形态已经冻结：TypeScript 源码必须针对各目标平台�
 xiao
 xiao --inLF
 xiao --inLF "<file.xiao>"
-xiao run <file.xiao>
-xiao build -o <output> <file.xiao>
-xiao build -xar "<config.xiao|main.xiao|任意.xiao>" [-O0|-O1|-O2|-O3]
-xiao -xar "<file.xar>"
+xiao run <file.xiao> [-debug]
+xiao build -o <output> <file.xiao> [-debug]
+xiao build -xar "<config.xiao|main.xiao|任意.xiao>" [-O0|-O1|-O2|-O3] [-debug]
+xiao -xar "<file.xar>" [-debug]
 xiao test <project>
 xiao config [--global] <key.path> <value>
 ```
@@ -31,6 +31,12 @@ xiao config [--global] <key.path> <value>
 `xiao build -xar "<源路径>" [-O0|-O1|-O2|-O3]` 与 `xiao -xar "<归档路径>"` 是已经确定的后置命令入口；方括号表示优化参数可省略，不是需要输入的字符。其实现不进入本阶段核心 CLI 的退出条件。参数校验、归档路由和文件关联的 SOP 见 [18. 优化与产物 CLI 接入](18-optimization-cli.md)；在该阶段完成前，CLI 不能自行发明其他临时优化级别或归档语义。
 
 所有支持优化级别的执行与构建命令在命令行和配置均未指定时统一使用 `-O0`。字节码执行路径默认生成并缓存经过验证的 `.xiaoc`，但缓存写入由后端产物层负责，TypeScript CLI 不自行序列化字节码；普通原生 `build` 不为 LLVM 不使用的模块额外生成 `.xiaoc`。
+
+### 运行时调试开关
+
+`-debug` 是显式的运行时诊断开关，适用于 `run`、脚本快捷运行、`.xar` 启动以及需要保留诊断能力的 `build`。对运行命令，它在当前进程启动独立诊断终端并显示内部日志、错误、模块/函数节点、生命周期钩子和固定指标栏；对构建命令，它至少要求产物保留源码映射、诊断元数据和运行时钩子能力。`-debug` 不等同于完整交互式调试器，也不能改变程序标准输出、错误传播或退出语义。
+
+命令行的具体参数顺序和短选项在 CLI 阶段冻结，但所有入口必须把 `-debug` 归一化为同一个后端诊断配置。`config.xiao` 的 `[debug]` 只提供默认等级、日志目标、堆栈详细程度和模块/源码文件聚焦规则；是否自动启用窗口仍以显式 `-debug` 为准。错误、日志和指标的详细契约见 [07. 错误模型与并发安全边界](07-concurrency-and-errors.md)。
 
 ### 配置修改命令
 
@@ -150,6 +156,23 @@ git = { summary = true }
 
 配置值必须经过类型检查和范围检查；未知键可以在严格模式下报错，在兼容模式下给出警告。
 
+### `[debug]` 诊断配置
+
+`[debug]` 是与 `[VM]`/`[Runtime]` 并列的运行时诊断表。其最小语义包括：终端日志等级、文件日志等级、日志目录或文件、堆栈详细程度，以及按模块名或源码文件匹配的聚焦输出规则。聚焦规则可以把事件分流到多个文件；具体字段名称、默认目录、日志轮转和是否同步写入总日志在 CLI 阶段冻结。
+
+示意结构：
+
+```xiao
+[debug]
+terminal_level = "info"
+file_level = "debug"
+log_dir = "logs"
+stacktrace = "full"
+focus = [
+    { module = "app.net", output = "logs/net.log", level = "trace" }
+]
+```
+
 ### 原生构建固化
 
 `xiao build` 可以把经过验证的运行时配置嵌入产物，让双击运行时拥有确定的默认行为。命令行覆盖是否允许覆盖已固化配置，需要在构建发布阶段明确。
@@ -177,6 +200,7 @@ git = { summary = true }
 7. 输出可脚本消费的机器可读错误模式。
 8. 通过稳定的进程或库接口调用编译器内核，不在 TypeScript CLI 中复制词法、类型或运行时语义。
 9. 为 Windows、Linux 和 macOS 生成独立 CLI 可执行程序，并在未安装 Node.js 的干净环境中验证启动。
+10. 将 `-debug` 和 `[debug]` 归一化为后端诊断配置，不能在 CLI 中另造一套日志或堆栈语义。
 
 ### 项目与依赖配置
 
@@ -204,6 +228,7 @@ git = { summary = true }
 - `xiao config CLI.git.summary true` 把布尔值写入项目配置；加入 `--global` 后写入全局配置，非法布尔文本在写入前报错。
 - 配置修改不会破坏无关表、键或注释，写入中断不会留下半个 `config.xiao`。
 - `run` 与 `build` 对同一配置的语义一致。
+- `run`、`.xar` 启动和 `build -debug` 对同一诊断配置使用一致的错误码、源码位置和日志等级；支持的平台能打开独立诊断终端，不支持时有明确降级。
 - 项目配置始终以全小写 `config.xiao` 识别。
 - `run`、`build` 和 `test` 对同一项目使用相同的项目根、源码根和配置解析结果。
 - 环境与包管理未实现时，核心 CLI 不伪造锁定结果，并能通过预留接口在第 11A 阶段加入自动激活及安装目标选择。

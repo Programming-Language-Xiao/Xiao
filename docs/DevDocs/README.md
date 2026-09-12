@@ -36,11 +36,11 @@
 | 04 | [函数与控制流](04-functions-and-control.md) | `def`、表达式、控制流和入口规则 | 未开始 |
 | 05 | [表、模块与工程模型](05-tables-and-projects.md) | 表生命周期、源码模块、依赖图和包外导出 | 未开始 |
 | 06 | [内存与运行时语义](06-memory-and-runtime.md) | 确定性释放、逃逸分析和引用计数 | 未开始 |
-| 07 | [错误模型与并发安全边界](07-concurrency-and-errors.md) | 错误分类、数据竞争策略和并发模型边界 | 未开始 |
+| 07 | [错误模型与并发安全边界](07-concurrency-and-errors.md) | 结构化错误传播、堆栈/日志诊断、数据竞争策略和并发模型边界 | 未开始 |
 | 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 未开始 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | `xiao run` 使用的字节码和解释器 | 未开始 |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 生成的跨平台原生二进制 | 未开始 |
-| 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置和目标平台适配 | 未开始 |
+| 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、共享包缓存、锁定和管理命令 | 未开始 |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | 单行会话、多行编辑、运行、保存、空命令面板和延迟包加载 | 未开始 |
 | 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
