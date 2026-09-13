@@ -1,0 +1,15 @@
+{
+  "source": "bad + 1\nok = 2\n3 = 4\nmissing =\nnext = 5\ncall()\nlast = 6",
+  "statements": [
+    {"kind": "assignment", "start": 8, "end": 14, "leading_docs": [], "target": {"start": 8, "end": 10, "text": "ok", "backticked": false}, "value": {"kind": "literal", "literal_kind": "Integer", "start": 13, "end": 14, "text": "2"}},
+    {"kind": "assignment", "start": 31, "end": 39, "leading_docs": [], "target": {"start": 31, "end": 35, "text": "next", "backticked": false}, "value": {"kind": "literal", "literal_kind": "Integer", "start": 38, "end": 39, "text": "5"}},
+    {"kind": "assignment", "start": 47, "end": 55, "leading_docs": [], "target": {"start": 47, "end": 51, "text": "last", "backticked": false}, "value": {"kind": "literal", "literal_kind": "Integer", "start": 54, "end": 55, "text": "6"}}
+  ],
+  "orphan_doc_comments": [],
+  "diagnostics": [
+    {"code": "X01-PARSE-005", "message_id": "x01.parse.unsupported_expression", "start": 4, "end": 5},
+    {"code": "X01-PARSE-002", "message_id": "x01.parse.invalid_assignment_target", "start": 15, "end": 16},
+    {"code": "X01-PARSE-004", "message_id": "x01.parse.missing_assignment_value", "start": 29, "end": 30},
+    {"code": "X01-PARSE-005", "message_id": "x01.parse.unsupported_expression", "start": 44, "end": 45}
+  ]
+}

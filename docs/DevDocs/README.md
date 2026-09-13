@@ -42,6 +42,7 @@
 | 01A | [F0/L0 实现交接记录](01a-f0-l0-implementation.md) | UTF-8 源码位置、最小 Token、统一诊断和规格快照 | 已完成 |
 | 01B | [L1 基础词法扩展交接记录](01b-l1-implementation.md) | 字面量、保留字、括号、运算符和错误恢复 | 已完成 |
 | 01C | [L2 反引号、注释与缩进实现交接记录](01c-l2-implementation.md) | UTF-8 名称、文档注释、缩进状态机和结构诊断 | 已完成 |
+| 01D | [P0 最小解析器与 AST 实现交接记录](01d-p0-parser-implementation.md) | 多条顶层语句、字面量/名称/简单赋值 AST、文档注释挂接和错误恢复 | 已完成 |
 | 02 | [类型与值系统](02-type-system.md) | 类型表示、推断、静态检查和动态值边界 | 未开始 |
 | 03 | [容器、集合与索引路径](03-collections.md) | 数组、元组、集合、字典表、字典列和路径约束 | 未开始 |
 | 04 | [函数与控制流](04-functions-and-control.md) | `def`、表达式、控制流和入口规则 | 未开始 |
@@ -71,10 +72,11 @@ A0.1–A0.4 已完成：Rust 核心、TypeScript CLI、平台、测试、工具�
 
 A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码，稳定记录字节偏移与行列号，识别 ASCII 标识符、十进制整数、`=`、换行和文件结束，并为非法字符给出稳定诊断。具体任务与退出条件分别见 [00A. 工程框架与目录布局](00a-project-layout.md)、[01. 词法 Token 与语法入口](01-lexical-and-grammar.md) 和 [12. 测试与开发里程碑](12-tests-and-milestones.md)。
 
-01 当前已完成 F0/L0/L1/L2 首批实现；实际 API、快照格式和后续代理交接边界分别见
+01 当前已完成 F0/L0/L1/L2 与严格最小 P0 首批实现；实际 API、快照格式和后续代理交接边界分别见
 [01A. F0/L0 实现交接记录](01a-f0-l0-implementation.md) 与
 [01B. L1 基础词法扩展交接记录](01b-l1-implementation.md) 与
-[01C. L2 反引号、注释与缩进实现交接记录](01c-l2-implementation.md)。下一批是 P0 最小语法树。
+[01C. L2 反引号、注释与缩进实现交接记录](01c-l2-implementation.md) 与
+[01D. P0 最小解析器与 AST 实现交接记录](01d-p0-parser-implementation.md)。下一批是 P1 索引/选择器与完整表达式规划。
 
 ## 文档变更规则
 

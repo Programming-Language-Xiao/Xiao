@@ -1,9 +1,10 @@
 //! Xiao 词法 Token 的基础实现。
 //!
 //! 本模块负责把经过 UTF-8 校验的源码转换为带 [`SourceSpan`] 的 Token
-//! 流。当前覆盖 01 阶段的 L0、L1 与 L2：源码位置、基本字面量、保留字、
-//! 括号、基础运算符、反引号名称、文档注释和缩进 Token。解析器、AST
-//! 和类型检查仍属于后续里程碑；词法器不会执行 Xiao 程序或猜测表达式语义。
+//! 流。当前覆盖 01 阶段的 L0、L1、L2 与严格最小 P0：源码位置、基本字面量、
+//! 保留字、括号、基础运算符、反引号名称、文档注释、缩进 Token，以及只包含
+//! 字面量、名称和简单赋值的 AST/解析器入口。词法器和解析器不会执行 Xiao
+//! 程序、推断类型或实现尚未冻结的复杂表达式。
 
 use std::collections::VecDeque;
 
@@ -42,6 +43,21 @@ pub const UNMATCHED_DELIMITER_CODE: &str = "X01-LEX-009";
 
 /// 文件结束时仍有未闭合分隔符时使用的稳定诊断编号。
 pub const UNTERMINATED_DELIMITER_CODE: &str = "X01-LEX-010";
+
+/// P0 中无法作为表达式起点的 Token 使用的稳定诊断编号。
+pub const INVALID_EXPRESSION_CODE: &str = "X01-PARSE-001";
+
+/// P0 中赋值左侧不是名称时使用的稳定诊断编号。
+pub const INVALID_ASSIGNMENT_TARGET_CODE: &str = "X01-PARSE-002";
+
+/// P0 遇到缩进代码块时使用的稳定诊断编号。
+pub const UNSUPPORTED_BLOCK_CODE: &str = "X01-PARSE-003";
+
+/// P0 赋值缺少右侧表达式时使用的稳定诊断编号。
+pub const MISSING_ASSIGNMENT_VALUE_CODE: &str = "X01-PARSE-004";
+
+/// P0 遇到运算、调用或其他复杂表达式尾部时使用的稳定诊断编号。
+pub const UNSUPPORTED_EXPRESSION_CODE: &str = "X01-PARSE-005";
 
 /// Xiao 语言中的保留字类别。
 ///
@@ -1256,6 +1272,556 @@ impl<'source> Lexer<'source> {
     fn eof_token(&self) -> Token {
         self.token(TokenKind::Eof, self.offset, self.offset)
     }
+}
+
+/// P0 解析得到的程序根节点。
+///
+/// `statements` 按源码顺序保存成功恢复出的顶层语句。解析器即使发现
+/// 错误也会尽可能继续，因此 `ParseResult::program` 通常仍然包含部分
+/// 结果；没有能够绑定到后续语句的文档注释会保存在 `orphan_doc_comments`。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct Program {
+    /// 按源码顺序解析出的顶层语句。
+    pub statements: Vec<Statement>,
+    /// 文件末尾没有相邻后续语句的文档注释区间。
+    pub orphan_doc_comments: Vec<SourceSpan>,
+    /// 覆盖整个输入源码的程序区间。
+    pub span: SourceSpan,
+}
+
+impl Program {
+    /// 返回程序覆盖的源码区间。
+    #[must_use]
+    pub const fn span(&self) -> SourceSpan {
+        self.span
+    }
+
+    /// 判断程序是否没有成功解析出的语句和文档注释。
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.statements.is_empty() && self.orphan_doc_comments.is_empty()
+    }
+}
+
+/// P0 支持的顶层语句。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Statement {
+    /// 一个独立的字面量或名称表达式语句。
+    Expression {
+        /// 语句的表达式。
+        expression: Expression,
+        /// 与该语句相邻、按源码顺序出现的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 语句源码区间，不包含结尾换行。
+        span: SourceSpan,
+    },
+    /// 一个简单名称赋值语句。
+    Assignment {
+        /// 赋值左侧名称。
+        target: Name,
+        /// 赋值右侧的 P0 表达式。
+        value: Expression,
+        /// 与该语句相邻、按源码顺序出现的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 语句源码区间，不包含结尾换行。
+        span: SourceSpan,
+    },
+}
+
+impl Statement {
+    /// 返回语句覆盖的源码区间。
+    #[must_use]
+    pub const fn span(&self) -> SourceSpan {
+        match self {
+            Self::Expression { span, .. } | Self::Assignment { span, .. } => *span,
+        }
+    }
+
+    /// 返回挂接到语句前面的文档注释区间。
+    #[must_use]
+    pub fn leading_docs(&self) -> &[SourceSpan] {
+        match self {
+            Self::Expression { leading_docs, .. } | Self::Assignment { leading_docs, .. } => {
+                leading_docs
+            }
+        }
+    }
+
+    /// 返回语句携带的主表达式；赋值语句返回右侧表达式。
+    #[must_use]
+    pub const fn expression(&self) -> &Expression {
+        match self {
+            Self::Expression { expression, .. } => expression,
+            Self::Assignment { value, .. } => value,
+        }
+    }
+}
+
+/// P0 支持的名称及其原始源码位置。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct Name {
+    /// 名称完整源码区间；反引号名称包含首尾反引号。
+    pub span: SourceSpan,
+    /// 名称是否由反引号包裹。
+    pub backticked: bool,
+}
+
+impl Name {
+    /// 返回名称完整源码区间。
+    #[must_use]
+    pub const fn span(self) -> SourceSpan {
+        self.span
+    }
+
+    /// 从源码中读取名称原始文本。
+    ///
+    /// 返回值保留反引号和其中的转义，不在 P0 阶段执行名称解码。
+    #[must_use]
+    pub fn text(self, source: &SourceFile) -> &str {
+        source.slice(self.span)
+    }
+
+    /// 从源码中读取名称去除外层反引号后的文本。
+    ///
+    /// 该方法只去除一对分隔符，不解释反斜杠转义；需要语义化名称的
+    /// 解码工作留给后续名称解析阶段。
+    #[must_use]
+    pub fn unquoted_text(self, source: &SourceFile) -> &str {
+        let text = self.text(source);
+        if self.backticked && text.len() >= 2 {
+            &text[1..text.len() - 1]
+        } else {
+            text
+        }
+    }
+}
+
+/// P0 支持的最小表达式。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum Expression {
+    /// 一个保留原始源码区间的字面量。
+    Literal {
+        /// 字面量类别。
+        kind: LiteralKind,
+        /// 字面量源码区间。
+        span: SourceSpan,
+    },
+    /// 一个普通或反引号名称引用。
+    Name(Name),
+}
+
+impl Expression {
+    /// 返回表达式覆盖的源码区间。
+    #[must_use]
+    pub const fn span(&self) -> SourceSpan {
+        match self {
+            Self::Literal { span, .. } => *span,
+            Self::Name(name) => name.span,
+        }
+    }
+
+    /// 返回字面量类别；名称表达式返回 `None`。
+    #[must_use]
+    pub const fn literal_kind(&self) -> Option<LiteralKind> {
+        match self {
+            Self::Literal { kind, .. } => Some(*kind),
+            Self::Name(_) => None,
+        }
+    }
+
+    /// 从源码中读取表达式的原始文本。
+    #[must_use]
+    pub fn text<'source>(&self, source: &'source SourceFile) -> &'source str {
+        source.slice(self.span())
+    }
+}
+
+/// P0 解析器识别的字面量类别。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum LiteralKind {
+    /// 十进制整数。
+    Integer,
+    /// 十进制浮点数。
+    Float,
+    /// 单引号或双引号字符串。
+    String,
+    /// `true` 或 `false`。
+    Boolean,
+    /// `none` 空值。
+    None,
+}
+
+impl LiteralKind {
+    /// 将词法 Token 类别映射为 P0 字面量类别。
+    #[must_use]
+    pub const fn from_token_kind(kind: TokenKind) -> Option<Self> {
+        match kind {
+            TokenKind::Integer => Some(Self::Integer),
+            TokenKind::Float => Some(Self::Float),
+            TokenKind::String => Some(Self::String),
+            TokenKind::Boolean => Some(Self::Boolean),
+            TokenKind::None => Some(Self::None),
+            _ => None,
+        }
+    }
+}
+
+/// 词法和 P0 语法解析的统一结果。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ParseResult {
+    /// 错误恢复后得到的程序；当前 P0 对可恢复错误也尽量返回根节点。
+    pub program: Option<Program>,
+    /// 按阶段顺序收集的词法和语法诊断。
+    pub diagnostics: Vec<ParseDiagnostic>,
+}
+
+impl ParseResult {
+    /// 判断结果中是否包含错误级别诊断。
+    #[must_use]
+    pub fn has_errors(&self) -> bool {
+        self.diagnostics.iter().any(Diagnostic::is_error)
+    }
+
+    /// 判断结果是否无错误且包含程序根节点。
+    #[must_use]
+    pub fn is_success(&self) -> bool {
+        self.program.is_some() && !self.has_errors()
+    }
+}
+
+/// P0 解析诊断沿用统一结构化诊断类型。
+pub type ParseDiagnostic = Diagnostic;
+
+/// 从已经验证的源码建立 P0 解析器。
+///
+/// 构造时会完整运行一次 L2 词法器；词法诊断会保留在最终
+/// [`ParseResult::diagnostics`] 中，解析阶段不会重复报告同一个 `Invalid`
+/// Token 的词法错误。
+pub struct Parser<'source> {
+    source: &'source SourceFile,
+    tokens: Vec<Token>,
+    diagnostics: Vec<ParseDiagnostic>,
+    cursor: usize,
+}
+
+impl<'source> Parser<'source> {
+    /// 创建位于源码开头的 P0 解析器。
+    #[must_use]
+    pub fn new(source: &'source SourceFile) -> Self {
+        let lexical = Lexer::new(source).tokenize();
+        Self {
+            source,
+            tokens: lexical.tokens,
+            diagnostics: lexical.diagnostics,
+            cursor: 0,
+        }
+    }
+
+    /// 解析整个源码并返回可恢复的 AST 与诊断。
+    #[must_use]
+    pub fn parse(mut self) -> ParseResult {
+        let mut statements = Vec::new();
+        let mut orphan_doc_comments = Vec::new();
+        let mut pending_docs = Vec::new();
+
+        while !self.at(TokenKind::Eof) {
+            match self.current().kind() {
+                TokenKind::Newline => {
+                    self.bump();
+                }
+                TokenKind::DocComment => {
+                    pending_docs.push(self.bump().span());
+                }
+                TokenKind::Indent => {
+                    orphan_doc_comments.append(&mut pending_docs);
+                    let token = self.bump();
+                    self.push_error(
+                        UNSUPPORTED_BLOCK_CODE,
+                        "x01.parse.unsupported_block",
+                        token.span(),
+                        "P0 尚不支持缩进代码块".to_string(),
+                    );
+                    self.skip_indented_region(&mut orphan_doc_comments);
+                }
+                TokenKind::Dedent => {
+                    orphan_doc_comments.append(&mut pending_docs);
+                    let token = self.bump();
+                    self.push_error(
+                        UNSUPPORTED_BLOCK_CODE,
+                        "x01.parse.unsupported_block",
+                        token.span(),
+                        "P0 不支持独立的反缩进 Token".to_string(),
+                    );
+                }
+                _ => {
+                    let docs = std::mem::take(&mut pending_docs);
+                    if let Some(statement) = self.parse_statement(docs.clone()) {
+                        statements.push(statement);
+                    } else {
+                        orphan_doc_comments.extend(docs);
+                    }
+                }
+            }
+        }
+        orphan_doc_comments.append(&mut pending_docs);
+
+        let span = self
+            .source
+            .span(0, self.source.len_bytes())
+            .expect("源码整体区间必须有效");
+        ParseResult {
+            program: Some(Program {
+                statements,
+                orphan_doc_comments,
+                span,
+            }),
+            diagnostics: self.diagnostics,
+        }
+    }
+
+    /// 返回当前 Token；词法器始终保证序列末尾存在 `Eof`。
+    fn current(&self) -> Token {
+        self.tokens
+            .get(self.cursor)
+            .copied()
+            .or_else(|| self.tokens.last().copied())
+            .expect("词法结果至少包含 EOF Token")
+    }
+
+    /// 消费当前 Token；EOF 不会推进游标。
+    fn bump(&mut self) -> Token {
+        let token = self.current();
+        if token.kind() != TokenKind::Eof && self.cursor < self.tokens.len() {
+            self.cursor += 1;
+        }
+        token
+    }
+
+    /// 判断当前 Token 类别。
+    fn at(&self, kind: TokenKind) -> bool {
+        self.current().kind() == kind
+    }
+
+    /// 解析一个 P0 语句。
+    fn parse_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        let first = self.current();
+        if is_name_token(first.kind()) {
+            let target = self.parse_name();
+            if self.at(TokenKind::Equal) {
+                let equal = self.bump();
+                if is_statement_boundary(self.current().kind()) {
+                    self.push_error(
+                        MISSING_ASSIGNMENT_VALUE_CODE,
+                        "x01.parse.missing_assignment_value",
+                        equal.span(),
+                        "赋值符号右侧缺少表达式".to_string(),
+                    );
+                    self.synchronize_to_boundary();
+                    return None;
+                }
+                let value = match self.parse_expression() {
+                    Some(value) => value,
+                    None => {
+                        if self.current().kind() != TokenKind::Invalid {
+                            self.push_error(
+                                UNSUPPORTED_EXPRESSION_CODE,
+                                "x01.parse.unsupported_expression",
+                                self.current().span(),
+                                "P0 赋值右侧只支持字面量或名称".to_string(),
+                            );
+                        }
+                        self.synchronize_to_boundary();
+                        return None;
+                    }
+                };
+                if !is_statement_boundary(self.current().kind()) {
+                    self.report_unsupported_tail();
+                    self.synchronize_to_boundary();
+                    return None;
+                }
+                let span = self.source_span(target.span.start(), value.span().end());
+                self.consume_newline();
+                return Some(Statement::Assignment {
+                    target,
+                    value,
+                    leading_docs,
+                    span,
+                });
+            }
+
+            let expression = Expression::Name(target);
+            if !is_statement_boundary(self.current().kind()) {
+                self.report_unsupported_tail();
+                self.synchronize_to_boundary();
+                return None;
+            }
+            self.consume_newline();
+            return Some(Statement::Expression {
+                span: expression.span(),
+                expression,
+                leading_docs,
+            });
+        }
+
+        if let Some(expression) = self.parse_expression() {
+            if self.at(TokenKind::Equal) {
+                self.push_error(
+                    INVALID_ASSIGNMENT_TARGET_CODE,
+                    "x01.parse.invalid_assignment_target",
+                    expression.span(),
+                    "赋值左侧必须是普通名称或反引号名称".to_string(),
+                );
+                self.synchronize_to_boundary();
+                return None;
+            }
+            if !is_statement_boundary(self.current().kind()) {
+                self.report_unsupported_tail();
+                self.synchronize_to_boundary();
+                return None;
+            }
+            self.consume_newline();
+            return Some(Statement::Expression {
+                span: expression.span(),
+                expression,
+                leading_docs,
+            });
+        }
+
+        if first.kind() != TokenKind::Invalid {
+            self.push_error(
+                INVALID_EXPRESSION_CODE,
+                "x01.parse.invalid_expression",
+                first.span(),
+                "该 Token 不能开始 P0 表达式".to_string(),
+            );
+        }
+        self.synchronize_to_boundary();
+        None
+    }
+
+    /// 解析一个名称 Token。
+    fn parse_name(&mut self) -> Name {
+        let token = self.bump();
+        Name {
+            span: token.span(),
+            backticked: token.kind() == TokenKind::BacktickIdentifier,
+        }
+    }
+
+    /// 解析一个字面量或名称表达式。
+    fn parse_expression(&mut self) -> Option<Expression> {
+        let token = self.current();
+        if let Some(kind) = LiteralKind::from_token_kind(token.kind()) {
+            self.bump();
+            return Some(Expression::Literal {
+                kind,
+                span: token.span(),
+            });
+        }
+        if is_name_token(token.kind()) {
+            return Some(Expression::Name(self.parse_name()));
+        }
+        None
+    }
+
+    /// 消费语句结尾的真实换行；`Dedent`/`Eof` 留给外层循环处理。
+    fn consume_newline(&mut self) {
+        if self.at(TokenKind::Newline) {
+            self.bump();
+        }
+    }
+
+    /// 报告已解析表达式后的复杂语法尾部。
+    fn report_unsupported_tail(&mut self) {
+        if self.current().kind() != TokenKind::Invalid {
+            self.push_error(
+                UNSUPPORTED_EXPRESSION_CODE,
+                "x01.parse.unsupported_expression",
+                self.current().span(),
+                "P0 尚不支持运算、调用或索引表达式".to_string(),
+            );
+        }
+    }
+
+    /// 将错误输入消费到换行、反缩进或 EOF，以便继续解析后续语句。
+    fn synchronize_to_boundary(&mut self) {
+        loop {
+            match self.current().kind() {
+                TokenKind::Newline => {
+                    self.bump();
+                    break;
+                }
+                TokenKind::Dedent | TokenKind::Eof => break,
+                _ => {
+                    self.bump();
+                }
+            }
+        }
+    }
+
+    /// 跳过一个 P0 不支持的缩进区域，并保留其后的顶层语句和文档区间。
+    fn skip_indented_region(&mut self, orphan_doc_comments: &mut Vec<SourceSpan>) {
+        let mut depth = 1usize;
+        while depth > 0 && !self.at(TokenKind::Eof) {
+            match self.current().kind() {
+                TokenKind::DocComment => {
+                    orphan_doc_comments.push(self.bump().span());
+                }
+                TokenKind::Indent => {
+                    depth += 1;
+                    self.bump();
+                }
+                TokenKind::Dedent => {
+                    depth -= 1;
+                    self.bump();
+                }
+                _ => {
+                    self.bump();
+                }
+            }
+        }
+    }
+
+    /// 追加一条带源码区间的解析错误。
+    fn push_error(
+        &mut self,
+        code: &'static str,
+        message_id: &'static str,
+        span: SourceSpan,
+        message: String,
+    ) {
+        self.diagnostics
+            .push(Diagnostic::error_at(code, message_id, span, message));
+    }
+
+    /// 从两个已经验证的字节边界创建源码区间。
+    fn source_span(&self, start: usize, end: usize) -> SourceSpan {
+        self.source
+            .span(start, end)
+            .expect("Token 区间端点必须属于同一份 UTF-8 源码")
+    }
+}
+
+/// 解析一个已经验证的 Xiao 源文件。
+///
+/// 这是 [`Parser::new`] 与 [`Parser::parse`] 的便捷入口，适合编译器前端
+/// 和规格测试直接调用。
+#[must_use]
+pub fn parse(source: &SourceFile) -> ParseResult {
+    Parser::new(source).parse()
+}
+
+/// 判断 Token 是否可以作为 P0 名称。
+fn is_name_token(kind: TokenKind) -> bool {
+    matches!(kind, TokenKind::Identifier | TokenKind::BacktickIdentifier)
+}
+
+/// 判断 Token 是否是 P0 顶层语句边界。
+fn is_statement_boundary(kind: TokenKind) -> bool {
+    matches!(
+        kind,
+        TokenKind::Newline | TokenKind::Dedent | TokenKind::Eof
+    )
 }
 
 /// 判断 ASCII 标识符首字符。

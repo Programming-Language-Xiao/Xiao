@@ -78,7 +78,7 @@ L0 的 `TokenKind` 固定为：`Identifier`、`Integer`、`Equal`、`Newline`、
 
 1. L1：字符串、浮点、布尔值、`none`、关键字、括号和基础运算符；实现交接见 [01B](01b-l1-implementation.md)。
 2. L2：反引号名称、注释、Tab/空格缩进层级、`INDENT`/`DEDENT`。
-3. P0：只在 L1/L2 Token 序列稳定后解析字面量、名称和简单赋值。
+3. P0：只在 L1/L2 Token 序列稳定后解析字面量、名称和简单赋值；该交接已由 [01D](01d-p0-parser-implementation.md) 完成。
 4. P1：再加入表达式优先级、代码块、表头和导入语句。
 
 未完成的高级索引选择器、容器字面量、动态类型结果和运行时错误传播不属于本交接记录。

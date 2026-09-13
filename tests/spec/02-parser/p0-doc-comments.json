@@ -1,0 +1,8 @@
+{
+  "source": "### first ###\n\n### second ###\nanswer = 42\n### orphan ###",
+  "statements": [
+    {"kind": "assignment", "start": 30, "end": 41, "leading_docs": [{"start": 0, "end": 13}, {"start": 15, "end": 29}], "target": {"start": 30, "end": 36, "text": "answer", "backticked": false}, "value": {"kind": "literal", "literal_kind": "Integer", "start": 39, "end": 41, "text": "42"}}
+  ],
+  "orphan_doc_comments": [{"start": 42, "end": 56}],
+  "diagnostics": []
+}

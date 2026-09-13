@@ -1,0 +1,13 @@
+{
+  "source": "12\n3.5\n\"hello\"\ntrue\nfalse\nnone",
+  "statements": [
+    {"kind": "expression", "start": 0, "end": 2, "leading_docs": [], "expression": {"kind": "literal", "literal_kind": "Integer", "start": 0, "end": 2, "text": "12"}},
+    {"kind": "expression", "start": 3, "end": 6, "leading_docs": [], "expression": {"kind": "literal", "literal_kind": "Float", "start": 3, "end": 6, "text": "3.5"}},
+    {"kind": "expression", "start": 7, "end": 14, "leading_docs": [], "expression": {"kind": "literal", "literal_kind": "String", "start": 7, "end": 14, "text": "\"hello\""}},
+    {"kind": "expression", "start": 15, "end": 19, "leading_docs": [], "expression": {"kind": "literal", "literal_kind": "Boolean", "start": 15, "end": 19, "text": "true"}},
+    {"kind": "expression", "start": 20, "end": 25, "leading_docs": [], "expression": {"kind": "literal", "literal_kind": "Boolean", "start": 20, "end": 25, "text": "false"}},
+    {"kind": "expression", "start": 26, "end": 30, "leading_docs": [], "expression": {"kind": "literal", "literal_kind": "None", "start": 26, "end": 30, "text": "none"}}
+  ],
+  "orphan_doc_comments": [],
+  "diagnostics": []
+}

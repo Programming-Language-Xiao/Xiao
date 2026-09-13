@@ -62,7 +62,7 @@
 ## 后续交接顺序
 
 1. L2 已由 [01C](01c-l2-implementation.md) 接手反引号标识符、注释、空行和缩进 Token；不得在 L2 重写 L1 的字面量扫描。
-2. P0 接手 Token 到字面量/名称/简单赋值 AST 的映射，并复用每个 Token 的 `SourceSpan`。
+2. P0 已由 [01D](01d-p0-parser-implementation.md) 接手并完成 Token 到字面量/名称/简单赋值 AST 的映射，继续复用每个 Token 的 `SourceSpan`。
 3. 第 02 阶段再实现数值位宽、字符串值、`bool(value)` 与 `as` 转换；不要在 Lexer 中加入类型语义。
 
 ## 验证命令

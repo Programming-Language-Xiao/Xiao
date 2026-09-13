@@ -78,9 +78,9 @@
 
 `tests/spec/01-lexical/l2-*.json` 覆盖合法名称、单/多行文档注释、空行、Tab、嵌套缩进、括号内换行、错误恢复和 EOF；集成入口为 `core/rust/crates/xiao-syntax/tests/lexical_snapshots.rs`。
 
-### L2.3 P0 准入
+### L2.3 P0 准入（已完成）
 
-P0 可以依赖 `Indent`、`Dedent`、`DocComment` 和 `BacktickIdentifier` 的稳定顺序与区间，但必须自行决定哪些 Token 对 AST 可见。P0 不得把普通注释重新构造成语法节点，也不得把 `/` 在词法层改成路径专用 Token。
+P0 已依赖 `Indent`、`Dedent`、`DocComment` 和 `BacktickIdentifier` 的稳定顺序与区间，并在 [01D](01d-p0-parser-implementation.md) 冻结可见 Token。后续解析器不得把普通注释重新构造成语法节点，也不得把 `/` 在词法层改成路径专用 Token。
 
 ## 验收与验证
 
