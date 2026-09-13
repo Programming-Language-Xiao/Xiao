@@ -10,8 +10,12 @@
 
 ## 模块放置
 
-`src/` 下按 `lexer`、`indent`、`ast`、`parser` 和 `selectors` 分模块；每个模块保留源码位置并有独立规格测试。当前词法、P0/P1 AST 与解析器仍集中于 `src/lib.rs`，选择器数据类型位于 `src/selectors.rs`；词法快照位于 `tests/lexical_snapshots.rs`，P0 快照位于 `tests/parser_snapshots.rs`，P1 回归位于 `tests/p1_expression.rs`。
+`src/` 下按 `diagnostics`、`token`、`lexer`、`ast`、`parser` 和 `selectors` 分模块；
+每个模块保留源码位置并有独立规格测试。`src/lib.rs` 仅是稳定门面，不承载实现细节。
+词法单元测试位于 `lexer.rs`，词法快照位于 `tests/lexical_snapshots.rs`，P0 快照位于
+`tests/parser_snapshots.rs`，P1 回归位于 `tests/p1_expression.rs`。
 
 ## 禁止事项
 
-不做类型推断、运行时执行或终端输入处理；词法错误通过 `xiao-diagnostics::Diagnostic` 输出稳定结构。
+不做类型推断、运行时执行或终端输入处理；不得依赖 `xiao-types`、Runtime、VM、LLVM、
+CLI 或平台代码。词法错误通过 `xiao-diagnostics::Diagnostic` 输出稳定结构。
