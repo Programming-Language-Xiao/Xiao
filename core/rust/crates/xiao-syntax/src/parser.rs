@@ -156,6 +156,9 @@ impl<'source> Parser<'source> {
 
     /// 解析一条 P1 顶层语句，并保留 P0 简单赋值的兼容形状。
     fn parse_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        if self.starts_declaration() {
+            return self.parse_declaration_statement(leading_docs);
+        }
         let first = self.current();
         let expression_diagnostics = self.diagnostics.len();
         let expression = match self.parse_expression() {
@@ -261,6 +264,155 @@ impl<'source> Parser<'source> {
             expression,
             leading_docs,
         })
+    }
+
+    /// 判断当前位置是否明确进入 P2 标量/常量声明语法。
+    ///
+    /// 标量关键字后只有紧跟名称时才视为声明；`int(value)` 等构造式调用
+    /// 继续交给 P1 表达式解析，避免把调用误判为声明。
+    fn starts_declaration(&self) -> bool {
+        if self.at(TokenKind::Keyword(KeywordKind::Const)) {
+            return true;
+        }
+        is_scalar_type_token(self.current().kind())
+            && self.lookahead_kind(1) != Some(TokenKind::LeftParen)
+    }
+
+    /// 解析 `type name [= expression]` 或 `const [type] name = expression`。
+    fn parse_declaration_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        let start = self.current().span().start();
+        let is_const = self.at(TokenKind::Keyword(KeywordKind::Const));
+        if is_const {
+            self.bump();
+        }
+
+        let declared_type = if is_scalar_type_token(self.current().kind()) {
+            let token = self.bump();
+            ScalarType::from_keyword(
+                token
+                    .kind()
+                    .keyword()
+                    .expect("标量类型 Token 必须携带关键字"),
+            )
+        } else {
+            None
+        };
+
+        if !is_declaration_name_token(self.current().kind()) {
+            let span = self.current().span();
+            self.push_error(
+                INVALID_DECLARATION_TARGET_CODE,
+                "x02.parse.invalid_declaration_target",
+                span,
+                "类型或 const 后必须是名称".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let target = self.parse_name();
+
+        if !is_const && is_statement_boundary(self.current().kind()) {
+            let span = self.source_span(start, target.span.end());
+            self.consume_newline();
+            return Some(Statement::Declaration {
+                target,
+                declared_type: declared_type.expect("普通声明必须有标量类型"),
+                value: None,
+                leading_docs,
+                span,
+            });
+        }
+
+        if !self.at(TokenKind::Equal) {
+            let span = self.current().span();
+            let code = if is_const {
+                MISSING_CONST_VALUE_CODE
+            } else {
+                INVALID_DECLARATION_CODE
+            };
+            let message_id = if is_const {
+                "x02.parse.missing_const_value"
+            } else {
+                "x02.parse.invalid_declaration"
+            };
+            let message = if is_const {
+                "const 声明必须包含初始化表达式"
+            } else {
+                "类型声明后只能跟初始化赋值或语句结束"
+            };
+            self.push_error(code, message_id, span, message.to_string());
+            self.synchronize_to_boundary();
+            return None;
+        }
+        self.bump();
+
+        if is_statement_boundary(self.current().kind()) {
+            let code = if is_const {
+                MISSING_CONST_VALUE_CODE
+            } else {
+                INVALID_DECLARATION_CODE
+            };
+            let message_id = if is_const {
+                "x02.parse.missing_const_value"
+            } else {
+                "x02.parse.invalid_declaration"
+            };
+            self.push_error(
+                code,
+                message_id,
+                self.current().span(),
+                "声明初始化表达式不能为空".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+
+        let value_diagnostics = self.diagnostics.len();
+        let value = match self.parse_expression() {
+            Some(value) => value,
+            None => {
+                if self.diagnostics.len() == value_diagnostics {
+                    self.push_error(
+                        INVALID_DECLARATION_CODE,
+                        "x02.parse.invalid_declaration_value",
+                        self.current().span(),
+                        "声明初始化表达式无效".to_string(),
+                    );
+                }
+                self.synchronize_to_boundary();
+                return None;
+            }
+        };
+
+        if !is_statement_boundary(self.current().kind()) {
+            self.push_error(
+                INVALID_DECLARATION_CODE,
+                "x02.parse.invalid_declaration_tail",
+                self.current().span(),
+                "声明表达式后存在未预期内容".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let span = self.source_span(start, value.span().end());
+        self.consume_newline();
+        if is_const {
+            Some(Statement::ConstDeclaration {
+                target,
+                declared_type,
+                value,
+                leading_docs,
+                span,
+            })
+        } else {
+            Some(Statement::Declaration {
+                target,
+                declared_type: declared_type.expect("普通声明必须有标量类型"),
+                value: Some(value),
+                leading_docs,
+                span,
+            })
+        }
     }
 
     /// 解析一个名称 Token 或标量类型关键字。
@@ -1152,6 +1304,28 @@ fn is_expression_name_token(kind: TokenKind) -> bool {
                     | KeywordKind::Bool
             )
     )
+}
+
+/// 判断 Token 是否为 P2 支持的标量类型关键字。
+fn is_scalar_type_token(kind: TokenKind) -> bool {
+    matches!(
+        kind,
+        TokenKind::Keyword(
+            KeywordKind::Int
+                | KeywordKind::Sint
+                | KeywordKind::Lint
+                | KeywordKind::Float
+                | KeywordKind::Sfloat
+                | KeywordKind::Lfloat
+                | KeywordKind::Str
+                | KeywordKind::Bool
+        )
+    )
+}
+
+/// 判断 Token 是否可作为声明目标名称。
+fn is_declaration_name_token(kind: TokenKind) -> bool {
+    matches!(kind, TokenKind::Identifier | TokenKind::BacktickIdentifier)
 }
 
 /// 将词法赋值 Token 映射为 P1 赋值运算符。

@@ -223,7 +223,7 @@ impl ScalarType {
     }
 }
 
-/// P0/P1 支持的顶层语句。
+/// P0/P1/P2 支持的顶层语句。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Statement {
     /// 一个独立的字面量或名称表达式语句。
@@ -259,6 +259,38 @@ pub enum Statement {
         /// 语句源码区间，不包含结尾换行。
         span: SourceSpan,
     },
+    /// 带标量类型前缀的静态声明，例如 `int count = 1` 或 `str name`。
+    ///
+    /// `value` 为空表示声明但尚未初始化；读取未初始化名称由类型检查阶段
+    /// 报告，而不是由语法层拒绝。容器类型前缀和路径约束留给后续阶段。
+    Declaration {
+        /// 声明目标名称。
+        target: Name,
+        /// 声明时锁定的标量类型。
+        declared_type: ScalarType,
+        /// 可选初始化表达式。
+        value: Option<Expression>,
+        /// 与该语句相邻、按源码顺序出现的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 语句源码区间，不包含结尾换行。
+        span: SourceSpan,
+    },
+    /// 编译期常量声明，例如 `const PI = 3.14`。
+    ///
+    /// 常量可以带可选标量类型前缀（`const int LIMIT = 1`）；初始化表达式
+    /// 必须存在，是否能够在编译期求值由类型检查阶段验证。
+    ConstDeclaration {
+        /// 常量目标名称。
+        target: Name,
+        /// 可选的显式标量类型。
+        declared_type: Option<ScalarType>,
+        /// 必需的初始化表达式。
+        value: Expression,
+        /// 与该语句相邻、按源码顺序出现的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 语句源码区间，不包含结尾换行。
+        span: SourceSpan,
+    },
 }
 
 impl Statement {
@@ -268,7 +300,9 @@ impl Statement {
         match self {
             Self::Expression { span, .. }
             | Self::Assignment { span, .. }
-            | Self::ExtendedAssignment { span, .. } => *span,
+            | Self::ExtendedAssignment { span, .. }
+            | Self::Declaration { span, .. }
+            | Self::ConstDeclaration { span, .. } => *span,
         }
     }
 
@@ -278,16 +312,53 @@ impl Statement {
         match self {
             Self::Expression { leading_docs, .. }
             | Self::Assignment { leading_docs, .. }
-            | Self::ExtendedAssignment { leading_docs, .. } => leading_docs,
+            | Self::ExtendedAssignment { leading_docs, .. }
+            | Self::Declaration { leading_docs, .. }
+            | Self::ConstDeclaration { leading_docs, .. } => leading_docs,
         }
     }
 
     /// 返回语句携带的主表达式；赋值语句返回右侧表达式。
+    ///
+    /// 无初始化声明没有主表达式，调用方应先使用 [`Self::try_expression`]
+    /// 判断；直接调用本方法会以明确消息 panic。
     #[must_use]
     pub const fn expression(&self) -> &Expression {
         match self {
             Self::Expression { expression, .. } => expression,
-            Self::Assignment { value, .. } | Self::ExtendedAssignment { value, .. } => value,
+            Self::Assignment { value, .. }
+            | Self::ExtendedAssignment { value, .. }
+            | Self::Declaration {
+                value: Some(value), ..
+            }
+            | Self::ConstDeclaration { value, .. } => value,
+            Self::Declaration { value: None, .. } => {
+                // 无初始化声明没有主表达式；为了保持旧的便捷 API，返回一个
+                // 仅用于诊断的静态哨兵并不安全，因此改用 panic 明确告知调用方。
+                panic!("未初始化声明没有 expression；请先检查 initializer()")
+            }
+        }
+    }
+
+    /// 返回语句的可选主表达式；无初始化声明返回 `None`，不会触发 panic。
+    #[must_use]
+    pub const fn try_expression(&self) -> Option<&Expression> {
+        match self {
+            Self::Expression { expression, .. }
+            | Self::Assignment {
+                value: expression, ..
+            }
+            | Self::ExtendedAssignment {
+                value: expression, ..
+            }
+            | Self::Declaration {
+                value: Some(expression),
+                ..
+            }
+            | Self::ConstDeclaration {
+                value: expression, ..
+            } => Some(expression),
+            Self::Declaration { value: None, .. } => None,
         }
     }
 
@@ -298,6 +369,44 @@ impl Statement {
             Self::Expression { .. } => None,
             Self::Assignment { .. } => Some(AssignmentOperator::Assign),
             Self::ExtendedAssignment { operator, .. } => Some(*operator),
+            Self::Declaration { .. } | Self::ConstDeclaration { .. } => None,
+        }
+    }
+
+    /// 返回声明目标；非声明语句返回 `None`。
+    #[must_use]
+    pub const fn declaration_target(&self) -> Option<Name> {
+        match self {
+            Self::Declaration { target, .. } | Self::ConstDeclaration { target, .. } => {
+                Some(*target)
+            }
+            _ => None,
+        }
+    }
+
+    /// 返回声明的显式类型；未带类型的常量和非声明语句返回 `None`。
+    #[must_use]
+    pub const fn declared_type(&self) -> Option<ScalarType> {
+        match self {
+            Self::Declaration { declared_type, .. } => Some(*declared_type),
+            Self::ConstDeclaration { declared_type, .. } => *declared_type,
+            _ => None,
+        }
+    }
+
+    /// 判断语句是否为编译期常量声明。
+    #[must_use]
+    pub const fn is_const_declaration(&self) -> bool {
+        matches!(self, Self::ConstDeclaration { .. })
+    }
+
+    /// 返回可选的初始化表达式；无初始化声明或非声明语句返回 `None`。
+    #[must_use]
+    pub const fn initializer(&self) -> Option<&Expression> {
+        match self {
+            Self::Declaration { value, .. } => value.as_ref(),
+            Self::ConstDeclaration { value, .. } => Some(value),
+            _ => None,
         }
     }
 }
@@ -543,18 +652,28 @@ impl NodeIndex {
         self.nodes.is_empty()
     }
 
+    /// 为一个源码区间分配下一个稳定节点编号。
     fn push(&mut self, span: SourceSpan) {
         let id = NodeId::new(self.nodes.len() as u32);
         self.nodes.push((id, span));
     }
 
+    /// 按先序访问语句及其子表达式。
     fn visit_statement(&mut self, statement: &Statement) {
         self.push(statement.span());
         match statement {
             Statement::Expression { expression, .. }
             | Statement::Assignment {
                 value: expression, ..
+            }
+            | Statement::ConstDeclaration {
+                value: expression, ..
             } => self.visit_expression(expression),
+            Statement::Declaration {
+                value: Some(expression),
+                ..
+            } => self.visit_expression(expression),
+            Statement::Declaration { value: None, .. } => {}
             Statement::ExtendedAssignment { target, value, .. } => {
                 self.visit_expression(target);
                 self.visit_expression(value);
@@ -562,6 +681,7 @@ impl NodeIndex {
         }
     }
 
+    /// 按语法书写顺序递归访问表达式。
     fn visit_expression(&mut self, expression: &Expression) {
         self.push(expression.span());
         match expression {

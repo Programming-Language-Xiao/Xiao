@@ -9,3 +9,8 @@ description = "Xiao type inference and checking"
 
 [lib]
 path = "src/lib.rs"
+
+[dependencies]
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-source = { path = "../xiao-source" }
+xiao-syntax = { path = "../xiao-syntax" }

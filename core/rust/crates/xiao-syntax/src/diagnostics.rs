@@ -65,3 +65,12 @@ pub const MISSING_EXPRESSION_CODE: &str = "X01-PARSE-009";
 
 /// P1 赋值运算符后出现非法表达式时使用的稳定诊断编号。
 pub const INVALID_ASSIGNMENT_CODE: &str = "X01-PARSE-010";
+
+/// P2 声明缺少目标名称或声明结构不完整时使用的稳定诊断编号。
+pub const INVALID_DECLARATION_CODE: &str = "X02-PARSE-001";
+
+/// `const` 声明缺少初始化表达式时使用的稳定诊断编号。
+pub const MISSING_CONST_VALUE_CODE: &str = "X02-PARSE-002";
+
+/// 类型前缀后出现的目标不是名称时使用的稳定诊断编号。
+pub const INVALID_DECLARATION_TARGET_CODE: &str = "X02-PARSE-003";

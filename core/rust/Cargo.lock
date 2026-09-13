@@ -185,6 +185,11 @@ dependencies = [
 [[package]]
 name = "xiao-types"
 version = "0.1.0"
+dependencies = [
+ "xiao-diagnostics",
+ "xiao-source",
+ "xiao-syntax",
+]
 
 [[package]]
 name = "xiao-vm"
