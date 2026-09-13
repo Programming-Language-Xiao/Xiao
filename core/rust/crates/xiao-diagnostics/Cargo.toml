@@ -9,3 +9,6 @@ description = "Structured Xiao diagnostics"
 
 [lib]
 path = "src/lib.rs"
+
+[dependencies]
+xiao-source = { path = "../xiao-source" }

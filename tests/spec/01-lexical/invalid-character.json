@@ -1,0 +1,13 @@
+{
+  "source": "a = § 1",
+  "tokens": [
+    { "kind": "Identifier", "start": 0, "end": 1, "text": "a" },
+    { "kind": "Equal", "start": 2, "end": 3, "text": "=" },
+    { "kind": "Invalid", "start": 4, "end": 6, "text": "§" },
+    { "kind": "Integer", "start": 7, "end": 8, "text": "1" },
+    { "kind": "Eof", "start": 8, "end": 8, "text": "" }
+  ],
+  "diagnostics": [
+    { "code": "X01-LEX-001", "start": 4, "end": 6 }
+  ]
+}

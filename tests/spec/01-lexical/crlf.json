@@ -1,0 +1,10 @@
+{
+  "source": "a\r\nb",
+  "tokens": [
+    { "kind": "Identifier", "start": 0, "end": 1, "text": "a" },
+    { "kind": "Newline", "start": 1, "end": 3, "text": "\r\n" },
+    { "kind": "Identifier", "start": 3, "end": 4, "text": "b" },
+    { "kind": "Eof", "start": 4, "end": 4, "text": "" }
+  ],
+  "diagnostics": []
+}

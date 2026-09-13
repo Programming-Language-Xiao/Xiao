@@ -1,0 +1,10 @@
+{
+  "source": "a = 1",
+  "tokens": [
+    { "kind": "Identifier", "start": 0, "end": 1, "text": "a" },
+    { "kind": "Equal", "start": 2, "end": 3, "text": "=" },
+    { "kind": "Integer", "start": 4, "end": 5, "text": "1" },
+    { "kind": "Eof", "start": 5, "end": 5, "text": "" }
+  ],
+  "diagnostics": []
+}

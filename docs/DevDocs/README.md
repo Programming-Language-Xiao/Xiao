@@ -38,7 +38,8 @@
 | --- | --- | --- | --- |
 | 00A | [工程框架与目录布局](00a-project-layout.md) | Rust 核心、TypeScript CLI、平台、测试、工具和资源骨架 | 进行中 |
 | 00A.1 | [工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) | 实际 workspace 清单、目录检查、UseDocs 登记和覆盖率报告契约 | 已完成 |
-| 01 | [词法 Token 与语法入口](01-lexical-and-grammar.md) | 源码位置模型、最小 Token 流、完整词法器和解析器入口 | 未开始 |
+| 01 | [词法 Token 与语法入口](01-lexical-and-grammar.md) | 源码位置模型、最小 Token 流、完整词法器和解析器入口 | 进行中 |
+| 01A | [F0/L0 实现交接记录](01a-f0-l0-implementation.md) | UTF-8 源码位置、最小 Token、统一诊断和规格快照 | 已完成 |
 | 02 | [类型与值系统](02-type-system.md) | 类型表示、推断、静态检查和动态值边界 | 未开始 |
 | 03 | [容器、集合与索引路径](03-collections.md) | 数组、元组、集合、字典表、字典列和路径约束 | 未开始 |
 | 04 | [函数与控制流](04-functions-and-control.md) | `def`、表达式、控制流和入口规则 | 未开始 |
@@ -67,6 +68,8 @@
 A0.1–A0.4 已完成：Rust 核心、TypeScript CLI、平台、测试、工具和资源目录均已登记，目录/README、UseDocs 链接和文档覆盖率门禁已可执行。公共 API 达到 100%，全仓库声明项达到 90% 以上；Bun workspace 与原生 AST 适配器协议已冻结。该阶段不添加语言功能实现。00A 后续仍需在进入各实现期时维护目录边界和交接文档。
 
 A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码，稳定记录字节偏移与行列号，识别 ASCII 标识符、十进制整数、`=`、换行和文件结束，并为非法字符给出稳定诊断。具体任务与退出条件分别见 [00A. 工程框架与目录布局](00a-project-layout.md)、[01. 词法 Token 与语法入口](01-lexical-and-grammar.md) 和 [12. 测试与开发里程碑](12-tests-and-milestones.md)。
+
+01 当前已完成 F0/L0 首批实现；实际 API、快照格式和后续代理交接边界见 [01A. F0/L0 实现交接记录](01a-f0-l0-implementation.md)。
 
 ## 文档变更规则
 

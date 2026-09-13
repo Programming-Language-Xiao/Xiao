@@ -4,11 +4,11 @@
 
 ## 推荐顺序
 
-1. [基础变量与表达式](basics/README.md)
-2. [容器与集合](collections/README.md)
-3. [模块与工程](modules/README.md)
+1. [源码位置与最小 Token](lexical/README.md)
+2. [基础变量与表达式](basics/README.md)
+3. [容器与集合](collections/README.md)
+4. [模块与工程](modules/README.md)
 
 ## 相关主题
 
 运行代码前可先阅读[开始使用](../getting-started/README.md)；语言错误的恢复方法见[故障排查](../troubleshooting/README.md)。
-

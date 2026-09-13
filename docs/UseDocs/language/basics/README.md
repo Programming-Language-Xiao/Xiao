@@ -4,7 +4,7 @@
 
 ## 前置知识
 
-建议先完成[安装与平台准备](../../getting-started/installation/README.md)。
+建议先完成[安装与平台准备](../../getting-started/installation/README.md)，并阅读[源码位置与最小 Token](../lexical/README.md)。
 
 ## 页面规划
 
@@ -13,4 +13,3 @@
 ## 下一步
 
 容器相关内容见[容器与集合](../collections/README.md)。
-

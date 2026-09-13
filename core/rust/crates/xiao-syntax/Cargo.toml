@@ -9,3 +9,11 @@ description = "Xiao lexer, parser and syntax tree"
 
 [lib]
 path = "src/lib.rs"
+
+[dependencies]
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-source = { path = "../xiao-source" }
+
+[dev-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
