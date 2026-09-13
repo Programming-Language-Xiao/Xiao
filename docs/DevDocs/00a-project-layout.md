@@ -14,7 +14,7 @@
 
 - 交付：代码目录骨架、Rust crate/TypeScript 包的职责分配、测试与工具分层、平台适配顺序和文档注释质量门槛。
 - 不负责：添加占位实现、冻结尚未确认的跨语言协议、选择具体 GUI 框架、选择 Apple 签名服务或编写业务功能。
-- A0 的 manifest 字段、目录检查算法、稳定诊断码和覆盖率报告格式由 [A0. 工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) 进一步细化；在其中列出的待确认项冻结前，不得提交实际 workspace manifest。
+- A0 的 manifest 字段、目录检查算法、稳定诊断码和覆盖率报告格式由 [A0. 工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) 进一步细化；Bun workspace 和原生 AST 适配器已经冻结，实际 manifest 必须遵循该契约。
 
 ### 交接检查
 
@@ -90,6 +90,7 @@ xiao-ir
 | `xiao-xar` | ZIP/ZIP64 `.xar` 清单、成员和归档验证 | 17 | CLI 参数路由 |
 | `xiao-platform` | 主机路径、进程、窗口、工具链和平台 API 适配 | 10、11、19 | 修改公共 IR 语义 |
 | `xiao-driver` | 编译/运行/构建请求编排和跨 crate 稳定服务接口 | 08–18 | 终端 UI、翻译文本 |
+| `xiao-doc-coverage-rust` | A0 文档覆盖率工具使用的 `syn` AST 与 JSON 协议适配器 | A0.3–A0.4 | Xiao 语言语义、Runtime 和用户命令 |
 
 每个 crate 的具体边界以其目录 README 为准；crate 名称是当前框架名称，不构成 Xiao 语言表面语法。
 

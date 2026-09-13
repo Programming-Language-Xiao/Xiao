@@ -1,0 +1,11 @@
+[package]
+name = "xiao-package"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Xiao package sources, resolution and locking"
+
+[lib]
+path = "src/lib.rs"

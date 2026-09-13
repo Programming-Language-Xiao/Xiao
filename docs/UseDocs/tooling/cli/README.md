@@ -6,7 +6,8 @@
 
 `run`、`build`、`test`、`config`、`venv`、`sync`、`install`、`-debug`、`.xiaoc` 和 `.xar` 会在相应实现完成后分别建立页面。优化级别未实现前不把占位参数写成可用命令。
 
+A0 工程检查工具先提供：[仓库完整性检查](repo-check.md)、[文档覆盖率检查](doc-coverage.md)和其内部的 [Rust AST 适配器说明](doc-coverage-rust.md)。
+
 ## 下一步
 
 需要逐行试验代码时阅读[交互式解释器](../repl/README.md)。
-

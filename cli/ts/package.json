@@ -1,0 +1,12 @@
+{
+  "name": "@xiao/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "bun": ">=1.4.0 <2"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

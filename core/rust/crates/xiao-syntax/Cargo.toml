@@ -1,0 +1,11 @@
+[package]
+name = "xiao-syntax"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Xiao lexer, parser and syntax tree"
+
+[lib]
+path = "src/lib.rs"

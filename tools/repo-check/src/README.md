@@ -10,5 +10,4 @@ A0.2 实现目录与 workspace 规则；A0.4 接入 CI、链接图和退出码�
 
 ## 模块边界
 
-建议按 `manifest`、`workspace`、`layout`、`docs`、`report` 分模块；每个模块新增代码时必须同步更新本 README、单元测试和对应 UseDocs 页面。
-
+实现按 `manifest`、`workspace`、`layout`、`docs`、`report` 分模块；每个模块新增代码时必须同步更新本 README、单元测试和对应 UseDocs 页面。

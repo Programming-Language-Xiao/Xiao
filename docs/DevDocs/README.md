@@ -13,7 +13,7 @@
 | [00. 决策基线](00-decisions.md) | 汇总已经确认的语言边界、跨阶段约束和待定决策；每次设计确认后首先更新 | 进行中 |
 | [00A. 工程框架与目录布局](00a-project-layout.md) | Rust 核心、TypeScript CLI、平台、测试、工具和资源的目录分配与文档质量门槛 | 进行中 |
 | [12. 测试与开发里程碑](12-tests-and-milestones.md) | 为每个实施阶段规定测试分层、子里程碑和退出条件；从第一阶段起同步执行，不是最后才实施的测试阶段 | 进行中 |
-| [A0. 工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) | Rust/TypeScript workspace 清单、目录完整性检查器、文档覆盖率检查器和 UseDocs 同步门禁的可执行契约 | 方案待确认 |
+| [A0. 工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) | Rust/Bun workspace 清单、目录完整性检查器、文档覆盖率检查器和 UseDocs 同步门禁的可执行契约 | 已完成 |
 
 实现边界速览：字节码 VM 与执行 Runtime 的 Rust 决策见 [00. 决策基线](00-decisions.md) 和 [09. 字节码运行模式](09-bytecode-runtime.md)；TypeScript CLI/REPL 边界见 [11. CLI、项目配置与平台](11-cli-config-and-platform.md)；Java 对照性能目标与验收口径见 [19. 优化、兼容性与发布验收](19-optimization-release.md)。
 
@@ -37,7 +37,7 @@
 | 顺序 | 阶段与文档 | 主要交付物 | 状态 |
 | --- | --- | --- | --- |
 | 00A | [工程框架与目录布局](00a-project-layout.md) | Rust 核心、TypeScript CLI、平台、测试、工具和资源骨架 | 进行中 |
-| 00A.1 | [工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) | 实际 workspace 清单、目录检查、UseDocs 登记和覆盖率报告契约 | 方案待确认 |
+| 00A.1 | [工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) | 实际 workspace 清单、目录检查、UseDocs 登记和覆盖率报告契约 | 已完成 |
 | 01 | [词法 Token 与语法入口](01-lexical-and-grammar.md) | 源码位置模型、最小 Token 流、完整词法器和解析器入口 | 未开始 |
 | 02 | [类型与值系统](02-type-system.md) | 类型表示、推断、静态检查和动态值边界 | 未开始 |
 | 03 | [容器、集合与索引路径](03-collections.md) | 数组、元组、集合、字典表、字典列和路径约束 | 未开始 |
@@ -64,7 +64,7 @@
 
 ### A0 工程骨架与文档门槛
 
-当前先推进第 00A 阶段：创建 Rust 核心、TypeScript CLI、平台、测试、工具和资源目录，为每个代码目录补齐 README，并建立公共 API 100%、全仓库函数/方法/类/模块 90% 的文档门禁。A0.1 的 manifest、检查器和报告契约见 [A0. 工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md)；其中 npm/pnpm 和 AST 适配器仍待星崽确认。该阶段不添加语言功能实现。
+A0.1–A0.4 已完成：Rust 核心、TypeScript CLI、平台、测试、工具和资源目录均已登记，目录/README、UseDocs 链接和文档覆盖率门禁已可执行。公共 API 达到 100%，全仓库声明项达到 90% 以上；Bun workspace 与原生 AST 适配器协议已冻结。该阶段不添加语言功能实现。00A 后续仍需在进入各实现期时维护目录边界和交接文档。
 
 A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码，稳定记录字节偏移与行列号，识别 ASCII 标识符、十进制整数、`=`、换行和文件结束，并为非法字符给出稳定诊断。具体任务与退出条件分别见 [00A. 工程框架与目录布局](00a-project-layout.md)、[01. 词法 Token 与语法入口](01-lexical-and-grammar.md) 和 [12. 测试与开发里程碑](12-tests-and-milestones.md)。
 

@@ -1,0 +1,18 @@
+{
+  "name": "@xiao/doc-coverage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "xiao-doc-coverage": "src/cli.ts"
+  },
+  "engines": {
+    "bun": ">=1.4.0 <2"
+  },
+  "dependencies": {
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

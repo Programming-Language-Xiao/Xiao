@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xiao.dev/schemas/module-registry.schema.json",
+  "type": "object",
+  "required": ["schemaVersion", "modules"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "stage", "status", "code", "tests", "usedocs"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$" },
+          "stage": { "type": "string", "pattern": "^[0-9A-Z]+(?:\\.[0-9A-Z]+)?$" },
+          "status": { "enum": ["planned", "draft", "verified", "deprecated"] },
+          "code": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "tests": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "usedocs": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+          "replacement": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

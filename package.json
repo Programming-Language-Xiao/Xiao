@@ -1,0 +1,23 @@
+{
+  "name": "xiao-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "bun@1.4.0",
+  "workspaces": [
+    "cli/ts",
+    "tools/repo-check",
+    "tools/doc-coverage"
+  ],
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "@types/node": "^22.10.0"
+  },
+  "scripts": {
+    "check:layout": "bun tools/repo-check/src/cli.ts layout",
+    "check:docs": "bun tools/repo-check/src/cli.ts docs",
+    "check:usedocs": "bun tools/repo-check/src/cli.ts usedocs",
+    "check:coverage": "bun tools/doc-coverage/src/cli.ts",
+    "check": "bun tools/repo-check/src/cli.ts all",
+    "test": "bun test"
+  }
+}

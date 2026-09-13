@@ -1,0 +1,28 @@
+{
+  "$schema": "../resources/schemas/module-registry.schema.json",
+  "schemaVersion": 1,
+  "modules": [
+    { "id": "rust.xiao-source", "stage": "01", "status": "planned", "code": ["core/rust/crates/xiao-source"], "tests": ["tests/unit"], "usedocs": ["docs/UseDocs/language/basics"] },
+    { "id": "rust.xiao-diagnostics", "stage": "07", "status": "planned", "code": ["core/rust/crates/xiao-diagnostics"], "tests": ["tests/unit"], "usedocs": ["docs/UseDocs/troubleshooting"] },
+    { "id": "rust.xiao-i18n", "stage": "11C", "status": "planned", "code": ["core/rust/crates/xiao-i18n"], "tests": ["tests/unit"], "usedocs": ["docs/UseDocs/reference"] },
+    { "id": "rust.xiao-syntax", "stage": "01", "status": "planned", "code": ["core/rust/crates/xiao-syntax"], "tests": ["tests/spec"], "usedocs": ["docs/UseDocs/language/basics"] },
+    { "id": "rust.xiao-config", "stage": "05", "status": "planned", "code": ["core/rust/crates/xiao-config"], "tests": ["tests/spec"], "usedocs": ["docs/UseDocs/language/modules"] },
+    { "id": "rust.xiao-types", "stage": "02", "status": "planned", "code": ["core/rust/crates/xiao-types"], "tests": ["tests/spec"], "usedocs": ["docs/UseDocs/language/basics"] },
+    { "id": "rust.xiao-modules", "stage": "05", "status": "planned", "code": ["core/rust/crates/xiao-modules"], "tests": ["tests/spec"], "usedocs": ["docs/UseDocs/language/modules"] },
+    { "id": "rust.xiao-ir", "stage": "08", "status": "planned", "code": ["core/rust/crates/xiao-ir"], "tests": ["tests/unit"], "usedocs": ["docs/UseDocs/reference"] },
+    { "id": "rust.xiao-runtime", "stage": "06", "status": "planned", "code": ["core/rust/crates/xiao-runtime"], "tests": ["tests/unit"], "usedocs": ["docs/UseDocs/troubleshooting"] },
+    { "id": "rust.xiao-bytecode", "stage": "09", "status": "planned", "code": ["core/rust/crates/xiao-bytecode"], "tests": ["tests/integration"], "usedocs": ["docs/UseDocs/tooling/cli"] },
+    { "id": "rust.xiao-vm", "stage": "09", "status": "planned", "code": ["core/rust/crates/xiao-vm"], "tests": ["tests/integration"], "usedocs": ["docs/UseDocs/tooling/cli"] },
+    { "id": "rust.xiao-optimizer", "stage": "13", "status": "planned", "code": ["core/rust/crates/xiao-optimizer"], "tests": ["tests/differential"], "usedocs": ["docs/UseDocs/tooling/cli"] },
+    { "id": "rust.xiao-codegen-llvm", "stage": "10", "status": "planned", "code": ["core/rust/crates/xiao-codegen-llvm"], "tests": ["tests/differential"], "usedocs": ["docs/UseDocs/guides"] },
+    { "id": "rust.xiao-package", "stage": "11A", "status": "planned", "code": ["core/rust/crates/xiao-package"], "tests": ["tests/integration"], "usedocs": ["docs/UseDocs/language/modules", "docs/UseDocs/tooling/cli"] },
+    { "id": "rust.xiao-artifacts", "stage": "16", "status": "planned", "code": ["core/rust/crates/xiao-artifacts"], "tests": ["tests/integration"], "usedocs": ["docs/UseDocs/tooling/cli"] },
+    { "id": "rust.xiao-xar", "stage": "17", "status": "planned", "code": ["core/rust/crates/xiao-xar"], "tests": ["tests/integration"], "usedocs": ["docs/UseDocs/tooling/cli"] },
+    { "id": "rust.xiao-platform", "stage": "10", "status": "planned", "code": ["core/rust/crates/xiao-platform"], "tests": ["tests/integration"], "usedocs": ["docs/UseDocs/getting-started/installation"] },
+    { "id": "rust.xiao-driver", "stage": "08", "status": "planned", "code": ["core/rust/crates/xiao-driver"], "tests": ["tests/integration"], "usedocs": ["docs/UseDocs/tooling/cli"] },
+    { "id": "rust.xiao-doc-coverage-rust", "stage": "A0", "status": "verified", "code": ["core/rust/crates/xiao-doc-coverage-rust"], "tests": ["core/rust/crates/xiao-doc-coverage-rust/src/lib.rs"], "usedocs": ["docs/UseDocs/tooling/cli/doc-coverage-rust.md"] },
+    { "id": "ts.xiao-cli", "stage": "11", "status": "planned", "code": ["cli/ts"], "tests": ["tests/integration"], "usedocs": ["docs/UseDocs/tooling/cli"] },
+    { "id": "ts.repo-check", "stage": "A0", "status": "verified", "code": ["tools/repo-check"], "tests": ["tools/repo-check/test"], "usedocs": ["docs/UseDocs/tooling/cli/repo-check.md"] },
+    { "id": "ts.doc-coverage", "stage": "A0", "status": "verified", "code": ["tools/doc-coverage"], "tests": ["tools/doc-coverage/test"], "usedocs": ["docs/UseDocs/tooling/cli/doc-coverage.md"] }
+  ]
+}

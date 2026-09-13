@@ -42,6 +42,16 @@
 *.idb
 *.pdb
 
+# Language workspace outputs
+node_modules/
+**/node_modules/
+target/
+**/target/
+dist/
+**/dist/
+coverage/
+**/coverage/
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd

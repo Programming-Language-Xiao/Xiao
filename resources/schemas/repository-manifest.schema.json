@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xiao.dev/schemas/repository-manifest.schema.json",
+  "type": "object",
+  "required": ["schemaVersion", "rust", "typescript", "codeRoots", "sourceExtensions", "excludedDirectories", "readmeFile", "moduleRegistry"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "rust": {
+      "type": "object",
+      "required": ["manifest", "members"],
+      "properties": {
+        "manifest": { "type": "string" },
+        "members": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true }
+      },
+      "additionalProperties": false
+    },
+    "typescript": {
+      "type": "object",
+      "required": ["manifest", "members"],
+      "properties": {
+        "manifest": { "type": "string" },
+        "members": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true }
+      },
+      "additionalProperties": false
+    },
+    "codeRoots": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+    "sourceExtensions": { "type": "array", "items": { "type": "string", "pattern": "^\\.[a-z0-9]+$" }, "minItems": 1, "uniqueItems": true },
+    "excludedDirectories": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "readmeFile": { "type": "string", "const": "README.md" },
+    "moduleRegistry": { "type": "string" }
+  },
+  "additionalProperties": false
+}

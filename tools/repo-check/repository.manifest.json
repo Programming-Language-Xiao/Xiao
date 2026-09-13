@@ -1,0 +1,58 @@
+{
+  "$schema": "../../resources/schemas/repository-manifest.schema.json",
+  "schemaVersion": 1,
+  "rust": {
+    "manifest": "core/rust/Cargo.toml",
+    "members": [
+      "core/rust/crates/xiao-source",
+      "core/rust/crates/xiao-diagnostics",
+      "core/rust/crates/xiao-i18n",
+      "core/rust/crates/xiao-syntax",
+      "core/rust/crates/xiao-config",
+      "core/rust/crates/xiao-types",
+      "core/rust/crates/xiao-modules",
+      "core/rust/crates/xiao-ir",
+      "core/rust/crates/xiao-runtime",
+      "core/rust/crates/xiao-bytecode",
+      "core/rust/crates/xiao-vm",
+      "core/rust/crates/xiao-optimizer",
+      "core/rust/crates/xiao-codegen-llvm",
+      "core/rust/crates/xiao-package",
+      "core/rust/crates/xiao-artifacts",
+      "core/rust/crates/xiao-xar",
+      "core/rust/crates/xiao-platform",
+      "core/rust/crates/xiao-driver",
+      "core/rust/crates/xiao-doc-coverage-rust"
+    ]
+  },
+  "typescript": {
+    "manifest": "package.json",
+    "members": [
+      "cli/ts",
+      "tools/repo-check",
+      "tools/doc-coverage"
+    ]
+  },
+  "codeRoots": [
+    "core/rust",
+    "cli/ts",
+    "tools",
+    "tests"
+  ],
+  "sourceExtensions": [
+    ".rs",
+    ".ts",
+    ".tsx"
+  ],
+  "excludedDirectories": [
+    ".git",
+    "target",
+    "node_modules",
+    "dist",
+    "coverage",
+    "generated",
+    "vendor"
+  ],
+  "readmeFile": "README.md",
+  "moduleRegistry": "docs/module-registry.json"
+}

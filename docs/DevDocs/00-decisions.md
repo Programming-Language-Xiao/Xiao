@@ -284,7 +284,7 @@ Xiao 不使用追踪式垃圾回收。内存方案由以下部分组成：
 - 全仓库项目维护代码中的函数、方法、类和模块文档注释覆盖率不得低于 90%；Rust `pub` 项、TypeScript `export` 项及公共模块/包入口必须 100% 有文档注释。该门槛同时适用于测试辅助和构建工具，并由 CI 自动检查。
 - README 和文档是工程交接契约，不是可选说明；移动模块、增加导出 API 或新增代码目录时，必须在同一变更中更新对应 README、覆盖率报告和阶段索引。
 - 从 A0 起，模块交付必须同时包含实现、测试和 UseDocs。UseDocs 独立位于 `docs/UseDocs/`，采用“根索引 → 主题索引 → 子主题/页面”的多级结构；只有链接、示例和元数据检查通过且页面为 `verified`，模块才可标记完成。代码 docstring 与 UseDocs 是两套独立门槛，不能相互抵扣。
-- A0 的机器清单、目录完整性检查器、UseDocs 登记和覆盖率报告契约见 [A0. 工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md)。Rust workspace 成员和 TypeScript workspace 成员必须显式列出并与实际目录交叉核对；具体采用 npm workspace 及 AST 适配器待本阶段确认后冻结。
+- A0 的机器清单、目录完整性检查器、UseDocs 登记和覆盖率报告契约见 [A0. 工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md)。Rust workspace 成员和 Bun workspace 成员必须显式列出并与实际目录交叉核对；覆盖率使用 Rust `syn` AST 与 TypeScript Compiler API 原生适配器，由 TypeScript/Bun 统一调用。
 
 ### 终端交互式解释器
 
@@ -315,13 +315,15 @@ Xiao 不使用追踪式垃圾回收。内存方案由以下部分组成：
 
 并发、JIT、包管理、FFI、完整调试器和高级泛型不能阻塞最小双模式闭环，应在核心语义稳定后加入。
 
-## 待定决策
+## 已冻结补充
 
 ### A0 工程清单与质量工具
 
-- TypeScript workspace 的包管理声明尚待确认：推荐仓库根 `package.json` 的 npm workspaces，并显式登记 `cli/ts`、`tools/repo-check`、`tools/doc-coverage`；不采用不可审计的 glob。若改用 pnpm，只替换 manifest/锁文件，不改变目录与报告契约。
-- 文档覆盖率解析器尚待确认：推荐由 TypeScript 统一 CLI 汇总 Rust/TypeScript 原生 AST 适配器（Rust 使用 `syn` 级 AST，TypeScript 使用 Compiler API），而非用正则或无语义的扫描；统一 tree-sitter 只能在明确接受其适配维护成本后采用。
-- A0 的政策清单建议为 `tools/repo-check/repository.manifest.json`，模块代码/测试/UseDocs 关系建议为 `docs/module-registry.json`；两者与 Cargo/npm manifest 三方交叉校验，检查器只读且不自动修复。
+- TypeScript workspace 已冻结为 Bun：仓库根 `package.json` 显式登记 `cli/ts`、`tools/repo-check`、`tools/doc-coverage`，锁文件统一为 `bun.lock`，不采用不可审计的 glob，也不提交 npm/pnpm/Yarn 的第二套锁文件。
+- 文档覆盖率已冻结为原生 AST 适配器：Rust 使用独立 `xiao-doc-coverage-rust` crate 的 `syn` AST，TypeScript 使用 Compiler API，由 TypeScript/Bun 统一 CLI 汇总；不以正则或统一 tree-sitter 作为 A0 回退。
+- A0 的政策清单为 `tools/repo-check/repository.manifest.json`，模块代码/测试/UseDocs 关系为 `docs/module-registry.json`；两者与 Cargo/Bun manifest 三方交叉校验，检查器只读且不自动修复。
+
+## 待定决策
 
 ### 需要语言设计确认
 

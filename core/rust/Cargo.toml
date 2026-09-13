@@ -1,0 +1,33 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/xiao-source",
+    "crates/xiao-diagnostics",
+    "crates/xiao-i18n",
+    "crates/xiao-syntax",
+    "crates/xiao-config",
+    "crates/xiao-types",
+    "crates/xiao-modules",
+    "crates/xiao-ir",
+    "crates/xiao-runtime",
+    "crates/xiao-bytecode",
+    "crates/xiao-vm",
+    "crates/xiao-optimizer",
+    "crates/xiao-codegen-llvm",
+    "crates/xiao-package",
+    "crates/xiao-artifacts",
+    "crates/xiao-xar",
+    "crates/xiao-platform",
+    "crates/xiao-driver",
+    "crates/xiao-doc-coverage-rust",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+rust-version = "1.85"
+publish = false
+
+[workspace.lints.rust]
+missing_docs = "warn"
