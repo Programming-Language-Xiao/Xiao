@@ -1,0 +1,16 @@
+{
+  "source": "true false none 12.50 .5 1e3 \"ok\" 'x'\n",
+  "tokens": [
+    { "kind": "Boolean", "start": 0, "end": 4, "text": "true" },
+    { "kind": "Boolean", "start": 5, "end": 10, "text": "false" },
+    { "kind": "None", "start": 11, "end": 15, "text": "none" },
+    { "kind": "Float", "start": 16, "end": 21, "text": "12.50" },
+    { "kind": "Float", "start": 22, "end": 24, "text": ".5" },
+    { "kind": "Float", "start": 25, "end": 28, "text": "1e3" },
+    { "kind": "String", "start": 29, "end": 33, "text": "\"ok\"" },
+    { "kind": "String", "start": 34, "end": 37, "text": "'x'" },
+    { "kind": "Newline", "start": 37, "end": 38, "text": "\n" },
+    { "kind": "Eof", "start": 38, "end": 38, "text": "" }
+  ],
+  "diagnostics": []
+}

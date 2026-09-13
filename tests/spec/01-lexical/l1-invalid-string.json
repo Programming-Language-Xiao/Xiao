@@ -1,0 +1,11 @@
+{
+  "source": "\"bad\\q\" tail",
+  "tokens": [
+    { "kind": "Invalid", "start": 0, "end": 7, "text": "\"bad\\q\"" },
+    { "kind": "Identifier", "start": 8, "end": 12, "text": "tail" },
+    { "kind": "Eof", "start": 12, "end": 12, "text": "" }
+  ],
+  "diagnostics": [
+    { "code": "X01-LEX-003", "start": 4, "end": 6 }
+  ]
+}

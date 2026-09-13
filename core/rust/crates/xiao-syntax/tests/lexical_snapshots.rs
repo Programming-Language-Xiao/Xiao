@@ -80,6 +80,42 @@ fn invalid_character_snapshot() {
 }
 
 #[test]
+/// 验证 L1 字面量的种类、原始文本和换行区间。
+fn l1_literals_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l1-literals.json"
+    )));
+}
+
+#[test]
+/// 验证 L1 保留字、分隔符、路径符号和最长运算符匹配。
+fn l1_operators_and_delimiters_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l1-operators-and-delimiters.json"
+    )));
+}
+
+#[test]
+/// 验证字符串转义错误仍能恢复到后续合法名称。
+fn l1_invalid_string_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l1-invalid-string.json"
+    )));
+}
+
+#[test]
+/// 验证不完整数字指数的诊断区间和错误恢复。
+fn l1_invalid_number_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l1-invalid-number.json"
+    )));
+}
+
+#[test]
 /// 确认快照仍覆盖 EOF Token，避免未使用的 TokenKind 导入退化。
 fn eof_kind_is_stable() {
     assert!(TokenKind::Eof.is_eof());
