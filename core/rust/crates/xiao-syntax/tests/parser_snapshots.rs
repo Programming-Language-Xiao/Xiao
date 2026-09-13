@@ -263,9 +263,9 @@ fn rejects_indented_block_and_keeps_following_statement() {
 }
 
 #[test]
-/// 验证独立复杂语法的诊断编号和错误恢复边界。
+/// 验证独立非法语法的诊断编号和错误恢复边界。
 fn reports_each_p0_boundary_error() {
-    let source = SourceFile::from_text("+\n1 = 2\na =\nb + c\nnext = 4");
+    let source = SourceFile::from_text("~\n1 = 2\na =\nb ~ c\nnext = 4");
     let result = Parser::new(&source).parse();
     let codes = result
         .diagnostics
@@ -333,21 +333,14 @@ fn preserves_crlf_statement_boundaries() {
 }
 
 #[test]
-/// 确认调用和索引都按 P0 复杂表达式拒绝，并恢复到后续语句。
-fn rejects_calls_and_indexes() {
+/// 确认 P1 已开放调用和索引，并继续恢复后续顶层语句。
+fn accepts_calls_and_indexes() {
     let source = SourceFile::from_text("call()\nvalue[0]\nvalid = 1");
     let result = Parser::new(&source).parse();
-    assert_eq!(
-        result
-            .diagnostics
-            .iter()
-            .map(|diagnostic| diagnostic.code())
-            .collect::<Vec<_>>(),
-        vec![UNSUPPORTED_EXPRESSION_CODE, UNSUPPORTED_EXPRESSION_CODE]
-    );
+    assert!(result.diagnostics.is_empty());
     assert_eq!(
         result.program.expect("应返回程序根节点").statements.len(),
-        1
+        3
     );
 }
 
