@@ -1,0 +1,10 @@
+{
+  "source": "### missing",
+  "tokens": [
+    { "kind": "Invalid", "start": 0, "end": 11, "text": "### missing" },
+    { "kind": "Eof", "start": 11, "end": 11, "text": "" }
+  ],
+  "diagnostics": [
+    { "code": "X01-LEX-006", "start": 0, "end": 11 }
+  ]
+}

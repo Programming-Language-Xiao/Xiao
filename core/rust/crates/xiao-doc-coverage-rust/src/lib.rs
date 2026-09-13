@@ -326,7 +326,7 @@ mod tests {
         let path = std::env::temp_dir().join("xiao-doc-coverage-rust-test.rs");
         std::fs::write(
             &path,
-            "/// documented\npub fn visible() {}\nfn hidden() {}\n",
+            "/// documented\npub fn visible() {}\n#[doc = \"same line\"] pub fn inline_documented() {}\nfn hidden() {}\n",
         )
         .expect("write fixture");
         let response = scan(&ScanRequest {
@@ -335,12 +335,18 @@ mod tests {
         });
         assert!(response.errors.is_empty());
         assert_eq!(response.protocol_version, AST_PROTOCOL_VERSION);
-        assert_eq!(response.declarations.len(), 3);
+        assert_eq!(response.declarations.len(), 4);
         assert!(
             response
                 .declarations
                 .iter()
                 .any(|item| item.is_public && item.has_doc)
+        );
+        assert!(
+            response
+                .declarations
+                .iter()
+                .any(|item| item.name == "inline_documented" && item.is_public && item.has_doc)
         );
         let _ = std::fs::remove_file(path);
     }

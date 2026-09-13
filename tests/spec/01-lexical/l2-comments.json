@@ -1,0 +1,13 @@
+{
+  "source": "a # ordinary\n### doc ###\nb\n",
+  "tokens": [
+    { "kind": "Identifier", "start": 0, "end": 1, "text": "a" },
+    { "kind": "Newline", "start": 12, "end": 13, "text": "\n" },
+    { "kind": "DocComment", "start": 13, "end": 24, "text": "### doc ###" },
+    { "kind": "Newline", "start": 24, "end": 25, "text": "\n" },
+    { "kind": "Identifier", "start": 25, "end": 26, "text": "b" },
+    { "kind": "Newline", "start": 26, "end": 27, "text": "\n" },
+    { "kind": "Eof", "start": 27, "end": 27, "text": "" }
+  ],
+  "diagnostics": []
+}

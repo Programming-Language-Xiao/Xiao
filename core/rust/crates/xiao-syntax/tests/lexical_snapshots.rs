@@ -116,6 +116,87 @@ fn l1_invalid_number_snapshot() {
 }
 
 #[test]
+/// 验证 L2 反引号 UTF-8 名称和转义区间。
+fn l2_backtick_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l2-backtick.json"
+    )));
+}
+
+#[test]
+/// 验证普通注释、单行文档注释和物理换行。
+fn l2_comments_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l2-comments.json"
+    )));
+}
+
+#[test]
+/// 验证跨行文档注释作为单个 Token 保留。
+fn l2_multiline_doc_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l2-multiline-doc.json"
+    )));
+}
+
+#[test]
+/// 验证多层缩进、反缩进和 EOF 行为。
+fn l2_indentation_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l2-indentation.json"
+    )));
+}
+
+#[test]
+/// 验证分隔符内部的物理换行不改变缩进层级。
+fn l2_delimiters_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l2-delimiters.json"
+    )));
+}
+
+#[test]
+/// 验证反引号错误的诊断顺序与恢复位置。
+fn l2_invalid_backtick_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l2-invalid-backtick.json"
+    )));
+}
+
+#[test]
+/// 验证未闭合文档注释的错误区间。
+fn l2_invalid_doc_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l2-invalid-doc.json"
+    )));
+}
+
+#[test]
+/// 验证缩进错误归入最近层级并继续扫描。
+fn l2_invalid_indent_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l2-invalid-indent.json"
+    )));
+}
+
+#[test]
+/// 验证 EOF 报告未闭合分隔符。
+fn l2_unclosed_delimiter_snapshot() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/01-lexical/l2-unclosed-delimiter.json"
+    )));
+}
+
+#[test]
 /// 确认快照仍覆盖 EOF Token，避免未使用的 TokenKind 导入退化。
 fn eof_kind_is_stable() {
     assert!(TokenKind::Eof.is_eof());

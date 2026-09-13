@@ -34,6 +34,18 @@ describe("TypeScript AST", () => {
     rmSync(directory, { recursive: true, force: true });
   });
 
+  test("同一行的单行 JSDoc 也计入文档覆盖率", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-doc-coverage-inline-jsdoc-"));
+    const file = join(directory, "index.ts");
+    writeFileSync(file, "/** 同一行说明 */ export function inlineDocumented() {}\n", "utf8");
+    try {
+      const records = scanTypeScriptFile(directory, file);
+      expect(records.some((item) => item.name === "inlineDocumented" && item.isPublic && item.hasDoc)).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   test("语法解析失败时抛出诊断，而不是返回空声明", () => {
     const directory = mkdtempSync(join(tmpdir(), "xiao-doc-coverage-invalid-ts-"));
     const file = join(directory, "broken.ts");

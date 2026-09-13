@@ -13,7 +13,7 @@ related:
 
 # 文档覆盖率检查
 
-本工具统计 Rust、TypeScript、TSX、测试辅助和构建工具中的声明文档。A0 的门槛是全仓库至少 90%，公共 API/导出项 100%；UseDocs 页面不能替代代码 docstring。
+本工具统计 Rust、TypeScript、TSX、测试辅助和构建工具中的声明文档。A0 的门槛是全仓库至少 90%，公共 API/导出项 100%；单行 Rustdoc/JSDoc 只要直接关联声明也会计入，UseDocs 页面不能替代代码 docstring。
 
 ## 运行方式
 

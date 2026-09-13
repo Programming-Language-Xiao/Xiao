@@ -32,7 +32,7 @@ true false none
 
 ### 保留字
 
-控制流、函数、导入、转换和类型名称按保留字识别，例如 `def`、`if`、`return`、`import`、`as`、`int`、`str` 和 `bool`。保留字区分大小写；需要把关键字作为变量名时，反引号名称要等 L2 开放后再使用。
+控制流、函数、导入、转换和类型名称按保留字识别，例如 `def`、`if`、`return`、`import`、`as`、`int`、`str` 和 `bool`。保留字区分大小写；需要把关键字作为变量名时，可以使用 L2 的反引号名称。
 
 ### 运算符和分隔符
 
@@ -48,6 +48,6 @@ L1 接受常用的换行、制表和引号转义，例如 `"a\\n b"`。字符串
 
 ## 当前边界
 
-反引号 UTF-8 名称、注释、缩进、AST 和可执行语法仍在后续里程碑。想了解最小 Token 的 EOF 与 CRLF 细节，请阅读[最小 Token 流](minimal-tokens.md)；遇到错误位置问题，请查看[结构化诊断](../../troubleshooting/diagnostics-structure.md)。
+反引号 UTF-8 名称、注释和缩进已经在 L2 词法层验证；AST 和可执行语法仍在后续里程碑。请阅读[反引号名称](backtick-identifiers.md)和[注释与缩进](comments-and-indentation.md)了解新增 Token，再查看[最小 Token 流](minimal-tokens.md)核对 EOF 与 CRLF 细节；遇到错误位置问题，请查看[结构化诊断](../../troubleshooting/diagnostics-structure.md)。
 
 下一步阅读[基础变量与表达式](../basics/README.md)。
