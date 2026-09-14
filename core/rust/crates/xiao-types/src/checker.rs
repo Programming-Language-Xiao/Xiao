@@ -29,6 +29,9 @@ use crate::unify::{TypeContext, UnifyError};
 /// C0 容器语义的子模块；保持主检查器只负责语句分派和标量规则。
 #[path = "container_checker.rs"]
 mod container_checker;
+/// C1 有序容器选择、随机种子和选择器左值检查。
+#[path = "selector_checker.rs"]
+mod selector_checker;
 
 /// 后端需要保留的运行时检查种类。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -41,6 +44,14 @@ pub enum RuntimeCheckKind {
     DynamicConversion,
     /// 动态算术的除零、溢出或操作数检查。
     Arithmetic,
+    /// 动态选择器索引、范围端点或字符串位置检查。
+    SelectorBounds,
+    /// 动态选择器步长检查。
+    SelectorStep,
+    /// 动态随机抽取数量和候选集边界检查。
+    RandomCount,
+    /// 动态 `random.seed` 非负性和表示范围检查。
+    RandomSeed,
 }
 
 /// 一个带源码区间的运行时检查标记。
@@ -74,6 +85,12 @@ pub struct TypeCheckResult {
     pub environment: TypeEnvironment,
     /// 空数组路径声明对应的静态物化计划。
     pub materialization_plans: Vec<ContainerMaterializationPlan>,
+    /// 有序容器选择器的规范化计划。
+    pub selection_plans: Vec<crate::selection_model::SelectionPlan>,
+    /// 选择器左值的事务性标量广播计划。
+    pub broadcast_assignment_plans: Vec<crate::selection_model::BroadcastAssignmentPlan>,
+    /// `random.seed` 调用的运行上下文种子计划。
+    pub random_seed_plans: Vec<crate::selection_model::RandomSeedPlan>,
 }
 
 impl TypeCheckResult {
@@ -131,6 +148,24 @@ impl TypeCheckResult {
     pub fn materialization_plans(&self) -> &[ContainerMaterializationPlan] {
         &self.materialization_plans
     }
+
+    /// 返回有序容器选择计划的只读视图。
+    #[must_use]
+    pub fn selection_plans(&self) -> &[crate::selection_model::SelectionPlan] {
+        &self.selection_plans
+    }
+
+    /// 返回选择器广播赋值计划的只读视图。
+    #[must_use]
+    pub fn broadcast_assignment_plans(&self) -> &[crate::selection_model::BroadcastAssignmentPlan] {
+        &self.broadcast_assignment_plans
+    }
+
+    /// 返回 `random.seed` 计划的只读视图。
+    #[must_use]
+    pub fn random_seed_plans(&self) -> &[crate::selection_model::RandomSeedPlan] {
+        &self.random_seed_plans
+    }
 }
 
 /// P2 静态检查器；生命周期只借用不可变源码。
@@ -142,6 +177,9 @@ pub struct TypeChecker<'source> {
     nodes: Vec<TypedNode>,
     runtime_checks: Vec<RuntimeCheck>,
     materialization_plans: Vec<ContainerMaterializationPlan>,
+    selection_plans: Vec<crate::selection_model::SelectionPlan>,
+    broadcast_assignment_plans: Vec<crate::selection_model::BroadcastAssignmentPlan>,
+    random_seed_plans: Vec<crate::selection_model::RandomSeedPlan>,
     constant_values: BTreeMap<String, ConstantValue>,
 }
 
@@ -157,6 +195,9 @@ impl<'source> TypeChecker<'source> {
             nodes: Vec::new(),
             runtime_checks: Vec::new(),
             materialization_plans: Vec::new(),
+            selection_plans: Vec::new(),
+            broadcast_assignment_plans: Vec::new(),
+            random_seed_plans: Vec::new(),
             constant_values: BTreeMap::new(),
         }
     }
@@ -179,6 +220,9 @@ impl<'source> TypeChecker<'source> {
             runtime_checks: self.runtime_checks,
             environment: self.environment,
             materialization_plans: self.materialization_plans,
+            selection_plans: self.selection_plans,
+            broadcast_assignment_plans: self.broadcast_assignment_plans,
+            random_seed_plans: self.random_seed_plans,
         }
     }
 
@@ -266,6 +310,10 @@ impl<'source> TypeChecker<'source> {
         operator: AssignmentOperator,
         value: &Expression,
     ) {
+        if matches!(target, Expression::Selector { .. }) {
+            self.check_selector_assignment(target, operator, value);
+            return;
+        }
         let right_type = self.check_expression(value);
         let Expression::Name(name) = target else {
             self.check_expression(target);
@@ -813,6 +861,9 @@ impl<'source> TypeChecker<'source> {
         arguments: &[Expression],
         span: SourceSpan,
     ) -> Type {
+        if is_random_seed_callee(callee, self.source) {
+            return self.check_random_seed_call(arguments, span);
+        }
         if let Some(target) = self.scalar_callee(callee) {
             if arguments.len() != 1 {
                 self.type_error(
@@ -1260,6 +1311,20 @@ impl<'source> TypeChecker<'source> {
             .get(start..)
             .is_some_and(|diagnostics| diagnostics.iter().any(Diagnostic::is_error))
     }
+}
+
+/// 判断调用者是否是内建的 `random.seed` 成员。
+fn is_random_seed_callee(callee: &Expression, source: &SourceFile) -> bool {
+    let Expression::Member { object, member, .. } = callee else {
+        return false;
+    };
+    let Expression::Name(module) = object.as_ref() else {
+        return false;
+    };
+    !module.backticked
+        && !member.backticked
+        && module.unquoted_text(source) == "random"
+        && member.unquoted_text(source) == "seed"
 }
 
 /// 检查一个已解析程序的便捷函数。

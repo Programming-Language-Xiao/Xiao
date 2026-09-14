@@ -225,7 +225,7 @@ fn preserves_dictionary_column_order_for_assignment() {
 }
 
 #[test]
-/// C0 精确索引返回叶子类型，并拒绝范围、多选和静态越界。
+/// 精确索引返回叶子类型，C1 范围选择成功接入且静态越界仍被拒绝。
 fn checks_exact_selectors() {
     let valid = check("items = [1, \"x\"]\nvalue = items[1]\n");
     assert!(!valid.has_errors(), "{:?}", valid.diagnostics());
@@ -240,11 +240,12 @@ fn checks_exact_selectors() {
     );
 
     let invalid = check("items = [1, 2]\na = items[0~1]\nb = items[3]\n");
-    assert!(
-        invalid
-            .diagnostics()
-            .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-007")
+    assert_eq!(
+        invalid.binding("a").expect("a").scheme.ty,
+        Type::Array(ArrayType::heterogeneous(vec![
+            Type::scalar(xiao_syntax::ScalarType::Int),
+            Type::scalar(xiao_syntax::ScalarType::Int),
+        ]))
     );
     assert!(
         invalid

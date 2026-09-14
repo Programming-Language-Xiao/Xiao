@@ -9,6 +9,8 @@ version: "0.1.0"
 related:
   - README.md
   - indexing.md
+  - advanced-selection.md
+  - random-selection.md
 ---
 
 # 元组
@@ -22,6 +24,8 @@ pair = ("x", 1)
 group = (1) # 没有逗号时是分组表达式，不是元组
 ```
 
-C0 只建立 AST 和静态类型；元组的范围、多选、步长和随机选择留给 C1。
+C1 已验证元组的多选、范围、步长和随机选择计划；具体运行时抽样和读取仍待 Runtime 接入。
+选择结果保留元组的根类型和必要的嵌套形状，零命中时返回空元组。
 
 单项精确读取和嵌套路径遵循[声明路径与精确索引](indexing.md)的规则。
+高级选择写法见[高级选择与结果形状](advanced-selection.md)，随机规则见[随机选择与种子](random-selection.md)。

@@ -36,3 +36,17 @@ pub const CONTAINER_KEY_NOT_FOUND_CODE: &str = "X03-TYPE-005";
 pub const INVALID_DECLARATION_PATH_CODE: &str = "X03-TYPE-006";
 /// C0 选择器包含范围、多选、步长或随机项。
 pub const UNSUPPORTED_CONTAINER_SELECTOR_CODE: &str = "X03-TYPE-007";
+/// 选择器作用于不支持高级选择的容器。
+pub const SELECTOR_UNORDERED_CONTAINER_CODE: &str = "X03-TYPE-008";
+/// 选择器步长不是合法的非零整数。
+pub const SELECTOR_INVALID_STEP_CODE: &str = "X03-TYPE-009";
+/// 随机选择数量不是合法的非负整数。
+pub const SELECTOR_INVALID_RANDOM_COUNT_CODE: &str = "X03-TYPE-010";
+/// 无放回随机选择数量超过候选元素数。
+pub const SELECTOR_RANDOM_EXHAUSTED_CODE: &str = "X03-TYPE-011";
+/// 选择器左值不满足标量广播赋值规则。
+pub const SELECTOR_ASSIGNMENT_CODE: &str = "X03-TYPE-012";
+/// `random.seed` 参数不满足非负 `lint` 规则。
+pub const RANDOM_SEED_CODE: &str = "X03-TYPE-013";
+/// `random.seed` 参数数量错误。
+pub const RANDOM_SEED_ARITY_CODE: &str = "X03-TYPE-014";

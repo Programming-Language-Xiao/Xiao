@@ -7,9 +7,7 @@
 use std::collections::BTreeSet;
 
 use xiao_source::SourceSpan;
-use xiao_syntax::{
-    DictEntry, DictKey, Expression, IndexPath, PathSegment, ScalarType, Selector, SelectorItem,
-};
+use xiao_syntax::{DictEntry, DictKey, Expression, IndexPath, PathSegment, ScalarType, Selector};
 
 use crate::containers::{
     ArrayType, ContainerPathSegment, DictEntryType, DictType, PathConstraintTree,
@@ -18,7 +16,6 @@ use crate::conversion::can_assign;
 use crate::diagnostics::{
     CONTAINER_INDEX_OUT_OF_BOUNDS_CODE, CONTAINER_KEY_NOT_FOUND_CODE, CONTAINER_TYPE_MISMATCH_CODE,
     DUPLICATE_CONTAINER_KEY_CODE, INVALID_CONTAINER_PATH_CODE, INVALID_DECLARATION_PATH_CODE,
-    UNSUPPORTED_CONTAINER_SELECTOR_CODE,
 };
 use crate::materialization::{build_plan, merge_constraints};
 use crate::path_constraints::{
@@ -208,7 +205,7 @@ impl<'source> TypeChecker<'source> {
         true
     }
 
-    /// 检查 C0 的选择器表达式，只接受一个精确路径项且不带步长。
+    /// 检查容器选择器表达式；C1 语义实现位于独立选择器模块。
     pub(super) fn check_container_selector(
         &mut self,
         source: &Expression,
@@ -216,52 +213,7 @@ impl<'source> TypeChecker<'source> {
         selector: &Selector,
         span: SourceSpan,
     ) -> Type {
-        let source_type = self.check_expression(source);
-        if let Some(step) = step {
-            self.check_expression(step);
-            self.type_error(
-                UNSUPPORTED_CONTAINER_SELECTOR_CODE,
-                "x03.type.selector_step_not_yet_supported",
-                span,
-                "C0 精确索引不支持步长".to_string(),
-            );
-            return Type::Dynamic;
-        }
-        let [item] = selector.items.as_slice() else {
-            self.type_error(
-                UNSUPPORTED_CONTAINER_SELECTOR_CODE,
-                "x03.type.selector_requires_one_exact_item",
-                selector.span(),
-                "C0 只支持单个精确索引项".to_string(),
-            );
-            return Type::Dynamic;
-        };
-        let SelectorItem::Exact { path, .. } = item else {
-            self.type_error(
-                UNSUPPORTED_CONTAINER_SELECTOR_CODE,
-                "x03.type.selector_item_not_exact",
-                item.span(),
-                "C0 暂不支持范围、全选或随机选择".to_string(),
-            );
-            return Type::Dynamic;
-        };
-        let lowered = match lower_index_path(self.source(), path) {
-            Ok(path) => path,
-            Err(error) => {
-                self.report_path_conversion_error(path, error);
-                return Type::Dynamic;
-            }
-        };
-        if source_type.is_dynamic() {
-            return Type::Dynamic;
-        }
-        match resolve_exact_path(&source_type, &lowered) {
-            Ok(ty) => ty,
-            Err(error) => {
-                self.report_path_resolution_error(path, error);
-                Type::Dynamic
-            }
-        }
+        self.check_advanced_selector(source, step, selector, span)
     }
 
     /// 检查字典条目、推导值类型并拒绝重复键。

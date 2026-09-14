@@ -9,13 +9,15 @@ version: "0.1.0"
 related:
   - README.md
   - indexing.md
+  - advanced-selection.md
+  - broadcast-assignment.md
   - errors.md
 ---
 
 # 数组
 
-数组使用方括号，可以保存异构的标量或其他容器。C0 只验证静态结构，不执行数组对象的
-自动扩容或元素修改。
+数组使用方括号，可以保存异构的标量或其他容器。C0/C1 验证静态结构、选择计划和类型
+约束，不执行数组对象的自动扩容或元素修改。
 
 ## 创建数组
 
@@ -40,4 +42,5 @@ int empty = []
 
 ## 下一步
 
-嵌套位置约束和读取方式见[声明路径与精确索引](indexing.md)；错误编号见[容器错误](errors.md)。
+嵌套位置约束和读取方式见[声明路径与精确索引](indexing.md)；多选和范围见[高级选择与结果形状](advanced-selection.md)；
+选择器写入见[选择器广播赋值](broadcast-assignment.md)；错误编号见[容器错误](errors.md)。

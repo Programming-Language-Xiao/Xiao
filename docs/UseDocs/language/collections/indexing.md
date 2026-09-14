@@ -10,6 +10,7 @@ related:
   - README.md
   - arrays.md
   - dictionaries.md
+  - advanced-selection.md
   - errors.md
 ---
 
@@ -44,16 +45,26 @@ items = ["python", "rust"]
 first = items[0]
 ```
 
-当前只允许一个精确选择项。下面这些形态会被明确拒绝，交由后续 C1：
+C0 的单项精确读取只允许一个精确选择项。C1 已在类型阶段验证多选、范围、步长和随机
+选择；它们的写法与结果形状见[高级选择与结果形状](advanced-selection.md)。
 
 ```xiao
-items[0, 1]   # 多选
-items[0~1]    # 范围
-items{2}[=]   # 步长/全选
-items[?1]     # 随机
+items[0, 1]   # C1 多选
+items[0~1]    # C1 范围
+items{2}[=]   # C1 步长/全选
+items[?1]     # C1 随机
 ```
 
 数组、元组、字典表和字典列都可以沿已知结构下降；静态已知越界或不存在的键会报错。
+数字索引支持 Python 风格负索引，例如 `items[-1]` 表示最后一个元素。`str` 的索引单位
+是 Unicode 码点；长度和边界无法在类型阶段确定时，会留下 Runtime 检查标记。
+
+## 路径与高级选择
+
+路径中的 `/` 继续进入嵌套容器，例如 `items[2/1]`。范围端点也可以是嵌套路径，类型
+阶段按有序容器的深度优先顺序投影结果；无序字典表只能精确按键读取，集合不支持任何索引。
+
+详见[高级选择与结果形状](advanced-selection.md)和[随机选择与种子](random-selection.md)。
 
 ## 下一步
 

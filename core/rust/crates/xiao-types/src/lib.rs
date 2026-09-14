@@ -19,6 +19,12 @@ mod materialization;
 mod numeric;
 /// C0 精确路径转换和静态解析。
 mod path_constraints;
+/// C1 有序容器选择的规范化计划模型。
+mod selection_model;
+/// C1 随机源和抽样算法。
+mod selection_random;
+/// C1 选择结果的静态形状重建。
+mod selection_shape;
 /// 类型与 HM 类型方案表示。
 mod types;
 /// 统一、occurs-check、泛化和实例化算法。
@@ -52,6 +58,17 @@ pub use numeric::{
 pub use path_constraints::{
     PathConversionError, PathConversionErrorKind, PathResolutionError, PathResolutionErrorKind,
     lower_index_path, resolve_exact_path,
+};
+/// 重新导出选择计划、广播计划和随机种子记录。
+pub use selection_model::{
+    BroadcastAssignmentPlan, RandomSeedPlan, SelectionItemPlan, SelectionPath,
+    SelectionPathSegment, SelectionPlan, StepPlan,
+};
+/// 重新导出可注入随机源和抽样辅助。
+pub use selection_random::{RandomSelectionError, RandomSource, SeededRandom, sample_indices};
+/// 重新导出选择结果形状辅助。
+pub use selection_shape::{
+    direct_selection_children, empty_selection_type, project_selection_type,
 };
 /// 重新导出类型表示和方案别名。
 pub use types::{Scheme, Type, TypeScheme, TypeVarId};

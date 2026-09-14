@@ -1,0 +1,48 @@
+{
+  "stage": "03B",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "multiple-and-closed-range",
+      "source": "items = [1, 2, 3, 4]\nselected = items[0, 2]\nranged = items[1~3]\n",
+      "expect": "ordered-selection-plan",
+      "diagnostics": []
+    },
+    {
+      "name": "open-range-and-all",
+      "source": "items = (\"a\", \"b\", \"c\")\nhead = items[<2]\nall = items[=]\n",
+      "expect": "tuple-projection",
+      "diagnostics": []
+    },
+    {
+      "name": "negative-index-and-nested-range",
+      "source": "items = (\"a\", [1, 2])\nlast = items[-1]\npart = items[0~1/1]\n",
+      "expect": "normalized-paths",
+      "diagnostics": []
+    },
+    {
+      "name": "positive-and-negative-step",
+      "source": "items = [0, 1, 2, 3, 4]\nforward = items{2}[0~4]\nreverse = items{-2}[0~4]\n",
+      "expect": "stepped-selection-plan",
+      "diagnostics": []
+    },
+    {
+      "name": "random-and-seeded",
+      "source": "items = [1, 2, 3]\nrandom.seed(42)\na = items[?2]\nb = items[!?5]\nzero = items[?0]\n",
+      "expect": "random-selection-plan",
+      "diagnostics": []
+    },
+    {
+      "name": "dictionary-column-repeated-key",
+      "source": "column = <name = \"x\", level = 1>\nvalue = column[0, name]\n",
+      "expect": "tuple-on-repeated-key",
+      "diagnostics": []
+    },
+    {
+      "name": "scalar-broadcast-assignment",
+      "source": "items = [1, 2, 3]\nitems[0, 2] = 0\n",
+      "expect": "transactional-broadcast-plan",
+      "diagnostics": []
+    }
+  ]
+}
