@@ -18,5 +18,7 @@
 
 `c2a_sets.rs` 对应工程期 03C，覆盖非空集合与 `set()` 的静态类型推断、`none`/`bool`
 边界、重复元素、可哈希性、显式元素类型、成员判断、动态检查标记和集合索引拒绝。
-测试只验证 AST 类型检查结果，不创建 Runtime 集合；异构集合、集合代数和 `frozenset`
-留给后续 C2 子阶段。
+`c2a_snapshots.rs` 读取 `tests/spec/05-containers/c2a-valid.json` 与
+`c2a-errors.json`，逐条验证 `code`、`message_id`、严重级别和结构化参数；快照不比较
+中文或英语展示文本。测试只验证 AST 类型检查结果，不创建 Runtime 集合；异构集合、
+集合代数和 `frozenset` 留给后续 C2 子阶段。

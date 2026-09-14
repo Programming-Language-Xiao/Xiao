@@ -37,7 +37,7 @@ impl<'source> TypeChecker<'source> {
         self.validate_existing_container_constraints(root, constraints, span);
     }
 
-    /// 检查四种 C0 容器字面量并推导其结构化类型。
+    /// 检查 C0 容器字面量，并将 C2-A 集合交给独立集合模块。
     pub(super) fn check_container_expression(&mut self, expression: &Expression) -> Type {
         match expression {
             Expression::ArrayLiteral { elements, .. } => {
@@ -327,6 +327,15 @@ impl<'source> TypeChecker<'source> {
         let Some(expected) = constraints.effective_for(path).cloned() else {
             return;
         };
+        // 路径可以定位到集合这个容器本身，但不能定位到某个集合成员。
+        // 非空路径落在集合上时，显式类型约束应作用于所有成员。
+        if !path.is_empty()
+            && let Type::Set(set) = &actual
+            && let Some(element) = set.element_type()
+        {
+            self.check_set_element_assignment(element, &expected, span);
+            return;
+        }
         let children = direct_children(&actual, path);
         if children.is_empty() {
             if !actual.is_container() {
@@ -391,7 +400,7 @@ impl<'source> TypeChecker<'source> {
             }
             Type::Set(set) => {
                 if let Some(element) = set.element_type() {
-                    if self.check_container_element_assignment(element, &expected, target.span) {
+                    if self.check_set_element_assignment(element, &expected, target.span) {
                         Some(Type::Set(crate::SetType::homogeneous(expected)))
                     } else {
                         Some(value_type.clone())
@@ -406,7 +415,7 @@ impl<'source> TypeChecker<'source> {
                     "x03.type.typed_prefix_requires_container",
                     target.span,
                     format!(
-                        "显式元素类型 {} 只能约束数组或字典容器，实际为 {}",
+                        "显式元素类型 {} 需要受支持的容器初始化器，实际为 {}",
                         expected, value_type
                     ),
                 );
@@ -509,6 +518,10 @@ impl<'source> TypeChecker<'source> {
         error: PathResolutionError,
     ) {
         let (code, message_id) = match error.kind {
+            PathResolutionErrorKind::SetIndexUnsupported => {
+                self.set_index_error(span);
+                return;
+            }
             PathResolutionErrorKind::OutOfBounds { .. } => (
                 CONTAINER_INDEX_OUT_OF_BOUNDS_CODE,
                 "x03.type.index_out_of_bounds",

@@ -1,10 +1,10 @@
 ---
 id: language.collections.errors
-title: 容器错误与诊断
+title: 容器与集合错误诊断
 status: verified
 audience: learner
 module: rust.xiao-types
-stage: "03B"
+stage: "03C"
 version: "0.1.0"
 related:
   - README.md
@@ -12,13 +12,15 @@ related:
   - advanced-selection.md
   - random-selection.md
   - broadcast-assignment.md
+  - sets.md
   - ../../troubleshooting/README.md
 ---
 
-# 容器错误与诊断
+# 容器与集合错误诊断
 
-C0/C1 的容器错误在类型检查阶段产生稳定编号。具体文案会随 `[language]` 国际化设置变化，
-编号和源码位置不变；C1 的选择器错误仍只表示静态计划阶段的诊断。
+C0/C1/C2-A 的容器错误在语法或类型检查阶段产生稳定编号。具体文案会随 `[language]`
+国际化设置变化，编号、`message_id`、结构化参数和源码位置不变；选择器和集合错误仍只
+表示静态计划阶段的诊断，不表示 Runtime 已执行真实容器操作。
 
 | 编号 | 含义 | 常见原因 |
 | --- | --- | --- |
@@ -36,14 +38,27 @@ C0/C1 的容器错误在类型检查阶段产生稳定编号。具体文案会�
 | `X03-TYPE-012` | 选择器广播赋值错误 | 右值非标量、目标随机/不可变或使用不支持的赋值形式 |
 | `X03-TYPE-013` | 随机种子错误 | `random.seed` 参数不是合法非负整数语义值 |
 | `X03-TYPE-014` | 随机种子参数数量错误 | `random.seed` 不是恰好一个参数 |
+| `X03-TYPE-015` | 集合元素类型不匹配 | 显式集合元素类型或 C2-A 单一元素类型推断发生冲突 |
+| `X03-TYPE-016` | 集合元素不可哈希 | 数组、字典、元组（C2-A 尚未实现递归证明）或其他已知不可哈希类型作为元素/成员值 |
+| `X03-TYPE-017` | 静态集合元素重复 | 同一静态类型下的常量值在集合字面量中出现多次 |
+| `X03-TYPE-018` | `set()` 参数数量错误 | 空集合构造式接收了参数；C2-A 只接受零参数 |
+| `X03-TYPE-019` | 集合成员判断类型错误 | `in`/`not in` 右侧不是集合，或左侧不符合集合元素类型约束 |
+| `X03-TYPE-020` | 集合不支持索引 | 对集合使用数字、键名、范围、多选、步长或随机选择 |
 
-语法阶段还会用 `X03-PARSE-004` 拒绝 `const name[path]`。`const` 的编译期常量语义与
-容器位置锁定不是同一件事，后者尚未进入 C0。
+语法阶段还会用 `X03-PARSE-002` 拒绝同一花括号中混用集合值和字典键值条目，并用
+`X03-PARSE-004` 拒绝 `const name[path]`。`const` 的编译期常量语义与容器位置锁定不是
+同一件事，后者尚未进入 C0。
+
+集合诊断的 `message_id` 使用 `x03.type.set_*` 命名空间；集合类型冲突和成员类型冲突
+携带 `actual_type`/`expected_type`，不可哈希诊断携带 `actual_type`，重复元素携带
+`element`，构造器参数数量携带 `actual_count`/`expected_count`。程序和测试应匹配
+`code`、`message_id` 与参数，而不是匹配中文或英语译文。
 
 未知长度数组和字符串的边界无法在静态阶段证明；这类值会登记相应 Runtime 检查，
-不应通过改写源码为范围或随机选择来绕过诊断。C1 的静态检查只生成计划，不执行真实
-容器读写或随机抽样。
+不应通过改写源码为范围或随机选择来绕过诊断。动态集合元素和动态成员判断分别登记
+`SetHashability`/`SetMembership` 检查。C1/C2-A 的静态检查只生成计划，不执行真实
+容器读写、集合哈希或随机抽样。
 
-更完整的运行时堆栈、日志和调试窗口属于第 07/11 阶段；当前页面覆盖 C0/C1 类型阶段诊断，
-不承诺 Runtime 执行结果。交接边界见 [03A](../../../DevDocs/03a-c0-containers.md) 和
-[03B](../../../DevDocs/03b-c1-ordered-selectors.md)。
+更完整的运行时堆栈、日志和调试窗口属于第 07/11 阶段；当前页面覆盖 C0/C1/C2-A
+类型阶段诊断，不承诺 Runtime 执行结果。交接边界见 [03A](../../../DevDocs/03a-c0-containers.md)、
+[03B](../../../DevDocs/03b-c1-ordered-selectors.md) 和 [03C](../../../DevDocs/03c-c2a-sets.md)。

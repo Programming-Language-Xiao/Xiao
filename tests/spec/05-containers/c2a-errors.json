@@ -1,0 +1,135 @@
+{
+  "stage": "03C",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "mixed-element-types",
+      "source": "values = {1, true}\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-015",
+          "message_id": "x03.type.set_element_type_mismatch",
+          "params": {
+            "actual_type": "bool",
+            "expected_type": "int"
+          }
+        }
+      ]
+    },
+    {
+      "name": "static-duplicate",
+      "source": "values = {1, 1}\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-017",
+          "message_id": "x03.type.set_duplicate_element",
+          "params": {
+            "element": "1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "unhashable-array-element",
+      "source": "values = {[1, 2]}\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-016",
+          "message_id": "x03.type.set_unhashable_element",
+          "params": {
+            "actual_type": "[int, int]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "set-constructor-arity",
+      "source": "values = set(1)\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-018",
+          "message_id": "x03.type.set_constructor_arity",
+          "params": {
+            "actual_count": 1,
+            "expected_count": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "membership-requires-set",
+      "source": "value = 1 in [1]\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-019",
+          "message_id": "x03.type.set_membership_requires_set",
+          "params": {
+            "actual_type": "[int]",
+            "operator": "in"
+          }
+        }
+      ]
+    },
+    {
+      "name": "membership-element-type-mismatch",
+      "source": "ids = {1, 2}\nvalue = \"x\" in ids\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-019",
+          "message_id": "x03.type.set_membership_element_mismatch",
+          "params": {
+            "actual_type": "str",
+            "expected_type": "int"
+          }
+        }
+      ]
+    },
+    {
+      "name": "unhashable-membership-value",
+      "source": "ids = {1, 2}\narray = [1]\nvalue = array in ids\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-016",
+          "message_id": "x03.type.set_unhashable_membership",
+          "params": {
+            "actual_type": "[int]"
+          }
+        }
+      ]
+    },
+    {
+      "name": "set-is-not-indexable",
+      "source": "values = {1, 2}\nfirst = values[0]\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-020",
+          "message_id": "x03.type.set_index_unsupported",
+          "params": {}
+        }
+      ]
+    },
+    {
+      "name": "explicit-element-type-mismatch",
+      "source": "int ids = {true}\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-015",
+          "message_id": "x03.type.set_element_type_mismatch",
+          "params": {
+            "actual_type": "bool",
+            "expected_type": "int"
+          }
+        }
+      ]
+    }
+  ]
+}

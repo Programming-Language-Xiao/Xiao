@@ -102,6 +102,8 @@ pub fn lower_index_path(
 pub enum PathResolutionErrorKind {
     /// 当前容器不接受此种路径段。
     WrongSegment,
+    /// 路径试图进入无序集合成员；集合没有任何位置或键索引。
+    SetIndexUnsupported,
     /// 静态已知的数字索引越界。
     OutOfBounds { length: usize },
     /// 静态已知的字典键不存在。
@@ -125,6 +127,13 @@ impl Display for PathResolutionError {
                 write!(
                     formatter,
                     "path segment {} does not match the container",
+                    self.segment
+                )
+            }
+            PathResolutionErrorKind::SetIndexUnsupported => {
+                write!(
+                    formatter,
+                    "path segment {} cannot index a set",
                     self.segment
                 )
             }
@@ -192,12 +201,14 @@ fn resolve_segment(
         },
         Type::DictTable(dictionary) => resolve_dictionary(dictionary, part, segment, false),
         Type::DictColumn(dictionary) => resolve_dictionary(dictionary, part, segment, true),
-        Type::Set(_) | Type::Function { .. } | Type::Scalar(_) | Type::None => {
-            Err(PathResolutionError {
-                segment,
-                kind: PathResolutionErrorKind::WrongSegment,
-            })
-        }
+        Type::Set(_) => Err(PathResolutionError {
+            segment,
+            kind: PathResolutionErrorKind::SetIndexUnsupported,
+        }),
+        Type::Function { .. } | Type::Scalar(_) | Type::None => Err(PathResolutionError {
+            segment,
+            kind: PathResolutionErrorKind::WrongSegment,
+        }),
     }
 }
 
@@ -302,5 +313,14 @@ mod tests {
             error.kind,
             PathResolutionErrorKind::OutOfBounds { .. }
         ));
+    }
+
+    #[test]
+    /// 集合成员路径必须保留专属拒绝原因，不能被解释成数字或键名位置。
+    fn rejects_set_member_paths() {
+        let root = Type::set(Type::scalar(ScalarType::Int));
+        let error = resolve_exact_path(&root, &[ContainerPathSegment::Index(0)])
+            .expect_err("集合不应支持索引");
+        assert_eq!(error.kind, PathResolutionErrorKind::SetIndexUnsupported);
     }
 }

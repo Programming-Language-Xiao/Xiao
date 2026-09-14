@@ -4,12 +4,13 @@
 //! Runtime 集合、不执行哈希，也不实现集合代数；动态元素只登记后续
 //! Runtime 所需的检查标记。
 
+use xiao_diagnostics::DiagnosticParam;
 use xiao_source::SourceSpan;
 use xiao_syntax::{BinaryOperator, Expression};
 
 use crate::diagnostics::{
     SET_CONSTRUCTOR_ARITY_CODE, SET_DUPLICATE_ELEMENT_CODE, SET_ELEMENT_TYPE_MISMATCH_CODE,
-    SET_MEMBERSHIP_TYPE_CODE, SET_UNHASHABLE_ELEMENT_CODE,
+    SET_INDEX_UNSUPPORTED_CODE, SET_MEMBERSHIP_TYPE_CODE, SET_UNHASHABLE_ELEMENT_CODE,
 };
 use crate::numeric::ConstantValue;
 use crate::set_types::{Hashability, SetType, hashability};
@@ -23,7 +24,7 @@ impl<'source> TypeChecker<'source> {
         let mut element_type: Option<Type> = None;
         let mut has_dynamic_type = false;
         let mut has_invalid_element = false;
-        let mut constants = Vec::<ConstantValue>::new();
+        let mut constants = Vec::<(Type, ConstantValue)>::new();
 
         for element in elements {
             let ty = self.check_expression(element);
@@ -32,11 +33,15 @@ impl<'source> TypeChecker<'source> {
                 Hashability::Hashable => {}
                 Hashability::Unhashable => {
                     has_invalid_element = true;
-                    self.type_error(
+                    self.type_error_with_params(
                         SET_UNHASHABLE_ELEMENT_CODE,
                         "x03.type.set_unhashable_element",
                         element.span(),
                         format!("类型 {} 不能作为集合元素", ty),
+                        [(
+                            "actual_type".to_owned(),
+                            DiagnosticParam::Text(ty.to_string()),
+                        )],
                     );
                 }
                 Hashability::Dynamic => {
@@ -50,40 +55,46 @@ impl<'source> TypeChecker<'source> {
                 continue;
             }
 
-            match ty {
+            match &ty {
                 Type::Dynamic | Type::Variable(_) => {
                     has_dynamic_type = true;
                 }
                 known => {
                     if let Some(expected) = element_type.as_ref() {
-                        if expected != &known {
+                        if expected != known {
                             has_invalid_element = true;
-                            self.type_error(
+                            self.type_error_with_params(
                                 SET_ELEMENT_TYPE_MISMATCH_CODE,
                                 "x03.type.set_element_type_mismatch",
                                 element.span(),
                                 format!("集合元素类型 {} 与已推断的 {} 不一致", known, expected),
+                                type_params(known, expected),
                             );
                         }
                     } else {
-                        element_type = Some(known);
+                        element_type = Some(known.clone());
                     }
                 }
             }
 
             // 只有编译期已知的常量才参与静态唯一性检查；动态值的哈希和
             // 相等判断必须留给 Runtime，不能依据源码表达式文本猜测。
-            if let Some(constant) = self.eval_const(element)
-                && !constants.iter().any(|seen| seen == &constant)
-            {
-                constants.push(constant);
-            } else if let Some(constant) = self.eval_const(element) {
-                self.type_error(
-                    SET_DUPLICATE_ELEMENT_CODE,
-                    "x03.type.set_duplicate_element",
-                    element.span(),
-                    format!("集合中重复的静态元素 {}", format_constant(&constant)),
-                );
+            if let Some(constant) = self.eval_const(element) {
+                if constants
+                    .iter()
+                    .any(|(seen_type, seen)| seen_type == &ty && same_set_constant(seen, &constant))
+                {
+                    let value = format_constant(&constant);
+                    self.type_error_with_params(
+                        SET_DUPLICATE_ELEMENT_CODE,
+                        "x03.type.set_duplicate_element",
+                        element.span(),
+                        format!("集合中重复的静态元素 {}", value),
+                        [("element".to_owned(), DiagnosticParam::Text(value))],
+                    );
+                } else {
+                    constants.push((ty, constant));
+                }
             }
         }
 
@@ -118,11 +129,18 @@ impl<'source> TypeChecker<'source> {
             for argument in arguments {
                 self.check_expression(argument);
             }
-            self.type_error(
+            self.type_error_with_params(
                 SET_CONSTRUCTOR_ARITY_CODE,
                 "x03.type.set_constructor_arity",
                 span,
                 format!("set() 构造式不接受参数，实际收到 {} 个", arguments.len()),
+                [
+                    (
+                        "actual_count".to_owned(),
+                        DiagnosticParam::Integer(arguments.len() as i128),
+                    ),
+                    ("expected_count".to_owned(), DiagnosticParam::Integer(0)),
+                ],
             );
         }
         Type::Set(SetType::Unknown)
@@ -149,7 +167,7 @@ impl<'source> TypeChecker<'source> {
                 Type::scalar(xiao_syntax::ScalarType::Bool)
             }
             other => {
-                self.type_error(
+                self.type_error_with_params(
                     SET_MEMBERSHIP_TYPE_CODE,
                     "x03.type.set_membership_requires_set",
                     right.span(),
@@ -158,6 +176,16 @@ impl<'source> TypeChecker<'source> {
                         operator.as_str(),
                         other
                     ),
+                    [
+                        (
+                            "operator".to_owned(),
+                            DiagnosticParam::Text(operator.as_str().to_owned()),
+                        ),
+                        (
+                            "actual_type".to_owned(),
+                            DiagnosticParam::Text(other.to_string()),
+                        ),
+                    ],
                 );
                 Type::Dynamic
             }
@@ -172,11 +200,15 @@ impl<'source> TypeChecker<'source> {
         span: SourceSpan,
     ) {
         match hashability(actual) {
-            Hashability::Unhashable => self.type_error(
+            Hashability::Unhashable => self.type_error_with_params(
                 SET_UNHASHABLE_ELEMENT_CODE,
                 "x03.type.set_unhashable_membership",
                 span,
                 format!("类型 {} 不能作为集合成员查询值", actual),
+                [(
+                    "actual_type".to_owned(),
+                    DiagnosticParam::Text(actual.to_string()),
+                )],
             ),
             Hashability::Dynamic => {
                 self.push_runtime_check(span, RuntimeCheckKind::SetMembership);
@@ -189,13 +221,79 @@ impl<'source> TypeChecker<'source> {
             && !matches!(actual, Type::Variable(_))
             && !crate::conversion::can_assign(actual, expected)
         {
-            self.type_error(
+            self.type_error_with_params(
                 SET_MEMBERSHIP_TYPE_CODE,
                 "x03.type.set_membership_element_mismatch",
                 span,
                 format!("成员类型 {} 不符合集合元素类型 {}", actual, expected),
+                type_params(actual, expected),
             );
         }
+    }
+
+    /// 将显式集合前缀检查为成员类型约束，不复用数组的位置诊断。
+    pub(super) fn check_set_element_assignment(
+        &mut self,
+        actual: &Type,
+        expected: &Type,
+        span: SourceSpan,
+    ) -> bool {
+        if crate::conversion::can_assign(actual, expected) {
+            true
+        } else {
+            self.type_error_with_params(
+                SET_ELEMENT_TYPE_MISMATCH_CODE,
+                "x03.type.set_element_type_mismatch",
+                span,
+                format!("集合元素类型 {} 不符合显式类型 {}", actual, expected),
+                type_params(actual, expected),
+            );
+            false
+        }
+    }
+
+    /// 报告集合不可索引；调用方不得为该读取建立选择计划。
+    pub(super) fn set_index_error(&mut self, span: SourceSpan) {
+        self.type_error(
+            SET_INDEX_UNSUPPORTED_CODE,
+            "x03.type.set_index_unsupported",
+            span,
+            "集合没有数字或键名索引，也不能使用高级选择器".to_owned(),
+        );
+    }
+}
+
+/// 保留类型冲突的原始类型文本供后续消息目录插值。
+fn type_params(actual: &Type, expected: &Type) -> [(String, DiagnosticParam); 2] {
+    [
+        (
+            "actual_type".to_owned(),
+            DiagnosticParam::Text(actual.to_string()),
+        ),
+        (
+            "expected_type".to_owned(),
+            DiagnosticParam::Text(expected.to_string()),
+        ),
+    ]
+}
+
+/// 比较同一静态类型的集合常量，不把 `bool` 或不同数值类型隐式合并。
+fn same_set_constant(left: &ConstantValue, right: &ConstantValue) -> bool {
+    match (left, right) {
+        (ConstantValue::BigInteger(left), ConstantValue::BigInteger(right)) => {
+            normalized_integer(left) == normalized_integer(right)
+        }
+        _ => left == right,
+    }
+}
+
+/// 去掉大整数字面量的前导零，避免源码拼写影响静态唯一性。
+fn normalized_integer(value: &str) -> &str {
+    let normalized = value.trim_start_matches('0');
+    if normalized.is_empty() {
+        "0"
+    } else {
+        normalized
     }
 }
 

@@ -5,7 +5,7 @@
 
 use std::collections::BTreeMap;
 
-use xiao_diagnostics::{Diagnostic, Severity};
+use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
 use xiao_source::{SourceFile, SourceSpan};
 use xiao_syntax::{
     AssignmentOperator, BinaryOperator, Expression, IndexPath, LiteralKind, Program, ScalarType,
@@ -1304,13 +1304,22 @@ impl<'source> TypeChecker<'source> {
         span: SourceSpan,
         message: String,
     ) {
-        self.diagnostics.push(Diagnostic::new(
-            code,
-            message_id,
-            Severity::Error,
-            Some(span),
-            message,
-        ));
+        self.type_error_with_params(code, message_id, span, message, []);
+    }
+
+    /// 保存新增诊断的稳定参数，展示文本仅作为当前阶段的预览。
+    fn type_error_with_params(
+        &mut self,
+        code: &'static str,
+        message_id: &'static str,
+        span: SourceSpan,
+        message: String,
+        params: impl IntoIterator<Item = (String, DiagnosticParam)>,
+    ) {
+        self.diagnostics.push(
+            Diagnostic::new(code, message_id, Severity::Error, Some(span), message)
+                .with_params(params),
+        );
     }
 
     /// 追加一个去重前的运行时检查标记。

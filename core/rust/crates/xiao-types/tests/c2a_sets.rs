@@ -159,11 +159,66 @@ fn records_dynamic_set_checks() {
 #[test]
 /// 集合不支持数字或高级选择器索引。
 fn rejects_set_indexing() {
-    let result = check("values = {1, 2}\nfirst = values[0]\n");
-    assert!(
+    let result = check(concat!(
+        "values = {1, 2}\n",
+        "a = values[0]\n",
+        "b = values[name]\n",
+        "c = values[0, 1]\n",
+        "d = values[0~1]\n",
+        "e = values[=]\n",
+        "f = values{2}[=]\n",
+        "g = values[?1]\n",
+        "h = values[!?1]\n",
+    ));
+    assert_eq!(
         result
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == SET_INDEX_UNSUPPORTED_CODE)
+            .filter(|diagnostic| diagnostic.code() == SET_INDEX_UNSUPPORTED_CODE)
+            .count(),
+        8
+    );
+    assert!(
+        result.selection_plans().is_empty(),
+        "集合选择失败时不得留下可执行选择计划"
+    );
+    assert!(
+        result.runtime_checks().is_empty(),
+        "集合选择失败时不得留下本次选择的运行时检查"
+    );
+}
+
+#[test]
+/// 嵌套路径进入集合时使用集合专属诊断，且不生成外层空选择计划。
+fn rejects_nested_set_indexing_without_plan() {
+    let result = check(concat!(
+        "items = [{1, 2}]\nvalue = items[0/0]\n",
+        "table = {values = {1, 2}}\nvalue2 = table[values/0]\n",
+    ));
+    assert_eq!(
+        result
+            .diagnostics()
+            .iter()
+            .filter(|diagnostic| diagnostic.code() == SET_INDEX_UNSUPPORTED_CODE)
+            .count(),
+        2
+    );
+    assert!(result.selection_plans().is_empty());
+}
+
+#[test]
+/// 集合位于其他容器的路径叶子时，显式类型约束其成员而不是伪造位置。
+fn constrains_nested_set_members_without_indexing() {
+    let valid = check("int items[0] = [{1, 2}]\n");
+    assert!(valid.is_success(), "diagnostics: {:?}", valid.diagnostics);
+
+    let invalid = check("str items[0] = [{1, 2}]\n");
+    assert!(
+        invalid
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == SET_ELEMENT_TYPE_MISMATCH_CODE),
+        "diagnostics: {:?}",
+        invalid.diagnostics
     );
 }

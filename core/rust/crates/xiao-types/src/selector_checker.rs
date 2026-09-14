@@ -63,26 +63,29 @@ impl<'source> TypeChecker<'source> {
         selector: &Selector,
         span: SourceSpan,
     ) -> Type {
+        let diagnostic_start = self.diagnostics.len();
         let source_type = self.check_expression(source);
+        if matches!(source_type, Type::Set(_)) {
+            self.set_index_error(span);
+            return Type::Dynamic;
+        }
+        if self.diagnostics[diagnostic_start..]
+            .iter()
+            .any(|diagnostic| diagnostic.code() == SET_INDEX_UNSUPPORTED_CODE)
+        {
+            return Type::Dynamic;
+        }
+        let runtime_check_start = self.runtime_checks.len();
         let mut requires_runtime_check = false;
         let step_plan = self.check_step_expression(step, &mut requires_runtime_check);
 
         if !is_selector_source(&source_type) {
-            if matches!(source_type, Type::Set(_)) {
-                self.selector_error(
-                    SET_INDEX_UNSUPPORTED_CODE,
-                    "x03.type.set_index_unsupported",
-                    span,
-                    "集合没有数字或键名索引，也不能使用高级选择器".to_string(),
-                );
-            } else {
-                self.selector_error(
-                    SELECTOR_UNORDERED_CONTAINER_CODE,
-                    "x03.type.selector_source_not_ordered",
-                    span,
-                    format!("类型 {} 不能使用有序选择器", source_type),
-                );
-            }
+            self.selector_error(
+                SELECTOR_UNORDERED_CONTAINER_CODE,
+                "x03.type.selector_source_not_ordered",
+                span,
+                format!("类型 {} 不能使用有序选择器", source_type),
+            );
             let result_type = Type::Dynamic;
             self.selection_plans.push(SelectionPlan {
                 span,
@@ -132,6 +135,16 @@ impl<'source> TypeChecker<'source> {
                 item,
                 &mut requires_runtime_check,
             ));
+        }
+
+        // 嵌套路径也可能在解析途中进入集合。该选择器已经不可执行，
+        // 不保留空计划或只为这次失败选择追加的 Runtime 检查。
+        if self.diagnostics[diagnostic_start..]
+            .iter()
+            .any(|diagnostic| diagnostic.code() == SET_INDEX_UNSUPPORTED_CODE)
+        {
+            self.runtime_checks.truncate(runtime_check_start);
+            return Type::Dynamic;
         }
 
         let mut selected_paths = Vec::new();
@@ -941,12 +954,7 @@ impl<'source> TypeChecker<'source> {
                     current = value;
                 }
                 Type::Set(_) => {
-                    self.selector_error(
-                        SET_INDEX_UNSUPPORTED_CODE,
-                        "x03.type.set_index_unsupported",
-                        diagnostic_span,
-                        "集合没有数字或键名索引，也不能使用高级选择器".to_string(),
-                    );
+                    self.set_index_error(diagnostic_span);
                     return None;
                 }
                 Type::Scalar(_) | Type::None | Type::Function { .. } => {
