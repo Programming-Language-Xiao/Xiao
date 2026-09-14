@@ -63,6 +63,7 @@ impl<'source> TypeChecker<'source> {
             Expression::DictColumnLiteral { entries, .. } => {
                 Type::DictColumn(self.check_dictionary_entries(entries))
             }
+            Expression::SetLiteral { elements, span } => self.check_set_literal(elements, *span),
             _ => Type::Dynamic,
         }
     }
@@ -75,7 +76,9 @@ impl<'source> TypeChecker<'source> {
         constraint_path: Option<&IndexPath>,
         value: Option<&Expression>,
     ) -> bool {
-        let has_container_initializer = value.is_some_and(is_container_expression);
+        let has_container_initializer = value.is_some_and(|expression| {
+            is_container_expression(expression) || self.is_set_constructor(expression)
+        });
         if constraint_path.is_none() && !has_container_initializer {
             return false;
         }
@@ -386,6 +389,17 @@ impl<'source> TypeChecker<'source> {
                 }
                 Some(value_type.clone())
             }
+            Type::Set(set) => {
+                if let Some(element) = set.element_type() {
+                    if self.check_container_element_assignment(element, &expected, target.span) {
+                        Some(Type::Set(crate::SetType::homogeneous(expected)))
+                    } else {
+                        Some(value_type.clone())
+                    }
+                } else {
+                    Some(Type::Set(crate::SetType::homogeneous(expected)))
+                }
+            }
             _ => {
                 self.type_error(
                     CONTAINER_TYPE_MISMATCH_CODE,
@@ -415,7 +429,7 @@ impl<'source> TypeChecker<'source> {
                 CONTAINER_TYPE_MISMATCH_CODE,
                 "x03.type.array_element_mismatch",
                 span,
-                format!("数组元素 {} 不符合显式类型 {}", actual, expected),
+                format!("容器元素 {} 不符合显式类型 {}", actual, expected),
             );
             false
         }
@@ -518,6 +532,7 @@ fn is_container_expression(expression: &Expression) -> bool {
             | Expression::TupleLiteral { .. }
             | Expression::DictTableLiteral { .. }
             | Expression::DictColumnLiteral { .. }
+            | Expression::SetLiteral { .. }
     )
 }
 
@@ -584,6 +599,7 @@ fn direct_children(
         | Type::Variable(_)
         | Type::Function { .. }
         | Type::Scalar(_)
+        | Type::Set(_)
         | Type::None => {}
     }
     children

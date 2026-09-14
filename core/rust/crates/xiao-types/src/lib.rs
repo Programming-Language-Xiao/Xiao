@@ -25,6 +25,8 @@ mod selection_model;
 mod selection_random;
 /// C1 选择结果的静态形状重建。
 mod selection_shape;
+/// C2-A 集合元素类型与可哈希能力。
+mod set_types;
 /// 类型与 HM 类型方案表示。
 mod types;
 /// 统一、occurs-check、泛化和实例化算法。
@@ -70,6 +72,8 @@ pub use selection_random::{RandomSelectionError, RandomSource, SeededRandom, sam
 pub use selection_shape::{
     direct_selection_children, empty_selection_type, project_selection_type,
 };
+/// 重新导出集合类型和可哈希判定。
+pub use set_types::{Hashability, SetType, can_assign_set, hashability};
 /// 重新导出类型表示和方案别名。
 pub use types::{Scheme, Type, TypeScheme, TypeVarId};
 /// 重新导出 HM 统一上下文和替换结构。

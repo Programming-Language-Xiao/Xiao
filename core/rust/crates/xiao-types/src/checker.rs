@@ -32,6 +32,9 @@ mod container_checker;
 /// C1 有序容器选择、随机种子和选择器左值检查。
 #[path = "selector_checker.rs"]
 mod selector_checker;
+/// C2-A 集合字面量、可哈希检查和成员判断。
+#[path = "set_checker.rs"]
+mod set_checker;
 
 /// 后端需要保留的运行时检查种类。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -52,6 +55,10 @@ pub enum RuntimeCheckKind {
     RandomCount,
     /// 动态 `random.seed` 非负性和表示范围检查。
     RandomSeed,
+    /// 动态集合元素的可哈希性检查。
+    SetHashability,
+    /// 动态集合成员判断的类型/容器检查。
+    SetMembership,
 }
 
 /// 一个带源码区间的运行时检查标记。
@@ -595,7 +602,8 @@ impl<'source> TypeChecker<'source> {
             Expression::ArrayLiteral { .. }
             | Expression::TupleLiteral { .. }
             | Expression::DictTableLiteral { .. }
-            | Expression::DictColumnLiteral { .. } => self.check_container_expression(expression),
+            | Expression::DictColumnLiteral { .. }
+            | Expression::SetLiteral { .. } => self.check_container_expression(expression),
             Expression::Group { expression, .. } => self.check_expression(expression),
             Expression::Unary {
                 operator,
@@ -761,6 +769,9 @@ impl<'source> TypeChecker<'source> {
         right: &Expression,
         span: SourceSpan,
     ) -> Type {
+        if matches!(operator, BinaryOperator::In | BinaryOperator::NotIn) {
+            return self.check_set_membership(operator, left, right, span);
+        }
         let left_type = self.check_expression(left);
         let right_type = self.check_expression(right);
         let mut operation_valid = false;
@@ -863,6 +874,9 @@ impl<'source> TypeChecker<'source> {
     ) -> Type {
         if is_random_seed_callee(callee, self.source) {
             return self.check_random_seed_call(arguments, span);
+        }
+        if self.is_set_constructor(callee) {
+            return self.check_set_constructor(arguments, span);
         }
         if let Some(target) = self.scalar_callee(callee) {
             if arguments.len() != 1 {

@@ -8,6 +8,7 @@ use std::fmt::{self, Display, Formatter};
 
 use crate::containers::{ArrayType, DictEntryType, DictType};
 use crate::environment::TypeEnvironment;
+use crate::set_types::SetType;
 use crate::types::{Type, TypeScheme, TypeVarId};
 
 /// 类型统一失败的结构化原因。
@@ -136,6 +137,7 @@ impl Substitution {
             Type::DictColumn(dictionary) => {
                 Type::DictColumn(apply_dictionary(dictionary, self, seen))
             }
+            Type::Set(set) => Type::Set(apply_set(set, self, seen)),
             Type::Scalar(_) | Type::None | Type::Dynamic => ty.clone(),
         }
     }
@@ -205,6 +207,7 @@ impl Substitution {
             (Type::DictColumn(left), Type::DictColumn(right)) => {
                 unify_dictionaries(self, left, right, true).map(Type::DictColumn)
             }
+            (Type::Set(left), Type::Set(right)) => unify_sets(self, left, right),
             _ => Err(UnifyError::Mismatch { left, right }),
         }
     }
@@ -338,6 +341,7 @@ fn substitute_quantified(ty: &Type, replacements: &BTreeMap<TypeVarId, Type>) ->
         Type::DictColumn(dictionary) => {
             Type::DictColumn(substitute_dictionary(dictionary, replacements))
         }
+        Type::Set(set) => Type::Set(substitute_set(set, replacements)),
         Type::Scalar(_) | Type::None | Type::Dynamic => ty.clone(),
     }
 }
@@ -522,6 +526,47 @@ fn substitute_dictionary(
             })
             .collect::<Vec<_>>(),
     )
+}
+
+/// 对集合元素类型递归应用当前替换。
+fn apply_set(
+    set: &SetType,
+    substitution: &Substitution,
+    seen: &mut BTreeSet<TypeVarId>,
+) -> SetType {
+    match set {
+        SetType::Homogeneous { element } => {
+            SetType::homogeneous(substitution.apply_with_seen(element, seen))
+        }
+        SetType::Unknown => SetType::Unknown,
+    }
+}
+
+/// 统一两个集合的元素约束；未知集合接受另一侧的已知约束。
+fn unify_sets(
+    context: &mut Substitution,
+    left: &SetType,
+    right: &SetType,
+) -> Result<Type, UnifyError> {
+    match (left.element_type(), right.element_type()) {
+        (None, None) => Ok(Type::Set(SetType::Unknown)),
+        (Some(element), None) | (None, Some(element)) => {
+            Ok(Type::Set(SetType::homogeneous(element.clone())))
+        }
+        (Some(left), Some(right)) => context
+            .unify(left, right)
+            .map(|element| Type::Set(SetType::homogeneous(element))),
+    }
+}
+
+/// 对量化方案中的集合元素类型递归替换。
+fn substitute_set(set: &SetType, replacements: &BTreeMap<TypeVarId, Type>) -> SetType {
+    match set {
+        SetType::Homogeneous { element } => {
+            SetType::homogeneous(substitute_quantified(element, replacements))
+        }
+        SetType::Unknown => SetType::Unknown,
+    }
 }
 
 #[cfg(test)]

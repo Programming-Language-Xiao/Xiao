@@ -7,6 +7,7 @@ use std::fmt::{self, Display, Formatter};
 
 use xiao_syntax::ScalarType;
 
+use crate::set_types::can_assign_set;
 use crate::types::Type;
 
 /// 转换的语义类别。
@@ -197,6 +198,7 @@ fn container_can_assign(source: &Type, target: &Type) -> bool {
                         source.key == target.key && can_assign(&source.value, &target.value)
                     })
         }
+        (Type::Set(source), Type::Set(target)) => can_assign_set(source, target),
         _ => false,
     }
 }

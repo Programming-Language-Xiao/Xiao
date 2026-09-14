@@ -14,7 +14,7 @@ use crate::diagnostics::{
     CONTAINER_INDEX_OUT_OF_BOUNDS_CODE, CONTAINER_KEY_NOT_FOUND_CODE, INVALID_CONTAINER_PATH_CODE,
     RANDOM_SEED_ARITY_CODE, RANDOM_SEED_CODE, SELECTOR_ASSIGNMENT_CODE,
     SELECTOR_INVALID_RANDOM_COUNT_CODE, SELECTOR_INVALID_STEP_CODE, SELECTOR_RANDOM_EXHAUSTED_CODE,
-    SELECTOR_UNORDERED_CONTAINER_CODE,
+    SELECTOR_UNORDERED_CONTAINER_CODE, SET_INDEX_UNSUPPORTED_CODE,
 };
 use crate::numeric::ConstantValue;
 use crate::selection_model::{
@@ -68,12 +68,21 @@ impl<'source> TypeChecker<'source> {
         let step_plan = self.check_step_expression(step, &mut requires_runtime_check);
 
         if !is_selector_source(&source_type) {
-            self.selector_error(
-                SELECTOR_UNORDERED_CONTAINER_CODE,
-                "x03.type.selector_source_not_ordered",
-                span,
-                format!("类型 {} 不能使用有序选择器", source_type),
-            );
+            if matches!(source_type, Type::Set(_)) {
+                self.selector_error(
+                    SET_INDEX_UNSUPPORTED_CODE,
+                    "x03.type.set_index_unsupported",
+                    span,
+                    "集合没有数字或键名索引，也不能使用高级选择器".to_string(),
+                );
+            } else {
+                self.selector_error(
+                    SELECTOR_UNORDERED_CONTAINER_CODE,
+                    "x03.type.selector_source_not_ordered",
+                    span,
+                    format!("类型 {} 不能使用有序选择器", source_type),
+                );
+            }
             let result_type = Type::Dynamic;
             self.selection_plans.push(SelectionPlan {
                 span,
@@ -931,6 +940,15 @@ impl<'source> TypeChecker<'source> {
                     }
                     current = value;
                 }
+                Type::Set(_) => {
+                    self.selector_error(
+                        SET_INDEX_UNSUPPORTED_CODE,
+                        "x03.type.set_index_unsupported",
+                        diagnostic_span,
+                        "集合没有数字或键名索引，也不能使用高级选择器".to_string(),
+                    );
+                    return None;
+                }
                 Type::Scalar(_) | Type::None | Type::Function { .. } => {
                     self.path_kind_error(part, segment, diagnostic_span);
                     return None;
@@ -1284,6 +1302,7 @@ fn canonical_order_key(source: &Type, path: &SelectionPath) -> Option<Vec<usize>
             // 字符串字符数在类型阶段未知；动态路径不会进入静态范围展开。
             Type::Dynamic
             | Type::Variable(_)
+            | Type::Set(_)
             | Type::DictTable(_)
             | Type::Scalar(_)
             | Type::None

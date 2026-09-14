@@ -10,6 +10,7 @@ use std::fmt::{self, Display, Formatter};
 use xiao_syntax::ScalarType;
 
 use crate::containers::{ArrayType, DictType};
+use crate::set_types::SetType;
 
 /// HM 类型变量的稳定编号。
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -53,6 +54,8 @@ pub enum Type {
     DictTable(DictType),
     /// 保持顺序的字典列类型。
     DictColumn(DictType),
+    /// 无序集合类型；元素类型由 [`SetType`] 描述。
+    Set(SetType),
     /// 动态值边界或错误恢复类型。
     Dynamic,
 }
@@ -97,12 +100,28 @@ impl Type {
         Self::Array(ArrayType::heterogeneous(elements))
     }
 
-    /// 判断是否为数组、元组或字典容器。
+    /// 创建指定元素类型的同构集合类型。
+    #[must_use]
+    pub fn set(element: Type) -> Self {
+        Self::Set(SetType::homogeneous(element))
+    }
+
+    /// 创建尚未确定元素类型的空集合类型。
+    #[must_use]
+    pub const fn unknown_set() -> Self {
+        Self::Set(SetType::Unknown)
+    }
+
+    /// 判断是否为数组、元组、集合或字典容器。
     #[must_use]
     pub const fn is_container(&self) -> bool {
         matches!(
             self,
-            Self::Array(_) | Self::Tuple(_) | Self::DictTable(_) | Self::DictColumn(_)
+            Self::Array(_)
+                | Self::Tuple(_)
+                | Self::Set(_)
+                | Self::DictTable(_)
+                | Self::DictColumn(_)
         )
     }
 
@@ -110,6 +129,12 @@ impl Type {
     #[must_use]
     pub const fn is_dynamic(&self) -> bool {
         matches!(self, Self::Dynamic)
+    }
+
+    /// 判断是否为集合类型。
+    #[must_use]
+    pub const fn is_set(&self) -> bool {
+        matches!(self, Self::Set(_))
     }
 
     /// 判断是否为布尔类型。
@@ -176,6 +201,11 @@ impl Type {
                     entry.value.collect_free_vars(output);
                 }
             }
+            Self::Set(set) => {
+                if let Some(element) = set.element_type() {
+                    element.collect_free_vars(output);
+                }
+            }
             Self::Scalar(_) | Self::None | Self::Dynamic => {}
         }
     }
@@ -222,6 +252,7 @@ impl Display for Type {
             Self::Array(array) => array.fmt(formatter),
             Self::DictTable(dictionary) => write_dictionary(formatter, dictionary, false),
             Self::DictColumn(dictionary) => write_dictionary(formatter, dictionary, true),
+            Self::Set(set) => set.fmt(formatter),
             Self::Dynamic => formatter.write_str("dynamic"),
         }
     }

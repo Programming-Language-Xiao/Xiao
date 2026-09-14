@@ -49,6 +49,7 @@ pub fn direct_selection_children(root: &Type) -> Option<Vec<(ContainerPathSegmen
         Type::Array(ArrayType::Homogeneous { length: None, .. })
         | Type::Array(ArrayType::Unknown)
         | Type::Scalar(_)
+        | Type::Set(_)
         | Type::DictTable(_)
         | Type::Dynamic
         | Type::Variable(_)

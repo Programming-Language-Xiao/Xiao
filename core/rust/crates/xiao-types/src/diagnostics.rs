@@ -50,3 +50,15 @@ pub const SELECTOR_ASSIGNMENT_CODE: &str = "X03-TYPE-012";
 pub const RANDOM_SEED_CODE: &str = "X03-TYPE-013";
 /// `random.seed` 参数数量错误。
 pub const RANDOM_SEED_ARITY_CODE: &str = "X03-TYPE-014";
+/// 集合元素与已锁定的单一元素类型不匹配。
+pub const SET_ELEMENT_TYPE_MISMATCH_CODE: &str = "X03-TYPE-015";
+/// 集合元素不是 C2-A 可接受的可哈希类型。
+pub const SET_UNHASHABLE_ELEMENT_CODE: &str = "X03-TYPE-016";
+/// 集合字面量包含重复的静态元素。
+pub const SET_DUPLICATE_ELEMENT_CODE: &str = "X03-TYPE-017";
+/// `set()` 构造式接收了错误数量的参数。
+pub const SET_CONSTRUCTOR_ARITY_CODE: &str = "X03-TYPE-018";
+/// 集合成员判断的左右类型不满足集合元素约束。
+pub const SET_MEMBERSHIP_TYPE_CODE: &str = "X03-TYPE-019";
+/// 集合不支持数字、键名或高级选择器索引。
+pub const SET_INDEX_UNSUPPORTED_CODE: &str = "X03-TYPE-020";

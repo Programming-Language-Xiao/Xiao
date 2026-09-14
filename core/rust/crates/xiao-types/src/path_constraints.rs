@@ -192,10 +192,12 @@ fn resolve_segment(
         },
         Type::DictTable(dictionary) => resolve_dictionary(dictionary, part, segment, false),
         Type::DictColumn(dictionary) => resolve_dictionary(dictionary, part, segment, true),
-        Type::Function { .. } | Type::Scalar(_) | Type::None => Err(PathResolutionError {
-            segment,
-            kind: PathResolutionErrorKind::WrongSegment,
-        }),
+        Type::Set(_) | Type::Function { .. } | Type::Scalar(_) | Type::None => {
+            Err(PathResolutionError {
+                segment,
+                kind: PathResolutionErrorKind::WrongSegment,
+            })
+        }
     }
 }
 
