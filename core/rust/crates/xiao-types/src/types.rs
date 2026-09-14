@@ -202,7 +202,7 @@ impl Type {
                 }
             }
             Self::Set(set) => {
-                if let Some(element) = set.element_type() {
+                for element in set.member_types() {
                     element.collect_free_vars(output);
                 }
             }

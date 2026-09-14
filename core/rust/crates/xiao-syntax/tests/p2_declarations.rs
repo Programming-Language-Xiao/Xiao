@@ -1,7 +1,7 @@
 //! P2 静态标量声明语法的规格测试。
 
 use xiao_source::SourceFile;
-use xiao_syntax::{Expression, Parser, ScalarType, Statement};
+use xiao_syntax::{DeclaredType, Expression, Parser, ScalarType, Statement};
 
 /// 解析只包含一条声明的源码并返回语句。
 fn one_statement(source: &str) -> Statement {
@@ -42,7 +42,7 @@ fn parses_typed_declarations() {
     else {
         panic!("expected initialized declaration");
     };
-    assert_eq!(declared_type, ScalarType::Int);
+    assert_eq!(declared_type, DeclaredType::Scalar(ScalarType::Int));
     assert_eq!(target.text(&initialized_source), "count");
     assert!(matches!(value, Expression::Literal { .. }));
 
@@ -50,7 +50,7 @@ fn parses_typed_declarations() {
     assert!(matches!(
         uninitialized,
         Statement::Declaration {
-            declared_type: ScalarType::Str,
+            declared_type: DeclaredType::Scalar(ScalarType::Str),
             value: None,
             target,
             ..

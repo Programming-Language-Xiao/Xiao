@@ -86,3 +86,12 @@ pub const UNSUPPORTED_CONTAINER_SELECTOR_CODE: &str = "X03-PARSE-003";
 
 /// 尚未开放 `const name[path]` 运行时锁定语义时使用的稳定诊断编号。
 pub const UNSUPPORTED_CONST_PATH_CODE: &str = "X03-PARSE-004";
+
+/// 集合类型并集注解结构非法时使用的稳定诊断编号。
+pub const INVALID_SET_TYPE_ANNOTATION_CODE: &str = "X03-PARSE-005";
+
+/// 集合类型并集注解出现在路径约束上时使用的稳定诊断编号。
+pub const UNSUPPORTED_SET_TYPE_PATH_CODE: &str = "X03-PARSE-006";
+
+/// `const` 声明尝试使用集合类型注解时使用的稳定诊断编号。
+pub const UNSUPPORTED_CONST_SET_TYPE_CODE: &str = "X03-PARSE-007";

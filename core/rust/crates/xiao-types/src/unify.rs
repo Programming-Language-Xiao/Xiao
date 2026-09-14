@@ -538,6 +538,16 @@ fn apply_set(
         SetType::Homogeneous { element } => {
             SetType::homogeneous(substitution.apply_with_seen(element, seen))
         }
+        SetType::Heterogeneous {
+            members,
+            allows_dynamic,
+        } => SetType::heterogeneous_with_dynamic(
+            members
+                .iter()
+                .map(|member| substitution.apply_with_seen(member, seen))
+                .collect::<Vec<_>>(),
+            *allows_dynamic,
+        ),
         SetType::Unknown => SetType::Unknown,
     }
 }
@@ -548,15 +558,26 @@ fn unify_sets(
     left: &SetType,
     right: &SetType,
 ) -> Result<Type, UnifyError> {
-    match (left.element_type(), right.element_type()) {
-        (None, None) => Ok(Type::Set(SetType::Unknown)),
-        (Some(element), None) | (None, Some(element)) => {
-            Ok(Type::Set(SetType::homogeneous(element.clone())))
-        }
-        (Some(left), Some(right)) => context
-            .unify(left, right)
-            .map(|element| Type::Set(SetType::homogeneous(element))),
+    if left.is_unknown() {
+        return Ok(Type::Set(right.clone()));
     }
+    if right.is_unknown() {
+        return Ok(Type::Set(left.clone()));
+    }
+    let mut members = left.to_member_types();
+    members.extend(right.member_types().cloned());
+    let allows_dynamic = left.allows_dynamic() || right.allows_dynamic();
+    // 集合类型的统一是成员并集，而不是把不同静态成员强行统一成一个
+    // 标量。这样 `set<int>` 与 `set<str>` 可以在 C2-B 中形成稳定的
+    // `set<int | str>`，同时仍由赋值规则决定方向性兼容。
+    let members = members
+        .into_iter()
+        .map(|member| context.apply(&member))
+        .collect::<Vec<_>>();
+    Ok(Type::Set(SetType::heterogeneous_with_dynamic(
+        members,
+        allows_dynamic,
+    )))
 }
 
 /// 对量化方案中的集合元素类型递归替换。
@@ -565,6 +586,16 @@ fn substitute_set(set: &SetType, replacements: &BTreeMap<TypeVarId, Type>) -> Se
         SetType::Homogeneous { element } => {
             SetType::homogeneous(substitute_quantified(element, replacements))
         }
+        SetType::Heterogeneous {
+            members,
+            allows_dynamic,
+        } => SetType::heterogeneous_with_dynamic(
+            members
+                .iter()
+                .map(|member| substitute_quantified(member, replacements))
+                .collect::<Vec<_>>(),
+            *allows_dynamic,
+        ),
         SetType::Unknown => SetType::Unknown,
     }
 }
@@ -626,5 +657,18 @@ mod tests {
             substitution.unify(&fixed, &mismatched),
             Err(UnifyError::ArityMismatch { left: 2, right: 1 })
         ));
+    }
+
+    #[test]
+    /// 集合统一合并静态成员并集，并保留动态尾标。
+    fn unifies_set_member_unions() {
+        let left = Type::Set(crate::SetType::homogeneous(Type::scalar(ScalarType::Int)));
+        let right = Type::Set(crate::SetType::heterogeneous_with_dynamic(
+            vec![Type::scalar(ScalarType::Str)],
+            true,
+        ));
+        let mut substitution = Substitution::new();
+        let unified = substitution.unify(&left, &right).expect("集合并集应可统一");
+        assert_eq!(unified.to_string(), "set<int | str | dynamic>");
     }
 }

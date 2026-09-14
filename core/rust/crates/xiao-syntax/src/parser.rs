@@ -8,8 +8,8 @@ use xiao_diagnostics::Diagnostic;
 use xiao_source::{SourceFile, SourceSpan};
 
 use crate::ast::{
-    AssignmentOperator, BinaryOperator, DictEntry, DictKey, Expression, LiteralKind, Name, Program,
-    ScalarType, Statement, UnaryOperator,
+    AssignmentOperator, BinaryOperator, DeclaredType, DictEntry, DictKey, Expression, LiteralKind,
+    Name, Program, ScalarType, SetTypeAnnotation, Statement, TypeTerm, UnaryOperator,
 };
 use crate::diagnostics::*;
 use crate::lexer::Lexer;
@@ -270,16 +270,18 @@ impl<'source> Parser<'source> {
         })
     }
 
-    /// 判断当前位置是否明确进入 P2 标量/常量声明语法。
+    /// 判断当前位置是否明确进入 P2 标量/集合/常量声明语法。
     ///
     /// 标量关键字后只有紧跟名称时才视为声明；`int(value)` 等构造式调用
-    /// 继续交给 P1 表达式解析，避免把调用误判为声明。
+    /// 继续交给 P1 表达式解析。`set<...>` 只在声明起点识别，`set()` 仍
+    /// 是普通调用表达式。
     fn starts_declaration(&self) -> bool {
         if self.at(TokenKind::Keyword(KeywordKind::Const)) {
             return true;
         }
-        is_scalar_type_token(self.current().kind())
-            && self.lookahead_kind(1) != Some(TokenKind::LeftParen)
+        (is_scalar_type_token(self.current().kind())
+            && self.lookahead_kind(1) != Some(TokenKind::LeftParen))
+            || self.starts_set_type()
     }
 
     /// 解析 `type name [= expression]` 或 `const [type] name = expression`。
@@ -290,17 +292,18 @@ impl<'source> Parser<'source> {
             self.bump();
         }
 
-        let declared_type = if is_scalar_type_token(self.current().kind()) {
-            let token = self.bump();
-            ScalarType::from_keyword(
-                token
-                    .kind()
-                    .keyword()
-                    .expect("标量类型 Token 必须携带关键字"),
-            )
-        } else {
-            None
-        };
+        let declared_type = self.parse_declared_type();
+
+        if is_const && matches!(declared_type, Some(DeclaredType::Set(_))) {
+            self.push_error(
+                UNSUPPORTED_CONST_SET_TYPE_CODE,
+                "x03.parse.const_set_type_not_supported",
+                self.current().span(),
+                "C2-B 尚未开放 const 集合类型声明".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
 
         if !is_declaration_name_token(self.current().kind()) {
             let span = self.current().span();
@@ -320,6 +323,19 @@ impl<'source> Parser<'source> {
             None
         };
 
+        if matches!(declared_type, Some(DeclaredType::Set(_))) && constraint_path.is_some() {
+            self.push_error(
+                UNSUPPORTED_SET_TYPE_PATH_CODE,
+                "x03.parse.set_type_path_not_supported",
+                constraint_path
+                    .as_ref()
+                    .map_or(target.span, IndexPath::span),
+                "C2-B 的集合类型注解只能用于变量根声明".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+
         if is_const && constraint_path.is_some() {
             self.push_error(
                 UNSUPPORTED_CONST_PATH_CODE,
@@ -338,7 +354,7 @@ impl<'source> Parser<'source> {
             self.consume_newline();
             return Some(Statement::Declaration {
                 target,
-                declared_type: declared_type.expect("普通声明必须有标量类型"),
+                declared_type: declared_type.expect("普通声明必须有显式类型注解"),
                 constraint_path,
                 value: None,
                 leading_docs,
@@ -422,7 +438,7 @@ impl<'source> Parser<'source> {
         if is_const {
             Some(Statement::ConstDeclaration {
                 target,
-                declared_type,
+                declared_type: declared_type.and_then(|declared| declared.as_scalar()),
                 value,
                 leading_docs,
                 span,
@@ -430,12 +446,170 @@ impl<'source> Parser<'source> {
         } else {
             Some(Statement::Declaration {
                 target,
-                declared_type: declared_type.expect("普通声明必须有标量类型"),
+                declared_type: declared_type.expect("普通声明必须有显式类型注解"),
                 constraint_path,
                 value: Some(value),
                 leading_docs,
                 span,
             })
+        }
+    }
+
+    /// 解析标量或 `set<T | U>` 类型注解；`const` 的集合限制由调用方处理。
+    fn parse_declared_type(&mut self) -> Option<DeclaredType> {
+        if is_scalar_type_token(self.current().kind()) {
+            let token = self.bump();
+            let scalar = ScalarType::from_keyword(
+                token
+                    .kind()
+                    .keyword()
+                    .expect("标量类型 Token 必须携带关键字"),
+            )
+            .expect("标量类型关键字必须映射到 ScalarType");
+            return Some(DeclaredType::Scalar(scalar));
+        }
+        self.starts_set_type()
+            .then(|| self.parse_set_type_annotation())
+            .flatten()
+            .map(DeclaredType::Set)
+    }
+
+    /// 判断当前位置是否为未被反引号包裹的 `set<` 类型注解起点。
+    fn starts_set_type(&self) -> bool {
+        if self.current().kind() != TokenKind::Identifier
+            || self.current().text(self.source) != "set"
+            || self.lookahead_kind(1) != Some(TokenKind::Less)
+        {
+            return false;
+        }
+        // 无空格的 `set<...>` 是明确的类型前缀；带空格时，只有第三个
+        // Token 已经是类型项才进入声明，避免把合法的 `set < value`
+        // 比较表达式误判成集合声明。
+        let adjacent = self
+            .tokens
+            .get(self.cursor + 1)
+            .is_some_and(|less| self.current().span().end() == less.span().start());
+        adjacent || self.lookahead_kind(2).is_some_and(is_set_type_term_token)
+    }
+
+    /// 解析 `set<T>` 或 `set<T | U>`，保留类型项源码区间。
+    fn parse_set_type_annotation(&mut self) -> Option<SetTypeAnnotation> {
+        let open_name = self.bump();
+        let open = if self.at(TokenKind::Less) {
+            self.bump()
+        } else {
+            self.push_error(
+                INVALID_SET_TYPE_ANNOTATION_CODE,
+                "x03.parse.invalid_set_type_annotation",
+                self.current().span(),
+                "集合类型注解缺少左尖括号".to_string(),
+            );
+            return None;
+        };
+        self.soft_newline_depth += 1;
+        self.skip_type_layout();
+        let mut members = Vec::new();
+
+        if self.at(TokenKind::Greater) {
+            self.push_error(
+                INVALID_SET_TYPE_ANNOTATION_CODE,
+                "x03.parse.empty_set_type_annotation",
+                self.current().span(),
+                "集合类型注解至少需要一个类型项".to_string(),
+            );
+        } else {
+            loop {
+                let Some(term) = self.parse_set_type_term() else {
+                    self.recover_set_type_annotation();
+                    break;
+                };
+                members.push(term);
+                self.skip_type_layout();
+                if !self.at(TokenKind::Pipe) {
+                    break;
+                }
+                self.bump();
+                self.skip_type_layout();
+                if self.at(TokenKind::Greater) {
+                    self.push_error(
+                        INVALID_SET_TYPE_ANNOTATION_CODE,
+                        "x03.parse.trailing_set_type_pipe",
+                        self.current().span(),
+                        "集合类型并集分隔符后缺少类型项".to_string(),
+                    );
+                    break;
+                }
+            }
+        }
+
+        self.skip_type_layout();
+        let close = self.expect_delimiter(TokenKind::Greater, open.span());
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        let end = close.map_or_else(
+            || {
+                members
+                    .last()
+                    .map_or(open_name.span().end(), |_| open.span().end())
+            },
+            |token| token.span().end(),
+        );
+        Some(SetTypeAnnotation::new(
+            members,
+            self.source_span(open_name.span().start(), end),
+        ))
+    }
+
+    /// 解析集合类型注解中的单个标量或 `none` 类型项。
+    fn parse_set_type_term(&mut self) -> Option<TypeTerm> {
+        let token = self.current();
+        if is_scalar_type_token(token.kind()) {
+            self.bump();
+            return ScalarType::from_keyword(
+                token
+                    .kind()
+                    .keyword()
+                    .expect("标量类型 Token 必须携带关键字"),
+            )
+            .map(TypeTerm::Scalar);
+        }
+        if token.kind() == TokenKind::None {
+            self.bump();
+            return Some(TypeTerm::None);
+        }
+        self.push_error(
+            INVALID_SET_TYPE_ANNOTATION_CODE,
+            "x03.parse.invalid_set_type_term",
+            token.span(),
+            "集合类型并集只能包含标量类型或 none".to_string(),
+        );
+        None
+    }
+
+    /// 将非法类型项消费到闭尖括号或语句边界，保证后续声明仍可恢复。
+    fn recover_set_type_annotation(&mut self) {
+        while !matches!(
+            self.current().kind(),
+            TokenKind::Greater
+                | TokenKind::Newline
+                | TokenKind::Indent
+                | TokenKind::Dedent
+                | TokenKind::Eof
+        ) {
+            self.bump();
+        }
+    }
+
+    /// 跳过集合类型注解中的布局 Token。
+    ///
+    /// `<` 目前仍是普通比较 Token，词法器不会为它单独维护分隔符深度；
+    /// 因而多行注解可能携带 `Indent`/`Dedent`。这些 Token 在类型注解内
+    /// 只表示格式，不应泄漏为顶层代码块。
+    fn skip_type_layout(&mut self) {
+        while matches!(
+            self.current().kind(),
+            TokenKind::Newline | TokenKind::Indent | TokenKind::Dedent
+        ) {
+            self.bump();
         }
     }
 
@@ -1722,6 +1896,11 @@ fn is_scalar_type_token(kind: TokenKind) -> bool {
                 | KeywordKind::Bool
         )
     )
+}
+
+/// 判断 Token 是否可以作为 `set<...>` 的首个类型项。
+fn is_set_type_term_token(kind: TokenKind) -> bool {
+    is_scalar_type_token(kind) || kind == TokenKind::None
 }
 
 /// 判断 Token 是否可作为声明目标名称。

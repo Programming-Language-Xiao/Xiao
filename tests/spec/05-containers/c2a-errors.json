@@ -4,7 +4,7 @@
   "cases": [
     {
       "name": "mixed-element-types",
-      "source": "values = {1, true}\n",
+      "source": "int values = {1, true}\n",
       "expect": "error",
       "diagnostics": [
         {

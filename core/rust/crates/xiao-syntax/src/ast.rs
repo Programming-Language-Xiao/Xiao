@@ -223,6 +223,84 @@ impl ScalarType {
     }
 }
 
+/// C2-B 集合类型注解中允许出现的基础类型项。
+///
+/// C2-B 只开放标量和 `none`。数组、字典、函数等递归类型会在后续通用
+/// 类型语法阶段加入，不能通过临时字符串绕过当前边界。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum TypeTerm {
+    /// 一个标量类型项。
+    Scalar(ScalarType),
+    /// `none` 类型项。
+    None,
+}
+
+impl TypeTerm {
+    /// 返回类型项的稳定 Xiao 拼写。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Scalar(scalar) => scalar.as_str(),
+            Self::None => "none",
+        }
+    }
+}
+
+/// C2-B 的集合类型注解，例如 `set<int | str>`。
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct SetTypeAnnotation {
+    /// 按源码顺序暂存的类型项；类型层会去重并规范化顺序。
+    pub members: Vec<TypeTerm>,
+    /// 覆盖 `set<...>` 的源码区间。
+    pub span: SourceSpan,
+}
+
+impl SetTypeAnnotation {
+    /// 创建一份集合类型注解。
+    #[must_use]
+    pub fn new(members: impl Into<Vec<TypeTerm>>, span: SourceSpan) -> Self {
+        Self {
+            members: members.into(),
+            span,
+        }
+    }
+
+    /// 返回注解是否没有类型项。
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.members.is_empty()
+    }
+}
+
+/// 声明语句使用的显式类型注解。
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub enum DeclaredType {
+    /// 旧版 `int name` 等标量声明。
+    Scalar(ScalarType),
+    /// C2-B `set<T>` 或 `set<T | U>` 集合声明。
+    Set(SetTypeAnnotation),
+}
+
+impl DeclaredType {
+    /// 返回标量声明项；集合声明返回 `None`。
+    #[must_use]
+    pub const fn as_scalar(&self) -> Option<ScalarType> {
+        match self {
+            Self::Scalar(scalar) => Some(*scalar),
+            Self::Set(_) => None,
+        }
+    }
+
+    /// 返回集合声明项；标量声明返回 `None`。
+    #[must_use]
+    pub const fn as_set(&self) -> Option<&SetTypeAnnotation> {
+        match self {
+            Self::Scalar(_) => None,
+            Self::Set(annotation) => Some(annotation),
+        }
+    }
+}
+
 /// P0/P1/P2 支持的顶层语句。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Statement {
@@ -259,15 +337,16 @@ pub enum Statement {
         /// 语句源码区间，不包含结尾换行。
         span: SourceSpan,
     },
-    /// 带标量类型前缀的静态声明，例如 `int count = 1` 或 `str name`。
+    /// 带显式类型前缀的静态声明，例如 `int count = 1` 或
+    /// `set<int | str> values = {1, "x"}`。
     ///
     /// `value` 为空表示声明但尚未初始化；读取未初始化名称由类型检查阶段
     /// 报告，而不是由语法层拒绝。容器类型前缀和路径约束留给后续阶段。
     Declaration {
         /// 声明目标名称。
         target: Name,
-        /// 声明时锁定的标量类型。
-        declared_type: ScalarType,
+        /// 声明时锁定的显式类型。
+        declared_type: DeclaredType,
         /// 可选的数组嵌套路径约束，例如 `[3/2]`。
         constraint_path: Option<IndexPath>,
         /// 可选初始化表达式。
@@ -390,8 +469,18 @@ impl Statement {
     #[must_use]
     pub const fn declared_type(&self) -> Option<ScalarType> {
         match self {
-            Self::Declaration { declared_type, .. } => Some(*declared_type),
+            Self::Declaration { declared_type, .. } => declared_type.as_scalar(),
             Self::ConstDeclaration { declared_type, .. } => *declared_type,
+            _ => None,
+        }
+    }
+
+    /// 返回声明携带的完整类型注解；未带类型的常量和非声明语句返回 `None`。
+    #[must_use]
+    pub const fn type_annotation(&self) -> Option<&DeclaredType> {
+        match self {
+            Self::Declaration { declared_type, .. } => Some(declared_type),
+            Self::ConstDeclaration { .. } => None,
             _ => None,
         }
     }

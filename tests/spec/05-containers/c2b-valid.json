@@ -1,0 +1,42 @@
+{
+  "stage": "03D",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "inferred-heterogeneous-members",
+      "source": "values = {1, \"x\", true, 1.0}\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "explicit-union-preserves-declaration",
+      "source": "set<int | str> values = {1}\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "explicit-union-empty-constructor",
+      "source": "set<int | str> values = set()\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "none-in-union",
+      "source": "set<int | none> values = {none, 1}\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "strict-cross-type-values",
+      "source": "values = {true, 1, 1.0}\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "union-membership",
+      "source": "values = {1, \"x\"}\nnumber = 1 in values\ntext = \"x\" in values\n",
+      "expect": "success",
+      "diagnostics": []
+    }
+  ]
+}

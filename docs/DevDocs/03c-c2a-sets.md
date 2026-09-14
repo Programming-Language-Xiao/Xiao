@@ -153,10 +153,12 @@ bun run check:coverage
 
 ## 后续交接边界
 
-### C2-B：异构与动态成员
+### C2-B：异构与动态成员（已完成静态阶段）
 
-先冻结异构集合的类型表示、跨类型相等/哈希规则和动态插入 API，再扩展 `SetType` 与 Runtime
-接口；必须复用本阶段的 `DiagnosticParam` 和稳定编号，不修改 C2-A 快照语义。
+异构集合的静态成员并集、跨类型相等/哈希隔离、动态尾标和成员检查已在
+[03D C2-B 交接记录](03d-c2b-heterogeneous-sets.md) 中完成。后续代理必须复用本阶段的
+`DiagnosticParam` 和稳定编号，不修改 C2-A 快照语义；真实 Runtime 插入检查仍由后续阶段
+消费 `SetHashability`/`SetMembership` 标记。
 
 ### C2-C：集合运算
 

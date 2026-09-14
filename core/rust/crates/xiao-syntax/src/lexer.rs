@@ -160,6 +160,7 @@ impl<'source> Lexer<'source> {
                 b'%' => {
                     self.scan_one_or_two(b'%', b'=', TokenKind::PercentEqual, TokenKind::Percent)
                 }
+                b'|' => self.scan_single(TokenKind::Pipe),
                 b'(' => self.scan_single(TokenKind::LeftParen),
                 b')' => self.scan_single(TokenKind::RightParen),
                 b'[' => self.scan_single(TokenKind::LeftBracket),
@@ -1032,7 +1033,7 @@ mod tests {
     /// 确认复合运算符和选择器标记采用最长匹配。
     fn applies_longest_operator_matching() {
         let source = SourceFile::from_text(
-            "== != <= >= += -= *= /= // //= %= ** **= -> !? ! ~ ? < > + - * / %",
+            "== != <= >= += -= *= /= // //= %= ** **= -> !? ! ~ ? < > + - * / % |",
         );
         let result = Lexer::new(&source).tokenize();
         assert_eq!(
@@ -1068,6 +1069,7 @@ mod tests {
                 TokenKind::Star,
                 TokenKind::Slash,
                 TokenKind::Percent,
+                TokenKind::Pipe,
                 TokenKind::Eof,
             ]
         );

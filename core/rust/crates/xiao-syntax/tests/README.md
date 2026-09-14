@@ -13,7 +13,8 @@
 01 的 L0、L1、L2、严格最小 P0 和 P1 表达式/选择器首批（已完成）。P2 声明和 C0 容器测试
 分别位于 `p2_declarations.rs`、`p2_snapshots.rs`、`c0_containers.rs` 和
 `c0_snapshots.rs`；C2-A 集合花括号消歧、`set()` 调用形状、集合 AST 节点索引和错误恢复
-位于 `c2a_sets.rs`。后续代码块和完整语义会继续沿用此处的集成测试边界。
+位于 `c2a_sets.rs`，C2-B `set<T | U>` 类型注解、多行布局和错误恢复位于 `c2b_sets.rs`。
+后续代码块和完整语义会继续沿用此处的集成测试边界。
 
 ## 依赖边界
 

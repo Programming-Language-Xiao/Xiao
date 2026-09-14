@@ -49,10 +49,10 @@ fn infers_scalar_set_types() {
 }
 
 #[test]
-/// 未显式集合拒绝异构元素、静态重复元素和不可哈希容器元素。
+/// 旧式同构前缀拒绝异构元素，同时拒绝静态重复元素和不可哈希容器元素。
 fn rejects_invalid_set_elements() {
     let result = check(
-        "mixed = {1, true}\nduplicate = {1, 1}\narray_value = {[1, 2]}\ntuple_value = {(1, 2)}\n",
+        "int mixed = {1, true}\nduplicate = {1, 1}\narray_value = {[1, 2]}\ntuple_value = {(1, 2)}\n",
     );
     let codes = result
         .diagnostics()

@@ -193,6 +193,8 @@ pub enum TokenKind {
     Percent,
     /// 幂运算符 `**`。
     Power,
+    /// 集合类型并集分隔符 `|`（仅在类型注解上下文使用）。
+    Pipe,
     /// 复合加法符 `+=`。
     PlusEqual,
     /// 复合减法符 `-=`。
@@ -277,6 +279,7 @@ impl TokenKind {
             Self::FloorDiv => "FloorDiv",
             Self::Percent => "Percent",
             Self::Power => "Power",
+            Self::Pipe => "Pipe",
             Self::PlusEqual => "PlusEqual",
             Self::MinusEqual => "MinusEqual",
             Self::StarEqual => "StarEqual",

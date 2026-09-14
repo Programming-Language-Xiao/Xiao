@@ -1,16 +1,18 @@
-//! C2-A 集合静态检查。
+//! C2-A/C2-B 集合静态检查。
 //!
 //! 该模块只消费语法 AST 并生成 [`crate::Type`] 与结构化诊断。它不创建
 //! Runtime 集合、不执行哈希，也不实现集合代数；动态元素只登记后续
-//! Runtime 所需的检查标记。
+//! Runtime 所需的检查标记。C2-B 允许静态成员类型并集和动态尾标，
+//! 但仍不创建 Runtime 集合对象或执行集合操作。
 
 use xiao_diagnostics::DiagnosticParam;
 use xiao_source::SourceSpan;
-use xiao_syntax::{BinaryOperator, Expression};
+use xiao_syntax::{BinaryOperator, Expression, Name, SetTypeAnnotation, TypeTerm};
 
 use crate::diagnostics::{
-    SET_CONSTRUCTOR_ARITY_CODE, SET_DUPLICATE_ELEMENT_CODE, SET_ELEMENT_TYPE_MISMATCH_CODE,
-    SET_INDEX_UNSUPPORTED_CODE, SET_MEMBERSHIP_TYPE_CODE, SET_UNHASHABLE_ELEMENT_CODE,
+    CONTAINER_TYPE_MISMATCH_CODE, INVALID_DECLARATION_PATH_CODE, SET_CONSTRUCTOR_ARITY_CODE,
+    SET_DUPLICATE_ELEMENT_CODE, SET_ELEMENT_TYPE_MISMATCH_CODE, SET_INDEX_UNSUPPORTED_CODE,
+    SET_MEMBERSHIP_TYPE_CODE, SET_UNHASHABLE_ELEMENT_CODE,
 };
 use crate::numeric::ConstantValue;
 use crate::set_types::{Hashability, SetType, hashability};
@@ -19,10 +21,10 @@ use crate::types::Type;
 use super::{RuntimeCheckKind, TypeChecker};
 
 impl<'source> TypeChecker<'source> {
-    /// 检查集合字面量并推导 C2-A 的单一元素类型。
+    /// 检查集合字面量并推导 C2-B 的静态成员并集。
     pub(super) fn check_set_literal(&mut self, elements: &[Expression], _span: SourceSpan) -> Type {
-        let mut element_type: Option<Type> = None;
-        let mut has_dynamic_type = false;
+        let mut members = Vec::<Type>::new();
+        let mut allows_dynamic = false;
         let mut has_invalid_element = false;
         let mut constants = Vec::<(Type, ConstantValue)>::new();
 
@@ -56,25 +58,8 @@ impl<'source> TypeChecker<'source> {
             }
 
             match &ty {
-                Type::Dynamic | Type::Variable(_) => {
-                    has_dynamic_type = true;
-                }
-                known => {
-                    if let Some(expected) = element_type.as_ref() {
-                        if expected != known {
-                            has_invalid_element = true;
-                            self.type_error_with_params(
-                                SET_ELEMENT_TYPE_MISMATCH_CODE,
-                                "x03.type.set_element_type_mismatch",
-                                element.span(),
-                                format!("集合元素类型 {} 与已推断的 {} 不一致", known, expected),
-                                type_params(known, expected),
-                            );
-                        }
-                    } else {
-                        element_type = Some(known.clone());
-                    }
-                }
+                Type::Dynamic | Type::Variable(_) => allows_dynamic = true,
+                known => members.push(known.clone()),
             }
 
             // 只有编译期已知的常量才参与静态唯一性检查；动态值的哈希和
@@ -98,14 +83,95 @@ impl<'source> TypeChecker<'source> {
             }
         }
 
-        let set = if has_dynamic_type || has_invalid_element {
+        let set = if has_invalid_element {
             SetType::Unknown
-        } else if let Some(element) = element_type {
-            SetType::homogeneous(element)
         } else {
-            SetType::Unknown
+            SetType::heterogeneous_with_dynamic(members, allows_dynamic)
         };
         Type::Set(set)
+    }
+
+    /// 检查 `set<T>`/`set<T | U>` 显式声明，并将完整并集写入环境。
+    pub(super) fn check_set_declaration(
+        &mut self,
+        target: Name,
+        annotation: &SetTypeAnnotation,
+        constraint_path: Option<&xiao_syntax::IndexPath>,
+        value: Option<&Expression>,
+    ) {
+        let key = self.name_key(target);
+        let expected_set = declared_set_type(annotation);
+        let expected = Type::Set(expected_set.clone());
+
+        if constraint_path.is_some() {
+            self.type_error(
+                INVALID_DECLARATION_PATH_CODE,
+                "x03.type.set_type_path_not_supported",
+                target.span,
+                "集合类型注解只能用于变量根声明".to_owned(),
+            );
+        }
+
+        if let Some(value) = value {
+            let actual = self.check_expression(value);
+            self.check_explicit_set_target(value, &actual, &expected_set);
+        }
+
+        if self.environment.contains_current(&key) {
+            self.type_error(
+                crate::diagnostics::DUPLICATE_DECLARATION_CODE,
+                "x02.type.duplicate_declaration",
+                target.span,
+                format!("名称 {} 在当前作用域中已经声明", self.display_name(target)),
+            );
+            return;
+        }
+        if let Err(error) = self
+            .environment
+            .declare_mutable(key, expected, value.is_some())
+        {
+            self.environment_error(target.span, error);
+        }
+    }
+
+    /// 验证显式集合声明的初始化器；静态成员采用严格类型隔离。
+    fn check_explicit_set_target(
+        &mut self,
+        expression: &Expression,
+        actual: &Type,
+        expected: &SetType,
+    ) {
+        match actual {
+            Type::Set(source) if source.is_unknown() => {}
+            Type::Set(source) => {
+                for member in source.member_types() {
+                    if !expected.contains_type(member) && !expected.allows_dynamic() {
+                        self.type_error_with_params(
+                            SET_ELEMENT_TYPE_MISMATCH_CODE,
+                            "x03.type.set_element_type_mismatch",
+                            expression.span(),
+                            format!("集合元素类型 {} 不符合显式类型 {}", member, expected),
+                            type_params(member, &Type::Set(expected.clone())),
+                        );
+                    }
+                }
+                if source.allows_dynamic() {
+                    self.push_runtime_check(expression.span(), RuntimeCheckKind::SetMembership);
+                }
+            }
+            Type::Dynamic => {
+                self.push_runtime_check(expression.span(), RuntimeCheckKind::DynamicConversion);
+            }
+            other => {
+                self.type_error_with_params(
+                    CONTAINER_TYPE_MISMATCH_CODE,
+                    "x03.type.set_initializer_requires_set",
+                    expression.span(),
+                    format!("集合声明需要集合初始化器，实际为 {}", other),
+                    type_params(other, &Type::Set(expected.clone())),
+                );
+            }
+        }
     }
 
     /// 判断表达式是否是未被反引号包裹的 `set` 构造器名称。
@@ -152,18 +218,17 @@ impl<'source> TypeChecker<'source> {
         operator: BinaryOperator,
         left: &Expression,
         right: &Expression,
-        span: SourceSpan,
+        _span: SourceSpan,
     ) -> Type {
         let left_type = self.check_expression(left);
         let right_type = self.check_expression(right);
-        match right_type {
+        match &right_type {
             Type::Set(set) => {
-                self.check_membership_element(&left_type, set.element_type(), left.span());
+                self.check_membership_element(&left_type, set, left.span());
                 Type::scalar(xiao_syntax::ScalarType::Bool)
             }
             Type::Dynamic | Type::Variable(_) => {
-                self.check_membership_element(&left_type, None, left.span());
-                self.push_runtime_check(span, RuntimeCheckKind::SetMembership);
+                self.check_membership_element(&left_type, &SetType::Unknown, left.span());
                 Type::scalar(xiao_syntax::ScalarType::Bool)
             }
             other => {
@@ -193,12 +258,7 @@ impl<'source> TypeChecker<'source> {
     }
 
     /// 验证成员值的可哈希性和已知集合元素类型约束。
-    fn check_membership_element(
-        &mut self,
-        actual: &Type,
-        expected: Option<&Type>,
-        span: SourceSpan,
-    ) {
+    fn check_membership_element(&mut self, actual: &Type, expected: &SetType, span: SourceSpan) {
         match hashability(actual) {
             Hashability::Unhashable => self.type_error_with_params(
                 SET_UNHASHABLE_ELEMENT_CODE,
@@ -215,18 +275,29 @@ impl<'source> TypeChecker<'source> {
             }
             Hashability::Hashable => {}
         }
-        if let Some(expected) = expected
-            && hashability(actual) == Hashability::Hashable
-            && !actual.is_dynamic()
-            && !matches!(actual, Type::Variable(_))
-            && !crate::conversion::can_assign(actual, expected)
-        {
+        if expected.is_unknown() || expected.allows_dynamic() || actual.is_dynamic() {
+            if actual.is_dynamic() || expected.is_unknown() {
+                self.push_runtime_check(span, RuntimeCheckKind::SetMembership);
+            }
+            return;
+        }
+        if hashability(actual) == Hashability::Hashable && !expected.contains_type(actual) {
+            let expected_text = expected_member_text(expected);
             self.type_error_with_params(
                 SET_MEMBERSHIP_TYPE_CODE,
                 "x03.type.set_membership_element_mismatch",
                 span,
-                format!("成员类型 {} 不符合集合元素类型 {}", actual, expected),
-                type_params(actual, expected),
+                format!("成员类型 {} 不符合集合元素类型 {}", actual, expected_text),
+                [
+                    (
+                        "actual_type".to_owned(),
+                        DiagnosticParam::Text(actual.to_string()),
+                    ),
+                    (
+                        "expected_type".to_owned(),
+                        DiagnosticParam::Text(expected_text),
+                    ),
+                ],
             );
         }
     }
@@ -261,6 +332,27 @@ impl<'source> TypeChecker<'source> {
             "集合没有数字或键名索引，也不能使用高级选择器".to_owned(),
         );
     }
+}
+
+/// 为诊断选择兼容的元素类型文本；同构集合沿用 C2-A 的 `int` 形式，
+/// 异构集合则展示完整 `set<T | U>` 并集。
+fn expected_member_text(expected: &SetType) -> String {
+    expected
+        .element_type()
+        .map_or_else(|| expected.to_string(), ToString::to_string)
+}
+
+/// 将语法层的集合类型项降低为规范化的类型并集。
+fn declared_set_type(annotation: &SetTypeAnnotation) -> SetType {
+    let members = annotation
+        .members
+        .iter()
+        .map(|term| match term {
+            TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
+            TypeTerm::None => Type::None,
+        })
+        .collect::<Vec<_>>();
+    SetType::heterogeneous(members)
 }
 
 /// 保留类型冲突的原始类型文本供后续消息目录插值。

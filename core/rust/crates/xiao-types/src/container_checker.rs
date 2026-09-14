@@ -24,7 +24,7 @@ use crate::path_constraints::{
 };
 use crate::types::Type;
 
-use super::TypeChecker;
+use super::{RuntimeCheckKind, TypeChecker};
 
 impl<'source> TypeChecker<'source> {
     /// 验证一次整体容器赋值是否满足绑定上已经登记的路径约束。
@@ -331,9 +331,13 @@ impl<'source> TypeChecker<'source> {
         // 非空路径落在集合上时，显式类型约束应作用于所有成员。
         if !path.is_empty()
             && let Type::Set(set) = &actual
-            && let Some(element) = set.element_type()
         {
-            self.check_set_element_assignment(element, &expected, span);
+            for element in set.member_types() {
+                self.check_set_element_assignment(element, &expected, span);
+            }
+            if set.allows_dynamic() || set.is_unknown() {
+                self.push_runtime_check(span, RuntimeCheckKind::SetMembership);
+            }
             return;
         }
         let children = direct_children(&actual, path);
@@ -399,14 +403,20 @@ impl<'source> TypeChecker<'source> {
                 Some(value_type.clone())
             }
             Type::Set(set) => {
-                if let Some(element) = set.element_type() {
-                    if self.check_set_element_assignment(element, &expected, target.span) {
+                if set.is_unknown() {
+                    Some(Type::Set(crate::SetType::homogeneous(expected)))
+                } else {
+                    let valid = set.member_types().all(|element| {
+                        self.check_set_element_assignment(element, &expected, target.span)
+                    });
+                    if set.allows_dynamic() {
+                        self.push_runtime_check(target.span, RuntimeCheckKind::SetMembership);
+                    }
+                    if valid {
                         Some(Type::Set(crate::SetType::homogeneous(expected)))
                     } else {
                         Some(value_type.clone())
                     }
-                } else {
-                    Some(Type::Set(crate::SetType::homogeneous(expected)))
                 }
             }
             _ => {

@@ -1,0 +1,66 @@
+{
+  "stage": "03D",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "explicit-union-member-mismatch",
+      "source": "set<int | str> values = {1, true}\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-015",
+          "message_id": "x03.type.set_element_type_mismatch",
+          "params": {
+            "actual_type": "bool",
+            "expected_type": "set<int | str>"
+          }
+        }
+      ]
+    },
+    {
+      "name": "union-membership-type-mismatch",
+      "source": "values = {1, \"x\"}\nbad = true in values\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-019",
+          "message_id": "x03.type.set_membership_element_mismatch",
+          "params": {
+            "actual_type": "bool",
+            "expected_type": "set<int | str>"
+          }
+        }
+      ]
+    },
+    {
+      "name": "set-declaration-requires-set-value",
+      "source": "set<int> value = [1]\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-001",
+          "message_id": "x03.type.set_initializer_requires_set",
+          "params": {
+            "actual_type": "[int]",
+            "expected_type": "set<int>"
+          }
+        }
+      ]
+    },
+    {
+      "name": "set-declaration-rejects-scalar-value",
+      "source": "set<int> value = 1\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-001",
+          "message_id": "x03.type.set_initializer_requires_set",
+          "params": {
+            "actual_type": "int",
+            "expected_type": "set<int>"
+          }
+        }
+      ]
+    }
+  ]
+}

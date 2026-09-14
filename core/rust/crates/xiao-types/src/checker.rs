@@ -8,8 +8,8 @@ use std::collections::BTreeMap;
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
 use xiao_source::{SourceFile, SourceSpan};
 use xiao_syntax::{
-    AssignmentOperator, BinaryOperator, Expression, IndexPath, LiteralKind, Program, ScalarType,
-    Statement, UnaryOperator,
+    AssignmentOperator, BinaryOperator, DeclaredType, Expression, IndexPath, LiteralKind, Program,
+    ScalarType, Statement, UnaryOperator,
 };
 
 use crate::containers::ContainerMaterializationPlan;
@@ -262,7 +262,7 @@ impl<'source> TypeChecker<'source> {
                 ..
             } => self.check_declaration(
                 *target,
-                *declared_type,
+                declared_type,
                 constraint_path.as_ref(),
                 value.as_ref(),
             ),
@@ -283,6 +283,13 @@ impl<'source> TypeChecker<'source> {
             let existing_type = self.context.instantiate(binding.scheme());
             if value_type.is_dynamic() {
                 self.push_runtime_check(value.span(), RuntimeCheckKind::DynamicConversion);
+            }
+            if let (Type::Set(source), Type::Set(_target)) = (&value_type, &existing_type)
+                && source.allows_dynamic()
+            {
+                // 集合静态成员已经在类型层验证；动态尾标只能由 Runtime
+                // 完成成员类型/哈希检查，不能静默当作完全兼容。
+                self.push_runtime_check(value.span(), RuntimeCheckKind::SetMembership);
             }
             if !can_assign(&value_type, &existing_type) {
                 self.type_error(
@@ -428,13 +435,29 @@ impl<'source> TypeChecker<'source> {
     fn check_declaration(
         &mut self,
         target: xiao_syntax::Name,
-        declared_type: ScalarType,
+        declared_type: &DeclaredType,
         constraint_path: Option<&IndexPath>,
         value: Option<&Expression>,
     ) {
-        if self.try_check_container_declaration(target, declared_type, constraint_path, value) {
-            return;
+        match declared_type {
+            DeclaredType::Set(annotation) => {
+                self.check_set_declaration(target, annotation, constraint_path, value);
+            }
+            DeclaredType::Scalar(scalar) => {
+                if !self.try_check_container_declaration(target, *scalar, constraint_path, value) {
+                    self.check_scalar_declaration(target, *scalar, value);
+                }
+            }
         }
+    }
+
+    /// 检查带显式标量类型的声明和可选初值。
+    fn check_scalar_declaration(
+        &mut self,
+        target: xiao_syntax::Name,
+        declared_type: ScalarType,
+        value: Option<&Expression>,
+    ) {
         let key = self.name_key(target);
         let value_type = value.map(|expression| self.check_expression(expression));
         if let Some(value) = value {
