@@ -6,6 +6,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{self, Display, Formatter};
 
+use crate::containers::{ArrayType, DictEntryType, DictType};
 use crate::environment::TypeEnvironment;
 use crate::types::{Type, TypeScheme, TypeVarId};
 
@@ -128,7 +129,13 @@ impl Substitution {
                     .map(|item| self.apply_with_seen(item, seen))
                     .collect(),
             ),
-            Type::Array(item) => Type::Array(Box::new(self.apply_with_seen(item, seen))),
+            Type::Array(array) => Type::Array(apply_array(array, self, seen)),
+            Type::DictTable(dictionary) => {
+                Type::DictTable(apply_dictionary(dictionary, self, seen))
+            }
+            Type::DictColumn(dictionary) => {
+                Type::DictColumn(apply_dictionary(dictionary, self, seen))
+            }
             Type::Scalar(_) | Type::None | Type::Dynamic => ty.clone(),
         }
     }
@@ -191,8 +198,12 @@ impl Substitution {
                 }
                 Ok(Type::Tuple(items))
             }
-            (Type::Array(left_item), Type::Array(right_item)) => {
-                Ok(Type::Array(Box::new(self.unify(left_item, right_item)?)))
+            (Type::Array(left), Type::Array(right)) => unify_arrays(self, left, right),
+            (Type::DictTable(left), Type::DictTable(right)) => {
+                unify_dictionaries(self, left, right, false).map(Type::DictTable)
+            }
+            (Type::DictColumn(left), Type::DictColumn(right)) => {
+                unify_dictionaries(self, left, right, true).map(Type::DictColumn)
             }
             _ => Err(UnifyError::Mismatch { left, right }),
         }
@@ -320,15 +331,204 @@ fn substitute_quantified(ty: &Type, replacements: &BTreeMap<TypeVarId, Type>) ->
                 .map(|item| substitute_quantified(item, replacements))
                 .collect(),
         ),
-        Type::Array(item) => Type::Array(Box::new(substitute_quantified(item, replacements))),
+        Type::Array(array) => Type::Array(substitute_array(array, replacements)),
+        Type::DictTable(dictionary) => {
+            Type::DictTable(substitute_dictionary(dictionary, replacements))
+        }
+        Type::DictColumn(dictionary) => {
+            Type::DictColumn(substitute_dictionary(dictionary, replacements))
+        }
         Type::Scalar(_) | Type::None | Type::Dynamic => ty.clone(),
     }
+}
+
+/// 对数组形状递归应用当前替换。
+fn apply_array(
+    array: &ArrayType,
+    context: &Substitution,
+    seen: &mut BTreeSet<TypeVarId>,
+) -> ArrayType {
+    match array {
+        ArrayType::Homogeneous { element, length } => ArrayType::Homogeneous {
+            element: Box::new(context.apply_with_seen(element, seen)),
+            length: *length,
+        },
+        ArrayType::Heterogeneous { elements } => ArrayType::Heterogeneous {
+            elements: elements
+                .iter()
+                .map(|element| context.apply_with_seen(element, seen))
+                .collect(),
+        },
+        ArrayType::Unknown => ArrayType::Unknown,
+    }
+}
+
+/// 对字典条目值递归应用当前替换。
+fn apply_dictionary(
+    dictionary: &DictType,
+    context: &Substitution,
+    seen: &mut BTreeSet<TypeVarId>,
+) -> DictType {
+    DictType::new(
+        dictionary
+            .entries
+            .iter()
+            .map(|entry| DictEntryType {
+                key: entry.key.clone(),
+                value: Box::new(context.apply_with_seen(&entry.value, seen)),
+            })
+            .collect::<Vec<_>>(),
+    )
+}
+
+/// 统一两个数组形状。
+fn unify_arrays(
+    context: &mut Substitution,
+    left: &ArrayType,
+    right: &ArrayType,
+) -> Result<Type, UnifyError> {
+    match (left, right) {
+        (ArrayType::Unknown, other) | (other, ArrayType::Unknown) => Ok(Type::Array(other.clone())),
+        (
+            ArrayType::Homogeneous {
+                element: left,
+                length: left_length,
+            },
+            ArrayType::Homogeneous {
+                element: right,
+                length: right_length,
+            },
+        ) => {
+            if left_length.is_some() && right_length.is_some() && left_length != right_length {
+                return Err(UnifyError::ArityMismatch {
+                    left: left_length.unwrap_or_default(),
+                    right: right_length.unwrap_or_default(),
+                });
+            }
+            Ok(Type::Array(ArrayType::Homogeneous {
+                element: Box::new(context.unify(left, right)?),
+                length: left_length.or(*right_length),
+            }))
+        }
+        (
+            ArrayType::Heterogeneous { elements: left },
+            ArrayType::Heterogeneous { elements: right },
+        ) => {
+            if left.len() != right.len() {
+                return Err(UnifyError::ArityMismatch {
+                    left: left.len(),
+                    right: right.len(),
+                });
+            }
+            let elements = left
+                .iter()
+                .zip(right)
+                .map(|(left, right)| context.unify(left, right))
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(Type::Array(ArrayType::Heterogeneous { elements }))
+        }
+        (ArrayType::Homogeneous { element, length }, ArrayType::Heterogeneous { elements })
+        | (ArrayType::Heterogeneous { elements }, ArrayType::Homogeneous { element, length }) => {
+            if length.is_some_and(|length| length != elements.len()) {
+                return Err(UnifyError::ArityMismatch {
+                    left: length.unwrap_or_default(),
+                    right: elements.len(),
+                });
+            }
+            let unified = elements
+                .iter()
+                .map(|item| context.unify(element, item))
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(Type::Array(ArrayType::Heterogeneous { elements: unified }))
+        }
+    }
+}
+
+/// 统一两个字典结构；字典表按键集合匹配，字典列还要求顺序一致。
+fn unify_dictionaries(
+    context: &mut Substitution,
+    left: &DictType,
+    right: &DictType,
+    ordered: bool,
+) -> Result<DictType, UnifyError> {
+    if left.entries.len() != right.entries.len() {
+        return Err(UnifyError::ArityMismatch {
+            left: left.entries.len(),
+            right: right.entries.len(),
+        });
+    }
+    let mut entries = Vec::with_capacity(left.entries.len());
+    for (index, left_entry) in left.entries.iter().enumerate() {
+        let right_entry = if ordered {
+            right
+                .entries
+                .get(index)
+                .filter(|entry| entry.key == left_entry.key)
+        } else {
+            right
+                .entries
+                .iter()
+                .find(|entry| entry.key == left_entry.key)
+        }
+        .ok_or_else(|| UnifyError::Mismatch {
+            left: if ordered {
+                Type::DictColumn(left.clone())
+            } else {
+                Type::DictTable(left.clone())
+            },
+            right: if ordered {
+                Type::DictColumn(right.clone())
+            } else {
+                Type::DictTable(right.clone())
+            },
+        })?;
+        entries.push(DictEntryType {
+            key: left_entry.key.clone(),
+            value: Box::new(context.unify(&left_entry.value, &right_entry.value)?),
+        });
+    }
+    Ok(DictType::new(entries))
+}
+
+/// 对方案中的数组结构递归替换量化变量。
+fn substitute_array(array: &ArrayType, replacements: &BTreeMap<TypeVarId, Type>) -> ArrayType {
+    match array {
+        ArrayType::Homogeneous { element, length } => ArrayType::Homogeneous {
+            element: Box::new(substitute_quantified(element, replacements)),
+            length: *length,
+        },
+        ArrayType::Heterogeneous { elements } => ArrayType::Heterogeneous {
+            elements: elements
+                .iter()
+                .map(|element| substitute_quantified(element, replacements))
+                .collect(),
+        },
+        ArrayType::Unknown => ArrayType::Unknown,
+    }
+}
+
+/// 对方案中的字典结构递归替换量化变量。
+fn substitute_dictionary(
+    dictionary: &DictType,
+    replacements: &BTreeMap<TypeVarId, Type>,
+) -> DictType {
+    DictType::new(
+        dictionary
+            .entries
+            .iter()
+            .map(|entry| DictEntryType {
+                key: entry.key.clone(),
+                value: Box::new(substitute_quantified(&entry.value, replacements)),
+            })
+            .collect::<Vec<_>>(),
+    )
 }
 
 #[cfg(test)]
 /// 覆盖统一、occurs-check、泛化和实例化的单元测试。
 mod tests {
     use super::{Substitution, TypeContext, UnifyError};
+    use crate::containers::ArrayType;
     use crate::environment::TypeEnvironment;
     use crate::types::{Type, TypeVarId};
     use xiao_syntax::ScalarType;
@@ -344,7 +544,7 @@ mod tests {
         );
         assert_eq!(substitution.apply(&variable), Type::scalar(ScalarType::Int));
         let recursive_variable = Type::variable(TypeVarId::new(1));
-        let recursive = Type::Array(Box::new(recursive_variable.clone()));
+        let recursive = Type::array(recursive_variable.clone());
         assert!(matches!(
             substitution.unify(&recursive_variable, &recursive),
             Err(UnifyError::OccursCheck { .. })
@@ -361,5 +561,25 @@ mod tests {
         let first = context.instantiate(&scheme);
         let second = context.instantiate(&scheme);
         assert_ne!(first, second);
+    }
+
+    #[test]
+    /// 固定长度同构数组与异构数组统一时必须保留长度约束。
+    fn preserves_array_length_during_unification() {
+        let fixed = Type::Array(ArrayType::homogeneous_with_length(
+            Type::scalar(ScalarType::Int),
+            2,
+        ));
+        let matching = Type::array_literal(vec![
+            Type::scalar(ScalarType::Int),
+            Type::scalar(ScalarType::Int),
+        ]);
+        let mismatched = Type::array_literal(vec![Type::scalar(ScalarType::Int)]);
+        let mut substitution = Substitution::new();
+        assert!(substitution.unify(&fixed, &matching).is_ok());
+        assert!(matches!(
+            substitution.unify(&fixed, &mismatched),
+            Err(UnifyError::ArityMismatch { left: 2, right: 1 })
+        ));
     }
 }

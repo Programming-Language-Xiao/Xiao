@@ -5,7 +5,7 @@
 
 use xiao_source::{SourceFile, SourceSpan};
 
-use crate::selectors::{Selector, SelectorItem};
+use crate::selectors::{IndexPath, Selector, SelectorItem};
 use crate::token::{KeywordKind, TokenKind};
 
 /// P0 解析得到的程序根节点。
@@ -268,6 +268,8 @@ pub enum Statement {
         target: Name,
         /// 声明时锁定的标量类型。
         declared_type: ScalarType,
+        /// 可选的数组嵌套路径约束，例如 `[3/2]`。
+        constraint_path: Option<IndexPath>,
         /// 可选初始化表达式。
         value: Option<Expression>,
         /// 与该语句相邻、按源码顺序出现的文档注释区间。
@@ -409,6 +411,17 @@ impl Statement {
             _ => None,
         }
     }
+
+    /// 返回标量声明携带的可选数组路径约束。
+    #[must_use]
+    pub const fn declaration_path(&self) -> Option<&IndexPath> {
+        match self {
+            Self::Declaration {
+                constraint_path, ..
+            } => constraint_path.as_ref(),
+            _ => None,
+        }
+    }
 }
 
 /// P0 支持的名称及其原始源码位置。
@@ -458,6 +471,34 @@ pub enum Expression {
         /// 字面量类别。
         kind: LiteralKind,
         /// 字面量源码区间。
+        span: SourceSpan,
+    },
+    /// 数组字面量；元素可以是任意递归表达式。
+    ArrayLiteral {
+        /// 按源码顺序保存的数组元素。
+        elements: Vec<Expression>,
+        /// 包含方括号的源码区间。
+        span: SourceSpan,
+    },
+    /// Python 风格元组字面量。
+    TupleLiteral {
+        /// 按源码顺序保存的元组元素。
+        elements: Vec<Expression>,
+        /// 包含圆括号的源码区间。
+        span: SourceSpan,
+    },
+    /// 无序字典表字面量。
+    DictTableLiteral {
+        /// 按源码顺序保存条目；语义层不依赖该顺序。
+        entries: Vec<DictEntry>,
+        /// 包含花括号的源码区间。
+        span: SourceSpan,
+    },
+    /// 保持书写顺序的字典列字面量。
+    DictColumnLiteral {
+        /// 按源码顺序保存条目。
+        entries: Vec<DictEntry>,
+        /// 包含尖括号的源码区间。
         span: SourceSpan,
     },
     /// 一个普通、反引号或构造式类型名称引用。
@@ -543,7 +584,11 @@ impl Expression {
     #[must_use]
     pub const fn span(&self) -> SourceSpan {
         match self {
-            Self::Literal { span, .. } => *span,
+            Self::Literal { span, .. }
+            | Self::ArrayLiteral { span, .. }
+            | Self::TupleLiteral { span, .. }
+            | Self::DictTableLiteral { span, .. }
+            | Self::DictColumnLiteral { span, .. } => *span,
             Self::Name(name) => name.span,
             Self::Group { span, .. }
             | Self::Unary { span, .. }
@@ -585,6 +630,37 @@ pub enum LiteralKind {
     Boolean,
     /// `none` 空值。
     None,
+}
+
+/// 字典表或字典列中的键；C0 只接受名称键和字符串键。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum DictKey {
+    /// 裸名称或反引号名称键。
+    Name(Name),
+    /// 字符串字面量键，区间包含引号。
+    String(SourceSpan),
+}
+
+impl DictKey {
+    /// 返回键在源码中的区间。
+    #[must_use]
+    pub const fn span(self) -> SourceSpan {
+        match self {
+            Self::Name(name) => name.span,
+            Self::String(span) => span,
+        }
+    }
+}
+
+/// 一个字典表或字典列条目。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct DictEntry {
+    /// 条目的名称或字符串键。
+    pub key: DictKey,
+    /// 条目对应的值表达式。
+    pub value: Expression,
+    /// 从键开始到值结束的源码区间。
+    pub span: SourceSpan,
 }
 
 impl LiteralKind {
@@ -686,6 +762,19 @@ impl NodeIndex {
         self.push(expression.span());
         match expression {
             Expression::Literal { .. } | Expression::Name(_) => {}
+            Expression::ArrayLiteral { elements, .. }
+            | Expression::TupleLiteral { elements, .. } => {
+                for element in elements {
+                    self.visit_expression(element);
+                }
+            }
+            Expression::DictTableLiteral { entries, .. }
+            | Expression::DictColumnLiteral { entries, .. } => {
+                for entry in entries {
+                    self.push(entry.key.span());
+                    self.visit_expression(&entry.value);
+                }
+            }
             Expression::Group { expression, .. }
             | Expression::Unary {
                 operand: expression,

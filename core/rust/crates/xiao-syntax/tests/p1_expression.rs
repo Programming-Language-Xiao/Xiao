@@ -312,7 +312,7 @@ fn reports_selector_and_cast_errors() {
 }
 
 #[test]
-/// 验证缺少一元操作数时只保留最具体的诊断，不重复追加起始 Token 错误。
+/// 验证缺少一元操作数时只保留最具体的诊断；空元组按 C0 的 Python 语义合法。
 fn avoids_duplicate_prefix_diagnostics() {
     let result = Parser::new(&SourceFile::from_text("+\nvalue = -\n()\n")).parse();
     let codes = result
@@ -320,10 +320,7 @@ fn avoids_duplicate_prefix_diagnostics() {
         .iter()
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
-    assert_eq!(
-        codes,
-        vec!["X01-PARSE-009", "X01-PARSE-009", "X01-PARSE-009",]
-    );
+    assert_eq!(codes, vec!["X01-PARSE-009", "X01-PARSE-009",]);
 }
 
 #[test]

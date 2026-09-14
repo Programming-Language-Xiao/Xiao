@@ -7,8 +7,8 @@ use xiao_diagnostics::Diagnostic;
 use xiao_source::{SourceFile, SourceSpan};
 
 use crate::ast::{
-    AssignmentOperator, BinaryOperator, Expression, LiteralKind, Name, Program, ScalarType,
-    Statement, UnaryOperator,
+    AssignmentOperator, BinaryOperator, DictEntry, DictKey, Expression, LiteralKind, Name, Program,
+    ScalarType, Statement, UnaryOperator,
 };
 use crate::diagnostics::*;
 use crate::lexer::Lexer;
@@ -53,6 +53,8 @@ pub struct Parser<'source> {
     cursor: usize,
     /// 当前处于括号、方括号或步长花括号的层数；其中的换行是软换行。
     soft_newline_depth: usize,
+    /// 当前处于字典列值列表的层数；用于把前缀 `>` 识别为闭分隔符。
+    angle_depth: usize,
 }
 
 impl<'source> Parser<'source> {
@@ -66,6 +68,7 @@ impl<'source> Parser<'source> {
             diagnostics: lexical.diagnostics,
             cursor: 0,
             soft_newline_depth: 0,
+            angle_depth: 0,
         }
     }
 
@@ -310,6 +313,24 @@ impl<'source> Parser<'source> {
             return None;
         }
         let target = self.parse_name();
+        let constraint_path = if self.at(TokenKind::LeftBracket) {
+            self.parse_declaration_path()
+        } else {
+            None
+        };
+
+        if is_const && constraint_path.is_some() {
+            self.push_error(
+                UNSUPPORTED_CONST_PATH_CODE,
+                "x03.parse.const_path_not_supported",
+                constraint_path
+                    .as_ref()
+                    .map_or(target.span, IndexPath::span),
+                "C0 尚未开放 const 的容器路径锁定语义".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
 
         if !is_const && is_statement_boundary(self.current().kind()) {
             let span = self.source_span(start, target.span.end());
@@ -317,6 +338,7 @@ impl<'source> Parser<'source> {
             return Some(Statement::Declaration {
                 target,
                 declared_type: declared_type.expect("普通声明必须有标量类型"),
+                constraint_path,
                 value: None,
                 leading_docs,
                 span,
@@ -408,11 +430,27 @@ impl<'source> Parser<'source> {
             Some(Statement::Declaration {
                 target,
                 declared_type: declared_type.expect("普通声明必须有标量类型"),
+                constraint_path,
                 value: Some(value),
                 leading_docs,
                 span,
             })
         }
+    }
+
+    /// 解析声明后的单个精确数组路径；范围和多选留给 C1。
+    fn parse_declaration_path(&mut self) -> Option<IndexPath> {
+        let open = self.bump();
+        self.soft_newline_depth += 1;
+        self.skip_soft_newlines();
+        let path = self.parse_index_path();
+        self.skip_soft_newlines();
+        let close = self.expect_delimiter(TokenKind::RightBracket, open.span());
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        if close.is_none() {
+            return path;
+        }
+        path
     }
 
     /// 解析一个名称 Token 或标量类型关键字。
@@ -435,6 +473,38 @@ impl<'source> Parser<'source> {
         let mut left = self.parse_prefix_expression()?;
         loop {
             self.skip_soft_newlines();
+            // 字典列的 `>` 同时也是比较运算符。若它后面紧跟外层
+            // 分隔符、后缀或不能作为比较右值起点的运算符，优先把它
+            // 还原为当前字典列的闭分隔符；复杂比较可用括号明确边界。
+            if self.angle_depth > 0
+                && self.at(TokenKind::Greater)
+                && matches!(
+                    self.lookahead_kind(1),
+                    Some(
+                        TokenKind::Comma
+                            | TokenKind::RightParen
+                            | TokenKind::RightBracket
+                            | TokenKind::RightBrace
+                            | TokenKind::LeftParen
+                            | TokenKind::LeftBracket
+                            | TokenKind::LeftBrace
+                            | TokenKind::Dot
+                            | TokenKind::Plus
+                            | TokenKind::Minus
+                            | TokenKind::Star
+                            | TokenKind::Slash
+                            | TokenKind::FloorDiv
+                            | TokenKind::Percent
+                            | TokenKind::Power
+                            | TokenKind::Keyword(KeywordKind::As)
+                            | TokenKind::Greater
+                            | TokenKind::Newline
+                            | TokenKind::Eof,
+                    ) | None
+                )
+            {
+                break;
+            }
             if let Some((operator, left_bp, right_bp, extra_tokens)) = self.current_infix() {
                 if left_bp < minimum_binding_power {
                     break;
@@ -527,37 +597,84 @@ impl<'source> Parser<'source> {
                     span,
                 }
             }
-            TokenKind::LeftParen => self.parse_group_expression()?,
+            TokenKind::LeftParen => self.parse_parenthesized_expression()?,
+            TokenKind::LeftBracket => self.parse_array_literal()?,
+            TokenKind::LeftBrace => self.parse_dict_table_literal()?,
+            TokenKind::Less => self.parse_dict_column_literal()?,
             TokenKind::Keyword(KeywordKind::New) => self.parse_new_expression()?,
             _ => return None,
         };
         self.parse_postfix_expression(expression)
     }
 
-    /// 解析括号分组表达式。
-    fn parse_group_expression(&mut self) -> Option<Expression> {
+    /// 解析圆括号分组表达式或 Python 风格元组字面量。
+    fn parse_parenthesized_expression(&mut self) -> Option<Expression> {
         let open = self.bump();
         self.soft_newline_depth += 1;
         self.skip_soft_newlines();
-        let expression = self.parse_expression_bp(0);
+        if self.at(TokenKind::RightParen) {
+            let close = self.bump();
+            self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+            return Some(Expression::TupleLiteral {
+                elements: Vec::new(),
+                span: self.source_span(open.span().start(), close.span().end()),
+            });
+        }
+        let first = self.parse_expression_bp(0);
+        let Some(first) = first else {
+            self.push_error(
+                MISSING_EXPRESSION_CODE,
+                "x01.parse.missing_group_expression",
+                open.span(),
+                "括号中缺少表达式".to_string(),
+            );
+            let _ = self.expect_delimiter(TokenKind::RightParen, open.span());
+            self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+            return None;
+        };
         self.skip_soft_newlines();
-        let close = self.expect_delimiter(TokenKind::RightParen, open.span());
-        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
-        let expression = match expression {
-            Some(expression) => expression,
-            None => {
+        if !self.at(TokenKind::Comma) {
+            let close = self.expect_delimiter(TokenKind::RightParen, open.span());
+            self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+            let end = close.map_or(first.span().end(), |token| token.span().end());
+            return Some(Expression::Group {
+                expression: Box::new(first),
+                span: self.source_span(open.span().start(), end),
+            });
+        }
+
+        let mut elements = vec![first];
+        while self.at(TokenKind::Comma) {
+            self.bump();
+            self.skip_soft_newlines();
+            if self.at(TokenKind::RightParen) {
+                break;
+            }
+            let Some(element) = self.parse_expression_bp(0) else {
                 self.push_error(
                     MISSING_EXPRESSION_CODE,
-                    "x01.parse.missing_group_expression",
-                    open.span(),
-                    "括号中缺少表达式".to_string(),
+                    "x01.parse.missing_tuple_element",
+                    self.current().span(),
+                    "元组逗号后缺少表达式".to_string(),
                 );
-                return None;
-            }
-        };
-        let end = close.map_or(expression.span().end(), |token| token.span().end());
-        Some(Expression::Group {
-            expression: Box::new(expression),
+                self.recover_delimited(TokenKind::RightParen);
+                break;
+            };
+            elements.push(element);
+            self.skip_soft_newlines();
+        }
+        let close = self.expect_delimiter(TokenKind::RightParen, open.span());
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        let end = close.map_or_else(
+            || {
+                elements
+                    .last()
+                    .map_or(open.span().end(), |element| element.span().end())
+            },
+            |token| token.span().end(),
+        );
+        Some(Expression::TupleLiteral {
+            elements,
             span: self.source_span(open.span().start(), end),
         })
     }
@@ -602,7 +719,7 @@ impl<'source> Parser<'source> {
         let mut callee = if is_expression_name_token(self.current().kind()) {
             Expression::Name(self.parse_name())
         } else if self.at(TokenKind::LeftParen) {
-            self.parse_group_expression()?
+            self.parse_parenthesized_expression()?
         } else {
             self.push_error(
                 MISSING_EXPRESSION_CODE,
@@ -633,6 +750,172 @@ impl<'source> Parser<'source> {
             };
         }
         Some(callee)
+    }
+
+    /// 解析数组字面量。
+    fn parse_array_literal(&mut self) -> Option<Expression> {
+        let open = self.bump();
+        self.soft_newline_depth += 1;
+        self.skip_soft_newlines();
+        let mut elements = Vec::new();
+        if !self.at(TokenKind::RightBracket) {
+            loop {
+                let Some(element) = self.parse_expression_bp(0) else {
+                    self.push_error(
+                        MISSING_EXPRESSION_CODE,
+                        "x03.parse.missing_array_element",
+                        self.current().span(),
+                        "数组逗号后缺少表达式".to_string(),
+                    );
+                    self.recover_delimited(TokenKind::RightBracket);
+                    break;
+                };
+                elements.push(element);
+                self.skip_soft_newlines();
+                if !self.at(TokenKind::Comma) {
+                    break;
+                }
+                self.bump();
+                self.skip_soft_newlines();
+                if self.at(TokenKind::RightBracket) {
+                    break;
+                }
+            }
+        }
+        let close = self.expect_delimiter(TokenKind::RightBracket, open.span());
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        let end = close.map_or_else(
+            || {
+                elements
+                    .last()
+                    .map_or(open.span().end(), |element| element.span().end())
+            },
+            |token| token.span().end(),
+        );
+        Some(Expression::ArrayLiteral {
+            elements,
+            span: self.source_span(open.span().start(), end),
+        })
+    }
+
+    /// 解析无序字典表字面量。
+    fn parse_dict_table_literal(&mut self) -> Option<Expression> {
+        let open = self.bump();
+        let entries = self.parse_dict_entries(TokenKind::RightBrace);
+        let close = self.expect_delimiter(TokenKind::RightBrace, open.span());
+        let end = close.map_or_else(
+            || {
+                entries
+                    .last()
+                    .map_or(open.span().end(), |entry| entry.span.end())
+            },
+            |token| token.span().end(),
+        );
+        Some(Expression::DictTableLiteral {
+            entries,
+            span: self.source_span(open.span().start(), end),
+        })
+    }
+
+    /// 解析保持顺序的字典列字面量。
+    fn parse_dict_column_literal(&mut self) -> Option<Expression> {
+        let open = self.bump();
+        self.soft_newline_depth += 1;
+        self.angle_depth += 1;
+        self.skip_soft_newlines();
+        let entries = self.parse_dict_entries(TokenKind::Greater);
+        self.skip_soft_newlines();
+        let close = self.expect_delimiter(TokenKind::Greater, open.span());
+        self.angle_depth = self.angle_depth.saturating_sub(1);
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        let end = close.map_or_else(
+            || {
+                entries
+                    .last()
+                    .map_or(open.span().end(), |entry| entry.span.end())
+            },
+            |token| token.span().end(),
+        );
+        Some(Expression::DictColumnLiteral {
+            entries,
+            span: self.source_span(open.span().start(), end),
+        })
+    }
+
+    /// 解析字典容器共用的键值条目列表。
+    fn parse_dict_entries(&mut self, close: TokenKind) -> Vec<DictEntry> {
+        self.soft_newline_depth += 1;
+        self.skip_soft_newlines();
+        let mut entries = Vec::new();
+        if !self.at(close) {
+            loop {
+                let key_token = self.current();
+                let key = match key_token.kind() {
+                    TokenKind::Identifier | TokenKind::BacktickIdentifier => {
+                        self.bump();
+                        DictKey::Name(Name {
+                            span: key_token.span(),
+                            backticked: key_token.kind() == TokenKind::BacktickIdentifier,
+                        })
+                    }
+                    TokenKind::String => {
+                        self.bump();
+                        DictKey::String(key_token.span())
+                    }
+                    _ => {
+                        self.push_error(
+                            INVALID_CONTAINER_CODE,
+                            "x03.parse.invalid_dict_key",
+                            key_token.span(),
+                            "字典键必须是名称或字符串".to_string(),
+                        );
+                        self.recover_delimited(close);
+                        break;
+                    }
+                };
+                if !self.at(TokenKind::Equal) {
+                    self.push_error(
+                        INVALID_CONTAINER_ENTRY_CODE,
+                        "x03.parse.missing_dict_equal",
+                        self.current().span(),
+                        "字典键后必须使用 = 连接值".to_string(),
+                    );
+                    self.recover_delimited(close);
+                    break;
+                }
+                self.bump();
+                let Some(value) = self.parse_expression_bp(0) else {
+                    self.push_error(
+                        INVALID_CONTAINER_ENTRY_CODE,
+                        "x03.parse.missing_dict_value",
+                        self.current().span(),
+                        "字典键值对缺少值表达式".to_string(),
+                    );
+                    self.recover_delimited(close);
+                    break;
+                };
+                let span = self.source_span(key.span().start(), value.span().end());
+                entries.push(DictEntry { key, value, span });
+                self.skip_soft_newlines();
+                if !self.at(TokenKind::Comma) {
+                    break;
+                }
+                self.bump();
+                self.skip_soft_newlines();
+                if self.at(close) {
+                    break;
+                }
+            }
+        }
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        entries
+    }
+
+    /// 消费一个分隔容器中的错误内容，保留闭分隔符供调用方处理。
+    fn recover_delimited(&mut self, close: TokenKind) {
+        while self.current().kind() != close && self.current().kind() != TokenKind::Eof {
+            self.bump();
+        }
     }
 
     /// 循环解析调用、成员、转换、步长和选择器后缀。

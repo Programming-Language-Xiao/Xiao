@@ -18,8 +18,8 @@ mod token;
 
 /// 重新导出 AST、声明和节点索引类型。
 pub use ast::{
-    AssignmentOperator, BinaryOperator, Expression, LiteralKind, Name, NodeId, NodeIndex, Program,
-    ScalarType, Statement, UnaryOperator,
+    AssignmentOperator, BinaryOperator, DictEntry, DictKey, Expression, LiteralKind, Name, NodeId,
+    NodeIndex, Program, ScalarType, Statement, UnaryOperator,
 };
 /// 重新导出词法与解析诊断编号。
 pub use diagnostics::*;

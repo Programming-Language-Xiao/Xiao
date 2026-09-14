@@ -1,0 +1,9 @@
+{
+  "stage": "03A",
+  "cases": [
+    { "name": "heterogeneous-array", "source": "items = [1, \"x\", true]\n", "expect": "array", "diagnostics": [] },
+    { "name": "python-tuples", "source": "empty = ()\none = (1,)\npair = (1, \"x\")\n", "expect": "tuple", "diagnostics": [] },
+    { "name": "dictionaries", "source": "table = {}\ncolumn = <name = 1>\n", "expect": "dictionary", "diagnostics": [] },
+    { "name": "exact-path", "source": "int list[3/2]\n", "expect": "path-constraint", "diagnostics": [] }
+  ]
+}

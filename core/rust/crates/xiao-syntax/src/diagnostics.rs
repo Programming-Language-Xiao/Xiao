@@ -74,3 +74,15 @@ pub const MISSING_CONST_VALUE_CODE: &str = "X02-PARSE-002";
 
 /// 类型前缀后出现的目标不是名称时使用的稳定诊断编号。
 pub const INVALID_DECLARATION_TARGET_CODE: &str = "X02-PARSE-003";
+
+/// C0 容器字面量结构非法时使用的稳定诊断编号。
+pub const INVALID_CONTAINER_CODE: &str = "X03-PARSE-001";
+
+/// C0 容器条目缺少值或键值分隔符时使用的稳定诊断编号。
+pub const INVALID_CONTAINER_ENTRY_CODE: &str = "X03-PARSE-002";
+
+/// C0 当前只允许精确索引时使用的稳定诊断编号。
+pub const UNSUPPORTED_CONTAINER_SELECTOR_CODE: &str = "X03-PARSE-003";
+
+/// 尚未开放 `const name[path]` 运行时锁定语义时使用的稳定诊断编号。
+pub const UNSUPPORTED_CONST_PATH_CODE: &str = "X03-PARSE-004";

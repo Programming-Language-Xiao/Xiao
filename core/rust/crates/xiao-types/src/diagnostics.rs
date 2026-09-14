@@ -21,3 +21,18 @@ pub const ARITHMETIC_ERROR_CODE: &str = "X02-TYPE-007";
 pub const NON_CONSTANT_CODE: &str = "X02-TYPE-008";
 /// HM 类型统一或 occurs-check 失败。
 pub const UNIFICATION_ERROR_CODE: &str = "X02-TYPE-009";
+
+/// 容器声明或元素赋值的静态类型不匹配。
+pub const CONTAINER_TYPE_MISMATCH_CODE: &str = "X03-TYPE-001";
+/// 字典表或字典列出现重复键。
+pub const DUPLICATE_CONTAINER_KEY_CODE: &str = "X03-TYPE-002";
+/// 容器路径段的种类与当前容器不匹配。
+pub const INVALID_CONTAINER_PATH_CODE: &str = "X03-TYPE-003";
+/// 静态可知的数组、元组或字典列数字索引越界。
+pub const CONTAINER_INDEX_OUT_OF_BOUNDS_CODE: &str = "X03-TYPE-004";
+/// 静态可知的字典键不存在。
+pub const CONTAINER_KEY_NOT_FOUND_CODE: &str = "X03-TYPE-005";
+/// 声明路径无法转换为受支持的非负整数/键路径。
+pub const INVALID_DECLARATION_PATH_CODE: &str = "X03-TYPE-006";
+/// C0 选择器包含范围、多选、步长或随机项。
+pub const UNSUPPORTED_CONTAINER_SELECTOR_CODE: &str = "X03-TYPE-007";

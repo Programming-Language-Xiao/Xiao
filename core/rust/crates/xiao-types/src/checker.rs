@@ -8,10 +8,11 @@ use std::collections::BTreeMap;
 use xiao_diagnostics::{Diagnostic, Severity};
 use xiao_source::{SourceFile, SourceSpan};
 use xiao_syntax::{
-    AssignmentOperator, BinaryOperator, Expression, LiteralKind, Program, ScalarType, Statement,
-    UnaryOperator,
+    AssignmentOperator, BinaryOperator, Expression, IndexPath, LiteralKind, Program, ScalarType,
+    Statement, UnaryOperator,
 };
 
+use crate::containers::ContainerMaterializationPlan;
 use crate::conversion::{
     ConversionKind, can_assign, classify_conversion, is_float, is_integer, is_numeric,
 };
@@ -24,6 +25,10 @@ use crate::numeric::{
 };
 use crate::types::Type;
 use crate::unify::{TypeContext, UnifyError};
+
+/// C0 容器语义的子模块；保持主检查器只负责语句分派和标量规则。
+#[path = "container_checker.rs"]
+mod container_checker;
 
 /// 后端需要保留的运行时检查种类。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -67,6 +72,8 @@ pub struct TypeCheckResult {
     pub runtime_checks: Vec<RuntimeCheck>,
     /// 检查结束时的环境快照，供后续 IR 阶段消费。
     pub environment: TypeEnvironment,
+    /// 空数组路径声明对应的静态物化计划。
+    pub materialization_plans: Vec<ContainerMaterializationPlan>,
 }
 
 impl TypeCheckResult {
@@ -98,6 +105,7 @@ impl TypeCheckResult {
         self.environment
             .lookup(name)
             .or_else(|| self.environment.lookup(&format!("ascii:{name}")))
+            .or_else(|| self.environment.lookup(&format!("backtick:{name}")))
     }
 
     /// 返回类型记录的只读视图。
@@ -117,6 +125,12 @@ impl TypeCheckResult {
     pub fn diagnostics(&self) -> &[Diagnostic] {
         &self.diagnostics
     }
+
+    /// 返回容器默认值/形状计划的只读视图。
+    #[must_use]
+    pub fn materialization_plans(&self) -> &[ContainerMaterializationPlan] {
+        &self.materialization_plans
+    }
 }
 
 /// P2 静态检查器；生命周期只借用不可变源码。
@@ -127,6 +141,7 @@ pub struct TypeChecker<'source> {
     diagnostics: Vec<Diagnostic>,
     nodes: Vec<TypedNode>,
     runtime_checks: Vec<RuntimeCheck>,
+    materialization_plans: Vec<ContainerMaterializationPlan>,
     constant_values: BTreeMap<String, ConstantValue>,
 }
 
@@ -141,6 +156,7 @@ impl<'source> TypeChecker<'source> {
             diagnostics: Vec::new(),
             nodes: Vec::new(),
             runtime_checks: Vec::new(),
+            materialization_plans: Vec::new(),
             constant_values: BTreeMap::new(),
         }
     }
@@ -162,6 +178,7 @@ impl<'source> TypeChecker<'source> {
             diagnostics: self.diagnostics,
             runtime_checks: self.runtime_checks,
             environment: self.environment,
+            materialization_plans: self.materialization_plans,
         }
     }
 
@@ -189,9 +206,15 @@ impl<'source> TypeChecker<'source> {
             Statement::Declaration {
                 target,
                 declared_type,
+                constraint_path,
                 value,
                 ..
-            } => self.check_declaration(*target, *declared_type, value.as_ref()),
+            } => self.check_declaration(
+                *target,
+                *declared_type,
+                constraint_path.as_ref(),
+                value.as_ref(),
+            ),
             Statement::ConstDeclaration {
                 target,
                 declared_type,
@@ -217,8 +240,17 @@ impl<'source> TypeChecker<'source> {
                     target.span,
                     format!("不能把 {} 赋给已锁定的 {}", value_type, existing_type),
                 );
-            } else if let Err(error) = self.environment.assign(&key) {
-                self.environment_error(target.span, error);
+            } else {
+                if value_type.is_container() && !binding.container_constraints.is_empty() {
+                    self.check_container_assignment_constraints(
+                        &value_type,
+                        &binding.container_constraints,
+                        value.span(),
+                    );
+                }
+                if let Err(error) = self.environment.assign(&key) {
+                    self.environment_error(target.span, error);
+                }
             }
             return;
         }
@@ -342,8 +374,12 @@ impl<'source> TypeChecker<'source> {
         &mut self,
         target: xiao_syntax::Name,
         declared_type: ScalarType,
+        constraint_path: Option<&IndexPath>,
         value: Option<&Expression>,
     ) {
+        if self.try_check_container_declaration(target, declared_type, constraint_path, value) {
+            return;
+        }
         let key = self.name_key(target);
         let value_type = value.map(|expression| self.check_expression(expression));
         if let Some(value) = value {
@@ -508,6 +544,10 @@ impl<'source> TypeChecker<'source> {
         let ty = match expression {
             Expression::Literal { kind, span } => self.literal_type(*kind, *span),
             Expression::Name(name) => self.check_name(*name),
+            Expression::ArrayLiteral { .. }
+            | Expression::TupleLiteral { .. }
+            | Expression::DictTableLiteral { .. }
+            | Expression::DictColumnLiteral { .. } => self.check_container_expression(expression),
             Expression::Group { expression, .. } => self.check_expression(expression),
             Expression::Unary {
                 operator,
@@ -554,26 +594,7 @@ impl<'source> TypeChecker<'source> {
                 step,
                 selector,
                 span,
-            } => {
-                let source_type = self.check_expression(source);
-                if let Some(step) = step {
-                    self.check_expression(step);
-                }
-                for item in &selector.items {
-                    if let xiao_syntax::SelectorItem::Random { count, .. } = item {
-                        self.check_expression(count);
-                    }
-                }
-                if !source_type.is_dynamic() {
-                    self.type_error(
-                        INVALID_OPERANDS_CODE,
-                        "x02.type.selector_requires_container",
-                        *span,
-                        format!("{} 不是 P2 可选择的容器", source_type),
-                    );
-                }
-                Type::Dynamic
-            }
+            } => self.check_container_selector(source, step.as_deref(), selector, *span),
         };
         self.nodes.push(TypedNode {
             span: expression.span(),

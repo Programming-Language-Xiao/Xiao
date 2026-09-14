@@ -116,6 +116,9 @@ pub fn can_assign(source: &Type, target: &Type) -> bool {
     if source == target || source.is_dynamic() || target.is_dynamic() {
         return true;
     }
+    if source.is_container() && target.is_container() {
+        return container_can_assign(source, target);
+    }
     let (Type::Scalar(source), Type::Scalar(target)) = (source, target) else {
         return false;
     };
@@ -123,6 +126,79 @@ pub fn can_assign(source: &Type, target: &Type) -> bool {
         return true;
     }
     is_numeric(*source) && is_numeric(*target) && numeric_widens(*source, *target)
+}
+
+/// 检查两个容器类型的结构化赋值兼容性。
+fn container_can_assign(source: &Type, target: &Type) -> bool {
+    match (source, target) {
+        (Type::Array(source), Type::Array(target)) => match (source, target) {
+            (_, crate::containers::ArrayType::Unknown) => true,
+            (crate::containers::ArrayType::Unknown, _) => true,
+            (
+                crate::containers::ArrayType::Homogeneous {
+                    element: source,
+                    length: source_length,
+                },
+                crate::containers::ArrayType::Homogeneous {
+                    element: target,
+                    length: target_length,
+                },
+            ) => {
+                target_length.is_none_or(|length| source_length == &Some(length))
+                    && can_assign(source, target)
+            }
+            (
+                crate::containers::ArrayType::Heterogeneous { elements: source },
+                crate::containers::ArrayType::Heterogeneous { elements: target },
+            ) => {
+                source.len() == target.len()
+                    && source
+                        .iter()
+                        .zip(target)
+                        .all(|(source, target)| can_assign(source, target))
+            }
+            (
+                crate::containers::ArrayType::Heterogeneous { elements },
+                crate::containers::ArrayType::Homogeneous { element, length },
+            ) => {
+                length.is_none_or(|length| length == elements.len())
+                    && elements.iter().all(|item| can_assign(item, element))
+            }
+            (
+                crate::containers::ArrayType::Homogeneous { element, length },
+                crate::containers::ArrayType::Heterogeneous { elements },
+            ) => {
+                length.is_none_or(|length| length == elements.len())
+                    && elements.iter().all(|item| can_assign(element, item))
+            }
+        },
+        (Type::Tuple(source), Type::Tuple(target)) => {
+            source.len() == target.len()
+                && source
+                    .iter()
+                    .zip(target)
+                    .all(|(source, target)| can_assign(source, target))
+        }
+        (Type::DictTable(source), Type::DictTable(target)) => {
+            source.entries.len() == target.entries.len()
+                && source.entries.iter().all(|source_entry| {
+                    target
+                        .value_type(&source_entry.key)
+                        .is_some_and(|target| can_assign(&source_entry.value, target))
+                })
+        }
+        (Type::DictColumn(source), Type::DictColumn(target)) => {
+            source.entries.len() == target.entries.len()
+                && source
+                    .entries
+                    .iter()
+                    .zip(&target.entries)
+                    .all(|(source, target)| {
+                        source.key == target.key && can_assign(&source.value, &target.value)
+                    })
+        }
+        _ => false,
+    }
 }
 
 /// 计算两个数值标量的安全提升结果。

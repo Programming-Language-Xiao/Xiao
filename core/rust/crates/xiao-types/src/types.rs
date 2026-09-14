@@ -9,6 +9,8 @@ use std::fmt::{self, Display, Formatter};
 
 use xiao_syntax::ScalarType;
 
+use crate::containers::{ArrayType, DictType};
+
 /// HM 类型变量的稳定编号。
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct TypeVarId(u32);
@@ -43,10 +45,14 @@ pub enum Type {
         /// 返回类型。
         return_type: Box<Type>,
     },
+    /// 数组类型；可以是同构、异构或未知形状。
+    Array(ArrayType),
     /// 元组类型。
     Tuple(Vec<Type>),
-    /// 同构数组类型。
-    Array(Box<Type>),
+    /// 无序字典表类型。
+    DictTable(DictType),
+    /// 保持顺序的字典列类型。
+    DictColumn(DictType),
     /// 动态值边界或错误恢复类型。
     Dynamic,
 }
@@ -77,6 +83,27 @@ impl Type {
     #[must_use]
     pub const fn variable(id: TypeVarId) -> Self {
         Self::Variable(id)
+    }
+
+    /// 创建长度未知的同构数组类型。
+    #[must_use]
+    pub fn array(element: Type) -> Self {
+        Self::Array(ArrayType::homogeneous(element))
+    }
+
+    /// 创建异构数组类型。
+    #[must_use]
+    pub fn array_literal(elements: impl Into<Vec<Type>>) -> Self {
+        Self::Array(ArrayType::heterogeneous(elements))
+    }
+
+    /// 判断是否为数组、元组或字典容器。
+    #[must_use]
+    pub const fn is_container(&self) -> bool {
+        matches!(
+            self,
+            Self::Array(_) | Self::Tuple(_) | Self::DictTable(_) | Self::DictColumn(_)
+        )
     }
 
     /// 判断是否为动态边界类型。
@@ -135,7 +162,20 @@ impl Type {
                     item.collect_free_vars(output);
                 }
             }
-            Self::Array(item) => item.collect_free_vars(output),
+            Self::Array(array) => match array {
+                ArrayType::Homogeneous { element, .. } => element.collect_free_vars(output),
+                ArrayType::Heterogeneous { elements } => {
+                    for element in elements {
+                        element.collect_free_vars(output);
+                    }
+                }
+                ArrayType::Unknown => {}
+            },
+            Self::DictTable(dictionary) | Self::DictColumn(dictionary) => {
+                for entry in &dictionary.entries {
+                    entry.value.collect_free_vars(output);
+                }
+            }
             Self::Scalar(_) | Self::None | Self::Dynamic => {}
         }
     }
@@ -179,10 +219,28 @@ impl Display for Type {
                 }
                 formatter.write_str(")")
             }
-            Self::Array(item) => write!(formatter, "[{item}]"),
+            Self::Array(array) => array.fmt(formatter),
+            Self::DictTable(dictionary) => write_dictionary(formatter, dictionary, false),
+            Self::DictColumn(dictionary) => write_dictionary(formatter, dictionary, true),
             Self::Dynamic => formatter.write_str("dynamic"),
         }
     }
+}
+
+/// 格式化两种字典类型的稳定摘要。
+fn write_dictionary(
+    formatter: &mut Formatter<'_>,
+    dictionary: &DictType,
+    ordered: bool,
+) -> fmt::Result {
+    formatter.write_str(if ordered { "<" } else { "{" })?;
+    for (index, entry) in dictionary.entries.iter().enumerate() {
+        if index > 0 {
+            formatter.write_str(", ")?;
+        }
+        write!(formatter, "{} = {}", entry.key, entry.value)?;
+    }
+    formatter.write_str(if ordered { ">" } else { "}" })
 }
 
 /// 一个可被环境保存的 HM 类型方案。

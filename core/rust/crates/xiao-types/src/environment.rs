@@ -6,6 +6,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{self, Display, Formatter};
 
+use crate::containers::PathConstraintTree;
 use crate::types::{Type, TypeScheme, TypeVarId};
 
 /// 一个名称绑定及其初始化/可变状态。
@@ -19,6 +20,8 @@ pub struct Binding {
     pub mutable: bool,
     /// 是否为编译期常量。
     pub constant: bool,
+    /// 绑定上的数组路径约束；普通标量绑定为空。
+    pub container_constraints: PathConstraintTree,
 }
 
 impl Binding {
@@ -30,6 +33,7 @@ impl Binding {
             initialized,
             mutable: true,
             constant: false,
+            container_constraints: PathConstraintTree::new(),
         }
     }
 
@@ -41,6 +45,7 @@ impl Binding {
             initialized: true,
             mutable: false,
             constant: true,
+            container_constraints: PathConstraintTree::new(),
         }
     }
 
@@ -138,6 +143,26 @@ impl TypeEnvironment {
         self.declare(
             name,
             Binding::mutable(TypeScheme::monomorphic(ty), initialized),
+        )
+    }
+
+    /// 声明带数组路径约束的普通可变名称。
+    pub fn declare_mutable_with_constraints(
+        &mut self,
+        name: impl Into<String>,
+        ty: Type,
+        initialized: bool,
+        constraints: PathConstraintTree,
+    ) -> Result<(), EnvironmentError> {
+        self.declare(
+            name,
+            Binding {
+                scheme: TypeScheme::monomorphic(ty),
+                initialized,
+                mutable: true,
+                constant: false,
+                container_constraints: constraints,
+            },
         )
     }
 
