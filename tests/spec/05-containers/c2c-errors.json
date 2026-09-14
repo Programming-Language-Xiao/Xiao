@@ -1,0 +1,65 @@
+{
+  "stage": "03E",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "mixed-union",
+      "source": "bad = {1} + 2\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-021",
+          "message_id": "x03.type.set_operation_requires_sets",
+          "params": {
+            "operator": "+",
+            "left_type": "set<int>",
+            "right_type": "int"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-intersection",
+      "source": "bad = 1 & 2\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-021",
+          "message_id": "x03.type.set_operation_requires_sets",
+          "params": {
+            "operator": "&",
+            "left_type": "int",
+            "right_type": "int"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-comparison",
+      "source": "bad = {1} < 2\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X03-TYPE-022",
+          "message_id": "x03.type.set_comparison_requires_sets",
+          "params": {
+            "operator": "<",
+            "left_type": "set<int>",
+            "right_type": "int"
+          }
+        }
+      ]
+    },
+    {
+      "name": "compound-result-mismatch",
+      "source": "set<int> target = set()\nsource = {\"x\"}\ntarget += source\n",
+      "expect": "error",
+      "diagnostics": [
+        {
+          "code": "X02-TYPE-004",
+          "message_id": "x02.type.compound_result_mismatch"
+        }
+      ]
+    }
+  ]
+}

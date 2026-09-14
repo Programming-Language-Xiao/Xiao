@@ -4,7 +4,7 @@ title: 容器与集合错误诊断
 status: verified
 audience: learner
 module: rust.xiao-types-sets
-stage: "03D"
+stage: "03E"
 version: "0.1.0"
 related:
   - README.md
@@ -44,6 +44,8 @@ C0/C1/C2-A/C2-B 的容器错误在语法或类型检查阶段产生稳定编号�
 | `X03-TYPE-018` | `set()` 参数数量错误 | 空集合构造式接收了参数；当前 C2-A/C2-B 只接受零参数 |
 | `X03-TYPE-019` | 集合成员判断类型错误 | `in`/`not in` 右侧不是集合，或左侧不符合集合元素类型约束 |
 | `X03-TYPE-020` | 集合不支持索引 | 对集合使用数字、键名、范围、多选、步长或随机选择 |
+| `X03-TYPE-021` | 集合运算操作数错误 | 集合代数两侧不是可确认的集合形状，或集合与标量混用 |
+| `X03-TYPE-022` | 集合比较操作数错误 | 集合比较两侧不是可确认的集合形状 |
 
 语法阶段还会用 `X03-PARSE-002` 拒绝同一花括号中混用集合值和字典键值条目，并用
 `X03-PARSE-004` 拒绝 `const name[path]`。C2-B 额外使用以下编号拒绝未开放的集合
@@ -64,11 +66,13 @@ C0/C1/C2-A/C2-B 的容器错误在语法或类型检查阶段产生稳定编号�
 
 未知长度数组和字符串的边界无法在静态阶段证明；这类值会登记相应 Runtime 检查，
 不应通过改写源码为范围或随机选择来绕过诊断。动态集合元素和动态成员判断分别登记
-`SetHashability`/`SetMembership` 检查；动态集合赋给受限集合时也登记
-`SetMembership`。C1/C2-A/C2-B 的静态检查只生成计划，不执行真实容器读写、集合哈希
+`SetHashability`/`SetMembership` 检查；动态集合赋给受限集合时也登记 `SetMembership`。
+C2-C 的集合代数动态边界登记 `SetOperation`，集合比较动态边界登记 `SetComparison`。
+C1/C2-A/C2-B/C2-C 的静态检查只生成计划，不执行真实容器读写、集合哈希、集合代数
 或随机抽样。
 
-更完整的运行时堆栈、日志和调试窗口属于第 07/11 阶段；当前页面覆盖 C0/C1/C2-A/C2-B
+更完整的运行时堆栈、日志和调试窗口属于第 07/11 阶段；当前页面覆盖 C0/C1/C2-A/C2-B/C2-C
 类型阶段诊断，不承诺 Runtime 执行结果。交接边界见 [03A](../../../DevDocs/03a-c0-containers.md)、
 [03B](../../../DevDocs/03b-c1-ordered-selectors.md)、[03C](../../../DevDocs/03c-c2a-sets.md)
-和 [03D](../../../DevDocs/03d-c2b-heterogeneous-sets.md)。
+、[03D](../../../DevDocs/03d-c2b-heterogeneous-sets.md) 和
+[03E](../../../DevDocs/03e-c2c-set-operations.md)。

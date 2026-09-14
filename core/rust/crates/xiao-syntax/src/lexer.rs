@@ -156,6 +156,13 @@ impl<'source> Lexer<'source> {
                 b'+' => self.scan_one_or_two(b'+', b'=', TokenKind::PlusEqual, TokenKind::Plus),
                 b'-' => self.scan_minus(),
                 b'*' => self.scan_star(),
+                b'&' => self.scan_one_or_two(
+                    b'&',
+                    b'=',
+                    TokenKind::AmpersandEqual,
+                    TokenKind::Ampersand,
+                ),
+                b'^' => self.scan_one_or_two(b'^', b'=', TokenKind::CaretEqual, TokenKind::Caret),
                 b'/' => self.scan_slash(),
                 b'%' => {
                     self.scan_one_or_two(b'%', b'=', TokenKind::PercentEqual, TokenKind::Percent)

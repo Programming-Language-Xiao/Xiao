@@ -77,6 +77,10 @@ pub enum BinaryOperator {
     Add,
     /// 减法 `-`。
     Subtract,
+    /// 集合交集或位与候选符 `&`。
+    Intersect,
+    /// 集合对称差或位异或候选符 `^`。
+    SymmetricDifference,
     /// 小于比较 `<`。
     Less,
     /// 小于等于比较 `<=`。
@@ -115,6 +119,8 @@ impl BinaryOperator {
             Self::Remainder => "%",
             Self::Add => "+",
             Self::Subtract => "-",
+            Self::Intersect => "&",
+            Self::SymmetricDifference => "^",
             Self::Less => "<",
             Self::LessEqual => "<=",
             Self::Greater => ">",
@@ -140,6 +146,10 @@ pub enum AssignmentOperator {
     AddAssign,
     /// 复合减法 `-=`。
     SubtractAssign,
+    /// 复合集合交集 `&=`。
+    IntersectAssign,
+    /// 复合集合对称差 `^=`。
+    SymmetricDifferenceAssign,
     /// 复合乘法 `*=`。
     MultiplyAssign,
     /// 复合除法 `/=`。
@@ -160,6 +170,8 @@ impl AssignmentOperator {
             Self::Assign => "=",
             Self::AddAssign => "+=",
             Self::SubtractAssign => "-=",
+            Self::IntersectAssign => "&=",
+            Self::SymmetricDifferenceAssign => "^=",
             Self::MultiplyAssign => "*=",
             Self::DivideAssign => "/=",
             Self::FloorDivideAssign => "//=",

@@ -2,7 +2,8 @@
 //!
 //! 本模块只描述集合的静态元素约束和可哈希判定，不创建运行时集合对象，
 //! 也不规定集合的遍历顺序。C2-B 在这里表达静态成员类型并集和动态尾标，
-//! 但仍不创建运行时集合对象，也不实现集合代数或增删操作。
+//! C2-C 额外表达集合运算产生的静态结果；仍不创建运行时集合对象，也不实现
+//! 集合代数的执行或增删操作。
 
 use std::fmt::{self, Display, Formatter};
 
@@ -11,6 +12,11 @@ use crate::types::Type;
 /// C2-A 集合的静态元素类型描述。
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum SetType {
+    /// 已静态证明不包含任何成员的集合结果。
+    ///
+    /// 该状态只用于类型运算结果；它与 [`Self::Unknown`] 不同，后者表示
+    /// 尚未知道集合的元素约束（例如无上下文的 `set()`）。
+    Empty,
     /// 已知所有元素都满足同一个类型约束。
     Homogeneous {
         /// 集合元素类型。
@@ -65,6 +71,12 @@ impl SetType {
         }
     }
 
+    /// 创建一个已静态证明为空的集合类型。
+    #[must_use]
+    pub const fn empty() -> Self {
+        Self::Empty
+    }
+
     /// 创建尚未确定元素类型的集合描述。
     #[must_use]
     pub const fn unknown() -> Self {
@@ -76,7 +88,7 @@ impl SetType {
     pub fn element_type(&self) -> Option<&Type> {
         match self {
             Self::Homogeneous { element } => Some(element),
-            Self::Heterogeneous { .. } | Self::Unknown => None,
+            Self::Empty | Self::Heterogeneous { .. } | Self::Unknown => None,
         }
     }
 
@@ -88,7 +100,7 @@ impl SetType {
         match self {
             Self::Homogeneous { element } => std::slice::from_ref(element.as_ref()).iter(),
             Self::Heterogeneous { members, .. } => members.iter(),
-            Self::Unknown => [].iter(),
+            Self::Empty | Self::Unknown => [].iter(),
         }
     }
 
@@ -103,7 +115,7 @@ impl SetType {
     pub fn members(&self) -> &[Type] {
         match self {
             Self::Heterogeneous { members, .. } => members,
-            Self::Homogeneous { .. } | Self::Unknown => &[],
+            Self::Empty | Self::Homogeneous { .. } | Self::Unknown => &[],
         }
     }
 
@@ -117,6 +129,12 @@ impl SetType {
                 ..
             }
         )
+    }
+
+    /// 判断集合是否已静态证明为空。
+    #[must_use]
+    pub const fn is_empty(&self) -> bool {
+        matches!(self, Self::Empty)
     }
 
     /// 判断集合是否包含指定静态成员类型。
@@ -135,6 +153,107 @@ impl SetType {
     #[must_use]
     pub const fn is_unknown(&self) -> bool {
         matches!(self, Self::Unknown)
+    }
+
+    /// 判断集合是否带有需要 Runtime 继续确认的边界。
+    ///
+    /// `Unknown` 表示完全未知，异构集合的动态尾标表示只知道部分成员；
+    /// 两者都会使集合运算或比较需要旁路检查。
+    #[must_use]
+    pub const fn has_dynamic_boundary(&self) -> bool {
+        self.is_unknown() || self.allows_dynamic()
+    }
+
+    /// 计算两个集合类型的静态并集结果。
+    #[must_use]
+    pub fn union(&self, other: &Self) -> Self {
+        if self.is_empty() {
+            return other.clone();
+        }
+        if other.is_empty() {
+            return self.clone();
+        }
+        if self.is_unknown() && other.is_unknown() {
+            return Self::Unknown;
+        }
+        let mut members = self.to_member_types();
+        members.extend(other.member_types().cloned());
+        Self::from_operation_members(
+            members,
+            self.has_dynamic_boundary() || other.has_dynamic_boundary(),
+        )
+    }
+
+    /// 计算两个集合类型的静态交集结果。
+    #[must_use]
+    pub fn intersection(&self, other: &Self) -> Self {
+        if self.is_empty() || other.is_empty() {
+            return Self::Empty;
+        }
+        if self.is_unknown() && other.is_unknown() {
+            return Self::Unknown;
+        }
+        if self.is_unknown() {
+            return Self::from_operation_members(other.to_member_types(), true);
+        }
+        if other.is_unknown() {
+            return Self::from_operation_members(self.to_member_types(), true);
+        }
+        let right = other.to_member_types();
+        let members = self
+            .member_types()
+            .filter(|member| right.iter().any(|candidate| candidate == *member))
+            .cloned()
+            .collect::<Vec<_>>();
+        Self::from_operation_members(
+            members,
+            self.has_dynamic_boundary() || other.has_dynamic_boundary(),
+        )
+    }
+
+    /// 计算两个集合类型的静态差集结果。
+    ///
+    /// 类型层保留左侧所有已知成员；右侧存在动态边界时只追加动态尾标，
+    /// 不把无法静态证明的成员误删。
+    #[must_use]
+    pub fn difference(&self, other: &Self) -> Self {
+        if self.is_empty() {
+            return Self::Empty;
+        }
+        if self.is_unknown() {
+            return Self::Unknown;
+        }
+        Self::from_operation_members(
+            self.to_member_types(),
+            self.has_dynamic_boundary() || other.has_dynamic_boundary(),
+        )
+    }
+
+    /// 计算两个集合类型的静态对称差结果。
+    ///
+    /// 对成员类型而言，对称差的可证明结果是两侧成员类型的并集；
+    /// 具体值的排除与唯一性由后续 Runtime 阶段执行。
+    #[must_use]
+    pub fn symmetric_difference(&self, other: &Self) -> Self {
+        self.union(other)
+    }
+
+    /// 用集合运算结果的成员列表和动态边界构造规范化类型。
+    fn from_operation_members(members: Vec<Type>, allows_dynamic: bool) -> Self {
+        let mut members = members;
+        normalize_members(&mut members);
+        if members.is_empty() {
+            if allows_dynamic {
+                Self::Heterogeneous {
+                    members,
+                    allows_dynamic: true,
+                }
+            } else {
+                Self::Empty
+            }
+        } else {
+            Self::heterogeneous_with_dynamic(members, allows_dynamic)
+        }
     }
 }
 
@@ -162,6 +281,7 @@ impl Display for SetType {
                 }
                 formatter.write_str(">")
             }
+            Self::Empty => formatter.write_str("set<never>"),
             Self::Unknown => formatter.write_str("set"),
         }
     }
@@ -210,6 +330,12 @@ pub fn hashability(ty: &Type) -> Hashability {
 /// 普通 Xiao 赋值规则。该函数放在集合模块中，避免转换矩阵承载集合细节。
 #[must_use]
 pub fn can_assign_set(source: &SetType, target: &SetType) -> bool {
+    if source.is_empty() {
+        return true;
+    }
+    if target.is_empty() {
+        return false;
+    }
     if source.is_unknown() || target.is_unknown() {
         // `set()` 的未知元素约束可以在声明上下文中被具体化；未知目标
         // 则表示尚未施加更窄的约束。
@@ -297,5 +423,41 @@ mod tests {
         ]);
         assert!(!super::can_assign_set(&sint_set, &int_set));
         assert!(super::can_assign_set(&int_set, &union));
+    }
+
+    #[test]
+    /// 集合运算保持成员并集、交集、左侧差集和动态边界规则。
+    fn computes_static_set_operation_results() {
+        let ints = SetType::homogeneous(Type::scalar(ScalarType::Int));
+        let mixed = SetType::heterogeneous(vec![
+            Type::scalar(ScalarType::Int),
+            Type::scalar(ScalarType::Str),
+        ]);
+        let bools = SetType::homogeneous(Type::scalar(ScalarType::Bool));
+        assert_eq!(ints.union(&bools).to_string(), "set<bool | int>");
+        assert_eq!(mixed.intersection(&ints).to_string(), "set<int>");
+        assert_eq!(mixed.difference(&ints).to_string(), "set<int | str>");
+        assert_eq!(ints.intersection(&bools), SetType::empty());
+        assert_eq!(
+            SetType::unknown().union(&ints).to_string(),
+            "set<int | dynamic>"
+        );
+    }
+
+    #[test]
+    /// 静态空集合可赋给任意成员约束，但未知集合不能伪装成空集合。
+    fn distinguishes_empty_from_unknown_for_assignment() {
+        assert!(super::can_assign_set(
+            &SetType::empty(),
+            &SetType::homogeneous(Type::scalar(ScalarType::Int))
+        ));
+        assert!(!super::can_assign_set(
+            &SetType::unknown(),
+            &SetType::empty()
+        ));
+        assert!(!super::can_assign_set(
+            &SetType::homogeneous(Type::scalar(ScalarType::Int)),
+            &SetType::empty()
+        ));
     }
 }

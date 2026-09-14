@@ -62,3 +62,7 @@ pub const SET_CONSTRUCTOR_ARITY_CODE: &str = "X03-TYPE-018";
 pub const SET_MEMBERSHIP_TYPE_CODE: &str = "X03-TYPE-019";
 /// 集合不支持数字、键名或高级选择器索引。
 pub const SET_INDEX_UNSUPPORTED_CODE: &str = "X03-TYPE-020";
+/// 集合代数操作数不是两个集合。
+pub const SET_OPERATION_TYPE_CODE: &str = "X03-TYPE-021";
+/// 集合比较操作数不是两个集合。
+pub const SET_COMPARISON_TYPE_CODE: &str = "X03-TYPE-022";

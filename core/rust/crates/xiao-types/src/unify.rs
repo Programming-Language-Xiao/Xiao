@@ -548,6 +548,7 @@ fn apply_set(
                 .collect::<Vec<_>>(),
             *allows_dynamic,
         ),
+        SetType::Empty => SetType::Empty,
         SetType::Unknown => SetType::Unknown,
     }
 }
@@ -558,6 +559,12 @@ fn unify_sets(
     left: &SetType,
     right: &SetType,
 ) -> Result<Type, UnifyError> {
+    if left.is_empty() {
+        return Ok(Type::Set(right.clone()));
+    }
+    if right.is_empty() {
+        return Ok(Type::Set(left.clone()));
+    }
     if left.is_unknown() {
         return Ok(Type::Set(right.clone()));
     }
@@ -596,6 +603,7 @@ fn substitute_set(set: &SetType, replacements: &BTreeMap<TypeVarId, Type>) -> Se
                 .collect::<Vec<_>>(),
             *allows_dynamic,
         ),
+        SetType::Empty => SetType::Empty,
         SetType::Unknown => SetType::Unknown,
     }
 }
@@ -670,5 +678,13 @@ mod tests {
         let mut substitution = Substitution::new();
         let unified = substitution.unify(&left, &right).expect("集合并集应可统一");
         assert_eq!(unified.to_string(), "set<int | str | dynamic>");
+    }
+
+    #[test]
+    /// 统一两个静态空集合时保留 `Empty`，不退化为未知集合。
+    fn preserves_empty_set_during_unification() {
+        let mut substitution = Substitution::new();
+        let empty = Type::Set(crate::SetType::empty());
+        assert_eq!(substitution.unify(&empty, &empty).unwrap(), empty);
     }
 }

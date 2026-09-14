@@ -248,6 +248,16 @@ pub fn binary_scalar_type(
             right: Type::scalar(right),
         });
     }
+    if matches!(
+        operator,
+        BinaryOperator::Intersect | BinaryOperator::SymmetricDifference
+    ) {
+        return Err(NumericError::InvalidOperands {
+            operator,
+            left: Type::scalar(left),
+            right: Type::scalar(right),
+        });
+    }
     if matches!(operator, BinaryOperator::And | BinaryOperator::Or)
         && left == ScalarType::Bool
         && right == ScalarType::Bool

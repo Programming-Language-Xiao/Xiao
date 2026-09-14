@@ -22,5 +22,11 @@
 `c2a-errors.json`，逐条验证 `code`、`message_id`、严重级别和结构化参数；快照不比较
 中文或英语展示文本。测试只验证 AST 类型检查结果，不创建 Runtime 集合；C2-B 的异构
 成员并集、显式集合注解、动态尾标和严格成员判断见 `c2b_heterogeneous_sets.rs`，其快照
-见 `c2b_snapshots.rs`，对应 `tests/spec/05-containers/c2b-*.json`。集合代数和
-`frozenset` 留给后续 C2 子阶段。
+见 `c2b_snapshots.rs`，对应 `tests/spec/05-containers/c2b-*.json`。
+
+## C2-C 测试登记
+
+`c2c_set_operations.rs` 覆盖四种集合代数、集合比较、动态边界、静态空交集、混合操作数
+和四种原地赋值；`c2c_snapshots.rs` 读取 `tests/spec/05-containers/c2c-valid.json` 与
+`c2c-errors.json`，只断言稳定诊断身份和结构化参数。测试不创建 Runtime 集合、不执行
+哈希或集合值运算；`frozenset` 留给后续 C2 子阶段。

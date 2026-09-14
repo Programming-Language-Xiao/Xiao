@@ -193,6 +193,10 @@ pub enum TokenKind {
     Percent,
     /// 幂运算符 `**`。
     Power,
+    /// 集合交集或位与候选符 `&`。
+    Ampersand,
+    /// 集合对称差或位异或候选符 `^`。
+    Caret,
     /// 集合类型并集分隔符 `|`（仅在类型注解上下文使用）。
     Pipe,
     /// 复合加法符 `+=`。
@@ -209,6 +213,10 @@ pub enum TokenKind {
     PercentEqual,
     /// 复合幂运算符 `**=`。
     PowerEqual,
+    /// 复合集合交集符 `&=`。
+    AmpersandEqual,
+    /// 复合集合对称差符 `^=`。
+    CaretEqual,
     /// 左圆括号 `(`。
     LeftParen,
     /// 右圆括号 `)`。
@@ -279,6 +287,8 @@ impl TokenKind {
             Self::FloorDiv => "FloorDiv",
             Self::Percent => "Percent",
             Self::Power => "Power",
+            Self::Ampersand => "Ampersand",
+            Self::Caret => "Caret",
             Self::Pipe => "Pipe",
             Self::PlusEqual => "PlusEqual",
             Self::MinusEqual => "MinusEqual",
@@ -287,6 +297,8 @@ impl TokenKind {
             Self::FloorDivEqual => "FloorDivEqual",
             Self::PercentEqual => "PercentEqual",
             Self::PowerEqual => "PowerEqual",
+            Self::AmpersandEqual => "AmpersandEqual",
+            Self::CaretEqual => "CaretEqual",
             Self::LeftParen => "LeftParen",
             Self::RightParen => "RightParen",
             Self::LeftBracket => "LeftBracket",
@@ -353,6 +365,8 @@ impl TokenKind {
                 | Self::FloorDiv
                 | Self::Percent
                 | Self::Power
+                | Self::Ampersand
+                | Self::Caret
                 | Self::PlusEqual
                 | Self::MinusEqual
                 | Self::StarEqual
@@ -360,6 +374,8 @@ impl TokenKind {
                 | Self::FloorDivEqual
                 | Self::PercentEqual
                 | Self::PowerEqual
+                | Self::AmpersandEqual
+                | Self::CaretEqual
                 | Self::Tilde
                 | Self::Question
                 | Self::Bang

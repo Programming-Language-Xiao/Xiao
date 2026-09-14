@@ -35,6 +35,11 @@ mod selector_checker;
 /// C2-A 集合字面量、可哈希检查和成员判断。
 #[path = "set_checker.rs"]
 mod set_checker;
+/// C2-C 集合代数、比较和动态检查计划。
+#[path = "set_operations.rs"]
+mod set_operations;
+
+use self::set_operations::should_attempt_set_semantics;
 
 /// 后端需要保留的运行时检查种类。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -59,6 +64,10 @@ pub enum RuntimeCheckKind {
     SetHashability,
     /// 动态集合成员判断的类型/容器检查。
     SetMembership,
+    /// 动态集合代数操作数、结果或形状检查。
+    SetOperation,
+    /// 动态集合比较的成员/关系检查。
+    SetComparison,
 }
 
 /// 一个带源码区间的运行时检查标记。
@@ -357,32 +366,53 @@ impl<'source> TypeChecker<'source> {
         let binary = assignment_binary_operator(operator);
         let mut operation_valid = initialized;
         let mut dynamic_operation = false;
-        let result_type = match (&left_type, &right_type, binary) {
-            (Type::Dynamic, _, _) | (_, Type::Dynamic, _) if binary.is_some() => {
-                dynamic_operation = true;
-                self.push_runtime_check(target.span(), RuntimeCheckKind::Arithmetic);
-                Type::Dynamic
-            }
-            (Type::Scalar(left), Type::Scalar(right), Some(binary)) => {
-                match binary_scalar_type(binary, *left, *right) {
-                    Ok(scalar) => Type::scalar(scalar),
-                    Err(error) => {
+        let mut set_dynamic_boundary = false;
+        let result_type = if let Some(binary) = binary {
+            if should_attempt_set_semantics(binary, &left_type, &right_type) {
+                let analysis =
+                    self.check_set_operation_types(binary, &left_type, &right_type, target.span());
+                operation_valid &= analysis.valid;
+                dynamic_operation = analysis.result.is_dynamic();
+                set_dynamic_boundary = analysis.has_dynamic_boundary;
+                analysis.result
+            } else {
+                match (&left_type, &right_type) {
+                    (Type::Dynamic, _) | (_, Type::Dynamic) => {
+                        dynamic_operation = true;
+                        self.push_runtime_check(target.span(), RuntimeCheckKind::Arithmetic);
+                        Type::Dynamic
+                    }
+                    (Type::Scalar(left), Type::Scalar(right)) => {
+                        match binary_scalar_type(binary, *left, *right) {
+                            Ok(scalar) => Type::scalar(scalar),
+                            Err(error) => {
+                                operation_valid = false;
+                                self.numeric_error(target.span(), binary, error);
+                                Type::Dynamic
+                            }
+                        }
+                    }
+                    _ => {
                         operation_valid = false;
-                        self.numeric_error(target.span(), binary, error);
+                        self.type_error(
+                            INVALID_OPERANDS_CODE,
+                            "x02.type.invalid_compound_operands",
+                            target.span(),
+                            format!("复合赋值不能作用于 {} 和 {}", left_type, right_type),
+                        );
                         Type::Dynamic
                     }
                 }
             }
-            _ => {
-                operation_valid = false;
-                self.type_error(
-                    INVALID_OPERANDS_CODE,
-                    "x02.type.invalid_compound_operands",
-                    target.span(),
-                    format!("复合赋值不能作用于 {} 和 {}", left_type, right_type),
-                );
-                Type::Dynamic
-            }
+        } else {
+            operation_valid = false;
+            self.type_error(
+                INVALID_OPERANDS_CODE,
+                "x02.type.invalid_compound_operands",
+                target.span(),
+                format!("复合赋值不能作用于 {} 和 {}", left_type, right_type),
+            );
+            Type::Dynamic
         };
         let constant_known = if operation_valid && !dynamic_operation {
             binary.is_some_and(|binary| {
@@ -416,6 +446,11 @@ impl<'source> TypeChecker<'source> {
                     RuntimeCheckKind::NumericRange
                 },
             );
+        }
+        if operation_valid && set_dynamic_boundary && left_type.is_set() {
+            // 集合运算的动态尾标必须在写回锁定左值时再次验证成员类型；
+            // `SetOperation` 只描述运算形状本身。
+            self.push_runtime_check(target.span(), RuntimeCheckKind::SetMembership);
         }
         if operation_valid && !dynamic_operation && !can_assign(&result_type, &left_type) {
             self.type_error(
@@ -797,6 +832,11 @@ impl<'source> TypeChecker<'source> {
         }
         let left_type = self.check_expression(left);
         let right_type = self.check_expression(right);
+        if should_attempt_set_semantics(operator, &left_type, &right_type) {
+            return self
+                .check_set_operation_types(operator, &left_type, &right_type, span)
+                .result;
+        }
         let mut operation_valid = false;
         let result = match (&left_type, &right_type) {
             (Type::Dynamic, _) | (_, Type::Dynamic) => {
@@ -1384,6 +1424,8 @@ fn assignment_binary_operator(operator: AssignmentOperator) -> Option<BinaryOper
     Some(match operator {
         AssignmentOperator::AddAssign => BinaryOperator::Add,
         AssignmentOperator::SubtractAssign => BinaryOperator::Subtract,
+        AssignmentOperator::IntersectAssign => BinaryOperator::Intersect,
+        AssignmentOperator::SymmetricDifferenceAssign => BinaryOperator::SymmetricDifference,
         AssignmentOperator::MultiplyAssign => BinaryOperator::Multiply,
         AssignmentOperator::DivideAssign => BinaryOperator::Divide,
         AssignmentOperator::FloorDivideAssign => BinaryOperator::FloorDivide,
@@ -1569,6 +1611,7 @@ fn eval_const_binary(
             )))
         }
         BinaryOperator::In | BinaryOperator::NotIn => None,
+        BinaryOperator::Intersect | BinaryOperator::SymmetricDifference => None,
     }
 }
 

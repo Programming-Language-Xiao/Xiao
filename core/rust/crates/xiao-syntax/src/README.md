@@ -1,8 +1,9 @@
 # `xiao-syntax/src`
 
-按职责放置 Token、词法器、P0/P1/P2/C0/C2-B AST、Pratt 解析器、诊断编号和选择器类型。对应工程期
-01–04；P1 首批、P2 标量声明语法、C0 容器字面量/声明路径 AST 和 C2-B 集合类型注解 AST 已完成，P2-A 已将实现拆为 `token.rs`、`lexer.rs`、`ast.rs`、
-`parser.rs`、`diagnostics.rs` 与 `selectors.rs`，`lib.rs` 只负责装配和公开重导出。
+按职责放置 Token、词法器、P0/P1/P2/C0/C2 AST、Pratt 解析器、诊断编号和选择器类型。对应工程期
+01–04；P1 首批、P2 标量声明语法、C0 容器字面量/声明路径 AST、C2-B 集合类型注解 AST 和 C2-C 集合运算 AST 已完成，P2-A 已将实现拆为 `token.rs`、`lexer.rs`、`ast.rs`、
+`parser.rs`、`diagnostics.rs` 与 `selectors.rs`，`lib.rs` 只负责装配和公开重导出。C2-C 的 `&`、`^` 及复合赋值
+只在语法层保留结构，集合含义由 `xiao-types` 的独立运算模块决定。
 类型检查放在独立的 `xiao-types` crate。
 
 模块之间不得循环依赖或访问彼此私有状态；解析器只消费 Token，类型层只消费公开 AST
