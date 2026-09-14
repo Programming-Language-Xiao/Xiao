@@ -78,7 +78,7 @@ pub const INVALID_DECLARATION_TARGET_CODE: &str = "X02-PARSE-003";
 /// C0 容器字面量结构非法时使用的稳定诊断编号。
 pub const INVALID_CONTAINER_CODE: &str = "X03-PARSE-001";
 
-/// C0 容器条目缺少值或键值分隔符时使用的稳定诊断编号。
+/// C0/C2-A 容器条目缺少值、键值分隔符或集合元素分隔符时使用的稳定诊断编号。
 pub const INVALID_CONTAINER_ENTRY_CODE: &str = "X03-PARSE-002";
 
 /// C0 当前只允许精确索引时使用的稳定诊断编号。

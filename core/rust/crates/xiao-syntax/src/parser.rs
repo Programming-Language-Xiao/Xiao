@@ -1,7 +1,8 @@
-//! Xiao P0/P1 解析器与可恢复诊断。
+//! Xiao P0/P1/C2-A 解析器与可恢复诊断。
 //!
 //! 解析器消费词法器提供的稳定 Token 流，构造 AST 并尽可能从错误中恢复；它不做
-//! 类型推断、容器边界检查或执行。与词法器分离后，语法策略可以独立演进。
+//! 类型推断、容器边界检查或执行。与词法器分离后，语法策略可以独立演进；
+//! C2-A 仅增加集合/字典花括号消歧和集合字面量结构，不创建运行时集合。
 
 use xiao_diagnostics::Diagnostic;
 use xiao_source::{SourceFile, SourceSpan};
@@ -599,7 +600,7 @@ impl<'source> Parser<'source> {
             }
             TokenKind::LeftParen => self.parse_parenthesized_expression()?,
             TokenKind::LeftBracket => self.parse_array_literal()?,
-            TokenKind::LeftBrace => self.parse_dict_table_literal()?,
+            TokenKind::LeftBrace => self.parse_brace_literal()?,
             TokenKind::Less => self.parse_dict_column_literal()?,
             TokenKind::Keyword(KeywordKind::New) => self.parse_new_expression()?,
             _ => return None,
@@ -793,6 +794,123 @@ impl<'source> Parser<'source> {
             |token| token.span().end(),
         );
         Some(Expression::ArrayLiteral {
+            elements,
+            span: self.source_span(open.span().start(), end),
+        })
+    }
+
+    /// 根据花括号首个逻辑条目区分集合与字典表。
+    ///
+    /// 空花括号保留给字典表；非空花括号在首个条目的后继 Token 为
+    /// `=` 或 `:` 时按字典表入口解析（这样非法键也能得到容器诊断），
+    /// 其余情况按集合值列表解析。换行只是花括号内部的软分隔，不参与
+    /// 这种语法消歧。
+    fn parse_brace_literal(&mut self) -> Option<Expression> {
+        if self.brace_uses_dictionary_entries() {
+            self.parse_dict_table_literal()
+        } else {
+            self.parse_set_literal()
+        }
+    }
+
+    /// 判断当前左花括号是否应进入字典表解析。
+    fn brace_uses_dictionary_entries(&self) -> bool {
+        let mut logical = self
+            .tokens
+            .iter()
+            .skip(self.cursor.saturating_add(1))
+            .filter(|token| token.kind() != TokenKind::Newline);
+        let Some(first) = logical.next().map(|token| token.kind()) else {
+            return false;
+        };
+        if first == TokenKind::RightBrace {
+            return true;
+        }
+        matches!(
+            logical.next().map(|token| token.kind()),
+            Some(TokenKind::Equal | TokenKind::Colon)
+        )
+    }
+
+    /// 解析无序集合字面量。
+    ///
+    /// 元素按源码顺序暂存，仅用于 AST 的源码定位与稳定诊断；集合的
+    /// 无序语义由后续类型/运行时阶段负责，语法层不重排元素。
+    fn parse_set_literal(&mut self) -> Option<Expression> {
+        let open = self.bump();
+        self.soft_newline_depth += 1;
+        self.skip_soft_newlines();
+        let mut elements = Vec::new();
+
+        if !self.at(TokenKind::RightBrace) {
+            loop {
+                let Some(element) = self.parse_expression_bp(0) else {
+                    self.push_error(
+                        MISSING_EXPRESSION_CODE,
+                        "x03.parse.missing_set_element",
+                        self.current().span(),
+                        "集合逗号后缺少表达式".to_string(),
+                    );
+                    self.recover_delimited(TokenKind::RightBrace);
+                    break;
+                };
+                elements.push(element);
+                self.skip_soft_newlines();
+
+                // 值后出现 `=` 表示本花括号在集合值之后混入了字典条目。
+                if self.at(TokenKind::Equal) {
+                    self.push_error(
+                        INVALID_CONTAINER_ENTRY_CODE,
+                        "x03.parse.mixed_brace_entries",
+                        self.current().span(),
+                        "花括号不能混合集合元素和字典键值条目".to_string(),
+                    );
+                    self.recover_delimited(TokenKind::RightBrace);
+                    break;
+                }
+                if self.at(TokenKind::Colon) {
+                    self.push_error(
+                        INVALID_CONTAINER_ENTRY_CODE,
+                        "x03.parse.invalid_set_separator",
+                        self.current().span(),
+                        "集合元素之间必须使用逗号分隔".to_string(),
+                    );
+                    self.recover_delimited(TokenKind::RightBrace);
+                    break;
+                }
+
+                if self.at(TokenKind::Comma) {
+                    self.bump();
+                    self.skip_soft_newlines();
+                    if self.at(TokenKind::RightBrace) {
+                        break;
+                    }
+                    continue;
+                }
+                if !self.at(TokenKind::RightBrace) {
+                    self.push_error(
+                        INVALID_CONTAINER_ENTRY_CODE,
+                        "x03.parse.missing_set_comma",
+                        self.current().span(),
+                        "集合元素之间必须使用逗号分隔".to_string(),
+                    );
+                    self.recover_delimited(TokenKind::RightBrace);
+                }
+                break;
+            }
+        }
+
+        let close = self.expect_delimiter(TokenKind::RightBrace, open.span());
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        let end = close.map_or_else(
+            || {
+                elements
+                    .last()
+                    .map_or(open.span().end(), |element| element.span().end())
+            },
+            |token| token.span().end(),
+        );
+        Some(Expression::SetLiteral {
             elements,
             span: self.source_span(open.span().start(), end),
         })

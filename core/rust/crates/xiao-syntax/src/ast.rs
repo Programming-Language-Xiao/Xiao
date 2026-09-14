@@ -463,7 +463,7 @@ impl Name {
     }
 }
 
-/// P0/P1 的表达式语法树。
+/// P0/P1/C2-A 的表达式语法树。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Expression {
     /// 一个保留原始源码区间的字面量。
@@ -491,6 +491,16 @@ pub enum Expression {
     DictTableLiteral {
         /// 按源码顺序保存条目；语义层不依赖该顺序。
         entries: Vec<DictEntry>,
+        /// 包含花括号的源码区间。
+        span: SourceSpan,
+    },
+    /// 无序集合字面量。
+    ///
+    /// 元素按源码顺序暂存只是为了保持诊断和节点索引稳定；集合的
+    /// 语义层不得把这个顺序当作可观察的迭代顺序。
+    SetLiteral {
+        /// 按源码顺序保存集合元素。
+        elements: Vec<Expression>,
         /// 包含花括号的源码区间。
         span: SourceSpan,
     },
@@ -588,6 +598,7 @@ impl Expression {
             | Self::ArrayLiteral { span, .. }
             | Self::TupleLiteral { span, .. }
             | Self::DictTableLiteral { span, .. }
+            | Self::SetLiteral { span, .. }
             | Self::DictColumnLiteral { span, .. } => *span,
             Self::Name(name) => name.span,
             Self::Group { span, .. }
@@ -763,7 +774,8 @@ impl NodeIndex {
         match expression {
             Expression::Literal { .. } | Expression::Name(_) => {}
             Expression::ArrayLiteral { elements, .. }
-            | Expression::TupleLiteral { elements, .. } => {
+            | Expression::TupleLiteral { elements, .. }
+            | Expression::SetLiteral { elements, .. } => {
                 for element in elements {
                     self.visit_expression(element);
                 }
