@@ -118,6 +118,11 @@ version = "0.1.0"
 [[package]]
 name = "xiao-config"
 version = "0.1.0"
+dependencies = [
+ "xiao-diagnostics",
+ "xiao-source",
+ "xiao-syntax",
+]
 
 [[package]]
 name = "xiao-diagnostics"

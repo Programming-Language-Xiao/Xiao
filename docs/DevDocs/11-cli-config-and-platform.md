@@ -113,7 +113,10 @@ locale = "zh-CN" # 可选 "en-US"；"zh"/"en" 是别名
 - 系统提示、错误说明、日志和调试窗口使用的 `[language]` 语言设置。
 - CLI 的项目级行为，例如是否显示 Git 摘要。
 
-它不保存每个源码文件实际写了哪些 `import`，也不要求用户手写所有传递依赖。下面的 `[Project]`、`[Dependencies]`、`[Exports]` 和 `[Constraints]` 仍是候选分表；`CLI.git.summary` 和 `[language].locale` 的字段语义已经冻结：
+它不保存每个源码文件实际写了哪些 `import`，也不要求用户手写所有传递依赖。05-D 已冻结
+`[project]` 的 `name/version`、`[exports]` 的模块路径映射以及静态值边界；依赖、源、约束、
+构建和优化表的具体字段仍由后续阶段冻结。`CLI.git.summary` 和 `[language].locale` 的
+字段语义已经冻结：
 
 ```xiao
 [Project]

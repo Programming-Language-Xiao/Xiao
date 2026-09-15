@@ -1,8 +1,8 @@
 # 05. 表、模块与工程模型
 
 > 本阶段把单文件脚本提升为可构建工程，并定义 TOML 风格表、源码模块和后续包边界。
-> 当前已完成 05-A、05-B，以及 05-C 的表语法与静态生命周期契约闭环；表的运行时释放、
-> `config.xiao` 配置读取和外部包仍是后续子阶段。
+> 当前已完成 05-A、05-B、05-C，以及 05-D 的配置声明静态闭环；表的运行时释放、
+> 外部依赖求解和环境物化仍是后续阶段。
 
 ## Agent 交接上下文
 
@@ -21,7 +21,7 @@
 | 05-A 导入 AST 与解析 | 已完成 | `xiao-syntax/src/imports.rs`、`src/parser/imports.rs`、`tests/d0_imports.rs` |
 | 05-B 本地发现与解析 | 已完成 | `xiao-modules/src/discovery.rs`、`resolver.rs`、`model.rs`、`tests/d0_modules.rs` |
 | 05-C 表语法与生命周期静态闭环 | 已完成静态阶段 | `xiao-syntax`、`xiao-types`、`xiao-modules`；运行时生命周期留给 06 |
-| 05-D `config.xiao` 与包边界 | 未开始 | `xiao-config` 及第 11A 包管理阶段 |
+| 05-D `config.xiao` 与包边界 | 已完成静态阶段 | `xiao-config`；依赖求解留给第 11A 阶段 |
 
 ### 不负责事项
 
@@ -241,13 +241,21 @@ Runtime/IR 产物。
    `xiao-modules/tests/c05_tables.rs` 验证正反路径；同步 UseDocs、目录 README、模块登记和
    国际化字段。
 
-### 05-D. 后续配置与包接口
+### 05-D. `config.xiao` 声明式配置静态闭环（已完成）
 
-1. 在不修改 05-A/B/C 公共模型的前提下，由 `xiao-config` 解析根 `config.xiao` 和 `[main]`
-   初始化计划。
-2. 再由 `xiao-package` 接入外部包身份、依赖锁定和多源索引。
-3. 任何跨层新增字段先更新 `00-decisions.md`、模块登记和交接文档，禁止在 resolver 中偷偷
+1. `xiao-config` 复用 Xiao 词法器和 `SourceSpan`，但输出独立的
+   `ConfigDocument`/`NormalizedConfig`，不暴露普通 Xiao AST，也不执行项目代码。
+2. 首版冻结 `[project]`（非空 `name`/`version`）、`[exports]`（名称到项目根相对
+   `.xiao` 路径）和可保留的 CLI、语言、调试、依赖、工具链及构建扩展表。
+3. 允许字符串、数值、布尔值、递归数组和字典表；函数、调用、控制流、导入、表达式、
+   重复键/表头、未知顶层表和严格表未知字段在读取阶段诊断。
+4. 源码 `.xiao` 中的 `[main]` 仍由 04/05-C 解析；配置解析不接管入口元数据。
+5. 具体依赖身份、锁文件、包源联邦索引、环境物化和 CLI 安装由 11A 消费本阶段模型；
+   任何新增字段先更新 `00-decisions.md`、模块登记和交接文档，禁止在 resolver 中偷偷
    读取配置或下载依赖。
+
+详细交接与 SOP 见 [05D. `config.xiao` 静态闭环](05d-config-static-closure.md)，
+面向使用者的说明见 [配置文件](../UseDocs/tooling/config/README.md)。
 
 ## 验收标准
 
@@ -264,5 +272,5 @@ Runtime/IR 产物。
 
 ### 后续验收债项
 
-- 表实例的运行时分配/释放、`config.xiao` 白名单、包外导出和外部依赖锁定尚未实现；这些
-  内容不得标记为 Runtime verified，也不能阻塞 05-A/B/C 的静态消费者建设。
+- 表实例的运行时分配/释放、外部依赖锁定和多源解析仍未实现；05-D 只完成配置白名单、
+  静态值和包外导出声明，不得把它误记为包管理或 Runtime 已完成。
