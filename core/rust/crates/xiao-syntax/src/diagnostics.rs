@@ -113,3 +113,15 @@ pub const INVALID_FUNCTION_TYPE_CODE: &str = "X04-PARSE-005";
 
 /// `[main]` 入口头部结构非法时使用的稳定诊断编号。
 pub const INVALID_ENTRY_CODE: &str = "X04-PARSE-006";
+
+/// 绝对模块路径结构非法时使用的稳定诊断编号。
+pub const INVALID_IMPORT_PATH_CODE: &str = "X05-PARSE-001";
+
+/// 导入列表或目标缺失时使用的稳定诊断编号。
+pub const INVALID_IMPORT_TARGET_CODE: &str = "X05-PARSE-002";
+
+/// 导入别名结构非法时使用的稳定诊断编号。
+pub const INVALID_IMPORT_ALIAS_CODE: &str = "X05-PARSE-003";
+
+/// 当前阶段不支持的导入形式使用的稳定诊断编号。
+pub const UNSUPPORTED_IMPORT_FORM_CODE: &str = "X05-PARSE-004";

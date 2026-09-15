@@ -7,6 +7,8 @@
 mod ast;
 /// 词法与解析阶段的稳定诊断编号。
 mod diagnostics;
+/// 05-A 导入路径、别名和选择导入数据结构。
+mod imports;
 /// UTF-8 源码词法扫描器。
 mod lexer;
 /// 可恢复的 P0/P1/P2 语法解析器。
@@ -25,6 +27,8 @@ pub use ast::{
 };
 /// 重新导出词法与解析诊断编号。
 pub use diagnostics::*;
+/// 重新导出导入语句及其路径/别名结构。
+pub use imports::{ImportPath, ImportStatement, ModuleImport, SelectedImport};
 /// 重新导出词法结果和词法器。
 pub use lexer::{LexResult, Lexer};
 /// 重新导出解析结果、解析器和便捷解析函数。

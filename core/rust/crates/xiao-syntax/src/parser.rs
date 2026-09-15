@@ -20,6 +20,10 @@ use crate::lexer::Lexer;
 use crate::selectors::{IndexPath, PathSegment, RandomMode, Selector, SelectorItem};
 use crate::token::{KeywordKind, Token, TokenKind};
 
+/// 05-A 导入语句解析扩展；只通过 `Parser` 的窄接口消费 Token。
+#[path = "parser/imports.rs"]
+mod import_parser;
+
 /// 词法和 P1 语法解析的统一结果。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ParseResult {
@@ -192,6 +196,9 @@ impl<'source> Parser<'source> {
     /// 解析一条 P1 顶层语句，并保留 P0 简单赋值的兼容形状。
     fn parse_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
         match self.current().kind() {
+            TokenKind::Keyword(KeywordKind::Import | KeywordKind::From) => {
+                return self.parse_import_statement(leading_docs);
+            }
             TokenKind::Keyword(KeywordKind::Def) => {
                 return self.parse_function_statement(leading_docs);
             }

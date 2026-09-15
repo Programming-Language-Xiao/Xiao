@@ -1,0 +1,32 @@
+{
+  "stage": "05",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "missing-import-target",
+      "files": {"main.xiao": "import missing\n"},
+      "expect": "error",
+      "diagnostics": ["X05-MODULE-004"]
+    },
+    {
+      "name": "missing-symbol-and-cycle",
+      "files": {
+        "main.xiao": "from base import absent\n",
+        "base.xiao": "value = 1\n",
+        "a.xiao": "import b\n",
+        "b.xiao": "import a\n"
+      },
+      "expect": "error",
+      "diagnostics": ["X05-MODULE-005", "X05-MODULE-007"]
+    },
+    {
+      "name": "missing-qualified-namespace-target",
+      "files": {
+        "main.xiao": "import app\nvalue = app.missing.value\n",
+        "app/available.xiao": "value = 1\n"
+      },
+      "expect": "error",
+      "diagnostics": ["X05-MODULE-004"]
+    }
+  ]
+}

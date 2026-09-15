@@ -327,6 +327,9 @@ impl<'source> TypeChecker<'source> {
                 value,
                 ..
             } => self.check_const_declaration(*target, *declared_type, value),
+            // 05-A/B 的导入解析由 `xiao-modules` 负责；当前类型检查器只保留
+            // 语句位置，不把跨文件名称错误地当成本地动态值。
+            Statement::Import { .. } => {}
             Statement::Function {
                 name,
                 parameters,

@@ -17,6 +17,9 @@
 优先级和四种集合复合赋值位于 `c2c_set_operations.rs`，对应 `tests/spec/05-containers/c2c-*` 快照。
 后续代码块和完整语义会继续沿用此处的集成测试边界。
 
+05-A 的 `d0_imports.rs` 覆盖绝对模块路径、多个导入项、选择导入、别名、反引号符号、
+嵌套代码块、文档注释、节点索引和相对/通配/尾逗号错误；它只验证语法 AST，不访问文件系统。
+
 ## 依赖边界
 
 只调用 `xiao-source`、`xiao-diagnostics` 和 `xiao-syntax` 的公开接口，不启动

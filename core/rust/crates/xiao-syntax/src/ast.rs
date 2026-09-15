@@ -5,6 +5,7 @@
 
 use xiao_source::{SourceFile, SourceSpan};
 
+use crate::imports::ImportStatement;
 use crate::selectors::{IndexPath, Selector, SelectorItem};
 use crate::token::{KeywordKind, TokenKind};
 
@@ -562,6 +563,18 @@ pub enum Statement {
         /// 语句源码区间，不包含结尾换行。
         span: SourceSpan,
     },
+    /// `import` 或 `from ... import ...` 模块导入语句。
+    ///
+    /// 导入路径和别名只保留语法结构；文件发现、名称绑定和依赖图由
+    /// `xiao-modules` 在后续阶段处理。
+    Import {
+        /// 导入语句的具体形式。
+        import: ImportStatement,
+        /// 与导入语句相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 语句源码区间。
+        span: SourceSpan,
+    },
     /// `def name(...) -> type` 函数定义。
     Function {
         /// 函数名称。
@@ -651,6 +664,7 @@ impl Statement {
             | Self::ExtendedAssignment { span, .. }
             | Self::Declaration { span, .. }
             | Self::ConstDeclaration { span, .. }
+            | Self::Import { span, .. }
             | Self::Function { span, .. }
             | Self::If { span, .. }
             | Self::For { span, .. }
@@ -670,6 +684,7 @@ impl Statement {
             | Self::ExtendedAssignment { leading_docs, .. }
             | Self::Declaration { leading_docs, .. }
             | Self::ConstDeclaration { leading_docs, .. }
+            | Self::Import { leading_docs, .. }
             | Self::Function { leading_docs, .. }
             | Self::If { leading_docs, .. }
             | Self::For { leading_docs, .. }
@@ -698,6 +713,7 @@ impl Statement {
                 value: Some(value), ..
             } => value,
             Self::Declaration { value: None, .. }
+            | Self::Import { .. }
             | Self::Function { .. }
             | Self::If { .. }
             | Self::For { .. }
@@ -731,6 +747,7 @@ impl Statement {
                 value: expression, ..
             } => Some(expression),
             Self::Declaration { value: None, .. }
+            | Self::Import { .. }
             | Self::Function { .. }
             | Self::If { .. }
             | Self::For { .. }
@@ -754,6 +771,7 @@ impl Statement {
             Self::ExtendedAssignment { operator, .. } => Some(*operator),
             Self::Declaration { .. }
             | Self::ConstDeclaration { .. }
+            | Self::Import { .. }
             | Self::Function { .. }
             | Self::If { .. }
             | Self::For { .. }
@@ -1166,6 +1184,7 @@ impl NodeIndex {
                 ..
             } => self.visit_expression(expression),
             Statement::Declaration { value: None, .. } => {}
+            Statement::Import { .. } => {}
             Statement::ExtendedAssignment { target, value, .. } => {
                 self.visit_expression(target);
                 self.visit_expression(value);
