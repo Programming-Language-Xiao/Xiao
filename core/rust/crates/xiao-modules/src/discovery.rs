@@ -352,6 +352,7 @@ fn collect_local_symbols(program: &Program, source: &SourceFile) -> BTreeMap<Str
                 (target, ModuleSymbolKind::Value, target.span)
             }
             Statement::Function { name, .. } => (name, ModuleSymbolKind::Function, name.span),
+            Statement::Table { name, .. } => (name, ModuleSymbolKind::Table, name.span),
             _ => continue,
         };
         let key = name.unquoted_text(source).to_owned();

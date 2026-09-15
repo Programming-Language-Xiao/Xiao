@@ -161,6 +161,9 @@ impl AnalysisState {
                 Statement::Function { body, .. } => {
                     self.collect_statements(module, body, false);
                 }
+                Statement::Table { body, .. } => {
+                    self.collect_statements(module, body, false);
+                }
                 Statement::If {
                     body,
                     elif_branches,
@@ -671,18 +674,21 @@ impl<'a> BindingResolver<'a> {
     /// 预登记当前块的函数名，使其与 04 阶段的函数检查顺序一致。
     fn predeclare_functions(&mut self, statements: &[Statement]) {
         for statement in statements {
-            let Statement::Function { name, span, .. } = statement else {
-                continue;
+            let (name, span) = match statement {
+                Statement::Function { name, span, .. } | Statement::Table { name, span, .. } => {
+                    (*name, *span)
+                }
+                _ => continue,
             };
-            let key = self.name_text(*name);
+            let key = self.name_text(name);
             if self.current_scope().contains_key(&key) {
-                self.binding_conflict(*span, &key);
+                self.binding_conflict(span, &key);
             } else {
                 self.current_scope_mut().insert(
                     key,
                     ScopeBinding {
                         kind: BindingKind::Local,
-                        span: *span,
+                        span,
                     },
                 );
             }
@@ -725,6 +731,45 @@ impl<'a> BindingResolver<'a> {
                     self.declare_local_name(parameter.name, parameter.span);
                 }
                 self.check_statements(body);
+                self.pop_scope();
+            }
+            Statement::Table { body, .. } => {
+                self.push_scope();
+                self.predeclare_functions(body);
+                for member in body {
+                    match member {
+                        Statement::Assignment { target, value, .. } => {
+                            self.check_expression(value);
+                            self.declare_local(*target, target.span);
+                        }
+                        Statement::Declaration { target, value, .. } => {
+                            if let Some(value) = value {
+                                self.check_expression(value);
+                            }
+                            self.declare_local(*target, target.span);
+                        }
+                        Statement::ConstDeclaration { target, value, .. } => {
+                            self.check_expression(value);
+                            self.declare_local(*target, target.span);
+                        }
+                        Statement::Function {
+                            parameters, body, ..
+                        } => {
+                            for parameter in parameters {
+                                if let Some(default) = &parameter.default {
+                                    self.check_expression(default);
+                                }
+                            }
+                            self.push_scope();
+                            for parameter in parameters {
+                                self.declare_local_name(parameter.name, parameter.span);
+                            }
+                            self.check_statements(body);
+                            self.pop_scope();
+                        }
+                        other => self.check_statement(other),
+                    }
+                }
                 self.pop_scope();
             }
             Statement::If {

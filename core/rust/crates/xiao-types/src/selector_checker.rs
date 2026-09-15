@@ -957,7 +957,7 @@ impl<'source> TypeChecker<'source> {
                     self.set_index_error(diagnostic_span);
                     return None;
                 }
-                Type::Scalar(_) | Type::None | Type::Function { .. } => {
+                Type::Table(_) | Type::Scalar(_) | Type::None | Type::Function { .. } => {
                     self.path_kind_error(part, segment, diagnostic_span);
                     return None;
                 }
@@ -1314,7 +1314,8 @@ fn canonical_order_key(source: &Type, path: &SelectionPath) -> Option<Vec<usize>
             | Type::DictTable(_)
             | Type::Scalar(_)
             | Type::None
-            | Type::Function { .. } => return None,
+            | Type::Function { .. }
+            | Type::Table(_) => return None,
         }
     }
     Some(order)

@@ -23,7 +23,7 @@ pub use ast::{
     AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, DeclaredType, DictEntry,
     DictKey, ElifBranch, EntryMode, Expression, FunctionParameter, FunctionParameterKind,
     FunctionTypeAnnotation, LiteralKind, Name, NodeId, NodeIndex, Program, ScalarType,
-    SetTypeAnnotation, Statement, TypeTerm, UnaryOperator,
+    SetTypeAnnotation, Statement, TableKind, TypeTerm, UnaryOperator,
 };
 /// 重新导出词法与解析诊断编号。
 pub use diagnostics::*;

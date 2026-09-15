@@ -316,7 +316,17 @@ F1 的完整输入、交付物、不负责事项和 Agent 交接清单见 [04. �
 4. `d0_modules.rs`、`tests/spec/06-modules`、分层 UseDocs、目录 README 和模块登记已同步；
    交接见 `05b-local-module-resolution.md`。
 
-#### D0-C：配置与包边界（未开始）
+#### D0-C：表语法与静态生命周期契约（已完成静态阶段）
+
+1. `[Table]`/`[[Table]]`、表体成员白名单、文档注释、缩进恢复和节点索引通过语法正反测试。
+2. `TableType`/`TableSignature`、字段纯初始化、成员可见性、`new` 参数和 `init`/`drop` 签名
+   通过类型层正反测试；结果只描述静态契约，不执行生命周期。
+3. 表作为模块顶层符号、方法体递归作用域和公开导出通过模块集成测试；`xiao-modules` 不依赖
+   `xiao-types`，不读取配置或创建 Runtime 值。
+4. 三个 crate 的 `c05_tables.rs`、分层 UseDocs、目录 README、DevDocs 和模块登记已同步；
+   交接见 `05c-table-static-closure.md`。
+
+#### D0-D：配置与包边界（未开始）
 
 1. 全小写 `config.xiao` 通过不可执行声明式子集解析，声明最小项目身份和包外导出。
 2. 配置中的函数、控制流、导入及其他可执行构造在读取阶段被拒绝。
@@ -327,7 +337,8 @@ F1 的完整输入、交付物、不负责事项和 Agent 交接清单见 [04. �
 退出条件：
 
 1. 逃逸分析、引用计数和 `Weak` 分别通过生命周期测试。
-2. `[Table]`、`[[Table]]`、`new`、`init`、`drop` 行为明确。
+2. 消费 D0-C 的表签名后，实现 `[Table]`、`[[Table]]`、`new`、`init`、`drop` 的运行时行为，
+   并验证与静态契约一致。
 3. 没有追踪式 GC 或隐式全堆扫描。
 
 ### H0：错误模型与并发边界

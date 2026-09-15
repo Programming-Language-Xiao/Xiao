@@ -11,6 +11,7 @@ use xiao_syntax::ScalarType;
 
 use crate::containers::{ArrayType, DictType};
 use crate::set_types::SetType;
+use crate::tables::TableType;
 
 /// HM 类型变量的稳定编号。
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -56,6 +57,8 @@ pub enum Type {
     DictColumn(DictType),
     /// 无序集合类型；元素类型由 [`SetType`] 描述。
     Set(SetType),
+    /// 表声明、构造目标或已构造实例的静态身份。
+    Table(TableType),
     /// 动态值边界或错误恢复类型。
     Dynamic,
 }
@@ -137,6 +140,12 @@ impl Type {
         matches!(self, Self::Set(_))
     }
 
+    /// 判断是否为表值类型。
+    #[must_use]
+    pub const fn is_table(&self) -> bool {
+        matches!(self, Self::Table(_))
+    }
+
     /// 判断是否为布尔类型。
     #[must_use]
     pub const fn is_bool(&self) -> bool {
@@ -206,6 +215,7 @@ impl Type {
                     element.collect_free_vars(output);
                 }
             }
+            Self::Table(_) => {}
             Self::Scalar(_) | Self::None | Self::Dynamic => {}
         }
     }
@@ -253,6 +263,7 @@ impl Display for Type {
             Self::DictTable(dictionary) => write_dictionary(formatter, dictionary, false),
             Self::DictColumn(dictionary) => write_dictionary(formatter, dictionary, true),
             Self::Set(set) => set.fmt(formatter),
+            Self::Table(table) => table.fmt(formatter),
             Self::Dynamic => formatter.write_str("dynamic"),
         }
     }

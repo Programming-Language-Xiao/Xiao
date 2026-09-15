@@ -83,3 +83,16 @@ pub const ITERABLE_TYPE_CODE: &str = "X04-TYPE-006";
 pub const LOOP_CONTROL_CODE: &str = "X04-TYPE-007";
 /// 程序入口声明与静态规则冲突。
 pub const ENTRY_RULE_CODE: &str = "X04-TYPE-008";
+
+/// 表声明名称重复或表签名无法登记。
+pub const TABLE_DECLARATION_CODE: &str = "X05-TYPE-001";
+/// 表成员重复、缺失或成员访问形状不合法。
+pub const TABLE_MEMBER_CODE: &str = "X05-TYPE-002";
+/// 表成员在当前访问位置不可见。
+pub const TABLE_VISIBILITY_CODE: &str = "X05-TYPE-003";
+/// `new` 目标不是可实例化表，或构造参数不匹配。
+pub const TABLE_CONSTRUCTOR_CODE: &str = "X05-TYPE-004";
+/// `init`/`drop` 生命周期方法签名不满足静态契约。
+pub const TABLE_LIFECYCLE_CODE: &str = "X05-TYPE-005";
+/// 表字段初始化器不是允许的静态纯表达式。
+pub const TABLE_INITIALIZER_CODE: &str = "X05-TYPE-006";

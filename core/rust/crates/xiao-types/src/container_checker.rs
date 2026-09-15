@@ -623,6 +623,7 @@ fn direct_children(
         | Type::Function { .. }
         | Type::Scalar(_)
         | Type::Set(_)
+        | Type::Table(_)
         | Type::None => {}
     }
     children

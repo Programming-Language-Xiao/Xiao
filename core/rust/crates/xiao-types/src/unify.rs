@@ -138,7 +138,7 @@ impl Substitution {
                 Type::DictColumn(apply_dictionary(dictionary, self, seen))
             }
             Type::Set(set) => Type::Set(apply_set(set, self, seen)),
-            Type::Scalar(_) | Type::None | Type::Dynamic => ty.clone(),
+            Type::Table(_) | Type::Scalar(_) | Type::None | Type::Dynamic => ty.clone(),
         }
     }
 
@@ -208,6 +208,9 @@ impl Substitution {
                 unify_dictionaries(self, left, right, true).map(Type::DictColumn)
             }
             (Type::Set(left), Type::Set(right)) => unify_sets(self, left, right),
+            (Type::Table(left), Type::Table(right)) if left == right => {
+                Ok(Type::Table(left.clone()))
+            }
             _ => Err(UnifyError::Mismatch { left, right }),
         }
     }
@@ -342,7 +345,7 @@ fn substitute_quantified(ty: &Type, replacements: &BTreeMap<TypeVarId, Type>) ->
             Type::DictColumn(substitute_dictionary(dictionary, replacements))
         }
         Type::Set(set) => Type::Set(substitute_set(set, replacements)),
-        Type::Scalar(_) | Type::None | Type::Dynamic => ty.clone(),
+        Type::Table(_) | Type::Scalar(_) | Type::None | Type::Dynamic => ty.clone(),
     }
 }
 

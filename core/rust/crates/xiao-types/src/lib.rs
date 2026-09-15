@@ -29,6 +29,8 @@ mod selection_random;
 mod selection_shape;
 /// C2-A 集合元素类型与可哈希能力。
 mod set_types;
+/// 05-C 表类型、成员签名和生命周期静态契约。
+mod tables;
 /// 类型与 HM 类型方案表示。
 mod types;
 /// 统一、occurs-check、泛化和实例化算法。
@@ -78,6 +80,10 @@ pub use selection_shape::{
 };
 /// 重新导出集合类型和可哈希判定。
 pub use set_types::{Hashability, SetType, can_assign_set, hashability};
+/// 重新导出表值类型、成员签名和可见性模型。
+pub use tables::{
+    TableMemberKind, TableMemberSignature, TableSignature, TableType, TableValueKind, Visibility,
+};
 /// 重新导出类型表示和方案别名。
 pub use types::{Scheme, Type, TypeScheme, TypeVarId};
 /// 重新导出 HM 统一上下文和替换结构。

@@ -131,6 +131,8 @@ pub enum ModuleSymbolKind {
     Value,
     /// 顶层函数。
     Function,
+    /// 顶层 `[Table]` 或 `[[Table]]` 表。
+    Table,
     /// 可用于限定访问的文件模块。
     Module,
     /// 可用于限定访问的目录命名空间。

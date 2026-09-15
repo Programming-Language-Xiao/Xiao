@@ -454,7 +454,7 @@ impl<'source> TypeChecker<'source> {
     }
 
     /// 统一两个类型并把失败映射为函数阶段诊断。
-    fn unify_or_report(
+    pub(super) fn unify_or_report(
         &mut self,
         expected: &Type,
         actual: &Type,
@@ -524,7 +524,7 @@ fn contains_unresolved_variable(ty: &Type) -> bool {
             .iter()
             .any(|entry| contains_unresolved_variable(&entry.value)),
         Type::Set(set) => set.member_types().any(contains_unresolved_variable),
-        Type::Scalar(_) | Type::None | Type::Dynamic => false,
+        Type::Table(_) | Type::Scalar(_) | Type::None | Type::Dynamic => false,
     }
 }
 

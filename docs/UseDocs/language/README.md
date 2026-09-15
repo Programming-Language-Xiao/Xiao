@@ -10,7 +10,8 @@
 4. [函数](functions/README.md)
 5. [控制流](control-flow/README.md)
 6. [程序入口](entry/README.md)
-7. [模块与工程](modules/README.md)
+7. [表与生命周期](tables/README.md)
+8. [模块与工程](modules/README.md)
 
 ## 相关主题
 

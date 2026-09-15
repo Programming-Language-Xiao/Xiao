@@ -1,7 +1,7 @@
 # 05. 表、模块与工程模型
 
 > 本阶段把单文件脚本提升为可构建工程，并定义 TOML 风格表、源码模块和后续包边界。
-> 当前已完成 05-A（绝对导入语法）与 05-B（本地模块发现/解析）的静态闭环；表生命周期、
+> 当前已完成 05-A、05-B，以及 05-C 的表语法与静态生命周期契约闭环；表的运行时释放、
 > `config.xiao` 配置读取和外部包仍是后续子阶段。
 
 ## Agent 交接上下文
@@ -20,7 +20,7 @@
 | --- | --- | --- |
 | 05-A 导入 AST 与解析 | 已完成 | `xiao-syntax/src/imports.rs`、`src/parser/imports.rs`、`tests/d0_imports.rs` |
 | 05-B 本地发现与解析 | 已完成 | `xiao-modules/src/discovery.rs`、`resolver.rs`、`model.rs`、`tests/d0_modules.rs` |
-| 05-C 表语法与生命周期 | 未开始 | 后续新增，不得提前塞入 05-B |
+| 05-C 表语法与生命周期静态闭环 | 已完成静态阶段 | `xiao-syntax`、`xiao-types`、`xiao-modules`；运行时生命周期留给 06 |
 | 05-D `config.xiao` 与包边界 | 未开始 | `xiao-config` 及第 11A 包管理阶段 |
 
 ### 不负责事项
@@ -39,11 +39,11 @@ Runtime 只在执行到导入语句时初始化目标且每个具体模块至多
 
 ```xiao
 [App]
-name = "Xiao"
-version = 1
+    name = "Xiao"
+    version = 1
 
-def start()
-    print(name)
+    def start()
+        print(name)
 ```
 
 ### 可实例化表 `[[TableName]]`
@@ -52,23 +52,67 @@ def start()
 
 ```xiao
 [[User]]
-name = ""
+    name = ""
 
-def init(self, name)
-    self.name = name
+    def init(self, name)
+        self.name = name
 
-def drop(self)
-    close(self.name)
+    def drop(self)
+        close(self.name)
 ```
 
 字段布局、方法接收者、构造参数映射和可见性在 05-C 冻结。花括号集合/字典表仍是运行时
 值，不会仅凭外观生成源码表或类。
 
-### 生命周期与入口（后续）
+### 生命周期与入口（分层交付）
 
-`init(self)` 在实例构造成功后运行，`drop(self)` 遵守第 06 阶段的确定性释放规则。脚本
-模式和 `[main]` 工程模式沿用 04 阶段入口元数据；构造失败、清理失败和多个入口的精确
-传播规则尚未实现，不能由本阶段代码猜测。
+05-C 只验证 `init(self, ...)`、`drop(self)` 的静态签名和 `new` 的参数契约：表方法的首个
+参数必须是普通名称 `self`，`drop` 只能接收 `self`，两个生命周期方法的返回类型必须为
+`none`。类型检查器不会执行任何方法，也不会创建实例、插入释放点或开启引用计数。
+实例分配、构造调用、作用域退出、错误展开时的清理和逃逸分析统一留给 06/R0；脚本模式和
+`[main]` 工程模式继续沿用 04 阶段入口元数据。构造失败、清理失败和多个入口的精确传播
+规则尚未实现，不能由本阶段代码猜测。
+
+## 一级工程目标：05-C 表语法与静态生命周期闭环
+
+### 表头、成员和可见性
+
+`[Table]` 是单例表，`[[Table]]` 是可实例化表。表头必须位于文件顶层并顶格；成员体缩进
+一级，方法体继续缩进。表体只允许字段赋值、字段声明、`const` 字段和 `def` 方法。字段与
+方法统一进入 `TableSignature.members`；成员名以下划线开头时默认 `Private`，其他成员默认
+`Public`。表不能作为数组/集合索引对象，本阶段也不把表作为集合的可哈希元素。
+
+### 静态类型与访问
+
+表名在类型环境中绑定为 `Type::Table`：单例表是 `Singleton`，可实例化表声明在 `new`
+之前是 `Constructor`，`new` 的结果是 `Instance`。字段类型来自显式声明或初始化表达式；
+字段初始化器必须是字面量、常量、纯一元/二元表达式或纯容器，`input`、`print`、普通函数
+调用、`new`、动态成员链和选择器都会产生 `X05-TYPE-006`。`self.field`、`Table.field`
+和实例字段访问复用同一成员解析；表外访问私有成员产生 `X05-TYPE-003`。
+
+### 构造和生命周期契约
+
+只有 `[[Table]]` 可以作为 `new` 目标；没有 `init` 时只能无参构造。存在 `init` 时，构造
+参数按位置/关键字与 `init` 去掉隐式 `self` 后的参数匹配，数量或类型错误使用
+`X05-TYPE-004`。`drop` 的参数和返回类型不满足契约时使用 `X05-TYPE-005`。本阶段只输出
+签名和类型结果，不执行构造或析构。
+
+### 稳定诊断
+
+| 编号 | `message_id` 示例 | 触发条件 |
+| --- | --- | --- |
+| `X05-PARSE-005` | `x05.parse.invalid_table_name` | 表头名称、尾部或顶层位置非法 |
+| `X05-PARSE-006` | `x05.parse.invalid_table_member` | 表体出现不在白名单内的语句 |
+| `X05-PARSE-007` | `x05.parse.missing_table_indent` | 缺少表体、缩进或成员 |
+| `X05-TYPE-001` | `x05.type.duplicate_table` | 表名重复或与当前作用域名称冲突 |
+| `X05-TYPE-002` | `x05.type.unknown_table_member` | 成员不存在、重复或字段类型冲突 |
+| `X05-TYPE-003` | `x05.type.private_table_member` | 表外访问下划线私有成员 |
+| `X05-TYPE-004` | `x05.type.constructor_argument` | `new` 目标/参数不符合构造契约 |
+| `X05-TYPE-005` | `x05.type.method_requires_self` | `init`/`drop` 或普通方法的首参契约错误 |
+| `X05-TYPE-006` | `x05.type.dynamic_table_initializer` | 字段初始化器含动态或有副作用表达式 |
+
+完整的交接上下文、SOP 和未负责事项见 [05C. 表静态闭环交接记录](05c-table-static-closure.md)。
+面向使用者的分层页面见 [表与生命周期](../UseDocs/language/tables/README.md)。
 
 ## 一级工程目标：05-A 绝对导入语法
 
@@ -185,25 +229,40 @@ Runtime/IR 产物。
 4. 通过 `d0_modules.rs` 覆盖发现、冲突、绑定、再导出、限定访问和循环；同步本目录 README、
    05B 交接文档、UseDocs 和模块登记。
 
-### 05-C/05-D. 后续接口
+### 05-C. 表静态闭环（已完成静态阶段）
 
-1. 在不修改 05-A/B 公共模型的前提下增加表布局、生命周期和 `[main]` 初始化计划。
-2. 由 `xiao-config` 解析 `config.xiao`，再由 `xiao-package` 接入外部包身份和锁定图。
+1. 在 `xiao-syntax` 中增加 `TableKind` 和 `Statement::Table`，解析顶层 `[Name]`/`[[Name]]`、
+   表体白名单、缩进恢复、文档注释和节点索引；解析器不执行表语义。
+2. 在 `xiao-types` 独立的 `table_checker.rs` 中预登记表/成员签名，检查字段纯初始化、
+   成员可见性、`new` 参数和 `init`/`drop` 契约；结果通过 `TableSignature` 暴露给后续前端。
+3. 在 `xiao-modules` 中把表加入本地导出符号，并递归检查方法体词法作用域；模块层不依赖
+   `xiao-types`，不执行构造和生命周期。
+4. 通过 `xiao-syntax/tests/c05_tables.rs`、`xiao-types/tests/c05_tables.rs` 和
+   `xiao-modules/tests/c05_tables.rs` 验证正反路径；同步 UseDocs、目录 README、模块登记和
+   国际化字段。
+
+### 05-D. 后续配置与包接口
+
+1. 在不修改 05-A/B/C 公共模型的前提下，由 `xiao-config` 解析根 `config.xiao` 和 `[main]`
+   初始化计划。
+2. 再由 `xiao-package` 接入外部包身份、依赖锁定和多源索引。
 3. 任何跨层新增字段先更新 `00-decisions.md`、模块登记和交接文档，禁止在 resolver 中偷偷
    读取配置或下载依赖。
 
 ## 验收标准
 
-### 05-A/B 当前验收
+### 05-A/B/C 当前验收
 
 - 绝对导入 AST、错误恢复、源码区间、文档注释和节点顺序通过语法测试。
 - 不创建 `__init__.py` 即可发现目录命名空间，根/嵌套配置和点目录规则稳定。
 - 导入目标、块作用域绑定、顶层再导出和限定访问结果可确定复现。
 - 缺失、冲突、循环和限定符错误具有稳定 `code`、`message_id`、参数和源码/模块上下文。
 - 循环图不暴露部分初始化序列；分析错误不会触发 Runtime 或外部副作用。
+- 表头、成员白名单、字段静态类型、私有成员、构造参数和 `init`/`drop` 签名通过 05-C
+  三个 crate 的规格测试；类型结果不执行生命周期。
 - Rust/TypeScript 模块职责保持低耦合，所有新增代码目录含 README，UseDocs 与测试同一提交。
 
 ### 后续验收债项
 
-- 表实例、字段可见性、`init`/`drop`、`config.xiao` 白名单、包外导出和外部依赖锁定尚未
-  实现；这些内容不得标记为 verified，也不能阻塞 05-A/B 的静态消费者建设。
+- 表实例的运行时分配/释放、`config.xiao` 白名单、包外导出和外部依赖锁定尚未实现；这些
+  内容不得标记为 Runtime verified，也不能阻塞 05-A/B/C 的静态消费者建设。

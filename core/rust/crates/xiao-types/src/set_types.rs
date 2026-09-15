@@ -320,7 +320,8 @@ pub fn hashability(ty: &Type) -> Hashability {
         | Type::DictTable(_)
         | Type::DictColumn(_)
         | Type::Set(_)
-        | Type::Function { .. } => Hashability::Unhashable,
+        | Type::Function { .. }
+        | Type::Table(_) => Hashability::Unhashable,
     }
 }
 

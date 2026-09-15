@@ -52,6 +52,45 @@ pub enum EntryMode {
     },
 }
 
+/// 表声明的两种静态形态。
+///
+/// 单例表 (`[Name]`) 提供一个稳定的命名空间；可实例化表
+/// (`[[Name]]`) 提供 `new` 的构造目标。表值的运行时存储和生命周期
+/// 不属于语法层。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum TableKind {
+    /// `[Name]` 单例表。
+    Singleton,
+    /// `[[Name]]` 可实例化表。
+    Instance,
+}
+
+impl TableKind {
+    /// 返回表头使用的左侧括号数量。
+    #[must_use]
+    pub const fn opening_bracket_count(self) -> usize {
+        match self {
+            Self::Singleton => 1,
+            Self::Instance => 2,
+        }
+    }
+
+    /// 判断该表是否可作为 `new` 的构造目标。
+    #[must_use]
+    pub const fn is_instantiable(self) -> bool {
+        matches!(self, Self::Instance)
+    }
+
+    /// 返回稳定的 Xiao 表头拼写。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Singleton => "[Table]",
+            Self::Instance => "[[Table]]",
+        }
+    }
+}
+
 impl EntryMode {
     /// 判断是否为脚本入口模式。
     #[must_use]
@@ -575,6 +614,23 @@ pub enum Statement {
         /// 语句源码区间。
         span: SourceSpan,
     },
+    /// `[Table]` 或 `[[Table]]` 表声明。
+    ///
+    /// `body` 按源码顺序保存字段和方法语句。语法层保留普通语句形状，
+    /// 表成员白名单、字段类型和生命周期签名由类型层检查；这样解析器
+    /// 可以在错误输入上继续恢复，而不会把语义规则耦合进 Token 消费。
+    Table {
+        /// 表名称；表头名称在解析阶段限定为 ASCII 标识符。
+        name: Name,
+        /// 表的单例/可实例化形态。
+        kind: TableKind,
+        /// 表体成员，按源码顺序排列。
+        body: Vec<Statement>,
+        /// 与表头相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 覆盖表头和表体的源码区间。
+        span: SourceSpan,
+    },
     /// `def name(...) -> type` 函数定义。
     Function {
         /// 函数名称。
@@ -665,6 +721,7 @@ impl Statement {
             | Self::Declaration { span, .. }
             | Self::ConstDeclaration { span, .. }
             | Self::Import { span, .. }
+            | Self::Table { span, .. }
             | Self::Function { span, .. }
             | Self::If { span, .. }
             | Self::For { span, .. }
@@ -685,6 +742,7 @@ impl Statement {
             | Self::Declaration { leading_docs, .. }
             | Self::ConstDeclaration { leading_docs, .. }
             | Self::Import { leading_docs, .. }
+            | Self::Table { leading_docs, .. }
             | Self::Function { leading_docs, .. }
             | Self::If { leading_docs, .. }
             | Self::For { leading_docs, .. }
@@ -714,6 +772,7 @@ impl Statement {
             } => value,
             Self::Declaration { value: None, .. }
             | Self::Import { .. }
+            | Self::Table { .. }
             | Self::Function { .. }
             | Self::If { .. }
             | Self::For { .. }
@@ -748,6 +807,7 @@ impl Statement {
             } => Some(expression),
             Self::Declaration { value: None, .. }
             | Self::Import { .. }
+            | Self::Table { .. }
             | Self::Function { .. }
             | Self::If { .. }
             | Self::For { .. }
@@ -772,6 +832,7 @@ impl Statement {
             Self::Declaration { .. }
             | Self::ConstDeclaration { .. }
             | Self::Import { .. }
+            | Self::Table { .. }
             | Self::Function { .. }
             | Self::If { .. }
             | Self::For { .. }
@@ -836,6 +897,33 @@ impl Statement {
             Self::Declaration {
                 constraint_path, ..
             } => constraint_path.as_ref(),
+            _ => None,
+        }
+    }
+
+    /// 返回表声明名称；非表语句返回 `None`。
+    #[must_use]
+    pub const fn table_name(&self) -> Option<Name> {
+        match self {
+            Self::Table { name, .. } => Some(*name),
+            _ => None,
+        }
+    }
+
+    /// 返回表声明形态；非表语句返回 `None`。
+    #[must_use]
+    pub const fn table_kind(&self) -> Option<TableKind> {
+        match self {
+            Self::Table { kind, .. } => Some(*kind),
+            _ => None,
+        }
+    }
+
+    /// 返回表体成员；非表语句返回 `None`。
+    #[must_use]
+    pub fn table_body(&self) -> Option<&[Statement]> {
+        match self {
+            Self::Table { body, .. } => Some(body),
             _ => None,
         }
     }
@@ -1185,6 +1273,11 @@ impl NodeIndex {
             } => self.visit_expression(expression),
             Statement::Declaration { value: None, .. } => {}
             Statement::Import { .. } => {}
+            Statement::Table { body, .. } => {
+                for statement in body {
+                    self.visit_statement(statement);
+                }
+            }
             Statement::ExtendedAssignment { target, value, .. } => {
                 self.visit_expression(target);
                 self.visit_expression(value);

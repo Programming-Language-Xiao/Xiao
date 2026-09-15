@@ -45,8 +45,12 @@ mod set_checker;
 /// C2-C 集合代数、比较和动态检查计划。
 #[path = "set_operations.rs"]
 mod set_operations;
+/// 05-C 表声明、成员访问和生命周期静态契约。
+#[path = "table_checker.rs"]
+mod table_checker;
 
 use self::set_operations::should_attempt_set_semantics;
+use self::table_checker::TableFrame;
 
 /// 后端需要保留的运行时检查种类。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -122,6 +126,8 @@ pub struct TypeCheckResult {
     pub entry_mode: EntryMode,
     /// 已登记并完成推断的函数签名。
     pub function_signatures: BTreeMap<String, FunctionSignature>,
+    /// 已登记并完成检查的表签名。
+    pub table_signatures: BTreeMap<String, crate::tables::TableSignature>,
 }
 
 impl TypeCheckResult {
@@ -209,6 +215,12 @@ impl TypeCheckResult {
     pub fn function_signatures(&self) -> &BTreeMap<String, FunctionSignature> {
         &self.function_signatures
     }
+
+    /// 返回表签名表的只读视图。
+    #[must_use]
+    pub fn table_signatures(&self) -> &BTreeMap<String, crate::tables::TableSignature> {
+        &self.table_signatures
+    }
 }
 
 /// P2 静态检查器；生命周期只借用不可变源码。
@@ -225,6 +237,8 @@ pub struct TypeChecker<'source> {
     random_seed_plans: Vec<crate::selection_model::RandomSeedPlan>,
     constant_values: BTreeMap<String, ConstantValue>,
     function_signatures: BTreeMap<String, FunctionSignature>,
+    table_signatures: BTreeMap<String, crate::tables::TableSignature>,
+    current_table: Option<TableFrame>,
     current_function: Option<FunctionFrame>,
     loop_depth: usize,
 }
@@ -255,6 +269,8 @@ impl<'source> TypeChecker<'source> {
             random_seed_plans: Vec::new(),
             constant_values: BTreeMap::new(),
             function_signatures: BTreeMap::new(),
+            table_signatures: BTreeMap::new(),
+            current_table: None,
             current_function: None,
             loop_depth: 0,
         }
@@ -270,6 +286,7 @@ impl<'source> TypeChecker<'source> {
     #[must_use]
     pub fn check_program(mut self, program: &Program) -> TypeCheckResult {
         self.register_top_level_functions(&program.statements);
+        self.register_top_level_tables(&program.statements);
         for statement in &program.statements {
             self.check_statement(statement);
         }
@@ -285,6 +302,7 @@ impl<'source> TypeChecker<'source> {
             random_seed_plans: self.random_seed_plans,
             entry_mode: program.entry_mode,
             function_signatures: self.function_signatures,
+            table_signatures: self.table_signatures,
         }
     }
 
@@ -338,6 +356,13 @@ impl<'source> TypeChecker<'source> {
                 span,
                 ..
             } => self.check_function_statement(*name, parameters, *return_type, body, *span),
+            Statement::Table {
+                name,
+                kind,
+                body,
+                span,
+                ..
+            } => self.check_table_statement(*name, *kind, body, *span),
             Statement::If {
                 condition,
                 body,
@@ -769,16 +794,7 @@ impl<'source> TypeChecker<'source> {
                 object,
                 member,
                 span,
-            } => {
-                self.check_expression(object);
-                self.type_error(
-                    INVALID_OPERANDS_CODE,
-                    "x02.type.member_not_scalar",
-                    *span,
-                    format!("标量值没有成员 {}", self.display_name(*member)),
-                );
-                Type::Dynamic
-            }
+            } => self.check_table_member_expression(object, *member, *span),
             Expression::Cast {
                 expression,
                 target,
@@ -1294,17 +1310,7 @@ impl<'source> TypeChecker<'source> {
         arguments: &[CallArgument],
         span: SourceSpan,
     ) -> Type {
-        self.check_expression(callee);
-        for argument in arguments {
-            self.check_expression(&argument.value);
-        }
-        self.type_error(
-            INVALID_OPERANDS_CODE,
-            "x02.type.new_requires_table",
-            span,
-            "P2 尚未开放表实例构造".to_string(),
-        );
-        Type::Dynamic
+        self.check_table_new_call(callee, arguments, span)
     }
 
     /// 检查 `as` 显式转换并记录必要的运行时检查。

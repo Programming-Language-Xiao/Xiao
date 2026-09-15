@@ -125,3 +125,12 @@ pub const INVALID_IMPORT_ALIAS_CODE: &str = "X05-PARSE-003";
 
 /// 当前阶段不支持的导入形式使用的稳定诊断编号。
 pub const UNSUPPORTED_IMPORT_FORM_CODE: &str = "X05-PARSE-004";
+
+/// 表头结构非法时使用的稳定诊断编号。
+pub const INVALID_TABLE_HEADER_CODE: &str = "X05-PARSE-005";
+
+/// 表体出现不允许的成员语句时使用的稳定诊断编号。
+pub const INVALID_TABLE_MEMBER_CODE: &str = "X05-PARSE-006";
+
+/// 表声明缺少有效缩进体时使用的稳定诊断编号。
+pub const MISSING_TABLE_BODY_CODE: &str = "X05-PARSE-007";

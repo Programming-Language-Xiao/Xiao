@@ -13,7 +13,7 @@ use crate::ast::{
     AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, DeclaredType, DictEntry,
     DictKey, ElifBranch, EntryMode, Expression, FunctionParameter, FunctionParameterKind,
     FunctionTypeAnnotation, LiteralKind, Name, Program, ScalarType, SetTypeAnnotation, Statement,
-    TypeTerm, UnaryOperator,
+    TableKind, TypeTerm, UnaryOperator,
 };
 use crate::diagnostics::*;
 use crate::lexer::Lexer;
@@ -122,6 +122,12 @@ impl<'source> Parser<'source> {
                         }
                     }
                 }
+                TokenKind::LeftBracket if self.starts_table_header() => {
+                    let docs = std::mem::take(&mut pending_docs);
+                    if let Some(statement) = self.parse_table_statement(docs) {
+                        statements.push(statement);
+                    }
+                }
                 TokenKind::Indent => {
                     orphan_doc_comments.append(&mut pending_docs);
                     let token = self.bump();
@@ -219,6 +225,20 @@ impl<'source> Parser<'source> {
             }
             TokenKind::Keyword(KeywordKind::Continue) => {
                 return self.parse_loop_control_statement(leading_docs, false);
+            }
+            TokenKind::LeftBracket if self.starts_table_header() => {
+                if self.block_context_depth != 0 {
+                    let span = self.current().span();
+                    self.push_error(
+                        INVALID_TABLE_HEADER_CODE,
+                        "x05.parse.nested_table",
+                        span,
+                        "表声明只能出现在文件顶层".to_string(),
+                    );
+                    self.synchronize_to_boundary();
+                    return None;
+                }
+                return self.parse_table_statement(leading_docs);
             }
             _ => {}
         }
@@ -352,6 +372,187 @@ impl<'source> Parser<'source> {
             && self.source.slice(name.span()) == "main"
             && close.kind() == TokenKind::RightBracket
             && is_statement_boundary(after)
+    }
+
+    /// 判断当前位置是否为顶层 `[Name]` 或 `[[Name]]` 表头。
+    ///
+    /// 只有普通 ASCII 标识符可以作为源码表名；反引号名称仍可用于
+    /// 字段和方法，但不能绕过跨平台表名规则。表头后的 Token 必须是
+    /// 语句边界，避免把数组/比较表达式误判为表声明。
+    fn starts_table_header(&self) -> bool {
+        if !self.at(TokenKind::LeftBracket) {
+            return false;
+        }
+        let first = self.tokens.get(self.cursor + 1).copied();
+        let second = self.tokens.get(self.cursor + 2).copied();
+        let third = self.tokens.get(self.cursor + 3).copied();
+        let fourth = self.tokens.get(self.cursor + 4).copied();
+        let is_name = |token: Option<Token>| {
+            token.is_some_and(|token| {
+                token.kind() == TokenKind::Identifier
+                    && KeywordKind::from_word(token.text(self.source)).is_none()
+            })
+        };
+        if first.is_some_and(|token| token.kind() == TokenKind::LeftBracket)
+            && is_name(second)
+            && third.is_some_and(|token| token.kind() == TokenKind::RightBracket)
+            && fourth.is_some_and(|token| token.kind() == TokenKind::RightBracket)
+        {
+            return self
+                .tokens
+                .get(self.cursor + 5)
+                .is_none_or(|token| is_statement_boundary(token.kind()));
+        }
+        is_name(first)
+            && second.is_some_and(|token| token.kind() == TokenKind::RightBracket)
+            && third.is_none_or(|token| is_statement_boundary(token.kind()))
+    }
+
+    /// 解析一个 `[Name]` 或 `[[Name]]` 表声明及其缩进体。
+    fn parse_table_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        let start = self.current().span().start();
+        let first = self.bump();
+        let kind = if self.at(TokenKind::LeftBracket) {
+            self.bump();
+            TableKind::Instance
+        } else {
+            TableKind::Singleton
+        };
+        let name_token = self.current();
+        if name_token.kind() != TokenKind::Identifier
+            || KeywordKind::from_word(name_token.text(self.source)).is_some()
+        {
+            self.push_error(
+                INVALID_TABLE_HEADER_CODE,
+                "x05.parse.invalid_table_name",
+                name_token.span(),
+                "表名必须是非保留的 ASCII 标识符".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let name = self.parse_name();
+        let Some(close) = self.expect_delimiter(TokenKind::RightBracket, first.span()) else {
+            self.synchronize_to_boundary();
+            return None;
+        };
+        let final_close = if kind == TableKind::Instance {
+            self.expect_delimiter(TokenKind::RightBracket, close.span())?
+        } else {
+            close
+        };
+        if !is_statement_boundary(self.current().kind()) {
+            self.push_error(
+                INVALID_TABLE_HEADER_CODE,
+                "x05.parse.table_header_tail",
+                self.current().span(),
+                "表头后只能出现换行".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let header_span = self.source_span(start, final_close.span().end());
+        let (body, body_end) = self.parse_table_body(header_span);
+        Some(Statement::Table {
+            name,
+            kind,
+            body,
+            leading_docs,
+            span: self.source_span(start, body_end.max(header_span.end())),
+        })
+    }
+
+    /// 解析表体；表成员必须是字段赋值/声明或方法定义。
+    fn parse_table_body(&mut self, header_span: SourceSpan) -> (Vec<Statement>, usize) {
+        if self.at(TokenKind::Newline) {
+            self.bump();
+        } else if !self.at(TokenKind::Eof) {
+            self.push_error(
+                MISSING_TABLE_BODY_CODE,
+                "x05.parse.table_body_newline",
+                header_span,
+                "表头后必须换行并跟随缩进体".to_string(),
+            );
+            return (Vec::new(), header_span.end());
+        }
+        let mut body_leading_docs = Vec::new();
+        loop {
+            if self.at(TokenKind::Newline) {
+                self.bump();
+            } else if self.at(TokenKind::DocComment) {
+                body_leading_docs.push(self.bump().span());
+            } else {
+                break;
+            }
+        }
+        if !self.at(TokenKind::Indent) {
+            self.push_error(
+                MISSING_TABLE_BODY_CODE,
+                "x05.parse.missing_table_indent",
+                header_span,
+                "表声明必须包含缩进体".to_string(),
+            );
+            return (Vec::new(), header_span.end());
+        }
+        self.bump();
+        self.block_context_depth = self.block_context_depth.saturating_add(1);
+        let mut body = Vec::new();
+        let mut pending_docs = body_leading_docs;
+        let mut last_end = header_span.end();
+        while !self.at(TokenKind::Dedent) && !self.at(TokenKind::Eof) {
+            match self.current().kind() {
+                TokenKind::Newline => {
+                    last_end = self.bump().span().end();
+                }
+                TokenKind::DocComment => pending_docs.push(self.bump().span()),
+                TokenKind::Indent => {
+                    let token = self.bump();
+                    self.push_error(
+                        INVALID_TABLE_MEMBER_CODE,
+                        "x05.parse.unexpected_table_indent",
+                        token.span(),
+                        "表成员不能出现额外缩进".to_string(),
+                    );
+                }
+                _ => {
+                    let docs = std::mem::take(&mut pending_docs);
+                    let before = self.diagnostics.len();
+                    if let Some(statement) = self.parse_statement(docs) {
+                        if !is_table_member_statement(&statement) {
+                            self.push_error(
+                                INVALID_TABLE_MEMBER_CODE,
+                                "x05.parse.invalid_table_member",
+                                statement.span(),
+                                "表体只能包含字段赋值、字段声明或 def 方法".to_string(),
+                            );
+                        }
+                        last_end = statement.span().end();
+                        body.push(statement);
+                    } else if self.diagnostics.len() == before {
+                        self.push_error(
+                            INVALID_TABLE_MEMBER_CODE,
+                            "x05.parse.invalid_table_member",
+                            self.current().span(),
+                            "无法解析表成员".to_string(),
+                        );
+                        self.synchronize_to_boundary();
+                    }
+                }
+            }
+        }
+        if self.at(TokenKind::Dedent) {
+            last_end = self.bump().span().end().max(last_end);
+        }
+        self.block_context_depth = self.block_context_depth.saturating_sub(1);
+        if body.is_empty() {
+            self.push_error(
+                MISSING_TABLE_BODY_CODE,
+                "x05.parse.empty_table_body",
+                header_span,
+                "表体不能为空".to_string(),
+            );
+        }
+        (body, last_end)
     }
 
     /// 解析独立的 `[main]` 入口表头并消费其换行。
@@ -2647,6 +2848,17 @@ fn is_set_type_term_token(kind: TokenKind) -> bool {
 /// 判断 Token 是否可作为声明目标名称。
 fn is_declaration_name_token(kind: TokenKind) -> bool {
     matches!(kind, TokenKind::Identifier | TokenKind::BacktickIdentifier)
+}
+
+/// 判断语法节点是否可作为表体成员。
+fn is_table_member_statement(statement: &Statement) -> bool {
+    matches!(
+        statement,
+        Statement::Assignment { .. }
+            | Statement::Declaration { .. }
+            | Statement::ConstDeclaration { .. }
+            | Statement::Function { .. }
+    )
 }
 
 /// 将词法赋值 Token 映射为 P1 赋值运算符。
