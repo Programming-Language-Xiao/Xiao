@@ -4,12 +4,16 @@
 //! 类型推断、容器边界检查或执行。与词法器分离后，语法策略可以独立演进；
 //! C2-A 仅增加集合/字典花括号消歧和集合字面量结构，不创建运行时集合。
 
+use std::collections::BTreeSet;
+
 use xiao_diagnostics::Diagnostic;
 use xiao_source::{SourceFile, SourceSpan};
 
 use crate::ast::{
-    AssignmentOperator, BinaryOperator, DeclaredType, DictEntry, DictKey, Expression, LiteralKind,
-    Name, Program, ScalarType, SetTypeAnnotation, Statement, TypeTerm, UnaryOperator,
+    AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, DeclaredType, DictEntry,
+    DictKey, ElifBranch, EntryMode, Expression, FunctionParameter, FunctionParameterKind,
+    FunctionTypeAnnotation, LiteralKind, Name, Program, ScalarType, SetTypeAnnotation, Statement,
+    TypeTerm, UnaryOperator,
 };
 use crate::diagnostics::*;
 use crate::lexer::Lexer;
@@ -56,6 +60,9 @@ pub struct Parser<'source> {
     soft_newline_depth: usize,
     /// 当前处于字典列值列表的层数；用于把前缀 `>` 识别为闭分隔符。
     angle_depth: usize,
+    /// 当前正在解析的缩进块层数；用于决定顶层条件链是否需要消费
+    /// 其最后一个延迟产生的 `Dedent`。
+    block_context_depth: usize,
 }
 
 impl<'source> Parser<'source> {
@@ -70,6 +77,7 @@ impl<'source> Parser<'source> {
             cursor: 0,
             soft_newline_depth: 0,
             angle_depth: 0,
+            block_context_depth: 0,
         }
     }
 
@@ -79,6 +87,7 @@ impl<'source> Parser<'source> {
         let mut statements = Vec::new();
         let mut orphan_doc_comments = Vec::new();
         let mut pending_docs = Vec::new();
+        let mut entry_mode = EntryMode::Script;
 
         while !self.at(TokenKind::Eof) {
             match self.current().kind() {
@@ -87,6 +96,27 @@ impl<'source> Parser<'source> {
                 }
                 TokenKind::DocComment => {
                     pending_docs.push(self.bump().span());
+                }
+                TokenKind::LeftBracket if self.starts_main_header() => {
+                    let header_docs = std::mem::take(&mut pending_docs);
+                    if !header_docs.is_empty() {
+                        // `[main]` 是程序元数据，不绑定文档注释；保留为孤立文档，
+                        // 避免在 AST 中伪造一个可执行表节点。
+                        orphan_doc_comments.extend(header_docs);
+                    }
+                    let header_span = self.parse_main_header();
+                    if let Some(header_span) = header_span {
+                        if entry_mode.is_project() {
+                            self.push_error(
+                                INVALID_ENTRY_CODE,
+                                "x04.parse.duplicate_main",
+                                header_span,
+                                "程序只能声明一个 [main] 入口".to_string(),
+                            );
+                        } else {
+                            entry_mode = EntryMode::Project { span: header_span };
+                        }
+                    }
                 }
                 TokenKind::Indent => {
                     orphan_doc_comments.append(&mut pending_docs);
@@ -130,6 +160,7 @@ impl<'source> Parser<'source> {
                 statements,
                 orphan_doc_comments,
                 span,
+                entry_mode,
             }),
             diagnostics: self.diagnostics,
         }
@@ -160,6 +191,30 @@ impl<'source> Parser<'source> {
 
     /// 解析一条 P1 顶层语句，并保留 P0 简单赋值的兼容形状。
     fn parse_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        match self.current().kind() {
+            TokenKind::Keyword(KeywordKind::Def) => {
+                return self.parse_function_statement(leading_docs);
+            }
+            TokenKind::Keyword(KeywordKind::If) => {
+                return self.parse_if_statement(leading_docs);
+            }
+            TokenKind::Keyword(KeywordKind::For) => {
+                return self.parse_for_statement(leading_docs);
+            }
+            TokenKind::Keyword(KeywordKind::While) => {
+                return self.parse_while_statement(leading_docs);
+            }
+            TokenKind::Keyword(KeywordKind::Return) => {
+                return self.parse_return_statement(leading_docs);
+            }
+            TokenKind::Keyword(KeywordKind::Break) => {
+                return self.parse_loop_control_statement(leading_docs, true);
+            }
+            TokenKind::Keyword(KeywordKind::Continue) => {
+                return self.parse_loop_control_statement(leading_docs, false);
+            }
+            _ => {}
+        }
         if self.starts_declaration() {
             return self.parse_declaration_statement(leading_docs);
         }
@@ -268,6 +323,637 @@ impl<'source> Parser<'source> {
             expression,
             leading_docs,
         })
+    }
+
+    /// 判断当前位置是否为独立的 `[main]` 程序入口表头。
+    fn starts_main_header(&self) -> bool {
+        if !self.at(TokenKind::LeftBracket) {
+            return false;
+        }
+        let Some(name) = self.tokens.get(self.cursor + 1).copied() else {
+            return false;
+        };
+        let Some(close) = self.tokens.get(self.cursor + 2).copied() else {
+            return false;
+        };
+        let after = self
+            .tokens
+            .get(self.cursor + 3)
+            .map(|token| token.kind())
+            .unwrap_or(TokenKind::Eof);
+        name.kind() == TokenKind::Identifier
+            && self.source.slice(name.span()) == "main"
+            && close.kind() == TokenKind::RightBracket
+            && is_statement_boundary(after)
+    }
+
+    /// 解析独立的 `[main]` 入口表头并消费其换行。
+    fn parse_main_header(&mut self) -> Option<SourceSpan> {
+        let open = self.bump();
+        let name = self.bump();
+        let close = self.bump();
+        let span = self.source_span(open.span().start(), close.span().end());
+        if !self.at(TokenKind::Newline) && !self.at(TokenKind::Eof) {
+            self.push_error(
+                INVALID_ENTRY_CODE,
+                "x04.parse.main_tail",
+                self.current().span(),
+                "[main] 表头后只能出现换行".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let _ = (name, span);
+        self.consume_newline();
+        Some(span)
+    }
+
+    /// 解析 `def` 函数定义及其缩进体。
+    fn parse_function_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        let keyword = self.bump();
+        if !is_declaration_name_token(self.current().kind()) {
+            self.push_error(
+                INVALID_FUNCTION_CODE,
+                "x04.parse.missing_function_name",
+                self.current().span(),
+                "def 后必须是函数名称".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let name = self.parse_name();
+        if !self.at(TokenKind::LeftParen) {
+            self.push_error(
+                INVALID_FUNCTION_CODE,
+                "x04.parse.function_parentheses",
+                self.current().span(),
+                "函数名称后必须是参数列表".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let parameters = self.parse_function_parameters();
+        let close = self.expect_delimiter(TokenKind::RightParen, name.span);
+        let mut return_type = None;
+        if self.at(TokenKind::Minus) && self.lookahead_kind(1) == Some(TokenKind::Greater) {
+            self.bump();
+            self.bump();
+            return_type = self.parse_function_type_annotation();
+            if return_type.is_none() {
+                self.push_error(
+                    INVALID_FUNCTION_TYPE_CODE,
+                    "x04.parse.invalid_return_type",
+                    self.current().span(),
+                    "函数返回类型必须是标量或 none".to_string(),
+                );
+            }
+        }
+        if !is_statement_boundary(self.current().kind()) {
+            self.push_error(
+                INVALID_FUNCTION_CODE,
+                "x04.parse.function_header_tail",
+                self.current().span(),
+                "函数头后存在未预期内容".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let header_end = return_type
+            .map(|_| self.previous_span_end())
+            .or_else(|| close.map(|token| token.span().end()))
+            .unwrap_or(name.span.end());
+        let (body, body_end) =
+            self.parse_indented_block(self.source_span(keyword.span().start(), header_end));
+        let span = self.source_span(keyword.span().start(), body_end.max(header_end));
+        Some(Statement::Function {
+            name,
+            parameters,
+            return_type,
+            body,
+            leading_docs,
+            span,
+        })
+    }
+
+    /// 解析函数参数列表；列表开始位置必须是 `(` 之后。
+    fn parse_function_parameters(&mut self) -> Vec<FunctionParameter> {
+        self.bump();
+        self.soft_newline_depth += 1;
+        self.skip_soft_newlines();
+        let mut parameters: Vec<FunctionParameter> = Vec::new();
+        let mut keyword_only = false;
+        let mut seen_positional_marker = false;
+        let mut seen_default = false;
+        let mut seen_varargs = false;
+        let mut seen_varkw = false;
+        let mut seen_names = BTreeSet::new();
+        while !self.at(TokenKind::RightParen) && !self.at(TokenKind::Eof) {
+            self.skip_soft_newlines();
+            if self.at(TokenKind::Comma) {
+                self.bump();
+                continue;
+            }
+            if self.at(TokenKind::Slash) {
+                let separated = self.previous_non_newline_kind() == Some(TokenKind::Comma);
+                let marker = self.bump();
+                if !separated {
+                    self.parameter_error(marker.span(), "位置参数 `/` 标记前必须有逗号");
+                } else if seen_positional_marker || keyword_only || parameters.is_empty() {
+                    self.parameter_error(marker.span(), "位置参数 `/` 标记位置无效");
+                } else {
+                    seen_positional_marker = true;
+                    for parameter in &mut parameters {
+                        if parameter.kind == FunctionParameterKind::PositionalOrKeyword {
+                            parameter.kind = FunctionParameterKind::PositionalOnly;
+                        }
+                    }
+                    // `/` 只修饰它之前的参数；后续参数保持普通位置/关键字语义。
+                }
+                self.consume_parameter_comma();
+                continue;
+            }
+            if self.at(TokenKind::Star) || self.at(TokenKind::Power) {
+                let star = self.bump();
+                if star.kind() == TokenKind::Power || self.at(TokenKind::Star) {
+                    if star.kind() != TokenKind::Power {
+                        self.bump();
+                    }
+                    if seen_varkw {
+                        self.parameter_error(star.span(), "函数只能声明一个 **kwargs 参数");
+                        self.recover_parameter_list();
+                        break;
+                    }
+                    let annotation = self.parse_optional_parameter_annotation();
+                    let Some(name) = self.parse_parameter_name() else {
+                        self.recover_parameter_list();
+                        break;
+                    };
+                    let span = self.source_span(star.span().start(), name.span.end());
+                    self.record_parameter_name(&mut seen_names, name);
+                    parameters.push(FunctionParameter {
+                        name,
+                        kind: FunctionParameterKind::VarKeywords,
+                        annotation,
+                        default: None,
+                        span,
+                    });
+                    seen_varkw = true;
+                    self.consume_parameter_comma();
+                    continue;
+                }
+                if seen_varargs || seen_varkw {
+                    self.parameter_error(star.span(), "可变参数必须位于参数列表末端区域");
+                    self.recover_parameter_list();
+                    break;
+                }
+                if self.at(TokenKind::Comma) || self.at(TokenKind::RightParen) {
+                    keyword_only = true;
+                    self.consume_parameter_comma();
+                    continue;
+                }
+                let annotation = self.parse_optional_parameter_annotation();
+                let Some(name) = self.parse_parameter_name() else {
+                    self.recover_parameter_list();
+                    break;
+                };
+                let span = self.source_span(star.span().start(), name.span.end());
+                self.record_parameter_name(&mut seen_names, name);
+                parameters.push(FunctionParameter {
+                    name,
+                    kind: FunctionParameterKind::VarArgs,
+                    annotation,
+                    default: None,
+                    span,
+                });
+                seen_varargs = true;
+                keyword_only = true;
+                self.consume_parameter_comma();
+                continue;
+            }
+            if seen_varkw {
+                self.parameter_error(self.current().span(), "**kwargs 后不能继续声明参数");
+                self.recover_parameter_list();
+                break;
+            }
+            let start = self.current().span();
+            let annotation = self.parse_optional_parameter_annotation();
+            let Some(name) = self.parse_parameter_name() else {
+                self.recover_parameter_list();
+                break;
+            };
+            let default = if self.at(TokenKind::Equal) {
+                self.bump();
+                let value = self.parse_expression();
+                if value.is_none() {
+                    self.parameter_error(name.span, "默认参数缺少表达式");
+                }
+                value
+            } else {
+                None
+            };
+            if default.is_some() {
+                seen_default = true;
+            } else if seen_default && !keyword_only {
+                self.parameter_error(name.span, "无默认值参数不能位于默认参数之后");
+            }
+            let kind = if keyword_only {
+                FunctionParameterKind::KeywordOnly
+            } else {
+                FunctionParameterKind::PositionalOrKeyword
+            };
+            let end = default
+                .as_ref()
+                .map_or(name.span.end(), Expression::span_end);
+            self.record_parameter_name(&mut seen_names, name);
+            parameters.push(FunctionParameter {
+                name,
+                kind,
+                annotation,
+                default,
+                span: self.source_span(start.start(), end),
+            });
+            self.consume_parameter_comma();
+        }
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        parameters
+    }
+
+    /// 解析可选的参数声明式类型前缀。
+    fn parse_optional_parameter_annotation(&mut self) -> Option<FunctionTypeAnnotation> {
+        if self.current().kind() == TokenKind::None {
+            self.bump();
+            return Some(FunctionTypeAnnotation::None);
+        }
+        if !is_scalar_type_token(self.current().kind())
+            || self.lookahead_kind(1) == Some(TokenKind::LeftParen)
+        {
+            return None;
+        }
+        let scalar = ScalarType::from_keyword(self.current().kind().keyword()?)?;
+        self.bump();
+        Some(FunctionTypeAnnotation::Scalar(scalar))
+    }
+
+    /// 解析函数返回类型注解。
+    fn parse_function_type_annotation(&mut self) -> Option<FunctionTypeAnnotation> {
+        self.parse_optional_parameter_annotation()
+    }
+
+    /// 解析一个函数参数名称。
+    fn parse_parameter_name(&mut self) -> Option<Name> {
+        if is_declaration_name_token(self.current().kind()) {
+            Some(self.parse_name())
+        } else {
+            self.parameter_error(self.current().span(), "参数必须是普通或反引号名称");
+            None
+        }
+    }
+
+    /// 消费参数逗号及其后的软换行。
+    fn consume_parameter_comma(&mut self) {
+        if self.at(TokenKind::Comma) {
+            self.bump();
+            self.skip_soft_newlines();
+        } else if !self.at(TokenKind::RightParen) {
+            self.parameter_error(self.current().span(), "参数之间必须使用逗号分隔");
+            self.recover_parameter_list();
+        }
+    }
+
+    /// 将参数列表错误输入消费到下一个逗号或右括号。
+    fn recover_parameter_list(&mut self) {
+        while !matches!(
+            self.current().kind(),
+            TokenKind::Comma | TokenKind::RightParen | TokenKind::Eof
+        ) {
+            self.bump();
+        }
+        if self.at(TokenKind::Comma) {
+            self.bump();
+        }
+    }
+
+    /// 追加参数结构诊断。
+    fn parameter_error(&mut self, span: SourceSpan, message: &str) {
+        self.push_error(
+            INVALID_PARAMETER_CODE,
+            "x04.parse.invalid_parameter",
+            span,
+            message.to_string(),
+        );
+    }
+
+    /// 记录参数名称并拒绝同一名称空间中的重复参数。
+    fn record_parameter_name(&mut self, seen: &mut BTreeSet<String>, name: Name) {
+        let prefix = if name.backticked {
+            "backtick:"
+        } else {
+            "ascii:"
+        };
+        let key = format!("{prefix}{}", self.source.slice(name.span));
+        if !seen.insert(key) {
+            self.parameter_error(name.span, "函数参数名称不能重复");
+        }
+    }
+
+    /// 解析一个缩进代码块；返回语句和块末源码偏移。
+    fn parse_indented_block(&mut self, header_span: SourceSpan) -> (Vec<Statement>, usize) {
+        if self.at(TokenKind::Newline) {
+            self.bump();
+        } else if !self.at(TokenKind::Eof) {
+            self.push_error(
+                MISSING_BLOCK_CODE,
+                "x04.parse.missing_block_newline",
+                header_span,
+                "代码块头后必须换行".to_string(),
+            );
+            return (Vec::new(), header_span.end());
+        }
+        while self.at(TokenKind::Newline) {
+            self.bump();
+        }
+        if !self.at(TokenKind::Indent) {
+            self.push_error(
+                MISSING_BLOCK_CODE,
+                "x04.parse.missing_indent",
+                header_span,
+                "代码块必须包含缩进体".to_string(),
+            );
+            return (Vec::new(), header_span.end());
+        }
+        self.bump();
+        self.block_context_depth = self.block_context_depth.saturating_add(1);
+        let mut statements = Vec::new();
+        let mut pending_docs = Vec::new();
+        let mut last_end = header_span.end();
+        while !self.at(TokenKind::Dedent)
+            && !self.at(TokenKind::Eof)
+            // `elif`/`else` at the parent indentation level is left for the
+            // owning `if` parser. Nested blocks have already consumed their
+            // own closing `Dedent` tokens before this point.
+            && !matches!(
+                self.current().kind(),
+                TokenKind::Keyword(KeywordKind::Elif | KeywordKind::Else)
+            )
+        {
+            match self.current().kind() {
+                TokenKind::Newline => {
+                    last_end = self.bump().span().end();
+                }
+                TokenKind::DocComment => pending_docs.push(self.bump().span()),
+                TokenKind::Indent => {
+                    let token = self.bump();
+                    self.push_error(
+                        INVALID_CONTROL_FLOW_CODE,
+                        "x04.parse.unexpected_indent",
+                        token.span(),
+                        "未预期的额外缩进".to_string(),
+                    );
+                }
+                _ => {
+                    let docs = std::mem::take(&mut pending_docs);
+                    if let Some(statement) = self.parse_statement(docs) {
+                        last_end = statement.span().end();
+                        statements.push(statement);
+                    } else {
+                        self.synchronize_to_boundary();
+                    }
+                }
+            }
+        }
+        if self.at(TokenKind::Dedent) {
+            last_end = self.bump().span().end().max(last_end);
+        } else {
+            pending_docs.clear();
+        }
+        self.block_context_depth = self.block_context_depth.saturating_sub(1);
+        if statements.is_empty() {
+            self.push_error(
+                MISSING_BLOCK_CODE,
+                "x04.parse.empty_block",
+                header_span,
+                "代码块不能为空".to_string(),
+            );
+        }
+        (statements, last_end)
+    }
+
+    /// 解析 `if`/`elif`/`else` 条件链。
+    fn parse_if_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        let start = self.bump();
+        let condition = self.parse_control_condition("if")?;
+        let (body, mut end) = self
+            .parse_indented_block(self.source_span(start.span().start(), condition.span().end()));
+        let mut elif_branches = Vec::new();
+        let mut else_body = None;
+        let mut had_alternate = false;
+        loop {
+            while self.at(TokenKind::Newline) {
+                self.bump();
+            }
+            if self.at(TokenKind::Keyword(KeywordKind::Elif)) {
+                had_alternate = true;
+                let elif = self.bump();
+                let Some(elif_condition) = self.parse_control_condition("elif") else {
+                    break;
+                };
+                let header = self.source_span(elif.span().start(), elif_condition.span().end());
+                let (elif_body, elif_end) = self.parse_indented_block(header);
+                end = elif_end.max(end);
+                elif_branches.push(ElifBranch {
+                    condition: elif_condition,
+                    body: elif_body,
+                    span: self.source_span(elif.span().start(), elif_end),
+                    leading_docs: Vec::new(),
+                });
+            } else if self.at(TokenKind::Keyword(KeywordKind::Else)) {
+                had_alternate = true;
+                let otherwise = self.bump();
+                let header = otherwise.span();
+                let (otherwise_body, otherwise_end) = self.parse_indented_block(header);
+                end = otherwise_end.max(end);
+                else_body = Some(otherwise_body);
+                break;
+            } else {
+                break;
+            }
+        }
+        if had_alternate && self.block_context_depth == 0 && self.at(TokenKind::Dedent) {
+            end = self.bump().span().end().max(end);
+        }
+        Some(Statement::If {
+            condition,
+            body,
+            elif_branches,
+            else_body,
+            leading_docs,
+            span: self.source_span(start.span().start(), end),
+        })
+    }
+
+    /// 解析控制流头部条件并验证其语句边界。
+    fn parse_control_condition(&mut self, keyword: &str) -> Option<Expression> {
+        let condition = self.parse_expression();
+        let Some(condition) = condition else {
+            self.push_error(
+                INVALID_CONTROL_FLOW_CODE,
+                "x04.parse.missing_condition",
+                self.current().span(),
+                format!("{keyword} 后缺少条件表达式"),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        };
+        if !is_statement_boundary(self.current().kind()) {
+            self.push_error(
+                INVALID_CONTROL_FLOW_CODE,
+                "x04.parse.control_header_tail",
+                self.current().span(),
+                format!("{keyword} 条件后存在未预期内容"),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        Some(condition)
+    }
+
+    /// 解析 `for name in iterable` 循环。
+    fn parse_for_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        let start = self.bump();
+        let Some(target) = self.parse_parameter_name() else {
+            self.synchronize_to_boundary();
+            return None;
+        };
+        if !self.at(TokenKind::Keyword(KeywordKind::In)) {
+            self.push_error(
+                INVALID_CONTROL_FLOW_CODE,
+                "x04.parse.for_missing_in",
+                self.current().span(),
+                "for 循环目标后必须是 in".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        self.bump();
+        let Some(iterable) = self.parse_expression() else {
+            self.push_error(
+                INVALID_CONTROL_FLOW_CODE,
+                "x04.parse.for_missing_iterable",
+                self.current().span(),
+                "for 的 in 后缺少可迭代表达式".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        };
+        if !is_statement_boundary(self.current().kind()) {
+            self.push_error(
+                INVALID_CONTROL_FLOW_CODE,
+                "x04.parse.for_header_tail",
+                self.current().span(),
+                "for 头后存在未预期内容".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let (body, end) = self
+            .parse_indented_block(self.source_span(start.span().start(), iterable.span().end()));
+        Some(Statement::For {
+            target,
+            iterable,
+            body,
+            leading_docs,
+            span: self.source_span(start.span().start(), end),
+        })
+    }
+
+    /// 解析 `while condition` 循环。
+    fn parse_while_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        let start = self.bump();
+        let condition = self.parse_control_condition("while")?;
+        let (body, end) = self
+            .parse_indented_block(self.source_span(start.span().start(), condition.span().end()));
+        Some(Statement::While {
+            condition,
+            body,
+            leading_docs,
+            span: self.source_span(start.span().start(), end),
+        })
+    }
+
+    /// 解析 `return`，允许省略返回表达式。
+    fn parse_return_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        let keyword = self.bump();
+        let value = if is_statement_boundary(self.current().kind()) {
+            None
+        } else {
+            let value = self.parse_expression();
+            if value.is_none() {
+                self.push_error(
+                    INVALID_CONTROL_FLOW_CODE,
+                    "x04.parse.invalid_return",
+                    keyword.span(),
+                    "return 后的表达式无效".to_string(),
+                );
+            }
+            value
+        };
+        let end = value
+            .as_ref()
+            .map_or(keyword.span().end(), Expression::span_end);
+        if !is_statement_boundary(self.current().kind()) {
+            self.push_error(
+                INVALID_CONTROL_FLOW_CODE,
+                "x04.parse.return_tail",
+                self.current().span(),
+                "return 后存在未预期内容".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        self.consume_newline();
+        Some(Statement::Return {
+            value,
+            leading_docs,
+            span: self.source_span(keyword.span().start(), end),
+        })
+    }
+
+    /// 解析 `break` 或 `continue`。
+    fn parse_loop_control_statement(
+        &mut self,
+        leading_docs: Vec<SourceSpan>,
+        is_break: bool,
+    ) -> Option<Statement> {
+        let keyword = self.bump();
+        if !is_statement_boundary(self.current().kind()) {
+            self.push_error(
+                INVALID_CONTROL_FLOW_CODE,
+                "x04.parse.loop_control_tail",
+                self.current().span(),
+                "break/continue 后不能跟表达式".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        self.consume_newline();
+        if is_break {
+            Some(Statement::Break {
+                leading_docs,
+                span: keyword.span(),
+            })
+        } else {
+            Some(Statement::Continue {
+                leading_docs,
+                span: keyword.span(),
+            })
+        }
+    }
+
+    /// 返回最近消费 Token 的结束偏移，用于带箭头函数头的源码区间。
+    fn previous_span_end(&self) -> usize {
+        self.tokens
+            .get(self.cursor.saturating_sub(1))
+            .map_or(self.current().span().start(), |token| token.span().end())
     }
 
     /// 判断当前位置是否明确进入 P2 标量/集合/常量声明语法。
@@ -1315,18 +2001,15 @@ impl<'source> Parser<'source> {
         let mut arguments = Vec::new();
         if !self.at(TokenKind::RightParen) {
             loop {
-                let argument = match self.parse_expression_bp(0) {
-                    Some(argument) => argument,
-                    None => {
-                        self.push_error(
-                            MISSING_EXPRESSION_CODE,
-                            "x01.parse.missing_call_argument",
-                            self.current().span(),
-                            "调用参数缺少表达式".to_string(),
-                        );
-                        self.recover_call_arguments();
-                        break;
-                    }
+                let Some(argument) = self.parse_call_argument() else {
+                    self.push_error(
+                        MISSING_EXPRESSION_CODE,
+                        "x01.parse.missing_call_argument",
+                        self.current().span(),
+                        "调用参数缺少表达式".to_string(),
+                    );
+                    self.recover_call_arguments();
+                    break;
                 };
                 arguments.push(argument);
                 self.skip_soft_newlines();
@@ -1357,6 +2040,44 @@ impl<'source> Parser<'source> {
             arguments,
             span: self.source_span(callee.span().start(), end),
         })
+    }
+
+    /// 解析位置、关键字、`*` 和 `**` 调用参数。
+    fn parse_call_argument(&mut self) -> Option<CallArgument> {
+        let start = self.current().span();
+        if self.at(TokenKind::Star) || self.at(TokenKind::Power) {
+            let prefix = self.bump();
+            let kind = if prefix.kind() == TokenKind::Power || self.at(TokenKind::Star) {
+                if prefix.kind() != TokenKind::Power {
+                    self.bump();
+                }
+                CallArgumentKind::DoubleStar
+            } else {
+                CallArgumentKind::Star
+            };
+            let value = self.parse_expression_bp(0)?;
+            return Some(CallArgument {
+                name: None,
+                span: self.source_span(start.start(), value.span().end()),
+                value,
+                kind,
+            });
+        }
+        if is_declaration_name_token(self.current().kind())
+            && self.lookahead_kind(1) == Some(TokenKind::Equal)
+        {
+            let name = self.parse_name();
+            self.bump();
+            let value = self.parse_expression_bp(0)?;
+            return Some(CallArgument {
+                name: Some(name),
+                span: self.source_span(start.start(), value.span().end()),
+                value,
+                kind: CallArgumentKind::Keyword,
+            });
+        }
+        let value = self.parse_expression_bp(0)?;
+        Some(CallArgument::positional(value))
     }
 
     /// 解析一个带可选步长的方括号选择器。
@@ -1739,6 +2460,17 @@ impl<'source> Parser<'source> {
         self.tokens
             .iter()
             .skip(self.cursor)
+            .find(|token| token.kind() != TokenKind::Newline)
+            .map(|token| token.kind())
+    }
+
+    /// 返回当前位置之前最近的非换行 Token 类别。
+    fn previous_non_newline_kind(&self) -> Option<TokenKind> {
+        self.tokens
+            .get(..self.cursor)
+            .into_iter()
+            .flatten()
+            .rev()
             .find(|token| token.kind() != TokenKind::Newline)
             .map(|token| token.kind())
     }

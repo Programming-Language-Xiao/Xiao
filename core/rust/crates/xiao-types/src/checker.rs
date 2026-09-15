@@ -8,8 +8,8 @@ use std::collections::BTreeMap;
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
 use xiao_source::{SourceFile, SourceSpan};
 use xiao_syntax::{
-    AssignmentOperator, BinaryOperator, DeclaredType, Expression, IndexPath, LiteralKind, Program,
-    ScalarType, Statement, UnaryOperator,
+    AssignmentOperator, BinaryOperator, CallArgument, DeclaredType, EntryMode, Expression,
+    IndexPath, LiteralKind, Program, ScalarType, Statement, UnaryOperator,
 };
 
 use crate::containers::ContainerMaterializationPlan;
@@ -18,6 +18,7 @@ use crate::conversion::{
 };
 use crate::diagnostics::*;
 use crate::environment::{Binding, EnvironmentError, TypeEnvironment};
+use crate::functions::FunctionSignature;
 use crate::numeric::{
     ConstantValue, NumericError, binary_scalar_type, boolean_integer_adjust, check_float_range,
     check_float_to_integer_range, check_integer_range, is_decimal_integer, parse_float_literal,
@@ -29,6 +30,12 @@ use crate::unify::{TypeContext, UnifyError};
 /// C0 容器语义的子模块；保持主检查器只负责语句分派和标量规则。
 #[path = "container_checker.rs"]
 mod container_checker;
+/// 04 条件、循环、返回和入口静态检查。
+#[path = "control_checker.rs"]
+mod control_checker;
+/// 04 函数定义、签名占位和调用参数检查。
+#[path = "function_checker.rs"]
+mod function_checker;
 /// C1 有序容器选择、随机种子和选择器左值检查。
 #[path = "selector_checker.rs"]
 mod selector_checker;
@@ -68,6 +75,10 @@ pub enum RuntimeCheckKind {
     SetOperation,
     /// 动态集合比较的成员/关系检查。
     SetComparison,
+    /// 动态值作为 `if`/`while` 条件的布尔检查。
+    BooleanCondition,
+    /// 动态值参与 `for in` 迭代时的可迭代性检查。
+    Iterable,
 }
 
 /// 一个带源码区间的运行时检查标记。
@@ -107,6 +118,10 @@ pub struct TypeCheckResult {
     pub broadcast_assignment_plans: Vec<crate::selection_model::BroadcastAssignmentPlan>,
     /// `random.seed` 调用的运行上下文种子计划。
     pub random_seed_plans: Vec<crate::selection_model::RandomSeedPlan>,
+    /// 顶层程序入口模式。
+    pub entry_mode: EntryMode,
+    /// 已登记并完成推断的函数签名。
+    pub function_signatures: BTreeMap<String, FunctionSignature>,
 }
 
 impl TypeCheckResult {
@@ -182,6 +197,18 @@ impl TypeCheckResult {
     pub fn random_seed_plans(&self) -> &[crate::selection_model::RandomSeedPlan] {
         &self.random_seed_plans
     }
+
+    /// 返回程序入口模式。
+    #[must_use]
+    pub const fn entry_mode(&self) -> EntryMode {
+        self.entry_mode
+    }
+
+    /// 返回函数签名表的只读视图。
+    #[must_use]
+    pub fn function_signatures(&self) -> &BTreeMap<String, FunctionSignature> {
+        &self.function_signatures
+    }
 }
 
 /// P2 静态检查器；生命周期只借用不可变源码。
@@ -197,6 +224,18 @@ pub struct TypeChecker<'source> {
     broadcast_assignment_plans: Vec<crate::selection_model::BroadcastAssignmentPlan>,
     random_seed_plans: Vec<crate::selection_model::RandomSeedPlan>,
     constant_values: BTreeMap<String, ConstantValue>,
+    function_signatures: BTreeMap<String, FunctionSignature>,
+    current_function: Option<FunctionFrame>,
+    loop_depth: usize,
+}
+
+/// 正在检查的函数上下文；只存静态返回约束，不持有运行时栈。
+#[derive(Clone, Debug)]
+struct FunctionFrame {
+    /// 返回类型约束。
+    return_type: Type,
+    /// 是否已经遇到返回语句。
+    saw_return: bool,
 }
 
 impl<'source> TypeChecker<'source> {
@@ -215,6 +254,9 @@ impl<'source> TypeChecker<'source> {
             broadcast_assignment_plans: Vec::new(),
             random_seed_plans: Vec::new(),
             constant_values: BTreeMap::new(),
+            function_signatures: BTreeMap::new(),
+            current_function: None,
+            loop_depth: 0,
         }
     }
 
@@ -227,9 +269,11 @@ impl<'source> TypeChecker<'source> {
     /// 使用当前环境检查整个程序并返回结果。
     #[must_use]
     pub fn check_program(mut self, program: &Program) -> TypeCheckResult {
+        self.register_top_level_functions(&program.statements);
         for statement in &program.statements {
             self.check_statement(statement);
         }
+        self.finalize_function_inference();
         TypeCheckResult {
             nodes: self.nodes,
             diagnostics: self.diagnostics,
@@ -239,6 +283,8 @@ impl<'source> TypeChecker<'source> {
             selection_plans: self.selection_plans,
             broadcast_assignment_plans: self.broadcast_assignment_plans,
             random_seed_plans: self.random_seed_plans,
+            entry_mode: program.entry_mode,
+            function_signatures: self.function_signatures,
         }
     }
 
@@ -281,6 +327,35 @@ impl<'source> TypeChecker<'source> {
                 value,
                 ..
             } => self.check_const_declaration(*target, *declared_type, value),
+            Statement::Function {
+                name,
+                parameters,
+                return_type,
+                body,
+                span,
+                ..
+            } => self.check_function_statement(*name, parameters, *return_type, body, *span),
+            Statement::If {
+                condition,
+                body,
+                elif_branches,
+                else_body,
+                ..
+            } => self.check_if_statement(condition, body, elif_branches, else_body.as_deref()),
+            Statement::For {
+                target,
+                iterable,
+                body,
+                ..
+            } => self.check_for_statement(*target, iterable, body),
+            Statement::While {
+                condition, body, ..
+            } => self.check_while_statement(condition, body),
+            Statement::Return { value, span, .. } => {
+                self.check_return_statement(value.as_ref(), *span)
+            }
+            Statement::Break { span, .. } => self.check_break_statement(*span),
+            Statement::Continue { span, .. } => self.check_continue_statement(*span),
         }
     }
 
@@ -300,7 +375,7 @@ impl<'source> TypeChecker<'source> {
                 // 完成成员类型/哈希检查，不能静默当作完全兼容。
                 self.push_runtime_check(value.span(), RuntimeCheckKind::SetMembership);
             }
-            if !can_assign(&value_type, &existing_type) {
+            if !self.types_compatible_for_assignment(&value_type, &existing_type) {
                 self.type_error(
                     ASSIGNMENT_TYPE_MISMATCH_CODE,
                     "x02.type.assignment_mismatch",
@@ -452,7 +527,10 @@ impl<'source> TypeChecker<'source> {
             // `SetOperation` 只描述运算形状本身。
             self.push_runtime_check(target.span(), RuntimeCheckKind::SetMembership);
         }
-        if operation_valid && !dynamic_operation && !can_assign(&result_type, &left_type) {
+        if operation_valid
+            && !dynamic_operation
+            && !self.types_compatible_for_assignment(&result_type, &left_type)
+        {
             self.type_error(
                 ASSIGNMENT_TYPE_MISMATCH_CODE,
                 "x02.type.compound_result_mismatch",
@@ -762,7 +840,8 @@ impl<'source> TypeChecker<'source> {
                 format!("名称 {} 在赋值前不能读取", self.display_name(name)),
             );
         }
-        self.context.instantiate(binding.scheme())
+        let instantiated = self.context.instantiate(binding.scheme());
+        self.context.apply(&instantiated)
     }
 
     /// 检查一元运算的操作数和结果类型。
@@ -780,6 +859,22 @@ impl<'source> TypeChecker<'source> {
             } else {
                 Type::Dynamic
             };
+        }
+        if let Type::Variable(variable) = &operand_type {
+            if operator == UnaryOperator::Not {
+                let boolean = Type::scalar(ScalarType::Bool);
+                if self
+                    .context
+                    .unify(&Type::Variable(*variable), &boolean)
+                    .is_ok()
+                {
+                    return boolean;
+                }
+            } else {
+                // 一元正负只能约束“数值族”；具体宽度由返回值、赋值或
+                // 调用点继续统一。暂不把未知参数错误地降成 dynamic。
+                return Type::Variable(*variable);
+            }
         }
         match operator {
             UnaryOperator::Not if operand_type.is_bool() => Type::scalar(ScalarType::Bool),
@@ -836,6 +931,9 @@ impl<'source> TypeChecker<'source> {
             return self
                 .check_set_operation_types(operator, &left_type, &right_type, span)
                 .result;
+        }
+        if let Some(result) = self.infer_binary_with_variables(operator, &left_type, &right_type) {
+            return result;
         }
         let mut operation_valid = false;
         let result = match (&left_type, &right_type) {
@@ -896,6 +994,148 @@ impl<'source> TypeChecker<'source> {
         result
     }
 
+    /// 在函数签名仍含类型变量时建立最小的二元运算约束。
+    ///
+    /// 函数体通常先于调用点检查；如果这里把未知参数立即当成非法
+    /// 操作数，合法的 `def f(x) -> int` 也无法由返回值或后续调用完成
+    /// 推断。该辅助只处理可局部确定的标量约束，其余情况仍交给统一器
+    /// 或最终的“无法推断”诊断，不把未知值静默改成动态类型。
+    fn infer_binary_with_variables(
+        &mut self,
+        operator: BinaryOperator,
+        left: &Type,
+        right: &Type,
+    ) -> Option<Type> {
+        let left = self.context.apply(left);
+        let right = self.context.apply(right);
+        let left_variable = matches!(left, Type::Variable(_));
+        let right_variable = matches!(right, Type::Variable(_));
+        if !left_variable && !right_variable {
+            return None;
+        }
+
+        let is_comparison = matches!(
+            operator,
+            BinaryOperator::Equal
+                | BinaryOperator::NotEqual
+                | BinaryOperator::Less
+                | BinaryOperator::LessEqual
+                | BinaryOperator::Greater
+                | BinaryOperator::GreaterEqual
+                | BinaryOperator::Is
+                | BinaryOperator::IsNot
+        );
+        if matches!(operator, BinaryOperator::And | BinaryOperator::Or) {
+            let boolean = Type::scalar(ScalarType::Bool);
+            let valid_left = !left_variable && left == boolean;
+            let valid_right = !right_variable && right == boolean;
+            if (valid_left || left_variable) && (valid_right || right_variable) {
+                if left_variable {
+                    self.context.unify(&left, &boolean).ok()?;
+                }
+                if right_variable {
+                    self.context.unify(&right, &boolean).ok()?;
+                }
+                return Some(boolean);
+            }
+            return None;
+        }
+
+        if left_variable && right_variable {
+            if is_comparison {
+                self.context.unify(&left, &right).ok()?;
+                return Some(Type::scalar(ScalarType::Bool));
+            }
+            if matches!(
+                operator,
+                BinaryOperator::Add
+                    | BinaryOperator::Subtract
+                    | BinaryOperator::Multiply
+                    | BinaryOperator::Divide
+                    | BinaryOperator::FloorDivide
+                    | BinaryOperator::Remainder
+                    | BinaryOperator::Power
+            ) {
+                self.context.unify(&left, &right).ok()?;
+                return Some(self.context.apply(&left));
+            }
+            return None;
+        }
+
+        let (variable, known, variable_on_left) = if left_variable {
+            (&left, &right, true)
+        } else {
+            (&right, &left, false)
+        };
+        let Type::Scalar(known_scalar) = known else {
+            return is_comparison.then_some(Type::scalar(ScalarType::Bool));
+        };
+        let candidate = match operator {
+            BinaryOperator::Add => {
+                if *known_scalar == ScalarType::Str
+                    || is_numeric(*known_scalar)
+                    || (!variable_on_left && *known_scalar == ScalarType::Bool)
+                {
+                    if *known_scalar == ScalarType::Bool && variable_on_left {
+                        None
+                    } else if *known_scalar == ScalarType::Bool {
+                        Some(ScalarType::Int)
+                    } else {
+                        Some(*known_scalar)
+                    }
+                } else {
+                    None
+                }
+            }
+            BinaryOperator::Subtract
+            | BinaryOperator::Multiply
+            | BinaryOperator::Divide
+            | BinaryOperator::FloorDivide
+            | BinaryOperator::Remainder
+            | BinaryOperator::Power => {
+                if is_numeric(*known_scalar) {
+                    Some(*known_scalar)
+                } else if !variable_on_left
+                    && *known_scalar == ScalarType::Bool
+                    && matches!(operator, BinaryOperator::Subtract)
+                {
+                    Some(ScalarType::Int)
+                } else {
+                    None
+                }
+            }
+            _ if is_comparison => Some(*known_scalar),
+            _ => None,
+        }?;
+
+        let candidate_type = Type::scalar(candidate);
+        self.context.unify(variable, &candidate_type).ok()?;
+        let resolved_left = self.context.apply(&left);
+        let resolved_right = self.context.apply(&right);
+        if is_comparison {
+            return Some(Type::scalar(ScalarType::Bool));
+        }
+        match (&resolved_left, &resolved_right) {
+            (Type::Scalar(left), Type::Scalar(right)) => {
+                binary_scalar_type(operator, *left, *right)
+                    .ok()
+                    .map(Type::scalar)
+            }
+            _ => Some(self.context.apply(&candidate_type)),
+        }
+    }
+
+    /// 检查赋值兼容性；含 HM 类型变量时先统一，再使用固定转换矩阵。
+    fn types_compatible_for_assignment(&mut self, source: &Type, target: &Type) -> bool {
+        let source = self.context.apply(source);
+        let target = self.context.apply(target);
+        if !source.free_vars().is_empty() || !target.free_vars().is_empty() {
+            self.context.unify(&source, &target).is_ok()
+        } else {
+            can_assign(&source, &target)
+        }
+    }
+
     /// 检查常量二元运算的求值错误及结果宽度；动态表达式留给后端
     /// 的运行时检查，不在这里假装已经完成求值。
     fn check_constant_binary_result(
@@ -932,7 +1172,7 @@ impl<'source> TypeChecker<'source> {
     fn check_call(
         &mut self,
         callee: &Expression,
-        arguments: &[Expression],
+        arguments: &[CallArgument],
         span: SourceSpan,
     ) -> Type {
         if is_random_seed_callee(callee, self.source) {
@@ -940,6 +1180,15 @@ impl<'source> TypeChecker<'source> {
         }
         if self.is_set_constructor(callee) {
             return self.check_set_constructor(arguments, span);
+        }
+        if self
+            .function_callee_key(callee)
+            .is_some_and(|key| self.function_signatures.contains_key(&key))
+        {
+            self.check_expression(callee);
+            return self
+                .check_known_function_call(callee, arguments, span)
+                .unwrap_or(Type::Dynamic);
         }
         if let Some(target) = self.scalar_callee(callee) {
             if arguments.len() != 1 {
@@ -952,14 +1201,14 @@ impl<'source> TypeChecker<'source> {
                 return Type::Dynamic;
             }
             let source_diagnostics = self.diagnostics.len();
-            let source_type = self.check_expression(&arguments[0]);
-            if !self.static_conversion_value_is_valid(&arguments[0], target) {
+            let source_type = self.check_expression(&arguments[0].value);
+            if !self.static_conversion_value_is_valid(&arguments[0].value, target) {
                 return Type::Dynamic;
             }
-            if !self.static_target_range_is_valid(&arguments[0], target) {
+            if !self.static_target_range_is_valid(&arguments[0].value, target) {
                 return Type::Dynamic;
             }
-            let constant_known = self.eval_const(&arguments[0]).is_some();
+            let constant_known = self.eval_const(&arguments[0].value).is_some();
             match classify_conversion(&source_type, target) {
                 Ok(conversion) => {
                     if conversion.requires_runtime_check
@@ -967,7 +1216,7 @@ impl<'source> TypeChecker<'source> {
                         && !self.has_errors_since(source_diagnostics)
                     {
                         self.push_runtime_check(
-                            arguments[0].span(),
+                            arguments[0].value.span(),
                             match conversion.kind {
                                 ConversionKind::StrToBool => RuntimeCheckKind::StringBoolean,
                                 ConversionKind::RuntimeChecked => {
@@ -983,7 +1232,7 @@ impl<'source> TypeChecker<'source> {
                     self.type_error(
                         INVALID_CONVERSION_CODE,
                         "x02.type.invalid_conversion",
-                        arguments[0].span(),
+                        arguments[0].value.span(),
                         error.to_string(),
                     );
                     Type::Dynamic
@@ -991,19 +1240,19 @@ impl<'source> TypeChecker<'source> {
             }
         } else if self.simple_callee_name(callee).as_deref() == Some("input") {
             for argument in arguments {
-                self.check_expression(argument);
+                self.check_expression(&argument.value);
             }
             Type::scalar(ScalarType::Str)
         } else if self.simple_callee_name(callee).as_deref() == Some("print") {
             for argument in arguments {
-                self.check_expression(argument);
+                self.check_expression(&argument.value);
             }
             Type::None
         } else {
             let callee_type = self.check_expression(callee);
             let argument_types = arguments
                 .iter()
-                .map(|argument| self.check_expression(argument))
+                .map(|argument| self.check_expression(&argument.value))
                 .collect::<Vec<_>>();
             if let Type::Function {
                 parameters,
@@ -1039,12 +1288,12 @@ impl<'source> TypeChecker<'source> {
     fn check_new_call(
         &mut self,
         callee: &Expression,
-        arguments: &[Expression],
+        arguments: &[CallArgument],
         span: SourceSpan,
     ) -> Type {
         self.check_expression(callee);
         for argument in arguments {
-            self.check_expression(argument);
+            self.check_expression(&argument.value);
         }
         self.type_error(
             INVALID_OPERANDS_CODE,
@@ -1189,6 +1438,15 @@ impl<'source> TypeChecker<'source> {
         Some(name.unquoted_text(self.source).to_owned())
     }
 
+    /// 返回任意名称调用者的规范化环境键；内建函数仍由
+    /// [`Self::simple_callee_name`] 单独限制为普通 ASCII 名称。
+    fn function_callee_key(&self, callee: &Expression) -> Option<String> {
+        let Expression::Name(name) = callee else {
+            return None;
+        };
+        Some(self.name_key(*name))
+    }
+
     /// 纯递归求值一个已知编译期表达式，动态输入返回 `None`。
     fn eval_const(&self, expression: &Expression) -> Option<ConstantValue> {
         match expression {
@@ -1248,7 +1506,7 @@ impl<'source> TypeChecker<'source> {
                 callee, arguments, ..
             } => {
                 let target = self.scalar_callee(callee)?;
-                let value = self.eval_const(arguments.first()?)?;
+                let value = self.eval_const(&arguments.first()?.value)?;
                 convert_constant(value, target)
             }
             _ => None,

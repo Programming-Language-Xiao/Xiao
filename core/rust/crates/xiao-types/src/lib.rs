@@ -13,6 +13,8 @@ mod conversion;
 mod diagnostics;
 /// 作用域和绑定状态环境。
 mod environment;
+/// 04 函数签名和参数匹配模型。
+mod functions;
 /// C0 空容器形状计划装配。
 mod materialization;
 /// 数值提升、范围和常量辅助。
@@ -48,6 +50,8 @@ pub use conversion::{
 pub use diagnostics::*;
 /// 重新导出作用域环境和绑定结构。
 pub use environment::{Binding, EnvironmentError, TypeEnvironment};
+/// 重新导出函数签名旁路结构。
+pub use functions::{FunctionParameterSignature, FunctionSignature};
 /// 重新导出静态物化计划装配辅助。
 pub use materialization::{build_plan, merge_constraints};
 /// 重新导出常量、数值检查和二元分析函数。

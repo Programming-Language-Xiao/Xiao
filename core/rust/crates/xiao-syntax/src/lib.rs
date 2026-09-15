@@ -18,9 +18,10 @@ mod token;
 
 /// 重新导出 AST、声明和节点索引类型。
 pub use ast::{
-    AssignmentOperator, BinaryOperator, DeclaredType, DictEntry, DictKey, Expression, LiteralKind,
-    Name, NodeId, NodeIndex, Program, ScalarType, SetTypeAnnotation, Statement, TypeTerm,
-    UnaryOperator,
+    AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, DeclaredType, DictEntry,
+    DictKey, ElifBranch, EntryMode, Expression, FunctionParameter, FunctionParameterKind,
+    FunctionTypeAnnotation, LiteralKind, Name, NodeId, NodeIndex, Program, ScalarType,
+    SetTypeAnnotation, Statement, TypeTerm, UnaryOperator,
 };
 /// 重新导出词法与解析诊断编号。
 pub use diagnostics::*;

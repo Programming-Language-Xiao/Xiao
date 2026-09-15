@@ -6,7 +6,7 @@
 
 use xiao_source::SourceSpan;
 use xiao_syntax::{
-    AssignmentOperator, Expression, PathSegment, RandomMode, Selector, SelectorItem,
+    AssignmentOperator, CallArgument, Expression, PathSegment, RandomMode, Selector, SelectorItem,
 };
 
 use crate::containers::{ArrayType, ContainerPathSegment};
@@ -351,12 +351,12 @@ impl<'source> TypeChecker<'source> {
     /// 检查 `random.seed(value)` 并记录当前执行上下文的种子计划。
     pub(super) fn check_random_seed_call(
         &mut self,
-        arguments: &[Expression],
+        arguments: &[CallArgument],
         span: SourceSpan,
     ) -> Type {
         if arguments.len() != 1 {
             for argument in arguments {
-                self.check_expression(argument);
+                self.check_expression(&argument.value);
             }
             self.selector_error(
                 RANDOM_SEED_ARITY_CODE,
@@ -366,7 +366,7 @@ impl<'source> TypeChecker<'source> {
             );
             return Type::None;
         }
-        let argument = &arguments[0];
+        let argument = &arguments[0].value;
         let argument_type = self.check_expression(argument);
         let mut dynamic = false;
         let value = if argument_type.is_dynamic() {

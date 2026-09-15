@@ -95,3 +95,21 @@ pub const UNSUPPORTED_SET_TYPE_PATH_CODE: &str = "X03-PARSE-006";
 
 /// `const` 声明尝试使用集合类型注解时使用的稳定诊断编号。
 pub const UNSUPPORTED_CONST_SET_TYPE_CODE: &str = "X03-PARSE-007";
+
+/// 函数或控制流语句结构非法时使用的稳定诊断编号。
+pub const INVALID_FUNCTION_CODE: &str = "X04-PARSE-001";
+
+/// 函数参数列表结构非法时使用的稳定诊断编号。
+pub const INVALID_PARAMETER_CODE: &str = "X04-PARSE-002";
+
+/// 代码块缺少缩进体时使用的稳定诊断编号。
+pub const MISSING_BLOCK_CODE: &str = "X04-PARSE-003";
+
+/// 控制流头部或返回语句结构非法时使用的稳定诊断编号。
+pub const INVALID_CONTROL_FLOW_CODE: &str = "X04-PARSE-004";
+
+/// 函数返回类型注解无法解析时使用的稳定诊断编号。
+pub const INVALID_FUNCTION_TYPE_CODE: &str = "X04-PARSE-005";
+
+/// `[main]` 入口头部结构非法时使用的稳定诊断编号。
+pub const INVALID_ENTRY_CODE: &str = "X04-PARSE-006";

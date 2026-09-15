@@ -21,6 +21,8 @@ pub struct Program {
     pub orphan_doc_comments: Vec<SourceSpan>,
     /// 覆盖整个输入源码的程序区间。
     pub span: SourceSpan,
+    /// 程序入口模式；未出现 `[main]` 时为脚本模式。
+    pub entry_mode: EntryMode,
 }
 
 impl Program {
@@ -34,6 +36,32 @@ impl Program {
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.statements.is_empty() && self.orphan_doc_comments.is_empty()
+    }
+}
+
+/// 程序的静态入口模式。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum EntryMode {
+    /// 顶层可执行语句自动组成入口。
+    Script,
+    /// 存在显式 `[main]` 入口表头。
+    Project {
+        /// `[main]` 表头源码区间。
+        span: SourceSpan,
+    },
+}
+
+impl EntryMode {
+    /// 判断是否为脚本入口模式。
+    #[must_use]
+    pub const fn is_script(self) -> bool {
+        matches!(self, Self::Script)
+    }
+
+    /// 判断是否为工程入口模式。
+    #[must_use]
+    pub const fn is_project(self) -> bool {
+        matches!(self, Self::Project { .. })
     }
 }
 
@@ -313,7 +341,157 @@ impl DeclaredType {
     }
 }
 
-/// P0/P1/P2 支持的顶层语句。
+/// 函数参数的绑定种类。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum FunctionParameterKind {
+    /// 只能通过位置传入的参数（`/` 标记之前的参数）。
+    PositionalOnly,
+    /// 可以通过位置或关键字传入的普通参数。
+    PositionalOrKeyword,
+    /// 只能通过关键字传入的参数（裸 `*` 之后的参数）。
+    KeywordOnly,
+    /// 可变位置参数（`*args`）。
+    VarArgs,
+    /// 可变关键字参数（`**kwargs`）。
+    VarKeywords,
+}
+
+impl FunctionParameterKind {
+    /// 判断参数是否会消耗一个普通位置实参。
+    #[must_use]
+    pub const fn accepts_positional(self) -> bool {
+        matches!(
+            self,
+            Self::PositionalOnly | Self::PositionalOrKeyword | Self::VarArgs
+        )
+    }
+
+    /// 判断参数是否可以通过关键字传入。
+    #[must_use]
+    pub const fn accepts_keyword(self) -> bool {
+        matches!(
+            self,
+            Self::PositionalOrKeyword | Self::KeywordOnly | Self::VarKeywords
+        )
+    }
+}
+
+/// 函数参数或返回值的首版显式类型注解。
+///
+/// 04 阶段先复用标量和 `none` 类型；容器/函数类型注解由后续通用类型语法
+/// 阶段扩展。该枚举独立于变量声明的 [`DeclaredType`]，避免把参数规则耦合
+/// 到容器路径约束。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum FunctionTypeAnnotation {
+    /// 一个标量类型。
+    Scalar(ScalarType),
+    /// `none` 类型。
+    None,
+}
+
+impl FunctionTypeAnnotation {
+    /// 返回注解的稳定 Xiao 拼写。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Scalar(scalar) => scalar.as_str(),
+            Self::None => "none",
+        }
+    }
+}
+
+/// 函数定义中的一个参数。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct FunctionParameter {
+    /// 参数名称。
+    pub name: Name,
+    /// 参数绑定种类。
+    pub kind: FunctionParameterKind,
+    /// 可选的显式类型注解。
+    pub annotation: Option<FunctionTypeAnnotation>,
+    /// 可选默认值；可变参数没有默认值。
+    pub default: Option<Expression>,
+    /// 覆盖整个参数的源码区间。
+    pub span: SourceSpan,
+}
+
+impl FunctionParameter {
+    /// 判断该参数是否为可变参数。
+    #[must_use]
+    pub const fn is_variadic(&self) -> bool {
+        matches!(
+            self.kind,
+            FunctionParameterKind::VarArgs | FunctionParameterKind::VarKeywords
+        )
+    }
+}
+
+/// 调用表达式中一个实参的传递方式。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum CallArgumentKind {
+    /// 普通位置实参。
+    Positional,
+    /// `name=value` 关键字实参。
+    Keyword,
+    /// `*values` 可变位置展开。
+    Star,
+    /// `**values` 可变关键字展开。
+    DoubleStar,
+}
+
+/// 调用表达式中的实参。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CallArgument {
+    /// 关键字实参的名称；其他种类为 `None`。
+    pub name: Option<Name>,
+    /// 实参表达式（展开参数保存被展开的来源表达式）。
+    pub value: Expression,
+    /// 实参传递方式。
+    pub kind: CallArgumentKind,
+    /// 覆盖前缀、名称和表达式的源码区间。
+    pub span: SourceSpan,
+}
+
+impl CallArgument {
+    /// 创建一个普通位置实参。
+    #[must_use]
+    pub fn positional(value: Expression) -> Self {
+        let span = value.span();
+        Self {
+            name: None,
+            value,
+            kind: CallArgumentKind::Positional,
+            span,
+        }
+    }
+
+    /// 判断实参是否为关键字或展开形式。
+    #[must_use]
+    pub const fn is_named_or_expanded(&self) -> bool {
+        !matches!(self.kind, CallArgumentKind::Positional)
+    }
+
+    /// 返回实参覆盖的源码区间。
+    #[must_use]
+    pub const fn span(&self) -> SourceSpan {
+        self.span
+    }
+}
+
+/// `elif` 分支的条件和缩进体。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ElifBranch {
+    /// 分支条件。
+    pub condition: Expression,
+    /// 分支缩进体。
+    pub body: Vec<Statement>,
+    /// 与该分支相邻的文档注释区间。
+    pub leading_docs: Vec<SourceSpan>,
+    /// 覆盖 `elif` 头和其代码块的源码区间。
+    pub span: SourceSpan,
+}
+
+/// P0/P1/P2/04 支持的语句。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Statement {
     /// 一个独立的字面量或名称表达式语句。
@@ -384,6 +562,83 @@ pub enum Statement {
         /// 语句源码区间，不包含结尾换行。
         span: SourceSpan,
     },
+    /// `def name(...) -> type` 函数定义。
+    Function {
+        /// 函数名称。
+        name: Name,
+        /// 参数列表。
+        parameters: Vec<FunctionParameter>,
+        /// 可选返回类型注解。
+        return_type: Option<FunctionTypeAnnotation>,
+        /// 缩进函数体。
+        body: Vec<Statement>,
+        /// 与函数定义相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 覆盖函数头和函数体的源码区间。
+        span: SourceSpan,
+    },
+    /// `if`、`elif`、`else` 条件语句。
+    If {
+        /// 首个 `if` 条件。
+        condition: Expression,
+        /// 首个条件体。
+        body: Vec<Statement>,
+        /// 后续 `elif` 分支。
+        elif_branches: Vec<ElifBranch>,
+        /// 可选 `else` 体。
+        else_body: Option<Vec<Statement>>,
+        /// 与 `if` 语句相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 覆盖整个条件链的源码区间。
+        span: SourceSpan,
+    },
+    /// `for name in iterable` 循环。
+    For {
+        /// 循环绑定名称。
+        target: Name,
+        /// 被遍历的表达式。
+        iterable: Expression,
+        /// 循环缩进体。
+        body: Vec<Statement>,
+        /// 与循环相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 覆盖循环头和循环体的源码区间。
+        span: SourceSpan,
+    },
+    /// `while condition` 循环。
+    While {
+        /// 循环条件。
+        condition: Expression,
+        /// 循环缩进体。
+        body: Vec<Statement>,
+        /// 与循环相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 覆盖循环头和循环体的源码区间。
+        span: SourceSpan,
+    },
+    /// `return` 返回语句。
+    Return {
+        /// 可选返回表达式；省略时返回 `none`。
+        value: Option<Expression>,
+        /// 与返回语句相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 返回语句源码区间。
+        span: SourceSpan,
+    },
+    /// `break` 循环控制语句。
+    Break {
+        /// 与控制语句相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 控制语句源码区间。
+        span: SourceSpan,
+    },
+    /// `continue` 循环控制语句。
+    Continue {
+        /// 与控制语句相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 控制语句源码区间。
+        span: SourceSpan,
+    },
 }
 
 impl Statement {
@@ -395,7 +650,14 @@ impl Statement {
             | Self::Assignment { span, .. }
             | Self::ExtendedAssignment { span, .. }
             | Self::Declaration { span, .. }
-            | Self::ConstDeclaration { span, .. } => *span,
+            | Self::ConstDeclaration { span, .. }
+            | Self::Function { span, .. }
+            | Self::If { span, .. }
+            | Self::For { span, .. }
+            | Self::While { span, .. }
+            | Self::Return { span, .. }
+            | Self::Break { span, .. }
+            | Self::Continue { span, .. } => *span,
         }
     }
 
@@ -407,7 +669,14 @@ impl Statement {
             | Self::Assignment { leading_docs, .. }
             | Self::ExtendedAssignment { leading_docs, .. }
             | Self::Declaration { leading_docs, .. }
-            | Self::ConstDeclaration { leading_docs, .. } => leading_docs,
+            | Self::ConstDeclaration { leading_docs, .. }
+            | Self::Function { leading_docs, .. }
+            | Self::If { leading_docs, .. }
+            | Self::For { leading_docs, .. }
+            | Self::While { leading_docs, .. }
+            | Self::Return { leading_docs, .. }
+            | Self::Break { leading_docs, .. }
+            | Self::Continue { leading_docs, .. } => leading_docs,
         }
     }
 
@@ -425,7 +694,17 @@ impl Statement {
                 value: Some(value), ..
             }
             | Self::ConstDeclaration { value, .. } => value,
-            Self::Declaration { value: None, .. } => {
+            Self::Return {
+                value: Some(value), ..
+            } => value,
+            Self::Declaration { value: None, .. }
+            | Self::Function { .. }
+            | Self::If { .. }
+            | Self::For { .. }
+            | Self::While { .. }
+            | Self::Return { value: None, .. }
+            | Self::Break { .. }
+            | Self::Continue { .. } => {
                 // 无初始化声明没有主表达式；为了保持旧的便捷 API，返回一个
                 // 仅用于诊断的静态哨兵并不安全，因此改用 panic 明确告知调用方。
                 panic!("未初始化声明没有 expression；请先检查 initializer()")
@@ -451,7 +730,18 @@ impl Statement {
             | Self::ConstDeclaration {
                 value: expression, ..
             } => Some(expression),
-            Self::Declaration { value: None, .. } => None,
+            Self::Declaration { value: None, .. }
+            | Self::Function { .. }
+            | Self::If { .. }
+            | Self::For { .. }
+            | Self::While { .. }
+            | Self::Return { value: None, .. }
+            | Self::Break { .. }
+            | Self::Continue { .. } => None,
+            Self::Return {
+                value: Some(expression),
+                ..
+            } => Some(expression),
         }
     }
 
@@ -462,7 +752,15 @@ impl Statement {
             Self::Expression { .. } => None,
             Self::Assignment { .. } => Some(AssignmentOperator::Assign),
             Self::ExtendedAssignment { operator, .. } => Some(*operator),
-            Self::Declaration { .. } | Self::ConstDeclaration { .. } => None,
+            Self::Declaration { .. }
+            | Self::ConstDeclaration { .. }
+            | Self::Function { .. }
+            | Self::If { .. }
+            | Self::For { .. }
+            | Self::While { .. }
+            | Self::Return { .. }
+            | Self::Break { .. }
+            | Self::Continue { .. } => None,
         }
     }
 
@@ -645,8 +943,8 @@ pub enum Expression {
     Call {
         /// 被调用的表达式。
         callee: Box<Expression>,
-        /// 按源码顺序保存的参数。
-        arguments: Vec<Expression>,
+        /// 按源码顺序保存的位置、关键字和展开参数。
+        arguments: Vec<CallArgument>,
         /// 表达式源码区间。
         span: SourceSpan,
     },
@@ -654,8 +952,8 @@ pub enum Expression {
     NewCall {
         /// 被构造的类型或名称表达式。
         callee: Box<Expression>,
-        /// 按源码顺序保存的参数。
-        arguments: Vec<Expression>,
+        /// 按源码顺序保存的位置、关键字和展开参数。
+        arguments: Vec<CallArgument>,
         /// 表达式源码区间。
         span: SourceSpan,
     },
@@ -711,6 +1009,12 @@ impl Expression {
             | Self::Cast { span, .. }
             | Self::Selector { span, .. } => *span,
         }
+    }
+
+    /// 返回表达式源码区间的结束偏移。
+    #[must_use]
+    pub const fn span_end(&self) -> usize {
+        self.span().end()
     }
 
     /// 返回字面量类别；名称表达式返回 `None`。
@@ -866,6 +1170,60 @@ impl NodeIndex {
                 self.visit_expression(target);
                 self.visit_expression(value);
             }
+            Statement::Function {
+                parameters, body, ..
+            } => {
+                for parameter in parameters {
+                    self.push(parameter.span);
+                    if let Some(default) = &parameter.default {
+                        self.visit_expression(default);
+                    }
+                }
+                for statement in body {
+                    self.visit_statement(statement);
+                }
+            }
+            Statement::If {
+                condition,
+                body,
+                elif_branches,
+                else_body,
+                ..
+            } => {
+                self.visit_expression(condition);
+                for statement in body {
+                    self.visit_statement(statement);
+                }
+                for branch in elif_branches {
+                    self.push(branch.span);
+                    self.visit_expression(&branch.condition);
+                    for statement in &branch.body {
+                        self.visit_statement(statement);
+                    }
+                }
+                if let Some(body) = else_body {
+                    for statement in body {
+                        self.visit_statement(statement);
+                    }
+                }
+            }
+            Statement::For { iterable, body, .. }
+            | Statement::While {
+                condition: iterable,
+                body,
+                ..
+            } => {
+                self.visit_expression(iterable);
+                for statement in body {
+                    self.visit_statement(statement);
+                }
+            }
+            Statement::Return {
+                value: Some(value), ..
+            } => self.visit_expression(value),
+            Statement::Return { value: None, .. }
+            | Statement::Break { .. }
+            | Statement::Continue { .. } => {}
         }
     }
 
@@ -906,7 +1264,8 @@ impl NodeIndex {
             } => {
                 self.visit_expression(callee);
                 for argument in arguments {
-                    self.visit_expression(argument);
+                    self.push(argument.span);
+                    self.visit_expression(&argument.value);
                 }
             }
             Expression::Member { object, .. } => self.visit_expression(object),

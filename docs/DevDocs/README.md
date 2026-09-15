@@ -53,7 +53,7 @@
 | 03C | [C2-A 最小集合静态闭环交接记录](03c-c2a-sets.md) | 集合 AST、单一元素类型、可哈希诊断和成员判断 | 已完成静态阶段 |
 | 03D | [C2-B 异构集合与动态成员静态闭环](03d-c2b-heterogeneous-sets.md) | 默认异构集合、`set<T | U>` 注解、动态尾标和并集成员判断 | 已完成静态阶段 |
 | 03E | [C2-C 集合运算静态闭环](03e-c2c-set-operations.md) | `+`、`&`、`-`、`^`、集合比较、四种原地运算和动态检查计划 | 已完成静态阶段 |
-| 04 | [函数与控制流](04-functions-and-control.md) | `def`、表达式、控制流和入口规则 | 未开始 |
+| 04 | [函数与控制流](04-functions-and-control.md) | `def`、表达式、控制流和入口规则 | 已完成静态阶段（04-A 至 04-D） |
 | 05 | [表、模块与工程模型](05-tables-and-projects.md) | 表生命周期、源码模块、依赖图和包外导出 | 未开始 |
 | 06 | [内存与运行时语义](06-memory-and-runtime.md) | 确定性释放、逃逸分析和引用计数 | 未开始 |
 | 07 | [错误模型与并发安全边界](07-concurrency-and-errors.md) | 结构化错误传播、堆栈/日志诊断、数据竞争策略和并发模型边界 | 未开始 |
@@ -87,6 +87,8 @@ A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码�
 [01D. P0 最小解析器与 AST 实现交接记录](01d-p0-parser-implementation.md) 与
 [01E. P1 表达式与选择器实现交接记录](01e-p1-expression-selectors.md) 与
 [01F. P2-A 语法模块解耦交接记录](01f-p2a-syntax-decoupling.md)。类型与容器阶段的 C0、C1 静态阶段已完成，C2-A 最小集合静态闭环、C2-B 异构集合静态闭环和 C2-C 集合运算静态闭环也已完成；其实现边界、交接清单和未负责事项分别见 [03A. C0 基础容器与精确路径](03a-c0-containers.md)、[03B. C1 有序容器选择器](03b-c1-ordered-selectors.md)、[03C. C2-A 最小集合静态闭环](03c-c2a-sets.md)、[03D. C2-B 异构集合与动态成员](03d-c2b-heterogeneous-sets.md)、[03E. C2-C 集合运算](03e-c2c-set-operations.md) 和 [03. 容器、集合与索引路径](03-collections.md)。Runtime 消费仍属于后续阶段。
+
+04 阶段已完成 04-A 至 04-D 的静态闭环：函数参数/调用 AST、签名预登记与推断、条件/循环/返回约束以及脚本/工程入口元数据均已通过定向测试。该阶段只产出公开 AST、类型结果和 Runtime 检查计划，不执行 Xiao 代码；交接边界、诊断编号和后置消费者见 [04. 函数与控制流](04-functions-and-control.md)。
 
 ## 文档变更规则
 

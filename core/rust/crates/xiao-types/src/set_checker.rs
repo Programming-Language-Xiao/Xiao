@@ -7,7 +7,7 @@
 
 use xiao_diagnostics::DiagnosticParam;
 use xiao_source::SourceSpan;
-use xiao_syntax::{BinaryOperator, Expression, Name, SetTypeAnnotation, TypeTerm};
+use xiao_syntax::{BinaryOperator, CallArgument, Expression, Name, SetTypeAnnotation, TypeTerm};
 
 use crate::diagnostics::{
     CONTAINER_TYPE_MISMATCH_CODE, INVALID_DECLARATION_PATH_CODE, SET_CONSTRUCTOR_ARITY_CODE,
@@ -188,12 +188,12 @@ impl<'source> TypeChecker<'source> {
     /// 检查 `set()` 空集合构造式；C2-A 不接受构造参数。
     pub(super) fn check_set_constructor(
         &mut self,
-        arguments: &[Expression],
+        arguments: &[CallArgument],
         span: SourceSpan,
     ) -> Type {
         if !arguments.is_empty() {
             for argument in arguments {
-                self.check_expression(argument);
+                self.check_expression(&argument.value);
             }
             self.type_error_with_params(
                 SET_CONSTRUCTOR_ARITY_CODE,

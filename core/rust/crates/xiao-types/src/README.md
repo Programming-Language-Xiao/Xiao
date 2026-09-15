@@ -28,3 +28,14 @@
 
 后续 Runtime/IR 只能通过这些稳定值对象消费 C1/C2-B 结果；不得把 VM、LLVM、CLI 或平台代码
 反向引入本目录。若单个文件继续膨胀，应按职责拆分并保持门面只做装配与重导出。
+
+## 04 阶段职责
+
+`functions.rs` 只保存 `FunctionSignature` 和参数签名值对象；`function_checker.rs` 负责函数预登记、
+参数匹配、返回统一、递归/前向引用和未解析类型诊断；`control_checker.rs` 负责条件、可迭代性、
+循环深度、`break`/`continue` 和入口相关静态约束。`checker.rs` 仅做 AST 分派与结果装配，不能重新承载
+这些模块的实现细节。
+
+04 阶段的检查器可以生成 `BooleanCondition`、`Iterable` 等 `RuntimeCheckKind`，但不执行它们；不创建
+调用栈、闭包、资源释放或字节码。函数参数作用域退出后才回写外层函数绑定，防止同名参数遮蔽签名。
+类型诊断的 `code`、`message_id`、结构化参数和源码区间是稳定接口，中文文本仅为预览译文。

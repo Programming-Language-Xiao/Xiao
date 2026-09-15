@@ -15,4 +15,5 @@
 
 ## 下一步
 
-容器相关内容见[容器与集合](../collections/README.md)。
+容器相关内容见[容器与集合](../collections/README.md)；函数和流程控制见[函数](../functions/README.md)与
+[控制流](../control-flow/README.md)。

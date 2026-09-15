@@ -30,3 +30,12 @@
 和四种原地赋值；`c2c_snapshots.rs` 读取 `tests/spec/05-containers/c2c-valid.json` 与
 `c2c-errors.json`，只断言稳定诊断身份和结构化参数。测试不创建 Runtime 集合、不执行
 哈希或集合值运算；`frozenset` 留给后续 C2 子阶段。
+
+## 04 阶段测试登记
+
+`f04_functions.rs` 对应 04-B/04-C，覆盖函数签名预登记、递归和前向推断、默认/位置/关键字/展开参数、
+反引号函数调用、参数遮蔽、返回类型、隐式 `none`、严格 `bool` 条件、已知/动态可迭代对象以及循环控制
+位置。测试只检查 `TypeCheckResult`、稳定诊断和 Runtime 检查计划，不执行用户代码，不验证调用栈或后端生成。
+
+04 阶段未新增执行快照；待 Runtime/IR 契约冻结后再加入双模式规格。每个测试辅助函数都必须有注释，
+诊断断言使用 `code`、`message_id` 和参数，不匹配本地化文本。

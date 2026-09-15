@@ -175,6 +175,22 @@ impl TypeEnvironment {
         self.declare(name, Binding::constant(scheme))
     }
 
+    /// 替换一个已经存在绑定的类型方案。
+    ///
+    /// 函数签名在函数体检查前会以类型变量占位，函数体检查完成后需要把
+    /// 统一后的方案写回环境；普通变量不会通过此接口隐式改变类型。
+    pub fn replace_scheme(
+        &mut self,
+        name: &str,
+        scheme: TypeScheme,
+    ) -> Result<(), EnvironmentError> {
+        let binding = self
+            .lookup_mut(name)
+            .ok_or_else(|| EnvironmentError::Unknown(name.to_owned()))?;
+        binding.scheme = scheme;
+        Ok(())
+    }
+
     /// 在内层到外层作用域中查找绑定。
     #[must_use]
     pub fn lookup(&self, name: &str) -> Option<&Binding> {

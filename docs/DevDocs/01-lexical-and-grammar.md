@@ -9,8 +9,8 @@
 F0、L0、L1、L2、P0 与 P1 已完成首批实现：`xiao-source` 提供不可变 UTF-8 源码、
 字节区间、行列位置和游标；`xiao-syntax` 提供基础词法、P0 AST，以及 P1 的表达式核心和
 索引选择器 AST。词法快照位于 `tests/spec/01-lexical`，P0 快照位于 `tests/spec/02-parser`，
-P1 测试位于 `core/rust/crates/xiao-syntax/tests/p1_expression.rs`。当前仍未实现类型检查、
-容器执行或 Xiao Runtime。
+P1 测试位于 `core/rust/crates/xiao-syntax/tests/p1_expression.rs`。类型检查已在独立的第 02/04
+阶段建立静态结果；本阶段词法/语法前端仍不执行类型、容器或 Xiao Runtime。
 
 ### 接手前必须阅读
 

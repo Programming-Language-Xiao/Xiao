@@ -66,3 +66,20 @@ pub const SET_INDEX_UNSUPPORTED_CODE: &str = "X03-TYPE-020";
 pub const SET_OPERATION_TYPE_CODE: &str = "X03-TYPE-021";
 /// 集合比较操作数不是两个集合。
 pub const SET_COMPARISON_TYPE_CODE: &str = "X03-TYPE-022";
+
+/// 函数名称重复或函数声明无法登记。
+pub const FUNCTION_DECLARATION_CODE: &str = "X04-TYPE-001";
+/// 函数调用参数与签名不匹配。
+pub const FUNCTION_CALL_CODE: &str = "X04-TYPE-002";
+/// 返回值与函数返回类型不匹配。
+pub const FUNCTION_RETURN_CODE: &str = "X04-TYPE-003";
+/// 参数或返回类型无法从静态约束中推断。
+pub const FUNCTION_INFERENCE_CODE: &str = "X04-TYPE-004";
+/// `if`/`while` 条件不是布尔类型。
+pub const CONDITION_TYPE_CODE: &str = "X04-TYPE-005";
+/// `for in` 右侧不是已知可迭代容器。
+pub const ITERABLE_TYPE_CODE: &str = "X04-TYPE-006";
+/// `break`/`continue` 出现在循环外。
+pub const LOOP_CONTROL_CODE: &str = "X04-TYPE-007";
+/// 程序入口声明与静态规则冲突。
+pub const ENTRY_RULE_CODE: &str = "X04-TYPE-008";
