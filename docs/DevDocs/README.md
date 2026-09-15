@@ -59,7 +59,8 @@
 | 05B | [本地模块发现与依赖图实现交接记录](05b-local-module-resolution.md) | 文件模块、目录命名空间、绑定、再导出和循环诊断 | 已完成 |
 | 05C | [表语法与静态生命周期闭环交接记录](05c-table-static-closure.md) | `[Table]`/`[[Table]]` AST、成员签名、可见性、`new/init/drop` 静态契约 | 已完成静态阶段 |
 | 05D | [`config.xiao` 声明式配置静态闭环](05d-config-static-closure.md) | 独立配置树、静态值、项目身份、包外导出和不可执行诊断 | 已完成静态阶段 |
-| 06 | [内存与运行时语义](06-memory-and-runtime.md) | 确定性释放、逃逸分析和引用计数 | 未开始 |
+| 06 | [内存与运行时语义](06-memory-and-runtime.md) | 确定性释放、逃逸分析和引用计数 | 进行中（06-A 静态闭环已完成） |
+| 06A | [生命周期静态闭环交接记录](06a-lifetime-static-closure.md) | 作用域、控制流、逃逸事实、强/弱所有权图和退出释放计划 | 已完成静态阶段 |
 | 07 | [错误模型与并发安全边界](07-concurrency-and-errors.md) | 结构化错误传播、堆栈/日志诊断、数据竞争策略和并发模型边界 | 未开始 |
 | 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 未开始 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 未开始 |
@@ -95,6 +96,8 @@ A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码�
 04 阶段已完成 04-A 至 04-D 的静态闭环：函数参数/调用 AST、签名预登记与推断、条件/循环/返回约束以及脚本/工程入口元数据均已通过定向测试。该阶段只产出公开 AST、类型结果和 Runtime 检查计划，不执行 Xiao 代码；交接边界、诊断编号和后置消费者见 [04. 函数与控制流](04-functions-and-control.md)。
 
 05 阶段当前完成了 05-A、05-B、05-C 和 05-D 的静态闭环：解析器能保留绝对导入与表 AST，模块分析器能从项目根发现 `.xiao` 文件、建立纯目录命名空间、解析词法绑定、传播顶层再导出并生成确定性依赖图，类型层能检查表成员、可见性和构造生命周期签名，配置层能把根 `config.xiao` 转换为独立的不可执行配置树并校验项目身份/包外导出。该闭环不下载外部依赖、不执行模块初始化或 `init`/`drop`，也不提供 Runtime 表值；接手实现时先阅读 [05A. 导入语法](05a-import-syntax.md)、[05B. 本地模块解析](05b-local-module-resolution.md)、[05C. 表静态闭环](05c-table-static-closure.md) 和 [05D. 配置静态闭环](05d-config-static-closure.md)，再进入 06 Runtime 或 11A 包管理。
+
+06-A 已完成静态生命周期闭环：`xiao-lifetime` 能从既有 AST 和类型结果建立程序/函数/分支/循环/表作用域、控制流基本块、绑定与匿名对象、强/弱边、闭包/返回/容器逃逸事实，并为八类退出边生成确定性释放计划；强对象环报告 `X06-LIFETIME-001`，动态值保守提升并报告 `X06-LIFETIME-005`。该阶段不创建 Runtime 对象、不执行引用计数或 `drop`，后续 06-B/08 接手时先阅读 [06A. 生命周期静态闭环](06a-lifetime-static-closure.md)，再实现 Runtime/IR 消费。
 
 ## 文档变更规则
 

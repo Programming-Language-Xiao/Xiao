@@ -7,6 +7,7 @@ members = [
     "crates/xiao-syntax",
     "crates/xiao-config",
     "crates/xiao-types",
+    "crates/xiao-lifetime",
     "crates/xiao-modules",
     "crates/xiao-ir",
     "crates/xiao-runtime",

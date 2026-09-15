@@ -10,6 +10,7 @@
       "core/rust/crates/xiao-syntax",
       "core/rust/crates/xiao-config",
       "core/rust/crates/xiao-types",
+      "core/rust/crates/xiao-lifetime",
       "core/rust/crates/xiao-modules",
       "core/rust/crates/xiao-ir",
       "core/rust/crates/xiao-runtime",

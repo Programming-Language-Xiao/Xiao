@@ -154,6 +154,16 @@ name = "xiao-ir"
 version = "0.1.0"
 
 [[package]]
+name = "xiao-lifetime"
+version = "0.1.0"
+dependencies = [
+ "xiao-diagnostics",
+ "xiao-source",
+ "xiao-syntax",
+ "xiao-types",
+]
+
+[[package]]
 name = "xiao-modules"
 version = "0.1.0"
 dependencies = [

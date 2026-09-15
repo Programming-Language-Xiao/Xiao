@@ -12,9 +12,11 @@
 6. [程序入口](entry/README.md)
 7. [表与生命周期](tables/README.md)
 8. [模块与工程](modules/README.md)
+9. [内存与静态生命周期](memory/README.md)
 
 ## 相关主题
 
 运行代码前可先阅读[开始使用](../getting-started/README.md)；语言错误的恢复方法见[故障排查](../troubleshooting/README.md)。
 
-函数、控制流和入口页面的 `verified` 只覆盖 04 阶段静态解析与类型检查，不表示当前版本已经执行 Xiao 程序。
+函数、控制流和入口页面的 `verified` 只覆盖 04 阶段静态解析与类型检查；内存页面的
+`verified` 只覆盖 06-A 静态生命周期计划。当前版本仍不表示已经执行 Xiao 程序。
