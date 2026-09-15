@@ -1,5 +1,7 @@
 # Xiao
 
+![Xiao Logo](./resources/brand/XiaoLogo.png)
+
 Xiao 编程语言工程。
 
 - [开发文档索引](docs/DevDocs/README.md)：规格、工程顺序、SOP 和 Agent 交接上下文。
