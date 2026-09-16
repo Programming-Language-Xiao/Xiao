@@ -12,12 +12,15 @@ use crate::graph::{GraphError, OwnershipGraph};
 use crate::model::{ExitKind, LifetimeResult, ReleaseAction, ReleaseActionKind, ReleasePlan};
 
 /// 所有退出边种类的稳定顺序。
-const ALL_EXITS: [ExitKind; 8] = [
+const ALL_EXITS: [ExitKind; 11] = [
     ExitKind::Normal,
     ExitKind::Return,
     ExitKind::Break,
     ExitKind::Continue,
     ExitKind::Error,
+    ExitKind::Raise,
+    ExitKind::Catch,
+    ExitKind::UnmatchedError,
     ExitKind::ConstructFailure,
     ExitKind::DynamicCheckFailure,
     ExitKind::Fatal,

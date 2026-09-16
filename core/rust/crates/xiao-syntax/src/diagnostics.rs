@@ -114,6 +114,15 @@ pub const INVALID_FUNCTION_TYPE_CODE: &str = "X04-PARSE-005";
 /// `[main]` 入口头部结构非法时使用的稳定诊断编号。
 pub const INVALID_ENTRY_CODE: &str = "X04-PARSE-006";
 
+/// 错误控制流头部结构非法时使用的稳定诊断编号。
+pub const INVALID_ERROR_CONTROL_FLOW_CODE: &str = "X07-PARSE-001";
+
+/// `raise` 缺少错误表达式时使用的稳定诊断编号。
+pub const MISSING_RAISE_VALUE_CODE: &str = "X07-PARSE-002";
+
+/// `try` 没有 `catch` 或 `finally` 时使用的稳定诊断编号。
+pub const MISSING_ERROR_HANDLER_CODE: &str = "X07-PARSE-003";
+
 /// 绝对模块路径结构非法时使用的稳定诊断编号。
 pub const INVALID_IMPORT_PATH_CODE: &str = "X05-PARSE-001";
 

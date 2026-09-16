@@ -62,7 +62,8 @@
 | 06 | [内存与运行时语义](06-memory-and-runtime.md) | 确定性释放、逃逸分析和引用计数 | 进行中（06-A、06-B 已完成，容器 Runtime 后置） |
 | 06A | [生命周期静态闭环交接记录](06a-lifetime-static-closure.md) | 作用域、控制流、逃逸事实、强/弱所有权图和退出释放计划 | 已完成静态阶段 |
 | 06B | [Runtime 对象与表生命周期执行闭环](06b-runtime-objects-and-tables.md) | 不透明对象头、Strong/Weak、标量/str、表状态机和释放展开驱动器 | 已完成首版 |
-| 07 | [错误模型与并发安全边界](07-concurrency-and-errors.md) | 统一错误核心、堆栈/报告契约、日志诊断、数据竞争策略和并发模型边界 | 进行中（07-A 已完成，07-B/07-C/07-D 后置） |
+| 07 | [错误模型与并发安全边界](07-concurrency-and-errors.md) | 统一错误核心、堆栈/报告契约、日志诊断、数据竞争策略和并发模型边界 | 进行中（07-A、07-B 已完成，07-C/07-D 后置） |
+| 07B | [错误控制流与统一展开消费](07-concurrency-and-errors.md#07-b-已完成错误控制流与统一展开消费) | `try`/`catch`/`finally`/`raise` 的语法、静态恢复边界、生命周期展开和 Runtime 路由契约 | 已完成首版 |
 | 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 未开始 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 未开始 |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
@@ -103,6 +104,8 @@ A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码�
 06-B 已完成首版 Runtime 执行闭环：`xiao-runtime` 消费 05-C 的 `TableSignature` 和 06-A 的 `ReleasePlan`，提供私有不透明对象头、单线程非原子 Strong/Weak 句柄、UTF-8 `str`、固定宽度标量、严格 `bool ± 整数`、表构造/`init`/`drop` 状态机和 `finally -> drop -> catch/传播` 释放展开。清理错误进入 `suppressed`，不覆盖主错误；本阶段仍不实现 VM、LLVM、并发或数组/元组/集合/字典的真实 Runtime。接手 08/09/10 时先阅读 [06B. Runtime 对象与表生命周期](06b-runtime-objects-and-tables.md) 及 [Runtime 使用文档](../UseDocs/language/memory/runtime/README.md)。
 
 07-A 已完成统一错误模型与报告器闭环：`xiao-diagnostics` 现在是 `XiaoError`、`FatalError`、统一 `StackFrame`、`ReportRecord` 和消息渲染接口的唯一实现；`xiao-runtime` 通过兼容门面迁移而不改变 06-B 行为。07-A 不实现错误控制流语法、日志文件、`-debug` 窗口或并发调度；接手后续 07-B/07-C/07-D 时先阅读 [07. 错误模型与并发安全边界](07-concurrency-and-errors.md) 的 07-A 交付记录和 [UseDocs 错误报告](../UseDocs/troubleshooting/errors-and-reports.md)。
+
+07-B 已完成错误控制流与统一展开消费首版：`xiao-syntax` 提供 `try`、`catch`、`finally`、`raise` 的 AST 与恢复；`xiao-types` 固定按错误类型名检查可恢复边界、Fatal 禁止捕获和具体到宽泛的顺序；`xiao-lifetime` 建立 try/catch/finally 作用域、正常/错误/未匹配/控制转移的释放计划与展开图；`xiao-runtime` 测试驱动器验证具体类型路由、未匹配传播和 Fatal 隔离。接手 07-C/07-D 或 08 前端降低时，先阅读 [07-B 交接记录](07-concurrency-and-errors.md#07-b-已完成错误控制流与统一展开消费)、[UseDocs 错误控制流](../UseDocs/language/control-flow/error-handling.md) 和 [Runtime 展开](../UseDocs/language/memory/runtime/errors-and-unwind.md)。07-B 不包含错误码/条件/模式匹配、`Result` 泛型、`?`、VM、LLVM、日志文件、`-debug` 窗口或并发实现。
 
 ## 文档变更规则
 

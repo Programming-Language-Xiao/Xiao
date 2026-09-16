@@ -9,5 +9,6 @@
 当前可用的前端诊断基础见[结构化诊断与词法错误](diagnostics-structure.md)，运行时错误模型和堆栈见[运行时错误报告](errors-and-reports.md)。
 
 函数参数和调用问题见[函数错误](../language/functions/errors.md)，条件、循环和返回问题见
-[控制流错误](../language/control-flow/errors.md)。这些页面按稳定 `code`、`message_id` 和结构化参数排查，
+[控制流错误](../language/control-flow/errors.md)；`try`/`catch`/`finally`/`raise` 的匹配和清理问题见
+[错误控制流](../language/control-flow/error-handling.md)。这些页面按稳定 `code`、`message_id` 和结构化参数排查，
 不要求复制本地化文案。

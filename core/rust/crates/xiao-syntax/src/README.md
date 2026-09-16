@@ -1,7 +1,7 @@
 # `xiao-syntax/src`
 
 按职责放置 Token、词法器、P0/P1/P2/C0/C2 AST、Pratt 解析器、诊断编号和选择器类型。对应工程期
-01–04；P1 首批、P2 标量声明语法、C0 容器字面量/声明路径 AST、C2-B 集合类型注解 AST 和 C2-C 集合运算 AST 已完成，P2-A 已将实现拆为 `token.rs`、`lexer.rs`、`ast.rs`、
+01–04、07-B；P1 首批、P2 标量声明语法、C0 容器字面量/声明路径 AST、C2-B 集合类型注解 AST、C2-C 集合运算 AST 和 07-B 错误控制流 AST 已完成，P2-A 已将实现拆为 `token.rs`、`lexer.rs`、`ast.rs`、
 `parser.rs`、`diagnostics.rs` 与 `selectors.rs`，`lib.rs` 只负责装配和公开重导出。C2-C 的 `&`、`^` 及复合赋值
 只在语法层保留结构，集合含义由 `xiao-types` 的独立运算模块决定。
 类型检查放在独立的 `xiao-types` crate。
@@ -14,9 +14,8 @@
 ## 04 阶段职责
 
 函数与控制流语法仍由 `parser.rs` 统一消费 Token，但 AST 数据结构集中在 `ast.rs`：
-`Function`、参数种类、调用参数、`If`、`For`、`While`、`Return`、`Break` 和 `Continue`
-均保存递归体、文档注释和原始源码区间。`diagnostics.rs` 只登记 `X04-PARSE-001` 至
-`X04-PARSE-006`，不执行类型判断。
+`Function`、参数种类、调用参数、`If`、`For`、`While`、`Return`、`Break` 和 `Continue`、`Try`、`CatchClause`、`Raise`
+均保存递归体、文档注释和原始源码区间。`diagnostics.rs` 另登记 `X07-PARSE-001` 至 `X07-PARSE-003`，不执行类型判断。
 
 解析器负责函数参数分隔、默认值、`/`/`*`/`**` 结构和缩进 `Dedent` 恢复；参数数量、类型统一、
 条件类型和循环位置由独立的 `xiao-types` 模块负责。入口只记录 `EntryMode`，不生成启动函数。

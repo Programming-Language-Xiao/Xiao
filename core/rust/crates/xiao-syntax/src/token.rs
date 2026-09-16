@@ -33,6 +33,14 @@ pub enum KeywordKind {
     Break,
     /// 循环控制关键字 `continue`。
     Continue,
+    /// 错误主体关键字 `try`。
+    Try,
+    /// 错误处理器关键字 `catch`。
+    Catch,
+    /// 清理块关键字 `finally`。
+    Finally,
+    /// 抛出可恢复错误关键字 `raise`。
+    Raise,
     /// 编译期常量关键字 `const`。
     Const,
     /// 模块导入关键字 `import`。
@@ -86,6 +94,10 @@ impl KeywordKind {
             Self::Return => "return",
             Self::Break => "break",
             Self::Continue => "continue",
+            Self::Try => "try",
+            Self::Catch => "catch",
+            Self::Finally => "finally",
+            Self::Raise => "raise",
             Self::Const => "const",
             Self::Import => "import",
             Self::From => "from",
@@ -121,6 +133,10 @@ impl KeywordKind {
             "return" => Self::Return,
             "break" => Self::Break,
             "continue" => Self::Continue,
+            "try" => Self::Try,
+            "catch" => Self::Catch,
+            "finally" => Self::Finally,
+            "raise" => Self::Raise,
             "const" => Self::Const,
             "import" => Self::Import,
             "from" => Self::From,

@@ -8,8 +8,8 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use xiao_source::{SourceFile, SourceSpan};
 use xiao_syntax::{
-    DeclaredType, ElifBranch, Expression, FunctionParameter, LiteralKind, Name, Program,
-    ScalarType, Statement, TableKind, TypeTerm,
+    CatchClause, DeclaredType, ElifBranch, Expression, FunctionParameter, LiteralKind, Name,
+    Program, ScalarType, Statement, TableKind, TypeTerm,
 };
 use xiao_types::{SetType, TableType, Type, TypeCheckResult};
 
@@ -73,6 +73,30 @@ struct FlowSummary {
     exits: BTreeSet<ExitKind>,
 }
 
+/// 一个受保护语句片段在分析期间产生的错误出口。
+///
+/// `try`、`catch` 和 `finally` 各自消费自己的收集器，避免一个处理器
+/// 把自己产生的错误错误地送回同一个 `catch` 链。片段结束后，未匹配出口
+/// 才会显式登记到外层收集器。
+#[derive(Default)]
+struct TryContext {
+    /// 该片段中由动态检查或 `raise` 创建的错误块。
+    error_blocks: Vec<BlockId>,
+    /// 该片段中尚未经过所属 `finally` 的控制转移源。
+    control_exits: Vec<ControlExit>,
+}
+
+/// 尚未经过所属 `finally` 的控制转移及其最终目标。
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+struct ControlExit {
+    /// 产生转移的基本块。
+    source: BlockId,
+    /// 转移类别。
+    kind: ExitKind,
+    /// 已解析的目标块；循环作用域结束后仍需保留该身份。
+    target: Option<BlockId>,
+}
+
 impl FlowSummary {
     /// 创建仍可正常到达的空摘要。
     fn reachable() -> Self {
@@ -128,6 +152,7 @@ pub(crate) struct EscapeAnalyzer<'source> {
     next_block: u32,
     next_order: BTreeMap<ScopeId, usize>,
     current_block: Option<BlockId>,
+    try_contexts: Vec<TryContext>,
 }
 
 impl<'source> EscapeAnalyzer<'source> {
@@ -147,6 +172,7 @@ impl<'source> EscapeAnalyzer<'source> {
             next_block: 0,
             next_order: BTreeMap::new(),
             current_block: None,
+            try_contexts: Vec::new(),
         }
     }
 
@@ -234,11 +260,16 @@ impl<'source> EscapeAnalyzer<'source> {
 
     /// 在当前基本块登记一条可能退出边。
     fn record_block_exit(&mut self, exit: ExitKind) {
-        if let Some(block) = self
-            .current_block
-            .and_then(|id| self.result.control_flow.blocks.get_mut(&id))
-        {
-            block.exits.insert(exit);
+        if let Some(current) = self.current_block {
+            if let Some(block) = self.result.control_flow.blocks.get_mut(&current) {
+                block.exits.insert(exit);
+            }
+            if matches!(
+                exit,
+                ExitKind::Return | ExitKind::Break | ExitKind::Continue
+            ) {
+                self.register_control_exit(current, exit);
+            }
         }
     }
 
@@ -253,6 +284,108 @@ impl<'source> EscapeAnalyzer<'source> {
             info.exits.insert(exit);
         }
         self.connect_blocks(from, block, ControlFlowEdgeKind::Error);
+        self.register_error_block(block);
+    }
+
+    /// 把错误块放入当前片段；没有片段时表示它已经到达程序外层。
+    fn register_error_block(&mut self, block: BlockId) {
+        if let Some(context) = self.try_contexts.last_mut() {
+            if !context.error_blocks.contains(&block) {
+                context.error_blocks.push(block);
+            }
+        }
+    }
+
+    /// 向一个合成块连接一组退出来源并保持边去重。
+    fn connect_exit_sources(
+        &mut self,
+        sources: &[BlockId],
+        target: BlockId,
+        kind: ControlFlowEdgeKind,
+    ) {
+        for source in sources {
+            self.connect_blocks(Some(*source), target, kind);
+        }
+    }
+
+    /// 移除控制转移在进入 `finally` 前建立的直达边，禁止绕过清理块。
+    fn disconnect_control_exit(&mut self, source: BlockId, exit: ExitKind) {
+        let edge = control_edge(exit);
+        if let Some(block) = self.result.control_flow.blocks.get_mut(&source) {
+            block.successors.retain(|(_, kind)| *kind != edge);
+        }
+    }
+
+    /// 将尚未清理的控制退出登记到当前错误控制片段。
+    fn register_control_exit(&mut self, source: BlockId, exit: ExitKind) {
+        let target = match exit {
+            ExitKind::Return => self.functions.last().map(|context| context.exit),
+            ExitKind::Break => self.loops.last().map(|context| context.exit),
+            ExitKind::Continue => self.loops.last().map(|context| context.header),
+            _ => None,
+        };
+        self.register_control_exit_with_target(source, exit, target);
+    }
+
+    /// 登记带固定目标的控制退出。
+    fn register_control_exit_with_target(
+        &mut self,
+        source: BlockId,
+        exit: ExitKind,
+        target: Option<BlockId>,
+    ) {
+        if let Some(context) = self.try_contexts.last_mut() {
+            let control = ControlExit {
+                source,
+                kind: exit,
+                target,
+            };
+            if !context.control_exits.contains(&control) {
+                context.control_exits.push(control);
+            }
+        }
+    }
+
+    /// 把控制退出转发给外层片段；没有外层片段时保留原有直达边。
+    fn forward_control_exits(&mut self, exits: &[ControlExit]) {
+        if self.try_contexts.is_empty() {
+            return;
+        }
+        for exit in exits {
+            self.disconnect_control_exit(exit.source, exit.kind);
+            self.register_control_exit_with_target(exit.source, exit.kind, exit.target);
+        }
+    }
+
+    /// 从清理完成块恢复一个已登记的非正常控制流目标。
+    fn connect_control_exit(
+        &mut self,
+        from: Option<BlockId>,
+        exit: ExitKind,
+        target: Option<BlockId>,
+    ) {
+        if let Some(target) = target {
+            self.connect_blocks(from, target, control_edge(exit));
+            return;
+        }
+        match exit {
+            ExitKind::Return => {
+                if let Some(target) = self.functions.last().map(|context| context.exit) {
+                    self.connect_blocks(from, target, ControlFlowEdgeKind::Return);
+                }
+            }
+            ExitKind::Break => {
+                if let Some(target) = self.loops.last().map(|context| context.exit) {
+                    self.connect_blocks(from, target, ControlFlowEdgeKind::Break);
+                }
+            }
+            ExitKind::Continue => {
+                if let Some(target) = self.loops.last().map(|context| context.header) {
+                    self.connect_blocks(from, target, ControlFlowEdgeKind::Continue);
+                }
+            }
+            _ => {}
+        }
     }
 
     /// 规范化普通和反引号名称，格式与类型层环境一致。
@@ -695,7 +828,228 @@ impl<'source> EscapeAnalyzer<'source> {
                 self.record_block_exit(ExitKind::Continue);
                 FlowSummary::terminal(ExitKind::Continue)
             }
+            Statement::Raise { value, span, .. } => self.analyze_raise(value, *span),
+            Statement::Try {
+                body,
+                catches,
+                finally_body,
+                span,
+                ..
+            } => self.analyze_try(body, catches, finally_body.as_deref(), *span),
         }
+    }
+
+    /// 分析主动 `raise`，将可恢复错误接入统一错误退出边。
+    fn analyze_raise(&mut self, value: &Expression, span: SourceSpan) -> FlowSummary {
+        let facts = self.analyze_expression(value);
+        self.attach_facts(None, &facts, span, OwnershipEdgeReason::Alias);
+        self.record_block_exit(ExitKind::Raise);
+        self.connect_error_block(span, ExitKind::Raise);
+        FlowSummary::terminal(ExitKind::Raise)
+    }
+
+    /// 分析 `try`/`catch`/`finally`，为每个子块建立独立作用域和错误边。
+    fn analyze_try(
+        &mut self,
+        body: &[Statement],
+        catches: &[CatchClause],
+        finally_body: Option<&[Statement]>,
+        span: SourceSpan,
+    ) -> FlowSummary {
+        let Some(parent_scope) = self.current_scope() else {
+            return FlowSummary::reachable();
+        };
+        let parent_block = self.current_block;
+        let join = self.new_block(parent_scope, Some(span));
+        let try_scope = self.push_scope(ScopeKind::Try, span, Some(parent_scope));
+        let try_block = self.new_block(try_scope, Some(span));
+        self.connect_blocks(parent_block, try_block, ControlFlowEdgeKind::Next);
+        self.current_block = Some(try_block);
+        self.try_contexts.push(TryContext::default());
+        let try_flow = self.analyze_statements(body);
+        let try_errors = self
+            .try_contexts
+            .pop()
+            .map(|context| (context.error_blocks, context.control_exits))
+            .unwrap_or_default();
+        let (try_errors, try_control_sources) = try_errors;
+        let try_normal_sources = if try_flow.normal {
+            self.current_block.into_iter().collect::<Vec<_>>()
+        } else {
+            Vec::new()
+        };
+        self.pop_scope();
+
+        let mut summary = FlowSummary {
+            normal: false,
+            exits: BTreeSet::new(),
+        };
+        for exit in try_flow.exits.iter().copied() {
+            if catches.is_empty()
+                || !matches!(
+                    exit,
+                    ExitKind::Error
+                        | ExitKind::Raise
+                        | ExitKind::ConstructFailure
+                        | ExitKind::DynamicCheckFailure
+                        | ExitKind::Fatal
+                        | ExitKind::UnmatchedError
+                )
+            {
+                summary.exits.insert(exit);
+            }
+        }
+
+        let mut normal_sources = try_normal_sources;
+        let mut control_sources = try_control_sources;
+        let mut propagated_sources = Vec::new();
+        let mut catch_error_sources = Vec::new();
+        if catches.is_empty() {
+            propagated_sources.extend(try_errors.iter().copied());
+        }
+        for catch in catches {
+            let catch_scope = self.push_scope(ScopeKind::Catch, catch.span, Some(parent_scope));
+            let catch_block = self.new_block(catch_scope, Some(catch.span));
+            self.connect_exit_sources(&try_errors, catch_block, ControlFlowEdgeKind::Error);
+            self.current_block = Some(catch_block);
+            let _ = self.declare_binding(
+                catch.binding,
+                catch.binding.span,
+                Some(Type::Dynamic),
+                StorageClass::HeapStrong,
+                false,
+                false,
+            );
+            self.try_contexts.push(TryContext::default());
+            let catch_flow = self.analyze_statements(&catch.body);
+            let catch_errors = self
+                .try_contexts
+                .pop()
+                .map(|context| (context.error_blocks, context.control_exits))
+                .unwrap_or_default();
+            let (catch_errors, catch_controls) = catch_errors;
+            let catch_normal = if catch_flow.normal {
+                self.current_block.into_iter().collect::<Vec<_>>()
+            } else {
+                Vec::new()
+            };
+            if catch_flow.normal {
+                self.record_block_exit(ExitKind::Catch);
+                normal_sources.extend(catch_normal);
+            }
+            control_sources.extend(catch_controls);
+            catch_error_sources.extend(catch_errors);
+            summary.exits.extend(
+                catch_flow
+                    .exits
+                    .iter()
+                    .copied()
+                    .filter(|exit| *exit != ExitKind::Catch),
+            );
+            self.pop_scope();
+        }
+
+        let unmatched_block = if catches.is_empty() {
+            None
+        } else {
+            let block = self.new_block(parent_scope, Some(span));
+            if let Some(info) = self.result.control_flow.blocks.get_mut(&block) {
+                info.exits.insert(ExitKind::UnmatchedError);
+            }
+            self.connect_exit_sources(&try_errors, block, ControlFlowEdgeKind::Error);
+            summary.exits.insert(ExitKind::Catch);
+            summary.exits.insert(ExitKind::UnmatchedError);
+            Some(block)
+        };
+
+        propagated_sources.extend(unmatched_block);
+        propagated_sources.extend(catch_error_sources.iter().copied());
+        propagated_sources.sort_unstable();
+        propagated_sources.dedup();
+
+        let final_errors;
+        let mut final_normal = true;
+
+        if let Some(finally_body) = finally_body {
+            let finally_scope = self.push_scope(ScopeKind::Finally, span, Some(parent_scope));
+            let finally_block = self.new_block(finally_scope, Some(span));
+            self.connect_exit_sources(&normal_sources, finally_block, ControlFlowEdgeKind::Next);
+            self.connect_exit_sources(
+                &propagated_sources,
+                finally_block,
+                ControlFlowEdgeKind::Error,
+            );
+            for control in &control_sources {
+                self.disconnect_control_exit(control.source, control.kind);
+                self.connect_blocks(
+                    Some(control.source),
+                    finally_block,
+                    control_edge(control.kind),
+                );
+            }
+            self.current_block = Some(finally_block);
+            self.try_contexts.push(TryContext::default());
+            let finally_flow = self.analyze_statements(finally_body);
+            final_errors = self
+                .try_contexts
+                .pop()
+                .map(|context| (context.error_blocks, context.control_exits))
+                .unwrap_or_default();
+            let (final_errors, final_controls) = final_errors;
+            summary.exits.extend(finally_flow.exits.iter().copied());
+            final_normal = finally_flow.normal;
+            if finally_flow.normal {
+                if !normal_sources.is_empty() {
+                    self.connect_blocks(self.current_block, join, ControlFlowEdgeKind::Next);
+                }
+                for control in &control_sources {
+                    self.connect_control_exit(self.current_block, control.kind, control.target);
+                }
+                if !propagated_sources.is_empty() {
+                    let propagate = self.new_block(parent_scope, Some(span));
+                    if let Some(info) = self.result.control_flow.blocks.get_mut(&propagate) {
+                        info.exits.insert(ExitKind::UnmatchedError);
+                    }
+                    self.connect_blocks(self.current_block, propagate, ControlFlowEdgeKind::Error);
+                    self.register_error_block(propagate);
+                }
+                // 先把已经经过本层 finally 的控制转移交给外层；没有
+                // 外层 try 时，保留它们到函数/循环目标的直达边。
+                let completed_controls = control_sources
+                    .iter()
+                    .map(|control| ControlExit {
+                        source: finally_block,
+                        kind: control.kind,
+                        target: control.target,
+                    })
+                    .collect::<Vec<_>>();
+                self.forward_control_exits(&completed_controls);
+                self.forward_control_exits(&final_controls);
+            } else {
+                // `finally` 自身的控制转移覆盖之前的路径；只有它们继续
+                // 向外传播，内层 try 的旧出口不能复活。
+                self.forward_control_exits(&final_controls);
+            }
+            for block in final_errors.iter().copied() {
+                self.register_error_block(block);
+            }
+            self.pop_scope();
+        } else {
+            self.connect_exit_sources(&normal_sources, join, ControlFlowEdgeKind::Next);
+            for control in &control_sources {
+                if self.try_contexts.is_empty() {
+                    self.connect_control_exit(Some(control.source), control.kind, control.target);
+                }
+            }
+            self.forward_control_exits(&control_sources);
+            for block in propagated_sources.iter().copied() {
+                self.register_error_block(block);
+            }
+        }
+
+        summary.normal = !normal_sources.is_empty() && final_normal;
+        self.current_block = summary.normal.then_some(join).or(parent_block);
+        summary
     }
 
     /// 分析普通声明。
@@ -846,6 +1200,7 @@ impl<'source> EscapeAnalyzer<'source> {
         let function_scope = self.push_scope(ScopeKind::Function, span, Some(parent));
         let previous_block = self.current_block;
         let previous_loops = std::mem::take(&mut self.loops);
+        let previous_try_contexts = std::mem::take(&mut self.try_contexts);
         let entry = self.new_block(function_scope, Some(span));
         let exit = self.new_block(function_scope, None);
         self.current_block = Some(entry);
@@ -894,6 +1249,7 @@ impl<'source> EscapeAnalyzer<'source> {
         let _ = self.functions.pop();
         self.current_block = previous_block;
         self.loops = previous_loops;
+        self.try_contexts = previous_try_contexts;
         self.pop_scope();
         // 函数体的 return/break/continue 只属于函数内部；声明函数本身不会
         // 终止外围语句序列。
@@ -1487,6 +1843,16 @@ fn body_span(body: &[Statement], fallback: SourceSpan) -> SourceSpan {
         return fallback;
     };
     SourceSpan::new(first.span().start(), last.span().end()).unwrap_or(fallback)
+}
+
+/// 将结构化控制流退出类别映射为控制流图边类别。
+fn control_edge(exit: ExitKind) -> ControlFlowEdgeKind {
+    match exit {
+        ExitKind::Return => ControlFlowEdgeKind::Return,
+        ExitKind::Break => ControlFlowEdgeKind::Break,
+        ExitKind::Continue => ControlFlowEdgeKind::Continue,
+        _ => ControlFlowEdgeKind::Error,
+    }
 }
 
 /// 判断表达式是否只是名称（允许任意层分组），用于区分句柄返回和构造结果返回。

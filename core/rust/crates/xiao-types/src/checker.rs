@@ -384,6 +384,14 @@ impl<'source> TypeChecker<'source> {
             }
             Statement::Break { span, .. } => self.check_break_statement(*span),
             Statement::Continue { span, .. } => self.check_continue_statement(*span),
+            Statement::Try {
+                body,
+                catches,
+                finally_body,
+                span,
+                ..
+            } => self.check_try_statement(body, catches, finally_body.as_deref(), *span),
+            Statement::Raise { value, span, .. } => self.check_raise_statement(value, *span),
         }
     }
 

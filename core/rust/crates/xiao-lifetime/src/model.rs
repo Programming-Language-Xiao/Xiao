@@ -78,6 +78,12 @@ pub enum ScopeKind {
     Table,
     /// 其他由后端建立的普通块作用域。
     Block,
+    /// `try` 受保护主体作用域。
+    Try,
+    /// `catch` 处理器作用域；不继承已释放的 try 局部值。
+    Catch,
+    /// `finally` 清理作用域。
+    Finally,
 }
 
 /// 值的静态所有权边类型。
@@ -155,6 +161,12 @@ pub enum ExitKind {
     Continue,
     /// 一般错误传播边。
     Error,
+    /// `raise` 主动抛出可恢复错误。
+    Raise,
+    /// 错误被某个 `catch` 处理器匹配。
+    Catch,
+    /// 没有匹配处理器、继续向外传播。
+    UnmatchedError,
     /// 构造器或初始化失败边。
     ConstructFailure,
     /// 动态检查失败边。

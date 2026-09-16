@@ -6,7 +6,7 @@
 
 ## 工程期
 
-01–04；当前已交付 F0/L0/L1/L2/P0/P1 表达式与选择器首批、P2 声明 AST、C0 容器 AST、C2-A 集合 AST、C2-B 集合类型注解 AST 和 C2-C 集合运算 AST；类型检查与容器语义由 02/03 负责，08 负责把 AST 交给名称解析和类型化 IR。
+01–04、07-B；当前已交付 F0/L0/L1/L2/P0/P1 表达式与选择器首批、P2 声明 AST、C0 容器 AST、C2-A 集合 AST、C2-B 集合类型注解 AST、C2-C 集合运算 AST 以及 `try`/`catch`/`finally`/`raise` AST；类型检查与容器语义由 02/03 负责，08 负责把 AST 交给名称解析和类型化 IR。
 
 ## 模块放置
 
@@ -17,7 +17,8 @@
 P2 声明回归位于 `tests/p2_declarations.rs` 和 `tests/p2_snapshots.rs`，C0 回归位于
 `tests/c0_containers.rs` 和 `tests/c0_snapshots.rs`，C2-A 集合回归位于
 `tests/c2a_sets.rs`，C2-B 类型注解和错误恢复回归位于 `tests/c2b_sets.rs`，C2-C 运算符、优先级和复合赋值回归位于
-`tests/c2c_set_operations.rs`，05-C 表头/表体回归位于 `tests/c05_tables.rs`；语法节点只保存结构和源码区间，
+`tests/c2c_set_operations.rs`，05-C 表头/表体回归位于 `tests/c05_tables.rs`，07-B 错误控制流回归位于
+`tests/f04_functions.rs`；语法节点只保存结构和源码区间，
 不执行类型检查。
 
 ## 禁止事项

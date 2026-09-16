@@ -12,7 +12,8 @@ Rust 执行 Runtime 的分层 crate。06-B 首版交付不透明对象头、单�
 
 ## 模块放置
 
-`src/` 下按 `value`、`tables`、`memory`、`errors` 和 `testing` 分模块；后续容器、I/O
+`src/` 下按 `value`、`tables`、`memory`、`errors` 和 `testing` 分模块；`testing` 现提供 07-B 的
+`dispatch_catch`/`dispatch_fatal` 规格路由；后续容器、I/O
 和调试目录必须沿用同样的单一职责边界。平台系统调用只经 `xiao-platform`。
 
 ## 约束

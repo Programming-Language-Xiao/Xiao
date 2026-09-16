@@ -3,8 +3,9 @@
 use xiao_source::SourceFile;
 use xiao_syntax::Parser;
 use xiao_types::{
-    CONDITION_TYPE_CODE, FUNCTION_CALL_CODE, FUNCTION_INFERENCE_CODE, FUNCTION_RETURN_CODE,
-    LOOP_CONTROL_CODE, RuntimeCheckKind, ScalarType, Type, TypeChecker,
+    CATCH_FATAL_CODE, CATCH_ORDER_CODE, CONDITION_TYPE_CODE, FUNCTION_CALL_CODE,
+    FUNCTION_INFERENCE_CODE, FUNCTION_RETURN_CODE, LOOP_CONTROL_CODE, RAISE_TYPE_CODE,
+    RuntimeCheckKind, ScalarType, Type, TypeChecker,
 };
 
 /// 解析并静态检查一个应当可用于 04 阶段测试的源码样例。
@@ -183,5 +184,39 @@ fn preserves_function_binding_when_parameter_has_same_name() {
     assert_eq!(
         result.binding("ascii:answer").expect("answer").scheme.ty,
         Type::scalar(ScalarType::Int)
+    );
+}
+
+#[test]
+/// `raise` 的静态值必须是可恢复错误边界，普通标量应被拒绝。
+fn rejects_non_error_raise_value() {
+    let result = check("raise 1\n");
+    assert!(
+        result
+            .diagnostics()
+            .iter()
+            .any(|d| d.code() == RAISE_TYPE_CODE)
+    );
+}
+
+#[test]
+/// `FatalError` 不得被普通 `catch` 捕获，宽泛处理器必须放在具体类型之后。
+fn enforces_catch_recovery_boundaries() {
+    let fatal = check("try\n    raise error\ncatch fatal as FatalError\n    print(fatal)\n");
+    assert!(
+        fatal
+            .diagnostics()
+            .iter()
+            .any(|d| d.code() == CATCH_FATAL_CODE)
+    );
+
+    let order = check(
+        "try\n    raise error\ncatch any as Error\n    print(any)\ncatch specific as ArithmeticError\n    print(specific)\n",
+    );
+    assert!(
+        order
+            .diagnostics()
+            .iter()
+            .any(|d| d.code() == CATCH_ORDER_CODE)
     );
 }

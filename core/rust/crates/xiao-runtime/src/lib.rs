@@ -37,6 +37,8 @@ pub use tables::{
     TableState,
 };
 /// 重导出释放计划测试驱动器和展开结果。
-pub use testing::{ReleaseEvent, ReleaseExecution, RuntimeBinding, RuntimeDriver, UnwindExecution};
+pub use testing::{
+    CatchRoute, ReleaseEvent, ReleaseExecution, RuntimeBinding, RuntimeDriver, UnwindExecution,
+};
 /// 重导出 Runtime 标量和字符串值。
 pub use value::{RuntimeValue, StringHandle};

@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 
 use xiao_lifetime::{ExitKind, ReleaseActionKind, ReleasePlan, ValueId};
 
-use crate::errors::{ErrorAccumulator, RuntimeError, RuntimeResult};
+use crate::errors::{ErrorAccumulator, FatalError, RuntimeError, RuntimeResult, XiaoErrorKind};
 use crate::memory::{StrongHandle, WeakHandle};
 
 /// 释放计划中一个值的测试绑定。
@@ -46,6 +46,28 @@ pub struct UnwindExecution {
     pub release: ReleaseExecution,
     /// 展开结束后需要交给 `catch` 或程序边界的主错误。
     pub error: Option<RuntimeError>,
+}
+
+/// 统一错误控制流的 Runtime 路由结果。
+#[derive(Debug)]
+pub enum CatchRoute {
+    /// 可恢复错误匹配了第一个满足条件的 `catch`，索引从零开始。
+    Matched {
+        /// 匹配到的处理器索引。
+        handler: usize,
+        /// 交给处理器的错误对象。
+        error: RuntimeError,
+    },
+    /// 没有匹配处理器，错误继续向外传播。
+    Propagate {
+        /// 保留原始身份的错误对象。
+        error: RuntimeError,
+    },
+    /// 致命错误永远不能进入普通 `catch`。
+    Fatal {
+        /// 保留原始身份的致命错误。
+        error: FatalError,
+    },
 }
 
 impl UnwindExecution {
@@ -110,6 +132,36 @@ impl RuntimeDriver {
             release,
             error: errors.finish(),
         }
+    }
+
+    /// 按错误类型名称执行首个匹配的普通 `catch`。
+    ///
+    /// 首版只支持类型匹配：`Error`/`XiaoError` 匹配所有可恢复错误，
+    /// `ArithmeticError`、`MemoryError`、`TableError`、`ConcurrencyError`、
+    /// `ResourceError` 和 `TypeError` 分别匹配对应的统一错误类别。未匹配
+    /// 时原错误不被改写；Fatal 不接受普通处理器参数，调用方必须走终止边界。
+    #[must_use]
+    pub fn dispatch_catch(&self, error: RuntimeError, handler_types: &[&str]) -> CatchRoute {
+        let error_kind = error.kind();
+        let handler = handler_types.iter().position(|name| {
+            matches!(*name, "Error" | "XiaoError")
+                || (*name == "ArithmeticError" && error_kind == XiaoErrorKind::Arithmetic)
+                || (*name == "MemoryError" && error_kind == XiaoErrorKind::Memory)
+                || (*name == "TableError" && error_kind == XiaoErrorKind::Table)
+                || (*name == "ConcurrencyError" && error_kind == XiaoErrorKind::Concurrency)
+                || (*name == "ResourceError" && error_kind == XiaoErrorKind::Resource)
+                || (*name == "TypeError" && error_kind == XiaoErrorKind::Type)
+        });
+        match handler {
+            Some(handler) => CatchRoute::Matched { handler, error },
+            None => CatchRoute::Propagate { error },
+        }
+    }
+
+    /// 将致命错误交给不可恢复终止路径，绝不伪装成普通捕获成功。
+    #[must_use]
+    pub fn dispatch_fatal(&self, error: FatalError) -> CatchRoute {
+        CatchRoute::Fatal { error }
     }
 
     /// 执行所有释放动作并持续收集清理错误，避免首个错误导致剩余绑定泄漏。
@@ -267,5 +319,30 @@ mod tests {
         assert_eq!(error.suppressed().len(), 1);
         assert_eq!(execution.release.events.len(), 1);
         assert!(bindings.is_empty());
+    }
+
+    #[test]
+    /// 首个具体类型处理器优先于后续宽泛处理器，未匹配时保持原错误。
+    fn dispatches_recoverable_catch_by_type() {
+        let driver = RuntimeDriver::new();
+        let matched = driver.dispatch_catch(
+            crate::RuntimeError::numeric_overflow("溢出"),
+            &["ArithmeticError", "Error"],
+        );
+        assert!(matches!(
+            matched,
+            super::CatchRoute::Matched { handler: 0, .. }
+        ));
+        let propagated =
+            driver.dispatch_catch(crate::RuntimeError::invalid_handle("句柄"), &["TableError"]);
+        assert!(matches!(propagated, super::CatchRoute::Propagate { .. }));
+    }
+
+    #[test]
+    /// 致命错误拥有独立路由，不能被普通 catch 当作可恢复错误消费。
+    fn keeps_fatal_outside_recoverable_catch() {
+        let route =
+            RuntimeDriver::new().dispatch_fatal(crate::FatalError::corrupt_artifact("损坏"));
+        assert!(matches!(route, super::CatchRoute::Fatal { .. }));
     }
 }

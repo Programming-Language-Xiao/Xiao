@@ -54,6 +54,29 @@ Actor 模型让每个执行单元独占自己的状态，其他执行单元通�
 
 07-A 的 Runtime 迁移保持 06-B 的 `finally -> drop -> catch/继续传播`、表生命周期、Strong/Weak 和布尔/数值行为不变。后续 07-B 再实现错误控制流降低，07-C 实现结构化日志与 `-debug` 诊断窗口，07-D 才研究线程、任务池和 Actor。
 
+### 07-B 已完成：错误控制流与统一展开消费
+
+07-B 在不引入 VM、LLVM、日志文件、调试窗口或并发调度的前提下，把错误控制流从语法一路降低到静态生命周期计划和 Runtime 测试驱动器。接手后续前端/后端工作的 Agent 必须先阅读本节、[07-A 统一错误模型](#07-a-已完成统一错误模型与报告器闭环)、[06A 生命周期静态闭环](06a-lifetime-static-closure.md) 和 [Runtime 使用文档](../UseDocs/language/memory/runtime/errors-and-unwind.md)。
+
+#### 冻结输入与交付物
+
+1. `xiao-syntax` 新增 `try`、`catch`、`finally`、`raise` Token、AST 和缩进块恢复；`CatchClause` 保留绑定名、错误类型名、处理器主体和 `SourceSpan`。
+2. `xiao-types` 只按错误类型名做首版静态边界检查：`raise` 必须是错误对象或动态值；`FatalError` 不得被普通 `catch` 捕获；具体类型必须位于 `Error`/`XiaoError` 之前。错误码匹配、条件匹配、模式匹配、泛型 `Result` 和简化传播全部延期。
+3. `xiao-lifetime` 新增 `Try`、`Catch`、`Finally` 作用域以及 `Raise`、`Catch`、`UnmatchedError` 退出边；每个作用域仍为所有退出边生成释放计划。`catch` 绑定在独立作用域中，不能读取已经从 `try` 作用域释放的局部绑定。
+4. Runtime 测试驱动器新增 `dispatch_catch`/`dispatch_fatal`：具体错误类型优先，未匹配错误原样传播，Fatal 进入独立不可恢复路由。既有展开顺序固定为 `finally -> drop -> 匹配 catch / 继续传播`。
+
+#### 二级实现任务与验收
+
+1. **G07-B.1 语法与 AST**：为 `try` 主体、多个 `catch`、可选 `finally` 和 `raise` 建立正反例；所有节点保留源码位置和文档注释。
+2. **G07-B.2 静态恢复边界**：验证 `raise` 的动态边界、错误类型名称、Fatal 禁止捕获和具体到宽泛的处理器顺序；处理器变量进入独立类型作用域。
+3. **G07-B.3 生命周期降低**：把正常、`raise`、匹配、未匹配、`return`、`break`、`continue` 和清理失败都纳入释放计划；同一作用域每条退出边最多释放一次。控制转移事件必须携带已解析的目标块，嵌套 `try/finally` 只能向外转发已经完成内层清理的出口；函数体分析与定义处的外层错误上下文隔离。
+4. **G07-B.4 Runtime 消费**：测试主错误优先、`suppressed` 追加、剩余资源继续释放、未匹配原样传播和 Fatal 不可恢复。
+5. **G07-B.5 交接与门禁**：同步 UseDocs、crate README、模块登记和 H0-B；通过 workspace 测试、Clippy、Rustdoc、仓库完整性、文档覆盖率和 `git diff --check`。
+
+#### 不负责事项
+
+07-B 不实现 `Result<T, E>` 泛型语法、`?` 简化传播、错误码/条件/模式匹配、VM/LLVM 执行、日志文件、`-debug` 诊断窗口、线程/任务池/Actor 或 `async`/`await`。这些内容必须由后续阶段在本节交付物之上接入，不能在语法或 Runtime 中复制第二套错误模型。
+
 ### 错误身份与三类边界
 
 Xiao 的错误控制流和观测信息必须分开：错误对象负责传播与捕获，日志负责记录，最终错误报告负责向用户呈现。错误文本不是程序判断错误的接口。

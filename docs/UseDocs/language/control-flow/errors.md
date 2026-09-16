@@ -12,6 +12,7 @@ related:
   - returns-and-control.md
   - ../../troubleshooting/README.md
   - ../../../DevDocs/04-functions-and-control.md
+  - ../../../DevDocs/07-concurrency-and-errors.md
 ---
 
 # 控制流错误
@@ -28,5 +29,4 @@ related:
 | `X04-TYPE-007` | 循环控制位于循环外 | 将语句移入最近循环 |
 | `X04-TYPE-003` | 返回类型不一致 | 统一所有返回路径的类型 |
 
-动态条件和动态可迭代对象不会被静态检查器直接执行，而会登记 Runtime 检查。当前页面不覆盖异常、`finally`、
-生命周期释放和运行时堆栈；这些内容见后续阶段。
+动态条件和动态可迭代对象不会被静态检查器直接执行，而会登记 Runtime 检查。错误控制流见[错误控制流](error-handling.md)。

@@ -11,6 +11,7 @@ related:
   - objects-and-handles.md
   - table-lifecycle.md
   - ../../../../DevDocs/06b-runtime-objects-and-tables.md
+  - ../../../../DevDocs/07-concurrency-and-errors.md
 ---
 
 # 错误与展开
@@ -19,7 +20,14 @@ related:
 
 ## 固定展开顺序
 
-发生主错误时，运行时严格执行：`finally -> drop -> catch/继续传播`。
+发生主错误时，运行时严格执行：`finally -> drop -> 匹配 catch/继续传播`。07-B 测试驱动器按错误类型名选择
+第一个匹配处理器；没有匹配时保留原错误对象并继续传播。
+
+## 与语言控制流的衔接
+
+`catch` 绑定在独立作用域中，不能读取已经离开 `try` 主体并完成释放的局部资源。具体错误类型必须排在
+`Error`/`XiaoError` 之前；`FatalError` 不属于普通可恢复捕获范围。错误码、条件和模式匹配，以及 `Result`
+泛型传播尚未开放。
 
 ## 清理错误
 

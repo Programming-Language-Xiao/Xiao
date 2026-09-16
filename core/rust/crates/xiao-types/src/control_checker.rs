@@ -6,15 +6,89 @@
 
 use xiao_diagnostics::DiagnosticParam;
 use xiao_source::SourceSpan;
-use xiao_syntax::{ElifBranch, Expression, Statement};
+use xiao_syntax::{CatchClause, ElifBranch, Expression, Name, Statement};
 
 use crate::containers::ArrayType;
-use crate::diagnostics::{CONDITION_TYPE_CODE, ITERABLE_TYPE_CODE, LOOP_CONTROL_CODE};
+use crate::diagnostics::{
+    CATCH_FATAL_CODE, CATCH_ORDER_CODE, CATCH_TYPE_CODE, CONDITION_TYPE_CODE, ITERABLE_TYPE_CODE,
+    LOOP_CONTROL_CODE, RAISE_TYPE_CODE,
+};
 use crate::types::Type;
 
 use super::{RuntimeCheckKind, TypeChecker};
 
 impl<'source> TypeChecker<'source> {
+    /// 检查 `try` 的主体、按序 `catch` 和最终清理体。
+    pub(super) fn check_try_statement(
+        &mut self,
+        body: &[Statement],
+        catches: &[CatchClause],
+        finally_body: Option<&[Statement]>,
+        _span: SourceSpan,
+    ) {
+        self.check_scoped_body(body);
+        let mut saw_broad = false;
+        for catch in catches {
+            let type_name = self.source.slice(catch.error_type.span);
+            if type_name.is_empty() || !is_error_type_name(catch.error_type, self.source) {
+                self.type_error(
+                    CATCH_TYPE_CODE,
+                    "x07.type.invalid_catch_type",
+                    catch.error_type.span,
+                    "catch 的错误类型必须是错误类型名称".to_string(),
+                );
+            }
+            if type_name == "FatalError" {
+                self.type_error(
+                    CATCH_FATAL_CODE,
+                    "x07.type.fatal_not_catchable",
+                    catch.error_type.span,
+                    "FatalError 不可由普通 catch 恢复".to_string(),
+                );
+            }
+            let is_broad = matches!(type_name, "Error" | "XiaoError");
+            if saw_broad && !is_broad {
+                self.type_error(
+                    CATCH_ORDER_CODE,
+                    "x07.type.catch_order",
+                    catch.error_type.span,
+                    "宽泛 catch 必须位于具体错误类型之后".to_string(),
+                );
+            }
+            saw_broad |= is_broad;
+            self.environment.push_scope();
+            if let Err(error) =
+                self.environment
+                    .declare_mutable(self.name_key(catch.binding), Type::Dynamic, true)
+            {
+                self.environment_error(catch.binding.span, error);
+            }
+            self.register_top_level_functions(&catch.body);
+            for statement in &catch.body {
+                self.check_statement(statement);
+            }
+            self.environment.pop_scope();
+        }
+        if let Some(body) = finally_body {
+            self.check_scoped_body(body);
+        }
+    }
+
+    /// 检查 `raise` 只能抛出可恢复错误对象或动态错误边界。
+    pub(super) fn check_raise_statement(&mut self, value: &Expression, span: SourceSpan) {
+        let ty = self.check_expression(value);
+        if ty.is_dynamic() {
+            self.push_runtime_check(span, RuntimeCheckKind::DynamicConversion);
+        } else {
+            self.type_error(
+                RAISE_TYPE_CODE,
+                "x07.type.raise_requires_error",
+                span,
+                "raise 的操作数必须是可恢复错误对象".to_string(),
+            );
+        }
+    }
+
     /// 检查一条 `if`/`elif`/`else` 条件链。
     pub(super) fn check_if_statement(
         &mut self,
@@ -196,6 +270,12 @@ impl<'source> TypeChecker<'source> {
         }
         self.environment.pop_scope();
     }
+}
+
+/// 判断捕获类型名称是否符合首版错误类型命名边界。
+fn is_error_type_name(name: Name, source: &xiao_source::SourceFile) -> bool {
+    let text = name.unquoted_text(source);
+    !name.backticked && (text == "Error" || text == "XiaoError" || text.ends_with("Error"))
 }
 
 /// 从已知容器类型中提取 `for` 循环元素类型。

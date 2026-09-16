@@ -1,8 +1,8 @@
 //! 06-A 生命周期静态闭环规格测试。
 
 use xiao_lifetime::{
-    ExitKind, GraphError, LifetimeAnalyzer, OwnershipEdge, OwnershipEdgeReason, OwnershipGraph,
-    OwnershipKind, ScopeKind, StorageClass, ValueId,
+    ControlFlowEdgeKind, ExitKind, GraphError, LifetimeAnalyzer, OwnershipEdge,
+    OwnershipEdgeReason, OwnershipGraph, OwnershipKind, ScopeId, ScopeKind, StorageClass, ValueId,
 };
 use xiao_source::SourceFile;
 use xiao_syntax::Parser;
@@ -462,6 +462,315 @@ fn constructor_failure_has_cleanup_plan() {
             .blocks
             .values()
             .any(|block| block.exits.contains(&ExitKind::ConstructFailure))
+    );
+}
+
+#[test]
+/// try/catch/finally 建立隔离作用域并为 raise/catch 退出生成释放计划。
+fn error_control_flow_has_unwind_scopes_and_plans() {
+    let result = analyze(
+        "try\n    value = \"try\"\n    raise error\ncatch err as Error\n    handled = \"catch\"\nfinally\n    cleanup = \"finally\"\n",
+    );
+    assert!(
+        result
+            .scopes
+            .values()
+            .any(|scope| scope.kind == ScopeKind::Try)
+    );
+    assert!(
+        result
+            .scopes
+            .values()
+            .any(|scope| scope.kind == ScopeKind::Catch)
+    );
+    assert!(
+        result
+            .scopes
+            .values()
+            .any(|scope| scope.kind == ScopeKind::Finally)
+    );
+    let try_scope = result
+        .scopes
+        .values()
+        .find(|scope| scope.kind == ScopeKind::Try)
+        .expect("try scope");
+    assert!(result.release_plan(try_scope.id, ExitKind::Raise).is_some());
+    assert!(
+        result
+            .release_plan(try_scope.id, ExitKind::UnmatchedError)
+            .is_some()
+    );
+    assert!(result.control_flow.blocks.values().any(|block| {
+        block.exits.contains(&ExitKind::Raise)
+            || block.exits.contains(&ExitKind::Catch)
+            || block.exits.contains(&ExitKind::UnmatchedError)
+    }));
+
+    let catch_blocks = result
+        .scopes
+        .values()
+        .filter(|scope| scope.kind == ScopeKind::Catch)
+        .flat_map(|scope| {
+            result
+                .control_flow
+                .blocks
+                .values()
+                .filter(move |block| block.scope == scope.id)
+                .map(|block| block.id)
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert!(result.control_flow.blocks.values().any(|block| {
+        block.exits.contains(&ExitKind::Raise)
+            && block.successors.iter().any(|(target, kind)| {
+                *kind == ControlFlowEdgeKind::Error && catch_blocks.contains(target)
+            })
+    }));
+
+    let finally_blocks = result
+        .scopes
+        .values()
+        .filter(|scope| scope.kind == ScopeKind::Finally)
+        .flat_map(|scope| {
+            result
+                .control_flow
+                .blocks
+                .values()
+                .filter(move |block| block.scope == scope.id)
+                .map(|block| block.id)
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    assert!(result.control_flow.blocks.values().any(|block| {
+        block.exits.contains(&ExitKind::Catch)
+            && block.successors.iter().any(|(target, kind)| {
+                *kind == ControlFlowEdgeKind::Next && finally_blocks.contains(target)
+            })
+    }));
+    assert!(result.control_flow.blocks.values().any(|block| {
+        block.exits.contains(&ExitKind::UnmatchedError)
+            && block.successors.iter().any(|(target, kind)| {
+                *kind == ControlFlowEdgeKind::Error && finally_blocks.contains(target)
+            })
+    }));
+}
+
+#[test]
+/// `try/finally` 没有处理器时，raise 必须经过 finally 后继续向外传播。
+fn try_finally_propagates_after_cleanup() {
+    let result = analyze("try\n    raise error\nfinally\n    cleanup = \"done\"\n");
+    let finally_scope = result
+        .scopes
+        .values()
+        .find(|scope| scope.kind == ScopeKind::Finally)
+        .expect("finally 作用域");
+    let finally_block = result
+        .control_flow
+        .blocks
+        .values()
+        .find(|block| block.scope == finally_scope.id)
+        .expect("finally 基本块");
+    assert!(result.control_flow.blocks.values().any(|block| {
+        block.exits.contains(&ExitKind::Raise)
+            && block
+                .successors
+                .contains(&(finally_block.id, ControlFlowEdgeKind::Error))
+    }));
+    assert!(finally_block.successors.iter().any(|(target, kind)| {
+        *kind == ControlFlowEdgeKind::Error
+            && result
+                .control_flow
+                .block(*target)
+                .is_some_and(|block| block.exits.contains(&ExitKind::UnmatchedError))
+    }));
+}
+
+#[test]
+/// `return` 的直达边会被 finally 截获，不能绕过清理作用域。
+fn return_inside_try_cannot_bypass_finally() {
+    let result = analyze(
+        "def run() -> str\n    try\n        return \"done\"\n    finally\n        cleanup = \"yes\"\n",
+    );
+    let finally_blocks = result
+        .scopes
+        .values()
+        .filter(|scope| scope.kind == ScopeKind::Finally)
+        .flat_map(|scope| {
+            result
+                .control_flow
+                .blocks
+                .values()
+                .filter(move |block| block.scope == scope.id)
+                .map(|block| block.id)
+        })
+        .collect::<std::collections::BTreeSet<_>>();
+    let return_source = result
+        .control_flow
+        .blocks
+        .values()
+        .find(|block| block.exits.contains(&ExitKind::Return))
+        .expect("return 基本块");
+    assert!(return_source.successors.iter().any(|(target, kind)| {
+        *kind == ControlFlowEdgeKind::Return && finally_blocks.contains(target)
+    }));
+    assert!(
+        return_source
+            .successors
+            .iter()
+            .all(|(target, _)| finally_blocks.contains(target))
+    );
+}
+
+#[test]
+/// 嵌套 `try/finally` 必须按内层到外层顺序展开，不能由外层截断内层清理。
+fn nested_try_finally_preserves_unwind_order() {
+    let result = analyze(
+        "def run() -> str\n    try\n        try\n            return \"done\"\n        finally\n            inner_cleanup = \"inner\"\n    finally\n        outer_cleanup = \"outer\"\n",
+    );
+    let finally_scopes = result
+        .scopes
+        .values()
+        .filter(|scope| scope.kind == ScopeKind::Finally)
+        .collect::<Vec<_>>();
+    assert_eq!(finally_scopes.len(), 2);
+    let inner_scope = finally_scopes
+        .iter()
+        .find(|scope| {
+            scope
+                .parent
+                .and_then(|parent| result.scope(parent))
+                .is_some_and(|parent| parent.kind == ScopeKind::Try)
+        })
+        .expect("inner finally");
+    let outer_scope = finally_scopes
+        .iter()
+        .find(|scope| scope.id != inner_scope.id)
+        .expect("outer finally");
+    let block_ids = |scope: ScopeId| {
+        result
+            .control_flow
+            .blocks
+            .values()
+            .filter(move |block| block.scope == scope)
+            .map(|block| block.id)
+            .collect::<std::collections::BTreeSet<_>>()
+    };
+    let inner_blocks = block_ids(inner_scope.id);
+    let outer_blocks = block_ids(outer_scope.id);
+    let return_source = result
+        .control_flow
+        .blocks
+        .values()
+        .find(|block| block.exits.contains(&ExitKind::Return))
+        .expect("return 基本块");
+    let inner_final_block = result
+        .control_flow
+        .blocks
+        .values()
+        .find(|block| inner_blocks.contains(&block.id))
+        .expect("inner finally 基本块");
+    let outer_final_block = result
+        .control_flow
+        .blocks
+        .values()
+        .find(|block| outer_blocks.contains(&block.id))
+        .expect("outer finally 基本块");
+    assert!(return_source.successors.iter().any(|(target, kind)| {
+        *kind == ControlFlowEdgeKind::Return && inner_blocks.contains(target)
+    }));
+    assert!(inner_final_block.successors.iter().any(|(target, kind)| {
+        *kind == ControlFlowEdgeKind::Return && outer_blocks.contains(target)
+    }));
+    assert!(
+        outer_final_block
+            .successors
+            .iter()
+            .any(|(_, kind)| *kind == ControlFlowEdgeKind::Return)
+    );
+}
+
+#[test]
+/// 循环已结束分析后，外层 finally 仍能使用已保存的 break 目标。
+fn nested_try_in_loop_preserves_break_target() {
+    let result = analyze(
+        "try\n    while true\n        try\n            break\n        finally\n            inner_cleanup = \"inner\"\n    finally\n        outer_cleanup = \"outer\"\n",
+    );
+    let finally_scopes = result
+        .scopes
+        .values()
+        .filter(|scope| scope.kind == ScopeKind::Finally)
+        .collect::<Vec<_>>();
+    assert_eq!(finally_scopes.len(), 2);
+    let inner_scope = finally_scopes
+        .iter()
+        .find(|scope| {
+            scope
+                .parent
+                .and_then(|parent| result.scope(parent))
+                .is_some_and(|parent| parent.kind == ScopeKind::Loop)
+        })
+        .expect("inner finally");
+    let outer_scope = finally_scopes
+        .iter()
+        .find(|scope| {
+            scope.id != inner_scope.id
+                && scope
+                    .parent
+                    .and_then(|parent| result.scope(parent))
+                    .is_some_and(|parent| parent.kind == ScopeKind::Program)
+        })
+        .expect("outer finally");
+    let inner_block = result
+        .control_flow
+        .blocks
+        .values()
+        .find(|block| block.scope == inner_scope.id)
+        .expect("inner finally block");
+    let outer_block = result
+        .control_flow
+        .blocks
+        .values()
+        .find(|block| block.scope == outer_scope.id)
+        .expect("outer finally block");
+    assert!(inner_block.successors.iter().any(|(target, kind)| {
+        *kind == ControlFlowEdgeKind::Break && *target == outer_block.id
+    }));
+    let loop_exit = outer_block
+        .successors
+        .iter()
+        .find_map(|(target, kind)| (*kind == ControlFlowEdgeKind::Break).then_some(*target))
+        .expect("outer finally should restore break");
+    assert!(
+        result
+            .control_flow
+            .block(loop_exit)
+            .is_some_and(|block| block.scope != inner_scope.id && block.scope != outer_scope.id)
+    );
+}
+
+#[test]
+/// `try` 外层的函数定义不会把函数体退出边泄漏到定义处的处理器。
+fn function_body_isolated_from_enclosing_try() {
+    let result = analyze(
+        "try\n    def make() -> str\n        raise error\n    value = \"ready\"\ncatch err as Error\n    handled = \"yes\"\n",
+    );
+    let function_scope = result
+        .scopes
+        .values()
+        .find(|scope| scope.kind == ScopeKind::Function)
+        .expect("函数作用域");
+    assert!(
+        result
+            .control_flow
+            .blocks
+            .values()
+            .filter(|block| block.scope == function_scope.id)
+            .all(|block| {
+                block.successors.iter().all(|(target, _)| {
+                    result
+                        .control_flow
+                        .block(*target)
+                        .is_some_and(|target_block| target_block.scope == function_scope.id)
+                })
+            })
     );
 }
 

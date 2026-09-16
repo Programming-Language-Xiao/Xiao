@@ -531,6 +531,25 @@ pub struct ElifBranch {
     pub span: SourceSpan,
 }
 
+/// `catch` 处理器的静态结构。
+///
+/// 错误类型先保留为名称，而不是在语法层绑定某个 Runtime 错误枚举；这样
+/// 用户定义错误和后续错误模块都能沿用同一份 AST。类型层负责检查名称形状、
+/// 捕获顺序以及 `FatalError` 的不可恢复边界。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CatchClause {
+    /// 处理器中绑定错误对象的名称。
+    pub binding: Name,
+    /// 按类型匹配的错误类型名称。
+    pub error_type: Name,
+    /// 处理器缩进体。
+    pub body: Vec<Statement>,
+    /// 与 `catch` 头相邻的文档注释区间。
+    pub leading_docs: Vec<SourceSpan>,
+    /// 覆盖 `catch` 头和处理器的源码区间。
+    pub span: SourceSpan,
+}
+
 /// P0/P1/P2/04 支持的语句。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Statement {
@@ -708,6 +727,28 @@ pub enum Statement {
         /// 控制语句源码区间。
         span: SourceSpan,
     },
+    /// `try` 主体、按类型匹配的 `catch` 列表和可选 `finally` 清理体。
+    Try {
+        /// 受保护的缩进体。
+        body: Vec<Statement>,
+        /// 按源码顺序排列的错误处理器。
+        catches: Vec<CatchClause>,
+        /// 可选的最终清理体。
+        finally_body: Option<Vec<Statement>>,
+        /// 与 `try` 相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 覆盖整个错误控制流结构的源码区间。
+        span: SourceSpan,
+    },
+    /// 抛出一个可恢复错误表达式。
+    Raise {
+        /// 错误表达式；运行时必须产生 `XiaoError`，不能产生 `FatalError`。
+        value: Expression,
+        /// 与 `raise` 相邻的文档注释区间。
+        leading_docs: Vec<SourceSpan>,
+        /// 语句源码区间。
+        span: SourceSpan,
+    },
 }
 
 impl Statement {
@@ -729,6 +770,7 @@ impl Statement {
             | Self::Return { span, .. }
             | Self::Break { span, .. }
             | Self::Continue { span, .. } => *span,
+            Self::Try { span, .. } | Self::Raise { span, .. } => *span,
         }
     }
 
@@ -750,6 +792,7 @@ impl Statement {
             | Self::Return { leading_docs, .. }
             | Self::Break { leading_docs, .. }
             | Self::Continue { leading_docs, .. } => leading_docs,
+            Self::Try { leading_docs, .. } | Self::Raise { leading_docs, .. } => leading_docs,
         }
     }
 
@@ -784,6 +827,8 @@ impl Statement {
                 // 仅用于诊断的静态哨兵并不安全，因此改用 panic 明确告知调用方。
                 panic!("未初始化声明没有 expression；请先检查 initializer()")
             }
+            Self::Try { .. } => panic!("try 语句没有单一 expression；请遍历其主体"),
+            Self::Raise { value, .. } => value,
         }
     }
 
@@ -815,6 +860,8 @@ impl Statement {
             | Self::Return { value: None, .. }
             | Self::Break { .. }
             | Self::Continue { .. } => None,
+            Self::Try { .. } => None,
+            Self::Raise { value, .. } => Some(value),
             Self::Return {
                 value: Some(expression),
                 ..
@@ -840,6 +887,7 @@ impl Statement {
             | Self::Return { .. }
             | Self::Break { .. }
             | Self::Continue { .. } => None,
+            Self::Try { .. } | Self::Raise { .. } => None,
         }
     }
 
@@ -1336,6 +1384,30 @@ impl NodeIndex {
             Statement::Return { value: None, .. }
             | Statement::Break { .. }
             | Statement::Continue { .. } => {}
+            Statement::Raise { value, .. } => self.visit_expression(value),
+            Statement::Try {
+                body,
+                catches,
+                finally_body,
+                ..
+            } => {
+                for statement in body {
+                    self.visit_statement(statement);
+                }
+                for catch in catches {
+                    self.push(catch.span);
+                    self.push(catch.binding.span);
+                    self.push(catch.error_type.span);
+                    for statement in &catch.body {
+                        self.visit_statement(statement);
+                    }
+                }
+                if let Some(body) = finally_body {
+                    for statement in body {
+                        self.visit_statement(statement);
+                    }
+                }
+            }
         }
     }
 

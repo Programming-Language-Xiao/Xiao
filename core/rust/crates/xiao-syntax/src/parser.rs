@@ -10,10 +10,10 @@ use xiao_diagnostics::Diagnostic;
 use xiao_source::{SourceFile, SourceSpan};
 
 use crate::ast::{
-    AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, DeclaredType, DictEntry,
-    DictKey, ElifBranch, EntryMode, Expression, FunctionParameter, FunctionParameterKind,
-    FunctionTypeAnnotation, LiteralKind, Name, Program, ScalarType, SetTypeAnnotation, Statement,
-    TableKind, TypeTerm, UnaryOperator,
+    AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, CatchClause, DeclaredType,
+    DictEntry, DictKey, ElifBranch, EntryMode, Expression, FunctionParameter,
+    FunctionParameterKind, FunctionTypeAnnotation, LiteralKind, Name, Program, ScalarType,
+    SetTypeAnnotation, Statement, TableKind, TypeTerm, UnaryOperator,
 };
 use crate::diagnostics::*;
 use crate::lexer::Lexer;
@@ -140,14 +140,18 @@ impl<'source> Parser<'source> {
                     self.skip_indented_region(&mut orphan_doc_comments);
                 }
                 TokenKind::Dedent => {
-                    orphan_doc_comments.append(&mut pending_docs);
                     let token = self.bump();
-                    self.push_error(
-                        UNSUPPORTED_BLOCK_CODE,
-                        "x01.parse.unsupported_block",
-                        token.span(),
-                        "P0 不支持独立的反缩进 Token".to_string(),
-                    );
+                    if self.block_context_depth != 0 {
+                        orphan_doc_comments.append(&mut pending_docs);
+                        self.push_error(
+                            UNSUPPORTED_BLOCK_CODE,
+                            "x01.parse.unsupported_block",
+                            token.span(),
+                            "P0 不支持独立的反缩进 Token".to_string(),
+                        );
+                    }
+                    // 复合语句可能在嵌套块一次收尾时留下多个合法的
+                    // 顶层 Dedent；它们只是词法结构，不再重复报错。
                 }
                 _ => {
                     let docs = std::mem::take(&mut pending_docs);
@@ -225,6 +229,12 @@ impl<'source> Parser<'source> {
             }
             TokenKind::Keyword(KeywordKind::Continue) => {
                 return self.parse_loop_control_statement(leading_docs, false);
+            }
+            TokenKind::Keyword(KeywordKind::Try) => {
+                return self.parse_try_statement(leading_docs);
+            }
+            TokenKind::Keyword(KeywordKind::Raise) => {
+                return self.parse_raise_statement(leading_docs);
             }
             TokenKind::LeftBracket if self.starts_table_header() => {
                 if self.block_context_depth != 0 {
@@ -901,7 +911,12 @@ impl<'source> Parser<'source> {
             // own closing `Dedent` tokens before this point.
             && !matches!(
                 self.current().kind(),
-                TokenKind::Keyword(KeywordKind::Elif | KeywordKind::Else)
+                TokenKind::Keyword(
+                    KeywordKind::Elif
+                        | KeywordKind::Else
+                        | KeywordKind::Catch
+                        | KeywordKind::Finally
+                )
             )
         {
             match self.current().kind() {
@@ -996,6 +1011,120 @@ impl<'source> Parser<'source> {
             else_body,
             leading_docs,
             span: self.source_span(start.span().start(), end),
+        })
+    }
+
+    /// 解析 `try`、一个或多个按类型匹配的 `catch` 以及可选 `finally`。
+    fn parse_try_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        let keyword = self.bump();
+        let (body, mut end) = self.parse_indented_block(keyword.span());
+        let mut catches = Vec::new();
+        let mut finally_body = None;
+
+        while self.at(TokenKind::Newline) {
+            self.bump();
+        }
+        while self.at(TokenKind::Keyword(KeywordKind::Catch)) {
+            let catch_keyword = self.bump();
+            let Some(binding) = self.parse_parameter_name() else {
+                self.synchronize_to_boundary();
+                break;
+            };
+            if !self.at(TokenKind::Keyword(KeywordKind::As)) {
+                self.push_error(
+                    INVALID_ERROR_CONTROL_FLOW_CODE,
+                    "x07.parse.catch_missing_as",
+                    self.current().span(),
+                    "catch 绑定名后必须使用 as 指定错误类型".to_string(),
+                );
+                self.synchronize_to_boundary();
+                break;
+            }
+            self.bump();
+            let Some(error_type) = self.parse_parameter_name() else {
+                self.synchronize_to_boundary();
+                break;
+            };
+            if !is_statement_boundary(self.current().kind()) {
+                self.push_error(
+                    INVALID_ERROR_CONTROL_FLOW_CODE,
+                    "x07.parse.catch_header_tail",
+                    self.current().span(),
+                    "catch 头后存在未预期内容".to_string(),
+                );
+                self.synchronize_to_boundary();
+                break;
+            }
+            let header = self.source_span(catch_keyword.span().start(), error_type.span.end());
+            let (catch_body, catch_end) = self.parse_indented_block(header);
+            end = end.max(catch_end);
+            catches.push(CatchClause {
+                binding,
+                error_type,
+                body: catch_body,
+                leading_docs: Vec::new(),
+                span: self.source_span(catch_keyword.span().start(), catch_end),
+            });
+            while self.at(TokenKind::Newline) {
+                self.bump();
+            }
+        }
+
+        if self.at(TokenKind::Keyword(KeywordKind::Finally)) {
+            let finally_keyword = self.bump();
+            let (body, finally_end) = self.parse_indented_block(finally_keyword.span());
+            end = end.max(finally_end);
+            finally_body = Some(body);
+        }
+
+        if catches.is_empty() && finally_body.is_none() {
+            self.push_error(
+                MISSING_ERROR_HANDLER_CODE,
+                "x07.parse.missing_handler",
+                keyword.span(),
+                "try 后必须至少包含 catch 或 finally".to_string(),
+            );
+            return None;
+        }
+        Some(Statement::Try {
+            body,
+            catches,
+            finally_body,
+            leading_docs,
+            span: self.source_span(keyword.span().start(), end),
+        })
+    }
+
+    /// 解析 `raise error_expression`。
+    fn parse_raise_statement(&mut self, leading_docs: Vec<SourceSpan>) -> Option<Statement> {
+        let keyword = self.bump();
+        if is_statement_boundary(self.current().kind()) {
+            self.push_error(
+                MISSING_RAISE_VALUE_CODE,
+                "x07.parse.missing_raise_value",
+                keyword.span(),
+                "raise 后必须提供错误表达式".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let value = self.parse_expression()?;
+        if !is_statement_boundary(self.current().kind()) {
+            self.push_error(
+                INVALID_ERROR_CONTROL_FLOW_CODE,
+                "x07.parse.raise_tail",
+                self.current().span(),
+                "raise 表达式后存在未预期内容".to_string(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
+        let span = self.source_span(keyword.span().start(), value.span_end());
+        self.consume_newline();
+        Some(Statement::Raise {
+            value,
+            leading_docs,
+            span,
         })
     }
 

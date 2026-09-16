@@ -182,3 +182,66 @@ fn rejects_unseparated_positional_marker() {
             .any(|diagnostic| diagnostic.code() == "X04-PARSE-002")
     );
 }
+
+#[test]
+/// `try`、多个 `catch`、`finally` 和 `raise` 应保留完整递归结构。
+fn parses_error_control_flow() {
+    let source = SourceFile::from_text(
+        "try\n    raise error\ncatch err as ArithmeticError\n    print(err)\ncatch other as Error\n    print(other)\nfinally\n    cleanup = true\n",
+    );
+    let result = Parser::new(&source).parse();
+    assert!(
+        result.diagnostics.is_empty(),
+        "unexpected diagnostics: {:?}",
+        result.diagnostics
+    );
+    let program = result.program.expect("program");
+    let Statement::Try {
+        body,
+        catches,
+        finally_body,
+        ..
+    } = &program.statements[0]
+    else {
+        panic!("expected try");
+    };
+    assert!(matches!(body[0], Statement::Raise { .. }));
+    assert_eq!(catches.len(), 2);
+    assert_eq!(catches[0].error_type.text(&source), "ArithmeticError");
+    assert!(finally_body.is_some());
+}
+
+#[test]
+/// 错误控制流语句继续接收与其他语句一致的文档注释区间。
+fn attaches_docs_to_error_control_flow() {
+    let program = parse_ok("### 处理错误 ###\ntry\n    raise error\nfinally\n    cleanup = true\n");
+    let Statement::Try { leading_docs, .. } = &program.statements[0] else {
+        panic!("expected try");
+    };
+    assert_eq!(leading_docs.len(), 1);
+}
+
+#[test]
+/// `try` 缺少处理器和 `raise` 缺少表达式必须给出稳定诊断。
+fn diagnoses_invalid_error_control_flow() {
+    let result = Parser::new(&SourceFile::from_text("try\n    value = 1\nraise\n")).parse();
+    let codes = result
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.code())
+        .collect::<Vec<_>>();
+    assert!(codes.contains(&"X07-PARSE-003"));
+    assert!(codes.contains(&"X07-PARSE-002"));
+}
+
+#[test]
+/// 嵌套循环和错误控制流收尾产生的多个顶层 Dedent 不应误报独立反缩进。
+fn parses_nested_try_and_loop_dedents() {
+    let program = parse_ok(
+        "try\n    while true\n        try\n            break\n        finally\n            inner = \"done\"\n    finally\n        outer = \"done\"\n",
+    );
+    assert!(matches!(
+        program.statements.first(),
+        Some(Statement::Try { .. })
+    ));
+}

@@ -84,6 +84,15 @@ pub const LOOP_CONTROL_CODE: &str = "X04-TYPE-007";
 /// 程序入口声明与静态规则冲突。
 pub const ENTRY_RULE_CODE: &str = "X04-TYPE-008";
 
+/// `raise` 操作数不是可恢复错误值时使用的稳定诊断编号。
+pub const RAISE_TYPE_CODE: &str = "X07-TYPE-001";
+/// `catch` 的错误类型名称无效时使用的稳定诊断编号。
+pub const CATCH_TYPE_CODE: &str = "X07-TYPE-002";
+/// 普通 `catch` 尝试捕获不可恢复 `FatalError` 时使用的稳定诊断编号。
+pub const CATCH_FATAL_CODE: &str = "X07-TYPE-003";
+/// `catch` 处理器顺序从宽到窄时使用的稳定诊断编号。
+pub const CATCH_ORDER_CODE: &str = "X07-TYPE-004";
+
 /// 表声明名称重复或表签名无法登记。
 pub const TABLE_DECLARATION_CODE: &str = "X05-TYPE-001";
 /// 表成员重复、缺失或成员访问形状不合法。

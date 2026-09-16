@@ -813,6 +813,24 @@ impl<'a> BindingResolver<'a> {
                 }
             }
             Statement::Break { .. } | Statement::Continue { .. } => {}
+            Statement::Raise { value, .. } => self.check_expression(value),
+            Statement::Try {
+                body,
+                catches,
+                finally_body,
+                ..
+            } => {
+                self.check_scoped_body(body);
+                for catch in catches {
+                    self.push_scope();
+                    self.declare_local_name(catch.binding, catch.binding.span);
+                    self.check_statements(&catch.body);
+                    self.pop_scope();
+                }
+                if let Some(body) = finally_body {
+                    self.check_scoped_body(body);
+                }
+            }
         }
     }
 

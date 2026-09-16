@@ -386,6 +386,26 @@ F1 的完整输入、交付物、不负责事项和 Agent 交接清单见 [04. �
 3. 既有 `X06-RUNTIME-*` 编号与 06-B 行为不变，Fatal 使用 `X07-FATAL-*`，不依赖 `xiao-i18n`。
 4. Rust 工作区测试、Clippy、Rustdoc、仓库检查和文档覆盖率门禁通过；UseDocs 页面状态为 `verified`。
 
+### H0-B：错误控制流与统一展开消费（07-B）
+
+前置上下文：先阅读 [07-B 交接记录](07-concurrency-and-errors.md#07-b-已完成错误控制流与统一展开消费)、[06A 生命周期静态闭环](06a-lifetime-static-closure.md) 和 [Runtime 错误展开使用文档](../UseDocs/language/memory/runtime/errors-and-unwind.md)。本子阶段只验证 `try`/`catch`/`finally`/`raise` 的语法、静态边界、释放计划和 Runtime 测试驱动器；不启动 VM/LLVM、日志窗口或并发实现。
+
+二级任务：
+
+1. `xiao-syntax` 正例覆盖单个/多个 `catch`、仅 `finally`、`raise` 和文档注释；负例覆盖缺少处理器、缺少 `as`、缺少错误表达式和尾部非法内容。
+2. `xiao-types` 覆盖可恢复错误、动态 `raise`、`FatalError` 禁止捕获和具体到宽泛的 `catch` 顺序；断言稳定 `X07-TYPE-*` 编号。
+3. `xiao-lifetime` 覆盖 Try/Catch/Finally 隔离作用域、Raise/Catch/UnmatchedError 退出边和每个退出计划的唯一释放动作。
+4. `xiao-runtime` 覆盖 `finally -> drop -> catch/传播` 顺序、主错误与 suppressed 合并、未匹配传播、具体类型优先以及 Fatal 独立路由。
+5. 更新 UseDocs、crate README、模块登记和 AST/类型/生命周期/Runtime 测试目录 README；公共 API 文档覆盖率保持 100%。
+
+退出条件：
+
+1. Rust workspace 定向测试和完整测试通过，旧 01–07-A 回归不变。
+2. `try`/`catch`/`finally`/`raise` 产生统一 AST 和稳定诊断；类型层不执行用户代码。
+3. 每条正常、raise、return、循环跳转和未匹配传播边都有可查询释放计划，清理错误不覆盖主错误。
+4. `dispatch_catch` 与 `dispatch_fatal` 的结果可审计，Fatal 永不进入普通恢复路径。
+5. Clippy `-D warnings`、Rustdoc、仓库检查、文档覆盖率和差分空白检查通过，模块状态才能标记为 `verified`。
+
 退出条件：
 
 1. 前序阶段的词法、类型、容器、模块和生命周期错误使用统一编号、源码位置与传播结构。
