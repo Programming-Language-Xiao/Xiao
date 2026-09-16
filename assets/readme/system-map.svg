@@ -6,9 +6,9 @@
 
   <rect width="1200" height="520" rx="28" fill="#07090D"/>
   <path d="M74 118 H1114 M74 428 H1114" stroke="#273242" stroke-width="1"/>
-  <path d="M98 476 L352 44" stroke="#A8CCFF" stroke-width="18" opacity="0.16"/>
-  <path d="M188 476 L442 44" stroke="#949DFF" stroke-width="10" opacity="0.20"/>
-  <path d="M1000 476 L1120 274" stroke="#F7F8FB" stroke-width="8" opacity="0.12"/>
+  <path d="M88 474 L104 482 L362 43 L346 35 Z" fill="#A8CCFF" opacity="0.16"/>
+  <path d="M180 476 L192 484 L450 45 L438 37 Z" fill="#949DFF" opacity="0.20"/>
+  <path d="M990 480 L1005 489 L1129 281 L1114 272 Z" fill="#F7F8FB" opacity="0.12"/>
 
   <g id="header" transform="translate(74 64)">
     <text x="0" y="0" fill="#A8CCFF" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="600">XIAO / SYSTEM MAP</text>

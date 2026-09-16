@@ -4,7 +4,29 @@
   <title id="title">Xiao programming language</title>
   <desc id="desc">Xiao's name, static-analysis specimen, and the official geometric Xiao logo.</desc>
 
+  <defs>
+    <clipPath id="hero-clip">
+      <rect width="1200" height="420" rx="28"/>
+    </clipPath>
+    <pattern id="diagonal-keylines" width="44" height="44" patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
+      <path d="M0 0 V44" stroke="#273242" stroke-width="1"/>
+      <path d="M22 0 V44" stroke="#A8CCFF" stroke-width="0.75" opacity="0.28"/>
+    </pattern>
+  </defs>
+
   <rect width="1200" height="420" rx="28" fill="#07090D"/>
+
+  <g id="background-texture" clip-path="url(#hero-clip)">
+    <rect x="610" y="-28" width="610" height="476" fill="url(#diagonal-keylines)" opacity="0.28"/>
+    <path d="M634 -30 L650 -30 L406 450 L390 450 Z" fill="#A8CCFF" opacity="0.08"/>
+    <path d="M716 -30 L728 -30 L484 450 L472 450 Z" fill="#949DFF" opacity="0.10"/>
+    <path d="M1152 -30 L1164 -30 L920 450 L908 450 Z" fill="#F7F8FB" opacity="0.07"/>
+    <path d="M654 82 H1140 M628 138 H1112 M650 326 H1138 M628 382 H1112" stroke="#273242" stroke-width="1" opacity="0.75"/>
+    <path d="M676 82 H702 M676 138 H690 M676 326 H702 M676 382 H690" stroke="#A8CCFF" stroke-width="2" opacity="0.42"/>
+    <circle cx="1116" cy="82" r="3" fill="#A8CCFF" opacity="0.55"/>
+    <circle cx="1088" cy="138" r="2" fill="#949DFF" opacity="0.55"/>
+    <circle cx="1116" cy="326" r="3" fill="#A8CCFF" opacity="0.38"/>
+  </g>
 
   <path d="M666 52 H1140" stroke="#273242" stroke-width="1"/>
   <path d="M666 366 H1140" stroke="#273242" stroke-width="1"/>
