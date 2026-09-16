@@ -2,17 +2,12 @@
      width="1200" height="420" viewBox="0 0 1200 420"
      role="img" aria-labelledby="title desc">
   <title id="title">Xiao programming language</title>
-  <desc id="desc">A dark, geometric hero for Xiao, showing its static-boundary language identity and crossing execution-rail motif.</desc>
+  <desc id="desc">Xiao's name, static-analysis specimen, and the official geometric Xiao logo.</desc>
 
   <rect width="1200" height="420" rx="28" fill="#07090D"/>
 
-  <g id="background-rails" opacity="0.9">
-    <path d="M828 -44 L860 -44 L594 424 L562 424 Z" fill="#A8CCFF" opacity="0.16"/>
-    <path d="M930 -44 L958 -44 L692 424 L664 424 Z" fill="#949DFF" opacity="0.20"/>
-    <path d="M1034 -44 L1058 -44 L792 424 L768 424 Z" fill="#F7F8FB" opacity="0.10"/>
-    <path d="M686 58 H1140" stroke="#273242" stroke-width="1"/>
-    <path d="M686 374 H1140" stroke="#273242" stroke-width="1"/>
-  </g>
+  <path d="M666 52 H1140" stroke="#273242" stroke-width="1"/>
+  <path d="M666 366 H1140" stroke="#273242" stroke-width="1"/>
 
   <g id="title-block" transform="translate(64 52)">
     <text x="0" y="0" fill="#A8CCFF" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="600">PROGRAMMING LANGUAGE / WORKSPACE</text>
@@ -32,20 +27,26 @@
     <text x="22" y="320" fill="#F7F8FB" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="22">int total = 1 + 2</text>
   </g>
 
-  <g id="brand-rails" transform="translate(700 46)">
-    <text x="0" y="0" fill="#A8CCFF" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="600">XIAO / VISUAL IDENTITY</text>
-
-    <g id="mark" transform="translate(18 52)">
-      <path d="M22 12 L58 12 L204 270 L168 270 Z" fill="#A8CCFF"/>
-      <path d="M108 0 L144 0 L278 228 L242 228 Z" fill="#949DFF"/>
-      <path d="M310 0 L340 0 L178 286 L148 286 Z" fill="#F7F8FB"/>
-      <path d="M376 0 L402 0 L240 286 L214 286 Z" fill="#8DAEC9"/>
-      <path d="M0 148 H260" stroke="#A8CCFF" stroke-width="28"/>
-      <path d="M214 148 H454" stroke="#A8CCFF" stroke-width="28"/>
-      <path d="M214 148 H454" stroke="#07090D" stroke-width="8" opacity="0.85"/>
-      <circle cx="214" cy="148" r="13" fill="#F7F8FB"/>
-      <circle cx="214" cy="148" r="6" fill="#949DFF"/>
-    </g>
-
+  <g id="official-logo" transform="translate(666 76) scale(0.29)">
+    <path d="M534.292 126.977L468.892 164.735L642.104 464.748L707.504 426.989L534.292 126.977Z" fill="#A8CCFF"/>
+    <path d="M1057.24 410.911L991.845 448.67L1159.13 738.432L1224.53 700.674L1057.24 410.911Z" fill="#A8CCFF"/>
+    <path d="M1290.58 234.403L1192.48 177.765L1057.43 411.68L1155.53 468.318L1290.58 234.403Z" fill="#F7F8FB"/>
+    <path d="M675.41 462.921L577.31 406.283L432.798 656.586L530.899 713.224L675.41 462.921Z" fill="#F7F8FB"/>
+    <path d="M849.572 396.469L1236.6 396.469L1236.6 471.986L849.572 471.986L849.572 396.469Z" fill="#A8CCFF"/>
+    <path d="M835.412 377.871L1722.74 377.871L1722.74 472.268L1708.58 472.268L1708.58 396.751L849.572 396.751L849.572 472.268L835.412 472.268L835.412 377.871Z" fill-rule="evenodd" fill="#07090D"/>
+    <path d="M490.864 396.469L859.011 396.469L859.011 471.986L490.864 471.986L490.864 396.469Z" fill="#A8CCFF"/>
+    <path d="M873.17 491.153L873.17 396.753L859.01 396.753L859.01 472.003L0 472.003L0 491.153L873.17 491.153Z" fill-rule="evenodd" fill="#07090D"/>
+    <path d="M442.06 298.105L274.926 395.462L379.456 574.91L546.591 477.553L442.06 298.105Z" fill="#07090D"/>
+    <path d="M1331.79 304.764L1185.52 389.212L1280.07 552.967L1426.34 468.517L1331.79 304.764Z" fill="#07090D"/>
+    <path d="M1633.05 90.5743L1538.65 90.5755L1113.88 798.54L1208.28 798.539L1633.05 90.5743Z" fill="#07090D"/>
+    <path d="M1113.88 90.5745L1208.28 90.5745L1633.07 798.551L1538.67 798.551L1113.88 90.5745Z" fill="#07090D"/>
+    <path d="M594.68 90.5731L456.373 65.2216L24.1516 768.884L162.459 794.235L594.68 90.5731Z" fill="#07090D"/>
+    <path d="M75.5176 90.5745L169.912 90.5757L594.679 798.542L500.284 798.541L75.5176 90.5745Z" fill="#07090D"/>
+    <path d="M1170.51 80.5179L1000.67 80.5578L575.82 788.477L745.747 788.484L1170.51 80.5179Z" fill="#F7F8FB"/>
+    <path d="M756.437 807.365L1203.86 61.6322L1170.51 61.64L989.977 61.6824L542.473 807.356L756.437 807.365ZM1148.5 80.5246L1170.51 80.5194L1159.18 99.4013L745.747 788.485L597.839 788.479L575.821 788.478L587.15 769.599L1000.67 80.5593L1148.5 80.5246Z" fill-rule="evenodd" fill="#07090D"/>
+    <path d="M613.592 81.1726L707.986 81.1738L1132.75 789.14L1038.36 789.138L613.592 81.1726Z" fill="#949DFF"/>
+    <path d="M1027.67 808.016L580.249 62.291L718.677 62.2927L1166.1 808.018L1027.67 808.016ZM635.61 81.1711L613.594 81.1708L1038.36 789.136L1110.74 789.137L1132.76 789.138L1121.43 770.258L707.988 81.172L635.61 81.1711Z" fill-rule="evenodd" fill="#07090D"/>
+    <path d="M1095.05 81.2366L1076.18 81.2464L651.332 789.166L670.194 789.156L1095.05 81.2366Z" fill="#8DAEC9"/>
+    <path d="M680.89 808.03L1128.4 62.34L1095.03 62.3571L1065.5 62.3723L617.977 808.062L680.89 808.03ZM1090.05 89.5662L1095.05 81.2365L1076.18 81.2462L662.669 770.28L656.335 780.836L651.336 789.165L670.198 789.156L1090.05 89.5661Z" fill-rule="evenodd" fill="#07090D"/>
   </g>
 </svg>
