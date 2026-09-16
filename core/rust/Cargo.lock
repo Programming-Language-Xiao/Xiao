@@ -187,6 +187,13 @@ version = "0.1.0"
 [[package]]
 name = "xiao-runtime"
 version = "0.1.0"
+dependencies = [
+ "xiao-diagnostics",
+ "xiao-lifetime",
+ "xiao-source",
+ "xiao-syntax",
+ "xiao-types",
+]
 
 [[package]]
 name = "xiao-source"

@@ -9,3 +9,10 @@ description = "Xiao execution runtime"
 
 [lib]
 path = "src/lib.rs"
+
+[dependencies]
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-lifetime = { path = "../xiao-lifetime" }
+xiao-source = { path = "../xiao-source" }
+xiao-syntax = { path = "../xiao-syntax" }
+xiao-types = { path = "../xiao-types" }

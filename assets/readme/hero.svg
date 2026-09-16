@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1200" height="420" viewBox="0 0 1200 420"
+     role="img" aria-labelledby="title desc">
+  <title id="title">Xiao programming language</title>
+  <desc id="desc">A dark, geometric hero for Xiao, showing its static-boundary language identity and crossing execution-rail motif.</desc>
+
+  <rect width="1200" height="420" rx="28" fill="#07090D"/>
+
+  <g id="background-rails" opacity="0.9">
+    <path d="M828 -44 L860 -44 L594 424 L562 424 Z" fill="#A8CCFF" opacity="0.16"/>
+    <path d="M930 -44 L958 -44 L692 424 L664 424 Z" fill="#949DFF" opacity="0.20"/>
+    <path d="M1034 -44 L1058 -44 L792 424 L768 424 Z" fill="#F7F8FB" opacity="0.10"/>
+    <path d="M686 58 H1140" stroke="#273242" stroke-width="1"/>
+    <path d="M686 374 H1140" stroke="#273242" stroke-width="1"/>
+  </g>
+
+  <g id="title-block" transform="translate(64 52)">
+    <text x="0" y="0" fill="#A8CCFF" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="600">PROGRAMMING LANGUAGE / WORKSPACE</text>
+    <text x="0" y="82" fill="#F7F8FB" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="78" font-weight="700">Xiao</text>
+    <text x="0" y="128" fill="#949DFF" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="30" font-weight="600">静态边界，双执行路径</text>
+    <text x="0" y="166" fill="#B7C0CE" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="20">从源码、类型与生命周期，走向可裁剪的运行时。</text>
+
+    <path d="M0 198 H522" stroke="#273242" stroke-width="1"/>
+    <text x="0" y="232" fill="#F7F8FB" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">0.1.0</text>
+    <text x="106" y="232" fill="#7C8796" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">·</text>
+    <text x="130" y="232" fill="#F7F8FB" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">DESIGN-FIRST</text>
+    <text x="294" y="232" fill="#7C8796" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">·</text>
+    <text x="318" y="232" fill="#F7F8FB" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">IN DEVELOPMENT</text>
+
+    <rect x="0" y="260" width="522" height="76" rx="12" fill="#0E141D" stroke="#273242"/>
+    <text x="22" y="292" fill="#8DAEC9" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">syntax specimen / static analysis</text>
+    <text x="22" y="320" fill="#F7F8FB" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="22">int total = 1 + 2</text>
+  </g>
+
+  <g id="brand-rails" transform="translate(700 46)">
+    <text x="0" y="0" fill="#A8CCFF" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18" font-weight="600">XIAO / VISUAL IDENTITY</text>
+
+    <g id="mark" transform="translate(18 52)">
+      <path d="M22 12 L58 12 L204 270 L168 270 Z" fill="#A8CCFF"/>
+      <path d="M108 0 L144 0 L278 228 L242 228 Z" fill="#949DFF"/>
+      <path d="M310 0 L340 0 L178 286 L148 286 Z" fill="#F7F8FB"/>
+      <path d="M376 0 L402 0 L240 286 L214 286 Z" fill="#8DAEC9"/>
+      <path d="M0 148 H260" stroke="#A8CCFF" stroke-width="28"/>
+      <path d="M214 148 H454" stroke="#A8CCFF" stroke-width="28"/>
+      <path d="M214 148 H454" stroke="#07090D" stroke-width="8" opacity="0.85"/>
+      <circle cx="214" cy="148" r="13" fill="#F7F8FB"/>
+      <circle cx="214" cy="148" r="6" fill="#949DFF"/>
+    </g>
+
+  </g>
+</svg>

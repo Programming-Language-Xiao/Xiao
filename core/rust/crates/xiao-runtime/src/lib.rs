@@ -1,1 +1,38 @@
 //! Xiao 执行时值、内存和错误运行库的 crate 入口。
+//!
+//! 本阶段提供不透明对象头、单线程引用计数、字符串和静态签名表对象。
+//! 字节码 VM、LLVM 后端、CLI 与并发调度器只应通过这里的稳定句柄接口接入，
+//! 不得复制一套生命周期语义。
+
+/// 稳定 Runtime 错误、原因链和结构化参数。
+pub mod errors;
+/// 不透明对象头、强/弱句柄和引用计数策略。
+pub mod memory;
+/// 由 05-C 签名驱动的表对象和状态机。
+pub mod tables;
+/// 仅供规格测试使用的释放计划驱动器。
+pub mod testing;
+/// 标量、字符串和统一 Runtime 值。
+pub mod value;
+
+/// 重导出 Runtime 错误身份和结果别名。
+pub use errors::{
+    ALLOCATION_CODE, CROSS_THREAD_CODE, ErrorAccumulator, INVALID_HANDLE_CODE, INVALID_VALUE_CODE,
+    NUMERIC_OVERFLOW_CODE, REFCOUNT_INVARIANT_CODE, RuntimeError, RuntimeErrorKind, RuntimeResult,
+    TABLE_DROP_CODE, TABLE_INIT_CODE, TABLE_STATE_CODE, TYPE_MISMATCH_CODE, USE_AFTER_RELEASE_CODE,
+    WEAK_UPGRADE_CODE,
+};
+/// 重导出对象头和强/弱句柄类型。
+pub use memory::{
+    CounterStrategyKind, NonAtomicRefCount, ObjectLayout, RefCountStrategy, RuntimeTypeTag,
+    StrongHandle, WeakHandle,
+};
+/// 重导出表定义、钩子和生命周期状态。
+pub use tables::{
+    TableDefinition, TableDropHook, TableHooks, TableInitHook, TableInstance, TableObject,
+    TableState,
+};
+/// 重导出释放计划测试驱动器和展开结果。
+pub use testing::{ReleaseEvent, ReleaseExecution, RuntimeBinding, RuntimeDriver, UnwindExecution};
+/// 重导出 Runtime 标量和字符串值。
+pub use value::{RuntimeValue, StringHandle};

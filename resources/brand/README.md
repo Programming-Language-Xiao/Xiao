@@ -6,9 +6,12 @@
 
 ## 文件清单
 
-- `XiaoLogo.png`：仓库 README 和文档中的位图展示资源。
-- `XiaoLogo.svg`：需要缩放或继续编辑时使用的矢量资源。
-- `XiaoLogo.ico`：后续 Windows 原生应用和文件关联图标的输入资源。
+- `XiaoLogo-Light.png` / `XiaoLogo-Light.svg`：浅色背景使用的位图和矢量资源。
+- `XiaoLogo-Dark.png` / `XiaoLogo-Dark.svg`：深色背景使用的位图和矢量资源。
+- `XiaoLogo-Light.ico` / `XiaoLogo-Dark.ico`：对应主题的 Windows 图标资源。
+
+平台接线阶段应根据宿主背景选择 `Light` 或 `Dark` 变体，并在生成最终应用时
+导出约定的 `XiaoLogo.ico` 文件名；本目录不负责文件关联注册。
 
 ## 使用阶段
 

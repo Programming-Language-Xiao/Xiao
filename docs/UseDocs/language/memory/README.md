@@ -22,10 +22,13 @@ Xiao 06-A 已经能在程序运行前分析作用域、逃逸、对象拥有关�
 ## 阅读顺序
 
 1. [静态分析规则](static-analysis.md)
-2. [释放、循环引用与诊断](release-and-errors.md)
+2. [Runtime 对象与句柄](runtime/objects-and-handles.md)
+3. [表生命周期执行](runtime/table-lifecycle.md)
+4. [Runtime 错误与展开](runtime/errors-and-unwind.md)
+5. [释放、循环引用与诊断](release-and-errors.md)
 
 ## 当前能力边界
 
-页面状态 `verified` 表示静态分析 crate 和规格测试已经完成。当前版本尚未创建真实堆对象、
-执行引用计数、调用 `drop` 或运行 Xiao 程序；这些执行能力会在 Runtime、字节码和 LLVM
-阶段逐步接入。表的 `init/drop` 签名规则见[表与生命周期](../tables/README.md)。
+页面状态 `verified` 表示对应页面描述的实现和测试已经完成。06-A 页面仍只描述静态分析；
+Runtime 子页描述可由 Rust 测试驱动器直接验证的对象、表和错误展开能力，不代表已经接入
+字节码 VM 或 LLVM。表的静态 `init/drop` 签名规则见[表与生命周期](../tables/README.md)。
