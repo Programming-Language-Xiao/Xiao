@@ -17,10 +17,14 @@ pub mod value;
 
 /// 重导出 Runtime 错误身份和结果别名。
 pub use errors::{
-    ALLOCATION_CODE, CROSS_THREAD_CODE, ErrorAccumulator, INVALID_HANDLE_CODE, INVALID_VALUE_CODE,
-    NUMERIC_OVERFLOW_CODE, REFCOUNT_INVARIANT_CODE, RuntimeError, RuntimeErrorKind, RuntimeResult,
-    TABLE_DROP_CODE, TABLE_INIT_CODE, TABLE_STATE_CODE, TYPE_MISMATCH_CODE, USE_AFTER_RELEASE_CODE,
-    WEAK_UPGRADE_CODE,
+    ALLOCATION_CODE, BackendLocation, CROSS_THREAD_CODE, DiagnosticParam, ErrorAccumulator,
+    FATAL_CORRUPT_ARTIFACT_CODE, FATAL_HARDWARE_CODE, FATAL_INTERNAL_CODE,
+    FATAL_OUT_OF_MEMORY_CODE, FATAL_RUNTIME_INVARIANT_CODE, FATAL_STACK_OVERFLOW_CODE, FatalError,
+    FatalKind, FrameKind, INVALID_HANDLE_CODE, INVALID_VALUE_CODE, MessageRenderer,
+    NUMERIC_OVERFLOW_CODE, PreviewRenderer, REFCOUNT_INVARIANT_CODE, ReportClass, ReportRecord,
+    RuntimeError, RuntimeErrorKind, RuntimeResult, StackFrame, TABLE_DROP_CODE, TABLE_INIT_CODE,
+    TABLE_STATE_CODE, TYPE_MISMATCH_CODE, USE_AFTER_RELEASE_CODE, WEAK_UPGRADE_CODE, XiaoError,
+    XiaoErrorKind, XiaoResult,
 };
 /// 重导出对象头和强/弱句柄类型。
 pub use memory::{

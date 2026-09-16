@@ -15,7 +15,7 @@ related:
 
 # 错误与展开
 
-运行时错误包含稳定错误码、消息标识、结构化参数和可选原因链，便于 CLI 或国际化层重新渲染消息。
+运行时错误统一使用 `xiao-diagnostics` 提供的 `XiaoError`，包含稳定错误码、消息标识、结构化参数、可选源码位置、上下文、调用栈和原因链，便于 CLI 或国际化层重新渲染消息。致命故障使用独立 `FatalError`，普通 `catch` 不得恢复；完整报告字段见[运行时错误报告](../../../troubleshooting/errors-and-reports.md)。
 
 ## 固定展开顺序
 

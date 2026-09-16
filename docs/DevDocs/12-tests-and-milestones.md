@@ -367,6 +367,25 @@ F1 的完整输入、交付物、不负责事项和 Agent 交接清单见 [04. �
 
 ### H0：错误模型与并发边界
 
+### H0-A：统一错误模型与报告器（07-A）
+
+前置上下文：先阅读 [07. 错误模型与并发安全边界](07-concurrency-and-errors.md) 的 07-A 小节、`xiao-diagnostics` crate README 和 [UseDocs 错误报告](../UseDocs/troubleshooting/errors-and-reports.md)。本子阶段只建设错误对象、统一堆栈和报告记录，不实现 `try`/`catch` 语法、日志文件、调试窗口或并发执行器。
+
+二级任务：
+
+1. 将 `Diagnostic` 兼容保留在 `xiao-diagnostics`，新增 `XiaoError`/`XiaoResult`、`FatalError`、稳定 `X06`/`X07` 错误码和原因链。
+2. 建立含源码区间、字节码偏移、原生地址、内联深度和帧类别的 `StackFrame` 模型。
+3. 建立与具体序列化格式无关的 `ReportRecord`、`MessageRenderer` 和默认文本渲染。
+4. 把 06-B Runtime 迁移到统一错误别名，验证 `suppressed`、Strong/Weak、表钩子和布尔算术回归不变。
+5. 同步更新 DevDocs、UseDocs、crate README 和模块登记；公共 API 文档覆盖率保持 100%。
+
+退出条件：
+
+1. `xiao-diagnostics` 是错误本体的唯一实现，Runtime 不再拥有独立 `RuntimeError` 结构。
+2. 可恢复报告和致命报告类型可区分，原因链、上下文、堆栈顺序和 suppressed 错误可稳定测试。
+3. 既有 `X06-RUNTIME-*` 编号与 06-B 行为不变，Fatal 使用 `X07-FATAL-*`，不依赖 `xiao-i18n`。
+4. Rust 工作区测试、Clippy、Rustdoc、仓库检查和文档覆盖率门禁通过；UseDocs 页面状态为 `verified`。
+
 退出条件：
 
 1. 前序阶段的词法、类型、容器、模块和生命周期错误使用统一编号、源码位置与传播结构。

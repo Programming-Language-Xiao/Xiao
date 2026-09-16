@@ -40,6 +40,20 @@ Actor 模型让每个执行单元独占自己的状态，其他执行单元通�
 
 ## 一级工程目标：冻结错误模型与分类
 
+### 07-A 已完成：统一错误模型与报告器闭环
+
+07-A 只完成语言无关的错误核心，不提前实现语法、日志文件、调试窗口或并发调度。统一实现位于 `xiao-diagnostics`，Runtime 通过类型别名门面消费它，禁止长期维护第二套 `RuntimeError` 结构。
+
+已交付的稳定契约包括：
+
+- `XiaoError`/`XiaoResult`：保留既有 `X06-RUNTIME-*` 编号、`message_id`、结构化参数、源码区间、上下文、原因链和 `suppressed` 清理错误。
+- `FatalError`：使用独立的 `X07-FATAL-*` 编号和 `FatalKind`，`is_recoverable()` 永远为假，普通 `catch` 不得恢复。
+- `StackFrame`：统一保存模块、函数、源文件、`SourceSpan`、用户/Runtime 帧标记，并为字节码偏移、原生地址和内联深度预留字段。
+- `ReportRecord`/`render_text`：提供与 JSON 或具体序列化格式无关的机器记录和默认文本报告；报告保留 `error_id`、原因链及 suppressed 错误。
+- `MessageRenderer`：只定义可替换的人类文案渲染接口，07-A 不依赖 `xiao-i18n`；具体语言目录在 11C 接入。
+
+07-A 的 Runtime 迁移保持 06-B 的 `finally -> drop -> catch/继续传播`、表生命周期、Strong/Weak 和布尔/数值行为不变。后续 07-B 再实现错误控制流降低，07-C 实现结构化日志与 `-debug` 诊断窗口，07-D 才研究线程、任务池和 Actor。
+
 ### 错误身份与三类边界
 
 Xiao 的错误控制流和观测信息必须分开：错误对象负责传播与捕获，日志负责记录，最终错误报告负责向用户呈现。错误文本不是程序判断错误的接口。
@@ -181,6 +195,14 @@ focus = [
 
 ## 二级实现任务
 
+### 07-A：统一错误模型与报告器（已完成）
+
+1. 在 `xiao-diagnostics` 定义可恢复 `XiaoError`、独立 `FatalError`、稳定错误码、原因链、上下文、`suppressed` 和统一结果别名。
+2. 定义可供字节码与 LLVM 共同消费的 `StackFrame`/`BackendLocation`，不在前端或 Runtime 内复制后端堆栈语义。
+3. 定义 `ReportRecord`、可替换 `MessageRenderer` 和默认文本报告；不冻结 JSON 或二进制字节格式，也不依赖 `xiao-i18n`。
+4. 将 06-B Runtime 迁移到统一错误类型门面，保留已有 `X06` 编号与清理展开行为。
+5. 以 Rust 单元测试和 Runtime 回归测试验证身份、原因链、堆栈、fatal/recoverable 边界与 suppressed 规则。
+
 ### 错误基础设施
 
 1. 接入前序阶段的最小诊断结构，统一错误编号、错误类型和源位置结构。
@@ -214,6 +236,14 @@ focus = [
 4. 用线程、任务池和 Actor 原型分别评估成本，不提前锁死语法。
 
 ## 验收标准
+
+### 07-A 验收
+
+- `xiao-diagnostics` 是错误核心的唯一实现，`xiao-runtime` 不再定义独立 `RuntimeError` 结构。
+- 既有 `X06-RUNTIME-*` 错误码不重编号；Fatal 使用独立 `X07-FATAL-*` 命名空间。
+- 报告记录同时保留机器字段和可替换的人类文本，语言目录缺失时不影响错误身份。
+- 堆栈帧能容纳源码区间、字节码偏移、原生地址和内联深度，且保持用户帧/Runtime 帧区分。
+- 07-A 不引入 `try`/`catch` 语法、日志文件、调试窗口或并发执行器。
 
 ### 并发验收
 

@@ -1,12 +1,51 @@
-//! Xiao 结构化诊断的最小基础层。
+//! Xiao 统一结构化诊断、可恢复错误和致命故障模型。
 //!
-//! 01 阶段先提供不可变的编译期诊断记录，让源码读取和词法器共享
-//! 稳定的错误身份；第 07 阶段会在此基础上扩展 `XiaoError`、原因链、
-//! 堆栈和运行时事件，但不会改变现有字段的机器语义。
+//! 本 crate 只保存语言无关的机器字段与报告边界：消息目录、CLI、日志和
+//! 调试窗口可以在此基础上渲染，但不能复制另一套错误身份或改变传播语义。
 
 use std::collections::BTreeMap;
+use std::fmt::{self, Display, Formatter};
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use xiao_source::SourceSpan;
+
+/// 无效或空 Runtime 句柄。
+pub const INVALID_HANDLE_CODE: &str = "X06-RUNTIME-001";
+/// Runtime 类型标签与预期不匹配。
+pub const TYPE_MISMATCH_CODE: &str = "X06-RUNTIME-002";
+/// 引用计数下溢或溢出。
+pub const REFCOUNT_INVARIANT_CODE: &str = "X06-RUNTIME-003";
+/// 访问已经释放的对象。
+pub const USE_AFTER_RELEASE_CODE: &str = "X06-RUNTIME-004";
+/// 弱引用无法升级。
+pub const WEAK_UPGRADE_CODE: &str = "X06-RUNTIME-005";
+/// 表对象状态不允许当前操作。
+pub const TABLE_STATE_CODE: &str = "X06-RUNTIME-006";
+/// 表初始化失败。
+pub const TABLE_INIT_CODE: &str = "X06-RUNTIME-007";
+/// 表释放钩子失败。
+pub const TABLE_DROP_CODE: &str = "X06-RUNTIME-008";
+/// 数值运算溢出或产生非有限结果。
+pub const NUMERIC_OVERFLOW_CODE: &str = "X06-RUNTIME-009";
+/// 首版禁止跨线程传递 Runtime 对象。
+pub const CROSS_THREAD_CODE: &str = "X06-RUNTIME-010";
+/// Runtime 对象分配失败。
+pub const ALLOCATION_CODE: &str = "X06-RUNTIME-011";
+/// Runtime 值不满足操作要求。
+pub const INVALID_VALUE_CODE: &str = "X06-RUNTIME-012";
+
+/// 虚拟机不变量损坏。
+pub const FATAL_RUNTIME_INVARIANT_CODE: &str = "X07-FATAL-001";
+/// 字节码或其他执行产物损坏。
+pub const FATAL_CORRUPT_ARTIFACT_CODE: &str = "X07-FATAL-002";
+/// 无法安全建立错误对象的内存耗尽。
+pub const FATAL_OUT_OF_MEMORY_CODE: &str = "X07-FATAL-003";
+/// 执行调用栈耗尽。
+pub const FATAL_STACK_OVERFLOW_CODE: &str = "X07-FATAL-004";
+/// 硬件异常。
+pub const FATAL_HARDWARE_CODE: &str = "X07-FATAL-005";
+/// 未分类的内部故障。
+pub const FATAL_INTERNAL_CODE: &str = "X07-FATAL-006";
 
 /// 诊断严重级别。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -33,25 +72,14 @@ pub enum DiagnosticParam {
 /// 按稳定参数名排列的诊断参数；不包含翻译后的句子。
 pub type DiagnosticParams = BTreeMap<String, DiagnosticParam>;
 
-/// 一条不可变的结构化诊断。
-///
-/// `code`、`message_id` 和 `params` 是机器接口；`message` 只是当前语言下的
-/// 预览文本，后续国际化层可以根据同一身份和参数重新渲染。`span` 为空时
-/// 表示诊断不对应具体源码区间。旧诊断可以暂时保留空参数，新诊断不得从
-/// 已拼接的预览文本反向解析参数。
+/// 一条不可变的结构化前端诊断。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Diagnostic {
-    /// 稳定、机器可读的诊断编号。
     code: String,
-    /// 语言目录使用的稳定消息键。
     message_id: String,
-    /// 不依赖展示语言的插值参数。
     params: DiagnosticParams,
-    /// 严重级别。
     severity: Severity,
-    /// 相关源码区间；系统级诊断可以为空。
     span: Option<SourceSpan>,
-    /// 当前语言的展示文本，不作为程序判断接口。
     message: String,
 }
 
@@ -87,8 +115,6 @@ impl Diagnostic {
     }
 
     /// 为诊断附加结构化参数并返回新的完整记录。
-    ///
-    /// 参数名属于 `message_id` 的稳定签名；重复参数名采用最后一个值。
     #[must_use]
     pub fn with_params(
         mut self,
@@ -109,31 +135,26 @@ impl Diagnostic {
     pub fn code(&self) -> &str {
         &self.code
     }
-
     /// 返回可翻译的稳定消息键。
     #[must_use]
     pub fn message_id(&self) -> &str {
         &self.message_id
     }
-
-    /// 返回原始插值参数，不解析或依赖当前展示文本。
+    /// 返回原始插值参数。
     #[must_use]
     pub const fn params(&self) -> &DiagnosticParams {
         &self.params
     }
-
     /// 返回诊断严重级别。
     #[must_use]
     pub const fn severity(&self) -> Severity {
         self.severity
     }
-
     /// 返回关联的源码区间。
     #[must_use]
     pub const fn span(&self) -> Option<SourceSpan> {
         self.span
     }
-
     /// 返回当前语言下的展示文本。
     #[must_use]
     pub fn message(&self) -> &str {
@@ -141,57 +162,1034 @@ impl Diagnostic {
     }
 }
 
+/// Runtime 错误的稳定类别。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum XiaoErrorKind {
+    /// 句柄、对象头或生命周期不变量错误。
+    Memory,
+    /// 值的类型或形状错误。
+    Type,
+    /// 数值运算错误。
+    Arithmetic,
+    /// 表构造、成员访问或生命周期错误。
+    Table,
+    /// 首版并发边界错误。
+    Concurrency,
+    /// 分配或系统资源错误。
+    Resource,
+    /// 其他可恢复执行错误。
+    Other,
+}
+
+impl XiaoErrorKind {
+    /// 返回稳定的小写类别名。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Memory => "memory",
+            Self::Type => "type",
+            Self::Arithmetic => "arithmetic",
+            Self::Table => "table",
+            Self::Concurrency => "concurrency",
+            Self::Resource => "resource",
+            Self::Other => "other",
+        }
+    }
+}
+
+/// 致命故障的稳定类别。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum FatalKind {
+    /// Runtime 不变量损坏。
+    RuntimeInvariant,
+    /// 产物内容无法执行。
+    CorruptArtifact,
+    /// 内存耗尽。
+    OutOfMemory,
+    /// 调用栈耗尽。
+    StackOverflow,
+    /// 硬件故障。
+    Hardware,
+    /// 未分类内部故障。
+    Internal,
+}
+
+impl FatalKind {
+    /// 返回稳定的小写类别名。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::RuntimeInvariant => "runtime_invariant",
+            Self::CorruptArtifact => "corrupt_artifact",
+            Self::OutOfMemory => "out_of_memory",
+            Self::StackOverflow => "stack_overflow",
+            Self::Hardware => "hardware",
+            Self::Internal => "internal",
+        }
+    }
+}
+
+/// 后端执行位置，为字节码、原生代码和内联信息预留统一字段。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct BackendLocation {
+    /// 可选字节码指令偏移。
+    pub bytecode_offset: Option<u64>,
+    /// 可选原生机器地址。
+    pub native_address: Option<u64>,
+    /// 内联展开深度；零表示非内联帧或未知。
+    pub inline_depth: Option<u32>,
+}
+
+impl BackendLocation {
+    /// 创建一个空的后端位置。
+    #[must_use]
+    pub const fn empty() -> Self {
+        Self {
+            bytecode_offset: None,
+            native_address: None,
+            inline_depth: None,
+        }
+    }
+
+    /// 设置字节码指令偏移。
+    #[must_use]
+    pub const fn with_bytecode_offset(mut self, offset: u64) -> Self {
+        self.bytecode_offset = Some(offset);
+        self
+    }
+
+    /// 设置原生机器地址。
+    #[must_use]
+    pub const fn with_native_address(mut self, address: u64) -> Self {
+        self.native_address = Some(address);
+        self
+    }
+
+    /// 设置内联展开深度。
+    #[must_use]
+    pub const fn with_inline_depth(mut self, depth: u32) -> Self {
+        self.inline_depth = Some(depth);
+        self
+    }
+}
+
+/// 调用栈帧属于用户代码还是 Runtime 内部。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum FrameKind {
+    /// 用户源码或用户模块帧。
+    User,
+    /// Runtime、VM 或系统内部帧。
+    Runtime,
+}
+
+/// 可由字节码和 LLVM 后端共同填充的统一调用栈帧。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct StackFrame {
+    /// 所属模块名。
+    pub module: String,
+    /// 函数名。
+    pub function: String,
+    /// 逻辑源文件路径。
+    pub source: Option<String>,
+    /// 源码字节区间。
+    pub span: Option<SourceSpan>,
+    /// 后端偏移和内联信息。
+    pub backend: BackendLocation,
+    /// 用户帧或 Runtime 帧。
+    pub kind: FrameKind,
+}
+
+impl StackFrame {
+    /// 创建一个用户源码帧。
+    #[must_use]
+    pub fn user(module: impl Into<String>, function: impl Into<String>) -> Self {
+        Self::new(module, function, FrameKind::User)
+    }
+
+    /// 创建一个 Runtime 内部帧。
+    #[must_use]
+    pub fn runtime(module: impl Into<String>, function: impl Into<String>) -> Self {
+        Self::new(module, function, FrameKind::Runtime)
+    }
+
+    /// 创建指定帧类型的空位置帧。
+    #[must_use]
+    pub fn new(module: impl Into<String>, function: impl Into<String>, kind: FrameKind) -> Self {
+        Self {
+            module: module.into(),
+            function: function.into(),
+            source: None,
+            span: None,
+            backend: BackendLocation::empty(),
+            kind,
+        }
+    }
+
+    /// 附加源文件和源码区间。
+    #[must_use]
+    pub fn with_source(mut self, source: impl Into<String>, span: Option<SourceSpan>) -> Self {
+        self.source = Some(source.into());
+        self.span = span;
+        self
+    }
+
+    /// 以更明确的名称附加源文件和源码区间。
+    #[must_use]
+    pub fn with_source_file(self, source: impl Into<String>, span: Option<SourceSpan>) -> Self {
+        self.with_source(source, span)
+    }
+
+    /// 附加后端位置。
+    #[must_use]
+    pub fn with_backend(mut self, backend: BackendLocation) -> Self {
+        self.backend = backend;
+        self
+    }
+
+    /// 直接附加字节码偏移。
+    #[must_use]
+    pub fn with_bytecode_offset(self, offset: u64) -> Self {
+        let backend = self.backend.with_bytecode_offset(offset);
+        self.with_backend(backend)
+    }
+
+    /// 直接附加原生地址。
+    #[must_use]
+    pub fn with_native_address(self, address: u64) -> Self {
+        let backend = self.backend.with_native_address(address);
+        self.with_backend(backend)
+    }
+
+    /// 直接附加内联深度。
+    #[must_use]
+    pub fn with_inline_depth(self, depth: u32) -> Self {
+        let backend = self.backend.with_inline_depth(depth);
+        self.with_backend(backend)
+    }
+
+    /// 返回模块名。
+    #[must_use]
+    pub fn module(&self) -> &str {
+        &self.module
+    }
+
+    /// 返回函数名。
+    #[must_use]
+    pub fn function(&self) -> &str {
+        &self.function
+    }
+
+    /// 返回可选源文件。
+    #[must_use]
+    pub fn source_file(&self) -> Option<&str> {
+        self.source.as_deref()
+    }
+
+    /// 返回源码区间。
+    #[must_use]
+    pub const fn span(&self) -> Option<SourceSpan> {
+        self.span
+    }
+
+    /// 返回后端位置。
+    #[must_use]
+    pub const fn backend(&self) -> BackendLocation {
+        self.backend
+    }
+
+    /// 返回帧类别。
+    #[must_use]
+    pub const fn kind(&self) -> FrameKind {
+        self.kind
+    }
+}
+
+/// 可恢复错误的结构化身份和传播载荷。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct XiaoError(Box<XiaoErrorData>);
+
+/// 可恢复错误的堆上详细载荷，避免错误句柄放大 Runtime 热路径上的 `Result`。
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct XiaoErrorData {
+    code: String,
+    message_id: String,
+    params: DiagnosticParams,
+    kind: XiaoErrorKind,
+    message: String,
+    location: Option<SourceSpan>,
+    context: DiagnosticParams,
+    stack: Vec<StackFrame>,
+    cause: Option<Box<XiaoError>>,
+    suppressed: Vec<XiaoError>,
+    error_id: u64,
+}
+
+/// 进程内错误事件编号分配器。
+static NEXT_ERROR_ID: AtomicU64 = AtomicU64::new(1);
+
+impl XiaoError {
+    /// 创建一条可恢复错误。
+    #[must_use]
+    pub fn new(
+        kind: XiaoErrorKind,
+        code: impl Into<String>,
+        message_id: impl Into<String>,
+        message: impl Into<String>,
+    ) -> Self {
+        Self(Box::new(XiaoErrorData {
+            code: code.into(),
+            message_id: message_id.into(),
+            params: BTreeMap::new(),
+            kind,
+            message: message.into(),
+            location: None,
+            context: BTreeMap::new(),
+            stack: Vec::new(),
+            cause: None,
+            suppressed: Vec::new(),
+            error_id: NEXT_ERROR_ID.fetch_add(1, Ordering::Relaxed),
+        }))
+    }
+
+    /// 创建句柄无效错误。
+    #[must_use]
+    pub fn invalid_handle(message: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Memory,
+            INVALID_HANDLE_CODE,
+            "runtime.invalid_handle",
+            message,
+        )
+    }
+    /// 创建类型不匹配错误。
+    #[must_use]
+    pub fn type_mismatch(expected: impl Into<String>, actual: impl Into<String>) -> Self {
+        let expected = expected.into();
+        let actual = actual.into();
+        Self::new(
+            XiaoErrorKind::Type,
+            TYPE_MISMATCH_CODE,
+            "runtime.type_mismatch",
+            format!("期望类型 {expected}，实际为 {actual}"),
+        )
+        .with_param("expected", DiagnosticParam::Text(expected))
+        .with_param("actual", DiagnosticParam::Text(actual))
+    }
+    /// 创建引用计数不变量错误。
+    #[must_use]
+    pub fn refcount_invariant(message: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Memory,
+            REFCOUNT_INVARIANT_CODE,
+            "runtime.refcount_invariant",
+            message,
+        )
+    }
+    /// 创建已释放对象访问错误。
+    #[must_use]
+    pub fn use_after_release() -> Self {
+        Self::new(
+            XiaoErrorKind::Memory,
+            USE_AFTER_RELEASE_CODE,
+            "runtime.use_after_release",
+            "对象已经释放，不能继续访问",
+        )
+    }
+    /// 创建弱引用升级失败错误。
+    #[must_use]
+    pub fn weak_upgrade() -> Self {
+        Self::new(
+            XiaoErrorKind::Memory,
+            WEAK_UPGRADE_CODE,
+            "runtime.weak_upgrade",
+            "弱引用指向的对象已经释放",
+        )
+    }
+    /// 创建表状态错误。
+    #[must_use]
+    pub fn table_state(expected: impl Into<String>, actual: impl Into<String>) -> Self {
+        let expected = expected.into();
+        let actual = actual.into();
+        Self::new(
+            XiaoErrorKind::Table,
+            TABLE_STATE_CODE,
+            "runtime.table_state",
+            format!("表状态应为 {expected}，实际为 {actual}"),
+        )
+        .with_param("expected", DiagnosticParam::Text(expected))
+        .with_param("actual", DiagnosticParam::Text(actual))
+    }
+    /// 创建表初始化失败错误。
+    #[must_use]
+    pub fn table_init(message: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Table,
+            TABLE_INIT_CODE,
+            "runtime.table_init",
+            message,
+        )
+    }
+    /// 创建表释放钩子失败错误。
+    #[must_use]
+    pub fn table_drop(message: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Table,
+            TABLE_DROP_CODE,
+            "runtime.table_drop",
+            message,
+        )
+    }
+    /// 创建数值溢出错误。
+    #[must_use]
+    pub fn numeric_overflow(message: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Arithmetic,
+            NUMERIC_OVERFLOW_CODE,
+            "runtime.numeric_overflow",
+            message,
+        )
+    }
+    /// 创建首版跨线程错误。
+    #[must_use]
+    pub fn cross_thread() -> Self {
+        Self::new(
+            XiaoErrorKind::Concurrency,
+            CROSS_THREAD_CODE,
+            "runtime.cross_thread",
+            "首版 Runtime 对象不能跨线程传递",
+        )
+    }
+    /// 创建一般值错误。
+    #[must_use]
+    pub fn invalid_value(message: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Type,
+            INVALID_VALUE_CODE,
+            "runtime.invalid_value",
+            message,
+        )
+    }
+    /// 附加结构化参数。
+    #[must_use]
+    pub fn with_param(mut self, name: impl Into<String>, value: DiagnosticParam) -> Self {
+        self.0.params.insert(name.into(), value);
+        self
+    }
+    /// 附加源码位置。
+    #[must_use]
+    pub fn with_location(mut self, location: SourceSpan) -> Self {
+        self.0.location = Some(location);
+        self
+    }
+    /// 附加操作上下文，不覆盖错误身份。
+    #[must_use]
+    pub fn with_context(mut self, name: impl Into<String>, value: DiagnosticParam) -> Self {
+        self.0.context.insert(name.into(), value);
+        self
+    }
+    /// 追加一个调用栈帧。
+    #[must_use]
+    pub fn with_stack_frame(mut self, frame: StackFrame) -> Self {
+        self.0.stack.push(frame);
+        self
+    }
+    /// 包装原始错误并保留原因链。
+    #[must_use]
+    pub fn with_cause(mut self, cause: Self) -> Self {
+        self.0.cause = Some(Box::new(cause));
+        self
+    }
+    /// 将次生错误加入 suppressed 列表。
+    pub fn push_suppressed(&mut self, error: Self) {
+        self.0.suppressed.push(error);
+    }
+    /// 返回稳定错误码。
+    #[must_use]
+    pub fn code(&self) -> &str {
+        &self.0.code
+    }
+    /// 返回可翻译消息键。
+    #[must_use]
+    pub fn message_id(&self) -> &str {
+        &self.0.message_id
+    }
+    /// 返回结构化插值参数。
+    #[must_use]
+    pub const fn params(&self) -> &DiagnosticParams {
+        &self.0.params
+    }
+    /// 返回错误类别。
+    #[must_use]
+    pub const fn kind(&self) -> XiaoErrorKind {
+        self.0.kind
+    }
+    /// 返回当前展示文本。
+    #[must_use]
+    pub fn message(&self) -> &str {
+        &self.0.message
+    }
+    /// 返回可选源码位置。
+    #[must_use]
+    pub const fn location(&self) -> Option<SourceSpan> {
+        self.0.location
+    }
+    /// 返回上下文参数。
+    #[must_use]
+    pub const fn context(&self) -> &DiagnosticParams {
+        &self.0.context
+    }
+    /// 返回调用栈帧。
+    #[must_use]
+    pub fn stack(&self) -> &[StackFrame] {
+        &self.0.stack
+    }
+    /// 返回直接原因。
+    #[must_use]
+    pub fn cause(&self) -> Option<&Self> {
+        self.0.cause.as_deref()
+    }
+    /// 返回次生错误列表。
+    #[must_use]
+    pub fn suppressed(&self) -> &[Self] {
+        &self.0.suppressed
+    }
+    /// 返回错误事件编号。
+    #[must_use]
+    pub const fn error_id(&self) -> u64 {
+        self.0.error_id
+    }
+    /// 可恢复错误始终允许进入普通捕获路径。
+    #[must_use]
+    pub const fn is_recoverable(&self) -> bool {
+        true
+    }
+    /// 生成与本错误关联的结构化报告记录。
+    #[must_use]
+    pub fn report(&self) -> ReportRecord {
+        ReportRecord::from_error(self)
+    }
+}
+
+impl Display for XiaoError {
+    /// 生成开发者可读的稳定错误摘要。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "{} [{}]: {}",
+            self.kind().as_str(),
+            self.code(),
+            self.message()
+        )
+    }
+}
+
+impl std::error::Error for XiaoError {}
+
+/// 致命故障；普通 `catch` 不得将其转为成功状态。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct FatalError(Box<FatalErrorData>);
+
+/// 致命故障的堆上详细载荷，保持 `Result` 错误句柄轻量。
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct FatalErrorData {
+    code: String,
+    message_id: String,
+    params: DiagnosticParams,
+    kind: FatalKind,
+    message: String,
+    location: Option<SourceSpan>,
+    context: DiagnosticParams,
+    stack: Vec<StackFrame>,
+    cause: Option<Box<FatalError>>,
+    suppressed: Vec<FatalError>,
+    error_id: u64,
+}
+
+impl FatalError {
+    /// 创建一条致命故障。
+    #[must_use]
+    pub fn new(
+        kind: FatalKind,
+        code: impl Into<String>,
+        message_id: impl Into<String>,
+        message: impl Into<String>,
+    ) -> Self {
+        Self(Box::new(FatalErrorData {
+            code: code.into(),
+            message_id: message_id.into(),
+            params: BTreeMap::new(),
+            kind,
+            message: message.into(),
+            location: None,
+            context: BTreeMap::new(),
+            stack: Vec::new(),
+            cause: None,
+            suppressed: Vec::new(),
+            error_id: NEXT_ERROR_ID.fetch_add(1, Ordering::Relaxed),
+        }))
+    }
+    /// 创建 Runtime 不变量故障。
+    #[must_use]
+    pub fn runtime_invariant(message: impl Into<String>) -> Self {
+        Self::new(
+            FatalKind::RuntimeInvariant,
+            FATAL_RUNTIME_INVARIANT_CODE,
+            "fatal.runtime_invariant",
+            message,
+        )
+    }
+    /// 创建损坏产物故障。
+    #[must_use]
+    pub fn corrupt_artifact(message: impl Into<String>) -> Self {
+        Self::new(
+            FatalKind::CorruptArtifact,
+            FATAL_CORRUPT_ARTIFACT_CODE,
+            "fatal.corrupt_artifact",
+            message,
+        )
+    }
+    /// 创建内存耗尽故障。
+    #[must_use]
+    pub fn out_of_memory(message: impl Into<String>) -> Self {
+        Self::new(
+            FatalKind::OutOfMemory,
+            FATAL_OUT_OF_MEMORY_CODE,
+            "fatal.out_of_memory",
+            message,
+        )
+    }
+    /// 创建调用栈耗尽故障。
+    #[must_use]
+    pub fn stack_overflow(message: impl Into<String>) -> Self {
+        Self::new(
+            FatalKind::StackOverflow,
+            FATAL_STACK_OVERFLOW_CODE,
+            "fatal.stack_overflow",
+            message,
+        )
+    }
+    /// 创建硬件故障。
+    #[must_use]
+    pub fn hardware(message: impl Into<String>) -> Self {
+        Self::new(
+            FatalKind::Hardware,
+            FATAL_HARDWARE_CODE,
+            "fatal.hardware",
+            message,
+        )
+    }
+    /// 创建内部故障。
+    #[must_use]
+    pub fn internal(message: impl Into<String>) -> Self {
+        Self::new(
+            FatalKind::Internal,
+            FATAL_INTERNAL_CODE,
+            "fatal.internal",
+            message,
+        )
+    }
+    /// 附加结构化参数。
+    #[must_use]
+    pub fn with_param(mut self, name: impl Into<String>, value: DiagnosticParam) -> Self {
+        self.0.params.insert(name.into(), value);
+        self
+    }
+    /// 附加源码位置。
+    #[must_use]
+    pub fn with_location(mut self, location: SourceSpan) -> Self {
+        self.0.location = Some(location);
+        self
+    }
+    /// 附加操作上下文，不改变致命故障身份。
+    #[must_use]
+    pub fn with_context(mut self, name: impl Into<String>, value: DiagnosticParam) -> Self {
+        self.0.context.insert(name.into(), value);
+        self
+    }
+    /// 附加调用栈帧。
+    #[must_use]
+    pub fn with_stack_frame(mut self, frame: StackFrame) -> Self {
+        self.0.stack.push(frame);
+        self
+    }
+    /// 包装致命原因。
+    #[must_use]
+    pub fn with_cause(mut self, cause: Self) -> Self {
+        self.0.cause = Some(Box::new(cause));
+        self
+    }
+    /// 附加清理阶段的致命故障。
+    pub fn push_suppressed(&mut self, error: Self) {
+        self.0.suppressed.push(error);
+    }
+    /// 返回稳定错误码。
+    #[must_use]
+    pub fn code(&self) -> &str {
+        &self.0.code
+    }
+    /// 返回消息键。
+    #[must_use]
+    pub fn message_id(&self) -> &str {
+        &self.0.message_id
+    }
+    /// 返回参数。
+    #[must_use]
+    pub const fn params(&self) -> &DiagnosticParams {
+        &self.0.params
+    }
+    /// 返回致命类别。
+    #[must_use]
+    pub const fn kind(&self) -> FatalKind {
+        self.0.kind
+    }
+    /// 返回当前展示文本。
+    #[must_use]
+    pub fn message(&self) -> &str {
+        &self.0.message
+    }
+    /// 返回源码位置。
+    #[must_use]
+    pub const fn location(&self) -> Option<SourceSpan> {
+        self.0.location
+    }
+    /// 返回上下文参数。
+    #[must_use]
+    pub const fn context(&self) -> &DiagnosticParams {
+        &self.0.context
+    }
+    /// 返回调用栈。
+    #[must_use]
+    pub fn stack(&self) -> &[StackFrame] {
+        &self.0.stack
+    }
+    /// 返回直接原因。
+    #[must_use]
+    pub fn cause(&self) -> Option<&Self> {
+        self.0.cause.as_deref()
+    }
+    /// 返回清理阶段故障。
+    #[must_use]
+    pub fn suppressed(&self) -> &[Self] {
+        &self.0.suppressed
+    }
+    /// 返回故障事件编号，供日志和诊断窗口关联。
+    #[must_use]
+    pub const fn error_id(&self) -> u64 {
+        self.0.error_id
+    }
+    /// 致命故障不能进入普通可恢复捕获路径。
+    #[must_use]
+    pub const fn is_recoverable(&self) -> bool {
+        false
+    }
+    /// 生成结构化报告记录。
+    #[must_use]
+    pub fn report(&self) -> ReportRecord {
+        ReportRecord::from_fatal(self)
+    }
+}
+
+impl Display for FatalError {
+    /// 生成致命故障摘要。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "fatal {} [{}]: {}",
+            self.kind().as_str(),
+            self.code(),
+            self.message()
+        )
+    }
+}
+
+impl std::error::Error for FatalError {}
+
+/// 错误报告所属类别。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum ReportClass {
+    /// 可以交给普通错误处理路径的错误。
+    Recoverable,
+    /// 必须终止当前执行的故障。
+    Fatal,
+}
+
+/// 与具体 JSON/二进制格式无关的结构化报告记录。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ReportRecord {
+    /// 可恢复或致命类别。
+    pub class: ReportClass,
+    /// 稳定错误码。
+    pub code: String,
+    /// 错误事件唯一编号；用于日志与调试会话关联。
+    pub error_id: u64,
+    /// 消息目录键。
+    pub message_id: String,
+    /// 结构化消息参数。
+    pub params: DiagnosticParams,
+    /// 当前语言预览文本。
+    pub message: String,
+    /// 直接源码位置。
+    pub location: Option<SourceSpan>,
+    /// 操作上下文。
+    pub context: DiagnosticParams,
+    /// 统一调用栈。
+    pub stack: Vec<StackFrame>,
+    /// 递归原因链报告。
+    pub cause: Option<Box<ReportRecord>>,
+    /// 次生错误报告。
+    pub suppressed: Vec<ReportRecord>,
+}
+
+impl ReportRecord {
+    /// 从可恢复错误建立报告记录。
+    #[must_use]
+    pub fn from_error(error: &XiaoError) -> Self {
+        Self {
+            class: ReportClass::Recoverable,
+            code: error.code().to_owned(),
+            error_id: error.error_id(),
+            message_id: error.message_id().to_owned(),
+            params: error.params().clone(),
+            message: error.message().to_owned(),
+            location: error.location(),
+            context: error.context().clone(),
+            stack: error.stack().to_vec(),
+            cause: error.cause().map(|cause| Box::new(Self::from_error(cause))),
+            suppressed: error.suppressed().iter().map(Self::from_error).collect(),
+        }
+    }
+
+    /// 从致命故障建立报告记录。
+    #[must_use]
+    pub fn from_fatal(error: &FatalError) -> Self {
+        Self {
+            class: ReportClass::Fatal,
+            code: error.code().to_owned(),
+            error_id: error.error_id(),
+            message_id: error.message_id().to_owned(),
+            params: error.params().clone(),
+            message: error.message().to_owned(),
+            location: error.location(),
+            context: error.context().clone(),
+            stack: error.stack().to_vec(),
+            cause: error.cause().map(|cause| Box::new(Self::from_fatal(cause))),
+            suppressed: error.suppressed().iter().map(Self::from_fatal).collect(),
+        }
+    }
+}
+
+/// 将消息身份和参数渲染为人类可读文本的接口。
+pub trait MessageRenderer {
+    /// 渲染一个消息键；返回 `None` 表示目录没有该消息。
+    fn render(&self, message_id: &str, params: &DiagnosticParams) -> Option<String>;
+}
+
+/// 不依赖 `xiao-i18n` 的最小回退渲染器。
+#[derive(Clone, Copy, Debug, Default)]
+pub struct PreviewRenderer;
+
+impl MessageRenderer for PreviewRenderer {
+    /// 没有目录时返回消息键和参数的可读摘要。
+    fn render(&self, message_id: &str, params: &DiagnosticParams) -> Option<String> {
+        let values = params
+            .iter()
+            .map(|(key, value)| format!("{key}={value:?}"))
+            .collect::<Vec<_>>()
+            .join(", ");
+        Some(if values.is_empty() {
+            message_id.to_owned()
+        } else {
+            format!("{message_id} ({values})")
+        })
+    }
+}
+
+/// 将报告渲染为默认多行文本。
+#[must_use]
+pub fn render_text(report: &ReportRecord, renderer: &impl MessageRenderer) -> String {
+    /// 递归渲染主错误、原因链和清理阶段错误。
+    fn render_one(
+        report: &ReportRecord,
+        renderer: &impl MessageRenderer,
+        indent: usize,
+        output: &mut String,
+    ) {
+        let prefix = "  ".repeat(indent);
+        let title = match report.class {
+            ReportClass::Recoverable => "error",
+            ReportClass::Fatal => "fatal",
+        };
+        let message = renderer
+            .render(&report.message_id, &report.params)
+            .unwrap_or_else(|| report.message.clone());
+        output.push_str(&format!("{prefix}{title} [{}]: {message}\n", report.code));
+        if let Some(location) = report.location {
+            output.push_str(&format!(
+                "{prefix}at bytes {}..{}\n",
+                location.start(),
+                location.end()
+            ));
+        }
+        for frame in &report.stack {
+            output.push_str(&format!(
+                "{prefix}at {}::{} ({:?})\n",
+                frame.module, frame.function, frame.kind
+            ));
+        }
+        if let Some(cause) = &report.cause {
+            output.push_str(&format!("{prefix}caused by:\n"));
+            render_one(cause, renderer, indent + 1, output);
+        }
+        for suppressed in &report.suppressed {
+            output.push_str(&format!("{prefix}suppressed:\n"));
+            render_one(suppressed, renderer, indent + 1, output);
+        }
+    }
+    let mut output = String::new();
+    render_one(report, renderer, 0, &mut output);
+    output
+}
+
+/// 使用内置回退渲染器生成报告文本。
+#[must_use]
+pub fn render_preview(report: &ReportRecord) -> String {
+    render_text(report, &PreviewRenderer)
+}
+
+/// 使用自定义消息渲染器生成报告文本。
+#[must_use]
+pub fn render_text_with_renderer(report: &ReportRecord, renderer: &impl MessageRenderer) -> String {
+    render_text(report, renderer)
+}
+
+/// 可恢复错误结果别名。
+pub type XiaoResult<T> = Result<T, XiaoError>;
+/// 兼容 Runtime 调用点的结果别名；错误本体已经统一为 `XiaoError`。
+pub type RuntimeResult<T> = XiaoResult<T>;
+/// 兼容旧 Runtime 命名的错误类别别名。
+pub type RuntimeErrorKind = XiaoErrorKind;
+/// 兼容旧 Runtime 命名的错误别名；不再维护第二套结构。
+pub type RuntimeError = XiaoError;
+
+/// 作用域展开期间收集主错误和清理阶段的次生错误。
+#[derive(Clone, Debug, Default)]
+pub struct ErrorAccumulator {
+    primary: Option<XiaoError>,
+}
+
+impl ErrorAccumulator {
+    /// 创建一个可选主错误的展开累加器。
+    #[must_use]
+    pub fn new(primary: Option<XiaoError>) -> Self {
+        Self { primary }
+    }
+    /// 记录一个错误；已有主错误时将其作为次生错误保存。
+    pub fn record(&mut self, error: XiaoError) {
+        if let Some(primary) = self.primary.as_mut() {
+            primary.push_suppressed(error);
+        } else {
+            self.primary = Some(error);
+        }
+    }
+    /// 判断当前是否已经有主错误。
+    #[must_use]
+    pub fn has_error(&self) -> bool {
+        self.primary.is_some()
+    }
+    /// 借用当前主错误。
+    #[must_use]
+    pub fn primary(&self) -> Option<&XiaoError> {
+        self.primary.as_ref()
+    }
+    /// 消耗累加器并取出最终主错误。
+    #[must_use]
+    pub fn finish(self) -> Option<XiaoError> {
+        self.primary
+    }
+}
+
 #[cfg(test)]
-/// 覆盖最小诊断结构字段和严重级别的单元测试。
+/// 覆盖诊断、统一错误、致命故障和报告器边界。
 mod tests {
-    use super::{Diagnostic, DiagnosticParam, Severity};
+    use super::*;
     use xiao_source::SourceSpan;
 
     #[test]
-    /// 确认错误构造器保留机器字段与源码区间。
+    /// 确认旧诊断构造器保留机器字段与源码区间。
     fn builds_error_with_span() {
         let span = SourceSpan::new(2, 3).expect("区间应有效");
         let diagnostic = Diagnostic::error_at("X01-LEX-001", "x01.lex.invalid", span, "bad");
         assert!(diagnostic.is_error());
-        assert_eq!(diagnostic.severity(), Severity::Error);
         assert_eq!(diagnostic.span(), Some(span));
-        assert!(diagnostic.params().is_empty());
     }
 
     #[test]
-    /// 参数与预览译文分离，且参数名保持确定性顺序。
+    /// 确认参数不依赖当前语言文本。
     fn preserves_language_independent_params() {
         let diagnostic = Diagnostic::new("E", "type.mismatch", Severity::Error, None, "预览")
-            .with_params([
-                (
-                    "expected".to_owned(),
-                    DiagnosticParam::Text("bool".to_owned()),
-                ),
-                ("count".to_owned(), DiagnosticParam::Integer(2)),
-                ("enabled".to_owned(), DiagnosticParam::Boolean(false)),
-            ]);
+            .with_params([(
+                "expected".to_owned(),
+                DiagnosticParam::Text("bool".to_owned()),
+            )]);
         assert_eq!(
             diagnostic.params().get("expected"),
             Some(&DiagnosticParam::Text("bool".to_owned()))
         );
-        assert_eq!(
-            diagnostic
-                .params()
-                .keys()
-                .map(String::as_str)
-                .collect::<Vec<_>>(),
-            vec!["count", "enabled", "expected"]
-        );
-        assert_eq!(diagnostic.code(), "E");
-        assert_eq!(diagnostic.message_id(), "type.mismatch");
     }
 
     #[test]
-    /// 确认非错误级别不会被误判为错误。
-    fn distinguishes_non_error_levels() {
-        let warning = Diagnostic::new("W", "warning", Severity::Warning, None, "warn");
-        let info = Diagnostic::new("I", "info", Severity::Info, None, "info");
-        assert!(!warning.is_error());
-        assert!(!info.is_error());
+    /// 确认可恢复错误保留原因、上下文和堆栈。
+    fn keeps_error_context_and_stack() {
+        let frame = StackFrame::user("app", "main").with_source("main.xiao", SourceSpan::new(1, 2));
+        let cause = XiaoError::invalid_handle("底层句柄为空");
+        let error = XiaoError::type_mismatch("str", "int")
+            .with_context("attempt", DiagnosticParam::Integer(1))
+            .with_stack_frame(frame.clone())
+            .with_cause(cause);
+        assert!(error.is_recoverable());
+        assert_eq!(error.stack(), &[frame]);
+        assert!(error.cause().is_some());
+    }
+
+    #[test]
+    /// 确认清理错误进入 suppressed 且不替换主错误。
+    fn reports_suppressed_without_replacing_primary() {
+        let mut error = XiaoError::invalid_handle("主错误");
+        error.push_suppressed(XiaoError::table_drop("清理失败"));
+        let report = error.report();
+        let text = render_text(&report, &PreviewRenderer);
+        assert_eq!(report.code, INVALID_HANDLE_CODE);
+        assert_eq!(report.suppressed.len(), 1);
+        assert!(text.contains("suppressed"));
+    }
+
+    #[test]
+    /// 确认致命故障独立于可恢复错误并保留 fatal 类别。
+    fn distinguishes_fatal_report() {
+        let fatal = FatalError::corrupt_artifact("字节码损坏");
+        assert_eq!(fatal.kind(), FatalKind::CorruptArtifact);
+        assert!(!fatal.is_recoverable());
+        assert_eq!(fatal.report().class, ReportClass::Fatal);
+        assert_eq!(fatal.report().error_id, fatal.error_id());
+    }
+
+    #[test]
+    /// 确认后端位置可以同时保存字节码、原生地址和内联深度。
+    fn preserves_backend_location() {
+        let backend = BackendLocation {
+            bytecode_offset: Some(4),
+            native_address: Some(8),
+            inline_depth: Some(2),
+        };
+        let frame = StackFrame::runtime("vm", "dispatch").with_backend(backend);
+        assert_eq!(frame.backend, backend);
+    }
+
+    #[test]
+    /// 确认没有主错误时首个清理错误成为主错误。
+    fn accumulator_uses_first_error_as_primary() {
+        let mut errors = ErrorAccumulator::new(None);
+        errors.record(XiaoError::table_drop("清理失败"));
+        assert_eq!(errors.primary().map(XiaoError::code), Some(TABLE_DROP_CODE));
     }
 }

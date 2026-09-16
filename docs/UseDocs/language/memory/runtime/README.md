@@ -7,6 +7,7 @@
 1. [对象与句柄](objects-and-handles.md)：了解强引用、弱引用和释放时机。
 2. [表生命周期](table-lifecycle.md)：了解 `[Table]` 与 `[[Table]]` 的运行时状态。
 3. [错误与展开](errors-and-unwind.md)：了解初始化失败、清理失败和主错误保留规则。
+4. [运行时错误报告](../../../troubleshooting/errors-and-reports.md)：了解统一错误码、Fatal 边界、原因链和堆栈报告。
 
 ## 当前边界
 
