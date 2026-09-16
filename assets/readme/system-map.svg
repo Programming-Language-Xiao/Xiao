@@ -5,7 +5,7 @@
   <desc id="desc">A project-native map of Xiao's source, static analysis layers, runtime core, and planned execution consumers.</desc>
 
   <rect width="1200" height="520" rx="28" fill="#07090D"/>
-  <path d="M74 132 H1126 M74 416 H1126" stroke="#273242" stroke-width="1"/>
+  <path d="M74 118 H1114 M74 428 H1114" stroke="#273242" stroke-width="1"/>
   <path d="M98 476 L352 44" stroke="#A8CCFF" stroke-width="18" opacity="0.16"/>
   <path d="M188 476 L442 44" stroke="#949DFF" stroke-width="10" opacity="0.20"/>
   <path d="M1000 476 L1120 274" stroke="#F7F8FB" stroke-width="8" opacity="0.12"/>
@@ -44,20 +44,24 @@
   <path d="M744 188 H770" stroke="#F7F8FB" stroke-width="2"/>
   <path d="M760 180 L770 188 L760 196" fill="none" stroke="#F7F8FB" stroke-width="2"/>
 
-  <g id="planned-consumers" transform="translate(326 296)">
+  <g id="planned-consumers" transform="translate(74 296)">
     <text x="0" y="0" fill="#7C8796" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17">04 / PLANNED CONSUMERS</text>
-    <rect x="0" y="22" width="294" height="86" rx="12" fill="#0E141D" stroke="#A8CCFF" stroke-dasharray="8 7"/>
+    <rect id="run-target" x="0" y="22" width="504" height="86" rx="12" fill="#0E141D" stroke="#A8CCFF" stroke-dasharray="8 7"/>
     <text x="20" y="57" fill="#F7F8FB" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="25" font-weight="600">xiao run</text>
     <text x="20" y="87" fill="#A8CCFF" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">Rust bytecode VM</text>
 
-    <rect x="328" y="22" width="294" height="86" rx="12" fill="#0E141D" stroke="#949DFF" stroke-dasharray="8 7"/>
-    <text x="348" y="57" fill="#F7F8FB" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="25" font-weight="600">xiao build</text>
-    <text x="348" y="87" fill="#949DFF" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">LLVM native path</text>
+    <rect id="build-target" x="536" y="22" width="504" height="86" rx="12" fill="#0E141D" stroke="#949DFF" stroke-dasharray="8 7"/>
+    <text x="556" y="57" fill="#F7F8FB" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, sans-serif" font-size="25" font-weight="600">xiao build</text>
+    <text x="556" y="87" fill="#949DFF" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">LLVM native path</text>
   </g>
 
-  <path d="M942 256 V284 M942 284 L800 318 M942 284 L1084 318" fill="none" stroke="#A8CCFF" stroke-width="2" stroke-dasharray="8 7"/>
+  <!-- 下排卡片中心为 (326, 318) 与 (862, 318)，连线落在顶部边界。 -->
+  <g id="planned-connectors" fill="none" stroke="#A8CCFF" stroke-width="2">
+    <path d="M942 256 V280 H326 V318 M862 280 V318" stroke-dasharray="8 7"/>
+    <path d="M318 308 L326 318 L334 308 M854 308 L862 318 L870 308"/>
+  </g>
 
-  <g id="quality-gates" transform="translate(74 444)">
+  <g id="quality-gates" transform="translate(74 460)">
     <text x="0" y="0" fill="#7C8796" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17">QUALITY GATES</text>
     <text x="176" y="0" fill="#F7F8FB" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">spec snapshots</text>
     <text x="390" y="0" fill="#F7F8FB" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">Rust tests</text>
