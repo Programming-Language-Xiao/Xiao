@@ -69,6 +69,7 @@
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 未开始（机型、调用约定与编码以 09R 冻结结果为准） |
 | 09R1 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 统一三地址语义、三种候选机型、寄存器类别与编号空间、调用约定、异常与清理转移、编码草案和基准协议 | 已完成首版 |
 | 09R2 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三种机型的可运行原型、共享语义向量、事件接收器和容器/选择器原型路径 | 进行中（R2a 第一批：TAC 降低、对账验证器、栈式解释器、语义向量；第二批：容器对象、精确索引、临时值释放） |
+| 09R2c | [异常控制流实现交接文档](09r2c-exception-control-flow.md) | 运行时错误对象、错误类型名单一来源、handler 表与 catch 路由、`finally` 子程序和 `Check` 降低 | 未开始 |
 | 09R3 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三机型基准、语义差分报告和机型/调用 ABI/编码冻结 | 未开始 |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
