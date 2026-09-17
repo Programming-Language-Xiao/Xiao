@@ -19,7 +19,8 @@ pub use lower::{ir_span, lower_program, lower_type};
 pub use model::*;
 /// 重导出 JSON 快照接口。
 pub use snapshot::{IR_SNAPSHOT_VERSION, SnapshotError, from_json, to_json};
-/// 重导出验证结果和稳定诊断类型。
+/// 重导出验证结果、稳定诊断类型和后端释放序列对账入口。
 pub use validate::{
-    IR_INVALID_CODE, IR_VERSION_CODE, IrValidationError, IrValidationResult, IrValidator, validate,
+    IR_INVALID_CODE, IR_RELEASE_MISMATCH_CODE, IR_VERSION_CODE, IrValidationError,
+    IrValidationResult, IrValidator, ObservedRelease, reconcile_release_plans, validate,
 };

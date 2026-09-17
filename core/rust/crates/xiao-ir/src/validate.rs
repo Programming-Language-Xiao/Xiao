@@ -6,12 +6,43 @@
 use std::collections::BTreeSet;
 use std::fmt::{self, Display, Formatter};
 
+use xiao_lifetime::ExitKind;
+
 use crate::model::*;
 
 /// IR 结构验证错误的稳定编号。
 pub const IR_INVALID_CODE: &str = "X08-IR-001";
 /// IR 版本不受支持时使用的稳定编号。
 pub const IR_VERSION_CODE: &str = "X08-IR-002";
+/// 后端实际发出的释放序列与冻结释放计划不一致时的稳定编号。
+pub const IR_RELEASE_MISMATCH_CODE: &str = "X08-IR-003";
+
+/// 一次执行实际发出的释放序列观测。
+///
+/// 后端在降低过程中记录每个 `(作用域, 退出边)` 真正发出的释放动作，再交给
+/// [`reconcile_release_plans`] 与冻结计划比对。这里使用纯数据而不是借用后端
+/// 类型，因此 `xiao-ir` 不需要反向依赖任何后端 crate。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ObservedRelease {
+    /// 触发释放的作用域编号。
+    pub scope: u32,
+    /// 退出边的稳定名称，取值集合与 [`ExitKind::as_name`] 一致。
+    pub exit: String,
+    /// 按该次退出实际发出的释放动作。
+    pub actions: Vec<IrReleaseAction>,
+}
+
+impl ObservedRelease {
+    /// 创建一条释放序列观测。
+    #[must_use]
+    pub fn new(scope: u32, exit: impl Into<String>, actions: Vec<IrReleaseAction>) -> Self {
+        Self {
+            scope,
+            exit: exit.into(),
+            actions,
+        }
+    }
+}
 
 /// 一条 IR 验证错误。
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -133,6 +164,16 @@ fn error(path: &str, message: &str, span: Option<IrSpan>) -> IrValidationError {
         path: path.to_owned(),
         message: message.to_owned(),
         span,
+    }
+}
+
+/// 创建一条释放序列对账错误。
+fn release_error(path: &str, message: &str) -> IrValidationError {
+    IrValidationError {
+        code: IR_RELEASE_MISMATCH_CODE,
+        path: path.to_owned(),
+        message: message.to_owned(),
+        span: None,
     }
 }
 
@@ -638,21 +679,143 @@ fn validate_ownership(ownership: &IrOwnership, result: &mut IrValidationResult) 
         }
     }
     for (index, plan) in ownership.release_plans.iter().enumerate() {
+        let path = format!("ownership.release_plans[{index}]");
         if !scope_ids.contains(&plan.scope) {
             result.errors.push(error(
-                &format!("ownership.release_plans[{index}].scope"),
+                &format!("{path}.scope"),
                 "释放计划所属作用域不存在",
                 None,
             ));
         }
+        if ExitKind::from_name(&plan.exit).is_none() {
+            result.errors.push(error(
+                &format!("{path}.exit"),
+                "退出边名称不是冻结的稳定拼写",
+                None,
+            ));
+        }
+        let mut orders = BTreeSet::new();
+        let mut released = BTreeSet::new();
         for action in &plan.actions {
             if !value_ids.contains(&action.value) {
                 result.errors.push(error(
-                    &format!("ownership.release_plans[{index}].actions"),
+                    &format!("{path}.actions"),
                     "释放动作引用了不存在的值",
+                    None,
+                ));
+            }
+            if !orders.insert(action.order) {
+                result.errors.push(error(
+                    &format!("{path}.actions"),
+                    "同一释放计划内的顺序编号必须唯一",
+                    None,
+                ));
+            }
+            if !released.insert(action.value) {
+                result.errors.push(error(
+                    &format!("{path}.actions"),
+                    "同一释放计划内不得重复释放同一个值",
+                    None,
+                ));
+            }
+        }
+        let expected = (0..plan.actions.len()).collect::<Vec<_>>();
+        let mut actual = plan
+            .actions
+            .iter()
+            .map(|action| action.order)
+            .collect::<Vec<_>>();
+        actual.sort_unstable();
+        if actual != expected {
+            result.errors.push(error(
+                &format!("{path}.actions"),
+                "释放顺序必须从零开始且连续",
+                None,
+            ));
+        }
+        for value in &plan.transferred {
+            if !value_ids.contains(value) {
+                result.errors.push(error(
+                    &format!("{path}.transferred"),
+                    "转移动作引用了不存在的值",
+                    None,
+                ));
+            }
+            if released.contains(value) {
+                result.errors.push(error(
+                    &format!("{path}.transferred"),
+                    "转移出去的值不得同时出现在同一计划的释放动作里",
                     None,
                 ));
             }
         }
     }
+}
+
+/// 比对后端实际发出的释放序列与冻结释放计划。
+///
+/// 这是注册阶段之外唯一能验证「后端没有重排、去重或漏放」的检查：验证器只
+/// 能看计划本身，而计划是每个作用域乘以全部退出边的无条件笛卡尔积，覆盖检查
+/// 恒真、区分不了任何东西。只有逐条比对实际执行序列才有校验价值。
+///
+/// 比较按 `order` 排序后进行，不依赖两侧 `Vec` 的下标顺序：IR 里的释放计划按
+/// `exit` 字符串排序，与上游枚举顺序不同。
+#[must_use]
+pub fn reconcile_release_plans(
+    program: &IrProgram,
+    observed: &[ObservedRelease],
+) -> IrValidationResult {
+    let mut result = IrValidationResult::default();
+    for (index, entry) in observed.iter().enumerate() {
+        let path = format!("observed[{index}]");
+        if ExitKind::from_name(&entry.exit).is_none() {
+            result.errors.push(release_error(
+                &format!("{path}.exit"),
+                "退出边名称不是冻结的稳定拼写",
+            ));
+            continue;
+        }
+        let plan = program
+            .ownership
+            .release_plans
+            .iter()
+            .find(|plan| plan.scope == entry.scope && plan.exit == entry.exit);
+        let Some(plan) = plan else {
+            result.errors.push(release_error(
+                &path,
+                &format!(
+                    "作用域 {} 的 {} 退出边没有对应的释放计划",
+                    entry.scope, entry.exit
+                ),
+            ));
+            continue;
+        };
+        if !actions_match(&entry.actions, &plan.actions) {
+            result.errors.push(release_error(
+                &path,
+                &format!(
+                    "作用域 {} 的 {} 退出边实际发出的释放序列与冻结计划不一致",
+                    entry.scope, entry.exit
+                ),
+            ));
+        }
+    }
+    result
+}
+
+/// 判断两侧释放动作在按顺序排列后是否逐条相等。
+fn actions_match(observed: &[IrReleaseAction], planned: &[IrReleaseAction]) -> bool {
+    let sorted = |actions: &[IrReleaseAction]| {
+        let mut sorted = actions.to_vec();
+        sorted.sort_by_key(|action| action.order);
+        sorted
+    };
+    let observed = sorted(observed);
+    let planned = sorted(planned);
+    observed.len() == planned.len()
+        && observed.iter().zip(&planned).all(|(observed, planned)| {
+            observed.value == planned.value
+                && observed.order == planned.order
+                && observed.kind == planned.kind
+        })
 }
