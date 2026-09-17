@@ -29,7 +29,7 @@ use crate::unify::{TypeContext, UnifyError};
 
 /// C0 容器语义的子模块；保持主检查器只负责语句分派和标量规则。
 #[path = "container_checker.rs"]
-mod container_checker;
+pub(crate) mod container_checker;
 /// 04 条件、循环、返回和入口静态检查。
 #[path = "control_checker.rs"]
 mod control_checker;

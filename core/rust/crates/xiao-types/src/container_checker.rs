@@ -494,7 +494,7 @@ impl<'source> TypeChecker<'source> {
     fn dictionary_key(&self, entry: &DictEntry) -> String {
         match entry.key {
             DictKey::Name(name) => name.unquoted_text(self.source()).to_owned(),
-            DictKey::String(span) => decode_key_string(self.source().slice(span)),
+            DictKey::String(span) => decode_string_literal(self.source().slice(span)),
         }
     }
 
@@ -629,8 +629,13 @@ fn direct_children(
     children
 }
 
-/// 解析字典字符串键；词法阶段已经验证引号，未知转义保留字符本身。
-fn decode_key_string(text: &str) -> String {
+/// 解析字符串字面量的稳定文本：去掉外围引号并处理转义。
+///
+/// 这是字符串字面量的**唯一**解码实现。类型层用它规范化字典键，IR 降低必须
+/// 消费同一个函数——两侧各写一份会让静态能通过的键在运行时查不到。
+/// 词法阶段已经验证引号配对，未知转义保留字符本身。
+#[must_use]
+pub fn decode_string_literal(text: &str) -> String {
     if text.len() < 2 {
         return text.to_owned();
     }

@@ -98,3 +98,36 @@ fn validator_rejects_broken_control_flow() {
     assert!(!result.is_success());
     assert_eq!(result.errors()[0].code, xiao_ir::IR_INVALID_CODE);
 }
+
+#[test]
+/// 字典键必须在类型层与 IR 层得到同一份规范化文本。
+///
+/// 两侧曾各写一份：类型层对字符串键去引号并处理转义，IR 却直接存含引号的原始
+/// 切片，于是静态能通过的键在运行时查不到。这条用例把两层钉在一起。
+fn normalizes_dict_keys_consistently() {
+    let ir = lower("mapping = {\"a\" = 1, plain = 2}\n");
+    let IrStatementKind::Assignment { value, .. } = &ir.body[0].kind else {
+        panic!("expected assignment");
+    };
+    let IrExpressionKind::DictTable { entries } = &value.kind else {
+        panic!("expected dict table literal");
+    };
+    let keys = entries
+        .iter()
+        .map(|entry| entry.key.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(keys, vec!["a", "plain"], "字符串键必须已去掉外围引号");
+}
+
+#[test]
+/// 带转义的字符串键与转义后的文本一致。
+fn normalizes_escaped_dict_keys() {
+    let ir = lower("mapping = {\"a\tb\" = 1}\n");
+    let IrStatementKind::Assignment { value, .. } = &ir.body[0].kind else {
+        panic!("expected assignment");
+    };
+    let IrExpressionKind::DictTable { entries } = &value.kind else {
+        panic!("expected dict table literal");
+    };
+    assert_eq!(entries[0].key, "a\tb", "转义必须与类型层同样处理");
+}

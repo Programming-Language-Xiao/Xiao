@@ -51,6 +51,22 @@
       }
     },
     {
+      "name": "dict-table-key",
+      "source": "mapping = {\"a\" = 1}\nvalue = mapping[a]\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 0,
+            "exit": "normal",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
       "name": "tuple-construct",
       "source": "pair = (1, 2)\n",
       "expect": {

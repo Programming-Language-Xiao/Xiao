@@ -351,10 +351,13 @@ impl<'a> Lowerer<'a> {
     }
 
     /// 降低字典条目。
+    ///
+    /// 键必须与类型层用同一套规范化：字符串键经 `decode_string_literal` 去掉
+    /// 外围引号并处理转义。直接存源码切片会让静态能通过的键在运行时查不到。
     fn dict_entry(&mut self, entry: &DictEntry) -> IrDictEntry {
         let key = match entry.key {
             DictKey::Name(name) => self.name(name).text,
-            DictKey::String(span) => self.source.slice(span).to_owned(),
+            DictKey::String(span) => xiao_types::decode_string_literal(self.source.slice(span)),
         };
         IrDictEntry {
             key,
