@@ -1,13 +1,17 @@
 //! Runtime 标量、字符串和统一值枚举。
 //!
 //! 静态标量尽量保持内联；只有 `str` 使用不透明堆对象。表句柄由 `tables`
-//! 模块提供并作为统一值的一种可拥有变体接入。
+//! 模块提供并作为统一值的一种可拥有变体接入。本模块只定义值的表示和读取，
+//! 算术、比较、相等和显式转换统一放在子模块 [`ops`]，避免算子矩阵散落。
+
+/// Runtime 唯一的算子表：算术、比较、相等和显式转换。
+mod ops;
 
 use std::any::Any;
 
 use xiao_syntax::ScalarType;
 
-use crate::errors::{RuntimeError, RuntimeResult};
+use crate::errors::RuntimeResult;
 use crate::memory::{
     ObjectLayout, ObjectPayload, RuntimeTypeTag, StrongHandle, WeakHandle, allocate_payload,
 };
@@ -167,6 +171,9 @@ pub enum RuntimeValue {
 
 impl PartialEq for RuntimeValue {
     /// 按 Xiao 值语义比较已实现的标量、字符串和表身份。
+    ///
+    /// `str` 走句柄的只读读取路径逐个比较内容，不产生副本；任一侧已经释放时
+    /// 保守判为不相等，而不是把两个「读不到内容」的句柄当成相等。
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Self::Int(left), Self::Int(right)) => left == right,
@@ -176,7 +183,10 @@ impl PartialEq for RuntimeValue {
             (Self::Sfloat(left), Self::Sfloat(right)) => left.to_bits() == right.to_bits(),
             (Self::Lfloat(left), Self::Lfloat(right)) => left == right,
             (Self::Bool(left), Self::Bool(right)) => left == right,
-            (Self::Str(left), Self::Str(right)) => left.to_string().ok() == right.to_string().ok(),
+            (Self::Str(left), Self::Str(right)) => left
+                .with_str(|left| right.with_str(|right| left == right))
+                .and_then(|equal| equal)
+                .unwrap_or(false),
             (Self::Table(left), Self::Table(right)) => left.same_object(right),
             (Self::None, Self::None) => true,
             _ => false,
@@ -222,98 +232,9 @@ impl RuntimeValue {
         }
     }
 
-    /// 对布尔值执行严格的 `bool ± 整数` 运算。
-    pub fn bool_adjust(&self, amount: i128) -> RuntimeResult<Self> {
-        let Self::Bool(value) = self else {
-            return Err(RuntimeError::type_mismatch("bool", self.type_name()));
-        };
-        let parity = amount.unsigned_abs() % 2 == 1;
-        Ok(Self::Bool(if parity { !value } else { *value }))
-    }
-
-    /// 执行首版已定义的加法，包括字符串拼接和布尔整数调整。
-    pub fn add(&self, other: &Self) -> RuntimeResult<Self> {
-        self.numeric_binary(other, false)
-    }
-
-    /// 执行首版已定义的减法，包括布尔整数调整。
-    pub fn subtract(&self, other: &Self) -> RuntimeResult<Self> {
-        self.numeric_binary(other, true)
-    }
-
-    /// 执行标量二元运算并统一处理布尔奇偶规则与溢出。
-    fn numeric_binary(&self, other: &Self, subtract: bool) -> RuntimeResult<Self> {
-        if let Self::Bool(value) = self {
-            let amount = integer_value(other)
-                .ok_or_else(|| RuntimeError::type_mismatch("int", other.type_name()))?;
-            let parity = amount.unsigned_abs() % 2 == 1;
-            return Ok(Self::Bool(if parity { !value } else { *value }));
-        }
-        match (self, other) {
-            (Self::Int(left), Self::Int(right)) => {
-                let result = if subtract {
-                    left.checked_sub(*right)
-                } else {
-                    left.checked_add(*right)
-                };
-                result
-                    .map(Self::Int)
-                    .ok_or_else(|| RuntimeError::numeric_overflow("int 运算溢出"))
-            }
-            (Self::Sint(left), Self::Sint(right)) => {
-                let result = if subtract {
-                    left.checked_sub(*right)
-                } else {
-                    left.checked_add(*right)
-                };
-                result
-                    .map(Self::Sint)
-                    .ok_or_else(|| RuntimeError::numeric_overflow("sint 运算溢出"))
-            }
-            (Self::Float(left), Self::Float(right)) => {
-                let result = if subtract {
-                    *left - *right
-                } else {
-                    *left + *right
-                };
-                result
-                    .is_finite()
-                    .then_some(Self::Float(result))
-                    .ok_or_else(|| RuntimeError::numeric_overflow("float 运算产生非有限值"))
-            }
-            (Self::Sfloat(left), Self::Sfloat(right)) => {
-                let result = if subtract {
-                    *left - *right
-                } else {
-                    *left + *right
-                };
-                result
-                    .is_finite()
-                    .then_some(Self::Sfloat(result))
-                    .ok_or_else(|| RuntimeError::numeric_overflow("sfloat 运算产生非有限值"))
-            }
-            (Self::Str(left), Self::Str(right)) if !subtract => {
-                let mut value = left.to_string()?;
-                value.push_str(&right.to_string()?);
-                Self::new_string(value)
-            }
-            _ => Err(RuntimeError::invalid_value("当前 Runtime 不支持这组运算")),
-        }
-    }
-
     /// 从字符串创建 `RuntimeValue::Str`。
     pub fn new_string(value: impl Into<String>) -> RuntimeResult<Self> {
         Ok(Self::Str(StringHandle::new(value)?))
-    }
-}
-
-/// 提取可参与布尔调整的整数值。
-fn integer_value(value: &RuntimeValue) -> Option<i128> {
-    match value {
-        RuntimeValue::Int(value) => Some(i128::from(*value)),
-        RuntimeValue::Sint(value) => Some(i128::from(*value)),
-        RuntimeValue::Lint(value) => value.parse().ok(),
-        _ => None,
     }
 }
 
