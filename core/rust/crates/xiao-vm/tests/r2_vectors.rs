@@ -156,3 +156,15 @@ fn error_vectors_are_stable() {
         "09R2",
     );
 }
+
+#[test]
+/// 容器构造、精确索引与临时值释放的语义向量。
+fn container_vectors_are_stable() {
+    assert_vectors(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/containers.json"
+        )),
+        "09R2",
+    );
+}

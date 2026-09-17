@@ -1,0 +1,117 @@
+{
+  "stage": "09R2",
+  "status": "verified-runtime",
+  "cases": [
+    {
+      "name": "array-construct",
+      "source": "values = [1, 2, 3]\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 0,
+            "exit": "normal",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "array-exact-index",
+      "source": "values = [1, 2, 3]\nfirst = values[0]\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 0,
+            "exit": "normal",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "array-negative-index",
+      "source": "values = [1, 2, 3]\nlast = values[-1]\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 0,
+            "exit": "normal",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "tuple-construct",
+      "source": "pair = (1, 2)\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "set-construct",
+      "source": "tags = {1, 2}\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 0,
+            "exit": "normal",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "string-exact-index",
+      "source": "text = \"abc\"\nfirst = text[0]\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 0,
+            "exit": "normal",
+            "value": 3,
+            "kind": "strong"
+          },
+          {
+            "scope": 0,
+            "exit": "normal",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "temporary-heap-value-is-released",
+      "source": "def sink(str value) -> str\n    return value\nresult = sink(\"x\")\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 0,
+            "exit": "normal",
+            "value": 4,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 2
+      }
+    }
+  ]
+}

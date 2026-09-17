@@ -59,7 +59,7 @@
 | 05B | [本地模块发现与依赖图实现交接记录](05b-local-module-resolution.md) | 文件模块、目录命名空间、绑定、再导出和循环诊断 | 已完成 |
 | 05C | [表语法与静态生命周期闭环交接记录](05c-table-static-closure.md) | `[Table]`/`[[Table]]` AST、成员签名、可见性、`new/init/drop` 静态契约 | 已完成静态阶段 |
 | 05D | [`config.xiao` 声明式配置静态闭环](05d-config-static-closure.md) | 独立配置树、静态值、项目身份、包外导出和不可执行诊断 | 已完成静态阶段 |
-| 06 | [内存与运行时语义](06-memory-and-runtime.md) | 确定性释放、逃逸分析和引用计数 | 进行中（06-A、06-B 已完成，容器 Runtime 后置） |
+| 06 | [内存与运行时语义](06-memory-and-runtime.md) | 确定性释放、逃逸分析和引用计数 | 进行中（06-A、06-B 已完成；容器 Runtime 由 09R2 第二批交付） |
 | 06A | [生命周期静态闭环交接记录](06a-lifetime-static-closure.md) | 作用域、控制流、逃逸事实、强/弱所有权图和退出释放计划 | 已完成静态阶段 |
 | 06B | [Runtime 对象与表生命周期执行闭环](06b-runtime-objects-and-tables.md) | 不透明对象头、Strong/Weak、标量/str、表状态机和释放展开驱动器 | 已完成首版 |
 | 07 | [错误模型与并发安全边界](07-concurrency-and-errors.md) | 统一错误核心、堆栈/报告契约、日志诊断、数据竞争策略和并发模型边界 | 进行中（07-A、07-B 已完成，07-C/07-D 后置） |
@@ -68,7 +68,7 @@
 | 08A | [U0 统一前端实现交接记录](08a-u0-frontend-implementation.md) | 单一前端流水线、递归类型化 IR、验证器和稳定 JSON 快照 | 已完成首版 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 未开始（机型、调用约定与编码以 09R 冻结结果为准） |
 | 09R1 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 统一三地址语义、三种候选机型、寄存器类别与编号空间、调用约定、异常与清理转移、编码草案和基准协议 | 已完成首版 |
-| 09R2 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三种机型的可运行原型、共享语义向量、事件接收器和容器/选择器原型路径 | 进行中（R2a 第一批已交付：TAC 降低、对账验证器、栈式参考解释器、语义向量） |
+| 09R2 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三种机型的可运行原型、共享语义向量、事件接收器和容器/选择器原型路径 | 进行中（R2a 第一批：TAC 降低、对账验证器、栈式解释器、语义向量；第二批：容器对象、精确索引、临时值释放） |
 | 09R3 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三机型基准、语义差分报告和机型/调用 ABI/编码冻结 | 未开始 |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
