@@ -38,3 +38,21 @@ C2-A 快照不要求 Runtime 集合、集合增删、异构集合、集合代数
 C2-B 不改写 C2-A 的历史快照；集合成员顺序仍只属于输入源码，类型并集的稳定显示顺序
 不代表运行时迭代顺序。动态成员的 `SetHashability`/`SetMembership` 只是后端待消费的
 检查标记，不能被快照解释为运行时检查已经执行。
+
+## c0/c1 快照的执行入口
+
+`c0-valid.json`、`c0-errors.json`、`c1-valid.json`、`c1-errors.json` 在 09R2 的
+跨层审计中被发现**从未被任何测试加载**：它们在模块登记里是有效契约，却因为缺少
+harness 而长期没有执行，快照与实现的分歧因此被静默掩盖。现在由
+`core/rust/crates/xiao-types/tests/c0c1_snapshots.rs` 加载。
+
+补上执行入口后立即暴露了两处分歧，已分别处理：
+
+- `c0-errors.json` 的 `unsupported-range`（数组上的 `items[0~1]` 期望报错）已被
+  C1 取代——C1 让有序容器支持区间。该用例改写为 `unsupported-dict-range`，用
+  字典表上的高级选择继续覆盖「不受支持的容器」，期望编号随之改为 `X03-TYPE-008`。
+  这是对 03A 期期望语义的**有意例外**：原期望已不可能成立，保留它只会让契约腐烂。
+- `c1-errors.json` 的 `random-seed-invalid` 源码含**两个**非法 `random.seed`
+  调用，实现正确地报了两条诊断，是快照当初只记了一条。期望已补全为两条。
+
+两处都不是实现缺陷，但只有把它们接回执行才能发现。

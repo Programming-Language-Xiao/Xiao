@@ -1,8 +1,30 @@
 {
   "stage": "03A",
   "cases": [
-    { "name": "duplicate-key", "source": "value = {name = 1, \"name\" = 2}\n", "expect": "error", "diagnostics": ["X03-TYPE-002"] },
-    { "name": "typed-element-mismatch", "source": "int values = [1, \"bad\"]\n", "expect": "error", "diagnostics": ["X03-TYPE-001"] },
-    { "name": "unsupported-range", "source": "items = [1, 2]\na = items[0~1]\n", "expect": "error", "diagnostics": ["X03-TYPE-007"] }
-  ]
+    {
+      "name": "duplicate-key",
+      "source": "value = {name = 1, \"name\" = 2}\n",
+      "expect": "error",
+      "diagnostics": [
+        "X03-TYPE-002"
+      ]
+    },
+    {
+      "name": "typed-element-mismatch",
+      "source": "int values = [1, \"bad\"]\n",
+      "expect": "error",
+      "diagnostics": [
+        "X03-TYPE-001"
+      ]
+    },
+    {
+      "name": "unsupported-dict-range",
+      "source": "table = {name = 1}\na = table[0~1]\n",
+      "expect": "error",
+      "diagnostics": [
+        "X03-TYPE-008"
+      ]
+    }
+  ],
+  "status": "verified-static"
 }

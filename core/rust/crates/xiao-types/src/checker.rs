@@ -1644,6 +1644,15 @@ impl<'source> TypeChecker<'source> {
         message: String,
         params: impl IntoIterator<Item = (String, DiagnosticParam)>,
     ) {
+        // 同一编号、同一源码位置的诊断是重复上报：两条检查路径报告了同一件事，
+        // 用户会在同一行看到两遍相同的错误。同一条错误只保留首次。
+        if self
+            .diagnostics
+            .iter()
+            .any(|existing| existing.code() == code && existing.span() == Some(span))
+        {
+            return;
+        }
         self.diagnostics.push(
             Diagnostic::new(code, message_id, Severity::Error, Some(span), message)
                 .with_params(params),
