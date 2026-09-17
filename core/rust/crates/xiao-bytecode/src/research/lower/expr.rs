@@ -79,7 +79,6 @@ fn build_container(lowerer: &mut Lowerer<'_>, op: TacOp, span: IrSpan, ty: &IrTy
     let class = Lowerer::class_of_type(ty);
     let register = lowerer.new_register(class, span);
     lowerer.emit(TacInstr::with_dst(op, register, span));
-    lowerer.note_temporary(register);
     register
 }
 

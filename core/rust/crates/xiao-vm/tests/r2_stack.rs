@@ -142,3 +142,22 @@ fn executes_containers_and_exact_index() {
     assert!(outcome.result.is_success(), "结果: {:?}", outcome.result);
     assert!(outcome.metrics.releases > 0, "容器临时值应被释放");
 }
+
+#[test]
+/// 具名绑定之间的赋值不得清空源绑定。
+///
+/// 一律用 `Move` 会让 `second = first` 把 `first` 的寄存器搬空，之后再用
+/// `first` 就读到空寄存器报无效句柄。
+fn copying_between_bindings_keeps_the_source() {
+    let source = "first = \"x\"\nsecond = first\nvalue = first\n";
+    let outcome = run(&load(source), VmOptions::new());
+    assert!(outcome.result.is_success(), "结果: {:?}", outcome.result);
+    assert_eq!(outcome.result.error_code(), None);
+}
+
+#[test]
+/// 临时值写进绑定仍然走移动，不产生额外引用。
+fn moving_temporaries_into_bindings_still_works() {
+    let outcome = run(&load("text = \"x\"\n"), VmOptions::new());
+    assert!(outcome.result.is_success(), "结果: {:?}", outcome.result);
+}

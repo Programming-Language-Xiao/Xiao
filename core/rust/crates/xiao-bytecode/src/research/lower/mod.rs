@@ -364,7 +364,7 @@ impl<'ir> Lowerer<'ir> {
         let mut registers = Vec::with_capacity(parameters.len());
         for parameter in parameters {
             let class = Lowerer::class_of_type(&parameter.ty);
-            let register = self.new_register(class, parameter.span);
+            let register = self.new_binding_register(class, parameter.span);
             self.frame.parameters.push(register);
             self.frame.locals.push(register);
             if let Some(value) = self.value_of_name_at(&parameter.name.text, parameter.span) {
@@ -380,7 +380,29 @@ impl<'ir> Lowerer<'ir> {
         let register = VReg::new(self.frame.next_vreg);
         self.frame.next_vreg = self.frame.next_vreg.saturating_add(1);
         self.categories.insert(register, class);
+        // 新建的值寄存器承载一条指令刚产生的值，语句结束时要释放。
+        // 具名绑定的寄存器走 `new_binding_register`，它们由释放计划负责。
+        if matches!(class, RegisterClass::ObjHandle) {
+            self.note_temporary(register);
+        }
         register
+    }
+
+    /// 新建一个承载具名绑定的寄存器。
+    ///
+    /// 绑定寄存器**不登记为临时值**：它的生命周期由冻结释放计划决定，
+    /// 再发一次 `Release` 会重复释放。
+    fn new_binding_register(&mut self, class: RegisterClass, span: IrSpan) -> VReg {
+        let register = VReg::new(self.frame.next_vreg);
+        self.frame.next_vreg = self.frame.next_vreg.saturating_add(1);
+        self.categories.insert(register, class);
+        let _ = span;
+        register
+    }
+
+    /// 判断一个寄存器当前是否承载待释放的临时值。
+    fn is_pending_temporary(&self, register: VReg) -> bool {
+        self.frame.pending_temporaries.contains(&register)
     }
 
     /// 新建一个基本块，**不切换当前块**。
@@ -496,7 +518,7 @@ impl<'ir> Lowerer<'ir> {
             .copied()
             .unwrap_or_else(|| IrSpan::new(0, 0));
         let class = self.class_for_value(value);
-        let register = self.new_register(class, span);
+        let register = self.new_binding_register(class, span);
         self.frame.value_regs.insert(value, register);
         self.frame.locals.push(register);
         register
@@ -535,9 +557,6 @@ impl<'ir> Lowerer<'ir> {
         let id = self.constants.intern(constant);
         let register = self.new_register(class, span);
         self.emit(TacInstr::with_dst(TacOp::LoadConst(id), register, span));
-        if matches!(class, RegisterClass::ObjHandle) {
-            self.note_temporary(register);
-        }
         register
     }
 

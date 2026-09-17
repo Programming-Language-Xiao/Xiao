@@ -200,6 +200,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let value = self.take(*source)?;
                 self.write_operand(instruction.dst, value);
             }
+            TacOp::Copy(source) => {
+                // 只读读取会克隆堆句柄（多持一次引用），源寄存器保持有效。
+                let value = self.read(*source)?;
+                self.write_operand(instruction.dst, value);
+            }
             TacOp::Cast { value, target } => {
                 let value = self
                     .read(*value)?

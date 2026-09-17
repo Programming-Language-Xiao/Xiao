@@ -118,9 +118,17 @@ fn store_into(lowerer: &mut Lowerer<'_>, name: &str, span: IrSpan, source: VReg)
         return;
     };
     let target = lowerer.register_of(value);
-    if target != source {
-        lowerer.emit(TacInstr::with_dst(TacOp::Move(source), target, span));
+    if target == source {
+        return;
     }
+    // 所有权语义决定用哪条指令：临时值转移进绑定，具名绑定之间必须复制。
+    // 一律用 `Move` 会让 `a = b` 清空 `b`，之后再用 `b` 就读到空寄存器。
+    let op = if lowerer.is_pending_temporary(source) {
+        TacOp::Move(source)
+    } else {
+        TacOp::Copy(source)
+    };
+    lowerer.emit(TacInstr::with_dst(op, target, span));
 }
 
 /// 降低复合赋值：等价于 `目标 = 目标 <op> 值`。
