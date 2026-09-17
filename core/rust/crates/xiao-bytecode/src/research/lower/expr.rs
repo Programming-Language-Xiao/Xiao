@@ -20,7 +20,9 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
         IrExpressionKind::Literal { literal, text } => {
             lower_literal(lowerer, literal, text, expression)
         }
-        IrExpressionKind::Name { name } => lower_name(lowerer, &name.text, name.span),
+        IrExpressionKind::Name { name } => {
+            lower_name(lowerer, &name.text, name.backticked, name.span)
+        }
         IrExpressionKind::Group { expression: inner } => lowerer.lower_expression(inner),
         IrExpressionKind::Unary { operator, operand } => {
             lower_unary(lowerer, operator, operand, expression)
@@ -197,8 +199,8 @@ fn lower_literal(
 }
 
 /// 降低名称引用：读取同名局部槽，或加载函数引用。
-fn lower_name(lowerer: &mut Lowerer<'_>, name: &str, span: IrSpan) -> VReg {
-    if let Some(value) = lowerer.value_of_name(name) {
+fn lower_name(lowerer: &mut Lowerer<'_>, name: &str, backticked: bool, span: IrSpan) -> VReg {
+    if let Some(value) = lowerer.value_of_name(name, backticked) {
         return lowerer.register_of(value);
     }
     if let Some(function) = lowerer.function_index(name) {

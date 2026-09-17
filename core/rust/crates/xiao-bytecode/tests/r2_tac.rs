@@ -359,3 +359,27 @@ fn promotes_cross_width_operands() {
         .count();
     assert!(casts > 0, "跨宽度运算应插入显式转换");
 }
+
+#[test]
+/// 反引号名称与普通名称是**不同**的绑定，不得混为一谈。
+///
+/// 同时接受 `ascii:` 与 `backtick:` 两个前缀会把 `foo` 与 `` `foo` `` 当成
+/// 同一个绑定，引用到另一个的值上。
+fn separates_backticked_from_plain_bindings() {
+    let (ir, tac) = lower("foo = \"a\"\n`foo` = \"b\"\n");
+    let targets = tac.functions[0]
+        .blocks
+        .iter()
+        .flat_map(|block| block.instructions.iter())
+        .filter(|instruction| matches!(instruction.op, TacOp::Move(_) | TacOp::Copy(_)))
+        .filter_map(|instruction| instruction.dst)
+        .collect::<Vec<_>>();
+    assert_eq!(targets.len(), 2, "两个赋值各写一个绑定");
+    assert_ne!(targets[0], targets[1], "两个绑定必须落在不同寄存器");
+    let verification = verify_program(&ir, &tac);
+    assert!(
+        verification.is_success(),
+        "验证错误: {:?}",
+        verification.errors
+    );
+}

@@ -49,7 +49,13 @@ fn dispatch_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
         }
         | IrStatementKind::ConstDeclaration { target, value, .. } => {
             let source = lowerer.lower_expression(value);
-            store_into(lowerer, &target.text, target.span, source);
+            store_into(
+                lowerer,
+                &target.text,
+                target.backticked,
+                target.span,
+                source,
+            );
         }
         IrStatementKind::Declaration { value: None, .. } => {}
         IrStatementKind::ExtendedAssignment {
@@ -109,8 +115,8 @@ fn dispatch_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
 }
 
 /// 把表达式结果写入目标绑定。
-fn store_into(lowerer: &mut Lowerer<'_>, name: &str, span: IrSpan, source: VReg) {
-    let Some(value) = lowerer.value_of_name_at(name, span) else {
+fn store_into(lowerer: &mut Lowerer<'_>, name: &str, backticked: bool, span: IrSpan, source: VReg) {
+    let Some(value) = lowerer.value_of_name_at(name, backticked, span) else {
         lowerer.record_unsupported(format!(
             "绑定缺少生命周期条目（{}..{}）",
             span.start, span.end
@@ -162,7 +168,7 @@ fn lower_extended_assignment(
         span,
     };
     let source = lowerer.lower_expression(&combined);
-    store_into(lowerer, &name.text, name.span, source);
+    store_into(lowerer, &name.text, name.backticked, name.span, source);
 }
 
 /// 降低 `if`/`elif`/`else`。

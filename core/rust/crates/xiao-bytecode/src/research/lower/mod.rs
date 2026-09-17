@@ -62,6 +62,18 @@ pub struct TacReleaseAction {
     pub kind: ReleaseActionKind,
 }
 
+/// 把源码名称拼成绑定键。
+///
+/// 规则与 `xiao-lifetime/src/escape.rs` 的 `name_key` 一致：反引号名称与普通
+/// 名称是**不同的绑定**，不能共用键。这里是降低器侧的唯一定义。
+fn name_key(name: &str, backticked: bool) -> String {
+    if backticked {
+        format!("backtick:{name}")
+    } else {
+        format!("ascii:{name}")
+    }
+}
+
 /// 语句到所属静态作用域的索引。
 ///
 /// 来源是控制流基本块的 `statements`（语句源码区间）与 `scope` 的对应关系，
@@ -367,7 +379,11 @@ impl<'ir> Lowerer<'ir> {
             let register = self.new_binding_register(class, parameter.span);
             self.frame.parameters.push(register);
             self.frame.locals.push(register);
-            if let Some(value) = self.value_of_name_at(&parameter.name.text, parameter.span) {
+            if let Some(value) = self.value_of_name_at(
+                &parameter.name.text,
+                parameter.name.backticked,
+                parameter.span,
+            ) {
                 self.frame.value_regs.insert(value, register);
             }
             registers.push(register);
@@ -437,26 +453,19 @@ impl<'ir> Lowerer<'ir> {
     /// 按名称与源码区间查找绑定的值编号。
     ///
     /// 名称优先；同名遮蔽时用源码区间消歧，因为绑定值的区间就是其名称区间。
-    fn value_of_name_at(&self, name: &str, span: IrSpan) -> Option<u32> {
-        let prefixed = [format!("ascii:{name}"), format!("backtick:{name}")];
+    fn value_of_name_at(&self, name: &str, backticked: bool, span: IrSpan) -> Option<u32> {
+        let key = name_key(name, backticked);
         self.program
             .ownership
             .values
             .iter()
-            .find(|value| {
-                value
-                    .name
-                    .as_deref()
-                    .is_some_and(|item| prefixed.iter().any(|p| p == item))
-                    && value.span == span
-            })
+            .find(|value| value.name.as_deref() == Some(key.as_str()) && value.span == span)
             .or_else(|| {
-                self.program.ownership.values.iter().find(|value| {
-                    value
-                        .name
-                        .as_deref()
-                        .is_some_and(|item| prefixed.iter().any(|p| p == item))
-                })
+                self.program
+                    .ownership
+                    .values
+                    .iter()
+                    .find(|value| value.name.as_deref() == Some(key.as_str()))
             })
             .map(|value| value.id)
     }
@@ -575,8 +584,8 @@ impl<'ir> Lowerer<'ir> {
     /// 必须按作用域消歧：不同函数可以各有一个同名形参，全局取首个会串到别的
     /// 函数的绑定上，读到本帧从未写入的寄存器。优先取当前作用域栈里最内层的
     /// 那个候选，找不到活动候选时才退回首个。
-    fn value_of_name(&self, name: &str) -> Option<u32> {
-        let candidates = self.candidates_of_name(name);
+    fn value_of_name(&self, name: &str, backticked: bool) -> Option<u32> {
+        let candidates = self.candidates_of_name(name, backticked);
         let active = candidates
             .iter()
             .filter(|(_, scope)| self.frame.scope_stack.contains(scope))
@@ -592,19 +601,15 @@ impl<'ir> Lowerer<'ir> {
     }
 
     /// 列出同名绑定的 `(值编号, 所属作用域)` 候选。
-    fn candidates_of_name(&self, name: &str) -> Vec<(u32, u32)> {
-        let ascii = format!("ascii:{name}");
-        let backtick = format!("backtick:{name}");
+    fn candidates_of_name(&self, name: &str, backticked: bool) -> Vec<(u32, u32)> {
+        // 反引号名称与普通名称是**不同**的绑定（`ascii:foo` 对 `backtick:foo`）。
+        // 同时接受两个前缀会把它们混为一谈，引用到另一个绑定上。
+        let key = name_key(name, backticked);
         self.program
             .ownership
             .values
             .iter()
-            .filter(|value| {
-                value
-                    .name
-                    .as_deref()
-                    .is_some_and(|item| item == ascii || item == backtick)
-            })
+            .filter(|value| value.name.as_deref() == Some(key.as_str()))
             .map(|value| {
                 (
                     value.id,
