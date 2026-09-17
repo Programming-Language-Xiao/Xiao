@@ -11,7 +11,7 @@ use std::any::Any;
 
 use xiao_syntax::ScalarType;
 
-use crate::errors::RuntimeResult;
+use crate::errors::{RuntimeResult, XiaoError};
 use crate::memory::{
     ObjectLayout, ObjectPayload, RuntimeTypeTag, StrongHandle, WeakHandle, allocate_payload,
 };
@@ -175,6 +175,8 @@ pub enum RuntimeValue {
     DictColumn(crate::containers::DictHandle),
     /// 集合对象。
     Set(crate::containers::SetHandle),
+    /// 可恢复错误对象；错误身份由 `XiaoError::error_id` 保持。
+    Error(Box<XiaoError>),
     /// 空值。
     None,
 }
@@ -203,6 +205,7 @@ impl PartialEq for RuntimeValue {
             (Self::DictTable(left), Self::DictTable(right)) => left.same_object(right),
             (Self::DictColumn(left), Self::DictColumn(right)) => left.same_object(right),
             (Self::Set(left), Self::Set(right)) => left.same_object(right),
+            (Self::Error(left), Self::Error(right)) => left == right,
             (Self::None, Self::None) => true,
             _ => false,
         }
@@ -237,6 +240,7 @@ impl std::hash::Hash for RuntimeValue {
             | Self::DictTable(_)
             | Self::DictColumn(_)
             | Self::Set(_)
+            | Self::Error(_)
             | Self::None => {}
         }
     }
@@ -261,6 +265,7 @@ impl RuntimeValue {
             | Self::DictTable(_)
             | Self::DictColumn(_)
             | Self::Set(_)
+            | Self::Error(_)
             | Self::None => return None,
         })
     }
@@ -278,6 +283,7 @@ impl RuntimeValue {
             Self::DictTable(_) => RuntimeTypeTag::DictTable.as_str().to_owned(),
             Self::DictColumn(_) => RuntimeTypeTag::DictColumn.as_str().to_owned(),
             Self::Set(_) => RuntimeTypeTag::Set.as_str().to_owned(),
+            Self::Error(_) => "error".to_owned(),
             Self::None => "none".to_owned(),
             _ => self
                 .scalar_type()
@@ -297,6 +303,21 @@ impl RuntimeValue {
     /// 从字符串创建 `RuntimeValue::Str`。
     pub fn new_string(value: impl Into<String>) -> RuntimeResult<Self> {
         Ok(Self::Str(StringHandle::new(value)?))
+    }
+
+    /// 从可恢复错误创建统一运行时值。
+    #[must_use]
+    pub fn error(error: XiaoError) -> Self {
+        Self::Error(Box::new(error))
+    }
+
+    /// 读取错误对象；其他值返回 `None`。
+    #[must_use]
+    pub fn as_error(&self) -> Option<&XiaoError> {
+        match self {
+            Self::Error(error) => Some(error),
+            _ => None,
+        }
     }
 }
 
@@ -324,5 +345,24 @@ mod tests {
         let value = StringHandle::new("小雪").expect("字符串应分配");
         assert_eq!(value.len(), 2);
         assert_eq!(value.to_string().expect("应读取"), "小雪");
+    }
+
+    #[test]
+    /// 错误对象复制保留身份相等，独立构造的同内容错误仍不相等。
+    fn error_values_keep_identity_semantics() {
+        let original = RuntimeValue::error(super::XiaoError::invalid_value("x"));
+        assert_eq!(original, original.clone());
+        assert_ne!(
+            original,
+            RuntimeValue::error(super::XiaoError::invalid_value("x"))
+        );
+    }
+
+    #[test]
+    /// 错误对象的类型名必须稳定为 `error`，不能落入 dynamic 兜底。
+    fn error_type_name_is_explicit() {
+        let value = RuntimeValue::error(super::XiaoError::invalid_value("x"));
+        assert_eq!(value.type_name(), "error");
+        assert!(!crate::containers::is_hashable(&value));
     }
 }

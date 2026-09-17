@@ -205,6 +205,83 @@ impl XiaoErrorKind {
     }
 }
 
+/// `catch` 类型名称的权威分类。
+///
+/// 这张表是前端和 Runtime 共用的唯一来源。`AnyRecoverable` 对应
+/// `Error`/`XiaoError`，`Fatal` 只用于明确拒绝普通 `catch`，不会被路由到
+/// 可恢复错误处理器。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum CatchTypeKind {
+    /// 匹配任意可恢复错误。
+    AnyRecoverable,
+    /// 匹配指定的可恢复错误类别。
+    Recoverable(XiaoErrorKind),
+    /// 不可由普通 `catch` 捕获的致命故障。
+    Fatal,
+}
+
+/// `catch` 类型名到类别的兼容别名。
+pub type ErrorTypeKind = CatchTypeKind;
+
+/// 首版错误类型名称的单一来源。
+pub const ERROR_TYPE_NAMES: &[&str] = &[
+    "Error",
+    "XiaoError",
+    "ArithmeticError",
+    "MemoryError",
+    "TableError",
+    "ConcurrencyError",
+    "ResourceError",
+    "TypeError",
+    "FatalError",
+];
+
+impl CatchTypeKind {
+    /// 判断一个可恢复错误类别是否被该捕获类型覆盖。
+    #[must_use]
+    pub fn matches(self, actual: XiaoErrorKind) -> bool {
+        match self {
+            Self::AnyRecoverable => true,
+            Self::Recoverable(expected) => expected == actual,
+            Self::Fatal => false,
+        }
+    }
+
+    /// 判断该名称是否可以作为普通 `catch` 类型。
+    #[must_use]
+    pub fn is_catchable(self) -> bool {
+        matches!(self, Self::AnyRecoverable | Self::Recoverable(_))
+    }
+}
+
+/// 查询一个源码错误类型名称的权威分类。
+#[must_use]
+pub fn error_kind_of(name: &str) -> Option<CatchTypeKind> {
+    Some(match name {
+        "Error" | "XiaoError" => CatchTypeKind::AnyRecoverable,
+        "ArithmeticError" => CatchTypeKind::Recoverable(XiaoErrorKind::Arithmetic),
+        "MemoryError" => CatchTypeKind::Recoverable(XiaoErrorKind::Memory),
+        "TableError" => CatchTypeKind::Recoverable(XiaoErrorKind::Table),
+        "ConcurrencyError" => CatchTypeKind::Recoverable(XiaoErrorKind::Concurrency),
+        "ResourceError" => CatchTypeKind::Recoverable(XiaoErrorKind::Resource),
+        "TypeError" => CatchTypeKind::Recoverable(XiaoErrorKind::Type),
+        "FatalError" => CatchTypeKind::Fatal,
+        _ => return None,
+    })
+}
+
+/// 查询一个名称是否属于首版错误类型集合。
+#[must_use]
+pub fn is_error_type_name(name: &str) -> bool {
+    error_kind_of(name).is_some()
+}
+
+/// 查询一个名称是否可以出现在普通 `catch` 中。
+#[must_use]
+pub fn is_catchable_error_type_name(name: &str) -> bool {
+    error_kind_of(name).is_some_and(CatchTypeKind::is_catchable)
+}
+
 /// 致命故障的稳定类别。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum FatalKind {
@@ -457,6 +534,30 @@ impl XiaoError {
             suppressed: Vec::new(),
             error_id: NEXT_ERROR_ID.fetch_add(1, Ordering::Relaxed),
         }))
+    }
+
+    /// 按语言层错误类型名称构造可恢复错误对象。
+    ///
+    /// `code` 和 `message` 由 `raise TypeError(...)` 的调用参数提供；省略时
+    /// 使用稳定的通用身份，具体类别仍由错误类型名单决定。`FatalError` 与
+    /// 未知名称返回 `None`，避免把致命故障伪装成可恢复错误。
+    #[must_use]
+    pub fn from_type_name(
+        type_name: &str,
+        code: Option<&str>,
+        message: Option<&str>,
+    ) -> Option<Self> {
+        let kind = match error_kind_of(type_name)? {
+            CatchTypeKind::Recoverable(kind) => kind,
+            CatchTypeKind::AnyRecoverable => XiaoErrorKind::Other,
+            CatchTypeKind::Fatal => return None,
+        };
+        Some(Self::new(
+            kind,
+            code.unwrap_or("X07-RUNTIME-ERROR"),
+            "runtime.user_error",
+            message.unwrap_or(type_name),
+        ))
     }
 
     /// 创建句柄无效错误。
@@ -1287,5 +1388,15 @@ mod tests {
         let mut errors = ErrorAccumulator::new(None);
         errors.record(XiaoError::table_drop("清理失败"));
         assert_eq!(errors.primary().map(XiaoError::code), Some(TABLE_DROP_CODE));
+    }
+
+    #[test]
+    /// 前端与 Runtime 使用同一张有限错误类型表，未知后缀不得隐式通过。
+    fn error_type_registry_is_finite_and_shared() {
+        assert!(is_error_type_name("ArithmeticError"));
+        assert!(is_catchable_error_type_name("Error"));
+        assert!(!is_catchable_error_type_name("FatalError"));
+        assert!(error_kind_of("FooError").is_none());
+        assert_eq!(ERROR_TYPE_NAMES.len(), 9);
     }
 }

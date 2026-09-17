@@ -42,6 +42,7 @@ pub fn is_hashable(value: &RuntimeValue) -> bool {
             | RuntimeValue::DictTable(_)
             | RuntimeValue::DictColumn(_)
             | RuntimeValue::Set(_)
+            | RuntimeValue::Error(_)
     )
 }
 

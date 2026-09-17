@@ -4,9 +4,9 @@
 //! 状态。每个缩进块使用独立类型作用域；后续 IR 阶段可以据此生成基本块
 //! 和确定性释放边。
 
-use xiao_diagnostics::DiagnosticParam;
+use xiao_diagnostics::{CatchTypeKind, DiagnosticParam, error_kind_of};
 use xiao_source::SourceSpan;
-use xiao_syntax::{CatchClause, ElifBranch, Expression, Name, Statement};
+use xiao_syntax::{CatchClause, ElifBranch, Expression, Statement};
 
 use crate::containers::ArrayType;
 use crate::diagnostics::{
@@ -30,7 +30,10 @@ impl<'source> TypeChecker<'source> {
         let mut saw_broad = false;
         for catch in catches {
             let type_name = self.source.slice(catch.error_type.span);
-            if type_name.is_empty() || !is_error_type_name(catch.error_type, self.source) {
+            let catch_kind = (!catch.error_type.backticked)
+                .then(|| error_kind_of(type_name))
+                .flatten();
+            if type_name.is_empty() || catch_kind.is_none() {
                 self.type_error(
                     CATCH_TYPE_CODE,
                     "x07.type.invalid_catch_type",
@@ -38,7 +41,7 @@ impl<'source> TypeChecker<'source> {
                     "catch 的错误类型必须是错误类型名称".to_string(),
                 );
             }
-            if type_name == "FatalError" {
+            if matches!(catch_kind, Some(CatchTypeKind::Fatal)) {
                 self.type_error(
                     CATCH_FATAL_CODE,
                     "x07.type.fatal_not_catchable",
@@ -46,7 +49,7 @@ impl<'source> TypeChecker<'source> {
                     "FatalError 不可由普通 catch 恢复".to_string(),
                 );
             }
-            let is_broad = matches!(type_name, "Error" | "XiaoError");
+            let is_broad = matches!(catch_kind, Some(CatchTypeKind::AnyRecoverable));
             if saw_broad && !is_broad {
                 self.type_error(
                     CATCH_ORDER_CODE,
@@ -270,12 +273,6 @@ impl<'source> TypeChecker<'source> {
         }
         self.environment.pop_scope();
     }
-}
-
-/// 判断捕获类型名称是否符合首版错误类型命名边界。
-fn is_error_type_name(name: Name, source: &xiao_source::SourceFile) -> bool {
-    let text = name.unquoted_text(source);
-    !name.backticked && (text == "Error" || text == "XiaoError" || text.ends_with("Error"))
 }
 
 /// 从已知容器类型中提取 `for` 循环元素类型。

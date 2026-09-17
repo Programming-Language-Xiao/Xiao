@@ -7,8 +7,9 @@ use std::collections::BTreeMap;
 
 use xiao_lifetime::{ExitKind, ReleaseActionKind, ReleasePlan, ValueId};
 
-use crate::errors::{ErrorAccumulator, FatalError, RuntimeError, RuntimeResult, XiaoErrorKind};
+use crate::errors::{ErrorAccumulator, FatalError, RuntimeError, RuntimeResult};
 use crate::memory::{StrongHandle, WeakHandle};
+use xiao_diagnostics::error_kind_of;
 
 /// 释放计划中一个值的测试绑定。
 #[derive(Debug)]
@@ -144,13 +145,7 @@ impl RuntimeDriver {
     pub fn dispatch_catch(&self, error: RuntimeError, handler_types: &[&str]) -> CatchRoute {
         let error_kind = error.kind();
         let handler = handler_types.iter().position(|name| {
-            matches!(*name, "Error" | "XiaoError")
-                || (*name == "ArithmeticError" && error_kind == XiaoErrorKind::Arithmetic)
-                || (*name == "MemoryError" && error_kind == XiaoErrorKind::Memory)
-                || (*name == "TableError" && error_kind == XiaoErrorKind::Table)
-                || (*name == "ConcurrencyError" && error_kind == XiaoErrorKind::Concurrency)
-                || (*name == "ResourceError" && error_kind == XiaoErrorKind::Resource)
-                || (*name == "TypeError" && error_kind == XiaoErrorKind::Type)
+            error_kind_of(name).is_some_and(|kind| kind.matches(error_kind))
         });
         match handler {
             Some(handler) => CatchRoute::Matched { handler, error },
