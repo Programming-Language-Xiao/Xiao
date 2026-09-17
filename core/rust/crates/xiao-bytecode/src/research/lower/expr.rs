@@ -215,35 +215,63 @@ fn lower_name(lowerer: &mut Lowerer<'_>, name: &str, span: IrSpan) -> VReg {
 }
 
 /// 降低一元运算。
+///
+/// 三种形态各自有准确的语义，**不得**退化成「不是 `not` 就当 `as int`」：
+/// 那会把 `-1.5` 静默截断成 `-1`，把未知运算符变成一次无声的类型转换。
 fn lower_unary(
     lowerer: &mut Lowerer<'_>,
     operator: &str,
     operand: &IrExpression,
     expression: &IrExpression,
 ) -> VReg {
-    let operand = lowerer.lower_expression(operand);
-    let register = lowerer.new_register(RegisterClass::Bool, expression.span);
-    if operator == "not" {
-        lowerer.emit(TacInstr {
-            op: TacOp::Compare {
-                op: CompareOp::Equal,
-                left: operand,
-                right: operand,
-            },
-            dst: Some(register),
-            span: expression.span,
-        });
-    } else {
-        lowerer.emit(TacInstr::with_dst(
-            TacOp::Cast {
-                value: operand,
-                target: ScalarType::Int,
-            },
-            register,
-            expression.span,
-        ));
+    let operand_register = lowerer.lower_expression(operand);
+    match operator {
+        // `+x` 是恒等；标量没有所有权，直接复用同一个寄存器。
+        "+" => operand_register,
+        "not" => {
+            // 取反必须与 `false` 比较。与自身比较恒为真，是静默算错。
+            let falsy = lowerer.emit_constant(TacConstant::Bool(false), expression.span);
+            let register = lowerer.new_register(RegisterClass::Bool, expression.span);
+            lowerer.emit(TacInstr::with_dst(
+                TacOp::Compare {
+                    op: CompareOp::Equal,
+                    left: operand_register,
+                    right: falsy,
+                },
+                register,
+                expression.span,
+            ));
+            register
+        }
+        "-" => {
+            // 一元负号等价于 `0 - x`；零常量必须与操作数同宽度，否则运行时会
+            // 以「宽度不一致」拒绝——那正是不做隐式提升的代价。
+            let Some(scalar) = scalar_of(&operand.ty) else {
+                return lower_unsupported(lowerer, "unary minus", expression.span);
+            };
+            let zero = match scalar {
+                ScalarType::Sint => TacConstant::Sint(0),
+                ScalarType::Int => TacConstant::Int(0),
+                ScalarType::Sfloat => TacConstant::Sfloat(0.0),
+                ScalarType::Float => TacConstant::Float(0.0),
+                _ => return lower_unsupported(lowerer, "unary minus", expression.span),
+            };
+            let zero_register = lowerer.emit_constant(zero, expression.span);
+            let class = Lowerer::class_of_type(&expression.ty);
+            let register = lowerer.new_register(class, expression.span);
+            lowerer.emit(TacInstr::with_dst(
+                TacOp::Arith {
+                    op: ArithOp::Subtract,
+                    left: zero_register,
+                    right: operand_register,
+                },
+                register,
+                expression.span,
+            ));
+            register
+        }
+        _ => lower_unsupported(lowerer, "unary operator", expression.span),
     }
-    register
 }
 
 /// 降低二元运算。
@@ -254,12 +282,16 @@ fn lower_binary(
     right: &IrExpression,
     expression: &IrExpression,
 ) -> VReg {
-    let left = lowerer.lower_expression(left);
-    let right = lowerer.lower_expression(right);
+    let left_register = lowerer.lower_expression(left);
+    let right_register = lowerer.lower_expression(right);
     if let Some(op) = compare_op(operator) {
         let register = lowerer.new_register(RegisterClass::Bool, expression.span);
         lowerer.emit(TacInstr::with_dst(
-            TacOp::Compare { op, left, right },
+            TacOp::Compare {
+                op,
+                left: left_register,
+                right: right_register,
+            },
             register,
             expression.span,
         ));
@@ -268,14 +300,101 @@ fn lower_binary(
     let Some(op) = arith_op(operator) else {
         return lower_unsupported(lowerer, "operator", expression.span);
     };
+    // 运行时不做隐式宽度提升，后端的这一步之前是缺失的：静态允许 `int + sint`
+    // 并提升为 `int`，运行时却会以「宽度不一致」拒绝。宽度由类型层的提升规则
+    // 决定，这里不自行推断。
+    let (left_register, right_register) = promote_operands(
+        lowerer,
+        op,
+        left,
+        right,
+        left_register,
+        right_register,
+        expression.span,
+    );
     let class = Lowerer::class_of_type(&expression.ty);
     let register = lowerer.new_register(class, expression.span);
     lowerer.emit(TacInstr::with_dst(
-        TacOp::Arith { op, left, right },
+        TacOp::Arith {
+            op,
+            left: left_register,
+            right: right_register,
+        },
         register,
         expression.span,
     ));
     register
+}
+
+/// 把二元数值运算的两个操作数提升到同一宽度，必要时插入显式转换。
+///
+/// 非标量操作数（动态值等）原样返回，交给运行时检查。`lint`/`lfloat` 的算术
+/// 尚无运行时实现，同样原样返回让它明确报错，而不是先转成一个假宽度。
+fn promote_operands(
+    lowerer: &mut Lowerer<'_>,
+    op: ArithOp,
+    left: &IrExpression,
+    right: &IrExpression,
+    left_register: VReg,
+    right_register: VReg,
+    span: IrSpan,
+) -> (VReg, VReg) {
+    let (Some(left_scalar), Some(right_scalar)) = (scalar_of(&left.ty), scalar_of(&right.ty))
+    else {
+        return (left_register, right_register);
+    };
+    let Some(promoted) = xiao_types::promote_numeric_scalars(left_scalar, right_scalar) else {
+        return (left_register, right_register);
+    };
+    let rank = xiao_types::numeric_rank(promoted);
+    let target = match op {
+        // `/` 的静态结果类型是浮点，两侧都要先转成浮点。
+        ArithOp::Divide => xiao_types::float_for_rank(rank),
+        // `//` 与 `%` 只接受整数。
+        ArithOp::FloorDivide | ArithOp::Remainder => xiao_types::integer_for_rank(rank),
+        _ => promoted,
+    };
+    if matches!(target, ScalarType::Lint | ScalarType::Lfloat) {
+        return (left_register, right_register);
+    }
+    (
+        cast_if_needed(lowerer, left_register, left_scalar, target, span),
+        cast_if_needed(lowerer, right_register, right_scalar, target, span),
+    )
+}
+
+/// 源宽度与目标不同时插入一次显式转换。
+fn cast_if_needed(
+    lowerer: &mut Lowerer<'_>,
+    register: VReg,
+    source: ScalarType,
+    target: ScalarType,
+    span: IrSpan,
+) -> VReg {
+    if source == target {
+        return register;
+    }
+    let class = class_of_scalar(target);
+    let converted = lowerer.new_register(class, span);
+    lowerer.emit(TacInstr::with_dst(
+        TacOp::Cast {
+            value: register,
+            target,
+        },
+        converted,
+        span,
+    ));
+    converted
+}
+
+/// 按标量返回它占用的寄存器类别。
+fn class_of_scalar(scalar: ScalarType) -> RegisterClass {
+    match scalar {
+        ScalarType::Int | ScalarType::Sint => RegisterClass::Int,
+        ScalarType::Float | ScalarType::Sfloat => RegisterClass::Float,
+        ScalarType::Bool => RegisterClass::Bool,
+        ScalarType::Str | ScalarType::Lint | ScalarType::Lfloat => RegisterClass::ObjHandle,
+    }
 }
 
 /// 降低调用。
@@ -289,6 +408,14 @@ fn lower_call(
         .iter()
         .map(|argument| {
             let value = lowerer.lower_expression(&argument.value);
+            // `*`/`**` 展开尚未降低。只按 `name.is_some()` 区分关键字与位置会
+            // 把展开实参静默当成普通实参，语义丢失且不报错。
+            if argument.kind != "positional" && argument.kind != "keyword" {
+                lowerer.record_unsupported(format!(
+                    "展开实参尚未降低：{}（{}..{}）",
+                    argument.kind, argument.span.start, argument.span.end
+                ));
+            }
             match argument.name.as_ref() {
                 Some(name) => TacArgument::keyword(name.text.clone(), value),
                 None => TacArgument::positional(value),

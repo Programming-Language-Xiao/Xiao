@@ -1,7 +1,8 @@
 //! 09R2 统一三地址降低规格。
 
 use xiao_bytecode::research::{
-    PathStep, RegisterClass, SigId, TacConstant, TacOp, TacProgram, lower_program, verify_program,
+    ArithOp, PathStep, RegisterClass, SigId, TacConstant, TacOp, TacProgram, lower_program,
+    verify_program,
 };
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::IrProgram;
@@ -280,4 +281,81 @@ fn shares_the_escape_table_with_the_type_layer() {
     assert_eq!(xiao_types::decode_escape('v'), Some('\u{b}'));
     assert_eq!(xiao_types::decode_escape('q'), None);
     assert_eq!(xiao_types::decode_escape('\\'), Some('\\'));
+}
+
+#[test]
+/// 一元 `not` 必须与 `false` 比较，不能与自身比较。
+///
+/// 与自身比较恒为真，是静默算错——程序照跑，结果全反。
+fn unary_not_compares_against_false() {
+    let (_, tac) = lower("flag = true\nvalue = not flag\n");
+    let compares = tac.functions[0]
+        .blocks
+        .iter()
+        .flat_map(|block| block.instructions.iter())
+        .filter_map(|instruction| match &instruction.op {
+            TacOp::Compare { left, right, .. } => Some((*left, *right)),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert!(
+        compares.iter().all(|(left, right)| left != right),
+        "比较的两个操作数不得相同：{compares:?}"
+    );
+}
+
+#[test]
+/// 一元负号不得退化成 `as int`，否则浮点会被静默截断。
+fn unary_minus_keeps_float_width() {
+    let (_, tac) = lower("value = -1.5\n");
+    let ops = tac
+        .functions
+        .iter()
+        .flat_map(|function| function.blocks.iter())
+        .flat_map(|block| block.instructions.iter())
+        .map(|instruction| &instruction.op)
+        .collect::<Vec<_>>();
+    assert!(
+        ops.iter().any(|op| matches!(
+            op,
+            TacOp::Arith {
+                op: ArithOp::Subtract,
+                ..
+            }
+        )),
+        "一元负号应降低为 `0 - x`"
+    );
+    assert!(
+        !ops.iter().any(|op| matches!(op, TacOp::Cast { .. })),
+        "不得把浮点负号静默转成整数"
+    );
+    let zeros = tac
+        .functions
+        .iter()
+        .flat_map(|function| function.blocks.iter())
+        .flat_map(|block| block.instructions.iter())
+        .filter_map(|instruction| match &instruction.op {
+            TacOp::LoadConst(id) => tac.constants.get(*id),
+            _ => None,
+        })
+        .filter(|constant| matches!(constant, TacConstant::Float(value) if *value == 0.0))
+        .count();
+    assert_eq!(zeros, 1, "零常量必须与操作数同宽度（浮点）");
+}
+
+#[test]
+/// 跨宽度数值运算必须由后端插入显式转换。
+///
+/// 静态提升规则允许 `int + sint`，运行时不隐式提升；缺了这一步就会静态
+/// 通过、运行时以「宽度不一致」拒绝。
+fn promotes_cross_width_operands() {
+    let (_, tac) = lower("value = 1 + sint(2)\n");
+    let casts = tac
+        .functions
+        .iter()
+        .flat_map(|function| function.blocks.iter())
+        .flat_map(|block| block.instructions.iter())
+        .filter(|instruction| matches!(instruction.op, TacOp::Cast { .. }))
+        .count();
+    assert!(casts > 0, "跨宽度运算应插入显式转换");
 }

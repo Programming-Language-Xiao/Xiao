@@ -274,7 +274,11 @@ fn numeric_widens(source: ScalarType, target: ScalarType) -> bool {
 }
 
 /// 将宽度等级映射回整数族标量。
-const fn integer_for_rank(rank: u8) -> ScalarType {
+///
+/// 与 [`numeric_rank`] 互为逆映射；后端插入显式转换时必须经它取宽度，
+/// 不得自行再写一份等级到类型的表。
+#[must_use]
+pub const fn integer_for_rank(rank: u8) -> ScalarType {
     match rank {
         0 => ScalarType::Sint,
         1 => ScalarType::Int,
@@ -283,7 +287,8 @@ const fn integer_for_rank(rank: u8) -> ScalarType {
 }
 
 /// 将宽度等级映射回浮点族标量。
-const fn float_for_rank(rank: u8) -> ScalarType {
+#[must_use]
+pub const fn float_for_rank(rank: u8) -> ScalarType {
     match rank {
         0 => ScalarType::Sfloat,
         1 => ScalarType::Float,

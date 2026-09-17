@@ -47,8 +47,8 @@ pub use containers::{
 };
 /// 重新导出转换分类和数值提升辅助。
 pub use conversion::{
-    Conversion, ConversionError, ConversionKind, can_assign, classify_conversion, is_float,
-    is_integer, is_numeric, numeric_rank, promote_numeric_scalars,
+    Conversion, ConversionError, ConversionKind, can_assign, classify_conversion, float_for_rank,
+    integer_for_rank, is_float, is_integer, is_numeric, numeric_rank, promote_numeric_scalars,
 };
 /// 重新导出稳定的 P2 诊断编号。
 pub use diagnostics::*;
