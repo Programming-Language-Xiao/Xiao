@@ -20,6 +20,16 @@ pub enum RuntimeTypeTag {
     String,
     /// 表实例或单例表对象。
     Table,
+    /// 数组对象。
+    Array,
+    /// 元组对象。
+    Tuple,
+    /// 无序字典表对象。
+    DictTable,
+    /// 顺序稳定的字典列对象。
+    DictColumn,
+    /// 集合对象。
+    Set,
     /// 为后续 Runtime 扩展保留的用户对象标签。
     Custom(u32),
 }
@@ -31,6 +41,11 @@ impl RuntimeTypeTag {
         match self {
             Self::String => "str",
             Self::Table => "table",
+            Self::Array => "array",
+            Self::Tuple => "tuple",
+            Self::DictTable => "dict_table",
+            Self::DictColumn => "dict_column",
+            Self::Set => "set",
             Self::Custom(_) => "custom",
         }
     }

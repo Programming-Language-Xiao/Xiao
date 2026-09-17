@@ -4,6 +4,8 @@
 //! 字节码 VM、LLVM 后端、CLI 与并发调度器只应通过这里的稳定句柄接口接入，
 //! 不得复制一套生命周期语义。
 
+/// 数组、元组、字典表、字典列和集合的运行对象。
+pub mod containers;
 /// 稳定 Runtime 错误、原因链和结构化参数。
 pub mod errors;
 /// 不透明对象头、强/弱句柄和引用计数策略。
@@ -15,6 +17,8 @@ pub mod testing;
 /// 标量、字符串和统一 Runtime 值。
 pub mod value;
 
+/// 重导出容器句柄、字典形态和可哈希判定。
+pub use containers::{ArrayHandle, DictHandle, DictKind, SetHandle, TupleHandle, is_hashable};
 /// 重导出 Runtime 错误身份和结果别名。
 pub use errors::{
     ALLOCATION_CODE, BackendLocation, CONTAINER_HASHABILITY_CODE, CONTAINER_INDEX_CODE,

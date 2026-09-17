@@ -9,7 +9,7 @@ use std::collections::BTreeMap;
 use std::fmt::{self, Debug, Formatter};
 
 use xiao_syntax::TableKind;
-use xiao_types::{TableMemberKind, TableSignature, TableValueKind, Type};
+use xiao_types::{ArrayType, SetType, TableMemberKind, TableSignature, TableValueKind, Type};
 
 use crate::errors::{RuntimeError, RuntimeResult};
 use crate::memory::{
@@ -489,7 +489,7 @@ impl TableInstance {
 }
 
 /// 检查 Runtime 值是否符合静态字段类型。
-fn runtime_value_matches(value: &RuntimeValue, expected: &Type) -> bool {
+pub(crate) fn runtime_value_matches(value: &RuntimeValue, expected: &Type) -> bool {
     match expected {
         Type::Dynamic => true,
         Type::None => matches!(value, RuntimeValue::None),
@@ -508,13 +508,93 @@ fn runtime_value_matches(value: &RuntimeValue, expected: &Type) -> bool {
                 .unwrap_or(false),
             _ => false,
         },
-        Type::Variable(_)
-        | Type::Function { .. }
-        | Type::Array(_)
-        | Type::Tuple(_)
-        | Type::DictTable(_)
-        | Type::DictColumn(_)
-        | Type::Set(_) => false,
+        Type::Array(array) => match value {
+            RuntimeValue::Array(handle) => match array {
+                ArrayType::Unknown => true,
+                ArrayType::Homogeneous { element, length } => {
+                    length.is_none_or(|length| handle.len() == length)
+                        && handle
+                            .with_elements(|items| {
+                                items
+                                    .iter()
+                                    .all(|item| runtime_value_matches(item, element))
+                            })
+                            .unwrap_or(false)
+                }
+                ArrayType::Heterogeneous { elements } => handle
+                    .with_elements(|items| {
+                        items.len() == elements.len()
+                            && items
+                                .iter()
+                                .zip(elements)
+                                .all(|(item, ty)| runtime_value_matches(item, ty))
+                    })
+                    .unwrap_or(false),
+            },
+            _ => false,
+        },
+        Type::Tuple(elements) => match value {
+            RuntimeValue::Tuple(handle) => handle
+                .with_elements(|items| {
+                    items.len() == elements.len()
+                        && items
+                            .iter()
+                            .zip(elements)
+                            .all(|(item, ty)| runtime_value_matches(item, ty))
+                })
+                .unwrap_or(false),
+            _ => false,
+        },
+        Type::DictTable(dictionary) | Type::DictColumn(dictionary) => {
+            let expected_variant = matches!(expected, Type::DictTable(_));
+            let matches_variant = match value {
+                RuntimeValue::DictTable(_) => expected_variant,
+                RuntimeValue::DictColumn(_) => !expected_variant,
+                _ => return false,
+            };
+            if !matches_variant {
+                return false;
+            }
+            let (RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle)) = value else {
+                return false;
+            };
+            handle
+                .with_entries(|entries| {
+                    entries.len() == dictionary.len()
+                        && entries.iter().all(|(key, item)| {
+                            dictionary
+                                .value_type(key)
+                                .is_some_and(|ty| runtime_value_matches(item, ty))
+                        })
+                })
+                .unwrap_or(false)
+        }
+        Type::Set(set) => match value {
+            RuntimeValue::Set(handle) => match set {
+                SetType::Empty => handle.is_empty(),
+                SetType::Unknown => true,
+                SetType::Homogeneous { element } => handle
+                    .with_elements(|items| {
+                        items
+                            .iter()
+                            .all(|item| runtime_value_matches(item, element))
+                    })
+                    .unwrap_or(false),
+                SetType::Heterogeneous {
+                    members,
+                    allows_dynamic,
+                } => handle
+                    .with_elements(|items| {
+                        items.iter().all(|item| {
+                            members.iter().any(|ty| runtime_value_matches(item, ty))
+                                || *allows_dynamic
+                        })
+                    })
+                    .unwrap_or(false),
+            },
+            _ => false,
+        },
+        Type::Variable(_) | Type::Function { .. } => false,
     }
 }
 

@@ -165,6 +165,16 @@ pub enum RuntimeValue {
     Str(StringHandle),
     /// 表对象；实际类型在 `TableInstance` 中校验。
     Table(crate::tables::TableInstance),
+    /// 数组对象。
+    Array(crate::containers::ArrayHandle),
+    /// 元组对象。
+    Tuple(crate::containers::TupleHandle),
+    /// 无序字典表对象。
+    DictTable(crate::containers::DictHandle),
+    /// 顺序稳定的字典列对象。
+    DictColumn(crate::containers::DictHandle),
+    /// 集合对象。
+    Set(crate::containers::SetHandle),
     /// 空值。
     None,
 }
@@ -188,8 +198,46 @@ impl PartialEq for RuntimeValue {
                 .and_then(|equal| equal)
                 .unwrap_or(false),
             (Self::Table(left), Self::Table(right)) => left.same_object(right),
+            (Self::Array(left), Self::Array(right)) => left.same_object(right),
+            (Self::Tuple(left), Self::Tuple(right)) => left.same_object(right),
+            (Self::DictTable(left), Self::DictTable(right)) => left.same_object(right),
+            (Self::DictColumn(left), Self::DictColumn(right)) => left.same_object(right),
+            (Self::Set(left), Self::Set(right)) => left.same_object(right),
             (Self::None, Self::None) => true,
             _ => false,
+        }
+    }
+}
+
+impl Eq for RuntimeValue {}
+
+impl std::hash::Hash for RuntimeValue {
+    /// 按与 [`PartialEq`] 自洽的口径哈希。
+    ///
+    /// 浮点走 `to_bits()`，与相等比较完全一致；`str` 按内容哈希，与内容相等
+    /// 一致。表与容器按**对象身份**相等，但对象头地址不可得，因此这里只哈希
+    /// 判别式——不相等的值允许哈希相同，符合 `Hash`/`Eq` 契约。它们本来就被
+    /// 判为不可哈希，不会成为集合元素或字典键。
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        std::mem::discriminant(self).hash(state);
+        match self {
+            Self::Int(value) => value.hash(state),
+            Self::Sint(value) => value.hash(state),
+            Self::Lint(value) => value.hash(state),
+            Self::Float(value) => value.to_bits().hash(state),
+            Self::Sfloat(value) => value.to_bits().hash(state),
+            Self::Lfloat(value) => value.hash(state),
+            Self::Bool(value) => value.hash(state),
+            Self::Str(handle) => {
+                let _ = handle.with_str(|text| text.hash(state));
+            }
+            Self::Table(_)
+            | Self::Array(_)
+            | Self::Tuple(_)
+            | Self::DictTable(_)
+            | Self::DictColumn(_)
+            | Self::Set(_)
+            | Self::None => {}
         }
     }
 }
@@ -207,15 +255,29 @@ impl RuntimeValue {
             Self::Lfloat(_) => ScalarType::Lfloat,
             Self::Bool(_) => ScalarType::Bool,
             Self::Str(_) => ScalarType::Str,
-            Self::Table(_) | Self::None => return None,
+            Self::Table(_)
+            | Self::Array(_)
+            | Self::Tuple(_)
+            | Self::DictTable(_)
+            | Self::DictColumn(_)
+            | Self::Set(_)
+            | Self::None => return None,
         })
     }
 
     /// 返回稳定的 Runtime 类型名称。
+    ///
+    /// 每个容器变体都必须显式列出：`scalar_type()` 对它们返回 `None`，靠 `_`
+    /// 兜底会让容器类型名静默变成 `dynamic`，而 `type_mismatch` 的参数正是它。
     #[must_use]
     pub fn type_name(&self) -> String {
         match self {
             Self::Table(instance) => format!("table {}", instance.name()),
+            Self::Array(_) => RuntimeTypeTag::Array.as_str().to_owned(),
+            Self::Tuple(_) => RuntimeTypeTag::Tuple.as_str().to_owned(),
+            Self::DictTable(_) => RuntimeTypeTag::DictTable.as_str().to_owned(),
+            Self::DictColumn(_) => RuntimeTypeTag::DictColumn.as_str().to_owned(),
+            Self::Set(_) => RuntimeTypeTag::Set.as_str().to_owned(),
             Self::None => "none".to_owned(),
             _ => self
                 .scalar_type()
