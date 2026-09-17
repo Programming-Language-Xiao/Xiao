@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 
 import { checkLayout } from "../src/layout.ts";
 import { parseArguments, runCommand } from "../src/cli.ts";
-import { checkMarkdownLinks } from "../src/docs.ts";
+import { checkMarkdownLinks, scanMarkdownDirectory } from "../src/docs.ts";
 import { findRepositoryRoot } from "../src/manifest.ts";
 import { inspectBunWorkspace } from "../src/workspace.ts";
 import { readmeMissingSections } from "../src/paths.ts";
@@ -80,6 +80,7 @@ describe("Markdown 链接负例", () => {
         frontMatter: {},
         headings: new Set(["index"]),
         links: ["missing.md"],
+        related: [],
       }];
       const diagnostics = checkMarkdownLinks(directory, pages);
       expect(diagnostics.some((item) => item.code === "A0-DOCS-001" && item.message.includes("链接目标不存在"))).toBe(true);
@@ -88,6 +89,55 @@ describe("Markdown 链接负例", () => {
     }
   });
 });
+
+describe("front matter related 校验", () => {
+  test("related 指向不存在的路径时报告断链", () => {
+    const directory = createMarkdownFixture({
+      "a.md": "---\nid: a\nrelated:\n  - missing.md\n---\n\n# A\n",
+    });
+    try {
+      const diagnostics = checkMarkdownLinks(directory, scanMarkdownDirectory(directory, "docs/DevDocs").pages);
+      expect(diagnostics.some((item) => item.code === "A0-DOCS-001" && item.message.includes("链接目标不存在"))).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("related 指向存在的路径时不产生诊断", () => {
+    const directory = createMarkdownFixture({
+      "README.md": "---\nid: a\nrelated:\n  - b.md\n---\n\n# A\n\n[跳转](b.md)\n",
+      "b.md": "# B\n",
+    });
+    try {
+      const diagnostics = checkMarkdownLinks(directory, scanMarkdownDirectory(directory, "docs/DevDocs").pages);
+      expect(diagnostics).toEqual([]);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("related 不计入入链，被它引用的页面仍是孤立页", () => {
+    const directory = createMarkdownFixture({
+      "README.md": "---\nid: a\nrelated:\n  - b.md\n---\n\n# A\n",
+      "b.md": "# B\n",
+    });
+    try {
+      const diagnostics = checkMarkdownLinks(directory, scanMarkdownDirectory(directory, "docs/DevDocs").pages);
+      expect(diagnostics.some((item) => item.code === "A0-DOCS-001" && item.message_id === "a0.docs.orphan_page")).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+});
+
+/** 创建只含指定 Markdown 页面的最小文档目录。 */
+function createMarkdownFixture(files: Record<string, string>): string {
+  const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-related-"));
+  const docs = join(directory, "docs", "DevDocs");
+  mkdirSync(docs, { recursive: true });
+  for (const [name, content] of Object.entries(files)) writeFileSync(join(docs, name), content, "utf8");
+  return directory;
+}
 
 /** 创建仅用于目录检查负例的最小 Cargo/Bun 仓库。 */
 function createLayoutFixture(withSourceReadme: boolean): string {

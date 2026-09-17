@@ -22,8 +22,15 @@ export interface MarkdownPage {
   frontMatter: Record<string, string | string[]>;
   /** 页面标题锚点。 */
   headings: Set<string>;
-  /** 页面引用的相对链接目标。 */
+  /** 页面正文引用的相对链接目标。 */
   links: string[];
+  /**
+   * front matter `related` 声明的相对引用。
+   *
+   * 这些条目参与断链与锚点校验，但不计入入链统计：它们在渲染后不产生可点击导航，
+   * 把它算作入链会掩盖真正的孤立页面。
+   */
+  related: string[];
 }
 
 /**
@@ -86,35 +93,10 @@ export function checkMarkdownLinks(root: string, pages: MarkdownPage[]): Diagnos
   for (const page of pages) inbound.set(page.path, 0);
   for (const page of pages) {
     for (const rawLink of page.links) {
-      if (isExternalLink(rawLink) || rawLink.startsWith("mailto:")) continue;
-      const [rawTarget, rawAnchor] = splitAnchor(rawLink);
-      if (!rawTarget) {
-        const anchor = normalizeAnchor(rawAnchor);
-        if (!page.headings.has(anchor)) {
-          diagnostics.push(docsDiagnostic("A0-DOCS-001", page.path, `页面锚点不存在：#${rawAnchor}`, "a0.docs.anchor_missing"));
-        }
-        continue;
-      }
-      let targetPath: string;
-      try {
-        targetPath = resolveMarkdownTarget(root, page.path, decodeURIComponent(rawTarget));
-      } catch (error) {
-        diagnostics.push(docsDiagnostic("A0-DOCS-001", page.path, `链接路径非法：${rawLink}（${String(error)}）`, "a0.docs.link_invalid"));
-        continue;
-      }
-      const targetFile = isDirectory(targetPath) ? join(targetPath, "README.md") : targetPath;
-      if (!isFile(targetFile)) {
-        diagnostics.push(docsDiagnostic("A0-DOCS-001", page.path, `链接目标不存在：${rawLink}`, "a0.docs.link_missing"));
-        continue;
-      }
-      const targetPagePath = repoRelative(root, targetFile);
-      inbound.set(targetPagePath, (inbound.get(targetPagePath) ?? 0) + 1);
-      if (rawAnchor) {
-        const targetPage = byPath.get(targetPagePath);
-        if (targetPage && !targetPage.headings.has(normalizeAnchor(rawAnchor))) {
-          diagnostics.push(docsDiagnostic("A0-DOCS-001", page.path, `链接锚点不存在：${rawLink}`, "a0.docs.anchor_missing"));
-        }
-      }
+      checkReference(root, page, rawLink, byPath, inbound, true, diagnostics);
+    }
+    for (const rawLink of page.related) {
+      checkReference(root, page, rawLink, byPath, inbound, false, diagnostics);
     }
   }
   for (const page of pages) {
@@ -179,7 +161,8 @@ function parseMarkdownPage(pathValue: string, content: string): MarkdownPage {
   }
   const links: string[] = [];
   for (const match of body.matchAll(/!?\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/gu)) links.push(match[1]);
-  return { path: pathValue, frontMatter, headings, links };
+  const related = Array.isArray(frontMatter.related) ? frontMatter.related : [];
+  return { path: pathValue, frontMatter, headings, links, related };
 }
 
 /** 解析 A0 所需的有限 YAML front matter 子集。 */
@@ -219,6 +202,60 @@ function parseFrontMatter(content: string): Record<string, string | string[]> {
 /** 从链接扫描输入中移除围栏代码块。 */
 function stripFencedCode(content: string): string {
   return content.replace(/^\s*```[\s\S]*?^\s*```\s*$/gmu, "");
+}
+
+/**
+ * 校验页面声明的一条相对引用。
+ *
+ * 正文链接和 front matter `related` 共用同一套解析与校验规则，只有入链统计不同：
+ * `countInbound` 为假时只报告断链和坏锚点，不把目标登记为「有入链」。
+ *
+ * @param root 仓库根目录。
+ * @param page 声明该引用的页面。
+ * @param rawLink 原始引用文本，可带锚点。
+ * @param byPath 已扫描页面索引，用于解析锚点。
+ * @param inbound 入链计数表。
+ * @param countInbound 是否把解析成功的目标计入入链。
+ * @param diagnostics 诊断输出列表。
+ */
+function checkReference(
+  root: string,
+  page: MarkdownPage,
+  rawLink: string,
+  byPath: Map<string, MarkdownPage>,
+  inbound: Map<string, number>,
+  countInbound: boolean,
+  diagnostics: Diagnostic[],
+): void {
+  if (isExternalLink(rawLink) || rawLink.startsWith("mailto:")) return;
+  const [rawTarget, rawAnchor] = splitAnchor(rawLink);
+  if (!rawTarget) {
+    const anchor = normalizeAnchor(rawAnchor);
+    if (!page.headings.has(anchor)) {
+      diagnostics.push(docsDiagnostic("A0-DOCS-001", page.path, `页面锚点不存在：#${rawAnchor}`, "a0.docs.anchor_missing"));
+    }
+    return;
+  }
+  let targetPath: string;
+  try {
+    targetPath = resolveMarkdownTarget(root, page.path, decodeURIComponent(rawTarget));
+  } catch (error) {
+    diagnostics.push(docsDiagnostic("A0-DOCS-001", page.path, `链接路径非法：${rawLink}（${String(error)}）`, "a0.docs.link_invalid"));
+    return;
+  }
+  const targetFile = isDirectory(targetPath) ? join(targetPath, "README.md") : targetPath;
+  if (!isFile(targetFile)) {
+    diagnostics.push(docsDiagnostic("A0-DOCS-001", page.path, `链接目标不存在：${rawLink}`, "a0.docs.link_missing"));
+    return;
+  }
+  const targetPagePath = repoRelative(root, targetFile);
+  if (countInbound) inbound.set(targetPagePath, (inbound.get(targetPagePath) ?? 0) + 1);
+  if (rawAnchor) {
+    const targetPage = byPath.get(targetPagePath);
+    if (targetPage && !targetPage.headings.has(normalizeAnchor(rawAnchor))) {
+      diagnostics.push(docsDiagnostic("A0-DOCS-001", page.path, `链接锚点不存在：${rawLink}`, "a0.docs.anchor_missing"));
+    }
+  }
 }
 
 /** 安全解析 Markdown 相对链接目标。 */
