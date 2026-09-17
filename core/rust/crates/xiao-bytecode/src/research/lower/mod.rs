@@ -111,6 +111,9 @@ struct Lowerer<'ir> {
     /// `IrValue.id` 到存储类别的映射。
     value_storage: HashMap<u32, String>,
     /// 顶层函数名到函数索引的映射。
+    ///
+    /// 脚本入口固定占用索引 0，命名函数从 1 开始，因此这里存的是「入口之后的
+    /// 序号」；调用点必须拿到与 `TacProgram.functions` 对齐的索引。
     named_functions: BTreeMap<String, FuncId>,
     /// 当前的函数构建状态。
     frame: Frame,
@@ -186,7 +189,7 @@ impl<'ir> Lowerer<'ir> {
             .collect::<Vec<_>>();
         for (index, (name, _)) in functions.iter().enumerate() {
             self.named_functions
-                .insert(name.clone(), FuncId::new(index as u32));
+                .insert(name.clone(), FuncId::new(index as u32 + 1));
             if let IrStatementKind::Function {
                 parameters,
                 return_type,
@@ -299,6 +302,7 @@ impl<'ir> Lowerer<'ir> {
     ) {
         self.frame = Frame::default();
         let entry = self.new_block(span);
+        self.switch_to(entry);
         let program_scope = self
             .program
             .ownership
@@ -326,6 +330,7 @@ impl<'ir> Lowerer<'ir> {
         self.emit(TacInstr::new(TacOp::Return { value: None }, span));
         let blocks = std::mem::take(&mut self.frame.blocks);
         let locals = std::mem::take(&mut self.frame.locals);
+        let value_registers = std::mem::take(&mut self.frame.value_regs);
         let used_scopes = std::mem::take(&mut self.frame.used_scopes);
         self.functions.push(TacFunction {
             name: name.to_owned(),
@@ -336,11 +341,15 @@ impl<'ir> Lowerer<'ir> {
             locals,
             scopes: used_scopes,
             handlers: Vec::new(),
+            value_registers,
             span,
         });
     }
 
-    /// 为形参分配寄存器。
+    /// 为形参分配寄存器，并把它们与对应的 `IrValue` 绑定。
+    ///
+    /// 绑定是必需的：函数体里按名引用形参会走 `register_of`，如果不先登记，
+    /// 它会为同一个值再分配一个新寄存器，读到的就是从未写入的槽位。
     fn declare_parameters(&mut self, parameters: &[xiao_ir::IrParameter]) -> Vec<VReg> {
         let mut registers = Vec::with_capacity(parameters.len());
         for parameter in parameters {
@@ -348,6 +357,9 @@ impl<'ir> Lowerer<'ir> {
             let register = self.new_register(class, parameter.span);
             self.frame.parameters.push(register);
             self.frame.locals.push(register);
+            if let Some(value) = self.value_of_name_at(&parameter.name.text, parameter.span) {
+                self.frame.value_regs.insert(value, register);
+            }
             registers.push(register);
         }
         registers
@@ -361,10 +373,10 @@ impl<'ir> Lowerer<'ir> {
         register
     }
 
-    /// 新建一个基本块并把它设为当前块。
+    /// 新建一个基本块，**不切换当前块**。
     ///
-    /// 新块继承当前最内层作用域；作用域归属由 [`Self::enter_scope`] 显式推进，
-    /// 不在这里推断。
+    /// 分配与切换刻意分开：调用方通常要先把终止跳转发进前驱块，再切到新块，
+    /// 否则跳转会落进自己块里形成自环。
     fn new_block(&mut self, span: IrSpan) -> BlockId {
         let scope = self.innermost_scope().unwrap_or(0);
         let id = BlockId::new(self.frame.blocks.len() as u32);
@@ -373,7 +385,6 @@ impl<'ir> Lowerer<'ir> {
             scope,
             instructions: Vec::new(),
         });
-        self.frame.current = Some(id);
         if !self.frame.used_scopes.contains(&scope) {
             self.frame.used_scopes.push(scope);
         }
@@ -554,15 +565,26 @@ impl<'ir> Lowerer<'ir> {
         self.named_functions.get(name).copied()
     }
 
-    /// 按名称查找顶层函数的调用签名。
-    fn signature_of_expression(
-        &self,
-        callee: &IrExpression,
-    ) -> Option<crate::research::tac::SigId> {
+    /// 按名称解析调用目标；不是已知顶层函数时返回 `None`。
+    fn function_index_of_expression(&self, callee: &IrExpression) -> Option<FuncId> {
         let IrExpressionKind::Name { name } = &callee.kind else {
             return None;
         };
-        self.function_signatures.get(&name.text).copied()
+        self.named_functions.get(&name.text).copied()
+    }
+
+    /// 返回某个函数的调用签名。
+    fn signature_of_function(&self, target: FuncId) -> Option<crate::research::tac::SigId> {
+        let name = self
+            .program
+            .body
+            .iter()
+            .filter_map(|statement| match &statement.kind {
+                IrStatementKind::Function { name, .. } => Some(name.text.clone()),
+                _ => None,
+            })
+            .nth(target.get().saturating_sub(1) as usize)?;
+        self.function_signatures.get(&name).copied()
     }
 
     /// 记录一个本批次尚未降低的构造。

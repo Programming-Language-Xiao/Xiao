@@ -430,6 +430,8 @@ pub enum TacOp {
     },
     /// 静态调用。
     Call {
+        /// 被调函数的静态索引。
+        callee: FuncId,
         /// 调用签名。
         signature: SigId,
         /// 实参。
@@ -571,6 +573,8 @@ pub struct TacFunction {
     pub scopes: Vec<u32>,
     /// 异常处理器表。
     pub handlers: Vec<TacHandler>,
+    /// `IrValue.id` 到寄存器的映射；释放计划按值编号寻址，解释器据此找到载体槽位。
+    pub value_registers: std::collections::BTreeMap<u32, VReg>,
     /// 函数源码区间。
     pub span: IrSpan,
 }

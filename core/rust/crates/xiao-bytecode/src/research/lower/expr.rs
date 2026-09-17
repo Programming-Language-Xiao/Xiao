@@ -157,11 +157,6 @@ fn lower_call(
     arguments: &[IrCallArgument],
     expression: &IrExpression,
 ) -> VReg {
-    let signature = lowerer.signature_of_expression(callee).unwrap_or_else(|| {
-        lowerer
-            .signatures
-            .intern(crate::research::sig::CallSig::dynamic())
-    });
     let arguments = arguments
         .iter()
         .map(|argument| {
@@ -174,14 +169,25 @@ fn lower_call(
         .collect::<Vec<_>>();
     let class = Lowerer::class_of_type(&expression.ty);
     let register = lowerer.new_register(class, expression.span);
-    lowerer.emit(TacInstr::with_dst(
-        TacOp::Call {
-            signature,
-            arguments,
-        },
-        register,
-        expression.span,
-    ));
+    let op = match lowerer.function_index_of_expression(callee) {
+        Some(target) => {
+            let signature = lowerer.signature_of_function(target).unwrap_or_else(|| {
+                lowerer
+                    .signatures
+                    .intern(crate::research::sig::CallSig::dynamic())
+            });
+            TacOp::Call {
+                callee: target,
+                signature,
+                arguments,
+            }
+        }
+        None => {
+            let callee = lowerer.lower_expression(callee);
+            TacOp::CallDynamic { callee, arguments }
+        }
+    };
+    lowerer.emit(TacInstr::with_dst(op, register, expression.span));
     register
 }
 

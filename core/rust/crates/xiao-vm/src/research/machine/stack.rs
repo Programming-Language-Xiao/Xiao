@@ -1,0 +1,78 @@
+//! 栈式机型载体。
+//!
+//! 虚拟寄存器直接映射为帧内槽位下标：`dst` 是写入槽位，源操作数从槽位读取。
+//! 这与寄存器机型的差别只在槽位如何分配，不在语义。
+
+use xiao_bytecode::research::VReg;
+use xiao_runtime::{RuntimeError, RuntimeResult, RuntimeValue};
+
+use crate::research::carrier::Carrier;
+
+/// 以一个槽位数组承载全部虚拟寄存器。
+#[derive(Debug, Default)]
+pub struct StackCarrier {
+    slots: Vec<Option<RuntimeValue>>,
+    peak: usize,
+}
+
+impl StackCarrier {
+    /// 创建一个空载体。
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            slots: Vec::new(),
+            peak: 0,
+        }
+    }
+
+    /// 返回指定槽位的只读引用。
+    #[must_use]
+    pub fn slot(&self, register: VReg) -> Option<&RuntimeValue> {
+        self.slots.get(register.get() as usize)?.as_ref()
+    }
+
+    /// 返回当前有效槽位的数量。
+    #[must_use]
+    pub fn occupied(&self) -> usize {
+        self.slots.iter().filter(|slot| slot.is_some()).count()
+    }
+}
+
+impl Carrier for StackCarrier {
+    /// 创建一个空载体。
+    fn empty() -> Self {
+        Self::new()
+    }
+
+    /// 读取槽位内容；越界或为空都报无效句柄错误。
+    fn read(&self, register: VReg) -> RuntimeResult<RuntimeValue> {
+        self.slot(register)
+            .cloned()
+            .ok_or_else(|| RuntimeError::invalid_handle(format!("槽位 {} 为空", register.get())))
+    }
+
+    /// 写入槽位并更新峰值。
+    fn write(&mut self, register: VReg, value: RuntimeValue) {
+        let index = register.get() as usize;
+        if self.slots.len() <= index {
+            self.slots.resize_with(index + 1, || None);
+        }
+        self.slots[index] = Some(value);
+        self.peak = self.peak.max(self.occupied());
+    }
+
+    /// 取出槽位内容并清空它。
+    fn take(&mut self, register: VReg) -> Option<RuntimeValue> {
+        self.slots.get_mut(register.get() as usize)?.take()
+    }
+
+    /// 返回数组长度，表示该帧的槽位上限。
+    fn depth(&self) -> usize {
+        self.slots.len()
+    }
+
+    /// 返回槽位占用峰值。
+    fn peak(&self) -> usize {
+        self.peak
+    }
+}

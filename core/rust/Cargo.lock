@@ -249,6 +249,13 @@ dependencies = [
 [[package]]
 name = "xiao-vm"
 version = "0.1.0"
+dependencies = [
+ "xiao-bytecode",
+ "xiao-diagnostics",
+ "xiao-driver",
+ "xiao-lifetime",
+ "xiao-runtime",
+]
 
 [[package]]
 name = "xiao-xar"

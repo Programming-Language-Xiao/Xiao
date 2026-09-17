@@ -149,6 +149,8 @@ fn lower_extended_assignment(
 }
 
 /// 降低 `if`/`elif`/`else`。
+///
+/// 每个分支的条件在前驱块里求值，分支体各自成块并以跳转汇入合流块。
 fn lower_if(
     lowerer: &mut Lowerer<'_>,
     condition: &IrExpression,
@@ -163,10 +165,11 @@ fn lower_if(
         branches.push((&branch.condition, &branch.body));
     }
     let last = branches.len() - 1;
+    let else_entry = else_body.map(|_| lowerer.new_block(span));
     for (index, (branch_condition, branch_body)) in branches.into_iter().enumerate() {
         let taken = lowerer.new_block(span);
         let next = if index == last {
-            end
+            else_entry.unwrap_or(end)
         } else {
             lowerer.new_block(span)
         };
@@ -186,12 +189,14 @@ fn lower_if(
     }
     if let Some(else_body) = else_body {
         lower_statements(lowerer, else_body, "normal");
+        lowerer.emit(TacInstr::new(TacOp::Jump(end), span));
     }
-    lowerer.emit(TacInstr::new(TacOp::Jump(end), span));
     lowerer.switch_to(end);
 }
 
 /// 降低 `while`。
+///
+/// 入口跳转发进前驱块，条件在循环头求值，循环体回到循环头。
 fn lower_while(
     lowerer: &mut Lowerer<'_>,
     condition: &IrExpression,
