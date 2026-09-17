@@ -33,6 +33,8 @@ pub const CROSS_THREAD_CODE: &str = "X06-RUNTIME-010";
 pub const ALLOCATION_CODE: &str = "X06-RUNTIME-011";
 /// Runtime 值不满足操作要求。
 pub const INVALID_VALUE_CODE: &str = "X06-RUNTIME-012";
+/// 整数除法或取模的除数为零。
+pub const DIVISION_BY_ZERO_CODE: &str = "X06-RUNTIME-013";
 
 /// 虚拟机不变量损坏。
 pub const FATAL_RUNTIME_INVARIANT_CODE: &str = "X07-FATAL-001";
@@ -548,6 +550,17 @@ impl XiaoError {
             "runtime.numeric_overflow",
             message,
         )
+    }
+    /// 创建除数为零错误。
+    #[must_use]
+    pub fn division_by_zero(operator: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Arithmetic,
+            DIVISION_BY_ZERO_CODE,
+            "runtime.division_by_zero",
+            "除数不能为零",
+        )
+        .with_param("operator", DiagnosticParam::Text(operator.into()))
     }
     /// 创建首版跨线程错误。
     #[must_use]
@@ -1149,6 +1162,19 @@ mod tests {
         assert!(error.is_recoverable());
         assert_eq!(error.stack(), &[frame]);
         assert!(error.cause().is_some());
+    }
+
+    #[test]
+    /// 确认除零是可恢复算术错误，且保留触发它的算子身份。
+    fn division_by_zero_keeps_operator_identity() {
+        let error = XiaoError::division_by_zero("//");
+        assert_eq!(error.code(), DIVISION_BY_ZERO_CODE);
+        assert_eq!(error.kind(), XiaoErrorKind::Arithmetic);
+        assert!(error.is_recoverable());
+        assert_eq!(
+            error.params().get("operator"),
+            Some(&DiagnosticParam::Text("//".to_owned()))
+        );
     }
 
     #[test]

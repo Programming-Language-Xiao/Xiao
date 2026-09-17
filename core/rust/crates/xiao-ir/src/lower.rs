@@ -907,20 +907,10 @@ fn escape_reason_name(reason: EscapeReason) -> &'static str {
 }
 
 /// 返回退出边类别的稳定名称。
+///
+/// 拼写由 [`ExitKind::as_name`] 单点维护；后端反查同一张表，不得另存一份。
 fn exit_kind_name(kind: ExitKind) -> &'static str {
-    match kind {
-        ExitKind::Normal => "normal",
-        ExitKind::Return => "return",
-        ExitKind::Break => "break",
-        ExitKind::Continue => "continue",
-        ExitKind::Error => "error",
-        ExitKind::Raise => "raise",
-        ExitKind::Catch => "catch",
-        ExitKind::UnmatchedError => "unmatched_error",
-        ExitKind::ConstructFailure => "construct_failure",
-        ExitKind::DynamicCheckFailure => "dynamic_check_failure",
-        ExitKind::Fatal => "fatal",
-    }
+    kind.as_name()
 }
 
 /// 返回所有权边类别的稳定名称。
@@ -943,11 +933,10 @@ fn ownership_reason_name(reason: OwnershipEdgeReason) -> &'static str {
 }
 
 /// 返回释放动作类别的稳定名称。
+///
+/// 拼写由 [`ReleaseActionKind::as_name`] 单点维护。
 fn release_action_kind_name(kind: ReleaseActionKind) -> &'static str {
-    match kind {
-        ReleaseActionKind::Strong => "strong",
-        ReleaseActionKind::Weak => "weak",
-    }
+    kind.as_name()
 }
 
 /// 返回控制流边类别的稳定名称。

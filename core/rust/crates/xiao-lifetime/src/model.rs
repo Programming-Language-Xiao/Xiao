@@ -176,10 +176,56 @@ pub enum ExitKind {
 }
 
 impl ExitKind {
+    /// 所有退出边种类的稳定顺序。
+    ///
+    /// 释放计划按该顺序为每个作用域预建条目，后端不得依赖其他顺序。
+    pub const ALL: [Self; 11] = [
+        Self::Normal,
+        Self::Return,
+        Self::Break,
+        Self::Continue,
+        Self::Error,
+        Self::Raise,
+        Self::Catch,
+        Self::UnmatchedError,
+        Self::ConstructFailure,
+        Self::DynamicCheckFailure,
+        Self::Fatal,
+    ];
+
     /// 判断是否为正常离开。
     #[must_use]
     pub const fn is_normal(self) -> bool {
         matches!(self, Self::Normal)
+    }
+
+    /// 返回该退出边在 IR、字节码和原生后端共享的稳定名称。
+    ///
+    /// 名称一旦发布就不能改写；后端用它反查释放计划，不得维护第二份映射表。
+    #[must_use]
+    pub const fn as_name(self) -> &'static str {
+        match self {
+            Self::Normal => "normal",
+            Self::Return => "return",
+            Self::Break => "break",
+            Self::Continue => "continue",
+            Self::Error => "error",
+            Self::Raise => "raise",
+            Self::Catch => "catch",
+            Self::UnmatchedError => "unmatched_error",
+            Self::ConstructFailure => "construct_failure",
+            Self::DynamicCheckFailure => "dynamic_check_failure",
+            Self::Fatal => "fatal",
+        }
+    }
+
+    /// 按稳定名称还原退出边类别。
+    ///
+    /// 只接受 [`Self::as_name`] 产出的拼写；未知名称返回 `None`，由调用方
+    /// 决定是拒绝产物还是继续执行，不得静默退化为某个默认类别。
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|kind| kind.as_name() == name)
     }
 }
 
@@ -256,6 +302,26 @@ pub enum ReleaseActionKind {
     Strong,
     /// 释放一个弱句柄，不触碰目标对象。
     Weak,
+}
+
+impl ReleaseActionKind {
+    /// 所有释放动作种类的稳定顺序。
+    pub const ALL: [Self; 2] = [Self::Strong, Self::Weak];
+
+    /// 返回该动作在 IR、字节码和原生后端共享的稳定名称。
+    #[must_use]
+    pub const fn as_name(self) -> &'static str {
+        match self {
+            Self::Strong => "strong",
+            Self::Weak => "weak",
+        }
+    }
+
+    /// 按稳定名称还原释放动作种类；未知名称返回 `None`。
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|kind| kind.as_name() == name)
+    }
 }
 
 /// 释放计划中的一个确定性动作。

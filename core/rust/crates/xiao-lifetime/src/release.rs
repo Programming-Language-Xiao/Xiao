@@ -11,21 +11,6 @@ use crate::escape::TransferFacts;
 use crate::graph::{GraphError, OwnershipGraph};
 use crate::model::{ExitKind, LifetimeResult, ReleaseAction, ReleaseActionKind, ReleasePlan};
 
-/// 所有退出边种类的稳定顺序。
-const ALL_EXITS: [ExitKind; 11] = [
-    ExitKind::Normal,
-    ExitKind::Return,
-    ExitKind::Break,
-    ExitKind::Continue,
-    ExitKind::Error,
-    ExitKind::Raise,
-    ExitKind::Catch,
-    ExitKind::UnmatchedError,
-    ExitKind::ConstructFailure,
-    ExitKind::DynamicCheckFailure,
-    ExitKind::Fatal,
-];
-
 /// 为分析结果建立所有权图和每个作用域的释放计划。
 pub(crate) fn finalize(mut result: LifetimeResult, transfers: TransferFacts) -> LifetimeResult {
     let mut graph = OwnershipGraph::new();
@@ -71,7 +56,7 @@ pub(crate) fn finalize(mut result: LifetimeResult, transfers: TransferFacts) -> 
             .copied()
             .filter(|id| result.values.get(id).is_some_and(|value| !value.temporary))
             .collect::<Vec<_>>();
-        for exit in ALL_EXITS {
+        for exit in ExitKind::ALL {
             let transferred = transfers
                 .get(&(scope_id, exit))
                 .cloned()

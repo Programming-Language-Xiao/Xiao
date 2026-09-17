@@ -5,8 +5,8 @@
 
 /// 统一诊断错误类型、稳定错误码及报告器接口的 Runtime 兼容重导出。
 pub use xiao_diagnostics::{
-    ALLOCATION_CODE, BackendLocation, CROSS_THREAD_CODE, DiagnosticParam, ErrorAccumulator,
-    FATAL_CORRUPT_ARTIFACT_CODE, FATAL_HARDWARE_CODE, FATAL_INTERNAL_CODE,
+    ALLOCATION_CODE, BackendLocation, CROSS_THREAD_CODE, DIVISION_BY_ZERO_CODE, DiagnosticParam,
+    ErrorAccumulator, FATAL_CORRUPT_ARTIFACT_CODE, FATAL_HARDWARE_CODE, FATAL_INTERNAL_CODE,
     FATAL_OUT_OF_MEMORY_CODE, FATAL_RUNTIME_INVARIANT_CODE, FATAL_STACK_OVERFLOW_CODE, FatalError,
     FatalKind, FrameKind, INVALID_HANDLE_CODE, INVALID_VALUE_CODE, MessageRenderer,
     NUMERIC_OVERFLOW_CODE, PreviewRenderer, REFCOUNT_INVARIANT_CODE, ReportClass, ReportRecord,

@@ -2,7 +2,8 @@
 
 use xiao_lifetime::{
     ControlFlowEdgeKind, ExitKind, GraphError, LifetimeAnalyzer, OwnershipEdge,
-    OwnershipEdgeReason, OwnershipGraph, OwnershipKind, ScopeId, ScopeKind, StorageClass, ValueId,
+    OwnershipEdgeReason, OwnershipGraph, OwnershipKind, ReleaseActionKind, ScopeId, ScopeKind,
+    StorageClass, ValueId,
 };
 use xiao_source::SourceFile;
 use xiao_syntax::Parser;
@@ -851,4 +852,47 @@ fn malformed_graph_is_recoverable() {
         .and_then(|_| graph.add_node(ValueId::new(0), 1))
         .expect_err("重复节点应报错");
     assert!(matches!(duplicate, GraphError::DuplicateNode(id) if id == ValueId::new(0)));
+}
+
+#[test]
+/// 退出边类别的稳定拼写被冻结，改写任何一条都会让后缀和原生后端一起失效。
+fn exit_kind_names_are_frozen() {
+    let expected = [
+        "normal",
+        "return",
+        "break",
+        "continue",
+        "error",
+        "raise",
+        "catch",
+        "unmatched_error",
+        "construct_failure",
+        "dynamic_check_failure",
+        "fatal",
+    ];
+    let actual = ExitKind::ALL.map(ExitKind::as_name);
+    assert_eq!(actual, expected);
+}
+
+#[test]
+/// 退出边类别可以按稳定名称原样还原，未知名称不静默退化。
+fn exit_kind_names_round_trip() {
+    for kind in ExitKind::ALL {
+        assert_eq!(ExitKind::from_name(kind.as_name()), Some(kind));
+    }
+    assert_eq!(ExitKind::from_name("Normal"), None);
+    assert_eq!(ExitKind::from_name(""), None);
+}
+
+#[test]
+/// 释放动作类别的稳定拼写与还原规则同样被冻结。
+fn release_action_kind_names_round_trip() {
+    assert_eq!(
+        ReleaseActionKind::ALL.map(ReleaseActionKind::as_name),
+        ["strong", "weak"]
+    );
+    for kind in ReleaseActionKind::ALL {
+        assert_eq!(ReleaseActionKind::from_name(kind.as_name()), Some(kind));
+    }
+    assert_eq!(ReleaseActionKind::from_name("Strong"), None);
 }
