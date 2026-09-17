@@ -35,6 +35,12 @@ pub const ALLOCATION_CODE: &str = "X06-RUNTIME-011";
 pub const INVALID_VALUE_CODE: &str = "X06-RUNTIME-012";
 /// 整数除法或取模的除数为零。
 pub const DIVISION_BY_ZERO_CODE: &str = "X06-RUNTIME-013";
+/// 运行时容器索引超出长度。
+pub const CONTAINER_INDEX_CODE: &str = "X06-RUNTIME-014";
+/// 运行时字典键不存在。
+pub const CONTAINER_KEY_CODE: &str = "X06-RUNTIME-015";
+/// 运行时判定元素不可哈希，不能进入集合或字典键位置。
+pub const CONTAINER_HASHABILITY_CODE: &str = "X06-RUNTIME-016";
 
 /// 虚拟机不变量损坏。
 pub const FATAL_RUNTIME_INVARIANT_CODE: &str = "X07-FATAL-001";
@@ -562,6 +568,45 @@ impl XiaoError {
         )
         .with_param("operator", DiagnosticParam::Text(operator.into()))
     }
+    /// 创建运行时容器索引越界错误。
+    #[must_use]
+    pub fn index_out_of_bounds(container: impl Into<String>, length: usize, index: i128) -> Self {
+        Self::new(
+            XiaoErrorKind::Type,
+            CONTAINER_INDEX_CODE,
+            "runtime.index_out_of_bounds",
+            "容器索引超出长度",
+        )
+        .with_param("container", DiagnosticParam::Text(container.into()))
+        .with_param("length", DiagnosticParam::Integer(length as i128))
+        .with_param("index", DiagnosticParam::Integer(index))
+    }
+
+    /// 创建运行时字典键不存在错误。
+    #[must_use]
+    pub fn key_not_found(container: impl Into<String>, key: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Type,
+            CONTAINER_KEY_CODE,
+            "runtime.key_not_found",
+            "字典中不存在该键",
+        )
+        .with_param("container", DiagnosticParam::Text(container.into()))
+        .with_param("key", DiagnosticParam::Text(key.into()))
+    }
+
+    /// 创建元素不可哈希错误。
+    #[must_use]
+    pub fn unhashable_element(type_name: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Type,
+            CONTAINER_HASHABILITY_CODE,
+            "runtime.unhashable_element",
+            "该类型的值不能作为集合元素或字典键",
+        )
+        .with_param("type_name", DiagnosticParam::Text(type_name.into()))
+    }
+
     /// 创建首版跨线程错误。
     #[must_use]
     pub fn cross_thread() -> Self {
@@ -1175,6 +1220,31 @@ mod tests {
             error.params().get("operator"),
             Some(&DiagnosticParam::Text("//".to_owned()))
         );
+    }
+
+    #[test]
+    /// 确认三个容器错误保留稳定身份与结构化参数。
+    fn container_errors_keep_stable_identity() {
+        let bounds = XiaoError::index_out_of_bounds("array", 3, -5);
+        assert_eq!(bounds.code(), CONTAINER_INDEX_CODE);
+        assert_eq!(bounds.kind(), XiaoErrorKind::Type);
+        assert_eq!(
+            bounds.params().get("length"),
+            Some(&DiagnosticParam::Integer(3))
+        );
+        assert_eq!(
+            bounds.params().get("index"),
+            Some(&DiagnosticParam::Integer(-5))
+        );
+        let key = XiaoError::key_not_found("dict table", "missing");
+        assert_eq!(key.code(), CONTAINER_KEY_CODE);
+        assert_eq!(
+            key.params().get("key"),
+            Some(&DiagnosticParam::Text("missing".to_owned()))
+        );
+        let hash = XiaoError::unhashable_element("array");
+        assert_eq!(hash.code(), CONTAINER_HASHABILITY_CODE);
+        assert_eq!(hash.kind(), XiaoErrorKind::Type);
     }
 
     #[test]

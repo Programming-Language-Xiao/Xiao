@@ -19,7 +19,7 @@ use crate::diagnostics::{
 use crate::numeric::ConstantValue;
 use crate::selection_model::{
     BroadcastAssignmentPlan, RandomSeedPlan, SelectionItemPlan, SelectionPath,
-    SelectionPathSegment, SelectionPlan, StepPlan,
+    SelectionPathSegment, SelectionPlan, StepPlan, normalize_index,
 };
 use crate::selection_shape::{direct_selection_children, project_selection_type};
 use crate::types::Type;
@@ -1076,16 +1076,6 @@ fn constant_integer(value: ConstantValue) -> Option<i128> {
         ConstantValue::BigInteger(value) => value.parse::<i128>().ok(),
         _ => None,
     }
-}
-
-/// 规范化 Python 风格负索引。
-fn normalize_index(raw: i128, length: usize) -> Option<usize> {
-    let index = if raw < 0 {
-        (length as i128).checked_add(raw)?
-    } else {
-        raw
-    };
-    usize::try_from(index).ok().filter(|index| *index < length)
 }
 
 /// 读取数组索引的静态结果；未知长度返回 `Ok(None)`。

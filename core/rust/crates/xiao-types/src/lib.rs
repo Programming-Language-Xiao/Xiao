@@ -70,7 +70,7 @@ pub use path_constraints::{
 /// 重新导出选择计划、广播计划和随机种子记录。
 pub use selection_model::{
     BroadcastAssignmentPlan, RandomSeedPlan, SelectionItemPlan, SelectionPath,
-    SelectionPathSegment, SelectionPlan, StepPlan,
+    SelectionPathSegment, SelectionPlan, StepPlan, normalize_index,
 };
 /// 重新导出可注入随机源和抽样辅助。
 pub use selection_random::{RandomSelectionError, RandomSource, SeededRandom, sample_indices};

@@ -10,6 +10,21 @@ use xiao_syntax::RandomMode;
 use crate::containers::ContainerPathSegment;
 use crate::types::Type;
 
+/// 规范化 Python 风格负索引。
+///
+/// `raw` 为负时按 `length + raw` 折算，折算结果必须落在 `[0, length)` 内，
+/// 否则返回 `None`。这是选择器负索引语义的**唯一实现**：类型检查器与运行时
+/// 都必须经它，不得各自再写一份。
+#[must_use]
+pub fn normalize_index(raw: i128, length: usize) -> Option<usize> {
+    let index = if raw < 0 {
+        (length as i128).checked_add(raw)?
+    } else {
+        raw
+    };
+    usize::try_from(index).ok().filter(|index| *index < length)
+}
+
 /// 一个选择路径中的语义段。
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum SelectionPathSegment {
