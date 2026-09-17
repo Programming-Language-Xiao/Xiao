@@ -10,6 +10,7 @@ related:
   - ../README.md
   - frontend/README.md
   - ir/README.md
+  - bytecode-runtime/README.md
   - ../../../DevDocs/08a-u0-frontend-implementation.md
 ---
 
@@ -22,5 +23,7 @@ IR 快照的开发者。它不承诺执行能力；运行和构建请等待字�
 
 1. [前端流水线](frontend/README.md)
 2. [IR 快照](ir/README.md)
+3. [字节码运行路径](bytecode-runtime/README.md)
 
-页面状态：`verified`（对应 08A/U0 静态前端实现）。
+页面状态：前端流水线与 IR 快照为 `verified`（对应 08A/U0 静态前端实现）；字节码运行路径
+仍为 `planned`，它只说明规划边界，不表示已经可以执行用户代码。
