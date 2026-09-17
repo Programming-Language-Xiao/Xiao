@@ -2,6 +2,7 @@
 
 use xiao_source::SourceFile;
 use xiao_syntax::{Parser, Program};
+use xiao_types::{ASSIGNMENT_TYPE_MISMATCH_CODE, SET_DUPLICATE_ELEMENT_CODE};
 use xiao_types::{
     RuntimeCheckKind, SET_ELEMENT_TYPE_MISMATCH_CODE, SET_MEMBERSHIP_TYPE_CODE, SetType, Type,
     TypeChecker,
@@ -102,13 +103,13 @@ fn isolates_static_equality_by_type() {
         result
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-017")
+            .any(|diagnostic| diagnostic.code() == SET_DUPLICATE_ELEMENT_CODE)
     );
     assert_eq!(
         result
             .diagnostics()
             .iter()
-            .filter(|diagnostic| diagnostic.code() == "X03-TYPE-017")
+            .filter(|diagnostic| diagnostic.code() == SET_DUPLICATE_ELEMENT_CODE)
             .count(),
         1
     );
@@ -139,7 +140,7 @@ fn checks_set_assignment_compatibility() {
         invalid
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X02-TYPE-004")
+            .any(|diagnostic| diagnostic.code() == ASSIGNMENT_TYPE_MISMATCH_CODE)
     );
 
     let dynamic =

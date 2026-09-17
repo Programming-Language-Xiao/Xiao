@@ -1,6 +1,10 @@
 //! 05-A 导入语法的规格回归测试。
 
 use xiao_source::SourceFile;
+use xiao_syntax::{
+    INVALID_IMPORT_ALIAS_CODE, INVALID_IMPORT_PATH_CODE, INVALID_IMPORT_TARGET_CODE,
+    UNSUPPORTED_IMPORT_FORM_CODE,
+};
 use xiao_syntax::{ImportStatement, Name, NodeIndex, Parser, Statement};
 
 /// 解析一段应当没有错误诊断的源码。
@@ -107,9 +111,9 @@ fn diagnoses_unsupported_import_forms() {
         .iter()
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
-    assert!(codes.contains(&"X05-PARSE-004"));
-    assert!(codes.contains(&"X05-PARSE-002"));
-    assert!(codes.contains(&"X05-PARSE-003"));
+    assert!(codes.contains(&UNSUPPORTED_IMPORT_FORM_CODE));
+    assert!(codes.contains(&INVALID_IMPORT_TARGET_CODE));
+    assert!(codes.contains(&INVALID_IMPORT_ALIAS_CODE));
 }
 
 #[test]
@@ -120,6 +124,6 @@ fn rejects_non_ascii_module_path_segments() {
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X05-PARSE-001")
+            .any(|diagnostic| diagnostic.code() == INVALID_IMPORT_PATH_CODE)
     );
 }

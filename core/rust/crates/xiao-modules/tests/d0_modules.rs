@@ -4,6 +4,10 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
+use xiao_modules::{
+    IMPORT_BINDING_CONFLICT_CODE, INVALID_QUALIFIER_USE_CODE, MISSING_IMPORT_SYMBOL_CODE,
+    MISSING_IMPORT_TARGET_CODE, MODULE_CYCLE_CODE, MODULE_PATH_CONFLICT_CODE,
+};
 
 use xiao_modules::{
     BindingKind, ExportOrigin, ImportEdgeKind, ModuleKind, ModuleName, analyze_project,
@@ -138,7 +142,7 @@ fn diagnoses_file_namespace_conflict() {
     project.write("app/user.xiao", "value = 2\n");
 
     let result = analyze_project(&project.path);
-    assert!(diagnostic_codes(&result).contains(&"X05-MODULE-003"));
+    assert!(diagnostic_codes(&result).contains(&MODULE_PATH_CONFLICT_CODE));
     assert!(
         result
             .diagnostics
@@ -156,13 +160,13 @@ fn diagnoses_case_fold_conflicts_and_preserves_case_sensitivity() {
     conflict.write("App.xiao", "value = 1\n");
     conflict.write("app/user.xiao", "value = 2\n");
     let result = analyze_project(&conflict.path);
-    assert!(diagnostic_codes(&result).contains(&"X05-MODULE-003"));
+    assert!(diagnostic_codes(&result).contains(&MODULE_PATH_CONFLICT_CODE));
 
     let exact = TempProject::new();
     exact.write("App.xiao", "value = 1\n");
     exact.write("main.xiao", "import app\n");
     let result = analyze_project(&exact.path);
-    assert!(diagnostic_codes(&result).contains(&"X05-MODULE-004"));
+    assert!(diagnostic_codes(&result).contains(&MISSING_IMPORT_TARGET_CODE));
 }
 
 #[test]
@@ -277,14 +281,14 @@ fn diagnoses_missing_targets_and_symbols_once() {
     assert_eq!(
         codes
             .iter()
-            .filter(|code| **code == "X05-MODULE-004")
+            .filter(|code| **code == MISSING_IMPORT_TARGET_CODE)
             .count(),
         2
     );
     assert_eq!(
         codes
             .iter()
-            .filter(|code| **code == "X05-MODULE-005")
+            .filter(|code| **code == MISSING_IMPORT_SYMBOL_CODE)
             .count(),
         1
     );
@@ -302,7 +306,7 @@ fn rejects_cycles_and_clears_initialization_order() {
     assert_eq!(
         codes
             .iter()
-            .filter(|code| **code == "X05-MODULE-007")
+            .filter(|code| **code == MODULE_CYCLE_CODE)
             .count(),
         1
     );
@@ -338,11 +342,11 @@ fn diagnoses_missing_qualified_namespace_target() {
     assert_eq!(
         codes
             .iter()
-            .filter(|code| **code == "X05-MODULE-004")
+            .filter(|code| **code == MISSING_IMPORT_TARGET_CODE)
             .count(),
         1
     );
-    assert!(!codes.contains(&"X05-MODULE-008"));
+    assert!(!codes.contains(&INVALID_QUALIFIER_USE_CODE));
 }
 
 #[test]
@@ -357,6 +361,6 @@ fn diagnoses_invalid_qualifier_use_and_binding_conflict() {
 
     let result = analyze_project(&project.path);
     let codes = diagnostic_codes(&result);
-    assert!(codes.contains(&"X05-MODULE-008"));
-    assert!(codes.contains(&"X05-MODULE-006"));
+    assert!(codes.contains(&INVALID_QUALIFIER_USE_CODE));
+    assert!(codes.contains(&IMPORT_BINDING_CONFLICT_CODE));
 }

@@ -1,6 +1,7 @@
 //! C2-A 集合字面量和花括号消歧的语法规格测试。
 
 use xiao_source::SourceFile;
+use xiao_syntax::INVALID_CONTAINER_ENTRY_CODE;
 use xiao_syntax::{Expression, NodeIndex, Parser, Statement};
 
 /// 解析一段源码并要求语法层没有诊断。
@@ -74,7 +75,7 @@ fn diagnoses_mixed_set_and_dictionary_entries() {
     let result = Parser::new(&SourceFile::from_text("values = {1, name = 2}\nnext = 1\n")).parse();
     assert!(
         result.diagnostics.iter().any(|diagnostic| {
-            diagnostic.code() == "X03-PARSE-002"
+            diagnostic.code() == INVALID_CONTAINER_ENTRY_CODE
                 && diagnostic.message_id() == "x03.parse.mixed_brace_entries"
         }),
         "expected mixed-entry diagnostic: {:?}",

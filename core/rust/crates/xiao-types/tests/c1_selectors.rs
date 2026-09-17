@@ -5,6 +5,10 @@ use xiao_syntax::{Parser, Program, ScalarType};
 use xiao_types::{
     ArrayType, RandomSeedPlan, RuntimeCheckKind, SelectionPathSegment, Type, TypeChecker,
 };
+use xiao_types::{
+    RANDOM_SEED_CODE, SELECTOR_ASSIGNMENT_CODE, SELECTOR_INVALID_RANDOM_COUNT_CODE,
+    SELECTOR_INVALID_STEP_CODE, SELECTOR_RANDOM_EXHAUSTED_CODE, SELECTOR_UNORDERED_CONTAINER_CODE,
+};
 
 /// 解析并检查一段 Xiao 源码。
 fn check(source: &str) -> xiao_types::TypeCheckResult {
@@ -102,9 +106,9 @@ fn rejects_invalid_step_and_random_counts() {
         .iter()
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
-    assert!(codes.contains(&"X03-TYPE-009"));
-    assert!(codes.contains(&"X03-TYPE-010"));
-    assert!(codes.contains(&"X03-TYPE-011"));
+    assert!(codes.contains(&SELECTOR_INVALID_STEP_CODE));
+    assert!(codes.contains(&SELECTOR_INVALID_RANDOM_COUNT_CODE));
+    assert!(codes.contains(&SELECTOR_RANDOM_EXHAUSTED_CODE));
 }
 
 #[test]
@@ -154,7 +158,7 @@ fn rejects_advanced_dictionary_table_selection() {
         result
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-008")
+            .any(|diagnostic| diagnostic.code() == SELECTOR_UNORDERED_CONTAINER_CODE)
     );
 }
 
@@ -166,14 +170,14 @@ fn rejects_invalid_random_seed() {
         negative
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-013")
+            .any(|diagnostic| diagnostic.code() == RANDOM_SEED_CODE)
     );
     let float = check("random.seed(1.5)\n");
     assert!(
         float
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-013")
+            .any(|diagnostic| diagnostic.code() == RANDOM_SEED_CODE)
     );
 }
 
@@ -191,7 +195,7 @@ fn checks_scalar_broadcast_assignment() {
         invalid
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-012")
+            .any(|diagnostic| diagnostic.code() == SELECTOR_ASSIGNMENT_CODE)
     );
     assert!(invalid.broadcast_assignment_plans().is_empty());
 }
@@ -318,7 +322,7 @@ fn rejects_range_through_dictionary_table() {
         result
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-008")
+            .any(|diagnostic| diagnostic.code() == SELECTOR_UNORDERED_CONTAINER_CODE)
     );
 }
 

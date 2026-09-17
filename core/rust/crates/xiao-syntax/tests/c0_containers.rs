@@ -2,6 +2,7 @@
 
 use xiao_source::SourceFile;
 use xiao_syntax::{DictKey, Expression, Parser, PathSegment, Statement};
+use xiao_syntax::{INVALID_CONTAINER_ENTRY_CODE, UNSUPPORTED_CONST_PATH_CODE};
 
 /// 解析一段源码并要求语法层没有诊断。
 fn parse_ok(source: &str) -> xiao_syntax::Program {
@@ -116,7 +117,7 @@ fn diagnoses_invalid_dictionary_entry() {
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-PARSE-002")
+            .any(|diagnostic| diagnostic.code() == INVALID_CONTAINER_ENTRY_CODE)
     );
 }
 
@@ -128,6 +129,6 @@ fn rejects_const_path_constraints() {
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-PARSE-004")
+            .any(|diagnostic| diagnostic.code() == UNSUPPORTED_CONST_PATH_CODE)
     );
 }

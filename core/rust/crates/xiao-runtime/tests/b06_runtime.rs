@@ -2,6 +2,9 @@
 
 use std::sync::atomic::{AtomicUsize, Ordering};
 
+use xiao_diagnostics::{
+    INVALID_VALUE_CODE, NUMERIC_OVERFLOW_CODE, TABLE_DROP_CODE, WEAK_UPGRADE_CODE,
+};
 use xiao_lifetime::{ExitKind, ReleaseAction, ReleaseActionKind, ReleasePlan, ScopeId, ValueId};
 use xiao_runtime::testing::{RuntimeBinding, RuntimeDriver};
 use xiao_runtime::{
@@ -84,10 +87,10 @@ fn drop_failure_keeps_structured_identity() {
         .expect("构造应成功")
         .try_release()
         .expect_err("drop 应返回错误");
-    assert_eq!(error.code(), "X06-RUNTIME-008");
+    assert_eq!(error.code(), TABLE_DROP_CODE);
     assert_eq!(
         error.cause().map(RuntimeError::code),
-        Some("X06-RUNTIME-012")
+        Some(INVALID_VALUE_CODE)
     );
 }
 
@@ -101,7 +104,7 @@ fn weak_handle_survives_strong_release_but_cannot_upgrade() {
     assert!(!weak.is_alive());
     assert_eq!(
         weak.upgrade().expect_err("升级应失败").code(),
-        "X06-RUNTIME-005"
+        WEAK_UPGRADE_CODE
     );
 }
 
@@ -148,7 +151,7 @@ fn bool_arithmetic_is_strict_and_overflow_is_reported() {
     let overflow = RuntimeValue::Int(i64::MAX)
         .add(&RuntimeValue::Int(1))
         .expect_err("应溢出");
-    assert_eq!(overflow.code(), "X06-RUNTIME-009");
+    assert_eq!(overflow.code(), NUMERIC_OVERFLOW_CODE);
     assert!(
         RuntimeValue::Bool(true)
             .add(&RuntimeValue::Float(1.0))

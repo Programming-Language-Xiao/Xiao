@@ -2,6 +2,10 @@
 
 use xiao_source::SourceFile;
 use xiao_syntax::{DeclaredType, Expression, Parser, Statement, TypeTerm};
+use xiao_syntax::{
+    INVALID_SET_TYPE_ANNOTATION_CODE, MISSING_DELIMITER_CODE, UNSUPPORTED_CONST_SET_TYPE_CODE,
+    UNSUPPORTED_SET_TYPE_PATH_CODE,
+};
 
 /// 解析一段源码并要求得到完整程序。
 fn parse(source: &str) -> xiao_syntax::ParseResult {
@@ -91,9 +95,9 @@ fn diagnoses_unsupported_set_annotation_forms() {
         .iter()
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
-    assert!(codes.contains(&"X03-PARSE-005"));
-    assert!(codes.contains(&"X03-PARSE-006"));
-    assert!(codes.contains(&"X03-PARSE-007"));
+    assert!(codes.contains(&INVALID_SET_TYPE_ANNOTATION_CODE));
+    assert!(codes.contains(&UNSUPPORTED_SET_TYPE_PATH_CODE));
+    assert!(codes.contains(&UNSUPPORTED_CONST_SET_TYPE_CODE));
     let program = result.program.expect("recovered program");
     assert!(program.statements.iter().any(|statement| {
         matches!(
@@ -114,13 +118,13 @@ fn recovers_incomplete_set_annotation() {
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X01-PARSE-007")
+            .any(|diagnostic| diagnostic.code() == MISSING_DELIMITER_CODE)
     );
     assert!(
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-PARSE-005")
+            .any(|diagnostic| diagnostic.code() == INVALID_SET_TYPE_ANNOTATION_CODE)
     );
     let program = result.program.expect("recovered program");
     let source =

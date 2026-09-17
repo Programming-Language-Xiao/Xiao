@@ -1,6 +1,7 @@
 //! 09R2 栈式载体解释器规格。
 
 use xiao_bytecode::research::lower_program;
+use xiao_diagnostics::{FATAL_STACK_OVERFLOW_CODE, NUMERIC_OVERFLOW_CODE};
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_vm::research::{RunResult, VmEvent, VmOptions, run};
 
@@ -48,7 +49,7 @@ fn stack_overflow_is_fatal() {
         "结果: {:?}",
         outcome.result
     );
-    assert_eq!(outcome.result.error_code(), Some("X07-FATAL-004"));
+    assert_eq!(outcome.result.error_code(), Some(FATAL_STACK_OVERFLOW_CODE));
 }
 
 #[test]
@@ -60,7 +61,7 @@ fn overflow_is_recoverable() {
         "结果: {:?}",
         outcome.result
     );
-    assert_eq!(outcome.result.error_code(), Some("X06-RUNTIME-009"));
+    assert_eq!(outcome.result.error_code(), Some(NUMERIC_OVERFLOW_CODE));
 }
 
 #[test]

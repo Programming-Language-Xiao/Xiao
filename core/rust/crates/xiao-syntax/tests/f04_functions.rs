@@ -2,6 +2,10 @@
 
 use xiao_source::SourceFile;
 use xiao_syntax::{CallArgumentKind, EntryMode, FunctionParameterKind, Parser, Statement};
+use xiao_syntax::{
+    INVALID_PARAMETER_CODE, MISSING_BLOCK_CODE, MISSING_ERROR_HANDLER_CODE,
+    MISSING_RAISE_VALUE_CODE,
+};
 
 /// 解析一个应当无错误的 04 阶段源码样例。
 fn parse_ok(source: &str) -> xiao_syntax::Program {
@@ -105,7 +109,7 @@ fn diagnoses_missing_block_and_control_tail() {
         .iter()
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
-    assert!(codes.contains(&"X04-PARSE-003"));
+    assert!(codes.contains(&MISSING_BLOCK_CODE));
 }
 
 #[test]
@@ -132,7 +136,7 @@ fn diagnoses_duplicate_parameters() {
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X04-PARSE-002")
+            .any(|diagnostic| diagnostic.code() == INVALID_PARAMETER_CODE)
     );
 }
 
@@ -179,7 +183,7 @@ fn rejects_unseparated_positional_marker() {
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X04-PARSE-002")
+            .any(|diagnostic| diagnostic.code() == INVALID_PARAMETER_CODE)
     );
 }
 
@@ -230,8 +234,8 @@ fn diagnoses_invalid_error_control_flow() {
         .iter()
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
-    assert!(codes.contains(&"X07-PARSE-003"));
-    assert!(codes.contains(&"X07-PARSE-002"));
+    assert!(codes.contains(&MISSING_ERROR_HANDLER_CODE));
+    assert!(codes.contains(&MISSING_RAISE_VALUE_CODE));
 }
 
 #[test]

@@ -6,6 +6,10 @@ use xiao_types::{
     ArrayType, ContainerPathSegment, DictEntryType, DictType, PathConstraintTree, Type,
     TypeChecker, can_assign,
 };
+use xiao_types::{
+    CONTAINER_INDEX_OUT_OF_BOUNDS_CODE, CONTAINER_KEY_NOT_FOUND_CODE, CONTAINER_TYPE_MISMATCH_CODE,
+    DUPLICATE_CONTAINER_KEY_CODE, INVALID_CONTAINER_PATH_CODE,
+};
 
 /// 解析并检查源码，要求语法层先通过。
 fn check(source: &str) -> xiao_types::TypeCheckResult {
@@ -63,7 +67,7 @@ fn enforces_homogeneous_array_prefix() {
         invalid
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-001")
+            .any(|diagnostic| diagnostic.code() == CONTAINER_TYPE_MISMATCH_CODE)
     );
 }
 
@@ -81,7 +85,7 @@ fn enforces_typed_dictionary_column_values() {
         invalid
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-001")
+            .any(|diagnostic| diagnostic.code() == CONTAINER_TYPE_MISMATCH_CODE)
     );
 }
 
@@ -93,7 +97,7 @@ fn rejects_duplicate_dictionary_keys() {
         result
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-002")
+            .any(|diagnostic| diagnostic.code() == DUPLICATE_CONTAINER_KEY_CODE)
     );
 }
 
@@ -137,7 +141,7 @@ fn parent_path_constrains_nested_array_elements() {
         invalid
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-001")
+            .any(|diagnostic| diagnostic.code() == CONTAINER_TYPE_MISMATCH_CODE)
     );
 }
 
@@ -156,7 +160,7 @@ fn validates_late_constraints_against_initialized_container() {
         mismatch
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-001")
+            .any(|diagnostic| diagnostic.code() == CONTAINER_TYPE_MISMATCH_CODE)
     );
     assert!(mismatch.materialization_plans().is_empty());
 
@@ -165,7 +169,7 @@ fn validates_late_constraints_against_initialized_container() {
         bounds
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-004")
+            .any(|diagnostic| diagnostic.code() == CONTAINER_INDEX_OUT_OF_BOUNDS_CODE)
     );
     assert!(bounds.materialization_plans().is_empty());
 
@@ -182,7 +186,7 @@ fn validates_constraints_on_container_assignment() {
         invalid
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-001")
+            .any(|diagnostic| diagnostic.code() == CONTAINER_TYPE_MISMATCH_CODE)
     );
 }
 
@@ -194,7 +198,7 @@ fn rejects_incompatible_initialized_container_redeclaration() {
         result
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-001")
+            .any(|diagnostic| diagnostic.code() == CONTAINER_TYPE_MISMATCH_CODE)
     );
 }
 
@@ -251,7 +255,7 @@ fn checks_exact_selectors() {
         invalid
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-004")
+            .any(|diagnostic| diagnostic.code() == CONTAINER_INDEX_OUT_OF_BOUNDS_CODE)
     );
 }
 
@@ -267,14 +271,14 @@ fn checks_dictionary_selectors() {
         missing
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-005")
+            .any(|diagnostic| diagnostic.code() == CONTAINER_KEY_NOT_FOUND_CODE)
     );
     let wrong_kind = check("items = [1]\na = items[name]\n");
     assert!(
         wrong_kind
             .diagnostics()
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-TYPE-003")
+            .any(|diagnostic| diagnostic.code() == INVALID_CONTAINER_PATH_CODE)
     );
 }
 

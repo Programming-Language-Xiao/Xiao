@@ -2,6 +2,7 @@
 
 use xiao_source::SourceFile;
 use xiao_syntax::{DeclaredType, Expression, Parser, ScalarType, Statement};
+use xiao_syntax::{INVALID_DECLARATION_TARGET_CODE, MISSING_CONST_VALUE_CODE};
 
 /// 解析只包含一条声明的源码并返回语句。
 fn one_statement(source: &str) -> Statement {
@@ -103,6 +104,6 @@ fn diagnoses_incomplete_declarations() {
         .iter()
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
-    assert!(codes.contains(&"X02-PARSE-002"));
-    assert!(codes.contains(&"X02-PARSE-003"));
+    assert!(codes.contains(&MISSING_CONST_VALUE_CODE));
+    assert!(codes.contains(&INVALID_DECLARATION_TARGET_CODE));
 }

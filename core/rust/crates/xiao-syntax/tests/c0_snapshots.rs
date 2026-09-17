@@ -1,6 +1,7 @@
 //! C0 AST/诊断稳定性快照测试。
 
 use xiao_source::SourceFile;
+use xiao_syntax::INVALID_CONTAINER_CODE;
 use xiao_syntax::{Expression, NodeIndex, Parser, Statement};
 
 #[test]
@@ -26,6 +27,6 @@ fn container_parse_diagnostic_namespace_is_stable() {
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X03-PARSE-001")
+            .any(|diagnostic| diagnostic.code() == INVALID_CONTAINER_CODE)
     );
 }

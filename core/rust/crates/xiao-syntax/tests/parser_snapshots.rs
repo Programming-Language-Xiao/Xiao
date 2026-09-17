@@ -2,6 +2,7 @@
 
 use serde::Deserialize;
 use xiao_source::SourceFile;
+use xiao_syntax::INVALID_CHARACTER_CODE;
 use xiao_syntax::{
     Expression, INVALID_ASSIGNMENT_TARGET_CODE, INVALID_EXPRESSION_CODE, LiteralKind,
     MISSING_ASSIGNMENT_VALUE_CODE, Parser, Statement, UNSUPPORTED_BLOCK_CODE,
@@ -300,7 +301,7 @@ fn preserves_lexical_diagnostic_and_recovers() {
     let source = SourceFile::from_text("§\nanswer = 1");
     let result = Parser::new(&source).parse();
     assert_eq!(result.diagnostics.len(), 1);
-    assert_eq!(result.diagnostics[0].code(), "X01-LEX-001");
+    assert_eq!(result.diagnostics[0].code(), INVALID_CHARACTER_CODE);
     assert_eq!(
         result.program.expect("应返回程序根节点").statements.len(),
         1

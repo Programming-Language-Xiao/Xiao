@@ -6,6 +6,9 @@ use xiao_types::{
     ARITHMETIC_ERROR_CODE, ASSIGNMENT_TYPE_MISMATCH_CODE, INVALID_CONVERSION_CODE,
     RuntimeCheckKind, Type, TypeChecker,
 };
+use xiao_types::{
+    DUPLICATE_DECLARATION_CODE, INVALID_OPERANDS_CODE, NON_CONSTANT_CODE, UNINITIALIZED_READ_CODE,
+};
 
 /// 解析并检查一段 Xiao 源码。
 fn check(source_text: &str) -> xiao_types::TypeCheckResult {
@@ -41,8 +44,8 @@ fn reports_binding_errors() {
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
     assert!(codes.contains(&ASSIGNMENT_TYPE_MISMATCH_CODE));
-    assert!(codes.contains(&"X02-TYPE-003"));
-    assert!(codes.contains(&"X02-TYPE-002"));
+    assert!(codes.contains(&UNINITIALIZED_READ_CODE));
+    assert!(codes.contains(&DUPLICATE_DECLARATION_CODE));
 }
 
 #[test]
@@ -70,7 +73,7 @@ fn rejects_invalid_boolean_and_arithmetic() {
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
     assert!(codes.contains(&ARITHMETIC_ERROR_CODE));
-    assert!(codes.contains(&"X02-TYPE-005"));
+    assert!(codes.contains(&INVALID_OPERANDS_CODE));
 }
 
 #[test]
@@ -125,7 +128,7 @@ fn checks_compile_time_constants() {
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X02-TYPE-008")
+            .any(|diagnostic| diagnostic.code() == NON_CONSTANT_CODE)
     );
     assert!(result.binding("ascii:answer").expect("answer").constant);
 }
@@ -174,7 +177,7 @@ fn rejects_invalid_static_boolean_conversion() {
         !result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X02-TYPE-008")
+            .any(|diagnostic| diagnostic.code() == NON_CONSTANT_CODE)
     );
 }
 

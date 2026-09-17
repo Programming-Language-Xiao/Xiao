@@ -1,6 +1,7 @@
 //! 05-C 表语法、文档注释和节点索引规格测试。
 
 use xiao_source::SourceFile;
+use xiao_syntax::MISSING_TABLE_BODY_CODE;
 use xiao_syntax::{NodeIndex, Parser, Statement, TableKind};
 
 #[test]
@@ -68,6 +69,6 @@ fn diagnoses_missing_table_body() {
         result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.code() == "X05-PARSE-007")
+            .any(|diagnostic| diagnostic.code() == MISSING_TABLE_BODY_CODE)
     );
 }

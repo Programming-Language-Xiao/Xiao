@@ -2,6 +2,7 @@
 
 use xiao_source::SourceFile;
 use xiao_syntax::Parser;
+use xiao_types::ASSIGNMENT_TYPE_MISMATCH_CODE;
 use xiao_types::{
     RuntimeCheckKind, SET_COMPARISON_TYPE_CODE, SET_OPERATION_TYPE_CODE, SetType, Type, TypeChecker,
 };
@@ -130,7 +131,7 @@ fn checks_set_compound_assignments() {
     let invalid = check("set<int> target = set()\nsource = {\"x\"}\ntarget += source\n");
     assert!(invalid.has_errors());
     assert!(invalid.diagnostics().iter().any(|diagnostic| {
-        diagnostic.code() == "X02-TYPE-004"
+        diagnostic.code() == ASSIGNMENT_TYPE_MISMATCH_CODE
             && diagnostic.message_id() == "x02.type.compound_result_mismatch"
     }));
 }

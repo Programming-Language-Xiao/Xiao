@@ -6,6 +6,7 @@ use xiao_syntax::{
     AssignmentOperator, BinaryOperator, Expression, Parser, PathSegment, RandomMode, SelectorItem,
     Statement, UnaryOperator,
 };
+use xiao_syntax::{INVALID_CAST_TARGET_CODE, INVALID_SELECTOR_CODE, MISSING_EXPRESSION_CODE};
 
 /// 一条 P1 规格快照用例。
 #[derive(Debug, Deserialize)]
@@ -307,8 +308,8 @@ fn reports_selector_and_cast_errors() {
         .iter()
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
-    assert!(codes.contains(&"X01-PARSE-006"));
-    assert!(codes.contains(&"X01-PARSE-008"));
+    assert!(codes.contains(&INVALID_SELECTOR_CODE));
+    assert!(codes.contains(&INVALID_CAST_TARGET_CODE));
 }
 
 #[test]
@@ -320,7 +321,10 @@ fn avoids_duplicate_prefix_diagnostics() {
         .iter()
         .map(|diagnostic| diagnostic.code())
         .collect::<Vec<_>>();
-    assert_eq!(codes, vec!["X01-PARSE-009", "X01-PARSE-009",]);
+    assert_eq!(
+        codes,
+        vec![MISSING_EXPRESSION_CODE, MISSING_EXPRESSION_CODE,]
+    );
 }
 
 #[test]
