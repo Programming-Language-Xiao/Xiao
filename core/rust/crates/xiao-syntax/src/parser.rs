@@ -862,13 +862,17 @@ impl<'source> Parser<'source> {
     }
 
     /// 记录参数名称并拒绝同一名称空间中的重复参数。
+    ///
+    /// 键取自 `unquoted_text` 而不是源码切片：反引号名称必须与类型层、生命周期
+    /// 阶段用同一规则归一化，否则 `foo` 与 `` `foo` `` 的去重键会不一致——
+    /// 前者是 `ascii:foo`，后者本应是 `backtick:foo` 而不是 `` backtick:`foo` ``。
     fn record_parameter_name(&mut self, seen: &mut BTreeSet<String>, name: Name) {
         let prefix = if name.backticked {
             "backtick:"
         } else {
             "ascii:"
         };
-        let key = format!("{prefix}{}", self.source.slice(name.span));
+        let key = format!("{prefix}{}", name.unquoted_text(self.source));
         if !seen.insert(key) {
             self.parameter_error(name.span, "函数参数名称不能重复");
         }

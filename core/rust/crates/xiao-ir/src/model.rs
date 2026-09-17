@@ -484,7 +484,9 @@ pub enum IrSelectorItem {
     All { span: IrSpan },
     /// 随机选择。
     Random {
-        /// `?` 或 `!?`。
+        /// 随机模式稳定拼写：`without_replacement` 或 `with_replacement`。
+        ///
+        /// 这里存的是**语义拼写**，不是源码标点 `?` / `!?`；源码拼写只属于语法层。
         mode: String,
         /// 数量。
         count: Box<IrExpression>,
