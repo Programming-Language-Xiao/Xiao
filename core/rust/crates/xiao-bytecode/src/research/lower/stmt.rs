@@ -27,8 +27,16 @@ pub(super) fn lower_statements(lowerer: &mut Lowerer<'_>, statements: &[IrStatem
     }
 }
 
-/// 降低一条语句。
+/// 降低一条语句，并在末尾释放本语句产生的临时堆值。
+///
+/// 临时值不进释放计划，必须在消费点之后显式释放，否则字面量堆值会一直漏。
 fn lower_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
+    dispatch_statement(lowerer, statement);
+    lowerer.flush_temporaries(statement.span);
+}
+
+/// 按语句形态分派降低。
+fn dispatch_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
     match &statement.kind {
         IrStatementKind::Expression { value } => {
             lowerer.lower_expression(value);
@@ -79,6 +87,7 @@ fn lower_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
         IrStatementKind::Continue => lower_loop_jump(lowerer, "continue", statement.span),
         IrStatementKind::Raise { value } => {
             let register = lowerer.lower_expression(value);
+            lowerer.flush_temporaries(statement.span);
             for scope in lowerer.scope_chain_to("function") {
                 lowerer.run_plan(scope, "raise", statement.span);
             }
@@ -182,6 +191,7 @@ fn lower_if(
             },
             span,
         ));
+        lowerer.flush_temporaries(span);
         lowerer.switch_to(taken);
         lower_statements(lowerer, branch_body, "normal");
         lowerer.emit(TacInstr::new(TacOp::Jump(end), span));
@@ -217,6 +227,7 @@ fn lower_while(
         },
         span,
     ));
+    lowerer.flush_temporaries(span);
     lowerer.switch_to(body_block);
     lowerer.push_loop(body_block, exit);
     lower_statements(lowerer, body, "normal");

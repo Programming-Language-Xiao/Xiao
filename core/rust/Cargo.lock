@@ -257,6 +257,7 @@ dependencies = [
  "xiao-driver",
  "xiao-lifetime",
  "xiao-runtime",
+ "xiao-types",
 ]
 
 [[package]]

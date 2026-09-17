@@ -3,12 +3,15 @@
 //! 每个表达式降低为一条或数条指令并把结果放进一个新的虚拟寄存器。这里只做
 //! 1:1 语义展开：类型来自 `IrExpression.ty`，本模块不重新推断。
 
-use xiao_ir::{IrCallArgument, IrExpression, IrExpressionKind, IrSpan, IrType};
+use xiao_ir::{
+    IrCallArgument, IrDictEntry, IrExpression, IrExpressionKind, IrPathSegmentKind, IrSelector,
+    IrSelectorItem, IrSpan, IrType,
+};
 use xiao_syntax::ScalarType;
 
 use crate::research::lower::Lowerer;
 use crate::research::tac::{
-    ArithOp, CompareOp, RegisterClass, TacArgument, TacConstant, TacInstr, TacOp, VReg,
+    ArithOp, CompareOp, PathStep, RegisterClass, TacArgument, TacConstant, TacInstr, TacOp, VReg,
 };
 
 /// 降低一个表达式并返回结果寄存器。
@@ -34,8 +37,131 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
             expression: inner,
             target,
         } => lower_cast(lowerer, inner, target, expression),
+        IrExpressionKind::Array { elements } => {
+            lower_elements(lowerer, elements, expression, ContainerKind::Array)
+        }
+        IrExpressionKind::Tuple { elements } => {
+            lower_elements(lowerer, elements, expression, ContainerKind::Tuple)
+        }
+        IrExpressionKind::Set { elements } => {
+            lower_elements(lowerer, elements, expression, ContainerKind::Set)
+        }
+        IrExpressionKind::DictTable { entries } => {
+            lower_entries(lowerer, entries, expression, ContainerKind::DictTable)
+        }
+        IrExpressionKind::DictColumn { entries } => {
+            lower_entries(lowerer, entries, expression, ContainerKind::DictColumn)
+        }
+        IrExpressionKind::Selector {
+            source, selector, ..
+        } => lower_selector(lowerer, source, selector, expression),
         _ => lower_unsupported(lowerer, "expression", expression.span),
     }
+}
+
+/// 本批次支持的容器构造形态。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum ContainerKind {
+    /// 数组。
+    Array,
+    /// 元组。
+    Tuple,
+    /// 集合。
+    Set,
+    /// 无序字典表。
+    DictTable,
+    /// 字典列。
+    DictColumn,
+}
+
+/// 构造一个容器并登记为待释放的临时值。
+fn build_container(lowerer: &mut Lowerer<'_>, op: TacOp, span: IrSpan, ty: &IrType) -> VReg {
+    let class = Lowerer::class_of_type(ty);
+    let register = lowerer.new_register(class, span);
+    lowerer.emit(TacInstr::with_dst(op, register, span));
+    lowerer.note_temporary(register);
+    register
+}
+
+/// 降低数组、元组和集合字面量。
+fn lower_elements(
+    lowerer: &mut Lowerer<'_>,
+    elements: &[IrExpression],
+    expression: &IrExpression,
+    kind: ContainerKind,
+) -> VReg {
+    let elements = elements
+        .iter()
+        .map(|element| lowerer.lower_expression(element))
+        .collect::<Vec<_>>();
+    let op = match kind {
+        ContainerKind::Array => TacOp::NewArray { elements },
+        ContainerKind::Tuple => TacOp::NewTuple { elements },
+        ContainerKind::Set => TacOp::NewSet { elements },
+        ContainerKind::DictTable | ContainerKind::DictColumn => {
+            return lower_unsupported(lowerer, "container", expression.span);
+        }
+    };
+    build_container(lowerer, op, expression.span, &expression.ty)
+}
+
+/// 降低字典表与字典列字面量。
+fn lower_entries(
+    lowerer: &mut Lowerer<'_>,
+    entries: &[IrDictEntry],
+    expression: &IrExpression,
+    kind: ContainerKind,
+) -> VReg {
+    let entries = entries
+        .iter()
+        .map(|entry| (entry.key.clone(), lowerer.lower_expression(&entry.value)))
+        .collect::<Vec<_>>();
+    let op = match kind {
+        ContainerKind::DictTable => TacOp::NewDictTable { entries },
+        ContainerKind::DictColumn => TacOp::NewDictColumn { entries },
+        _ => return lower_unsupported(lowerer, "container", expression.span),
+    };
+    build_container(lowerer, op, expression.span, &expression.ty)
+}
+
+/// 降低精确索引选择器。
+///
+/// 只接受「单个 `Exact` 项且路径只有一段」的形态；多选、区间、全选和随机选择
+/// 属于后续批次，混合段路径（既含索引又含键）需要嵌套派发，同样留待后续。
+fn lower_selector(
+    lowerer: &mut Lowerer<'_>,
+    source: &IrExpression,
+    selector: &IrSelector,
+    expression: &IrExpression,
+) -> VReg {
+    let [IrSelectorItem::Exact { path, .. }] = selector.items.as_slice() else {
+        return lower_unsupported(lowerer, "selector", expression.span);
+    };
+    let [segment] = path.segments.as_slice() else {
+        return lower_unsupported(lowerer, "selector path", expression.span);
+    };
+    let step = match &segment.kind {
+        IrPathSegmentKind::Index { text, negative } => {
+            let digits = text.strip_prefix('-').unwrap_or(text);
+            match digits.parse::<i128>() {
+                Ok(magnitude) => PathStep::Index(if *negative { -magnitude } else { magnitude }),
+                Err(_) => return lower_unsupported(lowerer, "selector index", expression.span),
+            }
+        }
+        IrPathSegmentKind::Name { name } => PathStep::Key(name.text.clone()),
+    };
+    let source = lowerer.lower_expression(source);
+    let class = Lowerer::class_of_type(&expression.ty);
+    let register = lowerer.new_register(class, expression.span);
+    lowerer.emit(TacInstr::with_dst(
+        TacOp::IndexGet {
+            source,
+            path: vec![step],
+        },
+        register,
+        expression.span,
+    ));
+    register
 }
 
 /// 降低字面量。

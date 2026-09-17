@@ -344,6 +344,18 @@ pub enum ArgKind {
     KwArgs,
 }
 
+/// 一条精确索引路径段。
+///
+/// 数字索引保留源码的有符号语义，负值由运行时按容器长度归一化；解析只发生在
+/// 降低期，运行时不重新解释源码文本。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum PathStep {
+    /// 有符号数字索引。
+    Index(i128),
+    /// 字典键。
+    Key(String),
+}
+
 /// 一条调用实参。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TacArgument {
@@ -416,6 +428,38 @@ pub enum TacOp {
         left: VReg,
         /// 右操作数。
         right: VReg,
+    },
+    /// 构造数组。
+    NewArray {
+        /// 元素寄存器。
+        elements: Vec<VReg>,
+    },
+    /// 构造元组。
+    NewTuple {
+        /// 元素寄存器。
+        elements: Vec<VReg>,
+    },
+    /// 构造无序字典表。
+    NewDictTable {
+        /// 按键值对排列的条目。
+        entries: Vec<(String, VReg)>,
+    },
+    /// 构造字典列。
+    NewDictColumn {
+        /// 按键值对排列的条目。
+        entries: Vec<(String, VReg)>,
+    },
+    /// 构造集合。
+    NewSet {
+        /// 元素寄存器。
+        elements: Vec<VReg>,
+    },
+    /// 按精确路径读取；路径只做精确索引，批量 1 只接受单段路径。
+    IndexGet {
+        /// 来源容器。
+        source: VReg,
+        /// 精确路径。
+        path: Vec<PathStep>,
     },
     /// 无条件跳转。
     Jump(BlockId),

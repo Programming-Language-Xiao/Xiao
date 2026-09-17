@@ -15,6 +15,7 @@ xiao-bytecode = { path = "../xiao-bytecode" }
 xiao-diagnostics = { path = "../xiao-diagnostics" }
 xiao-lifetime = { path = "../xiao-lifetime" }
 xiao-runtime = { path = "../xiao-runtime" }
+xiao-types = { path = "../xiao-types" }
 
 [dev-dependencies]
 xiao-driver = { path = "../xiao-driver" }

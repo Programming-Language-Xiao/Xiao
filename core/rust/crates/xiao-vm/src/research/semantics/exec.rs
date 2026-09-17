@@ -219,6 +219,36 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let value = ops::apply_compare(*op, &left, &right).map_err(Fault::Error)?;
                 self.write_operand(instruction.dst, value);
             }
+            TacOp::NewArray { elements } => {
+                let values = self.collect(elements)?;
+                let value = ops::new_array(values).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::NewTuple { elements } => {
+                let values = self.collect(elements)?;
+                let value = ops::new_tuple(values).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::NewDictTable { entries } => {
+                let values = self.collect_entries(entries)?;
+                let value = ops::new_dict_table(values).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::NewDictColumn { entries } => {
+                let values = self.collect_entries(entries)?;
+                let value = ops::new_dict_column(values).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::NewSet { elements } => {
+                let values = self.collect(elements)?;
+                let value = ops::new_set(values).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::IndexGet { source, path } => {
+                let source = self.read(*source)?;
+                let value = ops::index_get(&source, path).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
             TacOp::Jump(target) => return Ok(Flow::Jump(*target)),
             TacOp::BranchIf {
                 condition,
@@ -260,8 +290,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 )));
             }
             TacOp::Release { value, .. } => {
-                let _ = self.take(*value)?;
-                self.metrics.releases = self.metrics.releases.saturating_add(1);
+                // 临时值可能已被 `Move` 搬进绑定，此时寄存器是空的；空释放是
+                // 空操作，既不算一次释放也不报错。
+                if self.take_if_present(*value).is_some() {
+                    self.metrics.releases = self.metrics.releases.saturating_add(1);
+                }
             }
             TacOp::Transfer { .. } => {}
             TacOp::RunReleasePlan { scope, exit } => {
@@ -365,6 +398,27 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 });
             }
         }
+    }
+
+    /// 读取一组容器元素寄存器。
+    fn collect(&mut self, registers: &[VReg]) -> Result<Vec<RuntimeValue>, Fault> {
+        let mut values = Vec::with_capacity(registers.len());
+        for register in registers {
+            values.push(self.read(*register)?);
+        }
+        Ok(values)
+    }
+
+    /// 读取一组字典条目寄存器。
+    fn collect_entries(
+        &mut self,
+        entries: &[(String, VReg)],
+    ) -> Result<Vec<(String, RuntimeValue)>, Fault> {
+        let mut values = Vec::with_capacity(entries.len());
+        for (key, register) in entries {
+            values.push((key.clone(), self.read(*register)?));
+        }
+        Ok(values)
     }
 
     /// 求值一组实参。

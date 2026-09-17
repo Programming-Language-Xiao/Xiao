@@ -1,7 +1,7 @@
 //! 09R2 统一三地址降低规格。
 
 use xiao_bytecode::research::{
-    RegisterClass, SigId, TacOp, TacProgram, lower_program, verify_program,
+    PathStep, RegisterClass, SigId, TacOp, TacProgram, lower_program, verify_program,
 };
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::IrProgram;
@@ -138,4 +138,72 @@ fn records_unsupported_constructs() {
     let verification = verify_program(&ir, &tac);
     assert!(!verification.is_success(), "未降低的 try 不应被当成成功");
     assert!(!verification.unsupported.is_empty());
+}
+
+#[test]
+/// 容器字面量应降低为容器构造指令，且不再记为未支持。
+fn lowers_container_literals() {
+    let (ir, tac) = lower("values = [1, 2]\npair = (1, 2)\ntags = {1, 2}\n");
+    let ops = tac.functions[0]
+        .blocks
+        .iter()
+        .flat_map(|block| block.instructions.iter())
+        .map(|instruction| &instruction.op)
+        .collect::<Vec<_>>();
+    assert!(ops.iter().any(|op| matches!(op, TacOp::NewArray { .. })));
+    assert!(ops.iter().any(|op| matches!(op, TacOp::NewTuple { .. })));
+    assert!(ops.iter().any(|op| matches!(op, TacOp::NewSet { .. })));
+    let verification = verify_program(&ir, &tac);
+    assert!(
+        verification.is_success(),
+        "验证错误: {:?}",
+        verification.errors
+    );
+}
+
+#[test]
+/// 精确索引应降低为带路径的读取指令，负索引保留有符号语义。
+fn lowers_exact_index_with_signed_step() {
+    let (ir, tac) = lower("values = [1, 2]\nfirst = values[0]\nlast = values[-1]\n");
+    let paths = tac.functions[0]
+        .blocks
+        .iter()
+        .flat_map(|block| block.instructions.iter())
+        .filter_map(|instruction| match &instruction.op {
+            TacOp::IndexGet { path, .. } => Some(path.clone()),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(paths.len(), 2, "两次精确索引各产生一条读取指令");
+    assert_eq!(paths[0], vec![PathStep::Index(0)]);
+    assert_eq!(paths[1], vec![PathStep::Index(-1)], "负索引保留符号");
+    let verification = verify_program(&ir, &tac);
+    assert!(
+        verification.is_success(),
+        "验证错误: {:?}",
+        verification.errors
+    );
+}
+
+#[test]
+/// 字面量产生的临时堆值必须在消费后被显式释放。
+///
+/// `Release` 指令只由临时值释放路径发出（释放计划走 `RunReleasePlan`），
+/// 因此它的出现本身就证明泄漏修复生效。
+fn releases_temporary_heap_values() {
+    let (ir, tac) = lower("def sink(str value) -> str\n    return value\nresult = sink(\"x\")\n");
+    let entry = &tac.functions[0];
+    let releases = entry
+        .blocks
+        .iter()
+        .flat_map(|block| block.instructions.iter())
+        .filter(|instruction| matches!(instruction.op, TacOp::Release { .. }))
+        .count();
+    assert!(releases > 0, "传参的字面量临时值应被释放");
+    let verification = verify_program(&ir, &tac);
+    assert!(
+        verification.is_success(),
+        "验证错误: {:?}",
+        verification.errors
+    );
 }

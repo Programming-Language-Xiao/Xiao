@@ -138,6 +138,8 @@ struct Frame {
     scope_stack: Vec<u32>,
     /// 活动循环的 (循环体入口, 循环出口) 栈。
     loops: Vec<(BlockId, BlockId)>,
+    /// 当前语句产生的、需要在消费后释放的临时堆值寄存器。
+    pending_temporaries: Vec<VReg>,
 }
 
 impl<'ir> Lowerer<'ir> {
@@ -533,6 +535,9 @@ impl<'ir> Lowerer<'ir> {
         let id = self.constants.intern(constant);
         let register = self.new_register(class, span);
         self.emit(TacInstr::with_dst(TacOp::LoadConst(id), register, span));
+        if matches!(class, RegisterClass::ObjHandle) {
+            self.note_temporary(register);
+        }
         register
     }
 
@@ -615,6 +620,36 @@ impl<'ir> Lowerer<'ir> {
             })
             .nth(target.get().saturating_sub(1) as usize)?;
         self.function_signatures.get(&name).copied()
+    }
+
+    /// 登记一个新建的临时堆值寄存器，供语句结束时释放。
+    ///
+    /// 临时值不进释放计划（生命周期阶段按 `temporary` 过滤），所以必须由降低器
+    /// 在消费点之后显式释放，否则字面量产生的堆值会一直漏。
+    fn note_temporary(&mut self, register: VReg) {
+        if !self.frame.pending_temporaries.contains(&register) {
+            self.frame.pending_temporaries.push(register);
+        }
+    }
+
+    /// 取出并清空当前待释放的临时寄存器。
+    fn take_pending_temporaries(&mut self) -> Vec<VReg> {
+        std::mem::take(&mut self.frame.pending_temporaries)
+    }
+
+    /// 在当前位置发出释放临时值的指令。
+    ///
+    /// 被 `Move` 搬进绑定的临时值此时寄存器已空，释放是空操作，不会重复释放。
+    fn flush_temporaries(&mut self, span: IrSpan) {
+        for register in self.take_pending_temporaries() {
+            self.emit(TacInstr::new(
+                TacOp::Release {
+                    value: register,
+                    kind: ReleaseActionKind::Strong,
+                },
+                span,
+            ));
+        }
     }
 
     /// 记录一个本批次尚未降低的构造。

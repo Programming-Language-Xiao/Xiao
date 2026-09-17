@@ -133,3 +133,12 @@ fn research_module_stays_a_leaf() {
     }
     assert!(checked > 0, "应至少检查一个生产源文件");
 }
+
+#[test]
+/// 容器构造与精确索引应端到端跑通，负索引按长度归一化。
+fn executes_containers_and_exact_index() {
+    let source = "values = [1, 2, 3]\nfirst = values[0]\nlast = values[-1]\n";
+    let outcome = run(&load(source), VmOptions::new());
+    assert!(outcome.result.is_success(), "结果: {:?}", outcome.result);
+    assert!(outcome.metrics.releases > 0, "容器临时值应被释放");
+}
