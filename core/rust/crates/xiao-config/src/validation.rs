@@ -167,7 +167,7 @@ fn type_error(
     value: &ConfigValue,
 ) -> ConfigDiagnostic {
     error(
-        TYPE_MISMATCH_CODE,
+        CONFIG_TYPE_MISMATCH_CODE,
         "x05.config.type_mismatch",
         span,
         format!(

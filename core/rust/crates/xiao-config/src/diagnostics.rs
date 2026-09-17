@@ -18,7 +18,7 @@ pub const UNSUPPORTED_CONSTRUCT_CODE: &str = "X05-CONFIG-002";
 /// 同一个表中出现重复键时使用的编号。
 pub const DUPLICATE_KEY_CODE: &str = "X05-CONFIG-003";
 /// 配置字段值类型不符合模式时使用的编号。
-pub const TYPE_MISMATCH_CODE: &str = "X05-CONFIG-004";
+pub const CONFIG_TYPE_MISMATCH_CODE: &str = "X05-CONFIG-004";
 /// 已知表中出现未登记字段时使用的编号。
 pub const UNKNOWN_FIELD_CODE: &str = "X05-CONFIG-005";
 /// 顶层表名不是当前配置模式允许的表时使用的编号。
@@ -28,9 +28,9 @@ pub const MISSING_REQUIRED_CODE: &str = "X05-CONFIG-007";
 /// 导出模块路径不符合项目相对 `.xiao` 规则时使用的编号。
 pub const INVALID_EXPORT_PATH_CODE: &str = "X05-CONFIG-008";
 /// 表头形状非法时使用的编号。
-pub const INVALID_TABLE_HEADER_CODE: &str = "X05-CONFIG-009";
+pub const CONFIG_INVALID_TABLE_HEADER_CODE: &str = "X05-CONFIG-009";
 /// 字面量、数组或字典结构非法时使用的编号。
-pub const INVALID_VALUE_CODE: &str = "X05-CONFIG-010";
+pub const CONFIG_INVALID_VALUE_CODE: &str = "X05-CONFIG-010";
 /// 键值或容器元素分隔符缺失时使用的编号。
 pub const MISSING_SEPARATOR_CODE: &str = "X05-CONFIG-011";
 /// 同一个配置文档中重复出现表头时使用的编号。

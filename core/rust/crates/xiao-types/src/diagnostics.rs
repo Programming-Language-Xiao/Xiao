@@ -34,8 +34,6 @@ pub const CONTAINER_INDEX_OUT_OF_BOUNDS_CODE: &str = "X03-TYPE-004";
 pub const CONTAINER_KEY_NOT_FOUND_CODE: &str = "X03-TYPE-005";
 /// 声明路径无法转换为受支持的非负整数/键路径。
 pub const INVALID_DECLARATION_PATH_CODE: &str = "X03-TYPE-006";
-/// C0 选择器包含范围、多选、步长或随机项。
-pub const UNSUPPORTED_CONTAINER_SELECTOR_CODE: &str = "X03-TYPE-007";
 /// 选择器作用于不支持高级选择的容器。
 pub const SELECTOR_UNORDERED_CONTAINER_CODE: &str = "X03-TYPE-008";
 /// 选择器步长不是合法的非零整数。
@@ -81,8 +79,6 @@ pub const CONDITION_TYPE_CODE: &str = "X04-TYPE-005";
 pub const ITERABLE_TYPE_CODE: &str = "X04-TYPE-006";
 /// `break`/`continue` 出现在循环外。
 pub const LOOP_CONTROL_CODE: &str = "X04-TYPE-007";
-/// 程序入口声明与静态规则冲突。
-pub const ENTRY_RULE_CODE: &str = "X04-TYPE-008";
 
 /// `raise` 操作数不是可恢复错误值时使用的稳定诊断编号。
 pub const RAISE_TYPE_CODE: &str = "X07-TYPE-001";

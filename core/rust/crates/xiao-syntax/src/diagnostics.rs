@@ -81,9 +81,6 @@ pub const INVALID_CONTAINER_CODE: &str = "X03-PARSE-001";
 /// C0/C2-A 容器条目缺少值、键值分隔符或集合元素分隔符时使用的稳定诊断编号。
 pub const INVALID_CONTAINER_ENTRY_CODE: &str = "X03-PARSE-002";
 
-/// C0 当前只允许精确索引时使用的稳定诊断编号。
-pub const UNSUPPORTED_CONTAINER_SELECTOR_CODE: &str = "X03-PARSE-003";
-
 /// 尚未开放 `const name[path]` 运行时锁定语义时使用的稳定诊断编号。
 pub const UNSUPPORTED_CONST_PATH_CODE: &str = "X03-PARSE-004";
 

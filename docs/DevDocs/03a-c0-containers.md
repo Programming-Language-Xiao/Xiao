@@ -61,7 +61,7 @@
 
 - `path_constraints.rs`：语法路径降低为 `ContainerPathSegment`，以及数组、元组、字典表/列的精确下降；
 - `container_checker.rs`：选择器单项检查和诊断映射；
-- `xiao-types/src/diagnostics.rs`：`X03-TYPE-001` 至 `X03-TYPE-007`。
+- `xiao-types/src/diagnostics.rs`：`X03-TYPE-001` 至 `X03-TYPE-006`。
 
 静态已知越界、字典键缺失、路径段类型错误必须区分；未知数组边界返回 `Dynamic`，由后续 Runtime 插入检查，不得把未知边界误报为编译错误。C0 不把不支持的范围或随机项静默当作全选。
 
@@ -105,7 +105,6 @@ DictColumn(entries)
 | `X03-TYPE-004` | 静态数字索引越界 |
 | `X03-TYPE-005` | 字典键不存在 |
 | `X03-TYPE-006` | 路径无法降低为非负整数/键名 |
-| `X03-TYPE-007` | C0 不支持的选择器形态 |
 
 ## 交接清单
 

@@ -288,7 +288,8 @@ impl ScalarType {
 
     /// 按 Xiao 源码拼写还原标量类型；未知拼写返回 `None`。
     ///
-    /// 与 [`Self::as_str`] 共用同一张拼写表，调用方不应另存一份映射。
+    /// 与 [`Self::as_str`] 互为逆映射。两者是各自手写的 `match`，靠 `scalar_names_round_trip`
+    /// 往返用例把一致性钉住——调用方仍不应在别处另存第三份映射。
     #[must_use]
     pub fn from_name(name: &str) -> Option<Self> {
         Some(match name {
@@ -1488,5 +1489,40 @@ impl NodeIndex {
                 }
             }
         }
+    }
+}
+
+#[cfg(test)]
+/// 标量类型拼写表的往返一致性。
+mod tests {
+    use super::ScalarType;
+
+    #[test]
+    /// `as_str` 与 `from_name` 必须互为逆映射。
+    ///
+    /// 两者是各自手写的 `match`，不是构造上共享的表；这条用例是它们之间唯一的
+    /// 约束。任一侧改了拼写而另一侧没跟上，这里立刻失败——解析、转换和 IR 降低
+    /// 都建立在这两个方向上。
+    fn scalar_names_round_trip() {
+        let all = [
+            ScalarType::Int,
+            ScalarType::Sint,
+            ScalarType::Lint,
+            ScalarType::Float,
+            ScalarType::Sfloat,
+            ScalarType::Lfloat,
+            ScalarType::Str,
+            ScalarType::Bool,
+        ];
+        for scalar in all {
+            assert_eq!(
+                ScalarType::from_name(scalar.as_str()),
+                Some(scalar),
+                "{} 的拼写未能在反方向还原",
+                scalar.as_str()
+            );
+        }
+        assert_eq!(ScalarType::from_name("integer"), None);
+        assert_eq!(ScalarType::from_name(""), None);
     }
 }

@@ -183,7 +183,6 @@ def add(int left, int right = 1) -> int
 | 类型 | `X04-TYPE-005` | 条件必须为 `bool` |
 | 类型 | `X04-TYPE-006` | `for in` 可迭代性 |
 | 类型 | `X04-TYPE-007` | `break`/`continue` 位置 |
-| 类型 | `X04-TYPE-008` | 入口规则静态冲突 |
 
 ### 04-D.3 测试、UseDocs 与退出条件
 

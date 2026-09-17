@@ -210,7 +210,7 @@ impl<'source> RawConfigParser<'source> {
         if self.at(TokenKind::LeftBracket) {
             let second = self.bump();
             self.push_error(
-                INVALID_TABLE_HEADER_CODE,
+                CONFIG_INVALID_TABLE_HEADER_CODE,
                 "x05.config.instance_table_forbidden",
                 self.source_span(open.span().start(), second.span().end()),
                 "config.xiao 不允许可实例化的双层表头".to_owned(),
@@ -221,7 +221,7 @@ impl<'source> RawConfigParser<'source> {
         let name_token = self.current();
         let Some(name) = self.parse_name_token() else {
             self.push_error(
-                INVALID_TABLE_HEADER_CODE,
+                CONFIG_INVALID_TABLE_HEADER_CODE,
                 "x05.config.invalid_table_name",
                 name_token.span(),
                 "表头必须使用 ASCII 名称或反引号名称".to_owned(),
@@ -231,7 +231,7 @@ impl<'source> RawConfigParser<'source> {
         if self.at(TokenKind::Dot) {
             let dot = self.bump();
             self.push_error(
-                INVALID_TABLE_HEADER_CODE,
+                CONFIG_INVALID_TABLE_HEADER_CODE,
                 "x05.config.dotted_table_forbidden",
                 dot.span(),
                 "首版 config.xiao 不支持点号嵌套表头".to_owned(),
@@ -249,7 +249,7 @@ impl<'source> RawConfigParser<'source> {
         } else {
             let token = self.current();
             self.push_error(
-                INVALID_TABLE_HEADER_CODE,
+                CONFIG_INVALID_TABLE_HEADER_CODE,
                 "x05.config.missing_table_close",
                 token.span(),
                 "表头缺少右方括号".to_owned(),
@@ -422,7 +422,7 @@ impl<'source> RawConfigParser<'source> {
                 }),
                 Err(_) => {
                     self.push_error(
-                        INVALID_VALUE_CODE,
+                        CONFIG_INVALID_VALUE_CODE,
                         "x05.config.integer_out_of_range",
                         span,
                         "整数超出配置数值范围".to_owned(),
@@ -437,7 +437,7 @@ impl<'source> RawConfigParser<'source> {
                 }),
                 _ => {
                     self.push_error(
-                        INVALID_VALUE_CODE,
+                        CONFIG_INVALID_VALUE_CODE,
                         "x05.config.invalid_float",
                         span,
                         "浮点值必须是有限数值".to_owned(),
@@ -524,7 +524,7 @@ impl<'source> RawConfigParser<'source> {
             let key_token = self.current();
             let Some(key) = self.parse_name_or_string_key() else {
                 self.push_error(
-                    INVALID_VALUE_CODE,
+                    CONFIG_INVALID_VALUE_CODE,
                     "x05.config.invalid_dictionary_key",
                     key_token.span(),
                     "字典表键必须是名称或字符串".to_owned(),
@@ -622,7 +622,7 @@ impl<'source> RawConfigParser<'source> {
         }
         decode_backtick(text).ok().or_else(|| {
             self.push_error(
-                INVALID_VALUE_CODE,
+                CONFIG_INVALID_VALUE_CODE,
                 "x05.config.invalid_backtick_name",
                 token.span(),
                 "反引号名称包含非法转义".to_owned(),
@@ -637,7 +637,7 @@ impl<'source> RawConfigParser<'source> {
             .ok()
             .or_else(|| {
                 self.push_error(
-                    INVALID_VALUE_CODE,
+                    CONFIG_INVALID_VALUE_CODE,
                     "x05.config.invalid_string",
                     token.span(),
                     "字符串字面量无法解码".to_owned(),
