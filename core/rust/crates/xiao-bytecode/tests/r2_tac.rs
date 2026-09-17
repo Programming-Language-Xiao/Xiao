@@ -1,7 +1,7 @@
 //! 09R2 统一三地址降低规格。
 
 use xiao_bytecode::research::{
-    PathStep, RegisterClass, SigId, TacOp, TacProgram, lower_program, verify_program,
+    PathStep, RegisterClass, SigId, TacConstant, TacOp, TacProgram, lower_program, verify_program,
 };
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::IrProgram;
@@ -206,4 +206,78 @@ fn releases_temporary_heap_values() {
         "验证错误: {:?}",
         verification.errors
     );
+}
+
+#[test]
+/// 字符串字面量必须按与类型层同一套规则进入常量池。
+///
+/// 只剥引号而不解转义会让 `"a\tb"` 变成反斜杠加 t，而类型层看到的是制表符；
+/// 这是与字典键同一类的跨层不一致。
+fn decodes_string_literals_like_the_type_layer() {
+    let (_, tac) = lower("text = \"a\\tb\"\n");
+    let texts = tac
+        .functions
+        .iter()
+        .flat_map(|function| function.blocks.iter())
+        .flat_map(|block| block.instructions.iter())
+        .filter_map(|instruction| match &instruction.op {
+            TacOp::LoadConst(id) => match tac.constants.get(*id) {
+                Some(TacConstant::Str(text)) => Some(text.clone()),
+                _ => None,
+            },
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    // 源码里的 `\\t` 是转义；常量池必须存制表符，而不是反斜杠加 t。
+    assert_eq!(texts, vec!["a\tb".to_owned()], "转义必须与类型层同样解码");
+}
+
+#[test]
+/// 内容本身以引号开头结尾的字符串不得被误剥。
+///
+/// `unquote` 按「首尾是引号就切掉」判断，对已经解码的字面量会吃掉真实内容。
+fn keeps_quote_characters_inside_string_literals() {
+    let (_, tac) = lower("text = '\"x\"'\n");
+    let texts = tac
+        .functions
+        .iter()
+        .flat_map(|function| function.blocks.iter())
+        .flat_map(|block| block.instructions.iter())
+        .filter_map(|instruction| match &instruction.op {
+            TacOp::LoadConst(id) => match tac.constants.get(*id) {
+                Some(TacConstant::Str(text)) => Some(text.clone()),
+                _ => None,
+            },
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(texts, vec!["\"x\"".to_owned()], "内容里的引号必须保留");
+}
+
+#[test]
+/// 转义表必须与类型层单点共用，不能各自维护一张。
+///
+/// 词法层接受 `\\ \\' \\" n r t 0 b f v a` 十一类转义；类型层、常量折叠和 IR
+/// 降低只要有一处漏解或多解，同一个字面量就会在不同层得到不同文本。
+fn shares_the_escape_table_with_the_type_layer() {
+    // `\0` 与 `\v` 曾经只在类型层被拒绝、在 IR 层被原样保留。
+    let (_, tac) = lower("text = \"a\\0b\\vc\"\n");
+    let texts = tac
+        .functions
+        .iter()
+        .flat_map(|function| function.blocks.iter())
+        .flat_map(|block| block.instructions.iter())
+        .filter_map(|instruction| match &instruction.op {
+            TacOp::LoadConst(id) => match tac.constants.get(*id) {
+                Some(TacConstant::Str(text)) => Some(text.clone()),
+                _ => None,
+            },
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(texts, vec!["a\0b\u{b}c".to_owned()]);
+    // 转义表的唯一来源。
+    assert_eq!(xiao_types::decode_escape('v'), Some('\u{b}'));
+    assert_eq!(xiao_types::decode_escape('q'), None);
+    assert_eq!(xiao_types::decode_escape('\\'), Some('\\'));
 }

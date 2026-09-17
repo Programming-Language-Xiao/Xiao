@@ -36,8 +36,8 @@ mod types;
 /// 统一、occurs-check、泛化和实例化算法。
 mod unify;
 
-/// 重导出字符串字面量的唯一解码实现，供 IR 降低复用。
-pub use checker::container_checker::decode_string_literal;
+/// 重导出转义字符的唯一解码表与字符串字面量解码入口。
+pub use checker::container_checker::{decode_escape, decode_string_literal};
 /// 重新导出类型检查器及其结果结构。
 pub use checker::{RuntimeCheck, RuntimeCheckKind, TypeCheckResult, TypeChecker, TypedNode, check};
 /// 重新导出容器形状、路径约束和默认值计划。

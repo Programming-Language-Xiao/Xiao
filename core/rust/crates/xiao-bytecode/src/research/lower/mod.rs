@@ -717,10 +717,10 @@ fn convert_plan(plan: &IrReleasePlan) -> TacReleasePlan {
             .map(|action| TacReleaseAction {
                 value: action.value,
                 order: action.order,
-                kind: match action.kind.as_str() {
-                    "weak" => ReleaseActionKind::Weak,
-                    _ => ReleaseActionKind::Strong,
-                },
+                // 反向解析必须走 `from_name`：自己写 match 会让未知拼写静默
+                // 退化成强释放，而拼写表本来就有单一来源。
+                kind: ReleaseActionKind::from_name(&action.kind)
+                    .unwrap_or(ReleaseActionKind::Strong),
             })
             .collect(),
         transferred: plan.transferred.clone(),

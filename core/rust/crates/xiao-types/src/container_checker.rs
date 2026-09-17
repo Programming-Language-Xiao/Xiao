@@ -629,11 +629,33 @@ fn direct_children(
     children
 }
 
+/// 解码一个转义字符。
+///
+/// 这是转义语义的**唯一**来源；`decode_string_literal`、常量折叠和 IR 降低都
+/// 必须经它，不得各自维护一张表。转义集合与词法阶段的 `is_valid_escape` 一致。
+#[must_use]
+pub const fn decode_escape(character: char) -> Option<char> {
+    Some(match character {
+        'n' => '\n',
+        'r' => '\r',
+        't' => '\t',
+        '0' => '\0',
+        'b' => '\u{8}',
+        'f' => '\u{c}',
+        'v' => '\u{b}',
+        'a' => '\u{7}',
+        '\\' => '\\',
+        '\'' => '\'',
+        '"' => '"',
+        _ => return None,
+    })
+}
+
 /// 解析字符串字面量的稳定文本：去掉外围引号并处理转义。
 ///
 /// 这是字符串字面量的**唯一**解码实现。类型层用它规范化字典键，IR 降低必须
 /// 消费同一个函数——两侧各写一份会让静态能通过的键在运行时查不到。
-/// 词法阶段已经验证引号配对，未知转义保留字符本身。
+/// 词法阶段已经验证引号配对与转义合法性，因此未知转义保守地保留字符本身。
 #[must_use]
 pub fn decode_string_literal(text: &str) -> String {
     if text.len() < 2 {
@@ -644,12 +666,7 @@ pub fn decode_string_literal(text: &str) -> String {
     let mut escaped = false;
     for character in inner.chars() {
         if escaped {
-            output.push(match character {
-                'n' => '\n',
-                'r' => '\r',
-                't' => '\t',
-                other => other,
-            });
+            output.push(decode_escape(character).unwrap_or(character));
             escaped = false;
         } else if character == '\\' {
             escaped = true;

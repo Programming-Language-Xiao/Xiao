@@ -181,7 +181,9 @@ fn lower_literal(
             _ => TacConstant::Float(text.parse().unwrap_or_default()),
         },
         "bool" => TacConstant::Bool(text == "true"),
-        "str" => TacConstant::Str(unquote(text).to_owned()),
+        // 必须与类型层共用同一份解码。只剥引号而不解转义，会让带转义的字符串
+        // 在常量池里保留反斜杠，与类型层看到的文本不一致。
+        "str" => TacConstant::Str(xiao_types::decode_string_literal(text)),
         _ => {
             let register = lowerer.new_register(RegisterClass::None, expression.span);
             lowerer.emit(TacInstr::with_dst(
@@ -353,17 +355,6 @@ fn scalar_of(ty: &IrType) -> Option<ScalarType> {
         IrType::Scalar { name } => ScalarType::from_name(name),
         _ => None,
     }
-}
-
-/// 去掉字符串字面量的引号。
-fn unquote(text: &str) -> &str {
-    text.strip_prefix('"')
-        .and_then(|value| value.strip_suffix('"'))
-        .or_else(|| {
-            text.strip_prefix('\'')
-                .and_then(|value| value.strip_suffix('\''))
-        })
-        .unwrap_or(text)
 }
 
 /// 映射比较运算符。

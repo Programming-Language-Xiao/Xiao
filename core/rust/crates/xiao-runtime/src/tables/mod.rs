@@ -493,7 +493,12 @@ pub(crate) fn runtime_value_matches(value: &RuntimeValue, expected: &Type) -> bo
     match expected {
         Type::Dynamic => true,
         Type::None => matches!(value, RuntimeValue::None),
-        Type::Scalar(scalar) => value.scalar_type() == Some(*scalar),
+        // 必须复用类型层的赋值兼容判定，而不是精确相等：字段声明 `float`、
+        // 写入 `int` 在静态侧是允许的安全加宽，精确相等会让它静态通过、运行时
+        // 报类型错误。容器元素递归走同一判定。
+        Type::Scalar(scalar) => value.scalar_type().is_some_and(|actual| {
+            xiao_types::can_assign(&Type::scalar(actual), &Type::scalar(*scalar))
+        }),
         Type::Table(table) => match value {
             RuntimeValue::Table(instance) => instance
                 .definition()
@@ -607,6 +612,30 @@ mod tests {
     use xiao_source::SourceSpan;
     use xiao_syntax::{ScalarType, TableKind};
     use xiao_types::{TableMemberSignature, TableSignature, Type};
+
+    #[test]
+    /// 标量字段必须复用类型层的赋值兼容判定，而不是精确相等。
+    ///
+    /// 声明 `float` 的槽接受 `int` 是静态允许的安全加宽；精确相等会让这类
+    /// 写入静态通过、运行时却报类型错误。容器元素递归走同一判定。
+    fn scalar_fields_accept_widening_assignments() {
+        use super::runtime_value_matches;
+        let float = Type::scalar(ScalarType::Float);
+        assert!(
+            runtime_value_matches(&RuntimeValue::Int(1), &float),
+            "int 应能写入 float 槽"
+        );
+        assert!(runtime_value_matches(&RuntimeValue::Float(1.0), &float));
+        let int = Type::scalar(ScalarType::Int);
+        assert!(
+            !runtime_value_matches(&RuntimeValue::Float(1.0), &int),
+            "float 不能反向写入 int 槽"
+        );
+        assert!(
+            runtime_value_matches(&RuntimeValue::None, &Type::Dynamic),
+            "动态槽接受任何值"
+        );
+    }
 
     /// 返回测试用的有效源码区间。
     fn span() -> SourceSpan {

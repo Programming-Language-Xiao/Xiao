@@ -115,6 +115,7 @@ dependencies = [
  "xiao-ir",
  "xiao-lifetime",
  "xiao-syntax",
+ "xiao-types",
 ]
 
 [[package]]

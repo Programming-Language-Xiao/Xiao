@@ -1737,7 +1737,10 @@ fn binary_requires_runtime_check(
     )
 }
 
-/// 解码 P2 支持的短字符串转义。
+/// 解码字符串字面量为常量，引号不配对或转义非法时返回 `None`。
+///
+/// 转义表来自 [`container_checker::decode_escape`]，与字典键和 IR 降低共用
+/// 同一份定义——两侧各写一张表会让常量折叠与运行时值不一致。
 fn decode_string(text: &str) -> Option<String> {
     let mut characters = text.chars();
     let quote = characters.next()?;
@@ -1749,15 +1752,7 @@ fn decode_string(text: &str) -> Option<String> {
     let mut escaped = false;
     for character in inner.chars() {
         if escaped {
-            result.push(match character {
-                'n' => '\n',
-                'r' => '\r',
-                't' => '\t',
-                '\\' => '\\',
-                '\'' => '\'',
-                '"' => '"',
-                _ => return None,
-            });
+            result.push(self::container_checker::decode_escape(character)?);
             escaped = false;
         } else if character == '\\' {
             escaped = true;
