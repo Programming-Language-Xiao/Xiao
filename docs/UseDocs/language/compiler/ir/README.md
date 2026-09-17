@@ -9,7 +9,7 @@ version: "0.1.0"
 related:
   - ../README.md
   - ../frontend/README.md
-  - ../../../DevDocs/08a-u0-frontend-implementation.md
+  - ../../../../DevDocs/08a-u0-frontend-implementation.md
 ---
 
 # IR 快照

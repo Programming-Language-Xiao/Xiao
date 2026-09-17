@@ -10,7 +10,7 @@ related:
   - ../README.md
   - ../ir/README.md
   - ../../modules/imports.md
-  - ../../../DevDocs/08a-u0-frontend-implementation.md
+  - ../../../../DevDocs/08a-u0-frontend-implementation.md
 ---
 
 # 前端流水线
