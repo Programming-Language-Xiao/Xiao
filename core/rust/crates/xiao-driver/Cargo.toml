@@ -9,3 +9,13 @@ description = "Xiao compiler and runtime driver interfaces"
 
 [lib]
 path = "src/lib.rs"
+
+[dependencies]
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-source = { path = "../xiao-source" }
+xiao-config = { path = "../xiao-config" }
+xiao-syntax = { path = "../xiao-syntax" }
+xiao-types = { path = "../xiao-types" }
+xiao-modules = { path = "../xiao-modules" }
+xiao-lifetime = { path = "../xiao-lifetime" }
+xiao-ir = { path = "../xiao-ir" }

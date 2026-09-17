@@ -144,6 +144,16 @@ dependencies = [
 [[package]]
 name = "xiao-driver"
 version = "0.1.0"
+dependencies = [
+ "xiao-config",
+ "xiao-diagnostics",
+ "xiao-ir",
+ "xiao-lifetime",
+ "xiao-modules",
+ "xiao-source",
+ "xiao-syntax",
+ "xiao-types",
+]
 
 [[package]]
 name = "xiao-i18n"
@@ -152,6 +162,16 @@ version = "0.1.0"
 [[package]]
 name = "xiao-ir"
 version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "xiao-diagnostics",
+ "xiao-lifetime",
+ "xiao-modules",
+ "xiao-source",
+ "xiao-syntax",
+ "xiao-types",
+]
 
 [[package]]
 name = "xiao-lifetime"

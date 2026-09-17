@@ -15,3 +15,10 @@
 ## 边界
 
 不保存终端编辑状态、不生成本地化文案、不暴露 Rust 内部布局；请求/结果必须带版本、目标、优化和诊断字段。
+
+## 08A/U0 交付
+
+`src/frontend.rs` 提供 `FrontendRequest`、`FrontendContext`、`FrontendCompiler` 和
+`FrontendArtifact`。流水线固定调用解析、模块、类型、生命周期和 IR 验证；错误诊断会
+累积，错误时不返回 IR。定向规格位于 `tests/u0_frontend.rs`，对应 UseDocs 为
+`docs/UseDocs/language/compiler/frontend/README.md`。

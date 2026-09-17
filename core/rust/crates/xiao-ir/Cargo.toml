@@ -9,3 +9,13 @@ description = "Typed Xiao intermediate representation"
 
 [lib]
 path = "src/lib.rs"
+
+[dependencies]
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-source = { path = "../xiao-source" }
+xiao-syntax = { path = "../xiao-syntax" }
+xiao-types = { path = "../xiao-types" }
+xiao-lifetime = { path = "../xiao-lifetime" }
+xiao-modules = { path = "../xiao-modules" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

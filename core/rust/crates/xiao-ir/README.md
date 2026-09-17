@@ -15,3 +15,16 @@
 ## 稳定性要求
 
 IR 节点必须可验证、可快照和可版本化；后端不能重新解析源码或重新推断语言语义。
+
+## 08A/U0 交付
+
+`src/model.rs` 保存版本化递归 IR，`src/lower.rs` 只从 AST、类型结果和生命周期结果
+单向降低，`src/validate.rs` 在后端前检查结构不变量，`src/snapshot.rs` 提供版本化 JSON
+往返。定向规格位于 `tests/u0_ir.rs`，对应 UseDocs 为
+`docs/UseDocs/language/compiler/ir/README.md`。
+
+## 边界
+
+本 crate 不执行 Xiao 代码、不创建 Runtime 对象、不解析 CLI 参数，也不实现字节码、LLVM
+或优化 Pass。新增节点必须同时更新降低器、验证器、快照测试和 UseDocs，禁止把语义实现
+复制到后端。

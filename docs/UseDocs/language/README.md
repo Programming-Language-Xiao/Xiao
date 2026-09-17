@@ -13,6 +13,7 @@
 7. [表与生命周期](tables/README.md)
 8. [模块与工程](modules/README.md)
 9. [内存与静态生命周期](memory/README.md)
+10. [前端与中间表示](compiler/README.md)
 
 ## 相关主题
 

@@ -64,7 +64,8 @@
 | 06B | [Runtime 对象与表生命周期执行闭环](06b-runtime-objects-and-tables.md) | 不透明对象头、Strong/Weak、标量/str、表状态机和释放展开驱动器 | 已完成首版 |
 | 07 | [错误模型与并发安全边界](07-concurrency-and-errors.md) | 统一错误核心、堆栈/报告契约、日志诊断、数据竞争策略和并发模型边界 | 进行中（07-A、07-B 已完成，07-C/07-D 后置） |
 | 07B | [错误控制流与统一展开消费](07-concurrency-and-errors.md#07-b-已完成错误控制流与统一展开消费) | `try`/`catch`/`finally`/`raise` 的语法、静态恢复边界、生命周期展开和 Runtime 路由契约 | 已完成首版 |
-| 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 未开始 |
+| 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 进行中（08A/U0 已完成首版） |
+| 08A | [U0 统一前端实现交接记录](08a-u0-frontend-implementation.md) | 单一前端流水线、递归类型化 IR、验证器和稳定 JSON 快照 | 已完成首版 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 未开始 |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
@@ -106,6 +107,8 @@ A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码�
 07-A 已完成统一错误模型与报告器闭环：`xiao-diagnostics` 现在是 `XiaoError`、`FatalError`、统一 `StackFrame`、`ReportRecord` 和消息渲染接口的唯一实现；`xiao-runtime` 通过兼容门面迁移而不改变 06-B 行为。07-A 不实现错误控制流语法、日志文件、`-debug` 窗口或并发调度；接手后续 07-B/07-C/07-D 时先阅读 [07. 错误模型与并发安全边界](07-concurrency-and-errors.md) 的 07-A 交付记录和 [UseDocs 错误报告](../UseDocs/troubleshooting/errors-and-reports.md)。
 
 07-B 已完成错误控制流与统一展开消费首版：`xiao-syntax` 提供 `try`、`catch`、`finally`、`raise` 的 AST 与恢复；`xiao-types` 固定按错误类型名检查可恢复边界、Fatal 禁止捕获和具体到宽泛的顺序；`xiao-lifetime` 建立 try/catch/finally 作用域、正常/错误/未匹配/控制转移的释放计划与展开图；`xiao-runtime` 测试驱动器验证具体类型路由、未匹配传播和 Fatal 隔离。接手 07-C/07-D 或 08 前端降低时，先阅读 [07-B 交接记录](07-concurrency-and-errors.md#07-b-已完成错误控制流与统一展开消费)、[UseDocs 错误控制流](../UseDocs/language/control-flow/error-handling.md) 和 [Runtime 展开](../UseDocs/language/memory/runtime/errors-and-unwind.md)。07-B 不包含错误码/条件/模式匹配、`Result` 泛型、`?`、VM、LLVM、日志文件、`-debug` 窗口或并发实现。
+
+08A/U0 已完成统一前端首版：`xiao-driver` 按固定顺序串接解析、模块、类型和生命周期分析，累积诊断并在错误时停止降低；`xiao-ir` 输出覆盖当前已完成静态语义的递归类型化 IR，提供控制流、所有权、释放计划、选择器和错误边界；`IrValidator` 拒绝非法结构，稳定 JSON 快照带版本字段。该阶段不执行用户代码、不启动 VM/LLVM、不实现优化 Pass；接手 09/10 前端消费者时先阅读 [08A 交接记录](08a-u0-frontend-implementation.md) 和对应 [UseDocs 前端/IR](../UseDocs/language/compiler/README.md)。
 
 ## 文档变更规则
 
