@@ -286,6 +286,24 @@ impl ScalarType {
         }
     }
 
+    /// 按 Xiao 源码拼写还原标量类型；未知拼写返回 `None`。
+    ///
+    /// 与 [`Self::as_str`] 共用同一张拼写表，调用方不应另存一份映射。
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Self> {
+        Some(match name {
+            "int" => Self::Int,
+            "sint" => Self::Sint,
+            "lint" => Self::Lint,
+            "float" => Self::Float,
+            "sfloat" => Self::Sfloat,
+            "lfloat" => Self::Lfloat,
+            "str" => Self::Str,
+            "bool" => Self::Bool,
+            _ => return None,
+        })
+    }
+
     /// 将类型关键字映射为 P1 转换目标；其他关键字返回 `None`。
     #[must_use]
     pub const fn from_keyword(keyword: KeywordKind) -> Option<Self> {

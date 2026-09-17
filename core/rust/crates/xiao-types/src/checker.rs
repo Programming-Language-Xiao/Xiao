@@ -1369,17 +1369,7 @@ impl<'source> TypeChecker<'source> {
     /// 识别未被反引号包裹的标量转换构造器。
     fn scalar_callee(&self, callee: &Expression) -> Option<ScalarType> {
         let name = self.simple_callee_name(callee)?;
-        match name.as_str() {
-            "int" => Some(ScalarType::Int),
-            "sint" => Some(ScalarType::Sint),
-            "lint" => Some(ScalarType::Lint),
-            "float" => Some(ScalarType::Float),
-            "sfloat" => Some(ScalarType::Sfloat),
-            "lfloat" => Some(ScalarType::Lfloat),
-            "str" => Some(ScalarType::Str),
-            "bool" => Some(ScalarType::Bool),
-            _ => None,
-        }
+        ScalarType::from_name(&name)
     }
 
     /// 检查已知常量是否满足转换的内容约束；动态值留给运行时检查。

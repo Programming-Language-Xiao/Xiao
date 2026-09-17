@@ -9,3 +9,11 @@ description = "Xiao bytecode format and instruction model"
 
 [lib]
 path = "src/lib.rs"
+
+[dependencies]
+xiao-ir = { path = "../xiao-ir" }
+xiao-lifetime = { path = "../xiao-lifetime" }
+xiao-syntax = { path = "../xiao-syntax" }
+
+[dev-dependencies]
+xiao-driver = { path = "../xiao-driver" }

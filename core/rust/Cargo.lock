@@ -110,6 +110,12 @@ version = "0.1.0"
 [[package]]
 name = "xiao-bytecode"
 version = "0.1.0"
+dependencies = [
+ "xiao-driver",
+ "xiao-ir",
+ "xiao-lifetime",
+ "xiao-syntax",
+]
 
 [[package]]
 name = "xiao-codegen-llvm"
