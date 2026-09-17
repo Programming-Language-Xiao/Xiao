@@ -41,7 +41,14 @@ pub enum VmEvent {
         exit: String,
     },
     /// 按冻结计划释放了一个值。
+    ///
+    /// 事件带上 `(作用域, 退出边)`，语义向量才能锁定完整释放序列，而不只是
+    /// 统计释放个数。
     ValueReleased {
+        /// 触发释放的作用域。
+        scope: u32,
+        /// 退出边稳定名称。
+        exit: String,
         /// `IrValue.id`。
         value: u32,
         /// 强释放或弱释放。

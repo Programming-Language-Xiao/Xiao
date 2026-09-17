@@ -18,3 +18,5 @@ xiao-runtime = { path = "../xiao-runtime" }
 
 [dev-dependencies]
 xiao-driver = { path = "../xiao-driver" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

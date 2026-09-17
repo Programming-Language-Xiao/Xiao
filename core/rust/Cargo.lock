@@ -250,6 +250,8 @@ dependencies = [
 name = "xiao-vm"
 version = "0.1.0"
 dependencies = [
+ "serde",
+ "serde_json",
  "xiao-bytecode",
  "xiao-diagnostics",
  "xiao-driver",

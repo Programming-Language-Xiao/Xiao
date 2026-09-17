@@ -303,9 +303,15 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             let Some(register) = function.value_registers.get(&action.value).copied() else {
                 continue;
             };
-            let _ = self.take(register);
+            // 只在实际持有值时才算一次释放：计划里的某些值（例如函数名绑定）
+            // 在本帧从未被物化，把空槽位记成释放会虚报释放次数。
+            let Some(_released) = self.take_if_present(register) else {
+                continue;
+            };
             self.metrics.releases = self.metrics.releases.saturating_add(1);
             self.sink.record(VmEvent::ValueReleased {
+                scope,
+                exit: exit.to_owned(),
                 value: action.value,
                 kind: action.kind.as_name().to_owned(),
             });
@@ -390,6 +396,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             .carrier
             .take(register)
             .ok_or_else(|| Fault::Error(XiaoError::invalid_handle("寄存器为空")))
+    }
+
+    /// 取出当前帧的一个寄存器；为空时返回 `None` 而不报错。
+    fn take_if_present(&mut self, register: VReg) -> Option<RuntimeValue> {
+        self.frames.last_mut()?.carrier.take(register)
     }
 
     /// 写入当前帧的一个寄存器。

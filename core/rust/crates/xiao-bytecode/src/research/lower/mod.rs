@@ -110,6 +110,8 @@ struct Lowerer<'ir> {
     value_spans: HashMap<u32, IrSpan>,
     /// `IrValue.id` 到存储类别的映射。
     value_storage: HashMap<u32, String>,
+    /// `IrValue.id` 到所属作用域的映射，用于按作用域消歧同名绑定。
+    value_scopes: HashMap<u32, u32>,
     /// 顶层函数名到函数索引的映射。
     ///
     /// 脚本入口固定占用索引 0，命名函数从 1 开始，因此这里存的是「入口之后的
@@ -169,6 +171,12 @@ impl<'ir> Lowerer<'ir> {
             plans,
             value_spans,
             value_storage,
+            value_scopes: program
+                .ownership
+                .values
+                .iter()
+                .map(|value| (value.id, value.scope))
+                .collect(),
             named_functions: BTreeMap::new(),
             frame: Frame::default(),
             function_signatures: BTreeMap::new(),
@@ -539,25 +547,47 @@ impl<'ir> Lowerer<'ir> {
     }
 
     /// 按源码名称查找绑定的值编号；名称前缀由生命周期阶段添加，这里剥掉。
+    ///
+    /// 必须按作用域消歧：不同函数可以各有一个同名形参，全局取首个会串到别的
+    /// 函数的绑定上，读到本帧从未写入的寄存器。优先取当前作用域栈里最内层的
+    /// 那个候选，找不到活动候选时才退回首个。
     fn value_of_name(&self, name: &str) -> Option<u32> {
-        let key = format!("ascii:{name}");
-        let key = if self
-            .program
-            .ownership
-            .values
+        let candidates = self.candidates_of_name(name);
+        let active = candidates
             .iter()
-            .any(|v| v.name.as_deref() == Some(key.as_str()))
-        {
-            key
-        } else {
-            format!("backtick:{name}")
-        };
+            .filter(|(_, scope)| self.frame.scope_stack.contains(scope))
+            .max_by_key(|(_, scope)| {
+                self.frame
+                    .scope_stack
+                    .iter()
+                    .position(|item| item == scope)
+                    .unwrap_or(0)
+            })
+            .map(|(value, _)| *value);
+        active.or_else(|| candidates.first().map(|(value, _)| *value))
+    }
+
+    /// 列出同名绑定的 `(值编号, 所属作用域)` 候选。
+    fn candidates_of_name(&self, name: &str) -> Vec<(u32, u32)> {
+        let ascii = format!("ascii:{name}");
+        let backtick = format!("backtick:{name}");
         self.program
             .ownership
             .values
             .iter()
-            .find(|value| value.name.as_deref() == Some(key.as_str()))
-            .map(|value| value.id)
+            .filter(|value| {
+                value
+                    .name
+                    .as_deref()
+                    .is_some_and(|item| item == ascii || item == backtick)
+            })
+            .map(|value| {
+                (
+                    value.id,
+                    self.value_scopes.get(&value.id).copied().unwrap_or(0),
+                )
+            })
+            .collect()
     }
 
     /// 按名称查找顶层函数索引。

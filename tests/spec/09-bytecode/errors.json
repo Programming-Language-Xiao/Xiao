@@ -1,0 +1,27 @@
+{
+  "stage": "09R2",
+  "status": "verified-runtime",
+  "cases": [
+    {
+      "name": "overflow-recoverable",
+      "source": "def square(int value) -> int\n    return value * value\nresult = square(4000000000)\n",
+      "expect": {
+        "outcome": "error",
+        "error_code": "X06-RUNTIME-009",
+        "releases": [],
+        "max_call_depth": 2
+      }
+    },
+    {
+      "name": "stack-overflow-fatal",
+      "source": "def down(int value) -> int\n    return down(value)\nresult = down(1)\n",
+      "max_call_depth": 8,
+      "expect": {
+        "outcome": "fatal",
+        "error_code": "X07-FATAL-004",
+        "releases": [],
+        "max_call_depth": 8
+      }
+    }
+  ]
+}

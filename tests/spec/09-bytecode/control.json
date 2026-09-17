@@ -1,0 +1,74 @@
+{
+  "stage": "09R2",
+  "status": "verified-runtime",
+  "cases": [
+    {
+      "name": "if-branch",
+      "source": "value = 1\nif value == 1\n    flag = true\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "while-loop",
+      "source": "def count(int limit) -> int\n    total = 0\n    while total != limit\n        total = total + 1\n    return total\nresult = count(3)\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [],
+        "max_call_depth": 2
+      }
+    },
+    {
+      "name": "recursion",
+      "source": "def down(int value) -> int\n    if value == 0\n        return 0\n    return down(value - 1)\nresult = down(3)\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 1,
+            "exit": "return",
+            "value": 1,
+            "kind": "strong"
+          },
+          {
+            "scope": 1,
+            "exit": "return",
+            "value": 1,
+            "kind": "strong"
+          },
+          {
+            "scope": 1,
+            "exit": "return",
+            "value": 1,
+            "kind": "strong"
+          },
+          {
+            "scope": 1,
+            "exit": "return",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 5
+      }
+    },
+    {
+      "name": "nested-call",
+      "source": "def inner(int n) -> int\n    return n + 1\ndef outer(int n) -> int\n    return inner(n)\nresult = outer(1)\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 1,
+            "exit": "return",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 3
+      }
+    }
+  ]
+}
