@@ -49,7 +49,7 @@ fn executes_calls_and_loops() {
 /// 三种载体分别上报溢出、映射点和调用保存，不共用一个总成本计数。
 fn machine_metrics_keep_independent_cost_axes() {
     let program = load(
-        "def identity(int value) -> int\n    return value\npayload = \"x\"\nresult = identity(1)\n",
+        "def identity(int value) -> int\n    return value\ntotal = 0\nwhile total != 2\n    total = total + 1\nresult = identity(total)\n",
     );
     let stack = run(&program, VmOptions::new());
     let registers = run_register(&program, VmOptions::new());
@@ -58,14 +58,81 @@ fn machine_metrics_keep_independent_cost_axes() {
     assert!(stack.result.is_success());
     assert!(registers.result.is_success());
     assert!(hybrid.result.is_success());
-    assert_eq!(stack.metrics.spill_count, 0);
-    assert!(stack.metrics.stack_map_entries > 0);
+    assert_eq!(stack.metrics.spill_count, 0, "栈式不写独立帧槽");
+    assert!(
+        stack.metrics.stack_map_entries > 0,
+        "栈式在跳转目标需要映射"
+    );
+    assert_eq!(
+        registers.metrics.stack_map_entries, 0,
+        "分类型寄存器式按 R1-F 完全不需要映射"
+    );
     assert!(registers.metrics.spill_count > 0);
-    assert!(registers.metrics.stack_map_entries > 0);
     assert!(registers.metrics.call_save_count > 0);
+    assert!(
+        hybrid.metrics.stack_map_entries > 0,
+        "混合式在调用点与帧尾需要映射"
+    );
     assert!(hybrid.metrics.spill_count > 0);
-    assert!(hybrid.metrics.stack_map_entries > 0);
     assert!(hybrid.metrics.call_save_count > 0);
+}
+
+#[test]
+/// R1-F 冻结的映射分界：栈式数跳转目标，混合式数调用点与帧尾，寄存器式恒为 0。
+///
+/// 三种机型必须**同量纲**，否则 09R3 无法把这一轴当作机型差异来对比。
+fn stack_map_points_follow_the_frozen_machine_division() {
+    // 差分一：给同一条直线代码加一个循环（只增加跳转目标）。
+    // 栈式应当增长，混合式**一点都不该变**——跳转目标不是它的映射点。
+    let straight = load("total = 2\n");
+    let looping = load("total = 0\nwhile total != 2\n    total = total + 1\n");
+    assert_eq!(
+        run(&straight, VmOptions::new()).metrics.stack_map_entries,
+        0,
+        "直线代码没有跳转目标"
+    );
+    assert!(
+        run(&looping, VmOptions::new()).metrics.stack_map_entries > 0,
+        "循环带来跳转目标，栈式必须计数"
+    );
+    assert_eq!(
+        run_hybrid(&looping, VmOptions::new())
+            .metrics
+            .stack_map_entries,
+        run_hybrid(&straight, VmOptions::new())
+            .metrics
+            .stack_map_entries,
+        "跳转目标不得进入混合式的映射点数"
+    );
+
+    // 差分二：加一次函数调用（只增加调用点与被调帧尾）。
+    // 混合式应当增长，栈式**一点都不该变**——调用点不是它的映射点。
+    let calling = load("def identity(int value) -> int\n    return value\nresult = identity(1)\n");
+    assert!(
+        run_hybrid(&calling, VmOptions::new())
+            .metrics
+            .stack_map_entries
+            > run_hybrid(&straight, VmOptions::new())
+                .metrics
+                .stack_map_entries,
+        "调用点与帧尾是混合式的映射点"
+    );
+    assert_eq!(
+        run(&calling, VmOptions::new()).metrics.stack_map_entries,
+        run(&straight, VmOptions::new()).metrics.stack_map_entries,
+        "调用点不得进入栈式的映射点数"
+    );
+
+    // 不论程序形态，分类型寄存器式都恒为 0。
+    for program in [&straight, &looping, &calling] {
+        assert_eq!(
+            run_register(program, VmOptions::new())
+                .metrics
+                .stack_map_entries,
+            0,
+            "寄存器式按 R1-F 完全不需要映射"
+        );
+    }
 }
 
 #[test]

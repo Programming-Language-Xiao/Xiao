@@ -15,7 +15,7 @@ use xiao_diagnostics::{
 };
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue};
 
-use crate::research::carrier::{Carrier, CarrierContext};
+use crate::research::carrier::{Carrier, CarrierContext, MapPoint};
 use crate::research::frame::Frame;
 use crate::research::ops;
 use crate::research::run::{RunResult, VmMetrics, VmOptions};
@@ -218,6 +218,17 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         outcome
     }
 
+    /// 通知当前帧的载体：控制流经过了一个可能需要栈映射的程序点。
+    ///
+    /// 语义核只报事实，**由载体决定自己是否计数**——R1-F 冻结的机型分界
+    /// （栈式数跳转目标、混合式数调用点与帧尾、寄存器式一个都不数）因此写在
+    /// 各自的载体实现里，而不是在这里分支判断机型。
+    fn note_map_point(&mut self, point: MapPoint) {
+        if let Some(frame) = self.frames.last_mut() {
+            frame.carrier.map_point(point);
+        }
+    }
+
     /// 为在当前指令处产生的故障追加统一后端调用帧。
     ///
     /// 通过启动时建立的只读 pc 表追加统一后端调用帧。
@@ -287,6 +298,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             }
             match flow {
                 Flow::Jump(next) => {
+                    self.note_map_point(MapPoint::JumpTarget);
                     self.prune_handler_contexts(function, next);
                     self.prune_scopes_for_target(function, next);
                     block = next;
@@ -299,10 +311,12 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     if let Some(frame) = self.frames.last_mut() {
                         frame.pending_check_kind = Some(kind);
                     }
+                    self.note_map_point(MapPoint::JumpTarget);
                     self.prune_handler_contexts(function, target);
                     block = target;
                 }
                 Flow::Return(register) => {
+                    self.note_map_point(MapPoint::FrameEnd);
                     return match register {
                         Some(register) => self.read(register).map(Some),
                         None => Ok(None),
@@ -411,6 +425,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 callee, arguments, ..
             } => {
                 let bound = self.bind(arguments)?;
+                self.note_map_point(MapPoint::CallSite);
                 if let Some(frame) = self.frames.last_mut() {
                     frame.carrier.begin_call();
                 }
@@ -637,6 +652,10 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                         if next < sub {
                             return Ok(Flow::Jump(next));
                         }
+                        // 只登记留在子程序内部的转移；`next < sub` 的那一支会
+                        // 返回给外层 `run_blocks`，由它的 `Flow::Jump` 分支统一
+                        // 计数，这里再记一次就是重复计数。
+                        self.note_map_point(MapPoint::JumpTarget);
                         self.prune_handler_contexts(function, next);
                         self.prune_scopes_for_target(function, next);
                         block = next;
@@ -652,6 +671,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                         if let Some(frame) = self.frames.last_mut() {
                             frame.pending_check_kind = Some(kind);
                         }
+                        self.note_map_point(MapPoint::JumpTarget);
                         self.prune_handler_contexts(function, target);
                         block = target;
                     }

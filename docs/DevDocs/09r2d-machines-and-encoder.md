@@ -454,8 +454,23 @@ git diff --check
 - 跨调用保存/恢复、溢出、重载和窗口映射都通过机型中立指标出口上报；不要逐机型新增 getter。
 
 **指标字段必须独立**：`instructions`、`max_call_depth`、兼容保留的 `max_stack_depth`、
-`releases`、`spill_count`、`stack_map_entries`、`call_save_count` 分别计数。尤其
-`stack_map_entries`（栈式/混合式的可验证映射点）不能与 `spill_count` 合并。
+`releases`、`spill_count`、`stack_map_entries`、`call_save_count` 分别计数。
+
+**`stack_map_entries` 的口径已在实现后收敛（评审修正）**。R1-F 的原表在此处是含糊的：
+行标题写「需要的栈映射**位置**」，结语却写「`栈映射条目数`」；实现初期三种载体因此各数各的
+（栈式累加占用槽数、混合式每次调用 `+1`、寄存器记账帧槽数与保存数）——**同一字段三种量纲，
+而这个数正是 R1-F 说「三者真正可量化的分界」的那一个**。现按表格语义统一为
+「**需要建立栈映射的程序点数量**」，由 `Carrier::map_point` 分派、各载体自行过滤：
+
+| 机型 | 计数点 | 依据 |
+| --- | --- | --- |
+| 栈式 | **每个跳转目标** | 必须在每个合流点验证栈深 |
+| 混合式 | **调用点 + 帧尾** | 窗口与求值栈只在这两处需要被描述 |
+| 分类型寄存器式 | **恒为 0** | 帧槽由函数布局静态描述，不随 pc 变化 |
+
+落帧槽的开销记 `spill_count`、跨调用保存记 `call_save_count`——**两者都不许混进映射点数**。
+区分度证据见 `r2_stack.rs` 的 `stack_map_points_follow_the_frozen_machine_division`：
+加一个循环只让栈式增长、加一次调用只让混合式增长，寄存器式对两者都恒为 0。
 
 **改动面**：`exec.rs` 的帧创建、调用进出、指标汇总和子程序故障回传必须一起审阅；不能只改
 `Carrier::empty` 的签名而让 `Frame` 暗中携带机型细节。

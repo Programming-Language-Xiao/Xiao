@@ -32,10 +32,32 @@ pub struct CarrierMetrics {
     pub peak_occupancy: usize,
     /// 写入独立帧槽的次数。
     pub spill_count: u64,
-    /// 载体建立的可验证映射点数量。
+    /// 本机型**需要建立栈映射的程序点数量**。
+    ///
+    /// 口径由 R1-F 的「需要的栈映射位置」一行冻结：栈式是**每个跳转目标**，
+    /// 混合式是**调用点与帧尾**，分类型寄存器式**一个都不需要**（它的帧槽由
+    /// 函数布局静态描述，不随 pc 变化）。
+    ///
+    /// 三种机型必须用同一口径计数，09R3 才能把它当作可量化的机型分界来对比；
+    /// 谁需要映射由 [`Carrier::map_point`] 的分派决定，**不要在这里混入槽位数量**
+    /// ——那属于 [`Self::spill_count`]。
     pub stack_map_entries: usize,
     /// 跨调用保存值的次数。
     pub call_save_count: u64,
+}
+
+/// 一个需要栈映射的程序点。
+///
+/// 语义核只负责在控制流经过这些点时通知载体，**由载体决定自己是否计数**：
+/// 这既让「谁需要映射」写在每个机型自己的实现里，也避免语义核认识机型差异。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum MapPoint {
+    /// 显式跳转的目标块（含条件分支、`Jump` 与进入 handler）。
+    JumpTarget,
+    /// 调用点：即将进入被调帧。
+    CallSite,
+    /// 帧尾：本帧即将返回。
+    FrameEnd,
 }
 
 /// 构造三种载体共用的空寄存器错误。
@@ -68,6 +90,13 @@ pub trait Carrier: Sized {
 
     /// 在被调函数返回后恢复本帧保存的值。
     fn end_call(&mut self) {}
+
+    /// 控制流经过一个可能需要栈映射的程序点。
+    ///
+    /// 语义核只报事实，不判断该点对当前机型是否重要；**过滤由载体自己做**，
+    /// 这样 R1-F 冻结的机型分界写在各机型内部，而不是散在语义核的分支里。
+    /// 默认实现不计数——不需要映射的机型无须覆写。
+    fn map_point(&mut self, _point: MapPoint) {}
 
     /// 返回机型中立指标快照。
     fn metrics(&self) -> CarrierMetrics;

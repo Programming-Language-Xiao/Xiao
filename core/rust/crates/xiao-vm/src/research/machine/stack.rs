@@ -6,7 +6,9 @@
 use xiao_bytecode::research::VReg;
 use xiao_runtime::{RuntimeResult, RuntimeValue};
 
-use crate::research::carrier::{Carrier, CarrierContext, CarrierMetrics, empty_register_error};
+use crate::research::carrier::{
+    Carrier, CarrierContext, CarrierMetrics, MapPoint, empty_register_error,
+};
 
 /// 以一个槽位数组承载全部虚拟寄存器。
 #[derive(Debug, Default)]
@@ -68,9 +70,18 @@ impl Carrier for StackCarrier {
         self.slots.get_mut(register.get() as usize)?.take()
     }
 
-    /// 栈式载体无需保存值，但调用点会登记当前有效槽位映射。
-    fn begin_call(&mut self) {
-        self.stack_map_entries = self.stack_map_entries.saturating_add(self.occupied());
+    /// 栈式载体无需跨调用保存值：槽位就是帧内下标，不随调用变化。
+    fn begin_call(&mut self) {}
+
+    /// 栈式在**每个跳转目标**都需要可验证的栈深。
+    ///
+    /// 这是 R1-F 冻结的机型分界。调用点与帧尾**不计入**：调用不是 TAC 的块
+    /// 跳转，被调帧的形参由签名决定而不是由本帧栈深描述；把它们也算进来会让
+    /// 栈式与混合式在同一口径下重复计数，三种机型就不再可比。
+    fn map_point(&mut self, point: MapPoint) {
+        if matches!(point, MapPoint::JumpTarget) {
+            self.stack_map_entries = self.stack_map_entries.saturating_add(1);
+        }
     }
 
     /// 返回栈式载体的指标快照。

@@ -11,7 +11,9 @@ use xiao_bytecode::research::{
 };
 use xiao_runtime::{RuntimeResult, RuntimeValue};
 
-use crate::research::carrier::{Carrier, CarrierContext, CarrierMetrics, empty_register_error};
+use crate::research::carrier::{
+    Carrier, CarrierContext, CarrierMetrics, MapPoint, empty_register_error,
+};
 
 /// 混合式载体的固定局部窗口容量。
 pub const HYBRID_WINDOW_CAPACITY: usize = 8;
@@ -221,11 +223,10 @@ impl Carrier for HybridCarrier {
         self.slot_mut(location)?.take()
     }
 
-    /// 保存窗口和求值栈，并为调用点增加一个独立映射计数。
+    /// 保存窗口和求值栈。
     fn begin_call(&mut self) {
         let saved = self.eval_occupancy();
         self.metrics.call_save_count = self.metrics.call_save_count.saturating_add(saved as u64);
-        self.metrics.stack_map_entries = self.metrics.stack_map_entries.saturating_add(1);
         self.call_snapshots.push(self.snapshot());
     }
 
@@ -233,6 +234,17 @@ impl Carrier for HybridCarrier {
     fn end_call(&mut self) {
         if let Some(snapshot) = self.call_snapshots.pop() {
             self.restore(snapshot);
+        }
+    }
+
+    /// 混合式只在**调用点与帧尾**需要可验证的映射。
+    ///
+    /// 这是 R1-F 冻结的机型分界：窗口中的具名值与求值栈上的临时值只在跨调用
+    /// 和函数退出时才需要被描述，跳转目标处不需要——这正是它相对栈式的成本优势，
+    /// 也是 09R3 要量出来的差别。跳转目标不计入，否则两者的数字会退化成同一个东西。
+    fn map_point(&mut self, point: MapPoint) {
+        if matches!(point, MapPoint::CallSite | MapPoint::FrameEnd) {
+            self.metrics.stack_map_entries = self.metrics.stack_map_entries.saturating_add(1);
         }
     }
 

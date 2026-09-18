@@ -77,8 +77,15 @@ pub struct VmMetrics {
     /// 按冻结计划释放的值的数量。
     pub releases: usize,
     /// 写入独立帧槽的次数。
+    ///
+    /// 它与 [`Self::stack_map_entries`] 量纲不同：这里数的是**落帧槽的次数**，
+    /// 那里数的是**需要栈映射的程序点**。两者不可合并，否则三种机型在 09R3
+    /// 的对比中不再可比。
     pub spill_count: u64,
-    /// 载体建立的可验证映射点数量。
+    /// 需要建立栈映射的程序点数量（R1-F 的机型分界）。
+    ///
+    /// 栈式数跳转目标、混合式数调用点与帧尾、分类型寄存器式恒为 0；
+    /// 详见 [`crate::research::carrier::CarrierMetrics::stack_map_entries`]。
     pub stack_map_entries: usize,
     /// 跨调用保存值的次数。
     pub call_save_count: u64,

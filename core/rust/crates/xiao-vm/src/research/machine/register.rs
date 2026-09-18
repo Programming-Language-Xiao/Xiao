@@ -165,10 +165,13 @@ impl Carrier for RegisterCarrier {
             frame_slots: empty_slots(sizes.frames),
             zero_width: BTreeSet::new(),
             call_snapshots: Vec::new(),
-            metrics: CarrierMetrics {
-                stack_map_entries: sizes.frames,
-                ..CarrierMetrics::default()
-            },
+            // 分类型寄存器式**不需要任何栈映射点**（R1-F 的冻结口径是「无」）：
+            // 帧槽由函数布局静态描述，槽位含义不随 pc 变化，跳转目标、调用点和
+            // 帧尾都不需要额外描述。因此本类型刻意不覆写 `Carrier::map_point`，
+            // `stack_map_entries` 恒为 0。它落帧槽的开销记在 `spill_count`、
+            // 跨调用保存的开销记在 `call_save_count`——两者都不要混进映射点数，
+            // 否则三机型就不再同量纲。
+            metrics: CarrierMetrics::default(),
         }
     }
 
@@ -215,7 +218,11 @@ impl Carrier for RegisterCarrier {
         self.slot_mut(location)?.take()
     }
 
-    /// 保存当前易失寄存器文件并登记调用映射点。
+    /// 保存当前易失寄存器文件。
+    ///
+    /// 保存个数只记入 `call_save_count`：它是跨调用保存的**开销**，不是需要
+    /// 栈映射的**程序点**。两者量纲不同，混在一起会让本机型在 09R3 的
+    /// 「需要的栈映射位置」这一轴上与另两种机型不可比。
     fn begin_call(&mut self) {
         let saved = self
             .ints
@@ -227,7 +234,6 @@ impl Carrier for RegisterCarrier {
             .filter(|slot| slot.is_some())
             .count();
         self.metrics.call_save_count = self.metrics.call_save_count.saturating_add(saved as u64);
-        self.metrics.stack_map_entries = self.metrics.stack_map_entries.saturating_add(saved);
         self.call_snapshots.push(self.snapshot());
     }
 
