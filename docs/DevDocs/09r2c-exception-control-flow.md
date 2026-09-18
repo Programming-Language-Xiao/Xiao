@@ -362,13 +362,16 @@ finally
 
 ## 09R2C 交付核对
 
-- `xiao-diagnostics` 的 `ERROR_TYPE_NAMES`/`error_kind_of` 同时被类型层、Runtime 路由和 TAC
-  错误构造消费；未知 `FooError` 不再静默通过，`FatalError` 仍禁止普通捕获。
+- `xiao-diagnostics` 的 `ERROR_TYPE_NAMES` 是名称与类别的唯一来源，`error_kind_of` 由它派生；
+  类型层、Runtime 路由和 TAC 错误构造都经 `error_kind_of` 消费这张表。未知 `FooError` 不再
+  静默通过，`FatalError` 仍禁止普通捕获。
 - `RuntimeValue::Error` 保留错误身份，显式覆盖相等、哈希可用性和 `type_name()` 三处兜底。
 - `TacFunction.handlers` 保存受保护块区间、catch 类型、绑定寄存器和 finally 子程序；VM 只在
   当前帧查表，未匹配后逐帧清理，Fatal 绕过查表、finally、释放和 `suppressed`。
-- `Check` 当前执行 `boolean_condition`、`arithmetic`、`numeric_range`、`dynamic_conversion`；
-  `string_boolean` 等后续类别进入 `unsupported`。`dynamic_conversion` 的窄语义是只允许
+- `Check` 当前**降低** `boolean_condition`、`arithmetic`、`numeric_range`、`dynamic_conversion`
+  四类；其余（选择器、集合、随机、`iterable`）进入 `unsupported`。解释器额外认得
+  `string_boolean`，但降低器不会发出它——**「可解释的类别」与「已启用的类别」是两个不同
+  的问题**，前者是能力、后者是范围，不要把它们合并成一份清单。`dynamic_conversion` 的窄语义是只允许
   `RuntimeValue::Error` 通过，失败使用 `TYPE_MISMATCH_CODE`。
 - `tests/spec/09-bytecode/errors.json` 与 `xiao-vm/tests/r2_stack.rs` 共同锁定释放事件的完整
   `(scope, exit, value, kind)` 顺序和最大调用深度。

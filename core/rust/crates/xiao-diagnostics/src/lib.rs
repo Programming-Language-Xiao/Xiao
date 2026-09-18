@@ -220,20 +220,36 @@ pub enum CatchTypeKind {
     Fatal,
 }
 
-/// `catch` 类型名到类别的兼容别名。
-pub type ErrorTypeKind = CatchTypeKind;
-
-/// 首版错误类型名称的单一来源。
-pub const ERROR_TYPE_NAMES: &[&str] = &[
-    "Error",
-    "XiaoError",
-    "ArithmeticError",
-    "MemoryError",
-    "TableError",
-    "ConcurrencyError",
-    "ResourceError",
-    "TypeError",
-    "FatalError",
+/// 首版错误类型名称的**唯一**来源。
+///
+/// 名称与类别的对应关系只在这里写一次；[`error_kind_of`] 从它派生，不再另写
+/// 一份 `match`。此前两者是平行列举：加一个名字而忘了改另一处，静态检查与
+/// Runtime 路由就会漂移，而这类漂移没有门禁能发现。
+pub const ERROR_TYPE_NAMES: &[(&str, CatchTypeKind)] = &[
+    ("Error", CatchTypeKind::AnyRecoverable),
+    ("XiaoError", CatchTypeKind::AnyRecoverable),
+    (
+        "ArithmeticError",
+        CatchTypeKind::Recoverable(XiaoErrorKind::Arithmetic),
+    ),
+    (
+        "MemoryError",
+        CatchTypeKind::Recoverable(XiaoErrorKind::Memory),
+    ),
+    (
+        "TableError",
+        CatchTypeKind::Recoverable(XiaoErrorKind::Table),
+    ),
+    (
+        "ConcurrencyError",
+        CatchTypeKind::Recoverable(XiaoErrorKind::Concurrency),
+    ),
+    (
+        "ResourceError",
+        CatchTypeKind::Recoverable(XiaoErrorKind::Resource),
+    ),
+    ("TypeError", CatchTypeKind::Recoverable(XiaoErrorKind::Type)),
+    ("FatalError", CatchTypeKind::Fatal),
 ];
 
 impl CatchTypeKind {
@@ -255,19 +271,14 @@ impl CatchTypeKind {
 }
 
 /// 查询一个源码错误类型名称的权威分类。
+///
+/// 从 [`ERROR_TYPE_NAMES`] 派生，不另写映射表。
 #[must_use]
 pub fn error_kind_of(name: &str) -> Option<CatchTypeKind> {
-    Some(match name {
-        "Error" | "XiaoError" => CatchTypeKind::AnyRecoverable,
-        "ArithmeticError" => CatchTypeKind::Recoverable(XiaoErrorKind::Arithmetic),
-        "MemoryError" => CatchTypeKind::Recoverable(XiaoErrorKind::Memory),
-        "TableError" => CatchTypeKind::Recoverable(XiaoErrorKind::Table),
-        "ConcurrencyError" => CatchTypeKind::Recoverable(XiaoErrorKind::Concurrency),
-        "ResourceError" => CatchTypeKind::Recoverable(XiaoErrorKind::Resource),
-        "TypeError" => CatchTypeKind::Recoverable(XiaoErrorKind::Type),
-        "FatalError" => CatchTypeKind::Fatal,
-        _ => return None,
-    })
+    ERROR_TYPE_NAMES
+        .iter()
+        .find(|(candidate, _)| *candidate == name)
+        .map(|(_, kind)| *kind)
 }
 
 /// 查询一个名称是否属于首版错误类型集合。
@@ -1398,5 +1409,14 @@ mod tests {
         assert!(!is_catchable_error_type_name("FatalError"));
         assert!(error_kind_of("FooError").is_none());
         assert_eq!(ERROR_TYPE_NAMES.len(), 9);
+        // 表本身是唯一来源：每个条目都必须能被查询还原，且没有重名。
+        let mut seen = std::collections::BTreeSet::new();
+        for (name, kind) in ERROR_TYPE_NAMES {
+            assert_eq!(error_kind_of(name), Some(*kind), "条目 {name} 未能还原");
+            assert!(seen.insert(*name), "错误类型名 {name} 重复");
+            if !matches!(kind, CatchTypeKind::Fatal) {
+                assert!(is_catchable_error_type_name(name));
+            }
+        }
     }
 }
