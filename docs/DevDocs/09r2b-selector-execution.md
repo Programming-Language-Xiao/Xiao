@@ -21,12 +21,19 @@
    以及「实施中新发现的边界」小节。
 4. [09R2D. 两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md) —— **缺陷档案与
    开发规定的主表在这里**，本文不重复。
-5. 两个 research README：`core/rust/crates/{xiao-bytecode,xiao-vm}/src/research/README.md`。
+5. [09R2C. 异常控制流实现交接文档](09r2c-exception-control-flow.md) —— 选择器产生的可恢复
+   错误必须走已经冻结的错误对象、handler、`finally` 和释放计划路径，不能另开一条选择器专用
+   展开通道。
+6. 两个 research README：`core/rust/crates/{xiao-bytecode,xiao-vm}/src/research/README.md`。
 
 ### 当前进度
 
-`main` 上 HEAD 为 `f533e5b`，门禁全绿。09R2 已交付四批（批次 1、批次 2、跨层审计、09R2C），
-R2D 的交接文档已定稿但**尚未实现**。
+当前基线是：09R2C 已完成并通过完整门禁，09R2D 已定稿为施工交接但**尚未实现**；R2B
+仍只完成静态阶段，本文描述的是接执行前的真实状态，不把任何规划文字当成已交付功能。
+09R2C 的实现提交为 `d733522`、`76e3533`、`ef5b149`；09R2D 的 C0、H1、H2 和编码器
+工作仍属于另一条线。共享测试基线是 `tests/spec/09-bytecode/` 当前 **27 条向量**（`scalar` 6、
+`control` 4、`errors` 9、`containers` 8）以及 `core/rust/crates/xiao-vm/tests/r2_stack.rs`
+当前 **40 条栈式回归**；这两个数字是快照，准数以文件本身为准。
 
 **本阶段的起点是一个反差**：
 
@@ -34,21 +41,30 @@ R2D 的交接文档已定稿但**尚未实现**。
 | --- | --- |
 | 语法 `xiao-syntax` | ✅ `SelectorItem::{Exact, Range, OpenRange, All, Random}` 齐全，含 span |
 | 类型 `xiao-types` | ✅ `selector_checker.rs`（1411 行）、`selection_shape.rs`（327 行）、`selection_random.rs`（182 行）；`c1_selectors.rs` **18 条测试**、`c1-*.json` **15 条快照** |
-| IR `xiao-ir` | ✅ 五类形状原样搬运（**不做展开**） |
+| IR `xiao-ir` | ⚠️ 五类形状原样搬运（**不做展开**）；当前 `IrProgram` 没有把 `SelectionPlan`、广播计划或随机种子计划作为后端可消费的规范字段带过去 |
 | **TAC 降低** | ❌ 只放行「单个 `Exact` + 单段路径」，其余记入 `unsupported` |
 | **运行时** | ❌ `containers/` 只有单元素读取，无范围/形状构造 |
-| **RuntimeCheck** | ❌ `selector_bounds`/`selector_step`/`random_count`/`random_seed` 全进 `unsupported` |
+| **RuntimeCheck** | ⚠️ R2C 当前只实际降低 `boolean_condition`、`arithmetic`、`numeric_range`、`dynamic_conversion`；`selector_bounds`/`selector_step`/`random_count`/`random_seed` 仍进 `unsupported` |
+| **VM 载体** | ⚠️ 当前只有栈式参考载体；R2D 的分类型寄存器式、混合式载体和编码器尚未实现 |
 
 **后果**：高级选择**能通过类型检查，但跑不起来**——验证器拒绝带 `unsupported` 的产物
 （`verify.rs` 的 `is_success()` 要求 `unsupported.is_empty()`）。
 
+R2B 可以先在栈式参考 VM 上落地，但它产生的 TAC、结果形状、错误和释放事件必须是**机型无关**的；
+R2D 完成后，三种载体必须重放同一组选择器向量和同一套 `VmEvent` 证据，不能为某种机型另写
+选择语义或期望值。
+
 ### 本批交付与不负责
 
-**交付**：步长接线、`SelectionPlan` 消费方式落地、高级选择的 TAC 操作数格式与运行时执行、
-`RandomSource` 注入、结果形状构造、左值广播事务性写入、四个 RuntimeCheck 的启用、向量与文档。
+**交付**：步长接线、`SelectionPlan` 的跨层承载与消费方式、高级选择的 TAC 操作数格式与运行时
+执行、`RandomSource` 注入、结果形状构造、左值广播事务性写入、四个 RuntimeCheck 的启用、共享
+向量与文档。交付完成后，栈式参考 VM 应可执行本文件列出的 R2B 语义；同一 TAC/向量仍须能被
+后续 R2D 三种载体复用。
 
-**不负责**：R2D 的两台机型与编码器、`for` 与表声明、`set_*`/`iterable` 检查（属其它批次）、
-`Result` 泛型与 `?` 传播、正式 `.xiaoc` 格式、09R3 的基准测量本身。
+**不负责**：R2D 的 C0 类别表修复、两种新载体、活跃区间、指令编码器和 `pc -> IrSpan` 接线；
+`for` 与表声明、`set_*`/`iterable` 检查（属其它批次）、`Result` 泛型与 `?` 传播、正式
+`.xiaoc` 格式、09R3 的基准测量本身。R2B 不得为绕开这些未实现项而把机型字段、物理 pc 或
+另一套生命周期规则写进选择器操作数。
 
 ---
 
@@ -85,14 +101,71 @@ D 类 6 次契约腐烂、8 项潜在隐患、排除指南）见
 | 广播写入**留下半截修改** | 必须先验证**全部**目标再写入，失败整次回滚 |
 | 高级选择仍被拒 | 对应的 `RuntimeCheck` 是否还留在 `unsupported` 里 |
 
+### 1.4 R2C/R2D 兼容门（选择器不能另立语义）
+
+R2D 文档的 09R2C 兼容门同样适用于 R2B。下面是选择器实现必须满足的最小边界；详细缺陷
+档案和三载体施工要求仍以 [09R2D 第二章](09r2d-machines-and-encoder.md) 为准。
+
+| 已冻结的契约 | R2B 的具体要求 |
+| --- | --- |
+| 错误身份 | 选择器越界、零步长、随机数量和路径错误构造为同一个 `RuntimeValue::Error` 体系中的可恢复错误；catch 绑定、重抛和堆栈不得把它们重建成“等值但不同身份”的副本。 |
+| handler 路由 | 选择器运行时错误先交给当前帧 handler，未匹配才逐帧传播；不能在选择器容器 API 里直接吞错、返回空值或绕过 `TacHandler`。 |
+| 清理顺序 | 结果构造、广播写入或随机抽取中途失败时，沿当前作用域执行既有 `finally -> drop -> 匹配 catch / 继续传播`；清理错误进入 `suppressed`，不覆盖主错误。 |
+| Fatal | 选择器输入错误不是 Fatal。真正的 Fatal 仍绕过 handler、`finally`、`drop` 和 `suppressed`；R2B 不得用“选择失败”扩大 Fatal 通道。 |
+| 释放计划 | `RunReleasePlan` 的 `(scope, exit)` 名称、动作顺序和空寄存器容忍语义不可重排；高级选择只登记自己构造的临时节点，不能复制或裁剪已有计划。 |
+| 未支持构造 | 任何暂未落地的选择项或 RuntimeCheck 必须继续进入 `TacProgram.unsupported` 并由验证器拒绝，不能为了让样例运行而静默丢弃。 |
+| 三种机型 | R2B 先用栈式参考 VM 验证也可以，但 TAC、错误、结果形状、释放事件和随机序列必须不含载体字段；R2D 的三种机型复用同一组向量，JSON 不改。 |
+
+R2D 尚未解决的 C0（跨函数类别污染）、H1（子程序故障来源状态）和 H2（每块 `clone`）不由
+R2B 修复。R2B 只需避免依赖它们的未冻结实现细节，并在异常、`finally` 和释放测试中保留
+足够的 `VmEvent` 证据，方便 R2D 三载体对拍。
+
 ---
 
 ## 二、硬性约束与开发规定
 
 门禁、区分度验证、工具规定、单一来源原则、解耦约束**沿用 09R2D 文档第二章**（不重复）。
-以下是本阶段**新增**的三条。
+以下条款把 R2C 的异常边界和 R2D 的三机型要求具体化为 R2B 的实现门槛。
 
-### 2.1 随机必须经 `RandomSource` 注入，且已有实现的冻结行为不得改
+### 2.1 类型层到运行时的单一来源
+
+`TypeChecker` 是选择语义的唯一计算者。它产生的 `SelectionPlan`、
+`BroadcastAssignmentPlan` 和 `RandomSeedPlan` 必须通过 IR 或一个由 IR 持有的后端无关投影
+传到 TAC；如果因为依赖方向不能直接携带 `xiao_types` 的结构，必须在 IR 层一次性序列化
+规范化字段，并用静态快照和运行时对拍证明等价。**禁止**在 TAC、Runtime 或 VM 重新解析源码、
+重新推断容器类型、重新展开范围或重新决定结果形状。
+
+以下函数和数据是跨层唯一来源，选择器实现只能复用：
+
+- `xiao_types::normalize_index`：负索引按 Python 规则归一化；运行时不能另写一份边界算法；
+- `xiao_types::decode_string_literal` / `decode_escape`：字符串索引和字典键路径使用同一解码；
+- `SelectionPlan::selected_paths`、`target_types`、`result_type`、`step`、`has_duplicates`：
+  执行顺序、目标类型、形状、步长和重复键结论均以计划为准；
+- `selection_shape::{direct_selection_children, empty_selection_type, project_selection_type}`：
+  结果构造器只消费类型层已经决定的投影，不凭运行时变体猜形状。
+
+`SelectionPlan::is_single_value()` 是 R2a 精确 `IndexGet` 与 R2b 高级选择的唯一分界。
+不要用“选择项数量”“操作数种类”或运行时容器变体另立一套判据。
+
+### 2.2 选择器生命周期与异常边界
+
+选择器不是无副作用的纯读取：结果容器、临时元素、广播右值和随机抽取中间值都必须登记在
+当前作用域的所有权/释放模型里。实现必须明确：
+
+1. 成功路径由结果形状决定返回值的所有权；被返回或写入目标的节点按既有 `Transfer`/移动语义
+   离开临时释放集合，未逃逸节点仍由当前 `RunReleasePlan` 清理。
+2. 结果构造进行到一半失败时，先保留主选择错误，再沿当前退出边执行
+   `finally -> drop -> 匹配 catch / 继续传播`；清理错误只能进入 `suppressed`。
+3. `return`、`break`、`continue` 和普通异常都必须只执行一次对应释放计划；`Fatal` 不执行
+   任何 handler、`finally` 或 `drop`。选择器代码不得直接调用 `std::panic!` 或绕过 VM 的
+   `Fault` 路由来“简化”错误处理。
+4. 广播写入先验证所有目标，再一次性提交；失败时既不能留下半次容器修改，也不能把右侧
+   具名绑定 `Move` 掉。具名绑定之间使用 `Copy`，临时值才使用 `Move`。
+
+`RunReleasePlan` 的动作顺序、空寄存器容忍和 `(scope, exit)` 命名继承 R2C/R2D，R2B 不能
+为了结果构造增加一套局部清理顺序。
+
+### 2.3 随机必须经 `RandomSource` 注入，且已有实现的冻结行为不得改
 
 **调研更正：随机源已经存在，不要重写。** `xiao-types/src/selection_random.rs`（182 行，
 含单元测试）已提供 `RandomSource` trait、`SeededRandom`（**xorshift64\***）、
@@ -107,12 +180,22 @@ D 类 6 次契约腐烂、8 项潜在隐患、排除指南）见
 `00-decisions.md:536` 是它的上位契约：「选择器测试和后端通过 `RandomSource` 注入随机源；
 随机状态不在类型阶段推进」。
 
-### 2.2 结果形状只能来自类型层的计划
+### 2.4 结果形状只能来自类型层的计划
 
 执行层**不得自行推断结果形状，也不得重排选择顺序**。`09-bytecode-runtime.md:134` 要求
 「多范围按源码中的项目顺序交给结果构造器」；`00-decisions.md:536` 要求「保留抽取顺序」。
 
-### 2.3 单一来源：本批最大的一处抉择（见任务 1）
+### 2.5 `unsupported` 与机型中立性
+
+`TacProgram.unsupported` 是显式的拒绝契约，不是日志或提示。任何尚未支持的选择器形态、
+RuntimeCheck、集合边界或复杂左值必须保留原始类别和源码跨度，让验证器拒绝产物；不得把它
+变成一个“尽量运行”的空选择、默认步长或动态值。
+
+高级选择的 TAC 操作数只能包含语义数据（规范化路径、范围边界、步长、随机模式、形状计划和
+源码映射），不得包含栈槽、寄存器类、窗口下标、编码宽度或物理 pc。这样 R2D 才能让三种载体
+复用同一程序和向量，R2D 的编码器也能在后续统一编码全部操作数。
+
+### 2.6 单一来源：本批最大的一处抉择（见任务 1）
 
 `SelectionPlan` 已经算好了一切，**但全链路没有消费者**。在 TAC 层重写一遍范围展开、
 步长与形状投影，**就是本仓 A 类病史的第 8 次**。见任务 1。
@@ -121,9 +204,27 @@ D 类 6 次契约腐烂、8 项潜在隐患、排除指南）见
 
 ## 三、下一阶段任务
 
+### 施工依赖顺序
+
+任务编号是提交切分，不代表可以任意并行。语义实现应按下面的依赖推进；每一层都先有
+静态快照或单元测试，再进入下一层：
+
+| 顺序 | 语义族 | 前置条件 | 必须锁定的结果 |
+| --- | --- | --- | --- |
+| A | 多段精确路径与多选形状 | 任务 0、1、2 | 选择顺序、嵌套路径和 `is_single_value()` 分流 |
+| B | 闭区间、四种单边范围、正/负步长 | A | `~` 双端包含；每个选择项独立应用步长；字典表边界稳定拒绝 |
+| C | 字典表/字典列路径限制 | B 的路径遍历器 | 无序字典表不能被范围穿越；重复直接键转有序元组 |
+| D | 随机选择与种子 | A、结果采集接口、`RandomSource` 注入 | `?`/`!?` 的数量、顺序、空来源和种子 0 行为 |
+| E | 结果形状与广播写入 | A-D 的选择结果 | 同根类型投影、空结果类型、事务性全量写入 |
+| F | RuntimeCheck、错误码和端到端向量 | A-E、R2C 异常路由 | 动态失败可捕获、释放顺序不变、无 `unsupported` 静默丢失 |
+
+任务 0 是把现有降低器的隐式步长丢弃改成显式边界；任务 1-2 决定规范化计划和 TAC
+操作数如何跨层传递；任务 3-7 才能在此基础上实现语义；任务 8 负责向量和区分度证据，
+任务 9 才把已经实现的事实同步到 UseDocs 和阶段索引。
+
 ### 任务 0（**先做**）：接上步长
 
-`lower/expr.rs:58-60` 用 `..` 丢掉了 `StepPlan`：
+`xiao-bytecode/src/research/lower/expr.rs` 的选择器分支用 `..` 丢掉了 `StepPlan`：
 
 ```rust
 IrExpressionKind::Selector { source, selector, .. } => lower_selector(...),
@@ -142,13 +243,19 @@ IrExpressionKind::Selector { source, selector, .. } => lower_selector(...),
    先 `rev()` 再 `step_by(|n|)`（`selector_checker.rs:1388-1402`），负步长是**反转**；
 3. 补一条**多项 + 步长**的区分度用例（撤掉接线必须失败）。
 
+任务 0 不能只把字段从函数签名传下去却继续在后端另算步长；若当前结构无法消费完整计划，
+暂时应把该形态保留在 `unsupported`，直到任务 1 的承载方案落地。
+
 ### 任务 1：决定并落地 `SelectionPlan` 的消费方式（**本批的架构决策**）
 
 类型层产出了 `SelectionPlan { source_type, result_type, items, selected_paths, target_types,
 step, requires_runtime_check, with_replacement, has_duplicates }`，以及
 `selection_shape.rs` 的形状投影、`selector_checker.rs` 的范围展开（`expand_direct_range`）
 与步长应用（`apply_global_step`）——**但 IR/TAC/VM 全链路都没引用它**。
-IR 只是把 `IrSelectorItem` 五类形状原样搬运，**不做任何展开**。
+IR 目前只把 `IrSelectorItem` 五类形状原样搬运，**不做任何展开**，并且
+`IrProgram` 尚未保存类型阶段的选择/广播/随机种子计划。任务 1 必须先决定计划的承载位置：
+优先让 `xiao-ir` 保存带源码跨度的规范化计划；若只能保存后端无关镜像，也要由类型层一次性
+生成，不能让 TAC 通过源码切片重建。
 
 **推荐方案：让 TAC/运行时消费 `SelectionPlan`。** 理由是本仓第一号病史就是
 「同一规则两处各写一份然后漂移」；在 TAC 层重新实现一遍范围展开与形状投影，**就是第 8 次**。
@@ -156,9 +263,18 @@ IR 只是把 `IrSelectorItem` 五类形状原样搬运，**不做任何展开**�
 **若因结构原因无法直接消费**（例如 `xiao-bytecode` 不该依赖 `xiao-types` 的某个类型），
 必须**明确登记理由**，并给出「两条实现语义一致」的对拍用例——**登记理由不等于可以放任分叉**。
 
+计划镜像至少要保留：选择项的源码顺序和逐项跨度、`Range`/`OpenRange` 的边界包含关系、
+`All`、随机模式与动态数量、`step`、`selected_paths`、`target_types`、`result_type`、
+`with_replacement`、`has_duplicates` 以及 `requires_runtime_check`。现有类型层模型丢失的
+逐项 span 或 `Range`/`OpenRange` 区分必须在承载层补齐，不能靠运行时猜测；若暂时补不齐，
+错误定位只能标到整个选择器 span，并应在未决项中登记。
+
 **注意一个现成的分界线**：`SelectionPlan::is_single_value()` 的判据是
 「恰好一个 `Exact` 项 + 一条路径 + 不需要运行时检查」，这正是 R2a 已支持的精确索引
 与 R2b 高级选择的**精确分界**，直接用它分流，不要另立判据。
+
+任务 1 的退出条件不是“某个后端能读到计划”，而是类型层计划在 IR、TAC、栈式 VM 和后续
+三种载体之间只存在一份语义来源，并有一条静态计划快照与一条运行时结果对拍证明没有漂移。
 
 ### 任务 2：TAC 操作数格式
 
@@ -167,9 +283,17 @@ IR 只是把 `IrSelectorItem` 五类形状原样搬运，**不做任何展开**�
 
 现状 `TacOp` 只有 `IndexGet { source, path: Vec<PathStep> }`，而 `PathStep` 只有
 `Index(i128)` 与 `Key(String)`，**只够精确索引**。本任务要新增高级选择的操作数形式
-（范围/多选/全选/随机/结果形状计划），并按上式与精确路径**分开**。
+（范围/多选/全选/随机/结果形状计划），并按上式与精确路径**分开**。高级操作数应引用
+规范化计划或其后端无关镜像，而不是保存源码切片；`IndexGet` 继续只表达单项精确读取。
+文档或研究分支里可能出现的 `SelectorApply` 只是设想名称，**不是现有 API**，落地时必须
+显式登记真实的 `TacOp` 变体和版本字段。
 
-### 任务 3：运行时执行
+操作数设计还要给 R2D 编码器留下稳定边界：字段顺序、`i128` 有符号索引、字符串键、
+动态数量/步长、形状标签和源码跨度都要可验证；不能把寄存器类别、窗口位置、操作数宽度
+或物理 pc 编进选择器语义。块/寄存器关系由通用 TAC 验证器检查；常量、签名、函数等引用
+的边界由后续编码器补充检查，不能假定当前 `verify_program` 已经覆盖它们。
+
+### 任务 3：运行时执行（Range / All / Step）
 
 按冻结语义实现：
 
@@ -177,47 +301,75 @@ IR 只是把 `IrSelectorItem` 五类形状原样搬运，**不做任何展开**�
   范围端点按**深度优先路径**排序；降序时结果**反序**；**范围不能穿过无序字典表**。
 - **All**：`[=]` 全选。
 - **Step**：正数向前、负数反向、**动态零步长报统一错误**。
-- **Random**：`[?count]` 无放回、`[!?count]` 放回；保留抽取顺序；
-  **无放回超量报错，放回允许超量但空来源不能抽正数**；数量为 `0` 返回**同类型空结果**。
 
 容器层现在只有 `element(usize)` / `value(&str)` / `with_elements` / `with_entries`，
 **既没有切片 API 也没有结果形状构造器**——本任务要在「容器句柄」与「TAC 指令」之间补
-一层选择器语义。
+一层选择器语义。端点展开必须直接消费类型层的范围计划，保留多项的源码顺序；不能先把
+所有端点排序后再按运行时容器顺序重排。字典列可以按有序列索引/键名路径参与高级选择，
+但无序字典表不能被范围穿越；集合的任何索引继续稳定失败。每次读取都必须经过
+`normalize_index`，动态越界通过 `Check` 的失败边进入 R2C 的错误路由。
 
-### 任务 4：结果形状构造
+### 任务 4：随机选择执行
+
+`[?count]` 无放回、`[!?count]` 放回；保留抽取顺序；无放回超量报错，放回允许超量但空来源
+不能抽正数；数量为 `0` 返回同类型空结果。随机抽样必须调用现有
+`xiao_types::selection_random::sample_indices`，由 VM 注入 `RandomSource`；不得在 Runtime
+或 VM 自己实现另一套伪随机算法，也不得让类型阶段推进随机状态。
+
+测试必须锁定 `SeededRandom::new(0)` 的非零替换常量和取模采样行为，且同一固定种子两次运行
+得到同一序列。随机错误和动态 `random_seed` 检查走可恢复错误通道，不得被当成 Fatal。
+
+### 任务 5：结果形状构造
 
 按 `09-bytecode-runtime.md:169`：**单项精确索引返回元素；多选、范围和随机选择保持
 数组、元组、`str` 或字典列的来源根类型**，并保留必要的嵌套形状。
 
+构造器只接受 `SelectionPlan::result_type`、`target_types`、`selected_paths` 和
+`has_duplicates`，不得从 `RuntimeValue` 的当前变体反推返回类型。选择项和随机项的顺序
+必须保留；空结果调用 `empty_selection_type`；跨嵌套路径调用 `project_selection_type`，
+不把嵌套值扁平化。
+
 **字典列的特殊规则**（`00-decisions.md:534`）：数字索引/键名索引/范围产生**同一直接键的
 重复选择**时，结果改用**按选择顺序排列的元组**，**不能伪造重复键的字典列**。
 
-### 任务 5：左值广播事务性写入
+### 任务 6：左值广播事务性写入
 
 `00-decisions.md:537` 与 `broadcast-assignment.md` 冻结：标量复制到**全部**目标；
 **随机目标、复合赋值、复杂根表达式拒绝**；
 **Runtime 必须先验证全部目标，失败时整次回滚，不允许留下部分修改**。
 
 类型层已有 `BroadcastAssignmentPlan { root_name, target_paths, value_type, dynamic, transactional }`
-可直接消费。**注意 B3 的教训**：写具名绑定用 `Copy`，不要用 `Move` 清空源。
+可直接消费。只允许计划声明的根绑定和静态/动态目标；随机目标、容器右值、复合赋值和复杂
+根表达式继续拒绝。Runtime 必须先解析、类型检查并锁定全部目标，再提交任何写入；任何一项
+失败都要回滚整个操作。**注意 B3 的教训**：写具名绑定用 `Copy`，不要用 `Move` 清空源；
+临时右值的 `Move` 只有在事务成功后才可提交。
 
-### 任务 6：启用四个 RuntimeCheck
+### 任务 7：启用四个 RuntimeCheck 与错误码
 
-`09r-...md:541-542` 原文：「**`string_boolean` 与选择器/集合/迭代器检查**继续进入
-`TacProgram.unsupported`，待对应 **R2b** 语义落地后再执行。」
+09R2C 已明确：`boolean_condition`、`arithmetic`、`numeric_range`、`dynamic_conversion`
+是当前真正启用的四类；`string_boolean` 虽然解释器认识但降低器不发出，选择器、集合、
+随机和 `iterable` 目前仍进入 `TacProgram.unsupported`。R2B 只能在对应语义和测试完成后
+启用选择器相关四类，不能顺手扩大到集合或迭代器。
 
 本批启用 **`selector_bounds` / `selector_step` / `random_count` / `random_seed`**，
-逐个从 `lower/mod.rs:677-689` 的放行名单里移出，**各配一条区分度用例**。
+逐个从降低器的 `unsupported` 放行名单里移出，**各配一条区分度用例**；每个失败都必须
+构造稳定的 `RuntimeValue::Error`，并能被 R2C 的 catch/传播路径观察到。
 `string_boolean`、`set_*`、`iterable` **仍不归本批**，不要顺手扩大范围。
 
-**需要新增运行时错误码**：`X06-RUNTIME-*` 目前到 **016** 为止，且 **014/015/016 是容器码**，
-**没有任何选择器专属码**（无范围/步长/随机类）。新增码要同步 i18n 与 spec。
+**需要新增运行时错误码**：当前 `X06-RUNTIME-014/015/016` 分别仍是容器索引、字典键和
+集合哈希性错误，尚无选择器专属运行时码。新增码必须从权威错误表生成，映射到 i18n 与
+spec，并为每个码提供真实产生点；不能只在文档或消息目录里登记死码。
 
-### 任务 7：语义向量
+### 任务 8：语义向量与区分度测试
 
 扩展 `tests/spec/09-bytecode/containers.json` 或新增 `selectors.json`，覆盖：
 多选、闭区间、四种单边范围、全选、正负步长、放回/无放回随机、字典列重复键→元组、
 嵌套形状保留、空结果、以及各个错误路径。
+
+保留现有 27 条共享向量和 40 条 `r2_stack.rs` 回归作为 R2C/R2a 基线；新增选择器向量
+必须能由栈式 VM 执行，并在 R2D 完成后由三种机型复用，向量中不得出现机型字段。除了最终
+`RunResult`，还要核对 `VmEvent` 的 handler、`finally`、释放顺序、`suppressed` 和随机序列，
+防止“结果相同但清理路径不同”的假通过。
 
 **一条硬约束**：**语义向量不能用字面量构造错误**。`value = 7 % 0` 会被常量折叠在类型阶段
 拒掉（`X02-TYPE-007`），那是**正确行为**。选择器同理——零步长、越界、超量抽取
@@ -225,10 +377,20 @@ IR 只是把 `IrSelectorItem` 五类形状原样搬运，**不做任何展开**�
 
 向量**不得含机型专属字段**：R2D 的三种机型要复用同一组期望值。
 
-### 任务 8：文档同步
+区分度用例至少包括：
 
-- **改 UseDocs 的 5 个页面**：`collections/` 下的 `advanced-selection.md`、
-  `random-selection.md`、`broadcast-assignment.md`、`indexing.md` 等现在写着
+- 两个选择项各自应用非单位步长，能区分“逐项应用”和“全局应用一次”；
+- 字典列重复直接键必须得到有序元组，撤掉 `has_duplicates` 判定时用例失败；
+- 固定种子重复运行得到完全相同的抽取序列，撤掉 `RandomSource` 注入时用例失败；
+- 广播目标中一项非法时所有目标保持原值，且源绑定仍可读取；
+- 结果构造到一半失败时，事件序列显示已构造临时节点按当前释放计划清理；
+- 四个 RuntimeCheck 均由编译期不可知的形参触发，而不是被常量折叠提前拒绝。
+
+### 任务 9：文档同步
+
+- **改 UseDocs 的 5 个页面**：`docs/UseDocs/language/collections/` 下的
+  `advanced-selection.md`、`random-selection.md`、`broadcast-assignment.md`、
+  `indexing.md`、`dictionaries.md` 现在写着
   「当前版本的类型检查器生成选择计划和诊断，**后续 Runtime 才会把计划应用到真实值**」
   一类措辞。这是**当时的诚实描述**（已核实），但本批落地后必须更新，
   否则会出现「文档说后续才有，而 Runtime 已经有了」。
@@ -282,24 +444,40 @@ IR 只是把 `IrSelectorItem` 五类形状原样搬运，**不做任何展开**�
 
 ## 五、提交切分
 
-按可独立验证的单元分八次，**每次提交后门禁全绿**：
+按可独立验证的单元分十次，**每次提交后门禁全绿**；每次都先回归现有 27 条共享向量和
+40 条栈式异常回归：
 
-0. 步长接线（`lower/expr.rs` 的 `..`）+ 多项步长用例。
-1. `SelectionPlan` 消费方式落地（含登记理由）+ 对拍用例。
-2. 高级选择的 TAC 操作数格式（与精确路径分开）+ 单元测试。
-3. 运行时 Range / All / Step 执行 + 单元测试。
+0. 步长接线（`lower/expr.rs` 的 `..`）+ 多项步长区分度用例。
+1. `SelectionPlan`/广播/随机种子计划的 IR 承载（含缺失字段登记）+ 静态快照和对拍用例。
+2. 高级选择的 TAC 操作数格式（与精确路径分开）+ 验证器单元测试。
+3. Range / All / Step 运行时执行和字典表路径限制 + 单元测试。
 4. `RandomSource` 注入 + 随机选择执行（含种子 0 与取模行为的锁定用例）。
-5. 结果形状构造（含字典列重复键→元组）+ 单元测试。
-6. 左值广播事务性写入 + 单元测试。
-7. 四个 RuntimeCheck 启用 + 新运行时错误码 + 语义向量 + 文档（含 UseDocs 措辞）。
+5. 结果形状构造（含嵌套形状、空结果、字典列重复键→元组）+ 单元测试。
+6. 左值广播事务性写入 + `Copy`/`Move` 和回滚单元测试。
+7. 四个 RuntimeCheck 启用 + 新运行时错误码 + R2C 错误路由用例。
+8. 共享语义向量、三机型预留接口和所有区分度测试。
+9. UseDocs、crate README、研究 README、DevDocs 主表和模块登记同步。
 
-**若中途必须停**：0–2 与 7 的检查部分各自完整可验证，不会留下半成品。
+**若中途必须停**：0–2 仍是完整的承载/操作数边界；3–7 各自只在已有前置提交存在时合入；
+8–9 必须等实现事实稳定后再更新，不能先把规划写成已完成。
 
 ---
 
 ## 六、验收标准
 
-命令见 09R2D 文档 2.4 节。**关键验收不是「测试通过」**：
+每次提交前沿用 09R2D 2.4 的完整门禁；文档任务本轮已实际运行 `bun run check`、
+`bun run check:coverage`、`bun test` 和 `git diff --check`。代码实现提交还必须补跑：
+
+```text
+cargo test  --manifest-path core/rust/Cargo.toml --workspace
+cargo clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets -- -D warnings
+cargo fmt   --manifest-path core/rust/Cargo.toml --all -- --check
+cargo doc   --manifest-path core/rust/Cargo.toml --workspace --no-deps
+bun run check && bun run check:coverage && bun test
+git diff --check
+```
+
+**关键验收不是「测试通过」**：
 
 1. **`09-bytecode-runtime.md:164-172` 的九条运行验收逐条有对应用例**：
    `~` 双端包含、四种单边范围包含关系、跨嵌套选择的形状保留、步长 `0` 报错与负数反向、
@@ -318,9 +496,17 @@ IR 只是把 `IrSelectorItem` 五类形状原样搬运，**不做任何展开**�
 7. **中途错误清理已构造节点**：构造一个「结果构造到一半出错」的用例，
    断言按当前作用域释放计划清理干净（事件序列可查）。
 8. **四个检查真的会失败**：每个检查各有一条由**编译期不可知的值**触发的用例
-   （见任务 7 的字面量陷阱），**撤掉检查必须失败**。
+   （见任务 8 的字面量陷阱），**撤掉检查必须失败**。
 9. **没有留下死码**：每个新增错误码都有产生点与用例（D3 的教训）。
-10. **不算假通过**：新增 `pub` 项 100% Rustdoc；不用 `#[allow]` 掩盖。
+10. **R2C 兼容门不漂移**：选择器错误保留 `RuntimeValue::Error` 身份，当前帧优先路由、
+    `finally -> drop -> catch/传播`、`suppressed` 和 Fatal 隔离与现有 40 条栈式回归一致；
+    不得以最终结果相同掩盖释放或 handler 事件差异。
+11. **共享计划不漂移**：静态计划快照、TAC 操作数和运行时结果都来自同一规范化计划；
+    后端不重新解析源码、不重新推断类型，撤掉计划传递时对拍必须失败。
+12. **三机型可复用**：新增向量只描述语义结果、错误和释放事件，不写栈槽、寄存器、编码
+    宽度或物理 pc；R2D 的三种载体可以复用同一份 JSON，现有 27 条向量保持零差异。
+13. **不算假通过**：新增 `pub` 项 100% Rustdoc；不用 `#[allow]` 掩盖；`unsupported` 非空
+    的产物仍被验证器拒绝。
 
 ---
 
@@ -330,15 +516,24 @@ IR 只是把 `IrSelectorItem` 五类形状原样搬运，**不做任何展开**�
    `xiao-bytecode/src/research/`**（R2b 加选择器操作数格式，R2D 加 `categories`、
    载体与编码器）。**并行会直接冲突**。建议**串行**；若必须并行，
    先明确约定谁先动 `tac.rs` 并各自避开对方的文件。
-2. **形状投影与释放计划的交互**：任务 3「中途错误清理已构造节点」是一条**新的资源管理
+2. **计划承载与依赖方向**：当前 `xiao-ir` 没有保存 `SelectionPlan` 等类型阶段计划；如果
+   直接让后端依赖类型层结构会改变研究 crate 的边界，如果复制字段又可能形成第 8 次语义
+   分叉。必须在任务 1 登记承载决策、快照格式和对拍证据，不能先写一份临时 DTO 再忘记来源。
+3. **形状投影与释放计划的交互**：任务 5「中途错误清理已构造节点」是一条**新的资源管理
    路径**，与既有 `Release`/`Transfer` 语义如何衔接需要在实现时定清并登记。
    它与 D1（临时值泄漏）同源，**先读 `885a278` 的修法再设计**。
-3. **范围展开算法复杂度高**：`expand_direct_range` 约 90 行，处理排他下界子树排除、
+4. **范围展开算法复杂度高**：`expand_direct_range` 约 90 行，处理排他下界子树排除、
    边界切入裁剪、祖先去重三处陷阱。**若任务 1 选择在 TAC 层重实现，这三处是最可能分叉的地方**——
    这也是推荐消费 `SelectionPlan` 的主要原因。
-4. **随机序列跨平台一致性**：`SeededRandom` 是纯整数运算（无浮点、无平台依赖），
+5. **随机序列跨平台一致性**：`SeededRandom` 是纯整数运算（无浮点、无平台依赖），
    但要**确认**后再作为 09R3 差分基准的输入。
-5. **行尾与工具**：改中文源码一律用 `Write`/`Edit`，不要用 shell heredoc 或 Python 替换
+6. **R2D 兼容门尚未有新载体证据**：C0、H1、H2 仍开放；R2B 的选择器向量必须先在栈式
+   参考载体锁定异常、释放和随机证据，不能声称已经完成三机型对拍，也不能把 H1/H2 的现状
+   当作设计安全证明。
+7. **运行时错误码与本地化同步**：当前 `X06-RUNTIME-014..016` 已被容器语义占用；选择器
+   新码的编号、消息参数、`RuntimeValue::Error` 映射和 spec 快照必须同批更新，避免只加一张
+   消息表造成 D3 式死码。
+8. **行尾与工具**：改中文源码一律用 `Write`/`Edit`，不要用 shell heredoc 或 Python 替换
    （上一阶段三次静默失配，其中一次导致误报了一个不存在的前端缺陷）。
 
 ---
