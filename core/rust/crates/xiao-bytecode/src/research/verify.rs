@@ -2,7 +2,8 @@
 
 use xiao_ir::{IrProgram, ObservedRelease, reconcile_release_plans};
 
-use crate::research::tac::{BlockId, TacOp, TacProgram, VReg};
+use crate::research::cfg::jump_targets;
+use crate::research::tac::{TacOp, TacProgram, VReg};
 
 /// 三地址验证结果。
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -115,19 +116,6 @@ fn observed_plans(tac: &TacProgram) -> Vec<ObservedRelease> {
         }
     }
     observed
-}
-
-/// 列出一条指令的所有跳转目标。
-fn jump_targets(op: &TacOp) -> Vec<BlockId> {
-    match op {
-        TacOp::Jump(target) => vec![*target],
-        TacOp::BranchIf {
-            if_true, if_false, ..
-        } => vec![*if_true, *if_false],
-        TacOp::Check { on_failure, .. } => vec![*on_failure],
-        TacOp::CallSub { sub } => vec![*sub],
-        _ => Vec::new(),
-    }
 }
 
 /// 保留 `VReg` 在验证签名中的可见性。

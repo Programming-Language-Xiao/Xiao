@@ -6,6 +6,10 @@
 //!
 //! 冻结结论与施工顺序见 `docs/DevDocs/09r-bytecode-machine-research.md`。
 
+/// TAC 的显式控制流后继。
+pub mod cfg;
+/// 机型无关的活跃区间分析。
+pub mod liveness;
 /// `IrProgram` 到统一三地址模型的单向降低。
 pub mod lower;
 /// 调用签名表，补齐 `IrProgram` 缺失的调用 ABI 描述。
@@ -15,6 +19,10 @@ pub mod tac;
 /// 三地址自校验与释放序列对账。
 pub mod verify;
 
+/// 重导出 CFG 与活跃分析入口。
+pub use cfg::{jump_targets, protected_successors, successors};
+/// 重导出活跃区间结果与分析函数。
+pub use liveness::{LiveInterval, Liveness, analyze as analyze_liveness};
 /// 重导出降低入口与释放计划携带类型。
 pub use lower::{TacReleaseAction, TacReleasePlan, lower_program};
 /// 重导出调用签名表与形参类别。
