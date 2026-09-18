@@ -157,5 +157,5 @@ workspace = true
 
 ## 六、交接记录
 
-本阶段包含 20 个 manifest 的 opt-in 和 44 个字段 Rustdoc；实际提交号在提交完成后补入本节、
-`docs/DevDocs/README.md` 和 [12. 测试与开发里程碑](12-tests-and-milestones.md)。
+本阶段包含 20 个 manifest 的 opt-in 和 44 个字段 Rustdoc；实现提交为 `6d296c3`，并已在
+`docs/DevDocs/README.md` 和 [12. 测试与开发里程碑](12-tests-and-milestones.md) 留下索引。

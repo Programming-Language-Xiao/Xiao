@@ -55,7 +55,8 @@
 7. 代码、测试和 UseDocs 的同步规则已接入本地检查与 CI；模块未同步文档时不能标记完成。
 8. 平台适配计划明确按 Windows → Linux → macOS 排列，性能验收明确以 `xiao build` LLVM 原生模式为标准。
 9. 20 个 Rust workspace 成员均声明 `[lints] workspace = true`；`missing_docs` 的 rustc 与
-   repo-check 两套口径均无缺口，标准 Clippy 门禁能阻断新增缺失 Rustdoc。
+   repo-check 两套口径均无缺口，标准 Clippy 门禁能阻断新增缺失 Rustdoc（实现提交
+   `6d296c3`）。
 
 ### F0：源码工程与位置模型
 
