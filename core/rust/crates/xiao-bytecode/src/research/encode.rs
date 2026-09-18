@@ -2824,6 +2824,11 @@ mod tests {
             assert_program_eq(&program, &decoded);
             assert_eq!(encoded.functions[0].blocks[0].instruction_pcs.len(), 31);
             assert_eq!(encoded.span_at(0, 0, 7), Some(IrSpan::new(121, 123)));
+            let pc = encoded.functions[0].blocks[0].instruction_pcs[7];
+            assert_eq!(encoded.span_at_pc(0, pc), Some(IrSpan::new(121, 123)));
+            assert_eq!(encoded.span_at_pc(0, pc + 1), Some(IrSpan::new(121, 123)));
+            assert_eq!(encoded.span_at_pc(0, encoded.functions[0].code_len), None);
+            assert_ne!(pc as usize, 121, "物理 pc 不得退化为源码偏移");
             assert!(encoded.functions[0].blocks[1].pc > 0);
             sizes.push(encoded.bytes.len());
         }
