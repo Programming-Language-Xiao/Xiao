@@ -25,8 +25,8 @@
 
 ### 当前进度
 
-本次更新以 `09R2C` 已落地、`0fb62b9` 登记的 R2D 初版交接为基线；不要把本文件的规划文字
-误读成 R2D 已经实现。09R2C 的实现提交为 `d733522`、`76e3533`、`ef5b149`，
+本节保留 `09R2C` 已落地、`0fb62b9` 登记的 R2D 初版交接基线；实现状态以本节末的
+“R2D 交付快照”为准。09R2C 的实现提交为 `d733522`、`76e3533`、`ef5b149`，
 其完整门禁已经通过。09R2 已交付四批：
 
 | 批次 | 内容 | 提交 |
@@ -36,10 +36,9 @@
 | 跨层审计 | 12 项缺陷 + 契约清理 | `7a67af3` `3f6aa94` `85a11d8` `3d1956f` `59a0317` `2bb5dc8` `ccba90a` `e900f3b` |
 | 09R2C | 错误对象、handler 路由、finally 子程序、Raise/Check | `d733522` `76e3533` `ef5b149` |
 
-**R2D 接手现状**：语义核 `xiao-vm/src/research/semantics/exec.rs` 仍只通过
-`Carrier` 使用栈式载体；`Carrier` 目前有 `empty/read/write/take/depth/peak` 6 个方法，
-`run.rs` 的 `run()` 仍硬编码 `Vm::<StackCarrier, _>`。全仓**没有任何编码器代码**，
-也**没有物理 pc 概念**。
+**R2D 初版交接时的现状（历史基线）**：语义核仍只通过 `Carrier` 使用栈式载体，
+`Carrier` 只有六个旧方法，`run.rs` 只有栈式入口，全仓没有编码器和物理 pc。该基线
+已由下列交付快照完成，不应再当作当前状态。
 
 09R2C 已经锁定、R2D 必须保持的执行契约如下：
 
@@ -62,9 +61,16 @@
   准数一律以 `tests/spec/09-bytecode/*.json`、`r2_stack.rs` 与 `r2_tac.rs` 为准。**
   本仓的第一号病史就是「同一规则两处各写一份然后漂移」，不要把它变成第三份来源。
 
-当前仍有两项已知的前置状态：`TacProgram.categories` 仍是程序级表而 `VReg` 在每个函数
-重新编号，跨函数类别污染（C0）尚未修复；错误堆栈的 `BackendLocation.bytecode_offset`
-目前临时填入 `IrSpan.start`，它是源码偏移而不是物理 pc，必须由本批最后的映射任务替换。
+R2D 交付后，`TacFunction.categories` 已成为物理分配的正式输入，程序级类别只保留兼容
+视图；错误堆栈从只读 pc 表取得物理偏移，映射缺失保留空后端位置并记录事件。仍未交付的
+只有本批明确排除的 R2b 选择器全量、`for`/表声明、`Result` 泛型与正式 `.xiaoc` 格式。
+
+**R2D 交付快照（2026-09-18）**：实现提交为 `64691b6`、`351cb12`、`9b7d887`、
+`c3bd94c`、`2ac2f2e`、`af779e9`、`1a2b22f`、`b1bab53`、`1605282`。三种载体共用 27 条向量，
+`r2_stack.rs` 当前为 42 条回归（其中 40 条为交接时的 R2C 基线，另含机型指标与 pc
+映射反例）；编码器单元测试覆盖 31 个 opcode、两种操作数宽度和拒绝路径。H1 已用
+`subroutine_faults` 栈化状态收敛；H2 去掉块级 `TacInstr` 克隆，交接基准为中位数
+`253.66 ms -> 245.83 ms`（约 `3.1%`）。
 
 ### 本批交付与不负责
 
@@ -212,12 +218,14 @@ R2b 之后新增选择器操作数时，**编码器与三种载体都要跟着�
   嵌套 `finally` 按内层到外层执行，且同一动态轮次不重复执行。
 - 正常路径的 `finally` 故障成为主错误；已有主错误时，清理故障进入 `suppressed`；
   Fatal 故障立即终止，不进入普通错误的合并路径。
-- catch 绑定重抛保留原错误身份；未匹配错误逐帧传播；错误堆栈中的每一帧都必须保留
-  `BackendLocation`，但其 `bytecode_offset` 在本批完成前仍只是源码偏移临时值。
+- catch 绑定重抛保留原错误身份；未匹配错误逐帧传播；错误堆栈中的每一帧都保留
+  `BackendLocation`。R2D 完成后，`bytecode_offset` 来自只读物理 pc 表；映射缺失时
+  保留空后端位置并记录 `BackendLocationMissing` 事件。
 - `dynamic_conversion` 是只服务 `raise` 错误边界的窄语义，只允许 `RuntimeValue::Error` 通过；
   不得把它扩展宣传为完整动态标量转换。
 
-这些边界已经由 `r2_stack.rs` 的 40 条回归测试和 `errors.json` 的 9 条向量覆盖。
+这些边界由 `r2_stack.rs` 的 40 条 R2C 基线回归（当前文件共 42 条，新增两条区分度测试）
+和 `errors.json` 的 9 条向量覆盖。
 R2D 的寄存器/混合载体必须复用同一套 `VmEvent` 事件语义，不得只比较最终结果而丢掉
 释放、handler、Fatal 和 `suppressed` 证据。
 
@@ -226,8 +234,8 @@ R2D 的寄存器/混合载体必须复用同一套 `VmEvent` 事件语义，不�
 - **`76e3533` 的提交正文为空**（800 行执行核心），违反「正文说明为什么」的规定。
   **不重写历史无法修复**，接手时不要试图回填。
 - 09R2D 的初版交接曾把 R2C 之前的 27 条向量、旧提交基线和“尚待交付”混写；
-  本次已按最新交接重新标明 27 条共享向量、40 条栈式回归、C0 未修状态和
-  `bytecode_offset` 的临时语义。
+  本次先按接手时基线标明 27 条共享向量、40 条栈式回归、C0 未修状态和
+  `bytecode_offset` 的临时语义，交付快照再登记修复后的状态。
 - **教训**：这个仓库的文档承诺会被 `bun run check` 当作契约校验。写文档时要与代码同步核对。
 - **R2b 文档刻意不复制本档案**：`09r2b-selector-execution.md` 只在它的 1.2 保留与选择器
   直接相关的四条（A2/A3、B3、D1、D3），其余指向本文。这是对「同一内容誊抄成第三份副本」
@@ -237,13 +245,13 @@ R2D 的寄存器/混合载体必须复用同一套 `VmEvent` 事件语义，不�
 
 | # | 隐患 | 为什么危险 | 本批怎么处理 |
 | --- | --- | --- | --- |
-| H1 | `Frame.last_sub_fault` 是单个 `Option<BlockId>`，而 `active_subroutines` 是栈 | 嵌套 `finally` 内层失败时，外层子程序的来源信息可能被覆盖 → 错误路由到错的退出边 | **现状已排查但表示仍脆弱**：`nested_finally_failure_does_not_repeat_outer_finally` 等用例通过；R2D 必须把故障来源作为子程序返回值或等价的栈化状态传递，不能把“当前向量通过”当成设计证明 |
-| H2 | `run_blocks`（`exec.rs:221`）与 `run_subroutine`（`exec.rs:560`）**每执行一个块都 `instructions.clone()`** | 每块一次 `Vec` 分配，会**污染 09R3 的性能基准** | **仍开放**：先建立可复现的分配/指令基线，再移除 clone；记录前后数字，不得只凭编译通过宣称完成 |
+| H1 | 旧版 `Frame.last_sub_fault` 是单个 `Option<BlockId>`，而 `active_subroutines` 是栈 | 嵌套 `finally` 内层失败时，外层子程序的来源信息可能被覆盖 → 错误路由到错的退出边 | **已修复并验证**：改为栈化 `subroutine_faults`，保留 `nested_finally_failure_does_not_repeat_outer_finally` 回归；故障来源不再依赖可覆盖单值 |
+| H2 | 旧版 `run_blocks`/`run_subroutine` 每个块都 `instructions.clone()` | 每块一次 `Vec` 分配，会污染 09R3 的性能基准 | **已修复并留基准**：移除克隆后同一 27 条栈式向量连续 5 次中位数由 `253.66 ms` 降至 `245.83 ms`，约 `3.1%`；R3 仍需按正式协议重测 |
 | H3 | `RuntimeValue::Hash` 对错误对象只哈希判别式 | 契约上允许（不等者可同哈希），但若有人依赖哈希区分会静默错 | 已登记为**已知语义，不要「修」** |
 | H4 | 静态说栈值、运行时按堆物化的元组 | 语义可能不等价 | 本批不动，记入风险 |
 | H5 | `escape.rs:887-901` 把 `ExitKind::Fatal` 列为可被 catch 吃掉，与 07-B 冲突 | 依赖它会把 Fatal 吞掉 | **09R2C 已按 07-B 实现**：Fatal 绕过 handler/finally/drop；R2D 只需用三种载体复验，不得改生命周期冻结产物 |
 | H6 | 容器按**对象身份**相等，结构性 `==` 未实现 | 两个内容相同的数组判不等 | 已知语义，不要「修」 |
-| H7 | 合流点 `CategoryMap` 退化为 `Poly` | `Poly` 必须落帧槽，**寄存器机型若把它当普通类别分配会出错** | 与 C0 分开处理：先把类别表改为逐函数语义，再让分配器把 `Poly` 固定到帧槽、`None` 视为零宽 |
+| H7 | 合流点 `CategoryMap` 退化为 `Poly` | `Poly` 必须落帧槽，**寄存器机型若把它当普通类别分配会出错** | **已处理**：逐函数类别表已成为正式分配输入，寄存器载体将 `Poly` 固定到帧槽、`None` 视为零宽 |
 | H8 | 参数 clone 进被调帧后的引用计数是否平衡，未做峰值内存验证 | 09R3 有「峰值内存恶化 ≤10%」门槛 | 本批不验证，留给 09R3 |
 
 ### 1.8 排除指南（症状 → 先查哪里）
@@ -432,9 +440,9 @@ git diff --check
    R1-L/O 的保存责任无处落地。调用开始/结束可以进 trait，但必须用默认空实现让 `StackCarrier`
    零成本。
 4. **指标出口只有 `peak()`**，无法上报 `spill_count`、`stack_map_entries` 和调用保存次数。
-5. **`last_sub_fault` 是单值状态而不是栈化返回值**：R2C 的嵌套 finally 向量已经通过，但载体泛化
-   不得继续依赖一个会被内层子程序覆盖的全局临时字段。优先让 `run_subroutine` 返回结构化的
-   `Flow`/故障来源，或为每个活动子程序维护配对状态；不能把 H1 的“已排查”降级成“已证明安全”。
+5. **H1 已收敛**：旧版 `last_sub_fault` 已替换为与活动子程序配对的
+  `subroutine_faults` 栈；`run_subroutine` 的故障来源不会被内层子程序覆盖。后续改动仍不得
+  把它退化成单个可覆盖字段。
 
 **设计要求**：
 
@@ -646,18 +654,15 @@ R1-Z 要求源码映射是独立于指令流的 `pc -> IrSpan` 表、增量编�
 
 ### 任务 8：文档同步
 
-- 父文档 `09r-bytecode-machine-research.md` 必须继续使用「**已登记、尚待交付**」标题：
-  `for`/表声明仍由 `lower/stmt.rs` 记入 `unsupported`，两种新机型和编码器在实现前
-  不得写入“已交付”。本文件完成后要用 `rg` 交叉检查两份文档的状态词一致。
-- 本批实现代码落地时，同步更新两个 crate 的 research README、`docs/DevDocs/README.md`、
-  `12-tests-and-milestones.md` 和 `tests/spec/09-bytecode/README.md`；在代码尚未落地前，
-  不要提前把模块登记改成 `verified`。
-- `docs/module-registry.json` 只有在 `encode.rs`、新载体目录和对应测试真实存在后，才登记
-  它们的 `code`/`tests` 路径；研究模块整体仍保持 `draft`，直到 09R2 阶段退出条件全部满足。
-- H1/H2 必须留下可核查结论：H1 要么改成结构化子程序故障状态并有回归测试，要么明确记录
-  保守方案；H2 要有 clone 前后可复现数字。不能只写“已排查”而不留证据。
-- 本次交接文档自身的门禁是：链接、标题层级、提交基线、27 条向量/40 条回归数字和
-  09R2C 兼容门与代码一致；代码实现完成后再追加实际提交号和基准数字。
+- 父文档仍保留「**已登记、尚待交付**」标题，用于标记未完成的 `for`/表声明；R2D
+  已交付项单独列在父文档的“已交付”小节，避免把规划文字和完成状态混写。
+- 两个 crate 的 research README、`docs/DevDocs/README.md`、`12-tests-and-milestones.md`
+  和 `tests/spec/09-bytecode/README.md` 已同步；`docs/module-registry.json` 已登记
+  `encode.rs` 的代码与测试路径，但研究模块整体仍保持 `draft`，直到 09R2 阶段退出条件全部满足。
+- H1 已改成结构化的栈化子程序故障状态并由嵌套 finally 回归锁定；H2 已移除块级克隆，
+  并留下 `253.66 ms -> 245.83 ms` 的可复核基准数字。
+- 本批文档门禁已补入实际提交号、27 条共享向量、40 条 R2C 栈式基线（当前栈式回归
+  共 42 条，新增两条机型/pc 区分度测试）和 R2D 兼容门；正式全量门禁仍在最终收尾时复跑。
 
 ---
 
@@ -684,19 +689,19 @@ R1-Z 要求源码映射是独立于指令流的 `pc -> IrSpan` 表、增量编�
   一个可被 `catch_type` 匹配的普通 `XiaoError`。
 - `TacProgram.unsupported` 是有意保留的拒绝信息。编码器收到非空 `unsupported` 时必须在编码前
   拒绝；不能把未降低的检查/语句编码成空操作，也不要在本批引入绕过验证的“宽松模式”。
-- 当前 `verify.rs::jump_targets` 是私有函数；活跃分析要复用它，必须先提取 research 内部
-  共享入口，并为 `CallSub`、`Check.on_failure` 等 R2C 边保持同一实现。
-- `Frame` 当前包含 `pending_exits`、`active_subroutines`、`last_sub_fault`、`active_catches`
-  和 `completed_finally` 等异常记账字段；这些字段都是语义状态，不能替换成带“寄存器/窗口/溢出”
-  名称的机型字段。R2D 若调整子程序故障传递，应保持 `Frame` 对机型中立。
-- `TacFunction` 当前没有自己的 `CategoryMap`；`parameters`、`locals` 和 `value_registers`
-  都是函数局部，而 `TacProgram.categories` 才是唯一现有类别表。这正是 C0 的阻断点，不能
-  在载体里用函数索引加全局表下标的方式掩盖它。
+- `jump_targets` 已提取到 `research::cfg` 共享入口，由验证器和活跃分析共同消费；
+  `CallSub`、`Check.on_failure` 等 R2C 边保持同一实现。
+- `Frame` 包含 `pending_exits`、`active_subroutines`、栈化的 `subroutine_faults`、
+  `active_catches` 和 `completed_finally` 等异常记账字段；这些字段都是语义状态，不能替换成
+  带“寄存器/窗口/溢出”名称的机型字段。R2D 已保持 `Frame` 对机型中立。
+- `TacFunction.categories` 现在携带函数局部类别表；`parameters`、`locals` 和
+  `value_registers` 仍是函数局部，`TacProgram.categories` 只保留脚本入口兼容视图，不能
+  用于命名函数的物理分配。
 - `verify_program` 当前只检查跳转目标和 `RunReleasePlan` 名称；它不检查 `ConstId`、`SigId`
   或 `FuncId` 的范围，也不提供活跃分析。编码器和活析必须各自复用/补齐明确的校验入口，
   不要把验证器的“通过”误当成编码安全证明。
-- `tests/spec/09-bytecode` 的 27 条向量目前只由 `r2_vectors.rs` 的栈式 `run()` 消费；
-  在三机型入口接通前，目录 README 的“后续直接复用”是目标约束，不是现状描述。
+- `tests/spec/09-bytecode` 的 27 条向量现在由 `r2_vectors.rs` 的同一观察器依次消费栈式、
+  分类型寄存器式和混合式三种载体；JSON 没有改动。正式性能/内存门槛仍留给 09R3。
 
 ---
 
@@ -766,9 +771,10 @@ R1-Z 要求源码映射是独立于指令流的 `pc -> IrSpan` 表、增量编�
 2. **本批跨度大**（8 次提交跨 3 个 crate）。历次教训：**跨层 bug 只在接起来时才显现**，
    所以每批都必须有端到端向量，不能只靠单元测试。
 3. **编码器必须零新依赖**——字节写入手写在 `Vec<u8>` 上（`to_le_bytes` / `push` / 手写 LEB128）。
-4. **H1 的子程序故障来源**必须与 `pending_exits`、`active_subroutines` 成对维护；只把
-   `last_sub_fault` 换成另一个单值字段不算修复。
-5. **H2 的 clone 清理**会改变基准数字：**先测后改**并留下数字，因为它影响 09R3 的口径。
+4. **H1 的子程序故障来源**已与 `pending_exits`、`active_subroutines` 通过
+   `subroutine_faults` 栈成对维护；后续修改不得退回单值状态。
+5. **H2 的 clone 清理**已完成并留下基准数字：移除前/后中位数为 `253.66 ms` /
+   `245.83 ms`，R3 仍需按正式协议重测。
 6. **编码后的 handler 区间与 pc 映射可能漂移**：块重排、长度前缀或两种操作数宽度任何一处
    不一致，都会让异常路由和错误堆栈指向错误位置；编码器必须先固定块目录，再编码 handler/映射。
 7. **不许碰 `.xiaoc`**：研究编码不得冒充公开格式，不得用该扩展名落盘。
@@ -804,5 +810,5 @@ R1-Z 要求源码映射是独立于指令流的 `pc -> IrSpan` 表、增量编�
   不重新实现这些语义。
 - `dynamic_conversion` 的窄语义和其他 RuntimeCheck 的 `unsupported` 边界；不要在寄存器机型
   中偷偷扩展检查类别。
-- 09R2C 已覆盖的嵌套 finally 故障回归；只要 R2D 改动影响 `last_sub_fault` 或子程序上下文，
+- 09R2C 已覆盖的嵌套 finally 故障回归；只要后续改动影响 `subroutine_faults` 或子程序上下文，
   就重新运行并保留该回归，不要把它当成已完成的 R2D 测试替代品。
