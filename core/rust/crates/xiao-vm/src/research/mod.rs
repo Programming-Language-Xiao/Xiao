@@ -35,7 +35,9 @@ pub use machine::register::{RegisterCarrier, RegisterLocation, TypedRegisterCarr
 /// 重导出栈式载体。
 pub use machine::stack::StackCarrier;
 /// 重导出运行入口、结果与指标。
-pub use run::{RunOutcome, RunResult, VmMetrics, VmOptions, run};
+pub use run::{
+    RunOutcome, RunResult, VmMetrics, VmOptions, run, run_hybrid, run_register, run_with,
+};
 /// 重导出语义核与终止原因。
 pub use semantics::{Fault, Vm};
 /// 重导出调试事件与接收器。

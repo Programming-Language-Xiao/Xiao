@@ -190,10 +190,23 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         };
 
         if let Some(frame) = self.frames.pop() {
+            let carrier_metrics = frame.carrier.metrics();
             self.metrics.max_stack_depth = self
                 .metrics
                 .max_stack_depth
-                .max(frame.carrier.metrics().peak_occupancy);
+                .max(carrier_metrics.peak_occupancy);
+            self.metrics.spill_count = self
+                .metrics
+                .spill_count
+                .saturating_add(carrier_metrics.spill_count);
+            self.metrics.stack_map_entries = self
+                .metrics
+                .stack_map_entries
+                .saturating_add(carrier_metrics.stack_map_entries);
+            self.metrics.call_save_count = self
+                .metrics
+                .call_save_count
+                .saturating_add(carrier_metrics.call_save_count);
         }
         self.sink.record(VmEvent::FunctionReturned {
             function: function.name.clone(),
@@ -228,10 +241,8 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             let Some(current) = function.blocks.get(block.get() as usize) else {
                 return Ok(None);
             };
-            // 克隆当前块的指令，允许路由错误时修改帧状态而不持有块的借用。
-            let instructions = current.instructions.clone();
             let mut flow = Flow::Next;
-            for instruction in &instructions {
+            for instruction in &current.instructions {
                 self.metrics.instructions = self.metrics.instructions.saturating_add(1);
                 flow = match self.step(function, instruction) {
                     Ok(flow) => flow,
@@ -573,9 +584,8 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let Some(current) = function.blocks.get(block.get() as usize) else {
                     return Ok(Flow::Next);
                 };
-                let instructions = current.instructions.clone();
                 let mut flow = Flow::Next;
-                for instruction in &instructions {
+                for instruction in &current.instructions {
                     self.metrics.instructions = self.metrics.instructions.saturating_add(1);
                     flow = match self.step(function, instruction) {
                         Ok(flow) => flow,

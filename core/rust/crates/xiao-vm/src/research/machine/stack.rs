@@ -13,6 +13,7 @@ use crate::research::carrier::{Carrier, CarrierContext, CarrierMetrics, empty_re
 pub struct StackCarrier {
     slots: Vec<Option<RuntimeValue>>,
     peak: usize,
+    stack_map_entries: usize,
 }
 
 impl StackCarrier {
@@ -22,6 +23,7 @@ impl StackCarrier {
         Self {
             slots: Vec::new(),
             peak: 0,
+            stack_map_entries: 0,
         }
     }
 
@@ -66,10 +68,16 @@ impl Carrier for StackCarrier {
         self.slots.get_mut(register.get() as usize)?.take()
     }
 
+    /// 栈式载体无需保存值，但调用点会登记当前有效槽位映射。
+    fn begin_call(&mut self) {
+        self.stack_map_entries = self.stack_map_entries.saturating_add(self.occupied());
+    }
+
     /// 返回栈式载体的指标快照。
     fn metrics(&self) -> CarrierMetrics {
         CarrierMetrics {
             peak_occupancy: self.peak,
+            stack_map_entries: self.stack_map_entries,
             ..CarrierMetrics::default()
         }
     }

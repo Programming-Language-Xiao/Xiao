@@ -1,7 +1,7 @@
 //! 09R2 共享语义向量。
 //!
-//! 向量与机型无关：本批次只有栈式载体，但向量里不得出现任何机型专属字段，
-//! 后续的寄存器机型与混合式机型必须直接复用同一组期望值，禁止为某一型改期望。
+//! 向量与机型无关：栈式、分类型寄存器式和混合式载体直接复用同一组期望值，
+//! 向量里不得出现任何机型专属字段，也禁止为某一型改期望。
 //!
 //! 期望值锁定四件事：结构化结果、稳定错误码、`(作用域, 退出边, 值, 类别)` 的
 //! **完整释放序列**、以及最大调用深度。释放序列来自冻结计划，是后端「没有重排、
@@ -10,7 +10,9 @@
 use serde::Deserialize;
 use xiao_bytecode::research::lower_program;
 use xiao_driver::{FrontendCompiler, FrontendRequest};
-use xiao_vm::research::{RunResult, VmEvent, VmOptions, run};
+use xiao_vm::research::{
+    Carrier, HybridCarrier, RegisterCarrier, RunResult, StackCarrier, VmEvent, VmOptions, run_with,
+};
 
 /// 一份语义向量文件。
 #[derive(Debug, Deserialize)]
@@ -66,7 +68,7 @@ struct ReleaseRecord {
 }
 
 /// 从一次运行结果提取可观察事实。
-fn observe(case: &VectorCase) -> Expectation {
+fn observe<C: Carrier>(case: &VectorCase) -> Expectation {
     let artifact = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(case.source.clone()))
         .unwrap_or_else(|error| panic!("用例 {} 前端应成功: {:?}", case.name, error.diagnostics()));
@@ -74,7 +76,7 @@ fn observe(case: &VectorCase) -> Expectation {
     let options = VmOptions {
         max_call_depth: case.max_call_depth.unwrap_or(1024),
     };
-    let outcome = run(&tac, options);
+    let outcome = run_with::<C>(&tac, options);
     let releases = outcome
         .events
         .iter()
@@ -106,17 +108,17 @@ fn observe(case: &VectorCase) -> Expectation {
 }
 
 /// 断言一份向量文件的全部用例。
-fn assert_vectors(raw: &str, expected_stage: &str) {
+fn assert_vectors<C: Carrier>(raw: &str, expected_stage: &str, machine: &str) {
     let file: VectorFile = serde_json::from_str(raw).expect("向量文件应可解析");
     assert_eq!(file.stage, expected_stage);
     assert_eq!(file.status, "verified-runtime");
     assert!(!file.cases.is_empty(), "向量文件不应为空");
     let mut mismatches = Vec::new();
     for case in &file.cases {
-        let actual = observe(case);
+        let actual = observe::<C>(case);
         if actual != case.expect {
             mismatches.push(format!(
-                "{}: 期望 {:?}，实际 {:?}",
+                "{machine}/{}: 期望 {:?}，实际 {:?}",
                 case.name, case.expect, actual
             ));
         }
@@ -124,10 +126,17 @@ fn assert_vectors(raw: &str, expected_stage: &str) {
     assert!(mismatches.is_empty(), "期望不一致的用例：{mismatches:?}");
 }
 
+/// 用同一解析与观察路径依次验证三种载体。
+fn assert_all_machines(raw: &str, expected_stage: &str) {
+    assert_vectors::<StackCarrier>(raw, expected_stage, "stack");
+    assert_vectors::<RegisterCarrier>(raw, expected_stage, "register");
+    assert_vectors::<HybridCarrier>(raw, expected_stage, "hybrid");
+}
+
 #[test]
 /// 标量、字符串与显式转换的语义向量。
 fn scalar_vectors_are_stable() {
-    assert_vectors(
+    assert_all_machines(
         include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../../../tests/spec/09-bytecode/scalar.json"
@@ -139,7 +148,7 @@ fn scalar_vectors_are_stable() {
 #[test]
 /// 分支、循环、函数调用与递归的语义向量。
 fn control_vectors_are_stable() {
-    assert_vectors(
+    assert_all_machines(
         include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../../../tests/spec/09-bytecode/control.json"
@@ -151,7 +160,7 @@ fn control_vectors_are_stable() {
 #[test]
 /// 可恢复错误与致命故障的语义向量。
 fn error_vectors_are_stable() {
-    assert_vectors(
+    assert_all_machines(
         include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../../../tests/spec/09-bytecode/errors.json"
@@ -163,7 +172,7 @@ fn error_vectors_are_stable() {
 #[test]
 /// 容器构造、精确索引与临时值释放的语义向量。
 fn container_vectors_are_stable() {
-    assert_vectors(
+    assert_all_machines(
         include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../../../tests/spec/09-bytecode/containers.json"

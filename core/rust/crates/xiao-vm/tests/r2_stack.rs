@@ -8,7 +8,7 @@ use xiao_bytecode::research::{
 use xiao_diagnostics::{FATAL_STACK_OVERFLOW_CODE, NUMERIC_OVERFLOW_CODE, TYPE_MISMATCH_CODE};
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::IrSpan;
-use xiao_vm::research::{RunResult, VmEvent, VmOptions, run};
+use xiao_vm::research::{RunResult, VmEvent, VmOptions, run, run_hybrid, run_register};
 
 /// 编译并降低一份源码。
 fn load(source_text: &str) -> xiao_bytecode::research::TacProgram {
@@ -43,6 +43,29 @@ fn executes_calls_and_loops() {
     let outcome = run(&load(source), VmOptions::new());
     assert!(outcome.result.is_success(), "结果: {:?}", outcome.result);
     assert!(outcome.metrics.max_call_depth >= 2, "应进入被调函数");
+}
+
+#[test]
+/// 三种载体分别上报溢出、映射点和调用保存，不共用一个总成本计数。
+fn machine_metrics_keep_independent_cost_axes() {
+    let program = load(
+        "def identity(int value) -> int\n    return value\npayload = \"x\"\nresult = identity(1)\n",
+    );
+    let stack = run(&program, VmOptions::new());
+    let registers = run_register(&program, VmOptions::new());
+    let hybrid = run_hybrid(&program, VmOptions::new());
+
+    assert!(stack.result.is_success());
+    assert!(registers.result.is_success());
+    assert!(hybrid.result.is_success());
+    assert_eq!(stack.metrics.spill_count, 0);
+    assert!(stack.metrics.stack_map_entries > 0);
+    assert!(registers.metrics.spill_count > 0);
+    assert!(registers.metrics.stack_map_entries > 0);
+    assert!(registers.metrics.call_save_count > 0);
+    assert!(hybrid.metrics.spill_count > 0);
+    assert!(hybrid.metrics.stack_map_entries > 0);
+    assert!(hybrid.metrics.call_save_count > 0);
 }
 
 #[test]

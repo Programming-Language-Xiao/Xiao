@@ -2,6 +2,9 @@
 
 use xiao_diagnostics::{FatalError, XiaoError};
 
+use crate::research::carrier::Carrier;
+use crate::research::machine::hybrid::HybridCarrier;
+use crate::research::machine::register::RegisterCarrier;
 use crate::research::machine::stack::StackCarrier;
 use crate::research::semantics::Vm;
 use crate::research::sink::{RecordingSink, VmEvent};
@@ -69,10 +72,16 @@ pub struct VmMetrics {
     pub instructions: u64,
     /// 达到过的最大调用深度。
     pub max_call_depth: usize,
-    /// 载体槽位的历史峰值。
+    /// 载体占用的历史峰值。
     pub max_stack_depth: usize,
     /// 按冻结计划释放的值的数量。
     pub releases: usize,
+    /// 写入独立帧槽的次数。
+    pub spill_count: u64,
+    /// 载体建立的可验证映射点数量。
+    pub stack_map_entries: usize,
+    /// 跨调用保存值的次数。
+    pub call_save_count: u64,
 }
 
 /// 一次运行的完整结果。
@@ -89,7 +98,16 @@ pub struct RunOutcome {
 /// 用栈式载体运行一份三地址产物并记录全部事件。
 #[must_use]
 pub fn run(program: &xiao_bytecode::research::TacProgram, options: VmOptions) -> RunOutcome {
-    let mut vm = Vm::<StackCarrier, RecordingSink>::new(program, options, RecordingSink::new());
+    run_with::<StackCarrier>(program, options)
+}
+
+/// 使用指定静态载体运行一份三地址产物并记录全部事件。
+#[must_use]
+pub fn run_with<C: Carrier>(
+    program: &xiao_bytecode::research::TacProgram,
+    options: VmOptions,
+) -> RunOutcome {
+    let mut vm = Vm::<C, RecordingSink>::new(program, options, RecordingSink::new());
     let result = vm.run();
     let metrics = vm.metrics();
     RunOutcome {
@@ -97,4 +115,19 @@ pub fn run(program: &xiao_bytecode::research::TacProgram, options: VmOptions) ->
         metrics,
         events: vm.into_sink().into_events(),
     }
+}
+
+/// 用分类型寄存器载体运行一份三地址产物。
+#[must_use]
+pub fn run_register(
+    program: &xiao_bytecode::research::TacProgram,
+    options: VmOptions,
+) -> RunOutcome {
+    run_with::<RegisterCarrier>(program, options)
+}
+
+/// 用混合式窗口/求值栈载体运行一份三地址产物。
+#[must_use]
+pub fn run_hybrid(program: &xiao_bytecode::research::TacProgram, options: VmOptions) -> RunOutcome {
+    run_with::<HybridCarrier>(program, options)
 }
