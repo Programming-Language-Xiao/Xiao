@@ -58,6 +58,9 @@
   **不能在 R2D 中把“解释器认识”误写成“降低器已启用”**。
 - 共享向量仍是 27 条（`scalar` 6、`control` 4、`errors` 9、`containers` 8），
   `r2_stack.rs` 另有 40 条栈式回归测试；R2D 的三种机型必须复用这些期望，JSON 不改。
+  **这组数字在本文、父文档与 `12-tests-and-milestones.md` 各出现一次，属于快照而非来源；
+  准数一律以 `tests/spec/09-bytecode/*.json`、`r2_stack.rs` 与 `r2_tac.rs` 为准。**
+  本仓的第一号病史就是「同一规则两处各写一份然后漂移」，不要把它变成第三份来源。
 
 当前仍有两项已知的前置状态：`TacProgram.categories` 仍是程序级表而 `VReg` 在每个函数
 重新编号，跨函数类别污染（C0）尚未修复；错误堆栈的 `BackendLocation.bytecode_offset`
@@ -453,7 +456,7 @@ git diff --check
 `spill_count`，而调用点/帧尾需要的可验证栈映射条目计入 `stack_map_entries`；两者**必须是
 独立字段**。
 
-开始实现前必须核对“具名值窗口顺序”的输入。R1-F 要求按 `IrValue.declaration_order` 排列，
+开始实现前必须核对“具名值窗口顺序”的输入。R1-E 的冻结定义要求按 `IrValue.declaration_order` 排列，
 而当前 `TacFunction` 只公开 `locals: Vec<VReg>` 和 `value_registers`，没有显式的声明序号。
 如果 C0 修复没有顺带携带这项元数据，应在 TAC 中增加机型中立的局部布局表，或明确证明
 `locals` 已与生命周期声明顺序一一对应；**不得把 `VReg` 编号、源码 span 或 map 的遍历顺序
