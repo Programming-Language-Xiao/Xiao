@@ -397,8 +397,9 @@ bun run check && bun run check:coverage && bun test
 git diff --check
 ```
 
-- **不要用 `#[allow]` 掩盖警告或覆盖率缺口。** 新增 `pub` 项须 100% 有 Rustdoc
-  （工作区 `missing_docs = "warn"`）。
+- **不要用 `#[allow]` 掩盖警告或覆盖率缺口。** 20 个 workspace crate 均已声明
+  `[lints] workspace = true`，新增 `pub` 项须 100% 有 Rustdoc；标准 Clippy 门禁以
+  `-D warnings` 将工作区的 `missing_docs = "warn"` 提升为失败。
 - 含 `.rs` 的**新目录必须自带 `README.md`**（目录判定**不继承父目录**），且必须出现在
   `docs/module-registry.json` 某条目的 `code`/`tests` 路径中，否则报 `A0-LAYOUT-002`。
 - **新建 `tests/` 目录必须带 `tests/README.md`。**

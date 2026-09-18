@@ -1,9 +1,9 @@
-# 00C. 文档 lint 接线预研究
+# 00C. 文档 lint 接线实现交接
 
-> **预研究文档，不是施工图。** 它记录一个已确认、但尚未决策的工具层缺口，并给出实测依据，
-> 供决定「要不要接、怎么接、什么时候接」。
+> 本文保留接线前的实测缺口和方案比较，并记录已执行的方案 B。它现在是门禁变更的交接记录，
+> 不是待决策的预研究。
 >
-> 结论一句话：**仓库以为自己在强制「公开项必须有文档」，实际上没有。**
+> 当前结论：**20 个 Rust workspace 成员已经统一接入 `missing_docs`，代码文档和两套检查口径均为满覆盖。**
 
 ## Agent 交接上下文
 
@@ -12,19 +12,33 @@
 - 先读 [00A. 工程框架与目录布局](00a-project-layout.md)、
   [A0. 工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md)、
   [00B. UseDocs 同步政策](00b-usedocs-policy.md)。
-- 本文与 A0 检查器直接相关：它描述的正是「A0 文档覆盖率门禁之外，还缺哪一层强制」。
+- 本文与 A0 检查器直接相关：它记录 A0 文档覆盖率门禁之外的 Rust 编译器 lint 接线。
+
+### 当前状态
+
+方案 B 已于 2026-09-18 独立落地：20/20 个 crate 的 `Cargo.toml` 增加
+`[lints] workspace = true`，并补齐接线前 rustc `missing_docs` 报出的 44 个公共字段缺口。
+workspace 仍将 `missing_docs` 声明为 `warn`，标准 Clippy 门禁的 `-D warnings` 将其提升为失败；
+直接运行普通 `cargo check` 时仍会显示警告，这是 Cargo 的预期分层。
+
+复测结果：`cargo clippy --workspace --all-targets -- -D warnings`、
+`cargo doc --workspace --no-deps`、`cargo fmt --all -- --check` 均通过；
+`bun run check:coverage` 为总体 `3832/3832`、公共 API `2065/2065`，不再有
+`A0-COVERAGE-002`。实现提交号会在提交后补入本节和文档索引。
 
 ### 本阶段交付与不负责
 
-**交付**：缺口的事实、证据、实测数据、选项与代价、触发条件。
+**交付**：缺口的事实、证据、实测数据、方案决策、20 个 crate 的 lint 接线、44 个字段的
+Rustdoc 补齐，以及可重复的门禁验证记录。
 
-**不负责**：不修任何 crate、不改 workspace 配置、不动门禁行为——**本文只提供决策依据**。
+**不负责**：不改变文档覆盖率工具的 AST 口径，不把 UseDocs 当作代码文档抵扣，也不为后续
+新 crate 自动生成 manifest；新成员必须显式加入 workspace 并同步声明 `lints.workspace = true`。
 
 ---
 
-## 一、缺口
+## 一、接线前缺口
 
-`core/rust/Cargo.toml` 的 `:33-34` 写着：
+接线前，`core/rust/Cargo.toml` 的 workspace 配置写着：
 
 ```toml
 [workspace.lints.rust]
@@ -32,96 +46,116 @@ missing_docs = "warn"
 ```
 
 但 **Cargo 的 `[workspace.lints]` 只对声明了 `[lints] workspace = true` 的成员 crate 生效**。
-实测：`core/rust/crates/` 下 **20 个 crate 无一 opt-in**，因此这条 lint
-**从写下那天起就没有对任何 crate 生效过**。
+实测 `core/rust/crates/` 下 **20 个 crate 无一 opt-in**，因此这条 lint 在接线前没有对任何
+crate 生效。
 
 实际在兜底的是 `tools/repo-check` 的 `A0-COVERAGE-002`，但它报的是 **`[warning]`**，
-`bun run check` 的**退出码仍为 0**。
+`bun run check` 的退出码仍为 0。
 
-**后果**：凡是「新增 `pub` 项须 100% Rustdoc」「不用 `#[allow]` 掩盖警告」这类验收条件，
-**都没有强制力**。R2D 的 `encode.rs` 一次就积了 **110 项**，门禁依然是绿的。
+**接线前后果**：凡是「新增 `pub` 项须 100% Rustdoc」「不用 `#[allow]` 掩盖警告」这类验收条件，
+都没有 Cargo 强制力。R2D 的 `encode.rs` 一次就积了 **110 项**，门禁依然是绿的。
 
-这是本仓第一号病史（「同一规则两处各写一份然后漂移」）在**工具层**的形态：
-规则写在配置里，接线断了，而所有人都以为它生效。
+这是本仓第一号病史（「同一规则两处各写一份然后漂移」）在工具层的形态：规则写在配置里，
+接线断了，而所有人都以为它生效。
 
 ---
 
-## 二、证据
+## 二、接线前证据与复测
 
 ### 2.1 没有任何 crate opt-in
 
+接线前检查命令：
+
 ```bash
 for f in core/rust/crates/*/Cargo.toml; do
-  grep -q "lints.workspace = true\|\[lints\]" "$f" && echo "✅ $f" || echo "❌ $f"
+  grep -q "lints.workspace = true\|\[lints\]" "$f" && echo "yes $f" || echo "no $f"
 done
 ```
 
-**输出：20 个全部为 ❌**（`xiao-artifacts`、`xiao-bytecode`、`xiao-codegen-llvm`、
+输出是 20 个全部为 `no`：`xiao-artifacts`、`xiao-bytecode`、`xiao-codegen-llvm`、
 `xiao-config`、`xiao-diagnostics`、`xiao-doc-coverage-rust`、`xiao-driver`、`xiao-i18n`、
 `xiao-ir`、`xiao-lifetime`、`xiao-modules`、`xiao-optimizer`、`xiao-package`、
-`xiao-platform`、`xiao-runtime`、`xiao-source`、`xiao-syntax`、`xiao-types`、`xiao-vm`、`xiao-xar`）。
+`xiao-platform`、`xiao-runtime`、`xiao-source`、`xiao-syntax`、`xiao-types`、`xiao-vm`、
+`xiao-xar`。
 
-因此 `cargo clippy -- -D warnings` 也**不会**因为缺文档而失败——这条 lint 根本没进编译。
+因此接线前 `cargo clippy -- -D warnings` 不会因为缺文档失败：这条 lint 根本没有进入成员 crate。
 
-### 2.2 退出码实测
+### 2.2 接线前退出码实测
 
 | 命令 | 退出码 | 说明 |
 | --- | --- | --- |
-| `bun run check` | **0** | 110 条 `A0-COVERAGE-002` 全部是 warning |
-| `bun run check:coverage` | 0 | |
-| `bun test` | 0 | |
+| `bun run check` | 0 | 110 条 `A0-COVERAGE-002` 全部是 warning |
+| `bun run check:coverage` | 0 | 覆盖率工具本身通过 |
+| `bun test` | 0 | 工具测试通过 |
+
+### 2.3 接线后复测
+
+| 检查 | 结果 | 说明 |
+| --- | --- | --- |
+| `cargo check --workspace --all-targets` | 通过 | 20 个成员均实际读取 workspace lint 配置 |
+| `cargo clippy --workspace --all-targets -- -D warnings` | 通过 | 缺失文档现在会阻断标准 Rust 门禁 |
+| `cargo doc --workspace --no-deps` | 通过 | Rustdoc 无缺失文档警告 |
+| `cargo fmt --all -- --check` | 通过 | 格式无漂移 |
+| `bun run check:coverage` | 通过 | 总体 `3832/3832`，公共 API `2065/2065` |
+| `bun run check` | 通过 | 无 `A0-COVERAGE-002` |
 
 ---
 
-## 三、两套口径不同，别把它们当成一件事
+## 三、两套口径不同，必须同时保留
 
-用 `RUSTFLAGS="-W missing_docs"` 模拟「如果接上 lint 会怎样」：
+接线前用 `RUSTFLAGS="-W missing_docs"` 模拟「如果接上 lint 会怎样」：
 
 ```bash
 RUSTFLAGS="-W missing_docs" cargo check --manifest-path core/rust/Cargo.toml --workspace --all-targets
 ```
 
-**全仓 44 项**，分布：
+接线前全仓 44 项，分布如下：
 
 | 文件 | 项数 | 归属 |
 | --- | --- | --- |
-| `xiao-ir/src/model.rs` | 30 | **既有**，与任何当前批次无关 |
-| `xiao-bytecode/src/research/encode.rs` | 11 | R2D |
-| `xiao-types/src/selection_random.rs` | 2 | 既有 |
-| `xiao-types/src/path_constraints.rs` | 1 | 既有 |
+| `xiao-ir/src/model.rs` | 30 | 既有缺口 |
+| `xiao-bytecode/src/research/encode.rs` | 11 | R2D 缺口 |
+| `xiao-types/src/selection_random.rs` | 2 | 既有缺口 |
+| `xiao-types/src/path_constraints.rs` | 1 | 既有缺口 |
 
-而 `repo-check` 对**同一个 `encode.rs`** 报 **110 项**（72 function / 30 method /
-5 constant / 2 struct / 1 module）。
+而接线前 repo-check 对同一个 `encode.rs` 报 110 项（72 function、30 method、5 constant、
+2 struct、1 module）。差异来自统计范围：rustc `missing_docs` 只看 crate 根可达的公开 API，
+repo-check 的口径更宽，包含实现块内的关联方法等。
 
-**差异原因**：rustc 的 `missing_docs` 只看**crate 根可达的公开 API**；
-repo-check 的口径更宽（含实现块内的关联方法等）。
-**接线时必须同时确认两套口径**，否则会出现「rustc 不报、repo-check 仍报」的夹缝。
+本次先补齐 rustc 口径的 44 项，再由 repo-check 复测全仓；两套口径都为零缺口，但分母仍不相同，
+后续不能用其中一套替代另一套。
 
 ---
 
-## 四、选项与代价
+## 四、方案决策
 
-| 方案 | 做什么 | 代价 |
+| 方案 | 做法 | 结论 |
 | --- | --- | --- |
-| **A. 只补文档，不接线** | 补齐 `encode.rs` 的缺口，把本缺口如实登记 | 规则仍无强制力，下一个批次还会重演 |
-| **B. 一次到位** | 补齐 **44 项**（含既有 33 项）+ 给 **20 个 crate** 加 `[lints] workspace = true` | 门槛变更影响全仓；提交会带上与当前批次无关的既有改动；**`cargo clippy -- -D warnings` 从此会因缺文档直接失败**，需要确认全仓确实干净 |
-| **C. 只给部分 crate 接线** | 例如只给 `xiao-bytecode` / `xiao-vm` | 规则在仓内不一致，**容易让人误以为全仓已受管**——比不接更危险 |
+| A. 只补文档，不接线 | 只补 `encode.rs` 缺口 | 拒绝：规则仍无强制力 |
+| B. 一次到位 | 补齐 44 项，并给 20 个 crate 加 `[lints] workspace = true` | **采用并完成** |
+| C. 只给部分 crate 接线 | 只接 `xiao-bytecode` / `xiao-vm` 等 | 拒绝：规则不一致，容易误导 |
 
-**方案 C 不推荐**：不一致的强制比没有强制更容易误导。
+采用 B 的原因：门槛变更独立成批，避免污染功能批次；接线后标准 Clippy 命令确实会失败于缺失
+Rustdoc；rustc 与 repo-check 两套口径可以在同一变更中共同验收。
 
 ---
 
-## 五、建议与触发条件
+## 五、后续触发条件
 
-**建议按 B 执行，但必须独立成一批**，理由：
+任何新增 Rust workspace crate 的变更都必须在其 `Cargo.toml` 写入：
 
-1. 它把 33 项**既有**缺口和门槛变更混在一起，塞进任何功能性批次都会污染该批次的评审；
-2. 接线后 `cargo clippy -- -D warnings` 行为改变，属于**门禁变更**，应当单独提交、单独验证；
-3. 需要同时确认 rustc 与 repo-check **两套口径**都干净（见第三节），否则会留下夹缝。
+```toml
+[lints]
+workspace = true
+```
 
-**触发条件**：在任何「新增大量公开声明」的批次开始前做。
-R2D 的 `encode.rs` 就是反例——**它一次新增了 110 项缺口，而当时门禁是绿的**。
+任何新增公共声明都必须在同一变更中补 Rustdoc，并同时运行 Clippy 和 `bun run check:coverage`。
+接线完成后，不再把 `bun run check` 的退出码单独当作 Rust API 文档证明；它和
+`cargo clippy --workspace --all-targets -- -D warnings` 必须成对执行。
 
-**在此之前的最低要求**：凡是验收条件里写了「新增 `pub` 项 100% Rustdoc」的批次，
-必须**手动跑一次** `bun run check | grep A0-COVERAGE-002` 并确认计数为 0，
-**不能以「`bun run check` 退出码为 0」当作通过**。
+---
+
+## 六、交接记录
+
+本阶段包含 20 个 manifest 的 opt-in 和 44 个字段 Rustdoc；实际提交号在提交完成后补入本节、
+`docs/DevDocs/README.md` 和 [12. 测试与开发里程碑](12-tests-and-milestones.md)。

@@ -69,7 +69,12 @@ pub enum RandomSelectionError {
     /// 抽取数量为负数或无法表示为无符号数量。
     InvalidCount,
     /// 无放回抽取数量超过候选元素数。
-    WithoutReplacementTooMany { count: usize, available: usize },
+    WithoutReplacementTooMany {
+        /// 请求抽取的数量。
+        count: usize,
+        /// 候选元素数量。
+        available: usize,
+    },
     /// 空候选集无法完成正数次抽取。
     EmptySource,
 }

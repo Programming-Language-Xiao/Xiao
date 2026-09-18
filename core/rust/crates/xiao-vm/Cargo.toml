@@ -7,6 +7,9 @@ rust-version.workspace = true
 publish.workspace = true
 description = "Xiao Rust bytecode virtual machine"
 
+[lints]
+workspace = true
+
 [lib]
 path = "src/lib.rs"
 

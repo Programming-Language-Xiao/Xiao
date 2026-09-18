@@ -7,6 +7,9 @@ rust-version.workspace = true
 publish.workspace = true
 description = "Xiao config.xiao model and validation"
 
+[lints]
+workspace = true
+
 [lib]
 path = "src/lib.rs"
 

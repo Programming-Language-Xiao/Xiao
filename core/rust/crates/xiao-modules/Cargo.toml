@@ -7,6 +7,9 @@ rust-version.workspace = true
 publish.workspace = true
 description = "Xiao source module graph and exports"
 
+[lints]
+workspace = true
+
 [lib]
 path = "src/lib.rs"
 

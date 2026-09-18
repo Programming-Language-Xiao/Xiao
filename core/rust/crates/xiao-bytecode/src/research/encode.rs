@@ -238,7 +238,12 @@ pub enum EncodeError {
     /// 魔数不匹配。
     InvalidMagic,
     /// 格式版本不匹配。
-    UnsupportedFormatVersion { expected: u8, actual: u8 },
+    UnsupportedFormatVersion {
+        /// 当前实现支持的格式版本。
+        expected: u8,
+        /// 输入携带的格式版本。
+        actual: u8,
+    },
     /// ABI/TAC/IR 版本字段不匹配。
     VersionMismatch {
         /// 字段名。
@@ -249,7 +254,10 @@ pub enum EncodeError {
         actual: u64,
     },
     /// 输入在指定字段处提前结束。
-    UnexpectedEof { context: String },
+    UnexpectedEof {
+        /// 截断发生时正在读取的字段。
+        context: String,
+    },
     /// 输入含未知 opcode。
     UnknownOpcode(u8),
     /// 引用超出所属表的范围。
@@ -262,13 +270,33 @@ pub enum EncodeError {
         limit: usize,
     },
     /// 定宽操作数无法容纳该编号。
-    IntegerOverflow { field: String, value: u64 },
+    IntegerOverflow {
+        /// 溢出的字段名称。
+        field: String,
+        /// 无法表示的原始值。
+        value: u64,
+    },
     /// 长度或集合数量不合法。
-    InvalidLength { field: String, value: u64 },
+    InvalidLength {
+        /// 长度字段名称。
+        field: String,
+        /// 输入给出的长度。
+        value: u64,
+    },
     /// 稳定枚举标签未知。
-    InvalidEnum { field: String, value: u64 },
+    InvalidEnum {
+        /// 枚举字段名称。
+        field: String,
+        /// 输入给出的标签。
+        value: u64,
+    },
     /// 源码区间不满足半开区间不变量。
-    InvalidSpan { start: usize, end: usize },
+    InvalidSpan {
+        /// 区间起点。
+        start: usize,
+        /// 区间终点。
+        end: usize,
+    },
     /// 产物含有尚未降低的构造。
     Unsupported(String),
     /// 编码尾部有未消费字节。

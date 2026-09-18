@@ -7,6 +7,9 @@ rust-version.workspace = true
 publish.workspace = true
 description = "Internal Rust AST adapter for Xiao documentation coverage"
 
+[lints]
+workspace = true
+
 [lib]
 path = "src/lib.rs"
 

@@ -7,6 +7,9 @@ rust-version.workspace = true
 publish.workspace = true
 description = "Xiao compiler and runtime driver interfaces"
 
+[lints]
+workspace = true
+
 [lib]
 path = "src/lib.rs"
 

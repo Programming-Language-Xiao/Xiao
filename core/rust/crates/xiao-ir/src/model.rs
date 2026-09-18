@@ -150,9 +150,17 @@ pub struct IrStatement {
 #[serde(tag = "kind", content = "data")]
 pub enum IrStatementKind {
     /// 独立表达式。
-    Expression { value: IrExpression },
+    Expression {
+        /// 表达式。
+        value: IrExpression,
+    },
     /// 简单名称赋值。
-    Assignment { target: IrName, value: IrExpression },
+    Assignment {
+        /// 目标名称。
+        target: IrName,
+        /// 赋值表达式。
+        value: IrExpression,
+    },
     /// 复合或选择器赋值。
     ExtendedAssignment {
         /// 左值表达式。
@@ -183,7 +191,10 @@ pub enum IrStatementKind {
         value: IrExpression,
     },
     /// 导入语句摘要。
-    Import { description: String },
+    Import {
+        /// 导入的稳定描述。
+        description: String,
+    },
     /// 表声明。
     Table {
         /// 表名称。
@@ -232,7 +243,10 @@ pub enum IrStatementKind {
         body: Vec<IrStatement>,
     },
     /// 返回语句。
-    Return { value: Option<IrExpression> },
+    Return {
+        /// 可选返回值。
+        value: Option<IrExpression>,
+    },
     /// `break`。
     Break,
     /// `continue`。
@@ -247,7 +261,10 @@ pub enum IrStatementKind {
         finally_body: Option<Vec<IrStatement>>,
     },
     /// 抛出可恢复错误。
-    Raise { value: IrExpression },
+    Raise {
+        /// 要抛出的错误表达式。
+        value: IrExpression,
+    },
 }
 
 /// `elif` 分支。
@@ -305,21 +322,47 @@ pub struct IrExpression {
 #[serde(tag = "kind", content = "data")]
 pub enum IrExpressionKind {
     /// 字面量及其原始文本。
-    Literal { literal: String, text: String },
+    Literal {
+        /// 规范化后的字面量类别。
+        literal: String,
+        /// 源码原始文本。
+        text: String,
+    },
     /// 名称引用。
-    Name { name: IrName },
+    Name {
+        /// 被引用的名称。
+        name: IrName,
+    },
     /// 数组字面量。
-    Array { elements: Vec<IrExpression> },
+    Array {
+        /// 数组元素。
+        elements: Vec<IrExpression>,
+    },
     /// 元组字面量。
-    Tuple { elements: Vec<IrExpression> },
+    Tuple {
+        /// 元组元素。
+        elements: Vec<IrExpression>,
+    },
     /// 字典表字面量。
-    DictTable { entries: Vec<IrDictEntry> },
+    DictTable {
+        /// 字典条目。
+        entries: Vec<IrDictEntry>,
+    },
     /// 集合字面量。
-    Set { elements: Vec<IrExpression> },
+    Set {
+        /// 集合元素。
+        elements: Vec<IrExpression>,
+    },
     /// 字典列字面量。
-    DictColumn { entries: Vec<IrDictEntry> },
+    DictColumn {
+        /// 字典列条目。
+        entries: Vec<IrDictEntry>,
+    },
     /// 括号分组。
-    Group { expression: Box<IrExpression> },
+    Group {
+        /// 被分组的表达式。
+        expression: Box<IrExpression>,
+    },
     /// 一元运算。
     Unary {
         /// 运算符。
@@ -431,7 +474,10 @@ pub enum IrPathSegmentKind {
         negative: bool,
     },
     /// 键名路径段。
-    Name { name: IrName },
+    Name {
+        /// 路径中的名称。
+        name: IrName,
+    },
 }
 
 /// 类型约束或选择器使用的路径。
@@ -457,7 +503,12 @@ pub struct IrSelector {
 #[serde(tag = "kind", content = "data")]
 pub enum IrSelectorItem {
     /// 精确路径。
-    Exact { path: IrPath, span: IrSpan },
+    Exact {
+        /// 被选中的精确路径。
+        path: IrPath,
+        /// 项源码区间。
+        span: IrSpan,
+    },
     /// 闭区间。
     Range {
         /// 起点。
@@ -481,7 +532,10 @@ pub enum IrSelectorItem {
         span: IrSpan,
     },
     /// 全选。
-    All { span: IrSpan },
+    All {
+        /// 项源码区间。
+        span: IrSpan,
+    },
     /// 随机选择。
     Random {
         /// 随机模式稳定拼写：`without_replacement` 或 `with_replacement`。
@@ -500,11 +554,17 @@ pub enum IrSelectorItem {
 #[serde(tag = "kind", content = "data")]
 pub enum IrType {
     /// 标量类型。
-    Scalar { name: String },
+    Scalar {
+        /// 标量稳定名称。
+        name: String,
+    },
     /// `none`。
     None,
     /// HM 变量。
-    Variable { id: u32 },
+    Variable {
+        /// 类型变量编号。
+        id: u32,
+    },
     /// 函数类型。
     Function {
         /// 参数类型。
@@ -513,13 +573,25 @@ pub enum IrType {
         return_type: Box<IrType>,
     },
     /// 数组类型。
-    Array { shape: IrArrayShape },
+    Array {
+        /// 数组形状。
+        shape: IrArrayShape,
+    },
     /// 元组类型。
-    Tuple { elements: Vec<IrType> },
+    Tuple {
+        /// 元素类型。
+        elements: Vec<IrType>,
+    },
     /// 字典表。
-    DictTable { entries: Vec<IrDictTypeEntry> },
+    DictTable {
+        /// 字典条目类型。
+        entries: Vec<IrDictTypeEntry>,
+    },
     /// 字典列。
-    DictColumn { entries: Vec<IrDictTypeEntry> },
+    DictColumn {
+        /// 字典列条目类型。
+        entries: Vec<IrDictTypeEntry>,
+    },
     /// 集合类型。
     Set {
         /// 成员类型。
@@ -532,7 +604,12 @@ pub enum IrType {
         unknown: bool,
     },
     /// 表类型。
-    Table { name: String, kind: String },
+    Table {
+        /// 表名称。
+        name: String,
+        /// 表种类稳定名称。
+        kind: String,
+    },
     /// 动态类型。
     Dynamic,
 }
@@ -543,11 +620,16 @@ pub enum IrType {
 pub enum IrArrayShape {
     /// 同构数组。
     Homogeneous {
+        /// 元素类型。
         element: Box<IrType>,
+        /// 可选的静态长度。
         length: Option<usize>,
     },
     /// 异构数组。
-    Heterogeneous { elements: Vec<IrType> },
+    Heterogeneous {
+        /// 每个位置的元素类型。
+        elements: Vec<IrType>,
+    },
     /// 未知数组。
     Unknown,
 }

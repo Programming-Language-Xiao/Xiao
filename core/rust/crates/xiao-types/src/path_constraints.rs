@@ -105,7 +105,10 @@ pub enum PathResolutionErrorKind {
     /// 路径试图进入无序集合成员；集合没有任何位置或键索引。
     SetIndexUnsupported,
     /// 静态已知的数字索引越界。
-    OutOfBounds { length: usize },
+    OutOfBounds {
+        /// 可接受的容器长度。
+        length: usize,
+    },
     /// 静态已知的字典键不存在。
     MissingKey,
 }

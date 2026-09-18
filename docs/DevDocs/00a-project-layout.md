@@ -182,7 +182,7 @@ macOS/iOS 的最终签名、模拟器和 App Store 分发需要 macOS/Xcode 或�
 ### 自动化门槛
 
 1. `tools/doc-coverage` 解析 Rust 和 TypeScript AST，输出总覆盖率、每包覆盖率、公共 API 缺口和未达标文件。
-2. Rust 使用 `rustdoc`/`clippy` 的缺失文档检查，TypeScript 使用 JSDoc/TypeDoc 检查；自定义扫描器负责统一分母和跨语言报告。
+2. Rust 使用 `rustdoc`/`clippy` 的缺失文档检查，且每个 workspace 成员必须 opt-in 到共享 `missing_docs` lint；TypeScript 使用 JSDoc/TypeDoc 检查；自定义扫描器负责统一分母和跨语言报告。
 3. CI 先检查公共 API 100%，再检查全仓库 90%；任一门槛失败都阻止合并。
 4. 新增导出项必须在同一提交提供文档和至少一个规格/单元测试；重命名或移动模块必须同步更新目录 README。
 5. 覆盖率报告保存到构建产物，但不能把报告本身当作 API 文档；文档质量仍需人工抽查示例、错误语义和版本约束。

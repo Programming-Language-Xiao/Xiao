@@ -13,7 +13,7 @@
 
 ### 当前状态与边界
 
-- 当前仓库已经包含 Rust/Bun workspace manifest、19 个 Rust crate 骨架、三个 TypeScript workspace 包，以及 A0 目录与覆盖率检查器；语言本身仍未实现。
+- 当前仓库已经包含 Rust/Bun workspace manifest、20 个 Rust crate 骨架、三个 TypeScript workspace 包，以及 A0 目录与覆盖率检查器；20 个 Rust workspace 成员均已 opt-in 到共享 `missing_docs` lint，语言本身仍未实现。
 - 本阶段建立工程可审计性，不实现 Xiao Token、类型、Runtime、VM、LLVM 或包管理语义。
 - 代码、测试和 UseDocs 的同步要求从 A0 起生效；尚未实现的功能不得为了满足文档数量而伪造 `verified` 页面。
 - CLI 工具本身使用 TypeScript；Rust `syn` 解析器作为内部解析组件，不形成第二套用户 CLI。
@@ -42,7 +42,7 @@ A0 不把一个容易漂移的列表当作全部事实，而是交叉核对三�
 
 ### Rust workspace 成员（已冻结）
 
-`core/rust/Cargo.toml` 使用 virtual workspace，成员必须逐项列出，禁止 `crates/*` 等宽泛 glob。当前包含 18 个语言核心 crate 和 1 个仅供文档工具调用的内部 AST 适配 crate：
+`core/rust/Cargo.toml` 使用 virtual workspace，成员必须逐项列出，禁止 `crates/*` 等宽泛 glob。当前包含 19 个语言核心 crate 和 1 个仅供文档工具调用的内部 AST 适配 crate：
 
 1. `xiao-source`
 2. `xiao-diagnostics`
@@ -50,19 +50,20 @@ A0 不把一个容易漂移的列表当作全部事实，而是交叉核对三�
 4. `xiao-syntax`
 5. `xiao-config`
 6. `xiao-types`
-7. `xiao-modules`
-8. `xiao-ir`
-9. `xiao-runtime`
-10. `xiao-bytecode`
-11. `xiao-vm`
-12. `xiao-optimizer`
-13. `xiao-codegen-llvm`
-14. `xiao-package`
-15. `xiao-artifacts`
-16. `xiao-xar`
-17. `xiao-platform`
-18. `xiao-driver`
-19. `xiao-doc-coverage-rust`（内部工具适配器，不属于 Xiao Runtime）
+7. `xiao-lifetime`
+8. `xiao-modules`
+9. `xiao-ir`
+10. `xiao-runtime`
+11. `xiao-bytecode`
+12. `xiao-vm`
+13. `xiao-optimizer`
+14. `xiao-codegen-llvm`
+15. `xiao-package`
+16. `xiao-artifacts`
+17. `xiao-xar`
+18. `xiao-platform`
+19. `xiao-driver`
+20. `xiao-doc-coverage-rust`（内部工具适配器，不属于 Xiao Runtime）
 
 每个成员都必须有自己的 `Cargo.toml`、源码目录和同级 `README.md`。A0 可以使用最小可编译库骨架，但不得在骨架中加入语言功能或复制其他 crate 的职责。`Cargo.lock` 在首次引入依赖后提交，并由 CI 验证未被构建命令偷偷更新。
 
@@ -213,7 +214,7 @@ xiao-repo-check all        # 按固定顺序执行全部检查
 - 纳入 Rust、TypeScript、TSX、测试辅助和构建工具中的项目维护源文件。
 - 排除第三方依赖、生成代码、快照输出、`target/`、`node_modules/` 和明确登记的机器生成目录；排除项必须写入清单并在报告中列出。
 - 统计函数、方法、闭包包装类型、类、结构体、枚举、trait、接口、类型别名、模块/包入口等声明项。纯代码块、局部变量和测试数据不进入分母。
-- Rust `pub` 项（含公共字段、模块和 crate 入口）以及 TypeScript `export` 项/包入口必须 100% 有代码文档注释。
+- Rust `pub` 项（含公共字段、模块和 crate 入口）以及 TypeScript `export` 项/包入口必须 100% 有代码文档注释；每个 Rust workspace 成员必须在 `Cargo.toml` 声明 `[lints] workspace = true`，标准 Clippy 命令以 `-D warnings` 执行。
 - 全仓库声明项文档覆盖率至少 90%；同时报告每个 workspace 成员和每个文件，不能只给一个总数。
 - “有注释”必须是与声明直接关联、包含实质描述的 Rustdoc/JSDoc；单行形式同样有效（例如 Rust `///`、`#[doc = "..."]` 和 TypeScript `/** ... */`），不要求注释或声明之间存在换行。只有 `TODO`、空注释或复制的机器标记不计入。UseDocs 页面永远不能抵扣代码注释缺口。
 

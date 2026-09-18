@@ -7,6 +7,9 @@ rust-version.workspace = true
 publish.workspace = true
 description = "Typed Xiao intermediate representation"
 
+[lints]
+workspace = true
+
 [lib]
 path = "src/lib.rs"
 
