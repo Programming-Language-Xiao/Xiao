@@ -1,7 +1,7 @@
 //! 09R2 统一三地址降低规格。
 
 use xiao_bytecode::research::{
-    ArithOp, PathStep, RegisterClass, SigId, TacConstant, TacOp, TacProgram, lower_program,
+    ArithOp, PathStep, RegisterClass, SigId, TacConstant, TacOp, TacProgram, VReg, lower_program,
     verify_program,
 };
 use xiao_driver::{FrontendCompiler, FrontendRequest};
@@ -99,16 +99,37 @@ fn references_existing_release_plans() {
 /// 对象句柄与整数应落在不同寄存器类别里。
 fn assigns_register_classes() {
     let (_, tac) = lower("text = \"x\"\nnumber = 1\n");
-    let classes = tac
-        .functions
+    let function = &tac.functions[0];
+    let classes = function
+        .blocks
         .iter()
-        .flat_map(|function| function.blocks.iter())
         .flat_map(|block| block.instructions.iter())
         .filter_map(|instruction| instruction.dst)
-        .map(|register| tac.categories.get(register))
+        .map(|register| function.categories.get(register))
         .collect::<Vec<_>>();
     assert!(classes.contains(&RegisterClass::ObjHandle));
     assert!(classes.contains(&RegisterClass::Int));
+}
+
+#[test]
+/// 每个函数的局部寄存器编号可以重叠，但类别不得跨函数合并污染。
+fn keeps_register_classes_local_to_each_function() {
+    let (_, tac) = lower(
+        "def number() -> int\n    value = 1\n    return value\ndef text() -> str\n    value = \"x\"\n    return value\nleft = number()\nright = text()\n",
+    );
+    let number = tac
+        .functions
+        .iter()
+        .find(|function| function.name == "number")
+        .expect("number 函数应存在");
+    let text = tac
+        .functions
+        .iter()
+        .find(|function| function.name == "text")
+        .expect("text 函数应存在");
+    assert_eq!(number.categories.get(VReg::new(0)), RegisterClass::Int);
+    assert_eq!(text.categories.get(VReg::new(0)), RegisterClass::ObjHandle);
+    assert_eq!(number.categories.get(VReg::new(0)), RegisterClass::Int);
 }
 
 #[test]

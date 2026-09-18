@@ -943,6 +943,7 @@ fn manual_check_program(error_value: bool) -> TacProgram {
             ],
             parameters: Vec::new(),
             locals: Vec::new(),
+            categories: categories.clone(),
             scopes: vec![0],
             handlers: Vec::new(),
             value_registers: std::collections::BTreeMap::new(),

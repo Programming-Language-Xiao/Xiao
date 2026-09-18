@@ -116,7 +116,6 @@ struct Lowerer<'ir> {
     constants: ConstPool,
     signatures: CallSigTable,
     functions: Vec<TacFunction>,
-    categories: CategoryMap,
     plans: Vec<TacReleasePlan>,
     /// `IrValue.id` 到源码区间的映射，用于把释放动作还原成寄存器。
     value_spans: HashMap<u32, IrSpan>,
@@ -156,6 +155,8 @@ struct Frame {
     pending_temporaries: Vec<VReg>,
     /// 当前函数的异常处理器表。
     handlers: Vec<TacHandler>,
+    /// 当前函数局部编号空间内的寄存器类别。
+    categories: CategoryMap,
 }
 
 impl<'ir> Lowerer<'ir> {
@@ -185,7 +186,6 @@ impl<'ir> Lowerer<'ir> {
             constants: ConstPool::new(),
             signatures: CallSigTable::new(),
             functions: Vec::new(),
-            categories: CategoryMap::new(),
             plans,
             value_spans,
             value_storage,
@@ -276,6 +276,11 @@ impl<'ir> Lowerer<'ir> {
                 self.record_unsupported(format!("运行时检查未消费：{kind}（{start}..{end}）"));
             }
         }
+        let categories = self
+            .functions
+            .first()
+            .map(|function| function.categories.clone())
+            .unwrap_or_default();
         TacProgram {
             version: TAC_VERSION,
             abi: TacAbi {
@@ -288,7 +293,7 @@ impl<'ir> Lowerer<'ir> {
             constants: self.constants,
             signatures: self.signatures,
             functions: self.functions,
-            categories: self.categories,
+            categories,
             plans: self.plans,
             unsupported: self.unsupported,
         }
@@ -384,6 +389,7 @@ impl<'ir> Lowerer<'ir> {
         let blocks = std::mem::take(&mut self.frame.blocks);
         let locals = std::mem::take(&mut self.frame.locals);
         let value_registers = std::mem::take(&mut self.frame.value_regs);
+        let categories = std::mem::take(&mut self.frame.categories);
         let used_scopes = std::mem::take(&mut self.frame.used_scopes);
         let handlers = std::mem::take(&mut self.frame.handlers);
         self.functions.push(TacFunction {
@@ -393,6 +399,7 @@ impl<'ir> Lowerer<'ir> {
             blocks,
             parameters: parameter_registers,
             locals,
+            categories,
             scopes: used_scopes,
             handlers,
             value_registers,
@@ -427,7 +434,7 @@ impl<'ir> Lowerer<'ir> {
     fn new_register(&mut self, class: RegisterClass, _span: IrSpan) -> VReg {
         let register = VReg::new(self.frame.next_vreg);
         self.frame.next_vreg = self.frame.next_vreg.saturating_add(1);
-        self.categories.insert(register, class);
+        self.frame.categories.insert(register, class);
         // 新建的值寄存器承载一条指令刚产生的值，语句结束时要释放。
         // 具名绑定的寄存器走 `new_binding_register`，它们由释放计划负责。
         if matches!(class, RegisterClass::ObjHandle) {
@@ -443,7 +450,7 @@ impl<'ir> Lowerer<'ir> {
     fn new_binding_register(&mut self, class: RegisterClass, span: IrSpan) -> VReg {
         let register = VReg::new(self.frame.next_vreg);
         self.frame.next_vreg = self.frame.next_vreg.saturating_add(1);
-        self.categories.insert(register, class);
+        self.frame.categories.insert(register, class);
         let _ = span;
         register
     }

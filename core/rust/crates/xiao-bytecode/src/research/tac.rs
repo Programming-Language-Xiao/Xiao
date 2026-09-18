@@ -636,6 +636,11 @@ pub struct TacFunction {
     pub parameters: Vec<VReg>,
     /// 局部变量寄存器，按声明顺序。
     pub locals: Vec<VReg>,
+    /// 本函数局部编号空间内的寄存器类别。
+    ///
+    /// `VReg` 会在每个函数重新从零编号，因此类别必须与函数一起携带；物理
+    /// 分配不得读取 [`TacProgram::categories`] 的入口兼容视图。
+    pub categories: CategoryMap,
     /// 该函数涉及的作用域编号。
     pub scopes: Vec<u32>,
     /// 异常处理器表。
@@ -682,7 +687,10 @@ pub struct TacProgram {
     pub signatures: CallSigTable,
     /// 函数表；索引 0 是脚本入口。
     pub functions: Vec<TacFunction>,
-    /// 寄存器类别映射。
+    /// 脚本入口函数的寄存器类别兼容视图。
+    ///
+    /// 新代码应读取 [`TacFunction::categories`]。该字段只保留给 R2a 已有的
+    /// 单函数观察代码，不能用于命名函数的物理寄存器分配。
     pub categories: CategoryMap,
     /// 冻结的释放计划；解释器在退出点上按 `(作用域, 退出边)` 取出执行。
     pub plans: Vec<crate::research::lower::TacReleasePlan>,
