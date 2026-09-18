@@ -192,6 +192,16 @@ impl CategoryMap {
     pub fn is_empty(&self) -> bool {
         self.classes.is_empty()
     }
+
+    /// 按虚拟寄存器编号返回已登记类别。
+    pub fn iter(&self) -> impl ExactSizeIterator<Item = RegisterClass> + '_ {
+        self.classes.iter().copied()
+    }
+
+    /// 从按虚拟寄存器编号排列的类别重建映射。
+    pub(crate) fn from_classes(classes: Vec<RegisterClass>) -> Self {
+        Self { classes }
+    }
 }
 
 /// 合并两个类别的保守结果；不同类别在合流点退化为 `Poly`。
@@ -292,6 +302,16 @@ impl ConstPool {
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
+    }
+
+    /// 按常量索引顺序遍历全部条目。
+    pub fn iter(&self) -> impl ExactSizeIterator<Item = &TacConstant> {
+        self.entries.iter()
+    }
+
+    /// 从保持原始索引顺序的条目重建常量池。
+    pub(crate) fn from_entries(entries: Vec<TacConstant>) -> Self {
+        Self { entries }
     }
 }
 

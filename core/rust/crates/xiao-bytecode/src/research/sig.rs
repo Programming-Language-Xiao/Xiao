@@ -154,4 +154,14 @@ impl CallSigTable {
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
     }
+
+    /// 按签名索引顺序遍历全部条目。
+    pub fn iter(&self) -> impl ExactSizeIterator<Item = &CallSig> {
+        self.entries.iter()
+    }
+
+    /// 从保持原始索引顺序的条目重建签名表。
+    pub(crate) fn from_entries(entries: Vec<CallSig>) -> Self {
+        Self { entries }
+    }
 }
