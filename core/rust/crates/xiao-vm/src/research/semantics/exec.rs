@@ -7,8 +7,8 @@
 //! `order` 逐条释放。动态错误发生时按同一份计划展开当前作用域栈。
 
 use xiao_bytecode::research::{
-    BlockId, FuncId, TacArgument, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
-    TacProgram, VReg,
+    BlockId, FuncId, PcMap, TacArgument, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
+    TacProgram, VReg, build_pc_map,
 };
 use xiao_diagnostics::{
     BackendLocation, FatalError, NUMERIC_OVERFLOW_CODE, StackFrame, TYPE_MISMATCH_CODE, XiaoError,
@@ -88,6 +88,8 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     sink: S,
     metrics: VmMetrics,
     options: VmOptions,
+    /// 运行开始前建立的一次性只读 pc 映射；热路径只做查表。
+    pc_map: Option<PcMap>,
 }
 
 impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
@@ -99,6 +101,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             sink,
             metrics: VmMetrics::default(),
             options,
+            pc_map: build_pc_map(program, xiao_bytecode::research::OperandWidth::Leb128).ok(),
         }
     }
 
@@ -217,16 +220,33 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
 
     /// 为在当前指令处产生的故障追加统一后端调用帧。
     ///
-    /// TAC 的 `IrSpan.start` 是研究字节码阶段唯一稳定的位置来源；在尚未
-    /// 冻结物理编码前，将它映射到 `BackendLocation.bytecode_offset`，让错误
-    /// 身份与后端位置同时跨帧传播。每次故障离开一层调用帧时才会再次调用
-    /// 本方法，因此同一帧的连续清理不会悄悄丢掉调用方信息。
-    fn annotate_fault(&self, fault: Fault, bytecode_offset: usize) -> Fault {
+    /// 通过启动时建立的只读 pc 表追加统一后端调用帧。
+    ///
+    /// 映射缺失时保留空的后端位置，并记录结构化事件；绝不把源码偏移伪装
+    /// 成物理 pc。每次故障离开一层调用帧时才会再次调用本方法，因此同一帧
+    /// 的连续清理不会悄悄丢掉调用方信息。
+    fn annotate_fault(&mut self, fault: Fault, block: BlockId, instruction: usize) -> Fault {
         let Some(frame) = self.frames.last() else {
             return fault;
         };
-        let stack_frame = StackFrame::user(self.program.abi.target.clone(), frame.name.clone())
-            .with_backend(BackendLocation::empty().with_bytecode_offset(bytecode_offset as u64));
+        let function = frame.function;
+        let function_name = frame.name.clone();
+        let pc = self
+            .pc_map
+            .as_ref()
+            .and_then(|map| map.pc_at(function, block, instruction));
+        if pc.is_none() {
+            self.sink.record(VmEvent::BackendLocationMissing {
+                function: function_name.clone(),
+                block: block.get(),
+                instruction,
+            });
+        }
+        let backend = pc.map_or_else(BackendLocation::empty, |pc| {
+            BackendLocation::empty().with_bytecode_offset(pc as u64)
+        });
+        let stack_frame =
+            StackFrame::user(self.program.abi.target.clone(), function_name).with_backend(backend);
         match fault {
             Fault::Error(error) => Fault::Error(error.with_stack_frame(stack_frame)),
             Fault::Fatal(fatal) => Fault::Fatal(fatal.with_stack_frame(stack_frame)),
@@ -242,12 +262,12 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 return Ok(None);
             };
             let mut flow = Flow::Next;
-            for instruction in &current.instructions {
+            for (instruction_index, instruction) in current.instructions.iter().enumerate() {
                 self.metrics.instructions = self.metrics.instructions.saturating_add(1);
                 flow = match self.step(function, instruction) {
                     Ok(flow) => flow,
                     Err(fault) => {
-                        let fault = self.annotate_fault(fault, instruction.span.start);
+                        let fault = self.annotate_fault(fault, block, instruction_index);
                         let pending = pending_fault.take();
                         let exit = pending
                             .as_ref()
@@ -585,12 +605,12 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     return Ok(Flow::Next);
                 };
                 let mut flow = Flow::Next;
-                for instruction in &current.instructions {
+                for (instruction_index, instruction) in current.instructions.iter().enumerate() {
                     self.metrics.instructions = self.metrics.instructions.saturating_add(1);
                     flow = match self.step(function, instruction) {
                         Ok(flow) => flow,
                         Err(fault) => {
-                            let fault = self.annotate_fault(fault, instruction.span.start);
+                            let fault = self.annotate_fault(fault, block, instruction_index);
                             let pending = pending_fault.take();
                             let exit = pending
                                 .as_ref()

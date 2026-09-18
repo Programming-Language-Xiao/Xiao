@@ -2,8 +2,8 @@
 
 use xiao_bytecode::research::lower_program;
 use xiao_bytecode::research::{
-    BlockId, CategoryMap, ConstPool, RegisterClass, TacAbi, TacBlock, TacConstant, TacFunction,
-    TacInstr, TacOp, TacProgram, VReg,
+    BlockId, CategoryMap, ConstPool, FuncId, OperandWidth, RegisterClass, TacAbi, TacBlock,
+    TacConstant, TacFunction, TacInstr, TacOp, TacProgram, VReg, build_pc_map,
 };
 use xiao_diagnostics::{FATAL_STACK_OVERFLOW_CODE, NUMERIC_OVERFLOW_CODE, TYPE_MISMATCH_CODE};
 use xiao_driver::{FrontendCompiler, FrontendRequest};
@@ -882,6 +882,57 @@ fn errors_retain_vm_stack_and_bytecode_offset() {
             .iter()
             .all(|frame| frame.backend().bytecode_offset.is_some())
     );
+}
+
+#[test]
+/// 错误堆栈使用编码器的物理 pc，而不是源码区间起点。
+fn errors_use_encoded_pc_mapping() {
+    let source = "def fail() -> int\n    raise ArithmeticError(code = \"boom\")\n    return 0\nresult = fail()\n";
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect("前端应成功");
+    let tac = lower_program(&artifact.ir);
+    let fail_index = tac
+        .functions
+        .iter()
+        .position(|function| function.name == "fail")
+        .expect("fail 函数应存在");
+    let (block, instruction_index, source_start) = tac.functions[fail_index]
+        .blocks
+        .iter()
+        .find_map(|block| {
+            block
+                .instructions
+                .iter()
+                .enumerate()
+                .find_map(|(index, instruction)| {
+                    matches!(instruction.op, TacOp::Raise { .. }).then_some((
+                        block.id,
+                        index,
+                        instruction.span.start,
+                    ))
+                })
+        })
+        .expect("fail 函数应有 Raise 指令");
+    let map = build_pc_map(&tac, OperandWidth::Leb128).expect("TAC 应可建立 pc 映射");
+    let expected_pc = map
+        .pc_at(FuncId::new(fail_index as u32), block, instruction_index)
+        .expect("Raise 应有物理 pc");
+    assert_ne!(
+        expected_pc as usize, source_start,
+        "测试必须区分源码偏移与物理 pc"
+    );
+
+    let outcome = run(&tac, VmOptions::new());
+    let RunResult::Error(error) = outcome.result else {
+        panic!("应得到未捕获错误: {:?}", outcome.result);
+    };
+    let frame = error
+        .stack()
+        .iter()
+        .find(|frame| frame.function() == "fail")
+        .expect("错误堆栈应包含 fail 帧");
+    assert_eq!(frame.backend().bytecode_offset, Some(expected_pc as u64));
 }
 
 /// 构造只包含 `LoadConst`/`MakeError`/`Check` 的最小 TAC 程序，隔离检查执行语义。

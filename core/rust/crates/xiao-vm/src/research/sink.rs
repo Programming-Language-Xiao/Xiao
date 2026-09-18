@@ -96,6 +96,15 @@ pub enum VmEvent {
         /// 该帧的返回值寄存器（若有）。
         return_to: Option<VReg>,
     },
+    /// 物理 pc 映射缺失时保留的结构化诊断事件。
+    BackendLocationMissing {
+        /// 当前函数。
+        function: String,
+        /// 当前基本块。
+        block: u32,
+        /// 当前指令在块内的序号。
+        instruction: usize,
+    },
 }
 
 /// 接收调试事件的目标。
