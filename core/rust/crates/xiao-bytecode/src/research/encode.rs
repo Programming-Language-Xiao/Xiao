@@ -18,9 +18,26 @@ use super::tac::{
     TacHandler, TacInstr, TacOp, TacProgram, VReg,
 };
 
+/// 研究编码的魔数。
+///
+/// `X9` 前缀刻意与真实的 `.xiaoc` 容器区分开：这里编出来的是内存研究编码，
+/// 不承诺任何文件级兼容，因此需要一个能立刻判死的头，避免把实验字节流当成
+/// 产物格式误读。
 const MAGIC: [u8; 4] = *b"X9RD";
+/// 字节布局的版本号，与 ABI 版本分工不同。
+///
+/// ABI 版本描述语义契约（R1 冻结），这个字段描述**字节怎么排**。只要布局
+/// 变动就必须递增它，解码端据此直接拒绝旧字节，而不是照着新规则错读旧数据。
 const FORMAT_VERSION: u8 = 1;
+/// 集合元素数与块字节长度的上限。
+///
+/// 解码端读到长度前缀后第一件事就是拿它做上界判断：没有这个上限，一段几字节
+/// 的损坏输入就能让解码器按伪造的 u64 去预留内存。
 const MAX_COLLECTION: u64 = 1 << 20;
+/// 单个字符串的字节长度上限。
+///
+/// 与 [`MAX_COLLECTION`] 同理，挡的是「先分配再发现读不完」的路径；字符串
+/// 常量可以很长，所以这个上限比集合上限宽得多。
 const MAX_STRING: u64 = 1 << 24;
 
 /// 指令操作数的宽度策略。
@@ -33,6 +50,10 @@ pub enum OperandWidth {
 }
 
 impl OperandWidth {
+    /// 返回写进头部的宽度标签。
+    ///
+    /// 标签是格式的一部分，[`Self::from_tag`] 是它唯一的逆映射；两个方向必须
+    /// 一起改，单独改一个方向等于静默改格式。
     const fn tag(self) -> u8 {
         match self {
             Self::Leb128 => 0,
@@ -40,6 +61,10 @@ impl OperandWidth {
         }
     }
 
+    /// 按头部的宽度标签解析操作数宽度。
+    ///
+    /// 未知标签报 [`EncodeError::InvalidEnum`]，**不退回默认宽度**：静默退回
+    /// 会让同一份字节被两种读法解释，而调用方拿到的却是一个「成功」的结果。
     fn from_tag(tag: u8) -> Result<Self, EncodeError> {
         match tag {
             0 => Ok(Self::Leb128),
@@ -60,6 +85,10 @@ pub struct EncodeOptions {
 }
 
 impl Default for EncodeOptions {
+    /// 默认使用 [`OperandWidth::Leb128`]。
+    ///
+    /// 研究编码里的寄存器号和索引绝大多数是小编号，变长比定宽短；定宽是给
+    /// 需要固定步长或定长扫描的消费者显式选的，不该是默认。
     fn default() -> Self {
         Self {
             operand_width: OperandWidth::Leb128,
@@ -68,6 +97,8 @@ impl Default for EncodeOptions {
 }
 
 impl From<OperandWidth> for EncodeOptions {
+    /// 让 `encode(program, OperandWidth::FixedU16)` 直接可用，省掉调用方为了
+    /// 传一个宽度而构造选项结构的样板。
     fn from(operand_width: OperandWidth) -> Self {
         Self { operand_width }
     }
@@ -100,6 +131,13 @@ pub struct EncodedFunction {
 }
 
 impl EncodedFunction {
+    /// 按函数内物理 pc 反解源码区间。
+    ///
+    /// 块目录按 pc 递增排列，所以「下一块的起始 pc」就是本块的排他上界，最后
+    /// 一块用 `code_len`。命中落在 `[instruction_pcs[i], instruction_pcs[i+1])`
+    /// 之内，因此指向一条指令的**中间字节**也会返回它的区间；落在块间空洞或
+    /// 函数尾部返回 `None`。这里是线性扫描，调用点在调试路径上，不值得为它
+    /// 维护一棵索引。
     fn span_at_pc(&self, pc: u32) -> Option<IrSpan> {
         for (block_index, block) in self.blocks.iter().enumerate() {
             let next_block = self
@@ -240,6 +278,11 @@ pub enum EncodeError {
 }
 
 impl std::fmt::Display for EncodeError {
+    /// 把结构化错误渲染成人读的中文诊断。
+    ///
+    /// 每个变体都带上出错的具体字段与期望/实际值，因为调用方（检查器、测试）
+    /// 往往只打印 `Display`。`InvalidFormat` 直接透传底层说明——构造点已经把
+    /// 字段和期望值写进去了，这里再包一层只会丢失信息。
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::InvalidMagic => formatter.write_str("研究编码魔数错误"),
@@ -283,7 +326,7 @@ pub fn encode(
     options: impl Into<EncodeOptions>,
 ) -> Result<EncodedProgram, EncodeError> {
     let options = options.into();
-    validate_input(program)?;
+    validate_input(program, options.operand_width)?;
     let mut writer = Writer::new(options.operand_width);
     writer.bytes.extend_from_slice(&MAGIC);
     writer.bytes.push(FORMAT_VERSION);
@@ -345,15 +388,15 @@ pub fn build_pc_map(program: &TacProgram, width: OperandWidth) -> Result<PcMap, 
 
 /// 解码研究字节串并恢复 TAC 语义模型。
 pub fn decode(bytes: &[u8]) -> Result<TacProgram, EncodeError> {
-    let (program, _) = decode_inner(bytes)?;
-    validate_decoded(&program)?;
+    let (program, width) = decode_inner(bytes)?;
+    validate_decoded(&program, width)?;
     Ok(program)
 }
 
 /// 解码研究字节串并同时重建物理目录。
 pub fn decode_encoded(bytes: &[u8]) -> Result<EncodedProgram, EncodeError> {
     let (program, width) = decode_inner(bytes)?;
-    validate_decoded(&program)?;
+    validate_decoded(&program, width)?;
     encode(&program, width)
 }
 
@@ -368,7 +411,16 @@ pub fn validate_encoded(encoded: &EncodedProgram) -> Result<(), EncodeError> {
     Ok(())
 }
 
-fn validate_input(program: &TacProgram) -> Result<(), EncodeError> {
+/// 编码前的整体校验，也是编码器唯一的入口关卡。
+///
+/// 顺序是有意的：先卡版本字段（TAC、bytecode ABI、runtime ABI、IR，全部必须
+/// 等于当前实现），再拒绝非空 `unsupported`——宁可整体失败，也不要产出一份
+/// 「能解码但少算了一部分」的编码；最后才是签名自洽性与跨表引用。版本错误先
+/// 于引用错误报出，因为版本不符时后面的编号根本没有可比对的基准。
+///
+/// `width` 必须由调用方传入真实的操作数宽度：定宽 `u16` 下部分索引可能放不下，
+/// 传错宽度会让那条检查静默失效（见 [`check_index_width`]）。
+fn validate_input(program: &TacProgram, width: OperandWidth) -> Result<(), EncodeError> {
     if program.version != TAC_VERSION {
         return Err(EncodeError::VersionMismatch {
             field: "tac_version".to_owned(),
@@ -393,9 +445,13 @@ fn validate_input(program: &TacProgram) -> Result<(), EncodeError> {
     for signature in program.signatures.iter() {
         validate_signature(signature)?;
     }
-    validate_references(program)
+    validate_references(program, width)
 }
 
+/// 比对单个版本字段，不一致时报出字段名与两侧取值。
+///
+/// 抽出来是为了让编码入口与解码入口共用同一条判定；四处版本字段各写一遍
+/// `if` 很容易漏掉其中一处。
 fn check_version(field: &str, actual: u32, expected: u32) -> Result<(), EncodeError> {
     if actual != expected {
         return Err(EncodeError::VersionMismatch {
@@ -407,7 +463,19 @@ fn check_version(field: &str, actual: u32, expected: u32) -> Result<(), EncodeEr
     Ok(())
 }
 
-fn validate_references(program: &TacProgram) -> Result<(), EncodeError> {
+/// 检查所有「编码时会直接下标」的跨表引用。
+///
+/// 覆盖的范围比看起来大，因为它同时守住了两条结构性不变量：
+///
+/// - 块目录必须严格按 `BlockId` 递增排列（`blocks[i].id == i`）。编码端按位置
+///   写块，handler 的物理 pc 又靠 `block_pcs[块号]` 直接下标取，一旦目录错位，
+///   异常路由会静默指到别的块。
+/// - handler 的保护区间必须非倒置，且终点允许等于块数（排他上界可以越过最后
+///   一块，落到函数尾部）。
+///
+/// 这里也顺带过一遍释放动作的类别与所有退出边名称，因为这两者在编码端被当作
+/// 「一定能映射到标签」使用。
+fn validate_references(program: &TacProgram, width: OperandWidth) -> Result<(), EncodeError> {
     for plan in &program.plans {
         check_exit_name(&plan.exit)?;
         for action in &plan.actions {
@@ -461,17 +529,25 @@ fn validate_references(program: &TacProgram) -> Result<(), EncodeError> {
             }
             check_exit_name(&handler.exit)?;
             if let Some(binding) = handler.binding {
-                check_index_width(
-                    binding.get() as u64,
-                    "handler.binding",
-                    OperandWidth::Leb128,
-                )?;
+                check_index_width(binding.get() as u64, "handler.binding", width)?;
             }
         }
     }
     Ok(())
 }
 
+/// 检查一条指令引用到的表项都在范围内。
+///
+/// 校验分三类：常量池（`LoadConst`）、函数表（`LoadFunc`、`Call`）、签名表
+/// （`Call`），以及本函数的块目录（跳转、分支、`on_failure`、`Check`）。
+/// `RunReleasePlan` 另有一条更强的约束：`(scope, exit)` 必须**成对**出现在
+/// 释放计划表里，只对上作用域是没用的，解释器按这一对取计划。
+///
+/// [`VReg`] 编号**没有可校验的上界**：TAC 没有独立的寄存器表，编号空间与
+/// [`CategoryMap`] 的稠密长度不是同一回事（未登记的编号只是默认为 `Poly`，
+/// 合法）。因此 `check_vreg` 是一个空闭包——它在每个用到寄存器的分支上保留了
+/// 调用位置，等将来有了真正的寄存器表再往里填检查即可。寄存器号唯一的硬约束
+/// 是定宽模式下的 `u16` 上界，那由 `Writer::index` 在写出时兜住。
 fn validate_op(
     program: &TacProgram,
     function: &TacFunction,
@@ -579,6 +655,11 @@ fn validate_op(
     }
 }
 
+/// 检查退出边名称是 `ExitKind` 的稳定拼写。
+///
+/// 退出边名由 `xiao-lifetime` 冻结，编码按名字写字符串而不是编码成编号，所以
+/// 校验只能走 `ExitKind::from_name`。诊断里的 `value` 固定填 0：出错的是「名字
+/// 不认识」，没有一个可报的数字输入，字段名才是有效信息。
 fn check_exit_name(name: &str) -> Result<(), EncodeError> {
     if ExitKind::from_name(name).is_none() {
         return Err(EncodeError::InvalidEnum {
@@ -589,6 +670,7 @@ fn check_exit_name(name: &str) -> Result<(), EncodeError> {
     Ok(())
 }
 
+/// 检查 `ConstId` 落在常量池内。
 fn check_const(program: &TacProgram, id: ConstId) -> Result<(), EncodeError> {
     if id.get() as usize >= program.constants.len() {
         return Err(EncodeError::InvalidReference {
@@ -600,6 +682,10 @@ fn check_const(program: &TacProgram, id: ConstId) -> Result<(), EncodeError> {
     Ok(())
 }
 
+/// 检查 `FuncId` 落在函数表内。
+///
+/// 索引 0 是脚本入口，它可以被 `LoadFunc`/`Call` 正常引用（递归入口是合法的），
+/// 所以这里只卡上界，不排除任何编号。
 fn check_func(program: &TacProgram, id: FuncId) -> Result<(), EncodeError> {
     if id.get() as usize >= program.functions.len() {
         return Err(EncodeError::InvalidReference {
@@ -611,6 +697,10 @@ fn check_func(program: &TacProgram, id: FuncId) -> Result<(), EncodeError> {
     Ok(())
 }
 
+/// 检查 `SigId` 落在签名表内。
+///
+/// 签名的变长平行数组不走这里，而由 [`validate_signature`] 单独负责：这里只
+/// 回答「这个编号有没有指向一条存在的签名」。
 fn check_sig(program: &TacProgram, id: SigId) -> Result<(), EncodeError> {
     if id.get() as usize >= program.signatures.len() {
         return Err(EncodeError::InvalidReference {
@@ -622,6 +712,12 @@ fn check_sig(program: &TacProgram, id: SigId) -> Result<(), EncodeError> {
     Ok(())
 }
 
+/// 检查块号落在**本函数**的块目录内。
+///
+/// 块号是函数内编号空间，跨函数比较没有意义，所以基准取 `function` 而不是
+/// `program`。`kind` 由调用方给出（跳转目标、`on_failure`、handler 区间……），
+/// 直接进诊断，用来区分「哪一处引用越界」——同类错误在一条指令里可能出现多次，
+/// 没有这个上下文就只能靠数编号。
 fn check_block(function: &TacFunction, id: BlockId, kind: String) -> Result<(), EncodeError> {
     if id.get() as usize >= function.blocks.len() {
         return Err(EncodeError::InvalidReference {
@@ -633,6 +729,12 @@ fn check_block(function: &TacFunction, id: BlockId, kind: String) -> Result<(), 
     Ok(())
 }
 
+/// 按常量池索引顺序写常量：1 字节类别标签加载荷。
+///
+/// 载荷按类型分开编码：`Int`/`Sint` 写小端定宽整数，`Float`/`Sfloat` 先取
+/// `to_bits` 再写位模式（用 `PartialEq` 或十进制往返会丢掉 `-0.0` 的符号和 NaN
+/// 的载荷位），`Lint`/`Lfloat` 保持规范十进制文本，字符串写长度前缀加 UTF-8
+/// 字节。索引就是写出顺序，所以顺序不能重排。
 fn encode_constants(writer: &mut Writer, pool: &ConstPool) -> Result<(), EncodeError> {
     writer.count(pool.len(), "constants")?;
     for constant in pool.iter() {
@@ -678,6 +780,13 @@ fn encode_constants(writer: &mut Writer, pool: &ConstPool) -> Result<(), EncodeE
     Ok(())
 }
 
+/// 写签名表：每条签名先写形参数量，再逐参数写「名字、类别标签、类型、有无
+/// 默认值」，最后写 `*args`/`**kwargs` 槽位与返回类型。
+///
+/// 这里再校验一次平行数组等长（编码入口已经查过），是因为本函数会按下标
+/// `[index]` 同时索引四个数组——多一道局部检查比在下标处 panic 划算。
+/// 两个槽位是「被调方帧内的形参序号」，用可选索引写：`None` 与 `0` 必须区分，
+/// 0 号形参的槽位是合法位置。
 fn encode_signatures(writer: &mut Writer, table: &CallSigTable) -> Result<(), EncodeError> {
     writer.count(table.len(), "signatures")?;
     for signature in table.iter() {
@@ -707,6 +816,10 @@ fn encode_signatures(writer: &mut Writer, table: &CallSigTable) -> Result<(), En
     Ok(())
 }
 
+/// 检查一条签名自洽：四条平行数组等长，且两个变参槽位指向真实存在的形参。
+///
+/// 槽位越界不会在当前编码里报错（它只是个编号），但运行期会按槽位去被调方帧
+/// 取寄存器，取到的是别人的值——所以必须在编码期挡住。
 fn validate_signature(signature: &CallSig) -> Result<(), EncodeError> {
     let lengths = [
         signature.parameter_names.len(),
@@ -736,6 +849,22 @@ fn validate_signature(signature: &CallSig) -> Result<(), EncodeError> {
     Ok(())
 }
 
+/// 写一个函数，并同步填出它的物理目录。
+///
+/// 头部依次写名字、签名、入口块、函数源码区间、本函数类别表、形参/局部表、
+/// 作用域集合和「`IrValue.id` → 寄存器」映射。之后逐块写：
+///
+/// - 块字节先写进独立的 `block_writer`，因为块头要回填**精确的字节长度**，
+///   而长度只有写完才知道。
+/// - 每条指令的「函数内 pc」在写出**之前**就算好并记进目录：`instruction_pcs`
+///   与 `spans` 一一对应，后者直接取降低期已经定好的 `instruction.span`，
+///   编码器不重算区间。
+/// - `pc` 用 `checked_add` 累加，溢出报字段名，而不是回绕成一个能解码但全错的
+///   目录。
+///
+/// handler 条目写两份信息：物理 pc 与逻辑块号。pc 是异常路由真正命中的边界，
+/// 块号则是为了空块（相邻块 pc 相同）仍能无损往返——只留 pc 会把两个块合并成
+/// 一个。
 fn encode_function(
     writer: &mut Writer,
     directory: &mut EncodedFunction,
@@ -832,6 +961,10 @@ fn encode_function(
     Ok(())
 }
 
+/// 写一条指令：opcode 字节、可选 `dst`、再由 [`encode_op`] 写操作数。
+///
+/// `dst` 走可选索引，因此 `None` 与 `VReg(0)` 在字节上是不同的东西——把空结果
+/// 编码成 0 号寄存器会让解码端凭空多出一个写入目标。
 fn encode_instruction(
     writer: &mut Writer,
     program: &TacProgram,
@@ -843,6 +976,15 @@ fn encode_instruction(
     encode_op(writer, program, function, &instruction.op)
 }
 
+/// 写指令 pc → 源码区间的增量表。
+///
+/// 两个方向都用**增量**而不是绝对值：指令在函数内密集排列，源码区间在降低期
+/// 也只做局部回填，增量几乎全是小数字，比重复写绝对值省得多。pc 增量为无符号
+/// （必须非递减，否则说明块内指令 pc 排错了）；源码起止为**有符号**增量，因为
+/// 回填常常往左跳，用无符号会直接溢出。首条的基准是 0。
+///
+/// `span.start > span.end` 在这里就拒绝：半开区间不变量是下游一切反查的前提，
+/// 不能等解码端或消费者去发现。
 fn encode_span_map(
     writer: &mut Writer,
     instruction_pcs: &[u32],
@@ -885,6 +1027,19 @@ fn encode_span_map(
     Ok(())
 }
 
+/// 写一条指令的操作数（opcode 已由 [`encode_instruction`] 写出）。
+///
+/// 操作数形态决定了用哪种写入口：寄存器号和表索引走 `Writer::index`（跟随
+/// 头部声明的宽度），集合长度走 `Writer::count`，源码文本/名称走 `Writer::string`。
+/// `IndexGet` 的路径段自带标签（数字索引 0、键 1），数字索引用 `sleb` 写——
+/// 源码里的负索引有语义，运行时按容器长度归一化，编码期不允许改写成无符号。
+///
+/// `RunReleasePlan` 在这里补一次 `(scope, exit)` 存在性检查：解码端只会照抄这
+/// 一对去查计划表，写出一个查不到的引用等于产出不可执行的编码。
+///
+/// `_function` 当前不参与载荷编码（引用校验已在 [`validate_references`] 完成），
+/// 参数保留是为了与 [`validate_op`] 的形态对称，也留给将来需要函数内上下文的
+/// 操作数。
 fn encode_op(
     writer: &mut Writer,
     program: &TacProgram,
@@ -1019,6 +1174,10 @@ fn encode_op(
     }
 }
 
+/// 写调用实参序列：每条写类别标签、可选名字、寄存器。
+///
+/// 名字用可选字符串而不是「关键字实参必有名字」的假设：为位置实参编造空名会
+/// 让解码端拿到一个 `Some("")`，语义上和 `None` 不同。
 fn encode_arguments(writer: &mut Writer, arguments: &[TacArgument]) -> Result<(), EncodeError> {
     writer.count(arguments.len(), "call.arguments")?;
     for argument in arguments {
@@ -1029,6 +1188,10 @@ fn encode_arguments(writer: &mut Writer, arguments: &[TacArgument]) -> Result<()
     Ok(())
 }
 
+/// 写一段寄存器编号序列：先数量再逐项。
+///
+/// 数组元素、元组元素、集合元素、形参、局部都复用这里。空序列写出一个 0，
+/// 是合法且常见的情况（无参函数）。
 fn encode_vregs(writer: &mut Writer, values: &[VReg]) -> Result<(), EncodeError> {
     writer.count(values.len(), "vregs")?;
     for value in values {
@@ -1037,6 +1200,11 @@ fn encode_vregs(writer: &mut Writer, values: &[VReg]) -> Result<(), EncodeError>
     Ok(())
 }
 
+/// 写寄存器类别表：只写类别标签，不写编号。
+///
+/// [`CategoryMap::iter`] 已经按寄存器编号稠密展开（未登记的编号是 `Poly`），
+/// 所以「位置即编号」——解码端用 [`CategoryMap::from_classes`] 就能恢复同一张
+/// 表。每个函数都携带自己那份类别，因为 `VReg` 在每个函数重新从零编号。
 fn encode_categories(writer: &mut Writer, categories: &CategoryMap) -> Result<(), EncodeError> {
     writer.count(categories.len(), "categories")?;
     for class in categories.iter() {
@@ -1045,6 +1213,11 @@ fn encode_categories(writer: &mut Writer, categories: &CategoryMap) -> Result<()
     Ok(())
 }
 
+/// 写冻结释放计划表：按 `(scope, exit, actions, transferred)` 逐条写。
+///
+/// 动作保持计划内的 `order` 原样写出，**不重排、不去重**：释放顺序是
+/// `xiao-lifetime` 冻结的语义，编码器只负责搬运。`transferred` 是「已转移出去、
+/// 不在此处释放」的值编号，它和 `actions` 是两个独立的集合，不能互相推导。
 fn encode_plans(writer: &mut Writer, program: &TacProgram) -> Result<(), EncodeError> {
     writer.count(program.plans.len(), "release_plans")?;
     for plan in &program.plans {
@@ -1064,6 +1237,10 @@ fn encode_plans(writer: &mut Writer, program: &TacProgram) -> Result<(), EncodeE
     Ok(())
 }
 
+/// 写一个独立源码区间（函数级 `span`），起止各一个 uleb。
+///
+/// 与 [`encode_span_map`] 的增量表不同，这里只有一条，绝对值反而更直接。同样
+/// 先验半开区间不变量再写。
 fn encode_span(writer: &mut Writer, span: IrSpan) -> Result<(), EncodeError> {
     if span.start > span.end {
         return Err(EncodeError::InvalidSpan {
@@ -1076,6 +1253,12 @@ fn encode_span(writer: &mut Writer, span: IrSpan) -> Result<(), EncodeError> {
     Ok(())
 }
 
+/// 递归写 `IrType`：1 字节标签加载荷。
+///
+/// 几处刻意不合并的地方：`DictTable` 与 `DictColumn` 共用同一段条目编码，但标签
+/// 分成 6/7，因为两者在物理布局上是不同的东西；`Set` 额外写三个布尔标志
+/// （允许动态成员、已知为空、未知），它们描述的是不同的类型事实，压成一个
+/// 「unknown」会丢信息。`Function` 先写形参数组再写返回类型，顺序固定。
 fn encode_type(writer: &mut Writer, ty: &IrType) -> Result<(), EncodeError> {
     match ty {
         IrType::Scalar { name } => {
@@ -1142,6 +1325,10 @@ fn encode_type(writer: &mut Writer, ty: &IrType) -> Result<(), EncodeError> {
     Ok(())
 }
 
+/// 写数组形状：同质带元素类型与可选长度，异质带逐位置元素类型，未知只有标签。
+///
+/// 长度是可选值，因为 `Some(0)`（确定为空）与 `None`（长度运行期才定）是两个
+/// 不同的形状，不能互相替代。
 fn encode_array_shape(writer: &mut Writer, shape: &IrArrayShape) -> Result<(), EncodeError> {
     match shape {
         IrArrayShape::Homogeneous { element, length } => {
@@ -1161,6 +1348,10 @@ fn encode_array_shape(writer: &mut Writer, shape: &IrArrayShape) -> Result<(), E
     Ok(())
 }
 
+/// 写字典类型的条目：键字符串加值类型。
+///
+/// 键保持源码文本原样，**不做任何规范化**：它是 `IndexGet` 精确路径的匹配依据，
+/// 大小写或转义的改写会让类型信息与实际索引对不上。
 fn encode_dict_types(writer: &mut Writer, entries: &[IrDictTypeEntry]) -> Result<(), EncodeError> {
     writer.count(entries.len(), "dict_type.entries")?;
     for entry in entries {
@@ -1170,6 +1361,18 @@ fn encode_dict_types(writer: &mut Writer, entries: &[IrDictTypeEntry]) -> Result
     Ok(())
 }
 
+/// 解码主体，返回语义模型与**头部声明的**操作数宽度。
+///
+/// 读出顺序即格式顺序：魔数 → 布局版本 → 宽度标签 → 四个版本字段 → 语言版本
+/// 与目标 → 常量池 → 签名表 → 函数 → 程序级类别兼容视图 → 释放计划 →
+/// `unsupported` 说明。版本字段在读到时就逐个比对当前实现，不等读完再判。
+///
+/// 末尾要求恰好消费完：剩余任何字节都报 [`EncodeError::TrailingBytes`]。静默
+/// 忽略尾部会让「编码器多写了一段」这类 bug 永远浮不出来——解码成功、数据却
+/// 不是写入时的全部内容。
+///
+/// 返回宽度而不是丢掉，是因为 [`decode_encoded`] 要按**同一宽度**重新编码才能
+/// 重建物理目录。
 fn decode_inner(bytes: &[u8]) -> Result<(TacProgram, OperandWidth), EncodeError> {
     let mut reader = Reader::new(bytes);
     if reader.take_exact(4, "magic")? != MAGIC {
@@ -1239,6 +1442,14 @@ fn decode_inner(bytes: &[u8]) -> Result<(TacProgram, OperandWidth), EncodeError>
     ))
 }
 
+/// 按标签还原常量池。
+///
+/// 浮点按**位**还原（`from_bits`），保住 `-0.0` 的符号位和 NaN 的载荷位——
+/// 这两者在 `PartialEq` 下都等于「随便一个同类值」，只有位级往返才能证明没丢。
+/// `Lint`/`Lfloat` 只做 UTF-8 还原，十进制文本的规范化由消费方负责。
+///
+/// `width` 参数在本函数里用不到：常量池按索引顺序整体写出，条目内部既没有寄存器
+/// 号也没有表索引，因此不参与两种操作数宽度的分叉。
 fn decode_constants(
     reader: &mut Reader<'_>,
     width: OperandWidth,
@@ -1271,6 +1482,11 @@ fn decode_constants(
     Ok(ConstPool::from_entries(entries))
 }
 
+/// 还原签名表：逐参数读名字、类别标签、类型、默认值标志，再读两个可选槽位与
+/// 返回类型。
+///
+/// 两个槽位用 `optional_index` 读，因此必须按头部声明的宽度解析——签名表里的
+/// 槽位是寄存器序号，和指令操作数受同一条宽度策略约束。
 fn decode_signatures(
     reader: &mut Reader<'_>,
     width: OperandWidth,
@@ -1305,6 +1521,23 @@ fn decode_signatures(
     Ok(CallSigTable::from_entries(entries))
 }
 
+/// 还原一个函数，并在读的过程中重建它的物理 pc 目录。
+///
+/// 三处结构约束必须在这里守住：
+///
+/// - 块目录严格按 `BlockId` 从 0 递增。编码端按位置写块，只有这条成立才能保证
+///   `blocks[i].id == i`，后面 handler 的块号才能直接当索引用。
+/// - `value_registers` 出现重复值编号直接拒绝：查表结果会取决于插入顺序，
+///   同一份字节能解出两种映射。
+/// - 块字节串在声明的指令数之后必须为空。多出来的字节没有归属，读掉它就等于
+///   承认编码有歧义。
+///
+/// 指令的源码区间**不在**指令流里，而在块字节之后的增量表里；读完后按位置回填
+/// 到每条指令。
+///
+/// handler 的 pc 与块号写了两份，这里逐条交叉校验：pc 必须等于该块在函数内的
+/// 起始 pc（保护区间终点额外允许等于函数 `code_len`，对应「排他上界越过最后
+/// 一块」）。解码端不信任 pc，只信块目录里推出来的值。
 fn decode_function(
     reader: &mut Reader<'_>,
     width: OperandWidth,
@@ -1459,6 +1692,11 @@ fn decode_function(
     })
 }
 
+/// 核对 handler 里写的物理 pc 与块目录推出的 pc。
+///
+/// `expected` 为 `None` 表示块号超出了块目录，而 pc 位置本身是合法的——这种
+/// 组合只可能来自损坏或手写字节，报 [`EncodeError::InvalidReference`]，`limit`
+/// 填 0 表示「以块目录为准，没有可比的长度」。
 fn validate_handler_pc(
     actual: u32,
     expected: Option<u32>,
@@ -1477,6 +1715,11 @@ fn validate_handler_pc(
     Ok(())
 }
 
+/// 读一条指令：opcode、可选 `dst`，再交给 [`decode_op`] 读操作数。
+///
+/// 源码区间先留成 `IrSpan::new(0, 0)`，由 [`decode_span_map`] 按 pc 回填——
+/// 指令流本身不携带区间，硬在这里编一个默认区间会让「回填漏了一条」变成静默
+/// 的假数据。
 fn decode_instruction(
     reader: &mut Reader<'_>,
     width: OperandWidth,
@@ -1493,6 +1736,12 @@ fn decode_instruction(
     })
 }
 
+/// 按 opcode 还原操作数，与 [`encode_op`] 的写出顺序逐条对应。
+///
+/// 所有寄存器号与表索引都按头部声明的宽度读（`Leb128` 或定宽 `u16`），所以同一
+/// 段字节在两种宽度下含义不同——宽度是格式的一部分，必须一路传到底。未知 opcode
+/// 报 [`EncodeError::UnknownOpcode`]：跳过它会让后面所有操作数错位，产出一份
+/// 「能解码但指令全错」的程序。
 fn decode_op(
     reader: &mut Reader<'_>,
     width: OperandWidth,
@@ -1611,6 +1860,7 @@ fn decode_op(
     })
 }
 
+/// 读调用实参序列，与 [`encode_arguments`] 对称：类别标签、可选名字、寄存器。
 fn decode_arguments(
     reader: &mut Reader<'_>,
     width: OperandWidth,
@@ -1626,6 +1876,10 @@ fn decode_arguments(
     Ok(arguments)
 }
 
+/// 读字典字面量的键值对：键是 UTF-8 文本，值是寄存器。
+///
+/// 键值对按写出顺序保留，不去重也不排序——字典字面量里重复的键是源码允许的，
+/// 谁赢由运行时的构造语义决定，编码层不能替它做决定。
 fn decode_dict_entries(
     reader: &mut Reader<'_>,
     width: OperandWidth,
@@ -1641,6 +1895,10 @@ fn decode_dict_entries(
     Ok(entries)
 }
 
+/// 读一段寄存器编号序列。
+///
+/// `field` 由调用方给出，用来区分数组元素、元组元素、集合元素、形参、局部这些
+/// 形态相同但位置不同的长度字段——报错时只说「vregs」定位不到是哪一个序列。
 fn decode_vregs(
     reader: &mut Reader<'_>,
     width: OperandWidth,
@@ -1654,6 +1912,11 @@ fn decode_vregs(
     Ok(values)
 }
 
+/// 读稠密类别表并重建 `CategoryMap`。
+///
+/// 表里只有标签，位置就是寄存器编号；编码端已经把空洞补成 `Poly`，所以这里读
+/// 出来的长度同时就是编号上界。`field` 区分程序级入口兼容视图与函数级类别表
+/// （两者格式相同，出错的归属不同）。
 fn decode_categories(
     reader: &mut Reader<'_>,
     field: &'static str,
@@ -1666,6 +1929,12 @@ fn decode_categories(
     Ok(CategoryMap::from_classes(classes))
 }
 
+/// 还原冻结释放计划表。
+///
+/// `order` 用 [`Reader::usize_uleb`] 而不是 `u32_uleb`，因为它是解释器执行顺序的
+/// 直接依据，宽度跟宿主 `usize` 走；`scope`/`value` 这些编号仍是 `u32`，宽度跟
+/// 模型里的字段类型走。计划不参与两种操作数宽度策略——里面的编号是值编号不是
+/// 寄存器号。
 fn decode_plans(reader: &mut Reader<'_>) -> Result<Vec<super::lower::TacReleasePlan>, EncodeError> {
     let count = reader.count("release_plans")?;
     let mut plans = Vec::with_capacity(count);
@@ -1696,6 +1965,9 @@ fn decode_plans(reader: &mut Reader<'_>) -> Result<Vec<super::lower::TacReleaseP
     Ok(plans)
 }
 
+/// 读函数级独立源码区间（起止各一个 uleb）。
+///
+/// 倒置区间在这里就拒绝，和 [`encode_span`] 是同一条不变量的两侧。
 fn decode_span(reader: &mut Reader<'_>) -> Result<IrSpan, EncodeError> {
     let start = reader.usize_uleb("span.start")?;
     let end = reader.usize_uleb("span.end")?;
@@ -1705,6 +1977,15 @@ fn decode_span(reader: &mut Reader<'_>) -> Result<IrSpan, EncodeError> {
     Ok(IrSpan::new(start, end))
 }
 
+/// 读增量源码映射表，并与指令目录交叉校验后返回逐指令区间。
+///
+/// 三条硬校验：数量必须等于该块的指令数；每条 delta 累加出的 pc 必须**精确
+/// 等于**对应指令的 pc；区间不得倒置。这样任何一处错位都会立刻变成结构错误，
+/// 而不是产出一张「查得到但查不准」的映射表——后者会让错误堆栈指向无关的源码
+/// 位置，比直接失败危险得多。
+///
+/// 与 [`encode_span_map`] 对称：pc 走无符号增量，源码起止走有符号增量并经由
+/// [`add_signed_usize`] 落地。
 fn decode_span_map(
     reader: &mut Reader<'_>,
     instruction_pcs: &[u32],
@@ -1748,6 +2029,11 @@ fn decode_span_map(
     Ok(spans)
 }
 
+/// 把有符号增量加到一个无符号基准上，正负两侧都防溢出。
+///
+/// 源码区间在降低期既可能向右也可能向左回填，所以负增量是正常的，但结果落到
+/// 负数（或加爆 `usize`）说明增量表本身损坏，必须报错而不是回绕。错误统一记成
+/// `IntegerOverflow`，因为两种情况的处置相同：这份字节不可用。
 fn add_signed_usize(base: usize, delta: i128, field: &str) -> Result<usize, EncodeError> {
     if delta >= 0 {
         let delta = usize::try_from(delta).map_err(|_| EncodeError::IntegerOverflow {
@@ -1773,6 +2059,14 @@ fn add_signed_usize(base: usize, delta: i128, field: &str) -> Result<usize, Enco
     }
 }
 
+/// 递归还原 `IrType`，标签与 [`encode_type`] 一一对应。
+///
+/// `DictTable`/`DictColumn` 由 6/7 共用同一段条目读取后再分支，`Set` 的三个布尔
+/// 标志分开读——它们顺序固定，不能靠「读到一个 0」去猜剩下还有没有。未知标签
+/// 报 [`EncodeError::InvalidEnum`]，不猜成 `Dynamic`。
+///
+/// 类型是递归结构，每层至少消耗一个标签字节，递归深度因此受输入长度约束而不是
+/// 靠单独设限。
 fn decode_type(reader: &mut Reader<'_>) -> Result<IrType, EncodeError> {
     let tag = reader.byte("type.tag")?;
     Ok(match tag {
@@ -1847,6 +2141,10 @@ fn decode_type(reader: &mut Reader<'_>) -> Result<IrType, EncodeError> {
     })
 }
 
+/// 还原数组形状。
+///
+/// `Homogeneous` 的长度是可选 uleb：缺失表示长度运行期才定，与 `Some(0)` 的
+/// 「确定为空」不是一回事，不能用 0 顶替 `None`。
 fn decode_array_shape(reader: &mut Reader<'_>) -> Result<IrArrayShape, EncodeError> {
     Ok(match reader.byte("array.shape")? {
         0 => IrArrayShape::Homogeneous {
@@ -1871,10 +2169,22 @@ fn decode_array_shape(reader: &mut Reader<'_>) -> Result<IrArrayShape, EncodeErr
     })
 }
 
-fn validate_decoded(program: &TacProgram) -> Result<(), EncodeError> {
-    validate_input(program)
+/// 解码产物的整体校验。
+///
+/// 目前**与 [`validate_input`] 完全等价**（直接转调）：两侧必须用同一套规则，
+/// 否则会出现「编码通过、解出来的程序却不合法」的缝隙——同一份字节在两处得到
+/// 不同判定，谁对谁错没有依据。保留独立函数名，是为了让「解码后还有一次校验」
+/// 在两个调用点显式可见，而不是靠读者自己去追被调函数。
+fn validate_decoded(program: &TacProgram, width: OperandWidth) -> Result<(), EncodeError> {
+    validate_input(program, width)
 }
 
+/// `TacOp` 到稳定 opcode 的映射，0–30 连续。
+///
+/// 这张表是格式的核心契约：**只能追加，不得重排**。调换两个编号会让旧字节被读
+/// 成另一种指令，而这种错误在往返测试里是看不出来的（编码器和解码器用的是同一
+/// 张表）。`all_ops_program` 里断言了 `ops` 的顺序恰好产生 `0..31`，新增变体插在
+/// 中间会立刻失败。
 fn opcode(op: &TacOp) -> u8 {
     match op {
         TacOp::LoadConst(_) => 0,
@@ -1911,6 +2221,11 @@ fn opcode(op: &TacOp) -> u8 {
     }
 }
 
+/// `ScalarType` 与稳定标签的双向表。
+///
+/// 用数组而不是两段 `match`，是为了让正反两个方向共用同一份数据：写成两段
+/// `match` 时「正向写 3、反向读回 4」这种错配编译得过去，测试也未必覆盖到。
+/// 顺序即标签，改动等于改格式。
 const SCALAR_TAGS: [(ScalarType, u8); 8] = [
     (ScalarType::Int, 0),
     (ScalarType::Sint, 1),
@@ -1922,13 +2237,35 @@ const SCALAR_TAGS: [(ScalarType, u8); 8] = [
     (ScalarType::Bool, 7),
 ];
 
-fn scalar_tag(value: ScalarType) -> u8 {
-    SCALAR_TAGS
-        .iter()
-        .find(|(item, _)| *item == value)
-        .map_or(0, |(_, tag)| *tag)
+/// 查 `ScalarType` 的正向标签。
+///
+/// **穷尽匹配，没有兜底分支**：`ScalarType` 新增变体而没同步本函数时，这里会
+/// **编译失败**，强制作者回来处理。
+///
+/// 曾经写成「查 [`SCALAR_TAGS`]，查不到退回 0」——那样确实不会崩，但会**静默写出
+/// 一个错误标签**，产出一份「能解码、标量类型却被悄悄改写」的字节。错误推迟到
+/// 计算结果不对时才暴露，而且没有任何一层能指出是编码器写错了。编译失败比这
+/// 危险得多地便宜。
+///
+/// 取值必须与 [`SCALAR_TAGS`] 一致；两者之间的漂移由
+/// `scalar_and_release_tags_have_one_bidirectional_mapping` 逐条钉住。
+const fn scalar_tag(value: ScalarType) -> u8 {
+    match value {
+        ScalarType::Int => 0,
+        ScalarType::Sint => 1,
+        ScalarType::Lint => 2,
+        ScalarType::Float => 3,
+        ScalarType::Sfloat => 4,
+        ScalarType::Lfloat => 5,
+        ScalarType::Str => 6,
+        ScalarType::Bool => 7,
+    }
 }
 
+/// 按标签还原标量类型；未知标签报 [`EncodeError::InvalidEnum`]。
+///
+/// 不退回默认标量：静默退回会让一份损坏字节被当成合法程序继续往执行器走，
+/// 错误会推迟到计算结果不对的时候才暴露。
 fn scalar_from_tag(tag: u8) -> Result<ScalarType, EncodeError> {
     SCALAR_TAGS
         .iter()
@@ -1940,6 +2277,12 @@ fn scalar_from_tag(tag: u8) -> Result<ScalarType, EncodeError> {
         })
 }
 
+/// `ReleaseActionKind` 到标签的映射，直接取 `ALL` 数组下标。
+///
+/// 标签顺序就是 `xiao-lifetime` 冻结的枚举顺序，所以这条映射是与上游的接口
+/// 契约而不是本地编号：上游调整 `ALL` 的次序就等于改格式。查不到时报
+/// [`EncodeError::InvalidEnum`]，`value` 填 `u64::MAX`——出错的是「这个值不在
+/// `ALL` 里」，没有可报的输入标签。
 fn release_tag(value: ReleaseActionKind) -> Result<u8, EncodeError> {
     ReleaseActionKind::ALL
         .iter()
@@ -1951,6 +2294,11 @@ fn release_tag(value: ReleaseActionKind) -> Result<u8, EncodeError> {
         })
 }
 
+/// 按 `ALL` 下标还原释放动作类别；越界报 [`EncodeError::InvalidEnum`]。
+///
+/// 用 `ALL.get` 而不是下标索引，是因为 `tag` 直接来自输入字节：索引越界会 panic，
+/// 而这里需要的是一条结构化错误。强释放与弱释放的区分决定引用计数是否递减，
+/// 读错标签会静默改变释放语义。
 fn release_from_tag(tag: u8) -> Result<ReleaseActionKind, EncodeError> {
     ReleaseActionKind::ALL
         .get(tag as usize)
@@ -1961,6 +2309,10 @@ fn release_from_tag(tag: u8) -> Result<ReleaseActionKind, EncodeError> {
         })
 }
 
+/// 写 `ArithOp` 的稳定标签（加 0 到幂 6）。
+///
+/// 和 opcode 表一样只能追加：重排会让旧字节被当成另一种运算执行。算术错误不会
+/// 被结构校验发现，只会在结果里体现出来。
 fn arith_tag(value: ArithOp) -> u8 {
     match value {
         ArithOp::Add => 0,
@@ -1973,6 +2325,10 @@ fn arith_tag(value: ArithOp) -> u8 {
     }
 }
 
+/// 按标签还原算术运算；未知标签报 [`EncodeError::InvalidEnum`]。
+///
+/// 这里必须报错而不是挑一个默认运算：除法与取模的编号相邻，静默兜底会把一份
+/// 损坏字节变成一次「合法的」错运算。
 fn arith_from_tag(tag: u8) -> Result<ArithOp, EncodeError> {
     Ok(match tag {
         0 => ArithOp::Add,
@@ -1991,6 +2347,10 @@ fn arith_from_tag(tag: u8) -> Result<ArithOp, EncodeError> {
     })
 }
 
+/// 写 `CompareOp` 的稳定标签（`<` 0 到 `!=` 5）。
+///
+/// 顺序即标签，只可追加。比较结果恒为布尔，所以标签错位不会被类别检查发现——
+/// 仍然是同一类值，只是比较的语义变了。
 fn compare_tag(value: CompareOp) -> u8 {
     match value {
         CompareOp::Less => 0,
@@ -2002,6 +2362,7 @@ fn compare_tag(value: CompareOp) -> u8 {
     }
 }
 
+/// 按标签还原比较运算；未知标签报 [`EncodeError::InvalidEnum`]。
 fn compare_from_tag(tag: u8) -> Result<CompareOp, EncodeError> {
     Ok(match tag {
         0 => CompareOp::Less,
@@ -2019,6 +2380,10 @@ fn compare_from_tag(tag: u8) -> Result<CompareOp, EncodeError> {
     })
 }
 
+/// 写实参类别标签（位置 0、关键字 1、`*` 2、`**` 3）。
+///
+/// 类别决定被调方怎么绑定形参：位置实参按顺序占槽，关键字实参按名字找，
+/// `*`/`**` 展开成变参。读错标签不会越界，只会把值绑到别的形参上。
 fn arg_kind_tag(value: ArgKind) -> u8 {
     match value {
         ArgKind::Positional => 0,
@@ -2028,6 +2393,7 @@ fn arg_kind_tag(value: ArgKind) -> u8 {
     }
 }
 
+/// 按标签还原实参类别；未知标签报 [`EncodeError::InvalidEnum`]。
 fn arg_kind_from_tag(tag: u8) -> Result<ArgKind, EncodeError> {
     Ok(match tag {
         0 => ArgKind::Positional,
@@ -2043,6 +2409,11 @@ fn arg_kind_from_tag(tag: u8) -> Result<ArgKind, EncodeError> {
     })
 }
 
+/// 写形参类别标签（位置或关键字 0、位置专用 1、关键字专用 2、`*args` 3、
+/// `**kwargs` 4）。
+///
+/// 标签顺序与 [`ParamKind`] 的变体声明顺序一致，但**它本身是格式**：变体顺序
+/// 变了就得同步改这里，不能靠「声明顺序即标签」的默契。
 fn param_kind_tag(value: ParamKind) -> u8 {
     match value {
         ParamKind::PositionalOrKeyword => 0,
@@ -2053,6 +2424,7 @@ fn param_kind_tag(value: ParamKind) -> u8 {
     }
 }
 
+/// 按标签还原形参类别；未知标签报 [`EncodeError::InvalidEnum`]。
 fn param_kind_from_tag(tag: u8) -> Result<ParamKind, EncodeError> {
     Ok(match tag {
         0 => ParamKind::PositionalOrKeyword,
@@ -2069,6 +2441,10 @@ fn param_kind_from_tag(tag: u8) -> Result<ParamKind, EncodeError> {
     })
 }
 
+/// 写寄存器类别标签（整数 0、浮点 1、布尔 2、对象句柄 3、动态 4、无 5、合流 6）。
+///
+/// 类别是物理分配的依据：它决定值落在寄存器文件还是帧槽、要不要带运行时类型标
+/// 签。标签错位不会让编码失败，只会让分配器把对象句柄当整数处理。
 fn register_class_tag(value: RegisterClass) -> u8 {
     match value {
         RegisterClass::Int => 0,
@@ -2081,6 +2457,10 @@ fn register_class_tag(value: RegisterClass) -> u8 {
     }
 }
 
+/// 按标签还原寄存器类别；未知标签报 [`EncodeError::InvalidEnum`]。
+///
+/// 不退回 [`RegisterClass::Poly`]：`Poly` 是「合流点无法收敛」这一具体事实的
+/// 表示，用它兜底会把「类别未知」和「类别确实退化」混成一种。
 fn register_class_from_tag(tag: u8) -> Result<RegisterClass, EncodeError> {
     Ok(match tag {
         0 => RegisterClass::Int,
@@ -2099,6 +2479,10 @@ fn register_class_from_tag(tag: u8) -> Result<RegisterClass, EncodeError> {
     })
 }
 
+/// 写可选索引：`None` 写一个 0 字节，`Some` 先写 1 再按当前宽度写编号。
+///
+/// 不用「0 表示空」是因为 0 是合法编号——0 号常量、0 号函数（脚本入口）、
+/// 0 号寄存器都存在，用 0 当哨兵会把一个真实引用变成「没有」。
 fn write_optional_index(writer: &mut Writer, value: Option<u32>) -> Result<(), EncodeError> {
     match value {
         Some(value) => {
@@ -2110,6 +2494,10 @@ fn write_optional_index(writer: &mut Writer, value: Option<u32>) -> Result<(), E
     Ok(())
 }
 
+/// 写可选字符串：`None` 写一个 0 字节，`Some` 先写 1 再写长度前缀文本。
+///
+/// 同样不能拿空串当哨兵：`Some("")`（比如无名的关键字实参、空的捕获类型名）与
+/// `None`（根本没有这一项）在模型里是不同的值。
 fn write_optional_string(writer: &mut Writer, value: Option<&str>) -> Result<(), EncodeError> {
     match value {
         Some(value) => {
@@ -2121,6 +2509,11 @@ fn write_optional_string(writer: &mut Writer, value: Option<&str>) -> Result<(),
     Ok(())
 }
 
+/// 写可选长度：`None` 写一个 0 字节，`Some` 先写 1 再写 uleb。
+///
+/// 与 [`write_optional_index`] 分开，是因为这里的载荷**固定用 uleb**，不跟随头部
+/// 的操作数宽度：可选长度只出现在类型形状里（数组长度），而定宽策略只约束寄存器
+/// 号与表索引。
 fn write_optional_usize(writer: &mut Writer, value: Option<usize>) -> Result<(), EncodeError> {
     match value {
         Some(value) => {
@@ -2132,6 +2525,10 @@ fn write_optional_usize(writer: &mut Writer, value: Option<usize>) -> Result<(),
     Ok(())
 }
 
+/// 读一个布尔标志，只接受 0 和 1。
+///
+/// 其他任何值都报 [`EncodeError::InvalidEnum`]，不按「非零即真」处理：把 2 当作
+/// `true` 会把一个已经损坏的字段静默吞掉，后面再想定位就无从下手。
 fn read_bool(reader: &mut Reader<'_>, field: &'static str) -> Result<bool, EncodeError> {
     match reader.byte(field)? {
         0 => Ok(false),
@@ -2143,12 +2540,22 @@ fn read_bool(reader: &mut Reader<'_>, field: &'static str) -> Result<bool, Encod
     }
 }
 
+/// 编码写入器：累积字节串，并记住本次编码的操作数宽度。
+///
+/// 宽度存在写入器里而不是每个 [`Writer::index`] 调用点各传一次，是为了让一段
+/// 字节里**不可能**混进两种宽度的编号——解码端只有头部一个宽度标签，混写就是
+/// 不可解。
 struct Writer {
+    /// 已写出的字节。
     bytes: Vec<u8>,
+    /// 本次编码使用的操作数宽度，写编号时生效。
     width: OperandWidth,
 }
 
 impl Writer {
+    /// 建一个空写入器，绑定本次编码的宽度。
+    ///
+    /// 是 `const`，方便在常量语境（比如块级写入器的初始化）里构造。
     const fn new(width: OperandWidth) -> Self {
         Self {
             bytes: Vec::new(),
@@ -2156,10 +2563,18 @@ impl Writer {
         }
     }
 
+    /// 写一个原始字节（标签、布尔、opcode 都用它）。
+    ///
+    /// 不做长度或范围检查：能走到这里的值都已经由调用方决定了语义，检查放在
+    /// 有字段名可用的一层（比如 [`Writer::index`]）才报得清楚。
     fn byte(&mut self, value: u8) {
         self.bytes.push(value);
     }
 
+    /// 写无符号 LEB128：每字节取低 7 位，最高位表示「后面还有」。
+    ///
+    /// 0 写成一个 `0x00`，即最小表示唯一——不写补零的冗余形式，否则同一份语义
+    /// 会有多种字节表示，往返测试也就失去意义。
     fn uleb(&mut self, mut value: u64) {
         loop {
             let mut byte = (value & 0x7f) as u8;
@@ -2174,6 +2589,10 @@ impl Writer {
         }
     }
 
+    /// 写有符号 LEB128：低 7 位加符号位，终止条件是「剩余位全 0（正）或全 1（负）」。
+    ///
+    /// 取 `i128` 而不是更窄的整数，是因为源码区间的增量可以横跨整个 `usize`
+    /// 范围；按 `i64` 实现会在 64 位平台上截断极大的区间差。
     fn sleb(&mut self, mut value: i128) {
         loop {
             let byte = (value as u8) & 0x7f;
@@ -2187,6 +2606,11 @@ impl Writer {
         }
     }
 
+    /// 按当前宽度写一个寄存器号或表索引。
+    ///
+    /// `FixedU16` 下超出 `u16` 范围直接报 [`EncodeError::IntegerOverflow`] 并带上
+    /// `field`。这正是定宽操作数的契约：编号放不下时必须让编码失败，而不是截断
+    /// 成一个指向别的表项的合法编号。
     fn index(&mut self, value: u32, field: &str) -> Result<(), EncodeError> {
         match self.width {
             OperandWidth::Leb128 => {
@@ -2204,6 +2628,10 @@ impl Writer {
         }
     }
 
+    /// 写长度前缀加 UTF-8 字节串。
+    ///
+    /// 长度是**字节数**不是字符数，所以中文、含 `\0` 的内容都能原样往返（`\0`
+    /// 在源码字符串里是合法字符，不是终止符）。超过 [`MAX_STRING`] 拒绝。
     fn string(&mut self, value: &str) -> Result<(), EncodeError> {
         let bytes = value.as_bytes();
         if bytes.len() as u64 > MAX_STRING {
@@ -2217,6 +2645,11 @@ impl Writer {
         Ok(())
     }
 
+    /// 写一个集合数量或字节长度。
+    ///
+    /// 超过 [`MAX_COLLECTION`] 拒绝：写入方向也卡这个上限，是为了保证「能编出来
+    /// 的字节一定能解回来」——解码端有同样的上限，写入端不卡就会产出自己读不了
+    /// 的编码。
     fn count(&mut self, count: usize, field: &str) -> Result<(), EncodeError> {
         if count as u64 > MAX_COLLECTION {
             return Err(EncodeError::InvalidLength {
@@ -2229,28 +2662,53 @@ impl Writer {
     }
 }
 
+/// 解码读取器：一个字节切片加当前消费位置。
+///
+/// **不保存操作数宽度**：宽度是头部的属性，在每次 [`Reader::index`] /
+/// [`Reader::optional_index`] 调用点显式传入。这样同一个读取器既能读入口流
+/// （头部自带宽度标签），也能读块字节这类「宽度由外层决定」的子串。
 struct Reader<'a> {
+    /// 剩余待消费的字节。
     bytes: &'a [u8],
+    /// 已消费的字节数，同时是下一条指令的函数内 pc 基准。
     offset: usize,
 }
 
 impl<'a> Reader<'a> {
+    /// 从字节切片从头开始读。
+    ///
+    /// 适合整段入口流：头部自己带着宽度标签，后续每次读取再显式传入宽度，因此
+    /// 这里不需要挑一个默认宽度。
     fn new(bytes: &'a [u8]) -> Self {
         Self::with_width(bytes, OperandWidth::Leb128)
     }
 
+    /// 带宽度标注的构造入口。
+    ///
+    /// 当前实现**刻意忽略该参数**：读取器不持有宽度，宽度一律在读取点传入。
+    /// 保留这个入口是为了让「这段子串是按哪种宽度写的」在构造处写清楚，读代码的
+    /// 人不必回头去追头部。
     fn with_width(bytes: &'a [u8], _width: OperandWidth) -> Self {
         Self { bytes, offset: 0 }
     }
 
+    /// 判断是否已消费到末尾。
+    ///
+    /// 整个编码流读完后必须为空，否则 [`decode_inner`] 会报 `TrailingBytes`。
     fn is_empty(&self) -> bool {
         self.offset == self.bytes.len()
     }
 
+    /// 返回尚未消费的字节数。
+    ///
+    /// 用于 `TrailingBytes` 诊断，也被 [`Reader::count`] 当作「这个长度有没有可能
+    /// 装得下」的粗筛上界。
     fn remaining(&self) -> usize {
         self.bytes.len().saturating_sub(self.offset)
     }
 
+    /// 读一个字节，越界报 [`EncodeError::UnexpectedEof`]，并带上 `context` 字段名，
+    /// 让截断的位置可定位。
     fn byte(&mut self, context: &'static str) -> Result<u8, EncodeError> {
         let value = *self
             .bytes
@@ -2262,6 +2720,11 @@ impl<'a> Reader<'a> {
         Ok(value)
     }
 
+    /// 读走恰好 `length` 个字节并返回借用切片。
+    ///
+    /// `offset + length` 用 `checked_add`：长度是从输入里读出来的，可以大到让
+    /// `usize` 回绕；回绕后的上界会落在切片内，于是「越界」变成一次成功的读取。
+    /// 越界统一报 [`EncodeError::UnexpectedEof`]，与 `byte` 保持一致。
     fn take_exact(
         &mut self,
         length: usize,
@@ -2284,6 +2747,10 @@ impl<'a> Reader<'a> {
         Ok(result)
     }
 
+    /// 读定宽 `N` 字节并转成数组，供整数/浮点按小端还原。
+    ///
+    /// `N` 由调用点从常量给出（整数 8/4、定宽操作数 2），所以长度不足只可能是
+    /// 输入被截断，报 [`EncodeError::UnexpectedEof`]。
     fn fixed<const N: usize>(&mut self, context: &'static str) -> Result<[u8; N], EncodeError> {
         self.take_exact(N, context)?
             .try_into()
@@ -2292,6 +2759,11 @@ impl<'a> Reader<'a> {
             })
     }
 
+    /// 读无符号 LEB128，上限 10 字节（`u64` 的宽度）。
+    ///
+    /// 每步都检查位移：位移到 64 位以外、或最后一个可用字节带多余高位时报
+    /// [`EncodeError::IntegerOverflow`]。不查的话多出来的位会被 `<<` 静默丢弃，
+    /// 读出一个比实际小的数——而它多半会被当成合法的表索引或长度用下去。
     fn uleb(&mut self, context: &'static str) -> Result<u64, EncodeError> {
         let mut value = 0_u64;
         let mut shift = 0_u32;
@@ -2316,6 +2788,14 @@ impl<'a> Reader<'a> {
         })
     }
 
+    /// 读有符号 LEB128，按 `i128` 累积，最多 19 字节。
+    ///
+    /// 第 19 字节只剩 2 个有效位（`shift == 126`），此时还要检查它的其余位是不是
+    /// 合法的符号扩展（正数只能剩 `0x00`/`0x01`，负数只能剩 `0x7e`/`0x7f`），
+    /// 否则报 [`EncodeError::IntegerOverflow`]：不做这一步，一段超宽的编码会被
+    /// 截成一个「看起来正常」的小区间。
+    ///
+    /// 用 `i128` 而不是 `i64`，是因为源码区间增量要能覆盖整个 `usize` 范围。
     fn sleb(&mut self, context: &'static str) -> Result<i128, EncodeError> {
         let mut bits = 0_u128;
         let mut shift = 0_u32;
@@ -2360,6 +2840,9 @@ impl<'a> Reader<'a> {
         })
     }
 
+    /// 读 uleb 并收窄到 `u32`（作用域号、各类版本号用）。
+    ///
+    /// 放不进 `u32` 时报 [`EncodeError::IntegerOverflow`]，而不是截断取低 32 位。
     fn u32_uleb(&mut self, context: &'static str) -> Result<u32, EncodeError> {
         u32::try_from(self.uleb(context)?).map_err(|_| EncodeError::IntegerOverflow {
             field: context.to_owned(),
@@ -2367,6 +2850,10 @@ impl<'a> Reader<'a> {
         })
     }
 
+    /// 读 uleb 并收窄到 `usize`。
+    ///
+    /// 用于 [`super::lower::TacReleaseAction::order`] 这类「宽度跟宿主走」的字段，
+    /// 与 [`Reader::u32_uleb`] 分开写是为了让收窄目标在调用点一眼可辨。
     fn usize_uleb(&mut self, context: &'static str) -> Result<usize, EncodeError> {
         usize::try_from(self.uleb(context)?).map_err(|_| EncodeError::IntegerOverflow {
             field: context.to_owned(),
@@ -2374,6 +2861,15 @@ impl<'a> Reader<'a> {
         })
     }
 
+    /// 读一个集合数量，三重校验后才交给调用方去预留容量。
+    ///
+    /// 1. 不超过 [`MAX_COLLECTION`]；
+    /// 2. 能收窄到 `usize`；
+    /// 3. 不超过剩余字节数加一——每个条目至少要占一个字节，超过这个上界说明长度
+    ///    是伪造的。
+    ///
+    /// 第 3 条是防「几字节输入骗出巨大分配」的主要手段：前两条都只是定值上限，
+    /// 只有拿剩余长度当上界才真正和输入规模挂钩。
     fn count(&mut self, context: &'static str) -> Result<usize, EncodeError> {
         let value = self.uleb(context)?;
         if value > MAX_COLLECTION {
@@ -2395,6 +2891,11 @@ impl<'a> Reader<'a> {
         Ok(count)
     }
 
+    /// 读长度前缀加 UTF-8 字节串。
+    ///
+    /// 长度先卡 [`MAX_STRING`] 再收窄成 `usize` 才取字节。非 UTF-8 报
+    /// [`EncodeError::InvalidFormat`] 而不是替换成 U+FFFD：静默替换会改掉标识符
+    /// 和字符串常量的内容，而调用方拿到的仍是一个「成功」的结果。
     fn string(&mut self, context: &'static str) -> Result<String, EncodeError> {
         let length = self.uleb(context)?;
         if length > MAX_STRING {
@@ -2414,6 +2915,9 @@ impl<'a> Reader<'a> {
             .map_err(|_| EncodeError::InvalidFormat(format!("{context} 不是合法 UTF-8")))
     }
 
+    /// 读可选字符串，标志字节只接受 0/1（其他值报 [`EncodeError::InvalidEnum`]）。
+    ///
+    /// 与 [`write_optional_string`] 对称，`None` 和 `Some("")` 保持可区分。
     fn optional_string(&mut self, context: &'static str) -> Result<Option<String>, EncodeError> {
         match self.byte(context)? {
             0 => Ok(None),
@@ -2425,6 +2929,10 @@ impl<'a> Reader<'a> {
         }
     }
 
+    /// 按给定宽度读一个寄存器号或表索引。
+    ///
+    /// 这是「两种操作数宽度」在解码侧唯一的分叉点：`Leb128` 走 uleb，`FixedU16`
+    /// 读小端两字节。宽度由调用方传入而不是从 `self` 取，见 [`Reader`] 的说明。
     fn index(&mut self, width: OperandWidth, context: &'static str) -> Result<u32, EncodeError> {
         match width {
             OperandWidth::Leb128 => self.u32_uleb(context),
@@ -2432,6 +2940,10 @@ impl<'a> Reader<'a> {
         }
     }
 
+    /// 读可选编号：标志字节只接受 0/1（其他值报 [`EncodeError::InvalidEnum`]），
+    /// 随后按给定宽度读编号。
+    ///
+    /// 与 [`write_optional_index`] 对称，`None` 与编号 0 保持可区分。
     fn optional_index(
         &mut self,
         width: OperandWidth,
@@ -2447,6 +2959,10 @@ impl<'a> Reader<'a> {
         }
     }
 
+    /// 读可选长度（固定用 uleb）。
+    ///
+    /// 与 [`Reader::optional_index`] 分开，因为可选长度不参与定宽操作数策略；
+    /// 目前唯一的用处是数组形状里的长度。
     fn optional_usize(&mut self, context: &'static str) -> Result<Option<usize>, EncodeError> {
         match self.byte(context)? {
             0 => Ok(None),
@@ -2459,6 +2975,15 @@ impl<'a> Reader<'a> {
     }
 }
 
+/// 定宽模式下检查一个编号能否放进 `u16`。
+///
+/// **目前不会真的报错**：唯一的调用点在 [`validate_references`] 里固定传
+/// [`OperandWidth::Leb128`]，而该分支只在 `FixedU16` 下生效。定宽溢出实际是被
+/// [`Writer::index`] 在写出时抓住的（字段名退化成 `optional_index` 之类）。
+///
+/// 保留它的意义是给「handler.binding 也受定宽约束」这件事留一个显式位置：
+/// 那条检查发生在校验阶段，早于任何写出。等调用方能拿到真实宽度后它会立即生效，
+/// 届时错误信息里的字段名会比写入端的通用名精确得多。
 fn check_index_width(value: u64, field: &str, width: OperandWidth) -> Result<(), EncodeError> {
     if matches!(width, OperandWidth::FixedU16) && value > u16::MAX as u64 {
         return Err(EncodeError::IntegerOverflow {
@@ -2469,11 +2994,22 @@ fn check_index_width(value: u64, field: &str, width: OperandWidth) -> Result<(),
     Ok(())
 }
 
+/// 本模块的结构性回归测试。
+///
+/// 覆盖的是**格式契约**而不是业务语义：全部 opcode 与 ABI 头字段在两种操作数
+/// 宽度下往返、LEB128 的整数边界、损坏输入必须被结构性拒绝（而不是「随便报个
+/// 错」）、越界引用与定宽溢出、以及标签表的双向唯一性。这些测试的存在理由是
+/// 编码器与解码器共用同一批映射表——只做往返测试无法发现「两边一起错」，
+/// 所以每张表都另有独立的断言。
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::research::lower::{TacReleaseAction, TacReleasePlan};
 
+    /// 造一条测试指令：`dst` 与源码区间都由序号推出。
+    ///
+    /// 前 16 条带 `dst`、其余不带，覆盖可选字段的两侧；区间按序号错开，这样
+    /// 「按 pc 反查」的断言能确认命中的是**哪一条**，而不只是「有命中」。
     fn instruction(index: usize, op: TacOp) -> TacInstr {
         TacInstr {
             op,
@@ -2482,6 +3018,11 @@ mod tests {
         }
     }
 
+    /// 枚举 `IrType` 的每个变体，供类型编码覆盖测试使用。
+    ///
+    /// 包含三种数组形状、两种字典、`Table` 与 `Dynamic`。`Set` 刻意取
+    /// `allows_dynamic = true`、`empty = false`、`unknown = true` 这种非全零也
+    /// 非全一的组合，这样三个标志写串顺序或写错一个都能被发现。
     fn all_types() -> Vec<IrType> {
         vec![
             IrType::Scalar {
@@ -2536,6 +3077,16 @@ mod tests {
         ]
     }
 
+    /// 构造一份用满全部 31 个 opcode 的 TAC 程序。
+    ///
+    /// 刻意把每个「难往返」的角落都填上：常量池里有大整数、位模式特殊的浮点
+    /// （NaN 载荷、`-0.0`）、超长精度文本和带 `\0` 的中文串；签名表覆盖五种
+    /// [`ParamKind`] 与 `*args`/`**kwargs` 槽位；函数带类别表、值→寄存器映射、
+    /// handler 与释放计划；块从 31 条指令骤降到 1 条，条数不整齐。
+    ///
+    /// 函数内的两条断言是**格式守卫**：`ops` 的顺序必须恰好产生 `0..31` 的
+    /// opcode。新增变体若插在表中间而不是追加到末尾，这里会先失败，而不是等到
+    /// 某天有人拿旧字节解码才发现指令错位。
     fn all_ops_program() -> TacProgram {
         let mut constants = ConstPool::new();
         let constant = constants.intern(TacConstant::Int(-7));
@@ -2787,6 +3338,10 @@ mod tests {
         }
     }
 
+    /// 比较两个常量，`Float`/`Sfloat` 按**位**比较。
+    ///
+    /// `PartialEq` 在浮点上放过两类关键变化：`-0.0 == 0.0` 为真，NaN 不等于自身。
+    /// 用位比较才能证明编码往返没有改动符号位与 NaN 载荷。
     fn assert_constant_eq(left: &TacConstant, right: &TacConstant) {
         match (left, right) {
             (TacConstant::Float(left), TacConstant::Float(right)) => {
@@ -2799,6 +3354,10 @@ mod tests {
         }
     }
 
+    /// 逐字段比较两份 TAC 程序。
+    ///
+    /// 常量池单独处理：先比数量再逐项走 [`assert_constant_eq`]（浮点要按位比）。
+    /// 其余字段直接结构相等。
     fn assert_program_eq(left: &TacProgram, right: &TacProgram) {
         assert_eq!(left.version, right.version);
         assert_eq!(left.abi, right.abi);
@@ -2813,6 +3372,12 @@ mod tests {
         }
     }
 
+    /// 两种操作数宽度下「编码 → 自校验 → 解码」都必须与原程序一致。
+    ///
+    /// 除了往返，这里还钉住几条容易被假通过掩盖的性质：物理 pc **不得**退化成
+    /// 源码偏移（用 `assert_ne!` 显式排除这种实现），按 pc 反查在指向指令中间
+    /// 字节时仍命中、指向函数尾部（`code_len`）时返回 `None`，第二块的 pc 大于 0，
+    /// 以及小编号下 LEB128 确实比定宽更短（否则定宽策略就失去存在意义）。
     #[test]
     fn all_opcodes_and_abi_fields_round_trip_in_both_widths() {
         let program = all_ops_program();
@@ -2835,6 +3400,11 @@ mod tests {
         assert!(sizes[0] < sizes[1], "小编号下 LEB128 应比定宽编码更短");
     }
 
+    /// 覆盖 uleb 与 sleb 的整数边界：0、127/128（单字节与双字节的分界）、
+    /// `u32::MAX`，以及 `i128::MIN`/`MAX`、-1、-129。
+    ///
+    /// 先写进同一个写入器再顺序读回，最后断言读取器恰好空——把「写完还有残留」
+    /// 和「多读了一个字节」一并挡住。
     #[test]
     fn unsigned_and_signed_leb128_cover_integer_boundaries() {
         let mut writer = Writer::new(OperandWidth::Leb128);
@@ -2854,6 +3424,15 @@ mod tests {
         assert!(reader.is_empty());
     }
 
+    /// 逐类破坏字节流，断言报出的是**对应的**结构化错误。
+    ///
+    /// 覆盖：改动 `bytecode_abi_version` 字段必须报 `VersionMismatch` 且带上字段名；
+    /// 截断尾部报 `UnexpectedEof` 或 `InvalidLength`（取决于截在哪个位置）；多写
+    /// 一个字节报 `TrailingBytes`；未知 opcode、未知释放类别各自报 `UnknownOpcode`
+    /// 与 `InvalidEnum`；超长字符串报 `InvalidLength`。
+    ///
+    /// 这些断言刻意匹配具体错误而不是 `is_err()`：一个损坏输入「恰好」被别的原因
+    /// 拒绝掉，才算真正的测试通过。
     #[test]
     fn damaged_inputs_are_rejected_structurally() {
         let encoded = encode(&all_ops_program(), OperandWidth::Leb128).expect("基线编码应成功");
@@ -2903,6 +3482,39 @@ mod tests {
         ));
     }
 
+    /// 定宽模式下 `handler.binding` 放不下时，必须报出**精确字段名**。
+    ///
+    /// 这条检查曾经是死的：调用点硬编码传 `OperandWidth::Leb128`，而该函数只在
+    /// `FixedU16` 分支才可能报错，所以它永远不会触发——真正兜住越界的是写出时的
+    /// `Writer::index`，报的是通用字段名。**撤掉宽度透传（改回 `Leb128`），本用例
+    /// 必须失败。**
+    #[test]
+    fn fixed_width_reports_the_overflowing_handler_binding() {
+        let mut program = all_ops_program();
+        let handler = program
+            .functions
+            .iter_mut()
+            .flat_map(|function| function.handlers.iter_mut())
+            .next()
+            .expect("夹具应带 handler");
+        handler.binding = Some(VReg::new(u32::from(u16::MAX) + 1));
+
+        let error = encode_with_width(&program, OperandWidth::FixedU16)
+            .expect_err("定宽模式下越界绑定必须被拒绝");
+        match error {
+            EncodeError::IntegerOverflow { field, .. } => assert_eq!(field, "handler.binding"),
+            other => panic!("应报字段级溢出而不是通用错误: {other:?}"),
+        }
+
+        // 同一份程序在 LEB128 下必须正常编码：越界只是定宽格式的限制。
+        assert!(encode_with_width(&program, OperandWidth::Leb128).is_ok());
+    }
+
+    /// 越界引用与定宽溢出必须在**编码期**被拒，且错误里带上引用类别。
+    ///
+    /// 逐个改坏一份合法程序里的引用：`ConstId`、`FuncId`、`SigId`、跳转目标
+    /// `BlockId`，各自断言 `kind` 字段；最后把一条指令的寄存器号改成 65536 并用
+    /// `FixedU16` 编码，断言 `IntegerOverflow` 里报的是原值而不是截断后的值。
     #[test]
     fn bad_references_and_fixed_width_overflow_are_rejected() {
         let mut program = all_ops_program();
@@ -2949,6 +3561,11 @@ mod tests {
         ));
     }
 
+    /// 标量标签与释放类别标签必须正反双向一致。
+    ///
+    /// 这条测试同时钉住了与 `xiao-lifetime` 的接口契约：`ReleaseActionKind` 的标签
+    /// 就是 `ALL` 数组下标，上游调整 `ALL` 的次序会在这里失败，而不是在某个
+    /// 运行期表现为「强释放变成了弱释放」。
     #[test]
     fn scalar_and_release_tags_have_one_bidirectional_mapping() {
         for (scalar, tag) in SCALAR_TAGS {
