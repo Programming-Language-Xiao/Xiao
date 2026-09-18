@@ -130,10 +130,10 @@ R2B 修复。R2B 只需避免依赖它们的未冻结实现细节，并在异常
 ### 2.1 类型层到运行时的单一来源
 
 `TypeChecker` 是选择语义的唯一计算者。它产生的 `SelectionPlan`、
-`BroadcastAssignmentPlan` 和 `RandomSeedPlan` 必须通过 IR 或一个由 IR 持有的后端无关投影
-传到 TAC；如果因为依赖方向不能直接携带 `xiao_types` 的结构，必须在 IR 层一次性序列化
-规范化字段，并用静态快照和运行时对拍证明等价。**禁止**在 TAC、Runtime 或 VM 重新解析源码、
-重新推断容器类型、重新展开范围或重新决定结果形状。
+`BroadcastAssignmentPlan` 和 `RandomSeedPlan` 必须通过 IR 的一个**后端无关镜像**传到 TAC
+（**不是直接携带原结构**：`IrProgram` 可序列化而 `xiao_types` 的类型不可，详见任务 1），
+并由类型层一次性生成，用静态快照和运行时对拍证明等价。**禁止**在 TAC、Runtime 或 VM
+重新解析源码、重新推断容器类型、重新展开范围或重新决定结果形状。
 
 以下函数和数据是跨层唯一来源，选择器实现只能复用：
 
@@ -253,14 +253,37 @@ step, requires_runtime_check, with_replacement, has_duplicates }`，以及
 `selection_shape.rs` 的形状投影、`selector_checker.rs` 的范围展开（`expand_direct_range`）
 与步长应用（`apply_global_step`）——**但 IR/TAC/VM 全链路都没引用它**。
 IR 目前只把 `IrSelectorItem` 五类形状原样搬运，**不做任何展开**，并且
-`IrProgram` 尚未保存类型阶段的选择/广播/随机种子计划。任务 1 必须先决定计划的承载位置：
-优先让 `xiao-ir` 保存带源码跨度的规范化计划；若只能保存后端无关镜像，也要由类型层一次性
-生成，不能让 TAC 通过源码切片重建。
+`IrProgram` 尚未保存类型阶段的选择/广播/随机种子计划。任务 1 必须先决定计划的承载位置。
 
-**推荐方案：让 TAC/运行时消费 `SelectionPlan`。** 理由是本仓第一号病史就是
-「同一规则两处各写一份然后漂移」；在 TAC 层重新实现一遍范围展开与形状投影，**就是第 8 次**。
+**先把障碍说准——不是依赖方向。** 一个容易犯的归因错误是「`xiao-ir` 不能依赖
+`xiao-types` 的结构」，但这是可以一眼证伪的：`xiao-ir/Cargo.toml` **已经依赖** `xiao-types`，
+`lower.rs:20` 早就在用 `Type`/`TypeCheckResult`/`ArrayType`/`DictType`/`SetType`/
+`TableValueKind`，而 `lower.rs:821` 的 `runtime_check_kind_name` 更是**直接消费
+`xiao_types::RuntimeCheckKind`**。依赖方向不构成任何障碍。
 
-**若因结构原因无法直接消费**（例如 `xiao-bytecode` 不该依赖 `xiao-types` 的某个类型），
+**真正的障碍是序列化边界**：`IrProgram` 带 `Serialize/Deserialize`（IR 快照要用），
+而 `SelectionPlan` 及其内含的 `source_type`/`result_type`/`target_types: Vec<Type>` 所属的
+`xiao_types::Type` **都没有 serde derive**。直接携带字段，等于要把 serde 加给**整个类型表示**。
+
+**本仓对这种情况有既定约定，而且是镜像，不是直接携带。** 先例出现两次：
+
+- `IrType`（`model.rs`，带 `#[serde(tag = "kind", content = "data")]`）是
+  `xiao_types::Type` 的可序列化镜像，`lower_type(&Type) -> IrType`（`lower.rs:457`）是唯一转换入口；
+- `IrOwnership`（`model.rs`）持有 `IrScope`/`IrValue`/`IrOwnershipEdge`/`IrReleasePlan`
+  等**全 IR 自有类型**，`model.rs` 里**零** `xiao_lifetime::` 引用——尽管 `xiao-ir` 也依赖它。
+
+所以任务 1 的正解是：**在 IR 层为选择计划建一个后端无关镜像**，由类型层一次性生成，
+**不能让 TAC 通过源码切片重建**。`IrType` 已经存在，镜像选择计划只需复用它表示那三类 `Type` 字段。
+**镜像不是退路，是本仓约定**；照本文档早先那种「优先直接携带」的写法去做，只会撞上 serde 墙
+再临场发挥。
+
+**镜像必须配的纪律（这才是真正的风险点）**：唯一转换入口 + 往返证据。
+本仓已经为镜像吃过一次亏——`IrOwnershipEdge.kind` 存的是 **`String`** 而不是上游枚举，
+这正是 **A1「退出边拼写两处各写一份」的病根**；解药是 `ExitKind::as_name`/`from_name`
+与 `scalar_names_round_trip` 这类**往返测试**。选择计划镜像要照同一套做法办。
+
+**方案的评价标准不变**：让 TAC/运行时消费规范化计划，而不是在 TAC 层重新实现一遍范围展开
+与形状投影——后者就是本仓第一号病史的第 8 次。**若最终仍需在 TAC 侧重算**，
 必须**明确登记理由**，并给出「两条实现语义一致」的对拍用例——**登记理由不等于可以放任分叉**。
 
 计划镜像至少要保留：选择项的源码顺序和逐项跨度、`Range`/`OpenRange` 的边界包含关系、
@@ -512,13 +535,18 @@ git diff --check
 
 ## 七、风险与未决
 
-1. **与 R2D 的并行冲突**：两者**无依赖**（R2b 是语义，R2D 是机型），但**都要改
-   `xiao-bytecode/src/research/`**（R2b 加选择器操作数格式，R2D 加 `categories`、
-   载体与编码器）。**并行会直接冲突**。建议**串行**；若必须并行，
-   先明确约定谁先动 `tac.rs` 并各自避开对方的文件。
-2. **计划承载与依赖方向**：当前 `xiao-ir` 没有保存 `SelectionPlan` 等类型阶段计划；如果
-   直接让后端依赖类型层结构会改变研究 crate 的边界，如果复制字段又可能形成第 8 次语义
-   分叉。必须在任务 1 登记承载决策、快照格式和对拍证据，不能先写一份临时 DTO 再忘记来源。
+1. **与 R2D 的排序已定：R2D 先做，R2b 紧随其后，且必须在 R3 出报告之前。**
+   两者**无依赖**（R2b 是语义，R2D 是机型），但**都要改 `xiao-bytecode/src/research/`**
+   （R2b 加选择器操作数格式，R2D 加 `categories`、载体与编码器），所以**必须串行**。
+   排序理由与已知代价见
+   [09R2D 文档的「与 R2b 的排序结论」](09r2d-machines-and-encoder.md)——
+   **该节是这条结论的单一来源，本文只记录结论，不复制理由。**
+2. **计划镜像的单源纪律**：当前 `xiao-ir` 没有保存 `SelectionPlan` 等类型阶段计划
+   （障碍是**序列化边界**，不是依赖方向——`xiao-ir` 早已依赖并直接使用 `xiao-types`，
+   详见任务 1）。风险**不在「有镜像」**，而在**「有镜像但没有唯一转换入口与往返证据」**：
+   上游枚举一旦被镜像成字符串，两边拼写就会各自演化。本仓已经因此付过一次学费——
+   `IrOwnershipEdge.kind` 存 `String` 正是 A1「退出边拼写漂移」的病根，
+   解药是 `ExitKind::as_name`/`from_name` 式往返测试。任务 1 必须一并登记转换入口与往返用例。
 3. **形状投影与释放计划的交互**：任务 5「中途错误清理已构造节点」是一条**新的资源管理
    路径**，与既有 `Release`/`Transfer` 语义如何衔接需要在实现时定清并登记。
    它与 D1（临时值泄漏）同源，**先读 `885a278` 的修法再设计**。
