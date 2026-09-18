@@ -11,6 +11,7 @@ description = "Xiao bytecode format and instruction model"
 path = "src/lib.rs"
 
 [dependencies]
+xiao-diagnostics = { path = "../xiao-diagnostics" }
 xiao-ir = { path = "../xiao-ir" }
 xiao-lifetime = { path = "../xiao-lifetime" }
 xiao-syntax = { path = "../xiao-syntax" }

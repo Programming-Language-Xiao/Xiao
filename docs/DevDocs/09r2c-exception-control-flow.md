@@ -28,13 +28,14 @@
 | 批次 2 | 容器运行时对象、精确索引、临时值释放修复 | `1f8d560` `a93fd3f` `885a278` `7dc998a` |
 | 跨层审计 | 12 项缺陷修复 + 契约清理 | `7a67af3` `3f6aa94` `85a11d8` `3d1956f` `59a0317` `2bb5dc8` `ccba90a` `e900f3b` |
 
-**现状**：`lower/stmt.rs` 把 `IrStatementKind::Try` 归入 `record_unsupported`；解释器到达
-`TacOp::Raise` / `TacOp::Check` 直接报「尚未实现」；`TacHandler` 已定义但 `TacFunction.handlers`
-**永远是空表**（`lower/mod.rs:365` 写死 `Vec::new()`）；解释器的 `unwind`
-（`semantics/exec.rs:363`）只跑 `(scope, "error")` 计划，**完全不查处理器**。
+**交接基线（实现前）**：`lower/stmt.rs` 曾把 `IrStatementKind::Try` 归入
+`record_unsupported`；解释器到达 `TacOp::Raise` / `TacOp::Check` 曾直接报「尚未实现」；
+`TacHandler` 虽已定义但处理器表为空，旧版 `unwind` 也不查处理器。
 
-异常控制流是 R1 施工图里 R2a 唯一还没达成的验收条件——09R 文档要求语义向量「同时覆盖函数调用、
-递归、循环、`try`/`catch`/`finally`、`raise`」。
+**当前状态（09R2C 已完成）**：运行时错误对象、权威错误类型表、`MakeError`/`Raise`/`Check`、
+handler 表、`finally` 子程序、当前帧路由和逐帧未匹配展开均已接通。共享向量覆盖正常清理、
+匹配/未匹配传播、重抛、嵌套、递归循环、字符串释放和 Fatal 隔离；未消费的 RuntimeCheck
+会进入 `TacProgram.unsupported`，不会静默丢失。
 
 ### 本阶段交付与不负责事项
 
@@ -358,3 +359,23 @@ finally
 - 3 个死码（`X03-PARSE-003`、`X03-TYPE-007`、`X04-TYPE-008` 已删，文档承诺已清）
 - 诊断重复上报（同码同跨度只保留首次）
 - 18 个测试文件的诊断码字面值（已全部改为常量引用）
+
+## 09R2C 交付核对
+
+- `xiao-diagnostics` 的 `ERROR_TYPE_NAMES`/`error_kind_of` 同时被类型层、Runtime 路由和 TAC
+  错误构造消费；未知 `FooError` 不再静默通过，`FatalError` 仍禁止普通捕获。
+- `RuntimeValue::Error` 保留错误身份，显式覆盖相等、哈希可用性和 `type_name()` 三处兜底。
+- `TacFunction.handlers` 保存受保护块区间、catch 类型、绑定寄存器和 finally 子程序；VM 只在
+  当前帧查表，未匹配后逐帧清理，Fatal 绕过查表、finally、释放和 `suppressed`。
+- `Check` 当前执行 `boolean_condition`、`arithmetic`、`numeric_range`、`dynamic_conversion`；
+  `string_boolean` 等后续类别进入 `unsupported`。`dynamic_conversion` 的窄语义是只允许
+  `RuntimeValue::Error` 通过，失败使用 `TYPE_MISMATCH_CODE`。
+- `tests/spec/09-bytecode/errors.json` 与 `xiao-vm/tests/r2_stack.rs` 共同锁定释放事件的完整
+  `(scope, exit, value, kind)` 顺序和最大调用深度。
+
+## 当前验证
+
+定向验证包括 `xiao-bytecode` 的 TAC 降低测试、`xiao-vm` 的栈式异常回归和共享错误向量；提交前
+完整门禁已通过：Rust workspace 测试、Clippy、格式、Rustdoc、`bun run check`、
+`bun run check:coverage`、`bun test` 与 `git diff --check`。R2b 选择器全量、`for`/表声明、
+分类型机型、编码器、`Result` 泛型与正式 `.xiaoc` 格式仍不属于本批次。

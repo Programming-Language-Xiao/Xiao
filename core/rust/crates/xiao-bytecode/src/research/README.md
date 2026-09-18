@@ -6,5 +6,7 @@
 `.xiaoc` 扩展名落盘。
 
 `tac.rs` 只描述算什么，`sig.rs` 补 `IrProgram` 缺失的调用 ABI 描述，
-`lower/` 按关注点拆分降低规则，`verify.rs` 做自校验与释放序列对账。禁止在
-这里重新推断类型、重算生命周期或重排释放顺序。
+`lower/` 按关注点拆分降低规则，`verify.rs` 做自校验与释放序列对账。当前 R2C
+还提供 `MakeError`/`Raise`/`Check`、`TacHandler` 和按子程序复用的 `finally` 降低；
+未支持的 RuntimeCheck 会保留在 `TacProgram.unsupported`。禁止在这里重新推断类型、
+重算生命周期或重排释放顺序。

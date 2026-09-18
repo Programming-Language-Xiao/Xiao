@@ -80,7 +80,7 @@ impl<'source> TypeChecker<'source> {
     /// 检查 `raise` 只能抛出可恢复错误对象或动态错误边界。
     pub(super) fn check_raise_statement(&mut self, value: &Expression, span: SourceSpan) {
         let ty = self.check_expression(value);
-        if ty.is_dynamic() {
+        if ty.is_dynamic() || matches!(ty, Type::Variable(_)) {
             self.push_runtime_check(span, RuntimeCheckKind::DynamicConversion);
         } else {
             self.type_error(

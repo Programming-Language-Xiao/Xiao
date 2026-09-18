@@ -40,6 +40,27 @@ pub enum VmEvent {
         /// 退出边稳定名称。
         exit: String,
     },
+    /// 开始尝试当前帧的异常处理器路由。
+    HandlerEntered {
+        /// 处理器所属作用域。
+        scope: u32,
+        /// 处理器入口块。
+        handler: u32,
+    },
+    /// 错误命中了一个具体处理器。
+    HandlerMatched {
+        /// 处理器所属作用域。
+        scope: u32,
+        /// 处理器入口块编号。
+        handler: u32,
+        /// 匹配的错误类型名称。
+        catch_type: Option<String>,
+    },
+    /// 当前帧没有匹配的处理器。
+    HandlerUnmatched {
+        /// 发生未匹配的作用域。
+        scope: u32,
+    },
     /// 按冻结计划释放了一个值。
     ///
     /// 事件带上 `(作用域, 退出边)`，语义向量才能锁定完整释放序列，而不只是

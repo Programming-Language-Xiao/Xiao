@@ -4,10 +4,13 @@
 //! 出口三块。这里**不消费** `IrBasicBlock` 作为块划分依据，它只用于把语句映射
 //! 回所属作用域。
 
-use xiao_ir::{IrElifBranch, IrExpression, IrExpressionKind, IrSpan, IrStatement, IrStatementKind};
+use xiao_ir::{
+    IrCatchClause, IrElifBranch, IrExpression, IrExpressionKind, IrSpan, IrStatement,
+    IrStatementKind,
+};
 
 use crate::research::lower::Lowerer;
-use crate::research::tac::{TacInstr, TacOp, VReg};
+use crate::research::tac::{TacHandler, TacInstr, TacOp, VReg};
 
 /// 降低一个语句列表，并在结束时按 `exit` 离开所属作用域。
 pub(super) fn lower_statements(lowerer: &mut Lowerer<'_>, statements: &[IrStatement], exit: &str) {
@@ -21,6 +24,9 @@ pub(super) fn lower_statements(lowerer: &mut Lowerer<'_>, statements: &[IrStatem
     }
     for statement in statements {
         lower_statement(lowerer, statement);
+        if lowerer.current_block_terminated() {
+            break;
+        }
     }
     if let Some(scope) = entered {
         lowerer.exit_scope(scope, exit);
@@ -32,7 +38,13 @@ pub(super) fn lower_statements(lowerer: &mut Lowerer<'_>, statements: &[IrStatem
 /// 临时值不进释放计划，必须在消费点之后显式释放，否则字面量堆值会一直漏。
 fn lower_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
     dispatch_statement(lowerer, statement);
-    lowerer.flush_temporaries(statement.span);
+    if lowerer.current_block_terminated() {
+        // 返回、跳转和抛错已经把控制流交给目标；临时值若随终止值
+        // 一起转移则不能再发一条不可达 Release。
+        lowerer.discard_temporaries();
+    } else {
+        lowerer.flush_temporaries(statement.span);
+    }
 }
 
 /// 按语句形态分派降低。
@@ -93,25 +105,207 @@ fn dispatch_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
         IrStatementKind::Continue => lower_loop_jump(lowerer, "continue", statement.span),
         IrStatementKind::Raise { value } => {
             let register = lowerer.lower_expression(value);
+            // `raise` 的动态转换检查挂在语句跨度上，而不是表达式跨度上；
+            // 显式消费这条检查，失败才能走 `DynamicCheckFailure` 边。
+            lowerer.emit_runtime_checks(statement.span, register);
             lowerer.flush_temporaries(statement.span);
-            for scope in lowerer.scope_chain_to("function") {
-                lowerer.run_plan(scope, "raise", statement.span);
-            }
             lowerer.emit(TacInstr::new(
                 TacOp::Raise { value: register },
                 statement.span,
             ));
         }
         IrStatementKind::Function { .. } | IrStatementKind::Import { .. } => {}
-        IrStatementKind::Try { .. }
-        | IrStatementKind::For { .. }
-        | IrStatementKind::Table { .. } => {
+        IrStatementKind::Try {
+            body,
+            catches,
+            finally_body,
+        } => lower_try(
+            lowerer,
+            body,
+            catches,
+            finally_body.as_deref(),
+            statement.span,
+        ),
+        IrStatementKind::For { .. } | IrStatementKind::Table { .. } => {
             lowerer.record_unsupported(format!(
                 "语句形态尚未降低（{}..{}）",
                 statement.span.start, statement.span.end
             ));
         }
     }
+}
+
+/// 降低一个语句列表但暂不退出最外层作用域。
+///
+/// `try` 需要先执行 `finally` 再执行该作用域的释放计划，不能直接使用普通
+/// `lower_statements` 的「体尾立即退出」行为，因此把退出动作延后到接线阶段。
+fn lower_statements_open(lowerer: &mut Lowerer<'_>, statements: &[IrStatement]) -> Option<u32> {
+    let first = statements.first()?;
+    let scope = lowerer.scope_of_statement(first.span);
+    let entered = scope.filter(|scope| lowerer.innermost_scope() != Some(*scope));
+    if let Some(scope) = entered {
+        lowerer.enter_scope(scope, first.span);
+    }
+    for statement in statements {
+        lower_statement(lowerer, statement);
+        if lowerer.current_block_terminated() {
+            break;
+        }
+    }
+    entered
+}
+
+/// 降低 `try`/`catch`/`finally`，并建立保护区间和子程序处理器。
+fn lower_try(
+    lowerer: &mut Lowerer<'_>,
+    body: &[IrStatement],
+    catches: &[IrCatchClause],
+    finally_body: Option<&[IrStatement]>,
+    span: IrSpan,
+) {
+    // 先建立独立入口并从前置块跳入。若直接把前置块当作起点，处理器范围会
+    // 把 try 之前的指令一并保护，嵌套 try 尤其容易误命中。
+    let protected_start = lowerer.new_block(span);
+    if !lowerer.current_block_terminated() {
+        lowerer.emit(TacInstr::new(TacOp::Jump(protected_start), span));
+    }
+    lowerer.switch_to(protected_start);
+
+    let try_scope = lowerer
+        .scope_for_region(span, "try")
+        .or_else(|| {
+            body.first()
+                .and_then(|statement| lowerer.scope_of_statement(statement.span))
+        })
+        .unwrap_or_else(|| lowerer.innermost_scope().unwrap_or(0));
+    lowerer.enter_region_scope(try_scope, span);
+    lower_statements_open(lowerer, body);
+    let body_ended = lowerer.current_block_terminated();
+
+    // `body_exit` 是正常离开 try 体的桥；它同时作为 catch 保护范围的终点，
+    // 因而 catch 入口和 catch 体不会被同一条 catch 处理器再次捕获。
+    let body_exit = lowerer.new_block(span);
+    if !body_ended {
+        lowerer.emit(TacInstr::new(TacOp::Jump(body_exit), span));
+    }
+    lowerer.forget_scope(try_scope);
+
+    // catch 体没有 CFG 前驱，必须仍然保留为可由 handler 跳入的块。先建一个
+    // 统一出口，catch 正常结束时只离开自己的作用域；本层 finally 已在路由
+    // 进入 catch 前执行，不得在这里再跑一遍。
+    let catch_exit = (!catches.is_empty()).then(|| lowerer.new_block(span));
+    let mut catch_start = None;
+    let mut catch_blocks = Vec::with_capacity(catches.len());
+    let mut catch_bindings = Vec::with_capacity(catches.len());
+    for catch in catches {
+        let block = lowerer.new_block(span);
+        catch_start.get_or_insert(block);
+        catch_blocks.push(block);
+        lowerer.switch_to(block);
+        let catch_scope = lowerer.scope_for_region(catch.span, "catch").or_else(|| {
+            catch
+                .body
+                .first()
+                .and_then(|statement| lowerer.scope_of_statement(statement.span))
+        });
+        if let Some(scope) = catch_scope {
+            lowerer.enter_region_scope(scope, catch.span);
+        }
+        lower_statements_open(lowerer, &catch.body);
+        let binding = lowerer
+            .value_of_name_at(
+                &catch.binding.text,
+                catch.binding.backticked,
+                catch.binding.span,
+            )
+            .map(|value| lowerer.register_of(value));
+        catch_bindings.push(binding);
+        if !lowerer.current_block_terminated() {
+            if let Some(scope) = catch_scope {
+                lowerer.exit_scope(scope, "normal");
+            }
+            if let Some(exit) = catch_exit {
+                lowerer.emit(TacInstr::new(TacOp::Jump(exit), catch.span));
+            }
+        } else if let Some(scope) = catch_scope {
+            lowerer.forget_scope(scope);
+        }
+        lowerer.forget_scope(try_scope);
+    }
+
+    // finally 子程序必须在所有 catch 块之后分配，才能用 `[protected_start,
+    // finally_sub)` 覆盖 try/catch 体而排除子程序自身。
+    let finally_sub = finally_body.map(|_| lowerer.new_block(span));
+    let continuation = lowerer.new_block(span);
+
+    if let Some(exit) = catch_exit {
+        lowerer.switch_to(exit);
+        lowerer.emit(TacInstr::new(TacOp::Jump(continuation), span));
+    }
+
+    // 正常离开受保护体：finally -> drop -> continuation。
+    lowerer.switch_to(body_exit);
+    if let Some(sub) = finally_sub {
+        lowerer.emit(TacInstr::new(TacOp::CallSub { sub }, span));
+    }
+    lowerer.exit_scope(try_scope, "normal");
+    lowerer.emit(TacInstr::new(TacOp::Jump(continuation), span));
+
+    if let Some(sub) = finally_sub {
+        // 保护区内的 return 需要在已有 drop 计划之前调用子程序；插入范围
+        // 严格止于 body_exit。catch 体的非局部退出走另一段连续块范围，
+        // 也必须先调用本层 finally，但 catch 正常合流不应重复调用。
+        lowerer.patch_nonlocal_with_finally(protected_start, body_exit, sub, span);
+        if let Some(catch_start) = catch_start {
+            lowerer.patch_nonlocal_with_finally(catch_start, sub, sub, span);
+        }
+        lowerer.add_handler(TacHandler {
+            protected: (protected_start, sub),
+            handler: sub,
+            scope: try_scope,
+            exit: "finally".to_owned(),
+            catch_type: None,
+            binding: None,
+        });
+        // 运行时从 body_exit 的 CallSub 进入 finally 时，try 作用域仍然
+        // 活动；恢复降低器侧的栈可让 finally 内的 return/break/continue
+        // 先发出该作用域的对应释放计划。
+        lowerer.remember_scope(try_scope);
+        lowerer.switch_to(sub);
+        let finally_scope = lowerer.scope_for_region(span, "finally");
+        if let Some(scope) = finally_scope {
+            lowerer.enter_region_scope(scope, span);
+        }
+        if let Some(body) = finally_body {
+            lower_statements_open(lowerer, body);
+        }
+        if !lowerer.current_block_terminated() {
+            if let Some(scope) = finally_scope {
+                lowerer.exit_scope(scope, "normal");
+            }
+            lowerer.emit(TacInstr::new(TacOp::RetFromSub, span));
+        } else if let Some(scope) = finally_scope {
+            lowerer.forget_scope(scope);
+        }
+        lowerer.forget_scope(try_scope);
+    }
+
+    for ((catch, block), binding) in catches
+        .iter()
+        .zip(catch_blocks.iter().copied())
+        .zip(catch_bindings)
+    {
+        lowerer.add_handler(TacHandler {
+            protected: (protected_start, body_exit),
+            handler: block,
+            scope: try_scope,
+            exit: "catch".to_owned(),
+            catch_type: Some(catch.error_type.text.clone()),
+            binding,
+        });
+    }
+
+    lowerer.switch_to(continuation);
 }
 
 /// 把表达式结果写入目标绑定。
@@ -208,12 +402,16 @@ fn lower_if(
         lowerer.flush_temporaries(span);
         lowerer.switch_to(taken);
         lower_statements(lowerer, branch_body, "normal");
-        lowerer.emit(TacInstr::new(TacOp::Jump(end), span));
+        if !lowerer.current_block_terminated() {
+            lowerer.emit(TacInstr::new(TacOp::Jump(end), span));
+        }
         lowerer.switch_to(next);
     }
     if let Some(else_body) = else_body {
         lower_statements(lowerer, else_body, "normal");
-        lowerer.emit(TacInstr::new(TacOp::Jump(end), span));
+        if !lowerer.current_block_terminated() {
+            lowerer.emit(TacInstr::new(TacOp::Jump(end), span));
+        }
     }
     lowerer.switch_to(end);
 }
@@ -243,10 +441,14 @@ fn lower_while(
     ));
     lowerer.flush_temporaries(span);
     lowerer.switch_to(body_block);
-    lowerer.push_loop(body_block, exit);
+    // `continue` 必须回到条件头，重新判断循环是否继续；若跳到体入口，
+    // 条件会被永久绕过并把一个合法程序变成无限循环。
+    lowerer.push_loop(header, exit);
     lower_statements(lowerer, body, "normal");
     lowerer.pop_loop();
-    lowerer.emit(TacInstr::new(TacOp::Jump(header), span));
+    if !lowerer.current_block_terminated() {
+        lowerer.emit(TacInstr::new(TacOp::Jump(header), span));
+    }
     lowerer.switch_to(exit);
 }
 

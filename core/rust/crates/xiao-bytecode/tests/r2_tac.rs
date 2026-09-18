@@ -133,12 +133,42 @@ fn rebuilds_control_flow_blocks() {
 }
 
 #[test]
-/// 本批次尚未降低的构造必须被显式记录，而不是静默跳过。
-fn records_unsupported_constructs() {
-    let (ir, tac) = lower("try\n    value = 1\ncatch err as Error\n    value = 2\n");
+/// `try` 现在必须生成处理器表与 finally 子程序，而不是静默跳过。
+fn lowers_exception_handlers_and_finally_subroutine() {
+    let (ir, tac) =
+        lower("try\n    value = 1\ncatch err as Error\n    value = 2\nfinally\n    done = true\n");
     let verification = verify_program(&ir, &tac);
-    assert!(!verification.is_success(), "未降低的 try 不应被当成成功");
-    assert!(!verification.unsupported.is_empty());
+    assert!(
+        verification.is_success(),
+        "验证错误: {:?}",
+        verification.errors
+    );
+    assert!(
+        tac.functions[0]
+            .handlers
+            .iter()
+            .any(|handler| { handler.catch_type.as_deref() == Some("Error") })
+    );
+    assert!(
+        tac.functions[0]
+            .blocks
+            .iter()
+            .flat_map(|block| &block.instructions)
+            .any(|instruction| matches!(instruction.op, TacOp::CallSub { .. }))
+    );
+}
+
+#[test]
+/// 尚未支持的 RuntimeCheck 必须留在产物的 `unsupported`，不能被静默吞掉。
+fn records_unsupported_runtime_checks() {
+    let (_, tac) = lower("str raw = input(\"value\")\nbool parsed = raw as bool\n");
+    assert!(
+        tac.unsupported
+            .iter()
+            .any(|note| note.contains("string_boolean")),
+        "string_boolean 检查应明确登记为未支持: {:?}",
+        tac.unsupported
+    );
 }
 
 #[test]

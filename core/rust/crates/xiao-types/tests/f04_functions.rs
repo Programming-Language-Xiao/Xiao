@@ -3,7 +3,7 @@
 use xiao_source::SourceFile;
 use xiao_syntax::Parser;
 use xiao_types::{
-    CATCH_FATAL_CODE, CATCH_ORDER_CODE, CONDITION_TYPE_CODE, FUNCTION_CALL_CODE,
+    CATCH_FATAL_CODE, CATCH_ORDER_CODE, CATCH_TYPE_CODE, CONDITION_TYPE_CODE, FUNCTION_CALL_CODE,
     FUNCTION_INFERENCE_CODE, FUNCTION_RETURN_CODE, LOOP_CONTROL_CODE, RAISE_TYPE_CODE,
     RuntimeCheckKind, ScalarType, Type, TypeChecker,
 };
@@ -218,5 +218,29 @@ fn enforces_catch_recovery_boundaries() {
             .diagnostics()
             .iter()
             .any(|d| d.code() == CATCH_ORDER_CODE)
+    );
+}
+
+#[test]
+/// 未登记的 `FooError` 不得借助后缀规则静默通过。
+fn rejects_unknown_error_type_name() {
+    let result = check("try\n    value = 1\ncatch err as FooError\n    value = 2\n");
+    assert!(
+        result
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == CATCH_TYPE_CODE)
+    );
+}
+
+#[test]
+/// `FatalError(...)` 不能伪装成普通可恢复错误构造式。
+fn rejects_fatal_error_constructor() {
+    let result = check("raise FatalError(code = \"fatal\")\n");
+    assert!(
+        result
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == CATCH_FATAL_CODE)
     );
 }

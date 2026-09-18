@@ -8,8 +8,198 @@
       "expect": {
         "outcome": "error",
         "error_code": "X06-RUNTIME-009",
-        "releases": [],
+        "releases": [
+          {
+            "scope": 1,
+            "exit": "unmatched_error",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
         "max_call_depth": 2
+      }
+    },
+    {
+      "name": "normal-try-finally",
+      "source": "try\n    payload = \"try\"\nfinally\n    cleanup = \"finally\"\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 2,
+            "exit": "normal",
+            "value": 3,
+            "kind": "strong"
+          },
+          {
+            "scope": 1,
+            "exit": "normal",
+            "value": 1,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "matched-catch-and-finally",
+      "source": "try\n    raise ArithmeticError(code = \"matched\")\ncatch err as ArithmeticError\n    handled = \"catch\"\nfinally\n    cleanup = \"finally\"\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 3,
+            "exit": "normal",
+            "value": 6,
+            "kind": "strong"
+          },
+          {
+            "scope": 2,
+            "exit": "normal",
+            "value": 4,
+            "kind": "strong"
+          },
+          {
+            "scope": 2,
+            "exit": "normal",
+            "value": 2,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "unmatched-catch-propagates",
+      "source": "try\n    raise ArithmeticError(code = \"unmatched\")\ncatch err as TypeError\n    handled = \"wrong\"\nfinally\n    cleanup = \"finally\"\n",
+      "expect": {
+        "outcome": "error",
+        "error_code": "unmatched",
+        "releases": [
+          {
+            "scope": 3,
+            "exit": "normal",
+            "value": 6,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "catch-rethrow",
+      "source": "try\n    raise ArithmeticError(code = \"main\")\ncatch err as ArithmeticError\n    raise err\nfinally\n    cleanup = \"finally\"\n",
+      "expect": {
+        "outcome": "error",
+        "error_code": "main",
+        "releases": [
+          {
+            "scope": 3,
+            "exit": "normal",
+            "value": 4,
+            "kind": "strong"
+          },
+          {
+            "scope": 2,
+            "exit": "unmatched_error",
+            "value": 2,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "nested-try-finally",
+      "source": "try\n    try\n        raise ArithmeticError(code = \"nested\")\n    catch inner as TypeError\n        ignored = \"wrong\"\n    finally\n        inner_cleanup = \"inner\"\ncatch outer as ArithmeticError\n    handled = \"outer\"\nfinally\n    outer_cleanup = \"outer\"\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {
+            "scope": 4,
+            "exit": "normal",
+            "value": 6,
+            "kind": "strong"
+          },
+          {
+            "scope": 6,
+            "exit": "normal",
+            "value": 11,
+            "kind": "strong"
+          },
+          {
+            "scope": 5,
+            "exit": "normal",
+            "value": 9,
+            "kind": "strong"
+          },
+          {
+            "scope": 5,
+            "exit": "normal",
+            "value": 7,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "recursive-loop-raise-with-string-cleanup",
+      "source": "def countdown(int value) -> int\n    if value == 0\n        return 0\n    return countdown(value - 1)\nresult = countdown(2)\ncount = 0\nwhile count < 2\n    try\n        count = count + 1\n        if count == 2\n            raise ArithmeticError(code = \"loop\")\n    finally\n        cleanup = \"round\"\n",
+      "max_call_depth": 8,
+      "expect": {
+        "outcome": "error",
+        "error_code": "loop",
+        "releases": [
+          {
+            "scope": 1,
+            "exit": "return",
+            "value": 1,
+            "kind": "strong"
+          },
+          {
+            "scope": 1,
+            "exit": "return",
+            "value": 1,
+            "kind": "strong"
+          },
+          {
+            "scope": 1,
+            "exit": "return",
+            "value": 1,
+            "kind": "strong"
+          },
+          {
+            "scope": 6,
+            "exit": "normal",
+            "value": 7,
+            "kind": "strong"
+          },
+          {
+            "scope": 6,
+            "exit": "normal",
+            "value": 7,
+            "kind": "strong"
+          },
+          {
+            "scope": 0,
+            "exit": "unmatched_error",
+            "value": 3,
+            "kind": "strong"
+          }
+        ],
+        "max_call_depth": 4
+      }
+    },
+    {
+      "name": "fatal-skips-string-cleanup",
+      "source": "def down(int value) -> int\n    return down(value)\ntry\n    payload = \"heap\"\n    result = down(1)\ncatch err as Error\n    handled = true\nfinally\n    cleanup = \"cleanup\"\n",
+      "max_call_depth": 6,
+      "expect": {
+        "outcome": "fatal",
+        "error_code": "X07-FATAL-004",
+        "releases": [],
+        "max_call_depth": 6
       }
     },
     {

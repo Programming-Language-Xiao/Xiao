@@ -111,6 +111,7 @@ version = "0.1.0"
 name = "xiao-bytecode"
 version = "0.1.0"
 dependencies = [
+ "xiao-diagnostics",
  "xiao-driver",
  "xiao-ir",
  "xiao-lifetime",
@@ -256,6 +257,7 @@ dependencies = [
  "xiao-bytecode",
  "xiao-diagnostics",
  "xiao-driver",
+ "xiao-ir",
  "xiao-lifetime",
  "xiao-runtime",
  "xiao-types",

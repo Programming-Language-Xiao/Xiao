@@ -115,7 +115,10 @@ fn assert_vectors(raw: &str, expected_stage: &str) {
     for case in &file.cases {
         let actual = observe(case);
         if actual != case.expect {
-            mismatches.push(case.name.clone());
+            mismatches.push(format!(
+                "{}: 期望 {:?}，实际 {:?}",
+                case.name, case.expect, actual
+            ));
         }
     }
     assert!(mismatches.is_empty(), "期望不一致的用例：{mismatches:?}");

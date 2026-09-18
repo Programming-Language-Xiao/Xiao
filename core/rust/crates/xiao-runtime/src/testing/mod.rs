@@ -144,9 +144,9 @@ impl RuntimeDriver {
     #[must_use]
     pub fn dispatch_catch(&self, error: RuntimeError, handler_types: &[&str]) -> CatchRoute {
         let error_kind = error.kind();
-        let handler = handler_types.iter().position(|name| {
-            error_kind_of(name).is_some_and(|kind| kind.matches(error_kind))
-        });
+        let handler = handler_types
+            .iter()
+            .position(|name| error_kind_of(name).is_some_and(|kind| kind.matches(error_kind)));
         match handler {
             Some(handler) => CatchRoute::Matched { handler, error },
             None => CatchRoute::Propagate { error },

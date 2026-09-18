@@ -3,6 +3,7 @@
 //! 每个表达式降低为一条或数条指令并把结果放进一个新的虚拟寄存器。这里只做
 //! 1:1 语义展开：类型来自 `IrExpression.ty`，本模块不重新推断。
 
+use xiao_diagnostics::error_kind_of;
 use xiao_ir::{
     IrCallArgument, IrDictEntry, IrExpression, IrExpressionKind, IrPathSegmentKind, IrSelector,
     IrSelectorItem, IrSpan, IrType,
@@ -16,7 +17,7 @@ use crate::research::tac::{
 
 /// 降低一个表达式并返回结果寄存器。
 pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VReg {
-    match &expression.kind {
+    let register = match &expression.kind {
         IrExpressionKind::Literal { literal, text } => {
             lower_literal(lowerer, literal, text, expression)
         }
@@ -58,7 +59,9 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
             source, selector, ..
         } => lower_selector(lowerer, source, selector, expression),
         _ => lower_unsupported(lowerer, "expression", expression.span),
-    }
+    };
+    lowerer.emit_runtime_checks(expression.span, register);
+    register
 }
 
 /// 本批次支持的容器构造形态。
@@ -405,6 +408,9 @@ fn lower_call(
     arguments: &[IrCallArgument],
     expression: &IrExpression,
 ) -> VReg {
+    if let Some(register) = lower_error_constructor(lowerer, callee, arguments, expression) {
+        return register;
+    }
     let arguments = arguments
         .iter()
         .map(|argument| {
@@ -445,6 +451,62 @@ fn lower_call(
     };
     lowerer.emit(TacInstr::with_dst(op, register, expression.span));
     register
+}
+
+/// 识别 `raise ErrorType(code = ..., message = ...)` 使用的错误构造式。
+///
+/// 普通调用仍然保留原有静态/动态派发路径；只有错误类型名单中的裸名称才
+/// 降低为 `MakeError`，从而避免 Runtime 再解析源码文本。
+fn lower_error_constructor(
+    lowerer: &mut Lowerer<'_>,
+    callee: &IrExpression,
+    arguments: &[IrCallArgument],
+    expression: &IrExpression,
+) -> Option<VReg> {
+    let IrExpressionKind::Name { name } = &callee.kind else {
+        return None;
+    };
+    if name.backticked || error_kind_of(&name.text).is_none() {
+        return None;
+    }
+    if name.text == "FatalError" {
+        lowerer.record_unsupported("FatalError 不能构造为可恢复错误".to_owned());
+        // 类型层会拒绝该构造；这里仍给手工构造的 IR 一个确定的安全值，
+        // 避免退化成 `CallDynamic` 后在 VM 中伪装成普通可恢复错误。
+        let register = lowerer.new_register(RegisterClass::None, expression.span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::LoadNone,
+            register,
+            expression.span,
+        ));
+        return Some(register);
+    }
+    let mut code = None;
+    let mut message = None;
+    for (index, argument) in arguments.iter().enumerate() {
+        let value = lowerer.lower_expression(&argument.value);
+        match argument.name.as_ref().map(|name| name.text.as_str()) {
+            Some("code") => code = Some(value),
+            Some("message") => message = Some(value),
+            None if index == 0 => code = Some(value),
+            None if index == 1 => message = Some(value),
+            _ => lowerer.record_unsupported(format!(
+                "错误构造参数尚未降低（{}..{}）",
+                argument.span.start, argument.span.end
+            )),
+        }
+    }
+    let register = lowerer.new_register(RegisterClass::Dynamic, expression.span);
+    lowerer.emit(TacInstr::with_dst(
+        TacOp::MakeError {
+            type_name: name.text.clone(),
+            code,
+            message,
+        },
+        register,
+        expression.span,
+    ));
+    Some(register)
 }
 
 /// 降低显式转换。

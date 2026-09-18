@@ -11,5 +11,7 @@
 `bool -> str` 和数值宽度转换；跨宽度运算一律报错，要求后端先插入显式转换。
 
 数组、元组、字典表、字典列和集合作为五个可拥有变体接入，句柄由 `containers`
-模块提供；它们按对象身份相等，`Eq`/`Hash` 与相等口径自洽。`lint` / `lfloat`
+模块提供；它们按对象身份相等，`Eq`/`Hash` 与相等口径自洽。R2C 另加入
+`RuntimeValue::Error`：错误对象按 `XiaoError::error_id` 保留身份相等，明确不可哈希，
+并以 `error` 作为稳定类型名，供 VM 的 catch/raise 路由消费。`lint` / `lfloat`
 算术仍是登记在案的债项，不得在这里给出近似结果。

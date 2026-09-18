@@ -503,10 +503,28 @@ pub enum TacOp {
         /// 错误对象。
         value: VReg,
     },
+    /// 构造一个可恢复错误对象。
+    MakeError {
+        /// 语言层错误类型名称。
+        type_name: String,
+        /// 可选错误码寄存器。
+        code: Option<VReg>,
+        /// 可选人类可读消息寄存器。
+        message: Option<VReg>,
+    },
+    /// 调用一个 `finally` 子程序并挂起当前退出类别。
+    CallSub {
+        /// 子程序入口块。
+        sub: BlockId,
+    },
+    /// 从 `finally` 子程序返回并恢复挂起的退出类别。
+    RetFromSub,
     /// 运行时检查；失败时跳到失败块。
     Check {
         /// `IrRuntimeCheck.kind` 的稳定拼写。
         kind: String,
+        /// 被检查的运行时值。
+        value: VReg,
         /// 检查失败时的目标块。
         on_failure: BlockId,
     },

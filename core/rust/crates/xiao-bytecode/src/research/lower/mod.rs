@@ -27,7 +27,7 @@ use xiao_syntax::ScalarType;
 use crate::research::sig::{CallSig, CallSigTable};
 use crate::research::tac::{
     BlockId, CategoryMap, ConstPool, FuncId, RegisterClass, TAC_VERSION, TacAbi, TacBlock,
-    TacConstant, TacFunction, TacInstr, TacOp, TacProgram, VReg,
+    TacConstant, TacFunction, TacHandler, TacInstr, TacOp, TacProgram, VReg,
 };
 
 /// 当前三地址格式使用的 ABI 版本。
@@ -135,6 +135,8 @@ struct Lowerer<'ir> {
     function_signatures: BTreeMap<String, crate::research::tac::SigId>,
     /// 本批次尚未降低的构造；由验证器转成诊断，不静默跳过。
     unsupported: Vec<String>,
+    /// 按表达式源码区间收集的 Runtime 检查。
+    runtime_checks: BTreeMap<(usize, usize), Vec<String>>,
 }
 
 /// 单个函数的构建状态。
@@ -152,6 +154,8 @@ struct Frame {
     loops: Vec<(BlockId, BlockId)>,
     /// 当前语句产生的、需要在消费后释放的临时堆值寄存器。
     pending_temporaries: Vec<VReg>,
+    /// 当前函数的异常处理器表。
+    handlers: Vec<TacHandler>,
 }
 
 impl<'ir> Lowerer<'ir> {
@@ -195,6 +199,16 @@ impl<'ir> Lowerer<'ir> {
             frame: Frame::default(),
             function_signatures: BTreeMap::new(),
             unsupported: Vec::new(),
+            runtime_checks: program.runtime_checks.iter().fold(
+                BTreeMap::<(usize, usize), Vec<String>>::new(),
+                |mut checks, check| {
+                    checks
+                        .entry((check.span.start, check.span.end))
+                        .or_default()
+                        .push(check.kind.clone());
+                    checks
+                },
+            ),
         }
     }
 
@@ -253,7 +267,15 @@ impl<'ir> Lowerer<'ir> {
     }
 
     /// 汇总降低结果。
-    fn finish(self) -> TacProgram {
+    fn finish(mut self) -> TacProgram {
+        // 每一条前端登记的 RuntimeCheck 都必须在降低阶段被消费，或明确
+        // 进入 `unsupported`。静默丢弃会让产物看似完整，却把动态边界变成
+        // 未检查的普通指令。
+        for ((start, end), kinds) in std::mem::take(&mut self.runtime_checks) {
+            for kind in kinds {
+                self.record_unsupported(format!("运行时检查未消费：{kind}（{start}..{end}）"));
+            }
+        }
         TacProgram {
             version: TAC_VERSION,
             abi: TacAbi {
@@ -345,15 +367,25 @@ impl<'ir> Lowerer<'ir> {
             self.enter_scope(scope, span);
         }
         self.lower_statements(body, "normal");
-        if let Some(scope) = function_scope {
-            self.exit_scope(scope, "normal");
+        if !self.current_block_terminated() {
+            if let Some(scope) = function_scope {
+                self.exit_scope(scope, "normal");
+            }
+            self.exit_scope(program_scope, "normal");
+            self.emit(TacInstr::new(TacOp::Return { value: None }, span));
+        } else {
+            // 显式终止语句已经发出了对应的释放计划；不能在其后追加
+            // 不可达 `ExitScope`/隐式返回，否则块终止点和异常接线会失真。
+            if let Some(scope) = function_scope {
+                self.forget_scope(scope);
+            }
+            self.forget_scope(program_scope);
         }
-        self.exit_scope(program_scope, "normal");
-        self.emit(TacInstr::new(TacOp::Return { value: None }, span));
         let blocks = std::mem::take(&mut self.frame.blocks);
         let locals = std::mem::take(&mut self.frame.locals);
         let value_registers = std::mem::take(&mut self.frame.value_regs);
         let used_scopes = std::mem::take(&mut self.frame.used_scopes);
+        let handlers = std::mem::take(&mut self.frame.handlers);
         self.functions.push(TacFunction {
             name: name.to_owned(),
             signature,
@@ -362,7 +394,7 @@ impl<'ir> Lowerer<'ir> {
             parameters: parameter_registers,
             locals,
             scopes: used_scopes,
-            handlers: Vec::new(),
+            handlers,
             value_registers,
             span,
         });
@@ -450,6 +482,32 @@ impl<'ir> Lowerer<'ir> {
         self.scopes.of(span)
     }
 
+    /// 按源码区间和作用域类别查找一个结构化区域的作用域。
+    ///
+    /// 空的 `try`/`catch`/`finally` 没有可供 [`ScopeIndex`] 记录的语句区间，
+    /// 因此不能只依赖首条语句反查；这里消费生命周期阶段已经产出的作用域
+    /// 区间，按最窄匹配优先，避免嵌套区域被外层吞掉。
+    pub(super) fn scope_for_region(&self, span: IrSpan, kind: &str) -> Option<u32> {
+        self.program
+            .ownership
+            .scopes
+            .iter()
+            .filter(|scope| scope.kind == kind && contains(scope.span, span))
+            .min_by_key(|scope| {
+                (
+                    scope.span.end.saturating_sub(scope.span.start),
+                    scope.depth,
+                    scope.id,
+                )
+            })
+            .map(|scope| scope.id)
+    }
+
+    /// 进入一个结构化区域作用域；与普通词法作用域入口共用同一条指令。
+    pub(super) fn enter_region_scope(&mut self, scope: u32, span: IrSpan) {
+        self.enter_scope(scope, span);
+    }
+
     /// 按名称与源码区间查找绑定的值编号。
     ///
     /// 名称优先；同名遮蔽时用源码区间消歧，因为绑定值的区间就是其名称区间。
@@ -501,6 +559,167 @@ impl<'ir> Lowerer<'ir> {
         }
     }
 
+    /// 返回当前正在构建的块编号。
+    pub(super) fn current_block(&self) -> Option<BlockId> {
+        self.frame.current
+    }
+
+    /// 判断当前块是否已经写入终止控制流指令。
+    pub(super) fn current_block_terminated(&self) -> bool {
+        let Some(current) = self.frame.current else {
+            return true;
+        };
+        self.frame
+            .blocks
+            .get(current.get() as usize)
+            .and_then(|block| block.instructions.last())
+            .is_some_and(|instruction| {
+                matches!(
+                    instruction.op,
+                    TacOp::Jump(_)
+                        | TacOp::BranchIf { .. }
+                        | TacOp::Return { .. }
+                        | TacOp::Raise { .. }
+                        | TacOp::RetFromSub
+                )
+            })
+    }
+
+    /// 为当前函数登记一个异常处理器。
+    pub(super) fn add_handler(&mut self, handler: TacHandler) {
+        self.frame.handlers.push(handler);
+    }
+
+    /// 把当前 try 的 `finally` 子程序补到保护区内的非局部退出路径。
+    ///
+    /// 内层 try 可能已经在同一条路径上插入了自己的 `CallSub`。这里只越过
+    /// 释放计划定位插入点，保证最终顺序仍是「内层 finally -> 外层 finally ->
+    /// drop」，而不是把外层子程序推到最前面。
+    pub(super) fn patch_nonlocal_with_finally(
+        &mut self,
+        start: BlockId,
+        end: BlockId,
+        sub: BlockId,
+        span: IrSpan,
+    ) {
+        let start_id = start;
+        let end_id = end;
+        let start = start.get() as usize;
+        let end = end.get() as usize;
+        for block in self
+            .frame
+            .blocks
+            .iter_mut()
+            .skip(start)
+            .take(end.saturating_sub(start))
+        {
+            let mut index = 0;
+            while index < block.instructions.len() {
+                let is_return = matches!(block.instructions[index].op, TacOp::Return { .. });
+                let is_jump_exit = if let TacOp::Jump(target) = block.instructions[index].op {
+                    // 只有真正离开当前保护区的 break/continue 才需要外层
+                    // finally。目标仍在区间内时，它是 finally 或嵌套结构
+                    // 内部的循环/合流跳转，不能误插入外层清理。
+                    let leaves_protected = target < start_id || target >= end_id;
+                    if !leaves_protected {
+                        index += 1;
+                        continue;
+                    }
+                    let mut cursor = index;
+                    while cursor > 0
+                        && matches!(
+                            block.instructions[cursor - 1].op,
+                            TacOp::RunReleasePlan { .. }
+                        )
+                    {
+                        cursor -= 1;
+                    }
+                    block.instructions[cursor..index].iter().any(|instruction| {
+                        matches!(
+                            &instruction.op,
+                            TacOp::RunReleasePlan { exit, .. }
+                                if exit == "break" || exit == "continue" || exit == "return"
+                        )
+                    })
+                } else {
+                    false
+                };
+                if !is_return && !is_jump_exit {
+                    index += 1;
+                    continue;
+                }
+
+                // 先越过连续的释放计划；已有内层 CallSub 会留在插入点之前，
+                // 因而自然保持内层到外层的调用顺序。
+                let mut insert_at = index;
+                while insert_at > 0
+                    && matches!(
+                        block.instructions[insert_at - 1].op,
+                        TacOp::RunReleasePlan { .. }
+                    )
+                {
+                    insert_at -= 1;
+                }
+                let already_present = block.instructions[insert_at..index].iter().any(|instruction| {
+                    matches!(instruction.op, TacOp::CallSub { sub: existing } if existing == sub)
+                });
+                if !already_present {
+                    block
+                        .instructions
+                        .insert(insert_at, TacInstr::new(TacOp::CallSub { sub }, span));
+                    index += 1;
+                }
+                index += 1;
+            }
+        }
+    }
+
+    /// 把源码位置对应的 Runtime 检查降低为显式失败边。
+    pub(super) fn emit_runtime_checks(&mut self, span: IrSpan, value: VReg) {
+        let Some(kinds) = self.runtime_checks.remove(&(span.start, span.end)) else {
+            return;
+        };
+        for kind in kinds {
+            if !matches!(
+                kind.as_str(),
+                "boolean_condition" | "arithmetic" | "numeric_range" | "dynamic_conversion"
+            ) {
+                self.record_unsupported(format!("运行时检查尚未降低：{kind}"));
+                continue;
+            }
+            let Some(continuation) = self.current_block() else {
+                continue;
+            };
+            let failure = self.new_block(span);
+            self.emit(TacInstr::new(
+                TacOp::Check {
+                    kind: kind.clone(),
+                    value,
+                    on_failure: failure,
+                },
+                span,
+            ));
+            self.switch_to(failure);
+            let error = self.new_register(RegisterClass::Dynamic, span);
+            let error_type = if matches!(kind.as_str(), "arithmetic" | "numeric_range") {
+                "ArithmeticError"
+            } else {
+                "TypeError"
+            };
+            self.emit(TacInstr::with_dst(
+                TacOp::MakeError {
+                    type_name: error_type.to_owned(),
+                    code: None,
+                    message: None,
+                },
+                error,
+                span,
+            ));
+            self.emit(TacInstr::new(TacOp::Raise { value: error }, span));
+            self.switch_to(continuation);
+        }
+    }
+
     /// 进入一个静态作用域。
     fn enter_scope(&mut self, scope: u32, span: IrSpan) {
         if self.frame.scope_stack.last() == Some(&scope) {
@@ -514,6 +733,29 @@ impl<'ir> Lowerer<'ir> {
             self.frame.used_scopes.push(scope);
         }
         self.emit(TacInstr::new(TacOp::EnterScope(scope), span));
+    }
+
+    /// 仅恢复降低器的词法作用域栈，不发出运行时退出指令。
+    pub(super) fn forget_scope(&mut self, scope: u32) {
+        if let Some(index) = self
+            .frame
+            .scope_stack
+            .iter()
+            .rposition(|item| *item == scope)
+        {
+            self.frame.scope_stack.truncate(index);
+        }
+    }
+
+    /// 在已经发出入口指令的子程序路径上恢复一个仍然活动的作用域。
+    ///
+    /// `finally` 子程序在运行时从原 try 体的调用点进入，因而 try 作用域
+    /// 仍在动态栈上；降低器暂时移除它只是为了独立处理 catch 兄弟作用域。
+    /// 恢复时不能再次发出 `EnterScope`，否则运行时会收到重复的作用域事件。
+    pub(super) fn remember_scope(&mut self, scope: u32) {
+        if !self.frame.scope_stack.contains(&scope) {
+            self.frame.scope_stack.push(scope);
+        }
     }
 
     /// 取得或创建某个 `IrValue` 对应的寄存器。
@@ -659,6 +901,15 @@ impl<'ir> Lowerer<'ir> {
     /// 取出并清空当前待释放的临时寄存器。
     fn take_pending_temporaries(&mut self) -> Vec<VReg> {
         std::mem::take(&mut self.frame.pending_temporaries)
+    }
+
+    /// 丢弃终止控制流之后不再需要单独释放的临时值。
+    ///
+    /// `return` 会把结果交给调用方，`raise`/`break`/`continue` 则马上离开
+    /// 当前路径；在终止指令后追加不可达 `Release` 既没有运行时效果，也会
+    /// 让后续块重建误判终止点。
+    pub(super) fn discard_temporaries(&mut self) {
+        self.frame.pending_temporaries.clear();
     }
 
     /// 在当前位置发出释放临时值的指令。

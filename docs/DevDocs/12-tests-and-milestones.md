@@ -466,12 +466,29 @@ U0 拆为 U0-A、U0-B、U0-C 三个二级实现任务；完整交接见 [08A U0 
 （多选、范围、步长与随机选择全量）。
 
 09R2a 再分批次交付：第一批已落地 TAC 降低、对账验证器、栈式参考解释器、事件接收器与共享
-语义向量；第二批已落地容器运行时对象、精确索引路径与临时值释放修复（见
-[交接记录](09r-bytecode-machine-research.md)）。寄存器机型、混合式机型、指令编码器、
-`try/catch/finally/raise`、`for` 与表声明仍待交付，降低器遇到未支持的构造会记入
-`unsupported` 并由验证器拒绝。
+语义向量；第二批已落地容器运行时对象、精确索引路径与临时值释放修复；R2C 已落地错误对象、
+handler 路由、finally 子程序、Raise/Check 和异常向量（见 [交接记录](09r-bytecode-machine-research.md)
+与 [09R2C 记录](09r2c-exception-control-flow.md)）。寄存器机型、混合式机型、指令编码器、
+`for` 与表声明仍待交付，降低器遇到未支持的构造会记入 `unsupported` 并由验证器拒绝。
 
-退出条件：
+#### 09R2C：异常控制流执行闭环（已完成）
+
+本子阶段把 07-B 的静态错误边界接到 R2a 的 TAC 与栈式 VM：错误类型名单由
+`xiao-diagnostics` 单一提供，`RuntimeValue::Error` 保留身份；`TacHandler` 记录受保护区间、
+catch 绑定和 finally 子程序；VM 在当前帧查表，未匹配后逐帧展开，Fatal 绕过 catch/finally/释放。
+`Check` 已执行 `boolean_condition`、`arithmetic`、`numeric_range` 和窄语义的
+`dynamic_conversion`，其他检查明确记入 `TacProgram.unsupported`。
+
+09R2C 退出条件：
+
+1. `r2_stack.rs` 覆盖 catch 绑定重抛、跨帧传播、嵌套循环 finally、嵌套 return 顺序、Check 失败
+   稳定码和含堆字符串的 Fatal 隔离。
+2. `tests/spec/09-bytecode/errors.json` 覆盖正常/匹配/未匹配/清理/重抛/嵌套以及函数调用、递归、
+   循环、raise 和字符串释放的综合路径，并锁定完整释放事件序列。
+3. 未消费 RuntimeCheck 不得静默丢失；TAC/VM README、DevDocs、模块登记和差异空白检查同步。
+4. 研究 VM 定向测试通过；完整 workspace、Clippy、Rustdoc、Bun 检查和差异空白检查均已通过。
+
+09R2 阶段退出条件：
 
 1. 三种机型共用同一组语义向量，且没有为某种机型修改期望结果。
 2. 原型只消费已验证 `IrProgram` 或统一三地址结果，不重新解析源码。

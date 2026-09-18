@@ -7,10 +7,13 @@
 //! `order` 逐条释放。动态错误发生时按同一份计划展开当前作用域栈。
 
 use xiao_bytecode::research::{
-    BlockId, FuncId, TacArgument, TacConstant, TacFunction, TacInstr, TacOp, TacProgram, VReg,
+    BlockId, FuncId, TacArgument, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
+    TacProgram, VReg,
 };
-use xiao_diagnostics::{FatalError, XiaoError};
-use xiao_runtime::RuntimeValue;
+use xiao_diagnostics::{
+    BackendLocation, FatalError, NUMERIC_OVERFLOW_CODE, StackFrame, TYPE_MISMATCH_CODE, XiaoError,
+};
+use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue};
 
 use crate::research::carrier::Carrier;
 use crate::research::frame::Frame;
@@ -45,8 +48,37 @@ enum Flow {
     Next,
     /// 跳转到指定块。
     Jump(BlockId),
+    /// 运行时检查失败跳转；失败类别和原始块要保留到失败块构造错误。
+    JumpWithFault {
+        /// 失败处理块。
+        target: BlockId,
+        /// 触发检查的类别。
+        kind: String,
+    },
     /// 返回，携带可选返回值寄存器。
     Return(Option<VReg>),
+    /// 从 `finally` 子程序返回。
+    RetFromSub,
+}
+
+/// 当前帧异常路由的结果。
+///
+/// `finally` 可以覆盖挂起的错误或控制退出，因此异常路由除了跳进
+/// `catch`，还必须能把 `return`/`break`/`continue` 交回普通块循环。
+enum RouteDecision {
+    /// 跳进一个匹配的 `catch` 或嵌套处理器。
+    Jump(BlockId),
+    /// `finally` 产生了新的非局部控制流。
+    Flow(Flow),
+}
+
+/// 一次待路由故障的来源信息。
+#[derive(Clone, Debug)]
+struct PendingFault {
+    /// 对应冻结的退出边名称。
+    exit: String,
+    /// 发生故障的原始基本块。
+    origin: BlockId,
 }
 
 /// 三地址解释器。
@@ -90,8 +122,19 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         });
         match self.execute(FuncId::new(0), &[], None) {
             Ok(_) => RunResult::Success,
-            Err(Fault::Error(error)) => RunResult::Error(error),
-            Err(Fault::Fatal(fatal)) => RunResult::Fatal(fatal),
+            Err(Fault::Error(error)) => {
+                self.sink.record(VmEvent::ErrorRaised {
+                    code: error.code().to_owned(),
+                    message_id: error.message_id().to_owned(),
+                });
+                RunResult::Error(error)
+            }
+            Err(Fault::Fatal(fatal)) => {
+                self.sink.record(VmEvent::FatalRaised {
+                    code: fatal.code().to_owned(),
+                });
+                RunResult::Fatal(fatal)
+            }
         }
     }
 
@@ -114,9 +157,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 "调用深度超过上限 {}",
                 self.options.max_call_depth
             ));
-            self.sink.record(VmEvent::FatalRaised {
-                code: fatal.code().to_owned(),
-            });
             return Err(Fault::Fatal(fatal));
         }
         self.metrics.max_call_depth = self.metrics.max_call_depth.max(self.frames.len() + 1);
@@ -152,28 +192,85 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         outcome
     }
 
+    /// 为在当前指令处产生的故障追加统一后端调用帧。
+    ///
+    /// TAC 的 `IrSpan.start` 是研究字节码阶段唯一稳定的位置来源；在尚未
+    /// 冻结物理编码前，将它映射到 `BackendLocation.bytecode_offset`，让错误
+    /// 身份与后端位置同时跨帧传播。每次故障离开一层调用帧时才会再次调用
+    /// 本方法，因此同一帧的连续清理不会悄悄丢掉调用方信息。
+    fn annotate_fault(&self, fault: Fault, bytecode_offset: usize) -> Fault {
+        let Some(frame) = self.frames.last() else {
+            return fault;
+        };
+        let stack_frame = StackFrame::user(self.program.abi.target.clone(), frame.name.clone())
+            .with_backend(BackendLocation::empty().with_bytecode_offset(bytecode_offset as u64));
+        match fault {
+            Fault::Error(error) => Fault::Error(error.with_stack_frame(stack_frame)),
+            Fault::Fatal(fatal) => Fault::Fatal(fatal.with_stack_frame(stack_frame)),
+        }
+    }
+
     /// 执行一个函数的基本块序列。
     fn run_blocks(&mut self, function: &TacFunction) -> Result<Option<RuntimeValue>, Fault> {
         let mut block = function.entry;
+        let mut pending_fault: Option<PendingFault> = None;
         loop {
             let Some(current) = function.blocks.get(block.get() as usize) else {
                 return Ok(None);
             };
+            // 克隆当前块的指令，允许路由错误时修改帧状态而不持有块的借用。
+            let instructions = current.instructions.clone();
             let mut flow = Flow::Next;
-            for instruction in &current.instructions {
+            for instruction in &instructions {
                 self.metrics.instructions = self.metrics.instructions.saturating_add(1);
-                flow = self.step(function, instruction)?;
+                flow = match self.step(function, instruction) {
+                    Ok(flow) => flow,
+                    Err(fault) => {
+                        let fault = self.annotate_fault(fault, instruction.span.start);
+                        let pending = pending_fault.take();
+                        let exit = pending
+                            .as_ref()
+                            .map(|item| item.exit.as_str())
+                            .unwrap_or_else(|| exit_for_instruction(&instruction.op));
+                        let origin = pending.as_ref().map_or(block, |item| item.origin);
+                        match self.route_fault(function, origin, exit, fault) {
+                            Ok(RouteDecision::Jump(handler)) => Flow::Jump(handler),
+                            Ok(RouteDecision::Flow(flow)) => flow,
+                            Err(fault) => return Err(fault),
+                        }
+                    }
+                };
                 if !matches!(flow, Flow::Next) {
                     break;
                 }
             }
             match flow {
-                Flow::Jump(next) => block = next,
+                Flow::Jump(next) => {
+                    self.prune_handler_contexts(function, next);
+                    self.prune_scopes_for_target(function, next);
+                    block = next;
+                }
+                Flow::JumpWithFault { target, kind } => {
+                    pending_fault = Some(PendingFault {
+                        exit: "dynamic_check_failure".to_owned(),
+                        origin: block,
+                    });
+                    if let Some(frame) = self.frames.last_mut() {
+                        frame.pending_check_kind = Some(kind);
+                    }
+                    self.prune_handler_contexts(function, target);
+                    block = target;
+                }
                 Flow::Return(register) => {
                     return match register {
                         Some(register) => self.read(register).map(Some),
                         None => Ok(None),
                     };
+                }
+                Flow::RetFromSub => {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "finally 子程序在调用帧外返回",
+                    )));
                 }
                 Flow::Next => return Ok(None),
             }
@@ -284,15 +381,106 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 )));
             }
             TacOp::Return { value } => return Ok(Flow::Return(*value)),
-            TacOp::Raise { .. } => {
-                return Err(Fault::Error(XiaoError::invalid_value(
-                    "raise 的错误对象模型尚未实现",
-                )));
+            TacOp::Raise { value } => {
+                let value = self.read(*value)?;
+                let RuntimeValue::Error(error) = value else {
+                    return Err(Fault::Error(XiaoError::type_mismatch(
+                        "error",
+                        value.type_name(),
+                    )));
+                };
+                return Err(Fault::Error(*error));
             }
-            TacOp::Check { .. } => {
-                return Err(Fault::Error(XiaoError::invalid_value(
-                    "运行时检查指令尚未在解释器中实现",
-                )));
+            TacOp::MakeError {
+                type_name,
+                code,
+                message,
+            } => {
+                let pending_check = self
+                    .frames
+                    .last_mut()
+                    .and_then(|frame| frame.pending_check_kind.take());
+                let code = code
+                    .map(|register| self.read(register))
+                    .transpose()?
+                    .as_ref()
+                    .map(runtime_text)
+                    .transpose()?;
+                let message = message
+                    .map(|register| self.read(register))
+                    .transpose()?
+                    .as_ref()
+                    .map(runtime_text)
+                    .transpose()?;
+                let default_code = pending_check
+                    .as_deref()
+                    .and_then(runtime_check_code)
+                    .or(code.as_deref());
+                let error = XiaoError::from_type_name(type_name, default_code, message.as_deref())
+                    .ok_or_else(|| {
+                        Fault::Error(XiaoError::invalid_value(format!(
+                            "未知或不可恢复的错误类型 {type_name}"
+                        )))
+                    })?;
+                self.write_operand(instruction.dst, RuntimeValue::error(error));
+            }
+            TacOp::CallSub { sub } => {
+                let finally_handler = function
+                    .handlers
+                    .iter()
+                    .find(|handler| handler.handler == *sub && handler.exit == "finally");
+                let already_completed = finally_handler.is_some_and(|handler| {
+                    self.frames.last().is_some_and(|frame| {
+                        frame.completed_finally.contains(&(handler.scope, *sub))
+                    })
+                });
+                if already_completed {
+                    // 异常路径进入 catch 前已经执行过本层 finally；catch 体的
+                    // return/break/continue 仍会经过这里，但不得重复清理。
+                    return Ok(Flow::Next);
+                }
+                if let Some(handler) = finally_handler {
+                    // 正常路径调用 finally 也属于一次处理器进入；异常路径
+                    // 由 `route_fault` 记录同一事件，保持观测口径一致。
+                    self.sink.record(VmEvent::HandlerEntered {
+                        scope: handler.scope,
+                        handler: handler.handler.get(),
+                    });
+                }
+                let pending_exit = self
+                    .frames
+                    .last()
+                    .and_then(|frame| frame.pending_exits.last())
+                    .cloned()
+                    .unwrap_or_else(|| "normal".to_owned());
+                let sub_flow = self.run_subroutine(function, *sub, &pending_exit)?;
+                if let Some(frame) = self.frames.last_mut() {
+                    if let Some(handler) = finally_handler {
+                        let marker = (handler.scope, *sub);
+                        if !frame.completed_finally.contains(&marker) {
+                            frame.completed_finally.push(marker);
+                        }
+                    }
+                }
+                if !matches!(sub_flow, Flow::Next) {
+                    return Ok(sub_flow);
+                }
+            }
+            TacOp::RetFromSub => {
+                return Ok(Flow::RetFromSub);
+            }
+            TacOp::Check {
+                kind,
+                value,
+                on_failure,
+            } => {
+                let value = self.read(*value)?;
+                if !check_value(kind, &value) {
+                    return Ok(Flow::JumpWithFault {
+                        target: *on_failure,
+                        kind: kind.clone(),
+                    });
+                }
             }
             TacOp::Release { value, .. } => {
                 // 临时值可能已被 `Move` 搬进绑定，此时寄存器是空的；空释放是
@@ -307,7 +495,12 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             }
             TacOp::EnterScope(scope) => {
                 if let Some(frame) = self.frames.last_mut() {
-                    frame.scopes.push(*scope);
+                    // 同一作用域重新进入（例如循环中的 try）开启新的 finally
+                    // 动态轮次，旧轮次的记账不能影响本次执行。
+                    frame.completed_finally.retain(|(owner, _)| owner != scope);
+                    if !frame.scopes.contains(scope) {
+                        frame.scopes.push(*scope);
+                    }
                 }
                 self.sink.record(VmEvent::ScopeEntered { scope: *scope });
             }
@@ -316,6 +509,20 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     && let Some(index) = frame.scopes.iter().rposition(|item| item == scope)
                 {
                     frame.scopes.truncate(index);
+                    // `catch` 与其所属 `try` 是兄弟作用域。入口块的首条
+                    // `EnterScope` 指令携带 catch 作用域编号，正常离开时据此
+                    // 清掉动态上下文；catch 体抛错时不会走到这里。
+                    frame.active_catches.retain(|(_, catch_block)| {
+                        function.block(*catch_block).and_then(|block| {
+                            block.instructions.iter().find_map(|instruction| {
+                                if let TacOp::EnterScope(scope) = instruction.op {
+                                    Some(scope)
+                                } else {
+                                    None
+                                }
+                            })
+                        }) != Some(*scope)
+                    });
                 }
                 self.sink.record(VmEvent::ScopeExited {
                     scope: *scope,
@@ -324,6 +531,431 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             }
         }
         Ok(Flow::Next)
+    }
+
+    /// 在当前帧执行一个 `finally` 子程序，直到 `RetFromSub`。
+    ///
+    /// 子程序中的非局部退出会覆盖挂起类别并交回调用点；普通 `RetFromSub`
+    /// 返回 `Flow::Next`，由调用点继续原来的路径。由降低器生成的跨作用域
+    /// 跳转目标总是位于子程序入口之前，入口之后的目标属于子程序本身（包括
+    /// finally 内部声明的循环和嵌套处理器）。
+    fn run_subroutine(
+        &mut self,
+        function: &TacFunction,
+        sub: BlockId,
+        pending_exit: &str,
+    ) -> Result<Flow, Fault> {
+        if let Some(frame) = self.frames.last_mut() {
+            frame.pending_exits.push(pending_exit.to_owned());
+            frame.active_subroutines.push(sub);
+            frame.last_sub_fault = None;
+        }
+        let result = (|| {
+            let mut block = sub;
+            let mut pending_fault: Option<PendingFault> = None;
+            loop {
+                let Some(current) = function.blocks.get(block.get() as usize) else {
+                    return Ok(Flow::Next);
+                };
+                let instructions = current.instructions.clone();
+                let mut flow = Flow::Next;
+                for instruction in &instructions {
+                    self.metrics.instructions = self.metrics.instructions.saturating_add(1);
+                    flow = match self.step(function, instruction) {
+                        Ok(flow) => flow,
+                        Err(fault) => {
+                            let fault = self.annotate_fault(fault, instruction.span.start);
+                            let pending = pending_fault.take();
+                            let exit = pending
+                                .as_ref()
+                                .map(|item| item.exit.as_str())
+                                .unwrap_or_else(|| exit_for_instruction(&instruction.op));
+                            let origin = pending.as_ref().map_or(block, |item| item.origin);
+                            // 子程序只负责处理自己内部（在入口块之后建立）的
+                            // 嵌套 try；外层处理器必须等回到 CallSub 的调用点
+                            // 再路由，否则会跳出子程序却仍继续执行子块。
+                            match self.route_fault_scoped(function, origin, exit, fault, Some(sub))
+                            {
+                                Ok(RouteDecision::Jump(handler)) => Flow::Jump(handler),
+                                Ok(RouteDecision::Flow(flow)) => flow,
+                                Err(fault) => return Err(fault),
+                            }
+                        }
+                    };
+                    if !matches!(flow, Flow::Next) {
+                        break;
+                    }
+                }
+                match flow {
+                    Flow::Jump(next) => {
+                        if next < sub {
+                            return Ok(Flow::Jump(next));
+                        }
+                        self.prune_handler_contexts(function, next);
+                        self.prune_scopes_for_target(function, next);
+                        block = next;
+                    }
+                    Flow::JumpWithFault { target, kind } => {
+                        if target < sub {
+                            return Ok(Flow::JumpWithFault { target, kind });
+                        }
+                        pending_fault = Some(PendingFault {
+                            exit: "dynamic_check_failure".to_owned(),
+                            origin: block,
+                        });
+                        if let Some(frame) = self.frames.last_mut() {
+                            frame.pending_check_kind = Some(kind);
+                        }
+                        self.prune_handler_contexts(function, target);
+                        block = target;
+                    }
+                    Flow::RetFromSub => return Ok(Flow::Next),
+                    Flow::Return(register) => return Ok(Flow::Return(register)),
+                    Flow::Next => return Ok(Flow::Next),
+                }
+            }
+        })();
+        if let Some(frame) = self.frames.last_mut() {
+            if result.is_err() {
+                frame.last_sub_fault = Some(sub);
+            }
+            if let Ok(flow) = &result {
+                if let Some(pending) = frame.pending_exits.last_mut() {
+                    *pending = exit_name_for_flow(flow, pending);
+                }
+            }
+            let _ = frame.pending_exits.pop();
+            let _ = frame.active_subroutines.pop();
+        }
+        result
+    }
+
+    /// 在当前帧查找处理器、执行清理并决定继续跳转或向外传播。
+    ///
+    /// 块号区间只负责确认一个入口属于该处理器；真正的嵌套判定依赖当前帧
+    /// 的作用域栈和 catch 上下文。这样即使多个嵌套处理器共享一个起点，
+    /// 也不会把前置代码或已经离开的作用域误当成受保护体。
+    fn route_fault(
+        &mut self,
+        function: &TacFunction,
+        current_block: BlockId,
+        fault_exit: &str,
+        fault: Fault,
+    ) -> Result<RouteDecision, Fault> {
+        self.route_fault_scoped(function, current_block, fault_exit, fault, None)
+    }
+
+    /// 在指定的子程序边界内路由故障。
+    ///
+    /// `floor` 用来限制子程序内部只能跳入同一子程序之后建立的嵌套处理器；
+    /// 外层处理器要等 `CallSub` 返回错误后在调用点处理。否则清理代码会跳到
+    /// 外层 `catch`，随后又从错误的子程序上下文继续执行。
+    fn route_fault_scoped(
+        &mut self,
+        function: &TacFunction,
+        current_block: BlockId,
+        fault_exit: &str,
+        fault: Fault,
+        floor: Option<BlockId>,
+    ) -> Result<RouteDecision, Fault> {
+        let Fault::Error(mut error) = fault else {
+            // Fatal 是刻意的不对称通道：不查表、不清理、不进入普通 catch。
+            return Err(fault);
+        };
+        let (
+            origin_block,
+            active_scopes,
+            active_catches,
+            active_subroutines,
+            mut completed,
+            failed_sub,
+        ) = {
+            let Some(frame) = self.frames.last_mut() else {
+                return Err(Fault::Error(error));
+            };
+            (
+                current_block,
+                frame.scopes.clone(),
+                frame.active_catches.clone(),
+                frame.active_subroutines.clone(),
+                frame.completed_finally.clone(),
+                frame.last_sub_fault.take(),
+            )
+        };
+        let failed_scope = failed_sub.and_then(|sub| {
+            function
+                .handlers
+                .iter()
+                .find(|handler| handler.handler == sub && handler.exit == "finally")
+                .map(|handler| handler.scope)
+        });
+        if let Some(sub) = failed_sub {
+            // 失败的 finally 已经离开 active_subroutines，仍要把它标成完成，
+            // 防止同一个故障在调用点再次触发它。
+            for handler in function
+                .handlers
+                .iter()
+                .filter(|handler| handler.handler == sub && handler.exit == "finally")
+            {
+                completed.push((handler.scope, sub));
+            }
+        }
+        let contains = |handler: &TacHandler| {
+            origin_block >= handler.protected.0
+                && origin_block < handler.protected.1
+                && floor.is_none_or(|minimum| handler.protected.0 > minimum)
+        };
+        let scope_active = |scope: u32| active_scopes.contains(&scope);
+        let catch_context_active =
+            |scope: u32| active_catches.iter().any(|(owner, _)| *owner == scope);
+        let scope_rank = |scope: u32| {
+            active_scopes
+                .iter()
+                .position(|item| *item == scope)
+                .unwrap_or(0)
+        };
+        let driver = RuntimeDriver::new();
+
+        let mut catches = function
+            .handlers
+            .iter()
+            .enumerate()
+            .filter(|(_, handler)| {
+                contains(handler)
+                    && handler.catch_type.is_some()
+                    && (scope_active(handler.scope) || catch_context_active(handler.scope))
+                    && !active_subroutines.contains(&handler.handler)
+                    && failed_scope != Some(handler.scope)
+            })
+            .filter_map(|(index, handler)| {
+                let name = handler.catch_type.as_deref()?;
+                let route = driver.dispatch_catch(error.clone(), &[name]);
+                matches!(route, CatchRoute::Matched { .. }).then_some((index, handler.clone()))
+            })
+            .collect::<Vec<_>>();
+        catches.sort_by_key(|(index, handler)| {
+            (
+                std::cmp::Reverse(scope_rank(handler.scope)),
+                handler
+                    .protected
+                    .1
+                    .get()
+                    .saturating_sub(handler.protected.0.get()),
+                *index,
+            )
+        });
+        let selected = catches.into_iter().next();
+        let selected_depth = selected
+            .as_ref()
+            .map(|(_, handler)| scope_rank(handler.scope));
+
+        let mut finalies = function
+            .handlers
+            .iter()
+            .filter(|handler| {
+                if handler.exit != "finally"
+                    || !contains(handler)
+                    || active_subroutines.contains(&handler.handler)
+                    || completed.contains(&(handler.scope, handler.handler))
+                    || failed_sub == Some(handler.handler)
+                {
+                    return false;
+                }
+                let active = scope_active(handler.scope) || catch_context_active(handler.scope);
+                if !active {
+                    return false;
+                }
+                selected_depth.is_none_or(|depth| scope_rank(handler.scope) >= depth)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        finalies.sort_by_key(|handler| {
+            (
+                std::cmp::Reverse(scope_rank(handler.scope)),
+                handler.handler,
+            )
+        });
+        finalies.dedup_by_key(|handler| handler.handler);
+
+        // finally -> drop；清理错误只进入 suppressed，Fatal 则立即胜出。
+        let mut override_flow: Option<Flow> = None;
+        let mut pending_exit_name = fault_exit.to_owned();
+        for handler in &finalies {
+            if let Some(frame) = self.frames.last_mut() {
+                let marker = (handler.scope, handler.handler);
+                if !frame.completed_finally.contains(&marker) {
+                    frame.completed_finally.push(marker);
+                }
+            }
+            self.sink.record(VmEvent::HandlerEntered {
+                scope: handler.scope,
+                handler: handler.handler.get(),
+            });
+            match self.run_subroutine(function, handler.handler, &pending_exit_name) {
+                Ok(flow) => {
+                    if !matches!(flow, Flow::Next) {
+                        pending_exit_name = exit_name_for_flow(&flow, &pending_exit_name);
+                        override_flow = Some(flow);
+                    }
+                }
+                Err(Fault::Error(cleanup)) => error.push_suppressed(cleanup),
+                Err(Fault::Fatal(fatal)) => return Err(Fault::Fatal(fatal)),
+            }
+        }
+
+        if let Some(flow) = override_flow {
+            return Ok(RouteDecision::Flow(flow));
+        }
+
+        if let Some((_, handler)) = selected {
+            // 处理器命中时，清理从当前最内层作用域一直到该 try 作用域，
+            // 每层都使用冻结的 Catch 退出计划。
+            let scopes = self.scopes_until(handler.scope, true);
+            for scope in scopes {
+                self.run_plan(function, scope, "catch");
+            }
+            self.truncate_scope(handler.scope);
+            if let Some(binding) = handler.binding {
+                self.write(binding, RuntimeValue::error(error.clone()));
+            }
+            if let Some(frame) = self.frames.last_mut() {
+                frame.active_catches.push((handler.scope, handler.handler));
+            }
+            self.sink.record(VmEvent::HandlerMatched {
+                scope: handler.scope,
+                handler: handler.handler.get(),
+                catch_type: handler.catch_type.clone(),
+            });
+            return Ok(RouteDecision::Jump(handler.handler));
+        }
+
+        if floor.is_some() {
+            // 子程序内没有可匹配的嵌套处理器时，只把故障交回
+            // `CallSub` 调用点。此时不能清理整帧，否则会提前抹掉外层
+            // `catch` 的作用域；调用点的路由器会统一执行完整展开。
+            return Err(Fault::Error(error));
+        }
+
+        // 没有匹配处理器时，当前帧所有仍在栈上的作用域都按
+        // `UnmatchedError` 展开。检查失败保留其专用退出边，便于审计。
+        let cleanup_exit = if fault_exit == "dynamic_check_failure" {
+            fault_exit
+        } else {
+            "unmatched_error"
+        };
+        let scopes = self
+            .frames
+            .last()
+            .map(|frame| {
+                let mut seen = std::collections::HashSet::new();
+                frame
+                    .scopes
+                    .iter()
+                    .rev()
+                    .copied()
+                    .filter(|scope| seen.insert(*scope))
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        for scope in scopes {
+            self.run_plan(function, scope, cleanup_exit);
+            self.sink.record(VmEvent::HandlerUnmatched { scope });
+        }
+        if let Some(frame) = self.frames.last_mut() {
+            frame.scopes.clear();
+            frame.active_catches.clear();
+            frame.completed_finally.clear();
+        }
+        Err(Fault::Error(error))
+    }
+
+    /// 从当前作用域栈移除指定作用域及其内层作用域。
+    fn truncate_scope(&mut self, scope: u32) {
+        if let Some(frame) = self.frames.last_mut()
+            && let Some(index) = frame.scopes.iter().rposition(|item| *item == scope)
+        {
+            frame.scopes.truncate(index);
+        }
+    }
+
+    /// 返回当前帧从最内层到指定作用域的展开序列。
+    fn scopes_until(&self, target: u32, include_target: bool) -> Vec<u32> {
+        let mut scopes = Vec::new();
+        if let Some(frame) = self.frames.last() {
+            for scope in frame.scopes.iter().rev().copied() {
+                scopes.push(scope);
+                if scope == target {
+                    break;
+                }
+            }
+        }
+        if include_target && !scopes.contains(&target) {
+            scopes.push(target);
+        }
+        scopes
+    }
+
+    /// 离开 catch 体后清除动态处理器上下文。
+    fn prune_handler_contexts(&mut self, function: &TacFunction, target: BlockId) {
+        let Some(frame) = self.frames.last() else {
+            return;
+        };
+        let active = frame.active_catches.clone();
+        let kept = active
+            .iter()
+            .filter(|(_, catch_block)| {
+                // 跳入 catch 的第一块尚未执行 EnterScope，需保留上下文；
+                // 后续块在 catch 作用域仍活动时也会保留。正常退出先执行
+                // ExitScope，再跳到父作用域桥块，因而会在此处清掉。
+                *catch_block == target
+                    || function
+                        .block(*catch_block)
+                        .and_then(|block| {
+                            block.instructions.iter().find_map(|instruction| {
+                                if let TacOp::EnterScope(scope) = instruction.op {
+                                    Some(scope)
+                                } else {
+                                    None
+                                }
+                            })
+                        })
+                        .is_some_and(|scope| frame.scopes.contains(&scope))
+            })
+            .copied()
+            .collect::<Vec<_>>();
+        if let Some(frame) = self.frames.last_mut() {
+            frame.active_catches = kept;
+            frame.completed_finally.retain(|(owner, sub)| {
+                function.handlers.iter().any(|handler| {
+                    handler.scope == *owner
+                        && handler.handler == *sub
+                        && handler.exit == "finally"
+                        && target < handler.protected.1
+                })
+            });
+        }
+    }
+
+    /// 根据跳转目标的静态作用域收缩运行时作用域栈。
+    ///
+    /// `break`/`continue` 和 `finally` 内覆盖性的控制退出没有机会经过普通
+    /// `ExitScope` 指令；若保留旧作用域，后续错误会再次看到已经离开的处理器。
+    /// 普通结构化跳转也可以安全调用此方法：目标块若尚未进入（例如 catch
+    /// 入口），目标作用域不在栈中，函数不会做任何收缩。
+    fn prune_scopes_for_target(&mut self, function: &TacFunction, target: BlockId) {
+        let Some(target_scope) = function.block(target).map(|block| block.scope) else {
+            return;
+        };
+        let Some(frame) = self.frames.last_mut() else {
+            return;
+        };
+        if let Some(index) = frame
+            .scopes
+            .iter()
+            .rposition(|scope| *scope == target_scope)
+        {
+            frame.scopes.truncate(index + 1);
+        }
     }
 
     /// 执行一个冻结释放计划，按 `order` 逐条释放。
@@ -356,52 +988,34 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         }
     }
 
-    /// 展开一个错误：按冻结计划清理尚未退出的作用域。
+    /// 展开一个已经离开本帧路由器的故障。
     ///
-    /// 致命故障不执行释放计划，只记录退出——继续运行释放钩子在致命故障下已经
-    /// 不安全，这是刻意的不对称。
+    /// `run_blocks` 会先尝试当前帧的处理器；只有未匹配的错误或致命故障才会
+    /// 到这里。这里**只处理最内层帧**，不能把调用方的作用域一起清掉，否则
+    /// 外层 `catch` 永远没有机会接住从被调函数传播出来的错误。普通错误仍按
+    /// `UnmatchedError` 计划逐层释放；`Fatal` 则完全跳过释放计划。
     fn unwind(&mut self, fault: &Fault) {
-        let program = self.program;
-        let exit = match fault {
-            Fault::Error(_) => "error",
-            Fault::Fatal(_) => "fatal",
+        let Some(frame) = self.frames.last() else {
+            return;
         };
-        for frame in self.frames.iter_mut().rev() {
-            let Some(function) = program.functions.get(frame.function.get() as usize) else {
-                continue;
-            };
-            let scopes = frame.scopes.clone();
-            if matches!(fault, Fault::Error(_)) {
-                for scope in scopes.iter().rev() {
-                    let Some(plan) = program
-                        .plans
-                        .iter()
-                        .find(|plan| plan.scope == *scope && plan.exit == exit)
-                    else {
-                        continue;
-                    };
-                    for action in &plan.actions {
-                        if let Some(register) = function.value_registers.get(&action.value).copied()
-                        {
-                            let _ = frame.carrier.take(register);
-                        }
-                    }
+        let scopes = frame.scopes.clone();
+        let function = self
+            .program
+            .functions
+            .get(frame.function.get() as usize)
+            .cloned();
+        if matches!(fault, Fault::Error(_)) {
+            if let Some(function) = function.as_ref() {
+                for scope in scopes.iter().rev().copied() {
+                    self.run_plan(function, scope, "unmatched_error");
                 }
             }
-            frame.scopes.clear();
         }
-        match fault {
-            Fault::Error(error) => {
-                self.sink.record(VmEvent::ErrorRaised {
-                    code: error.code().to_owned(),
-                    message_id: error.message_id().to_owned(),
-                });
-            }
-            Fault::Fatal(fatal) => {
-                self.sink.record(VmEvent::FatalRaised {
-                    code: fatal.code().to_owned(),
-                });
-            }
+        if let Some(frame) = self.frames.last_mut() {
+            frame.scopes.clear();
+            frame.active_catches.clear();
+            frame.completed_finally.clear();
+            frame.pending_check_kind = None;
         }
     }
 
@@ -490,6 +1104,74 @@ fn constant_value(constant: &TacConstant) -> Result<RuntimeValue, Fault> {
         TacConstant::Str(text) => RuntimeValue::new_string(text.clone()).map_err(Fault::Error)?,
     };
     Ok(value)
+}
+
+/// 从指令形态映射到冻结的退出边名称。
+fn exit_for_instruction(op: &TacOp) -> &'static str {
+    match op {
+        TacOp::Raise { .. } => "raise",
+        TacOp::MakeError { .. } => "construct_failure",
+        _ => "error",
+    }
+}
+
+/// 把子程序返回的控制流更新为新的挂起退出类别。
+///
+/// 普通 `Jump` 既可能是子程序内部的结构化跳转，也可能是 `break`/
+/// `continue` 的跨作用域跳转；调用方已经用目标块判定边界，因此这里保留
+/// 原类别。`return` 与动态检查失败则有稳定的一对一类别。
+fn exit_name_for_flow(flow: &Flow, fallback: &str) -> String {
+    match flow {
+        Flow::Return(_) => "return".to_owned(),
+        Flow::JumpWithFault { .. } => "dynamic_check_failure".to_owned(),
+        _ => fallback.to_owned(),
+    }
+}
+
+/// 返回运行时检查失败对应的稳定错误码。
+fn runtime_check_code(kind: &str) -> Option<&'static str> {
+    match kind {
+        "boolean_condition" | "dynamic_conversion" | "string_boolean" => Some(TYPE_MISMATCH_CODE),
+        "arithmetic" | "numeric_range" => Some(NUMERIC_OVERFLOW_CODE),
+        _ => None,
+    }
+}
+
+/// 从检查/错误构造参数读取稳定文本。
+fn runtime_text(value: &RuntimeValue) -> Result<String, Fault> {
+    match value {
+        RuntimeValue::Str(handle) => handle.to_string().map_err(Fault::Error),
+        RuntimeValue::Lint(text) | RuntimeValue::Lfloat(text) => Ok(text.clone()),
+        _ => Err(Fault::Error(XiaoError::type_mismatch(
+            "str",
+            value.type_name(),
+        ))),
+    }
+}
+
+/// 判定本批次真正支持的四类 Runtime 检查。
+fn check_value(kind: &str, value: &RuntimeValue) -> bool {
+    match kind {
+        "boolean_condition" => value.as_bool().is_some(),
+        "dynamic_conversion" => matches!(value, RuntimeValue::Error(_)),
+        "numeric_range" => match value {
+            RuntimeValue::Int(_) | RuntimeValue::Sint(_) => true,
+            RuntimeValue::Float(value) => value.is_finite(),
+            RuntimeValue::Sfloat(value) => value.is_finite(),
+            RuntimeValue::Lint(value) => value.parse::<i128>().is_ok(),
+            RuntimeValue::Lfloat(value) => value.parse::<f64>().is_ok_and(f64::is_finite),
+            _ => false,
+        },
+        "arithmetic" => matches!(
+            value,
+            RuntimeValue::Int(_)
+                | RuntimeValue::Sint(_)
+                | RuntimeValue::Float(_)
+                | RuntimeValue::Sfloat(_)
+                | RuntimeValue::Bool(_)
+        ),
+        _ => true,
+    }
 }
 
 /// 按调用签名把实参绑定到形参寄存器。

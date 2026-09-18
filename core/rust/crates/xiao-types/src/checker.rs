@@ -5,7 +5,7 @@
 
 use std::collections::BTreeMap;
 
-use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
+use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity, error_kind_of};
 use xiao_source::{SourceFile, SourceSpan};
 use xiao_syntax::{
     AssignmentOperator, BinaryOperator, CallArgument, DeclaredType, EntryMode, Expression,
@@ -1202,6 +1202,32 @@ impl<'source> TypeChecker<'source> {
         arguments: &[CallArgument],
         span: SourceSpan,
     ) -> Type {
+        if self
+            .simple_callee_name(callee)
+            .as_deref()
+            .is_some_and(|name| name == "FatalError")
+        {
+            for argument in arguments {
+                self.check_expression(&argument.value);
+            }
+            self.type_error(
+                CATCH_FATAL_CODE,
+                "x07.type.fatal_constructor",
+                span,
+                "FatalError 不能构造为可恢复错误对象".to_string(),
+            );
+            return Type::Dynamic;
+        }
+        if self
+            .simple_callee_name(callee)
+            .as_deref()
+            .is_some_and(|name| error_kind_of(name).is_some())
+        {
+            for argument in arguments {
+                self.check_expression(&argument.value);
+            }
+            return Type::Dynamic;
+        }
         if is_random_seed_callee(callee, self.source) {
             return self.check_random_seed_call(arguments, span);
         }

@@ -3,7 +3,7 @@
 //! 帧承载一个函数的载体、运行时作用域栈和返回去向。值本身不在这里，而在
 //! 载体内；帧只保存与机型无关的记账信息。
 
-use xiao_bytecode::research::{FuncId, VReg};
+use xiao_bytecode::research::{BlockId, FuncId, VReg};
 
 use crate::research::carrier::Carrier;
 
@@ -20,6 +20,24 @@ pub struct Frame<C: Carrier> {
     pub scopes: Vec<u32>,
     /// 调用方接收返回值的寄存器。
     pub return_to: Option<VReg>,
+    /// 正在执行的 `finally` 子程序退出类别栈。
+    pub pending_exits: Vec<String>,
+    /// 当前正在执行的 finally 子程序入口栈，用于错误路由定位来源。
+    pub active_subroutines: Vec<BlockId>,
+    /// 最近一个从子程序冒出的错误来源块。
+    pub last_sub_fault: Option<BlockId>,
+    /// 最近命中且仍在执行体内的 catch 上下文。
+    ///
+    /// 元组保存 `(try 作用域, catch 入口块)`。try 作用域在进入 catch 前
+    /// 已经退出，但 catch 体再次出错时仍需要找到对应的 finally。
+    pub active_catches: Vec<(u32, BlockId)>,
+    /// 当前动态执行轮次已经完成的 `(try 作用域, finally 子程序)`。
+    ///
+    /// 处理器路由会先执行 finally 再进入 catch；该记账防止 catch 体的
+    /// 后续错误把同一份 finally 再跑一次。
+    pub completed_finally: Vec<(u32, BlockId)>,
+    /// 运行时检查失败跳转携带的检查类别。
+    pub pending_check_kind: Option<String>,
 }
 
 impl<C: Carrier> Frame<C> {
@@ -32,6 +50,12 @@ impl<C: Carrier> Frame<C> {
             carrier,
             scopes: Vec::new(),
             return_to,
+            pending_exits: Vec::new(),
+            active_subroutines: Vec::new(),
+            last_sub_fault: None,
+            active_catches: Vec::new(),
+            completed_finally: Vec::new(),
+            pending_check_kind: None,
         }
     }
 

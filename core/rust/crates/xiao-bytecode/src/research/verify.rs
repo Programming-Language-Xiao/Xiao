@@ -125,6 +125,7 @@ fn jump_targets(op: &TacOp) -> Vec<BlockId> {
             if_true, if_false, ..
         } => vec![*if_true, *if_false],
         TacOp::Check { on_failure, .. } => vec![*on_failure],
+        TacOp::CallSub { sub } => vec![*sub],
         _ => Vec::new(),
     }
 }

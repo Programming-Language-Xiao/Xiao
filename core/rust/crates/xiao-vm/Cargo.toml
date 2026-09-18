@@ -18,6 +18,7 @@ xiao-runtime = { path = "../xiao-runtime" }
 xiao-types = { path = "../xiao-types" }
 
 [dev-dependencies]
+xiao-ir = { path = "../xiao-ir" }
 xiao-driver = { path = "../xiao-driver" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
