@@ -37,6 +37,197 @@ fn executes_scalar_arithmetic() {
 }
 
 #[test]
+/// 高级多选应经过共享选择算子在栈式机型完成执行。
+fn executes_advanced_selector() {
+    let program = load("values = [1, 2, 3, 4]\nselected = values[0, 2]\n");
+    assert!(
+        program.unsupported.is_empty(),
+        "未支持项: {:?}",
+        program.unsupported
+    );
+    let outcome = run(&program, VmOptions::new());
+    assert!(outcome.result.is_success(), "结果: {:?}", outcome.result);
+    assert!(run_register(&program, VmOptions::new()).result.is_success());
+    assert!(run_hybrid(&program, VmOptions::new()).result.is_success());
+}
+
+#[test]
+/// 范围、全选、正负步长和随机选择都应共用同一高级指令。
+fn executes_selector_ranges_steps_and_random() {
+    let source = "values = [1, 2, 3, 4]\na = values[1~3]\nb = values[<2]\nc = values{2}[=]\nd = values{ -1 }[=]\ne = values[?2]\n";
+    let program = load(source);
+    assert!(
+        program.unsupported.is_empty(),
+        "未支持项: {:?}",
+        program.unsupported
+    );
+    assert!(run(&program, VmOptions::new()).result.is_success());
+    assert!(run_register(&program, VmOptions::new()).result.is_success());
+    assert!(run_hybrid(&program, VmOptions::new()).result.is_success());
+}
+
+#[test]
+/// 选择器左值广播应在全部目标验证后一次性提交。
+fn executes_selector_broadcast_assignment() {
+    let program = load("values = [1, 2, 3]\nvalues[0, 2] = 9\n");
+    assert!(
+        program.unsupported.is_empty(),
+        "未支持项: {:?}",
+        program.unsupported
+    );
+    assert!(run(&program, VmOptions::new()).result.is_success());
+    assert!(run_register(&program, VmOptions::new()).result.is_success());
+    assert!(run_hybrid(&program, VmOptions::new()).result.is_success());
+}
+
+#[test]
+/// `random.seed` 应降低为显式种子操作并保持可执行。
+fn executes_random_seed_plan() {
+    let program = load("values = [1, 2, 3]\nrandom.seed(42)\npicked = values[?1]\n");
+    assert!(
+        program.unsupported.is_empty(),
+        "未支持项: {:?}",
+        program.unsupported
+    );
+    assert!(run(&program, VmOptions::new()).result.is_success());
+    assert!(run_register(&program, VmOptions::new()).result.is_success());
+    assert!(run_hybrid(&program, VmOptions::new()).result.is_success());
+}
+
+#[test]
+/// 动态零步长应在执行器产生选择器专用可恢复错误。
+fn dynamic_zero_step_is_recoverable() {
+    let program = load(
+        "def choose(int step) -> int\n    return step\nvalues = [1, 2, 3]\nstep = choose(0)\nresult = values{step}[=]\n",
+    );
+    for outcome in [
+        run(&program, VmOptions::new()),
+        run_register(&program, VmOptions::new()),
+        run_hybrid(&program, VmOptions::new()),
+    ] {
+        assert_eq!(outcome.result.error_code(), Some("X06-RUNTIME-018"));
+    }
+}
+
+#[test]
+/// 动态合法步长和动态范围端点应在三种载体上继续执行，而不是被通用检查提前拒绝。
+fn dynamic_selector_inputs_are_executed() {
+    let program = load(
+        "def choose(int value) -> int\n    return value\nvalues = [1, 2, 3, 4, 5]\nstep = choose(2)\nselected = values{step}[=]\n",
+    );
+    assert!(
+        program.unsupported.is_empty(),
+        "动态选择不应留下未支持项: {:?}",
+        program.unsupported
+    );
+    for outcome in [
+        run(&program, VmOptions::new()),
+        run_register(&program, VmOptions::new()),
+        run_hybrid(&program, VmOptions::new()),
+    ] {
+        assert!(
+            outcome.result.is_success(),
+            "动态选择应成功: {:?}",
+            outcome.result
+        );
+    }
+}
+
+#[test]
+/// 放回随机可以超过候选数，零数量则返回成功的空结果。
+fn replacement_random_and_empty_selection_are_executed() {
+    let replacement = load("values = [1, 2]\npicked = values[!?5]\n");
+    assert!(replacement.unsupported.is_empty());
+    for outcome in [
+        run(&replacement, VmOptions::new()),
+        run_register(&replacement, VmOptions::new()),
+        run_hybrid(&replacement, VmOptions::new()),
+    ] {
+        assert!(
+            outcome.result.is_success(),
+            "放回随机应成功: {:?}",
+            outcome.result
+        );
+    }
+
+    let empty = load("values = [1, 2]\npicked = values[?0]\n");
+    assert!(empty.unsupported.is_empty());
+    for outcome in [
+        run(&empty, VmOptions::new()),
+        run_register(&empty, VmOptions::new()),
+        run_hybrid(&empty, VmOptions::new()),
+    ] {
+        assert!(
+            outcome.result.is_success(),
+            "零数量随机应成功: {:?}",
+            outcome.result
+        );
+    }
+}
+
+#[test]
+/// 字典列的键名选择应保留键和值，而不是退化成数字路径。
+fn dictionary_column_key_selector_is_executed() {
+    let program = load("column = <first = 1, second = 2>\nselected = column[second]\n");
+    assert!(
+        program.unsupported.is_empty(),
+        "字典列选择不应留下未支持项: {:?}",
+        program.unsupported
+    );
+    for outcome in [
+        run(&program, VmOptions::new()),
+        run_register(&program, VmOptions::new()),
+        run_hybrid(&program, VmOptions::new()),
+    ] {
+        assert!(
+            outcome.result.is_success(),
+            "字典列键名选择应成功: {:?}",
+            outcome.result
+        );
+    }
+}
+
+#[test]
+/// 动态随机数量的负值和无放回超量必须在三种载体上使用同一错误身份。
+fn dynamic_random_count_is_recoverable() {
+    for count in [-1, 3] {
+        let source = format!(
+            "def choose(int count) -> int\n    return count\nvalues = [1, 2]\ncount = choose({count})\nresult = values[?count]\n"
+        );
+        let program = load(&source);
+        for outcome in [
+            run(&program, VmOptions::new()),
+            run_register(&program, VmOptions::new()),
+            run_hybrid(&program, VmOptions::new()),
+        ] {
+            assert_eq!(outcome.result.error_code(), Some("X06-RUNTIME-019"));
+        }
+    }
+}
+
+#[test]
+/// 动态随机种子必须检查非负性，合法种子仍可在三种载体执行。
+fn dynamic_random_seed_is_recoverable() {
+    let invalid = load(
+        "def choose(int seed) -> int\n    return seed\nseed = choose(-1)\nrandom.seed(seed)\nvalues = [1, 2]\npicked = values[?1]\n",
+    );
+    for outcome in [
+        run(&invalid, VmOptions::new()),
+        run_register(&invalid, VmOptions::new()),
+        run_hybrid(&invalid, VmOptions::new()),
+    ] {
+        assert_eq!(outcome.result.error_code(), Some("X06-RUNTIME-020"));
+    }
+
+    let valid = load(
+        "def choose(int seed) -> int\n    return seed\nseed = choose(42)\nrandom.seed(seed)\nvalues = [1, 2]\npicked = values[?1]\n",
+    );
+    assert!(run(&valid, VmOptions::new()).result.is_success());
+    assert!(run_register(&valid, VmOptions::new()).result.is_success());
+    assert!(run_hybrid(&valid, VmOptions::new()).result.is_success());
+}
+
+#[test]
 /// 函数调用与循环应真的被执行，并记录调用深度。
 fn executes_calls_and_loops() {
     let source = "def count(int limit) -> int\n    total = 0\n    while total != limit\n        total = total + 1\n    return total\nresult = count(3)\n";
@@ -1092,6 +1283,9 @@ fn manual_check_program(error_value: bool) -> TacProgram {
         }],
         categories,
         plans: Vec::new(),
+        selection_plans: Vec::new(),
+        broadcast_assignment_plans: Vec::new(),
+        random_seed_plans: Vec::new(),
         unsupported: Vec::new(),
     }
 }

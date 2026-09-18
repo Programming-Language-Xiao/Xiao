@@ -19,6 +19,7 @@ xiao-ir = { path = "../xiao-ir" }
 xiao-lifetime = { path = "../xiao-lifetime" }
 xiao-syntax = { path = "../xiao-syntax" }
 xiao-types = { path = "../xiao-types" }
+serde_json = "1.0"
 
 [dev-dependencies]
 xiao-driver = { path = "../xiao-driver" }

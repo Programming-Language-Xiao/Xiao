@@ -486,6 +486,39 @@ pub enum TacOp {
         /// 精确路径。
         path: Vec<PathStep>,
     },
+    /// 按类型阶段规范化计划执行高级选择。
+    ///
+    /// `plan` 索引 [`TacProgram::selection_plans`]；步长和动态随机数量只携带
+    /// 已降低的寄存器，不允许执行器重新解析源码或重算选择形状。
+    SelectorApply {
+        /// 来源容器寄存器。
+        source: VReg,
+        /// 规范化选择计划索引。
+        plan: u32,
+        /// 动态步长寄存器。
+        step: Option<VReg>,
+        /// 与计划项一一对应的动态随机数量寄存器。
+        random_counts: Vec<Option<VReg>>,
+    },
+    /// 将一个标量按事务性广播计划写入根容器。
+    ///
+    /// `plan` 索引 [`TacProgram::broadcast_assignment_plans`]；执行器必须先验证
+    /// 全部目标，再提交任何写入。
+    BroadcastAssign {
+        /// 根容器寄存器。
+        root: VReg,
+        /// 标量值寄存器。
+        value: VReg,
+        /// 广播计划索引。
+        plan: u32,
+    },
+    /// 设置当前 VM 的选择器随机源种子。
+    RandomSeed {
+        /// 种子寄存器。
+        value: VReg,
+        /// 随机种子计划索引。
+        plan: u32,
+    },
     /// 无条件跳转。
     Jump(BlockId),
     /// 条件分支。
@@ -714,6 +747,12 @@ pub struct TacProgram {
     pub categories: CategoryMap,
     /// 冻结的释放计划；解释器在退出点上按 `(作用域, 退出边)` 取出执行。
     pub plans: Vec<crate::research::lower::TacReleasePlan>,
+    /// 类型阶段规范化选择计划表。
+    pub selection_plans: Vec<xiao_ir::IrSelectionPlan>,
+    /// 类型阶段事务性广播计划表。
+    pub broadcast_assignment_plans: Vec<xiao_ir::IrBroadcastAssignmentPlan>,
+    /// 类型阶段随机种子计划表。
+    pub random_seed_plans: Vec<xiao_ir::IrRandomSeedPlan>,
     /// 本批次尚未降低的构造说明；为空表示全部语句都已降低。
     ///
     /// 这里刻意保留说明而不是静默跳过：未降低的构造会让程序少算一部分，

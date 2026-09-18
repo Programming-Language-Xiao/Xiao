@@ -124,6 +124,46 @@ pub fn run_with<C: Carrier>(
     }
 }
 
+/// 使用指定种子的栈式载体运行一份三地址产物。
+#[must_use]
+pub fn run_with_seed(
+    program: &xiao_bytecode::research::TacProgram,
+    options: VmOptions,
+    seed: u128,
+) -> RunOutcome {
+    let mut vm = Vm::<StackCarrier, RecordingSink>::new_with_seed(
+        program,
+        options,
+        RecordingSink::new(),
+        seed,
+    );
+    let result = vm.run();
+    let metrics = vm.metrics();
+    RunOutcome {
+        result,
+        metrics,
+        events: vm.into_sink().into_events(),
+    }
+}
+
+/// 使用指定种子的任意静态载体运行一份三地址产物。
+#[must_use]
+pub fn run_with_machine_seed<C: Carrier>(
+    program: &xiao_bytecode::research::TacProgram,
+    options: VmOptions,
+    seed: u128,
+) -> RunOutcome {
+    let mut vm =
+        Vm::<C, RecordingSink>::new_with_seed(program, options, RecordingSink::new(), seed);
+    let result = vm.run();
+    let metrics = vm.metrics();
+    RunOutcome {
+        result,
+        metrics,
+        events: vm.into_sink().into_events(),
+    }
+}
+
 /// 用分类型寄存器载体运行一份三地址产物。
 #[must_use]
 pub fn run_register(

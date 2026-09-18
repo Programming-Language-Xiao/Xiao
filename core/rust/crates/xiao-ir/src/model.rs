@@ -51,6 +51,15 @@ pub struct IrProgram {
     pub ownership: IrOwnership,
     /// 前端登记的运行时检查。
     pub runtime_checks: Vec<IrRuntimeCheck>,
+    /// 类型阶段生成的规范化选择计划。
+    ///
+    /// 选择表达式通过 `IrExpressionKind::Selector::selection_plan` 引用此表；
+    /// 后端只能消费这里的镜像，不能重新解析选择器源码。
+    pub selection_plans: Vec<IrSelectionPlan>,
+    /// 类型阶段生成的事务性广播写入计划。
+    pub broadcast_assignment_plans: Vec<IrBroadcastAssignmentPlan>,
+    /// `random.seed` 的类型阶段计划。
+    pub random_seed_plans: Vec<IrRandomSeedPlan>,
     /// 入口源码区间；脚本模式使用程序区间。
     pub span: IrSpan,
 }
@@ -71,6 +80,9 @@ impl IrProgram {
             control_flow: IrControlFlow::default(),
             ownership: IrOwnership::default(),
             runtime_checks: Vec::new(),
+            selection_plans: Vec::new(),
+            broadcast_assignment_plans: Vec::new(),
+            random_seed_plans: Vec::new(),
             span,
         }
     }
@@ -415,6 +427,8 @@ pub enum IrExpressionKind {
         selector: IrSelector,
         /// 可选步长。
         step: Option<Box<IrExpression>>,
+        /// 规范化选择计划表中的索引。
+        selection_plan: Option<u32>,
     },
 }
 
@@ -650,6 +664,130 @@ pub struct IrRuntimeCheck {
     pub kind: String,
     /// 检查源码区间。
     pub span: IrSpan,
+}
+
+/// 选择路径中的规范化段。
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[serde(tag = "kind", content = "data")]
+pub enum IrSelectionPathSegment {
+    /// 数字索引；`raw` 保留负索引语义，`resolved` 是静态位置。
+    Index {
+        /// 源码中的有符号索引。
+        raw: i128,
+        /// 已知长度下解析出的零基位置。
+        resolved: Option<usize>,
+    },
+    /// 字典键。
+    Key(String),
+}
+
+/// 规范化选择路径。
+pub type IrSelectionPath = Vec<IrSelectionPathSegment>;
+
+/// 一个规范化选择项。
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+#[serde(tag = "kind", content = "data")]
+pub enum IrSelectionItemPlan {
+    /// 精确路径。
+    Exact {
+        /// 被选择的路径。
+        path: IrSelectionPath,
+    },
+    /// 范围路径。
+    Range {
+        /// 起点路径。
+        start: IrSelectionPath,
+        /// 终点路径。
+        end: IrSelectionPath,
+        /// 是否包含起点。
+        include_start: bool,
+        /// 是否包含终点。
+        include_end: bool,
+    },
+    /// 全选。
+    All,
+    /// 随机选择。
+    Random {
+        /// `without_replacement` 或 `with_replacement`。
+        mode: String,
+        /// 静态数量。
+        count: Option<usize>,
+        /// 数量是否动态。
+        dynamic_count: bool,
+    },
+}
+
+/// 规范化步长。
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+pub struct IrStepPlan {
+    /// 静态步长；动态表达式为 `None`。
+    pub value: Option<i128>,
+    /// 是否需要运行时求值。
+    pub dynamic: bool,
+}
+
+/// 类型阶段选择计划的可序列化镜像。
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+pub struct IrSelectionPlan {
+    /// 选择表达式源码区间。
+    pub span: IrSpan,
+    /// 来源类型。
+    pub source_type: IrType,
+    /// 结果类型。
+    pub result_type: IrType,
+    /// 按源码顺序排列的选择项。
+    pub items: Vec<IrSelectionItemPlan>,
+    /// 静态展开路径。
+    pub selected_paths: Vec<IrSelectionPath>,
+    /// 静态目标叶子类型。
+    pub target_types: Vec<IrType>,
+    /// 可选步长。
+    pub step: Option<IrStepPlan>,
+    /// 是否含运行时边界。
+    pub requires_runtime_check: bool,
+    /// 是否有放回随机项。
+    pub with_replacement: bool,
+    /// 是否有重复目标。
+    pub has_duplicates: bool,
+}
+
+impl IrSelectionPlan {
+    /// 判断该计划是否可以使用精确 `IndexGet`。
+    #[must_use]
+    pub fn is_single_value(&self) -> bool {
+        self.items.len() == 1
+            && self.selected_paths.len() == 1
+            && matches!(self.items.first(), Some(IrSelectionItemPlan::Exact { .. }))
+            && !self.requires_runtime_check
+    }
+}
+
+/// 事务性广播赋值计划的可序列化镜像。
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+pub struct IrBroadcastAssignmentPlan {
+    /// 赋值源码区间。
+    pub span: IrSpan,
+    /// 被写入的根绑定。
+    pub root_name: Option<String>,
+    /// 静态目标路径。
+    pub target_paths: Vec<IrSelectionPath>,
+    /// 右值类型。
+    pub value_type: IrType,
+    /// 是否需要运行时检查。
+    pub dynamic: bool,
+    /// 是否要求事务性提交。
+    pub transactional: bool,
+}
+
+/// `random.seed` 计划的可序列化镜像。
+#[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
+pub struct IrRandomSeedPlan {
+    /// 调用源码区间。
+    pub span: IrSpan,
+    /// 静态种子。
+    pub value: Option<u128>,
+    /// 是否动态求值。
+    pub dynamic: bool,
 }
 
 /// 生命周期控制流图。

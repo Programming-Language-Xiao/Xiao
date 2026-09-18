@@ -33,6 +33,7 @@ pub fn lower_program(
     let mut lowerer = Lowerer {
         source,
         type_result,
+        selection_plan_cursor: BTreeMap::new(),
     };
     let body = lowerer.statements(&program.statements);
     let entry_mode = match program.entry_mode {
@@ -55,6 +56,21 @@ pub fn lower_program(
             span: ir_span(check.span),
         })
         .collect();
+    result.selection_plans = type_result
+        .selection_plans()
+        .iter()
+        .map(lower_selection_plan)
+        .collect();
+    result.broadcast_assignment_plans = type_result
+        .broadcast_assignment_plans()
+        .iter()
+        .map(lower_broadcast_assignment_plan)
+        .collect();
+    result.random_seed_plans = type_result
+        .random_seed_plans()
+        .iter()
+        .map(lower_random_seed_plan)
+        .collect();
     result
 }
 
@@ -62,6 +78,8 @@ pub fn lower_program(
 struct Lowerer<'a> {
     source: &'a SourceFile,
     type_result: &'a TypeCheckResult,
+    /// 同一源码区间可能出现多个计划；按 lowering 访问顺序逐个分配稳定 ID。
+    selection_plan_cursor: BTreeMap<(usize, usize), usize>,
 }
 
 impl<'a> Lowerer<'a> {
@@ -71,6 +89,23 @@ impl<'a> Lowerer<'a> {
             .type_at(span)
             .map(lower_type)
             .unwrap_or(IrType::Dynamic)
+    }
+
+    /// 为一个选择表达式取得类型层计划 ID。
+    fn selection_plan_id(&mut self, span: SourceSpan) -> Option<u32> {
+        let candidates = self
+            .type_result
+            .selection_plans()
+            .iter()
+            .enumerate()
+            .filter(|(_, plan)| plan.span == span)
+            .map(|(index, _)| index)
+            .collect::<Vec<_>>();
+        let key = (span.start(), span.end());
+        let cursor = self.selection_plan_cursor.entry(key).or_default();
+        let index = candidates.get(*cursor).copied()?;
+        *cursor += 1;
+        u32::try_from(index).ok()
     }
 
     /// 降低名称并保留反引号信息。
@@ -345,6 +380,7 @@ impl<'a> Lowerer<'a> {
                 source: Box::new(self.expression(source)),
                 selector: self.selector(selector),
                 step: step.as_ref().map(|value| Box::new(self.expression(value))),
+                selection_plan: self.selection_plan_id(expression.span()),
             },
         };
         IrExpression { kind, ty, span }
@@ -489,6 +525,97 @@ pub fn lower_type(ty: &Type) -> IrType {
     }
 }
 
+/// 转换类型层选择路径为可序列化镜像。
+fn lower_selection_path(path: &xiao_types::SelectionPath) -> IrSelectionPath {
+    path.iter()
+        .map(|segment| match segment {
+            xiao_types::SelectionPathSegment::Index { raw, resolved } => {
+                IrSelectionPathSegment::Index {
+                    raw: *raw,
+                    resolved: *resolved,
+                }
+            }
+            xiao_types::SelectionPathSegment::Key(key) => IrSelectionPathSegment::Key(key.clone()),
+        })
+        .collect()
+}
+
+/// 转换一个类型层选择项。
+fn lower_selection_item(item: &xiao_types::SelectionItemPlan) -> IrSelectionItemPlan {
+    match item {
+        xiao_types::SelectionItemPlan::Exact { path } => IrSelectionItemPlan::Exact {
+            path: lower_selection_path(path),
+        },
+        xiao_types::SelectionItemPlan::Range {
+            start,
+            end,
+            include_start,
+            include_end,
+        } => IrSelectionItemPlan::Range {
+            start: lower_selection_path(start),
+            end: lower_selection_path(end),
+            include_start: *include_start,
+            include_end: *include_end,
+        },
+        xiao_types::SelectionItemPlan::All => IrSelectionItemPlan::All,
+        xiao_types::SelectionItemPlan::Random {
+            mode,
+            count,
+            dynamic_count,
+        } => IrSelectionItemPlan::Random {
+            mode: random_mode_name(*mode).to_owned(),
+            count: *count,
+            dynamic_count: *dynamic_count,
+        },
+    }
+}
+
+/// 转换类型层选择计划。
+fn lower_selection_plan(plan: &xiao_types::SelectionPlan) -> IrSelectionPlan {
+    IrSelectionPlan {
+        span: ir_span(plan.span),
+        source_type: lower_type(&plan.source_type),
+        result_type: lower_type(&plan.result_type),
+        items: plan.items.iter().map(lower_selection_item).collect(),
+        selected_paths: plan
+            .selected_paths
+            .iter()
+            .map(lower_selection_path)
+            .collect(),
+        target_types: plan.target_types.iter().map(lower_type).collect(),
+        step: plan.step.as_ref().map(|step| IrStepPlan {
+            value: step.value,
+            dynamic: step.dynamic,
+        }),
+        requires_runtime_check: plan.requires_runtime_check,
+        with_replacement: plan.with_replacement,
+        has_duplicates: plan.has_duplicates,
+    }
+}
+
+/// 转换广播计划。
+fn lower_broadcast_assignment_plan(
+    plan: &xiao_types::BroadcastAssignmentPlan,
+) -> IrBroadcastAssignmentPlan {
+    IrBroadcastAssignmentPlan {
+        span: ir_span(plan.span),
+        root_name: plan.root_name.clone(),
+        target_paths: plan.target_paths.iter().map(lower_selection_path).collect(),
+        value_type: lower_type(&plan.value_type),
+        dynamic: plan.dynamic,
+        transactional: plan.transactional,
+    }
+}
+
+/// 转换随机种子计划。
+fn lower_random_seed_plan(plan: &xiao_types::RandomSeedPlan) -> IrRandomSeedPlan {
+    IrRandomSeedPlan {
+        span: ir_span(plan.span),
+        value: plan.value,
+        dynamic: plan.dynamic,
+    }
+}
+
 /// 转换数组形状。
 fn lower_array_type(array: &ArrayType) -> IrArrayShape {
     match array {
@@ -584,6 +711,7 @@ fn lower_modules(project: &ProjectModuleResult, source: &SourceFile) -> Vec<IrMo
                 let mut lowerer = Lowerer {
                     source: module_source,
                     type_result: &empty_types,
+                    selection_plan_cursor: BTreeMap::new(),
                 };
                 lowerer.statements(&program.statements)
             })

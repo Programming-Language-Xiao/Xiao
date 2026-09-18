@@ -224,6 +224,23 @@ fn instruction_use_def(
         TacOp::IndexGet { source, .. } => {
             uses.insert(*source);
         }
+        TacOp::SelectorApply {
+            source,
+            step,
+            random_counts,
+            ..
+        } => {
+            uses.insert(*source);
+            uses.extend(step.iter().copied());
+            uses.extend(random_counts.iter().flatten().copied());
+        }
+        TacOp::BroadcastAssign { root, value, .. } => {
+            uses.insert(*root);
+            uses.insert(*value);
+        }
+        TacOp::RandomSeed { value, .. } => {
+            uses.insert(*value);
+        }
         TacOp::BranchIf { condition, .. } => {
             uses.insert(*condition);
         }

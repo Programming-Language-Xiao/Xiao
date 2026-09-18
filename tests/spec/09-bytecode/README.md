@@ -25,6 +25,8 @@
 - `errors.json`：整数溢出（可恢复）与调用栈耗尽（致命）。
 - `containers.json`：数组/元组/集合构造、数组与字符串的精确索引（含负索引）、
   以及传参字面量临时值的释放。
+- `selectors.json`：多选、嵌套范围、固定种子随机选择和事务性广播（4 条）；同一文件由
+  栈式、分类型寄存器式和混合式三种研究载体复用。
 
 运行时的容器越界与键缺失**没有进向量**：静态检查器会提前拒绝常量越界与缺失键，
 因此它们在字面量程序里不可达。那两类语义由 `xiao-vm` 的 `ops.rs` 单元测试直接
@@ -39,4 +41,5 @@
 拒绝（`X02-TYPE-007`），那是正确行为。运行时向量一律用编译期不可知的形参参与
 运算来构造。
 
-对应实现测试为 `core/rust/crates/xiao-vm/tests/r2_vectors.rs`。
+当前目录共 31 条向量（`scalar` 6、`control` 4、`errors` 9、`containers` 8、`selectors` 4）。
+对应实现测试为 `core/rust/crates/xiao-vm/tests/r2_vectors.rs`；研究 VM 仍不是生产 `xiao run`。

@@ -160,6 +160,29 @@ struct Frame {
 }
 
 impl<'ir> Lowerer<'ir> {
+    /// 按稳定索引读取 IR 选择计划。
+    pub(super) fn selection_plan(&self, id: u32) -> Option<&xiao_ir::IrSelectionPlan> {
+        self.program.selection_plans.get(id as usize)
+    }
+
+    /// 按赋值源码区间查找事务性广播计划。
+    pub(super) fn broadcast_assignment_plan_id(&self, span: IrSpan) -> Option<u32> {
+        self.program
+            .broadcast_assignment_plans
+            .iter()
+            .position(|plan| plan.span == span)
+            .and_then(|index| u32::try_from(index).ok())
+    }
+
+    /// 按调用源码区间查找随机种子计划。
+    pub(super) fn random_seed_plan_id(&self, span: IrSpan) -> Option<u32> {
+        self.program
+            .random_seed_plans
+            .iter()
+            .position(|plan| plan.span == span)
+            .and_then(|index| u32::try_from(index).ok())
+    }
+
     /// 建立降低器并预处理所有权与签名信息。
     fn new(program: &'ir IrProgram) -> Self {
         let value_spans = program
@@ -295,6 +318,9 @@ impl<'ir> Lowerer<'ir> {
             functions: self.functions,
             categories,
             plans: self.plans,
+            selection_plans: self.program.selection_plans.clone(),
+            broadcast_assignment_plans: self.program.broadcast_assignment_plans.clone(),
+            random_seed_plans: self.program.random_seed_plans.clone(),
             unsupported: self.unsupported,
         }
     }
@@ -686,10 +712,37 @@ impl<'ir> Lowerer<'ir> {
         let Some(kinds) = self.runtime_checks.remove(&(span.start, span.end)) else {
             return;
         };
+        self.emit_runtime_check_kinds(span, value, kinds);
+    }
+
+    /// 消费一个表达式范围内尚未由子表达式消费的检查。
+    pub(super) fn emit_runtime_checks_in(&mut self, span: IrSpan, value: VReg) {
+        let keys = self
+            .runtime_checks
+            .keys()
+            .copied()
+            .filter(|(start, end)| *start >= span.start && *end <= span.end)
+            .collect::<Vec<_>>();
+        for key in keys {
+            if let Some(kinds) = self.runtime_checks.remove(&key) {
+                self.emit_runtime_check_kinds(IrSpan::new(key.0, key.1), value, kinds);
+            }
+        }
+    }
+
+    /// 将一组检查降低为失败边。
+    fn emit_runtime_check_kinds(&mut self, span: IrSpan, value: VReg, kinds: Vec<String>) {
         for kind in kinds {
             if !matches!(
                 kind.as_str(),
-                "boolean_condition" | "arithmetic" | "numeric_range" | "dynamic_conversion"
+                "boolean_condition"
+                    | "arithmetic"
+                    | "numeric_range"
+                    | "dynamic_conversion"
+                    | "selector_bounds"
+                    | "selector_step"
+                    | "random_count"
+                    | "random_seed"
             ) {
                 self.record_unsupported(format!("运行时检查尚未降低：{kind}"));
                 continue;

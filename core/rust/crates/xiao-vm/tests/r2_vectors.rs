@@ -180,3 +180,15 @@ fn container_vectors_are_stable() {
         "09R2",
     );
 }
+
+#[test]
+/// 高级选择、嵌套范围、固定种子和广播在三种载体上复用同一向量。
+fn selector_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/selectors.json"
+        )),
+        "09R2",
+    );
+}

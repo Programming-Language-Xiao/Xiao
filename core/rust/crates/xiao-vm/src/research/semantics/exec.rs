@@ -11,9 +11,11 @@ use xiao_bytecode::research::{
     TacProgram, VReg, build_pc_map,
 };
 use xiao_diagnostics::{
-    BackendLocation, FatalError, NUMERIC_OVERFLOW_CODE, StackFrame, TYPE_MISMATCH_CODE, XiaoError,
+    BackendLocation, FatalError, NUMERIC_OVERFLOW_CODE, RANDOM_COUNT_CODE, RANDOM_SEED_CODE,
+    SELECTOR_BOUNDS_CODE, SELECTOR_STEP_CODE, StackFrame, TYPE_MISMATCH_CODE, XiaoError,
 };
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue};
+use xiao_types::SeededRandom;
 
 use crate::research::carrier::{Carrier, CarrierContext, MapPoint};
 use crate::research::frame::Frame;
@@ -90,6 +92,8 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     options: VmOptions,
     /// 运行开始前建立的一次性只读 pc 映射；热路径只做查表。
     pc_map: Option<PcMap>,
+    /// 选择器使用的可复现随机源；状态只在运行阶段推进。
+    random: SeededRandom,
 }
 
 impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
@@ -102,7 +106,15 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             metrics: VmMetrics::default(),
             options,
             pc_map: build_pc_map(program, xiao_bytecode::research::OperandWidth::Leb128).ok(),
+            random: SeededRandom::new(0),
         }
+    }
+
+    /// 创建一个使用指定种子的解释器。
+    pub fn new_with_seed(program: &'p TacProgram, options: VmOptions, sink: S, seed: u128) -> Self {
+        let mut vm = Self::new(program, options, sink);
+        vm.random.reseed(seed);
+        vm
     }
 
     /// 返回当前运行指标。
@@ -405,6 +417,61 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let source = self.read(*source)?;
                 let value = ops::index_get(&source, path).map_err(Fault::Error)?;
                 self.write_operand(instruction.dst, value);
+            }
+            TacOp::SelectorApply {
+                source,
+                plan,
+                step,
+                random_counts,
+            } => {
+                let source = self.read(*source)?;
+                let plan = self
+                    .program
+                    .selection_plans
+                    .get(*plan as usize)
+                    .cloned()
+                    .ok_or_else(|| Fault::Error(XiaoError::invalid_value("选择计划索引不存在")))?;
+                let step = step.map(|register| self.read(register)).transpose()?;
+                let counts = random_counts
+                    .iter()
+                    .map(|register| register.map(|value| self.read(value)).transpose())
+                    .collect::<Result<Vec<_>, Fault>>()?;
+                let value =
+                    ops::selector_apply(&source, &plan, step.as_ref(), &counts, &mut self.random)
+                        .map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::BroadcastAssign { root, value, plan } => {
+                let root = self.read(*root)?;
+                let value = self.read(*value)?;
+                let plan = self
+                    .program
+                    .broadcast_assignment_plans
+                    .get(*plan as usize)
+                    .cloned()
+                    .ok_or_else(|| Fault::Error(XiaoError::invalid_value("广播计划索引不存在")))?;
+                ops::broadcast_assign(&root, &value, &plan).map_err(Fault::Error)?;
+            }
+            TacOp::RandomSeed { value, plan } => {
+                let value = self.read(*value)?;
+                let seed = match value {
+                    RuntimeValue::Int(value) if value >= 0 => value as u128,
+                    RuntimeValue::Sint(value) if value >= 0 => value as u128,
+                    RuntimeValue::Lint(value) => value.parse::<u128>().map_err(|_| {
+                        Fault::Error(xiao_runtime::RuntimeError::random_seed("种子无效"))
+                    })?,
+                    _ => {
+                        return Err(Fault::Error(xiao_runtime::RuntimeError::random_seed(
+                            "种子必须是非负整数",
+                        )));
+                    }
+                };
+                if *plan as usize >= self.program.random_seed_plans.len() {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "随机种子计划索引不存在",
+                    )));
+                }
+                self.random.reseed(seed);
             }
             TacOp::Jump(target) => return Ok(Flow::Jump(*target)),
             TacOp::BranchIf {
@@ -1201,6 +1268,10 @@ fn runtime_check_code(kind: &str) -> Option<&'static str> {
     match kind {
         "boolean_condition" | "dynamic_conversion" | "string_boolean" => Some(TYPE_MISMATCH_CODE),
         "arithmetic" | "numeric_range" => Some(NUMERIC_OVERFLOW_CODE),
+        "selector_bounds" => Some(SELECTOR_BOUNDS_CODE),
+        "selector_step" => Some(SELECTOR_STEP_CODE),
+        "random_count" => Some(RANDOM_COUNT_CODE),
+        "random_seed" => Some(RANDOM_SEED_CODE),
         _ => None,
     }
 }
@@ -1238,7 +1309,27 @@ fn check_value(kind: &str, value: &RuntimeValue) -> bool {
                 | RuntimeValue::Sfloat(_)
                 | RuntimeValue::Bool(_)
         ),
+        "selector_bounds" => matches!(
+            value,
+            RuntimeValue::Array(_)
+                | RuntimeValue::Tuple(_)
+                | RuntimeValue::DictColumn(_)
+                | RuntimeValue::Str(_)
+        ),
+        "selector_step" | "random_count" | "random_seed" => {
+            integer_value(value).is_some_and(|value| value >= 0 || kind == "selector_step")
+        }
         _ => true,
+    }
+}
+
+/// 读取检查操作数中的整数。
+fn integer_value(value: &RuntimeValue) -> Option<i128> {
+    match value {
+        RuntimeValue::Int(value) => Some(i128::from(*value)),
+        RuntimeValue::Sint(value) => Some(i128::from(*value)),
+        RuntimeValue::Lint(value) => value.parse().ok(),
+        _ => None,
     }
 }
 

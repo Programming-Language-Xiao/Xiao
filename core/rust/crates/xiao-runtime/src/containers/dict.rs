@@ -177,6 +177,18 @@ impl DictHandle {
             })
     }
 
+    /// 以可变闭包访问全部条目。
+    pub fn with_entries_mut<R>(
+        &self,
+        callback: impl FnOnce(&mut Vec<(String, RuntimeValue)>) -> R,
+    ) -> RuntimeResult<R> {
+        let kind = self.kind();
+        self.inner
+            .with_payload_mut(kind.type_tag(), |object: &mut DictObject| {
+                callback(&mut object.entries)
+            })
+    }
+
     /// 创建一个不拥有字典生命周期的弱句柄。
     #[must_use]
     pub fn downgrade(&self) -> WeakHandle {

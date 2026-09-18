@@ -451,6 +451,7 @@ fn validate_expression(expression: &IrExpression, path: &str, result: &mut IrVal
             source,
             selector,
             step,
+            selection_plan: _,
         } => {
             if matches!(source.ty, IrType::Set { .. }) {
                 result.errors.push(error(

@@ -5,8 +5,8 @@
 
 use xiao_diagnostics::error_kind_of;
 use xiao_ir::{
-    IrCallArgument, IrDictEntry, IrExpression, IrExpressionKind, IrPathSegmentKind, IrSelector,
-    IrSelectorItem, IrSpan, IrType,
+    IrCallArgument, IrDictEntry, IrExpression, IrExpressionKind, IrSelector, IrSelectorItem,
+    IrSpan, IrType,
 };
 use xiao_syntax::ScalarType;
 
@@ -56,8 +56,18 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
             lower_entries(lowerer, entries, expression, ContainerKind::DictColumn)
         }
         IrExpressionKind::Selector {
-            source, selector, ..
-        } => lower_selector(lowerer, source, selector, expression),
+            source,
+            selector,
+            step,
+            selection_plan,
+        } => lower_selector(
+            lowerer,
+            source,
+            selector,
+            step.as_deref(),
+            *selection_plan,
+            expression,
+        ),
         _ => lower_unsupported(lowerer, "expression", expression.span),
     };
     lowerer.emit_runtime_checks(expression.span, register);
@@ -128,44 +138,87 @@ fn lower_entries(
     build_container(lowerer, op, expression.span, &expression.ty)
 }
 
-/// 降低精确索引选择器。
-///
-/// 只接受「单个 `Exact` 项且路径只有一段」的形态；多选、区间、全选和随机选择
-/// 属于后续批次，混合段路径（既含索引又含键）需要嵌套派发，同样留待后续。
+/// 降低选择器。单值计划继续使用精确 `IndexGet`，其余形态使用独立的
+/// `SelectorApply` 操作，计划和动态操作数均由前端显式提供。
 fn lower_selector(
     lowerer: &mut Lowerer<'_>,
     source: &IrExpression,
     selector: &IrSelector,
+    step: Option<&IrExpression>,
+    selection_plan: Option<u32>,
     expression: &IrExpression,
 ) -> VReg {
-    let [IrSelectorItem::Exact { path, .. }] = selector.items.as_slice() else {
-        return lower_unsupported(lowerer, "selector", expression.span);
+    let Some(plan_id) = selection_plan else {
+        return lower_unsupported(lowerer, "selector plan", expression.span);
     };
-    let [segment] = path.segments.as_slice() else {
-        return lower_unsupported(lowerer, "selector path", expression.span);
+    let Some(plan) = lowerer.selection_plan(plan_id).cloned() else {
+        return lower_unsupported(lowerer, "selector plan reference", expression.span);
     };
-    let step = match &segment.kind {
-        IrPathSegmentKind::Index { text, negative } => {
-            let digits = text.strip_prefix('-').unwrap_or(text);
-            match digits.parse::<i128>() {
-                Ok(magnitude) => PathStep::Index(if *negative { -magnitude } else { magnitude }),
-                Err(_) => return lower_unsupported(lowerer, "selector index", expression.span),
-            }
+    let source_register = lowerer.lower_expression(source);
+    if plan.is_single_value() {
+        let Some(path) = plan.selected_paths.first() else {
+            return lower_unsupported(lowerer, "empty exact selector path", expression.span);
+        };
+        let Some(path) = lower_selection_path(path) else {
+            return lower_unsupported(lowerer, "selector path", expression.span);
+        };
+        let class = Lowerer::class_of_type(&expression.ty);
+        let register = lowerer.new_register(class, expression.span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::IndexGet {
+                source: source_register,
+                path,
+            },
+            register,
+            expression.span,
+        ));
+        return register;
+    }
+    let dynamic_step = plan.step.as_ref().is_some_and(|item| item.dynamic);
+    let step_register = dynamic_step
+        .then(|| step.map(|item| lowerer.lower_expression(item)))
+        .flatten();
+    let mut random_counts = Vec::with_capacity(plan.items.len());
+    for (item, ir_item) in plan.items.iter().zip(&selector.items) {
+        if let xiao_ir::IrSelectionItemPlan::Random {
+            dynamic_count: true,
+            ..
+        } = item
+        {
+            let IrSelectorItem::Random { count, .. } = ir_item else {
+                return lower_unsupported(lowerer, "random selector plan", expression.span);
+            };
+            random_counts.push(Some(lowerer.lower_expression(count)));
+        } else {
+            random_counts.push(None);
         }
-        IrPathSegmentKind::Name { name } => PathStep::Key(name.text.clone()),
-    };
-    let source = lowerer.lower_expression(source);
+    }
+    // 路径边界检查挂在选择项/端点跨度上；子表达式已经消费步长和
+    // 随机数量检查，这里再收拢选择器剩余范围内的检查，避免静默丢失。
+    lowerer.emit_runtime_checks_in(expression.span, source_register);
     let class = Lowerer::class_of_type(&expression.ty);
     let register = lowerer.new_register(class, expression.span);
     lowerer.emit(TacInstr::with_dst(
-        TacOp::IndexGet {
-            source,
-            path: vec![step],
+        TacOp::SelectorApply {
+            source: source_register,
+            plan: plan_id,
+            step: step_register,
+            random_counts,
         },
         register,
         expression.span,
     ));
     register
+}
+
+/// 把 IR 规范化路径转成精确索引路径。
+fn lower_selection_path(path: &xiao_ir::IrSelectionPath) -> Option<Vec<PathStep>> {
+    path.iter()
+        .map(|segment| match segment {
+            xiao_ir::IrSelectionPathSegment::Index { raw, .. } => Some(PathStep::Index(*raw)),
+            xiao_ir::IrSelectionPathSegment::Key(key) => Some(PathStep::Key(key.clone())),
+        })
+        .collect()
 }
 
 /// 降低字面量。
@@ -411,6 +464,26 @@ fn lower_call(
     if let Some(register) = lower_error_constructor(lowerer, callee, arguments, expression) {
         return register;
     }
+    if is_random_seed_call(callee) {
+        let Some(argument) = arguments.first() else {
+            return lower_unsupported(lowerer, "random.seed 参数", expression.span);
+        };
+        let Some(plan) = lowerer.random_seed_plan_id(expression.span) else {
+            return lower_unsupported(lowerer, "random.seed 计划", expression.span);
+        };
+        let value = lowerer.lower_expression(&argument.value);
+        lowerer.emit(TacInstr::new(
+            TacOp::RandomSeed { value, plan },
+            expression.span,
+        ));
+        let register = lowerer.new_register(RegisterClass::None, expression.span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::LoadNone,
+            register,
+            expression.span,
+        ));
+        return register;
+    }
     let arguments = arguments
         .iter()
         .map(|argument| {
@@ -451,6 +524,16 @@ fn lower_call(
     };
     lowerer.emit(TacInstr::with_dst(op, register, expression.span));
     register
+}
+
+/// 判断 IR 调用是否为内建 `random.seed`。
+fn is_random_seed_call(callee: &IrExpression) -> bool {
+    let IrExpressionKind::Member { object, member } = &callee.kind else {
+        return false;
+    };
+    matches!(&object.kind, IrExpressionKind::Name { name } if !name.backticked && name.text == "random")
+        && !member.backticked
+        && member.text == "seed"
 }
 
 /// 识别 `raise ErrorType(code = ..., message = ...)` 使用的错误构造式。

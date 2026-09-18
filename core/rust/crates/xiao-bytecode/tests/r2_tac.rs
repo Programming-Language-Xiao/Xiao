@@ -214,6 +214,26 @@ fn lowers_container_literals() {
 }
 
 #[test]
+/// 高级选择应携带类型阶段计划并降低为独立选择指令。
+fn lowers_advanced_selector_plan() {
+    let (ir, tac) = lower("values = [1, 2, 3, 4]\nselected = values[0, 2]\n");
+    assert_eq!(ir.selection_plans.len(), 1);
+    assert!(tac.selection_plans.len() == 1);
+    assert!(
+        tac.functions[0]
+            .blocks
+            .iter()
+            .flat_map(|block| &block.instructions)
+            .any(|instruction| matches!(instruction.op, TacOp::SelectorApply { .. }))
+    );
+    assert!(
+        tac.unsupported.is_empty(),
+        "不应有未支持项: {:?}",
+        tac.unsupported
+    );
+}
+
+#[test]
 /// 精确索引应降低为带路径的读取指令，负索引保留有符号语义。
 fn lowers_exact_index_with_signed_step() {
     let (ir, tac) = lower("values = [1, 2]\nfirst = values[0]\nlast = values[-1]\n");

@@ -14,10 +14,11 @@
 
 ## 09R 研究边界
 
-`src/research/` 已落地 09R2 第一批：`tac.rs` 定义统一三地址指令、常量池、寄存器类别映射与
-调用签名表，`sig.rs` 补 `IrProgram` 缺失的调用 ABI 描述，`lower/` 按关注点拆分降低规则
-（`stmt` 重建块结构、`expr` 展开表达式、`plan` 接线释放计划），`verify.rs` 做自校验与释放
-序列对账。编码器仍待交付。
+`src/research/` 已落地 09R2：`tac.rs` 定义统一三地址指令、常量池、寄存器类别映射与调用
+签名表，`sig.rs` 补 `IrProgram` 缺失的调用 ABI 描述，`lower/` 按关注点拆分降低规则，
+`verify.rs` 做自校验与释放序列对账，`encode.rs` 提供 34 个稳定 opcode 的内存编码/解码。
+选择器执行使用 `SelectorApply`、`BroadcastAssign`、`RandomSeed` 携带类型阶段计划；精确
+`IndexGet` 与高级选择分开编码，LEB128 和定宽 `u16` 均有往返及拒绝测试。
 
 该子模块属于 09R 特别研究工程，**不是稳定语言接口**：试验性指令、寄存器结构和编码在 09R3
 冻结前不得对外暴露，也不得被 `xiao-driver` 或 CLI 依赖。研究产物不得使用 `.xiaoc` 扩展名

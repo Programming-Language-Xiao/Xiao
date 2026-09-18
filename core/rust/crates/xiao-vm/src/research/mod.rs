@@ -37,6 +37,7 @@ pub use machine::stack::StackCarrier;
 /// 重导出运行入口、结果与指标。
 pub use run::{
     RunOutcome, RunResult, VmMetrics, VmOptions, run, run_hybrid, run_register, run_with,
+    run_with_machine_seed, run_with_seed,
 };
 /// 重导出语义核与终止原因。
 pub use semantics::{Fault, Vm};

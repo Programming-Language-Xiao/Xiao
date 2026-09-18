@@ -381,6 +381,9 @@ pub fn encode(
     }
     encode_categories(&mut writer, &program.categories)?;
     encode_plans(&mut writer, program)?;
+    encode_selection_plans(&mut writer, program)?;
+    encode_broadcast_plans(&mut writer, program)?;
+    encode_random_seed_plans(&mut writer, program)?;
     writer.count(program.unsupported.len(), "unsupported")?;
     for note in &program.unsupported {
         writer.string(note)?;
@@ -618,6 +621,47 @@ fn validate_op(
             Ok(())
         }
         TacOp::IndexGet { source, .. } => check_vreg(*source),
+        TacOp::SelectorApply {
+            source,
+            plan,
+            step,
+            random_counts,
+        } => {
+            if *plan as usize >= program.selection_plans.len() {
+                return Err(EncodeError::InvalidReference {
+                    kind: format!("function[{function_index}].selection_plan"),
+                    index: *plan as u64,
+                    limit: program.selection_plans.len(),
+                });
+            }
+            check_vreg(*source)?;
+            step.map_or(Ok(()), check_vreg)?;
+            for value in random_counts.iter().flatten() {
+                check_vreg(*value)?;
+            }
+            Ok(())
+        }
+        TacOp::BroadcastAssign { root, value, plan } => {
+            if *plan as usize >= program.broadcast_assignment_plans.len() {
+                return Err(EncodeError::InvalidReference {
+                    kind: format!("function[{function_index}].broadcast_plan"),
+                    index: *plan as u64,
+                    limit: program.broadcast_assignment_plans.len(),
+                });
+            }
+            check_vreg(*root)?;
+            check_vreg(*value)
+        }
+        TacOp::RandomSeed { value, plan } => {
+            if *plan as usize >= program.random_seed_plans.len() {
+                return Err(EncodeError::InvalidReference {
+                    kind: format!("function[{function_index}].random_seed_plan"),
+                    index: *plan as u64,
+                    limit: program.random_seed_plans.len(),
+                });
+            }
+            check_vreg(*value)
+        }
         TacOp::Jump(target) | TacOp::CallSub { sub: target } => check_block_ref(*target),
         TacOp::BranchIf {
             condition,
@@ -1127,6 +1171,30 @@ fn encode_op(
             }
             Ok(())
         }
+        TacOp::SelectorApply {
+            source,
+            plan,
+            step,
+            random_counts,
+        } => {
+            writer.index(source.get(), "VReg")?;
+            writer.index(*plan, "SelectionPlanId")?;
+            write_optional_index(writer, step.map(VReg::get))?;
+            writer.count(random_counts.len(), "selector.random_counts")?;
+            for value in random_counts {
+                write_optional_index(writer, value.map(VReg::get))?;
+            }
+            Ok(())
+        }
+        TacOp::BroadcastAssign { root, value, plan } => {
+            writer.index(root.get(), "VReg")?;
+            writer.index(value.get(), "VReg")?;
+            writer.index(*plan, "BroadcastPlanId")
+        }
+        TacOp::RandomSeed { value, plan } => {
+            writer.index(value.get(), "VReg")?;
+            writer.index(*plan, "RandomSeedPlanId")
+        }
         TacOp::Jump(target) | TacOp::CallSub { sub: target } => {
             writer.index(target.get(), "BlockId")
         }
@@ -1261,6 +1329,46 @@ fn encode_plans(writer: &mut Writer, program: &TacProgram) -> Result<(), EncodeE
         for value in &plan.transferred {
             writer.uleb(*value as u64);
         }
+    }
+    Ok(())
+}
+
+/// 写类型阶段的选择计划表。
+///
+/// 计划镜像已经是 `xiao-ir` 的稳定 serde 数据对象；这里按条目写 JSON 文本，
+/// 让编码器只负责搬运而不复制计划字段的标签映射。
+fn encode_selection_plans(writer: &mut Writer, program: &TacProgram) -> Result<(), EncodeError> {
+    writer.count(program.selection_plans.len(), "selection_plans")?;
+    for plan in &program.selection_plans {
+        let json = serde_json::to_string(plan)
+            .map_err(|error| EncodeError::InvalidFormat(format!("选择计划序列化失败：{error}")))?;
+        writer.string(&json)?;
+    }
+    Ok(())
+}
+
+/// 写事务性广播计划表。
+fn encode_broadcast_plans(writer: &mut Writer, program: &TacProgram) -> Result<(), EncodeError> {
+    writer.count(
+        program.broadcast_assignment_plans.len(),
+        "broadcast_assignment_plans",
+    )?;
+    for plan in &program.broadcast_assignment_plans {
+        let json = serde_json::to_string(plan)
+            .map_err(|error| EncodeError::InvalidFormat(format!("广播计划序列化失败：{error}")))?;
+        writer.string(&json)?;
+    }
+    Ok(())
+}
+
+/// 写随机种子计划表。
+fn encode_random_seed_plans(writer: &mut Writer, program: &TacProgram) -> Result<(), EncodeError> {
+    writer.count(program.random_seed_plans.len(), "random_seed_plans")?;
+    for plan in &program.random_seed_plans {
+        let json = serde_json::to_string(plan).map_err(|error| {
+            EncodeError::InvalidFormat(format!("随机种子计划序列化失败：{error}"))
+        })?;
+        writer.string(&json)?;
     }
     Ok(())
 }
@@ -1441,6 +1549,9 @@ fn decode_inner(bytes: &[u8]) -> Result<(TacProgram, OperandWidth), EncodeError>
     }
     let categories = decode_categories(&mut reader, "program.categories")?;
     let plans = decode_plans(&mut reader)?;
+    let selection_plans = decode_selection_plans(&mut reader)?;
+    let broadcast_assignment_plans = decode_broadcast_plans(&mut reader)?;
+    let random_seed_plans = decode_random_seed_plans(&mut reader)?;
     let unsupported_count = reader.count("unsupported")?;
     let mut unsupported = Vec::with_capacity(unsupported_count);
     for _ in 0..unsupported_count {
@@ -1464,6 +1575,9 @@ fn decode_inner(bytes: &[u8]) -> Result<(TacProgram, OperandWidth), EncodeError>
             functions,
             categories,
             plans,
+            selection_plans,
+            broadcast_assignment_plans,
+            random_seed_plans,
             unsupported,
         },
         width,
@@ -1831,6 +1945,37 @@ fn decode_op(
             }
             TacOp::IndexGet { source, path }
         }
+        31 => {
+            let source = VReg::new(index(reader, "VReg")?);
+            let plan = index(reader, "SelectionPlanId")?;
+            let step = reader
+                .optional_index(width, "selector.step")?
+                .map(VReg::new);
+            let count = reader.count("selector.random_counts")?;
+            let mut random_counts = Vec::with_capacity(count);
+            for _ in 0..count {
+                random_counts.push(
+                    reader
+                        .optional_index(width, "selector.random_count")?
+                        .map(VReg::new),
+                );
+            }
+            TacOp::SelectorApply {
+                source,
+                plan,
+                step,
+                random_counts,
+            }
+        }
+        32 => TacOp::BroadcastAssign {
+            root: VReg::new(index(reader, "VReg")?),
+            value: VReg::new(index(reader, "VReg")?),
+            plan: index(reader, "BroadcastPlanId")?,
+        },
+        33 => TacOp::RandomSeed {
+            value: VReg::new(index(reader, "VReg")?),
+            plan: index(reader, "RandomSeedPlanId")?,
+        },
         16 => TacOp::Jump(BlockId::new(index(reader, "BlockId")?)),
         17 => TacOp::BranchIf {
             condition: VReg::new(index(reader, "VReg")?),
@@ -1989,6 +2134,54 @@ fn decode_plans(reader: &mut Reader<'_>) -> Result<Vec<super::lower::TacReleaseP
             actions,
             transferred,
         });
+    }
+    Ok(plans)
+}
+
+/// 还原类型阶段选择计划表。
+fn decode_selection_plans(
+    reader: &mut Reader<'_>,
+) -> Result<Vec<xiao_ir::IrSelectionPlan>, EncodeError> {
+    let count = reader.count("selection_plans")?;
+    let mut plans = Vec::with_capacity(count);
+    for _ in 0..count {
+        let json = reader.string("selection_plan")?;
+        let plan = serde_json::from_str(&json).map_err(|error| {
+            EncodeError::InvalidFormat(format!("选择计划反序列化失败：{error}"))
+        })?;
+        plans.push(plan);
+    }
+    Ok(plans)
+}
+
+/// 还原事务性广播计划表。
+fn decode_broadcast_plans(
+    reader: &mut Reader<'_>,
+) -> Result<Vec<xiao_ir::IrBroadcastAssignmentPlan>, EncodeError> {
+    let count = reader.count("broadcast_assignment_plans")?;
+    let mut plans = Vec::with_capacity(count);
+    for _ in 0..count {
+        let json = reader.string("broadcast_assignment_plan")?;
+        let plan = serde_json::from_str(&json).map_err(|error| {
+            EncodeError::InvalidFormat(format!("广播计划反序列化失败：{error}"))
+        })?;
+        plans.push(plan);
+    }
+    Ok(plans)
+}
+
+/// 还原随机种子计划表。
+fn decode_random_seed_plans(
+    reader: &mut Reader<'_>,
+) -> Result<Vec<xiao_ir::IrRandomSeedPlan>, EncodeError> {
+    let count = reader.count("random_seed_plans")?;
+    let mut plans = Vec::with_capacity(count);
+    for _ in 0..count {
+        let json = reader.string("random_seed_plan")?;
+        let plan = serde_json::from_str(&json).map_err(|error| {
+            EncodeError::InvalidFormat(format!("随机种子计划反序列化失败：{error}"))
+        })?;
+        plans.push(plan);
     }
     Ok(plans)
 }
@@ -2207,11 +2400,11 @@ fn validate_decoded(program: &TacProgram, width: OperandWidth) -> Result<(), Enc
     validate_input(program, width)
 }
 
-/// `TacOp` 到稳定 opcode 的映射，0–30 连续。
+/// `TacOp` 到稳定 opcode 的映射，0–33 连续。
 ///
 /// 这张表是格式的核心契约：**只能追加，不得重排**。调换两个编号会让旧字节被读
 /// 成另一种指令，而这种错误在往返测试里是看不出来的（编码器和解码器用的是同一
-/// 张表）。`all_ops_program` 里断言了 `ops` 的顺序恰好产生 `0..31`，新增变体插在
+/// 张表）。`all_ops_program` 里断言了 `ops` 的顺序恰好产生 `0..34`，新增变体插在
 /// 中间会立刻失败。
 fn opcode(op: &TacOp) -> u8 {
     match op {
@@ -2246,6 +2439,9 @@ fn opcode(op: &TacOp) -> u8 {
         TacOp::RunReleasePlan { .. } => 28,
         TacOp::EnterScope(_) => 29,
         TacOp::ExitScope { .. } => 30,
+        TacOp::SelectorApply { .. } => 31,
+        TacOp::BroadcastAssign { .. } => 32,
+        TacOp::RandomSeed { .. } => 33,
     }
 }
 
@@ -3033,6 +3229,7 @@ fn check_index_width(value: u64, field: &str, width: OperandWidth) -> Result<(),
 mod tests {
     use super::*;
     use crate::research::lower::{TacReleaseAction, TacReleasePlan};
+    use xiao_ir::{IrSelectionItemPlan, IrSelectionPlan};
 
     /// 造一条测试指令：`dst` 与源码区间都由序号推出。
     ///
@@ -3105,14 +3302,14 @@ mod tests {
         ]
     }
 
-    /// 构造一份用满全部 31 个 opcode 的 TAC 程序。
+    /// 构造一份用满全部 34 个 opcode 的 TAC 程序。
     ///
     /// 刻意把每个「难往返」的角落都填上：常量池里有大整数、位模式特殊的浮点
     /// （NaN 载荷、`-0.0`）、超长精度文本和带 `\0` 的中文串；签名表覆盖五种
     /// [`ParamKind`] 与 `*args`/`**kwargs` 槽位；函数带类别表、值→寄存器映射、
-    /// handler 与释放计划；块从 31 条指令骤降到 1 条，条数不整齐。
+    /// handler、释放计划、选择计划与广播/种子计划；块从 34 条指令骤降到 1 条，条数不整齐。
     ///
-    /// 函数内的两条断言是**格式守卫**：`ops` 的顺序必须恰好产生 `0..31` 的
+    /// 函数内的两条断言是**格式守卫**：`ops` 的顺序必须恰好产生 `0..34` 的
     /// opcode。新增变体若插在表中间而不是追加到末尾，这里会先失败，而不是等到
     /// 某天有人拿旧字节解码才发现指令错位。
     fn all_ops_program() -> TacProgram {
@@ -3131,6 +3328,23 @@ mod tests {
         let call_signature =
             signatures.intern(CallSig::plain(vec![IrType::Dynamic], IrType::Dynamic));
         let types = all_types();
+        let selection_plan = IrSelectionPlan {
+            span: IrSpan::new(1, 2),
+            source_type: IrType::Dynamic,
+            result_type: IrType::Dynamic,
+            items: vec![IrSelectionItemPlan::All],
+            selected_paths: Vec::new(),
+            target_types: Vec::new(),
+            step: None,
+            requires_runtime_check: false,
+            with_replacement: false,
+            has_duplicates: false,
+        };
+        let random_seed_plan = xiao_ir::IrRandomSeedPlan {
+            span: IrSpan::new(3, 4),
+            value: Some(7),
+            dynamic: false,
+        };
         signatures.intern(CallSig {
             parameter_names: (0..types.len()).map(|index| format!("p{index}")).collect(),
             parameter_kinds: (0..types.len())
@@ -3255,10 +3469,25 @@ mod tests {
                 scope: 7,
                 exit: "return".to_owned(),
             },
+            TacOp::SelectorApply {
+                source: VReg::new(18),
+                plan: 0,
+                step: None,
+                random_counts: vec![None],
+            },
+            TacOp::BroadcastAssign {
+                root: VReg::new(19),
+                value: VReg::new(20),
+                plan: 0,
+            },
+            TacOp::RandomSeed {
+                value: VReg::new(21),
+                plan: 0,
+            },
         ];
-        assert_eq!(ops.len(), 31);
+        assert_eq!(ops.len(), 34);
         let opcodes = ops.iter().map(opcode).collect::<Vec<_>>();
-        assert_eq!(opcodes, (0_u8..31).collect::<Vec<_>>());
+        assert_eq!(opcodes, (0_u8..34).collect::<Vec<_>>());
 
         let mut categories = CategoryMap::new();
         for (index, class) in [
@@ -3362,6 +3591,16 @@ mod tests {
                 }],
                 transferred: vec![45],
             }],
+            selection_plans: vec![selection_plan],
+            broadcast_assignment_plans: vec![xiao_ir::IrBroadcastAssignmentPlan {
+                span: IrSpan::new(5, 6),
+                root_name: Some("values".to_owned()),
+                target_paths: Vec::new(),
+                value_type: IrType::Dynamic,
+                dynamic: false,
+                transactional: true,
+            }],
+            random_seed_plans: vec![random_seed_plan],
             unsupported: Vec::new(),
         }
     }
@@ -3415,7 +3654,7 @@ mod tests {
             validate_encoded(&encoded).expect("编码应可自校验");
             let decoded = decode(&encoded.bytes).expect("完整 TAC 应可解码");
             assert_program_eq(&program, &decoded);
-            assert_eq!(encoded.functions[0].blocks[0].instruction_pcs.len(), 31);
+            assert_eq!(encoded.functions[0].blocks[0].instruction_pcs.len(), 34);
             assert_eq!(encoded.span_at(0, 0, 7), Some(IrSpan::new(121, 123)));
             let pc = encoded.functions[0].blocks[0].instruction_pcs[7];
             assert_eq!(encoded.span_at_pc(0, pc), Some(IrSpan::new(121, 123)));

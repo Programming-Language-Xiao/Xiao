@@ -18,6 +18,9 @@ pub fn jump_targets(op: &TacOp) -> Vec<BlockId> {
         } => vec![*if_true, *if_false],
         TacOp::Check { on_failure, .. } => vec![*on_failure],
         TacOp::CallSub { sub } => vec![*sub],
+        TacOp::SelectorApply { .. } => Vec::new(),
+        TacOp::BroadcastAssign { .. } => Vec::new(),
+        TacOp::RandomSeed { .. } => Vec::new(),
         _ => Vec::new(),
     }
 }

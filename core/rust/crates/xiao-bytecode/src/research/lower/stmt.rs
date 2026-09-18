@@ -339,6 +339,22 @@ fn lower_extended_assignment(
     value: &IrExpression,
     span: IrSpan,
 ) {
+    if let IrExpressionKind::Selector { source, .. } = &target.kind {
+        let Some(plan) = lowerer.broadcast_assignment_plan_id(target.span) else {
+            lowerer.record_unsupported(format!(
+                "选择器广播缺少类型计划（{}..{}）",
+                target.span.start, target.span.end
+            ));
+            return;
+        };
+        let root = lowerer.lower_expression(source);
+        let value = lowerer.lower_expression(value);
+        lowerer.emit(TacInstr::new(
+            TacOp::BroadcastAssign { root, value, plan },
+            span,
+        ));
+        return;
+    }
     let IrExpressionKind::Name { name } = &target.kind else {
         lowerer.record_unsupported(format!(
             "复合赋值的左值形态尚未降低（{}..{}）",

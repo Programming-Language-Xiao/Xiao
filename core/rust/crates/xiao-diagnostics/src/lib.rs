@@ -41,6 +41,14 @@ pub const CONTAINER_INDEX_CODE: &str = "X06-RUNTIME-014";
 pub const CONTAINER_KEY_CODE: &str = "X06-RUNTIME-015";
 /// 运行时判定元素不可哈希，不能进入集合或字典键位置。
 pub const CONTAINER_HASHABILITY_CODE: &str = "X06-RUNTIME-016";
+/// 选择器运行时边界或路径失败。
+pub const SELECTOR_BOUNDS_CODE: &str = "X06-RUNTIME-017";
+/// 选择器步长非法（包括零步长）。
+pub const SELECTOR_STEP_CODE: &str = "X06-RUNTIME-018";
+/// 随机选择数量非法或超出候选范围。
+pub const RANDOM_COUNT_CODE: &str = "X06-RUNTIME-019";
+/// 随机种子非法。
+pub const RANDOM_SEED_CODE: &str = "X06-RUNTIME-020";
 
 /// 虚拟机不变量损坏。
 pub const FATAL_RUNTIME_INVARIANT_CODE: &str = "X07-FATAL-001";
@@ -717,6 +725,50 @@ impl XiaoError {
             "该类型的值不能作为集合元素或字典键",
         )
         .with_param("type_name", DiagnosticParam::Text(type_name.into()))
+    }
+
+    /// 创建选择器边界或路径错误。
+    #[must_use]
+    pub fn selector_bounds(message: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Type,
+            SELECTOR_BOUNDS_CODE,
+            "runtime.selector_bounds",
+            message,
+        )
+    }
+
+    /// 创建选择器步长错误。
+    #[must_use]
+    pub fn selector_step(message: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Type,
+            SELECTOR_STEP_CODE,
+            "runtime.selector_step",
+            message,
+        )
+    }
+
+    /// 创建随机选择数量错误。
+    #[must_use]
+    pub fn random_count(message: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Type,
+            RANDOM_COUNT_CODE,
+            "runtime.random_count",
+            message,
+        )
+    }
+
+    /// 创建随机种子错误。
+    #[must_use]
+    pub fn random_seed(message: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Type,
+            RANDOM_SEED_CODE,
+            "runtime.random_seed",
+            message,
+        )
     }
 
     /// 创建首版跨线程错误。

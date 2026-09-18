@@ -114,6 +114,17 @@ impl ArrayHandle {
             })
     }
 
+    /// 以可变闭包访问全部元素。
+    pub fn with_elements_mut<R>(
+        &self,
+        callback: impl FnOnce(&mut Vec<RuntimeValue>) -> R,
+    ) -> RuntimeResult<R> {
+        self.inner
+            .with_payload_mut(RuntimeTypeTag::Array, |object: &mut ArrayObject| {
+                callback(&mut object.elements)
+            })
+    }
+
     /// 创建一个不拥有数组生命周期的弱句柄。
     #[must_use]
     pub fn downgrade(&self) -> WeakHandle {

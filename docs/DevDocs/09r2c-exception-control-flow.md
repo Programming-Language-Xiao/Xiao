@@ -20,7 +20,7 @@
 
 ### 当前进度
 
-09R2 已交付两批，全部在 `main` 上：
+09R2C 接手时已交付两批，全部在 `main` 上；随后 R2C、R2D 与 R2B 均已完成：
 
 | 批次 | 内容 | 提交 |
 | --- | --- | --- |
@@ -35,14 +35,16 @@
 **当前状态（09R2C 已完成）**：运行时错误对象、权威错误类型表、`MakeError`/`Raise`/`Check`、
 handler 表、`finally` 子程序、当前帧路由和逐帧未匹配展开均已接通。共享向量覆盖正常清理、
 匹配/未匹配传播、重抛、嵌套、递归循环、字符串释放和 Fatal 隔离；未消费的 RuntimeCheck
-会进入 `TacProgram.unsupported`，不会静默丢失。
+会进入 `TacProgram.unsupported`，不会静默丢失。R2B 后续复用这条路由执行选择器错误，
+新增 `selector_bounds`、`selector_step`、`random_count`、`random_seed` 四类检查，错误码为
+`X06-RUNTIME-017..020`。
 
 ### 本阶段交付与不负责事项
 
 **交付**：运行时错误对象、错误类型名单一来源、handler 表与 catch 路由、`finally` 子程序、
 `raise` 构造式与重抛、`Check` 降低、语义向量与文档同步。
 
-**不负责**：R2b 选择器全量（多选/区间/步长/随机）、分类型寄存器机型与混合式机型、指令编码器、
+**本批不负责（后续已交付）**：R2b 选择器全量（多选/区间/步长/随机）、分类型寄存器机型与混合式机型、指令编码器、
 `for` 与表声明、`Result` 泛型与 `?` 传播（07 文档明确后置）、正式 `.xiaoc` 格式。
 
 ## 开发规定与硬约束
@@ -212,8 +214,9 @@ Check { kind: String, value: VReg, on_failure: BlockId }   // 现有 Check 需�
 `IrRuntimeCheck` 只在 IR 里排队，全仓没有任何地方构造 `TacOp::Check`。
 
 本批只实现**能真正判定**的类别：`boolean_condition`、`arithmetic`、`numeric_range`、
-`dynamic_conversion`。其余（`selector_bounds`/`selector_step`/`random_count`/`random_seed`/
-`set_*`/`iterable`）依赖 R2b 或 `for`，继续记入 `unsupported`，**不要假装实现**。
+`dynamic_conversion`。接手时其余（`selector_bounds`/`selector_step`/`random_count`/`random_seed`/
+`set_*`/`iterable`）依赖 R2b 或 `for`，继续记入 `unsupported`；R2B 已启用前四类，集合和
+`iterable` 仍保持拒绝。
 
 失败走 R1 冻结的 `DynamicCheckFailure` 退出边。
 
@@ -368,8 +371,9 @@ finally
 - `RuntimeValue::Error` 保留错误身份，显式覆盖相等、哈希可用性和 `type_name()` 三处兜底。
 - `TacFunction.handlers` 保存受保护块区间、catch 类型、绑定寄存器和 finally 子程序；VM 只在
   当前帧查表，未匹配后逐帧清理，Fatal 绕过查表、finally、释放和 `suppressed`。
-- `Check` 当前**降低** `boolean_condition`、`arithmetic`、`numeric_range`、`dynamic_conversion`
-  四类；其余（选择器、集合、随机、`iterable`）进入 `unsupported`。解释器额外认得
+- `Check` 在 R2C 基线**降低** `boolean_condition`、`arithmetic`、`numeric_range`、`dynamic_conversion`
+  四类；R2B 已追加并执行 `selector_bounds`、`selector_step`、`random_count`、`random_seed`，
+  对应 `X06-RUNTIME-017..020`；集合和 `iterable` 仍进入 `unsupported`。解释器额外认得
   `string_boolean`，但降低器不会发出它——**「可解释的类别」与「已启用的类别」是两个不同
   的问题**，前者是能力、后者是范围，不要把它们合并成一份清单。`dynamic_conversion` 的窄语义是只允许
   `RuntimeValue::Error` 通过，失败使用 `TYPE_MISMATCH_CODE`。
@@ -378,7 +382,8 @@ finally
 
 ## 当前验证
 
-定向验证包括 `xiao-bytecode` 的 TAC 降低测试、`xiao-vm` 的栈式异常回归和共享错误向量；提交前
-完整门禁已通过：Rust workspace 测试、Clippy、格式、Rustdoc、`bun run check`、
-`bun run check:coverage`、`bun test` 与 `git diff --check`。R2b 选择器全量、`for`/表声明、
-分类型机型、编码器、`Result` 泛型与正式 `.xiaoc` 格式仍不属于本批次。
+定向验证包括 `xiao-bytecode` 的 TAC 降低测试、`xiao-vm` 的栈式异常回归和共享错误向量；当前
+R2B 已把共享向量扩展到 31 条、栈式回归扩展到 53 条，并由三种载体复用。提交前完整门禁已
+通过：Rust workspace 测试、Clippy、格式、Rustdoc、`bun run check`、`bun run check:coverage`、
+`bun test` 与 `git diff --check`。`for`/表声明、集合/迭代器运行时、`Result` 泛型与正式
+`.xiaoc` 格式仍不属于已交付范围。

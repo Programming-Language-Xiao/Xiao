@@ -15,10 +15,12 @@ path = "src/lib.rs"
 
 [dependencies]
 xiao-bytecode = { path = "../xiao-bytecode" }
+xiao-ir = { path = "../xiao-ir" }
 xiao-diagnostics = { path = "../xiao-diagnostics" }
 xiao-lifetime = { path = "../xiao-lifetime" }
 xiao-runtime = { path = "../xiao-runtime" }
 xiao-types = { path = "../xiao-types" }
+xiao-syntax = { path = "../xiao-syntax" }
 
 [dev-dependencies]
 xiao-ir = { path = "../xiao-ir" }

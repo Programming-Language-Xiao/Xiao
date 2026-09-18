@@ -3,9 +3,10 @@
 > 本阶段落实“绝对不使用追踪式 GC”的要求，并确保解释执行和原生执行拥有相同的释放语义。
 
 当前进度：06-A（静态生命周期闭环）和 06-B/R0-B（Runtime 对象与表生命周期）已完成；
-数组、元组、集合、字典和选择器的真实 Runtime 仍未开始。实现与交接细节见
-[06A](06a-lifetime-static-closure.md) 和 [06B](06b-runtime-objects-and-tables.md)；本文继续
-作为整个 06 阶段的总规格，不得把后置容器执行能力提前写成当前可用功能。
+生产容器执行仍由 09 阶段接入，09R2 研究 VM 已有限度执行有序容器选择、随机抽样和广播。
+实现与交接细节见 [06A](06a-lifetime-static-closure.md)、[06B](06b-runtime-objects-and-tables.md)
+和 [09R2B](09r2b-selector-execution.md)；本文继续作为整个 06 阶段的总规格，不得把研究 VM
+能力误写成正式生产命令。
 
 ## 一级工程目标：建立确定性生命周期
 
