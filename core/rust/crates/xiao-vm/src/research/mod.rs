@@ -26,6 +26,10 @@ pub mod sink;
 pub use carrier::{Carrier, CarrierContext, CarrierMetrics, empty_register_error};
 /// 重导出调用帧类型。
 pub use frame::Frame;
+/// 重导出混合式窗口/求值栈载体。
+pub use machine::hybrid::{
+    HYBRID_WINDOW_CAPACITY, HybridCarrier, HybridLocation, WindowStackCarrier,
+};
 /// 重导出分类型寄存器载体与物理位置。
 pub use machine::register::{RegisterCarrier, RegisterLocation, TypedRegisterCarrier};
 /// 重导出栈式载体。
