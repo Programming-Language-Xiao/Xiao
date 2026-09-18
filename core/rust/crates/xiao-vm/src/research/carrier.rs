@@ -4,15 +4,52 @@
 //! 差异全部落在本接口的实现里。接口刻意保持极小：新增方法等于给所有机型加
 //! 负担，也会把机型细节泄回语义核。
 
-use xiao_bytecode::research::VReg;
-use xiao_runtime::{RuntimeResult, RuntimeValue};
+use xiao_bytecode::research::{CategoryMap, FuncId, TacFunction, TacProgram, VReg};
+use xiao_runtime::{RuntimeError, RuntimeResult, RuntimeValue};
+
+/// 创建一帧载体所需的机型中立上下文。
+///
+/// 上下文只借用 TAC 语义产物，不包含任何栈、窗口或物理寄存器字段。载体在
+/// 构造期据此完成自己的布局，语义核不参与布局决策。
+#[derive(Clone, Copy, Debug)]
+pub struct CarrierContext<'a> {
+    /// 整份 TAC 产物。
+    pub program: &'a TacProgram,
+    /// 当前函数编号。
+    pub function_id: FuncId,
+    /// 当前函数。
+    pub function: &'a TacFunction,
+    /// 当前函数局部编号空间内的类别表。
+    pub categories: &'a CategoryMap,
+    /// 新帧进入后的调用深度。
+    pub call_depth: usize,
+}
+
+/// 一个载体向语义核上报的机型中立指标。
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct CarrierMetrics {
+    /// 载体占用的历史峰值。
+    pub peak_occupancy: usize,
+    /// 写入独立帧槽的次数。
+    pub spill_count: u64,
+    /// 载体建立的可验证映射点数量。
+    pub stack_map_entries: usize,
+    /// 跨调用保存值的次数。
+    pub call_save_count: u64,
+}
+
+/// 构造三种载体共用的空寄存器错误。
+#[must_use]
+pub fn empty_register_error(register: VReg) -> RuntimeError {
+    RuntimeError::invalid_handle(format!("寄存器 {} 为空", register.get()))
+}
 
 /// 存放虚拟寄存器值的载体。
 pub trait Carrier: Sized {
-    /// 创建一个空的帧载体。
+    /// 根据当前函数上下文创建一个空的帧载体。
     ///
-    /// 语义核按此建立新帧，因此它不需要知道机型如何分配槽位或寄存器。
-    fn empty() -> Self;
+    /// 语义核只提供机型中立信息，不参与槽位、窗口或寄存器布局。
+    fn empty(context: CarrierContext<'_>) -> Self;
 
     /// 只读读取一个寄存器；寄存器为空时报错。
     fn read(&self, register: VReg) -> RuntimeResult<RuntimeValue>;
@@ -26,9 +63,12 @@ pub trait Carrier: Sized {
     /// 可见：移动用 `take`，只读参与运算用 `read`。
     fn take(&mut self, register: VReg) -> Option<RuntimeValue>;
 
-    /// 返回当前已占用的载体槽位数量。
-    fn depth(&self) -> usize;
+    /// 在本帧调用另一个函数前保存需要跨调用存活的值。
+    fn begin_call(&mut self) {}
 
-    /// 返回载体槽位的历史峰值。
-    fn peak(&self) -> usize;
+    /// 在被调函数返回后恢复本帧保存的值。
+    fn end_call(&mut self) {}
+
+    /// 返回机型中立指标快照。
+    fn metrics(&self) -> CarrierMetrics;
 }

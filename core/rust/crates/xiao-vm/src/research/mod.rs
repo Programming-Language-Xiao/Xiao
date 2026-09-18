@@ -22,8 +22,8 @@ pub mod semantics;
 /// 调试事件接收器。
 pub mod sink;
 
-/// 重导出载体接口。
-pub use carrier::Carrier;
+/// 重导出载体接口、构造上下文与指标。
+pub use carrier::{Carrier, CarrierContext, CarrierMetrics, empty_register_error};
 /// 重导出调用帧类型。
 pub use frame::Frame;
 /// 重导出栈式载体。

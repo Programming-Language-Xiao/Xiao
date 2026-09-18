@@ -24,8 +24,11 @@ pub struct Frame<C: Carrier> {
     pub pending_exits: Vec<String>,
     /// 当前正在执行的 finally 子程序入口栈，用于错误路由定位来源。
     pub active_subroutines: Vec<BlockId>,
-    /// 最近一个从子程序冒出的错误来源块。
-    pub last_sub_fault: Option<BlockId>,
+    /// 尚待外层路由消费的子程序故障来源栈。
+    ///
+    /// 每层 `run_subroutine` 只登记自己的入口；嵌套子程序的来源由内层路由
+    /// 先消费，因而不会被外层入口覆盖。
+    pub subroutine_faults: Vec<BlockId>,
     /// 最近命中且仍在执行体内的 catch 上下文。
     ///
     /// 元组保存 `(try 作用域, catch 入口块)`。try 作用域在进入 catch 前
@@ -52,7 +55,7 @@ impl<C: Carrier> Frame<C> {
             return_to,
             pending_exits: Vec::new(),
             active_subroutines: Vec::new(),
-            last_sub_fault: None,
+            subroutine_faults: Vec::new(),
             active_catches: Vec::new(),
             completed_finally: Vec::new(),
             pending_check_kind: None,

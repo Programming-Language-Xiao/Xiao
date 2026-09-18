@@ -4,9 +4,9 @@
 //! 这与寄存器机型的差别只在槽位如何分配，不在语义。
 
 use xiao_bytecode::research::VReg;
-use xiao_runtime::{RuntimeError, RuntimeResult, RuntimeValue};
+use xiao_runtime::{RuntimeResult, RuntimeValue};
 
-use crate::research::carrier::Carrier;
+use crate::research::carrier::{Carrier, CarrierContext, CarrierMetrics, empty_register_error};
 
 /// 以一个槽位数组承载全部虚拟寄存器。
 #[derive(Debug, Default)]
@@ -39,8 +39,8 @@ impl StackCarrier {
 }
 
 impl Carrier for StackCarrier {
-    /// 创建一个空载体。
-    fn empty() -> Self {
+    /// 创建一个空载体；栈式布局无需读取函数上下文。
+    fn empty(_context: CarrierContext<'_>) -> Self {
         Self::new()
     }
 
@@ -48,7 +48,7 @@ impl Carrier for StackCarrier {
     fn read(&self, register: VReg) -> RuntimeResult<RuntimeValue> {
         self.slot(register)
             .cloned()
-            .ok_or_else(|| RuntimeError::invalid_handle(format!("槽位 {} 为空", register.get())))
+            .ok_or_else(|| empty_register_error(register))
     }
 
     /// 写入槽位并更新峰值。
@@ -66,13 +66,11 @@ impl Carrier for StackCarrier {
         self.slots.get_mut(register.get() as usize)?.take()
     }
 
-    /// 返回数组长度，表示该帧的槽位上限。
-    fn depth(&self) -> usize {
-        self.slots.len()
-    }
-
-    /// 返回槽位占用峰值。
-    fn peak(&self) -> usize {
-        self.peak
+    /// 返回栈式载体的指标快照。
+    fn metrics(&self) -> CarrierMetrics {
+        CarrierMetrics {
+            peak_occupancy: self.peak,
+            ..CarrierMetrics::default()
+        }
     }
 }

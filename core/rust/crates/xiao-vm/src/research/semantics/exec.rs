@@ -15,7 +15,7 @@ use xiao_diagnostics::{
 };
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue};
 
-use crate::research::carrier::Carrier;
+use crate::research::carrier::{Carrier, CarrierContext};
 use crate::research::frame::Frame;
 use crate::research::ops;
 use crate::research::run::{RunResult, VmMetrics, VmOptions};
@@ -160,9 +160,16 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             return Err(Fault::Fatal(fatal));
         }
         self.metrics.max_call_depth = self.metrics.max_call_depth.max(self.frames.len() + 1);
-        let mut frame = Frame::new(target, function.name.clone(), C::empty(), return_to);
-        bind_arguments(function, program, &mut frame, arguments);
         let depth = self.frames.len() + 1;
+        let carrier = C::empty(CarrierContext {
+            program,
+            function_id: target,
+            function,
+            categories: &function.categories,
+            call_depth: depth,
+        });
+        let mut frame = Frame::new(target, function.name.clone(), carrier, return_to);
+        bind_arguments(function, program, &mut frame, arguments);
         self.frames.push(frame);
         self.sink.record(VmEvent::FunctionEntered {
             function: function.name.clone(),
@@ -183,7 +190,10 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         };
 
         if let Some(frame) = self.frames.pop() {
-            self.metrics.max_stack_depth = self.metrics.max_stack_depth.max(frame.carrier.peak());
+            self.metrics.max_stack_depth = self
+                .metrics
+                .max_stack_depth
+                .max(frame.carrier.metrics().peak_occupancy);
         }
         self.sink.record(VmEvent::FunctionReturned {
             function: function.name.clone(),
@@ -370,7 +380,14 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 callee, arguments, ..
             } => {
                 let bound = self.bind(arguments)?;
-                let value = self.execute(*callee, &bound, instruction.dst)?;
+                if let Some(frame) = self.frames.last_mut() {
+                    frame.carrier.begin_call();
+                }
+                let value = self.execute(*callee, &bound, instruction.dst);
+                if let Some(frame) = self.frames.last_mut() {
+                    frame.carrier.end_call();
+                }
+                let value = value?;
                 if let Some(register) = instruction.dst {
                     self.write(register, value.unwrap_or(RuntimeValue::None));
                 }
@@ -548,7 +565,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         if let Some(frame) = self.frames.last_mut() {
             frame.pending_exits.push(pending_exit.to_owned());
             frame.active_subroutines.push(sub);
-            frame.last_sub_fault = None;
         }
         let result = (|| {
             let mut block = sub;
@@ -617,7 +633,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         })();
         if let Some(frame) = self.frames.last_mut() {
             if result.is_err() {
-                frame.last_sub_fault = Some(sub);
+                frame.subroutine_faults.push(sub);
             }
             if let Ok(flow) = &result {
                 if let Some(pending) = frame.pending_exits.last_mut() {
@@ -668,7 +684,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             active_catches,
             active_subroutines,
             mut completed,
-            failed_sub,
+            failed_subroutines,
         ) = {
             let Some(frame) = self.frames.last_mut() else {
                 return Err(Fault::Error(error));
@@ -679,17 +695,20 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 frame.active_catches.clone(),
                 frame.active_subroutines.clone(),
                 frame.completed_finally.clone(),
-                frame.last_sub_fault.take(),
+                std::mem::take(&mut frame.subroutine_faults),
             )
         };
-        let failed_scope = failed_sub.and_then(|sub| {
-            function
-                .handlers
-                .iter()
-                .find(|handler| handler.handler == sub && handler.exit == "finally")
-                .map(|handler| handler.scope)
-        });
-        if let Some(sub) = failed_sub {
+        let failed_scopes = failed_subroutines
+            .iter()
+            .filter_map(|sub| {
+                function
+                    .handlers
+                    .iter()
+                    .find(|handler| handler.handler == *sub && handler.exit == "finally")
+                    .map(|handler| handler.scope)
+            })
+            .collect::<Vec<_>>();
+        for sub in failed_subroutines {
             // 失败的 finally 已经离开 active_subroutines，仍要把它标成完成，
             // 防止同一个故障在调用点再次触发它。
             for handler in function
@@ -725,7 +744,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     && handler.catch_type.is_some()
                     && (scope_active(handler.scope) || catch_context_active(handler.scope))
                     && !active_subroutines.contains(&handler.handler)
-                    && failed_scope != Some(handler.scope)
+                    && !failed_scopes.contains(&handler.scope)
             })
             .filter_map(|(index, handler)| {
                 let name = handler.catch_type.as_deref()?;
@@ -757,7 +776,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     || !contains(handler)
                     || active_subroutines.contains(&handler.handler)
                     || completed.contains(&(handler.scope, handler.handler))
-                    || failed_sub == Some(handler.handler)
                 {
                     return false;
                 }
