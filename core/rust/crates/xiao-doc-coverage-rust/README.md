@@ -10,4 +10,4 @@ A0.3 建立原生 Rust AST 扫描；A0.4 由 Bun/TypeScript 覆盖率编排器�
 
 ## 依赖边界
 
-只允许依赖 Rust AST 和 JSON 序列化库；不得被任何 Xiao 语义 crate 反向依赖。公共 API 使用 Rustdoc，协议版本当前为 1；协议变更需同步更新 TypeScript 适配器、测试和 UseDocs。
+只允许依赖 Rust AST 和 JSON 序列化库；不得被任何 Xiao 语义 crate 反向依赖。公共 API 使用 Rustdoc，协议版本当前为 2；请求中的 `outline` 开关缺省为 `false`，响应始终保留 `outlines` 数组。协议变更需同步更新 TypeScript 适配器、测试和 UseDocs。

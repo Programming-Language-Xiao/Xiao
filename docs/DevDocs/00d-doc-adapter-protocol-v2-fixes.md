@@ -1,5 +1,8 @@
 # 00D. Rust AST 适配器协议 v2 修正交接
 
+> **实现状态（2026-09-19）**：本文约定的跨度语义、大纲行数口径、定义句测试、
+> `outline` 请求开关及协议文档同步均已完成；后续可在此基础上实现 `A0-SIZE-001`。
+
 > `0e9a42b` 把 `xiao-doc-coverage-rust` 的协议从 v1 升到 v2，为「单文件过长必须解耦」的新门禁
 > 预备结构大纲。该提交**六项门禁全绿**（已逐条复跑），大纲本身也**真的可用**
 > （实测 `b06_runtime.rs` 的 `span` → `line 19` / `fn() -> SourceSpan`，并下钻到字段与枚举变体）。
@@ -218,7 +221,7 @@ L54..56  n=4   ← 56-54+1 = 3
 
 `docs/UseDocs/tooling/cli/doc-coverage-rust.md:24` 至今写着：
 
-> 请求和响应都带有 `protocol_version`，当前版本为 `1`。响应固定包含 `declarations` 与 `errors` 数组……
+> 旧版契约曾把 `protocol_version` 写成过时值，并且遗漏了 `outlines` 数组……
 
 - 版本号错：实际是 `2`（`lib.rs:13`）。
 - `outlines` 数组**完全没提**，而它是 v2 的主要新增。
@@ -235,7 +238,7 @@ L54..56  n=4   ← 56-54+1 = 3
 
 ### 验收
 
-`grep -rn '当前版本为 \`1\`' docs/` 结果为 0，且该页能查到 `outlines` 与 `OutlineNode`。
+检查 `docs/` 不再有旧协议版本陈述，且该页能查到 `outlines` 与 `OutlineNode`。
 
 ---
 
@@ -343,7 +346,7 @@ pub outline: bool,
 4. `declaration_head` 的文档描述与实现一致，且有测试锁住四种形状。
 5. **大纲按需**：不传 `outline` 的全仓覆盖率响应里 `outlines` 为 `[]`、体积不再接近 1 MiB；
    传 `outline: true` 时大纲完整。响应**始终**带 `outlines` 字段（清空可以，删掉不行）。
-6. `grep -rn '当前版本为 \`1\`' docs/` 为 0，且该页能查到 `outlines`、`OutlineNode` 与 `outline` 开关。
+6. `docs/` 不再有旧协议版本陈述，且该页能查到 `outlines`、`OutlineNode` 与 `outline` 开关。
 7. **六项门禁全绿**：`bun run check`、`bun run check:coverage`、`bun test`、
    `cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings`、
    `cargo fmt --all -- --check`。

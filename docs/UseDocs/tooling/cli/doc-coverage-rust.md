@@ -21,7 +21,31 @@ related:
 
 ## 协议边界
 
-请求和响应都带有 `protocol_version`，当前版本为 `1`。响应固定包含 `declarations` 与 `errors` 数组；源文件语法错误会通过结构化错误返回，编排器不会退回正则扫描。
+请求和响应都带有 `protocol_version`，当前版本为 `2`。请求形如
+`{"protocol_version":2,"files":["..."],"outline":false}`，其中 `outline` 是可选布尔开关，
+省略时按 `false` 处理。响应始终包含 `declarations`、`outlines` 与 `errors` 三个数组；即使
+没有请求大纲，`outlines` 也必须存在并为空数组。源文件语法错误会通过结构化错误返回，
+编排器不会退回正则扫描。
+
+`declarations` 是覆盖率判定的唯一输入。每条声明含 `file`、`line`、`kind`、`name`、
+`is_public`、`has_doc` 和 `end_line`；`line` 指向声明自身起始行，`end_line` 指向整个项的
+结束行。`outlines` 是独立的结构通道，每个 `FileOutline` 含 `file` 与 `nodes`，节点
+`OutlineNode` 含以下字段：
+
+| 字段 | 含义 |
+| --- | --- |
+| `kind` / `name` | 节点类别与名称 |
+| `line` / `end_line` | 声明自身起始行与整个项结束行 |
+| `lines` | 从 `line` 到 `end_line` 的行数，满足 `line + lines - 1 == end_line` |
+| `signature` / `source_line` | 去名后的定义句与声明起始行源码 |
+| `children` | 字段、变体、方法或嵌套项的递归节点 |
+
+大纲只在调用方确实需要判断文件结构时生成。调用约定如下：
+
+| 调用方 | `outline` | 原因 |
+| --- | --- | --- |
+| 覆盖率检查 `checker.ts` | 不传（默认 `false`） | 只读取 `declarations`，避免正常检查承担大纲体积 |
+| 单文件过长门禁发现超标后 | `true` | 需要渲染该文件的结构大纲以指导解耦 |
 
 适配器由覆盖率命令按仓库 Rust workspace 构建和调用。它只处理传入的 Rust 文件，不执行 Xiao 源码，也不负责生成用户程序。
 

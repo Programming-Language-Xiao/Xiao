@@ -229,7 +229,7 @@ xiao-repo-check all        # 按固定顺序执行全部检查
 
 适配器输出统一的中间记录：`language`、`file`、`line`、`kind`、`name`、`isPublic`、`hasDoc` 和 `parser`。解析失败必须终止该文件检查，不得退回正则扫描，以免把复杂语法误报为已覆盖。
 
-Rust 适配器使用版本为 `1` 的 JSON 行协议。请求形如 `{"protocol_version":1,"files":["..."]}`；响应固定形如 `{"protocol_version":1,"declarations":[...],"errors":[...]}`。TypeScript 编排器在消费前校验版本号和数组/记录字段，缺失或不兼容时报告 `A0-PROTOCOL-001`；Rust 源文件解析错误仍报告 `A0-PARSER-001`。协议版本与覆盖率报告的 `schemaVersion` 独立递增。
+Rust 适配器使用版本为 `2` 的 JSON 行协议。请求形如 `{"protocol_version":2,"files":["..."],"outline":false}`，其中 `outline` 可省略且缺省为 `false`；响应固定包含 `protocol_version`、`declarations`、`outlines` 和 `errors`，未请求大纲时 `outlines` 为空数组。覆盖率判定只读取 `declarations`，`outlines` 是供结构门禁按需读取的独立通道。TypeScript 编排器在消费前校验版本号和数组/记录字段，缺失或不兼容时报告 `A0-PROTOCOL-001`；Rust 源文件解析错误仍报告 `A0-PARSER-001`。协议版本与覆盖率报告的 `schemaVersion` 独立递增。
 
 统一 tree-sitter 不作为 A0 实现路径；它对 Rust 属性/可见性、宏边界和 TypeScript 导出重载需要额外语义补全。若未来增加其他解析器，必须新增版本化适配器并在报告中标记，不能静默混用。
 
