@@ -3,6 +3,27 @@
 //! 集合的元素唯一、无序。本模块用**有序 `Vec` 加线性去重**而不是哈希表：
 //! 去重结果必须确定，哈希序会污染语义向量里的释放序列，而当前集合规模很小。
 //! 元素必须是可哈希值，判定见 [`super::is_hashable`]。
+//!
+//! # 成员判定与去重
+//!
+//! 一律走 [`RuntimeValue`] 的 `PartialEq` + 有序 `Vec`，**不得为实现集合代数而引入
+//! 哈希索引**。哈希索引会把元素顺序变成实现细节，而顺序是共享向量的可观察期望值；
+//! 上面「哈希序会污染释放序列」正是同一条理由。
+//!
+//! # 运算结果顺序
+//!
+//! 代数运算的结果顺序**只依赖操作数，不依赖哈希、不依赖排序**：
+//!
+//! | 运算 | 顺序 |
+//! | --- | --- |
+//! | 并集 | 左侧原序，随后右侧中不在左侧者按右侧原序 |
+//! | 交集 / 差集 | 左侧原序过滤 |
+//! | 对称差 | 左侧独有按左侧序，随后右侧独有按右侧序 |
+//! | 六种比较 | 与顺序无关 |
+//!
+//! `RuntimeValue` 没有全序，引入排序等于新增一个待冻结契约，因此这里不排序。
+//! **后续若把集合接进 `for` 之类的可观察路径，不得为了让输出好看而改这里的顺序**
+//! ——改了要连带改共享向量，那是掩盖而不是修复。
 
 use std::any::Any;
 
@@ -118,6 +139,99 @@ impl SetHandle {
             .with_payload(RuntimeTypeTag::Set, |object: &SetObject| {
                 callback(&object.elements)
             })
+    }
+
+    /// 取出元素快照，供两个句柄之间的运算使用。
+    ///
+    /// 快照而不是嵌套借用：两个句柄的载荷借用关系在编译期无从表达，
+    /// 而集合规模按模块文档约定很小，克隆的代价可忽略。
+    fn elements(&self) -> RuntimeResult<Vec<RuntimeValue>> {
+        self.with_elements(<[RuntimeValue]>::to_vec)
+    }
+
+    /// 返回两个集合的并集。
+    ///
+    /// 顺序见模块文档的运算结果顺序：左侧原序，随后右侧中不在左侧者按右侧原序。
+    pub fn union(&self, other: &Self) -> RuntimeResult<Self> {
+        let left = self.elements()?;
+        let right = other.elements()?;
+        let mut merged = left.clone();
+        merged.extend(right.iter().filter(|value| !left.contains(value)).cloned());
+        Self::new(merged)
+    }
+
+    /// 返回两个集合的交集，按左侧原序。
+    pub fn intersection(&self, other: &Self) -> RuntimeResult<Self> {
+        let left = self.elements()?;
+        let right = other.elements()?;
+        Self::new(
+            left.iter()
+                .filter(|value| right.contains(value))
+                .cloned()
+                .collect(),
+        )
+    }
+
+    /// 返回差集（左侧独有），按左侧原序。
+    pub fn difference(&self, other: &Self) -> RuntimeResult<Self> {
+        let left = self.elements()?;
+        let right = other.elements()?;
+        Self::new(
+            left.iter()
+                .filter(|value| !right.contains(value))
+                .cloned()
+                .collect(),
+        )
+    }
+
+    /// 返回对称差，按左侧独有、随后右侧独有的顺序。
+    pub fn symmetric_difference(&self, other: &Self) -> RuntimeResult<Self> {
+        let left = self.elements()?;
+        let right = other.elements()?;
+        let mut merged: Vec<RuntimeValue> = left
+            .iter()
+            .filter(|value| !right.contains(value))
+            .cloned()
+            .collect();
+        merged.extend(right.iter().filter(|value| !left.contains(value)).cloned());
+        Self::new(merged)
+    }
+
+    /// 判断两个集合是否相等。
+    ///
+    /// 相等是**无序双向包含**，既不是句柄身份，也不是元素序列逐位相等：
+    /// 集合的物理表示是有序 `Vec`，逐位比较会把 `{1, 2}` 与 `{2, 1}` 判成不等。
+    pub fn equals(&self, other: &Self) -> RuntimeResult<bool> {
+        let left = self.elements()?;
+        let right = other.elements()?;
+        Ok(left.len() == right.len() && left.iter().all(|value| right.contains(value)))
+    }
+
+    /// 判断 `self` 是否为 `other` 的子集（允许两者相等）。
+    pub fn is_subset(&self, other: &Self) -> RuntimeResult<bool> {
+        let left = self.elements()?;
+        let right = other.elements()?;
+        Ok(left.iter().all(|value| right.contains(value)))
+    }
+
+    /// 判断 `self` 是否为 `other` 的真子集。
+    ///
+    /// 真子集要求包含**且**不相等；与 [`Self::is_subset`] 共用同一个判断会让
+    /// `{1, 2} < {1, 2}` 判成真。先比长度即可短路，也顺带保证了不相等。
+    pub fn is_proper_subset(&self, other: &Self) -> RuntimeResult<bool> {
+        let left = self.elements()?;
+        let right = other.elements()?;
+        Ok(left.len() < right.len() && left.iter().all(|value| right.contains(value)))
+    }
+
+    /// 判断 `self` 是否为 `other` 的超集（允许两者相等）。
+    pub fn is_superset(&self, other: &Self) -> RuntimeResult<bool> {
+        other.is_subset(self)
+    }
+
+    /// 判断 `self` 是否为 `other` 的真超集。
+    pub fn is_proper_superset(&self, other: &Self) -> RuntimeResult<bool> {
+        other.is_proper_subset(self)
     }
 
     /// 创建一个不拥有集合生命周期的弱句柄。

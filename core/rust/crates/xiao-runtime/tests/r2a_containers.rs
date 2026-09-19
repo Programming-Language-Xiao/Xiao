@@ -144,3 +144,142 @@ fn scalar_hash_matches_equality() {
     let nan = RuntimeValue::Float(f64::NAN);
     assert_eq!(nan, nan.clone(), "位模式相等使 NaN 自反");
 }
+
+/// 由整数构造集合，供代数与比较用例复用。
+fn int_set(values: &[i64]) -> SetHandle {
+    SetHandle::new(
+        values
+            .iter()
+            .map(|value| RuntimeValue::Int(*value))
+            .collect(),
+    )
+    .expect("集合应分配")
+}
+
+/// 取出集合元素并转成整数序列，供顺序断言使用。
+fn int_elements(set: &SetHandle) -> Vec<i64> {
+    set.with_elements(|elements| {
+        elements
+            .iter()
+            .map(|value| match value {
+                RuntimeValue::Int(value) => *value,
+                other => panic!("应为整数元素，实际为 {other:?}"),
+            })
+            .collect()
+    })
+    .expect("应可读取元素")
+}
+
+#[test]
+/// 四种集合代数按操作数顺序产出结果，不依赖哈希、不依赖排序。
+fn set_algebra_follows_operand_order() {
+    let left = int_set(&[1, 2, 3]);
+    let right = int_set(&[3, 4, 2]);
+
+    assert_eq!(
+        int_elements(&left.union(&right).expect("并集")),
+        vec![1, 2, 3, 4],
+        "并集是左侧原序，随后右侧中不在左侧者按右侧原序"
+    );
+    assert_eq!(
+        int_elements(&left.intersection(&right).expect("交集")),
+        vec![2, 3],
+        "交集按左侧原序过滤"
+    );
+    assert_eq!(
+        int_elements(&left.difference(&right).expect("差集")),
+        vec![1],
+        "差集按左侧原序过滤"
+    );
+    assert_eq!(
+        int_elements(&left.symmetric_difference(&right).expect("对称差")),
+        vec![1, 4],
+        "对称差先左侧独有，再右侧独有"
+    );
+}
+
+#[test]
+/// 代数结果沿用构造期去重：重复元素不得在结果里重现。
+fn set_algebra_results_stay_deduplicated() {
+    let left = int_set(&[1, 1, 2]);
+    let right = int_set(&[2, 2, 3]);
+    let union = left.union(&right).expect("并集");
+    assert_eq!(union.len(), 3);
+    assert_eq!(int_elements(&union), vec![1, 2, 3]);
+}
+
+#[test]
+/// 集合相等是**无序双向包含**，既不是句柄身份，也不是元素序列逐位相等。
+///
+/// 反例的锚点：物理表示是有序 `Vec`，逐位比较会把 `{1, 2}` 与 `{2, 1}` 判成不等；
+/// 两者是不同对象，身份比较也会判成不等。两条错法都会让这里失败。
+fn set_equality_is_unordered_mutual_inclusion() {
+    let left = int_set(&[1, 2]);
+    let same = int_set(&[2, 1]);
+    assert!(!left.same_object(&same), "前提：两者是不同对象");
+    assert!(left.equals(&same).expect("相等判定"));
+    assert!(!left.equals(&int_set(&[1, 2, 3])).expect("相等判定"));
+    assert!(!left.equals(&int_set(&[1])).expect("相等判定"));
+}
+
+#[test]
+/// 子集与真子集必须分开：真子集要求包含**且**不相等。
+///
+/// 两者若共用同一个判断，`{1, 2} ⊂ {1, 2}` 会被判成真。
+fn set_subset_distinguishes_proper_from_equal() {
+    let small = int_set(&[1, 2]);
+    let same = int_set(&[2, 1]);
+    let big = int_set(&[1, 2, 3]);
+
+    assert!(small.is_subset(&big).expect("子集"));
+    assert!(small.is_proper_subset(&big).expect("真子集"));
+    assert!(small.is_subset(&same).expect("相等也是子集"));
+    assert!(!small.is_proper_subset(&same).expect("真子集"));
+    assert!(big.is_superset(&small).expect("超集"));
+    assert!(big.is_proper_superset(&small).expect("真超集"));
+    assert!(same.is_superset(&small).expect("相等也是超集"));
+    assert!(!same.is_proper_superset(&small).expect("真超集"));
+}
+
+#[test]
+/// 空集是任何集合的子集与真子集，但不是自己的真子集；方向不能反。
+fn set_empty_is_subset_of_everything_but_not_proper_of_itself() {
+    let empty = int_set(&[]);
+    let one = int_set(&[1]);
+
+    assert!(empty.is_subset(&one).expect("子集"));
+    assert!(empty.is_proper_subset(&one).expect("真子集"));
+    assert!(!one.is_subset(&empty).expect("子集"), "方向不得反");
+    assert!(empty.is_subset(&empty).expect("子集"));
+    assert!(!empty.is_proper_subset(&empty).expect("真子集"));
+
+    // 「空集」与「相减得到的空集」必须是同一种值。
+    let subtracted = one.difference(&one).expect("差集");
+    assert_eq!(subtracted.len(), 0);
+    assert!(empty.equals(&subtracted).expect("相等判定"));
+}
+
+#[test]
+/// 异构集合按判别式隔离：`1`、`true`、`1.0` 与 `Sint(1)` 是四个不同元素。
+fn heterogeneous_set_members_are_discriminated_by_variant() {
+    let mixed = SetHandle::new(vec![
+        RuntimeValue::Int(1),
+        RuntimeValue::Bool(true),
+        RuntimeValue::Float(1.0),
+        RuntimeValue::Sint(1),
+    ])
+    .expect("集合应分配");
+    assert_eq!(mixed.len(), 4, "判别式不同的值不得互相去重");
+
+    let ints = int_set(&[1]);
+    let bools = SetHandle::new(vec![RuntimeValue::Bool(true)]).expect("集合应分配");
+    assert!(
+        !ints.equals(&bools).expect("相等判定"),
+        "1 与 true 不是同一元素"
+    );
+    assert_eq!(
+        int_elements(&mixed.intersection(&ints).expect("交集")),
+        vec![1],
+        "交集只应命中 Int(1)"
+    );
+}
