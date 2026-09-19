@@ -67,8 +67,10 @@ cargo test --manifest-path core/rust/Cargo.toml
 ```
 
 `bun run check:layout` 与 `bun run check` 在发现超长 Rust 文件时会请求 Rust AST 大纲，因此需要
-Rust 工具链；可先运行 `cargo build --manifest-path core/rust/Cargo.toml -p xiao-doc-coverage-rust`，
-或设置 `XIAO_RUST_DOC_ADAPTER` 指向预编译二进制。当前这两个检查按设计为红：
+Rust 工具链；可先运行 `cargo build --manifest-path core/rust/Cargo.toml -p xiao-doc-coverage-rust`。
+**推荐再设置 `XIAO_RUST_DOC_ADAPTER` 指向该二进制**：适配器默认通过 `cargo run` 启动，而
+cargo 的进程创建本身就要约 10 秒（实测本机 `cargo --version` 即需 10.2 秒），直调已构建的
+二进制只要约 64 毫秒。当前这两个检查按设计为红：
 `core/rust/crates/xiao-bytecode/src/research/encode.rs`（3847 行）和
 `core/rust/crates/xiao-syntax/src/parser.rs`（3040 行）已被 `A0-SIZE-001` 列为后续拆分债务，
 不得用豁免掩盖。其余检查仍应正常通过。

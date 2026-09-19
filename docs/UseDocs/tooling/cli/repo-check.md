@@ -32,7 +32,9 @@ bun tools/repo-check/src/cli.ts all
 cargo build --manifest-path core/rust/Cargo.toml -p xiao-doc-coverage-rust
 ```
 
-也可以设置 `XIAO_RUST_DOC_ADAPTER` 指向已经构建的适配器二进制。适配器等待上限为 120 秒；
+也可以设置 `XIAO_RUST_DOC_ADAPTER` 指向已经构建的适配器二进制；**这是推荐做法**：适配器默认
+经 `cargo run` 启动，而 cargo 进程创建本身约需 10 秒（实测本机 `cargo --version` 即 10.2 秒），
+直调已构建二进制只需约 64 毫秒。适配器等待上限为 120 秒；
 并发 Cargo 构建持锁时，检查会以 `A0-PARSER-001` 失败而不是无限等待。`all` 按固定顺序执行
 workspace、目录与尺寸、DevDocs、UseDocs 和文档覆盖率检查，所以 `bun run check:layout` 与
 `bun run check` 都可能调用 Rust 工具链。需要脚本化时可添加 `--format json` 或

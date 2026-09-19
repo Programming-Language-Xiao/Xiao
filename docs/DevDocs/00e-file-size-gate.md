@@ -151,15 +151,29 @@ return lines.length;
 
 ## 五、只在确实超标时才取大纲
 
-- Rust：`scanRustFiles({ root, files: [绝对路径], outline: true })`。
+- Rust：`scanRustFiles({ root, files: [全部超标文件的绝对路径], outline: true })`。
 - TS：上面那个动态 import 出来的新函数。
+
+**必须一次传全部超标文件，不要逐文件调用。** Rust 适配器每次调用都要启动 cargo，
+逐文件调用会把启动开销乘以文件数。实测本机：
+
+| 调用 | 耗时 |
+| --- | --- |
+| `spawnSync("cargo", ["--version"])` | **10 167 ms** |
+| `spawnSync("node", ["--version"])` | 230 ms |
+| 直调已构建的适配器二进制 | **64 ms** |
+
+也就是说这 10 秒是 **cargo 进程创建本身的固定开销**（与 Xiao 无关），**每次 spawn 都付**，
+不是冷启动效应。实现提交 `1d546fc` 把逐文件改成批量后：`check:layout` 31.5 s → 21.1 s，
+`check` 44.3 s → 33.9 s。
 
 **两个已知后果，必须写进本文档、UseDocs 与根 README**：
 
-1. 门禁落地当天两个文件就超标，所以 `bun run check:layout` **每次都会 spawn cargo**
-   （冷启动 20–90 s，`bun test` 里 `repo-check.test.ts:34` 的 `60_000` 超时可能不够）。
+1. 门禁落地当天两个文件就超标，所以 `bun run check:layout` **每次都会 spawn cargo**（约 10 s）。
+   `bun test` 里仓库级用例的超时已相应放宽到 `120_000`。
 2. **`check` 从此依赖 Rust 工具链**。前置命令：`cargo build -p xiao-doc-coverage-rust`
-   或设 `XIAO_RUST_DOC_ADAPTER` 指向预编译二进制。
+   或设 `XIAO_RUST_DOC_ADAPTER` 指向预编译二进制——后者把每次调用从 10 s 压到 **64 ms**，
+   是开发期的推荐姿势，而不只是一个排错选项。
 
 ---
 
