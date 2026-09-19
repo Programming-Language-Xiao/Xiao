@@ -1,10 +1,10 @@
 /** 单文件物理行数门禁与结构大纲摘要。 */
 
 import { existsSync, readFileSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 
 import type { CheckResult, Diagnostic, RepositoryManifest } from "./types.ts";
-import { scanRustFiles } from "../../doc-coverage/src/rust-adapter.ts";
+import { RUST_ADAPTER_PROTOCOL_VERSION, scanRustFiles } from "../../doc-coverage/src/rust-adapter.ts";
 
 import { resolveRepoPath } from "./paths.ts";
 
@@ -31,8 +31,25 @@ export interface OutlineNodeLike {
   children: OutlineNodeLike[];
 }
 
-/** 可注入的大纲提供器；测试可借此隔离真实解析器和 Rust 工具链。 */
-export type OutlineProvider = (file: string) => OutlineNodeLike[] | Promise<OutlineNodeLike[]>;
+/**
+ * 一次大纲请求的结果。
+ *
+ * 两个表都用**调用方传入的原字符串**作键，调用方不必关心路径规范化。
+ */
+export interface OutlineBatch {
+  /** 成功取到的大纲。 */
+  nodes: Map<string, OutlineNodeLike[]>;
+  /** 取不到大纲的文件及原因；这些文件仍会照常报告行数。 */
+  failures: Map<string, string>;
+}
+
+/**
+ * 可注入的大纲提供器；测试可借此隔离真实解析器和 Rust 工具链。
+ *
+ * **必须一次接收全部超标文件**：Rust 适配器每次调用都要启动 cargo，逐文件调用会把
+ * 这份开销乘以文件数，而超标文件本来就只有少数几个。
+ */
+export type OutlineProvider = (files: string[]) => OutlineBatch | Promise<OutlineBatch>;
 
 /** 文件大小检查的可选配置。 */
 export interface SizeCheckOptions {
@@ -99,6 +116,8 @@ export async function checkFileSizes(
     if (lines > MAX_SOURCE_LINES) oversized.push({ file, absolute, lines });
   }
 
+  const outlines = await collectOutlines(root, oversized, options);
+
   for (const item of oversized) {
     const exemption = readExemption(item.absolute);
     const exempted = exemption.exists && exemption.missing.length === 0;
@@ -114,12 +133,9 @@ export async function checkFileSizes(
       });
     }
 
-    let nodes: OutlineNodeLike[] | undefined;
-    try {
-      nodes = await (options.outlineProvider ?? createOutlineProvider(root))(item.absolute);
-    } catch (error) {
-      diagnostics.push(outlineUnavailableDiagnostic(item.file, String(error)));
-    }
+    const nodes = outlines.nodes.get(item.absolute);
+    const failure = outlines.failures.get(item.absolute);
+    if (failure !== undefined) diagnostics.push(outlineUnavailableDiagnostic(item.file, failure));
     const details = nodes ? renderOutlineDetails(nodes) : undefined;
     const anchor = nodes ? largestTopLevelSummary(nodes) : undefined;
     diagnostics.push({
@@ -138,23 +154,85 @@ export async function checkFileSizes(
   return { passed: !diagnostics.some((item) => item.severity === "error"), diagnostics };
 }
 
-/** 创建按语言路由的真实大纲提供器。 */
+/**
+ * 一次性为全部超标文件取大纲。
+ *
+ * 整体失败（例如适配器起不来）时把同一个原因分摊到每个文件，逐文件诊断保持不变。
+ */
+async function collectOutlines(
+  root: string,
+  oversized: Array<{ file: string; absolute: string }>,
+  options: SizeCheckOptions,
+): Promise<OutlineBatch> {
+  if (oversized.length === 0) return { nodes: new Map(), failures: new Map() };
+  const provider = options.outlineProvider ?? createOutlineProvider(root);
+  try {
+    return await provider(oversized.map((item) => item.absolute));
+  } catch (error) {
+    const reason = String(error);
+    return { nodes: new Map(), failures: new Map(oversized.map((item) => [item.absolute, reason])) };
+  }
+}
+
+/**
+ * 创建按语言路由的真实大纲提供器。
+ *
+ * 所有 Rust 文件合并在**一次** `scanRustFiles` 调用里：该调用每次都启动 cargo，
+ * 逐文件调用会把启动开销乘以文件数。
+ */
 export function createOutlineProvider(root: string): OutlineProvider {
-  return async (file: string): Promise<OutlineNodeLike[]> => {
-    const lower = file.toLowerCase();
-    if (lower.endsWith(".rs")) {
-      const result = scanRustFiles({ root, files: [file], outline: true });
-      if (result.diagnostics.length > 0) throw new Error(result.diagnostics.map((item) => item.message).join("；"));
-      const outline = result.outlines[0];
-      if (!outline) throw new Error("Rust AST 适配器未返回所请求文件的大纲。");
-      return outline.nodes;
+  return async (files: string[]): Promise<OutlineBatch> => {
+    const nodes = new Map<string, OutlineNodeLike[]>();
+    const failures = new Map<string, string>();
+    // 规范化键 → 调用方传入的原字符串；结果一律用原字符串回填。
+    const requested = new Map(files.map((file) => [normalizeOutlineKey(file), file]));
+    const rustFiles = files.filter((file) => file.toLowerCase().endsWith(".rs"));
+    for (const file of files) {
+      if (!/\.(?:rs|ts|tsx)$/iu.test(file)) {
+        failures.set(file, `不支持为该扩展名生成结构大纲：${file}`);
+      }
     }
-    if (lower.endsWith(".ts") || lower.endsWith(".tsx")) {
+
+    if (rustFiles.length > 0) {
+      const result = scanRustFiles({ root, files: rustFiles, outline: true });
+      const adapterFailure = result.diagnostics.find((item) => item.path === "");
+      if (adapterFailure) {
+        for (const file of rustFiles) failures.set(file, adapterFailure.message);
+      } else {
+        for (const item of result.diagnostics) {
+          const file = requested.get(normalizeOutlineKey(resolve(root, item.path)));
+          if (file) failures.set(file, item.message);
+        }
+        for (const outline of result.outlines) {
+          const file = requested.get(normalizeOutlineKey(resolve(root, outline.file)));
+          if (file) nodes.set(file, outline.nodes);
+        }
+        for (const file of rustFiles) {
+          if (!nodes.has(file) && !failures.has(file)) {
+            failures.set(file, "Rust AST 适配器未返回所请求文件的大纲。");
+          }
+        }
+      }
+    }
+
+    const typeScriptFiles = files.filter((file) => /\.tsx?$/iu.test(file));
+    if (typeScriptFiles.length > 0) {
       const adapter = await import("../../doc-coverage/src/typescript-adapter.ts");
-      return adapter.outlineTypeScriptFile(file);
+      for (const file of typeScriptFiles) {
+        try {
+          nodes.set(file, adapter.outlineTypeScriptFile(file));
+        } catch (error) {
+          failures.set(file, String(error));
+        }
+      }
     }
-    throw new Error(`不支持为该扩展名生成结构大纲：${file}`);
+    return { nodes, failures };
   };
+}
+
+/** 生成跨平台一致的大纲结果键，用于把仓库相对路径还原到调用方传入的路径。 */
+function normalizeOutlineKey(pathValue: string): string {
+  return resolve(pathValue).replaceAll("\\", "/");
 }
 
 /** 校验旁置豁免说明的四个必需章节。 */
@@ -184,7 +262,7 @@ function readExemption(absolute: string): { exists: boolean; missing: string[] }
 
 /** 创建大纲不可用诊断；它不会改变尺寸规则的 error 级别。 */
 export function outlineUnavailableDiagnostic(file: string, reason: string): Diagnostic {
-  const request = JSON.stringify({ protocol_version: 2, files: [file], outline: true });
+  const request = JSON.stringify({ protocol_version: RUST_ADAPTER_PROTOCOL_VERSION, files: [file], outline: true });
   return {
     code: "A0-PARSER-001",
     severity: "error",

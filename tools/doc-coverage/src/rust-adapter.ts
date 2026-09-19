@@ -122,7 +122,9 @@ export function scanRustFiles(options: RustAdapterOptions): {
 /** 把进程错误转换为可操作的适配器失败原因。 */
 export function adapterFailureReason(response: ReturnType<typeof spawnSync>): string {
   const error = response.error as NodeJS.ErrnoException | undefined;
-  if (error?.code === "ETIMEDOUT") return "适配器 120 s 未返回，可能有并发的 cargo 构建持锁。";
+  if (error?.code === "ETIMEDOUT") {
+    return `适配器 ${RUST_ADAPTER_TIMEOUT_MS / 1000} s 未返回，可能有并发的 cargo 构建持锁。`;
+  }
   const stderr = typeof response.stderr === "string" ? response.stderr.trim() : response.stderr?.toString().trim();
   return error?.message ?? stderr ?? `退出码 ${response.status}`;
 }

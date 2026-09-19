@@ -2,7 +2,7 @@
 
 import { describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { checkLayout } from "../src/layout.ts";
@@ -108,7 +108,7 @@ describe("单文件行数门禁", () => {
       const result = await checkFileSizes(directory, {} as never, [file], {
         outlineProvider: () => {
           calls += 1;
-          return [];
+          return { nodes: new Map(), failures: new Map() };
         },
       });
       expect(calls).toBe(1);
@@ -194,12 +194,21 @@ describe("单文件行数门禁", () => {
     }
   });
 
-  test("超标诊断按仓库相对路径稳定排序", async () => {
+  test("超标诊断稳定排序，且多个超标文件共用一次大纲请求", async () => {
     const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-size-order-"));
     try {
       for (const file of ["a.ts", "b.ts"]) writeFileSync(join(directory, file), `${"x\n".repeat(MAX_SOURCE_LINES + 1)}`, "utf8");
-      const result = await checkFileSizes(directory, {} as never, ["b.ts", "a.ts"], { outlineProvider: () => [] });
+      const batches: string[][] = [];
+      const result = await checkFileSizes(directory, {} as never, ["b.ts", "a.ts"], {
+        outlineProvider: (files) => {
+          batches.push(files);
+          return { nodes: new Map(), failures: new Map() };
+        },
+      });
       expect(result.diagnostics.map((item) => item.path)).toEqual(["a.ts", "b.ts"]);
+      // Rust 适配器每次调用都要启动 cargo；逐文件请求会把启动开销乘以文件数。
+      expect(batches).toHaveLength(1);
+      expect(batches[0]?.map((item) => basename(item)).sort()).toEqual(["a.ts", "b.ts"]);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
