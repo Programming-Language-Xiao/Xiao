@@ -7,7 +7,9 @@
 > 但审核发现：**同批进入的 `Declaration.end_line` 是死字段**，`OutlineNode.lines` 与
 > `line`/`end_line` 三者口径互斥，另有成文契约未同步。本文记录**已核实的六条**，交给接手 Agent 修正。
 >
-> **本批只修这六条**，不改协议字段形状，不重写大纲遍历，不实现门禁本体。
+> **本批只修这六条**，不重写大纲遍历，不实现门禁本体。
+> 唯一一处协议改动是给**请求体加一个可选开关**（缺陷 6，用户已裁决取 B），
+> 响应形状与版本号都不动。
 
 ## Agent 交接上下文
 
@@ -24,10 +26,10 @@
 ### 本批交付与不负责
 
 **交付**：`Declaration.end_line` 的真实语义、`lines` 口径一致、`declaration_head` 的文档与实现对齐、
-协议契约文档同步。
+协议契约文档同步、**请求体的大纲开关**（缺陷 6，已裁决取 B）。
 
 **不负责**：单文件 2500 行的门禁本体（`A0-SIZE-001`）——**本批是它的前置**，见最后一节。
-不改协议字段形状，不重写大纲遍历，不动 `maxBuffer` 补丁。
+不重写大纲遍历，不动 `maxBuffer` 补丁，**不升协议版本号**（理由见缺陷 6）。
 
 ### 涉及文件
 
@@ -35,7 +37,7 @@
 | --- | --- |
 | `core/rust/crates/xiao-doc-coverage-rust/src/lib.rs` | 缺陷 1、3、4 的主战场 |
 | `docs/UseDocs/tooling/cli/doc-coverage-rust.md` | 缺陷 5 |
-| `tools/doc-coverage/src/{rust-adapter.ts,types.ts}` | 仅在字段语义变化波及校验/注释时跟进 |
+| `tools/doc-coverage/src/{rust-adapter.ts,types.ts}` | 透传缺陷 6 的 `outline` 开关；字段语义变化波及校验/注释时跟进 |
 | `tools/doc-coverage/README.md`、`tools/doc-coverage/src/README.md` | 缺陷 5 的顺带检查 |
 
 ---
@@ -237,7 +239,9 @@ L54..56  n=4   ← 56-54+1 = 3
 
 ---
 
-## 缺陷 6（设计）：大纲被绑死在覆盖率调用上，绿态也付全量代价
+## 缺陷 6（中）：大纲被绑死在覆盖率调用上，绿态也付全量代价
+
+> **用户已裁决：取 B——加请求开关。** 本节是可执行的实现要求，不是选项清单。
 
 ### 实测
 
@@ -253,14 +257,48 @@ declarations.push(...rust.declarations);
 **补丁本身是对的**（理由也写得对，保留），但它掩盖了代价而不是消除代价：
 每次覆盖率检查都背着整仓大纲，而原本的设想是**只在确实超标时才提取大纲**（正常绿态不 spawn cargo）。
 
-### 两个选项
+### 修法：请求体加 `outline` 开关，缺省不产出大纲
 
-- **A. 接受现状**：1.5 MB 可忍，不改协议。**用户未裁决时按 A 走**，不要自行加开关。
-  这时只需在 `doc-coverage-rust.md` 里写明「响应体积随文件数增长，调用方需自备足够的输出缓冲」。
-- **B. 加请求开关**：请求体加 `outline: bool`（缺省 `false`），覆盖率调用不请求大纲，
-  门禁只为超标文件请求。改动小，但**又是一次协议变更**，必须同批改 UseDoc 与两侧测试（同步面见硬性约束 1）。
+**请求加一个布尔字段，缺省 `false`**——不请求就不算，这才是消除代价而不是掩盖代价：
 
-**本批不要替用户做这个决定。** 若对 A / B 有疑问，先问，再动手。
+```rust
+/// 是否在响应中返回结构大纲。
+///
+/// 缺省为 `false`：大纲的体积远大于声明（实测整仓 1.56 MB），
+/// 只有需要判断文件结构时才值得付这个代价。
+#[serde(default)]
+pub outline: bool,
+```
+
+**三条硬要求：**
+
+1. **不升 `protocol_version`。**这是同一个协议的可选请求参数，**响应形状完全不变**：
+   `outlines` 数组**永远存在**，未请求时是 `[]`。`validateRustAdapterResponse`
+   （`rust-adapter.ts:126`）要求它必须是数组，所以**可以清空、不可以省掉**——
+   省掉字段会让校验直接失败。不升版本也就避免了又一次两侧版本联动。
+2. **字段名是 `outline`（布尔，单数），别和响应的 `outlines`（数组，复数）混**。
+   请求体里加的是开关，响应里仍是数组。
+3. **TS 侧 `scanRustFiles` 加同名可选参数**（如 `outline?: boolean`），透传进请求体；
+   现有的 4 条提前返回路径继续带 `outlines: []`（`rust-adapter.ts:34/51/69/84`），不受影响。
+
+**调用约定**（写进 UseDoc，也是门禁的实现依据）：
+
+| 调用方 | `outline` | 理由 |
+| --- | --- | --- |
+| `checker.ts` 的覆盖率检查（`checker.ts:49`） | **不传**（即 `false`） | 只读 `declarations`，不需要大纲 |
+| 门禁发现超标文件后取大纲 | `true` | 只为确实超标的文件请求 |
+
+**`maxBuffer: 256 * 1024 * 1024` 保留**：它是关掉开关也仍然需要安全带的地方
+（将来单文件请求大纲时体积依然可观），不要因为它不再被触发就删掉。
+
+### 验收
+
+- 全仓覆盖率调用（141 个 Rust 文件、不传 `outline`）的响应**不再接近 Node 默认 1 MiB**，
+  且其中 `outlines` 为 `[]`、`declarations` 与改动前逐条一致。
+- 传 `outline: true` 时，大纲内容与缺陷 1/3 修正后的结果一致。
+- 两侧各有一条测试：**不传时 `outlines` 为空数组而不是缺字段**（缺字段必须被
+  `validateRustAdapterResponse` 拒绝——那条校验保持不动，可作反向证据）。
+- `docs/UseDocs/tooling/cli/doc-coverage-rust.md` 里能查到 `outline` 的缺省值与上面这张调用约定表。
 
 ---
 
@@ -284,13 +322,14 @@ declarations.push(...rust.declarations);
 
 ## 提交切分
 
-按可独立验证的单元分两次，**每次提交后六项门禁全绿**：
+按可独立验证的单元分三次，**每次提交后六项门禁全绿**：
 
 1. **`lib.rs` 语义修正**（缺陷 1 + 3 + 4）：`push()` 双跨度、`lines` 口径统一、
-   `declaration_head` 文档与测试。**这是核心**，第 2 次是收尾。
-2. **协议契约同步**（缺陷 5）：`doc-coverage-rust.md` 与工具 README。
+   `declaration_head` 文档与测试。**这是核心**，后两次都是收尾。
+2. **大纲开关**（缺陷 6）：请求体加 `outline`、TS 侧透传、两侧测试。
+3. **协议契约同步**（缺陷 5 + 6 的 UseDoc 段落）：`doc-coverage-rust.md` 与工具 README。
 
-**若中途必须停**：第 1 次提交本身完整可验证。
+**若中途必须停**：第 1 次提交本身完整可验证；第 2 次之后调用方已经可以按需取大纲。
 
 ---
 
@@ -302,8 +341,10 @@ declarations.push(...rust.declarations);
 2. `b06_runtime.rs` 的 `span` 在**声明通道**报 `19..21`，与同文件**大纲通道**一致——两条通道不再打架。
 3. 每条大纲节点满足 `line + lines - 1 == end_line`。
 4. `declaration_head` 的文档描述与实现一致，且有测试锁住四种形状。
-5. `grep -rn '当前版本为 \`1\`' docs/` 为 0，且该页能查到 `outlines` 与 `OutlineNode`。
-6. **六项门禁全绿**：`bun run check`、`bun run check:coverage`、`bun test`、
+5. **大纲按需**：不传 `outline` 的全仓覆盖率响应里 `outlines` 为 `[]`、体积不再接近 1 MiB；
+   传 `outline: true` 时大纲完整。响应**始终**带 `outlines` 字段（清空可以，删掉不行）。
+6. `grep -rn '当前版本为 \`1\`' docs/` 为 0，且该页能查到 `outlines`、`OutlineNode` 与 `outline` 开关。
+7. **六项门禁全绿**：`bun run check`、`bun run check:coverage`、`bun test`、
    `cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings`、
    `cargo fmt --all -- --check`。
 
@@ -316,7 +357,8 @@ declarations.push(...rust.declarations);
 - **不要把 `impl` 块塞进 `declarations`**：覆盖率只读 `declarations` 是**有意的**，
   合并会平白改变一个已验证的 100% 数字。
 - **不要改写 `0e9a42b` 的历史**：正文里那三处陈述无法回填，只约束后续提交（缺陷 2）。
-- **不要动 `maxBuffer` 补丁**：256 MiB 的调整是对的，保留。
+- **不要动 `maxBuffer` 补丁**：256 MiB 的调整是对的，保留——即使加了开关，将来单文件请求大纲时它仍是安全带。
+- **不要升 `protocol_version`**：加的是可选请求参数、响应形状不变，升版本只会平白触发一次两侧联动。
 - **不要顺手实现 2500 行门禁**：本批是它的前置，见下。
 
 ---
