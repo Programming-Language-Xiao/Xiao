@@ -18,7 +18,9 @@ Rust 字节码唯一执行实现：解释循环、调用栈、局部槽、模块
 `semantics/` 只认识三地址指令与 `carrier.rs` 的窄接口，不认识「栈」这个词；
 `machine/stack.rs`、`machine/register.rs`、`machine/hybrid.rs` 分别实现三种载体；`ops.rs`
 统一提供算术、精确索引、高级选择、随机和事务性广播，`sink.rs` 记录结构化事件，`run.rs`
-提供结果与指标。三种载体复用同一选择器语义和 31 条共享向量。
+提供结果与指标；研究入口的 `RunOutcome.value` 只用于观察显式返回值，不是生产 API。
+三种载体复用同一选择器语义和 31 条共享向量，选择器结果值由
+`tests/r2_selector_values.rs` 的 7 条手工 TAC 夹具分别断言。
 
 该子模块属于 09R 特别研究工程，**不是稳定执行接口**：三种机型在 09R3 冻结前都不得被当作
 生产 VM 暴露，也不得让 TypeScript 层依赖其中任何一型的内部结构。

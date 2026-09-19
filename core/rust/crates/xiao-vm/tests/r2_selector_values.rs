@@ -20,6 +20,7 @@ use xiao_vm::research::{
     run_with_machine_seed,
 };
 
+/// 手工 TAC 指令共用的稳定源代码跨度。
 const SPAN: IrSpan = IrSpan::new(0, 1);
 
 /// 构造最小单函数选择器程序。

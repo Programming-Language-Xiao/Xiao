@@ -566,7 +566,7 @@ RuntimeCheck 已启用，对应 `X06-RUNTIME-017..020`。研究 VM 可执行降�
 [09R2b. 选择器全量执行交接文档](09r2b-selector-execution.md)；缺陷档案见
 [09R2D 文档](09r2d-machines-and-encoder.md)（R2b 文档刻意不复制第二份）。
 
-#### 09R2b1：选择器执行验证缺口修复（未开始）
+#### 09R2b1：选择器执行验证缺口修复（已完成，2026-09-19）
 
 审核发现 R2b 的**核心语义没有验证**：`RunResult::Success` 是无载荷变体（`exec.rs` 里
 `Ok(_) => RunResult::Success` 把值丢掉）、`Expectation` 没有结果值字段、新增测试的断言只有
@@ -575,7 +575,8 @@ RuntimeCheck 已启用，对应 `X06-RUNTIME-017..020`。研究 VM 可执行降�
 不解释指令，选择语义在共享的 `exec.rs` / `ops.rs` 里，算错是三台一起错。
 
 本子阶段补齐选择器结果值的可观察性与值断言，并清理两处一致性问题
-（提交信息缺前缀无正文、三处错误码字面量回退）。
+（提交信息缺前缀无正文、三处错误码字面量回退）。实现提交为 `2c3a67f` 和 `2ceaf4c`；
+新增 `xiao-vm/tests/r2_selector_values.rs`，不改既有 31 条共享 JSON 向量。
 
 09R2b1 退出条件：
 
@@ -584,6 +585,10 @@ RuntimeCheck 已启用，对应 `X06-RUNTIME-017..020`。研究 VM 可执行降�
 2. **撤掉对应实现必须让用例失败**——这是本批存在的唯一理由。
 3. 步长的「逐项应用」与「全局应用一次」有可区分的用例。
 4. 错误码字面量清零：`grep -rn 'Some("X0[0-9]-' core/rust/crates/ --include=*.rs` 为 0。
+
+上述退出条件已通过：新增 7 条手工 TAC 夹具在三种载体上断言返回值；步长逐项应用与字典列
+重复键元组各完成一次受控回退验证；`cargo test -p xiao-vm --no-fail-fast`、严格 Clippy
+和格式检查通过。
 
 完整任务、证据与修法见
 [09R2b1. 选择器执行验证缺口修复交接文档](09r2b1-selector-verification.md)。
