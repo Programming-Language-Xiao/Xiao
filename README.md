@@ -70,10 +70,10 @@ cargo test --manifest-path core/rust/Cargo.toml
 Rust 工具链；可先运行 `cargo build --manifest-path core/rust/Cargo.toml -p xiao-doc-coverage-rust`。
 **推荐再设置 `XIAO_RUST_DOC_ADAPTER` 指向该二进制**：适配器默认通过 `cargo run` 启动，而
 cargo 的进程创建本身就要约 10 秒（实测本机 `cargo --version` 即需 10.2 秒），直调已构建的
-二进制只要约 64 毫秒。当前这两个检查按设计为红：
-`core/rust/crates/xiao-bytecode/src/research/encode.rs`（3847 行）和
-`core/rust/crates/xiao-syntax/src/parser.rs`（3040 行）已被 `A0-SIZE-001` 列为后续拆分债务，
-不得用豁免掩盖。其余检查仍应正常通过。
+二进制只要约 64 毫秒。当前检查按设计仍有一个已知尺寸错误：
+`core/rust/crates/xiao-syntax/src/parser.rs`（3040 行）仍列为后续拆分债务；
+`xiao-bytecode` 的研究编码器已拆为 `research/encode.rs` 门面与 `research/encode/` 子模块，
+不得用豁免掩盖剩余债务。其余检查仍应正常通过。
 
 环境基线见 [`package.json`](./package.json)（Bun `1.4.x`）和 [`core/rust/Cargo.toml`](./core/rust/Cargo.toml)（Rust `1.85+`）。
 

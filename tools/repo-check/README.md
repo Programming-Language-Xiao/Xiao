@@ -15,8 +15,8 @@ A0 建立最小检查命令；A0.2 接入目录与 workspace 交叉核对；A0.4
 - 不得依赖 Rust crate 的内部内存布局、解析 Xiao 源码或根据本地化文本判断结果。
 
 `check:layout` 和 `check` 在超标 Rust 文件存在时依赖 Rust 工具链，也可通过
-`XIAO_RUST_DOC_ADAPTER` 使用预编译适配器。当前 `encode.rs` 与 `parser.rs` 是必须拆分的已知
-尺寸债务，因此两个命令有意为红；不得为它们增加旁置豁免说明。
+`XIAO_RUST_DOC_ADAPTER` 使用预编译适配器。当前 `parser.rs` 是必须拆分的已知尺寸债务，
+因此两个命令仍有意为红；`xiao-bytecode` 研究编码器已经拆分，不得为剩余债务增加旁置豁免说明。
 
 ## 交付规则
 

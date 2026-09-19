@@ -2,12 +2,20 @@
 
 > **本文记录的门禁已完成实施。** `A0-SIZE-001` 已进入 `00a` 的规则总表并在
 > `tools/repo-check` 中执行；其判定与接线提交为 `22fd395`，大纲渲染与适配器超时提交为
-> `5cccee0`。当前 `encode.rs`（3847 行）与 `parser.rs`（3040 行）仍会使 `check:layout` /
-> `check` 返回失败，这是留给后续拆分批次的显式债务，不得用豁免说明压低级别。
+> `5cccee0`。交接基线中的 `encode.rs` 已在本批完成拆分；当前仅 `parser.rs`（3040 行）
+> 仍会使 `check:layout` / `check` 返回失败，这是留给后续拆分批次的显式债务，不得用豁免
+> 说明压低级别。
 >
 > 目标：**单个代码文件超过 2500 物理行即报错**，**报错时附上该文件的树形结构大纲**
 > （结构 / 字段 / 函数 / 枚举 / 对象 / 成员的名字、所在行、定义句、嵌套层级、行数），
 > 让接手者一眼看出该拆哪里、拆出什么。
+
+### 当前拆分状态（2026-09-19）
+
+`core/rust/crates/xiao-bytecode/src/research/encode.rs` 已缩减为 474 行的公开门面，
+实现拆到 `research/encode/codec.rs`、`decoder.rs`、`encoder.rs`、`tags.rs`、`validate.rs`
+和 `tests.rs`；各文件均低于 2500 行。`bun run check:layout` 实测只剩
+`core/rust/crates/xiao-syntax/src/parser.rs` 的 `A0-SIZE-001`，本批不处理该文件。
 
 ## Agent 交接上下文
 
@@ -31,8 +39,8 @@
 
 **不负责**：
 
-- **不拆 `encode.rs`（3847 行）与 `parser.rs`（3040 行）**。门禁落地后 `bun run check` **为红**，
-  这是**有意的**，另开批次处理（见第十三节）。
+- **交接时不拆 `encode.rs`（3847 行）与 `parser.rs`（3040 行）**。门禁落地后
+  `bun run check` **为红**；本批已完成 `encode.rs` 的拆分，`parser.rs` 仍另开批次处理。
 - **不统一 `tools/doc-coverage/src/checker.ts:174` 那个私有的目录遍历副本**。它与
   `repo-check/src/paths.ts` 是同一段逻辑的两份实现、错误处理还不同，但改它会改变覆盖率工具
   扫描的文件集——**覆盖率是 100% 门禁依赖的已验证数字**，不许在本批动摇它。记为已知漂移。
@@ -43,10 +51,10 @@
 | 项 | 值 |
 | --- | --- |
 | 扫描范围 | 157 个文件、58205 行（`codeRoots` × `sourceExtensions`） |
-| 超标 | `core/rust/crates/xiao-bytecode/src/research/encode.rs` **3847 行** |
-| 超标 | `core/rust/crates/xiao-syntax/src/parser.rs` **3040 行** |
-| 第三名（余量参照） | `core/rust/crates/xiao-types/src/checker.rs` 2087 行 |
-| `encode.rs` 大纲规模 | 99 个顶层节点 / 196 个总节点 / 最深 3 层 |
+| 交接基线超标 | `core/rust/crates/xiao-bytecode/src/research/encode.rs` **3847 行**（已拆分） |
+| 当前超标 | `core/rust/crates/xiao-syntax/src/parser.rs` **3040 行** |
+| 交接基线第三名（余量参照） | `core/rust/crates/xiao-types/src/checker.rs` 2087 行 |
+| 交接基线 `encode.rs` 大纲规模 | 99 个顶层节点 / 196 个总节点 / 最深 3 层 |
 | `parser.rs` 大纲规模 | 16 / 102 / 2 |
 
 ---
@@ -92,7 +100,8 @@ return lines.length;
 孤立 `\r`、U+2028、U+2029 都是 JS/TS 的行终止符；末尾换行不该多算一行。
 
 **禁止**用 TypeScript 的 `getLineStarts()` 数 `.ts`、用别的办法数 `.rs`——两套口径会让阈值形同虚设。
-已知：两个超标文件都以 `\n` 结尾，本口径与 `wc -l` 一致（3847 / 3040），**验收时要对得上**。
+交接基线中的两个超标文件都以 `\n` 结尾，本口径与 `wc -l` 一致（3847 / 3040）；当前
+`parser.rs` 仍为 3040 行，**后续验收要对得上**。
 
 ---
 
@@ -169,7 +178,8 @@ return lines.length;
 
 **两个已知后果，必须写进本文档、UseDocs 与根 README**：
 
-1. 门禁落地当天两个文件就超标，所以 `bun run check:layout` **每次都会 spawn cargo**（约 10 s）。
+1. 门禁落地当天两个文件就超标，所以 `bun run check:layout` **每次都会 spawn cargo**（约 10 s）；
+   当前只剩 `parser.rs` 超标，适配器仍按需启动。
    `bun test` 里仓库级用例的超时已相应放宽到 `120_000`。
 2. **`check` 从此依赖 Rust 工具链**。前置命令：`cargo build -p xiao-doc-coverage-rust`
    或设 `XIAO_RUST_DOC_ADAPTER` 指向预编译二进制——后者把每次调用从 10 s 压到 **64 ms**，
@@ -340,7 +350,6 @@ checkFileSizes(root, manifest, files, options?: { outlineProvider?: OutlineProvi
 
 ```ts
 const KNOWN_OVERSIZED = [
-  "core/rust/crates/xiao-bytecode/src/research/encode.rs",
   "core/rust/crates/xiao-syntax/src/parser.rs",
 ];
 const sizeErrors = result.diagnostics.filter((item) => item.code === "A0-SIZE-001");
@@ -353,7 +362,7 @@ expect(sizeErrors.map((item) => item.path)).toEqual(KNOWN_OVERSIZED); // 相等�
 语义正好是「**这份名单只应缩短，不应增长**」。注释里写明这一点。
 **不要删掉这条用例**，也不要用宽泛过滤把它变成永远通过。
 
-`:36-41` 那条**要单独处理**：它断言 `result.result.passed === true`，只要两个文件
+`:36-41` 那条**要单独处理**：它断言 `result.result.passed === true`，只要 `parser.rs`
 还是 error 就必然 `false`——**这条救不回来**。它真正要验的是「从子目录执行时报告根目录」，
 所以保留 `expect(result.root).toBe(expectedRoot)`，把 `passed` 断言改成 `false`
 并注释「已知债未清」，或直接删掉它（它本来就不是这条测试的目的）。
@@ -380,7 +389,7 @@ expect(sizeErrors.map((item) => item.path)).toEqual(KNOWN_OVERSIZED); // 相等�
 ## 十三、提交切分
 
 按可独立验证的单元分三次，**每次提交后 `cargo test` / `clippy` / `fmt` / `bun test` 全绿**
-（`bun run check` 在本批结束时**预期为红**，见下）：
+（门禁实施批结束时 `bun run check` **预期为红**，见下）：
 
 1. **判定与接线**：`paths.ts` 返回 `files`、新建 `size.ts`（行数口径 + `A0-SIZE-001`）、
    `checkLoadedLayout`/`checkLayout` 改 async、注入式提供者、七类 fixture 用例、
@@ -400,7 +409,8 @@ expect(sizeErrors.map((item) => item.path)).toEqual(KNOWN_OVERSIZED); // 相等�
 
 1. **两个入口都生效**：`bun run check:layout` 与 `bun run check` 都报出 `A0-SIZE-001`，
    且**不重复**报同一条。
-2. **行数对得上 `wc -l`**：两个超标文件的诊断行数是 **3847** 与 **3040**。
+2. **行数对得上 `wc -l`**：交接基线两个超标文件的诊断行数是 **3847** 与 **3040**；
+   当前拆分后只应报告 **3040**。
 3. **大纲可达且为树**：对真实超标文件跑一次，确认 ① 顶层项与 `impl` 块都在；
    ② 字段、枚举变体、方法下钻到位；③ 每行都有名字与定义句；④ 节点行数满足
    `line + lines - 1 == end_line`。
@@ -411,9 +421,9 @@ expect(sizeErrors.map((item) => item.path)).toEqual(KNOWN_OVERSIZED); // 相等�
 7. **豁免四态**：无旁置 md（error）/ 齐全（warning、passed）/ 缺段（error）/ 空文件（error）。
 8. **恰好 2500 行不报**、2501 行报——边界两侧都有用例。
 9. **文档同步到位**：`00a` 规则总表有 `A0-SIZE-001`；UseDocs 能查到它。
-10. **明确记录**：`bun run check` **预期为红**（两个已知超标文件），
-    在**提交正文与文档里写清这是有意为之、由谁接手**。**不要**为了让门禁变绿而给这两个文件
-    写旁置 md——它们的预期是拆分。
+10. **明确记录**：`bun run check` **预期为红**（当前唯一已知超标文件为 `parser.rs`），
+    在**提交正文与文档里写清这是有意为之、由谁接手**。**不要**为了让门禁变绿而给剩余文件
+    写旁置 md——它的预期是拆分。
 
 ---
 
@@ -429,7 +439,7 @@ expect(sizeErrors.map((item) => item.path)).toEqual(KNOWN_OVERSIZED); // 相等�
 - **不要让门禁在没有 Rust 工具链时静默通过**：`A0-SIZE-001` 的 severity 恒为 `error`。
 - **不要给 `tools` 或任何目录加白名单**：`discoverSourceDirectories` 本就覆盖 `tools`，
   加白名单等于制造第二个豁免口。
-- **不要为了 `bun run check` 变绿去写旁置 md**：那两个文件的预期是拆分。
+- **不要为了 `bun run check` 变绿去写旁置 md**：`parser.rs` 的预期是拆分。
 
 ---
 

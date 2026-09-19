@@ -32,10 +32,7 @@ describe("README 规则", () => {
 describe("当前仓库布局", () => {
   test("A0 布局其它规则保持通过，尺寸债务名单精确可见", async () => {
     const result = await checkLayout(process.cwd());
-    const knownOversized = [
-      "core/rust/crates/xiao-bytecode/src/research/encode.rs",
-      "core/rust/crates/xiao-syntax/src/parser.rs",
-    ];
+    const knownOversized = ["core/rust/crates/xiao-syntax/src/parser.rs"];
     const sizeErrors = result.diagnostics.filter((item) => item.code === "A0-SIZE-001");
     const others = result.diagnostics.filter((item) => item.code !== "A0-SIZE-001");
     expect(others).toEqual([]);
@@ -48,7 +45,7 @@ describe("当前仓库布局", () => {
     const expectedRoot = findRepositoryRoot(process.cwd()) ?? process.cwd();
     const result = await runCommand({ command: "layout", root: join(expectedRoot, "tools"), format: "text" });
     expect(result.root).toBe(expectedRoot);
-    // 当前两个已知超长文件尚未拆分，子目录入口也必须报告尺寸债务。
+    // parser.rs 仍是已知超长文件，子目录入口也必须报告尺寸债务。
     expect(result.result.passed).toBe(false);
   }, 120_000);
 });
