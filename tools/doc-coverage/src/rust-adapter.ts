@@ -8,6 +8,9 @@ import type { CoverageDiagnostic, DeclarationRecord, RustAdapterResponse, RustFi
 /** 当前 TypeScript 编排器支持的 Rust AST 适配器协议版本。 */
 export const RUST_ADAPTER_PROTOCOL_VERSION = 2;
 
+/** Rust 适配器单次调用的最长等待时间，避免 cargo 锁使布局检查无限挂起。 */
+export const RUST_ADAPTER_TIMEOUT_MS = 120_000;
+
 /**
  * Rust AST 适配器调用选项。
  */
@@ -51,6 +54,7 @@ export function scanRustFiles(options: RustAdapterOptions): {
     // 单文件按需请求大纲时响应仍可能较大；保留宽松上限，避免 ENOBUFS
     // 被误报成「适配器启动失败」，掩盖真正的解析结果。
     maxBuffer: 256 * 1024 * 1024,
+    timeout: RUST_ADAPTER_TIMEOUT_MS,
   });
   if (response.error || response.status !== 0 && !response.stdout?.trim()) {
     return {
@@ -61,7 +65,7 @@ export function scanRustFiles(options: RustAdapterOptions): {
         severity: "error",
         path: "",
         subject: "rust-adapter",
-        message: `Rust AST 适配器启动失败：${response.error?.message ?? response.stderr?.trim() ?? `退出码 ${response.status}`}`,
+        message: `Rust AST 适配器启动失败：${adapterFailureReason(response)}`,
         hint: "确认 Rust 工具链可用，并先运行 cargo test -p xiao-doc-coverage-rust。",
         message_id: "a0.parser.rust_adapter_failed",
       }],
@@ -113,6 +117,14 @@ export function scanRustFiles(options: RustAdapterOptions): {
     nodes: item.nodes,
   }));
   return { declarations, outlines, diagnostics };
+}
+
+/** 把进程错误转换为可操作的适配器失败原因。 */
+export function adapterFailureReason(response: ReturnType<typeof spawnSync>): string {
+  const error = response.error as NodeJS.ErrnoException | undefined;
+  if (error?.code === "ETIMEDOUT") return "适配器 120 s 未返回，可能有并发的 cargo 构建持锁。";
+  const stderr = typeof response.stderr === "string" ? response.stderr.trim() : response.stderr?.toString().trim();
+  return error?.message ?? stderr ?? `退出码 ${response.status}`;
 }
 
 /**

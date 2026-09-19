@@ -21,7 +21,8 @@ export function renderText(result: CheckResult): string {
   return result.diagnostics.map((item) => {
     const location = item.line ? `${item.path}:${item.line}` : item.path || "仓库";
     const hint = item.hint ? `\n  修复：${item.hint}` : "";
-    return `[${item.severity}] ${item.code} ${location} ${item.subject}\n  ${item.message}${hint}`;
+    const details = item.details?.length ? `\n${item.details.map((line) => `  ${line}`).join("\n")}` : "";
+    return `[${item.severity}] ${item.code} ${location} ${item.subject}\n  ${item.message}${details}${hint}`;
   }).join("\n");
 }
 
@@ -59,6 +60,7 @@ export function renderSarif(result: CheckResult, checker = "repo-check"): Record
         level: item.severity === "error" ? "error" : item.severity === "warning" ? "warning" : "note",
         message: { text: item.message },
         locations: item.path ? [{ physicalLocation: { artifactLocation: { uri: item.path }, ...(item.line ? { region: { startLine: item.line } } : {}) } }] : [],
+        ...(item.details?.length ? { properties: { details: item.details } } : {}),
       })),
     }],
   };

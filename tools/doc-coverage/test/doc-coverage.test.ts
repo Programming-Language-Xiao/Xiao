@@ -7,8 +7,8 @@ import { join } from "node:path";
 
 import { checkCoverage, calculateSummary } from "../src/checker.ts";
 import { parseCoverageArguments } from "../src/cli.ts";
-import { scanTypeScriptFile } from "../src/typescript-adapter.ts";
-import { RUST_ADAPTER_PROTOCOL_VERSION, scanRustFiles, validateRustAdapterResponse } from "../src/rust-adapter.ts";
+import { outlineTypeScriptFile, scanTypeScriptFile } from "../src/typescript-adapter.ts";
+import { adapterFailureReason, RUST_ADAPTER_PROTOCOL_VERSION, RUST_ADAPTER_TIMEOUT_MS, scanRustFiles, validateRustAdapterResponse } from "../src/rust-adapter.ts";
 
 describe("覆盖率摘要", () => {
   test("空成员和公共门槛按百分比计算", () => {
@@ -56,6 +56,62 @@ describe("TypeScript AST", () => {
       rmSync(directory, { recursive: true, force: true });
     }
   });
+
+  test("大纲覆盖匿名默认导出、成员、枚举与多变量声明", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-doc-coverage-ts-outline-"));
+    const file = join(directory, "fixture.ts");
+    writeFileSync(file, [
+      "export default class {",
+      "  value = 1;",
+      "  constructor() {}",
+      "  method(): void {}",
+      "}",
+      "",
+      "interface Contract {",
+      "  run(): void;",
+      "  name: string;",
+      "  [key: string]: unknown;",
+      "}",
+      "",
+      "enum Phase {",
+      "  Ready,",
+      "  Done = 2,",
+      "}",
+      "",
+      "const first = 1, second = 2;",
+      "const options = { enabled: true, configure() {} };",
+      "export function id(id: string) {}",
+    ].join("\n"), "utf8");
+    try {
+      const nodes = outlineTypeScriptFile(file);
+      const defaultClass = nodes.find((item) => item.kind === "class" && item.name === "<default>");
+      expect(defaultClass?.children.map((item) => item.kind)).toEqual(["field", "method", "method"]);
+      expect(defaultClass?.children[1]?.name).toBe("<default>");
+      const contract = nodes.find((item) => item.kind === "interface" && item.name === "Contract");
+      expect(contract?.children.map((item) => item.kind)).toEqual(["method", "field", "field"]);
+      const phase = nodes.find((item) => item.kind === "enum" && item.name === "Phase");
+      expect(phase?.children.map((item) => item.name)).toEqual(["Ready", "Done"]);
+      expect(nodes.filter((item) => item.kind === "variable").map((item) => item.name)).toEqual(["first", "second", "options"]);
+      expect(nodes.find((item) => item.name === "options")?.children.map((item) => item.name)).toEqual(["enabled", "configure"]);
+      expect(nodes.find((item) => item.name === "id")?.signature).toBe("export function (id: string)");
+      expect(flattenOutline(nodes).every((item) => item.line + item.lines - 1 === item.end_line)).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("大纲使用 Compiler API 行起点，并对匿名默认函数尽力输出", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-doc-coverage-ts-outline-lines-"));
+    const file = join(directory, "fixture.ts");
+    writeFileSync(file, "export default function () {\r\n  return 1;\u2028}\r", "utf8");
+    try {
+      const node = outlineTypeScriptFile(file)[0];
+      expect(node).toMatchObject({ kind: "function", name: "<default>", line: 1, end_line: 3 });
+      expect(node?.source_line).toBe("export default function () {");
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("覆盖率负例", () => {
@@ -72,6 +128,13 @@ describe("覆盖率负例", () => {
 });
 
 describe("Rust AST 协议", () => {
+  test("超时原因可定位，且适配器等待上限固定", () => {
+    const error = Object.assign(new Error("timed out"), { code: "ETIMEDOUT" });
+    const reason = adapterFailureReason({ error, stderr: "", status: null } as unknown as Parameters<typeof adapterFailureReason>[0]);
+    expect(RUST_ADAPTER_TIMEOUT_MS).toBe(120_000);
+    expect(reason).toContain("120 s 未返回");
+  });
+
   test("拒绝不兼容的响应版本", () => {
     // 传的是**上一个**协议版本：必须被拒绝，而不是被当成当前版本继续校验字段。
     const diagnostic = validateRustAdapterResponse({ protocol_version: 1, declarations: [], outlines: [], errors: [] });
@@ -145,4 +208,9 @@ function createCoverageFixture(source: string): string {
   writeFileSync(join(directory, "docs", "module-registry.json"), JSON.stringify({ schemaVersion: 1, modules: [] }), "utf8");
   writeFileSync(join(directory, "package.json"), JSON.stringify({ workspaces: ["src"] }), "utf8");
   return directory;
+}
+
+/** 将大纲树压平，便于断言所有节点的行号跨度契约。 */
+function flattenOutline<T extends { children: T[] }>(nodes: T[]): T[] {
+  return nodes.flatMap((node) => [node, ...flattenOutline(node.children)]);
 }

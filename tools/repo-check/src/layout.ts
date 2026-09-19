@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { loadRepository } from "./manifest.ts";
+import { checkFileSizes } from "./size.ts";
 import {
   discoverSourceDirectories,
   isDirectory,
@@ -81,8 +82,7 @@ export async function checkLoadedLayout(repository: LoadedRepository): Promise<D
     checkDirectoryReadme(root, member, manifest.readmeFile, diagnostics);
   }
   checkSourceDirectoryRegistration(discovered.directories, repository.registry, diagnostics);
-  const size = await import("./size.ts");
-  const sizeResult = await size.checkFileSizes(root, manifest, discovered.files);
+  const sizeResult = await checkFileSizes(root, manifest, discovered.files);
   diagnostics.push(...sizeResult.diagnostics);
   return diagnostics;
 }

@@ -9,10 +9,12 @@ import { checkLayout } from "../src/layout.ts";
 import { parseArguments, runCommand } from "../src/cli.ts";
 import { checkMarkdownLinks, scanMarkdownDirectory } from "../src/docs.ts";
 import { findRepositoryRoot } from "../src/manifest.ts";
+import { renderJson, renderSarif, renderText } from "../src/report.ts";
 import { checkFileSizes, countPhysicalLines, exemptionMissingSections, MAX_SOURCE_LINES, renderOutlineDetails } from "../src/size.ts";
 import { inspectBunWorkspace } from "../src/workspace.ts";
 import { readmeMissingSections } from "../src/paths.ts";
 import type { MarkdownPage } from "../src/docs.ts";
+import type { CheckResult } from "../src/types.ts";
 
 describe("repo-check 参数", () => {
   test("默认执行 all 并支持 JSON 输出", () => {
@@ -35,20 +37,20 @@ describe("当前仓库布局", () => {
       "core/rust/crates/xiao-syntax/src/parser.rs",
     ];
     const sizeErrors = result.diagnostics.filter((item) => item.code === "A0-SIZE-001");
-    const others = result.diagnostics.filter((item) => item.code !== "A0-SIZE-001" && item.code !== "A0-PARSER-001");
+    const others = result.diagnostics.filter((item) => item.code !== "A0-SIZE-001");
     expect(others).toEqual([]);
     // 这份名单只能随着拆分缩短，不能用“包含”断言掩盖新增超长文件。
     expect(sizeErrors.map((item) => item.path)).toEqual(knownOversized);
     expect(result.passed).toBe(false);
-  }, 60_000);
+  }, 120_000);
 
   test("从子目录执行时报告根目录而不是子目录", async () => {
     const expectedRoot = findRepositoryRoot(process.cwd()) ?? process.cwd();
     const result = await runCommand({ command: "layout", root: join(expectedRoot, "tools"), format: "text" });
     expect(result.root).toBe(expectedRoot);
-      // 当前两个已知超长文件尚未拆分，子目录入口也必须报告尺寸债务。
-      expect(result.result.passed).toBe(false);
-  }, 60_000);
+    // 当前两个已知超长文件尚未拆分，子目录入口也必须报告尺寸债务。
+    expect(result.result.passed).toBe(false);
+  }, 120_000);
 });
 
 describe("workspace 漂移诊断", () => {
@@ -113,6 +115,8 @@ describe("单文件行数门禁", () => {
       expect(result.passed).toBe(false);
       expect(result.diagnostics).toHaveLength(1);
       expect(result.diagnostics[0]).toMatchObject({ code: "A0-SIZE-001", severity: "error", subject: "2501 行 / 上限 2500" });
+      expect(result.diagnostics[0]?.line).toBeUndefined();
+      expect(result.diagnostics[0]?.subject).not.toBe(result.diagnostics[0]?.path);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
@@ -170,12 +174,63 @@ describe("单文件行数门禁", () => {
     }));
     const details = renderOutlineDetails(nodes, 5);
     expect(details.filter((line) => line.startsWith("function top")).length).toBe(3);
+    expect(details.filter((line) => !line.startsWith("……")).length).toBe(5);
     expect(details.at(-1)).toContain("省略");
+  });
+
+  test("大纲不可用时仍保留尺寸 error 与可复现诊断", async () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-size-outline-error-"));
+    try {
+      const file = "fixture.ts";
+      writeFileSync(join(directory, file), `${"x\n".repeat(MAX_SOURCE_LINES + 1)}`, "utf8");
+      const result = await checkFileSizes(directory, {} as never, [file], { outlineProvider: () => { throw new Error("adapter unavailable"); } });
+      expect(result.passed).toBe(false);
+      expect(result.diagnostics).toEqual(expect.arrayContaining([
+        expect.objectContaining({ code: "A0-PARSER-001", hint: expect.stringContaining("\"outline\":true") }),
+        expect.objectContaining({ code: "A0-SIZE-001", severity: "error" }),
+      ]));
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("超标诊断按仓库相对路径稳定排序", async () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-size-order-"));
+    try {
+      for (const file of ["a.ts", "b.ts"]) writeFileSync(join(directory, file), `${"x\n".repeat(MAX_SOURCE_LINES + 1)}`, "utf8");
+      const result = await checkFileSizes(directory, {} as never, ["b.ts", "a.ts"], { outlineProvider: () => [] });
+      expect(result.diagnostics.map((item) => item.path)).toEqual(["a.ts", "b.ts"]);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
   });
 
   test("豁免章节缺失识别稳定", () => {
     expect(exemptionMissingSections("# 边界\n内容\n# 理由\n内容\n# 替代方案\n内容\n# 移除计划\n内容\n")).toEqual([]);
     expect(exemptionMissingSections("# 边界\n内容\n# 理由\n")).toEqual(["理由", "替代方案", "移除计划"]);
+  });
+});
+
+describe("报告详情渲染", () => {
+  test("文本、JSON 与 SARIF 分别保留结构详情", () => {
+    const result: CheckResult = {
+      passed: false,
+      diagnostics: [{
+        code: "A0-SIZE-001",
+        severity: "error",
+        path: "src/long.ts",
+        subject: "2501 行 / 上限 2500",
+        message: "单文件共 2501 行，超过上限 2500 行。",
+        details: ["class Reader [第 1-2501 行，共 2501 行] export class"],
+      }],
+    };
+    expect(renderText(result)).toContain("  class Reader");
+    const json = renderJson(result) as { diagnostics: Array<{ details?: string[] }> };
+    expect(json.diagnostics[0]?.details).toEqual(result.diagnostics[0]?.details);
+    const sarif = renderSarif(result) as { runs: Array<{ results: Array<{ message: { text: string }; properties?: { details?: string[] } }> }> };
+    const entry = sarif.runs[0]?.results[0];
+    expect(entry?.message.text).not.toContain("\n");
+    expect(entry?.properties?.details).toEqual(result.diagnostics[0]?.details);
   });
 });
 
