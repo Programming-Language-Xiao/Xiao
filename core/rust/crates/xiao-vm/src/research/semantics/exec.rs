@@ -131,24 +131,32 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
 
     /// 从脚本入口开始执行。
     pub fn run(&mut self) -> RunResult {
+        self.run_with_value().0
+    }
+
+    /// 从脚本入口执行并保留返回值，供研究运行入口构造可观察结果。
+    ///
+    /// 研究 VM 的公开兼容入口 [`Self::run`] 仍只返回结构化状态；返回值只在
+    /// `RunOutcome` 中作为测试和诊断观察面暴露，不构成生产 VM API。
+    pub(crate) fn run_with_value(&mut self) -> (RunResult, Option<RuntimeValue>) {
         let program = self.program;
         self.sink.record(VmEvent::ModuleLoaded {
             module: program.abi.target.clone(),
         });
         match self.execute(FuncId::new(0), &[], None) {
-            Ok(_) => RunResult::Success,
+            Ok(value) => (RunResult::Success, value),
             Err(Fault::Error(error)) => {
                 self.sink.record(VmEvent::ErrorRaised {
                     code: error.code().to_owned(),
                     message_id: error.message_id().to_owned(),
                 });
-                RunResult::Error(error)
+                (RunResult::Error(error), None)
             }
             Err(Fault::Fatal(fatal)) => {
                 self.sink.record(VmEvent::FatalRaised {
                     code: fatal.code().to_owned(),
                 });
-                RunResult::Fatal(fatal)
+                (RunResult::Fatal(fatal), None)
             }
         }
     }

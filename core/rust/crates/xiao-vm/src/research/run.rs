@@ -1,6 +1,7 @@
 //! 运行入口、结构化结果与运行指标。
 
 use xiao_diagnostics::{FatalError, XiaoError};
+use xiao_runtime::RuntimeValue;
 
 use crate::research::carrier::Carrier;
 use crate::research::machine::hybrid::HybridCarrier;
@@ -96,6 +97,11 @@ pub struct VmMetrics {
 pub struct RunOutcome {
     /// 结构化结果。
     pub result: RunResult,
+    /// 研究 VM 入口返回的值；脚本没有显式返回值时为 `None`。
+    ///
+    /// 这是为了让 09R 研究测试观察语义结果而暴露的调试字段，不是生产执行
+    /// 接口的稳定承诺。可恢复错误或致命故障结束时该字段始终为 `None`。
+    pub value: Option<RuntimeValue>,
     /// 运行指标。
     pub metrics: VmMetrics,
     /// 记录到的调试事件。
@@ -115,10 +121,11 @@ pub fn run_with<C: Carrier>(
     options: VmOptions,
 ) -> RunOutcome {
     let mut vm = Vm::<C, RecordingSink>::new(program, options, RecordingSink::new());
-    let result = vm.run();
+    let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     RunOutcome {
         result,
+        value,
         metrics,
         events: vm.into_sink().into_events(),
     }
@@ -137,10 +144,11 @@ pub fn run_with_seed(
         RecordingSink::new(),
         seed,
     );
-    let result = vm.run();
+    let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     RunOutcome {
         result,
+        value,
         metrics,
         events: vm.into_sink().into_events(),
     }
@@ -155,10 +163,11 @@ pub fn run_with_machine_seed<C: Carrier>(
 ) -> RunOutcome {
     let mut vm =
         Vm::<C, RecordingSink>::new_with_seed(program, options, RecordingSink::new(), seed);
-    let result = vm.run();
+    let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     RunOutcome {
         result,
+        value,
         metrics,
         events: vm.into_sink().into_events(),
     }
