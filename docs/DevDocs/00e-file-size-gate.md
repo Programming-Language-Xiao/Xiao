@@ -21,6 +21,35 @@
 [00F. 解析器第二批模块解耦交接记录](00f-parser-decoupling.md)。当前各源码文件均低于
 2500 行，`bun run check:layout` / `bun run check` 应保持通过。
 
+### 收口记录（2026-09-19）
+
+本阶段**已收口**：`bun run check`、`bun run check:layout`、`bun run check:coverage`
+均以退出码 0 通过，全仓 **0 条 `A0-SIZE-001`**。两个超标文件都已拆分并各有独立记录
+（`encode.rs`：`4baa3c3` + `f6c4be1`；`parser.rs`：`9681433`）。
+**没有任何文件使用旁置豁免。**
+
+十个验收项的最终状态：
+
+| # | 验收项 | 证据 |
+| --- | --- | --- |
+| 1 | 两个入口都生效、不重复 | `check` 与 `check:layout` 均退出 0 |
+| 2 | 行数对得上 `wc -l` | 拆分前实测 3847 / 3040；当前已无尺寸诊断 |
+| 3 | 大纲可达且为树 | 实测 196 / 102 个节点，下钻到字段、变体与方法 |
+| 4 | `line` 为空、`subject` 不等于 `path` | 实测终端输出不重复打印路径 |
+| 5 | SARIF 没被撑坏 | 实测 `message.text` 单行，大纲在 `properties.details` |
+| 6 | 区分度 | **批量请求**与**依赖方向**两组用例实做过「撤掉实现 → 变红 → 还原」；其余断言取的是只有新实现才产出的具体值 |
+| 7 | 豁免四态 | 单测覆盖（齐全 / 缺段 / 空文件 / 无说明） |
+| 8 | 边界 2500 与 2501 | 单测覆盖，且边界用例断言提供器**不被调用** |
+| 9 | 文档同步 | `00a` 规则总表、UseDocs、两个 README、`00-decisions`、`12-tests` |
+| 10 | 恢复为绿并留下记录 | 见本节的拆分记录与提交号 |
+
+**收口后的加固**（不改变上述结论）：两条源码级架构回归测试原先只匹配 `super::模块`
+子串，`use super::{模块}` 与 `use crate::…::模块::…` 这两类等价写法都能绕过。现已改为
+去掉行注释后**按标识符切词**匹配，并补上 `00F` 声明却未被任何测试锁住的
+「`imports.rs` 不得反向依赖 `statements.rs`」。两种绕过写法都实测过
+「注入 → 变红 → 撤针 → 复绿」。加固后这两条守卫拦的是**误加**：改名或换写法仍可能
+绕过，若要防刻意规避需另设机制——**在补上之前，不要把这两条测试当成完备边界**。
+
 ## Agent 交接上下文
 
 ### 接手前提
@@ -354,23 +383,23 @@ checkFileSizes(root, manifest, files, options?: { outlineProvider?: OutlineProvi
 的全局哨兵**，不只是「没有尺寸错误」。**保住哨兵，同时把债显式化**：
 
 ```ts
-const KNOWN_OVERSIZED = [
-  "core/rust/crates/xiao-syntax/src/parser.rs",
-];
+const knownOversized: string[] = [];                             // 债务清零后为空
 const sizeErrors = result.diagnostics.filter((item) => item.code === "A0-SIZE-001");
 const others = result.diagnostics.filter((item) => item.code !== "A0-SIZE-001");
 expect(others).toEqual([]);                                      // 原有哨兵，保住
-expect(sizeErrors.map((item) => item.path)).toEqual(KNOWN_OVERSIZED); // 相等而非包含
+expect(sizeErrors.map((item) => item.path)).toEqual(knownOversized); // 相等而非包含
+expect(result.passed).toBe(true);
 ```
 
 用 `toEqual`（**集合相等**）而不是「每个都在名单里」：名单长了、短了都会红，
-语义正好是「**这份名单只应缩短，不应增长**」。注释里写明这一点。
+语义正好是「**这份名单只应缩短，不应增长**」。债务清零后名单为空，此时它退化为
+「全仓不得出现任何 `A0-SIZE-001`」——比包含断言更强，因为新增超长文件会立刻变红。
 **不要删掉这条用例**，也不要用宽泛过滤把它变成永远通过。
 
-`:36-41` 那条**要单独处理**：它断言 `result.result.passed === true`，只要 `parser.rs`
-还是 error 就必然 `false`——**这条救不回来**。它真正要验的是「从子目录执行时报告根目录」，
-所以保留 `expect(result.root).toBe(expectedRoot)`，把 `passed` 断言改成 `false`
-并注释「已知债未清」，或直接删掉它（它本来就不是这条测试的目的）。
+`:36-41` 那条**当时要单独处理**：`parser.rs` 未拆分时它断言 `passed === true` 必然
+失败——那是**债的后果，不是名单能救的**。它真正要验的是「从子目录执行时报告根目录」，
+所以 `root` 断言始终保留，`passed` 断言随债务状态取值：债务期写 `false` 并注明
+「已知债未清」，债务清零后已恢复为 `true`，与上一条用例一致。
 
 ---
 

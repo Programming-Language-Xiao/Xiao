@@ -619,13 +619,27 @@ fn scalar_and_release_tags_have_one_bidirectional_mapping() {
     }
 }
 
-/// 断言实现文件没有引入指定的同级模块。
-fn assert_no_sibling_import(source_name: &str, source: &str, module: &str) {
-    let needle = format!("super::{module}");
-    assert!(
-        !source.contains(&needle),
-        "{source_name} 不得依赖同级模块 {module}"
-    );
+/// 去掉行注释，避免注释里提到的模块名被算成依赖。
+fn strip_line_comments(source: &str) -> String {
+    source
+        .lines()
+        .map(|line| line.split("//").next().unwrap_or_default())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// 断言实现文件没有把 `module` 当作完整标识符引用。
+///
+/// 只找 `super::模块` 子串拦不住等价写法：`use super::{模块}`、
+/// `use super::{模块, 另一个}` 和 `use crate::…::模块::…` 都不含该子串。
+/// 这里先去掉注释，再按标识符切词比较，因此 `xiao_encoder` 这类同前缀
+/// 名字不会误报，而上面三种写法都会被拦下。
+fn assert_no_module_reference(source_name: &str, source: &str, module: &str) {
+    let code = strip_line_comments(source);
+    let referenced = code
+        .split(|character: char| !(character.is_alphanumeric() || character == '_'))
+        .any(|token| token == module);
+    assert!(!referenced, "{source_name} 不得依赖同级模块 {module}");
 }
 
 /// 锁住研究编码器的内部依赖 DAG，避免后续修复通过横向引用重新耦合。
@@ -640,26 +654,26 @@ fn module_dependency_direction_is_acyclic() {
 
     let codec = include_str!("codec.rs");
     for module in ["tags", "validate", "encoder", "decoder", "tests"] {
-        assert_no_sibling_import("codec.rs", codec, module);
+        assert_no_module_reference("codec.rs", codec, module);
     }
 
     let tags = include_str!("tags.rs");
     for module in ["codec", "validate", "encoder", "decoder", "tests"] {
-        assert_no_sibling_import("tags.rs", tags, module);
+        assert_no_module_reference("tags.rs", tags, module);
     }
 
     let validate = include_str!("validate.rs");
     for module in ["encoder", "decoder", "tests"] {
-        assert_no_sibling_import("validate.rs", validate, module);
+        assert_no_module_reference("validate.rs", validate, module);
     }
 
     let encoder = include_str!("encoder.rs");
     for module in ["decoder", "tests"] {
-        assert_no_sibling_import("encoder.rs", encoder, module);
+        assert_no_module_reference("encoder.rs", encoder, module);
     }
 
     let decoder = include_str!("decoder.rs");
     for module in ["encoder", "tests"] {
-        assert_no_sibling_import("decoder.rs", decoder, module);
+        assert_no_module_reference("decoder.rs", decoder, module);
     }
 }

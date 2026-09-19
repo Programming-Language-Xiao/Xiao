@@ -356,11 +356,35 @@ fn attaches_docs_to_expression_statement() {
     assert_eq!(program.statements[0].leading_docs().len(), 1);
 }
 
+/// 去掉行注释，避免注释里提到的模块名被算成依赖。
+fn strip_line_comments(source: &str) -> String {
+    source
+        .lines()
+        .map(|line| line.split("//").next().unwrap_or_default())
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+/// 断言文件没有把 `module` 当作完整标识符引用。
+///
+/// 只找 `use crate::模块::` 这类子串拦不住等价写法：`use crate::{模块}`、
+/// `use crate::{模块, 另一个}` 和 `crate::模块::…` 的全限定路径都不含该子串。
+/// 这里先去掉注释，再按标识符切词比较，所以 `xiao_syntax` 这类同前缀名字
+/// 不会误报。`xiao-bytecode` 侧的 `assert_no_module_reference` 是同一套做法。
+fn assert_no_module_reference(source_name: &str, source: &str, module: &str) {
+    let code = strip_line_comments(source);
+    let referenced = code
+        .split(|character: char| !(character.is_alphanumeric() || character == '_'))
+        .any(|token| token == module);
+    assert!(!referenced, "{source_name} 不得依赖 {module}");
+}
+
 #[test]
 /// 锁住解析器门面与语句扩展的边界，避免大段语句实现回流到 `parser.rs`。
 fn parser_statement_split_keeps_dependency_boundary() {
     let facade = include_str!("../src/parser.rs");
     let statements = include_str!("../src/parser/statements.rs");
+    let imports = include_str!("../src/parser/imports.rs");
 
     assert!(facade.contains("mod statements;"));
     assert!(facade.contains("#[path = \"parser/imports.rs\"]"));
@@ -379,6 +403,10 @@ fn parser_statement_split_keeps_dependency_boundary() {
     }
     assert!(statements.contains("pub(super) fn parse_statement("));
     assert!(statements.contains("use crate::parser::"));
-    assert!(!statements.contains("use crate::lexer::"));
-    assert!(!statements.contains("xiao_types"));
+    // 扩展只消费 Token、诊断和公开 AST：不得直接拿词法器或类型层。
+    assert_no_module_reference("parser/statements.rs", statements, "lexer");
+    assert_no_module_reference("parser/statements.rs", statements, "xiao_types");
+    // 00F 声明 import 扩展不得反向依赖语句扩展，这里锁住它。
+    assert_no_module_reference("parser/imports.rs", imports, "statements");
+    assert_no_module_reference("parser/imports.rs", imports, "xiao_types");
 }
