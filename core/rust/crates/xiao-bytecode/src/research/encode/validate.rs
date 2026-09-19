@@ -1,4 +1,4 @@
-//! 编码前后的版本、签名和跨表引用校验。
+//! 编码输入的版本、签名和跨表引用校验。
 
 use super::codec::check_index_width;
 use super::tags::release_tag;

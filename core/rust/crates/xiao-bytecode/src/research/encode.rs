@@ -4,6 +4,28 @@
 //! 已经存在的 TAC/ABI 事实，不重新推断类型、重算生命周期，也不重排指令。格式
 //! 使用稳定的显式 opcode 表；操作数可以选择无符号 LEB128 或定宽 `u16`。
 
+/// 字节级读写原语。
+mod codec;
+/// 严格解码实现。
+mod decoder;
+/// 编码实现。
+mod encoder;
+/// 稳定标签映射。
+mod tags;
+#[cfg(test)]
+/// 编码器回归测试。
+mod tests;
+/// 编码输入与可复用不变量校验。
+mod validate;
+
+use codec::Writer;
+use decoder::{decode_inner, validate_decoded};
+use encoder::{
+    encode_broadcast_plans, encode_categories, encode_constants, encode_function, encode_plans,
+    encode_random_seed_plans, encode_selection_plans, encode_signatures,
+};
+use validate::validate_input;
+
 use xiao_ir::IrSpan;
 
 use super::lower::{TAC_BYTECODE_ABI_VERSION, TAC_RUNTIME_ABI_VERSION};
@@ -437,34 +459,6 @@ pub fn validate_encoded(encoded: &EncodedProgram) -> Result<(), EncodeError> {
     }
     Ok(())
 }
-
-/// 字节级读写原语。
-#[path = "encode/codec.rs"]
-mod codec;
-/// 严格解码实现。
-#[path = "encode/decoder.rs"]
-mod decoder;
-/// 编码实现。
-#[path = "encode/encoder.rs"]
-mod encoder;
-/// 稳定标签映射。
-#[path = "encode/tags.rs"]
-mod tags;
-#[cfg(test)]
-/// 编码器回归测试。
-#[path = "encode/tests.rs"]
-mod tests;
-/// 输入与解码结果校验。
-#[path = "encode/validate.rs"]
-mod validate;
-
-use codec::Writer;
-use decoder::{decode_inner, validate_decoded};
-use encoder::{
-    encode_broadcast_plans, encode_categories, encode_constants, encode_function, encode_plans,
-    encode_random_seed_plans, encode_selection_plans, encode_signatures,
-};
-use validate::validate_input;
 
 #[cfg(test)]
 use codec::{Reader, write_optional_index};

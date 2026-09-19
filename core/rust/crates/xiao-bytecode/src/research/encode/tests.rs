@@ -618,3 +618,48 @@ fn scalar_and_release_tags_have_one_bidirectional_mapping() {
         assert_eq!(release_from_tag(tag as u8), Ok(kind));
     }
 }
+
+/// 断言实现文件没有引入指定的同级模块。
+fn assert_no_sibling_import(source_name: &str, source: &str, module: &str) {
+    let needle = format!("super::{module}");
+    assert!(
+        !source.contains(&needle),
+        "{source_name} 不得依赖同级模块 {module}"
+    );
+}
+
+/// 锁住研究编码器的内部依赖 DAG，避免后续修复通过横向引用重新耦合。
+///
+/// 这是源码级架构检查而不是行为测试：`encoder` 与 `decoder` 必须保持互不依赖，
+/// `codec`/`tags` 必须保持叶子，`validate` 只能向下复用二者。门面使用 Rust 2018
+/// 的默认模块路径，因此也一并钉住不再恢复冗余的 `#[path]` 装配。
+#[test]
+fn module_dependency_direction_is_acyclic() {
+    let facade = include_str!("../encode.rs");
+    assert!(!facade.contains("#[path = \"encode/"));
+
+    let codec = include_str!("codec.rs");
+    for module in ["tags", "validate", "encoder", "decoder", "tests"] {
+        assert_no_sibling_import("codec.rs", codec, module);
+    }
+
+    let tags = include_str!("tags.rs");
+    for module in ["codec", "validate", "encoder", "decoder", "tests"] {
+        assert_no_sibling_import("tags.rs", tags, module);
+    }
+
+    let validate = include_str!("validate.rs");
+    for module in ["encoder", "decoder", "tests"] {
+        assert_no_sibling_import("validate.rs", validate, module);
+    }
+
+    let encoder = include_str!("encoder.rs");
+    for module in ["decoder", "tests"] {
+        assert_no_sibling_import("encoder.rs", encoder, module);
+    }
+
+    let decoder = include_str!("decoder.rs");
+    for module in ["encoder", "tests"] {
+        assert_no_sibling_import("decoder.rs", decoder, module);
+    }
+}

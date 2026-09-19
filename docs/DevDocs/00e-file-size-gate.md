@@ -12,9 +12,11 @@
 
 ### 当前拆分状态（2026-09-19）
 
-`core/rust/crates/xiao-bytecode/src/research/encode.rs` 已缩减为 474 行的公开门面，
+`core/rust/crates/xiao-bytecode/src/research/encode.rs` 已缩减为 468 行的公开门面，
 实现拆到 `research/encode/codec.rs`、`decoder.rs`、`encoder.rs`、`tags.rs`、`validate.rs`
-和 `tests.rs`；各文件均低于 2500 行。`bun run check:layout` 实测只剩
+和 `tests.rs`；各文件均低于 2500 行。模块依赖方向、兼容契约和架构回归测试见
+[09R2E. 研究编码器模块解耦交接记录](09r2e-research-encoder-decoupling.md)。
+`bun run check:layout` 实测只剩
 `core/rust/crates/xiao-syntax/src/parser.rs` 的 `A0-SIZE-001`，本批不处理该文件。
 
 ## Agent 交接上下文
