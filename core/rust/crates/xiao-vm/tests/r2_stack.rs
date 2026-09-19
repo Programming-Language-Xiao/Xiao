@@ -5,7 +5,10 @@ use xiao_bytecode::research::{
     BlockId, CategoryMap, ConstPool, FuncId, OperandWidth, RegisterClass, TacAbi, TacBlock,
     TacConstant, TacFunction, TacInstr, TacOp, TacProgram, VReg, build_pc_map,
 };
-use xiao_diagnostics::{FATAL_STACK_OVERFLOW_CODE, NUMERIC_OVERFLOW_CODE, TYPE_MISMATCH_CODE};
+use xiao_diagnostics::{
+    FATAL_STACK_OVERFLOW_CODE, NUMERIC_OVERFLOW_CODE, RANDOM_COUNT_CODE, RANDOM_SEED_CODE,
+    SELECTOR_STEP_CODE, TYPE_MISMATCH_CODE,
+};
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::IrSpan;
 use xiao_vm::research::{RunResult, VmEvent, VmOptions, run, run_hybrid, run_register};
@@ -105,7 +108,7 @@ fn dynamic_zero_step_is_recoverable() {
         run_register(&program, VmOptions::new()),
         run_hybrid(&program, VmOptions::new()),
     ] {
-        assert_eq!(outcome.result.error_code(), Some("X06-RUNTIME-018"));
+        assert_eq!(outcome.result.error_code(), Some(SELECTOR_STEP_CODE));
     }
 }
 
@@ -200,7 +203,7 @@ fn dynamic_random_count_is_recoverable() {
             run_register(&program, VmOptions::new()),
             run_hybrid(&program, VmOptions::new()),
         ] {
-            assert_eq!(outcome.result.error_code(), Some("X06-RUNTIME-019"));
+            assert_eq!(outcome.result.error_code(), Some(RANDOM_COUNT_CODE));
         }
     }
 }
@@ -216,7 +219,7 @@ fn dynamic_random_seed_is_recoverable() {
         run_register(&invalid, VmOptions::new()),
         run_hybrid(&invalid, VmOptions::new()),
     ] {
-        assert_eq!(outcome.result.error_code(), Some("X06-RUNTIME-020"));
+        assert_eq!(outcome.result.error_code(), Some(RANDOM_SEED_CODE));
     }
 
     let valid = load(
