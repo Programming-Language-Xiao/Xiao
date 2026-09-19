@@ -113,15 +113,16 @@ export function readJson(pathValue: string): unknown {
  * @param roots 待扫描的仓库相对根目录。
  * @param extensions 允许的源文件扩展名。
  * @param excludedNames 要跳过的目录名称集合。
- * @returns 源文件目录集合和遍历诊断。
+ * @returns 源文件目录、源文件相对路径集合和遍历诊断。
  */
 export function discoverSourceDirectories(
   root: string,
   roots: string[],
   extensions: string[],
   excludedNames: Set<string>,
-): { directories: Set<string>; diagnostics: Diagnostic[] } {
+): { directories: Set<string>; files: string[]; diagnostics: Diagnostic[] } {
   const directories = new Set<string>();
+  const files: string[] = [];
   const diagnostics: Diagnostic[] = [];
   const extensionSet = new Set(extensions.map((item) => item.toLowerCase()));
   const visited = new Set<string>();
@@ -175,7 +176,6 @@ export function discoverSourceDirectories(
 
     let hasSource = false;
     for (const entry of entries) {
-      if (excludedNames.has(entry.name)) continue;
       const child = join(directory, entry.name);
       if (entry.isSymbolicLink()) {
         let target: string;
@@ -207,12 +207,16 @@ export function discoverSourceDirectories(
         continue;
       }
       if (entry.isDirectory()) {
+        if (excludedNames.has(entry.name)) continue;
         visit(child);
         continue;
       }
       if (!entry.isFile()) continue;
       const extension = entry.name.slice(entry.name.lastIndexOf(".")).toLowerCase();
-      if (extensionSet.has(extension)) hasSource = true;
+      if (extensionSet.has(extension)) {
+        hasSource = true;
+        files.push(repoRelative(root, child));
+      }
     }
     if (hasSource) directories.add(repoRelative(root, directory));
   };
@@ -232,7 +236,8 @@ export function discoverSourceDirectories(
       });
     }
   }
-  return { directories, diagnostics };
+  files.sort();
+  return { directories, files, diagnostics };
 }
 
 /**

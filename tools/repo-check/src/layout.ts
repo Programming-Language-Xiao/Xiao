@@ -22,11 +22,11 @@ import type { CheckResult, Diagnostic, LoadedRepository } from "./types.ts";
  * @param start 仓库根目录或其下任意目录。
  * @returns 统一检查结果。
  */
-export function checkLayout(start: string): CheckResult {
+export async function checkLayout(start: string): Promise<CheckResult> {
   const loaded = loadRepository(start);
   const diagnostics = [...loaded.diagnostics];
   if (!loaded.repository) return finish(diagnostics);
-  diagnostics.push(...checkLoadedLayout(loaded.repository));
+  diagnostics.push(...await checkLoadedLayout(loaded.repository));
   return finish(diagnostics);
 }
 
@@ -36,7 +36,7 @@ export function checkLayout(start: string): CheckResult {
  * @param repository 已加载的仓库。
  * @returns workspace、路径和 README 诊断。
  */
-export function checkLoadedLayout(repository: LoadedRepository): Diagnostic[] {
+export async function checkLoadedLayout(repository: LoadedRepository): Promise<Diagnostic[]> {
   const { root, manifest } = repository;
   const diagnostics: Diagnostic[] = [];
   diagnostics.push(...inspectWorkspaces(root, manifest));
@@ -81,6 +81,9 @@ export function checkLoadedLayout(repository: LoadedRepository): Diagnostic[] {
     checkDirectoryReadme(root, member, manifest.readmeFile, diagnostics);
   }
   checkSourceDirectoryRegistration(discovered.directories, repository.registry, diagnostics);
+  const size = await import("./size.ts");
+  const sizeResult = await size.checkFileSizes(root, manifest, discovered.files);
+  diagnostics.push(...sizeResult.diagnostics);
   return diagnostics;
 }
 

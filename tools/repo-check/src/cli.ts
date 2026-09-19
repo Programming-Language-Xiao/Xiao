@@ -59,13 +59,13 @@ export function parseArguments(argv: string[]): {
 export async function runCommand(options: ReturnType<typeof parseArguments>): Promise<{ result: CheckResult; root: string }> {
   const start = options.root ?? process.cwd();
   if (options.command === "layout") {
-    const result = checkLayout(start);
+    const result = await checkLayout(start);
     return { result, root: findRepositoryRoot(start) ?? resolve(start) };
   }
   const loaded = loadRepository(start);
   if (!loaded.repository) return { result: { passed: false, diagnostics: loaded.diagnostics }, root: findRepositoryRoot(start) ?? resolve(start) };
   const results: CheckResult[] = [{ passed: loaded.diagnostics.length === 0, diagnostics: loaded.diagnostics }];
-  if (options.command === "all") results.push({ passed: true, diagnostics: checkLoadedLayout(loaded.repository) });
+  if (options.command === "all") results.push({ passed: true, diagnostics: await checkLoadedLayout(loaded.repository) });
   if (options.command === "docs" || options.command === "all") results.push({ passed: true, diagnostics: checkDevDocs(loaded.repository.root) });
   if (options.command === "usedocs" || options.command === "all") {
     results.push({ passed: true, diagnostics: loaded.repository.registry ? checkUseDocs(loaded.repository.root, loaded.repository.registry) : [] });

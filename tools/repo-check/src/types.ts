@@ -25,6 +25,8 @@ export interface Diagnostic {
   message: string;
   /** 建议的修复动作。 */
   hint?: string;
+  /** 结构化补充信息；报告器会按输出格式单独渲染。 */
+  details?: string[];
   /** 稳定消息编号，供国际化层使用。 */
   message_id?: string;
 }
