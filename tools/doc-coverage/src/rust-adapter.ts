@@ -3,10 +3,10 @@
 import { spawnSync } from "node:child_process";
 import { join, relative, resolve } from "node:path";
 
-import type { CoverageDiagnostic, DeclarationRecord, RustAdapterResponse } from "./types.ts";
+import type { CoverageDiagnostic, DeclarationRecord, RustAdapterResponse, RustFileOutline } from "./types.ts";
 
 /** 当前 TypeScript 编排器支持的 Rust AST 适配器协议版本。 */
-export const RUST_ADAPTER_PROTOCOL_VERSION = 1;
+export const RUST_ADAPTER_PROTOCOL_VERSION = 2;
 
 /**
  * Rust AST 适配器调用选项。
@@ -26,8 +26,12 @@ export interface RustAdapterOptions {
  * @param options 适配器调用参数。
  * @returns 统一声明记录和诊断。
  */
-export function scanRustFiles(options: RustAdapterOptions): { declarations: DeclarationRecord[]; diagnostics: CoverageDiagnostic[] } {
-  if (options.files.length === 0) return { declarations: [], diagnostics: [] };
+export function scanRustFiles(options: RustAdapterOptions): {
+  declarations: DeclarationRecord[];
+  outlines: RustFileOutline[];
+  diagnostics: CoverageDiagnostic[];
+} {
+  if (options.files.length === 0) return { declarations: [], outlines: [], diagnostics: [] };
   const adapter = options.adapterPath ?? process.env.XIAO_RUST_DOC_ADAPTER;
   const command = adapter ? adapter : "cargo";
   const args = adapter
@@ -38,10 +42,14 @@ export function scanRustFiles(options: RustAdapterOptions): { declarations: Decl
     input: JSON.stringify({ protocol_version: RUST_ADAPTER_PROTOCOL_VERSION, files: options.files }),
     encoding: "utf8",
     windowsHide: true,
+    // 协议 v2 起响应里带整仓的结构大纲，默认 1 MiB 上限会被撑爆并退化成
+    // ENOBUFS——那会被误报成「适配器启动失败」，掩盖真正的原因。
+    maxBuffer: 256 * 1024 * 1024,
   });
   if (response.error || response.status !== 0 && !response.stdout?.trim()) {
     return {
       declarations: [],
+      outlines: [],
       diagnostics: [{
         code: "A0-PARSER-001",
         severity: "error",
@@ -59,6 +67,7 @@ export function scanRustFiles(options: RustAdapterOptions): { declarations: Decl
   } catch (error) {
     return {
       declarations: [],
+      outlines: [],
       diagnostics: [{
         code: "A0-PARSER-001",
         severity: "error",
@@ -72,7 +81,7 @@ export function scanRustFiles(options: RustAdapterOptions): { declarations: Decl
   }
   const protocolError = validateRustAdapterResponse(parsed);
   if (protocolError) {
-    return { declarations: [], diagnostics: [protocolError] };
+    return { declarations: [], outlines: [], diagnostics: [protocolError] };
   }
   const declarations = (parsed.declarations ?? []).map((item) => ({
     language: "rust" as const,
@@ -93,7 +102,11 @@ export function scanRustFiles(options: RustAdapterOptions): { declarations: Decl
     hint: "修复 Rust 源文件语法或 AST 适配器协议后重试。",
     message_id: "a0.parser.rust_source",
   }));
-  return { declarations, diagnostics };
+  const outlines = (parsed.outlines ?? []).map((item) => ({
+    file: relativePath(options.root, item.file),
+    nodes: item.nodes,
+  }));
+  return { declarations, outlines, diagnostics };
 }
 
 /**
@@ -110,8 +123,8 @@ export function validateRustAdapterResponse(value: unknown): CoverageDiagnostic 
       "升级或重新编译 Rust 适配器，并确保 TypeScript 编排器与适配器使用同一协议版本。",
     );
   }
-  if (!Array.isArray(value.declarations) || !Array.isArray(value.errors)) {
-    return protocolDiagnostic("Rust AST 适配器响应缺少 declarations 或 errors 数组。", "检查适配器协议实现，确保响应字段完整且类型正确。");
+  if (!Array.isArray(value.declarations) || !Array.isArray(value.errors) || !Array.isArray(value.outlines)) {
+    return protocolDiagnostic("Rust AST 适配器响应缺少 declarations、outlines 或 errors 数组。", "检查适配器协议实现，确保响应字段完整且类型正确。");
   }
   for (const declaration of value.declarations) {
     if (!isRecord(declaration)
@@ -120,8 +133,17 @@ export function validateRustAdapterResponse(value: unknown): CoverageDiagnostic 
       || typeof declaration.kind !== "string"
       || typeof declaration.name !== "string"
       || typeof declaration.is_public !== "boolean"
-      || typeof declaration.has_doc !== "boolean") {
+      || typeof declaration.has_doc !== "boolean"
+      || typeof declaration.end_line !== "number") {
       return protocolDiagnostic("Rust AST 适配器返回了格式错误的声明记录。", "检查 declarations 中每条记录的字段类型。");
+    }
+  }
+  for (const outline of value.outlines) {
+    if (!isRecord(outline) || typeof outline.file !== "string" || !Array.isArray(outline.nodes)) {
+      return protocolDiagnostic("Rust AST 适配器返回了格式错误的大纲记录。", "检查 outlines 中每个文件的 file 与 nodes 字段。");
+    }
+    if (!outline.nodes.every(isOutlineNode)) {
+      return protocolDiagnostic("Rust AST 适配器返回了格式错误的大纲节点。", "检查大纲节点的 kind、name、line、end_line、lines、signature 与 children 字段。");
     }
   }
   for (const error of value.errors) {
@@ -148,6 +170,22 @@ function protocolDiagnostic(message: string, hint: string): CoverageDiagnostic {
 /** 判断未知值是否为普通对象。 */
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** 递归校验一个大纲节点的形状。 */
+function isOutlineNode(value: unknown): boolean {
+  if (!isRecord(value)) return false;
+  if (typeof value.kind !== "string"
+    || typeof value.name !== "string"
+    || typeof value.line !== "number"
+    || typeof value.end_line !== "number"
+    || typeof value.lines !== "number"
+    || typeof value.signature !== "string"
+    || typeof value.source_line !== "string"
+    || !Array.isArray(value.children)) {
+    return false;
+  }
+  return value.children.every(isOutlineNode);
 }
 
 /** 把 Rust 适配器类别限制到统一报告枚举。 */

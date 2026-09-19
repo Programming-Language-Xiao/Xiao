@@ -142,6 +142,43 @@ export interface RustDeclaration {
   is_public: boolean;
   /** 是否有 Rustdoc。 */
   has_doc: boolean;
+  /** 声明最后一行；与 `line` 之差即该声明占用的行数。 */
+  end_line: number;
+}
+
+/**
+ * 大纲中的一个结构化节点。
+ *
+ * 与 `RustDeclaration` 的分工是刻意的：声明记录服务文档覆盖率，是扁平的；
+ * 大纲递归到字段、变体与方法，供「文件过长必须解耦」这类判断使用。
+ */
+export interface RustOutlineNode {
+  /** 节点类别，例如 `function`、`field` 或 `variant`。 */
+  kind: string;
+  /** 节点名称。 */
+  name: string;
+  /** 起始行（一基）。 */
+  line: number;
+  /** 结束行（一基）。 */
+  end_line: number;
+  /** 覆盖行数，含子节点。 */
+  lines: number;
+  /** 定义句：省去名字的声明头，例如 `fn() -> SourceSpan`。 */
+  signature: string;
+  /** 声明起始行的源码文本。 */
+  source_line: string;
+  /** 子节点。 */
+  children: RustOutlineNode[];
+}
+
+/**
+ * 单个文件的结构大纲。
+ */
+export interface RustFileOutline {
+  /** 大纲所属的源文件。 */
+  file: string;
+  /** 该文件的顶层项。 */
+  nodes: RustOutlineNode[];
 }
 
 /**
@@ -152,6 +189,8 @@ export interface RustAdapterResponse {
   protocol_version: number;
   /** 声明记录。 */
   declarations: RustDeclaration[];
+  /** 每个成功解析文件的结构大纲。 */
+  outlines: RustFileOutline[];
   /** 解析错误。 */
   errors: Array<{ file: string; code: string; message: string }>;
 }

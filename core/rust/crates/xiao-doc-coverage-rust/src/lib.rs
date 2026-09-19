@@ -3,14 +3,16 @@
 //! 该 crate 是开发工具的内部组件。TypeScript 编排器通过命令行 JSON
 //! 协议调用它，不应把这里的 Rust 数据结构当作 Xiao 语言公共 API。
 
+use proc_macro2::Span;
 use serde::{Deserialize, Serialize};
+use syn::spanned::Spanned;
 use syn::visit::Visit;
 
 /// 当前 Rust AST 适配器 JSON 协议版本。
 ///
 /// 请求和响应都必须携带这个版本号。版本升级时，调用方与适配器
 /// 必须在同一变更中更新，并由兼容性测试覆盖。
-pub const AST_PROTOCOL_VERSION: u32 = 1;
+pub const AST_PROTOCOL_VERSION: u32 = 2;
 
 /// Rust 源文件的 AST 扫描请求。
 #[derive(Debug, Deserialize)]
@@ -36,6 +38,48 @@ pub struct Declaration {
     pub is_public: bool,
     /// 是否检测到直接关联的 Rustdoc。
     pub has_doc: bool,
+    /// 声明的最后一行（从 1 开始）。
+    ///
+    /// 取的是**整个项**的跨度，不是标识符的跨度；`line` 同样是项起始行。
+    /// 两者之差可以判断一个声明占了多大一块，是用行数门禁时唯一可信的读数。
+    pub end_line: usize,
+}
+
+/// 一个文件的结构大纲。
+#[derive(Debug, Serialize)]
+pub struct FileOutline {
+    /// 大纲所属的源文件。
+    pub file: String,
+    /// 该文件的顶层项。
+    pub nodes: Vec<OutlineNode>,
+}
+
+/// 大纲中的一个结构化节点。
+///
+/// 与 [`Declaration`] 的分工是刻意的：`Declaration` 只服务文档覆盖率，是**扁平**的、
+/// 且 `impl` 块自身不入册；大纲则要**递归**到字段、变体、方法与嵌套项，供
+/// 「文件过长必须解耦」这类判断使用。两者不能合并——把 `impl` 塞进覆盖率口径
+/// 会平白改变一个已验证的数字。
+#[derive(Debug, Serialize)]
+pub struct OutlineNode {
+    /// 节点类别，例如 `function`、`field` 或 `variant`。
+    pub kind: String,
+    /// 节点名称；`impl` 块用自身类型路径。
+    pub name: String,
+    /// 起始行（从 1 开始）。
+    pub line: usize,
+    /// 结束行（从 1 开始）。
+    pub end_line: usize,
+    /// 覆盖行数，含子节点。
+    pub lines: usize,
+    /// 定义句：**省去名字**的声明头，例如 `fn() -> SourceSpan`。
+    ///
+    /// 名字已经单独给出，签名里再重复一次只是噪声。
+    pub signature: String,
+    /// 声明起始行的源码文本（已去除首尾空白），便于人工核对。
+    pub source_line: String,
+    /// 子节点：字段、变体、方法、嵌套项。
+    pub children: Vec<OutlineNode>,
 }
 
 /// 扫描输出，供 TypeScript 编排器反序列化。
@@ -45,6 +89,8 @@ pub struct ScanResponse {
     pub protocol_version: u32,
     /// 成功解析出的声明。
     pub declarations: Vec<Declaration>,
+    /// 每个成功解析文件的结构大纲。
+    pub outlines: Vec<FileOutline>,
     /// 无法解析的文件及稳定错误文本。
     pub errors: Vec<ScanError>,
 }
@@ -65,6 +111,7 @@ pub fn scan(request: &ScanRequest) -> ScanResponse {
     let mut response = ScanResponse {
         protocol_version: AST_PROTOCOL_VERSION,
         declarations: Vec::new(),
+        outlines: Vec::new(),
         errors: Vec::new(),
     };
     if request.protocol_version != AST_PROTOCOL_VERSION {
@@ -82,6 +129,7 @@ pub fn scan(request: &ScanRequest) -> ScanResponse {
         match std::fs::read_to_string(file) {
             Ok(source) => match syn::parse_file(&source) {
                 Ok(parsed) => {
+                    let lines = source.lines().collect::<Vec<_>>();
                     let mut visitor = DeclarationVisitor {
                         file: file.clone(),
                         declarations: Vec::new(),
@@ -93,9 +141,14 @@ pub fn scan(request: &ScanRequest) -> ScanResponse {
                         name: "crate".to_string(),
                         is_public: true,
                         has_doc: has_doc(&parsed.attrs),
+                        end_line: lines.len().max(1),
                     });
                     visitor.visit_file(&parsed);
                     response.declarations.extend(visitor.declarations);
+                    response.outlines.push(FileOutline {
+                        file: file.clone(),
+                        nodes: outline_items(&parsed.items, &lines),
+                    });
                 }
                 Err(error) => response.errors.push(ScanError {
                     file: file.clone(),
@@ -125,7 +178,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "function",
             &item.sig.ident.to_string(),
-            item.sig.ident.span().start().line,
+            item.sig.ident.span(),
             &item.vis,
             &item.attrs,
         );
@@ -137,7 +190,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "struct",
             &item.ident.to_string(),
-            item.ident.span().start().line,
+            item.ident.span(),
             &item.vis,
             &item.attrs,
         );
@@ -149,7 +202,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "enum",
             &item.ident.to_string(),
-            item.ident.span().start().line,
+            item.ident.span(),
             &item.vis,
             &item.attrs,
         );
@@ -161,7 +214,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "trait",
             &item.ident.to_string(),
-            item.ident.span().start().line,
+            item.ident.span(),
             &item.vis,
             &item.attrs,
         );
@@ -173,7 +226,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "module",
             &item.ident.to_string(),
-            item.ident.span().start().line,
+            item.ident.span(),
             &item.vis,
             &item.attrs,
         );
@@ -185,7 +238,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "constant",
             &item.ident.to_string(),
-            item.ident.span().start().line,
+            item.ident.span(),
             &item.vis,
             &item.attrs,
         );
@@ -197,7 +250,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "static",
             &item.ident.to_string(),
-            item.ident.span().start().line,
+            item.ident.span(),
             &item.vis,
             &item.attrs,
         );
@@ -209,7 +262,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "type",
             &item.ident.to_string(),
-            item.ident.span().start().line,
+            item.ident.span(),
             &item.vis,
             &item.attrs,
         );
@@ -221,7 +274,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "union",
             &item.ident.to_string(),
-            item.ident.span().start().line,
+            item.ident.span(),
             &item.vis,
             &item.attrs,
         );
@@ -231,13 +284,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
     /// 收集公共 use 重导出。
     fn visit_item_use(&mut self, item: &'ast syn::ItemUse) {
         if matches!(&item.vis, syn::Visibility::Public(_)) {
-            self.push(
-                "reexport",
-                "use",
-                item.use_token.span.start().line,
-                &item.vis,
-                &item.attrs,
-            );
+            self.push("reexport", "use", item.span(), &item.vis, &item.attrs);
         }
         syn::visit::visit_item_use(self, item);
     }
@@ -247,7 +294,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "method",
             &item.sig.ident.to_string(),
-            item.sig.ident.span().start().line,
+            item.sig.ident.span(),
             &syn::Visibility::Inherited,
             &item.attrs,
         );
@@ -260,13 +307,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             && matches!(&field.vis, syn::Visibility::Public(_))
         {
             let name = identifier.to_string();
-            self.push(
-                "field",
-                &name,
-                identifier.span().start().line,
-                &field.vis,
-                &field.attrs,
-            );
+            self.push("field", &name, identifier.span(), &field.vis, &field.attrs);
         }
         syn::visit::visit_field(self, field);
     }
@@ -276,7 +317,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
         self.push(
             "method",
             &item.sig.ident.to_string(),
-            item.sig.ident.span().start().line,
+            item.sig.ident.span(),
             &item.vis,
             &item.attrs,
         );
@@ -286,22 +327,280 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
 
 impl DeclarationVisitor {
     /// 将一个 AST 项转换为统一声明记录。
+    ///
+    /// `span` 必须是**整个项**的跨度：`line` 与 `end_line` 都从它取，
+    /// 用标识符跨度会少算属性和 `pub`，定位也不对。
     fn push(
         &mut self,
         kind: &str,
         name: &str,
-        line: usize,
+        span: Span,
         visibility: &syn::Visibility,
         attrs: &[syn::Attribute],
     ) {
         self.declarations.push(Declaration {
             file: self.file.clone(),
-            line,
+            line: span.start().line,
             kind: kind.to_string(),
             name: name.to_string(),
             is_public: matches!(visibility, syn::Visibility::Public(_)),
             has_doc: has_doc(attrs),
+            end_line: span.end().line,
         });
+    }
+}
+
+/// 递归构建一组项的结构大纲。
+fn outline_items(items: &[syn::Item], lines: &[&str]) -> Vec<OutlineNode> {
+    items
+        .iter()
+        .filter_map(|item| outline_item(item, lines))
+        .collect()
+}
+
+/// 把一个 AST 项转换为大纲节点；不产出的项返回 `None`。
+///
+/// 以 `_` 收尾是**有意的**：大纲是尽力而为的辅助输出，遇到未列举的项跳过即可，
+/// 不应该因为它而让整个扫描失败。覆盖率声明那条路径则仍然是穷尽的。
+fn outline_item(item: &syn::Item, lines: &[&str]) -> Option<OutlineNode> {
+    // `header` 是**声明自身**的起点。整项跨度会把属性算进去——`///` 就是 `#[doc]`
+    // 属性，用整项起点会让「所在行」指向文档注释而不是声明，定位就错了。
+    let (kind, name, header, children) = match item {
+        syn::Item::Fn(inner) => (
+            "function",
+            inner.sig.ident.to_string(),
+            inner.sig.ident.span(),
+            Vec::new(),
+        ),
+        syn::Item::Struct(inner) => (
+            "struct",
+            inner.ident.to_string(),
+            inner.ident.span(),
+            outline_fields(inner.fields.iter(), lines),
+        ),
+        syn::Item::Enum(inner) => (
+            "enum",
+            inner.ident.to_string(),
+            inner.ident.span(),
+            outline_variants(&inner.variants, lines),
+        ),
+        syn::Item::Union(inner) => (
+            "union",
+            inner.ident.to_string(),
+            inner.ident.span(),
+            outline_fields(inner.fields.named.iter(), lines),
+        ),
+        syn::Item::Trait(inner) => (
+            "trait",
+            inner.ident.to_string(),
+            inner.ident.span(),
+            outline_trait_items(&inner.items, lines),
+        ),
+        syn::Item::Impl(inner) => (
+            "impl",
+            quote_like(&inner.self_ty),
+            inner.impl_token.span,
+            outline_impl_items(&inner.items, lines),
+        ),
+        syn::Item::Mod(inner) => (
+            "module",
+            inner.ident.to_string(),
+            inner.ident.span(),
+            inner
+                .content
+                .as_ref()
+                .map(|(_, items)| outline_items(items, lines))
+                .unwrap_or_default(),
+        ),
+        syn::Item::Const(inner) => (
+            "constant",
+            inner.ident.to_string(),
+            inner.ident.span(),
+            Vec::new(),
+        ),
+        syn::Item::Static(inner) => (
+            "static",
+            inner.ident.to_string(),
+            inner.ident.span(),
+            Vec::new(),
+        ),
+        syn::Item::Type(inner) => (
+            "type",
+            inner.ident.to_string(),
+            inner.ident.span(),
+            Vec::new(),
+        ),
+        // `use` 不属于大纲要回答的问题（结构/字段/函数/枚举/对象/成员），列出来只是噪声。
+        _ => return None,
+    };
+    Some(node(kind, name, header, item.span(), lines, children))
+}
+
+/// 按「声明自身起点 + 整项跨度」组装一个节点。
+fn node(
+    kind: &str,
+    name: String,
+    header: Span,
+    full: Span,
+    lines: &[&str],
+    children: Vec<OutlineNode>,
+) -> OutlineNode {
+    let source_line = line_text(lines, header.start().line);
+    OutlineNode {
+        signature: declaration_head(&source_line, &name),
+        kind: kind.to_string(),
+        name,
+        line: header.start().line,
+        end_line: full.end().line,
+        lines: full.end().line.saturating_sub(full.start().line) + 1,
+        source_line,
+        children,
+    }
+}
+
+/// 构建结构体、联合体或变体的字段节点。
+///
+/// 接收迭代器而不是 `&Fields`：`ItemUnion` 的字段是 `FieldsNamed`，
+/// 两者没有共同的引用形态。
+fn outline_fields<'a>(
+    fields: impl Iterator<Item = &'a syn::Field>,
+    lines: &[&str],
+) -> Vec<OutlineNode> {
+    fields
+        .filter_map(|field| {
+            let identifier = field.ident.as_ref()?;
+            Some(node(
+                "field",
+                identifier.to_string(),
+                identifier.span(),
+                field.span(),
+                lines,
+                Vec::new(),
+            ))
+        })
+        .collect()
+}
+
+/// 构建枚举变体节点，并下钻到变体自身的字段。
+fn outline_variants(
+    variants: &syn::punctuated::Punctuated<syn::Variant, syn::Token![,]>,
+    lines: &[&str],
+) -> Vec<OutlineNode> {
+    variants
+        .iter()
+        .map(|variant| {
+            node(
+                "variant",
+                variant.ident.to_string(),
+                variant.ident.span(),
+                variant.span(),
+                lines,
+                outline_fields(variant.fields.iter(), lines),
+            )
+        })
+        .collect()
+}
+
+/// 构建 trait 项节点。
+fn outline_trait_items(items: &[syn::TraitItem], lines: &[&str]) -> Vec<OutlineNode> {
+    items
+        .iter()
+        .filter_map(|item| {
+            let (kind, identifier, full) = match item {
+                syn::TraitItem::Fn(inner) => ("method", inner.sig.ident.clone(), inner.span()),
+                syn::TraitItem::Const(inner) => ("constant", inner.ident.clone(), inner.span()),
+                syn::TraitItem::Type(inner) => ("type", inner.ident.clone(), inner.span()),
+                _ => return None,
+            };
+            Some(node(
+                kind,
+                identifier.to_string(),
+                identifier.span(),
+                full,
+                lines,
+                Vec::new(),
+            ))
+        })
+        .collect()
+}
+
+/// 构建实现块内的关联项节点。
+fn outline_impl_items(items: &[syn::ImplItem], lines: &[&str]) -> Vec<OutlineNode> {
+    items
+        .iter()
+        .filter_map(|item| {
+            let (kind, identifier, full) = match item {
+                syn::ImplItem::Fn(inner) => ("method", inner.sig.ident.clone(), inner.span()),
+                syn::ImplItem::Const(inner) => ("constant", inner.ident.clone(), inner.span()),
+                syn::ImplItem::Type(inner) => ("type", inner.ident.clone(), inner.span()),
+                _ => return None,
+            };
+            Some(node(
+                kind,
+                identifier.to_string(),
+                identifier.span(),
+                full,
+                lines,
+                Vec::new(),
+            ))
+        })
+        .collect()
+}
+
+/// 取指定行的源码文本（已去除首尾空白）；越界返回空串。
+fn line_text(lines: &[&str], line: usize) -> String {
+    if line == 0 {
+        return String::new();
+    }
+    lines
+        .get(line - 1)
+        .map(|text| text.trim().to_string())
+        .unwrap_or_default()
+}
+
+/// 由起始源码行派生「定义句」：声明头去掉名字。
+///
+/// 例：`fn span() -> SourceSpan {` + 名字 `span` → `fn() -> SourceSpan`。
+/// 名字既已单列，签名里再重复一次只是噪声。取到第一个 `{` / `;` / `=` 为止，
+/// 因此多行签名的节点只会给出起始行上的那一段——`line`/`end_line` 才是判断大小的依据。
+fn declaration_head(source_line: &str, name: &str) -> String {
+    let head = source_line
+        .split(['{', ';'])
+        .next()
+        .unwrap_or(source_line)
+        .trim();
+    let without_name = match head.find(name) {
+        Some(index) => {
+            let mut text = String::with_capacity(head.len());
+            text.push_str(&head[..index]);
+            text.push_str(&head[index + name.len()..]);
+            text
+        }
+        None => head.to_string(),
+    };
+    without_name
+        .split_whitespace()
+        .collect::<Vec<_>>()
+        .join(" ")
+        .replace("fn (", "fn(")
+        .trim_end_matches([',', ':'])
+        .trim()
+        .to_string()
+}
+
+/// 把类型节点渲染成紧凑文本，用于 `impl` 块的名称。
+///
+/// 只处理 `impl` 自身类型这一种用途，不做完整类型打印——完整打印需要 `quote`，
+/// 而这里没有引入新依赖的必要时会退化成源码切片，得不偿失。
+fn quote_like(ty: &syn::Type) -> String {
+    match ty {
+        syn::Type::Path(path) => path
+            .path
+            .segments
+            .last()
+            .map(|segment| segment.ident.to_string())
+            .unwrap_or_else(|| "impl".to_string()),
+        _ => "impl".to_string(),
     }
 }
 

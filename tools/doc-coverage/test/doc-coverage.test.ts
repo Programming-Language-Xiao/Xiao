@@ -73,7 +73,13 @@ describe("覆盖率负例", () => {
 
 describe("Rust AST 协议", () => {
   test("拒绝不兼容的响应版本", () => {
-    const diagnostic = validateRustAdapterResponse({ protocol_version: 2, declarations: [], errors: [] });
+    // 传的是**上一个**协议版本：必须被拒绝，而不是被当成当前版本继续校验字段。
+    const diagnostic = validateRustAdapterResponse({ protocol_version: 1, declarations: [], outlines: [], errors: [] });
+    expect(diagnostic?.code).toBe("A0-PROTOCOL-001");
+  });
+
+  test("拒绝缺少 outlines 的响应", () => {
+    const diagnostic = validateRustAdapterResponse({ protocol_version: RUST_ADAPTER_PROTOCOL_VERSION, declarations: [], errors: [] });
     expect(diagnostic?.code).toBe("A0-PROTOCOL-001");
   });
 
@@ -85,7 +91,8 @@ describe("Rust AST 协议", () => {
       const result = scanRustFiles({ root: process.cwd(), files: [file] });
       expect(result.diagnostics).toEqual([]);
       expect(result.declarations.some((item) => item.name === "visible" && item.hasDoc)).toBe(true);
-      expect(RUST_ADAPTER_PROTOCOL_VERSION).toBe(1);
+      expect(result.outlines.some((item) => item.nodes.some((node) => node.name === "visible" && node.kind === "function"))).toBe(true);
+      expect(RUST_ADAPTER_PROTOCOL_VERSION).toBe(2);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
