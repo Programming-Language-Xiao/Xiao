@@ -351,6 +351,44 @@ pub enum CompareOp {
     NotEqual,
 }
 
+/// 集合代数运算类别，结果仍是集合。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum SetOpKind {
+    /// 并集。
+    Union,
+    /// 交集。
+    Intersection,
+    /// 差集：左操作数独有。
+    Difference,
+    /// 对称差。
+    SymmetricDifference,
+}
+
+/// 集合关系比较类别，结果恒为布尔。
+///
+/// 变体按「左操作数相对右操作数」的方向命名：`Subset` 表示左是右的子集。
+/// 成员判定用 [`Self::Member`] 而不是 `Contains`，因为后者读起来是「左包含右」，
+/// 而 `x in s` 里左操作数是被包含的一方，方向正好相反。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum SetCompareOp {
+    /// `==`：无序双向包含，不是句柄身份也不是元素序列逐位相等。
+    Equal,
+    /// `!=`。
+    NotEqual,
+    /// `<`：真子集，要求包含且不相等。
+    ProperSubset,
+    /// `<=`：子集，允许两边相等。
+    Subset,
+    /// `>`：真超集。
+    ProperSuperset,
+    /// `>=`：超集，允许两边相等。
+    Superset,
+    /// `in`：左操作数是右操作数的成员。
+    Member,
+    /// `not in`。
+    NotMember,
+}
+
 /// 调用实参的类别。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum ArgKind {
@@ -452,6 +490,30 @@ pub enum TacOp {
         /// 左操作数。
         left: VReg,
         /// 右操作数。
+        right: VReg,
+    },
+    /// 集合代数运算；`dst` 是结果集合。
+    ///
+    /// 与 [`Self::Arith`] 分开是有意的：集合的「加法」不是可折叠的算术，
+    /// 复用 `Arith` 会让优化器与后端无从判断能否强度削减。
+    SetOp {
+        /// 运算类别。
+        op: SetOpKind,
+        /// 左操作数寄存器。
+        left: VReg,
+        /// 右操作数寄存器。
+        right: VReg,
+    },
+    /// 集合关系比较；`dst` 恒为布尔。
+    ///
+    /// 与 [`Self::Compare`] 分开的理由同 [`Self::SetOp`]：`Compare` 的 `Less`
+    /// 在两个整数上是「小于」，在两个集合上却是「真子集」。
+    SetCompare {
+        /// 比较类别。
+        op: SetCompareOp,
+        /// 左操作数寄存器。
+        left: VReg,
+        /// 右操作数寄存器。
         right: VReg,
     },
     /// 构造数组。

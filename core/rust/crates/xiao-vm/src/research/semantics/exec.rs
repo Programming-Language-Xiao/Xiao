@@ -396,6 +396,18 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let value = ops::apply_compare(*op, &left, &right).map_err(Fault::Error)?;
                 self.write_operand(instruction.dst, value);
             }
+            TacOp::SetOp { op, left, right } => {
+                let left = self.read(*left)?;
+                let right = self.read(*right)?;
+                let value = ops::apply_set_op(*op, &left, &right).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::SetCompare { op, left, right } => {
+                let left = self.read(*left)?;
+                let right = self.read(*right)?;
+                let value = ops::apply_set_compare(*op, &left, &right).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
             TacOp::NewArray { elements } => {
                 let values = self.collect(elements)?;
                 let value = ops::new_array(values).map_err(Fault::Error)?;

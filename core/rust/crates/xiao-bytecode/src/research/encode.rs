@@ -32,8 +32,8 @@ use super::lower::{TAC_BYTECODE_ABI_VERSION, TAC_RUNTIME_ABI_VERSION};
 use super::sig::{CallSig, CallSigTable, ParamKind};
 use super::tac::{
     ArgKind, ArithOp, BlockId, CategoryMap, CompareOp, ConstId, ConstPool, FuncId, PathStep,
-    RegisterClass, SigId, TAC_VERSION, TacAbi, TacArgument, TacBlock, TacConstant, TacFunction,
-    TacHandler, TacInstr, TacOp, TacProgram, VReg,
+    RegisterClass, SetCompareOp, SetOpKind, SigId, TAC_VERSION, TacAbi, TacArgument, TacBlock,
+    TacConstant, TacFunction, TacHandler, TacInstr, TacOp, TacProgram, VReg,
 };
 
 /// 研究编码的魔数。

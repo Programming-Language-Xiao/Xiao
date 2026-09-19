@@ -3,7 +3,8 @@
 use super::codec::{Reader, read_bool};
 use super::tags::{
     arg_kind_from_tag, arith_from_tag, compare_from_tag, param_kind_from_tag,
-    register_class_from_tag, release_from_tag, scalar_from_tag,
+    register_class_from_tag, release_from_tag, scalar_from_tag, set_compare_from_tag,
+    set_op_from_tag,
 };
 use super::validate::{check_version, validate_input};
 use super::{
@@ -494,6 +495,16 @@ fn decode_op(
         33 => TacOp::RandomSeed {
             value: VReg::new(index(reader, "VReg")?),
             plan: index(reader, "RandomSeedPlanId")?,
+        },
+        34 => TacOp::SetOp {
+            op: set_op_from_tag(reader.byte("SetOpKind")?)?,
+            left: VReg::new(index(reader, "VReg")?),
+            right: VReg::new(index(reader, "VReg")?),
+        },
+        35 => TacOp::SetCompare {
+            op: set_compare_from_tag(reader.byte("SetCompareOp")?)?,
+            left: VReg::new(index(reader, "VReg")?),
+            right: VReg::new(index(reader, "VReg")?),
         },
         16 => TacOp::Jump(BlockId::new(index(reader, "BlockId")?)),
         17 => TacOp::BranchIf {

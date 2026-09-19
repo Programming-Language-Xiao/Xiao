@@ -202,7 +202,10 @@ fn validate_op(
         | TacOp::Raise { value }
         | TacOp::Transfer { value } => check_vreg(*value),
         TacOp::Cast { value, .. } => check_vreg(*value),
-        TacOp::Arith { left, right, .. } | TacOp::Compare { left, right, .. } => {
+        TacOp::Arith { left, right, .. }
+        | TacOp::Compare { left, right, .. }
+        | TacOp::SetOp { left, right, .. }
+        | TacOp::SetCompare { left, right, .. } => {
             check_vreg(*left)?;
             check_vreg(*right)
         }

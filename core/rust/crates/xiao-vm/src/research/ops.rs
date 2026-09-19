@@ -4,7 +4,7 @@
 //! 矩阵只有一处引用点：将来 Runtime 换实现、或某个机型需要不同的快速路径，
 //! 都只改这一个文件。这里不做任何隐式宽度提升——那由后端在降低时插入显式转换。
 
-use xiao_bytecode::research::{ArithOp, CompareOp, PathStep};
+use xiao_bytecode::research::{ArithOp, CompareOp, PathStep, SetCompareOp, SetOpKind};
 use xiao_ir::{
     IrSelectionItemPlan, IrSelectionPath, IrSelectionPathSegment, IrSelectionPlan, IrType,
 };
@@ -30,6 +30,61 @@ pub fn apply_arith(
         ArithOp::Remainder => left.remainder(right),
         ArithOp::Power => left.power(right),
     }
+}
+
+/// 取出两个集合操作数；任一不是集合就返回它的类型名供调用方构造稳定错误。
+///
+/// 走到这里说明静态检查与运行时检查都没拦住——正常路径上动态边界会先被
+/// `Check` 指令拒绝，所以这是兜底而不是主路径。
+fn set_operands(
+    left: &RuntimeValue,
+    right: &RuntimeValue,
+) -> Result<(SetHandle, SetHandle), String> {
+    match (left, right) {
+        (RuntimeValue::Set(left_set), RuntimeValue::Set(right_set)) => {
+            Ok((left_set.clone(), right_set.clone()))
+        }
+        (RuntimeValue::Set(_), other) | (other, _) => Err(other.type_name().to_owned()),
+    }
+}
+
+/// 执行集合代数运算，结果仍是集合。
+pub fn apply_set_op(
+    op: SetOpKind,
+    left: &RuntimeValue,
+    right: &RuntimeValue,
+) -> RuntimeResult<RuntimeValue> {
+    let (left_set, right_set) =
+        set_operands(left, right).map_err(RuntimeError::set_operation_requires_sets)?;
+    let result = match op {
+        SetOpKind::Union => left_set.union(&right_set)?,
+        SetOpKind::Intersection => left_set.intersection(&right_set)?,
+        SetOpKind::Difference => left_set.difference(&right_set)?,
+        SetOpKind::SymmetricDifference => left_set.symmetric_difference(&right_set)?,
+    };
+    Ok(RuntimeValue::Set(result))
+}
+
+/// 执行集合关系比较，结果恒为布尔。
+pub fn apply_set_compare(
+    op: SetCompareOp,
+    left: &RuntimeValue,
+    right: &RuntimeValue,
+) -> RuntimeResult<RuntimeValue> {
+    let (left_set, right_set) =
+        set_operands(left, right).map_err(RuntimeError::set_comparison_requires_sets)?;
+    let value = match op {
+        SetCompareOp::Equal => left_set.equals(&right_set)?,
+        SetCompareOp::NotEqual => !left_set.equals(&right_set)?,
+        SetCompareOp::ProperSubset => left_set.is_proper_subset(&right_set)?,
+        SetCompareOp::Subset => left_set.is_subset(&right_set)?,
+        SetCompareOp::ProperSuperset => left_set.is_proper_superset(&right_set)?,
+        SetCompareOp::Superset => left_set.is_superset(&right_set)?,
+        // `x in s` 里左操作数是被包含的一方，方向与名字相反，这里刻意写全。
+        SetCompareOp::Member => right_set.contains(left)?,
+        SetCompareOp::NotMember => !right_set.contains(left)?,
+    };
+    Ok(RuntimeValue::Bool(value))
 }
 
 /// 构造数组。

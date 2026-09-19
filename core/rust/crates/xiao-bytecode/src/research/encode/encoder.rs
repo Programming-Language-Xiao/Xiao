@@ -3,7 +3,7 @@
 use super::codec::{Writer, write_optional_index, write_optional_string, write_optional_usize};
 use super::tags::{
     arg_kind_tag, arith_tag, compare_tag, opcode, param_kind_tag, register_class_tag, release_tag,
-    scalar_tag,
+    scalar_tag, set_compare_tag, set_op_tag,
 };
 use super::validate::validate_signature;
 use super::{
@@ -313,6 +313,16 @@ fn encode_op(
             writer.index(value.get(), "VReg")?;
             writer.byte(scalar_tag(*target));
             Ok(())
+        }
+        TacOp::SetOp { op, left, right } => {
+            writer.byte(set_op_tag(*op));
+            writer.index(left.get(), "VReg")?;
+            writer.index(right.get(), "VReg")
+        }
+        TacOp::SetCompare { op, left, right } => {
+            writer.byte(set_compare_tag(*op));
+            writer.index(left.get(), "VReg")?;
+            writer.index(right.get(), "VReg")
         }
         TacOp::Arith { op, left, right } => {
             writer.byte(arith_tag(*op));

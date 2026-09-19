@@ -1,14 +1,17 @@
 //! opcode 与外部枚举的稳定标签映射。
 
-use super::{ArgKind, ArithOp, CompareOp, EncodeError, ParamKind, RegisterClass, TacOp};
+use super::{
+    ArgKind, ArithOp, CompareOp, EncodeError, ParamKind, RegisterClass, SetCompareOp, SetOpKind,
+    TacOp,
+};
 use xiao_lifetime::ReleaseActionKind;
 use xiao_syntax::ScalarType;
 
-/// `TacOp` 到稳定 opcode 的映射，0–33 连续。
+/// `TacOp` 到稳定 opcode 的映射，0–35 连续。
 ///
 /// 这张表是格式的核心契约：**只能追加，不得重排**。调换两个编号会让旧字节被读
 /// 成另一种指令，而这种错误在往返测试里是看不出来的（编码器和解码器用的是同一
-/// 张表）。`all_ops_program` 里断言了 `ops` 的顺序恰好产生 `0..34`，新增变体插在
+/// 张表）。`all_ops_program` 里断言了 `ops` 的顺序恰好产生 `0..36`，新增变体插在
 /// 中间会立刻失败。
 pub(super) fn opcode(op: &TacOp) -> u8 {
     match op {
@@ -46,7 +49,69 @@ pub(super) fn opcode(op: &TacOp) -> u8 {
         TacOp::SelectorApply { .. } => 31,
         TacOp::BroadcastAssign { .. } => 32,
         TacOp::RandomSeed { .. } => 33,
+        TacOp::SetOp { .. } => 34,
+        TacOp::SetCompare { .. } => 35,
     }
+}
+
+/// `SetOpKind` 与稳定标签的双向表。
+pub(super) fn set_op_tag(value: SetOpKind) -> u8 {
+    match value {
+        SetOpKind::Union => 0,
+        SetOpKind::Intersection => 1,
+        SetOpKind::Difference => 2,
+        SetOpKind::SymmetricDifference => 3,
+    }
+}
+
+/// 解析 `SetOpKind` 标签；未知标签显式报错，不退回默认值。
+pub(super) fn set_op_from_tag(tag: u8) -> Result<SetOpKind, EncodeError> {
+    Ok(match tag {
+        0 => SetOpKind::Union,
+        1 => SetOpKind::Intersection,
+        2 => SetOpKind::Difference,
+        3 => SetOpKind::SymmetricDifference,
+        value => {
+            return Err(EncodeError::InvalidEnum {
+                field: "SetOpKind".to_owned(),
+                value: value as u64,
+            });
+        }
+    })
+}
+
+/// `SetCompareOp` 与稳定标签的双向表。
+pub(super) fn set_compare_tag(value: SetCompareOp) -> u8 {
+    match value {
+        SetCompareOp::Equal => 0,
+        SetCompareOp::NotEqual => 1,
+        SetCompareOp::ProperSubset => 2,
+        SetCompareOp::Subset => 3,
+        SetCompareOp::ProperSuperset => 4,
+        SetCompareOp::Superset => 5,
+        SetCompareOp::Member => 6,
+        SetCompareOp::NotMember => 7,
+    }
+}
+
+/// 解析 `SetCompareOp` 标签；未知标签显式报错，不退回默认值。
+pub(super) fn set_compare_from_tag(tag: u8) -> Result<SetCompareOp, EncodeError> {
+    Ok(match tag {
+        0 => SetCompareOp::Equal,
+        1 => SetCompareOp::NotEqual,
+        2 => SetCompareOp::ProperSubset,
+        3 => SetCompareOp::Subset,
+        4 => SetCompareOp::ProperSuperset,
+        5 => SetCompareOp::Superset,
+        6 => SetCompareOp::Member,
+        7 => SetCompareOp::NotMember,
+        value => {
+            return Err(EncodeError::InvalidEnum {
+                field: "SetCompareOp".to_owned(),
+                value: value as u64,
+            });
+        }
+    })
 }
 
 /// `ScalarType` 与稳定标签的双向表。
