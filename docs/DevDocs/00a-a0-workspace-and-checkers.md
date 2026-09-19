@@ -13,7 +13,8 @@
 
 ### 当前状态与边界
 
-- 当前仓库已经包含 Rust/Bun workspace manifest、20 个 Rust crate 骨架、三个 TypeScript workspace 包，以及 A0 目录与覆盖率检查器；20 个 Rust workspace 成员均已 opt-in 到共享 `missing_docs` lint，语言本身仍未实现。
+- 当前仓库已经包含 Rust/Bun workspace manifest、20 个 Rust crate 骨架、三个 TypeScript workspace 包，以及 A0 目录、单文件行数与覆盖率检查器；20 个 Rust workspace 成员均已 opt-in 到共享 `missing_docs` lint。
+- `A0-SIZE-001` 已按 2500 物理行上限启用。`encode.rs`（3847 行）与 `parser.rs`（3040 行）是待后续拆分的已知债务，因此当前 `check:layout` 与 `check` 有意返回失败；不得为它们补豁免说明来伪造绿态。
 - 本阶段建立工程可审计性，不实现 Xiao Token、类型、Runtime、VM、LLVM 或包管理语义。
 - 代码、测试和 UseDocs 的同步要求从 A0 起生效；尚未实现的功能不得为了满足文档数量而伪造 `verified` 页面。
 - CLI 工具本身使用 TypeScript；Rust `syn` 解析器作为内部解析组件，不形成第二套用户 CLI。
@@ -22,8 +23,8 @@
 
 - workspace 清单：根 `package.json`、`bun.lock`、`core/rust/Cargo.toml`、`core/rust/Cargo.lock` 和 `core/rust/rust-toolchain.toml`。
 - 政策与登记：`tools/repo-check/repository.manifest.json`、`docs/module-registry.json` 及 `resources/schemas/` 下的两个 Schema。
-- 目录检查器：`tools/repo-check/src/cli.ts`；覆盖率检查器：`tools/doc-coverage/src/cli.ts`；Rust 原生 AST 适配器：`core/rust/crates/xiao-doc-coverage-rust/`。
-- 本地入口：`bun run check` 执行全套门禁；需要单项结果时使用 `bun tools/repo-check/src/cli.ts layout|docs|usedocs` 或 `bun tools/doc-coverage/src/cli.ts`。
+- 目录与尺寸检查器：`tools/repo-check/src/cli.ts`、`tools/repo-check/src/size.ts`；覆盖率检查器：`tools/doc-coverage/src/cli.ts`；Rust 原生 AST 适配器：`core/rust/crates/xiao-doc-coverage-rust/`。
+- 本地入口：`bun run check` 执行全套门禁；需要单项结果时使用 `bun run check:layout`、`bun tools/repo-check/src/cli.ts docs|usedocs` 或 `bun run check:coverage`。超标 Rust 文件会让 `check:layout`/`check` 调用 Rust 适配器，因此需有 Rust 工具链、预先构建适配器或设置 `XIAO_RUST_DOC_ADAPTER`。
 - A0 用户页面：`docs/UseDocs/tooling/cli/repo-check.md`、`doc-coverage.md` 和 `doc-coverage-rust.md`，均已登记并验证。
 
 ## 一级工程目标：建立唯一且可交叉验证的工作区清单
@@ -163,23 +164,38 @@ tools/doc-coverage      @xiao/doc-coverage
 目录检查器放在 `tools/repo-check/`，命令行实现使用 TypeScript 并由 Bun 执行。它只读取和校验仓库，不修改清单、README、源代码或用户配置。提供四个稳定子命令：
 
 ```text
-xiao-repo-check layout     # workspace、路径、README 和源目录
+xiao-repo-check layout     # workspace、路径、README、源目录和单文件行数
 xiao-repo-check docs       # DevDocs/UseDocs 登记、链接和状态
 xiao-repo-check usedocs    # UseDocs 页面元数据、示例和阅读图
 xiao-repo-check all        # 按固定顺序执行全部检查
 ```
 
-`all` 的顺序固定为：加载清单 → 校验 Rust workspace → 校验 Bun workspace → 校验目录/README → 校验模块登记和 UseDocs → 调用覆盖率检查器。检查器不通过解析人类可读的编译器输出判断 workspace 状态；使用 `cargo metadata --format-version 1` 和 JSON manifest。
+`all` 的顺序固定为：加载清单 → 校验 Rust workspace → 校验 Bun workspace → 校验目录/README 与单文件行数 → 校验 DevDocs → 校验模块登记和 UseDocs → 调用覆盖率检查器。只有发现超标 Rust 文件时，行数检查才按需调用 Rust 大纲适配器。检查器不通过解析人类可读的编译器输出判断 workspace 状态；使用 `cargo metadata --format-version 1` 和 JSON manifest。
 
 ### 目录检查算法
 
 1. 从显式 `--root` 或包含 `.git` 的最近祖先确定仓库根；拒绝根外路径。
 2. 解析并校验 `repository.manifest.json` 的版本、路径和数组去重。
 3. 读取 Cargo manifest 和 TypeScript manifest，展开显式成员，逐项确认目录、构建 manifest、源码入口和 README 存在。
-4. 在 `codeRoots` 内枚举 `.rs`、`.ts`、`.tsx` 等项目源文件所在目录；排除清单中的生成/第三方目录。任何源目录缺 README 或未登记都报错。
-5. 检查所有登记目录是否仍在仓库内，拒绝符号链接逃逸、绝对路径、大小写折叠冲突和同名 Rust crate/Bun 包。
-6. 检查 README 至少有标题、目录职责、工程期、依赖边界（或明确“不适用”）四类信息；内容质量由人工审查补充，检查器不把中文句子当作语义证明。
-7. 读取 `docs/module-registry.json`，确认代码、测试和 UseDocs 路径存在且路径大小写一致，并把结果交给文档链接检查。
+4. 在 `codeRoots` 内枚举 `.rs`、`.ts`、`.tsx` 等项目源文件及其所在目录；排除清单中的生成/第三方目录。任何源目录缺 README 或未登记都报错。
+5. 用统一换行口径统计每个源文件的物理行数；超过 2500 行时报告 `A0-SIZE-001`，并只为超标文件按需取得树形结构大纲。
+6. 检查所有登记目录是否仍在仓库内，拒绝符号链接逃逸、绝对路径、大小写折叠冲突和同名 Rust crate/Bun 包。
+7. 检查 README 至少有标题、目录职责、工程期、依赖边界（或明确“不适用”）四类信息；内容质量由人工审查补充，检查器不把中文句子当作语义证明。
+8. 读取 `docs/module-registry.json`，确认代码、测试和 UseDocs 路径存在且路径大小写一致，并把结果交给文档链接检查。
+
+当前遍历器不会扫描符号链接形式的源文件；仓内源码树已经确认没有此类链接。该限制必须保持
+显式可见，后续若要支持，应先补齐越界与循环链接测试，不能另写一套文件遍历器绕过现有规则。
+
+### 单文件行数与豁免
+
+`A0-SIZE-001` 对 `codeRoots` × `sourceExtensions` 中的项目维护源码使用 2500 物理行硬上限，
+注释与测试模块同样计入。行数判定独立于 AST；大纲不可用时仍保留尺寸 `error`，并额外报告
+`A0-PARSER-001`。文本报告把树形大纲放在诊断详情中，JSON 原样保留 `details`，SARIF 则放入
+结果 `properties.details`，主消息保持单行。
+
+只有同目录的 `<文件名>的硬耦合需要的说明.md` 同时包含“边界”“理由”“替代方案”“移除计划”
+四个非空章节时，尺寸诊断才降为仍然可见的 `warning`。空白或缺段说明会产生错误且不使豁免
+生效；不提供目录级或全局白名单。
 
 ### 稳定诊断与退出契约
 
@@ -197,11 +213,12 @@ xiao-repo-check all        # 按固定顺序执行全部检查
 | `A0-LAYOUT-002` | 源目录未登记、路径越界或大小写冲突 |
 | `A0-LAYOUT-003` | 符号链接损坏 |
 | `A0-LAYOUT-004` | 目录无法读取或枚举 |
+| `A0-SIZE-001` | 单个项目维护源文件超过 2500 物理行，或其豁免说明不完整 |
 | `A0-DOCS-001` | 模块登记路径、UseDocs 元数据或 Markdown 链接失效 |
 | `A0-DOCS-002` | 已完成模块缺少 `verified` UseDocs |
 | `A0-COVERAGE-001` | 公共 API 100% 或全仓库 90% 门槛未达 |
 | `A0-COVERAGE-002` | 单个声明缺少代码文档 |
-| `A0-PARSER-001` | 源文件 AST 解析失败 |
+| `A0-PARSER-001` | 源文件 AST 解析失败，或超长文件结构大纲不可用 |
 | `A0-PARSER-002` | 源文件无法读取 |
 | `A0-PROTOCOL-001` | AST 适配器协议版本或响应形状不匹配 |
 
@@ -229,7 +246,7 @@ xiao-repo-check all        # 按固定顺序执行全部检查
 
 适配器输出统一的中间记录：`language`、`file`、`line`、`kind`、`name`、`isPublic`、`hasDoc` 和 `parser`。解析失败必须终止该文件检查，不得退回正则扫描，以免把复杂语法误报为已覆盖。
 
-Rust 适配器使用版本为 `2` 的 JSON 行协议。请求形如 `{"protocol_version":2,"files":["..."],"outline":false}`，其中 `outline` 可省略且缺省为 `false`；响应固定包含 `protocol_version`、`declarations`、`outlines` 和 `errors`，未请求大纲时 `outlines` 为空数组。覆盖率判定只读取 `declarations`，`outlines` 是供结构门禁按需读取的独立通道。TypeScript 编排器在消费前校验版本号和数组/记录字段，缺失或不兼容时报告 `A0-PROTOCOL-001`；Rust 源文件解析错误仍报告 `A0-PARSER-001`。协议版本与覆盖率报告的 `schemaVersion` 独立递增。
+Rust 适配器使用版本为 `2` 的 JSON 行协议。请求形如 `{"protocol_version":2,"files":["..."],"outline":false}`，其中 `outline` 可省略且缺省为 `false`；响应固定包含 `protocol_version`、`declarations`、`outlines` 和 `errors`，未请求大纲时 `outlines` 为空数组。覆盖率判定只读取 `declarations`；`A0-SIZE-001` 是 `outlines` 的首个消费者，只在 Rust 文件确实超标后请求该独立通道。TypeScript 尺寸大纲使用字段同形但类型独立的 `TypeScriptOutlineNode`，不进入版本化 Rust 响应校验。TypeScript 编排器在消费 Rust 响应前校验版本号和数组/记录字段，缺失或不兼容时报告 `A0-PROTOCOL-001`；Rust 源文件解析错误仍报告 `A0-PARSER-001`。协议版本与覆盖率报告的 `schemaVersion` 独立递增。
 
 统一 tree-sitter 不作为 A0 实现路径；它对 Rust 属性/可见性、宏边界和 TypeScript 导出重载需要额外语义补全。若未来增加其他解析器，必须新增版本化适配器并在报告中标记，不能静默混用。
 

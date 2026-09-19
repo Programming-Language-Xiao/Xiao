@@ -57,6 +57,10 @@
 9. 20 个 Rust workspace 成员均声明 `[lints] workspace = true`；`missing_docs` 的 rustc 与
    repo-check 两套口径均无缺口，标准 Clippy 门禁能阻断新增缺失 Rustdoc（实现提交
    `6d296c3`）。
+10. `A0-SIZE-001` 对项目维护源码执行 2500 物理行门禁，超标时在 JSON/SARIF 与文本报告中
+    提供结构化树形大纲；解析大纲失败不得取消尺寸 `error`，四段齐全的旁置硬耦合说明才可
+    降级为可见 `warning`。当前 `encode.rs` 与 `parser.rs` 是精确列出的拆分债务，门禁必须
+    持续报出它们，直到后续批次拆分，不能用豁免让检查伪装通过。
 
 ### F0：源码工程与位置模型
 

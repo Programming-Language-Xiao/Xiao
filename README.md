@@ -23,7 +23,7 @@ Xiao 是一个正在构建中的编程语言与工具链工程：用 Rust 建立
 - **语言前端**：已完成 F0/L0/L1/L2 词法、P0/P1 解析入口、表达式与选择器，以及声明、容器、集合和表的 AST 结构。实现位于 [`xiao-syntax`](./core/rust/crates/xiao-syntax/README.md)。
 - **静态语义**：已建立标量类型、显式转换、容器约束、集合运算、模块依赖图和 `config.xiao` 声明式检查。实现位于 [`xiao-types`](./core/rust/crates/xiao-types/README.md) 及相关 Rust crate。
 - **生命周期与 Runtime 首版**：`xiao-lifetime` 能生成确定性释放计划；`xiao-runtime` 已覆盖不透明对象头、Strong/Weak 句柄、`str`、固定宽度标量和表生命周期首版，但还没有完整容器 Runtime、VM 或并发能力。
-- **工程门禁**：规格快照、Rust 单元测试、目录检查、文档覆盖率和 UseDocs 同步规则一起维护，避免把“已解析”误写成“已执行”。
+- **工程门禁**：规格快照、Rust 单元测试、目录检查、2500 物理行门禁、文档覆盖率和 UseDocs 同步规则一起维护，避免把“已解析”误写成“已执行”。
 
 这些能力目前主要面向工程验证和语言设计迭代；它们不等同于已经发布的 Xiao 编译器或可执行程序。
 
@@ -65,6 +65,13 @@ bun test
 # Rust language core
 cargo test --manifest-path core/rust/Cargo.toml
 ```
+
+`bun run check:layout` 与 `bun run check` 在发现超长 Rust 文件时会请求 Rust AST 大纲，因此需要
+Rust 工具链；可先运行 `cargo build --manifest-path core/rust/Cargo.toml -p xiao-doc-coverage-rust`，
+或设置 `XIAO_RUST_DOC_ADAPTER` 指向预编译二进制。当前这两个检查按设计为红：
+`core/rust/crates/xiao-bytecode/src/research/encode.rs`（3847 行）和
+`core/rust/crates/xiao-syntax/src/parser.rs`（3040 行）已被 `A0-SIZE-001` 列为后续拆分债务，
+不得用豁免掩盖。其余检查仍应正常通过。
 
 环境基线见 [`package.json`](./package.json)（Bun `1.4.x`）和 [`core/rust/Cargo.toml`](./core/rust/Cargo.toml)（Rust `1.85+`）。
 
