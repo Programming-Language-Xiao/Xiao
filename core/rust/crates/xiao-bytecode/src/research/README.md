@@ -7,7 +7,7 @@
 
 `tac.rs` 只描述算什么，`sig.rs` 补 `IrProgram` 缺失的调用 ABI 描述，
 `lower/` 按关注点拆分降低规则，`verify.rs` 做自校验与释放序列对账，`encode.rs` 作为
-研究编码门面，内部实现拆在 `encode/` 下，提供内存中的研究编码、解码、34 个稳定 opcode、
+研究编码门面，内部实现拆在 `encode/` 下，提供内存中的研究编码、解码、36 个稳定 opcode、
 两种操作数宽度和 `pc -> IrSpan` 目录；
 其中 `SelectorApply`、`BroadcastAssign`、`RandomSeed` 携带选择器、广播和种子计划。
 当前 R2C 还提供 `MakeError`/`Raise`/`Check`、`TacHandler` 和按子程序复用的 `finally`

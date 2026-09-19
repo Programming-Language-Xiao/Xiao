@@ -1083,3 +1083,68 @@ fn control_flow_kind_name(kind: ControlFlowEdgeKind) -> &'static str {
         ControlFlowEdgeKind::Error => "error",
     }
 }
+
+/// 运行时检查名称桥接的穷尽性回归测试。
+#[cfg(test)]
+mod tests {
+    use super::runtime_check_kind_name;
+    use xiao_types::RuntimeCheckKind;
+
+    /// RuntimeCheckKind 的字符串桥接必须显式覆盖全部变体，并把每一类归入
+    /// 当前降低器的白名单或有意保留的未支持清单；新增变体不能静默掉进兜底。
+    #[test]
+    fn runtime_check_kind_bridge_is_exhaustive() {
+        let all = [
+            RuntimeCheckKind::NumericRange,
+            RuntimeCheckKind::StringBoolean,
+            RuntimeCheckKind::DynamicConversion,
+            RuntimeCheckKind::Arithmetic,
+            RuntimeCheckKind::SelectorBounds,
+            RuntimeCheckKind::SelectorStep,
+            RuntimeCheckKind::RandomCount,
+            RuntimeCheckKind::RandomSeed,
+            RuntimeCheckKind::SetHashability,
+            RuntimeCheckKind::SetMembership,
+            RuntimeCheckKind::SetOperation,
+            RuntimeCheckKind::SetComparison,
+            RuntimeCheckKind::BooleanCondition,
+            RuntimeCheckKind::Iterable,
+        ];
+        let supported = [
+            "numeric_range",
+            "dynamic_conversion",
+            "arithmetic",
+            "selector_bounds",
+            "selector_step",
+            "random_count",
+            "random_seed",
+            "set_hashability",
+            "set_membership",
+            "set_operation",
+            "set_comparison",
+            "boolean_condition",
+        ];
+        let intentionally_unsupported = ["string_boolean", "iterable"];
+
+        let names = all
+            .into_iter()
+            .map(runtime_check_kind_name)
+            .collect::<Vec<_>>();
+        assert_eq!(names.len(), 14);
+        assert_eq!(
+            names
+                .iter()
+                .collect::<std::collections::BTreeSet<_>>()
+                .len(),
+            14
+        );
+        for name in names {
+            assert!(
+                supported.contains(&name) || intentionally_unsupported.contains(&name),
+                "RuntimeCheckKind {name} 未列入支持或显式未支持清单"
+            );
+        }
+        assert!(!supported.contains(&"string_boolean"));
+        assert!(!supported.contains(&"iterable"));
+    }
+}

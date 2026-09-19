@@ -10,7 +10,7 @@ use xiao_ir::{
 };
 use xiao_runtime::{
     ArrayHandle, DictHandle, DictKind, RuntimeError, RuntimeResult, RuntimeValue, SetHandle,
-    TupleHandle,
+    TupleHandle, is_hashable,
 };
 use xiao_syntax::RandomMode;
 use xiao_types::{RandomSelectionError, RandomSource, sample_indices};
@@ -71,6 +71,24 @@ pub fn apply_set_compare(
     left: &RuntimeValue,
     right: &RuntimeValue,
 ) -> RuntimeResult<RuntimeValue> {
+    if matches!(op, SetCompareOp::Member | SetCompareOp::NotMember) {
+        let RuntimeValue::Set(right_set) = right else {
+            return Err(RuntimeError::set_membership_requires_hashable(
+                right.type_name(),
+            ));
+        };
+        if !is_hashable(left) {
+            return Err(RuntimeError::set_membership_requires_hashable(
+                left.type_name(),
+            ));
+        }
+        let member = right_set.contains(left)?;
+        return Ok(RuntimeValue::Bool(if op == SetCompareOp::Member {
+            member
+        } else {
+            !member
+        }));
+    }
     let (left_set, right_set) =
         set_operands(left, right).map_err(RuntimeError::set_comparison_requires_sets)?;
     let value = match op {
@@ -80,9 +98,7 @@ pub fn apply_set_compare(
         SetCompareOp::Subset => left_set.is_subset(&right_set)?,
         SetCompareOp::ProperSuperset => left_set.is_proper_superset(&right_set)?,
         SetCompareOp::Superset => left_set.is_superset(&right_set)?,
-        // `x in s` 里左操作数是被包含的一方，方向与名字相反，这里刻意写全。
-        SetCompareOp::Member => right_set.contains(left)?,
-        SetCompareOp::NotMember => !right_set.contains(left)?,
+        SetCompareOp::Member | SetCompareOp::NotMember => unreachable!("成员分支已提前返回"),
     };
     Ok(RuntimeValue::Bool(value))
 }
@@ -1058,17 +1074,19 @@ pub fn apply_compare(
 /// 因此运行时容器错误在字面量程序里不可达，只能在这一层验证。
 mod tests {
     use super::{
-        broadcast_assign, index_get, new_array, new_dict_column, new_dict_table, new_set,
-        new_tuple, selector_apply,
+        apply_set_compare, apply_set_op, broadcast_assign, index_get, new_array, new_dict_column,
+        new_dict_table, new_set, new_tuple, selector_apply,
     };
     use xiao_bytecode::research::PathStep;
+    use xiao_bytecode::research::{SetCompareOp, SetOpKind};
     use xiao_ir::{
         IrArrayShape, IrBroadcastAssignmentPlan, IrSelectionItemPlan, IrSelectionPath,
         IrSelectionPathSegment, IrSelectionPlan, IrSpan, IrStepPlan, IrType,
     };
     use xiao_runtime::{
         CONTAINER_HASHABILITY_CODE, CONTAINER_INDEX_CODE, CONTAINER_KEY_CODE, RANDOM_COUNT_CODE,
-        RuntimeValue, SELECTOR_BOUNDS_CODE, SELECTOR_STEP_CODE,
+        RuntimeValue, SELECTOR_BOUNDS_CODE, SELECTOR_STEP_CODE, SET_COMPARISON_CODE,
+        SET_MEMBERSHIP_CODE, SET_OPERATION_CODE,
     };
     use xiao_types::SeededRandom;
 
@@ -1275,6 +1293,43 @@ mod tests {
         let nested = pair();
         let error = new_set(vec![nested]).expect_err("数组不可作为集合元素");
         assert_eq!(error.code(), CONTAINER_HASHABILITY_CODE);
+    }
+
+    #[test]
+    /// 集合算子层必须报告稳定的操作数错误，而不是落入数值宽度诊断。
+    fn set_operation_and_comparison_error_identities_are_stable() {
+        let scalar = RuntimeValue::Int(1);
+        let set = new_set(vec![RuntimeValue::Int(1)]).expect("集合应分配");
+        let operation = apply_set_op(SetOpKind::Union, &scalar, &set).expect_err("应拒绝标量");
+        assert_eq!(operation.code(), SET_OPERATION_CODE);
+        let comparison =
+            apply_set_compare(SetCompareOp::Equal, &scalar, &set).expect_err("应拒绝标量");
+        assert_eq!(comparison.code(), SET_COMPARISON_CODE);
+    }
+
+    #[test]
+    /// `x in s` 的左值是被包含成员，不能把两个集合比较的方向套过来。
+    fn set_membership_uses_left_member_and_right_set_direction() {
+        let set = new_set(vec![RuntimeValue::Int(1), RuntimeValue::Int(2)]).expect("集合应分配");
+        assert_eq!(
+            apply_set_compare(SetCompareOp::Member, &RuntimeValue::Int(1), &set),
+            Ok(RuntimeValue::Bool(true))
+        );
+        assert_eq!(
+            apply_set_compare(SetCompareOp::Member, &RuntimeValue::Int(3), &set),
+            Ok(RuntimeValue::Bool(false))
+        );
+        assert_eq!(
+            apply_set_compare(SetCompareOp::NotMember, &RuntimeValue::Int(3), &set),
+            Ok(RuntimeValue::Bool(true))
+        );
+        let error = apply_set_compare(
+            SetCompareOp::Member,
+            &RuntimeValue::Int(1),
+            &RuntimeValue::Int(2),
+        )
+        .expect_err("右侧非集合应拒绝");
+        assert_eq!(error.code(), SET_MEMBERSHIP_CODE);
     }
 
     #[test]

@@ -12,7 +12,8 @@ use xiao_syntax::ScalarType;
 
 use crate::research::lower::Lowerer;
 use crate::research::tac::{
-    ArithOp, CompareOp, PathStep, RegisterClass, TacArgument, TacConstant, TacInstr, TacOp, VReg,
+    ArithOp, CompareOp, PathStep, RegisterClass, SetCompareOp, SetOpKind, TacArgument, TacConstant,
+    TacInstr, TacOp, VReg,
 };
 
 /// 降低一个表达式并返回结果寄存器。
@@ -341,6 +342,38 @@ fn lower_binary(
 ) -> VReg {
     let left_register = lowerer.lower_expression(left);
     let right_register = lowerer.lower_expression(right);
+    if let Some(op) = set_op(operator)
+        && is_set_operation_candidate(operator, &left.ty, &right.ty)
+    {
+        lowerer.emit_runtime_checks_for(expression.span, &[left_register, right_register]);
+        let register = lowerer.new_register(RegisterClass::ObjHandle, expression.span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::SetOp {
+                op,
+                left: left_register,
+                right: right_register,
+            },
+            register,
+            expression.span,
+        ));
+        return register;
+    }
+    if let Some(op) = set_compare(operator)
+        && is_set_comparison_candidate(operator, &left.ty, &right.ty)
+    {
+        lowerer.emit_runtime_checks_for(expression.span, &[left_register, right_register]);
+        let register = lowerer.new_register(RegisterClass::Bool, expression.span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::SetCompare {
+                op,
+                left: left_register,
+                right: right_register,
+            },
+            register,
+            expression.span,
+        ));
+        return register;
+    }
     if let Some(op) = compare_op(operator) {
         let register = lowerer.new_register(RegisterClass::Bool, expression.span);
         lowerer.emit(TacInstr::with_dst(
@@ -381,6 +414,60 @@ fn lower_binary(
         expression.span,
     ));
     register
+}
+
+/// 判断 IR 类型是否是集合形状或运行时才确定的动态边界。
+fn is_set_shape(ty: &IrType) -> bool {
+    matches!(
+        ty,
+        IrType::Set { .. } | IrType::Dynamic | IrType::Variable { .. }
+    )
+}
+
+/// 判断二元运算是否应使用集合代数指令。
+fn is_set_operation_candidate(operator: &str, left: &IrType, right: &IrType) -> bool {
+    match operator {
+        "&" | "^" => is_set_shape(left) || is_set_shape(right),
+        "+" | "-" => matches!(left, IrType::Set { .. }) || matches!(right, IrType::Set { .. }),
+        _ => false,
+    }
+}
+
+/// 判断二元比较是否应使用集合关系指令。
+fn is_set_comparison_candidate(operator: &str, left: &IrType, right: &IrType) -> bool {
+    match operator {
+        "in" | "not in" => is_set_shape(right),
+        "==" | "!=" | "<" | "<=" | ">" | ">=" => {
+            matches!(left, IrType::Set { .. }) || matches!(right, IrType::Set { .. })
+        }
+        _ => false,
+    }
+}
+
+/// 映射集合代数运算符。
+fn set_op(operator: &str) -> Option<SetOpKind> {
+    Some(match operator {
+        "+" => SetOpKind::Union,
+        "&" => SetOpKind::Intersection,
+        "-" => SetOpKind::Difference,
+        "^" => SetOpKind::SymmetricDifference,
+        _ => return None,
+    })
+}
+
+/// 映射集合关系运算符；成员判断方向由 `SetCompareOp::Member` 固定。
+fn set_compare(operator: &str) -> Option<SetCompareOp> {
+    Some(match operator {
+        "==" => SetCompareOp::Equal,
+        "!=" => SetCompareOp::NotEqual,
+        "<" => SetCompareOp::ProperSubset,
+        "<=" => SetCompareOp::Subset,
+        ">" => SetCompareOp::ProperSuperset,
+        ">=" => SetCompareOp::Superset,
+        "in" => SetCompareOp::Member,
+        "not in" => SetCompareOp::NotMember,
+        _ => return None,
+    })
 }
 
 /// 把二元数值运算的两个操作数提升到同一宽度，必要时插入显式转换。
@@ -461,6 +548,21 @@ fn lower_call(
     arguments: &[IrCallArgument],
     expression: &IrExpression,
 ) -> VReg {
+    if arguments.is_empty()
+        && matches!(
+            &callee.kind,
+            IrExpressionKind::Name { name } if !name.backticked && name.text == "set"
+        )
+    {
+        return build_container(
+            lowerer,
+            TacOp::NewSet {
+                elements: Vec::new(),
+            },
+            expression.span,
+            &expression.ty,
+        );
+    }
     if let Some(register) = lower_error_constructor(lowerer, callee, arguments, expression) {
         return register;
     }
@@ -655,4 +757,29 @@ fn arith_op(operator: &str) -> Option<ArithOp> {
         "**" => ArithOp::Power,
         _ => return None,
     })
+}
+
+/// 集合候选分派的边界回归测试。
+#[cfg(test)]
+mod tests {
+    use super::{is_set_comparison_candidate, is_set_operation_candidate};
+    use xiao_ir::IrType;
+
+    #[test]
+    /// 未决类型变量与 `Dynamic` 一样属于运行时集合形状边界。
+    fn unresolved_type_variables_keep_set_only_operators_and_membership_lowerable() {
+        let variable = IrType::Variable { id: 1 };
+        let scalar = IrType::Scalar {
+            name: "int".to_owned(),
+        };
+
+        assert!(is_set_operation_candidate("&", &variable, &variable));
+        assert!(is_set_operation_candidate("^", &variable, &variable));
+        assert!(is_set_comparison_candidate("in", &scalar, &variable));
+        assert!(is_set_comparison_candidate("not in", &scalar, &variable));
+
+        // `+`、`-` 和普通比较仍有标量语义；没有静态集合锚点时不能抢先改走集合指令。
+        assert!(!is_set_operation_candidate("+", &variable, &variable));
+        assert!(!is_set_comparison_candidate("==", &variable, &variable));
+    }
 }

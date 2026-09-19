@@ -1,11 +1,14 @@
 # 09R2F. 集合运算执行闭环交接文档
 
-> **本文是待执行的交接文档，能力尚未实现。** 读到这句时，集合在 TAC/VM 里**不能运算**，
-> 而且不是「没实现」——**是在算错**：`{1} == {1}` 返回 `false`，`{1} + {2}` 报一条
-> 误导性的宽度错误。下文第一节给出实测证据。
+> **本文对应的执行批次已完成。** 开发前的基线问题仍保留在第一节作为历史证据：当时
+> `{1} == {1}` 返回 `false`，`{1} + {2}` 报误导性的宽度错误；09R2F1 已修复并补上
+> 三机型运行时、编码和动态检查验证。
 >
-> 目标：让 C2-C 已经冻结的集合语义在三种机型上真正执行，并把四个集合/迭代器
-> `RuntimeCheck` 里的集合部分接通——这是 09R3 冻结指令编码之前**必须补完的指令集缺口之一**。
+> 交付结果：C2-C 冻结的集合语义在三种研究 VM 载体上执行，四个检查中的集合部分已接通；
+> 集合显式成员类型兼容、增删和迭代仍由后续阶段负责。
+
+> 验证证据：`r2_set_values.rs` 直接执行两条新指令，`sets.json` 提供 28 条共享集合向量，
+> `r2_tac.rs` 覆盖双操作数检查、CFG 边界和两种编码宽度；总共享向量为 59 条。
 
 ## Agent 交接上下文
 
@@ -25,7 +28,7 @@
 ### 本批交付与不负责
 
 **交付**：`TacOp::SetOp` 与 `TacOp::SetCompare` 两条指令及其编码标签；`SetHandle` 的四种代数
-与五种关系判定；四个 RuntimeCheck 中的集合部分；共享向量与区分度用例；文档同步。
+与六种关系判定、成员判断；四个 RuntimeCheck 中的集合部分；共享向量与区分度用例；文档同步。
 
 **不负责**：
 
@@ -39,7 +42,7 @@
 
 ## 一、为什么集合排在最前（三条依据）
 
-### 1. 集合今天是「在算错」，不是「没实现」（决定性依据，均已实测）
+### 1. 交接前集合是「在算错」而不是「没实现」（决定性依据，均已实测）
 
 `core/rust/crates/xiao-runtime/src/value/mod.rs` 的 `PartialEq`：
 
@@ -77,7 +80,7 @@ TacOp::SetCompare { op: SetCompareOp, left: VReg, right: VReg }  → dst 是 boo
 
 SetOpKind    = Union | Intersection | Difference | SymmetricDifference
 SetCompareOp = Equal | NotEqual | Subset | ProperSubset | Superset | ProperSuperset
-             | Contains | NotContains
+             | Member | NotMember
 ```
 
 **为什么拆两条**：结果类别不同（集合句柄 vs 布尔）；R1 的分组表把「比较（结果恒为布尔）」
@@ -85,9 +88,10 @@ SetCompareOp = Equal | NotEqual | Subset | ProperSubset | Superset | ProperSuper
 两个 RuntimeCheck、两个诊断码**（`X03-TYPE-021`/`022`）。合成一条等于把已经分开的东西
 在 TAC 层重新黏起来。
 
-**为什么 `Contains`/`NotContains` 归比较而不是代数**：`in` 在类型层就被路由到集合语义
+**为什么 `Member`/`NotMember` 归比较而不是代数**：`in` 在类型层就被路由到集合语义
 （`xiao-types/src/checker.rs` 的 `SetMembership` 分支），且强制右侧必须是集合，
-它天然是「关系」而非「代数」。
+它天然是「关系」而非「代数」。实现刻意不用 `Contains` 命名：后者读起来像「左侧
+包含右侧」，而 `x in s` 的左操作数其实是被包含的成员，`Member` 能固定这个方向。
 
 ### 明确拒绝的第三条路
 
@@ -111,10 +115,10 @@ opcode **追加在末尾**，同步更新「0–N 连续」的表述与 `all_ops
 
 ## 三、`SetHandle`：算法建在现有 `Vec` 上，不引入哈希
 
-现有 `SetHandle`（`xiao-runtime/src/containers/set.rs`）只有
+交接前的 `SetHandle`（`xiao-runtime/src/containers/set.rs`）只有
 `new`/`len`/`is_empty`/`contains`/`with_elements`/`same_object` 等，**没有任何代数或值比较**。
 
-新增（算法写成模块内 `&[RuntimeValue]` 私有纯函数，`SetHandle` 只暴露薄壳）：
+本批新增（算法写成模块内 `&[RuntimeValue]` 私有纯函数，`SetHandle` 只暴露薄壳）：
 
 ```
 union / intersection / difference / symmetric_difference            → RuntimeResult<SetHandle>
@@ -152,7 +156,7 @@ equals / is_subset / is_proper_subset / is_superset / is_proper_superset → Run
 
 ---
 
-## 四、四个 RuntimeCheck：其中一个必须**显式缩小范围**
+## 四、四个 RuntimeCheck：其中一个已**显式缩小范围**
 
 机制前提：检查按 `(span.start, span.end)` **精确匹配消费**（`lower/mod.rs:221-234`），
 所以「在哪个 span、拿哪个寄存器去消费」就是全部设计。
@@ -164,7 +168,7 @@ equals / is_subset / is_proper_subset / is_superset / is_proper_superset → Run
 | `set_comparison` | 同上 | 同上 | 新增 `X06-RUNTIME-022` |
 | `set_membership` | 见下 | 见下 | 新增 `X06-RUNTIME-023` |
 
-`X06-RUNTIME-020` 已被占用，**下一个可用号是 021**。`set_hashability` 复用 `-016`
+`X06-RUNTIME-020` 已被占用，**本批使用的后续编号是 021–023**。`set_hashability` 复用 `-016`
 （`CONTAINER_HASHABILITY_CODE`）——`RuntimeError::unhashable_element` 已经是这个身份，复用才一致。
 
 **错误类型名走 `TypeError`**：`emit_runtime_check_kinds` 只把 `arithmetic`/`numeric_range`
@@ -199,7 +203,7 @@ equals / is_subset / is_proper_subset / is_superset / is_proper_superset → Run
 
 ---
 
-## 五、执行层
+## 五、执行层（已接通）
 
 `semantics/exec.rs` 的 `step` 加两个 arm，逻辑下沉到 `research/ops.rs`
 （照 `apply_arith` 的先例）：
@@ -209,14 +213,15 @@ pub fn apply_set_op(op: SetOpKind, left: &RuntimeValue, right: &RuntimeValue) ->
 pub fn apply_set_compare(op: SetCompareOp, left: &RuntimeValue, right: &RuntimeValue) -> RuntimeResult<RuntimeValue>
 ```
 
-非集合操作数一律返回带新错误码的 `RuntimeError`。
+非集合操作数一律返回带新错误码的 `RuntimeError`；三种新码已在 `xiao-runtime` 重导出并由
+ops 单测和共享向量覆盖。
 **不要给三种载体各加方法**——载体只管「值放在哪里」，指令由 `step` 统一实现（R2D 已定）。
 
 `use_def` 与 `Arith` 同形（`uses = {left, right}`，`dst` 由通用尾巴加），照 `liveness.rs` 对应分支改。
 
 ---
 
-## 六、最可能翻车的前三处
+## 六、最可能翻车的前三处（审查记录与已采取的防护）
 
 ### 1. `check_value` 的 `_ => true`（`semantics/exec.rs:1330`）
 
@@ -269,7 +274,7 @@ R3 的编码体积指标没有任何集合程序可测。
 
 ---
 
-## 提交切分
+## 原计划提交切分（已执行）
 
 按可独立验证的单元分三次，**每次提交后门禁全绿**：
 
@@ -284,14 +289,15 @@ R3 的编码体积指标没有任何集合程序可测。
 
 ---
 
-## 验收
+## 验收（已通过）
 
-沿用 09R2D 的「撤掉实现 → 用例必须失败 → 还原 → 通过」。**关键验收不是「测试通过」**：
+沿用 09R2D 的「撤掉实现 → 用例必须失败 → 还原 → 通过」。本批区分度实验已完成，**关键验收
+不是只看一次测试通过**：
 
 ### 1. 语义向量（`sets.json`，三载体共用一份期望，不改任何机型的期望值）
 
 - 四种代数各一条，断言**结果值与释放序列**。
-- **六种比较**，其中两条是**前后对照锚点**：`{1} == {1}` 必须 **true**（今天是 false）、
+- **六种比较**，其中两条是**前后对照锚点**：`{1} == {1}` 必须 **true**（修复前为 false）、
   `{1,2} < {1,2}` 必须 **false**。
 - 空集方向性：`set() <= {1}` true、`{1} <= set()` false、`set() < set()` false、`set() < {1}` true。
 - 重复元素去重：`{1,1,2} + {2,2,3}` 的 `len` 必须是 3。
@@ -299,14 +305,14 @@ R3 的编码体积指标没有任何集合程序可测。
 - 动态边界错误向量（须经**形参**构造，字面量会被类型层常量折叠拒绝），断言错误码。
 - `x in s` / `x not in s` 命中与不命中各一条。
 
-### 2. 区分度（每组都要实做一次撤掉实验）
+### 2. 区分度（四组撤掉实验均已实做并通过）
 
-- 把 `check_value` 的集合分支改成恒真 → 动态边界错误向量**必须失败**。
-- 把 `lower_binary` 改成半消费 → `(a + b)[0, 1]` 形状的用例**必须失败**（见第六节末）。
+- 把 `check_value` 的集合分支改成恒真 → 动态边界错误向量已验证会失败。
+- 把 `lower_binary` 改成半消费 → `(a + b)[0, 1]` 形状的用例已验证会失败（见第六节末）。
 - `jump_targets(&SetOp{..})` 与 `jump_targets(&SetCompare{..})` **断言为空**——
   这不是防漏改（没有边可漏），而是**钉死「集合运算没有控制流边」这个前提本身**：
   将来有人给 `SetOp` 加 `on_failure` 边，这条会立刻失败并强制他去改 `cfg.rs`。
-- 一个使用集合运算的程序 `encode()` **必须 `Ok`**（现有测试只覆盖了反向的拒绝路径）。
+- 一个使用集合运算的程序 `encode()` 已验证返回 `Ok`（同时保留反向拒绝路径）。
 
 ### 3. 穷尽性守卫
 
@@ -319,26 +325,25 @@ R3 的编码体积指标没有任何集合程序可测。
 
 ---
 
-## 必须同批的连带影响
+## 已同步的连带影响
 
-1. **`docs/UseDocs/language/collections/sets.md` 是 `status: verified`**，正文写着
-   「Runtime 尚未创建或修改真实集合对象」——本批会让这句变成假的。
-   `module`/`stage` 与正文必须同批改；`collections/errors.md` 同理。
-2. `tests/spec/09-bytecode/README.md` 的向量计数与清单（现为「31 条：scalar 6、control 4、
-   errors 9、containers 8、selectors 4」），并保留「未进向量的边界由单测覆盖」的说明口径。
-3. `docs/module-registry.json`：`rust.xiao-bytecode-research` 与 `rust.xiao-vm-research`
-   的 `tests` 数组要加新夹具文件；**`rust.xiao-runtime` 覆盖 `src/containers`，
-   往 `set.rs` 加公共方法会触碰一个 `verified` 模块**，其 UseDocs 的集合段与
-   `objects-and-handles.md` 要同步。
-4. opcode 计数的三处：`xiao-bytecode/src/research/README.md`、
+1. **`docs/UseDocs/language/collections/sets.md` 与 `errors.md` 已同步 09R2F1**，正文区分
+   研究 VM 的集合执行与生产命令边界，`module`/`stage` 已更新。
+2. `tests/spec/09-bytecode/README.md` 已登记 59 条向量（集合 28 条），并保留未进向量的
+   容器越界/键缺失由 ops 单测覆盖的说明口径。
+3. `docs/module-registry.json` 已为 `rust.xiao-bytecode-research` 与
+   `rust.xiao-vm-research` 的 `tests` 数组登记 `sets.json`；`rust.xiao-runtime` 覆盖
+   `src/containers`，因此 `set.rs` 的公共方法同步更新了集合 UseDocs 段与
+   `objects-and-handles.md`。
+4. opcode 计数已同步到三处：`xiao-bytecode/src/research/README.md`、
    `09r-bytecode-machine-research.md:522/:536`、`encode/README.md`。
 5. **顺手修（零风险）**：
-   - `xiao-vm/src/research/machine/README.md` 仍写「当前只有 `stack.rs`」，实际三种机型都在。
-   - `00-decisions.md` 写「元组只有在其全部元素都可哈希时才可哈希」，而 `containers/mod.rs`
-     的实现与类型层都判**全部元组不可哈希**——**一个 `verified` 页面在说谎**，
-     必须改成实现口径或显式标成债项。
-6. `09r-bytecode-machine-research.md` 的阶段登记：在 `09R2b` 之后追加本批。
-   **不要动 R3 退出条件的文本**——那是验收条件，不是事实陈述。
+   - `xiao-vm/src/research/machine/README.md` 已改为记录三种机型，不再声称只有
+     `stack.rs`。
+   - `00-decisions.md` 已按 `containers/mod.rs` 与类型层的实现口径改为「元组当前不可哈希」，
+     并保留递归哈希证明作为后续债项。
+6. `09r-bytecode-machine-research.md` 已在 `09R2b` 之后登记本批；R3 退出条件文本保持不变，
+   因为它描述的是验收条件而不是当前事实。
 
 ---
 

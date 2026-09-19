@@ -1,11 +1,13 @@
 //! 09R2 统一三地址降低规格。
 
 use xiao_bytecode::research::{
-    ArithOp, PathStep, RegisterClass, SigId, TacConstant, TacOp, TacProgram, VReg, lower_program,
-    verify_program,
+    ArithOp, OperandWidth, PathStep, RegisterClass, SetCompareOp, SetOpKind, SigId, TacConstant,
+    TacOp, TacProgram, VReg, encode, jump_targets, lower_program, verify_program,
 };
 use xiao_driver::{FrontendCompiler, FrontendRequest};
-use xiao_ir::IrProgram;
+use xiao_ir::{
+    IrExpression, IrExpressionKind, IrProgram, IrRuntimeCheck, IrSpan, IrStatementKind, IrType,
+};
 
 /// 从 Xiao 源码编译出已验证的 IR。
 fn compile(source_text: &str) -> IrProgram {
@@ -452,5 +454,165 @@ fn separates_backticked_from_plain_bindings() {
         verification.is_success(),
         "验证错误: {:?}",
         verification.errors
+    );
+}
+
+#[test]
+/// 集合代数和比较的动态边界必须分别给左右操作数发检查。
+fn lowers_set_checks_for_both_operands() {
+    let (_, tac) =
+        lower("left = set()\nright = {1}\nunion = left + right\nequal = left == right\n");
+    let checks = tac.functions[0]
+        .blocks
+        .iter()
+        .flat_map(|block| block.instructions.iter())
+        .filter_map(|instruction| match &instruction.op {
+            TacOp::Check { kind, value, .. } => Some((kind.as_str(), *value)),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    for kind in ["set_operation", "set_comparison"] {
+        let values = checks
+            .iter()
+            .filter(|(check_kind, _)| *check_kind == kind)
+            .map(|(_, value)| *value)
+            .collect::<Vec<_>>();
+        assert_eq!(values.len(), 2, "{kind} 必须检查左右两个操作数");
+        assert_ne!(values[0], values[1], "{kind} 的左右检查不能绑定同一寄存器");
+    }
+    assert!(
+        tac.unsupported.is_empty(),
+        "不应留下未支持项: {:?}",
+        tac.unsupported
+    );
+}
+
+#[test]
+/// 集合运算嵌套在选择器源中时，检查必须在二元表达式处完整消费。
+fn nested_set_operation_does_not_bind_check_to_selector_source() {
+    let mut ir = compile("values = [1, 2, 3]\nselected = values[0, 1]\n");
+    let binary_span = IrSpan::new(10_000, 10_010);
+    let mut injected = false;
+    for statement in &mut ir.body {
+        let IrStatementKind::Assignment { target, value } = &mut statement.kind else {
+            continue;
+        };
+        if target.text != "selected" {
+            continue;
+        }
+        let IrExpressionKind::Selector { source, .. } = &mut value.kind else {
+            continue;
+        };
+        // 当前静态规则拒绝直接索引集合；这里把一个已验证选择器的源替换成
+        // 动态集合二元表达式，只为隔离测试 lowering 的检查消费边界。
+        let mut left = (**source).clone();
+        left.ty = IrType::Set {
+            members: Vec::new(),
+            allows_dynamic: true,
+            empty: false,
+            unknown: true,
+        };
+        let mut right = left.clone();
+        right.ty = IrType::Dynamic;
+        **source = IrExpression {
+            kind: IrExpressionKind::Binary {
+                operator: "+".to_owned(),
+                left: Box::new(left),
+                right: Box::new(right),
+            },
+            ty: IrType::Dynamic,
+            span: binary_span,
+        };
+        injected = true;
+        break;
+    }
+    assert!(injected, "应找到选择器源表达式");
+    ir.runtime_checks.push(IrRuntimeCheck {
+        kind: "set_operation".to_owned(),
+        span: binary_span,
+    });
+    let tac = lower_program(&ir);
+    let selector_source = tac.functions[0]
+        .blocks
+        .iter()
+        .flat_map(|block| block.instructions.iter())
+        .find_map(|instruction| match instruction.op {
+            TacOp::SelectorApply { source, .. } => Some(source),
+            _ => None,
+        })
+        .expect("应有高级选择指令");
+    let operation_checks = tac.functions[0]
+        .blocks
+        .iter()
+        .flat_map(|block| block.instructions.iter())
+        .filter_map(|instruction| match &instruction.op {
+            TacOp::Check { kind, value, .. } if kind == "set_operation" => Some(*value),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        operation_checks.len(),
+        2,
+        "集合运算检查必须完整消费: {operation_checks:?}"
+    );
+    assert!(
+        operation_checks
+            .iter()
+            .all(|value| *value != selector_source),
+        "集合检查不得被选择器源寄存器接管: {operation_checks:?}, source={selector_source:?}"
+    );
+}
+
+#[test]
+/// 集合指令没有显式控制流边；这一前提由 CFG 公共入口固定下来。
+fn set_instructions_have_no_jump_targets() {
+    let left = VReg::new(1);
+    let right = VReg::new(2);
+    assert!(
+        jump_targets(&TacOp::SetOp {
+            op: SetOpKind::Union,
+            left,
+            right,
+        })
+        .is_empty()
+    );
+    assert!(
+        jump_targets(&TacOp::SetCompare {
+            op: SetCompareOp::Equal,
+            left,
+            right,
+        })
+        .is_empty()
+    );
+}
+
+#[test]
+/// 含集合运算的降低产物必须能通过研究编码器验证，而不是只覆盖拒绝路径。
+fn encodes_program_using_set_operation() {
+    let (_, tac) = lower("value = {1} + {2}\n");
+    assert!(
+        tac.unsupported.is_empty(),
+        "不应留下未支持项: {:?}",
+        tac.unsupported
+    );
+    assert!(encode(&tac, OperandWidth::Leb128).is_ok());
+    assert!(encode(&tac, OperandWidth::FixedU16).is_ok());
+}
+
+#[test]
+/// 复合集合赋值的检查跨度与类型层登记点一致，不能残留为 unsupported。
+fn consumes_runtime_checks_for_set_compound_assignment() {
+    let (_, tac) = lower("set<int> target = set()\nsource = set()\ntarget += source\n");
+    assert!(
+        tac.functions[0]
+            .blocks
+            .iter()
+            .flat_map(|block| block.instructions.iter())
+            .any(|instruction| matches!(instruction.op, TacOp::SetOp { .. }))
+    );
+    assert!(
+        tac.unsupported.is_empty(),
+        "复合集合赋值的检查不应遗留: {:?}",
+        tac.unsupported
     );
 }

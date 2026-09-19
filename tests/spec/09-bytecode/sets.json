@@ -1,0 +1,337 @@
+{
+  "stage": "09R2F1",
+  "status": "verified-runtime",
+  "cases": [
+    {
+      "name": "union",
+      "source": "def result()\n    return {1, 2} + {2, 3}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": {"kind": "set", "elements": [1, 2, 3]},
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "intersection",
+      "source": "def result()\n    return {1, 2} & {2, 3}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": {"kind": "set", "elements": [2]},
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "difference",
+      "source": "def result()\n    return {1, 2} - {2, 3}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": {"kind": "set", "elements": [1]},
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "symmetric-difference",
+      "source": "def result()\n    return {1, 2} ^ {2, 3}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": {"kind": "set", "elements": [1, 3]},
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "equal-unordered",
+      "source": "def result() -> bool\n    return {1, 2} == {2, 1}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "not-equal",
+      "source": "def result() -> bool\n    return {1} != {2}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "proper-subset",
+      "source": "def result() -> bool\n    return {1} < {1, 2}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "subset",
+      "source": "def result() -> bool\n    return {1} <= {1, 2}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "proper-superset",
+      "source": "def result() -> bool\n    return {1, 2} > {1}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "superset",
+      "source": "def result() -> bool\n    return {1, 2} >= {1}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "equal-singleton-anchor",
+      "source": "def result() -> bool\n    return {1} == {1}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "proper-subset-equal-anchor",
+      "source": "def result() -> bool\n    return {1, 2} < {1, 2}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": false,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "empty-subset-direction",
+      "source": "def result() -> bool\n    return set() <= {1}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "nonempty-subset-of-empty",
+      "source": "def result() -> bool\n    return {1} <= set()\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": false,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "empty-proper-subset-self",
+      "source": "def result() -> bool\n    return set() < set()\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": false,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "heterogeneous-intersection",
+      "source": "def result()\n    return {1, \"a\"} & {1, true}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": {"kind": "set", "elements": [1]},
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "heterogeneous-equality-isolated",
+      "source": "def result() -> bool\n    return {true} == {1}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": false,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "duplicate-operands-deduplicated",
+      "source": "def result()\n    return {1, 2} + {2, 3}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": {"kind": "set", "elements": [1, 2, 3]},
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "member-hit",
+      "source": "def result() -> bool\n    return 2 in {1, 2}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "member-miss",
+      "source": "def result() -> bool\n    return 3 in {1, 2}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": false,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "not-member-hit",
+      "source": "def result() -> bool\n    return 3 not in {1, 2}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "not-member-miss",
+      "source": "def result() -> bool\n    return 2 not in {1, 2}\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": false,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "dynamic-empty-set-boundary",
+      "source": "def result()\n    known = {1}\n    unknown_set = set()\n    return known + unknown_set\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": {"kind": "set", "elements": [1]},
+        "releases": [
+          {"scope": 1, "exit": "return", "value": 4, "kind": "strong"},
+          {"scope": 1, "exit": "return", "value": 2, "kind": "strong"}
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "dynamic-member-boundary",
+      "source": "def result() -> bool\n    unknown_set = set()\n    return 1 in unknown_set\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": false,
+        "releases": [
+          {"scope": 1, "exit": "return", "value": 2, "kind": "strong"}
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "runtime-operation-boundary-error",
+      "source": "def result(value) -> bool\n    computed = value + {1}\n    return true\nprobe = result(set())\n",
+      "entry": "result",
+      "arguments": [
+        {"kind": "array", "elements": [1]}
+      ],
+      "expect": {
+        "outcome": "error",
+        "error_code": "X06-RUNTIME-021",
+        "releases": [
+          {"scope": 1, "exit": "dynamic_check_failure", "value": 1, "kind": "strong"}
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "runtime-comparison-boundary-error",
+      "source": "def result(value) -> bool\n    return value == {1}\nprobe = result(set())\n",
+      "entry": "result",
+      "arguments": [
+        {"kind": "array", "elements": [1]}
+      ],
+      "expect": {
+        "outcome": "error",
+        "error_code": "X06-RUNTIME-022",
+        "releases": [
+          {"scope": 1, "exit": "dynamic_check_failure", "value": 1, "kind": "strong"}
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "runtime-membership-boundary-error",
+      "source": "def result(value) -> bool\n    return value in {1}\nprobe = result(1)\n",
+      "entry": "result",
+      "arguments": [
+        {"kind": "array", "elements": [1]}
+      ],
+      "expect": {
+        "outcome": "error",
+        "error_code": "X06-RUNTIME-023",
+        "releases": [
+          {"scope": 1, "exit": "dynamic_check_failure", "value": 1, "kind": "strong"}
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "runtime-set-elements-deduplicated",
+      "source": "def result(int value) -> bool\n    computed = {value, 1, 2} + {2, value, 3}\n    return computed == {1, 2, 3}\nprobe = result(1)\n",
+      "entry": "result",
+      "arguments": [1],
+      "expect": {
+        "outcome": "success",
+        "value": true,
+        "releases": [
+          {"scope": 1, "exit": "return", "value": 5, "kind": "strong"}
+        ],
+        "max_call_depth": 1
+      }
+    }
+  ]
+}

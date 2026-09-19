@@ -715,6 +715,26 @@ impl<'ir> Lowerer<'ir> {
         self.emit_runtime_check_kinds(span, value, kinds);
     }
 
+    /// 消费一个集合二元表达式的检查，并把集合形状检查发给两个操作数。
+    ///
+    /// 检查按源码跨度一次性移除；若只消费左侧，剩余检查会被外层选择器的
+    /// 范围清扫绑定到错误的源容器，合法程序反而会在运行时失败。非集合检查
+    /// 仍只绑定第一个值，保持单操作数检查的既有语义。
+    pub(super) fn emit_runtime_checks_for(&mut self, span: IrSpan, values: &[VReg]) {
+        let Some(kinds) = self.runtime_checks.remove(&(span.start, span.end)) else {
+            return;
+        };
+        for kind in kinds {
+            if matches!(kind.as_str(), "set_operation" | "set_comparison") {
+                for value in values {
+                    self.emit_runtime_check_kinds(span, *value, vec![kind.clone()]);
+                }
+            } else if let Some(value) = values.first() {
+                self.emit_runtime_check_kinds(span, *value, vec![kind]);
+            }
+        }
+    }
+
     /// 消费一个表达式范围内尚未由子表达式消费的检查。
     pub(super) fn emit_runtime_checks_in(&mut self, span: IrSpan, value: VReg) {
         let keys = self
@@ -743,6 +763,10 @@ impl<'ir> Lowerer<'ir> {
                     | "selector_step"
                     | "random_count"
                     | "random_seed"
+                    | "set_hashability"
+                    | "set_membership"
+                    | "set_operation"
+                    | "set_comparison"
             ) {
                 self.record_unsupported(format!("运行时检查尚未降低：{kind}"));
                 continue;

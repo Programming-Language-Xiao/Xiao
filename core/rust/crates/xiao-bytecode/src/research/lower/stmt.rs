@@ -375,7 +375,9 @@ fn lower_extended_assignment(
             right: Box::new(value.clone()),
         },
         ty: value.ty.clone(),
-        span,
+        // C2-C 将复合集合赋值的 RuntimeCheck 登记在左值名称跨度；
+        // 使用语句跨度会让检查逃过二元表达式的精确消费并落入 unsupported。
+        span: target.span,
     };
     let source = lowerer.lower_expression(&combined);
     store_into(lowerer, &name.text, name.backticked, name.span, source);

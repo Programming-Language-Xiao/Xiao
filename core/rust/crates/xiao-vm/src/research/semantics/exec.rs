@@ -11,10 +11,12 @@ use xiao_bytecode::research::{
     TacProgram, VReg, build_pc_map,
 };
 use xiao_diagnostics::{
-    BackendLocation, FatalError, NUMERIC_OVERFLOW_CODE, RANDOM_COUNT_CODE, RANDOM_SEED_CODE,
-    SELECTOR_BOUNDS_CODE, SELECTOR_STEP_CODE, StackFrame, TYPE_MISMATCH_CODE, XiaoError,
+    BackendLocation, CONTAINER_HASHABILITY_CODE, FatalError, NUMERIC_OVERFLOW_CODE,
+    RANDOM_COUNT_CODE, RANDOM_SEED_CODE, SELECTOR_BOUNDS_CODE, SELECTOR_STEP_CODE,
+    SET_COMPARISON_CODE, SET_MEMBERSHIP_CODE, SET_OPERATION_CODE, StackFrame, TYPE_MISMATCH_CODE,
+    XiaoError,
 };
-use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue};
+use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
 use xiao_types::SeededRandom;
 
 use crate::research::carrier::{Carrier, CarrierContext, MapPoint};
@@ -139,11 +141,22 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     /// 研究 VM 的公开兼容入口 [`Self::run`] 仍只返回结构化状态；返回值只在
     /// `RunOutcome` 中作为测试和诊断观察面暴露，不构成生产 VM API。
     pub(crate) fn run_with_value(&mut self) -> (RunResult, Option<RuntimeValue>) {
+        self.run_with_arguments(&[])
+    }
+
+    /// 从脚本入口执行并把位置实参绑定到入口形参。
+    ///
+    /// 该入口只供研究向量构造真实动态边界；生产 VM 尚未承诺脚本入口的
+    /// 参数 ABI。调用方负责按入口函数声明顺序传入参数。
+    pub(crate) fn run_with_arguments(
+        &mut self,
+        arguments: &[BoundArgument],
+    ) -> (RunResult, Option<RuntimeValue>) {
         let program = self.program;
         self.sink.record(VmEvent::ModuleLoaded {
             module: program.abi.target.clone(),
         });
-        match self.execute(FuncId::new(0), &[], None) {
+        match self.execute(FuncId::new(0), arguments, None) {
             Ok(value) => (RunResult::Success, value),
             Err(Fault::Error(error)) => {
                 self.sink.record(VmEvent::ErrorRaised {
@@ -1292,6 +1305,10 @@ fn runtime_check_code(kind: &str) -> Option<&'static str> {
         "selector_step" => Some(SELECTOR_STEP_CODE),
         "random_count" => Some(RANDOM_COUNT_CODE),
         "random_seed" => Some(RANDOM_SEED_CODE),
+        "set_operation" => Some(SET_OPERATION_CODE),
+        "set_comparison" => Some(SET_COMPARISON_CODE),
+        "set_hashability" => Some(CONTAINER_HASHABILITY_CODE),
+        "set_membership" => Some(SET_MEMBERSHIP_CODE),
         _ => None,
     }
 }
@@ -1339,6 +1356,14 @@ fn check_value(kind: &str, value: &RuntimeValue) -> bool {
         "selector_step" | "random_count" | "random_seed" => {
             integer_value(value).is_some_and(|value| value >= 0 || kind == "selector_step")
         }
+        "set_operation" | "set_comparison" => matches!(value, RuntimeValue::Set(_)),
+        "set_hashability" => is_hashable(value),
+        "set_membership" => match value {
+            RuntimeValue::Set(handle) => handle
+                .with_elements(|elements| elements.iter().all(is_hashable))
+                .unwrap_or(false),
+            other => is_hashable(other),
+        },
         _ => true,
     }
 }

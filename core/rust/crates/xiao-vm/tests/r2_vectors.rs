@@ -8,10 +8,13 @@
 //! 去重或漏放」的可观察证据。
 
 use serde::Deserialize;
+use serde_json::{Value as JsonValue, json};
 use xiao_bytecode::research::lower_program;
 use xiao_driver::{FrontendCompiler, FrontendRequest};
+use xiao_runtime::{ArrayHandle, RuntimeValue, SetHandle, TupleHandle};
 use xiao_vm::research::{
     Carrier, HybridCarrier, RegisterCarrier, RunResult, StackCarrier, VmEvent, VmOptions, run_with,
+    run_with_values,
 };
 
 /// 一份语义向量文件。
@@ -35,6 +38,12 @@ struct VectorCase {
     /// 调用深度上限；省略时用默认值。
     #[serde(default)]
     max_call_depth: Option<usize>,
+    /// 可选的无参数函数入口；指定后把该函数复制到脚本入口执行。
+    #[serde(default)]
+    entry: Option<String>,
+    /// 入口函数的位置实参；用稳定 JSON 形状构造 RuntimeValue。
+    #[serde(default)]
+    arguments: Vec<JsonValue>,
     /// 期望结果。
     expect: Expectation,
 }
@@ -47,6 +56,9 @@ struct Expectation {
     /// 期望的稳定错误码或故障码。
     #[serde(default)]
     error_code: Option<String>,
+    /// 入口返回值的 JSON 观察形式。
+    #[serde(default)]
+    value: Option<JsonValue>,
     /// 期望的完整释放序列。
     #[serde(default)]
     releases: Vec<ReleaseRecord>,
@@ -72,11 +84,29 @@ fn observe<C: Carrier>(case: &VectorCase) -> Expectation {
     let artifact = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(case.source.clone()))
         .unwrap_or_else(|error| panic!("用例 {} 前端应成功: {:?}", case.name, error.diagnostics()));
-    let tac = lower_program(&artifact.ir);
+    let mut tac = lower_program(&artifact.ir);
+    if let Some(entry) = case.entry.as_deref() {
+        let function = tac
+            .functions
+            .iter()
+            .find(|function| function.name == entry)
+            .cloned()
+            .unwrap_or_else(|| panic!("用例 {} 的入口 {entry:?} 应存在", case.name));
+        tac.functions[0] = function;
+    }
     let options = VmOptions {
         max_call_depth: case.max_call_depth.unwrap_or(1024),
     };
-    let outcome = run_with::<C>(&tac, options);
+    let arguments = case
+        .arguments
+        .iter()
+        .map(runtime_value_from_json)
+        .collect::<Vec<_>>();
+    let outcome = if arguments.is_empty() {
+        run_with::<C>(&tac, options)
+    } else {
+        run_with_values::<C>(&tac, options, &arguments)
+    };
     let releases = outcome
         .events
         .iter()
@@ -102,8 +132,78 @@ fn observe<C: Carrier>(case: &VectorCase) -> Expectation {
             RunResult::Fatal(_) => "fatal".to_owned(),
         },
         error_code: outcome.result.error_code().map(str::to_owned),
+        value: outcome.value.as_ref().map(runtime_value_json),
         releases,
         max_call_depth: outcome.metrics.max_call_depth,
+    }
+}
+
+/// 将向量中的稳定 JSON 实参还原为研究 VM 可消费的 RuntimeValue。
+fn runtime_value_from_json(value: &JsonValue) -> RuntimeValue {
+    match value {
+        JsonValue::Bool(value) => RuntimeValue::Bool(*value),
+        JsonValue::Number(value) if value.as_i64().is_some() => {
+            RuntimeValue::Int(value.as_i64().expect("整数 JSON 应可读取"))
+        }
+        JsonValue::Number(value) => {
+            RuntimeValue::Float(value.as_f64().expect("浮点 JSON 应可读取"))
+        }
+        JsonValue::String(value) => {
+            RuntimeValue::new_string(value.clone()).expect("字符串应可分配")
+        }
+        JsonValue::Object(object) => {
+            let kind = object
+                .get("kind")
+                .and_then(JsonValue::as_str)
+                .expect("容器实参应带 kind");
+            let elements = object
+                .get("elements")
+                .and_then(JsonValue::as_array)
+                .expect("容器实参应带 elements")
+                .iter()
+                .map(runtime_value_from_json)
+                .collect::<Vec<_>>();
+            match kind {
+                "array" => RuntimeValue::Array(ArrayHandle::new(elements).expect("数组应可分配")),
+                "set" => RuntimeValue::Set(SetHandle::new(elements).expect("集合应可分配")),
+                "tuple" => RuntimeValue::Tuple(TupleHandle::new(elements).expect("元组应可分配")),
+                other => panic!("不支持的向量实参容器 {other:?}"),
+            }
+        }
+        other => panic!("不支持的向量实参 JSON {other:?}"),
+    }
+}
+
+/// 将研究 VM 的返回值转换成向量使用的稳定 JSON 形状。
+fn runtime_value_json(value: &RuntimeValue) -> JsonValue {
+    match value {
+        RuntimeValue::Int(value) => json!(value),
+        RuntimeValue::Sint(value) => json!(value),
+        RuntimeValue::Lint(value) => json!(value),
+        RuntimeValue::Float(value) => json!(value),
+        RuntimeValue::Sfloat(value) => json!(value),
+        RuntimeValue::Lfloat(value) => json!(value),
+        RuntimeValue::Bool(value) => json!(value),
+        RuntimeValue::Str(handle) => json!(handle.to_string().expect("字符串句柄应可读取")),
+        RuntimeValue::Set(handle) => json!({
+            "kind": "set",
+            "elements": handle
+                .with_elements(|elements| elements.iter().map(runtime_value_json).collect::<Vec<_>>())
+                .expect("集合句柄应可读取"),
+        }),
+        RuntimeValue::Array(handle) => json!({
+            "kind": "array",
+            "elements": handle
+                .with_elements(|elements| elements.iter().map(runtime_value_json).collect::<Vec<_>>())
+                .expect("数组句柄应可读取"),
+        }),
+        RuntimeValue::Tuple(handle) => json!({
+            "kind": "tuple",
+            "elements": handle
+                .with_elements(|elements| elements.iter().map(runtime_value_json).collect::<Vec<_>>())
+                .expect("元组句柄应可读取"),
+        }),
+        other => panic!("向量暂不支持观察返回值 {other:?}"),
     }
 }
 
@@ -190,5 +290,17 @@ fn selector_vectors_are_stable() {
             "/../../../../tests/spec/09-bytecode/selectors.json"
         )),
         "09R2",
+    );
+}
+
+#[test]
+/// 集合运算与比较的返回值向量在三种载体上保持一致。
+fn sets_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/sets.json"
+        )),
+        "09R2F1",
     );
 }

@@ -1,5 +1,6 @@
 //! 研究编码器的往返、边界和损坏输入回归测试。
 
+use super::tags::{set_compare_from_tag, set_compare_tag, set_op_from_tag, set_op_tag};
 use super::*;
 use crate::research::lower::{TacReleaseAction, TacReleasePlan};
 use std::collections::BTreeMap;
@@ -627,6 +628,47 @@ fn scalar_and_release_tags_have_one_bidirectional_mapping() {
         assert_eq!(release_tag(kind), Ok(tag as u8));
         assert_eq!(release_from_tag(tag as u8), Ok(kind));
     }
+}
+
+/// 集合算子标签必须钉在显式数值上，而不是只依赖编码后再解码的自洽性。
+///
+/// 编码器与解码器若共同把两个标签写反，普通往返测试仍会通过；这里直接把
+/// 格式数值写进断言，专门防止 `Subset`/`ProperSubset` 等相邻语义漂移。
+#[test]
+fn set_tags_have_explicit_bidirectional_mapping() {
+    let set_ops = [
+        (SetOpKind::Union, 0),
+        (SetOpKind::Intersection, 1),
+        (SetOpKind::Difference, 2),
+        (SetOpKind::SymmetricDifference, 3),
+    ];
+    for (op, tag) in set_ops {
+        assert_eq!(set_op_tag(op), tag);
+        assert_eq!(set_op_from_tag(tag), Ok(op));
+    }
+    assert!(matches!(
+        set_op_from_tag(4),
+        Err(EncodeError::InvalidEnum { ref field, value: 4 }) if field == "SetOpKind"
+    ));
+
+    let comparisons = [
+        (SetCompareOp::Equal, 0),
+        (SetCompareOp::NotEqual, 1),
+        (SetCompareOp::ProperSubset, 2),
+        (SetCompareOp::Subset, 3),
+        (SetCompareOp::ProperSuperset, 4),
+        (SetCompareOp::Superset, 5),
+        (SetCompareOp::Member, 6),
+        (SetCompareOp::NotMember, 7),
+    ];
+    for (op, tag) in comparisons {
+        assert_eq!(set_compare_tag(op), tag);
+        assert_eq!(set_compare_from_tag(tag), Ok(op));
+    }
+    assert!(matches!(
+        set_compare_from_tag(8),
+        Err(EncodeError::InvalidEnum { ref field, value: 8 }) if field == "SetCompareOp"
+    ));
 }
 
 /// 去掉行注释，避免注释里提到的模块名被算成依赖。

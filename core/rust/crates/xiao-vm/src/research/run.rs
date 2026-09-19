@@ -7,7 +7,7 @@ use crate::research::carrier::Carrier;
 use crate::research::machine::hybrid::HybridCarrier;
 use crate::research::machine::register::RegisterCarrier;
 use crate::research::machine::stack::StackCarrier;
-use crate::research::semantics::Vm;
+use crate::research::semantics::{BoundArgument, Vm};
 use crate::research::sink::{RecordingSink, VmEvent};
 
 /// 一次运行的结构化结果。
@@ -122,6 +122,35 @@ pub fn run_with<C: Carrier>(
 ) -> RunOutcome {
     let mut vm = Vm::<C, RecordingSink>::new(program, options, RecordingSink::new());
     let (result, value) = vm.run_with_value();
+    let metrics = vm.metrics();
+    RunOutcome {
+        result,
+        value,
+        metrics,
+        events: vm.into_sink().into_events(),
+    }
+}
+
+/// 使用位置实参和指定载体运行一份三地址产物。
+///
+/// 该入口只供研究 VM 的动态边界向量注入入口形参；实参按入口函数的形参
+/// 声明顺序绑定，不承诺生产 VM 的脚本调用 ABI。
+#[must_use]
+pub fn run_with_values<C: Carrier>(
+    program: &xiao_bytecode::research::TacProgram,
+    options: VmOptions,
+    arguments: &[RuntimeValue],
+) -> RunOutcome {
+    let bound_arguments = arguments
+        .iter()
+        .cloned()
+        .map(|value| BoundArgument {
+            keyword: None,
+            value,
+        })
+        .collect::<Vec<_>>();
+    let mut vm = Vm::<C, RecordingSink>::new(program, options, RecordingSink::new());
+    let (result, value) = vm.run_with_arguments(&bound_arguments);
     let metrics = vm.metrics();
     RunOutcome {
         result,
