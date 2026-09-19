@@ -18,6 +18,8 @@ export interface RustAdapterOptions {
   files: string[];
   /** 可选的已编译适配器路径。 */
   adapterPath?: string;
+  /** 是否请求结构大纲；省略时为 `false`。 */
+  outline?: boolean;
 }
 
 /**
@@ -39,11 +41,15 @@ export function scanRustFiles(options: RustAdapterOptions): {
     : ["run", "--quiet", "--manifest-path", join(options.root, "core/rust/Cargo.toml"), "-p", "xiao-doc-coverage-rust", "--bin", "xiao-doc-coverage-rust", "--"];
   const response = spawnSync(command, args, {
     cwd: options.root,
-    input: JSON.stringify({ protocol_version: RUST_ADAPTER_PROTOCOL_VERSION, files: options.files }),
+    input: JSON.stringify({
+      protocol_version: RUST_ADAPTER_PROTOCOL_VERSION,
+      files: options.files,
+      outline: options.outline ?? false,
+    }),
     encoding: "utf8",
     windowsHide: true,
-    // 协议 v2 起响应里带整仓的结构大纲，默认 1 MiB 上限会被撑爆并退化成
-    // ENOBUFS——那会被误报成「适配器启动失败」，掩盖真正的原因。
+    // 单文件按需请求大纲时响应仍可能较大；保留宽松上限，避免 ENOBUFS
+    // 被误报成「适配器启动失败」，掩盖真正的解析结果。
     maxBuffer: 256 * 1024 * 1024,
   });
   if (response.error || response.status !== 0 && !response.stdout?.trim()) {

@@ -142,7 +142,7 @@ export interface RustDeclaration {
   is_public: boolean;
   /** 是否有 Rustdoc。 */
   has_doc: boolean;
-  /** 声明最后一行；与 `line` 之差即该声明占用的行数。 */
+  /** 声明自身覆盖的最后一行；与 `line` 配对计算声明区域。 */
   end_line: number;
 }
 
@@ -161,7 +161,7 @@ export interface RustOutlineNode {
   line: number;
   /** 结束行（一基）。 */
   end_line: number;
-  /** 覆盖行数，含子节点。 */
+  /** 从 `line` 到 `end_line` 的覆盖行数，不含上方属性或文档注释。 */
   lines: number;
   /** 定义句：省去名字的声明头，例如 `fn() -> SourceSpan`。 */
   signature: string;

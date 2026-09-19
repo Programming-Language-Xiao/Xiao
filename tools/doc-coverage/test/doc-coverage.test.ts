@@ -83,7 +83,7 @@ describe("Rust AST 协议", () => {
     expect(diagnostic?.code).toBe("A0-PROTOCOL-001");
   });
 
-  test("调用真实适配器时返回并校验协议版本", () => {
+  test("未请求大纲时返回空数组并保留声明", () => {
     const directory = mkdtempSync(join(tmpdir(), "xiao-doc-coverage-rust-ts-"));
     const file = join(directory, "fixture.rs");
     writeFileSync(file, "//! fixture\n/// visible\npub fn visible() {}\n", "utf8");
@@ -91,8 +91,26 @@ describe("Rust AST 协议", () => {
       const result = scanRustFiles({ root: process.cwd(), files: [file] });
       expect(result.diagnostics).toEqual([]);
       expect(result.declarations.some((item) => item.name === "visible" && item.hasDoc)).toBe(true);
-      expect(result.outlines.some((item) => item.nodes.some((node) => node.name === "visible" && node.kind === "function"))).toBe(true);
+      expect(result.outlines).toEqual([]);
       expect(RUST_ADAPTER_PROTOCOL_VERSION).toBe(2);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  test("显式请求大纲时返回结构节点", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-doc-coverage-rust-outline-ts-"));
+    const file = join(directory, "fixture.rs");
+    writeFileSync(file, "//! fixture\n/// visible\npub fn visible() {\n    let value = 1;\n}\n", "utf8");
+    try {
+      const result = scanRustFiles({ root: process.cwd(), files: [file], outline: true });
+      expect(result.diagnostics).toEqual([]);
+      const node = result.outlines[0]?.nodes.find((item) => item.name === "visible");
+      expect(node).toBeDefined();
+      if (!node) throw new Error("expected visible outline node");
+      expect(node.kind).toBe("function");
+      expect(node.line).toBe(3);
+      expect(node.line + node.lines - 1).toBe(node.end_line);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }
