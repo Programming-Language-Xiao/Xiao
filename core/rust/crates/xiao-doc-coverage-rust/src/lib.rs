@@ -21,6 +21,12 @@ pub struct ScanRequest {
     pub protocol_version: u32,
     /// 待扫描文件的仓库相对或绝对路径。
     pub files: Vec<String>,
+    /// 是否在响应中返回结构大纲。
+    ///
+    /// 缺省为 `false`：大纲的体积远大于声明，只有需要判断文件结构时
+    /// 才值得付出生成和传输它的代价。
+    #[serde(default)]
+    pub outline: bool,
 }
 
 /// 一个可计入文档覆盖率的 Rust 声明记录。
@@ -38,10 +44,10 @@ pub struct Declaration {
     pub is_public: bool,
     /// 是否检测到直接关联的 Rustdoc。
     pub has_doc: bool,
-    /// 声明的最后一行（从 1 开始）。
+    /// 声明自身所覆盖的最后一行（从 1 开始）。
     ///
-    /// 取的是**整个项**的跨度，不是标识符的跨度；`line` 同样是项起始行。
-    /// 两者之差可以判断一个声明占了多大一块，是用行数门禁时唯一可信的读数。
+    /// 取整个项的跨度终点；与只定位声明名称的 `line` 配对后，
+    /// `end_line - line + 1` 就是从声明自身起始行到项尾的行数。
     pub end_line: usize,
 }
 
@@ -70,7 +76,9 @@ pub struct OutlineNode {
     pub line: usize,
     /// 结束行（从 1 开始）。
     pub end_line: usize,
-    /// 覆盖行数，含子节点。
+    /// 从声明自身起始行到项尾的覆盖行数（含首尾，不含上方属性或文档注释）。
+    ///
+    /// 该字段满足 `line + lines - 1 == end_line`；子节点不会改变这个口径。
     pub lines: usize,
     /// 定义句：**省去名字**的声明头，例如 `fn() -> SourceSpan`。
     ///
@@ -145,10 +153,12 @@ pub fn scan(request: &ScanRequest) -> ScanResponse {
                     });
                     visitor.visit_file(&parsed);
                     response.declarations.extend(visitor.declarations);
-                    response.outlines.push(FileOutline {
-                        file: file.clone(),
-                        nodes: outline_items(&parsed.items, &lines),
-                    });
+                    if request.outline {
+                        response.outlines.push(FileOutline {
+                            file: file.clone(),
+                            nodes: outline_items(&parsed.items, &lines),
+                        });
+                    }
                 }
                 Err(error) => response.errors.push(ScanError {
                     file: file.clone(),
@@ -179,6 +189,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "function",
             &item.sig.ident.to_string(),
             item.sig.ident.span(),
+            item.span(),
             &item.vis,
             &item.attrs,
         );
@@ -191,6 +202,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "struct",
             &item.ident.to_string(),
             item.ident.span(),
+            item.span(),
             &item.vis,
             &item.attrs,
         );
@@ -203,6 +215,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "enum",
             &item.ident.to_string(),
             item.ident.span(),
+            item.span(),
             &item.vis,
             &item.attrs,
         );
@@ -215,6 +228,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "trait",
             &item.ident.to_string(),
             item.ident.span(),
+            item.span(),
             &item.vis,
             &item.attrs,
         );
@@ -227,6 +241,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "module",
             &item.ident.to_string(),
             item.ident.span(),
+            item.span(),
             &item.vis,
             &item.attrs,
         );
@@ -239,6 +254,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "constant",
             &item.ident.to_string(),
             item.ident.span(),
+            item.span(),
             &item.vis,
             &item.attrs,
         );
@@ -251,6 +267,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "static",
             &item.ident.to_string(),
             item.ident.span(),
+            item.span(),
             &item.vis,
             &item.attrs,
         );
@@ -263,6 +280,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "type",
             &item.ident.to_string(),
             item.ident.span(),
+            item.span(),
             &item.vis,
             &item.attrs,
         );
@@ -275,6 +293,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "union",
             &item.ident.to_string(),
             item.ident.span(),
+            item.span(),
             &item.vis,
             &item.attrs,
         );
@@ -284,7 +303,14 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
     /// 收集公共 use 重导出。
     fn visit_item_use(&mut self, item: &'ast syn::ItemUse) {
         if matches!(&item.vis, syn::Visibility::Public(_)) {
-            self.push("reexport", "use", item.span(), &item.vis, &item.attrs);
+            self.push(
+                "reexport",
+                "use",
+                item.use_token.span,
+                item.span(),
+                &item.vis,
+                &item.attrs,
+            );
         }
         syn::visit::visit_item_use(self, item);
     }
@@ -295,6 +321,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "method",
             &item.sig.ident.to_string(),
             item.sig.ident.span(),
+            item.span(),
             &syn::Visibility::Inherited,
             &item.attrs,
         );
@@ -307,7 +334,14 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             && matches!(&field.vis, syn::Visibility::Public(_))
         {
             let name = identifier.to_string();
-            self.push("field", &name, identifier.span(), &field.vis, &field.attrs);
+            self.push(
+                "field",
+                &name,
+                identifier.span(),
+                field.span(),
+                &field.vis,
+                &field.attrs,
+            );
         }
         syn::visit::visit_field(self, field);
     }
@@ -318,6 +352,7 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
             "method",
             &item.sig.ident.to_string(),
             item.sig.ident.span(),
+            item.span(),
             &item.vis,
             &item.attrs,
         );
@@ -328,24 +363,26 @@ impl<'ast> Visit<'ast> for DeclarationVisitor {
 impl DeclarationVisitor {
     /// 将一个 AST 项转换为统一声明记录。
     ///
-    /// `span` 必须是**整个项**的跨度：`line` 与 `end_line` 都从它取，
-    /// 用标识符跨度会少算属性和 `pub`，定位也不对。
+    /// `header` 只覆盖声明自身的头部（通常是标识符），用于定位 `line`；
+    /// `full` 覆盖整个项，用于计算真实的 `end_line`。两者不能合并：
+    /// 整项跨度的起点会把上方属性和 `///` 文档注释算进定位行。
     fn push(
         &mut self,
         kind: &str,
         name: &str,
-        span: Span,
+        header: Span,
+        full: Span,
         visibility: &syn::Visibility,
         attrs: &[syn::Attribute],
     ) {
         self.declarations.push(Declaration {
             file: self.file.clone(),
-            line: span.start().line,
+            line: header.start().line,
             kind: kind.to_string(),
             name: name.to_string(),
             is_public: matches!(visibility, syn::Visibility::Public(_)),
             has_doc: has_doc(attrs),
-            end_line: span.end().line,
+            end_line: full.end().line,
         });
     }
 }
@@ -452,7 +489,7 @@ fn node(
         name,
         line: header.start().line,
         end_line: full.end().line,
-        lines: full.end().line.saturating_sub(full.start().line) + 1,
+        lines: full.end().line.saturating_sub(header.start().line) + 1,
         source_line,
         children,
     }
@@ -561,7 +598,7 @@ fn line_text(lines: &[&str], line: usize) -> String {
 /// 由起始源码行派生「定义句」：声明头去掉名字。
 ///
 /// 例：`fn span() -> SourceSpan {` + 名字 `span` → `fn() -> SourceSpan`。
-/// 名字既已单列，签名里再重复一次只是噪声。取到第一个 `{` / `;` / `=` 为止，
+/// 名字既已单列，签名里再重复一次只是噪声。取到第一个 `{` / `;` 为止，
 /// 因此多行签名的节点只会给出起始行上的那一段——`line`/`end_line` 才是判断大小的依据。
 fn declaration_head(source_line: &str, name: &str) -> String {
     let head = source_line
@@ -617,7 +654,7 @@ fn has_doc(attrs: &[syn::Attribute]) -> bool {
 #[cfg(test)]
 /// 覆盖 Rust AST 适配器核心行为的测试模块。
 mod tests {
-    use super::{AST_PROTOCOL_VERSION, ScanRequest, scan};
+    use super::{AST_PROTOCOL_VERSION, ScanRequest, declaration_head, scan};
 
     /// 确认公共和私有函数都能被发现且公共文档状态正确。
     #[test]
@@ -631,10 +668,12 @@ mod tests {
         let response = scan(&ScanRequest {
             protocol_version: AST_PROTOCOL_VERSION,
             files: vec![path.to_string_lossy().into_owned()],
+            outline: false,
         });
         assert!(response.errors.is_empty());
         assert_eq!(response.protocol_version, AST_PROTOCOL_VERSION);
         assert_eq!(response.declarations.len(), 4);
+        assert!(response.outlines.is_empty());
         assert!(
             response
                 .declarations
@@ -656,6 +695,7 @@ mod tests {
         let response = scan(&ScanRequest {
             protocol_version: AST_PROTOCOL_VERSION + 1,
             files: Vec::new(),
+            outline: false,
         });
         assert_eq!(response.protocol_version, AST_PROTOCOL_VERSION);
         assert!(response.declarations.is_empty());
@@ -673,6 +713,7 @@ mod tests {
         let response = scan(&ScanRequest {
             protocol_version: AST_PROTOCOL_VERSION,
             files: vec![path.to_string_lossy().into_owned()],
+            outline: false,
         });
         assert_eq!(
             response.errors.first().map(|item| item.code.as_str()),
@@ -680,5 +721,90 @@ mod tests {
         );
         assert!(response.declarations.is_empty());
         let _ = std::fs::remove_file(path);
+    }
+
+    /// 确认省略请求开关时按协议约定默认为关闭，并始终返回空大纲数组。
+    #[test]
+    fn outline_defaults_to_false() {
+        let request: ScanRequest =
+            serde_json::from_str(r#"{"protocol_version":2,"files":[]}"#).expect("parse request");
+        assert!(!request.outline);
+        let response = scan(&request);
+        assert!(response.outlines.is_empty());
+    }
+
+    /// 确认声明的起始行定位到名称，而结束行取整个项的真实末尾。
+    #[test]
+    fn declaration_end_line_uses_full_item_span() {
+        let path = std::env::temp_dir().join("xiao-doc-coverage-rust-multi-line.rs");
+        std::fs::write(
+            &path,
+            "/// documented\npub fn multi_line(\n    value: usize,\n) -> usize {\n    value\n}\n",
+        )
+        .expect("write fixture");
+        let response = scan(&ScanRequest {
+            protocol_version: AST_PROTOCOL_VERSION,
+            files: vec![path.to_string_lossy().into_owned()],
+            outline: false,
+        });
+        let declaration = response
+            .declarations
+            .iter()
+            .find(|item| item.name == "multi_line")
+            .expect("find declaration");
+        assert_eq!(declaration.line, 2);
+        assert_eq!(declaration.end_line, 6);
+        assert!(declaration.end_line > declaration.line);
+        let _ = std::fs::remove_file(path);
+    }
+
+    /// 确认请求大纲时节点行数与起止行保持同一口径，不把上方文档注释算入其中。
+    #[test]
+    fn outline_lines_match_line_and_end_line() {
+        let path = std::env::temp_dir().join("xiao-doc-coverage-rust-outline-lines.rs");
+        std::fs::write(
+            &path,
+            "/// documented\npub struct Sample {\n    pub value: usize,\n}\n",
+        )
+        .expect("write fixture");
+        let response = scan(&ScanRequest {
+            protocol_version: AST_PROTOCOL_VERSION,
+            files: vec![path.to_string_lossy().into_owned()],
+            outline: true,
+        });
+        let node = response
+            .outlines
+            .first()
+            .and_then(|outline| outline.nodes.iter().find(|node| node.name == "Sample"))
+            .expect("find outline node");
+        assert_eq!(node.line, 2);
+        assert_eq!(node.end_line, 4);
+        assert_eq!(node.lines, 3);
+        assert_eq!(node.line + node.lines - 1, node.end_line);
+        let _ = std::fs::remove_file(path);
+    }
+
+    /// 锁定函数、静态量、结构体和多行签名的定义句截取规则。
+    #[test]
+    fn declaration_head_covers_common_shapes() {
+        assert_eq!(
+            declaration_head("pub fn render(value: usize) -> usize {", "render"),
+            "pub fn(value: usize) -> usize"
+        );
+        assert_eq!(
+            declaration_head(
+                "static DROP_CALLS: AtomicUsize = AtomicUsize::new(0);",
+                "DROP_CALLS"
+            ),
+            "static : AtomicUsize = AtomicUsize::new(0)"
+        );
+        assert_eq!(
+            declaration_head("pub struct Sample {", "Sample"),
+            "pub struct"
+        );
+        assert_eq!(
+            declaration_head("pub fn multi_line(", "multi_line"),
+            "pub fn("
+        );
     }
 }
