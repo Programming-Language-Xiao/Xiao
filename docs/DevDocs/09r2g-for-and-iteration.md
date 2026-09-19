@@ -14,10 +14,15 @@
    第六节的三处翻车点**直接适用于本批；其中的检查接线手法（白名单 + `check_value` +
    `runtime_check_code` 三处）本批照用。
 2. [09R2F1. 集合运算续交接文档](09r2f1-set-operations-continuation.md) —— **本批的前置**。
-   它列出的七个问题要**先修完**，否则本批会在同一批未验证的管线上继续叠加。
-3. [09R2D. 两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md) —— 开发规定主表；
-   **新增 `TacOp` 的 8 处改动点清单**在 `:373-399`，本批要再走一遍。
-4. [09. 字节码运行模式](09-bytecode-runtime.md) —— 09 阶段最小执行骨架的边界。
+   **已完成**（`a1a0938`），七个问题全部关掉、四类集合检查接通、59 条共享向量就位。
+   它同时给本批留下了两样可直接复用的东西：`emit_runtime_checks_for` 那个
+   **精确消费整个 span** 的发射入口，以及那条遍历全部 `RuntimeCheckKind` 的
+   **穷尽性守卫测试**——本批接通 `iterable` 时要把它的名字从「显式未支持清单」移出。
+3. [09R2D. 两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md) —— 开发规定主表。
+4. [09R2B. 选择器全量执行交接文档](09r2b-selector-execution.md) —— **新增 `TacOp` 的
+   8 处改动点清单**在 `:373`（标题是「照单改，别凭记忆」），其中 `decode_op` 与
+   `cfg.rs::jump_targets` 两处**编译器不强制**。本批要再走一遍。
+5. [09. 字节码运行模式](09-bytecode-runtime.md) —— 09 阶段最小执行骨架的边界。
 
 ### 本批交付与不负责
 
@@ -72,9 +77,13 @@
 ## 三、设计：两条基础指令 + 循环降低，**不是**一条 `IterNext`
 
 ```
-TacOp::Len             { source: VReg }          → dst 是 int
-TacOp::IndexGetDynamic { source: VReg, index: VReg } → dst 是元素
+TacOp::Len             { source: VReg }          → dst 是 int   （opcode 36）
+TacOp::IndexGetDynamic { source: VReg, index: VReg } → dst 是元素（opcode 37）
 ```
+
+编号**必须是 36 与 37**：34/35 已被 09R2F 的 `SetOp`/`SetCompare` 占用。这张表
+**只能追加、不得重排**——`all_ops_program` 的计数守卫会拦住插在中间的新变体，
+而重排会让旧字节被读成另一种指令，往返测试**看不出来**（编解码用同一张表）。
 
 ### 为什么不用一条 `IterNext`
 
@@ -92,7 +101,7 @@ TacOp::IndexGetDynamic { source: VReg, index: VReg } → dst 是元素
 P1 项里）。`IndexGetDynamic` 应当把**动态索引解析成同一个 `raw` 后走同一条路径**，
 而不是另写一份。另写一份就会让「`x[-1]` 是什么」在两个地方各有一套答案。
 
-### 降低形状（CFG 抄 `lower_while`，`lower/stmt.rs:438`）
+### 降低形状（CFG 抄 `lower_while`，`lower/stmt.rs:440`）
 
 ```text
 src  = <iterable 表达式>
@@ -120,12 +129,36 @@ exit:
 
 | 位置 | 改什么 |
 | --- | --- |
-| `lower/mod.rs:738` 的白名单 | 加 `iterable` |
-| `semantics/exec.rs:1312` `check_value`（兜底在 `:1342`） | 加 `iterable` 分支；**不加就静默恒真** |
-| `semantics/exec.rs:1287` `runtime_check_code`（兜底在 `:1295`） | 加分支；不加就没有稳定码 |
+| `lower/mod.rs` 的白名单（`matches!` 列表，当前 `:761-770`） | 加 `iterable` |
+| `semantics/exec.rs:1329` `check_value`（兜底 `_ => true` 在 **`:1367`**） | 加 `iterable` 分支；**不加就静默恒真** |
+| `semantics/exec.rs:1300` `runtime_check_code`（兜底 `_ => None` 在 **`:1312`**） | 加分支；不加就没有稳定码 |
+
+> **行号随每次接线下移**：09R2F 落地后它下移过 12 行，09R2F1 落地后又下移了更多。
+> 上面的数字是本文定稿时实测的；接手时**先按函数名定位，不要按行号跳转**。
 
 错误码：**`X06-RUNTIME-024`**（`021`–`023` 已被 09R2F 的集合三类占用），
 `message_id` 走 `runtime.*` 命名空间，错误类型名走 `TypeError`。
+
+### 4.1 本批同时认领的债：`set_membership` 的**类型兼容半**
+
+09R2F 与 09R2F1 **两份文档都把这一笔交给 09R2G**，而 09R2G 原文没有认领它——
+**债不能掉在地板缝里**，所以在这里正式接下。
+
+现状（`semantics/exec.rs` 的 `check_value`）：`set_membership` 只覆盖**可哈希半**
+（值是集合则查全部成员可哈希，否则查自身）。缺的一半是：
+
+> 动态成员必须满足**声明的** `set<T>` 成员类型。
+
+`Check { kind, value }` 只带一个字符串 kind 和一个寄存器，**带不了期望成员类型**。
+本批之所以该接它，是因为 `for` 无论如何要引入新的操作数形态（`Len` / `IndexGetDynamic`），
+正好可以复用同一次格式变更，比单独为它做一次便宜。
+
+**动手前先想清楚扩哪一种**：给 `Check` 加一个可选的计划索引、还是新增一条指令。
+选哪种都要说明为什么另一种不行，并写进本批交接文档。
+
+**绝不能用 `record_unsupported` 给它记账**——`encode/validate.rs:40` 对非空
+`TacProgram.unsupported` **直接拒绝编码**，一记就把 09R3 的**编码体积**指标整条堵死，
+而且要到 R3 才流血。
 
 ---
 
