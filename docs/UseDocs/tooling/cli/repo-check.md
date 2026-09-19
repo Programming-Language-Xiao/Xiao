@@ -55,9 +55,8 @@ workspace、目录与尺寸、DevDocs、UseDocs 和文档覆盖率检查，所�
 - `移除计划`：满足什么条件后删除豁免。
 
 四段齐全只会把诊断降为仍然可见的 `warning`；缺段或空文件不生效。没有目录级或全局
-白名单。当前 `core/rust/crates/xiao-syntax/src/parser.rs`（3040 行）必须由后续批次拆分，
-不得添加豁免；`xiao-bytecode` 研究编码器已拆为门面与 `research/encode/` 子模块。在
-`parser.rs` 拆分完成前，`bun run check:layout` 和 `bun run check` 按设计返回失败。
+白名单。`xiao-bytecode` 研究编码器和 `xiao-syntax/parser.rs` 均已拆为门面与职责子模块，
+当前仓库不应存在尺寸债务；`bun run check:layout` 和 `bun run check` 应保持通过。
 
 已知限制：符号链接形式的源文件目前不会被扫描。仓内源码树没有此类链接；若新增链接，
 不能把它当作绕过尺寸门禁的方式。

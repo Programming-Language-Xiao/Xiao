@@ -9,8 +9,8 @@
 
 1. [09R2D. 两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md)：研究编码器的
    字节字段、源码映射和 ABI 冻结依据。
-2. [00E. 单文件行数门禁交接](00e-file-size-gate.md)：`A0-SIZE-001` 的拆分门槛与当前
-   `parser.rs` 债务。
+2. [00E. 单文件行数门禁交接](00e-file-size-gate.md)：`A0-SIZE-001` 的拆分门槛，以及
+   本批之前尚存的 `parser.rs` 尺寸债务历史。
 3. [00. 决策基线](00-decisions.md)：架构耦合硬约束和新增模块的 README/依赖/测试要求。
 4. [`research/encode/README.md`](../../core/rust/crates/xiao-bytecode/src/research/encode/README.md)：
    当前模块职责、允许依赖和禁止依赖的唯一局部边界说明。
@@ -52,8 +52,8 @@ encode.rs（类型、错误、公开入口与装配）
 2. `cargo test --manifest-path core/rust/Cargo.toml -p xiao-bytecode`。
 3. `cargo clippy --manifest-path core/rust/Cargo.toml -p xiao-bytecode --all-targets -- -D warnings`。
 4. `bun test`、`bun run check:docs`、`bun run check:usedocs` 和 `bun run check:coverage`。
-5. `bun run check:layout` 与 `bun run check` 必须继续只报告已登记的
-   `core/rust/crates/xiao-syntax/src/parser.rs` 尺寸债务；`encode.rs` 不得重新出现。
+5. `bun run check:layout` 与 `bun run check` 不得报告 `parser.rs` 或 `encode.rs` 的尺寸
+   债务；未来新超标文件必须另开拆分批次。
 
 后续接手者若继续拆分研究模块，必须在同一提交更新局部 README、允许/禁止依赖、架构
 回归测试和本记录的交付状态；不得用新增跨层依赖绕过这张 DAG。

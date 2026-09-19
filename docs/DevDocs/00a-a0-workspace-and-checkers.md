@@ -14,9 +14,9 @@
 ### 当前状态与边界
 
 - 当前仓库已经包含 Rust/Bun workspace manifest、20 个 Rust crate 骨架、三个 TypeScript workspace 包，以及 A0 目录、单文件行数与覆盖率检查器；20 个 Rust workspace 成员均已 opt-in 到共享 `missing_docs` lint。
-- `A0-SIZE-001` 已按 2500 物理行上限启用。`xiao-bytecode` 的研究编码器已在本批拆为
-  `research/encode.rs` 门面与 `research/encode/` 子模块；`parser.rs`（3040 行）仍是待后续
-  拆分的已知债务，因此当前 `check:layout` 与 `check` 有意返回失败，不得补豁免说明伪造绿态。
+- `A0-SIZE-001` 已按 2500 物理行上限启用。`xiao-bytecode` 的研究编码器和
+  `xiao-syntax/parser.rs` 均已拆为门面与职责子模块；当前没有已登记的尺寸债务，
+  `check:layout` 与 `check` 应保持通过，不得补豁免说明掩盖新的超长文件。
 - 本阶段建立工程可审计性，不实现 Xiao Token、类型、Runtime、VM、LLVM 或包管理语义。
 - 代码、测试和 UseDocs 的同步要求从 A0 起生效；尚未实现的功能不得为了满足文档数量而伪造 `verified` 页面。
 - CLI 工具本身使用 TypeScript；Rust `syn` 解析器作为内部解析组件，不形成第二套用户 CLI。

@@ -32,21 +32,21 @@ describe("README 规则", () => {
 describe("当前仓库布局", () => {
   test("A0 布局其它规则保持通过，尺寸债务名单精确可见", async () => {
     const result = await checkLayout(process.cwd());
-    const knownOversized = ["core/rust/crates/xiao-syntax/src/parser.rs"];
+    const knownOversized: string[] = [];
     const sizeErrors = result.diagnostics.filter((item) => item.code === "A0-SIZE-001");
     const others = result.diagnostics.filter((item) => item.code !== "A0-SIZE-001");
     expect(others).toEqual([]);
-    // 这份名单只能随着拆分缩短，不能用“包含”断言掩盖新增超长文件。
+    // 这份名单只能随着拆分缩短，不能用“包含”断言掩盖新增超长文件；当前已清空。
     expect(sizeErrors.map((item) => item.path)).toEqual(knownOversized);
-    expect(result.passed).toBe(false);
+    expect(result.passed).toBe(true);
   }, 120_000);
 
   test("从子目录执行时报告根目录而不是子目录", async () => {
     const expectedRoot = findRepositoryRoot(process.cwd()) ?? process.cwd();
     const result = await runCommand({ command: "layout", root: join(expectedRoot, "tools"), format: "text" });
     expect(result.root).toBe(expectedRoot);
-    // parser.rs 仍是已知超长文件，子目录入口也必须报告尺寸债务。
-    expect(result.result.passed).toBe(false);
+    // 入口解析与根目录发现仍需保持通过；尺寸债务已在本批清零。
+    expect(result.result.passed).toBe(true);
   }, 120_000);
 });
 

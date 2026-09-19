@@ -355,3 +355,30 @@ fn attaches_docs_to_expression_statement() {
     assert_eq!(program.statements.len(), 1);
     assert_eq!(program.statements[0].leading_docs().len(), 1);
 }
+
+#[test]
+/// 锁住解析器门面与语句扩展的边界，避免大段语句实现回流到 `parser.rs`。
+fn parser_statement_split_keeps_dependency_boundary() {
+    let facade = include_str!("../src/parser.rs");
+    let statements = include_str!("../src/parser/statements.rs");
+
+    assert!(facade.contains("mod statements;"));
+    assert!(facade.contains("#[path = \"parser/imports.rs\"]"));
+    assert!(!facade.contains("#[path = \"parser/statements.rs\"]"));
+    for signature in [
+        "fn parse_statement(",
+        "fn parse_table_statement(",
+        "fn parse_function_statement(",
+        "fn parse_if_statement(",
+        "fn parse_try_statement(",
+    ] {
+        assert!(
+            !facade.contains(signature),
+            "语句实现不得回流到 parser.rs: {signature}"
+        );
+    }
+    assert!(statements.contains("pub(super) fn parse_statement("));
+    assert!(statements.contains("use crate::parser::"));
+    assert!(!statements.contains("use crate::lexer::"));
+    assert!(!statements.contains("xiao_types"));
+}
