@@ -1,0 +1,28 @@
+# Xiao 开发容器。
+#
+# 钉死与仓库一致的版本：Rust 1.96.0（core/rust/rust-toolchain.toml 的 channel 与
+# components）与 Bun 1.4.0（根 package.json 的 packageManager）。
+#
+# 这不是验收路径的一部分：09R3 的基准数字只在 Windows 原生采，容器只用于在 Linux 上
+# 开发与验证。将来固定 CI 环境时可以直接复用这份定义。
+#
+# 构建：
+#   docker build -f Dockerfile.dev -t xiao-dev .
+#
+# 运行（Git Bash 下必须加 MSYS_NO_PATHCONV=1，否则 -v 的路径会被 MSYS 转换掉）：
+#   MSYS_NO_PATHCONV=1 docker run --rm -it \
+#     -v "$PWD":/w -v xiao-target:/w/core/rust/target -w /w xiao-dev bash
+#
+# 首次进容器后先跑 `bun install`：node_modules 在绑定挂载上，不进镜像。
+FROM rust:1.96.0
+
+# 与 rust-toolchain.toml 的 components 一致；镜像本身已带 rustc/cargo。
+RUN rustup component add rustfmt clippy
+
+# 与根 package.json 的 packageManager 一致。
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.0"
+ENV PATH="/root/.bun/bin:${PATH}"
+
+# `target/` 刻意留在具名卷而不是绑定挂载里：仓库位于 Windows 盘时，编译产物落在
+# 绑定挂载上会让每次构建都付跨文件系统开销。
+WORKDIR /w

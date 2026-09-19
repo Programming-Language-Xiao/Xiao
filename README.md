@@ -74,6 +74,10 @@ cargo 的进程创建本身就要约 10 秒（实测本机 `cargo --version` 即
 `xiao-syntax/src/parser.rs` 均已拆为门面与职责子模块，当前尺寸门禁应全绿，
 不得用豁免掩盖未来可拆分的超长文件。其余检查仍应正常通过。
 
+在 Linux 上开发时可以用仓库根的 [`Dockerfile.dev`](./Dockerfile.dev)：它钉死与仓库一致的
+Rust `1.96.0` 与 Bun `1.4.0`，用法见文件头部注释。容器只用于开发与验证，
+**不是验收路径的一部分**——09R3 的基准数字只在 Windows 原生采。
+
 环境基线见 [`package.json`](./package.json)（Bun `1.4.x`）和 [`core/rust/Cargo.toml`](./core/rust/Cargo.toml)（Rust `1.85+`）。
 
 ## 阅读路线
