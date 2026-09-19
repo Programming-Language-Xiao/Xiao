@@ -16,6 +16,7 @@
 | [A0. 工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) | Rust/Bun workspace 清单、目录完整性检查器、文档覆盖率检查器和 UseDocs 同步门禁的可执行契约 | 已完成 |
 | [00C. 文档 lint 接线实现交接](00c-doc-lint-wiring.md) | 统一 20 个 Rust crate 的 `missing_docs` 接线，补齐 rustc 与 repo-check 两套口径的文档缺口；实现提交 `6d296c3` | 已完成（方案 B） |
 | [00D. Rust AST 适配器协议 v2 修正交接](00d-doc-adapter-protocol-v2-fixes.md) | 修正 `0e9a42b` 的 `end_line` 死字段、大纲行数口径与协议契约文档，并给请求体加大纲开关；是单文件行数门禁的前置 | 已完成 |
+| [00E. 单文件行数门禁交接](00e-file-size-gate.md) | `A0-SIZE-001` 的判定与树形大纲渲染、TS 侧结构大纲、旁置 md 豁免机制；落地后门禁为红，两个超标文件另开批次拆分 | 未开始（规则尚未实现） |
 
 实现边界速览：字节码 VM 与执行 Runtime 的 Rust 决策见 [00. 决策基线](00-decisions.md) 和 [09. 字节码运行模式](09-bytecode-runtime.md)；字节码机型、调用约定与编码的研究冻结过程见 [09R. 字节码寄存器机型特别研究](09r-bytecode-machine-research.md)；TypeScript CLI/REPL 边界见 [11. CLI、项目配置与平台](11-cli-config-and-platform.md)；Java 对照性能目标与验收口径见 [19. 优化、兼容性与发布验收](19-optimization-release.md)。
 
@@ -42,6 +43,7 @@
 | 00A.1 | [工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) | 实际 workspace 清单、目录检查、UseDocs 登记和覆盖率报告契约 | 已完成 |
 | 00C | [文档 lint 接线实现交接](00c-doc-lint-wiring.md) | 20 个 Rust crate 的 `missing_docs` 接线、44 个字段 Rustdoc、两套口径复测（提交 `6d296c3`） | 已完成（方案 B） |
 | 00D | [Rust AST 适配器协议 v2 修正交接](00d-doc-adapter-protocol-v2-fixes.md) | `Declaration.end_line` 真实语义、大纲 `lines` 口径统一、`declaration_head` 文档对齐、`outline` 请求开关、协议 UseDoc 同步 | 已完成 |
+| 00E | [单文件行数门禁交接](00e-file-size-gate.md) | `A0-SIZE-001` 判定与树形大纲渲染、TS 结构大纲、旁置 md 豁免机制、七处文档同步 | 未开始（规则尚未实现） |
 | 01 | [词法 Token 与语法入口](01-lexical-and-grammar.md) | 源码位置模型、最小 Token 流、完整词法器和解析器入口 | 进行中 |
 | 01A | [F0/L0 实现交接记录](01a-f0-l0-implementation.md) | UTF-8 源码位置、最小 Token、统一诊断和规格快照 | 已完成 |
 | 01B | [L1 基础词法扩展交接记录](01b-l1-implementation.md) | 字面量、保留字、括号、运算符和错误恢复 | 已完成 |
