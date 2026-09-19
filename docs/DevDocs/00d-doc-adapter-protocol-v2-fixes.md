@@ -219,9 +219,9 @@ L54..56  n=4   ← 56-54+1 = 3
 
 ## 缺陷 5（中）：协议升到 v2，成文契约没跟着改
 
-`docs/UseDocs/tooling/cli/doc-coverage-rust.md:24` 至今写着：
+`docs/UseDocs/tooling/cli/doc-coverage-rust.md:24` 在修复前写着（**原文照录，是本节缺陷的证据，不要改写或删除**）：
 
-> 旧版契约曾把 `protocol_version` 写成过时值，并且遗漏了 `outlines` 数组……
+> 请求和响应都带有 `protocol_version`，当前版本为 `1`。响应固定包含 `declarations` 与 `errors` 数组……
 
 - 版本号错：实际是 `2`（`lib.rs:13`）。
 - `outlines` 数组**完全没提**，而它是 v2 的主要新增。
@@ -238,7 +238,19 @@ L54..56  n=4   ← 56-54+1 = 3
 
 ### 验收
 
-检查 `docs/` 不再有旧协议版本陈述，且该页能查到 `outlines` 与 `OutlineNode`。
+**只扫契约面，不扫全 `docs/`**：
+
+```bash
+grep -rn '当前版本为 `1`' docs/UseDocs/ tools/*/README.md tools/*/src/README.md
+```
+
+结果为 0，且该页能查到 `outlines` 与 `OutlineNode`。
+
+> **判据必须限定在契约面，这条踩过坑。**「扫全 `docs/` 且结果为 0」与「本节保留原文引用」
+> **互斥**：00D 自己就在 `docs/` 下，一保留引文，那条 grep 就永远不可能为 0。
+> 实测 `8a916e3` 时两处命中，其中一处正是本文 222 行。
+> 一个自败的判据会逼着后来者删证据去满足它——本仓已经发生过一次。
+> 缺陷档案保留缺陷原文是**必须的**，所以判据的范围要跟着定，不能反过来。
 
 ---
 
@@ -344,9 +356,14 @@ pub outline: bool,
 2. `b06_runtime.rs` 的 `span` 在**声明通道**报 `19..21`，与同文件**大纲通道**一致——两条通道不再打架。
 3. 每条大纲节点满足 `line + lines - 1 == end_line`。
 4. `declaration_head` 的文档描述与实现一致，且有测试锁住四种形状。
-5. **大纲按需**：不传 `outline` 的全仓覆盖率响应里 `outlines` 为 `[]`、体积不再接近 1 MiB；
+5. **大纲按需**：不传 `outline` 的全仓覆盖率响应里 `outlines` 为 `[]`；
    传 `outline: true` 时大纲完整。响应**始终**带 `outlines` 字段（清空可以，删掉不行）。
-6. `docs/` 不再有旧协议版本陈述，且该页能查到 `outlines`、`OutlineNode` 与 `outline` 开关。
+   实测口径：141 个 Rust 文件 **1,560,394 → 605,535 字节**。
+   **注意 605,535 字节 ≈ 592 KB，仍是 1 MiB 默认上限的 58%**——那是 v1 本来的体积
+   （每声明重复整个文件路径，约 157 字节/条），不是「远离上限」。
+   故 `maxBuffer` 必须保留，且**仓库规模翻倍时这 592 KB 会再次越过 1 MiB**。
+6. 契约面内 `grep -rn '当前版本为 \`1\`' docs/UseDocs/ tools/*/README.md tools/*/src/README.md` 为 0，
+   且该页能查到 `outlines`、`OutlineNode` 与 `outline` 开关。**判据范围限定在契约面的原因见缺陷 5**。
 7. **六项门禁全绿**：`bun run check`、`bun run check:coverage`、`bun test`、
    `cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings`、
    `cargo fmt --all -- --check`。
