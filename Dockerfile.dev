@@ -14,14 +14,18 @@
 #     -v "$PWD":/w -v xiao-target:/w/core/rust/target -w /w xiao-dev bash
 #
 # 首次进容器后先跑 `bun install`：node_modules 在绑定挂载上，不进镜像。
+#
+# Bun 从官方镜像取二进制而不是构建时 curl 安装：构建过程因此不需要访问 bun.sh，
+# 少一类失败点，版本也由镜像标签而不是安装脚本参数决定。
+FROM oven/bun:1.4.0 AS bun
+
 FROM rust:1.96.0
 
 # 与 rust-toolchain.toml 的 components 一致；镜像本身已带 rustc/cargo。
 RUN rustup component add rustfmt clippy
 
-# 与根 package.json 的 packageManager 一致。
-RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.0"
-ENV PATH="/root/.bun/bin:${PATH}"
+# 官方 oven/bun 镜像把二进制放在这里；路径若变，COPY 会直接失败而不是静默跳过。
+COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
 
 # `target/` 刻意留在具名卷而不是绑定挂载里：仓库位于 Windows 盘时，编译产物落在
 # 绑定挂载上会让每次构建都付跨文件系统开销。

@@ -1,0 +1,11 @@
+# 构建上下文排除编译产物与依赖。
+#
+# `core/rust/target` 单目录就近 9 GB，不排除会让每次 docker build 都把它发给守护进程。
+# `Dockerfile.dev` 本身不 COPY 任何仓库内容（仓库在运行期用 -v 挂载），所以这里可以
+# 放心排除到只剩源文件。
+target
+**/target
+node_modules
+**/node_modules
+.git
+.git/*
