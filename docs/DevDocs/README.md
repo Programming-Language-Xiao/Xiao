@@ -83,7 +83,8 @@
 | 09R2b | [选择器全量执行交接文档](09r2b-selector-execution.md) | 步长接线、`SelectionPlan` 消费方式、高级选择的 TAC 操作数格式与运行时执行、`RandomSource` 注入、结果形状构造、左值广播写入 | 已完成（31 条共享向量、53 条栈式测试、四类 RuntimeCheck） |
 | 09R2b1 | [选择器执行验证缺口修复交接文档](09r2b1-selector-verification.md) | 选择器结果值的可观察性、能断言选择结果的区分度用例、错误码字面量回退清理 | 已完成（7 条三机型值断言、受控回退验证、错误码字面量清零） |
 | 09R2f | [集合运算执行闭环交接文档](09r2f-set-operations.md) | `SetOp`/`SetCompare` 两条指令、`SetHandle` 代数与六种比较、四个集合类 RuntimeCheck、`sets.json` 共享向量 | 进行中（指令与代数已落地 `17d36b1`/`68199e9`；RuntimeCheck 接线未做） |
-| 09R2f1 | [集合运算执行闭环续交接文档](09r2f1-set-operations-continuation.md) | 自审发现的四个问题（错误码未重导出、opcode 计数、ops 层缺单测、文档改名）与 RuntimeCheck 接线、向量与区分度 | 未开始 |
+| 09R2f1 | [集合运算执行闭环续交接文档](09r2f1-set-operations-continuation.md) | 交接前查出的七个问题（错误码未重导出、opcode 计数、ops 层缺单测、文档改名、新指令无运行时用例、标签表缺显式数值测试、错误码表不全）与 RuntimeCheck 接线、向量与区分度 | 未开始 |
+| 09R2g | [`for` 与迭代执行闭环交接文档](09r2g-for-and-iteration.md) | `Len`/`IndexGetDynamic` 两条指令、`for` 的 TAC 降低与三块 CFG、`iterable` 运行时检查、`iteration.json` 共享向量 | 未开始（`for` 仍记入 unsupported） |
 | 09R3 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三机型基准、语义差分报告和机型/调用 ABI/编码冻结 | 未开始 |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
