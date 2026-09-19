@@ -82,6 +82,7 @@
 | 09R2e | [研究编码器模块解耦交接记录](09r2e-research-encoder-decoupling.md) | `research::encode` 门面与 `codec`/`tags`/`validate`/`encoder`/`decoder`/`tests` 依赖 DAG、兼容契约和架构回归测试 | 已完成 |
 | 09R2b | [选择器全量执行交接文档](09r2b-selector-execution.md) | 步长接线、`SelectionPlan` 消费方式、高级选择的 TAC 操作数格式与运行时执行、`RandomSource` 注入、结果形状构造、左值广播写入 | 已完成（31 条共享向量、53 条栈式测试、四类 RuntimeCheck） |
 | 09R2b1 | [选择器执行验证缺口修复交接文档](09r2b1-selector-verification.md) | 选择器结果值的可观察性、能断言选择结果的区分度用例、错误码字面量回退清理 | 已完成（7 条三机型值断言、受控回退验证、错误码字面量清零） |
+| 09R2f | [集合运算执行闭环交接文档](09r2f-set-operations.md) | `SetOp`/`SetCompare` 两条指令、`SetHandle` 代数与六种比较、四个集合类 RuntimeCheck、`sets.json` 共享向量 | 未开始（集合当前会算错：`{1} == {1}` 返回 false） |
 | 09R3 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三机型基准、语义差分报告和机型/调用 ABI/编码冻结 | 未开始 |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
