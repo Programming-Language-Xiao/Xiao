@@ -218,6 +218,13 @@ fn instruction_use_def(
             uses.insert(*left);
             uses.insert(*right);
         }
+        TacOp::Len { source } => {
+            uses.insert(*source);
+        }
+        TacOp::IndexGetDynamic { source, index } => {
+            uses.insert(*source);
+            uses.insert(*index);
+        }
         TacOp::NewArray { elements }
         | TacOp::NewTuple { elements }
         | TacOp::NewSet { elements } => uses.extend(elements.iter().copied()),

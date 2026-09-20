@@ -136,7 +136,14 @@ impl<'source> TypeChecker<'source> {
                 Type::Dynamic
             }
         };
-        if iterable_type.is_dynamic() {
+        let dynamic_iterable =
+            iterable_type.is_dynamic() || matches!(iterable_type, Type::Variable(_));
+        if matches!(iterable_type, Type::Variable(_)) {
+            // `for` 只要求运行时可迭代；未被其他约束解析的参数应像动态条件
+            // 一样落到 Dynamic，而不是在函数收尾时留下无法推断的类型变量。
+            self.context.bind_dynamic(&iterable_type);
+        }
+        if dynamic_iterable {
             self.push_runtime_check(iterable.span(), RuntimeCheckKind::Iterable);
         }
         self.loop_depth = self.loop_depth.saturating_add(1);

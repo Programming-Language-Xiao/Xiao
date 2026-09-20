@@ -25,32 +25,7 @@
       "source": "def down(int value) -> int\n    if value == 0\n        return 0\n    return down(value - 1)\nresult = down(3)\n",
       "expect": {
         "outcome": "success",
-        "releases": [
-          {
-            "scope": 1,
-            "exit": "return",
-            "value": 1,
-            "kind": "strong"
-          },
-          {
-            "scope": 1,
-            "exit": "return",
-            "value": 1,
-            "kind": "strong"
-          },
-          {
-            "scope": 1,
-            "exit": "return",
-            "value": 1,
-            "kind": "strong"
-          },
-          {
-            "scope": 1,
-            "exit": "return",
-            "value": 1,
-            "kind": "strong"
-          }
-        ],
+        "releases": [],
         "max_call_depth": 5
       }
     },
@@ -59,14 +34,7 @@
       "source": "def inner(int n) -> int\n    return n + 1\ndef outer(int n) -> int\n    return inner(n)\nresult = outer(1)\n",
       "expect": {
         "outcome": "success",
-        "releases": [
-          {
-            "scope": 1,
-            "exit": "return",
-            "value": 1,
-            "kind": "strong"
-          }
-        ],
+        "releases": [],
         "max_call_depth": 3
       }
     }

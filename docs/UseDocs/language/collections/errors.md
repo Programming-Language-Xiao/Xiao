@@ -4,7 +4,7 @@ title: 容器与集合错误诊断
 status: verified
 audience: learner
 module: rust.xiao-vm-research
-stage: "09R2F1"
+stage: "09R2G"
 version: "0.1.0"
 related:
   - README.md
@@ -58,7 +58,8 @@ VM 另有选择器执行错误，仍使用同一结构化错误核心并沿 hand
 | `X06-RUNTIME-020` | 随机种子不是合法非负整数 |
 | `X06-RUNTIME-021` | 集合运算操作数不是集合 |
 | `X06-RUNTIME-022` | 集合比较操作数不是集合 |
-| `X06-RUNTIME-023` | 集合成员值不可哈希，或成员判断右侧不是集合 |
+| `X06-RUNTIME-023` | 集合成员值不可哈希、不满足声明成员类型，或成员判断右侧不是集合 |
+| `X06-RUNTIME-024` | 动态 `for in` 右值不是可迭代容器 |
 
 语法阶段还会用 `X03-PARSE-002` 拒绝同一花括号中混用集合值和字典键值条目，并用
 `X03-PARSE-004` 拒绝 `const name[path]`。C2-B 额外使用以下编号拒绝未开放的集合
@@ -81,9 +82,10 @@ VM 另有选择器执行错误，仍使用同一结构化错误核心并沿 hand
 不应通过改写源码为范围或随机选择来绕过诊断。动态集合元素和动态成员判断分别登记
 `SetHashability`/`SetMembership` 检查；动态集合赋给受限集合时也登记 `SetMembership`。
 C2-C 的集合代数动态边界登记 `SetOperation`，集合比较动态边界登记 `SetComparison`。
-09R2F1 研究 VM 已执行可哈希检查、集合代数、集合比较和成员判断；`SetHashability`
+09R2G 研究 VM 已执行可哈希检查、集合代数、集合比较、成员判断和 `for` 迭代；`SetHashability`
 复用 `X06-RUNTIME-016`，后三类分别使用 `X06-RUNTIME-021`/`022`/`023`。显式集合
-成员类型的动态兼容半、集合增删、自动扩容和迭代仍未开放。
+集合成员类型的动态兼容半已通过 `Check.expected` 接入；集合增删和自动扩容仍未开放；
+迭代使用 `Len`/动态索引降低，集合顺序仍遵循集合模块的物理顺序契约。
 
 更完整的生产运行时堆栈、日志和调试窗口属于第 07/11 阶段；本页同时列出研究 VM 的
 选择器与集合运行时码，但不承诺正式 `xiao run` 或 `.xiaoc` 产物已经开放。交接边界见 [03A](../../../DevDocs/03a-c0-containers.md)、

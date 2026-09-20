@@ -324,6 +324,11 @@ fn encode_op(
             writer.index(left.get(), "VReg")?;
             writer.index(right.get(), "VReg")
         }
+        TacOp::Len { source } => writer.index(source.get(), "VReg"),
+        TacOp::IndexGetDynamic { source, index } => {
+            writer.index(source.get(), "VReg")?;
+            writer.index(index.get(), "VReg")
+        }
         TacOp::Arith { op, left, right } => {
             writer.byte(arith_tag(*op));
             writer.index(left.get(), "VReg")?;
@@ -425,10 +430,16 @@ fn encode_op(
             kind,
             value,
             on_failure,
+            expected,
         } => {
             writer.string(kind)?;
             writer.index(value.get(), "VReg")?;
-            writer.index(on_failure.get(), "BlockId")
+            writer.index(on_failure.get(), "BlockId")?;
+            writer.byte(u8::from(expected.is_some()));
+            if let Some(expected) = expected {
+                encode_type(writer, expected)?;
+            }
+            Ok(())
         }
         TacOp::Release { value, kind } => {
             writer.index(value.get(), "VReg")?;

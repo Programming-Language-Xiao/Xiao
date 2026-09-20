@@ -8,14 +8,7 @@
       "expect": {
         "outcome": "error",
         "error_code": "X06-RUNTIME-009",
-        "releases": [
-          {
-            "scope": 1,
-            "exit": "unmatched_error",
-            "value": 1,
-            "kind": "strong"
-          }
-        ],
+        "releases": [],
         "max_call_depth": 2
       }
     },
@@ -152,24 +145,6 @@
         "error_code": "loop",
         "releases": [
           {
-            "scope": 1,
-            "exit": "return",
-            "value": 1,
-            "kind": "strong"
-          },
-          {
-            "scope": 1,
-            "exit": "return",
-            "value": 1,
-            "kind": "strong"
-          },
-          {
-            "scope": 1,
-            "exit": "return",
-            "value": 1,
-            "kind": "strong"
-          },
-          {
             "scope": 6,
             "exit": "normal",
             "value": 7,
@@ -179,12 +154,6 @@
             "scope": 6,
             "exit": "normal",
             "value": 7,
-            "kind": "strong"
-          },
-          {
-            "scope": 0,
-            "exit": "unmatched_error",
-            "value": 3,
             "kind": "strong"
           }
         ],

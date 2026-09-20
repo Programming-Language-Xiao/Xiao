@@ -24,21 +24,23 @@ Xiao 的双模式执行从类型化 IR 分叉：`xiao run` 走字节码解释路
 
 ## 当前进展
 
-09R2 已完成异常控制流、三种研究载体、内存编码和选择器执行的首版闭环：
+09R2 已完成异常控制流、三种研究载体、内存编码、选择器、集合和迭代执行的研究闭环：
 
-- 栈式、分类型寄存器式、混合式三种载体共用同一 TAC 语义核、释放计划和 59 条共享向量；
+- 栈式、分类型寄存器式、混合式三种载体共用同一 TAC 语义核、释放计划和 73 条共享向量；
 - `SelectorApply`、`BroadcastAssign`、`RandomSeed` 已接通多选、范围、步长、随机、结果形状
   和事务性广播；
 - `SetOp`、`SetCompare` 已接通四种集合代数、六种关系比较和成员判断；集合操作数检查使用
   `X06-RUNTIME-021`/`022`，成员检查使用 `X06-RUNTIME-023`，可哈希检查复用
   `X06-RUNTIME-016`；
-- 编码器支持 36 个稳定 opcode、LEB128/定宽 `u16` 两种操作数宽度、版本拒绝和 `pc -> IrSpan`
-  只读映射；
+- `Len`、`IndexGetDynamic` 已接通 `for` 的 CFG 降低；数组、元组、字符串、集合、字典表和
+  字典列可迭代，字符串按 Unicode 码点计数，动态右值失败使用 `X06-RUNTIME-024`；
+- 编码器支持布局版本 2、38 个稳定 opcode、LEB128/定宽 `u16` 两种操作数宽度、版本拒绝和
+  `pc -> IrSpan` 只读映射；
 - 动态选择器边界、步长、随机数量和随机种子分别使用 `X06-RUNTIME-017..020`，错误沿统一
   handler/finally/释放路径传播。
 
-`for`、表声明、集合/迭代器运行时、正式 `.xiaoc` 分段格式、生产 `xiao run` 和 09R3 正式
-性能门槛仍未开放。研究代码保持在 `xiao-bytecode/src/research` 与 `xiao-vm/src/research`，
+表声明、正式 `.xiaoc` 分段格式、生产 `xiao run` 和 09R3 正式性能门槛仍未开放。研究代码保持在
+`xiao-bytecode/src/research` 与 `xiao-vm/src/research`，
 不构成稳定语言接口。
 
 ## 已经确定的部分

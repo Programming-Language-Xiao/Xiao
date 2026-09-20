@@ -156,6 +156,37 @@ fn rebuilds_control_flow_blocks() {
 }
 
 #[test]
+/// `for` 应降低为长度、动态索引、条件分支和游标更新，而不是进入 unsupported。
+fn lowers_for_iteration_cfg() {
+    let (ir, tac) = lower(
+        "def result() -> int\n    total = 0\n    for item in [1, 2, 3]\n        total = total + item\n    return total\n",
+    );
+    assert!(
+        tac.unsupported.is_empty(),
+        "for 降低不应留下 unsupported: {:?}",
+        tac.unsupported
+    );
+    let ops = tac.functions[1]
+        .blocks
+        .iter()
+        .flat_map(|block| block.instructions.iter())
+        .map(|instruction| &instruction.op)
+        .collect::<Vec<_>>();
+    assert!(ops.iter().any(|op| matches!(op, TacOp::Len { .. })));
+    assert!(
+        ops.iter()
+            .any(|op| matches!(op, TacOp::IndexGetDynamic { .. }))
+    );
+    assert!(ops.iter().any(|op| matches!(op, TacOp::BranchIf { .. })));
+    let verification = verify_program(&ir, &tac);
+    assert!(
+        verification.is_success(),
+        "验证错误: {:?}",
+        verification.errors
+    );
+}
+
+#[test]
 /// `try` 现在必须生成处理器表与 finally 子程序，而不是静默跳过。
 fn lowers_exception_handlers_and_finally_subroutine() {
     let (ir, tac) =
@@ -530,6 +561,7 @@ fn nested_set_operation_does_not_bind_check_to_selector_source() {
     ir.runtime_checks.push(IrRuntimeCheck {
         kind: "set_operation".to_owned(),
         span: binary_span,
+        expected: None,
     });
     let tac = lower_program(&ir);
     let selector_source = tac.functions[0]

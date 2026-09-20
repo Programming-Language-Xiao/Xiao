@@ -11,7 +11,7 @@ use xiao_bytecode::research::{
     TacProgram, VReg, build_pc_map,
 };
 use xiao_diagnostics::{
-    BackendLocation, CONTAINER_HASHABILITY_CODE, FatalError, NUMERIC_OVERFLOW_CODE,
+    BackendLocation, CONTAINER_HASHABILITY_CODE, FatalError, ITERABLE_CODE, NUMERIC_OVERFLOW_CODE,
     RANDOM_COUNT_CODE, RANDOM_SEED_CODE, SELECTOR_BOUNDS_CODE, SELECTOR_STEP_CODE,
     SET_COMPARISON_CODE, SET_MEMBERSHIP_CODE, SET_OPERATION_CODE, StackFrame, TYPE_MISMATCH_CODE,
     XiaoError,
@@ -451,6 +451,17 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let value = ops::index_get(&source, path).map_err(Fault::Error)?;
                 self.write_operand(instruction.dst, value);
             }
+            TacOp::Len { source } => {
+                let source = self.read(*source)?;
+                let value = ops::len(&source).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::IndexGetDynamic { source, index } => {
+                let source = self.read(*source)?;
+                let index = self.read(*index)?;
+                let value = ops::index_get_dynamic(&source, &index).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
             TacOp::SelectorApply {
                 source,
                 plan,
@@ -636,9 +647,10 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 kind,
                 value,
                 on_failure,
+                expected,
             } => {
                 let value = self.read(*value)?;
-                if !check_value(kind, &value) {
+                if !check_value(kind, &value, expected.as_ref()) {
                     return Ok(Flow::JumpWithFault {
                         target: *on_failure,
                         kind: kind.clone(),
@@ -1309,6 +1321,7 @@ fn runtime_check_code(kind: &str) -> Option<&'static str> {
         "set_comparison" => Some(SET_COMPARISON_CODE),
         "set_hashability" => Some(CONTAINER_HASHABILITY_CODE),
         "set_membership" => Some(SET_MEMBERSHIP_CODE),
+        "iterable" => Some(ITERABLE_CODE),
         _ => None,
     }
 }
@@ -1326,7 +1339,7 @@ fn runtime_text(value: &RuntimeValue) -> Result<String, Fault> {
 }
 
 /// 判定本批次真正支持的四类 Runtime 检查。
-fn check_value(kind: &str, value: &RuntimeValue) -> bool {
+fn check_value(kind: &str, value: &RuntimeValue, expected: Option<&xiao_ir::IrType>) -> bool {
     match kind {
         "boolean_condition" => value.as_bool().is_some(),
         "dynamic_conversion" => matches!(value, RuntimeValue::Error(_)),
@@ -1358,13 +1371,60 @@ fn check_value(kind: &str, value: &RuntimeValue) -> bool {
         }
         "set_operation" | "set_comparison" => matches!(value, RuntimeValue::Set(_)),
         "set_hashability" => is_hashable(value),
-        "set_membership" => match value {
+        "set_membership" => check_set_membership(value, expected),
+        "iterable" => matches!(
+            value,
+            RuntimeValue::Array(_)
+                | RuntimeValue::Tuple(_)
+                | RuntimeValue::Str(_)
+                | RuntimeValue::Set(_)
+                | RuntimeValue::DictTable(_)
+                | RuntimeValue::DictColumn(_)
+        ),
+        _ => true,
+    }
+}
+
+/// 检查集合成员的可哈希性与声明类型边界。
+fn check_set_membership(value: &RuntimeValue, expected: Option<&xiao_ir::IrType>) -> bool {
+    let Some(expected) = expected else {
+        return match value {
             RuntimeValue::Set(handle) => handle
                 .with_elements(|elements| elements.iter().all(is_hashable))
                 .unwrap_or(false),
             other => is_hashable(other),
-        },
-        _ => true,
+        };
+    };
+    let xiao_ir::IrType::Set {
+        members,
+        allows_dynamic,
+        empty,
+        unknown,
+    } = expected
+    else {
+        return is_hashable(value);
+    };
+    let accepts = |member: &RuntimeValue| {
+        is_hashable(member)
+            && (*unknown
+                || *allows_dynamic
+                || (!*empty && members.iter().any(|ty| runtime_matches_type(member, ty))))
+    };
+    match value {
+        RuntimeValue::Set(handle) => handle
+            .with_elements(|elements| elements.iter().all(accepts))
+            .unwrap_or(false),
+        other => accepts(other),
+    }
+}
+
+/// 判断一个 Runtime 值是否满足可哈希的 IR 类型描述。
+fn runtime_matches_type(value: &RuntimeValue, ty: &xiao_ir::IrType) -> bool {
+    match ty {
+        xiao_ir::IrType::Scalar { name } => value.type_name() == *name,
+        xiao_ir::IrType::None => matches!(value, RuntimeValue::None),
+        xiao_ir::IrType::Dynamic | xiao_ir::IrType::Variable { .. } => true,
+        _ => false,
     }
 }
 

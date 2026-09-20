@@ -156,7 +156,11 @@ impl<'source> TypeChecker<'source> {
                     }
                 }
                 if source.allows_dynamic() {
-                    self.push_runtime_check(expression.span(), RuntimeCheckKind::SetMembership);
+                    self.push_runtime_check_with_expected(
+                        expression.span(),
+                        RuntimeCheckKind::SetMembership,
+                        Type::Set(expected.clone()),
+                    );
                 }
             }
             Type::Dynamic => {
@@ -259,6 +263,7 @@ impl<'source> TypeChecker<'source> {
 
     /// 验证成员值的可哈希性和已知集合元素类型约束。
     fn check_membership_element(&mut self, actual: &Type, expected: &SetType, span: SourceSpan) {
+        let mut needs_runtime_check = false;
         match hashability(actual) {
             Hashability::Unhashable => self.type_error_with_params(
                 SET_UNHASHABLE_ELEMENT_CODE,
@@ -271,15 +276,29 @@ impl<'source> TypeChecker<'source> {
                 )],
             ),
             Hashability::Dynamic => {
-                self.push_runtime_check(span, RuntimeCheckKind::SetMembership);
+                needs_runtime_check = true;
             }
             Hashability::Hashable => {}
         }
         if expected.is_unknown() || expected.allows_dynamic() || actual.is_dynamic() {
             if actual.is_dynamic() || expected.is_unknown() {
-                self.push_runtime_check(span, RuntimeCheckKind::SetMembership);
+                needs_runtime_check = true;
+            }
+            if needs_runtime_check {
+                self.push_runtime_check_with_expected(
+                    span,
+                    RuntimeCheckKind::SetMembership,
+                    Type::Set(expected.clone()),
+                );
             }
             return;
+        }
+        if needs_runtime_check {
+            self.push_runtime_check_with_expected(
+                span,
+                RuntimeCheckKind::SetMembership,
+                Type::Set(expected.clone()),
+            );
         }
         if hashability(actual) == Hashability::Hashable && !expected.contains_type(actual) {
             let expected_text = expected_member_text(expected);

@@ -54,6 +54,7 @@ pub fn lower_program(
         .map(|check| IrRuntimeCheck {
             kind: runtime_check_kind_name(check.kind).to_owned(),
             span: ir_span(check.span),
+            expected: check.expected.as_ref().map(lower_type),
         })
         .collect();
     result.selection_plans = type_result
@@ -1123,8 +1124,9 @@ mod tests {
             "set_operation",
             "set_comparison",
             "boolean_condition",
+            "iterable",
         ];
-        let intentionally_unsupported = ["string_boolean", "iterable"];
+        let intentionally_unsupported = ["string_boolean"];
 
         let names = all
             .into_iter()
@@ -1145,6 +1147,6 @@ mod tests {
             );
         }
         assert!(!supported.contains(&"string_boolean"));
-        assert!(!supported.contains(&"iterable"));
+        assert!(supported.contains(&"iterable"));
     }
 }

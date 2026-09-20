@@ -520,7 +520,10 @@ impl<'source> EscapeAnalyzer<'source> {
     fn mark_escape(&mut self, id: ValueId, reason: EscapeReason) {
         if let Some(value) = self.result.values.get_mut(&id) {
             value.escapes.insert(reason);
-            if value.storage != StorageClass::HeapWeak {
+            // 标量/栈值跨作用域被读取时仍按值传递，不应因为保守的
+            // 逃逸边界被伪装成堆句柄。只有已经需要堆管理的值才需
+            // 在逃逸后提升为强拥有类别。
+            if value.storage.is_heap() && value.storage != StorageClass::HeapWeak {
                 value.storage = StorageClass::HeapStrong;
             }
         }

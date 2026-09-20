@@ -664,6 +664,8 @@ pub struct IrRuntimeCheck {
     pub kind: String,
     /// 检查源码区间。
     pub span: IrSpan,
+    /// `set_membership` 的可选声明成员类型边界。
+    pub expected: Option<IrType>,
 }
 
 /// 选择路径中的规范化段。

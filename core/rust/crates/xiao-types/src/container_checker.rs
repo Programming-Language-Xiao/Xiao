@@ -336,7 +336,11 @@ impl<'source> TypeChecker<'source> {
                 self.check_set_element_assignment(element, &expected, span);
             }
             if set.allows_dynamic() || set.is_unknown() {
-                self.push_runtime_check(span, RuntimeCheckKind::SetMembership);
+                self.push_runtime_check_with_expected(
+                    span,
+                    RuntimeCheckKind::SetMembership,
+                    Type::Set(crate::SetType::homogeneous(expected.clone())),
+                );
             }
             return;
         }
@@ -410,7 +414,11 @@ impl<'source> TypeChecker<'source> {
                         self.check_set_element_assignment(element, &expected, target.span)
                     });
                     if set.allows_dynamic() {
-                        self.push_runtime_check(target.span, RuntimeCheckKind::SetMembership);
+                        self.push_runtime_check_with_expected(
+                            target.span,
+                            RuntimeCheckKind::SetMembership,
+                            Type::Set(crate::SetType::homogeneous(expected.clone())),
+                        );
                     }
                     if valid {
                         Some(Type::Set(crate::SetType::homogeneous(expected)))

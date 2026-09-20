@@ -288,6 +288,17 @@ impl TypeContext {
         self.substitution.unify(left, right)
     }
 
+    /// 将一个尚未解析的类型变量明确收敛为 `dynamic`。
+    ///
+    /// 普通 `unify` 把 `dynamic` 当作通配符，不会反向绑定变量；控制流中
+    /// `for ... in value` 则需要把「运行时检查边界」保留下来，避免函数收尾
+    /// 把这个合法的动态入口误报为无法推断。
+    pub(crate) fn bind_dynamic(&mut self, ty: &Type) {
+        if let Type::Variable(variable) = self.apply(ty) {
+            self.substitution.insert(variable, Type::Dynamic);
+        }
+    }
+
     /// 对外暴露 occurs-check 查询，供泛型推断器构造约束时复用。
     #[must_use]
     pub fn occurs_check(&self, variable: TypeVarId, ty: &Type) -> bool {

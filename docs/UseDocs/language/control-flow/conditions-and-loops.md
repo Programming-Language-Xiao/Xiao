@@ -4,13 +4,14 @@ title: 条件与循环
 status: verified
 audience: learner
 module: rust.xiao-types-control
-stage: "04C"
+stage: "09R2G"
 version: "0.1.0"
 related:
   - README.md
   - returns-and-control.md
   - errors.md
   - ../../../DevDocs/04-functions-and-control.md
+  - ../../../DevDocs/09r2g-for-and-iteration.md
 ---
 
 # 条件与循环
@@ -49,6 +50,6 @@ Runtime 在执行时验证。
 
 ## `for in` 可迭代对象
 
-数组、元组、集合、字典表和字典列可以作为已知可迭代对象。集合和字典表的遍历顺序不保证，字典列保留其定义
-顺序；本阶段只验证形状，不执行遍历。动态右值会登记 `Iterable` 检查，标量等已知不可迭代值产生
-`X04-TYPE-006`。
+数组、元组、字符串、集合、字典表和字典列可以作为已知可迭代对象。集合和字典表的遍历顺序不保证，字典列保留其
+定义顺序。研究 VM 已按该顺序契约执行 `for`；字符串按 Unicode 码点迭代。动态右值会登记 `Iterable` 检查，标量等
+已知不可迭代值产生 `X04-TYPE-006`，运行时检查失败使用 `X06-RUNTIME-024`。

@@ -1,0 +1,165 @@
+{
+  "stage": "09R2G",
+  "status": "verified-runtime",
+  "cases": [
+    {
+      "name": "array-sum",
+      "source": "def result() -> int\n    total = 0\n    for item in [1, 2, 3]\n        total = total + item\n    return total\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 6,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "tuple-sum",
+      "source": "def result() -> int\n    total = 0\n    for item in (1, 2, 3)\n        total = total + item\n    return total\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 6,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "unicode-code-point-iteration",
+      "source": "def result() -> int\n    count = 0\n    for item in \"小雪\"\n        count = count + 1\n    return count\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 2,
+        "releases": [
+          {"scope": 2, "exit": "normal", "value": 3, "kind": "strong"},
+          {"scope": 2, "exit": "normal", "value": 3, "kind": "strong"}
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "set-sum",
+      "source": "def result() -> int\n    total = 0\n    for item in {1, 2, 3}\n        total = total + item\n    return total\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 6,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "dict-table-values",
+      "source": "def result() -> int\n    total = 0\n    for item in {first = 1, second = 2}\n        total = total + item\n    return total\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 3,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "dict-column-values",
+      "source": "def result() -> int\n    total = 0\n    for item in <first = 1, second = 2>\n        total = total + item\n    return total\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 3,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "empty-container",
+      "source": "def result() -> int\n    count = 0\n    for item in []\n        count = count + 1\n    return count\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 0,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "break-skips-rest",
+      "source": "def result() -> int\n    total = 0\n    for item in [1, 2, 3]\n        if item == 2\n            break\n        total = total + item\n    return total\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 1,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "continue-advances-cursor",
+      "source": "def result() -> int\n    total = 0\n    for item in [1, 2, 3]\n        if item == 2\n            continue\n        total = total + item\n    return total\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 4,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "nested-for",
+      "source": "def result() -> int\n    total = 0\n    for row in [[1, 2], [3, 4]]\n        for item in row\n            total = total + item\n    return total\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 10,
+        "releases": [
+          {"scope": 2, "exit": "normal", "value": 5, "kind": "strong"},
+          {"scope": 2, "exit": "normal", "value": 5, "kind": "strong"}
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "loop-binding-reassignment",
+      "source": "def result() -> int\n    total = 0\n    for item in [1, 2, 3]\n        total = total + item\n        item = 99\n    return total\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 6,
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "dynamic-iterable-success",
+      "source": "def result(value) -> int\n    count = 0\n    for item in value\n        count = count + 1\n    return count\n",
+      "entry": "result",
+      "arguments": [
+        {"kind": "array", "elements": [4, 5]}
+      ],
+      "expect": {
+        "outcome": "success",
+        "value": 2,
+        "releases": [
+          {"scope": 2, "exit": "normal", "value": 3, "kind": "strong"},
+          {"scope": 2, "exit": "normal", "value": 3, "kind": "strong"},
+          {"scope": 1, "exit": "return", "value": 1, "kind": "strong"}
+        ],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "dynamic-iterable-error",
+      "source": "def result(value) -> int\n    total = 0\n    for item in value\n        total = total + item\n    return total\n",
+      "entry": "result",
+      "arguments": [1],
+      "expect": {
+        "outcome": "error",
+        "error_code": "X06-RUNTIME-024",
+        "releases": [
+          {"scope": 1, "exit": "dynamic_check_failure", "value": 1, "kind": "strong"}
+        ],
+        "max_call_depth": 1
+      }
+    }
+  ]
+}

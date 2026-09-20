@@ -134,6 +134,53 @@ pub fn new_set(elements: Vec<RuntimeValue>) -> RuntimeResult<RuntimeValue> {
     Ok(RuntimeValue::Set(SetHandle::new(elements)?))
 }
 
+/// 返回可迭代值的逻辑长度。
+///
+/// 字符串长度按 Unicode 标量（码点）计算，与 `StringHandle::len` 和统一索引
+/// 语义一致；集合沿用 `SetHandle` 的物理顺序契约，但这里只读取元素数量。
+pub fn len(source: &RuntimeValue) -> RuntimeResult<RuntimeValue> {
+    let length = match source {
+        RuntimeValue::Array(handle) => handle.len(),
+        RuntimeValue::Tuple(handle) => handle.len(),
+        RuntimeValue::Str(handle) => handle.len(),
+        RuntimeValue::Set(handle) => handle.len(),
+        RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle) => handle.len(),
+        _ => {
+            return Err(RuntimeError::type_mismatch(
+                "可迭代容器",
+                source.type_name(),
+            ));
+        }
+    };
+    let length = i64::try_from(length)
+        .map_err(|_| RuntimeError::numeric_overflow("可迭代值长度超出 int 范围"))?;
+    Ok(RuntimeValue::Int(length))
+}
+
+/// 按运行时整数索引读取一个可迭代值的元素。
+///
+/// 动态索引先还原为 [`PathStep::Index`]，再复用 [`index_step`]，确保数组、元组、
+/// 字符串和字典列的负索引及边界行为与静态 `IndexGet` 完全一致。
+pub fn index_get_dynamic(
+    source: &RuntimeValue,
+    index: &RuntimeValue,
+) -> RuntimeResult<RuntimeValue> {
+    let raw = integer_index(index)?;
+    index_step(source, &PathStep::Index(raw))
+}
+
+/// 从 Runtime 值读取动态索引整数。
+fn integer_index(value: &RuntimeValue) -> RuntimeResult<i128> {
+    match value {
+        RuntimeValue::Int(value) => Ok(i128::from(*value)),
+        RuntimeValue::Sint(value) => Ok(i128::from(*value)),
+        RuntimeValue::Lint(value) => value
+            .parse::<i128>()
+            .map_err(|_| RuntimeError::type_mismatch("int", "lint")),
+        _ => Err(RuntimeError::type_mismatch("int", value.type_name())),
+    }
+}
+
 /// 按精确路径读取容器元素。
 ///
 /// 负索引一律经 [`xiao_types::normalize_index`] 归一化——与类型检查器共用同一
@@ -169,15 +216,24 @@ fn index_step(source: &RuntimeValue, step: &PathStep) -> RuntimeResult<RuntimeVa
                 None => Err(missing_element()),
             }
         }
+        (RuntimeValue::Set(handle), PathStep::Index(raw)) => {
+            let index = resolve_index(*raw, handle.len(), "set")?;
+            handle
+                .with_elements(|elements| elements.get(index).cloned())?
+                .ok_or_else(missing_element)
+        }
         (
             RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle),
             PathStep::Key(key),
         ) => handle
             .value(key)?
             .ok_or_else(|| RuntimeError::key_not_found(handle.kind().as_str(), key.clone())),
-        (RuntimeValue::DictColumn(handle), PathStep::Index(raw)) => {
+        (
+            RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle),
+            PathStep::Index(raw),
+        ) => {
             let length = handle.len();
-            let index = resolve_index(*raw, length, "dict_column")?;
+            let index = resolve_index(*raw, length, handle.kind().as_str())?;
             let entry = handle
                 .with_entries(|entries| entries.get(index).map(|(_, value)| value.clone()))?;
             entry.ok_or_else(missing_element)
@@ -1074,8 +1130,8 @@ pub fn apply_compare(
 /// 因此运行时容器错误在字面量程序里不可达，只能在这一层验证。
 mod tests {
     use super::{
-        apply_set_compare, apply_set_op, broadcast_assign, index_get, new_array, new_dict_column,
-        new_dict_table, new_set, new_tuple, selector_apply,
+        apply_set_compare, apply_set_op, broadcast_assign, index_get, index_get_dynamic, len,
+        new_array, new_dict_column, new_dict_table, new_set, new_tuple, selector_apply,
     };
     use xiao_bytecode::research::PathStep;
     use xiao_bytecode::research::{SetCompareOp, SetOpKind};
@@ -1266,17 +1322,61 @@ mod tests {
     }
 
     #[test]
-    /// 元组支持位置索引；不可索引的容器形态给出类型错误。
-    fn tuple_index_and_unsupported_source() {
+    /// 元组和集合支持运行时位置索引；标量仍给出类型错误。
+    fn tuple_and_set_index_and_unsupported_source() {
         let tuple = new_tuple(vec![RuntimeValue::Int(1)]).expect("应分配");
         assert_eq!(
             index_get(&tuple, &[PathStep::Index(0)]),
             Ok(RuntimeValue::Int(1))
         );
         let set = new_set(vec![RuntimeValue::Int(1)]).expect("应分配");
-        assert!(
-            index_get(&set, &[PathStep::Index(0)]).is_err(),
-            "集合不可索引"
+        assert_eq!(
+            index_get(&set, &[PathStep::Index(0)]),
+            Ok(RuntimeValue::Int(1)),
+            "迭代的内部动态索引必须沿用集合物理顺序"
+        );
+        assert!(index_get(&RuntimeValue::Int(1), &[PathStep::Index(0)]).is_err());
+    }
+
+    #[test]
+    /// `Len`/动态索引的运行时算子必须覆盖所有可迭代形态，并以码点计字符串长度。
+    fn len_and_dynamic_index_cover_iterables() {
+        let array = new_array(vec![RuntimeValue::Int(1), RuntimeValue::Int(2)]).expect("应分配");
+        let tuple = new_tuple(vec![RuntimeValue::Int(3)]).expect("应分配");
+        let set = new_set(vec![RuntimeValue::Int(4), RuntimeValue::Int(5)]).expect("应分配");
+        let table = new_dict_table(vec![
+            ("first".to_owned(), RuntimeValue::Int(6)),
+            ("second".to_owned(), RuntimeValue::Int(7)),
+        ])
+        .expect("应分配");
+        let column = new_dict_column(vec![
+            ("first".to_owned(), RuntimeValue::Int(8)),
+            ("second".to_owned(), RuntimeValue::Int(9)),
+        ])
+        .expect("应分配");
+        let text = RuntimeValue::new_string("小雪A").expect("应分配");
+        for (value, expected) in [
+            (&array, 2),
+            (&tuple, 1),
+            (&set, 2),
+            (&table, 2),
+            (&column, 2),
+            (&text, 3),
+        ] {
+            assert_eq!(len(value), Ok(RuntimeValue::Int(expected)));
+        }
+        let indexed = index_get_dynamic(&text, &RuntimeValue::Int(1)).expect("码点索引应成功");
+        let RuntimeValue::Str(indexed) = indexed else {
+            panic!("字符串动态索引应返回 str");
+        };
+        assert_eq!(indexed.to_string().expect("字符串应可读取"), "雪");
+        assert_eq!(
+            index_get_dynamic(&table, &RuntimeValue::Int(-1)),
+            Ok(RuntimeValue::Int(7))
+        );
+        assert_eq!(
+            index_get_dynamic(&column, &RuntimeValue::Int(0)),
+            Ok(RuntimeValue::Int(8))
         );
     }
 

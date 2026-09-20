@@ -513,7 +513,7 @@ target                 目标平台描述
 
 已登记、**尚待交付**（现状逐条注明，勿读作已完成）：
 
-- **`for` 与表声明**仍未实现：`lower/stmt.rs` 继续把它们记入 `unsupported`，由验证器拒绝。
+- **表声明**仍未实现：`lower/stmt.rs` 继续把它记入 `unsupported`，由验证器拒绝。
 
 已交付（2026-09-18，详见 [09R2D 记录](09r2d-machines-and-encoder.md)）：
 
@@ -526,15 +526,16 @@ target                 目标平台描述
 R2D 的实现提交为 `64691b6`、`351cb12`、`9b7d887`、`c3bd94c`、`2ac2f2e`、
 `af779e9`、`1a2b22f`、`b1bab53`、`1605282`。
 
-R2a 剩余的 `for`/表声明仍由后续阶段承接；上述 R2D 交付项和新发现的类别映射缺陷已由
-[09R2D. 两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md)完成。
+R2a 剩余的表声明仍由后续阶段承接；`for`/迭代已由 R2G 接通。上述 R2D 交付项和新发现的
+类别映射缺陷已由 [09R2D. 两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md)完成。
 
 **R2b（选择器全量）已完成（2026-09-19）**：在既有静态语义冻结、语法、类型检查和形状
 投影（`c1_selectors.rs` 18 条、`c1-*.json` 15 条快照）之上，降低器和研究 VM 已接通
 `SelectionPlan`、`SelectorApply`、`BroadcastAssign`、`RandomSeed`，并启用四类选择器运行时
-检查。共享向量新增 `selectors.json` 4 条；在 09R2F1 接通集合后，目录总数为 59 条，三种
+检查。共享向量新增 `selectors.json` 4 条；在 09R2F1 接通集合后为 59 条，R2G 再增加 13 条，三种
 载体复用同一观察器和期望值。
-R2b 批次追加三个操作码，R2F1 再追加两条集合指令；当前共覆盖 36 个 `TacOp` 变体。详见
+R2b 批次追加三个操作码，R2F1 再追加两条集合指令，R2G 追加 `Len`/`IndexGetDynamic`；
+当前共覆盖 38 个 `TacOp` 变体。详见
 [09R2b. 选择器全量执行交接文档](09r2b-selector-execution.md)。
 
 **R2F1（集合运算执行）已完成（2026-09-20）**：`SetOp`/`SetCompare` 已由降低器、
@@ -543,7 +544,16 @@ R2b 批次追加三个操作码，R2F1 再追加两条集合指令；当前共�
 报告 `X06-RUNTIME-023`，可哈希检查复用 `X06-RUNTIME-016`。`sets.json` 新增 28 条
 共享向量，覆盖结果值、释放序列、动态错误边界、空集方向、异构集合和运行时去重；
 `r2_set_values.rs` 直接构造 TAC 验证两条新指令在栈式、寄存器式和混合式载体上真实执行。
-集合显式成员类型的动态兼容半、增删、`for`/迭代及正式生产 `xiao run` 仍未开放。
+集合显式成员类型的动态兼容半已通过 `Check.expected` 接入；集合增删、表声明和正式生产
+`xiao run` 仍未开放。`for`/迭代由 `Len`/`IndexGetDynamic` 完成，动态不可迭代值报告
+`X06-RUNTIME-024`。
+
+**R2G（`for` 与迭代执行）已完成（2026-09-20）**：`Len`/`IndexGetDynamic` 使用
+opcode 36/37，`for` 已降低为来源求值、长度、游标比较、动态索引、绑定、更新桥与出口块；
+`continue` 进入更新桥，`break` 进入统一出口。六类可迭代值、Unicode 码点、空容器、嵌套
+循环、动态检查和释放边界由 `iteration.json` 13 条向量在三种载体复用验证，直接 TAC 夹具
+另行验证两条指令。当前共享向量共 73 条，指令共 38 个；详见
+[09R2G 交接记录](09r2g-for-and-iteration.md)。
 
 #### R2a 第二批已交付（2026-09-17）
 
@@ -570,8 +580,9 @@ R2b 批次追加三个操作码，R2F1 再追加两条集合指令；当前共�
   差分基准仍属于 R3。当前研究 VM 在临时值消费点发出显式 `Release`，并由向量锁定释放序列。
 - **`dynamic_conversion` 目前是窄语义**：它只验证动态值是否为 `RuntimeValue::Error`，服务
   `raise` 的错误边界；动态标量转换没有目标类型字段，暂不伪装成完整实现。
-- **`string_boolean` 与 `iterable` 检查**继续进入 `TacProgram.unsupported`；选择器四类和
-  集合四类已分别由 R2B/R2F1 启用。集合显式成员类型的动态兼容半作为后续债项保留。
+- **`string_boolean` 检查**继续进入 `TacProgram.unsupported`；`iterable` 已由 R2G 启用，
+  选择器四类和集合四类也已分别由 R2B/R2F1 启用。`set_membership` 的声明成员类型经
+  `Check.expected` 传递，不再是未接线债项。
 - **形参按名查找必须按作用域消歧**：两个函数各有一个同名形参时，全局取首个会串到别的函数
   的绑定上，读到本帧从未写入的寄存器。降低器已按作用域栈取最内层候选。
 - **运行时可恢复错误不能用字面量构造**：`value = 7 % 0` 会在类型阶段被常量折叠拒绝

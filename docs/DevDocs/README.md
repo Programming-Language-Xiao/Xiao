@@ -76,15 +76,15 @@
 | 08A | [U0 统一前端实现交接记录](08a-u0-frontend-implementation.md) | 单一前端流水线、递归类型化 IR、验证器和稳定 JSON 快照 | 已完成首版 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 未开始（机型、调用约定与编码以 09R 冻结结果为准） |
 | 09R1 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 统一三地址语义、三种候选机型、寄存器类别与编号空间、调用约定、异常与清理转移、编码草案和基准协议 | 已完成首版 |
-| 09R2 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三种机型的可运行原型、共享语义向量、事件接收器和容器/选择器/集合原型路径 | 进行中（R2a、R2C、R2D、R2b、R2b1 与 R2F1 已交付；`for`/表声明、迭代器运行时、正式生产字节码与 R3 仍待后续） |
+| 09R2 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三种机型的可运行原型、共享语义向量、事件接收器和容器/选择器/集合/迭代原型路径 | 进行中（R2a、R2C、R2D、R2b、R2b1、R2F1 与 R2G 已交付；表声明、正式生产字节码与 R3 仍待后续） |
 | 09R2c | [异常控制流实现交接文档](09r2c-exception-control-flow.md) | 运行时错误对象、错误类型名单一来源、handler 表与 catch 路由、`finally` 子程序和 `Check` 降低 | 已完成（R2B 选择器错误复用同一异常路由） |
-| 09R2d | [两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md) | 逐函数类别映射修复、`Carrier` 接口演进、活跃区间分析、寄存器与混合式机型、指令编码器、`pc -> span` 映射 | 已完成（编码器基线 31 个，后续选择器与集合指令扩展至 36 个 opcode；研究模块仍保持 draft，待 R2 总阶段退出） |
+| 09R2d | [两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md) | 逐函数类别映射修复、`Carrier` 接口演进、活跃区间分析、寄存器与混合式机型、指令编码器、`pc -> span` 映射 | 已完成（编码器基线 31 个，后续选择器、集合与迭代指令扩展至 38 个 opcode；研究模块仍保持 draft，待 R2 总阶段退出） |
 | 09R2e | [研究编码器模块解耦交接记录](09r2e-research-encoder-decoupling.md) | `research::encode` 门面与 `codec`/`tags`/`validate`/`encoder`/`decoder`/`tests` 依赖 DAG、兼容契约和架构回归测试 | 已完成 |
 | 09R2b | [选择器全量执行交接文档](09r2b-selector-execution.md) | 步长接线、`SelectionPlan` 消费方式、高级选择的 TAC 操作数格式与运行时执行、`RandomSource` 注入、结果形状构造、左值广播写入 | 已完成（31 条共享向量、53 条栈式测试、四类 RuntimeCheck） |
 | 09R2b1 | [选择器执行验证缺口修复交接文档](09r2b1-selector-verification.md) | 选择器结果值的可观察性、能断言选择结果的区分度用例、错误码字面量回退清理 | 已完成（7 条三机型值断言、受控回退验证、错误码字面量清零） |
 | 09R2f | [集合运算执行闭环交接文档](09r2f-set-operations.md) | `SetOp`/`SetCompare` 两条指令、`SetHandle` 代数与六种比较、四个集合类 RuntimeCheck、`sets.json` 共享向量 | 已完成（由 09R2F1 接续补齐运行时检查、验证夹具和文档） |
-| 09R2f1 | [集合运算执行闭环续交接文档](09r2f1-set-operations-continuation.md) | 交接前七个问题的修复、RuntimeCheck 接线、三机型共享向量、运行时区分度与文档同步 | 已完成（59 条共享向量，四类集合检查接通；显式成员类型兼容和集合增删仍为后续债项） |
-| 09R2g | [`for` 与迭代执行闭环交接文档](09r2g-for-and-iteration.md) | `Len`/`IndexGetDynamic` 两条指令、`for` 的 TAC 降低与三块 CFG、`iterable` 运行时检查、`iteration.json` 共享向量 | 未开始（`for` 仍记入 unsupported） |
+| 09R2f1 | [集合运算执行闭环续交接文档](09r2f1-set-operations-continuation.md) | 交接前七个问题的修复、RuntimeCheck 接线、三机型共享向量、运行时区分度与文档同步 | 已完成（前置阶段 59 条共享向量，四类集合检查接通；成员类型载荷由 R2G 收口，集合增删仍为后续债项） |
+| 09R2g | [`for` 与迭代执行闭环交接文档](09r2g-for-and-iteration.md) | `Len`/`IndexGetDynamic` 两条指令、`for` 的 TAC 降低与 CFG、`iterable` 运行时检查、`iteration.json` 共享向量 | 已完成（opcode 36/37、三种载体、动态错误码 `X06-RUNTIME-024` 与释放边界均已验证） |
 | 09R3 | [跨平台基准与冻结](09r3-benchmarks-and-freeze.md)（权威定义见 [09R](09r-bytecode-machine-research.md) `:610-619`） | 语义差分、性能、内存与编码体积四份报告，以及机型/ABI/编码的冻结 | 未开始（方向稿；入场条件见文档第二节） |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
@@ -115,7 +115,7 @@ A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码�
 [01C. L2 反引号、注释与缩进实现交接记录](01c-l2-implementation.md) 与
 [01D. P0 最小解析器与 AST 实现交接记录](01d-p0-parser-implementation.md) 与
 [01E. P1 表达式与选择器实现交接记录](01e-p1-expression-selectors.md) 与
-[01F. P2-A 语法模块解耦交接记录](01f-p2a-syntax-decoupling.md)。类型与容器阶段的 C0、C1 静态阶段已完成，C2-A 最小集合静态闭环、C2-B 异构集合静态闭环和 C2-C 集合运算静态闭环也已完成；09R2F1 已消费集合运行时检查并执行集合代数、比较和成员判断。其实现边界、交接清单和未负责事项分别见 [03A. C0 基础容器与精确路径](03a-c0-containers.md)、[03B. C1 有序容器选择器](03b-c1-ordered-selectors.md)、[03C. C2-A 最小集合静态闭环](03c-c2a-sets.md)、[03D. C2-B 异构集合与动态成员](03d-c2b-heterogeneous-sets.md)、[03E. C2-C 集合运算](03e-c2c-set-operations.md) 和 [03. 容器、集合与索引路径](03-collections.md)。集合增删、迭代和正式生产 Runtime 仍属于后续阶段。
+[01F. P2-A 语法模块解耦交接记录](01f-p2a-syntax-decoupling.md)。类型与容器阶段的 C0、C1 静态阶段已完成，C2-A 最小集合静态闭环、C2-B 异构集合静态闭环和 C2-C 集合运算静态闭环也已完成；09R2F1 已消费集合运行时检查并执行集合代数、比较和成员判断，09R2G 已在三种研究 VM 载体接通 `for` 与六类值的迭代。其实现边界、交接清单和未负责事项分别见 [03A. C0 基础容器与精确路径](03a-c0-containers.md)、[03B. C1 有序容器选择器](03b-c1-ordered-selectors.md)、[03C. C2-A 最小集合静态闭环](03c-c2a-sets.md)、[03D. C2-B 异构集合与动态成员](03d-c2b-heterogeneous-sets.md)、[03E. C2-C 集合运算](03e-c2c-set-operations.md) 和 [03. 容器、集合与索引路径](03-collections.md)。集合增删和正式生产 Runtime 仍属于后续阶段。
 
 04 阶段已完成 04-A 至 04-D 的静态闭环：函数参数/调用 AST、签名预登记与推断、条件/循环/返回约束以及脚本/工程入口元数据均已通过定向测试。该阶段只产出公开 AST、类型结果和 Runtime 检查计划，不执行 Xiao 代码；交接边界、诊断编号和后置消费者见 [04. 函数与控制流](04-functions-and-control.md)。
 

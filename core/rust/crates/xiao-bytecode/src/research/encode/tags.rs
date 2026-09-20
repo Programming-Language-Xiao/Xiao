@@ -7,11 +7,11 @@ use super::{
 use xiao_lifetime::ReleaseActionKind;
 use xiao_syntax::ScalarType;
 
-/// `TacOp` 到稳定 opcode 的映射，0–35 连续。
+/// `TacOp` 到稳定 opcode 的映射，0–37 连续。
 ///
 /// 这张表是格式的核心契约：**只能追加，不得重排**。调换两个编号会让旧字节被读
 /// 成另一种指令，而这种错误在往返测试里是看不出来的（编码器和解码器用的是同一
-/// 张表）。`all_ops_program` 里断言了 `ops` 的顺序恰好产生 `0..36`，新增变体插在
+/// 张表）。`all_ops_program` 里断言了 `ops` 的顺序恰好产生 `0..38`，新增变体插在
 /// 中间会立刻失败。
 pub(super) fn opcode(op: &TacOp) -> u8 {
     match op {
@@ -51,6 +51,8 @@ pub(super) fn opcode(op: &TacOp) -> u8 {
         TacOp::RandomSeed { .. } => 33,
         TacOp::SetOp { .. } => 34,
         TacOp::SetCompare { .. } => 35,
+        TacOp::Len { .. } => 36,
+        TacOp::IndexGetDynamic { .. } => 37,
     }
 }
 

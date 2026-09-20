@@ -10,7 +10,9 @@ use xiao_ir::{
 };
 
 use crate::research::lower::Lowerer;
-use crate::research::tac::{TacHandler, TacInstr, TacOp, VReg};
+use crate::research::tac::{
+    ArithOp, CompareOp, RegisterClass, TacConstant, TacHandler, TacInstr, TacOp, VReg,
+};
 
 /// 降低一个语句列表，并在结束时按 `exit` 离开所属作用域。
 pub(super) fn lower_statements(lowerer: &mut Lowerer<'_>, statements: &[IrStatement], exit: &str) {
@@ -126,7 +128,12 @@ fn dispatch_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
             finally_body.as_deref(),
             statement.span,
         ),
-        IrStatementKind::For { .. } | IrStatementKind::Table { .. } => {
+        IrStatementKind::For {
+            target,
+            iterable,
+            body,
+        } => lower_for(lowerer, target, iterable, body, statement.span),
+        IrStatementKind::Table { .. } => {
             lowerer.record_unsupported(format!(
                 "语句形态尚未降低（{}..{}）",
                 statement.span.start, statement.span.end
@@ -470,9 +477,113 @@ fn lower_while(
     lowerer.switch_to(exit);
 }
 
+/// 降低 `for target in iterable`。
+///
+/// 迭代器状态不进入 RuntimeValue：来源只求值一次，循环头比较游标和长度，
+/// 每轮通过 `IndexGetDynamic` 取值。`continue` 先经过更新桥接块，保证不会
+/// 跳过游标递增；来源表达式若产生临时句柄，则由循环出口统一释放。
+fn lower_for(
+    lowerer: &mut Lowerer<'_>,
+    target: &xiao_ir::IrName,
+    iterable: &IrExpression,
+    body: &[IrStatement],
+    span: IrSpan,
+) {
+    let source = lowerer.lower_expression(iterable);
+    let held_source = lowerer.take_temporary(source).then_some(source);
+    let length = lowerer.new_register(RegisterClass::Int, span);
+    lowerer.emit(TacInstr::with_dst(TacOp::Len { source }, length, span));
+    let index = lowerer.emit_constant(TacConstant::Int(0), span);
+    let one = lowerer.emit_constant(TacConstant::Int(1), span);
+
+    let header = lowerer.new_block(span);
+    let body_block = lowerer.new_block(span);
+    let advance = lowerer.new_block(span);
+    let exit = lowerer.new_block(span);
+    lowerer.emit(TacInstr::new(TacOp::Jump(header), span));
+
+    lowerer.switch_to(header);
+    let condition = lowerer.new_register(RegisterClass::Bool, span);
+    lowerer.emit(TacInstr::with_dst(
+        TacOp::Compare {
+            op: CompareOp::Less,
+            left: index,
+            right: length,
+        },
+        condition,
+        span,
+    ));
+    lowerer.emit(TacInstr::new(
+        TacOp::BranchIf {
+            condition,
+            if_true: body_block,
+            if_false: exit,
+        },
+        span,
+    ));
+
+    lowerer.switch_to(body_block);
+    let Some(target_value) = lowerer.value_of_name_at(&target.text, target.backticked, target.span)
+    else {
+        lowerer.record_unsupported(format!(
+            "循环绑定缺少生命周期条目（{}..{}）",
+            target.span.start, target.span.end
+        ));
+        lowerer.switch_to(exit);
+        return;
+    };
+    let element_class = lowerer.class_for_value(target_value);
+    let element = lowerer.new_register(element_class, target.span);
+    lowerer.emit(TacInstr::with_dst(
+        TacOp::IndexGetDynamic { source, index },
+        element,
+        span,
+    ));
+    store_into(
+        lowerer,
+        &target.text,
+        target.backticked,
+        target.span,
+        element,
+    );
+    // `store_into` 对新建对象使用 Move；源寄存器随后为空，不能让它污染
+    // 下一轮或循环外的临时刷新列表。
+    lowerer.take_temporary(element);
+
+    lowerer.push_loop(advance, exit);
+    lower_statements(lowerer, body, "normal");
+    lowerer.pop_loop();
+    if !lowerer.current_block_terminated() {
+        lowerer.emit(TacInstr::new(TacOp::Jump(advance), span));
+    }
+
+    lowerer.switch_to(advance);
+    lowerer.emit(TacInstr::with_dst(
+        TacOp::Arith {
+            op: ArithOp::Add,
+            left: index,
+            right: one,
+        },
+        index,
+        span,
+    ));
+    lowerer.emit(TacInstr::new(TacOp::Jump(header), span));
+
+    lowerer.switch_to(exit);
+    if let Some(source) = held_source {
+        lowerer.emit(TacInstr::new(
+            TacOp::Release {
+                value: source,
+                kind: xiao_lifetime::ReleaseActionKind::Strong,
+            },
+            span,
+        ));
+    }
+}
+
 /// 降低 `break`/`continue`。
 fn lower_loop_jump(lowerer: &mut Lowerer<'_>, exit: &str, span: IrSpan) {
-    let Some(target) = lowerer.loop_target(exit).copied() else {
+    let Some(target) = lowerer.loop_target(exit) else {
         lowerer.record_unsupported(format!(
             "循环跳转没有活动循环（{}..{}）",
             span.start, span.end

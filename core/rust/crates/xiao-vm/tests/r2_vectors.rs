@@ -304,3 +304,15 @@ fn sets_vectors_are_stable() {
         "09R2F1",
     );
 }
+
+#[test]
+/// `for` 的容器读取、游标控制和动态可迭代检查在三种载体上复用同一向量。
+fn iteration_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/iteration.json"
+        )),
+        "09R2G",
+    );
+}

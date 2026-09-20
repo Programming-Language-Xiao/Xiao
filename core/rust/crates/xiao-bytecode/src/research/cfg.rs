@@ -21,6 +21,7 @@ pub fn jump_targets(op: &TacOp) -> Vec<BlockId> {
         TacOp::SelectorApply { .. } => Vec::new(),
         TacOp::BroadcastAssign { .. } => Vec::new(),
         TacOp::RandomSeed { .. } => Vec::new(),
+        TacOp::Len { .. } | TacOp::IndexGetDynamic { .. } => Vec::new(),
         _ => Vec::new(),
     }
 }

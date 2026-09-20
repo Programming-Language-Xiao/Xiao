@@ -35,6 +35,9 @@ pub const TAC_BYTECODE_ABI_VERSION: u32 = 1;
 /// 当前消费的 Runtime ABI 版本。
 pub const TAC_RUNTIME_ABI_VERSION: u32 = 1;
 
+/// 按源码区间分组的待降低 Runtime 检查。
+type PendingRuntimeChecks = BTreeMap<(usize, usize), Vec<(String, Option<IrType>)>>;
+
 /// 一条释放计划的携带形式。
 ///
 /// 三地址程序保留冻结计划的原始动作序列，由解释器在退出点上执行；这样三种
@@ -135,7 +138,7 @@ struct Lowerer<'ir> {
     /// 本批次尚未降低的构造；由验证器转成诊断，不静默跳过。
     unsupported: Vec<String>,
     /// 按表达式源码区间收集的 Runtime 检查。
-    runtime_checks: BTreeMap<(usize, usize), Vec<String>>,
+    runtime_checks: PendingRuntimeChecks,
 }
 
 /// 单个函数的构建状态。
@@ -149,14 +152,23 @@ struct Frame {
     parameters: Vec<VReg>,
     used_scopes: Vec<u32>,
     scope_stack: Vec<u32>,
-    /// 活动循环的 (循环体入口, 循环出口) 栈。
-    loops: Vec<(BlockId, BlockId)>,
+    /// 活动循环的跳转目标栈。
+    loops: Vec<LoopFrame>,
     /// 当前语句产生的、需要在消费后释放的临时堆值寄存器。
     pending_temporaries: Vec<VReg>,
     /// 当前函数的异常处理器表。
     handlers: Vec<TacHandler>,
     /// 当前函数局部编号空间内的寄存器类别。
     categories: CategoryMap,
+}
+
+/// 一个活动循环的控制流目标与循环期临时值。
+#[derive(Debug)]
+struct LoopFrame {
+    /// `continue` 的目标；`for` 指向游标递增桥，`while` 指向条件头。
+    continue_target: BlockId,
+    /// `break` 的循环出口。
+    exit: BlockId,
 }
 
 impl<'ir> Lowerer<'ir> {
@@ -223,12 +235,12 @@ impl<'ir> Lowerer<'ir> {
             function_signatures: BTreeMap::new(),
             unsupported: Vec::new(),
             runtime_checks: program.runtime_checks.iter().fold(
-                BTreeMap::<(usize, usize), Vec<String>>::new(),
+                PendingRuntimeChecks::new(),
                 |mut checks, check| {
                     checks
                         .entry((check.span.start, check.span.end))
                         .or_default()
-                        .push(check.kind.clone());
+                        .push((check.kind.clone(), check.expected.clone()));
                     checks
                 },
             ),
@@ -294,8 +306,8 @@ impl<'ir> Lowerer<'ir> {
         // 每一条前端登记的 RuntimeCheck 都必须在降低阶段被消费，或明确
         // 进入 `unsupported`。静默丢弃会让产物看似完整，却把动态边界变成
         // 未检查的普通指令。
-        for ((start, end), kinds) in std::mem::take(&mut self.runtime_checks) {
-            for kind in kinds {
+        for ((start, end), checks) in std::mem::take(&mut self.runtime_checks) {
+            for (kind, _) in checks {
                 self.record_unsupported(format!("运行时检查未消费：{kind}（{start}..{end}）"));
             }
         }
@@ -486,6 +498,20 @@ impl<'ir> Lowerer<'ir> {
         self.frame.pending_temporaries.contains(&register)
     }
 
+    /// 从当前语句的待刷新列表取出一个临时值，交给结构化控制流持有。
+    fn take_temporary(&mut self, register: VReg) -> bool {
+        let Some(index) = self
+            .frame
+            .pending_temporaries
+            .iter()
+            .position(|candidate| *candidate == register)
+        else {
+            return false;
+        };
+        self.frame.pending_temporaries.remove(index);
+        true
+    }
+
     /// 新建一个基本块，**不切换当前块**。
     ///
     /// 分配与切换刻意分开：调用方通常要先把终止跳转发进前驱块，再切到新块，
@@ -562,8 +588,11 @@ impl<'ir> Lowerer<'ir> {
     }
 
     /// 压入一个活动循环。
-    fn push_loop(&mut self, body: BlockId, exit: BlockId) {
-        self.frame.loops.push((body, exit));
+    fn push_loop(&mut self, continue_target: BlockId, exit: BlockId) {
+        self.frame.loops.push(LoopFrame {
+            continue_target,
+            exit,
+        });
     }
 
     /// 弹出一个活动循环。
@@ -571,10 +600,14 @@ impl<'ir> Lowerer<'ir> {
         self.frame.loops.pop();
     }
 
-    /// 返回当前循环的跳转目标：`break` 去出口，`continue` 回循环体。
-    fn loop_target(&self, exit: &str) -> Option<&BlockId> {
-        let (body, leave) = self.frame.loops.last()?;
-        Some(if exit == "break" { leave } else { body })
+    /// 返回当前循环的跳转目标：`break` 去出口，`continue` 去循环更新点。
+    fn loop_target(&self, exit: &str) -> Option<BlockId> {
+        let frame = self.frame.loops.last()?;
+        Some(if exit == "break" {
+            frame.exit
+        } else {
+            frame.continue_target
+        })
     }
 
     /// 切换到指定块。
@@ -724,13 +757,17 @@ impl<'ir> Lowerer<'ir> {
         let Some(kinds) = self.runtime_checks.remove(&(span.start, span.end)) else {
             return;
         };
-        for kind in kinds {
+        for (kind, expected) in kinds {
             if matches!(kind.as_str(), "set_operation" | "set_comparison") {
                 for value in values {
-                    self.emit_runtime_check_kinds(span, *value, vec![kind.clone()]);
+                    self.emit_runtime_check_kinds(
+                        span,
+                        *value,
+                        vec![(kind.clone(), expected.clone())],
+                    );
                 }
             } else if let Some(value) = values.first() {
-                self.emit_runtime_check_kinds(span, *value, vec![kind]);
+                self.emit_runtime_check_kinds(span, *value, vec![(kind, expected)]);
             }
         }
     }
@@ -751,8 +788,13 @@ impl<'ir> Lowerer<'ir> {
     }
 
     /// 将一组检查降低为失败边。
-    fn emit_runtime_check_kinds(&mut self, span: IrSpan, value: VReg, kinds: Vec<String>) {
-        for kind in kinds {
+    fn emit_runtime_check_kinds(
+        &mut self,
+        span: IrSpan,
+        value: VReg,
+        kinds: Vec<(String, Option<IrType>)>,
+    ) {
+        for (kind, expected) in kinds {
             if !matches!(
                 kind.as_str(),
                 "boolean_condition"
@@ -767,6 +809,7 @@ impl<'ir> Lowerer<'ir> {
                     | "set_membership"
                     | "set_operation"
                     | "set_comparison"
+                    | "iterable"
             ) {
                 self.record_unsupported(format!("运行时检查尚未降低：{kind}"));
                 continue;
@@ -780,6 +823,7 @@ impl<'ir> Lowerer<'ir> {
                     kind: kind.clone(),
                     value,
                     on_failure: failure,
+                    expected,
                 },
                 span,
             ));

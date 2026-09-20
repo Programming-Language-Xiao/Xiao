@@ -86,12 +86,14 @@ pub enum RuntimeCheckKind {
 }
 
 /// 一个带源码区间的运行时检查标记。
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct RuntimeCheck {
     /// 需要插入检查的源码区间。
     pub span: SourceSpan,
     /// 检查种类。
     pub kind: RuntimeCheckKind,
+    /// `set_membership` 的可选声明成员类型；其他检查保持为空。
+    pub expected: Option<Type>,
 }
 
 /// 一个类型化 AST 节点的旁路记录。
@@ -404,12 +406,16 @@ impl<'source> TypeChecker<'source> {
             if value_type.is_dynamic() {
                 self.push_runtime_check(value.span(), RuntimeCheckKind::DynamicConversion);
             }
-            if let (Type::Set(source), Type::Set(_target)) = (&value_type, &existing_type)
+            if let (Type::Set(source), Type::Set(target)) = (&value_type, &existing_type)
                 && source.allows_dynamic()
             {
                 // 集合静态成员已经在类型层验证；动态尾标只能由 Runtime
                 // 完成成员类型/哈希检查，不能静默当作完全兼容。
-                self.push_runtime_check(value.span(), RuntimeCheckKind::SetMembership);
+                self.push_runtime_check_with_expected(
+                    value.span(),
+                    RuntimeCheckKind::SetMembership,
+                    Type::Set(target.clone()),
+                );
             }
             if !self.types_compatible_for_assignment(&value_type, &existing_type) {
                 self.type_error(
@@ -561,7 +567,11 @@ impl<'source> TypeChecker<'source> {
         if operation_valid && set_dynamic_boundary && left_type.is_set() {
             // 集合运算的动态尾标必须在写回锁定左值时再次验证成员类型；
             // `SetOperation` 只描述运算形状本身。
-            self.push_runtime_check(target.span(), RuntimeCheckKind::SetMembership);
+            self.push_runtime_check_with_expected(
+                target.span(),
+                RuntimeCheckKind::SetMembership,
+                left_type.clone(),
+            );
         }
         if operation_valid
             && !dynamic_operation
@@ -1687,7 +1697,25 @@ impl<'source> TypeChecker<'source> {
 
     /// 追加一个去重前的运行时检查标记。
     fn push_runtime_check(&mut self, span: SourceSpan, kind: RuntimeCheckKind) {
-        self.runtime_checks.push(RuntimeCheck { span, kind });
+        self.runtime_checks.push(RuntimeCheck {
+            span,
+            kind,
+            expected: None,
+        });
+    }
+
+    /// 追加带声明类型边界的运行时检查。
+    pub(super) fn push_runtime_check_with_expected(
+        &mut self,
+        span: SourceSpan,
+        kind: RuntimeCheckKind,
+        expected: Type,
+    ) {
+        self.runtime_checks.push(RuntimeCheck {
+            span,
+            kind,
+            expected: Some(expected),
+        });
     }
 
     /// 判断指定诊断索引之后是否已经出现错误；错误恢复表达式不再

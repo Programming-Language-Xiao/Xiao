@@ -506,6 +506,13 @@ fn decode_op(
             left: VReg::new(index(reader, "VReg")?),
             right: VReg::new(index(reader, "VReg")?),
         },
+        36 => TacOp::Len {
+            source: VReg::new(index(reader, "VReg")?),
+        },
+        37 => TacOp::IndexGetDynamic {
+            source: VReg::new(index(reader, "VReg")?),
+            index: VReg::new(index(reader, "VReg")?),
+        },
         16 => TacOp::Jump(BlockId::new(index(reader, "BlockId")?)),
         17 => TacOp::BranchIf {
             condition: VReg::new(index(reader, "VReg")?),
@@ -542,6 +549,11 @@ fn decode_op(
             kind: reader.string("check.kind")?,
             value: VReg::new(index(reader, "VReg")?),
             on_failure: BlockId::new(index(reader, "BlockId")?),
+            expected: if read_bool(reader, "check.expected")? {
+                Some(decode_type(reader)?)
+            } else {
+                None
+            },
         },
         26 => TacOp::Release {
             value: VReg::new(index(reader, "VReg")?),

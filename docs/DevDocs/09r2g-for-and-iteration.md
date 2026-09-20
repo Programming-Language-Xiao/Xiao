@@ -1,10 +1,8 @@
 # 09R2G. `for` 与迭代执行闭环交接文档
 
-> **本文是待执行的交接文档。** `for` 在前端是**静态闭环**（类型检查与生命周期逃逸分析
-> 都已实现，且复用同一个元素类型推导），但降低器把它整条记入 `unsupported`
-> （`lower/stmt.rs:129`），所以它**不可执行、也无法编码**。
->
-> 本批补齐迭代，并把它排在 09R3 冻结指令编码**之前**——理由见第一节。
+> **本文对应的执行批次已完成。** `for` 的类型检查、生命周期事实、TAC 降低和三种研究
+> VM 载体已经闭环；`Len`/`IndexGetDynamic` 追加为 opcode 36/37，动态可迭代检查使用
+> `X06-RUNTIME-024`。本文保留设计取舍、释放边界和验证证据，供后续表声明与 R3 冻结复用。
 
 ## Agent 交接上下文
 
@@ -26,8 +24,8 @@
 
 ### 本批交付与不负责
 
-**交付**：两条基础指令与编码标签、`for` 的 TAC 降低、`iterable` 运行时检查、
-共享向量与区分度用例、文档同步。
+**交付（已完成）**：两条基础指令与编码标签、`for` 的 TAC 降低、`iterable` 运行时检查、
+共享向量、直接 VM 夹具、释放边界修复与文档同步。
 
 **不负责**：表声明（`09R2H`）、集合的增删与跨后端 lowering、`0..n` 这类 range 语法
 （见第二节末），以及 09R3 的基准设施。
@@ -150,11 +148,10 @@ exit:
 > 动态成员必须满足**声明的** `set<T>` 成员类型。
 
 `Check { kind, value }` 只带一个字符串 kind 和一个寄存器，**带不了期望成员类型**。
-本批之所以该接它，是因为 `for` 无论如何要引入新的操作数形态（`Len` / `IndexGetDynamic`），
-正好可以复用同一次格式变更，比单独为它做一次便宜。
-
-**动手前先想清楚扩哪一种**：给 `Check` 加一个可选的计划索引、还是新增一条指令。
-选哪种都要说明为什么另一种不行，并写进本批交接文档。
+本批已把 `Check` 扩为 `expected: Option<IrType>`，由类型层的 `RuntimeCheck.expected`
+经 IR 原样镜像到 TAC，再由 VM 的 `check_set_membership` 消费。选择可选类型载荷而不是
+新增指令，是因为它只改变检查的声明边界，不改变控制流或值计算；新增指令会重复现有
+`Check` 的失败边和错误路由，也无法复用其他检查的统一编码/验证路径。
 
 **绝不能用 `record_unsupported` 给它记账**——`encode/validate.rs:40` 对非空
 `TacProgram.unsupported` **直接拒绝编码**，一记就把 09R3 的**编码体积**指标整条堵死，
@@ -183,8 +180,9 @@ exit:
 2. **空容器与边界**：`len == 0` 时循环体必须**一次都不进**（`BranchIf` 的条件方向写反会
    变成死循环或越界）。`str` 的迭代单位是**码点**，不是字节——直接用字节长度会让多字节
    字符被切碎。
-3. **临时容器的释放时机**：`for x in <表达式>` 的临时值要在循环结束后释放**一次**，
-   而不是每轮一次。释放计划挂在错误的块上会让引用计数在循环里被反复减。
+3. **临时容器的释放时机**：`for x in <表达式>` 的来源只求值一次，临时来源在循环
+   `exit` 块释放；循环体的元素若是堆句柄，则由循环体作用域的正常/`break`/`continue`
+   计划按轮次释放。标量循环变量不会因跨作用域读取而被错误提升为堆值。
 
 ---
 
@@ -195,9 +193,10 @@ exit:
 按 09R2B1 的写法：断言 `RunOutcome::value` 的**实际值**，不是 `is_success()`；
 错误码引用常量而非字面量。
 
-覆盖：数组、元组、字符串（**含多字节字符**，验证码点单位）、集合、字典列各一条；
+覆盖：数组、元组、字符串（**含多字节字符**，验证码点单位）、集合、字典表、字典列各一条；
 `break` / `continue` 各一条；**空容器**（循环体零次）；嵌套 `for`；
-动态 iterable 的错误码；循环体里对循环变量的重新赋值不影响下一轮的绑定。
+动态 iterable 的错误码；循环体里对循环变量的重新赋值不影响下一轮的绑定。另有
+`xiao-vm/tests/r2_iteration_values.rs` 手工 TAC 夹具，直接覆盖三种载体的两条新指令。
 
 ### 7.2 区分度（每组都要实做一次撤掉实验）
 
@@ -210,6 +209,28 @@ exit:
 
 把 `iterable` 从 09R2F 建的那份「显式未支持清单」里**移出**——那份测试断言
 「每个 kind 要么在降低白名单里、要么在显式未支持清单里」，本批接通后它应当落在前者。
+
+## 八、完成证据
+
+- `TacOp::Len`/`IndexGetDynamic` 使用 opcode 36/37，已完成 TAC 定义、LEB128/定宽
+  `u16` 编解码、标签、引用验证、活跃分析、CFG 目标遍历和 VM `step` 接线。
+- `lower_for` 生成来源求值、`Len`、游标比较、`BranchIf`、动态索引、绑定、更新桥和
+  出口块；`continue` 指向更新桥，空容器不会进入循环体。
+- `Len` 覆盖数组、元组、字符串、集合、字典表和字典列；字符串按 Unicode 码点计数。
+  `IndexGetDynamic` 复用统一 `index_step`，保留负索引和集合/字典表物理顺序。
+- `iteration.json` 由栈式、分类型寄存器式和混合式载体复用；`r2_iteration_values.rs`
+  直接构造 TAC 验证两条新指令。
+- 动态 iterable 失败稳定报告 `X06-RUNTIME-024`；`set_membership` 的声明类型载荷
+  通过 `Check.expected` 传递，没有新增平行检查指令；可哈希但不符合 `set<int>` 的动态
+  字符串由三载体共享向量锁定为 `X06-RUNTIME-023`。
+- `Check.expected` 为既有 opcode 25 增加存在位与类型载荷，研究编码布局版本已从 1
+  升至 2；解码器会在读取函数体前拒绝版本 1 字节，避免按新布局错读旧 `Check`。
+- 四组受控撤回均被测试捕获：动态索引固定为字面 `0` 时
+  `dynamic_index_executes_on_all_carriers` 得到 `Int(1)` 而非 `Int(2)`；对调 `for`
+  的 `BranchIf` 目标时 `iteration_vectors_are_stable` 的非空循环结果归零，空容器触发
+  `X06-RUNTIME-014`；字符串长度改用 UTF-8 字节数时 `len_executes_on_all_carriers`
+  得到 `7` 而非 `3`，且 `unicode-code-point-iteration` 触发越界；`iterable` 检查恒真时
+  `dynamic-iterable-error` 从预期 `X06-RUNTIME-024` 退化为 `X06-RUNTIME-002`。
 
 ---
 
@@ -224,7 +245,7 @@ exit:
    不要因为"没有边"就跳过 `jump_targets`。
 4. **不要改 09R2F 已定的集合顺序契约**。
 
-## 提交切分
+## 原计划提交切分（已完成）
 
 1. **两条指令与接线**：`Len` / `IndexGetDynamic` + 8 处清单 + 编码标签 + 往返用例。
    此时降低器还不发射它们，靠编码往返与手工 TAC 验证。
@@ -232,19 +253,20 @@ exit:
    三处检查接线、错误码 `024`。
 3. **向量与文档**：`iteration.json`、区分度四组、穷尽性守卫的迁移、连带文档。
 
-**若中途必须停**：第 1 次提交本身完整可验证。
+三步均已在同一工作批次完成；`cargo test --workspace`、全目标 Clippy、格式检查、
+`bun test`、仓库检查和文档覆盖率门禁均已通过，本交接记录随实现一并提交。
 
 ## 连带影响（必须同批）
 
-- `tests/spec/09-bytecode/README.md` 的向量计数与清单。
+- `tests/spec/09-bytecode/README.md` 的向量计数与清单（本批共 73 条共享向量）。
 - `docs/module-registry.json` 里 `rust.xiao-bytecode-research` 与 `rust.xiao-vm-research`
   的 `tests` 数组要加 `iteration.json`。
-- **opcode 计数的同一批三处文档**（`xiao-bytecode/README.md`、
+- **opcode 计数与布局版本的同一批文档**（`xiao-bytecode/README.md`、
   `research/README.md`、`09r-bytecode-machine-research.md`）——09R2F 已经因为漏改它们
   被记过一次，本批不要重演。
 - `docs/UseDocs/language/control-flow/conditions-and-loops.md:52` 的可迭代清单
   （第二节的不一致之一）。
-- **顺手修（零风险）**：`xiao-vm/src/research/machine/README.md` 仍写「当前只有 `stack.rs`」。
+- **顺手修（零风险）**：`xiao-vm/src/research/machine/README.md` 已记录三种载体。
 
 ## 不要重复做的事
 

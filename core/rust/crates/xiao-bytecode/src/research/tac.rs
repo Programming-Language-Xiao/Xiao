@@ -642,6 +642,8 @@ pub enum TacOp {
         value: VReg,
         /// 检查失败时的目标块。
         on_failure: BlockId,
+        /// 可选的声明类型边界；目前由 `set_membership` 使用。
+        expected: Option<xiao_ir::IrType>,
     },
     /// 按冻结计划逐条释放一个值。
     Release {
@@ -670,6 +672,23 @@ pub enum TacOp {
         scope: u32,
         /// 退出边稳定名称。
         exit: String,
+    },
+    /// 读取可迭代值的元素数量；结果为整数。
+    ///
+    /// 该操作只报告容器/字符串长度，不改变来源值，也不携带迭代器状态。
+    Len {
+        /// 来源可迭代值。
+        source: VReg,
+    },
+    /// 使用运行时整数索引读取一个容器元素。
+    ///
+    /// 与 [`Self::IndexGet`] 的字面路径不同，索引来自寄存器；实际索引规则
+    ///（负索引、字符串码点和字典列顺序）仍由 Runtime 的统一索引实现决定。
+    IndexGetDynamic {
+        /// 来源容器。
+        source: VReg,
+        /// 动态整数索引。
+        index: VReg,
     },
 }
 

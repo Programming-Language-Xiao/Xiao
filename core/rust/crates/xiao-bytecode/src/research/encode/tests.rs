@@ -80,14 +80,14 @@ fn all_types() -> Vec<IrType> {
     ]
 }
 
-/// 构造一份用满全部 36 个 opcode 的 TAC 程序。
+/// 构造一份用满全部 38 个 opcode 的 TAC 程序。
 ///
 /// 刻意把每个「难往返」的角落都填上：常量池里有大整数、位模式特殊的浮点
 /// （NaN 载荷、`-0.0`）、超长精度文本和带 `\0` 的中文串；签名表覆盖五种
 /// [`ParamKind`] 与 `*args`/`**kwargs` 槽位；函数带类别表、值→寄存器映射、
-/// handler、释放计划、选择计划与广播/种子计划；块从 36 条指令骤降到 1 条，条数不整齐。
+/// handler、释放计划、选择计划与广播/种子计划；块从 38 条指令骤降到 1 条，条数不整齐。
 ///
-/// 函数内的两条断言是**格式守卫**：`ops` 的顺序必须恰好产生 `0..36` 的
+/// 函数内的两条断言是**格式守卫**：`ops` 的顺序必须恰好产生 `0..38` 的
 /// opcode。新增变体若插在表中间而不是追加到末尾，这里会先失败，而不是等到
 /// 某天有人拿旧字节解码才发现指令错位。
 fn all_ops_program() -> TacProgram {
@@ -229,6 +229,7 @@ fn all_ops_program() -> TacProgram {
             kind: "numeric_range".to_owned(),
             value: VReg::new(15),
             on_failure: BlockId::new(2),
+            expected: None,
         },
         TacOp::Release {
             value: VReg::new(16),
@@ -271,10 +272,17 @@ fn all_ops_program() -> TacProgram {
             left: VReg::new(22),
             right: VReg::new(23),
         },
+        TacOp::Len {
+            source: VReg::new(24),
+        },
+        TacOp::IndexGetDynamic {
+            source: VReg::new(25),
+            index: VReg::new(26),
+        },
     ];
-    assert_eq!(ops.len(), 36);
+    assert_eq!(ops.len(), 38);
     let opcodes = ops.iter().map(opcode).collect::<Vec<_>>();
-    assert_eq!(opcodes, (0_u8..36).collect::<Vec<_>>());
+    assert_eq!(opcodes, (0_u8..38).collect::<Vec<_>>());
 
     let mut categories = CategoryMap::new();
     for (index, class) in [
@@ -441,7 +449,7 @@ fn all_opcodes_and_abi_fields_round_trip_in_both_widths() {
         validate_encoded(&encoded).expect("编码应可自校验");
         let decoded = decode(&encoded.bytes).expect("完整 TAC 应可解码");
         assert_program_eq(&program, &decoded);
-        assert_eq!(encoded.functions[0].blocks[0].instruction_pcs.len(), 36);
+        assert_eq!(encoded.functions[0].blocks[0].instruction_pcs.len(), 38);
         assert_eq!(encoded.span_at(0, 0, 7), Some(IrSpan::new(121, 123)));
         let pc = encoded.functions[0].blocks[0].instruction_pcs[7];
         assert_eq!(encoded.span_at_pc(0, pc), Some(IrSpan::new(121, 123)));
@@ -452,6 +460,38 @@ fn all_opcodes_and_abi_fields_round_trip_in_both_widths() {
         sizes.push(encoded.bytes.len());
     }
     assert!(sizes[0] < sizes[1], "小编号下 LEB128 应比定宽编码更短");
+}
+
+#[test]
+/// `Check.expected` 的有值分支必须在两种操作数宽度下完整往返。
+fn check_expected_type_round_trips_in_both_widths() {
+    let mut program = all_ops_program();
+    let expected = IrType::Set {
+        members: vec![IrType::Scalar {
+            name: "int".to_owned(),
+        }],
+        allows_dynamic: false,
+        empty: false,
+        unknown: false,
+    };
+    let check = program.functions[0]
+        .blocks
+        .iter_mut()
+        .flat_map(|block| block.instructions.iter_mut())
+        .find_map(|instruction| match &mut instruction.op {
+            TacOp::Check {
+                expected: payload, ..
+            } => Some(payload),
+            _ => None,
+        })
+        .expect("全操作码夹具应包含 Check");
+    *check = Some(expected);
+
+    for width in [OperandWidth::Leb128, OperandWidth::FixedU16] {
+        let encoded = encode(&program, width).expect("带期望类型的 Check 应可编码");
+        let decoded = decode(&encoded.bytes).expect("带期望类型的 Check 应可解码");
+        assert_program_eq(&program, &decoded);
+    }
 }
 
 /// 覆盖 uleb 与 sleb 的整数边界：0、127/128（单字节与双字节的分界）、
@@ -490,6 +530,16 @@ fn unsigned_and_signed_leb128_cover_integer_boundaries() {
 #[test]
 fn damaged_inputs_are_rejected_structurally() {
     let encoded = encode(&all_ops_program(), OperandWidth::Leb128).expect("基线编码应成功");
+
+    let mut old_format = encoded.bytes.clone();
+    old_format[4] = FORMAT_VERSION - 1;
+    assert!(matches!(
+        decode(&old_format),
+        Err(EncodeError::UnsupportedFormatVersion {
+            expected: FORMAT_VERSION,
+            actual
+        }) if actual == FORMAT_VERSION - 1
+    ));
 
     let mut bad_version = encoded.bytes.clone();
     bad_version[7] = 2;

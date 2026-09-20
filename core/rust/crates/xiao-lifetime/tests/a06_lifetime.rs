@@ -201,6 +201,25 @@ fn nested_function_captures_outer_value() {
 }
 
 #[test]
+/// 标量被闭包捕获时按值跨作用域，不能因此伪装成需要释放的堆句柄。
+fn captured_scalar_remains_stack_storage() {
+    let result = analyze(
+        "def outer() -> int\n    value = 1\n    def inner() -> int\n        return value\n    return inner()\n",
+    );
+    let value = result
+        .values
+        .values()
+        .find(|value| value.name.as_deref() == Some("ascii:value"))
+        .expect("标量 value");
+    assert!(
+        value
+            .escapes
+            .contains(&xiao_lifetime::EscapeReason::CapturedByClosure)
+    );
+    assert_eq!(value.storage, StorageClass::Stack);
+}
+
+#[test]
 /// 同一函数内跨分支读取参数只是普通词法访问，不能误判为闭包捕获。
 fn nested_blocks_do_not_create_closure_capture() {
     let result = analyze(

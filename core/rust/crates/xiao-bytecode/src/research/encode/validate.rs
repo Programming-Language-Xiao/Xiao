@@ -209,6 +209,11 @@ fn validate_op(
             check_vreg(*left)?;
             check_vreg(*right)
         }
+        TacOp::Len { source } => check_vreg(*source),
+        TacOp::IndexGetDynamic { source, index } => {
+            check_vreg(*source)?;
+            check_vreg(*index)
+        }
         TacOp::NewArray { elements }
         | TacOp::NewTuple { elements }
         | TacOp::NewSet { elements } => {

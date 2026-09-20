@@ -313,9 +313,19 @@
       "expect": {
         "outcome": "error",
         "error_code": "X06-RUNTIME-023",
-        "releases": [
-          {"scope": 1, "exit": "dynamic_check_failure", "value": 1, "kind": "strong"}
-        ],
+        "releases": [],
+        "max_call_depth": 1
+      }
+    },
+    {
+      "name": "runtime-membership-declared-type-error",
+      "source": "def result(value) -> bool\n    return value in {1}\nprobe = result(1)\n",
+      "entry": "result",
+      "arguments": ["wrong-type"],
+      "expect": {
+        "outcome": "error",
+        "error_code": "X06-RUNTIME-023",
+        "releases": [],
         "max_call_depth": 1
       }
     },

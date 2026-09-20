@@ -243,7 +243,7 @@ fn executes_calls_and_loops() {
 /// 三种载体分别上报溢出、映射点和调用保存，不共用一个总成本计数。
 fn machine_metrics_keep_independent_cost_axes() {
     let program = load(
-        "def identity(int value) -> int\n    return value\ntotal = 0\nwhile total != 2\n    total = total + 1\nresult = identity(total)\n",
+        "def identity(int value) -> int\n    return value\npayload = \"heap\"\ntotal = 0\nwhile total != 2\n    total = total + 1\nresult = identity(total)\n",
     );
     let stack = run(&program, VmOptions::new());
     let registers = run_register(&program, VmOptions::new());
@@ -1233,6 +1233,7 @@ fn manual_check_program(error_value: bool) -> TacProgram {
             kind: "dynamic_conversion".to_owned(),
             value,
             on_failure: BlockId::new(1),
+            expected: None,
         },
         span,
     ));

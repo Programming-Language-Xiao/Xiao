@@ -244,6 +244,7 @@ fn dynamic_check_program(
                 kind: kind.to_owned(),
                 value: parameters[0],
                 on_failure: BlockId::new(1),
+                expected: None,
             },
             SPAN,
         ),

@@ -55,6 +55,8 @@ pub const SET_OPERATION_CODE: &str = "X06-RUNTIME-021";
 pub const SET_COMPARISON_CODE: &str = "X06-RUNTIME-022";
 /// 集合成员判定的操作数在运行期不可哈希。
 pub const SET_MEMBERSHIP_CODE: &str = "X06-RUNTIME-023";
+/// 动态值不能作为 `for in` 的可迭代对象。
+pub const ITERABLE_CODE: &str = "X06-RUNTIME-024";
 
 /// 虚拟机不变量损坏。
 pub const FATAL_RUNTIME_INVARIANT_CODE: &str = "X07-FATAL-001";
@@ -762,6 +764,18 @@ impl XiaoError {
             SET_MEMBERSHIP_CODE,
             "runtime.set_membership_requires_hashable",
             "成员判定的左操作数必须是可哈希值",
+        )
+        .with_param("type_name", DiagnosticParam::Text(type_name.into()))
+    }
+
+    /// 动态 `for in` 的右侧值不可迭代。
+    #[must_use]
+    pub fn iterable_required(type_name: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Type,
+            ITERABLE_CODE,
+            "runtime.iterable_required",
+            "for 的右侧必须是可迭代容器",
         )
         .with_param("type_name", DiagnosticParam::Text(type_name.into()))
     }
