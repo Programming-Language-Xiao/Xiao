@@ -205,14 +205,19 @@ Protobuf 的收益是解析速度与传输体积，用一个**带摘要校验、
 ```xiao
 [PackageSources]
 sources = [
-    { name = "official", kind = "registry", location = "https://packages.xiao.example" },
-    { name = "community", kind = "static", location = "https://example.org/xiao-index" },
-    { name = "team", kind = "git-index", location = "https://github.com/example/xiao-packages.git" }
+    { alias = "official", display = "官方源", kind = "registry", location = "https://packages.xiao.example" },
+    { alias = "community", display = "社区镜像", kind = "static", location = "https://example.org/xiao-index" },
+    { alias = "team", display = "团队内部", kind = "git-index", location = "https://github.com/example/xiao-packages.git" }
 ]
 
 [Dependencies]
 http = { version = "^1.4", source = "community" }
 ```
+
+示例里的 `source = "community"` 绑定的是 **`alias`**，不是显示名。包源有**三个必须分开的概念**
+（已冻结于 [00. 决策基线](00-decisions.md)）：稳定的 `source_id`、配置内引用用的 `alias`、
+纯展示用的显示名。**依赖只能引用 `alias` 或明确的 `source_id`**；`alias` 冲突默认报错，
+只有用户显式改名或建立映射时才接受。字段名仍待 E3A 冻结，但三者的分工不再改变。
 
 ### 联邦源索引（逻辑已冻结）
 
@@ -352,6 +357,13 @@ xiao update
   - `--frozen`：只使用现有锁文件，缺失或不一致直接失败。
 
 **CI 与可复现构建必须使用 `--locked` 或 `--frozen`**，否则每次同步都可能悄悄改写锁定版本。
+
+**源列表同样受这两个模式约束**：
+
+- `--frozen`：**只使用已钉住的源清单与展开结果**；清单缺失或其摘要与配置不符时**直接失败**；
+- `--locked`：可以读取远端以验证摘要，但**发现变化必须失败**，**不得自动采用新列表**；
+- 源列表的更新走**显式命令**，不得由普通 `sync` 静默完成——否则"每次同步都可能换一批源"，
+  而源顺序决定选择结果（见多源选择规则）。
 
 `install` / `i` **不重新求解**：它按已有锁文件物化，不更新锁文件。需要更新锁文件的路径
 只有 `sync`（以及后续冻结的 `add` / `remove` / `lock` / `update`）。
