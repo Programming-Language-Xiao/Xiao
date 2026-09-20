@@ -1,0 +1,400 @@
+{
+  "report_version": 1,
+  "stage": "09R3",
+  "platform": "windows-native",
+  "format_version": 3,
+  "opcode_range": [
+    0,
+    40
+  ],
+  "protocol": {
+    "rust_toolchain": "1.96.0",
+    "profile": "release",
+    "opt_level": 3,
+    "codegen_units": 1,
+    "lto": false,
+    "warmup_iterations": 3,
+    "measurement_iterations": 11,
+    "statistic": "median plus q1/q3; samples sorted by elapsed nanoseconds",
+    "baseline": "same-build Windows native stack carrier",
+    "input_scale": "manifest arguments are fixed and shared by all three machines"
+  },
+  "cases": [
+    {
+      "id": "deep-expression-arithmetic",
+      "family": "deep-expression-arithmetic",
+      "timings": {
+        "hybrid": {
+          "samples_ns": [
+            31877000,
+            31963400,
+            31996900,
+            32125900,
+            32142900,
+            32228400,
+            32312600,
+            32398800,
+            32975100,
+            33113700,
+            33748200
+          ],
+          "median_ns": 32228400,
+          "q1_ns": 31996900,
+          "q3_ns": 32398800
+        },
+        "register": {
+          "samples_ns": [
+            32571100,
+            32602100,
+            32684700,
+            32727800,
+            32759400,
+            32819600,
+            32859500,
+            32981800,
+            33061600,
+            33559700,
+            33790200
+          ],
+          "median_ns": 32819600,
+          "q1_ns": 32684700,
+          "q3_ns": 32981800
+        },
+        "stack": {
+          "samples_ns": [
+            12292100,
+            12299800,
+            12317800,
+            12324500,
+            12333900,
+            12353300,
+            12369500,
+            12387500,
+            12422000,
+            12518500,
+            13459200
+          ],
+          "median_ns": 12353300,
+          "q1_ns": 12317800,
+          "q3_ns": 12387500
+        }
+      },
+      "ratios_to_stack": {
+        "hybrid": 2.6088899322448253,
+        "register": 2.6567475897128703,
+        "stack": 1.0
+      }
+    },
+    {
+      "id": "scalar-overflow-and-bool-parity",
+      "family": "deep-expression-arithmetic",
+      "timings": {
+        "hybrid": {
+          "samples_ns": [
+            50500,
+            50700,
+            50700,
+            51300,
+            51400,
+            51500,
+            51600,
+            51600,
+            51700,
+            113400,
+            121100
+          ],
+          "median_ns": 51500,
+          "q1_ns": 50700,
+          "q3_ns": 51600
+        },
+        "register": {
+          "samples_ns": [
+            52500,
+            52800,
+            53000,
+            53400,
+            53700,
+            55100,
+            58300,
+            65200,
+            86700,
+            161900,
+            230500
+          ],
+          "median_ns": 55100,
+          "q1_ns": 53000,
+          "q3_ns": 65200
+        },
+        "stack": {
+          "samples_ns": [
+            43000,
+            43000,
+            43400,
+            43700,
+            43700,
+            43800,
+            44100,
+            44600,
+            45000,
+            45100,
+            46600
+          ],
+          "median_ns": 43800,
+          "q1_ns": 43400,
+          "q3_ns": 44600
+        }
+      },
+      "ratios_to_stack": {
+        "hybrid": 1.1757990867579908,
+        "register": 1.2579908675799087,
+        "stack": 1.0
+      }
+    },
+    {
+      "id": "named-local-loop",
+      "family": "named-local-loop",
+      "timings": {
+        "hybrid": {
+          "samples_ns": [
+            18884200,
+            18894700,
+            18934100,
+            19001900,
+            19020600,
+            19076000,
+            19083500,
+            19110300,
+            19141200,
+            19182700,
+            20789100
+          ],
+          "median_ns": 19076000,
+          "q1_ns": 18934100,
+          "q3_ns": 19110300
+        },
+        "register": {
+          "samples_ns": [
+            18475300,
+            18526500,
+            18561800,
+            18632200,
+            18651700,
+            18688500,
+            18694200,
+            18727900,
+            18764800,
+            18784800,
+            18886100
+          ],
+          "median_ns": 18688500,
+          "q1_ns": 18561800,
+          "q3_ns": 18727900
+        },
+        "stack": {
+          "samples_ns": [
+            18379400,
+            18389700,
+            18439200,
+            18439500,
+            18448400,
+            18490500,
+            18506700,
+            18546500,
+            18697100,
+            19357200,
+            20050200
+          ],
+          "median_ns": 18490500,
+          "q1_ns": 18439200,
+          "q3_ns": 18546500
+        }
+      },
+      "ratios_to_stack": {
+        "hybrid": 1.031664909007328,
+        "register": 1.0107082015088829,
+        "stack": 1.0
+      }
+    },
+    {
+      "id": "deep-call-recursion",
+      "family": "deep-call-recursion",
+      "timings": {
+        "hybrid": {
+          "samples_ns": [
+            668200,
+            670000,
+            670200,
+            670300,
+            672200,
+            675600,
+            677200,
+            682600,
+            703700,
+            708100,
+            822800
+          ],
+          "median_ns": 675600,
+          "q1_ns": 670200,
+          "q3_ns": 682600
+        },
+        "register": {
+          "samples_ns": [
+            696800,
+            701700,
+            702900,
+            705200,
+            745000,
+            746900,
+            755900,
+            763100,
+            774600,
+            786500,
+            904500
+          ],
+          "median_ns": 746900,
+          "q1_ns": 702900,
+          "q3_ns": 763100
+        },
+        "stack": {
+          "samples_ns": [
+            188600,
+            188800,
+            188800,
+            188900,
+            189500,
+            189500,
+            189500,
+            192800,
+            193500,
+            197700,
+            242600
+          ],
+          "median_ns": 189500,
+          "q1_ns": 188800,
+          "q3_ns": 192800
+        }
+      },
+      "ratios_to_stack": {
+        "hybrid": 3.565171503957784,
+        "register": 3.941424802110818,
+        "stack": 1.0
+      }
+    },
+    {
+      "id": "container-dense",
+      "family": "container-dense",
+      "timings": {
+        "hybrid": {
+          "samples_ns": [
+            18585400,
+            18594400,
+            18811000,
+            18853500,
+            18860200,
+            20440900,
+            20870500,
+            27108700,
+            27310100,
+            28347000,
+            31274600
+          ],
+          "median_ns": 20440900,
+          "q1_ns": 18811000,
+          "q3_ns": 27108700
+        },
+        "register": {
+          "samples_ns": [
+            18675200,
+            18687900,
+            18700600,
+            18789100,
+            18886900,
+            18897700,
+            19076400,
+            19100000,
+            19226400,
+            19530800,
+            22542100
+          ],
+          "median_ns": 18897700,
+          "q1_ns": 18700600,
+          "q3_ns": 19100000
+        },
+        "stack": {
+          "samples_ns": [
+            17325400,
+            17484600,
+            17526900,
+            17742300,
+            18000800,
+            18024900,
+            18059600,
+            18221800,
+            18842700,
+            18910700,
+            19268400
+          ],
+          "median_ns": 18024900,
+          "q1_ns": 17526900,
+          "q3_ns": 18221800
+        }
+      },
+      "ratios_to_stack": {
+        "hybrid": 1.1340368046424667,
+        "register": 1.0484219052532886,
+        "stack": 1.0
+      }
+    }
+  ],
+  "family_medians": {
+    "container-dense": {
+      "hybrid": 20440900,
+      "register": 18897700,
+      "stack": 18024900
+    },
+    "deep-call-recursion": {
+      "hybrid": 675600,
+      "register": 746900,
+      "stack": 189500
+    },
+    "deep-expression-arithmetic": {
+      "hybrid": 16139950,
+      "register": 16437350,
+      "stack": 6198550
+    },
+    "named-local-loop": {
+      "hybrid": 19076000,
+      "register": 18688500,
+      "stack": 18490500
+    }
+  },
+  "family_ratios_to_stack": {
+    "container-dense": {
+      "hybrid": 1.1340368046424667,
+      "register": 1.0484219052532886,
+      "stack": 1.0
+    },
+    "deep-call-recursion": {
+      "hybrid": 3.565171503957784,
+      "register": 3.941424802110818,
+      "stack": 1.0
+    },
+    "deep-expression-arithmetic": {
+      "hybrid": 2.603826701405974,
+      "register": 2.651805664227924,
+      "stack": 1.0
+    },
+    "named-local-loop": {
+      "hybrid": 1.031664909007328,
+      "register": 1.0107082015088829,
+      "stack": 1.0
+    }
+  },
+  "global_register_ratio_to_stack": 2.651805664227924,
+  "global_hybrid_ratio_to_stack": 2.603826701405974,
+  "threshold": {
+    "throughput_improvement_required": 0.1,
+    "cold_start_and_memory_and_size_regression_allowed": 0.1,
+    "interpretation": "时间比值低于 0.90 才表示相对栈式吞吐至少提升 10%；四族必须分别查看"
+  }
+}

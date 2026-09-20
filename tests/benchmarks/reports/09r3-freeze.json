@@ -1,0 +1,28 @@
+{
+  "report_version": 1,
+  "stage": "09R3",
+  "platform_status": {
+    "windows_native": "completed",
+    "linux": "pending-reproduction",
+    "macos": "pending-reproduction",
+    "wsl_and_containers": "development-only; excluded from acceptance"
+  },
+  "selected_machine": "stack",
+  "selection_basis": "按 Windows 原生性能报告的全局中位数比值选择；四族明细保留在性能报告",
+  "family_direction_explanation": "按族分别观察：container-dense：寄存器式慢于栈式（比值 1.048），混合式慢于栈式（比值 1.134）；deep-call-recursion：寄存器式慢于栈式（比值 3.941），混合式慢于栈式（比值 3.565）；deep-expression-arithmetic：寄存器式慢于栈式（比值 2.652），混合式慢于栈式（比值 2.604）；named-local-loop：寄存器式慢于栈式（比值 1.011），混合式慢于栈式（比值 1.032）。族间方向相反时以这些明细解释，不以全局中位数掩盖。",
+  "format_version": 3,
+  "opcode_range": [
+    0,
+    40
+  ],
+  "frozen_items": [
+    "最终字节码机型",
+    "寄存器类别与分配策略",
+    "函数调用 ABI",
+    "异常与清理转移 ABI",
+    "指令编码与版本字段",
+    "源码映射格式",
+    "性能阈值与基准协议"
+  ],
+  "invalidation_rule": "指令集、ABI 或编码任何一项事后改动，本轮全部基准数字作废并需重新冻结"
+}

@@ -1,0 +1,52 @@
+{
+  "report_version": 1,
+  "stage": "09R3",
+  "platform": "windows-native",
+  "format_version": 3,
+  "opcode_range": [
+    0,
+    40
+  ],
+  "cases": [
+    {
+      "id": "deep-expression-arithmetic",
+      "family": "deep-expression-arithmetic",
+      "widths": {
+        "fixed-u16": 3199,
+        "leb128": 2911
+      }
+    },
+    {
+      "id": "scalar-overflow-and-bool-parity",
+      "family": "deep-expression-arithmetic",
+      "widths": {
+        "fixed-u16": 3020,
+        "leb128": 2753
+      }
+    },
+    {
+      "id": "named-local-loop",
+      "family": "named-local-loop",
+      "widths": {
+        "fixed-u16": 3983,
+        "leb128": 3483
+      }
+    },
+    {
+      "id": "deep-call-recursion",
+      "family": "deep-call-recursion",
+      "widths": {
+        "fixed-u16": 2052,
+        "leb128": 1892
+      }
+    },
+    {
+      "id": "container-dense",
+      "family": "container-dense",
+      "widths": {
+        "fixed-u16": 20072,
+        "leb128": 19395
+      }
+    }
+  ]
+}

@@ -46,7 +46,13 @@ const MAGIC: [u8; 4] = *b"X9RD";
 ///
 /// ABI 版本描述语义契约（R1 冻结），这个字段描述**字节怎么排**。只要布局
 /// 变动就必须递增它，解码端据此直接拒绝旧字节，而不是照着新规则错读旧数据。
-const FORMAT_VERSION: u8 = 3;
+pub const FORMAT_VERSION: u8 = 3;
+
+/// 本研究编码器当前冻结的最小 opcode。
+pub const OPCODE_MIN: u8 = 0;
+
+/// 本研究编码器当前冻结的最大 opcode。
+pub const OPCODE_MAX: u8 = 40;
 /// 集合元素数与块字节长度的上限。
 ///
 /// 解码端读到长度前缀后第一件事就是拿它做上界判断：没有这个上限，一段几字节

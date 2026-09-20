@@ -13,6 +13,9 @@
 而 09R3 本身在仓内**没有对应文档**——接手者看得到约束，看不到约束指向哪里。
 本文补上这个缺口，并明确**哪些东西一旦冻结就不能再动**。
 
+> 本方向稿的可执行落地记录见文末“十一、09R3 Windows 原生落地记录”；原有入场、协议和退出
+> 条件仍以本文引用的权威定义为准。
+
 ---
 
 ## 二、入场条件
@@ -153,8 +156,8 @@ R3 不是"随时可以开始跑基准"的批次，它有一组硬前置：
 
 | 文件 | 现写 | 问题 |
 | --- | --- | --- |
-| `tests/benchmarks/README.md` | "工程期 15、19" | R1-AD 要求 R3 的报告落这里；工程期标注与现状矛盾 |
-| `tests/differential/README.md` | "性能比较以 `xiao build` LLVM 原生模式为标准" | 与 R1-AC 的"相对**同机 Rust 栈式基线**"口径冲突；LLVM 原生要到 10/15 才存在 |
+| `tests/benchmarks/README.md` | 已修正为 09R3 基准、协议和报告目录 | R1-AD 要求 R3 的报告落这里 |
+| `tests/differential/README.md` | 已修正为同机 Rust 栈式基线 | 与 R1-AC 一致；LLVM 原生要到 10/15 才存在 |
 
 ---
 
@@ -192,3 +195,26 @@ R3 不是"随时可以开始跑基准"的批次，它有一组硬前置：
 - [09R2D. 两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md)
 - [09R2G. `for` 与迭代执行闭环交接文档](09r2g-for-and-iteration.md)
 - [09. 字节码运行模式](09-bytecode-runtime.md)
+
+## 十一、09R3 Windows 原生落地记录
+
+2026-09-20 已使用 `tests/benchmarks/Cargo.toml` 的零框架工具完成 Windows 原生复现。工具以
+真实 Xiao 源码调用 `FrontendCompiler`，同一份 IR/TAC 和同一组输入依次运行三种载体；清单固定
+Rust `1.96.0`、`release`、`opt-level = 3`、`codegen-units = 1`、关闭 LTO、3 次预热、11 次
+测量，并取中位数和四分位区间。四族均有独立条目，程序避开 `string_boolean`、表方法值/动态
+派发和 `*args`/`**kwargs` 展开实参。
+
+报告位于 `tests/benchmarks/reports/`：
+
+- `windows-native-semantic-differential.json`：三机型结果、错误链、返回值和释放序列对拍；
+- `windows-native-performance.json`：四族逐项耗时、四分位区间和相对栈式基线比值；
+- `windows-native-memory.json`：Windows 峰值工作集、逻辑峰值、`stack_map_entries`、
+  `spill_count` 与 `call_save_count`；
+- `windows-native-encoding-size.json`：布局版本 3、opcode `0..40` 下两种操作数宽度的体积；
+- `09r3-freeze.json`：冻结七项、平台状态和依据报告作出的机型选择。
+
+性能报告按族保留方向，冻结记录的 `family_direction_explanation` 会把本次每族的相对比值和
+快慢方向逐项落盘；本次样本中四族的寄存器式与混合式均慢于栈式。两种候选的全局中位数也都
+未达到相对栈式至少 10% 的吞吐提升，故冻结记录按报告选择栈式；族间若出现相反方向也不会
+被单一总数掩盖。Linux/macOS 仍明确标为待复现，WSL 与容器不计入验收；冻结后任何指令集、
+ABI 或编码改动都会使本轮数字作废。

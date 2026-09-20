@@ -1,0 +1,148 @@
+{
+  "report_version": 1,
+  "stage": "09R3",
+  "platform": "windows-native",
+  "format_version": 3,
+  "opcode_range": [
+    0,
+    40
+  ],
+  "peak_memory_measurement": "Windows GetProcessMemoryInfo PeakWorkingSetSize；同一 harness 进程内记录，逻辑载体峰值另列",
+  "cases": [
+    {
+      "id": "deep-expression-arithmetic",
+      "family": "deep-expression-arithmetic",
+      "machines": {
+        "hybrid": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 12,
+          "stack_map_entries": 1201,
+          "spill_count": 600,
+          "call_save_count": 2999
+        },
+        "register": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 7,
+          "stack_map_entries": 0,
+          "spill_count": 0,
+          "call_save_count": 3599
+        },
+        "stack": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 24,
+          "stack_map_entries": 1202,
+          "spill_count": 0,
+          "call_save_count": 0
+        }
+      }
+    },
+    {
+      "id": "scalar-overflow-and-bool-parity",
+      "family": "deep-expression-arithmetic",
+      "machines": {
+        "hybrid": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 4,
+          "stack_map_entries": 0,
+          "spill_count": 0,
+          "call_save_count": 0
+        },
+        "register": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 4,
+          "stack_map_entries": 0,
+          "spill_count": 0,
+          "call_save_count": 0
+        },
+        "stack": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 7,
+          "stack_map_entries": 0,
+          "spill_count": 0,
+          "call_save_count": 0
+        }
+      }
+    },
+    {
+      "id": "named-local-loop",
+      "family": "named-local-loop",
+      "machines": {
+        "hybrid": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 26,
+          "stack_map_entries": 1,
+          "spill_count": 12006,
+          "call_save_count": 0
+        },
+        "register": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 16,
+          "stack_map_entries": 0,
+          "spill_count": 0,
+          "call_save_count": 0
+        },
+        "stack": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 54,
+          "stack_map_entries": 2402,
+          "spill_count": 0,
+          "call_save_count": 0
+        }
+      }
+    },
+    {
+      "id": "deep-call-recursion",
+      "family": "deep-call-recursion",
+      "machines": {
+        "hybrid": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 11,
+          "stack_map_entries": 35,
+          "spill_count": 0,
+          "call_save_count": 181
+        },
+        "register": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 12,
+          "stack_map_entries": 0,
+          "spill_count": 0,
+          "call_save_count": 197
+        },
+        "stack": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 18,
+          "stack_map_entries": 17,
+          "spill_count": 0,
+          "call_save_count": 0
+        }
+      }
+    },
+    {
+      "id": "container-dense",
+      "family": "container-dense",
+      "machines": {
+        "hybrid": {
+          "peak_working_set_bytes": 9596928,
+          "peak_stack_depth": 19,
+          "stack_map_entries": 241,
+          "spill_count": 1120,
+          "call_save_count": 480
+        },
+        "register": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 22,
+          "stack_map_entries": 0,
+          "spill_count": 1120,
+          "call_save_count": 720
+        },
+        "stack": {
+          "peak_working_set_bytes": 9580544,
+          "peak_stack_depth": 57,
+          "stack_map_entries": 402,
+          "spill_count": 0,
+          "call_save_count": 0
+        }
+      }
+    }
+  ]
+}

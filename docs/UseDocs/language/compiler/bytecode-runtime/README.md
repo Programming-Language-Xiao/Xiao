@@ -59,6 +59,7 @@ Xiao 的双模式执行从类型化 IR 分叉：`xiao run` 走字节码解释路
 1. [前端流水线](../frontend/README.md)
 2. [IR 快照](../ir/README.md)
 3. 本页
+4. [09R3 基准与冻结记录](benchmarks-and-freeze.md)
 
 内部设计细节、三种机型的结构对比和未决风险见
 [09R. 字节码寄存器机型特别研究](../../../../DevDocs/09r-bytecode-machine-research.md)。

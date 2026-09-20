@@ -1,0 +1,19 @@
+[package]
+name = "xiao-r3-benchmarks"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+xiao-bytecode = { path = "../../core/rust/crates/xiao-bytecode" }
+xiao-diagnostics = { path = "../../core/rust/crates/xiao-diagnostics" }
+xiao-driver = { path = "../../core/rust/crates/xiao-driver" }
+xiao-runtime = { path = "../../core/rust/crates/xiao-runtime" }
+xiao-vm = { path = "../../core/rust/crates/xiao-vm" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[profile.release]
+opt-level = 3
+codegen-units = 1
+lto = false

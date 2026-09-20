@@ -1,0 +1,29 @@
+[[Box]]
+    value = 1
+    def drop(self) -> none
+        observed = self.value
+
+def benchmark(int rounds) -> int
+    total = 0
+    index = 0
+    while index != rounds
+        values = [index, index + 1, index + 2, index + 3]
+        pair = (values[0], values[1])
+        mapping = {"first" = values[0], "second" = values[1]}
+        tags = {index, index + 1}
+        column = <first = values[0], second = values[1]>
+        selected = values[0, 2]
+        ranged = values[1~3]
+        stepped = values{2}[=]
+        random.seed(7)
+        picked = values[?1]
+        item = new Box()
+        text = "xiao"
+        first_char = text[0]
+        try
+            guarded = [index]
+        finally
+            cleaned = "round"
+        total = total + values[0] + pair[0] + mapping[first] + column[first] + selected[0] + ranged[0] + stepped[0] + picked[0] + item.value + index
+        index = index + 1
+    return total

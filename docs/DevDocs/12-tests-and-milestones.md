@@ -53,7 +53,8 @@
 5. 文档覆盖率检查器能统计 Rust/TypeScript/测试辅助代码，公共 API 文档达到 100%，全仓库函数/方法/类/模块文档达到 90% 以上；解析失败不得假通过。
 6. `docs/UseDocs` 具备根索引、主题索引和至少一层子主题；模块登记能关联代码、测试与 UseDocs，已完成模块没有缺失或非 `verified` 页面。
 7. 代码、测试和 UseDocs 的同步规则已接入本地检查与 CI；模块未同步文档时不能标记完成。
-8. 平台适配计划明确按 Windows → Linux → macOS 排列，性能验收明确以 `xiao build` LLVM 原生模式为标准。
+8. 平台适配计划明确按 Windows → Linux → macOS 排列；09R3 使用同机 Rust 栈式原型基线，
+   LLVM 原生性能验收留到 10/15 阶段。
 9. 20 个 Rust workspace 成员均声明 `[lints] workspace = true`；`missing_docs` 的 rustc 与
    repo-check 两套口径均无缺口，标准 Clippy 门禁能阻断新增缺失 Rustdoc（实现提交
    `6d296c3`）。
@@ -652,6 +653,21 @@ RuntimeCheck 已启用，对应 `X06-RUNTIME-017..020`。研究 VM 可执行降�
 
 09R3 结束后冻结：最终字节码机型、寄存器类别与分配策略、函数调用 ABI、异常与清理转移 ABI、
 指令编码和版本字段、源码映射格式、性能阈值与基准协议。
+
+#### 09R3 落地记录（2026-09-20）
+
+`tests/benchmarks/Cargo.toml` 提供零框架基准工具：真实 Xiao 源码统一经过
+`FrontendCompiler` 和一次 `lower_program`，再由三种载体使用相同实参运行。清单固定 Rust
+`1.96.0`、`release`、`opt-level = 3`、`codegen-units = 1`、关闭 LTO、3 次预热、11 次测量、
+中位数和四分位区间；编码报告固定 `FORMAT_VERSION = 3`、opcode `0..40`。四个族分别上报，
+并逐项确认没有 `string_boolean`、表方法值/动态派发或 `*args`/`**kwargs` 展开实参。
+
+Windows 原生报告已落盘到 `tests/benchmarks/reports/`。语义差分通过；冻结记录的
+`family_direction_explanation` 按族记录本次比值和快慢方向，本次样本中四族的寄存器式与混合式
+均慢于栈式。两种候选的全局中位数均未达到相对栈式基线至少 10% 的吞吐提升，因此依据报告
+选择栈式；这不是实现代理的预先拍板，也没有用全局数字掩盖潜在的族间方向。Linux/macOS 仍
+为待复现，WSL/容器数字不进入验收。任何指令集、ABI 或编码改动都使本轮数字作废并要求重新
+冻结。
 
 ### B0：字节码最小运行闭环
 

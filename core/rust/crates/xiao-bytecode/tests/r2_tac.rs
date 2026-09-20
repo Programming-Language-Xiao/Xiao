@@ -632,6 +632,19 @@ fn encodes_program_using_set_operation() {
 }
 
 #[test]
+/// finally handler 的专用路由标签应能与释放计划一起进入两种研究编码。
+fn encodes_try_finally_handler() {
+    let (_, tac) = lower("try\n    value = 1\nfinally\n    cleaned = \"done\"\n");
+    assert!(
+        tac.unsupported.is_empty(),
+        "不应留下未支持项: {:?}",
+        tac.unsupported
+    );
+    assert!(encode(&tac, OperandWidth::Leb128).is_ok());
+    assert!(encode(&tac, OperandWidth::FixedU16).is_ok());
+}
+
+#[test]
 /// 复合集合赋值的检查跨度与类型层登记点一致，不能残留为 unsupported。
 fn consumes_runtime_checks_for_set_compound_assignment() {
     let (_, tac) = lower("set<int> target = set()\nsource = set()\ntarget += source\n");

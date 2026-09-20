@@ -25,8 +25,9 @@ pub mod verify;
 pub use cfg::{jump_targets, protected_successors, successors};
 /// 重导出研究编码接口与结构化错误。
 pub use encode::{
-    EncodeError, EncodeOptions, EncodedBlock, EncodedFunction, EncodedProgram, OperandWidth, PcMap,
-    build_pc_map, decode, decode_encoded, encode, encode_with_width, validate_encoded,
+    EncodeError, EncodeOptions, EncodedBlock, EncodedFunction, EncodedProgram, FORMAT_VERSION,
+    OPCODE_MAX, OPCODE_MIN, OperandWidth, PcMap, build_pc_map, decode, decode_encoded, encode,
+    encode_with_width, validate_encoded,
 };
 /// 重导出活跃区间结果与分析函数。
 pub use liveness::{LiveInterval, Liveness, analyze as analyze_liveness};
