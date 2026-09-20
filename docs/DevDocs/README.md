@@ -98,6 +98,7 @@
 | 16 | [SHA-256 内容寻址与二进制索引](16-content-addressed-artifacts.md) | 整文件摘要、归档/全局 Protobuf 索引和缓存维护 | 未开始 |
 | 17 | [`.xar` 字节码归档与启动](17-xar-archive.md) | ZIP/ZIP64 归档、第三方依赖、资源与双击启动 | 未开始 |
 | 18 | [优化与产物 CLI 接入](18-optimization-cli.md) | TypeScript CLI、默认 `-O0`、缓存/验证/打包命令 | 未开始 |
+| 20 | [内置函数与标准库：方向与待决（讨论稿）](20-builtins-and-standard-library.md) | intrinsic 的单一来源表、外部资源句柄、内置库与普通包的划分规则 | 讨论稿（**未立项**；当前路线图 01–19 里没有标准库阶段） |
 | 19 | [优化、兼容性与发布验收](19-optimization-release.md) | LLVM 原生 Java 对照、版本矩阵、跨平台和安全发布 | 未开始 |
 
 ## 当前最近里程碑
