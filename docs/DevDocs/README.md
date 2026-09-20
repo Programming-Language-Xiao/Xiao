@@ -74,9 +74,9 @@
 | 07B | [错误控制流与统一展开消费](07-concurrency-and-errors.md#07-b-已完成错误控制流与统一展开消费) | `try`/`catch`/`finally`/`raise` 的语法、静态恢复边界、生命周期展开和 Runtime 路由契约 | 已完成首版 |
 | 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 进行中（08A/U0 已完成首版） |
 | 08A | [U0 统一前端实现交接记录](08a-u0-frontend-implementation.md) | 单一前端流水线、递归类型化 IR、验证器和稳定 JSON 快照 | 已完成首版 |
-| 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 未开始（机型、调用约定与编码以 09R 冻结结果为准） |
+| 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 进行中（09R1–09R3 已完成并冻结；B0 未开工，批次边界见 [09-B0](09b0-bytecode-closure.md)） |
 | 09R1 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 统一三地址语义、三种候选机型、寄存器类别与编号空间、调用约定、异常与清理转移、编码草案和基准协议 | 已完成首版 |
-| 09R2 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三种机型的可运行原型、共享语义向量、事件接收器和容器/选择器/集合/迭代/表声明路径 | 进行中（R2a、R2C、R2D、R2b、R2b1、R2F1、R2G 与 R2H 已交付；正式生产字节码与 R3 仍待后续） |
+| 09R2 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三种机型的可运行原型、共享语义向量、事件接收器和容器/选择器/集合/迭代/表声明路径 | 已完成（R2a、R2C、R2D、R2b、R2b1、R2F/2F1、R2G、R2H 与 R3 全部交付并冻结） |
 | 09R2c | [异常控制流实现交接文档](09r2c-exception-control-flow.md) | 运行时错误对象、错误类型名单一来源、handler 表与 catch 路由、`finally` 子程序和 `Check` 降低 | 已完成（R2B 选择器错误复用同一异常路由） |
 | 09R2d | [两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md) | 逐函数类别映射修复、`Carrier` 接口演进、活跃区间分析、寄存器与混合式机型、指令编码器、`pc -> span` 映射 | 已完成（编码器基线 31 个，后续扩展至 41 个 opcode、布局版本 3；研究模块仍保持 draft，待 R2 总阶段退出） |
 | 09R2e | [研究编码器模块解耦交接记录](09r2e-research-encoder-decoupling.md) | `research::encode` 门面与 `codec`/`tags`/`validate`/`encoder`/`decoder`/`tests` 依赖 DAG、兼容契约和架构回归测试 | 已完成 |
@@ -87,6 +87,7 @@
 | 09R2g | [`for` 与迭代执行闭环交接文档](09r2g-for-and-iteration.md) | `Len`/`IndexGetDynamic` 两条指令、`for` 的 TAC 降低与 CFG、`iterable` 运行时检查、`iteration.json` 共享向量 | 已完成（opcode 36/37、三种载体、动态错误码 `X06-RUNTIME-024` 与释放边界均已验证） |
 | 09R2h | [表声明执行闭环交接记录](09r2h-table-declarations.md) | 表签名与方法索引、构造与字段读写、初始化回滚和确定性析构 | 已完成（新增表定义段、opcode 38–40、布局版本 3；79 条共享向量；须以新布局进入 R3） |
 | 09R3 | [跨平台基准与冻结](09r3-benchmarks-and-freeze.md)（权威定义见 [09R](09r-bytecode-machine-research.md) `:610-619`） | 语义差分、性能、内存与编码体积四份报告，以及机型/ABI/编码的冻结 | 已完成 Windows 原生复现；Linux/macOS 待复现 |
+| 09-B0 | [字节码最小运行闭环](09b0-bytecode-closure.md)（权威定义见 [12](12-tests-and-milestones.md) `:672-679` 与 [09R](09r-bytecode-machine-research.md) `:640-649`） | 生产字节码模型与验证器（B0-A）、生产 VM 执行闭环（B0-B）、前端到 VM 的内部驱动器（B0-C） | 未开始（三批依次交付；09R3 冻结七项为输入契约） |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
 | 11A.1 | [包源协议：决策、待决与风险（待审）](11a1-package-source-protocol-review.md) | 源身份规范化、JSON 权威与 Protobuf 派生、解析键与同一性、canonical JSON、源列表导入的三条规则；含六条待审风险 | 已审并处置（方向保留；源引用语义、导入顺序、摘要信任边界三处已修正） |
@@ -131,6 +132,8 @@ A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码�
 07-B 已完成错误控制流与统一展开消费首版：`xiao-syntax` 提供 `try`、`catch`、`finally`、`raise` 的 AST 与恢复；`xiao-types` 固定按错误类型名检查可恢复边界、Fatal 禁止捕获和具体到宽泛的顺序；`xiao-lifetime` 建立 try/catch/finally 作用域、正常/错误/未匹配/控制转移的释放计划与展开图；`xiao-runtime` 测试驱动器验证具体类型路由、未匹配传播和 Fatal 隔离。接手 07-C/07-D 或 08 前端降低时，先阅读 [07-B 交接记录](07-concurrency-and-errors.md#07-b-已完成错误控制流与统一展开消费)、[UseDocs 错误控制流](../UseDocs/language/control-flow/error-handling.md) 和 [Runtime 展开](../UseDocs/language/memory/runtime/errors-and-unwind.md)。07-B 不包含错误码/条件/模式匹配、`Result` 泛型、`?`、VM、LLVM、日志文件、`-debug` 窗口或并发实现。
 
 08A/U0 已完成统一前端首版：`xiao-driver` 按固定顺序串接解析、模块、类型和生命周期分析，累积诊断并在错误时停止降低；`xiao-ir` 输出覆盖当前已完成静态语义的递归类型化 IR，提供控制流、所有权、释放计划、选择器和错误边界；`IrValidator` 拒绝非法结构，稳定 JSON 快照带版本字段。该阶段不执行用户代码、不启动 VM/LLVM、不实现优化 Pass；接手 09/10 前端消费者时先阅读 [08A 交接记录](08a-u0-frontend-implementation.md) 和对应 [UseDocs 前端/IR](../UseDocs/language/compiler/README.md)。
+
+09 阶段的前置特别研究工程 `09R1 → 09R2 → 09R3` 已完成并冻结：三机型原型、指令编码器、源码映射、79 条共享向量、容器/选择器/集合/迭代/表声明执行路径和 Windows 原生基准均已交付，冻结结论为**栈式机型、`FORMAT_VERSION = 3`、opcode `0..40`**。生产 `xiao-bytecode` 与 `xiao-vm` 目前仍是空壳，全部实现位于 `research` 子模块；09-B0 按 B0-A（生产模型与验证器）、B0-B（生产 VM）、B0-C（内部驱动器）三批依次接续，**冻结七项是本阶段的输入契约而不是待决项**。批次边界、迁移方案与 B0-A 的可执行清单见 [09-B0. 字节码最小运行闭环](09b0-bytecode-closure.md)。
 
 ## 文档变更规则
 
