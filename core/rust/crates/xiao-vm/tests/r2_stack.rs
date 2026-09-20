@@ -1123,6 +1123,49 @@ fn dynamic_conversion_check_has_stable_failure_code() {
 }
 
 #[test]
+/// 字符串布尔转换复用 Runtime 的四个冻结拼写，并把非法拼写映射为类型错误。
+fn string_boolean_check_has_stable_failure_code() {
+    for conversion in ["raw as bool", "bool(raw)"] {
+        for literal in ["true", "True", "false", "False"] {
+            let source = format!(
+                "def parse(str raw) -> bool\n    return {conversion}\nresult = parse(\"{literal}\")\n"
+            );
+            let program = load(&source);
+            assert!(
+                program.unsupported.is_empty(),
+                "合法字符串转换不应留下未支持项: {:?}",
+                program.unsupported
+            );
+            for outcome in [
+                run(&program, VmOptions::new()),
+                run_register(&program, VmOptions::new()),
+                run_hybrid(&program, VmOptions::new()),
+            ] {
+                assert!(
+                    outcome.result.is_success(),
+                    "{conversion} / {literal} 应成功转换: {:?}",
+                    outcome.result
+                );
+            }
+        }
+    }
+
+    for conversion in ["raw as bool", "bool(raw)"] {
+        let source = format!(
+            "def parse(str raw) -> bool\n    return {conversion}\nresult = parse(\"yes\")\n"
+        );
+        let invalid = load(&source);
+        for outcome in [
+            run(&invalid, VmOptions::new()),
+            run_register(&invalid, VmOptions::new()),
+            run_hybrid(&invalid, VmOptions::new()),
+        ] {
+            assert_eq!(outcome.result.error_code(), Some(TYPE_MISMATCH_CODE));
+        }
+    }
+}
+
+#[test]
 /// 未捕获错误应保留产生点和逐层调用帧的后端位置。
 fn errors_retain_vm_stack_and_bytecode_offset() {
     let source = "def fail() -> int\n    raise ArithmeticError(code = \"boom\")\n    return 0\nresult = fail()\n";

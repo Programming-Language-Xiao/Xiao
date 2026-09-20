@@ -11,9 +11,7 @@ use xiao_bytecode::{
 };
 use xiao_runtime::{RuntimeResult, RuntimeValue};
 
-use crate::carrier::{
-    Carrier, CarrierContext, CarrierMetrics, MapPoint, empty_register_error,
-};
+use crate::carrier::{Carrier, CarrierContext, CarrierMetrics, MapPoint, empty_register_error};
 
 /// 混合式载体的固定局部窗口容量。
 pub const HYBRID_WINDOW_CAPACITY: usize = 8;

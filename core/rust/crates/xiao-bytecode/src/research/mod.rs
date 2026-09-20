@@ -8,6 +8,7 @@
 pub use crate::cfg;
 /// 兼容暴露生产编码模块。
 pub mod encode {
+    /// 兼容暴露生产编码模块的全部公开项。
     pub use crate::encode::*;
 }
 /// 兼容暴露生产活跃分析模块。
@@ -21,15 +22,18 @@ pub use crate::tac;
 /// 兼容暴露生产验证模块。
 pub use crate::verify;
 
+/// 兼容暴露生产模块的根级类型、常量和函数。
 pub use crate::{
-    ArithOp, BlockId, CallSig, CallSigTable, CategoryMap, CompareOp, ConstId, ConstPool, EncodeError,
-    EncodeOptions, EncodedBlock, EncodedFunction, EncodedProgram, FORMAT_VERSION, FuncId,
-    LiveInterval, Liveness, OPCODE_MAX, OPCODE_MIN, OperandWidth, ParamKind, PathStep, PcMap,
-    RegisterClass, SetCompareOp, SetOpKind, SigId, TAC_BYTECODE_ABI_VERSION, TAC_RUNTIME_ABI_VERSION,
-    TAC_VERSION, TacAbi, TacArgument, TacBlock, TacConstant, TacFunction, TacHandler, TacInstr,
-    TacOp, TacProgram, TacReleaseAction, TacReleasePlan, TacTableDefinition, TacVerification, VReg,
-    analyze_liveness, build_pc_map, decode, decode_encoded, encode_with_width, jump_targets,
-    lower_program, protected_successors, successors, validate_encoded, verify_program,
+    ArithOp, BlockId, CallSig, CallSigTable, CategoryMap, CompareOp, ConstId, ConstPool,
+    EncodeError, EncodeOptions, EncodedBlock, EncodedFunction, EncodedProgram, FORMAT_VERSION,
+    FuncId, LiveInterval, Liveness, OPCODE_MAX, OPCODE_MIN, OperandWidth, ParamKind, PathStep,
+    PcMap, RegisterClass, SetCompareOp, SetOpKind, SigId, TAC_BYTECODE_ABI_VERSION,
+    TAC_INTERNAL_CONSISTENCY_CODE, TAC_RUNTIME_ABI_VERSION, TAC_STRUCTURE_CODE, TAC_VERSION,
+    TacAbi, TacArgument, TacBlock, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
+    TacProgram, TacReleaseAction, TacReleasePlan, TacTableDefinition, TacVerification,
+    TacVerificationError, VReg, analyze_liveness, build_pc_map, decode, decode_encoded,
+    encode_with_width, jump_targets, lower_program, protected_successors, successors,
+    validate_encoded, verify_for_execution, verify_production, verify_program,
 };
 
 /// 兼容保留编码函数的旧根路径。

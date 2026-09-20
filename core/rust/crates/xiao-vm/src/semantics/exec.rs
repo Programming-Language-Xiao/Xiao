@@ -17,6 +17,7 @@ use xiao_diagnostics::{
     XiaoError,
 };
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
+use xiao_syntax::ScalarType;
 /// 表生命周期回调和执行上下文适配。
 #[path = "tables.rs"]
 mod tables;
@@ -1406,6 +1407,11 @@ fn check_value(kind: &str, value: &RuntimeValue, expected: Option<&xiao_ir::IrTy
     match kind {
         "boolean_condition" => value.as_bool().is_some(),
         "dynamic_conversion" => matches!(value, RuntimeValue::Error(_)),
+        // RuntimeValue::convert_to 是字符串布尔规则的唯一来源；这里仅把
+        // 成功/失败映射成检查分支，避免在 VM 复制四个冻结拼写。
+        "string_boolean" => {
+            matches!(value, RuntimeValue::Str(_)) && value.convert_to(ScalarType::Bool).is_ok()
+        }
         "numeric_range" => match value {
             RuntimeValue::Int(_) | RuntimeValue::Sint(_) => true,
             RuntimeValue::Float(value) => value.is_finite(),

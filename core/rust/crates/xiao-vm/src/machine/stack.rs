@@ -6,9 +6,7 @@
 use xiao_bytecode::VReg;
 use xiao_runtime::{RuntimeResult, RuntimeValue};
 
-use crate::carrier::{
-    Carrier, CarrierContext, CarrierMetrics, MapPoint, empty_register_error,
-};
+use crate::carrier::{Carrier, CarrierContext, CarrierMetrics, MapPoint, empty_register_error};
 
 /// 以一个槽位数组承载全部虚拟寄存器。
 #[derive(Debug, Default)]

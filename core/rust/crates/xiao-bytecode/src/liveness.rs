@@ -192,7 +192,7 @@ fn extend_range(
 }
 
 /// 提取一条指令的读取与定义集合，包括释放计划的间接读取。
-fn instruction_use_def(
+pub(crate) fn instruction_use_def(
     function: &TacFunction,
     instruction: &TacInstr,
     plans: &[TacReleasePlan],

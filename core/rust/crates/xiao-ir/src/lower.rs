@@ -1154,6 +1154,7 @@ mod tests {
         ];
         let supported = [
             "numeric_range",
+            "string_boolean",
             "dynamic_conversion",
             "arithmetic",
             "selector_bounds",
@@ -1167,7 +1168,7 @@ mod tests {
             "boolean_condition",
             "iterable",
         ];
-        let intentionally_unsupported = ["string_boolean"];
+        let intentionally_unsupported: [&str; 0] = [];
 
         let names = all
             .into_iter()
@@ -1187,7 +1188,7 @@ mod tests {
                 "RuntimeCheckKind {name} 未列入支持或显式未支持清单"
             );
         }
-        assert!(!supported.contains(&"string_boolean"));
+        assert!(supported.contains(&"string_boolean"));
         assert!(supported.contains(&"iterable"));
     }
 }

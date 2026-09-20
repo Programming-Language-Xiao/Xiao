@@ -11,7 +11,7 @@ use xiao_bytecode::VReg;
 pub enum VmEvent {
     /// 模块开始执行。
     ModuleLoaded {
-        /// 模块标签；研究阶段使用目标平台描述。
+        /// 模块标签；当前内存执行基线使用目标平台描述。
         module: String,
     },
     /// 进入一个函数。

@@ -1,4 +1,4 @@
-//! 研究编码字节流的严格解码实现。
+//! 冻结内存编码字节流的严格解码实现。
 
 use super::codec::{Reader, read_bool};
 use super::tags::{

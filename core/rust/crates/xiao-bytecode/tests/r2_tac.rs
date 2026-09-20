@@ -213,16 +213,34 @@ fn lowers_exception_handlers_and_finally_subroutine() {
 }
 
 #[test]
-/// 尚未支持的 RuntimeCheck 必须留在产物的 `unsupported`，不能被静默吞掉。
-fn records_unsupported_runtime_checks() {
-    let (_, tac) = lower("str raw = input(\"value\")\nbool parsed = raw as bool\n");
+/// `str as bool` 应消费检查、保持产物完整，并在转换前发出检查指令。
+fn lowers_string_boolean_runtime_check() {
+    let (ir, tac) = lower("str raw = input(\"value\")\nbool parsed = raw as bool\n");
     assert!(
-        tac.unsupported
-            .iter()
-            .any(|note| note.contains("string_boolean")),
-        "string_boolean 检查应明确登记为未支持: {:?}",
+        tac.unsupported.is_empty(),
+        "string_boolean 不应再进入 unsupported: {:?}",
         tac.unsupported
     );
+    let instructions = tac.functions[0]
+        .blocks
+        .iter()
+        .flat_map(|block| block.instructions.iter())
+        .collect::<Vec<_>>();
+    let check_index = instructions
+        .iter()
+        .position(|instruction| {
+            matches!(
+                &instruction.op,
+                TacOp::Check { kind, .. } if kind == "string_boolean"
+            )
+        })
+        .expect("应生成 string_boolean 检查");
+    let cast_index = instructions
+        .iter()
+        .position(|instruction| matches!(instruction.op, TacOp::Cast { .. }))
+        .expect("应生成 bool 转换");
+    assert!(check_index < cast_index, "检查必须位于 Cast 前");
+    assert!(verify_program(&ir, &tac).is_success());
 }
 
 #[test]

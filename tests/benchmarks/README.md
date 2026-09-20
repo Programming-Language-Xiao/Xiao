@@ -1,6 +1,6 @@
 # `tests/benchmarks`
 
-这里承载 09R3 的四份基准报告、固定源码和零框架测量器。基准程序必须先经过
+这里承载 09R3 的四份基准报告、固定源码和零框架测量器，是冻结后的历史验收设施。基准程序必须先经过
 `xiao-driver::FrontendCompiler`，再由同一份 `TacProgram` 交给栈式、分类型寄存器式和混合式
 载体；没有手搓 TAC、`xiao run` 或 LLVM 原生对照。
 
@@ -22,5 +22,6 @@ cargo run --release --manifest-path tests/benchmarks/Cargo.toml
 带平台、协议、布局版本和 opcode 范围。`09r3-freeze.json` 只根据性能报告选择主机型，并明确
 记录 Linux/macOS 的待复现状态。WSL 与容器只用于开发，数字不计入验收。
 
+工具仍使用 `xiao_bytecode::research::...` 兼容别名，B0 迁移不改基准源码或冻结报告。
 报告重新生成前应确认使用 `core/rust/rust-toolchain.toml` 的 `1.96.0`；任何指令集、ABI 或
 编码改动都会使本轮数字作废并要求重新冻结。

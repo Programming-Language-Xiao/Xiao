@@ -42,7 +42,10 @@ pub use tac::{
     TacFunction, TacHandler, TacInstr, TacOp, TacProgram, TacTableDefinition, VReg,
 };
 /// 重导出三地址验证入口与结果类型。
-pub use verify::{TacVerification, verify_program};
+pub use verify::{
+    TAC_INTERNAL_CONSISTENCY_CODE, TAC_STRUCTURE_CODE, TacVerification, TacVerificationError,
+    verify_for_execution, verify_production, verify_program,
+};
 
 /// 09R 冻结产物的兼容重导出层；沿革见 09R2D，冻结依据见 09R3。
 pub mod research;

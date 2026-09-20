@@ -116,10 +116,7 @@ pub fn run(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcom
 
 /// 使用指定静态载体运行一份三地址产物并记录全部事件。
 #[must_use]
-pub fn run_with<C: Carrier>(
-    program: &xiao_bytecode::TacProgram,
-    options: VmOptions,
-) -> RunOutcome {
+pub fn run_with<C: Carrier>(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcome {
     let mut vm = Vm::<C, RecordingSink>::new(program, options, RecordingSink::new());
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
@@ -204,10 +201,7 @@ pub fn run_with_machine_seed<C: Carrier>(
 
 /// 用分类型寄存器载体运行一份三地址产物。
 #[must_use]
-pub fn run_register(
-    program: &xiao_bytecode::TacProgram,
-    options: VmOptions,
-) -> RunOutcome {
+pub fn run_register(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcome {
     run_with::<RegisterCarrier>(program, options)
 }
 

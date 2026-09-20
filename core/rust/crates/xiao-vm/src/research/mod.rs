@@ -13,6 +13,7 @@ pub use crate::machine;
 pub use crate::ops;
 /// 兼容暴露生产运行入口。
 pub mod run {
+    /// 兼容暴露生产运行入口的全部公开项。
     pub use crate::run::*;
 }
 /// 兼容暴露生产语义核。
@@ -20,9 +21,10 @@ pub use crate::semantics;
 /// 兼容暴露生产事件接收器。
 pub use crate::sink;
 
+/// 兼容暴露生产 VM 的根级类型、常量和运行函数。
 pub use crate::{
-    Carrier, CarrierContext, CarrierMetrics, Fault, Frame, HybridCarrier, HybridLocation,
-    HYBRID_WINDOW_CAPACITY, MapPoint, NullSink, RecordingSink, RegisterCarrier, RegisterLocation,
+    Carrier, CarrierContext, CarrierMetrics, Fault, Frame, HYBRID_WINDOW_CAPACITY, HybridCarrier,
+    HybridLocation, MapPoint, NullSink, RecordingSink, RegisterCarrier, RegisterLocation,
     RunOutcome, RunResult, StackCarrier, TypedRegisterCarrier, Vm, VmEvent, VmEventSink, VmMetrics,
     VmOptions, WindowStackCarrier, empty_register_error, run_hybrid, run_register, run_with,
     run_with_machine_seed, run_with_seed, run_with_values,

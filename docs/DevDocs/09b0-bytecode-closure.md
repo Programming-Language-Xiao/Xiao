@@ -29,11 +29,12 @@
 
 - 研究序列 `09R1 → 09R2 → 09R3` 全部交付，**冻结已生效**（栈式机型；`FORMAT_VERSION = 3`；
   opcode `0..40`）；79 条共享向量、6 个 `r2_*.rs` 定向测试、`tests/benchmarks/` 基准设施齐备。
-- 生产 `xiao-bytecode` 与 `xiao-vm` **仍是空壳**：两个 `lib.rs` 各只有一句 `pub mod research;`
-  和一段说明「生产接口仍在 09-B0」。**全部 14337 行实现都在 `research` 子模块里。**
+- B0-A 已完成迁移：`xiao-bytecode/src/` 与 `xiao-vm/src/` 承载生产实现，两个 `research`
+  目录改为兼容重导出层。生产验证入口已接入，`TacProgram.unsupported` 非空会返回稳定的
+  内部一致性错误；B0-B 的生产运行 ABI 与 B0-C 的前端驱动器仍未开始。
 - `tests/benchmarks/src/main.rs:441-454` 是**全仓唯一**把 `FrontendArtifact` 接到
   `lower_program` 的代码。它是 B0-C 的原型，**不是**生产驱动器，也不承担生产契约。
-- 登记状态：`rust.xiao-bytecode` / `rust.xiao-vm` 为 `planned`（stage `09`）；
+- 登记状态：`rust.xiao-bytecode` / `rust.xiao-vm` 已为 `draft`（stage `09`）；
   `rust.xiao-bytecode-research` / `rust.xiao-vm-research` 为 `draft`（stage `09R2`）。
 
 ### 本阶段交付与不负责
@@ -189,8 +190,9 @@ git show -M --stat <sha>     # 重命名检测下增删行数应为 0
 
 现状（已实测）：
 
-- 降低器有一张 **13 项白名单**（`research/lower/mod.rs:826-840`）。不在其中的 `RuntimeCheckKind`
-  走 `record_unsupported("运行时检查尚未降低：{kind}")`（`:842`）；
+- 降低器有一张覆盖 **14 个 RuntimeCheckKind** 的白名单（`src/lower/mod.rs`）。不在其中的
+  构造仍会走 `record_unsupported`，但生产验证入口会把它作为内部一致性错误拦截；合法前端
+  产物不会留下该向量。
 - `encode/validate.rs:40` 对非空 `TacProgram.unsupported` **直接拒绝编码**；
 - 于是「前端接受了的合法程序」在**编码期**才失败，且拿到的是 `EncodeError::Unsupported`
   ——一条**没有源码位置、没有稳定诊断码**的路径。
@@ -214,15 +216,14 @@ git show -M --stat <sha>     # 重命名检测下增删行数应为 0
 
 ### 3.4 `string_boolean`：本批**唯一**需要裁定的语义缺口
 
-实测确认：`RuntimeCheckKind` 共 14 个变体，白名单覆盖 13 个，**唯一落在
-`intentionally_unsupported` 的是 `string_boolean`**（`xiao-ir/src/lower.rs:1170`，
-由 `#[cfg(test)]` 的 `runtime_check_kind_bridge_is_exhaustive` 钉住）。
+实测确认：`RuntimeCheckKind` 共 14 个变体，B0-A 已把此前唯一缺口
+`string_boolean` 接入降低白名单；`xiao-ir/src/lower.rs` 的穷尽性测试继续钉住字符串桥接。
 
 它的触发是**字符串转布尔**（`x as bool` / `bool(x)`，`ConversionKind::StrToBool`）。
-后果：**任何含该构造的程序都无法通过研究编码器**——09R3 `:57` 已经点名它是「唯一一个
-已登记但尚未接通的 RuntimeCheck」，并要求基准程序逐条避开它。
+此前含该构造的程序无法通过研究编码器；B0-A 后检查会进入 TAC，编码与验证均可通过，
+基准程序仍按 09R3 既定协议避开三条拒绝路径。
 
-**推荐接通，而不是继续拒绝**，理由按强度排序：
+**B0-A 的结论是接通**，理由按强度排序：
 
 1. **它是中心不变量的唯一破坏者**（§3.3）。不变量是"**恒为空**"——只要有一条能触发，
    B0 就得永远带着 `unsupported` 的处理路径，B0-B/B0-C 都要为一条**理论上不该发生**的
@@ -230,11 +231,12 @@ git show -M --stat <sha>     # 重命名检测下增删行数应为 0
 2. **类型层语义已经通过前置里程碑**。`ConversionKind::StrToBool` 与 `RuntimeCheckKind::StringBoolean`
    都是 02/03 阶段已冻结的成果；B0 退出条件第 3 条要求「只纳入**已经通过前置里程碑**的语义」
    ——这不构成新增语言语义，是**补接通**。
-3. 工作量可控：白名单加一项 + `check_value` 分支 + 复用一个既有错误码（或按 09R2F 的先例
-   新增一个），且 09R2F/09R2F1/09R2G 已把三处接线手法和区分度写法演示过三遍。
+3. 工作量可控：白名单加一项，`check_value` 复用 `RuntimeValue::convert_to(ScalarType::Bool)`
+   的唯一规则，并使用既有 `TYPE_MISMATCH_CODE`。降低测试确认检查位于 `Cast` 前，三载体
+   回归覆盖四种合法拼写和非法拼写。
 
-**如果评估后决定不接通**，必须在本批交接文档里写明依据，并把 §3.3 的第 2 条从
-「不变量」降级为「显式处理的已知缺口」——**不允许不声不响地留着**。
+因此不需要降级 §3.3 的不变量；非空 `unsupported` 只代表降低器与生产契约的内部缺口，
+由 `verify_production` 以 `X09-BYTECODE-001` 拒绝。
 
 > 无论走哪条路，**绝不能用 `record_unsupported` 给它（或任何东西）记账**——一记就把
 > 编码体积指标整条堵死，而且要到验收才流血。这条 09R2F1 已写过一次，这里再写一次。
@@ -256,6 +258,13 @@ git show -M --stat <sha>     # 重命名检测下增删行数应为 0
 **注意**：`TacProgram.categories` 那条是本批最可能"看起来已经有、实际没人用"的一项。
 09R2D 已经因为同款问题被记过一次（09R2G 漏改三处文档）。**判据不是"字段存在"，
 而是"有没有一条断言会在它错的时候失败"。**
+
+B0-A 的落点如下：生产 `verify_program` 对每个函数使用局部 `TacFunction::categories`，
+将指令使用/定义和活跃区间逐一登记；程序级 `TacProgram::categories` 只保留兼容观察用途。
+`verify_production` / `verify_for_execution` 在编码器或执行器消费前返回结构化错误，
+`X09-BYTECODE-001` 专用于非空 `unsupported`，`X09-BYTECODE-002` 覆盖结构、引用和 ABI
+错误。释放计划由 `reconcile_release_plans` 在该生产验证路径中对账。未知 opcode、定宽
+溢出和解码边界仍由冻结编码器/解码器的同一输入校验负责，未改变版本字段或布局。
 
 ### 3.6 登记与文档同步（连带影响，必须同批）
 
@@ -399,6 +408,11 @@ B0 会大量触碰已交付的测试与登记文件，**触发这三类的概率
 6. **门禁全绿**：`cargo test --workspace`、`cargo clippy --workspace --all-targets -- -D warnings`、
    `cargo fmt --all -- --check`、`cargo doc --workspace --no-deps`、`bun test`、
    `bun run check`、`bun run check:coverage`。
+
+B0-A 本轮已完成迁移、验证器加固、兼容别名回归和文档登记；提交正文须说明
+`string_boolean` 接通、`unsupported` 改为内部一致性错误、类别校验采用函数局部映射的
+原因，并明确 `FORMAT_VERSION = 3` 与 09R3 冻结报告未改动。B0-B/B0-C 的退出条件仍待
+后续批次分别验收。
 
 ---
 

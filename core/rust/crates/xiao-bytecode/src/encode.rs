@@ -1,6 +1,6 @@
-//! 09R2 研究用 TAC 编码器。
+//! 09R3 冻结的 TAC 内存编码器。
 //!
-//! 这里定义的是内存中的研究编码，不是公开的 `.xiaoc` 文件格式。编码器只展开
+//! 这里定义的是内存中的冻结编码，不是公开的 `.xiaoc` 文件格式。编码器只展开
 //! 已经存在的 TAC/ABI 事实，不重新推断类型、重算生命周期，也不重排指令。格式
 //! 使用稳定的显式 opcode 表；操作数可以选择无符号 LEB128 或定宽 `u16`。
 
@@ -36,9 +36,9 @@ use super::tac::{
     TacConstant, TacFunction, TacHandler, TacInstr, TacOp, TacProgram, VReg,
 };
 
-/// 研究编码的魔数。
+/// 内存编码的魔数。
 ///
-/// `X9` 前缀刻意与真实的 `.xiaoc` 容器区分开：这里编出来的是内存研究编码，
+/// `X9` 前缀刻意与真实的 `.xiaoc` 容器区分开：这里编出来的是内存编码，
 /// 不承诺任何文件级兼容，因此需要一个能立刻判死的头，避免把实验字节流当成
 /// 产物格式误读。
 const MAGIC: [u8; 4] = *b"X9RD";
@@ -48,10 +48,10 @@ const MAGIC: [u8; 4] = *b"X9RD";
 /// 变动就必须递增它，解码端据此直接拒绝旧字节，而不是照着新规则错读旧数据。
 pub const FORMAT_VERSION: u8 = 3;
 
-/// 本研究编码器当前冻结的最小 opcode。
+/// 当前冻结的最小 opcode。
 pub const OPCODE_MIN: u8 = 0;
 
-/// 本研究编码器当前冻结的最大 opcode。
+/// 当前冻结的最大 opcode。
 pub const OPCODE_MAX: u8 = 40;
 /// 集合元素数与块字节长度的上限。
 ///
@@ -111,7 +111,7 @@ pub struct EncodeOptions {
 impl Default for EncodeOptions {
     /// 默认使用 [`OperandWidth::Leb128`]。
     ///
-    /// 研究编码里的寄存器号和索引绝大多数是小编号，变长比定宽短；定宽是给
+    /// 冻结编码里的寄存器号和索引绝大多数是小编号，变长比定宽短；定宽是给
     /// 需要固定步长或定长扫描的消费者显式选的，不该是默认。
     fn default() -> Self {
         Self {
@@ -186,7 +186,7 @@ impl EncodedFunction {
     }
 }
 
-/// 一份内存中的研究编码结果。
+/// 一份内存中的冻结编码结果。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct EncodedProgram {
     /// 编码所携带的 ABI 版本和目标描述。
@@ -256,7 +256,7 @@ impl EncodedProgram {
     }
 }
 
-/// 研究编码的结构化错误。
+/// 内存编码的结构化错误。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum EncodeError {
     /// 魔数不匹配。
@@ -372,7 +372,7 @@ impl std::fmt::Display for EncodeError {
 
 impl std::error::Error for EncodeError {}
 
-/// 把 TAC 程序编码为内存中的研究字节串。
+/// 把 TAC 程序编码为内存中的冻结字节串。
 pub fn encode(
     program: &TacProgram,
     options: impl Into<EncodeOptions>,
@@ -442,14 +442,14 @@ pub fn build_pc_map(program: &TacProgram, width: OperandWidth) -> Result<PcMap, 
     })
 }
 
-/// 解码研究字节串并恢复 TAC 语义模型。
+/// 解码冻结字节串并恢复 TAC 语义模型。
 pub fn decode(bytes: &[u8]) -> Result<TacProgram, EncodeError> {
     let (program, width) = decode_inner(bytes)?;
     validate_decoded(&program, width)?;
     Ok(program)
 }
 
-/// 解码研究字节串并同时重建物理目录。
+/// 解码冻结字节串并同时重建物理目录。
 pub fn decode_encoded(bytes: &[u8]) -> Result<EncodedProgram, EncodeError> {
     let (program, width) = decode_inner(bytes)?;
     validate_decoded(&program, width)?;

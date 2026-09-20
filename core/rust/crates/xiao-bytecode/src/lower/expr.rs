@@ -656,11 +656,9 @@ fn lower_call(
     let register = lowerer.new_register(class, expression.span);
     let op = match lowerer.function_index_of_expression(callee) {
         Some(target) => {
-            let signature = lowerer.signature_of_function(target).unwrap_or_else(|| {
-                lowerer
-                    .signatures
-                    .intern(crate::sig::CallSig::dynamic())
-            });
+            let signature = lowerer
+                .signature_of_function(target)
+                .unwrap_or_else(|| lowerer.signatures.intern(crate::sig::CallSig::dynamic()));
             TacOp::Call {
                 callee: target,
                 signature,
@@ -753,6 +751,17 @@ fn lower_cast(
     let Some(target) = ScalarType::from_name(target) else {
         return lower_unsupported(lowerer, "cast", expression.span);
     };
+    // `str -> bool` 的 RuntimeCheck 必须在 Cast 前消费：Cast 本身复用 Runtime
+    // 转换矩阵，非法拼写若先到达它会得到泛化的 invalid_value，而不是冻结的
+    // 类型错误码。其它转换仍由表达式末尾的统一检查入口处理。
+    if target == ScalarType::Bool
+        && matches!(
+            &inner.ty,
+            IrType::Scalar { name } if ScalarType::from_name(name) == Some(ScalarType::Str)
+        )
+    {
+        lowerer.emit_runtime_checks(expression.span, source);
+    }
     let class = Lowerer::class_of_type(&expression.ty);
     let register = lowerer.new_register(class, expression.span);
     lowerer.emit(TacInstr::with_dst(

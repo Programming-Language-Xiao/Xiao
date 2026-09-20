@@ -1,6 +1,6 @@
 //! 统一三地址语义模型。
 //!
-//! 本模块是 09R 研究工程的一部分，**不是稳定语言接口**。它只描述「算什么」，
+//! 本模块是 09R3 冻结后生产接口的一部分。它只描述「算什么」，
 //! 把「值放在哪里、怎么编码」完全留给机型。三条冻结的边界：
 //!
 //! - 指令不记录寄存器类别，类别另由 [`CategoryMap`] 携带，因为类别归属是机型
@@ -13,7 +13,7 @@ use xiao_ir::IrSpan;
 use xiao_lifetime::ReleaseActionKind;
 use xiao_syntax::ScalarType;
 
-/// 研究用三地址格式的版本。
+/// 冻结三地址格式的版本。
 pub const TAC_VERSION: u32 = 1;
 
 /// 虚拟寄存器编号。
@@ -821,7 +821,7 @@ impl TacFunction {
 /// 后端共享的版本字段。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TacAbi {
-    /// 研究用编码版本。
+    /// 冻结内存编码版本。
     pub bytecode_abi_version: u32,
     /// Runtime 句柄与值表示版本。
     pub runtime_abi_version: u32,

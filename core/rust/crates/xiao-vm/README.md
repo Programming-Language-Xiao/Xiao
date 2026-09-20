@@ -2,7 +2,7 @@
 
 ## 目录职责
 
-Rust 字节码唯一执行实现：解释循环、调用栈、局部槽、模块加载、错误回溯、确定性随机源和 `-debug` 诊断事件。
+Rust 字节码唯一执行实现：解释循环、调用栈、局部槽、模块加载、错误回溯、确定性随机源和诊断事件。
 
 ## 工程期
 
@@ -12,9 +12,9 @@ Rust 字节码唯一执行实现：解释循环、调用栈、局部槽、模块
 
 `src/` 下按 `interpreter`、`stack`、`loader`、`debug` 和 `random` 分模块；REPL 缓冲区放在 TypeScript CLI。
 
-## 09R 研究边界
+## 09R 沿革与兼容边界
 
-`src/research/` 已落地 09R2 首版，按「机型无关语义核 + 可替换载体」两层组织：
+09R2 的实质实现已经迁入 `src/`，按「机型无关语义核 + 可替换载体」两层组织：
 `semantics/` 只认识三地址指令与 `carrier.rs` 的窄接口，不认识「栈」这个词；
 `machine/stack.rs`、`machine/register.rs`、`machine/hybrid.rs` 分别实现三种载体；`ops.rs`
 统一提供算术、精确索引、高级选择、随机和事务性广播，`sink.rs` 记录结构化事件，`run.rs`
@@ -25,11 +25,13 @@ Rust 字节码唯一执行实现：解释循环、调用栈、局部槽、模块
 `tests/r2_iteration_values.rs` 与 `iteration.json` 共同断言；表生命周期由
 `tests/r2_table_values.rs` 与 `tables.json` 验证结果、错误链、析构次数和完整释放序列。
 
-该子模块属于 09R 特别研究工程，**不是稳定执行接口**：三种机型在 09R3 冻结前都不得被当作
-生产 VM 暴露，也不得让 TypeScript 层依赖其中任何一型的内部结构。
+`src/research/` 现在是兼容重导出层，保留旧路径供 09R 共享向量和基准设施使用；生产入口
+固定使用冻结的栈式载体，寄存器式与混合式载体仍保留用于复现和对比。别名层的移除条件是
+B0-C 交付且生产驱动器成为唯一消费方，不得提前删除。
 
 冻结结论与施工顺序见 [09R. 字节码寄存器机型特别研究](../../../../docs/DevDocs/09r-bytecode-machine-research.md)。
 
 ## 边界
 
-不处理 TypeScript REPL 状态、不解析 CLI 参数、不依赖人类可读日志判断控制流。
+不处理 TypeScript REPL 状态、不解析 CLI 参数、不依赖人类可读日志判断控制流；用户可见的
+`xiao run` 仍归 X0。

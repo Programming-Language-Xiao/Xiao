@@ -409,7 +409,7 @@ fn check_exit_name(name: &str) -> Result<(), EncodeError> {
 /// `finally` 是 handler 表自己的路由标签，不是释放计划的 `ExitKind`；它
 /// 标记进入 finally 子程序，子程序返回后再恢复原来的控制退出。因此它不能
 /// 通过只接受 11 种 `ExitKind` 的 [`check_exit_name`]，但仍需在编码入口显式
-/// 校验，避免把任意字符串写进研究编码。
+/// 校验，避免把任意字符串写进冻结编码。
 fn check_handler_exit_name(name: &str) -> Result<(), EncodeError> {
     if name == "finally" {
         Ok(())

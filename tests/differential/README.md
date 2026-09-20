@@ -1,6 +1,7 @@
 # `tests/differential`
 
-09R3 差分驱动由 `tests/benchmarks` 的同一个零框架测量器提供：同一份 Xiao 源码先经过
+09R3 差分驱动由 `tests/benchmarks` 的同一个零框架测量器提供，是冻结后的历史验收设施：
+同一份 Xiao 源码先经过
 `FrontendCompiler`，只降低一次 `TacProgram`，再以相同语义输入运行三种载体。驱动比较成功/错误
 状态、错误码与原因链、返回值、完整释放序列和最大调用深度；任一机型不一致即使进程退出失败，
 报告中的 `all_machines_equal` 也必须为 `false`。

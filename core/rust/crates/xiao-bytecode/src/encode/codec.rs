@@ -1,4 +1,4 @@
-//! 研究编码格式的底层字节读写原语。
+//! 冻结内存编码格式的底层字节读写原语。
 
 use super::{EncodeError, MAX_COLLECTION, MAX_STRING, OperandWidth};
 

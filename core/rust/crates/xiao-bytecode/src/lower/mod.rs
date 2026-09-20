@@ -829,6 +829,7 @@ impl<'ir> Lowerer<'ir> {
                     | "arithmetic"
                     | "numeric_range"
                     | "dynamic_conversion"
+                    | "string_boolean"
                     | "selector_bounds"
                     | "selector_step"
                     | "random_count"
