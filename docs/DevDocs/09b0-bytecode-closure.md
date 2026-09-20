@@ -31,9 +31,9 @@
   opcode `0..40`）；79 条共享向量、6 个 `r2_*.rs` 定向测试、`tests/benchmarks/` 基准设施齐备。
 - B0-A 已完成迁移：`xiao-bytecode/src/` 与 `xiao-vm/src/` 承载生产实现，两个 `research`
   目录改为兼容重导出层。生产验证入口已接入，`TacProgram.unsupported` 非空会返回稳定的
-  内部一致性错误；B0-B 的生产运行 ABI 与 B0-C 的前端驱动器仍未开始。
-- `tests/benchmarks/src/main.rs:441-454` 是**全仓唯一**把 `FrontendArtifact` 接到
-  `lower_program` 的代码。它是 B0-C 的原型，**不是**生产驱动器，也不承担生产契约。
+  内部一致性错误；B0-B 的生产运行 ABI 与 B0-C 的前端驱动器均已落地。
+- `tests/benchmarks/src/main.rs:441-454` 曾是把 `FrontendArtifact` 接到 `lower_program` 的
+  唯一代码；现在生产链位于 `xiao-driver/src/run.rs`，基准段仍是一次性原型，**不承担**生产契约。
 - 登记状态：`rust.xiao-bytecode` / `rust.xiao-vm` 已为 `draft`（stage `09`）；
   `rust.xiao-bytecode-research` / `rust.xiao-vm-research` 为 `draft`（stage `09R2`）。
 
@@ -289,7 +289,7 @@ B0-A 的落点如下：生产 `verify_program` 对每个函数使用局部 `TacF
 
 ---
 
-## 四、B0-B 方向：生产 VM 执行闭环（仅定方向）
+## 四、B0-B：生产 VM 执行闭环（已落地）
 
 `09r:646-647` 的范围是「接入 `xiao-runtime`、统一错误、表生命周期、容器和选择器；
 保持调试事件接收器，但不实现诊断窗口」。研究 VM **已经**接了前四项，所以 B0-B 的实质
@@ -328,7 +328,7 @@ B0-B 要定义的是 09 文档 `:163` 要求的**两种模式**：
 
 ---
 
-## 五、B0-C 方向：前端到 VM 的内部驱动器（仅定方向）
+## 五、B0-C：前端到 VM 的内部驱动器（已落地）
 
 `09r:648-649`：「`FrontendArtifact` → 字节码 → VM 执行，提供结构化成功、错误、退出码、
 堆栈和事件结果；`xiao run` 与 TypeScript CLI 接线继续留到 11/X0」。
@@ -340,20 +340,22 @@ B0-B 要定义的是 09 文档 `:163` 要求的**两种模式**：
 落点**；且它的 crate 定位原文就是「Xiao **编译、运行和构建**请求编排接口」
 （`xiao-driver/src/lib.rs:1`）——**运行**两个字本来就在它的职责里。
 
-需要新增 `xiao-bytecode` 与 `xiao-vm` 两个依赖。开工前先核对 00A 的依赖方向图与
-`xiao-driver/Cargo.toml` 现状，确认不引入环。
+已新增 `xiao-bytecode` 与 `xiao-vm` 两个依赖；依赖方向沿 00A 图从编排层指向后端，
+没有引入环。实现位于 `xiao-driver/src/run.rs`。
 
-**开工前的第一个动作**：把 `tests/benchmarks/src/main.rs:441-454` 读透。它是这条链
-**已被验证可行**的原型（09R3 四份报告就是它跑出来的），生产驱动器是把它的逻辑提升为
-稳定接口，**不是从零设计**。
+`tests/benchmarks/src/main.rs:441-454` 仍是这条链**已被验证可行**的一次性工具原型；生产
+驱动器把 `FrontendCompiler → lower_program → xiao_vm::run_request` 提升为稳定接口，
+不复制工具的函数零搬迁。
 
 ### 5.2 交付形状
 
-- 稳定的**运行请求 / 运行结果 / 结构化错误 / 取消与超时边界**（09 文档 `:44`）。
+- 稳定的**运行请求 / 运行结果 / 结构化错误 / 取消与超时边界**（09 文档 `:44`）。已由
+  `DriverRequest`、`DriverOutcome`、`DriverError`、`CancellationToken` 和 `RunControl` 提供。
   传输用进程协议还是库 ABI **留到 CLI 集成阶段冻结**，本批只冻结字段语义。
 - **不得让消费方解析文本**判断成功与否（09 文档 `:120`）。
 - **不得在驱动器里重新推断语言语义**（09 文档 `:15`、`:102`）。
-- 内部测试驱动器必须证明 **TypeScript 层没有复制解释器语义**（09 文档 `:25` 的交接检查）。
+- 内部测试驱动器已由 `core/rust/crates/xiao-driver/tests/b0_c_driver.rs` 覆盖；它只调用
+  Rust 前端和生产 VM，不引入 TypeScript/Node.js 执行用户指令。
 
 ---
 
@@ -414,10 +416,12 @@ B0 会大量触碰已交付的测试与登记文件，**触发这三类的概率
    `bun run check`、`bun run check:coverage`。
 
 B0-A 本轮已完成迁移、验证器加固、兼容别名回归和文档登记；B0-B 已接入生产请求、执行前验证、
-统一报告、源码栈帧和有界事件接收器；提交正文须说明
+统一报告、源码栈帧和有界事件接收器；B0-C 已接入前端到 VM 的内部驱动器、三段结构化结果、
+边界取消/超时和公共契约测试。提交正文须说明
 `string_boolean` 接通、`unsupported` 改为内部一致性错误、类别校验采用函数局部映射的
-原因，并明确 `FORMAT_VERSION = 3` 与 09R3 冻结报告未改动。B0-B/B0-C 的退出条件仍待
-完整门禁和 B0-C 的前端驱动器分别验收。
+原因，并明确 `FORMAT_VERSION = 3` 与 09R3 冻结报告未改动。B0-B/B0-C 的实现、定向验收
+和完整门禁均已通过；B0-C 的 VM 中途取消检查点保留为
+`B0-C-CANCEL-001`，出口批次为 `11/X0`。
 
 ---
 

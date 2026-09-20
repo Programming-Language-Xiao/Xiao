@@ -87,9 +87,9 @@
 | 09R2g | [`for` 与迭代执行闭环交接文档](09r2g-for-and-iteration.md) | `Len`/`IndexGetDynamic` 两条指令、`for` 的 TAC 降低与 CFG、`iterable` 运行时检查、`iteration.json` 共享向量 | 已完成（opcode 36/37、三种载体、动态错误码 `X06-RUNTIME-024` 与释放边界均已验证） |
 | 09R2h | [表声明执行闭环交接记录](09r2h-table-declarations.md) | 表签名与方法索引、构造与字段读写、初始化回滚和确定性析构 | 已完成（新增表定义段、opcode 38–40、布局版本 3；79 条共享向量；须以新布局进入 R3） |
 | 09R3 | [跨平台基准与冻结](09r3-benchmarks-and-freeze.md)（权威定义见 [09R](09r-bytecode-machine-research.md) `:610-619`） | 语义差分、性能、内存与编码体积四份报告，以及机型/ABI/编码的冻结 | 已完成 Windows 原生复现；Linux/macOS 待复现 |
-| 09-B0 | [字节码最小运行闭环](09b0-bytecode-closure.md)（权威定义见 [12](12-tests-and-milestones.md) `:672-679` 与 [09R](09r-bytecode-machine-research.md) `:640-649`） | 生产字节码模型与验证器（B0-A）、生产 VM 执行闭环（B0-B）、前端到 VM 的内部驱动器（B0-C） | 进行中（B0-A 已完成；B0-B 见 [09-B0-B](09b0b-production-vm.md)，B0-C 待续） |
-| 09-B0-B | [生产 VM 执行闭环](09b0b-production-vm.md) | 生产入口 ABI（脚本/`[main]`）、规范化运行参数对象、结构化退出结果、栈回溯与事件接收器生产化 | 已完成（生产入口、前置验证、报告接线和有界事件接收器已落地；B0-C 待续） |
-| 09-B0-C | [前端到 VM 内部驱动器](09b0c-frontend-to-vm-driver.md) | `xiao-driver` 的运行驱动器、三段错误的统一结构化表示、取消/超时边界 | 未开始（B0-B 已完成；本批还 lock 漏提交与门禁盲区） |
+| 09-B0 | [字节码最小运行闭环](09b0-bytecode-closure.md)（权威定义见 [12](12-tests-and-milestones.md) `:672-679` 与 [09R](09r-bytecode-machine-research.md) `:640-649`） | 生产字节码模型与验证器（B0-A）、生产 VM 执行闭环（B0-B）、前端到 VM 的内部驱动器（B0-C） | 已完成（B0-A/B/C 均已落地；VM 中途取消检查点债项转入 `11/X0`） |
+| 09-B0-B | [生产 VM 执行闭环](09b0b-production-vm.md) | 生产入口 ABI（脚本/`[main]`）、规范化运行参数对象、结构化退出结果、栈回溯与事件接收器生产化 | 已完成（生产入口、前置验证、报告接线和有界事件接收器已落地） |
+| 09-B0-C | [前端到 VM 内部驱动器](09b0c-frontend-to-vm-driver.md) | `xiao-driver` 的运行驱动器、三段错误的统一结构化表示、取消/超时边界 | 已完成（内部驱动器、公共契约测试和 UseDocs 已落地；`B0-C-CANCEL-001` 转入 `11/X0`） |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
 | 11A.1 | [包源协议：决策、待决与风险（待审）](11a1-package-source-protocol-review.md) | 源身份规范化、JSON 权威与 Protobuf 派生、解析键与同一性、canonical JSON、源列表导入的三条规则；含六条待审风险 | 已审并处置（方向保留；源引用语义、导入顺序、摘要信任边界三处已修正） |
@@ -135,7 +135,7 @@ A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码�
 
 08A/U0 已完成统一前端首版：`xiao-driver` 按固定顺序串接解析、模块、类型和生命周期分析，累积诊断并在错误时停止降低；`xiao-ir` 输出覆盖当前已完成静态语义的递归类型化 IR，提供控制流、所有权、释放计划、选择器和错误边界；`IrValidator` 拒绝非法结构，稳定 JSON 快照带版本字段。该阶段不执行用户代码、不启动 VM/LLVM、不实现优化 Pass；接手 09/10 前端消费者时先阅读 [08A 交接记录](08a-u0-frontend-implementation.md) 和对应 [UseDocs 前端/IR](../UseDocs/language/compiler/README.md)。
 
-09 阶段的前置特别研究工程 `09R1 → 09R2 → 09R3` 已完成并冻结：三机型原型、指令编码器、源码映射、79 条共享向量、容器/选择器/集合/迭代/表声明执行路径和 Windows 原生基准均已交付，冻结结论为**栈式机型、`FORMAT_VERSION = 3`、opcode `0..40`**。B0-A 已将 `xiao-bytecode` 与 `xiao-vm` 的实质实现迁入生产 `src/`，`research` 仅保留兼容重导出；B0-B 已接上生产运行契约（`RunRequest`/`run_request` 固定函数 0 与栈式载体，运行前无条件走 `verify_for_execution`，栈回溯经 `PcMap::span_at_pc` 接入 `ReportRecord`，生产事件接收器改为有界 `BoundedSink`）；B0-C（`xiao-driver` 内部驱动器）待续。**冻结七项是本阶段的输入契约而不是待决项**。批次边界、迁移方案与各批可执行清单见 [09-B0. 字节码最小运行闭环](09b0-bytecode-closure.md)、[09-B0-B](09b0b-production-vm.md) 与 [09-B0-C](09b0c-frontend-to-vm-driver.md)。
+09 阶段的前置特别研究工程 `09R1 → 09R2 → 09R3` 已完成并冻结：三机型原型、指令编码器、源码映射、79 条共享向量、容器/选择器/集合/迭代/表声明执行路径和 Windows 原生基准均已交付，冻结结论为**栈式机型、`FORMAT_VERSION = 3`、opcode `0..40`**。B0-A 已将 `xiao-bytecode` 与 `xiao-vm` 的实质实现迁入生产 `src/`，`research` 仅保留兼容重导出；B0-B 已接上生产运行契约（`RunRequest`/`run_request` 固定函数 0 与栈式载体，运行前无条件走 `verify_for_execution`，栈回溯经 `PcMap::span_at_pc` 接入 `ReportRecord`，生产事件接收器改为有界 `BoundedSink`）；B0-C 已在 `xiao-driver` 接上前端到 VM 的内部驱动器（`DriverRequest`/`DriverOutcome`、三段结构化失败、边界取消/超时和公共契约测试）。**冻结七项是本阶段的输入契约而不是待决项**；VM 中途取消检查点记为 `B0-C-CANCEL-001`，出口批次为 `11/X0`。批次边界、迁移方案与各批可执行清单见 [09-B0. 字节码最小运行闭环](09b0-bytecode-closure.md)、[09-B0-B](09b0b-production-vm.md) 与 [09-B0-C](09b0c-frontend-to-vm-driver.md)。
 
 ## 文档变更规则
 

@@ -7,6 +7,28 @@
 > 「`FrontendArtifact` → 字节码 → VM 执行，提供结构化成功、错误、退出码、堆栈和事件结果；
 > `xiao run` 与 TypeScript CLI 接线继续留到 11/X0」。本文**不新增要求**。
 
+### 本批落地记录（2026-09-21）
+
+09-B0-C 已在 `xiao-driver` 落地。`DriverRequest` 把前端请求、B0-B 运行参数、模块/源码
+身份、事件容量和取消/超时控制收在一个库 ABI 中；`FrontendVmDriver` 只编排
+`FrontendCompiler → lower_program → xiao_vm::run_request`，不重新解析源码、推断类型/生命周期，
+也不搬迁基准工具的命名函数到函数零。入口函数仍由生产 ABI 固定为函数零，脚本与 `[main]`
+都沿用 B0-B 的同一入口。
+
+结果采用单一 `DriverOutcome` 枚举，分为 `Frontend`、`Rejected` 和 `Executed` 三段。这样前端
+失败可以保留完整 `FrontendError.diagnostics`，执行后的 `Success/Error/Fatal` 又可以保留
+B0-B 的事件、指标和 `ReportRecord`；若使用 `Result<RunOutcome, DriverError>`，前端诊断和已执行
+故障的结构都会被压扁或另造一层包装。整数退出码仍不冻结，继续留给 11/X0。
+
+取消/超时选择方案 A：驱动器在开始、前端完成、降低完成和 VM 调用前后采样；VM 指令循环
+检查点记为 `B0-C-CANCEL-001`，出口批次为 `11/X0`，不会把边界采样伪装成中途中断能力。
+稳定驱动器编号为 `X09-DRIVER-001`（取消）、`X09-DRIVER-002`（超时）和
+`X09-DRIVER-003`（控制字段不可表示）。公共契约回归位于
+`core/rust/crates/xiao-driver/tests/b0_c_driver.rs`，私有单元测试另守损坏 TAC 的执行前拒绝。
+
+本批没有修改 `FORMAT_VERSION = 3`、opcode `0..40`、09R3 冻结报告、共享向量或
+`tests/benchmarks/reports/`；UseDocs 和模块登记与驱动器一起更新。
+
 ## Agent 交接上下文
 
 ### 接手前提
@@ -27,12 +49,12 @@
 
 | 项 | 现状 |
 | --- | --- |
-| `FrontendArtifact` → `lower_program` 的连接 | **只存在于 `tests/benchmarks/src/main.rs:441-454`**，是 09R3 的一次性工具，不是生产驱动器 |
-| `xiao-driver` 规模 | `frontend.rs` 344 行 + `lib.rs` 13 行，**只有前端**，无执行侧依赖 |
-| `xiao-driver` 登记 | `status = verified`、`stage = 08A`，UseDocs 为 `compiler/README.md` 与 `compiler/frontend/README.md` |
+| `FrontendArtifact` → `lower_program` 的连接 | ✅ 已接入 `xiao-driver/src/run.rs`；基准工具仍保留自己的一次性链路 |
+| `xiao-driver` 规模 | `frontend.rs` 保持前端职责，新增 `run.rs` 作为生产 VM 编排层 |
+| `xiao-driver` 登记 | `status = verified`、`stage = 09-B0-C`，新增 `compiler/driver/README.md` |
 | 生产运行入口 | ✅ B0-B 已交付：`RunRequest` / `run_request`（别名 `run_production`），固定函数 0 与栈式载体 |
 | 退出码 | ❌ 仍未定义（**有意为之**：B0-B 只冻结 `Success/Error/Fatal` 三分支，整数留给 11/X0） |
-| 取消 / 超时 | ❌ **全链未定义**；09 文档 `:44` 把它列为一级工程目标的一条 |
+| 取消 / 超时 | ✅ 驱动器边界采样已实现；VM 中途检查点记为 `B0-C-CANCEL-001`，出口 `11/X0` |
 
 ### 本批交付与不负责
 
@@ -49,14 +71,15 @@
 ### 1.1 `tests/benchmarks/Cargo.lock` 的漏提交（B0-B 遗留）
 
 B0-B 给 `xiao-vm` 加了 `xiao-source` 依赖，`core/rust/Cargo.lock` 提交了，
-**独立 crate 的那份 lock 漏了**。当前工作区有未提交的 +1 行：
+**独立 crate 的那份 lock 漏了**。本批已先用独立 `fix:` 提交补齐：
 
 ```diff
  name = "xiao-vm"
  dependencies = [ ..., + "xiao-source", ]
 ```
 
-本批**第一个提交**把它补上（`fix:` 前缀）。
+提交为 `c2f56ef fix: 补齐基准 crate 的 VM 依赖锁定`；后续依赖变更仍须复跑独立
+`tests/benchmarks` 检查。
 
 ### 1.2 门禁必须带上 `tests/benchmarks`（**结构性盲区**）
 
@@ -164,9 +187,9 @@ program.functions[0] = function;      // 把命名函数搬到入口槽 0
 > 定义稳定的运行请求、运行结果、结构化错误/诊断事件和**取消/超时边界**。传输采用
 > 进程协议还是库 ABI 留到 CLI 集成阶段冻结，但字段语义必须先与第 07、08 阶段一致。
 
-现状：**全链未定义**，B0-B 没有做。
+现状：B0-B 没有做 VM 中途检查点；本批已定义并实现驱动器层边界采样。
 
-**本批要做的最小形状**：在运行请求上定义取消/超时的**语义与字段**，并写清传输层
+**本批采用方案 A**：在运行请求上定义取消/超时的**语义与字段**，并写清传输层
 （进程协议 / 库 ABI）如何注入留到 11。
 
 **但这里有一个必须正面回答的问题**：超时与取消在字节码 VM 里意味着什么？
@@ -174,7 +197,8 @@ program.functions[0] = function;      // 把命名函数搬到入口槽 0
 
 三条路，选一条并写明依据：
 
-- **A**：本批只定义驱动器层接口，VM 侧的检查点显式记为**具名债项**并写明出口批次；
+- **A（已选择）**：本批只定义驱动器层接口，VM 侧的检查点显式记为**具名债项**
+  `B0-C-CANCEL-001`，出口批次为 `11/X0`；
 - **B**：本批接通最小检查点（例如仅在函数调用边界检查），并说明它对 09R3 冻结的
   性能口径意味着什么；
 - **C**：证明本批不需要它，并写明"09 文档 `:44` 的这条由哪个批次兑现"。
@@ -185,8 +209,9 @@ program.functions[0] = function;      // 把命名函数搬到入口槽 0
 
 ## 六、UseDocs 与登记（**`rust.xiao-driver` 是 `verified`**）
 
-实测：`rust.xiao-driver` 的 `status = verified`、`stage = 08A`，UseDocs 指向
-`docs/UseDocs/language/compiler/README.md` 与 `compiler/frontend/README.md`。
+实测：`rust.xiao-driver` 的 `status = verified`、`stage = 09-B0-C`，UseDocs 指向
+`docs/UseDocs/language/compiler/README.md`、`compiler/frontend/README.md` 和新增的
+`compiler/driver/README.md`。
 
 本批改了它，**必须同批**：
 
@@ -256,18 +281,20 @@ B0-B 的正文是三段"为什么"加一段"验证："，**这是本仓目前最
 
 沿用 09R2D 的「撤掉实现 → 用例必须失败 → 还原 → 通过」。**关键验收不是「测试通过」**：
 
-1. **端到端跑通**：一份真实源码经 `FrontendCompiler` → `lower_program` →
-   `verify_for_execution` → `run_request`，拿到结构化结果；**脚本模式与 `[main]`
-   工程模式各一条**。
-2. **三段失败各有断言**：前端失败、验证失败、执行失败三种情况都返回**结构化**结果，
-   且各自的 `code` 稳定（§3 第 3 条）。
-3. **区分度**：注入一个结构错误的 `TacProgram` → 驱动器必须拒绝且**不是** VM 内部崩溃
-   （这是 B0-B 那条测试在驱动器层面的复述）。
-4. **§4.1 有守卫**：驱动器的公开面**没有**"指定入口函数"的参数；若有，必须能说明它不是
-   基准工具那个手法的搬运。
-5. **§5 有结论**：取消/超时要么接通、要么有具名债项与出口批次，**不允许两可**。
-6. **§6 同批完成**：UseDocs 与登记已复核，`check:usedocs` 通过。
-7. **门禁全绿**，**包含** §1.2 的 `tests/benchmarks` 一项。
+1. **端到端跑通（已通过）**：`b0_c_driver.rs` 用真实源码走
+   `FrontendCompiler` → `lower_program` → `verify_for_execution` → `run_request`，脚本模式与
+   `[main]` 工程模式各一条。
+2. **三段失败各有断言（已通过）**：前端失败、验证失败、执行失败都返回结构化结果，
+   且各自的 `code` 稳定；请求字段拒绝另有断言。
+3. **区分度（已通过）**：私有单元测试注入结构错误的 `TacProgram`，驱动器在 VM 前返回
+   `X09-BYTECODE-001`，公共测试另验证损坏 IR 的 `X09-BYTECODE-002`。
+4. **§4.1 有守卫（已通过）**：公开 `DriverRequest` 没有指定入口函数或机型选择字段，
+   函数零由 B0-B 生产 ABI 固定。
+5. **§5 有结论（已通过，保留债项）**：取消/超时采用方案 A；`B0-C-CANCEL-001` 的出口
+   批次是 `11/X0`。
+6. **§6 同批完成（已通过）**：UseDocs、模块登记和入链已同步。
+7. **门禁（已通过）**：Rust workspace 测试、clippy、格式化、文档、`tests/benchmarks`
+   检查、Bun 测试、仓库检查和文档覆盖率均通过。
 
 ---
 

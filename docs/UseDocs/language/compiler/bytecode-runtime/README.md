@@ -1,22 +1,24 @@
 ---
 id: language.compiler.bytecode-runtime
 title: 字节码运行路径
-status: planned
+status: draft
 audience: contributor
 module: rust.xiao-bytecode
-stage: "09R1"
+stage: "09"
 version: "0.1.0"
 related:
   - ../README.md
   - ../ir/README.md
   - ../frontend/README.md
+  - ../driver/README.md
   - ../../../../DevDocs/09r-bytecode-machine-research.md
 ---
 
 # 字节码运行路径
 
-状态：研究路径 `verified`，生产路径 `planned`。09R2 研究 VM 已能执行前端生成并经验证的
-IR/TAC 研究产物；它仍不是面向用户的 `xiao run`，也不会直接把任意源码当作正式字节码运行。
+状态：研究路径 `verified`，生产内部路径已由 09-B0-A/B/C 接通；用户可见的 `xiao run` 仍为
+后续阶段。生产驱动器能执行前端生成并经验证的 IR/TAC，但它仍是内部 Rust ABI，不会直接把
+任意源码当作面向用户的正式字节码命令。
 
 Xiao 的双模式执行从类型化 IR 分叉：`xiao run` 走字节码解释路径，`xiao build` 走 LLVM 原生
 路径。两条路径必须共享同一套类型、溢出、求值顺序、动态检查、随机选择、容器顺序、引用计数、
@@ -43,7 +45,7 @@ Xiao 的双模式执行从类型化 IR 分叉：`xiao run` 走字节码解释路
 
 方法值的动态派发、正式 `.xiaoc` 分段格式、生产 `xiao run` 和 09R3 正式性能门槛仍未开放。研究代码保持在
 `xiao-bytecode/src/research` 与 `xiao-vm/src/research`，
-不构成稳定语言接口。
+不构成稳定语言接口；B0-C 的内部驱动器位于 `xiao-driver/src/run.rs`。
 
 ## 已经确定的部分
 

@@ -8,6 +8,7 @@ stage: "08A"
 version: "0.1.0"
 related:
   - ../README.md
+  - ../driver/README.md
   - ../ir/README.md
   - ../../modules/imports.md
   - ../../../../DevDocs/08a-u0-frontend-implementation.md
@@ -22,6 +23,9 @@ related:
 
 前端只做静态分析，不执行配置值、模块初始化、`init`/`drop` 或用户代码。错误诊断
 中的编号、消息键、参数和源码位置稳定；展示语言由上层国际化配置决定。
+
+成功产物可交给 [前端到 VM 内部驱动器](../driver/README.md) 执行；本页不定义用户可见的
+`xiao run` 或 CLI 接线。
 
 ## 相关页面
 

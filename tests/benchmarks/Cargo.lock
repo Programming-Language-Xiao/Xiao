@@ -124,6 +124,7 @@ dependencies = [
 name = "xiao-driver"
 version = "0.1.0"
 dependencies = [
+ "xiao-bytecode",
  "xiao-config",
  "xiao-diagnostics",
  "xiao-ir",
@@ -132,6 +133,7 @@ dependencies = [
  "xiao-source",
  "xiao-syntax",
  "xiao-types",
+ "xiao-vm",
 ]
 
 [[package]]
