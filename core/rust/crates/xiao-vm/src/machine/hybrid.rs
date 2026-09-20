@@ -6,12 +6,12 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use xiao_bytecode::research::{
+use xiao_bytecode::{
     LiveInterval, RegisterClass, TacFunction, TacReleasePlan, VReg, analyze_liveness,
 };
 use xiao_runtime::{RuntimeResult, RuntimeValue};
 
-use crate::research::carrier::{
+use crate::carrier::{
     Carrier, CarrierContext, CarrierMetrics, MapPoint, empty_register_error,
 };
 
@@ -349,7 +349,7 @@ pub type WindowStackCarrier = HybridCarrier;
 mod tests {
     use super::{HYBRID_WINDOW_CAPACITY, HybridLocation, allocate_locations};
     use std::collections::BTreeMap;
-    use xiao_bytecode::research::{
+    use xiao_bytecode::{
         BlockId, CategoryMap, RegisterClass, TacBlock, TacFunction, TacInstr, TacOp, VReg,
     };
     use xiao_ir::IrSpan;

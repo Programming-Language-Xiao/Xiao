@@ -2,7 +2,7 @@
 
 use super::tags::{set_compare_from_tag, set_compare_tag, set_op_from_tag, set_op_tag};
 use super::*;
-use crate::research::lower::{TacReleaseAction, TacReleasePlan};
+use crate::lower::{TacReleaseAction, TacReleasePlan};
 use std::collections::BTreeMap;
 use xiao_ir::{IR_VERSION, IrArrayShape, IrDictTypeEntry, IrType};
 use xiao_ir::{IrSelectionItemPlan, IrSelectionPlan};
@@ -410,7 +410,7 @@ fn all_ops_program() -> TacProgram {
             transactional: true,
         }],
         random_seed_plans: vec![random_seed_plan],
-        table_definitions: vec![crate::research::TacTableDefinition {
+        table_definitions: vec![crate::TacTableDefinition {
             signature: xiao_ir::IrTableSignature {
                 name: "Example".to_owned(),
                 kind: "instance".to_owned(),

@@ -13,7 +13,7 @@ use super::{
     TAC_RUNTIME_ABI_VERSION, TAC_VERSION, TacAbi, TacArgument, TacBlock, TacConstant, TacFunction,
     TacHandler, TacInstr, TacOp, TacProgram, VReg,
 };
-use crate::research::lower::{TacReleaseAction, TacReleasePlan};
+use crate::lower::{TacReleaseAction, TacReleasePlan};
 use std::collections::BTreeMap;
 use xiao_ir::{IR_VERSION, IrArrayShape, IrDictTypeEntry, IrType};
 
@@ -749,7 +749,7 @@ fn decode_random_seed_plans(
 fn decode_table_definitions(
     reader: &mut Reader<'_>,
     width: OperandWidth,
-) -> Result<Vec<crate::research::tac::TacTableDefinition>, EncodeError> {
+) -> Result<Vec<crate::tac::TacTableDefinition>, EncodeError> {
     let count = reader.count("table_definitions")?;
     let mut tables = Vec::with_capacity(count);
     for _ in 0..count {
@@ -765,7 +765,7 @@ fn decode_table_definitions(
                 return Err(EncodeError::InvalidFormat("重复的表方法".to_owned()));
             }
         }
-        tables.push(crate::research::tac::TacTableDefinition {
+        tables.push(crate::tac::TacTableDefinition {
             signature,
             fields,
             methods,

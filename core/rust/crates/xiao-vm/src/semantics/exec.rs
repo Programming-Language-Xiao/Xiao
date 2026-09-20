@@ -6,7 +6,7 @@
 //! 释放顺序的唯一来源是冻结计划：退出点上执行 `(作用域, 退出边)` 计划，按
 //! `order` 逐条释放。动态错误发生时按同一份计划展开当前作用域栈。
 
-use xiao_bytecode::research::{
+use xiao_bytecode::{
     BlockId, FuncId, PcMap, TacArgument, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
     TacProgram, VReg, build_pc_map,
 };
@@ -21,11 +21,11 @@ use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
 #[path = "tables.rs"]
 mod tables;
 
-use crate::research::carrier::{Carrier, CarrierContext, MapPoint};
-use crate::research::frame::Frame;
-use crate::research::ops;
-use crate::research::run::{RunResult, VmMetrics, VmOptions};
-use crate::research::sink::{VmEvent, VmEventSink};
+use crate::carrier::{Carrier, CarrierContext, MapPoint};
+use crate::frame::Frame;
+use crate::ops;
+use crate::run::{RunResult, VmMetrics, VmOptions};
+use crate::sink::{VmEvent, VmEventSink};
 
 /// 解释过程中的终止原因。
 ///
@@ -111,7 +111,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             sink,
             metrics: VmMetrics::default(),
             options,
-            pc_map: build_pc_map(program, xiao_bytecode::research::OperandWidth::Leb128).ok(),
+            pc_map: build_pc_map(program, xiao_bytecode::OperandWidth::Leb128).ok(),
             tables: std::rc::Rc::new(tables::TableContext::default()),
             pending_base: 0,
         }

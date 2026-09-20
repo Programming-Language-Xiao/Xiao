@@ -852,7 +852,7 @@ pub struct TacProgram {
     /// 单函数观察代码，不能用于命名函数的物理寄存器分配。
     pub categories: CategoryMap,
     /// 冻结的释放计划；解释器在退出点上按 `(作用域, 退出边)` 取出执行。
-    pub plans: Vec<crate::research::lower::TacReleasePlan>,
+    pub plans: Vec<crate::lower::TacReleasePlan>,
     /// 类型阶段规范化选择计划表。
     pub selection_plans: Vec<xiao_ir::IrSelectionPlan>,
     /// 类型阶段事务性广播计划表。
@@ -880,4 +880,4 @@ pub struct TacTableDefinition {
 }
 
 /// 调用签名表；定义与降低器分开，因为它是数据而不是降低规则。
-pub use crate::research::sig::CallSigTable;
+pub use crate::sig::CallSigTable;

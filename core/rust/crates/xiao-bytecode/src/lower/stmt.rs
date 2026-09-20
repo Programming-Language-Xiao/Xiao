@@ -9,8 +9,8 @@ use xiao_ir::{
     IrStatementKind,
 };
 
-use crate::research::lower::Lowerer;
-use crate::research::tac::{
+use crate::lower::Lowerer;
+use crate::tac::{
     ArithOp, CompareOp, RegisterClass, TacConstant, TacHandler, TacInstr, TacOp, VReg,
 };
 

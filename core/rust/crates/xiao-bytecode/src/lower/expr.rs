@@ -10,8 +10,8 @@ use xiao_ir::{
 };
 use xiao_syntax::ScalarType;
 
-use crate::research::lower::Lowerer;
-use crate::research::tac::{
+use crate::lower::Lowerer;
+use crate::tac::{
     ArithOp, CompareOp, PathStep, RegisterClass, SetCompareOp, SetOpKind, TacArgument, TacConstant,
     TacInstr, TacOp, VReg,
 };
@@ -659,7 +659,7 @@ fn lower_call(
             let signature = lowerer.signature_of_function(target).unwrap_or_else(|| {
                 lowerer
                     .signatures
-                    .intern(crate::research::sig::CallSig::dynamic())
+                    .intern(crate::sig::CallSig::dynamic())
             });
             TacOp::Call {
                 callee: target,

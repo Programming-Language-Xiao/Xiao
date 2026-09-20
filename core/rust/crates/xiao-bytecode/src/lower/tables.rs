@@ -1,7 +1,7 @@
 //! 表声明与普通函数表的适配；不重新推断类型或释放计划。
 
 use super::{Lowerer, name_key};
-use crate::research::tac::{
+use crate::tac::{
     FuncId, RegisterClass, SigId, TacArgument, TacInstr, TacOp, TacTableDefinition, VReg,
 };
 use std::collections::BTreeMap;

@@ -2,8 +2,8 @@
 
 use xiao_ir::{IrProgram, ObservedRelease, reconcile_release_plans};
 
-use crate::research::cfg::jump_targets;
-use crate::research::tac::{TacOp, TacProgram, VReg};
+use crate::cfg::jump_targets;
+use crate::tac::{TacOp, TacProgram, VReg};
 
 /// 三地址验证结果。
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

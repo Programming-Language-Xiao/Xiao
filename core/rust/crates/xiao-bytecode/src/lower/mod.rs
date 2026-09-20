@@ -26,8 +26,8 @@ use xiao_ir::{
 use xiao_lifetime::ReleaseActionKind;
 use xiao_syntax::ScalarType;
 
-use crate::research::sig::{CallSig, CallSigTable};
-use crate::research::tac::{
+use crate::sig::{CallSig, CallSigTable};
+use crate::tac::{
     BlockId, CategoryMap, ConstPool, FuncId, RegisterClass, TAC_VERSION, TacAbi, TacBlock,
     TacConstant, TacFunction, TacHandler, TacInstr, TacOp, TacProgram, VReg,
 };
@@ -122,9 +122,9 @@ struct Lowerer<'ir> {
     signatures: CallSigTable,
     functions: Vec<TacFunction>,
     /// 源码顺序的表定义与方法索引。
-    table_definitions: Vec<crate::research::tac::TacTableDefinition>,
+    table_definitions: Vec<crate::tac::TacTableDefinition>,
     /// 所有预登记函数的签名，包含追加的表函数。
-    indexed_signatures: BTreeMap<FuncId, crate::research::tac::SigId>,
+    indexed_signatures: BTreeMap<FuncId, crate::tac::SigId>,
     plans: Vec<TacReleasePlan>,
     /// `IrValue.id` 到源码区间的映射，用于把释放动作还原成寄存器。
     value_spans: HashMap<u32, IrSpan>,
@@ -140,7 +140,7 @@ struct Lowerer<'ir> {
     /// 当前的函数构建状态。
     frame: Frame,
     /// 顶层函数名到调用签名的映射。
-    function_signatures: BTreeMap<String, crate::research::tac::SigId>,
+    function_signatures: BTreeMap<String, crate::tac::SigId>,
     /// 本批次尚未降低的构造；由验证器转成诊断，不静默跳过。
     unsupported: Vec<String>,
     /// 按表达式源码区间收集的 Runtime 检查。
@@ -364,8 +364,8 @@ impl<'ir> Lowerer<'ir> {
         &mut self,
         parameters: &[xiao_ir::IrParameter],
         return_type: &IrType,
-    ) -> crate::research::tac::SigId {
-        use crate::research::sig::ParamKind;
+    ) -> crate::tac::SigId {
+        use crate::sig::ParamKind;
 
         let signature = if parameters.is_empty() && return_type == &IrType::Dynamic {
             CallSig::dynamic()
@@ -407,7 +407,7 @@ impl<'ir> Lowerer<'ir> {
         body: &[IrStatement],
         parameters: &[xiao_ir::IrParameter],
         span: IrSpan,
-        signature: Option<crate::research::tac::SigId>,
+        signature: Option<crate::tac::SigId>,
     ) {
         self.frame = Frame::default();
         let entry = self.new_block(span);
@@ -1031,7 +1031,7 @@ impl<'ir> Lowerer<'ir> {
     }
 
     /// 返回某个函数的调用签名。
-    fn signature_of_function(&self, target: FuncId) -> Option<crate::research::tac::SigId> {
+    fn signature_of_function(&self, target: FuncId) -> Option<crate::tac::SigId> {
         self.indexed_signatures.get(&target).copied()
     }
 

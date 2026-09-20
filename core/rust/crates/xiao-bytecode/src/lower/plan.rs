@@ -5,8 +5,8 @@
 
 use xiao_ir::IrSpan;
 
-use crate::research::lower::Lowerer;
-use crate::research::tac::{TacInstr, TacOp};
+use crate::lower::Lowerer;
+use crate::tac::{TacInstr, TacOp};
 
 impl Lowerer<'_> {
     /// 在退出点上发出一个作用域的释放计划。

@@ -6,7 +6,7 @@
 
 use std::collections::BTreeMap;
 
-use crate::research::tac::{BlockId, TacFunction, TacOp};
+use crate::tac::{BlockId, TacFunction, TacOp};
 
 /// 列出一条指令的所有显式跳转目标。
 #[must_use]

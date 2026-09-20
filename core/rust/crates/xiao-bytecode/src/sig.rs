@@ -11,7 +11,7 @@
 
 use xiao_ir::IrType;
 
-use crate::research::tac::SigId;
+use crate::tac::SigId;
 
 /// 形参类别。
 ///

@@ -4,7 +4,7 @@
 //! 差异全部落在本接口的实现里。接口刻意保持极小：新增方法等于给所有机型加
 //! 负担，也会把机型细节泄回语义核。
 
-use xiao_bytecode::research::{CategoryMap, FuncId, TacFunction, TacProgram, VReg};
+use xiao_bytecode::{CategoryMap, FuncId, TacFunction, TacProgram, VReg};
 use xiao_runtime::{RuntimeError, RuntimeResult, RuntimeValue};
 
 /// 创建一帧载体所需的机型中立上下文。

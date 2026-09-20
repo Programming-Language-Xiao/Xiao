@@ -4,7 +4,7 @@
 //! 矩阵只有一处引用点：将来 Runtime 换实现、或某个机型需要不同的快速路径，
 //! 都只改这一个文件。这里不做任何隐式宽度提升——那由后端在降低时插入显式转换。
 
-use xiao_bytecode::research::{ArithOp, CompareOp, PathStep, SetCompareOp, SetOpKind};
+use xiao_bytecode::{ArithOp, CompareOp, PathStep, SetCompareOp, SetOpKind};
 use xiao_ir::{
     IrSelectionItemPlan, IrSelectionPath, IrSelectionPathSegment, IrSelectionPlan, IrType,
 };
@@ -1133,8 +1133,8 @@ mod tests {
         apply_set_compare, apply_set_op, broadcast_assign, index_get, index_get_dynamic, len,
         new_array, new_dict_column, new_dict_table, new_set, new_tuple, selector_apply,
     };
-    use xiao_bytecode::research::PathStep;
-    use xiao_bytecode::research::{SetCompareOp, SetOpKind};
+    use xiao_bytecode::PathStep;
+    use xiao_bytecode::{SetCompareOp, SetOpKind};
     use xiao_ir::{
         IrArrayShape, IrBroadcastAssignmentPlan, IrSelectionItemPlan, IrSelectionPath,
         IrSelectionPathSegment, IrSelectionPlan, IrSpan, IrStepPlan, IrType,

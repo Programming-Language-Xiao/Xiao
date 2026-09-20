@@ -6,9 +6,9 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::research::cfg::{protected_successors, successors};
-use crate::research::lower::TacReleasePlan;
-use crate::research::tac::{BlockId, TacFunction, TacInstr, TacOp, VReg};
+use crate::cfg::{protected_successors, successors};
+use crate::lower::TacReleasePlan;
+use crate::tac::{BlockId, TacFunction, TacInstr, TacOp, VReg};
 
 /// 一个虚拟寄存器的半开活跃区间 `[start, end)`。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -310,11 +310,11 @@ fn instruction_use_def(
 /// 活跃分析的最小 CFG 与间接读取回归。
 mod tests {
     use super::analyze;
-    use crate::research::{BlockId, CategoryMap, TacBlock, TacFunction, TacInstr, TacOp, VReg};
+    use crate::{BlockId, CategoryMap, TacBlock, TacFunction, TacInstr, TacOp, VReg};
     use xiao_ir::IrSpan;
 
     /// 构造只保留数据流字段的测试函数。
-    fn function(blocks: Vec<TacBlock>, handlers: Vec<crate::research::TacHandler>) -> TacFunction {
+    fn function(blocks: Vec<TacBlock>, handlers: Vec<crate::TacHandler>) -> TacFunction {
         TacFunction {
             name: String::new(),
             signature: None,
@@ -373,7 +373,7 @@ mod tests {
         let span = IrSpan::new(0, 1);
         let value = VReg::new(0);
         let binding = VReg::new(1);
-        let handler = crate::research::TacHandler {
+        let handler = crate::TacHandler {
             protected: (BlockId::new(0), BlockId::new(1)),
             handler: BlockId::new(1),
             scope: 0,
@@ -423,10 +423,10 @@ mod tests {
             Vec::new(),
         );
         function.value_registers.insert(7, value);
-        let plan = crate::research::TacReleasePlan {
+        let plan = crate::TacReleasePlan {
             scope: 0,
             exit: "normal".to_owned(),
-            actions: vec![crate::research::TacReleaseAction {
+            actions: vec![crate::TacReleaseAction {
                 value: 7,
                 order: 0,
                 kind: xiao_lifetime::ReleaseActionKind::Strong,

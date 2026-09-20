@@ -4,7 +4,7 @@
 //! 和调用栈。刻意不做逐指令回调——逐指令观测会污染后续批次的性能基准，也会让
 //! 语义核依赖接收器是否存在。本批次只建立接收器，不实现诊断窗口。
 
-use xiao_bytecode::research::VReg;
+use xiao_bytecode::VReg;
 
 /// 一条结构化调试事件。
 #[derive(Clone, Debug, Eq, PartialEq)]

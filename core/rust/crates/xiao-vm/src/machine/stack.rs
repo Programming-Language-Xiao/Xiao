@@ -3,10 +3,10 @@
 //! 虚拟寄存器直接映射为帧内槽位下标：`dst` 是写入槽位，源操作数从槽位读取。
 //! 这与寄存器机型的差别只在槽位如何分配，不在语义。
 
-use xiao_bytecode::research::VReg;
+use xiao_bytecode::VReg;
 use xiao_runtime::{RuntimeResult, RuntimeValue};
 
-use crate::research::carrier::{
+use crate::carrier::{
     Carrier, CarrierContext, CarrierMetrics, MapPoint, empty_register_error,
 };
 

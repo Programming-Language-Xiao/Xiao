@@ -3,9 +3,9 @@
 //! 帧承载一个函数的载体、运行时作用域栈和返回去向。值本身不在这里，而在
 //! 载体内；帧只保存与机型无关的记账信息。
 
-use xiao_bytecode::research::{BlockId, FuncId, VReg};
+use xiao_bytecode::{BlockId, FuncId, VReg};
 
-use crate::research::carrier::Carrier;
+use crate::carrier::Carrier;
 
 /// 一个执行中的调用帧。
 #[derive(Debug)]

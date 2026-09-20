@@ -6,12 +6,12 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use xiao_bytecode::research::{
+use xiao_bytecode::{
     LiveInterval, RegisterClass, TacFunction, TacReleasePlan, VReg, analyze_liveness,
 };
 use xiao_runtime::{RuntimeResult, RuntimeValue};
 
-use crate::research::carrier::{Carrier, CarrierContext, CarrierMetrics, empty_register_error};
+use crate::carrier::{Carrier, CarrierContext, CarrierMetrics, empty_register_error};
 
 /// 一个虚拟寄存器在分类型载体中的稳定物理位置。
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -394,7 +394,7 @@ pub type TypedRegisterCarrier = RegisterCarrier;
 /// 分类型分配器的确定性、复用与特殊类别回归。
 mod tests {
     use super::{RegisterLocation, allocate_locations};
-    use xiao_bytecode::research::{
+    use xiao_bytecode::{
         BlockId, CategoryMap, RegisterClass, TacBlock, TacFunction, TacInstr, TacOp, VReg,
     };
     use xiao_ir::IrSpan;
@@ -472,10 +472,10 @@ mod tests {
         categories.insert(value, RegisterClass::ObjHandle);
         let mut function = function(categories, Vec::new());
         function.value_registers.insert(11, value);
-        let plan = xiao_bytecode::research::TacReleasePlan {
+        let plan = xiao_bytecode::TacReleasePlan {
             scope: 0,
             exit: "normal".to_owned(),
-            actions: vec![xiao_bytecode::research::TacReleaseAction {
+            actions: vec![xiao_bytecode::TacReleaseAction {
                 value: 11,
                 order: 0,
                 kind: xiao_lifetime::ReleaseActionKind::Strong,

@@ -3,12 +3,12 @@
 use xiao_diagnostics::{FatalError, XiaoError};
 use xiao_runtime::RuntimeValue;
 
-use crate::research::carrier::Carrier;
-use crate::research::machine::hybrid::HybridCarrier;
-use crate::research::machine::register::RegisterCarrier;
-use crate::research::machine::stack::StackCarrier;
-use crate::research::semantics::{BoundArgument, Vm};
-use crate::research::sink::{RecordingSink, VmEvent};
+use crate::carrier::Carrier;
+use crate::machine::hybrid::HybridCarrier;
+use crate::machine::register::RegisterCarrier;
+use crate::machine::stack::StackCarrier;
+use crate::semantics::{BoundArgument, Vm};
+use crate::sink::{RecordingSink, VmEvent};
 
 /// 一次运行的结构化结果。
 ///
@@ -86,7 +86,7 @@ pub struct VmMetrics {
     /// 需要建立栈映射的程序点数量（R1-F 的机型分界）。
     ///
     /// 栈式数跳转目标、混合式数调用点与帧尾、分类型寄存器式恒为 0；
-    /// 详见 [`crate::research::carrier::CarrierMetrics::stack_map_entries`]。
+    /// 详见 [`crate::carrier::CarrierMetrics::stack_map_entries`]。
     pub stack_map_entries: usize,
     /// 跨调用保存值的次数。
     pub call_save_count: u64,
@@ -110,14 +110,14 @@ pub struct RunOutcome {
 
 /// 用栈式载体运行一份三地址产物并记录全部事件。
 #[must_use]
-pub fn run(program: &xiao_bytecode::research::TacProgram, options: VmOptions) -> RunOutcome {
+pub fn run(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcome {
     run_with::<StackCarrier>(program, options)
 }
 
 /// 使用指定静态载体运行一份三地址产物并记录全部事件。
 #[must_use]
 pub fn run_with<C: Carrier>(
-    program: &xiao_bytecode::research::TacProgram,
+    program: &xiao_bytecode::TacProgram,
     options: VmOptions,
 ) -> RunOutcome {
     let mut vm = Vm::<C, RecordingSink>::new(program, options, RecordingSink::new());
@@ -137,7 +137,7 @@ pub fn run_with<C: Carrier>(
 /// 声明顺序绑定，不承诺生产 VM 的脚本调用 ABI。
 #[must_use]
 pub fn run_with_values<C: Carrier>(
-    program: &xiao_bytecode::research::TacProgram,
+    program: &xiao_bytecode::TacProgram,
     options: VmOptions,
     arguments: &[RuntimeValue],
 ) -> RunOutcome {
@@ -163,7 +163,7 @@ pub fn run_with_values<C: Carrier>(
 /// 使用指定种子的栈式载体运行一份三地址产物。
 #[must_use]
 pub fn run_with_seed(
-    program: &xiao_bytecode::research::TacProgram,
+    program: &xiao_bytecode::TacProgram,
     options: VmOptions,
     seed: u128,
 ) -> RunOutcome {
@@ -186,7 +186,7 @@ pub fn run_with_seed(
 /// 使用指定种子的任意静态载体运行一份三地址产物。
 #[must_use]
 pub fn run_with_machine_seed<C: Carrier>(
-    program: &xiao_bytecode::research::TacProgram,
+    program: &xiao_bytecode::TacProgram,
     options: VmOptions,
     seed: u128,
 ) -> RunOutcome {
@@ -205,7 +205,7 @@ pub fn run_with_machine_seed<C: Carrier>(
 /// 用分类型寄存器载体运行一份三地址产物。
 #[must_use]
 pub fn run_register(
-    program: &xiao_bytecode::research::TacProgram,
+    program: &xiao_bytecode::TacProgram,
     options: VmOptions,
 ) -> RunOutcome {
     run_with::<RegisterCarrier>(program, options)
@@ -213,6 +213,6 @@ pub fn run_register(
 
 /// 用混合式窗口/求值栈载体运行一份三地址产物。
 #[must_use]
-pub fn run_hybrid(program: &xiao_bytecode::research::TacProgram, options: VmOptions) -> RunOutcome {
+pub fn run_hybrid(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcome {
     run_with::<HybridCarrier>(program, options)
 }
