@@ -17,6 +17,7 @@ use xiao_diagnostics::{
     XiaoError,
 };
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
+use xiao_source::SourceSpan;
 use xiao_syntax::ScalarType;
 /// 表生命周期回调和执行上下文适配。
 #[path = "tables.rs"]
@@ -88,6 +89,37 @@ struct PendingFault {
     origin: BlockId,
 }
 
+/// 一次运行的模块和源码身份；不进入冻结 TAC/字节码布局。
+#[derive(Clone, Debug)]
+pub(crate) struct VmMetadata {
+    /// 事件和调用栈使用的逻辑模块名。
+    pub(crate) module_name: String,
+    /// 调用栈使用的源码路径或稳定内存来源名。
+    pub(crate) source_name: String,
+    /// 入口模式对应的源码跨度，供缺失 pc 映射时回退。
+    pub(crate) entry_span: Option<xiao_ir::IrSpan>,
+}
+
+impl VmMetadata {
+    /// 创建一次运行的身份上下文。
+    pub(crate) fn new(
+        module_name: String,
+        source_name: String,
+        entry_span: Option<xiao_ir::IrSpan>,
+    ) -> Self {
+        Self {
+            module_name,
+            source_name,
+            entry_span,
+        }
+    }
+
+    /// 为研究兼容入口建立不会改变既有事件含义的默认上下文。
+    fn legacy(program: &TacProgram) -> Self {
+        Self::new(program.abi.target.clone(), "<unknown>".to_owned(), None)
+    }
+}
+
 /// 三地址解释器。
 pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     program: &'p TacProgram,
@@ -101,11 +133,23 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     tables: std::rc::Rc<tables::TableContext>,
     /// 当前回调不能消费进入前已经挂起的清理错误。
     pending_base: usize,
+    /// 模块和源码身份。
+    metadata: VmMetadata,
 }
 
 impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     /// 创建一个解释器。
     pub fn new(program: &'p TacProgram, options: VmOptions, sink: S) -> Self {
+        Self::new_with_metadata(program, options, sink, VmMetadata::legacy(program))
+    }
+
+    /// 创建一个带模块/源码身份的解释器。
+    pub(crate) fn new_with_metadata(
+        program: &'p TacProgram,
+        options: VmOptions,
+        sink: S,
+        metadata: VmMetadata,
+    ) -> Self {
         Self {
             program,
             frames: Vec::new(),
@@ -115,6 +159,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             pc_map: build_pc_map(program, xiao_bytecode::OperandWidth::Leb128).ok(),
             tables: std::rc::Rc::new(tables::TableContext::default()),
             pending_base: 0,
+            metadata,
         }
     }
 
@@ -142,25 +187,29 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         self.run_with_value().0
     }
 
-    /// 从脚本入口执行并保留返回值，供研究运行入口构造可观察结果。
-    ///
-    /// 研究 VM 的公开兼容入口 [`Self::run`] 仍只返回结构化状态；返回值只在
-    /// `RunOutcome` 中作为测试和诊断观察面暴露，不构成生产 VM API。
+    /// 从统一入口执行并保留显式返回值，供运行入口构造结构化结果。
     pub(crate) fn run_with_value(&mut self) -> (RunResult, Option<RuntimeValue>) {
         self.run_with_arguments(&[])
     }
 
-    /// 从脚本入口执行并把位置实参绑定到入口形参。
+    /// 从统一入口执行并把位置实参绑定到入口形参。
     ///
-    /// 该入口只供研究向量构造真实动态边界；生产 VM 尚未承诺脚本入口的
-    /// 参数 ABI。调用方负责按入口函数声明顺序传入参数。
+    /// 该入口只由研究兼容入口使用；生产请求固定不注入外部形参，脚本和
+    /// `[main]` 工程入口都从函数 0 开始执行。
     pub(crate) fn run_with_arguments(
         &mut self,
         arguments: &[BoundArgument],
     ) -> (RunResult, Option<RuntimeValue>) {
-        let program = self.program;
+        if let Err(error) = self.options.validate() {
+            let fatal = FatalError::runtime_invariant(format!("运行参数无效：{error}"));
+            self.tables.fatal.set(true);
+            self.sink.record(VmEvent::FatalRaised {
+                code: fatal.code().to_owned(),
+            });
+            return (RunResult::Fatal(fatal), None);
+        }
         self.sink.record(VmEvent::ModuleLoaded {
-            module: program.abi.target.clone(),
+            module: self.metadata.module_name.clone(),
         });
         match self.execute(FuncId::new(0), arguments, None) {
             Ok(value) => (RunResult::Success, value),
@@ -302,8 +351,26 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         let backend = pc.map_or_else(BackendLocation::empty, |pc| {
             BackendLocation::empty().with_bytecode_offset(pc as u64)
         });
-        let stack_frame =
-            StackFrame::user(self.program.abi.target.clone(), function_name).with_backend(backend);
+        let span = pc
+            .and_then(|pc| {
+                self.pc_map
+                    .as_ref()
+                    .and_then(|map| map.span_at_pc(function, pc))
+            })
+            .or_else(|| {
+                if function == FuncId::new(0) {
+                    self.metadata.entry_span
+                } else {
+                    self.program
+                        .functions
+                        .get(function.get() as usize)
+                        .map(|item| item.span)
+                }
+            })
+            .and_then(|span| SourceSpan::new(span.start, span.end));
+        let stack_frame = StackFrame::user(self.metadata.module_name.clone(), function_name)
+            .with_source(self.metadata.source_name.clone(), span)
+            .with_backend(backend);
         match fault {
             Fault::Error(error) => Fault::Error(error.with_stack_frame(stack_frame)),
             Fault::Fatal(fatal) => Fault::Fatal(fatal.with_stack_frame(stack_frame)),

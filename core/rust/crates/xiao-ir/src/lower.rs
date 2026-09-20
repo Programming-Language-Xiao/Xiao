@@ -989,22 +989,7 @@ fn random_mode_name(mode: RandomMode) -> &'static str {
 
 /// 返回运行时检查类别的稳定名称。
 fn runtime_check_kind_name(kind: xiao_types::RuntimeCheckKind) -> &'static str {
-    match kind {
-        xiao_types::RuntimeCheckKind::NumericRange => "numeric_range",
-        xiao_types::RuntimeCheckKind::StringBoolean => "string_boolean",
-        xiao_types::RuntimeCheckKind::DynamicConversion => "dynamic_conversion",
-        xiao_types::RuntimeCheckKind::Arithmetic => "arithmetic",
-        xiao_types::RuntimeCheckKind::SelectorBounds => "selector_bounds",
-        xiao_types::RuntimeCheckKind::SelectorStep => "selector_step",
-        xiao_types::RuntimeCheckKind::RandomCount => "random_count",
-        xiao_types::RuntimeCheckKind::RandomSeed => "random_seed",
-        xiao_types::RuntimeCheckKind::SetHashability => "set_hashability",
-        xiao_types::RuntimeCheckKind::SetMembership => "set_membership",
-        xiao_types::RuntimeCheckKind::SetOperation => "set_operation",
-        xiao_types::RuntimeCheckKind::SetComparison => "set_comparison",
-        xiao_types::RuntimeCheckKind::BooleanCondition => "boolean_condition",
-        xiao_types::RuntimeCheckKind::Iterable => "iterable",
-    }
+    kind.as_name()
 }
 
 /// 返回模块形态的稳定名称。
@@ -1136,45 +1121,13 @@ mod tests {
     /// 当前降低器的白名单或有意保留的未支持清单；新增变体不能静默掉进兜底。
     #[test]
     fn runtime_check_kind_bridge_is_exhaustive() {
-        let all = [
-            RuntimeCheckKind::NumericRange,
-            RuntimeCheckKind::StringBoolean,
-            RuntimeCheckKind::DynamicConversion,
-            RuntimeCheckKind::Arithmetic,
-            RuntimeCheckKind::SelectorBounds,
-            RuntimeCheckKind::SelectorStep,
-            RuntimeCheckKind::RandomCount,
-            RuntimeCheckKind::RandomSeed,
-            RuntimeCheckKind::SetHashability,
-            RuntimeCheckKind::SetMembership,
-            RuntimeCheckKind::SetOperation,
-            RuntimeCheckKind::SetComparison,
-            RuntimeCheckKind::BooleanCondition,
-            RuntimeCheckKind::Iterable,
-        ];
-        let supported = [
-            "numeric_range",
-            "string_boolean",
-            "dynamic_conversion",
-            "arithmetic",
-            "selector_bounds",
-            "selector_step",
-            "random_count",
-            "random_seed",
-            "set_hashability",
-            "set_membership",
-            "set_operation",
-            "set_comparison",
-            "boolean_condition",
-            "iterable",
-        ];
-        let intentionally_unsupported: [&str; 0] = [];
+        let all = RuntimeCheckKind::all();
 
         let names = all
             .into_iter()
             .map(runtime_check_kind_name)
             .collect::<Vec<_>>();
-        assert_eq!(names.len(), 14);
+        assert_eq!(names.len(), RuntimeCheckKind::all().len());
         assert_eq!(
             names
                 .iter()
@@ -1184,11 +1137,17 @@ mod tests {
         );
         for name in names {
             assert!(
-                supported.contains(&name) || intentionally_unsupported.contains(&name),
-                "RuntimeCheckKind {name} 未列入支持或显式未支持清单"
+                RuntimeCheckKind::from_name(name).is_some(),
+                "RuntimeCheckKind {name} 未列入共享名称表"
             );
         }
-        assert!(supported.contains(&"string_boolean"));
-        assert!(supported.contains(&"iterable"));
+        assert_eq!(
+            runtime_check_kind_name(RuntimeCheckKind::StringBoolean),
+            "string_boolean"
+        );
+        assert_eq!(
+            runtime_check_kind_name(RuntimeCheckKind::Iterable),
+            "iterable"
+        );
     }
 }

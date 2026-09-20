@@ -823,23 +823,7 @@ impl<'ir> Lowerer<'ir> {
         kinds: Vec<(String, Option<IrType>)>,
     ) {
         for (kind, expected) in kinds {
-            if !matches!(
-                kind.as_str(),
-                "boolean_condition"
-                    | "arithmetic"
-                    | "numeric_range"
-                    | "dynamic_conversion"
-                    | "string_boolean"
-                    | "selector_bounds"
-                    | "selector_step"
-                    | "random_count"
-                    | "random_seed"
-                    | "set_hashability"
-                    | "set_membership"
-                    | "set_operation"
-                    | "set_comparison"
-                    | "iterable"
-            ) {
+            if xiao_types::RuntimeCheckKind::from_name(&kind).is_none() {
                 self.record_unsupported(format!("运行时检查尚未降低：{kind}"));
                 continue;
             }

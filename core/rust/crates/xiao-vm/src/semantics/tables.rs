@@ -90,12 +90,14 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 .clone();
             let context = Rc::clone(&self.tables);
             let options = self.options;
+            let metadata = self.metadata.clone();
             runtime = runtime.with_drop_executor(move |object| {
                 if context.fatal.get() {
                     return Ok(());
                 }
                 let mut vm =
                     Vm::<C, HookSink>::new(&program, options, HookSink(Rc::clone(&context)));
+                vm.metadata = metadata.clone();
                 vm.tables = Rc::clone(&context);
                 vm.pending_base = context.pending.borrow().len();
                 let result = vm.execute(

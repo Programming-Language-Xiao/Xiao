@@ -6,12 +6,19 @@
 
 use xiao_bytecode::VReg;
 
+use crate::run::VmMetrics;
+
+/// 生产事件接收器的默认容量。
+pub const DEFAULT_EVENT_CAPACITY: usize = 256;
+/// 生产事件接收器允许的最大容量。
+pub const MAX_EVENT_CAPACITY: usize = 1_000_000;
+
 /// 一条结构化调试事件。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VmEvent {
     /// 模块开始执行。
     ModuleLoaded {
-        /// 模块标签；当前内存执行基线使用目标平台描述。
+        /// 运行请求提供的逻辑模块身份。
         module: String,
     },
     /// 进入一个函数。
@@ -105,6 +112,25 @@ pub enum VmEvent {
         /// 当前指令在块内的序号。
         instruction: usize,
     },
+    /// 一次运行完成时的聚合指标。
+    Metrics {
+        /// 执行的指令条数。
+        instructions: u64,
+        /// 达到过的最大调用深度。
+        max_call_depth: usize,
+        /// 载体占用的历史峰值。
+        max_stack_depth: usize,
+        /// 按冻结计划释放的值的数量。
+        releases: usize,
+        /// 写入独立帧槽的次数。
+        spill_count: u64,
+        /// 需要建立栈映射的程序点数量。
+        stack_map_entries: usize,
+        /// 跨调用保存值的次数。
+        call_save_count: u64,
+        /// 因容量上限丢弃的事件数量。
+        dropped_events: usize,
+    },
 }
 
 /// 接收调试事件的目标。
@@ -159,4 +185,120 @@ impl VmEventSink for RecordingSink {
     fn record(&mut self, event: VmEvent) {
         self.events.push(event);
     }
+}
+
+/// 有界的生产事件接收器。
+///
+/// 接收器达到容量后丢弃新来的普通事件并递增 [`Self::dropped_events`]，不阻塞
+/// 解释器，也不改变执行顺序或释放计划。终止错误事件会优先挤出一条普通事件；
+/// 完成指标也会尽量保留。研究测试应继续使用 [`RecordingSink`]，因为它不丢弃事件。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct BoundedSink {
+    capacity: usize,
+    events: Vec<VmEvent>,
+    dropped_events: usize,
+}
+
+impl BoundedSink {
+    /// 创建一个指定容量的有界接收器。
+    #[must_use]
+    pub fn new(capacity: usize) -> Self {
+        Self {
+            capacity,
+            events: Vec::with_capacity(capacity.min(DEFAULT_EVENT_CAPACITY)),
+            dropped_events: 0,
+        }
+    }
+
+    /// 创建使用默认容量的生产接收器。
+    #[must_use]
+    pub fn default_capacity() -> Self {
+        Self::new(DEFAULT_EVENT_CAPACITY)
+    }
+
+    /// 返回容量上限。
+    #[must_use]
+    pub const fn capacity(&self) -> usize {
+        self.capacity
+    }
+
+    /// 返回已丢弃的普通事件数量。
+    #[must_use]
+    pub const fn dropped_events(&self) -> usize {
+        self.dropped_events
+    }
+
+    /// 返回当前保留的事件。
+    #[must_use]
+    pub fn events(&self) -> &[VmEvent] {
+        &self.events
+    }
+
+    /// 取出当前保留的事件。
+    #[must_use]
+    pub fn into_events(self) -> Vec<VmEvent> {
+        self.events
+    }
+
+    /// 追加一条完成指标，并为它保留容量。
+    pub fn record_metrics(&mut self, metrics: VmMetrics) {
+        if self.capacity == 0 {
+            self.dropped_events = self.dropped_events.saturating_add(1);
+            return;
+        }
+        if self.events.len() >= self.capacity {
+            if let Some(index) = self
+                .events
+                .iter()
+                .position(|event| !is_priority_event(event))
+            {
+                self.events.remove(index);
+                self.dropped_events = self.dropped_events.saturating_add(1);
+            } else {
+                self.dropped_events = self.dropped_events.saturating_add(1);
+                return;
+            }
+        }
+        self.events.push(VmEvent::Metrics {
+            instructions: metrics.instructions,
+            max_call_depth: metrics.max_call_depth,
+            max_stack_depth: metrics.max_stack_depth,
+            releases: metrics.releases,
+            spill_count: metrics.spill_count,
+            stack_map_entries: metrics.stack_map_entries,
+            call_save_count: metrics.call_save_count,
+            dropped_events: self.dropped_events,
+        });
+    }
+}
+
+impl VmEventSink for BoundedSink {
+    /// 在容量内保留事件，超限时按丢弃新事件策略记账。
+    fn record(&mut self, event: VmEvent) {
+        if self.events.len() < self.capacity {
+            self.events.push(event);
+        } else if is_priority_event(&event) {
+            if let Some(index) = self
+                .events
+                .iter()
+                .position(|existing| !is_priority_event(existing))
+            {
+                self.events.remove(index);
+                self.events.push(event);
+                self.dropped_events = self.dropped_events.saturating_add(1);
+            } else {
+                self.dropped_events = self.dropped_events.saturating_add(1);
+            }
+        } else {
+            self.dropped_events = self.dropped_events.saturating_add(1);
+        }
+    }
+}
+
+/// 判断一条事件是否应在容量压力下优先保留。
+fn is_priority_event(event: &VmEvent) -> bool {
+    matches!(
+        event,
+        VmEvent::ErrorRaised { .. } | VmEvent::FatalRaised { .. }
+    )
 }

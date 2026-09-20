@@ -85,6 +85,78 @@ pub enum RuntimeCheckKind {
     Iterable,
 }
 
+impl RuntimeCheckKind {
+    /// 返回运行时检查的稳定名称。
+    #[must_use]
+    pub const fn as_name(self) -> &'static str {
+        match self {
+            Self::NumericRange => "numeric_range",
+            Self::StringBoolean => "string_boolean",
+            Self::DynamicConversion => "dynamic_conversion",
+            Self::Arithmetic => "arithmetic",
+            Self::SelectorBounds => "selector_bounds",
+            Self::SelectorStep => "selector_step",
+            Self::RandomCount => "random_count",
+            Self::RandomSeed => "random_seed",
+            Self::SetHashability => "set_hashability",
+            Self::SetMembership => "set_membership",
+            Self::SetOperation => "set_operation",
+            Self::SetComparison => "set_comparison",
+            Self::BooleanCondition => "boolean_condition",
+            Self::Iterable => "iterable",
+        }
+    }
+
+    /// 将降低器携带的稳定名称还原为检查类别。
+    ///
+    /// 检查名称由类型层统一维护，IR 和字节码层都消费这一入口，避免两层
+    /// 各自维护一份容易漂移的白名单。
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Self> {
+        Some(match name {
+            "numeric_range" => Self::NumericRange,
+            "string_boolean" => Self::StringBoolean,
+            "dynamic_conversion" => Self::DynamicConversion,
+            "arithmetic" => Self::Arithmetic,
+            "selector_bounds" => Self::SelectorBounds,
+            "selector_step" => Self::SelectorStep,
+            "random_count" => Self::RandomCount,
+            "random_seed" => Self::RandomSeed,
+            "set_hashability" => Self::SetHashability,
+            "set_membership" => Self::SetMembership,
+            "set_operation" => Self::SetOperation,
+            "set_comparison" => Self::SetComparison,
+            "boolean_condition" => Self::BooleanCondition,
+            "iterable" => Self::Iterable,
+            _ => return None,
+        })
+    }
+
+    /// 返回首版全部可降低检查类别。
+    ///
+    /// 数组用于穷尽性测试和跨层桥接；新增枚举变体时必须同步更新这里，
+    /// 从而让类型层测试在同一批次暴露接线缺口。
+    #[must_use]
+    pub const fn all() -> [Self; 14] {
+        [
+            Self::NumericRange,
+            Self::StringBoolean,
+            Self::DynamicConversion,
+            Self::Arithmetic,
+            Self::SelectorBounds,
+            Self::SelectorStep,
+            Self::RandomCount,
+            Self::RandomSeed,
+            Self::SetHashability,
+            Self::SetMembership,
+            Self::SetOperation,
+            Self::SetComparison,
+            Self::BooleanCondition,
+            Self::Iterable,
+        ]
+    }
+}
+
 /// 一个带源码区间的运行时检查标记。
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct RuntimeCheck {

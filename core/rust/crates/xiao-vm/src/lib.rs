@@ -32,13 +32,18 @@ pub use machine::register::{RegisterCarrier, RegisterLocation, TypedRegisterCarr
 pub use machine::stack::StackCarrier;
 /// 重导出运行入口、结果与指标。
 pub use run::{
-    RunOutcome, RunResult, VmMetrics, VmOptions, run, run_hybrid, run_register, run_with,
-    run_with_machine_seed, run_with_seed, run_with_values,
+    DEFAULT_MAX_CALL_DEPTH, MAX_MAX_CALL_DEPTH, RunOutcome, RunRequest, RunRequestError, RunResult,
+    VM_OPTIONS_CODE, VM_REQUEST_CODE, VmMetrics, VmOptions, VmOptionsError, run, run_checked,
+    run_hybrid, run_production, run_register, run_request, run_with, run_with_machine_seed,
+    run_with_seed, run_with_values,
 };
 /// 重导出语义核与终止原因。
 pub use semantics::{Fault, Vm};
 /// 重导出调试事件与接收器。
-pub use sink::{NullSink, RecordingSink, VmEvent, VmEventSink};
+pub use sink::{
+    BoundedSink, DEFAULT_EVENT_CAPACITY, MAX_EVENT_CAPACITY, NullSink, RecordingSink, VmEvent,
+    VmEventSink,
+};
 
 /// 09R 冻结产物的兼容重导出层；沿革见 09R2D，冻结依据见 09R3。
 pub mod research;

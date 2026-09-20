@@ -13,8 +13,8 @@ use xiao_bytecode::research::lower_program;
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_runtime::{ArrayHandle, RuntimeValue, SetHandle, TupleHandle};
 use xiao_vm::research::{
-    Carrier, HybridCarrier, RegisterCarrier, RunResult, StackCarrier, VmEvent, VmOptions, run_with,
-    run_with_values,
+    Carrier, DEFAULT_MAX_CALL_DEPTH, HybridCarrier, RegisterCarrier, RunResult, StackCarrier,
+    VmEvent, VmOptions, run_with, run_with_values,
 };
 
 /// 一份语义向量文件。
@@ -101,7 +101,7 @@ fn observe<C: Carrier>(case: &VectorCase) -> Expectation {
         tac.functions[0] = function;
     }
     let options = VmOptions {
-        max_call_depth: case.max_call_depth.unwrap_or(1024),
+        max_call_depth: case.max_call_depth.unwrap_or(DEFAULT_MAX_CALL_DEPTH),
     };
     let arguments = case
         .arguments

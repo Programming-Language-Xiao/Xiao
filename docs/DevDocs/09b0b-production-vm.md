@@ -34,11 +34,11 @@
 | `xiao-runtime` | ✅ 已接：`RuntimeValue`、`RuntimeDriver`、`CatchRoute`、表状态机 |
 | 表生命周期 | ✅ 已接：`semantics/tables.rs` |
 | 容器与选择器 | ✅ 已接：`ops.rs` |
-| 统一错误 | ⚠️ **部分**：`XiaoError`/`FatalError` 在用；`StackFrame` 已在 `semantics/exec.rs:306` 构造，但只填了函数名与后端，**没有源码位置**；`ReportRecord`（07-A）**未被 VM 使用** |
-| 调试事件接收器 | ⚠️ 有 `sink.rs`，但 `RecordingSink` 是**记录到 `Vec` 的研究实现** |
-| **生产入口 ABI** | ❌ **未定义**（`run.rs` 自己声明"不承诺生产 ABI"） |
+| 统一错误 | ✅ `RunOutcome.report` 接入 `ReportRecord`；`StackFrame` 通过 `PcMap::span_at_pc` 填入源码路径和 `SourceSpan` |
+| 调试事件接收器 | ✅ `RecordingSink` 保留给研究测试；生产入口使用有界 `BoundedSink`，按丢弃新事件策略计数并保留完成指标 |
+| **生产入口 ABI** | ✅ `RunRequest`/`run_request`（别名 `run_production`）固定函数 0 和栈式载体 |
 | **退出码** | ❌ **全仓未定义**（grep `exit_code` / `ExitCode` / `退出码` 在 `xiao-vm`、`xiao-driver`、`xiao-diagnostics` 均无命中） |
-| **`entry_mode` 消费** | ❌ **降低器完全忽略 `IrEntryMode`**（见 §2.1） |
+| **`entry_mode` 消费** | ✅ 不新增第二入口；请求根据 `Script`/`Project` 选择入口诊断跨度，执行均走函数 0 |
 
 ### 本批交付与不负责
 
@@ -245,6 +245,32 @@ B0-A 把两边**都**同步了，但**没有任何机制保证一致**；而且 
 - 修改会触碰 `verified` 模块的 UseDocs 与登记，**同批复核**。
 - `A0-SIZE-001`：`exec.rs` 1536 行、`ops.rs` 1714 行——本批若显著增长，超 2500 行必须
   走旁置 md 豁免的四个小节。
+
+---
+
+## 八点一、本批落地记录
+
+本批已经把生产执行契约接到 `xiao-vm`：
+
+1. `RunRequest` 同时携带 `IrProgram`、`TacProgram`、规范化参数、模块/源码身份和事件容量；
+   `run_request` 先调用 `verify_for_execution`，验证失败以 `FatalError::corrupt_artifact`
+   返回，并把验证编号、路径和原因放入结构化报告。
+2. 脚本模式与 `IrEntryMode::Project` 都执行降低器已经固定的函数 0；工程入口的表头跨度
+   用作入口诊断回退位置，没有重新解析源码，也没有新增参数或第二入口。
+3. `RunOutcome.value` 现在是稳定的入口显式返回值观察面；两种入口没有显式返回值时均为
+   `None`。旧 `run_with_values` 仅保留给研究向量的形参注入。
+4. `VmOptions::validate` 集中提供默认调用深度、零值和上限诊断；生产请求的事件容量和身份
+   也在进入 VM 前校验。整数退出码仍留给 11/X0，本批只冻结 `Success/Error/Fatal` 三分支。
+5. `PcMap::span_at_pc` 的结果通过 `StackFrame::with_source` 接入 `ReportRecord`；
+   研究兼容入口继续使用默认身份，生产请求必须提供真实模块/源码身份（构造器提供稳定内存默认名）。
+6. 生产默认使用固定容量 `BoundedSink`，超限普通事件丢弃并计数，终止错误和完成指标事件
+   尽量保留；完整指标始终由 `RunOutcome.metrics` 提供。`RecordingSink` 和三种载体未删除，
+   事件接收策略只影响观测，不参与语义和释放决策。
+7. `RuntimeCheckKind` 名称与反查集中到 `xiao-types`，IR 桥接和字节码降低共同消费，避免
+   类型层测试清单与生产白名单再次漂移。
+
+本批没有改动 `FORMAT_VERSION = 3`、opcode 0..40、共享规格向量或 09R3 基准报告，也没有
+冻结 CLI 整数退出码。
 
 ---
 

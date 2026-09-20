@@ -409,10 +409,11 @@ B0 会大量触碰已交付的测试与登记文件，**触发这三类的概率
    `cargo fmt --all -- --check`、`cargo doc --workspace --no-deps`、`bun test`、
    `bun run check`、`bun run check:coverage`。
 
-B0-A 本轮已完成迁移、验证器加固、兼容别名回归和文档登记；提交正文须说明
+B0-A 本轮已完成迁移、验证器加固、兼容别名回归和文档登记；B0-B 已接入生产请求、执行前验证、
+统一报告、源码栈帧和有界事件接收器；提交正文须说明
 `string_boolean` 接通、`unsupported` 改为内部一致性错误、类别校验采用函数局部映射的
 原因，并明确 `FORMAT_VERSION = 3` 与 09R3 冻结报告未改动。B0-B/B0-C 的退出条件仍待
-后续批次分别验收。
+完整门禁和 B0-C 的前端驱动器分别验收。
 
 ---
 

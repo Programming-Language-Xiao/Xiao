@@ -18,7 +18,9 @@ Rust 字节码唯一执行实现：解释循环、调用栈、局部槽、模块
 `semantics/` 只认识三地址指令与 `carrier.rs` 的窄接口，不认识「栈」这个词；
 `machine/stack.rs`、`machine/register.rs`、`machine/hybrid.rs` 分别实现三种载体；`ops.rs`
 统一提供算术、精确索引、高级选择、随机和事务性广播，`sink.rs` 记录结构化事件，`run.rs`
-提供结果与指标；研究入口的 `RunOutcome.value` 只用于观察显式返回值，不是生产 API。
+提供结果与指标。`run_request`/`run_production` 是生产入口：它携带 IR、TAC、模块和源码身份，
+先做 `verify_for_execution`，再固定使用栈式载体；`RunOutcome.value` 在脚本与 `[main]` 中都表示
+入口显式返回值。`run_with_values` 仍只供研究夹具注入动态边界。
 三种载体复用同一选择器、集合、迭代和表声明语义及 79 条共享向量，选择器结果值由
 `tests/r2_selector_values.rs` 的 7 条手工 TAC 夹具断言，集合指令由
 `tests/r2_set_values.rs` 的手工 TAC 夹具和 `sets.json` 入口向量共同断言，迭代指令由
@@ -28,6 +30,10 @@ Rust 字节码唯一执行实现：解释循环、调用栈、局部槽、模块
 `src/research/` 现在是兼容重导出层，保留旧路径供 09R 共享向量和基准设施使用；生产入口
 固定使用冻结的栈式载体，寄存器式与混合式载体仍保留用于复现和对比。别名层的移除条件是
 B0-C 交付且生产驱动器成为唯一消费方，不得提前删除。
+
+生产事件默认进入固定容量的 `BoundedSink`；超过容量的普通事件按丢弃新事件策略记账，
+完成指标仍通过 `Metrics` 事件和 `RunOutcome.metrics` 提供。`RecordingSink` 继续用于规格测试，
+因此事件接收策略不会改变语义或释放计划。
 
 冻结结论与施工顺序见 [09R. 字节码寄存器机型特别研究](../../../../docs/DevDocs/09r-bytecode-machine-research.md)。
 

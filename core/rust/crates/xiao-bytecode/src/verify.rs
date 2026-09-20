@@ -160,6 +160,14 @@ pub fn verify_production(
     program: &IrProgram,
     tac: &TacProgram,
 ) -> Result<(), TacVerificationError> {
+    // IR 是验证器的另一项输入；先消费它自己的不变量，避免损坏的所有权或
+    // 控制流表在释放计划对账时把结构问题升级成后端 panic。
+    if let Some(error) = program.validate().errors.first() {
+        return Err(TacVerificationError::structure(
+            error.path.clone(),
+            format!("{}: {}", error.code, error.message),
+        ));
+    }
     let result = verify_program(program, tac);
     if let Some(error) = result.first_internal_error() {
         return Err(error.clone());
