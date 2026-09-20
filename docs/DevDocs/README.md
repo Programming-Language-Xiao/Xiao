@@ -85,7 +85,7 @@
 | 09R2f | [集合运算执行闭环交接文档](09r2f-set-operations.md) | `SetOp`/`SetCompare` 两条指令、`SetHandle` 代数与六种比较、四个集合类 RuntimeCheck、`sets.json` 共享向量 | 已完成（由 09R2F1 接续补齐运行时检查、验证夹具和文档） |
 | 09R2f1 | [集合运算执行闭环续交接文档](09r2f1-set-operations-continuation.md) | 交接前七个问题的修复、RuntimeCheck 接线、三机型共享向量、运行时区分度与文档同步 | 已完成（59 条共享向量，四类集合检查接通；显式成员类型兼容和集合增删仍为后续债项） |
 | 09R2g | [`for` 与迭代执行闭环交接文档](09r2g-for-and-iteration.md) | `Len`/`IndexGetDynamic` 两条指令、`for` 的 TAC 降低与三块 CFG、`iterable` 运行时检查、`iteration.json` 共享向量 | 未开始（`for` 仍记入 unsupported） |
-| 09R3 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三机型基准、语义差分报告和机型/调用 ABI/编码冻结 | 未开始 |
+| 09R3 | [跨平台基准与冻结](09r3-benchmarks-and-freeze.md)（权威定义见 [09R](09r-bytecode-machine-research.md) `:610-619`） | 语义差分、性能、内存与编码体积四份报告，以及机型/ABI/编码的冻结 | 未开始（方向稿；入场条件见文档第二节） |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 未开始 |
