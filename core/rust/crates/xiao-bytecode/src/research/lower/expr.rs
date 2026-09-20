@@ -37,6 +37,27 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
         IrExpressionKind::Call { callee, arguments } => {
             lower_call(lowerer, callee, arguments, expression)
         }
+        IrExpressionKind::NewCall { callee, arguments } => {
+            lowerer.lower_new(callee, arguments, expression.span)
+        }
+        IrExpressionKind::Member { object, member } => {
+            if matches!(expression.ty, IrType::Function { .. }) {
+                lower_unsupported(lowerer, "表方法值的动态调用", expression.span)
+            } else {
+                let object = lowerer.lower_expression(object);
+                let register =
+                    lowerer.new_register(Lowerer::class_of_type(&expression.ty), expression.span);
+                lowerer.emit(TacInstr::with_dst(
+                    TacOp::MemberGet {
+                        object,
+                        member: super::name_key(&member.text, member.backticked),
+                    },
+                    register,
+                    expression.span,
+                ));
+                register
+            }
+        }
         IrExpressionKind::Cast {
             expression: inner,
             target,
@@ -69,7 +90,6 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
             *selection_plan,
             expression,
         ),
-        _ => lower_unsupported(lowerer, "expression", expression.span),
     };
     lowerer.emit_runtime_checks(expression.span, register);
     register
@@ -257,8 +277,26 @@ fn lower_literal(
 
 /// 降低名称引用：读取同名局部槽，或加载函数引用。
 fn lower_name(lowerer: &mut Lowerer<'_>, name: &str, backticked: bool, span: IrSpan) -> VReg {
+    if let Some(register) = lowerer
+        .frame
+        .parameter_names
+        .get(&super::name_key(name, backticked))
+    {
+        return *register;
+    }
     if let Some(value) = lowerer.value_of_name(name, backticked) {
+        if !lowerer.frame.value_regs.contains_key(&value) {
+            if let Some(register) = lowerer.singleton_reference(name, span) {
+                return register;
+            }
+            if let Some(register) = lowerer.global_constant(name, backticked) {
+                return register;
+            }
+        }
         return lowerer.register_of(value);
+    }
+    if let Some(register) = lowerer.singleton_reference(name, span) {
+        return register;
     }
     if let Some(function) = lowerer.function_index(name) {
         let register = lowerer.new_register(RegisterClass::ObjHandle, span);
@@ -548,6 +586,16 @@ fn lower_call(
     arguments: &[IrCallArgument],
     expression: &IrExpression,
 ) -> VReg {
+    if let IrExpressionKind::Member { object, member } = &callee.kind {
+        if let Some(register) = lowerer.lower_method_call(object, member, arguments, expression) {
+            return register;
+        }
+    }
+    if let IrExpressionKind::Name { name } = &callee.kind {
+        if !name.backticked && ScalarType::from_name(&name.text).is_some() && arguments.len() == 1 {
+            return lower_cast(lowerer, &arguments[0].value, &name.text, expression);
+        }
+    }
     if arguments.is_empty()
         && matches!(
             &callee.kind,

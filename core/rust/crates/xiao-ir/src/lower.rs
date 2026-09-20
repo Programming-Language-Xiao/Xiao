@@ -43,6 +43,11 @@ pub fn lower_program(
         },
     };
     let mut result = IrProgram::new(entry_mode, body, ir_span(program.span));
+    result.table_signatures = type_result
+        .table_signatures
+        .values()
+        .map(crate::IrTableSignature::from_signature)
+        .collect();
     result.modules = modules
         .map(|project| lower_modules(project, source))
         .unwrap_or_default();
@@ -180,11 +185,47 @@ impl<'a> Lowerer<'a> {
             },
             Statement::Table {
                 name, kind, body, ..
-            } => IrStatementKind::Table {
-                name: self.name(*name),
-                table_kind: table_kind_name(*kind).to_owned(),
-                body: self.statements(body),
-            },
+            } => {
+                let mut body = self.statements(body);
+                if let Some(signature) = self
+                    .type_result
+                    .table_signatures
+                    .get(name.unquoted_text(self.source))
+                {
+                    for statement in &mut body {
+                        if let IrStatementKind::Function {
+                            name,
+                            parameters,
+                            return_type,
+                            ..
+                        } = &mut statement.kind
+                        {
+                            let key = format!(
+                                "{}:{}",
+                                if name.backticked { "backtick" } else { "ascii" },
+                                name.text
+                            );
+                            if let Some(method) = signature
+                                .members
+                                .get(&key)
+                                .and_then(|member| member.function.as_ref())
+                            {
+                                for (parameter, checked) in
+                                    parameters.iter_mut().zip(&method.parameters)
+                                {
+                                    parameter.ty = lower_type(&checked.ty);
+                                }
+                                *return_type = lower_type(&method.return_type);
+                            }
+                        }
+                    }
+                }
+                IrStatementKind::Table {
+                    name: self.name(*name),
+                    table_kind: table_kind_name(*kind).to_owned(),
+                    body,
+                }
+            }
             Statement::Function {
                 name,
                 parameters,

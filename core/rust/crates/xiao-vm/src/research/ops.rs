@@ -159,7 +159,7 @@ pub fn len(source: &RuntimeValue) -> RuntimeResult<RuntimeValue> {
 
 /// 按运行时整数索引读取一个可迭代值的元素。
 ///
-/// 动态索引先还原为 [`PathStep::Index`]，再复用 [`index_step`]，确保数组、元组、
+/// 动态索引先还原为 [`PathStep::Index`]，再复用内部 `index_step`，确保数组、元组、
 /// 字符串和字典列的负索引及边界行为与静态 `IndexGet` 完全一致。
 pub fn index_get_dynamic(
     source: &RuntimeValue,

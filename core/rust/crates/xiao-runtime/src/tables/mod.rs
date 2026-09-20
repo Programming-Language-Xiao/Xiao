@@ -7,6 +7,7 @@ use std::any::Any;
 use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::fmt::{self, Debug, Formatter};
+use std::rc::{Rc, Weak};
 
 use xiao_syntax::TableKind;
 use xiao_types::{ArrayType, SetType, TableMemberKind, TableSignature, TableValueKind, Type};
@@ -60,10 +61,27 @@ impl TableHooks {
 }
 
 /// 静态表签名与运行时钩子的组合。
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct TableDefinition {
     signature: TableSignature,
     hooks: TableHooks,
+    /// 后端生命周期边界的可捕获回调；不参与字段指令派发。
+    contextual_drop: Option<ContextualDrop>,
+}
+
+/// 持有后端执行上下文的析构回调。
+type ContextualDrop = Rc<dyn Fn(&TableObject) -> RuntimeResult<()>>;
+
+impl Debug for TableDefinition {
+    /// 调试输出保留接口与钩子存在性，不展开捕获的执行器。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("TableDefinition")
+            .field("signature", &self.signature)
+            .field("hooks", &self.hooks)
+            .field("contextual_drop", &self.contextual_drop.is_some())
+            .finish()
+    }
 }
 
 impl TableDefinition {
@@ -73,13 +91,28 @@ impl TableDefinition {
         Self {
             signature,
             hooks: TableHooks::none(),
+            contextual_drop: None,
         }
     }
 
     /// 使用指定生命周期钩子创建定义。
     #[must_use]
     pub fn with_hooks(signature: TableSignature, hooks: TableHooks) -> Self {
-        Self { signature, hooks }
+        Self {
+            signature,
+            hooks,
+            contextual_drop: None,
+        }
+    }
+
+    /// 安装可捕获执行上下文的后端析构钩子；仍由最后强引用触发现有状态机。
+    #[must_use]
+    pub fn with_drop_executor(
+        mut self,
+        callback: impl Fn(&TableObject) -> RuntimeResult<()> + 'static,
+    ) -> Self {
+        self.contextual_drop = Some(Rc::new(callback));
+        self
     }
 
     /// 返回静态表签名。
@@ -149,7 +182,7 @@ struct TableData {
 /// 表载荷；成员集合由静态签名约束。
 pub struct TableObject {
     definition: TableDefinition,
-    data: RefCell<TableData>,
+    data: Rc<RefCell<TableData>>,
 }
 
 impl Debug for TableObject {
@@ -168,10 +201,10 @@ impl TableObject {
     fn new(definition: TableDefinition) -> Self {
         Self {
             definition,
-            data: RefCell::new(TableData {
+            data: Rc::new(RefCell::new(TableData {
                 state: TableState::Allocated,
                 fields: BTreeMap::new(),
-            }),
+            })),
         }
     }
 
@@ -196,7 +229,29 @@ impl TableObject {
     /// 读取一个已初始化字段的副本。
     pub fn field(&self, name: &str) -> RuntimeResult<Option<RuntimeValue>> {
         self.ensure_readable()?;
-        Ok(self.data.borrow().fields.get(name).cloned())
+        self.field_checked(name)
+    }
+
+    /// 创建仅在本对象析构回调期间有效的弱只读接收者。
+    #[must_use]
+    pub fn drop_view(&self) -> TableDropView {
+        TableDropView {
+            signature: self.definition.signature.clone(),
+            data: Rc::downgrade(&self.data),
+        }
+    }
+
+    /// 读取签名中存在的字段；允许初始化方法观察已经写入的字段。
+    fn field_checked(&self, name: &str) -> RuntimeResult<Option<RuntimeValue>> {
+        let member = self
+            .definition
+            .signature
+            .member(name)
+            .filter(|member| member.kind == TableMemberKind::Field)
+            .ok_or_else(|| {
+                RuntimeError::invalid_value(format!("表 {} 没有字段 {name}", self.name()))
+            })?;
+        Ok(self.data.borrow().fields.get(&member.name).cloned())
     }
 
     /// 在 Runtime 内部写入字段；调用方必须已经通过签名检查。
@@ -217,7 +272,12 @@ impl TableObject {
                 value.type_name(),
             ));
         }
-        self.data.borrow_mut().fields.insert(name.to_owned(), value);
+        let old = self
+            .data
+            .borrow_mut()
+            .fields
+            .insert(member.name.clone(), value);
+        drop(old);
         Ok(())
     }
 
@@ -269,7 +329,14 @@ impl ObjectPayload for TableObject {
             data.state = TableState::Dropping;
             self.definition.hooks.drop
         };
-        let result = hook.map_or(Ok(()), |callback| callback(self));
+        let result = hook
+            .map_or(Ok(()), |callback| callback(self))
+            .and_then(|()| {
+                self.definition
+                    .contextual_drop
+                    .as_ref()
+                    .map_or(Ok(()), |callback| callback(self))
+            });
         self.data.borrow_mut().state = TableState::Released;
         result.map_err(|error| RuntimeError::table_drop("表 drop 钩子失败").with_cause(error))
     }
@@ -282,6 +349,49 @@ impl ObjectPayload for TableObject {
     /// 暴露可变 `Any` 视图。
     fn as_any_mut(&mut self) -> &mut dyn Any {
         self
+    }
+}
+
+/// 析构中的弱只读表接收者；复制它不会增加原对象强计数。
+///
+/// 即使被错误地保存到回调之外，后续读取也会因状态或弱引用失效而失败。
+#[derive(Clone, Debug)]
+pub struct TableDropView {
+    signature: TableSignature,
+    data: Weak<RefCell<TableData>>,
+}
+
+impl TableDropView {
+    /// 返回接收者的静态表身份。
+    #[must_use]
+    pub fn signature(&self) -> &TableSignature {
+        &self.signature
+    }
+
+    /// 读取经过静态检查的字段；只在 `Dropping` 期间有效。
+    pub fn get_compiled_field(&self, name: &str) -> RuntimeResult<Option<RuntimeValue>> {
+        let data = self
+            .data
+            .upgrade()
+            .ok_or_else(RuntimeError::use_after_release)?;
+        let data = data.borrow();
+        if data.state != TableState::Dropping {
+            return Err(RuntimeError::table_state("dropping", data.state.as_str()));
+        }
+        let member = self
+            .signature
+            .member(name)
+            .filter(|member| member.kind == TableMemberKind::Field)
+            .ok_or_else(|| {
+                RuntimeError::invalid_value(format!("表 {} 没有字段 {name}", self.signature.name))
+            })?;
+        Ok(data.fields.get(&member.name).cloned())
+    }
+
+    /// 判断两个弱视图是否指向同一对象数据。
+    #[must_use]
+    pub fn same_object(&self, other: &Self) -> bool {
+        self.data.ptr_eq(&other.data)
     }
 }
 
@@ -336,26 +446,41 @@ impl TableInstance {
 
     /// 分配表载荷并执行完整初始化状态机。
     fn allocate_and_initialize(definition: TableDefinition) -> RuntimeResult<Self> {
+        Self::allocate_with_initializer(definition, |_| Ok(()))
+    }
+
+    /// 按定义种类构造，先执行后端字段/初始化闭包，再完成既有状态迁移。
+    pub fn with_initializer(
+        definition: TableDefinition,
+        initializer: impl FnOnce(&Self) -> RuntimeResult<()>,
+    ) -> RuntimeResult<Self> {
+        Self::allocate_with_initializer(definition, initializer)
+    }
+
+    /// 分配对象并通过同一状态机执行后端初始化。
+    fn allocate_with_initializer(
+        definition: TableDefinition,
+        initializer: impl FnOnce(&Self) -> RuntimeResult<()>,
+    ) -> RuntimeResult<Self> {
         let handle = allocate_payload(Box::new(TableObject::new(definition)))?;
         let instance = Self { handle };
-        instance.initialize()
+        instance.initialize(initializer)
     }
 
     /// 执行字段初始化、`init` 钩子和失败回滚。
-    fn initialize(self) -> RuntimeResult<Self> {
+    fn initialize(
+        self,
+        initializer: impl FnOnce(&Self) -> RuntimeResult<()>,
+    ) -> RuntimeResult<Self> {
         let hook = self
             .handle
             .with_payload(RuntimeTypeTag::Table, |object: &TableObject| {
                 object.definition.hooks.init
             })?;
         self.set_state(TableState::FieldsInitializing)?;
-        let Some(callback) = hook else {
-            self.set_state(TableState::InitCompleted)?;
-            self.set_state(TableState::Usable)?;
-            return Ok(self);
-        };
         let mut callback_view = self.clone();
-        let result = callback(&mut callback_view);
+        let result = initializer(&callback_view)
+            .and_then(|()| hook.map_or(Ok(()), |callback| callback(&mut callback_view)));
         drop(callback_view);
         match result {
             Ok(()) => {
@@ -397,6 +522,35 @@ impl TableInstance {
             .with_payload(RuntimeTypeTag::Table, |object: &TableObject| {
                 object.definition.clone()
             })
+    }
+
+    /// 读取前端已验证的字段，允许方法在初始化期间访问已写入值。
+    pub fn get_compiled_field(&self, name: &str) -> RuntimeResult<Option<RuntimeValue>> {
+        self.handle
+            .with_payload(RuntimeTypeTag::Table, |object: &TableObject| {
+                if object.state() != TableState::FieldsInitializing {
+                    object.ensure_readable()?;
+                }
+                object.field_checked(name)
+            })?
+    }
+
+    /// 写入前端已验证的字段；私有访问已静态检查，类型和状态仍在此校验。
+    pub fn set_compiled_field(&self, name: &str, value: RuntimeValue) -> RuntimeResult<()> {
+        self.handle
+            .with_payload(RuntimeTypeTag::Table, |object: &TableObject| {
+                object.set_internal(name, value)
+            })?
+    }
+
+    /// 从仍然存活的弱表引用取出强句柄，供单例注册表使用。
+    pub fn from_weak(handle: &WeakHandle) -> RuntimeResult<Self> {
+        if handle.type_tag() != RuntimeTypeTag::Table {
+            return Err(RuntimeError::invalid_handle("弱引用不是表"));
+        }
+        Ok(Self {
+            handle: handle.upgrade()?,
+        })
     }
 
     /// 读取公开字段。

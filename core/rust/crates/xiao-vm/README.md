@@ -19,10 +19,11 @@ Rust 字节码唯一执行实现：解释循环、调用栈、局部槽、模块
 `machine/stack.rs`、`machine/register.rs`、`machine/hybrid.rs` 分别实现三种载体；`ops.rs`
 统一提供算术、精确索引、高级选择、随机和事务性广播，`sink.rs` 记录结构化事件，`run.rs`
 提供结果与指标；研究入口的 `RunOutcome.value` 只用于观察显式返回值，不是生产 API。
-三种载体复用同一选择器、集合与迭代语义和 73 条共享向量，选择器结果值由
+三种载体复用同一选择器、集合、迭代和表声明语义及 79 条共享向量，选择器结果值由
 `tests/r2_selector_values.rs` 的 7 条手工 TAC 夹具断言，集合指令由
 `tests/r2_set_values.rs` 的手工 TAC 夹具和 `sets.json` 入口向量共同断言，迭代指令由
-`tests/r2_iteration_values.rs` 与 `iteration.json` 共同断言。
+`tests/r2_iteration_values.rs` 与 `iteration.json` 共同断言；表生命周期由
+`tests/r2_table_values.rs` 与 `tables.json` 验证结果、错误链、析构次数和完整释放序列。
 
 该子模块属于 09R 特别研究工程，**不是稳定执行接口**：三种机型在 09R3 冻结前都不得被当作
 生产 VM 暴露，也不得让 TypeScript 层依赖其中任何一型的内部结构。

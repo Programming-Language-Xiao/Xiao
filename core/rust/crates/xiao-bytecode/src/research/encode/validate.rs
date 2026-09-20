@@ -107,6 +107,32 @@ pub(super) fn validate_signature(signature: &CallSig) -> Result<(), EncodeError>
 /// 这里也顺带过一遍释放动作的类别与所有退出边名称，因为这两者在编码端被当作
 /// 「一定能映射到标签」使用。
 fn validate_references(program: &TacProgram, width: OperandWidth) -> Result<(), EncodeError> {
+    let mut names = std::collections::BTreeSet::new();
+    for table in &program.table_definitions {
+        if table.signature.runtime_signature().is_none() || !names.insert(&table.signature.name) {
+            return Err(EncodeError::InvalidFormat("无效或重复的表签名".to_owned()));
+        }
+        for function in std::iter::once(&table.fields).chain(table.methods.values()) {
+            check_func(program, *function)?;
+            check_index_width(function.get() as u64, "table.function", width)?;
+        }
+        for member in &table.signature.members {
+            if member.method != table.methods.contains_key(&member.name) {
+                return Err(EncodeError::InvalidFormat(
+                    "表成员与方法索引不一致".to_owned(),
+                ));
+            }
+        }
+        if table.methods.keys().any(|name| {
+            !table
+                .signature
+                .members
+                .iter()
+                .any(|member| member.method && member.name == *name)
+        }) {
+            return Err(EncodeError::InvalidFormat("表方法没有静态签名".to_owned()));
+        }
+    }
     for plan in &program.plans {
         check_exit_name(&plan.exit)?;
         for action in &plan.actions {
@@ -210,6 +236,34 @@ fn validate_op(
             check_vreg(*right)
         }
         TacOp::Len { source } => check_vreg(*source),
+        TacOp::LoadTable {
+            table,
+            construct,
+            arguments,
+        } => {
+            let definition = program
+                .table_definitions
+                .get(*table as usize)
+                .ok_or_else(|| EncodeError::InvalidReference {
+                    kind: "TableId".to_owned(),
+                    index: *table as u64,
+                    limit: program.table_definitions.len(),
+                })?;
+            if !construct && (definition.signature.kind != "singleton" || !arguments.is_empty()) {
+                return Err(EncodeError::InvalidFormat(
+                    "单例读取不能携带构造参数或引用实例定义".to_owned(),
+                ));
+            }
+            for argument in arguments {
+                check_vreg(argument.value)?;
+            }
+            Ok(())
+        }
+        TacOp::MemberGet { object, .. } => check_vreg(*object),
+        TacOp::MemberSet { object, value, .. } => {
+            check_vreg(*object)?;
+            check_vreg(*value)
+        }
         TacOp::IndexGetDynamic { source, index } => {
             check_vreg(*source)?;
             check_vreg(*index)

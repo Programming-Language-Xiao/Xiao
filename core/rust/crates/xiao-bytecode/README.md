@@ -17,7 +17,8 @@
 `src/research/` 已落地 09R2：`tac.rs` 定义统一三地址指令、常量池、寄存器类别映射与调用
 签名表，`sig.rs` 补 `IrProgram` 缺失的调用 ABI 描述，`lower/` 按关注点拆分降低规则，
 `verify.rs` 做自校验与释放序列对账，`encode.rs` 作为门面、`encode/` 按职责拆分实现，
-提供 38 个稳定 opcode、布局版本 2 的内存编码/解码。
+提供 41 个稳定 opcode、布局版本 3 的内存编码/解码。09R2H 新增程序级表定义段，
+携带静态成员签名、字段初始化函数和方法索引；构造与成员访问接入既有 Runtime 状态机。
 选择器执行使用 `SelectorApply`、`BroadcastAssign`、`RandomSeed` 携带类型阶段计划；精确
 `IndexGet` 与高级选择分开编码，LEB128 和定宽 `u16` 均有往返及拒绝测试。
 

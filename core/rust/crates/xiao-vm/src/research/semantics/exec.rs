@@ -17,7 +17,9 @@ use xiao_diagnostics::{
     XiaoError,
 };
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
-use xiao_types::SeededRandom;
+/// 表生命周期回调和执行上下文适配。
+#[path = "tables.rs"]
+mod tables;
 
 use crate::research::carrier::{Carrier, CarrierContext, MapPoint};
 use crate::research::frame::Frame;
@@ -94,8 +96,10 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     options: VmOptions,
     /// 运行开始前建立的一次性只读 pc 映射；热路径只做查表。
     pc_map: Option<PcMap>,
-    /// 选择器使用的可复现随机源；状态只在运行阶段推进。
-    random: SeededRandom,
+    /// 普通帧与析构帧共享的表生命周期、调用深度和可复现随机源。
+    tables: std::rc::Rc<tables::TableContext>,
+    /// 当前回调不能消费进入前已经挂起的清理错误。
+    pending_base: usize,
 }
 
 impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
@@ -108,14 +112,15 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             metrics: VmMetrics::default(),
             options,
             pc_map: build_pc_map(program, xiao_bytecode::research::OperandWidth::Leb128).ok(),
-            random: SeededRandom::new(0),
+            tables: std::rc::Rc::new(tables::TableContext::default()),
+            pending_base: 0,
         }
     }
 
     /// 创建一个使用指定种子的解释器。
     pub fn new_with_seed(program: &'p TacProgram, options: VmOptions, sink: S, seed: u128) -> Self {
-        let mut vm = Self::new(program, options, sink);
-        vm.random.reseed(seed);
+        let vm = Self::new(program, options, sink);
+        vm.tables.random.borrow_mut().reseed(seed);
         vm
     }
 
@@ -188,15 +193,17 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 target.get()
             ))));
         };
-        if self.frames.len() >= self.options.max_call_depth {
+        if self.tables.depth.get() >= self.options.max_call_depth {
             let fatal = FatalError::stack_overflow(format!(
                 "调用深度超过上限 {}",
                 self.options.max_call_depth
             ));
+            self.tables.fatal.set(true);
             return Err(Fault::Fatal(fatal));
         }
-        self.metrics.max_call_depth = self.metrics.max_call_depth.max(self.frames.len() + 1);
-        let depth = self.frames.len() + 1;
+        let depth = self.tables.depth.get() + 1;
+        self.tables.depth.set(depth);
+        self.metrics.max_call_depth = self.metrics.max_call_depth.max(depth);
         let carrier = C::empty(CarrierContext {
             program,
             function_id: target,
@@ -220,6 +227,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         let outcome = match self.run_blocks(function) {
             Ok(value) => Ok(value),
             Err(fault) => {
+                if matches!(fault, Fault::Fatal(_)) {
+                    self.tables.fatal.set(true);
+                }
                 self.unwind(&fault);
                 Err(fault)
             }
@@ -244,6 +254,8 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 .call_save_count
                 .saturating_add(carrier_metrics.call_save_count);
         }
+        let outcome = self.finish_table_effects(outcome);
+        self.tables.depth.set(depth - 1);
         self.sink.record(VmEvent::FunctionReturned {
             function: function.name.clone(),
             depth,
@@ -308,7 +320,8 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             let mut flow = Flow::Next;
             for (instruction_index, instruction) in current.instructions.iter().enumerate() {
                 self.metrics.instructions = self.metrics.instructions.saturating_add(1);
-                flow = match self.step(function, instruction) {
+                let step = self.step(function, instruction);
+                flow = match self.finish_table_effects(step) {
                     Ok(flow) => flow,
                     Err(fault) => {
                         let fault = self.annotate_fault(fault, block, instruction_index);
@@ -480,9 +493,14 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     .iter()
                     .map(|register| register.map(|value| self.read(value)).transpose())
                     .collect::<Result<Vec<_>, Fault>>()?;
-                let value =
-                    ops::selector_apply(&source, &plan, step.as_ref(), &counts, &mut self.random)
-                        .map_err(Fault::Error)?;
+                let value = ops::selector_apply(
+                    &source,
+                    &plan,
+                    step.as_ref(),
+                    &counts,
+                    &mut *self.tables.random.borrow_mut(),
+                )
+                .map_err(Fault::Error)?;
                 self.write_operand(instruction.dst, value);
             }
             TacOp::BroadcastAssign { root, value, plan } => {
@@ -515,7 +533,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                         "随机种子计划索引不存在",
                     )));
                 }
-                self.random.reseed(seed);
+                self.tables.random.borrow_mut().reseed(seed);
             }
             TacOp::Jump(target) => return Ok(Flow::Jump(*target)),
             TacOp::BranchIf {
@@ -553,6 +571,26 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 return Err(Fault::Error(XiaoError::invalid_value(
                     "动态派发调用尚未在解释器中实现",
                 )));
+            }
+            TacOp::LoadTable {
+                table,
+                construct,
+                arguments,
+            } => {
+                let arguments = self.bind(arguments)?;
+                let value = self.load_table(*table, *construct, &arguments)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::MemberGet { object, member } => {
+                let value = tables::member_get(&self.read(*object)?, member)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::MemberSet {
+                object,
+                member,
+                value,
+            } => {
+                tables::member_set(&self.read(*object)?, member, self.read(*value)?)?;
             }
             TacOp::Return { value } => return Ok(Flow::Return(*value)),
             TacOp::Raise { value } => {
@@ -734,7 +772,8 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let mut flow = Flow::Next;
                 for (instruction_index, instruction) in current.instructions.iter().enumerate() {
                     self.metrics.instructions = self.metrics.instructions.saturating_add(1);
-                    flow = match self.step(function, instruction) {
+                    let step = self.step(function, instruction);
+                    flow = match self.finish_table_effects(step) {
                         Ok(flow) => flow,
                         Err(fault) => {
                             let fault = self.annotate_fault(fault, block, instruction_index);
@@ -993,6 +1032,14 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             let scopes = self.scopes_until(handler.scope, true);
             for scope in scopes {
                 self.run_plan(function, scope, "catch");
+                if let Err(fault) = self.finish_table_effects::<()>(Err(Fault::Error(error))) {
+                    match fault {
+                        Fault::Error(updated) => error = updated,
+                        fatal => return Err(fatal),
+                    }
+                } else {
+                    unreachable!("主错误不会被清理吞掉");
+                }
             }
             self.truncate_scope(handler.scope);
             if let Some(binding) = handler.binding {
@@ -1039,6 +1086,14 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             .unwrap_or_default();
         for scope in scopes {
             self.run_plan(function, scope, cleanup_exit);
+            if let Err(fault) = self.finish_table_effects::<()>(Err(Fault::Error(error))) {
+                match fault {
+                    Fault::Error(updated) => error = updated,
+                    fatal => return Err(fatal),
+                }
+            } else {
+                unreachable!("主错误不会被清理吞掉");
+            }
             self.sink.record(VmEvent::HandlerUnmatched { scope });
         }
         if let Some(frame) = self.frames.last_mut() {
@@ -1155,7 +1210,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             };
             // 只在实际持有值时才算一次释放：计划里的某些值（例如函数名绑定）
             // 在本帧从未被物化，把空槽位记成释放会虚报释放次数。
-            let Some(_released) = self.take_if_present(register) else {
+            let Some(released) = self.take_if_present(register) else {
                 continue;
             };
             self.metrics.releases = self.metrics.releases.saturating_add(1);
@@ -1165,6 +1220,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 value: action.value,
                 kind: action.kind.as_name().to_owned(),
             });
+            drop(released);
+            self.sync_table_events();
+            if self.tables.fatal.get() {
+                break;
+            }
         }
     }
 
@@ -1290,7 +1350,10 @@ fn constant_value(constant: &TacConstant) -> Result<RuntimeValue, Fault> {
 fn exit_for_instruction(op: &TacOp) -> &'static str {
     match op {
         TacOp::Raise { .. } => "raise",
-        TacOp::MakeError { .. } => "construct_failure",
+        TacOp::MakeError { .. }
+        | TacOp::LoadTable {
+            construct: true, ..
+        } => "construct_failure",
         _ => "error",
     }
 }

@@ -126,3 +126,48 @@ fn diagnoses_dynamic_field_initializer() {
             .any(|diagnostic| diagnostic.code() == TABLE_INITIALIZER_CODE)
     );
 }
+
+#[test]
+/// 成员写入沿用可见性和类型规则，方法不能被字段赋值覆盖。
+fn diagnoses_invalid_member_writes() {
+    for (source, code) in [
+        (
+            "[Config]\n    _secret = 1\nConfig._secret = 2\n",
+            TABLE_VISIBILITY_CODE,
+        ),
+        (
+            "[Config]\n    int count = 1\nConfig.count = true\n",
+            xiao_types::TABLE_MEMBER_CODE,
+        ),
+        (
+            "[Config]\n    def read(self) -> int\n        return 1\nConfig.read = 2\n",
+            xiao_types::TABLE_MEMBER_CODE,
+        ),
+    ] {
+        let result = check(source);
+        assert!(
+            result
+                .diagnostics()
+                .iter()
+                .any(|diagnostic| diagnostic.code() == code),
+            "{:?}",
+            result.diagnostics()
+        );
+    }
+}
+
+#[test]
+/// 方法前向调用不要求显式 self，默认与关键字参数复用普通函数匹配规则。
+fn checks_method_defaults_keywords_and_forward_calls() {
+    let source = "[[Counter]]\n    value = 2\n    def first(self) -> int\n        return self.add(amount = 4)\n    def add(self, int amount = 3) -> int\n        self.value += amount\n        return self.value\nitem = new Counter()\nanswer = item.first() + item.add()\n";
+    let result = check(source);
+    assert!(result.is_success(), "{:?}", result.diagnostics());
+    for suffix in [
+        "item.add(amount = true)\n",
+        "item.add(unknown = 1)\n",
+        "item.add(1, amount = 2)\n",
+    ] {
+        let invalid = check(&(source.to_owned() + suffix));
+        assert!(!invalid.is_success(), "应拒绝 {suffix}");
+    }
+}

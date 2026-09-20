@@ -690,6 +690,31 @@ pub enum TacOp {
         /// 动态整数索引。
         index: VReg,
     },
+    /// 构造表对象，或读取声明语句已建立的单例。
+    LoadTable {
+        /// 程序级表定义索引。
+        table: u32,
+        /// 为真时构造；为假时只读取已声明单例。
+        construct: bool,
+        /// 传给 `init` 的实参，不含隐式接收者。
+        arguments: Vec<TacArgument>,
+    },
+    /// 读取经过静态检查的表字段。
+    MemberGet {
+        /// 表接收者。
+        object: VReg,
+        /// 保留名称类别前缀的成员键。
+        member: String,
+    },
+    /// 写入经过静态检查的表字段；类型与状态仍由 Runtime 校验。
+    MemberSet {
+        /// 表接收者。
+        object: VReg,
+        /// 保留名称类别前缀的成员键。
+        member: String,
+        /// 待写入值。
+        value: VReg,
+    },
 }
 
 /// 一条带源码位置的三地址指令。
@@ -834,11 +859,24 @@ pub struct TacProgram {
     pub broadcast_assignment_plans: Vec<xiao_ir::IrBroadcastAssignmentPlan>,
     /// 类型阶段随机种子计划表。
     pub random_seed_plans: Vec<xiao_ir::IrRandomSeedPlan>,
+    /// 静态表接口和可执行函数索引；顺序对应源码表声明。
+    pub table_definitions: Vec<TacTableDefinition>,
     /// 本批次尚未降低的构造说明；为空表示全部语句都已降低。
     ///
     /// 这里刻意保留说明而不是静默跳过：未降低的构造会让程序少算一部分，
     /// 验证器据此直接拒绝，避免出现「能跑但结果不对」。
     pub unsupported: Vec<String>,
+}
+
+/// 表接口与已降低方法之间的程序级关联。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TacTableDefinition {
+    /// 类型阶段冻结的成员签名镜像。
+    pub signature: xiao_ir::IrTableSignature,
+    /// 按源码顺序初始化字段的辅助函数。
+    pub fields: FuncId,
+    /// 成员键到方法函数编号的映射。
+    pub methods: std::collections::BTreeMap<String, FuncId>,
 }
 
 /// 调用签名表；定义与降低器分开，因为它是数据而不是降低规则。

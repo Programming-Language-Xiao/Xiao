@@ -254,8 +254,14 @@ fn instruction_use_def(
         TacOp::BranchIf { condition, .. } => {
             uses.insert(*condition);
         }
-        TacOp::Call { arguments, .. } => {
+        TacOp::Call { arguments, .. } | TacOp::LoadTable { arguments, .. } => {
             uses.extend(arguments.iter().map(|argument| argument.value));
+        }
+        TacOp::MemberGet { object, .. } => {
+            uses.insert(*object);
+        }
+        TacOp::MemberSet { object, value, .. } => {
+            uses.extend([*object, *value]);
         }
         TacOp::CallDynamic { callee, arguments } => {
             uses.insert(*callee);

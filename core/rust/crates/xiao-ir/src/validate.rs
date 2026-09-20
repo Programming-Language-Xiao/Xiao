@@ -128,6 +128,16 @@ impl IrValidator {
             ));
         }
         validate_statements(&program.body, "body", &mut result);
+        let mut table_names = BTreeSet::new();
+        for (index, table) in program.table_signatures.iter().enumerate() {
+            if !table_names.insert(&table.name) || table.runtime_signature().is_none() {
+                result.errors.push(error(
+                    &format!("table_signatures[{index}]"),
+                    "表签名重复或包含非法成员、类型、源码区间",
+                    Some(table.span),
+                ));
+            }
+        }
         for (index, module) in program.modules.iter().enumerate() {
             validate_statements(&module.body, &format!("modules[{index}].body"), &mut result);
             for (symbol_index, symbol) in module.symbols.iter().enumerate() {

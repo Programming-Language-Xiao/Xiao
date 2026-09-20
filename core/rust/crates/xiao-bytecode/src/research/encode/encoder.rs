@@ -325,6 +325,28 @@ fn encode_op(
             writer.index(right.get(), "VReg")
         }
         TacOp::Len { source } => writer.index(source.get(), "VReg"),
+        TacOp::LoadTable {
+            table,
+            construct,
+            arguments,
+        } => {
+            writer.index(*table, "TableId")?;
+            writer.byte(u8::from(*construct));
+            encode_arguments(writer, arguments)
+        }
+        TacOp::MemberGet { object, member } => {
+            writer.index(object.get(), "VReg")?;
+            writer.string(member)
+        }
+        TacOp::MemberSet {
+            object,
+            member,
+            value,
+        } => {
+            writer.index(object.get(), "VReg")?;
+            writer.string(member)?;
+            writer.index(value.get(), "VReg")
+        }
         TacOp::IndexGetDynamic { source, index } => {
             writer.index(source.get(), "VReg")?;
             writer.index(index.get(), "VReg")
@@ -583,6 +605,26 @@ pub(super) fn encode_random_seed_plans(
             EncodeError::InvalidFormat(format!("随机种子计划序列化失败：{error}"))
         })?;
         writer.string(&json)?;
+    }
+    Ok(())
+}
+
+/// 写入格式 3 新增的表定义段；函数索引遵循所选操作数宽度。
+pub(super) fn encode_table_definitions(
+    writer: &mut Writer,
+    program: &TacProgram,
+) -> Result<(), EncodeError> {
+    writer.count(program.table_definitions.len(), "table_definitions")?;
+    for table in &program.table_definitions {
+        let json = serde_json::to_string(&table.signature)
+            .map_err(|error| EncodeError::InvalidFormat(format!("表签名序列化失败：{error}")))?;
+        writer.string(&json)?;
+        writer.index(table.fields.get(), "FuncId")?;
+        writer.count(table.methods.len(), "table.methods")?;
+        for (name, function) in &table.methods {
+            writer.string(name)?;
+            writer.index(function.get(), "FuncId")?;
+        }
     }
     Ok(())
 }

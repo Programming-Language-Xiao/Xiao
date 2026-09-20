@@ -80,14 +80,14 @@ fn all_types() -> Vec<IrType> {
     ]
 }
 
-/// 构造一份用满全部 38 个 opcode 的 TAC 程序。
+/// 构造一份用满全部 41 个 opcode 的 TAC 程序。
 ///
 /// 刻意把每个「难往返」的角落都填上：常量池里有大整数、位模式特殊的浮点
 /// （NaN 载荷、`-0.0`）、超长精度文本和带 `\0` 的中文串；签名表覆盖五种
 /// [`ParamKind`] 与 `*args`/`**kwargs` 槽位；函数带类别表、值→寄存器映射、
-/// handler、释放计划、选择计划与广播/种子计划；块从 38 条指令骤降到 1 条，条数不整齐。
+/// handler、释放计划、选择计划与广播/种子计划；块从 41 条指令骤降到 1 条，条数不整齐。
 ///
-/// 函数内的两条断言是**格式守卫**：`ops` 的顺序必须恰好产生 `0..38` 的
+/// 函数内的两条断言是**格式守卫**：`ops` 的顺序必须恰好产生 `0..41` 的
 /// opcode。新增变体若插在表中间而不是追加到末尾，这里会先失败，而不是等到
 /// 某天有人拿旧字节解码才发现指令错位。
 fn all_ops_program() -> TacProgram {
@@ -279,10 +279,24 @@ fn all_ops_program() -> TacProgram {
             source: VReg::new(25),
             index: VReg::new(26),
         },
+        TacOp::LoadTable {
+            table: 0,
+            construct: true,
+            arguments: Vec::new(),
+        },
+        TacOp::MemberGet {
+            object: VReg::new(25),
+            member: "ascii:value".to_owned(),
+        },
+        TacOp::MemberSet {
+            object: VReg::new(25),
+            member: "ascii:value".to_owned(),
+            value: VReg::new(26),
+        },
     ];
-    assert_eq!(ops.len(), 38);
+    assert_eq!(ops.len(), 41);
     let opcodes = ops.iter().map(opcode).collect::<Vec<_>>();
-    assert_eq!(opcodes, (0_u8..38).collect::<Vec<_>>());
+    assert_eq!(opcodes, (0_u8..41).collect::<Vec<_>>());
 
     let mut categories = CategoryMap::new();
     for (index, class) in [
@@ -396,6 +410,22 @@ fn all_ops_program() -> TacProgram {
             transactional: true,
         }],
         random_seed_plans: vec![random_seed_plan],
+        table_definitions: vec![crate::research::TacTableDefinition {
+            signature: xiao_ir::IrTableSignature {
+                name: "Example".to_owned(),
+                kind: "instance".to_owned(),
+                members: vec![xiao_ir::IrTableMember {
+                    name: "ascii:value".to_owned(),
+                    method: false,
+                    public: true,
+                    ty: IrType::Dynamic,
+                    span: IrSpan::new(0, 1),
+                }],
+                span: IrSpan::new(0, 1),
+            },
+            fields: FuncId::new(1),
+            methods: BTreeMap::new(),
+        }],
         unsupported: Vec::new(),
     }
 }
@@ -427,6 +457,7 @@ fn assert_program_eq(left: &TacProgram, right: &TacProgram) {
     assert_eq!(left.functions, right.functions);
     assert_eq!(left.categories, right.categories);
     assert_eq!(left.plans, right.plans);
+    assert_eq!(left.table_definitions, right.table_definitions);
     assert_eq!(left.unsupported, right.unsupported);
     assert_eq!(left.constants.len(), right.constants.len());
     for (left, right) in left.constants.iter().zip(right.constants.iter()) {
@@ -449,7 +480,7 @@ fn all_opcodes_and_abi_fields_round_trip_in_both_widths() {
         validate_encoded(&encoded).expect("编码应可自校验");
         let decoded = decode(&encoded.bytes).expect("完整 TAC 应可解码");
         assert_program_eq(&program, &decoded);
-        assert_eq!(encoded.functions[0].blocks[0].instruction_pcs.len(), 38);
+        assert_eq!(encoded.functions[0].blocks[0].instruction_pcs.len(), 41);
         assert_eq!(encoded.span_at(0, 0, 7), Some(IrSpan::new(121, 123)));
         let pc = encoded.functions[0].blocks[0].instruction_pcs[7];
         assert_eq!(encoded.span_at_pc(0, pc), Some(IrSpan::new(121, 123)));

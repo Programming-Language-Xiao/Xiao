@@ -133,12 +133,9 @@ fn dispatch_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
             iterable,
             body,
         } => lower_for(lowerer, target, iterable, body, statement.span),
-        IrStatementKind::Table { .. } => {
-            lowerer.record_unsupported(format!(
-                "语句形态尚未降低（{}..{}）",
-                statement.span.start, statement.span.end
-            ));
-        }
+        IrStatementKind::Table {
+            name, table_kind, ..
+        } => lowerer.lower_table_declaration(name, table_kind, statement.span),
     }
 }
 
@@ -316,7 +313,13 @@ fn lower_try(
 }
 
 /// 把表达式结果写入目标绑定。
-fn store_into(lowerer: &mut Lowerer<'_>, name: &str, backticked: bool, span: IrSpan, source: VReg) {
+pub(super) fn store_into(
+    lowerer: &mut Lowerer<'_>,
+    name: &str,
+    backticked: bool,
+    span: IrSpan,
+    source: VReg,
+) {
     let Some(value) = lowerer.value_of_name_at(name, backticked, span) else {
         lowerer.record_unsupported(format!(
             "绑定缺少生命周期条目（{}..{}）",
@@ -346,6 +349,57 @@ fn lower_extended_assignment(
     value: &IrExpression,
     span: IrSpan,
 ) {
+    if let IrExpressionKind::Member { object, member } = &target.kind {
+        let object = lowerer.lower_expression(object);
+        let member = super::name_key(&member.text, member.backticked);
+        let source = if operator == "=" {
+            lowerer.lower_expression(value)
+        } else {
+            let left = lowerer.new_register(Lowerer::class_of_type(&target.ty), span);
+            lowerer.emit(TacInstr::with_dst(
+                TacOp::MemberGet {
+                    object,
+                    member: member.clone(),
+                },
+                left,
+                span,
+            ));
+            let name = format!("#member{}", left.get());
+            let key = super::name_key(&name, false);
+            lowerer.frame.parameter_names.insert(key.clone(), left);
+            let combined = IrExpression {
+                kind: IrExpressionKind::Binary {
+                    operator: operator.strip_suffix('=').unwrap_or(operator).to_owned(),
+                    left: Box::new(IrExpression {
+                        kind: IrExpressionKind::Name {
+                            name: xiao_ir::IrName {
+                                text: name,
+                                backticked: false,
+                                span,
+                            },
+                        },
+                        ty: target.ty.clone(),
+                        span,
+                    }),
+                    right: Box::new(value.clone()),
+                },
+                ty: target.ty.clone(),
+                span: target.span,
+            };
+            let register = lowerer.lower_expression(&combined);
+            lowerer.frame.parameter_names.remove(&key);
+            register
+        };
+        lowerer.emit(TacInstr::new(
+            TacOp::MemberSet {
+                object,
+                member,
+                value: source,
+            },
+            span,
+        ));
+        return;
+    }
     if let IrExpressionKind::Selector { source, .. } = &target.kind {
         let Some(plan) = lowerer.broadcast_assignment_plan_id(target.span) else {
             lowerer.record_unsupported(format!(

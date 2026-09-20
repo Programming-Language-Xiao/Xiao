@@ -1,0 +1,86 @@
+{
+  "stage": "09R2H",
+  "status": "verified-runtime",
+  "cases": [
+    {
+      "name": "table-singleton-init-and-member-write",
+      "source": "[Config]\n    value = 0\n    def init(self, int value = 9) -> none\n        self.value = value\n    def add(self, int amount) -> int\n        self.value += amount\n        return self.value\nanswer = Config.add(2)\nif answer != 11\n    raise ArithmeticError(code = \"BAD_SINGLETON\")\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {"scope": 2, "exit": "normal", "value": 3, "kind": "strong"},
+          {"scope": 3, "exit": "return", "value": 6, "kind": "strong"},
+          {"scope": 0, "exit": "normal", "value": 0, "kind": "strong"}
+        ],
+        "max_call_depth": 2
+      }
+    },
+    {
+      "name": "table-instance-isolation-and-method-defaults",
+      "source": "[[Counter]]\n    _value = 2\n    def init(self, int start) -> none\n        self._value += start\n    def read(self) -> int\n        return self._value\n    def add(self, int amount = 3) -> int\n        self._value += amount\n        return self.read()\ndef result() -> int\n    first = new Counter(5)\n    second = new Counter(1)\n    return first.add() + second.read()\n",
+      "entry": "result",
+      "expect": {
+        "outcome": "success",
+        "value": 13,
+        "releases": [
+          {"scope": 2, "exit": "normal", "value": 3, "kind": "strong"},
+          {"scope": 2, "exit": "normal", "value": 3, "kind": "strong"},
+          {"scope": 3, "exit": "return", "value": 6, "kind": "strong"},
+          {"scope": 4, "exit": "return", "value": 8, "kind": "strong"},
+          {"scope": 3, "exit": "return", "value": 6, "kind": "strong"},
+          {"scope": 5, "exit": "return", "value": 15, "kind": "strong"},
+          {"scope": 5, "exit": "return", "value": 13, "kind": "strong"}
+        ],
+        "max_call_depth": 3
+      }
+    },
+    {
+      "name": "table-alias-and-container-drop-once",
+      "source": "[State]\n    count = 0\n[[Item]]\n    value = 7\n    def drop(self) -> none\n        State.count += self.value\ndef work() -> none\n    first = new Item()\n    alias = first\n    items = [alias]\nwork()\nif State.count != 7\n    raise ArithmeticError(code = \"DROP_COUNT\")\n",
+      "expect": {
+        "outcome": "success",
+        "releases": [
+          {"scope": 4, "exit": "normal", "value": 11, "kind": "strong"},
+          {"scope": 4, "exit": "normal", "value": 9, "kind": "strong"},
+          {"scope": 4, "exit": "normal", "value": 8, "kind": "strong"},
+          {"scope": 0, "exit": "normal", "value": 0, "kind": "strong"}
+        ],
+        "max_call_depth": 3
+      }
+    },
+    {
+      "name": "table-init-rollback-keeps-cleanup-errors",
+      "source": "[[Broken]]\n    value = 7\n    def init(self) -> none\n        raise ArithmeticError(code = \"INIT\")\n    def drop(self) -> none\n        observed = self.value\n        raise ArithmeticError(code = \"DROP\")\nheld = \"outer\"\nitem = new Broken()\n",
+      "expect": {
+        "outcome": "error",
+        "error_code": "X06-RUNTIME-007",
+        "releases": [
+          {"scope": 2, "exit": "unmatched_error", "value": 3, "kind": "strong"},
+          {"scope": 3, "exit": "unmatched_error", "value": 7, "kind": "strong"},
+          {"scope": 0, "exit": "unmatched_error", "value": 12, "kind": "strong"}
+        ],
+        "max_call_depth": 2
+      }
+    },
+    {
+      "name": "table-unwind-releases-nested-instances",
+      "source": "[[Item]]\n    value = 1\n    def drop(self) -> none\n        raise ArithmeticError(code = \"DROP\")\ndef work() -> none\n    items = [new Item(), new Item()]\n    raise ArithmeticError(code = \"PRIMARY\")\nwork()\n",
+      "expect": {
+        "outcome": "error",
+        "error_code": "PRIMARY",
+        "releases": [
+          {"scope": 3, "exit": "unmatched_error", "value": 10, "kind": "strong"},
+          {"scope": 2, "exit": "unmatched_error", "value": 3, "kind": "strong"},
+          {"scope": 2, "exit": "unmatched_error", "value": 3, "kind": "strong"}
+        ],
+        "max_call_depth": 3
+      }
+    },
+    {
+      "name": "table-fatal-skips-user-drop",
+      "source": "[[Item]]\n    value = 1\n    def drop(self) -> none\n        raise ArithmeticError(code = \"DROP\")\ndef recurse(int value) -> int\n    item = new Item()\n    return recurse(value)\nresult = recurse(1)\n",
+      "max_call_depth": 8,
+      "expect": {"outcome": "fatal", "error_code": "X07-FATAL-004", "releases": [], "max_call_depth": 8}
+    }
+  ]
+}

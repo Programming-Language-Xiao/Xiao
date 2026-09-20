@@ -313,6 +313,16 @@ impl<'source> TypeChecker<'source> {
         // 普通 ASCII 内建函数，也不能在调用时丢失 Unicode 内容。
         let key = self.function_callee_key(callee)?;
         let signature = self.function_signatures.get(&key).cloned()?;
+        Some(self.check_function_arguments(&signature, arguments, span))
+    }
+
+    /// 使用同一参数匹配器检查顶层函数和去掉隐式接收者后的表方法。
+    pub(super) fn check_function_arguments(
+        &mut self,
+        signature: &FunctionSignature,
+        arguments: &[CallArgument],
+        span: SourceSpan,
+    ) -> Type {
         let mut used = BTreeSet::new();
         let mut positional_index = 0usize;
         let mut saw_keyword = false;
@@ -450,7 +460,7 @@ impl<'source> TypeChecker<'source> {
                 self.call_error(span, "函数缺少必需参数");
             }
         }
-        Some(self.context.apply(&signature.return_type))
+        self.context.apply(&signature.return_type)
     }
 
     /// 统一两个类型并把失败映射为函数阶段诊断。

@@ -40,8 +40,8 @@ pub use memory::{
 };
 /// 重导出表定义、钩子和生命周期状态。
 pub use tables::{
-    TableDefinition, TableDropHook, TableHooks, TableInitHook, TableInstance, TableObject,
-    TableState,
+    TableDefinition, TableDropHook, TableDropView, TableHooks, TableInitHook, TableInstance,
+    TableObject, TableState,
 };
 /// 重导出释放计划测试驱动器和展开结果。
 pub use testing::{

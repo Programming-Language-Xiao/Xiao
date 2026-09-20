@@ -1211,6 +1211,15 @@ impl<'source> EscapeAnalyzer<'source> {
             .types
             .function_signatures()
             .get(&function_key)
+            .filter(|signature| signature.span == span)
+            .or_else(|| {
+                self.types
+                    .table_signatures
+                    .values()
+                    .flat_map(|table| table.members.values())
+                    .filter_map(|member| member.function.as_ref())
+                    .find(|signature| signature.span == span)
+            })
             .map(|signature| signature.parameters.clone());
         for (index, parameter) in parameters.iter().enumerate() {
             let ty = signature_parameters

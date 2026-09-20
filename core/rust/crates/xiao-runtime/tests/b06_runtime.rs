@@ -167,3 +167,88 @@ fn singleton_and_instance_kinds_are_not_interchangeable() {
     let instance = TableInstance::singleton(singleton).expect("单例应创建");
     assert_eq!(instance.state(), TableState::Usable);
 }
+
+#[test]
+/// 编译后访问保持私有字段的静态契约，同时校验类型、状态和规范成员键。
+fn compiled_initializer_preserves_field_contracts() {
+    let mut signature = signature(TableKind::Instance);
+    signature.members.insert(
+        "ascii:_secret".to_owned(),
+        TableMemberSignature::field("ascii:_secret", Type::scalar(ScalarType::Int), span()),
+    );
+    let instance = TableInstance::with_initializer(TableDefinition::new(signature), |instance| {
+        assert_eq!(instance.state(), TableState::FieldsInitializing);
+        assert!(instance.get("id").is_err());
+        assert_eq!(instance.get_compiled_field("id")?, None);
+        instance.set_compiled_field("id", RuntimeValue::Int(3))?;
+        assert_eq!(
+            instance.get_compiled_field("id")?,
+            Some(RuntimeValue::Int(3))
+        );
+        instance.set_compiled_field("ascii:_secret", RuntimeValue::Int(7))?;
+        assert!(
+            instance
+                .set_compiled_field("id", RuntimeValue::Bool(true))
+                .is_err()
+        );
+        assert!(
+            instance
+                .set_compiled_field("missing", RuntimeValue::Int(1))
+                .is_err()
+        );
+        Ok(())
+    })
+    .expect("构造成功");
+    assert!(instance.get("ascii:_secret").is_err());
+    assert!(instance.set("ascii:_secret", RuntimeValue::Int(8)).is_err());
+    assert_eq!(
+        instance.get_compiled_field("ascii:_secret").unwrap(),
+        Some(RuntimeValue::Int(7))
+    );
+    assert_eq!(instance.get("id").unwrap(), Some(RuntimeValue::Int(3)));
+}
+
+#[test]
+/// 析构弱视图不可哈希、不可复活对象，保存到回调外后不能继续读取。
+fn drop_view_is_borrowed_and_expires_after_callback() {
+    use std::cell::RefCell;
+    use std::rc::Rc;
+
+    let saved = Rc::new(RefCell::new(None));
+    let observed = Rc::clone(&saved);
+    let definition =
+        TableDefinition::new(signature(TableKind::Instance)).with_drop_executor(move |object| {
+            let view = object.drop_view();
+            assert_eq!(view.get_compiled_field("id")?, Some(RuntimeValue::Int(42)));
+            assert!(!xiao_runtime::is_hashable(&RuntimeValue::TableDropView(
+                view.clone()
+            )));
+            assert!(
+                xiao_runtime::SetHandle::new(vec![RuntimeValue::TableDropView(view.clone())])
+                    .is_err()
+            );
+            *observed.borrow_mut() = Some(view);
+            Ok(())
+        });
+    let instance = TableInstance::with_initializer(definition, |instance| {
+        instance.set_compiled_field("id", RuntimeValue::Int(42))
+    })
+    .expect("构造成功");
+    let weak = instance.downgrade();
+    let alias = TableInstance::from_weak(&weak).expect("存活时能升级");
+    instance.try_release().expect("别名仍持有");
+    assert!(saved.borrow().is_none());
+    alias.try_release().expect("最后强引用执行析构");
+    assert_eq!(weak.strong_count(), 0);
+    assert!(TableInstance::from_weak(&weak).is_err());
+    assert!(
+        saved
+            .borrow()
+            .as_ref()
+            .expect("钩子已执行")
+            .get_compiled_field("id")
+            .is_err()
+    );
+    let wrong = StringHandle::new("不是表").unwrap();
+    assert!(TableInstance::from_weak(&wrong.downgrade()).is_err());
+}

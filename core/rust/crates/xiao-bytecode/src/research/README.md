@@ -7,9 +7,11 @@
 
 `tac.rs` 只描述算什么，`sig.rs` 补 `IrProgram` 缺失的调用 ABI 描述，
 `lower/` 按关注点拆分降低规则，`verify.rs` 做自校验与释放序列对账，`encode.rs` 作为
-研究编码门面，内部实现拆在 `encode/` 下，提供布局版本 2 的内存研究编码、解码、38 个
+研究编码门面，内部实现拆在 `encode/` 下，提供布局版本 3 的内存研究编码、解码、41 个
 稳定 opcode、两种操作数宽度和 `pc -> IrSpan` 目录；
 其中 `SelectorApply`、`BroadcastAssign`、`RandomSeed` 携带选择器、广播和种子计划。
+09R2H 的 `table_definitions` 保存前端表签名镜像与函数索引，`LoadTable`、`MemberGet`、
+`MemberSet` 执行表构造和字段访问；静态方法复用 `Call`，旧函数编号不变。
 当前 R2C 还提供 `MakeError`/`Raise`/`Check`、`TacHandler` 和按子程序复用的 `finally`
 降低；未支持的 RuntimeCheck 会保留在 `TacProgram.unsupported`，编码器对此明确拒绝。
 禁止在这里重新推断类型、重算生命周期或重排释放顺序。编码器不是公开 `.xiaoc`

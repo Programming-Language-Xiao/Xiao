@@ -37,6 +37,7 @@ pub fn is_hashable(value: &RuntimeValue) -> bool {
     !matches!(
         value,
         RuntimeValue::Table(_)
+            | RuntimeValue::TableDropView(_)
             | RuntimeValue::Array(_)
             | RuntimeValue::Tuple(_)
             | RuntimeValue::DictTable(_)

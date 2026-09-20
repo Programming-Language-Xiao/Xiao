@@ -76,16 +76,16 @@
 | 08A | [U0 统一前端实现交接记录](08a-u0-frontend-implementation.md) | 单一前端流水线、递归类型化 IR、验证器和稳定 JSON 快照 | 已完成首版 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 未开始（机型、调用约定与编码以 09R 冻结结果为准） |
 | 09R1 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 统一三地址语义、三种候选机型、寄存器类别与编号空间、调用约定、异常与清理转移、编码草案和基准协议 | 已完成首版 |
-| 09R2 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三种机型的可运行原型、共享语义向量、事件接收器和容器/选择器/集合/迭代原型路径 | 进行中（R2a、R2C、R2D、R2b、R2b1、R2F1 与 R2G 已交付；表声明、正式生产字节码与 R3 仍待后续） |
+| 09R2 | [字节码寄存器机型特别研究](09r-bytecode-machine-research.md) | 三种机型的可运行原型、共享语义向量、事件接收器和容器/选择器/集合/迭代/表声明路径 | 进行中（R2a、R2C、R2D、R2b、R2b1、R2F1、R2G 与 R2H 已交付；正式生产字节码与 R3 仍待后续） |
 | 09R2c | [异常控制流实现交接文档](09r2c-exception-control-flow.md) | 运行时错误对象、错误类型名单一来源、handler 表与 catch 路由、`finally` 子程序和 `Check` 降低 | 已完成（R2B 选择器错误复用同一异常路由） |
-| 09R2d | [两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md) | 逐函数类别映射修复、`Carrier` 接口演进、活跃区间分析、寄存器与混合式机型、指令编码器、`pc -> span` 映射 | 已完成（编码器基线 31 个，后续选择器、集合与迭代指令扩展至 38 个 opcode；研究模块仍保持 draft，待 R2 总阶段退出） |
+| 09R2d | [两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md) | 逐函数类别映射修复、`Carrier` 接口演进、活跃区间分析、寄存器与混合式机型、指令编码器、`pc -> span` 映射 | 已完成（编码器基线 31 个，后续扩展至 41 个 opcode、布局版本 3；研究模块仍保持 draft，待 R2 总阶段退出） |
 | 09R2e | [研究编码器模块解耦交接记录](09r2e-research-encoder-decoupling.md) | `research::encode` 门面与 `codec`/`tags`/`validate`/`encoder`/`decoder`/`tests` 依赖 DAG、兼容契约和架构回归测试 | 已完成 |
 | 09R2b | [选择器全量执行交接文档](09r2b-selector-execution.md) | 步长接线、`SelectionPlan` 消费方式、高级选择的 TAC 操作数格式与运行时执行、`RandomSource` 注入、结果形状构造、左值广播写入 | 已完成（31 条共享向量、53 条栈式测试、四类 RuntimeCheck） |
 | 09R2b1 | [选择器执行验证缺口修复交接文档](09r2b1-selector-verification.md) | 选择器结果值的可观察性、能断言选择结果的区分度用例、错误码字面量回退清理 | 已完成（7 条三机型值断言、受控回退验证、错误码字面量清零） |
 | 09R2f | [集合运算执行闭环交接文档](09r2f-set-operations.md) | `SetOp`/`SetCompare` 两条指令、`SetHandle` 代数与六种比较、四个集合类 RuntimeCheck、`sets.json` 共享向量 | 已完成（由 09R2F1 接续补齐运行时检查、验证夹具和文档） |
 | 09R2f1 | [集合运算执行闭环续交接文档](09r2f1-set-operations-continuation.md) | 交接前七个问题的修复、RuntimeCheck 接线、三机型共享向量、运行时区分度与文档同步 | 已完成（前置阶段 59 条共享向量，四类集合检查接通；成员类型载荷由 R2G 收口，集合增删仍为后续债项） |
 | 09R2g | [`for` 与迭代执行闭环交接文档](09r2g-for-and-iteration.md) | `Len`/`IndexGetDynamic` 两条指令、`for` 的 TAC 降低与 CFG、`iterable` 运行时检查、`iteration.json` 共享向量 | 已完成（opcode 36/37、三种载体、动态错误码 `X06-RUNTIME-024` 与释放边界均已验证） |
-| 09R2h | [表声明执行闭环交接文档（方向稿）](09r2h-table-declarations.md) | 表声明的 TAC 降低与执行、表实例的构造与字段读写；**含那个可能阻塞 09R3 的判断** | 未开始（`LoadTable`/`TableInstance::` 在 VM 与 bytecode 里零命中） |
+| 09R2h | [表声明执行闭环交接记录](09r2h-table-declarations.md) | 表签名与方法索引、构造与字段读写、初始化回滚和确定性析构 | 已完成（新增表定义段、opcode 38–40、布局版本 3；79 条共享向量；须以新布局进入 R3） |
 | 09R3 | [跨平台基准与冻结](09r3-benchmarks-and-freeze.md)（权威定义见 [09R](09r-bytecode-machine-research.md) `:610-619`） | 语义差分、性能、内存与编码体积四份报告，以及机型/ABI/编码的冻结 | 未开始（方向稿；入场条件见文档第二节） |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 未开始 |
 | 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 未开始 |

@@ -165,6 +165,8 @@ pub enum RuntimeValue {
     Str(StringHandle),
     /// 表对象；实际类型在 `TableInstance` 中校验。
     Table(crate::tables::TableInstance),
+    /// 析构回调中的弱只读接收者，不拥有原表对象。
+    TableDropView(crate::tables::TableDropView),
     /// 数组对象。
     Array(crate::containers::ArrayHandle),
     /// 元组对象。
@@ -200,6 +202,7 @@ impl PartialEq for RuntimeValue {
                 .and_then(|equal| equal)
                 .unwrap_or(false),
             (Self::Table(left), Self::Table(right)) => left.same_object(right),
+            (Self::TableDropView(left), Self::TableDropView(right)) => left.same_object(right),
             (Self::Array(left), Self::Array(right)) => left.same_object(right),
             (Self::Tuple(left), Self::Tuple(right)) => left.same_object(right),
             (Self::DictTable(left), Self::DictTable(right)) => left.same_object(right),
@@ -235,6 +238,7 @@ impl std::hash::Hash for RuntimeValue {
                 let _ = handle.with_str(|text| text.hash(state));
             }
             Self::Table(_)
+            | Self::TableDropView(_)
             | Self::Array(_)
             | Self::Tuple(_)
             | Self::DictTable(_)
@@ -260,6 +264,7 @@ impl RuntimeValue {
             Self::Bool(_) => ScalarType::Bool,
             Self::Str(_) => ScalarType::Str,
             Self::Table(_)
+            | Self::TableDropView(_)
             | Self::Array(_)
             | Self::Tuple(_)
             | Self::DictTable(_)
@@ -278,6 +283,7 @@ impl RuntimeValue {
     pub fn type_name(&self) -> String {
         match self {
             Self::Table(instance) => format!("table {}", instance.name()),
+            Self::TableDropView(view) => format!("table {}", view.signature().name),
             Self::Array(_) => RuntimeTypeTag::Array.as_str().to_owned(),
             Self::Tuple(_) => RuntimeTypeTag::Tuple.as_str().to_owned(),
             Self::DictTable(_) => RuntimeTypeTag::DictTable.as_str().to_owned(),

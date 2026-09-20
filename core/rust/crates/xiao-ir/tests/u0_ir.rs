@@ -76,6 +76,52 @@ fn carries_type_result_without_reinference() {
 }
 
 #[test]
+/// 表镜像保留字段类型、私有性和方法接口，函数 IR 另存带 self 的完整签名。
+fn mirrors_table_interface_and_typed_receiver() {
+    let ir = lower(
+        "[[Counter]]\n    _value = 2\n    def read(self) -> int\n        return self._value\n",
+    );
+    let table = &ir.table_signatures[0];
+    let signature = table.runtime_signature().expect("接口可还原");
+    let field = signature.member("ascii:_value").unwrap();
+    assert!(!field.is_public());
+    assert_eq!(
+        field.ty,
+        xiao_types::Type::scalar(xiao_syntax::ScalarType::Int)
+    );
+    let method = signature.member("ascii:read").unwrap();
+    assert!(method.is_method());
+    assert!(
+        matches!(&method.ty, xiao_types::Type::Function { parameters, .. } if parameters.is_empty())
+    );
+    let IrStatementKind::Table { body, .. } = &ir.body[0].kind else {
+        panic!("表声明")
+    };
+    let IrStatementKind::Function { parameters, .. } = &body[1].kind else {
+        panic!("方法")
+    };
+    assert_eq!(
+        parameters[0].ty,
+        IrType::Table {
+            name: "Counter".to_owned(),
+            kind: "instance".to_owned()
+        }
+    );
+    assert_eq!(from_json(&to_json(&ir).unwrap()).unwrap(), ir);
+    let mut invalid = table.clone();
+    invalid.members.push(invalid.members[0].clone());
+    assert!(invalid.runtime_signature().is_none());
+    invalid = table.clone();
+    invalid.members[0].ty = IrType::Scalar {
+        name: "invalid".to_owned(),
+    };
+    assert!(invalid.runtime_signature().is_none());
+    let mut invalid_ir = ir.clone();
+    invalid_ir.table_signatures[0] = invalid;
+    assert!(!IrValidator::new().validate(&invalid_ir).is_success());
+}
+
+#[test]
 /// JSON 快照应可往返，并在版本不一致时明确拒绝。
 fn snapshot_round_trip_and_version_guard() {
     let ir = lower("value = \"hello\"\n");

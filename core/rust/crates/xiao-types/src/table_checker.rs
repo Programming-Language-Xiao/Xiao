@@ -141,7 +141,9 @@ impl<'source> TypeChecker<'source> {
                     let key = self.name_key(*name);
                     let function =
                         self.build_method_signature(key.clone(), parameters, *return_type, *span);
-                    (key, TableMemberSignature::method(function))
+                    let mut member = TableMemberSignature::method(function.clone());
+                    member.ty = method_type_without_self(&function);
+                    (key, member)
                 }
                 other => {
                     self.type_error(
@@ -231,6 +233,10 @@ impl<'source> TypeChecker<'source> {
         self.declare_table_fields(&signature);
 
         for statement in body {
+            // 方法体从全局签名表查成员；及时发布已检查字段和先前方法，
+            // 不能直到整个表结束才让 self 看见新的接口。
+            self.table_signatures
+                .insert(table_name.clone(), signature.clone());
             match statement {
                 Statement::Assignment { target, value, .. } => {
                     self.check_table_field_assignment(&mut signature, *target, value);
@@ -621,6 +627,83 @@ impl<'source> TypeChecker<'source> {
             return Type::Dynamic;
         }
         member_signature.ty.clone()
+    }
+
+    /// 方法调用消费完整静态签名，并复用普通函数的缺省/关键字匹配规则。
+    pub(super) fn check_table_method_call(
+        &mut self,
+        callee: &Expression,
+        arguments: &[CallArgument],
+        span: SourceSpan,
+    ) -> Option<Type> {
+        let Expression::Member { object, member, .. } = callee else {
+            return None;
+        };
+        let callable = self.check_expression(callee);
+        let object_type = self
+            .nodes
+            .iter()
+            .rev()
+            .find(|node| node.span == object.span())
+            .map(|node| self.context.apply(&node.ty))?;
+        let Type::Table(table) = object_type else {
+            return None;
+        };
+        let signature = self
+            .table_signature(&table.name)?
+            .members
+            .get(&self.name_key(*member))?
+            .function
+            .clone()?;
+        if !matches!(callable, Type::Function { .. }) {
+            return Some(Type::Dynamic);
+        }
+        let mut bound = signature;
+        if !bound.parameters.is_empty() {
+            bound.parameters.remove(0);
+        }
+        Some(self.check_function_arguments(&bound, arguments, span))
+    }
+
+    /// 成员写入沿用成员可见性、算子和赋值兼容规则；方法不能被字段写入替换。
+    pub(super) fn check_table_member_assignment(
+        &mut self,
+        target: &Expression,
+        operator: xiao_syntax::AssignmentOperator,
+        value: &Expression,
+    ) {
+        let expected = self.check_expression(target);
+        if matches!(expected, Type::Function { .. }) {
+            self.type_error(
+                TABLE_MEMBER_CODE,
+                "x05.type.assign_method",
+                target.span(),
+                "表方法不能被赋值覆盖".to_owned(),
+            );
+            self.check_expression(value);
+            return;
+        }
+        let actual = if let Some(operator) = super::assignment_binary_operator(operator) {
+            self.check_expression(&Expression::Binary {
+                operator,
+                left: Box::new(target.clone()),
+                right: Box::new(value.clone()),
+                span: target.span(),
+            })
+        } else {
+            self.check_expression(value)
+        };
+        if !actual.is_dynamic()
+            && !expected.is_dynamic()
+            && !self.types_compatible_for_assignment(&actual, &expected)
+        {
+            self.type_error(
+                TABLE_MEMBER_CODE,
+                "x05.type.table_field_type_mismatch",
+                target.span(),
+                format!("字段写入类型 {actual} 不符合 {expected}"),
+            );
+        }
     }
 
     /// 检查 `new Table(...)` 并返回实例类型。

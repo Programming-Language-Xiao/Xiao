@@ -41,7 +41,7 @@ pub use sig::{CallSig, CallSigTable, ParamKind};
 pub use tac::{
     ArithOp, BlockId, CategoryMap, CompareOp, ConstId, ConstPool, FuncId, PathStep, RegisterClass,
     SetCompareOp, SetOpKind, SigId, TAC_VERSION, TacAbi, TacArgument, TacBlock, TacConstant,
-    TacFunction, TacHandler, TacInstr, TacOp, TacProgram, VReg,
+    TacFunction, TacHandler, TacInstr, TacOp, TacProgram, TacTableDefinition, VReg,
 };
 /// 重导出三地址验证入口与结果类型。
 pub use verify::{TacVerification, verify_program};

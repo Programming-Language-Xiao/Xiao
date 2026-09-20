@@ -450,6 +450,10 @@ impl<'source> TypeChecker<'source> {
         operator: AssignmentOperator,
         value: &Expression,
     ) {
+        if matches!(target, Expression::Member { .. }) {
+            self.check_table_member_assignment(target, operator, value);
+            return;
+        }
         if matches!(target, Expression::Selector { .. }) {
             self.check_selector_assignment(target, operator, value);
             return;
@@ -1240,6 +1244,9 @@ impl<'source> TypeChecker<'source> {
         }
         if is_random_seed_callee(callee, self.source) {
             return self.check_random_seed_call(arguments, span);
+        }
+        if let Some(result) = self.check_table_method_call(callee, arguments, span) {
+            return result;
         }
         if self.is_set_constructor(callee) {
             return self.check_set_constructor(arguments, span);

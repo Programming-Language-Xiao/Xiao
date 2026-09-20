@@ -32,6 +32,8 @@
   运行时去重；同样由三种研究载体复用。
 - `iteration.json`：数组、元组、字符串码点、集合、字典表/字典列迭代，空容器、嵌套
   循环、`break`/`continue`、动态可迭代检查和循环绑定重赋值；同样由三种研究载体复用。
+- `tables.json`：单例、实例隔离、方法参数、别名/容器析构、初始化失败回滚、异常展开和
+  致命故障（6 条）；同时锁定完整释放序列。
 
 运行时的容器越界与键缺失**没有进向量**：静态检查器会提前拒绝常量越界与缺失键，
 因此它们在字面量程序里不可达。那两类语义由 `xiao-vm` 的 `ops.rs` 单元测试直接
@@ -46,6 +48,12 @@
 拒绝（`X02-TYPE-007`），那是正确行为。运行时向量一律用编译期不可知的形参参与
 运算来构造。
 
-当前目录共 73 条向量（`scalar` 6、`control` 4、`errors` 9、`containers` 8、`selectors` 4、
-`sets` 29、`iteration` 13）。
+表向量的释放序列已对照 `IrOwnership` 和冻结计划审阅：实例用例先释放调用接收者，
+再按逆声明顺序释放 `second`、`first`；别名用例依次释放 `items`、`alias`、`first`，
+最后释放全局单例。未物化的构造定义和方法名不虚报释放；析构只读视图也不增加对象强计数。
+未捕获的初始化/析构错误消费 `unmatched_error` 计划，Fatal 不执行计划。错误原因链与
+析构调用次数另由 `r2_table_values.rs` 精确断言。
+
+当前目录共 79 条向量（`scalar` 6、`control` 4、`errors` 9、`containers` 8、`selectors` 4、
+`sets` 29、`iteration` 13、`tables` 6）；09R2H 未修改既有 73 条向量的期望。
 对应实现测试为 `core/rust/crates/xiao-vm/tests/r2_vectors.rs`；研究 VM 仍不是生产 `xiao run`。

@@ -10,6 +10,8 @@ mod lower;
 mod model;
 /// 稳定 JSON 快照编码与解码辅助。
 mod snapshot;
+/// 静态表签名的可序列化镜像与无推断转换。
+mod tables;
 /// IR 不变量验证器。
 mod validate;
 
@@ -19,6 +21,8 @@ pub use lower::{ir_span, lower_program, lower_type};
 pub use model::*;
 /// 重导出 JSON 快照接口。
 pub use snapshot::{IR_SNAPSHOT_VERSION, SnapshotError, from_json, to_json};
+/// 重导出表签名镜像和类型还原入口。
+pub use tables::{IrTableMember, IrTableSignature, restore_type};
 /// 重导出验证结果、稳定诊断类型和后端释放序列对账入口。
 pub use validate::{
     IR_INVALID_CODE, IR_RELEASE_MISMATCH_CODE, IR_VERSION_CODE, IrValidationError,

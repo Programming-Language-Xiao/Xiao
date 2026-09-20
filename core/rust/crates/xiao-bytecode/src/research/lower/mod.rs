@@ -14,6 +14,8 @@ mod expr;
 mod plan;
 /// 语句降低与块结构重建。
 mod stmt;
+/// 表定义、字段初始化函数和方法接线。
+mod tables;
 
 use std::collections::{BTreeMap, HashMap};
 
@@ -119,6 +121,10 @@ struct Lowerer<'ir> {
     constants: ConstPool,
     signatures: CallSigTable,
     functions: Vec<TacFunction>,
+    /// 源码顺序的表定义与方法索引。
+    table_definitions: Vec<crate::research::tac::TacTableDefinition>,
+    /// 所有预登记函数的签名，包含追加的表函数。
+    indexed_signatures: BTreeMap<FuncId, crate::research::tac::SigId>,
     plans: Vec<TacReleasePlan>,
     /// `IrValue.id` 到源码区间的映射，用于把释放动作还原成寄存器。
     value_spans: HashMap<u32, IrSpan>,
@@ -150,6 +156,8 @@ struct Frame {
     value_regs: BTreeMap<u32, VReg>,
     locals: Vec<VReg>,
     parameters: Vec<VReg>,
+    /// 形参的精确名称绑定，也覆盖合成字段初始化函数的接收者。
+    parameter_names: BTreeMap<String, VReg>,
     used_scopes: Vec<u32>,
     scope_stack: Vec<u32>,
     /// 活动循环的跳转目标栈。
@@ -221,6 +229,8 @@ impl<'ir> Lowerer<'ir> {
             constants: ConstPool::new(),
             signatures: CallSigTable::new(),
             functions: Vec::new(),
+            table_definitions: Vec::new(),
+            indexed_signatures: BTreeMap::new(),
             plans,
             value_spans,
             value_storage,
@@ -271,8 +281,11 @@ impl<'ir> Lowerer<'ir> {
                 let return_type = return_type.clone();
                 let signature = self.signature_for(&parameters, &return_type);
                 self.function_signatures.insert(name.clone(), signature);
+                self.indexed_signatures
+                    .insert(FuncId::new(index as u32 + 1), signature);
             }
         }
+        let table_functions = self.register_tables(functions.len() as u32 + 1);
         let script = self
             .program
             .body
@@ -298,6 +311,14 @@ impl<'ir> Lowerer<'ir> {
                 .unwrap_or_else(|| self.signature_for(parameters, return_type));
             let parameters = parameters.clone();
             self.lower_function(&name, body, &parameters, statement.span, Some(signature));
+        }
+        for (name, statement, signature) in table_functions {
+            if let IrStatementKind::Function {
+                parameters, body, ..
+            } = &statement.kind
+            {
+                self.lower_function(&name, body, parameters, statement.span, Some(signature));
+            }
         }
     }
 
@@ -333,6 +354,7 @@ impl<'ir> Lowerer<'ir> {
             selection_plans: self.program.selection_plans.clone(),
             broadcast_assignment_plans: self.program.broadcast_assignment_plans.clone(),
             random_seed_plans: self.program.random_seed_plans.clone(),
+            table_definitions: self.table_definitions,
             unsupported: self.unsupported,
         }
     }
@@ -455,6 +477,12 @@ impl<'ir> Lowerer<'ir> {
             let class = Lowerer::class_of_type(&parameter.ty);
             let register = self.new_binding_register(class, parameter.span);
             self.frame.parameters.push(register);
+            if parameter.name.text.starts_with('#') {
+                self.frame.parameter_names.insert(
+                    name_key(&parameter.name.text, parameter.name.backticked),
+                    register,
+                );
+            }
             self.frame.locals.push(register);
             if let Some(value) = self.value_of_name_at(
                 &parameter.name.text,
@@ -1004,16 +1032,7 @@ impl<'ir> Lowerer<'ir> {
 
     /// 返回某个函数的调用签名。
     fn signature_of_function(&self, target: FuncId) -> Option<crate::research::tac::SigId> {
-        let name = self
-            .program
-            .body
-            .iter()
-            .filter_map(|statement| match &statement.kind {
-                IrStatementKind::Function { name, .. } => Some(name.text.clone()),
-                _ => None,
-            })
-            .nth(target.get().saturating_sub(1) as usize)?;
-        self.function_signatures.get(&name).copied()
+        self.indexed_signatures.get(&target).copied()
     }
 
     /// 登记一个新建的临时堆值寄存器，供语句结束时释放。

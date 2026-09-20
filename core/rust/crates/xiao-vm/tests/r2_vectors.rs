@@ -85,6 +85,12 @@ fn observe<C: Carrier>(case: &VectorCase) -> Expectation {
         .compile(&FrontendRequest::from_text(case.source.clone()))
         .unwrap_or_else(|error| panic!("用例 {} 前端应成功: {:?}", case.name, error.diagnostics()));
     let mut tac = lower_program(&artifact.ir);
+    assert!(
+        tac.unsupported.is_empty(),
+        "用例 {} 存在未降低语义: {:?}",
+        case.name,
+        tac.unsupported
+    );
     if let Some(entry) = case.entry.as_deref() {
         let function = tac
             .functions
@@ -314,5 +320,17 @@ fn iteration_vectors_are_stable() {
             "/../../../../tests/spec/09-bytecode/iteration.json"
         )),
         "09R2G",
+    );
+}
+
+#[test]
+/// 表声明、构造回滚和最后强引用析构复用同一份完整释放序列。
+fn table_vectors_are_stable() {
+    assert_all_machines(
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../../../tests/spec/09-bytecode/tables.json"
+        )),
+        "09R2H",
     );
 }

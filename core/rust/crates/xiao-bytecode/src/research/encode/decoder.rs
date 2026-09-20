@@ -21,7 +21,8 @@ use xiao_ir::{IR_VERSION, IrArrayShape, IrDictTypeEntry, IrType};
 ///
 /// 读出顺序即格式顺序：魔数 → 布局版本 → 宽度标签 → 四个版本字段 → 语言版本
 /// 与目标 → 常量池 → 签名表 → 函数 → 程序级类别兼容视图 → 释放计划 →
-/// `unsupported` 说明。版本字段在读到时就逐个比对当前实现，不等读完再判。
+/// 选择/广播/种子计划 → 表定义 → `unsupported` 说明。版本字段在读到时就逐个
+/// 比对当前实现，不等读完再判。
 ///
 /// 末尾要求恰好消费完：剩余任何字节都报 [`EncodeError::TrailingBytes`]。静默
 /// 忽略尾部会让「编码器多写了一段」这类 bug 永远浮不出来——解码成功、数据却
@@ -72,6 +73,7 @@ pub(super) fn decode_inner(bytes: &[u8]) -> Result<(TacProgram, OperandWidth), E
     let selection_plans = decode_selection_plans(&mut reader)?;
     let broadcast_assignment_plans = decode_broadcast_plans(&mut reader)?;
     let random_seed_plans = decode_random_seed_plans(&mut reader)?;
+    let table_definitions = decode_table_definitions(&mut reader, width)?;
     let unsupported_count = reader.count("unsupported")?;
     let mut unsupported = Vec::with_capacity(unsupported_count);
     for _ in 0..unsupported_count {
@@ -98,6 +100,7 @@ pub(super) fn decode_inner(bytes: &[u8]) -> Result<(TacProgram, OperandWidth), E
             selection_plans,
             broadcast_assignment_plans,
             random_seed_plans,
+            table_definitions,
             unsupported,
         },
         width,
@@ -513,6 +516,20 @@ fn decode_op(
             source: VReg::new(index(reader, "VReg")?),
             index: VReg::new(index(reader, "VReg")?),
         },
+        38 => TacOp::LoadTable {
+            table: index(reader, "TableId")?,
+            construct: read_bool(reader, "table.construct")?,
+            arguments: decode_arguments(reader, width)?,
+        },
+        39 => TacOp::MemberGet {
+            object: VReg::new(index(reader, "VReg")?),
+            member: reader.string("member")?,
+        },
+        40 => TacOp::MemberSet {
+            object: VReg::new(index(reader, "VReg")?),
+            member: reader.string("member")?,
+            value: VReg::new(index(reader, "VReg")?),
+        },
         16 => TacOp::Jump(BlockId::new(index(reader, "BlockId")?)),
         17 => TacOp::BranchIf {
             condition: VReg::new(index(reader, "VReg")?),
@@ -726,6 +743,35 @@ fn decode_random_seed_plans(
         plans.push(plan);
     }
     Ok(plans)
+}
+
+/// 读取表接口和函数索引，拒绝被重复键覆盖的方法。
+fn decode_table_definitions(
+    reader: &mut Reader<'_>,
+    width: OperandWidth,
+) -> Result<Vec<crate::research::tac::TacTableDefinition>, EncodeError> {
+    let count = reader.count("table_definitions")?;
+    let mut tables = Vec::with_capacity(count);
+    for _ in 0..count {
+        let signature = serde_json::from_str(&reader.string("table.signature")?)
+            .map_err(|error| EncodeError::InvalidFormat(format!("表签名反序列化失败：{error}")))?;
+        let fields = FuncId::new(reader.index(width, "FuncId")?);
+        let count = reader.count("table.methods")?;
+        let mut methods = BTreeMap::new();
+        for _ in 0..count {
+            let name = reader.string("table.method")?;
+            let function = FuncId::new(reader.index(width, "FuncId")?);
+            if methods.insert(name, function).is_some() {
+                return Err(EncodeError::InvalidFormat("重复的表方法".to_owned()));
+            }
+        }
+        tables.push(crate::research::tac::TacTableDefinition {
+            signature,
+            fields,
+            methods,
+        });
+    }
+    Ok(tables)
 }
 
 /// 读函数级独立源码区间（起止各一个 uleb）。

@@ -58,6 +58,7 @@ fn program(
         selection_plans: Vec::new(),
         broadcast_assignment_plans: Vec::new(),
         random_seed_plans: Vec::new(),
+        table_definitions: Vec::new(),
         unsupported: Vec::new(),
     }
 }

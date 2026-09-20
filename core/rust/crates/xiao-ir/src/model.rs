@@ -60,6 +60,9 @@ pub struct IrProgram {
     pub broadcast_assignment_plans: Vec<IrBroadcastAssignmentPlan>,
     /// `random.seed` 的类型阶段计划。
     pub random_seed_plans: Vec<IrRandomSeedPlan>,
+    /// 类型阶段冻结的表签名；空表保持旧快照的编码形状。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub table_signatures: Vec<crate::IrTableSignature>,
     /// 入口源码区间；脚本模式使用程序区间。
     pub span: IrSpan,
 }
@@ -83,6 +86,7 @@ impl IrProgram {
             selection_plans: Vec::new(),
             broadcast_assignment_plans: Vec::new(),
             random_seed_plans: Vec::new(),
+            table_signatures: Vec::new(),
             span,
         }
     }
