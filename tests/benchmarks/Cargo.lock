@@ -221,6 +221,7 @@ dependencies = [
  "xiao-ir",
  "xiao-lifetime",
  "xiao-runtime",
+ "xiao-source",
  "xiao-syntax",
  "xiao-types",
 ]
