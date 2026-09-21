@@ -74,7 +74,7 @@ impl Display for CodegenError {
             }
             Self::InvalidIr { message } => write!(formatter, "IR 无效：{message}"),
             Self::Unsupported { feature, span } => {
-                write!(formatter, "N0-A 不支持 {feature}")?;
+                write!(formatter, "原生后端不支持 {feature}")?;
                 if let Some(span) = span {
                     write!(formatter, "（{}..{}）", span.start, span.end)?;
                 }

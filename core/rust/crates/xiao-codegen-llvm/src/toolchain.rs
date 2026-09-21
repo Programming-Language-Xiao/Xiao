@@ -10,6 +10,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::error::{CodegenError, Result};
 use crate::target::TargetDescription;
+use xiao_runtime_abi::ABI_ENCODED_VERSION;
 
 /// 外部工具链版本清单。
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -50,6 +51,8 @@ pub struct Toolchain {
     pub llvm_as: Option<PathBuf>,
     /// 可选的 `llc` 路径；N0-A 的直接链接路径不强制使用它。
     pub llc: Option<PathBuf>,
+    /// 可选的 Xiao Runtime 静态库路径；动态模块必须由调用方显式注入。
+    pub runtime_library: Option<PathBuf>,
     /// 已登记的工具版本文本。
     pub versions: ToolchainVersions,
 }
@@ -62,6 +65,7 @@ impl Toolchain {
             clang: clang.into(),
             llvm_as: None,
             llc: None,
+            runtime_library: None,
             versions: ToolchainVersions::default(),
         }
     }
@@ -77,6 +81,13 @@ impl Toolchain {
     #[must_use]
     pub fn with_llc(mut self, path: impl Into<PathBuf>) -> Self {
         self.llc = Some(path.into());
+        self
+    }
+
+    /// 设置 Xiao Runtime 静态库路径；后端不自行搜索或发现它。
+    #[must_use]
+    pub fn with_runtime_library(mut self, path: impl Into<PathBuf>) -> Self {
+        self.runtime_library = Some(path.into());
         self
     }
 
@@ -114,7 +125,11 @@ impl Toolchain {
         codegen_version: u32,
     ) -> ToolchainFingerprint {
         let canonical = format!(
-            "codegen={codegen_version};{};clang={};llvm-as={};llc={}",
+            "codegen={codegen_version};abi={ABI_ENCODED_VERSION};runtime={};{};clang={};llvm-as={};llc={}",
+            self.runtime_library
+                .as_deref()
+                .map(runtime_fingerprint)
+                .unwrap_or_else(|| "<none>".to_owned()),
             target.fingerprint_fields(),
             self.versions.clang,
             self.versions.llvm_as.as_deref().unwrap_or("<none>"),
@@ -179,6 +194,39 @@ impl Toolchain {
         target: &TargetDescription,
         output: impl AsRef<Path>,
     ) -> Result<PathBuf> {
+        self.compile_inner(text, target, output, None, false)
+    }
+
+    /// 验证 LLVM IR 后仅链接 IR 自身；即便工具链配置过 Runtime，也不会继承它。
+    pub fn compile_without_runtime(
+        &self,
+        text: &str,
+        target: &TargetDescription,
+        output: impl AsRef<Path>,
+    ) -> Result<PathBuf> {
+        self.compile_inner(text, target, output, None, false)
+    }
+
+    /// 验证 LLVM IR 后调用 clang，并按需链接调用方注入的 Runtime 静态库。
+    pub fn compile_with_runtime(
+        &self,
+        text: &str,
+        target: &TargetDescription,
+        output: impl AsRef<Path>,
+        runtime_library: Option<&Path>,
+    ) -> Result<PathBuf> {
+        self.compile_inner(text, target, output, runtime_library, true)
+    }
+
+    /// 按是否继承配置中的 Runtime 库执行一次验证、编译和链接。
+    fn compile_inner(
+        &self,
+        text: &str,
+        target: &TargetDescription,
+        output: impl AsRef<Path>,
+        runtime_library: Option<&Path>,
+        inherit_configured_runtime: bool,
+    ) -> Result<PathBuf> {
         let output = output.as_ref().to_path_buf();
         if let Some(parent) = output.parent().filter(|path| !path.as_os_str().is_empty()) {
             fs::create_dir_all(parent).map_err(|error| CodegenError::Io {
@@ -192,18 +240,24 @@ impl Toolchain {
             path: temp.path.clone(),
             message: error.to_string(),
         })?;
-        let result = run_command(
-            &self.clang,
-            &[
-                "-target",
-                &target.triple,
-                "-Wno-override-module",
-                &path_text(&temp.path),
-                "-o",
-                &path_text(&output),
-            ],
-            "clang",
-        )?;
+        let mut args = vec![
+            "-target".to_owned(),
+            target.triple.clone(),
+            "-Wno-override-module".to_owned(),
+            path_text(&temp.path),
+            "-o".to_owned(),
+            path_text(&output),
+        ];
+        let runtime_library = if inherit_configured_runtime {
+            runtime_library.or(self.runtime_library.as_deref())
+        } else {
+            runtime_library
+        };
+        if let Some(runtime_library) = runtime_library {
+            args.push(path_text(runtime_library));
+        }
+        let arg_refs = args.iter().map(String::as_str).collect::<Vec<_>>();
+        let result = run_command(&self.clang, &arg_refs, "clang")?;
         if !result.status.success() {
             let _ = fs::remove_file(&output);
             return Err(CodegenError::ToolchainFailed {
@@ -308,4 +362,12 @@ fn fnv1a64(bytes: &[u8]) -> u64 {
         hash = hash.wrapping_mul(0x100000001b3);
     }
     hash
+}
+
+/// 计算 Runtime 静态库内容指纹；路径变化不会导致无意义失配。
+fn runtime_fingerprint(path: &Path) -> String {
+    match fs::read(path) {
+        Ok(bytes) => format!("{:016x}", fnv1a64(&bytes)),
+        Err(_) => "<unreadable>".to_owned(),
+    }
 }

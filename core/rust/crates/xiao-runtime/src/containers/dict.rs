@@ -115,6 +115,17 @@ impl Clone for DictHandle {
 }
 
 impl DictHandle {
+    /// 从 Runtime 内部强句柄恢复字典包装；调用方必须已验证字典标签。
+    pub(crate) fn from_strong_handle(inner: StrongHandle) -> RuntimeResult<Self> {
+        if !matches!(
+            inner.type_tag(),
+            RuntimeTypeTag::DictTable | RuntimeTypeTag::DictColumn
+        ) {
+            return Err(crate::errors::RuntimeError::invalid_handle("句柄不是字典"));
+        }
+        Ok(Self { inner })
+    }
+
     /// 分配一个字典对象。
     pub fn new(kind: DictKind, entries: Vec<(String, RuntimeValue)>) -> RuntimeResult<Self> {
         let inner = allocate_payload(Box::new(DictObject { kind, entries }))?;

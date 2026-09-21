@@ -272,3 +272,55 @@ b6df79d（N0-A）                     →  两条都守住了 ✓
 - [21A. 单线程 RC、强环与并发模型决策交接](21a-rc-cycles-and-concurrency-handoff.md) —— `RefCountStrategy` 的边界
 - [09R2D. 两种机型与指令编码器交接文档](09r2d-machines-and-encoder.md) —— 开发规定主表
 - [00E. 单文件行数门禁交接](00e-file-size-gate.md) —— `A0-SIZE-001` 与旁置 md 豁免
+
+---
+
+## 八、落地记录（2026-09-21）
+
+本批已按上述边界落地，代码分为三层：`xiao-runtime-abi` 只保留固定 C 布局、版本常量和
+外部声明；`xiao-runtime/src/abi.rs` 提供唯一符号实现；`xiao-codegen-llvm/src/dynamic.rs`
+消费同一份类型化 IR 并生成 `%xiao.value` 调用。选择 tagged union 是因为标量仍必须保留
+N0-A 的原生 LLVM 类型，不能把所有值装箱；标签使用透明的 `u32` 新类型而不是 Rust
+`enum`，所以 C/LLVM 传入未知值时可以返回 `InvalidArgument`，不会触发非法判别值的未定义行为。
+
+ABI 主版本仍为 1，新增动态入口把次版本推进为 1。强/弱 ABI 句柄使用带魔数和种类标记
+的盒子；`retain`/`weak_retain` 返回原 ABI 盒子地址并在盒子内部增加一份 Runtime 引用，
+从而与 N0-A 的地址契约一致。拥有句柄的 `XiaoValue` 不再实现 Rust 的隐式 `Copy`，跨
+边界复制必须调用 `xiao_runtime_value_copy`。动态入口在启动时检查主/次版本，构造和复制
+调用检查状态码，失败边进入 `llvm.trap`；这不等同于 N0-C 的可恢复异常展开。由于 ABI
+长度字段采用 `usize`、LLVM 描述符当前按 `i64` 发射，N0-B 动态降低明确只接受 64 位
+目标；32 位目标留给 N0-D 的固定宽度验证。
+
+所有 `out` 句柄槽都采用显式替换协议：调用方先写入空指针（或仍然 live 的 ABI 强句柄），
+Runtime 成功时先归还旧句柄再写入新句柄，失败时保持旧槽位；`XiaoValue` 输出槽同样必须
+先初始化为 `none` 或有效值。句柄只能传回 Runtime 返回且尚未 `release` 的地址，释放后
+不得重用。盒子魔数和种类标记只能拦截仍可读的明显类型错配，不能把任意外部地址或释放
+后的悬空指针变成安全输入；这条边界由调用方的生命周期契约负责。
+
+LLVM 表描述符完整写入表名、形态、字段名、字段类型和公开标记；真实表声明中的字段默认值
+会在每次 `new`/singleton 构造后按源码顺序写入，含方法或非 ABI 字段类型的表、带初始化
+参数的 `new` 以及其他表体语句仍结构化拒绝，避免静默丢失语义。
+动态 `Cast` 只允许类型层已经证明的 identity 透传；跨类型转换（包括 `str -> bool`）
+和前端登记但原生侧尚未消费的任意 `runtime_checks` 都会带源码区间拒绝，直到对应失败边
+接入后续批次。数组、元组、字典和集合构造
+遵循“Runtime 先复制输入值，生成代码再释放临时拥有值”的协议；表字段读写同样经过 ABI
+类型和句柄校验。正常结束和 `return` 会
+优先消费根程序的 `IrOwnership.release_plans`，按 `order` 发出 strong/weak 释放；没有
+所有权元数据的手工 IR 才使用逆声明序兜底。已类型检查的布尔 `if`/`elif`/`else` 与无
+异常转移的 `while`（包括没有块级拥有值时的 `break`/`continue`）会降低为基本块。若
+分支或循环声明了动态拥有局部值，降低器会在生成 LLVM 前返回带作用域和源码区间的结构化
+拒绝，避免把它静默漏到根计划；块级计划发射和作用域展开留给后续 N0-B 批次。`for`、
+动态局部的 `break`/`continue` 当前也会结构化拒绝，待同一块级计划机制接入后再实现；异常、`raise`、
+`try/catch/finally` 和致命终止路径属于 N0-C。后者需要异常展开上下文，不能在 N0-B 里
+用根槽位释放代替。
+
+`CodegenOptions::entry_observation(ExitCode)` 在动态模块中也会显式生成 `i64`
+入口和 `main` 适配器；它只记录类型层明确为 `int`/`sint`/`bool` 的最后一次值，避免
+把动态标签猜测成退出码。未启用该选项时动态入口保持 `void` 与零退出码。
+
+验证覆盖 ABI 布局、版本、强/弱计数、未知标签、数组往返、动态表描述符、真实前端的字符串/
+数组/表同源降低、Cast/运行时检查拒绝边界和真实 `llvm-as` 解析；`xiao-driver` 另有真实
+`FrontendCompiler` 动态构建测试。原生链接测试只在
+显式提供与目标三元组匹配的 `XIAO_RUNTIME_LIBRARY`、`XIAO_CLANG` 和 `XIAO_LLVM_AS` 时
+运行。本机当前仅有 MSYS clang、缺少可用的 MSVC 链接环境，因此未把该次链接结果宣称为
+Windows 原生验证；Linux/macOS 与 WSL/容器仍列为待复现。

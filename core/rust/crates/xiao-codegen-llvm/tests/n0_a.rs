@@ -324,8 +324,8 @@ fn lowers_float_power_with_valid_intrinsic_signature() {
 }
 
 #[test]
-/// N0-A 明确拒绝字符串和容器，避免静态产物隐式装载完整 Runtime。
-fn rejects_runtime_values() {
+/// N0-B 把字符串值切到稳定 ABI，同时保留可解释的 Runtime 组件清单。
+fn lowers_runtime_values_with_abi() {
     let string_program = simple_program(vec![assignment(
         "value",
         IrExpression {
@@ -337,8 +337,16 @@ fn rejects_runtime_values() {
             span: span(),
         },
     )]);
-    let error = lower_program(&string_program, &CodegenOptions::default()).expect_err("应拒绝");
-    assert!(matches!(error, CodegenError::Unsupported { .. }));
+    let module = lower_program(&string_program, &CodegenOptions::default()).expect("动态值应降低");
+    assert!(module.uses_runtime);
+    assert!(module.text.contains("@xiao_runtime_string_new"));
+    assert!(module.text.contains("@xiao_runtime_value_str"));
+    assert!(
+        module
+            .runtime_components
+            .iter()
+            .any(|component| component == "value")
+    );
 }
 
 #[test]

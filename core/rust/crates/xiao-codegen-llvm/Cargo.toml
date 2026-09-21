@@ -15,3 +15,5 @@ path = "src/lib.rs"
 
 [dependencies]
 xiao-ir = { path = "../xiao-ir" }
+xiao-runtime-abi = { path = "../xiao-runtime-abi" }
+xiao-types = { path = "../xiao-types" }

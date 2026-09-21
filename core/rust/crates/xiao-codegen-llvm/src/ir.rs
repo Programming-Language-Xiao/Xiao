@@ -69,6 +69,10 @@ pub struct LlvmModule {
     pub entry_symbol: String,
     /// N0-A 模块是否调用 Runtime ABI；纯静态模块固定为 `false`。
     pub uses_runtime: bool,
+    /// 生成模块实际需要的 Runtime 组件名称；静态模块为空。
+    pub runtime_components: Vec<String>,
+    /// 动态模块要求的 Runtime ABI 编码版本；静态模块没有该依赖。
+    pub runtime_abi_version: Option<u64>,
     /// 后端版本和目标字段组成的可追踪指纹（工具版本在构建驱动器中补入）。
     pub codegen_fingerprint: String,
 }
@@ -91,7 +95,10 @@ pub fn validate_program(program: &IrProgram) -> Result<()> {
 }
 
 /// 将一份已验证的类型化 IR 降低成 LLVM 文本。
-pub fn lower_program(program: &IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
+pub(crate) fn lower_static_program(
+    program: &IrProgram,
+    options: &CodegenOptions,
+) -> Result<LlvmModule> {
     validate_program(program)?;
     let mut generator = ModuleGenerator::new(program, options);
     generator.generate()
@@ -262,6 +269,8 @@ impl<'a> ModuleGenerator<'a> {
             target: self.options.target.clone(),
             entry_symbol: "xiao_entry".to_owned(),
             uses_runtime: false,
+            runtime_components: Vec::new(),
+            runtime_abi_version: None,
             codegen_fingerprint: fingerprint,
         })
     }

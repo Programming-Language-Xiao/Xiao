@@ -12,8 +12,10 @@ workspace = true
 
 [lib]
 path = "src/lib.rs"
+crate-type = ["rlib", "staticlib"]
 
 [dependencies]
+xiao-runtime-abi = { path = "../xiao-runtime-abi" }
 xiao-diagnostics = { path = "../xiao-diagnostics" }
 xiao-lifetime = { path = "../xiao-lifetime" }
 xiao-source = { path = "../xiao-source" }

@@ -75,6 +75,16 @@ impl Clone for StringHandle {
 }
 
 impl StringHandle {
+    /// 从 Runtime 内部强句柄恢复字符串包装；调用方必须已验证类型标签。
+    pub(crate) fn from_strong_handle(inner: StrongHandle) -> RuntimeResult<Self> {
+        if inner.type_tag() != RuntimeTypeTag::String {
+            return Err(crate::errors::RuntimeError::invalid_handle(
+                "句柄不是字符串",
+            ));
+        }
+        Ok(Self { inner })
+    }
+
     /// 分配一个 UTF-8 字符串对象。
     pub fn new(value: impl Into<String>) -> RuntimeResult<Self> {
         let inner = allocate_payload(Box::new(StringObject {

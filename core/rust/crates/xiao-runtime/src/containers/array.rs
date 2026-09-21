@@ -70,6 +70,14 @@ impl Clone for ArrayHandle {
 }
 
 impl ArrayHandle {
+    /// 从 Runtime 内部强句柄恢复数组包装；调用方必须已验证类型标签。
+    pub(crate) fn from_strong_handle(inner: StrongHandle) -> RuntimeResult<Self> {
+        if inner.type_tag() != RuntimeTypeTag::Array {
+            return Err(crate::errors::RuntimeError::invalid_handle("句柄不是数组"));
+        }
+        Ok(Self { inner })
+    }
+
     /// 分配一个数组对象。
     pub fn new(elements: Vec<RuntimeValue>) -> RuntimeResult<Self> {
         let inner = allocate_payload(Box::new(ArrayObject { elements }))?;

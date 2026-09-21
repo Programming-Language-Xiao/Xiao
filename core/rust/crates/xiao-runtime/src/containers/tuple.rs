@@ -70,6 +70,14 @@ impl Clone for TupleHandle {
 }
 
 impl TupleHandle {
+    /// 从 Runtime 内部强句柄恢复元组包装；调用方必须已验证类型标签。
+    pub(crate) fn from_strong_handle(inner: StrongHandle) -> RuntimeResult<Self> {
+        if inner.type_tag() != RuntimeTypeTag::Tuple {
+            return Err(crate::errors::RuntimeError::invalid_handle("句柄不是元组"));
+        }
+        Ok(Self { inner })
+    }
+
     /// 分配一个元组对象。
     pub fn new(elements: Vec<RuntimeValue>) -> RuntimeResult<Self> {
         let inner = allocate_payload(Box::new(TupleObject { elements }))?;

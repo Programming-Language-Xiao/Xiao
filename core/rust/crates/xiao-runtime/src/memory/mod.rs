@@ -340,6 +340,17 @@ impl WeakHandle {
         }
     }
 
+    /// 尝试克隆弱句柄并显式处理计数溢出。
+    pub fn try_clone(&self) -> RuntimeResult<Self> {
+        let header = unsafe { self.ptr.as_ref() };
+        let count = header.strategy.increment(header.weak_count.get())?;
+        header.weak_count.set(count);
+        Ok(Self {
+            ptr: self.ptr,
+            _single_thread: PhantomData,
+        })
+    }
+
     /// 尝试将弱句柄升级为强句柄。
     pub fn upgrade(&self) -> RuntimeResult<StrongHandle> {
         let header = unsafe { self.ptr.as_ref() };

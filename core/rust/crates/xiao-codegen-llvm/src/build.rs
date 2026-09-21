@@ -8,7 +8,8 @@ use xiao_ir::IrProgram;
 
 use crate::CODEGEN_VERSION;
 use crate::error::{CodegenError, Result};
-use crate::ir::{CodegenOptions, LlvmModule, lower_program};
+use crate::ir::{CodegenOptions, LlvmModule};
+use crate::lower_program;
 use crate::target::TargetDescription;
 use crate::toolchain::{Toolchain, ToolchainFingerprint};
 
@@ -105,10 +106,27 @@ impl NativeBuild {
                 message: error.to_string(),
             })?;
         }
-        let executable =
-            request
-                .toolchain
-                .compile(&module.text, &request.options.target, &request.output)?;
+        if module.uses_runtime && request.toolchain.runtime_library.is_none() {
+            return Err(CodegenError::ToolchainUnavailable {
+                tool: "xiao-runtime".to_owned(),
+                message: "动态模块需要调用方通过 Toolchain::with_runtime_library 注入静态库"
+                    .to_owned(),
+            });
+        }
+        let executable = if module.uses_runtime {
+            request.toolchain.compile_with_runtime(
+                &module.text,
+                &request.options.target,
+                &request.output,
+                None,
+            )?
+        } else {
+            request.toolchain.compile_without_runtime(
+                &module.text,
+                &request.options.target,
+                &request.output,
+            )?
+        };
         let fingerprint = request
             .toolchain
             .fingerprint(&request.options.target, CODEGEN_VERSION);

@@ -422,6 +422,14 @@ impl Clone for TableInstance {
 }
 
 impl TableInstance {
+    /// 从 Runtime 内部强句柄恢复表包装；调用方必须已验证表标签。
+    pub(crate) fn from_strong_handle(handle: StrongHandle) -> RuntimeResult<Self> {
+        if handle.type_tag() != RuntimeTypeTag::Table {
+            return Err(RuntimeError::invalid_handle("句柄不是表"));
+        }
+        Ok(Self { handle })
+    }
+
     /// 按 `[[Table]]` 定义分配并初始化一个实例。
     pub fn new(definition: TableDefinition) -> RuntimeResult<Self> {
         if !definition.is_instantiable() {

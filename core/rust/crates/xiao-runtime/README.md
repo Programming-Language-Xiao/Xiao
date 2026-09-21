@@ -3,8 +3,8 @@
 ## 目录职责
 
 Rust 执行 Runtime 的分层 crate。06-B 首版交付不透明对象头、单线程引用计数、
-`Weak`、`str`、标量值和静态签名表生命周期；数组/元组/集合/字典、I/O、字节码执行
-和调试窗口由后续阶段接入。
+`Weak`、`str`、标量值和静态签名表生命周期；10B 通过独立 ABI 接入数组/元组/集合/字典
+和表描述符。I/O、字节码执行、异常对象和调试窗口由后续阶段接入。
 
 ## 工程期
 
@@ -12,7 +12,7 @@ Rust 执行 Runtime 的分层 crate。06-B 首版交付不透明对象头、单�
 
 ## 模块放置
 
-`src/` 下按 `value`、`tables`、`memory`、`errors` 和 `testing` 分模块；`testing` 现提供 07-B 的
+`src/` 下按 `value`、`tables`、`memory`、`errors`、`abi` 和 `testing` 分模块；`testing` 现提供 07-B 的
 `dispatch_catch`/`dispatch_fatal` 规格路由；后续容器、I/O
 和调试目录必须沿用同样的单一职责边界。平台系统调用只经 `xiao-platform`。
 

@@ -93,6 +93,14 @@ impl Clone for SetHandle {
 }
 
 impl SetHandle {
+    /// 从 Runtime 内部强句柄恢复集合包装；调用方必须已验证类型标签。
+    pub(crate) fn from_strong_handle(inner: StrongHandle) -> RuntimeResult<Self> {
+        if inner.type_tag() != RuntimeTypeTag::Set {
+            return Err(crate::errors::RuntimeError::invalid_handle("句柄不是集合"));
+        }
+        Ok(Self { inner })
+    }
+
     /// 分配一个集合对象；不可哈希元素被拒绝。
     pub fn new(elements: Vec<RuntimeValue>) -> RuntimeResult<Self> {
         if let Some(offender) = elements.iter().find(|value| !is_hashable(value)) {

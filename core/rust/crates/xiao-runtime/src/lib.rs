@@ -4,6 +4,9 @@
 //! 字节码 VM、LLVM 后端、CLI 与并发调度器只应通过这里的稳定句柄接口接入，
 //! 不得复制一套生命周期语义。
 
+/// 稳定 C ABI 的 Runtime 符号实现；公开布局来自 `xiao-runtime-abi`。
+mod abi;
+
 /// 数组、元组、字典表、字典列和集合的运行对象。
 pub mod containers;
 /// 稳定 Runtime 错误、原因链和结构化参数。
