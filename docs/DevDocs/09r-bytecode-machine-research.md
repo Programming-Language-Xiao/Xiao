@@ -658,8 +658,9 @@ opcode 36/37，`for` 已降低为来源求值、长度、游标比较、动态�
 
 **B0-B 已完成**：`xiao-vm` 提供携带 IR/TAC 的生产 `RunRequest`，执行前无条件消费验证器，
 固定函数 0 的栈式入口，统一 `ReportRecord`/源码栈帧和有界事件接收器；脚本与 `[main]` 共用
-同一入口 ABI。B0-C 已交付内部前端驱动器；整数退出码仍留给 11/X0，用户可见的
-`xiao run` 与 TypeScript CLI 接线也仍留给 11/X0。
+同一入口 ABI。B0-C 已交付内部前端驱动器；**B0-D 已在 `xiao-driver` 冻结五个退出码语义**，
+由 `DriverOutcome::exit_code()` 派生，11/X0 只负责进程映射。用户可见的 `xiao run` 与
+TypeScript CLI 接线仍留给 11/X0。
 
 ## 验收与后置债项
 

@@ -1,8 +1,8 @@
-# 09-B0. 字节码最小运行闭环（阶段方向与 B0-A 交接）
+# 09-B0. 字节码最小运行闭环（阶段方向与 B0 交接）
 
 > **本文是 09-B0 的阶段方向稿，同时是 B0-A 的可执行交接。** 09R 研究序列已于
 > 2026-09-20 完成冻结（09R3），**冻结结论进入生产的方式由本文定**；B0-B / B0-C
-> 只定方向，各自开工时再出批次交接文档。
+> / B0-D 的批次交接文档负责具体落地。
 >
 > B0 的**权威定义**在执行 [12. 测试与开发里程碑](12-tests-and-milestones.md) `:672-679`
 > 的四条退出条件、[09. 字节码运行模式](09-bytecode-runtime.md) 的验收标准，以及
@@ -14,7 +14,8 @@
 ### 接手前提
 
 1. [09R. 字节码寄存器机型特别研究](09r-bytecode-machine-research.md) —— 权威定义。
-   `:610-619` 是 09R3 施工图，`:640-649` 是 **B0-A/B0-B/B0-C 的拆分依据**。
+   `:610-619` 是 09R3 施工图，`:640-649` 是 **B0-A/B0-B/B0-C 的拆分依据**；B0-D 的退出码
+   与实测记录见本阶段收口文档。
 2. [09R3. 跨平台基准与冻结](09r3-benchmarks-and-freeze.md) —— **冻结七项就是本阶段的
    输入契约**；第十一节的落地记录含 `selected_machine: stack` 与布局版本 3。
 3. [09. 字节码运行模式](09-bytecode-runtime.md) —— 一级/二级工程目标与验收标准，
@@ -34,13 +35,15 @@
   内部一致性错误；B0-B 的生产运行 ABI 与 B0-C 的前端驱动器均已落地。
 - `tests/benchmarks/src/main.rs:441-454` 曾是把 `FrontendArtifact` 接到 `lower_program` 的
   唯一代码；现在生产链位于 `xiao-driver/src/run.rs`，基准段仍是一次性原型，**不承担**生产契约。
+- B0-D 已冻结 `xiao-driver::ExitCode` 的五个终局和 `DriverOutcome::exit_code()`；Linux
+  容器仅作为开发环境门禁记录，不改变 Windows 原生基准与跨平台验收口径。
 - 登记状态：`rust.xiao-bytecode` / `rust.xiao-vm` 已为 `draft`（stage `09`）；
   `rust.xiao-bytecode-research` / `rust.xiao-vm-research` 为 `draft`（stage `09R2`）。
 
 ### 本阶段交付与不负责
 
 **交付**：生产字节码模型与验证器（B0-A）、生产 VM 执行闭环（B0-B）、前端到 VM 的内部
-驱动器（B0-C）。
+驱动器（B0-C）和退出码冻结（B0-D）。
 
 **不负责**：`.xiaoc` 文件格式与加载器（14）、LLVM 原生（10/N0）、优化 Pass（13）、
 用户可见的 `xiao run` 与 `-debug` 诊断窗口（11/X0）、多模块工程图与依赖解析（D/E）、
@@ -318,7 +321,8 @@ B0-B 要定义的是 09 文档 `:163` 要求的**两种模式**：
 
 - **结构化结果**：`RunResult { Success, Error(XiaoError), Fatal(FatalError) }` 的分工是好的
   （`Fatal` 不是"更严重的错误"，它不可被 `catch` 恢复、不执行释放计划），**沿用**；
-  B0-B 要补的是**退出码**与**结构化诊断**，且不得让消费方解析人类可读文本（09 文档 `:120`）。
+  B0-B 补结构化诊断；退出码语义由 B0-D 在驱动器边界冻结，且不得让消费方解析人类可读文本
+  （09 文档 `:120`）。
 - **栈回溯与源码位置**：`PcMap::span_at_pc` 已有，接上统一 `StackFrame` 与 `ReportRecord`
   （07-A 交付）。
 - **`VmEventSink`**：`sink.rs` 的 `RecordingSink` 是研究实现。B0-B 要把它变成**生产事件
@@ -356,6 +360,16 @@ B0-B 要定义的是 09 文档 `:163` 要求的**两种模式**：
 - **不得在驱动器里重新推断语言语义**（09 文档 `:15`、`:102`）。
 - 内部测试驱动器已由 `core/rust/crates/xiao-driver/tests/b0_c_driver.rs` 覆盖；它只调用
   Rust 前端和生产 VM，不引入 TypeScript/Node.js 执行用户指令。
+
+### 5.3 B0-D：退出码与 Linux 开发环境记录（已落地）
+
+`xiao-driver::ExitCode` 将 `DriverOutcome` 的三段和 `RunResult` 的三分支穷尽映射为五个
+稳定终局：`Success = 0`、`SourceRejected = 1`、`ArtifactRejected = 2`、
+`RuntimeError = 3`、`Fatal = 4`。被 `catch` 消费的错误仍是 `Success`；取消和超时属于
+`ArtifactRejected`。`exit_code()` 不读取诊断编号或本地化文本，11/X0 只负责进程映射。
+
+Linux 容器门禁记录见 [09-B0-D](09b0d-exit-codes-and-linux-verification.md)；容器数字不进入
+09R3 冻结报告，也不与 Windows 原生基准并列。
 
 ---
 

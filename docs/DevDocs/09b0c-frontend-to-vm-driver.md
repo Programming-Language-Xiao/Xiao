@@ -20,6 +20,11 @@
 B0-B 的事件、指标和 `ReportRecord`；若使用 `Result<RunOutcome, DriverError>`，前端诊断和已执行
 故障的结构都会被压扁或另造一层包装。整数退出码仍不冻结，继续留给 11/X0。
 
+> **修正批注（2026-09-21，B0-D）**：上句保留 B0-C 当时的判断；依据
+> `00a-project-layout.md:127,135` 与 `12-tests-and-milestones.md:674-679`，退出码语义属于
+> B0 边界而不是 CLI 私有字段。B0-D 已在 `xiao-driver` 冻结 `ExitCode` 的五个值，11/X0
+> 只负责 `as_process_code()` 的进程映射与 CLI 自身错误。
+
 取消/超时选择方案 A：驱动器在开始、前端完成、降低完成和 VM 调用前后采样；VM 指令循环
 检查点记为 `B0-C-CANCEL-001`，出口批次为 `11/X0`，不会把边界采样伪装成中途中断能力。
 稳定驱动器编号为 `X09-DRIVER-001`（取消）、`X09-DRIVER-002`（超时）和
@@ -55,6 +60,10 @@ B0-B 的事件、指标和 `ReportRecord`；若使用 `Result<RunOutcome, Driver
 | 生产运行入口 | ✅ B0-B 已交付：`RunRequest` / `run_request`（别名 `run_production`），固定函数 0 与栈式载体 |
 | 退出码 | ❌ 仍未定义（**有意为之**：B0-B 只冻结 `Success/Error/Fatal` 三分支，整数留给 11/X0） |
 | 取消 / 超时 | ✅ 驱动器边界采样已实现；VM 中途检查点记为 `B0-C-CANCEL-001`，出口 `11/X0` |
+
+> **修正批注（2026-09-21，B0-D）**：表格中的“仍未定义（有意为之）”是历史盘点，原文
+> 保留以记录 B0-C 的误判来源。现状已由 B0-D 改为 `ExitCode`/`exit_code()` 已定义；
+> 11/X0 不重新定义五个值。
 
 ### 本批交付与不负责
 
