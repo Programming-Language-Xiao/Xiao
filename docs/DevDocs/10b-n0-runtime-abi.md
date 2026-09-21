@@ -71,19 +71,35 @@ N0-A 加了新 crate，`core/rust/Cargo.lock` 提交了，**独立 crate 的那�
    `git diff --exit-code tests/benchmarks/Cargo.lock`，或跑完统一看 `git status`。
    **选哪种写法请在本批交接记录里写明**，因为口头提醒已经失败四次。
 
-### 1.2 `xiao-codegen-llvm` 的私有项文档注释率 **56%**
+### 1.2 83 条 `A0-COVERAGE-002`：`xiao-codegen-llvm` 的声明缺文档
+
+两个口径描述的是同一件事，先把它们对上：
 
 ```
-成员 xiao-codegen-llvm：105/187（56.15%），公共 88/88（100.00%）
-成员 xiao-driver：      180/181（99.45%），公共 125/125（100.00%）
-其余 19 个成员：         100.00%
+覆盖率报告：总体 4717/4800（98.27%），公共 API 2482/2482（100.00%）
+bun run check：83 条 A0-COVERAGE-002「声明缺少代码文档」
 ```
 
-**公共 API 是 100%，总体 98.27% 也高于 90% 门槛，门禁没有失败**。但这是仓内第一次
-出现这么明显的私有项缺口，而且缺口集中在新写的 1700 行 `ir.rs` 里。
+**83 = 83**，逐条可定位。按文件分布：
 
-**本批要做的**：在 N0-B 继续往 `ir.rs` 加东西**之前**补平。理由很实际：本批要加的
-动态值/容器/表会让这个文件更大，**带病扩张之后更难补**。
+| 文件 | 条数 |
+| --- | --- |
+| `core/rust/crates/xiao-codegen-llvm/src/ir.rs` | **59** |
+| `core/rust/crates/xiao-codegen-llvm/src/toolchain.rs` | 9 |
+| `core/rust/crates/xiao-codegen-llvm/tests/n0_a.rs` | 7 |
+| `core/rust/crates/xiao-codegen-llvm/src/lib.rs` | 5 |
+| `core/rust/crates/xiao-codegen-llvm/src/error.rs` | 2 |
+| `core/rust/crates/xiao-driver/src/native.rs` | 1 |
+
+**它不是门禁失败**：公共 API 是 100%（硬门槛），总体 98.27% 也高于 90% 门槛，
+而且 **`bun run check` 的退出码是 0**。其余 19 个成员全是 100%，这里是唯一例外。
+
+**本批要做的**：在 N0-B 继续往 `ir.rs` 加东西**之前**补平这 83 条。理由很实际：
+本批要加的动态值/容器/表会让这个文件更大，**带病扩张之后更难补**。
+
+> **一条门禁阅读提醒（写给接手者，也是本文作者踩过的）**：`bun run check` 的 warning
+> **不影响退出码**，所以 `bun run check | tail -3` 会显示"通过"而**把 83 条 warning
+> 全部吞掉**。核对这一项时**必须看完整输出**，或直接 `grep -c A0-COVERAGE-002`。
 
 ### 1.3 `ir.rs` 已用掉 `A0-SIZE-001` 上限的 68%
 
