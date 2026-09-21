@@ -52,6 +52,7 @@ impl CodegenOptions {
 }
 
 impl Default for CodegenOptions {
+    /// 为宿主目标创建静态标量默认配置。
     fn default() -> Self {
         Self::for_target(TargetDescription::host())
     }
@@ -96,6 +97,7 @@ pub fn lower_program(program: &IrProgram, options: &CodegenOptions) -> Result<Ll
     generator.generate()
 }
 
+/// N0-A 支持的固定宽度 LLVM 标量类别。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 enum Scalar {
     Int,
@@ -107,6 +109,7 @@ enum Scalar {
 }
 
 impl Scalar {
+    /// 从 IR 类型解析静态标量，并拒绝动态布局。
     fn from_type(ty: &IrType, span: IrSpan) -> Result<Self> {
         match ty {
             IrType::None => Ok(Self::None),
@@ -136,6 +139,7 @@ impl Scalar {
         }
     }
 
+    /// 返回该标量在 LLVM 文本中的类型名称。
     const fn llvm(self) -> &'static str {
         match self {
             Self::Int => "i64",
@@ -147,14 +151,17 @@ impl Scalar {
         }
     }
 
+    /// 判断该标量是否为整数类别。
     const fn is_integer(self) -> bool {
         matches!(self, Self::Int | Self::Sint)
     }
 
+    /// 判断该标量是否为浮点类别。
     const fn is_float(self) -> bool {
         matches!(self, Self::Float | Self::Sfloat)
     }
 
+    /// 返回该标量的规范位宽。
     const fn width(self) -> u16 {
         match self {
             Self::Int | Self::Float => 64,
@@ -165,6 +172,7 @@ impl Scalar {
     }
 }
 
+/// 已收集的函数 LLVM 签名。
 #[derive(Clone, Debug)]
 struct FunctionSignature {
     llvm_name: String,
@@ -172,12 +180,14 @@ struct FunctionSignature {
     return_type: Scalar,
 }
 
+/// 一个局部变量在 LLVM 栈上的槽位描述。
 #[derive(Clone, Copy, Debug)]
 struct Slot {
     name: usize,
     ty: Scalar,
 }
 
+/// 收集声明并生成一个完整 LLVM 模块的状态机。
 struct ModuleGenerator<'a> {
     program: &'a IrProgram,
     options: &'a CodegenOptions,
@@ -188,6 +198,7 @@ struct ModuleGenerator<'a> {
 }
 
 impl<'a> ModuleGenerator<'a> {
+    /// 为一份已验证 IR 创建模块生成器。
     fn new(program: &'a IrProgram, options: &'a CodegenOptions) -> Self {
         Self {
             program,
@@ -199,6 +210,7 @@ impl<'a> ModuleGenerator<'a> {
         }
     }
 
+    /// 生成声明、函数、入口和可追踪指纹。
     fn generate(&mut self) -> Result<LlvmModule> {
         self.declaration("declare void @llvm.trap()");
         self.collect_functions()?;
@@ -254,6 +266,7 @@ impl<'a> ModuleGenerator<'a> {
         })
     }
 
+    /// 收集函数签名并在发现不支持的参数时提前失败。
     fn collect_functions(&mut self) -> Result<()> {
         for (index, statement) in self.program.body.iter().enumerate() {
             let IrStatementKind::Function {
@@ -297,6 +310,7 @@ impl<'a> ModuleGenerator<'a> {
         Ok(())
     }
 
+    /// 发射一个用户函数的 LLVM 定义。
     fn emit_function(
         &mut self,
         name: &IrName,
@@ -353,6 +367,7 @@ impl<'a> ModuleGenerator<'a> {
         Ok(function.lines.join("\n") + "\n")
     }
 
+    /// 发射脚本入口及其 `main` 适配器。
     fn emit_entry(&mut self) -> Result<String> {
         let mut slots = BTreeMap::new();
         let mut next_slot = 0;
@@ -399,16 +414,19 @@ impl<'a> ModuleGenerator<'a> {
         Ok(output)
     }
 
+    /// 登记一条去重的 LLVM 声明。
     fn declaration(&mut self, text: impl Into<String>) {
         self.declarations.insert(text.into());
     }
 
+    /// 分配下一个模块级临时值编号。
     fn next_temp(&mut self) -> String {
         let value = format!("%t{}", self.next_temp);
         self.next_temp += 1;
         value
     }
 
+    /// 分配下一个带前缀的基本块标签。
     fn next_label(&mut self, prefix: &str) -> String {
         let value = format!("{prefix}{}", self.next_label);
         self.next_label += 1;
@@ -416,6 +434,7 @@ impl<'a> ModuleGenerator<'a> {
     }
 }
 
+/// 负责在单个函数内发射指令和控制流的生成器。
 struct FunctionGenerator<'a, 'b> {
     module: &'a mut ModuleGenerator<'b>,
     slots: BTreeMap<String, Slot>,
@@ -427,6 +446,7 @@ struct FunctionGenerator<'a, 'b> {
 }
 
 impl<'a, 'b> FunctionGenerator<'a, 'b> {
+    /// 创建函数级生成器并接管局部槽表。
     fn new(
         module: &'a mut ModuleGenerator<'b>,
         slots: BTreeMap<String, Slot>,
@@ -444,15 +464,18 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         }
     }
 
+    /// 追加一行 LLVM 文本。
     fn emit_line(&mut self, line: impl Into<String>) {
         self.lines.push(line.into());
     }
 
+    /// 追加基本块标签并标记后续块未终止。
     fn emit_label(&mut self, label: impl Into<String>) {
         self.emit_line(format!("{}:", label.into()));
         self.terminated = false;
     }
 
+    /// 为全部局部槽发射 `alloca`。
     fn emit_slots(&mut self) {
         let mut slots = self.slots.values().copied().collect::<Vec<_>>();
         slots.sort_by_key(|slot| slot.name);
@@ -461,6 +484,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         }
     }
 
+    /// 记录入口观察模式下最后一个整数值。
     fn record_observation(&mut self, value: String, ty: Scalar) {
         let Some(slot) = self.observation_slot else {
             return;
@@ -483,6 +507,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         self.emit_line(format!("  store i64 {value}, ptr %slot{slot}"));
     }
 
+    /// 按名称查找局部槽并报告缺失名称。
     fn slot(&self, name: &str, span: IrSpan) -> Result<Slot> {
         self.slots
             .get(name)
@@ -492,6 +517,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
             })
     }
 
+    /// 依次发射一组语句，跳过已终止的控制流块。
     fn emit_statements(&mut self, statements: &[IrStatement]) -> Result<()> {
         for statement in statements {
             if self.terminated {
@@ -502,6 +528,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(())
     }
 
+    /// 发射单条语句并维护局部控制流状态。
     fn emit_statement(&mut self, statement: &IrStatement) -> Result<()> {
         match &statement.kind {
             IrStatementKind::Expression { value } => {
@@ -637,6 +664,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(())
     }
 
+    /// 发射 `if`、`elif` 和 `else` 分支。
     fn emit_if(
         &mut self,
         condition: &IrExpression,
@@ -678,6 +706,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(())
     }
 
+    /// 递归发射一条 `elif` 链并汇合到统一出口。
     fn emit_elif_chain(
         &mut self,
         branches: &[xiao_ir::IrElifBranch],
@@ -718,6 +747,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(())
     }
 
+    /// 发射带显式条件块和循环回边的 `while`。
     fn emit_while(&mut self, condition: &IrExpression, body: &[IrStatement]) -> Result<()> {
         let condition_label = self.module.next_label("while.cond");
         let body_label = self.module.next_label("while.body");
@@ -746,6 +776,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(())
     }
 
+    /// 将一个 IR 表达式发射为 LLVM 值和静态标量类别。
     fn emit_expression(&mut self, expression: &IrExpression) -> Result<(String, Scalar)> {
         let expected = Scalar::from_type(&expression.ty, expression.span)?;
         match &expression.kind {
@@ -812,6 +843,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         }
     }
 
+    /// 发射静态函数调用并检查参数和返回类型。
     fn emit_call(
         &mut self,
         callee: &IrExpression,
@@ -863,6 +895,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         }
     }
 
+    /// 发射一元运算并保持固定宽度语义。
     fn emit_unary(
         &mut self,
         operator: &str,
@@ -900,6 +933,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         }
     }
 
+    /// 发射二元算术、比较或逻辑运算。
     fn emit_binary_values(
         &mut self,
         operator: &str,
@@ -1027,6 +1061,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok((self.cast_value(value, common, result, span)?, result))
     }
 
+    /// 发射带溢出检查的整数二元运算。
     fn checked_integer_bin(
         &mut self,
         op: &str,
@@ -1071,6 +1106,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(value)
     }
 
+    /// 发射浮点二元运算并检查有限性。
     fn float_bin(
         &mut self,
         op: &str,
@@ -1085,6 +1121,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(value)
     }
 
+    /// 对浮点结果发射 NaN/无穷检查。
     fn check_finite(&mut self, value: String, ty: Scalar, span: IrSpan) -> Result<()> {
         let max = match ty {
             Scalar::Float => "1.7976931348623157e+308",
@@ -1129,6 +1166,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(())
     }
 
+    /// 发射 Xiao 语义的整数向下除法。
     fn floor_div(
         &mut self,
         ty: Scalar,
@@ -1197,6 +1235,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(result)
     }
 
+    /// 发射与向下除法配套的整数余数。
     fn floor_rem(
         &mut self,
         ty: Scalar,
@@ -1218,6 +1257,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(result)
     }
 
+    /// 检查除数为零及最小值除以负一的溢出组合。
     fn check_divisor(
         &mut self,
         ty: Scalar,
@@ -1243,6 +1283,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(())
     }
 
+    /// 发射浮点幂运算并拒绝尚未接入的动态整数幂。
     fn power(
         &mut self,
         ty: Scalar,
@@ -1279,6 +1320,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Err(unsupported("动态整数幂", Some(span)))
     }
 
+    /// 发射固定宽度标量转换并检查窄化边界。
     fn cast_value(
         &mut self,
         value: String,
@@ -1414,6 +1456,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Err(unsupported("标量转换", Some(span)))
     }
 
+    /// 从局部槽加载一个值并分配临时编号。
     fn load_slot(&mut self, slot: Slot) -> String {
         let temp = self.module.next_temp();
         self.emit_line(format!(
@@ -1424,6 +1467,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         temp
     }
 
+    /// 把失败条件分支到 `llvm.trap`，并继续生成成功块。
     fn branch_on_trap(&mut self, condition: String, _span: IrSpan) {
         let trap = self.module.next_label("xiao.trap");
         let continue_label = self.module.next_label("xiao.continue");
@@ -1438,6 +1482,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         self.emit_label(continue_label);
     }
 
+    /// 为尚未显式返回的函数发射默认返回值。
     fn emit_return_default(&mut self) {
         if self.return_type == Scalar::None {
             self.emit_line("  ret void");
@@ -1452,6 +1497,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
     }
 }
 
+/// 递归收集语句树中的局部槽并保持声明类型。
 fn collect_slots(
     statements: &[IrStatement],
     slots: &mut BTreeMap<String, Slot>,
@@ -1541,6 +1587,7 @@ fn collect_slots(
     Ok(())
 }
 
+/// 插入一个局部槽，并拒绝同名不兼容类型。
 fn insert_slot(
     slots: &mut BTreeMap<String, Slot>,
     name: &str,
@@ -1566,6 +1613,7 @@ fn insert_slot(
     Ok(())
 }
 
+/// 将文本标量名称解析为内部类别。
 fn scalar_name_type(name: &str, span: IrSpan) -> Result<Scalar> {
     Scalar::from_type(
         &IrType::Scalar {
@@ -1575,6 +1623,7 @@ fn scalar_name_type(name: &str, span: IrSpan) -> Result<Scalar> {
     )
 }
 
+/// 返回内部标量类别的 Xiao 名称。
 fn scalar_name(scalar: Scalar) -> &'static str {
     match scalar {
         Scalar::Int => "int",
@@ -1586,6 +1635,7 @@ fn scalar_name(scalar: Scalar) -> &'static str {
     }
 }
 
+/// 计算两个标量的公共数值类型。
 fn common_numeric(left: Scalar, right: Scalar) -> Option<Scalar> {
     if left == right {
         return Some(left);
@@ -1607,6 +1657,7 @@ fn common_numeric(left: Scalar, right: Scalar) -> Option<Scalar> {
     Some(Scalar::Int)
 }
 
+/// 计算除法的公共类型，并把整数除法提升为浮点。
 fn common_division(left: Scalar, right: Scalar) -> Option<Scalar> {
     let common = common_numeric(left, right)?;
     Some(match common {
@@ -1616,6 +1667,7 @@ fn common_division(left: Scalar, right: Scalar) -> Option<Scalar> {
     })
 }
 
+/// 校验字面量并转换为 LLVM 接受的文本。
 fn literal_value(ty: Scalar, text: &str, span: IrSpan) -> Result<String> {
     let text = text.replace('_', "");
     match ty {
@@ -1644,17 +1696,20 @@ fn literal_value(ty: Scalar, text: &str, span: IrSpan) -> Result<String> {
     }
 }
 
+/// 构造带源码区间的非法字面量错误。
 fn invalid_literal(text: String, span: IrSpan) -> CodegenError {
     CodegenError::InvalidIr {
         message: format!("字面量 {text:?} 无法编码（{}..{}）", span.start, span.end),
     }
 }
 
+/// 以稳定科学计数法格式化浮点常量。
 fn format_float(value: f64) -> String {
     let text = format!("{value:.17e}");
     text
 }
 
+/// 返回 LLVM 文本中的标量默认值。
 fn default_value(ty: Scalar) -> &'static str {
     match ty {
         Scalar::Int | Scalar::Sint | Scalar::Bool => "0",
@@ -1663,6 +1718,7 @@ fn default_value(ty: Scalar) -> &'static str {
     }
 }
 
+/// 构造带可选源码位置的不支持错误。
 fn unsupported(feature: impl Into<String>, span: Option<IrSpan>) -> CodegenError {
     CodegenError::Unsupported {
         feature: feature.into(),
@@ -1670,6 +1726,7 @@ fn unsupported(feature: impl Into<String>, span: Option<IrSpan>) -> CodegenError
     }
 }
 
+/// 把 Xiao 名称转换为 LLVM 符号安全文本。
 fn sanitize(name: &str) -> String {
     let mut output = String::new();
     for character in name.chars() {
@@ -1686,10 +1743,12 @@ fn sanitize(name: &str) -> String {
     }
 }
 
+/// 转义 LLVM 字符串字面量中的反斜杠和引号。
 fn escape_llvm(text: &str) -> String {
     text.replace('\\', "\\5C").replace('"', "\\22")
 }
 
+/// 计算用于构建指纹的稳定 FNV-1a 文本。
 fn stable_hash(bytes: &[u8]) -> String {
     let mut hash = 0xcbf29ce484222325_u64;
     for byte in bytes {

@@ -35,6 +35,7 @@ impl ToolchainFingerprint {
 }
 
 impl std::fmt::Display for ToolchainFingerprint {
+    /// 将构建指纹写入日志或产物元数据。
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         formatter.write_str(&self.0)
     }
@@ -222,6 +223,7 @@ struct CommandResult {
     stderr: String,
 }
 
+/// 运行调用方注入的外部工具并收集诊断输出。
 fn run_command(path: &Path, args: &[&str], name: &str) -> Result<CommandResult> {
     if path.as_os_str().is_empty() {
         return Err(CodegenError::ToolchainUnavailable {
@@ -242,6 +244,7 @@ fn run_command(path: &Path, args: &[&str], name: &str) -> Result<CommandResult> 
     })
 }
 
+/// 读取外部工具版本输出的第一行。
 fn version_line(path: &Path, name: &str) -> Result<String> {
     let output = Command::new(path)
         .arg("--version")
@@ -261,19 +264,23 @@ fn version_line(path: &Path, name: &str) -> Result<String> {
     Ok(text.lines().next().unwrap_or("unknown").trim().to_owned())
 }
 
+/// 将工具输出按 UTF-8 宽松解码并去除首尾空白。
 fn text_from_bytes(bytes: &[u8]) -> String {
     String::from_utf8_lossy(bytes).trim().to_owned()
 }
 
+/// 转换路径为传给外部进程的稳定文本。
 fn path_text(path: &Path) -> String {
     path.to_string_lossy().into_owned()
 }
 
+/// 自动清理的临时 LLVM 文本文件路径。
 struct TempFile {
     path: PathBuf,
 }
 
 impl TempFile {
+    /// 在系统临时目录生成唯一文件名，不创建文件本身。
     fn new(prefix: &str, extension: &str) -> Result<Self> {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -287,11 +294,13 @@ impl TempFile {
 }
 
 impl Drop for TempFile {
+    /// 删除验证或构建结束后留下的临时文件。
     fn drop(&mut self) {
         let _ = fs::remove_file(&self.path);
     }
 }
 
+/// 计算工具链指纹使用的 64 位 FNV-1a 哈希。
 fn fnv1a64(bytes: &[u8]) -> u64 {
     let mut hash = 0xcbf29ce484222325_u64;
     for byte in bytes {

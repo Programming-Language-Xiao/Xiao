@@ -83,6 +83,7 @@ pub enum NativeDriverError {
 }
 
 impl Display for NativeDriverError {
+    /// 将驱动器错误渲染为用户可读的稳定文本。
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::Frontend(error) => Display::fmt(error, formatter),

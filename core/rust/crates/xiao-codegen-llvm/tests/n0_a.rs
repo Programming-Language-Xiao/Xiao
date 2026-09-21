@@ -9,10 +9,12 @@ use xiao_ir::{
     IrSpan, IrStatement, IrStatementKind, IrType,
 };
 
+/// 返回测试用的最小有效源码区间。
 fn span() -> IrSpan {
     IrSpan::new(0, 1)
 }
 
+/// 构造未加反引号的测试名称。
 fn name(text: &str) -> IrName {
     IrName {
         text: text.to_owned(),
@@ -21,12 +23,14 @@ fn name(text: &str) -> IrName {
     }
 }
 
+/// 构造一个固定宽度标量类型。
 fn scalar(text: &str) -> IrType {
     IrType::Scalar {
         name: text.to_owned(),
     }
 }
 
+/// 构造带类型和文本的测试字面量。
 fn literal(ty: &str, text: &str) -> IrExpression {
     IrExpression {
         kind: IrExpressionKind::Literal {
@@ -38,10 +42,12 @@ fn literal(ty: &str, text: &str) -> IrExpression {
     }
 }
 
+/// 用脚本入口包装测试语句。
 fn simple_program(body: Vec<IrStatement>) -> IrProgram {
     IrProgram::new(IrEntryMode::Script, body, span())
 }
 
+/// 构造一个简单名称赋值语句。
 fn assignment(target: &str, value: IrExpression) -> IrStatement {
     IrStatement {
         kind: IrStatementKind::Assignment {
@@ -53,6 +59,7 @@ fn assignment(target: &str, value: IrExpression) -> IrStatement {
     }
 }
 
+/// 构造用于原生编译 smoke test 的加法程序。
 fn compile_scalar_program() -> IrProgram {
     let add = IrExpression {
         kind: IrExpressionKind::Binary {

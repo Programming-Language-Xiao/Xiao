@@ -66,6 +66,7 @@ pub enum CodegenError {
 }
 
 impl Display for CodegenError {
+    /// 将结构化后端错误渲染为稳定的诊断文本。
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Self::IrVersion { expected, actual } => {
@@ -97,6 +98,7 @@ impl Display for CodegenError {
 impl std::error::Error for CodegenError {}
 
 impl From<std::io::Error> for CodegenError {
+    /// 将通用 I/O 错误归一化为后端 I/O 错误。
     fn from(error: std::io::Error) -> Self {
         Self::Io {
             path: PathBuf::from("<stream>"),
