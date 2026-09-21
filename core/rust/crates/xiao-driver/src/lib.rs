@@ -20,5 +20,5 @@ pub use frontend::{
 pub use run::{
     CancellationToken, DRIVER_CANCELLED_CODE, DRIVER_CONTROL_CODE, DRIVER_TIMEOUT_CODE,
     DRIVER_VERSION, DriverError, DriverExecution, DriverOutcome, DriverPhase, DriverRequest,
-    FrontendVmDriver, RunControl, run, run_request,
+    ExitCode, FrontendVmDriver, RunControl, run, run_request,
 };

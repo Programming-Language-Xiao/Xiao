@@ -14,8 +14,8 @@ use std::time::{Duration, Instant};
 use xiao_bytecode::{TacProgram, lower_program};
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord};
 use xiao_vm::{
-    DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome, RunRequest as VmRunRequest, VmEvent,
-    VmOptions, run_request as run_vm_request,
+    DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome, RunRequest as VmRunRequest, RunResult,
+    VmEvent, VmOptions, run_request as run_vm_request,
 };
 
 use crate::frontend::{FrontendArtifact, FrontendCompiler, FrontendError, FrontendRequest};
@@ -28,6 +28,38 @@ pub const DRIVER_CANCELLED_CODE: &str = "X09-DRIVER-001";
 pub const DRIVER_TIMEOUT_CODE: &str = "X09-DRIVER-002";
 /// 取消/超时控制字段自身无法建立时的稳定编号。
 pub const DRIVER_CONTROL_CODE: &str = "X09-DRIVER-003";
+
+/// 驱动器对外稳定表达的五种终局。
+///
+/// 这些语义值属于 B0 的库边界；第 11/X0 阶段只负责把
+/// [`ExitCode::as_process_code`] 的结果映射到宿主进程，并处理 CLI 自身错误。
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum ExitCode {
+    /// 执行成功，包括由 Xiao 程序自身 `catch` 消费的可恢复错误。
+    Success,
+    /// 前端源码检查失败，未产生可执行产物。
+    SourceRejected,
+    /// 产物、请求或控制边界拒绝执行，包括取消和超时。
+    ArtifactRejected,
+    /// 已进入 VM，但以未捕获的可恢复运行时错误结束。
+    RuntimeError,
+    /// 已进入 VM，但以不可恢复的致命故障结束。
+    Fatal,
+}
+
+impl ExitCode {
+    /// 返回冻结的宿主进程退出码（`0..=4`）。
+    #[must_use]
+    pub const fn as_process_code(self) -> u8 {
+        match self {
+            Self::Success => 0,
+            Self::SourceRejected => 1,
+            Self::ArtifactRejected => 2,
+            Self::RuntimeError => 3,
+            Self::Fatal => 4,
+        }
+    }
+}
 
 /// 可跨线程共享的取消信号。
 ///
@@ -375,6 +407,24 @@ pub enum DriverOutcome {
 }
 
 impl DriverOutcome {
+    /// 从结构化驱动结果派生稳定退出语义。
+    ///
+    /// 派生只读取 `DriverOutcome` 的阶段和已执行结果的 `RunResult` 分支，
+    /// 不读取诊断编号、消息文本或本地化展示内容。被 `catch` 消费的错误
+    /// 会使 VM 返回 `RunResult::Success`，因此映射为 [`ExitCode::Success`]。
+    #[must_use]
+    pub fn exit_code(&self) -> ExitCode {
+        match self {
+            Self::Frontend(_error) => ExitCode::SourceRejected,
+            Self::Rejected(_error) => ExitCode::ArtifactRejected,
+            Self::Executed(execution) => match &execution.outcome.result {
+                RunResult::Success => ExitCode::Success,
+                RunResult::Error(_error) => ExitCode::RuntimeError,
+                RunResult::Fatal(_error) => ExitCode::Fatal,
+            },
+        }
+    }
+
     /// 判断是否是成功执行。
     #[must_use]
     pub fn is_success(&self) -> bool {

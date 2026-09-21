@@ -4,7 +4,7 @@ title: 前端到 VM 内部驱动器
 status: verified
 audience: contributor
 module: rust.xiao-driver
-stage: "09-B0-C"
+stage: "09-B0-D"
 version: "0.1.0"
 related:
   - ../README.md
@@ -12,11 +12,12 @@ related:
   - ../bytecode-runtime/README.md
   - ../../../../DevDocs/09b0c-frontend-to-vm-driver.md
   - ../../../../DevDocs/09b0b-production-vm.md
+  - ../../../../DevDocs/09b0d-exit-codes-and-linux-verification.md
 ---
 
 # 前端到 VM 内部驱动器
 
-状态：`verified`，对应 09-B0-C。该页面描述 Rust 内部库 ABI，不代表用户可见的
+状态：`verified`，对应 09-B0-C/D。该页面描述 Rust 内部库 ABI，不代表用户可见的
 `xiao run` 已经接入。
 
 ## 运行链
@@ -37,8 +38,13 @@ related:
 - `Executed` 保留 B0-B 的 `RunOutcome`、事件、指标、报告和前端非错误诊断；其中的
   `Success`、`Error`、`Fatal` 仍由 VM 结构化表达。
 
-选择单一枚举是为了同时保留前端诊断和已执行结果的完整形状；整数退出码不在本批冻结，
-继续留给 11/X0。消费方应读取 `code`、`phase` 和报告字段，不解析人类可读消息判断成败。
+`ExitCode` 和 `DriverOutcome::exit_code()` 将这三段结果稳定映射为五种终局：成功为 `0`，
+源码检查失败为 `1`，产物/请求/控制边界拒绝（含取消和超时）为 `2`，未捕获可恢复运行时
+错误为 `3`，Fatal 为 `4`。派生只读取结构化结果，不读取诊断编号、消息或 locale 展示文本；
+第 11/X0 阶段负责把 `as_process_code()` 接到宿主进程。
+
+选择单一枚举是为了同时保留前端诊断和已执行结果的完整形状。消费方应读取 `code`、
+`phase` 和报告字段，不解析人类可读消息判断成败。
 
 ## 取消与超时
 
