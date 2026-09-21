@@ -14,6 +14,7 @@
       "core/rust/crates/xiao-modules",
       "core/rust/crates/xiao-ir",
       "core/rust/crates/xiao-runtime",
+      "core/rust/crates/xiao-runtime-abi",
       "core/rust/crates/xiao-bytecode",
       "core/rust/crates/xiao-vm",
       "core/rust/crates/xiao-optimizer",

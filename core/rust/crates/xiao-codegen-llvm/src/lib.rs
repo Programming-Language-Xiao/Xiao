@@ -1,1 +1,25 @@
-//! Xiao LLVM 原生后端的 crate 入口。
+//! Xiao N0-A LLVM 原生后端。
+//!
+//! 后端只消费已经由 `xiao-driver` 生成并验证的 [`xiao_ir::IrProgram`]，把 N0-A 支持的
+//! 静态标量和控制流写成 LLVM IR 文本。LLVM 开发库不是 Rust 编译期依赖；验证、目标文件
+//! 生成和链接都通过调用方显式注入的外部工具链完成。
+
+mod build;
+mod error;
+mod ir;
+mod target;
+mod toolchain;
+
+/// 构建请求、原生产物和运行观察接口。
+pub use build::{BuildRequest, NativeArtifact, NativeBuild, NativeRun, NativeRunResult};
+/// 后端失败类型和统一结果别名。
+pub use error::{CodegenError, Result};
+/// LLVM 文本降低选项、入口观察策略和降低入口。
+pub use ir::{CodegenOptions, EntryObservation, LlvmModule, lower_program, validate_program};
+/// 目标字节序、对象格式和规范化目标描述。
+pub use target::{Endian, ObjectFormat, TargetDescription};
+/// 外部 LLVM 工具链描述、版本和构建指纹。
+pub use toolchain::{Toolchain, ToolchainFingerprint, ToolchainVersions};
+
+/// 后端接口版本；参与原生产物指纹。
+pub const CODEGEN_VERSION: u32 = 1;

@@ -41,3 +41,10 @@
 结果阶段和 `RunResult` 分支派生，不读取诊断编号或本地化文本。`Success` 包括被 `catch`
 消费的错误；取消、超时和其它执行前拒绝统一为 `ArtifactRejected`。CLI 接线仍由 11/X0
 调用 `as_process_code()` 完成。契约测试位于 `tests/b0_d_exit_codes.rs`。
+
+## 10A 前端到 LLVM 内部驱动器
+
+`src/native.rs` 提供 `NativeBuildRequest`、`FrontendNativeDriver` 和
+`NativeBuildResult`。驱动器先调用同一个 `FrontendCompiler`，再把同一份已验证 IR 交给
+`xiao-codegen-llvm`；工具链路径由请求注入，缺失或失败以结构化错误返回。这里不接用户可见
+的 `xiao build`，也不重新解析源码或发现宿主工具链。

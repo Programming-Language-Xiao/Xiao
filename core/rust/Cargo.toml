@@ -11,6 +11,7 @@ members = [
     "crates/xiao-modules",
     "crates/xiao-ir",
     "crates/xiao-runtime",
+    "crates/xiao-runtime-abi",
     "crates/xiao-bytecode",
     "crates/xiao-vm",
     "crates/xiao-optimizer",

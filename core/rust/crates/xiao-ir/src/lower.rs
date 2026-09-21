@@ -231,18 +231,35 @@ impl<'a> Lowerer<'a> {
                 parameters,
                 return_type,
                 body,
+                span,
                 ..
-            } => IrStatementKind::Function {
-                name: self.name(*name),
-                parameters: parameters
+            } => {
+                // 函数签名已经由类型阶段完成推断；这里消费其最终结果，不能只看
+                // AST 上可选的注解，否则未注解函数会被错误降低成 `none`/`dynamic`。
+                let signature = self.function_signature(*name, *span).cloned();
+                let lowered_parameters = parameters
                     .iter()
-                    .map(|parameter| self.parameter(parameter))
-                    .collect(),
-                return_type: return_type
-                    .map(lower_function_annotation)
-                    .unwrap_or(IrType::None),
-                body: self.statements(body),
-            },
+                    .enumerate()
+                    .map(|(index, parameter)| {
+                        signature
+                            .as_ref()
+                            .and_then(|signature| signature.parameters.get(index))
+                            .map(|checked| self.parameter_with_type(parameter, &checked.ty))
+                            .unwrap_or_else(|| self.parameter(parameter))
+                    })
+                    .collect();
+                let lowered_return = signature
+                    .as_ref()
+                    .map(|signature| lower_type(&signature.return_type))
+                    .or_else(|| return_type.map(lower_function_annotation))
+                    .unwrap_or(IrType::None);
+                IrStatementKind::Function {
+                    name: self.name(*name),
+                    parameters: lowered_parameters,
+                    return_type: lowered_return,
+                    body: self.statements(body),
+                }
+            }
             Statement::If {
                 condition,
                 body,
@@ -318,6 +335,37 @@ impl<'a> Lowerer<'a> {
                 .map(|value| self.expression(value)),
             span: ir_span(parameter.span),
         }
+    }
+
+    /// 使用类型阶段签名中的最终参数类型降低函数参数。
+    fn parameter_with_type(&mut self, parameter: &FunctionParameter, ty: &Type) -> IrParameter {
+        IrParameter {
+            name: self.name(parameter.name),
+            kind: parameter_kind_name(parameter.kind).to_owned(),
+            ty: lower_type(ty),
+            default: parameter
+                .default
+                .as_ref()
+                .map(|value| self.expression(value)),
+            span: ir_span(parameter.span),
+        }
+    }
+
+    /// 按名称和源码跨度取得类型阶段已经解析的函数签名。
+    fn function_signature(
+        &self,
+        name: Name,
+        span: SourceSpan,
+    ) -> Option<&xiao_types::FunctionSignature> {
+        let key = format!(
+            "{}:{}",
+            if name.backticked { "backtick" } else { "ascii" },
+            name.unquoted_text(self.source)
+        );
+        self.type_result
+            .function_signatures()
+            .get(&key)
+            .filter(|signature| signature.span == span)
     }
 
     /// 降低 `elif` 分支。

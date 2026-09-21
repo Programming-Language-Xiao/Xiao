@@ -365,6 +365,12 @@ impl<'source> TypeChecker<'source> {
             self.check_statement(statement);
         }
         self.finalize_function_inference();
+        // 表达式节点是在约束收集期间记录的；函数调用或函数体返回值可能在
+        // 后续语句才把类型变量绑定到具体标量。对外发布结果前统一应用最终
+        // 替换，确保 IR 消费者看到的节点类型与函数签名使用同一份结论。
+        for node in &mut self.nodes {
+            node.ty = self.context.apply(&node.ty);
+        }
         TypeCheckResult {
             nodes: self.nodes,
             diagnostics: self.diagnostics,

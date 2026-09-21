@@ -17,3 +17,4 @@ F0/A0 建立 workspace；01–10 按顺序启用前端和执行核心；13–17 
 ## 子目录
 
 - `crates/`：具体 Rust crate，见其各自 README。
+- `llvm-toolchain.toml`：N0-A 外部 LLVM 工具链版本策略与构建指纹字段；工具路径由调用方注入。

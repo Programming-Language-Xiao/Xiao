@@ -1,0 +1,15 @@
+# N0-A 的 LLVM 工具链登记。这里登记版本策略，不替调用方发现本机路径。
+schema_version = 1
+family = "LLVM"
+minimum_major = 18
+version_policy = "caller-supplied-version-line"
+fingerprint_fields = [
+  "codegen_version",
+  "target_triple",
+  "pointer_width",
+  "endianness",
+  "object_format",
+  "clang_version_line",
+  "llvm_as_version_line",
+  "llc_version_line",
+]

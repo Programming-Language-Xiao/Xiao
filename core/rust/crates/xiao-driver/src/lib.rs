@@ -7,6 +7,8 @@
 /// 统一前端请求、上下文、结果和编排器。
 mod frontend;
 
+/// 前端到 LLVM 原生后端的内部构建驱动器。
+mod native;
 /// 前端产物到生产 VM 的内部运行驱动器。
 mod run;
 
@@ -22,3 +24,6 @@ pub use run::{
     DRIVER_VERSION, DriverError, DriverExecution, DriverOutcome, DriverPhase, DriverRequest,
     ExitCode, FrontendVmDriver, RunControl, run, run_request,
 };
+
+/// 重导出前端到 LLVM 原生程序的结构化构建接口。
+pub use native::{FrontendNativeDriver, NativeBuildRequest, NativeBuildResult, NativeDriverError};

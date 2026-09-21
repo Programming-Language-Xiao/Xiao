@@ -24,6 +24,7 @@ xiao-lifetime = { path = "../xiao-lifetime" }
 xiao-ir = { path = "../xiao-ir" }
 xiao-bytecode = { path = "../xiao-bytecode" }
 xiao-vm = { path = "../xiao-vm" }
+xiao-codegen-llvm = { path = "../xiao-codegen-llvm" }
 
 [dev-dependencies]
 xiao-ir = { path = "../xiao-ir" }
