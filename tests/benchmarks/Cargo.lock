@@ -109,6 +109,8 @@ name = "xiao-codegen-llvm"
 version = "0.1.0"
 dependencies = [
  "xiao-ir",
+ "xiao-runtime-abi",
+ "xiao-types",
 ]
 
 [[package]]
@@ -196,10 +198,15 @@ version = "0.1.0"
 dependencies = [
  "xiao-diagnostics",
  "xiao-lifetime",
+ "xiao-runtime-abi",
  "xiao-source",
  "xiao-syntax",
  "xiao-types",
 ]
+
+[[package]]
+name = "xiao-runtime-abi"
+version = "0.1.0"
 
 [[package]]
 name = "xiao-source"
