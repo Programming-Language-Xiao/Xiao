@@ -105,6 +105,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "xiao-codegen-llvm"
+version = "0.1.0"
+dependencies = [
+ "xiao-ir",
+]
+
+[[package]]
 name = "xiao-config"
 version = "0.1.0"
 dependencies = [
@@ -125,6 +132,7 @@ name = "xiao-driver"
 version = "0.1.0"
 dependencies = [
  "xiao-bytecode",
+ "xiao-codegen-llvm",
  "xiao-config",
  "xiao-diagnostics",
  "xiao-ir",
