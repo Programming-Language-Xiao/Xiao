@@ -159,6 +159,8 @@ dependencies = [
 name = "xiao-driver"
 version = "0.1.0"
 dependencies = [
+ "serde",
+ "serde_json",
  "xiao-bytecode",
  "xiao-codegen-llvm",
  "xiao-config",
@@ -166,6 +168,8 @@ dependencies = [
  "xiao-ir",
  "xiao-lifetime",
  "xiao-modules",
+ "xiao-runtime",
+ "xiao-runtime-abi",
  "xiao-source",
  "xiao-syntax",
  "xiao-types",

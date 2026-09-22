@@ -9,6 +9,8 @@ mod frontend;
 
 /// 前端到 LLVM 原生后端的内部构建驱动器。
 mod native;
+/// X0-A 子进程协议、帧编解码和 Rust 核心入口。
+pub mod protocol;
 /// 前端产物到生产 VM 的内部运行驱动器。
 mod run;
 
@@ -27,3 +29,16 @@ pub use run::{
 
 /// 重导出前端到 LLVM 原生程序的结构化构建接口。
 pub use native::{FrontendNativeDriver, NativeBuildRequest, NativeBuildResult, NativeDriverError};
+
+/// 重导出 X0-A 协议契约和标准输入/输出服务。
+pub use protocol::{
+    BUILD_ERROR_CODE, CANCELLED_ERROR_CODE, CORE_CRASH_CODE, CORE_VERSION, CoreVersions,
+    FRAME_ERROR_CODE, FRAME_LENGTH_BYTES, FrameError, MAX_FRAME_BYTES, OptimizationConfig,
+    PROTOCOL_VERSION, ProtocolArtifact, ProtocolBackendLocation, ProtocolDiagnostic, ProtocolError,
+    ProtocolErrorBody, ProtocolEvent, ProtocolMetrics, ProtocolParam, ProtocolReport,
+    ProtocolRequest, ProtocolResponse, ProtocolSpan, ProtocolStackFrame, ProtocolTarget,
+    ProtocolValue, REQUEST_ERROR_CODE, RunOptions, SourceIdentity, ToolchainSpec,
+    ToolchainVersionsSpec, UNSUPPORTED_OPERATION_CODE, VERSION_MISMATCH_CODE, core_crash_response,
+    decode_frame, dispatch, encode_frame, read_frame, read_request, serve, serve_stdio,
+    write_frame,
+};

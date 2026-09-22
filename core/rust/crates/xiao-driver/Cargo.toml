@@ -13,6 +13,10 @@ workspace = true
 [lib]
 path = "src/lib.rs"
 
+[[bin]]
+name = "xiao-core"
+path = "src/protocol_main.rs"
+
 [dependencies]
 xiao-diagnostics = { path = "../xiao-diagnostics" }
 xiao-source = { path = "../xiao-source" }
@@ -25,6 +29,10 @@ xiao-ir = { path = "../xiao-ir" }
 xiao-bytecode = { path = "../xiao-bytecode" }
 xiao-vm = { path = "../xiao-vm" }
 xiao-codegen-llvm = { path = "../xiao-codegen-llvm" }
+xiao-runtime = { path = "../xiao-runtime" }
+xiao-runtime-abi = { path = "../xiao-runtime-abi" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 [dev-dependencies]
 xiao-ir = { path = "../xiao-ir" }

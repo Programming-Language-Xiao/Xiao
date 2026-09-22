@@ -31,7 +31,7 @@
 
 | 项 | 现状 |
 | --- | --- |
-| `cli/ts` | **零个 `.ts` 文件**——CLI 完全从零开始 |
+| `cli/ts` | CLI 命令仍未实现；X0-A 已加入仅供契约测试使用的 protocol 编解码层 |
 | 跨语言传输方式 | **未冻结**。`00a:237` 至今把它列在待定决策里 |
 | Rust 侧稳定接口 | ✅ 齐备：`FrontendVmDriver`/`FrontendNativeDriver`、`DriverOutcome`、`ExitCode` 五个值、`CancellationToken` |
 | 用户可观察输出 | ❌ **内置函数不存在**：`print("hello")` 报 `X06-RUNTIME-012`。见 §1.3 |
@@ -41,6 +41,9 @@
 ### 本阶段交付与不负责
 
 **交付**：跨语言协议、TypeScript CLI、三平台构建矩阵与独立可执行、`-debug` 与诊断窗口。
+
+**当前进度（2026-09-22）**：X0-A「协议契约 + Rust 侧入口」已落地；X0-B、X0-C、X0-D
+仍未开始。`cli/ts/src/protocol` 当前只提供协议编解码和共享夹具适配，不构成用户可见 CLI。
 
 **不负责**：内置函数与标准库（20）、`.xiaoc` 容器（14）、优化（13/15/18）、
 包管理（11A）、REPL（11B）、i18n（11C）、并发（后置独立阶段）。
@@ -159,6 +162,13 @@ X0 第 6 条要求「发现并调用**兼容版本**的 Rust 核心」。本批�
 **选哪个都行，但要写明为什么不选另外两个。** 无论选哪个，**都要有一条测试**：
 Rust 侧产生的帧能被 TS 侧解析、TS 侧产生的帧能被 Rust 侧解析，且**用的是同一批样本**。
 
+**X0-A 决定采用 C：两侧保留窄的公共消息类型，共享 `tests/spec/11x0-protocol/` 夹具和
+双向回环测试。** 当前仓库还没有 Schema 生成流水线；引入生成器会把协议冻结和工具链建设
+耦合到 X0-B/C，并不能减少首批字段审阅。A 方案会让 Rust 构建额外承担 TypeScript
+生成物发布与版本追踪，B 方案则需要先建立 `tools/schema` 的生成/校验门禁。C 先用同一批
+机器样本锁住字节级边界，后续若字段规模需要增长，再由独立变更把夹具迁移到 B，迁移前不得
+同时保留第二套隐式规则。
+
 ---
 
 ## 三、X0-A：协议与 Rust 侧入口
@@ -177,6 +187,38 @@ Rust 侧产生的帧能被 TS 侧解析、TS 侧产生的帧能被 Rust 侧解�
 **落点**：`00a:126` 已经预留了 `cli/ts/src/protocol` 作为 TS 侧落点；
 **Rust 侧**的新模块应放在 `xiao-driver`（它是编排层，`DriverOutcome` 就在这里），
 **不要**新建 crate——依赖图里没有多余的位置。
+
+### X0-A 已落地记录（2026-09-22）
+
+1. **帧格式冻结**：8 字节无符号大端长度字段 + UTF-8 JSON 负载；长度只计算负载字节，
+   `MAX_FRAME_BYTES = 16 MiB`。首字节 EOF 是正常结束，部分长度、部分负载、超长负载、
+   非 UTF-8 和非法 JSON 都进入 `X11-PROTOCOL-001`，分配前完成上限检查。
+2. **版本协商冻结**：首帧必须是 `type = "hello"`。协议用 `protocol_version = 1` 和统一
+   `core_version = 1` 做兼容判断；前端、驱动器、字节码布局、Runtime ABI 和 LLVM 版本
+   作为 `versions` 诊断字段返回，CLI 不逐个比较这些组件号。失配使用
+   `X11-PROTOCOL-004`，不会启动用户代码。
+3. **消息集合**：`hello`、`run`、`build`、`cancel`、`shutdown`，结果统一带
+   `request_id`、`exit_code`/`exit_name`；运行结果带前端诊断、报告、事件、指标和值摘要，
+   构建结果带产物和工具链指纹。目标、语言/Runtime、优化、源码/模块身份均是显式字段。
+4. **Rust 入口**：`xiao-driver` 的 `protocol` 模块和 `xiao-core` 二进制读取标准输入、
+   写标准输出，分别调用 `FrontendVmDriver` 与 `FrontendNativeDriver`。协议层不解析 AST、
+   不做类型/生命周期推断，也不接受手写 TAC；`-O0` 是 X0-A 唯一可执行优化级别。
+5. **取消和崩溃**：服务为每个请求登记 `CancellationToken`，`cancel` 按请求 ID 触发，
+   驱动器返回的 `ArtifactRejected` 固定映射为进程码 2。请求线程捕获 panic 并返回
+   `X11-PROTOCOL-003`/进程码 4，同时在 `details` 写入 `status` 与 `process_exit_code`；
+   帧级故障返回 `X11-PROTOCOL-001`/进程码 2。执行前拒绝保留 `report`，错误对象都带
+   `next_step`，机器逻辑只读取 `code` 和结构化字段。
+6. **跨语言证据**：Rust 测试和 Bun 测试共同读取 `tests/spec/11x0-protocol/`；双方都
+   覆盖请求/响应回环、长度字段和截断/超长输入。TypeScript 文件只属于协议适配夹具，
+   完整命令路由、打包和平台发现仍归 X0-B/C。
+
+X0-A 的定向验证命令为：
+
+```text
+cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --all-targets
+bun test cli/ts/src/protocol/protocol.test.ts
+bunx tsc --noEmit -p tsconfig.json
+```
 
 ---
 

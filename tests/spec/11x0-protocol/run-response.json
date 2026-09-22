@@ -1,0 +1,27 @@
+{
+  "type": "result",
+  "request_id": "fixture-run-1",
+  "operation": "run",
+  "exit_code": 0,
+  "exit_name": "success",
+  "diagnostics": [],
+  "report": null,
+  "events": [
+    {
+      "kind": "module_loaded",
+      "data": { "module": "main" }
+    }
+  ],
+  "metrics": {
+    "instructions": 1,
+    "max_call_depth": 1,
+    "max_stack_depth": 1,
+    "releases": 0,
+    "spill_count": 0,
+    "stack_map_entries": 0,
+    "call_save_count": 0,
+    "dropped_events": 0
+  },
+  "value": null,
+  "artifact": null
+}

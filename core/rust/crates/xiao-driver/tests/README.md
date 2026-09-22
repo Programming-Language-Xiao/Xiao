@@ -1,6 +1,6 @@
 # `xiao-driver` 测试
 
-本目录覆盖 08-U0 统一前端入口，以及 09-B0-C/D 前端到生产 VM 驱动器和退出码的公共契约。
+本目录覆盖 08-U0 统一前端入口，以及 09-B0-C/D 前端到生产 VM 驱动器、退出码和 X0-A 协议的公共契约。
 `u0_frontend.rs` 验证阶段顺序、诊断累积和成功/失败产物边界；`b0_c_driver.rs` 验证脚本与
 `[main]` 端到端运行、三段结构化失败、执行前拒绝和取消/超时边界。测试不接入 CLI 或 LLVM。
 
@@ -15,3 +15,6 @@
 `XIAO_LLVM_AS`、`XIAO_RUNTIME_LIBRARY`，并会用传入的 `rustc` 查询
 `native-static-libs`，再将清单传给 clang。缺少变量或 Runtime staticlib 时测试直接失败。
 Windows 原生准备方式见 `docs/DevDocs/10d-environment-gated-test-spec.md` §4。
+
+`x0_a_protocol.rs` 与 `tests/spec/11x0-protocol` 验证 Rust/TypeScript 共用的帧和消息样本；
+它们只检查机器字段，不解析人类可读诊断文本。

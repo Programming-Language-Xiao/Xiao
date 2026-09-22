@@ -234,7 +234,9 @@ macOS/iOS 的最终签名、模拟器和 App Store 分发需要 macOS/Xcode 或�
 
 ## 待定决策
 
-- Rust 核心与 TypeScript CLI 最终采用进程协议还是库 ABI，以及协议编码格式。
+- Rust 核心与 TypeScript CLI 的边界已在 11X0/X0-A 冻结为子进程 + 8 字节大端长度前缀 JSON；
+  协议版本与统一 `core_version` 负责兼容判断，Rust/TypeScript 共享 fixture 负责首批公共类型
+  的单一契约。后续迁移到生成 Schema 必须另行通过门禁，不能让两侧隐式漂移。
 - 编译器前端、共享优化器和 LLVM 后端是否在实现层统一使用 Rust；当前目录允许 Rust 实现，但不把它写成语言语义要求。
 - Java 性能基线的发行版/版本、基准套件、统计阈值和发布优化配置。
 - macOS GUI 框架、Apple 签名/公证服务和 iOS 宿主方案。
