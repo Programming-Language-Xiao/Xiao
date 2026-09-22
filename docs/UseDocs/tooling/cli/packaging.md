@@ -34,11 +34,13 @@ bun run build -- --outdir release/xiao --core C:/xiao/xiao-core.exe
 <目录>/
   xiao[.exe]
   xiao-core[.exe]
+  xiao-diagnostics[.exe]
   xiao-package.json
 ```
 
 `xiao` 是内嵌 Bun 运行时的独立可执行文件；Bun 只在构建机上需要，用户运行时不需要另装
-Bun 或 Node.js。`xiao-core` 不嵌入 CLI，而是作为同目录资源分发，清单记录目标和发现来源。
+Bun 或 Node.js。`xiao-core` 与 `xiao-diagnostics` 不嵌入 CLI，而是作为同目录资源分发，
+清单记录目标和发现来源。
 
 核心发现顺序固定为：
 

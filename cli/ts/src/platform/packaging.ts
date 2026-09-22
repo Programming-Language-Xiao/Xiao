@@ -7,6 +7,7 @@ import { dirname, join, resolve } from "node:path";
 import {
   coreExecutableName,
   discoverCoreWithMetadata,
+  isExecutableFile,
   hostTarget,
   type CoreDiscoverySource,
   type HostTarget,
@@ -32,6 +33,8 @@ export interface PackageTarget {
   executableName: string;
   /** 相邻 Rust 核心文件名。 */
   coreName: string;
+  /** 相邻独立诊断进程文件名。 */
+  diagnosticsName: string;
 }
 
 /** 打包器的程序化选项。路径相对 `cli/ts` 目录解析。 */
@@ -42,6 +45,8 @@ export interface PackageBuildOptions {
   outDir?: string;
   /** Rust 核心显式路径；省略时按生产发现顺序寻找。 */
   corePath?: string;
+  /** 独立诊断进程显式路径；省略时按核心相邻/开发树顺序寻找。 */
+  diagnosticsPath?: string;
   /** 构建工作目录；仅供测试和嵌入式调用覆盖。 */
   cwd?: string;
   /** 构建与发现阶段使用的环境变量。 */
@@ -64,6 +69,8 @@ export interface PackageBuildResult {
   executablePath: string;
   /** 相邻核心路径。 */
   corePath: string;
+  /** 相邻诊断进程路径。 */
+  diagnosticsPath: string;
   /** 分发清单路径。 */
   manifestPath: string;
   /** 核心发现来源。 */
@@ -118,6 +125,7 @@ export function parsePackagingArguments(argv: readonly string[]): PackagingCliOp
   let target: string | undefined;
   let outDir: string | undefined;
   let corePath: string | undefined;
+  let diagnosticsPath: string | undefined;
   let help = false;
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
@@ -125,21 +133,23 @@ export function parsePackagingArguments(argv: readonly string[]): PackagingCliOp
       help = true;
       continue;
     }
-    if (argument === "--target" || argument === "--outdir" || argument === "--core") {
+    if (argument === "--target" || argument === "--outdir" || argument === "--core" || argument === "--diagnostics") {
       const value = argv[index + 1];
       if (!value || value.startsWith("-")) throw new PackagingError("X11-PACKAGE-ARG-001", `${argument} 需要一个值`, { argument });
       index += 1;
       if (argument === "--target") target = value;
       else if (argument === "--outdir") outDir = value;
-      else corePath = value;
+      else if (argument === "--core") corePath = value;
+      else diagnosticsPath = value;
       continue;
     }
     if (argument.startsWith("--target=")) target = argument.slice("--target=".length);
     else if (argument.startsWith("--outdir=")) outDir = argument.slice("--outdir=".length);
     else if (argument.startsWith("--core=")) corePath = argument.slice("--core=".length);
+    else if (argument.startsWith("--diagnostics=")) diagnosticsPath = argument.slice("--diagnostics=".length);
     else throw new PackagingError("X11-PACKAGE-ARG-001", `未知打包参数：${argument}`, { argument });
   }
-  return { target, outDir, corePath, help };
+  return { target, outDir, corePath, diagnosticsPath, help };
 }
 
 /** 返回打包器帮助文本。 */
@@ -150,6 +160,7 @@ export function packagingHelpText(): string {
     "  --target <bun-windows-x64|bun-windows-arm64|bun-linux-x64|bun-linux-arm64|bun-darwin-x64|bun-darwin-arm64>",
     "  --outdir <目录>    覆盖默认 dist/<目标> 输出目录",
     "  --core <路径>      显式指定要随包分发的 xiao-core",
+    "  --diagnostics <路径> 显式指定独立诊断进程",
     "  --help             显示帮助",
     "",
     "打包需要 Bun；生成的 xiao 可执行文件运行时不需要 Bun 或 Node.js。",
@@ -163,6 +174,7 @@ export async function buildPackage(options: PackageBuildOptions = {}): Promise<P
   const outputDirectory = resolve(packageRoot, options.outDir ?? join("dist", target.bunTarget));
   const executablePath = join(outputDirectory, target.executableName);
   const coreDestination = join(outputDirectory, target.coreName);
+  const diagnosticsDestination = join(outputDirectory, target.diagnosticsName);
   const manifestPath = join(outputDirectory, "xiao-package.json");
   const entrypoint = join(packageRoot, "src", "main.ts");
   const environment = { ...process.env, ...(options.env ?? {}) };
@@ -176,6 +188,12 @@ export async function buildPackage(options: PackageBuildOptions = {}): Promise<P
     overridePath: options.corePath,
     platform: target.platform,
     architecture: target.architecture,
+  });
+  const diagnosticsSource = await discoverDiagnostics({
+    cwd: packageRoot,
+    corePath: discovery.path,
+    explicitPath: options.diagnosticsPath,
+    platform: target.platform,
   });
   await mkdir(outputDirectory, { recursive: true });
   const buildResult = spawnSync(process.execPath, [
@@ -198,11 +216,14 @@ export async function buildPackage(options: PackageBuildOptions = {}): Promise<P
     });
   }
   await copyFile(discovery.path, coreDestination);
+  await copyFile(diagnosticsSource, diagnosticsDestination);
   if (target.platform !== "win32") await chmod(coreDestination, 0o755);
+  if (target.platform !== "win32") await chmod(diagnosticsDestination, 0o755);
   const manifest = {
     format_version: 1,
     cli: { file: target.executableName, version: PACKAGE_VERSION, runtime: "bun-compile", requires_node: false },
     core: { file: target.coreName, source: discovery.source },
+    diagnostics: { file: target.diagnosticsName, source: diagnosticsSource },
     target: { bun: target.bunTarget, rust: target.rustTarget },
   };
   await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
@@ -211,6 +232,7 @@ export async function buildPackage(options: PackageBuildOptions = {}): Promise<P
     outputDirectory,
     executablePath,
     corePath: coreDestination,
+    diagnosticsPath: diagnosticsDestination,
     manifestPath,
     coreSource: discovery.source,
   };
@@ -226,7 +248,32 @@ function makePackageTarget(platform: PackagePlatform, architecture: PackageArchi
     rustTarget: hostTarget(platform, architecture),
     executableName: platform === "win32" ? "xiao.exe" : "xiao",
     coreName: coreExecutableName(platform),
+    diagnosticsName: platform === "win32" ? "xiao-diagnostics.exe" : "xiao-diagnostics",
   };
+}
+
+/** 按与核心相同的可审计顺序寻找独立诊断进程。 */
+async function discoverDiagnostics(options: {
+  cwd: string;
+  corePath: string;
+  explicitPath?: string;
+  platform: PackagePlatform;
+}): Promise<string> {
+  const name = options.platform === "win32" ? "xiao-diagnostics.exe" : "xiao-diagnostics";
+  const candidates = options.explicitPath
+    ? [resolve(options.cwd, options.explicitPath)]
+    : [
+        join(dirname(resolve(options.corePath)), name),
+        join(options.cwd, "core", "rust", "target", "debug", name),
+        join(options.cwd, "core", "rust", "target", "release", name),
+      ];
+  for (const candidate of candidates) {
+    if (await isExecutableFile(candidate, options.platform)) return candidate;
+  }
+  throw new PackagingError("X11-PACKAGE-DIAGNOSTICS-001", "找不到独立诊断进程；调试构建必须随包携带 xiao-diagnostics", {
+    candidates,
+    explicit: options.explicitPath ?? null,
+  });
 }
 
 /** 程序入口：解析参数、构建产物并打印分发位置。 */
@@ -241,6 +288,7 @@ async function main(): Promise<void> {
     `已生成 ${result.target.bunTarget}`,
     `  CLI: ${result.executablePath}`,
     `  核心: ${result.corePath}（${result.coreSource}）`,
+    `  诊断: ${result.diagnosticsPath}`,
     `  清单: ${result.manifestPath}`,
     "",
   ].join("\n"));

@@ -35,4 +35,20 @@ describe("X0-A 长度前缀协议", () => {
     new DataView(oversized.buffer).setBigUint64(0, BigInt(16 * 1024 * 1024 + 1), false);
     expect(() => readFrame(oversized)).toThrow("X11-PROTOCOL-001");
   });
+
+  test("debug 请求保留诊断等级和聚焦规则", async () => {
+    const value = validateMessage(await fixture("debug-run-request.json"));
+    expect(value).toMatchObject({
+      type: "run",
+      optimization: {
+        debug: true,
+        diagnostics: {
+          terminal_level: "info",
+          file_level: "debug",
+          focus: [{ module: "app.net", mirror: false }],
+        },
+      },
+    });
+    expect(decodeFrame<unknown>(encodeFrame(value))).toEqual(value);
+  });
 });

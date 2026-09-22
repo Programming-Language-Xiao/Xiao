@@ -6,6 +6,8 @@ export interface GlobalCliOptions {
   color: "auto" | "always" | "never";
   /** 输出机器 JSON。 */
   json: boolean;
+  /** 强制运行时诊断窗口。 */
+  debug: boolean;
 }
 
 /** 解析成功的命令联合。 */
@@ -16,8 +18,7 @@ export type ParsedCommand =
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
   | { kind: "test"; project?: string; options: GlobalCliOptions }
   | { kind: "build"; args: readonly string[]; options: GlobalCliOptions }
-  | { kind: "repl"; options: GlobalCliOptions }
-  | { kind: "unsupported-debug"; options: GlobalCliOptions };
+  | { kind: "repl"; options: GlobalCliOptions };
 
 /** 参数解析异常。 */
 export class CliArgumentError extends Error {
@@ -38,7 +39,6 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
   const { options, positional } = parseGlobalOptions(argv);
   if (argv.some((argument) => argument === "--help" || argument === "-h")) return { kind: "help", options };
   if (argv.some((argument) => argument === "--version" || argument === "-v")) return { kind: "version", options };
-  if (argv.some((argument) => argument === "-debug")) return { kind: "unsupported-debug", options };
   if (positional.length === 0) return { kind: "repl", options };
   const [command, ...rest] = positional;
   if (command === "--help" || command === "-h") {
@@ -50,7 +50,7 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     return { kind: "version", options };
   }
   if (command === "--inLF" || command === "-debug") {
-    return command === "-debug" ? { kind: "unsupported-debug", options } : { kind: "repl", options };
+    return { kind: "repl", options };
   }
   if (command === "run") return parseRun(rest, options);
   if (command === "config") return parseConfig(rest, options);
@@ -61,7 +61,6 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
   if (command === "build") return { kind: "build", args: rest, options };
   if (command.endsWith(".xiao")) {
     if (rest.length > 0) throw new CliArgumentError("源码快捷运行只接受一个 .xiao 文件");
-    if (command === "-debug") return { kind: "unsupported-debug", options };
     return { kind: "run", file: command, options };
   }
   if (command.startsWith("-")) throw new CliArgumentError(`未知选项：${command}`);
@@ -73,8 +72,8 @@ export function helpText(): string {
   return [
     "xiao 0.1.0",
     "用法：",
-    "  xiao run <file.xiao> [--json] [--color=auto|always|never]",
-    "  xiao <file.xiao>                         运行源码快捷方式",
+    "  xiao run <file.xiao> [-debug] [--json] [--color=auto|always|never]",
+    "  xiao <file.xiao> [-debug]                运行源码快捷方式",
     "  xiao config [--global] <key.path> <value>",
     "  xiao test                                已登记，测试框架待后续批次",
     "  xiao build ...                           X0-E 尚未实现",
@@ -109,9 +108,11 @@ function parseConfig(args: readonly string[], options: GlobalCliOptions): Parsed
 function parseGlobalOptions(argv: readonly string[]): { options: GlobalCliOptions; positional: string[] } {
   let color: GlobalCliOptions["color"] = "auto";
   let json = false;
+  let debug = false;
   const positional: string[] = [];
   for (const argument of argv) {
     if (argument === "--json") { json = true; continue; }
+    if (argument === "-debug") { debug = true; continue; }
     if (argument === "--color") throw new CliArgumentError("--color 必须写成 --color=auto|always|never");
     if (argument.startsWith("--color=")) {
       const candidate = argument.slice("--color=".length);
@@ -121,5 +122,5 @@ function parseGlobalOptions(argv: readonly string[]): { options: GlobalCliOption
     }
     positional.push(argument);
   }
-  return { options: { color, json }, positional };
+  return { options: { color, json, debug }, positional };
 }

@@ -6,6 +6,7 @@
 
 use std::collections::BTreeMap;
 use std::fmt::{self, Display, Formatter};
+use std::fs;
 use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -19,6 +20,9 @@ use xiao_codegen_llvm::{
     CODEGEN_VERSION, CodegenOptions, Endian, ObjectFormat, TargetDescription, Toolchain,
     ToolchainVersions,
 };
+use xiao_diagnostics::window::{
+    DIAGNOSTIC_START_CODE, DiagnosticActivation, activation_path, write_activation,
+};
 use xiao_diagnostics::{
     Diagnostic, DiagnosticParam, FrameKind, ReportClass, ReportRecord, Severity, StackFrame,
 };
@@ -26,6 +30,7 @@ use xiao_runtime::RuntimeValue;
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 use xiao_vm::{VmEvent, VmOptions};
 
+use crate::diagnostics::{DiagnosticOptions, DiagnosticSession, start_error_details};
 use crate::frontend::{FrontendContext, FrontendRequest};
 use crate::native::{FrontendNativeDriver, NativeBuildRequest, NativeDriverError};
 use crate::run::{
@@ -173,6 +178,43 @@ pub struct OptimizationConfig {
     pub level: u8,
     /// 是否请求调试元数据；诊断窗口留给 X0-D。
     pub debug: bool,
+    /// 可选的诊断等级和输出配置；未提供时使用 Runtime 默认值。
+    #[serde(default)]
+    pub diagnostics: Option<DiagnosticConfig>,
+}
+
+/// `-debug` 诊断参数的窄协议镜像。
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct DiagnosticConfig {
+    /// 终端等级。
+    pub terminal_level: Option<String>,
+    /// 文件等级。
+    pub file_level: Option<String>,
+    /// 日志目录。
+    pub log_dir: Option<String>,
+    /// 总日志文件。
+    pub log_file: Option<String>,
+    /// 堆栈详细程度。
+    pub stacktrace: Option<String>,
+    /// 模块/源码聚焦规则。
+    #[serde(default)]
+    pub focus: Vec<DiagnosticFocusConfig>,
+}
+
+/// 一个诊断聚焦规则。
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct DiagnosticFocusConfig {
+    /// 模块匹配项。
+    pub module: Option<String>,
+    /// 源码匹配项。
+    pub source: Option<String>,
+    /// 输出文件。
+    pub output: String,
+    /// 文件等级。
+    pub level: Option<String>,
+    /// 是否镜像到总日志。
+    #[serde(default)]
+    pub mirror: bool,
 }
 
 /// 源码与模块身份；协议传递真实 Xiao 源码，不接受手写 TAC。
@@ -557,6 +599,22 @@ pub struct ProtocolArtifact {
     pub uses_runtime: bool,
     /// Runtime 组件列表。
     pub runtime_components: Vec<String>,
+    /// `-debug` 构建生成的持久激活位；普通构建为空。
+    #[serde(default)]
+    pub diagnostic_activation: Option<ProtocolDiagnosticActivation>,
+}
+
+/// 产物中诊断激活元数据的协议摘要。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ProtocolDiagnosticActivation {
+    /// 激活元数据文件路径。
+    pub path: String,
+    /// 是否强制开窗。
+    pub enabled: bool,
+    /// 源码映射是否随产物声明。
+    pub source_map: bool,
+    /// Runtime 钩子能力是否声明。
+    pub hooks: bool,
 }
 
 /// 帧解码错误。
@@ -1141,6 +1199,84 @@ fn run_response(request_id: String, outcome: DriverOutcome) -> ProtocolResponse 
     }
 }
 
+/// 把协议诊断配置转换成 Runtime 会话配置。
+fn diagnostic_options(config: Option<DiagnosticConfig>) -> DiagnosticOptions {
+    let Some(config) = config else {
+        return DiagnosticOptions::default();
+    };
+    DiagnosticOptions {
+        terminal_level: config.terminal_level,
+        file_level: config.file_level,
+        log_dir: config.log_dir.map(PathBuf::from),
+        log_file: config.log_file.map(PathBuf::from),
+        stacktrace: config.stacktrace,
+        focus: config
+            .focus
+            .into_iter()
+            .map(|focus| crate::diagnostics::DiagnosticFocus {
+                module: focus.module,
+                source: focus.source,
+                output: PathBuf::from(focus.output),
+                level: focus.level,
+                mirror: focus.mirror,
+            })
+            .collect(),
+    }
+}
+
+/// 将 Runtime 侧诊断启动失败转换为稳定协议响应。
+fn diagnostic_start_response(
+    request_id: String,
+    error: crate::diagnostics::DiagnosticStartError,
+) -> ProtocolResponse {
+    let details = start_error_details(&error);
+    let code = error.code;
+    let message = error.message;
+    ProtocolResponse::Error {
+        request_id: Some(request_id),
+        error: protocol_error_body(
+            code,
+            "x11.diagnostics.start_failed",
+            message,
+            Some("diagnostic_startup".to_owned()),
+            Some("安装可用终端并重试，或检查 XIAO_DIAGNOSTICS_PATH".to_owned()),
+            details,
+        ),
+        report: None,
+        exit_code: ExitCode::ArtifactRejected.as_process_code(),
+    }
+}
+
+/// 在用户代码开始前建立诊断会话，执行后投递所有 VM 事件。
+fn run_with_diagnostics(
+    request_id: String,
+    debug: bool,
+    module: String,
+    source: Option<String>,
+    config: Option<DiagnosticConfig>,
+    request: &DriverRequest,
+) -> ProtocolResponse {
+    let mut session = if debug {
+        match DiagnosticSession::start(module.clone(), source.clone(), &diagnostic_options(config))
+        {
+            Ok(session) => Some(session),
+            Err(error) => return diagnostic_start_response(request_id, error),
+        }
+    } else {
+        None
+    };
+    let outcome = FrontendVmDriver::new().run(request);
+    if let Some(mut session) = session.take() {
+        if let DriverOutcome::Executed(execution) = &outcome {
+            for event in execution.events() {
+                session.record(event);
+            }
+        }
+        session.finish();
+    }
+    run_response(request_id, outcome)
+}
+
 /// 将执行前拒绝转换为稳定协议错误。
 fn rejected_response(
     request_id: String,
@@ -1266,6 +1402,28 @@ fn build_response(
             &ProtocolError::request("output", "原生构建必须提供输出路径"),
         );
     }
+    // 先移除旧激活位，避免失败的普通/调试重建继续误启用上一次的诊断配置。
+    let activation_file = activation_path(&output);
+    if let Err(error) = fs::remove_file(&activation_file)
+        && error.kind() != std::io::ErrorKind::NotFound
+    {
+        return ProtocolResponse::Error {
+            request_id: Some(request_id),
+            error: protocol_error_body(
+                DIAGNOSTIC_START_CODE,
+                "x11.diagnostics.activation_cleanup_failed",
+                format!("无法清理旧的调试产物激活位：{error}"),
+                Some("build".to_owned()),
+                Some("检查产物目录权限后重试".to_owned()),
+                BTreeMap::from([(
+                    "path".to_owned(),
+                    json!(activation_file.display().to_string()),
+                )]),
+            ),
+            report: None,
+            exit_code: ExitCode::ArtifactRejected.as_process_code(),
+        };
+    }
     let target_description = match target.to_target() {
         Ok(target) => target,
         Err(error) => return protocol_error_response(Some(request_id), &error),
@@ -1293,6 +1451,45 @@ fn build_response(
             if cancellation.is_cancelled() {
                 return cancelled_error_response(request_id);
             }
+            let diagnostic_activation = if optimization.debug {
+                let activation = DiagnosticActivation {
+                    format_version: 1,
+                    enabled: true,
+                    source_map: Some(
+                        source
+                            .path
+                            .clone()
+                            .unwrap_or_else(|| "<embedded>".to_owned()),
+                    ),
+                    metadata_version: 1,
+                    hooks: true,
+                };
+                match write_activation(&result.native.executable, &activation) {
+                    Ok(path) => Some(ProtocolDiagnosticActivation {
+                        path: path.display().to_string(),
+                        enabled: activation.enabled,
+                        source_map: activation.source_map.is_some(),
+                        hooks: activation.hooks,
+                    }),
+                    Err(error) => {
+                        return ProtocolResponse::Error {
+                            request_id: Some(request_id),
+                            error: protocol_error_body(
+                                DIAGNOSTIC_START_CODE,
+                                "x11.diagnostics.activation_write_failed",
+                                format!("无法写入调试产物激活位：{error}"),
+                                Some("build".to_owned()),
+                                Some("检查产物目录权限后重试".to_owned()),
+                                BTreeMap::new(),
+                            ),
+                            report: None,
+                            exit_code: ExitCode::ArtifactRejected.as_process_code(),
+                        };
+                    }
+                }
+            } else {
+                None
+            };
             ProtocolResponse::Result {
                 request_id,
                 operation: "build".to_owned(),
@@ -1314,6 +1511,7 @@ fn build_response(
                     toolchain_fingerprint: result.native.toolchain_fingerprint.to_string(),
                     uses_runtime: result.native.module.uses_runtime,
                     runtime_components: result.native.module.runtime_components,
+                    diagnostic_activation,
                 }),
             }
         }
@@ -1433,20 +1631,31 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
                 Ok(value) => value,
                 Err(error) => return protocol_error_response(Some(request_id), &error),
             };
+            let debug = optimization.debug;
+            let diagnostic_config = optimization.diagnostics.clone();
+            let module_name = source.module.clone();
+            let source_name = source.path.clone();
             let token = CancellationToken::new();
             let mut driver_request =
                 DriverRequest::new(frontend_request(&source, &language_version, &target))
                     .with_options(vm_options)
-                    .with_module_name(source.module)
+                    .with_module_name(module_name.clone())
                     .with_event_capacity(event_capacity)
                     .with_cancellation(token);
-            if let Some(path) = source.path {
+            if let Some(path) = source_name.clone() {
                 driver_request = driver_request.with_source_name(path);
             }
             if let Some(timeout) = timeout {
                 driver_request = driver_request.with_timeout(timeout);
             }
-            run_response(request_id, FrontendVmDriver::new().run(&driver_request))
+            run_with_diagnostics(
+                request_id,
+                debug,
+                module_name,
+                source_name,
+                diagnostic_config,
+                &driver_request,
+            )
         }
         ProtocolRequest::Build {
             request_id,
@@ -1550,19 +1759,30 @@ fn worker_response(request: ProtocolRequest, token: CancellationToken) -> Protoc
                 Ok(value) => value,
                 Err(error) => return protocol_error_response(Some(request_id), &error),
             };
+            let debug = optimization.debug;
+            let diagnostic_config = optimization.diagnostics.clone();
+            let module_name = source.module.clone();
+            let source_name = source.path.clone();
             let mut driver_request =
                 DriverRequest::new(frontend_request(&source, &language_version, &target))
                     .with_options(vm_options)
-                    .with_module_name(source.module)
+                    .with_module_name(module_name.clone())
                     .with_event_capacity(event_capacity)
                     .with_cancellation(token);
-            if let Some(path) = source.path {
+            if let Some(path) = source_name.clone() {
                 driver_request = driver_request.with_source_name(path);
             }
             if let Some(timeout) = timeout {
                 driver_request = driver_request.with_timeout(timeout);
             }
-            run_response(request_id, FrontendVmDriver::new().run(&driver_request))
+            run_with_diagnostics(
+                request_id,
+                debug,
+                module_name,
+                source_name,
+                diagnostic_config,
+                &driver_request,
+            )
         }
         ProtocolRequest::Build {
             request_id,

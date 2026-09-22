@@ -10,14 +10,16 @@ describe("xiao 命令解析", () => {
     expect(parseArguments(["main.xiao", "--color=always"]).kind).toBe("run");
     expect(parseArguments(["config", "--global", "CLI.git.summary", "true"]).kind).toBe("config");
     expect(parseArguments(["run", "--help"]).kind).toBe("help");
-    expect(parseArguments(["run", "main.xiao", "-debug"]).kind).toBe("unsupported-debug");
+    const debugRun = parseArguments(["run", "main.xiao", "-debug"]);
+    expect(debugRun.kind).toBe("run");
+    expect(debugRun.kind === "run" && debugRun.options.debug).toBe(true);
   });
 
   test("未实现入口保持稳定命令身份", () => {
     expect(parseArguments([]).kind).toBe("repl");
     expect(parseArguments(["test"]).kind).toBe("test");
     expect(parseArguments(["build", "main.xiao"]).kind).toBe("build");
-    expect(parseArguments(["-debug"]).kind).toBe("unsupported-debug");
+    expect(parseArguments(["-debug"]).kind).toBe("repl");
   });
 
   test("非法参数不依赖本地化文本判断", () => {

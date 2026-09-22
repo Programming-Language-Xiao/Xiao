@@ -16,6 +16,7 @@ class FakeCore extends EventEmitter {
   signalCode: NodeJS.Signals | null = null;
   killed = false;
   private buffer = new Uint8Array(0);
+  readonly requests: Record<string, unknown>[] = [];
 
   /** 监听 stdin 并按帧返回固定结果。 */
   constructor() {
@@ -50,6 +51,7 @@ class FakeCore extends EventEmitter {
 
   /** 返回 hello、result 或 shutdown 响应。 */
   private respond(request: Record<string, unknown>): void {
+    this.requests.push(request);
     if (request.type === "hello") {
       this.stdout.write(Buffer.from(encodeFrame({
         type: "hello", request_id: request.request_id, accepted: true, protocol_version: 1,
@@ -84,5 +86,29 @@ describe("协议客户端", () => {
     expect(result.response.type).toBe("result");
     expect((result.response as { exit_code: number }).exit_code).toBe(0);
     expect(fake?.exitCode).toBe(0);
+  });
+
+  test("debug 位和诊断配置按结构化字段传给 Rust 核心", async () => {
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      overridePath: process.execPath,
+      spawnProcess: () => {
+        fake = new FakeCore();
+        return fake as never;
+      },
+    });
+    await client.runSource("value = 1\n", {
+      debug: true,
+      diagnostics: { terminal_level: "trace", file_level: "debug", log_dir: "logs" },
+    });
+    const request = fake?.requests.find((value) => value.type === "run");
+    expect(request).toMatchObject({
+      type: "run",
+      optimization: {
+        level: 0,
+        debug: true,
+        diagnostics: { terminal_level: "trace", file_level: "debug", log_dir: "logs" },
+      },
+    });
   });
 });

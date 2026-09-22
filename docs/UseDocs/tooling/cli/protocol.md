@@ -8,6 +8,7 @@ stage: 11X0
 related:
   - ../../../DevDocs/11x0-cli-protocol-and-toolchain.md
   - README.md
+  - debug.md
 ---
 
 # Rust 核心进程协议
@@ -32,6 +33,11 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 运行响应还提供结构化诊断、错误报告、事件和指标；执行前拒绝的 `error` 响应也保留可选
 `report`；构建响应提供产物路径与工具链指纹。
 取消通过同一请求 ID 绑定 `CancellationToken`，其结果使用 `ArtifactRejected` 的进程码 2。
+
+`optimization.debug = true` 是强制诊断位。它携带可选的 `diagnostics` 等级、日志目标和
+聚焦规则，核心会在进入前端/VM 前启动独立 `xiao-diagnostics` 终端会话；诊断通道使用
+独立的 8 字节长度帧，不复用核心 stdout。构建响应在该位开启时增加旁置激活位摘要，普通
+构建的 `diagnostic_activation` 为空。终端窗口细节见[-debug 诊断窗口](debug.md)。
 
 X0-B 的 `xiao run` 已消费这条协议；命令行为、非 TTY 呈现和 `print` 尚未实现的限制见
 [xiao run 与 CLI 外壳](shell.md)，分发目录和核心发现见[独立打包与核心发现](packaging.md)。

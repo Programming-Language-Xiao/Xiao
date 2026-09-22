@@ -7,6 +7,7 @@ import {
   CORE_VERSION,
   PROTOCOL_VERSION,
   type HelloResponse,
+  type DiagnosticConfig,
   type ProtocolResponse,
   type ProtocolTarget,
   type RunRequest,
@@ -41,8 +42,10 @@ export interface SourceRunOptions {
   eventCapacity?: number;
   /** 驱动器超时（毫秒）。 */
   timeoutMs?: number | null;
-  /** 调试位；X0-B 保留字段，不打开 X0-D 窗口。 */
+  /** 调试位；由 Rust Runtime 在用户代码前启动独立诊断窗口。 */
   debug?: boolean;
+  /** 调试窗口/文件输出配置。 */
+  diagnostics?: DiagnosticConfig | null;
   /** 取消信号。 */
   signal?: AbortSignal;
 }
@@ -110,7 +113,7 @@ export class ProtocolClient {
       language_version: options.languageVersion ?? "0.1.0",
       runtime_version: options.runtimeVersion ?? "0.1.0",
       target,
-      optimization: { level: 0, debug: options.debug ?? false },
+      optimization: { level: 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
       source: { module, path: sourcePath, text: sourceText },
       options: {
         max_call_depth: options.maxCallDepth ?? 1024,

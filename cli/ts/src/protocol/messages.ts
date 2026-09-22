@@ -33,6 +33,26 @@ export interface ProtocolTarget {
 export interface OptimizationConfig {
   level: number;
   debug: boolean;
+  diagnostics?: DiagnosticConfig | null;
+}
+
+/** `-debug` 诊断等级与输出配置。 */
+export interface DiagnosticConfig {
+  terminal_level?: string | null;
+  file_level?: string | null;
+  log_dir?: string | null;
+  log_file?: string | null;
+  stacktrace?: string | null;
+  focus?: DiagnosticFocus[];
+}
+
+/** 一个模块/源码聚焦输出规则。 */
+export interface DiagnosticFocus {
+  module?: string | null;
+  source?: string | null;
+  output: string;
+  level?: string | null;
+  mirror?: boolean;
 }
 
 /** VM 运行参数。 */
@@ -145,6 +165,24 @@ export interface ResultResponse {
   metrics: unknown | null;
   value: unknown | null;
   artifact: unknown | null;
+}
+
+/** 原生构建产物的稳定摘要。 */
+export interface ProtocolArtifact {
+  executable: string;
+  llvm_ir_output: string | null;
+  toolchain_fingerprint: string;
+  uses_runtime: boolean;
+  runtime_components: string[];
+  diagnostic_activation?: ProtocolDiagnosticActivation | null;
+}
+
+/** 调试产物持久激活位摘要。 */
+export interface ProtocolDiagnosticActivation {
+  path: string;
+  enabled: boolean;
+  source_map: boolean;
+  hooks: boolean;
 }
 
 /** 协议级失败响应。 */

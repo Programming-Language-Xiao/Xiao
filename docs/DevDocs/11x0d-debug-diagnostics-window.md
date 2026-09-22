@@ -289,3 +289,39 @@ bun/node，直接违反 `:217`。
 - [10A. LLVM 原生构建闭环](10a-n0-native-closure.md) —— `xiao build` 的后端
 - [10D. 环境依赖测试专项规范](10d-environment-gated-test-spec.md) —— 环境门控测试怎么写
 - [12. 测试与开发里程碑](12-tests-and-milestones.md) —— X0 八条退出条件
+
+---
+
+## 十、实现记录（2026-09-23）
+
+本批已按上面的约束落地。诊断渲染器选择独立 Rust `xiao-diagnostics` 二进制，原因是
+调试原生产物不能要求用户安装 Bun/Node.js；它作为 `xiao` 分发目录中的相邻文件携带，
+并由 `XIAO_DIAGNOSTICS_PATH` 或同目录发现。渲染器只消费诊断消息，不拥有 Xiao 前端、
+Runtime 或用户代码入口。
+
+Runtime 与窗口之间选择本机回环 TCP 套接字。Windows 匿名管道句柄继承和 Unix 管道/套接字
+语义不一致，而回环端点可由 Runtime 在三平台统一创建；随机端口加一次性令牌限制了错误
+进程接入。每条消息使用八字节大端长度前缀，帧上限为 4 MiB，握手顺序为 `hello`、`ready`、
+事件、`final`、`close`。窗口进程没有反向请求消息类型。
+
+`xiao-driver` 在 `FrontendVmDriver` 之前启动会话，因此窗口就绪是用户代码执行的前置条件。
+终端候选顺序和来源固定，所有候选失败返回 `X11-DIAGNOSTIC-START-001`，并在 `details`
+中列出命令、来源和失败原因。运行阶段写端断开、窗口关闭或文件目标失败只移除对应输出
+目标；VM 继续运行，协议结果仍从原 `DriverOutcome` 派生，标准输出和退出码不经过诊断进程。
+
+事件生产仍来自既有 `VmEventSink`。Runtime 把事件补齐单调时间、模块、源码、节点/函数、
+错误编号字段和结构化负载；终端等级、总文件等级和聚焦文件规则独立过滤。聚焦命中事件
+默认从总 JSONL 分流，只有显式 `mirror = true` 才镜像；错误计数在过滤前累加。状态栏刷新
+只写终端，结束时才写入一次最终指标快照。
+
+`xiao build` 协议响应在 `optimization.debug = true` 时写入旁置
+`<executable>.xiao-debug.json` 激活位，并在响应中返回 `diagnostic_activation`；普通构建
+会删除同名激活位。激活位格式和读写 API 位于 `xiao-diagnostics::window`，包含格式版本、
+源码映射声明、元数据版本和钩子能力。X0-E 负责把该文件和诊断二进制放入最终原生产物
+目录，`xiao build` 命令路由与主机工具链发现仍不在本批实现范围内。
+
+测试证据包括：共享 `debug-run-request.json` 的 Rust/TypeScript 双向帧回环、终端候选顺序、
+激活位持久化/普通构建缺失、CLI `-debug` 结构化传递、诊断帧上限和真实运行驱动器回归。
+真实终端测试使用 `#[ignore]` 显式门控；默认测试输出会显示 ignored 数量，不用条件 `return`
+静默跳过。当前只宣称 Windows 原生端到端口径；Linux Docker 仅作构建/功能证据，Linux
+原生、WSL 和 macOS 仍列入待复现清单。

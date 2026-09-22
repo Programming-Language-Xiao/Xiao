@@ -13,6 +13,7 @@ describe("CLI 独立打包目标", () => {
       architecture: "x64",
       executableName: "xiao.exe",
       coreName: "xiao-core.exe",
+      diagnosticsName: "xiao-diagnostics.exe",
     });
     expect(target.rustTarget.triple).toBe("x86_64-pc-windows-msvc");
     expect(parsePackageTarget("bun-darwin-arm64").rustTarget.triple).toBe("aarch64-apple-darwin");
@@ -24,6 +25,7 @@ describe("CLI 独立打包目标", () => {
       target: "bun-linux-x64",
       outDir: "release",
       corePath: "core-bin",
+      diagnosticsPath: undefined,
       help: false,
     });
     expect(() => parsePackageTarget("bun-freebsd-x64")).toThrow("X11-PACKAGE-TARGET-001");

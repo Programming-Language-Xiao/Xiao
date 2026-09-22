@@ -7,6 +7,9 @@
 /// 统一前端请求、上下文、结果和编排器。
 mod frontend;
 
+/// `-debug` 独立诊断进程与终端启动编排。
+pub mod diagnostics;
+
 /// 前端到 LLVM 原生后端的内部构建驱动器。
 mod native;
 /// X0-A 子进程协议、帧编解码和 Rust 核心入口。
@@ -33,8 +36,9 @@ pub use native::{FrontendNativeDriver, NativeBuildRequest, NativeBuildResult, Na
 /// 重导出 X0-A 协议契约和标准输入/输出服务。
 pub use protocol::{
     BUILD_ERROR_CODE, CANCELLED_ERROR_CODE, CORE_CRASH_CODE, CORE_VERSION, CoreVersions,
-    FRAME_ERROR_CODE, FRAME_LENGTH_BYTES, FrameError, MAX_FRAME_BYTES, OptimizationConfig,
-    PROTOCOL_VERSION, ProtocolArtifact, ProtocolBackendLocation, ProtocolDiagnostic, ProtocolError,
+    DiagnosticConfig, DiagnosticFocusConfig, FRAME_ERROR_CODE, FRAME_LENGTH_BYTES, FrameError,
+    MAX_FRAME_BYTES, OptimizationConfig, PROTOCOL_VERSION, ProtocolArtifact,
+    ProtocolBackendLocation, ProtocolDiagnostic, ProtocolDiagnosticActivation, ProtocolError,
     ProtocolErrorBody, ProtocolEvent, ProtocolMetrics, ProtocolParam, ProtocolReport,
     ProtocolRequest, ProtocolResponse, ProtocolSpan, ProtocolStackFrame, ProtocolTarget,
     ProtocolValue, REQUEST_ERROR_CODE, RunOptions, SourceIdentity, ToolchainSpec,

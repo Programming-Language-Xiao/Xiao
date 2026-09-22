@@ -48,14 +48,11 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
   if (command.kind === "repl") {
     return renderCliError(new CliCommandError("X11-CLI-REPL-001", "交互式解释器尚未在本批实现；请使用 xiao run <file.xiao>"), renderOptions(command.options, context));
   }
-  if (command.kind === "unsupported-debug") {
-    return renderCliError(new CliCommandError("X11-CLI-DEBUG-001", "-debug 诊断窗口属于 X0-D，当前尚未实现"), renderOptions(command.options, context));
-  }
   if (command.kind === "test") {
     return renderCliError(new CliCommandError("X11-CLI-TEST-001", "xiao test 已登记但尚无项目测试语义；请使用 cargo test 或 bun test", CLI_EXIT_CODES.usage, { status: "registered_unimplemented", project: command.project ?? null }), renderOptions(command.options, context));
   }
   if (command.kind === "build") {
-    return renderCliError(new CliCommandError("X11-CLI-BUILD-001", "xiao build 的主机工具链发现和原生构建属于 X0-E，当前尚未实现", CLI_EXIT_CODES.usage, { status: "x0e_unimplemented", arguments: command.args }), renderOptions(command.options, context));
+    return renderCliError(new CliCommandError("X11-CLI-BUILD-001", "xiao build 的主机工具链发现和原生构建属于 X0-E，当前尚未实现", CLI_EXIT_CODES.usage, { status: "x0e_unimplemented", arguments: command.args, debug: command.options.debug }), renderOptions(command.options, context));
   }
   if (command.kind === "config") return executeConfig(command, context);
   return executeRun(command, context);
@@ -83,7 +80,7 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
       overridePath: context.corePath,
       spawnProcess: context.spawnProcess,
     });
-    const result = await client.runSource(source, { path, module: moduleFromPath(path) });
+    const result = await client.runSource(source, { path, module: moduleFromPath(path), debug: command.options.debug });
     return renderProtocolResponse(result.response, renderOptions(command.options, context));
   } catch (error) {
     return renderCliError(error, renderOptions(command.options, context));

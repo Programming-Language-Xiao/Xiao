@@ -9,6 +9,9 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use xiao_source::SourceSpan;
 
+/// 独立诊断进程的帧协议和终端渲染辅助模块。
+pub mod window;
+
 /// 无效或空 Runtime 句柄。
 pub const INVALID_HANDLE_CODE: &str = "X06-RUNTIME-001";
 /// Runtime 类型标签与预期不匹配。

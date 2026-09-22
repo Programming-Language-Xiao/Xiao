@@ -2,7 +2,7 @@
 
 > **本文是 X0 的阶段方向稿，同时是 X0-A 的可执行交接。** B0（字节码）与 N0（原生）
 > 都已收口，两条执行路径都能跑。X0 把它们接成 `xiao run` / `xiao build` /
-> `xiao test` / `xiao config`；其中 X0-A/B/C 已经落地，X0-D/E 仍按后续批次推进。
+> `xiao test` / `xiao config`；其中 X0-A/B/C/D 已经落地，X0-E 仍按后续批次推进。
 >
 > X0 的**权威定义**是 [12. 测试与开发里程碑](12-tests-and-milestones.md) 的八条退出条件、
 > [11. CLI、项目配置与平台](11-cli-config-and-platform.md) 的一级目标，以及
@@ -36,16 +36,16 @@
 | Rust 侧稳定接口 | ✅ 齐备：`FrontendVmDriver`/`FrontendNativeDriver`、`DriverOutcome`、`ExitCode` 五个值、`CancellationToken` |
 | 用户可观察输出 | ❌ **内置函数不存在**：`print("hello")` 报 `X06-RUNTIME-012`。见 §1.3 |
 | `xiao test` | 已登记但未实现（`12-tests` 列出入口，项目测试语义仍待后续批次冻结） |
-| 诊断窗口 | 设计完整（`07:183-217`），**实现为零** |
+| 诊断窗口 | X0-D 已落地：独立 Rust 进程、本机回环通道、终端候选与 TUI；平台复现按清单记录 |
 
 ### 本阶段交付与不负责
 
 **交付**：跨语言协议、TypeScript CLI、三平台构建矩阵与独立可执行、`-debug` 与诊断窗口。
 
 **当前进度（2026-09-22）**：X0-A「协议契约 + Rust 侧入口」、X0-B「TypeScript CLI
-骨架」与 X0-C「独立打包和平台发现」已落地；X0-D 仍未开始。X0-C 的 Windows 原生
+骨架」与 X0-C「独立打包和平台发现」已落地；X0-D 已接入 `-debug` 与诊断窗口。X0-C 的 Windows 原生
 回环已完成；Linux Docker 功能/构建回环已复现，但 Linux 原生、WSL 和 macOS 原生矩阵
-继续按待复现清单推进，诊断窗口仍属后续批次。
+继续按待复现清单推进；Linux/macOS 原生诊断窗口仍不能宣称已验收。
 
 **不负责**：内置函数与标准库（20）、`.xiaoc` 容器（14）、优化（13/15/18）、
 包管理（11A）、REPL（11B）、i18n（11C）、并发（后置独立阶段）。
