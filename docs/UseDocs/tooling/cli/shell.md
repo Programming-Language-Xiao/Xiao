@@ -1,0 +1,48 @@
+---
+id: tooling.cli.shell
+title: xiao run 与 CLI 外壳
+status: verified
+audience: learner
+module: ts.xiao-cli
+stage: 11X0-B
+related:
+  - README.md
+  - protocol.md
+  - ../../../DevDocs/11x0b-cli-shell.md
+---
+
+# xiao run 与 CLI 外壳
+
+X0-B 提供 TypeScript `xiao` 命令入口。`xiao run <file.xiao>` 和直接写文件名的快捷方式
+读取真实 Xiao 源码，通过 `xiao-core` 的长度前缀 JSON 协议执行，再把结构化结果写到终端。
+核心路径可以用 `XIAO_CORE_PATH` 指定；当前开发阶段仍需要先构建 `xiao-core`，独立打包和
+完整三平台安装发现属于 X0-C。
+
+## 运行结果
+
+CLI 不从人类可读文案猜测成败。进程码直接取协议响应的 `exit_code`，诊断使用稳定的
+`code`、`message_id`、`report` 和 `next_step` 字段。`--json` 把完整响应写到标准输出，
+适合脚本消费；人类文本诊断写到标准错误。
+
+`NO_COLOR` 或非 TTY 输出会自动去色，`--color=always` 可用于快照测试。中文和 emoji 的
+表格宽度按终端显示列计算。管道接收端提前关闭时，CLI 会忽略 `EPIPE`，不会额外打印异常。
+
+## 已知限制：没有 `print`
+
+本阶段没有实现内置函数和标准库。`print("hello")` 仍会得到 Runtime 的结构化错误，成功
+脚本的入口值也不会自动显示；因此一个没有诊断的 `xiao run hello.xiao` 没有用户程序输出
+是预期行为，不表示 CLI 丢失了输出。内置函数契约属于 20 阶段，CLI 不会在这里添加替代
+实现。
+
+## 其他入口
+
+`xiao config [--global] CLI.git.summary true|false` 和
+`xiao config [--global] language.locale zh|zh-CN|en|en-US` 使用结构化、原子写回，保留
+注释和无关配置。`xiao test` 目前只登记命令并给出 `X11-CLI-TEST-001`；Rust 使用
+`cargo test`，TypeScript 使用 `bun test`。`xiao build`、无参数 REPL、`--inLF` 和 `-debug`
+分别给出后续批次的稳定未实现诊断。
+
+## 平台说明
+
+本批只在 Windows 原生开发树完成端到端回环；Linux 和 macOS 仍是待复现清单，WSL/容器
+数字不能替代原生平台验证。

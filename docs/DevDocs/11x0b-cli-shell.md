@@ -29,10 +29,10 @@
 | --- | --- |
 | 协议与 Rust 入口 | ✅ X0-A 已交付：8 字节大端长度 + JSON、`hello`/`run`/`build`/`cancel`/`shutdown`、`xiao-core` 二进制 |
 | 共享 fixture | ✅ `tests/spec/11x0-protocol/`，Rust 与 TS **读同一批文件** |
-| `cli/ts/src/` | 除 `protocol/` 外**全是 README 占位**：`commands/`、`config/`、`diagnostics/`、`platform/`、`ui/`、`repl/`、`environments/`、`packages/` |
-| 命令入口 | ❌ **不存在**（没有 `bin`，没有 `xiao` 可执行） |
+| `cli/ts/src/` | `commands/`、`config/`、`diagnostics/`、`platform/`、`ui/` 已完成 X0-B 骨架；REPL、环境和包目录仍为后续占位 |
+| 命令入口 | ✅ `cli/ts/src/main.ts` 与 `bin.xiao` 已接入；独立打包仍归 X0-C |
 | `print` | ❌ 内置函数不存在，`print(...)` 报 `X06-RUNTIME-012`（见 §2.2） |
-| `xiao test` | ❌ 仓内**没有它的语义规格**（见 §2.1） |
+| `xiao test` | ⚠️ 只登记命令与稳定诊断，行为留待测试框架批次（见 §2.1） |
 
 ### 本批交付与不负责
 
@@ -78,6 +78,11 @@
 **无论选哪条**，都要说明它与 `cargo test`/`bun test` 的分工，并**明确说出它在 X0 退出
 条件第 1 条里是"已接"还是"已登记未实现"**。**不允许**悄悄实现一个名字对但语义含糊的命令。
 
+**X0-B 裁定：选择 C。** `xiao test [project]` 现在只完成参数登记、帮助和稳定的
+`X11-CLI-TEST-001` 诊断，并明确标记为 X0 第 1 条“已登记未实现”。`cargo test` 运行 Rust
+workspace，`bun test` 运行 TypeScript/CLI 工具链；在项目测试语义冻结前，CLI 不会把其中
+任何一个偷偷包装成 `xiao test`。
+
 ### 2.2 `xiao run` 的输出（**`print` 不在本阶段**）
 
 **既定事实**（11X0 §1.3）：内置函数不存在，`print("hello")` 报 `X06-RUNTIME-012`；
@@ -93,6 +98,11 @@
 
 > **不要**为了让 `xiao run` "看起来有用"而顺手实现 `print`。那是 20 阶段的事，
 > 而且它会绕过 `xiao-intrinsics` 的声明式契约（见 [20](20-builtins-and-standard-library.md)）。
+
+**X0-B 落地结果：** `xiao run` 已通过 TypeScript CLI、长度前缀协议和 `xiao-core` 的真实
+源码回环。成功或失败由响应中的 `exit_code`/`exit_name` 和结构化 `diagnostics`、`report`
+表达；CLI 不读取本地化文本推断结果。`print` 仍未实现，因此脚本即使成功也不会凭空产生
+用户程序输出，详细限制写在 [CLI 运行说明](../UseDocs/tooling/cli/shell.md)。
 
 ---
 
@@ -241,6 +251,22 @@ COLORTERM 表明 truecolor  → 24-bit
 - **不要重新定义协议**（X0-A 已冻结，方案 C 的单一来源要守住）。
 - **不要重新定义退出码**（B0-D 已冻结）。
 - **不要在 CLI 里实现编译器语义**（`11:9`）。
+
+## 九、X0-B 已落地记录（2026-09-22）
+
+1. `commands/` 提供全局颜色/JSON 选项、帮助、版本、源码快捷运行、`run`、`config`、
+   `test`、`build` 和 REPL 未实现分支；`package.json` 暴露 `xiao` bin。
+2. `config/editor.ts` 发现祖先目录的小写 `config.xiao`，诊断非规范大小写，支持
+   `CLI.git.summary` 与 `language.locale`，保留注释/无关字段并用同目录临时文件原子替换。
+3. `platform/core.ts` 提供宿主目标描述、`XIAO_CORE_PATH` 覆盖和开发树核心发现；完整
+   安装包/三平台发现仍属于 X0-C。
+4. `protocol/client.ts` 先协商版本，再发送真实 Xiao 源码；核心崩溃、坏帧、版本失配和
+   取消都保留稳定机器码，退出状态不从人类文案推导。
+5. `ui/` 与 `diagnostics/` 实现 Unicode 显示宽度、TTY/`NO_COLOR`/`--color=always`
+   降级、JSON 输出和 EPIPE 安全写入；中文对齐和非 TTY 回归测试已加入。
+
+本记录只覆盖 X0-B；独立可执行打包、完整三平台矩阵、`-debug` 窗口、REPL、i18n 和
+`print` 不在本批交付范围内。
 
 ## 相关页面
 

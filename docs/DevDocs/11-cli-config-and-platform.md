@@ -14,6 +14,15 @@ CLI 的发布形态已经冻结：TypeScript 源码必须针对各目标平台�
 
 ### 核心命令
 
+#### X0-B 的 `xiao test` 裁定
+
+X0-B 只登记 `xiao test [project]` 的命令名、帮助和稳定诊断，不在没有项目测试框架与
+Xiao 测试语义规格时伪造测试运行器。Rust workspace 仍由 `cargo test` 负责，TypeScript
+和 CLI 工具链由 `bun test` 负责；两者都不是 `xiao test` 的隐藏实现。
+
+因此，X0 退出条件第 1 条中的 `xiao test` 在本批标记为“已登记未实现”。后续批次冻结项目
+测试文件发现、执行顺序和结果协议后，才能把该命令标记为已接入。
+
 规划中的核心命令为：
 
 ```text

@@ -33,6 +33,9 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 `report`；构建响应提供产物路径与工具链指纹。
 取消通过同一请求 ID 绑定 `CancellationToken`，其结果使用 `ArtifactRejected` 的进程码 2。
 
+X0-B 的 `xiao run` 已消费这条协议；命令行为、非 TTY 呈现和 `print` 尚未实现的限制见
+[xiao run 与 CLI 外壳](shell.md)。独立打包和完整三平台核心发现仍属于 X0-C。
+
 ## 共享契约
 
 Rust 与 TypeScript 当前采用共享 JSON fixture 的窄类型策略。样本位于

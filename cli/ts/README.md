@@ -17,3 +17,6 @@ TypeScript workspace 根目录。所有 CLI/REPL 代码都放在 `src/`，通过
 ## 子目录
 
 - `src/`：命令、REPL、协议、配置、平台和 UI 模块。
+
+X0-B 已接入 `src/main.ts` 的 `xiao` 命令入口，运行链路通过 `src/protocol/client.ts`
+调用 Rust `xiao-core`；独立可执行打包仍由 X0-C 负责。
