@@ -41,10 +41,12 @@ N0-B 的正常作用域退出、`return` 释放按前端 `IrOwnership.release_pl
 
 `Toolchain` 的路径由调用方显式注入；N0 不搜索 PATH。`llvm-as`（或 clang 的 IR 编译模式）
 先验证文本，再由 clang 生成并链接目标文件。动态模块还必须由调用方通过
-`Toolchain::with_runtime_library` 注入与目标 triple 匹配的 `xiao-runtime` 静态库；后端不
-自动发现或下载 Runtime。目标 triple、固定宽度描述、后端版本、ABI 编码版本和工具链版本
-首行进入构建指纹，绝对安装路径只保留在调用方日志中。版本登记位置为
-`core/rust/llvm-toolchain.toml`。
+`Toolchain::with_runtime_library` 注入与目标 triple 匹配的 `xiao-runtime` 静态库，并通过
+`Toolchain::probe_native_static_libraries` 让 Rust 工具链报告该 staticlib 的原生依赖；已经
+由调用方取得的规范化清单也可用 `Toolchain::with_native_static_libraries` 注入。缺少原生库
+清单时后端拒绝动态链接，不会硬编码平台库名。后端不自动发现或下载 Runtime。目标 triple、
+固定宽度描述、后端版本、ABI 编码版本、Rust/LLVM 版本首行和原生库清单进入构建指纹，绝对
+安装路径只保留在调用方日志中。版本登记位置为 `core/rust/llvm-toolchain.toml`。
 
 ## ABI 边界
 

@@ -12,4 +12,6 @@ fingerprint_fields = [
   "clang_version_line",
   "llvm_as_version_line",
   "llc_version_line",
+  "rustc_version_line",
+  "runtime_native_static_libraries",
 ]

@@ -26,10 +26,16 @@ pub use ir::{CodegenOptions, EntryObservation, LlvmModule, validate_program};
 /// 目标字节序、对象格式和规范化目标描述。
 pub use target::{Endian, ObjectFormat, TargetDescription};
 /// 外部 LLVM 工具链描述、版本和构建指纹。
-pub use toolchain::{Toolchain, ToolchainFingerprint, ToolchainVersions};
+pub use toolchain::{
+    Toolchain, ToolchainFingerprint, ToolchainVersions, parse_native_static_libraries,
+    query_native_static_libraries,
+};
 
 /// 后端接口版本；参与原生产物指纹。
-pub const CODEGEN_VERSION: u32 = 1;
+///
+/// 版本 2 固定了 COFF 目标的 Runtime `sret`/间接聚合参数调用约定；旧版本生成的动态
+/// LLVM 文本不能与当前 MSVC Runtime ABI 混用。
+pub const CODEGEN_VERSION: u32 = 2;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {

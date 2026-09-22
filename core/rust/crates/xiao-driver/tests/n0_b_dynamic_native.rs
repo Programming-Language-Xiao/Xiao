@@ -6,41 +6,42 @@ use xiao_codegen_llvm::{CodegenOptions, NativeBuild, TargetDescription, Toolchai
 use xiao_driver::{FrontendCompiler, FrontendNativeDriver, FrontendRequest, NativeBuildRequest};
 
 #[test]
+#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
 /// 同一份 Xiao 字符串源码必须能经前端生成动态 LLVM 并链接 Runtime。
 fn optional_dynamic_string_native_round_trip() {
-    let (Some(clang), Some(llvm_as)) = (
-        std::env::var_os("XIAO_CLANG"),
-        std::env::var_os("XIAO_LLVM_AS"),
-    ) else {
-        return;
-    };
-    let Some(runtime_text) = std::env::var_os("XIAO_RUNTIME_LIBRARY") else {
-        return;
-    };
+    let clang = std::env::var_os("XIAO_CLANG")
+        .expect("显式运行 --ignored 时 XIAO_CLANG 必须已设置；准备方式见 10D §4");
+    let llvm_as = std::env::var_os("XIAO_LLVM_AS")
+        .expect("显式运行 --ignored 时 XIAO_LLVM_AS 必须已设置；准备方式见 10D §4");
+    let runtime_text = std::env::var_os("XIAO_RUNTIME_LIBRARY")
+        .expect("显式运行 --ignored 时 XIAO_RUNTIME_LIBRARY 必须已设置；准备方式见 10D §4");
     let runtime = PathBuf::from(runtime_text);
-    if !runtime.exists() {
-        return;
-    }
-    let target = std::env::var("XIAO_TARGET_TRIPLE")
-        .ok()
-        .and_then(|triple| {
-            TargetDescription::new(
-                triple,
-                64,
-                xiao_codegen_llvm::Endian::Little,
-                xiao_codegen_llvm::ObjectFormat::Coff,
-            )
-            .ok()
-        })
-        .unwrap_or_else(TargetDescription::host);
+    assert!(
+        runtime.is_file(),
+        "XIAO_RUNTIME_LIBRARY 必须指向已构建的 Runtime staticlib: {}",
+        runtime.display()
+    );
+    let target_triple = std::env::var("XIAO_TARGET_TRIPLE")
+        .expect("显式运行 --ignored 时 XIAO_TARGET_TRIPLE 必须已设置；准备方式见 10D §4");
+    let target = TargetDescription::new(
+        target_triple,
+        64,
+        xiao_codegen_llvm::Endian::Little,
+        xiao_codegen_llvm::ObjectFormat::Coff,
+    )
+    .expect("XIAO_TARGET_TRIPLE 必须是有效的 64 位 COFF 目标");
+    let rustc = std::env::var_os("RUSTC").unwrap_or_else(|| std::ffi::OsString::from("rustc"));
+    let toolchain = Toolchain::new(clang)
+        .with_llvm_as(llvm_as)
+        .with_runtime_library(runtime)
+        .probe_native_static_libraries(rustc, &target)
+        .expect("rustc 应报告 Runtime staticlib 的原生库清单");
     let root = std::env::temp_dir().join(format!("xiao-n0-b-dynamic-{}", std::process::id()));
     let output = root.join("dynamic.exe");
     let request = NativeBuildRequest::new(
         FrontendRequest::from_text("value = \"heap\"\n"),
         target,
-        Toolchain::new(clang)
-            .with_llvm_as(llvm_as)
-            .with_runtime_library(runtime),
+        toolchain,
         &output,
     );
     let result = FrontendNativeDriver::new()

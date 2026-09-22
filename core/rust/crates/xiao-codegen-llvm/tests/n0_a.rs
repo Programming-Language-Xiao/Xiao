@@ -30,6 +30,19 @@ fn scalar(text: &str) -> IrType {
     }
 }
 
+/// 读取环境依赖原生测试使用的固定目标三元组。
+fn configured_native_target() -> TargetDescription {
+    let triple = std::env::var("XIAO_TARGET_TRIPLE")
+        .expect("显式运行 --ignored 时 XIAO_TARGET_TRIPLE 必须已设置；准备方式见 10D §4");
+    TargetDescription::new(
+        triple,
+        64,
+        xiao_codegen_llvm::Endian::Little,
+        xiao_codegen_llvm::ObjectFormat::Coff,
+    )
+    .expect("XIAO_TARGET_TRIPLE 必须是有效的 64 位 COFF 目标")
+}
+
 /// 构造带类型和文本的测试字面量。
 fn literal(ty: &str, text: &str) -> IrExpression {
     IrExpression {
@@ -551,11 +564,11 @@ fn entry_observation_is_explicit() {
 }
 
 #[test]
+#[ignore = "需要 XIAO_CLANG 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
 /// 入口观察值必须来自实际执行的分支，而不是降低顺序中的最后一个赋值。
 fn optional_entry_observation_tracks_runtime_branch() {
-    let Some(clang) = std::env::var_os("XIAO_CLANG") else {
-        return;
-    };
+    let clang = std::env::var_os("XIAO_CLANG")
+        .expect("显式运行 --ignored 时 XIAO_CLANG 必须已设置；准备方式见 10D §4");
     let branch = IrStatement {
         kind: IrStatementKind::If {
             condition: literal("bool", "true"),
@@ -566,13 +579,7 @@ fn optional_entry_observation_tracks_runtime_branch() {
         span: span(),
         leading_docs: Vec::new(),
     };
-    let target = TargetDescription::new(
-        "x86_64-w64-windows-gnu",
-        64,
-        xiao_codegen_llvm::Endian::Little,
-        xiao_codegen_llvm::ObjectFormat::Coff,
-    )
-    .expect("目标");
+    let target = configured_native_target();
     let options = CodegenOptions::for_target(target.clone())
         .with_entry_observation(EntryObservation::ExitCode);
     let request = xiao_codegen_llvm::BuildRequest::new(
@@ -591,11 +598,11 @@ fn optional_entry_observation_tracks_runtime_branch() {
 }
 
 #[test]
+#[ignore = "需要 XIAO_CLANG（可选 XIAO_LLVM_AS）与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
 /// 在调用方显式提供 LLVM 工具链时，生成文本必须能验证、链接并启动。
 fn optional_real_llvm_round_trip() {
-    let Some(clang) = std::env::var_os("XIAO_CLANG") else {
-        return;
-    };
+    let clang = std::env::var_os("XIAO_CLANG")
+        .expect("显式运行 --ignored 时 XIAO_CLANG 必须已设置；准备方式见 10D §4");
     let llvm_as = std::env::var_os("XIAO_LLVM_AS");
     let root = std::env::temp_dir().join(format!("xiao-n0-a-{}", std::process::id()));
     let output = root.join(if cfg!(windows) {
@@ -610,13 +617,7 @@ fn optional_real_llvm_round_trip() {
     }
     let request = xiao_codegen_llvm::BuildRequest::new(
         compile_scalar_program(),
-        TargetDescription::new(
-            "x86_64-w64-windows-gnu",
-            64,
-            xiao_codegen_llvm::Endian::Little,
-            xiao_codegen_llvm::ObjectFormat::Coff,
-        )
-        .expect("目标"),
+        configured_native_target(),
         toolchain,
         &output,
     )
@@ -631,11 +632,11 @@ fn optional_real_llvm_round_trip() {
 }
 
 #[test]
+#[ignore = "需要 XIAO_CLANG；准备方式见 10D §4"]
 /// LLVM 语法损坏时，验证器必须拒绝文本而不是继续链接。
 fn optional_corrupt_llvm_is_rejected() {
-    let Some(clang) = std::env::var_os("XIAO_CLANG") else {
-        return;
-    };
+    let clang = std::env::var_os("XIAO_CLANG")
+        .expect("显式运行 --ignored 时 XIAO_CLANG 必须已设置；准备方式见 10D §4");
     let toolchain = Toolchain::new(clang);
     let error = NativeBuild::new()
         .validate_llvm(

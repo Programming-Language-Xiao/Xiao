@@ -186,20 +186,54 @@ fn rejects_table_constructor_arguments_until_init_abi_exists() {
 }
 
 #[test]
+#[ignore = "需要 XIAO_LLVM_AS 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
 /// 动态表模块必须能被真实 LLVM 汇编器解析，避免只验证字符串片段。
 fn optional_llvm_accepts_dynamic_table_module() {
-    let Some(llvm_as) = std::env::var_os("XIAO_LLVM_AS") else {
-        return;
-    };
+    let llvm_as = std::env::var_os("XIAO_LLVM_AS")
+        .expect("显式运行 --ignored 时 XIAO_LLVM_AS 必须已设置；准备方式见 10D §4");
+    let triple = std::env::var("XIAO_TARGET_TRIPLE")
+        .expect("显式运行 --ignored 时 XIAO_TARGET_TRIPLE 必须已设置；准备方式见 10D §4");
+    let target = TargetDescription::new(
+        triple,
+        64,
+        xiao_codegen_llvm::Endian::Little,
+        xiao_codegen_llvm::ObjectFormat::Coff,
+    )
+    .expect("XIAO_TARGET_TRIPLE 必须是有效的 64 位 COFF 目标");
     let module = lower_program(&table_program("instance"), &CodegenOptions::default())
         .expect("动态表应降低");
     NativeBuild::new()
         .validate_llvm(
             &module.text,
-            &TargetDescription::host(),
+            &target,
             &Toolchain::new("unused").with_llvm_as(llvm_as),
         )
         .expect("llvm-as 应接受动态表模块");
+}
+
+#[test]
+/// Windows x64 的 Runtime 聚合值和字节视图必须使用与 Rust `extern "C"` 一致的间接 ABI。
+fn emits_windows_indirect_runtime_abi_calls() {
+    let module = lower_program(
+        &expression_program(literal("str", "\"windows\"", "str")),
+        &CodegenOptions::for_target(TargetDescription::windows_x86_64()),
+    )
+    .expect("Windows 动态字符串应降低");
+    assert!(
+        module
+            .text
+            .contains("declare void @xiao_runtime_value_str(ptr sret(%xiao.value) align 8, ptr)")
+    );
+    assert!(
+        module
+            .text
+            .contains("call void @xiao_runtime_value_str(ptr sret(%xiao.value)")
+    );
+    assert!(
+        module
+            .text
+            .contains("declare i32 @xiao_runtime_string_new(ptr, ptr)")
+    );
 }
 
 #[test]

@@ -109,12 +109,13 @@ let clang = std::env::var_os("XIAO_CLANG")
 
 ```bat
 @echo off
-call "<VS 安装路径>\VC\Auxiliary\Build\vcvars64.bat" >nul 2>&1
-set PATH=<MSYS2 路径>\ucrt64\bin;%PATH%
-set XIAO_CLANG=<MSYS2 路径>\ucrt64\bin\clang.exe
-set XIAO_LLVM_AS=<MSYS2 路径>\ucrt64\bin\llvm-as.exe
-set XIAO_RUNTIME_LIBRARY=<仓库>\core\rust\target\release\xiao_runtime.lib
-cd /d <仓库>\core\rust
+call "<VS_ROOT>\VC\Auxiliary\Build\vcvars64.bat" >nul 2>&1
+set PATH=<MSYS2_ROOT>\ucrt64\bin;%PATH%
+set XIAO_CLANG=<MSYS2_ROOT>\ucrt64\bin\clang.exe
+set XIAO_LLVM_AS=<MSYS2_ROOT>\ucrt64\bin\llvm-as.exe
+set XIAO_RUNTIME_LIBRARY=<REPO>\core\rust\target\release\xiao_runtime.lib
+set XIAO_TARGET_TRIPLE=x86_64-pc-windows-msvc
+cd /d <REPO>\core\rust
 cargo test -p xiao-codegen-llvm -p xiao-driver -- --ignored
 ```
 
@@ -135,7 +136,9 @@ cargo test -p xiao-codegen-llvm -p xiao-driver -- --ignored
 ### 4.2 关于 `XIAO_RUNTIME_LIBRARY` 的路径
 
 它必须是**已经构建好的** staticlib。若路径不存在，测试应当**失败**（按 §3.2），
-而不是退回跳过——**"库没构建"是配置错误，不是环境缺失**。
+而不是退回跳过——**"库没构建"是配置错误，不是环境缺失**。`XIAO_TARGET_TRIPLE` 也必须
+明确设为与 Runtime staticlib 相同的目标；本批 Windows 原生复现使用
+`x86_64-pc-windows-msvc`。
 
 ## 五、门禁要求
 
@@ -156,7 +159,33 @@ cargo test -p xiao-codegen-llvm -p xiao-driver -- --ignored
 4. 缺环境时跑 `--ignored` 会**失败**，不是静默跳过（§3.2）；
 5. 本批交接记录里有**一次齐备环境的完整结果**。
 
-## 七、不负责
+## 七、落地记录（2026-09-22）
+
+§2 列出的 7 条测试现已全部使用 `#[ignore = "...；准备方式见 10D §4"]`：
+`xiao-codegen-llvm` 的 4 条和 `xiao-driver` 的 3 条。默认运行
+`cargo test -p xiao-codegen-llvm -p xiao-driver` 的汇总为 7 ignored（分别为 3、1、2、1），
+没有把缺环境伪装成通过；显式运行 `--ignored` 时会用 `expect` 检查变量，Runtime 库路径
+不存在也会直接断言失败。
+
+在 Windows 原生环境按 §4 准备后，以下命令已完整执行 7 条门控测试并全部通过：
+
+```text
+n0_a                         3 passed
+n0_b_dynamic                 1 passed
+n0_a_native_driver           2 passed
+n0_b_dynamic_native          1 passed
+合计                         7 passed, 0 failed
+```
+
+动态 Runtime 测试使用 `x86_64-pc-windows-msvc`，通过 `Toolchain::probe_native_static_libraries`
+查询 Rust 清单后链接 `xiao_runtime.lib`。VS Community 18.9.2、MSVC linker 14.51.36256.0、
+MSYS2 clang/llvm-as 22.1.2 和 Rust 1.96.0 均为本次记录的实际工具；缺少 `XIAO_CLANG` 时
+单独执行 `optional_real_llvm_round_trip --ignored` 已确认会失败并给出配置错误。
+
+本次只完成 Windows 原生复现。Linux/macOS 仍列为待复现；WSL 和容器共享宿主调度或多一层
+文件系统，不能与原生数字并列，也没有被宣称为跨平台验证。
+
+## 八、不负责
 
 - **不改变这些测试的断言内容**——本文只管"它们有没有跑"，不管"它们断得对不对"；
 - **不引入 CI**（CI 方向见 00. 决策基线的 GitHub Actions 决定，属独立批次）；

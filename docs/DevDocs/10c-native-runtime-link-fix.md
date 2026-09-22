@@ -108,10 +108,41 @@ $ ./t2d.exe
 修复后要复核：**纯静态标量程序仍不链接 Runtime**（`10:78`）。
 N0-A 的 `assert!(!module.uses_runtime)` 是这条的探测器，**不得为了让新测试通过而删掉它**。
 
-## 四、为什么它长期不可见
+### 3.4 落地实现与验证记录（2026-09-22）
 
-跑这个测试需要四个环境变量（`XIAO_CLANG`、`XIAO_LLVM_AS`、`XIAO_RUNTIME_LIBRARY`、
-`XIAO_TARGET_TRIPLE`）。**没设时测试直接 `return`**：
+本批选择候选 **A：构建时查询**。`Toolchain::probe_native_static_libraries` 接收调用方
+提供的 `rustc` 路径和目标描述，执行 `--crate-type=staticlib --print=native-static-libs`，
+由 `parse_native_static_libraries` 保留 Rust 报告顺序，把 Windows 的 `.lib` 名称转换为
+clang 的 `-l...` 参数，并过滤 `/defaultlib:*` 元参数。原生库清单、Runtime staticlib
+内容摘要、目标字段和 `rustc`/LLVM 版本首行共同进入构建指纹；后端不硬编码 Windows 库名，
+也不自动发现 clang、VS 或 Rust 路径。选择 A 是因为依赖清单由 Rust 标准库实际计算，能随
+目标和 Rust 版本变化，避免登记文件成为第二份真相；B 不能覆盖版本漂移，C 会把链接实现
+错误地塞进 ABI 声明层。
+
+实现时又验证了同一 ABI 在 MSVC x64 下的调用约定：16 字节 `XiaoValue` 返回值必须使用
+隐藏 `sret` 槽，16 字节 `XiaoAbiBytes` 参数必须按间接指针传递。动态 LLVM 降低器只对
+COFF 目标发射这两种形态，ELF/Mach-O 仍使用直接聚合返回/传参；这样既保持固定 C 布局，
+也避免“能链接但返回时破坏栈帧”的未定义行为。
+
+本机实际验证环境如下：VS Community 18.9.2 的 `link.exe` 14.51.36256.0，路径位于
+`VC\Tools\MSVC\14.51.36231\bin\Hostx64\x64`；MSYS2 clang/llvm-as 22.1.2；Rust
+`rustc 1.96.0`；目标 `x86_64-pc-windows-msvc`。Rust 对 Runtime staticlib 报告的清单为：
+
+```text
+kernel32.lib ntdll.lib userenv.lib ws2_32.lib dbghelp.lib /defaultlib:msvcrt
+```
+
+解析后传给 clang 的参数为 `-lkernel32 -lntdll -luserenv -lws2_32 -ldbghelp`。带这组参数
+的真实 `FrontendCompiler -> LLVM -> clang -> MSVC link -> xiao_runtime.lib` 动态字符串
+程序已启动并以退出码 0 结束；不带这组参数的对照仍复现 LNK1120。纯静态标量路径的
+`!module.uses_runtime` 断言继续通过。由于 COFF 调用约定修复改变了动态 LLVM 文本，
+`xiao-codegen-llvm` 的 `CODEGEN_VERSION` 已从 1 升到 2，旧指纹产物不会被复用。
+
+## 四、为什么它长期不可见（修复前）
+
+以下保留事故发生时的旧实现，用来解释为什么缺陷能进入交接记录。跑这个测试需要四个环境
+变量（`XIAO_CLANG`、`XIAO_LLVM_AS`、`XIAO_RUNTIME_LIBRARY`、`XIAO_TARGET_TRIPLE`）。
+**修复前没设时测试直接 `return`**：
 
 ```rust
 let Some(runtime_text) = std::env::var_os("XIAO_RUNTIME_LIBRARY") else {
@@ -119,7 +150,7 @@ let Some(runtime_text) = std::env::var_os("XIAO_RUNTIME_LIBRARY") else {
 };
 ```
 
-于是它在 `cargo test` 的汇总里显示为 **`ok`**。
+于是它在修复前的 `cargo test` 汇总里显示为 **`ok`**。
 
 **「静默跳过的测试」与「真的通过的测试」在门禁输出里长得一模一样**——
 这是本次缺陷能藏这么久的唯一原因，也是

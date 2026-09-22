@@ -322,5 +322,5 @@ LLVM 表描述符完整写入表名、形态、字段名、字段类型和公开
 数组/表同源降低、Cast/运行时检查拒绝边界和真实 `llvm-as` 解析；`xiao-driver` 另有真实
 `FrontendCompiler` 动态构建测试。原生链接测试只在
 显式提供与目标三元组匹配的 `XIAO_RUNTIME_LIBRARY`、`XIAO_CLANG` 和 `XIAO_LLVM_AS` 时
-运行。本机当前仅有 MSYS clang、缺少可用的 MSVC 链接环境，因此未把该次链接结果宣称为
-Windows 原生验证；Linux/macOS 与 WSL/容器仍列为待复现。
+运行。本批随后在 VS C/C++ 桌面开发负载就位后完成了 Windows 原生链接复现；Linux/macOS
+与 WSL/容器仍列为待复现，不能与原生数字并列。

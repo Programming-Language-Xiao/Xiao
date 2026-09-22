@@ -15,6 +15,7 @@ use xiao_runtime_abi::{ABI_ENCODED_VERSION, ABI_MAJOR_VERSION, ABI_MINOR_VERSION
 use crate::CODEGEN_VERSION;
 use crate::error::{CodegenError, Result};
 use crate::ir::{CodegenOptions, LlvmModule, validate_program};
+use crate::target::ObjectFormat;
 
 /// 动态值的固定 `{ i32, i32, i64 }` LLVM 结构名。
 const VALUE_TYPE: &str = "%xiao.value";
@@ -726,61 +727,55 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert("declare i32 @xiao_runtime_value_release_weak(ptr)".to_owned());
         self.declarations
-            .insert(format!("declare {VALUE_TYPE} @xiao_runtime_value_none()"));
+            .insert(self.value_declaration("xiao_runtime_value_none", ""));
         self.declarations
-            .insert(format!("declare {VALUE_TYPE} @xiao_runtime_value_int(i64)"));
-        self.declarations.insert(format!(
-            "declare {VALUE_TYPE} @xiao_runtime_value_sint(i32)"
-        ));
-        self.declarations.insert(format!(
-            "declare {VALUE_TYPE} @xiao_runtime_value_float(double)"
-        ));
-        self.declarations.insert(format!(
-            "declare {VALUE_TYPE} @xiao_runtime_value_sfloat(float)"
-        ));
+            .insert(self.value_declaration("xiao_runtime_value_int", "i64"));
         self.declarations
-            .insert(format!("declare {VALUE_TYPE} @xiao_runtime_value_bool(i8)"));
+            .insert(self.value_declaration("xiao_runtime_value_sint", "i32"));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_float", "double"));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_sfloat", "float"));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_bool", "i8"));
         self.declarations.insert(format!(
-            "declare i32 @xiao_runtime_string_new({BYTES_TYPE}, ptr)"
+            "declare i32 @xiao_runtime_string_new({}, ptr)",
+            self.bytes_parameter_type()
         ));
         self.declarations
-            .insert(format!("declare {VALUE_TYPE} @xiao_runtime_value_str(ptr)"));
-        self.declarations.insert(format!(
-            "declare {VALUE_TYPE} @xiao_runtime_value_lint(ptr)"
-        ));
-        self.declarations.insert(format!(
-            "declare {VALUE_TYPE} @xiao_runtime_value_lfloat(ptr)"
-        ));
+            .insert(self.value_declaration("xiao_runtime_value_str", "ptr"));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_lint", "ptr"));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_lfloat", "ptr"));
         self.declarations
             .insert("declare i32 @xiao_runtime_array_new(ptr, i64, ptr)".to_owned());
-        self.declarations.insert(format!(
-            "declare {VALUE_TYPE} @xiao_runtime_value_array(ptr)"
-        ));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_array", "ptr"));
         self.declarations
             .insert("declare i32 @xiao_runtime_tuple_new(ptr, i64, ptr)".to_owned());
-        self.declarations.insert(format!(
-            "declare {VALUE_TYPE} @xiao_runtime_value_tuple(ptr)"
-        ));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_tuple", "ptr"));
         self.declarations
             .insert("declare i32 @xiao_runtime_dict_new(i32, ptr, ptr, i64, ptr)".to_owned());
-        self.declarations.insert(format!(
-            "declare {VALUE_TYPE} @xiao_runtime_value_dict(ptr, i32)"
-        ));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_dict", "ptr, i32"));
         self.declarations
             .insert("declare i32 @xiao_runtime_set_new(ptr, i64, ptr)".to_owned());
         self.declarations
-            .insert(format!("declare {VALUE_TYPE} @xiao_runtime_value_set(ptr)"));
+            .insert(self.value_declaration("xiao_runtime_value_set", "ptr"));
         self.declarations
             .insert("declare i32 @xiao_runtime_table_new(ptr, ptr)".to_owned());
         self.declarations.insert(format!(
-            "declare i32 @xiao_runtime_table_get(ptr, {BYTES_TYPE}, ptr)"
+            "declare i32 @xiao_runtime_table_get(ptr, {}, ptr)",
+            self.bytes_parameter_type()
         ));
         self.declarations.insert(format!(
-            "declare i32 @xiao_runtime_table_set(ptr, {BYTES_TYPE}, ptr)"
+            "declare i32 @xiao_runtime_table_set(ptr, {}, ptr)",
+            self.bytes_parameter_type()
         ));
-        self.declarations.insert(format!(
-            "declare {VALUE_TYPE} @xiao_runtime_value_table(ptr)"
-        ));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_table", "ptr"));
         self.declared_runtime_components.insert("value".to_owned());
         self.declared_runtime_components.insert("rc".to_owned());
         if self.program_uses_container_abi() {
@@ -800,6 +795,83 @@ impl<'a> DynamicGenerator<'a> {
         if !self.program.table_signatures.is_empty() {
             self.declared_runtime_components.insert("tables".to_owned());
         }
+    }
+
+    /// 判断目标 C ABI 是否把 16 字节 `XiaoValue` 通过隐藏返回槽传递。
+    ///
+    /// Windows x64 的 MSVC/COFF ABI 对该布局使用 `sret`；SysV/Clang 的 ELF 与 Mach-O
+    /// 目标则按两个寄存器直接返回。Runtime 的 Rust `extern "C"` 符号必须与目标侧采用
+    /// 同一调用约定，否则函数虽然能链接，返回时会破坏调用方栈帧。
+    fn value_return_is_indirect(&self) -> bool {
+        matches!(self.options.target.object_format, ObjectFormat::Coff)
+    }
+
+    /// 返回 Runtime 对聚合字节视图参数采用的 LLVM 类型。
+    fn bytes_parameter_type(&self) -> &'static str {
+        if self.value_return_is_indirect() {
+            "ptr"
+        } else {
+            BYTES_TYPE
+        }
+    }
+
+    /// 把字节视图物化为目标 ABI 所需的参数形态。
+    fn emit_bytes_argument(&mut self, value: &str) -> String {
+        if self.value_return_is_indirect() {
+            let output = self.next_temp();
+            self.emit(format!("  {output} = alloca {BYTES_TYPE}"));
+            self.emit(format!("  store {BYTES_TYPE} {value}, ptr {output}"));
+            format!("ptr {output}")
+        } else {
+            format!("{BYTES_TYPE} {value}")
+        }
+    }
+
+    /// 生成一个 Runtime ABI 值返回函数的 LLVM 声明。
+    fn value_declaration(&self, name: &str, arguments: &str) -> String {
+        if self.value_return_is_indirect() {
+            let prefix = format!("declare void @{name}(ptr sret({VALUE_TYPE}) align 8");
+            if arguments.is_empty() {
+                format!("{prefix})")
+            } else {
+                format!("{prefix}, {arguments})")
+            }
+        } else if arguments.is_empty() {
+            format!("declare {VALUE_TYPE} @{name}()")
+        } else {
+            format!("declare {VALUE_TYPE} @{name}({arguments})")
+        }
+    }
+
+    /// 发射一个 Runtime ABI 值返回调用，并屏蔽目标 C ABI 的返回槽差异。
+    fn emit_value_call(&mut self, name: &str, arguments: &str) -> String {
+        let value = self.next_temp();
+        if self.value_return_is_indirect() {
+            let output = self.next_temp();
+            self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+            self.emit(format!(
+                "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+            ));
+            if arguments.is_empty() {
+                self.emit(format!(
+                    "  call void @{name}(ptr sret({VALUE_TYPE}) {output})"
+                ));
+            } else {
+                self.emit(format!(
+                    "  call void @{name}(ptr sret({VALUE_TYPE}) {output}, {arguments})"
+                ));
+            }
+            self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {output}"));
+        } else {
+            if arguments.is_empty() {
+                self.emit(format!("  {value} = call {VALUE_TYPE} @{name}()"));
+            } else {
+                self.emit(format!(
+                    "  {value} = call {VALUE_TYPE} @{name}({arguments})"
+                ));
+            }
+        }
+        value
     }
 
     /// 判断程序是否实际构造容器，而不是仅仅声明了动态值。
@@ -1279,13 +1351,14 @@ impl<'a> DynamicGenerator<'a> {
         let handle = self.next_temp();
         self.emit(format!("  {handle} = inttoptr i64 {payload} to ptr"));
         let field = self.emit_bytes_value(name_key(member).as_bytes());
+        let field_argument = self.emit_bytes_argument(&field);
         let output = self.next_temp();
         self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
         self.emit(format!(
             "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
         ));
         self.checked_status_call(format!(
-            "@xiao_runtime_table_get(ptr {handle}, {BYTES_TYPE} {field}, ptr {output})"
+            "@xiao_runtime_table_get(ptr {handle}, {field_argument}, ptr {output})"
         ));
         let value = self.next_temp();
         self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {output}"));
@@ -1317,12 +1390,13 @@ impl<'a> DynamicGenerator<'a> {
             "  {object_handle} = inttoptr i64 {object_payload} to ptr"
         ));
         let field = self.emit_bytes_value(name_key(member).as_bytes());
+        let field_argument = self.emit_bytes_argument(&field);
         let emitted = self.emit_expression(value)?;
         let value_slot = self.next_temp();
         self.emit(format!("  {value_slot} = alloca {VALUE_TYPE}"));
         self.emit(format!("  store {VALUE_TYPE} {emitted}, ptr {value_slot}"));
         self.checked_status_call(format!(
-            "@xiao_runtime_table_set(ptr {object_handle}, {BYTES_TYPE} {field}, ptr {value_slot})"
+            "@xiao_runtime_table_set(ptr {object_handle}, {field_argument}, ptr {value_slot})"
         ));
         self.release_value(emitted);
         self.release_value(object_value);
@@ -1396,11 +1470,7 @@ impl<'a> DynamicGenerator<'a> {
 
     /// 调用一个返回 ABI 值的标量构造器。
     fn constructor_call(&mut self, name: &str, ty: &str, value: &str) -> Result<String> {
-        let temp = self.next_temp();
-        self.emit(format!(
-            "  {temp} = call {VALUE_TYPE} @{name}({ty} {value})"
-        ));
-        Ok(temp)
+        Ok(self.emit_value_call(name, &format!("{ty} {value}")))
     }
 
     /// 发射字符串全局常量、分配句柄并构造字符串值。
@@ -1439,18 +1509,14 @@ impl<'a> DynamicGenerator<'a> {
             "  {descriptor2} = insertvalue {BYTES_TYPE} {descriptor}, i64 {}, 1",
             bytes.len()
         ));
+        let input = self.emit_bytes_argument(&descriptor2);
         let handle = self.next_temp();
         self.emit(format!("  {handle} = alloca ptr"));
         self.emit(format!("  store ptr null, ptr {handle}"));
-        self.checked_status_call(format!(
-            "@xiao_runtime_string_new({BYTES_TYPE} {descriptor2}, ptr {handle})"
-        ));
+        self.checked_status_call(format!("@xiao_runtime_string_new({input}, ptr {handle})"));
         let raw = self.next_temp();
         self.emit(format!("  {raw} = load ptr, ptr {handle}"));
-        let value = self.next_temp();
-        self.emit(format!(
-            "  {value} = call {VALUE_TYPE} @{constructor}(ptr {raw})"
-        ));
+        let value = self.emit_value_call(constructor, &format!("ptr {raw}"));
         self.emit(format!("  call void @xiao_runtime_release(ptr {raw})"));
         Ok(value)
     }
@@ -1489,15 +1555,12 @@ impl<'a> DynamicGenerator<'a> {
         }
         let raw = self.next_temp();
         self.emit(format!("  {raw} = load ptr, ptr {handle}"));
-        let value = self.next_temp();
         let constructor = if tuple {
             "xiao_runtime_value_tuple"
         } else {
             "xiao_runtime_value_array"
         };
-        self.emit(format!(
-            "  {value} = call {VALUE_TYPE} @{constructor}(ptr {raw})"
-        ));
+        let value = self.emit_value_call(constructor, &format!("ptr {raw}"));
         self.emit(format!("  call void @xiao_runtime_release(ptr {raw})"));
         Ok(value)
     }
@@ -1563,10 +1626,8 @@ impl<'a> DynamicGenerator<'a> {
         }
         let raw = self.next_temp();
         self.emit(format!("  {raw} = load ptr, ptr {handle}"));
-        let value = self.next_temp();
-        self.emit(format!(
-            "  {value} = call {VALUE_TYPE} @xiao_runtime_value_dict(ptr {raw}, i32 {kind})"
-        ));
+        let value =
+            self.emit_value_call("xiao_runtime_value_dict", &format!("ptr {raw}, i32 {kind}"));
         self.emit(format!("  call void @xiao_runtime_release(ptr {raw})"));
         Ok(value)
     }
@@ -1600,10 +1661,7 @@ impl<'a> DynamicGenerator<'a> {
         }
         let raw = self.next_temp();
         self.emit(format!("  {raw} = load ptr, ptr {handle}"));
-        let value = self.next_temp();
-        self.emit(format!(
-            "  {value} = call {VALUE_TYPE} @xiao_runtime_value_set(ptr {raw})"
-        ));
+        let value = self.emit_value_call("xiao_runtime_value_set", &format!("ptr {raw}"));
         self.emit(format!("  call void @xiao_runtime_release(ptr {raw})"));
         Ok(value)
     }
@@ -1653,18 +1711,16 @@ impl<'a> DynamicGenerator<'a> {
         for (field, initializer) in initializers {
             let value = self.emit_expression(&initializer)?;
             let field_bytes = self.emit_bytes_value(field.as_bytes());
+            let field_argument = self.emit_bytes_argument(&field_bytes);
             let value_slot = self.next_temp();
             self.emit(format!("  {value_slot} = alloca {VALUE_TYPE}"));
             self.emit(format!("  store {VALUE_TYPE} {value}, ptr {value_slot}"));
             self.checked_status_call(format!(
-                "@xiao_runtime_table_set(ptr {raw}, {BYTES_TYPE} {field_bytes}, ptr {value_slot})"
+                "@xiao_runtime_table_set(ptr {raw}, {field_argument}, ptr {value_slot})"
             ));
             self.release_value(value);
         }
-        let value = self.next_temp();
-        self.emit(format!(
-            "  {value} = call {VALUE_TYPE} @xiao_runtime_value_table(ptr {raw})"
-        ));
+        let value = self.emit_value_call("xiao_runtime_value_table", &format!("ptr {raw}"));
         self.emit(format!("  call void @xiao_runtime_release(ptr {raw})"));
         Ok(value)
     }
@@ -1852,11 +1908,7 @@ impl<'a> DynamicGenerator<'a> {
 
     /// 发射空值构造器调用。
     fn none_value(&mut self) -> String {
-        let value = self.next_temp();
-        self.emit(format!(
-            "  {value} = call {VALUE_TYPE} @xiao_runtime_value_none()"
-        ));
-        value
+        self.emit_value_call("xiao_runtime_value_none", "")
     }
 
     /// 释放一个临时 ABI 值。

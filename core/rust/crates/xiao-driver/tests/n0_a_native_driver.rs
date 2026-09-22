@@ -7,6 +7,19 @@ use xiao_driver::{
 };
 use xiao_ir::{IrStatementKind, IrType};
 
+/// 读取环境依赖原生测试使用的固定目标三元组。
+fn configured_native_target() -> TargetDescription {
+    let triple = std::env::var("XIAO_TARGET_TRIPLE")
+        .expect("显式运行 --ignored 时 XIAO_TARGET_TRIPLE 必须已设置；准备方式见 10D §4");
+    TargetDescription::new(
+        triple,
+        64,
+        xiao_codegen_llvm::Endian::Little,
+        xiao_codegen_llvm::ObjectFormat::Coff,
+    )
+    .expect("XIAO_TARGET_TRIPLE 必须是有效的 64 位 COFF 目标")
+}
+
 #[test]
 /// 后端请求必须先经过真实 FrontendCompiler，再在工具链边界返回结构化错误。
 fn compiles_frontend_before_toolchain() {
@@ -77,24 +90,18 @@ fn carries_inferred_function_signature_into_ir() {
 }
 
 #[test]
+#[ignore = "需要 XIAO_CLANG 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
 /// 提供工具链时，真实 Xiao 源码必须完整走前端再生成原生程序。
 fn optional_real_frontend_to_native_round_trip() {
-    let Some(clang) = std::env::var_os("XIAO_CLANG") else {
-        return;
-    };
+    let clang = std::env::var_os("XIAO_CLANG")
+        .expect("显式运行 --ignored 时 XIAO_CLANG 必须已设置；准备方式见 10D §4");
     let root = std::env::temp_dir().join(format!("xiao-driver-n0-a-{}", std::process::id()));
     let output = root.join(if cfg!(windows) {
         "program.exe"
     } else {
         "program"
     });
-    let target = TargetDescription::new(
-        "x86_64-w64-windows-gnu",
-        64,
-        xiao_codegen_llvm::Endian::Little,
-        xiao_codegen_llvm::ObjectFormat::Coff,
-    )
-    .expect("目标");
+    let target = configured_native_target();
     let request = NativeBuildRequest::new(
         FrontendRequest::from_text(
             "def count(limit)\n    total = 0\n    while total != limit\n        total = total + 1\n    return total\nresult = count(3)\n",
@@ -115,11 +122,11 @@ fn optional_real_frontend_to_native_round_trip() {
 }
 
 #[test]
+#[ignore = "需要 XIAO_CLANG 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
 /// VM 与原生后端必须消费同一份前端产物，并在静态标量入口上得到同一结果。
 fn optional_frontend_artifact_differential_round_trip() {
-    let Some(clang) = std::env::var_os("XIAO_CLANG") else {
-        return;
-    };
+    let clang = std::env::var_os("XIAO_CLANG")
+        .expect("显式运行 --ignored 时 XIAO_CLANG 必须已设置；准备方式见 10D §4");
     let source = "[main]\nvalue = 1 + 2\n";
     let frontend_request = FrontendRequest::from_text(source);
     let artifact = FrontendCompiler::new()
@@ -138,13 +145,7 @@ fn optional_frontend_artifact_differential_round_trip() {
     } else {
         "program"
     });
-    let target = TargetDescription::new(
-        "x86_64-w64-windows-gnu",
-        64,
-        xiao_codegen_llvm::Endian::Little,
-        xiao_codegen_llvm::ObjectFormat::Coff,
-    )
-    .expect("目标");
+    let target = configured_native_target();
     let request = NativeBuildRequest::new(
         frontend_request,
         target.clone(),
