@@ -27,12 +27,12 @@
 
 | 项 | 现状 |
 | --- | --- |
-| `cli/ts` 的 `bin` | `{"xiao": "src/main.ts"}`——**指向 TS 源码，需要 bun 运行时** |
-| 构建脚本 | **没有**。`scripts` 只有 `test` 与 `typecheck` |
+| `cli/ts` 的 `bin` | 开发入口仍指向 `src/main.ts`；发布入口由 `bun build --compile` 生成独立 `xiao[.exe]` |
+| 构建脚本 | `bun run build` 已接入 `src/platform/packaging.ts`，默认输出 `dist/<bun-target>/` |
 | 唯一依赖 | `string-width@7.2.0`（打包友好） |
-| `xiao-core` 的发现 | `XIAO_CORE_PATH` → 仓库根相对路径 → PATH。注释自称是**开发回环**用的 |
-| 失败诊断 | ✅ 找不到时列出全部候选（`X11-CLI-FILE-001` 一类的稳定形状） |
-| 平台证据 | 仅 Windows 原生（X0-A/B 都这么标的） |
+| `xiao-core` 的发现 | `XIAO_CORE_PATH` → 独立可执行同目录 → PATH → 检测到仓库根后的开发回环 |
+| 失败诊断 | ✅ 候选带来源，`development` 明确标记开发布局，机器码为 `X11-CLI-CORE-001` |
+| 平台证据 | Windows 原生已完成本批回环；Linux/macOS 仍为待复现清单 |
 
 ### 本批交付与不负责
 
@@ -251,6 +251,21 @@ X0-A 已经冻结了协议：首帧 `hello`、`protocol_version` + 统一 `core_
 - **不要重新定义协议或退出码**（X0-A / B0-D 已冻结）。
 - **不要实现内置函数**（20）。
 - **不要为了让产物"看起来小"而裁剪核心能力**——体积不是本批的验收项。
+
+## 八、X0-C 已落地记录（2026-09-22）
+
+1. `cli/ts/src/platform/packaging.ts` 接入 `bun build --compile`，默认按当前宿主生成
+   `dist/<bun-target>/xiao[.exe]`，并写入 `xiao-package.json`；构建机需要 Bun，生成物运行时
+   不依赖 Bun 或 Node.js。
+2. `xiao-core` 按显式覆盖、独立可执行同目录、`PATH`、仓库开发回环的顺序发现；候选带有
+   `override`、`adjacent`、`path`、`development` 来源，生产失败诊断不会把无仓库目录误当
+   开发布局。
+3. `hostPackageTarget` 与 `parsePackageTarget` 同时产出 Bun 目标和 Rust `HostTarget`，
+   保持 `bun-windows-x64` 等命名与协议目标三元组一致；没有接入 `xiao build` 或工具链发现。
+4. Windows 原生已完成独立产物、同目录核心和开发回环的真实源码回环；Linux Docker/WSL
+   与 macOS 原生仍为待复现清单，当前不宣称三平台验收完成。
+
+本批的验证脚本、分发目录和安装边界见 [UseDocs：独立打包与核心发现](../UseDocs/tooling/cli/packaging.md)。
 
 ## 相关页面
 

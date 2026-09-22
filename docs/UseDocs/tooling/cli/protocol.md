@@ -14,7 +14,7 @@ related:
 
 X0-A 的核心入口是 `xiao-core` 子进程。调用方先发送一个 `hello` 帧完成版本协商，
 再发送 `run`、`build`、`cancel` 或 `shutdown`。本页描述已经验证的机器边界；用户可见的
-`xiao` 命令、打包和平台发现仍属于后续 X0 批次。
+`xiao` 命令和 X0-C 的独立分发已经接入；`xiao build` 及主机工具链发现仍属于后续 X0-E。
 
 ## 帧格式
 
@@ -34,7 +34,7 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 取消通过同一请求 ID 绑定 `CancellationToken`，其结果使用 `ArtifactRejected` 的进程码 2。
 
 X0-B 的 `xiao run` 已消费这条协议；命令行为、非 TTY 呈现和 `print` 尚未实现的限制见
-[xiao run 与 CLI 外壳](shell.md)。独立打包和完整三平台核心发现仍属于 X0-C。
+[xiao run 与 CLI 外壳](shell.md)，分发目录和核心发现见[独立打包与核心发现](packaging.md)。
 
 ## 共享契约
 

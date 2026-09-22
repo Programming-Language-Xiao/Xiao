@@ -77,7 +77,7 @@ export function helpText(): string {
     "  xiao <file.xiao>                         运行源码快捷方式",
     "  xiao config [--global] <key.path> <value>",
     "  xiao test                                已登记，测试框架待后续批次",
-    "  xiao build ...                           X0-C 尚未实现",
+    "  xiao build ...                           X0-E 尚未实现",
     "  xiao --help | --version",
     "",
     "当前阶段不启动 REPL；无参数或 --inLF 会给出稳定的未实现诊断。",

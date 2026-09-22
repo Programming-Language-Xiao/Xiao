@@ -19,4 +19,6 @@ TypeScript workspace 根目录。所有 CLI/REPL 代码都放在 `src/`，通过
 - `src/`：命令、REPL、协议、配置、平台和 UI 模块。
 
 X0-B 已接入 `src/main.ts` 的 `xiao` 命令入口，运行链路通过 `src/protocol/client.ts`
-调用 Rust `xiao-core`；独立可执行打包仍由 X0-C 负责。
+调用 Rust `xiao-core`。X0-C 通过 `bun run build` 生成 `dist/<目标>/xiao[.exe]`，并把
+同目标的 `xiao-core[.exe]` 和 `xiao-package.json` 放在同一目录；构建时需要 Bun，生成物
+运行时不需要 Bun 或 Node.js。

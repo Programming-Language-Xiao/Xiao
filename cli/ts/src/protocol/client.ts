@@ -11,7 +11,7 @@ import {
   type ProtocolTarget,
   type RunRequest,
 } from "./messages.ts";
-import { discoverCore, hostTarget, type CoreDiscoveryOptions } from "../platform/core.ts";
+import { discoverCoreWithMetadata, hostTarget, type CoreDiscoveryOptions, type CoreDiscoverySource } from "../platform/core.ts";
 
 /** 核心客户端运行选项。 */
 export interface CoreClientOptions extends CoreDiscoveryOptions {
@@ -56,6 +56,10 @@ export interface CoreCallResult {
   response: ProtocolResponse;
   /** 核心 stderr，供诊断详情显示，不参与结果判断。 */
   stderr: string;
+  /** 实际使用的核心路径；用于调试和安装诊断。 */
+  corePath: string;
+  /** 核心路径来源；`development` 明确表示开发布局。 */
+  coreSource: CoreDiscoverySource;
 }
 
 /** 核心协议或进程边界错误。 */
@@ -120,7 +124,8 @@ export class ProtocolClient {
   /** 使用已经规范化的协议运行请求发送一次调用。 */
   async call(request: RunRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
-    const corePath = await discoverCore(this.options);
+    const discovery = await discoverCoreWithMetadata(this.options);
+    const corePath = discovery.path;
     const cwd = this.options.cwd ?? process.cwd();
     const env = { ...process.env, ...(this.options.env ?? {}) };
     let child: ChildProcessWithoutNullStreams;
@@ -170,7 +175,7 @@ export class ProtocolClient {
       await frames.nextMatching((responseValue) => responseValue.type === "shutdown");
       child.stdin.end();
       await waitForExit(child);
-      return { response: asProtocolResponse(response), stderr };
+      return { response: asProtocolResponse(response), stderr, corePath, coreSource: discovery.source };
     } catch (error) {
       if (error instanceof CoreClientError) throw error;
       if (error instanceof ProtocolFrameError) {

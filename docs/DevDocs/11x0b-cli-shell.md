@@ -40,7 +40,7 @@
 非 TTY 降级）、以及它与 X0-A 协议的接线。
 
 **不负责**：独立可执行打包与三平台（X0-C）、`-debug` 与诊断窗口（X0-D）、`xiao build`
-（依赖 X0-C 的工具链发现）、REPL（11B）、i18n 目录本身（11C）、包管理（11A）、
+（依赖 X0-E 的主机工具链发现）、REPL（11B）、i18n 目录本身（11C）、包管理（11A）、
 内置函数（20）。
 
 ---
@@ -49,7 +49,7 @@
 
 | X0 退出条件 | 本批覆盖 |
 | --- | --- |
-| 第 1 条 `xiao run`、源码快捷运行、`xiao config` | ✅ 本批；**`xiao test` 见 §2.1**；`xiao build` 归 X0-C |
+| 第 1 条 `xiao run`、源码快捷运行、`xiao config` | ✅ 本批；**`xiao test` 见 §2.1**；`xiao build` 归 X0-E |
 | 第 4 条 TS 构建 + 静态检查、三平台行为一致 | ⚠️ **构建与静态检查在本批**；三平台一致性归 X0-C |
 | 第 7 条 `xiao config` 的布尔写入 | ✅ 本批 |
 | 第 2、5、6 条（三平台矩阵、独立可执行、核心发现） | ❌ X0-C |
@@ -192,7 +192,7 @@ COLORTERM 表明 truecolor  → 24-bit
    接收结构化结果并渲染。
 6. **通过解析本地化文本判断成败**（`00a:135` 末句、X0 第 6 条）。
 7. **重新定义退出码**（它已由 B0-D 冻结，CLI 只做映射）。
-8. **把 `xiao build` 顺手做了**——它需要 X0-C 的工具链发现（`10:21`）。
+8. **把 `xiao build` 顺手做了**——它需要 X0-E 的主机工具链发现（`10:21`）。
 
 ---
 
@@ -245,7 +245,7 @@ COLORTERM 表明 truecolor  → 24-bit
 
 ## 八、不负责与不要重复做的事
 
-- **不要做 `xiao build`**（X0-C）、**不要做 `-debug` / 诊断窗口**（X0-D）。
+- **不要做 `xiao build`**（X0-E）、**不要做 `-debug` / 诊断窗口**（X0-D）。
 - **不要实现 `print` 或任何内置函数**（20 阶段）。
 - **不要做 REPL**（11B）、**不要做 i18n 目录**（11C）、**不要做包管理**（11A）。
 - **不要重新定义协议**（X0-A 已冻结，方案 C 的单一来源要守住）。
@@ -258,14 +258,14 @@ COLORTERM 表明 truecolor  → 24-bit
    `test`、`build` 和 REPL 未实现分支；`package.json` 暴露 `xiao` bin。
 2. `config/editor.ts` 发现祖先目录的小写 `config.xiao`，诊断非规范大小写，支持
    `CLI.git.summary` 与 `language.locale`，保留注释/无关字段并用同目录临时文件原子替换。
-3. `platform/core.ts` 提供宿主目标描述、`XIAO_CORE_PATH` 覆盖和开发树核心发现；完整
-   安装包/三平台发现仍属于 X0-C。
+3. `platform/core.ts` 提供宿主目标描述、`XIAO_CORE_PATH` 覆盖和开发树核心发现；独立
+   安装包已在 X0-C 接入，Linux/macOS 原生矩阵仍按 X0-C 清单待复现。
 4. `protocol/client.ts` 先协商版本，再发送真实 Xiao 源码；核心崩溃、坏帧、版本失配和
    取消都保留稳定机器码，退出状态不从人类文案推导。
 5. `ui/` 与 `diagnostics/` 实现 Unicode 显示宽度、TTY/`NO_COLOR`/`--color=always`
    降级、JSON 输出和 EPIPE 安全写入；中文对齐和非 TTY 回归测试已加入。
 
-本记录只覆盖 X0-B；独立可执行打包、完整三平台矩阵、`-debug` 窗口、REPL、i18n 和
+本记录只覆盖 X0-B；独立可执行打包已由 X0-C 接入，Linux/macOS 原生矩阵、`-debug` 窗口、REPL、i18n 和
 `print` 不在本批交付范围内。
 
 ## 相关页面

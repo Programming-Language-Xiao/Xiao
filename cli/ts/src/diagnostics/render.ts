@@ -107,7 +107,17 @@ interface NormalizedCliError { code: string; message: string; details: Record<st
 /** 把协议、配置和参数异常归一化为同一诊断形状。 */
 function normalizeCliError(error: unknown): NormalizedCliError {
   if (error instanceof CoreClientError) return { code: error.code, message: error.message.replace(`${error.code}: `, ""), details: error.details, exitCode: error.exitCode };
-  if (error instanceof CoreDiscoveryError) return { code: error.code, message: error.message.replace(`${error.code}: `, ""), details: { candidates: error.candidates }, exitCode: CLI_EXIT_CODES.infrastructure };
+  if (error instanceof CoreDiscoveryError) {
+    return {
+      code: error.code,
+      message: error.message.replace(`${error.code}: `, ""),
+      details: {
+        candidates: error.candidates,
+        candidate_sources: error.candidateDetails,
+      },
+      exitCode: CLI_EXIT_CODES.infrastructure,
+    };
+  }
   if (error instanceof CliConfigError) return { code: error.code, message: error.message.replace(`${error.code}: `, ""), details: { ...error.details, path: error.path }, exitCode: CLI_EXIT_CODES.config };
   if (isCommandError(error)) return { code: error.code, message: error.message.replace(`${error.code}: `, ""), details: error.details, exitCode: error.exitCode };
   if (isArgumentError(error)) return { code: error.code, message: error.message.replace(`${error.code}: `, ""), details: {}, exitCode: CLI_EXIT_CODES.usage };

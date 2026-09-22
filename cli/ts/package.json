@@ -10,6 +10,7 @@
     "xiao": "src/main.ts"
   },
   "scripts": {
+    "build": "bun run src/platform/packaging.ts",
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit -p ../../tsconfig.json"
   },

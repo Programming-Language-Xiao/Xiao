@@ -15,8 +15,8 @@ related:
 
 X0-B 提供 TypeScript `xiao` 命令入口。`xiao run <file.xiao>` 和直接写文件名的快捷方式
 读取真实 Xiao 源码，通过 `xiao-core` 的长度前缀 JSON 协议执行，再把结构化结果写到终端。
-核心路径可以用 `XIAO_CORE_PATH` 指定；当前开发阶段仍需要先构建 `xiao-core`，独立打包和
-完整三平台安装发现属于 X0-C。
+核心路径可以用 `XIAO_CORE_PATH` 指定；独立分发目录和生产发现顺序见[独立打包与核心发现](packaging.md)。
+当前平台证据仍以 Windows 原生为主，Linux/macOS 的原生复现状态见该页。
 
 ## 运行结果
 

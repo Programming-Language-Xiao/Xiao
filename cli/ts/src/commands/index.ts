@@ -55,7 +55,7 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
     return renderCliError(new CliCommandError("X11-CLI-TEST-001", "xiao test 已登记但尚无项目测试语义；请使用 cargo test 或 bun test", CLI_EXIT_CODES.usage, { status: "registered_unimplemented", project: command.project ?? null }), renderOptions(command.options, context));
   }
   if (command.kind === "build") {
-    return renderCliError(new CliCommandError("X11-CLI-BUILD-001", "xiao build 的工具链发现和独立产物属于 X0-C，当前尚未实现", CLI_EXIT_CODES.usage, { status: "x0c_unimplemented", arguments: command.args }), renderOptions(command.options, context));
+    return renderCliError(new CliCommandError("X11-CLI-BUILD-001", "xiao build 的主机工具链发现和原生构建属于 X0-E，当前尚未实现", CLI_EXIT_CODES.usage, { status: "x0e_unimplemented", arguments: command.args }), renderOptions(command.options, context));
   }
   if (command.kind === "config") return executeConfig(command, context);
   return executeRun(command, context);
