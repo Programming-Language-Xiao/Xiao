@@ -26,7 +26,10 @@
 - workspace 清单：根 `package.json`、`bun.lock`、`core/rust/Cargo.toml`、`core/rust/Cargo.lock` 和 `core/rust/rust-toolchain.toml`。
 - 政策与登记：`tools/repo-check/repository.manifest.json`、`docs/module-registry.json` 及 `resources/schemas/` 下的两个 Schema。
 - 目录与尺寸检查器：`tools/repo-check/src/cli.ts`、`tools/repo-check/src/size.ts`；覆盖率检查器：`tools/doc-coverage/src/cli.ts`；Rust 原生 AST 适配器：`core/rust/crates/xiao-doc-coverage-rust/`。
-- 本地入口：`bun run check` 执行全套门禁；需要单项结果时使用 `bun run check:layout`、`bun tools/repo-check/src/cli.ts docs|usedocs` 或 `bun run check:coverage`。超标 Rust 文件会让 `check:layout`/`check` 调用 Rust 适配器，因此需有 Rust 工具链、预先构建适配器或设置 `XIAO_RUST_DOC_ADAPTER`。
+- 本地入口：`bun run check` 执行全套门禁；需要单项结果时使用 `bun run check:layout`、`bun tools/repo-check/src/cli.ts docs|usedocs`、`bun run check:coverage` 或 `bun run check:lock`。超标 Rust 文件会让 `check:layout`/`check` 调用 Rust 适配器，因此需有 Rust 工具链、预先构建适配器或设置 `XIAO_RUST_DOC_ADAPTER`。
+- **锁文件门禁（`check:lock`，2026-09-22 加入）**：`tests/benchmarks` 是**独立 crate**，它的 `Cargo.lock` 不在 `core/rust` workspace 的覆盖范围内。任何给 `core/rust` 的 crate 增删依赖的改动都**同时**需要更新两份锁文件，而 `cargo test --workspace` **覆盖不到独立那份**——该盲区已经造成三次漏提交（B0-B 的 `xiao-source`、N0-A 的 `xiao-codegen-llvm`、X0-A 的四个依赖），三次都写在交接文档里提醒过，都没有生效。
+  该门禁先跑两次 `cargo check`（**允许**它更新锁文件），再用 `git diff --exit-code` 检查两份锁文件既**内容与 manifest 一致**、又**已经提交**。
+  注意 `cargo check --locked` **不能**单独承担这条：它只检查锁文件内容，检查不了"改了但没提交"——而那正是三次复发的形态。它因此并入 `bun run check`，而不是留作可选项：**不会被自动跑到的门禁等于没有**。
 - A0 用户页面：`docs/UseDocs/tooling/cli/repo-check.md`、`doc-coverage.md` 和 `doc-coverage-rust.md`，均已登记并验证。
 
 ## 一级工程目标：建立唯一且可交叉验证的工作区清单

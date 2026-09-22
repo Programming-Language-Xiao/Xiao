@@ -244,7 +244,10 @@ bunx tsc --noEmit -p tsconfig.json
 5. **顺手做诊断窗口**（归 X0-D，见 §1.4 末段）。
 6. **在 Rust 侧协议层重新实现语义**——它只能**编排**已有驱动器。
 7. **版本协商流于形式**：逐个比对五个版本号而没有统一的"核心版本"表达（§2.2）。
-8. **忘了 `tests/benchmarks` 独立 crate 的 lock**——它已经绊倒过两次，这是第六次点名。
+8. **忘了 `tests/benchmarks` 独立 crate 的 lock**——该盲区已经造成**三次**漏提交
+   （B0-B / N0-A / X0-A），三次都写在交接文档里提醒过、都没有生效。**2026-09-22 起已固化为
+   `check:lock` 门禁并并入 `bun run check`**（见 [00A.1](00a-a0-workspace-and-checkers.md)），
+   不再依赖提醒。跑 `cargo check` 之后如果锁文件出现 diff，就是漏提交。
 
 ---
 

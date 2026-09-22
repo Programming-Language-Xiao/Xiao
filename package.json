@@ -17,7 +17,8 @@
     "check:docs": "bun tools/repo-check/src/cli.ts docs",
     "check:usedocs": "bun tools/repo-check/src/cli.ts usedocs",
     "check:coverage": "bun tools/doc-coverage/src/cli.ts",
-    "check": "bun tools/repo-check/src/cli.ts all",
+    "check:lock": "cargo check --manifest-path core/rust/Cargo.toml --workspace && cargo check --manifest-path tests/benchmarks/Cargo.toml && git diff --exit-code -- core/rust/Cargo.lock tests/benchmarks/Cargo.lock",
+    "check": "bun tools/repo-check/src/cli.ts all && bun run check:lock",
     "test": "bun test"
   }
 }
