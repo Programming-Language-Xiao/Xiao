@@ -31,7 +31,7 @@
 
 | 项 | 现状 |
 | --- | --- |
-| `cli/ts` | X0-B 已接入命令与终端呈现，X0-C 已补齐独立打包和核心发现；Linux/macOS 原生复现仍待完成 |
+| `cli/ts` | X0-B 已接入命令与终端呈现，X0-C 已补齐独立打包和核心发现；Linux Docker 功能证据已完成，Linux/macOS 原生复现仍待完成 |
 | 跨语言传输方式 | **已冻结**为子进程 + 8 字节大端长度前缀 JSON（X0-A） |
 | Rust 侧稳定接口 | ✅ 齐备：`FrontendVmDriver`/`FrontendNativeDriver`、`DriverOutcome`、`ExitCode` 五个值、`CancellationToken` |
 | 用户可观察输出 | ❌ **内置函数不存在**：`print("hello")` 报 `X06-RUNTIME-012`。见 §1.3 |
@@ -44,7 +44,8 @@
 
 **当前进度（2026-09-22）**：X0-A「协议契约 + Rust 侧入口」、X0-B「TypeScript CLI
 骨架」与 X0-C「独立打包和平台发现」已落地；X0-D 仍未开始。X0-C 的 Windows 原生
-回环已完成，Linux/macOS 原生矩阵继续按待复现清单推进，诊断窗口仍属后续批次。
+回环已完成；Linux Docker 功能/构建回环已复现，但 Linux 原生、WSL 和 macOS 原生矩阵
+继续按待复现清单推进，诊断窗口仍属后续批次。
 
 **不负责**：内置函数与标准库（20）、`.xiaoc` 容器（14）、优化（13/15/18）、
 包管理（11A）、REPL（11B）、i18n（11C）、并发（后置独立阶段）。

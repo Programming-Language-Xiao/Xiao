@@ -32,7 +32,7 @@
 | 唯一依赖 | `string-width@7.2.0`（打包友好） |
 | `xiao-core` 的发现 | `XIAO_CORE_PATH` → 独立可执行同目录 → PATH → 检测到仓库根后的开发回环 |
 | 失败诊断 | ✅ 候选带来源，`development` 明确标记开发布局，机器码为 `X11-CLI-CORE-001` |
-| 平台证据 | Windows 原生已完成本批回环；Linux/macOS 仍为待复现清单 |
+| 平台证据 | Windows 原生回环已完成；Linux Docker 功能/构建证据已完成（不等同原生验收）；Linux 原生、WSL、macOS 仍待复现 |
 
 ### 本批交付与不负责
 
@@ -166,8 +166,10 @@ X0-A 已经冻结了协议：首帧 `hello`、`protocol_version` + 统一 `core_
 ### 3.2 本批的口径
 
 - **Windows 原生**：完整验收；
-- **Linux（Docker + WSL）**：取得**可复现的构建与功能证据**，并在交接记录里**逐项说明
-  每个环境跑了什么、结果如何**；
+- **Linux Docker**：本批已取得**可复现的构建与功能证据**，并在交接记录里逐项说明
+  环境、命令和结果；证据不等同真实 Linux 主机验收；
+- **WSL**：当前 Ubuntu/Arch 发行版没有本批固定工具链，仍列待复现，不把 Docker 的结果冒充
+  WSL 原生证据；
 - **macOS**：**没有环境**，如实记为**待复现**，**不得**宣称已验证；
 - **X0 第 2 条的完整达成**：需要**真实 Linux 主机**复现一次，或说明为什么容器证据
   足以替代。**这个判断要写出来**，不能含糊。
@@ -183,6 +185,22 @@ X0-A 已经冻结了协议：首帧 `hello`、`protocol_version` + 统一 `core_
 | 发现 | 同目录 / PATH / 开发回环三条路径各在一个环境里验证 |
 | 版本协商 | 失配时是否拒绝；崩溃是否产出 `X11-PROTOCOL-003` |
 | **差异** | 与 Windows 原生的**逐项差异**——没有差异也要写"无差异" |
+
+### 3.4 Linux Docker 实测记录（2026-09-22）
+
+| 项 | 结果 |
+| --- | --- |
+| 环境 | `xiao-dev:latest`：Debian 13（trixie），Bun 1.4.0，Rust 1.96.0；容器运行在 Docker Desktop 的 WSL2 内核上 |
+| 文件系统 | 项目源码和 Cargo `target` 放在 Docker ext4 命名卷，未把编译中间文件写回 Windows `D:` 驱动器 |
+| TypeScript | `bun test`：58 pass；`bun x tsc --noEmit -p tsconfig.json`：通过；文档覆盖率 5486/5486、公共 API 2851/2851 |
+| Rust 与门禁 | `cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast`：通过；`bun run check`（含 `check:lock`）：通过；`check:usedocs`：通过 |
+| Linux 打包 | `bun run build` 生成 ELF `xiao` 与 `xiao-core`，清单目标为 `x86_64-unknown-linux-gnu` / `elf` |
+| 独立回环 | 将两个 ELF 文件和真实 `.xiao` 源码复制到仓库外 `/tmp`，清空 `XIAO_CORE_PATH`，仅保留 `/usr/bin:/bin`，同目录发现成功，协议 `exit_code=0` |
+| 09R3 基准 | release 驱动按设计拒绝非 Windows：返回“只接受 Windows 原生采数”，未生成 Linux 性能、内存或编码报告 |
+| 与 Windows 差异 | 产物为 ELF/Linux 目标而非 PE/COFF/Windows 目标；本次测试的协议结果和退出码形状一致。性能数字不作跨环境比较 |
+
+这份记录证明 Linux 容器中的构建、核心发现和功能回环可复现，不关闭“真实 Linux 主机”
+或 macOS 原生待复现项。
 
 ---
 
@@ -262,8 +280,8 @@ X0-A 已经冻结了协议：首帧 `hello`、`protocol_version` + 统一 `core_
    开发布局。
 3. `hostPackageTarget` 与 `parsePackageTarget` 同时产出 Bun 目标和 Rust `HostTarget`，
    保持 `bun-windows-x64` 等命名与协议目标三元组一致；没有接入 `xiao build` 或工具链发现。
-4. Windows 原生已完成独立产物、同目录核心和开发回环的真实源码回环；Linux Docker/WSL
-   与 macOS 原生仍为待复现清单，当前不宣称三平台验收完成。
+4. Windows 原生已完成独立产物、同目录核心和开发回环的真实源码回环；Linux Docker 已有
+   功能/构建证据，但 Linux 原生、WSL 和 macOS 原生仍为待复现清单，当前不宣称三平台验收完成。
 
 本批的验证脚本、分发目录和安装边界见 [UseDocs：独立打包与核心发现](../UseDocs/tooling/cli/packaging.md)。
 

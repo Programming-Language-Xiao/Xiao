@@ -53,8 +53,15 @@ Bun 或 Node.js。`xiao-core` 不嵌入 CLI，而是作为同目录资源分发�
 
 ## 平台证据
 
-Windows 原生已验证独立产物、同目录核心发现、开发回环和真实源码回环。Linux 的 Docker/WSL
-功能与构建证据、macOS 原生证据仍在待复现清单中；这些环境未复现前，不宣称三平台验收完成。
+Windows 原生已验证独立产物、同目录核心发现、开发回环和真实源码回环。Linux Docker 已
+完成构建、Rust/TypeScript 门禁和仓库外真实源码回环；这只是容器功能证据，不等同真实
+Linux 主机验收。WSL Ubuntu/Arch 当前缺少固定工具链，Linux 原生、WSL 和 macOS 原生仍
+在待复现清单中，不宣称三平台验收完成。
+
+Linux Docker 本次使用 `xiao-dev:latest`（Debian 13、Bun 1.4.0、Rust 1.96.0），项目和
+Cargo `target` 放在 Docker ext4 命名卷，避免把 Cargo 的密集 I/O 写入 Windows 驱动器。
+09R3 release 基准驱动在 Linux 会明确拒绝并保持 `pending-reproduction`，因此不能用容器
+数字替代 Windows 原生性能报告。
 
 Git Bash 运行的是 Windows 产物，只用于 PATH/shell 差异检查，不能作为 Linux 证据。容器和
 WSL 的性能数字也不能与 Windows 原生基准并列。
