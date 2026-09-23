@@ -2,7 +2,7 @@
 
 ## 目录职责
 
-存放 A0 的仓库完整性检查器。工具读取 workspace manifest、仓库政策清单、项目维护源码、模块登记和 Markdown 文档，报告目录、README、单文件行数、UseDocs 链接及 workspace 漂移；不实现 Xiao 语言语义，也不自动修改用户文件。
+存放 A0 的仓库完整性检查器。工具读取 workspace manifest、仓库政策清单、项目维护源码、模块登记和 Markdown 文档，报告目录、README、单文件行数、UseDocs 链接及 workspace 漂移；同时提供提交信息门禁；不实现 Xiao 语言语义，也不自动修改用户文件。
 
 ## 工程期
 
@@ -22,6 +22,18 @@ A0 建立最小检查命令；A0.2 接入目录与 workspace 交叉核对；A0.4
 ## 交付规则
 
 实现、测试和 [UseDocs 工具说明](../../docs/UseDocs/tooling/cli/README.md) 必须在同一可审计变更集中完成。所有公共导出项使用 JSDoc；本目录自身也纳入全仓库 90% 文档覆盖率统计。
+
+## 提交信息门禁
+
+`commit-msg` 子命令检查提交标题的类型前缀和非空正文；正文至少要说明为什么需要这次改动，
+不能只重复标题。首次克隆或启用本门禁时，在仓库根目录执行：
+
+```text
+cmd /c git config core.hooksPath .githooks
+```
+
+`.githooks/commit-msg` 会在每次提交前调用同一检查器；也可以直接执行
+`bun tools/repo-check/src/cli.ts commit-msg --file .git/COMMIT_EDITMSG` 复核当前提交信息文件。
 
 ## 子目录
 

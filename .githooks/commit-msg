@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+
+exec bun tools/repo-check/src/cli.ts commit-msg --file "$1"

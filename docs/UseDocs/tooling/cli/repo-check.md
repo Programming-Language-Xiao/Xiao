@@ -22,6 +22,7 @@ related:
 bun tools/repo-check/src/cli.ts layout
 bun tools/repo-check/src/cli.ts docs
 bun tools/repo-check/src/cli.ts usedocs
+bun tools/repo-check/src/cli.ts commit-msg --file .git/COMMIT_EDITMSG
 bun tools/repo-check/src/cli.ts all
 ```
 
@@ -39,6 +40,21 @@ cargo build --manifest-path core/rust/Cargo.toml -p xiao-doc-coverage-rust
 workspace、目录与尺寸、DevDocs、UseDocs 和文档覆盖率检查，所以 `bun run check:layout` 与
 `bun run check` 都可能调用 Rust 工具链。需要脚本化时可添加 `--format json` 或
 `--format sarif`，并用 `--out` 保存报告。
+
+## 提交正文门禁
+
+`commit-msg` 检查标题必须使用 `feat:`、`fix:`、`test:`、`docs:`、`chore:` 或 `refactor:`
+前缀（可附带 scope），并且正文必须包含至少一段非空说明。它不试图判断中文或英文内容是否
+真的回答了“为什么”，而是先阻止最常见的空正文复发。
+
+首次启用仓库钩子时执行：
+
+```text
+cmd /c git config core.hooksPath .githooks
+```
+
+启用后，`.githooks/commit-msg` 会在提交前调用同一命令；钩子与手工命令共享实现，避免两套
+规则继续漂移。
 
 ## 单文件行数门禁
 

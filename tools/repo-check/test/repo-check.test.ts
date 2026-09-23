@@ -6,6 +6,7 @@ import { basename, join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { checkLayout } from "../src/layout.ts";
+import { checkCommitMessage } from "../src/commit.ts";
 import { parseArguments, runCommand } from "../src/cli.ts";
 import { checkMarkdownLinks, scanMarkdownDirectory } from "../src/docs.ts";
 import { findRepositoryRoot } from "../src/manifest.ts";
@@ -18,7 +19,41 @@ import type { CheckResult } from "../src/types.ts";
 
 describe("repo-check 参数", () => {
   test("默认执行 all 并支持 JSON 输出", () => {
-    expect(parseArguments(["--format", "json"])).toEqual({ command: "all", root: undefined, format: "json", output: undefined });
+    expect(parseArguments(["--format", "json"])).toEqual({ command: "all", root: undefined, file: undefined, format: "json", output: undefined });
+  });
+
+  test("commit-msg 命令接收提交信息文件", () => {
+    expect(parseArguments(["commit-msg", "--file", ".git/COMMIT_EDITMSG"])).toEqual({
+      command: "commit-msg",
+      root: undefined,
+      file: ".git/COMMIT_EDITMSG",
+      format: "text",
+      output: undefined,
+    });
+  });
+});
+
+describe("提交信息门禁", () => {
+  test("接受带 scope 且正文说明原因的提交", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-commit-"));
+    try {
+      writeFileSync(join(directory, "message.txt"), "docs(vm): close handoff\n\n为什么：把收尾规则落到可执行门禁。\n", "utf8");
+      expect(checkCommitMessage(directory, "message.txt")).toEqual({ passed: true, diagnostics: [] });
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("拒绝标题前缀错误和只有注释的正文", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-commit-"));
+    try {
+      writeFileSync(join(directory, "message.txt"), "checkpoint cleanup\n\n# Please enter a commit message\n", "utf8");
+      const result = checkCommitMessage(directory, "message.txt");
+      expect(result.passed).toBe(false);
+      expect(result.diagnostics.map((item) => item.code)).toEqual(["A0-COMMIT-001", "A0-COMMIT-002"]);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
   });
 });
 

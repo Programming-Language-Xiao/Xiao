@@ -2,6 +2,7 @@
 
 import { resolve } from "node:path";
 
+import { checkCommitMessage } from "./commit.ts";
 import { checkDevDocs, checkUseDocs } from "./docs.ts";
 import { findRepositoryRoot, loadRepository } from "./manifest.ts";
 import { checkLayout, checkLoadedLayout } from "./layout.ts";
@@ -11,7 +12,7 @@ import type { CheckResult } from "./types.ts";
 /**
  * A0 检查器支持的子命令。
  */
-export type RepoCheckCommand = "layout" | "docs" | "usedocs" | "all";
+export type RepoCheckCommand = "layout" | "docs" | "usedocs" | "commit-msg" | "all";
 
 /**
  * 解析检查器命令行参数。
@@ -22,19 +23,23 @@ export type RepoCheckCommand = "layout" | "docs" | "usedocs" | "all";
 export function parseArguments(argv: string[]): {
   command: RepoCheckCommand;
   root?: string;
+  file?: string;
   format: ReportFormat;
   output?: string;
 } {
   let command: RepoCheckCommand = "all";
   let root: string | undefined;
+  let file: string | undefined;
   let format: ReportFormat = "text";
   let output: string | undefined;
   for (let index = 0; index < argv.length; index += 1) {
     const argument = argv[index];
-    if (argument === "layout" || argument === "docs" || argument === "usedocs" || argument === "all") {
+    if (argument === "layout" || argument === "docs" || argument === "usedocs" || argument === "commit-msg" || argument === "all") {
       command = argument;
     } else if (argument === "--root") {
       root = argv[++index];
+    } else if (argument === "--file") {
+      file = argv[++index];
     } else if (argument === "--format") {
       const candidate = argv[++index];
       if (candidate !== "text" && candidate !== "json" && candidate !== "sarif") throw new Error(`不支持的报告格式：${candidate}`);
@@ -47,7 +52,7 @@ export function parseArguments(argv: string[]): {
       throw new Error(`未知参数：${argument}`);
     }
   }
-  return { command, root, format, output };
+  return { command, root, file, format, output };
 }
 
 /**
@@ -61,6 +66,27 @@ export async function runCommand(options: ReturnType<typeof parseArguments>): Pr
   if (options.command === "layout") {
     const result = await checkLayout(start);
     return { result, root: findRepositoryRoot(start) ?? resolve(start) };
+  }
+  if (options.command === "commit-msg") {
+    const root = findRepositoryRoot(start) ?? resolve(start);
+    if (!options.file) {
+      return {
+        result: {
+          passed: false,
+          diagnostics: [{
+            code: "A0-COMMIT-003",
+            severity: "error",
+            path: "",
+            subject: "commit message file",
+            message: "commit-msg 命令缺少 --file 参数。",
+            hint: "传入 Git 提供的提交信息文件路径。",
+            message_id: "a0.commit.message_file_argument_missing",
+          }],
+        },
+        root,
+      };
+    }
+    return { result: checkCommitMessage(root, options.file), root };
   }
   const loaded = loadRepository(start);
   if (!loaded.repository) return { result: { passed: false, diagnostics: loaded.diagnostics }, root: findRepositoryRoot(start) ?? resolve(start) };
@@ -81,7 +107,7 @@ if (import.meta.main) {
   try {
     const options = parseArguments(process.argv.slice(2));
     if (process.argv.includes("--help") || process.argv.includes("-h")) {
-      process.stdout.write("用法：xiao-repo-check [layout|docs|usedocs|all] [--root 路径] [--format text|json|sarif] [--out 文件]\n");
+      process.stdout.write("用法：xiao-repo-check [layout|docs|usedocs|commit-msg|all] [--root 路径] [--file 文件] [--format text|json|sarif] [--out 文件]\n");
       process.exit(0);
     }
     const { result, root } = await runCommand(options);

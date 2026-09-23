@@ -33,8 +33,11 @@ use crate::sink::{VmEvent, VmEventSink};
 
 /// 解释过程中的终止原因。
 ///
-/// 可恢复错误与致命故障是两条通道：致命故障不执行释放计划，也不能被普通
-/// 处理器捕获，因此不能与 [`XiaoError`] 共用一个变体。
+/// 终止原因分为三条通道：[`Fault::Error`] 是可恢复的运行时错误，会参与
+/// handler 路由；[`Fault::Cancelled`] 由 VM 外部取消或截止时间触发，不查
+/// handler 表、不进入用户 `catch`，但会执行活动作用域的 `finally` 并复用既有
+/// 释放计划；[`Fault::Fatal`] 是不可恢复故障，不执行释放计划，也不能被普通
+/// 处理器捕获。因此取消和致命故障都不能与 [`XiaoError`] 共用一个变体。
 #[derive(Debug)]
 pub enum Fault {
     /// 可恢复的运行时错误。

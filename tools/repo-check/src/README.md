@@ -10,7 +10,7 @@ A0.2 实现目录与 workspace 规则；A0.4 接入 CI、链接图和退出码�
 
 ## 模块边界
 
-实现按 `manifest`、`workspace`、`layout`、`size`、`docs`、`report` 分模块：`paths` 在既有遍历中
+实现按 `manifest`、`workspace`、`layout`、`size`、`docs`、`commit`、`report` 分模块：`paths` 在既有遍历中
 同时提供稳定排序的源文件列表，`size` 执行 2500 物理行门禁、四段旁置豁免校验与按需大纲，
-`report` 将大纲详情分别映射到文本、JSON 和 SARIF。每个模块新增代码时必须同步更新本
-README、单元测试和对应 UseDocs 页面。
+`commit` 锁定提交标题前缀与非空正文，`report` 将大纲详情分别映射到文本、JSON 和 SARIF。
+每个模块新增代码时必须同步更新本 README、单元测试和对应 UseDocs 页面。
