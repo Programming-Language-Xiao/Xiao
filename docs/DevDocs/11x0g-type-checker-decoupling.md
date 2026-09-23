@@ -192,7 +192,7 @@ checker/diagnostic.rs    诊断上报（所有 *_error 与 push_runtime_check）
 5. `5a56447`：拆出 `checker/expression.rs`，并拆分变量二元推导与调用检查；
 6. `e66bfdc`：拆出 `checker/conversion.rs`，完成门面收尾。
 
-最终结构为 `checker.rs`（162 行）门面，加上 `checker/` 下六个职责模块：
+最终结构为 `checker.rs`（166 行）门面，加上 `checker/` 下六个职责模块：
 `constant`、`result`、`diagnostic`、`statement`、`expression`、`conversion`。公开的
 `RuntimeCheckKind`、`TypeCheckResult`、`TypedNode`、`TypeChecker` 和 `check` 路径保持不变；
 `RuntimeCheckKind::as_name`、`from_name`、`all` 的实现与行为未改，`xiao-types/tests/`
