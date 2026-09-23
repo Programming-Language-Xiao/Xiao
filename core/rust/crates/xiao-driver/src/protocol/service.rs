@@ -16,11 +16,12 @@ use super::mapping::{protocol_error_body, protocol_error_from_error};
 use super::message::{CORE_VERSION, CoreVersions, PROTOCOL_VERSION, ProtocolResponse};
 use super::request::{
     CORE_CRASH_CODE, OptimizationConfig, ProtocolError, ProtocolRequest, ProtocolTarget,
-    RunOptions, SourceIdentity, ToolchainSpec,
+    SourceIdentity, ToolchainSpec,
 };
-use super::run::{frontend_request, protocol_error_response, run_options, run_with_diagnostics};
+use super::run::{protocol_error_response, run_request_response};
+use super::test::test_request_response;
 use super::validate::{validate_source, validate_target, validate_versions};
-use crate::run::{CancellationToken, DriverRequest, ExitCode};
+use crate::run::{CancellationToken, ExitCode};
 
 /// 从流读取并解码一条请求。
 pub fn read_request<R: Read>(reader: &mut R) -> Result<Option<ProtocolRequest>, FrameError> {
@@ -56,6 +57,27 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             target,
             optimization,
             source,
+            options,
+            CancellationToken::new(),
+        ),
+        ProtocolRequest::Test {
+            request_id,
+            protocol_version,
+            core_version,
+            language_version,
+            runtime_version: _,
+            target,
+            optimization,
+            cases,
+            options,
+        } => test_request_response(
+            request_id,
+            protocol_version,
+            core_version,
+            language_version,
+            target,
+            optimization,
+            cases,
             options,
             CancellationToken::new(),
         ),
@@ -119,7 +141,12 @@ fn hello_response(
             protocol_version: PROTOCOL_VERSION,
             core_version: CORE_VERSION,
             versions,
-            capabilities: vec!["run".to_owned(), "build".to_owned(), "cancel".to_owned()],
+            capabilities: vec![
+                "run".to_owned(),
+                "test".to_owned(),
+                "build".to_owned(),
+                "cancel".to_owned(),
+            ],
             error: None,
         },
         Err(error) => ProtocolResponse::Hello {
@@ -132,61 +159,6 @@ fn hello_response(
             error: Some(protocol_error_from_error(&error)),
         },
     }
-}
-
-#[allow(clippy::too_many_arguments)]
-/// 校验运行请求并交给前端到 VM 的驱动路径。
-fn run_request_response(
-    request_id: String,
-    protocol_version: u16,
-    core_version: u32,
-    language_version: String,
-    target: ProtocolTarget,
-    optimization: OptimizationConfig,
-    source: SourceIdentity,
-    options: RunOptions,
-    cancellation: CancellationToken,
-) -> ProtocolResponse {
-    if let Err(error) = validate_versions(protocol_version, core_version) {
-        return protocol_error_response(Some(request_id), &error);
-    }
-    if let Err(error) = validate_source(&source).and_then(|_| validate_target(&target)) {
-        return protocol_error_response(Some(request_id), &error);
-    }
-    if optimization.level != 0 {
-        return protocol_error_response(
-            Some(request_id),
-            &ProtocolError::request("optimization.level", "X0-A 只接受优化级别 0"),
-        );
-    }
-    let (vm_options, event_capacity, timeout) = match run_options(&options) {
-        Ok(value) => value,
-        Err(error) => return protocol_error_response(Some(request_id), &error),
-    };
-    let debug = optimization.debug;
-    let diagnostic_config = optimization.diagnostics.clone();
-    let module_name = source.module.clone();
-    let source_name = source.path.clone();
-    let mut driver_request =
-        DriverRequest::new(frontend_request(&source, &language_version, &target))
-            .with_options(vm_options)
-            .with_module_name(module_name.clone())
-            .with_event_capacity(event_capacity)
-            .with_cancellation(cancellation);
-    if let Some(path) = source_name.clone() {
-        driver_request = driver_request.with_source_name(path);
-    }
-    if let Some(timeout) = timeout {
-        driver_request = driver_request.with_timeout(timeout);
-    }
-    run_with_diagnostics(
-        request_id,
-        debug,
-        module_name,
-        source_name,
-        diagnostic_config,
-        &driver_request,
-    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -294,6 +266,27 @@ pub(super) fn worker_response(
             options,
             token,
         ),
+        ProtocolRequest::Test {
+            request_id,
+            protocol_version,
+            core_version,
+            language_version,
+            runtime_version: _,
+            target,
+            optimization,
+            cases,
+            options,
+        } => test_request_response(
+            request_id,
+            protocol_version,
+            core_version,
+            language_version,
+            target,
+            optimization,
+            cases,
+            options,
+            token,
+        ),
         ProtocolRequest::Build {
             request_id,
             protocol_version,
@@ -381,9 +374,11 @@ where
                     break;
                 }
             }
-            request @ (ProtocolRequest::Run { .. } | ProtocolRequest::Build { .. }) => {
+            request @ (ProtocolRequest::Run { .. }
+            | ProtocolRequest::Test { .. }
+            | ProtocolRequest::Build { .. }) => {
                 if !negotiated {
-                    let request_id = request_id_for(&request).expect("run/build request id");
+                    let request_id = request_id_for(&request).expect("run/test/build request id");
                     let error = ProtocolError::version("必须先完成 hello 版本协商");
                     write_response(&writer, &protocol_error_response(Some(request_id), &error));
                     continue;
@@ -411,6 +406,7 @@ fn reject_non_hello_first_frame(request: &ProtocolRequest) -> Option<ProtocolRes
 fn request_id_for(request: &ProtocolRequest) -> Option<String> {
     match request {
         ProtocolRequest::Run { request_id, .. }
+        | ProtocolRequest::Test { request_id, .. }
         | ProtocolRequest::Build { request_id, .. }
         | ProtocolRequest::Cancel { request_id, .. }
         | ProtocolRequest::Shutdown { request_id, .. } => Some(request_id.clone()),
@@ -478,14 +474,14 @@ fn handle_shutdown<W: Write>(
     true
 }
 
-/// 登记取消令牌并在线程中执行运行或构建请求。
+/// 登记取消令牌并在线程中执行运行、测试或构建请求。
 fn spawn_worker<W: Write + Send + 'static>(
     request: ProtocolRequest,
     writer: &SharedWriter<W>,
     cancellations: &CancellationMap,
     workers: &mut Vec<JoinHandle<()>>,
 ) {
-    let request_id = request_id_for(&request).expect("run/build request id");
+    let request_id = request_id_for(&request).expect("run/test/build request id");
     let token = CancellationToken::new();
     if let Ok(mut map) = cancellations.lock() {
         map.insert(request_id.clone(), token.clone());

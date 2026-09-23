@@ -32,6 +32,7 @@ fn module_dependency_direction_is_acyclic() {
         "mod build;",
         "mod config;",
         "mod service;",
+        "mod test;",
     ] {
         assert!(facade.contains(declaration), "门面缺少 {declaration}");
     }
@@ -41,6 +42,7 @@ fn module_dependency_direction_is_acyclic() {
         "fn worker_response",
         "fn serve",
         "fn build_response",
+        "fn test_request_response",
     ] {
         assert!(
             !facade.contains(implementation),
@@ -78,10 +80,15 @@ fn module_dependency_direction_is_acyclic() {
     let run = include_str!("protocol/run.rs");
     let build = include_str!("protocol/build.rs");
     let config = include_str!("protocol/config.rs");
+    let test = include_str!("protocol/test.rs");
     assert_no_dependency("run.rs", run, "super::service");
     assert_no_dependency("run.rs", run, "super::build");
     assert_no_dependency("run.rs", run, "super::config");
-    assert_no_dependency("run.rs", run, "super::validate");
+    assert_no_dependency("test.rs", test, "super::service");
+    assert_no_dependency("test.rs", test, "super::build");
+    assert_no_dependency("test.rs", test, "super::config");
+    assert_no_dependency("test.rs", test, "super::validate");
+    assert!(test.contains("super::run"));
     assert_no_dependency("build.rs", build, "super::service");
     assert_no_dependency("build.rs", build, "super::validate");
     assert_no_dependency("config.rs", config, "super::service");
@@ -98,6 +105,7 @@ fn module_dependency_direction_is_acyclic() {
         "super::validate",
         "super::run",
         "super::build",
+        "super::test",
     ] {
         assert!(
             service.contains(dependency),
@@ -115,6 +123,7 @@ fn module_dependency_direction_is_acyclic() {
         ("run.rs", run),
         ("build.rs", build),
         ("config.rs", config),
+        ("test.rs", test),
     ] {
         assert_no_dependency(name, source, "std::thread");
         assert_no_dependency(name, source, "Arc<");

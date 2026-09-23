@@ -78,6 +78,20 @@ export interface RunRequest {
   options: RunOptions;
 }
 
+/** 项目测试请求；cases 顺序就是核心执行和结果返回顺序。 */
+export interface TestRequest {
+  type: "test";
+  request_id: string;
+  protocol_version: number;
+  core_version: number;
+  language_version: string;
+  runtime_version: string;
+  target: ProtocolTarget;
+  optimization: OptimizationConfig;
+  cases: SourceIdentity[];
+  options: RunOptions;
+}
+
 /** 工具链版本文本。 */
 export interface ToolchainVersions {
   clang: string;
@@ -136,7 +150,7 @@ export interface ShutdownRequest {
 }
 
 /** 所有请求消息的联合类型。 */
-export type ProtocolRequest = HelloRequest | RunRequest | BuildRequest | CancelRequest | ShutdownRequest;
+export type ProtocolRequest = HelloRequest | RunRequest | TestRequest | BuildRequest | CancelRequest | ShutdownRequest;
 
 /** 机器可读协议错误。 */
 export interface ProtocolErrorBody {
@@ -173,6 +187,33 @@ export interface ResultResponse {
   metrics: unknown | null;
   value: unknown | null;
   artifact: unknown | null;
+}
+
+/** 一个项目测试用例的结构化执行结果。 */
+export interface ProtocolTestCaseResult {
+  path: string;
+  module: string;
+  exit_code: number;
+  exit_name: string;
+  diagnostics: unknown[];
+  report: unknown | null;
+  events: unknown[];
+  metrics: unknown | null;
+  value: unknown | null;
+  error: ProtocolErrorBody | null;
+}
+
+/** 项目测试聚合结果；tests 顺序与请求 cases 顺序一致。 */
+export interface TestResultResponse {
+  type: "test_result";
+  request_id: string;
+  operation: "test";
+  exit_code: number;
+  exit_name: string;
+  total: number;
+  passed: number;
+  failed: number;
+  tests: ProtocolTestCaseResult[];
 }
 
 /** 原生构建产物的稳定摘要。 */
@@ -232,7 +273,7 @@ export interface ShutdownResponse {
 }
 
 /** 所有响应消息的联合类型。 */
-export type ProtocolResponse = HelloResponse | ResultResponse | ErrorResponse | CancelledResponse | ShutdownResponse;
+export type ProtocolResponse = HelloResponse | ResultResponse | TestResultResponse | ErrorResponse | CancelledResponse | ShutdownResponse;
 
 /** 判断一个值是否具有字符串字段。 */
 export function hasStringField(value: unknown, field: string): value is Record<string, unknown> & Record<string, string> {

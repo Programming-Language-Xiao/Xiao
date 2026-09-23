@@ -20,6 +20,8 @@ mod request;
 mod run;
 /// 请求分发、取消登记和标准输入输出服务。
 mod service;
+/// 项目测试请求与结构化结果聚合。
+mod test;
 /// 协议版本、源码和目标校验。
 mod validate;
 

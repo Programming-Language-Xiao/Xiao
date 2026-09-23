@@ -12,14 +12,15 @@ use super::mapping::{
 };
 use super::message::ProtocolResponse;
 use super::request::{
-    CANCELLED_ERROR_CODE, DiagnosticConfig, ProtocolError, ProtocolTarget, RunOptions,
-    SourceIdentity,
+    CANCELLED_ERROR_CODE, DiagnosticConfig, OptimizationConfig, ProtocolError, ProtocolTarget,
+    RunOptions, SourceIdentity,
 };
+use super::validate::{validate_source, validate_target, validate_versions};
 use crate::diagnostics::{DiagnosticOptions, DiagnosticSession, start_error_details};
 use crate::frontend::{FrontendContext, FrontendRequest};
 use crate::run::{
-    DriverError, DriverExecution, DriverOutcome, DriverPhase, DriverRequest, ExitCode,
-    FrontendVmDriver,
+    CancellationToken, DriverError, DriverExecution, DriverOutcome, DriverPhase, DriverRequest,
+    ExitCode, FrontendVmDriver,
 };
 
 /// 将协议源码字段转换为既有前端请求。
@@ -62,6 +63,61 @@ pub(super) fn run_options(
     }
     let timeout = options.timeout_ms.map(Duration::from_millis);
     Ok((vm_options, options.event_capacity, timeout))
+}
+
+#[allow(clippy::too_many_arguments)]
+/// 校验运行请求并交给前端到 VM 的驱动路径。
+pub(super) fn run_request_response(
+    request_id: String,
+    protocol_version: u16,
+    core_version: u32,
+    language_version: String,
+    target: ProtocolTarget,
+    optimization: OptimizationConfig,
+    source: SourceIdentity,
+    options: RunOptions,
+    cancellation: CancellationToken,
+) -> ProtocolResponse {
+    if let Err(error) = validate_versions(protocol_version, core_version) {
+        return protocol_error_response(Some(request_id), &error);
+    }
+    if let Err(error) = validate_source(&source).and_then(|_| validate_target(&target)) {
+        return protocol_error_response(Some(request_id), &error);
+    }
+    if optimization.level != 0 {
+        return protocol_error_response(
+            Some(request_id),
+            &ProtocolError::request("optimization.level", "X0-A 只接受优化级别 0"),
+        );
+    }
+    let (vm_options, event_capacity, timeout) = match run_options(&options) {
+        Ok(value) => value,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let debug = optimization.debug;
+    let diagnostic_config = optimization.diagnostics.clone();
+    let module_name = source.module.clone();
+    let source_name = source.path.clone();
+    let mut driver_request =
+        DriverRequest::new(frontend_request(&source, &language_version, &target))
+            .with_options(vm_options)
+            .with_module_name(module_name.clone())
+            .with_event_capacity(event_capacity)
+            .with_cancellation(cancellation);
+    if let Some(path) = source_name.clone() {
+        driver_request = driver_request.with_source_name(path);
+    }
+    if let Some(timeout) = timeout {
+        driver_request = driver_request.with_timeout(timeout);
+    }
+    run_with_diagnostics(
+        request_id,
+        debug,
+        module_name,
+        source_name,
+        diagnostic_config,
+        &driver_request,
+    )
 }
 
 /// 将三段驱动器结果转换为运行响应。

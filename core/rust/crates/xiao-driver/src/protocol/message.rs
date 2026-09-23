@@ -202,6 +202,31 @@ pub struct ProtocolErrorBody {
     pub details: BTreeMap<String, Value>,
 }
 
+/// 一个项目测试用例的结构化执行结果。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ProtocolTestCaseResult {
+    /// 项目相对路径或协议提供的稳定模块名。
+    pub path: String,
+    /// 测试用例的逻辑模块名。
+    pub module: String,
+    /// B0-D 冻结的单用例退出码。
+    pub exit_code: u8,
+    /// 单用例退出语义名称。
+    pub exit_name: String,
+    /// 前端警告/错误诊断。
+    pub diagnostics: Vec<ProtocolDiagnostic>,
+    /// VM 结构化报告。
+    pub report: Option<ProtocolReport>,
+    /// VM 事件。
+    pub events: Vec<ProtocolEvent>,
+    /// VM 指标。
+    pub metrics: Option<ProtocolMetrics>,
+    /// 可选入口值摘要；本批不以它作为判据。
+    pub value: Option<ProtocolValue>,
+    /// 单用例在协议或驱动边界被拒绝时的错误体。
+    pub error: Option<ProtocolErrorBody>,
+}
+
 /// Rust/TypeScript 共享的响应消息。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
@@ -246,6 +271,25 @@ pub enum ProtocolResponse {
         value: Option<ProtocolValue>,
         /// 可选原生构建产物摘要。
         artifact: Option<ProtocolArtifact>,
+    },
+    /// 项目测试完成结果；`tests` 顺序与请求中的源码顺序一致。
+    TestResult {
+        /// 对应请求编号。
+        request_id: String,
+        /// 固定为 `test`。
+        operation: String,
+        /// 首个非零单用例退出码；所有用例成功时为 `0`。
+        exit_code: u8,
+        /// 整体退出语义名称。
+        exit_name: String,
+        /// 发现并执行的用例总数。
+        total: usize,
+        /// 退出码为 `0` 的用例数。
+        passed: usize,
+        /// 退出码非 `0` 的用例数。
+        failed: usize,
+        /// 各用例的结构化结果。
+        tests: Vec<ProtocolTestCaseResult>,
     },
     /// 请求或协议层失败。
     Error {

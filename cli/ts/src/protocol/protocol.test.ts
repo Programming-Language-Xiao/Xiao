@@ -51,4 +51,34 @@ describe("X0-A 长度前缀协议", () => {
     });
     expect(decodeFrame<unknown>(encodeFrame(value))).toEqual(value);
   });
+
+  test("项目测试请求保留发现顺序、每用例源码和超时", async () => {
+    const value = validateMessage(await fixture("test-request.json"));
+    expect(value).toMatchObject({
+      type: "test",
+      cases: [
+        { path: "tests/nested/a-first.xiao", module: "tests/nested/a-first" },
+        { path: "tests/z-last.xiao", module: "tests/z-last" },
+      ],
+      options: { timeout_ms: 5000, checkpoints_enabled: true },
+    });
+    expect(decodeFrame<unknown>(encodeFrame(value))).toEqual(value);
+  });
+
+  test("项目测试响应保留聚合退出码和逐用例结构化结果", async () => {
+    const value = validateMessage(await fixture("test-response.json"));
+    expect(value).toMatchObject({
+      type: "test_result",
+      operation: "test",
+      exit_code: 1,
+      total: 2,
+      passed: 1,
+      failed: 1,
+      tests: [
+        { path: "tests/nested/a-first.xiao", exit_code: 0, error: null },
+        { path: "tests/z-last.xiao", exit_code: 1, error: { code: "X11-PROTOCOL-002" } },
+      ],
+    });
+    expect(decodeFrame<unknown>(encodeFrame(value))).toEqual(value);
+  });
 });

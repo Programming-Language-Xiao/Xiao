@@ -82,6 +82,86 @@ fn version_mismatch_is_machine_readable() {
 }
 
 #[test]
+/// hello 能明确声明项目测试操作，避免客户端猜测能力。
+fn hello_advertises_test_capability() {
+    let ProtocolResponse::Hello { capabilities, .. } = dispatch(hello()) else {
+        panic!("hello must produce hello response");
+    };
+    assert!(capabilities.iter().any(|capability| capability == "test"));
+}
+
+#[test]
+/// 空测试集合在协议边界被拒绝，而不是产生虚假的成功结果。
+fn test_request_rejects_empty_case_list() {
+    let response = dispatch(ProtocolRequest::Test {
+        request_id: "test-empty".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        cases: Vec::new(),
+        options: RunOptions::default(),
+    });
+    let ProtocolResponse::Error { error, .. } = response else {
+        panic!("empty test cases must produce an error");
+    };
+    assert_eq!(error.code, REQUEST_ERROR_CODE);
+    assert_eq!(
+        error.details["field"],
+        serde_json::Value::String("cases".to_owned())
+    );
+}
+
+#[test]
+/// 测试响应保留请求顺序，并以首个非零用例码作为整体退出码。
+fn test_request_preserves_case_order_and_aggregates_results() {
+    let response = dispatch(ProtocolRequest::Test {
+        request_id: "test-order".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        cases: vec![
+            SourceIdentity {
+                module: "tests/z-last".to_owned(),
+                path: Some("tests/z-last.xiao".to_owned()),
+                text: "value = 1\n".to_owned(),
+            },
+            SourceIdentity {
+                module: "tests/a-first".to_owned(),
+                path: Some("tests/a-first.xiao".to_owned()),
+                text: "value = 1\n".to_owned(),
+            },
+        ],
+        options: RunOptions::default(),
+    });
+    let ProtocolResponse::TestResult {
+        exit_code,
+        total,
+        passed,
+        failed,
+        tests,
+        ..
+    } = response
+    else {
+        panic!("test request must produce test_result");
+    };
+    assert_eq!(exit_code, 0);
+    assert_eq!((total, passed, failed), (2, 2, 0));
+    assert_eq!(
+        tests
+            .iter()
+            .map(|test| test.path.as_str())
+            .collect::<Vec<_>>(),
+        ["tests/z-last.xiao", "tests/a-first.xiao"]
+    );
+}
+
+#[test]
 /// 首帧不是 hello 时会拒绝会话，不让请求绕过版本协商。
 fn service_requires_hello_as_first_frame() {
     let request = ProtocolRequest::Run {

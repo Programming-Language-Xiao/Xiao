@@ -259,6 +259,27 @@ pub enum ProtocolRequest {
         /// VM 参数。
         options: RunOptions,
     },
+    /// 使用真实源码顺序执行项目测试用例。
+    Test {
+        /// 请求编号，用于取消和响应关联。
+        request_id: String,
+        /// 协议版本。
+        protocol_version: u16,
+        /// 统一核心版本。
+        core_version: u32,
+        /// 语言版本上下文。
+        language_version: String,
+        /// Runtime 版本提示。
+        runtime_version: String,
+        /// 目标条件。
+        target: ProtocolTarget,
+        /// 优化/调试配置。
+        optimization: OptimizationConfig,
+        /// 已按项目相对路径排序的测试源码。
+        cases: Vec<SourceIdentity>,
+        /// 每个测试用例复用的 VM 参数。
+        options: RunOptions,
+    },
     /// 使用真实源码调用 `FrontendNativeDriver`。
     Build {
         /// 请求编号。
