@@ -102,6 +102,7 @@
 | 11X0-C | [独立可执行与平台矩阵](11x0c-packaging-and-platforms.md) | `bun build --compile` 独立可执行、`xiao-core` 同目录分发与生产发现契约、验证环境矩阵（验证 ≠ 验收） | 已落地（Windows 原生回环；Linux Docker 功能/构建证据；Linux 原生/WSL/macOS 待复现；构建接续 X0-E） |
 | 11X0-D | [`-debug` 与诊断窗口](11x0d-debug-diagnostics-window.md) | 诊断激活位、独立诊断进程与事件管道、平台终端启动与 TUI、启动失败与运行中断的区分 | 已完成（Windows 原生口径；Linux 原生/WSL/macOS 按平台清单待复现） |
 | 11X0-E | [`xiao build` 与主机工具链发现](11x0e-build-and-toolchain.md) | `build` 命令路由、主机工具链发现、原生启动 shim、运行时配置固化；含跨批次待完善清单 | 已落地（Windows 原生 build/run/debug；Linux 原生/WSL/macOS 待复现） |
+| 11X0-F | [`protocol.rs` 解耦交接](11x0f-protocol-decoupling.md) | 2354 行（94%）预防性拆分：门面 + 九个子模块、依赖 DAG 与架构测试、七步分提交 | 未开始（另两份高位文件的解耦文档待补） |
 | 11A.1 | [包源协议：决策、待决与风险（待审）](11a1-package-source-protocol-review.md) | 源身份规范化、JSON 权威与 Protobuf 派生、解析键与同一性、canonical JSON、源列表导入的三条规则；含六条待审风险 | 已审并处置（方向保留；源引用语义、导入顺序、摘要信任边界三处已修正） |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 未开始 |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |
