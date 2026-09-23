@@ -125,29 +125,18 @@ CLI 侧    cli/ts/src/commands/parser.ts:57-60   test 分支（无 - 前缀校�
 
 ### 2.3 「隔离/超时」的边界，以及与 09-B0-E 的接口
 
-出口条件里有「**隔离/超时**」这一条，但**它今天做不到承诺的那种程度**：
+出口条件里的「**隔离/超时**」按 [09-B0-E](09b0e-vm-cancellation-checkpoint.md) 已落地的
+能力承诺，不能扩大为子进程沙箱：
 
-- **超时**：驱动器只做**阶段边界采样**（开始、前端完成、降低完成、VM 调用前后，
-  见 [09-B0-E §3](09b0e-vm-cancellation-checkpoint.md)）。**VM 指令循环里没有检查点**，
-  所以**超时无法中断 VM 里的死循环**——VM 会跑完，跑完后才发现已超时。
-- **隔离**：协议层每个 run/build 请求在**独立线程**中执行（`service.rs:495` 的
-  `thread::spawn`），panic 被 `catch_unwind` 转成 `X11-PROTOCOL-003`。
-  但**没有子进程隔离**，全局状态（VM 单例、文件系统）**不隔离**。
+- **超时**：`--timeout` 是**每个测试用例**的驱动器期限；同一个取消源和 deadline 会进入
+  VM，VM 在启用的检查点处协作式响应取消/超时，并在驱动器边界映射为退出码 `2`。这不是
+  操作系统强制杀死进程的硬期限。
+- **隔离**：协议层每个测试请求在独立 worker 线程中顺序执行，panic 被转换为
+  `X11-PROTOCOL-003`。但**没有子进程隔离**，全局状态、文件系统和外部副作用不隔离。
 
-**二选一，并写明**：
-
-- **(a) 本批只承诺阶段边界层面的隔离/超时，并在 UseDocs 写明边界**——
-  **推荐**。它诚实、可交付，且不阻塞任何事。
-- **(b) 等 09-B0-E 完成后才承诺中途取消**——代价是本批无谓地等待，
-  而 09-B0-E 的出口条件里**并没有**包含 `xiao test` 的语义。
-
-**无论选哪条，`xiao test --timeout` 这类承诺都必须与 [09-B0-E](09b0e-vm-cancellation-checkpoint.md)
-的实际能力对齐**，否则就是超额承诺——那正是 `11x0b:190` 第 4 条翻车点的另一个形态。
-
-本批选择 **(a)**，但把边界写成当前实现可证明的范围：`--timeout` 是**每个测试用例**的
-驱动器期限，`SIGINT`/取消沿既有协议和 VM 检查点传递；每个用例仍在核心服务的独立 worker
-线程中执行。该机制不是子进程沙箱，不隔离全局状态、文件系统或外部副作用，也不承诺跨用例
-恢复被破坏的宿主状态。
+因此本批承诺的是**每用例期限、既有 VM 检查点和 worker 线程边界**，不承诺沙箱、全局状态
+重置，或在前一个用例破坏宿主状态后自动恢复环境。`SIGINT` 沿既有 `cancel` 帧和取消令牌
+传递；具体用户契约见 [xiao test](../UseDocs/tooling/cli/test.md)。
 
 ---
 
@@ -186,11 +175,11 @@ CLI 侧    cli/ts/src/commands/parser.ts:57-60   test 分支（无 - 前缀校�
 ### 3.4 CLI 退出码 `64` 与协议退出码是**两套**
 
 - `CLI_EXIT_CODES.usage = 64`（`diagnostics/render.ts:41-48`）的语义是
-  **「命令本身没用」**——参数错误、文件读取失败，以及**当前的 `test` 未实现**。
+  **「命令本身没用」**——参数错误、项目发现失败、文件读取失败等 CLI 自身错误。
 - 协议结果的退出码是**另一套**：`render.ts:115-118` 的 `responseExitCode`
   直接取响应的 `exit_code`（B0-D 冻结的 `0..=4`）。
 
-**所以**：X0-T 落地后，**测试失败不应继续用 64**。测试结果若走协议回传，
+**所以**：X0-T 落地后，**测试失败不应继续用 64**。测试结果若走 `test_result` 协议回传，
 进程码必须来自 `response.exit_code`；**只有 CLI 自身的错误**（找不到项目、
 无测试文件、参数非法）才用 `usage` / `infrastructure`。
 
@@ -199,8 +188,9 @@ CLI 侧    cli/ts/src/commands/parser.ts:57-60   test 分支（无 - 前缀校�
 
 ### 3.5 既有测试**故意**锁死了旧行为
 
-`cli/ts/src/main.test.ts:9-18` 断言 `xiao --json test` 返回 **64** 且
-`code === "X11-CLI-TEST-001"`。**本批一改实现它必红——这是「故意要改」的测试，不是回归。**
+旧版 `cli/ts/src/main.test.ts` 曾断言 `xiao --json test` 返回 **64** 且
+`code === "X11-CLI-TEST-001"`。**本批已重写它**，改为注入核心替身并断言失败用例返回
+`test_result.exit_code`；这保留了协议接线被撤掉时必然失败的区分度。
 
 重写它时**要保留区分度**（沿用 09R2D 的「撤掉实现 → 用例必须失败 → 还原 → 通过」）：
 新测试必须在**语义被撤掉时失败**，而不是只断言"命令能跑"。
@@ -256,6 +246,10 @@ CLI 侧    cli/ts/src/commands/parser.ts:57-60   test 分支（无 - 前缀校�
 | **6** | 文档与登记收尾：六处承诺点 + UseDocs 新页面 + `module-registry.json` | 见 §六 |
 
 **每一步的验收**：既有测试除 `main.test.ts`（故意要改）外不改、门禁全绿。
+
+本批实施记录：步骤 1、2、3、4、5、6 均已完成；步骤 3 使用共享请求/响应夹具先行，步骤 4
+接入批量客户端和 CLI 发现，步骤 5 接入逐用例人类/JSON 渲染，步骤 6 完成 UseDocs、登记和
+承诺点同步。
 
 ---
 
@@ -332,3 +326,25 @@ index.ts   executeBuild（:94-137）：
 - [09-B0-E. VM 中途取消检查点](09b0e-vm-cancellation-checkpoint.md) —— **同期另一笔**，决定「隔离/超时」的边界
 - [11-cli-config-and-platform.md](11-cli-config-and-platform.md) —— `xiao test` 裁定落地处
 - [00A. 工程框架与目录布局](00a-project-layout.md) —— 目录边界与登记要求
+
+---
+
+## 八、落地结果与验证
+
+X0-T 已按本交接文档落地：
+
+1. `xiao test [project]` 运行项目根下递归的 `tests/**/*.xiao`，按项目相对路径的稳定字典序
+   逐文件执行；普通失败继续执行后续用例，整体退出码取首个非零用例码。
+2. Rust 协议新增 `test` 请求、`test_result` 响应和逐用例结构化结果；协议版本仍为 `1`，
+   因为本批是向后兼容的新增操作。Rust 与 TypeScript 共用请求/响应夹具并分别做帧回环测试。
+3. TypeScript CLI 读取 UTF-8 测试源码，把发现路径、模块身份和每用例 `--timeout` 交给核心；
+   `--json` 原样输出结构化响应，人类模式显示统计、路径和诊断。
+4. CLI 自身的项目发现/读取错误继续使用命令层退出码；测试失败使用协议 `0..=4`，没有测试
+   文件不会伪造成功结果。
+
+验证记录：
+
+- `cargo test -p xiao-driver`
+- `bun test src/protocol/protocol.test.ts src/protocol/client.test.ts src/commands/index.test.ts src/diagnostics/render.test.ts src/main.test.ts`
+- `bunx tsc --noEmit`
+- `cargo check --manifest-path tests/benchmarks/Cargo.toml`

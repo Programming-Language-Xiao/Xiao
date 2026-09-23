@@ -93,5 +93,5 @@ Windows 原生已完成真实 Xiao 源码的 build、脱离 CLI 直接运行、�
 
 ## 已知边界
 
-`xiao test` 仍只是登记的命令，项目测试语义归 X0-T；`xiao build` 的优化级别除 `-O0` 外尚未
-实现。原生构建不改变 Xiao 的语言、退出码或诊断协议语义。
+项目测试由[`xiao test`](test.md)负责；`xiao build` 的优化级别除 `-O0` 外尚未实现。原生
+构建不改变 Xiao 的语言、退出码或诊断协议语义。

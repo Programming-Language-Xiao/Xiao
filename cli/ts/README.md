@@ -25,3 +25,5 @@ X0-B 已接入 `src/main.ts` 的 `xiao` 命令入口，运行链路通过 `src/p
 
 X0-E 已接入 `xiao build`：`src/platform/toolchain.ts` 按固定来源发现并探测 clang、Runtime
 和诊断组件，`src/protocol/client.ts` 把真实源码、配置与输出路径交给 Rust 原生驱动器。
+X0-T 已接入 `xiao test`：`src/commands/test-discovery.ts` 递归发现并排序项目测试文件，
+`src/protocol/client.ts` 发送批量源码请求，结果协议直接决定项目测试退出码。

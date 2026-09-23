@@ -71,6 +71,22 @@ class FakeCore extends EventEmitter {
           toolchain_fingerprint: "test", uses_runtime: false, runtime_components: [],
         },
       })));
+    } else if (request.type === "test") {
+      const cases = Array.isArray(request.cases) ? request.cases : [];
+      this.stdout.write(Buffer.from(encodeFrame({
+        type: "test_result", request_id: request.request_id, operation: "test", exit_code: 0,
+        exit_name: "success", total: cases.length, passed: cases.length, failed: 0,
+        tests: cases.map((value) => {
+          const source = value as { path?: string | null; module?: string };
+          return {
+            path: source.path ?? source.module ?? "main",
+            module: source.module ?? "main",
+            exit_code: 0,
+            exit_name: "success",
+            diagnostics: [], report: null, events: [], metrics: null, value: null, error: null,
+          };
+        }),
+      })));
     } else if (request.type === "shutdown") {
       this.stdout.write(Buffer.from(encodeFrame({ type: "shutdown", request_id: request.request_id })));
       this.exitCode = 0;
@@ -143,6 +159,31 @@ describe("协议客户端", () => {
       type: "build", source: { path: "main.xiao", text: "value = 1\n" },
       output: "build/main.exe", llvm_ir_output: "build/main.ll", config_text: "[Runtime]\ncall_stack_depth = 64\n",
       optimization: { level: 0, debug: true },
+    });
+  });
+
+  test("testSources 按输入顺序批量传递源码和每用例期限", async () => {
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      overridePath: process.execPath,
+      spawnProcess: () => {
+        fake = new FakeCore();
+        return fake as never;
+      },
+    });
+    const result = await client.testSources([
+      { module: "tests/z-last", path: "tests/z-last.xiao", text: "value = 1\n" },
+      { module: "tests/a-first", path: "tests/a-first.xiao", text: "value = 1\n" },
+    ], { timeoutMs: 25 });
+    expect(result.response.type).toBe("test_result");
+    const request = fake?.requests.find((value) => value.type === "test");
+    expect(request).toMatchObject({
+      type: "test",
+      options: { timeout_ms: 25 },
+      cases: [
+        { module: "tests/z-last", path: "tests/z-last.xiao" },
+        { module: "tests/a-first", path: "tests/a-first.xiao" },
+      ],
     });
   });
 });

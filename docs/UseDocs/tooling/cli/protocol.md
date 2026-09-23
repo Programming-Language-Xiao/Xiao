@@ -14,8 +14,8 @@ related:
 # Rust 核心进程协议
 
 X0-A 的核心入口是 `xiao-core` 子进程。调用方先发送一个 `hello` 帧完成版本协商，
-再发送 `run`、`build`、`cancel` 或 `shutdown`。本页描述已经验证的机器边界；用户可见的
-`xiao` 命令和 X0-C 的独立分发已经接入；`xiao build` 及主机工具链发现仍属于后续 X0-E。
+再发送 `run`、`test`、`build`、`cancel` 或 `shutdown`。本页描述已经验证的机器边界；用户可见的
+`xiao` 命令、项目测试和独立分发已经接入；`xiao build` 及主机工具链发现也已接入 X0-E。
 
 ## 帧格式
 
@@ -32,6 +32,8 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 `run` 和 `build` 响应始终包含 `request_id`、冻结的 `exit_code`（0 到 4）和 `exit_name`。
 运行响应还提供结构化诊断、错误报告、事件和指标；执行前拒绝的 `error` 响应也保留可选
 `report`；构建响应提供产物路径与工具链指纹。
+`test` 请求携带按项目相对路径排序的 `cases`；`test_result` 响应提供整体退出码、通过/失败
+统计和按请求顺序排列的逐用例诊断、报告、事件、指标与协议错误。
 取消通过同一请求 ID 绑定 `CancellationToken`，其结果使用 `ArtifactRejected` 的进程码 2。
 
 `optimization.debug = true` 是强制诊断位。它携带可选的 `diagnostics` 等级、日志目标和
@@ -39,8 +41,9 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 独立的 8 字节长度帧，不复用核心 stdout。构建响应在该位开启时增加旁置激活位摘要，普通
 构建的 `diagnostic_activation` 为空。终端窗口细节见[-debug 诊断窗口](debug.md)。
 
-X0-B 的 `xiao run` 和 X0-E 的 `xiao build` 已消费这条协议；命令行为、非 TTY 呈现和 `print`
-尚未实现的限制见[xiao run 与 CLI 外壳](shell.md)，构建参数与工具链发现见[`xiao build`](build.md)，
+X0-B 的 `xiao run`、X0-T 的 `xiao test` 和 X0-E 的 `xiao build` 已消费这条协议；命令行为、非 TTY
+呈现和 `print` 尚未实现的限制见[xiao run 与 CLI 外壳](shell.md)，测试规则见[`xiao test`](test.md)，
+构建参数与工具链发现见[`xiao build`](build.md)，
 分发目录和核心发现见[独立打包与核心发现](packaging.md)。
 
 ## 共享契约
@@ -51,7 +54,7 @@ Rust 与 TypeScript 当前采用共享 JSON fixture 的窄类型策略。样本�
 
 ## 运行控制
 
-`run.options` 包含 `max_call_depth`、`event_capacity`、`timeout_ms`、
+`run.options` 和 `test.options` 包含 `max_call_depth`、`event_capacity`、`timeout_ms`、
 `checkpoints_enabled` 和 `checkpoint_interval`。后两个字段控制 VM 热循环取消检查点；缺失
 时 Rust 核心按默认值启用检查点并使用默认间隔。它们只控制运行时轮询，不改变
 `metrics.instructions` 或既有 `Error`/`Fatal` 结果语义。

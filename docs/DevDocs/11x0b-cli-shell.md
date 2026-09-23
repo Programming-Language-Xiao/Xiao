@@ -32,7 +32,7 @@
 | `cli/ts/src/` | `commands/`、`config/`、`diagnostics/`、`platform/`、`ui/` 已完成 X0-B 骨架；REPL、环境和包目录仍为后续占位 |
 | 命令入口 | ✅ `cli/ts/src/main.ts` 与 `bin.xiao` 已接入；独立打包仍归 X0-C |
 | `print` | ❌ 内置函数不存在，`print(...)` 报 `X06-RUNTIME-012`（见 §2.2） |
-| `xiao test` | ⚠️ 只登记命令与稳定诊断，行为留待测试框架批次（见 §2.1） |
+| `xiao test` | ✅ 语义与协议由 X0-T 接入（见 §2.1） |
 
 ### 本批交付与不负责
 
@@ -49,7 +49,7 @@
 
 | X0 退出条件 | 本批覆盖 |
 | --- | --- |
-| 第 1 条 `xiao run`、源码快捷运行、`xiao config` | ✅ 本批；**`xiao test` 见 §2.1**；`xiao build` 归 X0-E |
+| 第 1 条 `xiao run`、源码快捷运行、`xiao config` | ✅ 本批；`xiao test` 由 X0-T 接入；`xiao build` 归 X0-E |
 | 第 4 条 TS 构建 + 静态检查、三平台行为一致 | ⚠️ **构建与静态检查在本批**；三平台一致性归 X0-C |
 | 第 7 条 `xiao config` 的布尔写入 | ✅ 本批 |
 | 第 2、5、6 条（三平台矩阵、独立可执行、核心发现） | ❌ X0-C |
@@ -63,7 +63,7 @@
 
 ## 二、必须先裁定的两件事
 
-### 2.1 `xiao test` 的语义（**仓内没有规格**）
+### 2.1 `xiao test` 的语义（X0-T 已关闭本项）
 
 `12-tests` 的 X0 第 1 条点名了 `xiao test`，但**全仓没有它的语义定义**：它跑什么、
 输出什么、怎么和「第 01 到本阶段所有已确定规则的自动化规格测试」（第 3 条）区分开，
@@ -78,10 +78,10 @@
 **无论选哪条**，都要说明它与 `cargo test`/`bun test` 的分工，并**明确说出它在 X0 退出
 条件第 1 条里是"已接"还是"已登记未实现"**。**不允许**悄悄实现一个名字对但语义含糊的命令。
 
-**X0-B 裁定：选择 C。** `xiao test [project]` 现在只完成参数登记、帮助和稳定的
-`X11-CLI-TEST-001` 诊断，并明确标记为 X0 第 1 条“已登记未实现”。`cargo test` 运行 Rust
-workspace，`bun test` 运行 TypeScript/CLI 工具链；在项目测试语义冻结前，CLI 不会把其中
-任何一个偷偷包装成 `xiao test`。
+**X0-B 当时裁定：选择 C。** `xiao test [project]` 先只完成参数登记、帮助和稳定诊断；
+随后 X0-T 裁定并落地项目测试运行器：递归发现 `tests/**/*.xiao`，按项目相对路径稳定排序，
+逐文件通过核心协议执行并返回结构化结果。`cargo test` 仍运行 Rust workspace，`bun test`
+仍运行 TypeScript/CLI 工具链；两者没有被偷偷包装成 `xiao test`。
 
 ### 2.2 `xiao run` 的输出（**`print` 不在本阶段**）
 

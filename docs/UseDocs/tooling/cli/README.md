@@ -5,7 +5,8 @@
 ## 页面规划
 
 `run`、`build`、`test`、`config`、`venv`、`sync`、`install`、`.xiaoc` 和 `.xar` 分别维护页面；
-当前已提供 [`xiao build`](build.md) 和 `-debug` 页面。优化级别未实现前不把占位参数写成可用命令。
+当前已提供 [`xiao test`](test.md)、[`xiao build`](build.md) 和 `-debug` 页面。优化级别未实现前
+不把占位参数写成可用命令。
 
 X0-B 已提供 [xiao run 与 CLI 外壳](shell.md)；X0-C 的[独立打包与核心发现](packaging.md)
 补充了分发目录、构建时/运行时依赖和平台证据边界。两页都记录 `print` 尚未实现、退出码
@@ -19,8 +20,8 @@ X0-A 已验证核心协议的[长度前缀与结构化结果](protocol.md)；X0-
 X0-D 已提供 [`-debug` 诊断窗口](debug.md)：诊断事件走独立 Rust 进程和本机回环通道，
 不会污染用户程序标准输出。
 
-`xiao test` 目前只登记命令并返回稳定的未实现诊断；项目测试语义归 X0-T，不能用 `cargo test`
-或 `bun test` 代替。
+X0-T 已接入 [`xiao test`](test.md)：它递归发现项目 `tests/**/*.xiao`，按稳定路径顺序执行，
+并返回逐用例结构化结果；它仍不替代 `cargo test` 或 `bun test`。
 
 ## 下一步
 

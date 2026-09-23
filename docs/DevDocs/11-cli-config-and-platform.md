@@ -14,16 +14,14 @@ CLI 的发布形态已经冻结：TypeScript 源码必须针对各目标平台�
 
 ### 核心命令
 
-#### X0-B 的 `xiao test` 登记
+#### X0-B 的登记与 X0-T 的落地
 
-X0-B 只登记 `xiao test [project]` 的命令名、帮助和稳定诊断，不在没有项目测试框架与
+X0-B 当时只登记 `xiao test [project]` 的命令名、帮助和稳定诊断，不在没有项目测试框架与
 Xiao 测试语义规格时伪造测试运行器。Rust workspace 仍由 `cargo test` 负责，TypeScript
-和 CLI 工具链由 `bun test` 负责；两者都不是 `xiao test` 的隐藏实现。项目测试语义与结果
-协议由后续 **X0-T** 批次关闭。
+和 CLI 工具链由 `bun test` 负责；两者都不是 `xiao test` 的隐藏实现。
 
-因此，X0 退出条件第 1 条中的 `xiao test` 在本批之前标记为“已登记未实现”。项目测试
-文件发现、执行顺序和结果协议由 **X0-T** 裁定并落地；`cargo test` 与 `bun test` 仍然是
-各自 workspace 的工程测试，不是 `xiao test` 的隐藏实现。
+X0-T 已关闭这项登记：项目测试文件发现、执行顺序、结果协议和 CLI 接线已经落地；`cargo test`
+与 `bun test` 仍然是各自 workspace 的工程测试，不是 `xiao test` 的隐藏实现。
 
 #### X0-T 的项目测试语义
 

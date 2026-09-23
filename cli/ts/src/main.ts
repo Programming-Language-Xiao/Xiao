@@ -3,6 +3,7 @@
 import { parseArguments, CliArgumentError } from "./commands/parser.ts";
 import { executeCommand } from "./commands/index.ts";
 import { renderCliError } from "./diagnostics/render.ts";
+import type { SpawnCoreProcess } from "./protocol/client.ts";
 
 /** CLI 入口依赖的可注入 IO。 */
 export interface CliIo {
@@ -12,6 +13,10 @@ export interface CliIo {
   stderr?: CliOutput;
   /** 工作目录覆盖，供宿主和测试注入。 */
   cwd?: string;
+  /** Rust 核心路径覆盖，供测试和开发布局注入。 */
+  corePath?: string;
+  /** 核心进程启动器，供协议契约测试注入。 */
+  spawnProcess?: SpawnCoreProcess;
   /** 环境变量覆盖，供宿主和测试注入。 */
   env?: NodeJS.ProcessEnv;
   /** 输出 TTY 能力覆盖。 */
@@ -36,6 +41,8 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
   const context = {
     cwd: io.cwd ?? process.cwd(),
     env,
+    corePath: io.corePath,
+    spawnProcess: io.spawnProcess,
     isTTY: io.isTTY ?? Boolean(stdout.isTTY),
     executablePath: io.executablePath ?? process.execPath,
     signal: io.signal,

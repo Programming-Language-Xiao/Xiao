@@ -54,6 +54,7 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
   if (response.type === "hello" || response.type === "shutdown" || response.type === "cancelled") {
     return { stdout: "", stderr: "", exitCode: responseExitCode(response) };
   }
+  if (response.type === "test_result") return renderTestResult(response, colorizer, options);
   const diagnostics = response.type === "result" ? response.diagnostics : [];
   const lines: string[] = [];
   for (const diagnostic of diagnostics) {
@@ -64,7 +65,7 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
   }
   if (response.type === "error") {
     lines.push(renderProtocolError(response.error, colorizer));
-  } else if (response.report !== null && isRecord(response.report)) {
+  } else if (response.type === "result" && response.report !== null && isRecord(response.report)) {
     const code = typeof response.report.code === "string" ? response.report.code : response.exit_name;
     const message = typeof response.report.message === "string" ? response.report.message : code;
     lines.push(colorizer.color("error", `${code}: ${message}`));
@@ -96,6 +97,35 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
   return { stdout: "", stderr, exitCode: responseExitCode(response) };
 }
 
+/** 渲染项目测试的逐用例路径、统计和结构化诊断。 */
+function renderTestResult(
+  response: Extract<ProtocolResponse, { type: "test_result" }>,
+  colorizer: Colorizer,
+  options: DiagnosticRenderOptions,
+): RenderedDiagnostic {
+  const lines = [
+    `${localized(options.locale, "测试结果", "test results")}  ${response.passed}/${response.total} ${localized(options.locale, "通过", "passed")}，${localized(options.locale, "失败", "failed")} ${response.failed}`,
+  ];
+  for (const test of response.tests) {
+    const passed = test.exit_code === 0;
+    const status = passed ? localized(options.locale, "通过", "passed") : localized(options.locale, "失败", "failed");
+    lines.push(colorizer.color(passed ? "success" : "error", `${status}  ${test.path}  [${test.exit_code}]`));
+    for (const diagnostic of test.diagnostics) {
+      if (!isRecord(diagnostic)) continue;
+      const code = typeof diagnostic.code === "string" ? diagnostic.code : "X11-DIAGNOSTIC-001";
+      const message = typeof diagnostic.message === "string" ? diagnostic.message : code;
+      lines.push(`  ${colorizer.color(diagnosticSeverity(diagnostic), `${code}: ${message}`)}`);
+    }
+    if (test.error !== null) lines.push(`  ${renderProtocolError(test.error, colorizer)}`);
+    if (test.report !== null && isRecord(test.report)) {
+      const code = typeof test.report.code === "string" ? test.report.code : test.exit_name;
+      const message = typeof test.report.message === "string" ? test.report.message : code;
+      lines.push(`  ${colorizer.color("error", `${code}: ${message}`)}`);
+    }
+  }
+  return { stdout: "", stderr: `${lines.join("\n")}\n`, exitCode: response.exit_code };
+}
+
 /** 将 CLI 自身异常渲染为稳定诊断。 */
 export function renderCliError(error: unknown, options: DiagnosticRenderOptions = {}): RenderedDiagnostic {
   const normalized = normalizeCliError(error);
@@ -113,7 +143,7 @@ export function renderCliError(error: unknown, options: DiagnosticRenderOptions 
 
 /** 返回协议响应中的 B0-D 退出码，不读取本地化文本。 */
 export function responseExitCode(response: ProtocolResponse): number {
-  if (response.type === "result" || response.type === "error" || response.type === "cancelled") return response.exit_code;
+  if (response.type === "result" || response.type === "test_result" || response.type === "error" || response.type === "cancelled") return response.exit_code;
   return 0;
 }
 

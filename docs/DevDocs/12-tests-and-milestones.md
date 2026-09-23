@@ -699,9 +699,9 @@ Windows 原生报告已落盘到 `tests/benchmarks/reports/`。语义差分通�
 7. `xiao config CLI.git.summary true` 与 `xiao config --global CLI.git.summary false` 按布尔模式结构化写入目标配置；非法值、未知路径和写入中断具有稳定诊断，且无关配置与注释不被破坏。
 8. `-debug` 能从 CLI 传递到运行/构建后端；任何直接运行以及调试产物启动都在用户代码前打开独立诊断窗口，且主程序标准输出和退出码不变。调试版原生程序脱离 `xiao` 启动器、以 GUI 子系统启动时仍须打开窗口；`.xar` 仍由 `xiao -xar` 按 Runtime 前提启动并打开窗口；无法创建窗口时必须报告明确失败，不能静默降级。
 
-X0 的第 1 条中，`xiao test` 目前只完成入口登记和稳定未实现诊断。项目测试文件发现、
-确定性执行顺序、隔离/超时、源码测试入口以及机器可读结果协议统一归后续 **X0-T「项目
-测试语义与结果协议」**；在该批完成前，`cargo test` 和 `bun test` 不得冒充 Xiao 项目测试。
+X0 的第 1 条中，**X0-T「项目测试语义与结果协议」已完成**：`xiao test` 递归发现项目
+`tests/**/*.xiao`，按项目相对路径稳定排序，逐文件执行并返回机器可读的聚合/逐用例结果。
+`cargo test` 和 `bun test` 仍是各自 workspace 的工程测试，不冒充 Xiao 项目测试。
 
 X0-E 已完成 `xiao build` 的真实源码路由、主机工具链发现、原生 startup shim 和运行时配置
 固化。VM 指令循环的中途取消检查点不属于 X0，`B0-C-CANCEL-001` 由 **09-B0-E「VM 中途

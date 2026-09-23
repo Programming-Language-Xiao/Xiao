@@ -11,6 +11,7 @@ import {
   type ProtocolResponse,
   type ProtocolTarget,
   type RunRequest,
+  type TestRequest,
   type BuildRequest,
   type ToolchainSpec,
 } from "./messages.ts";
@@ -80,6 +81,38 @@ export interface SourceBuildOptions {
   diagnostics?: DiagnosticConfig | null;
   /** 已读取的 config.xiao 原文。 */
   configText?: string | null;
+  /** 取消信号。 */
+  signal?: AbortSignal;
+}
+
+/** 一个交给项目测试协议执行的源码用例。 */
+export interface SourceTestCase {
+  /** 逻辑模块名；省略时由路径基名推导。 */
+  module?: string;
+  /** 项目相对或绝对源码路径。 */
+  path?: string | null;
+  /** UTF-8 Xiao 源码文本。 */
+  text: string;
+}
+
+/** 项目测试请求的批量参数。 */
+export interface SourceTestOptions {
+  /** 协议目标，默认当前宿主。 */
+  target?: ProtocolTarget;
+  /** 语言版本。 */
+  languageVersion?: string;
+  /** Runtime 版本。 */
+  runtimeVersion?: string;
+  /** 每个测试用例的驱动器期限（毫秒）。 */
+  timeoutMs?: number | null;
+  /** VM 调用深度。 */
+  maxCallDepth?: number;
+  /** 事件容量。 */
+  eventCapacity?: number;
+  /** 是否在 VM 热循环中启用取消检查点。 */
+  checkpointsEnabled?: boolean;
+  /** 两次取消检查点之间执行的指令数。 */
+  checkpointInterval?: number;
   /** 取消信号。 */
   signal?: AbortSignal;
 }
@@ -183,8 +216,35 @@ export class ProtocolClient {
     return this.call(request, options.signal);
   }
 
+  /** 按传入顺序批量发送项目测试源码。 */
+  async testSources(sources: readonly SourceTestCase[], options: SourceTestOptions = {}): Promise<CoreCallResult> {
+    const target = options.target ?? hostTarget();
+    const request: TestRequest = {
+      type: "test",
+      request_id: requestId("test"),
+      protocol_version: PROTOCOL_VERSION,
+      core_version: CORE_VERSION,
+      language_version: options.languageVersion ?? "0.1.0",
+      runtime_version: options.runtimeVersion ?? "0.1.0",
+      target,
+      optimization: { level: 0, debug: false, diagnostics: null },
+      cases: sources.map((source) => {
+        const path = source.path ?? null;
+        return { module: source.module ?? moduleName(path), path, text: source.text };
+      }),
+      options: {
+        max_call_depth: options.maxCallDepth ?? 1024,
+        event_capacity: options.eventCapacity ?? 256,
+        timeout_ms: options.timeoutMs ?? null,
+        checkpoints_enabled: options.checkpointsEnabled ?? true,
+        checkpoint_interval: options.checkpointInterval ?? 1024,
+      },
+    };
+    return this.call(request, options.signal);
+  }
+
   /** 使用已经规范化的协议运行请求发送一次调用。 */
-  async call(request: RunRequest | BuildRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  async call(request: RunRequest | TestRequest | BuildRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     const discovery = await discoverCoreWithMetadata(this.options);
     const corePath = discovery.path;

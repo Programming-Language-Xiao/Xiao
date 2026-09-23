@@ -7,6 +7,7 @@ import { findProjectConfig, writeConfigValue, type ConfigEditorOptions } from ".
 import { ProtocolClient, type CoreClientOptions } from "../protocol/client.ts";
 import { renderCliError, renderProtocolResponse, CLI_EXIT_CODES, type DiagnosticRenderOptions, type RenderedDiagnostic } from "../diagnostics/render.ts";
 import { helpText as parserHelpText, type ParsedCommand } from "./parser.ts";
+import { discoverProjectTests, testModuleName } from "./test-discovery.ts";
 import { discoverToolchainWithMetadata, ToolchainDiscoveryError } from "../platform/toolchain.ts";
 
 /** 命令执行上下文；IO 由入口注入，便于管道和测试。 */
@@ -53,14 +54,50 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
   if (command.kind === "repl") {
     return renderCliError(new CliCommandError("X11-CLI-REPL-001", "交互式解释器尚未在本批实现；请使用 xiao run <file.xiao>"), renderOptions(command.options, context));
   }
-  if (command.kind === "test") {
-    return renderCliError(new CliCommandError("X11-CLI-TEST-001", "xiao test 已登记但尚无项目测试语义；请使用 cargo test 或 bun test", CLI_EXIT_CODES.usage, { status: "registered_unimplemented", project: command.project ?? null }), renderOptions(command.options, context));
-  }
+  if (command.kind === "test") return executeTest(command, context);
   if (command.kind === "build") {
     return executeBuild(command, context);
   }
   if (command.kind === "config") return executeConfig(command, context);
   return executeRun(command, context);
+}
+
+/** 发现、读取并通过项目测试协议执行所有测试源码。 */
+async function executeTest(command: Extract<ParsedCommand, { kind: "test" }>, context: CommandContext): Promise<RenderedDiagnostic> {
+  const cwd = context.cwd ?? process.cwd();
+  const options = renderOptions(command.options, context);
+  try {
+    const files = await discoverProjectTests(command.project ?? ".", cwd);
+    const sources = [] as Array<{ module: string; path: string; text: string }>;
+    for (const file of files) {
+      try {
+        const bytes = await readFile(file.absolutePath);
+        const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+        sources.push({ module: testModuleName(file.relativePath), path: file.relativePath, text });
+      } catch (error) {
+        return renderCliError(new CliCommandError(
+          "X11-CLI-FILE-001",
+          `无法读取测试源码 ${file.absolutePath}：${String(error)}`,
+          CLI_EXIT_CODES.usage,
+          { path: file.absolutePath, relative_path: file.relativePath },
+        ), options);
+      }
+    }
+    const client = new ProtocolClient({
+      cwd,
+      env: context.env,
+      overridePath: context.corePath,
+      executablePath: context.executablePath,
+      spawnProcess: context.spawnProcess,
+    });
+    const result = await client.testSources(sources, {
+      timeoutMs: command.timeoutMs ?? null,
+      signal: context.signal,
+    });
+    return renderProtocolResponse(result.response, options);
+  } catch (error) {
+    return renderCliError(error, options);
+  }
 }
 
 /** 返回入口使用的帮助文本，避免命令解析器和执行器各维护一份。 */

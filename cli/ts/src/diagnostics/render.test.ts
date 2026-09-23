@@ -42,4 +42,33 @@ describe("CLI 诊断呈现", () => {
     expect(value.code).toBe("X11-CLI-CORE-001");
     expect(value.details.candidate_sources[0]?.source).toBe("adjacent");
   });
+
+  test("人类模式展示项目测试统计、路径和结构化诊断", () => {
+    const rendered = renderProtocolResponse({
+      type: "test_result",
+      request_id: "test-1",
+      operation: "test",
+      exit_code: 1,
+      exit_name: "source_rejected",
+      total: 1,
+      passed: 0,
+      failed: 1,
+      tests: [{
+        path: "tests/case.xiao",
+        module: "tests/case",
+        exit_code: 1,
+        exit_name: "source_rejected",
+        diagnostics: [{ code: "X11-TEST-001", message: "失败", severity: "error" }],
+        report: null,
+        events: [],
+        metrics: null,
+        value: null,
+        error: null,
+      }],
+    }, { isTTY: false, color: "auto" });
+    expect(rendered.exitCode).toBe(1);
+    expect(rendered.stderr).toContain("0/1");
+    expect(rendered.stderr).toContain("tests/case.xiao");
+    expect(rendered.stderr).toContain("X11-TEST-001");
+  });
 });
