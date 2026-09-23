@@ -15,6 +15,7 @@ use crate::types::Type;
 
 use super::{RuntimeCheckKind, TypeChecker};
 
+/// 复合赋值检查在推导、诊断和环境写回阶段之间传递的中间状态。
 struct ExtendedAssignment<'source> {
     target: &'source Expression,
     name: xiao_syntax::Name,
@@ -188,6 +189,7 @@ impl<'source> TypeChecker<'source> {
         self.check_extended_name_assignment(target, *name, operator, value, right_type);
     }
 
+    /// 检查名称目标的复合赋值并准备最终环境写回。
     fn check_extended_name_assignment(
         &mut self,
         target: &Expression,
@@ -229,6 +231,7 @@ impl<'source> TypeChecker<'source> {
         });
     }
 
+    /// 推导复合赋值的结果类型并记录运行时边界。
     fn extended_assignment_result(
         &mut self,
         target: &Expression,
@@ -294,6 +297,7 @@ impl<'source> TypeChecker<'source> {
         )
     }
 
+    /// 完成复合赋值的常量折叠、兼容性检查和绑定更新。
     fn finish_extended_assignment(&mut self, assignment: ExtendedAssignment<'_>) {
         let ExtendedAssignment {
             target,

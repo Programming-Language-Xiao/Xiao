@@ -11,6 +11,7 @@ use crate::numeric::{
     check_float_to_integer_range, check_integer_range,
 };
 
+/// 判断调用者是否为未加反引号的 `random.seed`。
 pub(super) fn is_random_seed_callee(callee: &Expression, source: &SourceFile) -> bool {
     let Expression::Member { object, member, .. } = callee else {
         return false;
@@ -23,6 +24,7 @@ pub(super) fn is_random_seed_callee(callee: &Expression, source: &SourceFile) ->
         && module.unquoted_text(source) == "random"
         && member.unquoted_text(source) == "seed"
 }
+/// 将复合赋值运算符映射为对应的二元运算符。
 pub(super) fn assignment_binary_operator(operator: AssignmentOperator) -> Option<BinaryOperator> {
     Some(match operator {
         AssignmentOperator::AddAssign => BinaryOperator::Add,

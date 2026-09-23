@@ -60,6 +60,7 @@ mod statement;
 #[path = "table_checker.rs"]
 mod table_checker;
 
+/// 检查器输出、类型化节点和后端运行时检查标记的稳定公开模型。
 pub use self::result::{RuntimeCheck, RuntimeCheckKind, TypeCheckResult, TypedNode};
 use self::table_checker::TableFrame;
 

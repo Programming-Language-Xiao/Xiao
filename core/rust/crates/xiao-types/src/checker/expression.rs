@@ -343,6 +343,7 @@ impl<'source> TypeChecker<'source> {
         }
     }
 
+    /// 将参与布尔逻辑运算的类型变量统一为 `bool`。
     fn infer_variable_boolean(
         &mut self,
         left: &Type,
@@ -366,6 +367,7 @@ impl<'source> TypeChecker<'source> {
         }
     }
 
+    /// 推导两个类型变量参与二元运算时的共同结果类型。
     fn infer_binary_with_two_variables(
         &mut self,
         operator: BinaryOperator,
@@ -394,6 +396,7 @@ impl<'source> TypeChecker<'source> {
         }
     }
 
+    /// 根据已知标量和运算方向推导另一侧类型变量的候选标量。
     fn binary_variable_candidate(
         operator: BinaryOperator,
         known_scalar: ScalarType,
@@ -527,6 +530,7 @@ impl<'source> TypeChecker<'source> {
         self.check_function_value_call(callee, arguments, span)
     }
 
+    /// 检查内建错误对象构造调用，并处理不可捕获的 `FatalError`。
     fn check_error_constructor_call(
         &mut self,
         callee: &Expression,
@@ -555,6 +559,7 @@ impl<'source> TypeChecker<'source> {
         None
     }
 
+    /// 检查标量转换构造器调用并记录必要的运行时转换检查。
     fn check_scalar_call(
         &mut self,
         target: ScalarType,
@@ -608,6 +613,7 @@ impl<'source> TypeChecker<'source> {
         }
     }
 
+    /// 检查函数值调用的参数数量、参数类型和返回类型。
     fn check_function_value_call(
         &mut self,
         callee: &Expression,
