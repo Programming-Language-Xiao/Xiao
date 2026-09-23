@@ -18,6 +18,8 @@ export interface CliIo {
   isTTY?: boolean;
   /** CLI 可执行文件路径覆盖，供相邻工具链发现和测试注入。 */
   executablePath?: string;
+  /** 外部注入的取消信号；未提供时由 CLI 监听 SIGINT。 */
+  signal?: AbortSignal;
 }
 
 /** CLI 可写输出流的最小能力。 */
@@ -36,10 +38,15 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
     env,
     isTTY: io.isTTY ?? Boolean(stdout.isTTY),
     executablePath: io.executablePath ?? process.execPath,
+    signal: io.signal,
   };
+  const controller = io.signal === undefined ? new AbortController() : undefined;
+  const signal = io.signal ?? controller?.signal;
+  const onInterrupt = () => controller?.abort();
+  if (controller) process.once("SIGINT", onInterrupt);
   try {
     const command = parseArguments(argv);
-    const result = await executeCommand(command, context);
+    const result = await executeCommand(command, { ...context, signal });
     await writeSafely(stdout, result.stdout);
     await writeSafely(stderr, result.stderr);
     return result.exitCode;
@@ -55,6 +62,8 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
     await writeSafely(stdout, result.stdout);
     await writeSafely(stderr, result.stderr);
     return result.exitCode;
+  } finally {
+    if (controller) process.removeListener("SIGINT", onInterrupt);
   }
 }
 

@@ -23,6 +23,8 @@ export interface CommandContext {
   spawnProcess?: CoreClientOptions["spawnProcess"];
   /** CLI 可执行文件路径，用于工具链/诊断组件相邻发现。 */
   executablePath?: string;
+  /** 当前命令的取消信号。 */
+  signal?: AbortSignal;
 }
 
 /** 命令本身尚未进入本批的稳定诊断。 */
@@ -83,7 +85,12 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
       overridePath: context.corePath,
       spawnProcess: context.spawnProcess,
     });
-    const result = await client.runSource(source, { path, module: moduleFromPath(path), debug: command.options.debug });
+    const result = await client.runSource(source, {
+      path,
+      module: moduleFromPath(path),
+      debug: command.options.debug,
+      signal: context.signal,
+    });
     return renderProtocolResponse(result.response, renderOptions(command.options, context));
   } catch (error) {
     return renderCliError(error, renderOptions(command.options, context));
@@ -126,6 +133,7 @@ async function executeBuild(command: Extract<ParsedCommand, { kind: "build" }>, 
       toolchain: toolchain.toolchain,
       debug: command.options.debug,
       configText,
+      signal: context.signal,
     });
     return renderProtocolResponse(result.response, options);
   } catch (error) {
