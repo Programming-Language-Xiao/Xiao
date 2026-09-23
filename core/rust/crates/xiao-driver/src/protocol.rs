@@ -4,47 +4,47 @@
 //! 字节码降低、VM 执行和 LLVM 构建仍分别由已有驱动器负责。帧的长度字段是 8 字节
 //! 大端无符号整数，只计算 UTF-8 JSON 负载；解码器在分配前检查 16 MiB 上限。
 
+mod config;
 mod frame;
 mod mapping;
 mod message;
 mod request;
+mod run;
 mod validate;
 
+#[allow(unused_imports)]
+use config::FrozenRuntimeConfig;
+use config::{freeze_runtime_config, runtime_config_path, write_runtime_config};
 pub use frame::{
     FRAME_ERROR_CODE, FRAME_LENGTH_BYTES, FrameError, MAX_FRAME_BYTES, decode_frame, encode_frame,
     read_frame, write_frame,
 };
-use mapping::{
-    exit_name, protocol_error_body, protocol_error_from_error, protocol_event, protocol_metrics,
-    protocol_report, protocol_value,
-};
+use mapping::{exit_name, protocol_error_body, protocol_error_from_error};
 pub use mapping::{protocol_diagnostic, protocol_param};
 pub use message::*;
 pub use request::*;
+use run::{
+    cancelled_error_response, frontend_request, protocol_error_response, run_options,
+    run_with_diagnostics,
+};
 use std::collections::BTreeMap;
 use std::fs;
 use std::io::{self, BufReader, BufWriter, Read, Write};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
-use std::time::Duration;
 use validate::{validate_source, validate_target, validate_versions};
 
-use serde_json::{Value, json};
+#[allow(unused_imports)]
+use serde_json::Value;
+use serde_json::json;
 use xiao_codegen_llvm::{CodegenOptions, TargetDescription, Toolchain, ToolchainVersions};
-use xiao_config::{ConfigDocument, ConfigValue, parse_config_text};
 use xiao_diagnostics::window::{
     DIAGNOSTIC_START_CODE, DiagnosticActivation, activation_path, write_activation,
 };
-use xiao_vm::VmOptions;
 
-use crate::diagnostics::{DiagnosticOptions, DiagnosticSession, start_error_details};
-use crate::frontend::{FrontendContext, FrontendRequest};
 use crate::native::{FrontendNativeDriver, NativeBuildRequest, NativeDriverError};
-use crate::run::{
-    CancellationToken, DriverError, DriverExecution, DriverOutcome, DriverPhase, DriverRequest,
-    ExitCode, FrontendVmDriver,
-};
+use crate::run::{CancellationToken, DriverRequest, ExitCode};
 
 /// 当前协议版本。协议字段和帧布局变化时必须递增。
 /// 核心处理请求时发生 panic。
@@ -60,210 +60,6 @@ pub fn read_request<R: Read>(reader: &mut R) -> Result<Option<ProtocolRequest>, 
         return Ok(None);
     };
     decode_frame(&payload).map(Some)
-}
-
-/// 将协议源码字段转换为既有前端请求。
-fn frontend_request(
-    source: &SourceIdentity,
-    language_version: &str,
-    target: &ProtocolTarget,
-) -> FrontendRequest {
-    let mut context = FrontendContext::host();
-    context.language_version = language_version.to_owned();
-    context.target = target.triple.clone();
-    let request = match &source.path {
-        Some(path) => FrontendRequest::from_text_at(source.text.clone(), path.clone()),
-        None => FrontendRequest::from_text(source.text.clone()),
-    };
-    request.with_context(context)
-}
-
-/// 将协议 VM 参数交给生产 VM 自身的范围校验。
-fn run_options(
-    options: &RunOptions,
-) -> Result<(VmOptions, usize, Option<Duration>), ProtocolError> {
-    let vm_options = VmOptions {
-        max_call_depth: options.max_call_depth,
-    };
-    vm_options
-        .validate()
-        .map_err(|error| ProtocolError::request("options.max_call_depth", error.to_string()))?;
-    if options.event_capacity == 0 || options.event_capacity > xiao_vm::MAX_EVENT_CAPACITY {
-        return Err(ProtocolError::request(
-            "options.event_capacity",
-            format!(
-                "必须位于 1..={}（收到 {}）",
-                xiao_vm::MAX_EVENT_CAPACITY,
-                options.event_capacity
-            ),
-        ));
-    }
-    let timeout = options.timeout_ms.map(Duration::from_millis);
-    Ok((vm_options, options.event_capacity, timeout))
-}
-
-/// 将三段驱动器结果转换为运行响应。
-fn run_response(request_id: String, outcome: DriverOutcome) -> ProtocolResponse {
-    let exit_code = outcome.exit_code();
-    match outcome {
-        DriverOutcome::Frontend(error) => ProtocolResponse::Result {
-            request_id,
-            operation: "run".to_owned(),
-            exit_code: exit_code.as_process_code(),
-            exit_name: exit_name(exit_code).to_owned(),
-            diagnostics: error
-                .diagnostics()
-                .iter()
-                .map(protocol_diagnostic)
-                .collect(),
-            report: None,
-            events: Vec::new(),
-            metrics: None,
-            value: None,
-            artifact: None,
-        },
-        DriverOutcome::Rejected(error) => rejected_response(request_id, exit_code, &error),
-        DriverOutcome::Executed(execution) => executed_response(request_id, exit_code, &execution),
-    }
-}
-
-/// 把协议诊断配置转换成 Runtime 会话配置。
-fn diagnostic_options(config: Option<DiagnosticConfig>) -> DiagnosticOptions {
-    let Some(config) = config else {
-        return DiagnosticOptions::default();
-    };
-    DiagnosticOptions {
-        terminal_level: config.terminal_level,
-        file_level: config.file_level,
-        log_dir: config.log_dir.map(PathBuf::from),
-        log_file: config.log_file.map(PathBuf::from),
-        stacktrace: config.stacktrace,
-        focus: config
-            .focus
-            .into_iter()
-            .map(|focus| crate::diagnostics::DiagnosticFocus {
-                module: focus.module,
-                source: focus.source,
-                output: PathBuf::from(focus.output),
-                level: focus.level,
-                mirror: focus.mirror,
-            })
-            .collect(),
-    }
-}
-
-/// 将 Runtime 侧诊断启动失败转换为稳定协议响应。
-fn diagnostic_start_response(
-    request_id: String,
-    error: crate::diagnostics::DiagnosticStartError,
-) -> ProtocolResponse {
-    let details = start_error_details(&error);
-    let code = error.code;
-    let message = error.message;
-    ProtocolResponse::Error {
-        request_id: Some(request_id),
-        error: protocol_error_body(
-            code,
-            "x11.diagnostics.start_failed",
-            message,
-            Some("diagnostic_startup".to_owned()),
-            Some("安装可用终端并重试，或检查 XIAO_DIAGNOSTICS_PATH".to_owned()),
-            details,
-        ),
-        report: None,
-        exit_code: ExitCode::ArtifactRejected.as_process_code(),
-    }
-}
-
-/// 在用户代码开始前建立诊断会话，执行后投递所有 VM 事件。
-fn run_with_diagnostics(
-    request_id: String,
-    debug: bool,
-    module: String,
-    source: Option<String>,
-    config: Option<DiagnosticConfig>,
-    request: &DriverRequest,
-) -> ProtocolResponse {
-    let mut session = if debug {
-        match DiagnosticSession::start(module.clone(), source.clone(), &diagnostic_options(config))
-        {
-            Ok(session) => Some(session),
-            Err(error) => return diagnostic_start_response(request_id, error),
-        }
-    } else {
-        None
-    };
-    let outcome = FrontendVmDriver::new().run(request);
-    if let Some(mut session) = session.take() {
-        if let DriverOutcome::Executed(execution) = &outcome {
-            for event in execution.events() {
-                session.record(event);
-            }
-        }
-        session.finish();
-    }
-    run_response(request_id, outcome)
-}
-
-/// 将执行前拒绝转换为稳定协议错误。
-fn rejected_response(
-    request_id: String,
-    exit_code: ExitCode,
-    error: &DriverError,
-) -> ProtocolResponse {
-    let mut details = BTreeMap::new();
-    details.insert("code".to_owned(), Value::String(error.code().to_owned()));
-    if let Some(path) = error.path() {
-        details.insert("path".to_owned(), Value::String(path.to_owned()));
-    }
-    ProtocolResponse::Error {
-        request_id: Some(request_id),
-        error: protocol_error_body(
-            error.code(),
-            "x11.driver.rejected",
-            error.message(),
-            Some(driver_phase_name(error.phase()).to_owned()),
-            Some("检查源码、产物或取消状态后重试".to_owned()),
-            details,
-        ),
-        report: error.report().map(protocol_report),
-        exit_code: exit_code.as_process_code(),
-    }
-}
-
-/// 返回驱动器阶段的稳定名称。
-fn driver_phase_name(phase: DriverPhase) -> &'static str {
-    match phase {
-        DriverPhase::Control => "control",
-        DriverPhase::Verification => "verification",
-        DriverPhase::Request => "request",
-    }
-}
-
-/// 将已进入 VM 的执行结果转换为结构化响应。
-fn executed_response(
-    request_id: String,
-    exit_code: ExitCode,
-    execution: &DriverExecution,
-) -> ProtocolResponse {
-    let outcome = &execution.outcome;
-    let value = outcome.value.as_ref().map(protocol_value);
-    ProtocolResponse::Result {
-        request_id,
-        operation: "run".to_owned(),
-        exit_code: exit_code.as_process_code(),
-        exit_name: exit_name(exit_code).to_owned(),
-        diagnostics: execution
-            .diagnostics()
-            .iter()
-            .map(protocol_diagnostic)
-            .collect(),
-        report: outcome.report.as_ref().map(protocol_report),
-        events: outcome.events.iter().map(protocol_event).collect(),
-        metrics: Some(protocol_metrics(outcome.metrics, outcome.dropped_events)),
-        value,
-        artifact: None,
-    }
 }
 
 /// 将调用方注入的工具链字段转换为 LLVM 驱动器对象。
@@ -610,11 +406,6 @@ fn build_response(
     }
 }
 
-/// 构建时已验证的配置摘要；写文件延迟到原生链接成功之后。
-struct FrozenRuntimeConfig {
-    value: Value,
-}
-
 /// 计算调试组件在最终产物目录中的携带路径。
 fn diagnostics_component_path(output: &str, source: &str) -> String {
     let output_path = PathBuf::from(output);
@@ -686,132 +477,6 @@ fn cleanup_native_outputs(executable: &std::path::Path, llvm_ir_output: Option<&
     let _ = fs::remove_file(executable);
     if let Some(path) = llvm_ir_output {
         let _ = fs::remove_file(path);
-    }
-}
-
-/// 解析并校验 `config.xiao`，只保留静态配置树，不执行用户代码。
-fn freeze_runtime_config(
-    _output: &str,
-    text: Option<&str>,
-) -> Result<Option<FrozenRuntimeConfig>, ProtocolError> {
-    let Some(text) = text else {
-        return Ok(None);
-    };
-    let document = parse_config_text(text).map_err(|diagnostics| {
-        let first = diagnostics
-            .first()
-            .map(|diagnostic| format!("{}: {}", diagnostic.code(), diagnostic.message()))
-            .unwrap_or_else(|| "配置解析失败".to_owned());
-        ProtocolError::build(format!("config.xiao 校验失败：{first}"))
-    })?;
-    Ok(Some(FrozenRuntimeConfig {
-        value: config_document_value(&document),
-    }))
-}
-
-/// 把不可执行配置模型转换为确定性 JSON 值。
-fn config_document_value(document: &ConfigDocument) -> Value {
-    let tables = document
-        .tables
-        .iter()
-        .map(|(name, table)| {
-            let entries = table
-                .entries
-                .iter()
-                .map(|(key, entry)| (key.clone(), config_value(&entry.value)))
-                .collect::<serde_json::Map<_, _>>();
-            (name.clone(), Value::Object(entries))
-        })
-        .collect::<serde_json::Map<_, _>>();
-    Value::Object(serde_json::Map::from_iter([
-        ("format_version".to_owned(), json!(1)),
-        ("cli_overrides".to_owned(), json!(true)),
-        ("tables".to_owned(), Value::Object(tables)),
-    ]))
-}
-
-/// 递归转换配置字面量。
-fn config_value(value: &ConfigValue) -> Value {
-    match value {
-        ConfigValue::String(value) => Value::String(value.clone()),
-        ConfigValue::Integer(value) => json!(value),
-        ConfigValue::Float(value) => json!(value),
-        ConfigValue::Boolean(value) => json!(value),
-        ConfigValue::Array(values) => Value::Array(values.iter().map(config_value).collect()),
-        ConfigValue::Dictionary(values) => Value::Object(
-            values
-                .iter()
-                .map(|(key, value)| (key.clone(), config_value(value)))
-                .collect(),
-        ),
-    }
-}
-
-/// 将配置摘要原子地写到可执行文件旁边。
-fn write_runtime_config(
-    executable: &std::path::Path,
-    config: &FrozenRuntimeConfig,
-) -> Result<ProtocolRuntimeConfig, ProtocolError> {
-    let path = runtime_config_path(executable);
-    if let Some(parent) = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-    {
-        fs::create_dir_all(parent)
-            .map_err(|error| ProtocolError::build(format!("无法创建配置目录：{error}")))?;
-    }
-    let bytes = serde_json::to_vec_pretty(&config.value)
-        .map_err(|error| ProtocolError::build(format!("无法编码运行时配置：{error}")))?;
-    let temporary = PathBuf::from(format!("{}.tmp-{}", path.display(), std::process::id()));
-    fs::write(&temporary, [bytes.as_slice(), b"\n"].concat())
-        .map_err(|error| ProtocolError::build(format!("无法写入运行时配置：{error}")))?;
-    if cfg!(windows)
-        && let Err(error) = fs::remove_file(&path)
-        && error.kind() != std::io::ErrorKind::NotFound
-    {
-        let _ = fs::remove_file(&temporary);
-        return Err(ProtocolError::build(format!("无法替换运行时配置：{error}")));
-    }
-    if let Err(error) = fs::rename(&temporary, &path) {
-        let _ = fs::remove_file(&temporary);
-        return Err(ProtocolError::build(format!("无法提交运行时配置：{error}")));
-    }
-    Ok(ProtocolRuntimeConfig {
-        path: path.display().to_string(),
-        format_version: 1,
-        cli_overrides: true,
-    })
-}
-
-/// 返回原生可执行文件旁的运行时配置路径。
-fn runtime_config_path(executable: &std::path::Path) -> PathBuf {
-    PathBuf::from(format!("{}.xiao-runtime.json", executable.display()))
-}
-
-/// 创建统一取消响应，使用 `ArtifactRejected` 进程码。
-fn cancelled_error_response(request_id: String) -> ProtocolResponse {
-    ProtocolResponse::Error {
-        request_id: Some(request_id),
-        error: protocol_error_body(
-            CANCELLED_ERROR_CODE,
-            "x11.protocol.cancelled",
-            "请求已取消",
-            Some("control".to_owned()),
-            Some("重新提交请求或继续等待其他请求".to_owned()),
-            BTreeMap::new(),
-        ),
-        report: None,
-        exit_code: ExitCode::ArtifactRejected.as_process_code(),
-    }
-}
-
-/// 将内部协议验证错误包装为响应。
-fn protocol_error_response(request_id: Option<String>, error: &ProtocolError) -> ProtocolResponse {
-    ProtocolResponse::Error {
-        request_id,
-        error: protocol_error_from_error(error),
-        report: None,
-        exit_code: ExitCode::ArtifactRejected.as_process_code(),
     }
 }
 
