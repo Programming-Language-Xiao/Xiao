@@ -9,7 +9,7 @@
 > **模板是 [09R2E](09r2e-research-encoder-decoupling.md)**：门面保留、公开路径不变、
 > 留源码级架构回归测试。
 
-## Agent 交接上下文
+## 一、Agent 交接上下文
 
 ### 接手前提
 

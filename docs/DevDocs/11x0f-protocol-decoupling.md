@@ -7,7 +7,7 @@
 > **模板是 [09R2E](09r2e-research-encoder-decoupling.md)**：它把 `encode.rs` 拆成 `encode/` 子模块，
 > 保持门面路径与兼容契约不变，并留下源码级架构回归测试。本批照它的形状做。
 
-## Agent 交接上下文
+## 一、Agent 交接上下文
 
 ### 接手前提
 
