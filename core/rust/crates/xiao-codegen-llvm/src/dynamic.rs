@@ -16,11 +16,15 @@ use crate::CODEGEN_VERSION;
 use crate::error::{CodegenError, Result};
 use crate::ir::{CodegenOptions, LlvmModule, validate_program};
 use crate::target::ObjectFormat;
+use crate::text::{escape_llvm, stable_hash};
 
 #[path = "dynamic/predicate.rs"]
 mod predicate;
+#[path = "dynamic/text.rs"]
+mod text;
 pub(crate) use self::predicate::program_uses_runtime;
 use self::predicate::{abi_field_type, name_key, scope_is_ancestor, statement_uses_container_abi};
+use self::text::{escape_bytes, format_float, is_identity_cast, parse_i32, parse_i64, unquote};
 
 /// 动态值的固定 `{ i32, i32, i64 }` LLVM 结构名。
 const VALUE_TYPE: &str = "%xiao.value";
@@ -1773,90 +1777,4 @@ impl<'a> DynamicGenerator<'a> {
         self.check_status(&status);
         status
     }
-}
-
-/// 解析带下划线的 64 位整数文本。
-fn parse_i64(text: &str, span: IrSpan) -> Result<String> {
-    text.replace('_', "")
-        .parse::<i64>()
-        .map(|value| value.to_string())
-        .map_err(|_| CodegenError::InvalidIr {
-            message: format!("整数无法编码（{}..{}）", span.start, span.end),
-        })
-}
-
-/// 解析带下划线的 32 位整数文本。
-fn parse_i32(text: &str, span: IrSpan) -> Result<String> {
-    text.replace('_', "")
-        .parse::<i32>()
-        .map(|value| value.to_string())
-        .map_err(|_| CodegenError::InvalidIr {
-            message: format!("短整数无法编码（{}..{}）", span.start, span.end),
-        })
-}
-
-/// 解析有限浮点文本。
-fn format_float(text: &str, span: IrSpan) -> Result<String> {
-    let value = text
-        .replace('_', "")
-        .parse::<f64>()
-        .map_err(|_| CodegenError::InvalidIr {
-            message: format!("浮点无法编码（{}..{}）", span.start, span.end),
-        })?;
-    if !value.is_finite() {
-        return Err(CodegenError::InvalidIr {
-            message: format!("浮点必须有限（{}..{}）", span.start, span.end),
-        });
-    }
-    Ok(format!("{value:.17e}"))
-}
-
-/// 判断动态路径是否可以安全透传一个显式转换。
-///
-/// 动态转换的运行时检查仍由字节码侧和后续 N0-C 负责；这里仅接受类型层已经证明为
-/// identity 的转换，避免把 `str as bool` 或数值转换误当成位布局相同的值。
-fn is_identity_cast(inner: &IrExpression, target: &str, result_type: &IrType) -> bool {
-    matches!(
-        (&inner.ty, result_type),
-        (
-            IrType::Scalar { name: source },
-            IrType::Scalar { name: result }
-        ) if source == target && result == target
-    )
-}
-
-/// 去除 Xiao 字符串字面量的外层引号。
-fn unquote(text: &str) -> Option<String> {
-    if !text.starts_with('"') || !text.ends_with('"') {
-        return None;
-    }
-    Some(xiao_types::decode_string_literal(text))
-}
-
-/// 转义 LLVM C 字符串常量中的字节。
-fn escape_bytes(bytes: &[u8]) -> String {
-    let mut output = String::new();
-    for byte in bytes {
-        if (0x20..=0x7e).contains(byte) && *byte != b'"' && *byte != b'\\' {
-            output.push(*byte as char);
-        } else {
-            output.push_str(&format!("\\{byte:02X}"));
-        }
-    }
-    output
-}
-
-/// 转义 LLVM 模块头中的目标字符串。
-fn escape_llvm(text: &str) -> String {
-    text.replace('\\', "\\5C").replace('"', "\\22")
-}
-
-/// 计算动态模块的稳定指纹。
-fn stable_hash(bytes: &[u8]) -> String {
-    let mut hash = 0xcbf29ce484222325_u64;
-    for byte in bytes {
-        hash ^= u64::from(*byte);
-        hash = hash.wrapping_mul(0x100000001b3);
-    }
-    format!("{hash:016x}")
 }

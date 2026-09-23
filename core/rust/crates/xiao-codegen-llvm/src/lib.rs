@@ -14,6 +14,8 @@ mod error;
 mod ir;
 /// 规范化目标描述和固定宽度约束。
 mod target;
+/// LLVM 文本转义和构建指纹的共用纯函数。
+mod text;
 /// 外部 LLVM 工具链调用和指纹。
 mod toolchain;
 

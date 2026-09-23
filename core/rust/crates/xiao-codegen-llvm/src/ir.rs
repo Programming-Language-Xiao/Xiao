@@ -14,6 +14,7 @@ use xiao_ir::{
 use crate::CODEGEN_VERSION;
 use crate::error::{CodegenError, Result};
 use crate::target::TargetDescription;
+use crate::text::{escape_llvm, stable_hash};
 
 /// 入口结果的观察策略。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -1781,19 +1782,4 @@ fn sanitize(name: &str) -> String {
     } else {
         output
     }
-}
-
-/// 转义 LLVM 字符串字面量中的反斜杠和引号。
-fn escape_llvm(text: &str) -> String {
-    text.replace('\\', "\\5C").replace('"', "\\22")
-}
-
-/// 计算用于构建指纹的稳定 FNV-1a 文本。
-fn stable_hash(bytes: &[u8]) -> String {
-    let mut hash = 0xcbf29ce484222325_u64;
-    for byte in bytes {
-        hash ^= u64::from(*byte);
-        hash = hash.wrapping_mul(0x100000001b3);
-    }
-    format!("{hash:016x}")
 }
