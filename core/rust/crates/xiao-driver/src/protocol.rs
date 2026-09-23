@@ -8,6 +8,7 @@ mod frame;
 mod mapping;
 mod message;
 mod request;
+mod validate;
 
 pub use frame::{
     FRAME_ERROR_CODE, FRAME_LENGTH_BYTES, FrameError, MAX_FRAME_BYTES, decode_frame, encode_frame,
@@ -27,6 +28,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
+use validate::{validate_source, validate_target, validate_versions};
 
 use serde_json::{Value, json};
 use xiao_codegen_llvm::{CodegenOptions, TargetDescription, Toolchain, ToolchainVersions};
@@ -60,23 +62,6 @@ pub fn read_request<R: Read>(reader: &mut R) -> Result<Option<ProtocolRequest>, 
     decode_frame(&payload).map(Some)
 }
 
-/// 校验协议版本和统一核心版本。
-fn validate_versions(protocol_version: u16, core_version: u32) -> Result<(), ProtocolError> {
-    if protocol_version != PROTOCOL_VERSION {
-        return Err(ProtocolError::version(format!(
-            "协议版本不兼容：需要 {}，收到 {}",
-            PROTOCOL_VERSION, protocol_version
-        )));
-    }
-    if core_version != CORE_VERSION {
-        return Err(ProtocolError::version(format!(
-            "核心版本不兼容：需要 {}，收到 {}",
-            CORE_VERSION, core_version
-        )));
-    }
-    Ok(())
-}
-
 /// 将协议源码字段转换为既有前端请求。
 fn frontend_request(
     source: &SourceIdentity,
@@ -91,19 +76,6 @@ fn frontend_request(
         None => FrontendRequest::from_text(source.text.clone()),
     };
     request.with_context(context)
-}
-
-/// 校验源码和模块身份的最小边界。
-fn validate_source(source: &SourceIdentity) -> Result<(), ProtocolError> {
-    if source.module.trim().is_empty() {
-        return Err(ProtocolError::request("source.module", "模块名不能为空"));
-    }
-    Ok(())
-}
-
-/// 校验目标字段而不复制 LLVM 目标语义。
-fn validate_target(target: &ProtocolTarget) -> Result<(), ProtocolError> {
-    target.to_target().map(|_| ())
 }
 
 /// 将协议 VM 参数交给生产 VM 自身的范围校验。
