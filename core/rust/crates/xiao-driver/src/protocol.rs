@@ -4,6 +4,7 @@
 //! 字节码降低、VM 执行和 LLVM 构建仍分别由已有驱动器负责。帧的长度字段是 8 字节
 //! 大端无符号整数，只计算 UTF-8 JSON 负载；解码器在分配前检查 16 MiB 上限。
 
+mod build;
 mod config;
 mod frame;
 mod mapping;
@@ -13,38 +14,32 @@ mod run;
 mod validate;
 
 #[allow(unused_imports)]
+use build::{diagnostics_component_path, stage_diagnostics_component};
+#[allow(unused_imports)]
 use config::FrozenRuntimeConfig;
-use config::{freeze_runtime_config, runtime_config_path, write_runtime_config};
+#[allow(unused_imports)]
+use config::{freeze_runtime_config, write_runtime_config};
 pub use frame::{
     FRAME_ERROR_CODE, FRAME_LENGTH_BYTES, FrameError, MAX_FRAME_BYTES, decode_frame, encode_frame,
     read_frame, write_frame,
 };
-use mapping::{exit_name, protocol_error_body, protocol_error_from_error};
 pub use mapping::{protocol_diagnostic, protocol_param};
+use mapping::{protocol_error_body, protocol_error_from_error};
 pub use message::*;
 pub use request::*;
-use run::{
-    cancelled_error_response, frontend_request, protocol_error_response, run_options,
-    run_with_diagnostics,
-};
+use run::{frontend_request, protocol_error_response, run_options, run_with_diagnostics};
 use std::collections::BTreeMap;
+#[allow(unused_imports)]
 use std::fs;
 use std::io::{self, BufReader, BufWriter, Read, Write};
-use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
 use validate::{validate_source, validate_target, validate_versions};
 
+use crate::run::{CancellationToken, DriverRequest, ExitCode};
 #[allow(unused_imports)]
 use serde_json::Value;
 use serde_json::json;
-use xiao_codegen_llvm::{CodegenOptions, TargetDescription, Toolchain, ToolchainVersions};
-use xiao_diagnostics::window::{
-    DIAGNOSTIC_START_CODE, DiagnosticActivation, activation_path, write_activation,
-};
-
-use crate::native::{FrontendNativeDriver, NativeBuildRequest, NativeDriverError};
-use crate::run::{CancellationToken, DriverRequest, ExitCode};
 
 /// 当前协议版本。协议字段和帧布局变化时必须递增。
 /// 核心处理请求时发生 panic。
@@ -60,424 +55,6 @@ pub fn read_request<R: Read>(reader: &mut R) -> Result<Option<ProtocolRequest>, 
         return Ok(None);
     };
     decode_frame(&payload).map(Some)
-}
-
-/// 将调用方注入的工具链字段转换为 LLVM 驱动器对象。
-fn build_toolchain(
-    spec: &ToolchainSpec,
-    target: &TargetDescription,
-) -> Result<Toolchain, ProtocolError> {
-    if spec.clang.trim().is_empty() {
-        return Err(ProtocolError::request(
-            "toolchain.clang",
-            "原生构建必须显式提供 clang 路径",
-        ));
-    }
-    let versions = ToolchainVersions {
-        clang: spec.versions.clang.clone(),
-        llvm_as: spec.versions.llvm_as.clone(),
-        llc: spec.versions.llc.clone(),
-        rustc: spec.versions.rustc.clone(),
-    };
-    let mut toolchain = Toolchain::new(PathBuf::from(&spec.clang)).with_versions(versions);
-    if let Some(path) = &spec.llvm_as {
-        toolchain = toolchain.with_llvm_as(path);
-    }
-    if let Some(path) = &spec.llc {
-        toolchain = toolchain.with_llc(path);
-    }
-    if let Some(path) = &spec.runtime_library {
-        toolchain = toolchain.with_runtime_library(path);
-    }
-    let mut toolchain =
-        toolchain.with_native_static_libraries(spec.native_static_libraries.clone());
-    if toolchain.runtime_library.is_some() && toolchain.native_static_libraries.is_empty() {
-        let Some(rustc) = spec.rustc.as_deref() else {
-            return Err(ProtocolError::build(
-                "动态 Runtime 构建需要 rustc 路径以查询 native-static-libs",
-            ));
-        };
-        toolchain = toolchain
-            .probe_native_static_libraries(rustc, target)
-            .map_err(|error| ProtocolError::build(format!("无法查询 Rust 原生库清单：{error}")))?;
-    }
-    Ok(toolchain)
-}
-
-#[allow(clippy::too_many_arguments)]
-/// 调用原生驱动器并转换构建结果或结构化后端错误。
-fn build_response(
-    request_id: String,
-    language_version: String,
-    target: ProtocolTarget,
-    optimization: OptimizationConfig,
-    source: SourceIdentity,
-    output: String,
-    llvm_ir_output: Option<String>,
-    toolchain: ToolchainSpec,
-    config_text: Option<String>,
-    cancellation: &CancellationToken,
-) -> ProtocolResponse {
-    if cancellation.is_cancelled() {
-        return cancelled_error_response(request_id);
-    }
-    if optimization.level != 0 {
-        return ProtocolResponse::Error {
-            request_id: Some(request_id),
-            error: protocol_error_body(
-                UNSUPPORTED_OPERATION_CODE,
-                "x11.protocol.optimization_unavailable",
-                "X0-A 只接受优化级别 0",
-                Some("build".to_owned()),
-                Some("使用 level=0，优化接线留给后续阶段".to_owned()),
-                BTreeMap::from([("level".to_owned(), json!(optimization.level))]),
-            ),
-            report: None,
-            exit_code: ExitCode::ArtifactRejected.as_process_code(),
-        };
-    }
-    if output.trim().is_empty() {
-        return protocol_error_response(
-            Some(request_id),
-            &ProtocolError::request("output", "原生构建必须提供输出路径"),
-        );
-    }
-    // 先移除旧激活位，避免失败的普通/调试重建继续误启用上一次的诊断配置。
-    let activation_file = activation_path(&output);
-    if let Err(error) = fs::remove_file(&activation_file)
-        && error.kind() != std::io::ErrorKind::NotFound
-    {
-        return ProtocolResponse::Error {
-            request_id: Some(request_id),
-            error: protocol_error_body(
-                DIAGNOSTIC_START_CODE,
-                "x11.diagnostics.activation_cleanup_failed",
-                format!("无法清理旧的调试产物激活位：{error}"),
-                Some("build".to_owned()),
-                Some("检查产物目录权限后重试".to_owned()),
-                BTreeMap::from([(
-                    "path".to_owned(),
-                    json!(activation_file.display().to_string()),
-                )]),
-            ),
-            report: None,
-            exit_code: ExitCode::ArtifactRejected.as_process_code(),
-        };
-    }
-    let target_description = match target.to_target() {
-        Ok(target) => target,
-        Err(error) => return protocol_error_response(Some(request_id), &error),
-    };
-    let diagnostics_source = toolchain.diagnostics_path.clone();
-    let diagnostics_path = diagnostics_source
-        .as_deref()
-        .map(|path| diagnostics_component_path(&output, path));
-    let toolchain = match build_toolchain(&toolchain, &target_description) {
-        Ok(toolchain) => toolchain,
-        Err(error) => return protocol_error_response(Some(request_id), &error),
-    };
-    let frozen_config = match freeze_runtime_config(&output, config_text.as_deref()) {
-        Ok(config) => config,
-        Err(error) => return protocol_error_response(Some(request_id), &error),
-    };
-    let frontend = frontend_request(&source, &language_version, &target);
-    let mut request = NativeBuildRequest::new(
-        frontend,
-        target_description.clone(),
-        toolchain,
-        output.clone(),
-    )
-    .with_codegen_options({
-        let options = CodegenOptions::for_target(target_description);
-        if optimization.debug {
-            let Some(path) = diagnostics_path.as_deref() else {
-                return protocol_error_response(
-                    Some(request_id),
-                    &ProtocolError::build(
-                        "调试构建缺少 xiao-diagnostics 路径；请随分发包携带诊断组件",
-                    ),
-                );
-            };
-            options.with_debug_startup(path)
-        } else {
-            options
-        }
-    });
-    if let Some(path) = &llvm_ir_output {
-        request = request.with_llvm_ir_output(path);
-    }
-    if cancellation.is_cancelled() {
-        return cancelled_error_response(request_id);
-    }
-    match FrontendNativeDriver::new().build(&request) {
-        Ok(result) => {
-            if cancellation.is_cancelled() {
-                cleanup_native_outputs(&result.native.executable, llvm_ir_output.as_deref());
-                return cancelled_error_response(request_id);
-            }
-            let mut staged_diagnostics_component = false;
-            let diagnostics_component = if optimization.debug {
-                let Some(source) = diagnostics_source.as_deref() else {
-                    return protocol_error_response(
-                        Some(request_id),
-                        &ProtocolError::build("调试构建缺少 xiao-diagnostics 源文件路径"),
-                    );
-                };
-                let destination = diagnostics_path
-                    .as_deref()
-                    .expect("调试构建已计算诊断组件目标路径");
-                match stage_diagnostics_component(source, destination) {
-                    Ok(staged) => staged_diagnostics_component = staged,
-                    Err(error) => {
-                        cleanup_native_outputs(
-                            &result.native.executable,
-                            llvm_ir_output.as_deref(),
-                        );
-                        return ProtocolResponse::Error {
-                            request_id: Some(request_id),
-                            error: protocol_error_body(
-                                DIAGNOSTIC_START_CODE,
-                                "x11.diagnostics.component_copy_failed",
-                                format!("无法把 xiao-diagnostics 随产物携带：{error}"),
-                                Some("build".to_owned()),
-                                Some("检查诊断组件路径和产物目录权限后重试".to_owned()),
-                                BTreeMap::from([
-                                    ("source".to_owned(), json!(source)),
-                                    ("destination".to_owned(), json!(destination)),
-                                ]),
-                            ),
-                            report: None,
-                            exit_code: ExitCode::ArtifactRejected.as_process_code(),
-                        };
-                    }
-                }
-                Some(destination.to_owned())
-            } else {
-                None
-            };
-            let diagnostic_activation = if optimization.debug {
-                let activation = DiagnosticActivation {
-                    format_version: 1,
-                    enabled: true,
-                    source_map: Some(
-                        source
-                            .path
-                            .clone()
-                            .unwrap_or_else(|| "<embedded>".to_owned()),
-                    ),
-                    metadata_version: 1,
-                    hooks: true,
-                };
-                match write_activation(&result.native.executable, &activation) {
-                    Ok(path) => Some(ProtocolDiagnosticActivation {
-                        path: path.display().to_string(),
-                        enabled: activation.enabled,
-                        source_map: activation.source_map.is_some(),
-                        hooks: activation.hooks,
-                    }),
-                    Err(error) => {
-                        cleanup_native_outputs(
-                            &result.native.executable,
-                            llvm_ir_output.as_deref(),
-                        );
-                        if staged_diagnostics_component
-                            && let Some(component) = &diagnostics_component
-                        {
-                            let _ = fs::remove_file(component);
-                        }
-                        return ProtocolResponse::Error {
-                            request_id: Some(request_id),
-                            error: protocol_error_body(
-                                DIAGNOSTIC_START_CODE,
-                                "x11.diagnostics.activation_write_failed",
-                                format!("无法写入调试产物激活位：{error}"),
-                                Some("build".to_owned()),
-                                Some("检查产物目录权限后重试".to_owned()),
-                                BTreeMap::new(),
-                            ),
-                            report: None,
-                            exit_code: ExitCode::ArtifactRejected.as_process_code(),
-                        };
-                    }
-                }
-            } else {
-                None
-            };
-            let runtime_config = match frozen_config {
-                Some(config) => match write_runtime_config(&result.native.executable, &config) {
-                    Ok(summary) => Some(summary),
-                    Err(error) => {
-                        cleanup_native_outputs(
-                            &result.native.executable,
-                            llvm_ir_output.as_deref(),
-                        );
-                        if staged_diagnostics_component
-                            && let Some(component) = &diagnostics_component
-                        {
-                            let _ = fs::remove_file(component);
-                        }
-                        if let Some(activation) = &diagnostic_activation {
-                            let _ = fs::remove_file(&activation.path);
-                        }
-                        return protocol_error_response(Some(request_id), &error);
-                    }
-                },
-                None => {
-                    let path = runtime_config_path(&result.native.executable);
-                    if let Err(error) = fs::remove_file(&path)
-                        && error.kind() != std::io::ErrorKind::NotFound
-                    {
-                        cleanup_native_outputs(
-                            &result.native.executable,
-                            llvm_ir_output.as_deref(),
-                        );
-                        if staged_diagnostics_component
-                            && let Some(component) = &diagnostics_component
-                        {
-                            let _ = fs::remove_file(component);
-                        }
-                        if let Some(activation) = &diagnostic_activation {
-                            let _ = fs::remove_file(&activation.path);
-                        }
-                        return protocol_error_response(
-                            Some(request_id),
-                            &ProtocolError::build(format!("无法清理旧的运行时配置：{error}")),
-                        );
-                    }
-                    None
-                }
-            };
-            ProtocolResponse::Result {
-                request_id,
-                operation: "build".to_owned(),
-                exit_code: ExitCode::Success.as_process_code(),
-                exit_name: exit_name(ExitCode::Success).to_owned(),
-                diagnostics: result
-                    .frontend
-                    .diagnostics()
-                    .iter()
-                    .map(protocol_diagnostic)
-                    .collect(),
-                report: None,
-                events: Vec::new(),
-                metrics: None,
-                value: None,
-                artifact: Some(ProtocolArtifact {
-                    executable: result.native.executable.display().to_string(),
-                    llvm_ir_output,
-                    toolchain_fingerprint: result.native.toolchain_fingerprint.to_string(),
-                    uses_runtime: result.native.module.uses_runtime,
-                    runtime_components: result.native.module.runtime_components,
-                    diagnostic_activation,
-                    diagnostics_component,
-                    runtime_config,
-                }),
-            }
-        }
-        Err(NativeDriverError::Frontend(error)) => ProtocolResponse::Result {
-            request_id,
-            operation: "build".to_owned(),
-            exit_code: ExitCode::SourceRejected.as_process_code(),
-            exit_name: exit_name(ExitCode::SourceRejected).to_owned(),
-            diagnostics: error
-                .diagnostics()
-                .iter()
-                .map(protocol_diagnostic)
-                .collect(),
-            report: None,
-            events: Vec::new(),
-            metrics: None,
-            value: None,
-            artifact: None,
-        },
-        Err(NativeDriverError::Backend(error)) => ProtocolResponse::Error {
-            request_id: Some(request_id),
-            error: protocol_error_body(
-                BUILD_ERROR_CODE,
-                "x11.driver.native_build",
-                error.to_string(),
-                Some("build".to_owned()),
-                Some("检查目标描述、输出路径和外部 LLVM 工具链".to_owned()),
-                BTreeMap::new(),
-            ),
-            report: None,
-            exit_code: ExitCode::ArtifactRejected.as_process_code(),
-        },
-    }
-}
-
-/// 计算调试组件在最终产物目录中的携带路径。
-fn diagnostics_component_path(output: &str, source: &str) -> String {
-    let output_path = PathBuf::from(output);
-    // 协议路径可能来自另一种宿主格式（例如 Windows 上收到 `C:/...`），不能只依赖
-    // 当前平台的 PathBuf 解析，否则盘符或反斜杠会被误当成文件名的一部分。
-    let name = source
-        .rsplit(['/', '\\'])
-        .find(|part| !part.is_empty())
-        .map(std::ffi::OsString::from)
-        .unwrap_or_else(|| {
-            if cfg!(windows) {
-                std::ffi::OsString::from("xiao-diagnostics.exe")
-            } else {
-                std::ffi::OsString::from("xiao-diagnostics")
-            }
-        });
-    output_path
-        .parent()
-        .unwrap_or_else(|| std::path::Path::new("."))
-        .join(name)
-        .display()
-        .to_string()
-}
-
-/// 把独立诊断进程复制到原生构建目录，使调试产物不依赖 `xiao` 启动器。
-fn stage_diagnostics_component(source: &str, destination: &str) -> std::io::Result<bool> {
-    let source_path = PathBuf::from(source);
-    let destination_path = PathBuf::from(destination);
-    let same_file = source_path == destination_path
-        || (source_path
-            .canonicalize()
-            .ok()
-            .zip(destination_path.canonicalize().ok())
-            .is_some_and(|(source, destination)| source == destination));
-    if same_file {
-        return Ok(false);
-    }
-    if let Some(parent) = destination_path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-    {
-        fs::create_dir_all(parent)?;
-    }
-    let temporary = PathBuf::from(format!(
-        "{}.tmp-{}",
-        destination_path.display(),
-        std::process::id()
-    ));
-    if let Err(error) = fs::copy(source_path, &temporary) {
-        let _ = fs::remove_file(&temporary);
-        return Err(error);
-    }
-    if cfg!(windows)
-        && let Err(error) = fs::remove_file(&destination_path)
-        && error.kind() != std::io::ErrorKind::NotFound
-    {
-        let _ = fs::remove_file(&temporary);
-        return Err(error);
-    }
-    if let Err(error) = fs::rename(&temporary, &destination_path) {
-        let _ = fs::remove_file(&temporary);
-        return Err(error);
-    }
-    Ok(true)
-}
-
-/// 清理一次失败或已取消构建已经提交的原生与 LLVM 输出。
-fn cleanup_native_outputs(executable: &std::path::Path, llvm_ir_output: Option<&str>) {
-    let _ = fs::remove_file(executable);
-    if let Some(path) = llvm_ir_output {
-        let _ = fs::remove_file(path);
-    }
 }
 
 /// 直接处理一条请求；适合契约测试和不需要并发取消的调用方。
@@ -583,7 +160,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             if let Err(error) = validate_source(&source).and_then(|_| validate_target(&target)) {
                 return protocol_error_response(Some(request_id), &error);
             }
-            build_response(
+            build::build_response(
                 request_id,
                 language_version,
                 target,
@@ -712,7 +289,7 @@ fn worker_response(request: ProtocolRequest, token: CancellationToken) -> Protoc
             if let Err(error) = validate_source(&source).and_then(|_| validate_target(&target)) {
                 return protocol_error_response(Some(request_id), &error);
             }
-            build_response(
+            build::build_response(
                 request_id,
                 language_version,
                 target,
