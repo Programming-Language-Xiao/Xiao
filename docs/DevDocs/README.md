@@ -87,10 +87,11 @@
 | 09R2g | [`for` 与迭代执行闭环交接文档](09r2g-for-and-iteration.md) | `Len`/`IndexGetDynamic` 两条指令、`for` 的 TAC 降低与 CFG、`iterable` 运行时检查、`iteration.json` 共享向量 | 已完成（opcode 36/37、三种载体、动态错误码 `X06-RUNTIME-024` 与释放边界均已验证） |
 | 09R2h | [表声明执行闭环交接记录](09r2h-table-declarations.md) | 表签名与方法索引、构造与字段读写、初始化回滚和确定性析构 | 已完成（新增表定义段、opcode 38–40、布局版本 3；79 条共享向量；须以新布局进入 R3） |
 | 09R3 | [跨平台基准与冻结](09r3-benchmarks-and-freeze.md)（权威定义见 [09R](09r-bytecode-machine-research.md) `:610-619`） | 语义差分、性能、内存与编码体积四份报告，以及机型/ABI/编码的冻结 | 已完成 Windows 原生复现；Linux/macOS 待复现 |
-| 09-B0 | [字节码最小运行闭环](09b0-bytecode-closure.md)（权威定义见 [12](12-tests-and-milestones.md) `:672-679` 与 [09R](09r-bytecode-machine-research.md) `:640-649`） | 生产字节码模型与验证器（B0-A）、生产 VM 执行闭环（B0-B）、前端到 VM 的内部驱动器（B0-C）、退出码冻结（B0-D） | 已完成（B0-A/B/C/D 均已落地；VM 中途取消检查点转入 `09-B0-E`） |
+| 09-B0 | [字节码最小运行闭环](09b0-bytecode-closure.md)（权威定义见 [12](12-tests-and-milestones.md) `:672-679` 与 [09R](09r-bytecode-machine-research.md) `:640-649`） | 生产字节码模型与验证器（B0-A）、生产 VM 执行闭环（B0-B）、前端到 VM 的内部驱动器（B0-C）、退出码冻结（B0-D） | 已完成（B0-A/B/C/D 均已落地；VM 中途取消检查点转入 [09-B0-E](09b0e-vm-cancellation-checkpoint.md)） |
 | 09-B0-B | [生产 VM 执行闭环](09b0b-production-vm.md) | 生产入口 ABI（脚本/`[main]`）、规范化运行参数对象、结构化退出结果、栈回溯与事件接收器生产化 | 已完成（生产入口、前置验证、报告接线和有界事件接收器已落地） |
-| 09-B0-C | [前端到 VM 内部驱动器](09b0c-frontend-to-vm-driver.md) | `xiao-driver` 的运行驱动器、三段错误的统一结构化表示、取消/超时边界 | 已完成（内部驱动器、公共契约测试和 UseDocs 已落地；`B0-C-CANCEL-001` 转入 `09-B0-E`） |
+| 09-B0-C | [前端到 VM 内部驱动器](09b0c-frontend-to-vm-driver.md) | `xiao-driver` 的运行驱动器、三段错误的统一结构化表示、取消/超时边界 | 已完成（内部驱动器、公共契约测试和 UseDocs 已落地；`B0-C-CANCEL-001` 转入 [09-B0-E](09b0e-vm-cancellation-checkpoint.md)） |
 | 09-B0-D | [退出码冻结与 Linux 容器实测](09b0d-exit-codes-and-linux-verification.md) | `ExitCode` 的语义与取值冻结、`DriverOutcome` 上的稳定派生、locale 中立性断言、容器实测记录 | 已完成（退出码契约与测试已落地；Linux 容器结果见交接文档；不改变 Windows 原生冻结口径） |
+| 09-B0-E | [VM 中途取消检查点](09b0e-vm-cancellation-checkpoint.md) | `B0-C-CANCEL-001` 的出口：VM 热循环内的中途检查点、可注入取消源、清理/退出码回归、**单独记录**的性能对照 | 待开工（交接文档已就绪；别名层清理已裁定拆出，另登记编号） |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 进行中（N0-A/N0-B 已落地；N0-C/D 与用户可见 CLI 仍后置） |
 | 10A | [LLVM 原生构建闭环](10a-n0-native-closure.md) | 手写 IR 文本 + 外部工具链、`xiao-runtime-abi`、四批交付（N0-A 纯静态 → N0-D 验证裁剪） | N0-A 已完成；N0-B Runtime ABI 已接续落地（Windows 原生已复现；Linux/macOS 待复现） |
 | 10B | [N0-B Runtime ABI](10b-n0-runtime-abi.md) | 动态值的 ABI 表示、真实引用计数与 `Weak`、容器与表 ABI、正常路径的释放计划 | 已落地（ABI/容器/表/正常释放计划；异常展开留 N0-C） |
@@ -105,6 +106,7 @@
 | 11X0-F | [`protocol.rs` 解耦交接](11x0f-protocol-decoupling.md) | 2354 行（94%）预防性拆分：门面 + 九个子模块、依赖 DAG 与架构测试、七步分提交 | 已完成（门面 59 行；九模块与架构回归测试已落地；公开 API、协议夹具和既有测试未改） |
 | 11X0-G | [`checker.rs` 解耦交接](11x0g-type-checker-decoupling.md) | 2200 行（88%）预防性拆分：`RuntimeCheckKind` 跨 crate 路径不变、常量求值作最安全起点、六步分提交 | 已完成（门面 166 行；六个职责子模块、架构回归测试和模块文档已落地；公开 API、类型规则与 `xiao-types/tests/` 未改） |
 | 11X0-H | [`dynamic.rs` 解耦交接](11x0h-llvm-dynamic-decoupling.md) | 2172 行（87%）预防性拆分：逐字节不变为最强验收、静态/动态边界、**发现 escape_llvm/stable_hash 重复实现** | 已完成（门面 248 行；九个动态职责子模块、架构回归测试和模块文档已落地；Runtime ABI、静态边界与 LLVM 文本未变） |
+| 11X0-T | [项目测试语义与结果协议](11x0t-project-test-semantics.md) | `xiao test` 的语义裁定、测试文件发现、确定性执行顺序、隔离/超时边界、机器可读结果协议 | 待开工（交接文档已就绪；语义裁定、发现顺序与协议字段均待落地） |
 | 11A.1 | [包源协议：决策、待决与风险（待审）](11a1-package-source-protocol-review.md) | 源身份规范化、JSON 权威与 Protobuf 派生、解析键与同一性、canonical JSON、源列表导入的三条规则；含六条待审风险 | 已审并处置（方向保留；源引用语义、导入顺序、摘要信任边界三处已修正） |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 未开始 |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |
