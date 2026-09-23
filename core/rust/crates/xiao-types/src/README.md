@@ -9,9 +9,11 @@
 只保存绑定状态；`conversion.rs`/`numeric.rs` 是纯规则函数；`path_constraints.rs` 和
 `materialization.rs` 是 C0 无状态路径/计划辅助；`selection_model.rs`、
 `selection_random.rs`、`selection_shape.rs` 和 `selector_checker.rs` 负责 C1 选择计划、
-抽样辅助和结果形状；`checker.rs` 是 AST 分派入口，具体容器逻辑在 `container_checker.rs`
-和 C1 选择器模块中实现。新增容器语义必须继续放入独立模块，禁止把检查器堆成跨层中心或
-形成循环依赖。
+抽样辅助和结果形状；`checker.rs` 是 AST 分派与结果装配门面，标量检查实现按职责拆在
+`checker/` 下的 `result.rs`、`constant.rs`、`conversion.rs`、`diagnostic.rs`、
+`expression.rs` 和 `statement.rs`，具体容器逻辑仍在 `container_checker.rs` 和 C1 选择器
+模块中实现。新增容器语义必须继续放入独立模块，禁止把检查器堆成跨层中心或形成循环依赖；
+检查器子模块的允许依赖见 `checker/README.md`。
 
 集合职责：`set_types.rs` 保存 `SetType`、C2-A/C2-B 可哈希判定、静态成员并集和集合赋值兼容规则；
 `set_checker.rs` 负责集合字面量、`set<T | U>`、`set()`、成员判断及相关 Runtime 检查标记；

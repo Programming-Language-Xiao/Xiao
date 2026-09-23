@@ -181,6 +181,30 @@ checker/diagnostic.rs    诊断上报（所有 *_error 与 push_runtime_check）
   按各自的批次做。
 - **不要用旁置 md 豁免替代拆分**（`00E` 明说它是最后手段）。
 
+## 八、落地记录（2026-09-23）
+
+本批已按六步顺序完成并分别提交：
+
+1. `e2db2d9`：拆出 `checker/constant.rs`；
+2. `f7309d3`：拆出 `checker/result.rs`；
+3. `465d9aa`：拆出 `checker/diagnostic.rs`；
+4. `eefae85`：拆出 `checker/statement.rs`；
+5. `5a56447`：拆出 `checker/expression.rs`，并拆分变量二元推导与调用检查；
+6. `e66bfdc`：拆出 `checker/conversion.rs`，完成门面收尾。
+
+最终结构为 `checker.rs`（162 行）门面，加上 `checker/` 下六个职责模块：
+`constant`、`result`、`diagnostic`、`statement`、`expression`、`conversion`。公开的
+`RuntimeCheckKind`、`TypeCheckResult`、`TypedNode`、`TypeChecker` 和 `check` 路径保持不变；
+`RuntimeCheckKind::as_name`、`from_name`、`all` 的实现与行为未改，`xiao-types/tests/`
+及快照均未修改。`checker_architecture_tests.rs` 通过 `cfg(test)` 接入门面，锁定门面无实现
+和子模块无反向依赖；局部 README、crate README、模块登记和本交接状态已同步。
+
+本机 Windows 验收已通过：`cargo fmt --manifest-path core/rust/Cargo.toml --all -- --check`、
+`cargo test --manifest-path core/rust/Cargo.toml -p xiao-types`（含 28 条单元/架构测试及全部
+外部类型测试）、`cargo clippy --manifest-path core/rust/Cargo.toml -p xiao-types --all-targets -- -D warnings`、
+`bun run check:layout`、`bun run check:lock`、`bunx tsc` 和
+`cargo check --manifest-path core/rust/Cargo.toml --workspace` 均通过；锁文件未变化。
+
 ## 相关页面
 
 - [09R2E. 研究编码器模块解耦交接记录](09r2e-research-encoder-decoupling.md) —— **本批的模板**

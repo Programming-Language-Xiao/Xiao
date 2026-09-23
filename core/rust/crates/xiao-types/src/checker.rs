@@ -16,6 +16,10 @@ use crate::numeric::ConstantValue;
 use crate::types::Type;
 use crate::unify::TypeContext;
 
+#[cfg(test)]
+#[path = "checker_architecture_tests.rs"]
+/// 锁定检查器子模块的源码级依赖方向。
+mod architecture_tests;
 /// 常量求值和跨职责共享的无状态辅助。
 #[path = "checker/constant.rs"]
 mod constant;

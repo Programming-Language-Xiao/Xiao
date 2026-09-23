@@ -12,6 +12,14 @@
 
 类型表示放在 `types.rs`，容器形状和约束放在 `containers.rs`，集合类型和可哈希规则放在 `set_types.rs`，集合 AST 检查放在 `set_checker.rs`，集合运算/比较分派放在 `set_operations.rs`，表检查放在独立的 `table_checker.rs`，路径解析放在 `path_constraints.rs`，空容器计划放在 `materialization.rs`，容器 AST 检查放在 `checker.rs` 的 `container_checker.rs` 子模块；统一和 HM 操作放在 `unify.rs`，作用域放在 `environment.rs`，转换放在 `conversion.rs`，数值规则放在 `numeric.rs`，稳定编号放在 `diagnostics.rs`。后端布局类型放在各后端 crate，禁止把 Runtime 或 CLI 依赖倒灌到类型层。
 
+## 检查器门面
+
+`checker.rs` 只保留 `TypeChecker` 状态、顶层声明注册、语句分派和结果装配；标量检查按
+职责拆在 `src/checker/` 的 `result.rs`、`constant.rs`、`conversion.rs`、`diagnostic.rs`、
+`expression.rs` 和 `statement.rs`。`RuntimeCheckKind`、`TypeCheckResult` 和 `TypedNode` 的
+公开路径与字段保持不变，架构边界由 `checker_architecture_tests.rs` 锁定。允许依赖和门面
+契约详见 `src/checker/README.md`；本拆分不新增类型规则、诊断码或 Runtime 能力。
+
 ## 禁止事项
 
 不编码 LLVM 指令、不执行用户代码、不把平台 C 类型宽度当作 Xiao 类型定义。
