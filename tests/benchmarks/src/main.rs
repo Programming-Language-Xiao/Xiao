@@ -487,6 +487,7 @@ fn compile_all(root: &Path, manifest: &Manifest) -> Result<Vec<CompiledBenchmark
 fn options(manifest: &Manifest) -> VmOptions {
     VmOptions {
         max_call_depth: manifest.max_call_depth,
+        ..VmOptions::default()
     }
 }
 
@@ -532,6 +533,7 @@ fn observe(outcome: &RunOutcome) -> Observation {
             Some(error.code().to_owned()),
             Some(fatal_record(error)),
         ),
+        RunResult::Cancelled => ("cancelled".to_owned(), None, None),
     };
     let releases = outcome
         .events
