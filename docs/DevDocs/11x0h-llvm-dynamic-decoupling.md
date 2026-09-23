@@ -9,6 +9,10 @@
 > **三份各自独立做。**
 >
 > **模板是 [09R2E](09r2e-research-encoder-decoupling.md)**。
+>
+> **⚠️ 接手前先读 §8 与 §9**：§8 是上一批（`checker.rs`）**尚未收尾的两件事**
+> （一个门禁失败 + 一批空正文），**先做完再动本批**；§9 是**新会话必读**的跨批次约束
+> （门禁清单、公共 API 硬门槛、`check:lock`、提交正文要求等）——它们不因批次更替失效。
 
 ## 一、Agent 交接上下文
 
@@ -218,6 +222,110 @@ dynamic/*   可以 use crate::ir::{LlvmModule, CodegenOptions, ...}
 - **不要顺手拆其他高位文件**——`protocol.rs` 与 `checker.rs` **各有独立交接文档**。
 - **不要用旁置 md 豁免替代拆分**（`00E` 明说它是最后手段）。
 
+## 八、**接手前先做**：上一批（`checker.rs`）的收尾
+
+`11X0-G`（`checker.rs`）已经落地——形状完全按文档做到了（2200 → 166 行门面，
+六个子模块与 §2 的落点表一字不差，`RuntimeCheckKind` 仍可达，`tests/` 零 diff）。
+**但它留下了两件必须收尾的事，先处理完再动 `dynamic.rs`。**
+
+### 8.1 一个**门禁失败**要修（`bun run check` exit 1）
+
+```text
+[error] A0-COVERAGE-001 公共 API 文档覆盖率 99.97% 低于 100%
+[error] A0-COVERAGE-002 xiao-types/src/checker.rs:63 reexport use：公共声明缺少代码文档
+公共 API：3001/3002
+```
+
+**根因就一行**——门面里那个显式重导出没有文档注释：
+
+```rust
+pub use self::result::{RuntimeCheck, RuntimeCheckKind, TypeCheckResult, TypedNode};
+```
+
+**`pub use` 本身算「公开声明」**，而公共 API 覆盖率是 **100% 的硬门槛**
+（不是"全仓 ≥90%"那条）。另有 **13 个内部项**缺文档（`constant.rs` 2 项、
+`expression.rs` 若干等），它们是 warning 但也要补。
+
+**修法**：给该 `pub use` 加文档注释、补齐那 13 项，然后 `bun run check` 必须 **exit 0**。
+
+### 8.2 一批提交**缺正文**，用下一笔补说明
+
+`checker.rs` 那批有 **8 个提交正文为空**（6 个 `refactor(types)` + 2 个 `docs(types)`），
+而其中 6 个 `refactor` **正是最需要说明"这只是移动、没有语义变更"的**。
+
+**不要改写历史**（成本高且无必要）。**用下一笔提交说明这批改动的性质**，
+并给出"无语义变更"的证据——**最强的证据已经存在**：
+
+> 四个快照测试（`c0c1_snapshots.rs`、`c2a_snapshots.rs`、`c2b_snapshots.rs`、
+> `c2c_snapshots.rs`）**一个字符没改却全部通过**。它们比对的是**类型检查结果的结构**，
+> 所以"结构没变"是被测试锁住的，不是靠声称。
+
+**这条要做在 `dynamic.rs` 之前**，免得两批的说明混在一起。
+
+---
+
+## 九、本批的硬约束（**新会话必读**）
+
+接手者可能没有前序批次的上下文。以下约束**跨批次有效，不因批次更替失效**；
+本批（`dynamic.rs`）与后续任何解耦批次都适用。
+
+### 9.1 门禁清单（每次提交前全跑）
+
+```text
+cargo test --manifest-path core/rust/Cargo.toml --workspace
+cargo clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets -- -D warnings
+cargo fmt --manifest-path core/rust/Cargo.toml --all -- --check
+cargo doc --manifest-path core/rust/Cargo.toml --workspace --no-deps
+bun test
+bunx tsc --noEmit -p tsconfig.json
+bun run check              ← 含 check:lock，见 9.3
+bun run check:coverage     ← 公共 API 硬门槛，见 9.2
+```
+
+### 9.2 **公共 API 覆盖率 100% 是硬门槛**（§8.1 就是踩了这条）
+
+- **`pub use` 算公开声明**，重导出行**也要有文档注释**；
+- `pub` 项、`export` 项、公共模块入口都是 100%；
+- 全仓声明项是 **≥90%**——**两条门槛不同，别混**。
+
+### 9.3 `check:lock` 是**已固化**的门禁
+
+`tests/benchmarks` 是**独立 crate**，它的 `Cargo.lock` 不在 `core/rust` workspace 覆盖内。
+这个盲区造成过**三次**漏提交，写文档提醒三次都没生效，现已固化为 `check:lock`
+并**并入 `bun run check`**。**本批若给任何 Rust crate 增删依赖**，跑完 `cargo check`
+后锁文件有 diff 就是漏提交。判据与来由见 [00A.1](00a-a0-workspace-and-checkers.md)。
+
+### 9.4 **`bun run check` 要看完整输出，不要 `| tail`**
+
+它的 warning **不影响退出码**。`| tail -3` 会显示"通过"而**吞掉几十条告警**——
+本仓真的漏看过 83 条。核对时用 `grep -c` 计数。
+
+### 9.5 ★ 两条提交约束**分别**核对
+
+1. **标题带规范前缀**（`feat:`/`fix:`/`test:`/`docs:`/`chore:`；`refactor:` 与带 scope 的
+   `feat(x0-e):` 同样合规）；
+2. **正文说明为什么**——**空正文是违规**（§8.2 就是踩了这条）。
+
+复发史：`261d88e`/`66f0cec`/B0-A 两个（标题缺）→ `2a33680`（正文缺）→
+之后各批守住 → **`checker.rs` 那批 8 个提交正文为空，再次复发**。
+
+**对解耦批次尤其重要**：审核者必须能**只读正文**就知道"这笔只是移动、没有语义变更"，
+而不是读 diff 反推。
+
+### 9.6 环境依赖测试按 [10D](10d-environment-gated-test-spec.md) 写
+
+本仓的原生相关测试大量依赖外部工具链。**一律用显式的跳过机制**
+（`#[test] #[ignore]`），**不允许条件 `return`**——那会让"没跑"和"通过"在汇总里
+长得一模一样。跳过的数量要在默认门禁里**可见**（`cargo test` 会打印 `N ignored`）。
+
+### 9.7 单一来源原则（本仓的**头号病**）
+
+「同一条规则在两层各写一份，然后漂移」——**已登记过 7 次**。
+`11X0-H` §2.1 发现的 `escape_llvm`/`stable_hash` 重复实现**就是这个病**，
+只是还没发作。**解耦时如果发现重复实现，顺手合并掉**，别把它搬进新结构里固化下来。
+
+---
+
 ## 相关页面
 
 - [09R2E. 研究编码器模块解耦交接记录](09r2e-research-encoder-decoupling.md) —— **本批的模板**
@@ -226,3 +334,5 @@ dynamic/*   可以 use crate::ir::{LlvmModule, CodegenOptions, ...}
 - [10A. LLVM 原生构建闭环](10a-n0-native-closure.md) —— 本模块的来源与 `CODEGEN_VERSION`
 - [10B. N0-B Runtime ABI 交接文档](10b-n0-runtime-abi.md) —— 动态值的 ABI 形状
 - [00E. 单文件行数门禁交接](00e-file-size-gate.md) —— `A0-SIZE-001` 与豁免机制
+- [00A.1 工作区与质量门禁](00a-a0-workspace-and-checkers.md) —— `check:lock` 的判据（§9.3）
+- [11X0-G. `checker.rs` 解耦交接](11x0g-type-checker-decoupling.md) —— 上一批，其收尾见 §8
