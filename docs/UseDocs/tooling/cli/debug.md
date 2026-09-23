@@ -40,5 +40,8 @@ related:
 
 独立分发目录随 `xiao-core` 一并携带 `xiao-diagnostics`。调试原生构建的旁置
 `<可执行文件>.xiao-debug.json` 是持久激活位；普通构建不会生成该文件，也不会因 `[debug]`
-配置自行开窗。激活位格式和读取 API 位于 `xiao-diagnostics::window`，`xiao build` 命令本身
-仍归 X0-E。
+配置自行开窗。激活位格式和读取 API 位于 `xiao-diagnostics::window`。X0-E 已接入
+`xiao build`：调试构建会把 `xiao-diagnostics` 复制到可执行文件目录，并把启动 shim 链接
+进原生入口。Windows shim 使用新控制台并等待诊断进程写入一次性就绪标记；创建失败、诊断
+进程提前退出或就绪超时都会在执行用户代码前返回 `X11-DIAGNOSTIC-START-001`。构建用法和
+工具链环境变量见 [`xiao build`](build.md)。

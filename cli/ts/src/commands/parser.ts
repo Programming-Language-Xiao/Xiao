@@ -17,7 +17,7 @@ export type ParsedCommand =
   | { kind: "run"; file: string; options: GlobalCliOptions }
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
   | { kind: "test"; project?: string; options: GlobalCliOptions }
-  | { kind: "build"; args: readonly string[]; options: GlobalCliOptions }
+  | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; optimizationLevel: 0; args: readonly string[]; options: GlobalCliOptions }
   | { kind: "repl"; options: GlobalCliOptions };
 
 /** 参数解析异常。 */
@@ -58,7 +58,7 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     if (rest.length > 1) throw new CliArgumentError("test 最多接受一个项目路径");
     return { kind: "test", project: rest[0], options };
   }
-  if (command === "build") return { kind: "build", args: rest, options };
+  if (command === "build") return parseBuild(rest, options);
   if (command.endsWith(".xiao")) {
     if (rest.length > 0) throw new CliArgumentError("源码快捷运行只接受一个 .xiao 文件");
     return { kind: "run", file: command, options };
@@ -76,7 +76,7 @@ export function helpText(): string {
     "  xiao <file.xiao> [-debug]                运行源码快捷方式",
     "  xiao config [--global] <key.path> <value>",
     "  xiao test                                已登记，测试框架待后续批次",
-    "  xiao build ...                           X0-E 尚未实现",
+    "  xiao build -o <output> <file.xiao> [-debug] [--emit-llvm <path>] [--json]",
     "  xiao --help | --version",
     "",
     "当前阶段不启动 REPL；无参数或 --inLF 会给出稳定的未实现诊断。",
@@ -88,6 +88,66 @@ function parseRun(args: readonly string[], options: GlobalCliOptions): ParsedCom
   if (args.length !== 1) throw new CliArgumentError("run 需要且只需要一个 .xiao 文件");
   if (!args[0].toLowerCase().endsWith(".xiao")) throw new CliArgumentError("run 的输入必须是 .xiao 文件");
   return { kind: "run", file: args[0], options };
+}
+
+/** 解析已经冻结的原生构建参数。 */
+function parseBuild(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  let output: string | undefined;
+  let llvmIrOutput: string | null = null;
+  let optimizationLevel: 0 = 0;
+  const positional: string[] = [];
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === "-o" || argument === "--output") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("-")) throw new CliArgumentError(`${argument} 需要一个输出路径`);
+      output = value;
+      index += 1;
+      continue;
+    }
+    if (argument.startsWith("-o=") || argument.startsWith("--output=")) {
+      const value = argument.slice(argument.indexOf("=") + 1);
+      if (!value) throw new CliArgumentError(`${argument.slice(0, argument.indexOf("="))} 需要一个输出路径`);
+      output = value;
+      continue;
+    }
+    if (argument === "--emit-llvm") {
+      const value = args[index + 1];
+      if (!value || value.startsWith("-")) throw new CliArgumentError("--emit-llvm 需要一个输出路径");
+      llvmIrOutput = value;
+      index += 1;
+      continue;
+    }
+    if (argument.startsWith("--emit-llvm=")) {
+      const value = argument.slice("--emit-llvm=".length);
+      if (!value) throw new CliArgumentError("--emit-llvm 需要一个输出路径");
+      llvmIrOutput = value;
+      continue;
+    }
+    if (argument === "-O0") {
+      optimizationLevel = 0;
+      continue;
+    }
+    if (/^-O\d+$/u.test(argument) || argument.startsWith("-O")) {
+      throw new CliArgumentError(`当前只支持 -O0，不支持优化级别：${argument}`);
+    }
+    if (argument.startsWith("-")) throw new CliArgumentError(`build 不支持选项：${argument}`);
+    positional.push(argument);
+  }
+  if (positional.length !== 1) throw new CliArgumentError("build 需要且只需要一个 .xiao 文件");
+  const file = positional[0];
+  if (!file.toLowerCase().endsWith(".xiao")) throw new CliArgumentError("build 的输入必须是 .xiao 文件");
+  const stem = file.replaceAll("\\", "/").slice(file.replaceAll("\\", "/").lastIndexOf("/") + 1).replace(/\.xiao$/iu, "") || "main";
+  const defaultName = process.platform === "win32" ? `${stem}.exe` : stem;
+  return {
+    kind: "build",
+    file,
+    output: output ?? `build/${defaultName}`,
+    llvmIrOutput,
+    optimizationLevel,
+    args,
+    options,
+  };
 }
 
 /** 解析配置范围、点分路径和值。 */

@@ -87,6 +87,24 @@ fn compile_scalar_program() -> IrProgram {
 }
 
 #[test]
+/// 调试入口必须先调用原生启动 shim，再进入用户入口。
+fn debug_startup_shim_precedes_user_entry() {
+    let options = CodegenOptions::for_target(TargetDescription::windows_x86_64())
+        .with_debug_startup("xiao-diagnostics.exe");
+    let module = lower_program(&compile_scalar_program(), &options).expect("应生成调试 IR");
+    let main = module
+        .text
+        .split("define i32 @main() {")
+        .nth(1)
+        .expect("main");
+    let startup = main
+        .find("call i32 @xiao_native_debug_start()")
+        .expect("启动 shim");
+    let user = main.find("call void @xiao_entry()").expect("用户入口");
+    assert!(startup < user, "启动 shim 必须位于用户入口之前");
+}
+
+#[test]
 /// 同一前端 IR 应生成固定宽度标量、函数和入口。
 fn lowers_scalar_calls_and_control_flow() {
     let total_name = || IrExpression {
@@ -534,7 +552,10 @@ fn emits_terminated_elif_false_path() {
 /// 外部工具路径由调用方注入；缺失工具会返回稳定的结构化错误。
 fn missing_toolchain_is_structured() {
     let program = compile_scalar_program();
-    let output = std::env::temp_dir().join("xiao-n0-a-missing.exe");
+    let root = std::env::temp_dir().join(format!("xiao-n0-a-missing-{}", std::process::id()));
+    let output = root.join("missing.exe");
+    let ir_output = root.join("missing.ll");
+    let _ = std::fs::remove_dir_all(&root);
     let request = xiao_codegen_llvm::BuildRequest::new(
         program,
         TargetDescription::new(
@@ -545,12 +566,15 @@ fn missing_toolchain_is_structured() {
         )
         .expect("目标"),
         Toolchain::new("xiao-clang-that-does-not-exist"),
-        output,
-    );
+        &output,
+    )
+    .with_llvm_ir_output(&ir_output);
     let error = NativeBuild::new()
         .build(&request)
         .expect_err("应报告工具缺失");
     assert!(matches!(error, CodegenError::ToolchainUnavailable { .. }));
+    assert!(!output.exists(), "失败构建不能留下原生半成品");
+    assert!(!ir_output.exists(), "失败构建不能提前提交 LLVM 半成品");
 }
 
 #[test]

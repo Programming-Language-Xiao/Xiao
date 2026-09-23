@@ -3,10 +3,11 @@
 import { readFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 
-import { writeConfigValue, type ConfigEditorOptions } from "../config/editor.ts";
+import { findProjectConfig, writeConfigValue, type ConfigEditorOptions } from "../config/editor.ts";
 import { ProtocolClient, type CoreClientOptions } from "../protocol/client.ts";
 import { renderCliError, renderProtocolResponse, CLI_EXIT_CODES, type DiagnosticRenderOptions, type RenderedDiagnostic } from "../diagnostics/render.ts";
 import { helpText as parserHelpText, type ParsedCommand } from "./parser.ts";
+import { discoverToolchainWithMetadata, ToolchainDiscoveryError } from "../platform/toolchain.ts";
 
 /** 命令执行上下文；IO 由入口注入，便于管道和测试。 */
 export interface CommandContext {
@@ -20,6 +21,8 @@ export interface CommandContext {
   isTTY?: boolean;
   /** 测试用核心启动器。 */
   spawnProcess?: CoreClientOptions["spawnProcess"];
+  /** CLI 可执行文件路径，用于工具链/诊断组件相邻发现。 */
+  executablePath?: string;
 }
 
 /** 命令本身尚未进入本批的稳定诊断。 */
@@ -52,7 +55,7 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
     return renderCliError(new CliCommandError("X11-CLI-TEST-001", "xiao test 已登记但尚无项目测试语义；请使用 cargo test 或 bun test", CLI_EXIT_CODES.usage, { status: "registered_unimplemented", project: command.project ?? null }), renderOptions(command.options, context));
   }
   if (command.kind === "build") {
-    return renderCliError(new CliCommandError("X11-CLI-BUILD-001", "xiao build 的主机工具链发现和原生构建属于 X0-E，当前尚未实现", CLI_EXIT_CODES.usage, { status: "x0e_unimplemented", arguments: command.args, debug: command.options.debug }), renderOptions(command.options, context));
+    return executeBuild(command, context);
   }
   if (command.kind === "config") return executeConfig(command, context);
   return executeRun(command, context);
@@ -84,6 +87,52 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
     return renderProtocolResponse(result.response, renderOptions(command.options, context));
   } catch (error) {
     return renderCliError(error, renderOptions(command.options, context));
+  }
+}
+
+/** 读取源码、发现工具链并通过协议执行 `build`。 */
+async function executeBuild(command: Extract<ParsedCommand, { kind: "build" }>, context: CommandContext): Promise<RenderedDiagnostic> {
+  const cwd = context.cwd ?? process.cwd();
+  const path = resolve(cwd, command.file);
+  const options = renderOptions(command.options, context);
+  let source: string;
+  try {
+    const bytes = await readFile(path);
+    source = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch (error) {
+    return renderCliError(new CliCommandError("X11-CLI-FILE-001", `无法读取源码 ${path}：${String(error)}`, CLI_EXIT_CODES.usage, { path }), options);
+  }
+  try {
+    const configPath = await findProjectConfig(cwd);
+    const configText = configPath === null ? null : await readFile(configPath, "utf8");
+    const toolchain = await discoverToolchainWithMetadata({
+      cwd,
+      env: context.env,
+      executablePath: context.executablePath,
+      requireDiagnostics: command.options.debug,
+    });
+    const client = new ProtocolClient({
+      cwd,
+      env: context.env,
+      overridePath: context.corePath,
+      executablePath: context.executablePath,
+      spawnProcess: context.spawnProcess,
+    });
+    const result = await client.buildSource(source, {
+      path,
+      module: moduleFromPath(path),
+      output: resolve(cwd, command.output),
+      llvmIrOutput: command.llvmIrOutput === null ? null : resolve(cwd, command.llvmIrOutput),
+      toolchain: toolchain.toolchain,
+      debug: command.options.debug,
+      configText,
+    });
+    return renderProtocolResponse(result.response, options);
+  } catch (error) {
+    if (error instanceof ToolchainDiscoveryError) {
+      return renderCliError(error, { ...options, json: command.options.json });
+    }
+    return renderCliError(error, options);
   }
 }
 

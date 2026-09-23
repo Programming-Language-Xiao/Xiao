@@ -22,6 +22,17 @@ describe("xiao 命令解析", () => {
     expect(parseArguments(["-debug"]).kind).toBe("repl");
   });
 
+  test("build 默认产物、LLVM 输出和优化级别保持冻结", () => {
+    const command = parseArguments(["build", "src/main.xiao", "--emit-llvm", "out/main.ll", "-debug"]);
+    expect(command).toMatchObject({ kind: "build", file: "src/main.xiao", llvmIrOutput: "out/main.ll" });
+    if (command.kind === "build") {
+      expect(command.output).toMatch(/(?:^|[\\/])build[\\/]main(?:\.exe)?$/u);
+      expect(command.optimizationLevel).toBe(0);
+      expect(command.options.debug).toBe(true);
+    }
+    expect(() => parseArguments(["build", "main.xiao", "-O1"])).toThrow("X11-CLI-ARG-001");
+  });
+
   test("非法参数不依赖本地化文本判断", () => {
     expect(() => parseArguments(["run"])).toThrow(CliArgumentError);
     expect(() => parseArguments(["--color=rainbow"])).toThrow("X11-CLI-ARG-001");

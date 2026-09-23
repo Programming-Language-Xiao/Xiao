@@ -16,6 +16,8 @@ export interface CliIo {
   env?: NodeJS.ProcessEnv;
   /** 输出 TTY 能力覆盖。 */
   isTTY?: boolean;
+  /** CLI 可执行文件路径覆盖，供相邻工具链发现和测试注入。 */
+  executablePath?: string;
 }
 
 /** CLI 可写输出流的最小能力。 */
@@ -33,6 +35,7 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
     cwd: io.cwd ?? process.cwd(),
     env,
     isTTY: io.isTTY ?? Boolean(stdout.isTTY),
+    executablePath: io.executablePath ?? process.execPath,
   };
   try {
     const command = parseArguments(argv);

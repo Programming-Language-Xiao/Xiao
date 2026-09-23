@@ -39,8 +39,12 @@ CLI 不从人类可读文案猜测成败。进程码直接取协议响应的 `ex
 `xiao config [--global] CLI.git.summary true|false` 和
 `xiao config [--global] language.locale zh|zh-CN|en|en-US` 使用结构化、原子写回，保留
 注释和无关配置。`xiao test` 目前只登记命令并给出 `X11-CLI-TEST-001`；Rust 使用
-`cargo test`，TypeScript 使用 `bun test`。`xiao build`、无参数 REPL 和 `--inLF` 仍给出稳定
-未实现诊断；`-debug` 已接入 `run` 与源码快捷运行，诊断窗口行为见[-debug 诊断窗口](debug.md)。
+`cargo test`，TypeScript 使用 `bun test`。`xiao build` 的输入、输出和工具链要求见
+[`xiao build`](build.md)；无参数 REPL 和 `--inLF` 仍给出稳定未实现诊断。`-debug` 已接入
+`run` 与源码快捷运行，诊断窗口行为见[-debug 诊断窗口](debug.md)。
+
+`xiao test` 只完成命令登记，返回 `X11-CLI-TEST-001`；项目测试文件和结果协议由 X0-T 冻结后
+再接入，不能把 Rust/TypeScript 的工程测试当作 Xiao 项目测试。
 
 ## 平台说明
 

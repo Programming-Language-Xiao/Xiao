@@ -42,6 +42,9 @@ bun run build -- --outdir release/xiao --core C:/xiao/xiao-core.exe
 Bun 或 Node.js。`xiao-core` 与 `xiao-diagnostics` 不嵌入 CLI，而是作为同目录资源分发，
 清单记录目标和发现来源。
 
+源码原生构建使用 [`xiao build`](build.md)。它复用本页的相邻目录与 `PATH` 发现规则，并额外
+发现 clang、Runtime 和调试组件；独立 CLI 能启动不代表 Linux/macOS 原生构建已经验收。
+
 核心发现顺序固定为：
 
 1. `XIAO_CORE_PATH` 显式覆盖；

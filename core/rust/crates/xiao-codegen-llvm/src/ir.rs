@@ -31,6 +31,15 @@ pub struct CodegenOptions {
     pub target: TargetDescription,
     /// 是否把入口观察值映射到 `main` 的返回码。
     pub entry_observation: EntryObservation,
+    /// 调试原生产物启动 shim；普通构建为 `None`。
+    pub debug_startup: Option<NativeStartup>,
+}
+
+/// 原生产物启动 shim 的静态配置。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct NativeStartup {
+    /// 随产物携带的独立诊断进程路径。
+    pub diagnostics_path: String,
 }
 
 impl CodegenOptions {
@@ -40,6 +49,7 @@ impl CodegenOptions {
         Self {
             target,
             entry_observation: EntryObservation::Ignore,
+            debug_startup: None,
         }
     }
 
@@ -47,6 +57,15 @@ impl CodegenOptions {
     #[must_use]
     pub const fn with_entry_observation(mut self, observation: EntryObservation) -> Self {
         self.entry_observation = observation;
+        self
+    }
+
+    /// 为调试构建登记原生诊断启动路径。
+    #[must_use]
+    pub fn with_debug_startup(mut self, diagnostics_path: impl Into<String>) -> Self {
+        self.debug_startup = Some(NativeStartup {
+            diagnostics_path: diagnostics_path.into(),
+        });
         self
     }
 }
@@ -220,6 +239,9 @@ impl<'a> ModuleGenerator<'a> {
     /// 生成声明、函数、入口和可追踪指纹。
     fn generate(&mut self) -> Result<LlvmModule> {
         self.declaration("declare void @llvm.trap()");
+        if self.options.debug_startup.is_some() {
+            self.declaration("declare i32 @xiao_native_debug_start()");
+        }
         self.collect_functions()?;
         let mut definitions = Vec::new();
         for statement in &self.program.body {
@@ -413,14 +435,23 @@ impl<'a> ModuleGenerator<'a> {
         }
         function.emit_line("}");
         let mut output = function.lines.join("\n") + "\n\n";
-        if observed {
-            output.push_str("define i32 @main() {\nentry:\n  %xiao_exit = call i64 @xiao_entry()\n  %xiao_exit_code = trunc i64 %xiao_exit to i32\n  ret i32 %xiao_exit_code\n}\n");
-        } else {
-            output.push_str(
-                "define i32 @main() {\nentry:\n  call void @xiao_entry()\n  ret i32 0\n}\n",
-            );
-        }
+        output.push_str(&self.main_adapter(observed));
         Ok(output)
+    }
+
+    /// 发射带可选调试启动检查的 C `main` 适配器。
+    fn main_adapter(&self, observed: bool) -> String {
+        let entry = if observed {
+            "  %xiao_exit = call i64 @xiao_entry()\n  %xiao_exit_code = trunc i64 %xiao_exit to i32\n  ret i32 %xiao_exit_code\n"
+        } else {
+            "  call void @xiao_entry()\n  ret i32 0\n"
+        };
+        if self.options.debug_startup.is_none() {
+            return format!("define i32 @main() {{\nentry:\n{entry}}}\n");
+        }
+        format!(
+            "define i32 @main() {{\nentry:\n  %xiao_debug_status = call i32 @xiao_native_debug_start()\n  %xiao_debug_ok = icmp eq i32 %xiao_debug_status, 0\n  br i1 %xiao_debug_ok, label %xiao.user, label %xiao.debug.fail\nxiao.user:\n{entry}xiao.debug.fail:\n  ret i32 %xiao_debug_status\n}}\n"
+        )
     }
 
     /// 登记一条去重的 LLVM 声明。

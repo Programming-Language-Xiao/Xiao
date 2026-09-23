@@ -22,7 +22,7 @@ pub use build::{BuildRequest, NativeArtifact, NativeBuild, NativeRun, NativeRunR
 /// 后端失败类型和统一结果别名。
 pub use error::{CodegenError, Result};
 /// LLVM 文本降低选项、入口观察策略和降低入口。
-pub use ir::{CodegenOptions, EntryObservation, LlvmModule, validate_program};
+pub use ir::{CodegenOptions, EntryObservation, LlvmModule, NativeStartup, validate_program};
 /// 目标字节序、对象格式和规范化目标描述。
 pub use target::{Endian, ObjectFormat, TargetDescription};
 /// 外部 LLVM 工具链描述、版本和构建指纹。

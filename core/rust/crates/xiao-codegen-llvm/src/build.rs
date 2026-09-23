@@ -1,7 +1,7 @@
 //! LLVM 文本验证、编译、链接和运行的内部构建驱动器。
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use xiao_ir::IrProgram;
@@ -91,21 +91,6 @@ impl NativeBuild {
     /// 执行 LLVM 文本验证、编译和链接。
     pub fn build(&self, request: &BuildRequest) -> Result<NativeArtifact> {
         let module = lower_program(&request.program, &request.options)?;
-        if let Some(path) = &request.llvm_ir_output {
-            if let Some(parent) = path
-                .parent()
-                .filter(|parent| !parent.as_os_str().is_empty())
-            {
-                fs::create_dir_all(parent).map_err(|error| CodegenError::Io {
-                    path: parent.to_path_buf(),
-                    message: error.to_string(),
-                })?;
-            }
-            fs::write(path, &module.text).map_err(|error| CodegenError::Io {
-                path: path.clone(),
-                message: error.to_string(),
-            })?;
-        }
         if module.uses_runtime && request.toolchain.runtime_library.is_none() {
             return Err(CodegenError::ToolchainUnavailable {
                 tool: "xiao-runtime".to_owned(),
@@ -113,7 +98,25 @@ impl NativeBuild {
                     .to_owned(),
             });
         }
-        let executable = if module.uses_runtime {
+        let executable = if let Some(startup) = &request.options.debug_startup {
+            if startup.diagnostics_path.trim().is_empty() {
+                return Err(CodegenError::ToolchainUnavailable {
+                    tool: "xiao-diagnostics".to_owned(),
+                    message: "调试构建缺少独立诊断进程路径".to_owned(),
+                });
+            }
+            request.toolchain.compile_with_startup_shim(
+                &module.text,
+                &request.options.target,
+                &request.output,
+                module
+                    .uses_runtime
+                    .then_some(request.toolchain.runtime_library.as_deref())
+                    .flatten(),
+                module.uses_runtime,
+                std::path::Path::new(&startup.diagnostics_path),
+            )?
+        } else if module.uses_runtime {
             request.toolchain.compile_with_runtime(
                 &module.text,
                 &request.options.target,
@@ -127,6 +130,12 @@ impl NativeBuild {
                 &request.output,
             )?
         };
+        if let Some(path) = &request.llvm_ir_output
+            && let Err(error) = write_llvm_artifact(path, &module.text)
+        {
+            let _ = fs::remove_file(&executable);
+            return Err(error);
+        }
         let fingerprint = request
             .toolchain
             .fingerprint(&request.options.target, CODEGEN_VERSION);
@@ -146,6 +155,42 @@ impl NativeBuild {
     ) -> Result<()> {
         toolchain.validate_llvm_ir(text, target)
     }
+}
+
+/// 在原生链接成功后原子提交可选 LLVM 文本，避免失败构建留下半成品。
+fn write_llvm_artifact(path: &Path, text: &str) -> Result<()> {
+    if let Some(parent) = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+    {
+        fs::create_dir_all(parent).map_err(|error| CodegenError::Io {
+            path: parent.to_path_buf(),
+            message: error.to_string(),
+        })?;
+    }
+    let temporary = PathBuf::from(format!("{}.tmp-{}", path.display(), std::process::id()));
+    fs::write(&temporary, text).map_err(|error| CodegenError::Io {
+        path: temporary.clone(),
+        message: error.to_string(),
+    })?;
+    if cfg!(windows)
+        && let Err(error) = fs::remove_file(path)
+        && error.kind() != std::io::ErrorKind::NotFound
+    {
+        let _ = fs::remove_file(&temporary);
+        return Err(CodegenError::Io {
+            path: path.to_path_buf(),
+            message: error.to_string(),
+        });
+    }
+    if let Err(error) = fs::rename(&temporary, path) {
+        let _ = fs::remove_file(&temporary);
+        return Err(CodegenError::Io {
+            path: path.to_path_buf(),
+            message: error.to_string(),
+        });
+    }
+    Ok(())
 }
 
 /// 一次原生可执行文件的运行结果。

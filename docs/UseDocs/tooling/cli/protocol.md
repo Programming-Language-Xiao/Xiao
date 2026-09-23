@@ -39,8 +39,9 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 独立的 8 字节长度帧，不复用核心 stdout。构建响应在该位开启时增加旁置激活位摘要，普通
 构建的 `diagnostic_activation` 为空。终端窗口细节见[-debug 诊断窗口](debug.md)。
 
-X0-B 的 `xiao run` 已消费这条协议；命令行为、非 TTY 呈现和 `print` 尚未实现的限制见
-[xiao run 与 CLI 外壳](shell.md)，分发目录和核心发现见[独立打包与核心发现](packaging.md)。
+X0-B 的 `xiao run` 和 X0-E 的 `xiao build` 已消费这条协议；命令行为、非 TTY 呈现和 `print`
+尚未实现的限制见[xiao run 与 CLI 外壳](shell.md)，构建参数与工具链发现见[`xiao build`](build.md)，
+分发目录和核心发现见[独立打包与核心发现](packaging.md)。
 
 ## 共享契约
 

@@ -8,3 +8,6 @@
 X0-A 的 `protocol.rs` 提供长度前缀 JSON、统一 `core_version` 协商、结构化错误/退出码/事件
 映射和可取消的 stdin/stdout 服务；`protocol_main.rs` 是 `xiao-core` 进程入口。协议只调用
 `FrontendVmDriver`/`FrontendNativeDriver`，不在边界层复制语言语义。
+
+X0-E 在同一协议中接入真实源码原生构建、运行时配置固化和诊断组件携带；对应的协议边界
+测试拆在 `protocol_tests.rs`，避免传输与构建编排文件超过仓库单文件尺寸门禁。

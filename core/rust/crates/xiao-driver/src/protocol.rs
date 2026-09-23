@@ -20,6 +20,7 @@ use xiao_codegen_llvm::{
     CODEGEN_VERSION, CodegenOptions, Endian, ObjectFormat, TargetDescription, Toolchain,
     ToolchainVersions,
 };
+use xiao_config::{ConfigDocument, ConfigValue, parse_config_text};
 use xiao_diagnostics::window::{
     DIAGNOSTIC_START_CODE, DiagnosticActivation, activation_path, write_activation,
 };
@@ -263,6 +264,12 @@ pub struct ToolchainSpec {
     pub runtime_library: Option<String>,
     /// 链接所需的原生库参数。
     pub native_static_libraries: Vec<String>,
+    /// Rust 编译器路径；动态 Runtime 构建时用于查询 native-static-libs。
+    #[serde(default)]
+    pub rustc: Option<String>,
+    /// 调试原生产物启动 shim 使用的诊断进程路径。
+    #[serde(default)]
+    pub diagnostics_path: Option<String>,
     /// 已探测的工具版本文本。
     pub versions: ToolchainVersionsSpec,
 }
@@ -277,6 +284,7 @@ pub struct ToolchainVersionsSpec {
     /// llc 版本首行。
     pub llc: Option<String>,
     /// rustc 版本首行。
+    #[serde(default)]
     pub rustc: Option<String>,
 }
 
@@ -339,6 +347,9 @@ pub enum ProtocolRequest {
         llvm_ir_output: Option<String>,
         /// 外部工具链描述。
         toolchain: ToolchainSpec,
+        /// 可选的原始 config.xiao；由 Rust 配置解析器验证并固化。
+        #[serde(default)]
+        config_text: Option<String>,
     },
     /// 请求取消另一个正在执行的请求。
     Cancel {
@@ -602,6 +613,23 @@ pub struct ProtocolArtifact {
     /// `-debug` 构建生成的持久激活位；普通构建为空。
     #[serde(default)]
     pub diagnostic_activation: Option<ProtocolDiagnosticActivation>,
+    /// 随调试产物复制的独立诊断组件路径。
+    #[serde(default)]
+    pub diagnostics_component: Option<String>,
+    /// 构建时固化的运行时配置旁置文件。
+    #[serde(default)]
+    pub runtime_config: Option<ProtocolRuntimeConfig>,
+}
+
+/// 固化运行时配置的旁置文件摘要。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ProtocolRuntimeConfig {
+    /// 配置摘要文件路径。
+    pub path: String,
+    /// 固化格式版本。
+    pub format_version: u16,
+    /// 是否允许普通命令行覆盖。
+    pub cli_overrides: bool,
 }
 
 /// 产物中诊断激活元数据的协议摘要。
@@ -709,6 +737,15 @@ impl ProtocolError {
     fn version(message: impl Into<String>) -> Self {
         Self {
             code: VERSION_MISMATCH_CODE,
+            field: None,
+            message: message.into(),
+        }
+    }
+
+    /// 创建构建阶段错误。
+    fn build(message: impl Into<String>) -> Self {
+        Self {
+            code: BUILD_ERROR_CODE,
             field: None,
             message: message.into(),
         }
@@ -1339,7 +1376,10 @@ fn executed_response(
 }
 
 /// 将调用方注入的工具链字段转换为 LLVM 驱动器对象。
-fn build_toolchain(spec: &ToolchainSpec) -> Result<Toolchain, ProtocolError> {
+fn build_toolchain(
+    spec: &ToolchainSpec,
+    target: &TargetDescription,
+) -> Result<Toolchain, ProtocolError> {
     if spec.clang.trim().is_empty() {
         return Err(ProtocolError::request(
             "toolchain.clang",
@@ -1362,7 +1402,19 @@ fn build_toolchain(spec: &ToolchainSpec) -> Result<Toolchain, ProtocolError> {
     if let Some(path) = &spec.runtime_library {
         toolchain = toolchain.with_runtime_library(path);
     }
-    Ok(toolchain.with_native_static_libraries(spec.native_static_libraries.clone()))
+    let mut toolchain =
+        toolchain.with_native_static_libraries(spec.native_static_libraries.clone());
+    if toolchain.runtime_library.is_some() && toolchain.native_static_libraries.is_empty() {
+        let Some(rustc) = spec.rustc.as_deref() else {
+            return Err(ProtocolError::build(
+                "动态 Runtime 构建需要 rustc 路径以查询 native-static-libs",
+            ));
+        };
+        toolchain = toolchain
+            .probe_native_static_libraries(rustc, target)
+            .map_err(|error| ProtocolError::build(format!("无法查询 Rust 原生库清单：{error}")))?;
+    }
+    Ok(toolchain)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -1376,6 +1428,7 @@ fn build_response(
     output: String,
     llvm_ir_output: Option<String>,
     toolchain: ToolchainSpec,
+    config_text: Option<String>,
     cancellation: &CancellationToken,
 ) -> ProtocolResponse {
     if cancellation.is_cancelled() {
@@ -1428,8 +1481,16 @@ fn build_response(
         Ok(target) => target,
         Err(error) => return protocol_error_response(Some(request_id), &error),
     };
-    let toolchain = match build_toolchain(&toolchain) {
+    let diagnostics_source = toolchain.diagnostics_path.clone();
+    let diagnostics_path = diagnostics_source
+        .as_deref()
+        .map(|path| diagnostics_component_path(&output, path));
+    let toolchain = match build_toolchain(&toolchain, &target_description) {
         Ok(toolchain) => toolchain,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let frozen_config = match freeze_runtime_config(&output, config_text.as_deref()) {
+        Ok(config) => config,
         Err(error) => return protocol_error_response(Some(request_id), &error),
     };
     let frontend = frontend_request(&source, &language_version, &target);
@@ -1439,7 +1500,22 @@ fn build_response(
         toolchain,
         output.clone(),
     )
-    .with_codegen_options(CodegenOptions::for_target(target_description));
+    .with_codegen_options({
+        let options = CodegenOptions::for_target(target_description);
+        if optimization.debug {
+            let Some(path) = diagnostics_path.as_deref() else {
+                return protocol_error_response(
+                    Some(request_id),
+                    &ProtocolError::build(
+                        "调试构建缺少 xiao-diagnostics 路径；请随分发包携带诊断组件",
+                    ),
+                );
+            };
+            options.with_debug_startup(path)
+        } else {
+            options
+        }
+    });
     if let Some(path) = &llvm_ir_output {
         request = request.with_llvm_ir_output(path);
     }
@@ -1449,8 +1525,49 @@ fn build_response(
     match FrontendNativeDriver::new().build(&request) {
         Ok(result) => {
             if cancellation.is_cancelled() {
+                cleanup_native_outputs(&result.native.executable, llvm_ir_output.as_deref());
                 return cancelled_error_response(request_id);
             }
+            let mut staged_diagnostics_component = false;
+            let diagnostics_component = if optimization.debug {
+                let Some(source) = diagnostics_source.as_deref() else {
+                    return protocol_error_response(
+                        Some(request_id),
+                        &ProtocolError::build("调试构建缺少 xiao-diagnostics 源文件路径"),
+                    );
+                };
+                let destination = diagnostics_path
+                    .as_deref()
+                    .expect("调试构建已计算诊断组件目标路径");
+                match stage_diagnostics_component(source, destination) {
+                    Ok(staged) => staged_diagnostics_component = staged,
+                    Err(error) => {
+                        cleanup_native_outputs(
+                            &result.native.executable,
+                            llvm_ir_output.as_deref(),
+                        );
+                        return ProtocolResponse::Error {
+                            request_id: Some(request_id),
+                            error: protocol_error_body(
+                                DIAGNOSTIC_START_CODE,
+                                "x11.diagnostics.component_copy_failed",
+                                format!("无法把 xiao-diagnostics 随产物携带：{error}"),
+                                Some("build".to_owned()),
+                                Some("检查诊断组件路径和产物目录权限后重试".to_owned()),
+                                BTreeMap::from([
+                                    ("source".to_owned(), json!(source)),
+                                    ("destination".to_owned(), json!(destination)),
+                                ]),
+                            ),
+                            report: None,
+                            exit_code: ExitCode::ArtifactRejected.as_process_code(),
+                        };
+                    }
+                }
+                Some(destination.to_owned())
+            } else {
+                None
+            };
             let diagnostic_activation = if optimization.debug {
                 let activation = DiagnosticActivation {
                     format_version: 1,
@@ -1472,6 +1589,15 @@ fn build_response(
                         hooks: activation.hooks,
                     }),
                     Err(error) => {
+                        cleanup_native_outputs(
+                            &result.native.executable,
+                            llvm_ir_output.as_deref(),
+                        );
+                        if staged_diagnostics_component
+                            && let Some(component) = &diagnostics_component
+                        {
+                            let _ = fs::remove_file(component);
+                        }
                         return ProtocolResponse::Error {
                             request_id: Some(request_id),
                             error: protocol_error_body(
@@ -1489,6 +1615,50 @@ fn build_response(
                 }
             } else {
                 None
+            };
+            let runtime_config = match frozen_config {
+                Some(config) => match write_runtime_config(&result.native.executable, &config) {
+                    Ok(summary) => Some(summary),
+                    Err(error) => {
+                        cleanup_native_outputs(
+                            &result.native.executable,
+                            llvm_ir_output.as_deref(),
+                        );
+                        if staged_diagnostics_component
+                            && let Some(component) = &diagnostics_component
+                        {
+                            let _ = fs::remove_file(component);
+                        }
+                        if let Some(activation) = &diagnostic_activation {
+                            let _ = fs::remove_file(&activation.path);
+                        }
+                        return protocol_error_response(Some(request_id), &error);
+                    }
+                },
+                None => {
+                    let path = runtime_config_path(&result.native.executable);
+                    if let Err(error) = fs::remove_file(&path)
+                        && error.kind() != std::io::ErrorKind::NotFound
+                    {
+                        cleanup_native_outputs(
+                            &result.native.executable,
+                            llvm_ir_output.as_deref(),
+                        );
+                        if staged_diagnostics_component
+                            && let Some(component) = &diagnostics_component
+                        {
+                            let _ = fs::remove_file(component);
+                        }
+                        if let Some(activation) = &diagnostic_activation {
+                            let _ = fs::remove_file(&activation.path);
+                        }
+                        return protocol_error_response(
+                            Some(request_id),
+                            &ProtocolError::build(format!("无法清理旧的运行时配置：{error}")),
+                        );
+                    }
+                    None
+                }
             };
             ProtocolResponse::Result {
                 request_id,
@@ -1512,6 +1682,8 @@ fn build_response(
                     uses_runtime: result.native.module.uses_runtime,
                     runtime_components: result.native.module.runtime_components,
                     diagnostic_activation,
+                    diagnostics_component,
+                    runtime_config,
                 }),
             }
         }
@@ -1545,6 +1717,184 @@ fn build_response(
             exit_code: ExitCode::ArtifactRejected.as_process_code(),
         },
     }
+}
+
+/// 构建时已验证的配置摘要；写文件延迟到原生链接成功之后。
+struct FrozenRuntimeConfig {
+    value: Value,
+}
+
+/// 计算调试组件在最终产物目录中的携带路径。
+fn diagnostics_component_path(output: &str, source: &str) -> String {
+    let output_path = PathBuf::from(output);
+    // 协议路径可能来自另一种宿主格式（例如 Windows 上收到 `C:/...`），不能只依赖
+    // 当前平台的 PathBuf 解析，否则盘符或反斜杠会被误当成文件名的一部分。
+    let name = source
+        .rsplit(['/', '\\'])
+        .find(|part| !part.is_empty())
+        .map(std::ffi::OsString::from)
+        .unwrap_or_else(|| {
+            if cfg!(windows) {
+                std::ffi::OsString::from("xiao-diagnostics.exe")
+            } else {
+                std::ffi::OsString::from("xiao-diagnostics")
+            }
+        });
+    output_path
+        .parent()
+        .unwrap_or_else(|| std::path::Path::new("."))
+        .join(name)
+        .display()
+        .to_string()
+}
+
+/// 把独立诊断进程复制到原生构建目录，使调试产物不依赖 `xiao` 启动器。
+fn stage_diagnostics_component(source: &str, destination: &str) -> std::io::Result<bool> {
+    let source_path = PathBuf::from(source);
+    let destination_path = PathBuf::from(destination);
+    let same_file = source_path == destination_path
+        || (source_path
+            .canonicalize()
+            .ok()
+            .zip(destination_path.canonicalize().ok())
+            .is_some_and(|(source, destination)| source == destination));
+    if same_file {
+        return Ok(false);
+    }
+    if let Some(parent) = destination_path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+    {
+        fs::create_dir_all(parent)?;
+    }
+    let temporary = PathBuf::from(format!(
+        "{}.tmp-{}",
+        destination_path.display(),
+        std::process::id()
+    ));
+    if let Err(error) = fs::copy(source_path, &temporary) {
+        let _ = fs::remove_file(&temporary);
+        return Err(error);
+    }
+    if cfg!(windows)
+        && let Err(error) = fs::remove_file(&destination_path)
+        && error.kind() != std::io::ErrorKind::NotFound
+    {
+        let _ = fs::remove_file(&temporary);
+        return Err(error);
+    }
+    if let Err(error) = fs::rename(&temporary, &destination_path) {
+        let _ = fs::remove_file(&temporary);
+        return Err(error);
+    }
+    Ok(true)
+}
+
+/// 清理一次失败或已取消构建已经提交的原生与 LLVM 输出。
+fn cleanup_native_outputs(executable: &std::path::Path, llvm_ir_output: Option<&str>) {
+    let _ = fs::remove_file(executable);
+    if let Some(path) = llvm_ir_output {
+        let _ = fs::remove_file(path);
+    }
+}
+
+/// 解析并校验 `config.xiao`，只保留静态配置树，不执行用户代码。
+fn freeze_runtime_config(
+    _output: &str,
+    text: Option<&str>,
+) -> Result<Option<FrozenRuntimeConfig>, ProtocolError> {
+    let Some(text) = text else {
+        return Ok(None);
+    };
+    let document = parse_config_text(text).map_err(|diagnostics| {
+        let first = diagnostics
+            .first()
+            .map(|diagnostic| format!("{}: {}", diagnostic.code(), diagnostic.message()))
+            .unwrap_or_else(|| "配置解析失败".to_owned());
+        ProtocolError::build(format!("config.xiao 校验失败：{first}"))
+    })?;
+    Ok(Some(FrozenRuntimeConfig {
+        value: config_document_value(&document),
+    }))
+}
+
+/// 把不可执行配置模型转换为确定性 JSON 值。
+fn config_document_value(document: &ConfigDocument) -> Value {
+    let tables = document
+        .tables
+        .iter()
+        .map(|(name, table)| {
+            let entries = table
+                .entries
+                .iter()
+                .map(|(key, entry)| (key.clone(), config_value(&entry.value)))
+                .collect::<serde_json::Map<_, _>>();
+            (name.clone(), Value::Object(entries))
+        })
+        .collect::<serde_json::Map<_, _>>();
+    Value::Object(serde_json::Map::from_iter([
+        ("format_version".to_owned(), json!(1)),
+        ("cli_overrides".to_owned(), json!(true)),
+        ("tables".to_owned(), Value::Object(tables)),
+    ]))
+}
+
+/// 递归转换配置字面量。
+fn config_value(value: &ConfigValue) -> Value {
+    match value {
+        ConfigValue::String(value) => Value::String(value.clone()),
+        ConfigValue::Integer(value) => json!(value),
+        ConfigValue::Float(value) => json!(value),
+        ConfigValue::Boolean(value) => json!(value),
+        ConfigValue::Array(values) => Value::Array(values.iter().map(config_value).collect()),
+        ConfigValue::Dictionary(values) => Value::Object(
+            values
+                .iter()
+                .map(|(key, value)| (key.clone(), config_value(value)))
+                .collect(),
+        ),
+    }
+}
+
+/// 将配置摘要原子地写到可执行文件旁边。
+fn write_runtime_config(
+    executable: &std::path::Path,
+    config: &FrozenRuntimeConfig,
+) -> Result<ProtocolRuntimeConfig, ProtocolError> {
+    let path = runtime_config_path(executable);
+    if let Some(parent) = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+    {
+        fs::create_dir_all(parent)
+            .map_err(|error| ProtocolError::build(format!("无法创建配置目录：{error}")))?;
+    }
+    let bytes = serde_json::to_vec_pretty(&config.value)
+        .map_err(|error| ProtocolError::build(format!("无法编码运行时配置：{error}")))?;
+    let temporary = PathBuf::from(format!("{}.tmp-{}", path.display(), std::process::id()));
+    fs::write(&temporary, [bytes.as_slice(), b"\n"].concat())
+        .map_err(|error| ProtocolError::build(format!("无法写入运行时配置：{error}")))?;
+    if cfg!(windows)
+        && let Err(error) = fs::remove_file(&path)
+        && error.kind() != std::io::ErrorKind::NotFound
+    {
+        let _ = fs::remove_file(&temporary);
+        return Err(ProtocolError::build(format!("无法替换运行时配置：{error}")));
+    }
+    if let Err(error) = fs::rename(&temporary, &path) {
+        let _ = fs::remove_file(&temporary);
+        return Err(ProtocolError::build(format!("无法提交运行时配置：{error}")));
+    }
+    Ok(ProtocolRuntimeConfig {
+        path: path.display().to_string(),
+        format_version: 1,
+        cli_overrides: true,
+    })
+}
+
+/// 返回原生可执行文件旁的运行时配置路径。
+fn runtime_config_path(executable: &std::path::Path) -> PathBuf {
+    PathBuf::from(format!("{}.xiao-runtime.json", executable.display()))
 }
 
 /// 创建统一取消响应，使用 `ArtifactRejected` 进程码。
@@ -1669,6 +2019,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             output,
             llvm_ir_output,
             toolchain,
+            config_text,
         } => {
             if let Err(error) = validate_versions(protocol_version, core_version) {
                 return protocol_error_response(Some(request_id), &error);
@@ -1685,6 +2036,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
                 output,
                 llvm_ir_output,
                 toolchain,
+                config_text,
                 &CancellationToken::new(),
             )
         }
@@ -1796,6 +2148,7 @@ fn worker_response(request: ProtocolRequest, token: CancellationToken) -> Protoc
             output,
             llvm_ir_output,
             toolchain,
+            config_text,
         } => {
             if let Err(error) = validate_versions(protocol_version, core_version) {
                 return protocol_error_response(Some(request_id), &error);
@@ -1812,6 +2165,7 @@ fn worker_response(request: ProtocolRequest, token: CancellationToken) -> Protoc
                 output,
                 llvm_ir_output,
                 toolchain,
+                config_text,
                 &token,
             )
         }
@@ -1995,254 +2349,6 @@ pub fn core_crash_response(request_id: Option<String>) -> ProtocolResponse {
 }
 
 #[cfg(test)]
+#[path = "protocol_tests.rs"]
 /// 覆盖帧边界、版本协商、取消和真实前端运行路径。
-mod tests {
-    use super::*;
-    use std::io::Cursor;
-    use std::sync::Arc;
-
-    /// 测试用的线程安全输出缓冲区。
-    #[derive(Clone, Default)]
-    struct SharedBuffer(Arc<Mutex<Vec<u8>>>);
-
-    impl Write for SharedBuffer {
-        /// 追加响应帧字节。
-        fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
-            self.0.lock().expect("buffer lock").extend_from_slice(bytes);
-            Ok(bytes.len())
-        }
-
-        /// 测试缓冲区无需额外刷新动作。
-        fn flush(&mut self) -> io::Result<()> {
-            Ok(())
-        }
-    }
-
-    /// 构造一条正确版本的 hello 请求。
-    fn hello() -> ProtocolRequest {
-        ProtocolRequest::Hello {
-            request_id: "hello-1".to_owned(),
-            protocol_version: PROTOCOL_VERSION,
-            core_version: CORE_VERSION,
-        }
-    }
-
-    #[test]
-    /// 长度字段固定为 8 字节大端且只计算 JSON 负载。
-    fn frame_uses_eight_byte_big_endian_payload_length() {
-        let frame = encode_frame(&hello()).expect("frame");
-        assert_eq!(
-            &frame[..FRAME_LENGTH_BYTES],
-            &[0, 0, 0, 0, 0, 0, 0, frame.len() as u8 - 8]
-        );
-        let decoded: ProtocolRequest = decode_frame(&frame[FRAME_LENGTH_BYTES..]).expect("decode");
-        assert_eq!(decoded, hello());
-    }
-
-    #[test]
-    /// 干净 EOF 可结束服务，部分长度必须拒绝。
-    fn read_frame_accepts_clean_eof_and_rejects_truncation() {
-        assert!(
-            read_frame(&mut Cursor::new(Vec::<u8>::new()))
-                .expect("eof")
-                .is_none()
-        );
-        let error = read_frame(&mut Cursor::new(vec![1, 2])).expect_err("truncated");
-        assert!(matches!(error, FrameError::TruncatedLength { read: 2 }));
-    }
-
-    #[test]
-    /// 超长帧在分配前被拒绝。
-    fn read_frame_rejects_oversized_payload_before_allocating() {
-        let mut bytes = Vec::new();
-        bytes.extend_from_slice(&((MAX_FRAME_BYTES as u64) + 1).to_be_bytes());
-        let error = read_frame(&mut Cursor::new(bytes)).expect_err("oversized");
-        assert!(matches!(error, FrameError::LengthTooLarge { .. }));
-    }
-
-    #[test]
-    /// 版本失配返回稳定机器错误码。
-    fn version_mismatch_is_machine_readable() {
-        let response = dispatch(ProtocolRequest::Hello {
-            request_id: "bad".to_owned(),
-            protocol_version: PROTOCOL_VERSION,
-            core_version: CORE_VERSION + 1,
-        });
-        let ProtocolResponse::Hello {
-            accepted, error, ..
-        } = response
-        else {
-            panic!("expected hello response");
-        };
-        assert!(!accepted);
-        assert_eq!(error.expect("error").code, VERSION_MISMATCH_CODE);
-    }
-
-    #[test]
-    /// 首帧不是 hello 时会拒绝会话，不让请求绕过版本协商。
-    fn service_requires_hello_as_first_frame() {
-        let request = ProtocolRequest::Run {
-            request_id: "run-before-hello".to_owned(),
-            protocol_version: PROTOCOL_VERSION,
-            core_version: CORE_VERSION,
-            language_version: "0.1.0".to_owned(),
-            runtime_version: "0.1.0".to_owned(),
-            target: ProtocolTarget::host(),
-            optimization: OptimizationConfig::default(),
-            source: SourceIdentity {
-                module: "main".to_owned(),
-                path: None,
-                text: "value = 1\n".to_owned(),
-            },
-            options: RunOptions::default(),
-        };
-        let mut input = encode_frame(&request).expect("run frame");
-        input.extend_from_slice(&encode_frame(&hello()).expect("hello frame"));
-        let output = SharedBuffer::default();
-        let output_view = Arc::clone(&output.0);
-        serve(Cursor::new(input), output).expect("service");
-
-        let mut cursor = Cursor::new(output_view.lock().expect("buffer lock").clone());
-        let payload = read_frame(&mut cursor)
-            .expect("error frame")
-            .expect("one response");
-        let ProtocolResponse::Error { error, .. } = decode_frame(&payload).expect("response")
-        else {
-            panic!("首帧违规应返回 error");
-        };
-        assert_eq!(error.code, VERSION_MISMATCH_CODE);
-        assert!(read_frame(&mut cursor).expect("end of session").is_none());
-    }
-
-    #[test]
-    /// 帧损坏和语义请求错误使用不同的稳定机器码。
-    fn frame_and_request_errors_keep_distinct_codes() {
-        let frame_error = decode_frame::<ProtocolRequest>(b"not-json").expect_err("bad json");
-        assert_eq!(frame_error.code(), FRAME_ERROR_CODE);
-
-        let response = dispatch(ProtocolRequest::Run {
-            request_id: "bad-source".to_owned(),
-            protocol_version: PROTOCOL_VERSION,
-            core_version: CORE_VERSION,
-            language_version: "0.1.0".to_owned(),
-            runtime_version: "0.1.0".to_owned(),
-            target: ProtocolTarget::host(),
-            optimization: OptimizationConfig::default(),
-            source: SourceIdentity {
-                module: "  ".to_owned(),
-                path: None,
-                text: "value = 1\n".to_owned(),
-            },
-            options: RunOptions::default(),
-        });
-        let ProtocolResponse::Error { error, .. } = response else {
-            panic!("无效源码身份应返回 error");
-        };
-        assert_eq!(error.code, REQUEST_ERROR_CODE);
-    }
-
-    #[test]
-    /// 取消令牌映射到冻结的产物拒绝进程码。
-    fn real_source_run_maps_cancel_to_artifact_rejected() {
-        let token = CancellationToken::new();
-        token.cancel();
-        let request = ProtocolRequest::Run {
-            request_id: "run-1".to_owned(),
-            protocol_version: PROTOCOL_VERSION,
-            core_version: CORE_VERSION,
-            language_version: "0.1.0".to_owned(),
-            runtime_version: "0.1.0".to_owned(),
-            target: ProtocolTarget::host(),
-            optimization: OptimizationConfig::default(),
-            source: SourceIdentity {
-                module: "main".to_owned(),
-                path: None,
-                text: "value = 1\n".to_owned(),
-            },
-            options: RunOptions::default(),
-        };
-        let response = worker_response(request, token);
-        let (ProtocolResponse::Result { exit_code, .. }
-        | ProtocolResponse::Error { exit_code, .. }) = response
-        else {
-            panic!("expected run response");
-        };
-        assert_eq!(exit_code, ExitCode::ArtifactRejected.as_process_code());
-    }
-
-    #[test]
-    /// 真实 Xiao 源码经前端和 VM 后返回结构化结果。
-    fn real_source_run_returns_structured_result_without_text_parsing() {
-        let response = dispatch(ProtocolRequest::Run {
-            request_id: "run-success".to_owned(),
-            protocol_version: PROTOCOL_VERSION,
-            core_version: CORE_VERSION,
-            language_version: "0.1.0".to_owned(),
-            runtime_version: "0.1.0".to_owned(),
-            target: ProtocolTarget::host(),
-            optimization: OptimizationConfig::default(),
-            source: SourceIdentity {
-                module: "main".to_owned(),
-                path: Some("main.xiao".to_owned()),
-                text: "value = 1 + 2\n".to_owned(),
-            },
-            options: RunOptions::default(),
-        });
-        let ProtocolResponse::Result {
-            exit_code,
-            exit_name,
-            metrics,
-            ..
-        } = response
-        else {
-            panic!("真实源码应产生结构化结果");
-        };
-        assert_eq!(exit_code, ExitCode::Success.as_process_code());
-        assert_eq!(exit_name, "success");
-        assert!(metrics.is_some());
-    }
-
-    #[test]
-    /// 服务入口先协商版本，再处理真实源码并确认关闭。
-    fn service_round_trips_hello_run_and_shutdown_frames() {
-        let run = ProtocolRequest::Run {
-            request_id: "service-run".to_owned(),
-            protocol_version: PROTOCOL_VERSION,
-            core_version: CORE_VERSION,
-            language_version: "0.1.0".to_owned(),
-            runtime_version: "0.1.0".to_owned(),
-            target: ProtocolTarget::host(),
-            optimization: OptimizationConfig::default(),
-            source: SourceIdentity {
-                module: "main".to_owned(),
-                path: None,
-                text: "value = 1\n".to_owned(),
-            },
-            options: RunOptions::default(),
-        };
-        let shutdown = ProtocolRequest::Shutdown {
-            request_id: "service-shutdown".to_owned(),
-            protocol_version: PROTOCOL_VERSION,
-            core_version: CORE_VERSION,
-        };
-        let mut input = encode_frame(&hello()).expect("hello frame");
-        input.extend_from_slice(&encode_frame(&run).expect("run frame"));
-        input.extend_from_slice(&encode_frame(&shutdown).expect("shutdown frame"));
-        let output = SharedBuffer::default();
-        let output_view = Arc::clone(&output.0);
-        serve(Cursor::new(input), output).expect("service");
-
-        let mut cursor = Cursor::new(output_view.lock().expect("buffer lock").clone());
-        let mut responses = Vec::new();
-        while let Some(payload) = read_frame(&mut cursor).expect("response frame") {
-            responses.push(decode_frame::<ProtocolResponse>(&payload).expect("response"));
-        }
-        assert!(
-            responses
-                .iter()
-                .any(|response| matches!(response, ProtocolResponse::Hello { accepted: true, .. }))
-        );
-        assert!(responses.iter().any(|response| matches!(response, ProtocolResponse::Result { request_id, exit_code: 0, .. } if request_id == "service-run")));
-        assert!(responses.iter().any(|response| matches!(response, ProtocolResponse::Shutdown { request_id } if request_id == "service-shutdown")));
-    }
-}
+mod tests;

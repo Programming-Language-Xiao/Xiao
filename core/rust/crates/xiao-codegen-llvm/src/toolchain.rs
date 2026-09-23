@@ -241,7 +241,7 @@ impl Toolchain {
         target: &TargetDescription,
         output: impl AsRef<Path>,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, None, false)
+        self.compile_inner(text, target, output, None, false, None)
     }
 
     /// 验证 LLVM IR 后仅链接 IR 自身；即便工具链配置过 Runtime，也不会继承它。
@@ -251,7 +251,7 @@ impl Toolchain {
         target: &TargetDescription,
         output: impl AsRef<Path>,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, None, false)
+        self.compile_inner(text, target, output, None, false, None)
     }
 
     /// 验证 LLVM IR 后调用 clang，并按需链接调用方注入的 Runtime 静态库。
@@ -262,7 +262,27 @@ impl Toolchain {
         output: impl AsRef<Path>,
         runtime_library: Option<&Path>,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, runtime_library, true)
+        self.compile_inner(text, target, output, runtime_library, true, None)
+    }
+
+    /// 验证 LLVM IR、链接 Runtime，并把调试启动 shim 链接进原生产物。
+    pub fn compile_with_startup_shim(
+        &self,
+        text: &str,
+        target: &TargetDescription,
+        output: impl AsRef<Path>,
+        runtime_library: Option<&Path>,
+        inherit_configured_runtime: bool,
+        diagnostics_path: &Path,
+    ) -> Result<PathBuf> {
+        self.compile_inner(
+            text,
+            target,
+            output,
+            runtime_library,
+            inherit_configured_runtime,
+            Some(diagnostics_path),
+        )
     }
 
     /// 按是否继承配置中的 Runtime 库执行一次验证、编译和链接。
@@ -273,6 +293,7 @@ impl Toolchain {
         output: impl AsRef<Path>,
         runtime_library: Option<&Path>,
         inherit_configured_runtime: bool,
+        diagnostics_path: Option<&Path>,
     ) -> Result<PathBuf> {
         let output = output.as_ref().to_path_buf();
         if let Some(parent) = output.parent().filter(|path| !path.as_os_str().is_empty()) {
@@ -295,6 +316,49 @@ impl Toolchain {
             "-o".to_owned(),
             path_text(&output),
         ];
+        let mut startup_object = None;
+        if let Some(diagnostics_path) = diagnostics_path {
+            let source = TempFile::new("xiao-startup", "c")?;
+            fs::write(&source.path, startup_source(diagnostics_path, target)).map_err(|error| {
+                CodegenError::Io {
+                    path: source.path.clone(),
+                    message: error.to_string(),
+                }
+            })?;
+            let object = source.path.with_extension(
+                if matches!(target.object_format, crate::target::ObjectFormat::Coff) {
+                    "obj"
+                } else {
+                    "o"
+                },
+            );
+            let compile_args = [
+                "-target".to_owned(),
+                target.triple.clone(),
+                "-c".to_owned(),
+                path_text(&source.path),
+                "-o".to_owned(),
+                path_text(&object),
+            ];
+            let compile_refs = compile_args.iter().map(String::as_str).collect::<Vec<_>>();
+            let result = match run_command(&self.clang, &compile_refs, "clang-startup-shim") {
+                Ok(result) => result,
+                Err(error) => {
+                    let _ = fs::remove_file(&object);
+                    return Err(error);
+                }
+            };
+            if !result.status.success() {
+                let _ = fs::remove_file(&object);
+                return Err(CodegenError::ToolchainFailed {
+                    tool: result.tool,
+                    status: result.status.code(),
+                    stderr: result.stderr,
+                });
+            }
+            args.insert(3, path_text(&object));
+            startup_object = Some(object);
+        }
         let runtime_library = if inherit_configured_runtime {
             runtime_library.or(self.runtime_library.as_deref())
         } else {
@@ -302,6 +366,9 @@ impl Toolchain {
         };
         if let Some(runtime_library) = runtime_library {
             if self.native_static_libraries.is_empty() {
+                if let Some(object) = startup_object.take() {
+                    let _ = fs::remove_file(object);
+                }
                 return Err(CodegenError::ToolchainUnavailable {
                     tool: "rustc".to_owned(),
                     message: "链接 Xiao Runtime staticlib 前必须查询 native-static-libs".to_owned(),
@@ -311,7 +378,18 @@ impl Toolchain {
             args.extend(self.native_static_libraries.iter().cloned());
         }
         let arg_refs = args.iter().map(String::as_str).collect::<Vec<_>>();
-        let result = run_command(&self.clang, &arg_refs, "clang")?;
+        let result = match run_command(&self.clang, &arg_refs, "clang") {
+            Ok(result) => result,
+            Err(error) => {
+                if let Some(object) = startup_object.take() {
+                    let _ = fs::remove_file(object);
+                }
+                return Err(error);
+            }
+        };
+        if let Some(object) = startup_object.take() {
+            let _ = fs::remove_file(object);
+        }
         if !result.status.success() {
             let _ = fs::remove_file(&output);
             return Err(CodegenError::ToolchainFailed {
@@ -350,6 +428,303 @@ fn run_command(path: &Path, args: &[&str], name: &str) -> Result<CommandResult> 
         status: output.status,
         stderr: text_from_bytes(&output.stderr),
     })
+}
+
+/// 生成跨平台的最小诊断启动 shim；它只创建诊断进程，不执行 Xiao 代码。
+fn startup_source(diagnostics_path: &Path, target: &TargetDescription) -> String {
+    let diagnostics_name = diagnostics_file_name(diagnostics_path, target);
+    if matches!(target.object_format, crate::target::ObjectFormat::Coff) {
+        /// Windows 原生调试入口使用的独立控制台与就绪握手模板。
+        const WINDOWS_SOURCE: &str = r#"#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <process.h>
+#include <stdio.h>
+#include <string.h>
+#include <wchar.h>
+
+static const wchar_t xiao_renderer_name[] = __XIAO_DIAGNOSTICS_NAME__;
+
+static int xiao_startup_error(const char *reason, DWORD code) {
+  fprintf(stderr, "X11-DIAGNOSTIC-START-001: %s (%lu)\n", reason, (unsigned long)code);
+  return 70;
+}
+
+static DWORD xiao_adjacent_renderer(wchar_t *buffer, DWORD capacity) {
+  DWORD length = GetModuleFileNameW(NULL, buffer, capacity);
+  if (length == 0 || length >= capacity - 1) {
+    DWORD error = GetLastError();
+    return error ? error : ERROR_BUFFER_OVERFLOW;
+  }
+  wchar_t *backslash = wcsrchr(buffer, L'\\');
+  wchar_t *slash = wcsrchr(buffer, L'/');
+  wchar_t *separator = backslash;
+  if (slash && (!separator || slash > separator)) {
+    separator = slash;
+  }
+  DWORD prefix = separator ? (DWORD)(separator - buffer + 1) : 0;
+  size_t name_length = wcslen(xiao_renderer_name);
+  if ((size_t)prefix + name_length + 1 > capacity) {
+    return ERROR_BUFFER_OVERFLOW;
+  }
+  memcpy(buffer + prefix, xiao_renderer_name, (name_length + 1) * sizeof(wchar_t));
+  return ERROR_SUCCESS;
+}
+
+int xiao_native_debug_start(void) {
+  wchar_t configured[32768];
+  wchar_t adjacent[32768];
+  DWORD configured_length = GetEnvironmentVariableW(
+      L"XIAO_DIAGNOSTICS_PATH", configured,
+      (DWORD)(sizeof(configured) / sizeof(configured[0])));
+  if (configured_length >= (DWORD)(sizeof(configured) / sizeof(configured[0]))) {
+    return xiao_startup_error("XIAO_DIAGNOSTICS_PATH is too long", ERROR_BUFFER_OVERFLOW);
+  }
+  const wchar_t *renderer = configured;
+  if (configured_length == 0) {
+    DWORD adjacent_error = xiao_adjacent_renderer(
+        adjacent, (DWORD)(sizeof(adjacent) / sizeof(adjacent[0])));
+    if (adjacent_error != ERROR_SUCCESS) {
+      return xiao_startup_error("cannot resolve the adjacent diagnostic component", adjacent_error);
+    }
+    renderer = adjacent;
+  }
+
+  wchar_t temporary_directory[MAX_PATH];
+  wchar_t ready_file[MAX_PATH];
+  DWORD temporary_length = GetTempPathW(MAX_PATH, temporary_directory);
+  if (temporary_length == 0 || temporary_length >= MAX_PATH) {
+    return xiao_startup_error("cannot resolve the temporary directory", GetLastError());
+  }
+  if (GetTempFileNameW(temporary_directory, L"xdr", 0, ready_file) == 0) {
+    return xiao_startup_error("cannot reserve the readiness marker", GetLastError());
+  }
+  if (!DeleteFileW(ready_file)) {
+    return xiao_startup_error("cannot prepare the readiness marker", GetLastError());
+  }
+
+  wchar_t command_line[32768];
+  int command_length = swprintf(
+      command_line, sizeof(command_line) / sizeof(command_line[0]),
+      L"\"%ls\" --standalone --parent-pid %lu --ready-file \"%ls\"",
+      renderer, (unsigned long)_getpid(), ready_file);
+  if (command_length < 0 ||
+      command_length >= (int)(sizeof(command_line) / sizeof(command_line[0]))) {
+    return xiao_startup_error("diagnostic command line is too long", ERROR_BUFFER_OVERFLOW);
+  }
+
+  STARTUPINFOW startup;
+  PROCESS_INFORMATION process;
+  ZeroMemory(&startup, sizeof(startup));
+  ZeroMemory(&process, sizeof(process));
+  startup.cb = sizeof(startup);
+  if (!CreateProcessW(renderer, command_line, NULL, NULL, FALSE,
+                      CREATE_NEW_CONSOLE | CREATE_UNICODE_ENVIRONMENT,
+                      NULL, NULL, &startup, &process)) {
+    DeleteFileW(ready_file);
+    return xiao_startup_error("cannot create the diagnostic console", GetLastError());
+  }
+  CloseHandle(process.hThread);
+
+  for (DWORD attempt = 0; attempt < 500; ++attempt) {
+    DWORD attributes = GetFileAttributesW(ready_file);
+    if (attributes != INVALID_FILE_ATTRIBUTES &&
+        (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+      DeleteFileW(ready_file);
+      CloseHandle(process.hProcess);
+      return 0;
+    }
+
+    DWORD state = WaitForSingleObject(process.hProcess, 10);
+    if (state == WAIT_OBJECT_0) {
+      DWORD exit_code = 0;
+      GetExitCodeProcess(process.hProcess, &exit_code);
+      CloseHandle(process.hProcess);
+      DeleteFileW(ready_file);
+      return xiao_startup_error("diagnostic process exited before readiness", exit_code);
+    }
+    if (state == WAIT_FAILED) {
+      DWORD error = GetLastError();
+      TerminateProcess(process.hProcess, 70);
+      CloseHandle(process.hProcess);
+      DeleteFileW(ready_file);
+      return xiao_startup_error("cannot wait for diagnostic readiness", error);
+    }
+  }
+
+  TerminateProcess(process.hProcess, 70);
+  WaitForSingleObject(process.hProcess, 1000);
+  CloseHandle(process.hProcess);
+  DeleteFileW(ready_file);
+  return xiao_startup_error("diagnostic readiness timed out", ERROR_TIMEOUT);
+}
+"#;
+        return WINDOWS_SOURCE.replace(
+            "__XIAO_DIAGNOSTICS_NAME__",
+            &c_utf16_array_initializer(&diagnostics_name),
+        );
+    }
+
+    /// POSIX 原生调试入口使用的进程启动与就绪握手模板。
+    const POSIX_SOURCE: &str = r#"#include <errno.h>
+#include <stdint.h>
+#include <signal.h>
+#include <spawn.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#if defined(__APPLE__)
+#include <mach-o/dyld.h>
+#endif
+
+extern char **environ;
+static const char xiao_renderer_name[] = __XIAO_DIAGNOSTICS_NAME__;
+
+static int xiao_startup_error(const char *reason, int code) {
+  fprintf(stderr, "X11-DIAGNOSTIC-START-001: %s (%d)\n", reason, code);
+  return 70;
+}
+
+static int xiao_adjacent_renderer(char *buffer, size_t capacity) {
+#if defined(__APPLE__)
+  uint32_t requested = (uint32_t)capacity;
+  if (_NSGetExecutablePath(buffer, &requested) != 0) {
+    return ENAMETOOLONG;
+  }
+#else
+  ssize_t length = readlink("/proc/self/exe", buffer, capacity - 1);
+  if (length < 0) {
+    return errno;
+  }
+  if ((size_t)length >= capacity - 1) {
+    return ENAMETOOLONG;
+  }
+  buffer[length] = '\0';
+#endif
+  char *separator = strrchr(buffer, '/');
+  size_t prefix = separator ? (size_t)(separator - buffer + 1) : 0;
+  size_t name_length = strlen(xiao_renderer_name);
+  if (prefix + name_length + 1 > capacity) {
+    return ENAMETOOLONG;
+  }
+  memcpy(buffer + prefix, xiao_renderer_name, name_length + 1);
+  return 0;
+}
+
+int xiao_native_debug_start(void) {
+  const char *configured = getenv("XIAO_DIAGNOSTICS_PATH");
+  char adjacent[32768];
+  const char *renderer = configured;
+  if (!renderer || !renderer[0]) {
+    int adjacent_error = xiao_adjacent_renderer(adjacent, sizeof(adjacent));
+    if (adjacent_error != 0) {
+      return xiao_startup_error("cannot resolve the adjacent diagnostic component", adjacent_error);
+    }
+    renderer = adjacent;
+  }
+  char parent[32];
+  snprintf(parent, sizeof(parent), "%ld", (long)getpid());
+
+  char ready_file[] = "/tmp/xiao-diagnostics-ready-XXXXXX";
+  int ready_descriptor = mkstemp(ready_file);
+  if (ready_descriptor < 0) {
+    return xiao_startup_error("cannot reserve the readiness marker", errno);
+  }
+  close(ready_descriptor);
+  if (unlink(ready_file) != 0) {
+    return xiao_startup_error("cannot prepare the readiness marker", errno);
+  }
+
+  char *const argv[] = {
+      (char *)renderer,
+      (char *)"--standalone",
+      (char *)"--parent-pid",
+      parent,
+      (char *)"--ready-file",
+      ready_file,
+      NULL,
+  };
+  pid_t child = 0;
+  int status = posix_spawn(&child, renderer, NULL, NULL, argv, environ);
+  if (status != 0) {
+    unlink(ready_file);
+    return xiao_startup_error("cannot create the diagnostic process", status);
+  }
+
+  for (int attempt = 0; attempt < 500; ++attempt) {
+    if (access(ready_file, F_OK) == 0) {
+      unlink(ready_file);
+      return 0;
+    }
+    int child_status = 0;
+    pid_t state = waitpid(child, &child_status, WNOHANG);
+    if (state == child) {
+      unlink(ready_file);
+      return xiao_startup_error("diagnostic process exited before readiness", child_status);
+    }
+    if (state < 0) {
+      int error = errno;
+      kill(child, SIGTERM);
+      unlink(ready_file);
+      return xiao_startup_error("cannot wait for diagnostic readiness", error);
+    }
+    usleep(10000);
+  }
+
+  kill(child, SIGTERM);
+  waitpid(child, NULL, 0);
+  unlink(ready_file);
+  return xiao_startup_error("diagnostic readiness timed out", ETIMEDOUT);
+}
+"#;
+    POSIX_SOURCE.replace(
+        "__XIAO_DIAGNOSTICS_NAME__",
+        &c_string_literal(&diagnostics_name),
+    )
+}
+
+/// 从构建时组件路径提取可随原生产物搬迁的相邻文件名。
+fn diagnostics_file_name(path: &Path, target: &TargetDescription) -> String {
+    path_text(path)
+        .rsplit(['/', '\\'])
+        .find(|part| !part.is_empty())
+        .map(str::to_owned)
+        .unwrap_or_else(|| {
+            if matches!(target.object_format, crate::target::ObjectFormat::Coff) {
+                "xiao-diagnostics.exe".to_owned()
+            } else {
+                "xiao-diagnostics".to_owned()
+            }
+        })
+}
+
+/// 将 Windows 路径编码为不受源码编码和转义边界影响的 UTF-16 C 数组。
+fn c_utf16_array_initializer(value: &str) -> String {
+    let mut output = String::from("{");
+    for unit in value.encode_utf16() {
+        output.push_str(&format!("0x{unit:04x}, "));
+    }
+    output.push_str("0}");
+    output
+}
+
+/// 将宿主路径编码为 C 字符串常量。
+fn c_string_literal(value: &str) -> String {
+    let mut output = String::from("\"");
+    for byte in value.bytes() {
+        match byte {
+            b'\\' => output.push_str("\\\\"),
+            b'"' => output.push_str("\\\""),
+            b'\n' => output.push_str("\\n"),
+            b'\r' => output.push_str("\\r"),
+            0x20..=0x7e => output.push(byte as char),
+            // 固定三位八进制避免后续 ASCII 十六进制字符被 C 编译器吞进同一转义。
+            other => output.push_str(&format!("\\{other:03o}")),
+        }
+    }
+    output.push('"');
+    output
 }
 
 /// 解析 `rustc --print native-static-libs` 的稳定提示行。
@@ -528,8 +903,61 @@ fn runtime_fingerprint(path: &Path) -> String {
 #[cfg(test)]
 /// 覆盖 Rust 原生库清单的跨平台解析、过滤和构建指纹隔离。
 mod tests {
-    use super::{Toolchain, parse_native_static_libraries};
+    use std::path::Path;
+
+    use super::{Toolchain, diagnostics_file_name, parse_native_static_libraries, startup_source};
     use crate::target::TargetDescription;
+
+    #[test]
+    /// Windows 调试产物必须创建独立控制台，并等待诊断进程显式确认就绪。
+    fn windows_startup_shim_opens_console_and_waits_for_readiness() {
+        let source = startup_source(
+            Path::new(r"C:\Xiao 工具\xiao-diagnostics.exe"),
+            &TargetDescription::windows_x86_64(),
+        );
+        assert!(source.contains("CreateProcessW"));
+        assert!(source.contains("CREATE_NEW_CONSOLE"));
+        assert!(source.contains("GetModuleFileNameW"));
+        assert!(source.contains("xiao_adjacent_renderer"));
+        assert!(source.contains("--ready-file"));
+        assert!(source.contains("WaitForSingleObject"));
+        assert!(source.contains("diagnostic process exited before readiness"));
+        assert!(!source.contains("_spawnv"));
+    }
+
+    #[test]
+    /// POSIX 启动路径也必须以就绪标记阻止用户入口抢跑。
+    fn posix_startup_shim_waits_for_readiness() {
+        let source = startup_source(
+            Path::new("/opt/xiao/bin/xiao-diagnostics"),
+            &TargetDescription::linux_x86_64(),
+        );
+        assert!(source.contains("posix_spawn"));
+        assert!(source.contains("/proc/self/exe"));
+        assert!(source.contains("_NSGetExecutablePath"));
+        assert!(source.contains("--ready-file"));
+        assert!(source.contains("waitpid"));
+        assert!(source.contains("diagnostic readiness timed out"));
+    }
+
+    #[test]
+    /// 启动桥只携带组件文件名，确保最终产物可整体搬迁到另一目录。
+    fn startup_shim_embeds_only_diagnostics_basename() {
+        let windows_path = Path::new(r"C:\build\xiao-diagnostics.exe");
+        let posix_path = Path::new("/build/xiao-diagnostics");
+        assert_eq!(
+            diagnostics_file_name(windows_path, &TargetDescription::windows_x86_64()),
+            "xiao-diagnostics.exe"
+        );
+        assert_eq!(
+            diagnostics_file_name(posix_path, &TargetDescription::linux_x86_64()),
+            "xiao-diagnostics"
+        );
+
+        let source = startup_source(windows_path, &TargetDescription::windows_x86_64());
+        assert!(source.contains("0x0078"));
+        assert!(!source.contains("C:\\\\build"));
+    }
 
     #[test]
     /// Rust 的 Windows 清单应转换为 clang `-l` 参数并过滤默认库元参数。

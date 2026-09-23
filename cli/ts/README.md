@@ -22,3 +22,6 @@ X0-B 已接入 `src/main.ts` 的 `xiao` 命令入口，运行链路通过 `src/p
 调用 Rust `xiao-core`。X0-C 通过 `bun run build` 生成 `dist/<目标>/xiao[.exe]`，并把
 同目标的 `xiao-core[.exe]` 和 `xiao-package.json` 放在同一目录；构建时需要 Bun，生成物
 运行时不需要 Bun 或 Node.js。
+
+X0-E 已接入 `xiao build`：`src/platform/toolchain.ts` 按固定来源发现并探测 clang、Runtime
+和诊断组件，`src/protocol/client.ts` 把真实源码、配置与输出路径交给 Rust 原生驱动器。

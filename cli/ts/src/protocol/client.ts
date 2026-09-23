@@ -11,6 +11,8 @@ import {
   type ProtocolResponse,
   type ProtocolTarget,
   type RunRequest,
+  type BuildRequest,
+  type ToolchainSpec,
 } from "./messages.ts";
 import { discoverCoreWithMetadata, hostTarget, type CoreDiscoveryOptions, type CoreDiscoverySource } from "../platform/core.ts";
 
@@ -46,6 +48,34 @@ export interface SourceRunOptions {
   debug?: boolean;
   /** 调试窗口/文件输出配置。 */
   diagnostics?: DiagnosticConfig | null;
+  /** 取消信号。 */
+  signal?: AbortSignal;
+}
+
+/** 源码原生构建请求的便捷参数。 */
+export interface SourceBuildOptions {
+  /** 逻辑模块名。 */
+  module?: string;
+  /** 源文件路径。 */
+  path?: string | null;
+  /** 协议目标。 */
+  target?: ProtocolTarget;
+  /** 语言版本。 */
+  languageVersion?: string;
+  /** Runtime 版本。 */
+  runtimeVersion?: string;
+  /** 原生可执行输出路径。 */
+  output: string;
+  /** 可选 LLVM 文本输出路径。 */
+  llvmIrOutput?: string | null;
+  /** 工具链发现结果。 */
+  toolchain: ToolchainSpec;
+  /** `-debug` 强制激活位。 */
+  debug?: boolean;
+  /** 诊断窗口/文件输出配置。 */
+  diagnostics?: DiagnosticConfig | null;
+  /** 已读取的 config.xiao 原文。 */
+  configText?: string | null;
   /** 取消信号。 */
   signal?: AbortSignal;
 }
@@ -124,8 +154,31 @@ export class ProtocolClient {
     return this.call(request, options.signal);
   }
 
+  /** 使用真实 Xiao 源码发送一次 `build` 请求。 */
+  async buildSource(sourceText: string, options: SourceBuildOptions): Promise<CoreCallResult> {
+    const target = options.target ?? hostTarget();
+    const sourcePath = options.path ?? null;
+    const module = options.module ?? moduleName(sourcePath);
+    const request: BuildRequest = {
+      type: "build",
+      request_id: requestId("build"),
+      protocol_version: PROTOCOL_VERSION,
+      core_version: CORE_VERSION,
+      language_version: options.languageVersion ?? "0.1.0",
+      runtime_version: options.runtimeVersion ?? "0.1.0",
+      target,
+      optimization: { level: 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
+      source: { module, path: sourcePath, text: sourceText },
+      output: options.output,
+      llvm_ir_output: options.llvmIrOutput ?? null,
+      toolchain: options.toolchain,
+      config_text: options.configText ?? null,
+    };
+    return this.call(request, options.signal);
+  }
+
   /** 使用已经规范化的协议运行请求发送一次调用。 */
-  async call(request: RunRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  async call(request: RunRequest | BuildRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     const discovery = await discoverCoreWithMetadata(this.options);
     const corePath = discovery.path;

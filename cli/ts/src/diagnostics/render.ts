@@ -7,6 +7,7 @@ import type { ProtocolResponse } from "../protocol/messages.ts";
 import { CoreClientError } from "../protocol/client.ts";
 import { CliConfigError } from "../config/editor.ts";
 import { CoreDiscoveryError } from "../platform/core.ts";
+import { ToolchainDiscoveryError } from "../platform/toolchain.ts";
 
 /** 渲染模式。 */
 export interface DiagnosticRenderOptions {
@@ -76,6 +77,21 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
     // 表格只展示稳定字段，指标本身不参与退出判断。
     lines.push(renderTable(rows));
   }
+  if (response.type === "result" && response.operation === "build" && response.artifact !== null && isRecord(response.artifact) && response.exit_code === 0) {
+    const executable = typeof response.artifact.executable === "string" ? response.artifact.executable : "<unknown>";
+    const fingerprint = typeof response.artifact.toolchain_fingerprint === "string" ? response.artifact.toolchain_fingerprint : "<unknown>";
+    lines.push(`产物  ${executable}`);
+    lines.push(`指纹  ${fingerprint}`);
+    if (isRecord(response.artifact.diagnostic_activation) && typeof response.artifact.diagnostic_activation.path === "string") {
+      lines.push(`调试  ${response.artifact.diagnostic_activation.path}`);
+    }
+    if (typeof response.artifact.diagnostics_component === "string") {
+      lines.push(`诊断  ${response.artifact.diagnostics_component}`);
+    }
+    if (isRecord(response.artifact.runtime_config) && typeof response.artifact.runtime_config.path === "string") {
+      lines.push(`配置  ${response.artifact.runtime_config.path}`);
+    }
+  }
   const stderr = lines.length === 0 ? "" : `${lines.join("\n")}\n`;
   return { stdout: "", stderr, exitCode: responseExitCode(response) };
 }
@@ -115,6 +131,14 @@ function normalizeCliError(error: unknown): NormalizedCliError {
         candidates: error.candidates,
         candidate_sources: error.candidateDetails,
       },
+      exitCode: CLI_EXIT_CODES.infrastructure,
+    };
+  }
+  if (error instanceof ToolchainDiscoveryError) {
+    return {
+      code: error.code,
+      message: error.message.replace(`${error.code}: `, ""),
+      details: { ...error.details, candidates: error.candidates },
       exitCode: CLI_EXIT_CODES.infrastructure,
     };
   }

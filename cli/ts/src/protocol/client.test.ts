@@ -62,6 +62,15 @@ class FakeCore extends EventEmitter {
         type: "result", request_id: request.request_id, operation: "run", exit_code: 0,
         exit_name: "success", diagnostics: [], report: null, events: [], metrics: null, value: null, artifact: null,
       })));
+    } else if (request.type === "build") {
+      this.stdout.write(Buffer.from(encodeFrame({
+        type: "result", request_id: request.request_id, operation: "build", exit_code: 0,
+        exit_name: "success", diagnostics: [], report: null, events: [], metrics: null, value: null,
+        artifact: {
+          executable: request.output, llvm_ir_output: request.llvm_ir_output,
+          toolchain_fingerprint: "test", uses_runtime: false, runtime_components: [],
+        },
+      })));
     } else if (request.type === "shutdown") {
       this.stdout.write(Buffer.from(encodeFrame({ type: "shutdown", request_id: request.request_id })));
       this.exitCode = 0;
@@ -109,6 +118,31 @@ describe("协议客户端", () => {
         debug: true,
         diagnostics: { terminal_level: "trace", file_level: "debug", log_dir: "logs" },
       },
+    });
+  });
+
+  test("buildSource 使用真实源码并传递工具链、配置和输出路径", async () => {
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      overridePath: process.execPath,
+      spawnProcess: () => {
+        fake = new FakeCore();
+        return fake as never;
+      },
+    });
+    const toolchain = {
+      clang: "clang", llvm_as: null, llc: null, runtime_library: null,
+      native_static_libraries: [], versions: { clang: "clang version 22", llvm_as: null, llc: null, rustc: null },
+    };
+    const result = await client.buildSource("value = 1\n", {
+      path: "main.xiao", output: "build/main.exe", llvmIrOutput: "build/main.ll",
+      toolchain, debug: true, configText: "[Runtime]\ncall_stack_depth = 64\n",
+    });
+    expect(result.response.type).toBe("result");
+    expect(fake?.requests.find((value) => value.type === "build")).toMatchObject({
+      type: "build", source: { path: "main.xiao", text: "value = 1\n" },
+      output: "build/main.exe", llvm_ir_output: "build/main.ll", config_text: "[Runtime]\ncall_stack_depth = 64\n",
+      optimization: { level: 0, debug: true },
     });
   });
 });

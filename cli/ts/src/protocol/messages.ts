@@ -81,7 +81,7 @@ export interface ToolchainVersions {
   clang: string;
   llvm_as: string | null;
   llc: string | null;
-  rustc: string | null;
+  rustc?: string | null;
 }
 
 /** 原生构建工具链描述。 */
@@ -91,6 +91,10 @@ export interface ToolchainSpec {
   llc: string | null;
   runtime_library: string | null;
   native_static_libraries: string[];
+  /** Rust 编译器路径；动态 Runtime 构建时由核心查询 native-static-libs。 */
+  rustc?: string | null;
+  /** 调试原生产物启动 shim 使用的诊断进程路径。 */
+  diagnostics_path?: string | null;
   versions: ToolchainVersions;
 }
 
@@ -108,6 +112,8 @@ export interface BuildRequest {
   output: string;
   llvm_ir_output: string | null;
   toolchain: ToolchainSpec;
+  /** 可选的原始 config.xiao；由 Rust 配置解析器验证并固化。 */
+  config_text?: string | null;
 }
 
 /** 取消请求。 */
@@ -175,6 +181,20 @@ export interface ProtocolArtifact {
   uses_runtime: boolean;
   runtime_components: string[];
   diagnostic_activation?: ProtocolDiagnosticActivation | null;
+  /** 随调试产物复制的独立诊断组件。 */
+  diagnostics_component?: string | null;
+  /** 构建时固化的运行时配置旁置文件。 */
+  runtime_config?: ProtocolRuntimeConfig | null;
+}
+
+/** 固化运行时配置的旁置文件摘要。 */
+export interface ProtocolRuntimeConfig {
+  /** 配置文件路径。 */
+  path: string;
+  /** 固化格式版本。 */
+  format_version: number;
+  /** 是否允许普通命令行覆盖。 */
+  cli_overrides: boolean;
 }
 
 /** 调试产物持久激活位摘要。 */

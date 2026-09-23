@@ -19,7 +19,8 @@ related:
 
 状态：`verified`，对应 N0-A/N0-B。调用方把真实 Xiao 源码交给统一
 `FrontendCompiler`，再把同一份已验证的 `IrProgram` 交给 `xiao-codegen-llvm`；本页面描述
-Rust 内部接口，不代表用户可见的 `xiao build` 已接入。
+Rust 内部接口。用户可见的 `xiao build` 已由 X0-E 接入，用法见
+[原生构建命令](../../../tooling/cli/build.md)。
 
 ## 已接入能力
 

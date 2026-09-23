@@ -428,6 +428,10 @@ impl<'a> DynamicGenerator<'a> {
             self.observation_slot = Some(self.slots.len());
         }
         self.declare_runtime();
+        if self.options.debug_startup.is_some() {
+            self.declarations
+                .insert("declare i32 @xiao_native_debug_start()".to_owned());
+        }
         self.emit_entry()?;
         let mut text = String::new();
         text.push_str("; Xiao N0-B LLVM dynamic module\n");
@@ -925,17 +929,23 @@ impl<'a> DynamicGenerator<'a> {
         self.emit("  unreachable".to_owned());
         self.emit("}".to_owned());
         self.emit(String::new());
-        if observed {
-            self.emit(
-                "define i32 @main() {\nentry:\n  %xiao_exit = call i64 @xiao_entry()\n  %xiao_exit_code = trunc i64 %xiao_exit to i32\n  ret i32 %xiao_exit_code\n}".to_owned(),
-            );
-        } else {
-            self.emit(
-                "define i32 @main() {\nentry:\n  call void @xiao_entry()\n  ret i32 0\n}"
-                    .to_owned(),
-            );
-        }
+        self.emit(self.main_adapter(observed));
         Ok(())
+    }
+
+    /// 发射带可选调试启动检查的 C `main` 适配器。
+    fn main_adapter(&self, observed: bool) -> String {
+        let entry = if observed {
+            "  %xiao_exit = call i64 @xiao_entry()\n  %xiao_exit_code = trunc i64 %xiao_exit to i32\n  ret i32 %xiao_exit_code\n"
+        } else {
+            "  call void @xiao_entry()\n  ret i32 0\n"
+        };
+        if self.options.debug_startup.is_none() {
+            return format!("define i32 @main() {{\nentry:\n{entry}}}\n");
+        }
+        format!(
+            "define i32 @main() {{\nentry:\n  %xiao_debug_status = call i32 @xiao_native_debug_start()\n  %xiao_debug_ok = icmp eq i32 %xiao_debug_status, 0\n  br i1 %xiao_debug_ok, label %xiao.user, label %xiao.debug.fail\nxiao.user:\n{entry}xiao.debug.fail:\n  ret i32 %xiao_debug_status\n}}\n"
+        )
     }
 
     /// 在入口观察模式下返回最近一次静态整数/布尔观察值。
