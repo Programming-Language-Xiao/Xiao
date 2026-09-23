@@ -36,7 +36,8 @@ bash tools/platform-reproduction/reproduce.sh native
 
 Ubuntu 与 Arch 必须分别记录发行版版本、glibc、`uname -m`、Rust/Bun/LLVM 版本和完整命令。
 WSL 共享宿主调度，不可将性能数字与 Windows 原生并列；它可以作为功能证据，但不自动等同裸机
-安装路径验收。Arch 环境需要先准备 `base-devel`、`clang`、`llvm`、`lld`、Rust 1.96.0 和 Bun 1.4.0。
+安装路径验收。Arch 环境需要先准备 `base-devel`、`clang`、`llvm`、`lld`、Rust 1.96.0 和 Bun 1.4.1
+或更高的 1.x 版本；Bun 1.4.0 在 Docker 的 `--compile` 路径存在 ELF 临时文件权限回归。
 
 ## macOS
 

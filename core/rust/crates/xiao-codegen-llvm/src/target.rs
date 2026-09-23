@@ -184,10 +184,12 @@ impl TargetDescription {
 }
 
 #[cfg(test)]
+/// 目标描述的架构回归测试。
 mod tests {
     use super::{Endian, ObjectFormat, TargetDescription};
 
     #[test]
+    /// 确认主机目标与编译期架构、指针宽度和字节序一致。
     fn host_target_architecture_matches_compile_time_target() {
         let target = TargetDescription::host();
         let expected_architecture = if cfg!(target_arch = "x86_64") {
