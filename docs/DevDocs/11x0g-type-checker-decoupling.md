@@ -199,6 +199,24 @@ checker/diagnostic.rs    诊断上报（所有 *_error 与 push_runtime_check）
 及快照均未修改。`checker_architecture_tests.rs` 通过 `cfg(test)` 接入门面，锁定门面无实现
 和子模块无反向依赖；局部 README、crate README、模块登记和本交接状态已同步。
 
+### 无语义变更的验证依据（2026-09-23 补）
+
+本批的 8 个提交（6 个 `refactor(types)` + 2 个 `docs(types)`）**正文为空**——
+这是个缺陷，成因见 [11X0-H](11x0h-llvm-dynamic-decoupling.md) §9.5。作为补正，
+这里把「这只是移动、没有语义变更」的依据写全，**审核者不必读 diff 反推**：
+
+- **`xiao-types/tests/` 在整批期间零改动**——
+  `git diff --stat e2db2d9^ 3271c7b -- core/rust/crates/xiao-types/tests/` 输出为空；
+- **四个快照测试一个字符没改却全部通过**：`c0c1_snapshots.rs`（4 条）、
+  `c2a_snapshots.rs`（2 条）、`c2b_snapshots.rs`（2 条）、`c2c_snapshots.rs`（2 条），
+  合计 10 条。它们比对的是**类型检查结果的结构**，所以「结构没变」是被测试锁住的，
+  不是靠声称；
+- **六笔都是纯移动的形状**：每笔的 diff 都是「`checker.rs` 减 N 行 / 对应子模块加 N 行」，
+  差额来自新增的 `mod` 声明、`use` 路径与文档注释（`e2db2d9` 另含 `table_checker.rs`
+  的 2 行 import 路径调整）。
+
+**未改写历史**——那 8 个提交仍是空正文，说明与证据落在本文档，而不是重写已提交的正文。
+
 本机 Windows 验收已通过：`cargo fmt --manifest-path core/rust/Cargo.toml --all -- --check`、
 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-types`（含 28 条单元/架构测试及全部
 外部类型测试）、`cargo clippy --manifest-path core/rust/Cargo.toml -p xiao-types --all-targets -- -D warnings`、
