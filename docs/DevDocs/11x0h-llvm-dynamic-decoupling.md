@@ -30,7 +30,7 @@
 6. [11X0-F. `protocol.rs` 解耦交接](11x0f-protocol-decoupling.md) —— 同轮发现的另一份，
    分步提交与门面保留的做法相同。
 
-### 现状盘点（2026-09-23 实测）
+### 拆分前基线（2026-09-23 实测）
 
 ```text
 core/rust/crates/xiao-codegen-llvm/src/dynamic.rs   2172 行 → 占阈值 87%，无内联测试
@@ -336,3 +336,22 @@ bun run check:coverage     ← 公共 API 硬门槛，见 9.2
 - [00E. 单文件行数门禁交接](00e-file-size-gate.md) —— `A0-SIZE-001` 与豁免机制
 - [00A.1 工作区与质量门禁](00a-a0-workspace-and-checkers.md) —— `check:lock` 的判据（§9.3）
 - [11X0-G. `checker.rs` 解耦交接](11x0g-type-checker-decoupling.md) —— 上一批，其收尾见 §8
+
+---
+
+## 十、本批落地记录（2026-09-23）
+
+- `dynamic.rs` 已从拆分前的 2172 行收敛到 248 行门面；实现按职责落在 `predicate.rs`、
+  `text.rs`、`runtime_abi.rs`、`entry.rs`、`slot.rs`、`release.rs`、`control.rs`、
+  `expression.rs` 和 `container.rs`。
+- `escape_llvm` 与 `stable_hash` 已合并到 crate 级 `src/text.rs`，静态 `ir.rs` 与动态
+  门面共同消费；动态文本解析仍保留在 `dynamic/text.rs`，没有固化重复实现。
+- 新增 `dynamic_architecture_tests.rs`、`src/dynamic/README.md` 和两级 LLVM README，
+  源码级锁定门面不回流职责实现、`ir.rs` 不依赖 `dynamic/`、子模块不形成兄弟反向依赖。
+- `CODEGEN_VERSION` 保持为 2，`xiao-runtime-abi` 形状、静态/动态选择、所有权释放顺序、
+  Runtime 组件清单和 LLVM 发射调用顺序均未改变；既有 N0-A/N0-B 测试计数保持不变。
+- 分步提交为 `c2f0b2b`、`a5aa9b1`、`6ee24f5`、`75d014d`、`13acaf4`；每笔提交均带
+  规范标题和正文，并记录“仅移动、无语义变更”的验证依据。
+- 本地定向门禁通过：`cargo fmt --manifest-path core/rust/Cargo.toml --all -- --check`、
+  `cargo check -p xiao-codegen-llvm`、LLVM crate 全套测试、严格 `clippy`，以及动态架构
+  回归测试 `dynamic::architecture_tests::module_dependency_direction_is_acyclic`。

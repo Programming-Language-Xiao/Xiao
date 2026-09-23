@@ -104,7 +104,7 @@
 | 11X0-E | [`xiao build` 与主机工具链发现](11x0e-build-and-toolchain.md) | `build` 命令路由、主机工具链发现、原生启动 shim、运行时配置固化；含跨批次待完善清单 | 已落地（Windows 原生 build/run/debug；Linux 原生/WSL/macOS 待复现） |
 | 11X0-F | [`protocol.rs` 解耦交接](11x0f-protocol-decoupling.md) | 2354 行（94%）预防性拆分：门面 + 九个子模块、依赖 DAG 与架构测试、七步分提交 | 已完成（门面 59 行；九模块与架构回归测试已落地；公开 API、协议夹具和既有测试未改） |
 | 11X0-G | [`checker.rs` 解耦交接](11x0g-type-checker-decoupling.md) | 2200 行（88%）预防性拆分：`RuntimeCheckKind` 跨 crate 路径不变、常量求值作最安全起点、六步分提交 | 已完成（门面 166 行；六个职责子模块、架构回归测试和模块文档已落地；公开 API、类型规则与 `xiao-types/tests/` 未改） |
-| 11X0-H | [`dynamic.rs` 解耦交接](11x0h-llvm-dynamic-decoupling.md) | 2172 行（87%）预防性拆分： 逐字节不变为最强验收、静态/动态边界、**发现 escape_llvm/stable_hash 重复实现** | 未开始（顺带治愈一处既有 A 类病） |
+| 11X0-H | [`dynamic.rs` 解耦交接](11x0h-llvm-dynamic-decoupling.md) | 2172 行（87%）预防性拆分：逐字节不变为最强验收、静态/动态边界、**发现 escape_llvm/stable_hash 重复实现** | 已完成（门面 248 行；九个动态职责子模块、架构回归测试和模块文档已落地；Runtime ABI、静态边界与 LLVM 文本未变） |
 | 11A.1 | [包源协议：决策、待决与风险（待审）](11a1-package-source-protocol-review.md) | 源身份规范化、JSON 权威与 Protobuf 派生、解析键与同一性、canonical JSON、源列表导入的三条规则；含六条待审风险 | 已审并处置（方向保留；源引用语义、导入顺序、摘要信任边界三处已修正） |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 未开始 |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |

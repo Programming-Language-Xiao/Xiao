@@ -15,23 +15,36 @@ use crate::error::{CodegenError, Result};
 use crate::ir::{CodegenOptions, LlvmModule, validate_program};
 use crate::text::{escape_llvm, stable_hash};
 
+#[cfg(test)]
+#[path = "dynamic_architecture_tests.rs"]
+/// 锁定动态降低器门面、静态边界和职责子模块的依赖方向。
+mod architecture_tests;
 #[path = "dynamic/container.rs"]
+/// 数组、字典、集合、表构造与表描述符发射。
 mod container;
 #[path = "dynamic/control.rs"]
+/// 动态语句、条件和循环控制流发射。
 mod control;
 #[path = "dynamic/entry.rs"]
+/// 动态程序入口、C `main` 适配器和观察值发射。
 mod entry;
 #[path = "dynamic/expression.rs"]
+/// 动态表达式、字面量和表字段访问发射。
 mod expression;
 #[path = "dynamic/predicate.rs"]
+/// 纯 IR Runtime/容器谓词和稳定名称辅助。
 mod predicate;
 #[path = "dynamic/release.rs"]
+/// 临时值与所有权退出计划的释放发射。
 mod release;
 #[path = "dynamic/runtime_abi.rs"]
+/// Runtime 声明、目标 ABI 适配和 ABI 调用原语。
 mod runtime_abi;
 #[path = "dynamic/slot.rs"]
+/// 动态槽收集、边界校验和槽读写。
 mod slot;
 #[path = "dynamic/text.rs"]
+/// 动态路径文本解析、转义和 Cast 安全辅助。
 mod text;
 pub(crate) use self::predicate::program_uses_runtime;
 

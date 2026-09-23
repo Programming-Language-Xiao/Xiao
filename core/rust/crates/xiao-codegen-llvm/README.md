@@ -12,9 +12,19 @@
 
 ## 模块放置
 
-`src/ir.rs` 放置标量 LLVM 降低，`src/target.rs` 放置规范化目标，`src/toolchain.rs` 放置
-显式工具链适配，`src/build.rs` 放置内部构建/运行观察面。稳定 Runtime ABI 位于独立的
-`xiao-runtime-abi` crate；`.app`/签名编排由平台与发布工具负责。
+`src/ir.rs` 放置标量 LLVM 降低，`src/dynamic.rs` 是 N0-B 动态降低门面，具体实现拆在
+`src/dynamic/` 的谓词、文本、Runtime ABI、入口、槽、释放、控制流、表达式和容器模块中；
+`src/target.rs` 放置规范化目标，`src/toolchain.rs` 放置显式工具链适配，`src/build.rs` 放置
+内部构建/运行观察面。稳定 Runtime ABI 位于独立的 `xiao-runtime-abi` crate；`.app`/签名
+编排由平台与发布工具负责。
+
+## N0-B 动态降低器
+
+`dynamic.rs` 只保留生成器状态、生成流程和 LLVM 发射原语；职责实现见
+`src/dynamic/README.md`。动态路径可以依赖 `xiao-ir`、`xiao-runtime-abi` 和 crate 级
+`text.rs`，静态 `ir.rs` 不得反向依赖 `dynamic/`。源码级依赖回归由
+`src/dynamic_architecture_tests.rs` 锁定，拆分不新增 Runtime 能力、不改变所有权释放顺序，
+也不升 `CODEGEN_VERSION`。
 
 ## 允许与禁止依赖
 
