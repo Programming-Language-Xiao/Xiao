@@ -15,10 +15,10 @@ import {
 async function fakeTool(directory: string, name: string, version: string, target?: string, exitCode = 0): Promise<string> {
   const windows = process.platform === "win32";
   const path = join(directory, windows ? `${name}.cmd` : name);
-  const targetLine = target ? (windows ? `echo Target: ${target}` : `echo 'Target: ${target}'`) : "";
+  const targetLine = target ? (windows ? `echo Target: ${target}` : `echo 'Target: ${target}'`) : null;
   const body = windows
-    ? `@echo off\nif "%1"=="--version" (echo clang version ${version}&${targetLine}&exit /b 0)\nexit /b ${exitCode}\n`
-    : `#!/bin/sh\nif [ "$1" = "--version" ]; then echo "clang version ${version}"; ${targetLine}; exit 0; fi\nexit ${exitCode}\n`;
+    ? `@echo off\nif "%1"=="--version" (echo clang version ${version}${targetLine ? `&${targetLine}` : ""}&exit /b 0)\nexit /b ${exitCode}\n`
+    : `#!/bin/sh\nif [ "$1" = "--version" ]; then echo "clang version ${version}"${targetLine ? `; ${targetLine}` : ""}; exit 0; fi\nexit ${exitCode}\n`;
   await Bun.write(path, body);
   if (!windows) await chmod(path, 0o755);
   return path;

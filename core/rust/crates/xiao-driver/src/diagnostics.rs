@@ -841,7 +841,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "需要真实终端模拟器；按 10D 规则显式跳过环境缺失"]
+    #[ignore = "需要真实终端模拟器；准备方式见 10D §4.2"]
     /// 在具备终端环境时验证真实窗口握手。
     fn real_terminal_session_is_environment_gated() {
         let _ = DiagnosticSession::start(

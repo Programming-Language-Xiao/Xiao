@@ -31,9 +31,9 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 10C 的缺陷就是这么活下来的：那条测试从写出来那天起就没真跑过，
 **第一次真跑就失败了**。
 
-## 二、现状清单（2026-09-22 实测）
+## 二、现状清单（2026-09-23 实测）
 
-**7 个测试**在默认环境里静默跳过，涉及 **4 个环境变量**：
+**8 个测试**在默认环境里静默跳过，涉及 **4 个环境变量**和一个真实终端能力：
 
 | 文件 | 测试 |
 | --- | --- |
@@ -44,6 +44,7 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 | `xiao-driver/tests/n0_a_native_driver.rs` | `optional_real_frontend_to_native_round_trip` |
 | `xiao-driver/tests/n0_a_native_driver.rs` | `optional_frontend_artifact_differential_round_trip` |
 | `xiao-driver/tests/n0_b_dynamic_native.rs` | `optional_dynamic_string_native_round_trip` |
+| `xiao-driver/src/diagnostics.rs` | `real_terminal_session_is_environment_gated` |
 
 环境变量：`XIAO_CLANG`、`XIAO_LLVM_AS`、`XIAO_RUNTIME_LIBRARY`、`XIAO_TARGET_TRIPLE`。
 
@@ -56,7 +57,7 @@ n0_a_native_driver        6 passed    （2 个 optional 真跑并通过）
 n0_b_dynamic_native       6 passed, 1 FAILED   ← 唯一的失败，正是 10C
 ```
 
-**7 个里 1 个是坏的**。这个比例说明：静默跳过不是"省事"，是**在积累未验证的代码**。
+**8 个里 1 个是坏的**。这个比例说明：静默跳过不是"省事"，是**在积累未验证的代码**。
 
 ## 三、规范
 
@@ -74,7 +75,7 @@ fn optional_real_llvm_round_trip() { ... }
 
 ```text
 test result: ok. 40 passed; 0 failed; 0 ignored    ← 一眼看到有没有跳过
-test result: ok. 33 passed; 0 failed; 7 ignored    ← 这 7 个去哪了，写在文档里
+test result: ok. 33 passed; 0 failed; 8 ignored    ← 这 8 个去哪了，写在文档里
 ```
 
 它把"没跑"变成了**第四种状态**，而不是伪装成"通过"。
@@ -98,14 +99,14 @@ let clang = std::env::var_os("XIAO_CLANG")
 `#[ignore = "..."]` 的字符串里写清**需要哪些变量**，并指向本文 §4。
 否则接手者只知道"它被跳过了"，不知道"怎么让它跑起来"。
 
-## 四、怎么准备齐备环境（Windows）
+## 四、怎么准备齐备环境
 
 **这一节是 10C 摸索出来的，照抄即可。**
 
 前置：安装 Visual Studio 的 C/C++ 桌面开发负载（提供 MSVC 的 `link.exe`），
 以及 MSYS2 的 clang / llvm-as（提供能编译 LLVM IR 的 clang）。
 
-准备一个 `.bat`（**必须全 ASCII，见 §4.2**）：
+准备一个 `.bat`（**必须全 ASCII，见 §4.3**）：
 
 ```bat
 @echo off
@@ -122,7 +123,44 @@ cargo test -p xiao-codegen-llvm -p xiao-driver -- --ignored
 **先决条件**：`XIAO_RUNTIME_LIBRARY` 指向的 staticlib 要先构建出来
 （`cargo build --release -p xiao-runtime`；它的 `crate-type` 含 `staticlib`）。
 
-### 4.1 三个必须知道的坑
+### 4.2 Linux、WSL 与 macOS
+
+Linux 与 WSL 使用发行版提供的 LLVM，macOS 使用 Homebrew LLVM；三者都必须把目标三元组
+设成 `rustc -vV` 的 `host` 行，不能手工沿用 Windows 的 COFF 配置。复现脚本
+`tools/platform-reproduction/reproduce.sh native` 会执行同一套准备、门控测试和端到端回环。
+
+Ubuntu/Arch WSL 的最小准备：
+
+```sh
+sudo apt-get install clang llvm lld build-essential xvfb xterm   # Ubuntu
+sudo pacman -S --needed base-devel clang llvm lld                 # Arch
+cargo build --manifest-path core/rust/Cargo.toml -p xiao-runtime --release
+export XIAO_CLANG="$(command -v clang)"
+export XIAO_LLVM_AS="$(command -v llvm-as)"
+export XIAO_LLC="$(command -v llc)"
+export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
+export XIAO_TARGET_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
+cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
+```
+
+macOS 需要先把 Homebrew LLVM 放入 PATH，并保留 `osascript` 与 `open`：
+
+```sh
+brew install llvm
+export PATH="$(brew --prefix llvm)/bin:$PATH"
+export XIAO_CLANG="$(command -v clang)"
+export XIAO_LLVM_AS="$(command -v llvm-as)"
+export XIAO_LLC="$(command -v llc)"
+export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
+export XIAO_TARGET_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
+cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
+```
+
+`real_terminal_session_is_environment_gated` 还要求真实终端能力：Linux/WSL 要有可用的
+`DISPLAY`（无桌面 runner 使用 `xvfb-run`），macOS 要能执行 `osascript`/`open -a Terminal`。
+没有这些能力时，显式 `--ignored` 必须失败，不能把终端测试重新改成条件 `return`。
+
+### 4.3 三个必须知道的坑
 
 1. **`vcvars64.bat` 会改 PATH**，但 clang 需要**同时**能看到 MSVC 的工具——
    所以顺序是**先 vcvars，再把 MSYS 加进 PATH**，不能反过来。
@@ -133,37 +171,38 @@ cargo test -p xiao-codegen-llvm -p xiao-driver -- --ignored
    （报 `'xxx' is not recognized` 之类），而且错误信息会误导排查方向——
    10C 的排查在这上面绕了好几轮。
 
-### 4.2 关于 `XIAO_RUNTIME_LIBRARY` 的路径
+### 4.4 关于 `XIAO_RUNTIME_LIBRARY` 的路径
 
 它必须是**已经构建好的** staticlib。若路径不存在，测试应当**失败**（按 §3.2），
 而不是退回跳过——**"库没构建"是配置错误，不是环境缺失**。`XIAO_TARGET_TRIPLE` 也必须
-明确设为与 Runtime staticlib 相同的目标；本批 Windows 原生复现使用
-`x86_64-pc-windows-msvc`。
+    明确设为与 Runtime staticlib 相同的目标；Windows 使用 `x86_64-pc-windows-msvc`，
+    Linux 使用 `x86_64-unknown-linux-gnu` 或 `aarch64-unknown-linux-gnu`，macOS 使用
+    `x86_64-apple-darwin` 或 `aarch64-apple-darwin`。
 
 ## 五、门禁要求
 
 1. **默认门禁**：`cargo test` 的汇总里**记录 `ignored` 的数量**。
-   与本文 §2 的清单（当前 7 个）不一致时，要么是新增了环境依赖测试（好事，更新清单），
+   与本文 §2 的清单（当前 8 个）不一致时，要么是新增了环境依赖测试（好事，更新清单），
    要么是有人把测试从 `ignored` 改回了条件 `return`（**要拒绝**）。
-2. **每批至少一次齐备环境跑**：把 §4 的 `.bat` 跑一次，结果写进该批的交接记录。
+2. **每批至少一次齐备环境跑**：把对应平台的 §4 脚本跑一次，结果写进该批的交接记录。
    **这是唯一能证明那些测试还活着的动作。**
 3. **`ignored` 数归零不一定是好事**：它可能意味着有人为了"门禁好看"把它们改成了
    条件 `return`——那正是本文要防的形态。
 
 ## 六、验收
 
-1. §2 清单里的 7 个测试**全部标了 `#[ignore]`**，且理由字符串能定位到本文 §4；
-2. 默认 `cargo test` 的汇总里能看到 `7 ignored`；
+1. §2 清单里的 8 个测试**全部标了 `#[ignore]`**，且理由字符串能定位到本文 §4；
+2. 默认 `cargo test` 的汇总里能看到 `8 ignored`；
 3. `cargo test -- --ignored` 在齐备环境里**全部执行**（10C 修复前允许 1 个失败，
    修复后必须全绿）；
 4. 缺环境时跑 `--ignored` 会**失败**，不是静默跳过（§3.2）；
 5. 本批交接记录里有**一次齐备环境的完整结果**。
 
-## 七、落地记录（2026-09-22）
+## 七、落地记录（2026-09-23）
 
-§2 列出的 7 条测试现已全部使用 `#[ignore = "...；准备方式见 10D §4"]`：
-`xiao-codegen-llvm` 的 4 条和 `xiao-driver` 的 3 条。默认运行
-`cargo test -p xiao-codegen-llvm -p xiao-driver` 的汇总为 7 ignored（分别为 3、1、2、1），
+§2 列出的 8 条测试现已全部使用 `#[ignore = "...；准备方式见 10D §4"]`：
+`xiao-codegen-llvm` 的 4 条、`xiao-driver` 的 3 条和诊断窗口的 1 条。默认运行
+`cargo test -p xiao-codegen-llvm -p xiao-driver` 另加诊断单元测试时的汇总为 8 ignored（分别为 3、1、2、1、1），
 没有把缺环境伪装成通过；显式运行 `--ignored` 时会用 `expect` 检查变量，Runtime 库路径
 不存在也会直接断言失败。
 
@@ -182,14 +221,15 @@ n0_b_dynamic_native          1 passed
 MSYS2 clang/llvm-as 22.1.2 和 Rust 1.96.0 均为本次记录的实际工具；缺少 `XIAO_CLANG` 时
 单独执行 `optional_real_llvm_round_trip --ignored` 已确认会失败并给出配置错误。
 
-本次只完成 Windows 原生复现。Linux/macOS 仍列为待复现；WSL 和容器共享宿主调度或多一层
-文件系统，不能与原生数字并列，也没有被宣称为跨平台验证。
+Windows 的 7 条工具链门控结果已有历史记录；新增的真实终端测试和 Linux/WSL/macOS 的
+`--ignored` 结果由 11X0-P 的平台记录逐项补齐。WSL 和容器共享宿主调度或多一层文件系统，
+不能与原生数字并列；未运行的 macOS 不能被宣称为已验证。
 
 ## 八、不负责
 
 - **不改变这些测试的断言内容**——本文只管"它们有没有跑"，不管"它们断得对不对"；
-- **不引入 CI**（CI 方向见 00. 决策基线的 GitHub Actions 决定，属独立批次）；
-- **不做非 Windows 平台的准备方式**——本节只覆盖当前开发环境。
+- **不修改测试断言**——本批只补跨平台准备与证据记录；
+- **不采性能数字**——Linux/WSL/容器的功能证据不进入 09R3 冻结报告。
 
 ## 相关页面
 

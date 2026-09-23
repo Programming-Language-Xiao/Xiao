@@ -16,6 +16,7 @@ RUN apt-get update \
         lld \
         llvm \
         pkg-config \
+        xauth \
         xvfb \
         xterm \
     && rm -rf /var/lib/apt/lists/* \
