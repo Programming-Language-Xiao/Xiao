@@ -96,18 +96,18 @@
 | 10A | [LLVM 原生构建闭环](10a-n0-native-closure.md) | 手写 IR 文本 + 外部工具链、`xiao-runtime-abi`、四批交付（N0-A 纯静态 → N0-D 验证裁剪） | N0-A 已完成；N0-B Runtime ABI 已接续落地（Windows 原生已复现；Linux/macOS 待复现） |
 | 10B | [N0-B Runtime ABI](10b-n0-runtime-abi.md) | 动态值的 ABI 表示、真实引用计数与 `Weak`、容器与表 ABI、正常路径的释放计划 | 已落地（ABI/容器/表/正常释放计划；异常展开留 N0-C） |
 | 10C | [原生 Runtime 链接缺陷修复交接](10c-native-runtime-link-fix.md) | `LNK1120` 的完整证据、Rust staticlib 原生库查询、MSVC ABI 调用约定修复与实际链接结果 | 已完成（Windows 原生动态 Runtime 闭环通过；Linux/macOS 待复现） |
-| 10D | [环境依赖测试专项规范](10d-environment-gated-test-spec.md) | `#[ignore]` 取代静默 `return`、齐备环境的准备方式与三个坑、门禁的 `ignored` 计数要求 | 已完成（7 条门控测试默认可见，Windows 原生显式运行全绿） |
-| 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 进行中（X0-B/C/D/E/T 已落地；Linux 原生/WSL/macOS 待复现） |
-| 11X0 | [跨平台工具链：协议与 CLI](11x0-cli-protocol-and-toolchain.md) | 进程协议 + 长度前缀 JSON、协议单一来源、X0-A/B/C/D/E/T 交付 | X0-A/B/C/D/E/T 已落地（Windows 原生；Linux Docker 功能证据；Linux 原生/WSL/macOS 待复现；`print` 不在本阶段） |
+| 10D | [环境依赖测试专项规范](10d-environment-gated-test-spec.md) | `#[ignore]` 取代静默 `return`、齐备环境的准备方式与三个坑、门禁的 `ignored` 计数要求 | 已完成（8 条门控测试默认可见；Linux Docker amd64 显式运行 8 条全绿） |
+| 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 进行中（X0-B/C/D/E/T 已落地；Linux Docker amd64 功能证据；ARM64/WSL/macOS 待完成） |
+| 11X0 | [跨平台工具链：协议与 CLI](11x0-cli-protocol-and-toolchain.md) | 进程协议 + 长度前缀 JSON、协议单一来源、X0-A/B/C/D/E/T 交付 | X0-A/B/C/D/E/T 已落地（Windows 原生；Linux Docker amd64 功能证据；ARM64 仿真阻塞、WSL 工具链缺失、macOS CI 未运行；`print` 不在本阶段） |
 | 11X0-B | [TypeScript CLI 骨架](11x0b-cli-shell.md) | `xiao` 命令入口、命令解析与帮助、`xiao run` / `xiao config`、呈现层（颜色四层降级、**中文宽度**、非 TTY） | 已完成（Windows 原生回环；项目测试语义与接线由 X0-T 完成；`print` 仍后置） |
-| 11X0-C | [独立可执行与平台矩阵](11x0c-packaging-and-platforms.md) | `bun build --compile` 独立可执行、`xiao-core` 同目录分发与生产发现契约、验证环境矩阵（验证 ≠ 验收） | 已落地（Windows 原生回环；Linux Docker 功能/构建证据；Linux 原生/WSL/macOS 待复现；构建接续 X0-E） |
-| 11X0-D | [`-debug` 与诊断窗口](11x0d-debug-diagnostics-window.md) | 诊断激活位、独立诊断进程与事件管道、平台终端启动与 TUI、启动失败与运行中断的区分 | 已完成（Windows 原生口径；Linux 原生/WSL/macOS 按平台清单待复现） |
-| 11X0-E | [`xiao build` 与主机工具链发现](11x0e-build-and-toolchain.md) | `build` 命令路由、主机工具链发现、原生启动 shim、运行时配置固化；含跨批次待完善清单 | 已落地（Windows 原生 build/run/debug；Linux 原生/WSL/macOS 待复现） |
+| 11X0-C | [独立可执行与平台矩阵](11x0c-packaging-and-platforms.md) | `bun build --compile` 独立可执行、`xiao-core` 同目录分发与生产发现契约、验证环境矩阵（验证 ≠ 验收） | 已落地（Windows 原生回环；Linux Docker amd64 功能/构建证据；ARM64/WSL/macOS 仍待复现或受阻；构建接续 X0-E） |
+| 11X0-D | [`-debug` 与诊断窗口](11x0d-debug-diagnostics-window.md) | 诊断激活位、独立诊断进程与事件管道、平台终端启动与 TUI、启动失败与运行中断的区分 | 已完成（Windows 原生与 Linux Docker Xvfb 功能证据；ARM64/WSL/macOS 按平台清单待复现） |
+| 11X0-E | [`xiao build` 与主机工具链发现](11x0e-build-and-toolchain.md) | `build` 命令路由、主机工具链发现、原生启动 shim、运行时配置固化；含跨批次待完善清单 | 已落地（Windows 原生与 Linux Docker amd64 build/run/debug；ARM64/WSL/macOS 待完成） |
 | 11X0-F | [`protocol.rs` 解耦交接](11x0f-protocol-decoupling.md) | 2354 行（94%）预防性拆分：门面 + 九个子模块、依赖 DAG 与架构测试、七步分提交 | 已完成（门面 59 行；九模块与架构回归测试已落地；公开 API、协议夹具和既有测试未改） |
 | 11X0-G | [`checker.rs` 解耦交接](11x0g-type-checker-decoupling.md) | 2200 行（88%）预防性拆分：`RuntimeCheckKind` 跨 crate 路径不变、常量求值作最安全起点、六步分提交 | 已完成（门面 166 行；六个职责子模块、架构回归测试和模块文档已落地；公开 API、类型规则与 `xiao-types/tests/` 未改） |
 | 11X0-H | [`dynamic.rs` 解耦交接](11x0h-llvm-dynamic-decoupling.md) | 2172 行（87%）预防性拆分：逐字节不变为最强验收、静态/动态边界、**发现 escape_llvm/stable_hash 重复实现** | 已完成（门面 248 行；九个动态职责子模块、架构回归测试和模块文档已落地；Runtime ABI、静态边界与 LLVM 文本未变） |
 | 11X0-T | [项目测试语义与结果协议](11x0t-project-test-semantics.md) | `xiao test` 的语义裁定、测试文件发现、确定性执行顺序、隔离/超时边界、机器可读结果协议 | 已完成（项目测试发现、协议夹具、Rust/TypeScript 接线、逐用例结果与 UseDocs 已落地；跨平台原生复现仍按清单记录） |
-| 11X0-P | [跨平台复现（Linux 原生 / WSL / macOS）](11x0-platform-reproduction.md) | 清 X0 积压的平台债：容器多架构（含 arm64 架构缺陷）、WSL 反例探测、CI macOS runner；补齐容器工具链与复现脚本 | 待开工（交接文档已就绪；X0 第 2/4/5/6 条的唯一阻塞） |
+| 11X0-P | [跨平台复现（Linux 原生 / WSL / macOS）](11x0-platform-reproduction.md) | 清 X0 积压的平台债：容器多架构（含 arm64 架构缺陷）、WSL 反例探测、CI macOS runner；补齐容器工具链与复现脚本 | 受阻（Linux amd64 功能证据与架构修复已落地；ARM64 仿真、WSL 工具链、macOS runner 尚未完成） |
 | 11A.1 | [包源协议：决策、待决与风险（待审）](11a1-package-source-protocol-review.md) | 源身份规范化、JSON 权威与 Protobuf 派生、解析键与同一性、canonical JSON、源列表导入的三条规则；含六条待审风险 | 已审并处置（方向保留；源引用语义、导入顺序、摘要信任边界三处已修正） |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 未开始 |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |

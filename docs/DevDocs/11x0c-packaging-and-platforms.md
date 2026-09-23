@@ -170,11 +170,12 @@ X0-A 已经冻结了协议：首帧 `hello`、`protocol_version` + 统一 `core_
 ### 3.2 本批的口径
 
 - **Windows 原生**：完整验收；
-- **Linux Docker**：本批已取得**可复现的构建与功能证据**，并在交接记录里逐项说明
-  环境、命令和结果；证据不等同真实 Linux 主机验收；
-- **WSL**：当前 Ubuntu/Arch 发行版没有本批固定工具链，仍列待复现，不把 Docker 的结果冒充
-  WSL 原生证据；
-- **macOS**：**没有环境**，如实记为**待复现**，**不得**宣称已验证；
+- **Linux Docker**：`linux/amd64` 已取得**可复现的构建与功能证据**，并在交接记录里
+  逐项说明环境、命令和结果；`linux/arm64` 在 Docker Desktop 的 QEMU `RUN` 阶段被
+  `exec format error` 阻塞；这些证据都不等同真实 Linux 主机验收；
+- **WSL**：Ubuntu 26.04 与 Arch 发行版都能启动，但当前没有 `rustc`、Bun、clang/LLVM
+  工具链，仍列为环境缺失；不把 Docker 的结果冒充 WSL 原生证据；
+- **macOS**：CI 工作流已经建立但尚未执行，仍如实记为**待复现**，**不得**宣称已验证；
 - **X0 第 2 条的完整达成**：需要**真实 Linux 主机**复现一次，或说明为什么容器证据
   足以替代。**这个判断要写出来**，不能含糊。
 
@@ -205,6 +206,22 @@ X0-A 已经冻结了协议：首帧 `hello`、`protocol_version` + 统一 `core_
 
 这份记录证明 Linux 容器中的构建、核心发现和功能回环可复现，不关闭“真实 Linux 主机”
 或 macOS 原生待复现项。
+
+### 3.5 11X0-P 更新记录（2026-09-24）
+
+平台复现镜像已改为 `xiao-platform-reproduction:linux-amd64`，使用 Debian 13、
+Rust `1.96.0`、Bun `1.4.1` 和 LLVM `19.1.7`；镜像摘要为
+`sha256:196c4439891e619cf1909023027732c5c1c3eb64c98e33482aa96fe02dde9e6c`。
+按 `tools/platform-reproduction/reproduce.sh native` 执行后，`xiao build`、
+独立 ELF 运行、同目录核心发现、`xiao test`（`total=1`、`passed=1`）和 `-debug`
+构建均通过，`cargo test -- --ignored` 的 8 条门控测试全部通过。该结果是 Linux
+amd64 容器功能证据，不能替代裸机 Linux 验收，也不进入 09R3 性能冻结。
+
+ARM64 已完成 `TargetDescription::host()` 的 `target_arch` 修复与断言，但在
+`docker buildx build --platform linux/arm64 ... --load` 的 Dockerfile `RUN` 阶段仍报
+`exec /bin/sh: exec format error`，没有产生 ARM64 产物。Ubuntu/Arch WSL 的探测结果是
+两者均缺少 Rust、Bun、clang、`llvm-as` 和 `llc`，所以没有执行原生脚本。macOS
+工作流尚未运行；这些项继续保持待复现或外部环境阻塞。
 
 ---
 

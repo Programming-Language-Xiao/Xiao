@@ -30,12 +30,13 @@
 ### 现状盘点（2026-09-24 实测）
 
 ```text
-已完成的证据   Windows 原生：xiao build / run / debug 端到端
-              Linux Docker：CLI/核心构建 + run 回环（09-B0-D、X0-C 各一次）
-              macOS：无
-待复现        Linux 原生、WSL（Ubuntu/Arch）、macOS
-平台分支      31 处（Rust cfg + TS process.platform），Linux/macOS 路径
-              **零功能验证**，只有"代码存在 + 源码文本断言"
+已完成的证据   Windows 原生：xiao build / run / test / debug 端到端
+              Linux Docker amd64：工具链、构建、独立运行、xiao test 与 8 条门控测试全绿
+              Linux ARM：目标描述修复与架构断言已落地；镜像构建被主机 QEMU 执行层阻塞
+              macOS：仅建立 CI 复现工作流，当前环境未运行
+待补证据      Linux 真机、WSL（Ubuntu/Arch）工具链复现、Docker arm64、macOS runner
+平台分支      31 处（Rust cfg + TS process.platform）；Linux amd64 已有端到端证据，
+              ARM/WSL/macOS 仍不得写成已验证
 ```
 
 **两个关键事实要先说清**：
@@ -70,14 +71,14 @@
 容器「内核版本、cgroup、文件系统仍然与裸机有差异，**而且容器里没有真实的安装路径与用户环境**」。
 **§五.1 给出本批的替代方案与必须写出的判断。**
 
-### 2.1 ⚠️ Arch 是**待建**环境，不是既有环境
+### 2.1 ⚠️ Arch WSL 已存在，但工具链仍未齐备
 
 `11x0c:76,80-82` 把 Docker(Arch) 列为「发行版差异验证」环境，
 `11x0d:214` 的翻车点 8 更是依赖「本仓有 Ubuntu 与 Arch 两个验证环境」。
-**但全仓唯一实测过的镜像是 Debian 13 (trixie)**（`11x0c:197`），
-**没有任何 Arch 记录**。
-
-**本批要么补上 Arch，要么把那两处表述改准**，不能继续让文档依赖一个不存在的环境。
+本机现在确实有 `Ubuntu-26.04` 与 `archlinux` 两个 WSL 发行版，但
+2026-09-24 的探测显示两者都没有 `rustc`、Bun、`clang`、`llvm-as` 或 `llc`。
+因此它们只能记录为**环境存在、工具链缺失**，不能冒充 WSL 功能通过；Docker
+镜像仍是 Debian 13，不把不存在的 Arch Docker 结果写进证据。
 
 ---
 
@@ -99,8 +100,10 @@
 ### 3.2 补复现脚本
 
 `09r-bytecode-machine-research.md:462`（R1-AE）要求
-「Linux 与 macOS 写成明确的待复现清单**与复现脚本**」——
-**全仓至今没有任何 `.sh` / `.ps1` / CI workflow**。这是悬空的要求，本批要兑现。
+「Linux 与 macOS 写成明确的待复现清单**与复现脚本**」。本批已补齐
+`tools/platform-reproduction/reproduce.sh`、`reproduce.ps1`、Dockerfile 和
+`.github/workflows/platform-reproduction.yml`；Linux amd64 已实际执行脚本，
+ARM64、WSL 和 macOS 的未完成项保留在 §5.6。
 
 ### 3.3 更新 `10D` 的 `#[ignore]` 清单（7 → 8）
 
@@ -133,7 +136,8 @@ X0-D 新增的 `xiao-driver/src/diagnostics.rs:844`（真实终端模拟器）�
 
 ### 4.3 ★ 顺带要抓的架构缺陷（**本批的高价值产出**）
 
-`core/rust/crates/xiao-codegen-llvm/src/target.rs:100` 的 `TargetDescription::host()`：
+`core/rust/crates/xiao-codegen-llvm/src/target.rs:100` 的 `TargetDescription::host()`
+曾经按操作系统直接返回 x86_64 目标：
 
 ```rust
 #[cfg(target_os = "macos")]
@@ -142,12 +146,14 @@ X0-D 新增的 `xiao-driver/src/diagnostics.rs:844`（真实终端模拟器）�
 { Self::linux_x86_64() }     // ← 同上
 ```
 
-**整个文件没有任何 `target_arch` 判断**。而同一条规则在 TS 侧
+而同一条规则在 TS 侧
 （`cli/ts/src/platform/core.ts:77-91` 的 `hostTarget`）**是按 `process.arch` 动态推导的**
 （`arm64` → `aarch64`）。
 
 **这是本仓头号病（同一规则两层各写一份然后漂移）的又一实例**：
-TS 侧写对了、Rust 侧写死了。**至今没被发现，是因为所有已完成的复现都是 x86_64。**
+TS 侧写对了、Rust 侧写死了。它已在本批修复为按 `target_arch` 返回
+`x86_64`/`aarch64` 的 Windows、Linux 和 macOS 目标，并增加
+`host_target_architecture_matches_compile_time_target` 断言。
 
 **影响面是单点**：`ProtocolTarget::host()`（`protocol/request.rs:38`）直接
 `from_target(TargetDescription::host())`，**修一处即可覆盖协议侧**。
@@ -156,9 +162,10 @@ TS 侧写对了、Rust 侧写死了。**至今没被发现，是因为所有已�
 `x86_64-*` 三元组。而 **GitHub Actions 的 `macos-14`+ runner 全是 arm64**，
 `ubuntu-24.04-arm` 也可用——**手段 2 与手段 4 都会踩到它**。
 
-**要求**：本批**必须**在 arm64 上暴露并修掉它，并补一条
-「`host()` 的三元组与编译期 `target_arch` 一致」的断言。
-**现有测试抓不到它**：`n0_a.rs` 用 `TargetDescription::host()` 只当输入，从不断言其值。
+ARM64 镜像原本应当负责把这条断言真正编译并执行；但本机在安装了
+`qemu-aarch64` binfmt 后，`docker buildx build --platform linux/arm64` 仍在
+Dockerfile 的 `RUN apt-get ...` 阶段报 `exec /bin/sh: exec format error`，所以
+§5.6 只记录为**仿真执行阻塞**，不宣称 ARM64 运行时证据完成。
 
 ### 4.4 环境依赖测试
 
@@ -167,10 +174,11 @@ TS 侧写对了、Rust 侧写死了。**至今没被发现，是因为所有已�
 `10d §五 门槛 2` 说这是「唯一能证明那些测试还活着的动作」。
 
 ⚠️ `10d §四` 的**环境准备方式只有 Windows**（`:101-141`），
-且 `§八`（`:192`）明写「不做非 Windows 平台的准备方式」——
-**Linux/macOS 的准备方式是本批的新增工作**：
-把 `XIAO_CLANG` / `XIAO_LLVM_AS` 指向发行版 LLVM ≥18，
-`XIAO_RUNTIME_LIBRARY` 指向 `libxiao_runtime.a`，`XIAO_TARGET_TRIPLE` 设成对应三元组。
+且 `§八`（`:192`）明写「不做非 Windows 平台的准备方式」。本批已为
+Linux/macOS 补上脚本路径：把 `XIAO_CLANG` / `XIAO_LLVM_AS` / `XIAO_LLC`
+指向 LLVM ≥18，把 `XIAO_RUNTIME_LIBRARY` 指向 `libxiao_runtime.a`，并把
+`XIAO_TARGET_TRIPLE` 设成与 `rustc -vV` 一致的三元组。Linux Docker amd64
+按此方式跑通；WSL 因工具缺失未进入测试，macOS 尚未执行。
 
 ---
 
@@ -193,8 +201,9 @@ TS 侧写对了、Rust 侧写死了。**至今没被发现，是因为所有已�
 - **(a)** 在真实 Linux 主机上复现一次；**或**
 - **(b)** 写明为什么容器/WSL 证据足以替代。
 
-**本批的立场**：WSL 跑的是**真 Linux 内核**（不是容器），配合 CI 的原生 runner，
-**可以**构成 (b)。**但这个判断必须在落地记录里写出来，不能含糊带过。**
+**本批的实际立场**：当前没有真实 Linux 主机或已执行的 macOS runner 结果，
+而 WSL 两个发行版也缺少工具链，因此本批**不采用 (b)**。Docker amd64 只能
+作为可复现的 Linux 功能证据；X0 第 2 条仍保持未收口，具体原因见 §5.6 与 §8.1。
 
 ### 5.2 禁止在没跑之前改状态
 
@@ -233,18 +242,99 @@ TS 侧写对了、Rust 侧写死了。**至今没被发现，是因为所有已�
 - 不新增 Rust 依赖前先想清楚 `check:lock`（`tests/benchmarks` 是独立 crate）。
 - 提交标题带规范前缀、**正文说明为什么**（已由 `.githooks/commit-msg` 兜住）。
 
+### 5.6 2026-09-24 实测记录
+
+#### Linux Docker `linux/amd64`
+
+环境与镜像：
+
+| 项 | 结果 |
+| --- | --- |
+| 镜像 | `xiao-platform-reproduction:linux-amd64`，镜像摘要 `sha256:196c4439891e619cf1909023027732c5c1c3eb64c98e33482aa96fe02dde9e6c` |
+| 系统 | Debian 13（trixie），Linux `x86_64`，运行在 Docker Desktop 的 WSL2 内核上 |
+| 工具链 | Rust `1.96.0`；Bun `1.4.1`；clang / `llvm-as` / `llc` `19.1.7` |
+| 目标 | `x86_64-unknown-linux-gnu` |
+
+完整命令：
+
+```text
+docker build --platform linux/amd64 -f tools/platform-reproduction/Dockerfile -t xiao-platform-reproduction:linux-amd64 .
+docker run --rm --platform linux/amd64 -e XIAO_USE_XVFB=1 -v "${PWD}:/workspace" -w /workspace xiao-platform-reproduction:linux-amd64 bash tools/platform-reproduction/reproduce.sh native
+```
+
+结果：
+
+- `cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored` 在
+  `xvfb-run` 下 8 条门控测试全部通过：`n0_a` 3 条、`n0_b_dynamic` 1 条、
+  `n0_a_native_driver` 2 条、`n0_b_dynamic_native` 1 条、真实终端测试 1 条；
+  合计 `8 passed, 0 failed`。
+- `cargo test -p xiao-driver` 通过（默认汇总保留 1 条 ignored）；`bun test` 为
+  `82 pass / 1 skip / 0 fail`；`bunx tsc --noEmit`、基准 crate `cargo check`、
+  `bun run check`、`cargo fmt --all -- --check` 均通过。
+- `bun run check:coverage` 为 `5916/5916`，公共 API 为 `3052/3052`；
+  `tests/benchmarks/reports/` 没有性能数字或文件差异。
+- 独立 `bun-linux-x64` CLI 打包成功；`xiao build`（含 LLVM 输出）、`-debug build`、
+  仓库外 `xiao run` 和 `xiao test` 全部成功。产物为 ELF x86-64；`xiao run` 返回
+  `exit_code=0`、`exit_name=success`，`xiao test` 返回 `total=1`、`passed=1`、
+  `failed=0`、`exit_code=0`。
+
+这证明 Debian 容器内的 Linux amd64 功能链路和当前架构断言可运行；它不证明裸机
+Linux 安装路径，也不把容器结果写入 09R3 性能验收。
+
+#### Linux Docker `linux/arm64`
+
+已执行：
+
+```text
+docker run --privileged --rm tonistiigi/binfmt --install arm64
+docker buildx build --platform linux/arm64 -f tools/platform-reproduction/Dockerfile -t xiao-platform-reproduction:linux-arm64 --load .
+```
+
+`binfmt` 报告 `qemu-aarch64` 已注册，BuildKit 也列出 `linux/arm64`；但镜像在
+Dockerfile 的 `RUN apt-get ...` 阶段仍失败：
+
+```text
+exec /bin/sh: exec format error
+```
+
+因此 ARM64 镜像没有生成，`cargo test` 和 `reproduce.sh` 未开始。该项状态是
+**主机 Docker Desktop 的 QEMU/binfmt 执行阻塞**，不是仓库代码失败；`host()` 的
+`target_arch` 修复和断言已经提交，但 ARM64 的运行时证据仍待能执行 ARM64 `RUN`
+步骤的主机或 CI runner。
+
+#### WSL（Ubuntu 与 Arch）
+
+两个发行版均能启动并挂载工作树，探测命令为：
+
+```text
+wsl.exe -d Ubuntu-26.04 -- bash -lc "cd /mnt/d/project/Xiao/Xiao && uname -a && cat /etc/os-release && ldd --version | head -1 && rustc -vV && bun --version && clang --version | head -1 && llvm-as --version | head -1 && llc --version | head -1"
+wsl.exe -d archlinux -- bash -lc "cd /mnt/d/project/Xiao/Xiao && uname -a && cat /etc/os-release && ldd --version | head -1 && rustc -vV && bun --version && clang --version | head -1 && llvm-as --version | head -1 && llc --version | head -1"
+```
+
+Ubuntu 结果为 Ubuntu 26.04 LTS、WSL2 `6.6.114.1-microsoft-standard-WSL2`、
+`x86_64`、glibc `2.43`；Arch 结果为 Arch Linux、同一 WSL2 内核、`x86_64`、
+glibc `2.43`。两者都报告 `rustc`、Bun、`clang`、`llvm-as`、`llc` 未安装，
+所以没有执行 `reproduce.sh native`，状态记为**环境缺失**而非通过或失败。
+
+#### macOS CI
+
+`.github/workflows/platform-reproduction.yml` 已加入 `macos-14`、Bun `1.4.1`、
+Rust `1.96.0` 和 Homebrew LLVM；Linux 安装步骤也补上了 `xauth`。当前没有执行
+GitHub Actions runner，因此没有 Mach-O、`osascript` 或 `open -a Terminal` 证据，
+macOS 必须继续保持**待复现**。
+
 ---
 
-## 六、分步提交
+## 六、分步执行记录
 
-| 步 | 内容 | 为什么这个顺序 |
+| 步 | 实际结果 | 状态 |
 | --- | --- | --- |
-| **1** | 补 Dockerfile 的 C/LLVM（§3.1）+ 复现脚本（§3.2） | **没有它，后面一行 `xiao build` 都验不了** |
-| **2** | Docker `linux/amd64` 全链路复现 | 打底；与已有两次实测对齐 |
-| **3** | **Docker `linux/arm64`**，暴露并修 §4.3 的架构硬编码 | **独立一笔**——它抓的是真缺陷，不该混在复现里 |
-| **4** | WSL（Ubuntu + Arch） | 真内核证据；Arch 是反例探测 |
-| **5** | CI：GitHub Actions 多平台矩阵 | macOS 走它；Linux/Windows 一并纳入 |
-| **6** | `10D` 清单 7→8、平台记录逐项更新、X0 收口判定 | 收尾 |
+| **1** | Dockerfile、Linux/macOS 复现脚本、PowerShell 入口和 CI 矩阵已落地；镜像含 C/LLVM、`xauth`、Xvfb 与 xterm | ✅ |
+| **2** | Docker `linux/amd64` 全链路复现，含 `xiao build`、独立运行、`xiao test`、`-debug` 和 8 条门控测试 | ✅ |
+| **3** | ARM64 目标缺陷已修复并加断言；镜像构建被主机 QEMU 的 `exec format error` 阻塞 | ⚠️ 待 ARM64 runner |
+| **4** | Ubuntu/Arch WSL 可启动，但 Rust/Bun/LLVM 全部缺失，未进入复现脚本 | ⚠️ 待准备环境 |
+| **5** | 多平台 GitHub Actions 工作流已提交；macOS runner 尚未实际运行 | ⚠️ 待 CI |
+| **6** | `10D` 清单已从 7 条修正为 8 条；平台记录、机器状态和 X0 判定在本批同步 | ✅ |
 
 **每一步的验收**：既有测试不改、`tests/benchmarks/reports/` 无 diff、门禁全绿。
 
@@ -285,11 +375,11 @@ TS 侧写对了、Rust 侧写死了。**至今没被发现，是因为所有已�
 | # | 条件 | 现状 |
 | --- | --- | --- |
 | 1 | CLI 接成 `run`/快捷运行/`build`/`test`/`config` | ✅ 已满足（X0-T 补齐了 `xiao test`） |
-| 2 | **三平台最小构建矩阵通过** | ❌ 本批要解决 |
-| 3 | **01 至本阶段的"已确定"规则都有自动化规格测试** | ⚠️ **无人认领**，见 §8.2 |
-| 4 | CLI 用 TS 构建并通过静态检查；**三平台入口行为一致** | ⚠️ 前半满足，后半本批解决 |
-| 5 | **三平台独立 `xiao` 可执行并能调用内核** | ❌ 本批要解决 |
-| 6 | **三平台均能发现并调用兼容版本核心** | ⚠️ 实现是平台中立的，但只有 Windows 验证 |
+| 2 | **三平台最小构建矩阵通过** | ⚠️ 未收口：Linux amd64 Docker 功能证据通过，ARM64 被主机 QEMU 阻塞，WSL/macOS 未完成 |
+| 3 | **01 至本阶段的"已确定"规则都有自动化规格测试** | ⚠️ 独立规格测试债，登记为 `X0-SPEC-001`，不属于本批平台债 |
+| 4 | CLI 用 TS 构建并通过静态检查；**三平台入口行为一致** | ⚠️ Linux amd64 静态检查与入口回环通过；ARM64、WSL、macOS 仍缺证据 |
+| 5 | **三平台独立 `xiao` 可执行并能调用内核** | ⚠️ Linux amd64 ELF 独立产物与核心发现通过；ARM64/macOS 未完成，不能收口 |
+| 6 | **三平台均能发现并调用兼容版本核心** | ⚠️ Linux amd64 同目录发现与开发回环通过；WSL 工具链缺失，macOS 未运行 |
 | 7 | `xiao config` 布尔结构化写入 | ✅ 已满足 |
 | 8 | `-debug` 传递与独立窗口 | ⚠️ Windows 原生满足；POSIX 只有源码文本断言 |
 
@@ -304,9 +394,10 @@ TS 侧写对了、Rust 侧写死了。**至今没被发现，是因为所有已�
 - `tests/unit/` 与 `tests/integration/` **只有 README**；
 - **全仓没有任何文档宣称这条已关闭**。
 
-**它在本批里既不能被"顺带完成"，也不能被记成平台债**——
-那样会用一个容易的归类掩盖一个独立的缺口。**本批必须显式给出判定：
-是补规格测试，还是转交给后续批次并登记为具名债项。**
+**本批不补这组规格测试，也不把它记成平台债。**现状登记为后续具名债项
+`X0-SPEC-001`：为阶段 07、08、10、11/11X0 已确定规则建立对应的自动化规格
+测试目录与执行入口，并在补齐前保持 X0 第 3 条未满足。后续批次接手时不能以
+本批 Linux/Windows 功能证据替代这项规格覆盖。
 
 ### 8.3 落地记录的形态（照 `09R3` 的先例）
 
@@ -314,7 +405,8 @@ TS 侧写对了、Rust 侧写死了。**至今没被发现，是因为所有已�
 
 1. **债进产物不只进文档**：`09r3-freeze.json:4-7` 的 `platform_status` 机器字段；
 2. **退出条件里点名**并解释"最容易做假"的那条（`09r3:182`）；
-3. **落地记录做双重否定**：「X 仍明确标为待复现」（`09r3:219-220`）；
+3. **落地记录做双重否定**：Linux Docker amd64 的功能证据已落地，但 ARM64、WSL
+   和 macOS 仍明确标为阻塞或待复现；
 4. **下游批次引用这笔债**而不是假装已清（`09b0:116`）；
 5. **环境矩阵逐项表**（`11x0c:183-191` 的五项）。
 
@@ -327,8 +419,8 @@ TS 侧写对了、Rust 侧写死了。**至今没被发现，是因为所有已�
 - **不做 `.app` / 签名 / 公证 / Apple SDK 检测**——那些归 `11:249` 的后续工作。
 - **不做 X0 第 3 条以外的规格测试扩张**（§8.2 单独处置）。
 - **不顺手改 X0-T 之外的功能语义**——本批是**证据批次**，没有新功能。
-- **不把 X0-T 的平台债漏掉**：`11x0t-project-test-semantics.md` 目前 **0 处**平台提及，
-  而 `xiao test` 同样需要在三平台各跑一次。**本批的清单要把它补进去。**
+- **不把 X0-T 的平台债漏掉**：`11x0t-project-test-semantics.md` 已补入三平台
+  `xiao test` 复现清单，但不改变 X0-T 已冻结的测试发现、排序、退出码和结果协议语义。
 - **不改 `Dockerfile.dev` 的验收地位注释**：它写明「这不是验收路径的一部分」，
   补了 C/LLVM 之后**这条仍然成立**。
 

@@ -30,7 +30,7 @@
 7. [10D. 环境依赖测试规范](10d-environment-gated-test-spec.md) —— 新测试若依赖环境，
    按 `#[ignore]` 规格写。
 
-### 现状盘点（2026-09-23 实测）
+### 现状盘点（2026-09-24 实测）
 
 ```text
 CLI 侧    cli/ts/src/commands/parser.ts:57-60   test 分支（无 - 前缀校验）
@@ -348,3 +348,22 @@ X0-T 已按本交接文档落地：
 - `bun test src/protocol/protocol.test.ts src/protocol/client.test.ts src/commands/index.test.ts src/diagnostics/render.test.ts src/main.test.ts`
 - `bunx tsc --noEmit`
 - `cargo check --manifest-path tests/benchmarks/Cargo.toml`
+
+## 九、跨平台复现登记
+
+本节只登记 `xiao test` 在平台复现中的执行证据，**不改变** §2 已冻结的测试文件
+发现、项目相对路径排序、逐用例执行、退出码和结构化结果协议。平台证据与性能数字
+分离，Docker/WSL 结果不进入 09R3 性能验收。
+
+| 环境 | 命令或状态 | `xiao test` 结果 |
+| --- | --- | --- |
+| Windows 原生 | X0-T 已接入独立 CLI；Windows 原生回环沿用既有 `xiao test` 接线，平台复现入口为 `tools/platform-reproduction/reproduce.ps1 -Mode native` | 保持协议语义；本批不把未重新采集的 Windows 输出冒充新平台证据 |
+| Linux Docker `amd64` | `docker run --rm --platform linux/amd64 -e XIAO_USE_XVFB=1 -v "${PWD}:/workspace" -w /workspace xiao-platform-reproduction:linux-amd64 bash tools/platform-reproduction/reproduce.sh native` | 通过：`total=1`、`passed=1`、`failed=0`、`exit_code=0` |
+| Linux Docker `arm64` | `docker buildx build --platform linux/arm64 ... --load` 在 Dockerfile `RUN` 阶段报 `exec /bin/sh: exec format error` | 未开始；镜像构建被主机 QEMU/binfmt 执行层阻塞 |
+| WSL Ubuntu / Arch | 两个发行版均缺少 `rustc`、Bun、`clang`、`llvm-as`、`llc`，未执行 `reproduce.sh native` | 未开始；环境缺失，不记为通过或失败 |
+| macOS | `.github/workflows/platform-reproduction.yml` 已提供 `macos-14` 入口，但当前尚未运行 runner | 未开始；继续保持待复现 |
+
+Linux amd64 的 `xiao test` 结果说明 CLI 能把项目根下递归发现的一个
+`tests/smoke.xiao` 交给核心并返回机器可读聚合结果；它不改变“测试失败使用协议退出码、
+不比较用户程序 stdout、没有测试文件不伪造成功”的既有裁定。完整平台边界和 X0 收口判定见
+[11X0-P. 跨平台复现](11x0-platform-reproduction.md) §5.6 与 §8.1。

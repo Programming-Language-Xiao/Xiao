@@ -221,9 +221,11 @@ n0_b_dynamic_native          1 passed
 MSYS2 clang/llvm-as 22.1.2 和 Rust 1.96.0 均为本次记录的实际工具；缺少 `XIAO_CLANG` 时
 单独执行 `optional_real_llvm_round_trip --ignored` 已确认会失败并给出配置错误。
 
-Windows 的 7 条工具链门控结果已有历史记录；新增的真实终端测试和 Linux/WSL/macOS 的
-`--ignored` 结果由 11X0-P 的平台记录逐项补齐。WSL 和容器共享宿主调度或多一层文件系统，
-不能与原生数字并列；未运行的 macOS 不能被宣称为已验证。
+Windows 的 7 条工具链门控结果已有历史记录；11X0-P 在 Linux Docker amd64 的
+`xvfb-run` 环境中又完整执行了新增真实终端测试，8 条门控测试合计全部通过。WSL
+Ubuntu/Arch 当前因 Rust、Bun 和 LLVM 工具链缺失未执行，ARM64 因 Docker Desktop
+QEMU 的 `exec format error` 未执行，未运行的 macOS 也不能被宣称为已验证。WSL 和容器
+共享宿主调度或多一层文件系统，不能与原生数字并列。
 
 ## 八、不负责
 

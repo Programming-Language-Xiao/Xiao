@@ -36,7 +36,7 @@ jobs:
         if: startsWith(matrix.name, 'linux-')
         run: |
           sudo apt-get update
-          sudo apt-get install --yes clang lld llvm xvfb xterm file
+          sudo apt-get install --yes clang lld llvm xauth xvfb xterm file
 
       - name: Install macOS LLVM
         if: startsWith(matrix.name, 'macos-')

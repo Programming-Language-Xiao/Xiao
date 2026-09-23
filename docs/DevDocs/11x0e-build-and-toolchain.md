@@ -231,18 +231,20 @@ VM 检查点、worker 线程和无子进程沙箱的边界见 [X0-T](11x0t-proje
 
 ### 5.5 平台待复现清单
 
-历次累积，**当前仍开放**：
+11X0-P 已把可运行的证据与外部环境阻塞分开记录；以下是截至 2026-09-24
+的权威清单：
 
 | 平台 | 状态 |
 | --- | --- |
-| Windows 原生 | ✅ 已完成 `xiao build`、工具链探测、独立产物和 `-debug` shim 复现 |
-| Linux（Docker） | ✅ 已有 CLI/核心构建与功能证据；`xiao build` 工具链探测数字不作为原生验收 |
-| **Linux 原生** | ❌ 待复现：需 LLVM ≥18、目标/链接探测和真实源码独立运行 |
-| **WSL** | ❌ 待复现：Ubuntu/Arch 发行版尚未固定本批工具链；WSL 数字不与 Windows 并列 |
-| **macOS** | ❌ **无环境**，不得宣称已验证；需 Mach-O 工具链和独立产物复现 |
+| Windows 原生 | ✅ 已完成 `xiao build`、工具链探测、独立产物、`xiao test` 和 `-debug` shim 复现 |
+| Linux Docker `amd64` | ✅ Debian 13 + Rust 1.96.0 + Bun 1.4.1 + LLVM 19.1.7；构建、独立运行、核心发现和 8 条门控测试通过；仅作功能证据 |
+| Linux Docker `arm64` | ⚠️ 已注册 `qemu-aarch64`，但 Dockerfile `RUN` 阶段仍报 `exec /bin/sh: exec format error`；未进入测试 |
+| **Linux 原生** | ❌ 仍待复现：Docker amd64 不能替代真实主机安装路径与用户环境；需 LLVM ≥18、目标/链接探测和真实源码独立运行 |
+| **WSL** | ⚠️ Ubuntu 26.04 与 Arch 均可启动，但 `rustc`、Bun、`clang`、`llvm-as`、`llc` 未安装；工具链齐备前不宣称通过 |
+| **macOS** | ❌ CI 工作流已建立但 runner 尚未执行；不得宣称已验证，仍需 Mach-O 工具链和独立产物复现 |
 
-**本批新增的 `xiao build` 会让这份清单变长**（工具链发现在每个平台都要各验一次）。
-**逐项更新，不要沿用旧表述。**
+`xiao build` 的工具链发现在 Linux Docker amd64 已按完整命令跑通；ARM64、WSL、
+Linux 真机和 macOS 的未完成项必须继续保留，不能用容器结果替换。
 
 ---
 

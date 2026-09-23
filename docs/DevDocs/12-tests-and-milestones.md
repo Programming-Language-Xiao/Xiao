@@ -707,6 +707,18 @@ X0-E 已完成 `xiao build` 的真实源码路由、主机工具链发现、原�
 固化。VM 指令循环的中途取消检查点不属于 X0，`B0-C-CANCEL-001` 由 **09-B0-E「VM 中途
 取消检查点」**关闭；其性能对照必须单独记录，不能改变 09R3 固定基准数字。
 
+#### X0 平台复现登记（2026-09-24）
+
+[11X0-P. 跨平台复现](11x0-platform-reproduction.md) 已补齐 Docker 多架构镜像、
+Linux/WSL/macOS 复现脚本和 CI 矩阵，并取得 Linux Docker `amd64` 的完整功能证据：
+工具链发现、`xiao build`、独立 ELF 运行、`xiao test` 和 8 条环境门控测试均通过。
+这项证据不等同裸机 Linux 验收，也没有采集或修改 09R3 性能数字。
+
+截至本记录日，ARM64 镜像仍在 Docker Desktop 的 QEMU `exec /bin/sh: exec format error`
+阻塞；Ubuntu/Arch WSL 缺少 Rust、Bun 和 LLVM 工具链；macOS runner 尚未执行。因此
+X0 第 2、4、5、6 条继续保持未收口，不能把 Linux 容器结果写成三平台已验证。X0 第 3 条
+另行登记为 `X0-SPEC-001` 规格测试债，不属于平台复现批次。
+
 ### D1：外部包契约与依赖图骨架
 
 退出条件：
