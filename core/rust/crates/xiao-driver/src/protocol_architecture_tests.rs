@@ -1,5 +1,6 @@
 //! 协议子模块依赖方向的源码级回归测试。
 
+/// 移除行注释，避免依赖断言被说明文字误触发。
 fn code_without_line_comments(source: &str) -> String {
     source
         .lines()
@@ -8,6 +9,7 @@ fn code_without_line_comments(source: &str) -> String {
         .join("\n")
 }
 
+/// 断言源码不包含指定的反向依赖。
 fn assert_no_dependency(source_name: &str, source: &str, dependency: &str) {
     let code = code_without_line_comments(source);
     assert!(
@@ -17,6 +19,7 @@ fn assert_no_dependency(source_name: &str, source: &str, dependency: &str) {
 }
 
 #[test]
+/// 验证协议门面、叶子模块和服务层的依赖方向保持无环。
 fn module_dependency_direction_is_acyclic() {
     let facade = include_str!("protocol.rs");
     for declaration in [

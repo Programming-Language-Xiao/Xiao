@@ -105,6 +105,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
     }
 }
 
+/// 校验版本并构造 hello 响应。
 fn hello_response(
     request_id: String,
     protocol_version: u16,
@@ -134,6 +135,7 @@ fn hello_response(
 }
 
 #[allow(clippy::too_many_arguments)]
+/// 校验运行请求并交给前端到 VM 的驱动路径。
 fn run_request_response(
     request_id: String,
     protocol_version: u16,
@@ -188,6 +190,7 @@ fn run_request_response(
 }
 
 #[allow(clippy::too_many_arguments)]
+/// 校验构建请求并交给原生构建路径。
 fn build_request_response(
     request_id: String,
     protocol_version: u16,
@@ -222,6 +225,7 @@ fn build_request_response(
     )
 }
 
+/// 校验取消请求并返回协议层取消结果。
 fn cancel_response(
     request_id: String,
     protocol_version: u16,
@@ -239,6 +243,7 @@ fn cancel_response(
     }
 }
 
+/// 校验关闭请求并返回服务关闭结果。
 fn shutdown_response(
     request_id: String,
     protocol_version: u16,
@@ -393,6 +398,7 @@ where
     Ok(())
 }
 
+/// 拒绝未以 hello 开始的协议会话。
 fn reject_non_hello_first_frame(request: &ProtocolRequest) -> Option<ProtocolResponse> {
     if matches!(request, ProtocolRequest::Hello { .. }) {
         return None;
@@ -401,6 +407,7 @@ fn reject_non_hello_first_frame(request: &ProtocolRequest) -> Option<ProtocolRes
     Some(protocol_error_response(request_id_for(request), &error))
 }
 
+/// 从可关联响应的请求中提取请求编号。
 fn request_id_for(request: &ProtocolRequest) -> Option<String> {
     match request {
         ProtocolRequest::Run { request_id, .. }
@@ -411,6 +418,7 @@ fn request_id_for(request: &ProtocolRequest) -> Option<String> {
     }
 }
 
+/// 处理已协商会话中的取消请求。
 fn handle_cancel<W: Write>(
     writer: &SharedWriter<W>,
     cancellations: &CancellationMap,
@@ -449,6 +457,7 @@ fn handle_cancel<W: Write>(
     );
 }
 
+/// 处理已协商会话中的关闭请求，并报告是否结束服务循环。
 fn handle_shutdown<W: Write>(
     writer: &SharedWriter<W>,
     negotiated: bool,
@@ -469,6 +478,7 @@ fn handle_shutdown<W: Write>(
     true
 }
 
+/// 登记取消令牌并在线程中执行运行或构建请求。
 fn spawn_worker<W: Write + Send + 'static>(
     request: ProtocolRequest,
     writer: &SharedWriter<W>,

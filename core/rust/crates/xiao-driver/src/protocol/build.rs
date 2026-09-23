@@ -506,6 +506,7 @@ fn cleanup_after_failure(
     }
 }
 
+/// 为尚未支持的非零优化级别构造稳定协议错误。
 fn unsupported_optimization_response(request_id: String, level: u8) -> ProtocolResponse {
     ProtocolResponse::Error {
         request_id: Some(request_id),
