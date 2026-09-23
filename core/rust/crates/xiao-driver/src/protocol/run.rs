@@ -44,6 +44,8 @@ pub(super) fn run_options(
 ) -> Result<(xiao_vm::VmOptions, usize, Option<Duration>), ProtocolError> {
     let vm_options = xiao_vm::VmOptions {
         max_call_depth: options.max_call_depth,
+        checkpoints_enabled: options.checkpoints_enabled,
+        checkpoint_interval: options.checkpoint_interval,
     };
     vm_options
         .validate()

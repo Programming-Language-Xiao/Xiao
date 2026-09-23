@@ -5,10 +5,6 @@
 //! 不重新推断类型或生命周期，也不搬运研究基准的入口重排逻辑。
 
 use std::fmt::{self, Display, Formatter};
-use std::sync::{
-    Arc,
-    atomic::{AtomicBool, Ordering},
-};
 use std::time::{Duration, Instant};
 
 use xiao_bytecode::{TacProgram, lower_program};
@@ -17,6 +13,8 @@ use xiao_vm::{
     DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome, RunRequest as VmRunRequest, RunResult,
     VmEvent, VmOptions, run_request as run_vm_request,
 };
+
+pub use xiao_vm::CancellationToken;
 
 use crate::frontend::{FrontendArtifact, FrontendCompiler, FrontendError, FrontendRequest};
 
@@ -58,34 +56,6 @@ impl ExitCode {
             Self::RuntimeError => 3,
             Self::Fatal => 4,
         }
-    }
-}
-
-/// 可跨线程共享的取消信号。
-///
-/// 本批只在驱动器阶段边界采样该信号。VM 指令循环尚未接入中途检查点，
-/// 具体检查点作为 `B0-C-CANCEL-001` 债项留给 11/X0 前的后续批次。
-#[derive(Clone, Debug, Default)]
-pub struct CancellationToken {
-    cancelled: Arc<AtomicBool>,
-}
-
-impl CancellationToken {
-    /// 创建一个未取消的信号。
-    #[must_use]
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    /// 设置取消标记；重复设置不会改变语义。
-    pub fn cancel(&self) {
-        self.cancelled.store(true, Ordering::Release);
-    }
-
-    /// 查询当前是否已经取消。
-    #[must_use]
-    pub fn is_cancelled(&self) -> bool {
-        self.cancelled.load(Ordering::Acquire)
     }
 }
 

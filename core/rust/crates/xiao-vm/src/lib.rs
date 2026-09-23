@@ -32,10 +32,11 @@ pub use machine::register::{RegisterCarrier, RegisterLocation, TypedRegisterCarr
 pub use machine::stack::StackCarrier;
 /// 重导出运行入口、结果与指标。
 pub use run::{
-    DEFAULT_MAX_CALL_DEPTH, MAX_MAX_CALL_DEPTH, RunOutcome, RunRequest, RunRequestError, RunResult,
-    VM_OPTIONS_CODE, VM_REQUEST_CODE, VmMetrics, VmOptions, VmOptionsError, run, run_checked,
-    run_hybrid, run_production, run_register, run_request, run_with, run_with_machine_seed,
-    run_with_seed, run_with_values,
+    CancellationSource, CancellationToken, DEFAULT_CHECKPOINT_INTERVAL, DEFAULT_MAX_CALL_DEPTH,
+    MAX_MAX_CALL_DEPTH, RunOutcome, RunRequest, RunRequestError, RunResult, VM_OPTIONS_CODE,
+    VM_REQUEST_CODE, VmMetrics, VmOptions, VmOptionsError, run, run_checked, run_hybrid,
+    run_production, run_register, run_request, run_with, run_with_machine_seed, run_with_seed,
+    run_with_values,
 };
 /// 重导出语义核与终止原因。
 pub use semantics::{Fault, Vm};

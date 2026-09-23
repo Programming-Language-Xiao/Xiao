@@ -103,7 +103,13 @@ fn initialization_failure_rolls_back_and_preserves_errors() {
 fn fatal_does_not_execute_drop() {
     let source = "[[Item]]\n    value = 1\n    def drop(self) -> none\n        raise ArithmeticError(code = \"DROP\", message = \"不应执行\")\ndef recurse(int value) -> int\n    item = new Item()\n    return recurse(value)\nresult = recurse(1)\n";
     let program = compile(source, None);
-    for outcome in outcomes(&program, VmOptions { max_call_depth: 8 }) {
+    for outcome in outcomes(
+        &program,
+        VmOptions {
+            max_call_depth: 8,
+            ..VmOptions::default()
+        },
+    ) {
         assert!(
             matches!(outcome.result, RunResult::Fatal(_)),
             "{:?}",
@@ -195,7 +201,13 @@ fn recursive_drop_obeys_call_depth() {
         "[[Item]]\n    value = 1\n    def drop(self) -> none\n        other = new Item()\nitem = new Item()\n",
         None,
     );
-    for outcome in outcomes(&program, VmOptions { max_call_depth: 8 }) {
+    for outcome in outcomes(
+        &program,
+        VmOptions {
+            max_call_depth: 8,
+            ..VmOptions::default()
+        },
+    ) {
         assert!(
             matches!(outcome.result, RunResult::Fatal(_)),
             "{:?}",

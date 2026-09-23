@@ -96,7 +96,10 @@ fn uncaught_runtime_error_is_runtime_error_three() {
 /// VM 内部 Fatal 终局映射到码四。
 fn fatal_is_four() {
     let source = "def down(int value) -> int\n    return down(value)\nresult = down(1)\n";
-    let request = request(source).with_options(VmOptions { max_call_depth: 6 });
+    let request = request(source).with_options(VmOptions {
+        max_call_depth: 6,
+        ..VmOptions::default()
+    });
     let outcome = run(&request);
     let DriverOutcome::Executed(execution) = &outcome else {
         panic!("递归栈溢出应在 VM 内形成 Fatal");

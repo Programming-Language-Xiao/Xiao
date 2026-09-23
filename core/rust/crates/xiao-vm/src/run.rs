@@ -1,6 +1,11 @@
 //! 运行入口、结构化结果与运行指标。
 
 use std::fmt::{Display, Formatter};
+use std::sync::{
+    Arc,
+    atomic::{AtomicBool, Ordering},
+};
+use std::time::Instant;
 
 use xiao_bytecode::{TacProgram, TacVerificationError, verify_for_execution};
 use xiao_diagnostics::{DiagnosticParam, FatalError, ReportRecord, XiaoError};
@@ -25,6 +30,76 @@ pub const MAX_MAX_CALL_DEPTH: usize = 1_000_000;
 pub const VM_OPTIONS_CODE: &str = "X09-VM-001";
 /// 运行请求字段非法时使用的稳定诊断编号。
 pub const VM_REQUEST_CODE: &str = "X09-VM-002";
+/// 默认的指令检查点间隔。
+pub const DEFAULT_CHECKPOINT_INTERVAL: usize = 1024;
+
+/// 可跨线程共享的取消信号。
+#[derive(Clone, Debug, Default)]
+pub struct CancellationToken {
+    cancelled: Arc<AtomicBool>,
+}
+
+impl CancellationToken {
+    /// 创建一个未取消的信号。
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// 设置取消标记；重复设置不会改变语义。
+    pub fn cancel(&self) {
+        self.cancelled.store(true, Ordering::Release);
+    }
+
+    /// 查询当前是否已经取消。
+    #[must_use]
+    pub fn is_cancelled(&self) -> bool {
+        self.cancelled.load(Ordering::Acquire)
+    }
+}
+
+/// VM 可注入的取消与截止时间来源。
+#[derive(Clone, Debug, Default)]
+pub struct CancellationSource {
+    token: Option<CancellationToken>,
+    deadline: Option<Instant>,
+}
+
+impl CancellationSource {
+    /// 创建一个尚未配置取消条件的来源。
+    #[must_use]
+    pub const fn new() -> Self {
+        Self {
+            token: None,
+            deadline: None,
+        }
+    }
+
+    /// 接入共享取消信号。
+    #[must_use]
+    pub fn with_token(mut self, token: CancellationToken) -> Self {
+        self.token = Some(token);
+        self
+    }
+
+    /// 接入绝对截止时间。
+    #[must_use]
+    pub const fn with_deadline(mut self, deadline: Instant) -> Self {
+        self.deadline = Some(deadline);
+        self
+    }
+
+    /// 查询共享取消信号或截止时间是否已经触发。
+    #[must_use]
+    pub fn is_cancelled(&self) -> bool {
+        self.token
+            .as_ref()
+            .is_some_and(CancellationToken::is_cancelled)
+            || self
+                .deadline
+                .is_some_and(|deadline| Instant::now() >= deadline)
+    }
+}
 
 /// 规范化运行参数的验证错误。
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -124,6 +199,10 @@ impl RunResult {
 pub struct VmOptions {
     /// 最大调用深度；超限产生不可恢复的栈溢出故障。
     pub max_call_depth: usize,
+    /// 是否在 VM 热循环中启用取消检查点。
+    pub checkpoints_enabled: bool,
+    /// 两次取消检查点之间执行的指令数。
+    pub checkpoint_interval: usize,
 }
 
 impl VmOptions {
@@ -132,6 +211,8 @@ impl VmOptions {
     pub const fn new() -> Self {
         Self {
             max_call_depth: DEFAULT_MAX_CALL_DEPTH,
+            checkpoints_enabled: true,
+            checkpoint_interval: DEFAULT_CHECKPOINT_INTERVAL,
         }
     }
 
@@ -149,6 +230,13 @@ impl VmOptions {
                 field: "max_call_depth",
                 value: self.max_call_depth,
                 reason: "超过实现上限",
+            });
+        }
+        if self.checkpoint_interval == 0 {
+            return Err(VmOptionsError {
+                field: "checkpoint_interval",
+                value: self.checkpoint_interval,
+                reason: "必须大于零",
             });
         }
         Ok(())
@@ -181,6 +269,8 @@ pub struct RunRequest<'a> {
     pub source_name: String,
     /// 生产事件接收器容量；超限事件按丢弃新事件策略记账。
     pub event_capacity: usize,
+    /// 可选的 VM 取消与截止时间来源。
+    pub cancellation: Option<CancellationSource>,
 }
 
 impl<'a> RunRequest<'a> {
@@ -194,6 +284,7 @@ impl<'a> RunRequest<'a> {
             module_name: "main".to_owned(),
             source_name: "<memory>".to_owned(),
             event_capacity: DEFAULT_EVENT_CAPACITY,
+            cancellation: None,
         }
     }
 
@@ -222,6 +313,13 @@ impl<'a> RunRequest<'a> {
     #[must_use]
     pub const fn with_event_capacity(mut self, event_capacity: usize) -> Self {
         self.event_capacity = event_capacity;
+        self
+    }
+
+    /// 替换 VM 取消与截止时间来源。
+    #[must_use]
+    pub fn with_cancellation(mut self, cancellation: CancellationSource) -> Self {
+        self.cancellation = Some(cancellation);
         self
     }
 

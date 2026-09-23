@@ -23,14 +23,14 @@ pub use crate::sink;
 
 /// 兼容暴露生产 VM 的根级类型、常量和运行函数。
 pub use crate::{
-    BoundedSink, Carrier, CarrierContext, CarrierMetrics, DEFAULT_EVENT_CAPACITY,
-    DEFAULT_MAX_CALL_DEPTH, Fault, Frame, HYBRID_WINDOW_CAPACITY, HybridCarrier, HybridLocation,
-    MAX_EVENT_CAPACITY, MAX_MAX_CALL_DEPTH, MapPoint, NullSink, RecordingSink, RegisterCarrier,
-    RegisterLocation, RunOutcome, RunRequest, RunRequestError, RunResult, StackCarrier,
-    TypedRegisterCarrier, VM_OPTIONS_CODE, VM_REQUEST_CODE, Vm, VmEvent, VmEventSink, VmMetrics,
-    VmOptions, VmOptionsError, WindowStackCarrier, empty_register_error, run_checked, run_hybrid,
-    run_production, run_register, run_request, run_with, run_with_machine_seed, run_with_seed,
-    run_with_values,
+    BoundedSink, CancellationSource, CancellationToken, Carrier, CarrierContext, CarrierMetrics,
+    DEFAULT_CHECKPOINT_INTERVAL, DEFAULT_EVENT_CAPACITY, DEFAULT_MAX_CALL_DEPTH, Fault, Frame,
+    HYBRID_WINDOW_CAPACITY, HybridCarrier, HybridLocation, MAX_EVENT_CAPACITY, MAX_MAX_CALL_DEPTH,
+    MapPoint, NullSink, RecordingSink, RegisterCarrier, RegisterLocation, RunOutcome, RunRequest,
+    RunRequestError, RunResult, StackCarrier, TypedRegisterCarrier, VM_OPTIONS_CODE,
+    VM_REQUEST_CODE, Vm, VmEvent, VmEventSink, VmMetrics, VmOptions, VmOptionsError,
+    WindowStackCarrier, empty_register_error, run_checked, run_hybrid, run_production,
+    run_register, run_request, run_with, run_with_machine_seed, run_with_seed, run_with_values,
 };
 
 /// 兼容保留运行函数的旧根路径。

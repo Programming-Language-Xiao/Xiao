@@ -44,6 +44,10 @@ export interface SourceRunOptions {
   eventCapacity?: number;
   /** 驱动器超时（毫秒）。 */
   timeoutMs?: number | null;
+  /** 是否在 VM 热循环中启用取消检查点。 */
+  checkpointsEnabled?: boolean;
+  /** 两次取消检查点之间执行的指令数。 */
+  checkpointInterval?: number;
   /** 调试位；由 Rust Runtime 在用户代码前启动独立诊断窗口。 */
   debug?: boolean;
   /** 调试窗口/文件输出配置。 */
@@ -149,6 +153,8 @@ export class ProtocolClient {
         max_call_depth: options.maxCallDepth ?? 1024,
         event_capacity: options.eventCapacity ?? 256,
         timeout_ms: options.timeoutMs ?? null,
+        checkpoints_enabled: options.checkpointsEnabled ?? true,
+        checkpoint_interval: options.checkpointInterval ?? 1024,
       },
     };
     return this.call(request, options.signal);

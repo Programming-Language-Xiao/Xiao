@@ -332,7 +332,13 @@ fn stack_map_points_follow_the_frozen_machine_division() {
 #[test]
 /// 递归深度超过上限时产生不可恢复的栈溢出故障，而不是普通错误。
 fn stack_overflow_is_fatal() {
-    let outcome = run(&load(RUNAWAY), VmOptions { max_call_depth: 8 });
+    let outcome = run(
+        &load(RUNAWAY),
+        VmOptions {
+            max_call_depth: 8,
+            ..VmOptions::default()
+        },
+    );
     assert!(
         matches!(outcome.result, RunResult::Fatal(_)),
         "结果: {:?}",
@@ -382,7 +388,13 @@ fn records_all_event_categories() {
             .any(|event| matches!(event, VmEvent::ErrorRaised { .. }))
     );
 
-    let fatal = run(&load(RUNAWAY), VmOptions { max_call_depth: 8 });
+    let fatal = run(
+        &load(RUNAWAY),
+        VmOptions {
+            max_call_depth: 8,
+            ..VmOptions::default()
+        },
+    );
     assert!(
         fatal
             .events
@@ -668,7 +680,13 @@ fn finally_failure_is_suppressed_on_primary_error() {
 /// Fatal 故障绕过普通 catch、finally 和所有释放计划。
 fn fatal_bypasses_handlers_and_cleanup() {
     let source = "def down(int value) -> int\n    return down(value)\ntry\n    result = down(1)\ncatch err as Error\n    handled = true\nfinally\n    cleaned = true\n";
-    let outcome = run(&load(source), VmOptions { max_call_depth: 6 });
+    let outcome = run(
+        &load(source),
+        VmOptions {
+            max_call_depth: 6,
+            ..VmOptions::default()
+        },
+    );
     assert!(
         matches!(outcome.result, RunResult::Fatal(_)),
         "结果: {:?}",
@@ -685,7 +703,13 @@ fn fatal_bypasses_handlers_and_cleanup() {
 /// 含堆字符串的 Fatal 路径仍然跳过全部释放计划和 finally。
 fn fatal_with_heap_values_has_no_releases() {
     let source = "def down(int value) -> int\n    return down(value)\ntry\n    payload = \"heap\"\n    result = down(1)\ncatch err as Error\n    handled = true\nfinally\n    cleanup = \"cleanup\"\n";
-    let outcome = run(&load(source), VmOptions { max_call_depth: 6 });
+    let outcome = run(
+        &load(source),
+        VmOptions {
+            max_call_depth: 6,
+            ..VmOptions::default()
+        },
+    );
     assert!(
         matches!(outcome.result, RunResult::Fatal(_)),
         "结果: {:?}",
@@ -1073,7 +1097,13 @@ fn nested_finally_failure_does_not_repeat_outer_finally() {
 #[test]
 /// Fatal 终止事件应只在最终运行边界记录一次。
 fn fatal_event_is_emitted_once_at_run_boundary() {
-    let outcome = run(&load(RUNAWAY), VmOptions { max_call_depth: 4 });
+    let outcome = run(
+        &load(RUNAWAY),
+        VmOptions {
+            max_call_depth: 4,
+            ..VmOptions::default()
+        },
+    );
     assert_eq!(
         outcome
             .events

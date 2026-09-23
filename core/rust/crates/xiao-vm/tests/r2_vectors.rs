@@ -102,6 +102,7 @@ fn observe<C: Carrier>(case: &VectorCase) -> Expectation {
     }
     let options = VmOptions {
         max_call_depth: case.max_call_depth.unwrap_or(DEFAULT_MAX_CALL_DEPTH),
+        ..VmOptions::default()
     };
     let arguments = case
         .arguments

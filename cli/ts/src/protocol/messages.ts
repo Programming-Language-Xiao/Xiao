@@ -60,6 +60,8 @@ export interface RunOptions {
   max_call_depth: number;
   event_capacity: number;
   timeout_ms: number | null;
+  checkpoints_enabled: boolean;
+  checkpoint_interval: number;
 }
 
 /** 运行请求。 */

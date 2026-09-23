@@ -87,7 +87,10 @@ fn production_rejects_invalid_ir_before_vm() {
 fn production_rejects_invalid_options_with_structured_fatal() {
     let (ir, tac) = compile("value = 1\n");
     let request = RunRequest::new(&ir, &tac)
-        .with_options(VmOptions { max_call_depth: 0 })
+        .with_options(VmOptions {
+            max_call_depth: 0,
+            ..VmOptions::default()
+        })
         .with_event_capacity(1);
     let outcome = run_request(&request);
     assert!(matches!(outcome.result, RunResult::Fatal(_)));

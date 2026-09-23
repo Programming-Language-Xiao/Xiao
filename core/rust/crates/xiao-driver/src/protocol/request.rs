@@ -156,6 +156,20 @@ pub struct RunOptions {
     pub event_capacity: usize,
     /// 可选的驱动器边界超时（毫秒）。
     pub timeout_ms: Option<u64>,
+    /// 是否在 VM 热循环中启用取消检查点。
+    #[serde(default = "default_checkpoints_enabled")]
+    pub checkpoints_enabled: bool,
+    /// 两次取消检查点之间执行的指令数。
+    #[serde(default = "default_checkpoint_interval")]
+    pub checkpoint_interval: usize,
+}
+
+fn default_checkpoints_enabled() -> bool {
+    true
+}
+
+fn default_checkpoint_interval() -> usize {
+    xiao_vm::DEFAULT_CHECKPOINT_INTERVAL
 }
 
 impl Default for RunOptions {
@@ -165,6 +179,8 @@ impl Default for RunOptions {
             max_call_depth: VmOptions::default().max_call_depth,
             event_capacity: xiao_vm::DEFAULT_EVENT_CAPACITY,
             timeout_ms: None,
+            checkpoints_enabled: true,
+            checkpoint_interval: xiao_vm::DEFAULT_CHECKPOINT_INTERVAL,
         }
     }
 }
