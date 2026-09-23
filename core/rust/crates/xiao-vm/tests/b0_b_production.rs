@@ -4,7 +4,9 @@ use xiao_bytecode::lower_program;
 use xiao_diagnostics::{FATAL_CORRUPT_ARTIFACT_CODE, FATAL_RUNTIME_INVARIANT_CODE};
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::IrEntryMode;
-use xiao_vm::{RunRequest, RunResult, VmEvent, VmOptions, run_request};
+use xiao_vm::{
+    CancellationSource, CancellationToken, RunRequest, RunResult, VmEvent, VmOptions, run_request,
+};
 
 /// 使用真实前端编译并降低一份测试源码。
 fn compile(source: &str) -> (xiao_ir::IrProgram, xiao_bytecode::TacProgram) {
@@ -140,4 +142,35 @@ fn bounded_events_do_not_change_result_or_release_sequence() {
     assert_eq!(complete.metrics, bounded.metrics);
     assert_eq!(complete.metrics.releases, bounded.metrics.releases);
     assert!(bounded.dropped_events > 0);
+}
+
+/// 取消源在生产 VM 内部应能终止主解释循环，且关闭开关保持旧行为。
+#[test]
+fn production_checkpoint_can_cancel_and_can_be_disabled() {
+    let (ir, tac) = compile("value = 1\n");
+    let token = CancellationToken::new();
+    token.cancel();
+    let enabled = VmOptions {
+        checkpoint_interval: 1,
+        ..VmOptions::default()
+    };
+    let cancelled = run_request(
+        &RunRequest::new(&ir, &tac)
+            .with_options(enabled)
+            .with_cancellation(CancellationSource::new().with_token(token.clone())),
+    );
+    assert!(matches!(cancelled.result, RunResult::Cancelled));
+    assert_eq!(cancelled.metrics.instructions, 1);
+
+    let disabled = VmOptions {
+        checkpoints_enabled: false,
+        checkpoint_interval: 1,
+        ..VmOptions::default()
+    };
+    let completed = run_request(
+        &RunRequest::new(&ir, &tac)
+            .with_options(disabled)
+            .with_cancellation(CancellationSource::new().with_token(token)),
+    );
+    assert!(completed.result.is_success());
 }

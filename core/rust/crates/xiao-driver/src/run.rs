@@ -10,8 +10,8 @@ use std::time::{Duration, Instant};
 use xiao_bytecode::{TacProgram, lower_program};
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord};
 use xiao_vm::{
-    DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome, RunRequest as VmRunRequest, RunResult,
-    VmEvent, VmOptions, run_request as run_vm_request,
+    CancellationSource, DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome,
+    RunRequest as VmRunRequest, RunResult, VmEvent, VmOptions, run_request as run_vm_request,
 };
 
 pub use xiao_vm::CancellationToken;
@@ -61,8 +61,8 @@ impl ExitCode {
 
 /// 驱动器层的取消与超时控制字段。
 ///
-/// `timeout` 从一次驱动调用开始计时。控制只在前端完成、降低完成和 VM 调用
-/// 前后采样；它不会伪装成已经能中断正在执行的 VM。
+/// `timeout` 从一次驱动调用开始计时。控制仍在阶段边界采样，同时把同一截止时间
+/// 注入 VM 检查点，确保正在执行的热循环也能尽快结束。
 #[derive(Clone, Debug, Default)]
 pub struct RunControl {
     cancellation: Option<CancellationToken>,
@@ -391,6 +391,7 @@ impl DriverOutcome {
                 RunResult::Success => ExitCode::Success,
                 RunResult::Error(_error) => ExitCode::RuntimeError,
                 RunResult::Fatal(_error) => ExitCode::Fatal,
+                RunResult::Cancelled => ExitCode::ArtifactRejected,
             },
         }
     }
@@ -522,6 +523,11 @@ impl FrontendVmDriver {
             .with_module_name(request.resolved_module_name())
             .with_source_name(request.resolved_source_name())
             .with_event_capacity(request.event_capacity);
+        let vm_request = if let Some(source) = control.cancellation_source() {
+            vm_request.with_cancellation(source)
+        } else {
+            vm_request
+        };
         let outcome = run_vm_request(&vm_request);
         // 方案 A 仍需在 VM 返回边界采样；VM 已经结束后发现控制信号时，控制结果
         // 优先于已完成的 VM 结果，避免把超时/取消伪装成成功。
@@ -596,6 +602,21 @@ impl ControlWindow {
             ));
         }
         None
+    }
+
+    /// 为 VM 建立与驱动器边界一致的可注入取消来源。
+    fn cancellation_source(&self) -> Option<CancellationSource> {
+        let mut source = CancellationSource::new();
+        let mut configured = false;
+        if let Some(token) = &self.cancellation {
+            source = source.with_token(token.clone());
+            configured = true;
+        }
+        if let Some(deadline) = self.deadline {
+            source = source.with_deadline(deadline);
+            configured = true;
+        }
+        configured.then_some(source)
     }
 }
 

@@ -174,6 +174,8 @@ pub enum RunResult {
     Error(XiaoError),
     /// 以不可恢复故障结束。
     Fatal(FatalError),
+    /// 由 VM 取消源或截止时间请求终止。
+    Cancelled,
 }
 
 impl RunResult {
@@ -189,7 +191,7 @@ impl RunResult {
         match self {
             Self::Error(error) => Some(error.code()),
             Self::Fatal(error) => Some(error.code()),
-            Self::Success => None,
+            Self::Success | Self::Cancelled => None,
         }
     }
 }
@@ -419,6 +421,7 @@ fn report_for_result(result: &RunResult) -> Option<ReportRecord> {
         RunResult::Success => None,
         RunResult::Error(error) => Some(error.report()),
         RunResult::Fatal(error) => Some(error.report()),
+        RunResult::Cancelled => None,
     }
 }
 
@@ -598,6 +601,7 @@ pub fn run_request(request: &RunRequest<'_>) -> RunOutcome {
         sink,
         metadata,
     );
+    vm.set_cancellation_source(request.cancellation.clone());
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     sink = vm.into_sink();

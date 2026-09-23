@@ -91,6 +91,8 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             let context = Rc::clone(&self.tables);
             let options = self.options;
             let metadata = self.metadata.clone();
+            let cancellation = self.cancellation.clone();
+            let checkpoint_counter = Rc::clone(&self.checkpoint_counter);
             runtime = runtime.with_drop_executor(move |object| {
                 if context.fatal.get() {
                     return Ok(());
@@ -100,6 +102,8 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 vm.metadata = metadata.clone();
                 vm.tables = Rc::clone(&context);
                 vm.pending_base = context.pending.borrow().len();
+                vm.cancellation = cancellation.clone();
+                vm.checkpoint_counter = Rc::clone(&checkpoint_counter);
                 let result = vm.execute(
                     method,
                     &[BoundArgument {
@@ -122,6 +126,10 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                     Err(Fault::Fatal(fatal)) => {
                         context.fatal.set(true);
                         context.pending.borrow_mut().push(Fault::Fatal(fatal));
+                        Ok(())
+                    }
+                    Err(Fault::Cancelled) => {
+                        context.pending.borrow_mut().push(Fault::Cancelled);
                         Ok(())
                     }
                 }
@@ -158,6 +166,10 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                     self.tables.fatal.set(true);
                     self.tables.pending.borrow_mut().push(Fault::Fatal(fatal));
                     Err(XiaoError::invalid_value("构造被致命故障中断"))
+                }
+                Err(Fault::Cancelled) => {
+                    self.tables.pending.borrow_mut().push(Fault::Cancelled);
+                    Err(XiaoError::invalid_value("构造被取消中断"))
                 }
             }
         });
@@ -201,6 +213,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             result = match (result, fault) {
                 (Err(Fault::Fatal(primary)), _) => Err(Fault::Fatal(primary)),
                 (_, Fault::Fatal(fatal)) => Err(Fault::Fatal(fatal)),
+                (Err(Fault::Cancelled), _) | (_, Fault::Cancelled) => Err(Fault::Cancelled),
                 (Err(Fault::Error(mut primary)), Fault::Error(secondary)) => {
                     if !contains_error(&primary, &secondary) {
                         primary.push_suppressed(secondary);

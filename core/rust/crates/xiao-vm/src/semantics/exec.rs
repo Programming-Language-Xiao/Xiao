@@ -6,6 +6,8 @@
 //! 释放顺序的唯一来源是冻结计划：退出点上执行 `(作用域, 退出边)` 计划，按
 //! `order` 逐条释放。动态错误发生时按同一份计划展开当前作用域栈。
 
+use std::cell::Cell;
+use std::rc::Rc;
 use xiao_bytecode::{
     BlockId, FuncId, PcMap, TacArgument, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
     TacProgram, VReg, build_pc_map,
@@ -26,7 +28,7 @@ mod tables;
 use crate::carrier::{Carrier, CarrierContext, MapPoint};
 use crate::frame::Frame;
 use crate::ops;
-use crate::run::{RunResult, VmMetrics, VmOptions};
+use crate::run::{CancellationSource, RunResult, VmMetrics, VmOptions};
 use crate::sink::{VmEvent, VmEventSink};
 
 /// 解释过程中的终止原因。
@@ -39,6 +41,8 @@ pub enum Fault {
     Error(XiaoError),
     /// 不可恢复的故障。
     Fatal(FatalError),
+    /// VM 外部取消或截止时间触发。
+    Cancelled,
 }
 
 /// 一条已经求值的实参。
@@ -135,6 +139,10 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     pending_base: usize,
     /// 模块和源码身份。
     metadata: VmMetadata,
+    /// 可注入的取消与截止时间来源。
+    cancellation: Option<CancellationSource>,
+    /// 跨普通调用帧和析构帧共享的检查点计数器。
+    checkpoint_counter: Rc<Cell<u64>>,
 }
 
 impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
@@ -160,6 +168,8 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             tables: std::rc::Rc::new(tables::TableContext::default()),
             pending_base: 0,
             metadata,
+            cancellation: None,
+            checkpoint_counter: Rc::new(Cell::new(0)),
         }
     }
 
@@ -174,6 +184,34 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     #[must_use]
     pub const fn metrics(&self) -> VmMetrics {
         self.metrics
+    }
+
+    /// 设置当前执行共享的取消与截止时间来源。
+    pub(crate) fn set_cancellation_source(&mut self, cancellation: Option<CancellationSource>) {
+        self.cancellation = cancellation;
+    }
+
+    /// 在一次指令完成后轮询取消检查点。
+    fn cancellation_checkpoint(&self) -> Result<(), Fault> {
+        if !self.options.checkpoints_enabled {
+            return Ok(());
+        }
+        let interval = self.options.checkpoint_interval as u64;
+        if self.checkpoint_counter.get() % interval == 0
+            && self
+                .cancellation
+                .as_ref()
+                .is_some_and(CancellationSource::is_cancelled)
+        {
+            return Err(Fault::Cancelled);
+        }
+        Ok(())
+    }
+
+    /// 递增跨帧共享的指令检查计数器。
+    fn count_instruction(&self) {
+        self.checkpoint_counter
+            .set(self.checkpoint_counter.get().saturating_add(1));
     }
 
     /// 取出事件接收器。
@@ -226,6 +264,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 });
                 (RunResult::Fatal(fatal), None)
             }
+            Err(Fault::Cancelled) => (RunResult::Cancelled, None),
         }
     }
 
@@ -374,6 +413,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         match fault {
             Fault::Error(error) => Fault::Error(error.with_stack_frame(stack_frame)),
             Fault::Fatal(fatal) => Fault::Fatal(fatal.with_stack_frame(stack_frame)),
+            Fault::Cancelled => Fault::Cancelled,
         }
     }
 
@@ -388,6 +428,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             let mut flow = Flow::Next;
             for (instruction_index, instruction) in current.instructions.iter().enumerate() {
                 self.metrics.instructions = self.metrics.instructions.saturating_add(1);
+                self.count_instruction();
                 let step = self.step(function, instruction);
                 flow = match self.finish_table_effects(step) {
                     Ok(flow) => flow,
@@ -406,6 +447,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                         }
                     }
                 };
+                self.cancellation_checkpoint()?;
                 if !matches!(flow, Flow::Next) {
                     break;
                 }
@@ -1087,6 +1129,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 }
                 Err(Fault::Error(cleanup)) => error.push_suppressed(cleanup),
                 Err(Fault::Fatal(fatal)) => return Err(Fault::Fatal(fatal)),
+                Err(Fault::Cancelled) => return Err(Fault::Cancelled),
             }
         }
 
