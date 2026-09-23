@@ -174,3 +174,64 @@ fn production_checkpoint_can_cancel_and_can_be_disabled() {
     );
     assert!(completed.result.is_success());
 }
+
+/// 取消不得被用户 catch 吞掉，且应先尝试 finally 再执行释放计划。
+#[test]
+fn cancellation_bypasses_catch_and_runs_cleanup_once() {
+    let source = "try\n    value = \"held\"\n    while true\n        value = \"held\"\ncatch err as ArithmeticError\n    while true\n        value = \"caught\"\nfinally\n    cleaned = true\n";
+    let (ir, tac) = compile(source);
+    let token = CancellationToken::new();
+    token.cancel();
+    let outcome = run_request(
+        &RunRequest::new(&ir, &tac)
+            .with_options(VmOptions {
+                checkpoint_interval: 32,
+                ..VmOptions::default()
+            })
+            .with_cancellation(CancellationSource::new().with_token(token)),
+    );
+    assert!(matches!(outcome.result, RunResult::Cancelled));
+    assert!(
+        outcome
+            .events
+            .iter()
+            .any(|event| matches!(event, VmEvent::HandlerEntered { .. }))
+    );
+    assert!(
+        !outcome
+            .events
+            .iter()
+            .any(|event| matches!(event, VmEvent::HandlerMatched { .. }))
+    );
+    assert!(
+        outcome
+            .events
+            .iter()
+            .any(|event| matches!(event, VmEvent::ValueReleased { .. }))
+    );
+}
+
+/// finally 自身的死循环也必须经过独立检查点而被取消打断。
+#[test]
+fn cancellation_interrupts_finally_subroutine() {
+    let source =
+        "try\n    while true\n        value = 1\nfinally\n    while true\n        value = 1\n";
+    let (ir, tac) = compile(source);
+    let token = CancellationToken::new();
+    token.cancel();
+    let outcome = run_request(
+        &RunRequest::new(&ir, &tac)
+            .with_options(VmOptions {
+                checkpoint_interval: 32,
+                ..VmOptions::default()
+            })
+            .with_cancellation(CancellationSource::new().with_token(token)),
+    );
+    assert!(matches!(outcome.result, RunResult::Cancelled));
+    assert!(
+        outcome
+            .events
+            .iter()
+            .any(|event| matches!(event, VmEvent::HandlerEntered { .. }))
+    );
+}

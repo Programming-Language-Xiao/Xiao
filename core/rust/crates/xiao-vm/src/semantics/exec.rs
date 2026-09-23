@@ -882,6 +882,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let mut flow = Flow::Next;
                 for (instruction_index, instruction) in current.instructions.iter().enumerate() {
                     self.metrics.instructions = self.metrics.instructions.saturating_add(1);
+                    self.count_instruction();
                     let step = self.step(function, instruction);
                     flow = match self.finish_table_effects(step) {
                         Ok(flow) => flow,
@@ -904,6 +905,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                             }
                         }
                     };
+                    self.cancellation_checkpoint()?;
                     if !matches!(flow, Flow::Next) {
                         break;
                     }
@@ -1344,7 +1346,8 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     /// `run_blocks` 会先尝试当前帧的处理器；只有未匹配的错误或致命故障才会
     /// 到这里。这里**只处理最内层帧**，不能把调用方的作用域一起清掉，否则
     /// 外层 `catch` 永远没有机会接住从被调函数传播出来的错误。普通错误仍按
-    /// `UnmatchedError` 计划逐层释放；`Fatal` 则完全跳过释放计划。
+    /// `UnmatchedError` 计划逐层释放；取消先执行 `finally`，再复用同一释放计划；
+    /// `Fatal` 则完全跳过释放计划。
     fn unwind(&mut self, fault: &Fault) {
         let Some(frame) = self.frames.last() else {
             return;
@@ -1355,8 +1358,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             .functions
             .get(frame.function.get() as usize)
             .cloned();
-        if matches!(fault, Fault::Error(_)) {
-            if let Some(function) = function.as_ref() {
+        if let Some(function) = function.as_ref() {
+            if matches!(fault, Fault::Cancelled) {
+                self.run_cancelled_finalies(function);
+            }
+            if matches!(fault, Fault::Error(_) | Fault::Cancelled) {
                 for scope in scopes.iter().rev().copied() {
                     self.run_plan(function, scope, "unmatched_error");
                 }
@@ -1367,6 +1373,63 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             frame.active_catches.clear();
             frame.completed_finally.clear();
             frame.pending_check_kind = None;
+        }
+    }
+
+    /// 取消时执行当前帧仍活动的 `finally`，但不查找用户 `catch`。
+    fn run_cancelled_finalies(&mut self, function: &TacFunction) {
+        let Some(frame) = self.frames.last() else {
+            return;
+        };
+        let active_scopes = frame.scopes.clone();
+        let active_catches = frame.active_catches.clone();
+        let active_subroutines = frame.active_subroutines.clone();
+        let failed_subroutines = frame.subroutine_faults.clone();
+        let mut completed = frame.completed_finally.clone();
+        let scope_active = |scope: u32| active_scopes.contains(&scope);
+        let catch_context_active =
+            |scope: u32| active_catches.iter().any(|(owner, _)| *owner == scope);
+        let scope_rank = |scope: u32| {
+            active_scopes
+                .iter()
+                .position(|item| *item == scope)
+                .unwrap_or(0)
+        };
+        let mut finalies = function
+            .handlers
+            .iter()
+            .filter(|handler| {
+                handler.exit == "finally"
+                    && (scope_active(handler.scope) || catch_context_active(handler.scope))
+                    && !active_subroutines.contains(&handler.handler)
+                    && !failed_subroutines.contains(&handler.handler)
+                    && !completed.contains(&(handler.scope, handler.handler))
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        finalies.sort_by_key(|handler| {
+            (
+                std::cmp::Reverse(scope_rank(handler.scope)),
+                handler.handler,
+            )
+        });
+        finalies.dedup_by_key(|handler| handler.handler);
+
+        for handler in finalies {
+            let marker = (handler.scope, handler.handler);
+            completed.push(marker);
+            if let Some(frame) = self.frames.last_mut()
+                && !frame.completed_finally.contains(&marker)
+            {
+                frame.completed_finally.push(marker);
+            }
+            self.sink.record(VmEvent::HandlerEntered {
+                scope: handler.scope,
+                handler: handler.handler.get(),
+            });
+            match self.run_subroutine(function, handler.handler, "cancelled") {
+                Ok(_) | Err(Fault::Error(_)) | Err(Fault::Fatal(_)) | Err(Fault::Cancelled) => {}
+            }
         }
     }
 

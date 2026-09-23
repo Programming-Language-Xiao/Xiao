@@ -137,6 +137,7 @@ fn observe<C: Carrier>(case: &VectorCase) -> Expectation {
             RunResult::Success => "success".to_owned(),
             RunResult::Error(_) => "error".to_owned(),
             RunResult::Fatal(_) => "fatal".to_owned(),
+            RunResult::Cancelled => "cancelled".to_owned(),
         },
         error_code: outcome.result.error_code().map(str::to_owned),
         value: outcome.value.as_ref().map(runtime_value_json),
