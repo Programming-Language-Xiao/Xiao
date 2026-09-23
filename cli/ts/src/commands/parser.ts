@@ -16,7 +16,7 @@ export type ParsedCommand =
   | { kind: "version"; options: GlobalCliOptions }
   | { kind: "run"; file: string; options: GlobalCliOptions }
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
-  | { kind: "test"; project?: string; options: GlobalCliOptions }
+  | { kind: "test"; project?: string; timeoutMs?: number; options: GlobalCliOptions }
   | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; optimizationLevel: 0; args: readonly string[]; options: GlobalCliOptions }
   | { kind: "repl"; options: GlobalCliOptions };
 
@@ -55,8 +55,7 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
   if (command === "run") return parseRun(rest, options);
   if (command === "config") return parseConfig(rest, options);
   if (command === "test") {
-    if (rest.length > 1) throw new CliArgumentError("test 最多接受一个项目路径");
-    return { kind: "test", project: rest[0], options };
+    return parseTest(rest, options);
   }
   if (command === "build") return parseBuild(rest, options);
   if (command.endsWith(".xiao")) {
@@ -75,12 +74,32 @@ export function helpText(): string {
     "  xiao run <file.xiao> [-debug] [--json] [--color=auto|always|never]",
     "  xiao <file.xiao> [-debug]                运行源码快捷方式",
     "  xiao config [--global] <key.path> <value>",
-    "  xiao test                                已登记，测试框架待后续批次",
+    "  xiao test [project] [--timeout <ms>]     运行项目 tests/**/*.xiao",
     "  xiao build -o <output> <file.xiao> [-debug] [--emit-llvm <path>] [--json]",
     "  xiao --help | --version",
     "",
     "当前阶段不启动 REPL；无参数或 --inLF 会给出稳定的未实现诊断。",
   ].join("\n") + "\n";
+}
+
+/** 解析项目测试命令；选项必须留在命令分支内，不能静默成为项目路径。 */
+function parseTest(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  let project: string | undefined;
+  let timeoutMs: number | undefined;
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === "--timeout") {
+      const value = args[++index];
+      if (value === undefined || !/^\d+$/u.test(value)) throw new CliArgumentError("test --timeout 需要非负整数毫秒");
+      timeoutMs = Number(value);
+      if (!Number.isSafeInteger(timeoutMs)) throw new CliArgumentError("test --timeout 超出安全整数范围");
+      continue;
+    }
+    if (argument.startsWith("-")) throw new CliArgumentError(`test 不支持选项：${argument}`);
+    if (project !== undefined) throw new CliArgumentError("test 最多接受一个项目路径");
+    project = argument;
+  }
+  return { kind: "test", project, timeoutMs, options };
 }
 
 /** 校验 `run` 的单一源码参数。 */
