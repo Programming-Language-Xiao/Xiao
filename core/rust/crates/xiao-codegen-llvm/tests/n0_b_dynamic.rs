@@ -191,15 +191,13 @@ fn rejects_table_constructor_arguments_until_init_abi_exists() {
 fn optional_llvm_accepts_dynamic_table_module() {
     let llvm_as = std::env::var_os("XIAO_LLVM_AS")
         .expect("显式运行 --ignored 时 XIAO_LLVM_AS 必须已设置；准备方式见 10D §4");
-    let triple = std::env::var("XIAO_TARGET_TRIPLE")
+    let configured_triple = std::env::var("XIAO_TARGET_TRIPLE")
         .expect("显式运行 --ignored 时 XIAO_TARGET_TRIPLE 必须已设置；准备方式见 10D §4");
-    let target = TargetDescription::new(
-        triple,
-        64,
-        xiao_codegen_llvm::Endian::Little,
-        xiao_codegen_llvm::ObjectFormat::Coff,
-    )
-    .expect("XIAO_TARGET_TRIPLE 必须是有效的 64 位 COFF 目标");
+    let target = TargetDescription::host();
+    assert_eq!(
+        configured_triple, target.triple,
+        "XIAO_TARGET_TRIPLE 必须与当前 Rust 编译目标一致"
+    );
     let module = lower_program(&table_program("instance"), &CodegenOptions::default())
         .expect("动态表应降低");
     NativeBuild::new()

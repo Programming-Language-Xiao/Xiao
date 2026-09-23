@@ -9,15 +9,14 @@ use xiao_ir::{IrStatementKind, IrType};
 
 /// 读取环境依赖原生测试使用的固定目标三元组。
 fn configured_native_target() -> TargetDescription {
-    let triple = std::env::var("XIAO_TARGET_TRIPLE")
+    let configured_triple = std::env::var("XIAO_TARGET_TRIPLE")
         .expect("显式运行 --ignored 时 XIAO_TARGET_TRIPLE 必须已设置；准备方式见 10D §4");
-    TargetDescription::new(
-        triple,
-        64,
-        xiao_codegen_llvm::Endian::Little,
-        xiao_codegen_llvm::ObjectFormat::Coff,
-    )
-    .expect("XIAO_TARGET_TRIPLE 必须是有效的 64 位 COFF 目标")
+    let target = TargetDescription::host();
+    assert_eq!(
+        configured_triple, target.triple,
+        "XIAO_TARGET_TRIPLE 必须与当前 Rust 编译目标一致"
+    );
+    target
 }
 
 #[test]

@@ -73,11 +73,33 @@ impl TargetDescription {
         }
     }
 
+    /// 创建 Windows AArch64 MSVC 目标描述。
+    #[must_use]
+    pub fn windows_aarch64() -> Self {
+        Self {
+            triple: "aarch64-pc-windows-msvc".to_owned(),
+            pointer_width: 64,
+            endian: Endian::Little,
+            object_format: ObjectFormat::Coff,
+        }
+    }
+
     /// 创建 Linux x86_64 GNU 目标描述。
     #[must_use]
     pub fn linux_x86_64() -> Self {
         Self {
             triple: "x86_64-unknown-linux-gnu".to_owned(),
+            pointer_width: 64,
+            endian: Endian::Little,
+            object_format: ObjectFormat::Elf,
+        }
+    }
+
+    /// 创建 Linux AArch64 GNU 目标描述。
+    #[must_use]
+    pub fn linux_aarch64() -> Self {
+        Self {
+            triple: "aarch64-unknown-linux-gnu".to_owned(),
             pointer_width: 64,
             endian: Endian::Little,
             object_format: ObjectFormat::Elf,
@@ -95,22 +117,52 @@ impl TargetDescription {
         }
     }
 
+    /// 创建 macOS AArch64 目标描述。
+    #[must_use]
+    pub fn macos_aarch64() -> Self {
+        Self {
+            triple: "aarch64-apple-darwin".to_owned(),
+            pointer_width: 64,
+            endian: Endian::Little,
+            object_format: ObjectFormat::MachO,
+        }
+    }
+
     /// 返回当前编译主机的规范化目标；只读取编译期平台，不发现工具链。
     #[must_use]
     pub fn host() -> Self {
-        #[cfg(target_os = "windows")]
+        #[cfg(all(target_os = "windows", target_arch = "x86_64"))]
         {
             Self::windows_x86_64()
         }
-        #[cfg(target_os = "macos")]
+        #[cfg(all(target_os = "windows", target_arch = "aarch64"))]
+        {
+            Self::windows_aarch64()
+        }
+        #[cfg(all(target_os = "macos", target_arch = "x86_64"))]
         {
             Self::macos_x86_64()
         }
-        #[cfg(target_os = "linux")]
+        #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+        {
+            Self::macos_aarch64()
+        }
+        #[cfg(all(target_os = "linux", target_arch = "x86_64"))]
         {
             Self::linux_x86_64()
         }
-        #[cfg(not(any(target_os = "windows", target_os = "macos", target_os = "linux")))]
+        #[cfg(all(target_os = "linux", target_arch = "aarch64"))]
+        {
+            Self::linux_aarch64()
+        }
+        #[cfg(not(any(
+            all(target_os = "windows", target_arch = "x86_64"),
+            all(target_os = "windows", target_arch = "aarch64"),
+            all(target_os = "macos", target_arch = "x86_64"),
+            all(target_os = "macos", target_arch = "aarch64"),
+            all(target_os = "linux", target_arch = "x86_64"),
+            all(target_os = "linux", target_arch = "aarch64"),
+        )))]
         {
             Self {
                 triple: "unknown-unknown-unknown".to_owned(),
@@ -128,5 +180,35 @@ impl TargetDescription {
             "triple={};pointer_width={};endian={:?};format={:?}",
             self.triple, self.pointer_width, self.endian, self.object_format
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Endian, ObjectFormat, TargetDescription};
+
+    #[test]
+    fn host_target_architecture_matches_compile_time_target() {
+        let target = TargetDescription::host();
+        let expected_architecture = if cfg!(target_arch = "x86_64") {
+            "x86_64"
+        } else if cfg!(target_arch = "aarch64") {
+            "aarch64"
+        } else {
+            panic!("当前测试只覆盖 x86_64 和 aarch64")
+        };
+        assert_eq!(target.triple.split('-').next(), Some(expected_architecture));
+        assert_eq!(target.pointer_width, usize::BITS as u16);
+        assert_eq!(target.endian, Endian::Little);
+
+        if cfg!(target_os = "windows") {
+            assert_eq!(target.object_format, ObjectFormat::Coff);
+        } else if cfg!(target_os = "macos") {
+            assert_eq!(target.object_format, ObjectFormat::MachO);
+        } else if cfg!(target_os = "linux") {
+            assert_eq!(target.object_format, ObjectFormat::Elf);
+        } else {
+            panic!("当前测试只覆盖 Windows、macOS 和 Linux")
+        }
     }
 }

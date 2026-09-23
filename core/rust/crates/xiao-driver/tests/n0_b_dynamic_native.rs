@@ -21,15 +21,13 @@ fn optional_dynamic_string_native_round_trip() {
         "XIAO_RUNTIME_LIBRARY 必须指向已构建的 Runtime staticlib: {}",
         runtime.display()
     );
-    let target_triple = std::env::var("XIAO_TARGET_TRIPLE")
+    let configured_triple = std::env::var("XIAO_TARGET_TRIPLE")
         .expect("显式运行 --ignored 时 XIAO_TARGET_TRIPLE 必须已设置；准备方式见 10D §4");
-    let target = TargetDescription::new(
-        target_triple,
-        64,
-        xiao_codegen_llvm::Endian::Little,
-        xiao_codegen_llvm::ObjectFormat::Coff,
-    )
-    .expect("XIAO_TARGET_TRIPLE 必须是有效的 64 位 COFF 目标");
+    let target = TargetDescription::host();
+    assert_eq!(
+        configured_triple, target.triple,
+        "XIAO_TARGET_TRIPLE 必须与当前 Rust 编译目标一致"
+    );
     let rustc = std::env::var_os("RUSTC").unwrap_or_else(|| std::ffi::OsString::from("rustc"));
     let toolchain = Toolchain::new(clang)
         .with_llvm_as(llvm_as)
@@ -37,7 +35,11 @@ fn optional_dynamic_string_native_round_trip() {
         .probe_native_static_libraries(rustc, &target)
         .expect("rustc 应报告 Runtime staticlib 的原生库清单");
     let root = std::env::temp_dir().join(format!("xiao-n0-b-dynamic-{}", std::process::id()));
-    let output = root.join("dynamic.exe");
+    let output = root.join(if cfg!(windows) {
+        "dynamic.exe"
+    } else {
+        "dynamic"
+    });
     let request = NativeBuildRequest::new(
         FrontendRequest::from_text("value = \"heap\"\n"),
         target,
