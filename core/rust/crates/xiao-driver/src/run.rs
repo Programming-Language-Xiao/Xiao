@@ -14,6 +14,7 @@ use xiao_vm::{
     RunRequest as VmRunRequest, RunResult, VmEvent, VmOptions, run_request as run_vm_request,
 };
 
+/// 可跨线程共享的 VM 取消令牌。
 pub use xiao_vm::CancellationToken;
 
 use crate::frontend::{FrontendArtifact, FrontendCompiler, FrontendError, FrontendRequest};

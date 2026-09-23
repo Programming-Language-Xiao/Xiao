@@ -1,0 +1,76 @@
+{
+  "report_id": "09b0e-checkpoint-toggle",
+  "generated_at": "2026-09-23",
+  "status": "附加对照，不构成 09R3 重新冻结",
+  "source_revision": "b6bed615c64dadf1b9cb679dfa316504fd71c19f",
+  "platform": {
+    "os": "Windows 11 专业版 10.0.26200",
+    "cpu": "AMD Ryzen 9 9955HX 16-Core Processor",
+    "logical_processors": 32
+  },
+  "toolchain": {
+    "rust": "1.96.0",
+    "profile": "release",
+    "measurement": "std::time::Instant"
+  },
+  "protocol": {
+    "warmup_iterations": 3,
+    "measurement_iterations": 11,
+    "checkpoint_interval": 1024,
+    "same_tac": true,
+    "same_process": true,
+    "same_build": true,
+    "order": "每个样本交替测量开启与关闭"
+  },
+  "fixture": {
+    "test": "core/rust/crates/xiao-vm/tests/b0_e_checkpoint_performance.rs",
+    "program": "固定 50000 轮整数循环",
+    "entry": "生产 run_request，栈式载体"
+  },
+  "measurements": {
+    "enabled": {
+      "checkpoints_enabled": true,
+      "samples_ns": [
+        236743200,
+        237816600,
+        239859800,
+        282552900,
+        345179600,
+        295119900,
+        338896900,
+        309601600,
+        330476900,
+        331543300,
+        318501800
+      ],
+      "median_ns": 309601600
+    },
+    "disabled": {
+      "checkpoints_enabled": false,
+      "samples_ns": [
+        235946200,
+        242783300,
+        235539000,
+        245826500,
+        340477400,
+        292282300,
+        268191500,
+        316499900,
+        281046500,
+        347428200,
+        285090800
+      ],
+      "median_ns": 281046500
+    }
+  },
+  "summary": {
+    "enabled_minus_disabled_ns": 28555100,
+    "enabled_over_disabled_percent": 10.16,
+    "interpretation": "本轮同机微基准中，运行期开关开启的中位耗时高于关闭；该数字只用于检查点开关的附加对照，不修改 09R3 冻结表。"
+  },
+  "limitations": [
+    "样本数量和单一固定循环不足以替代完整基准族复现。",
+    "Windows 调度和频率变化会影响绝对耗时；本报告只比较同一次构建内的相对结果。",
+    "tests/benchmarks/reports/ 下的既有冻结 JSON 未修改。"
+  ]
+}

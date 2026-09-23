@@ -48,3 +48,14 @@ X0-B 的 `xiao run` 和 X0-E 的 `xiao build` 已消费这条协议；命令行�
 Rust 与 TypeScript 当前采用共享 JSON fixture 的窄类型策略。样本位于
 `tests/spec/11x0-protocol/`，两侧测试都必须读取同一批样本并验证回环。新增字段先更新
 样本和两侧显式类型，再更新协议版本或核心版本。
+
+## 运行控制
+
+`run.options` 包含 `max_call_depth`、`event_capacity`、`timeout_ms`、
+`checkpoints_enabled` 和 `checkpoint_interval`。后两个字段控制 VM 热循环取消检查点；缺失
+时 Rust 核心按默认值启用检查点并使用默认间隔。它们只控制运行时轮询，不改变
+`metrics.instructions` 或既有 `Error`/`Fatal` 结果语义。
+
+TypeScript `ProtocolClient.runSource` 接收 `AbortSignal`。CLI 入口通过 `AbortController` 监听
+`SIGINT`，信号触发后由客户端发送 `cancel` 帧；核心侧取消和超时统一返回 `ArtifactRejected`
+进程码 `2`。取消不进入用户 `catch`，但 VM 会尝试现有 `finally` 和释放计划。

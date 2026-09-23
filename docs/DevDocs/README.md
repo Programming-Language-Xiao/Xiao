@@ -91,7 +91,7 @@
 | 09-B0-B | [生产 VM 执行闭环](09b0b-production-vm.md) | 生产入口 ABI（脚本/`[main]`）、规范化运行参数对象、结构化退出结果、栈回溯与事件接收器生产化 | 已完成（生产入口、前置验证、报告接线和有界事件接收器已落地） |
 | 09-B0-C | [前端到 VM 内部驱动器](09b0c-frontend-to-vm-driver.md) | `xiao-driver` 的运行驱动器、三段错误的统一结构化表示、取消/超时边界 | 已完成（内部驱动器、公共契约测试和 UseDocs 已落地；`B0-C-CANCEL-001` 转入 [09-B0-E](09b0e-vm-cancellation-checkpoint.md)） |
 | 09-B0-D | [退出码冻结与 Linux 容器实测](09b0d-exit-codes-and-linux-verification.md) | `ExitCode` 的语义与取值冻结、`DriverOutcome` 上的稳定派生、locale 中立性断言、容器实测记录 | 已完成（退出码契约与测试已落地；Linux 容器结果见交接文档；不改变 Windows 原生冻结口径） |
-| 09-B0-E | [VM 中途取消检查点](09b0e-vm-cancellation-checkpoint.md) | `B0-C-CANCEL-001` 的出口：VM 热循环内的中途检查点、可注入取消源、清理/退出码回归、**单独记录**的性能对照 | 待开工（交接文档已就绪；别名层清理已裁定拆出，另登记编号） |
+| 09-B0-E | [VM 中途取消检查点](09b0e-vm-cancellation-checkpoint.md) | `B0-C-CANCEL-001` 的出口：VM 热循环内的中途检查点、可注入取消源、清理/退出码回归、**单独记录**的性能对照 | 已完成（`Fault::Cancelled` 独立通道、`run_blocks`/`run_subroutine` 检查点、CLI `AbortSignal`、退出码 2 回归；别名层清理仍拆出） |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 进行中（N0-A/N0-B 已落地；N0-C/D 与用户可见 CLI 仍后置） |
 | 10A | [LLVM 原生构建闭环](10a-n0-native-closure.md) | 手写 IR 文本 + 外部工具链、`xiao-runtime-abi`、四批交付（N0-A 纯静态 → N0-D 验证裁剪） | N0-A 已完成；N0-B Runtime ABI 已接续落地（Windows 原生已复现；Linux/macOS 待复现） |
 | 10B | [N0-B Runtime ABI](10b-n0-runtime-abi.md) | 动态值的 ABI 表示、真实引用计数与 `Weak`、容器与表 ABI、正常路径的释放计划 | 已落地（ABI/容器/表/正常释放计划；异常展开留 N0-C） |
@@ -153,6 +153,10 @@ A0 通过后才进入第 01 阶段的最小 Token 闭环：读取 UTF-8 源码�
 08A/U0 已完成统一前端首版：`xiao-driver` 按固定顺序串接解析、模块、类型和生命周期分析，累积诊断并在错误时停止降低；`xiao-ir` 输出覆盖当前已完成静态语义的递归类型化 IR，提供控制流、所有权、释放计划、选择器和错误边界；`IrValidator` 拒绝非法结构，稳定 JSON 快照带版本字段。该阶段不执行用户代码、不启动 VM/LLVM、不实现优化 Pass；接手 09/10 前端消费者时先阅读 [08A 交接记录](08a-u0-frontend-implementation.md) 和对应 [UseDocs 前端/IR](../UseDocs/language/compiler/README.md)。
 
 09 阶段的前置特别研究工程 `09R1 → 09R2 → 09R3` 已完成并冻结：三机型原型、指令编码器、源码映射、79 条共享向量、容器/选择器/集合/迭代/表声明执行路径和 Windows 原生基准均已交付，冻结结论为**栈式机型、`FORMAT_VERSION = 3`、opcode `0..40`**。B0-A 已将 `xiao-bytecode` 与 `xiao-vm` 的实质实现迁入生产 `src/`，`research` 仅保留兼容重导出；B0-B 已接上生产运行契约（`RunRequest`/`run_request` 固定函数 0 与栈式载体，运行前无条件走 `verify_for_execution`，栈回溯经 `PcMap::span_at_pc` 接入 `ReportRecord`，生产事件接收器改为有界 `BoundedSink`）；B0-C 已在 `xiao-driver` 接上前端到 VM 的内部驱动器（`DriverRequest`/`DriverOutcome`、三段结构化失败、边界取消/超时和公共契约测试）；B0-D 已冻结五个退出码语义并记录 Linux 容器开发门禁，容器不改变原生基准口径。**冻结七项是本阶段的输入契约而不是待决项**；VM 中途取消检查点记为 `B0-C-CANCEL-001`，出口批次改为 `09-B0-E`。批次边界、迁移方案与各批可执行清单见 [09-B0. 字节码最小运行闭环](09b0-bytecode-closure.md)、[09-B0-B](09b0b-production-vm.md)、[09-B0-C](09b0c-frontend-to-vm-driver.md) 与 [09-B0-D](09b0d-exit-codes-and-linux-verification.md)。
+
+09-B0-E 已完成 VM 两处热循环检查点、独立取消/清理通道、deadline 注入、CLI `AbortSignal`
+接线和退出码回归；附加开关 A/B 结果见 [09-B0-E 性能报告](09b0e-checkpoint-performance.json)，
+不改动 09R3 冻结报告。别名层清理仍按交接文档 §七.1 另行登记。
 
 ## 文档变更规则
 

@@ -310,6 +310,47 @@ VM 侧要自带等价类型（或收 `&dyn Fn() -> bool` / 泛型轮询参数）
 
 ---
 
+## 八、落地结果（2026-09-23）
+
+本批已经按 §四分阶段落地，最终选择如下：
+
+1. `xiao-vm` 提供独立的 `CancellationToken`/`CancellationSource`。驱动器只依赖 VM 的
+   抽象，不形成反向依赖；`CancellationSource` 同时承载跨线程取消标记和绝对截止时间。
+2. `VmOptions` 增加 `checkpoints_enabled` 与 `checkpoint_interval`。检查点关闭是运行期
+   布尔开关，关闭时仍保留该分支的真实成本；计数器使用 VM 共享的单调计数，不改变
+   `metrics.instructions`。
+3. `run_blocks` 与 `run_subroutine` 都在 `finish_table_effects` 之后轮询。取消使用独立的
+   `Fault::Cancelled`/`RunResult::Cancelled` 通道：不查用户 `catch`，但按活动作用域先尝试
+   既有 `finally`，再复用 `unmatched_error` 释放计划；`finally` 内部也有检查点，因此死循环
+   清理可以被打断。既有 `Error` 与 `Fatal` 的路由、清理和退出语义未改写。
+4. 驱动器把同一个取消源和 deadline 注入生产 `RunRequest`；VM 终止后仍由驱动器边界映射
+   为 `DriverOutcome::Rejected`，因此取消/超时保持 `ArtifactRejected` 进程码 `2`。
+5. TypeScript CLI 的 `run`/`build` 命令沿 `CommandContext.signal` 传入 `ProtocolClient`；
+   真实入口用 `AbortController` 接收 `SIGINT`，客户端继续通过既有 `cancel` 帧绑定请求 ID。
+
+### 8.1 验证结果
+
+- `cargo test -p xiao-vm --test b0_b_production cancellation_`：取消绕过 `catch`、释放计划执行、
+  `finally` 死循环中断和关闭开关回归通过。
+- `bun test cli/ts/src/commands/index.test.ts cli/ts/src/protocol/client.test.ts` 与
+  `bunx tsc --noEmit -p tsconfig.json` 通过。
+- `cargo check --manifest-path tests/benchmarks/Cargo.toml` 通过；基准 crate 仅同步新增
+  `VmOptions` 字段和 `RunResult::Cancelled` 分支，未改其冻结协议或既有报告。
+- 附加 release A/B 结果见
+  [`09b0e-checkpoint-performance.json`](09b0e-checkpoint-performance.json)。它使用同一份 TAC、
+  同一构建、交替样本测量，**不构成 09R3 重新冻结**。
+- `tests/benchmarks/reports/` 无 diff；既有 09R3 冻结数字保持只读输入。
+
+### 8.2 分阶段提交
+
+- `7ec5cb6`：新增 VM 取消源、检查点配置和协议字段链路。
+- `f5043c2`：接入主解释循环、deadline 注入和关闭开关回归。
+- `d9a8efc`：接入 `finally`/释放计划清理与独立取消通道。
+- `47d1b90`：CLI `AbortController`/`AbortSignal` 接线及 TypeScript 回归。
+- `b6bed61`：附加 release A/B 性能对照夹具与独立基准兼容修复。
+
+---
+
 ## 相关页面
 
 - [09-B0-C. 前端到 VM 内部驱动器](09b0c-frontend-to-vm-driver.md) —— **债项来源与方案 A 的选择**

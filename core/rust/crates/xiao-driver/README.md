@@ -31,9 +31,11 @@
 事件、指标和报告。驱动器固定消费真实 `FrontendArtifact`，经生产 `lower_program` 和
 `xiao_vm::run_request` 执行；它不提供入口函数或机型选择参数，也不复制基准工具的函数零搬迁。
 
-取消与超时目前在前端完成、降低完成和 VM 调用前后采样。VM 指令循环检查点记录为
-`B0-C-CANCEL-001`，出口批次为 `11/X0`；因此接口已可表达边界拒绝，但不会声称能中途打断
-正在运行的 VM。测试位于 `tests/b0_c_driver.rs`。
+取消与超时由 `CancellationToken`/`CancellationSource` 注入生产 VM。驱动器仍在开始、前端
+完成、降低完成和 VM 调用前后采样，同时 VM 的 `run_blocks` 与 `run_subroutine` 在
+`finish_table_effects` 后按 `VmOptions.checkpoint_interval` 轮询。取消不进入用户 `catch`，
+但会尝试 `finally` 并执行释放计划；`checkpoints_enabled = false` 保留旧的无轮询行为。
+测试位于 `tests/b0_c_driver.rs`、`tests/b0_d_exit_codes.rs` 和 `xiao-vm/tests/b0_b_production.rs`。
 
 ## 09-B0-D 退出码
 

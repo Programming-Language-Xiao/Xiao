@@ -48,9 +48,14 @@ related:
 
 ## 取消与超时
 
-`CancellationToken` 和 `RunControl` 支持从驱动调用开始计时的超时，以及跨线程取消信号。
-本批在驱动器边界采样：开始、前端完成、降低完成和 VM 调用前后。VM 指令循环中途检查点
-记录为 `B0-C-CANCEL-001`，出口批次为 `09-B0-E`；当前接口不会声称可以中途打断正在运行的 VM。
+`CancellationToken` 和 `RunControl` 支持从驱动调用开始计时的超时，以及跨线程取消信号；
+驱动器把同一个来源和 deadline 注入 VM。`VmOptions.checkpoints_enabled` 可关闭热循环检查点，
+`checkpoint_interval` 控制两次轮询之间的指令数。取消不进入用户 `catch`，但会尝试 `finally`
+并执行释放计划；取消和超时仍映射为 `ArtifactRejected` 进程码 `2`。
+
+检查点在 `run_blocks` 与 `run_subroutine` 的 `finish_table_effects` 之后执行，避免表析构错误
+覆盖控制信号；`metrics.instructions` 不受检查点计数影响。CLI 的 `AbortSignal` 通过协议客户端
+发送既有 `cancel` 帧，核心按请求 ID 触发同一取消源。
 
 ## 相关实现
 

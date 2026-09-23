@@ -6,9 +6,12 @@ use xiao_bytecode::lower_program;
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_vm::{RunRequest, RunResult, VmOptions, run_request};
 
+/// 每组测量前用于稳定运行状态的预热次数。
 const WARMUP_ITERATIONS: usize = 3;
+/// 每种检查点配置的正式测量次数。
 const MEASUREMENT_ITERATIONS: usize = 11;
 
+/// 编译性能夹具源码并生成对应的 TAC 程序。
 fn compile() -> (xiao_ir::IrProgram, xiao_bytecode::TacProgram) {
     let source = "total = 0\nindex = 0\nwhile index != 50000\n    total = total + index\n    index = index + 1\n";
     let artifact = FrontendCompiler::new()
@@ -20,6 +23,7 @@ fn compile() -> (xiao_ir::IrProgram, xiao_bytecode::TacProgram) {
     (ir, program)
 }
 
+/// 使用指定检查点配置执行一次性能夹具。
 fn run_once(ir: &xiao_ir::IrProgram, program: &xiao_bytecode::TacProgram, enabled: bool) {
     let options = VmOptions {
         checkpoints_enabled: enabled,
@@ -30,11 +34,13 @@ fn run_once(ir: &xiao_ir::IrProgram, program: &xiao_bytecode::TacProgram, enable
     assert!(matches!(outcome.result, RunResult::Success));
 }
 
+/// 返回无序样本的中位数。
 fn median(values: &mut [u128]) -> u128 {
     values.sort_unstable();
     values[values.len() / 2]
 }
 
+/// 交替测量启用与关闭检查点时的执行耗时。
 fn measure_pair(
     ir: &xiao_ir::IrProgram,
     program: &xiao_bytecode::TacProgram,
@@ -46,7 +52,7 @@ fn measure_pair(
     let mut enabled = Vec::with_capacity(MEASUREMENT_ITERATIONS);
     let mut disabled = Vec::with_capacity(MEASUREMENT_ITERATIONS);
     for index in 0..MEASUREMENT_ITERATIONS {
-        let first = index.is_multiple_of(2);
+        let first = index % 2 == 0;
         for enabled_first in [first, !first] {
             let start = Instant::now();
             run_once(ir, program, enabled_first);
@@ -62,6 +68,7 @@ fn measure_pair(
 }
 
 #[test]
+/// 对照检查点启用与关闭时的 release 构建执行耗时。
 fn checkpoint_toggle_release_comparison() {
     let (ir, program) = compile();
     let (enabled, disabled) = measure_pair(&ir, &program);

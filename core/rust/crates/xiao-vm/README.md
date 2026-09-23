@@ -35,6 +35,15 @@ B0-C 交付且生产驱动器成为唯一消费方，不得提前删除。
 完成指标仍通过 `Metrics` 事件和 `RunOutcome.metrics` 提供。`RecordingSink` 继续用于规格测试，
 因此事件接收策略不会改变语义或释放计划。
 
+## 09-B0-E 取消检查点
+
+`CancellationToken` 和 `CancellationSource` 是 VM 侧的可注入控制源，支持跨线程取消和绝对
+截止时间。`VmOptions.checkpoints_enabled` 控制运行期开关，`checkpoint_interval` 控制轮询
+频率；检查点计数跨普通调用帧和析构帧共享，且不改变 `metrics.instructions`。
+取消使用独立的 `Cancelled` 通道，绕过用户 `catch`，但复用既有 `finally` 与释放计划机制；
+`Fatal` 和普通 `Error` 的既有不对称语义保持不变。性能开关对照见
+`docs/DevDocs/09b0e-checkpoint-performance.json`，不属于 09R3 冻结数字。
+
 冻结结论与施工顺序见 [09R. 字节码寄存器机型特别研究](../../../../docs/DevDocs/09r-bytecode-machine-research.md)。
 
 ## 边界

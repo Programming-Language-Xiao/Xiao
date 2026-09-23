@@ -164,10 +164,12 @@ pub struct RunOptions {
     pub checkpoint_interval: usize,
 }
 
+/// 返回请求反序列化时检查点开关的默认值。
 fn default_checkpoints_enabled() -> bool {
     true
 }
 
+/// 返回请求反序列化时采用的默认检查点间隔。
 fn default_checkpoint_interval() -> usize {
     xiao_vm::DEFAULT_CHECKPOINT_INTERVAL
 }
