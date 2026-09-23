@@ -3,7 +3,8 @@
 //! 校验层只检查协议版本、源码身份和目标描述；具体运行参数与构建工具链
 //! 的阶段性校验留在各自职责模块，避免把执行语义倒灌到协议门面。
 
-use super::{CORE_VERSION, PROTOCOL_VERSION, ProtocolError, ProtocolTarget, SourceIdentity};
+use super::message::{CORE_VERSION, PROTOCOL_VERSION};
+use super::request::{ProtocolError, ProtocolTarget, SourceIdentity};
 
 /// 校验协议版本和统一核心版本。
 pub(super) fn validate_versions(

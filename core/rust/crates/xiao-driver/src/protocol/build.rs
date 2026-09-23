@@ -17,11 +17,14 @@ use super::config::{
     FrozenRuntimeConfig, freeze_runtime_config, runtime_config_path, write_runtime_config,
 };
 use super::mapping::{exit_name, protocol_diagnostic, protocol_error_body};
-use super::run::{cancelled_error_response, frontend_request, protocol_error_response};
-use super::{
-    BUILD_ERROR_CODE, ProtocolArtifact, ProtocolDiagnosticActivation, ProtocolError,
-    ProtocolResponse, ProtocolTarget, SourceIdentity, ToolchainSpec, UNSUPPORTED_OPERATION_CODE,
+use super::message::{
+    ProtocolArtifact, ProtocolDiagnosticActivation, ProtocolResponse, ProtocolRuntimeConfig,
 };
+use super::request::{
+    BUILD_ERROR_CODE, OptimizationConfig, ProtocolError, ProtocolTarget, SourceIdentity,
+    ToolchainSpec, UNSUPPORTED_OPERATION_CODE,
+};
+use super::run::{cancelled_error_response, frontend_request, protocol_error_response};
 use crate::native::{
     FrontendNativeDriver, NativeBuildRequest, NativeBuildResult, NativeDriverError,
 };
@@ -31,7 +34,7 @@ use crate::run::{CancellationToken, ExitCode};
 struct BuildInputs {
     language_version: String,
     target: ProtocolTarget,
-    optimization: super::OptimizationConfig,
+    optimization: OptimizationConfig,
     source: SourceIdentity,
     output: String,
     llvm_ir_output: Option<String>,
@@ -43,7 +46,7 @@ struct BuildInputs {
 struct BuildPlan {
     request: NativeBuildRequest,
     source: SourceIdentity,
-    optimization: super::OptimizationConfig,
+    optimization: OptimizationConfig,
     llvm_ir_output: Option<String>,
     diagnostics_source: Option<String>,
     diagnostics_path: Option<String>,
@@ -98,7 +101,7 @@ pub(super) fn build_response(
     request_id: String,
     language_version: String,
     target: ProtocolTarget,
-    optimization: super::OptimizationConfig,
+    optimization: OptimizationConfig,
     source: SourceIdentity,
     output: String,
     llvm_ir_output: Option<String>,
@@ -196,7 +199,7 @@ fn prepare_build(request_id: &str, inputs: BuildInputs) -> Result<BuildPlan, Pro
 /// 生成目标相关代码生成选项，并在调试构建缺少 shim 时提前拒绝。
 #[allow(clippy::result_large_err)]
 fn build_codegen_options(
-    optimization: &super::OptimizationConfig,
+    optimization: &OptimizationConfig,
     diagnostics_path: Option<&str>,
     request_id: &str,
     target: TargetDescription,
@@ -464,7 +467,7 @@ fn write_or_clear_runtime_config(
     frozen_config: Option<FrozenRuntimeConfig>,
     executable: &Path,
     request_id: &str,
-) -> Result<Option<super::ProtocolRuntimeConfig>, ProtocolResponse> {
+) -> Result<Option<ProtocolRuntimeConfig>, ProtocolResponse> {
     match frozen_config {
         Some(config) => write_runtime_config(executable, &config)
             .map(Some)

@@ -10,9 +10,10 @@ use super::mapping::{
     exit_name, protocol_diagnostic, protocol_error_body, protocol_error_from_error, protocol_event,
     protocol_metrics, protocol_report, protocol_value,
 };
-use super::{
-    CANCELLED_ERROR_CODE, DiagnosticConfig, ProtocolError, ProtocolResponse, ProtocolTarget,
-    RunOptions, SourceIdentity,
+use super::message::ProtocolResponse;
+use super::request::{
+    CANCELLED_ERROR_CODE, DiagnosticConfig, ProtocolError, ProtocolTarget, RunOptions,
+    SourceIdentity,
 };
 use crate::diagnostics::{DiagnosticOptions, DiagnosticSession, start_error_details};
 use crate::frontend::{FrontendContext, FrontendRequest};

@@ -6,7 +6,8 @@ use std::path::PathBuf;
 use serde_json::{Value, json};
 use xiao_config::{ConfigDocument, ConfigValue, parse_config_text};
 
-use super::{ProtocolError, ProtocolRuntimeConfig};
+use super::message::ProtocolRuntimeConfig;
+use super::request::ProtocolError;
 
 /// 构建时已验证的配置摘要；写文件延迟到原生链接成功之后。
 pub(super) struct FrozenRuntimeConfig {

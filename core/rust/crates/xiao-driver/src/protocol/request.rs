@@ -12,6 +12,12 @@ pub const REQUEST_ERROR_CODE: &str = "X11-PROTOCOL-002";
 pub const VERSION_MISMATCH_CODE: &str = "X11-PROTOCOL-004";
 /// 原生构建驱动器错误的协议包装编号。
 pub const BUILD_ERROR_CODE: &str = "X11-PROTOCOL-007";
+/// 核心处理请求时发生 panic。
+pub const CORE_CRASH_CODE: &str = "X11-PROTOCOL-003";
+/// 协议请求主动取消。
+pub const CANCELLED_ERROR_CODE: &str = "X11-PROTOCOL-005";
+/// X0-A 尚未支持的协议操作或配置。
+pub const UNSUPPORTED_OPERATION_CODE: &str = "X11-PROTOCOL-006";
 
 /// 目标条件；运行请求会把 `triple` 传给前端上下文，构建请求还会转换成 LLVM 目标。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
