@@ -683,7 +683,7 @@ impl<'source> TypeChecker<'source> {
             self.check_expression(value);
             return;
         }
-        let actual = if let Some(operator) = super::assignment_binary_operator(operator) {
+        let actual = if let Some(operator) = super::constant::assignment_binary_operator(operator) {
             self.check_expression(&Expression::Binary {
                 operator,
                 left: Box::new(target.clone()),
