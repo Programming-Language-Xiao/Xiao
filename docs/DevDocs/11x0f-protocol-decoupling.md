@@ -201,6 +201,31 @@ service                     ← 允许依赖以上全部，且只有它依赖 st
   按各自的批次做。
 - **不要用旁置 md 豁免替代拆分**（`00E` 明说它是最后手段）。
 
+## 八、落地记录（2026-09-23）
+
+本批已按七步顺序完成并分别提交：
+
+1. `368087a`：帧编解码叶子；
+2. `584271a`：消息与请求类型；
+3. `8c3f829`：内部类型映射；
+4. `bab87f5`：请求校验；
+5. `27b2d12`：运行路径与运行时配置；
+6. `a288124`：原生构建及长函数分段；
+7. `90f350d`：服务分发、worker、取消和架构回归测试。
+
+最终结构为门面 `protocol.rs`（59 行）加 `protocol/` 下九个职责模块：
+`frame`、`message`、`request`、`mapping`、`validate`、`run`、`build`、`config`、`service`。
+`build_response` 已拆为准备、代码生成选项、执行错误、诊断组件、激活位和配置整理阶段；
+`dispatch` 与 `serve` 已分别拆成命令处理器、首帧检查、取消/关闭处理和 worker 生成辅助。
+`protocol_architecture_tests.rs` 锁定模块声明、依赖方向、门面无实现，以及只有 `service`
+持有线程和 `Arc`。
+
+Windows 原生验证已通过：`cargo fmt --all -- --check`、`cargo test -p xiao-driver`、
+`cargo clippy -p xiao-driver --all-targets -- -D warnings`；单元测试 22 条中 22 条通过，
+另有 1 条既有真实终端环境门控忽略，协议集成测试和共享 fixture 回环均通过。
+`protocol_tests.rs` 与 `tests/spec/11x0-protocol/` 未修改。Linux 原生、WSL 和 macOS
+仍按平台清单待复现，本记录不把当前 Windows 数字宣称为跨平台验证。
+
 ## 相关页面
 
 - [09R2E. 研究编码器模块解耦交接记录](09r2e-research-encoder-decoupling.md) —— **本批的模板**
