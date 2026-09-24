@@ -59,6 +59,13 @@ xiao shell-init powershell | Invoke-Expression
 `cmd.exe` 在 E0 中是明确的降级路径：`xiao shell-init cmd` 只输出说明，不修改注册表、不宣称
 自动激活；需要提示符闭环时请使用 Bash 兼容 Shell 或 PowerShell。
 
+## 诊断编号
+
+`X11-CLI-VENV-001` 在 E0 中保留为未分配编号：环境入口的首个稳定失败场景后来由更具体的
+`X11-CLI-VENV-002`（非法名称）覆盖，因此不会用同一个编号表达另一种语义。当前使用的
+`-002` 至 `-005` 分别覆盖名称、已存在目录、目录/元数据写入失败和核心响应类型错误；后续新增
+场景不得回收 `-001`。
+
 ## 边界
 
 `xiao run`、`xiao build` 和 `xiao test` 仍会自动定位项目环境，不要求当前提示符已经激活。
