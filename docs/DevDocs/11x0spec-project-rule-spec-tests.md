@@ -51,7 +51,7 @@
 | `05-containers` | 10 | `xiao-types/tests/c0c1_snapshots.rs:122,…158` 等四份 | ✅ 10/10 |
 | `06-modules` | 2 | `xiao-modules/tests/d0_modules.rs:454` | ✅ 2/2 |
 | `07-error-control` | 2 | `xiao-types/tests/control_flow_snapshots.rs:72` | ✅ 2/2 |
-| `08-ir` | 1（10 个 case） | `xiao-ir/tests/structure_snapshots.rs:222` | ✅ 1/1 |
+| `08-ir` | 1（12 个 case，含七类选择器） | `xiao-ir/tests/structure_snapshots.rs:222` | ✅ 1/1 |
 | `09-bytecode` | 8 | `xiao-vm/tests/r2_vectors.rs:250,…334` | ✅ 8/8（79 向量） |
 | `11-config` | 2 | `xiao-config/tests/spec_snapshots.rs:60` | ✅ 2/2 |
 | `11x0-protocol` | 5 | Rust `x0_a_protocol.rs:10,…22` + TS `protocol.test.ts:8,…69` | ✅ 5/5 **双向** |
