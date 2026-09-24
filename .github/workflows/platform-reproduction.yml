@@ -72,11 +72,26 @@ jobs:
 
       - name: Install Windows LLVM
         if: startsWith(matrix.name, 'windows-')
+        id: msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-clang
+            mingw-w64-ucrt-x86_64-llvm
+
+      - name: Configure Windows LLVM
+        if: startsWith(matrix.name, 'windows-')
         run: |
-          choco install llvm file --yes --no-progress
-          $llvmBin = Join-Path $env:ProgramFiles 'LLVM\bin'
+          choco install file --yes --no-progress
+          $msys2Root = '${{ steps.msys2.outputs.msys2-location }}'
+          $llvmBin = Join-Path $msys2Root 'ucrt64\bin'
           if (-not (Test-Path -LiteralPath (Join-Path $llvmBin 'llvm-as.exe'))) {
             throw "LLVM installation did not provide llvm-as.exe: $llvmBin"
+          }
+          if (-not (Test-Path -LiteralPath (Join-Path $llvmBin 'llc.exe'))) {
+            throw "LLVM installation did not provide llc.exe: $llvmBin"
           }
           Add-Content -Path $env:GITHUB_PATH -Value $llvmBin
 
