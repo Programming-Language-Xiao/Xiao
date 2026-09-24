@@ -131,6 +131,55 @@ CI 用 choco 装的 LLVM（windows-2025 镜像预装 20.1.8），
 
 ---
 
+### 3.7 🔴 `actions/checkout@v4` **已弃用**
+
+用 `actionista` 技能的当日版本索引（`actions-index.json`，264 个动作）核对：
+
+| Action | 工作流用的 | 索引最新 | 状态 |
+| --- | --- | --- | --- |
+| **`actions/checkout`** | **`@v4`** | **`v7.0.1`** | 🔴 **落在弃用区间**（`deprecated: ["v1","v2","v3","v4","v5"]`） |
+| `oven-sh/setup-bun` | `@v2` | `v2.2.0` | ✅ 大版本正确 |
+| `dtolnay/rust-toolchain` | `@1.96.0` | `v1` | ✅ **用版本号正是该 action 的推荐用法**，不要改成 SHA |
+
+**这条是本批最容易漏的**——它需要一份**当日更新的索引**才看得出来，
+靠读代码或读文档都发现不了。**升级到 `v7` 时注意大版本跨了三个**，
+跑之前先确认 `checkout` 的行为差异（尤其 fetch 深度相关的默认值）。
+
+### 3.8 三个**常被漏掉的顶层字段**，我们全缺
+
+```yaml
+permissions:
+  contents: read            # ← 当前没写，token 权限偏宽
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true  # ← 当前没写
+
+jobs:
+  reproduce:
+    timeout-minutes: 30     # ← 当前没写
+```
+
+⚠️ **`timeout-minutes` 与 §3.3 叠在一起才是真问题**：macOS runner 无 GUI 会话、
+第 8 条门控测试可能挂起，而**没有超时的话那个 job 会一直挂到 GitHub 的默认上限**。
+**这两条必须一起修**，只修一条都不解决问题。
+
+### 3.9 缺缓存：Rust 全量编译要跑**四遍**
+
+四个平台各编一次整个 workspace。两条路：
+
+- **社区标准**：`Swatinem/rust-cache@v2.9.2`（索引确认**未弃用**）——一行搞定；
+- **手写**：`actions/cache@v6.1.0` 缓存 `~/.cargo/bin/`、`~/.cargo/registry/`、
+  `~/.cargo/git/`、`target/`，key 用 `cargo-${{ hashFiles('**/Cargo.lock') }}`。
+
+⚠️ **本仓有两份 `Cargo.lock`**（`core/rust/Cargo.lock` 与 `tests/benchmarks/Cargo.lock`，
+后者是独立 crate）——用 `hashFiles('**/Cargo.lock')` 一并覆盖，
+**别只写 `core/rust/Cargo.lock`**，否则 benchmarks 改了不会失效缓存。
+
+**缓存不是阻塞项**（不影响能不能跑），但直接影响这轮 CI 的时间和额度。
+
+---
+
 ## 四、三条路径
 
 ### 4.1 CI（**macOS 与原生 ARM64 的正解**）
