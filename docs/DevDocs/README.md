@@ -111,7 +111,8 @@
 | 11X0-P1 | [跨平台复现收口](11x0p1-platform-reproduction-closure.md) | 收掉 P 批留下的三项：修 `reproduce.ps1` 的 PowerShell 5.1 缺陷、推分支触发 CI（原生 arm64 绕开 QEMU + macOS runner）、WSL 装工具链；X0 第 2/4/5/6 条明确收口 | 已完成（CI 运行 `35955788547` 四平台成功；X0 第 2/4/5/6 条收口；macOS 真实终端与 X0 第 8 条单项保持未验证） |
 | 11X0-SPEC | [`X0-SPEC-001` 规格测试债](11x0spec-project-rule-spec-tests.md) | 为阶段 07/08/10/11 补规格测试**目录与执行入口**；判据是「有加载者」而非「目录存在」；含四阶段的可行性分级与既有登记偏差更正 | 已完成（06 接线、07/08/11 规格入口、登记门禁；10 论证后不重复建夹具；**`tests/unit`/`tests/integration` 明确 out of scope**） |
 | 11A.1 | [包源协议：决策、待决与风险（待审）](11a1-package-source-protocol-review.md) | 源身份规范化、JSON 权威与 Protobuf 派生、解析键与同一性、canonical JSON、源列表导入的三条规则；含六条待审风险 | 已审并处置（方向保留；源引用语义、导入顺序、摘要信任边界三处已修正） |
-| 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 未开始 |
+| 11A-D1 | [外部包契约与依赖图骨架](11ad1-package-contract-and-graph.md) | `config.xiao` 声明外部依赖、依赖解析器与内存依赖图、包粒度诊断；**不含缓存/锁文件/远程** | 待开工（交接文档已就绪；**前置：补 `11a` 的 D1 章节**） |
+| 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 未开始（D1 的权威描述在 [12](12-tests-and-milestones.md) `:724-731`，`11a` 正文缺该章节） |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |
 | 11C | [国际化、系统提示与语言包插件](11c-localization.md) | `[language]` 配置、中英内置目录、统一错误文案和资源型语言包插件 | 未开始 |
 | 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
