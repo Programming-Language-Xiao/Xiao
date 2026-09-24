@@ -17,7 +17,7 @@
         "b.xiao": "import a\n"
       },
       "expect": "error",
-      "diagnostics": ["X05-MODULE-005", "X05-MODULE-007"]
+      "diagnostics": ["X05-MODULE-007", "X05-MODULE-005"]
     },
     {
       "name": "missing-qualified-namespace-target",

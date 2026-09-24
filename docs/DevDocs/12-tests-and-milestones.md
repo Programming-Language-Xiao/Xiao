@@ -718,7 +718,8 @@ CI 的完整功能证据：工具链发现、`xiao build`、独立产物运行�
 截至本记录日，本机 Docker arm64 镜像仍在 Docker Desktop 的 QEMU `exec /bin/sh: exec format error`
 阻塞，但不影响原生 `ubuntu-24.04-arm` runner 的 ARM64 功能证据；Ubuntu/Arch WSL 已补齐
 工具链并通过完整复现。因此 X0 第 2、4、5、6 条按 P1 收口；X0 第 8 条的 macOS 真实终端
-项继续保持未验证。X0 第 3 条另行登记为 `X0-SPEC-001` 规格测试债，不属于平台复现批次。
+项继续保持未验证。X0 第 3 条曾另行登记为 `X0-SPEC-001` 规格测试债；该债项已在 2026-09-24
+按交接文档收口，10 阶段经边界论证不新增重复夹具。
 
 ### D1：外部包契约与依赖图骨架
 

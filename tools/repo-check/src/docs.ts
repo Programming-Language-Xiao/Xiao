@@ -137,6 +137,7 @@ export function checkUseDocs(root: string, registry: ModuleRegistry): Diagnostic
   for (const module of registry.modules) {
     checkModuleRecord(root, module, pageByPath, diagnostics);
   }
+  checkSpecFixtureExecution(root, registry, diagnostics);
   return diagnostics;
 }
 
@@ -311,6 +312,78 @@ function checkModuleRecord(root: string, module: ModuleRecord, pages: Map<string
     return false;
   });
   if (!verifiedPage) diagnostics.push(docsDiagnostic("A0-DOCS-002", module.id, "已完成模块没有 verified UseDocs 页面。", "a0.registry.verified_missing"));
+}
+
+/**
+ * 校验每个 `tests/spec` 子目录都同时具备登记项和真实加载者。
+ *
+ * 仅检查路径存在会让「有夹具、无执行入口」的债项长期存活；这里复用模块登记的
+ * 测试路径扫描源文件，并要求源文件正文出现对应的规范目录标记。它不要求某种
+ * Rust/TypeScript 测试框架，也不把 README 或 JSON 本身误认为执行入口。
+ */
+function checkSpecFixtureExecution(root: string, registry: ModuleRegistry, diagnostics: Diagnostic[]): void {
+  let specRoot: string;
+  try {
+    specRoot = resolveRepoPath(root, "tests/spec");
+  } catch (error) {
+    diagnostics.push(docsDiagnostic("A0-DOCS-003", "tests/spec", `规格目录路径非法：${String(error)}`, "a0.spec.invalid_root"));
+    return;
+  }
+  if (!isDirectory(specRoot)) return;
+
+  const sources = new Map<string, string>();
+  const visit = (pathValue: string): void => {
+    for (const entry of readdirSync(pathValue, { withFileTypes: true })) {
+      const child = join(pathValue, entry.name);
+      if (entry.isDirectory()) {
+        visit(child);
+        continue;
+      }
+      if (!entry.isFile() || ![".rs", ".ts", ".tsx", ".js", ".jsx"].includes(extname(entry.name).toLowerCase())) continue;
+      try {
+        sources.set(repoRelative(root, child), readText(child));
+      } catch {
+        // 路径存在性已由模块登记检查负责；不可读源码不构成有效执行入口。
+      }
+    }
+  };
+
+  for (const module of registry.modules) {
+    for (const testPath of module.tests) {
+      let absolute: string;
+      try {
+        absolute = resolveRepoPath(root, testPath);
+      } catch {
+        continue;
+      }
+      if (isDirectory(absolute)) visit(absolute);
+      else if (isFile(absolute) && [".rs", ".ts", ".tsx", ".js", ".jsx"].includes(extname(absolute).toLowerCase())) {
+        try {
+          sources.set(repoRelative(root, absolute), readText(absolute));
+        } catch {
+          // 不可读源码不构成有效执行入口。
+        }
+      }
+    }
+  }
+
+  for (const entry of readdirSync(specRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const specPath = `tests/spec/${entry.name}`;
+    const registered = registry.modules.some((module) => module.tests.some((testPath) => {
+      const normalized = testPath.replaceAll("\\", "/").replace(/\/$/u, "");
+      return normalized === specPath || normalized.startsWith(`${specPath}/`);
+    }));
+    if (!registered) {
+      diagnostics.push(docsDiagnostic("A0-DOCS-003", specPath, "规格目录没有在 module-registry.json 的 tests 数组中登记。", "a0.spec.registry_missing"));
+      continue;
+    }
+    const marker = `${specPath}/`;
+    const loaders = [...sources.entries()].filter(([, content]) => content.includes(marker));
+    if (loaders.length === 0) {
+      diagnostics.push(docsDiagnostic("A0-DOCS-003", specPath, "规格目录已登记，但没有测试源码加载其中的夹具。", "a0.spec.loader_missing"));
+    }
+  }
 }
 
 /** 创建文档检查器统一诊断。 */

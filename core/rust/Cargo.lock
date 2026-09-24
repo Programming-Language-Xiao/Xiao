@@ -133,6 +133,8 @@ dependencies = [
 name = "xiao-config"
 version = "0.1.0"
 dependencies = [
+ "serde",
+ "serde_json",
  "xiao-diagnostics",
  "xiao-source",
  "xiao-syntax",
@@ -210,6 +212,8 @@ dependencies = [
 name = "xiao-modules"
 version = "0.1.0"
 dependencies = [
+ "serde",
+ "serde_json",
  "xiao-diagnostics",
  "xiao-source",
  "xiao-syntax",

@@ -1,0 +1,18 @@
+{
+  "stage": "07",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "try-catch-finally",
+      "source": "try\n    result = 1\ncatch err as ArithmeticError\n    result = 0\ncatch other as Error\n    result = 1\nfinally\n    cleanup = true\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "nested-finally",
+      "source": "ready = true\ntry\n    while ready\n        try\n            break\n        finally\n            inner = \"done\"\nfinally\n    outer = \"done\"\n",
+      "expect": "success",
+      "diagnostics": []
+    }
+  ]
+}

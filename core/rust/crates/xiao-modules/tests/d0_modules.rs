@@ -4,6 +4,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use serde::Deserialize;
 use xiao_modules::{
     IMPORT_BINDING_CONFLICT_CODE, INVALID_QUALIFIER_USE_CODE, MISSING_IMPORT_SYMBOL_CODE,
     MISSING_IMPORT_TARGET_CODE, MODULE_CYCLE_CODE, MODULE_PATH_CONFLICT_CODE,
@@ -49,6 +51,88 @@ impl Drop for TempProject {
     /// 删除测试项目及其全部 fixture。
     fn drop(&mut self) {
         let _ = fs::remove_dir_all(&self.path);
+    }
+}
+
+/// 一条 06 模块规格快照用例。
+#[derive(Debug, Deserialize)]
+struct SnapshotCase {
+    /// 用例名称，用于失败定位。
+    name: String,
+    /// 项目根下的相对 Xiao 文件映射。
+    files: std::collections::BTreeMap<String, String>,
+    /// 期望状态。
+    expect: String,
+    /// 期望模块名称；只在合法用例中出现。
+    #[serde(default)]
+    modules: Vec<String>,
+    /// 期望的确定性初始化顺序；只在相关用例中出现。
+    #[serde(default)]
+    initialization_order: Vec<String>,
+    /// 期望的稳定诊断编号。
+    #[serde(default)]
+    diagnostics: Vec<String>,
+}
+
+/// 一份 06 模块规格快照。
+#[derive(Debug, Deserialize)]
+struct SnapshotFile {
+    /// 阶段标识。
+    stage: String,
+    /// 快照状态。
+    status: String,
+    /// 用例列表。
+    cases: Vec<SnapshotCase>,
+}
+
+/// 读取并执行模块规格快照中的全部项目样本。
+fn assert_snapshot(raw: &str) {
+    let snapshot: SnapshotFile = serde_json::from_str(raw).expect("模块快照 JSON 必须有效");
+    assert_eq!(snapshot.stage, "05");
+    assert_eq!(snapshot.status, "verified-static");
+    assert!(!snapshot.cases.is_empty(), "模块快照不应为空");
+
+    for case in snapshot.cases {
+        let project = TempProject::new();
+        for (path, source) in case.files {
+            project.write(path, &source);
+        }
+        let result = analyze_project(&project.path);
+        let actual_codes = diagnostic_codes(&result)
+            .into_iter()
+            .map(str::to_owned)
+            .collect::<Vec<_>>();
+        assert_eq!(actual_codes, case.diagnostics, "快照用例: {}", case.name);
+        assert_eq!(
+            result.is_success(),
+            case.expect == "success",
+            "快照用例: {}",
+            case.name
+        );
+
+        if case.expect == "success" {
+            let actual_modules = result
+                .modules
+                .keys()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>();
+            if !case.modules.is_empty() {
+                assert_eq!(actual_modules, case.modules, "快照用例: {}", case.name);
+            }
+            if !case.initialization_order.is_empty() {
+                let actual_order = result
+                    .graph
+                    .initialization_order
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>();
+                assert_eq!(
+                    actual_order, case.initialization_order,
+                    "快照用例: {}",
+                    case.name
+                );
+            }
+        }
     }
 }
 
@@ -363,4 +447,17 @@ fn diagnoses_invalid_qualifier_use_and_binding_conflict() {
     let codes = diagnostic_codes(&result);
     assert!(codes.contains(&INVALID_QUALIFIER_USE_CODE));
     assert!(codes.contains(&IMPORT_BINDING_CONFLICT_CODE));
+}
+
+#[test]
+/// 06 模块正例和反例必须由真实项目分析入口读取，而不是只存在于目录中。
+fn module_spec_snapshots_are_executed() {
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/06-modules/valid.json"
+    )));
+    assert_snapshot(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/06-modules/errors.json"
+    )));
 }

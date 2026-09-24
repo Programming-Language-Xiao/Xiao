@@ -1,5 +1,13 @@
 # 11X0-SPEC. `X0-SPEC-001` 规格测试债
 
+> **收口记录（2026-09-24）**：本债项已完成可执行范围的实现。`06-modules` 的两个历史
+> 夹具已接入真实模块分析入口，并按执行后暴露的确定性诊断顺序修正；新增 `07-error-control`、
+> `08-ir`、`11-config` 夹具和对应 harness，全部同步 `docs/module-registry.json`。同时新增
+> `tests/spec` 的登记+真实加载者门禁，修正 `04-types` 与 `05-containers` 的 README 登记偏差。
+> 阶段 10 经论证不新增规格夹具：其剩余规则属于双模式一致性或已有 `09-bytecode` 覆盖，
+> 不重复制造第四套 schema；11-config 固定配置语义，CLI 的保注释/原子写回继续由既有
+> `editor.test.ts` 单元层覆盖；11X0 协议夹具原已双向执行，无需改动。
+
 > **债项原文**（`12-tests-and-milestones.md:717-720`）：X0 第 3 条「从阶段 01 到本阶段
 > 已经实现的所有"已确定"规则都有自动化规格测试」另行登记为 `X0-SPEC-001` 规格测试债，
 > **不属于平台复现批次**。
@@ -26,23 +34,26 @@
 ### 现状盘点（2026-09-24 实测）
 
 ```text
-夹具总量   49 个 JSON、2234 行、79943 字节
-执行入口   47/49 被加载（95.9%）
-唯一缺口   tests/spec/06-modules/ 的 2 个夹具**无人读取**
+夹具总量   54 个 JSON、2533 行、76302 字节
+执行入口   54/54 被加载（100%）
+收口结果   06-modules 已接线；07/08/11 新增夹具均有真实加载者；无未执行夹具
 格式       三代互不兼容的 schema 并存（见 §五）
 ```
 
-**八个 spec 目录的执行入口**（判据表，逐项带 `文件:行号`）：
+**十一个 spec 目录的执行入口**（判据表，逐项带 `文件:行号`）：
 
 | 目录 | 夹具 | 执行入口 | 状态 |
 | --- | --- | --- | --- |
 | `01-lexical` | 16 | `xiao-syntax/tests/lexical_snapshots.rs:60,69,…195` | ✅ 16/16 |
 | `02-parser` | 5 | `xiao-syntax/tests/parser_snapshots.rs:215,224,…251` | ✅ 5/5 |
 | `03-expression` | 2 | `xiao-syntax/tests/p1_expression.rs:442,451` | ✅ 2/2 |
-| `04-types` | 1 | `xiao-syntax/tests/p2_snapshots.rs:34` | ⚠️ 见 §六.2 |
-| `05-containers` | 10 | `xiao-types/tests/c0c1_snapshots.rs:122,…158` 等四份 | ⚠️ 见 §六.2 |
-| **`06-modules`** | **2** | **无** | ❌ **本债项的直接缺口** |
+| `04-types` | 1 | `xiao-syntax/tests/p2_snapshots.rs:34` | ✅ 1/1 |
+| `05-containers` | 10 | `xiao-types/tests/c0c1_snapshots.rs:122,…158` 等四份 | ✅ 10/10 |
+| `06-modules` | 2 | `xiao-modules/tests/d0_modules.rs:454` | ✅ 2/2 |
+| `07-error-control` | 2 | `xiao-types/tests/control_flow_snapshots.rs:72` | ✅ 2/2 |
+| `08-ir` | 1（10 个 case） | `xiao-ir/tests/structure_snapshots.rs:222` | ✅ 1/1 |
 | `09-bytecode` | 8 | `xiao-vm/tests/r2_vectors.rs:250,…334` | ✅ 8/8（79 向量） |
+| `11-config` | 2 | `xiao-config/tests/spec_snapshots.rs:60` | ✅ 2/2 |
 | `11x0-protocol` | 5 | Rust `x0_a_protocol.rs:10,…22` + TS `protocol.test.ts:8,…69` | ✅ 5/5 **双向** |
 
 **范围**（债项原文）：补 **07、08、10、11/11X0** 四个阶段的规格测试。
@@ -208,16 +219,16 @@
 | 只覆盖**单个模块行为** | **单元测试**（crate 内联） | `07:115-132` 的错误对象字段表、`08a:43` 的 `IrValidator` |
 | 是**性能/体积** | **benchmarks** | `10:76-81` |
 
-### 6.4 建议补一条门禁（否则第 4 份债会继续复制）
+### 6.4 已补门禁：登记路径之外还要有真实加载者
 
-`tools/repo-check/src/docs.ts:301` 只做 `existsSync`。
-**建议**：增加检查——`tests/spec/*/` 下每个目录，是否被
-`docs/module-registry.json` 的某个 `tests` 数组引用，**且该引用路径里存在真实加载者**。
-（`06-modules` 之所以活过四次门禁改版，就是因为缺这一条。）
+`tools/repo-check/src/docs.ts` 的 `checkSpecFixtureExecution` 现在对每个
+`tests/spec/*/` 子目录同时检查：是否被 `docs/module-registry.json` 的某个 `tests` 数组
+登记，以及登记的 Rust/TypeScript 测试源码是否出现该目录的真实加载路径。只登记路径或
+只保留 README/JSON 都会触发 `A0-DOCS-003`，不会再复制 `06-modules` 的无人读取债项。
 
 ### 6.5 其它
 
-- **不新增 Rust 依赖**；`check:lock` 会拦。
+- **不新增第三方 Rust crate**；规格 harness 复用 workspace 已锁定的 `serde`/`serde_json`，`check:lock` 仍会拦截未登记的锁文件漂移。
 - **`docs/module-registry.json` 的 `tests` 数组**逐文件登记，新增夹具必须同步。
 - 新增 harness 文件要进 `module-registry.json` 的对应 crate `tests` 数组。
 

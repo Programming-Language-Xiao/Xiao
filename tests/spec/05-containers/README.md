@@ -3,11 +3,14 @@
 本目录按阶段承载容器语法、结构化类型和选择器正反例。JSON 只描述输入与稳定诊断编号，
 不执行 Runtime，也不把静态计划伪装成真实容器值。
 
-对应实现测试：
+对应 JSON 执行入口为：
 
-- `core/rust/crates/xiao-syntax/tests/c0_containers.rs`
-- `core/rust/crates/xiao-syntax/tests/c0_snapshots.rs`
-- `core/rust/crates/xiao-types/tests/c0_containers.rs`
+- `core/rust/crates/xiao-types/tests/c0c1_snapshots.rs`
+
+`core/rust/crates/xiao-syntax/tests/c0_containers.rs`、
+`core/rust/crates/xiao-syntax/tests/c0_snapshots.rs` 和
+`core/rust/crates/xiao-types/tests/c0_containers.rs` 是不读取本目录 JSON 的内联规格测试，
+因此不把它们列为快照 harness。
 
 后续 C1/C2 必须新增独立目录或明确版本字段，不能改写 C0 快照的语义。
 

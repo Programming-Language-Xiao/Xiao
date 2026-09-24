@@ -1,0 +1,36 @@
+{
+  "stage": "11",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "duplicate-key",
+      "source": "[project]\nname = \"a\"\nname = \"b\"\nversion = \"1\"\n",
+      "expect": "error",
+      "diagnostics": ["X05-CONFIG-003"]
+    },
+    {
+      "name": "unknown-table",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[mystery]\nvalue = 1\n",
+      "expect": "error",
+      "diagnostics": ["X05-CONFIG-006"]
+    },
+    {
+      "name": "unsupported-construct",
+      "source": "[project]\ndef build()\nversion = \"1\"\n",
+      "expect": "error",
+      "diagnostics": ["X05-CONFIG-002"]
+    },
+    {
+      "name": "missing-project-identity",
+      "source": "[language]\nlocale = \"zh-CN\"\n",
+      "expect": "error",
+      "diagnostics": ["X05-CONFIG-007"]
+    },
+    {
+      "name": "unsafe-export-path",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[exports]\napi = \"../api.xiao\"\n",
+      "expect": "error",
+      "diagnostics": ["X05-CONFIG-008"]
+    }
+  ]
+}

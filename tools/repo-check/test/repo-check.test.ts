@@ -8,14 +8,14 @@ import { tmpdir } from "node:os";
 import { checkLayout } from "../src/layout.ts";
 import { checkCommitMessage } from "../src/commit.ts";
 import { parseArguments, runCommand } from "../src/cli.ts";
-import { checkMarkdownLinks, scanMarkdownDirectory } from "../src/docs.ts";
+import { checkMarkdownLinks, checkUseDocs, scanMarkdownDirectory } from "../src/docs.ts";
 import { findRepositoryRoot } from "../src/manifest.ts";
 import { renderJson, renderSarif, renderText } from "../src/report.ts";
 import { checkFileSizes, countPhysicalLines, exemptionMissingSections, MAX_SOURCE_LINES, renderOutlineDetails } from "../src/size.ts";
 import { inspectBunWorkspace } from "../src/workspace.ts";
 import { readmeMissingSections } from "../src/paths.ts";
 import type { MarkdownPage } from "../src/docs.ts";
-import type { CheckResult } from "../src/types.ts";
+import type { CheckResult, ModuleRegistry } from "../src/types.ts";
 
 describe("repo-check 参数", () => {
   test("默认执行 all 并支持 JSON 输出", () => {
@@ -294,6 +294,28 @@ describe("Markdown 链接负例", () => {
   });
 });
 
+describe("规格夹具执行入口门禁", () => {
+  test("登记目录但没有加载者时失败", () => {
+    const directory = createSpecFixture(false);
+    try {
+      const diagnostics = checkUseDocs(directory, specFixtureRegistry());
+      expect(diagnostics.some((item) => item.code === "A0-DOCS-003" && item.message.includes("没有测试源码加载"))).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("测试源码出现夹具路径时通过执行入口检查", () => {
+    const directory = createSpecFixture(true);
+    try {
+      const diagnostics = checkUseDocs(directory, specFixtureRegistry());
+      expect(diagnostics.filter((item) => item.code === "A0-DOCS-003")).toEqual([]);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("front matter related 校验", () => {
   test("related 指向不存在的路径时报告断链", () => {
     const directory = createMarkdownFixture({
@@ -341,6 +363,36 @@ function createMarkdownFixture(files: Record<string, string>): string {
   mkdirSync(docs, { recursive: true });
   for (const [name, content] of Object.entries(files)) writeFileSync(join(docs, name), content, "utf8");
   return directory;
+}
+
+/** 创建规格目录执行入口门禁的最小仓库。 */
+function createSpecFixture(withLoader: boolean): string {
+  const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-spec-"));
+  mkdirSync(join(directory, "docs", "UseDocs"), { recursive: true });
+  mkdirSync(join(directory, "tests", "spec", "fixture"), { recursive: true });
+  writeFileSync(join(directory, "docs", "UseDocs", "README.md"), "# UseDocs\n", "utf8");
+  writeFileSync(join(directory, "tests", "spec", "fixture", "valid.json"), "{}\n", "utf8");
+  writeFileSync(
+    join(directory, "tests", "fixture.test.ts"),
+    withLoader ? 'const fixture = "tests/spec/fixture/valid.json";\n' : "const fixture = {};\n",
+    "utf8",
+  );
+  return directory;
+}
+
+/** 返回规格目录执行入口门禁使用的最小登记表。 */
+function specFixtureRegistry(): ModuleRegistry {
+  return {
+    schemaVersion: 1,
+    modules: [{
+      id: "fixture",
+      stage: "A0",
+      status: "planned",
+      code: [],
+      tests: ["tests/fixture.test.ts", "tests/spec/fixture"],
+      usedocs: [],
+    }],
+  };
 }
 
 /** 创建仅用于目录检查负例的最小 Cargo/Bun 仓库。 */

@@ -109,7 +109,7 @@
 | 11X0-T | [项目测试语义与结果协议](11x0t-project-test-semantics.md) | `xiao test` 的语义裁定、测试文件发现、确定性执行顺序、隔离/超时边界、机器可读结果协议 | 已完成（项目测试发现、协议夹具、Rust/TypeScript 接线、逐用例结果与 UseDocs 已落地；跨平台原生复现仍按清单记录） |
 | 11X0-P | [跨平台复现（Linux 原生 / WSL / macOS）](11x0-platform-reproduction.md) | 清 X0 积压的平台债：容器多架构（含 arm64 架构缺陷）、WSL 反例探测、CI macOS runner；补齐容器工具链与复现脚本 | 已完成功能证据（Windows、Linux amd64/arm64、macOS arm64 CI 与 Ubuntu/Arch WSL 均通过；本机 Docker arm64 仿真仍受阻，macOS 真实终端未验证） |
 | 11X0-P1 | [跨平台复现收口](11x0p1-platform-reproduction-closure.md) | 收掉 P 批留下的三项：修 `reproduce.ps1` 的 PowerShell 5.1 缺陷、推分支触发 CI（原生 arm64 绕开 QEMU + macOS runner）、WSL 装工具链；X0 第 2/4/5/6 条明确收口 | 已完成（CI 运行 `35955788547` 四平台成功；X0 第 2/4/5/6 条收口；macOS 真实终端与 X0 第 8 条单项保持未验证） |
-| 11X0-SPEC | [`X0-SPEC-001` 规格测试债](11x0spec-project-rule-spec-tests.md) | 为阶段 07/08/10/11 补规格测试**目录与执行入口**；判据是「有加载者」而非「目录存在」；含四阶段的可行性分级与既有登记偏差更正 | 待开工（交接文档已就绪；**`tests/unit`/`tests/integration` 明确 out of scope**） |
+| 11X0-SPEC | [`X0-SPEC-001` 规格测试债](11x0spec-project-rule-spec-tests.md) | 为阶段 07/08/10/11 补规格测试**目录与执行入口**；判据是「有加载者」而非「目录存在」；含四阶段的可行性分级与既有登记偏差更正 | 已完成（06 接线、07/08/11 规格入口、登记门禁；10 论证后不重复建夹具；**`tests/unit`/`tests/integration` 明确 out of scope**） |
 | 11A.1 | [包源协议：决策、待决与风险（待审）](11a1-package-source-protocol-review.md) | 源身份规范化、JSON 权威与 Protobuf 派生、解析键与同一性、canonical JSON、源列表导入的三条规则；含六条待审风险 | 已审并处置（方向保留；源引用语义、导入顺序、摘要信任边界三处已修正） |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 未开始 |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |

@@ -1,0 +1,24 @@
+{
+  "stage": "11",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "recursive-static-values",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[runtime]\nvalues = [1, 2.5, true, { nested = [\"x\"] }]\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "multiline-arrays-and-relative-export",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[exports]\napi = \"./src\\\\api.xiao\"\n[runtime]\nvalues = [\n    \"a\",\n    2,\n]\n",
+      "expect": "success",
+      "diagnostics": []
+    },
+    {
+      "name": "language-locale",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[language]\nlocale = \"zh-CN\"\n",
+      "expect": "success",
+      "diagnostics": []
+    }
+  ]
+}
