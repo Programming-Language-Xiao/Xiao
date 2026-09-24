@@ -251,6 +251,64 @@ fn emits_sysv_runtime_value_layout() {
     assert!(!module.text.contains("i32, i32, i64"));
 }
 
+/// 构造一个动态表成员读取程序（`Record().count`）。
+///
+/// 复用 `table_program` 的表签名与构造表达式，只把顶层语句换成成员读取——
+/// 这是唯一会走到 `emit_table_get` 的形状。
+fn member_read_program() -> IrProgram {
+    let mut program = table_program("instance");
+    let constructor = program.body.pop().expect("table_program 应当产出一条语句");
+    let IrStatementKind::Expression { value: object } = constructor.kind else {
+        panic!("table_program 的首条语句应当是表达式");
+    };
+    program.body.push(IrStatement {
+        kind: IrStatementKind::Expression {
+            value: IrExpression {
+                kind: IrExpressionKind::Member {
+                    object: Box::new(object),
+                    member: name("count"),
+                },
+                ty: IrType::Scalar {
+                    name: "int".to_owned(),
+                },
+                span: span(),
+            },
+        },
+        span: span(),
+        leading_docs: Vec::new(),
+    });
+    program
+}
+
+#[test]
+/// 动态表成员读取必须从两字段 `%xiao.value` 的 payload 字段取出句柄。
+///
+/// `%xiao.value` 恒为 `{ i32, i64 }`，有效索引只有 0 和 1。取索引 2 会越界，
+/// 把 union payload 拆到不存在的第三个寄存器——这个缺陷曾经真实存在，
+/// 而当时没有任何断言检查索引（只断言了 `extractvalue %xiao.value` 前缀），
+/// 所以它在两轮解耦与多次门禁里都没有被发现。
+fn dynamic_table_member_reads_payload_at_index_one() {
+    let module = lower_program(&member_read_program(), &CodegenOptions::default())
+        .expect("动态表成员读取应降低");
+    let indexed: Vec<&str> = module
+        .text
+        .lines()
+        .filter(|line| line.contains("extractvalue %xiao.value"))
+        .collect();
+    assert!(
+        !indexed.is_empty(),
+        "动态表成员读取应当产生 extractvalue；实际生成：\n{}",
+        module.text
+    );
+    for line in indexed {
+        assert!(
+            line.trim_end().ends_with(", 1"),
+            "extractvalue 必须取索引 1（%xiao.value 是两字段结构 {{ i32, i64 }}），实际：{line}"
+        );
+    }
+    validate_with_llvm_as(&module.text);
+}
+
 #[test]
 /// 动态数组的元素需逐项复制并释放临时值，且生成文本必须能被 LLVM 汇编器接受。
 fn lowers_array_and_preserves_runtime_components() {
