@@ -112,8 +112,9 @@
 | 11X0-SPEC | [`X0-SPEC-001` 规格测试债](11x0spec-project-rule-spec-tests.md) | 为阶段 07/08/10/11 补规格测试**目录与执行入口**；判据是「有加载者」而非「目录存在」；含四阶段的可行性分级与既有登记偏差更正 | 已完成（06 接线、07/08/11 规格入口、登记门禁；10 论证后不重复建夹具；**`tests/unit`/`tests/integration` 明确 out of scope**） |
 | 11A.1 | [包源协议：决策、待决与风险（待审）](11a1-package-source-protocol-review.md) | 源身份规范化、JSON 权威与 Protobuf 派生、解析键与同一性、canonical JSON、源列表导入的三条规则；含六条待审风险 | 已审并处置（方向保留；源引用语义、导入顺序、摘要信任边界三处已修正） |
 | 11A-D1 | [外部包契约与依赖图骨架](11ad1-package-contract-and-graph.md) | `config.xiao` 声明外部依赖、依赖解析器与内存依赖图、包粒度诊断；**不含缓存/锁文件/远程** | 已完成（本地路径包契约、图解析和规格门禁已收口） |
-| 11A-E0 | [配置与环境指纹](11ae0-environment-fingerprint-and-activation.md) | 配置/工具链/目标指纹、`xiao venv` 目录规则、Shell 钩子激活与绿色前缀；**不含缓存/锁文件/网络** | 待开工（交接文档已就绪；**前置：冻结 5 条输入**，其中 `venv` 目录基准连 D1 清单都漏了） |
-| 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 进行中（D1 已完成；E0 交接文档已就绪，E1–E3 未开始） |
+| 11A-E0 | [配置与环境指纹](11ae0-environment-fingerprint-and-activation.md) | 配置/工具链/目标指纹、`xiao venv` 目录规则、Shell 钩子激活与绿色前缀；**不含缓存/锁文件/网络** | 已完成（5 条输入已冻结；Bash/PowerShell 钩子 + `cmd` 降级已接；`fnv1a64` 已并入 `stable_hash`；真实父终端测试按冻结留给 E3D） |
+| 11A-E1 | [本地依赖与共享缓存](11ae1-local-dependencies-and-cache.md) | 全局内容寻址缓存、`SHA-256` 内容摘要、环境到缓存条目的只读逻辑映射、损坏条目隔离；**不含锁文件/sync/install/CLI** | 待开工（交接文档已就绪；**前置：解 `11a:125` ↔ `16:31` 的位置环并冻结 7 条输入**） |
+| 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 进行中（D1、E0 已完成；E1 交接文档已就绪，E1–E3 未开始） |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |
 | 11C | [国际化、系统提示与语言包插件](11c-localization.md) | `[language]` 配置、中英内置目录、统一错误文案和资源型语言包插件 | 未开始 |
 | 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
