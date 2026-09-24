@@ -165,30 +165,29 @@ fn validate_dependency_table(table: &ConfigTable, diagnostics: &mut ConfigDiagno
                     ],
                 ));
             }
-            if field == "version" || field == "source" {
-                if !matches!(value, ConfigValue::String(text) if !text.trim().is_empty() && !text.chars().any(char::is_control))
-                {
-                    let code = if field == "version" {
-                        INVALID_DEPENDENCY_CONSTRAINT_CODE
-                    } else {
-                        INVALID_DEPENDENCY_SOURCE_CODE
-                    };
-                    let message_id = if field == "version" {
-                        "x05.config.invalid_dependency_constraint"
-                    } else {
-                        "x05.config.invalid_dependency_source"
-                    };
-                    diagnostics.push(error(
-                        code,
-                        message_id,
-                        entry.span,
-                        format!("依赖 {name:?} 的 {field:?} 必须是非空静态字符串"),
-                        [
-                            ("package", DiagnosticParam::Text(name.clone())),
-                            ("field", DiagnosticParam::Text(field.clone())),
-                        ],
-                    ));
-                }
+            if (field == "version" || field == "source")
+                && !matches!(value, ConfigValue::String(text) if !text.trim().is_empty() && !text.chars().any(char::is_control))
+            {
+                let code = if field == "version" {
+                    INVALID_DEPENDENCY_CONSTRAINT_CODE
+                } else {
+                    INVALID_DEPENDENCY_SOURCE_CODE
+                };
+                let message_id = if field == "version" {
+                    "x05.config.invalid_dependency_constraint"
+                } else {
+                    "x05.config.invalid_dependency_source"
+                };
+                diagnostics.push(error(
+                    code,
+                    message_id,
+                    entry.span,
+                    format!("依赖 {name:?} 的 {field:?} 必须是非空静态字符串"),
+                    [
+                        ("package", DiagnosticParam::Text(name.clone())),
+                        ("field", DiagnosticParam::Text(field.clone())),
+                    ],
+                ));
             }
         }
 

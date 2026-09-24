@@ -1,5 +1,8 @@
 # 11A-E1. 本地依赖与共享缓存
 
+> **状态：已完成（实现提交 `6662fac`）。** 已交付 `xiao-package` 的 SHA-256 本地源码对象缓存、
+> v2 环境元数据兼容读取、项目/全局逻辑映射、只读校验与损坏隔离；E1 不新增 CLI 命令。
+
 > **这是 11A 的第三批。** 退出条件四条（`12-tests-and-milestones.md:742-750`）：
 > ① 本地路径依赖可以进入经过校验的全局内容寻址缓存；② 两个项目环境可以复用相同包内容，
 > 同时保持各自的依赖映射；③ Windows、Linux、macOS 通过只读逻辑映射读取同一缓存内容，
@@ -7,6 +10,16 @@
 > 缓存内容使用前经过摘要验证，损坏条目不会进入构建。
 >
 > **第 3 条是本批的边界**——它把 E1 与「顺手做个 symlink」切开。
+
+### 实现收口
+
+- `cache.rs` 统一实现 `XIAO_HOME` 布局、规范化目录树快照、SHA-256 内容寻址、同文件系统原子提交、
+  只读权限、摘要复核和 `.corrupt` 隔离；带 `.xiao-environment.json` 的生成环境目录不会污染源码摘要。
+- `mapping.rs` 消费 D1 `PackageGraph`，以完整 `PackageIdentity` 排序保存 `package_mappings`；项目环境
+  与 `envs/<name>` 全局环境都只写映射 JSON，不创建符号链接、硬链接或源码副本。
+- `EnvironmentMetadata` 已升到 v2；v1 缺少映射时按空环境读取，高版本使用 `X05-ENV-004` 稳定拒绝。
+- 新增 `e0_environment.rs`、`e1_cache.rs` 和 `tests/spec/11a-cache/`；E0 测试债、`X11-CLI-VENV-001`
+  编号说明和 UseDocs 登记已同步收口。
 
 ## 一、Agent 交接上下文
 
@@ -399,19 +412,18 @@ E0 又加了 `xiao-package → xiao-codegen-llvm`（复用指纹）。
 审核 E0 的两笔提交（`f2e949b`、`d9300ce`）时发现三处小缺口，**都不影响 E0 出口条件**，
 但应在 E1 一并收敛：
 
-1. **E0 的测试塞在 `d1_package.rs` 里**——`environment_layout_uses_default_and_explicit_directory_names`
+1. **已完成：E0 的测试已从 `d1_package.rs` 拆到 `e0_environment.rs`**——`environment_layout_uses_default_and_explicit_directory_names`
    与 `environment_metadata_is_stable_and_duplicate_creation_is_rejected` 在
    `core/rust/crates/xiao-package/tests/d1_package.rs:193,208`，
-   而该文件名对应的是 D1 批次。**建议连同 E1 一起拆出 `e0_environment.rs`**，
-   并同步 `module-registry.json:36` 的 `tests` 数组。
-2. **`X11-CLI-VENV-001` 缺失**——CLI 侧实际存在 `-002`（`cli/ts/src/environments/index.ts:282`）、
+   而该文件名对应的是 D1 批次；登记已同步更新。
+2. **已完成：`X11-CLI-VENV-001` 的保留原因已写入 UseDocs**——CLI 侧实际存在 `-002`（`cli/ts/src/environments/index.ts:282`）、
    `-003`、`-004`、`-005`，**唯独没有 `-001`**。同前缀的 `X11-CLI-CORE-001/002/003`
    与 `X11-CLI-TOOLCHAIN-001/002/003` 都是连续的。
-   要么补上，要么在诊断编号表里写明 `-001` 为何跳过（**不能留给下一个人猜**）。
-3. **`tests/spec/` 下没有 E0 的夹具目录**——`grep venv\|environment` 在整个 `tests/spec/` 零命中，
+   `-001` 不回收给其他语义。
+3. **已完成：E0 没有静态夹具目录的原因已写明**——`grep venv\|environment` 在整个 `tests/spec/` 零命中，
    E0 的规格验证全在 TS 单测（`cli/ts/src/environments/index.test.ts`）与
    Rust 集成测试里。**这可能是有意为之**（E0 主要验终端行为，不适合静态快照），
-   但**必须在文档里写明**，否则按 `11x0spec` 的判据看像漏了。
+   但 E0 主要验终端行为，验证保留在 TS 单测和 Rust 集成测试；E1 另建并真实加载 `11a-cache` 夹具。
 
 **另有一条跨批次债，本批不处理但不许忘**：X0 第 8 条的 **macOS 真实终端**项
 （`12-tests:715-721` 附近）仍因环境缺失保持未验证，与 E0 冻结的
