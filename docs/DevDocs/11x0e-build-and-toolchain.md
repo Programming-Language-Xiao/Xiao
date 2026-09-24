@@ -236,15 +236,16 @@ VM 检查点、worker 线程和无子进程沙箱的边界见 [X0-T](11x0t-proje
 
 | 平台 | 状态 |
 | --- | --- |
-| Windows 原生 | ✅ 已完成 `xiao build`、工具链探测、独立产物、`xiao test` 和 `-debug` shim 复现 |
+| Windows 原生 | ✅ 已完成 `xiao build`、工具链探测、独立产物、`xiao test` 和 `-debug` shim 复现；CI 使用 MSYS2 UCRT64 clang/LLVM 22.1.8 + MSVC |
 | Linux Docker `amd64` | ✅ Debian 13 + Rust 1.96.0 + Bun 1.4.1 + LLVM 19.1.7；构建、独立运行、核心发现和 8 条门控测试通过；仅作功能证据 |
-| Linux Docker `arm64` | ⚠️ 已注册 `qemu-aarch64`，但 Dockerfile `RUN` 阶段仍报 `exec /bin/sh: exec format error`；未进入测试 |
-| **Linux 原生** | ⚠️ 裸机仍待复现：Docker amd64 不能替代真实主机安装路径与用户环境；Ubuntu/Arch WSL 已提供真 Linux 内核的 x86_64 功能证据，但不替代裸机验收 |
+| Linux Docker `arm64` | ⚠️ 本机已注册 `qemu-aarch64`，但 Dockerfile `RUN` 阶段仍报 `exec /bin/sh: exec format error`；本机镜像未进入测试；原生 ARM64 runner 证据已另行取得 |
+| **Linux 原生 runner** | ✅ GitHub Actions `ubuntu-24.04` 与 `ubuntu-24.04-arm` 的 `reproduce.sh native` 全链路通过，分别覆盖 x86_64 与 aarch64；功能证据不等同固定裸机性能验收 |
 | **WSL** | ✅ Ubuntu 26.04 与 Arch 均已安装 Rust 1.96.0、Bun 1.4.2 和 LLVM/clang，`reproduce.sh native` 全链路通过；WSL 共享宿主调度，不纳入性能验收 |
-| **macOS** | ❌ CI 工作流已建立但 runner 尚未执行；不得宣称已验证，仍需 Mach-O 工具链和独立产物复现 |
+| **macOS** | ✅ GitHub Actions `macos-14` arm64 的 `reproduce.sh native` 通过，Mach-O 独立产物与 `xiao test` 已验证；真实终端测试因无 GUI 显式跳过，仍不计入 X0 第 8 条 |
 
-`xiao build` 的工具链发现在 Linux Docker amd64、Ubuntu WSL 和 Arch WSL 已按完整命令跑通；
-ARM64、Linux 裸机和 macOS 的未完成项必须继续保留，不能用容器或 WSL 结果替换裸机验收。
+`xiao build` 的工具链发现在 Linux 原生 amd64/arm64 runner、Linux Docker amd64、Ubuntu WSL、
+Arch WSL、macOS arm64 CI 和 Windows CI 已按完整命令跑通；本机 Docker arm64 镜像仍受
+QEMU 执行层阻塞，WSL/容器结果仍不能改写成性能验收。
 
 ---
 
@@ -283,7 +284,8 @@ ARM64、Linux 裸机和 macOS 的未完成项必须继续保留，不能用容�
 
 ### ★ 容器口径见 [11X0-C](11x0c-packaging-and-platforms.md) §3
 
-**验证 ≠ 验收**：容器里的功能结果是有效证据，但不等同真机；macOS 仍记待复现。
+**验证 ≠ 验收**：容器里的功能结果是有效证据，但不等同固定物理主机；macOS arm64 CI 的
+功能证据已取得，但真实终端测试因无 GUI 显式跳过，仍不计入 X0 第 8 条。
 
 ---
 
@@ -347,9 +349,21 @@ PowerShell 5.1 完整入口也已通过，包含 `--emit-llvm`、`-debug`、PE/C
 Ubuntu 26.04 WSL 与 Arch WSL 均以 Rust 1.96.0、Bun 1.4.2 和各自发行版 LLVM 完整执行
 `tools/platform-reproduction/reproduce.sh native`：8 条 `--ignored` 门控全部通过，
 `bun test` 为 `82 pass / 1 skip / 0 fail`，`bun run check`、`check:lock`、Rust workspace
-检查、文档覆盖率 `5921/5921`（公共 API `3052/3052`）以及同目录/PATH/开发回环发现和
+检查、文档覆盖率 `5922/5922`（公共 API `3052/3052`）以及同目录/PATH/开发回环发现和
 `X11-PROTOCOL-004` 版本失配回环均通过。WSL 结果是共享宿主 CPU 调度下的功能证据，不能
-改写成 Linux 裸机性能或 macOS 证据；ARM64 和 macOS 仍按 §5.5 待复现。
+改写成 Linux 裸机性能。
+
+GitHub Actions 工作流运行 `35955788547` 的四个 job 均成功，并上传了各平台日志。`linux-amd64`
+使用 `ubuntu-24.04`、目标 `x86_64-unknown-linux-gnu` 和 Ubuntu LLVM 18.1.3；`linux-arm64`
+使用 `ubuntu-24.04-arm`、目标 `aarch64-unknown-linux-gnu` 和 Ubuntu LLVM 18.1.3；两者的
+8 条 `--ignored` 门控、`bun test`（`82 pass`）、文档覆盖率（公共 API `3052/3052`）、独立
+ELF、`xiao test`、三条核心发现路径和 `X11-PROTOCOL-004` 版本失配回环均通过。
+
+`macos-arm64` 使用 `macos-14`、目标 `aarch64-apple-darwin` 和 Homebrew LLVM 23.1.0，
+独立产物为 Mach-O arm64，`xiao build`、`xiao run`、`xiao test`、发现路径和协议失配回环通过；
+日志明确记录真实终端测试因 CI 无 GUI 而跳过，不能把该项写成已验证。`windows-amd64` 使用
+目标 `x86_64-pc-windows-msvc`、MSYS2 UCRT64 clang 22.1.8 与 `vcvars64` 导入的 MSVC 环境，
+PE/COFF、LLVM 输出、`-debug`、`xiao test`、三条发现路径和协议失配回环均通过。
 
 ## 相关页面
 

@@ -710,14 +710,15 @@ X0-E 已完成 `xiao build` 的真实源码路由、主机工具链发现、原�
 #### X0 平台复现登记（2026-09-24）
 
 [11X0-P. 跨平台复现](11x0-platform-reproduction.md) 已补齐 Docker 多架构镜像、
-Linux/WSL/macOS 复现脚本和 CI 矩阵，并取得 Linux Docker `amd64` 的完整功能证据：
-工具链发现、`xiao build`、独立 ELF 运行、`xiao test` 和 8 条环境门控测试均通过。
-这项证据不等同裸机 Linux 验收，也没有采集或修改 09R3 性能数字。
+Linux/WSL/macOS 复现脚本和 CI 矩阵，并取得 Linux amd64/arm64 原生 runner 与 macOS arm64
+CI 的完整功能证据：工具链发现、`xiao build`、独立产物运行、`xiao test` 和环境门控均按
+平台通过；macOS 真实终端测试因 CI 无 GUI 显式跳过。该证据不等同固定物理主机性能验收，
+也没有采集或修改 09R3 性能数字。
 
-截至本记录日，ARM64 镜像仍在 Docker Desktop 的 QEMU `exec /bin/sh: exec format error`
-阻塞；Ubuntu/Arch WSL 缺少 Rust、Bun 和 LLVM 工具链；macOS runner 尚未执行。因此
-X0 第 2、4、5、6 条继续保持未收口，不能把 Linux 容器结果写成三平台已验证。X0 第 3 条
-另行登记为 `X0-SPEC-001` 规格测试债，不属于平台复现批次。
+截至本记录日，本机 Docker arm64 镜像仍在 Docker Desktop 的 QEMU `exec /bin/sh: exec format error`
+阻塞，但不影响原生 `ubuntu-24.04-arm` runner 的 ARM64 功能证据；Ubuntu/Arch WSL 已补齐
+工具链并通过完整复现。因此 X0 第 2、4、5、6 条按 P1 收口；X0 第 8 条的 macOS 真实终端
+项继续保持未验证。X0 第 3 条另行登记为 `X0-SPEC-001` 规格测试债，不属于平台复现批次。
 
 ### D1：外部包契约与依赖图骨架
 

@@ -32,12 +32,13 @@
 ```text
 已完成的证据   Windows 原生：xiao build / run / test / debug 端到端
               Linux Docker amd64：工具链、构建、独立运行、xiao test 与 8 条门控测试全绿
+              GitHub Actions Linux amd64/arm64 原生 runner：目标架构、构建、独立运行、xiao test 与 8 条门控测试全绿
               Ubuntu/Arch WSL：Rust/Bun/LLVM 齐备，8 条门控、构建、独立运行和三条发现路径全绿
-              Linux ARM：目标描述修复与架构断言已落地；镜像构建被主机 QEMU 执行层阻塞
-              macOS：仅建立 CI 复现工作流，当前环境未运行
-待补证据      Linux 裸机、Docker arm64、macOS runner
-平台分支      31 处（Rust cfg + TS process.platform）；Linux x86_64 已有容器与 WSL 功能证据，
-              ARM64/macOS 仍不得写成已验证
+              macOS arm64 CI：Mach-O 构建、独立运行、xiao test 与 7/8 条环境门控通过
+              Linux ARM Docker：本机镜像构建仍被主机 QEMU 执行层阻塞，非平台 runner 结论
+待补证据      Docker arm64 本机镜像、macOS 真实终端端到端；性能验收仍不在本批
+平台分支      31 处（Rust cfg + TS process.platform）；x86_64/aarch64/macOS 功能证据均已取得，
+              macOS 真实终端测试因 CI 无 GUI 显式跳过，仍不得写成已验证
 ```
 
 **两个关键事实要先说清**：
@@ -52,21 +53,22 @@
 
 ### 本批交付与不负责
 
-**交付**：Linux 原生（Docker 多架构 + 真机/WSL）与 macOS（CI runner）的**功能证据**、
+**交付**：Linux 原生（Docker 多架构 + GitHub 原生 runner + WSL）与 macOS（CI runner）的**功能证据**、
 补齐缺失的前置设施（容器工具链、复现脚本）、X0 第 2/4/5/6 条的收口判定。
 
 **不负责**：**X0 第 3 条**（它**不是平台债**，见 §八.2）；09R3 的性能数字（本批不采）。
 
 ---
 
-## 二、范围：四项手段，四种证据等级
+## 二、范围：五项手段，五种证据等级
 
 | # | 手段 | 覆盖 | 能证明什么 | 不能证明什么 |
 | --- | --- | --- | --- | --- |
 | **1** | **Docker `linux/amd64`** | Linux x86_64 | 构建/运行/发现/退出码/协议字段 | 真机安装路径与用户环境 |
 | **2** | **Docker `linux/arm64`** | Linux ARM | 同上，**且能抓架构硬编码**（§四.3） | 同上；QEMU 下编译慢 |
 | **3** | **WSL（Ubuntu + Arch）** | 真 Linux 内核 | 更强的功能证据；**Arch 是廉价反例探测**（glibc/路径/`lib` 布局不同） | 仍共享宿主 CPU 调度（数字不可与 Windows 并列） |
-| **4** | **CI macOS runner** | 真机 macOS | **Mach-O 工具链、`osascript` 开窗、Rust 核心原生构建** | 云 runner 性能波动大（但本批只要功能） |
+| **4** | **CI Linux 原生 runner** | Linux x86_64 / ARM64 | 原生工具链、目标架构、构建/运行/发现和协议回环 | GitHub runner 不是固定物理基准机，不能用于性能冻结 |
+| **5** | **CI macOS runner** | 真机 macOS | **Mach-O 工具链、Rust 核心原生构建**；真实终端需另行具备 GUI | 云 runner 性能波动大；本批只要功能 |
 
 ⚠️ **手段 1/2/3 都不是「真机 Linux 验收」**——`11x0c:166-168` 说得很清楚：
 容器「内核版本、cgroup、文件系统仍然与裸机有差异，**而且容器里没有真实的安装路径与用户环境**」。
@@ -104,8 +106,8 @@
 `09r-bytecode-machine-research.md:462`（R1-AE）要求
 「Linux 与 macOS 写成明确的待复现清单**与复现脚本**」。本批已补齐
 `tools/platform-reproduction/reproduce.sh`、`reproduce.ps1`、Dockerfile 和
-`.github/workflows/platform-reproduction.yml`；Linux amd64 已实际执行脚本，
-ARM64、Linux 裸机和 macOS 的未完成项保留在 §5.6。
+`.github/workflows/platform-reproduction.yml`；Linux amd64/arm64 原生 runner 与 macOS CI
+已实际执行脚本，本机 Docker arm64 镜像阻塞和 macOS 真实终端跳过保留在 §5.6。
 
 ### 3.3 更新 `10D` 的 `#[ignore]` 清单（7 → 8）
 
@@ -162,12 +164,13 @@ TS 侧写对了、Rust 侧写死了。它已在本批修复为按 `target_arch` 
 
 **在 arm64 上它会直接错**：Apple Silicon macOS 与 ARM Linux 都会拿到
 `x86_64-*` 三元组。而 **GitHub Actions 的 `macos-14`+ runner 全是 arm64**，
-`ubuntu-24.04-arm` 也可用——**手段 2 与手段 4 都会踩到它**。
+`ubuntu-24.04-arm` 也可用——**手段 2、4 与 5 都会踩到它**。
 
-ARM64 镜像原本应当负责把这条断言真正编译并执行；但本机在安装了
-`qemu-aarch64` binfmt 后，`docker buildx build --platform linux/arm64` 仍在
-Dockerfile 的 `RUN apt-get ...` 阶段报 `exec /bin/sh: exec format error`，所以
-§5.6 只记录为**仿真执行阻塞**，不宣称 ARM64 运行时证据完成。
+本机 ARM64 镜像在安装了 `qemu-aarch64` binfmt 后，`docker buildx build --platform linux/arm64`
+仍在 Dockerfile 的 `RUN apt-get ...` 阶段报 `exec /bin/sh: exec format error`，所以 Docker
+仿真路径仍记录为**本机执行阻塞**。但 `ubuntu-24.04-arm` 原生 runner 已真正编译并执行
+这条断言，`aarch64-unknown-linux-gnu` 的 `reproduce.sh native` 全链路通过；ARM64 平台
+功能证据不再依赖本机 QEMU，仍不把 runner 结果写成性能验收。
 
 ### 4.4 环境依赖测试
 
@@ -178,8 +181,9 @@ Dockerfile 的 `RUN apt-get ...` 阶段报 `exec /bin/sh: exec format error`，�
 上一批 `10d §四` 的环境准备方式只有 Windows，且 `§八` 曾明写「不做非 Windows 平台
 的准备方式」。本批已为 Linux/WSL/macOS 补上脚本路径：把 `XIAO_CLANG` / `XIAO_LLVM_AS` / `XIAO_LLC`
 指向 LLVM ≥18，把 `XIAO_RUNTIME_LIBRARY` 指向 `libxiao_runtime.a`，并把
-`XIAO_TARGET_TRIPLE` 设成与 `rustc -vV` 一致的三元组。Linux Docker amd64
-按此方式跑通；Ubuntu/Arch WSL 的 8 条门控与完整脚本均已通过，macOS 尚未执行。
+`XIAO_TARGET_TRIPLE` 设成与 `rustc -vV` 一致的三元组。Linux Docker amd64、GitHub Actions
+原生 amd64/arm64、Ubuntu/Arch WSL 的 8 条门控与完整脚本均已通过；macOS CI 执行 7 条，
+真实终端测试因无 GUI 显式跳过，不能计为通过。
 
 ---
 
@@ -202,9 +206,10 @@ Dockerfile 的 `RUN apt-get ...` 阶段报 `exec /bin/sh: exec format error`，�
 - **(a)** 在真实 Linux 主机上复现一次；**或**
 - **(b)** 写明为什么容器/WSL 证据足以替代。
 
-**本批的实际立场**：当前没有真实 Linux 主机或已执行的 macOS runner 结果，
-而 WSL 两个发行版也缺少工具链，因此本批**不采用 (b)**。Docker amd64 只能
-作为可复现的 Linux 功能证据；X0 第 2 条仍保持未收口，具体原因见 §5.6 与 §8.1。
+**本批的实际立场**：GitHub Actions 的 `ubuntu-24.04` 与 `ubuntu-24.04-arm` 原生 runner
+已经取得 Linux amd64/arm64 功能证据，`macos-14` 也取得 Mach-O 功能证据；本机 Docker
+arm64 仍受 QEMU 执行层阻塞，WSL 与容器仍不用于性能验收。X0 第 2/4/5/6 条可按 CI 结果
+收口；X0 第 8 条的 macOS 真实终端项继续明确保持未验证，具体边界见 §5.6 与 §8.1。
 
 ### 5.2 禁止在没跑之前改状态
 
@@ -300,8 +305,22 @@ exec /bin/sh: exec format error
 
 因此 ARM64 镜像没有生成，`cargo test` 和 `reproduce.sh` 未开始。该项状态是
 **主机 Docker Desktop 的 QEMU/binfmt 执行阻塞**，不是仓库代码失败；`host()` 的
-`target_arch` 修复和断言已经提交，但 ARM64 的运行时证据仍待能执行 ARM64 `RUN`
-步骤的主机或 CI runner。
+`target_arch` 修复和断言已经提交。本机 Docker 仿真路径仍未进入测试，但
+`ubuntu-24.04-arm` 原生 runner 已绕开该执行层并完成同一套 ARM64 复现，见下节。
+
+#### GitHub Actions 原生 Linux runner
+
+工作流运行 `35955788547` 的 `linux-amd64` 与 `linux-arm64` job 均成功；两者都直接执行
+`tools/platform-reproduction/reproduce.sh native`，没有使用 Docker 或 QEMU。环境分别为
+`ubuntu-24.04` / `x86_64-unknown-linux-gnu` 与 `ubuntu-24.04-arm` /
+`aarch64-unknown-linux-gnu`，Rust 为 `1.96.0`、Bun 为 `1.4.1`、Ubuntu clang/LLVM 为
+`18.1.3`。
+
+两个平台各自完成 8 条 `--ignored` 门控测试、`bun test`（`82 pass`）、`bunx tsc`、
+`bun run check`、文档覆盖率（公共 API `3052/3052`）、独立 ELF 构建运行、`xiao test`
+和同目录/PATH/开发回环及 `X11-PROTOCOL-004` 版本失配回环；amd64 产物为 ELF x86-64，
+arm64 产物为 ELF aarch64。该结果是 GitHub 原生 runner 的功能证据，不写入 09R3 性能数字，
+也不等同固定物理裸机的性能验收。
 
 #### WSL（Ubuntu 与 Arch）
 
@@ -323,16 +342,20 @@ XIAO_USE_XVFB=1 bash tools/platform-reproduction/reproduce.sh native
 
 两套 WSL 的结果一致：8 条 `--ignored` 门控全部通过；`bun test` 为
 `82 pass / 1 skip / 0 fail`；`bun run check`、`check:lock`、Rust workspace 检查、
-文档覆盖率 `5921/5921`（公共 API `3052/3052`）、独立 ELF 构建与运行、`xiao test`、
+文档覆盖率 `5922/5922`（公共 API `3052/3052`）、独立 ELF 构建与运行、`xiao test`、
 同目录/PATH/开发回环核心发现及 `X11-PROTOCOL-004` 版本失配回环均通过。该证据覆盖
 WSL x86_64 功能路径，但共享宿主 CPU 调度，不能替代 Linux 裸机或性能验收。
 
 #### macOS CI
 
-`.github/workflows/platform-reproduction.yml` 已加入 `macos-14`、Bun `1.4.1`、
-Rust `1.96.0` 和 Homebrew LLVM；Linux 安装步骤也补上了 `xauth`。当前没有执行
-GitHub Actions runner，因此没有 Mach-O、`osascript` 或 `open -a Terminal` 证据，
-macOS 必须继续保持**待复现**。
+`.github/workflows/platform-reproduction.yml` 的 `macos-arm64` job 已在运行
+`35955788547` 中成功完成。环境为 `macos-14`、`aarch64-apple-darwin`、Rust `1.96.0`、
+Bun `1.4.1` 和 Homebrew LLVM `23.1.0`；`xiao build`、独立 Mach-O arm64 产物、`xiao run`、
+`xiao test`、三条核心发现路径和 `X11-PROTOCOL-004` 版本失配回环均通过。
+
+macOS runner 无 GUI 会话，日志明确记录 `real_terminal_session_is_environment_gated`
+被显式跳过；因此 `osascript` / `open -a Terminal` 的真实终端握手仍未验证，也不计入 X0
+第 8 条。其余 7 条环境门控测试通过。
 
 ---
 
@@ -342,9 +365,9 @@ macOS 必须继续保持**待复现**。
 | --- | --- | --- |
 | **1** | Dockerfile、Linux/macOS 复现脚本、PowerShell 入口和 CI 矩阵已落地；镜像含 C/LLVM、`xauth`、Xvfb 与 xterm | ✅ |
 | **2** | Docker `linux/amd64` 全链路复现，含 `xiao build`、独立运行、`xiao test`、`-debug` 和 8 条门控测试 | ✅ |
-| **3** | ARM64 目标缺陷已修复并加断言；镜像构建被主机 QEMU 的 `exec format error` 阻塞 | ⚠️ 待 ARM64 runner |
+| **3** | ARM64 目标缺陷已修复并加断言；本机 Docker 镜像仍被 QEMU 的 `exec format error` 阻塞，但原生 ARM64 runner 已通过 | ✅ 功能证据；Docker 仿真仍受阻 |
 | **4** | Ubuntu/Arch WSL 已补齐 Rust/Bun/LLVM、xterm、Xvfb 和 rustfmt；两套 `reproduce.sh native` 全链路通过 | ✅ |
-| **5** | 多平台 GitHub Actions 工作流已提交；macOS runner 尚未实际运行 | ⚠️ 待 CI |
+| **5** | 多平台 GitHub Actions 工作流已提交并运行；Linux amd64/arm64、macOS arm64、Windows amd64 job 全部成功 | ✅；macOS 真实终端单项除外 |
 | **6** | `10D` 清单已从 7 条修正为 8 条；平台记录、机器状态和 X0 判定在本批同步 | ✅ |
 
 **每一步的验收**：既有测试不改、`tests/benchmarks/reports/` 无 diff、门禁全绿。
@@ -386,11 +409,11 @@ macOS 必须继续保持**待复现**。
 | # | 条件 | 现状 |
 | --- | --- | --- |
 | 1 | CLI 接成 `run`/快捷运行/`build`/`test`/`config` | ✅ 已满足（X0-T 补齐了 `xiao test`） |
-| 2 | **三平台最小构建矩阵通过** | ⚠️ 未收口：Windows 与 Linux x86_64（Docker/WSL）功能证据通过，ARM64 被主机 QEMU 阻塞，macOS runner 尚未执行；WSL 不替代裸机验收 |
+| 2 | **三平台最小构建矩阵通过** | ✅ Windows、Linux amd64/arm64 原生 runner、macOS arm64 CI 的 `xiao build`、独立产物和运行回环均通过；Docker/WSL 仍不用于性能验收 |
 | 3 | **01 至本阶段的"已确定"规则都有自动化规格测试** | ⚠️ 独立规格测试债，登记为 `X0-SPEC-001`，不属于本批平台债 |
-| 4 | CLI 用 TS 构建并通过静态检查；**三平台入口行为一致** | ⚠️ Windows 与 Linux x86_64（Docker/WSL）静态检查、`xiao test` 和入口回环通过；ARM64、macOS 仍缺证据 |
-| 5 | **三平台独立 `xiao` 可执行并能调用内核** | ⚠️ Windows 与 Linux x86_64（Docker/WSL）独立产物和内核调用通过；ARM64/macOS 未完成，不能收口 |
-| 6 | **三平台均能发现并调用兼容版本核心** | ⚠️ Windows 与 Linux x86_64（Docker/WSL）已通过同目录、PATH、开发回环和版本失配；ARM64/macOS 尚未运行 |
+| 4 | CLI 用 TS 构建并通过静态检查；**三平台入口行为一致** | ✅ Windows、Linux amd64/arm64、macOS arm64 均通过静态检查、`xiao test` 和入口回环；macOS 真实终端测试另行显式跳过 |
+| 5 | **三平台独立 `xiao` 可执行并能调用内核** | ✅ 三个平台均生成独立产物，复制到仓库外后完成运行与 `xiao test`；产物分别为 PE/COFF、ELF、Mach-O |
+| 6 | **三平台均能发现并调用兼容版本核心** | ✅ 三个平台均通过同目录、PATH、开发回环和版本失配回环，失配返回 `X11-PROTOCOL-004` |
 | 7 | `xiao config` 布尔结构化写入 | ✅ 已满足 |
 | 8 | `-debug` 传递与独立窗口 | ⚠️ Windows 原生满足；POSIX 只有源码文本断言 |
 
@@ -417,8 +440,8 @@ macOS 必须继续保持**待复现**。
 
 1. **债进产物不只进文档**：`09r3-freeze.json:4-7` 的 `platform_status` 机器字段；
 2. **退出条件里点名**并解释"最容易做假"的那条（`09r3:182`）；
-3. **落地记录做双重否定**：Linux Docker amd64 与 Ubuntu/Arch WSL 的功能证据已落地，
-   但 ARM64、Linux 裸机和 macOS 仍明确标为阻塞或待复现；
+3. **落地记录做双重否定**：GitHub Actions 原生 Linux amd64/arm64 与 macOS arm64 的功能证据已落地，
+   但本机 Docker arm64 镜像仍受 QEMU 执行层阻塞，macOS 真实终端仍明确标为未验证；
 4. **下游批次引用这笔债**而不是假装已清（`09b0:116`）；
 5. **环境矩阵逐项表**（`11x0c:183-191` 的五项）。
 

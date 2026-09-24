@@ -114,6 +114,7 @@ call "<VS_ROOT>\VC\Auxiliary\Build\vcvars64.bat" >nul 2>&1
 set PATH=<MSYS2_ROOT>\ucrt64\bin;%PATH%
 set XIAO_CLANG=<MSYS2_ROOT>\ucrt64\bin\clang.exe
 set XIAO_LLVM_AS=<MSYS2_ROOT>\ucrt64\bin\llvm-as.exe
+set XIAO_LLC=<MSYS2_ROOT>\ucrt64\bin\llc.exe
 set XIAO_RUNTIME_LIBRARY=<REPO>\core\rust\target\release\xiao_runtime.lib
 set XIAO_TARGET_TRIPLE=x86_64-pc-windows-msvc
 cd /d <REPO>\core\rust
@@ -209,7 +210,8 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 没有把缺环境伪装成通过；显式运行 `--ignored` 时会用 `expect` 检查变量，Runtime 库路径
 不存在也会直接断言失败。
 
-在 Windows 原生环境按 §4 准备后，以下命令已完整执行 7 条门控测试并全部通过：
+在 Windows 原生环境按 §4 准备后，以下命令已完整执行 7 条工具链门控测试并全部通过；
+真实终端测试另在同一环境中通过：
 
 ```text
 n0_a                         3 passed
@@ -221,17 +223,20 @@ n0_b_dynamic_native          1 passed
 
 动态 Runtime 测试使用 `x86_64-pc-windows-msvc`，通过 `Toolchain::probe_native_static_libraries`
 查询 Rust 清单后链接 `xiao_runtime.lib`。VS Community 18.9.2、MSVC linker 14.51.36256.0、
-MSYS2 clang/llvm-as 22.1.2 和 Rust 1.96.0 均为本次记录的实际工具；缺少 `XIAO_CLANG` 时
+MSYS2 UCRT64 clang/LLVM 22.1.8 和 Rust 1.96.0 均为 CI 运行 `35955788547` 的实际工具；
+本机历史记录中的 MSYS2 clang/llvm-as 22.1.2 仍符合同一准备方式。缺少 `XIAO_CLANG` 时
 单独执行 `optional_real_llvm_round_trip --ignored` 已确认会失败并给出配置错误。
 
-Windows 的 7 条工具链门控结果已有历史记录；随后 Windows PowerShell 5.1 完整入口通过。
+Windows 的 8 条环境门控结果已有完整记录；随后 Windows PowerShell 5.1 完整入口通过。
 Linux Docker amd64 的 `xvfb-run` 环境中新增真实终端测试也通过，8 条门控测试合计全部
-通过。Ubuntu 26.04 WSL 与 Arch WSL 在补齐 Rust `rustfmt`、xterm、Xvfb 后各自执行
+通过。GitHub Actions 的 `linux-amd64`、`linux-arm64` 与 `windows-amd64` 各自执行 8 条
+门控并全部通过；`macos-arm64` 因 CI 无 GUI 显式跳过真实终端测试，其他 7 条执行并通过，
+该项不能记为真实终端已验证。Ubuntu 26.04 WSL 与 Arch WSL 在补齐 Rust `rustfmt`、xterm、Xvfb 后各自执行
 `XIAO_USE_XVFB=1 bash tools/platform-reproduction/reproduce.sh native`，两套均为
 8 条门控通过，且完整检查、文档覆盖率、独立 ELF、`xiao test`、三条核心发现路径和
-`X11-PROTOCOL-004` 版本失配回环通过。ARM64 因 Docker Desktop QEMU 的
-`exec format error` 未执行，未运行的 macOS 也不能被宣称为已验证。WSL 和容器共享
-宿主调度或多一层文件系统，不能与原生性能数字并列。
+`X11-PROTOCOL-004` 版本失配回环通过。Docker arm64 本机仿真仍因 Docker Desktop QEMU 的
+`exec format error` 未执行，但原生 `ubuntu-24.04-arm` runner 已补足 ARM64 功能证据。WSL、
+容器和 CI runner 结果均不进入 09R3 性能数字。
 
 ## 八、不负责
 

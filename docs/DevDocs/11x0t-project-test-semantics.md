@@ -357,11 +357,12 @@ X0-T 已按本交接文档落地：
 
 | 环境 | 命令或状态 | `xiao test` 结果 |
 | --- | --- | --- |
-| Windows 原生 | X0-T 已接入独立 CLI；Windows 原生回环沿用既有 `xiao test` 接线，平台复现入口为 `tools/platform-reproduction/reproduce.ps1 -Mode native` | 保持协议语义；本批不把未重新采集的 Windows 输出冒充新平台证据 |
+| Windows 原生 | X0-T 已接入独立 CLI；CI 运行 `35955788547` 的 `windows-amd64` 入口为 `tools/platform-reproduction/reproduce.ps1 -Mode native` | 通过：`total=1`、`passed=1`、`failed=0`、`exit_code=0` |
 | Linux Docker `amd64` | `docker run --rm --platform linux/amd64 -e XIAO_USE_XVFB=1 -v "${PWD}:/workspace" -w /workspace xiao-platform-reproduction:linux-amd64 bash tools/platform-reproduction/reproduce.sh native` | 通过：`total=1`、`passed=1`、`failed=0`、`exit_code=0` |
 | Linux Docker `arm64` | `docker buildx build --platform linux/arm64 ... --load` 在 Dockerfile `RUN` 阶段报 `exec /bin/sh: exec format error` | 未开始；镜像构建被主机 QEMU/binfmt 执行层阻塞 |
-| WSL Ubuntu / Arch | 两个发行版均缺少 `rustc`、Bun、`clang`、`llvm-as`、`llc`，未执行 `reproduce.sh native` | 未开始；环境缺失，不记为通过或失败 |
-| macOS | `.github/workflows/platform-reproduction.yml` 已提供 `macos-14` 入口，但当前尚未运行 runner | 未开始；继续保持待复现 |
+| Linux 原生 amd64/arm64 | CI 运行 `35955788547` 的 `linux-amd64` / `linux-arm64` job，分别执行 `reproduce.sh native` | 通过：两者均为 `total=1`、`passed=1`、`failed=0`、`exit_code=0` |
+| WSL Ubuntu / Arch | 两个发行版均已补齐 Rust 1.96.0、Bun 1.4.2、clang/LLVM、xterm、Xvfb 和 rustfmt，并执行 `XIAO_USE_XVFB=1 bash tools/platform-reproduction/reproduce.sh native` | 通过：两者均为 `total=1`、`passed=1`、`failed=0`、`exit_code=0` |
+| macOS arm64 | CI 运行 `35955788547` 的 `macos-arm64` job，执行 `reproduce.sh native` | 通过：`total=1`、`passed=1`、`failed=0`、`exit_code=0`；真实终端门控因无 GUI 显式跳过 |
 
 Linux amd64 的 `xiao test` 结果说明 CLI 能把项目根下递归发现的一个
 `tests/smoke.xiao` 交给核心并返回机器可读聚合结果；它不改变“测试失败使用协议退出码、

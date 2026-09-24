@@ -3,8 +3,9 @@
 > **本批是 [11X0-P](11x0-platform-reproduction.md) 的续批。** 上一批完成了
 > Linux Docker amd64 的完整功能复现、修掉了 `target.rs` 的架构硬编码、
 > 补齐了复现脚本与 CI 工作流。启动本批时仍有三项未完成：ARM64（被主机 QEMU 阻塞）、
-> WSL（工具链缺失）、macOS（CI 建好但从未运行）。目前 Windows PowerShell 5.1 与
-> Ubuntu/Arch WSL 的本地复现已通过，ARM64/macOS 仍等待云端工作流证据。
+> WSL（工具链缺失）、macOS（CI 建好但从未运行）。目前 Windows PowerShell 5.1、
+> Ubuntu/Arch WSL 和 GitHub Actions 四平台工作流均已通过；本机 Docker arm64 仿真仍受阻，
+> macOS 真实终端测试仍按无 GUI 规则显式跳过。
 >
 > **本批的目标是让 X0 第 2/4/5/6 条真正收口**——或者按 `09R3` 先例明确带债关门。
 > **两条路都行，但不许含糊**（`11x0c:178-179`）。
@@ -29,10 +30,10 @@
 ### 现状盘点（2026-09-24 实测）
 
 ```text
-本地状态   main 分支，Windows PowerShell 5.1 与 Ubuntu/Arch WSL 本地复现已通过，待推送触发 CI
-CI 状态    .github/workflows/platform-reproduction.yml 已更新，ARM64/macOS 仍待云端运行
+本地状态   main 分支，Windows PowerShell 5.1 与 Ubuntu/Arch WSL 本地复现已通过
+CI 状态    运行 35955788547 已完成，linux-amd64/linux-arm64/macos-arm64/windows-amd64 全部成功
 WSL 状态   Ubuntu-26.04 与 archlinux 均已具备 Rust 1.96.0、Bun 1.4.2、clang/LLVM、xterm、Xvfb、rustfmt
-未收口     X0 第 2/4/5/6 条；第 8 条（POSIX 只有源码文本断言）本批亦未动
+未收口     X0 第 8 条的 macOS 真实终端握手；本机 Docker arm64 镜像仍受 QEMU 执行层阻塞
 ```
 
 ### 本批交付与不负责
@@ -105,12 +106,13 @@ Windows 侧现在同步检查 `--emit-llvm` 输出、`-debug` 产物和 PE/COFF 
 
 ### 3.4 Windows 侧的 LLVM 来源已明确
 
-CI 用 choco 装的 LLVM（windows-2025 镜像预装 20.1.8），
-而 `10d:221` 钉的是 **MSYS2 clang/llvm-as 22.1.2 + vcvars64**。
-CI 使用 Chocolatey LLVM，脚本通过 `vswhere.exe` 自动导入 Visual Studio 的
-`vcvars64.bat`，确保 clang 使用 MSVC 的 `link.exe` 和头文件；本机实测采用 MSYS2
-clang/LLVM 22.1.2 + 同一 MSVC 环境。10D 的 MSYS2 准备方式仍保留为开发机路径，CI
-采用 Chocolatey LLVM 的差异已在本节明确记录。
+Windows runner 的官方 LLVM 包不可靠地提供 `llvm-as` / `llc`，因此 CI 改为使用
+`msys2/setup-msys2@v2` 的 UCRT64 环境，安装 `mingw-w64-ucrt-x86_64-clang` 与
+`mingw-w64-ucrt-x86_64-llvm`，再把 `ucrt64\bin` 加入当前 job 的 PATH。工作流通过
+`vswhere.exe` 自动导入 Visual Studio 的 `vcvars64.bat`，确保 MSYS2 clang 使用 MSVC 的
+`link.exe` 和头文件；`35955788547` 的 Windows job 实测 clang `22.1.8`、目标
+`x86_64-pc-windows-msvc`，LLVM 输出、PE/COFF 和完整复现均通过。10D 的 MSYS2 准备方式
+与 CI 现在保持同一工具链来源，Chocolatey 只负责提供 `file` 命令。
 
 ### 3.5 `ubuntu-24.04-arm` 的可用性前提
 
@@ -270,9 +272,8 @@ tools/platform-reproduction/reproduce.sh native` 执行完整复现。
 ⚠️ [11X0-P §5.3](11x0-platform-reproduction.md) 的措辞「不要产生 diff」**划得过宽**，
 正确口径是「**数字不得写入；状态更新是必要的**」。
 
-**若 ARM64 最终由 `ubuntu-24.04-arm` 原生 runner 完成**，
-`linux` 串里应写明"经原生 arm64 runner"，**不要再留 `blocked-by-host-qemu`**
-（那是主机环境限制，不是平台结论）。
+ARM64 已由 `ubuntu-24.04-arm` 原生 runner 完成，`linux` 状态串已写明原生 amd64/arm64
+功能证据；本机 Docker arm64 的 QEMU 阻塞只保留在复现记录，不作为 Linux 平台结论。
 
 ### 5.4 更正上一批的一处措辞
 
@@ -295,10 +296,10 @@ WSL 证据的边界：共享宿主调度，**性能数字不得与 Windows 原�
 | --- | --- | --- |
 | **1** | 修 `reproduce.ps1` 的 `utf8NoBOM`（§3.1）+ 补三项（§3.2） | ✅ Windows PowerShell 5.1 已实测通过 |
 | **2** | 给 CI 加 artifact 上传 / 超时（§3.6、§3.3） | ✅ 工作流已补齐证据留存、并发和超时 |
-| **3** | **推送**（§二），触发 `linux-amd64` + `linux-arm64` | ⏳ 待推送；原生 arm64 runner 用于绕开主机 QEMU |
-| **4** | 触发 `macos-arm64`、`windows-amd64` | ⏳ 待推送后执行；macOS 真实终端测试仍按显式跳过记录 |
+| **3** | **推送**（§二），触发 `linux-amd64` + `linux-arm64` | ✅ 运行 `35955788547` 成功；原生 arm64 runner 绕开主机 QEMU |
+| **4** | 触发 `macos-arm64`、`windows-amd64` | ✅ 同一运行成功；macOS 真实终端测试按显式跳过记录 |
 | **5** | WSL：装工具链（§4.2）并 `reproduce.sh native` | ✅ Ubuntu/Arch 两套 WSL 各自完整通过 |
-| **6** | 逐项更新 `11x0e §5.5`、`11x0p §5.6/§8.1`、`09r3-freeze.json` 状态串；更正 §5.4 | ✅ 本地证据已写回；CI 结果后再做最终收口更新 |
+| **6** | 逐项更新 `11x0e §5.5`、`11x0p §5.6/§8.1`、`09r3-freeze.json` 状态串；更正 §5.4 | ✅ CI 结果与四平台证据已写回；性能数字未改 |
 
 ---
 
@@ -335,8 +336,8 @@ WSL 证据的边界：共享宿主调度，**性能数字不得与 Windows 原�
 
 1. **债进产物**：`09r3-freeze.json` 的 `platform_status` 机器字段；
 2. **退出条件点名**并解释"最容易做假"的那条（`09r3:182`）；
-3. **落地记录做双重否定**：Ubuntu/Arch WSL 功能证据已落地，但 ARM64、Linux 裸机和
-   macOS 仍明确标为待复现；
+3. **落地记录做双重否定**：GitHub Actions 原生 Linux amd64/arm64 与 macOS arm64 功能证据
+   已落地，但本机 Docker arm64 仿真仍受阻，macOS 真实终端测试仍明确标为未验证；
 4. **下游批次引用这笔债**而不是假装已清（`09b0:116`）；
 5. **环境矩阵逐项表**（`11x0c:183-191` 的五项）。
 
