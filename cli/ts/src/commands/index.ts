@@ -5,10 +5,16 @@ import { basename, resolve } from "node:path";
 
 import { findProjectConfig, writeConfigValue, type ConfigEditorOptions } from "../config/editor.ts";
 import { ProtocolClient, type CoreClientOptions } from "../protocol/client.ts";
+import type { ToolchainSpec } from "../protocol/messages.ts";
 import { renderCliError, renderProtocolResponse, CLI_EXIT_CODES, type DiagnosticRenderOptions, type RenderedDiagnostic } from "../diagnostics/render.ts";
 import { helpText as parserHelpText, type ParsedCommand } from "./parser.ts";
 import { discoverProjectTests, testModuleName } from "./test-discovery.ts";
 import { discoverToolchainWithMetadata, ToolchainDiscoveryError } from "../platform/toolchain.ts";
+import {
+  createEnvironment,
+  shellInitScript,
+  EnvironmentCommandError,
+} from "../environments/index.ts";
 
 /** 命令执行上下文；IO 由入口注入，便于管道和测试。 */
 export interface CommandContext {
@@ -26,6 +32,8 @@ export interface CommandContext {
   executablePath?: string;
   /** 当前命令的取消信号。 */
   signal?: AbortSignal;
+  /** 环境创建时可注入的工具链描述；未提供时由 CLI 发现。 */
+  environmentToolchain?: ToolchainSpec;
 }
 
 /** 命令本身尚未进入本批的稳定诊断。 */
@@ -55,11 +63,76 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
     return renderCliError(new CliCommandError("X11-CLI-REPL-001", "交互式解释器尚未在本批实现；请使用 xiao run <file.xiao>"), renderOptions(command.options, context));
   }
   if (command.kind === "test") return executeTest(command, context);
+  if (command.kind === "venv") return executeVenv(command, context);
+  if (command.kind === "shell-init") return executeShellInit(command, context);
+  if (command.kind === "deactivate") return executeDeactivate(command);
   if (command.kind === "build") {
     return executeBuild(command, context);
   }
   if (command.kind === "config") return executeConfig(command, context);
   return executeRun(command, context);
+}
+
+/** 创建项目环境并写入 E0 最小元数据。Shell 前缀由已求值的钩子负责。 */
+async function executeVenv(
+  command: Extract<ParsedCommand, { kind: "venv" }>,
+  context: CommandContext,
+): Promise<RenderedDiagnostic> {
+  try {
+    const created = await createEnvironment(context.cwd ?? process.cwd(), command.name, {
+      corePath: context.corePath,
+      env: context.env,
+      executablePath: context.executablePath,
+      spawnProcess: context.spawnProcess,
+      toolchain: context.environmentToolchain,
+      signal: context.signal,
+    });
+    if (command.options.json) {
+      return {
+        stdout: `${JSON.stringify({
+          type: "environment_created",
+          logical_name: created.logicalName,
+          directory_name: created.directoryName,
+          path: created.path,
+          project_root: created.projectRoot,
+          metadata_path: created.metadataPath,
+        })}\n`,
+        stderr: "",
+        exitCode: 0,
+      };
+    }
+    return {
+      stdout: `已创建环境 ${created.logicalName}：${created.path}\n`,
+      stderr: "",
+      exitCode: 0,
+    };
+  } catch (error) {
+    return renderCliError(error, renderOptions(command.options, context));
+  }
+}
+
+/** 输出一次性 Shell 钩子；不会写入 profile，也不会修改父 Shell。 */
+function executeShellInit(
+  command: Extract<ParsedCommand, { kind: "shell-init" }>,
+  context: CommandContext,
+): RenderedDiagnostic {
+  const script = shellInitScript(command.shell);
+  if (command.options.json) {
+    return {
+      stdout: `${JSON.stringify({ type: "shell_init", shell: command.shell, script })}\n`,
+      stderr: "",
+      exitCode: 0,
+    };
+  }
+  return { stdout: script, stderr: "", exitCode: 0 };
+}
+
+/** 取消激活由 Shell 钩子消费；直接运行时不伪造父 Shell 状态。 */
+function executeDeactivate(command: Extract<ParsedCommand, { kind: "deactivate" }>): RenderedDiagnostic {
+  if (command.options.json) {
+    return { stdout: `${JSON.stringify({ type: "deactivate", applied: false })}\n`, stderr: "", exitCode: 0 };
+  }
+  return { stdout: "", stderr: "", exitCode: 0 };
 }
 
 /** 发现、读取并通过项目测试协议执行所有测试源码。 */

@@ -54,7 +54,7 @@ struct BuildPlan {
 }
 
 /// 将调用方注入的工具链字段转换为 LLVM 驱动器对象。
-fn build_toolchain(
+pub(super) fn build_toolchain(
     spec: &ToolchainSpec,
     target: &TargetDescription,
 ) -> Result<Toolchain, ProtocolError> {

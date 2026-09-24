@@ -60,6 +60,7 @@ fn module_dependency_direction_is_acyclic() {
     }
 
     let ir = include_str!("ir.rs");
+    let toolchain = include_str!("toolchain.rs");
     assert_no_dependency("ir.rs", ir, "crate::dynamic");
     assert_no_dependency("ir.rs", ir, "dynamic::");
     assert!(ir.contains("crate::text::{escape_llvm, stable_hash}"));
@@ -68,6 +69,8 @@ fn module_dependency_direction_is_acyclic() {
     assert!(!ir.contains("fn stable_hash"));
     assert!(!facade.contains("fn escape_llvm"));
     assert!(!facade.contains("fn stable_hash"));
+    assert!(!toolchain.contains("fn fnv1a64"));
+    assert!(!toolchain.contains("fn stable_hash"));
 
     let predicate = include_str!("dynamic/predicate.rs");
     let text = include_str!("dynamic/text.rs");

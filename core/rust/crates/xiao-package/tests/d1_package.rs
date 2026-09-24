@@ -7,10 +7,15 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Deserialize;
+use serde_json::Value;
+use xiao_codegen_llvm::{TargetDescription, Toolchain, ToolchainVersions};
+use xiao_config::parse_config_project;
 use xiao_package::{
+    ENVIRONMENT_ALREADY_EXISTS_CODE, EnvironmentError, EnvironmentLayout,
     PACKAGE_DEPENDENCY_CYCLE_CODE, PACKAGE_IDENTITY_CONFLICT_CODE, PACKAGE_MISSING_DEPENDENCY_CODE,
-    resolve_project,
+    materialize_environment, resolve_project,
 };
+use xiao_source::SourceFile;
 
 /// 为并行测试 fixture 提供进程内唯一的临时目录后缀。
 static NEXT_PROJECT: AtomicU64 = AtomicU64::new(0);
@@ -183,4 +188,54 @@ fn exposes_stable_package_diagnostic_codes() {
     assert_eq!(PACKAGE_IDENTITY_CONFLICT_CODE, "X05-PACKAGE-001");
     assert_eq!(PACKAGE_MISSING_DEPENDENCY_CODE, "X05-PACKAGE-002");
     assert_eq!(PACKAGE_DEPENDENCY_CYCLE_CODE, "X05-PACKAGE-003");
+}
+
+#[test]
+/// 默认环境和显式环境名称必须使用冻结的目录映射。
+fn environment_layout_uses_default_and_explicit_directory_names() {
+    let project = TempProject::new();
+    let default = EnvironmentLayout::for_project(&project.path, None).expect("默认布局");
+    assert_eq!(default.logical_name, "venv");
+    assert_eq!(default.directory_name, ".venv");
+    assert_eq!(default.path, project.path.join(".venv"));
+
+    let named = EnvironmentLayout::for_project(&project.path, Some("dev")).expect("显式布局");
+    assert_eq!(named.logical_name, "dev");
+    assert_eq!(named.directory_name, "dev");
+    assert_eq!(named.path, project.path.join("dev"));
+}
+
+#[test]
+/// 环境元数据必须稳定且重复创建必须返回专用诊断。
+fn environment_metadata_is_stable_and_duplicate_creation_is_rejected() {
+    let project = TempProject::new();
+    let document = parse_config_project(&SourceFile::from_text(
+        "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n",
+    ))
+    .expect("配置应合法");
+    let toolchain = Toolchain::new("clang").with_versions(ToolchainVersions {
+        clang: "clang 18".to_owned(),
+        ..ToolchainVersions::default()
+    });
+    let target = TargetDescription::host();
+
+    let first = materialize_environment(&project.path, None, &document, &toolchain, &target)
+        .expect("首次创建环境");
+    assert_eq!(first.logical_name, "venv");
+    assert_eq!(first.directory_name, ".venv");
+    assert_eq!(first.metadata_version, 1);
+    assert!(!first.config_fingerprint.is_empty());
+    assert!(!first.toolchain_fingerprint.is_empty());
+    assert!(!first.target_fingerprint.is_empty());
+    assert!(!first.environment_fingerprint.is_empty());
+    let json = first.to_json();
+    assert!(!json.contains(project.path.to_string_lossy().as_ref()));
+    let parsed: Value = serde_json::from_str(&json).expect("环境元数据必须是有效 JSON");
+    assert_eq!(parsed["metadata_version"], 1);
+    assert_eq!(parsed["lockfile_summary"], Value::Null);
+
+    let second = materialize_environment(&project.path, None, &document, &toolchain, &target)
+        .expect_err("重复创建必须失败");
+    assert!(matches!(second, EnvironmentError::AlreadyExists { .. }));
+    assert_eq!(second.code(), ENVIRONMENT_ALREADY_EXISTS_CODE);
 }

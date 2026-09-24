@@ -40,6 +40,28 @@ impl ConfigDocument {
     pub const fn span(&self) -> SourceSpan {
         self.span
     }
+
+    /// 返回不含源码区间的版本化类型化指纹输入。
+    ///
+    /// 该编码使用明确的类型标签、元素数量和字节长度边界，不是 RFC 8785/JCS。
+    /// 表、键和字典均依赖 `BTreeMap` 的确定性顺序；源码位置不会进入编码。
+    #[must_use]
+    pub fn canonical_fingerprint_input(&self) -> Vec<u8> {
+        let mut output = Vec::new();
+        output.extend_from_slice(b"xiao-config-fingerprint-v1\0");
+        append_len(&mut output, self.tables.len());
+        for (table_key, table) in &self.tables {
+            append_text(&mut output, table_key);
+            append_text(&mut output, &table.name);
+            append_len(&mut output, table.entries.len());
+            for (entry_key, entry) in &table.entries {
+                append_text(&mut output, entry_key);
+                append_text(&mut output, &entry.key);
+                append_value(&mut output, &entry.value);
+            }
+        }
+        output
+    }
 }
 
 /// 一个顶层配置表。
@@ -229,3 +251,55 @@ impl ConfigValue {
 
 /// 当前已通过配置校验的规范化文档类型。
 pub type NormalizedConfig = ConfigDocument;
+
+/// 以固定宽度大端整数追加长度边界。
+fn append_len(output: &mut Vec<u8>, length: usize) {
+    output.extend_from_slice(
+        &u64::try_from(length)
+            .expect("配置树长度必须能表示为 64 位无符号整数")
+            .to_be_bytes(),
+    );
+}
+
+/// 追加带长度边界的 UTF-8 文本。
+fn append_text(output: &mut Vec<u8>, text: &str) {
+    append_len(output, text.len());
+    output.extend_from_slice(text.as_bytes());
+}
+
+/// 追加带类型标签的静态配置值。
+fn append_value(output: &mut Vec<u8>, value: &ConfigValue) {
+    match value {
+        ConfigValue::String(value) => {
+            output.push(1);
+            append_text(output, value);
+        }
+        ConfigValue::Integer(value) => {
+            output.push(2);
+            output.extend_from_slice(&value.to_be_bytes());
+        }
+        ConfigValue::Float(value) => {
+            output.push(3);
+            output.extend_from_slice(&value.to_bits().to_be_bytes());
+        }
+        ConfigValue::Boolean(value) => {
+            output.push(4);
+            output.push(u8::from(*value));
+        }
+        ConfigValue::Array(values) => {
+            output.push(5);
+            append_len(output, values.len());
+            for value in values {
+                append_value(output, value);
+            }
+        }
+        ConfigValue::Dictionary(values) => {
+            output.push(6);
+            append_len(output, values.len());
+            for (key, value) in values {
+                append_text(output, key);
+                append_value(output, value);
+            }
+        }
+    }
+}

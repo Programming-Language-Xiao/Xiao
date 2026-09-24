@@ -14,6 +14,19 @@ pub(super) struct FrozenRuntimeConfig {
     pub(super) value: Value,
 }
 
+/// 将可选配置源码解析为规范化静态文档；未提供时使用空配置文档。
+pub(super) fn parse_environment_config(
+    text: Option<&str>,
+) -> Result<ConfigDocument, ProtocolError> {
+    parse_config_text(text.unwrap_or_default()).map_err(|diagnostics| {
+        let first = diagnostics
+            .first()
+            .map(|diagnostic| format!("{}: {}", diagnostic.code(), diagnostic.message()))
+            .unwrap_or_else(|| "配置解析失败".to_owned());
+        ProtocolError::request("config_text", format!("config.xiao 校验失败：{first}"))
+    })
+}
+
 /// 解析并校验 `config.xiao`，只保留静态配置树，不执行用户代码。
 pub(super) fn freeze_runtime_config(
     _output: &str,

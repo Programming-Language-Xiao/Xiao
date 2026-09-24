@@ -112,6 +112,7 @@ fn module_dependency_direction_is_acyclic() {
             "service.rs 应显式依赖 {dependency}"
         );
     }
+    assert!(service.contains("xiao_package"));
     assert!(service.contains("std::thread"));
     assert!(service.contains("Arc"));
     for (name, source) in [

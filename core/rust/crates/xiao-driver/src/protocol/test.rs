@@ -123,6 +123,7 @@ fn test_case_result(
             error: Some(cancelled_error()),
         },
         ProtocolResponse::Hello { .. }
+        | ProtocolResponse::EnvironmentResult { .. }
         | ProtocolResponse::Shutdown { .. }
         | ProtocolResponse::TestResult { .. } => {
             let exit_code = ExitCode::Fatal.as_process_code();

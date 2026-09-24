@@ -10,6 +10,9 @@ export interface GlobalCliOptions {
   debug: boolean;
 }
 
+/** E0 支持的 Shell 名称。 */
+export type ShellName = "bash" | "powershell" | "cmd";
+
 /** 解析成功的命令联合。 */
 export type ParsedCommand =
   | { kind: "help"; options: GlobalCliOptions }
@@ -18,6 +21,9 @@ export type ParsedCommand =
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
   | { kind: "test"; project?: string; timeoutMs?: number; options: GlobalCliOptions }
   | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; optimizationLevel: 0; args: readonly string[]; options: GlobalCliOptions }
+  | { kind: "venv"; name?: string; options: GlobalCliOptions }
+  | { kind: "shell-init"; shell: ShellName; options: GlobalCliOptions }
+  | { kind: "deactivate"; options: GlobalCliOptions }
   | { kind: "repl"; options: GlobalCliOptions };
 
 /** 参数解析异常。 */
@@ -58,6 +64,12 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     return parseTest(rest, options);
   }
   if (command === "build") return parseBuild(rest, options);
+  if (command === "venv") return parseVenv(rest, options);
+  if (command === "shell-init") return parseShellInit(rest, options);
+  if (command === "deactivate") {
+    if (rest.length > 0) throw new CliArgumentError("deactivate 不接受额外参数");
+    return { kind: "deactivate", options };
+  }
   if (command.endsWith(".xiao")) {
     if (rest.length > 0) throw new CliArgumentError("源码快捷运行只接受一个 .xiao 文件");
     return { kind: "run", file: command, options };
@@ -76,10 +88,31 @@ export function helpText(): string {
     "  xiao config [--global] <key.path> <value>",
     "  xiao test [project] [--timeout <ms>]     运行项目 tests/**/*.xiao",
     "  xiao build -o <output> <file.xiao> [-debug] [--emit-llvm <path>] [--json]",
+    "  xiao venv [name]                         创建项目环境并输出激活提示",
+    "  xiao shell-init <bash|powershell|cmd>    输出一次性 Shell 钩子",
+    "  xiao deactivate                          取消当前 Shell 环境激活",
     "  xiao --help | --version",
     "",
     "当前阶段不启动 REPL；无参数或 --inLF 会给出稳定的未实现诊断。",
   ].join("\n") + "\n";
+}
+
+/** 解析环境创建命令；名称为空时使用冻结的默认环境。 */
+function parseVenv(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  if (args.length > 1) throw new CliArgumentError("venv 最多接受一个环境名称");
+  const name = args[0];
+  if (name !== undefined && name.startsWith("-")) throw new CliArgumentError("venv 环境名称不能以选项开头");
+  return name === undefined ? { kind: "venv", options } : { kind: "venv", name, options };
+}
+
+/** 解析一次性 Shell 钩子输出命令。 */
+function parseShellInit(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  if (args.length !== 1) throw new CliArgumentError("shell-init 需要且只需要一个 Shell 名称");
+  const shell = args[0].toLowerCase();
+  if (shell === "bash") return { kind: "shell-init", shell: "bash", options };
+  if (shell === "powershell" || shell === "pwsh") return { kind: "shell-init", shell: "powershell", options };
+  if (shell === "cmd" || shell === "cmd.exe") return { kind: "shell-init", shell: "cmd", options };
+  throw new CliArgumentError("shell-init 仅支持 bash、powershell/pwsh 或 cmd/cmd.exe");
 }
 
 /** 解析项目测试命令；选项必须留在命令分支内，不能静默成为项目路径。 */

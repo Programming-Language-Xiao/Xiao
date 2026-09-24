@@ -308,6 +308,25 @@ pub enum ProtocolRequest {
         #[serde(default)]
         config_text: Option<String>,
     },
+    /// 基于已规范化配置和工具链描述生成环境指纹元数据。
+    Environment {
+        /// 请求编号。
+        request_id: String,
+        /// 协议版本。
+        protocol_version: u16,
+        /// 统一核心版本。
+        core_version: u32,
+        /// 项目根目录；只作为环境布局来源，不进入指纹。
+        project_root: String,
+        /// 可选逻辑环境名称；省略时使用 `venv`。
+        logical_name: Option<String>,
+        /// 可选项目配置源码；仅解析为静态配置树。
+        config_text: Option<String>,
+        /// 目标平台描述。
+        target: ProtocolTarget,
+        /// 工具链路径与版本描述。
+        toolchain: ToolchainSpec,
+    },
     /// 请求取消另一个正在执行的请求。
     Cancel {
         /// 取消消息自身的编号。

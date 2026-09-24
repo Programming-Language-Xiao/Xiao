@@ -88,6 +88,71 @@ fn hello_advertises_test_capability() {
         panic!("hello must produce hello response");
     };
     assert!(capabilities.iter().any(|capability| capability == "test"));
+    assert!(
+        capabilities
+            .iter()
+            .any(|capability| capability == "environment")
+    );
+}
+
+#[test]
+/// 环境请求只消费静态配置和显式工具链，返回稳定且不含项目绝对路径的元数据。
+fn environment_request_generates_stable_metadata() {
+    let request = || ProtocolRequest::Environment {
+        request_id: "environment-1".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        project_root: "C:/workspace/project".to_owned(),
+        logical_name: Some("dev".to_owned()),
+        config_text: Some("[project]\nname = \"demo\"\nversion = \"0.1.0\"\n".to_owned()),
+        target: ProtocolTarget::host(),
+        toolchain: ToolchainSpec {
+            clang: "clang".to_owned(),
+            versions: ToolchainVersionsSpec {
+                clang: "clang 18".to_owned(),
+                ..ToolchainVersionsSpec::default()
+            },
+            ..ToolchainSpec::default()
+        },
+    };
+    let first = dispatch(request());
+    let second = dispatch(request());
+    let ProtocolResponse::EnvironmentResult { metadata, .. } = first else {
+        panic!("环境请求应返回元数据");
+    };
+    let ProtocolResponse::EnvironmentResult {
+        metadata: second_metadata,
+        ..
+    } = second
+    else {
+        panic!("环境请求应返回元数据");
+    };
+    assert_eq!(metadata, second_metadata);
+    assert_eq!(metadata.logical_name, "dev");
+    assert_eq!(metadata.directory_name, "dev");
+    assert!(!metadata.config_fingerprint.is_empty());
+    assert!(!metadata.toolchain_fingerprint.is_empty());
+    assert!(!metadata.target_fingerprint.is_empty());
+    assert!(!metadata.environment_fingerprint.is_empty());
+    assert!(
+        !serde_json::to_string(&metadata)
+            .expect("元数据应可编码")
+            .contains("C:/workspace/project")
+    );
+
+    let mut default_request = request();
+    if let ProtocolRequest::Environment { logical_name, .. } = &mut default_request {
+        *logical_name = None;
+    }
+    let ProtocolResponse::EnvironmentResult {
+        metadata: default_metadata,
+        ..
+    } = dispatch(default_request)
+    else {
+        panic!("默认环境请求应返回元数据");
+    };
+    assert_eq!(default_metadata.logical_name, "venv");
+    assert_eq!(default_metadata.directory_name, ".venv");
 }
 
 #[test]

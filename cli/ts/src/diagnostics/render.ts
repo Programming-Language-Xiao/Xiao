@@ -8,6 +8,7 @@ import { CoreClientError } from "../protocol/client.ts";
 import { CliConfigError } from "../config/editor.ts";
 import { CoreDiscoveryError } from "../platform/core.ts";
 import { ToolchainDiscoveryError } from "../platform/toolchain.ts";
+import { EnvironmentCommandError } from "../environments/index.ts";
 
 /** 渲染模式。 */
 export interface DiagnosticRenderOptions {
@@ -170,6 +171,14 @@ function normalizeCliError(error: unknown): NormalizedCliError {
       message: error.message.replace(`${error.code}: `, ""),
       details: { ...error.details, candidates: error.candidates },
       exitCode: CLI_EXIT_CODES.infrastructure,
+    };
+  }
+  if (error instanceof EnvironmentCommandError) {
+    return {
+      code: error.code,
+      message: error.message.replace(`${error.code}: `, ""),
+      details: error.details,
+      exitCode: error.exitCode,
     };
   }
   if (error instanceof CliConfigError) return { code: error.code, message: error.message.replace(`${error.code}: `, ""), details: { ...error.details, path: error.path }, exitCode: CLI_EXIT_CODES.config };

@@ -27,6 +27,8 @@ pub use error::{CodegenError, Result};
 pub use ir::{CodegenOptions, EntryObservation, LlvmModule, NativeStartup, validate_program};
 /// 目标字节序、对象格式和规范化目标描述。
 pub use target::{Endian, ObjectFormat, TargetDescription};
+/// 计算跨模块复用的稳定 FNV-1a 文本哈希。
+pub use text::stable_hash;
 /// 外部 LLVM 工具链描述、版本和构建指纹。
 pub use toolchain::{
     Toolchain, ToolchainFingerprint, ToolchainVersions, parse_native_static_libraries,

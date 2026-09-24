@@ -29,6 +29,7 @@ xiao-ir = { path = "../xiao-ir" }
 xiao-bytecode = { path = "../xiao-bytecode" }
 xiao-vm = { path = "../xiao-vm" }
 xiao-codegen-llvm = { path = "../xiao-codegen-llvm" }
+xiao-package = { path = "../xiao-package" }
 xiao-runtime = { path = "../xiao-runtime" }
 xiao-runtime-abi = { path = "../xiao-runtime-abi" }
 serde = { version = "1.0", features = ["derive"] }

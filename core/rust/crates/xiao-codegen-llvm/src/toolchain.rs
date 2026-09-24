@@ -11,6 +11,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::error::{CodegenError, Result};
 use crate::target::TargetDescription;
+use crate::text::stable_hash;
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 
 /// 外部工具链版本清单。
@@ -183,8 +184,8 @@ impl Toolchain {
             self.versions.rustc.as_deref().unwrap_or("<none>")
         );
         ToolchainFingerprint(format!(
-            "xiao-fnv1a64-{:016x}",
-            fnv1a64(canonical.as_bytes())
+            "xiao-fnv1a64-{}",
+            stable_hash(canonical.as_bytes())
         ))
     }
 
@@ -882,20 +883,10 @@ impl Drop for TempFile {
     }
 }
 
-/// 计算工具链指纹使用的 64 位 FNV-1a 哈希。
-fn fnv1a64(bytes: &[u8]) -> u64 {
-    let mut hash = 0xcbf29ce484222325_u64;
-    for byte in bytes {
-        hash ^= u64::from(*byte);
-        hash = hash.wrapping_mul(0x100000001b3);
-    }
-    hash
-}
-
 /// 计算 Runtime 静态库内容指纹；路径变化不会导致无意义失配。
 fn runtime_fingerprint(path: &Path) -> String {
     match fs::read(path) {
-        Ok(bytes) => format!("{:016x}", fnv1a64(&bytes)),
+        Ok(bytes) => stable_hash(&bytes),
         Err(_) => "<unreadable>".to_owned(),
     }
 }

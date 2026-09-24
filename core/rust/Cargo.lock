@@ -172,6 +172,7 @@ dependencies = [
  "xiao-ir",
  "xiao-lifetime",
  "xiao-modules",
+ "xiao-package",
  "xiao-runtime",
  "xiao-runtime-abi",
  "xiao-source",
@@ -229,6 +230,7 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "xiao-codegen-llvm",
  "xiao-config",
  "xiao-diagnostics",
  "xiao-modules",

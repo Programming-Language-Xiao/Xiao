@@ -15,8 +15,9 @@ D1 首批只实现 `config.xiao` 本地路径依赖的静态读取和包身份�
 ## 模块放置
 
 `src/model.rs` 放置包身份、来源和图模型，`src/resolver.rs` 读取本地包配置并解析图，
-`src/diagnostics.rs` 放置 `X05-PACKAGE-*` 稳定编号。源适配器、联邦索引、求解器、锁文件
-和环境物化仍放在后续批次；命令参数和提示符放在 CLI。
+`src/environment.rs` 消费规范化配置文档并生成环境布局、稳定指纹和最小元数据，
+`src/diagnostics.rs` 放置 `X05-PACKAGE-*` 与 `X05-ENV-*` 稳定编号。源适配器、联邦索引、
+求解器、锁文件和 CLI 命令属于后续批次；命令参数和提示符放在 CLI。
 
 ## 禁止事项
 

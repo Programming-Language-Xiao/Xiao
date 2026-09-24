@@ -168,3 +168,90 @@ fn malformed_inputs_do_not_panic() {
         assert!(result.expect("catch_unwind 已确认成功").is_err());
     }
 }
+
+#[test]
+/// 配置指纹输入只依赖规范化值和确定性顺序，不包含源码区间。
+fn canonical_fingerprint_input_is_stable_and_span_free() {
+    use std::collections::BTreeMap;
+
+    use xiao_config::{ConfigDocument, ConfigEntry, ConfigTable, ConfigValue};
+    use xiao_source::SourceSpan;
+
+    let first_span = SourceSpan::new(1, 2).expect("valid span");
+    let second_span = SourceSpan::new(100, 200).expect("valid span");
+    let mut entries = BTreeMap::new();
+    entries.insert(
+        "name".to_owned(),
+        ConfigEntry::new("name", ConfigValue::String("demo".to_owned()), first_span),
+    );
+    let mut tables = BTreeMap::new();
+    tables.insert(
+        "project".to_owned(),
+        ConfigTable::new("project", entries, first_span),
+    );
+    let first = ConfigDocument::new(tables, first_span);
+
+    let mut second_entries = BTreeMap::new();
+    second_entries.insert(
+        "name".to_owned(),
+        ConfigEntry::new("name", ConfigValue::String("demo".to_owned()), second_span),
+    );
+    let mut second_tables = BTreeMap::new();
+    second_tables.insert(
+        "project".to_owned(),
+        ConfigTable::new("project", second_entries, second_span),
+    );
+    let second = ConfigDocument::new(second_tables, second_span);
+
+    assert_eq!(
+        first.canonical_fingerprint_input(),
+        second.canonical_fingerprint_input()
+    );
+}
+
+#[test]
+/// 配置指纹输入必须保留键顺序语义和每种静态值的类型标签。
+fn canonical_fingerprint_input_distinguishes_order_and_value_types() {
+    use std::collections::BTreeMap;
+
+    use xiao_config::{ConfigDocument, ConfigEntry, ConfigTable, ConfigValue};
+    use xiao_source::SourceSpan;
+
+    let span = SourceSpan::new(1, 2).expect("valid span");
+    let mut first_entries = BTreeMap::new();
+    first_entries.insert(
+        "alpha".to_owned(),
+        ConfigEntry::new("alpha", ConfigValue::Integer(1), span),
+    );
+    first_entries.insert(
+        "beta".to_owned(),
+        ConfigEntry::new("beta", ConfigValue::String("1".to_owned()), span),
+    );
+    let mut first_tables = BTreeMap::new();
+    first_tables.insert(
+        "project".to_owned(),
+        ConfigTable::new("project", first_entries, span),
+    );
+    let first = ConfigDocument::new(first_tables, span);
+
+    let mut second_entries = BTreeMap::new();
+    second_entries.insert(
+        "alpha".to_owned(),
+        ConfigEntry::new("alpha", ConfigValue::String("1".to_owned()), span),
+    );
+    second_entries.insert(
+        "beta".to_owned(),
+        ConfigEntry::new("beta", ConfigValue::Integer(1), span),
+    );
+    let mut second_tables = BTreeMap::new();
+    second_tables.insert(
+        "project".to_owned(),
+        ConfigTable::new("project", second_entries, span),
+    );
+    let second = ConfigDocument::new(second_tables, span);
+
+    assert_ne!(
+        first.canonical_fingerprint_input(),
+        second.canonical_fingerprint_input()
+    );
+}

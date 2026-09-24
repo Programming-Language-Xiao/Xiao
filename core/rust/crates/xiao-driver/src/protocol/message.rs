@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use xiao_bytecode::FORMAT_VERSION;
 use xiao_codegen_llvm::CODEGEN_VERSION;
+use xiao_package::EnvironmentMetadata;
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 
 use crate::run::DRIVER_VERSION;
@@ -271,6 +272,13 @@ pub enum ProtocolResponse {
         value: Option<ProtocolValue>,
         /// 可选原生构建产物摘要。
         artifact: Option<ProtocolArtifact>,
+    },
+    /// 环境指纹元数据生成成功。
+    EnvironmentResult {
+        /// 对应请求编号。
+        request_id: String,
+        /// 规范化配置、工具链和目标指纹。
+        metadata: EnvironmentMetadata,
     },
     /// 项目测试完成结果；`tests` 顺序与请求中的源码顺序一致。
     TestResult {

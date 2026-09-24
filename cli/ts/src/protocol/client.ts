@@ -13,6 +13,7 @@ import {
   type RunRequest,
   type TestRequest,
   type BuildRequest,
+  type EnvironmentRequest,
   type ToolchainSpec,
 } from "./messages.ts";
 import { discoverCoreWithMetadata, hostTarget, type CoreDiscoveryOptions, type CoreDiscoverySource } from "../platform/core.ts";
@@ -81,6 +82,22 @@ export interface SourceBuildOptions {
   diagnostics?: DiagnosticConfig | null;
   /** 已读取的 config.xiao 原文。 */
   configText?: string | null;
+  /** 取消信号。 */
+  signal?: AbortSignal;
+}
+
+/** 环境指纹请求的便捷参数。 */
+export interface EnvironmentMetadataOptions {
+  /** 项目根目录；只用于构造布局，不进入指纹。 */
+  projectRoot: string;
+  /** 逻辑环境名称。 */
+  logicalName?: string | null;
+  /** 已读取的 config.xiao 原文。 */
+  configText?: string | null;
+  /** 目标条件。 */
+  target?: ProtocolTarget;
+  /** 工具链发现结果。 */
+  toolchain: ToolchainSpec;
   /** 取消信号。 */
   signal?: AbortSignal;
 }
@@ -216,6 +233,22 @@ export class ProtocolClient {
     return this.call(request, options.signal);
   }
 
+  /** 请求 Rust 核心生成规范化环境元数据。 */
+  async environmentMetadata(options: EnvironmentMetadataOptions): Promise<CoreCallResult> {
+    const request: EnvironmentRequest = {
+      type: "environment",
+      request_id: requestId("environment"),
+      protocol_version: PROTOCOL_VERSION,
+      core_version: CORE_VERSION,
+      project_root: options.projectRoot,
+      logical_name: options.logicalName ?? null,
+      config_text: options.configText ?? null,
+      target: options.target ?? hostTarget(),
+      toolchain: options.toolchain,
+    };
+    return this.call(request, options.signal);
+  }
+
   /** 按传入顺序批量发送项目测试源码。 */
   async testSources(sources: readonly SourceTestCase[], options: SourceTestOptions = {}): Promise<CoreCallResult> {
     const target = options.target ?? hostTarget();
@@ -244,7 +277,7 @@ export class ProtocolClient {
   }
 
   /** 使用已经规范化的协议运行请求发送一次调用。 */
-  async call(request: RunRequest | TestRequest | BuildRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  async call(request: RunRequest | TestRequest | BuildRequest | EnvironmentRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     const discovery = await discoverCoreWithMetadata(this.options);
     const corePath = discovery.path;

@@ -5,7 +5,7 @@
 
 ## 工程期
 
-11X0-F（协议职责解耦）。本目录记录 X0-A 协议的九个实现模块及其固定依赖方向；拆分不
+11X0-F（协议职责解耦）。本目录记录 X0-A 协议的十个实现模块及其固定依赖方向；拆分不
 新增字段、命令或语义，Windows 原生验证结果以父级交接文档为准。
 
 职责与允许依赖固定如下：
@@ -20,9 +20,10 @@
 | `run.rs` | 前端到 VM 的请求组装、诊断会话和运行响应 | `mapping`、`message`、`request`、驱动器 |
 | `build.rs` | 工具链准备、原生构建及附属产物整理 | `config`、`mapping`、`message`、`request`、`run` |
 | `config.rs` | `config.xiao` 静态固化与旁置 JSON 写入 | `message`、`request`、配置 crate |
-| `service.rs` | 分发、取消登记、worker、stdin/stdout 服务和崩溃响应 | 以上所有协议子模块 |
+| `service.rs` | 分发、环境元数据请求、取消登记、worker、stdin/stdout 服务和崩溃响应 | 以上所有协议子模块、`xiao-package` 环境接口 |
 
-依赖只能沿 `frame/message/request → mapping/validate → run/build/config → service` 向上流动。
+依赖只能沿 `frame/message/request → mapping/validate → run/build/config → service` 向上流动；
+环境请求由 `service` 消费 `xiao-package` 的纯元数据接口，不把包解析或用户代码执行带入协议叶子。
 叶子不得依赖服务层或门面，`run` 与 `build` 不得横向依赖彼此，只有 `service` 可以持有
 `std::thread`、`Arc` 和共享输出锁。`protocol_architecture_tests.rs` 以源码级断言锁住
 这些边界；`protocol_tests.rs` 与 `tests/spec/11x0-protocol/` 仍是协议行为和跨语言夹具的

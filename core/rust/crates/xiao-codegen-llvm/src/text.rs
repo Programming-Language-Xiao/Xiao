@@ -6,7 +6,7 @@ pub(crate) fn escape_llvm(text: &str) -> String {
 }
 
 /// 计算用于构建指纹的稳定 FNV-1a 文本。
-pub(crate) fn stable_hash(bytes: &[u8]) -> String {
+pub fn stable_hash(bytes: &[u8]) -> String {
     let mut hash = 0xcbf29ce484222325_u64;
     for byte in bytes {
         hash ^= u64::from(*byte);

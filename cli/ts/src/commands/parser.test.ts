@@ -33,6 +33,18 @@ describe("xiao 命令解析", () => {
     expect(() => parseArguments(["build", "main.xiao", "-O1"])).toThrow("X11-CLI-ARG-001");
   });
 
+  test("环境命令解析默认名、显式名、Shell 和取消激活", () => {
+    expect(parseArguments(["venv"])).toMatchObject({ kind: "venv" });
+    expect(parseArguments(["venv", "dev", "--color=never"])).toMatchObject({ kind: "venv", name: "dev" });
+    expect(parseArguments(["shell-init", "bash"])).toMatchObject({ kind: "shell-init", shell: "bash" });
+    expect(parseArguments(["shell-init", "pwsh"])).toMatchObject({ kind: "shell-init", shell: "powershell" });
+    expect(parseArguments(["shell-init", "cmd.exe"])).toMatchObject({ kind: "shell-init", shell: "cmd" });
+    expect(parseArguments(["deactivate"])).toMatchObject({ kind: "deactivate" });
+    expect(() => parseArguments(["venv", "one", "two"])).toThrow(CliArgumentError);
+    expect(() => parseArguments(["shell-init", "zsh"])).toThrow(CliArgumentError);
+    expect(() => parseArguments(["deactivate", "dev"])).toThrow(CliArgumentError);
+  });
+
   test("非法参数不依赖本地化文本判断", () => {
     expect(() => parseArguments(["run"])).toThrow(CliArgumentError);
     expect(() => parseArguments(["--color=rainbow"])).toThrow("X11-CLI-ARG-001");

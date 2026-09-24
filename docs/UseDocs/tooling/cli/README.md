@@ -5,7 +5,7 @@
 ## 页面规划
 
 `run`、`build`、`test`、`config`、`venv`、`sync`、`install`、`.xiaoc` 和 `.xar` 分别维护页面；
-当前已提供 [`xiao test`](test.md)、[`xiao build`](build.md) 和 `-debug` 页面。优化级别未实现前
+当前已提供 [`xiao test`](test.md)、[`xiao build`](build.md)、[`xiao venv`](environments.md) 和 `-debug` 页面。优化级别未实现前
 不把占位参数写成可用命令。
 
 X0-B 已提供 [xiao run 与 CLI 外壳](shell.md)；X0-C 的[独立打包与核心发现](packaging.md)
@@ -25,6 +25,8 @@ X0-T 已接入 [`xiao test`](test.md)：它递归发现项目 `tests/**/*.xiao`�
 
 平台功能复现和环境门禁见[平台复现工具](platform-reproduction.md)。它只验证构建、核心发现、
 协议协商和项目测试链路，不把 Docker/WSL 功能证据写成裸机性能验收。
+
+11A-E0 的项目环境创建、一次性 Shell 钩子、提示符前缀和取消激活规则见[`xiao venv` 与环境激活](environments.md)。
 
 ## 下一步
 

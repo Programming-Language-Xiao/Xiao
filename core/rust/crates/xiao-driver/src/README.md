@@ -7,7 +7,7 @@
 
 X0-A 的 `protocol.rs` 是稳定门面，只负责公开重导出和协议常量；实现按职责放在
 `protocol/` 下的 `frame`、`message`、`request`、`mapping`、`validate`、`run`、`build`、
-`config`、`service` 九个模块。依赖方向固定为叶子类型/帧 → 映射与校验 → 运行/构建/配置
+`config`、`service` 十个模块。依赖方向固定为叶子类型/帧 → 映射与校验 → 运行/构建/配置
 → 服务分发，只有 `service` 持有线程和共享输出锁。协议仍提供长度前缀 JSON、统一
 `core_version` 协商、结构化错误/退出码/事件映射和可取消的 stdin/stdout 服务；
 `protocol_main.rs` 是 `xiao-core` 进程入口。协议只调用 `FrontendVmDriver`/`FrontendNativeDriver`，

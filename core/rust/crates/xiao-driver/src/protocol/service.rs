@@ -11,6 +11,7 @@ use std::thread::{self, JoinHandle};
 use serde_json::json;
 
 use super::build;
+use super::config::parse_environment_config;
 use super::frame::{FrameError, decode_frame, read_frame, write_frame};
 use super::mapping::{protocol_error_body, protocol_error_from_error};
 use super::message::{CORE_VERSION, CoreVersions, PROTOCOL_VERSION, ProtocolResponse};
@@ -22,6 +23,7 @@ use super::run::{protocol_error_response, run_request_response};
 use super::test::test_request_response;
 use super::validate::{validate_source, validate_target, validate_versions};
 use crate::run::{CancellationToken, ExitCode};
+use xiao_package::{EnvironmentLayout, build_environment_metadata};
 
 /// 从流读取并解码一条请求。
 pub fn read_request<R: Read>(reader: &mut R) -> Result<Option<ProtocolRequest>, FrameError> {
@@ -108,6 +110,25 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             config_text,
             &CancellationToken::new(),
         ),
+        ProtocolRequest::Environment {
+            request_id,
+            protocol_version,
+            core_version,
+            project_root,
+            logical_name,
+            config_text,
+            target,
+            toolchain,
+        } => environment_request_response(
+            request_id,
+            protocol_version,
+            core_version,
+            project_root,
+            logical_name,
+            config_text,
+            target,
+            toolchain,
+        ),
         ProtocolRequest::Cancel {
             request_id,
             protocol_version,
@@ -145,6 +166,7 @@ fn hello_response(
                 "run".to_owned(),
                 "test".to_owned(),
                 "build".to_owned(),
+                "environment".to_owned(),
                 "cancel".to_owned(),
             ],
             error: None,
@@ -195,6 +217,55 @@ fn build_request_response(
         config_text,
         cancellation,
     )
+}
+
+#[allow(clippy::too_many_arguments)]
+/// 校验环境请求并生成不含项目绝对路径的环境元数据。
+fn environment_request_response(
+    request_id: String,
+    protocol_version: u16,
+    core_version: u32,
+    project_root: String,
+    logical_name: Option<String>,
+    config_text: Option<String>,
+    target: ProtocolTarget,
+    toolchain: ToolchainSpec,
+) -> ProtocolResponse {
+    if let Err(error) = validate_versions(protocol_version, core_version) {
+        return protocol_error_response(Some(request_id), &error);
+    }
+    if project_root.trim().is_empty() {
+        return protocol_error_response(
+            Some(request_id),
+            &ProtocolError::request("project_root", "项目根目录不能为空"),
+        );
+    }
+    let target_description = match target.to_target() {
+        Ok(target) => target,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let document = match parse_environment_config(config_text.as_deref()) {
+        Ok(document) => document,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let layout = match EnvironmentLayout::for_project(&project_root, logical_name.as_deref()) {
+        Ok(layout) => layout,
+        Err(error) => {
+            return protocol_error_response(
+                Some(request_id),
+                &ProtocolError::request("logical_name", error.to_string()),
+            );
+        }
+    };
+    let toolchain = match build::build_toolchain(&toolchain, &target_description) {
+        Ok(toolchain) => toolchain,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let metadata = build_environment_metadata(&layout, &document, &toolchain, &target_description);
+    ProtocolResponse::EnvironmentResult {
+        request_id,
+        metadata,
+    }
 }
 
 /// 校验取消请求并返回协议层取消结果。
@@ -314,6 +385,7 @@ pub(super) fn worker_response(
             config_text,
             &token,
         ),
+        request @ ProtocolRequest::Environment { .. } => dispatch(request),
         other => dispatch(other),
     }
 }
@@ -385,6 +457,15 @@ where
                 }
                 spawn_worker(request, &writer, &cancellations, &mut workers);
             }
+            request @ ProtocolRequest::Environment { .. } => {
+                if !negotiated {
+                    let request_id = request_id_for(&request).expect("environment request id");
+                    let error = ProtocolError::version("必须先完成 hello 版本协商");
+                    write_response(&writer, &protocol_error_response(Some(request_id), &error));
+                    continue;
+                }
+                write_response(&writer, &dispatch(request));
+            }
         }
     }
     for worker in workers {
@@ -408,6 +489,7 @@ fn request_id_for(request: &ProtocolRequest) -> Option<String> {
         ProtocolRequest::Run { request_id, .. }
         | ProtocolRequest::Test { request_id, .. }
         | ProtocolRequest::Build { request_id, .. }
+        | ProtocolRequest::Environment { request_id, .. }
         | ProtocolRequest::Cancel { request_id, .. }
         | ProtocolRequest::Shutdown { request_id, .. } => Some(request_id.clone()),
         ProtocolRequest::Hello { .. } => None,

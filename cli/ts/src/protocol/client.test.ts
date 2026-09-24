@@ -55,7 +55,7 @@ class FakeCore extends EventEmitter {
     if (request.type === "hello") {
       this.stdout.write(Buffer.from(encodeFrame({
         type: "hello", request_id: request.request_id, accepted: true, protocol_version: 1,
-        core_version: 1, versions: {}, capabilities: ["run"], error: null,
+        core_version: 1, versions: {}, capabilities: ["run", "environment"], error: null,
       })));
     } else if (request.type === "run") {
       this.stdout.write(Buffer.from(encodeFrame({
@@ -86,6 +86,22 @@ class FakeCore extends EventEmitter {
             diagnostics: [], report: null, events: [], metrics: null, value: null, error: null,
           };
         }),
+      })));
+    } else if (request.type === "environment") {
+      const logicalName = typeof request.logical_name === "string" ? request.logical_name : "venv";
+      this.stdout.write(Buffer.from(encodeFrame({
+        type: "environment_result",
+        request_id: request.request_id,
+        metadata: {
+          metadata_version: 1,
+          logical_name: logicalName,
+          directory_name: logicalName === "venv" ? ".venv" : logicalName,
+          config_fingerprint: "config-test",
+          toolchain_fingerprint: "toolchain-test",
+          target_fingerprint: "target-test",
+          environment_fingerprint: "environment-test",
+          lockfile_summary: null,
+        },
       })));
     } else if (request.type === "shutdown") {
       this.stdout.write(Buffer.from(encodeFrame({ type: "shutdown", request_id: request.request_id })));
@@ -185,5 +201,35 @@ describe("协议客户端", () => {
         { module: "tests/a-first", path: "tests/a-first.xiao" },
       ],
     });
+  });
+
+  test("environmentMetadata 传递项目布局、配置和工具链并返回元数据", async () => {
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      overridePath: process.execPath,
+      spawnProcess: () => {
+        fake = new FakeCore();
+        return fake as never;
+      },
+    });
+    const result = await client.environmentMetadata({
+      projectRoot: "C:/project",
+      logicalName: "dev",
+      configText: "[project]\nname = \"demo\"\n",
+      target: { triple: "x86_64-pc-windows-msvc", pointer_width: 64, endian: "little", object_format: "coff" },
+      toolchain: {
+        clang: "clang", llvm_as: null, llc: null, runtime_library: null,
+        native_static_libraries: [], rustc: null,
+        versions: { clang: "clang 18", llvm_as: null, llc: null, rustc: null },
+      },
+    });
+    expect(result.response.type).toBe("environment_result");
+    expect(fake?.requests.find((value) => value.type === "environment")).toMatchObject({
+      type: "environment",
+      project_root: "C:/project",
+      logical_name: "dev",
+      config_text: "[project]\nname = \"demo\"\n",
+    });
+    expect((result.response as { metadata: { environment_fingerprint: string } }).metadata.environment_fingerprint).toBe("environment-test");
   });
 });

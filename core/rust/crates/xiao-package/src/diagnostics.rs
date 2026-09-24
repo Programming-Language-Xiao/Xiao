@@ -14,6 +14,13 @@ pub const PACKAGE_CONFIG_READ_CODE: &str = "X05-PACKAGE-004";
 /// 包配置缺少可构造身份的元数据时使用的编号。
 pub const PACKAGE_INVALID_METADATA_CODE: &str = "X05-PACKAGE-005";
 
+/// 环境目录已经存在或重复创建时使用的编号。
+pub const ENVIRONMENT_ALREADY_EXISTS_CODE: &str = "X05-ENV-001";
+/// 环境逻辑名称或目录名称非法时使用的编号。
+pub const ENVIRONMENT_INVALID_NAME_CODE: &str = "X05-ENV-002";
+/// 环境目录或元数据写入失败时使用的编号。
+pub const ENVIRONMENT_WRITE_CODE: &str = "X05-ENV-003";
+
 /// 包身份冲突诊断编号的简短别名。
 pub const IDENTITY_CONFLICT_CODE: &str = PACKAGE_IDENTITY_CONFLICT_CODE;
 /// 缺失依赖诊断编号的简短别名。

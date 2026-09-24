@@ -132,6 +132,19 @@ export interface BuildRequest {
   config_text?: string | null;
 }
 
+/** 环境指纹请求；项目根只用于布局，不进入任何指纹字段。 */
+export interface EnvironmentRequest {
+  type: "environment";
+  request_id: string;
+  protocol_version: number;
+  core_version: number;
+  project_root: string;
+  logical_name: string | null;
+  config_text: string | null;
+  target: ProtocolTarget;
+  toolchain: ToolchainSpec;
+}
+
 /** 取消请求。 */
 export interface CancelRequest {
   type: "cancel";
@@ -150,7 +163,7 @@ export interface ShutdownRequest {
 }
 
 /** 所有请求消息的联合类型。 */
-export type ProtocolRequest = HelloRequest | RunRequest | TestRequest | BuildRequest | CancelRequest | ShutdownRequest;
+export type ProtocolRequest = HelloRequest | RunRequest | TestRequest | BuildRequest | EnvironmentRequest | CancelRequest | ShutdownRequest;
 
 /** 机器可读协议错误。 */
 export interface ProtocolErrorBody {
@@ -187,6 +200,25 @@ export interface ResultResponse {
   metrics: unknown | null;
   value: unknown | null;
   artifact: unknown | null;
+}
+
+/** 环境指纹元数据。 */
+export interface EnvironmentMetadata {
+  metadata_version: number;
+  logical_name: string;
+  directory_name: string;
+  config_fingerprint: string;
+  toolchain_fingerprint: string;
+  target_fingerprint: string;
+  environment_fingerprint: string;
+  lockfile_summary: string | null;
+}
+
+/** 环境指纹生成结果。 */
+export interface EnvironmentResultResponse {
+  type: "environment_result";
+  request_id: string;
+  metadata: EnvironmentMetadata;
 }
 
 /** 一个项目测试用例的结构化执行结果。 */
@@ -273,7 +305,7 @@ export interface ShutdownResponse {
 }
 
 /** 所有响应消息的联合类型。 */
-export type ProtocolResponse = HelloResponse | ResultResponse | TestResultResponse | ErrorResponse | CancelledResponse | ShutdownResponse;
+export type ProtocolResponse = HelloResponse | ResultResponse | EnvironmentResultResponse | TestResultResponse | ErrorResponse | CancelledResponse | ShutdownResponse;
 
 /** 判断一个值是否具有字符串字段。 */
 export function hasStringField(value: unknown, field: string): value is Record<string, unknown> & Record<string, string> {

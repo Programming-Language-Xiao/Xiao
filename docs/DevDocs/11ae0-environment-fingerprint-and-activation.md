@@ -1,5 +1,8 @@
 # 11A-E0. 配置与环境指纹
 
+> **状态：已完成。** E0 的配置/环境元数据、`xiao venv`、基础 Shell 钩子、协议接线、测试和
+> UseDocs 已落地；完整 Shell 矩阵、profile 安装、锁文件和同步仍按本文边界留给后续阶段。
+
 > **11A 的第二批。** 退出条件四条（`12-tests-and-milestones.md:733-740`）：
 > ① 环境管理器消费 D0 产出的规范化配置声明树，不执行项目代码；② 配置/工具链/目标条件
 > 有稳定指纹，环境元数据为锁文件摘要预留字段；③ `xiao venv` 的目录规则；
@@ -84,6 +87,17 @@ environments/      只有 README，且**不在** module-registry.json 的 ts.xia
 颜色规则也冻结为：非 TTY、`NO_COLOR` 或 `--color=never` 时保留纯文本 `$环境名$ ` 前缀，不输出 ANSI；可着色终端才使用绿色 ANSI。终端测试不引入 `portable-pty`，先使用可注入的等价 Shell 状态模型覆盖激活、重复激活、切换、取消和颜色降级；真实父终端测试留给 E3D，并按 10D 使用显式 `#[ignore]` 门控。
 
 配置指纹不采用 RFC 8785/JCS。`xiao-package` 消费 D0 已规范化的 `ConfigDocument`，通过版本化、带长度边界的类型化规范编码生成配置输入；源码区间和绝对路径均排除。RFC 8785/JCS 继续只作为后续包源索引的候选规范。工具链指纹复用 `Toolchain::fingerprint`，目标字段复用 `TargetDescription::fingerprint_fields`，因此依赖方向图登记 `xiao-package → xiao-codegen-llvm`，不在调用方复制第二套哈希输入。
+
+### 3.1 实现收口（2026-09-24）
+
+- `xiao-package::environment` 已提供环境布局、配置/工具链/目标/汇总指纹和元数据 JSON；配置只消费
+  `ConfigDocument` 的规范化输入，未执行项目代码或接入网络。
+- Rust 核心新增 `environment` 请求和 `environment_result` 响应；CLI `xiao venv` 创建目录后请求真实
+  元数据，再写入 `.xiao-environment.json`，不再写入空指纹占位值。
+- Bash、PowerShell 5.1 兼容钩子和 `cmd.exe` 降级路径已接入；提示符模型覆盖重复激活、切换、取消和
+  颜色降级。真实父终端/完整 Shell 矩阵仍按冻结决策留给 E3D。
+- 已覆盖 Rust 协议、`xiao-package`、CLI 客户端和命令集成的定向回归；伪终端依赖未引入，真实终端测试
+  仍使用后续阶段的显式门控策略。
 
 | # | 条件 | 现状 | 判定 |
 | --- | --- | --- | --- |
@@ -331,7 +345,7 @@ fn fnv1a64(bytes: &[u8]) -> u64 { /* FNV-1a 逐字节 */ }
 
 ---
 
-## 十一、验收
+## 十一、验收（已完成）
 
 1. **§二 的 5 条已冻结**，且写进了 `11a`/`00-decisions`，不是只写在本文档；
 2. **`00a` 的依赖方向图含 E0 引入的边**（或写明为何不引入）；
