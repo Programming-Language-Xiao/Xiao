@@ -63,9 +63,11 @@ xiao-ir
 
 xiao-config ─┐
 xiao-modules ─┴→ xiao-package → xiao-driver (protocol)
+xiao-package ─→ xiao-codegen-llvm (共享工具链/稳定哈希接口)
 ```
 
 图示表达的是职责方向，不是要求所有 crate 直接互相依赖。共享数据结构应放在最小的稳定层；平台、归档和 CLI 不得反向进入语法或类型层。
+11A-E0 的跨层边只允许消费 `xiao-codegen-llvm` 暴露的纯指纹辅助和目标/工具链描述，不得把 LLVM 构建流程、项目代码执行或后端状态反向带入 `xiao-package`。
 
 ### 高度耦合禁止项（全工程硬约束）
 

@@ -71,6 +71,20 @@ environments/      只有 README，且**不在** module-registry.json 的 ts.xia
 
 ## 三、E0 四条件的实现基础
 
+### 3.0 冻结结果（2026-09-24）
+
+§二 的五条阻塞决策现已冻结：
+
+1. 初始化命令是 `xiao shell-init <shell>`，只输出一次性、幂等、由用户显式求值的钩子脚本；E0 不自动修改 profile。
+2. 取消激活命令是 `xiao deactivate`。钩子保存原提示符，重复激活和切换前移除旧的 `$环境名$ ` 前缀，取消时恢复原提示符。
+3. Bash 和 PowerShell 是 E0 的基础支持样本，PowerShell 必须兼容 5.1；`cmd.exe` 明确走不支持钩子的降级路径，不修改注册表、不宣称自动激活，并输出初始化或手工激活提示。
+4. `venv`/`sync` 以向上发现的 `config.xiao` 所在项目根为目录基准，找不到配置时回退当前目录；默认环境为逻辑名 `venv`、目录 `.venv`，显式名称同时作为逻辑名和目录名。
+5. E0 只建立基础钩子协议与闭环，完整 Shell 矩阵、profile 安装和生产级取消激活命令归 E3D；E0 至少验证一种支持钩子的 Shell 和一种降级路径。
+
+颜色规则也冻结为：非 TTY、`NO_COLOR` 或 `--color=never` 时保留纯文本 `$环境名$ ` 前缀，不输出 ANSI；可着色终端才使用绿色 ANSI。终端测试不引入 `portable-pty`，先使用可注入的等价 Shell 状态模型覆盖激活、重复激活、切换、取消和颜色降级；真实父终端测试留给 E3D，并按 10D 使用显式 `#[ignore]` 门控。
+
+配置指纹不采用 RFC 8785/JCS。`xiao-package` 消费 D0 已规范化的 `ConfigDocument`，通过版本化、带长度边界的类型化规范编码生成配置输入；源码区间和绝对路径均排除。RFC 8785/JCS 继续只作为后续包源索引的候选规范。工具链指纹复用 `Toolchain::fingerprint`，目标字段复用 `TargetDescription::fingerprint_fields`，因此依赖方向图登记 `xiao-package → xiao-codegen-llvm`，不在调用方复制第二套哈希输入。
+
 | # | 条件 | 现状 | 判定 |
 | --- | --- | --- | --- |
 | **1** | 消费 D0 的配置树，不执行项目代码 | `ConfigDocument` 已就绪（D1 已消费过一次） | **有基础** |
