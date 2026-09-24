@@ -186,9 +186,11 @@
 
 它们与本债项**同型**（README 声称的 harness 实际不读夹具），建议同批更正：
 
-- `tests/spec/05-containers/README.md:6-10` 把
-  `xiao-syntax/tests/c0_containers.rs` 与 `c0_snapshots.rs` 列为"对应实现测试"，
-  **但两个文件都不读 JSON**（`c0_snapshots.rs:19,29` 用内联 `SourceFile::from_text`）；
+- `tests/spec/05-containers/README.md:6-10` 把**三个**文件列为"对应实现测试"：
+  `xiao-syntax/tests/c0_containers.rs`、`xiao-syntax/tests/c0_snapshots.rs`
+  与 `xiao-types/tests/c0_containers.rs`——**而它们都不读 JSON**
+  （`c0_snapshots.rs` 里 `grep "include_str|tests/spec|.json"` **零命中**，
+  全用内联 `SourceFile::from_text`）；
 - `tests/spec/04-types/README.md:3-4` 称"类型语义快照由 `xiao-types` 的测试入口验证"，
   **但全仓 `declarations.json` 只被 `xiao-syntax/tests/p2_snapshots.rs:34` 加载**，
   `xiao-types/` 下零命中。
