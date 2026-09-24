@@ -1,7 +1,7 @@
 /** 仓库路径安全、遍历和 README 最小结构工具。 */
 
 import { existsSync, lstatSync, readdirSync, readFileSync, realpathSync } from "node:fs";
-import { isAbsolute, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 
 import type { Diagnostic } from "./types.ts";
 
@@ -23,10 +23,28 @@ export function slashPath(value: string): string {
  * @returns 路径等于根目录或位于其子树时返回 `true`。
  */
 export function isInside(root: string, candidate: string): boolean {
-  const rootReal = resolve(root);
-  const candidateResolved = resolve(candidate);
+  const rootReal = canonicalPath(root);
+  const candidateResolved = canonicalPath(candidate);
   const rest = relative(rootReal, candidateResolved);
   return rest === "" || (!rest.startsWith(`..${sep}`) && rest !== "..");
+}
+
+/** 解析真实路径，同时保留尚不存在路径的仓库内判断能力。 */
+function canonicalPath(pathValue: string): string {
+  const resolved = resolve(pathValue);
+  let current = resolved;
+  const suffix: string[] = [];
+  while (!existsSync(current)) {
+    const parent = dirname(current);
+    if (parent === current) return resolved;
+    suffix.unshift(basename(current));
+    current = parent;
+  }
+  try {
+    return suffix.reduce((parent, segment) => join(parent, segment), realpathSync(current));
+  } catch {
+    return resolved;
+  }
 }
 
 /**

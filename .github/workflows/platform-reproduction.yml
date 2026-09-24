@@ -72,7 +72,13 @@ jobs:
 
       - name: Install Windows LLVM
         if: startsWith(matrix.name, 'windows-')
-        run: choco install llvm file --yes --no-progress
+        run: |
+          choco install llvm file --yes --no-progress
+          $llvmBin = Join-Path $env:ProgramFiles 'LLVM\bin'
+          if (-not (Test-Path -LiteralPath (Join-Path $llvmBin 'llvm-as.exe'))) {
+            throw "LLVM installation did not provide llvm-as.exe: $llvmBin"
+          }
+          Add-Content -Path $env:GITHUB_PATH -Value $llvmBin
 
       - name: Run Unix reproduction
         if: matrix.shell == 'bash'

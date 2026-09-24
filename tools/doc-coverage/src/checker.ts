@@ -1,9 +1,10 @@
 /** 文档覆盖率计算、阈值判定和报告数据模型。 */
 
 import { readdirSync, realpathSync } from "node:fs";
-import { join, relative, resolve, sep } from "node:path";
+import { join, relative, resolve } from "node:path";
 
 import { findRepositoryRoot, loadRepositoryManifest } from "../../repo-check/src/manifest.ts";
+import { isInside } from "../../repo-check/src/paths.ts";
 import { scanRustFiles } from "./rust-adapter.ts";
 import { scanTypeScriptFile } from "./typescript-adapter.ts";
 import type {
@@ -182,8 +183,7 @@ function discoverSourceFiles(root: string, roots: string[], extensions: string[]
     } catch {
       return;
     }
-    const normalizedRoot = resolve(root);
-    if (real !== normalizedRoot && !real.startsWith(`${normalizedRoot}${sep}`)) return;
+    if (!isInside(root, real)) return;
     if (visited.has(real)) return;
     visited.add(real);
     let entries;
