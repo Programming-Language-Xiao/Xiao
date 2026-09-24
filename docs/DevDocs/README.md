@@ -97,7 +97,7 @@
 | 10B | [N0-B Runtime ABI](10b-n0-runtime-abi.md) | 动态值的 ABI 表示、真实引用计数与 `Weak`、容器与表 ABI、正常路径的释放计划 | 已落地（ABI/容器/表/正常释放计划；异常展开留 N0-C） |
 | 10C | [原生 Runtime 链接缺陷修复交接](10c-native-runtime-link-fix.md) | `LNK1120` 的完整证据、Rust staticlib 原生库查询、MSVC ABI 调用约定修复与实际链接结果 | 已完成（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 动态 Runtime 功能闭环通过；WSL/容器仅作功能证据） |
 | 10D | [环境依赖测试专项规范](10d-environment-gated-test-spec.md) | `#[ignore]` 取代静默 `return`、齐备环境的准备方式与三个坑、门禁的 `ignored` 计数要求 | 已完成（8 条门控测试默认可见；Linux amd64/arm64、Windows 各 8 条全绿，macOS 7 条执行且真实终端显式跳过） |
-| 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 进行中（X0-B/C/D/E/T 已落地；Windows、Linux amd64/arm64 与 macOS arm64 CI 功能证据通过；macOS 真实终端与 X0-SPEC-001 仍后置） |
+| 11 | [CLI、项目配置与平台](11-cli-config-and-platform.md) | TypeScript CLI、运行时配置、`-debug` 诊断入口和目标平台适配 | 进行中（X0-B/C/D/E/T 与 X0-SPEC 已落地；四平台 CI 功能证据通过；**仅余 X0 第 8 条的 macOS 真实终端待环境**——Linux 侧已在 WSL 验证，macOS CI runner 无 GUI 会话） |
 | 11X0 | [跨平台工具链：协议与 CLI](11x0-cli-protocol-and-toolchain.md) | 进程协议 + 长度前缀 JSON、协议单一来源、X0-A/B/C/D/E/T 交付 | X0-A/B/C/D/E/T 已落地（Windows、Linux amd64/arm64、macOS arm64 CI 功能证据；macOS 真实终端显式跳过；`print` 不在本阶段） |
 | 11X0-B | [TypeScript CLI 骨架](11x0b-cli-shell.md) | `xiao` 命令入口、命令解析与帮助、`xiao run` / `xiao config`、呈现层（颜色四层降级、**中文宽度**、非 TTY） | 已完成（Windows 原生回环；项目测试语义与接线由 X0-T 完成；`print` 仍后置） |
 | 11X0-C | [独立可执行与平台矩阵](11x0c-packaging-and-platforms.md) | `bun build --compile` 独立可执行、`xiao-core` 同目录分发与生产发现契约、验证环境矩阵（验证 ≠ 验收） | 已落地（Windows、Linux amd64/arm64、macOS arm64 CI 的独立产物与发现回环通过；WSL/容器仅作功能证据；构建接续 X0-E） |

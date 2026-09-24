@@ -227,7 +227,9 @@ VM 检查点、worker 线程和无子进程沙箱的边界见 [X0-T](11x0t-proje
 
 **结论**：条件仍未满足。`tests/benchmarks/src/main.rs` 仍直接引用
 `xiao_bytecode::research` / `xiao_vm::research`，共享向量的 `r2_*.rs` 也未全部迁到生产
-路径；本批不删除别名层，待迁移完成后由 B0-E（别名层清理专项）单独验收。
+路径；本批不删除别名层，待迁移完成后由 **`09-B0-F`「研究别名层清理」**单独验收
+（2026-09-24 具名；此前本节把它误与 `09-B0-E` 混为一谈，见
+[09-B0](09b0-bytecode-closure.md) §2.1 与 [09-B0-E](09b0e-vm-cancellation-checkpoint.md) §七.1）。
 
 ### 5.5 平台待复现清单
 
