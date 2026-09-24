@@ -6,7 +6,7 @@
 
 ### 接手前提
 
-- 先阅读 [05. 表、模块与工程模型](05-tables-and-projects.md)、[08. 前端与统一中间表示](08-frontend-pipeline.md)、[11. CLI、项目配置与平台](11-cli-config-and-platform.md) 和 [12. 测试与开发里程碑](12-tests-and-milestones.md) 的 D1/E0–E2 条目。
+- 先阅读 [05. 表、模块与工程模型](05-tables-and-projects.md)、[08. 前端与统一中间表示](08-frontend-pipeline.md)、[11. CLI、项目配置与平台](11-cli-config-and-platform.md)、本页的 D1 章节和 [12. 测试与开发里程碑](12-tests-and-milestones.md) 的 D1/E0–E2 条目。
 - `config.xiao` 只提供不可执行的声明式依赖配置；项目环境、全局环境、锁文件和全局不可变内容缓存的基础边界已经确定。
 - 本阶段采用语言包/项目环境模型，不采用操作系统级 apt 数据库；远程来源允许多个且不要求中央服务器，源码包是规范内容，预编译 `.xiaoc` 只是可选加速产物。
 - 多源选择和联邦索引的逻辑已冻结：显式 `source` 优先，否则按 `config.xiao` 的源顺序；不得跨源按版本号择高，仍无法唯一确定时报告歧义。源配置变更后必须尝试读取全部已配置源的最新可验证快照并合并索引；物理索引格式仍属本阶段实现决策。
@@ -19,6 +19,26 @@
 - 下一位代理必须能区分“GitHub 仓库承载多包源索引”和“单个 Git 仓库作为直接依赖”，并沿用同一个锁定、摘要校验和环境物化接口。
 
 ## 一级工程目标：确定环境模型
+
+### D1：外部包契约与依赖图骨架（已完成）
+
+D1 是 11A 的第一批，权威实现边界见 [11A-D1 交接文档](11ad1-package-contract-and-graph.md)。
+本批冻结并实现以下最小契约：
+
+- `[dependencies]` 和 `[devdependencies]` 的每个条目必须是字典，字段白名单为
+  `path`、可选 `version` 和可选 `source`；`path` 是声明包根目录相对的本地路径，
+  `version`/`source` 是静态约束文本，D1 只保存不求解。
+- `xiao-package` 读取根包及所有路径依赖的 `config.xiao`，直接消费 `xiao-config` 的
+  `ConfigDocument`/依赖声明，不重新扫描配置文本，也不执行任何包代码。
+- 包图使用独立的 `PackageGraph`，节点身份为规范化包名、配置版本和来源身份；每个来源
+  同时保留独立的 `source_id`、`alias`、`display_name`。D1 的本地路径来源生成 `path:`
+  `source_id`，不自动生成 alias。
+- 同一图中同名包绑定不同本地路径/版本、依赖名与包元数据名不一致、缺失路径包配置和
+  依赖环分别使用稳定的 `X05-PACKAGE-*` 边界；无错误时按依赖优先顺序产生内存解析计划。
+- D1 同时读取运行时与开发依赖并保留其分类，但不实现版本求解、缓存、锁文件、环境物化、
+  远程源、安装脚本或 CLI 命令；全局环境参与解析等问题留给 E0/E1。
+
+本批不扩展 05 阶段的文件粒度 `ModuleGraph`，也不冻结完整 semver 或多源协议字段。
 
 ### 项目环境
 
@@ -115,15 +135,15 @@ $dev$ /home/project/xiao$
 
 ### 依赖分组
 
-所有用户直接选择的依赖都写入 `config.xiao`。下面是候选分组，并非已冻结表名：
+所有用户直接选择的依赖都写入 `config.xiao`。D1 首先冻结本地路径依赖的最小写法；完整
+版本求解、远程源和额外依赖分组仍由后续批次扩展：
 
 ```xiao
 [Dependencies]
-http = "^1.4"
-utils = { path = "../utils" }
+utils = { path = "../utils", version = "^1.4" }
 
 [DevDependencies]
-testkit = "^0.3"
+testkit = { path = "../testkit", version = "^0.3" }
 
 [Toolchain]
 xiao = "0.1"
@@ -200,10 +220,11 @@ Protobuf 的收益是解析速度与传输体积，用一个**带摘要校验、
 
 仍留给 E3A/E3B 的是：**准确文件名与字段名**、缓存目录布局、压缩方式、分片的具体切法。
 
-下面只展示多源配置希望表达的能力，表名、字段名和源类型名称仍待冻结；`sources` 数组的书写顺序及依赖 `source` 绑定的优先级已经冻结：
+下面只展示 E3A 多源配置希望表达的能力；D1 只保留 `sources` 表为静态节点，不解析其
+字段。`sources` 数组的书写顺序及依赖 `source` 绑定的优先级已经冻结：
 
 ```xiao
-[PackageSources]
+[sources]
 sources = [
     { alias = "official", display = "官方源", kind = "registry", location = "https://packages.xiao.example" },
     { alias = "community", display = "社区镜像", kind = "static", location = "https://example.org/xiao-index" },
@@ -211,7 +232,7 @@ sources = [
 ]
 
 [Dependencies]
-http = { version = "^1.4", source = "community" }
+http = { path = "../http", version = "^1.4", source = "community" }
 ```
 
 示例里的 `source = "community"` 绑定的是 **`alias`**，不是显示名。包源有**三个必须分开的概念**
@@ -378,6 +399,16 @@ xiao update
 当 `sync` 或 `install`/`i` 需要重新求解依赖时，命令内部必须按“读取已配置源 → 校验并合并联邦源索引 → 应用显式源/配置顺序规则 → 生成或验证锁文件 → 下载并校验正文 → 原子更新环境映射”的顺序执行。源索引刷新失败不得被安装步骤吞掉；错误必须指出受影响的源、快照和是否存在可用缓存。
 
 ## 二级实现任务
+
+### D1：外部包契约与依赖图骨架
+
+1. 为 `[dependencies]`/`[devdependencies]` 建立 `path`、`version`、`source` 字段白名单
+   和类型/路径校验，并从规范化 `ConfigDocument` 提取结构化声明。
+2. 在 `xiao-package` 中读取项目及本地路径包的 `config.xiao`，构建独立于文件模块图的
+   确定性包身份图和依赖优先顺序。
+3. 为包身份冲突、缺失依赖和依赖环提供 `X05-PACKAGE-*` 稳定诊断。
+4. 明确不实现缓存、锁文件、远程下载、版本求解和 CLI 命令；这些能力由 E0–E3 后续批次
+   按边界接入。
 
 ### E0：配置与环境指纹
 

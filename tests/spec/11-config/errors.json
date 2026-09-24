@@ -31,6 +31,30 @@
       "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[exports]\napi = \"../api.xiao\"\n",
       "expect": "error",
       "diagnostics": ["X05-CONFIG-008"]
+    },
+    {
+      "name": "dependency-unknown-field",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[dependencies]\nutils = { path = \"../utils\", registry = \"local\" }\n",
+      "expect": "error",
+      "diagnostics": ["X05-CONFIG-005"]
+    },
+    {
+      "name": "dependency-missing-path",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[dependencies]\nutils = { version = \"^1.4\" }\n",
+      "expect": "error",
+      "diagnostics": ["X05-CONFIG-007"]
+    },
+    {
+      "name": "dependency-absolute-path",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[dependencies]\nutils = { path = \"C:/utils\" }\n",
+      "expect": "error",
+      "diagnostics": ["X05-CONFIG-013"]
+    },
+    {
+      "name": "dependency-path-type",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[dependencies]\nutils = { path = 1 }\n",
+      "expect": "error",
+      "diagnostics": ["X05-CONFIG-004"]
     }
   ]
 }

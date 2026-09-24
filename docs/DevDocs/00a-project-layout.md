@@ -60,6 +60,9 @@ xiao-ir
                     xiao-driver
                          ↓
        xiao-artifacts / xiao-xar / xiao-platform
+
+xiao-config ─┐
+xiao-modules ─┴→ xiao-package → xiao-driver (protocol)
 ```
 
 图示表达的是职责方向，不是要求所有 crate 直接互相依赖。共享数据结构应放在最小的稳定层；平台、归档和 CLI 不得反向进入语法或类型层。

@@ -1,0 +1,22 @@
+//! 11A-D1 包契约与依赖图的稳定诊断编号。
+//!
+//! 包诊断与 `xiao-modules` 的文件模块诊断分开编号，因为两者的身份粒度、输入来源
+//! 和后续处理边界都不同。消息文本只是当前语言预览，上层应优先消费编号和参数。
+
+/// 同一包图中同名包绑定到不兼容身份时使用的编号。
+pub const PACKAGE_IDENTITY_CONFLICT_CODE: &str = "X05-PACKAGE-001";
+/// 依赖声明指向不存在的本地包配置时使用的编号。
+pub const PACKAGE_MISSING_DEPENDENCY_CODE: &str = "X05-PACKAGE-002";
+/// 包依赖图出现环时使用的编号。
+pub const PACKAGE_DEPENDENCY_CYCLE_CODE: &str = "X05-PACKAGE-003";
+/// 根包或依赖包的配置文件无法读取时使用的编号。
+pub const PACKAGE_CONFIG_READ_CODE: &str = "X05-PACKAGE-004";
+/// 包配置缺少可构造身份的元数据时使用的编号。
+pub const PACKAGE_INVALID_METADATA_CODE: &str = "X05-PACKAGE-005";
+
+/// 包身份冲突诊断编号的简短别名。
+pub const IDENTITY_CONFLICT_CODE: &str = PACKAGE_IDENTITY_CONFLICT_CODE;
+/// 缺失依赖诊断编号的简短别名。
+pub const MISSING_DEPENDENCY_CODE: &str = PACKAGE_MISSING_DEPENDENCY_CODE;
+/// 依赖环诊断编号的简短别名。
+pub const DEPENDENCY_CYCLE_CODE: &str = PACKAGE_DEPENDENCY_CYCLE_CODE;

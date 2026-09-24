@@ -12,3 +12,13 @@ workspace = true
 
 [lib]
 path = "src/lib.rs"
+
+[dependencies]
+xiao-config = { path = "../xiao-config" }
+xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-modules = { path = "../xiao-modules" }
+xiao-source = { path = "../xiao-source" }
+
+[dev-dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

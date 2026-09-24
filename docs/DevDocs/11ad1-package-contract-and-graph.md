@@ -1,5 +1,8 @@
 # 11A-D1. 外部包契约与依赖图骨架
 
+> **实现状态：已完成（2026-09-24）。** 本文的冻结边界、规格夹具和真实 Rust 加载入口
+> 已落地；缓存、锁文件、远程源和 CLI 仍明确留给后续批次。
+
 > **这是 11A 的第一批。** 退出条件四条（`12-tests-and-milestones.md:724-731`）：
 > ① `config.xiao` 能声明直接外部依赖及版本/来源约束；② 依赖解析器读取本地路径包配置、
 > 在内存中构建完整依赖图；③ 包身份冲突/缺失依赖/依赖环有稳定诊断；
@@ -23,7 +26,7 @@
    **本批只消费其中与「包契约」相关的**，多源/联邦/索引那些属 E3。
 6. [00A. 工程框架与目录布局](00a-project-layout.md) —— 登记要求与依赖方向（**注意 §五.2 的缺口**）。
 
-### 现状盘点（2026-09-24 实测）
+### 现状盘点（2026-09-24 实测，D1 实现前）
 
 ```text
 xiao-package      core/rust/crates/xiao-package/src/lib.rs 只有 1 行 //! 注释
@@ -55,6 +58,9 @@ D1 的全部内容只存在于 `12-tests-and-milestones.md:724-731` 的四行退
   「D1 的权威描述见 `12`」+ 一句为什么。
 
 **在 (a)/(b) 完成前，任何接手者都会按 `11a:9` 去 `11a` 找 D1 而找不到。**
+
+**本批已采用方案 (a)**：`11a` 现在包含 D1 权威章节，本文保留这段历史问题作为本批
+设计动因，不再要求后续接手者从 `12` 的四行退出条件反推实现边界。
 
 ---
 
@@ -133,16 +139,14 @@ D1 的全部内容只存在于 `12-tests-and-milestones.md:724-731` 的四行退
 > **禁止**：不执行包安装脚本或包代码，不绘制提示符，**不把不同源的版本简单按高低混选**。
 
 工程期：**11A 建核心逻辑 → 16 接内容寻址缓存 → 18 由 CLI 调用**。
-`module-registry.json:36` 已登记（`planned`），workspace 已收，**不需要新建 crate**。
+`module-registry.json` 已登记为 `11A-D1/verified`，workspace 已收，**不需要新建 crate**。
 
-### 5.2 ⚠️ 依赖方向图**漏了它**
+### 5.2 依赖方向图已补齐
 
-`00a-project-layout.md:57-72` 的依赖方向图画了 `xiao-artifacts` / `xiao-xar` /
-`xiao-platform`，**唯独没有 `xiao-package`**——而同一文档 `:97` 的 crate 分配表
-又明确登记了它。
+原先 `00a-project-layout.md:57-72` 的依赖方向图画了 `xiao-artifacts` / `xiao-xar` /
+`xiao-platform`，唯独遗漏 `xiao-package`；同一文档的 crate 分配表却已经登记了它。
 
-**本批要先把这个位置补进图里**，否则新增依赖（`xiao-package → xiao-config`）
-**没有任何已冻结依据**。建议方向：
+本批已按下列方向补进图中，作为新增依赖（`xiao-package → xiao-config`）的冻结依据：
 
 ```text
 xiao-source / xiao-diagnostics
@@ -259,11 +263,30 @@ Rust 侧同理：`xiao-package/src/` 下新增文件要同步 `module-registry.j
 
 ---
 
+## 十一、实现收口（2026-09-24）
+
+本批已按前述顺序完成：
+
+1. `11a-environments-and-packages.md` 补入 D1 权威章节，`00a-project-layout.md` 补入
+   `xiao-config`/`xiao-modules` → `xiao-package` 的依赖方向。
+2. `xiao-config` 增加本地路径依赖字段白名单、类型/路径诊断和结构化声明提取；配置表
+   只消费静态 `ConfigDocument`，不重新扫描文本。
+3. `xiao-package` 增加独立 `PackageGraph`、`source_id`/`alias`/`display_name` 分层、
+   本地 `config.xiao` 递归读取、依赖优先顺序和 `X05-PACKAGE-001` 至 `003` 稳定诊断。
+4. `tests/spec/11a-package/` 的正反例由
+   `core/rust/crates/xiao-package/tests/d1_package.rs` 真实写入隔离项目并执行；没有实现
+   缓存、锁文件、远程下载、安装脚本或 CLI 包命令。
+
+目标验证包括 `cargo test -p xiao-config -p xiao-package`、格式/工作区检查、规格门禁、
+文档覆盖率和锁文件检查；提交前必须保持 `module-registry.json` 与新增源码/夹具同步。
+
+---
+
 ## 相关页面
 
-- [11A. 虚拟环境与包管理](11a-environments-and-packages.md) —— 阶段方向稿（**D1 章节待补**）
-- [12. 测试与开发里程碑](12-tests-and-milestones.md) `:724-731` —— **D1 的权威描述**
+- [11A. 虚拟环境与包管理](11a-environments-and-packages.md) —— 阶段方向稿及已补入的 D1 章节
+- [12. 测试与开发里程碑](12-tests-and-milestones.md) `:724-731` —— D1 退出条件基线
 - [05D. `config.xiao` 声明式配置静态闭环](05d-config-static-closure.md) —— 硬前置，`:103` 的消费约定
 - [11A.1. 包源协议审核](11a1-package-source-protocol-review.md) —— 对 D1 的三条约束
 - [00. 决策基线](00-decisions.md) `:258-298` —— 39 条冻结项
-- [00A. 工程框架与目录布局](00a-project-layout.md) —— 登记要求与依赖方向图（**待补 `xiao-package`**）
+- [00A. 工程框架与目录布局](00a-project-layout.md) —— 登记要求与已补齐的 `xiao-package` 依赖方向图

@@ -1,0 +1,36 @@
+{
+  "stage": "11A-D1",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "missing-local-dependency",
+      "files": {
+        "config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\nmissing = { path = \"missing\" }\n"
+      },
+      "expect": "error",
+      "diagnostics": ["X05-PACKAGE-002"]
+    },
+    {
+      "name": "same-package-name-from-two-paths",
+      "files": {
+        "config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\nleft = { path = \"left\" }\nright = { path = \"right\" }\n",
+        "left/config.xiao": "[project]\nname = \"left\"\nversion = \"1.0.0\"\n[dependencies]\nshared = { path = \"../shared-a\" }\n",
+        "right/config.xiao": "[project]\nname = \"right\"\nversion = \"1.0.0\"\n[dependencies]\nshared = { path = \"../shared-b\" }\n",
+        "shared-a/config.xiao": "[project]\nname = \"shared\"\nversion = \"1.0.0\"\n",
+        "shared-b/config.xiao": "[project]\nname = \"shared\"\nversion = \"2.0.0\"\n"
+      },
+      "expect": "error",
+      "diagnostics": ["X05-PACKAGE-001"]
+    },
+    {
+      "name": "cyclic-local-dependencies",
+      "files": {
+        "config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\na = { path = \"a\" }\n",
+        "a/config.xiao": "[project]\nname = \"a\"\nversion = \"1.0.0\"\n[dependencies]\nb = { path = \"../b\" }\n",
+        "b/config.xiao": "[project]\nname = \"b\"\nversion = \"1.0.0\"\n[dependencies]\na = { path = \"../a\" }\n"
+      },
+      "expect": "error",
+      "diagnostics": ["X05-PACKAGE-003"]
+    }
+  ]
+}

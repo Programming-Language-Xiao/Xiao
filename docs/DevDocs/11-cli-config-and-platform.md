@@ -146,7 +146,7 @@ source = "src"
 entry = "main"
 
 [Dependencies]
-http = { version = "^1.4" }
+http = { path = "../http", version = "^1.4" }
 utils = { path = "../utils" }
 
 [Exports]

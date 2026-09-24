@@ -226,6 +226,14 @@ version = "0.1.0"
 [[package]]
 name = "xiao-package"
 version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "xiao-config",
+ "xiao-diagnostics",
+ "xiao-modules",
+ "xiao-source",
+]
 
 [[package]]
 name = "xiao-platform"

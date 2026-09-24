@@ -19,6 +19,12 @@
       "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[language]\nlocale = \"zh-CN\"\n",
       "expect": "success",
       "diagnostics": []
+    },
+    {
+      "name": "local-dependency-contract",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[dependencies]\nutils = { path = \"../utils\", version = \"^1.4\", source = \"local\" }\n[devdependencies]\ntestkit = { path = \"tools/testkit\" }\n",
+      "expect": "success",
+      "diagnostics": []
     }
   ]
 }

@@ -69,7 +69,10 @@ fn validate(
             "project" => validate_project_table(table, &mut diagnostics),
             "exports" => validate_exports_table(table, &mut diagnostics),
             "language" => validate_language_table(table, &mut diagnostics),
-            // CLI、Debug、VM、依赖和构建相关表在本阶段只保留静态值。
+            "dependencies" | "devdependencies" => {
+                validate_dependency_table(table, &mut diagnostics)
+            }
+            // CLI、Debug、VM、工具链、来源和构建相关表在本阶段只保留静态值。
             _ => {}
         }
     }
@@ -140,6 +143,87 @@ fn validate_language_table(table: &ConfigTable, diagnostics: &mut ConfigDiagnost
     }
 }
 
+/// 检查 11A-D1 的本地路径依赖条目。
+fn validate_dependency_table(table: &ConfigTable, diagnostics: &mut ConfigDiagnostics) {
+    for (name, entry) in &table.entries {
+        let Some(fields) = entry.value.as_dictionary() else {
+            diagnostics.push(type_error(entry.span, name, "dict", &entry.value));
+            continue;
+        };
+
+        for (field, value) in fields {
+            if !matches!(field.as_str(), "path" | "version" | "source") {
+                diagnostics.push(error(
+                    UNKNOWN_FIELD_CODE,
+                    "x05.config.unknown_dependency_field",
+                    entry.span,
+                    format!("依赖 {name:?} 中未知字段 {field:?}"),
+                    [
+                        ("table", DiagnosticParam::Text(table.name.clone())),
+                        ("package", DiagnosticParam::Text(name.clone())),
+                        ("field", DiagnosticParam::Text(field.clone())),
+                    ],
+                ));
+            }
+            if field == "version" || field == "source" {
+                if !matches!(value, ConfigValue::String(text) if !text.trim().is_empty() && !text.chars().any(char::is_control))
+                {
+                    let code = if field == "version" {
+                        INVALID_DEPENDENCY_CONSTRAINT_CODE
+                    } else {
+                        INVALID_DEPENDENCY_SOURCE_CODE
+                    };
+                    let message_id = if field == "version" {
+                        "x05.config.invalid_dependency_constraint"
+                    } else {
+                        "x05.config.invalid_dependency_source"
+                    };
+                    diagnostics.push(error(
+                        code,
+                        message_id,
+                        entry.span,
+                        format!("依赖 {name:?} 的 {field:?} 必须是非空静态字符串"),
+                        [
+                            ("package", DiagnosticParam::Text(name.clone())),
+                            ("field", DiagnosticParam::Text(field.clone())),
+                        ],
+                    ));
+                }
+            }
+        }
+
+        let Some(path) = fields.get("path") else {
+            diagnostics.push(error(
+                MISSING_REQUIRED_CODE,
+                "x05.config.missing_dependency_path",
+                entry.span,
+                format!("依赖 {name:?} 必须声明 path"),
+                [
+                    ("package", DiagnosticParam::Text(name.clone())),
+                    ("field", DiagnosticParam::Text("path".to_owned())),
+                ],
+            ));
+            continue;
+        };
+        let ConfigValue::String(path) = path else {
+            diagnostics.push(type_error(entry.span, "path", "str", path));
+            continue;
+        };
+        if !is_relative_dependency_path(path) {
+            diagnostics.push(error(
+                INVALID_DEPENDENCY_PATH_CODE,
+                "x05.config.invalid_dependency_path",
+                entry.span,
+                format!("依赖 {name:?} 的 path 必须是项目根相对路径"),
+                [
+                    ("package", DiagnosticParam::Text(name.clone())),
+                    ("path", DiagnosticParam::Text(path.clone())),
+                ],
+            ));
+        }
+    }
+}
+
 /// 检查严格表中的未知字段。
 fn check_known_fields(table: &ConfigTable, known: &[&str], diagnostics: &mut ConfigDiagnostics) {
     let known = known.iter().copied().collect::<BTreeSet<_>>();
@@ -157,6 +241,19 @@ fn check_known_fields(table: &ConfigTable, known: &[&str], diagnostics: &mut Con
             ));
         }
     }
+}
+
+/// 判断本地依赖路径是否为非空、非绝对的静态路径。
+fn is_relative_dependency_path(path: &str) -> bool {
+    if path.trim().is_empty()
+        || path.chars().any(char::is_control)
+        || path.starts_with('/')
+        || path.starts_with('\\')
+        || path.as_bytes().get(1) == Some(&b':')
+    {
+        return false;
+    }
+    true
 }
 
 /// 构造类型错误诊断。
@@ -229,6 +326,26 @@ fn normalize(document: &ConfigDocument) -> ConfigDocument {
                     .filter(|segment| !segment.is_empty() && *segment != ".")
                     .collect::<Vec<_>>()
                     .join("/");
+            }
+        }
+    }
+    for table_name in ["dependencies", "devdependencies"] {
+        if let Some(table) = normalized.tables.get_mut(table_name) {
+            for entry in table.entries.values_mut() {
+                if let ConfigValue::Dictionary(fields) = &mut entry.value {
+                    if let Some(ConfigValue::String(path)) = fields.get_mut("path") {
+                        let normalized_path = path.replace('\\', "/");
+                        let parts = normalized_path
+                            .split('/')
+                            .filter(|segment| !segment.is_empty() && *segment != ".")
+                            .collect::<Vec<_>>();
+                        *path = if parts.is_empty() {
+                            ".".to_owned()
+                        } else {
+                            parts.join("/")
+                        };
+                    }
+                }
             }
         }
     }

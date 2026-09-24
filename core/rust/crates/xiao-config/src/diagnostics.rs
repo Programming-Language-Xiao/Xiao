@@ -35,6 +35,12 @@ pub const CONFIG_INVALID_VALUE_CODE: &str = "X05-CONFIG-010";
 pub const MISSING_SEPARATOR_CODE: &str = "X05-CONFIG-011";
 /// 同一个配置文档中重复出现表头时使用的编号。
 pub const DUPLICATE_TABLE_CODE: &str = "X05-CONFIG-012";
+/// 本地路径依赖不是项目根相对路径时使用的编号。
+pub const INVALID_DEPENDENCY_PATH_CODE: &str = "X05-CONFIG-013";
+/// 依赖版本约束为空或包含控制字符时使用的编号。
+pub const INVALID_DEPENDENCY_CONSTRAINT_CODE: &str = "X05-CONFIG-014";
+/// 依赖来源引用为空或包含控制字符时使用的编号。
+pub const INVALID_DEPENDENCY_SOURCE_CODE: &str = "X05-CONFIG-015";
 
 /// 判断诊断列表是否包含错误级别项目。
 #[must_use]

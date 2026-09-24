@@ -4,7 +4,7 @@ title: 静态配置语法
 status: verified
 audience: learner
 module: rust.xiao-config
-stage: "05-D"
+stage: "05-D/11A-D1"
 version: "0.1.0"
 related:
   - README.md
@@ -54,6 +54,22 @@ options = [1, 2.5, true, { label = "demo" }]
 
 配置中不能出现 `def`、`if`、`for`、`while`、`import`、函数调用、变量引用、常量
 引用、运算表达式或源码 `[main]`。源码中的 `[main]` 仍由语言解析器处理，不写入配置树。
+
+## 本地路径依赖
+
+11A-D1 的依赖条目使用字典形式。`path` 必填且必须是声明包根目录相对路径；`version`
+和 `source` 可选，当前只保存为静态约束，不执行完整版本求解或远程源解析：
+
+```xiao
+[dependencies]
+utils = { path = "../utils", version = "^1.4", source = "local" }
+
+[devdependencies]
+testkit = { path = "../testkit" }
+```
+
+依赖表字段只允许 `path`、`version` 和 `source`。包源的 `source_id`、`alias` 与展示名
+属于包管理器的不同概念；展示名不能作为依赖引用键。
 
 ## 下一步
 
