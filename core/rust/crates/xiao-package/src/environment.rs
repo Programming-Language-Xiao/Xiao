@@ -8,18 +8,23 @@ use std::fmt::{self, Display, Formatter};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use serde::de::{self, Deserializer};
 use serde::{Deserialize, Serialize};
 use xiao_codegen_llvm::{CODEGEN_VERSION, TargetDescription, Toolchain, stable_hash};
 use xiao_config::ConfigDocument;
 
+use crate::cache::CacheStore;
 use crate::diagnostics::{
-    ENVIRONMENT_ALREADY_EXISTS_CODE, ENVIRONMENT_INVALID_NAME_CODE, ENVIRONMENT_WRITE_CODE,
+    ENVIRONMENT_ALREADY_EXISTS_CODE, ENVIRONMENT_INVALID_NAME_CODE,
+    ENVIRONMENT_METADATA_VERSION_CODE, ENVIRONMENT_WRITE_CODE,
 };
+use crate::mapping::{MappingError, PackageObjectMapping, materialize_package_mappings};
+use crate::model::PackageGraph;
 
 /// 环境目录内的元数据文件名。
 pub const ENVIRONMENT_METADATA_FILE: &str = ".xiao-environment.json";
 /// 当前环境元数据的版本号。
-pub const ENVIRONMENT_METADATA_VERSION: u32 = 1;
+pub const ENVIRONMENT_METADATA_VERSION: u32 = 2;
 
 /// 环境逻辑名称、目录名称和绝对落点。
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -82,7 +87,7 @@ pub struct EnvironmentFingerprint {
 }
 
 /// 环境目录内保存的最小元数据。
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub struct EnvironmentMetadata {
     /// 元数据格式版本。
     pub metadata_version: u32,
@@ -100,26 +105,90 @@ pub struct EnvironmentMetadata {
     pub environment_fingerprint: String,
     /// 后续锁文件摘要预留字段。
     pub lockfile_summary: Option<String>,
+    /// 按包逻辑身份排序的全局源码对象映射。
+    pub package_mappings: Vec<PackageObjectMapping>,
+}
+
+/// 用于兼容读取 v1/v2 元数据的内部反序列化形状。
+#[derive(Debug, Deserialize)]
+struct EnvironmentMetadataFields {
+    metadata_version: u32,
+    logical_name: String,
+    directory_name: String,
+    config_fingerprint: String,
+    toolchain_fingerprint: String,
+    target_fingerprint: String,
+    environment_fingerprint: String,
+    lockfile_summary: Option<String>,
+    #[serde(default)]
+    package_mappings: Vec<PackageObjectMapping>,
+}
+
+impl<'de> Deserialize<'de> for EnvironmentMetadata {
+    /// 读取 v1/v2 元数据，并拒绝高于当前读取器的版本。
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let fields = EnvironmentMetadataFields::deserialize(deserializer)?;
+        if fields.metadata_version > ENVIRONMENT_METADATA_VERSION {
+            return Err(de::Error::custom(format!(
+                "不支持的环境元数据版本：{}",
+                fields.metadata_version
+            )));
+        }
+        Ok(Self {
+            metadata_version: fields.metadata_version,
+            logical_name: fields.logical_name,
+            directory_name: fields.directory_name,
+            config_fingerprint: fields.config_fingerprint,
+            toolchain_fingerprint: fields.toolchain_fingerprint,
+            target_fingerprint: fields.target_fingerprint,
+            environment_fingerprint: fields.environment_fingerprint,
+            lockfile_summary: fields.lockfile_summary,
+            package_mappings: fields.package_mappings,
+        })
+    }
 }
 
 impl EnvironmentMetadata {
     /// 将元数据编码为稳定、无绝对路径的 JSON 文本。
     #[must_use]
     pub fn to_json(&self) -> String {
-        let value = serde_json::json!({
-            "metadata_version": self.metadata_version,
-            "logical_name": self.logical_name,
-            "directory_name": self.directory_name,
-            "config_fingerprint": self.config_fingerprint,
-            "toolchain_fingerprint": self.toolchain_fingerprint,
-            "target_fingerprint": self.target_fingerprint,
-            "environment_fingerprint": self.environment_fingerprint,
-            "lockfile_summary": self.lockfile_summary,
-        });
         format!(
             "{}\n",
-            serde_json::to_string_pretty(&value).expect("环境元数据必须可编码为 JSON")
+            serde_json::to_string_pretty(self).expect("环境元数据必须可编码为 JSON")
         )
+    }
+
+    /// 从 JSON 文本读取 v1/v2 环境元数据并拒绝未来版本。
+    pub fn from_json(text: &str) -> Result<Self, EnvironmentError> {
+        let value: serde_json::Value =
+            serde_json::from_str(text).map_err(|error| EnvironmentError::MetadataRead {
+                path: PathBuf::from("<json>"),
+                operation: "解析环境元数据",
+                message: error.to_string(),
+            })?;
+        let version = value
+            .get("metadata_version")
+            .and_then(serde_json::Value::as_u64)
+            .and_then(|value| u32::try_from(value).ok())
+            .ok_or_else(|| EnvironmentError::MetadataRead {
+                path: PathBuf::from("<json>"),
+                operation: "读取环境元数据版本",
+                message: "metadata_version 必须是无符号整数".to_owned(),
+            })?;
+        if version > ENVIRONMENT_METADATA_VERSION {
+            return Err(EnvironmentError::UnsupportedMetadataVersion {
+                path: PathBuf::from("<json>"),
+                version,
+            });
+        }
+        serde_json::from_value(value).map_err(|error| EnvironmentError::MetadataRead {
+            path: PathBuf::from("<json>"),
+            operation: "读取环境元数据",
+            message: error.to_string(),
+        })
     }
 }
 
@@ -145,6 +214,22 @@ pub enum EnvironmentError {
         /// 主机错误文本。
         message: String,
     },
+    /// 元数据版本高于当前读取器。
+    UnsupportedMetadataVersion {
+        /// 元数据文件路径。
+        path: PathBuf,
+        /// 不支持的版本号。
+        version: u32,
+    },
+    /// 元数据读取或解析失败。
+    MetadataRead {
+        /// 元数据文件路径。
+        path: PathBuf,
+        /// 失败操作名称。
+        operation: &'static str,
+        /// 主机错误文本。
+        message: String,
+    },
 }
 
 impl EnvironmentError {
@@ -155,6 +240,8 @@ impl EnvironmentError {
             Self::InvalidName { .. } => ENVIRONMENT_INVALID_NAME_CODE,
             Self::AlreadyExists { .. } => ENVIRONMENT_ALREADY_EXISTS_CODE,
             Self::Write { .. } => ENVIRONMENT_WRITE_CODE,
+            Self::UnsupportedMetadataVersion { .. } => ENVIRONMENT_METADATA_VERSION_CODE,
+            Self::MetadataRead { .. } => ENVIRONMENT_WRITE_CODE,
         }
     }
 }
@@ -179,6 +266,22 @@ impl Display for EnvironmentError {
                 self.code(),
                 path.display()
             ),
+            Self::UnsupportedMetadataVersion { path, version } => write!(
+                formatter,
+                "{}: 环境元数据 {} 的版本 {version} 高于当前读取器",
+                self.code(),
+                path.display()
+            ),
+            Self::MetadataRead {
+                path,
+                operation,
+                message,
+            } => write!(
+                formatter,
+                "{}: {operation} 环境元数据 {} 失败：{message}",
+                self.code(),
+                path.display()
+            ),
         }
     }
 }
@@ -187,6 +290,41 @@ impl std::error::Error for EnvironmentError {}
 
 /// 环境创建错误的语义别名。
 pub type EnvironmentCreationError = EnvironmentError;
+
+/// 环境包图物化失败，保留环境和缓存两个粒度的诊断。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum EnvironmentPackageError {
+    /// 环境目录或元数据物化失败。
+    Environment(EnvironmentError),
+    /// 包图到缓存对象的映射失败。
+    Mapping(MappingError),
+}
+
+impl Display for EnvironmentPackageError {
+    /// 输出底层环境或映射诊断。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Environment(error) => Display::fmt(error, formatter),
+            Self::Mapping(error) => Display::fmt(error, formatter),
+        }
+    }
+}
+
+impl std::error::Error for EnvironmentPackageError {}
+
+impl From<EnvironmentError> for EnvironmentPackageError {
+    /// 将环境错误包装为包图物化错误。
+    fn from(error: EnvironmentError) -> Self {
+        Self::Environment(error)
+    }
+}
+
+impl From<MappingError> for EnvironmentPackageError {
+    /// 将映射错误包装为包图物化错误。
+    fn from(error: MappingError) -> Self {
+        Self::Mapping(error)
+    }
+}
 
 /// 为配置文档生成稳定指纹。
 #[must_use]
@@ -232,6 +370,19 @@ pub fn build_environment_metadata(
     toolchain: &Toolchain,
     target: &TargetDescription,
 ) -> EnvironmentMetadata {
+    build_environment_metadata_with_mappings(layout, document, toolchain, target, Vec::new())
+}
+
+/// 从配置、工具链、目标和已准备的包映射生成 v2 环境元数据。
+#[must_use]
+pub fn build_environment_metadata_with_mappings(
+    layout: &EnvironmentLayout,
+    document: &ConfigDocument,
+    toolchain: &Toolchain,
+    target: &TargetDescription,
+    mut package_mappings: Vec<PackageObjectMapping>,
+) -> EnvironmentMetadata {
+    package_mappings.sort_by(|left, right| left.package.cmp(&right.package));
     let config_fingerprint = fingerprint_config(document);
     let target_fingerprint = fingerprint_target(target);
     let toolchain_fingerprint = toolchain.fingerprint(target, CODEGEN_VERSION).to_string();
@@ -250,6 +401,7 @@ pub fn build_environment_metadata(
         target_fingerprint,
         environment_fingerprint,
         lockfile_summary: None,
+        package_mappings,
     }
 }
 
@@ -261,11 +413,87 @@ pub fn materialize_environment(
     toolchain: &Toolchain,
     target: &TargetDescription,
 ) -> Result<EnvironmentMetadata, EnvironmentError> {
+    materialize_environment_with_mappings(
+        project_root,
+        logical_name,
+        document,
+        toolchain,
+        target,
+        Vec::new(),
+    )
+}
+
+/// 创建环境目录并写入包含包映射的 v2 元数据。
+pub fn materialize_environment_with_mappings(
+    project_root: impl AsRef<Path>,
+    logical_name: Option<&str>,
+    document: &ConfigDocument,
+    toolchain: &Toolchain,
+    target: &TargetDescription,
+    package_mappings: Vec<PackageObjectMapping>,
+) -> Result<EnvironmentMetadata, EnvironmentError> {
     let layout = match logical_name {
         Some(name) => EnvironmentLayout::named_for_project(project_root, name)?,
         None => EnvironmentLayout::default_for_project(project_root),
     };
-    let metadata = build_environment_metadata(&layout, document, toolchain, target);
+    materialize_environment_at_layout(&layout, document, toolchain, target, package_mappings)
+}
+
+/// 从 D1 包图导入源码对象并物化项目环境及其逻辑映射。
+#[allow(clippy::result_large_err)]
+pub fn materialize_environment_from_graph(
+    project_root: impl AsRef<Path>,
+    logical_name: Option<&str>,
+    document: &ConfigDocument,
+    toolchain: &Toolchain,
+    target: &TargetDescription,
+    graph: &PackageGraph,
+    cache: &CacheStore,
+) -> Result<EnvironmentMetadata, EnvironmentPackageError> {
+    let mappings = materialize_package_mappings(graph, cache)?;
+    Ok(materialize_environment_with_mappings(
+        project_root,
+        logical_name,
+        document,
+        toolchain,
+        target,
+        mappings,
+    )?)
+}
+
+/// 从 D1 包图导入源码对象并物化用户域下的全局环境。
+#[allow(clippy::result_large_err)]
+pub fn materialize_global_environment_from_graph(
+    logical_name: &str,
+    document: &ConfigDocument,
+    toolchain: &Toolchain,
+    target: &TargetDescription,
+    graph: &PackageGraph,
+    cache: &CacheStore,
+) -> Result<EnvironmentMetadata, EnvironmentPackageError> {
+    let mappings = materialize_package_mappings(graph, cache)?;
+    let layout =
+        EnvironmentLayout::named_for_project(cache.layout().environments_root(), logical_name)?;
+    Ok(materialize_environment_at_layout(
+        &layout, document, toolchain, target, mappings,
+    )?)
+}
+
+/// 在已计算好的环境布局中创建目录并写入元数据。
+fn materialize_environment_at_layout(
+    layout: &EnvironmentLayout,
+    document: &ConfigDocument,
+    toolchain: &Toolchain,
+    target: &TargetDescription,
+    package_mappings: Vec<PackageObjectMapping>,
+) -> Result<EnvironmentMetadata, EnvironmentError> {
+    let metadata = build_environment_metadata_with_mappings(
+        layout,
+        document,
+        toolchain,
+        target,
+        package_mappings,
+    );
     fs::create_dir(&layout.path).map_err(|error| {
         if error.kind() == std::io::ErrorKind::AlreadyExists {
             EnvironmentError::AlreadyExists {
@@ -290,6 +518,44 @@ pub fn materialize_environment(
         });
     }
     Ok(metadata)
+}
+
+/// 读取环境目录内的元数据并对未来版本给出稳定诊断。
+pub fn read_environment_metadata(
+    metadata_path: impl AsRef<Path>,
+) -> Result<EnvironmentMetadata, EnvironmentError> {
+    let path = metadata_path.as_ref();
+    let text = fs::read_to_string(path).map_err(|error| EnvironmentError::MetadataRead {
+        path: path.to_path_buf(),
+        operation: "读取环境元数据",
+        message: error.to_string(),
+    })?;
+    let value: serde_json::Value =
+        serde_json::from_str(&text).map_err(|error| EnvironmentError::MetadataRead {
+            path: path.to_path_buf(),
+            operation: "解析环境元数据",
+            message: error.to_string(),
+        })?;
+    let version = value
+        .get("metadata_version")
+        .and_then(serde_json::Value::as_u64)
+        .and_then(|value| u32::try_from(value).ok())
+        .ok_or_else(|| EnvironmentError::MetadataRead {
+            path: path.to_path_buf(),
+            operation: "读取环境元数据版本",
+            message: "metadata_version 必须是无符号整数".to_owned(),
+        })?;
+    if version > ENVIRONMENT_METADATA_VERSION {
+        return Err(EnvironmentError::UnsupportedMetadataVersion {
+            path: path.to_path_buf(),
+            version,
+        });
+    }
+    serde_json::from_value(value).map_err(|error| EnvironmentError::MetadataRead {
+        path: path.to_path_buf(),
+        operation: "读取环境元数据",
+        message: error.to_string(),
+    })
 }
 
 /// 校验环境名，拒绝路径穿越、分隔符和控制字符。

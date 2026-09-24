@@ -28,6 +28,9 @@ X0-T 已接入 [`xiao test`](test.md)：它递归发现项目 `tests/**/*.xiao`�
 
 11A-E0 的项目环境创建、一次性 Shell 钩子、提示符前缀和取消激活规则见[`xiao venv` 与环境激活](environments.md)。
 
+11A-E1 的本地依赖快照、`XIAO_HOME` 共享缓存和环境逻辑映射见[本地包缓存与环境映射](package-cache.md)。
+E1 只提供核心 API 和测试，不新增用户命令；`sync`、`install`/`i` 仍由后续 E2 接入。
+
 ## 下一步
 
 需要逐行试验代码时阅读[交互式解释器](../repl/README.md)。

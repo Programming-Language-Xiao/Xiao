@@ -20,6 +20,16 @@ pub const ENVIRONMENT_ALREADY_EXISTS_CODE: &str = "X05-ENV-001";
 pub const ENVIRONMENT_INVALID_NAME_CODE: &str = "X05-ENV-002";
 /// 环境目录或元数据写入失败时使用的编号。
 pub const ENVIRONMENT_WRITE_CODE: &str = "X05-ENV-003";
+/// 元数据版本高于当前读取器时使用的编号。
+pub const ENVIRONMENT_METADATA_VERSION_CODE: &str = "X05-ENV-004";
+/// 缓存根目录或环境元数据无法读取时使用的编号。
+pub const CACHE_HOME_UNAVAILABLE_CODE: &str = "X05-CACHE-001";
+/// `XIAO_HOME` 或对象摘要格式非法时使用的编号。
+pub const CACHE_INVALID_INPUT_CODE: &str = "X05-CACHE-002";
+/// 源目录包含不支持的文件类型或路径时使用的编号。
+pub const CACHE_INVALID_SOURCE_CODE: &str = "X05-CACHE-003";
+/// 缓存对象摘要校验失败时使用的编号。
+pub const CACHE_OBJECT_CORRUPT_CODE: &str = "X05-CACHE-004";
 
 /// 包身份冲突诊断编号的简短别名。
 pub const IDENTITY_CONFLICT_CODE: &str = PACKAGE_IDENTITY_CONFLICT_CODE;

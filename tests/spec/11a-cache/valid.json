@@ -1,0 +1,9 @@
+{
+  "stage": "11A-E1",
+  "status": "verified-static",
+  "cases": [
+    "same-source-content-deduplicates-to-one-object",
+    "environment-mappings-share-digest-without-filesystem-links",
+    "corrupt-object-is-quarantined-before-read"
+  ]
+}

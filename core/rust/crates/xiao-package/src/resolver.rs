@@ -396,6 +396,7 @@ impl ResolverState {
     }
 
     /// 添加带包身份和路径上下文的结构化诊断。
+    #[allow(clippy::too_many_arguments)]
     fn push_package_diagnostic<I, K>(
         &mut self,
         code: &str,

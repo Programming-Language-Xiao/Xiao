@@ -9,6 +9,7 @@ use std::fmt::{self, Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
+use serde::{Deserialize, Serialize};
 use xiao_config::{DependencyDeclaration, DependencyKind};
 use xiao_diagnostics::Diagnostic;
 use xiao_source::SourceSpan;
@@ -17,7 +18,7 @@ use xiao_source::SourceSpan;
 ///
 /// `source_id` 是唯一身份键；`alias` 只供配置引用；`display_name` 只供人类展示。
 /// 三者不能合并为一个 `name` 字段，以便后续 E3A 接入多源协议时保持契约稳定。
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct PackageSource {
     /// 稳定的来源身份键，例如 `path:/workspace/lib`。
     pub source_id: String,
@@ -74,7 +75,7 @@ impl PartialOrd for PackageSource {
 pub type SourceIdentity = PackageSource;
 
 /// 一个包的逻辑身份。
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct PackageIdentity {
     /// 规范化包名。
     pub name: String,
