@@ -97,7 +97,7 @@ impl<'a> DynamicGenerator<'a> {
         };
         let payload = self.next_temp();
         self.emit(format!(
-            "  {payload} = extractvalue {VALUE_TYPE} {value}, 2"
+            "  {payload} = extractvalue {VALUE_TYPE} {value}, 1"
         ));
         let observed = if let Some(instruction) = instruction {
             let narrowed = self.next_temp();

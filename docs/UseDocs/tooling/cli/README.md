@@ -23,6 +23,9 @@ X0-D 已提供 [`-debug` 诊断窗口](debug.md)：诊断事件走独立 Rust �
 X0-T 已接入 [`xiao test`](test.md)：它递归发现项目 `tests/**/*.xiao`，按稳定路径顺序执行，
 并返回逐用例结构化结果；它仍不替代 `cargo test` 或 `bun test`。
 
+平台功能复现和环境门禁见[平台复现工具](platform-reproduction.md)。它只验证构建、核心发现、
+协议协商和项目测试链路，不把 Docker/WSL 功能证据写成裸机性能验收。
+
 ## 下一步
 
 需要逐行试验代码时阅读[交互式解释器](../repl/README.md)。

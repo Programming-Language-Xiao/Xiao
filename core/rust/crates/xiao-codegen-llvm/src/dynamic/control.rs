@@ -274,7 +274,7 @@ impl<'a> DynamicGenerator<'a> {
                 self.emit_label(&valid_label);
                 let payload = self.next_temp();
                 self.emit(format!(
-                    "  {payload} = extractvalue {VALUE_TYPE} {value}, 2"
+                    "  {payload} = extractvalue {VALUE_TYPE} {value}, 1"
                 ));
                 let output = self.next_temp();
                 self.emit(format!("  {output} = trunc i64 {payload} to i1"));

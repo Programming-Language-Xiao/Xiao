@@ -122,6 +122,10 @@ export XIAO_TARGET_TRIPLE="$target_triple"
 
 printf '\n== 环境门控测试（显式 --ignored） ==\n'
 ignored_command=(cargo test --manifest-path "$cargo_manifest" --workspace -- --ignored)
+if [[ "${XIAO_SKIP_REAL_TERMINAL_TEST:-0}" == "1" && "$host_system" == "Darwin" ]]; then
+    printf 'macOS CI 无 GUI 会话，显式跳过真实终端测试：real_terminal_session_is_environment_gated\n'
+    ignored_command+=(--skip real_terminal_session_is_environment_gated)
+fi
 if [[ "${XIAO_USE_XVFB:-0}" == "1" && "$host_system" == "Linux" && -x "$(command -v xvfb-run 2>/dev/null || true)" ]]; then
     (cd "$repository_root" && xvfb-run -a "${ignored_command[@]}")
 else
@@ -173,6 +177,7 @@ printf '%s\n' "$debug_json"
 [[ -x "$debug_output" ]]
 
 cp "$source_directory/main.xiao" "$temporary_root/outside/main.xiao"
+printf '\n== 同目录核心发现 ==\n'
 run_json="$(cd "$temporary_root/outside" && env -u XIAO_CORE_PATH PATH=/usr/bin:/bin "$cli_path" --json run "$temporary_root/outside/main.xiao")"
 printf '%s\n' "$run_json"
 [[ "$run_json" == *'"type":"result"'* ]]
@@ -190,5 +195,32 @@ printf '%s\n' "$test_json"
 if command -v file >/dev/null 2>&1; then
     file "$native_output" "$cli_path"
 fi
+
+outside_cli_directory="$temporary_root/path-cli"
+path_core_directory="$temporary_root/path-bin"
+mkdir -p "$outside_cli_directory" "$path_core_directory"
+cp "$cli_path" "$outside_cli_directory/xiao"
+cp "$package_directory/xiao-core" "$path_core_directory/xiao-core"
+chmod +x "$outside_cli_directory/xiao" "$path_core_directory/xiao-core"
+
+printf '\n== PATH 核心发现 ==\n'
+path_run_json="$(cd "$temporary_root/outside" && env -u XIAO_CORE_PATH PATH="$path_core_directory:/usr/bin:/bin" "$outside_cli_directory/xiao" --json run "$temporary_root/outside/main.xiao")"
+printf '%s\n' "$path_run_json"
+[[ "$path_run_json" == *'"type":"result"'* ]]
+[[ "$path_run_json" == *'"exit_name":"success"'* ]]
+[[ "$path_run_json" == *'"exit_code":0'* ]]
+
+printf '\n== 开发回环核心发现 ==\n'
+development_run_json="$(cd "$repository_root" && env -u XIAO_CORE_PATH PATH=/usr/bin:/bin "$(command -v bun)" "$repository_root/cli/ts/src/main.ts" --json run "$source_directory/main.xiao")"
+printf '%s\n' "$development_run_json"
+[[ "$development_run_json" == *'"type":"result"'* ]]
+[[ "$development_run_json" == *'"exit_name":"success"'* ]]
+[[ "$development_run_json" == *'"exit_code":0'* ]]
+
+printf '\n== 版本协商失配 ==\n'
+mismatch_json="$("$(command -v bun)" "$script_directory/check-protocol.ts" "$repository_root/core/rust/target/debug/xiao-core")"
+printf '%s\n' "$mismatch_json"
+[[ "$mismatch_json" == *'"accepted":false'* ]]
+[[ "$mismatch_json" == *'"error_code":"X11-PROTOCOL-004"'* ]]
 
 printf '\n平台复现脚本完成：%s\n' "$host_triple"

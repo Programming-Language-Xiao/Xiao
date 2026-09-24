@@ -3,9 +3,17 @@ name: Xiao platform reproduction
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   reproduce:
     name: ${{ matrix.name }}
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -30,23 +38,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install Linux tools
-        if: startsWith(matrix.name, 'linux-')
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes clang lld llvm xauth xvfb xterm file
-
-      - name: Install macOS LLVM
-        if: startsWith(matrix.name, 'macos-')
-        run: |
-          brew install llvm
-          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
-
-      - name: Install Windows LLVM
-        if: startsWith(matrix.name, 'windows-')
-        run: choco install llvm --yes --no-progress
+        uses: actions/checkout@v7
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -58,12 +50,57 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            core/rust -> core/rust/target
+            tests/benchmarks -> tests/benchmarks/target
+
+      - name: Install Linux tools
+        if: startsWith(matrix.name, 'linux-')
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes clang lld llvm xauth xvfb xterm file
+          sudo update-alternatives --set x-terminal-emulator /usr/bin/xterm || true
+
+      - name: Install macOS LLVM
+        if: startsWith(matrix.name, 'macos-')
+        run: |
+          brew install llvm
+          echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+
+      - name: Install Windows LLVM
+        if: startsWith(matrix.name, 'windows-')
+        run: choco install llvm file --yes --no-progress
+
       - name: Run Unix reproduction
         if: matrix.shell == 'bash'
         env:
           XIAO_USE_XVFB: ${{ startsWith(matrix.name, 'linux-') && '1' || '0' }}
-        run: bash tools/platform-reproduction/reproduce.sh native
+          XIAO_SKIP_REAL_TERMINAL_TEST: ${{ matrix.name == 'macos-arm64' && '1' || '0' }}
+        run: |
+          mkdir -p artifacts
+          set +e
+          printf 'runner=%s\nos=%s\narch=%s\nplatform=%s\n' "$RUNNER_NAME" "$RUNNER_OS" "$RUNNER_ARCH" "${{ matrix.name }}" | tee "artifacts/${{ matrix.name }}.log"
+          bash tools/platform-reproduction/reproduce.sh native 2>&1 | tee -a "artifacts/${{ matrix.name }}.log"
+          status=${PIPESTATUS[0]}
+          set -e
+          exit "$status"
 
       - name: Run Windows reproduction
         if: matrix.shell == 'pwsh'
-        run: powershell -ExecutionPolicy Bypass -File tools/platform-reproduction/reproduce.ps1 -Mode native
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          & pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tools/platform-reproduction/reproduce.ps1 -Mode native 2>&1 | Tee-Object -FilePath artifacts/${{ matrix.name }}.log
+          $status = $LASTEXITCODE
+          if ($status -ne 0) { exit $status }
+
+      - name: Upload reproduction evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xiao-platform-reproduction-${{ matrix.name }}
+          path: artifacts/
+          if-no-files-found: warn
+          retention-days: 30

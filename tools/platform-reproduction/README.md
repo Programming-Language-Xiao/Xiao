@@ -3,6 +3,16 @@
 本目录提供 X0 平台债的可重复入口。它只验证功能链路和环境门禁，不采集或修改
 `tests/benchmarks/reports/` 中的性能数字；`Dockerfile.dev` 仍然只是开发容器，验收定位不变。
 
+## 工程期
+
+11X0-P、11X0-P1；脚本只编排平台复现与证据采集，不实现 CLI、Rust 核心或 Runtime 语义。
+
+## 职责与边界
+
+`reproduce.sh` 与 `reproduce.ps1` 负责准备工具链、运行门控测试、打包独立 CLI、验证同目录/PATH/
+开发回环核心发现和版本协商失配；`check-protocol.ts` 只读取长度前缀协议的结构化字段。Docker/WSL
+结果是功能证据，不进入性能冻结，也不能冒充裸机性能验收。
+
 ## Linux Docker 多架构
 
 在仓库根目录执行：

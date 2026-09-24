@@ -48,7 +48,7 @@ mod slot;
 mod text;
 pub(crate) use self::predicate::program_uses_runtime;
 
-/// 动态值的固定 `{ i32, i32, i64 }` LLVM 结构名。
+/// 动态值的固定 `{ i32, i64 }` LLVM 结构名；它对应 C ABI 的 tag 和 union payload 两个字段。
 const VALUE_TYPE: &str = "%xiao.value";
 /// 不拥有输入内存的 UTF-8 字节视图结构名。
 const BYTES_TYPE: &str = "%xiao.bytes";
@@ -156,7 +156,7 @@ impl<'a> DynamicGenerator<'a> {
             "target triple = \"{}\"\n\n",
             escape_llvm(&self.options.target.triple)
         ));
-        text.push_str(&format!("{VALUE_TYPE} = type {{ i32, i32, i64 }}\n"));
+        text.push_str(&format!("{VALUE_TYPE} = type {{ i32, i64 }}\n"));
         text.push_str(&format!("{BYTES_TYPE} = type {{ ptr, i64 }}\n\n"));
         text.push_str(&format!(
             "{TABLE_FIELD_TYPE} = type {{ {BYTES_TYPE}, i32, i8 }}\n"

@@ -31,9 +31,9 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 10C 的缺陷就是这么活下来的：那条测试从写出来那天起就没真跑过，
 **第一次真跑就失败了**。
 
-## 二、现状清单（2026-09-23 实测）
+## 二、现状清单（2026-09-24 实测）
 
-**8 个测试**在默认环境里静默跳过，涉及 **4 个环境变量**和一个真实终端能力：
+**8 个测试**在默认环境里静默跳过，涉及 **5 个环境变量**和一个真实终端能力：
 
 | 文件 | 测试 |
 | --- | --- |
@@ -46,7 +46,7 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 | `xiao-driver/tests/n0_b_dynamic_native.rs` | `optional_dynamic_string_native_round_trip` |
 | `xiao-driver/src/diagnostics.rs` | `real_terminal_session_is_environment_gated` |
 
-环境变量：`XIAO_CLANG`、`XIAO_LLVM_AS`、`XIAO_RUNTIME_LIBRARY`、`XIAO_TARGET_TRIPLE`。
+环境变量：`XIAO_CLANG`、`XIAO_LLVM_AS`、`XIAO_LLC`、`XIAO_RUNTIME_LIBRARY`、`XIAO_TARGET_TRIPLE`。
 
 **齐备环境下的实测结果**（10C 发现时跑的）：
 
@@ -133,7 +133,9 @@ Ubuntu/Arch WSL 的最小准备：
 
 ```sh
 sudo apt-get install clang llvm lld build-essential xvfb xterm   # Ubuntu
-sudo pacman -S --needed base-devel clang llvm lld                 # Arch
+sudo update-alternatives --set x-terminal-emulator /usr/bin/xterm
+sudo pacman -S --needed base-devel clang llvm lld xterm xorg-xauth xorg-server-xvfb  # Arch
+rustup component add rustfmt --toolchain 1.96.0-$(rustc -vV | sed -n 's/^host: //p')
 cargo build --manifest-path core/rust/Cargo.toml -p xiao-runtime --release
 export XIAO_CLANG="$(command -v clang)"
 export XIAO_LLVM_AS="$(command -v llvm-as)"
@@ -141,6 +143,7 @@ export XIAO_LLC="$(command -v llc)"
 export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
 export XIAO_TARGET_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
 cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
+XIAO_USE_XVFB=1 bash tools/platform-reproduction/reproduce.sh native
 ```
 
 macOS 需要先把 Homebrew LLVM 放入 PATH，并保留 `osascript` 与 `open`：
@@ -198,7 +201,7 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 4. 缺环境时跑 `--ignored` 会**失败**，不是静默跳过（§3.2）；
 5. 本批交接记录里有**一次齐备环境的完整结果**。
 
-## 七、落地记录（2026-09-23）
+## 七、落地记录（2026-09-24）
 
 §2 列出的 8 条测试现已全部使用 `#[ignore = "...；准备方式见 10D §4"]`：
 `xiao-codegen-llvm` 的 4 条、`xiao-driver` 的 3 条和诊断窗口的 1 条。默认运行
@@ -221,11 +224,14 @@ n0_b_dynamic_native          1 passed
 MSYS2 clang/llvm-as 22.1.2 和 Rust 1.96.0 均为本次记录的实际工具；缺少 `XIAO_CLANG` 时
 单独执行 `optional_real_llvm_round_trip --ignored` 已确认会失败并给出配置错误。
 
-Windows 的 7 条工具链门控结果已有历史记录；11X0-P 在 Linux Docker amd64 的
-`xvfb-run` 环境中又完整执行了新增真实终端测试，8 条门控测试合计全部通过。WSL
-Ubuntu/Arch 当前因 Rust、Bun 和 LLVM 工具链缺失未执行，ARM64 因 Docker Desktop
-QEMU 的 `exec format error` 未执行，未运行的 macOS 也不能被宣称为已验证。WSL 和容器
-共享宿主调度或多一层文件系统，不能与原生数字并列。
+Windows 的 7 条工具链门控结果已有历史记录；随后 Windows PowerShell 5.1 完整入口通过。
+Linux Docker amd64 的 `xvfb-run` 环境中新增真实终端测试也通过，8 条门控测试合计全部
+通过。Ubuntu 26.04 WSL 与 Arch WSL 在补齐 Rust `rustfmt`、xterm、Xvfb 后各自执行
+`XIAO_USE_XVFB=1 bash tools/platform-reproduction/reproduce.sh native`，两套均为
+8 条门控通过，且完整检查、文档覆盖率、独立 ELF、`xiao test`、三条核心发现路径和
+`X11-PROTOCOL-004` 版本失配回环通过。ARM64 因 Docker Desktop QEMU 的
+`exec format error` 未执行，未运行的 macOS 也不能被宣称为已验证。WSL 和容器共享
+宿主调度或多一层文件系统，不能与原生性能数字并列。
 
 ## 八、不负责
 

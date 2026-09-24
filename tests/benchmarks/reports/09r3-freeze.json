@@ -3,9 +3,9 @@
   "stage": "09R3",
   "platform_status": {
     "windows_native": "completed",
-    "linux": "docker-amd64-functional-evidence; docker-arm64-blocked-by-host-qemu; native-host-pending",
+    "linux": "docker-amd64-functional-evidence; wsl-ubuntu-and-arch-functional-evidence; docker-arm64-blocked-by-host-qemu; native-host-pending",
     "macos": "pending-reproduction; ci-runner-not-executed",
-    "wsl_and_containers": "wsl-toolchain-missing; containers-functional-only; excluded-from-acceptance"
+    "wsl_and_containers": "wsl-ubuntu-and-arch-functional-evidence; containers-functional-only; excluded-from-acceptance"
   },
   "selected_machine": "stack",
   "selection_basis": "按 Windows 原生性能报告的全局中位数比值选择；四族明细保留在性能报告",

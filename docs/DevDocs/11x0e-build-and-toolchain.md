@@ -239,12 +239,12 @@ VM 检查点、worker 线程和无子进程沙箱的边界见 [X0-T](11x0t-proje
 | Windows 原生 | ✅ 已完成 `xiao build`、工具链探测、独立产物、`xiao test` 和 `-debug` shim 复现 |
 | Linux Docker `amd64` | ✅ Debian 13 + Rust 1.96.0 + Bun 1.4.1 + LLVM 19.1.7；构建、独立运行、核心发现和 8 条门控测试通过；仅作功能证据 |
 | Linux Docker `arm64` | ⚠️ 已注册 `qemu-aarch64`，但 Dockerfile `RUN` 阶段仍报 `exec /bin/sh: exec format error`；未进入测试 |
-| **Linux 原生** | ❌ 仍待复现：Docker amd64 不能替代真实主机安装路径与用户环境；需 LLVM ≥18、目标/链接探测和真实源码独立运行 |
-| **WSL** | ⚠️ Ubuntu 26.04 与 Arch 均可启动，但 `rustc`、Bun、`clang`、`llvm-as`、`llc` 未安装；工具链齐备前不宣称通过 |
+| **Linux 原生** | ⚠️ 裸机仍待复现：Docker amd64 不能替代真实主机安装路径与用户环境；Ubuntu/Arch WSL 已提供真 Linux 内核的 x86_64 功能证据，但不替代裸机验收 |
+| **WSL** | ✅ Ubuntu 26.04 与 Arch 均已安装 Rust 1.96.0、Bun 1.4.2 和 LLVM/clang，`reproduce.sh native` 全链路通过；WSL 共享宿主调度，不纳入性能验收 |
 | **macOS** | ❌ CI 工作流已建立但 runner 尚未执行；不得宣称已验证，仍需 Mach-O 工具链和独立产物复现 |
 
-`xiao build` 的工具链发现在 Linux Docker amd64 已按完整命令跑通；ARM64、WSL、
-Linux 真机和 macOS 的未完成项必须继续保留，不能用容器结果替换。
+`xiao build` 的工具链发现在 Linux Docker amd64、Ubuntu WSL 和 Arch WSL 已按完整命令跑通；
+ARM64、Linux 裸机和 macOS 的未完成项必须继续保留，不能用容器或 WSL 结果替换裸机验收。
 
 ---
 
@@ -314,7 +314,7 @@ Linux 真机和 macOS 的未完成项必须继续保留，不能用容器结果�
 
 ---
 
-## 十、落地记录（2026-09-23）
+## 十、落地记录（2026-09-24）
 
 本批已完成从真实 Xiao 源码到原生可执行文件的完整路由：TypeScript CLI 读取 `.xiao` 和
 项目 `config.xiao`，按固定顺序发现工具链，发送版本协商后的 `build` 消息，Rust 核心再经
@@ -337,11 +337,19 @@ shim 只把诊断组件的文件名编入原生代码，运行时按自身可执
 但激活位仍由 `-debug` 独占。
 
 验证记录：TypeScript 类型检查、CLI 定向测试、Rust `xiao-driver`/`xiao-codegen-llvm`/
-`xiao-diagnostics` 定向测试、真实 Windows 原生 build/run/debug 回环均通过。调试产物直接运行
-返回零，主标准输出和标准错误均为空；把诊断组件覆盖为不存在的路径时，产物在用户入口前以
-70 退出并报告 `X11-DIAGNOSTIC-START-001`。工具链真实 smoke 测试默认以显式跳过计数呈现，
-只有设置 `XIAO_TOOLCHAIN_SMOKE=1` 才会运行。Linux 原生、WSL 和 macOS 未在本批运行，仍按
-§5.5 待复现。
+`xiao-diagnostics` 定向测试、真实 Windows 原生 build/run/debug 回环均通过。Windows
+PowerShell 5.1 完整入口也已通过，包含 `--emit-llvm`、`-debug`、PE/COFF 检查、同目录/PATH/
+开发回环核心发现和版本失配回环；失配返回结构化错误码 `X11-PROTOCOL-004`。调试产物直接
+运行返回零，主标准输出和标准错误均为空；把诊断组件覆盖为不存在的路径时，产物在用户入口前
+以 70 退出并报告 `X11-DIAGNOSTIC-START-001`。工具链真实 smoke 测试默认以显式跳过计数
+呈现，只有设置 `XIAO_TOOLCHAIN_SMOKE=1` 才会运行。
+
+Ubuntu 26.04 WSL 与 Arch WSL 均以 Rust 1.96.0、Bun 1.4.2 和各自发行版 LLVM 完整执行
+`tools/platform-reproduction/reproduce.sh native`：8 条 `--ignored` 门控全部通过，
+`bun test` 为 `82 pass / 1 skip / 0 fail`，`bun run check`、`check:lock`、Rust workspace
+检查、文档覆盖率 `5921/5921`（公共 API `3052/3052`）以及同目录/PATH/开发回环发现和
+`X11-PROTOCOL-004` 版本失配回环均通过。WSL 结果是共享宿主 CPU 调度下的功能证据，不能
+改写成 Linux 裸机性能或 macOS 证据；ARM64 和 macOS 仍按 §5.5 待复现。
 
 ## 相关页面
 

@@ -91,7 +91,7 @@ impl<'a> DynamicGenerator<'a> {
         let object_value = self.emit_expression(object)?;
         let payload = self.next_temp();
         self.emit(format!(
-            "  {payload} = extractvalue {VALUE_TYPE} {object_value}, 2"
+            "  {payload} = extractvalue {VALUE_TYPE} {object_value}, 1"
         ));
         let handle = self.next_temp();
         self.emit(format!("  {handle} = inttoptr i64 {payload} to ptr"));
@@ -128,7 +128,7 @@ impl<'a> DynamicGenerator<'a> {
         let object_value = self.emit_expression(object)?;
         let object_payload = self.next_temp();
         self.emit(format!(
-            "  {object_payload} = extractvalue {VALUE_TYPE} {object_value}, 2"
+            "  {object_payload} = extractvalue {VALUE_TYPE} {object_value}, 1"
         ));
         let object_handle = self.next_temp();
         self.emit(format!(

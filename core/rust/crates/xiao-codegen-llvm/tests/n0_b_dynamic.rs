@@ -235,6 +235,23 @@ fn emits_windows_indirect_runtime_abi_calls() {
 }
 
 #[test]
+/// Unix 动态值必须按 C ABI 的两个字段返回，避免把 union payload 拆成错误的第三个寄存器。
+fn emits_sysv_runtime_value_layout() {
+    let module = lower_program(
+        &expression_program(literal("str", "\"linux\"", "str")),
+        &CodegenOptions::for_target(TargetDescription::linux_x86_64()),
+    )
+    .expect("Linux 动态字符串应降低");
+    assert!(module.text.contains("%xiao.value = type { i32, i64 }"));
+    assert!(
+        module
+            .text
+            .contains("declare %xiao.value @xiao_runtime_value_str(ptr)")
+    );
+    assert!(!module.text.contains("i32, i32, i64"));
+}
+
+#[test]
 /// 动态数组的元素需逐项复制并释放临时值，且生成文本必须能被 LLVM 汇编器接受。
 fn lowers_array_and_preserves_runtime_components() {
     let array = IrExpression {
