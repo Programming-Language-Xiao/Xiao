@@ -6,10 +6,16 @@ mod adapters;
 mod cache;
 /// 11A-D1 包粒度的稳定诊断编号。
 mod diagnostics;
+/// 缓存条目的跨进程排他创建与陈旧锁回收。
+mod entry_lock;
 /// 项目环境布局、指纹和元数据物化。
 mod environment;
+/// 离线快速路径、三态回退与有界包源并行。
+mod fastpath;
 /// 包源快照及联邦索引。
 mod federation;
+/// 联邦索引覆盖缓存与跨源去重的包元数据。
+mod federation_cache;
 /// RFC 8785 JSON 规范化。
 mod jcs;
 /// 11A-E2A 锁文件、过期判据和跨平台原子文件提交。
@@ -22,6 +28,8 @@ mod model;
 mod resolver;
 /// 跨源选择的确定性纯逻辑。
 mod selection;
+/// 按源身份存放不可变快照与当前指向。
+mod snapshot_store;
 /// 离线源身份、声明与清单展开。
 mod source;
 /// E2B 本地依赖同步、安装与只读包视图。
@@ -46,12 +54,16 @@ pub use environment::{
     materialize_global_environment_from_graph, read_environment_metadata,
     update_environment_mappings, update_environment_metadata,
 };
+/// 重导出多源缓存解析编排入口与状态报告。
+pub use fastpath::{MAX_PARALLEL_SOURCES, SourceResolution, SourceResolver, SourceStatusReport};
 /// 重导出离线快照与合并契约。
 pub use federation::{
     ArtifactReference, FederatedRecord, FederationKey, IndexDependency, IndexPackage, PackageShard,
     SnapshotManifest, SnapshotStatus, SourceListFingerprint, SourceSequenceEntry, SourceSnapshot,
     federate, source_list_fingerprint,
 };
+/// 重导出可审计的联邦索引与包元数据缓存接口。
+pub use federation_cache::{FederationCache, FederationIndex, MetadataCache};
 /// 重导出统一 JSON 规范化入口。
 pub use jcs::{canonicalize_json, jcs_digest};
 /// 重导出锁文件和原子更新接口。
@@ -74,6 +86,8 @@ pub use model::{
 pub use resolver::{PackageResolver, resolve_path_dependencies, resolve_project};
 /// 重导出跨源选择入口。
 pub use selection::select_source;
+/// 重导出已验证的可复用源快照存储。
+pub use snapshot_store::{SnapshotStore, StoredSnapshot};
 /// 重导出离线源契约。
 pub use source::{
     ConfiguredSource, SOURCE_PROTOCOL_VERSION, SourceDeclaration, SourceDescriptor, SourceError,

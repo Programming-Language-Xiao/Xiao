@@ -26,6 +26,10 @@ pub struct IndexSnapshot {
 
 /// 传输仅返回规范元数据；源码/预编译产物另按引用获取。
 pub trait PackageSourceAdapter {
+    /// 是否支持断点后的部分读取；本地目录源固定不支持。
+    fn supports_partial_reads(&self) -> bool {
+        false
+    }
     /// 仅读取源清单，不下载任何正文。
     fn read_snapshot(&self, source: &SourceDescriptor) -> Result<IndexSnapshot, SourceError>;
     /// 只获取指定包名的分片及全部版本元数据。

@@ -127,6 +127,24 @@ impl CacheLayout {
             .join(SOURCE_OBJECT_ALGORITHM)
     }
 
+    /// E3B 包元数据不可变对象的独立命名空间。
+    #[must_use]
+    pub fn metadata_objects_root(&self) -> PathBuf {
+        self.cache_root().join("objects/metadata/sha256")
+    }
+
+    /// 按源身份摘要隔离的快照目录根。
+    #[must_use]
+    pub fn snapshots_root(&self) -> PathBuf {
+        self.cache_root().join("snapshots")
+    }
+
+    /// 按有序配置指纹隔离的联邦视图目录。
+    #[must_use]
+    pub fn federation_root(&self) -> PathBuf {
+        self.cache_root().join("federation")
+    }
+
     /// 返回同文件系统内的对象暂存目录。
     #[must_use]
     pub fn temporary_root(&self) -> PathBuf {

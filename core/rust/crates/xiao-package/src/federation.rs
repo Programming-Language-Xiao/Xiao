@@ -143,7 +143,7 @@ pub struct PackageShard {
 }
 
 /// 已读取的源索引状态；失败仍必须保留源序号。
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct SourceSnapshot {
     /// 包源最终序号。
     pub config_order: usize,
@@ -217,7 +217,7 @@ impl SourceSnapshot {
 }
 
 /// 索引记录的确定性合并键，保留来源与变体。
-#[derive(Clone, Debug, Eq, Ord, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, Ord, PartialEq, PartialOrd, Serialize)]
 pub struct FederationKey {
     /// 源优先级。
     pub config_order: usize,
@@ -232,7 +232,7 @@ pub struct FederationKey {
 }
 
 /// 可供后续求解器使用的联邦记录。
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct FederatedRecord {
     /// 含来源维度的合并键。
     pub key: FederationKey,
@@ -309,7 +309,7 @@ pub fn federate(snapshots: &[SourceSnapshot]) -> Result<Vec<FederatedRecord>, So
 }
 
 /// 供既有配置指纹输入组合使用的有序源清单部分。
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct SourceListFingerprint {
     /// 完整展开列表的 SHA-256 JCS 摘要。
     pub list_digest: String,
@@ -318,7 +318,7 @@ pub struct SourceListFingerprint {
 }
 
 /// 别名与显示名不影响缓存身份的源序列元素。
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct SourceSequenceEntry {
     /// 规范源身份。
     pub source_id: String,

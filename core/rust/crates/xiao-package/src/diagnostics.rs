@@ -63,6 +63,12 @@ pub const SOURCE_UNKNOWN_REFERENCE_CODE: &str = "X05-SOURCE-005";
 pub const SOURCE_AMBIGUOUS_CODE: &str = "X05-SOURCE-006";
 /// 源描述或索引结构不合法。
 pub const SOURCE_INVALID_CODE: &str = "X05-SOURCE-007";
+/// 包源缓存、跨进程锁或原子提交的本地基础设施故障。
+pub const SOURCE_CACHE_IO_CODE: &str = "X05-SOURCE-008";
+/// 已存在的包源缓存对象损坏或缺失。
+pub const SOURCE_CACHE_CORRUPT_CODE: &str = "X05-SOURCE-009";
+/// 快照缓存声称属于不同的源或快照身份。
+pub const SOURCE_SNAPSHOT_OWNER_CODE: &str = "X05-SOURCE-010";
 
 /// 包身份冲突诊断编号的简短别名。
 pub const IDENTITY_CONFLICT_CODE: &str = PACKAGE_IDENTITY_CONFLICT_CODE;

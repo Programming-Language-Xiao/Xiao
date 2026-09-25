@@ -1,0 +1,9 @@
+[
+  {
+    "package": "demo",
+    "versions": ["1.0", "9.0"],
+    "unavailable_order": 0,
+    "expected_code": "X05-SOURCE-003",
+    "expected_source": "first"
+  }
+]
