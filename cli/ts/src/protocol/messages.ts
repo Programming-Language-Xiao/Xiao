@@ -145,6 +145,23 @@ export interface EnvironmentRequest {
   toolchain: ToolchainSpec;
 }
 
+/** Rust 侧唯一的包操作入口。 */
+export interface PackageRequest {
+  type: "package";
+  request_id: string;
+  protocol_version: number;
+  core_version: number;
+  operation: "sync" | "install";
+  project_root: string;
+  active_environment: string | null;
+  config_text: string;
+  keep_extra: boolean;
+  locked: boolean;
+  frozen: boolean;
+  target: ProtocolTarget;
+  toolchain: ToolchainSpec;
+}
+
 /** 取消请求。 */
 export interface CancelRequest {
   type: "cancel";
@@ -163,7 +180,7 @@ export interface ShutdownRequest {
 }
 
 /** 所有请求消息的联合类型。 */
-export type ProtocolRequest = HelloRequest | RunRequest | TestRequest | BuildRequest | EnvironmentRequest | CancelRequest | ShutdownRequest;
+export type ProtocolRequest = HelloRequest | RunRequest | TestRequest | BuildRequest | EnvironmentRequest | PackageRequest | CancelRequest | ShutdownRequest;
 
 /** 机器可读协议错误。 */
 export interface ProtocolErrorBody {
@@ -219,6 +236,13 @@ export interface EnvironmentResultResponse {
   type: "environment_result";
   request_id: string;
   metadata: EnvironmentMetadata;
+}
+
+/** 包操作结果；环境选择不在 CLI 重算。 */
+export interface PackageResultResponse {
+  type: "package_result";
+  request_id: string;
+  result: { environment_path: string; created: boolean; changed: boolean; activate: boolean; lock_status: string | null };
 }
 
 /** 一个项目测试用例的结构化执行结果。 */
@@ -305,7 +329,7 @@ export interface ShutdownResponse {
 }
 
 /** 所有响应消息的联合类型。 */
-export type ProtocolResponse = HelloResponse | ResultResponse | EnvironmentResultResponse | TestResultResponse | ErrorResponse | CancelledResponse | ShutdownResponse;
+export type ProtocolResponse = HelloResponse | ResultResponse | EnvironmentResultResponse | PackageResultResponse | TestResultResponse | ErrorResponse | CancelledResponse | ShutdownResponse;
 
 /** 判断一个值是否具有字符串字段。 */
 export function hasStringField(value: unknown, field: string): value is Record<string, unknown> & Record<string, string> {

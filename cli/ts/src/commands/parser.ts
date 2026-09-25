@@ -22,6 +22,8 @@ export type ParsedCommand =
   | { kind: "test"; project?: string; timeoutMs?: number; options: GlobalCliOptions }
   | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; optimizationLevel: 0; args: readonly string[]; options: GlobalCliOptions }
   | { kind: "venv"; name?: string; options: GlobalCliOptions }
+  | { kind: "sync"; keepExtra: boolean; locked: boolean; frozen: boolean; options: GlobalCliOptions }
+  | { kind: "install"; options: GlobalCliOptions }
   | { kind: "shell-init"; shell: ShellName; options: GlobalCliOptions }
   | { kind: "deactivate"; options: GlobalCliOptions }
   | { kind: "repl"; options: GlobalCliOptions };
@@ -65,6 +67,11 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
   }
   if (command === "build") return parseBuild(rest, options);
   if (command === "venv") return parseVenv(rest, options);
+  if (command === "sync") return parseSync(rest, options);
+  if (command === "install" || command === "i") {
+    if (rest.length !== 0) throw new CliArgumentError("install/i 不接受选项或位置参数");
+    return { kind: "install", options };
+  }
   if (command === "shell-init") return parseShellInit(rest, options);
   if (command === "deactivate") {
     if (rest.length > 0) throw new CliArgumentError("deactivate 不接受额外参数");
@@ -89,6 +96,8 @@ export function helpText(): string {
     "  xiao test [project] [--timeout <ms>]     运行项目 tests/**/*.xiao",
     "  xiao build -o <output> <file.xiao> [-debug] [--emit-llvm <path>] [--json]",
     "  xiao venv [name]                         创建项目环境并输出激活提示",
+    "  xiao sync [--keep-extra] [--locked|--frozen] 同步依赖并激活环境",
+    "  xiao install | xiao i                     安装已有锁文件到激活或全局环境",
     "  xiao shell-init <bash|powershell|cmd>    输出一次性 Shell 钩子",
     "  xiao deactivate                          取消当前 Shell 环境激活",
     "  xiao --help | --version",
@@ -103,6 +112,18 @@ function parseVenv(args: readonly string[], options: GlobalCliOptions): ParsedCo
   const name = args[0];
   if (name !== undefined && name.startsWith("-")) throw new CliArgumentError("venv 环境名称不能以选项开头");
   return name === undefined ? { kind: "venv", options } : { kind: "venv", name, options };
+}
+
+/** 同步开关只决定 Rust 请求模式，不在 CLI 实现锁文件规则。 */
+function parseSync(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  if (args.some((argument) => !["--keep-extra", "--locked", "--frozen"].includes(argument))) {
+    throw new CliArgumentError("sync 仅支持 --keep-extra、--locked、--frozen");
+  }
+  if (new Set(args).size !== args.length) throw new CliArgumentError("sync 选项不可重复");
+  const locked = args.includes("--locked");
+  const frozen = args.includes("--frozen");
+  if (locked && frozen) throw new CliArgumentError("--locked 与 --frozen 不可同时使用");
+  return { kind: "sync", keepExtra: args.includes("--keep-extra"), locked, frozen, options };
 }
 
 /** 解析一次性 Shell 钩子输出命令。 */

@@ -5,7 +5,7 @@
 ## 页面规划
 
 `run`、`build`、`test`、`config`、`venv`、`sync`、`install`、`.xiaoc` 和 `.xar` 分别维护页面；
-当前已提供 [`xiao test`](test.md)、[`xiao build`](build.md)、[`xiao venv`](environments.md) 和 `-debug` 页面。优化级别未实现前
+当前已提供 [`xiao test`](test.md)、[`xiao build`](build.md)、[`xiao venv`](environments.md)、[`sync`/`install`](sync.md) 和 `-debug` 页面。优化级别未实现前
 不把占位参数写成可用命令。
 
 X0-B 已提供 [xiao run 与 CLI 外壳](shell.md)；X0-C 的[独立打包与核心发现](packaging.md)
@@ -29,10 +29,10 @@ X0-T 已接入 [`xiao test`](test.md)：它递归发现项目 `tests/**/*.xiao`�
 11A-E0 的项目环境创建、一次性 Shell 钩子、提示符前缀和取消激活规则见[`xiao venv` 与环境激活](environments.md)。
 
 11A-E1 的本地依赖快照、`XIAO_HOME` 共享缓存和环境逻辑映射见[本地包缓存与环境映射](package-cache.md)。
-E1 只提供核心 API 和测试，不新增用户命令；`sync`、`install`/`i` 仍由后续 E2 接入。
+E1 只提供核心 API 和测试；E2B 已接入 `sync`、`install`/`i`。
 
 11A-E2A 的项目根 [`xiao.lock.json` 与原子环境映射](package-lockfile.md)已提供核心生成、
-校验和复用 API；`sync`、`install`/`i` 的命令接线仍留在 E2B。
+校验和复用 API；E2B 的命令接线见 [`sync`/`install`](sync.md)。
 
 ## 下一步
 

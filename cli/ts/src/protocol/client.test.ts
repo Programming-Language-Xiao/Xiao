@@ -6,6 +6,7 @@ import { PassThrough } from "node:stream";
 
 import { ProtocolClient } from "./client.ts";
 import { decodePayload, encodeFrame } from "./codec.ts";
+import type { PackageRequest } from "./messages.ts";
 
 /** 在内存中模拟 xiao-core 的最小协议进程。 */
 class FakeCore extends EventEmitter {
@@ -114,6 +115,21 @@ class FakeCore extends EventEmitter {
 }
 
 describe("协议客户端", () => {
+  test("旧核心未声明 package 能力时不发送新请求", async () => {
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      overridePath: process.execPath,
+      spawnProcess: () => {
+        fake = new FakeCore();
+        return fake as never;
+      },
+    });
+    const fixturePath = new URL("../../../../tests/spec/11x0-protocol/package-request.json", import.meta.url);
+    const request = await Bun.file(fixturePath).json() as PackageRequest;
+    await expect(client.call(request)).rejects.toMatchObject({ code: "X11-CLI-CORE-004" });
+    expect(fake?.requests.map((value) => value.type)).toEqual(["hello"]);
+  });
+
   test("先握手，再按 request_id 取得运行结果并关闭核心", async () => {
     let fake: FakeCore | undefined;
     const client = new ProtocolClient({

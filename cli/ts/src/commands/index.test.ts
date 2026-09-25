@@ -2,7 +2,7 @@
 
 import { describe, expect, test } from "bun:test";
 import { EventEmitter } from "node:events";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { PassThrough } from "node:stream";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -59,7 +59,7 @@ class EnvironmentFakeCore extends EventEmitter {
     if (request.type === "hello") {
       this.stdout.write(Buffer.from(encodeFrame({
         type: "hello", request_id: request.request_id, accepted: true, protocol_version: 1,
-        core_version: 1, versions: {}, capabilities: ["environment"], error: null,
+        core_version: 1, versions: {}, capabilities: ["environment", "package"], error: null,
       })));
     } else if (request.type === "environment") {
       const logicalName = typeof request.logical_name === "string" ? request.logical_name : "venv";
@@ -75,6 +75,15 @@ class EnvironmentFakeCore extends EventEmitter {
           target_fingerprint: "xiao-target-fingerprint-v1-test",
           environment_fingerprint: "xiao-environment-fingerprint-v1-test",
           lockfile_summary: null,
+        },
+      })));
+    } else if (request.type === "package") {
+      this.stdout.write(Buffer.from(encodeFrame({
+        type: "package_result", request_id: request.request_id,
+        result: {
+          environment_path: request.active_environment ?? "C:\\project\\.venv",
+          created: request.operation === "sync", changed: true,
+          activate: request.operation === "sync", lock_status: request.operation === "sync" ? "created" : null,
         },
       })));
     } else if (request.type === "shutdown") {
@@ -109,6 +118,42 @@ function environmentContext() {
 }
 
 describe("命令取消接线", () => {
+  test("sync 激活传 Rust 路径，install 与 i 完全共用协议，不写激活文件", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-activation."));
+    const activationFile = join(directory, "activation.12345678");
+    const config = "[project]\nname = \"app\"\nversion = \"0.1.0\"\n";
+    await writeFile(join(directory, "config.xiao"), config);
+    await writeFile(activationFile, "");
+    try {
+      const syncContext = environmentContext();
+      const env = { ...process.env, XIAO_ACTIVATION_FILE: activationFile, XIAO_ACTIVE_ENV: "C:\\env\\dev" };
+      const syncResult = await executeCommand(parseArguments(["sync", "--keep-extra", "--locked"]), { ...syncContext, cwd: directory, env });
+      expect(syncResult.exitCode).toBe(0);
+      expect(syncContext.fake.requests.find((value) => value.type === "package")).toMatchObject({
+        operation: "sync", active_environment: "C:\\env\\dev", keep_extra: true, locked: true, frozen: false, config_text: config,
+      });
+      expect(await readFile(activationFile, "utf8")).toBe("XIAO_ACTIVE_ENV='C:\\env\\dev'\nexport XIAO_ACTIVE_ENV\n");
+      const results = [];
+      for (const alias of ["install", "i"]) {
+        await writeFile(activationFile, "unchanged");
+        const context = environmentContext();
+        const result = await executeCommand(parseArguments([alias, "--json"]), { ...context, cwd: directory, env });
+        expect(result.exitCode).toBe(0);
+        const request = context.fake.requests.find((value) => value.type === "package");
+        results.push({ response: JSON.parse(result.stdout), request: {
+          operation: request?.operation, project_root: request?.project_root, config_text: request?.config_text,
+          active_environment: request?.active_environment, keep_extra: request?.keep_extra,
+          locked: request?.locked, frozen: request?.frozen,
+        } });
+        expect(await readFile(activationFile, "utf8")).toBe("unchanged");
+      }
+      expect(results[0]).toEqual(results[1]);
+      expect(results[0]?.request).toMatchObject({ operation: "install", keep_extra: false, locked: false, frozen: false });
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   test("预取消信号沿 runSource 传递并在启动核心前返回稳定错误", async () => {
     const directory = await mkdtemp(join(tmpdir(), "xiao-cli-cancel-"));
     const sourcePath = join(directory, "main.xiao");

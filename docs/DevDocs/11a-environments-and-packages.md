@@ -65,6 +65,13 @@ D1 是 11A 的第一批，权威实现边界见 [11A-D1 交接文档](11ad1-pack
 - E0 的基础支持样本为 Bash 和 PowerShell；PowerShell 实现必须兼容 PowerShell 5.1。`cmd.exe` 是不支持钩子的降级样本：创建环境仍成功，但不修改注册表、不宣称已自动激活，并输出初始化或手工激活提示。
 - 非 TTY、`NO_COLOR` 或 `--color=never` 时保留纯文本 `$环境名$ ` 前缀，不输出 ANSI；可着色终端才使用绿色 ANSI。完整 Shell 矩阵、profile 安装和生产级取消激活命令留给 E3D。
 
+11A-E2B 将 E0 的钩子原则落实为私有随机临时目录中的一次性激活文件：Shell 导出
+`XIAO_ACTIVATION_FILE` 供 `venv`/`sync` 成功后写入，两行内容仅允许
+`XIAO_ACTIVE_ENV='<绝对路径>'` 与 `export XIAO_ACTIVE_ENV`。Bash、PowerShell 均在
+**白名单检查后按数据赋值（不求值文件）**，调用成功或失败后删除文件；
+`XIAO_ACTIVE_ENV` 由 E0 的不导出环境名称升级为导出的绝对路径。
+`cmd.exe` 没有钩子，仍只能手工切换 Shell，不能宣称已自动激活。
+
 `venv` 与 `sync` 的环境目录基准是向上发现到的项目根，即 `config.xiao` 所在目录；找不到配置时回退到当前目录。无参数 `xiao venv` 使用逻辑名 `venv` 和目录 `.venv`，带名称形式使用同一名称作为逻辑名和目录名。
 
 激活后只在原提示符之前增加绿色前缀，环境名和前后两个 `$` 都使用绿色，后接一个空格：
@@ -78,7 +85,7 @@ $dev$ /home/project/xiao$
 
 `xiao run`、`xiao build` 和 `xiao test` 仍能自动定位项目环境；“自动激活”不意味着这些命令必须依赖终端已经激活。激活状态主要影响交互提示和 `install`/`i` 的安装目标。
 
-多个环境并存时 `sync` 的目标选择顺序，以及锁文件缺失时的同步策略仍待定；11A-E0 已冻结并实现基础
+多个环境并存时 `sync` 按激活路径 → `.venv` → 创建 `.venv` 选择目标；锁文件缺失时由本地依赖图生成，冻结模式须已有有效锁文件。11A-E0 已冻结并实现基础
 Shell 钩子、取消激活、`cmd.exe` 降级和找不到 `config.xiao` 时回退当前目录的规则。完整 Shell 矩阵、
 profile 安装和生产级取消激活命令留给 E3D。
 

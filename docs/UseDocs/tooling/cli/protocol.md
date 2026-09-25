@@ -14,7 +14,7 @@ related:
 # Rust 核心进程协议
 
 X0-A 的核心入口是 `xiao-core` 子进程。调用方先发送一个 `hello` 帧完成版本协商，
-再发送 `run`、`test`、`build`、`environment`、`cancel` 或 `shutdown`。本页描述已经验证的机器边界；用户可见的
+再发送 `run`、`test`、`build`、`environment`、`package`、`cancel` 或 `shutdown`。本页描述已经验证的机器边界；用户可见的
 `xiao` 命令、项目测试和独立分发已经接入；`xiao build` 及主机工具链发现也已接入 X0-E。
 
 ## 帧格式
@@ -37,6 +37,11 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 `environment` 请求携带项目根、逻辑环境名、原始 `config.xiao`、目标和工具链描述；核心只把配置
 解析为静态 `ConfigDocument`，返回 `environment_result` 元数据。项目根只用于计算环境落点，
 不进入配置、目标、工具链或汇总指纹；元数据中的 `lockfile_summary` 当前为 `null`，由后续锁文件阶段填写。
+`package` 请求携带 `sync`/`install`、项目根、可选激活环境绝对路径、静态配置文本、
+目标与工具链以及同步开关；Rust 返回 `package_result` 的环境绝对路径、创建/变化与
+锁文件状态。错误依旧走 `error`，CLI 不重新判定目标或生成锁文件。
+`package` 是以 `hello.capabilities` 协商的兼容新增操作；不支持时 CLI 在发送请求前失败，
+不把旧核心的未知请求当作可用功能。
 取消通过同一请求 ID 绑定 `CancellationToken`，其结果使用 `ArtifactRejected` 的进程码 2。
 
 `optimization.debug = true` 是强制诊断位。它携带可选的 `diagnostics` 等级、日志目标和

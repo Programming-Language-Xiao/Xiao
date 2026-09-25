@@ -20,6 +20,35 @@ const TEST_REQUEST_FIXTURE: &str =
 /// Rust 与 TypeScript 共用的项目测试响应样本。
 const TEST_RESPONSE_FIXTURE: &str =
     include_str!("../../../../../tests/spec/11x0-protocol/test-response.json");
+/// Rust 与 TypeScript 共用的包操作请求样本。
+const PACKAGE_REQUEST_FIXTURE: &str =
+    include_str!("../../../../../tests/spec/11x0-protocol/package-request.json");
+
+#[test]
+/// E2B 包请求的两侧字段形状一致，序列化后保留全部同步开关。
+fn package_fixture_round_trips() {
+    let request: ProtocolRequest =
+        serde_json::from_str(PACKAGE_REQUEST_FIXTURE).expect("package fixture");
+    let ProtocolRequest::Package {
+        operation,
+        active_environment,
+        keep_extra,
+        frozen,
+        ..
+    } = &request
+    else {
+        panic!("expected package request");
+    };
+    assert_eq!(operation, "sync");
+    assert_eq!(
+        active_environment.as_deref(),
+        Some("/workspace/project/dev")
+    );
+    assert!(*keep_extra && *frozen);
+    let frame = encode_frame(&request).expect("encode");
+    let decoded: ProtocolRequest = decode_frame(&frame[FRAME_LENGTH_BYTES..]).expect("decode");
+    assert_eq!(decoded, request);
+}
 
 #[test]
 /// Rust 能读取 TypeScript 共用的请求样本并生成同一帧格式。

@@ -6,12 +6,12 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use xiao_bytecode::FORMAT_VERSION;
 use xiao_codegen_llvm::CODEGEN_VERSION;
-use xiao_package::EnvironmentMetadata;
+use xiao_package::{EnvironmentMetadata, PackageOperationResult};
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 
 use crate::run::DRIVER_VERSION;
 
-/// 当前协议版本。协议字段和帧布局变化时必须递增。
+/// 当前协议版本。破坏性字段或帧布局变化时递增；新增兼容操作由 hello 能力协商。
 pub const PROTOCOL_VERSION: u16 = 1;
 /// CLI 与核心比较的统一兼容版本；组件版本只作为诊断信息返回。
 pub const CORE_VERSION: u32 = 1;
@@ -279,6 +279,13 @@ pub enum ProtocolResponse {
         request_id: String,
         /// 规范化配置、工具链和目标指纹。
         metadata: EnvironmentMetadata,
+    },
+    /// 同步或安装完成。
+    PackageResult {
+        /// 对应请求编号。
+        request_id: String,
+        /// 环境与锁文件操作摘要。
+        result: PackageOperationResult,
     },
     /// 项目测试完成结果；`tests` 顺序与请求中的源码顺序一致。
     TestResult {

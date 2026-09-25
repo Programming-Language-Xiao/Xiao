@@ -5,6 +5,14 @@ import { describe, expect, test } from "bun:test";
 import { CliArgumentError, parseArguments } from "./parser.ts";
 
 describe("xiao 命令解析", () => {
+  test("同步模式互斥，install/i 共享命令形状", () => {
+    expect(parseArguments(["sync", "--keep-extra", "--frozen"])).toMatchObject({ kind: "sync", keepExtra: true, frozen: true, locked: false });
+    expect(parseArguments(["i"])).toEqual(parseArguments(["install"]));
+    for (const argumentsList of [["sync", "--locked", "--frozen"], ["sync", "--unknown"], ["i", "--locked"], ["sync", "--locked", "--locked"]]) {
+      expect(() => parseArguments(argumentsList)).toThrow(CliArgumentError);
+    }
+  });
+
   test("支持 run、源码快捷方式和全局输出选项", () => {
     expect(parseArguments(["run", "main.xiao", "--json"]).kind).toBe("run");
     expect(parseArguments(["main.xiao", "--color=always"]).kind).toBe("run");

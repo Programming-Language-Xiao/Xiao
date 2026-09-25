@@ -17,6 +17,8 @@ related:
 11A-E0 提供项目环境目录、环境元数据和一次性 Shell 钩子。该阶段不联网、不执行项目代码，
 也不实现依赖求解、锁文件同步或缓存。
 
+11A-E2B 已增加 [`sync`/`install`](sync.md)，并统一 `venv` 与 `sync` 的一次性激活通道。
+
 ## 创建环境
 
 ```text
@@ -56,6 +58,11 @@ xiao shell-init powershell | Invoke-Expression
 前加上绿色 `$环境名$ ` 前缀；重复激活或切换会先移除旧前缀，`xiao deactivate` 会恢复初始化前的
 原提示符。`NO_COLOR`、`TERM=dumb`、非 TTY 或 `--color=never` 时不输出 ANSI，但仍保留纯文本前缀。
 
+钩子将不可预测的临时文件路径导出为 `XIAO_ACTIVATION_FILE`，命令成功时写入两行
+`XIAO_ACTIVE_ENV='<绝对路径>'` / `export XIAO_ACTIVE_ENV`。Bash 与 PowerShell 对内容
+逐行校验，只将合格路径作为**数据**导出；任意第三行、相对路径、别的变量、引号或换行都会
+被拒绝。成功、失败都清理文件；普通未初始化 Shell 不会自动激活。
+
 `cmd.exe` 在 E0 中是明确的降级路径：`xiao shell-init cmd` 只输出说明，不修改注册表、不宣称
 自动激活；需要提示符闭环时请使用 Bash 兼容 Shell 或 PowerShell。
 
@@ -69,4 +76,5 @@ xiao shell-init powershell | Invoke-Expression
 ## 边界
 
 `xiao run`、`xiao build` 和 `xiao test` 仍会自动定位项目环境，不要求当前提示符已经激活。
-完整 Shell 矩阵、profile 安装和生产级取消激活命令属于 E3D；锁文件摘要和 `sync` 属于后续阶段。
+完整 Shell 矩阵、profile 安装和生产级取消激活命令属于 E3D；`sync` 已在 E2B 接入。
+当前元数据的 `lockfile_summary` 仍为 `null`；`sync` 的锁文件信息存放在项目根 `xiao.lock.json`。

@@ -30,6 +30,12 @@ pub const CACHE_INVALID_INPUT_CODE: &str = "X05-CACHE-002";
 pub const CACHE_INVALID_SOURCE_CODE: &str = "X05-CACHE-003";
 /// 缓存对象摘要校验失败时使用的编号。
 pub const CACHE_OBJECT_CORRUPT_CODE: &str = "X05-CACHE-004";
+/// 包操作开关、项目根或激活路径不合法时使用的编号。
+pub const SYNC_INVALID_INPUT_CODE: &str = "X05-SYNC-001";
+/// 安装或冻结同步缺少现有锁文件时使用的编号。
+pub const SYNC_LOCK_REQUIRED_CODE: &str = "X05-SYNC-002";
+/// 激活环境不存在或环境元数据无法写入时使用的编号。
+pub const SYNC_ENVIRONMENT_CODE: &str = "X05-SYNC-003";
 /// 锁文件格式版本高于当前读取器时使用的编号。
 pub const LOCKFILE_UNSUPPORTED_VERSION_CODE: &str = "X05-LOCK-001";
 /// 锁文件 JSON、结构或输入图无效时使用的编号。

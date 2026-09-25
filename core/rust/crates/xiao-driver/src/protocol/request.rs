@@ -327,6 +327,33 @@ pub enum ProtocolRequest {
         /// 工具链路径与版本描述。
         toolchain: ToolchainSpec,
     },
+    /// 使用 D1 本地包图同步或安装；目标环境由 Rust 唯一选择。
+    Package {
+        /// 请求编号。
+        request_id: String,
+        /// 协议版本。
+        protocol_version: u16,
+        /// 核心版本。
+        core_version: u32,
+        /// sync 或 install。
+        operation: String,
+        /// 项目根绝对路径。
+        project_root: String,
+        /// 已激活环境的绝对路径。
+        active_environment: Option<String>,
+        /// 静态配置原文。
+        config_text: String,
+        /// 是否保留多余映射。
+        keep_extra: bool,
+        /// 锁文件必须为最新。
+        locked: bool,
+        /// 只读现有锁文件。
+        frozen: bool,
+        /// 平台目标。
+        target: ProtocolTarget,
+        /// 已发现的工具链。
+        toolchain: ToolchainSpec,
+    },
     /// 请求取消另一个正在执行的请求。
     Cancel {
         /// 取消消息自身的编号。

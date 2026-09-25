@@ -14,8 +14,8 @@ related:
 
 # 本地包锁文件与原子环境映射
 
-11A-E2A 只提供 Rust `xiao-package` 核心 API，不新增 `xiao` 子命令。后续 E2B 的 `sync`、
-`install`/`i` 可消费这里的锁定结果；目前无法通过 CLI 生成锁文件。
+11A-E2A 提供 Rust `xiao-package` 核心 API；11A-E2B 已通过 `xiao sync` 接入锁文件生成，
+`install`/`i` 只消费已有锁文件。命令行为见 [`sync`/`install`](sync.md)。
 
 ## 文件契约
 
@@ -59,5 +59,5 @@ related:
 均使用 `fs::rename` 替换已存在的文件，不先删除旧文件。写入中断最多留下可清理
 的暂存文件，旧元数据依然可读取；此保证面向进程中断，不承诺断电持久性。
 
-E0 Shell 钩子尚未把激活环境的绝对路径导出给 CLI 子进程。E2B 实现“激活环境优先”前
-须补这条接线；E2A 不实施激活、同步或安装。
+E2A 不实施激活、同步或安装；E2B 已由 Shell 钩子导出激活环境绝对路径，
+并在 Rust 编排入口按「激活环境 → 项目 `.venv` → 创建 `.venv`」选定同步目标。

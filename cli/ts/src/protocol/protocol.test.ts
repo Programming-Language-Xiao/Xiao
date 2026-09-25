@@ -14,6 +14,15 @@ async function fixture(name: string): Promise<unknown> {
 }
 
 describe("X0-A 长度前缀协议", () => {
+  test("包请求共享夹具保留目标环境和锁定开关", async () => {
+    const value = validateMessage(await fixture("package-request.json"));
+    expect(value).toMatchObject({
+      type: "package", operation: "sync", active_environment: "/workspace/project/dev",
+      keep_extra: true, locked: false, frozen: true,
+    });
+    expect(decodeFrame<unknown>(encodeFrame(value))).toEqual(value);
+  });
+
   test("共享 hello fixture 可编码、解码并验证消息形状", async () => {
     const value = validateMessage(await fixture("hello-request.json"));
     const frame = encodeFrame(value);

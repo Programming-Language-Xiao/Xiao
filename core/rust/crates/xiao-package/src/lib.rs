@@ -14,6 +14,8 @@ mod mapping;
 mod model;
 /// 本地路径包配置读取和递归依赖解析。
 mod resolver;
+/// E2B 本地依赖同步、安装与只读包视图。
+mod sync;
 
 /// 重导出本地源码缓存接口。
 pub use cache::{
@@ -50,3 +52,8 @@ pub use model::{
 };
 /// 重导出本地路径解析入口。
 pub use resolver::{PackageResolver, resolve_path_dependencies, resolve_project};
+/// 重导出同步与安装编排入口。
+pub use sync::{
+    PackageOperation, PackageOperationResult, PackageSyncError, apply_packages,
+    environment_package_view,
+};

@@ -156,6 +156,56 @@ fn environment_request_generates_stable_metadata() {
 }
 
 #[test]
+/// 包协议保留 E2B 稳定错误编号，缺失锁文件时不创建目标环境。
+fn package_request_missing_lock_does_not_create_environment() {
+    let project_root = std::env::temp_dir().join(format!(
+        "xiao-package-protocol-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("clock")
+            .as_nanos()
+    ));
+    fs::create_dir(&project_root).expect("create project");
+    let config_text = "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n";
+    fs::write(project_root.join("config.xiao"), config_text).expect("config");
+    let request = ProtocolRequest::Package {
+        request_id: "package-1".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        operation: "sync".to_owned(),
+        project_root: project_root.to_string_lossy().into_owned(),
+        active_environment: None,
+        config_text: config_text.to_owned(),
+        keep_extra: false,
+        locked: true,
+        frozen: false,
+        target: ProtocolTarget::host(),
+        toolchain: ToolchainSpec {
+            clang: "clang".to_owned(),
+            versions: ToolchainVersionsSpec {
+                clang: "clang 18".to_owned(),
+                ..ToolchainVersionsSpec::default()
+            },
+            ..ToolchainSpec::default()
+        },
+    };
+    let encoded = serde_json::to_string(&request).expect("encode");
+    let decoded = serde_json::from_str(&encoded).expect("decode");
+    let response = dispatch(decoded);
+    let ProtocolResponse::Error {
+        error, exit_code, ..
+    } = response
+    else {
+        panic!("missing lock must reject");
+    };
+    assert_eq!(error.code, "X05-SYNC-002");
+    assert_eq!(exit_code, 2);
+    assert!(!project_root.join(".venv").exists());
+    fs::remove_dir_all(project_root).expect("cleanup");
+}
+
+#[test]
 /// 空测试集合在协议边界被拒绝，而不是产生虚假的成功结果。
 fn test_request_rejects_empty_case_list() {
     let response = dispatch(ProtocolRequest::Test {

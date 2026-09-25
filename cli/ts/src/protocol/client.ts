@@ -14,6 +14,7 @@ import {
   type TestRequest,
   type BuildRequest,
   type EnvironmentRequest,
+  type PackageRequest,
   type ToolchainSpec,
 } from "./messages.ts";
 import { discoverCoreWithMetadata, hostTarget, type CoreDiscoveryOptions, type CoreDiscoverySource } from "../platform/core.ts";
@@ -277,7 +278,7 @@ export class ProtocolClient {
   }
 
   /** 使用已经规范化的协议运行请求发送一次调用。 */
-  async call(request: RunRequest | TestRequest | BuildRequest | EnvironmentRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  async call(request: RunRequest | TestRequest | BuildRequest | EnvironmentRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     const discovery = await discoverCoreWithMetadata(this.options);
     const corePath = discovery.path;
@@ -317,6 +318,10 @@ export class ProtocolClient {
         throw new CoreClientError(error?.code ?? "X11-PROTOCOL-004", error?.message ?? "核心版本不兼容", 2, {
           response: helloResponse,
         });
+      }
+
+      if (request.type === "package" && !helloResponse.capabilities.includes("package")) {
+        throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 package 能力，请升级 xiao-core", 2);
       }
 
       await writeChildFrame(child, request);

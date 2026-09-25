@@ -1,6 +1,6 @@
 # `xiao-package/tests`
 
-这里放置 11A-D1 包契约、11A-E0 环境物化、11A-E1 本地依赖缓存及 11A-E2A 锁文件的规格测试。测试通过
+这里放置 11A-D1 包契约、11A-E0 环境物化、11A-E1 本地依赖缓存及 11A-E2A/E2B 锁与同步的规格测试。测试通过
 `xiao-package` 的公开入口读取隔离临时项目，并验证包身份、确定性拓扑顺序、环境元数据版本、
 SHA-256 对象、只读校验、损坏隔离和 `X05-*` 诊断。
 
@@ -9,4 +9,5 @@ SHA-256 对象、只读校验、损坏隔离和 `X05-*` 诊断。
 本目录不执行 Xiao 包代码，不访问远程源，也不碰真实 `~/.xiao`；每个用例注入临时缓存根目录。
 D1 夹具位于 `tests/spec/11a-package/`，由 `d1_package.rs` 真实加载；E1 夹具位于
 `tests/spec/11a-cache/`，由 `e1_cache.rs` 真实加载；E2A 双夹具位于
-`tests/spec/11a-lockfile/`，由 `e2a_lockfile.rs` 真实加载并执行。
+`tests/spec/11a-lockfile/`，由 `e2a_lockfile.rs` 真实加载并执行；E2B 双夹具位于
+`tests/spec/11a-sync/`，由 `e2b_sync.rs` 逐例执行。

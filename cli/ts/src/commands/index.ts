@@ -15,6 +15,8 @@ import {
   shellInitScript,
   EnvironmentCommandError,
 } from "../environments/index.ts";
+import { requestActivation } from "../environments/activation.ts";
+import { executePackageCommand } from "../packages/index.ts";
 
 /** 命令执行上下文；IO 由入口注入，便于管道和测试。 */
 export interface CommandContext {
@@ -64,6 +66,13 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
   }
   if (command.kind === "test") return executeTest(command, context);
   if (command.kind === "venv") return executeVenv(command, context);
+  if (command.kind === "sync" || command.kind === "install") {
+    try {
+      return await executePackageCommand(command, context, renderOptions(command.options, context));
+    } catch (error) {
+      return renderCliError(error, renderOptions(command.options, context));
+    }
+  }
   if (command.kind === "shell-init") return executeShellInit(command, context);
   if (command.kind === "deactivate") return executeDeactivate(command);
   if (command.kind === "build") {
@@ -87,6 +96,7 @@ async function executeVenv(
       toolchain: context.environmentToolchain,
       signal: context.signal,
     });
+    await requestActivation(created.path, context.env ?? process.env);
     if (command.options.json) {
       return {
         stdout: `${JSON.stringify({
@@ -102,7 +112,7 @@ async function executeVenv(
       };
     }
     return {
-      stdout: `已创建环境 ${created.logicalName}：${created.path}\n`,
+      stdout: `已创建环境 ${created.logicalName}：${created.path}\n${(context.env ?? process.env).XIAO_ACTIVATION_FILE ? "" : "未检测到激活钩子；可手工将 XIAO_ACTIVE_ENV 设为以上绝对路径，或先在 Bash/PowerShell 初始化对应的 shell-init 钩子。\n"}`,
       stderr: "",
       exitCode: 0,
     };

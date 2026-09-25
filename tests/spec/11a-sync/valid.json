@@ -1,0 +1,10 @@
+{
+  "stage": "11A-E2B",
+  "status": "verified-static",
+  "cases": [
+    { "name": "sync-creates-project", "mode": "sync", "seed": false, "environment": "project/.venv", "lock_status": "created", "activate": true },
+    { "name": "sync-reuses-lock", "mode": "sync", "seed": true, "environment": "project/.venv", "lock_status": "reused", "activate": true },
+    { "name": "sync-prefers-active", "mode": "active-sync", "seed": true, "environment": "project/dev", "lock_status": "reused", "activate": true },
+    { "name": "install-uses-global-container", "mode": "install", "seed": true, "environment": "home/envs/global", "lock_status": null, "activate": false }
+  ]
+}

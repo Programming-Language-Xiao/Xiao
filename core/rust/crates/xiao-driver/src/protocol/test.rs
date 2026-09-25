@@ -124,6 +124,7 @@ fn test_case_result(
         },
         ProtocolResponse::Hello { .. }
         | ProtocolResponse::EnvironmentResult { .. }
+        | ProtocolResponse::PackageResult { .. }
         | ProtocolResponse::Shutdown { .. }
         | ProtocolResponse::TestResult { .. } => {
             let exit_code = ExitCode::Fatal.as_process_code();

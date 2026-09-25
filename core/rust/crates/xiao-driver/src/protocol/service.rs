@@ -23,7 +23,9 @@ use super::run::{protocol_error_response, run_request_response};
 use super::test::test_request_response;
 use super::validate::{validate_source, validate_target, validate_versions};
 use crate::run::{CancellationToken, ExitCode};
-use xiao_package::{EnvironmentLayout, build_environment_metadata};
+use xiao_package::{
+    CacheLayout, EnvironmentLayout, PackageOperation, apply_packages, build_environment_metadata,
+};
 
 /// 从流读取并解码一条请求。
 pub fn read_request<R: Read>(reader: &mut R) -> Result<Option<ProtocolRequest>, FrameError> {
@@ -129,6 +131,33 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             target,
             toolchain,
         ),
+        ProtocolRequest::Package {
+            request_id,
+            protocol_version,
+            core_version,
+            operation,
+            project_root,
+            active_environment,
+            config_text,
+            keep_extra,
+            locked,
+            frozen,
+            target,
+            toolchain,
+        } => package_request_response(
+            request_id,
+            protocol_version,
+            core_version,
+            operation,
+            project_root,
+            active_environment,
+            config_text,
+            keep_extra,
+            locked,
+            frozen,
+            target,
+            toolchain,
+        ),
         ProtocolRequest::Cancel {
             request_id,
             protocol_version,
@@ -167,6 +196,7 @@ fn hello_response(
                 "test".to_owned(),
                 "build".to_owned(),
                 "environment".to_owned(),
+                "package".to_owned(),
                 "cancel".to_owned(),
             ],
             error: None,
@@ -265,6 +295,86 @@ fn environment_request_response(
     ProtocolResponse::EnvironmentResult {
         request_id,
         metadata,
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+/// 校验包请求后交给 Rust 唯一的同步/安装编排入口。
+fn package_request_response(
+    request_id: String,
+    protocol_version: u16,
+    core_version: u32,
+    operation: String,
+    project_root: String,
+    active_environment: Option<String>,
+    config_text: String,
+    keep_extra: bool,
+    locked: bool,
+    frozen: bool,
+    target: ProtocolTarget,
+    toolchain: ToolchainSpec,
+) -> ProtocolResponse {
+    if let Err(error) = validate_versions(protocol_version, core_version) {
+        return protocol_error_response(Some(request_id), &error);
+    }
+    let action = match operation.as_str() {
+        "sync" => PackageOperation::Sync {
+            keep_extra,
+            locked,
+            frozen,
+        },
+        "install" if !keep_extra && !locked && !frozen => PackageOperation::Install,
+        _ => {
+            return protocol_error_response(
+                Some(request_id),
+                &ProtocolError::request("operation", "包操作或选项无效"),
+            );
+        }
+    };
+    let document = match parse_environment_config(Some(&config_text)) {
+        Ok(document) => document,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let target = match target.to_target() {
+        Ok(target) => target,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let toolchain = match build::build_toolchain(&toolchain, &target) {
+        Ok(toolchain) => toolchain,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let cache = match CacheLayout::from_environment() {
+        Ok(cache) => cache,
+        Err(error) => {
+            return protocol_error_response(
+                Some(request_id),
+                &ProtocolError::request("cache", error.to_string()),
+            );
+        }
+    };
+    match apply_packages(
+        std::path::Path::new(&project_root),
+        active_environment.as_deref().map(std::path::Path::new),
+        &document,
+        &toolchain,
+        &target,
+        action,
+        cache,
+    ) {
+        Ok(result) => ProtocolResponse::PackageResult { request_id, result },
+        Err(error) => ProtocolResponse::Error {
+            request_id: Some(request_id),
+            error: protocol_error_body(
+                error.code,
+                "x05.package.operation",
+                error.message,
+                Some("package".to_owned()),
+                Some("检查本地依赖与锁文件".to_owned()),
+                BTreeMap::new(),
+            ),
+            report: None,
+            exit_code: ExitCode::ArtifactRejected.as_process_code(),
+        },
     }
 }
 
@@ -385,7 +495,9 @@ pub(super) fn worker_response(
             config_text,
             &token,
         ),
-        request @ ProtocolRequest::Environment { .. } => dispatch(request),
+        request @ (ProtocolRequest::Environment { .. } | ProtocolRequest::Package { .. }) => {
+            dispatch(request)
+        }
         other => dispatch(other),
     }
 }
@@ -457,7 +569,7 @@ where
                 }
                 spawn_worker(request, &writer, &cancellations, &mut workers);
             }
-            request @ ProtocolRequest::Environment { .. } => {
+            request @ (ProtocolRequest::Environment { .. } | ProtocolRequest::Package { .. }) => {
                 if !negotiated {
                     let request_id = request_id_for(&request).expect("environment request id");
                     let error = ProtocolError::version("必须先完成 hello 版本协商");
@@ -490,6 +602,7 @@ fn request_id_for(request: &ProtocolRequest) -> Option<String> {
         | ProtocolRequest::Test { request_id, .. }
         | ProtocolRequest::Build { request_id, .. }
         | ProtocolRequest::Environment { request_id, .. }
+        | ProtocolRequest::Package { request_id, .. }
         | ProtocolRequest::Cancel { request_id, .. }
         | ProtocolRequest::Shutdown { request_id, .. } => Some(request_id.clone()),
         ProtocolRequest::Hello { .. } => None,
