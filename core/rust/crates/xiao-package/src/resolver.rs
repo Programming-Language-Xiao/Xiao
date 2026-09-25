@@ -7,7 +7,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use xiao_config::{ConfigDocument, dependency_declarations, parse_config_project};
+use xiao_config::{
+    ConfigDocument, dependency_declarations, git_dependency_declarations, parse_config_project,
+};
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
 use xiao_source::{SourceFile, SourceSpan};
 
@@ -180,6 +182,20 @@ impl ResolverState {
                 return None;
             }
         };
+        if let Some(dependency) = git_dependency_declarations(&document).first() {
+            self.push_path_diagnostic(
+                PACKAGE_INVALID_METADATA_CODE,
+                "x05.package.git_dependency_unresolved",
+                Some(dependency.span),
+                package_root.clone(),
+                format!(
+                    "Git 依赖 {:?} 尚未进入本地路径同步；远程版本解析留待 E3D",
+                    dependency.name
+                ),
+                [("package", DiagnosticParam::Text(dependency.name.clone()))],
+            );
+            return None;
+        }
         let Some(identity) = package_identity(&document, &package_root) else {
             self.push_path_diagnostic(
                 PACKAGE_INVALID_METADATA_CODE,

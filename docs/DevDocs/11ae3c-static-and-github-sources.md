@@ -287,6 +287,39 @@ lib = { git = "https://github.com/acme/lib.git", rev = "v1.2.0" }
 
 ---
 
+## 十二、实现收口与冻结结果
+
+1. **同步客户端**：`xiao-package` 引入 `ureq 3` 的 `rustls`（关闭不必要的默认功能）；
+   不引入 async runtime、Git 客户端或任务池。`MultiSourceAdapter` 对目录、静态 HTTP、
+   注册表静态索引和 Git 稀疏索引复用同一校验/联邦缓存入口。
+2. **Git 引用**：以 smart HTTP v1 `info/refs?service=git-upload-pack` 读取受限 pkt-line，
+   对未知版本、无效长度/编码、重复引用拒绝。GitHub 公共仓库的 raw 基址由
+   `owner/repo` 推导；自托管/测试可显式给 raw 基址。`[sources]` 可指定唯一的
+   `rev`/`tag`/`branch`，省略时发现广告的 `HEAD`；`rev` 的完整 40/64 位小写
+   哈希直接钉住提交，其余文本作为标签。不同引用拥有独立源身份和缓存。
+3. **URL 与重定向**：HTTP(S) 基址去尾 `/` 后添加安全相对路径；拒绝点段、编码路径、
+   用户信息、查询及片段。所有 3xx **一律不跟随**，跨 host 也不跟随，诊断只记录原 URL；
+   4xx/5xx、连接、TLS、超时和截断读归入 `unavailable`，不解释为「包不存在」。
+4. **直接 Git 依赖**：`git = "https://..."` 须且仅须携带 `rev`、`tag`、`branch` 之一；
+   与 `path`/`source` 互斥，`version` 仅保存。配置层只提取静态声明，现有本地路径
+   `sync` 对 Git 依赖**明确诊断并中止**，不悄悄略过，也不冒充已安装；把直接仓库
+   的包内容纳入远程依赖求解、锁定和安装仍归 E3D。
+5. **不可变证明**：`git-index` 清单的 `snapshot_id` 必须为本次解析出的完整 commit；
+   `LockFile.source_snapshots` 因而同时保存该提交和清单 JCS 摘要，原有
+   `LockedPackage.source` 则继续记录来源身份。在线解析旧锁定标签必须复查 refs，
+   改写或同 commit 下清单规范内容变化直接拒绝（不回退旧缓存）；分支前进允许新快照。
+   离线钉住的完整缓存仍可走 E3B 快速路径；非标签源仅在主动刷新时发现远端变化。
+6. **相同语义**：三类来源共用同一清单、分片、正文验证函数。不同 kind/URL 的
+   `source_id` 必然不同，所以整份 `snapshot.json`/分片不可能跨源**逐字节相同**；
+   可比较的对象是排除来源身份后的规范包记录。相同身份且相同快照正文走 HTTP
+   或本地目录的解析结果一致，绝不放宽清单 `source_id` 校验来伪造字节相等。
+
+网络测试只起本机 `TcpListener`：覆盖真实 Range 206 续传、截断不提交半成品、
+404/503/302、超时、TLS 握手失败、连接拒绝、标签改写、同 commit 清单变更、
+分支前进、未知协议和不执行正文。DNS 外部联调不进 CI。
+
+---
+
 ## 相关页面
 
 - [11A. 虚拟环境与包管理](11a-environments-and-packages.md) `:495-502`、`:334-340`、`:342-348`

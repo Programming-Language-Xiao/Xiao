@@ -41,6 +41,8 @@ pub const INVALID_DEPENDENCY_PATH_CODE: &str = "X05-CONFIG-013";
 pub const INVALID_DEPENDENCY_CONSTRAINT_CODE: &str = "X05-CONFIG-014";
 /// 依赖来源引用为空或包含控制字符时使用的编号。
 pub const INVALID_DEPENDENCY_SOURCE_CODE: &str = "X05-CONFIG-015";
+/// Git 依赖引用、互斥字段或仓库地址不合法。
+pub const INVALID_DEPENDENCY_GIT_CODE: &str = "X05-CONFIG-016";
 
 /// 判断诊断列表是否包含错误级别项目。
 #[must_use]

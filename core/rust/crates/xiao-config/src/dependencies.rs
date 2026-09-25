@@ -7,6 +7,70 @@ use xiao_source::SourceSpan;
 
 use crate::model::{ConfigDocument, ConfigValue};
 
+/// 不访问网络的单仓库 Git 依赖声明。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct GitDependencyDeclaration {
+    /// 配置包名。
+    pub name: String,
+    /// 声明类别。
+    pub kind: DependencyKind,
+    /// HTTPS 仓库地址。
+    pub git: String,
+    /// 引用类型：rev、tag 或 branch。
+    pub reference_kind: String,
+    /// 公开的引用文本，不作为完整性证明。
+    pub reference: String,
+    /// 可选版本条件（此阶段不求解）。
+    pub version: Option<String>,
+    /// 声明源码范围。
+    pub span: SourceSpan,
+}
+
+/// 从已校验的静态树提取显式 Git 依赖，而不解析其引用。
+#[must_use]
+pub fn git_dependency_declarations(document: &ConfigDocument) -> Vec<GitDependencyDeclaration> {
+    let mut declarations = Vec::new();
+    for (table_name, kind) in [
+        ("dependencies", DependencyKind::Runtime),
+        ("devdependencies", DependencyKind::Development),
+    ] {
+        let Some(table) = document.table(table_name) else {
+            continue;
+        };
+        for (name, entry) in table.iter() {
+            let Some(fields) = entry.value.as_dictionary() else {
+                continue;
+            };
+            let Some(git) = fields.get("git").and_then(ConfigValue::as_str) else {
+                continue;
+            };
+            let Some((reference_kind, reference)) =
+                ["rev", "tag", "branch"].into_iter().find_map(|field| {
+                    fields
+                        .get(field)
+                        .and_then(ConfigValue::as_str)
+                        .map(|value| (field, value))
+                })
+            else {
+                continue;
+            };
+            declarations.push(GitDependencyDeclaration {
+                name: name.clone(),
+                kind,
+                git: git.to_owned(),
+                reference_kind: reference_kind.to_owned(),
+                reference: reference.to_owned(),
+                version: fields
+                    .get("version")
+                    .and_then(ConfigValue::as_str)
+                    .map(str::to_owned),
+                span: entry.span,
+            });
+        }
+    }
+    declarations
+}
+
 /// 依赖声明所属的配置表。
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum DependencyKind {

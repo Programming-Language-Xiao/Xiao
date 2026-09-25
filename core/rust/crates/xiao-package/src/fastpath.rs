@@ -1,4 +1,4 @@
-//! E3B 本地源驱动的确定性并行读取与离线快照快速路径。
+//! E3B 的确定性并行读取与离线快照快速路径，E3C 同步远程适配器复用此入口。
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
@@ -165,7 +165,12 @@ impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
             return Err(SourceError::new(SOURCE_INVALID_CODE, "查询包名不合法"));
         }
         let source_fingerprint = source_list_fingerprint(&ordered);
-        if let Some(lockfile) = usable_lockfile {
+        let verify_tags = !offline
+            && usable_lockfile.is_some()
+            && ordered
+                .iter()
+                .any(|source| self.adapter.requires_online_pin_check(&source.descriptor));
+        if let Some(lockfile) = usable_lockfile.filter(|_| !verify_tags) {
             if let Some(cached) =
                 self.try_fast_path(&fingerprint, &source_fingerprint, &ordered, lockfile, names)?
             {
@@ -182,7 +187,10 @@ impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
                     .iter()
                     .map(|source| {
                         scope.spawn(|| {
-                            if can_reuse {
+                            if can_reuse
+                                && (offline
+                                    || !self.adapter.requires_online_pin_check(&source.descriptor))
+                            {
                                 if let Some(existing) = previous.as_ref().and_then(|index| {
                                     index.snapshots.get(source.config_order).filter(|snapshot| {
                                         snapshot.source_id == source.descriptor.source.source_id
@@ -215,8 +223,17 @@ impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
                                 return Ok(ReadOutcome::Failed(None));
                             }
                             Ok(
-                                match self.adapter.read_snapshot(&source.descriptor).and_then(
-                                    |index| {
+                                match self
+                                    .adapter
+                                    .read_snapshot_pinned(
+                                        &source.descriptor,
+                                        usable_lockfile.and_then(|lockfile| {
+                                            lockfile
+                                                .source_snapshots
+                                                .get(&source.descriptor.source.source_id)
+                                        }),
+                                    )
+                                    .and_then(|index| {
                                         let mut snapshot = SourceSnapshot::from_index(
                                             source.config_order,
                                             SnapshotStatus::Fresh,
@@ -231,8 +248,7 @@ impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
                                             )?;
                                         }
                                         Ok((index, snapshot))
-                                    },
-                                ) {
+                                    }) {
                                     Ok((index, snapshot)) => ReadOutcome::Fresh(index, snapshot),
                                     Err(error) => ReadOutcome::Failed(Some(error)),
                                 },
@@ -266,6 +282,13 @@ impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
                     (snapshot, Some(observed_at_ms), None)
                 }
                 ReadOutcome::Failed(problem) => {
+                    if let Some(error) = &problem {
+                        if source.descriptor.kind != "path"
+                            && error.code != crate::diagnostics::SOURCE_UNAVAILABLE_CODE
+                        {
+                            return Err(error.clone());
+                        }
+                    }
                     let previous_snapshot = previous.as_ref().and_then(|index| {
                         index.snapshots.get(source.config_order).filter(|snapshot| {
                             snapshot.source_id == source.descriptor.source.source_id

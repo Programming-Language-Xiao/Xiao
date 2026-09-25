@@ -108,7 +108,9 @@ fn validate_source_table(table: &ConfigTable, diagnostics: &mut ConfigDiagnostic
         let allowed: &[&str] = if imported {
             &["list", "digest"]
         } else {
-            &["kind", "location", "alias", "display", "protocol"]
+            &[
+                "kind", "location", "alias", "display", "protocol", "rev", "tag", "branch",
+            ]
         };
         for (field, value) in fields {
             if !allowed.contains(&field.as_str()) {
@@ -151,6 +153,33 @@ fn validate_source_table(table: &ConfigTable, diagnostics: &mut ConfigDiagnostic
                     entry.span,
                     format!("源 {:?} 缺少必填字段 {required:?}", entry.key),
                     [("field", DiagnosticParam::Text((*required).to_owned()))],
+                ));
+            }
+        }
+        if !imported
+            && ["rev", "tag", "branch"]
+                .iter()
+                .any(|field| fields.contains_key(*field))
+        {
+            let count = ["rev", "tag", "branch"]
+                .iter()
+                .filter(|field| fields.contains_key(**field))
+                .count();
+            if count != 1
+                || !matches!(fields.get("kind"), Some(ConfigValue::String(kind)) if kind == "git-index")
+                || ["rev", "tag", "branch"].iter().any(|field| {
+                    fields
+                        .get(*field)
+                        .and_then(ConfigValue::as_str)
+                        .is_some_and(|value| !valid_git_reference(value))
+                })
+            {
+                diagnostics.push(error(
+                    INVALID_DEPENDENCY_GIT_CODE,
+                    "x05.config.invalid_source_git_ref",
+                    entry.span,
+                    format!("源 {:?} 的 Git 引用仅能在 git-index 中指定一个", entry.key),
+                    [("field", DiagnosticParam::Text("rev/tag/branch".to_owned()))],
                 ));
             }
         }
@@ -206,7 +235,7 @@ fn validate_language_table(table: &ConfigTable, diagnostics: &mut ConfigDiagnost
     }
 }
 
-/// 检查 11A-D1 的本地路径依赖条目。
+/// 检查本地路径或显式 Git 引用的声明式依赖条目。
 fn validate_dependency_table(table: &ConfigTable, diagnostics: &mut ConfigDiagnostics) {
     for (name, entry) in &table.entries {
         let Some(fields) = entry.value.as_dictionary() else {
@@ -215,7 +244,10 @@ fn validate_dependency_table(table: &ConfigTable, diagnostics: &mut ConfigDiagno
         };
 
         for (field, value) in fields {
-            if !matches!(field.as_str(), "path" | "version" | "source") {
+            if !matches!(
+                field.as_str(),
+                "path" | "version" | "source" | "git" | "rev" | "tag" | "branch"
+            ) {
                 diagnostics.push(error(
                     UNKNOWN_FIELD_CODE,
                     "x05.config.unknown_dependency_field",
@@ -252,8 +284,44 @@ fn validate_dependency_table(table: &ConfigTable, diagnostics: &mut ConfigDiagno
                     ],
                 ));
             }
+            if matches!(field.as_str(), "git" | "rev" | "tag" | "branch")
+                && !matches!(value, ConfigValue::String(text) if !text.trim().is_empty() && !text.chars().any(char::is_control))
+            {
+                diagnostics.push(type_error(entry.span, field, "nonempty str", value));
+            }
         }
 
+        let has_git = fields.contains_key("git");
+        let references = ["rev", "tag", "branch"]
+            .iter()
+            .filter(|field| fields.contains_key(**field))
+            .count();
+        if has_git || references != 0 {
+            let invalid = fields.contains_key("path")
+                || fields.contains_key("source")
+                || !has_git
+                || references != 1
+                || fields
+                    .get("git")
+                    .and_then(ConfigValue::as_str)
+                    .is_none_or(|url| !valid_git_url(url))
+                || ["rev", "tag", "branch"].iter().any(|field| {
+                    fields
+                        .get(*field)
+                        .and_then(ConfigValue::as_str)
+                        .is_some_and(|reference| !valid_git_reference(reference))
+                });
+            if invalid {
+                diagnostics.push(error(
+                    INVALID_DEPENDENCY_GIT_CODE,
+                    "x05.config.invalid_dependency_git",
+                    entry.span,
+                    format!("依赖 {name:?} 须指定安全的 https git 地址和唯一的 rev/tag/branch，且不能同时声明 path/source"),
+                    [("package", DiagnosticParam::Text(name.clone()))],
+                ));
+            }
+            continue;
+        }
         let Some(path) = fields.get("path") else {
             diagnostics.push(error(
                 MISSING_REQUIRED_CODE,
@@ -284,6 +352,40 @@ fn validate_dependency_table(table: &ConfigTable, diagnostics: &mut ConfigDiagno
             ));
         }
     }
+}
+
+fn valid_git_url(url: &str) -> bool {
+    let Some(remainder) = url.strip_prefix("https://") else {
+        return false;
+    };
+    let Some((authority, path)) = remainder.split_once('/') else {
+        return false;
+    };
+    !authority.is_empty()
+        && authority.bytes().all(|byte| {
+            byte.is_ascii_alphanumeric() || matches!(byte, b'.' | b'-' | b':' | b'[' | b']')
+        })
+        && !path.is_empty()
+        && path.split('/').all(|segment| {
+            !segment.is_empty()
+                && !matches!(segment, "." | "..")
+                && segment
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.'))
+        })
+}
+
+fn valid_git_reference(reference: &str) -> bool {
+    !reference.is_empty()
+        && !reference.contains("..")
+        && reference.split('/').all(|segment| {
+            !segment.is_empty()
+                && !segment.starts_with('.')
+                && !segment.ends_with('.')
+                && segment
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.'))
+        })
 }
 
 /// 检查严格表中的未知字段。

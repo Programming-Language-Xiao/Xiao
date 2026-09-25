@@ -4,7 +4,7 @@ title: 包源声明与离线索引
 status: verified
 audience: learner
 module: rust.xiao-package
-stage: "11A-E3A"
+stage: "11A-E3C"
 version: "0.1.0"
 related:
   - README.md
@@ -12,10 +12,11 @@ related:
   - package-lockfile.md
 ---
 
-# 包源声明与离线索引
+# 包源声明与远程索引
 
-11A-E3A 提供离线包源数据契约和本地目录适配器；`sync`/`install` 目前仍只处理本地路径依赖，
-不会通过此配置访问网络或解析远程版本。不要把已经配置远程源误认为已安装远程包。
+11A-E3C 在 E3A 的离线契约和 E3B 的缓存上增加同步 HTTP 与 GitHub 适配器。
+Rust `SourceResolver` 能联网查询索引；`sync`/`install` 仍只安装本地路径依赖，
+不会因声明了远程源就自动安装远程包。
 
 ## 多源声明
 
@@ -23,6 +24,7 @@ related:
 [sources]
 primary = { kind = "static", location = "https://example.org/index", display = "主源" }
 mirror = { kind = "git-index", location = "https://github.com/team/index.git", alias = "team" }
+release = { kind = "git-index", location = "https://github.com/team/index.git", tag = "v1" }
 extra = { list = "https://example.org/sources.json", digest = "<源列表 JSON 规范化后的 64 位小写 SHA-256>" }
 
 [dependencies]
@@ -31,7 +33,8 @@ utils = { path = "../utils", source = "team" }
 
 每个直接源允许 `kind`、`location`、`alias`、`display`、`protocol`；前两者必填，
 `alias` 默认取条目名，`protocol` 默认 1。支持 `path`、`registry`、`static`、
-`git-index`，远程地址首版使用 `http://`/`https://`，`git-index` 另可使用 `ssh://`。
+`git-index`；静态源使用 `http://`/`https://`。早期协议接受 `ssh://` 源身份，
+当前联网适配器**不支持 SSH 传输**，须使用 HTTP(S)。
 本地 `path` 源需给出不含 `.`/`..` 点段的绝对目录路径；相对路径缺少项目根上下文，
 不能安全地生成跨项目稳定源身份。
 `source` 绑定只能填 alias 或规范化后的 `source_id`，不能填显示名。
@@ -39,7 +42,8 @@ utils = { path = "../utils", source = "team" }
 
 导入项只能有 `list` 和 `digest`。源列表是一份独立 JSON，至少包含
 `protocol_version: 1` 与有序 `sources` 数组，每项含 `kind`、`location`，
-可带 `alias`、`display`、`protocol_version`。先处理全部直接源（按书写顺序），
+可带 `alias`、`display`、`protocol_version`；Git 索引项还可带唯一的
+`rev`、`tag` 或 `branch`。先处理全部直接源（按书写顺序），
 再按导入项书写顺序及各列表内部顺序展开；清单摘要不匹配、别名冲突即失败，
 不会静默改写配置。本批不支持保留注释的结构化写回；它属于 E3D。
 
@@ -54,7 +58,29 @@ JCS SHA-256；可选 `mirrors`、`expires_at`、`signature` 仅保留元数据�
 
 源清单、分片和源列表摘要都针对 UTF-8/JCS 规范字节计算，不针对原始空白或键顺序计算。
 源不存在、版本不识别、分片与清单不符、路径逃逸、正文摘要不匹配都会报错；
-不可用源不能伪装为空索引。E3B 已支持本地源驱动的快照与联邦缓存，真实远程传输仍留 E3C。
+不可用源不能伪装为空索引。
+
+## HTTP 与 Git 稀疏索引
+
+静态源把基址与 `snapshot.json`、`index/<包名>.json` 或正文相对路径拼接；
+会拒绝 `..`、编码路径、查询/片段及含用户信息的地址。重定向**不跟随**，
+无论是否跨主机；3xx、4xx/5xx 和真正的连接、TLS、超时或截断错误作为
+`X05-SOURCE-003` 上报。正文在内存中接续 `Range: bytes=<偏移>-`，只接受匹配
+长度与起点的 206 响应，完成后校验长度和 SHA-256；中断的字节不写入缓存。
+
+`git-index` 必须是遵守相同分片规范的仓库，不扫描任意项目。通过标准 Git smart HTTP
+`info/refs?service=git-upload-pack` 获取分支/标签的提交号，然后从 raw 服务的
+`<commit>/snapshot.json` 和对应分片读取；默认发现 HEAD，也可在源声明中选择
+唯一的 `branch`、`tag` 或 `rev`。`rev` 是完整小写 Git 哈希时直接固定提交，
+否则作为标签名。Git 快照的 `snapshot_id` 必须等于该完整提交哈希；
+锁文件 `source_snapshots` 钉住提交与清单摘要。在线解析已锁定标签时发现指向
+新提交，或相同提交的清单规范内容变了，都会拒绝；离线的旧缓存只在已验证时使用。
+仓库中的脚本不会在元数据读取或正文下载时执行。
+
+`[dependencies]`/`[devdependencies]` 也允许独立的
+`{ git = "https://github.com/team/lib.git", rev = "v1" }`；必须显式提供且仅提供
+`rev`/`tag`/`branch` 一项，不得与 `path`/`source` 并用。`version` 仍只保存为约束文本。
+当前本地路径 `sync` 遇到直接 Git 依赖会明确失败；获取、求解和安装该直接依赖归 E3D。
 
 ## 选择与诊断
 

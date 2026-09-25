@@ -17,7 +17,7 @@
 - `src/parser.rs`：复用 `xiao-syntax::Lexer` 的 Token 到配置树转换。
 - `src/validation.rs`：表/字段白名单、项目身份和导出路径校验。
 - `src/diagnostics.rs`：`X05-CONFIG-*` 稳定诊断编号。
-- `src/dependencies.rs`：D1 本地路径依赖声明提取，不执行版本求解或源访问。
+- `src/dependencies.rs`：D1 本地路径与 E3C Git 仓库声明提取，不执行版本求解或源访问。
 
 CLI 写回流程放在 `cli/ts/src/config`，不得在 TypeScript 中复制解析语义。
 

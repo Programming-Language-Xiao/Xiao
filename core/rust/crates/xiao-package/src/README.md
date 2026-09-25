@@ -13,5 +13,6 @@ D1 首批只实现 `config.xiao` 本地路径依赖的静态读取和包身份�
 `lockfile.rs` 保存锁文件、过期诊断以及 Unix/Windows 原子文件替换。
 E3A 的 `source.rs` 保存多源静态解析、统一身份及清单展开，`selection.rs` 保存确定性
 跨源选择，`jcs.rs` 负责 Rust 侧规范 JSON 字节，`federation.rs` 保留来源维度的联邦记录，
-`adapters.rs` 定义元数据/正文分离读取 trait 及不联网的本地目录实现。
-远程下载、安装脚本、缓存清理及远程 CLI 命令属于后续工程期。
+`adapters.rs` 定义元数据/正文分离读取 trait 及本地目录实现，`adapters/` 放置
+同步 HTTP、Git refs、GitHub raw 与多源分派。正文只读取和校验，不执行安装脚本。
+远程包安装、缓存清理及远程 CLI 命令属于后续工程期。

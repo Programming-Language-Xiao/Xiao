@@ -1,6 +1,6 @@
 //! Xiao 包源、依赖求解和锁定逻辑的 crate 入口。
 
-/// 离线目录源与传输适配器接口。
+/// 本地目录、静态 HTTP 与 Git 索引的统一传输适配器接口。
 mod adapters;
 /// 不可变源码对象缓存和摘要校验。
 mod cache;
@@ -30,13 +30,16 @@ mod resolver;
 mod selection;
 /// 按源身份存放不可变快照与当前指向。
 mod snapshot_store;
-/// 离线源身份、声明与清单展开。
+/// 包源身份、声明与有序清单展开。
 mod source;
 /// E2B 本地依赖同步、安装与只读包视图。
 mod sync;
 
 /// 重导出统一索引与正文读取边界。
-pub use adapters::{IndexSnapshot, LocalDirectoryAdapter, PackageSourceAdapter};
+pub use adapters::{
+    GitHubAdapter, GitReference, HttpStaticAdapter, IndexSnapshot, LocalDirectoryAdapter,
+    MultiSourceAdapter, PackageSourceAdapter, ResolvedGitRef, parse_advertised_refs,
+};
 /// 重导出本地源码缓存接口。
 pub use cache::{
     CacheError, CacheLayout, CacheObject, CacheObjectKind, CacheObjectReference, CacheStore,

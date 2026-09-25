@@ -68,7 +68,16 @@ utils = { path = "../utils", version = "^1.4", source = "local" }
 testkit = { path = "../testkit" }
 ```
 
-依赖表字段只允许 `path`、`version` 和 `source`。包源的 `source_id`、`alias` 与展示名
+E3C 还允许直接 Git 仓库声明（只解析静态声明，不进行远程版本求解）：
+
+```xiao
+[dependencies]
+lib = { git = "https://github.com/acme/lib.git", rev = "v1.2.0", version = "^1" }
+```
+
+`git` 与 `path`/`source` 互斥；`rev`、`tag`、`branch` 中必须且仅能选一个。
+缺省引用、多个引用或不安全的引用会报配置错误；本地路径同步遇到 Git 依赖会明确拒绝，
+远程求解与安装归 E3D。包源的 `source_id`、`alias` 与展示名
 属于包管理器的不同概念；展示名不能作为依赖引用键。
 
 ## 离线多源声明
@@ -82,8 +91,9 @@ team = { kind = "git-index", location = "https://github.com/team/packages.git", 
 直接源必须有 `kind` 与 `location`，还可有 `alias`、`display`、`protocol`；
 省略 alias 时使用左侧键名。另可声明 `{ list = "...", digest = "<SHA-256>" }`
 形式的清单引用（只允许 `list`/`digest` 两字段）。书写顺序决定优先级，
-但所有直接源先于导入列表展开；字段错误和别名冲突会拒绝。此批仅支持离线解析，
-远程获取、配置注释保持写回和完整版本求解还未接入。细节见
+但所有直接源先于导入列表展开；字段错误和别名冲突会拒绝。
+Git 稀疏索引源可额外声明唯一的 `rev`、`tag` 或 `branch`；省略时使用 HEAD。
+E3C 已提供同步网络适配器；配置注释保持写回、完整版本求解和远程包命令仍未接入。细节见
 [包源声明与离线索引](../cli/package-sources.md)。
 
 ## 下一步

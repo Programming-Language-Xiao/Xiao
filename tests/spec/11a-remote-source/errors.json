@@ -1,0 +1,6 @@
+[
+  {"name":"非法长度","wire":"zzzz","code":"X05-SOURCE-007"},
+  {"name":"超长行","wire":"ffff","code":"X05-SOURCE-007"},
+  {"name":"截断行","wire":"0008ab","code":"X05-SOURCE-007"},
+  {"name":"未知协议版本","wire":"001e# service=git-upload-pack\n0000000eversion 2\n0000","code":"X05-SOURCE-001"}
+]

@@ -8,6 +8,7 @@ use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use xiao_config::{ConfigDocument, ConfigValue};
 
+use crate::adapters::GitReference;
 use crate::diagnostics::{
     SOURCE_ALIAS_CONFLICT_CODE, SOURCE_DIGEST_MISMATCH_CODE, SOURCE_INVALID_CODE,
     SOURCE_UNKNOWN_REFERENCE_CODE, SOURCE_UNSUPPORTED_VERSION_CODE,
@@ -164,6 +165,8 @@ pub struct SourceDescriptor {
     pub location: String,
     /// 当前支持的协议版本。
     pub protocol_version: u64,
+    /// Git 稀疏索引的可变发现引用；空表示使用广告的 HEAD。
+    pub git_reference: Option<GitReference>,
 }
 
 impl SourceDescriptor {
@@ -212,7 +215,32 @@ impl SourceDescriptor {
             kind: kind.to_owned(),
             location: location.to_owned(),
             protocol_version,
+            git_reference: None,
         })
+    }
+
+    /// 使同一仓库的不同 Git 引用拥有各自独立的缓存与源身份。
+    pub fn with_git_reference(mut self, reference: GitReference) -> Result<Self, SourceError> {
+        if self.kind != "git-index" || self.git_reference.is_some() {
+            return Err(SourceError::new(
+                SOURCE_INVALID_CODE,
+                "只有未指定引用的 Git 索引源可声明 Git 引用",
+            ));
+        }
+        let (kind, name) = match &reference {
+            GitReference::Head => ("head", "HEAD"),
+            GitReference::Branch(name) => ("branch", name.as_str()),
+            GitReference::Tag(name) => ("tag", name.as_str()),
+            GitReference::Commit(name) => ("rev", name.as_str()),
+        };
+        if !matches!(reference, GitReference::Head)
+            && GitReference::from_config(kind, name)? != reference
+        {
+            return Err(SourceError::new(SOURCE_INVALID_CODE, "Git 引用不合法"));
+        }
+        self.source.source_id = format!("{}@{kind}:{name}", self.source.source_id);
+        self.git_reference = Some(reference);
+        Ok(self)
     }
 }
 
@@ -286,15 +314,28 @@ pub fn source_declarations(
                     ));
                 }
             };
-            Ok(SourceDeclaration::Direct(SourceDescriptor::new(
-                kind,
-                location,
-                Some(alias),
-                display,
-                version,
+            let descriptor = SourceDescriptor::new(kind, location, Some(alias), display, version)?;
+            Ok(SourceDeclaration::Direct(with_reference(
+                descriptor,
+                |field| fields.get(field).and_then(ConfigValue::as_str),
             )?))
         })
         .collect()
+}
+
+fn with_reference<'a>(
+    descriptor: SourceDescriptor,
+    get: impl Fn(&str) -> Option<&'a str>,
+) -> Result<SourceDescriptor, SourceError> {
+    let refs = ["rev", "tag", "branch"]
+        .into_iter()
+        .filter_map(|kind| get(kind).map(|value| (kind, value)))
+        .collect::<Vec<_>>();
+    match refs.as_slice() {
+        [] => Ok(descriptor),
+        [(kind, value)] => descriptor.with_git_reference(GitReference::from_config(kind, value)?),
+        _ => Err(SourceError::new(SOURCE_INVALID_CODE, "Git 源引用不可重复")),
+    }
 }
 
 /// 从静态字典中读取必填的非空字符串。
@@ -335,6 +376,9 @@ struct SourceListEntry {
     alias: Option<String>,
     display: Option<String>,
     protocol_version: Option<u64>,
+    rev: Option<String>,
+    tag: Option<String>,
+    branch: Option<String>,
 }
 
 impl SourceList {
@@ -353,13 +397,19 @@ impl SourceList {
             .sources
             .into_iter()
             .map(|entry| {
-                SourceDescriptor::new(
+                let descriptor = SourceDescriptor::new(
                     &entry.kind,
                     &entry.location,
                     entry.alias.as_deref(),
                     entry.display.as_deref(),
                     entry.protocol_version.unwrap_or(SOURCE_PROTOCOL_VERSION),
-                )
+                )?;
+                with_reference(descriptor, |field| match field {
+                    "rev" => entry.rev.as_deref(),
+                    "tag" => entry.tag.as_deref(),
+                    "branch" => entry.branch.as_deref(),
+                    _ => None,
+                })
             })
             .collect::<Result<Vec<_>, _>>()?;
         Ok(Self {
