@@ -135,6 +135,25 @@ impl Workspace {
         )
         .unwrap()
     }
+
+    fn revise_snapshot(&self, source: &str, snapshot_id: &str, version: &str) {
+        let directory = self.root.join(source);
+        let shard_path = directory.join("index/demo.json");
+        let mut shard: PackageShard =
+            serde_json::from_slice(&fs::read(&shard_path).unwrap()).unwrap();
+        shard.snapshot_id = snapshot_id.to_owned();
+        shard.packages[0].version = version.to_owned();
+        let shard_text = serde_json::to_string(&shard).unwrap();
+        fs::write(shard_path, &shard_text).unwrap();
+        let manifest_path = directory.join("snapshot.json");
+        let mut manifest: SnapshotManifest =
+            serde_json::from_slice(&fs::read(&manifest_path).unwrap()).unwrap();
+        manifest.snapshot_id = snapshot_id.to_owned();
+        manifest
+            .shards
+            .insert("demo".to_owned(), jcs_digest(&shard_text).unwrap());
+        fs::write(manifest_path, serde_json::to_vec(&manifest).unwrap()).unwrap();
+    }
 }
 
 impl Drop for Workspace {
@@ -178,6 +197,7 @@ fn locked(
         config_fingerprint: fingerprint_config(document),
         root: identity.clone(),
         packages: BTreeMap::from([(identity.to_string(), package)]),
+        source_snapshots: BTreeMap::new(),
     }
 }
 
@@ -196,12 +216,15 @@ fn cache_policy_fixture_offline_fast_path() {
     ];
     let document = workspace.config(valid["config_template"].as_str().unwrap());
     let cache = workspace.cache();
-    let lockfile = locked(&sources[0], &cache, &document);
+    let mut lockfile = locked(&sources[0], &cache, &document);
     let resolver = SourceResolver::new(LocalDirectoryAdapter, cache);
     let names = [valid["package"].as_str().unwrap().to_owned()];
     let first = resolver
         .resolve(&document, &sources, None, &names, false)
         .unwrap();
+    first.pin_lockfile(&mut lockfile).unwrap();
+    let lockfile: LockFile = serde_json::from_str(&lockfile.to_json()).unwrap();
+    assert!(!lockfile.source_snapshots.is_empty());
     assert!(!first.fast_path);
     assert_eq!(first.reports[0].status, SnapshotStatus::Fresh);
     assert_eq!(valid["expected_online_status"], "fresh");
@@ -223,7 +246,14 @@ fn cache_policy_fixture_offline_fast_path() {
     assert!(layout.source_objects_root().exists());
     assert!(layout.metadata_objects_root().exists());
     assert!(layout.snapshots_root().exists());
-    assert!(layout.federation_root().join("index.json").exists());
+    assert!(
+        FederationCache::new(layout.clone())
+            .index_path(
+                &fingerprint_config(&document),
+                &source_list_fingerprint(&sources)
+            )
+            .exists()
+    );
     fs::rename(
         workspace.root.join("first"),
         workspace.root.join("first-offline"),
@@ -250,6 +280,105 @@ fn cache_policy_fixture_offline_fast_path() {
         .unwrap();
     assert!(!cached_again.fast_path);
     assert_eq!(cached_again.reports[0].status, SnapshotStatus::Cached);
+}
+
+#[test]
+fn another_project_cannot_discard_an_offline_federation_view() {
+    let workspace = Workspace::new();
+    let source = workspace.source("first", "1.0", 0);
+    let first = parse_config_text("[project]\nname = \"demo\"\nversion = \"1.0\"\n").unwrap();
+    let second = parse_config_text("[project]\nname = \"other\"\nversion = \"2.0\"\n").unwrap();
+    let cache = workspace.cache();
+    let mut lockfile = locked(&source, &cache, &first);
+    let resolver = SourceResolver::new(LocalDirectoryAdapter, cache);
+    let names = ["demo".to_owned()];
+    let first_result = resolver
+        .resolve(&first, std::slice::from_ref(&source), None, &names, false)
+        .unwrap();
+    first_result.pin_lockfile(&mut lockfile).unwrap();
+    resolver
+        .resolve(&second, std::slice::from_ref(&source), None, &names, false)
+        .unwrap();
+    fs::rename(
+        workspace.root.join("first"),
+        workspace.root.join("offline-first"),
+    )
+    .unwrap();
+    let result = resolver
+        .resolve(&first, &[source], Some(&lockfile), &names, true)
+        .unwrap();
+    assert!(result.fast_path);
+    assert_eq!(result.reports[0].status, SnapshotStatus::Cached);
+}
+
+#[test]
+fn new_snapshot_of_same_version_must_not_match_old_lock() {
+    let workspace = Workspace::new();
+    let source = workspace.source("first", "1.0", 0);
+    let document = parse_config_text("[project]\nname = \"demo\"\nversion = \"1.0\"\n").unwrap();
+    let cache = workspace.cache();
+    let mut lockfile = locked(&source, &cache, &document);
+    let resolver = SourceResolver::new(LocalDirectoryAdapter, cache);
+    let names = ["demo".to_owned()];
+    let original = resolver
+        .resolve(
+            &document,
+            std::slice::from_ref(&source),
+            None,
+            &names,
+            false,
+        )
+        .unwrap();
+    original.pin_lockfile(&mut lockfile).unwrap();
+    workspace.revise_snapshot("first", "two", "1.0");
+    resolver
+        .resolve(
+            &document,
+            std::slice::from_ref(&source),
+            None,
+            &names,
+            false,
+        )
+        .unwrap();
+    let result = resolver
+        .resolve(&document, &[source], Some(&lockfile), &names, true)
+        .unwrap();
+    assert!(!result.fast_path);
+    assert_eq!(result.snapshots[0].snapshot_id.as_deref(), Some("two"));
+}
+
+#[test]
+fn first_unavailable_source_does_not_block_explicit_later_binding() {
+    let workspace = Workspace::new();
+    let sources = [
+        workspace.source("first", "1.0", 0),
+        workspace.source("second", "1.0", 1),
+    ];
+    fs::rename(
+        workspace.root.join("first"),
+        workspace.root.join("offline-first"),
+    )
+    .unwrap();
+    let document = parse_config_text("[project]\nname = \"root\"\nversion = \"1.0\"\n[dependencies]\ndemo = { path = \"dep\", source = \"second\" }\n").unwrap();
+    let resolver = SourceResolver::new(LocalDirectoryAdapter, workspace.cache());
+    let result = resolver
+        .resolve(&document, &sources, None, &["demo".to_owned()], false)
+        .unwrap();
+    assert_eq!(result.reports[0].status, SnapshotStatus::Unavailable);
+    assert_eq!(
+        select_source(
+            &sources,
+            &result.snapshots,
+            &result.records,
+            "demo",
+            Some("second"),
+            |_| true
+        )
+        .unwrap()[0]
+            .key
+            .config_order,
+        1
+    );
 }
 
 #[test]
@@ -402,12 +531,13 @@ fn lock_from_later_source_cannot_skip_priority_validation() {
     ];
     let document = parse_config_text("[project]\nname = \"demo\"\nversion = \"1.0\"\n").unwrap();
     let cache = workspace.cache();
-    let lockfile = locked(&sources[1], &cache, &document);
+    let mut lockfile = locked(&sources[1], &cache, &document);
     let resolver = SourceResolver::new(LocalDirectoryAdapter, cache);
     let names = ["demo".to_owned()];
-    resolver
+    let first = resolver
         .resolve(&document, &sources, None, &names, false)
         .unwrap();
+    first.pin_lockfile(&mut lockfile).unwrap();
     let result = resolver
         .resolve(&document, &sources, Some(&lockfile), &names, true)
         .unwrap();

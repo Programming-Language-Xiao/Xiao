@@ -551,7 +551,7 @@ E0 配置指纹、逻辑身份和 E1 源码摘要。E2A 提供读取、生成、
 
 ## 已冻结补充：E3B 快速解析与缓存
 
-- **布局**：`cache/objects/metadata/sha256/` 存不可变包元数据，`cache/objects/source/sha256/` 复用 E1 正文对象；`cache/snapshots/<source_id 的 SHA-256>/` 保存历次快照及原子替换的 `current.json`，`cache/federation/index.json` 原子替换按有序源配置隔离的联邦视图。
+- **布局**：`cache/objects/metadata/sha256/` 存不可变包元数据，`cache/objects/source/sha256/` 复用 E1 正文对象；`cache/snapshots/<source_id 的 SHA-256>/` 保存历次快照及原子替换的 `current.json`，`cache/federation/<配置指纹的 SHA-256>/<有序源序列摘要的 SHA-256>/index.json` 独立保存并原子替换每份联邦视图；旧单文件仅只读兼容。
 - **离线命中**：有效且配置指纹一致的锁文件、所有可能影响优先级的可验证源快照/元数据、全部通过摘要验证的正文对象须同时命中；缺更靠前的源不能静默选择后面的源。
 - **状态与过期**：配置/锁文件或对象完整性变化才触发重解，不引入时间 TTL；本次读取为 `fresh`、沿用旧快照为 `cached`、源不可达且无旧快照为 `unavailable`，沿用时报告摘要及读取时间，时间不参与选包。
 - **中断与断点**：本地源验证中断安全，不把重试成功冒充断点恢复；适配器声明部分读取能力，实际 HTTP Range 留 E3C。

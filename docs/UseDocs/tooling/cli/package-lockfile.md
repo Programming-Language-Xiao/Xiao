@@ -4,7 +4,7 @@ title: 本地包锁文件与原子环境映射
 status: verified
 audience: developer
 module: rust.xiao-package
-stage: 11A-E2A
+stage: 11A-E2A/E3B
 related:
   - README.md
   - environments.md
@@ -23,6 +23,11 @@ related:
 `lock_version: 1` JSON。它包含 E0 规范化配置指纹、根包身份、完整传递依赖图和每个包的
 逻辑名称、版本、来源身份、E1 源码 SHA-256 摘要；直接依赖保存运行时/开发期分类，
 版本约束与来源引用只保留文本，不执行版本求解。预编译变体和目标条件字段首版固定为空。
+
+E3B 可选增加 `source_snapshots`：按 `source_id` 记录 `snapshot_id` 与清单摘要。
+核心先解析源，再通过 `SourceResolution::pin_lockfile` 钉住快照、写入锁文件；
+仅钉住信息与当前快照、联邦索引及正文对象均相符时才走离线快速路径。
+旧版 E2A 锁文件仍可读取，但涉及包源时不能直接命中快速路径。
 
 本地源的 `source_id` 是 `path:<绝对规范化路径>`。路径变动使锁文件过期；因此包含本地路径
 依赖的锁文件不能跨机器直接复用。内容摘要只标识缓存对象，不取代包名、版本或源身份。

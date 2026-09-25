@@ -135,6 +135,18 @@ impl FederationCache {
         Self { layout }
     }
 
+    /// 按配置与源序列指纹隔离项目视图，避免跨项目覆盖。
+    #[must_use]
+    pub fn index_path(&self, config_fingerprint: &str, sources: &SourceListFingerprint) -> PathBuf {
+        let config = format!("{:x}", Sha256::digest(config_fingerprint.as_bytes()));
+        let sequence = format!("{:x}", Sha256::digest(sources.list_digest.as_bytes()));
+        self.layout
+            .federation_root()
+            .join(config)
+            .join(sequence)
+            .join("index.json")
+    }
+
     /// 验证完整联邦记录及元数据对象后再原子提交。
     pub fn store(&self, index: &FederationIndex) -> Result<(), SourceError> {
         self.commit(index, atomic_write_file)
@@ -146,10 +158,17 @@ impl FederationCache {
         config_fingerprint: &str,
         sources: &SourceListFingerprint,
     ) -> Result<Option<FederationIndex>, SourceError> {
-        let path = self.layout.federation_root().join("index.json");
-        let bytes = match fs::read(path) {
+        let path = self.index_path(config_fingerprint, sources);
+        let bytes = match fs::read(&path) {
             Ok(bytes) => bytes,
-            Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {
+                let legacy = self.layout.federation_root().join("index.json");
+                match fs::read(legacy) {
+                    Ok(bytes) => bytes,
+                    Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
+                    Err(error) => return Err(cache_io(error)),
+                }
+            }
             Err(error) => return Err(cache_io(error)),
         };
         let index: FederationIndex = serde_json::from_slice(&bytes).map_err(cache_corrupt)?;
@@ -166,7 +185,7 @@ impl FederationCache {
         writer: impl FnOnce(&Path, &[u8]) -> io::Result<()>,
     ) -> Result<(), SourceError> {
         self.validate(index)?;
-        let path = self.layout.federation_root().join("index.json");
+        let path = self.index_path(&index.config_fingerprint, &index.sources);
         let _guard = EntryLock::acquire(&path.with_extension("lock"))?;
         writer(&path, &serde_json::to_vec(index).map_err(cache_corrupt)?).map_err(cache_io)
     }
@@ -209,7 +228,8 @@ mod tests {
 
     use super::{FederationCache, FederationIndex};
     use crate::cache::CacheLayout;
-    use crate::federation::source_list_fingerprint;
+    use crate::federation::{SnapshotStatus, SourceSnapshot, source_list_fingerprint};
+    use crate::source::{ConfiguredSource, SourceDescriptor};
 
     #[test]
     /// 更新失败时旧索引仍是完整可读的版本。
@@ -225,15 +245,38 @@ mod tests {
         fs::create_dir_all(&home).unwrap();
         let layout = CacheLayout::from_xiao_home(Some(&home), &home).unwrap();
         let store = FederationCache::new(layout);
+        let source = ConfiguredSource {
+            descriptor: SourceDescriptor::new(
+                "path",
+                &home.to_string_lossy().replace('\\', "/"),
+                None,
+                None,
+                1,
+            )
+            .unwrap(),
+            config_order: 0,
+            imported_from: None,
+        };
+        let source_id = source.descriptor.source.source_id.clone();
         let original = FederationIndex {
             config_fingerprint: "first".to_owned(),
-            sources: source_list_fingerprint(&[]),
-            snapshots: Vec::new(),
+            sources: source_list_fingerprint(&[source]),
+            snapshots: vec![SourceSnapshot {
+                config_order: 0,
+                source_id,
+                snapshot_id: None,
+                snapshot_digest: None,
+                status: SnapshotStatus::Unavailable,
+                candidates: Vec::new(),
+                queried_packages: Default::default(),
+            }],
             records: Vec::new(),
         };
         store.store(&original).unwrap();
         let mut changed = original.clone();
-        changed.config_fingerprint = "second".to_owned();
+        changed.snapshots[0].status = SnapshotStatus::Fresh;
+        changed.snapshots[0].snapshot_id = Some("new".to_owned());
+        changed.snapshots[0].snapshot_digest = Some("0".repeat(64));
         assert_eq!(
             store
                 .commit(&changed, |_, _| Err(std::io::Error::other("中断")))
@@ -243,9 +286,19 @@ mod tests {
         );
         assert_eq!(
             store.read("first", &original.sources).unwrap(),
+            Some(original.clone())
+        );
+        let first_path = store.index_path(&original.config_fingerprint, &original.sources);
+        let legacy = home.join("cache/federation/index.json");
+        fs::write(&legacy, serde_json::to_vec(&original).unwrap()).unwrap();
+        fs::remove_file(&first_path).unwrap();
+        assert_eq!(
+            store.read("first", &original.sources).unwrap(),
             Some(original)
         );
-        fs::remove_file(home.join("cache/federation/index.json")).unwrap();
+        fs::remove_file(legacy).unwrap();
+        fs::remove_dir(first_path.parent().unwrap()).unwrap();
+        fs::remove_dir(first_path.parent().unwrap().parent().unwrap()).unwrap();
         fs::remove_dir(home.join("cache/federation")).unwrap();
         fs::remove_dir(home.join("cache")).unwrap();
         fs::remove_dir(home).unwrap();

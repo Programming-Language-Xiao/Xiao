@@ -4,7 +4,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::thread;
 
-use xiao_config::ConfigDocument;
+use xiao_config::{ConfigDocument, ConfigValue};
 
 use crate::adapters::PackageSourceAdapter;
 use crate::cache::{CacheError, CacheStore};
@@ -15,7 +15,7 @@ use crate::federation::{
     valid_package_name,
 };
 use crate::federation_cache::{FederationCache, FederationIndex, MetadataCache};
-use crate::lockfile::LockFile;
+use crate::lockfile::{LockFile, LockedPackage, LockedSourceSnapshot};
 use crate::selection::select_source;
 use crate::snapshot_store::SnapshotStore;
 use crate::source::{ConfiguredSource, SourceError};
@@ -49,6 +49,8 @@ pub struct SourceStatusReport {
 /// 供后续单一求解器消费的完整有序源视图。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SourceResolution {
+    /// 与此次解析所用配置一致的规范指纹。
+    pub config_fingerprint: String,
     /// 是否在未经本次源读取的情况下复用了完整锁文件和缓存。
     pub fast_path: bool,
     /// 与最终配置顺序一致的快照状态。
@@ -57,6 +59,43 @@ pub struct SourceResolution {
     pub records: Vec<FederatedRecord>,
     /// 每个源的摘要、新鲜度和失败原因。
     pub reports: Vec<SourceStatusReport>,
+}
+
+impl SourceResolution {
+    /// 将已验证快照钉住到同一份配置的锁文件，缺失源仍需后续重解。
+    pub fn pin_lockfile(&self, lockfile: &mut LockFile) -> Result<(), SourceError> {
+        if lockfile.config_fingerprint != self.config_fingerprint {
+            return Err(SourceError::new(
+                SOURCE_INVALID_CODE,
+                "锁文件与源解析配置不一致",
+            ));
+        }
+        let mut pinned = BTreeMap::new();
+        for snapshot in &self.snapshots {
+            if snapshot.status == SnapshotStatus::Unavailable {
+                continue;
+            }
+            let (Some(snapshot_id), Some(snapshot_digest)) =
+                (&snapshot.snapshot_id, &snapshot.snapshot_digest)
+            else {
+                return Err(SourceError::new(SOURCE_INVALID_CODE, "可用源缺少快照身份"));
+            };
+            pinned.insert(
+                snapshot.source_id.clone(),
+                LockedSourceSnapshot {
+                    snapshot_id: snapshot_id.clone(),
+                    snapshot_digest: snapshot_digest.clone(),
+                },
+            );
+        }
+        let mut updated = lockfile.clone();
+        updated.source_snapshots = pinned;
+        updated
+            .validate(std::path::Path::new("<memory>"))
+            .map_err(|error| SourceError::new(SOURCE_INVALID_CODE, error.to_string()))?;
+        lockfile.source_snapshots = updated.source_snapshots;
+        Ok(())
+    }
 }
 
 /// 只使用同步适配器，传输方式不会改变包选择语义。
@@ -242,23 +281,25 @@ impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
         }
         let records = federate(&snapshots)?;
         for name in &requested {
-            let binding = usable_lockfile.and_then(|lockfile| explicit_source(lockfile, name));
-            select_source(
-                &ordered,
-                &snapshots,
-                &records,
-                name,
-                binding.as_deref(),
-                |_| true,
-            )?;
+            for binding in query_bindings(document, usable_lockfile, name) {
+                select_source(
+                    &ordered,
+                    &snapshots,
+                    &records,
+                    name,
+                    binding.as_deref(),
+                    |_| true,
+                )?;
+            }
         }
         self.federation.store(&FederationIndex {
-            config_fingerprint: fingerprint,
+            config_fingerprint: fingerprint.clone(),
             sources: source_fingerprint,
             snapshots: snapshots.clone(),
             records: records.clone(),
         })?;
         Ok(SourceResolution {
+            config_fingerprint: fingerprint,
             fast_path: false,
             snapshots,
             records,
@@ -358,6 +399,12 @@ impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
         };
         let required = required_sources(lockfile, sources);
         for (order, names) in required {
+            let Some(pinned) = lockfile
+                .source_snapshots
+                .get(&sources[order].descriptor.source.source_id)
+            else {
+                return Ok(None);
+            };
             let Some(current) = self
                 .snapshots
                 .current(&sources[order].descriptor.source.source_id)?
@@ -365,8 +412,10 @@ impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
                 return Ok(None);
             };
             let snapshot = &cached.snapshots[order];
-            if snapshot.snapshot_id.as_deref() != Some(&current.index.manifest.snapshot_id)
-                || snapshot.snapshot_digest.as_deref() != Some(&current.index.digest)
+            if snapshot.snapshot_id.as_deref() != Some(&pinned.snapshot_id)
+                || snapshot.snapshot_digest.as_deref() != Some(&pinned.snapshot_digest)
+                || pinned.snapshot_id != current.index.manifest.snapshot_id
+                || pinned.snapshot_digest != current.index.digest
                 || names
                     .iter()
                     .any(|name| !snapshot.queried_packages.contains(name))
@@ -382,25 +431,26 @@ impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
             {
                 continue;
             }
-            let binding = explicit_source(lockfile, &package.name);
-            let Ok(selected) = select_source(
-                sources,
-                &cached.snapshots,
-                &cached.records,
-                &package.name,
-                binding.as_deref(),
-                |_| true,
-            ) else {
-                return Ok(None);
-            };
-            if selected
-                .first()
-                .is_none_or(|record| record.key.source_id != package.source.source_id)
-                || !selected
-                    .iter()
-                    .any(|record| record.key.version == package.version)
-            {
-                return Ok(None);
+            for binding in locked_bindings(lockfile, package) {
+                let Ok(selected) = select_source(
+                    sources,
+                    &cached.snapshots,
+                    &cached.records,
+                    &package.name,
+                    binding.as_deref(),
+                    |_| true,
+                ) else {
+                    return Ok(None);
+                };
+                if selected
+                    .first()
+                    .is_none_or(|record| record.key.source_id != package.source.source_id)
+                    || !selected
+                        .iter()
+                        .any(|record| record.key.version == package.version)
+                {
+                    return Ok(None);
+                }
             }
         }
         let mut reports = Vec::new();
@@ -416,6 +466,7 @@ impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
         }
         cached.records = federate(&cached.snapshots)?;
         Ok(Some(SourceResolution {
+            config_fingerprint: config_fingerprint.to_owned(),
             fast_path: true,
             snapshots: cached.snapshots,
             records: cached.records,
@@ -462,23 +513,52 @@ fn required_sources(
     required
 }
 
-fn explicit_source(lockfile: &LockFile, name: &str) -> Option<String> {
-    let mut bound = None;
-    for reference in lockfile
+fn locked_bindings(lockfile: &LockFile, package: &LockedPackage) -> BTreeSet<Option<String>> {
+    let mut bindings = lockfile
         .packages
         .values()
-        .flat_map(|package| package.dependencies.values())
-        .filter(|dependency| dependency.target.name == name)
-    {
-        reference.source_reference.as_ref()?;
-        if let Some(existing) = &bound {
-            if existing != &reference.target.source.source_id {
-                return None;
-            }
-        }
-        bound = Some(reference.target.source.source_id.clone());
+        .flat_map(|owner| owner.dependencies.values())
+        .filter(|dependency| dependency.target == package.identity())
+        .map(|dependency| dependency.source_reference.clone())
+        .collect::<BTreeSet<_>>();
+    if bindings.is_empty() {
+        bindings.insert(None);
     }
-    bound
+    bindings
+}
+
+fn query_bindings(
+    document: &ConfigDocument,
+    lockfile: Option<&LockFile>,
+    name: &str,
+) -> BTreeSet<Option<String>> {
+    let mut bindings = BTreeSet::new();
+    for section in ["dependencies", "devdependencies"] {
+        if let Some(entry) = document.table(section).and_then(|table| table.get(name)) {
+            bindings.insert(
+                entry
+                    .value
+                    .as_dictionary()
+                    .and_then(|fields| fields.get("source"))
+                    .and_then(ConfigValue::as_str)
+                    .map(str::to_owned),
+            );
+        }
+    }
+    if let Some(lockfile) = lockfile {
+        for reference in lockfile
+            .packages
+            .values()
+            .flat_map(|package| package.dependencies.values())
+            .filter(|dependency| dependency.target.name == name)
+        {
+            bindings.insert(reference.source_reference.clone());
+        }
+    }
+    if bindings.is_empty() {
+        bindings.insert(None);
+    }
+    bindings
 }
 
 fn report(

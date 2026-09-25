@@ -69,8 +69,9 @@ pub use jcs::{canonicalize_json, jcs_digest};
 /// 重导出锁文件和原子更新接口。
 pub use lockfile::{
     LOCKFILE_NAME, LOCKFILE_VERSION, LockFile, LockFileWriteStatus, LockedDependency,
-    LockedPackage, LockfileError, LockfileMismatch, build_lockfile, compare_lockfile,
-    generate_or_reuse_lockfile, lockfile_path, read_lockfile, validate_lockfile, write_lockfile,
+    LockedPackage, LockedSourceSnapshot, LockfileError, LockfileMismatch, build_lockfile,
+    compare_lockfile, generate_or_reuse_lockfile, lockfile_path, read_lockfile, validate_lockfile,
+    write_lockfile,
 };
 /// 重导出环境映射接口。
 pub use mapping::{

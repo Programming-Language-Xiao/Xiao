@@ -41,6 +41,18 @@ pub struct LockFile {
     pub root: PackageIdentity,
     /// 按稳定身份键排序的全部可达包。
     pub packages: BTreeMap<String, LockedPackage>,
+    /// E3B 已锁定源的不可变快照身份；旧版 E2A 锁文件没有此字段。
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub source_snapshots: BTreeMap<String, LockedSourceSnapshot>,
+}
+
+/// 源快照标识及已验证清单的 JCS 摘要。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct LockedSourceSnapshot {
+    /// 不可变快照的标识。
+    pub snapshot_id: String,
+    /// 当前源清单的规范 SHA-256 摘要。
+    pub snapshot_digest: String,
 }
 
 /// 锁文件中的一个完整包条目。
@@ -303,6 +315,7 @@ pub fn build_lockfile(
         config_fingerprint: fingerprint_config(document),
         root,
         packages,
+        source_snapshots: BTreeMap::new(),
     };
     lockfile.validate(Path::new("<memory>"))?;
     Ok(lockfile)
@@ -345,6 +358,17 @@ impl LockFile {
                 path: path.to_path_buf(),
                 message: "config_fingerprint 不得为空".to_owned(),
             });
+        }
+        for (source_id, snapshot) in &self.source_snapshots {
+            if source_id.is_empty()
+                || snapshot.snapshot_id.is_empty()
+                || !is_digest(&snapshot.snapshot_digest)
+            {
+                return Err(LockfileError::Invalid {
+                    path: path.to_path_buf(),
+                    message: "锁定源快照缺少有效身份或摘要".to_owned(),
+                });
+            }
         }
         if !self.packages.contains_key(&identity_key(&self.root)) {
             return Err(LockfileError::Invalid {

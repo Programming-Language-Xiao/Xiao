@@ -14,5 +14,6 @@ D1 夹具位于 `tests/spec/11a-package/`，由 `d1_package.rs` 真实加载；E
 E3A 的 `e3a_source.rs` 真实加载 `tests/spec/11a-jcs/vectors.json` 及
 `tests/spec/11a-source/valid.json`/`errors.json`，另以隔离目录测快照、分片、正文和摘要校验。
 E3B 的 `e3b_cache.rs` 真实加载 `tests/spec/11a-cache-policy/valid.json`/`errors.json`，
-验证离线命中、有界并行、优先级、缓存损坏与基础设施故障、跨进程条目锁和中断后重试；
+验证离线命中、有界并行、优先级、跨项目视图隔离、锁文件快照钉住、显式来源绑定、
+缓存损坏与基础设施故障、跨进程条目锁和中断后重试；
 本地目录源不验证真实 HTTP Range 断点续传。
