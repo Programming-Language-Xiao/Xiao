@@ -30,6 +30,18 @@ pub const CACHE_INVALID_INPUT_CODE: &str = "X05-CACHE-002";
 pub const CACHE_INVALID_SOURCE_CODE: &str = "X05-CACHE-003";
 /// 缓存对象摘要校验失败时使用的编号。
 pub const CACHE_OBJECT_CORRUPT_CODE: &str = "X05-CACHE-004";
+/// 锁文件格式版本高于当前读取器时使用的编号。
+pub const LOCKFILE_UNSUPPORTED_VERSION_CODE: &str = "X05-LOCK-001";
+/// 锁文件 JSON、结构或输入图无效时使用的编号。
+pub const LOCKFILE_INVALID_CODE: &str = "X05-LOCK-002";
+/// 配置解析出的依赖图与锁文件不一致时使用的编号。
+pub const LOCKFILE_CONFIG_MISMATCH_CODE: &str = "X05-LOCK-003";
+/// 本地包源码内容摘要与锁文件不一致时使用的编号。
+pub const LOCKFILE_CONTENT_MISMATCH_CODE: &str = "X05-LOCK-004";
+/// 本地包来源身份与锁文件不一致时使用的编号。
+pub const LOCKFILE_SOURCE_MISMATCH_CODE: &str = "X05-LOCK-005";
+/// 锁文件或原子提交的文件系统操作失败时使用的编号。
+pub const LOCKFILE_IO_CODE: &str = "X05-LOCK-006";
 
 /// 包身份冲突诊断编号的简短别名。
 pub const IDENTITY_CONFLICT_CODE: &str = PACKAGE_IDENTITY_CONFLICT_CODE;

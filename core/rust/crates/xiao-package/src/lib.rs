@@ -6,6 +6,8 @@ mod cache;
 mod diagnostics;
 /// 项目环境布局、指纹和元数据物化。
 mod environment;
+/// 11A-E2A 锁文件、过期判据和跨平台原子文件提交。
+mod lockfile;
 /// 环境到缓存对象的逻辑映射。
 mod mapping;
 /// 包身份、来源预留和确定性内存图模型。
@@ -28,6 +30,13 @@ pub use environment::{
     fingerprint_config, fingerprint_environment, fingerprint_target, materialize_environment,
     materialize_environment_from_graph, materialize_environment_with_mappings,
     materialize_global_environment_from_graph, read_environment_metadata,
+    update_environment_mappings, update_environment_metadata,
+};
+/// 重导出锁文件和原子更新接口。
+pub use lockfile::{
+    LOCKFILE_NAME, LOCKFILE_VERSION, LockFile, LockFileWriteStatus, LockedDependency,
+    LockedPackage, LockfileError, LockfileMismatch, build_lockfile, compare_lockfile,
+    generate_or_reuse_lockfile, lockfile_path, read_lockfile, validate_lockfile, write_lockfile,
 };
 /// 重导出环境映射接口。
 pub use mapping::{

@@ -1,0 +1,32 @@
+{
+  "stage": "11A-E2A",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "complete-transitive-local-graph",
+      "project": "project",
+      "files": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\ncore = { path = \"../packages/core\", version = \"^1.0\", source = \"local\" }\n",
+        "packages/core/config.xiao": "[project]\nname = \"core\"\nversion = \"1.2.0\"\n[dependencies]\nutil = { path = \"../util\" }\n",
+        "packages/util/config.xiao": "[project]\nname = \"util\"\nversion = \"0.4.0\"\n",
+        "packages/util/main.xiao": "return 42\n"
+      },
+      "expect": "success",
+      "packages": ["app@0.1.0", "core@1.2.0", "util@0.4.0"],
+      "edges": {"app": ["core"], "core": ["util"], "util": []},
+      "write": ["created", "reused"]
+    },
+    {
+      "name": "development-dependency-retains-kind",
+      "project": "project",
+      "files": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[devdependencies]\ntestkit = { path = \"../tools/testkit\" }\n",
+        "tools/testkit/config.xiao": "[project]\nname = \"testkit\"\nversion = \"0.3.0\"\n"
+      },
+      "expect": "success",
+      "packages": ["app@0.1.0", "testkit@0.3.0"],
+      "edges": {"app": ["testkit"], "testkit": []},
+      "write": ["created", "reused"]
+    }
+  ]
+}

@@ -27,6 +27,8 @@ pub const SOURCE_OBJECT_KIND: &str = "source";
 pub const SOURCE_OBJECT_ALGORITHM: &str = "sha256";
 /// 已物化环境目录的元数据标记文件名，用于排除生成内容。
 const GENERATED_ENVIRONMENT_METADATA_FILE: &str = ".xiao-environment.json";
+/// 项目锁文件由 E2A 管理，不属于包源码对象内容。
+const GENERATED_LOCKFILE: &str = "xiao.lock.json";
 
 /// 生成进程内唯一暂存对象名称的计数器。
 static NEXT_TEMP_OBJECT: AtomicU64 = AtomicU64::new(0);
@@ -563,6 +565,9 @@ fn collect_snapshot_entries(
                 reason: "不跟随符号链接",
             });
         }
+        if metadata.is_file() && is_generated_lockfile(segment) {
+            continue;
+        }
         if metadata.is_dir() {
             if path.join(GENERATED_ENVIRONMENT_METADATA_FILE).is_file() {
                 continue;
@@ -590,6 +595,11 @@ fn collect_snapshot_entries(
         }
     }
     Ok(())
+}
+
+/// 判断目录项是否为应从源码摘要排除的项目生成文件。
+fn is_generated_lockfile(name: &str) -> bool {
+    name == GENERATED_LOCKFILE || name.starts_with(".xiao.lock.json.tmp-")
 }
 
 /// 对规范化快照编码并计算 SHA-256 摘要。

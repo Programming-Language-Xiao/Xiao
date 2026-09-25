@@ -1,0 +1,68 @@
+{
+  "stage": "11A-E2A",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "non-dependency-config-fingerprint-changed",
+      "project": "project",
+      "files": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[build]\nmode = \"debug\"\n"
+      },
+      "after": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[build]\nmode = \"release\"\n"
+      },
+      "expect": "error",
+      "diagnostics": ["X05-LOCK-003"]
+    },
+    {
+      "name": "config-declaration-changed",
+      "project": "project",
+      "files": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\nlib = { path = \"../packages/lib\", version = \"^1.0\" }\n",
+        "packages/lib/config.xiao": "[project]\nname = \"lib\"\nversion = \"1.0.0\"\n"
+      },
+      "after": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\nlib = { path = \"../packages/lib\", version = \"^2.0\" }\n"
+      },
+      "expect": "error",
+      "diagnostics": ["X05-LOCK-003"]
+    },
+    {
+      "name": "local-package-content-changed",
+      "project": "project",
+      "files": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\nlib = { path = \"../packages/lib\" }\n",
+        "packages/lib/config.xiao": "[project]\nname = \"lib\"\nversion = \"1.0.0\"\n",
+        "packages/lib/main.xiao": "return 1\n"
+      },
+      "after": {"packages/lib/main.xiao": "return 2\n"},
+      "expect": "error",
+      "diagnostics": ["X05-LOCK-004"]
+    },
+    {
+      "name": "local-package-source-path-changed",
+      "project": "project",
+      "files": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\nlib = { path = \"../packages/lib-a\" }\n",
+        "packages/lib-a/config.xiao": "[project]\nname = \"lib\"\nversion = \"1.0.0\"\n",
+        "packages/lib-b/config.xiao": "[project]\nname = \"lib\"\nversion = \"1.0.0\"\n"
+      },
+      "after": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\nlib = { path = \"../packages/lib-b\" }\n"
+      },
+      "expect": "error",
+      "diagnostics": ["X05-LOCK-005"]
+    },
+    {
+      "name": "unsupported-lock-version",
+      "project": "project",
+      "files": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n"
+      },
+      "after": {},
+      "lock_version": 99,
+      "expect": "error",
+      "diagnostics": ["X05-LOCK-001"]
+    }
+  ]
+}

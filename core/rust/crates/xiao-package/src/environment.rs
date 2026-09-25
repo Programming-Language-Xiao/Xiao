@@ -2,7 +2,7 @@
 //!
 //! 本模块只消费已经规范化的 [`xiao_config::ConfigDocument`]，不会重新扫描配置源码、
 //! 执行项目代码、解析远程来源或生成锁文件。环境目录保存轻量元数据，依赖源码和缓存
-//! 由后续 E1/E2 负责。
+//! 由 E1/E2A 的独立模块负责。
 
 use std::fmt::{self, Display, Formatter};
 use std::fs;
@@ -18,7 +18,10 @@ use crate::diagnostics::{
     ENVIRONMENT_ALREADY_EXISTS_CODE, ENVIRONMENT_INVALID_NAME_CODE,
     ENVIRONMENT_METADATA_VERSION_CODE, ENVIRONMENT_WRITE_CODE,
 };
-use crate::mapping::{MappingError, PackageObjectMapping, materialize_package_mappings};
+use crate::lockfile::atomic_write_file;
+use crate::mapping::{
+    MappingError, PackageObjectMapping, materialize_package_mappings, validate_package_mappings,
+};
 use crate::model::PackageGraph;
 
 /// 环境目录内的元数据文件名。
@@ -508,8 +511,7 @@ fn materialize_environment_at_layout(
         }
     })?;
     let metadata_path = layout.path.join(ENVIRONMENT_METADATA_FILE);
-    if let Err(error) = fs::write(&metadata_path, metadata.to_json()) {
-        let _ = fs::remove_file(&metadata_path);
+    if let Err(error) = atomic_write_file(&metadata_path, metadata.to_json().as_bytes()) {
         let _ = fs::remove_dir(&layout.path);
         return Err(EnvironmentError::Write {
             path: metadata_path,
@@ -517,6 +519,41 @@ fn materialize_environment_at_layout(
             message: error.to_string(),
         });
     }
+    Ok(metadata)
+}
+
+/// 原子更新既有环境的元数据映射。
+///
+/// 该入口不重新创建环境目录；写入先进入同目录暂存文件，再使用平台替换语义提交，
+/// 因而中断只会留下旧元数据或完整的新元数据，不会留下半截 JSON。
+#[allow(clippy::result_large_err)]
+pub fn update_environment_metadata(
+    metadata_path: impl AsRef<Path>,
+    metadata: &EnvironmentMetadata,
+) -> Result<(), EnvironmentError> {
+    let path = metadata_path.as_ref();
+    read_environment_metadata(path)?;
+    atomic_write_file(path, metadata.to_json().as_bytes()).map_err(|error| {
+        EnvironmentError::Write {
+            path: path.to_path_buf(),
+            operation: "原子更新元数据",
+            message: error.to_string(),
+        }
+    })
+}
+
+/// 将已存在项目或全局环境的包映射原子替换为完整的新映射。
+#[allow(clippy::result_large_err)]
+pub fn update_environment_mappings(
+    metadata_path: impl AsRef<Path>,
+    package_mappings: Vec<PackageObjectMapping>,
+) -> Result<EnvironmentMetadata, EnvironmentPackageError> {
+    validate_package_mappings(&package_mappings)?;
+    let path = metadata_path.as_ref();
+    let mut metadata = read_environment_metadata(path)?;
+    metadata.metadata_version = ENVIRONMENT_METADATA_VERSION;
+    metadata.package_mappings = package_mappings;
+    update_environment_metadata(path, &metadata)?;
     Ok(metadata)
 }
 
