@@ -319,7 +319,7 @@ impl LockFile {
         )
     }
 
-    /// 从 JSON 文本读取当前或旧版锁文件，拒绝未来版本。
+    /// 从 JSON 文本读取当前版本锁文件，拒绝不支持的版本。
     #[allow(clippy::result_large_err)]
     pub fn from_json(text: &str) -> Result<Self, LockfileError> {
         Self::from_json_at(text, Path::new("<json>"))
@@ -391,16 +391,30 @@ impl LockFile {
             }
         }
         let mut reachable = BTreeSet::new();
-        let mut pending = vec![identity_key(&self.root)];
-        while let Some(identity) = pending.pop() {
-            if reachable.insert(identity.clone()) {
-                pending.extend(
-                    self.packages[&identity]
-                        .dependencies
-                        .values()
-                        .map(|dependency| identity_key(&dependency.target)),
-                );
+        let mut active = BTreeSet::new();
+        let mut pending = vec![(identity_key(&self.root), false)];
+        while let Some((identity, exiting)) = pending.pop() {
+            if exiting {
+                active.remove(&identity);
+                reachable.insert(identity);
+                continue;
             }
+            if reachable.contains(&identity) {
+                continue;
+            }
+            if !active.insert(identity.clone()) {
+                return Err(LockfileError::Invalid {
+                    path: path.to_path_buf(),
+                    message: "锁文件依赖图存在环".to_owned(),
+                });
+            }
+            pending.push((identity.clone(), true));
+            pending.extend(
+                self.packages[&identity]
+                    .dependencies
+                    .values()
+                    .map(|dependency| (identity_key(&dependency.target), false)),
+            );
         }
         if reachable.len() != self.packages.len() {
             return Err(LockfileError::Invalid {
@@ -465,8 +479,18 @@ pub fn write_lockfile(
     lockfile.validate(path)?;
     let contents = lockfile.to_json();
     let status = match fs::read(path) {
-        Ok(existing) if existing == contents.as_bytes() => LockFileWriteStatus::Reused,
-        Ok(_) => LockFileWriteStatus::Updated,
+        Ok(existing) => {
+            let text = std::str::from_utf8(&existing).map_err(|error| LockfileError::Invalid {
+                path: path.to_path_buf(),
+                message: error.to_string(),
+            })?;
+            LockFile::from_json_at(text, path)?;
+            if existing == contents.as_bytes() {
+                LockFileWriteStatus::Reused
+            } else {
+                LockFileWriteStatus::Updated
+            }
+        }
         Err(error) if error.kind() == io::ErrorKind::NotFound => LockFileWriteStatus::Created,
         Err(error) => {
             return Err(LockfileError::Io {
@@ -571,6 +595,14 @@ pub fn validate_lockfile(
 
 /// 供环境模块复用的同文件系统原子文件写入。
 pub(crate) fn atomic_write_file(path: &Path, contents: &[u8]) -> io::Result<()> {
+    atomic_write_file_with(path, |file| file.write_all(contents))
+}
+
+/// 在暂存写入阶段注入写入器，提交前的失败必须保留原目标。
+fn atomic_write_file_with(
+    path: &Path,
+    write_contents: impl FnOnce(&mut fs::File) -> io::Result<()>,
+) -> io::Result<()> {
     let parent = path
         .parent()
         .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "目标文件没有父目录"))?;
@@ -591,9 +623,9 @@ pub(crate) fn atomic_write_file(path: &Path, contents: &[u8]) -> io::Result<()> 
             Err(error) if error.kind() == io::ErrorKind::AlreadyExists => continue,
             Err(error) => return Err(error),
         };
-        let written = file.write_all(contents).and_then(|()| file.sync_all());
+        let written = write_contents(&mut file).and_then(|()| file.sync_all());
         drop(file);
-        if let Err(error) = written.and_then(|()| atomic_replace(&temporary, path)) {
+        if let Err(error) = written.and_then(|()| fs::rename(&temporary, path)) {
             let _ = fs::remove_file(&temporary);
             return Err(error);
         }
@@ -603,50 +635,6 @@ pub(crate) fn atomic_write_file(path: &Path, contents: &[u8]) -> io::Result<()> 
         io::ErrorKind::AlreadyExists,
         "原子提交暂存文件名称耗尽",
     ))
-}
-
-/// 使用同文件系统替换语义提交暂存文件。
-fn atomic_replace(temporary: &Path, target: &Path) -> io::Result<()> {
-    #[cfg(windows)]
-    {
-        /// Windows 覆盖现有目标，而不是先删除旧文件。
-        const MOVEFILE_REPLACE_EXISTING: u32 = 0x0000_0001;
-        /// 请求 Windows 在返回之前提交替换操作。
-        const MOVEFILE_WRITE_THROUGH: u32 = 0x0000_0008;
-        #[link(name = "kernel32")]
-        unsafe extern "system" {
-            fn MoveFileExW(existing: *const u16, replacement: *const u16, flags: u32) -> i32;
-        }
-        let existing = wide_path(temporary);
-        let replacement = wide_path(target);
-        let moved = unsafe {
-            MoveFileExW(
-                existing.as_ptr(),
-                replacement.as_ptr(),
-                MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH,
-            )
-        };
-        if moved == 0 {
-            Err(io::Error::last_os_error())
-        } else {
-            Ok(())
-        }
-    }
-    #[cfg(not(windows))]
-    {
-        fs::rename(temporary, target)
-    }
-}
-
-#[cfg(windows)]
-/// 将原生路径编码为以零结尾的 Windows 宽字符串。
-fn wide_path(path: &Path) -> Vec<u16> {
-    use std::os::windows::ffi::OsStrExt;
-
-    path.as_os_str()
-        .encode_wide()
-        .chain(std::iter::once(0))
-        .collect()
 }
 
 /// 从已解析图节点及其依赖边创建确定性包条目。
@@ -768,4 +756,51 @@ fn is_digest(value: &str) -> bool {
         && value
             .bytes()
             .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+}
+
+/// 覆盖原子写入阶段失败后的旧文件完整性与后续替换。
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use std::io::{self, Write};
+    use std::sync::atomic::Ordering;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    use super::{NEXT_ATOMIC_FILE, atomic_write_file, atomic_write_file_with};
+
+    #[test]
+    /// 暂存文件写入一半即失败时旧文件不损坏，后续写入仍能覆盖。
+    fn interrupted_temporary_write_preserves_existing_target() {
+        let stamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system clock")
+            .as_nanos();
+        let id = NEXT_ATOMIC_FILE.fetch_add(1, Ordering::Relaxed);
+        let directory = std::env::temp_dir().join(format!(
+            "xiao-atomic-write-{stamp}-{}-{id}",
+            std::process::id()
+        ));
+        fs::create_dir(&directory).expect("create isolated directory");
+        let target = directory.join("metadata.json");
+        let original = b"{\"ready\":true}\n";
+        fs::write(&target, original).expect("write existing metadata");
+
+        let failure = atomic_write_file_with(&target, |file| {
+            file.write_all(b"{\"ready\":")?;
+            Err(io::Error::other("injected partial write"))
+        })
+        .expect_err("temporary write must fail");
+        assert_eq!(failure.to_string(), "injected partial write");
+        assert_eq!(fs::read(&target).expect("old metadata intact"), original);
+        assert_eq!(fs::read_dir(&directory).expect("read directory").count(), 1);
+
+        let replacement = b"{\"ready\":false}\n";
+        atomic_write_file(&target, replacement).expect("replace after interrupted write");
+        assert_eq!(
+            fs::read(&target).expect("new metadata complete"),
+            replacement
+        );
+        fs::remove_file(&target).expect("remove test file");
+        fs::remove_dir(&directory).expect("remove isolated directory");
+    }
 }

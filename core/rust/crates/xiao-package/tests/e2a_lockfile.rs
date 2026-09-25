@@ -11,10 +11,11 @@ use xiao_codegen_llvm::{TargetDescription, Toolchain, ToolchainVersions};
 use xiao_config::{ConfigDocument, parse_config_project};
 use xiao_package::{
     CacheLayout, CacheStore, ENVIRONMENT_METADATA_FILE, LOCKFILE_INVALID_CODE, LOCKFILE_VERSION,
-    LockFile, LockFileWriteStatus, build_lockfile, fingerprint_config, generate_or_reuse_lockfile,
-    lockfile_path, materialize_environment, materialize_package_mappings,
-    read_environment_metadata, read_lockfile, resolve_project, source_directory_digest,
-    update_environment_mappings, update_environment_metadata, validate_lockfile, write_lockfile,
+    LockFile, LockFileWriteStatus, LockedDependency, build_lockfile, fingerprint_config,
+    generate_or_reuse_lockfile, lockfile_path, materialize_environment,
+    materialize_package_mappings, read_environment_metadata, read_lockfile, resolve_project,
+    source_directory_digest, update_environment_mappings, update_environment_metadata,
+    validate_lockfile, write_lockfile,
 };
 use xiao_source::SourceFile;
 
@@ -261,9 +262,27 @@ fn error_lockfile_spec_is_executed() {
                     "\"lock_version\": 1",
                     &format!("\"lock_version\": {version}"),
                 );
-            LockFile::from_json(&text)
+            let code = LockFile::from_json(&text)
                 .expect_err("future version must fail")
-                .code()
+                .code();
+            fs::write(&path, &text).expect("place future lockfile");
+            assert_eq!(
+                read_lockfile(&path)
+                    .expect_err("future file must fail")
+                    .code(),
+                code
+            );
+            assert_eq!(
+                generate_or_reuse_lockfile(&project, &initial.graph, &document, &cache)
+                    .expect_err("generation must not overwrite a future lockfile")
+                    .code(),
+                code
+            );
+            assert_eq!(
+                fs::read(&path).expect("future lockfile retained"),
+                text.as_bytes()
+            );
+            code
         } else {
             populate(&workspace, &case.after);
             let current = resolve_project(&project);
@@ -349,7 +368,7 @@ fn environment_mapping_update_replaces_existing_file_without_partial_json() {
 }
 
 #[test]
-/// 拒绝部分包图、缺根包和不可达包的锁文件。
+/// 拒绝部分包图、缺根包、不可达包和依赖环。
 fn invalid_graph_or_unreachable_lock_entry_is_rejected() {
     let workspace = TempWorkspace::new();
     workspace.write(
@@ -395,6 +414,56 @@ fn invalid_graph_or_unreachable_lock_entry_is_rejected() {
             .expect_err("missing root")
             .code(),
         LOCKFILE_INVALID_CODE
+    );
+    let mut cyclic = build_lockfile(&complete, &document, &cache).expect("valid graph");
+    let root = cyclic.root.clone();
+    cyclic
+        .packages
+        .get_mut(&root.to_string())
+        .expect("root package")
+        .dependencies
+        .insert(
+            root.name.clone(),
+            LockedDependency {
+                kind: "dependencies".to_owned(),
+                version_constraint: None,
+                source_reference: None,
+                config_path: "config.xiao".to_owned(),
+                target: root,
+            },
+        );
+    assert_eq!(
+        LockFile::from_json(&cyclic.to_json())
+            .expect_err("cyclic lockfile")
+            .code(),
+        LOCKFILE_INVALID_CODE
+    );
+}
+
+#[test]
+/// 拒绝覆盖已存在但无效的锁文件，而不是静默擦除诊断信息。
+fn invalid_existing_lockfile_is_not_overwritten() {
+    let workspace = TempWorkspace::new();
+    workspace.write(
+        "project/config.xiao",
+        "[project]\nname = \"app\"\nversion = \"0.1.0\"\n",
+    );
+    let project = workspace.path("project");
+    let cache = workspace.cache();
+    let document = workspace.document("project");
+    let graph = resolve_project(&project).graph;
+    let lockfile = build_lockfile(&graph, &document, &cache).expect("valid graph");
+    let path = lockfile_path(&project);
+    fs::write(&path, "{broken").expect("place invalid lockfile");
+    assert_eq!(
+        write_lockfile(&path, &lockfile)
+            .expect_err("invalid lockfile must not be overwritten")
+            .code(),
+        LOCKFILE_INVALID_CODE
+    );
+    assert_eq!(
+        fs::read_to_string(&path).expect("invalid file retained"),
+        "{broken"
     );
 }
 

@@ -565,7 +565,10 @@ fn collect_snapshot_entries(
                 reason: "不跟随符号链接",
             });
         }
-        if metadata.is_file() && is_generated_lockfile(segment) {
+        if relative_directory.as_os_str().is_empty()
+            && metadata.is_file()
+            && is_generated_lockfile(segment)
+        {
             continue;
         }
         if metadata.is_dir() {

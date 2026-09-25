@@ -40,6 +40,17 @@
       "diagnostics": ["X05-LOCK-004"]
     },
     {
+      "name": "nested-lockfile-is-source-content",
+      "project": "project",
+      "files": {
+        "project/config.xiao": "[project]\nname = \"app\"\nversion = \"0.1.0\"\n",
+        "project/assets/xiao.lock.json": "{\"value\":1}\n"
+      },
+      "after": {"project/assets/xiao.lock.json": "{\"value\":2}\n"},
+      "expect": "error",
+      "diagnostics": ["X05-LOCK-004"]
+    },
+    {
       "name": "local-package-source-path-changed",
       "project": "project",
       "files": {
