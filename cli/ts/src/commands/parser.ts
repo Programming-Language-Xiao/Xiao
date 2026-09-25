@@ -23,7 +23,7 @@ export type ParsedCommand =
   | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; optimizationLevel: 0; args: readonly string[]; options: GlobalCliOptions }
   | { kind: "venv"; name?: string; options: GlobalCliOptions }
   | { kind: "sync"; keepExtra: boolean; locked: boolean; frozen: boolean; options: GlobalCliOptions }
-  | { kind: "install"; options: GlobalCliOptions }
+  | { kind: "install"; project?: string; options: GlobalCliOptions }
   | { kind: "shell-init"; shell: ShellName; options: GlobalCliOptions }
   | { kind: "deactivate"; options: GlobalCliOptions }
   | { kind: "repl"; options: GlobalCliOptions };
@@ -69,8 +69,10 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
   if (command === "venv") return parseVenv(rest, options);
   if (command === "sync") return parseSync(rest, options);
   if (command === "install" || command === "i") {
-    if (rest.length !== 0) throw new CliArgumentError("install/i 不接受选项或位置参数");
-    return { kind: "install", options };
+    if (rest.length > 1 || rest[0] === "" || rest[0]?.startsWith("-")) {
+      throw new CliArgumentError("install/i 最多接受一个项目目录或 config.xiao 路径");
+    }
+    return rest.length === 0 ? { kind: "install", options } : { kind: "install", project: rest[0], options };
   }
   if (command === "shell-init") return parseShellInit(rest, options);
   if (command === "deactivate") {
@@ -97,7 +99,7 @@ export function helpText(): string {
     "  xiao build -o <output> <file.xiao> [-debug] [--emit-llvm <path>] [--json]",
     "  xiao venv [name]                         创建项目环境并输出激活提示",
     "  xiao sync [--keep-extra] [--locked|--frozen] 同步依赖并激活环境",
-    "  xiao install | xiao i                     安装已有锁文件到激活或全局环境",
+    "  xiao install [project-or-config-path]    安装已有锁文件到激活或全局环境（别名：i）",
     "  xiao shell-init <bash|powershell|cmd>    输出一次性 Shell 钩子",
     "  xiao deactivate                          取消当前 Shell 环境激活",
     "  xiao --help | --version",

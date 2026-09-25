@@ -1,8 +1,9 @@
 /** E2B 命令交互层；目标选择与锁文件判定均由 Rust 包模块完成。 */
 
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { readFile, stat } from "node:fs/promises";
+import { basename, dirname, join, resolve } from "node:path";
 
+import { CliArgumentError, type ParsedCommand } from "../commands/parser.ts";
 import { findEnvironmentProjectRoot } from "../environments/index.ts";
 import { requestActivation } from "../environments/activation.ts";
 import { discoverToolchainWithMetadata } from "../platform/toolchain.ts";
@@ -11,7 +12,16 @@ import { ProtocolClient } from "../protocol/client.ts";
 import { CORE_VERSION, PROTOCOL_VERSION, type PackageRequest } from "../protocol/messages.ts";
 import { renderProtocolResponse, type RenderedDiagnostic, type DiagnosticRenderOptions } from "../diagnostics/render.ts";
 import type { CommandContext } from "../commands/index.ts";
-import type { ParsedCommand } from "../commands/parser.ts";
+
+/** 安装只读显式目标或当前目录，不向上推断另一个项目。 */
+async function installProjectRoot(cwd: string, project?: string): Promise<string> {
+  const selected = resolve(cwd, project ?? ".");
+  if (project === undefined) return selected;
+  const entry = await stat(selected);
+  if (entry.isDirectory()) return selected;
+  if (entry.isFile() && basename(selected) === "config.xiao") return dirname(selected);
+  throw new CliArgumentError("install/i 只接受项目目录或小写 config.xiao 路径");
+}
 
 /** 执行一次 sync/install；别名 i 在解析后共享同一个分支。 */
 export async function executePackageCommand(
@@ -20,7 +30,9 @@ export async function executePackageCommand(
   renderOptions: DiagnosticRenderOptions,
 ): Promise<RenderedDiagnostic> {
   const cwd = context.cwd ?? process.cwd();
-  const projectRoot = await findEnvironmentProjectRoot(cwd);
+  const projectRoot = command.kind === "sync"
+    ? await findEnvironmentProjectRoot(cwd)
+    : await installProjectRoot(cwd, command.project);
   const configText = await readFile(join(projectRoot, "config.xiao"), "utf8");
   const toolchain = context.environmentToolchain ?? (await discoverToolchainWithMetadata({
     cwd: projectRoot, env: context.env, executablePath: context.executablePath, probeLink: false,

@@ -447,6 +447,10 @@ E2B 不再重复修改这段历史说明。
   `index.test.ts` 比较 `install` 与 `i` 的协议结果。Windows 实测真实 `xiao-core`
   协议完成同步、锁定与全局安装；该机器只有 GNU clang（目标为 windows-gnu），
   CLI 工具链发现拒绝 MSVC 目标，故未将**真实 CLI 全链路**冒充为已验证。
+- **自审核修复**：恢复 `install`/`i` 的可选项目目录与 `config.xiao` 文件参数，省略时只查
+  当前目录、不误选父项目；Bash/PowerShell 钩子识别前置全局选项并跳过帮助/版本命令。
+  PowerShell 不向标准输出追加数字状态，失败时清理临时文件并返回非零进程状态。
+  对应的真实 Shell 与协议替身回归已纳入 TypeScript 测试；11B 债项保持不变。
 
 ---
 

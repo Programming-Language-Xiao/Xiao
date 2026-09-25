@@ -33,17 +33,23 @@ xiao sync --frozen        只读现有锁文件，缺失或失配则失败
 在 CI 和可复现构建中使用 `--locked` 或 `--frozen`。
 
 ```text
-xiao install
-xiao i
+xiao install [project-or-config-path]
+xiao i [project-or-config-path]
 ```
 
 两个命令解析成同一操作：**只消费已有且与当前本地依赖一致的锁文件**，
+可显式传入项目目录或小写的 `config.xiao` 文件路径；省略时只读取当前目录下的
+`config.xiao`，不会向父目录发现项目（这点不同于 `sync`）。
 不改锁、不移除多余映射、不创建项目环境、不激活。有激活环境时使用该绝对路径；
 否则按需创建 `XIAO_HOME/envs/global` **全局映射容器**，而不是创建项目环境。
 未设置 `XIAO_HOME` 时使用用户目录下的 `~/.xiao/envs/global`；若已激活环境的路径
 失效，`install` 会报错而不会重建项目环境，可先 `xiao deactivate` 后使用全局容器。
 锁文件不存在、源内容改变或依赖图不匹配时失败，请先运行 `sync`；不要在 `install`
 中暗中更新锁文件。未找到项目 `config.xiao` 时本地包图无法解析，命令失败。
+
+全局选项 `--json`、`--color=...` 可放在子命令前后；Bash/PowerShell 钩子
+均识别这种写法。PowerShell 钩子不向标准输出追加状态数字，失败时以非零状态报错，
+不会将失败的 `sync` 伪装为成功。
 
 错误响应保留 Rust 的稳定诊断编号：`X05-SYNC-001` 表示参数或路径无效，
 `X05-SYNC-002` 表示冻结/安装模式缺锁，`X05-SYNC-003` 表示激活环境不存在或

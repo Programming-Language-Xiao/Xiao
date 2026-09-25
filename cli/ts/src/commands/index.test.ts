@@ -154,6 +154,33 @@ describe("命令取消接线", () => {
     }
   });
 
+  test("install/i 仅从当前目录或显式路径读取配置，不向上发现", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-install-target-"));
+    const project = join(directory, "project");
+    const nested = join(project, "nested");
+    const config = "[project]\nname = \"chosen\"\nversion = \"0.1.0\"\n";
+    await mkdir(nested, { recursive: true });
+    await writeFile(join(project, "config.xiao"), config);
+    try {
+      for (const [alias, path] of [["install", ".."], ["i", "../config.xiao"]] as const) {
+        const context = environmentContext();
+        const result = await executeCommand(parseArguments([alias, path]), { ...context, cwd: nested });
+        expect(result.exitCode).toBe(0);
+        expect(context.fake.requests.find((request) => request.type === "package")).toMatchObject({
+          operation: "install", project_root: project, config_text: config,
+        });
+      }
+      const missing = await executeCommand(parseArguments(["install", "--json"]), { cwd: nested });
+      expect(missing.exitCode).not.toBe(0);
+      expect(JSON.parse(missing.stdout)).toMatchObject({ type: "error" });
+      await writeFile(join(project, "other.xiao"), config);
+      const unrelated = await executeCommand(parseArguments(["i", "../other.xiao", "--json"]), { cwd: nested });
+      expect(unrelated.exitCode).toBe(64);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   test("预取消信号沿 runSource 传递并在启动核心前返回稳定错误", async () => {
     const directory = await mkdtemp(join(tmpdir(), "xiao-cli-cancel-"));
     const sourcePath = join(directory, "main.xiao");

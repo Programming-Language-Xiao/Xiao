@@ -8,7 +8,9 @@ describe("xiao 命令解析", () => {
   test("同步模式互斥，install/i 共享命令形状", () => {
     expect(parseArguments(["sync", "--keep-extra", "--frozen"])).toMatchObject({ kind: "sync", keepExtra: true, frozen: true, locked: false });
     expect(parseArguments(["i"])).toEqual(parseArguments(["install"]));
-    for (const argumentsList of [["sync", "--locked", "--frozen"], ["sync", "--unknown"], ["i", "--locked"], ["sync", "--locked", "--locked"]]) {
+    expect(parseArguments(["install", "./project"])).toEqual(parseArguments(["i", "./project"]));
+    expect(parseArguments(["--json", "i", "./project/config.xiao"])).toMatchObject({ kind: "install", project: "./project/config.xiao", options: { json: true } });
+    for (const argumentsList of [["sync", "--locked", "--frozen"], ["sync", "--unknown"], ["i", "--locked"], ["i", "one", "two"], ["install", ""], ["sync", "--locked", "--locked"]]) {
       expect(() => parseArguments(argumentsList)).toThrow(CliArgumentError);
     }
   });
