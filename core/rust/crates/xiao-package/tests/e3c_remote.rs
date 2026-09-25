@@ -33,6 +33,9 @@ struct Reply {
     body: Vec<u8>,
     cut: Option<usize>,
     ranged: bool,
+    range_end: Option<usize>,
+    ranged_body_limit: Option<usize>,
+    ranged_cut: Option<usize>,
     delay: Duration,
     extra: String,
 }
@@ -44,6 +47,9 @@ impl Reply {
             body: body.into(),
             cut: None,
             ranged: false,
+            range_end: None,
+            ranged_body_limit: None,
+            ranged_cut: None,
             delay: Duration::ZERO,
             extra: String::new(),
         }
@@ -146,15 +152,19 @@ fn handle(
         });
     thread::sleep(response.delay);
     let (status, content_range, body) = if let Some(start) = range.filter(|_| response.ranged) {
+        let full_body = &response.body[start..];
         (
             206,
             format!(
                 "Content-Range: bytes {}-{}/{}\r\n",
                 start,
-                response.body.len() - 1,
+                response.range_end.unwrap_or(response.body.len() - 1),
                 response.body.len()
             ),
-            &response.body[start..],
+            &full_body[..response
+                .ranged_body_limit
+                .unwrap_or(full_body.len())
+                .min(full_body.len())],
         )
     } else {
         (response.status, String::new(), response.body.as_slice())
@@ -164,11 +174,11 @@ fn handle(
         body.len(),
         response.extra
     );
-    if let (Some(cut), None) = (response.cut, range) {
-        let header = header.replace(
-            &format!("Content-Length: {}", body.len()),
-            &format!("Content-Length: {}", response.body.len()),
-        );
+    if let Some(cut) = if range.is_some() {
+        response.ranged_cut
+    } else {
+        response.cut
+    } {
         let _ = stream.write_all(header.as_bytes());
         let _ = stream.write_all(&body[..cut.min(body.len())]);
     } else {
@@ -328,6 +338,39 @@ fn pkt_line_rejects_spec_errors_and_non_utf8() {
             .code,
         SOURCE_UNSUPPORTED_VERSION_CODE
     );
+}
+
+#[test]
+fn pkt_line_accepts_optional_lf_in_service_version_and_refs() {
+    for service_header in ["# service=git-upload-pack", "# service=git-upload-pack\n"] {
+        let mut wire = Vec::new();
+        for line in [
+            service_header.to_owned(),
+            String::new(),
+            "version 1".to_owned(),
+            format!("{COMMIT} HEAD\0multi_ack"),
+            format!("{COMMIT} refs/heads/main\n"),
+        ] {
+            if line.is_empty() {
+                wire.extend_from_slice(b"0000");
+            } else {
+                wire.extend_from_slice(format!("{:04x}{line}", line.len() + 4).as_bytes());
+            }
+        }
+        wire.extend_from_slice(b"0000");
+        assert_eq!(
+            parse_advertised_refs(&wire, &GitReference::Head)
+                .unwrap()
+                .commit,
+            COMMIT
+        );
+        assert_eq!(
+            parse_advertised_refs(&wire, &GitReference::Branch("main".to_owned()))
+                .unwrap()
+                .commit,
+            COMMIT
+        );
+    }
 }
 
 #[test]
@@ -692,6 +735,69 @@ fn range_resume_and_unavailable_failures_do_not_create_half_snapshot() {
         .unwrap();
     assert_eq!(report.snapshots[0].status, SnapshotStatus::Unavailable);
     fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn range_header_cannot_understate_returned_body() {
+    let server = Server::new();
+    let source = descriptor("static", &format!("{}/static", server.base));
+    let (_, _, artifact) = fixture(&source, COMMIT);
+    let mut response = Reply::ok(b"not executable: create NO_SIDE_EFFECT".to_vec());
+    response.cut = Some(7);
+    response.ranged = true;
+    response.range_end = Some(7);
+    server.route("/static/artifacts/demo.bin", response);
+    assert_eq!(
+        HttpStaticAdapter::new()
+            .read_artifact(&source, &artifact)
+            .unwrap_err()
+            .code,
+        SOURCE_UNAVAILABLE_CODE
+    );
+}
+
+#[test]
+fn range_header_cannot_overstate_cleanly_returned_body() {
+    let server = Server::new();
+    let source = descriptor("static", &format!("{}/static", server.base));
+    let (_, _, artifact) = fixture(&source, COMMIT);
+    let mut response = Reply::ok(b"not executable: create NO_SIDE_EFFECT".to_vec());
+    response.cut = Some(artifact.length as usize - 2);
+    response.ranged = true;
+    response.ranged_body_limit = Some(1);
+    server.route("/static/artifacts/demo.bin", response);
+    assert_eq!(
+        HttpStaticAdapter::new()
+            .read_artifact(&source, &artifact)
+            .unwrap_err()
+            .code,
+        SOURCE_UNAVAILABLE_CODE
+    );
+}
+
+#[test]
+fn interrupted_range_response_can_resume_again() {
+    let server = Server::new();
+    let source = descriptor("static", &format!("{}/static", server.base));
+    let (_, _, artifact) = fixture(&source, COMMIT);
+    let mut response = Reply::ok(b"not executable: create NO_SIDE_EFFECT".to_vec());
+    response.cut = Some(artifact.length as usize - 5);
+    response.ranged = true;
+    response.ranged_cut = Some(3);
+    server.route("/static/artifacts/demo.bin", response);
+    assert_eq!(
+        HttpStaticAdapter::new()
+            .read_artifact(&source, &artifact)
+            .unwrap()
+            .len(),
+        artifact.length as usize
+    );
+    assert!(
+        server
+            .requests()
+            .iter()
+            .any(|request| request.contains(&format!("Some({})", artifact.length - 2)))
+    );
 }
 
 #[test]

@@ -52,8 +52,9 @@ pub fn parse_advertised_refs(
         return Err(invalid("Git refs 广告过长"));
     }
     let mut offset = 0;
-    if next_line(input, &mut offset)? != Some(b"# service=git-upload-pack\n".as_slice())
-        || next_line(input, &mut offset)?.is_some()
+    if !next_line(input, &mut offset)?.is_some_and(|line| {
+        line == b"# service=git-upload-pack" || line == b"# service=git-upload-pack\n"
+    }) || next_line(input, &mut offset)?.is_some()
     {
         return Err(invalid("Git refs 缺少 smart HTTP 服务头或 flush"));
     }
@@ -66,8 +67,9 @@ pub fn parse_advertised_refs(
             break;
         };
         let text = std::str::from_utf8(line).map_err(|_| invalid("Git refs 含非 UTF-8 行"))?;
-        if first && text.starts_with("version ") {
-            if text != "version 1\n" {
+        let clean = text.strip_suffix('\n').unwrap_or(text);
+        if first && clean.starts_with("version ") {
+            if clean != "version 1" {
                 return Err(SourceError::new(
                     SOURCE_UNSUPPORTED_VERSION_CODE,
                     "Git refs 协议版本不受支持",
@@ -77,9 +79,6 @@ pub fn parse_advertised_refs(
             continue;
         }
         first = false;
-        let clean = text
-            .strip_suffix('\n')
-            .ok_or_else(|| invalid("Git refs 行缺少换行"))?;
         let advertised = clean.split_once('\0').map_or(clean, |(before, _)| before);
         let (commit, name) = advertised
             .split_once(' ')

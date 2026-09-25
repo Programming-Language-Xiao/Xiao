@@ -112,28 +112,53 @@ impl HttpStaticAdapter {
                     "Range 响应状态不符",
                 ));
             }
-            if start != 0 && !valid_content_range(&response, start as u64, artifact.length) {
-                return Err(SourceError::new(
-                    SOURCE_UNAVAILABLE_CODE,
-                    "Range 响应范围不符",
-                ));
-            }
+            let expected_range_length = if start == 0 {
+                None
+            } else {
+                Some(
+                    valid_content_range(&response, start as u64, artifact.length).ok_or_else(
+                        || SourceError::new(SOURCE_UNAVAILABLE_CODE, "Range 响应范围不符"),
+                    )?,
+                )
+            };
             let mut buffer = [0; 8192];
             let mut reader = response.body_mut().as_reader();
+            let mut interrupted = false;
             loop {
                 match reader.read(&mut buffer) {
                     Ok(0) => break,
                     Ok(count) => {
-                        if bytes.len().saturating_add(count) as u64 > artifact.length {
+                        let next_size = bytes.len().saturating_add(count);
+                        if next_size as u64 > artifact.length {
                             return Err(SourceError::new(
                                 SOURCE_UNAVAILABLE_CODE,
                                 "正文响应超出声明长度",
                             ));
                         }
+                        if expected_range_length
+                            .is_some_and(|length| (next_size - start) as u64 > length)
+                        {
+                            return Err(SourceError::new(
+                                SOURCE_UNAVAILABLE_CODE,
+                                "Range 响应正文超出声明范围",
+                            ));
+                        }
                         bytes.extend_from_slice(&buffer[..count]);
                     }
-                    Err(_) => break,
+                    Err(_) => {
+                        interrupted = true;
+                        break;
+                    }
                 }
+            }
+            if !interrupted
+                && expected_range_length
+                    .is_some_and(|length| ((bytes.len() - start) as u64) < length)
+            {
+                return Err(SourceError::new(
+                    SOURCE_UNAVAILABLE_CODE,
+                    "Range 响应正文短于声明范围",
+                ));
             }
             if bytes.len() as u64 == artifact.length {
                 verify_artifact(artifact, &bytes)?;
@@ -249,26 +274,23 @@ fn read_limited(reader: impl Read, limit: usize, url: &str) -> Result<Vec<u8>, S
     Ok(bytes)
 }
 
-fn valid_content_range(response: &http::Response<ureq::Body>, start: u64, length: u64) -> bool {
-    let Some(range) = response
+fn valid_content_range(
+    response: &http::Response<ureq::Body>,
+    start: u64,
+    length: u64,
+) -> Option<u64> {
+    let range = response
         .headers()
         .get("content-range")
-        .and_then(|value| value.to_str().ok())
-    else {
-        return false;
-    };
-    let Some((begin, total)) = range
+        .and_then(|value| value.to_str().ok())?;
+    let (begin, total) = range
         .strip_prefix("bytes ")
-        .and_then(|text| text.split_once('/'))
-    else {
-        return false;
-    };
-    let Some((begin, end)) = begin.split_once('-') else {
-        return false;
-    };
-    begin.parse::<u64>() == Ok(start)
+        .and_then(|text| text.split_once('/'))?;
+    let (begin, end) = begin.split_once('-')?;
+    let end = end.parse::<u64>().ok()?;
+    (begin.parse::<u64>() == Ok(start)
         && total.parse::<u64>() == Ok(length)
-        && end
-            .parse::<u64>()
-            .is_ok_and(|end| end >= start && end < length)
+        && end >= start
+        && end < length)
+        .then_some(end - start + 1)
 }

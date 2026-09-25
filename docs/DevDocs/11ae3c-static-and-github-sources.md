@@ -293,7 +293,8 @@ lib = { git = "https://github.com/acme/lib.git", rev = "v1.2.0" }
    不引入 async runtime、Git 客户端或任务池。`MultiSourceAdapter` 对目录、静态 HTTP、
    注册表静态索引和 Git 稀疏索引复用同一校验/联邦缓存入口。
 2. **Git 引用**：以 smart HTTP v1 `info/refs?service=git-upload-pack` 读取受限 pkt-line，
-   对未知版本、无效长度/编码、重复引用拒绝。GitHub 公共仓库的 raw 基址由
+   对未知版本、无效长度/编码、重复引用拒绝；服务头、版本行及引用行允许省略可选的行末 LF。
+   GitHub 公共仓库的 raw 基址由
    `owner/repo` 推导；自托管/测试可显式给 raw 基址。`[sources]` 可指定唯一的
    `rev`/`tag`/`branch`，省略时发现广告的 `HEAD`；`rev` 的完整 40/64 位小写
    哈希直接钉住提交，其余文本作为标签。不同引用拥有独立源身份和缓存。
@@ -314,7 +315,8 @@ lib = { git = "https://github.com/acme/lib.git", rev = "v1.2.0" }
    可比较的对象是排除来源身份后的规范包记录。相同身份且相同快照正文走 HTTP
    或本地目录的解析结果一致，绝不放宽清单 `source_id` 校验来伪造字节相等。
 
-网络测试只起本机 `TcpListener`：覆盖真实 Range 206 续传、截断不提交半成品、
+网络测试只起本机 `TcpListener`：覆盖真实 Range 206 续传（含再次中断）、
+拒绝 206 声明范围与实际完整正文长度不符、截断不提交半成品、
 404/503/302、超时、TLS 握手失败、连接拒绝、标签改写、同 commit 清单变更、
 分支前进、未知协议和不执行正文。DNS 外部联调不进 CI。
 
