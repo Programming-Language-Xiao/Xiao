@@ -20,7 +20,7 @@ describe("项目环境边界", () => {
 
   test("提示符状态重复激活、切换和取消不叠加", () => {
     const original = { prompt: "PS C:\\project> " };
-    const dev = activatePromptState(original, "dev", { isTTY: true, noColor: false, term: "xterm", color: "always" });
+    const dev = activatePromptState(original, "dev", { isTTY: true, noColor: false, term: "xterm", color: "always", colorTerm: "" });
     expect(stripAnsi(dev.prompt)).toBe("$dev$ PS C:\\project> ");
     expect(dev.prompt).toContain("\u001B[32m");
     const testEnvironment = activatePromptState(dev, "test", { isTTY: false });

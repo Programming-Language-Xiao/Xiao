@@ -4,7 +4,7 @@ title: 配置错误与修复
 status: verified
 audience: learner
 module: rust.xiao-config
-stage: "05-D/11A-D1"
+stage: "05-D/11A-D1/E3A"
 version: "0.1.0"
 related:
   - README.md
@@ -27,7 +27,7 @@ related:
 | `X05-CONFIG-004` | 配置字段值类型不符合模式 | 按模式要求的类型改写字面量 |
 | `X05-CONFIG-005` | 严格表出现未知字段 | 检查字段拼写和当前阶段白名单 |
 | `X05-CONFIG-006` | 顶层表未知 | 使用已登记表，或等待对应工程期 |
-| `X05-CONFIG-007` | 缺少项目身份 | 补齐 `[project].name` 和 `version` |
+| `X05-CONFIG-007` | 缺少项目身份或源必填字段 | 补齐 `[project].name`/`version` 或源的 `kind`/`location` |
 | `X05-CONFIG-008` | 导出路径不安全或扩展名错误 | 使用项目根相对的 `.xiao` 路径 |
 | `X05-CONFIG-009` | 表头形状非法 | 使用 `[表名]` 形式，不要嵌套或留空 |
 | `X05-CONFIG-010` | 字面量、数组或字典结构非法 | 检查括号配对与元素类型是否一致 |
@@ -36,6 +36,9 @@ related:
 | `X05-CONFIG-013` | 本地依赖路径不是相对路径 | 使用声明包根目录相对路径 |
 | `X05-CONFIG-014` | 依赖版本约束不是非空静态字符串 | 填写版本约束文本，或删除该字段 |
 | `X05-CONFIG-015` | 依赖来源引用不是非空静态字符串 | 填写 alias/source_id 约束文本，或删除该字段 |
+
+源身份、不可用、摘要、协议与别名冲突属于独立的 `X05-SOURCE-001..007` 编号，
+详见[包源声明与离线索引](../cli/package-sources.md)。
 
 ## 典型错误
 

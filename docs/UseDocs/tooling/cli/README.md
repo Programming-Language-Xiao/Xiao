@@ -34,6 +34,9 @@ E1 只提供核心 API 和测试；E2B 已接入 `sync`、`install`/`i`。
 11A-E2A 的项目根 [`xiao.lock.json` 与原子环境映射](package-lockfile.md)已提供核心生成、
 校验和复用 API；E2B 的命令接线见 [`sync`/`install`](sync.md)。
 
+11A-E3A 的[多源声明与离线索引契约](package-sources.md)已提供静态配置读取、
+JCS 校验与本地目录适配器；远程传输和 CLI 接线不在本批。
+
 ## 下一步
 
 需要逐行试验代码时阅读[交互式解释器](../repl/README.md)。

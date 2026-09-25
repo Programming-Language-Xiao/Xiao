@@ -11,3 +11,5 @@ D1 夹具位于 `tests/spec/11a-package/`，由 `d1_package.rs` 真实加载；E
 `tests/spec/11a-cache/`，由 `e1_cache.rs` 真实加载；E2A 双夹具位于
 `tests/spec/11a-lockfile/`，由 `e2a_lockfile.rs` 真实加载并执行；E2B 双夹具位于
 `tests/spec/11a-sync/`，由 `e2b_sync.rs` 逐例执行。
+E3A 的 `e3a_source.rs` 真实加载 `tests/spec/11a-jcs/vectors.json` 及
+`tests/spec/11a-source/valid.json`/`errors.json`，另以隔离目录测快照、分片、正文和摘要校验。

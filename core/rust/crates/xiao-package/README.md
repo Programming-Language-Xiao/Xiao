@@ -10,6 +10,8 @@ D1 首批只实现 `config.xiao` 本地路径依赖的静态读取和包身份�
 11A-E2B 的 `src/sync.rs` 则编排三档环境目标、锁模式、本地缓存和安装映射。图节点独立于
 `xiao-modules::ModuleGraph`，使用 `source_id`、`alias`、展示名三个分开的来源字段，
 并按依赖优先顺序生成内存解析计划；版本约束只作为结构化输入保留。
+E3A 新增静态多源声明、钉住摘要的独立源列表、JCS 规范字节、联邦记录与跨源优先级，
+本地目录源通过相同的适配器接口分离读取索引和正文；远程传输、远程 CLI 接线留 E3B/E3C。
 
 ## 工程期
 
@@ -22,6 +24,9 @@ D1 首批只实现 `config.xiao` 本地路径依赖的静态读取和包身份�
 `src/cache.rs` 放置 `XIAO_HOME` 布局、SHA-256 源码对象、只读校验与损坏隔离，
 `src/mapping.rs` 放置包身份到对象引用的确定性逻辑映射，`src/lockfile.rs` 保存完整图、
 稳定诊断与跨平台原子文件替换，`src/sync.rs` 编排已有接口，`src/diagnostics.rs` 放置稳定编号。
+`src/source.rs` 处理规范源身份与有序配置，`src/jcs.rs` 处理规范 JSON，
+`src/federation.rs` 和 `src/selection.rs` 处理联邦记录与优先级，`src/adapters.rs` 放置
+元数据/正文分离接口和离线目录源。
 远程源适配器、联邦索引和版本求解属于后续批次；命令参数和提示符放在 CLI。
 
 ## 禁止事项

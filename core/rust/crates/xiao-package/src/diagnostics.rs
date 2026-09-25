@@ -49,6 +49,21 @@ pub const LOCKFILE_SOURCE_MISMATCH_CODE: &str = "X05-LOCK-005";
 /// 锁文件或原子提交的文件系统操作失败时使用的编号。
 pub const LOCKFILE_IO_CODE: &str = "X05-LOCK-006";
 
+/// 包源协议版本不受支持。
+pub const SOURCE_UNSUPPORTED_VERSION_CODE: &str = "X05-SOURCE-001";
+/// 同一配置内包源别名指向多个源。
+pub const SOURCE_ALIAS_CONFLICT_CODE: &str = "X05-SOURCE-002";
+/// 源不可用且没有可验证的缓存快照。
+pub const SOURCE_UNAVAILABLE_CODE: &str = "X05-SOURCE-003";
+/// 源清单或索引快照摘要不匹配。
+pub const SOURCE_DIGEST_MISMATCH_CODE: &str = "X05-SOURCE-004";
+/// 依赖或导入引用不存在的源。
+pub const SOURCE_UNKNOWN_REFERENCE_CODE: &str = "X05-SOURCE-005";
+/// 同等优先级或源内存在无法唯一确定的候选。
+pub const SOURCE_AMBIGUOUS_CODE: &str = "X05-SOURCE-006";
+/// 源描述或索引结构不合法。
+pub const SOURCE_INVALID_CODE: &str = "X05-SOURCE-007";
+
 /// 包身份冲突诊断编号的简短别名。
 pub const IDENTITY_CONFLICT_CODE: &str = PACKAGE_IDENTITY_CONFLICT_CODE;
 /// 缺失依赖诊断编号的简短别名。

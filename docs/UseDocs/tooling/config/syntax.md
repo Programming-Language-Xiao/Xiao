@@ -4,7 +4,7 @@ title: 静态配置语法
 status: verified
 audience: learner
 module: rust.xiao-config
-stage: "05-D/11A-D1"
+stage: "05-D/11A-D1/E3A"
 version: "0.1.0"
 related:
   - README.md
@@ -49,7 +49,7 @@ options = [1, 2.5, true, { label = "demo" }]
 ## 保留扩展表
 
 `[CLI]`、`[language]`、`[debug]`、`[VM]`、依赖和构建相关表可以先以静态值保留，
-供后续工具阶段读取；本阶段不解释这些表的专属行为。`[language].locale` 的语言
+供后续工具阶段读取；`[sources]` 在 11A-E3A 起已校验具名条目。`[language].locale` 的语言
 回退和语言包规则由 11C 页面定义。
 
 配置中不能出现 `def`、`if`、`for`、`while`、`import`、函数调用、变量引用、常量
@@ -70,6 +70,21 @@ testkit = { path = "../testkit" }
 
 依赖表字段只允许 `path`、`version` 和 `source`。包源的 `source_id`、`alias` 与展示名
 属于包管理器的不同概念；展示名不能作为依赖引用键。
+
+## 离线多源声明
+
+```xiao
+[sources]
+official = { kind = "registry", location = "https://example.org/packages", display = "官方" }
+team = { kind = "git-index", location = "https://github.com/team/packages.git", protocol = 1 }
+```
+
+直接源必须有 `kind` 与 `location`，还可有 `alias`、`display`、`protocol`；
+省略 alias 时使用左侧键名。另可声明 `{ list = "...", digest = "<SHA-256>" }`
+形式的清单引用（只允许 `list`/`digest` 两字段）。书写顺序决定优先级，
+但所有直接源先于导入列表展开；字段错误和别名冲突会拒绝。此批仅支持离线解析，
+远程获取、配置注释保持写回和完整版本求解还未接入。细节见
+[包源声明与离线索引](../cli/package-sources.md)。
 
 ## 下一步
 

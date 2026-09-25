@@ -72,7 +72,8 @@ fn validate(
             "dependencies" | "devdependencies" => {
                 validate_dependency_table(table, &mut diagnostics)
             }
-            // CLI、Debug、VM、工具链、来源和构建相关表在本阶段只保留静态值。
+            "sources" => validate_source_table(table, &mut diagnostics),
+            // CLI、Debug、VM、工具链和构建相关表在本阶段只保留静态值。
             _ => {}
         }
     }
@@ -91,6 +92,68 @@ fn validate(
         Ok(normalize(document))
     } else {
         Err(diagnostics)
+    }
+}
+
+/// 对多源具名条目分别校验直接源与列表导入的字段白名单。
+fn validate_source_table(table: &ConfigTable, diagnostics: &mut ConfigDiagnostics) {
+    let mut entries = table.entries.values().collect::<Vec<_>>();
+    entries.sort_by_key(|entry| entry.span.start());
+    for entry in entries {
+        let ConfigValue::Dictionary(fields) = &entry.value else {
+            diagnostics.push(type_error(entry.span, &entry.key, "dict", &entry.value));
+            continue;
+        };
+        let imported = fields.contains_key("list");
+        let allowed: &[&str] = if imported {
+            &["list", "digest"]
+        } else {
+            &["kind", "location", "alias", "display", "protocol"]
+        };
+        for (field, value) in fields {
+            if !allowed.contains(&field.as_str()) {
+                diagnostics.push(error(
+                    UNKNOWN_FIELD_CODE,
+                    "x05.config.unknown_source_field",
+                    entry.span,
+                    format!("源 {:?} 中未知字段 {field:?}", entry.key),
+                    [("field", DiagnosticParam::Text(field.clone()))],
+                ));
+                continue;
+            }
+            let valid = if field == "protocol" {
+                matches!(value, ConfigValue::Integer(version) if *version > 0)
+            } else {
+                matches!(value, ConfigValue::String(text) if !text.trim().is_empty() && !text.chars().any(char::is_control))
+            };
+            if !valid {
+                diagnostics.push(type_error(
+                    entry.span,
+                    field,
+                    if field == "protocol" {
+                        "positive int"
+                    } else {
+                        "nonempty str"
+                    },
+                    value,
+                ));
+            }
+        }
+        for required in if imported {
+            &["list", "digest"][..]
+        } else {
+            &["kind", "location"][..]
+        } {
+            if !fields.contains_key(*required) {
+                diagnostics.push(error(
+                    MISSING_REQUIRED_CODE,
+                    "x05.config.missing_source_field",
+                    entry.span,
+                    format!("源 {:?} 缺少必填字段 {required:?}", entry.key),
+                    [("field", DiagnosticParam::Text((*required).to_owned()))],
+                ));
+            }
+        }
     }
 }
 

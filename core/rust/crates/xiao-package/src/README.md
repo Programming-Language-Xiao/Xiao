@@ -11,4 +11,7 @@ D1 首批只实现 `config.xiao` 本地路径依赖的静态读取和包身份�
 `resolver.rs` 只读本地包配置并递归建立图，`environment.rs` 生成环境布局、指纹、v2 元数据和物化，
 `cache.rs` 保存 SHA-256 源码对象并负责只读校验/隔离，`mapping.rs` 保存包身份到对象引用的逻辑映射，
 `lockfile.rs` 保存锁文件、过期诊断以及 Unix/Windows 原子文件替换。
-远程下载、安装脚本、缓存清理和 CLI 命令属于后续工程期。
+E3A 的 `source.rs` 保存多源静态解析、统一身份及清单展开，`selection.rs` 保存确定性
+跨源选择，`jcs.rs` 负责 Rust 侧规范 JSON 字节，`federation.rs` 保留来源维度的联邦记录，
+`adapters.rs` 定义元数据/正文分离读取 trait 及不联网的本地目录实现。
+远程下载、安装脚本、缓存清理及远程 CLI 命令属于后续工程期。

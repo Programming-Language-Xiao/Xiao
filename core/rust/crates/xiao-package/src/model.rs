@@ -34,7 +34,8 @@ impl PackageSource {
     pub fn local_path(path: &Path) -> Self {
         let normalized = normalize_source_path(path);
         Self {
-            source_id: format!("path:{normalized}"),
+            source_id: crate::source::source_id("path", &normalized)
+                .expect("规范化的本地路径应有效"),
             alias: None,
             display_name: path.display().to_string(),
         }

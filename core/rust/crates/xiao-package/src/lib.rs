@@ -1,11 +1,17 @@
 //! Xiao 包源、依赖求解和锁定逻辑的 crate 入口。
 
+/// 离线目录源与传输适配器接口。
+mod adapters;
 /// 不可变源码对象缓存和摘要校验。
 mod cache;
 /// 11A-D1 包粒度的稳定诊断编号。
 mod diagnostics;
 /// 项目环境布局、指纹和元数据物化。
 mod environment;
+/// 包源快照及联邦索引。
+mod federation;
+/// RFC 8785 JSON 规范化。
+mod jcs;
 /// 11A-E2A 锁文件、过期判据和跨平台原子文件提交。
 mod lockfile;
 /// 环境到缓存对象的逻辑映射。
@@ -14,9 +20,15 @@ mod mapping;
 mod model;
 /// 本地路径包配置读取和递归依赖解析。
 mod resolver;
+/// 跨源选择的确定性纯逻辑。
+mod selection;
+/// 离线源身份、声明与清单展开。
+mod source;
 /// E2B 本地依赖同步、安装与只读包视图。
 mod sync;
 
+/// 重导出统一索引与正文读取边界。
+pub use adapters::{IndexSnapshot, LocalDirectoryAdapter, PackageSourceAdapter};
 /// 重导出本地源码缓存接口。
 pub use cache::{
     CacheError, CacheLayout, CacheObject, CacheObjectKind, CacheObjectReference, CacheStore,
@@ -34,6 +46,14 @@ pub use environment::{
     materialize_global_environment_from_graph, read_environment_metadata,
     update_environment_mappings, update_environment_metadata,
 };
+/// 重导出离线快照与合并契约。
+pub use federation::{
+    ArtifactReference, FederatedRecord, FederationKey, IndexDependency, IndexPackage, PackageShard,
+    SnapshotManifest, SnapshotStatus, SourceListFingerprint, SourceSequenceEntry, SourceSnapshot,
+    federate, source_list_fingerprint,
+};
+/// 重导出统一 JSON 规范化入口。
+pub use jcs::{canonicalize_json, jcs_digest};
 /// 重导出锁文件和原子更新接口。
 pub use lockfile::{
     LOCKFILE_NAME, LOCKFILE_VERSION, LockFile, LockFileWriteStatus, LockedDependency,
@@ -52,6 +72,13 @@ pub use model::{
 };
 /// 重导出本地路径解析入口。
 pub use resolver::{PackageResolver, resolve_path_dependencies, resolve_project};
+/// 重导出跨源选择入口。
+pub use selection::select_source;
+/// 重导出离线源契约。
+pub use source::{
+    ConfiguredSource, SOURCE_PROTOCOL_VERSION, SourceDeclaration, SourceDescriptor, SourceError,
+    SourceList, SourceListImport, expand_source_lists, source_declarations, source_id,
+};
 /// 重导出同步与安装编排入口。
 pub use sync::{
     PackageOperation, PackageOperationResult, PackageSyncError, apply_packages,

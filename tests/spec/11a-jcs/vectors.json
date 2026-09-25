@@ -1,0 +1,17 @@
+[
+  { "name": "ASCII 键序", "input": "{ \"a\":2,\"A\":1 }", "expected_bytes": "{\"A\":1,\"a\":2}", "sha256": "0d0e3924a16d7710884d7aaf5ddacfafcef0079c6717e1415b8074f911635606" },
+  { "name": "UTF-16 代理对键序", "input": "{\"\":2,\"😀\":1}", "expected_bytes": "{\"😀\":1,\"\":2}", "sha256": "04208f6cdb854e2ab1b07dd3633a39dec854344fe72824cf7f2fdb4e2e33129e" },
+  { "name": "规范数值", "input": "[1.0,1,1e2,-0.0]", "expected_bytes": "[1,1,100,0]", "sha256": "f1f8d8523c5ac00489ea1805f86584ff6e0bc8095c5e4f619efd75e93d44d5c0" },
+  { "name": "大整数作为字符串", "input": "{\"huge\":\"9007199254740992\"}", "expected_bytes": "{\"huge\":\"9007199254740992\"}", "sha256": "5c4fa938ea8c561257da00eeb234614b9370b688a94eb08c540cfb8722b70374" },
+  { "name": "字符串转义", "input": "{\"s\":\"\\b\\n\\u0000😀\"}", "expected_bytes": "{\"s\":\"\\b\\n\\u0000😀\"}", "sha256": "2a29a5447d4ae26db770acc84b3ba41e3f001798a0eff009822ebb5b2ef93ef0" },
+  { "name": "嵌套与空容器", "input": "{\"nested\":{\"z\":[],\"a\":{}},\"empty\":[]}", "expected_bytes": "{\"empty\":[],\"nested\":{\"a\":{},\"z\":[]}}", "sha256": "fcb56d5a52b49d59d15a5e2b92abd7d95ac11eec1056298e568c9da96b9be443" },
+  { "name": "空对象", "input": "{}", "expected_bytes": "{}", "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a" },
+  { "name": "空数组", "input": "[]", "expected_bytes": "[]", "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945" },
+  { "name": "指数阈值", "input": "[0.000001,1e-7,1e21]", "expected_bytes": "[0.000001,1e-7,1e+21]", "sha256": "27d17ef1f4e9e38c60244a7bb87f5d9f65d4f7ef3577242b44e3a655202e242b" },
+  { "name": "RFC 浮点数舍入", "input": "[333333333.33333329,1E30,4.50,2e-3,1e-27]", "expected_bytes": "[333333333.3333333,1e+30,4.5,0.002,1e-27]", "sha256": "7c6bc86d861387d823ae596b79ca0b26567dddc22a77acb1f4e06d441f555adf" },
+  { "name": "重复键", "input": "{\"a\":1,\"a\":2}", "expected_bytes": "", "sha256": "", "error": "X05-SOURCE-007" },
+  { "name": "转义后重复键", "input": "{\"a\":1,\"\\u0061\":2}", "expected_bytes": "", "sha256": "", "error": "X05-SOURCE-007" },
+  { "name": "不安全整数", "input": "{\"n\":9007199254740992}", "expected_bytes": "", "sha256": "", "error": "X05-SOURCE-007" },
+  { "name": "非有限数值 NaN", "input": "[NaN]", "expected_bytes": "", "sha256": "", "error": "X05-SOURCE-007" },
+  { "name": "非有限数值 Infinity", "input": "[Infinity]", "expected_bytes": "", "sha256": "", "error": "X05-SOURCE-007" }
+]

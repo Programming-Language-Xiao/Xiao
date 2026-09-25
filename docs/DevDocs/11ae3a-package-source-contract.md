@@ -25,7 +25,8 @@
    `:107` 明列留给 E3A/E3B 的待决：**分片的具体切法、准确文件名与字段名、缓存目录布局、压缩方式**。
 6. [11A-E2B. 同步与安装命令](11ae2b-sync-and-install.md) —— 直接前置。
    E2B 已把 `sync` 流水线里"读取源/合并联邦索引"标为**跳过**（其 §3.4），
-   并明确"不要为跳过的步骤写空壳占位"——**本批正是来填这块的**。
+   并明确"不要为跳过的步骤写空壳占位"——**本批实现离线读取与合并契约**，
+   真正的远程接线仍归 E3B/E3C。
 7. [11A-E2A. 锁文件与环境映射](11ae2a-lockfile-and-mapping.md) —— 锁文件已记录源身份（`:291` 要求）。
 8. [05D. `config.xiao` 声明式配置静态闭环](05d-config-static-closure.md) —— **硬前置**：
    `:103`「直接消费 `ConfigDocument`，不得重新扫描文本」。
@@ -400,15 +401,16 @@ E2B 的两条退出条件已满足（审核实测：Rust 测试全绿、激活�
 让测试不再依赖宿主终端。**顺带检查 `ui.test.ts` 是否也有同类依赖**
 （它已经显式传了 `colorTerm`，但要确认全部用例）。
 
-### 11.2 ⚠️ 待议：`bun run check` 不含 `bun test`
+### 11.2 已决：`bun run check` 不含 `bun test`
 
 `check` = `repo-check all && check:clippy && check:lock`，**不含测试**。
 CI 通过 `tools/platform-reproduction/reproduce.sh:138` 兜底跑了 `bun test`
 （同处 `:136` 跑 `cargo test`、`:141` 跑 `bun run check`），**所以不是漏洞**。
 
 **但本地 `bun run check` 绿 ≠ 测试绿**。E2A 刚把 clippy 并进 `check`，
-**本批要决定 test 是否也并入**，并在文档里写明口径——
-不能留下"验收条款要求它、门禁不跑它"的落差（这正是 E2A §11.1 修 clippy 的同类问题）。
+**E3A 决定维持独立门禁**：`bun run check` 是静态、文档、Clippy 与锁文件检查，
+`bun test` 是另一条显式门禁；CI 复现入口两者都跑。本地验收必须明确运行两条，
+不能把 `check` 绿视作测试绿。
 
 ### 11.3 纪律：交接文档的跨平台/环境假设必须实测
 
@@ -422,11 +424,36 @@ E2A 交接文档有**两处错误断言**被 E2A 执行方更正（Windows 的 `
 - 引用 `file:line` 时，**写完和改完各核一次**——
   E3A 规划时 `11a`/`00-decisions` 的行号已因前几批落地而漂移，本批引用的行号**已全部重核**。
 
-### 11.4 待补：E1 的只读强度差额
+### 11.4 已核：E1 的只读强度差额
 
 `11ae1` §3.6 要求「若三平台无法做到同等强度，要在文档里写明差额」。
-E1 代码分了平台（Windows `set_readonly` / Unix `0o555`·`0o444`）但文档没写。
-**E2A 与 E2B 均未处理，仍未结清。**
+E1 代码分了平台（Windows `set_readonly` / Unix `0o555`·`0o444`）。
+实测交接审查时 `11ae1` 开头第 16–18 行**已有强度差额说明**，
+明确 Windows 文件只读属性不是 Unix 权限模型、目录属性不能视为安全边界；无需重复补文。
+
+---
+
+## 十二、E3A 实施记录（2026-09-25）
+
+- 冻结 `[sources]` 具名条目：直接源 `{kind,location,alias?,display?,protocol?}`；
+  导入 `{list,digest}`，采用 `list` 而非 `import` 因后者在配置词法层是保留关键字。
+  `alias` 缺省取条目名，协议首版为 1，`digest` 是 64 位小写 JCS SHA-256。
+- 列表 JSON 与索引 JSON 分离。列表 `{protocol_version,sources}` 由调用方提供并校验摘要；
+  本地目录索引为 `snapshot.json` 与 `index/<规范包名>.json`，每片的源身份、快照标识、
+  协议版本及摘要均校验；正文另取。远程传输、缓存有效期与写回仍归 E3B/E3C/E3D。
+- `source_id` 复用 `PackageSource::local_path` 的入口；远程 ID 保留 `http`/`https`/`ssh`
+  协议，以免跨协议误合并。配置中的 `path` 源必须使用不含点段的绝对路径，
+  避免跨项目相对路径碰撞。源指纹部分同时保存完整展开列表的摘要和最终有序序列，
+  包含导入位置与摘要但排除别名和显示名；E0/E2A 原有指纹算法未更改，未来集成必须
+  将此部分纳入配置指纹输入，不得当成另一套独立环境指纹。
+- Rust JCS 使用现有 `serde_json` 的 `float_roundtrip` 特性（无需新增包），共享向量
+  `tests/spec/11a-jcs/vectors.json` 可供未来 TypeScript 消费；十进制与 UTF-16 键序、
+  重复键、非有限数值及超安全整数均有真实读取测试。
+- 包源使用独立 `X05-SOURCE-001..007`，与包身份/缓存/锁文件/环境/同步的错误粒度分开。
+  选择只限定优先级源，不在 E3A 擅自冻结源内求解；不可达源阻断后续选择，
+  同源同版本重复拒绝、跨源同版本保留。
+- §一与 §三中所引行号记录的是接手时文档快照；实施改动了 `11a`/`00-decisions`
+  的行数，后续请按章节标题与此节的最终字段契约查阅，不将旧行号当作实时定位。
 
 ---
 
@@ -438,7 +465,7 @@ E1 代码分了平台（Windows `set_readonly` / Unix `0o555`·`0o444`）但文�
 - [00. 决策基线](00-decisions.md) `:291`、`:292`、`:295`、`:297`、`:298`、`:299`、`:301`
   —— 七条已冻结的多源契约
 - [11A.1. 包源协议审核](11a1-package-source-protocol-review.md) `:107` —— 留给 E3A/E3B 的待决
-- [11A-E2B. 同步与安装命令](11ae2b-sync-and-install.md) —— 前置；本批填它标为跳过的流水线步骤
+- [11A-E2B. 同步与安装命令](11ae2b-sync-and-install.md) —— 前置；本批定义跳过步骤所需的离线契约，不接 CLI
 - [11A-E2A. 锁文件与环境映射](11ae2a-lockfile-and-mapping.md) —— 锁文件中的源身份
 - [05D. `config.xiao` 声明式配置静态闭环](05d-config-static-closure.md) `:103` —— 单一来源硬前置
 - [00A. 工程框架与目录布局](00a-project-layout.md) —— 登记要求与依赖方向

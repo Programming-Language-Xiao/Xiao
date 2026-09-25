@@ -1,0 +1,6 @@
+[
+  { "config": "[sources]\na = { kind = \"static\", location = \"https://example.org\", extra = true }", "code": "X05-CONFIG-005" },
+  { "config": "[sources]\na = { kind = \"static\" }", "code": "X05-CONFIG-007" },
+  { "config": "[sources]\na = { kind = \"static\", location = \"https://example.org\", protocol = 2 }", "code": "X05-SOURCE-001" },
+  { "config": "[sources]\na = { kind = \"static\", location = \"https://example.org\", alias = \"same\" }\nb = { kind = \"static\", location = \"https://example.net\", alias = \"same\" }", "code": "X05-SOURCE-002" }
+]

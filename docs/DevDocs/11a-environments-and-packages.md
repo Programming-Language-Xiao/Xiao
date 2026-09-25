@@ -210,7 +210,7 @@ config.xiao 中的直接依赖与包源
 
 ### 统一包源契约
 
-每个包源至少需要向客户端表达以下逻辑信息；准确文件名、字段名和序列化格式在 E3A 冻结：
+每个包源至少需要向客户端表达以下逻辑信息；E3A 已冻结离线目录源的文件名、字段和 JSON 形状（见下文），远程传输与缓存布局留 E3B/E3C：
 
 - 包源协议版本、规范源身份和可选的仓库快照身份。
 - 规范化包名、版本列表、撤回状态及版本选择所需的最小元数据。
@@ -238,25 +238,35 @@ Protobuf 的收益是解析速度与传输体积，用一个**带摘要校验、
 
 仍留给 E3A/E3B 的是：**准确文件名与字段名**、缓存目录布局、压缩方式、分片的具体切法。
 
-下面只展示 E3A 多源配置希望表达的能力；D1 只保留 `sources` 表为静态节点，不解析其
-字段。`sources` 数组的书写顺序及依赖 `source` 绑定的优先级已经冻结：
+E3A 已把 D1 预留的 `[sources]` 表扩展为具名条目；顺序按条目的源码位置而非配置树
+字典序。直接源全部排在导入列表之前；导入项在本批仅有静态契约，不联网：
 
 ```xiao
 [sources]
-sources = [
-    { alias = "official", display = "官方源", kind = "registry", location = "https://packages.xiao.example" },
-    { alias = "community", display = "社区镜像", kind = "static", location = "https://example.org/xiao-index" },
-    { alias = "team", display = "团队内部", kind = "git-index", location = "https://github.com/example/xiao-packages.git" }
-]
+official = { display = "官方源", kind = "registry", location = "https://packages.xiao.example" }
+community = { display = "社区镜像", kind = "static", location = "https://example.org/xiao-index" }
+team = { display = "团队内部", kind = "git-index", location = "https://github.com/example/xiao-packages.git" }
+# 如需导入：list_ref = { list = "https://example.org/lists/team.json", digest = "<64 位小写 SHA-256>" }
 
 [Dependencies]
 http = { path = "../http", version = "^1.4", source = "community" }
 ```
 
+源字段白名单：直接源的 `kind`、`location` 必填，`alias`、`display`、`protocol` 可选；
+默认 alias 为条目名，`protocol` 默认 1。导入项只有 `list` 和 `digest`（完整 JCS SHA-256）。
+源列表 JSON 与包索引严格分离：`{"protocol_version":1,"sources":[{"kind":"static","location":"https://packages.example/lib","alias":"lib"}]}`，
+列表条目可附加 `display`、`protocol_version`。首版本地源在根目录放 `snapshot.json`
+（`protocol_version`、`source_id`、`snapshot_id`、`shards` 包名到 JCS SHA-256 的映射，
+可选 `mirrors`/`expires_at`）；包分片放 `index/<package>.json`（`protocol_version`、
+`source_id`、`snapshot_id`、`packages` 全部版本元数据）。正文引用独立包含 `location`、
+`length`、`digest`，只在安装时获取，不执行包代码。导入清单由调用方提供已验证字节，
+清单修改须重新钉住摘要；E3A 不自动刷新或写回配置。
+
 示例里的 `source = "community"` 绑定的是 **`alias`**，不是显示名。包源有**三个必须分开的概念**
 （已冻结于 [00. 决策基线](00-decisions.md)）：稳定的 `source_id`、配置内引用用的 `alias`、
 纯展示用的显示名。**依赖只能引用 `alias` 或明确的 `source_id`**；`alias` 冲突默认报错，
-只有用户显式改名或建立映射时才接受。字段名仍待 E3A 冻结，但三者的分工不再改变。
+只有用户显式改名或建立映射时才接受。E3A 冻结的字段及精确限制见
+[包源契约](11ae3a-package-source-contract.md)，三者的分工不再改变。
 
 ### 联邦源索引（逻辑已冻结）
 
@@ -468,7 +478,7 @@ E0 配置指纹、逻辑身份和 E1 源码摘要。E2A 提供读取、生成、
 ### E3A：包源契约与多源配置
 
 1. [11A.E3A.1] 定义声明式包源描述、源身份、协议版本和传输适配器接口；不要求存在唯一中央服务器。
-2. [11A.E3A.2] 让 `config.xiao` 能表达多个独立包源及直接依赖的来源约束，保留用户注释并以结构化方式写回。
+2. [11A.E3A.2] 让 `config.xiao` 能表达多个独立包源及直接依赖的来源约束；保留用户注释的结构化写回归 E3D 的 add/remove。
 3. [11A.E3A.3] 设计包元数据与源码/预编译产物分离获取的接口，支持按包名分片或等价的稀疏查询。
 4. [11A.E3A.4] 冻结同名包跨源选择、显式源绑定、优先级和歧义诊断规则：显式源优先，其次按 `config_order`，仍不唯一则报错，禁止跨源按版本号择高。
 5. [11A.E3A.5] 定义每个源的最新完整索引快照、源身份/快照摘要和配置序号，明确“读取所有已配置源、保留全部版本元数据、正文按需下载”的逻辑契约。
