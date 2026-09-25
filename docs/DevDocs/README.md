@@ -114,7 +114,9 @@
 | 11A-D1 | [外部包契约与依赖图骨架](11ad1-package-contract-and-graph.md) | `config.xiao` 声明外部依赖、依赖解析器与内存依赖图、包粒度诊断；**不含缓存/锁文件/远程** | 已完成（本地路径包契约、图解析和规格门禁已收口） |
 | 11A-E0 | [配置与环境指纹](11ae0-environment-fingerprint-and-activation.md) | 配置/工具链/目标指纹、`xiao venv` 目录规则、Shell 钩子激活与绿色前缀；**不含缓存/锁文件/网络** | 已完成（5 条输入已冻结；Bash/PowerShell 钩子 + `cmd` 降级已接；`fnv1a64` 已并入 `stable_hash`；真实父终端测试按冻结留给 E3D） |
 | 11A-E1 | [本地依赖与共享缓存](11ae1-local-dependencies-and-cache.md) | 全局内容寻址缓存、`SHA-256` 内容摘要、环境到缓存条目的只读逻辑映射、损坏条目隔离；**不含锁文件/sync/install/CLI** | 已完成（源码对象、v2 映射、项目/全局环境复用、损坏隔离、规格夹具和 UseDocs 已通过） |
-| 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 进行中（D1、E0、E1 已完成；E2/E3 尚未开始） |
+| 11A-E2A | [锁文件与环境映射](11ae2a-lockfile-and-mapping.md) | `xiao.lock.json` 的生成/校验/复用、环境映射原子更新、配置与锁文件不一致诊断；**不含 sync/install/CLI** | 待开工（交接文档已就绪；**前置：冻结 6 条输入**并清理 `00-decisions:624/625` 与 `:282-284` 的自相矛盾） |
+| 11A-E2B | 同步与安装命令（权威描述见 [11A](11a-environments-and-packages.md) E2B 章节） | `sync` 的创建/补齐/激活流水线、`install`/`i` 的目标选择、11B 只读包视图接口 | 未开始（依赖 E2A 的锁文件与环境映射） |
+| 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 进行中（D1、E0、E1 已完成；**E2 已拆为 E2A/E2B 两批**，E2A 交接文档已就绪；E3 尚未开始） |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |
 | 11C | [国际化、系统提示与语言包插件](11c-localization.md) | `[language]` 配置、中英内置目录、统一错误文案和资源型语言包插件 | 未开始 |
 | 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
