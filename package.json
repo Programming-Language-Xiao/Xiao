@@ -18,8 +18,9 @@
     "check:usedocs": "bun tools/repo-check/src/cli.ts usedocs",
     "check:commit-msg": "bun tools/repo-check/src/cli.ts commit-msg --file .git/COMMIT_EDITMSG",
     "check:coverage": "bun tools/doc-coverage/src/cli.ts",
+    "check:clippy": "cargo clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets -- -D warnings",
     "check:lock": "cargo check --manifest-path core/rust/Cargo.toml --workspace && cargo check --manifest-path tests/benchmarks/Cargo.toml && git diff --exit-code -- core/rust/Cargo.lock tests/benchmarks/Cargo.lock",
-    "check": "bun tools/repo-check/src/cli.ts all && bun run check:lock",
+    "check": "bun tools/repo-check/src/cli.ts all && bun run check:clippy && bun run check:lock",
     "test": "bun test"
   }
 }

@@ -13,6 +13,10 @@
 
 ### 实现收口
 
+Windows 的 `set_readonly(true)` 设置文件系统只读属性，Unix 则为目录/文件分别设置
+`0o555`/`0o444` 权限位；两者均提供只读逻辑映射和摘要校验，但写保护强度并不等价，
+不能将 Windows 属性视为 Unix 权限模型或抵御有意篡改的安全边界。
+
 - `cache.rs` 统一实现 `XIAO_HOME` 布局、规范化目录树快照、SHA-256 内容寻址、同文件系统原子提交、
   只读权限、摘要复核和 `.corrupt` 隔离；带 `.xiao-environment.json` 的生成环境目录不会污染源码摘要。
 - `mapping.rs` 消费 D1 `PackageGraph`，以完整 `PackageIdentity` 排序保存 `package_mappings`；项目环境

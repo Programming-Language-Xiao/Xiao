@@ -372,6 +372,56 @@ fn cache_spec_snapshot_is_executed() {
     );
 }
 
+#[test]
+/// E1 错误夹具逐例创建隔离输入并断言实际的稳定诊断。
+fn cache_error_spec_snapshot_is_executed() {
+    let snapshot: Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../../tests/spec/11a-cache/errors.json"
+    )))
+    .expect("E1 错误规格必须是有效 JSON");
+    assert_eq!(snapshot["stage"], "11A-E1");
+    for case in snapshot["cases"].as_array().expect("错误用例数组") {
+        let workspace = TempWorkspace::new();
+        for (path, text) in case["files"].as_object().expect("文件树") {
+            workspace.write(path, text.as_str().expect("文件内容"));
+        }
+        let code = match case["name"].as_str().expect("场景名称") {
+            "relative-xiao-home" => CacheLayout::from_xiao_home(
+                Some(Path::new(case["xiao_home"].as_str().expect("XIAO_HOME"))),
+                &workspace.path,
+            )
+            .expect_err("相对路径必须拒绝")
+            .code(),
+            "invalid-source-root" => {
+                source_directory_digest(workspace.path(case["source"].as_str().expect("源目录")))
+                    .expect_err("非目录源码根必须拒绝")
+                    .code()
+            }
+            "tampered-source-object" => {
+                let cache = open_cache(&workspace);
+                let object = cache
+                    .import_source_directory(
+                        workspace.path(case["source"].as_str().expect("源目录")),
+                    )
+                    .expect("导入源码对象");
+                make_writable(&object.path);
+                for (relative, text) in case["tamper"].as_object().expect("篡改文件树") {
+                    fs::write(object.path.join(relative), text.as_str().expect("篡改内容"))
+                        .expect("篡改对象");
+                }
+                cache
+                    .verify_source_object(&object.reference.digest)
+                    .expect_err("篡改对象必须拒绝")
+                    .code()
+            }
+            other => panic!("未知的缓存错误规格：{other}"),
+        };
+        assert_eq!(case["expect"], "error");
+        assert_eq!(case["diagnostics"][0], code, "{}", case["name"]);
+    }
+}
+
 /// 为损坏隔离测试递归解除对象只读属性。
 fn make_writable(path: &Path) {
     let Ok(metadata) = fs::symlink_metadata(path) else {

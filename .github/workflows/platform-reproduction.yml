@@ -57,6 +57,10 @@ jobs:
             core/rust -> core/rust/target
             tests/benchmarks -> tests/benchmarks/target
 
+      - name: Check Rust Clippy
+        if: matrix.name == 'linux-amd64'
+        run: cargo clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets -- -D warnings
+
       - name: Install Linux tools
         if: startsWith(matrix.name, 'linux-')
         run: |

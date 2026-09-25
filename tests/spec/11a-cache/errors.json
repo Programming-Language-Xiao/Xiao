@@ -1,0 +1,31 @@
+{
+  "stage": "11A-E1",
+  "status": "verified-static",
+  "cases": [
+    {
+      "name": "relative-xiao-home",
+      "files": {},
+      "xiao_home": "relative-home",
+      "expect": "error",
+      "diagnostics": ["X05-CACHE-002"]
+    },
+    {
+      "name": "invalid-source-root",
+      "files": {"source": "not a directory"},
+      "source": "source",
+      "expect": "error",
+      "diagnostics": ["X05-CACHE-003"]
+    },
+    {
+      "name": "tampered-source-object",
+      "files": {
+        "source/config.xiao": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n",
+        "source/main.xiao": "return 1\n"
+      },
+      "source": "source",
+      "tamper": {"main.xiao": "tampered\n"},
+      "expect": "error",
+      "diagnostics": ["X05-CACHE-004"]
+    }
+  ]
+}
