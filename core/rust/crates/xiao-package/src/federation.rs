@@ -5,9 +5,13 @@ use std::collections::BTreeSet;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+use crate::adapters::{IndexSnapshot, PackageSourceAdapter};
 use crate::diagnostics::{SOURCE_INVALID_CODE, SOURCE_UNSUPPORTED_VERSION_CODE};
 use crate::jcs::canonicalize_json;
-use crate::source::{ConfiguredSource, SOURCE_PROTOCOL_VERSION, SourceError, valid_digest};
+use crate::source::{
+    ConfiguredSource, SOURCE_PROTOCOL_VERSION, SourceDeclaration, SourceError, SourceListImport,
+    valid_digest,
+};
 
 /// 完整或仅索引的源快照状态；不可达不能表现为空集合。
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -153,6 +157,63 @@ pub struct SourceSnapshot {
     pub status: SnapshotStatus,
     /// 已按包名稀疏读取的候选；完整源清单仍保留全部分片摘要。
     pub candidates: Vec<IndexPackage>,
+    /// 已成功完成稀疏查询的包名；空候选不代表已查过该包。
+    pub queried_packages: BTreeSet<String>,
+}
+
+impl SourceSnapshot {
+    /// 根据已验证索引清单创建尚未查询任何包的可用快照。
+    pub fn from_index(
+        config_order: usize,
+        status: SnapshotStatus,
+        index: &IndexSnapshot,
+    ) -> Result<Self, SourceError> {
+        if status == SnapshotStatus::Unavailable {
+            return Err(SourceError::new(
+                SOURCE_INVALID_CODE,
+                "不可用源不能持有可用索引",
+            ));
+        }
+        index.manifest.validate(&index.manifest.source_id)?;
+        if !valid_digest(&index.digest) {
+            return Err(SourceError::new(SOURCE_INVALID_CODE, "快照摘要不合法"));
+        }
+        Ok(Self {
+            config_order,
+            source_id: index.manifest.source_id.clone(),
+            snapshot_id: Some(index.manifest.snapshot_id.clone()),
+            snapshot_digest: Some(index.digest.clone()),
+            status,
+            candidates: Vec::new(),
+            queried_packages: BTreeSet::new(),
+        })
+    }
+
+    /// 仅当适配器成功返回指定快照的完整包分片后，才标记已查询。
+    pub fn query_package(
+        &mut self,
+        adapter: &impl PackageSourceAdapter,
+        source: &crate::source::SourceDescriptor,
+        index: &IndexSnapshot,
+        name: &str,
+    ) -> Result<(), SourceError> {
+        if self.status == SnapshotStatus::Unavailable
+            || self.source_id != source.source.source_id
+            || self.source_id != index.manifest.source_id
+            || self.snapshot_id.as_deref() != Some(index.manifest.snapshot_id.as_str())
+            || self.snapshot_digest.as_deref() != Some(index.digest.as_str())
+        {
+            return Err(SourceError::new(
+                SOURCE_INVALID_CODE,
+                "查询源与快照身份不匹配",
+            ));
+        }
+        let packages = adapter.read_package(source, index, name)?;
+        self.candidates.retain(|package| package.name != name);
+        self.candidates.extend(packages);
+        self.queried_packages.insert(name.to_owned());
+        Ok(())
+    }
 }
 
 /// 索引记录的确定性合并键，保留来源与变体。
@@ -191,8 +252,11 @@ pub fn federate(snapshots: &[SourceSnapshot]) -> Result<Vec<FederatedRecord>, So
     let mut seen = BTreeSet::new();
     for snapshot in snapshots {
         if snapshot.status == SnapshotStatus::Unavailable {
-            if !snapshot.candidates.is_empty() {
-                return Err(SourceError::new(SOURCE_INVALID_CODE, "不可用源不得带候选"));
+            if !snapshot.candidates.is_empty() || !snapshot.queried_packages.is_empty() {
+                return Err(SourceError::new(
+                    SOURCE_INVALID_CODE,
+                    "不可用源不得带候选或查询结果",
+                ));
             }
             continue;
         }
@@ -212,6 +276,7 @@ pub fn federate(snapshots: &[SourceSnapshot]) -> Result<Vec<FederatedRecord>, So
         }
         for package in &snapshot.candidates {
             if !valid_package_name(&package.name)
+                || !snapshot.queried_packages.contains(&package.name)
                 || package.version.is_empty()
                 || package.variant.is_empty()
             {
@@ -278,6 +343,37 @@ pub fn source_list_fingerprint(sources: &[ConfiguredSource]) -> SourceListFinger
             import_digest: entry.imported_from.as_ref().map(|item| item.digest.clone()),
         })
         .collect::<Vec<_>>();
+    fingerprint_source_sequence(ordered_sources)
+}
+
+/// 配置尚未读取导入清单时，以钉住的摘要标记间接来源；直接源仍按最终优先级编码。
+pub(crate) fn source_declaration_fingerprint(
+    declarations: &[SourceDeclaration],
+) -> SourceListFingerprint {
+    let mut ordered_sources = Vec::new();
+    for declaration in declarations {
+        if let SourceDeclaration::Direct(source) = declaration {
+            ordered_sources.push(SourceSequenceEntry {
+                source_id: source.source.source_id.clone(),
+                imported_from: None,
+                import_digest: None,
+            });
+        }
+    }
+    for declaration in declarations {
+        if let SourceDeclaration::Import(SourceListImport { location, digest }) = declaration {
+            ordered_sources.push(SourceSequenceEntry {
+                source_id: String::new(),
+                imported_from: Some(location.clone()),
+                import_digest: Some(digest.clone()),
+            });
+        }
+    }
+    fingerprint_source_sequence(ordered_sources)
+}
+
+/// 在保留顺序与导入出处的序列上计算规范化摘要。
+fn fingerprint_source_sequence(ordered_sources: Vec<SourceSequenceEntry>) -> SourceListFingerprint {
     let encoded = serde_json::to_string(&ordered_sources).expect("受控的源序列可序列化");
     let canonical = canonicalize_json(&encoded).expect("受控的源序列符合 I-JSON");
     SourceListFingerprint {

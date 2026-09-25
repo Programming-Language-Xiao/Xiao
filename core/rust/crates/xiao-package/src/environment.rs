@@ -18,11 +18,13 @@ use crate::diagnostics::{
     ENVIRONMENT_ALREADY_EXISTS_CODE, ENVIRONMENT_INVALID_NAME_CODE,
     ENVIRONMENT_METADATA_VERSION_CODE, ENVIRONMENT_WRITE_CODE,
 };
+use crate::federation::source_declaration_fingerprint;
 use crate::lockfile::atomic_write_file;
 use crate::mapping::{
     MappingError, PackageObjectMapping, materialize_package_mappings, validate_package_mappings,
 };
 use crate::model::PackageGraph;
+use crate::source::source_declarations;
 
 /// 环境目录内的元数据文件名。
 pub const ENVIRONMENT_METADATA_FILE: &str = ".xiao-environment.json";
@@ -332,6 +334,20 @@ impl From<MappingError> for EnvironmentPackageError {
 /// 为配置文档生成稳定指纹。
 #[must_use]
 pub fn fingerprint_config(document: &ConfigDocument) -> String {
+    if document.table("sources").is_some() {
+        if let Ok(declarations) = source_declarations(document) {
+            let mut without_sources = document.clone();
+            without_sources.tables.remove("sources");
+            let mut input = without_sources.canonical_fingerprint_input();
+            input.extend_from_slice(b"\0xiao-source-declarations-v1\0");
+            input.extend_from_slice(
+                source_declaration_fingerprint(&declarations)
+                    .list_digest
+                    .as_bytes(),
+            );
+            return format!("xiao-config-fingerprint-v2-{}", stable_hash(&input));
+        }
+    }
     format!(
         "xiao-config-fingerprint-v1-{}",
         stable_hash(&document.canonical_fingerprint_input())

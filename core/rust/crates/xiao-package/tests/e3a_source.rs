@@ -1,6 +1,6 @@
 //! 11A-E3A：共享 JCS 向量及离线包源契约。
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 
 use serde_json::{Value, json};
@@ -12,8 +12,8 @@ use xiao_package::{
     SOURCE_DIGEST_MISMATCH_CODE, SOURCE_INVALID_CODE, SOURCE_UNAVAILABLE_CODE,
     SOURCE_UNKNOWN_REFERENCE_CODE, SOURCE_UNSUPPORTED_VERSION_CODE, SnapshotStatus,
     SourceDeclaration, SourceDescriptor, SourceList, SourceSnapshot, canonicalize_json,
-    expand_source_lists, federate, jcs_digest, select_source, source_declarations, source_id,
-    source_list_fingerprint,
+    expand_source_lists, federate, fingerprint_config, jcs_digest, select_source,
+    source_declarations, source_id, source_list_fingerprint,
 };
 
 #[test]
@@ -178,6 +178,43 @@ fn direct(kind: &str, location: &str, alias: &str, order: usize) -> ConfiguredSo
     }
 }
 
+#[test]
+/// 源优先级和钉住的导入摘要进入配置指纹，展示名称不参与身份。
+fn config_fingerprint_tracks_source_priority_without_aliases() {
+    let base = "[project]\nname = \"app\"\nversion = \"0.1.0\"\n";
+    let no_sources = parse_config_text(base).unwrap();
+    assert!(fingerprint_config(&no_sources).starts_with("xiao-config-fingerprint-v1-"));
+    let first = format!(
+        "{base}[sources]\nfirst = {{ kind = \"static\", location = \"https://first.example\", alias = \"a\", display = \"First\" }}\nsecond = {{ kind = \"static\", location = \"https://second.example\" }}\n"
+    );
+    let reordered = format!(
+        "{base}[sources]\nsecond = {{ kind = \"static\", location = \"https://second.example\" }}\nfirst = {{ kind = \"static\", location = \"https://first.example\", alias = \"a\", display = \"First\" }}\n"
+    );
+    let renamed = format!(
+        "{base}[sources]\nrenamed = {{ kind = \"static\", location = \"https://first.example/\", alias = \"renamed\", display = \"Changed\" }}\nsecond = {{ kind = \"static\", location = \"https://second.example\" }}\n"
+    );
+    let fingerprint = fingerprint_config(&parse_config_text(&first).unwrap());
+    assert!(fingerprint.starts_with("xiao-config-fingerprint-v2-"));
+    assert_ne!(
+        fingerprint,
+        fingerprint_config(&parse_config_text(&reordered).unwrap())
+    );
+    assert_eq!(
+        fingerprint,
+        fingerprint_config(&parse_config_text(&renamed).unwrap())
+    );
+
+    let import = format!(
+        "{base}[sources]\nfirst = {{ kind = \"static\", location = \"https://first.example\" }}\nexternal = {{ list = \"https://example.org/list\", digest = \"{}\" }}\n",
+        "a".repeat(64)
+    );
+    let changed_import = import.replace(&"a".repeat(64), &"b".repeat(64));
+    assert_ne!(
+        fingerprint_config(&parse_config_text(&import).unwrap()),
+        fingerprint_config(&parse_config_text(&changed_import).unwrap())
+    );
+}
+
 /// 构造具有固定包名的候选版本元数据。
 fn candidate(version: &str) -> IndexPackage {
     IndexPackage {
@@ -213,6 +250,71 @@ fn snapshot(source: &ConfiguredSource, version: &str, status: SnapshotStatus) ->
         } else {
             vec![candidate(version)]
         },
+        queried_packages: if status == SnapshotStatus::Unavailable {
+            BTreeSet::new()
+        } else {
+            BTreeSet::from(["demo".to_owned()])
+        },
+    }
+}
+
+#[test]
+/// 未查询不能伪装成空分片，真实空分片则允许尝试后续源。
+fn unqueried_source_cannot_be_treated_as_missing_package() {
+    let first = direct("static", "https://first.example", "first", 0);
+    let second = direct("static", "https://second.example", "second", 1);
+    let mut snapshots = [
+        snapshot(&first, "1.0", SnapshotStatus::Fresh),
+        snapshot(&second, "2.0", SnapshotStatus::Fresh),
+    ];
+    snapshots[0].candidates.clear();
+    snapshots[0].queried_packages.clear();
+    let records = federate(&snapshots).unwrap();
+    assert_eq!(
+        select_source(
+            &[first.clone(), second.clone()],
+            &snapshots,
+            &records,
+            "demo",
+            None,
+            |_| true
+        )
+        .unwrap_err()
+        .code,
+        SOURCE_UNAVAILABLE_CODE
+    );
+    snapshots[0].queried_packages.insert("demo".to_owned());
+    assert_eq!(
+        select_source(&[first, second], &snapshots, &records, "demo", None, |_| {
+            true
+        })
+        .unwrap()[0]
+            .package
+            .version,
+        "2.0"
+    );
+}
+
+#[test]
+/// 旧记录不得搭配不同标识、摘要或状态的新快照参与选择。
+fn source_selection_rejects_records_from_a_different_snapshot() {
+    let source = direct("static", "https://first.example", "first", 0);
+    let original = snapshot(&source, "1.0", SnapshotStatus::Fresh);
+    let records = federate(std::slice::from_ref(&original)).unwrap();
+    let sources = [source];
+    for change in 0..3 {
+        let mut current = original.clone();
+        match change {
+            0 => current.snapshot_id = Some("snapshot-2".to_owned()),
+            1 => current.snapshot_digest = Some("b".repeat(64)),
+            _ => current.status = SnapshotStatus::Cached,
+        }
+        assert_eq!(
+            select_source(&sources, &[current], &records, "demo", None, |_| true)
+                .unwrap_err()
+                .code,
+            SOURCE_INVALID_CODE
+        );
     }
 }
 
@@ -424,6 +526,16 @@ fn local_adapter_separates_metadata_from_body_and_checks_digests() {
     .unwrap();
     let adapter = LocalDirectoryAdapter;
     let snapshot = adapter.read_snapshot(&descriptor).unwrap();
+    let mut queried = SourceSnapshot::from_index(0, SnapshotStatus::Fresh, &snapshot).unwrap();
+    assert!(queried.queried_packages.is_empty());
+    queried
+        .query_package(&adapter, &descriptor, &snapshot, "absent")
+        .unwrap();
+    queried
+        .query_package(&adapter, &descriptor, &snapshot, "demo")
+        .unwrap();
+    assert!(queried.queried_packages.contains("absent"));
+    assert_eq!(federate(&[queried]).unwrap()[0].package, package);
     assert_eq!(
         adapter
             .read_package(&descriptor, &snapshot, "demo")
@@ -438,6 +550,15 @@ fn local_adapter_separates_metadata_from_body_and_checks_digests() {
     );
     assert_eq!(adapter.read_artifact(&descriptor, &artifact).unwrap(), body);
     fs::write(root.join("index/demo.json"), "{}").unwrap();
+    let mut failed = SourceSnapshot::from_index(0, SnapshotStatus::Fresh, &snapshot).unwrap();
+    assert_eq!(
+        failed
+            .query_package(&adapter, &descriptor, &snapshot, "demo")
+            .unwrap_err()
+            .code,
+        SOURCE_DIGEST_MISMATCH_CODE
+    );
+    assert!(failed.queried_packages.is_empty());
     assert_eq!(
         adapter
             .read_package(&descriptor, &snapshot, "demo")
