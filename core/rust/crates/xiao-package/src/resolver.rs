@@ -36,8 +36,21 @@ impl PackageResolver {
     /// 从项目根目录或其 `config.xiao` 文件解析可达本地包图。
     #[must_use]
     pub fn resolve_project(&self, project_or_config: impl AsRef<Path>) -> PackageResolution {
-        let config_path = project_config_path(project_or_config.as_ref());
-        let mut state = ResolverState::default();
+        self.resolve_with_document(project_or_config.as_ref(), None)
+    }
+
+    /// 用已验证的拟写回根配置求解本地依赖图，不在校验前改动磁盘。
+    #[must_use]
+    pub fn resolve_with_document(
+        &self,
+        project_or_config: &Path,
+        document: Option<&ConfigDocument>,
+    ) -> PackageResolution {
+        let config_path = project_config_path(project_or_config);
+        let mut state = ResolverState {
+            root_document: document.cloned(),
+            ..ResolverState::default()
+        };
         let Some((root, is_new)) = state.load_package(config_path, None, false) else {
             return state.finish();
         };
@@ -61,6 +74,15 @@ pub fn resolve_project(project_or_config: impl AsRef<Path>) -> PackageResolution
     PackageResolver::new().resolve_project(project_or_config)
 }
 
+/// 校验拟写回根配置的本地依赖图，不修改配置文件。
+#[must_use]
+pub fn resolve_project_with_document(
+    project_or_config: &Path,
+    document: &ConfigDocument,
+) -> PackageResolution {
+    PackageResolver::new().resolve_with_document(project_or_config, Some(document))
+}
+
 /// `resolve_project` 的 D1 语义别名，便于调用方明确表达“路径依赖”边界。
 #[must_use]
 pub fn resolve_path_dependencies(project_or_config: impl AsRef<Path>) -> PackageResolution {
@@ -71,6 +93,7 @@ pub fn resolve_path_dependencies(project_or_config: impl AsRef<Path>) -> Package
 #[derive(Default)]
 struct ResolverState {
     graph: PackageGraph,
+    root_document: Option<ConfigDocument>,
     diagnostics: Vec<PackageDiagnostic>,
     path_identities: BTreeMap<PathBuf, PackageIdentity>,
     name_identities: BTreeMap<String, (PackageIdentity, PathBuf)>,
@@ -148,38 +171,46 @@ impl ResolverState {
             return Some((identity, false));
         }
 
-        let text = match fs::read_to_string(&canonical_config) {
-            Ok(text) => text,
-            Err(error) => {
-                self.push_path_diagnostic(
-                    PACKAGE_CONFIG_READ_CODE,
-                    "x05.package.config_read",
-                    None,
-                    package_root.clone(),
-                    format!("无法读取包配置 {}：{error}", canonical_config.display()),
-                    [
-                        (
-                            "path",
-                            DiagnosticParam::Text(canonical_config.display().to_string()),
-                        ),
-                        ("reason", DiagnosticParam::Text(error.to_string())),
-                    ],
-                );
-                return None;
-            }
+        let document = if !is_dependency {
+            self.root_document.take()
+        } else {
+            None
         };
-        let source = SourceFile::from_text(&text);
-        let document = match parse_config_project(&source) {
-            Ok(document) => document,
-            Err(errors) => {
-                for diagnostic in errors {
-                    self.diagnostics.push(PackageDiagnostic {
-                        package: None,
-                        path: Some(package_root.clone()),
-                        diagnostic,
-                    });
+        let document = if let Some(document) = document {
+            document
+        } else {
+            let text = match fs::read_to_string(&canonical_config) {
+                Ok(text) => text,
+                Err(error) => {
+                    self.push_path_diagnostic(
+                        PACKAGE_CONFIG_READ_CODE,
+                        "x05.package.config_read",
+                        None,
+                        package_root.clone(),
+                        format!("无法读取包配置 {}：{error}", canonical_config.display()),
+                        [
+                            (
+                                "path",
+                                DiagnosticParam::Text(canonical_config.display().to_string()),
+                            ),
+                            ("reason", DiagnosticParam::Text(error.to_string())),
+                        ],
+                    );
+                    return None;
                 }
-                return None;
+            };
+            match parse_config_project(&SourceFile::from_text(&text)) {
+                Ok(document) => document,
+                Err(errors) => {
+                    for diagnostic in errors {
+                        self.diagnostics.push(PackageDiagnostic {
+                            package: None,
+                            path: Some(package_root.clone()),
+                            diagnostic,
+                        });
+                    }
+                    return None;
+                }
             }
         };
         if let Some(dependency) = git_dependency_declarations(&document).first() {

@@ -24,6 +24,10 @@ export type ParsedCommand =
   | { kind: "venv"; name?: string; options: GlobalCliOptions }
   | { kind: "sync"; keepExtra: boolean; locked: boolean; frozen: boolean; options: GlobalCliOptions }
   | { kind: "install"; project?: string; options: GlobalCliOptions }
+  | { kind: "lock"; options: GlobalCliOptions }
+  | { kind: "update"; options: GlobalCliOptions }
+  | { kind: "add"; packageName: string; path: string; version?: string; dev: boolean; options: GlobalCliOptions }
+  | { kind: "remove"; packageName: string; dev: boolean; options: GlobalCliOptions }
   | { kind: "shell-init"; shell: ShellName; options: GlobalCliOptions }
   | { kind: "deactivate"; options: GlobalCliOptions }
   | { kind: "repl"; options: GlobalCliOptions };
@@ -46,7 +50,8 @@ export class CliArgumentError extends Error {
 export function parseArguments(argv: readonly string[]): ParsedCommand {
   const { options, positional } = parseGlobalOptions(argv);
   if (argv.some((argument) => argument === "--help" || argument === "-h")) return { kind: "help", options };
-  if (argv.some((argument) => argument === "--version" || argument === "-v")) return { kind: "version", options };
+  if (argv.some((argument, index) => (argument === "-v" || argument === "--version") &&
+    ((positional[0] !== "add" && positional[0] !== "remove") || index < argv.indexOf(positional[0])))) return { kind: "version", options };
   if (positional.length === 0) return { kind: "repl", options };
   const [command, ...rest] = positional;
   if (command === "--help" || command === "-h") {
@@ -68,6 +73,12 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
   if (command === "build") return parseBuild(rest, options);
   if (command === "venv") return parseVenv(rest, options);
   if (command === "sync") return parseSync(rest, options);
+  if (command === "lock" || command === "update") {
+    if (rest.length !== 0) throw new CliArgumentError(`${command} 不接受额外参数`);
+    return { kind: command, options };
+  }
+  if (command === "add") return parseAdd(rest, options);
+  if (command === "remove") return parseRemove(rest, options);
   if (command === "install" || command === "i") {
     if (rest.length > 1 || rest[0] === "" || rest[0]?.startsWith("-")) {
       throw new CliArgumentError("install/i 最多接受一个项目目录或 config.xiao 路径");
@@ -100,6 +111,10 @@ export function helpText(): string {
     "  xiao venv [name]                         创建项目环境并输出激活提示",
     "  xiao sync [--keep-extra] [--locked|--frozen] 同步依赖并激活环境",
     "  xiao install [project-or-config-path]    安装已有锁文件到激活或全局环境（别名：i）",
+    "  xiao lock                              创建锁文件或核对现有锁文件，不动环境",
+    "  xiao update                            显式重解并更新锁文件，不动环境",
+    "  xiao add <package> --path <path> [--version <range>] [--dev]  添加本地依赖并重新锁定",
+    "  xiao remove <package> [--dev]           删除依赖并重新锁定",
     "  xiao shell-init <bash|powershell|cmd>    输出一次性 Shell 钩子",
     "  xiao deactivate                          取消当前 Shell 环境激活",
     "  xiao --help | --version",
@@ -126,6 +141,43 @@ function parseSync(args: readonly string[], options: GlobalCliOptions): ParsedCo
   const frozen = args.includes("--frozen");
   if (locked && frozen) throw new CliArgumentError("--locked 与 --frozen 不可同时使用");
   return { kind: "sync", keepExtra: args.includes("--keep-extra"), locked, frozen, options };
+}
+
+/** 依赖写回只接受明确的本地路径；源依赖在正文物化闭环完成后开放。 */
+function parseAdd(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  const [packageName, ...rest] = args;
+  if (!packageName || packageName.startsWith("-")) throw new CliArgumentError("add 需要一个包名");
+  let path: string | undefined;
+  let version: string | undefined;
+  let dev = false;
+  for (let index = 0; index < rest.length; index += 1) {
+    const option = rest[index];
+    if (option === "--dev" && !dev) { dev = true; continue; }
+    const separator = option.indexOf("=");
+    const flag = separator < 0 ? option : option.slice(0, separator);
+    const inline = separator < 0 ? undefined : option.slice(separator + 1);
+    if (flag !== "--path" && flag !== "--version") throw new CliArgumentError(`add 未知或重复选项：${option}`);
+    const value = inline ?? rest[++index];
+    if (!value || value.startsWith("--")) throw new CliArgumentError(`${flag} 需要一个值`);
+    if (flag === "--path") {
+      if (path !== undefined) throw new CliArgumentError("--path 不可重复");
+      path = value;
+    } else {
+      if (version !== undefined) throw new CliArgumentError("--version 不可重复");
+      version = value;
+    }
+  }
+  if (path === undefined) throw new CliArgumentError("add 需要 --path <相对路径>");
+  return { kind: "add", packageName, path, ...(version === undefined ? {} : { version }), dev, options };
+}
+
+/** 删除指定表中的已有声明，不隐式推断开发依赖。 */
+function parseRemove(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  const [packageName, ...rest] = args;
+  if (!packageName || packageName.startsWith("-") || rest.length > 1 || (rest.length === 1 && rest[0] !== "--dev")) {
+    throw new CliArgumentError("remove 需要一个包名，可附加 --dev");
+  }
+  return { kind: "remove", packageName, dev: rest.length === 1, options };
 }
 
 /** 解析一次性 Shell 钩子输出命令。 */

@@ -181,6 +181,34 @@ describe("命令取消接线", () => {
     }
   });
 
+  test("锁和依赖编辑操作传递精确参数且不触发激活", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-package-edit-"));
+    const project = join(directory, "project");
+    const nested = join(project, "nested");
+    const config = "[project]\nname = \"app\"\nversion = \"1\"\n";
+    await mkdir(nested, { recursive: true });
+    await writeFile(join(project, "config.xiao"), config);
+    try {
+      for (const [args, expected] of [
+        [["lock"], { operation: "lock", package_name: null }],
+        [["update"], { operation: "update", package_name: null }],
+        [["add", "lib", "--path", "../lib", "--version", "1.2", "--dev"], {
+          operation: "add", package_name: "lib", package_path: "../lib", package_version: "1.2", development: true,
+        }],
+        [["remove", "lib"], { operation: "remove", package_name: "lib", package_path: null, development: false }],
+      ] as const) {
+        const context = environmentContext();
+        const result = await executeCommand(parseArguments(args), { ...context, cwd: nested });
+        expect(result.exitCode).toBe(0);
+        expect(context.fake.requests.find((request) => request.type === "package")).toMatchObject({
+          project_root: project, config_text: config, ...expected,
+        });
+      }
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   test("预取消信号沿 runSource 传递并在启动核心前返回稳定错误", async () => {
     const directory = await mkdtemp(join(tmpdir(), "xiao-cli-cancel-"));
     const sourcePath = join(directory, "main.xiao");

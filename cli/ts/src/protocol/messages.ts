@@ -151,13 +151,17 @@ export interface PackageRequest {
   request_id: string;
   protocol_version: number;
   core_version: number;
-  operation: "sync" | "install";
+  operation: "sync" | "install" | "lock" | "update" | "add" | "remove";
   project_root: string;
   active_environment: string | null;
   config_text: string;
   keep_extra: boolean;
   locked: boolean;
   frozen: boolean;
+  package_name?: string | null;
+  package_path?: string | null;
+  package_version?: string | null;
+  development?: boolean;
   target: ProtocolTarget;
   toolchain: ToolchainSpec;
 }

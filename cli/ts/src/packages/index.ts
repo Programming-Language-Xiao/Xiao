@@ -23,16 +23,16 @@ async function installProjectRoot(cwd: string, project?: string): Promise<string
   throw new CliArgumentError("install/i 只接受项目目录或小写 config.xiao 路径");
 }
 
-/** 执行一次 sync/install；别名 i 在解析后共享同一个分支。 */
+/** 执行包操作；别名 i 在解析后共享 install 分支。 */
 export async function executePackageCommand(
-  command: Extract<ParsedCommand, { kind: "sync" | "install" }>,
+  command: Extract<ParsedCommand, { kind: "sync" | "install" | "lock" | "update" | "add" | "remove" }>,
   context: CommandContext,
   renderOptions: DiagnosticRenderOptions,
 ): Promise<RenderedDiagnostic> {
   const cwd = context.cwd ?? process.cwd();
-  const projectRoot = command.kind === "sync"
-    ? await findEnvironmentProjectRoot(cwd)
-    : await installProjectRoot(cwd, command.project);
+  const projectRoot = command.kind === "install"
+    ? await installProjectRoot(cwd, command.project)
+    : await findEnvironmentProjectRoot(cwd);
   const configText = await readFile(join(projectRoot, "config.xiao"), "utf8");
   const toolchain = context.environmentToolchain ?? (await discoverToolchainWithMetadata({
     cwd: projectRoot, env: context.env, executablePath: context.executablePath, probeLink: false,
@@ -45,6 +45,10 @@ export async function executePackageCommand(
     config_text: configText, keep_extra: command.kind === "sync" && command.keepExtra,
     locked: command.kind === "sync" && command.locked,
     frozen: command.kind === "sync" && command.frozen,
+    package_name: command.kind === "add" || command.kind === "remove" ? command.packageName : null,
+    package_path: command.kind === "add" ? command.path : null,
+    package_version: command.kind === "add" ? command.version ?? null : null,
+    development: command.kind === "add" || command.kind === "remove" ? command.dev : false,
     target: hostTarget(), toolchain,
   };
   const client = new ProtocolClient({
@@ -60,7 +64,7 @@ export async function executePackageCommand(
   const instruction = response.result.activate && !(context.env ?? process.env).XIAO_ACTIVATION_FILE
     ? "（未检测到激活钩子；可手工设置 XIAO_ACTIVE_ENV 为以上绝对路径，或在 Bash/PowerShell 初始化 shell-init 钩子）" : "";
   return {
-    stdout: `${command.kind === "sync" ? "已同步" : "已安装"}：${response.result.environment_path}${instruction}\n`,
+    stdout: `${({ sync: "已同步", install: "已安装", lock: "已锁定", update: "已更新锁文件", add: "已添加依赖", remove: "已移除依赖" })[command.kind]}：${response.result.environment_path}${instruction}\n`,
     stderr: "", exitCode: 0,
   };
 }

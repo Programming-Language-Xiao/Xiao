@@ -66,7 +66,7 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
   }
   if (command.kind === "test") return executeTest(command, context);
   if (command.kind === "venv") return executeVenv(command, context);
-  if (command.kind === "sync" || command.kind === "install") {
+  if (command.kind === "sync" || command.kind === "install" || command.kind === "lock" || command.kind === "update" || command.kind === "add" || command.kind === "remove") {
     try {
       return await executePackageCommand(command, context, renderOptions(command.options, context));
     } catch (error) {

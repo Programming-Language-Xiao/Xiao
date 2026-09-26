@@ -180,6 +180,10 @@ fn package_request_missing_lock_does_not_create_environment() {
         keep_extra: false,
         locked: true,
         frozen: false,
+        package_name: None,
+        package_path: None,
+        package_version: None,
+        development: false,
         target: ProtocolTarget::host(),
         toolchain: ToolchainSpec {
             clang: "clang".to_owned(),

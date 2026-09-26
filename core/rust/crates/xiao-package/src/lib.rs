@@ -4,6 +4,8 @@
 mod adapters;
 /// 不可变源码对象缓存和摘要校验。
 mod cache;
+/// 基于配置解析区间的保留格式依赖编辑。
+mod config_edit;
 /// 11A-D1 包粒度的稳定诊断编号。
 mod diagnostics;
 /// 缓存条目的跨进程排他创建与陈旧锁回收。
@@ -28,10 +30,10 @@ mod model;
 mod resolver;
 /// 跨源选择的确定性纯逻辑。
 mod selection;
-/// 11A-E3D 的确定性多包版本约束求解。
-mod solver;
 /// 按源身份存放不可变快照与当前指向。
 mod snapshot_store;
+/// 11A-E3D 的确定性多包版本约束求解。
+mod solver;
 /// 包源身份、声明与有序清单展开。
 mod source;
 /// E2B 本地依赖同步、安装与只读包视图。
@@ -49,6 +51,8 @@ pub use cache::{
     CacheError, CacheLayout, CacheObject, CacheObjectKind, CacheObjectReference, CacheStore,
     SOURCE_OBJECT_ALGORITHM, SOURCE_OBJECT_KIND, XIAO_HOME_ENV, source_directory_digest,
 };
+/// 重导出依赖写回接口。
+pub use config_edit::{DependencyEdit, edit_dependency, write_config_edit};
 /// 重导出包解析诊断编号。
 pub use diagnostics::*;
 /// 重导出项目环境接口。
@@ -91,13 +95,15 @@ pub use model::{
     PackageResolution, PackageSource, SourceIdentity, local_source_id,
 };
 /// 重导出本地路径解析入口。
-pub use resolver::{PackageResolver, resolve_path_dependencies, resolve_project};
+pub use resolver::{
+    PackageResolver, resolve_path_dependencies, resolve_project, resolve_project_with_document,
+};
 /// 重导出跨源选择入口。
 pub use selection::select_source;
-/// 重导出联邦索引约束求解接口。
-pub use solver::{ResolvedPackage, SolveRequirement, solve_dependencies};
 /// 重导出已验证的可复用源快照存储。
 pub use snapshot_store::{SnapshotStore, StoredSnapshot};
+/// 重导出联邦索引约束求解接口。
+pub use solver::{ResolvedPackage, SolveRequirement, solve_dependencies};
 /// 重导出离线源契约。
 pub use source::{
     ConfiguredSource, SOURCE_PROTOCOL_VERSION, SourceDeclaration, SourceDescriptor, SourceError,
@@ -105,8 +111,8 @@ pub use source::{
 };
 /// 重导出同步与安装编排入口。
 pub use sync::{
-    PackageOperation, PackageOperationResult, PackageSyncError, apply_packages,
-    environment_package_view,
+    PackageOperation, PackageOperationResult, PackageSyncError, apply_dependency_edit,
+    apply_packages, environment_package_view,
 };
 /// 重导出唯一版本与约束解析入口。
 pub use version::{Version, VersionRequirement};

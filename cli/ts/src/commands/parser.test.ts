@@ -15,6 +15,18 @@ describe("xiao 命令解析", () => {
     }
   });
 
+  test("锁定与依赖编辑命令的参数边界", () => {
+    expect(parseArguments(["lock"])).toMatchObject({ kind: "lock" });
+    expect(parseArguments(["update"])).toMatchObject({ kind: "update" });
+    expect(parseArguments(["add", "lib", "--path", "../lib", "--version", "1.2", "--dev"])).toMatchObject({
+      kind: "add", packageName: "lib", path: "../lib", version: "1.2", dev: true,
+    });
+    expect(parseArguments(["remove", "lib", "--dev"])).toMatchObject({ kind: "remove", packageName: "lib", dev: true });
+    for (const args of [["lock", "lib"], ["update", "--frozen"], ["add", "lib"], ["add", "lib", "--path"], ["add", "lib", "--path", "one", "--path", "two"], ["remove", "lib", "--version", "1"]]) {
+      expect(() => parseArguments(args)).toThrow(CliArgumentError);
+    }
+  });
+
   test("支持 run、源码快捷方式和全局输出选项", () => {
     expect(parseArguments(["run", "main.xiao", "--json"]).kind).toBe("run");
     expect(parseArguments(["main.xiao", "--color=always"]).kind).toBe("run");

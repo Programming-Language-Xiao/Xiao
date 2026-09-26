@@ -23,8 +23,10 @@ use super::run::{protocol_error_response, run_request_response};
 use super::test::test_request_response;
 use super::validate::{validate_source, validate_target, validate_versions};
 use crate::run::{CancellationToken, ExitCode};
+use xiao_config::DependencyKind;
 use xiao_package::{
-    CacheLayout, EnvironmentLayout, PackageOperation, apply_packages, build_environment_metadata,
+    CacheLayout, DependencyEdit, EnvironmentLayout, PackageOperation, apply_dependency_edit,
+    apply_packages, build_environment_metadata,
 };
 
 /// 从流读取并解码一条请求。
@@ -142,6 +144,10 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             keep_extra,
             locked,
             frozen,
+            package_name,
+            package_path,
+            package_version,
+            development,
             target,
             toolchain,
         } => package_request_response(
@@ -155,6 +161,10 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             keep_extra,
             locked,
             frozen,
+            package_name,
+            package_path,
+            package_version,
+            development,
             target,
             toolchain,
         ),
@@ -311,19 +321,89 @@ fn package_request_response(
     keep_extra: bool,
     locked: bool,
     frozen: bool,
+    package_name: Option<String>,
+    package_path: Option<String>,
+    package_version: Option<String>,
+    development: bool,
     target: ProtocolTarget,
     toolchain: ToolchainSpec,
 ) -> ProtocolResponse {
     if let Err(error) = validate_versions(protocol_version, core_version) {
         return protocol_error_response(Some(request_id), &error);
     }
+    let edit = match operation.as_str() {
+        "add" if !keep_extra && !locked && !frozen => {
+            match (package_name.as_deref(), package_path.as_deref()) {
+                (Some(name), Some(path)) if !path.is_empty() => {
+                    let mut fields = BTreeMap::from([("path".to_owned(), path.to_owned())]);
+                    if let Some(version) = package_version {
+                        fields.insert("version".to_owned(), version);
+                    }
+                    Some(DependencyEdit::Add {
+                        name: name.to_owned(),
+                        kind: if development {
+                            DependencyKind::Development
+                        } else {
+                            DependencyKind::Runtime
+                        },
+                        fields,
+                    })
+                }
+                _ => {
+                    return protocol_error_response(
+                        Some(request_id),
+                        &ProtocolError::request("package_name", "add 需要包名及 --path"),
+                    );
+                }
+            }
+        }
+        "remove"
+            if !keep_extra
+                && !locked
+                && !frozen
+                && package_path.is_none()
+                && package_version.is_none() =>
+        {
+            let Some(name) = package_name else {
+                return protocol_error_response(
+                    Some(request_id),
+                    &ProtocolError::request("package_name", "remove 需要包名"),
+                );
+            };
+            Some(DependencyEdit::Remove {
+                name,
+                kind: if development {
+                    DependencyKind::Development
+                } else {
+                    DependencyKind::Runtime
+                },
+            })
+        }
+        "sync" | "install" | "lock" | "update"
+            if package_name.is_none()
+                && package_path.is_none()
+                && package_version.is_none()
+                && !development =>
+        {
+            None
+        }
+        _ => {
+            return protocol_error_response(
+                Some(request_id),
+                &ProtocolError::request("operation", "包操作或选项无效"),
+            );
+        }
+    };
     let action = match operation.as_str() {
-        "sync" => PackageOperation::Sync {
+        "sync" => Some(PackageOperation::Sync {
             keep_extra,
             locked,
             frozen,
-        },
-        "install" if !keep_extra && !locked && !frozen => PackageOperation::Install,
+        }),
+        "install" if !keep_extra && !locked && !frozen => Some(PackageOperation::Install),
+        "lock" if !keep_extra && !locked && !frozen => Some(PackageOperation::Lock),
+        "update" if !keep_extra && !locked && !frozen => Some(PackageOperation::Update),
+        "add" | "remove" if edit.is_some() => None,
         _ => {
             return protocol_error_response(
                 Some(request_id),
@@ -352,15 +432,26 @@ fn package_request_response(
             );
         }
     };
-    match apply_packages(
-        std::path::Path::new(&project_root),
-        active_environment.as_deref().map(std::path::Path::new),
-        &document,
-        &toolchain,
-        &target,
-        action,
-        cache,
-    ) {
+    let result = match (edit.as_ref(), action) {
+        (Some(edit), None) => apply_dependency_edit(
+            std::path::Path::new(&project_root),
+            &document,
+            &config_text,
+            edit,
+            cache,
+        ),
+        (None, Some(action)) => apply_packages(
+            std::path::Path::new(&project_root),
+            active_environment.as_deref().map(std::path::Path::new),
+            &document,
+            &toolchain,
+            &target,
+            action,
+            cache,
+        ),
+        _ => unreachable!("操作分类已经通过校验"),
+    };
+    match result {
         Ok(result) => ProtocolResponse::PackageResult { request_id, result },
         Err(error) => ProtocolResponse::Error {
             request_id: Some(request_id),

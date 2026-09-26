@@ -620,7 +620,10 @@ fn collect_snapshot_entries(
 
 /// 判断目录项是否为应从源码摘要排除的项目生成文件。
 fn is_generated_lockfile(name: &str) -> bool {
-    name == GENERATED_LOCKFILE || name.starts_with(".xiao.lock.json.tmp-")
+    name == GENERATED_LOCKFILE
+        || name == ".xiao-package-operation.lock"
+        || name.starts_with(".xiao.lock.json.tmp-")
+        || name.starts_with(".config.xiao.tmp-")
 }
 
 /// 对规范化快照编码并计算 SHA-256 摘要。

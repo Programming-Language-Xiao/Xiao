@@ -327,7 +327,7 @@ pub enum ProtocolRequest {
         /// 工具链路径与版本描述。
         toolchain: ToolchainSpec,
     },
-    /// 使用 D1 本地包图同步或安装；目标环境由 Rust 唯一选择。
+    /// 本地包操作；目标环境由 Rust 唯一选择。
     Package {
         /// 请求编号。
         request_id: String,
@@ -349,6 +349,18 @@ pub enum ProtocolRequest {
         locked: bool,
         /// 只读现有锁文件。
         frozen: bool,
+        /// add/remove 的包名，其余操作不得设置。
+        #[serde(default)]
+        package_name: Option<String>,
+        /// add 的本地相对路径。
+        #[serde(default)]
+        package_path: Option<String>,
+        /// add 的可选版本约束。
+        #[serde(default)]
+        package_version: Option<String>,
+        /// 是否编辑开发依赖表。
+        #[serde(default)]
+        development: bool,
         /// 平台目标。
         target: ProtocolTarget,
         /// 已发现的工具链。
