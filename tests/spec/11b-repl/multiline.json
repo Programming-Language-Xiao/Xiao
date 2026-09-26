@@ -1,0 +1,10 @@
+{
+  "stage": "11B-I1a",
+  "cases": [
+    { "name": "empty", "width": 12, "lines": [""], "expected": "    1|" },
+    { "name": "exact-width", "width": 12, "lines": ["abcdef"], "expected": "    1|abcdef" },
+    { "name": "soft-wrap", "width": 12, "lines": ["abcdefghij", "123"], "expected": "    1|abcdef\n     |ghij\n    2|123" },
+    { "name": "double-width", "width": 10, "lines": ["中文abc"], "expected": "    1|中文\n     |abc" },
+    { "name": "combining", "width": 10, "lines": ["é中文"], "expected": "    1|é中\n     |文" }
+  ]
+}
