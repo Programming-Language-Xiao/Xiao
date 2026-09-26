@@ -63,7 +63,7 @@ D1 是 11A 的第一批，权威实现边界见 [11A-D1 交接文档](11ad1-pack
 - 初始化命令为 `xiao shell-init <shell>`。它只输出一次性、幂等、由用户在当前 Shell 中显式求值的钩子脚本，E0 不自动修改 profile。
 - 取消激活命令为 `xiao deactivate`。钩子保存原提示符；重复激活或切换前先移除旧的 `$环境名$ ` 前缀，取消时恢复保存的原提示符。
 - E0 的基础支持样本为 Bash 和 PowerShell；PowerShell 实现必须兼容 PowerShell 5.1。`cmd.exe` 是不支持钩子的降级样本：创建环境仍成功，但不修改注册表、不宣称已自动激活，并输出初始化或手工激活提示。
-- 非 TTY、`NO_COLOR` 或 `--color=never` 时保留纯文本 `$环境名$ ` 前缀，不输出 ANSI；可着色终端才使用绿色 ANSI。完整 Shell 矩阵、profile 安装和生产级取消激活命令留给 E3D。
+- 非 TTY、`NO_COLOR` 或 `--color=never` 时保留纯文本 `$环境名$ ` 前缀，不输出 ANSI；可着色终端才使用绿色 ANSI。完整 Shell 矩阵、profile 安装和生产级取消激活命令留给 E4。
 
 11A-E2B 将 E0 的钩子原则落实为私有随机临时目录中的一次性激活文件：Shell 导出
 `XIAO_ACTIVATION_FILE` 供 `venv`/`sync` 成功后写入，两行内容仅允许
@@ -87,7 +87,7 @@ $dev$ /home/project/xiao$
 
 多个环境并存时 `sync` 按激活路径 → `.venv` → 创建 `.venv` 选择目标；锁文件缺失时由本地依赖图生成，冻结模式须已有有效锁文件。11A-E0 已冻结并实现基础
 Shell 钩子、取消激活、`cmd.exe` 降级和找不到 `config.xiao` 时回退当前目录的规则。完整 Shell 矩阵、
-profile 安装和生产级取消激活命令留给 E3D。
+profile 安装和生产级取消激活命令留给 E4。
 
 ### 全局安装环境
 
