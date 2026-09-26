@@ -28,12 +28,16 @@ mod model;
 mod resolver;
 /// 跨源选择的确定性纯逻辑。
 mod selection;
+/// 11A-E3D 的确定性多包版本约束求解。
+mod solver;
 /// 按源身份存放不可变快照与当前指向。
 mod snapshot_store;
 /// 包源身份、声明与有序清单展开。
 mod source;
 /// E2B 本地依赖同步、安装与只读包视图。
 mod sync;
+/// 冻结的 SemVer 2.0.0 版本与部分区间约束。
+mod version;
 
 /// 重导出统一索引与正文读取边界。
 pub use adapters::{
@@ -90,6 +94,8 @@ pub use model::{
 pub use resolver::{PackageResolver, resolve_path_dependencies, resolve_project};
 /// 重导出跨源选择入口。
 pub use selection::select_source;
+/// 重导出联邦索引约束求解接口。
+pub use solver::{ResolvedPackage, SolveRequirement, solve_dependencies};
 /// 重导出已验证的可复用源快照存储。
 pub use snapshot_store::{SnapshotStore, StoredSnapshot};
 /// 重导出离线源契约。
@@ -102,3 +108,5 @@ pub use sync::{
     PackageOperation, PackageOperationResult, PackageSyncError, apply_packages,
     environment_package_view,
 };
+/// 重导出唯一版本与约束解析入口。
+pub use version::{Version, VersionRequirement};

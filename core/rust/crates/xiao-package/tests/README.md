@@ -20,3 +20,7 @@ E3B 的 `e3b_cache.rs` 真实加载 `tests/spec/11a-cache-policy/valid.json`/`er
 E3C 的 `e3c_remote.rs` 使用本机 `TcpListener` 与 `tests/spec/11a-remote-source/`
 验证 HTTP(S) 故障、真实 Range 续传、Git 协议负例、标签防改写与三类来源一致性；
 不调用真实 GitHub。
+
+E3D 的 `e3d_version.rs` 逐例验证 SemVer、`1.*` / `1.2.*` 展开和预发布准入，
+`e3d_solver.rs` 使用隔离的已验证快照模型验证来源优先、确定性、回溯、冲突和歧义；
+包操作命令、配置写回与远程安装的端到端验收尚未完成。

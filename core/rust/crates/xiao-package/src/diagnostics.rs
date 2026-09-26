@@ -70,6 +70,11 @@ pub const SOURCE_CACHE_CORRUPT_CODE: &str = "X05-SOURCE-009";
 /// 快照缓存声称属于不同的源或快照身份。
 pub const SOURCE_SNAPSHOT_OWNER_CODE: &str = "X05-SOURCE-010";
 
+/// 版本或约束不符合冻结的 SemVer 语法。
+pub const VERSION_INVALID_CODE: &str = "X05-VERSION-001";
+/// 已验证候选无法同时满足版本及来源约束。
+pub const VERSION_UNSATISFIED_CODE: &str = "X05-VERSION-002";
+
 /// 包身份冲突诊断编号的简短别名。
 pub const IDENTITY_CONFLICT_CODE: &str = PACKAGE_IDENTITY_CONFLICT_CODE;
 /// 缺失依赖诊断编号的简短别名。
