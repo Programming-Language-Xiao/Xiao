@@ -19,7 +19,7 @@ related:
 `[sources]` 中已声明的远程版本依赖，
 创建或更新项目根 `xiao.lock.json`，导入全局只读源码缓存，再原子更新目标环境的包映射。
 多余映射默认移除；目标按 **当前激活环境 → 项目 `.venv` → 创建 `.venv`** 选择。
-在 Bash/PowerShell 中执行过 `shell-init` 钩子时，成功后激活目标；普通子进程不能
+在 Bash、zsh、fish 或 PowerShell 中执行过 `shell-init` 钩子时，成功后激活目标；普通子进程不能
 直接激活父 Shell。`cmd.exe` 无钩子，只能使用手工激活或改用支持钩子的 Shell。
 
 ```text
@@ -48,7 +48,7 @@ xiao i [project-or-config-path]
 锁文件不存在、源内容改变或依赖图不匹配时失败，请先运行 `sync`；不要在 `install`
 中暗中更新锁文件。未找到项目 `config.xiao` 时本地包图无法解析，命令失败。
 
-全局选项 `--json`、`--color=...` 可放在子命令前后；Bash/PowerShell 钩子
+全局选项 `--json`、`--color=...` 可放在子命令前后；Bash、zsh、fish 和 PowerShell 钩子
 均识别这种写法。PowerShell 钩子不向标准输出追加状态数字，失败时以非零状态报错，
 不会将失败的 `sync` 伪装为成功。
 

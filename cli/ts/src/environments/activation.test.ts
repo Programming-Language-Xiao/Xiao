@@ -9,6 +9,7 @@ import { dirname, delimiter, join } from "node:path";
 
 import { shellInitScript } from "./index.ts";
 import { requestActivation } from "./activation.ts";
+import vectors from "../../../../tests/spec/11a-shell/activation.json";
 
 const windows = process.platform === "win32";
 const validPath = windows ? "C:\\project\\.venv" : "/home/user/project/.venv";
@@ -18,7 +19,7 @@ const optionalWindowsBash = process.env.XIAO_TEST_MSYS_BASH;
 /** 真实 Shell 测试中可选的命令形状与初始状态。 */
 interface ActivationOptions {
   /** 可选的钩子实现；默认使用当前平台的原生 Shell。 */
-  shell?: "bash" | "powershell";
+  shell?: "bash" | "zsh" | "fish" | "powershell";
   /** 传给 xiao 函数的原始参数。 */
   args?: readonly string[];
   /** 已激活环境的初始绝对路径。 */
@@ -32,7 +33,7 @@ async function checkActivation(contents: string, success: boolean, expected: str
   const { shell = windows ? "powershell" : "bash", args = ["sync"], initialActive, uncaughtFailure = false } = options;
   const directory = await mkdtemp(join(tmpdir(), "xiao-hook-test-"));
   const logPath = join(directory, "file-path.txt");
-  const hookPath = join(directory, shell === "powershell" ? "hook.ps1" : "hook.sh");
+  const hookPath = join(directory, shell === "powershell" ? "hook.ps1" : shell === "fish" ? "hook.fish" : "hook.sh");
   const environment: NodeJS.ProcessEnv = {
     ...process.env,
     PATH: `${directory}${delimiter}${process.env.PATH ?? ""}`,
@@ -70,11 +71,14 @@ async function checkActivation(contents: string, success: boolean, expected: str
         "printf 'xiao-test-payload\\n'",
         "exit \"$XIAO_TEST_EXIT\"",
       ].join("\n"), { mode: 0o700 });
-      await writeFile(hookPath, shellInitScript("bash", commandName));
+      await writeFile(hookPath, shellInitScript(shell, commandName));
     }
+    const shellCommand = shell === "fish"
+      ? 'source "$XIAO_TEST_HOOK"; xiao ' + args.join(" ") + '; set -l _xiao_status $status; printf "STATUS=%s\\nACTIVE=%s\\nFILE=%s\\n" $_xiao_status "$XIAO_ACTIVE_ENV" "$XIAO_ACTIVATION_FILE"'
+      : `${windows ? 'export PATH="/usr/bin:$PATH"; export PATH="$(cygpath -u "$XIAO_TEST_DIR"):$PATH"; source "$(cygpath -u "$XIAO_TEST_HOOK")"' : 'source "$XIAO_TEST_HOOK"'}; xiao ${args.join(" ")}; printf "STATUS=%s\\nACTIVE=%s\\nFILE=%s\\n" "$?" "$XIAO_ACTIVE_ENV" "$XIAO_ACTIVATION_FILE"`;
     const result = shell === "powershell"
       ? spawnSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-File", hookPath], { env: environment, encoding: "utf8", timeout: 20000 })
-      : spawnSync(optionalWindowsBash ?? "bash", ["--noprofile", "--norc", "-c", `${windows ? 'export PATH="/usr/bin:$PATH"; export PATH="$(cygpath -u "$XIAO_TEST_DIR"):$PATH"; source "$(cygpath -u "$XIAO_TEST_HOOK")"' : 'source "$XIAO_TEST_HOOK"'}; xiao ${args.join(" ")}; printf "STATUS=%s\\nACTIVE=%s\\nFILE=%s\\n" "$?" "$XIAO_ACTIVE_ENV" "$XIAO_ACTIVATION_FILE"`], { env: environment, encoding: "utf8", timeout: 20000 });
+      : spawnSync(shell === "fish" ? "fish" : shell === "zsh" ? "zsh" : optionalWindowsBash ?? "bash", shell === "fish" ? ["--no-config", "-c", shellCommand] : shell === "zsh" ? ["-f", "-c", shellCommand] : ["--noprofile", "--norc", "-c", shellCommand], { env: environment, encoding: "utf8", timeout: 20000 });
     expect(result.error).toBeUndefined();
     expect(result.status).toBe(uncaughtFailure ? 1 : 0);
     if (uncaughtFailure) expect(result.stderr).not.toBe("");
@@ -95,21 +99,39 @@ async function checkActivation(contents: string, success: boolean, expected: str
   }
 }
 
-test("合法激活内容导出绝对路径并删除一次性文件", async () => {
-  await checkActivation(`XIAO_ACTIVE_ENV='${validPath}'\nexport XIAO_ACTIVE_ENV\n`, true, validPath);
-}, 30000);
-
-for (const [label, content] of [
-  ["第三行注入", `XIAO_ACTIVE_ENV='${validPath}'\nexport XIAO_ACTIVE_ENV\nWrite-Output injected\n`],
-  ["相对路径", "XIAO_ACTIVE_ENV='project/.venv'\nexport XIAO_ACTIVE_ENV\n"],
-  ["非白名单变量", `BAD_ENV='${validPath}'\nexport XIAO_ACTIVE_ENV\n`],
-  ["路径含换行", `XIAO_ACTIVE_ENV='${validPath}\nextra'\nexport XIAO_ACTIVE_ENV\n`],
-  ["路径含引号", `XIAO_ACTIVE_ENV='${validPath}'evil'\nexport XIAO_ACTIVE_ENV\n`],
-] as const) {
-  test(`${label} 被拒绝且清理文件`, async () => {
-    await checkActivation(content, true, null);
+for (const vector of vectors.cases) {
+  test(`${vector.name} 向量经当前平台 Shell 校验并清理文件`, async () => {
+    await checkActivation(vector.content.replaceAll("{{ABS}}", validPath), true, vector.accepted ? validPath : null);
   }, 30000);
 }
+
+for (const shell of ["zsh", "fish"] as const) {
+  const available = !windows && spawnSync(shell, ["--version"], { encoding: "utf8" }).status === 0;
+  test.skipIf(!available)(`${shell} 在安装时复用白名单并可取消激活`, async () => {
+    for (const vector of vectors.cases) {
+      await checkActivation(vector.content.replaceAll("{{ABS}}", validPath), true, vector.accepted ? validPath : null, { shell });
+    }
+    await checkActivation("", true, null, { shell, args: ["deactivate"], initialActive: validPath });
+  }, 120000);
+}
+
+const fishAvailable = !windows && spawnSync("fish", ["--version"], { encoding: "utf8" }).status === 0;
+test.skipIf(!fishAvailable)("fish 激活切换后恢复用户原函数，未激活取消无副作用", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "xiao-fish-prompt-"));
+  const hook = join(directory, "hook.fish");
+  try {
+    await writeFile(hook, shellInitScript("fish"));
+    const command = `function fish_prompt; printf 'user> '; end; source '${hook}'; __xiao_deactivate_environment; printf 'BEFORE=%s\\n' (fish_prompt); __xiao_activate_environment dev 0 /tmp/dev; __xiao_activate_environment test 0 /tmp/test; printf 'ACTIVE=%s\\n' (fish_prompt); __xiao_deactivate_environment; printf 'AFTER=%s\\n' (fish_prompt); functions -q __xiao_original_prompt; or printf 'SAVED=CLEARED\\n'`;
+    const result = spawnSync("fish", ["--no-config", "-c", command], { encoding: "utf8", timeout: 20000 });
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("BEFORE=user> ");
+    expect(result.stdout).toContain("ACTIVE=$test$ user> ");
+    expect(result.stdout).toContain("AFTER=user> ");
+    expect(result.stdout).toContain("SAVED=CLEARED");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+}, 30000);
 
 test("失败命令也清理文件并保持 Shell 未激活", async () => {
   await checkActivation(`XIAO_ACTIVE_ENV='${validPath}'\nexport XIAO_ACTIVE_ENV\n`, false, null);

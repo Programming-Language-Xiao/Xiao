@@ -71,7 +71,7 @@ export async function executePackageCommand(
     stdout: `${JSON.stringify({ type: "package_result", ...response.result })}\n`, stderr: "", exitCode: 0,
   };
   const instruction = response.result.activate && !(context.env ?? process.env).XIAO_ACTIVATION_FILE
-    ? "（未检测到激活钩子；可手工设置 XIAO_ACTIVE_ENV 为以上绝对路径，或在 Bash/PowerShell 初始化 shell-init 钩子）" : "";
+    ? "（未检测到激活钩子；可手工设置 XIAO_ACTIVE_ENV 为以上绝对路径，或在 Bash/zsh/fish/PowerShell 初始化 shell-init 钩子）" : "";
   return {
     stdout: `${({ sync: "已同步", install: "已安装", lock: "已锁定", update: "已更新锁文件", add: "已添加依赖", remove: "已移除依赖" })[command.kind]}：${response.result.environment_path}${instruction}\n`,
     stderr: "", exitCode: 0,

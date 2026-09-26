@@ -50,21 +50,45 @@ CLI 只负责发现工具链、创建空目录和写元数据；指纹由 Rust �
 # Bash
 eval "$(xiao shell-init bash)"
 
+# zsh
+eval "$(xiao shell-init zsh)"
+
+# fish
+xiao shell-init fish | source -
+
 # PowerShell 5.1+
 xiao shell-init powershell | Invoke-Expression
 ```
 
-钩子不写入 profile，也不能由普通子进程直接改变父 Shell。创建成功后，支持的 Shell 会在原提示符
+默认仅输出钩子，不写入 profile，也不能由普通子进程直接改变父 Shell。创建成功后，支持的 Shell 会在原提示符
 前加上绿色 `$环境名$ ` 前缀；重复激活或切换会先移除旧前缀，`xiao deactivate` 会恢复初始化前的
-原提示符。`NO_COLOR`、`TERM=dumb`、非 TTY 或 `--color=never` 时不输出 ANSI，但仍保留纯文本前缀。
+原提示符（fish 会先保存原 `fish_prompt` 函数）；未激活时执行取消操作不会修改提示符。
+`NO_COLOR`、`TERM=dumb`、非 TTY 或 `--color=never` 时不输出 ANSI，但仍保留纯文本前缀。
+
+可显式执行 `xiao shell-init bash --install`（zsh/fish 同理）安装到 profile；
+`xiao shell-init bash --uninstall` 只移除 `# >>> xiao init >>>` 与
+`# <<< xiao init <<<` 标记块，不取消当前会话激活。默认路径在 Unix 上分别为
+`~/.bashrc`、`~/.zshrc`、`~/.config/fish/config.fish`；PowerShell 和 Windows 上的
+其他 Shell 必须用 `--profile <绝对路径>` 指定目标，例如：
+
+```text
+$profilePath = $PROFILE.CurrentUserCurrentHost
+xiao shell-init powershell --install --profile $profilePath
+xiao shell-init powershell --uninstall --profile $profilePath
+```
+
+命令会输出实际目标路径；改写已有文件前生成不覆盖旧备份的 `.bak-<随机值>` 文件并输出
+路径，重复安装不叠加、不改写、不产生新备份。移除也会先备份；标记块残缺或重复则拒绝
+修改。不存在的 profile 可以新建，但**不会自动创建上级目录**；fish 配置目录缺失时
+会报错，需用户自行建立目录或指定已有目录中的 profile。
 
 钩子将不可预测的临时文件路径导出为 `XIAO_ACTIVATION_FILE`，命令成功时写入两行
-`XIAO_ACTIVE_ENV='<绝对路径>'` / `export XIAO_ACTIVE_ENV`。Bash 与 PowerShell 对内容
+`XIAO_ACTIVE_ENV='<绝对路径>'` / `export XIAO_ACTIVE_ENV`。Bash、zsh、fish 与 PowerShell 对内容
 逐行校验，只将合格路径作为**数据**导出；任意第三行、相对路径、别的变量、引号或换行都会
 被拒绝。成功、失败都清理文件；普通未初始化 Shell 不会自动激活。
 
 `cmd.exe` 在 E0 中是明确的降级路径：`xiao shell-init cmd` 只输出说明，不修改注册表、不宣称
-自动激活；需要提示符闭环时请使用 Bash 兼容 Shell 或 PowerShell。
+自动激活，也不支持 `--install`；需要提示符闭环时请使用 Bash、zsh、fish 或 PowerShell。
 
 ## 诊断编号
 
@@ -73,8 +97,12 @@ xiao shell-init powershell | Invoke-Expression
 `-002` 至 `-005` 分别覆盖名称、已存在目录、目录/元数据写入失败和核心响应类型错误；后续新增
 场景不得回收 `-001`。
 
+Shell 诊断 `X11-CLI-SHELL-001` 表示不认识的 Shell，`-002` 表示给 `cmd` 安装钩子，
+`-003` 表示 profile 路径或父目录不可用，`-004` 表示目标不是普通 UTF-8 文件，
+`-005` 表示标记块损坏或重复，`-006` 表示读取、备份或写入失败。
+
 ## 边界
 
 `xiao run`、`xiao build` 和 `xiao test` 仍会自动定位项目环境，不要求当前提示符已经激活。
-完整 Shell 矩阵、profile 安装和生产级取消激活命令属于 E3D；`sync` 已在 E2B 接入。
+完整 Shell 矩阵、profile 安装和生产级取消激活命令属于 E4；`sync` 已在 E2B 接入。
 当前元数据的 `lockfile_summary` 仍为 `null`；`sync` 的锁文件信息存放在项目根 `xiao.lock.json`。

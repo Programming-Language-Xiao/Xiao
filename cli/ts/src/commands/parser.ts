@@ -10,8 +10,8 @@ export interface GlobalCliOptions {
   debug: boolean;
 }
 
-/** E0 支持的 Shell 名称。 */
-export type ShellName = "bash" | "powershell" | "cmd";
+/** 11A-E4 支持的 Shell 名称。 */
+export type ShellName = "bash" | "zsh" | "fish" | "powershell" | "cmd";
 
 /** 解析成功的命令联合。 */
 export type ParsedCommand =
@@ -28,21 +28,22 @@ export type ParsedCommand =
   | { kind: "update"; options: GlobalCliOptions }
   | { kind: "add"; packageName: string; path: string; version?: string; dev: boolean; options: GlobalCliOptions }
   | { kind: "remove"; packageName: string; dev: boolean; options: GlobalCliOptions }
-  | { kind: "shell-init"; shell: ShellName; options: GlobalCliOptions }
+  | { kind: "shell-init"; shell: ShellName; action: "print" | "install" | "uninstall"; profile?: string; options: GlobalCliOptions }
   | { kind: "deactivate"; options: GlobalCliOptions }
   | { kind: "repl"; options: GlobalCliOptions };
 
 /** 参数解析异常。 */
 export class CliArgumentError extends Error {
   /** 稳定诊断编号。 */
-  readonly code = "X11-CLI-ARG-001";
+  readonly code: string;
   /** 帮助文本应显示的原因。 */
   readonly usage = true;
 
   /** 创建参数错误。 */
-  constructor(message: string) {
-    super(`${"X11-CLI-ARG-001"}: ${message}`);
+  constructor(message: string, code = "X11-CLI-ARG-001") {
+    super(`${code}: ${message}`);
     this.name = "CliArgumentError";
+    this.code = code;
   }
 }
 
@@ -115,7 +116,7 @@ export function helpText(): string {
     "  xiao update                            显式重解并更新锁文件，不动环境",
     "  xiao add <package> --path <path> [--version <range>] [--dev]  添加本地依赖并重新锁定",
     "  xiao remove <package> [--dev]           删除依赖并重新锁定",
-    "  xiao shell-init <bash|powershell|cmd>    输出一次性 Shell 钩子",
+    "  xiao shell-init <bash|zsh|fish|powershell|cmd> [--install|--uninstall] [--profile <绝对路径>]",
     "  xiao deactivate                          取消当前 Shell 环境激活",
     "  xiao --help | --version",
     "",
@@ -180,14 +181,30 @@ function parseRemove(args: readonly string[], options: GlobalCliOptions): Parsed
   return { kind: "remove", packageName, dev: rest.length === 1, options };
 }
 
-/** 解析一次性 Shell 钩子输出命令。 */
+/** 解析 Shell 钩子输出、显式安装和移除命令。 */
 function parseShellInit(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
-  if (args.length !== 1) throw new CliArgumentError("shell-init 需要且只需要一个 Shell 名称");
+  if (args.length === 0) throw new CliArgumentError("shell-init 需要一个 Shell 名称");
   const shell = args[0].toLowerCase();
-  if (shell === "bash") return { kind: "shell-init", shell: "bash", options };
-  if (shell === "powershell" || shell === "pwsh") return { kind: "shell-init", shell: "powershell", options };
-  if (shell === "cmd" || shell === "cmd.exe") return { kind: "shell-init", shell: "cmd", options };
-  throw new CliArgumentError("shell-init 仅支持 bash、powershell/pwsh 或 cmd/cmd.exe");
+  let canonical: ShellName;
+  if (shell === "bash" || shell === "zsh" || shell === "fish") canonical = shell;
+  else if (shell === "powershell" || shell === "pwsh") canonical = "powershell";
+  else if (shell === "cmd" || shell === "cmd.exe") canonical = "cmd";
+  else throw new CliArgumentError("shell-init 仅支持 bash、zsh、fish、powershell/pwsh 或 cmd/cmd.exe", "X11-CLI-SHELL-001");
+  let action: "print" | "install" | "uninstall" = "print";
+  let profile: string | undefined;
+  for (let index = 1; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === "--install" || argument === "--uninstall") {
+      if (action !== "print") throw new CliArgumentError("shell-init 的安装与移除选项不可重复或并用");
+      action = argument === "--install" ? "install" : "uninstall";
+    } else if (argument === "--profile") {
+      if (profile !== undefined || !args[index + 1] || args[index + 1].startsWith("--")) throw new CliArgumentError("--profile 需要一个绝对路径且不可重复");
+      profile = args[++index];
+    } else throw new CliArgumentError(`shell-init 不支持选项：${argument}`);
+  }
+  if (profile !== undefined && action === "print") throw new CliArgumentError("--profile 只能与 --install 或 --uninstall 同用");
+  if (canonical === "cmd" && action !== "print") throw new CliArgumentError("cmd 只提供手工激活说明，不支持安装钩子", "X11-CLI-SHELL-002");
+  return { kind: "shell-init", shell: canonical, action, ...(profile === undefined ? {} : { profile }), options };
 }
 
 /** 解析项目测试命令；选项必须留在命令分支内，不能静默成为项目路径。 */

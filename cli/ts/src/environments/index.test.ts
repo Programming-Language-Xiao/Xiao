@@ -29,6 +29,12 @@ describe("项目环境边界", () => {
     expect(deactivatePromptState(testEnvironment)).toEqual({ prompt: "PS C:\\project> " });
   });
 
+  test("未激活时取消不改用户原有的美元符提示符", () => {
+    const initial = { prompt: "$custom$ user> " };
+    expect(deactivatePromptState(initial)).toEqual(initial);
+    expect(deactivatePromptState(activatePromptState(initial, "dev", { isTTY: false }))).toEqual(initial);
+  });
+
   test("前缀颜色遵守非 TTY、NO_COLOR、dumb 和 never 降级", () => {
     for (const options of [
       { isTTY: false },

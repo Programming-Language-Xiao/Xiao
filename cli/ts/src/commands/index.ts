@@ -16,6 +16,7 @@ import {
   EnvironmentCommandError,
 } from "../environments/index.ts";
 import { requestActivation } from "../environments/activation.ts";
+import { editShellProfile } from "../environments/profile.ts";
 import { executePackageCommand } from "../packages/index.ts";
 
 /** 命令执行上下文；IO 由入口注入，便于管道和测试。 */
@@ -112,7 +113,7 @@ async function executeVenv(
       };
     }
     return {
-      stdout: `已创建环境 ${created.logicalName}：${created.path}\n${(context.env ?? process.env).XIAO_ACTIVATION_FILE ? "" : "未检测到激活钩子；可手工将 XIAO_ACTIVE_ENV 设为以上绝对路径，或先在 Bash/PowerShell 初始化对应的 shell-init 钩子。\n"}`,
+      stdout: `已创建环境 ${created.logicalName}：${created.path}\n${(context.env ?? process.env).XIAO_ACTIVATION_FILE ? "" : "未检测到激活钩子；可手工将 XIAO_ACTIVE_ENV 设为以上绝对路径，或先在 Bash/zsh/fish/PowerShell 初始化对应的 shell-init 钩子。\n"}`,
       stderr: "",
       exitCode: 0,
     };
@@ -121,20 +122,24 @@ async function executeVenv(
   }
 }
 
-/** 输出一次性 Shell 钩子；不会写入 profile，也不会修改父 Shell。 */
-function executeShellInit(
+/** 默认输出脚本；只有显式安装或移除才会改写指定 profile。 */
+async function executeShellInit(
   command: Extract<ParsedCommand, { kind: "shell-init" }>,
   context: CommandContext,
-): RenderedDiagnostic {
-  const script = shellInitScript(command.shell);
-  if (command.options.json) {
-    return {
-      stdout: `${JSON.stringify({ type: "shell_init", shell: command.shell, script })}\n`,
-      stderr: "",
-      exitCode: 0,
-    };
+): Promise<RenderedDiagnostic> {
+  try {
+    if (command.action !== "print") {
+      const result = await editShellProfile(command.shell, command.action, command.profile, context.env ?? process.env);
+      if (command.options.json) return { stdout: `${JSON.stringify({ type: "shell_profile", shell: command.shell, ...result })}\n`, stderr: "", exitCode: 0 };
+      const status = result.changed ? (result.action === "install" ? "已安装" : "已移除") : "无需更改";
+      return { stdout: `${status} Shell 钩子：${result.profile}\n${result.backup === null ? "未改写既有文件，无备份。" : `备份：${result.backup}`}\n`, stderr: "", exitCode: 0 };
+    }
+    const script = shellInitScript(command.shell);
+    if (command.options.json) return { stdout: `${JSON.stringify({ type: "shell_init", shell: command.shell, script })}\n`, stderr: "", exitCode: 0 };
+    return { stdout: script, stderr: "", exitCode: 0 };
+  } catch (error) {
+    return renderCliError(error, renderOptions(command.options, context));
   }
-  return { stdout: script, stderr: "", exitCode: 0 };
 }
 
 /** 取消激活由 Shell 钩子消费；直接运行时不伪造父 Shell 状态。 */

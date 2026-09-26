@@ -59,11 +59,18 @@ describe("xiao 命令解析", () => {
     expect(parseArguments(["venv"])).toMatchObject({ kind: "venv" });
     expect(parseArguments(["venv", "dev", "--color=never"])).toMatchObject({ kind: "venv", name: "dev" });
     expect(parseArguments(["shell-init", "bash"])).toMatchObject({ kind: "shell-init", shell: "bash" });
+    expect(parseArguments(["shell-init", "zsh"])).toMatchObject({ kind: "shell-init", shell: "zsh", action: "print" });
+    expect(parseArguments(["shell-init", "fish", "--install"])).toMatchObject({ kind: "shell-init", shell: "fish", action: "install" });
+    expect(parseArguments(["shell-init", "bash", "--uninstall", "--profile", "/tmp/profile"])).toMatchObject({ kind: "shell-init", action: "uninstall", profile: "/tmp/profile" });
     expect(parseArguments(["shell-init", "pwsh"])).toMatchObject({ kind: "shell-init", shell: "powershell" });
     expect(parseArguments(["shell-init", "cmd.exe"])).toMatchObject({ kind: "shell-init", shell: "cmd" });
     expect(parseArguments(["deactivate"])).toMatchObject({ kind: "deactivate" });
     expect(() => parseArguments(["venv", "one", "two"])).toThrow(CliArgumentError);
-    expect(() => parseArguments(["shell-init", "zsh"])).toThrow(CliArgumentError);
+    expect(() => parseArguments(["shell-init", "unknown"])).toThrow("X11-CLI-SHELL-001");
+    expect(() => parseArguments(["shell-init", "cmd", "--install"])).toThrow("X11-CLI-SHELL-002");
+    for (const args of [["shell-init", "bash", "--install", "--uninstall"], ["shell-init", "fish", "--profile", "/tmp/profile"], ["shell-init", "zsh", "--install", "--install"], ["shell-init", "bash", "--install", "--profile"], ["shell-init", "fish", "--wat"]]) {
+      expect(() => parseArguments(args)).toThrow(CliArgumentError);
+    }
     expect(() => parseArguments(["deactivate", "dev"])).toThrow(CliArgumentError);
   });
 

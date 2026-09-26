@@ -10,6 +10,8 @@ import { hostTarget } from "../platform/core.ts";
 import { discoverToolchainWithMetadata } from "../platform/toolchain.ts";
 import { createColorizer, stripAnsi, type ColorMode } from "../ui/color.ts";
 import type { ShellName } from "../commands/parser.ts";
+import { fishShellInitScript } from "./fish.ts";
+import { zshShellInitScript } from "./zsh.ts";
 
 /** 环境元数据文件名；字段与 Rust `xiao-package` 的 E0 元数据保持一致。 */
 export const ENVIRONMENT_METADATA_FILE = ".xiao-environment.json";
@@ -200,15 +202,18 @@ export async function createEnvironment(cwd: string, name?: string, options: Env
 /** 生成一次性、幂等的 Shell 钩子；不写 profile。 */
 export function shellInitScript(shell: ShellName, commandName = "xiao"): string {
   if (shell === "bash") return bashShellInitScript(commandName);
+  if (shell === "zsh") return zshShellInitScript(bashShellInitScript(commandName));
+  if (shell === "fish") return fishShellInitScript(commandName);
   if (shell === "powershell") return powershellShellInitScript(commandName);
-  return [
+  if (shell === "cmd") return [
     "# xiao shell-init cmd",
     "提示：cmd.exe 不支持由子进程修改父会话的 PROMPT。",
     "环境创建仍可使用 `xiao venv [name]`，但不会自动修改当前提示符。",
     "手工激活请将 XIAO_ACTIVE_ENV 设为已创建/同步环境的绝对路径（cmd 示例：set \"XIAO_ACTIVE_ENV=C:\\project\\.venv\"）。",
-    "请改用 `xiao shell-init powershell` 或 bash 兼容 Shell。",
+    "请改用 `xiao shell-init powershell`、bash、zsh 或 fish。",
     "",
   ].join("\n");
+  throw new EnvironmentCommandError("X11-CLI-SHELL-001", "不支持的 Shell；可选 bash、zsh、fish、powershell 或 cmd");
 }
 
 /** 把环境名称渲染为提示符前缀；非 TTY/NO_COLOR/never 时不输出 ANSI。 */
@@ -235,7 +240,7 @@ export function activatePromptState(
   options: PromptColorOptions = {},
 ): ShellPromptState {
   validateEnvironmentName(name);
-  const originalPrompt = state.originalPrompt ?? removeEnvironmentPrefix(state.prompt);
+  const originalPrompt = state.originalPrompt ?? (state.environmentName === undefined ? state.prompt : removeEnvironmentPrefix(state.prompt));
   return {
     prompt: `${environmentPromptPrefix(name, options)}${originalPrompt}`,
     originalPrompt,
@@ -246,7 +251,7 @@ export function activatePromptState(
 /** 取消激活并恢复进入环境前的提示符。 */
 export function deactivatePromptState(state: ShellPromptState): ShellPromptState {
   return {
-    prompt: state.originalPrompt ?? removeEnvironmentPrefix(state.prompt),
+    prompt: state.originalPrompt ?? (state.environmentName === undefined ? state.prompt : removeEnvironmentPrefix(state.prompt)),
   };
 }
 
@@ -351,7 +356,7 @@ function bashShellInitScript(commandName: string): string {
     "        _xiao_name=${_xiao_name##*\\\\}",
     "        [[ \"$_xiao_name\" == .venv ]] && _xiao_name=venv",
     "        local _xiao_color=0 _xiao_arg _xiao_can_color=0",
-    "        [[ -t 1 && -z \"${NO_COLOR:-}\" && \"${TERM:-}\" != dumb ]] && _xiao_can_color=1",
+    "        [[ -t 1 && -z \"${NO_COLOR+x}\" && \"${TERM:-}\" != dumb ]] && _xiao_can_color=1",
     "        [[ $_xiao_can_color -eq 1 ]] && _xiao_color=1",
     "        for _xiao_arg in \"$@\"; do",
     "          [[ \"$_xiao_arg\" == \"--color=never\" ]] && _xiao_color=0",
@@ -376,9 +381,9 @@ function powershellShellInitScript(commandName: string): string {
   return [
     "# xiao shell-init powershell",
     "# 兼容 Windows PowerShell 5.1；只定义当前会话函数，不修改 profile。",
-    "$script:XiaoOriginalPrompt = $null",
-    "$script:XiaoActiveEnvironment = $null",
-    "$script:XiaoColorEnvironment = $true",
+    "if (-not (Get-Variable -Name XiaoOriginalPrompt -Scope Script -ErrorAction SilentlyContinue)) { $script:XiaoOriginalPrompt = $null }",
+    "if (-not (Get-Variable -Name XiaoActiveEnvironment -Scope Script -ErrorAction SilentlyContinue)) { $script:XiaoActiveEnvironment = $null }",
+    "if (-not (Get-Variable -Name XiaoColorEnvironment -Scope Script -ErrorAction SilentlyContinue)) { $script:XiaoColorEnvironment = $true }",
     "function global:__xiao_activate_environment {",
     "  param([string]$Name, [bool]$UseColor = $true, [string]$Path)",
     "  if ($null -eq $script:XiaoOriginalPrompt) { $script:XiaoOriginalPrompt = (Get-Command prompt -CommandType Function).ScriptBlock }",

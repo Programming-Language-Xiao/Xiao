@@ -239,6 +239,26 @@ E2B 冻结的通道是：钩子 `export XIAO_ACTIVATION_FILE=<临时文件>` →
 
 ---
 
+## 十一、实现与评估记录（2026-09-26）
+
+- Shell 矩阵固定为 Bash、zsh、fish、PowerShell 与 `cmd` 降级；不认识的 Shell
+  报 `X11-CLI-SHELL-001`。zsh 与 Bash 共用钩子主体，仅修正数组下标和 `%F` 提示符；
+  fish 保存/恢复用户的 `fish_prompt`，不对激活文件求值。四份脚本由
+  `tests/spec/11a-shell/activation.json` 的相同合法/非法内容向量约束。
+- `shell-init <shell> --install|--uninstall [--profile <绝对路径>]` 明确分离 profile
+  管理与当前会话的 `deactivate`；安装块可重复且无叠加，改写前备份并输出路径。
+  Unix 默认只选择 `~/.bashrc`、`~/.zshrc`、`~/.config/fish/config.fish`；PowerShell
+  或 Windows 上其他 Shell 必须显式指定绝对路径。缺失的 profile 父目录直接报错，
+  不自动创建。`cmd` 安装明确报 `X11-CLI-SHELL-002`。
+- 工具链安装**评估结论：本批不实现**。现有 CLI 仅负责发现和使用本地工具链；全局
+  安装需先独立冻结来源与完整性、版本切换、权限、PATH 变更与回滚，以及跨平台错误
+  边界，再决定是否提供独立命令。当前既无工具链安装入口，也不声称满足其实现验收。
+- Windows 原生执行 PowerShell 白名单向量，WSL Linux 执行 Bash 向量；四壳均通过
+  可注入提示符状态与脚本文本规格测试。当前测试主机未安装 zsh/fish，真实 Shell
+  子进程用例按既有条件门控跳过，不能把静态向量结果描述成两者的实际终端验收。
+
+---
+
 ## 相关页面
 
 - [11A. 虚拟环境与包管理](11a-environments-and-packages.md) `:513-519`、`:55-84`
