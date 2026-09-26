@@ -1,0 +1,23 @@
+{
+  "stage": "11B-I0",
+  "cases": [
+    {
+      "platform": "windows",
+      "cwd": "D:\\Project\\xiao",
+      "activeEnvironment": "D:\\Project\\xiao\\.venv",
+      "expected": "$venv$ D:\\Project\\xiao [X> "
+    },
+    {
+      "platform": "linux",
+      "cwd": "/home/project/xiao",
+      "activeEnvironment": "/home/project/xiao/.venv",
+      "expected": "$venv$ /home/project/xiao [X> "
+    },
+    {
+      "platform": "macos",
+      "cwd": "/Users/dev/xiao",
+      "activeEnvironment": null,
+      "expected": "/Users/dev/xiao [X> "
+    }
+  ]
+}
