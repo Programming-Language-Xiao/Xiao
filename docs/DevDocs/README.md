@@ -122,6 +122,7 @@
 | 11A-E3C | [静态源与 GitHub 适配器](11ae3c-static-and-github-sources.md) | 静态 HTTP 源、GitHub 稀疏索引、单仓库 Git 声明语法、不可变提交与 Range；**第一批联网** | 已实现核心适配器及本机网络规格；远程直接依赖的求解/安装归 E3D |
 | 11A-E3D | [包操作、安全与发布](11ae3d-package-operations.md) | 完整 semver 约束与求解、`add`/`remove`/`lock`/`update`、`config.xiao` 保留注释的写回、来源审计与凭据边界；**签名不做** | 待开工（交接文档已就绪；**前置：先冻结约束语法**，否则违反「未决决策不得被实现偷偷冻结」） |
 | 11A-E4 | 环境交付（权威描述见 [11A](11a-environments-and-packages.md) E4 章节） | 完整 Shell 钩子矩阵、取消激活命令、profile 安装与工具链安装 | 未开始（**从 E3D 移出**：它是 E0/E2B 遗留的环境激活工作，与包操作无关） |
+| 11A-E3D1 | [首个远程闭环](11ae3d1-remote-closure.md) | 求解器接到 `sync` 真实流程、远程正文下载与锁文件摘要校验、凭据边界（0600）、来源审计与信任失败诊断 | 待开工（交接文档已就绪；**前置：`sync.rs` 尚未调用求解器**，远程下载零实现） |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 进行中（D1、E0、E1、E2A、E2B、E3A 已实现；**E3B 的前置并发冻结件 11A-CONC 已就绪**；E3B 已实现；E3C 已实现；**E3D 与 E4 已拆开**，E3D 交接文档已就绪） |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |
 | 11C | [国际化、系统提示与语言包插件](11c-localization.md) | `[language]` 配置、中英内置目录、统一错误文案和资源型语言包插件 | 未开始 |
