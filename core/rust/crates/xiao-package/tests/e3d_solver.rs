@@ -2,8 +2,8 @@
 
 use xiao_package::{
     ArtifactReference, ConfiguredSource, IndexDependency, IndexPackage, SOURCE_AMBIGUOUS_CODE,
-    SnapshotStatus, SolveRequirement, SourceDescriptor, SourceSnapshot, VERSION_UNSATISFIED_CODE,
-    federate, solve_dependencies,
+    SOURCE_INVALID_CODE, SnapshotStatus, SolveRequirement, SourceDescriptor, SourceSnapshot,
+    VERSION_UNSATISFIED_CODE, federate, solve_dependencies,
 };
 
 fn source(alias: &str, order: usize) -> ConfiguredSource {
@@ -258,4 +258,79 @@ fn cyclic_highest_candidate_backtracks_to_acyclic_release() {
     .unwrap();
     assert_eq!(result["app"].package.version, "1.0.0");
     assert!(!result.contains_key("helper"));
+}
+
+#[test]
+fn conditional_releases_are_not_selected_without_compatibility_context() {
+    let first = source("first", 0);
+    let sources = [first.clone()];
+    let lower = package("lib", "1.0.0", &[]);
+    let mut conditional = package("lib", "2.0.0", &[]);
+    for kind in ["features", "target", "abi", "xiao", "runtime"] {
+        conditional.features.clear();
+        conditional.target = None;
+        conditional.abi = None;
+        conditional.xiao_range = None;
+        conditional.runtime_range = None;
+        match kind {
+            "features" => conditional.features.push("gpu".to_owned()),
+            "target" => conditional.target = Some("other-target".to_owned()),
+            "abi" => conditional.abi = Some("other-abi".to_owned()),
+            "xiao" => conditional.xiao_range = Some(">=9.0.0".to_owned()),
+            "runtime" => conditional.runtime_range = Some(">=9.0.0".to_owned()),
+            _ => unreachable!(),
+        }
+        let snapshots = [snapshot(&first, vec![lower.clone(), conditional.clone()])];
+        let records = federate(&snapshots).unwrap();
+        let requirement = [requirement("lib", "*", None)];
+        let chosen = solve_dependencies(
+            &sources,
+            &snapshots,
+            &records,
+            &requirement,
+            Some("our-target"),
+        )
+        .unwrap();
+        assert_eq!(chosen["lib"].package.version, "1.0.0", "{kind}");
+
+        let snapshots = [snapshot(&first, vec![conditional.clone()])];
+        let records = federate(&snapshots).unwrap();
+        assert_eq!(
+            solve_dependencies(&sources, &snapshots, &records, &requirement, None)
+                .unwrap_err()
+                .code,
+            VERSION_UNSATISFIED_CODE,
+            "{kind}"
+        );
+    }
+}
+
+#[test]
+fn record_key_must_match_package_identity() {
+    let first = source("first", 0);
+    let sources = [first.clone()];
+    let snapshots = [snapshot(&first, vec![package("lib", "1.0.0", &[])])];
+    let verified = federate(&snapshots).unwrap();
+    for mismatched_field in ["name", "version", "variant"] {
+        let mut records = verified.clone();
+        match mismatched_field {
+            "name" => records[0].package.name = "shadow".to_owned(),
+            "version" => records[0].package.version = "2.0.0".to_owned(),
+            "variant" => records[0].package.variant = "other".to_owned(),
+            _ => unreachable!(),
+        }
+        assert_eq!(
+            solve_dependencies(
+                &sources,
+                &snapshots,
+                &records,
+                &[requirement("lib", "*", None)],
+                None,
+            )
+            .unwrap_err()
+            .code,
+            SOURCE_INVALID_CODE,
+            "{mismatched_field}"
+        );
+    }
 }

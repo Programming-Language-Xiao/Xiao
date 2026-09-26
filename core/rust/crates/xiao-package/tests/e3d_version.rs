@@ -79,6 +79,10 @@ fn precedence_ignores_build_and_compares_prerelease_identifiers() {
             .precedence(&Version::parse("1.2.3+second").unwrap()),
         Ordering::Equal
     );
+    assert_ne!(
+        Version::parse("1.2.3+first").unwrap(),
+        Version::parse("1.2.3+second").unwrap()
+    );
 }
 
 #[test]

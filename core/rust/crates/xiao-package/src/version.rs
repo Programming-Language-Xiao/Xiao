@@ -23,6 +23,7 @@ impl Core {
         Version {
             core: self.clone(),
             prerelease: Vec::new(),
+            build: Vec::new(),
         }
     }
 }
@@ -44,11 +45,12 @@ impl Identifier {
     }
 }
 
-/// 严格的 SemVer 2.0.0 版本；构建元数据只经过校验，不参与优先级。
+/// 严格的 SemVer 2.0.0 版本；构建元数据保留身份但不参与优先级。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Version {
     core: Core,
     prerelease: Vec<Identifier>,
+    build: Vec<Identifier>,
 }
 
 impl Version {
@@ -57,9 +59,10 @@ impl Version {
         let (without_build, build) = text
             .split_once('+')
             .map_or((text, None), |(head, tail)| (head, Some(tail)));
-        if let Some(build) = build {
-            validate_identifiers(build, false)?;
-        }
+        let build = build
+            .map(|identifiers| validate_identifiers(identifiers, false))
+            .transpose()?
+            .unwrap_or_default();
         let (numbers, prerelease) = without_build
             .split_once('-')
             .map_or((without_build, None), |(head, tail)| (head, Some(tail)));
@@ -77,7 +80,11 @@ impl Version {
         } else {
             Vec::new()
         };
-        Ok(Self { core, prerelease })
+        Ok(Self {
+            core,
+            prerelease,
+            build,
+        })
     }
 
     /// 比较 SemVer 优先级；构建元数据不会改变比较结果。
@@ -149,6 +156,7 @@ impl PartialVersion {
                     patch: "0".to_owned(),
                 },
                 prerelease: Vec::new(),
+                build: Vec::new(),
             })
         } else {
             Some(Version {
@@ -158,6 +166,7 @@ impl PartialVersion {
                     patch: "0".to_owned(),
                 },
                 prerelease: Vec::new(),
+                build: Vec::new(),
             })
         };
         Ok(Self {
@@ -168,6 +177,7 @@ impl PartialVersion {
                     patch: patch.unwrap_or_else(|| "0".to_owned()),
                 },
                 prerelease: Vec::new(),
+                build: Vec::new(),
             },
             ceiling,
         })
@@ -259,6 +269,7 @@ impl VersionRequirement {
                         patch: "0".to_owned(),
                     },
                     prerelease: Vec::new(),
+                    build: Vec::new(),
                 };
                 result.push(Operator::GreaterEqual, version);
                 result.push(Operator::Less, ceiling);

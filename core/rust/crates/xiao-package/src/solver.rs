@@ -4,7 +4,8 @@ use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::diagnostics::{
-    SOURCE_AMBIGUOUS_CODE, SOURCE_UNKNOWN_REFERENCE_CODE, VERSION_UNSATISFIED_CODE,
+    SOURCE_AMBIGUOUS_CODE, SOURCE_INVALID_CODE, SOURCE_UNKNOWN_REFERENCE_CODE,
+    VERSION_UNSATISFIED_CODE,
 };
 use crate::federation::{FederatedRecord, IndexPackage, SourceSnapshot};
 use crate::selection::select_source;
@@ -61,6 +62,9 @@ impl State<'_> {
 }
 
 /// 从已验证索引求解依赖：先选来源，再按 SemVer 降序尝试候选并回溯。
+///
+/// 此入口尚无特性及 Xiao/Runtime 兼容性上下文；带目标、ABI 或兼容范围的候选
+/// 在接口扩展前不会被选择，避免将条件包误当成通用包。
 pub fn solve_dependencies(
     sources: &[ConfiguredSource],
     snapshots: &[SourceSnapshot],
@@ -73,6 +77,15 @@ pub fn solve_dependencies(
         state.require(requirement)?;
     }
     for record in records {
+        if record.key.name != record.package.name
+            || record.key.version != record.package.version
+            || record.key.variant != record.package.variant
+        {
+            return Err(SourceError::new(
+                SOURCE_INVALID_CODE,
+                "联邦记录与包元数据的身份不一致",
+            ));
+        }
         Version::parse(&record.package.version)?;
         for dependency in &record.package.dependencies {
             VersionRequirement::parse(&dependency.version)?;
@@ -197,6 +210,11 @@ fn satisfies(
     target_variant: Option<&str>,
 ) -> bool {
     if record.package.withdrawn
+        || !record.package.features.is_empty()
+        || record.package.target.is_some()
+        || record.package.abi.is_some()
+        || record.package.xiao_range.is_some()
+        || record.package.runtime_range.is_some()
         || !matches!(target_variant, Some(target) if record.package.variant == target)
             && record.package.variant != "any"
     {
