@@ -108,6 +108,59 @@ pub struct DependencyDeclaration {
     pub span: SourceSpan,
 }
 
+/// 由联邦包源求解的版本依赖，不含本地路径或单仓库 Git 引用。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct RemoteDependencyDeclaration {
+    /// 规范化包名。
+    pub name: String,
+    /// 声明类别。
+    pub kind: DependencyKind,
+    /// 冻结的版本约束文本。
+    pub version: String,
+    /// 可选的源别名或身份。
+    pub source: Option<String>,
+    /// 配置中的源码区间。
+    pub span: SourceSpan,
+}
+
+/// 从已校验配置中读取无需本地路径的远程包需求。
+#[must_use]
+pub fn remote_dependency_declarations(
+    document: &ConfigDocument,
+) -> Vec<RemoteDependencyDeclaration> {
+    let mut declarations = Vec::new();
+    for (table_name, kind) in [
+        ("dependencies", DependencyKind::Runtime),
+        ("devdependencies", DependencyKind::Development),
+    ] {
+        let Some(table) = document.table(table_name) else {
+            continue;
+        };
+        for (name, entry) in table.iter() {
+            let Some(fields) = entry.value.as_dictionary() else {
+                continue;
+            };
+            if fields.contains_key("path") || fields.contains_key("git") {
+                continue;
+            }
+            let Some(version) = fields.get("version").and_then(ConfigValue::as_str) else {
+                continue;
+            };
+            declarations.push(RemoteDependencyDeclaration {
+                name: name.clone(),
+                kind,
+                version: version.to_owned(),
+                source: fields
+                    .get("source")
+                    .and_then(ConfigValue::as_str)
+                    .map(str::to_owned),
+                span: entry.span,
+            });
+        }
+    }
+    declarations
+}
+
 /// 从规范化配置树中按稳定顺序提取全部依赖声明。
 ///
 /// 调用者应传入 [`crate::parse_config`] 或 [`crate::parse_config_project`] 返回的文档。

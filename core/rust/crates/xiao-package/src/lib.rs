@@ -6,6 +6,8 @@ mod adapters;
 mod cache;
 /// 基于配置解析区间的保留格式依赖编辑。
 mod config_edit;
+/// 严格权限的包源凭据与不可记录的令牌。
+mod credentials;
 /// 11A-D1 包粒度的稳定诊断编号。
 mod diagnostics;
 /// 缓存条目的跨进程排他创建与陈旧锁回收。
@@ -18,6 +20,8 @@ mod fastpath;
 mod federation;
 /// 联邦索引覆盖缓存与跨源去重的包元数据。
 mod federation_cache;
+/// 锁定字节摘要校验、安全 TAR 展开与 E1 目录导入。
+mod fetch;
 /// RFC 8785 JSON 规范化。
 mod jcs;
 /// 11A-E2A 锁文件、过期判据和跨平台原子文件提交。
@@ -26,6 +30,8 @@ mod lockfile;
 mod mapping;
 /// 包身份、来源预留和确定性内存图模型。
 mod model;
+/// 远程候选求解、锁定复用与本地图合并。
+mod remote;
 /// 本地路径包配置读取和递归依赖解析。
 mod resolver;
 /// 跨源选择的确定性纯逻辑。
@@ -36,6 +42,8 @@ mod snapshot_store;
 mod solver;
 /// 包源身份、声明与有序清单展开。
 mod source;
+/// 钉住摘要的导入源列表读取与本地复用。
+mod source_lists;
 /// E2B 本地依赖同步、安装与只读包视图。
 mod sync;
 /// 冻结的 SemVer 2.0.0 版本与部分区间约束。

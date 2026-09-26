@@ -253,7 +253,7 @@ fn safe_path(source: &SourceDescriptor, relative: &str) -> Result<std::path::Pat
 }
 
 /// 校验索引正文引用的摘要语法和源目录内相对路径。
-fn valid_artifact(artifact: &ArtifactReference) -> bool {
+pub(crate) fn valid_artifact(artifact: &ArtifactReference) -> bool {
     artifact.digest.len() == 64
         && artifact
             .digest

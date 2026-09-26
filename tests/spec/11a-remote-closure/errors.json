@@ -1,0 +1,5 @@
+{
+  "cases": [
+    { "name": "conditional-target", "constraint": "1.*", "published": "1.0.0", "target": "unknown-target", "diagnostic": "X05-VERSION-002" }
+  ]
+}

@@ -23,6 +23,18 @@ pub struct SolveRequirement {
     pub source: Option<String>,
 }
 
+impl SolveRequirement {
+    /// 直接与传递依赖共用的约束构造与语法校验入口。
+    pub fn new(name: String, version: String, source: Option<String>) -> Result<Self, SourceError> {
+        VersionRequirement::parse(&version)?;
+        Ok(Self {
+            name,
+            version,
+            source,
+        })
+    }
+}
+
 /// 求解结果中保留候选及其可审计的来源快照。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ResolvedPackage {
@@ -91,8 +103,22 @@ pub fn solve_dependencies(
             VersionRequirement::parse(&dependency.version)?;
         }
     }
-    let solved = search(sources, snapshots, records, target_variant, state)?
-        .ok_or_else(|| unsatisfied("所有候选均无法满足依赖约束"))?;
+    let solved = search(sources, snapshots, records, target_variant, state)?.ok_or_else(|| {
+        if records.iter().any(|record| {
+            requirements
+                .iter()
+                .any(|request| request.name == record.package.name)
+                && (!record.package.features.is_empty()
+                    || record.package.target.is_some()
+                    || record.package.abi.is_some()
+                    || record.package.xiao_range.is_some()
+                    || record.package.runtime_range.is_some())
+        }) {
+            unsatisfied("候选带目标、ABI、特性或运行时兼容条件；本批无兼容上下文，已保守排除")
+        } else {
+            unsatisfied("所有候选均无法满足依赖约束")
+        }
+    })?;
     Ok(solved
         .selected
         .into_iter()
@@ -176,11 +202,11 @@ fn search<'a>(
                 let mut branch = state.clone();
                 branch.selected.insert(name.clone(), record);
                 for dependency in &record.package.dependencies {
-                    branch.require(&SolveRequirement {
-                        name: dependency.name.clone(),
-                        version: dependency.version.clone(),
-                        source: dependency.source.clone(),
-                    })?;
+                    branch.require(&SolveRequirement::new(
+                        dependency.name.clone(),
+                        dependency.version.clone(),
+                        dependency.source.clone(),
+                    )?)?;
                 }
                 if let Some(next) = search(sources, snapshots, records, target_variant, branch)? {
                     if solution.is_some() {

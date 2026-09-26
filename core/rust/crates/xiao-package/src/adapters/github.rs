@@ -73,7 +73,9 @@ impl GitHubAdapter {
                 name: commit.clone(),
             }
         } else {
-            let bytes = self.transport.get_refs(&source.location)?;
+            let bytes = self
+                .transport
+                .get_refs(&source.location, source.source.alias.as_deref())?;
             parse_advertised_refs(&bytes, self.reference_for(source))?
         };
         if matches!(self.reference_for(source), GitReference::Tag(_))
@@ -106,7 +108,8 @@ impl GitHubAdapter {
         })?;
         let base = self.raw_for(source)?;
         let base = join_url(&base, commit)?;
-        self.transport.artifact(&base, artifact)
+        self.transport
+            .artifact(&base, artifact, self.raw_alias(source, &base))
     }
 
     fn raw_for(&self, source: &SourceDescriptor) -> Result<String, SourceError> {
@@ -153,6 +156,24 @@ impl GitHubAdapter {
             segments[0], segments[1]
         ))
     }
+
+    fn raw_alias<'a>(&self, source: &'a SourceDescriptor, base: &str) -> Option<&'a str> {
+        let source_uri: ureq::http::Uri = source.location.parse().ok()?;
+        let raw_uri: ureq::http::Uri = base.parse().ok()?;
+        let same_origin = source_uri.scheme() == raw_uri.scheme()
+            && source_uri
+                .authority()
+                .zip(raw_uri.authority())
+                .is_some_and(|(left, right)| left.as_str().eq_ignore_ascii_case(right.as_str()));
+        let github_raw = source_uri.scheme_str() == Some("https")
+            && source_uri.host() == Some("github.com")
+            && raw_uri.scheme_str() == Some("https")
+            && raw_uri.host() == Some("raw.githubusercontent.com")
+            && raw_uri.port_u16().is_none();
+        (same_origin || github_raw)
+            .then_some(source.source.alias.as_deref())
+            .flatten()
+    }
 }
 
 impl PackageSourceAdapter for GitHubAdapter {
@@ -175,7 +196,12 @@ impl PackageSourceAdapter for GitHubAdapter {
     ) -> Result<IndexSnapshot, SourceError> {
         let resolved = self.resolve_ref(source, pinned)?;
         let base = join_url(&self.raw_for(source)?, &resolved.commit)?;
-        let snapshot = parse_snapshot(source, &self.transport.get_text(&base, "snapshot.json")?)?;
+        let snapshot = parse_snapshot(
+            source,
+            &self
+                .transport
+                .get_text(&base, "snapshot.json", self.raw_alias(source, &base))?,
+        )?;
         if snapshot.manifest.snapshot_id != resolved.commit {
             return Err(SourceError::new(
                 SOURCE_INVALID_CODE,
@@ -222,9 +248,11 @@ impl PackageSourceAdapter for GitHubAdapter {
             source,
             snapshot,
             name,
-            &self
-                .transport
-                .get_text(&base, &format!("index/{name}.json"))?,
+            &self.transport.get_text(
+                &base,
+                &format!("index/{name}.json"),
+                self.raw_alias(source, &base),
+            )?,
         )
     }
 

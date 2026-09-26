@@ -1,0 +1,6 @@
+{
+  "cases": [
+    { "name": "major-wildcard", "constraint": "1.*", "published": "1.0.0", "selected": "1.0.0" },
+    { "name": "minor-wildcard", "constraint": "1.2.*", "published": "1.2.3", "selected": "1.2.3" }
+  ]
+}

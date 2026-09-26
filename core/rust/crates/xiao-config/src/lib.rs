@@ -16,8 +16,8 @@ pub mod validation;
 
 /// 重导出依赖声明及其运行时/开发期分类。
 pub use dependencies::{
-    DependencyDeclaration, DependencyKind, GitDependencyDeclaration, dependency_declarations,
-    git_dependency_declarations,
+    DependencyDeclaration, DependencyKind, GitDependencyDeclaration, RemoteDependencyDeclaration,
+    dependency_declarations, git_dependency_declarations, remote_dependency_declarations,
 };
 /// 重导出配置诊断编号、诊断类型和列表辅助，供上层保持统一错误接口。
 pub use diagnostics::*;

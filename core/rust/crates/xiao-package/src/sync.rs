@@ -18,12 +18,13 @@ use crate::environment::{
     materialize_environment_with_mappings, read_environment_metadata, update_environment_metadata,
 };
 use crate::lockfile::{
-    LockFileWriteStatus, build_lockfile, compare_lockfile, lockfile_path, read_lockfile,
-    write_lockfile,
+    LockFileWriteStatus, build_lockfile_unvalidated, compare_lockfile, lockfile_path,
+    read_lockfile, write_lockfile,
 };
 use crate::mapping::{
     PackageObjectMapping, materialize_package_mappings, validate_package_mappings,
 };
+use crate::remote;
 use crate::resolver::{resolve_project, resolve_project_with_document};
 use crate::version::{Version, VersionRequirement};
 
@@ -81,7 +82,7 @@ impl std::fmt::Display for PackageSyncError {
 impl std::error::Error for PackageSyncError {}
 
 /// 将下层错误保留为可交给驱动器的包操作诊断。
-fn failure(code: &str, message: impl ToString) -> PackageSyncError {
+pub(crate) fn failure(code: &str, message: impl ToString) -> PackageSyncError {
     PackageSyncError {
         code: code.to_owned(),
         message: message.to_string(),
@@ -123,10 +124,18 @@ pub fn apply_dependency_edit(
         read_lockfile(&lock_path).map_err(|error| failure(error.code(), error))?;
     }
     let cache = CacheStore::open(cache_layout).map_err(|error| failure(error.code(), error))?;
+    let prepared = remote::prepare(
+        &next_document,
+        graph,
+        None,
+        PackageOperation::Update,
+        &cache,
+    )?;
     write_config_edit(&config_path, original, &edited)?;
     let write_result = (|| {
-        let candidate = build_lockfile(&graph, &next_document, &cache)
+        let mut candidate = build_lockfile_unvalidated(&prepared.graph, &next_document, &cache)
             .map_err(|error| failure(error.code(), error))?;
+        prepared.annotate_lockfile(&mut candidate)?;
         if fs::read_to_string(&config_path).ok().as_deref() != Some(&edited) {
             return Err(failure(
                 SYNC_INVALID_INPUT_CODE,
@@ -308,15 +317,18 @@ pub fn apply_packages(
         Err(crate::lockfile::LockfileError::Io { .. }) if !lock_path.exists() => None,
         Err(error) => return Err(failure(error.code(), error)),
     };
+    let cache = CacheStore::open(cache_layout).map_err(|error| failure(error.code(), error))?;
+    let prepared = remote::prepare(document, graph, existing.as_ref(), operation, &cache)?;
+    let graph = &prepared.graph;
     if matches!(operation, PackageOperation::Lock | PackageOperation::Update) {
-        let cache = CacheStore::open(cache_layout).map_err(|error| failure(error.code(), error))?;
         let status = if let (PackageOperation::Lock, Some(lock)) = (operation, existing.as_ref()) {
-            compare_lockfile(lock, &graph, document)
+            compare_lockfile(lock, graph, document)
                 .map_err(|error| failure(error.code(), error))?;
             LockFileWriteStatus::Reused
         } else {
-            let candidate = build_lockfile(&graph, document, &cache)
+            let mut candidate = build_lockfile_unvalidated(graph, document, &cache)
                 .map_err(|error| failure(error.code(), error))?;
+            prepared.annotate_lockfile(&mut candidate)?;
             write_lockfile(&lock_path, &candidate).map_err(|error| failure(error.code(), error))?
         };
         return Ok(PackageOperationResult {
@@ -339,19 +351,19 @@ pub fn apply_packages(
         let lock = existing
             .as_ref()
             .ok_or_else(|| failure(SYNC_LOCK_REQUIRED_CODE, "锁文件缺失；请先执行 xiao sync"))?;
-        compare_lockfile(lock, &graph, document).map_err(|error| failure(error.code(), error))?;
+        compare_lockfile(lock, graph, document).map_err(|error| failure(error.code(), error))?;
     }
-    let cache = CacheStore::open(cache_layout).map_err(|error| failure(error.code(), error))?;
     let lock_status = if must_match {
         None
     } else {
-        let candidate = build_lockfile(&graph, document, &cache)
+        let mut candidate = build_lockfile_unvalidated(graph, document, &cache)
             .map_err(|error| failure(error.code(), error))?;
+        prepared.annotate_lockfile(&mut candidate)?;
         let status =
             write_lockfile(&lock_path, &candidate).map_err(|error| failure(error.code(), error))?;
         Some(lock_status_name(status).to_owned())
     };
-    let mappings = materialize_package_mappings(&graph, &cache)
+    let mappings = materialize_package_mappings(graph, &cache)
         .map_err(|error| failure(error.code(), error))?;
     let metadata_path = environment_path.join(ENVIRONMENT_METADATA_FILE);
     let created = !environment_path.exists();

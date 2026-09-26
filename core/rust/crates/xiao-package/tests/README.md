@@ -23,4 +23,7 @@ E3C 的 `e3c_remote.rs` 使用本机 `TcpListener` 与 `tests/spec/11a-remote-so
 
 E3D 的 `e3d_version.rs` 逐例验证 SemVer、`1.*` / `1.2.*` 展开和预发布准入，
 `e3d_solver.rs` 使用隔离的已验证快照模型验证来源优先、确定性、回溯、冲突和歧义；
-包操作命令、配置写回与远程安装的端到端验收尚未完成。
+包操作与保留格式写回由 `e3d_operations.rs`、`e3d_config_edit.rs` 验证；
+E3D1 的 `e3d1_remote.rs` 逐例执行 `tests/spec/11a-remote-closure/`，
+通过真实目录索引、传递求解、TAR 正文、锁文件与环境映射验证首个远程闭环；
+`e3c_remote.rs` 的本机 HTTP 测试还验证源列表缓存、凭据脱敏与不执行包代码。

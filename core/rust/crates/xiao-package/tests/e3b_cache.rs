@@ -184,6 +184,7 @@ fn locked(
         .reference
         .digest;
     let package = LockedPackage {
+        source_artifact: None,
         name: identity.name.clone(),
         version: identity.version.clone(),
         source: identity.source.clone(),

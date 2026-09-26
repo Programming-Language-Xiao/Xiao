@@ -323,6 +323,13 @@ fn validate_dependency_table(table: &ConfigTable, diagnostics: &mut ConfigDiagno
             continue;
         }
         let Some(path) = fields.get("path") else {
+            if fields
+                .get("version")
+                .and_then(ConfigValue::as_str)
+                .is_some()
+            {
+                continue;
+            }
             diagnostics.push(error(
                 MISSING_REQUIRED_CODE,
                 "x05.config.missing_dependency_path",

@@ -75,6 +75,15 @@ pub const VERSION_INVALID_CODE: &str = "X05-VERSION-001";
 /// 已验证候选无法同时满足版本及来源约束。
 pub const VERSION_UNSATISFIED_CODE: &str = "X05-VERSION-002";
 
+/// 锁定的正文摘要与索引、下载字节或缓存目录不一致。
+pub const TRUST_ARTIFACT_CODE: &str = "X05-TRUST-001";
+/// 来源快照与锁定身份不一致。
+pub const TRUST_SOURCE_CODE: &str = "X05-TRUST-002";
+/// 正文不是符合首版契约的安全 TAR 包。
+pub const TRUST_ARCHIVE_CODE: &str = "X05-TRUST-003";
+/// 回退凭据的权限或结构不满足安全要求。
+pub const TRUST_CREDENTIALS_CODE: &str = "X05-TRUST-004";
+
 /// 包身份冲突诊断编号的简短别名。
 pub const IDENTITY_CONFLICT_CODE: &str = PACKAGE_IDENTITY_CONFLICT_CODE;
 /// 缺失依赖诊断编号的简短别名。

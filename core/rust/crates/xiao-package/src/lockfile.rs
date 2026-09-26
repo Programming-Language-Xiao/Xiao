@@ -20,12 +20,13 @@ use crate::diagnostics::{
     LOCKFILE_IO_CODE, LOCKFILE_SOURCE_MISMATCH_CODE, LOCKFILE_UNSUPPORTED_VERSION_CODE,
 };
 use crate::environment::fingerprint_config;
+use crate::federation::ArtifactReference;
 use crate::model::{PackageGraph, PackageIdentity, PackageNode};
 
 /// 项目锁文件的固定文件名。
 pub const LOCKFILE_NAME: &str = "xiao.lock.json";
 /// 当前支持的锁文件格式版本。
-pub const LOCKFILE_VERSION: u32 = 1;
+pub const LOCKFILE_VERSION: u32 = 2;
 
 /// 生成原子暂存文件名的进程内计数器。
 static NEXT_ATOMIC_FILE: AtomicU64 = AtomicU64::new(0);
@@ -66,6 +67,9 @@ pub struct LockedPackage {
     pub source: crate::model::PackageSource,
     /// E1 源码对象的 SHA-256 摘要。
     pub content_digest: String,
+    /// 远程 TAR 原始字节的锁定位置、长度与摘要；本地包为空。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_artifact: Option<ArtifactReference>,
     /// 该包的全部直接依赖，按配置名称排序。
     pub dependencies: BTreeMap<String, LockedDependency>,
     /// 预编译产物变体预留，E2A 首版固定为空。
@@ -300,6 +304,16 @@ pub fn build_lockfile(
     document: &ConfigDocument,
     cache: &CacheStore,
 ) -> Result<LockFile, LockfileError> {
+    let lockfile = build_lockfile_unvalidated(graph, document, cache)?;
+    lockfile.validate(Path::new("<memory>"))?;
+    Ok(lockfile)
+}
+
+pub(crate) fn build_lockfile_unvalidated(
+    graph: &PackageGraph,
+    document: &ConfigDocument,
+    cache: &CacheStore,
+) -> Result<LockFile, LockfileError> {
     let root = graph.root.clone().ok_or(LockfileError::EmptyGraph)?;
     validate_graph(graph)?;
     let mut packages = BTreeMap::new();
@@ -310,15 +324,13 @@ pub fn build_lockfile(
             locked_package(node, object.reference.digest, graph),
         );
     }
-    let lockfile = LockFile {
+    Ok(LockFile {
         lock_version: LOCKFILE_VERSION,
         config_fingerprint: fingerprint_config(document),
         root,
         packages,
         source_snapshots: BTreeMap::new(),
-    };
-    lockfile.validate(Path::new("<memory>"))?;
-    Ok(lockfile)
+    })
 }
 
 /// 将锁文件编码为稳定、可审计的 JSON 文本。
@@ -347,7 +359,7 @@ impl LockFile {
                 version: self.lock_version,
             });
         }
-        if self.lock_version != LOCKFILE_VERSION {
+        if self.lock_version != 1 && self.lock_version != LOCKFILE_VERSION {
             return Err(LockfileError::Invalid {
                 path: path.to_path_buf(),
                 message: format!("lock_version 必须为 {LOCKFILE_VERSION}"),
@@ -377,6 +389,16 @@ impl LockFile {
             });
         }
         for (key, package) in &self.packages {
+            if package.source_artifact.is_none()
+                && ["registry:", "static:", "git-index:"]
+                    .iter()
+                    .any(|prefix| package.source.source_id.starts_with(prefix))
+            {
+                return Err(LockfileError::Invalid {
+                    path: path.to_path_buf(),
+                    message: format!("远程包 {} 缺少锁定正文引用", package.name),
+                });
+            }
             if key != &identity_key(&package.identity()) {
                 return Err(LockfileError::Invalid {
                     path: path.to_path_buf(),
@@ -388,6 +410,20 @@ impl LockFile {
                     path: path.to_path_buf(),
                     message: format!("包 {} 的 content_digest 不是 SHA-256", package.name),
                 });
+            }
+            if let Some(artifact) = &package.source_artifact {
+                if self.lock_version < 2
+                    || !crate::adapters::valid_artifact(artifact)
+                    || artifact.length == 0
+                    || !self
+                        .source_snapshots
+                        .contains_key(&package.source.source_id)
+                {
+                    return Err(LockfileError::Invalid {
+                        path: path.to_path_buf(),
+                        message: format!("包 {} 缺少可信的远程正文引用或快照", package.name),
+                    });
+                }
             }
             if !package.precompiled_variants.is_empty() || !package.target_conditions.is_empty() {
                 return Err(LockfileError::Invalid {
@@ -690,6 +726,7 @@ fn locked_package(
         version: node.identity.version.clone(),
         source: node.identity.source.clone(),
         content_digest,
+        source_artifact: None,
         dependencies,
         precompiled_variants: Vec::new(),
         target_conditions: Vec::new(),

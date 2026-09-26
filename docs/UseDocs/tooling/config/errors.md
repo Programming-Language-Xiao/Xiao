@@ -38,6 +38,10 @@ related:
 | `X05-CONFIG-015` | 依赖来源引用不是非空静态字符串 | 填写 alias/source_id 约束文本，或删除该字段 |
 | `X05-CONFIG-016` | Git 依赖引用冲突、缺失或地址不安全 | 指定安全 HTTPS 仓库和唯一的 `rev`/`tag`/`branch`，不要并用 `path`/`source` |
 
+远程索引依赖可仅声明 `version`（加可选 `source`）；无 `path`/`git`/`version` 时
+仍报告缺少必需字段。TAR、锁定产物和凭据权限失败分别使用独立的
+`X05-TRUST-001`、`X05-TRUST-003` 与 `X05-TRUST-004`，不报成包不存在。
+
 源身份、不可用、摘要、协议与别名冲突属于独立的 `X05-SOURCE-001..007` 编号，
 详见[包源声明与离线索引](../cli/package-sources.md)。
 

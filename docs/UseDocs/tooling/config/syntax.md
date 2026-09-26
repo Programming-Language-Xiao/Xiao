@@ -57,8 +57,8 @@ options = [1, 2.5, true, { label = "demo" }]
 
 ## 本地路径依赖
 
-11A-D1 的依赖条目使用字典形式。`path` 必填且必须是声明包根目录相对路径；`version`
-和 `source` 可选，当前只保存为静态约束，不执行完整版本求解或远程源解析：
+11A-D1 的本地路径依赖使用字典形式。`path` 必填且必须是声明包根目录相对路径；
+`version` 和 `source` 可选，运行时会校验本地包版本及来源：
 
 ```xiao
 [dependencies]
@@ -67,6 +67,12 @@ utils = { path = "../utils", version = "^1.4", source = "local" }
 [devdependencies]
 testkit = { path = "../testkit" }
 ```
+
+远程索引包不写 `path`，但必须写版本约束；`source` 可省略并按配置顺序选择。
+例如在 `[sources]` 声明名为 `community` 的静态源，再在 `[dependencies]`
+声明 `utils = { version = "1.2.*", source = "community" }`。
+直接声明与索引里的传递依赖共用 SemVer 解析；只写 `source` 而没有
+`version`/`path`/`git` 仍是不完整的依赖声明。
 
 E3C 还允许直接 Git 仓库声明（只解析静态声明，不进行远程版本求解）：
 
@@ -77,7 +83,8 @@ lib = { git = "https://github.com/acme/lib.git", rev = "v1.2.0", version = "^1" 
 
 `git` 与 `path`/`source` 互斥；`rev`、`tag`、`branch` 中必须且仅能选一个。
 缺省引用、多个引用或不安全的引用会报配置错误；本地路径同步遇到 Git 依赖会明确拒绝，
-远程求解与安装归 E3D。包源的 `source_id`、`alias` 与展示名
+此种独立 Git 依赖仍待单独接线；通过 `[sources]` 的 `git-index` 可参与远程闭环。
+包源的 `source_id`、`alias` 与展示名
 属于包管理器的不同概念；展示名不能作为依赖引用键。
 
 ## 离线多源声明
@@ -93,7 +100,7 @@ team = { kind = "git-index", location = "https://github.com/team/packages.git", 
 形式的清单引用（只允许 `list`/`digest` 两字段）。书写顺序决定优先级，
 但所有直接源先于导入列表展开；字段错误和别名冲突会拒绝。
 Git 稀疏索引源可额外声明唯一的 `rev`、`tag` 或 `branch`；省略时使用 HEAD。
-E3C 已提供同步网络适配器；配置注释保持写回、完整版本求解和远程包命令仍未接入。细节见
+E3C 提供同步网络适配器，E3D1 已将联邦求解及源码正文校验接入包操作；细节见
 [包源声明与离线索引](../cli/package-sources.md)。
 
 ## 下一步

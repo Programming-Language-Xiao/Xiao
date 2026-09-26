@@ -108,6 +108,9 @@ pub struct SourceResolver<A> {
 }
 
 impl<A: PackageSourceAdapter + Sync> SourceResolver<A> {
+    pub(crate) fn adapter(&self) -> &A {
+        &self.adapter
+    }
     /// 使用同一缓存布局初始化四类独立对象。
     #[must_use]
     pub fn new(adapter: A, cache: CacheStore) -> Self {

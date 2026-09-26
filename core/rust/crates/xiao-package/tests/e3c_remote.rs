@@ -12,16 +12,22 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use serde_json::Value;
 use sha2::{Digest, Sha256};
-use xiao_config::{INVALID_DEPENDENCY_GIT_CODE, git_dependency_declarations, parse_config_text};
+use xiao_codegen_llvm::{TargetDescription, Toolchain};
+use xiao_config::{
+    INVALID_DEPENDENCY_GIT_CODE, git_dependency_declarations, parse_config_project,
+    parse_config_text,
+};
 use xiao_package::{
     ArtifactReference, CacheLayout, CacheStore, ConfiguredSource, GitHubAdapter, GitReference,
     HttpStaticAdapter, IndexPackage, LOCKFILE_VERSION, LocalDirectoryAdapter, LockFile,
-    LockedPackage, LockedSourceSnapshot, MultiSourceAdapter, PackageIdentity, PackageShard,
-    PackageSource, PackageSourceAdapter, SOURCE_DIGEST_MISMATCH_CODE, SOURCE_INVALID_CODE,
-    SOURCE_UNAVAILABLE_CODE, SOURCE_UNSUPPORTED_VERSION_CODE, SnapshotManifest, SnapshotStatus,
-    SnapshotStore, SourceDeclaration, SourceDescriptor, SourceResolver, fingerprint_config,
-    jcs_digest, parse_advertised_refs, source_declarations,
+    LockedPackage, LockedSourceSnapshot, MultiSourceAdapter, PackageIdentity, PackageOperation,
+    PackageShard, PackageSource, PackageSourceAdapter, SOURCE_DIGEST_MISMATCH_CODE,
+    SOURCE_INVALID_CODE, SOURCE_UNAVAILABLE_CODE, SOURCE_UNSUPPORTED_VERSION_CODE,
+    SnapshotManifest, SnapshotStatus, SnapshotStore, SourceDeclaration, SourceDescriptor,
+    SourceResolver, TRUST_ARTIFACT_CODE, apply_packages, fingerprint_config, jcs_digest,
+    lockfile_path, parse_advertised_refs, read_lockfile, source_declarations,
 };
+use xiao_source::SourceFile;
 
 const COMMIT: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const NEXT_COMMIT: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
@@ -140,7 +146,15 @@ fn handle(
             .strip_prefix("range: bytes=")
             .and_then(|value| value.trim().trim_end_matches('-').parse::<usize>().ok())
     });
-    seen.lock().unwrap().push(format!("{path} {range:?}"));
+    let authenticated = request.lines().any(|line| {
+        line.split_once(':').is_some_and(|(name, value)| {
+            name.eq_ignore_ascii_case("authorization")
+                && value.trim() == "Bearer e3d1-secret-should-never-escape"
+        })
+    });
+    seen.lock()
+        .unwrap()
+        .push(format!("{path} {range:?} auth={authenticated}"));
     let response = routes
         .lock()
         .unwrap()
@@ -150,6 +164,14 @@ fn handle(
             status: 404,
             ..Reply::ok(Vec::new())
         });
+    let response = if path.starts_with("/private/") && !authenticated {
+        Reply {
+            status: 401,
+            ..Reply::ok(Vec::new())
+        }
+    } else {
+        response
+    };
     thread::sleep(response.delay);
     let (status, content_range, body) = if let Some(start) = range.filter(|_| response.ranged) {
         let full_body = &response.body[start..];
@@ -563,6 +585,7 @@ fn online_lock_cannot_hide_rewritten_tag_but_offline_can_reuse_pinned_snapshot()
         source: PackageSource::local_path(&project),
     };
     let package = LockedPackage {
+        source_artifact: None,
         name: identity.name.clone(),
         version: identity.version.clone(),
         source: identity.source.clone(),
@@ -610,6 +633,7 @@ fn online_lock_cannot_hide_rewritten_tag_but_offline_can_reuse_pinned_snapshot()
             .code,
         SOURCE_DIGEST_MISMATCH_CODE
     );
+    make_writable(&root);
     fs::remove_dir_all(root).unwrap();
 }
 
@@ -923,4 +947,178 @@ fn config_requires_unique_git_ref_and_no_local_path_mix() {
             .code,
         SOURCE_INVALID_CODE
     );
+}
+
+struct ResetRemoteToken;
+
+impl Drop for ResetRemoteToken {
+    fn drop(&mut self) {
+        unsafe { std::env::remove_var("XIAO_SOURCE_TOKEN_E3D1_PRIVATE") };
+    }
+}
+
+fn make_writable(path: &std::path::Path) {
+    if let Ok(metadata) = fs::symlink_metadata(path) {
+        if metadata.is_dir() {
+            for entry in fs::read_dir(path).unwrap().flatten() {
+                make_writable(&entry.path());
+            }
+        }
+        let mut permissions = metadata.permissions();
+        #[allow(clippy::permissions_set_readonly_false)]
+        permissions.set_readonly(false);
+        fs::set_permissions(path, permissions).unwrap();
+    }
+}
+
+#[test]
+fn authenticated_http_source_installs_without_leaking_token_or_running_code() {
+    let server = Server::new();
+    let source = SourceDescriptor::new(
+        "static",
+        &format!("{}/private", server.base),
+        Some("e3d1_private"),
+        None,
+        1,
+    )
+    .unwrap();
+    let mut archive = tar::Builder::new(Vec::new());
+    for (path, content) in [
+        (
+            "config.xiao",
+            "[project]\nname = \"demo\"\nversion = \"1.0.0\"\n",
+        ),
+        ("install.xiao", "write NO_SIDE_EFFECT if executed\n"),
+    ] {
+        let mut header = tar::Header::new_ustar();
+        header.set_size(content.len() as u64);
+        header.set_mode(0o644);
+        header.set_cksum();
+        archive
+            .append_data(&mut header, path, content.as_bytes())
+            .unwrap();
+    }
+    let body = archive.into_inner().unwrap();
+    let artifact = ArtifactReference {
+        location: "artifacts/demo.tar".into(),
+        length: body.len() as u64,
+        digest: format!("{:x}", Sha256::digest(&body)),
+    };
+    let shard = serde_json::to_string(&PackageShard {
+        protocol_version: 1,
+        source_id: source.source.source_id.clone(),
+        snapshot_id: "snapshot-one".into(),
+        packages: vec![IndexPackage {
+            name: "demo".into(),
+            version: "1.0.0".into(),
+            variant: "any".into(),
+            withdrawn: false,
+            dependencies: Vec::new(),
+            features: Vec::new(),
+            target: None,
+            abi: None,
+            xiao_range: None,
+            runtime_range: None,
+            source_artifact: artifact.clone(),
+            binary_artifacts: Vec::new(),
+        }],
+    })
+    .unwrap();
+    let manifest = SnapshotManifest {
+        protocol_version: 1,
+        source_id: source.source.source_id.clone(),
+        snapshot_id: "snapshot-one".into(),
+        shards: BTreeMap::from([("demo".into(), jcs_digest(&shard).unwrap())]),
+        mirrors: Vec::new(),
+        expires_at: None,
+        signature: None,
+    };
+    server.route(
+        "/private/snapshot.json",
+        Reply::ok(serde_json::to_vec(&manifest).unwrap()),
+    );
+    server.route("/private/index/demo.json", Reply::ok(shard));
+    server.route("/private/artifacts/demo.tar", Reply::ok(body.clone()));
+    let list_text = serde_json::json!({
+        "protocol_version": 1,
+        "sources": [{"kind": "static", "location": source.location, "alias": "e3d1_private"}],
+    })
+    .to_string();
+    let list_digest = xiao_package::SourceList::parse(&list_text).unwrap().digest;
+    server.route("/sources.json", Reply::ok(list_text));
+    let root = temporary();
+    let text = format!(
+        "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[sources]\nprivate = {{ list = \"{}/sources.json\", digest = \"{list_digest}\" }}\n[dependencies]\ndemo = {{ version = \"1.*\", source = \"e3d1_private\" }}\n",
+        server.base,
+    );
+    fs::write(root.join("config.xiao"), &text).unwrap();
+    let document = parse_config_project(&SourceFile::from_text(&text)).unwrap();
+    let layout = CacheLayout::from_xiao_home(Some(&root.join("home")), &root).unwrap();
+    let token = "e3d1-secret-should-never-escape";
+    unsafe { std::env::set_var("XIAO_SOURCE_TOKEN_E3D1_PRIVATE", token) };
+    let _reset = ResetRemoteToken;
+    let run = || {
+        apply_packages(
+            &root,
+            None,
+            &document,
+            &Toolchain::new("clang"),
+            &TargetDescription::host(),
+            PackageOperation::Sync {
+                keep_extra: false,
+                locked: false,
+                frozen: false,
+            },
+            layout.clone(),
+        )
+    };
+    let result = run().unwrap();
+    let requests = server.requests();
+    assert!(
+        requests.len() >= 4
+            && requests
+                .iter()
+                .filter(|request| request.starts_with("/private/"))
+                .all(|request| request.ends_with("auth=true"))
+    );
+    let locked = read_lockfile(lockfile_path(&root)).unwrap();
+    let demo = locked
+        .packages
+        .values()
+        .find(|package| package.name == "demo")
+        .unwrap();
+    assert_eq!(
+        demo.source_artifact.as_ref().unwrap().digest,
+        artifact.digest
+    );
+    assert!(
+        !fs::read_to_string(lockfile_path(&root))
+            .unwrap()
+            .contains(token)
+    );
+    assert!(!format!("{result:?} {locked:?} {source:?}").contains(token));
+    assert!(!root.join("NO_SIDE_EFFECT").exists());
+    let object = CacheStore::open(layout.clone())
+        .unwrap()
+        .layout()
+        .source_object_path(&demo.content_digest)
+        .unwrap();
+    make_writable(&object);
+    fs::remove_dir_all(object).unwrap();
+    let mut invalid_body = body;
+    invalid_body[0] ^= 1;
+    server.route("/private/artifacts/demo.tar", Reply::ok(invalid_body));
+    let error = run().unwrap_err();
+    assert_eq!(error.code, TRUST_ARTIFACT_CODE);
+    assert!(!format!("{error:?} {error}").contains(token));
+    assert_eq!(
+        server
+            .requests()
+            .iter()
+            .filter(|request| request.starts_with("/sources.json"))
+            .count(),
+        1
+    );
+    make_writable(&root);
+    fs::remove_dir_all(root).unwrap();
 }

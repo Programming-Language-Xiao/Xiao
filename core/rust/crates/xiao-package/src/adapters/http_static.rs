@@ -9,6 +9,7 @@ use super::{
     IndexSnapshot, PackageSourceAdapter, check_package_request, parse_package, parse_snapshot,
     verify_artifact,
 };
+use crate::credentials;
 use crate::diagnostics::{SOURCE_INVALID_CODE, SOURCE_UNAVAILABLE_CODE};
 use crate::federation::{ArtifactReference, IndexPackage};
 use crate::source::{SourceDescriptor, SourceError};
@@ -29,6 +30,19 @@ impl Default for HttpStaticAdapter {
 }
 
 impl HttpStaticAdapter {
+    pub(crate) fn source_list(&self, location: &str) -> Result<String, SourceError> {
+        crate::source::source_id("static", location)?;
+        let (base, name) = location
+            .rsplit_once('/')
+            .ok_or_else(|| SourceError::new(SOURCE_INVALID_CODE, "源列表地址必须包含文件名"))?;
+        if name.is_empty() {
+            return Err(SourceError::new(
+                SOURCE_INVALID_CODE,
+                "源列表文件名不能为空",
+            ));
+        }
+        self.get_text(base, name, None)
+    }
     /// 使用无自动重定向的同步客户端。
     #[must_use]
     pub fn new() -> Self {
@@ -47,18 +61,23 @@ impl HttpStaticAdapter {
         }
     }
 
-    pub(super) fn get_text(&self, base: &str, relative: &str) -> Result<String, SourceError> {
+    pub(super) fn get_text(
+        &self,
+        base: &str,
+        relative: &str,
+        alias: Option<&str>,
+    ) -> Result<String, SourceError> {
         let url = join_url(base, relative)?;
-        let mut response = self.get(&url, None)?;
+        let mut response = self.get(&url, None, alias)?;
         let bytes = read_limited(response.body_mut().as_reader(), METADATA_LIMIT, &url)?;
         String::from_utf8(bytes).map_err(|_| {
             SourceError::new(SOURCE_INVALID_CODE, format!("远程元数据不是 UTF-8：{url}"))
         })
     }
 
-    pub(super) fn get_refs(&self, base: &str) -> Result<Vec<u8>, SourceError> {
+    pub(super) fn get_refs(&self, base: &str, alias: Option<&str>) -> Result<Vec<u8>, SourceError> {
         let url = format!("{}?service=git-upload-pack", join_url(base, "info/refs")?);
-        let mut response = self.get(&url, None)?;
+        let mut response = self.get(&url, None, alias)?;
         read_limited(response.body_mut().as_reader(), 1024 * 1024, &url)
     }
 
@@ -66,15 +85,58 @@ impl HttpStaticAdapter {
         &self,
         url: &str,
         start: Option<usize>,
+        alias: Option<&str>,
     ) -> Result<http::Response<ureq::Body>, SourceError> {
+        let credential = credentials::lookup(alias)?;
+        if credential.is_some() {
+            let uri: http::Uri = url.parse().map_err(|_| {
+                SourceError::new(
+                    crate::diagnostics::TRUST_CREDENTIALS_CODE,
+                    "包源认证地址不安全",
+                )
+            })?;
+            if uri.scheme_str() != Some("https")
+                && !matches!(uri.host(), Some("127.0.0.1" | "localhost" | "[::1]"))
+            {
+                return Err(SourceError::new(
+                    crate::diagnostics::TRUST_CREDENTIALS_CODE,
+                    "凭据只允许 HTTPS 或本机测试源",
+                ));
+            }
+        }
         let request = self.agent.get(url).header("Accept-Encoding", "identity");
+        let request = if let Some(credential) = &credential {
+            request.header("Authorization", &format!("Bearer {}", credential.as_str()))
+        } else {
+            request
+        };
         let request = if let Some(start) = start {
             request.header("Range", &format!("bytes={start}-"))
         } else {
             request
         };
         let response = request.call().map_err(|error| {
-            SourceError::new(SOURCE_UNAVAILABLE_CODE, format!("无法读取 {url}：{error}"))
+            let reason = match error {
+                ureq::Error::Http(_) => "HTTP 请求头无效",
+                ureq::Error::StatusCode(_) => "HTTP 状态不成功",
+                ureq::Error::Protocol(_) => "HTTP 响应协议错误",
+                ureq::Error::Io(ref io) if io.kind() == std::io::ErrorKind::ConnectionReset => {
+                    "网络连接已重置"
+                }
+                ureq::Error::Io(ref io) if io.kind() == std::io::ErrorKind::UnexpectedEof => {
+                    "网络连接过早关闭"
+                }
+                ureq::Error::Io(ref io) if io.kind() == std::io::ErrorKind::ConnectionAborted => {
+                    "网络连接被中止"
+                }
+                ureq::Error::Io(ref io) if io.kind() == std::io::ErrorKind::BrokenPipe => {
+                    "网络连接管道中断"
+                }
+                ureq::Error::Io(_) => "网络连接中断",
+                ureq::Error::Timeout(_) => "HTTP 请求超时",
+                _ => "包源 HTTP 请求失败",
+            };
+            SourceError::new(SOURCE_UNAVAILABLE_CODE, reason)
         })?;
         if !matches!(
             (start, response.status().as_u16()),
@@ -92,6 +154,7 @@ impl HttpStaticAdapter {
         &self,
         base: &str,
         artifact: &ArtifactReference,
+        alias: Option<&str>,
     ) -> Result<Vec<u8>, SourceError> {
         if !valid_relative(&artifact.location) || artifact.length > ARTIFACT_LIMIT {
             return Err(SourceError::new(
@@ -103,7 +166,7 @@ impl HttpStaticAdapter {
         let mut bytes = Vec::new();
         for _attempt in 0..3 {
             let start = bytes.len();
-            let mut response = self.get(&url, (start != 0).then_some(start))?;
+            let mut response = self.get(&url, (start != 0).then_some(start), alias)?;
             if start == 0 && response.status().as_u16() != 200
                 || start != 0 && response.status().as_u16() != 206
             {
@@ -182,7 +245,14 @@ impl PackageSourceAdapter for HttpStaticAdapter {
 
     fn read_snapshot(&self, source: &SourceDescriptor) -> Result<IndexSnapshot, SourceError> {
         require_kind(source)?;
-        parse_snapshot(source, &self.get_text(&source.location, "snapshot.json")?)
+        parse_snapshot(
+            source,
+            &self.get_text(
+                &source.location,
+                "snapshot.json",
+                source.source.alias.as_deref(),
+            )?,
+        )
     }
 
     fn read_package(
@@ -200,7 +270,11 @@ impl PackageSourceAdapter for HttpStaticAdapter {
             source,
             snapshot,
             name,
-            &self.get_text(&source.location, &format!("index/{name}.json"))?,
+            &self.get_text(
+                &source.location,
+                &format!("index/{name}.json"),
+                source.source.alias.as_deref(),
+            )?,
         )
     }
 
@@ -210,7 +284,7 @@ impl PackageSourceAdapter for HttpStaticAdapter {
         artifact: &ArtifactReference,
     ) -> Result<Vec<u8>, SourceError> {
         require_kind(source)?;
-        self.artifact(&source.location, artifact)
+        self.artifact(&source.location, artifact, source.source.alias.as_deref())
     }
 }
 

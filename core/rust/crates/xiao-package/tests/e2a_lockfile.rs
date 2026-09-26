@@ -147,6 +147,20 @@ fn valid_lockfile_spec_is_executed() {
         let before = source_directory_digest(&project).expect("source digest before lock");
         let first = build_lockfile(&resolution.graph, &document, &cache).expect("build lockfile");
         assert_eq!(first.lock_version, LOCKFILE_VERSION);
+        if first
+            .packages
+            .values()
+            .all(|package| package.source_artifact.is_none())
+        {
+            let mut previous = first.clone();
+            previous.lock_version = 1;
+            assert_eq!(
+                LockFile::from_json(&previous.to_json())
+                    .unwrap()
+                    .lock_version,
+                1
+            );
+        }
         assert_eq!(first.config_fingerprint, fingerprint_config(&document));
         let packages = first
             .packages
@@ -259,7 +273,7 @@ fn error_lockfile_spec_is_executed() {
             let text = String::from_utf8(original.clone())
                 .expect("JSON UTF-8")
                 .replace(
-                    "\"lock_version\": 1",
+                    &format!("\"lock_version\": {LOCKFILE_VERSION}"),
                     &format!("\"lock_version\": {version}"),
                 );
             let code = LockFile::from_json(&text)
