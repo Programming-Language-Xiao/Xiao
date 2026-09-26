@@ -64,7 +64,7 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     return { kind: "version", options };
   }
   if (command === "--inLF") {
-    if (rest.length > 1) throw new CliArgumentError("--inLF 最多接受一个源码文件");
+    if (rest.length > 0) throw new CliArgumentError("--inLF 文件打开留给 11B-I1，当前不接受文件参数");
     return { kind: "repl", multiline: true, options };
   }
   if (command === "run") return parseRun(rest, options);

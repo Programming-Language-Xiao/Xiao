@@ -5,7 +5,7 @@ import { createInterface } from "node:readline";
 import { readConfigValue } from "../config/editor.ts";
 import { renderCliError, renderProtocolResponse } from "../diagnostics/render.ts";
 import { ProtocolClient, type CoreClientOptions } from "../protocol/client.ts";
-import { probeGitSummary } from "../ui/git.ts";
+import { probeGitSummary, type GitProbeOptions } from "../ui/git.ts";
 import { renderReplBanner, renderReplPrompt } from "../ui/prompt.ts";
 
 /** 标准流和配置/执行依赖由 CLI 入口传入，便于无终端集成验证。 */
@@ -24,6 +24,8 @@ export interface ReplContext {
   corePath?: CoreClientOptions["overridePath"];
   spawnProcess?: CoreClientOptions["spawnProcess"];
   executablePath?: string;
+  /** Git 状态进程注入点，供会话逻辑测试保持确定性。 */
+  gitRunStatus?: GitProbeOptions["runStatus"];
 }
 
 /** 启动、提交、执行、显示结果/错误并继续到 EOF；失败的一行不终止会话。 */
@@ -105,7 +107,9 @@ async function currentPrompt(context: ReplContext): Promise<string> {
   } catch (failure) {
     if (context.debug) await context.write(context.error, renderCliError(failure).stderr);
   }
-  const result = enabled ? await probeGitSummary(context.cwd, { env: context.env }) : null;
+  const result = enabled ? await probeGitSummary(context.cwd, {
+    env: context.env, timeoutMs: 250, runStatus: context.gitRunStatus,
+  }) : null;
   if (context.debug && result?.diagnostic != null && result.diagnostic.reason !== "not-repository") {
     await context.write(context.error, `${result.diagnostic.code}: Git 摘要已降级（${result.diagnostic.reason}）\n`);
   }

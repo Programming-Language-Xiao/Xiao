@@ -1,7 +1,6 @@
 /** CLI 进程入口的 IO 注入和稳定退出码回归。 */
 
 import { describe, expect, test } from "bun:test";
-import { execFileSync, spawnSync } from "node:child_process";
 import { EventEmitter } from "node:events";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -22,7 +21,7 @@ class FakeCore extends EventEmitter {
   private buffer = new Uint8Array(0);
 
   /** 每次运行请求跨进程汇总到同一测试向量。 */
-  constructor(private readonly runRequests: Record<string, unknown>[] = [], private readonly onRun?: () => void) {
+  constructor(private readonly runRequests: Record<string, unknown>[] = []) {
     super();
     this.stdin.on("data", (chunk: Buffer) => this.consume(chunk));
   }
@@ -81,7 +80,6 @@ class FakeCore extends EventEmitter {
       })));
     } else if (request.type === "run") {
       this.runRequests.push(request);
-      this.onRun?.();
       const source = request.source as { text: string };
       const rejected = source.text === "bad";
       this.stdout.write(Buffer.from(encodeFrame({
@@ -136,6 +134,7 @@ describe("CLI 入口", () => {
     const stderr = new PassThrough();
     expect(await runCli(["--inLF"], { stdout, stderr })).toBe(64);
     expect(stderr.read()?.toString()).toContain("X11-CLI-REPL-001");
+    expect(await runCli(["--inLF", "file.xiao"], { stdout: new PassThrough(), stderr: new PassThrough() })).toBe(64);
     const json = new PassThrough();
     expect(await runCli(["--json"], { stdout: json, stderr: new PassThrough() })).toBe(64);
     expect(JSON.parse(json.read()?.toString() ?? "{}")).toMatchObject({ type: "error", code: "X11-CLI-ARG-001" });
@@ -163,44 +162,35 @@ describe("CLI 入口", () => {
     }
   });
 
-  const gitCommand = process.platform === "win32" ? "cmd" : "git";
-  const gitArgs = (args: string[]) => process.platform === "win32" ? ["/c", "git", ...args] : args;
-  const gitAvailable = spawnSync(gitCommand, gitArgs(["--version"]), { windowsHide: true }).status === 0;
-  test.skipIf(!gitAvailable)("全局配置启用 Git 摘要，分支计数随每次提示符刷新；项目配置可覆盖", async () => {
+  test("全局配置启用 Git 摘要，分支计数随每次提示符刷新；项目配置可覆盖", async () => {
     const directory = await mkdtemp(join(tmpdir(), "xiao-cli-repl-git-"));
-    const bare = join(directory, "remote.git");
     const project = join(directory, "project");
     const globalConfig = join(directory, "global.xiao");
-    const git = (cwd: string, args: string[]) => execFileSync(gitCommand, gitArgs(args), { cwd, windowsHide: true, stdio: "ignore" });
     try {
       await mkdir(project);
       await writeFile(globalConfig, "[CLI]\ngit = { summary = true }\n");
-      git(project, ["init", "-b", "main"]);
-      git(project, ["-c", "user.name=Test", "-c", "user.email=test@example.org", "commit", "--allow-empty", "-m", "first"]);
-      git(directory, ["init", "--bare", bare]);
-      git(project, ["remote", "add", "origin", bare]);
-      git(project, ["push", "-u", "origin", "main"]);
       const output = new PassThrough();
       let printed = "";
       output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
-      let calls = 0;
+      let statusQueries = 0;
       const options = {
         stdin: Readable.from(["1\n"]), stdout: output, stderr: new PassThrough(), cwd: project,
         env: { ...process.env, XIAO_GLOBAL_CONFIG: globalConfig, NO_COLOR: "1" },
         corePath: process.execPath, isTTY: false,
-        spawnProcess: () => new FakeCore([], () => {
-          if (calls++ === 0) git(project, ["-c", "user.name=Test", "-c", "user.email=test@example.org", "commit", "--allow-empty", "-m", "second"]);
-        }) as never,
+        spawnProcess: () => new FakeCore() as never,
+        gitRunStatus: async () => `# branch.oid 123\n# branch.head main\n# branch.upstream origin/main\n# branch.ab +${statusQueries++} -0\n`,
       };
       expect(await runCli([], options)).toBe(0);
       expect(printed).toContain("main-0↑-0↓ [X>");
       expect(printed).toContain("main-1↑-0↓ [X>");
+      expect(statusQueries).toBe(2);
       await writeFile(join(project, "config.xiao"), "[CLI]\ngit = { summary = false }\n");
       const disabled = new PassThrough();
       let disabledOutput = "";
       disabled.on("data", (chunk: Buffer) => { disabledOutput += chunk.toString(); });
       expect(await runCli([], { ...options, stdin: Readable.from([]), stdout: disabled })).toBe(0);
       expect(disabledOutput).not.toContain("main-");
+      expect(statusQueries).toBe(2);
     } finally {
       await rm(directory, { recursive: true, force: true });
     }

@@ -5,6 +5,7 @@ import { executeCommand } from "./commands/index.ts";
 import { renderCliError } from "./diagnostics/render.ts";
 import { runSingleLineRepl } from "./repl/session.ts";
 import type { SpawnCoreProcess } from "./protocol/client.ts";
+import type { GitProbeOptions } from "./ui/git.ts";
 import cliPackage from "../package.json";
 
 /** CLI 入口依赖的可注入 IO。 */
@@ -29,6 +30,8 @@ export interface CliIo {
   executablePath?: string;
   /** 外部注入的取消信号；未提供时由 CLI 监听 SIGINT。 */
   signal?: AbortSignal;
+  /** 测试用 Git 状态进程注入点。 */
+  gitRunStatus?: GitProbeOptions["runStatus"];
 }
 
 /** CLI 可写输出流的最小能力。 */
@@ -64,7 +67,7 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
         cwd: context.cwd, env, isTTY: context.isTTY, color: command.options.color,
         debug: command.options.debug, version: cliPackage.version,
         corePath: context.corePath, spawnProcess: context.spawnProcess,
-        executablePath: context.executablePath, signal,
+        executablePath: context.executablePath, signal, gitRunStatus: io.gitRunStatus,
       });
     }
     const result = await executeCommand(command, { ...context, signal });

@@ -1,9 +1,6 @@
 /** 提示符专用 Git 状态探测；失败只影响摘要，不影响输入循环。 */
 
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
-const execFileAsync = promisify(execFile);
+import { spawn } from "node:child_process";
 
 /** 当前分支的上游差异；没有上游时计数均为 null。 */
 export interface GitSummary {
@@ -70,12 +67,46 @@ export function parseGitStatus(output: string): GitSummary | null {
   return { branch: head, ahead: counts === null ? null : Number(counts[1]), behind: counts === null ? null : Number(counts[2]) };
 }
 
-/** 通过受限缓冲区读取 Git 状态，不启动 Shell，也不要求包管理器安装 Git。 */
+/** 异步启动单条 Git 命令，限制双向输出并在取消时立即结束子进程。 */
 async function readGitStatus(cwd: string, env: NodeJS.ProcessEnv, signal: AbortSignal): Promise<string> {
-  const { stdout } = await execFileAsync("git", ["status", "--porcelain=v2", "--branch"], {
-    cwd, env, signal, windowsHide: true, maxBuffer: 64 * 1024,
+  return new Promise((resolve, reject) => {
+    const child = spawn("git", ["status", "--porcelain=v2", "--branch"], {
+      cwd, env, shell: false, windowsHide: true, stdio: ["ignore", "pipe", "pipe"],
+    });
+    const stdout: Buffer[] = [];
+    const stderr: Buffer[] = [];
+    let stdoutBytes = 0;
+    let stderrBytes = 0;
+    let settled = false;
+    const finish = (error: Error | null, output = "") => {
+      if (settled) return;
+      settled = true;
+      signal.removeEventListener("abort", onAbort);
+      if (error === null) resolve(output);
+      else reject(error);
+    };
+    const onAbort = () => {
+      child.kill();
+      finish(Object.assign(new Error("Git 探测已取消"), { code: "ABORT_ERR" }));
+    };
+    const collect = (chunk: Buffer, chunks: Buffer[], bytes: number): number => {
+      const total = bytes + chunk.byteLength;
+      if (total > 64 * 1024) {
+        child.kill();
+        finish(new Error("Git 状态输出超过上限"));
+      } else chunks.push(chunk);
+      return total;
+    };
+    child.stdout.on("data", (chunk: Buffer) => { stdoutBytes = collect(chunk, stdout, stdoutBytes); });
+    child.stderr.on("data", (chunk: Buffer) => { stderrBytes = collect(chunk, stderr, stderrBytes); });
+    child.on("error", (error) => finish(error));
+    child.on("close", (code) => {
+      if (code === 0) finish(null, Buffer.concat(stdout).toString("utf8"));
+      else finish(Object.assign(new Error("Git 状态查询失败"), { stderr: Buffer.concat(stderr).toString("utf8") }));
+    });
+    signal.addEventListener("abort", onAbort, { once: true });
+    if (signal.aborted) onAbort();
   });
-  return stdout;
 }
 
 /** 合并稳定编号与降级原因。 */
