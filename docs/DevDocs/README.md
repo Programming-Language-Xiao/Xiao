@@ -124,8 +124,9 @@
 | 11A-E4 | 环境交付（权威描述见 [11A](11a-environments-and-packages.md) E4 章节） | 完整 Shell 钩子矩阵、取消激活命令、profile 安装与工具链安装 | 未开始（**从 E3D 移出**：它是 E0/E2B 遗留的环境激活工作，与包操作无关） |
 | 11A-E3D1 | [首个远程闭环](11ae3d1-remote-closure.md) | 求解器接到 `sync` 真实流程、远程正文下载与锁文件摘要校验、凭据边界（0600）、来源审计与信任失败诊断 | 待开工（交接文档已就绪；**前置：`sync.rs` 尚未调用求解器**，远程下载零实现） |
 | 11A-E4 | [环境交付](11ae4-shell-delivery.md) | bash/zsh/fish/PowerShell 四 Shell 矩阵、`fish_prompt` 保存恢复、`--install` 标记块安装（备份/幂等/可移除）、生产级取消激活 | 待开工（交接文档已就绪；**前置：zsh/fish 目前落进 cmd 降级分支**） |
-| 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | 进行中（D1、E0、E1、E2A、E2B、E3A 已实现；**E3B 的前置并发冻结件 11A-CONC 已就绪**；E3B 已实现；E3C 已实现；**E3D 与 E4 已拆开**，E3D 交接文档已就绪） |
-| 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 未开始 |
+| 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | **已完成**（D1、E0、E1、E2A、E2B、E3A、E3B、E3C、E3D、E3D1、E4 全部交付；条件候选兼容性上下文登记为 `E3D1-COMPAT-001`） |
+| 11B-I0 | [终端骨架与单行会话](11bi0-terminal-skeleton.md) | 无参数启动交互会话、版权/版本/路径/环境段/`[X>` 提示符、Git 摘要（含无上游与超时降级） | 待开工（交接文档已就绪；**前置：`00-decisions:636` 待清**） |
+| 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 进行中（已预拆 I0–I5；I0 交接文档已就绪） |
 | 11C | [国际化、系统提示与语言包插件](11c-localization.md) | `[language]` 配置、中英内置目录、统一错误文案和资源型语言包插件 | 未开始 |
 | 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
 | 14 | [字节码优化与 `.xiaoc` 产物](14-bytecode-optimization.md) | 单模块分段字节码、默认缓存、加载验证和调试映射 | 未开始 |
