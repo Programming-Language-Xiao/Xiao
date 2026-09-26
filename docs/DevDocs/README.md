@@ -124,7 +124,8 @@
 | 11A-E3D1 | [首个远程闭环](11ae3d1-remote-closure.md) | 求解器接到 `sync` 真实流程、远程正文下载与锁文件摘要校验、凭据边界（0600）、来源审计与信任失败诊断 | 已完成 |
 | 11A-E4 | [环境交付](11ae4-shell-delivery.md) | bash/zsh/fish/PowerShell 四 Shell 矩阵、`fish_prompt` 保存恢复、`--install` 标记块安装（备份/幂等/可移除）、生产级取消激活；工具链安装仅评估 | 已完成；实际工具链安装未实现 |
 | 11A | [虚拟环境与包管理](11a-environments-and-packages.md) | 项目隔离、多源包仓库、联邦源索引、共享缓存、锁定和管理命令 | **已完成**（D1、E0、E1、E2A、E2B、E3A、E3B、E3C、E3D、E3D1、E4 全部交付；条件候选兼容性上下文登记为 `E3D1-COMPAT-001`） |
-| 11B-I0 | [终端骨架与单行会话](11bi0-terminal-skeleton.md) | 无参数启动交互会话、版权/版本/路径/环境段/`[X>` 提示符、Git 摘要（含无上游与超时降级） | 已实现并通过定向测试；多行与包加载仍归 I1/I4 |
+| 11B-I0 | [终端骨架与单行会话](11bi0-terminal-skeleton.md) | 无参数启动交互会话、版权/版本/路径/环境段/`[X>` 提示符、Git 摘要（含无上游与超时降级） | **未通过验收**（首次探测阻塞首个提示符，见[修复批次](11bi0-fix-git-probe-blocking.md)）；多行与包加载仍归 I1/I4 |
+| 11B-I0 修复 | [Git 探测阻塞首个提示符](11bi0-fix-git-probe-blocking.md) | 把 `execFile` 换成 `spawn`（Bun 上首次调用约 5 秒）、冷进程超时测试、消除测试互拖、I0 文档更正 | 待开工（交接文档已就绪） |
 | 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 进行中（已预拆 I0–I5；I0 交接文档已就绪） |
 | 11C | [国际化、系统提示与语言包插件](11c-localization.md) | `[language]` 配置、中英内置目录、统一错误文案和资源型语言包插件 | 未开始 |
 | 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
