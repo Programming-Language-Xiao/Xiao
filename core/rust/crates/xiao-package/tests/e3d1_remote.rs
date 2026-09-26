@@ -254,6 +254,61 @@ fn locked_digest_overrides_index_and_never_becomes_package_missing() {
 }
 
 #[test]
+fn remote_archive_identity_must_match_the_index() {
+    for config in [
+        Some("[project]\nname = \"impostor\"\nversion = \"1.0.0\"\n"),
+        Some("[project]\nname = \"demo\"\nversion = \"2.0.0\"\n"),
+        Some("[project]\nname = 123\nversion = \"1.0.0\"\n"),
+        None,
+    ] {
+        let workspace = Workspace::new();
+        workspace.config("1.*");
+        workspace.publish("1.0.0", "snapshot-one");
+        let mut archive = tar::Builder::new(Vec::new());
+        let mut header = tar::Header::new_ustar();
+        let readme = b"safe archive";
+        header.set_size(readme.len() as u64);
+        header.set_mode(0o644);
+        header.set_cksum();
+        archive
+            .append_data(&mut header, "README.md", Cursor::new(readme))
+            .unwrap();
+        if let Some(config) = config {
+            let mut header = tar::Header::new_ustar();
+            header.set_size(config.len() as u64);
+            header.set_mode(0o644);
+            header.set_cksum();
+            archive
+                .append_data(&mut header, "config.xiao", Cursor::new(config))
+                .unwrap();
+        }
+        let body = archive.into_inner().unwrap();
+        workspace.write("registry/artifacts/demo-1.0.0.tar", &body);
+        let shard_path = "registry/index/demo.json";
+        let mut shard: PackageShard =
+            serde_json::from_slice(&fs::read(workspace.path(shard_path)).unwrap()).unwrap();
+        shard.packages[0].source_artifact.length = body.len() as u64;
+        shard.packages[0].source_artifact.digest = format!("{:x}", Sha256::digest(&body));
+        let shard_text = serde_json::to_string(&shard).unwrap();
+        workspace.write(shard_path, &shard_text);
+        let mut manifest: SnapshotManifest =
+            serde_json::from_slice(&fs::read(workspace.path("registry/snapshot.json")).unwrap())
+                .unwrap();
+        manifest
+            .shards
+            .insert("demo".into(), jcs_digest(&shard_text).unwrap());
+        workspace.write(
+            "registry/snapshot.json",
+            serde_json::to_vec(&manifest).unwrap(),
+        );
+        let error = workspace.run(sync()).unwrap_err();
+        assert_eq!(error.code, TRUST_ARTIFACT_CODE, "{error:?}");
+        assert!(!lockfile_path(workspace.path("project")).exists());
+        assert!(!workspace.path("project/.venv").exists());
+    }
+}
+
+#[test]
 fn explicit_update_changes_version_but_regular_sync_does_not() {
     let workspace = Workspace::new();
     workspace.config("1.*");
