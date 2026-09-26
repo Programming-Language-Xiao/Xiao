@@ -13,6 +13,7 @@ export interface PromptOptions {
   color?: ColorOptions;
 }
 
+/** 与 11B 颜色表逐项对应的提示符片段。 */
 type PromptColor = "environment" | "marker" | "main" | "master" | "dev" | "other" | "counts";
 
 const COLORS: Record<PromptColor, { rgb: string; ansi256: number; ansi16: number }> = {

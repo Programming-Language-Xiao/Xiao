@@ -3,10 +3,14 @@
 import { parseArguments, CliArgumentError } from "./commands/parser.ts";
 import { executeCommand } from "./commands/index.ts";
 import { renderCliError } from "./diagnostics/render.ts";
+import { runSingleLineRepl } from "./repl/session.ts";
 import type { SpawnCoreProcess } from "./protocol/client.ts";
+import cliPackage from "../package.json";
 
 /** CLI 入口依赖的可注入 IO。 */
 export interface CliIo {
+  /** 标准输入；REPL 可用可控流模拟 Enter 和 EOF。 */
+  stdin?: NodeJS.ReadableStream;
   /** 标准输出。 */
   stdout?: CliOutput;
   /** 标准错误。 */
@@ -53,6 +57,16 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
   if (controller) process.once("SIGINT", onInterrupt);
   try {
     const command = parseArguments(argv);
+    if (command.kind === "repl" && !command.multiline) {
+      if (command.options.json) throw new CliArgumentError("交互会话不支持 --json");
+      return await runSingleLineRepl({
+        input: io.stdin ?? process.stdin, output: stdout, error: stderr, write: writeSafely,
+        cwd: context.cwd, env, isTTY: context.isTTY, color: command.options.color,
+        debug: command.options.debug, version: cliPackage.version,
+        corePath: context.corePath, spawnProcess: context.spawnProcess,
+        executablePath: context.executablePath, signal,
+      });
+    }
     const result = await executeCommand(command, { ...context, signal });
     await writeSafely(stdout, result.stdout);
     await writeSafely(stderr, result.stderr);

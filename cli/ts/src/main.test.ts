@@ -1,11 +1,12 @@
 /** CLI 进程入口的 IO 注入和稳定退出码回归。 */
 
 import { describe, expect, test } from "bun:test";
+import { execFileSync, spawnSync } from "node:child_process";
 import { EventEmitter } from "node:events";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { PassThrough } from "node:stream";
+import { PassThrough, Readable } from "node:stream";
 
 import { runCli, writeSafely } from "./main.ts";
 import { decodePayload, encodeFrame } from "./protocol/codec.ts";
@@ -20,8 +21,8 @@ class FakeCore extends EventEmitter {
   killed = false;
   private buffer = new Uint8Array(0);
 
-  /** 监听 stdin 并按帧处理 CLI 请求。 */
-  constructor() {
+  /** 每次运行请求跨进程汇总到同一测试向量。 */
+  constructor(private readonly runRequests: Record<string, unknown>[] = [], private readonly onRun?: () => void) {
     super();
     this.stdin.on("data", (chunk: Buffer) => this.consume(chunk));
   }
@@ -78,6 +79,18 @@ class FakeCore extends EventEmitter {
         type: "test_result", request_id: request.request_id, operation: "test", exit_code: 1,
         exit_name: "source_rejected", total: tests.length, passed: 0, failed: tests.length, tests,
       })));
+    } else if (request.type === "run") {
+      this.runRequests.push(request);
+      this.onRun?.();
+      const source = request.source as { text: string };
+      const rejected = source.text === "bad";
+      this.stdout.write(Buffer.from(encodeFrame({
+        type: "result", request_id: request.request_id, operation: "run",
+        exit_code: rejected ? 1 : 0, exit_name: rejected ? "source_rejected" : "success",
+        diagnostics: rejected ? [{ code: "X11-REPL-TEST-001", message: "源码错误", severity: "error" }] : [],
+        report: null, events: [], metrics: null,
+        value: rejected ? null : { kind: "int", text: source.text }, artifact: null,
+      })));
     } else if (request.type === "shutdown") {
       this.stdout.write(Buffer.from(encodeFrame({ type: "shutdown", request_id: request.request_id })));
       this.exitCode = 0;
@@ -89,6 +102,110 @@ class FakeCore extends EventEmitter {
 }
 
 describe("CLI 入口", () => {
+  test("无参数进入单行会话：执行、显示错误后继续，EOF 正常退出", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-cli-repl-"));
+    const stdout = new PassThrough();
+    const stderr = new PassThrough();
+    let output = "";
+    let errors = "";
+    stdout.on("data", (chunk: Buffer) => { output += chunk.toString(); });
+    stderr.on("data", (chunk: Buffer) => { errors += chunk.toString(); });
+    const requests: Record<string, unknown>[] = [];
+    try {
+      const code = await runCli([], {
+        stdin: Readable.from(["1\nbad\n2\n"]), stdout, stderr, cwd: directory,
+        corePath: process.execPath, spawnProcess: () => new FakeCore(requests) as never,
+        env: { ...process.env, XIAO_GLOBAL_CONFIG: join(directory, "global.xiao"), XIAO_ACTIVE_ENV: join(directory, ".venv"), NO_COLOR: "1" },
+        isTTY: false,
+      });
+      expect(code).toBe(0);
+      expect(output).toContain("Xiao (c) XiaoCZX\nV0.1.0\n");
+      expect(output).toContain(`$venv$ ${directory} [X> `);
+      expect(output).toContain("1\n");
+      expect(output).toContain("2\n");
+      expect(errors).toContain("X11-REPL-TEST-001: 源码错误");
+      expect(requests.map((request) => (request.source as { text: string }).text)).toEqual(["1", "bad", "2"]);
+      expect(requests.every((request) => (request.optimization as { level: number }).level === 0)).toBe(true);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("多行入口保持 I1 占位；机器 JSON 模式不启动交互会话", async () => {
+    const stdout = new PassThrough();
+    const stderr = new PassThrough();
+    expect(await runCli(["--inLF"], { stdout, stderr })).toBe(64);
+    expect(stderr.read()?.toString()).toContain("X11-CLI-REPL-001");
+    const json = new PassThrough();
+    expect(await runCli(["--json"], { stdout: json, stderr: new PassThrough() })).toBe(64);
+    expect(JSON.parse(json.read()?.toString() ?? "{}")).toMatchObject({ type: "error", code: "X11-CLI-ARG-001" });
+  });
+
+  test("配置启用但未装 Git 时不阻断提示符，可从调试输出查询原因", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-cli-repl-no-git-"));
+    const stdout = new PassThrough();
+    const stderr = new PassThrough();
+    let output = "";
+    let errors = "";
+    stdout.on("data", (chunk: Buffer) => { output += chunk.toString(); });
+    stderr.on("data", (chunk: Buffer) => { errors += chunk.toString(); });
+    try {
+      await writeFile(join(directory, "config.xiao"), "[CLI]\ngit = { summary = true }\n");
+      const code = await runCli(["-debug"], {
+        stdin: Readable.from([]), stdout, stderr, cwd: directory,
+        env: { ...process.env, PATH: "", NO_COLOR: "1", XIAO_GLOBAL_CONFIG: join(directory, "global.xiao") }, isTTY: false,
+      });
+      expect(code).toBe(0);
+      expect(output).toContain(`${directory} [X>`);
+      expect(errors).toContain("X11-REPL-GIT-001: Git 摘要已降级（unavailable）");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  const gitCommand = process.platform === "win32" ? "cmd" : "git";
+  const gitArgs = (args: string[]) => process.platform === "win32" ? ["/c", "git", ...args] : args;
+  const gitAvailable = spawnSync(gitCommand, gitArgs(["--version"]), { windowsHide: true }).status === 0;
+  test.skipIf(!gitAvailable)("全局配置启用 Git 摘要，分支计数随每次提示符刷新；项目配置可覆盖", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-cli-repl-git-"));
+    const bare = join(directory, "remote.git");
+    const project = join(directory, "project");
+    const globalConfig = join(directory, "global.xiao");
+    const git = (cwd: string, args: string[]) => execFileSync(gitCommand, gitArgs(args), { cwd, windowsHide: true, stdio: "ignore" });
+    try {
+      await mkdir(project);
+      await writeFile(globalConfig, "[CLI]\ngit = { summary = true }\n");
+      git(project, ["init", "-b", "main"]);
+      git(project, ["-c", "user.name=Test", "-c", "user.email=test@example.org", "commit", "--allow-empty", "-m", "first"]);
+      git(directory, ["init", "--bare", bare]);
+      git(project, ["remote", "add", "origin", bare]);
+      git(project, ["push", "-u", "origin", "main"]);
+      const output = new PassThrough();
+      let printed = "";
+      output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+      let calls = 0;
+      const options = {
+        stdin: Readable.from(["1\n"]), stdout: output, stderr: new PassThrough(), cwd: project,
+        env: { ...process.env, XIAO_GLOBAL_CONFIG: globalConfig, NO_COLOR: "1" },
+        corePath: process.execPath, isTTY: false,
+        spawnProcess: () => new FakeCore([], () => {
+          if (calls++ === 0) git(project, ["-c", "user.name=Test", "-c", "user.email=test@example.org", "commit", "--allow-empty", "-m", "second"]);
+        }) as never,
+      };
+      expect(await runCli([], options)).toBe(0);
+      expect(printed).toContain("main-0↑-0↓ [X>");
+      expect(printed).toContain("main-1↑-0↓ [X>");
+      await writeFile(join(project, "config.xiao"), "[CLI]\ngit = { summary = false }\n");
+      const disabled = new PassThrough();
+      let disabledOutput = "";
+      disabled.on("data", (chunk: Buffer) => { disabledOutput += chunk.toString(); });
+      expect(await runCli([], { ...options, stdin: Readable.from([]), stdout: disabled })).toBe(0);
+      expect(disabledOutput).not.toContain("main-");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   test("机器模式使用项目测试协议返回的失败进程码", async () => {
     const directory = await mkdtemp(join(tmpdir(), "xiao-cli-main-test-"));
     await mkdir(join(directory, "tests"));

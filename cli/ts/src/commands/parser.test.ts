@@ -37,8 +37,11 @@ describe("xiao 命令解析", () => {
     expect(debugRun.kind === "run" && debugRun.options.debug).toBe(true);
   });
 
-  test("未实现入口保持稳定命令身份", () => {
+  test("单行 REPL 路由与仍未实现的多行入口互不混淆", () => {
     expect(parseArguments([]).kind).toBe("repl");
+    expect(parseArguments(["--inLF"])).toMatchObject({ kind: "repl", multiline: true });
+    expect(parseArguments(["--inLF", "file.xiao"])).toMatchObject({ kind: "repl", multiline: true });
+    expect(() => parseArguments(["--inLF", "a.xiao", "b.xiao"])).toThrow(CliArgumentError);
     expect(parseArguments(["test"]).kind).toBe("test");
     expect(parseArguments(["build", "main.xiao"]).kind).toBe("build");
     expect(parseArguments(["-debug"]).kind).toBe("repl");

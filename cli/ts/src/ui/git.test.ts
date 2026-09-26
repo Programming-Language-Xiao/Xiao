@@ -26,11 +26,13 @@ test("无上游分支不捏造 +0/-0 计数", () => {
   expect(parseGitStatus("# branch.oid 123\n# branch.head (detached)\n")).toBeNull();
 });
 
-const gitAvailable = spawnSync("git", ["--version"], { windowsHide: true }).status === 0;
+const gitCommand = process.platform === "win32" ? "cmd" : "git";
+const gitArgs = (args: string[]) => process.platform === "win32" ? ["/c", "git", ...args] : args;
+const gitAvailable = spawnSync(gitCommand, gitArgs(["--version"]), { windowsHide: true }).status === 0;
 test.skipIf(!gitAvailable)("真实无上游仓库仍显示分支、不显示领先落后", async () => {
   const directory = await mkdtemp(join(tmpdir(), "xiao-git-untracked-"));
   try {
-    execFileSync("git", ["init", "-b", "main"], { cwd: directory, windowsHide: true, stdio: "ignore" });
+    execFileSync(gitCommand, gitArgs(["init", "-b", "main"]), { cwd: directory, windowsHide: true, stdio: "ignore" });
     expect((await probeGitSummary(directory, { timeoutMs: 2000 })).summary).toEqual({ branch: "main", ahead: null, behind: null });
   } finally {
     await rm(directory, { recursive: true, force: true });

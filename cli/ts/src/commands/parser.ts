@@ -30,7 +30,7 @@ export type ParsedCommand =
   | { kind: "remove"; packageName: string; dev: boolean; options: GlobalCliOptions }
   | { kind: "shell-init"; shell: ShellName; action: "print" | "install" | "uninstall"; profile?: string; options: GlobalCliOptions }
   | { kind: "deactivate"; options: GlobalCliOptions }
-  | { kind: "repl"; options: GlobalCliOptions };
+  | { kind: "repl"; multiline?: boolean; options: GlobalCliOptions };
 
 /** 参数解析异常。 */
 export class CliArgumentError extends Error {
@@ -63,8 +63,9 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     if (rest.length > 0) throw new CliArgumentError("--version 不接受额外参数");
     return { kind: "version", options };
   }
-  if (command === "--inLF" || command === "-debug") {
-    return { kind: "repl", options };
+  if (command === "--inLF") {
+    if (rest.length > 1) throw new CliArgumentError("--inLF 最多接受一个源码文件");
+    return { kind: "repl", multiline: true, options };
   }
   if (command === "run") return parseRun(rest, options);
   if (command === "config") return parseConfig(rest, options);
@@ -120,7 +121,7 @@ export function helpText(): string {
     "  xiao deactivate                          取消当前 Shell 环境激活",
     "  xiao --help | --version",
     "",
-    "当前阶段不启动 REPL；无参数或 --inLF 会给出稳定的未实现诊断。",
+    "无参数 xiao 启动单行交互会话；--inLF 多行模式仍在开发中。",
   ].join("\n") + "\n";
 }
 

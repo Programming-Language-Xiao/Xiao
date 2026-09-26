@@ -2,6 +2,8 @@
 
 本页是 CLI 命令的分层入口。每个命令页面都要说明输入、输出、退出码、失败恢复和 Windows/Linux/macOS 差异。
 
+无参数启动的 I0 单行会话、环境前缀与 Git 摘要见[交互式解释器](../repl/README.md)。
+
 ## 页面规划
 
 `run`、`build`、`test`、`config`、`venv`、`sync`、`install`、`.xiaoc` 和 `.xar` 分别维护页面；
