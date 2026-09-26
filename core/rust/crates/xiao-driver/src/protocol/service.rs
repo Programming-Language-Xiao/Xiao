@@ -23,6 +23,7 @@ use super::run::{protocol_error_response, run_request_response};
 use super::test::test_request_response;
 use super::validate::{validate_source, validate_target, validate_versions};
 use crate::run::{CancellationToken, ExitCode};
+use xiao_codegen_llvm::Toolchain;
 use xiao_config::DependencyKind;
 use xiao_package::{
     CacheLayout, DependencyEdit, EnvironmentLayout, PackageOperation, apply_dependency_edit,
@@ -419,9 +420,16 @@ fn package_request_response(
         Ok(target) => target,
         Err(error) => return protocol_error_response(Some(request_id), &error),
     };
-    let toolchain = match build::build_toolchain(&toolchain, &target) {
-        Ok(toolchain) => toolchain,
-        Err(error) => return protocol_error_response(Some(request_id), &error),
+    let toolchain = if matches!(
+        action,
+        Some(PackageOperation::Sync { .. } | PackageOperation::Install)
+    ) {
+        match build::build_toolchain(&toolchain, &target) {
+            Ok(toolchain) => toolchain,
+            Err(error) => return protocol_error_response(Some(request_id), &error),
+        }
+    } else {
+        Toolchain::new("")
     };
     let cache = match CacheLayout::from_environment() {
         Ok(cache) => cache,

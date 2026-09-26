@@ -9,7 +9,7 @@ import { requestActivation } from "../environments/activation.ts";
 import { discoverToolchainWithMetadata } from "../platform/toolchain.ts";
 import { hostTarget } from "../platform/core.ts";
 import { ProtocolClient } from "../protocol/client.ts";
-import { CORE_VERSION, PROTOCOL_VERSION, type PackageRequest } from "../protocol/messages.ts";
+import { CORE_VERSION, PROTOCOL_VERSION, type PackageRequest, type ToolchainSpec } from "../protocol/messages.ts";
 import { renderProtocolResponse, type RenderedDiagnostic, type DiagnosticRenderOptions } from "../diagnostics/render.ts";
 import type { CommandContext } from "../commands/index.ts";
 
@@ -23,6 +23,13 @@ async function installProjectRoot(cwd: string, project?: string): Promise<string
   throw new CliArgumentError("install/i 只接受项目目录或小写 config.xiao 路径");
 }
 
+/** 纯锁定或依赖编辑不调用原生编译器；保留协议必填字段的空形状。 */
+const noBuildToolchain: ToolchainSpec = {
+  clang: "", llvm_as: null, llc: null, runtime_library: null,
+  native_static_libraries: [],
+  versions: { clang: "", llvm_as: null, llc: null },
+};
+
 /** 执行包操作；别名 i 在解析后共享 install 分支。 */
 export async function executePackageCommand(
   command: Extract<ParsedCommand, { kind: "sync" | "install" | "lock" | "update" | "add" | "remove" }>,
@@ -34,9 +41,11 @@ export async function executePackageCommand(
     ? await installProjectRoot(cwd, command.project)
     : await findEnvironmentProjectRoot(cwd);
   const configText = await readFile(join(projectRoot, "config.xiao"), "utf8");
-  const toolchain = context.environmentToolchain ?? (await discoverToolchainWithMetadata({
-    cwd: projectRoot, env: context.env, executablePath: context.executablePath, probeLink: false,
-  })).toolchain;
+  const toolchain = command.kind === "sync" || command.kind === "install"
+    ? context.environmentToolchain ?? (await discoverToolchainWithMetadata({
+      cwd: projectRoot, env: context.env, executablePath: context.executablePath, probeLink: false,
+    })).toolchain
+    : noBuildToolchain;
   const request: PackageRequest = {
     type: "package", request_id: `package-${crypto.randomUUID()}`,
     protocol_version: PROTOCOL_VERSION, core_version: CORE_VERSION,

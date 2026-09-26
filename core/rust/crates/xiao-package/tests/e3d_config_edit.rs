@@ -63,6 +63,38 @@ fn new_table_and_conflicting_edits() {
 }
 
 #[test]
+fn new_table_respects_crlf_even_without_final_newline() {
+    let original = "[project]\r\nname = \"app\"\r\nversion = \"1\"";
+    let inserted = edit(original, add("lib", "../lib", DependencyKind::Runtime)).unwrap();
+    assert!(inserted.ends_with("\r\n\r\n[dependencies]\r\n\"lib\" = { path = \"../lib\" }\r\n"));
+    assert!(!inserted.replace("\r\n", "").contains('\n'));
+}
+
+#[test]
+fn mismatched_unicode_span_returns_error_instead_of_panicking() {
+    let original =
+        "[project]\nname = \"app\"\nversion = \"1\"\n[dependencies]\nlib = { path = \"../lib\" }\n";
+    let document = parse_config_project(&SourceFile::from_text(original)).unwrap();
+    let start = document
+        .table("dependencies")
+        .unwrap()
+        .get("lib")
+        .unwrap()
+        .span
+        .start();
+    let mismatched = format!("{}é{}", &original[..start - 1], &original[start + 1..]);
+    assert_eq!(mismatched.len(), original.len());
+    assert!(
+        edit_dependency(
+            &document,
+            &mismatched,
+            &remove("lib", DependencyKind::Runtime)
+        )
+        .is_err()
+    );
+}
+
+#[test]
 fn invalid_constraint_and_path_are_not_committed() {
     let original = "[project]\nname = \"app\"\nversion = \"1\"\n";
     let action = DependencyEdit::Add {

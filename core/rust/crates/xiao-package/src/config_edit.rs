@@ -120,7 +120,11 @@ pub fn edit_dependency(
                     } else if original.ends_with('\n') {
                         newline
                     } else {
-                        "\n\n"
+                        if newline == "\r\n" {
+                            "\r\n\r\n"
+                        } else {
+                            "\n\n"
+                        }
                     };
                 format!("{original}{separator}[{table_name}]{newline}{entry}")
             }
@@ -131,8 +135,14 @@ pub fn edit_dependency(
                 .ok_or_else(|| invalid("依赖不存在"))?;
             let start = entry.span.start();
             let end = entry.span.end();
-            let line_start = original[..start].rfind('\n').map_or(0, |offset| offset + 1);
-            let line_end = original[end..]
+            let before = original
+                .get(..start)
+                .ok_or_else(|| invalid("配置源码区间不合法"))?;
+            let after_entry = original
+                .get(end..)
+                .ok_or_else(|| invalid("配置源码区间不合法"))?;
+            let line_start = before.rfind('\n').map_or(0, |offset| offset + 1);
+            let line_end = after_entry
                 .find('\n')
                 .map_or(original.len(), |offset| end + offset);
             if !original[line_start..start].trim().is_empty() {

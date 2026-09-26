@@ -197,11 +197,11 @@ describe("命令取消接线", () => {
         }],
         [["remove", "lib"], { operation: "remove", package_name: "lib", package_path: null, development: false }],
       ] as const) {
-        const context = environmentContext();
-        const result = await executeCommand(parseArguments(args), { ...context, cwd: nested });
+        const { environmentToolchain: _injectedToolchain, ...context } = environmentContext();
+        const result = await executeCommand(parseArguments(args), { ...context, cwd: nested, env: { PATH: "" } });
         expect(result.exitCode).toBe(0);
         expect(context.fake.requests.find((request) => request.type === "package")).toMatchObject({
-          project_root: project, config_text: config, ...expected,
+          project_root: project, config_text: config, toolchain: { clang: "" }, ...expected,
         });
       }
     } finally {

@@ -250,3 +250,111 @@ fn explicit_wrong_source_is_never_silently_treated_as_local() {
     );
     assert!(!workspace.path("project/xiao.lock.json").exists());
 }
+
+#[test]
+fn lock_rejects_stale_document_without_changing_existing_lock() {
+    let workspace = Workspace::new();
+    let before = "[project]\nname = \"app\"\nversion = \"1\"\n";
+    workspace.write("project/config.xiao", before);
+    workspace.run(PackageOperation::Lock).unwrap();
+    let document = xiao_config::parse_config_text(before).unwrap();
+    let locked = fs::read(workspace.path("project/xiao.lock.json")).unwrap();
+    workspace.write(
+        "project/config.xiao",
+        "[project]\nname = \"app\"\nversion = \"2\"\n",
+    );
+    let error = apply_packages(
+        &workspace.path("project"),
+        None,
+        &document,
+        &Toolchain::new("clang"),
+        &TargetDescription::host(),
+        PackageOperation::Update,
+        workspace.layout(),
+    )
+    .unwrap_err();
+    assert_eq!(error.code, "X05-SYNC-001");
+    assert_eq!(
+        fs::read(workspace.path("project/xiao.lock.json")).unwrap(),
+        locked
+    );
+    assert!(
+        !workspace
+            .path("project/.xiao-package-operation.lock")
+            .exists()
+    );
+}
+
+#[test]
+fn invalid_project_does_not_create_root_directory() {
+    let workspace = Workspace::new();
+    let root = workspace.path("missing");
+    let config = "[project]\nname = \"app\"\nversion = \"1\"\n";
+    let document = parse_config_project(&SourceFile::from_text(config)).unwrap();
+    let result = apply_packages(
+        &root,
+        None,
+        &document,
+        &Toolchain::new("clang"),
+        &TargetDescription::host(),
+        PackageOperation::Lock,
+        workspace.layout(),
+    );
+    assert_eq!(result.unwrap_err().code, "X05-SYNC-001");
+    assert!(!root.exists());
+    let result = apply_dependency_edit(
+        &root,
+        &document,
+        config,
+        &DependencyEdit::Remove {
+            name: "lib".to_owned(),
+            kind: DependencyKind::Runtime,
+        },
+        workspace.layout(),
+    );
+    assert_eq!(result.unwrap_err().code, "X05-SYNC-001");
+    assert!(!root.exists());
+}
+
+#[test]
+fn lock_does_not_depend_on_unrelated_active_environment() {
+    let workspace = Workspace::new();
+    workspace.write(
+        "project/config.xiao",
+        "[project]\nname = \"app\"\nversion = \"1\"\n",
+    );
+    let config = fs::read_to_string(workspace.path("project/config.xiao")).unwrap();
+    let document = parse_config_project(&SourceFile::from_text(&config)).unwrap();
+    let invalid_active = Path::new("relative-env");
+    let result = apply_packages(
+        &workspace.path("project"),
+        Some(invalid_active),
+        &document,
+        &Toolchain::new("clang"),
+        &TargetDescription::host(),
+        PackageOperation::Lock,
+        workspace.layout(),
+    )
+    .unwrap();
+    assert_eq!(result.lock_status.as_deref(), Some("created"));
+    assert!(!workspace.path("project/.venv").exists());
+    let sync = PackageOperation::Sync {
+        keep_extra: false,
+        locked: true,
+        frozen: false,
+    };
+    assert_eq!(
+        apply_packages(
+            &workspace.path("project"),
+            Some(invalid_active),
+            &document,
+            &Toolchain::new("clang"),
+            &TargetDescription::host(),
+            sync,
+            workspace.layout(),
+        )
+        .unwrap_err()
+        .code,
+        "X05-SYNC-001",
+    );
+}

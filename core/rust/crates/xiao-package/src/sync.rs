@@ -4,6 +4,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use xiao_codegen_llvm::{TargetDescription, Toolchain};
 use xiao_config::{ConfigDocument, parse_config_project};
 use xiao_source::SourceFile;
@@ -110,8 +111,7 @@ pub fn apply_dependency_edit(
         return Err(failure(SYNC_INVALID_INPUT_CODE, "项目根目录必须是绝对路径"));
     }
     let config_path = project_root.join("config.xiao");
-    let _guard = EntryLock::acquire(&project_root.join(".xiao-package-operation.lock"))
-        .map_err(|error| failure(error.code, "无法获取项目包操作锁"))?;
+    let _guard = acquire_operation_lock(project_root, &cache_layout)?;
     let edited = edit_dependency(document, original, edit)?;
     let next_document = parse_config_project(&SourceFile::from_text(&edited))
         .map_err(|_| failure(SYNC_INVALID_INPUT_CODE, "拟写回配置不合法"))?;
@@ -154,6 +154,23 @@ pub fn apply_dependency_edit(
         activate: false,
         lock_status: Some(lock_status_name(status).to_owned()),
     })
+}
+
+fn acquire_operation_lock(
+    project_root: &Path,
+    cache_layout: &CacheLayout,
+) -> Result<EntryLock, PackageSyncError> {
+    if !project_root.is_dir() {
+        return Err(failure(SYNC_INVALID_INPUT_CODE, "项目根目录不存在"));
+    }
+    let canonical = fs::canonicalize(project_root)
+        .map_err(|_| failure(SYNC_INVALID_INPUT_CODE, "项目根目录不可用"))?;
+    let digest = Sha256::digest(canonical.to_string_lossy().as_bytes());
+    let lock_path = cache_layout
+        .cache_root()
+        .join("locks/package-operations")
+        .join(format!("{digest:x}.lock"));
+    EntryLock::acquire(&lock_path).map_err(|error| failure(error.code, "无法获取项目包操作锁"))
 }
 
 fn valid_resolution(
@@ -233,7 +250,20 @@ pub fn apply_packages(
     if !project_root.is_absolute() {
         return Err(failure(SYNC_INVALID_INPUT_CODE, "项目根目录必须是绝对路径"));
     }
+    let _guard = acquire_operation_lock(project_root, &cache_layout)?;
+    let config_path = project_root.join("config.xiao");
+    let current = fs::read_to_string(&config_path)
+        .map_err(|_| failure(SYNC_INVALID_INPUT_CODE, "读取 config.xiao 失败"))?;
+    let current_document = parse_config_project(&SourceFile::from_text(&current))
+        .map_err(|_| failure(SYNC_INVALID_INPUT_CODE, "config.xiao 未通过静态校验"))?;
+    if &current_document != document {
+        return Err(failure(
+            SYNC_INVALID_INPUT_CODE,
+            "config.xiao 已被修改，请重新执行包操作",
+        ));
+    }
     let active = active_environment
+        .filter(|_| !matches!(operation, PackageOperation::Lock | PackageOperation::Update))
         .map(|path| {
             if !path.is_absolute()
                 || path
