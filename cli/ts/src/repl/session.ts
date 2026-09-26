@@ -7,6 +7,7 @@ import { renderCliError, renderProtocolResponse } from "../diagnostics/render.ts
 import { ProtocolClient, type CoreClientOptions } from "../protocol/client.ts";
 import { probeGitSummary, type GitProbeOptions } from "../ui/git.ts";
 import { renderReplBanner, renderReplPrompt } from "../ui/prompt.ts";
+import { runMultilineSession, MultilineTerminalError } from "./multiline.ts";
 
 /** 标准流和配置/执行依赖由 CLI 入口传入，便于无终端集成验证。 */
 export interface ReplContext {
@@ -26,12 +27,14 @@ export interface ReplContext {
   executablePath?: string;
   /** Git 状态进程注入点，供会话逻辑测试保持确定性。 */
   gitRunStatus?: GitProbeOptions["runStatus"];
+  /** 交接回单行循环时不重复打印版权行。 */
+  showBanner?: boolean;
 }
 
 /** 启动、提交、执行、显示结果/错误并继续到 EOF；失败的一行不终止会话。 */
 export async function runSingleLineRepl(context: ReplContext): Promise<number> {
   const { input, output, error, write, env } = context;
-  await write(output, renderReplBanner(context.version));
+  if (context.showBanner !== false) await write(output, renderReplBanner(context.version));
   const firstPrompt = await currentPrompt(context);
   const terminal = context.isTTY && Boolean((input as NodeJS.ReadStream).isTTY);
   if (!terminal) await write(output, firstPrompt);
@@ -47,6 +50,7 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
   const onAbort = () => reader.close();
   reader.on("SIGINT", onAbort);
   context.signal?.addEventListener("abort", onAbort, { once: true });
+  let enterMultiline = false;
   try {
     if (terminal) {
       reader.setPrompt(firstPrompt);
@@ -55,6 +59,10 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
     while (!context.signal?.aborted) {
       const next = await lines.next();
       if (next.done) break;
+      if (next.value === "!inLF!") {
+        enterMultiline = true;
+        break;
+      }
       if (next.value.trim().length > 0) {
         try {
           const client = new ProtocolClient({
@@ -92,6 +100,19 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
   } finally {
     context.signal?.removeEventListener("abort", onAbort);
     reader.close();
+  }
+  if (enterMultiline && !context.signal?.aborted) {
+    try {
+      const result = await runMultilineSession(context);
+      if (result.exitCode === 130) return runSingleLineRepl({ ...context, showBanner: false });
+      return result.exitCode;
+    } catch (error) {
+      if (error instanceof MultilineTerminalError) {
+        await write(context.error, `${error.message}\n`);
+        return error.exitCode;
+      }
+      else throw error;
+    }
   }
   return context.signal?.aborted ? 130 : 0;
 }

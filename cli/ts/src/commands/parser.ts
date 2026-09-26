@@ -121,7 +121,7 @@ export function helpText(): string {
     "  xiao deactivate                          取消当前 Shell 环境激活",
     "  xiao --help | --version",
     "",
-    "无参数 xiao 启动单行交互会话；--inLF 多行模式仍在开发中。",
+    "无参数 xiao 启动单行交互会话；--inLF 进入多行编辑（文件参数留给 I2）。",
   ].join("\n") + "\n";
 }
 

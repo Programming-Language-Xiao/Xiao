@@ -19,7 +19,7 @@ export interface EditorState {
 /** 按键产生的缓冲区变化与控制动作。 */
 export interface EditResult {
   state: EditorState;
-  effect: "none" | "eof" | "line-limit" | "redraw" | "run" | "save" | "panel";
+  effect: "none" | "eof" | "interrupt" | "line-limit" | "redraw" | "run" | "save" | "panel";
 }
 
 /** 行号协议允许的最大逻辑行数。 */
@@ -63,7 +63,7 @@ export function applyKey(state: EditorState, key: KeyEvent): EditResult {
     case "kill-end": return killRange(state, state.cursor.column, graphemes(state.lines[state.cursor.line]).length);
     case "kill-start": return killRange(state, 0, state.cursor.column);
     case "yank": return state.killBuffer === "" ? unchanged(state) : insertText(state, state.killBuffer);
-    case "interrupt": return { state: { ...initialEditorState(), killBuffer: state.killBuffer }, effect: "redraw" };
+    case "interrupt": return { state: { ...initialEditorState(), killBuffer: state.killBuffer }, effect: "interrupt" };
     case "redraw": return { state, effect: "redraw" };
     case "shift-enter": return { state, effect: "run" };
     case "save": return { state, effect: "save" };

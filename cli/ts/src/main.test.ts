@@ -129,11 +129,11 @@ describe("CLI 入口", () => {
     }
   });
 
-  test("多行入口保持 I1 占位；机器 JSON 模式不启动交互会话", async () => {
+  test("非 raw mode 多行入口给稳定诊断；机器 JSON 模式不启动交互会话", async () => {
     const stdout = new PassThrough();
     const stderr = new PassThrough();
     expect(await runCli(["--inLF"], { stdout, stderr })).toBe(64);
-    expect(stderr.read()?.toString()).toContain("X11-CLI-REPL-001");
+    expect(stderr.read()?.toString()).toContain("X11-CLI-REPL-002");
     expect(await runCli(["--inLF", "file.xiao"], { stdout: new PassThrough(), stderr: new PassThrough() })).toBe(64);
     const json = new PassThrough();
     expect(await runCli(["--json"], { stdout: json, stderr: new PassThrough() })).toBe(64);

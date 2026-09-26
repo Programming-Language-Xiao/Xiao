@@ -6,14 +6,16 @@ export type KeyEvent =
   | { kind: "kitty-report"; flags: number }
   | { kind: "enter" | "shift-enter" | "backspace" | "delete" | "left" | "right" | "up" | "down"
       | "home" | "end" | "word-left" | "word-right" | "kill-word" | "kill-end" | "kill-start"
-      | "yank" | "redraw" | "interrupt" | "eof" | "escape" | "save" | "panel" };
+      | "yank" | "redraw" | "interrupt" | "eof" | "escape" | "save" | "panel"; kittyOnly?: boolean };
+
+/** Kitty 专属事件的标记，未确认协议时由 raw mode 循环静默丢弃。 */
+export type KittyKeyEvent = Exclude<KeyEvent, { kind: "text" | "paste" | "kitty-report" }> & { kittyOnly: true };
 
 /** 前一块遗留的序列与尚未闭合的括号粘贴。 */
 export interface KeyParserState {
   pending: Uint8Array;
   pasteChunks: readonly Uint8Array[];
   pasting: boolean;
-  kittyKeys: boolean;
   skipNextLF: boolean;
 }
 
@@ -28,13 +30,8 @@ const PASTE_END = Buffer.from("\u001b[201~");
 const NAVIGATION = { A: "up", B: "down", C: "right", D: "left", H: "home", F: "end" } as const;
 
 /** 新建不猜测修饰键的传统终端状态。 */
-export function initialKeyParserState(kittyKeys = false): KeyParserState {
-  return { pending: new Uint8Array(), pasteChunks: [], pasting: false, kittyKeys, skipNextLF: false };
-}
-
-/** 只有完成 Kitty 能力协商后才允许解析组合键。 */
-export function withKittyKeys(state: KeyParserState, enabled: boolean): KeyParserState {
-  return { ...state, kittyKeys: enabled };
+export function initialKeyParserState(): KeyParserState {
+  return { pending: new Uint8Array(), pasteChunks: [], pasting: false, skipNextLF: false };
 }
 
 /** 解析一个任意大小的字节块，未闭合序列留给下一块。 */
@@ -76,7 +73,7 @@ export function parseKeys(bytes: Uint8Array, state: KeyParserState = initialKeyP
         if (sequence === PASTE_START.toString("ascii")) {
           pasting = true;
         } else {
-          const event = csiKey(sequence, state.kittyKeys);
+          const event = csiKey(sequence);
           if (event !== null) events.push(event);
         }
         cursor = end + 1;
@@ -90,9 +87,9 @@ export function parseKeys(bytes: Uint8Array, state: KeyParserState = initialKeyP
         continue;
       }
       const alt = input[cursor + 1];
-      if (alt === 98 || alt === 66) events.push({ kind: "word-left" });
-      else if (alt === 102 || alt === 70) events.push({ kind: "word-right" });
-      else if (alt === 127 || alt === 8) events.push({ kind: "kill-word" });
+      if (alt === 98 || alt === 66) events.push({ kind: "word-left", kittyOnly: true } as KittyKeyEvent);
+      else if (alt === 102 || alt === 70) events.push({ kind: "word-right", kittyOnly: true } as KittyKeyEvent);
+      else if (alt === 127 || alt === 8) events.push({ kind: "kill-word", kittyOnly: true } as KittyKeyEvent);
       else events.push({ kind: "escape" });
       cursor += 2;
       continue;
@@ -121,38 +118,39 @@ export function flushPendingKeys(state: KeyParserState): ParsedKeys {
   return { events: [], state };
 }
 
-/** CSI u 仅在协商成功时启用组合键；终端能力报告始终可解析。 */
-function csiKey(sequence: string, kittyKeys: boolean): KeyEvent | null {
+/** 字节层识别 CSI u，组合键是否可用由终端能力层最终判定。 */
+function csiKey(sequence: string): KeyEvent | null {
   const report = /^\u001b\[\?(\d+)u$/u.exec(sequence);
   if (report !== null) return { kind: "kitty-report", flags: Number(report[1]) };
   const arrows = /^\u001b\[(?:1;([0-9]+))?([ABCDHF])$/u.exec(sequence);
   if (arrows !== null) {
     const key = NAVIGATION[arrows[2] as keyof typeof NAVIGATION];
-    if (arrows[1] === "3" && (key === "left" || key === "right")) return { kind: key === "left" ? "word-left" : "word-right" };
+    if (arrows[1] === "3" && (key === "left" || key === "right")) {
+      return { kind: key === "left" ? "word-left" : "word-right", kittyOnly: true } as KittyKeyEvent;
+    }
     return { kind: key };
   }
   if (/^\u001b\[(?:3(?:;[0-9]+)?)~$/u.test(sequence)) return { kind: "delete" };
   if (/^\u001b\[(?:1|7)~$/u.test(sequence)) return { kind: "home" };
   if (/^\u001b\[(?:4|8)~$/u.test(sequence)) return { kind: "end" };
-  if (!kittyKeys) return null;
   const match = /^\u001b\[(\d+)(?::(\d+)(?::\d+)?)?(?:;(\d+)(?::(\d+))?)?(?:;([\d:]+))?u$/u.exec(sequence);
   if (match === null || match[4] === "3") return null;
   const code = Number(match[1]);
   const modifier = Number(match[3] ?? "1");
-  if (code === 13) return { kind: modifier === 2 ? "shift-enter" : "enter" };
-  if (code === 127 && modifier === 3) return { kind: "kill-word" };
-  if (code === 127) return { kind: "backspace" };
-  if (code === 27) return { kind: "escape" };
+  if (code === 13) return { kind: modifier === 2 ? "shift-enter" : "enter", kittyOnly: true } as KittyKeyEvent;
+  if (code === 127 && modifier === 3) return { kind: "kill-word", kittyOnly: true } as KittyKeyEvent;
+  if (code === 127) return { kind: "backspace", kittyOnly: true } as KittyKeyEvent;
+  if (code === 27) return { kind: "escape", kittyOnly: true } as KittyKeyEvent;
   if (code === 9) return { kind: "text", text: "\t" };
-  if (modifier === 3 && code === 98) return { kind: "word-left" };
-  if (modifier === 3 && code === 102) return { kind: "word-right" };
-  if (modifier === 6 && code === 115) return { kind: "save" };
-  if (modifier === 6 && code === 112) return { kind: "panel" };
+  if (modifier === 3 && code === 98) return { kind: "word-left", kittyOnly: true } as KittyKeyEvent;
+  if (modifier === 3 && code === 102) return { kind: "word-right", kittyOnly: true } as KittyKeyEvent;
+  if (modifier === 6 && code === 115) return { kind: "save", kittyOnly: true } as KittyKeyEvent;
+  if (modifier === 6 && code === 112) return { kind: "panel", kittyOnly: true } as KittyKeyEvent;
   if (modifier === 5) {
     const controls = ({ 97: "home", 99: "interrupt", 100: "eof", 101: "end", 107: "kill-end",
       108: "redraw", 117: "kill-start", 119: "kill-word", 121: "yank" } as const);
     const kind = controls[code as keyof typeof controls];
-    if (kind !== undefined) return { kind };
+    if (kind !== undefined) return { kind, kittyOnly: true } as KittyKeyEvent;
   }
   if (modifier === 1 || modifier === 2) {
     const codepoints = match[5]?.split(":").map(Number)

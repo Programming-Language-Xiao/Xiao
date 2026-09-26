@@ -51,10 +51,14 @@ test.skipIf(!gitAvailable)("冷进程首次探测及时返回真实无上游分�
       clearTimeout(deadline);
     }
     expect((await probeGitSummary(directory, { timeoutMs: 2000 })).summary).toEqual({ branch: "main", ahead: null, behind: null });
+    execFileSync(gitCommand, gitArgs(["-c", "user.name=Test", "-c", "user.email=test@example.org", "commit", "--allow-empty", "-m", "first"]), { cwd: directory, windowsHide: true, stdio: "ignore" });
+    execFileSync(gitCommand, gitArgs(["checkout", "--detach", "HEAD"]), { cwd: directory, windowsHide: true, stdio: "ignore" });
+    expect((await probeGitSummary(directory, { timeoutMs: 2000 })).summary).toBeNull();
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
 });
+
 
 test("Git 缺失、非仓库和超时都保留可查询诊断，且超时不等待任务结束", async () => {
   const missing = await probeGitSummary(process.cwd(), { runStatus: async () => { throw Object.assign(new Error("missing"), { code: "ENOENT" }); } });

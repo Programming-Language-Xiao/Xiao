@@ -6,6 +6,7 @@ import { renderCliError } from "./diagnostics/render.ts";
 import { runSingleLineRepl } from "./repl/session.ts";
 import type { SpawnCoreProcess } from "./protocol/client.ts";
 import type { GitProbeOptions } from "./ui/git.ts";
+import { runMultilineSession, MultilineTerminalError } from "./repl/multiline.ts";
 import cliPackage from "../package.json";
 
 /** CLI 入口依赖的可注入 IO。 */
@@ -69,6 +70,32 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
         corePath: context.corePath, spawnProcess: context.spawnProcess,
         executablePath: context.executablePath, signal, gitRunStatus: io.gitRunStatus,
       });
+    }
+    if (command.kind === "repl" && command.multiline) {
+      if (command.options.json) throw new CliArgumentError("多行交互会话不支持 --json");
+      try {
+        const result = await runMultilineSession({
+          input: io.stdin ?? process.stdin, output: stdout, error: stderr, write: writeSafely,
+          env, isTTY: context.isTTY, color: command.options.color, signal,
+        });
+        if (result.exitCode === 130) {
+          return await runSingleLineRepl({
+            input: io.stdin ?? process.stdin, output: stdout, error: stderr, write: writeSafely,
+            cwd: context.cwd, env, isTTY: context.isTTY, color: command.options.color,
+            debug: command.options.debug, version: cliPackage.version,
+            corePath: context.corePath, spawnProcess: context.spawnProcess,
+            executablePath: context.executablePath, signal, gitRunStatus: io.gitRunStatus,
+            showBanner: false,
+          });
+        }
+        return result.exitCode;
+      } catch (error) {
+        if (error instanceof MultilineTerminalError) {
+          await writeSafely(stderr, `${error.message}\n`);
+          return error.exitCode;
+        }
+        throw error;
+      }
     }
     const result = await executeCommand(command, { ...context, signal });
     await writeSafely(stdout, result.stdout);

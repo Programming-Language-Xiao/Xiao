@@ -2,23 +2,23 @@
 
 import { expect, test } from "bun:test";
 
-import { flushPendingKeys, initialKeyParserState, parseKeys, withKittyKeys } from "./keys.ts";
+import { flushPendingKeys, parseKeys } from "./keys.ts";
 
 test("传统 Enter 只能新建逻辑行，Kitty 回复本身不是输入", () => {
   const legacy = parseKeys(Buffer.from("\r"));
   expect(legacy.events).toEqual([{ kind: "enter" }]);
-  expect(parseKeys(Buffer.from("\u001b[13;2u")).events).toEqual([]);
+  expect(parseKeys(Buffer.from("\u001b[13;2u")).events).toEqual([{ kind: "shift-enter", kittyOnly: true }]);
   expect(parseKeys(Buffer.from("\u001b[?8u")).events).toEqual([{ kind: "kitty-report", flags: 8 }]);
-  const kitty = parseKeys(Buffer.from("\u001b[13;2u\u001b[115;6u\u001b[112;6u"), withKittyKeys(initialKeyParserState(), true));
-  expect(kitty.events).toEqual([{ kind: "shift-enter" }, { kind: "save" }, { kind: "panel" }]);
-  const text = parseKeys(Buffer.from("\u001b[97u\u001b[97;2;65u\u001b[49:33;2u"), withKittyKeys(initialKeyParserState(), true));
+  const kitty = parseKeys(Buffer.from("\u001b[13;2u\u001b[115;6u\u001b[112;6u"));
+  expect(kitty.events).toEqual([{ kind: "shift-enter", kittyOnly: true }, { kind: "save", kittyOnly: true }, { kind: "panel", kittyOnly: true }]);
+  const text = parseKeys(Buffer.from("\u001b[97u\u001b[97;2;65u\u001b[49:33;2u"));
   expect(text.events).toEqual([{ kind: "text", text: "a" }, { kind: "text", text: "A" }, { kind: "text", text: "!" }]);
 });
 
 test("跨块 CSI、UTF-8、Esc 和退格不丢失也不拆坏字符", () => {
   const first = parseKeys(Buffer.from([0x1b, 0x5b, 0x31, 0x3b]));
   const second = parseKeys(Buffer.from("3D中"), first.state);
-  expect(second.events).toEqual([{ kind: "word-left" }, { kind: "text", text: "中" }]);
+  expect(second.events).toEqual([{ kind: "word-left", kittyOnly: true }, { kind: "text", text: "中" }]);
   const utf8 = Buffer.from("🙂");
   const partial = parseKeys(utf8.subarray(0, 2));
   expect(parseKeys(utf8.subarray(2), partial.state).events).toEqual([{ kind: "text", text: "🙂" }]);

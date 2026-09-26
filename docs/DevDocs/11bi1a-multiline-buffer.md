@@ -315,3 +315,19 @@ detached 状态下**没有分支名可显示**，而短 SHA 对「一眼看懂�
 - [11B-I0. 终端骨架与单行会话](11bi0-terminal-skeleton.md) —— I0 的交付、边界与债项
 - [00. 决策基线](00-decisions.md) `:463-475` —— 终端解释器**已冻结**段（本批的写回位置）
 - [00A. 工程框架与目录布局](00a-project-layout.md) —— `repl/`、`ui/` 的职责与登记
+
+---
+
+## 十一、实现与验证记录（2026-09-27）
+
+- 编辑协议写回 `00-decisions.md`：普通 Enter 始终新建逻辑行；仅 Kitty“所有按键上报”
+  能力确认后启用 Shift+Enter 等修饰键。基础按词移动按空白/字母数字/标点分类，
+  更复杂的语言感知边界留给 R7。
+- `keys.ts` 处理分块 UTF-8、CSI/CSI-u 和括号粘贴；`editor.ts` 保持真实换行、
+  字素光标、上下移动目标列、唯一 kill 缓冲和 99999 行原子边界；`render.ts`
+  按 Unicode 显示宽度绘制五字符行号栏和软换行。
+- `commands.ts` 统一剔除三个控制词；`multiline.ts` 进入 raw mode，退出时恢复 raw mode、
+  Kitty 键盘状态、括号粘贴和光标。`xiao --inLF` 与单行 `!inLF!` 已接入，
+  Ctrl+C 清空当前编辑并返回单行，空缓冲 Ctrl+D 正常退出；direct `--inLF` 的 Ctrl+C
+  也交回单行会话。
+- I1b 运行确认及完整缓冲区执行、I2 保存、I3 面板、I4 包加载仍未实现。

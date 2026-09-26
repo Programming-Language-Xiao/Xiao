@@ -21,7 +21,7 @@ export interface KeyboardProbe {
 /** Kitty 键盘协议查询序列。 */
 export const KITTY_QUERY = "\u001b[?u";
 /** 上报所有按键及对应文字，Shift+Enter 才有独立编码。 */
-export const KITTY_PUSH = "\u001b[>28u";
+export const KITTY_PUSH = "\u001b[=28;1u";
 /** 撤销本会话推入的键盘模式。 */
 export const KITTY_POP = "\u001b[<u";
 
