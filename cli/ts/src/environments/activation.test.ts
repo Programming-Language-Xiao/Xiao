@@ -86,6 +86,7 @@ async function checkActivation(contents: string, success: boolean, expected: str
     const output = result.stdout.replaceAll("\r\n", "\n");
     expect(output).toContain("xiao-test-payload\n");
     expect(output).not.toMatch(/^0$/mu);
+    if (shell === "zsh") expect(output).not.toMatch(/^_xiao_arg=/mu);
     if (!uncaughtFailure) {
       expect(output).toContain(`ACTIVE=${expected ?? ""}`);
       expect(output).toContain("FILE=\n");

@@ -78,6 +78,20 @@ test("移除时保留标记块之后的用户配置且不将两段配置粘连",
   }
 });
 
+test("行内伪结束标记不能被当作完整块而误删用户配置", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "xiao-shell-inline-marker-"));
+  const profile = join(directory, "profile");
+  const original = "# >>> xiao init >>>\nUSER_CONFIG=1\necho test # <<< xiao init <<<\nAFTER=1\n";
+  try {
+    await writeFile(profile, original);
+    const removed = await executeCommand(parseArguments(["shell-init", "bash", "--uninstall", "--profile", profile]));
+    expect(removed.stderr).toContain("X11-CLI-SHELL-005");
+    expect(await readFile(profile, "utf8")).toBe(original);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test("畸形标记、非绝对路径和无目标的 PowerShell 安装明确失败", async () => {
   const directory = await mkdtemp(join(tmpdir(), "xiao-shell-error-"));
   const profile = join(directory, "profile");

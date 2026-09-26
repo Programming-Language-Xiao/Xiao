@@ -355,7 +355,7 @@ function bashShellInitScript(commandName: string): string {
     "        _xiao_name=${_xiao_path##*/}",
     "        _xiao_name=${_xiao_name##*\\\\}",
     "        [[ \"$_xiao_name\" == .venv ]] && _xiao_name=venv",
-    "        local _xiao_color=0 _xiao_arg _xiao_can_color=0",
+    "        local _xiao_color=0 _xiao_can_color=0",
     "        [[ -t 1 && -z \"${NO_COLOR+x}\" && \"${TERM:-}\" != dumb ]] && _xiao_can_color=1",
     "        [[ $_xiao_can_color -eq 1 ]] && _xiao_color=1",
     "        for _xiao_arg in \"$@\"; do",

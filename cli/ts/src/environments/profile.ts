@@ -142,6 +142,7 @@ function markerRange(contents: string): { start: number; end: number } | null {
   if (begin < 0 || finish <= begin || contents.indexOf(START, begin + START.length) >= 0
     || contents.indexOf(END, finish + END.length) >= 0
     || (begin > 0 && contents[begin - 1] !== "\n")
+    || contents[finish - 1] !== "\n"
     || !(afterStart.startsWith("\r\n") || afterStart.startsWith("\n"))
     || !(afterEnd === "" || afterEnd.startsWith("\r\n") || afterEnd.startsWith("\n"))) {
     throw new ShellProfileError("X11-CLI-SHELL-005", "profile 中的 xiao 标记块不完整或重复");

@@ -24,7 +24,10 @@ for (const shell of ["bash", "zsh", "fish", "powershell"] as const) {
       expect(script).toContain("_xiao_lines[@]} -eq 2");
       expect(script).toContain(`_xiao_lines[${shell === "bash" ? 0 : 1}]`);
       expect(script).toContain("[[:cntrl:]]");
-      if (shell === "zsh") expect(script).toContain("%F{green}");
+      if (shell === "zsh") {
+        expect(script).toContain("%F{green}");
+        expect(script).not.toContain("local _xiao_color=0 _xiao_arg");
+      }
     } else if (shell === "fish") {
       expect(script).toContain("test (count $_xiao_lines) -eq 2");
       expect(script).toContain("functions -c fish_prompt __xiao_original_prompt");
