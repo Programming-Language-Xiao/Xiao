@@ -4,7 +4,7 @@ title: 交互会话与多行编辑
 status: verified
 audience: learner
 module: ts.xiao-cli
-stage: 11B-I0/I1a/I1b/I1c/I2
+stage: 11B-I0/I1a/I1b/I1c/I2/I3
 related:
   - ../cli/README.md
   - ../../../DevDocs/11bi0-terminal-skeleton.md
@@ -12,6 +12,7 @@ related:
   - ../../../DevDocs/11bi1b-confirm-and-run.md
   - ../../../DevDocs/11bi1c-cursor-selection-clipboard.md
   - ../../../DevDocs/11bi2-file-save.md
+  - ../../../DevDocs/11bi3-command-panel.md
 ---
 
 # 交互会话与多行编辑
@@ -48,7 +49,7 @@ EOF/Ctrl+D 可退出空缓冲，Ctrl+C 清空当前编辑并回到单行提示�
 按住 Shift 的本地选择由终端处理。鼠标滚轮在编辑器中被忽略，按住 Shift 滚动可交回终端。
 
 `!outLF!` 独占逻辑行时会从缓冲区和源码行号映射移除并分派到运行准备；`!save!` 也会
-剔除后进入保存，`!panel!` 的界面留给 I3。传统终端无法区分修饰键时，普通 Enter
+剔除后进入保存，`!panel!` 剔除后打开命令面板。传统终端无法区分修饰键时，普通 Enter
 不会被误判为 Shift+Enter，后者仅在 Kitty“所有按键上报”能力确认后启用。
 
 进入运行确认后，上方分隔线显示确认标题，下一行只有独立的 `>`。按 Enter 执行完整缓冲区；
@@ -83,9 +84,25 @@ Windows 覆盖回退若连回滚也失败，诊断会指出保留原文件的备
 `005` 是其他文件系统错误。
 诊断包含目标路径与处理建议。路径输入与源码缓冲区相互独立，保存栏的光标不是文件内容。
 
+## 命令面板
+
+多行模式可在独占逻辑行输入 `!panel!` 并按 Enter，或在 Kitty“所有按键上报”能力确认后按
+`Ctrl+Shift+P`。控制行会从源码与行号映射移除。单行模式用独占一行的 `!panel!` 打开；
+它会暂时接管 raw mode，关闭后返回单行提示符且不重复版权行。
+
+单行模式沿用 readline：传统终端把 `Ctrl+Shift+P` 与 `Ctrl+P` 编成相同输入，readline
+也可能拿不到 Kitty 组合键。因此单行快捷键不支持并静默降级，使用 `!panel!` 即可；不会把
+`Ctrl+P` 猜作面板命令，也不会报错。
+
+面板显示 `Command Panel` 标题和独立 `>` 输入栏，目前没有可执行命令。可以键入临时文本，
+但按 Enter 不会执行操作，Esc 或面板内已确认的 Kitty `Ctrl+Shift+P` 可关闭并丢弃输入；
+单行临时 raw 面板内也适用这个关闭键，但不能据此从 readline 直接打开面板。
+打开和关闭不改源码、光标、文件绑定或磁盘文件。标题本批固定英文，
+语言目录替换由 11C 负责。
+
 建议先阅读[命令行参考](../cli/README.md)和[开始使用](../../getting-started/README.md)。
 
 ## 后续批次
 
-`!panel!` 的面板界面留给 I3。环境包延迟加载和跨行共享运行时状态留给 I4。
+环境包延迟加载和跨行共享运行时状态留给 I4。
 非 `.xiao` 文件的打开与保存属于后续扩展；扩展时必须重新检查 `q` + Enter 取消键的歧义。

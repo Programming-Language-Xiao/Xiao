@@ -276,3 +276,16 @@ repl/panel.ts     面板状态与渲染（标题、`>` 栏、两条分隔线、�
 - [11B-I2. 文件编辑与保存](11bi2-file-save.md) —— 第四个状态、防绕过闸、`modalPrompt` 的抽取
 - [11B-I0. 终端骨架与单行会话](11bi0-terminal-skeleton.md) —— 单行模式用 readline 的边界
 - [00A. 工程框架与目录布局](00a-project-layout.md) —— `repl/` 的职责与登记
+
+## 十一、实现与验证记录（2026-09-27）
+
+- 单行 readline 降级、共用空面板模态、无命令输入与 11C 标题归属已写入决策基线；
+  不把传统 `Ctrl+P` 猜成面板键，也不引入消息目录。
+- `panel.ts` 单独维护输入字素和光标，共用 `confirm.ts` 的分隔线与 `>` 配色；
+  Enter 不执行或清空输入，Esc、Ctrl+C 与已确认的 Kitty `Ctrl+Shift+P` 关闭时丢弃输入。
+- 多行 raw 循环增加第五态，并用与确认/保存同构的可见界面闸丢弃同块关闭键；
+  单行 `!panel!` 暂时退出 readline，复用该 raw 循环的面板入口，关闭后返回单行提示符。
+- `panel.json` 覆盖三档宽度；纯模态、单行交接、多行开关、同块输入隔离和文件绑定保留
+  都由可注入终端流测试验证。
+- TypeScript 类型检查通过，CLI 全测试 204 通过、5 条件跳过，根 Bun 测试 241 通过、
+  5 条件跳过；`bun run check`（含 clippy 与 Cargo workspace 检查）连续三轮通过。

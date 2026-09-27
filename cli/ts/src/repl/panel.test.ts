@@ -6,6 +6,7 @@ import { stripAnsi } from "../ui/color.ts";
 import type { TerminalView } from "../ui/terminal.ts";
 import { displayWidth } from "../ui/width.ts";
 import { applyPanelKey, initialPanelState, renderPanel } from "./panel.ts";
+import vectors from "../../../../tests/spec/11b-repl/panel.json";
 
 /** 明确注入颜色与尺寸，避免宿主终端影响测试。 */
 function view(width: number, height = 24, color = false): TerminalView {
@@ -25,6 +26,7 @@ test("面板键入仅改变临时状态，Enter 无动作，Esc 与快捷键关�
   expect(applyPanelKey(state, { kind: "enter" })).toEqual({ state, close: false });
   expect(applyPanelKey(state, { kind: "escape" }).close).toBe(true);
   expect(applyPanelKey(state, { kind: "panel" }).close).toBe(true);
+  expect(applyPanelKey(state, { kind: "interrupt" }).close).toBe(true);
   expect(applyPanelKey(state, { kind: "paste", text: "\u001b[2J" }).state).toBe(state);
   expect(initialPanelState()).toEqual(empty);
 });
@@ -43,6 +45,12 @@ test("面板标题和两条分隔线自适应，并复用确认态配色", () =>
   expect(colored).toContain("\u001b[38;2;220;220;173m>");
   expect(stripAnsi(colored)).toBe(renderPanel(initialPanelState(), view(40)).text);
 });
+
+for (const vector of vectors.cases) {
+  test(`${vector.width} 列空面板与共享规格一致`, () => {
+    expect(renderPanel(initialPanelState(), view(vector.width)).text).toBe(vector.expected);
+  });
+}
 
 test("长输入只在面板内水平滚动，极矮终端不写越界行", () => {
   const state = { text: "very/long/panel/search", cursor: 22 };

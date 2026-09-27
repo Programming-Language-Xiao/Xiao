@@ -25,6 +25,7 @@ export interface MultilineContext extends Pick<ReplContext, "input" | "output" |
   debug?: boolean;
   file?: string;
   fileSystem?: ReplFileSystem;
+  /** 单行控制词临时打开面板，关闭后交还 readline。 */
   initialPanel?: boolean;
   executeSource?: (source: string, signal: AbortSignal) => Promise<CoreCallResult>;
 }
@@ -138,6 +139,14 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
       panelReady = false;
       inputGeneration += 1;
     }
+  };
+  const closePanel = (): number | null => {
+    panelReady = false;
+    panelState = initialPanelState();
+    inputGeneration += 1;
+    if (context.initialPanel) return 0;
+    mode = "edit";
+    return null;
   };
   const saveCurrent = async (path: string): Promise<boolean> => {
     try {
@@ -281,13 +290,9 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
         const result = applyPanelKey(panelState, parsedKey);
         panelState = result.state;
         if (result.close) {
-          panelReady = false;
-          panelState = initialPanelState();
-          inputGeneration += 1;
-          if (context.initialPanel) return 0;
-          mode = "edit";
-          await redraw();
-          return null;
+          const exitCode = closePanel();
+          if (exitCode === null) await redraw();
+          return exitCode;
         }
         continue;
       }
@@ -345,16 +350,11 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
     if (parser.pending.length === 1 && parser.pending[0] === 27) {
       escapeTimer = setTimeout(() => {
         parser = flushPendingKeys(parser).state;
-        if (mode === "confirm" || mode === "save" || mode === "panel") {
-          if (mode === "panel") {
-            panelReady = false;
-            panelState = initialPanelState();
-            inputGeneration += 1;
-            if (context.initialPanel) {
-              finishSession(0);
-              return;
-            }
-          }
+        if (mode === "panel") {
+          const exitCode = closePanel();
+          if (exitCode === null) void redraw().catch(failSession);
+          else finishSession(exitCode);
+        } else if (mode === "confirm" || mode === "save") {
           mode = "edit";
           confirmationReady = false;
           saveReady = false;
