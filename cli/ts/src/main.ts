@@ -58,9 +58,11 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
   const controller = io.signal === undefined ? new AbortController() : undefined;
   const signal = io.signal ?? controller?.signal;
   const onInterrupt = () => controller?.abort();
-  if (controller) process.once("SIGINT", onInterrupt);
+  let listenForInterrupt = false;
   try {
     const command = parseArguments(argv);
+    listenForInterrupt = controller !== undefined && command.kind !== "repl";
+    if (listenForInterrupt) process.once("SIGINT", onInterrupt);
     if (command.kind === "repl" && !command.multiline) {
       if (command.options.json) throw new CliArgumentError("交互会话不支持 --json");
       return await runSingleLineRepl({
@@ -76,7 +78,9 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
       try {
         const result = await runMultilineSession({
           input: io.stdin ?? process.stdin, output: stdout, error: stderr, write: writeSafely,
-          env, isTTY: context.isTTY, color: command.options.color, signal,
+          cwd: context.cwd, env, isTTY: context.isTTY, color: command.options.color, signal,
+          corePath: context.corePath, spawnProcess: context.spawnProcess,
+          executablePath: context.executablePath, debug: command.options.debug,
         });
         if (result.exitCode === 130) {
           return await runSingleLineRepl({
@@ -113,8 +117,8 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
     await writeSafely(stdout, result.stdout);
     await writeSafely(stderr, result.stderr);
     return result.exitCode;
-  } finally {
-    if (controller) process.removeListener("SIGINT", onInterrupt);
+    } finally {
+    if (listenForInterrupt) process.removeListener("SIGINT", onInterrupt);
   }
 }
 

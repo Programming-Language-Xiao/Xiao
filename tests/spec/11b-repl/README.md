@@ -10,3 +10,7 @@
 
 I1c 的覆盖模式、选区、共享编辑器剪贴板、SGR 鼠标反向映射、滚轮忽略和终端状态恢复
 由同目录的 TypeScript 单测验证；程序不读取或写入系统剪贴板，也不使用 OSC 52。
+
+I1b 的 `confirm.json` 固定窄、中、宽终端的确认标题与独立 `>` 行；`confirm.test.ts`
+加载该夹具。追加输出、CRLF、取消、尺寸变化和保留编辑状态由 `output.test.ts`、
+`multiline.test.ts` 与 CLI 入口测试覆盖。

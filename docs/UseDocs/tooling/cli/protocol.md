@@ -62,7 +62,8 @@ X0-B 的 `xiao run`、X0-T 的 `xiao test`、X0-E 的 `xiao build` 和 11A-E0 �
 
 Rust 与 TypeScript 当前采用共享 JSON fixture 的窄类型策略。样本位于
 `tests/spec/11x0-protocol/`，两侧测试都必须读取同一批样本并验证回环。新增字段先更新
-样本和两侧显式类型，再更新协议版本或核心版本。
+样本和两侧显式类型；不兼容的消息变更必须更新协议版本或核心版本。可兼容的附加计量
+字段保留现有版本，客户端不得因缺失该字段而崩溃；`peak_live_bytes` 缺失时摘要显示未知。
 
 ## 运行控制
 

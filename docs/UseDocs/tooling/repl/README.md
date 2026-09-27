@@ -4,11 +4,12 @@ title: 交互会话与多行编辑
 status: verified
 audience: learner
 module: ts.xiao-cli
-stage: 11B-I0/I1a/I1c
+stage: 11B-I0/I1a/I1b/I1c
 related:
   - ../cli/README.md
   - ../../../DevDocs/11bi0-terminal-skeleton.md
   - ../../../DevDocs/11bi1a-multiline-buffer.md
+  - ../../../DevDocs/11bi1b-confirm-and-run.md
   - ../../../DevDocs/11bi1c-cursor-selection-clipboard.md
 ---
 
@@ -49,10 +50,17 @@ EOF/Ctrl+D 可退出空缓冲，Ctrl+C 清空当前编辑并回到单行提示�
 `!panel!` 已接入共享分派但分别留给 I2、I3。传统终端无法区分修饰键时，普通 Enter
 不会被误判为 Shift+Enter，后者仅在 Kitty“所有按键上报”能力确认后启用。
 
+进入运行确认后，上方分隔线显示确认标题，下一行只有独立的 `>`。按 Enter 执行完整缓冲区；
+按 Esc 或 Ctrl+C 取消并回到原编辑位置，其他输入不会改写源码。运行结果顺序追加到终端，
+结束后显示 `time:秒数 memory:MB` 并重画编辑区；执行出错后仍能继续编辑。运行期 Ctrl+C
+只取消本次运行，不清除编辑缓冲区、覆盖模式或程序内剪贴板。旧核心没有峰值字段时显示 `?MB`。
+内存值只计入 Xiao Runtime 管理的对象，不是进程 RSS；具体边界见[进程协议](../cli/protocol.md)。
+当前 `xiao-core` 的标准输入承载协议帧，尚无语言级交互输入通道；执行期虽然退出 raw mode，
+终端键入内容仍不会作为 Xiao 程序输入，不能把它当作已实现的 `input()` 功能。
+
 建议先阅读[命令行参考](../cli/README.md)和[开始使用](../../getting-started/README.md)。
 
 ## 后续批次
 
-I1b 的运行确认、完整缓冲区执行及输出摘要尚未实现；`!save!` 的实际写盘留给 I2，
-`!panel!` 的面板界面留给 I3。`xiao --inLF <file.xiao>` 的文件参数当前明确拒绝，
+`!save!` 的实际写盘留给 I2，`!panel!` 的面板界面留给 I3。`xiao --inLF <file.xiao>` 的文件参数当前明确拒绝，
 文件打开行为留给 I2。环境包延迟加载和跨行共享运行时状态留给 I4。

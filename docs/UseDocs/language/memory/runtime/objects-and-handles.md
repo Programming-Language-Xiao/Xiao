@@ -4,7 +4,7 @@ title: Runtime 对象与句柄
 status: verified
 audience: learner
 module: rust.xiao-runtime
-stage: "06B"
+stage: "06B/11B-I1b"
 version: "0.1.0"
 related:
   - README.md
@@ -35,3 +35,7 @@ related:
 ## 策略边界
 
 引用计数策略通过可插拔接口提供，当前实现仅支持单线程非原子计数，因此不得在线程之间传递句柄。
+
+交互运行的内存摘要另用独立的原子计量作用域记录 Runtime 管理对象的峰值存活字节，
+不改变上述句柄约束。数组、元组、集合和字典的元素/键存储计入容器自身；共享引用
+指向的对象只按对象头计一次。它不等于进程内存，协议字段边界见[核心进程协议](../../../tooling/cli/protocol.md)。

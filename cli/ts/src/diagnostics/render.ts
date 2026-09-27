@@ -148,6 +148,14 @@ export function responseExitCode(response: ProtocolResponse): number {
   return 0;
 }
 
+/** 读取兼容旧核心的 Runtime 对象峰值字节；缺失或越过 JS 安全整数时返回未知。 */
+export function peakLiveBytes(response: ProtocolResponse | null): number | null {
+  const metrics = response?.type === "result" ? response.metrics : null;
+  if (!isRecord(metrics)) return null;
+  const bytes = metrics.peak_live_bytes;
+  return typeof bytes === "number" && Number.isSafeInteger(bytes) && bytes >= 0 ? bytes : null;
+}
+
 /** 统一 CLI 异常的机器字段。 */
 interface NormalizedCliError { code: string; message: string; details: Record<string, unknown>; exitCode: number }
 

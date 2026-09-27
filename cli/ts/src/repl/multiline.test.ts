@@ -37,7 +37,7 @@ test("raw mode 保留真实多行、剔除 !outLF!，Ctrl+C 恢复状态并返�
     onCommand: (command) => commands.push(command), terminalSize: { width: 80, height: 24 },
   });
   await new Promise((resolve) => setTimeout(resolve, 0));
-  input.write(Buffer.from("code\r!outLF!\r\u0003"));
+  input.write(Buffer.from("code\r!outLF!\r\u0003\u0003"));
   const result = await session;
   expect(result.exitCode).toBe(130);
   expect(result.state.lines).toEqual([""]);
@@ -86,12 +86,158 @@ test("括号粘贴中以换行结束的控制行按 Enter 语义剔除", async (
     onCommand: (command) => commands.push(command),
   });
   await new Promise((resolve) => setTimeout(resolve, 0));
-  input.write(Buffer.from("\u001b[200~!outLF!\n\u001b[201~\u0004"));
+  input.write(Buffer.from("\u001b[200~!outLF!\n\u001b[201~\u0003\u0004"));
   const result = await session;
   expect(result.exitCode).toBe(0);
   expect(commands).toEqual(["run"]);
   expect(result.state.lines).toEqual([""]);
   input.end();
+});
+
+test("确认态忽略源码字符，Esc 无损取消且不执行", async () => {
+  const input = rawInput();
+  const output = new PassThrough();
+  let printed = "";
+  output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+  let called = false;
+  const session = runMultilineSession({
+    input, output, error: new PassThrough(), write: writeSafely, env: {}, isTTY: true, color: "never",
+    executeSource: async () => { called = true; throw new Error("不得执行"); },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("code\r!outLF!\rignored\u001b"));
+  await new Promise((resolve) => setTimeout(resolve, 70));
+  input.end();
+  const result = await session;
+  expect(called).toBe(false);
+  expect(result.state.lines).toEqual(["code"]);
+  expect(printed).toContain("Press Enter to confirm and run");
+});
+
+test("确认后调用完整源码并恢复覆盖模式、剪贴板和光标", async () => {
+  const input = rawInput();
+  const output = new PassThrough();
+  let printed = "";
+  output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+  const requests: string[] = [];
+  const session = runMultilineSession({
+    input, output, error: new PassThrough(), write: writeSafely, env: {}, isTTY: true, color: "never",
+    executeSource: async (source) => {
+      expect(input.isRaw).toBe(false);
+      requests.push(source);
+      return {
+        response: {
+          type: "result", request_id: "test", operation: "run", exit_code: 0, exit_name: "success",
+          diagnostics: [], report: null, events: [], metrics: { peak_live_bytes: 2_000_000 },
+          value: { kind: "int", value: "42" }, artifact: null,
+        },
+        stderr: "", corePath: "test", coreSource: "override",
+      };
+    },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("!ovr!\rfirst\rsecond\u0017\u0019\r!outLF!\r\r"));
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  input.end();
+  const result = await session;
+  expect(requests).toEqual(["first\nsecond"]);
+  expect(result.state.lines).toEqual(["first", "second"]);
+  expect(result.state.cursor).toEqual({ line: 1, column: 6 });
+  expect(result.state.overwrite).toBe(true);
+  expect(result.state.killBuffer).toBe("second");
+  expect(printed).toContain("42\r\n");
+  expect(printed).toContain("memory:2.00MB\r\n");
+  expect(input.isRaw).toBe(false);
+});
+
+test("执行期 SIGINT 只取消本次运行，缓冲区和光标可继续编辑", async () => {
+  const input = rawInput();
+  const output = new PassThrough();
+  let startRun!: () => void;
+  const running = new Promise<void>((resolve) => { startRun = resolve; });
+  const session = runMultilineSession({
+    input, output, error: new PassThrough(), write: writeSafely, env: {}, isTTY: true, color: "never",
+    executeSource: async (_source, signal) => {
+      startRun();
+      await new Promise<void>((resolve) => signal.addEventListener("abort", () => resolve(), { once: true }));
+      return {
+        response: { type: "cancelled", request_id: "run", target_request_id: "run", accepted: true, exit_code: 2 },
+        stderr: "", corePath: "test", coreSource: "override",
+      };
+    },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("code\r!outLF!\r\r"));
+  await running;
+  expect(input.isRaw).toBe(false);
+  process.emit("SIGINT");
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  expect(input.isRaw).toBe(true);
+  input.end();
+  const result = await session;
+  expect(result.exitCode).toBe(0);
+  expect(result.state.lines).toEqual(["code"]);
+  expect(result.state.cursor).toEqual({ line: 0, column: 4 });
+});
+
+test("确认态尺寸变化重画标题，输出期间不重排历史内容", async () => {
+  const input = rawInput();
+  const output = new PassThrough() as PassThrough & { columns: number; rows: number };
+  output.columns = 20;
+  output.rows = 10;
+  let printed = "";
+  output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+  const session = runMultilineSession({
+    input, output, error: new PassThrough(), write: writeSafely, env: {}, isTTY: true, color: "never",
+    executeSource: async () => {
+      output.columns = 40;
+      output.emit("resize");
+      return {
+        response: {
+          type: "result", request_id: "run", operation: "run", exit_code: 0, exit_name: "success",
+          diagnostics: [], report: null, events: [], metrics: { peak_live_bytes: 0 },
+          value: null, artifact: null,
+        },
+        stderr: "", corePath: "test", coreSource: "override",
+      };
+    },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("code\r!outLF!\r"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  output.columns = 30;
+  output.emit("resize");
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("\r"));
+  await new Promise((resolve) => setTimeout(resolve, 15));
+  input.end();
+  await session;
+  expect(printed).toContain("─ Press Enter to confirm");
+  expect(printed).toContain("─".repeat(40) + "\r\n");
+});
+
+test("核心执行失败仍结束输出段并保留编辑状态", async () => {
+  const input = rawInput();
+  const output = new PassThrough();
+  const error = new PassThrough();
+  let printed = "";
+  let errors = "";
+  output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+  error.on("data", (chunk: Buffer) => { errors += chunk.toString(); });
+  const session = runMultilineSession({
+    input, output, error, write: writeSafely, env: {}, isTTY: true, color: "never",
+    executeSource: async () => { throw new Error("核心不可用"); },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("code\r!outLF!\r\r"));
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  input.end();
+  const result = await session;
+  expect(result.state.lines).toEqual(["code"]);
+  expect(result.state.cursor).toEqual({ line: 0, column: 4 });
+  expect(errors).toContain("X11-CLI-001: 核心不可用\r\n");
+  expect(printed).toContain("memory:?MB\r\n");
+  expect(input.isRaw).toBe(false);
 });
 
 test("SGR 鼠标点击和拖动建立选区，滚轮忽略且退出关闭鼠标上报", async () => {
@@ -128,6 +274,28 @@ test("未确认 Kitty 能力时 Shift+Enter 不进入运行分派", async () => 
   expect(commands).toEqual([]);
   expect(result.state.lines).toEqual([""]);
   input.end();
+});
+
+test("Kitty 所有按键确认后 Shift+Enter 进入确认态", async () => {
+  const input = rawInput();
+  const output = new PassThrough();
+  let printed = "";
+  output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+  const commands: string[] = [];
+  const session = runMultilineSession({
+    input, output, error: new PassThrough(), write: writeSafely, env: {}, isTTY: true, color: "never",
+    onCommand: (command) => commands.push(command),
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("code\u001b[?0u\u001b[?28u\u001b[13;2u"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("\u0003"));
+  input.end();
+  const result = await session;
+  expect(commands).toEqual(["run"]);
+  expect(result.state.lines).toEqual(["code"]);
+  expect(printed).toContain("Press Enter to confirm and run");
+  expect(printed).toContain("\u001b[<u");
 });
 
 test("--inLF 通过 CLI 入口进入 raw mode，而不是走旧的占位诊断", async () => {

@@ -1,19 +1,29 @@
-/** I1a raw mode 编辑循环；只编辑和分派，不执行多行缓冲区。 */
+/** 多行 raw mode 编辑、运行确认和追加式执行输出状态机。 */
 
 import type { ReplContext } from "./session.ts";
+import { ProtocolClient, type CoreCallResult, type SpawnCoreProcess } from "../protocol/client.ts";
+import { renderCliError, renderProtocolResponse } from "../diagnostics/render.ts";
 import { dispatchControl, type ControlCommand } from "./commands.ts";
-import { applyKey, initialEditorState, MAX_LOGICAL_LINES, positionCursor, selectRange, type EditorCursor, type EditorState } from "./editor.ts";
+import { applyKey, editorSource, initialEditorState, MAX_LOGICAL_LINES, positionCursor, selectRange, type EditorCursor, type EditorState } from "./editor.ts";
 import { flushPendingKeys, initialKeyParserState, parseKeys, type KeyEvent, type KeyParserState } from "./keys.ts";
 import { cursorFromRenderedPosition, renderMultiline } from "./render.ts";
-import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_QUERY, MOUSE_DISABLE, MOUSE_ENABLE, type KeyboardProbe, type TerminalView } from "../ui/terminal.ts";
+import { renderConfirmation } from "./confirm.ts";
+import { beginOutput, finishOutput, type RunDisplay } from "./output.ts";
+import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_PUSH, KITTY_QUERY, MOUSE_DISABLE, MOUSE_ENABLE, type KeyboardProbe, type TerminalView } from "../ui/terminal.ts";
 
-/** 可注入的 I1a 终端边界与后续批次的指令消费点。 */
+/** 可注入的终端边界、核心进程和控制指令消费点。 */
 export interface MultilineContext extends Pick<ReplContext, "input" | "output" | "error" | "write" | "env" | "isTTY" | "color" | "signal"> {
   terminalSize?: { width: number; height: number };
   onCommand?: (command: ControlCommand, state: EditorState) => void;
+  cwd?: string;
+  corePath?: string;
+  spawnProcess?: SpawnCoreProcess;
+  executablePath?: string;
+  debug?: boolean;
+  executeSource?: (source: string, signal: AbortSignal) => Promise<CoreCallResult>;
 }
 
-/** 多行退出时交还的编辑状态；I1b 可以在此状态上接确认界面。 */
+/** 多行退出时交还的编辑状态与已触发控制指令。 */
 export interface MultilineResult {
   exitCode: number;
   state: EditorState;
@@ -36,6 +46,7 @@ export class MultilineTerminalError extends Error {
 export async function runMultilineSession(context: MultilineContext): Promise<MultilineResult> {
   const input = context.input as NodeJS.ReadableStream & { setRawMode?: (mode: boolean) => void; isRaw?: boolean };
   if (typeof input.setRawMode !== "function") throw new MultilineTerminalError();
+  const setRawMode = input.setRawMode.bind(input);
   const output = context.output as NodeJS.WritableStream & { columns?: number; rows?: number };
   const wasRaw = Boolean(input.isRaw);
   const wasPaused = input.isPaused();
@@ -43,6 +54,8 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   let state = initialEditorState();
   let parser: KeyParserState = initialKeyParserState();
   let keyboard: KeyboardProbe = initialKeyboardProbe();
+  let mode: "edit" | "confirm" | "output" = "edit";
+  let inputGeneration = 0;
   let mouseAnchor: EditorCursor | null = null;
   let probeTimer: ReturnType<typeof setTimeout> | undefined;
   let escapeTimer: ReturnType<typeof setTimeout> | undefined;
@@ -57,6 +70,11 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
     },
   });
   const redraw = async () => {
+    if (mode === "output") return;
+    if (mode === "confirm") {
+      await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${renderConfirmation(view())}\u001b[2;2H\u001b[?25h`);
+      return;
+    }
     const frame = renderMultiline(state, view());
     await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${frame.text}\u001b[${frame.cursorRow};${frame.cursorColumn}H\u001b[?25h`);
   };
@@ -71,6 +89,64 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   const emitCommand = (command: ControlCommand) => {
     commands.push(command);
     context.onCommand?.(command, state);
+    if (command === "run") mode = "confirm";
+  };
+  const execute = async () => {
+    inputGeneration += 1;
+    await context.write(output, "\u001b[H\u001b[2J");
+    mode = "output";
+    if (keyboard.pushed) {
+      output.write(KITTY_POP);
+      keyboard = { ...keyboard, pushed: false };
+    }
+    await context.write(output, MOUSE_DISABLE + "\u001b[?2004l");
+    setRawMode(false);
+    const controller = new AbortController();
+    const onInterrupt = () => controller.abort();
+    const signal = context.signal === undefined
+      ? controller.signal : AbortSignal.any([controller.signal, context.signal]);
+    process.on("SIGINT", onInterrupt);
+    const started = performance.now();
+    let display: RunDisplay | null = null;
+    try {
+      await beginOutput(view(), output, context.write);
+      const result = context.executeSource !== undefined
+        ? await context.executeSource(editorSource(state), signal)
+        : await new ProtocolClient({
+          cwd: context.cwd, env: context.env, overridePath: context.corePath,
+          spawnProcess: context.spawnProcess, executablePath: context.executablePath,
+        }).runSource(editorSource(state), { debug: context.debug, signal });
+      display = {
+        response: result.response,
+        rendered: renderProtocolResponse(result.response, {
+          color: context.color, isTTY: context.isTTY,
+          noColor: context.env.NO_COLOR !== undefined,
+          term: context.env.TERM, colorTerm: context.env.COLORTERM,
+        }),
+        coreStderr: result.stderr,
+        elapsedMs: performance.now() - started,
+      };
+    } catch (failure) {
+      display = {
+        response: null,
+        rendered: renderCliError(failure, {
+          color: context.color, isTTY: context.isTTY,
+          noColor: context.env.NO_COLOR !== undefined,
+          term: context.env.TERM, colorTerm: context.env.COLORTERM,
+        }),
+        coreStderr: "", elapsedMs: performance.now() - started,
+      };
+    } finally {
+      process.off("SIGINT", onInterrupt);
+      try {
+        if (display !== null) await finishOutput(view(), output, context.error, context.write, display);
+      } finally {
+        setRawMode(true);
+        await context.write(output, "\u001b[?2004h" + MOUSE_ENABLE + (keyboard.kittyKeys ? KITTY_PUSH : ""));
+        if (keyboard.kittyKeys) keyboard = { ...keyboard, pushed: true };
+        mode = "edit";
+      }
+    }
   };
   const consume = async (chunk: Buffer): Promise<number | null> => {
     if (escapeTimer !== undefined) clearTimeout(escapeTimer);
@@ -84,6 +160,16 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
         if (report.request !== "") output.write(report.request);
         if (keyboard.phase === "verify") armProbeTimer();
         else if (probeTimer !== undefined) clearTimeout(probeTimer);
+        continue;
+      }
+      if (mode === "confirm") {
+        if ("kittyOnly" in parsedKey && parsedKey.kittyOnly && !keyboard.kittyKeys) continue;
+        if (parsedKey.kind === "enter") {
+          await execute();
+          await redraw();
+          return null;
+        }
+        else if (parsedKey.kind === "escape" || parsedKey.kind === "interrupt") mode = "edit";
         continue;
       }
       if (parsedKey.kind === "mouse") {
@@ -126,13 +212,20 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
       }
     }
     if (parser.pending.length === 1 && parser.pending[0] === 27) {
-      escapeTimer = setTimeout(() => { parser = flushPendingKeys(parser).state; }, 40);
+      escapeTimer = setTimeout(() => {
+        parser = flushPendingKeys(parser).state;
+        if (mode === "confirm") {
+          mode = "edit";
+          void redraw().catch(failSession);
+        }
+      }, 40);
     }
     if (parsed.events.length > 0) await redraw();
     return null;
   };
   let exitCode = 0;
-  input.setRawMode(true);
+  let failSession: (error: Error) => void = () => undefined;
+  setRawMode(true);
   try {
     await context.write(output, "\u001b[?2004h" + MOUSE_ENABLE + KITTY_QUERY);
     await redraw();
@@ -152,15 +245,17 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
         cleanup();
         reject(error);
       };
+      failSession = fail;
       const finish = (code: number) => {
         if (finished) return;
         finished = true;
         void processing.then(() => { cleanup(); resolve(code); }, (error: Error) => { cleanup(); reject(error); });
       };
       const onData = (chunk: Buffer) => {
-        if (finished) return;
+        if (finished || mode === "output") return;
+        const generation = inputGeneration;
         processing = processing.then(async () => {
-          if (finished) return;
+          if (finished || generation !== inputGeneration) return;
           const result = await consume(chunk);
           if (result !== null) finish(result);
         });
@@ -170,7 +265,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
       const onError = (error: Error) => fail(error);
       const onAbort = () => finish(130);
       const onResize = () => {
-        if (finished) return;
+        if (finished || mode === "output") return;
         processing = processing.then(async () => {
           if (!finished) await redraw();
         });
@@ -189,7 +284,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
     if (escapeTimer !== undefined) clearTimeout(escapeTimer);
     if (wasPaused) input.pause();
     else input.resume();
-    input.setRawMode(wasRaw);
+    setRawMode(wasRaw);
     if (keyboard.pushed) output.write(KITTY_POP);
     await context.write(output, MOUSE_DISABLE + "\u001b[?2004l\u001b[?25h\n");
   }

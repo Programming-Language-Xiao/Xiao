@@ -129,6 +129,29 @@ describe("CLI 入口", () => {
     }
   });
 
+  test("--inLF 执行完整缓冲区时沿用 CLI 核心注入", async () => {
+    const input = new PassThrough() as PassThrough & { isRaw: boolean; setRawMode: (mode: boolean) => void };
+    input.isRaw = false;
+    input.setRawMode = (mode) => { input.isRaw = mode; };
+    const output = new PassThrough();
+    let printed = "";
+    output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+    const requests: Record<string, unknown>[] = [];
+    const session = runCli(["--inLF"], {
+      stdin: input, stdout: output, stderr: new PassThrough(),
+      cwd: process.cwd(), corePath: process.execPath,
+      spawnProcess: () => new FakeCore(requests) as never,
+      env: { NO_COLOR: "1" }, isTTY: true,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    input.write(Buffer.from("first\rsecond\r!outLF!\r\r"));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    input.end();
+    expect(await session).toBe(0);
+    expect(requests.map((request) => (request.source as { text: string }).text)).toEqual(["first\nsecond"]);
+    expect(printed).toContain("first\r\nsecond\r\n");
+  });
+
   test("非 raw mode 多行入口给稳定诊断；机器 JSON 模式不启动交互会话", async () => {
     const stdout = new PassThrough();
     const stderr = new PassThrough();
