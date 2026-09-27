@@ -64,6 +64,21 @@ test("空缓冲 Ctrl+D 结束多行会话并恢复 raw mode", async () => {
   input.end();
 });
 
+test("raw mode 启动失败时仍尝试恢复终端", async () => {
+  const input = rawInput();
+  const transitions: boolean[] = [];
+  input.setRawMode = (mode) => {
+    transitions.push(mode);
+    if (mode) throw new Error("raw mode 不可用");
+  };
+  await expect(runMultilineSession({
+    input, output: new PassThrough(), error: new PassThrough(), write: writeSafely,
+    env: {}, isTTY: true, color: "never",
+  })).rejects.toThrow("raw mode 不可用");
+  expect(transitions).toEqual([true, false]);
+  input.end();
+});
+
 test("Ctrl+D 完成后排队的数据不会污染已结束的编辑状态", async () => {
   const input = rawInput();
   const session = runMultilineSession({

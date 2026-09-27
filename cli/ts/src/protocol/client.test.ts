@@ -18,9 +18,10 @@ class FakeCore extends EventEmitter {
   killed = false;
   private buffer = new Uint8Array(0);
   readonly requests: Record<string, unknown>[] = [];
+  private pendingRunId: string | null = null;
 
   /** 监听 stdin 并按帧返回固定结果。 */
-  constructor() {
+  constructor(private readonly onRun?: () => void) {
     super();
     this.stdin.on("data", (chunk: Buffer) => this.consume(chunk));
   }
@@ -59,9 +60,19 @@ class FakeCore extends EventEmitter {
         core_version: 1, versions: {}, capabilities: ["run", "environment"], error: null,
       })));
     } else if (request.type === "run") {
+      if (this.onRun !== undefined) {
+        this.pendingRunId = String(request.request_id);
+        this.onRun();
+        return;
+      }
       this.stdout.write(Buffer.from(encodeFrame({
         type: "result", request_id: request.request_id, operation: "run", exit_code: 0,
         exit_name: "success", diagnostics: [], report: null, events: [], metrics: null, value: null, artifact: null,
+      })));
+    } else if (request.type === "cancel" && this.pendingRunId !== null) {
+      this.stdout.write(Buffer.from(encodeFrame({
+        type: "error", request_id: this.pendingRunId, exit_code: 2,
+        error: { code: "X11-PROTOCOL-005", message: "请求已取消" }, report: null,
       })));
     } else if (request.type === "build") {
       this.stdout.write(Buffer.from(encodeFrame({
@@ -115,6 +126,51 @@ class FakeCore extends EventEmitter {
 }
 
 describe("协议客户端", () => {
+  test("核心发现期间取消不会启动进程", async () => {
+    const controller = new AbortController();
+    let spawned = false;
+    const client = new ProtocolClient({
+      overridePath: process.execPath,
+      spawnProcess: () => { spawned = true; return new FakeCore() as never; },
+    });
+    const pending = client.runSource("value = 1\n", { signal: controller.signal });
+    controller.abort();
+    await expect(pending).rejects.toMatchObject({ code: "X11-PROTOCOL-005" });
+    expect(spawned).toBe(false);
+  });
+
+  test("握手前取消不会发送尚未存在的运行请求", async () => {
+    const controller = new AbortController();
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      overridePath: process.execPath,
+      spawnProcess: () => {
+        fake = new FakeCore();
+        controller.abort();
+        return fake as never;
+      },
+    });
+    await expect(client.runSource("value = 1\n", { signal: controller.signal }))
+      .rejects.toMatchObject({ code: "X11-PROTOCOL-005" });
+    expect(fake?.requests.map((value) => value.type)).toEqual(["hello"]);
+    expect(fake?.killed).toBe(true);
+  });
+
+  test("运行帧写入期间取消仍会发送取消帧", async () => {
+    const controller = new AbortController();
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      overridePath: process.execPath,
+      spawnProcess: () => {
+        fake = new FakeCore(() => controller.abort());
+        return fake as never;
+      },
+    });
+    const result = await client.runSource("value = 1\n", { signal: controller.signal });
+    expect(result.response.type).toBe("error");
+    expect(fake?.requests.map((value) => value.type)).toEqual(["hello", "run", "cancel", "shutdown"]);
+  });
+
   test("旧核心未声明 package 能力时不发送新请求", async () => {
     let fake: FakeCore | undefined;
     const client = new ProtocolClient({

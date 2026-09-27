@@ -281,6 +281,7 @@ export class ProtocolClient {
   async call(request: RunRequest | TestRequest | BuildRequest | EnvironmentRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     const discovery = await discoverCoreWithMetadata(this.options);
+    if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     const corePath = discovery.path;
     const cwd = this.options.cwd ?? process.cwd();
     const env = { ...process.env, ...(this.options.env ?? {}) };
@@ -302,7 +303,6 @@ export class ProtocolClient {
       // 取消帧发送失败时，主请求仍会由核心退出/EOF 转换为稳定错误。
       void this.sendCancel(child, request.request_id).catch(() => undefined);
     };
-    signal?.addEventListener("abort", abortHandler, { once: true });
     try {
       await writeChildFrame(child, {
         type: "hello",
@@ -324,8 +324,12 @@ export class ProtocolClient {
         throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 package 能力，请升级 xiao-core", 2);
       }
 
+      if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
       await writeChildFrame(child, request);
+      signal?.addEventListener("abort", abortHandler, { once: true });
+      if (signal?.aborted) abortHandler();
       const response = await frames.nextMatching(request.request_id);
+      signal?.removeEventListener("abort", abortHandler);
       await writeChildFrame(child, {
         type: "shutdown",
         request_id: requestId("shutdown"),

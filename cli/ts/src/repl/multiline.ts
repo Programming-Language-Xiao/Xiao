@@ -244,8 +244,8 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   };
   let exitCode = 0;
   let failSession: (error: Error) => void = () => undefined;
-  setRawMode(true);
   try {
+    setRawMode(true);
     await context.write(output, "\u001b[?2004h" + MOUSE_ENABLE + KITTY_QUERY);
     await redraw();
     exitCode = await new Promise<number>((resolve, reject) => {
