@@ -90,12 +90,13 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
     }
     if (mode === "save") {
       const frame = renderSaveInput(saveInput, view());
-      await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${frame.text}\u001b[2;${frame.cursorColumn}H\u001b[?25h`);
+      await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${frame.text}\u001b[${frame.cursorRow};${frame.cursorColumn}H\u001b[?25h`);
       saveReady = true;
       return;
     }
     const terminal = view();
-    const notices = editorNotice === null ? [] : wrapNotice(editorNotice, terminal.width).slice(-Math.max(0, terminal.height - 1));
+    const maxNoticeRows = Math.max(0, Math.floor(terminal.height) - 1);
+    const notices = editorNotice === null || maxNoticeRows === 0 ? [] : wrapNotice(editorNotice, terminal.width).slice(-maxNoticeRows);
     const frame = renderMultiline(state, { ...terminal, height: Math.max(1, terminal.height - notices.length) });
     const notice = notices.length === 0 ? "" : `\u001b[${terminal.height - notices.length + 1};1H${notices.join("\r\n")}`;
     await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${frame.text}${notice}\u001b[${frame.cursorRow};${frame.cursorColumn}H\u001b[?25h`);

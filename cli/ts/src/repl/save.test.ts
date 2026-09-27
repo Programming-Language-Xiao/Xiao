@@ -25,6 +25,7 @@ test("保存路径支持字素编辑、粘贴与 q/ESC 取消", () => {
   expect(applySaveKey(cancel, { kind: "enter" }).action).toBe("cancel");
   expect(applySaveKey(state, { kind: "enter" }).action).toBe("submit");
   expect(applySaveKey(state, { kind: "paste", text: "\n" }).state.error).toContain("X11-CLI-SAVE-001");
+  expect(applySaveKey(state, { kind: "paste", text: "\u2028" }).state.text).toBe(state.text);
 });
 
 test("保存标题、独立提示符和水平滚动路径适配窄终端", () => {
@@ -57,4 +58,9 @@ test("保存提示符复用确认态配色，错误不超过终端高度", () =>
   expect(stripAnsi(frame)).toBe(renderSaveInput(initialSaveInput(), { ...view, width: 40 }).text);
   const failed = renderSaveInput({ text: "main.xiao", cursor: 9, error: "path: very long failure message" }, { ...view, height: 4 });
   expect(failed.text.split("\r\n")).toHaveLength(4);
+  for (const height of [1, 2, 3]) {
+    const compact = renderSaveInput({ text: "main.xiao", cursor: 9, error: "path: very long failure message" }, { ...view, height });
+    expect(compact.text.split("\r\n")).toHaveLength(height);
+    expect(compact.cursorRow).toBe(height === 2 ? 1 : Math.min(height, 2));
+  }
 });

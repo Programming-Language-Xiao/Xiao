@@ -55,6 +55,15 @@ test("非法 UTF-8 与破坏行结构的控制字节分属编码和换行诊断"
 
 test("当前只接受 .xiao；权限与路径错误分开报告", async () => {
   expect(() => resolveXiaoPath("main.txt", process.cwd())).toThrow("X11-CLI-SAVE-001");
+  for (const separator of ["\u001b", "\u0085", "\u2028", "\u2029"]) {
+    const path = `bad${separator}.xiao`;
+    expect(() => resolveXiaoPath(path, process.cwd())).toThrow("X11-CLI-SAVE-001");
+    try {
+      resolveXiaoPath(path, process.cwd());
+    } catch (error) {
+      expect((error as Error).message).not.toContain(separator);
+    }
+  }
   await expect(loadEditorFile("main.xiao", process.cwd(), {
     readFile: async () => { throw Object.assign(new Error("denied"), { code: "EACCES" }); },
   })).rejects.toMatchObject({ code: "X11-CLI-SAVE-002" });

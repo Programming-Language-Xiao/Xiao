@@ -27,6 +27,7 @@ export const REPL_FILE_ERROR = {
 } as const;
 
 const INVALID_SOURCE_LINE = /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\u0085\u2028\u2029]/u;
+const INVALID_PATH_CHARACTER = /[\x00-\x1f\x7f\u0085\u2028\u2029]/u;
 
 /** 用户可操作的文件读写错误。 */
 export class ReplFileError extends Error {
@@ -43,8 +44,8 @@ export class ReplFileError extends Error {
 
 /** 当前只允许 `.xiao` 文件；其他扩展名是后续 I2 扩展点。 */
 export function resolveXiaoPath(path: string, cwd: string): string {
-  if (path.trim() === "" || /[\x00-\x1f\x7f]/u.test(path)) {
-    throw new ReplFileError(REPL_FILE_ERROR.path, path, "路径为空或包含控制字符，请输入有效的 .xiao 文件路径");
+  if (path.trim() === "" || INVALID_PATH_CHARACTER.test(path)) {
+    throw new ReplFileError(REPL_FILE_ERROR.path, path, "路径为空或包含控制/分隔字符，请输入有效的 .xiao 文件路径");
   }
   const absolute = resolve(cwd, path);
   if (extname(absolute) !== ".xiao") {
@@ -127,5 +128,6 @@ function fileErrorCode(error: unknown): string | null {
 
 /** 只转义终端控制字符，保留 Windows 路径分隔符的可读性。 */
 function safePath(path: string): string {
-  return path.replace(/[\x00-\x1f\x7f]/gu, (character) => JSON.stringify(character).slice(1, -1));
+  return path.replace(new RegExp(INVALID_PATH_CHARACTER.source, "gu"), (character) =>
+    `\\u${character.codePointAt(0)!.toString(16).padStart(4, "0")}`);
 }

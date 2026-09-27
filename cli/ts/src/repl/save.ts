@@ -43,8 +43,8 @@ export function applySaveKey(state: SaveInputState, key: KeyEvent): SaveInputRes
     return { state: { text: chars.join(""), cursor: key.kind === "backspace" ? index : state.cursor, error: null }, action: "none" };
   }
   if (key.kind === "text" || key.kind === "paste") {
-    if (/[\x00-\x1f\x7f]/u.test(key.text)) {
-      return { state: { ...state, error: "X11-CLI-SAVE-001: 路径不能包含控制字符" }, action: "none" };
+    if (/[\x00-\x1f\x7f\u0085\u2028\u2029]/u.test(key.text)) {
+      return { state: { ...state, error: "X11-CLI-SAVE-001: 路径不能包含控制或分隔字符" }, action: "none" };
     }
     const inserted = graphemes(key.text);
     chars.splice(state.cursor, 0, ...inserted);
@@ -54,8 +54,9 @@ export function applySaveKey(state: SaveInputState, key: KeyEvent): SaveInputRes
 }
 
 /** 绘制自适应保存态；路径太长时只水平滚动输入，不截断原始状态。 */
-export function renderSaveInput(state: SaveInputState, view: TerminalView): { text: string; cursorColumn: number } {
+export function renderSaveInput(state: SaveInputState, view: TerminalView): { text: string; cursorRow: number; cursorColumn: number } {
   const width = Math.max(1, Math.floor(view.width));
+  const height = Math.max(1, Math.floor(view.height));
   const chars = graphemes(state.text);
   const available = Math.max(0, width - 2);
   let start = 0;
@@ -70,13 +71,17 @@ export function renderSaveInput(state: SaveInputState, view: TerminalView): { te
   const marker = modalPrompt(view);
   const input = width === 1 ? marker : `${marker} ${visible}`;
   const cursorColumn = Math.min(width, Math.max(1, 3 + displayWidth(chars.slice(start, state.cursor).join(""))));
-  const errorRows = state.error === null ? [] : wrapNotice(state.error, width)
-    .slice(-Math.max(0, Math.floor(view.height) - 3));
-  const error = errorRows.length === 0 ? "" : `\r\n${errorRows.join("\r\n")}`;
-  return {
-    text: `${separator(view, SAVE_TITLE)}\r\n${input}\r\n${separator(view)}${error}`,
-    cursorColumn,
-  };
+  if (height === 1) return { text: input, cursorRow: 1, cursorColumn };
+  const title = separator(view, SAVE_TITLE);
+  const errorCapacity = state.error === null ? 0 : height >= 4 ? height - 3 : 1;
+  const errorRows = errorCapacity === 0 ? [] : wrapNotice(state.error!, width).slice(-errorCapacity);
+  if (height === 2) {
+    return errorRows.length === 0
+      ? { text: `${title}\r\n${input}`, cursorRow: 2, cursorColumn }
+      : { text: `${input}\r\n${errorRows[0]}`, cursorRow: 1, cursorColumn };
+  }
+  const tail = errorRows.length === 0 ? separator(view) : height === 3 ? errorRows[0] : `${separator(view)}\r\n${errorRows.join("\r\n")}`;
+  return { text: `${title}\r\n${input}\r\n${tail}`, cursorRow: 2, cursorColumn };
 }
 
 /** 按终端显示列宽换行诊断，避免路径和原因覆盖相邻界面。 */

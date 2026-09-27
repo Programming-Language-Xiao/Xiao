@@ -224,6 +224,46 @@ test("已载入文件用 Kitty 保存键直接写回，不进入路径界面", a
   }
 });
 
+test("运行完整缓冲区后仍保留文件绑定并可直接保存", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "xiao-repl-run-save-"));
+  try {
+    const path = join(directory, "main.xiao");
+    await writeFile(path, "code", "utf8");
+    const input = rawInput();
+    const sources: string[] = [];
+    const session = runMultilineSession({
+      input, output: new PassThrough(), error: new PassThrough(), write: writeSafely,
+      env: {}, isTTY: true, color: "never", cwd: directory, file: "main.xiao",
+      executeSource: async (source) => {
+        sources.push(source);
+        return {
+          response: {
+            type: "result", request_id: "run", operation: "run", exit_code: 0, exit_name: "success",
+            diagnostics: [], report: null, events: [], metrics: { peak_live_bytes: 0 },
+            value: null, artifact: null,
+          },
+          stderr: "", corePath: "test", coreSource: "override",
+        };
+      },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    input.write(Buffer.from("\u001b[?0u\u001b[?28u\u001b[13;2u"));
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    input.write(Buffer.from("\r"));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    input.write(Buffer.from("X\u001b[115;6u"));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    input.end();
+    const result = await session;
+    expect(sources).toEqual(["code"]);
+    expect(result.state.filePath).toBe(path);
+    expect(result.state.lines).toEqual(["Xcode"]);
+    expect(await readFile(path, "utf8")).toBe("Xcode");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test("已绑定保存失败保留原文件、绑定与缓冲区并显示路径和原因", async () => {
   const directory = await mkdtemp(join(tmpdir(), "xiao-repl-failed-save-"));
   try {
@@ -255,6 +295,39 @@ test("已绑定保存失败保留原文件、绑定与缓冲区并显示路径�
     expect(errors).toContain("X11-CLI-SAVE-002");
     expect(errors).toContain(path);
     expect(printed).toContain("权限不足");
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("一行高终端的保存失败不生成越界光标坐标", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "xiao-repl-short-save-"));
+  try {
+    const path = join(directory, "main.xiao");
+    await writeFile(path, "old", "utf8");
+    const input = rawInput();
+    const output = new PassThrough();
+    const error = new PassThrough();
+    let printed = "";
+    let errors = "";
+    output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+    error.on("data", (chunk: Buffer) => { errors += chunk.toString(); });
+    const session = runMultilineSession({
+      input, output, error, write: writeSafely, env: {}, isTTY: true, color: "never",
+      cwd: directory, file: "main.xiao", terminalSize: { width: 20, height: 1 },
+      fileSystem: {
+        ...nativeReplFileSystem,
+        writeFile: async () => { throw Object.assign(new Error("denied"), { code: "EACCES" }); },
+      },
+    });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    input.write(Buffer.from("\u001b[?0u\u001b[?28u\u001b[115;6u"));
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    input.end();
+    const result = await session;
+    expect(result.state.filePath).toBe(path);
+    expect(errors).toContain("X11-CLI-SAVE-002");
+    expect(printed).not.toMatch(/\u001b\[(?:0|-\d+);/u);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
