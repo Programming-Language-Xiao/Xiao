@@ -89,9 +89,28 @@ VM 的模块状态      **零**：xiao-vm 侧 grep `package` 零命中，
 
 ## 三、必须先冻结的 6 条
 
-### 3.1 **待查明**：`import` 的预期运行时语义（**先查清再动手**）
+### 3.1 `import` 的预期运行时语义（**已查明，2026-09-28**）
 
-**⚠️ 这是本批最重要的前置，不查清会修错东西。**
+**结论：当前丢弃 `Import` 是未实现，不是静态链接设计。**
+`docs/UseDocs/language/modules/imports.md`「位置与加载边界」已经规定：
+执行到导入语句时才初始化目标模块，单次运行内只初始化一次；05-B 只承诺静态发现。
+
+已用隔离项目在 `xiao-driver` 的真实 `run` 链路实测：`main.xiao` 只有
+`import helper`，`helper.xiao` 顶层写 `raise 1`，结果仍**成功**；
+改为 `import helper` 后引用 `helper.answer`，得到 `X02-TYPE-001`（名称未定义），
+而不是模块初始化或成员诊断。也就是说，**多模块项目当前不能跑通**。
+
+调用链核对：`FrontendCompiler::compile` 调用 `analyze_project`，仅把结果的
+诊断加入前端；`xiao-ir::lower_program` 将项目模块写入 `IrProgram.modules`，
+但该路径使用空类型结果降低模块 AST；`xiao-bytecode::lower_program` 不读取
+`modules`，`lower/stmt.rs` 丢弃 `Import`；类型检查对 `Statement::Import` 不绑定名称，
+VM 没有项目模块运行表。**没有将多个模块拼为可执行编译单元**。
+
+因此项目内导入另有待补的运行时债：执行到 `import` 时初始化模块，
+但**环境包根 `pkg.foo` 无需写 `import`**，按 §3.5 走另一套触发和缓存键；
+不能通过仅补一条 `Import` 指令代替包命名空间加载。两者的实现与验收分开登记。
+
+以下是查明前的判断框架，保留作为后续审计依据：
 
 现状是 `import` 在 bytecode lowering 里**落进空分支**（`lower/stmt.rs:119`）。
 但这**未必是缺陷**，取决于模块系统的设计：
