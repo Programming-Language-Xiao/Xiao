@@ -88,7 +88,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
       }
       if (parsedKey.kind === "mouse") {
         if (parsedKey.action === "release") {
-          if (parsedKey.button === 0) mouseAnchor = null;
+          mouseAnchor = null;
           continue;
         }
         if (parsedKey.action === "wheel" || parsedKey.button !== 0) continue;

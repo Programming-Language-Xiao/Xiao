@@ -502,7 +502,7 @@ I1c 在上述协议上新增覆盖模式、锚点选区和鼠标/剪贴板语义
 | Shift + ← / → / ↑ / ↓ / Home / End | 扩展锚点选区 | — |
 | Ctrl+← / Ctrl+→ | 逻辑行首 / 行尾；与 Home / End 同一语义 | — |
 | Ctrl+↑ / Ctrl+↓ | 缓冲区首行行首 / 尾行行尾 | — |
-| Ctrl+Shift+C / Ctrl+Shift+X / Ctrl+Shift+A | 复制 / 剪切选区 / 全选到程序内剪贴板 | Kitty 不可用时由终端自身处理，不报错 |
+| Ctrl+Shift+C / Ctrl+Shift+X / Ctrl+Shift+A | 复制选区 / 剪切选区 / 全选；复制和剪切共用程序内剪贴板 | Kitty 不可用时由终端自身处理，不报错 |
 
 有选区时输入、粘贴、Backspace 和 Delete 替换或删除整个选区；无 Shift 的方向键折叠到对应端点。
 覆盖模式只替换当前逻辑行的字素，行尾变为追加且不吞真实换行。鼠标使用 SGR 坐标，行号栏点击忽略，
