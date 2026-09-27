@@ -53,7 +53,9 @@ impl ObjectPayload for SetObject {
 
     /// 计入去重后的集合元素缓冲区。
     fn owned_bytes(&self) -> usize {
-        self.elements.capacity().saturating_mul(std::mem::size_of::<RuntimeValue>())
+        self.elements
+            .capacity()
+            .saturating_mul(std::mem::size_of::<RuntimeValue>())
     }
 
     /// 集合自身没有用户钩子；元素由引用计数逐个释放。

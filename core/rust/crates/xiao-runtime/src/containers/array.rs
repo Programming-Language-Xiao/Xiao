@@ -30,7 +30,9 @@ impl ObjectPayload for ArrayObject {
 
     /// 计入数组元素缓冲区，而不重复计入被引用的 Runtime 对象。
     fn owned_bytes(&self) -> usize {
-        self.elements.capacity().saturating_mul(std::mem::size_of::<RuntimeValue>())
+        self.elements
+            .capacity()
+            .saturating_mul(std::mem::size_of::<RuntimeValue>())
     }
 
     /// 数组自身没有用户钩子；元素由引用计数逐个释放。

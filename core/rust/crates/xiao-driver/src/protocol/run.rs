@@ -121,7 +121,11 @@ pub(super) fn run_request_response(
 }
 
 /// 将三段驱动器结果转换为运行响应。
-fn run_response(request_id: String, outcome: DriverOutcome, peak_live_bytes: u64) -> ProtocolResponse {
+fn run_response(
+    request_id: String,
+    outcome: DriverOutcome,
+    peak_live_bytes: u64,
+) -> ProtocolResponse {
     let exit_code = outcome.exit_code();
     match outcome {
         DriverOutcome::Frontend(error) => ProtocolResponse::Result {
@@ -141,7 +145,9 @@ fn run_response(request_id: String, outcome: DriverOutcome, peak_live_bytes: u64
             artifact: None,
         },
         DriverOutcome::Rejected(error) => rejected_response(request_id, exit_code, &error),
-        DriverOutcome::Executed(execution) => executed_response(request_id, exit_code, &execution, peak_live_bytes),
+        DriverOutcome::Executed(execution) => {
+            executed_response(request_id, exit_code, &execution, peak_live_bytes)
+        }
     }
 }
 
@@ -282,7 +288,11 @@ fn executed_response(
             .collect(),
         report: outcome.report.as_ref().map(protocol_report),
         events: outcome.events.iter().map(protocol_event).collect(),
-        metrics: Some(protocol_metrics(outcome.metrics, outcome.dropped_events, peak_live_bytes)),
+        metrics: Some(protocol_metrics(
+            outcome.metrics,
+            outcome.dropped_events,
+            peak_live_bytes,
+        )),
         value,
         artifact: None,
     }

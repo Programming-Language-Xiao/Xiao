@@ -182,7 +182,10 @@ struct MemoryCounter {
 impl MemoryCounter {
     /// 更新当前存活字节数及历史峰值。
     fn add(&self, bytes: u64) {
-        let current = self.current.fetch_add(bytes, Ordering::Relaxed).saturating_add(bytes);
+        let current = self
+            .current
+            .fetch_add(bytes, Ordering::Relaxed)
+            .saturating_add(bytes);
         self.peak.fetch_max(current, Ordering::Relaxed);
     }
 
@@ -623,7 +626,9 @@ unsafe fn free_header(ptr: NonNull<ObjectHeader>) {
 #[cfg(test)]
 /// 对象头计数、弱引用存活和载荷释放的回归测试。
 mod tests {
-    use super::{ObjectLayout, ObjectPayload, RuntimeTypeTag, allocate_payload, start_memory_measurement};
+    use super::{
+        ObjectLayout, ObjectPayload, RuntimeTypeTag, allocate_payload, start_memory_measurement,
+    };
     use crate::containers::ArrayHandle;
     use crate::errors::RuntimeResult;
     use crate::value::RuntimeValue;
@@ -728,15 +733,21 @@ mod tests {
         drop(empty_sample);
 
         let full_sample = start_memory_measurement();
-        let full = ArrayHandle::new(vec![RuntimeValue::Int(1); 1_000_000])
-            .expect("百万元素数组应分配");
+        let full =
+            ArrayHandle::new(vec![RuntimeValue::Int(1); 1_000_000]).expect("百万元素数组应分配");
         assert!(full_sample.peak_live_bytes() > empty_peak + 1_000_000);
         let before_growth = full_sample.peak_live_bytes();
         full.with_elements_mut(|elements| elements.reserve(1_000_000))
             .expect("数组扩容应成功");
         assert!(full_sample.peak_live_bytes() > before_growth);
         drop(full);
-        assert_eq!(full_sample.counter.current.load(std::sync::atomic::Ordering::Relaxed), 0);
+        assert_eq!(
+            full_sample
+                .counter
+                .current
+                .load(std::sync::atomic::Ordering::Relaxed),
+            0
+        );
     }
 
     #[test]

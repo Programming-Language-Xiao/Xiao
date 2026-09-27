@@ -1,7 +1,7 @@
 //! X0-A Rust 侧共享协议夹具与双向帧契约。
 
 use xiao_driver::protocol::{
-    CORE_VERSION, FRAME_LENGTH_BYTES, PROTOCOL_VERSION, OptimizationConfig, ProtocolRequest,
+    CORE_VERSION, FRAME_LENGTH_BYTES, OptimizationConfig, PROTOCOL_VERSION, ProtocolRequest,
     ProtocolResponse, ProtocolTarget, RunOptions, SourceIdentity, decode_frame, dispatch,
     encode_frame,
 };
@@ -113,7 +113,8 @@ fn runtime_peak_metric_is_backward_compatible_and_tracks_containers() {
             exit_code: 0,
             metrics: Some(metrics),
             ..
-        } = response else {
+        } = response
+        else {
             panic!("run must succeed: {response:?}");
         };
         metrics.peak_live_bytes

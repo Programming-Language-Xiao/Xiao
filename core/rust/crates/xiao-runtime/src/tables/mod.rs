@@ -555,7 +555,8 @@ impl TableInstance {
 
     /// 写入前端已验证的字段；私有访问已静态检查，类型和状态仍在此校验。
     pub fn set_compiled_field(&self, name: &str, value: RuntimeValue) -> RuntimeResult<()> {
-        let result = self.handle
+        let result = self
+            .handle
             .with_payload(RuntimeTypeTag::Table, |object: &TableObject| {
                 object.set_internal(name, value)
             })?;
@@ -597,7 +598,8 @@ impl TableInstance {
 
     /// 写入公开字段并执行静态类型对应的 Runtime 校验。
     pub fn set(&self, name: &str, value: RuntimeValue) -> RuntimeResult<()> {
-        let result = self.handle
+        let result = self
+            .handle
             .with_payload(RuntimeTypeTag::Table, |object: &TableObject| {
                 let member = object.definition.signature.member(name).ok_or_else(|| {
                     RuntimeError::invalid_value(format!("表 {} 没有成员 {name}", object.name()))
