@@ -312,3 +312,21 @@ TS 侧**已经有**原子写（`cli/ts/src/config/editor.ts:189` 的 `atomicWrit
 - [11B-I1c. 光标模式、选区与剪贴板](11bi1c-cursor-selection-clipboard.md) —— 编辑器状态字段
 - [00. 决策基线](00-decisions.md) `:674`、`:676`、`:677` —— 本批要删的三条待定项
 - [00A. 工程框架与目录布局](00a-project-layout.md) —— `repl/`、`config/`、`platform/` 的职责与登记
+
+## 十一、实现与验证记录（2026-09-27）
+
+- 三条待定决策已移入 `00-decisions` 的已冻结段：首次保存直接覆盖、缺失文件创建空绑定缓冲区、
+  当前只接受 `.xiao`。`q` 取消键依赖扩展名限定，其他扩展名留待后续扩展。
+- 配置写入和 REPL 源码保存共用 `platform/atomic-write.ts`；同目录临时文件、目标权限保留、
+  Windows 覆盖失败后的备份/回滚及文件系统注入点都保留，配置既有测试继续通过。
+- `--inLF <file.xiao>` 严格按 UTF-8 字节读取，接受 CRLF/CR/LF 并归一化为逻辑行；
+  保存固定 UTF-8 无 BOM、LF。非法编码、破坏行结构的控制/分隔字符、路径/扩展名、权限
+  及其他 I/O 分别报告稳定诊断。
+- 保存路径保持在独立状态。未绑定时 `!save!` 和 Kitty Ctrl+Shift+S 打开保存栏；
+  已绑定时直接写回。Esc 与 `q` + Enter 无损取消，同块回车不能绕过可见保存栏；
+  失败不改绑定和缓冲区，未绑定失败后可保留路径输入重试。
+- `save.json` 固定三档终端宽度的保存界面；配置、文件、编辑状态、CLI 入口和失败回滚均有
+  可注入边界测试。当前不改变 I3/I4 与语言级交互输入的归属。
+- 验证结果：CLI 全测试 186 通过、5 条件跳过，根 Bun 测试 223 通过、5 条件跳过；
+  TypeScript 类型检查、`xiao-runtime` 与 `xiao-driver` 测试通过；`bun run check`
+  （含 clippy、工作区检查）连续三轮通过。

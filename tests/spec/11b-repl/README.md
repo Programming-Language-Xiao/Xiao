@@ -14,3 +14,7 @@ I1c 的覆盖模式、选区、共享编辑器剪贴板、SGR 鼠标反向映射
 I1b 的 `confirm.json` 固定窄、中、宽终端的确认标题与独立 `>` 行；`confirm.test.ts`
 加载该夹具。追加输出、CRLF、取消、尺寸变化和保留编辑状态由 `output.test.ts`、
 `multiline.test.ts` 与 CLI 入口测试覆盖。
+
+I2 的 `save.json` 固定保存标题、路径输入提示符及分隔线的三档宽度；
+`save.test.ts` 执行夹具，文件读写、取消、失败回滚与绑定由 `file.test.ts`、
+`atomic-write.test.ts`、`multiline.test.ts` 和 CLI 入口测试覆盖。

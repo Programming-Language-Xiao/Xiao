@@ -123,6 +123,7 @@ export function helpText(): string {
     "  xiao remove <package> [--dev]           删除依赖并重新锁定",
     "  xiao shell-init <bash|zsh|fish|powershell|cmd> [--install|--uninstall] [--profile <绝对路径>]",
     "  xiao deactivate                          取消当前 Shell 环境激活",
+    "  xiao --inLF [file.xiao]                  多行编辑或打开源码文件",
     "  xiao --help | --version",
     "",
     "无参数 xiao 启动单行交互会话；--inLF [file.xiao] 进入多行编辑。",

@@ -2,7 +2,7 @@
 
 import { describe, expect, test } from "bun:test";
 import { EventEmitter } from "node:events";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough, Readable } from "node:stream";
@@ -152,6 +152,52 @@ describe("CLI 入口", () => {
     expect(await session).toBe(0);
     expect(requests.map((request) => (request.source as { text: string }).text)).toEqual(["first\nsecond"]);
     expect(printed).toContain("first\r\nsecond\r\n");
+  });
+
+  test("--inLF 缺失文件立即绑定，首次保存直接创建文件", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-cli-new-file-"));
+    try {
+      const input = new PassThrough() as PassThrough & { isRaw: boolean; setRawMode: (mode: boolean) => void };
+      input.isRaw = false;
+      input.setRawMode = (mode) => { input.isRaw = mode; };
+      const output = new PassThrough();
+      let printed = "";
+      output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+      const session = runCli(["--inLF", "new.xiao"], {
+        stdin: input, stdout: output, stderr: new PassThrough(), cwd: directory,
+        env: { NO_COLOR: "1" }, isTTY: true,
+      });
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      input.write(Buffer.from("code\r!save!\r"));
+      await new Promise((resolve) => setTimeout(resolve, 15));
+      input.end();
+      expect(await session).toBe(0);
+      expect(await readFile(join(directory, "new.xiao"), "utf8")).toBe("code");
+      expect(printed).not.toContain("Enter the save location");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("--inLF 拒绝非法 UTF-8 文件，不进入 raw mode", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-cli-invalid-file-"));
+    try {
+      await writeFile(join(directory, "bad.xiao"), Buffer.from([0xff]));
+      const input = new PassThrough() as PassThrough & { isRaw: boolean; setRawMode: (mode: boolean) => void };
+      input.isRaw = false;
+      input.setRawMode = (mode) => { input.isRaw = mode; };
+      const error = new PassThrough();
+      let errors = "";
+      error.on("data", (chunk: Buffer) => { errors += chunk.toString(); });
+      expect(await runCli(["--inLF", "bad.xiao"], {
+        stdin: input, stdout: new PassThrough(), stderr: error, cwd: directory,
+        env: { NO_COLOR: "1" }, isTTY: true,
+      })).toBe(74);
+      expect(errors).toContain("X11-CLI-SAVE-003");
+      expect(input.isRaw).toBe(false);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 
   test("非 raw mode 多行入口给稳定诊断；机器 JSON 模式不启动交互会话", async () => {

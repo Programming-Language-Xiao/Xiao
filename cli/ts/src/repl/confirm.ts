@@ -27,6 +27,11 @@ export function separator(view: TerminalView, title = ""): string {
 
 /** 绘制确认态三行：嵌入标题的分隔线、独立提示符、下方分隔线。 */
 export function renderConfirmation(view: TerminalView): string {
+  return `${separator(view, CONFIRM_TITLE)}\r\n${modalPrompt(view)}\r\n${separator(view)}`;
+}
+
+/** 确认、保存和后续面板共用的独立提示符配色。 */
+export function modalPrompt(view: TerminalView): string {
   const colorizer = createColorizer({
     mode: view.color.mode ?? "auto",
     isTTY: view.isTTY,
@@ -36,7 +41,7 @@ export function renderConfirmation(view: TerminalView): string {
   });
   const term = view.color.term ?? "";
   const marker = !colorizer.enabled ? ">" : `\u001b[${colorizer.trueColor ? "38;2;220;220;173" : term.includes("256color") ? "38;5;187" : "33"}m>\u001b[39m`;
-  return `${separator(view, CONFIRM_TITLE)}\r\n${marker}\r\n${separator(view)}`;
+  return marker;
 }
 
 /** 保持标题和分隔线在窄终端也精确占满目标列数。 */
