@@ -10,6 +10,7 @@ import { cursorFromRenderedPosition, renderMultiline } from "./render.ts";
 import { renderConfirmation } from "./confirm.ts";
 import { loadEditorFile, saveEditorFile, type ReplFileSystem } from "./file.ts";
 import { beginOutput, finishOutput, terminalLines, type RunDisplay } from "./output.ts";
+import { applyPanelKey, initialPanelState, renderPanel } from "./panel.ts";
 import { applySaveKey, initialSaveInput, renderSaveInput, wrapNotice } from "./save.ts";
 import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_PUSH, KITTY_QUERY, MOUSE_DISABLE, MOUSE_ENABLE, type KeyboardProbe, type TerminalView } from "../ui/terminal.ts";
 
@@ -24,6 +25,7 @@ export interface MultilineContext extends Pick<ReplContext, "input" | "output" |
   debug?: boolean;
   file?: string;
   fileSystem?: ReplFileSystem;
+  initialPanel?: boolean;
   executeSource?: (source: string, signal: AbortSignal) => Promise<CoreCallResult>;
 }
 
@@ -62,10 +64,12 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   }
   let parser: KeyParserState = initialKeyParserState();
   let keyboard: KeyboardProbe = initialKeyboardProbe();
-  let mode: "edit" | "confirm" | "save" | "output" = "edit";
+  let mode: "edit" | "confirm" | "save" | "panel" | "output" = context.initialPanel ? "panel" : "edit";
   let confirmationReady = false;
   let saveReady = false;
+  let panelReady = false;
   let saveInput = initialSaveInput();
+  let panelState = initialPanelState();
   let editorNotice: string | null = null;
   let inputGeneration = 0;
   let mouseAnchor: EditorCursor | null = null;
@@ -92,6 +96,12 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
       const frame = renderSaveInput(saveInput, view());
       await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${frame.text}\u001b[${frame.cursorRow};${frame.cursorColumn}H\u001b[?25h`);
       saveReady = true;
+      return;
+    }
+    if (mode === "panel") {
+      const frame = renderPanel(panelState, view());
+      await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${frame.text}\u001b[${frame.cursorRow};${frame.cursorColumn}H\u001b[?25h`);
+      panelReady = true;
       return;
     }
     const terminal = view();
@@ -121,6 +131,11 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
       saveInput = initialSaveInput();
       saveReady = false;
       editorNotice = null;
+      inputGeneration += 1;
+    } else if (command === "panel") {
+      mode = "panel";
+      panelState = initialPanelState();
+      panelReady = false;
       inputGeneration += 1;
     }
   };
@@ -261,6 +276,21 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
         }
         continue;
       }
+      if (mode === "panel") {
+        if ("kittyOnly" in parsedKey && parsedKey.kittyOnly && !keyboard.kittyKeys) continue;
+        const result = applyPanelKey(panelState, parsedKey);
+        panelState = result.state;
+        if (result.close) {
+          panelReady = false;
+          panelState = initialPanelState();
+          inputGeneration += 1;
+          if (context.initialPanel) return 0;
+          mode = "edit";
+          await redraw();
+          return null;
+        }
+        continue;
+      }
       if (parsedKey.kind === "mouse") {
         if (parsedKey.action === "release") {
           mouseAnchor = null;
@@ -289,7 +319,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
           if (dispatched !== null) {
             state = dispatched.state;
             emitCommand(dispatched.command);
-            if (dispatched.command === "run" || dispatched.command === "save") {
+            if (dispatched.command === "run" || dispatched.command === "save" || dispatched.command === "panel") {
               if (dispatched.command === "save") await handleSaveCommand();
               else await redraw();
               return null;
@@ -305,7 +335,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
           await context.write(context.error, "X11-REPL-LINES-001: 多行缓冲区不能超过 99999 行\n");
         }
         if (result.effect === "run" || result.effect === "save" || result.effect === "panel") emitCommand(result.effect);
-        if (result.effect === "run" || result.effect === "save") {
+        if (result.effect === "run" || result.effect === "save" || result.effect === "panel") {
           if (result.effect === "save") await handleSaveCommand();
           else await redraw();
           return null;
@@ -315,7 +345,16 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
     if (parser.pending.length === 1 && parser.pending[0] === 27) {
       escapeTimer = setTimeout(() => {
         parser = flushPendingKeys(parser).state;
-        if (mode === "confirm" || mode === "save") {
+        if (mode === "confirm" || mode === "save" || mode === "panel") {
+          if (mode === "panel") {
+            panelReady = false;
+            panelState = initialPanelState();
+            inputGeneration += 1;
+            if (context.initialPanel) {
+              finishSession(0);
+              return;
+            }
+          }
           mode = "edit";
           confirmationReady = false;
           saveReady = false;
@@ -330,6 +369,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   };
   let exitCode = 0;
   let failSession: (error: Error) => void = () => undefined;
+  let finishSession: (code: number) => void = () => undefined;
   try {
     setRawMode(true);
     await context.write(output, "\u001b[?2004h" + MOUSE_ENABLE + KITTY_QUERY);
@@ -356,8 +396,10 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
         finished = true;
         void processing.then(() => { cleanup(); resolve(code); }, (error: Error) => { cleanup(); reject(error); });
       };
+      finishSession = finish;
       const onData = (chunk: Buffer) => {
-        if (finished || mode === "output" || (mode === "confirm" && !confirmationReady) || (mode === "save" && !saveReady)) return;
+        if (finished || mode === "output" || (mode === "confirm" && !confirmationReady)
+          || (mode === "save" && !saveReady) || (mode === "panel" && !panelReady)) return;
         const generation = inputGeneration;
         processing = processing.then(async () => {
           if (finished || generation !== inputGeneration) return;

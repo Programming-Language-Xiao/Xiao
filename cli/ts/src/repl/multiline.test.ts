@@ -197,6 +197,97 @@ test("同一输入块不能绕过保存界面，q 和 Esc 无损取消", async (
   }
 });
 
+test("!panel! 剔除控制行，面板输入与回车不进入源码", async () => {
+  const input = rawInput();
+  const output = new PassThrough();
+  let printed = "";
+  output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+  const session = runMultilineSession({
+    input, output, error: new PassThrough(), write: writeSafely,
+    env: {}, isTTY: true, color: "never",
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("code\r!panel!\r\r"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("ignored\r"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("\u001b"));
+  await new Promise((resolve) => setTimeout(resolve, 70));
+  input.end();
+  const result = await session;
+  expect(result.state.lines).toEqual(["code"]);
+  expect(result.state.cursor).toEqual({ line: 0, column: 4 });
+  expect(result.commands).toEqual(["panel"]);
+  expect(printed).toContain("Command Panel");
+  expect(printed).not.toContain("Press Enter to confirm and run");
+});
+
+test("同一输入块里的面板键不能在界面出现前立刻关闭面板", async () => {
+  const input = rawInput();
+  const session = runMultilineSession({
+    input, output: new PassThrough(), error: new PassThrough(), write: writeSafely,
+    env: {}, isTTY: true, color: "never",
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("\u001b[?0u\u001b[?28u"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("code\r!panel!\r\u001b[112;6u"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("panel-only\r\u001b[112;6u"));
+  await new Promise((resolve) => setTimeout(resolve, 15));
+  input.end();
+  const result = await session;
+  expect(result.state.lines).toEqual(["code"]);
+  expect(result.commands).toEqual(["panel"]);
+});
+
+test("Kitty 面板键可开关，关闭后保留文件绑定和编辑位置", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "xiao-repl-panel-bound-"));
+  try {
+    const path = join(directory, "main.xiao");
+    await writeFile(path, "code", "utf8");
+    const input = rawInput();
+    const session = runMultilineSession({
+      input, output: new PassThrough(), error: new PassThrough(), write: writeSafely,
+      env: {}, isTTY: true, color: "never", cwd: directory, file: "main.xiao",
+    });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    input.write(Buffer.from("X\u001b[?0u\u001b[?28u\u001b[112;6u"));
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    input.write(Buffer.from("temporary\r\u001b[112;6u"));
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    input.end();
+    const result = await session;
+    expect(result.state.filePath).toBe(path);
+    expect(result.state.lines).toEqual(["Xcode"]);
+    expect(result.state.cursor).toEqual({ line: 0, column: 1 });
+    expect(await readFile(path, "utf8")).toBe("code");
+    expect(result.commands).toEqual(["panel"]);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test("临时 raw 面板从独立入口打开，Esc 结束后恢复终端", async () => {
+  const input = rawInput();
+  const output = new PassThrough();
+  let printed = "";
+  output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+  const session = runMultilineSession({
+    input, output, error: new PassThrough(), write: writeSafely,
+    env: {}, isTTY: true, color: "never", initialPanel: true,
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("query\r\u001b"));
+  await new Promise((resolve) => setTimeout(resolve, 70));
+  const result = await session;
+  expect(result.exitCode).toBe(0);
+  expect(result.state.lines).toEqual([""]);
+  expect(input.isRaw).toBe(false);
+  expect(printed).toContain("Command Panel");
+  input.end();
+});
+
 test("已载入文件用 Kitty 保存键直接写回，不进入路径界面", async () => {
   const directory = await mkdtemp(join(tmpdir(), "xiao-repl-direct-save-"));
   try {
