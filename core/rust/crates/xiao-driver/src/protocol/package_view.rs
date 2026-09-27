@@ -3,12 +3,12 @@
 use std::collections::BTreeMap;
 use std::path::{Component, Path};
 
+use crate::packages::valid_package_root;
 use serde_json::json;
 use xiao_modules::{
     ExportOrigin, ModuleKind, ModuleName, ModuleSymbolKind, ProjectModuleResult, analyze_project,
 };
 use xiao_package::{CacheLayout, PackageObjectMapping, environment_package_view};
-use xiao_syntax::KeywordKind;
 use xiao_types::{TypeCheckResult, check};
 
 use super::mapping::{protocol_error_body, protocol_error_from_error};
@@ -85,7 +85,7 @@ fn repl_packages_with_layout(
     };
     let mappings = mappings
         .into_iter()
-        .filter(|mapping| valid_module_segment(&mapping.package.name))
+        .filter(|mapping| valid_package_root(&mapping.package.name))
         .collect::<Vec<_>>();
     let mut roots = BTreeMap::new();
     for mapping in &mappings {
@@ -133,7 +133,7 @@ fn module_interface(
     let module_segments = segments.map(str::to_owned).collect::<Vec<_>>();
     if module_segments
         .iter()
-        .any(|segment| !valid_module_segment(segment))
+        .any(|segment| !valid_package_root(segment))
     {
         return Err((Some(root.to_owned()), format!("非法模块路径 {path:?}")));
     }
@@ -193,17 +193,6 @@ fn module_interface(
         module_path: path.to_owned(),
         exports,
     })
-}
-
-/// 包名还可包含 `-` 和 `.`；自动登记只接受 05-B 模块路径可解析的单段名称。
-fn valid_module_segment(segment: &str) -> bool {
-    let mut chars = segment.chars();
-    let Some(first) = chars.next() else {
-        return false;
-    };
-    (first == '_' || first.is_ascii_alphabetic())
-        && chars.all(|character| character == '_' || character.is_ascii_alphanumeric())
-        && KeywordKind::from_word(segment).is_none()
 }
 
 /// 将再导出来源解析回 05-B 已发现的真实文件模块，再读取其函数签名。

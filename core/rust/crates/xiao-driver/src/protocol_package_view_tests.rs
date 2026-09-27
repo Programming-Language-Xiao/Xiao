@@ -172,6 +172,23 @@ fn interface_query_does_not_execute_module() {
         "{:?}",
         interface.exports
     );
+    let registry = crate::packages::PackageRegistry::from_layout(
+        &workspace.layout,
+        std::path::Path::new(&active),
+        false,
+    )
+    .expect("readonly package registry");
+    assert!(registry.namespaces.members["lib"].contains("api"));
+    assert!(registry.namespaces.members["lib.api"].contains("greet"));
+    let mut context = crate::frontend::FrontendContext::host();
+    context.package_registry = Some(registry);
+    let compiled = crate::frontend::FrontendCompiler::new().compile(
+        &crate::frontend::FrontendRequest::from_text("module = lib.api\n").with_context(context),
+    );
+    assert!(
+        compiled.is_ok(),
+        "static lookup must not run raise probe: {compiled:?}"
+    );
     let executed = crate::run::run(&crate::run::DriverRequest::new(
         crate::frontend::FrontendRequest::from_text(text),
     ));

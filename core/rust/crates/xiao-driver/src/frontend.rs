@@ -9,6 +9,7 @@ use std::fmt::{self, Display, Formatter};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use crate::packages::PackageRegistry;
 use xiao_config::NormalizedConfig;
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
 use xiao_ir::{IrProgram, IrValidationError, IrValidator, lower_program};
@@ -16,7 +17,7 @@ use xiao_lifetime::analyze as analyze_lifetime;
 use xiao_modules::{ProjectModuleResult, analyze_project};
 use xiao_source::SourceFile;
 use xiao_syntax::{ParseResult, Program, parse};
-use xiao_types::{TypeCheckResult, check};
+use xiao_types::{ExternalNamespaces, TypeCheckResult, TypeChecker, check};
 
 /// 前端流水线版本；用于请求/结果协商和快照元数据。
 pub const FRONTEND_VERSION: u32 = 1;
@@ -53,6 +54,10 @@ pub struct FrontendContext {
     pub config_present: bool,
     /// 可选外部包图摘要。
     pub external_modules: Option<ExternalModuleGraph>,
+    /// 来自环境视图的包命名空间接口；仅用于静态类型检查。
+    pub package_namespaces: Option<ExternalNamespaces>,
+    /// 环境包的只读静态映射，不是 VM 初始化缓存。
+    pub package_registry: Option<PackageRegistry>,
     /// 目标平台描述，默认使用 `host`。
     pub target: String,
     /// 语言版本，默认使用 `0.1.0`。
@@ -258,7 +263,20 @@ impl FrontendCompiler {
         let Some(program) = parsed.program.as_ref() else {
             return Err(FrontendError { diagnostics });
         };
-        let type_result = check(&request.source, program);
+        let namespaces = request.context.package_namespaces.as_ref().or_else(|| {
+            request
+                .context
+                .package_registry
+                .as_ref()
+                .map(|registry| &registry.namespaces)
+        });
+        let type_result = if let Some(namespaces) = namespaces {
+            TypeChecker::new(&request.source)
+                .with_external_namespaces(namespaces.clone())
+                .check_program(program)
+        } else {
+            check(&request.source, program)
+        };
         diagnostics.extend(type_result.diagnostics.clone());
 
         let lifetime = analyze_lifetime(&request.source, program, &type_result);

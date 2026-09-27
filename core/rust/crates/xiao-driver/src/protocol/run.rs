@@ -18,6 +18,7 @@ use super::request::{
 use super::validate::{validate_source, validate_target, validate_versions};
 use crate::diagnostics::{DiagnosticOptions, DiagnosticSession, start_error_details};
 use crate::frontend::{FrontendContext, FrontendRequest};
+use crate::packages::PackageRegistry;
 use crate::run::{
     CancellationToken, DriverError, DriverExecution, DriverOutcome, DriverPhase, DriverRequest,
     ExitCode, FrontendVmDriver,
@@ -37,6 +38,20 @@ pub(super) fn frontend_request(
         None => FrontendRequest::from_text(source.text.clone()),
     };
     request.with_context(context)
+}
+
+fn frontend_run_request(
+    source: &SourceIdentity,
+    language_version: &str,
+    target: &ProtocolTarget,
+) -> Result<FrontendRequest, ProtocolError> {
+    let mut request = frontend_request(source, language_version, target);
+    let active_environment = std::env::var_os("XIAO_ACTIVE_ENV");
+    let registry =
+        PackageRegistry::from_environment(active_environment.as_deref().map(std::path::Path::new))
+            .map_err(|error| ProtocolError::request("environment", error))?;
+    request.context.package_registry = Some(registry);
+    Ok(request)
 }
 
 /// 将协议 VM 参数交给生产 VM 自身的范围校验。
@@ -98,12 +113,15 @@ pub(super) fn run_request_response(
     let diagnostic_config = optimization.diagnostics.clone();
     let module_name = source.module.clone();
     let source_name = source.path.clone();
-    let mut driver_request =
-        DriverRequest::new(frontend_request(&source, &language_version, &target))
-            .with_options(vm_options)
-            .with_module_name(module_name.clone())
-            .with_event_capacity(event_capacity)
-            .with_cancellation(cancellation);
+    let frontend = match frontend_run_request(&source, &language_version, &target) {
+        Ok(frontend) => frontend,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let mut driver_request = DriverRequest::new(frontend)
+        .with_options(vm_options)
+        .with_module_name(module_name.clone())
+        .with_event_capacity(event_capacity)
+        .with_cancellation(cancellation);
     if let Some(path) = source_name.clone() {
         driver_request = driver_request.with_source_name(path);
     }

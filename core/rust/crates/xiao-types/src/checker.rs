@@ -3,17 +3,18 @@
 //! 检查器只消费 `xiao-syntax` 的公开 AST 和源码区间，输出类型化结果、结构化
 //! 诊断及需要后端插入的运行时检查标记；它绝不执行 Xiao 程序或修改原始 AST。
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use xiao_diagnostics::Diagnostic;
 use xiao_source::SourceFile;
 use xiao_syntax::Program;
 
 use crate::containers::ContainerMaterializationPlan;
+use crate::environment::Binding;
 use crate::environment::TypeEnvironment;
 use crate::functions::FunctionSignature;
 use crate::numeric::ConstantValue;
-use crate::types::Type;
+use crate::types::{Type, TypeScheme};
 use crate::unify::TypeContext;
 
 #[cfg(test)]
@@ -64,11 +65,19 @@ mod table_checker;
 pub use self::result::{RuntimeCheck, RuntimeCheckKind, TypeCheckResult, TypedNode};
 use self::table_checker::TableFrame;
 
+/// 包路径到可读取成员的静态、无副作用接口；键是完整点号路径。
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct ExternalNamespaces {
+    /// 根名称、目录命名空间及文件模块各自的公开成员。
+    pub members: BTreeMap<String, BTreeSet<String>>,
+}
+
 /// P2 静态检查器；生命周期只借用不可变源码。
 pub struct TypeChecker<'source> {
     source: &'source SourceFile,
     context: TypeContext,
     environment: TypeEnvironment,
+    external_namespaces: ExternalNamespaces,
     diagnostics: Vec<Diagnostic>,
     nodes: Vec<TypedNode>,
     runtime_checks: Vec<RuntimeCheck>,
@@ -101,6 +110,7 @@ impl<'source> TypeChecker<'source> {
             source,
             context: TypeContext::new(),
             environment: TypeEnvironment::new(),
+            external_namespaces: ExternalNamespaces::default(),
             diagnostics: Vec::new(),
             nodes: Vec::new(),
             runtime_checks: Vec::new(),
@@ -157,6 +167,19 @@ impl<'source> TypeChecker<'source> {
     #[must_use]
     pub const fn source(&self) -> &'source SourceFile {
         self.source
+    }
+
+    /// 只登记外部包接口；此步骤不读取或执行包模块源码。
+    #[must_use]
+    pub fn with_external_namespaces(mut self, namespaces: ExternalNamespaces) -> Self {
+        for root in namespaces.members.keys().filter(|path| !path.contains('.')) {
+            let _ = self.environment.declare(
+                format!("ascii:{root}"),
+                Binding::constant(TypeScheme::monomorphic(Type::Dynamic)),
+            );
+        }
+        self.external_namespaces = namespaces;
+        self
     }
 }
 

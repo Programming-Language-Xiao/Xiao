@@ -558,6 +558,26 @@ impl<'source> TypeChecker<'source> {
         member: Name,
         span: SourceSpan,
     ) -> Type {
+        if let Some(path) = self.external_namespace_path(object) {
+            self.check_expression(object);
+            let member_name = self.display_name(member);
+            if !member.backticked
+                && self
+                    .external_namespaces
+                    .members
+                    .get(&path)
+                    .is_some_and(|members| members.contains(&member_name))
+            {
+                return Type::Dynamic;
+            }
+            self.type_error(
+                crate::diagnostics::UNDEFINED_NAME_CODE,
+                "x02.type.undefined_name",
+                member.span,
+                format!("包命名空间 {path} 中未定义名称 {member_name}"),
+            );
+            return Type::Dynamic;
+        }
         let object_type = self.check_expression(object);
         let Type::Table(table_type) = self.context.apply(&object_type) else {
             if object_type.is_dynamic() || matches!(object_type, Type::Variable(_)) {
@@ -627,6 +647,30 @@ impl<'source> TypeChecker<'source> {
             return Type::Dynamic;
         }
         member_signature.ty.clone()
+    }
+
+    fn external_namespace_path(&self, expression: &Expression) -> Option<String> {
+        match expression {
+            Expression::Name(name) if !name.backticked => {
+                let root = self.display_name(*name);
+                self.external_namespaces
+                    .members
+                    .contains_key(&root)
+                    .then_some(root)
+            }
+            Expression::Member { object, member, .. } if !member.backticked => {
+                let path = format!(
+                    "{}.{}",
+                    self.external_namespace_path(object)?,
+                    self.display_name(*member)
+                );
+                self.external_namespaces
+                    .members
+                    .contains_key(&path)
+                    .then_some(path)
+            }
+            _ => None,
+        }
     }
 
     /// 方法调用消费完整静态签名，并复用普通函数的缺省/关键字匹配规则。

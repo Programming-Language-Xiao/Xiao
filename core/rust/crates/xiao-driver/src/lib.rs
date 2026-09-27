@@ -12,6 +12,8 @@ pub mod diagnostics;
 
 /// 前端到 LLVM 原生后端的内部构建驱动器。
 mod native;
+/// 环境包源码及其只读静态接口。
+mod packages;
 /// X0-A 子进程协议、帧编解码和 Rust 核心入口。
 pub mod protocol;
 /// 前端产物到生产 VM 的内部运行驱动器。
@@ -32,6 +34,8 @@ pub use run::{
 
 /// 重导出前端到 LLVM 原生程序的结构化构建接口。
 pub use native::{FrontendNativeDriver, NativeBuildRequest, NativeBuildResult, NativeDriverError};
+/// 可注入的环境包映射及其具体文件模块。
+pub use packages::{PackageModule, PackageRegistry};
 
 /// 重导出 X0-A 协议契约和标准输入/输出服务。
 pub use protocol::{

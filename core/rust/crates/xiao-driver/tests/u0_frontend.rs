@@ -1,7 +1,9 @@
 //! 08-U0 统一前端流水线规格。
 
+use std::collections::{BTreeMap, BTreeSet};
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::IrStatementKind;
+use xiao_types::ExternalNamespaces;
 
 #[test]
 /// 无错误源码应得到经过验证的 IR，且保留源码入口模式。
@@ -40,4 +42,18 @@ fn carries_context_metadata() {
     let artifact = xiao_driver::compile(&request).expect("frontend");
     assert_eq!(artifact.ir.target, "windows-x86_64");
     assert_eq!(artifact.ir.language_version, "0.1-test");
+}
+
+#[test]
+fn accepts_external_package_namespace_without_initializing_modules() {
+    let mut context = xiao_driver::FrontendContext::host();
+    context.package_namespaces = Some(ExternalNamespaces {
+        members: BTreeMap::from([
+            ("lib".to_owned(), BTreeSet::from(["api".to_owned()])),
+            ("lib.api".to_owned(), BTreeSet::from(["value".to_owned()])),
+        ]),
+    });
+    let request = FrontendRequest::from_text("answer = lib.api.value\n").with_context(context);
+    let artifact = FrontendCompiler::new().compile(&request).expect("frontend");
+    assert_eq!(artifact.ir.body.len(), 1);
 }
