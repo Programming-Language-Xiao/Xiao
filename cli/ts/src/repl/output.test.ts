@@ -43,6 +43,7 @@ test("输出段只追加分隔线、长输出和摘要，完全不清屏", async
   expect(printed).toContain("line 0\r\n");
   expect(printed).toContain("line 29\r\n");
   expect(printed).toContain("time:1.2500 memory:12.35MB\r\n");
+  expect(printed.endsWith("\r\n".repeat(view.height))).toBe(true);
   expect(error.chunks).toEqual([]);
 });
 

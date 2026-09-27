@@ -128,8 +128,8 @@
 | 11B-I0 修复 | [Git 探测阻塞首个提示符](11bi0-fix-git-probe-blocking.md) | `execFile` → `spawn`（**可真正杀掉超时子进程**、stdout/stderr 各限 64 KiB、显式 `shell: false`）、冷进程耗时测试、`--inLF` 明确拒绝、I0 文档更正 | 已完成（目标环境 101 通过 / 5 跳过 / 0 失败；首屏 0.343s 带计数） |
 | 11B-I1a | [多行缓冲区与编辑核心](11bi1a-multiline-buffer.md) | 多行缓冲区与五字符行号栏、软换行（含**双宽字符**）、多行粘贴、**完整编辑按键协议**、控制指令共享分派、`!inLF!`/`--inLF` 入口 | 已完成（134 通过 / 5 跳过 / 0 失败）；确认执行由 I1b 接续 |
 | 11B-I1c | [光标模式、选区与剪贴板](11bi1c-cursor-selection-clipboard.md) | `Ins` 覆盖模式、锚点+光标选区、鼠标点击定位（SGR，**Shift 保留终端本地选中**）、程序内剪贴板 `Ctrl+Shift+C/X/A`、修 I1a 的 Alt 过度降级 | 已完成（144 通过 / 5 跳过 / 0 失败） |
-| 11B-I1b | [运行确认与执行输出](11bi1b-confirm-and-run.md) | 确认态与自适应分隔线、Esc 无损取消、执行完整缓冲区、追加式输出、耗时/Runtime 峰值内存摘要、终端尺寸变化 | 确认执行闭环已实现；运行时交互输入受现有协议与语言内建限制，待独立 I/O 通道决策 |
-| 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 进行中（I0、I1a、I1c 已验收，I1b 确认执行已接线；交互输入通道及 I2–I5 待实施） |
+| 11B-I1b | [运行确认与执行输出](11bi1b-confirm-and-run.md) | 确认态与自适应分隔线、Esc 无损取消、执行完整缓冲区、追加式输出、耗时/Runtime 峰值内存摘要、终端尺寸变化 | 已完成（现有协议范围）；语言级交互输入由星崽确认留给独立 VM I/O 通道 |
+| 11B | [终端交互式解释器](11b-interactive-repl.md) | TypeScript 终端前端、Rust 执行接线、单/多行会话与延迟包加载 | 进行中（I0、I1a、I1b、I1c 已按各自范围交付；交互输入通道及 I2–I5 待实施） |
 | 11C | [国际化、系统提示与语言包插件](11c-localization.md) | `[language]` 配置、中英内置目录、统一错误文案和资源型语言包插件 | 未开始 |
 | 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
 | 14 | [字节码优化与 `.xiaoc` 产物](14-bytecode-optimization.md) | 单模块分段字节码、默认缓存、加载验证和调试映射 | 未开始 |

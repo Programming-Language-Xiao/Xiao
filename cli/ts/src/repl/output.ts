@@ -45,6 +45,7 @@ export async function finishOutput(
   await write(output, terminalLines(display.rendered.stdout));
   await write(error, terminalLines(display.rendered.stderr + display.coreStderr));
   await write(output, `${separator(view)}\r\n${runSummary(display.elapsedMs, display.response)}\r\n`);
+  await write(output, "\r\n".repeat(Math.max(1, Math.floor(view.height))));
 }
 
 /** 格式化本次耗时和可选 Runtime 峰值对象字节。 */

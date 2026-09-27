@@ -75,3 +75,6 @@ Rust 与 TypeScript 当前采用共享 JSON fixture 的窄类型策略。样本�
 TypeScript `ProtocolClient.runSource` 接收 `AbortSignal`。CLI 入口通过 `AbortController` 监听
 `SIGINT`，信号触发后由客户端发送 `cancel` 帧；核心侧取消和超时统一返回 `ArtifactRejected`
 进程码 `2`。取消不进入用户 `catch`，但 VM 会尝试现有 `finally` 和释放计划。
+`xiao-core` 的 stdin 专用于此帧协议，不能混入终端输入的原始字节；语言级交互输入需要
+后续独立的 VM I/O 与协议通道。I1b 的多行执行只临时退出终端 raw mode 以恢复 SIGINT，
+不宣称当前 `input()` 已可使用。
