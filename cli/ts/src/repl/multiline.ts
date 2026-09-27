@@ -55,6 +55,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   let parser: KeyParserState = initialKeyParserState();
   let keyboard: KeyboardProbe = initialKeyboardProbe();
   let mode: "edit" | "confirm" | "output" = "edit";
+  let confirmationReady = false;
   let inputGeneration = 0;
   let mouseAnchor: EditorCursor | null = null;
   let probeTimer: ReturnType<typeof setTimeout> | undefined;
@@ -73,6 +74,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
     if (mode === "output") return;
     if (mode === "confirm") {
       await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${renderConfirmation(view())}\u001b[2;2H\u001b[?25h`);
+      confirmationReady = true;
       return;
     }
     const frame = renderMultiline(state, view());
@@ -89,7 +91,11 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   const emitCommand = (command: ControlCommand) => {
     commands.push(command);
     context.onCommand?.(command, state);
-    if (command === "run") mode = "confirm";
+    if (command === "run") {
+      mode = "confirm";
+      confirmationReady = false;
+      inputGeneration += 1;
+    }
   };
   const execute = async () => {
     inputGeneration += 1;
@@ -165,11 +171,15 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
       if (mode === "confirm") {
         if ("kittyOnly" in parsedKey && parsedKey.kittyOnly && !keyboard.kittyKeys) continue;
         if (parsedKey.kind === "enter") {
+          confirmationReady = false;
           await execute();
           await redraw();
           return null;
         }
-        else if (parsedKey.kind === "escape" || parsedKey.kind === "interrupt") mode = "edit";
+        else if (parsedKey.kind === "escape" || parsedKey.kind === "interrupt") {
+          mode = "edit";
+          confirmationReady = false;
+        }
         continue;
       }
       if (parsedKey.kind === "mouse") {
@@ -198,6 +208,10 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
           if (dispatched !== null) {
             state = dispatched.state;
             emitCommand(dispatched.command);
+            if (dispatched.command === "run") {
+              await redraw();
+              return null;
+            }
             continue;
           }
         }
@@ -209,6 +223,10 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
           await context.write(context.error, "X11-REPL-LINES-001: 多行缓冲区不能超过 99999 行\n");
         }
         if (result.effect === "run" || result.effect === "save" || result.effect === "panel") emitCommand(result.effect);
+        if (result.effect === "run") {
+          await redraw();
+          return null;
+        }
       }
     }
     if (parser.pending.length === 1 && parser.pending[0] === 27) {
@@ -216,6 +234,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
         parser = flushPendingKeys(parser).state;
         if (mode === "confirm") {
           mode = "edit";
+          confirmationReady = false;
           void redraw().catch(failSession);
         }
       }, 40);
@@ -252,7 +271,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
         void processing.then(() => { cleanup(); resolve(code); }, (error: Error) => { cleanup(); reject(error); });
       };
       const onData = (chunk: Buffer) => {
-        if (finished || mode === "output") return;
+        if (finished || mode === "output" || (mode === "confirm" && !confirmationReady)) return;
         const generation = inputGeneration;
         processing = processing.then(async () => {
           if (finished || generation !== inputGeneration) return;

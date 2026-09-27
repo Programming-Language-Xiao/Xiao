@@ -144,7 +144,9 @@ describe("CLI 入口", () => {
       env: { NO_COLOR: "1" }, isTTY: true,
     });
     await new Promise((resolve) => setTimeout(resolve, 0));
-    input.write(Buffer.from("first\rsecond\r!outLF!\r\r"));
+    input.write(Buffer.from("first\rsecond\r!outLF!\r"));
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    input.write(Buffer.from("\r"));
     await new Promise((resolve) => setTimeout(resolve, 20));
     input.end();
     expect(await session).toBe(0);

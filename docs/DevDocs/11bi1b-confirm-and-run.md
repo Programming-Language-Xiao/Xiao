@@ -358,11 +358,12 @@ core/rust/crates/xiao-runtime/src/memory/mod.rs:281   try_release ——释放�
 - `ProtocolMetrics.peak_live_bytes` 已进入 Rust 映射、双侧共享向量和协议 UseDoc；旧响应缺字段时
   Rust 反序列化有默认值，TS 摘要保持“未知”而不伪报为零。
 - TypeScript 已建立确认态和共用分隔线、追加式输出及 `time/memory` 摘要；`!outLF!` 与
-  Kitty Shift+Enter 共用入口。Esc/Ctrl+C 取消确认，执行期 SIGINT 仅取消当次运行。
+  Kitty Shift+Enter 共用入口。确认画面完成绘制前，同一输入块中剩余的 Enter 会被丢弃，
+  不能绕过可见确认。Esc/Ctrl+C 取消确认，执行期 SIGINT 仅取消当次运行。
 - 编辑、确认和输出的终端状态成对切换；输出段不清屏，输出文本统一 CRLF，输出期尺寸变化
   不重排历史行，收尾使用新宽度。CLI 入口已将核心发现与测试注入传给多行执行。
 - 当前 `xiao-core` 的标准输入用于长度前缀协议，语言级交互输入内建尚未交付；执行段虽退出
   raw mode，但不能把用户输入直接写入协议帧。该项需要独立的 VM I/O 与协议通道，不能伪称已实现。
-- TypeScript 类型检查、`bun run check`、CLI 全测试（158 通过 / 5 条件跳过）和根 Bun 测试
-  （195 通过 / 5 条件跳过）通过；`xiao-runtime` 与 `xiao-driver` 全测试通过。Rust 全工作区
+- TypeScript 类型检查、`bun run check`、CLI 全测试和根 Bun 测试通过；`xiao-runtime` 与
+  `xiao-driver` 全测试通过。真实 `xiao-core` 的确认执行及内存摘要也已联调。Rust 全工作区
   测试被未修改的 `xiao-config` 快照 `dependency-missing-path`（期望 `X05-CONFIG-007`、实际空诊断）阻断。

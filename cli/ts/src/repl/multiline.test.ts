@@ -37,7 +37,9 @@ test("raw mode 保留真实多行、剔除 !outLF!，Ctrl+C 恢复状态并返�
     onCommand: (command) => commands.push(command), terminalSize: { width: 80, height: 24 },
   });
   await new Promise((resolve) => setTimeout(resolve, 0));
-  input.write(Buffer.from("code\r!outLF!\r\u0003\u0003"));
+  input.write(Buffer.from("code\r!outLF!\r"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("\u0003\u0003"));
   const result = await session;
   expect(result.exitCode).toBe(130);
   expect(result.state.lines).toEqual([""]);
@@ -86,7 +88,9 @@ test("括号粘贴中以换行结束的控制行按 Enter 语义剔除", async (
     onCommand: (command) => commands.push(command),
   });
   await new Promise((resolve) => setTimeout(resolve, 0));
-  input.write(Buffer.from("\u001b[200~!outLF!\n\u001b[201~\u0003\u0004"));
+  input.write(Buffer.from("\u001b[200~!outLF!\n\u001b[201~"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("\u0003\u0004"));
   const result = await session;
   expect(result.exitCode).toBe(0);
   expect(commands).toEqual(["run"]);
@@ -105,8 +109,30 @@ test("确认态忽略源码字符，Esc 无损取消且不执行", async () => {
     executeSource: async () => { called = true; throw new Error("不得执行"); },
   });
   await new Promise((resolve) => setTimeout(resolve, 0));
-  input.write(Buffer.from("code\r!outLF!\rignored\u001b"));
+  input.write(Buffer.from("code\r!outLF!\r"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("ignored\u001b"));
   await new Promise((resolve) => setTimeout(resolve, 70));
+  input.end();
+  const result = await session;
+  expect(called).toBe(false);
+  expect(result.state.lines).toEqual(["code"]);
+  expect(printed).toContain("Press Enter to confirm and run");
+});
+
+test("同一输入块中的第二个 Enter 不得绕过可见确认态", async () => {
+  const input = rawInput();
+  const output = new PassThrough();
+  let printed = "";
+  output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+  let called = false;
+  const session = runMultilineSession({
+    input, output, error: new PassThrough(), write: writeSafely, env: {}, isTTY: true, color: "never",
+    executeSource: async () => { called = true; throw new Error("不得自动执行"); },
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("code\r!outLF!\r\r"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
   input.end();
   const result = await session;
   expect(called).toBe(false);
@@ -136,7 +162,9 @@ test("确认后调用完整源码并恢复覆盖模式、剪贴板和光标", as
     },
   });
   await new Promise((resolve) => setTimeout(resolve, 0));
-  input.write(Buffer.from("!ovr!\rfirst\rsecond\u0017\u0019\r!outLF!\r\r"));
+  input.write(Buffer.from("!ovr!\rfirst\rsecond\u0017\u0019\r!outLF!\r"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("\r"));
   await new Promise((resolve) => setTimeout(resolve, 20));
   input.end();
   const result = await session;
@@ -167,7 +195,9 @@ test("执行期 SIGINT 只取消本次运行，缓冲区和光标可继续编辑
     },
   });
   await new Promise((resolve) => setTimeout(resolve, 0));
-  input.write(Buffer.from("code\r!outLF!\r\r"));
+  input.write(Buffer.from("code\r!outLF!\r"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("\r"));
   await running;
   expect(input.isRaw).toBe(false);
   process.emit("SIGINT");
@@ -229,7 +259,9 @@ test("核心执行失败仍结束输出段并保留编辑状态", async () => {
     executeSource: async () => { throw new Error("核心不可用"); },
   });
   await new Promise((resolve) => setTimeout(resolve, 0));
-  input.write(Buffer.from("code\r!outLF!\r\r"));
+  input.write(Buffer.from("code\r!outLF!\r"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.write(Buffer.from("\r"));
   await new Promise((resolve) => setTimeout(resolve, 10));
   input.end();
   const result = await session;
