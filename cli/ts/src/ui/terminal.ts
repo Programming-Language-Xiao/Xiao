@@ -20,8 +20,8 @@ export interface KeyboardProbe {
 
 /** Kitty 键盘协议查询序列。 */
 export const KITTY_QUERY = "\u001b[?u";
-/** 上报所有按键及对应文字，Shift+Enter 才有独立编码。 */
-export const KITTY_PUSH = "\u001b[=28;1u";
+/** 推入旧键盘标志并启用所有按键及关联文字上报，Shift+Enter 才有独立编码。 */
+export const KITTY_PUSH = "\u001b[>28u";
 /** 撤销本会话推入的键盘模式。 */
 export const KITTY_POP = "\u001b[<u";
 

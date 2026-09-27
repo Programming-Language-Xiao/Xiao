@@ -25,7 +25,7 @@ test("无上游只显示分支，有上游才显示领先落后", () => {
 test("非 TTY、NO_COLOR、dumb 与 never 必须完全不输出 ANSI", () => {
   const basic = { cwd: "/project", activeEnvironment: "/project/.venv", color: { isTTY: true, colorTerm: "truecolor", noColor: false, term: "xterm", mode: "auto" as const } };
   for (const color of [
-    { ...basic.color, isTTY: false, mode: "always" as const },
+    { ...basic.color, isTTY: false },
     { ...basic.color, noColor: true },
     { ...basic.color, term: "dumb" },
     { ...basic.color, mode: "never" as const },
@@ -34,6 +34,16 @@ test("非 TTY、NO_COLOR、dumb 与 never 必须完全不输出 ANSI", () => {
     expect(result).toBe("$venv$ /project [X> ");
     expect(result).not.toContain("\u001b");
   }
+});
+
+test("显式 always 在非 TTY 下仍保留提示符颜色", () => {
+  const result = renderReplPrompt({
+    cwd: "/project",
+    activeEnvironment: "/project/.venv",
+    color: { isTTY: false, mode: "always", colorTerm: "truecolor", term: "xterm" },
+  });
+  expect(result).toContain("\u001b[38;2;");
+  expect(stripAnsi(result)).toBe("$venv$ /project [X> ");
 });
 
 test("真彩色与 256/16 色回退保持文本相同，分支颜色按规范区分", () => {

@@ -69,7 +69,7 @@ function coloredSeparator(terminal: TerminalView): string {
   const options = terminal.color;
   const term = options.term ?? "";
   const colorizer = createColorizer({
-    mode: options.mode === "never" ? "never" : "auto",
+    mode: options.mode ?? "auto",
     isTTY: terminal.isTTY,
     noColor: options.noColor ?? false,
     term,

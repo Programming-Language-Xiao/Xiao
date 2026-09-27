@@ -59,7 +59,7 @@ function paint(role: PromptColor, text: string, options: ColorOptions = {}): str
   const isTTY = options.isTTY ?? false;
   const term = options.term ?? "";
   const colorizer = createColorizer({
-    mode: options.mode === "never" ? "never" : "auto",
+    mode: options.mode ?? "auto",
     isTTY,
     noColor: options.noColor ?? false,
     term,

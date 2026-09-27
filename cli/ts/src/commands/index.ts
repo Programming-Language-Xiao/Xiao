@@ -63,7 +63,7 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
   if (command.kind === "help") return { stdout: helpText(), stderr: "", exitCode: 0 };
   if (command.kind === "version") return { stdout: "xiao 0.1.0\n", stderr: "", exitCode: 0 };
   if (command.kind === "repl") {
-    const message = command.multiline ? "多行模式留给 11B-I1；无参数 xiao 已支持单行会话"
+    const message = command.multiline ? "多行会话须由 CLI 入口提供标准输入与输出"
       : "交互会话须由 CLI 入口提供标准输入与输出";
     return renderCliError(new CliCommandError("X11-CLI-REPL-001", message), renderOptions(command.options, context));
   }

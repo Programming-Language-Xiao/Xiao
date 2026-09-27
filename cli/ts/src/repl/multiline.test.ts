@@ -62,6 +62,38 @@ test("空缓冲 Ctrl+D 结束多行会话并恢复 raw mode", async () => {
   input.end();
 });
 
+test("Ctrl+D 完成后排队的数据不会污染已结束的编辑状态", async () => {
+  const input = rawInput();
+  const session = runMultilineSession({
+    input, output: new PassThrough(), error: new PassThrough(), write: writeSafely,
+    env: {}, isTTY: true, color: "never",
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("\u0004"));
+  input.write(Buffer.from("late"));
+  const result = await session;
+  expect(result.exitCode).toBe(0);
+  expect(result.state.lines).toEqual([""]);
+  input.end();
+});
+
+test("括号粘贴中以换行结束的控制行按 Enter 语义剔除", async () => {
+  const input = rawInput();
+  const output = new PassThrough();
+  const commands: string[] = [];
+  const session = runMultilineSession({
+    input, output, error: new PassThrough(), write: writeSafely, env: {}, isTTY: true, color: "never",
+    onCommand: (command) => commands.push(command),
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("\u001b[200~!outLF!\n\u001b[201~\u0004"));
+  const result = await session;
+  expect(result.exitCode).toBe(0);
+  expect(commands).toEqual(["run"]);
+  expect(result.state.lines).toEqual([""]);
+  input.end();
+});
+
 test("未确认 Kitty 能力时 Shift+Enter 不进入运行分派", async () => {
   const input = rawInput();
   const output = new PassThrough();
@@ -79,7 +111,7 @@ test("未确认 Kitty 能力时 Shift+Enter 不进入运行分派", async () => 
   input.end();
 });
 
-test("--inLF 通过 CLI 入口进入 raw mode，而不是走 I1 占位诊断", async () => {
+test("--inLF 通过 CLI 入口进入 raw mode，而不是走旧的占位诊断", async () => {
   const input = rawInput();
   const output = new PassThrough();
   const started = runCli(["--inLF"], {

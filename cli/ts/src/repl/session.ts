@@ -34,6 +34,9 @@ export interface ReplContext {
 /** 启动、提交、执行、显示结果/错误并继续到 EOF；失败的一行不终止会话。 */
 export async function runSingleLineRepl(context: ReplContext): Promise<number> {
   const { input, output, error, write, env } = context;
+  if ((input as NodeJS.ReadableStream & { readableEnded?: boolean }).readableEnded) {
+    return context.signal?.aborted ? 130 : 0;
+  }
   if (context.showBanner !== false) await write(output, renderReplBanner(context.version));
   const firstPrompt = await currentPrompt(context);
   const terminal = context.isTTY && Boolean((input as NodeJS.ReadStream).isTTY);

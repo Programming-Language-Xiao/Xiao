@@ -2,8 +2,8 @@
 
 import type { ReplContext } from "./session.ts";
 import { dispatchControl, type ControlCommand } from "./commands.ts";
-import { applyKey, initialEditorState, type EditorState } from "./editor.ts";
-import { flushPendingKeys, initialKeyParserState, parseKeys, type KeyParserState } from "./keys.ts";
+import { applyKey, initialEditorState, MAX_LOGICAL_LINES, type EditorState } from "./editor.ts";
+import { flushPendingKeys, initialKeyParserState, parseKeys, type KeyEvent, type KeyParserState } from "./keys.ts";
 import { renderMultiline } from "./render.ts";
 import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_QUERY, type KeyboardProbe, type TerminalView } from "../ui/terminal.ts";
 
@@ -75,8 +75,9 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
     if (escapeTimer !== undefined) clearTimeout(escapeTimer);
     const parsed = parseKeys(chunk, parser);
     parser = parsed.state;
-    for (const key of parsed.events) {
-      if (key.kind === "kitty-report") {
+    for (const parsedKey of parsed.events) {
+      if (parsedKey.kind === "kitty-report") {
+        const key = parsedKey;
         const report = keyboardReport(keyboard, key.flags);
         keyboard = report.probe;
         if (report.request !== "") output.write(report.request);
@@ -84,23 +85,26 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
         else if (probeTimer !== undefined) clearTimeout(probeTimer);
         continue;
       }
-      if ("kittyOnly" in key && key.kittyOnly && !keyboard.kittyKeys) continue;
-      if (key.kind === "enter") {
-        const dispatched = dispatchControl(state);
-        if (dispatched !== null) {
-          state = dispatched.state;
-          emitCommand(dispatched.command);
-          continue;
+      const keys = parsedKey.kind === "paste" ? expandPaste(parsedKey.text, state) : [parsedKey];
+      for (const key of keys) {
+        if ("kittyOnly" in key && key.kittyOnly && !keyboard.kittyKeys) continue;
+        if (key.kind === "enter") {
+          const dispatched = dispatchControl(state);
+          if (dispatched !== null) {
+            state = dispatched.state;
+            emitCommand(dispatched.command);
+            continue;
+          }
         }
+        const result = applyKey(state, key);
+        state = result.state;
+        if (result.effect === "eof") return 0;
+        if (result.effect === "interrupt") return 130;
+        if (result.effect === "line-limit") {
+          await context.write(context.error, "X11-REPL-LINES-001: 多行缓冲区不能超过 99999 行\n");
+        }
+        if (result.effect === "run" || result.effect === "save" || result.effect === "panel") emitCommand(result.effect);
       }
-      const result = applyKey(state, key);
-      state = result.state;
-      if (result.effect === "eof") return 0;
-      if (result.effect === "interrupt") return 130;
-      if (result.effect === "line-limit") {
-        await context.write(context.error, "X11-REPL-LINES-001: 多行缓冲区不能超过 99999 行\n");
-      }
-      if (result.effect === "run" || result.effect === "save" || result.effect === "panel") emitCommand(result.effect);
     }
     if (parser.pending.length === 1 && parser.pending[0] === 27) {
       escapeTimer = setTimeout(() => { parser = flushPendingKeys(parser).state; }, 40);
@@ -137,6 +141,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
       const onData = (chunk: Buffer) => {
         if (finished) return;
         processing = processing.then(async () => {
+          if (finished) return;
           const result = await consume(chunk);
           if (result !== null) finish(result);
         });
@@ -147,7 +152,9 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
       const onAbort = () => finish(130);
       const onResize = () => {
         if (finished) return;
-        processing = processing.then(redraw);
+        processing = processing.then(async () => {
+          if (!finished) await redraw();
+        });
         void processing.catch(fail);
       };
       input.on("data", onData);
@@ -168,4 +175,17 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
     await context.write(output, "\u001b[?2004l\u001b[?25h\n");
   }
   return { exitCode, state, commands };
+}
+
+/** 把粘贴中的真实换行按 Enter 语义交给控制指令分派，同时保留整次插入的行数原子性。 */
+function expandPaste(text: string, state: EditorState): KeyEvent[] {
+  const normalized = text.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
+  const pieces = normalized.split("\n");
+  if (state.lines.length + pieces.length - 1 > MAX_LOGICAL_LINES) return [{ kind: "paste", text }];
+  const events: KeyEvent[] = [];
+  for (let index = 0; index < pieces.length; index += 1) {
+    if (pieces[index] !== "") events.push({ kind: "paste", text: pieces[index] });
+    if (index + 1 < pieces.length) events.push({ kind: "enter" });
+  }
+  return events;
 }

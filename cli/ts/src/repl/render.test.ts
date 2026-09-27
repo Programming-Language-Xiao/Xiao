@@ -48,5 +48,10 @@ test("灰色分隔符真彩色、256/16 色回退和四种无色条件都不改�
   ]) {
     expect(renderMultiline(state, terminal(12, { color, isTTY: color.isTTY })).text).toBe("    1|");
   }
+  const forced = renderMultiline(state, terminal(12, {
+    isTTY: false,
+    color: { ...base, isTTY: false, mode: "always" },
+  })).text;
+  expect(forced).toContain("\u001b[38;2;127;127;127m|");
   expect(stripAnsi(rgb)).toBe("    1|");
 });

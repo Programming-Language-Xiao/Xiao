@@ -5,6 +5,8 @@ import { expect, test } from "bun:test";
 import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_PUSH, KITTY_QUERY } from "./terminal.ts";
 
 test("两步查询仅在确认 bit8 后开启 Shift+Enter", () => {
+  expect(KITTY_PUSH).toBe("\u001b[>28u");
+  expect(KITTY_POP).toBe("\u001b[<u");
   const queried = keyboardReport(initialKeyboardProbe(), 0);
   expect(queried.request).toBe(KITTY_PUSH + KITTY_QUERY);
   expect(queried.probe.kittyKeys).toBe(false);
