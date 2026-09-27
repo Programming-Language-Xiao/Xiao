@@ -2,7 +2,7 @@
 
 import { expect, test } from "bun:test";
 
-import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_PUSH, KITTY_QUERY } from "./terminal.ts";
+import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_PUSH, KITTY_QUERY, MOUSE_DISABLE, MOUSE_ENABLE } from "./terminal.ts";
 
 test("两步查询仅在确认 bit8 后开启 Shift+Enter", () => {
   expect(KITTY_PUSH).toBe("\u001b[>28u");
@@ -17,4 +17,9 @@ test("两步查询仅在确认 bit8 后开启 Shift+Enter", () => {
 test("查询或确认超时均禁用组合键并恢复推入的终端状态", () => {
   expect(keyboardTimeout(initialKeyboardProbe())).toMatchObject({ probe: { kittyKeys: false, phase: "unsupported" }, request: "" });
   expect(keyboardTimeout(keyboardReport(initialKeyboardProbe(), 0).probe).request).toBe(KITTY_POP);
+});
+
+test("鼠标上报开关使用 SGR 并按相反顺序恢复", () => {
+  expect(MOUSE_ENABLE).toBe("\u001b[?1000h\u001b[?1002h\u001b[?1006h");
+  expect(MOUSE_DISABLE).toBe("\u001b[?1006l\u001b[?1002l\u001b[?1000l");
 });

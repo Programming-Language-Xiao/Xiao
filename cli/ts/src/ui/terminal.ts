@@ -24,6 +24,10 @@ export const KITTY_QUERY = "\u001b[?u";
 export const KITTY_PUSH = "\u001b[>28u";
 /** 撤销本会话推入的键盘模式。 */
 export const KITTY_POP = "\u001b[<u";
+/** 开启按键、按住拖动和 SGR 坐标鼠标上报。 */
+export const MOUSE_ENABLE = "\u001b[?1000h\u001b[?1002h\u001b[?1006h";
+/** 按与开启相反的顺序关闭鼠标上报。 */
+export const MOUSE_DISABLE = "\u001b[?1006l\u001b[?1002l\u001b[?1000l";
 
 /** 探测从禁用组合键开始。 */
 export function initialKeyboardProbe(): KeyboardProbe {

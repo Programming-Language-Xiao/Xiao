@@ -1,5 +1,5 @@
 {
-  "stage": "11B-I1a",
+  "stage": "11B-I1a/I1c",
   "cases": [
     { "name": "empty", "width": 12, "lines": [""], "expected": "    1|" },
     { "name": "exact-width", "width": 12, "lines": ["abcdef"], "expected": "    1|abcdef" },

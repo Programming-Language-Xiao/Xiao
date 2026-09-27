@@ -2,10 +2,10 @@
 
 import type { ReplContext } from "./session.ts";
 import { dispatchControl, type ControlCommand } from "./commands.ts";
-import { applyKey, initialEditorState, MAX_LOGICAL_LINES, type EditorState } from "./editor.ts";
+import { applyKey, initialEditorState, MAX_LOGICAL_LINES, positionCursor, selectRange, type EditorCursor, type EditorState } from "./editor.ts";
 import { flushPendingKeys, initialKeyParserState, parseKeys, type KeyEvent, type KeyParserState } from "./keys.ts";
-import { renderMultiline } from "./render.ts";
-import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_QUERY, type KeyboardProbe, type TerminalView } from "../ui/terminal.ts";
+import { cursorFromRenderedPosition, renderMultiline } from "./render.ts";
+import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_QUERY, MOUSE_DISABLE, MOUSE_ENABLE, type KeyboardProbe, type TerminalView } from "../ui/terminal.ts";
 
 /** 可注入的 I1a 终端边界与后续批次的指令消费点。 */
 export interface MultilineContext extends Pick<ReplContext, "input" | "output" | "error" | "write" | "env" | "isTTY" | "color" | "signal"> {
@@ -43,6 +43,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   let state = initialEditorState();
   let parser: KeyParserState = initialKeyParserState();
   let keyboard: KeyboardProbe = initialKeyboardProbe();
+  let mouseAnchor: EditorCursor | null = null;
   let probeTimer: ReturnType<typeof setTimeout> | undefined;
   let escapeTimer: ReturnType<typeof setTimeout> | undefined;
   const view = (): TerminalView => ({
@@ -85,6 +86,24 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
         else if (probeTimer !== undefined) clearTimeout(probeTimer);
         continue;
       }
+      if (parsedKey.kind === "mouse") {
+        if (parsedKey.action === "release") {
+          if (parsedKey.button === 0) mouseAnchor = null;
+          continue;
+        }
+        if (parsedKey.action === "wheel" || parsedKey.button !== 0) continue;
+        const frame = renderMultiline(state, view());
+        const position = cursorFromRenderedPosition(frame, state, parsedKey.row, parsedKey.column);
+        if (position === null) continue;
+        if (parsedKey.action === "press") {
+          state = positionCursor(state, position);
+          mouseAnchor = position;
+        } else if (parsedKey.action === "drag") {
+          mouseAnchor ??= state.cursor;
+          state = selectRange(state, mouseAnchor, position);
+        }
+        continue;
+      }
       const keys = parsedKey.kind === "paste" ? expandPaste(parsedKey.text, state) : [parsedKey];
       for (const key of keys) {
         if ("kittyOnly" in key && key.kittyOnly && !keyboard.kittyKeys) continue;
@@ -115,7 +134,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   let exitCode = 0;
   input.setRawMode(true);
   try {
-    await context.write(output, "\u001b[?2004h" + KITTY_QUERY);
+    await context.write(output, "\u001b[?2004h" + MOUSE_ENABLE + KITTY_QUERY);
     await redraw();
     exitCode = await new Promise<number>((resolve, reject) => {
       let finished = false;
@@ -172,7 +191,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
     else input.resume();
     input.setRawMode(wasRaw);
     if (keyboard.pushed) output.write(KITTY_POP);
-    await context.write(output, "\u001b[?2004l\u001b[?25h\n");
+    await context.write(output, MOUSE_DISABLE + "\u001b[?2004l\u001b[?25h\n");
   }
   return { exitCode, state, commands };
 }

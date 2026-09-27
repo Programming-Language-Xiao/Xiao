@@ -94,6 +94,25 @@ test("括号粘贴中以换行结束的控制行按 Enter 语义剔除", async (
   input.end();
 });
 
+test("SGR 鼠标点击和拖动建立选区，滚轮忽略且退出关闭鼠标上报", async () => {
+  const input = rawInput();
+  const output = new PassThrough();
+  let printed = "";
+  output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+  const session = runMultilineSession({
+    input, output, error: new PassThrough(), write: writeSafely, env: {}, isTTY: true, color: "never",
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("abc\u001b[<0;7;1M\u001b[<32;10;1M\u001b[<64;10;1M\u001b[<0;10;1m"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.end();
+  const result = await session;
+  expect(result.state.anchor).toEqual({ line: 0, column: 0 });
+  expect(result.state.cursor).toEqual({ line: 0, column: 3 });
+  expect(printed).toContain("\u001b[?1000h\u001b[?1002h\u001b[?1006h");
+  expect(printed).toContain("\u001b[?1006l\u001b[?1002l\u001b[?1000l");
+});
+
 test("未确认 Kitty 能力时 Shift+Enter 不进入运行分派", async () => {
   const input = rawInput();
   const output = new PassThrough();

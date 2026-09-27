@@ -4,8 +4,8 @@ import { expect, test } from "bun:test";
 
 import vectors from "../../../../tests/spec/11b-repl/multiline.json";
 import { stripAnsi } from "../ui/color.ts";
-import { initialEditorState, type EditorState } from "./editor.ts";
-import { renderMultiline } from "./render.ts";
+import { initialEditorState, selectRange, type EditorState } from "./editor.ts";
+import { cursorFromRenderedPosition, renderMultiline } from "./render.ts";
 import type { TerminalView } from "../ui/terminal.ts";
 
 /** 注入终端能力，不读取测试宿主的 COLORTERM。 */
@@ -54,4 +54,24 @@ test("灰色分隔符真彩色、256/16 色回退和四种无色条件都不改�
   })).text;
   expect(forced).toContain("\u001b[38;2;127;127;127m|");
   expect(stripAnsi(rgb)).toBe("    1|");
+});
+
+test("物理行来源可把中文点击映射到字素边界，双宽字符后半格归前", () => {
+  const state: EditorState = { ...initialEditorState(), lines: ["中文ab", "尾"], cursor: { line: 0, column: 0 } };
+  const frame = renderMultiline(state, terminal(12));
+  expect(frame.rows).toEqual([{ line: 0, start: 0, end: 4 }, { line: 1, start: 0, end: 1 }]);
+  expect(cursorFromRenderedPosition(frame, state, 1, 6)).toBeNull();
+  expect(cursorFromRenderedPosition(frame, state, 1, 7)).toEqual({ line: 0, column: 0 });
+  expect(cursorFromRenderedPosition(frame, state, 1, 8)).toEqual({ line: 0, column: 0 });
+  expect(cursorFromRenderedPosition(frame, state, 1, 9)).toEqual({ line: 0, column: 1 });
+  expect(cursorFromRenderedPosition(frame, state, 1, 99)).toEqual({ line: 0, column: 4 });
+});
+
+test("选区绘制只增加背景色，不改变去色后的源码布局", () => {
+  const base = { isTTY: true, noColor: false, term: "xterm", colorTerm: "truecolor" };
+  const state = selectRange({ ...initialEditorState(), lines: ["abcdef"], cursor: { line: 0, column: 4 } },
+    { line: 0, column: 1 }, { line: 0, column: 4 });
+  const frame = renderMultiline(state, terminal(12, { isTTY: true, color: base }));
+  expect(frame.text).toContain("\u001b[48;2;55;80;110m");
+  expect(stripAnsi(frame.text)).toBe("    1|abcdef");
 });

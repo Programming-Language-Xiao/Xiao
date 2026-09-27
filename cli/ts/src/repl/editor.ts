@@ -8,10 +8,18 @@ export interface EditorCursor {
   column: number;
 }
 
-/** 多行编辑状态；只有最近一次删除写入唯一 kill 缓冲。 */
+/** 规范化后的半开选区；`end` 不包含在选区内。 */
+export interface EditorSelection {
+  start: EditorCursor;
+  end: EditorCursor;
+}
+
+/** 多行编辑状态；kill 缓冲同时作为程序内编辑器剪贴板。 */
 export interface EditorState {
   lines: readonly string[];
   cursor: EditorCursor;
+  anchor: EditorCursor | null;
+  overwrite: boolean;
   preferredColumn: number | null;
   killBuffer: string;
 }
@@ -29,7 +37,10 @@ const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 
 /** 创建只有一个空逻辑行的编辑器。 */
 export function initialEditorState(): EditorState {
-  return { lines: [""], cursor: { line: 0, column: 0 }, preferredColumn: null, killBuffer: "" };
+  return {
+    lines: [""], cursor: { line: 0, column: 0 }, anchor: null, overwrite: false,
+    preferredColumn: null, killBuffer: "",
+  };
 }
 
 /** 源码视图只包含真实换行；软换行和终端控制指令不在此处生成。 */
@@ -42,54 +53,124 @@ export function graphemes(text: string): string[] {
   return Array.from(segmenter.segment(text), (part) => part.segment);
 }
 
+/** 返回锚点与光标组成的规范化半开选区。 */
+export function selectionRange(state: EditorState): EditorSelection | null {
+  if (state.anchor === null || compareCursors(state.anchor, state.cursor) === 0) return null;
+  return compareCursors(state.anchor, state.cursor) < 0
+    ? { start: state.anchor, end: state.cursor }
+    : { start: state.cursor, end: state.anchor };
+}
+
+/** 返回选区的真实源码文本；无选区时返回空字符串。 */
+export function selectedText(state: EditorState): string {
+  const selection = selectionRange(state);
+  if (selection === null) return "";
+  const { start, end } = selection;
+  if (start.line === end.line) return graphemes(state.lines[start.line]).slice(start.column, end.column).join("");
+  return [
+    graphemes(state.lines[start.line]).slice(start.column).join(""),
+    ...state.lines.slice(start.line + 1, end.line),
+    graphemes(state.lines[end.line]).slice(0, end.column).join(""),
+  ].join("\n");
+}
+
+/** 将鼠标点击定位到单一光标并取消选区。 */
+export function positionCursor(state: EditorState, cursor: EditorCursor): EditorState {
+  return { ...state, cursor, anchor: null, preferredColumn: null };
+}
+
+/** 以指定锚点和活动端建立选区。 */
+export function selectRange(state: EditorState, anchor: EditorCursor, cursor: EditorCursor): EditorState {
+  return { ...state, anchor, cursor, preferredColumn: null };
+}
+
 /** 应用一个按键，不读取终端、不写屏幕，也不执行源码。 */
 export function applyKey(state: EditorState, key: KeyEvent): EditResult {
   switch (key.kind) {
-    case "text":
-    case "paste": return insertText(state, key.text);
-    case "enter": return insertText(state, "\n");
+    case "text": return insertText(state, key.text, state.overwrite);
+    case "paste": return insertText(state, key.text, false);
+    case "enter": return insertText(state, "\n", false);
     case "backspace": return backspace(state);
     case "delete": return deleteForward(state);
-    case "eof": return editorSource(state) === "" ? { state, effect: "eof" } : deleteForward(state);
-    case "left": return moveHorizontal(state, -1);
-    case "right": return moveHorizontal(state, 1);
-    case "up": return moveVertical(state, -1);
-    case "down": return moveVertical(state, 1);
-    case "home": return positioned(state, { line: state.cursor.line, column: 0 });
-    case "end": return positioned(state, { line: state.cursor.line, column: graphemes(state.lines[state.cursor.line]).length });
+    case "left": return moveHorizontal(state, -1, key.shift === true);
+    case "right": return moveHorizontal(state, 1, key.shift === true);
+    case "up": return moveVertical(state, -1, key.shift === true);
+    case "down": return moveVertical(state, 1, key.shift === true);
+    case "home": return positioned(state, { line: state.cursor.line, column: 0 }, key.shift === true);
+    case "end": return positioned(state, { line: state.cursor.line, column: graphemes(state.lines[state.cursor.line]).length }, key.shift === true);
+    case "buffer-home": return positioned(state, { line: 0, column: 0 });
+    case "buffer-end": {
+      const line = state.lines.length - 1;
+      return positioned(state, { line, column: graphemes(state.lines[line]).length });
+    }
     case "word-left": return positioned(state, { line: state.cursor.line, column: wordLeft(graphemes(state.lines[state.cursor.line]), state.cursor.column) });
     case "word-right": return positioned(state, { line: state.cursor.line, column: wordRight(graphemes(state.lines[state.cursor.line]), state.cursor.column) });
     case "kill-word": return killPreviousWord(state);
     case "kill-end": return killRange(state, state.cursor.column, graphemes(state.lines[state.cursor.line]).length);
     case "kill-start": return killRange(state, 0, state.cursor.column);
-    case "yank": return state.killBuffer === "" ? unchanged(state) : insertText(state, state.killBuffer);
+    case "yank": return state.killBuffer === "" ? unchanged(state) : insertText(state, state.killBuffer, false);
+    case "insert": return { state: { ...state, overwrite: !state.overwrite }, effect: "none" };
+    case "select-all": return { state: selectAll(state), effect: "none" };
+    case "copy": return copySelection(state);
+    case "cut": return cutSelection(state);
+    case "eof": {
+      const selection = selectionRange(state);
+      if (selection !== null) return replaceRange(state, selection.start, selection.end, "");
+      return editorSource(state) === "" ? { state, effect: "eof" } : deleteForward(state);
+    }
     case "interrupt": return { state: { ...initialEditorState(), killBuffer: state.killBuffer }, effect: "interrupt" };
     case "redraw": return { state, effect: "redraw" };
     case "shift-enter": return { state, effect: "run" };
     case "save": return { state, effect: "save" };
     case "panel": return { state, effect: "panel" };
     case "escape":
-    case "kitty-report": return unchanged(state);
+    case "kitty-report":
+    case "mouse": return unchanged(state);
   }
 }
 
-/** 粘贴保留真实换行与缩进，超出 99999 行时整次插入原子拒绝。 */
-function insertText(state: EditorState, text: string): EditResult {
+/** 输入文本；覆盖模式只作用于没有换行的可打印文本。 */
+function insertText(state: EditorState, text: string, overwrite: boolean): EditResult {
+  const selection = selectionRange(state);
+  if (selection !== null) return replaceRange(state, selection.start, selection.end, text);
+  if (overwrite && !text.includes("\n") && !text.includes("\r")) return overwriteText(state, text);
+  return replaceRange(state, state.cursor, state.cursor, text);
+}
+
+/** 覆盖当前逻辑行的字素；行尾只追加，不跨过真实换行。 */
+function overwriteText(state: EditorState, text: string): EditResult {
+  const incoming = graphemes(text);
+  if (incoming.length === 0) return unchanged(state);
+  const chars = graphemes(state.lines[state.cursor.line]);
+  const next = [
+    ...chars.slice(0, state.cursor.column),
+    ...incoming,
+    ...chars.slice(state.cursor.column + incoming.length),
+  ].join("");
+  return replaceLine(state, state.cursor.line, next, state.cursor.column + incoming.length);
+}
+
+/** 用文本替换任意跨行半开范围。 */
+function replaceRange(state: EditorState, start: EditorCursor, end: EditorCursor, text: string): EditResult {
   const pieces = text.replaceAll("\r\n", "\n").replaceAll("\r", "\n").split("\n");
-  if (state.lines.length + pieces.length - 1 > MAX_LOGICAL_LINES) return { state, effect: "line-limit" };
-  const { line, column } = state.cursor;
-  const current = graphemes(state.lines[line]);
-  const before = current.slice(0, column).join("");
-  const after = current.slice(column).join("");
+  const removedLines = end.line - start.line;
+  const nextLineCount = state.lines.length - removedLines + pieces.length - 1;
+  if (nextLineCount > MAX_LOGICAL_LINES) return { state, effect: "line-limit" };
+  const startChars = graphemes(state.lines[start.line]);
+  const endChars = graphemes(state.lines[end.line]);
+  const before = startChars.slice(0, start.column).join("");
+  const after = endChars.slice(end.column).join("");
   const replacement = pieces.length === 1 ? [before + pieces[0] + after]
     : [before + pieces[0], ...pieces.slice(1, -1), pieces[pieces.length - 1] + after];
-  const nextLine = line + replacement.length - 1;
-  const nextColumn = graphemes(pieces.length === 1 ? before + pieces[0] : pieces[pieces.length - 1]).length;
+  const nextLine = start.line + replacement.length - 1;
+  const nextColumn = pieces.length === 1
+    ? graphemes(before + pieces[0]).length
+    : graphemes(pieces[pieces.length - 1]).length;
   return {
     state: {
       ...state,
-      lines: [...state.lines.slice(0, line), ...replacement, ...state.lines.slice(line + 1)],
-      cursor: { line: nextLine, column: nextColumn }, preferredColumn: null,
+      lines: [...state.lines.slice(0, start.line), ...replacement, ...state.lines.slice(end.line + 1)],
+      cursor: { line: nextLine, column: nextColumn }, anchor: null, preferredColumn: null,
     },
     effect: "none",
   };
@@ -97,6 +178,8 @@ function insertText(state: EditorState, text: string): EditResult {
 
 /** 退格在行首删除真实换行并合并上一逻辑行。 */
 function backspace(state: EditorState): EditResult {
+  const selection = selectionRange(state);
+  if (selection !== null) return replaceRange(state, selection.start, selection.end, "");
   const { line, column } = state.cursor;
   if (column > 0) {
     const chars = graphemes(state.lines[line]);
@@ -107,13 +190,15 @@ function backspace(state: EditorState): EditResult {
   const previous = state.lines[line - 1];
   return {
     state: { ...state, lines: [...state.lines.slice(0, line - 1), previous + state.lines[line], ...state.lines.slice(line + 1)],
-      cursor: { line: line - 1, column: graphemes(previous).length }, preferredColumn: null },
+      cursor: { line: line - 1, column: graphemes(previous).length }, anchor: null, preferredColumn: null },
     effect: "none",
   };
 }
 
 /** 删除当前字素；在行尾则删除真实换行。 */
 function deleteForward(state: EditorState): EditResult {
+  const selection = selectionRange(state);
+  if (selection !== null) return replaceRange(state, selection.start, selection.end, "");
   const { line, column } = state.cursor;
   const chars = graphemes(state.lines[line]);
   if (column < chars.length) {
@@ -122,28 +207,33 @@ function deleteForward(state: EditorState): EditResult {
   }
   if (line + 1 >= state.lines.length) return unchanged(state);
   return {
-    state: { ...state, lines: [...state.lines.slice(0, line), state.lines[line] + state.lines[line + 1], ...state.lines.slice(line + 2)], preferredColumn: null },
+    state: { ...state, lines: [...state.lines.slice(0, line), state.lines[line] + state.lines[line + 1], ...state.lines.slice(line + 2)], anchor: null, preferredColumn: null },
     effect: "none",
   };
 }
 
-/** 左右移动可跨过真实换行，但不改变源码。 */
-function moveHorizontal(state: EditorState, direction: -1 | 1): EditResult {
+/** 左右移动可跨过真实换行；无 Shift 的移动先折叠选区。 */
+function moveHorizontal(state: EditorState, direction: -1 | 1, extend: boolean): EditResult {
+  const selection = selectionRange(state);
+  if (selection !== null && !extend) return positioned(state, direction < 0 ? selection.start : selection.end);
   const { line, column } = state.cursor;
   const length = graphemes(state.lines[line]).length;
-  if (direction < 0 && column > 0) return positioned(state, { line, column: column - 1 });
-  if (direction < 0 && line > 0) return positioned(state, { line: line - 1, column: graphemes(state.lines[line - 1]).length });
-  if (direction > 0 && column < length) return positioned(state, { line, column: column + 1 });
-  if (direction > 0 && line + 1 < state.lines.length) return positioned(state, { line: line + 1, column: 0 });
+  if (direction < 0 && column > 0) return positioned(state, { line, column: column - 1 }, extend);
+  if (direction < 0 && line > 0) return positioned(state, { line: line - 1, column: graphemes(state.lines[line - 1]).length }, extend);
+  if (direction > 0 && column < length) return positioned(state, { line, column: column + 1 }, extend);
+  if (direction > 0 && line + 1 < state.lines.length) return positioned(state, { line: line + 1, column: 0 }, extend);
   return unchanged(state);
 }
 
-/** 连续上下移动记住目标列，经过短行后仍可回到原列。 */
-function moveVertical(state: EditorState, direction: -1 | 1): EditResult {
+/** 上下移动尽量保持目标列；无 Shift 的移动先折叠选区。 */
+function moveVertical(state: EditorState, direction: -1 | 1, extend: boolean): EditResult {
+  const selection = selectionRange(state);
+  if (selection !== null && !extend) return positioned(state, direction < 0 ? selection.start : selection.end);
   const line = state.cursor.line + direction;
   if (line < 0 || line >= state.lines.length) return unchanged(state);
   const preferred = state.preferredColumn ?? state.cursor.column;
-  return { state: { ...state, cursor: { line, column: Math.min(preferred, graphemes(state.lines[line]).length) }, preferredColumn: preferred }, effect: "none" };
+  const anchor = extend ? state.anchor ?? state.cursor : null;
+  return { state: { ...state, cursor: { line, column: Math.min(preferred, graphemes(state.lines[line]).length) }, anchor, preferredColumn: preferred }, effect: "none" };
 }
 
 /** 按词操作将空白、字母数字与标点分为三类。 */
@@ -175,17 +265,19 @@ function wordRight(chars: readonly string[], column: number): number {
 
 /** 删除上一词并记录最近一次 kill 内容。 */
 function killPreviousWord(state: EditorState): EditResult {
-  const chars = graphemes(state.lines[state.cursor.line]);
-  const start = wordLeft(chars, state.cursor.column);
-  return killRange(state, start, state.cursor.column);
+  const base = state.anchor === null ? state : positionCursor(state, state.cursor);
+  const chars = graphemes(base.lines[base.cursor.line]);
+  const start = wordLeft(chars, base.cursor.column);
+  return killRange(base, start, base.cursor.column);
 }
 
 /** 从当前逻辑行删除字素区间。 */
 function killRange(state: EditorState, start: number, end: number): EditResult {
-  if (start === end) return unchanged(state);
-  const chars = graphemes(state.lines[state.cursor.line]);
+  const base = state.anchor === null ? state : positionCursor(state, state.cursor);
+  if (start === end) return unchanged(base);
+  const chars = graphemes(base.lines[base.cursor.line]);
   const killed = chars.slice(start, end).join("");
-  const next = replaceLine(state, state.cursor.line, [...chars.slice(0, start), ...chars.slice(end)].join(""), start);
+  const next = replaceLine(base, base.cursor.line, [...chars.slice(0, start), ...chars.slice(end)].join(""), start);
   return { state: { ...next.state, killBuffer: killed }, effect: "none" };
 }
 
@@ -193,12 +285,39 @@ function killRange(state: EditorState, start: number, end: number): EditResult {
 function replaceLine(state: EditorState, line: number, text: string, column: number): EditResult {
   const lines = [...state.lines];
   lines[line] = text;
-  return { state: { ...state, lines, cursor: { line, column }, preferredColumn: null }, effect: "none" };
+  return { state: { ...state, lines, cursor: { line, column }, anchor: null, preferredColumn: null }, effect: "none" };
 }
 
 /** 水平或行内定位时清除竖直目标列。 */
-function positioned(state: EditorState, cursor: EditorCursor): EditResult {
-  return { state: { ...state, cursor, preferredColumn: null }, effect: "none" };
+function positioned(state: EditorState, cursor: EditorCursor, extend = false): EditResult {
+  const anchor = extend ? state.anchor ?? state.cursor : null;
+  return { state: { ...state, cursor, anchor, preferredColumn: null }, effect: "none" };
+}
+
+/** 比较两个逻辑源码位置。 */
+function compareCursors(left: EditorCursor, right: EditorCursor): number {
+  return left.line - right.line || left.column - right.column;
+}
+
+/** 选择整个源码缓冲区。 */
+function selectAll(state: EditorState): EditorState {
+  const line = state.lines.length - 1;
+  return selectRange(state, { line: 0, column: 0 }, { line, column: graphemes(state.lines[line]).length });
+}
+
+/** 复制选区到与 kill 操作共享的编辑器剪贴板。 */
+function copySelection(state: EditorState): EditResult {
+  const text = selectedText(state);
+  return text === "" ? unchanged(state) : { state: { ...state, killBuffer: text }, effect: "none" };
+}
+
+/** 剪切选区到与 kill 操作共享的编辑器剪贴板。 */
+function cutSelection(state: EditorState): EditResult {
+  const selection = selectionRange(state);
+  if (selection === null) return unchanged(state);
+  const text = selectedText(state);
+  const result = replaceRange(state, selection.start, selection.end, "");
+  return { state: { ...result.state, killBuffer: text }, effect: result.effect };
 }
 
 /** 无效或不可上报的键不改变状态。 */

@@ -39,6 +39,9 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
   }
   if (context.showBanner !== false) await write(output, renderReplBanner(context.version));
   const firstPrompt = await currentPrompt(context);
+  if ((input as NodeJS.ReadableStream & { readableEnded?: boolean }).readableEnded) {
+    return context.signal?.aborted ? 130 : 0;
+  }
   const terminal = context.isTTY && Boolean((input as NodeJS.ReadStream).isTTY);
   if (!terminal) await write(output, firstPrompt);
   const reader = createInterface({

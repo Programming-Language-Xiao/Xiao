@@ -16,6 +16,14 @@ for (const [word, command] of [["!outLF!", "run"], ["!save!", "save"], ["!panel!
   });
 }
 
+test("!ovr! 复用控制分派表并只切换覆盖状态", () => {
+  const state: EditorState = { ...initialEditorState(), lines: ["!ovr!"], cursor: { line: 0, column: 5 } };
+  const result = dispatchControl(state);
+  expect(result?.command).toBe("overwrite");
+  expect(result?.state.lines).toEqual([""]);
+  expect(result?.state.overwrite).toBe(true);
+});
+
 test("普通源码、带空白的控制词不被识别；唯一控制行移除后保留空缓冲", () => {
   const initial = initialEditorState();
   expect(dispatchControl(initial)).toBeNull();
