@@ -603,14 +603,14 @@ unsafe fn destroy_payload(ptr: NonNull<ObjectHeader>) -> Option<RuntimeError> {
     if header.destroyed.replace(true) {
         return Some(RuntimeError::refcount_invariant("对象载荷被重复释放"));
     }
-    if let Some(counter) = &header.measurement {
-        counter.subtract(header.accounted_bytes.get());
-    }
     let cell = &*header.payload;
     let mut payload = cell.borrow_mut();
     let result = payload.on_drop().err();
     drop(payload);
     unsafe { ManuallyDrop::drop(&mut (*ptr.as_ptr()).payload) };
+    if let Some(counter) = &header.measurement {
+        counter.subtract(header.accounted_bytes.get());
+    }
     result
 }
 
@@ -632,6 +632,45 @@ mod tests {
     /// 用于观察载荷释放次数的测试对象。
     struct Probe {
         dropped: std::rc::Rc<std::cell::Cell<u32>>,
+    }
+
+    /// 在释放钩子中临时分配 Runtime 对象的测试载荷。
+    struct AllocatingDrop {
+        bytes: Vec<u8>,
+    }
+
+    impl ObjectPayload for AllocatingDrop {
+        /// 返回测试对象标签。
+        fn type_tag(&self) -> RuntimeTypeTag {
+            RuntimeTypeTag::Custom(2)
+        }
+
+        /// 返回测试载荷布局。
+        fn layout(&self) -> ObjectLayout {
+            ObjectLayout::for_type::<Self>(RuntimeTypeTag::Custom(2))
+        }
+
+        /// 将测试载荷的字节缓冲区计入对象内存。
+        fn owned_bytes(&self) -> usize {
+            self.bytes.capacity()
+        }
+
+        /// 在原对象仍存活时构造并释放临时数组。
+        fn on_drop(&mut self) -> RuntimeResult<()> {
+            let temporary = ArrayHandle::new(vec![RuntimeValue::Int(1); 100_000])?;
+            drop(temporary);
+            Ok(())
+        }
+
+        /// 暴露测试载荷的只读视图。
+        fn as_any(&self) -> &dyn Any {
+            self
+        }
+
+        /// 暴露测试载荷的可变视图。
+        fn as_any_mut(&mut self) -> &mut dyn Any {
+            self
+        }
     }
 
     impl ObjectPayload for Probe {
@@ -698,5 +737,32 @@ mod tests {
         assert!(full_sample.peak_live_bytes() > before_growth);
         drop(full);
         assert_eq!(full_sample.counter.current.load(std::sync::atomic::Ordering::Relaxed), 0);
+    }
+
+    #[test]
+    /// 释放钩子期间的原对象与新对象同时计入峰值。
+    fn peak_live_bytes_includes_objects_allocated_during_drop() {
+        let temporary_sample = start_memory_measurement();
+        let temporary =
+            ArrayHandle::new(vec![RuntimeValue::Int(1); 100_000]).expect("临时数组应分配");
+        let temporary_bytes = temporary_sample.peak_live_bytes();
+        drop(temporary);
+        drop(temporary_sample);
+
+        let sample = start_memory_measurement();
+        let parent = allocate_payload(Box::new(AllocatingDrop {
+            bytes: vec![0; 1_000_000],
+        }))
+        .expect("父对象应分配");
+        let parent_bytes = sample.peak_live_bytes();
+        parent.try_release().expect("释放钩子应成功");
+        assert!(sample.peak_live_bytes() >= parent_bytes + temporary_bytes);
+        assert_eq!(
+            sample
+                .counter
+                .current
+                .load(std::sync::atomic::Ordering::Relaxed),
+            0
+        );
     }
 }

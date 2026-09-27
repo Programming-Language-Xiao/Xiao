@@ -370,3 +370,7 @@ core/rust/crates/xiao-runtime/src/memory/mod.rs:281   try_release ——释放�
 - TypeScript 类型检查、`bun run check`、CLI 全测试和根 Bun 测试通过；`xiao-runtime` 与
   `xiao-driver` 全测试通过。真实 `xiao-core` 的确认执行及内存摘要也已联调。Rust 全工作区
   测试被未修改的 `xiao-config` 快照 `dependency-missing-path`（期望 `X05-CONFIG-007`、实际空诊断）阻断。
+- 后续自审核修复了取消竞态：核心发现或握手期间取消不再启动运行请求；运行帧写入期间取消
+  仍会发送取消帧。raw mode 启动失败也进入终端恢复路径。
+- 峰值计量直到释放钩子与载荷析构完成才扣除原对象；钩子中新建对象与原对象的并存峰值
+  由 Runtime 回归测试验证。
