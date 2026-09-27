@@ -50,11 +50,15 @@ export async function atomicWriteFile(
       await fileSystem.rename(path, backup);
       try {
         await fileSystem.rename(temp, path);
-        await fileSystem.rm(backup, { force: true });
       } catch (replaceError) {
-        try { await fileSystem.rename(backup, path); } catch { /* 保留原始错误 */ }
+        try {
+          await fileSystem.rename(backup, path);
+        } catch (rollbackError) {
+          throw new Error(`原子替换与回滚均失败；原文件保留在 ${backup}，请手动恢复（替换：${String(replaceError)}；回滚：${String(rollbackError)}）`);
+        }
         throw replaceError;
       }
+      await fileSystem.rm(backup, { force: true }).catch(() => undefined);
     }
   } finally {
     await fileSystem.rm(temp, { force: true }).catch(() => undefined);
