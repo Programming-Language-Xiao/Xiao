@@ -30,7 +30,7 @@ export type ParsedCommand =
   | { kind: "remove"; packageName: string; dev: boolean; options: GlobalCliOptions }
   | { kind: "shell-init"; shell: ShellName; action: "print" | "install" | "uninstall"; profile?: string; options: GlobalCliOptions }
   | { kind: "deactivate"; options: GlobalCliOptions }
-  | { kind: "repl"; multiline?: boolean; options: GlobalCliOptions };
+  | { kind: "repl"; multiline?: boolean; file?: string; options: GlobalCliOptions };
 
 /** 参数解析异常。 */
 export class CliArgumentError extends Error {
@@ -64,8 +64,12 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     return { kind: "version", options };
   }
   if (command === "--inLF") {
-    if (rest.length > 0) throw new CliArgumentError("--inLF 文件打开留给 11B-I2，当前不接受文件参数");
-    return { kind: "repl", multiline: true, options };
+    if (rest.length > 1) throw new CliArgumentError("--inLF 最多接受一个 .xiao 文件路径");
+    if (rest.length === 1 && !rest[0].endsWith(".xiao")) {
+      throw new CliArgumentError("--inLF 当前只支持 .xiao 文件；其他扩展名留待后续扩展", "X11-CLI-SAVE-001");
+    }
+    return rest.length === 0 ? { kind: "repl", multiline: true, options }
+      : { kind: "repl", multiline: true, file: rest[0], options };
   }
   if (command === "run") return parseRun(rest, options);
   if (command === "config") return parseConfig(rest, options);
@@ -121,7 +125,7 @@ export function helpText(): string {
     "  xiao deactivate                          取消当前 Shell 环境激活",
     "  xiao --help | --version",
     "",
-    "无参数 xiao 启动单行交互会话；--inLF 进入多行编辑（文件参数留给 I2）。",
+    "无参数 xiao 启动单行交互会话；--inLF [file.xiao] 进入多行编辑。",
   ].join("\n") + "\n";
 }
 

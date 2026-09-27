@@ -8,6 +8,7 @@ import { applyKey, editorSource, initialEditorState, MAX_LOGICAL_LINES, position
 import { flushPendingKeys, initialKeyParserState, parseKeys, type KeyEvent, type KeyParserState } from "./keys.ts";
 import { cursorFromRenderedPosition, renderMultiline } from "./render.ts";
 import { renderConfirmation } from "./confirm.ts";
+import { loadEditorFile, type ReplReadFileSystem } from "./file.ts";
 import { beginOutput, finishOutput, type RunDisplay } from "./output.ts";
 import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_PUSH, KITTY_QUERY, MOUSE_DISABLE, MOUSE_ENABLE, type KeyboardProbe, type TerminalView } from "../ui/terminal.ts";
 
@@ -20,6 +21,8 @@ export interface MultilineContext extends Pick<ReplContext, "input" | "output" |
   spawnProcess?: SpawnCoreProcess;
   executablePath?: string;
   debug?: boolean;
+  file?: string;
+  fileSystem?: ReplReadFileSystem;
   executeSource?: (source: string, signal: AbortSignal) => Promise<CoreCallResult>;
 }
 
@@ -52,6 +55,10 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   const wasPaused = input.isPaused();
   const commands: ControlCommand[] = [];
   let state = initialEditorState();
+  if (context.file !== undefined) {
+    const loaded = await loadEditorFile(context.file, context.cwd ?? process.cwd(), context.fileSystem);
+    state = { ...state, lines: loaded.lines, filePath: loaded.path };
+  }
   let parser: KeyParserState = initialKeyParserState();
   let keyboard: KeyboardProbe = initialKeyboardProbe();
   let mode: "edit" | "confirm" | "output" = "edit";

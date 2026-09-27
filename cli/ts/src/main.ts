@@ -81,6 +81,7 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
           cwd: context.cwd, env, isTTY: context.isTTY, color: command.options.color, signal,
           corePath: context.corePath, spawnProcess: context.spawnProcess,
           executablePath: context.executablePath, debug: command.options.debug,
+          file: command.file,
         });
         if (result.exitCode === 130) {
           return await runSingleLineRepl({

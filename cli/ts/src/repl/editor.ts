@@ -17,6 +17,7 @@ export interface EditorSelection {
 /** 多行编辑状态；kill 缓冲同时作为程序内编辑器剪贴板。 */
 export interface EditorState {
   lines: readonly string[];
+  filePath: string | null;
   cursor: EditorCursor;
   anchor: EditorCursor | null;
   overwrite: boolean;
@@ -38,7 +39,7 @@ const segmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 /** 创建只有一个空逻辑行的编辑器。 */
 export function initialEditorState(): EditorState {
   return {
-    lines: [""], cursor: { line: 0, column: 0 }, anchor: null, overwrite: false,
+    lines: [""], filePath: null, cursor: { line: 0, column: 0 }, anchor: null, overwrite: false,
     preferredColumn: null, killBuffer: "",
   };
 }

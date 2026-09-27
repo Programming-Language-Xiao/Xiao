@@ -1,6 +1,9 @@
 /** raw mode 循环使用可注入流验证终端恢复，不依赖伪终端库。 */
 
 import { expect, test } from "bun:test";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { PassThrough } from "node:stream";
 
 import { runCli } from "../main.ts";
@@ -62,6 +65,26 @@ test("空缓冲 Ctrl+D 结束多行会话并恢复 raw mode", async () => {
   expect(result.state.lines).toEqual([""]);
   expect(input.isRaw).toBe(false);
   input.end();
+});
+
+test("文件入口载入逻辑行并立即绑定，源码不含原始 CRLF", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "xiao-repl-bound-"));
+  try {
+    const path = join(directory, "main.xiao");
+    await writeFile(path, "first\r\n  second", "utf8");
+    const input = rawInput();
+    const session = runMultilineSession({
+      input, output: new PassThrough(), error: new PassThrough(), write: writeSafely,
+      env: {}, isTTY: true, color: "never", cwd: directory, file: "main.xiao",
+    });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    input.end();
+    const result = await session;
+    expect(result.state.filePath).toBe(path);
+    expect(result.state.lines).toEqual(["first", "  second"]);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
 
 test("raw mode 启动失败时仍尝试恢复终端", async () => {

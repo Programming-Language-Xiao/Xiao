@@ -37,10 +37,11 @@ describe("xiao 命令解析", () => {
     expect(debugRun.kind === "run" && debugRun.options.debug).toBe(true);
   });
 
-  test("单行 REPL 路由与仍未实现的多行入口互不混淆", () => {
+  test("单行 REPL 与多行文件入口互不混淆", () => {
     expect(parseArguments([]).kind).toBe("repl");
     expect(parseArguments(["--inLF"])).toMatchObject({ kind: "repl", multiline: true });
-    expect(() => parseArguments(["--inLF", "file.xiao"])).toThrow("文件打开留给 11B-I2");
+    expect(parseArguments(["--inLF", "file.xiao"])).toMatchObject({ kind: "repl", multiline: true, file: "file.xiao" });
+    expect(() => parseArguments(["--inLF", "file.txt"])).toThrow("X11-CLI-SAVE-001");
     expect(() => parseArguments(["--inLF", "a.xiao", "b.xiao"])).toThrow(CliArgumentError);
     expect(parseArguments(["test"]).kind).toBe("test");
     expect(parseArguments(["build", "main.xiao"]).kind).toBe("build");
