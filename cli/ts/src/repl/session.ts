@@ -57,6 +57,7 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
   reader.on("SIGINT", onAbort);
   context.signal?.addEventListener("abort", onAbort, { once: true });
   let enterMultiline = false;
+  let enterPanel = false;
   try {
     if (terminal) {
       reader.setPrompt(firstPrompt);
@@ -67,6 +68,10 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
       if (next.done) break;
       if (next.value === "!inLF!") {
         enterMultiline = true;
+        break;
+      }
+      if (next.value === "!panel!") {
+        enterPanel = true;
         break;
       }
       if (next.value.trim().length > 0) {
@@ -107,9 +112,12 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
     context.signal?.removeEventListener("abort", onAbort);
     reader.close();
   }
-  if (enterMultiline && !context.signal?.aborted) {
+  if ((enterMultiline || enterPanel) && !context.signal?.aborted) {
     try {
-      const result = await runMultilineSession(context);
+      const result = await runMultilineSession(enterPanel ? { ...context, initialPanel: true } : context);
+      if (enterPanel && result.exitCode === 0 && !(input as NodeJS.ReadableStream & { readableEnded?: boolean }).readableEnded) {
+        return runSingleLineRepl({ ...context, showBanner: false });
+      }
       if (result.exitCode === 130) return runSingleLineRepl({ ...context, showBanner: false });
       return result.exitCode;
     } catch (error) {
