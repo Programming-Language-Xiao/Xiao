@@ -1,0 +1,8 @@
+{
+  "type": "repl_packages",
+  "request_id": "fixture-repl-packages-1",
+  "protocol_version": 1,
+  "core_version": 1,
+  "active_environment": "/workspace/project/dev",
+  "module_path": "lib.api"
+}

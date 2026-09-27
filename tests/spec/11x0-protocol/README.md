@@ -14,6 +14,7 @@
 - `test-response.json`：包含聚合退出码和逐用例结构化结果的测试响应。
 - `debug-run-request.json`：`-debug` 与终端/文件等级配置的运行请求。
 - `package-request.json`：E2B 包操作、激活路径、锁模式与工具链的机器请求。
+- `repl-packages-request.json` / `repl-packages-response.json`：I4a 的环境视图与模块接口只读查询；与 `package` 包管理操作分离。
 
 Rust 和 TypeScript 各自的测试都必须对这些文件做编码/解码回环；增加字段时先更新夹具，
 再更新两侧的显式类型和测试。

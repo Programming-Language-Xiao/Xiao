@@ -124,6 +124,7 @@ fn test_case_result(
         },
         ProtocolResponse::Hello { .. }
         | ProtocolResponse::EnvironmentResult { .. }
+        | ProtocolResponse::ReplPackagesResult { .. }
         | ProtocolResponse::PackageResult { .. }
         | ProtocolResponse::Shutdown { .. }
         | ProtocolResponse::TestResult { .. } => {

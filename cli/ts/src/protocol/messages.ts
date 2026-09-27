@@ -145,6 +145,16 @@ export interface EnvironmentRequest {
   toolchain: ToolchainSpec;
 }
 
+/** 只读查询 REPL 所选环境的包根与可选模块接口，不触发运行时加载。 */
+export interface ReplPackagesRequest {
+  type: "repl_packages";
+  request_id: string;
+  protocol_version: number;
+  core_version: number;
+  active_environment?: string | null;
+  module_path?: string | null;
+}
+
 /** Rust 侧唯一的包操作入口。 */
 export interface PackageRequest {
   type: "package";
@@ -184,7 +194,7 @@ export interface ShutdownRequest {
 }
 
 /** 所有请求消息的联合类型。 */
-export type ProtocolRequest = HelloRequest | RunRequest | TestRequest | BuildRequest | EnvironmentRequest | PackageRequest | CancelRequest | ShutdownRequest;
+export type ProtocolRequest = HelloRequest | RunRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest | CancelRequest | ShutdownRequest;
 
 /** 机器可读协议错误。 */
 export interface ProtocolErrorBody {
@@ -240,6 +250,31 @@ export interface EnvironmentResultResponse {
   type: "environment_result";
   request_id: string;
   metadata: EnvironmentMetadata;
+}
+
+/** 与包源、版本绑定的 REPL 根名；不等同于包管理操作。 */
+export interface ReplPackage {
+  root: string;
+  identity: {
+    name: string;
+    version: string;
+    source: { source_id: string; alias: string | null; display_name: string };
+  };
+}
+
+/** 一个模块的静态导出，不含运行时对象。 */
+export interface ReplInterface {
+  module_path: string;
+  exports: { name: string; kind: "value" | "function" | "table" | "module" | "namespace"; signature: string | null }[];
+}
+
+/** 当前环境的包根及可选接口读取结果。 */
+export interface ReplPackagesResultResponse {
+  type: "repl_packages_result";
+  request_id: string;
+  environment_path: string;
+  packages: ReplPackage[];
+  interface: ReplInterface | null;
 }
 
 /** 包操作结果；环境选择不在 CLI 重算。 */
@@ -333,7 +368,7 @@ export interface ShutdownResponse {
 }
 
 /** 所有响应消息的联合类型。 */
-export type ProtocolResponse = HelloResponse | ResultResponse | EnvironmentResultResponse | PackageResultResponse | TestResultResponse | ErrorResponse | CancelledResponse | ShutdownResponse;
+export type ProtocolResponse = HelloResponse | ResultResponse | EnvironmentResultResponse | ReplPackagesResultResponse | PackageResultResponse | TestResultResponse | ErrorResponse | CancelledResponse | ShutdownResponse;
 
 /** 判断一个值是否具有字符串字段。 */
 export function hasStringField(value: unknown, field: string): value is Record<string, unknown> & Record<string, string> {

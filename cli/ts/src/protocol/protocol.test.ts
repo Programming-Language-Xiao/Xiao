@@ -14,6 +14,16 @@ async function fixture(name: string): Promise<unknown> {
 }
 
 describe("X0-A 长度前缀协议", () => {
+  test("REPL 包视图请求和接口响应共用 Rust 夹具，且不复用包管理请求", async () => {
+    const request = validateMessage(await fixture("repl-packages-request.json"));
+    expect(request).toMatchObject({ type: "repl_packages", module_path: "lib.api" });
+    expect(decodeFrame<unknown>(encodeFrame(request))).toEqual(request);
+    const response = validateMessage(await fixture("repl-packages-response.json"));
+    expect(response).toMatchObject({ type: "repl_packages_result", interface: {
+      exports: [{ name: "greet", signature: "(name: str) -> str" }],
+    } });
+    expect(decodeFrame<unknown>(encodeFrame(response))).toEqual(response);
+  });
   test("包请求共享夹具保留目标环境和锁定开关", async () => {
     const value = validateMessage(await fixture("package-request.json"));
     expect(value).toMatchObject({

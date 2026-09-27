@@ -14,7 +14,7 @@ related:
 # Rust 核心进程协议
 
 X0-A 的核心入口是 `xiao-core` 子进程。调用方先发送一个 `hello` 帧完成版本协商，
-再发送 `run`、`test`、`build`、`environment`、`package`、`cancel` 或 `shutdown`。本页描述已经验证的机器边界；用户可见的
+再发送 `run`、`test`、`build`、`environment`、`package`、`repl_packages`、`cancel` 或 `shutdown`。本页描述已经验证的机器边界；用户可见的
 `xiao` 命令、项目测试和独立分发已经接入；`xiao build` 及主机工具链发现也已接入 X0-E。
 
 ## 帧格式
@@ -46,6 +46,33 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 锁文件状态。错误依旧走 `error`，CLI 不重新判定目标或生成锁文件。
 `package` 是以 `hello.capabilities` 协商的兼容新增操作；不支持时 CLI 在发送请求前失败，
 不把旧核心的未知请求当作可用功能。
+
+## REPL 环境包视图（I4a）
+
+`hello.capabilities` 中的 `"package"` **只表示包管理**（`sync`、`install`、`lock`、
+`update`、`add`、`remove`）；`"repl_packages"` 才表示环境包视图与静态接口查询。
+它们是两种不同操作，不共享 `PackageRequest.operation`。新增只读操作保持协议版本 1。
+客户端在旧核心缺少 `"repl_packages"` 时**不要发送该请求**，应返回无第三方包的空视图；
+缺少新请求的可选字段也不得导致崩溃。
+
+`repl_packages` 请求携带 `request_id`、`protocol_version`、`core_version`，并可带
+`active_environment`（绝对路径，省略或为 `null` 时只查全局 `envs/global`）和
+`module_path`（如 `lib.api`，省略时只枚举包根、不读取源码）。激活环境与全局环境不会合并；
+全局环境尚未安装时返回空数组，显式指定的环境不存在则返回错误。
+`repl_packages_result` 返回 `environment_path`、按名称排序的 `packages`（每项含 `root`、
+版本及来源 `identity`）和可选 `interface`；接口含 `module_path`、按名称排序的
+`exports`，每项有 `name`、`kind` 和可为空的函数 `signature`。读取接口复用 05-B
+模块符号与 04 静态类型签名，不执行包代码；包名中含 `-`、`.` 或关键字等不可
+作为单段 Xiao 模块名的包不进入自动登记视图。若多个映射争用根名，返回
+`X11-REPL-PACKAGE-001`（`details.root`、`details.candidates`、`details.environment`），
+要求显式 `import`，绝不按扫描顺序任选；读取失败为 `X11-REPL-PACKAGE-002`，
+`details` 给出环境、包名及底层原因。
+
+本请求**不预加载**模块，也不维持跨请求 VM 状态；首次引用的执行机制必须落在 VM，
+不能由客户端在 `run` 前调用此接口冒充加载。当前运行链尚未完成包模块执行接线，
+不能把协议查询成功当成运行时首次加载已实现。现有 `run` 每次新建 VM，跨请求复用归 I4b。
+共享机器样本见 `tests/spec/11x0-protocol/repl-packages-request.json` 和
+`tests/spec/11x0-protocol/repl-packages-response.json`。
 取消通过同一请求 ID 绑定 `CancellationToken`，其结果使用 `ArtifactRejected` 的进程码 2。
 
 `optimization.debug = true` 是强制诊断位。它携带可选的 `diagnostics` 等级、日志目标和

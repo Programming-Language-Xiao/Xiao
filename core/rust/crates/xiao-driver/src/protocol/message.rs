@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use xiao_bytecode::FORMAT_VERSION;
 use xiao_codegen_llvm::CODEGEN_VERSION;
-use xiao_package::{EnvironmentMetadata, PackageOperationResult};
+use xiao_package::{EnvironmentMetadata, PackageIdentity, PackageOperationResult};
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 
 use crate::run::DRIVER_VERSION;
@@ -189,6 +189,35 @@ pub struct ProtocolValue {
     pub value: String,
 }
 
+/// REPL 中一个可登记的包根，身份包含来源与版本，不把同名包任意合并。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ReplPackage {
+    /// 可用于名称解析的根名称。
+    pub root: String,
+    /// 锁定的完整包身份。
+    pub identity: PackageIdentity,
+}
+
+/// 05-B 符号接口及 04 类型检查器给出的可选函数签名。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ReplExport {
+    /// 已导出的名称。
+    pub name: String,
+    /// `value`、`function`、`table`、`module` 或 `namespace`。
+    pub kind: String,
+    /// 函数签名；其他种类和暂不可推断的函数为 `null`。
+    pub signature: Option<String>,
+}
+
+/// 一个模块的无副作用静态接口。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ReplInterface {
+    /// 查询时使用的包根与模块路径。
+    pub module_path: String,
+    /// 按名称排序的静态导出。
+    pub exports: Vec<ReplExport>,
+}
+
 /// 协议错误本体。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ProtocolErrorBody {
@@ -282,6 +311,17 @@ pub enum ProtocolResponse {
         request_id: String,
         /// 规范化配置、工具链和目标指纹。
         metadata: EnvironmentMetadata,
+    },
+    /// 当前环境的包根及可选静态模块接口；不加载模块。
+    ReplPackagesResult {
+        /// 对应请求编号。
+        request_id: String,
+        /// 只使用激活环境或全局环境中的一个。
+        environment_path: String,
+        /// 按根名称排序的可解析包。
+        packages: Vec<ReplPackage>,
+        /// 未要求查询模块时为 `null`。
+        interface: Option<ReplInterface>,
     },
     /// 同步或安装完成。
     PackageResult {

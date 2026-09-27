@@ -24,6 +24,44 @@ const TEST_RESPONSE_FIXTURE: &str =
 /// Rust 与 TypeScript 共用的包操作请求样本。
 const PACKAGE_REQUEST_FIXTURE: &str =
     include_str!("../../../../../tests/spec/11x0-protocol/package-request.json");
+/// REPL 环境包视图请求的双语夹具。
+const REPL_PACKAGES_REQUEST_FIXTURE: &str =
+    include_str!("../../../../../tests/spec/11x0-protocol/repl-packages-request.json");
+/// REPL 环境包视图响应的双语夹具。
+const REPL_PACKAGES_RESPONSE_FIXTURE: &str =
+    include_str!("../../../../../tests/spec/11x0-protocol/repl-packages-response.json");
+
+#[test]
+/// 包视图请求和响应各自回环，旧请求缺少可选字段仍可解码。
+fn repl_package_fixtures_round_trip_without_changing_package_operations() {
+    let request: ProtocolRequest =
+        serde_json::from_str(REPL_PACKAGES_REQUEST_FIXTURE).expect("view request");
+    let ProtocolRequest::ReplPackages { module_path, .. } = &request else {
+        panic!("view request must not be a package management operation");
+    };
+    assert_eq!(module_path.as_deref(), Some("lib.api"));
+    let encoded = encode_frame(&request).expect("frame");
+    let decoded: ProtocolRequest = decode_frame(&encoded[FRAME_LENGTH_BYTES..]).expect("decode");
+    assert_eq!(decoded, request);
+    let legacy = serde_json::json!({
+        "type": "repl_packages", "request_id": "legacy", "protocol_version": 1, "core_version": 1
+    });
+    let legacy: ProtocolRequest = serde_json::from_value(legacy).expect("optional fields");
+    assert!(matches!(
+        legacy,
+        ProtocolRequest::ReplPackages {
+            active_environment: None,
+            module_path: None,
+            ..
+        }
+    ));
+    let response: ProtocolResponse =
+        serde_json::from_str(REPL_PACKAGES_RESPONSE_FIXTURE).expect("view response");
+    let encoded = encode_frame(&response).expect("response frame");
+    let decoded: ProtocolResponse =
+        decode_frame(&encoded[FRAME_LENGTH_BYTES..]).expect("response decode");
+    assert_eq!(decoded, response);
+}
 
 #[test]
 /// E2B 包请求的两侧字段形状一致，序列化后保留全部同步开关。

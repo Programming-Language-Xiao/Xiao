@@ -327,6 +327,21 @@ pub enum ProtocolRequest {
         /// 工具链路径与版本描述。
         toolchain: ToolchainSpec,
     },
+    /// 枚举当前 REPL 环境的包根；可选地只读查询一个模块的接口。
+    ReplPackages {
+        /// 请求编号。
+        request_id: String,
+        /// 协议版本。
+        protocol_version: u16,
+        /// 统一核心版本。
+        core_version: u32,
+        /// 已激活环境的绝对路径；省略时只查看全局环境。
+        #[serde(default)]
+        active_environment: Option<String>,
+        /// 可选的 `包根.模块路径`；省略时不读取任何包源码。
+        #[serde(default)]
+        module_path: Option<String>,
+    },
     /// 本地包操作；目标环境由 Rust 唯一选择。
     Package {
         /// 请求编号。

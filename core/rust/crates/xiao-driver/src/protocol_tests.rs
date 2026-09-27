@@ -93,6 +93,33 @@ fn hello_advertises_test_capability() {
             .iter()
             .any(|capability| capability == "environment")
     );
+    assert!(
+        capabilities
+            .iter()
+            .any(|capability| capability == "package")
+    );
+    assert!(
+        capabilities
+            .iter()
+            .any(|capability| capability == "repl_packages")
+    );
+}
+
+#[test]
+/// 包视图缺少可选环境和模块字段仍能解码，激活环境不能使用相对路径。
+fn repl_packages_request_validates_environment_without_renaming_package_operation() {
+    let request = ProtocolRequest::ReplPackages {
+        request_id: "invalid-view".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        active_environment: Some("relative/env".to_owned()),
+        module_path: None,
+    };
+    let ProtocolResponse::Error { error, .. } = dispatch(request) else {
+        panic!("relative active environment must be rejected");
+    };
+    assert_eq!(error.code, REPL_VIEW_ERROR_CODE);
+    assert_eq!(error.details["environment"], "relative/env");
 }
 
 #[test]

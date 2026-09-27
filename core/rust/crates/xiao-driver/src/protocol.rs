@@ -14,6 +14,8 @@ mod frame;
 mod mapping;
 /// 协议版本、消息和响应类型。
 mod message;
+/// 环境包视图与静态导出签名查询。
+mod package_view;
 /// 请求配置、请求消息和协议错误。
 mod request;
 /// 前端到 VM 的运行路径。
@@ -46,6 +48,8 @@ pub use frame::{
 pub use mapping::{protocol_diagnostic, protocol_param};
 /// 协议版本、响应和跨进程值类型。
 pub use message::*;
+/// 包视图失败及包根冲突的稳定诊断码。
+pub use package_view::{REPL_ROOT_CONFLICT_CODE, REPL_VIEW_ERROR_CODE};
 /// 请求配置、请求消息和协议层错误类型。
 pub use request::*;
 #[cfg(test)]

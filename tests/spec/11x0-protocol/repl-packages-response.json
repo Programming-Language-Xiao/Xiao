@@ -1,0 +1,19 @@
+{
+  "type": "repl_packages_result",
+  "request_id": "fixture-repl-packages-1",
+  "environment_path": "/workspace/project/dev",
+  "packages": [
+    {
+      "root": "lib",
+      "identity": {
+        "name": "lib",
+        "version": "1.0.0",
+        "source": { "source_id": "path:/workspace/lib", "alias": null, "display_name": "/workspace/lib" }
+      }
+    }
+  ],
+  "interface": {
+    "module_path": "lib.api",
+    "exports": [{ "name": "greet", "kind": "function", "signature": "(name: str) -> str" }]
+  }
+}

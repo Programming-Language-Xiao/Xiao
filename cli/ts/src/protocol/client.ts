@@ -14,6 +14,7 @@ import {
   type TestRequest,
   type BuildRequest,
   type EnvironmentRequest,
+  type ReplPackagesRequest,
   type PackageRequest,
   type ToolchainSpec,
 } from "./messages.ts";
@@ -250,6 +251,19 @@ export class ProtocolClient {
     return this.call(request, options.signal);
   }
 
+  /** 只读查询 REPL 包根；旧核心缺少独立能力时返回空视图。 */
+  async replPackages(activeEnvironment?: string | null, modulePath?: string | null): Promise<CoreCallResult> {
+    const request: ReplPackagesRequest = {
+      type: "repl_packages",
+      request_id: requestId("repl-packages"),
+      protocol_version: PROTOCOL_VERSION,
+      core_version: CORE_VERSION,
+      active_environment: activeEnvironment ?? null,
+      module_path: modulePath ?? null,
+    };
+    return this.call(request);
+  }
+
   /** 按传入顺序批量发送项目测试源码。 */
   async testSources(sources: readonly SourceTestCase[], options: SourceTestOptions = {}): Promise<CoreCallResult> {
     const target = options.target ?? hostTarget();
@@ -278,7 +292,7 @@ export class ProtocolClient {
   }
 
   /** 使用已经规范化的协议运行请求发送一次调用。 */
-  async call(request: RunRequest | TestRequest | BuildRequest | EnvironmentRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  async call(request: RunRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     const discovery = await discoverCoreWithMetadata(this.options);
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
@@ -325,11 +339,17 @@ export class ProtocolClient {
       }
 
       if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
-      await writeChildFrame(child, request);
-      signal?.addEventListener("abort", abortHandler, { once: true });
-      if (signal?.aborted) abortHandler();
-      const response = await frames.nextMatching(request.request_id);
-      signal?.removeEventListener("abort", abortHandler);
+      let response: ProtocolResponse;
+      if (request.type === "repl_packages" && !helloResponse.capabilities.includes("repl_packages")) {
+        response = { type: "repl_packages_result", request_id: request.request_id,
+          environment_path: request.active_environment ?? "", packages: [], interface: null };
+      } else {
+        await writeChildFrame(child, request);
+        signal?.addEventListener("abort", abortHandler, { once: true });
+        if (signal?.aborted) abortHandler();
+        response = asProtocolResponse(await frames.nextMatching(request.request_id));
+        signal?.removeEventListener("abort", abortHandler);
+      }
       await writeChildFrame(child, {
         type: "shutdown",
         request_id: requestId("shutdown"),
@@ -339,7 +359,7 @@ export class ProtocolClient {
       await frames.nextMatching((responseValue) => responseValue.type === "shutdown");
       child.stdin.end();
       await waitForExit(child);
-      return { response: asProtocolResponse(response), stderr, corePath, coreSource: discovery.source };
+      return { response, stderr, corePath, coreSource: discovery.source };
     } catch (error) {
       if (error instanceof CoreClientError) throw error;
       if (error instanceof ProtocolFrameError) {

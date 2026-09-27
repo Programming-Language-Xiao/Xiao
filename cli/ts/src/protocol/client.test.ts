@@ -21,7 +21,7 @@ class FakeCore extends EventEmitter {
   private pendingRunId: string | null = null;
 
   /** 监听 stdin 并按帧返回固定结果。 */
-  constructor(private readonly onRun?: () => void) {
+  constructor(private readonly onRun?: () => void, private readonly capabilities: string[] = ["run", "environment"]) {
     super();
     this.stdin.on("data", (chunk: Buffer) => this.consume(chunk));
   }
@@ -57,7 +57,7 @@ class FakeCore extends EventEmitter {
     if (request.type === "hello") {
       this.stdout.write(Buffer.from(encodeFrame({
         type: "hello", request_id: request.request_id, accepted: true, protocol_version: 1,
-        core_version: 1, versions: {}, capabilities: ["run", "environment"], error: null,
+        core_version: 1, versions: {}, capabilities: this.capabilities, error: null,
       })));
     } else if (request.type === "run") {
       if (this.onRun !== undefined) {
@@ -184,6 +184,18 @@ describe("协议客户端", () => {
     const request = await Bun.file(fixturePath).json() as PackageRequest;
     await expect(client.call(request)).rejects.toMatchObject({ code: "X11-CLI-CORE-004" });
     expect(fake?.requests.map((value) => value.type)).toEqual(["hello"]);
+  });
+
+  test("旧核心只声明 package 而无 repl_packages 时关闭进程并降级为空视图", async () => {
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      overridePath: process.execPath,
+      spawnProcess: () => { fake = new FakeCore(undefined, ["run", "environment", "package"]); return fake as never; },
+    });
+    const result = await client.replPackages("C:/project/dev");
+    expect(result.response).toMatchObject({ type: "repl_packages_result", packages: [], interface: null });
+    expect(fake?.requests.map((value) => value.type)).toEqual(["hello", "shutdown"]);
+    expect(fake?.exitCode).toBe(0);
   });
 
   test("先握手，再按 request_id 取得运行结果并关闭核心", async () => {

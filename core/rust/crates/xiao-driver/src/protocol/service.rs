@@ -15,6 +15,7 @@ use super::config::parse_environment_config;
 use super::frame::{FrameError, decode_frame, read_frame, write_frame};
 use super::mapping::{protocol_error_body, protocol_error_from_error};
 use super::message::{CORE_VERSION, CoreVersions, PROTOCOL_VERSION, ProtocolResponse};
+use super::package_view::repl_packages_response;
 use super::request::{
     CORE_CRASH_CODE, OptimizationConfig, ProtocolError, ProtocolRequest, ProtocolTarget,
     SourceIdentity, ToolchainSpec,
@@ -134,6 +135,19 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             target,
             toolchain,
         ),
+        ProtocolRequest::ReplPackages {
+            request_id,
+            protocol_version,
+            core_version,
+            active_environment,
+            module_path,
+        } => repl_packages_response(
+            request_id,
+            protocol_version,
+            core_version,
+            active_environment,
+            module_path,
+        ),
         ProtocolRequest::Package {
             request_id,
             protocol_version,
@@ -208,6 +222,7 @@ fn hello_response(
                 "build".to_owned(),
                 "environment".to_owned(),
                 "package".to_owned(),
+                "repl_packages".to_owned(),
                 "cancel".to_owned(),
             ],
             error: None,
@@ -594,9 +609,9 @@ pub(super) fn worker_response(
             config_text,
             &token,
         ),
-        request @ (ProtocolRequest::Environment { .. } | ProtocolRequest::Package { .. }) => {
-            dispatch(request)
-        }
+        request @ (ProtocolRequest::Environment { .. }
+        | ProtocolRequest::Package { .. }
+        | ProtocolRequest::ReplPackages { .. }) => dispatch(request),
         other => dispatch(other),
     }
 }
@@ -668,7 +683,9 @@ where
                 }
                 spawn_worker(request, &writer, &cancellations, &mut workers);
             }
-            request @ (ProtocolRequest::Environment { .. } | ProtocolRequest::Package { .. }) => {
+            request @ (ProtocolRequest::Environment { .. }
+            | ProtocolRequest::Package { .. }
+            | ProtocolRequest::ReplPackages { .. }) => {
                 if !negotiated {
                     let request_id = request_id_for(&request).expect("environment request id");
                     let error = ProtocolError::version("必须先完成 hello 版本协商");
@@ -702,6 +719,7 @@ fn request_id_for(request: &ProtocolRequest) -> Option<String> {
         | ProtocolRequest::Build { request_id, .. }
         | ProtocolRequest::Environment { request_id, .. }
         | ProtocolRequest::Package { request_id, .. }
+        | ProtocolRequest::ReplPackages { request_id, .. }
         | ProtocolRequest::Cancel { request_id, .. }
         | ProtocolRequest::Shutdown { request_id, .. } => Some(request_id.clone()),
         ProtocolRequest::Hello { .. } => None,
