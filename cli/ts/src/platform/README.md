@@ -6,3 +6,6 @@ X0-B 已提供宿主目标描述和开发树 `xiao-core` 发现；X0-C 增加同
 生产发现顺序，以及 `bun build --compile` 的独立分发目录。X0-E 的 `toolchain.ts` 用相同来源
 模型发现 clang、LLVM、Rust、Runtime 与诊断组件，并在构建前做版本、目标和链接探测。完整
 Linux 原生、WSL 与 macOS 原生矩阵仍按环境清单逐项复现。
+
+I2 的 `atomic-write.ts` 提供配置写回与 REPL 源码保存共用的同目录临时文件替换；
+调用方负责各自的诊断映射，测试可注入最小文件系统接口。

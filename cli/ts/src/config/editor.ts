@@ -5,9 +5,10 @@
  * `xiao-config` 负责，本模块只处理已经冻结的两个 CLI 写入路径。
  */
 
-import { chmod, mkdir, readFile, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join, parse, resolve } from "node:path";
+import { atomicWriteFile, nativeAtomicWriteFileSystem, type AtomicWriteFileSystem } from "../platform/atomic-write.ts";
 
 /** 支持写入的配置路径。 */
 export type SupportedConfigKey = "CLI.git.summary" | "language.locale";
@@ -28,15 +29,9 @@ export interface ConfigEditorOptions {
 }
 
 /** 配置写回所需的最小文件系统接口。 */
-export interface ConfigFileSystem {
+export interface ConfigFileSystem extends AtomicWriteFileSystem {
   readFile(path: string, encoding: "utf8"): Promise<string>;
-  writeFile(path: string, data: string, encoding: "utf8"): Promise<void>;
-  rename(oldPath: string, newPath: string): Promise<void>;
-  rm(path: string, options?: { force?: boolean }): Promise<void>;
-  mkdir(path: string, options: { recursive: true }): Promise<void>;
-  stat(path: string): Promise<{ mode: number }>;
   readdir(path: string): Promise<string[]>;
-  chmod(path: string, mode: number): Promise<void>;
 }
 
 /** 成功写入的结果。 */
@@ -80,14 +75,9 @@ const CONFIG_ERROR = {
 } as const;
 
 const nativeFs: ConfigFileSystem = {
+  ...nativeAtomicWriteFileSystem,
   readFile: (path, encoding) => readFile(path, encoding),
-  writeFile: (path, data, encoding) => writeFile(path, data, encoding),
-  rename,
-  rm,
-  mkdir: (path, options) => mkdir(path, options).then(() => undefined),
-  stat,
   readdir,
-  chmod,
 };
 
 /** 返回受支持的配置键清单。 */
@@ -169,7 +159,12 @@ export async function writeConfigValue(
   const { path, text } = await readConfig(scope, options);
   validateDocumentShape(text, path);
   const updated = updateDocument(text, typedKey, value, path);
-  await atomicWrite(path, updated, fileSystem);
+  try {
+    await atomicWriteFile(path, updated, fileSystem, CANONICAL_FILE);
+  } catch (error) {
+    if (error instanceof CliConfigError) throw error;
+    throw new CliConfigError(CONFIG_ERROR.write, `原子写入配置失败：${String(error)}`, path);
+  }
   return { path, text: updated, value };
 }
 
@@ -183,45 +178,6 @@ export async function readConfigValue(
   const found = findValue(text, key);
   if (found === null) return undefined;
   return normalizeConfigValue(key, found);
-}
-
-/** 通过同目录临时文件和回滚备份完成原子替换。 */
-async function atomicWrite(path: string, text: string, fileSystem: ConfigFileSystem): Promise<void> {
-  const directory = dirname(path);
-  try {
-    await fileSystem.mkdir(directory, { recursive: true });
-    let mode: number | undefined;
-    try {
-      mode = (await fileSystem.stat(path)).mode;
-    } catch (error) {
-      if (!isMissing(error)) throw error;
-    }
-    const temp = join(directory, `.${CANONICAL_FILE}.tmp-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`);
-    try {
-      await fileSystem.writeFile(temp, text, "utf8");
-      if (mode !== undefined) await fileSystem.chmod(temp, mode);
-      try {
-        await fileSystem.rename(temp, path);
-      } catch (error) {
-        // Windows 不允许直接覆盖现有文件；备份/替换失败时尽量回滚原文件。
-        if (mode === undefined || !isAlreadyExists(error)) throw error;
-        const backup = `${path}.xiao-backup-${process.pid}-${Date.now()}`;
-        await fileSystem.rename(path, backup);
-        try {
-          await fileSystem.rename(temp, path);
-          await fileSystem.rm(backup, { force: true });
-        } catch (replaceError) {
-          try { await fileSystem.rename(backup, path); } catch { /* 保留原始错误 */ }
-          throw replaceError;
-        }
-      }
-    } finally {
-      await fileSystem.rm(temp, { force: true }).catch(() => undefined);
-    }
-  } catch (error) {
-    if (error instanceof CliConfigError) throw error;
-    throw new CliConfigError(CONFIG_ERROR.write, `原子写入配置失败：${String(error)}`, path);
-  }
 }
 
 /** 在保留原始布局的前提下更新目标表和键。 */
@@ -491,5 +447,3 @@ async function readDirectory(directory: string, fileSystem: ConfigFileSystem): P
 
 /** 判断底层错误是否表示路径不存在。 */
 function isMissing(error: unknown): boolean { return typeof error === "object" && error !== null && "code" in error && (error as { code?: string }).code === "ENOENT"; }
-/** 判断重命名是否因目标文件存在而失败。 */
-function isAlreadyExists(error: unknown): boolean { return typeof error === "object" && error !== null && "code" in error && ["EEXIST", "EPERM", "ENOTEMPTY"].includes((error as { code?: string }).code ?? ""); }
