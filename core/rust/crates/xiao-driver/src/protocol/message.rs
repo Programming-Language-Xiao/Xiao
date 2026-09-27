@@ -161,6 +161,9 @@ pub struct ProtocolEvent {
 pub struct ProtocolMetrics {
     /// 执行指令数。
     pub instructions: u64,
+    /// 本次运行同时存活的 Xiao Runtime 对象峰值字节数。
+    #[serde(default)]
+    pub peak_live_bytes: u64,
     /// 最大调用深度。
     pub max_call_depth: usize,
     /// 最大栈深度。

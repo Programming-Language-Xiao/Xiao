@@ -104,9 +104,11 @@ pub(super) fn protocol_report(report: &ReportRecord) -> ProtocolReport {
 pub(super) fn protocol_metrics(
     metrics: xiao_vm::VmMetrics,
     dropped_events: usize,
+    peak_live_bytes: u64,
 ) -> ProtocolMetrics {
     ProtocolMetrics {
         instructions: metrics.instructions,
+        peak_live_bytes,
         max_call_depth: metrics.max_call_depth,
         max_stack_depth: metrics.max_stack_depth,
         releases: metrics.releases,

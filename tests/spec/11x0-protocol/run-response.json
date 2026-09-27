@@ -14,6 +14,7 @@
   ],
   "metrics": {
     "instructions": 1,
+    "peak_live_bytes": 0,
     "max_call_depth": 1,
     "max_stack_depth": 1,
     "releases": 0,

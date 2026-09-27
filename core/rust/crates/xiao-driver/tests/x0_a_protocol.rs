@@ -1,8 +1,9 @@
 //! X0-A Rust 侧共享协议夹具与双向帧契约。
 
 use xiao_driver::protocol::{
-    CORE_VERSION, FRAME_LENGTH_BYTES, PROTOCOL_VERSION, ProtocolRequest, ProtocolResponse,
-    decode_frame, dispatch, encode_frame,
+    CORE_VERSION, FRAME_LENGTH_BYTES, PROTOCOL_VERSION, OptimizationConfig, ProtocolRequest,
+    ProtocolResponse, ProtocolTarget, RunOptions, SourceIdentity, decode_frame, dispatch,
+    encode_frame,
 };
 
 /// Rust 与 TypeScript 共用的 hello 请求样本。
@@ -75,6 +76,49 @@ fn shared_response_fixture_round_trips() {
     let frame = encode_frame(&response).expect("encode");
     let decoded: ProtocolResponse = decode_frame(&frame[FRAME_LENGTH_BYTES..]).expect("decode");
     assert_eq!(decoded, response);
+}
+
+#[test]
+/// 旧响应缺失新增计量字段时仍可读取；新运行按实际 Runtime 对象返回峰值。
+fn runtime_peak_metric_is_backward_compatible_and_tracks_containers() {
+    let mut legacy: serde_json::Value =
+        serde_json::from_str(RESPONSE_FIXTURE).expect("response fixture");
+    legacy["metrics"]
+        .as_object_mut()
+        .expect("metrics object")
+        .remove("peak_live_bytes");
+    let decoded: ProtocolResponse = serde_json::from_value(legacy).expect("legacy response");
+    let ProtocolResponse::Result { metrics, .. } = decoded else {
+        panic!("expected run result");
+    };
+    assert_eq!(metrics.expect("legacy metrics").peak_live_bytes, 0);
+
+    let run = |text: &str| {
+        let response = dispatch(ProtocolRequest::Run {
+            request_id: "memory-sample".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            language_version: "0.1.0".to_owned(),
+            runtime_version: "0.1.0".to_owned(),
+            target: ProtocolTarget::host(),
+            optimization: OptimizationConfig::default(),
+            source: SourceIdentity {
+                module: "main".to_owned(),
+                path: None,
+                text: text.to_owned(),
+            },
+            options: RunOptions::default(),
+        });
+        let ProtocolResponse::Result {
+            exit_code: 0,
+            metrics: Some(metrics),
+            ..
+        } = response else {
+            panic!("run must succeed: {response:?}");
+        };
+        metrics.peak_live_bytes
+    };
+    assert!(run("value = [1, 2, 3]\n") > run("value = 1\n"));
 }
 
 #[test]

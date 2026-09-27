@@ -121,7 +121,7 @@ pub(super) fn run_request_response(
 }
 
 /// 将三段驱动器结果转换为运行响应。
-fn run_response(request_id: String, outcome: DriverOutcome) -> ProtocolResponse {
+fn run_response(request_id: String, outcome: DriverOutcome, peak_live_bytes: u64) -> ProtocolResponse {
     let exit_code = outcome.exit_code();
     match outcome {
         DriverOutcome::Frontend(error) => ProtocolResponse::Result {
@@ -141,7 +141,7 @@ fn run_response(request_id: String, outcome: DriverOutcome) -> ProtocolResponse 
             artifact: None,
         },
         DriverOutcome::Rejected(error) => rejected_response(request_id, exit_code, &error),
-        DriverOutcome::Executed(execution) => executed_response(request_id, exit_code, &execution),
+        DriverOutcome::Executed(execution) => executed_response(request_id, exit_code, &execution, peak_live_bytes),
     }
 }
 
@@ -211,7 +211,10 @@ pub(super) fn run_with_diagnostics(
     } else {
         None
     };
+    let measurement = xiao_runtime::start_memory_measurement();
     let outcome = FrontendVmDriver::new().run(request);
+    let peak_live_bytes = measurement.peak_live_bytes();
+    drop(measurement);
     if let Some(mut session) = session.take() {
         if let DriverOutcome::Executed(execution) = &outcome {
             for event in execution.events() {
@@ -220,7 +223,7 @@ pub(super) fn run_with_diagnostics(
         }
         session.finish();
     }
-    run_response(request_id, outcome)
+    run_response(request_id, outcome, peak_live_bytes)
 }
 
 /// 将执行前拒绝转换为稳定协议错误。
@@ -263,6 +266,7 @@ fn executed_response(
     request_id: String,
     exit_code: ExitCode,
     execution: &DriverExecution,
+    peak_live_bytes: u64,
 ) -> ProtocolResponse {
     let outcome = &execution.outcome;
     let value = outcome.value.as_ref().map(protocol_value);
@@ -278,7 +282,7 @@ fn executed_response(
             .collect(),
         report: outcome.report.as_ref().map(protocol_report),
         events: outcome.events.iter().map(protocol_event).collect(),
-        metrics: Some(protocol_metrics(outcome.metrics, outcome.dropped_events)),
+        metrics: Some(protocol_metrics(outcome.metrics, outcome.dropped_events, peak_live_bytes)),
         value,
         artifact: None,
     }
