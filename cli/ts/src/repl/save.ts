@@ -2,7 +2,7 @@
 
 import type { TerminalView } from "../ui/terminal.ts";
 import { displayWidth } from "../ui/width.ts";
-import { modalPrompt, separator } from "./confirm.ts";
+import { modalInputWindow, modalPrompt, separator } from "./confirm.ts";
 import { graphemes } from "./editor.ts";
 import type { KeyEvent } from "./keys.ts";
 
@@ -46,9 +46,9 @@ export function applySaveKey(state: SaveInputState, key: KeyEvent): SaveInputRes
     if (/[\x00-\x1f\x7f\u0085\u2028\u2029]/u.test(key.text)) {
       return { state: { ...state, error: "X11-CLI-SAVE-001: 路径不能包含控制或分隔字符" }, action: "none" };
     }
-    const inserted = graphemes(key.text);
-    chars.splice(state.cursor, 0, ...inserted);
-    return { state: { text: chars.join(""), cursor: state.cursor + inserted.length, error: null }, action: "none" };
+    const prefix = chars.slice(0, state.cursor).join("") + key.text;
+    const text = prefix + chars.slice(state.cursor).join("");
+    return { state: { text, cursor: graphemes(prefix).length, error: null }, action: "none" };
   }
   return { state, action: "none" };
 }
@@ -57,31 +57,20 @@ export function applySaveKey(state: SaveInputState, key: KeyEvent): SaveInputRes
 export function renderSaveInput(state: SaveInputState, view: TerminalView): { text: string; cursorRow: number; cursorColumn: number } {
   const width = Math.max(1, Math.floor(view.width));
   const height = Math.max(1, Math.floor(view.height));
-  const chars = graphemes(state.text);
-  const available = Math.max(0, width - 2);
-  let start = 0;
-  while (start < state.cursor && displayWidth(chars.slice(start, state.cursor).join("")) >= available && available > 0) start += 1;
-  let end = start;
-  let used = 0;
-  while (end < chars.length && used + displayWidth(chars[end]) <= available) {
-    used += displayWidth(chars[end]);
-    end += 1;
-  }
-  const visible = chars.slice(start, end).join("");
+  const window = modalInputWindow(state.text, state.cursor, width);
   const marker = modalPrompt(view);
-  const input = width === 1 ? marker : `${marker} ${visible}`;
-  const cursorColumn = Math.min(width, Math.max(1, 3 + displayWidth(chars.slice(start, state.cursor).join(""))));
-  if (height === 1) return { text: input, cursorRow: 1, cursorColumn };
+  const input = width === 1 ? marker : `${marker} ${window.text}`;
+  if (height === 1) return { text: input, cursorRow: 1, cursorColumn: window.cursorColumn };
   const title = separator(view, SAVE_TITLE);
   const errorCapacity = state.error === null ? 0 : height >= 4 ? height - 3 : 1;
   const errorRows = errorCapacity === 0 ? [] : wrapNotice(state.error!, width).slice(-errorCapacity);
   if (height === 2) {
     return errorRows.length === 0
-      ? { text: `${title}\r\n${input}`, cursorRow: 2, cursorColumn }
-      : { text: `${input}\r\n${errorRows[0]}`, cursorRow: 1, cursorColumn };
+      ? { text: `${title}\r\n${input}`, cursorRow: 2, cursorColumn: window.cursorColumn }
+      : { text: `${input}\r\n${errorRows[0]}`, cursorRow: 1, cursorColumn: window.cursorColumn };
   }
   const tail = errorRows.length === 0 ? separator(view) : height === 3 ? errorRows[0] : `${separator(view)}\r\n${errorRows.join("\r\n")}`;
-  return { text: `${title}\r\n${input}\r\n${tail}`, cursorRow: 2, cursorColumn };
+  return { text: `${title}\r\n${input}\r\n${tail}`, cursorRow: 2, cursorColumn: window.cursorColumn };
 }
 
 /** 按终端显示列宽换行诊断，避免路径和原因覆盖相邻界面。 */

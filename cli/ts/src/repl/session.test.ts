@@ -110,6 +110,24 @@ test("单行面板识别 Kitty 面板键关闭后回到 readline", async () => {
   expect(printed.match(/Xiao \(c\) XiaoCZX/gu)?.length).toBe(1);
 });
 
+test("单行临时面板遇到 EOF 直接退出并恢复 raw mode", async () => {
+  const input = inputStream();
+  const output = new PassThrough();
+  let printed = "";
+  output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+  const session = runSingleLineRepl({
+    input, output, error: new PassThrough(), write: writeSafely, cwd: "/project", env: { NO_COLOR: "1" },
+    isTTY: true, color: "never", debug: false, version: "0.1.0",
+  });
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  input.write(Buffer.from("!panel!\n"));
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  input.end();
+  expect(await session).toBe(0);
+  expect(input.isRaw).toBe(false);
+  expect(printed.match(/Xiao \(c\) XiaoCZX/gu)?.length).toBe(1);
+});
+
 test("传统 Ctrl+P 不被猜成单行面板入口", async () => {
   const input = inputStream();
   const output = new PassThrough();

@@ -64,3 +64,18 @@ test("保存提示符复用确认态配色，错误不超过终端高度", () =>
     expect(compact.cursorRow).toBe(height === 2 ? 1 : Math.min(height, 2));
   }
 });
+
+test("大段路径粘贴不会因参数展开溢出，输入窗口保持有界", () => {
+  const state = applySaveKey(initialSaveInput(), { kind: "paste", text: "x".repeat(750_000) }).state;
+  expect(state.text.length).toBe(750_000);
+  const frame = renderSaveInput(state, { ...view, width: 20 });
+  expect(frame.text.split("\r\n")[1]).toBe("> " + "x".repeat(17));
+  expect(frame.cursorColumn).toBe(20);
+});
+
+test("保存路径的组合字符插入后可按一个字素退格", () => {
+  let state = applySaveKey(initialSaveInput(), { kind: "text", text: "a" }).state;
+  state = applySaveKey(state, { kind: "text", text: "\u0301" }).state;
+  expect(state).toEqual({ text: "a\u0301", cursor: 1, error: null });
+  expect(applySaveKey(state, { kind: "backspace" }).state).toEqual(initialSaveInput());
+});

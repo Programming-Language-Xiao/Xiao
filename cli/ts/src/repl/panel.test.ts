@@ -63,3 +63,25 @@ test("长输入只在面板内水平滚动，极矮终端不写越界行", () =>
     expect(frame.cursorColumn).toBeLessThanOrEqual(8);
   }
 });
+
+test("大段粘贴不使用参数展开且只渲染光标附近的输入", () => {
+  const state = applyPanelKey(initialPanelState(), { kind: "paste", text: "x".repeat(750_000) }).state;
+  expect(state.text.length).toBe(750_000);
+  expect(state.cursor).toBe(750_000);
+  const frame = renderPanel(state, view(20));
+  expect(frame.text.split("\r\n")[1]).toBe("> " + "x".repeat(17));
+  expect(frame.cursorColumn).toBe(20);
+});
+
+test("中文输入的中间光标保持字素与显示列对齐", () => {
+  const frame = renderPanel({ text: "甲乙丙abcd", cursor: 3 }, view(8));
+  expect(frame.text.split("\r\n")[1]).toBe("> 乙丙ab");
+  expect(frame.cursorColumn).toBe(7);
+});
+
+test("组合字符插入后光标仍在字素边界，退格可删除整体", () => {
+  let state = applyPanelKey(initialPanelState(), { kind: "text", text: "a" }).state;
+  state = applyPanelKey(state, { kind: "text", text: "\u0301" }).state;
+  expect(state).toEqual({ text: "a\u0301", cursor: 1 });
+  expect(applyPanelKey(state, { kind: "backspace" }).state).toEqual(initialPanelState());
+});
