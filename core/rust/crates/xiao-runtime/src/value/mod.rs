@@ -34,6 +34,11 @@ impl ObjectPayload for StringObject {
         ObjectLayout::for_type::<Self>(RuntimeTypeTag::String)
     }
 
+    /// 计入字符串拥有的 UTF-8 字节缓冲区。
+    fn owned_bytes(&self) -> usize {
+        self.value.capacity()
+    }
+
     /// 字符串没有用户 `drop` 钩子。
     fn on_drop(&mut self) -> RuntimeResult<()> {
         Ok(())

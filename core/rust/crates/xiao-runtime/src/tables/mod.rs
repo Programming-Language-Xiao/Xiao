@@ -319,6 +319,16 @@ impl ObjectPayload for TableObject {
         ObjectLayout::for_type::<Self>(RuntimeTypeTag::Table)
     }
 
+    /// 计入表字段节点及字段名，不重复计入字段引用的 Runtime 对象。
+    fn owned_bytes(&self) -> usize {
+        let data = self.data.borrow();
+        std::mem::size_of::<TableData>()
+            .saturating_add(data.fields.len().saturating_mul(
+                std::mem::size_of::<(String, RuntimeValue)>() + 3 * std::mem::size_of::<usize>(),
+            ))
+            .saturating_add(data.fields.keys().map(String::capacity).sum::<usize>())
+    }
+
     /// 运行 `drop` 钩子并把对象转为已释放状态。
     fn on_drop(&mut self) -> RuntimeResult<()> {
         let hook = {
@@ -545,10 +555,12 @@ impl TableInstance {
 
     /// 写入前端已验证的字段；私有访问已静态检查，类型和状态仍在此校验。
     pub fn set_compiled_field(&self, name: &str, value: RuntimeValue) -> RuntimeResult<()> {
-        self.handle
+        let result = self.handle
             .with_payload(RuntimeTypeTag::Table, |object: &TableObject| {
                 object.set_internal(name, value)
-            })?
+            })?;
+        self.handle.refresh_memory_usage();
+        result
     }
 
     /// 从仍然存活的弱表引用取出强句柄，供单例注册表使用。
@@ -585,7 +597,7 @@ impl TableInstance {
 
     /// 写入公开字段并执行静态类型对应的 Runtime 校验。
     pub fn set(&self, name: &str, value: RuntimeValue) -> RuntimeResult<()> {
-        self.handle
+        let result = self.handle
             .with_payload(RuntimeTypeTag::Table, |object: &TableObject| {
                 let member = object.definition.signature.member(name).ok_or_else(|| {
                     RuntimeError::invalid_value(format!("表 {} 没有成员 {name}", object.name()))
@@ -596,7 +608,9 @@ impl TableInstance {
                     )));
                 }
                 object.set_internal(name, value)
-            })?
+            })?;
+        self.handle.refresh_memory_usage();
+        result
     }
 
     /// 返回强引用计数。

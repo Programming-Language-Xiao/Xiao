@@ -10,6 +10,8 @@ use std::marker::PhantomData;
 use std::mem::ManuallyDrop;
 use std::ptr::NonNull;
 use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::errors::{RuntimeError, RuntimeResult};
 
@@ -144,6 +146,10 @@ pub(crate) trait ObjectPayload: Any {
     fn type_tag(&self) -> RuntimeTypeTag;
     /// 返回载荷布局摘要。
     fn layout(&self) -> ObjectLayout;
+    /// 返回载荷额外拥有的堆存储字节数，不重复计算其他 Runtime 对象。
+    fn owned_bytes(&self) -> usize {
+        0
+    }
     /// 在最后一个强引用释放前执行用户可观察的释放钩子。
     fn on_drop(&mut self) -> RuntimeResult<()>;
     /// 暴露只读 `Any` 视图供同 crate 类型安全下转型。
@@ -161,7 +167,63 @@ struct ObjectHeader {
     layout: ObjectLayout,
     strategy: &'static dyn RefCountStrategy,
     destroyed: Cell<bool>,
+    accounted_bytes: Cell<u64>,
+    measurement: Option<Arc<MemoryCounter>>,
     payload: ManuallyDrop<RefCell<Box<dyn ObjectPayload>>>,
+}
+
+/// 一次运行的对象存活字节计数；每个对象头只归属于创建它的运行。
+#[derive(Default)]
+struct MemoryCounter {
+    current: AtomicU64,
+    peak: AtomicU64,
+}
+
+impl MemoryCounter {
+    /// 更新当前存活字节数及历史峰值。
+    fn add(&self, bytes: u64) {
+        let current = self.current.fetch_add(bytes, Ordering::Relaxed).saturating_add(bytes);
+        self.peak.fetch_max(current, Ordering::Relaxed);
+    }
+
+    /// 对象释放或收缩时扣除对应字节数。
+    fn subtract(&self, bytes: u64) {
+        self.current.fetch_sub(bytes, Ordering::Relaxed);
+    }
+}
+
+thread_local! {
+    /// 当前线程的运行测量；对象头保留自身归属，释放时不依赖此线程状态。
+    static ACTIVE_MEASUREMENT: RefCell<Option<Arc<MemoryCounter>>> = const { RefCell::new(None) };
+}
+
+/// 本次运行的 Runtime 对象内存测量作用域。
+pub struct MemoryMeasurement {
+    counter: Arc<MemoryCounter>,
+    previous: Option<Arc<MemoryCounter>>,
+}
+
+impl MemoryMeasurement {
+    /// 返回本次运行期间同时存活的 Runtime 对象峰值字节数。
+    #[must_use]
+    pub fn peak_live_bytes(&self) -> u64 {
+        self.counter.peak.load(Ordering::Relaxed)
+    }
+}
+
+impl Drop for MemoryMeasurement {
+    /// 恢复外层测量作用域，嵌套运行互不覆盖。
+    fn drop(&mut self) {
+        ACTIVE_MEASUREMENT.with(|active| *active.borrow_mut() = self.previous.take());
+    }
+}
+
+/// 为一次同步运行建立独立的 Runtime 对象内存测量。
+#[must_use]
+pub fn start_memory_measurement() -> MemoryMeasurement {
+    let counter = Arc::new(MemoryCounter::default());
+    let previous = ACTIVE_MEASUREMENT.with(|active| active.borrow_mut().replace(counter.clone()));
+    MemoryMeasurement { counter, previous }
 }
 
 /// 强拥有的不透明 Runtime 句柄。
@@ -300,6 +362,11 @@ impl StrongHandle {
     ) -> RuntimeResult<R> {
         with_payload_mut(self.ptr, expected, callback)
     }
+
+    /// 在内部可变对象通过间接可变性修改后刷新其计量大小。
+    pub(crate) fn refresh_memory_usage(&self) {
+        refresh_memory_usage(self.ptr);
+    }
 }
 
 impl Clone for StrongHandle {
@@ -400,6 +467,8 @@ impl Drop for WeakHandle {
 /// 为一个内部载荷分配对象头和首个强句柄。
 pub(crate) fn allocate_payload(payload: Box<dyn ObjectPayload>) -> RuntimeResult<StrongHandle> {
     let layout = payload.layout();
+    let bytes = object_bytes(&*payload);
+    let measurement = ACTIVE_MEASUREMENT.with(|active| active.borrow().clone());
     let header = Box::new(ObjectHeader {
         type_tag: payload.type_tag(),
         strong_count: Cell::new(1),
@@ -408,6 +477,8 @@ pub(crate) fn allocate_payload(payload: Box<dyn ObjectPayload>) -> RuntimeResult
         layout,
         strategy: CounterStrategyKind::NonAtomic.implementation(),
         destroyed: Cell::new(false),
+        accounted_bytes: Cell::new(bytes),
+        measurement: measurement.clone(),
         payload: ManuallyDrop::new(RefCell::new(payload)),
     });
     let ptr = NonNull::new(Box::into_raw(header)).ok_or_else(|| {
@@ -418,6 +489,9 @@ pub(crate) fn allocate_payload(payload: Box<dyn ObjectPayload>) -> RuntimeResult
             "无法分配 Runtime 对象",
         )
     })?;
+    if let Some(counter) = measurement {
+        counter.add(bytes);
+    }
     Ok(StrongHandle {
         ptr,
         _single_thread: PhantomData,
@@ -469,7 +543,39 @@ fn with_payload_mut<T: Any, R>(
         .as_any_mut()
         .downcast_mut::<T>()
         .ok_or_else(|| RuntimeError::type_mismatch(expected.as_str(), "载荷布局"))?;
-    Ok(callback(typed))
+    let result = callback(typed);
+    let bytes = object_bytes(&**payload);
+    update_memory_usage(header, bytes);
+    Ok(result)
+}
+
+/// 计算对象头、静态载荷与载荷额外拥有的堆存储。
+fn object_bytes(payload: &dyn ObjectPayload) -> u64 {
+    let bytes = std::mem::size_of::<ObjectHeader>()
+        .saturating_add(payload.layout().payload_size)
+        .saturating_add(payload.owned_bytes());
+    u64::try_from(bytes).unwrap_or(u64::MAX)
+}
+
+/// 按对象归属的计量作用域刷新变长载荷大小。
+fn update_memory_usage(header: &ObjectHeader, bytes: u64) {
+    let previous = header.accounted_bytes.replace(bytes);
+    if let Some(counter) = &header.measurement {
+        if bytes > previous {
+            counter.add(bytes - previous);
+        } else if previous > bytes {
+            counter.subtract(previous - bytes);
+        }
+    }
+}
+
+/// 支持表字段等内部可变载荷的显式刷新。
+fn refresh_memory_usage(ptr: NonNull<ObjectHeader>) {
+    let header = unsafe { ptr.as_ref() };
+    if !header.destroyed.get() {
+        let payload = (*header.payload).borrow();
+        update_memory_usage(header, object_bytes(&**payload));
+    }
 }
 
 /// 减少强计数，并在最后一个强引用释放时销毁载荷。
@@ -497,6 +603,9 @@ unsafe fn destroy_payload(ptr: NonNull<ObjectHeader>) -> Option<RuntimeError> {
     if header.destroyed.replace(true) {
         return Some(RuntimeError::refcount_invariant("对象载荷被重复释放"));
     }
+    if let Some(counter) = &header.measurement {
+        counter.subtract(header.accounted_bytes.get());
+    }
     let cell = &*header.payload;
     let mut payload = cell.borrow_mut();
     let result = payload.on_drop().err();
@@ -514,8 +623,10 @@ unsafe fn free_header(ptr: NonNull<ObjectHeader>) {
 #[cfg(test)]
 /// 对象头计数、弱引用存活和载荷释放的回归测试。
 mod tests {
-    use super::{ObjectLayout, ObjectPayload, RuntimeTypeTag, allocate_payload};
+    use super::{ObjectLayout, ObjectPayload, RuntimeTypeTag, allocate_payload, start_memory_measurement};
+    use crate::containers::ArrayHandle;
     use crate::errors::RuntimeResult;
+    use crate::value::RuntimeValue;
     use std::any::Any;
 
     /// 用于观察载荷释放次数的测试对象。
@@ -566,5 +677,26 @@ mod tests {
         assert_eq!(dropped.get(), 1);
         assert!(!weak.is_alive());
         assert!(weak.upgrade().is_err());
+    }
+
+    #[test]
+    /// 峰值包含容器元素缓冲区，释放后新测量不会混入上一轮分配。
+    fn peak_live_bytes_counts_container_contents_per_run() {
+        let empty_sample = start_memory_measurement();
+        let empty = ArrayHandle::new(Vec::new()).expect("空数组应分配");
+        let empty_peak = empty_sample.peak_live_bytes();
+        drop(empty);
+        drop(empty_sample);
+
+        let full_sample = start_memory_measurement();
+        let full = ArrayHandle::new(vec![RuntimeValue::Int(1); 1_000_000])
+            .expect("百万元素数组应分配");
+        assert!(full_sample.peak_live_bytes() > empty_peak + 1_000_000);
+        let before_growth = full_sample.peak_live_bytes();
+        full.with_elements_mut(|elements| elements.reserve(1_000_000))
+            .expect("数组扩容应成功");
+        assert!(full_sample.peak_live_bytes() > before_growth);
+        drop(full);
+        assert_eq!(full_sample.counter.current.load(std::sync::atomic::Ordering::Relaxed), 0);
     }
 }

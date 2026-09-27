@@ -38,8 +38,8 @@ pub use errors::{
 };
 /// 重导出对象头和强/弱句柄类型。
 pub use memory::{
-    CounterStrategyKind, NonAtomicRefCount, ObjectLayout, RefCountStrategy, RuntimeTypeTag,
-    StrongHandle, WeakHandle,
+    CounterStrategyKind, MemoryMeasurement, NonAtomicRefCount, ObjectLayout, RefCountStrategy,
+    RuntimeTypeTag, StrongHandle, WeakHandle, start_memory_measurement,
 };
 /// 重导出表定义、钩子和生命周期状态。
 pub use tables::{

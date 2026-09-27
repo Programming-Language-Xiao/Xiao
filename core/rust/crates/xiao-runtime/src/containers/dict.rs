@@ -72,6 +72,12 @@ impl ObjectPayload for DictObject {
         ObjectLayout::for_type::<Self>(self.kind.type_tag())
     }
 
+    /// 计入字典条目缓冲区及拥有的键字符串。
+    fn owned_bytes(&self) -> usize {
+        self.entries.capacity().saturating_mul(std::mem::size_of::<(String, RuntimeValue)>())
+            .saturating_add(self.entries.iter().map(|(key, _)| key.capacity()).sum::<usize>())
+    }
+
     /// 字典自身没有用户钩子；值由引用计数逐个释放。
     fn on_drop(&mut self) -> RuntimeResult<()> {
         self.entries.clear();

@@ -28,6 +28,11 @@ impl ObjectPayload for TupleObject {
         ObjectLayout::for_type::<Self>(RuntimeTypeTag::Tuple)
     }
 
+    /// 计入元组元素缓冲区。
+    fn owned_bytes(&self) -> usize {
+        self.elements.capacity().saturating_mul(std::mem::size_of::<RuntimeValue>())
+    }
+
     /// 元组自身没有用户钩子；元素由引用计数逐个释放。
     fn on_drop(&mut self) -> RuntimeResult<()> {
         self.elements.clear();
