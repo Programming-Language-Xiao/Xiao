@@ -99,6 +99,22 @@ fn driver_reuses_module_initialization_but_not_request_bindings() {
 }
 
 #[test]
+fn main_singletons_restart_each_run_while_module_singletons_remain_loaded() {
+    let workspace = Workspace::new();
+    workspace.write("helper.xiao", "[State]\n    count = 7\n");
+    let mut driver = FrontendVmDriver::new();
+    let source = "[Local]\n    count = 3\nimport helper\nif Local.count != 3\n    raise ArithmeticError(code = \"LOCAL_TABLE\")\nif helper.State.count != 7\n    raise ArithmeticError(code = \"MODULE_TABLE\")\n";
+
+    let first = driver.run(&workspace.request(source));
+    assert!(first.is_success(), "{first:?}");
+    assert_eq!(loaded(&first, "project:helper"), 1);
+
+    let second = driver.run(&workspace.request(source));
+    assert!(second.is_success(), "{second:?}");
+    assert_eq!(loaded(&second, "project:helper"), 0);
+}
+
+#[test]
 fn failed_module_run_discards_session_and_allows_retry() {
     let workspace = Workspace::new();
     workspace.write("helper.xiao", "raise ArithmeticError(code = \"BROKEN\")\n");

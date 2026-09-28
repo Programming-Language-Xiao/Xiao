@@ -39,9 +39,12 @@ impl Default for TableContext {
 }
 
 impl TableContext {
-    /// 清除请求级的备用程序引用，让下一次运行绑定当前主程序。
+    /// 清除请求级的程序引用和主程序单例，让下一次运行绑定新主程序。
     pub(super) fn reset_program(&self) {
         self.program.borrow_mut().take();
+        self.singletons
+            .borrow_mut()
+            .retain(|(module, _), _| !module.is_empty());
     }
 
     /// 判断表运行时没有遗留待处理故障或事件。
