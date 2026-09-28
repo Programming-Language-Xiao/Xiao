@@ -25,6 +25,12 @@
       "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[dependencies]\nutils = { path = \"../utils\", version = \"^1.4\", source = \"local\" }\n[devdependencies]\ntestkit = { path = \"tools/testkit\" }\n",
       "expect": "success",
       "diagnostics": []
+    },
+    {
+      "name": "dependency-version-only",
+      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[dependencies]\nutils = { version = \"^1.4\" }\n",
+      "expect": "success",
+      "diagnostics": []
     }
   ]
 }

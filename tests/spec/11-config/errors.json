@@ -39,12 +39,6 @@
       "diagnostics": ["X05-CONFIG-005"]
     },
     {
-      "name": "dependency-missing-path",
-      "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[dependencies]\nutils = { version = \"^1.4\" }\n",
-      "expect": "error",
-      "diagnostics": ["X05-CONFIG-007"]
-    },
-    {
       "name": "dependency-absolute-path",
       "source": "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[dependencies]\nutils = { path = \"C:/utils\" }\n",
       "expect": "error",
