@@ -27,3 +27,10 @@ I4a2 的 `module-loading.json` 固定项目内 `import` 的执行触发、跳过
 共享目录根与反引号导出；
 `core/rust/crates/xiao-driver/tests/i4a2_module_loading.rs` 在隔离项目中执行向量，
 环境包的只读探针、首次引用、单次运行去重及失败重试由同目录的 Rust 测试覆盖。
+
+I4b 的会话契约由 `core/rust/crates/xiao-driver/tests/i4b_session.rs` 覆盖：同一驱动
+会话内模块只初始化一次、普通顶层绑定不跨请求、模块失败后可重试，以及协议服务对
+连续 `run` 的串行排队与模块状态复用、跨项目隔离、包源码对象变化失效及预取消重试。
+`cli/ts/src/protocol/client.test.ts` 覆盖长驻客户端的单次握手、显式关闭、调用串行、
+包视图成功缓存与错误重试、通信失败重启；`cli/ts/src/main.test.ts`
+覆盖 `--inLF` 从多行取消回到单行时仍复用同一个核心。
