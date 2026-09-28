@@ -28,6 +28,8 @@ export interface CoreClientOptions extends CoreDiscoveryOptions {
   env?: NodeJS.ProcessEnv;
   /** 注入进程启动器，供契约测试使用。 */
   spawnProcess?: SpawnCoreProcess;
+  /** 保持核心进程到显式 `shutdown`；REPL 会话必须启用。 */
+  keepAlive?: boolean;
 }
 
 /** 源码运行请求的便捷参数。 */
@@ -174,6 +176,16 @@ export class CoreClientError extends Error {
 export class ProtocolClient {
   private readonly options: CoreClientOptions;
   private readonly spawnProcess: SpawnCoreProcess;
+  private child: ChildProcessWithoutNullStreams | null = null;
+  private frames: FrameQueue | null = null;
+  private stderr = "";
+  private corePath = "";
+  private coreSource: CoreDiscoverySource | null = null;
+  private helloResponse: HelloResponse | null = null;
+  private startPromise: Promise<void> | null = null;
+  private operation = Promise.resolve();
+  private shutdownPromise: Promise<void> | null = null;
+  private readonly replPackageCalls = new Map<string, Promise<CoreCallResult>>();
 
   /** 创建客户端。 */
   constructor(options: CoreClientOptions = {}) {
@@ -253,6 +265,9 @@ export class ProtocolClient {
 
   /** 只读查询 REPL 包根；旧核心缺少独立能力时返回空视图。 */
   async replPackages(activeEnvironment?: string | null, modulePath?: string | null): Promise<CoreCallResult> {
+    const cacheKey = `${activeEnvironment ?? "<global>"}\0${modulePath ?? ""}`;
+    const cached = this.options.keepAlive === true ? this.replPackageCalls.get(cacheKey) : undefined;
+    if (cached !== undefined) return cached;
     const request: ReplPackagesRequest = {
       type: "repl_packages",
       request_id: requestId("repl-packages"),
@@ -261,7 +276,16 @@ export class ProtocolClient {
       active_environment: activeEnvironment ?? null,
       module_path: modulePath ?? null,
     };
-    return this.call(request);
+    const call = this.call(request);
+    if (this.options.keepAlive === true) this.replPackageCalls.set(cacheKey, call);
+    try {
+      const result = await call;
+      if (result.response.type === "error") this.replPackageCalls.delete(cacheKey);
+      return result;
+    } catch (error) {
+      this.replPackageCalls.delete(cacheKey);
+      throw error;
+    }
   }
 
   /** 按传入顺序批量发送项目测试源码。 */
@@ -293,47 +317,38 @@ export class ProtocolClient {
 
   /** 使用已经规范化的协议运行请求发送一次调用。 */
   async call(request: RunRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
-    if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
-    const discovery = await discoverCoreWithMetadata(this.options);
-    if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
-    const corePath = discovery.path;
-    const cwd = this.options.cwd ?? process.cwd();
-    const env = { ...process.env, ...(this.options.env ?? {}) };
-    let child: ChildProcessWithoutNullStreams;
-    try {
-      child = this.spawnProcess(corePath, { cwd, env });
-    } catch (error) {
-      throw new CoreClientError("X11-CLI-CORE-002", `无法启动 xiao-core：${String(error)}`, 4, { path: corePath });
-    }
+    if (this.shutdownPromise !== null) throw new CoreClientError("X11-CLI-CORE-003", "核心会话已关闭", 4);
+    const execute = () => this.callNow(request, signal);
+    const result = this.operation.then(execute, execute);
+    this.operation = result.then(() => undefined, () => undefined);
+    return result;
+  }
 
-    const frames = new FrameQueue(child);
-    child.on("error", (error) => frames.fail(error));
-    let stderr = "";
-    child.stderr.on("data", (chunk: Buffer | string) => {
-      stderr += chunk.toString();
-      if (stderr.length > 64 * 1024) stderr = stderr.slice(-64 * 1024);
-    });
+  /** 关闭长驻核心会话；重复关闭是幂等的。 */
+  async shutdown(): Promise<void> {
+    if (this.shutdownPromise !== null) return this.shutdownPromise;
+    this.shutdownPromise = this.operation.then(
+      () => this.closeProcess(),
+      () => this.closeProcess(),
+    );
+    return this.shutdownPromise;
+  }
+
+  /** 串行执行一次协议调用，避免同一客户端的帧写入互相交错。 */
+  private async callNow(request: RunRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+    if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
+    await this.ensureStarted(signal);
+    const child = this.child;
+    const frames = this.frames;
+    const helloResponse = this.helloResponse;
+    if (child === null || frames === null || helloResponse === null || this.coreSource === null) {
+      throw new CoreClientError("X11-CLI-CORE-003", "核心会话未建立", 4);
+    }
     const abortHandler = () => {
       // 取消帧发送失败时，主请求仍会由核心退出/EOF 转换为稳定错误。
       void this.sendCancel(child, request.request_id).catch(() => undefined);
     };
     try {
-      await writeChildFrame(child, {
-        type: "hello",
-        request_id: requestId("hello"),
-        protocol_version: PROTOCOL_VERSION,
-        core_version: CORE_VERSION,
-      });
-      const hello = await frames.next();
-      if (hello === null) throw await processEndedError(child, stderr);
-      const helloResponse = asHello(hello);
-      if (!helloResponse.accepted) {
-        const error = helloResponse.error;
-        throw new CoreClientError(error?.code ?? "X11-PROTOCOL-004", error?.message ?? "核心版本不兼容", 2, {
-          response: helloResponse,
-        });
-      }
-
       if (request.type === "package" && !helloResponse.capabilities.includes("package")) {
         throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 package 能力，请升级 xiao-core", 2);
       }
@@ -350,28 +365,127 @@ export class ProtocolClient {
         response = asProtocolResponse(await frames.nextMatching(request.request_id));
         signal?.removeEventListener("abort", abortHandler);
       }
-      await writeChildFrame(child, {
-        type: "shutdown",
-        request_id: requestId("shutdown"),
-        protocol_version: PROTOCOL_VERSION,
-        core_version: CORE_VERSION,
-      });
-      await frames.nextMatching((responseValue) => responseValue.type === "shutdown");
-      child.stdin.end();
-      await waitForExit(child);
-      return { response, stderr, corePath, coreSource: discovery.source };
+      const result = {
+        response,
+        stderr: this.stderr,
+        corePath: this.corePath,
+        coreSource: this.coreSource,
+      };
+      if (this.options.keepAlive !== true) await this.closeProcess();
+      return result;
     } catch (error) {
+      await this.closeProcess(false);
       if (error instanceof CoreClientError) throw error;
       if (error instanceof ProtocolFrameError) {
-        throw new CoreClientError(error.code, error.message, 2, { stderr });
+        throw new CoreClientError(error.code, error.message, 2, { stderr: this.stderr });
       }
       throw new CoreClientError("X11-CLI-CORE-003", `核心进程通信失败：${String(error)}`, 4, {
-        stderr,
+        stderr: this.stderr,
         process_exit_code: child.exitCode,
       });
     } finally {
       signal?.removeEventListener("abort", abortHandler);
+    }
+  }
+
+  /** 确保核心进程和 hello 协商只建立一次。 */
+  private async ensureStarted(signal?: AbortSignal): Promise<void> {
+    if (this.child !== null && this.frames !== null && this.helloResponse !== null && this.child.exitCode === null) {
+      return;
+    }
+    if (this.startPromise !== null) return this.startPromise;
+    this.startPromise = this.startProcess(signal).finally(() => { this.startPromise = null; });
+    return this.startPromise;
+  }
+
+  /** 启动核心并完成一次版本协商。 */
+  private async startProcess(signal?: AbortSignal): Promise<void> {
+    await this.closeProcess();
+    if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
+    const discovery = await discoverCoreWithMetadata(this.options);
+    if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
+    const cwd = this.options.cwd ?? process.cwd();
+    const env = { ...process.env, ...(this.options.env ?? {}) };
+    let child: ChildProcessWithoutNullStreams;
+    try {
+      child = this.spawnProcess(discovery.path, { cwd, env });
+    } catch (error) {
+      throw new CoreClientError("X11-CLI-CORE-002", `无法启动 xiao-core：${String(error)}`, 4, { path: discovery.path });
+    }
+    const frames = new FrameQueue(child);
+    child.on("error", (error) => frames.fail(error));
+    this.child = child;
+    this.frames = frames;
+    this.stderr = "";
+    this.corePath = discovery.path;
+    this.coreSource = discovery.source;
+    child.stderr.on("data", (chunk: Buffer | string) => {
+      this.stderr += chunk.toString();
+      if (this.stderr.length > 64 * 1024) this.stderr = this.stderr.slice(-64 * 1024);
+    });
+    try {
+      await writeChildFrame(child, {
+        type: "hello",
+        request_id: requestId("hello"),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+      });
+      const hello = await frames.next();
+      if (hello === null) throw await processEndedError(child, this.stderr);
+      const helloResponse = asHello(hello);
+      if (!helloResponse.accepted) {
+        const error = helloResponse.error;
+        throw new CoreClientError(error?.code ?? "X11-PROTOCOL-004", error?.message ?? "核心版本不兼容", 2, {
+          response: helloResponse,
+        });
+      }
+      this.helloResponse = helloResponse;
+    } catch (error) {
+      await this.closeProcess(false);
+      throw error;
+    }
+  }
+
+  /** 尽力发送 shutdown 并回收当前核心进程。 */
+  private async closeProcess(graceful = true): Promise<void> {
+    const child = this.child;
+    const frames = this.frames;
+    if (child === null) {
+      this.frames = null;
+      this.helloResponse = null;
+      return;
+    }
+    this.replPackageCalls.clear();
+    if (!graceful) {
       if (child.exitCode === null && !child.killed) child.kill();
+      if (this.child === child) {
+        this.child = null;
+        this.frames = null;
+        this.helloResponse = null;
+      }
+      return;
+    }
+    try {
+      if (child.exitCode === null && !child.killed && frames !== null && this.helloResponse !== null) {
+        await writeChildFrame(child, {
+          type: "shutdown",
+          request_id: requestId("shutdown"),
+          protocol_version: PROTOCOL_VERSION,
+          core_version: CORE_VERSION,
+        });
+        await frames.nextMatching((responseValue) => responseValue.type === "shutdown");
+      }
+      if (child.exitCode === null && !child.killed) child.stdin.end();
+      await waitForExit(child);
+    } catch {
+      if (child.exitCode === null && !child.killed) child.kill();
+    } finally {
+      if (child.exitCode === null && !child.killed) child.kill();
+      if (this.child === child) {
+        this.child = null;
+        this.frames = null;
+        this.helloResponse = null;
+      }
     }
   }
 
@@ -390,7 +504,11 @@ export class ProtocolClient {
 /** 便捷函数：发现核心并运行一段源码。 */
 export async function runCoreSource(sourceText: string, options: SourceRunOptions & CoreClientOptions = {}): Promise<CoreCallResult> {
   const client = new ProtocolClient(options);
-  return client.runSource(sourceText, options);
+  try {
+    return await client.runSource(sourceText, options);
+  } finally {
+    await client.shutdown();
+  }
 }
 
 /** 将核心 stdout 的分块字节流还原为完整协议 JSON。 */

@@ -19,9 +19,14 @@ class FakeCore extends EventEmitter {
   private buffer = new Uint8Array(0);
   readonly requests: Record<string, unknown>[] = [];
   private pendingRunId: string | null = null;
+  private failedPackageView = false;
 
   /** 监听 stdin 并按帧返回固定结果。 */
-  constructor(private readonly onRun?: () => void, private readonly capabilities: string[] = ["run", "environment"]) {
+  constructor(
+    private readonly onRun?: () => void,
+    private readonly capabilities: string[] = ["run", "environment"],
+    private readonly packageErrorOnce = false,
+  ) {
     super();
     this.stdin.on("data", (chunk: Buffer) => this.consume(chunk));
   }
@@ -114,6 +119,19 @@ class FakeCore extends EventEmitter {
           environment_fingerprint: "environment-test",
           lockfile_summary: null,
         },
+      })));
+    } else if (request.type === "repl_packages") {
+      if (this.packageErrorOnce && !this.failedPackageView) {
+        this.failedPackageView = true;
+        this.stdout.write(Buffer.from(encodeFrame({
+          type: "error", request_id: request.request_id, exit_code: 2,
+          error: { code: "X11-REPL-PACKAGE-002", message: "环境暂时不可读" }, report: null,
+        })));
+        return;
+      }
+      this.stdout.write(Buffer.from(encodeFrame({
+        type: "repl_packages_result", request_id: request.request_id,
+        environment_path: request.active_environment ?? "", packages: [], interface: null,
       })));
     } else if (request.type === "shutdown") {
       this.stdout.write(Buffer.from(encodeFrame({ type: "shutdown", request_id: request.request_id })));
@@ -211,6 +229,100 @@ describe("协议客户端", () => {
     expect(result.response.type).toBe("result");
     expect((result.response as { exit_code: number }).exit_code).toBe(0);
     expect(fake?.exitCode).toBe(0);
+  });
+
+  test("keepAlive 会复用核心和单次握手，显式 shutdown 才关闭", async () => {
+    let fake: FakeCore | undefined;
+    let spawnCount = 0;
+    const client = new ProtocolClient({
+      keepAlive: true, overridePath: process.execPath,
+      spawnProcess: () => {
+        spawnCount += 1;
+        fake = new FakeCore();
+        return fake as never;
+      },
+    });
+    await client.runSource("first = 1\n");
+    await client.runSource("second = 2\n");
+    expect(spawnCount).toBe(1);
+    expect(fake?.requests.map((value) => value.type)).toEqual(["hello", "run", "run"]);
+    expect(fake?.exitCode).toBeNull();
+    await client.shutdown();
+    expect(fake?.requests.map((value) => value.type)).toEqual(["hello", "run", "run", "shutdown"]);
+    expect(fake?.exitCode).toBe(0);
+  });
+
+  test("repl_packages 同一环境键只发送一次并允许并发调用共享结果", async () => {
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      keepAlive: true, overridePath: process.execPath,
+      spawnProcess: () => {
+        fake = new FakeCore(undefined, ["run", "repl_packages"]);
+        return fake as never;
+      },
+    });
+    await Promise.all([client.replPackages("C:/project/dev"), client.replPackages("C:/project/dev")]);
+    expect(fake?.requests.map((value) => value.type)).toEqual(["hello", "repl_packages"]);
+    await client.shutdown();
+  });
+
+  test("repl_packages 返回错误后下次会重试而不复用旧诊断", async () => {
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      keepAlive: true, overridePath: process.execPath,
+      spawnProcess: () => {
+        fake = new FakeCore(undefined, ["run", "repl_packages"], true);
+        return fake as never;
+      },
+    });
+    expect((await client.replPackages("C:/project/dev")).response.type).toBe("error");
+    expect((await client.replPackages("C:/project/dev")).response.type).toBe("repl_packages_result");
+    expect(fake?.requests.filter((request) => request.type === "repl_packages")).toHaveLength(2);
+    await client.shutdown();
+  });
+
+  test("同一客户端的多个调用按提交顺序串行发送", async () => {
+    let fake: FakeCore | undefined;
+    const client = new ProtocolClient({
+      keepAlive: true, overridePath: process.execPath,
+      spawnProcess: () => {
+        fake = new FakeCore();
+        return fake as never;
+      },
+    });
+    await Promise.all([client.runSource("first\n"), client.runSource("second\n")]);
+    expect(fake?.requests.filter((value) => value.type === "run").map((value) => (value.source as { text: string }).text))
+      .toEqual(["first\n", "second\n"]);
+    await client.shutdown();
+  });
+
+  test("通信失败后可重新握手，旧核心的包视图缓存不会复用", async () => {
+    const cores: FakeCore[] = [];
+    let current: FakeCore | undefined;
+    const client = new ProtocolClient({
+      keepAlive: true, overridePath: process.execPath,
+      spawnProcess: () => {
+        current = cores.length === 0
+          ? new FakeCore(() => current?.kill(), ["run", "repl_packages"])
+          : new FakeCore(undefined, ["run", "repl_packages"]);
+        cores.push(current);
+        return current as never;
+      },
+    });
+    await client.replPackages("C:/project/dev");
+    await expect(client.runSource("first\n")).rejects.toMatchObject({ code: "X11-CLI-CORE-003" });
+    await client.replPackages("C:/project/dev");
+    const result = await client.runSource("second\n");
+    expect(result.response.type).toBe("result");
+    expect(cores.map((core) => core.requests.map((request) => request.type)))
+      .toEqual([["hello", "repl_packages", "run"], ["hello", "repl_packages", "run"]]);
+    await client.shutdown();
+  });
+
+  test("关闭后不能悄悄重启核心", async () => {
+    const client = new ProtocolClient({ keepAlive: true, overridePath: process.execPath });
+    await client.shutdown();
+    await expect(client.runSource("value = 1\n")).rejects.toMatchObject({ code: "X11-CLI-CORE-003" });
   });
 
   test("debug 位和诊断配置按结构化字段传给 Rust 核心", async () => {

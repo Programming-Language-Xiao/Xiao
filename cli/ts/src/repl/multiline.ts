@@ -28,6 +28,8 @@ export interface MultilineContext extends Pick<ReplContext, "input" | "output" |
   /** 单行控制词临时打开面板，关闭后交还 readline。 */
   initialPanel?: boolean;
   executeSource?: (source: string, signal: AbortSignal) => Promise<CoreCallResult>;
+  /** 与单行 REPL 共享的长驻核心客户端。 */
+  protocolClient?: ProtocolClient;
 }
 
 /** 多行退出时交还的编辑状态与已触发控制指令。 */
@@ -51,6 +53,23 @@ export class MultilineTerminalError extends Error {
 
 /** 建立逐字节循环，关闭时恢复 raw mode、键盘模式、粘贴模式与光标。 */
 export async function runMultilineSession(context: MultilineContext): Promise<MultilineResult> {
+  if (context.executeSource !== undefined && context.protocolClient === undefined) {
+    return runMultilineSessionLoop(context);
+  }
+  const client = context.protocolClient ?? new ProtocolClient({
+    cwd: context.cwd, env: context.env, overridePath: context.corePath,
+    spawnProcess: context.spawnProcess, executablePath: context.executablePath, keepAlive: true,
+  });
+  const ownsClient = context.protocolClient === undefined;
+  try {
+    return await runMultilineSessionLoop({ ...context, protocolClient: client });
+  } finally {
+    if (ownsClient) await client.shutdown();
+  }
+}
+
+/** 使用已建立的客户端执行 raw mode 编辑循环。 */
+async function runMultilineSessionLoop(context: MultilineContext): Promise<MultilineResult> {
   const input = context.input as NodeJS.ReadableStream & { setRawMode?: (mode: boolean) => void; isRaw?: boolean };
   if (typeof input.setRawMode !== "function") throw new MultilineTerminalError();
   const setRawMode = input.setRawMode.bind(input);
@@ -196,10 +215,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
       await beginOutput(view(), output, context.write);
       const result = context.executeSource !== undefined
         ? await context.executeSource(editorSource(state), signal)
-        : await new ProtocolClient({
-          cwd: context.cwd, env: context.env, overridePath: context.corePath,
-          spawnProcess: context.spawnProcess, executablePath: context.executablePath,
-        }).runSource(editorSource(state), { debug: context.debug, signal });
+        : await runWithReplPackages(context.protocolClient!, context, editorSource(state), signal);
       display = {
         response: result.response,
         rendered: renderProtocolResponse(result.response, {
@@ -436,6 +452,24 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
     await context.write(output, MOUSE_DISABLE + "\u001b[?2004l\u001b[?25h\n");
   }
   return { exitCode, state, commands };
+}
+
+/** 在首次真实执行前登记包根；查询失败仍把完整诊断交给终端。 */
+async function runWithReplPackages(
+  client: ProtocolClient,
+  context: MultilineContext,
+  source: string,
+  signal: AbortSignal,
+): Promise<CoreCallResult> {
+  const packages = await client.replPackages(context.env.XIAO_ACTIVE_ENV ?? null);
+  if (packages.response.type === "error") {
+    const rendered = renderProtocolResponse(packages.response, {
+      color: context.color, isTTY: context.isTTY,
+      noColor: context.env.NO_COLOR !== undefined, term: context.env.TERM, colorTerm: context.env.COLORTERM,
+    });
+    await context.write(context.error, rendered.stderr);
+  }
+  return client.runSource(source, { debug: context.debug, signal });
 }
 
 /** 把粘贴中的真实换行按 Enter 语义交给控制指令分派，同时保留整次插入的行数原子性。 */

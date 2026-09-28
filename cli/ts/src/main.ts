@@ -4,7 +4,7 @@ import { parseArguments, CliArgumentError } from "./commands/parser.ts";
 import { executeCommand } from "./commands/index.ts";
 import { renderCliError } from "./diagnostics/render.ts";
 import { runSingleLineRepl } from "./repl/session.ts";
-import type { SpawnCoreProcess } from "./protocol/client.ts";
+import { ProtocolClient, type SpawnCoreProcess } from "./protocol/client.ts";
 import type { GitProbeOptions } from "./ui/git.ts";
 import { runMultilineSession, MultilineTerminalError } from "./repl/multiline.ts";
 import cliPackage from "../package.json";
@@ -75,13 +75,17 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
     }
     if (command.kind === "repl" && command.multiline) {
       if (command.options.json) throw new CliArgumentError("多行交互会话不支持 --json");
+      const protocolClient = new ProtocolClient({
+        cwd: context.cwd, env, overridePath: context.corePath,
+        spawnProcess: context.spawnProcess, executablePath: context.executablePath, keepAlive: true,
+      });
       try {
         const result = await runMultilineSession({
           input: io.stdin ?? process.stdin, output: stdout, error: stderr, write: writeSafely,
           cwd: context.cwd, env, isTTY: context.isTTY, color: command.options.color, signal,
           corePath: context.corePath, spawnProcess: context.spawnProcess,
           executablePath: context.executablePath, debug: command.options.debug,
-          file: command.file,
+          file: command.file, protocolClient,
         });
         if (result.exitCode === 130) {
           return await runSingleLineRepl({
@@ -90,7 +94,7 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
             debug: command.options.debug, version: cliPackage.version,
             corePath: context.corePath, spawnProcess: context.spawnProcess,
             executablePath: context.executablePath, signal, gitRunStatus: io.gitRunStatus,
-            showBanner: false,
+            showBanner: false, protocolClient,
           });
         }
         return result.exitCode;
@@ -100,6 +104,8 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
           return error.exitCode;
         }
         throw error;
+      } finally {
+        await protocolClient.shutdown();
       }
     }
     const result = await executeCommand(command, { ...context, signal });

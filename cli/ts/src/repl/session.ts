@@ -29,10 +29,29 @@ export interface ReplContext {
   gitRunStatus?: GitProbeOptions["runStatus"];
   /** 交接回单行循环时不重复打印版权行。 */
   showBanner?: boolean;
+  /** 由同一 REPL 生命周期共享的核心客户端。 */
+  protocolClient?: ProtocolClient;
 }
 
 /** 启动、提交、执行、显示结果/错误并继续到 EOF；失败的一行不终止会话。 */
 export async function runSingleLineRepl(context: ReplContext): Promise<number> {
+  if ((context.input as NodeJS.ReadableStream & { readableEnded?: boolean }).readableEnded) {
+    return context.signal?.aborted ? 130 : 0;
+  }
+  const client = context.protocolClient ?? new ProtocolClient({
+    cwd: context.cwd, env: context.env, overridePath: context.corePath,
+    spawnProcess: context.spawnProcess, executablePath: context.executablePath, keepAlive: true,
+  });
+  const ownsClient = context.protocolClient === undefined;
+  try {
+    return await runSingleLineReplLoop({ ...context, protocolClient: client });
+  } finally {
+    if (ownsClient) await client.shutdown();
+  }
+}
+
+/** 使用已建立的长驻核心客户端执行 readline 循环。 */
+async function runSingleLineReplLoop(context: ReplContext): Promise<number> {
   const { input, output, error, write, env } = context;
   if ((input as NodeJS.ReadableStream & { readableEnded?: boolean }).readableEnded) {
     return context.signal?.aborted ? 130 : 0;
@@ -43,7 +62,6 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
     return context.signal?.aborted ? 130 : 0;
   }
   const terminal = context.isTTY && Boolean((input as NodeJS.ReadStream).isTTY);
-  if (!terminal) await write(output, firstPrompt);
   const reader = createInterface({
     input,
     output: terminal ? output : undefined,
@@ -62,7 +80,7 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
     if (terminal) {
       reader.setPrompt(firstPrompt);
       reader.prompt();
-    }
+    } else await write(output, firstPrompt);
     while (!context.signal?.aborted) {
       const next = await lines.next();
       if (next.done) break;
@@ -76,10 +94,15 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
       }
       if (next.value.trim().length > 0) {
         try {
-          const client = new ProtocolClient({
-            cwd: context.cwd, env, overridePath: context.corePath,
-            spawnProcess: context.spawnProcess, executablePath: context.executablePath,
-          });
+          const client = context.protocolClient!;
+          const packages = await client.replPackages(env.XIAO_ACTIVE_ENV ?? null);
+          if (packages.response.type === "error") {
+            const packageError = renderProtocolResponse(packages.response, {
+              color: context.color, isTTY: context.isTTY,
+              noColor: env.NO_COLOR !== undefined, term: env.TERM, colorTerm: env.COLORTERM,
+            });
+            await write(error, packageError.stderr);
+          }
           const result = await client.runSource(next.value, { signal: context.signal });
           const rendered = renderProtocolResponse(result.response, {
             color: context.color, isTTY: context.isTTY,

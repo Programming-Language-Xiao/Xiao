@@ -18,6 +18,7 @@ class FakeCore extends EventEmitter {
   exitCode: number | null = null;
   signalCode: NodeJS.Signals | null = null;
   killed = false;
+  readonly requests: Record<string, unknown>[] = [];
   private buffer = new Uint8Array(0);
 
   /** 每次运行请求跨进程汇总到同一测试向量。 */
@@ -53,6 +54,7 @@ class FakeCore extends EventEmitter {
 
   /** 返回握手、测试聚合结果或关闭响应。 */
   private respond(request: Record<string, unknown>): void {
+    this.requests.push(request);
     if (request.type === "hello") {
       this.stdout.write(Buffer.from(encodeFrame({
         type: "hello", request_id: request.request_id, accepted: true, protocol_version: 1,
@@ -152,6 +154,51 @@ describe("CLI 入口", () => {
     expect(await session).toBe(0);
     expect(requests.map((request) => (request.source as { text: string }).text)).toEqual(["first\nsecond"]);
     expect(printed).toContain("first\r\nsecond\r\n");
+  });
+
+  test("--inLF 取消后回到单行时复用同一个核心会话", async () => {
+    const input = new PassThrough() as PassThrough & { isRaw: boolean; setRawMode: (mode: boolean) => void };
+    input.isRaw = false;
+    input.setRawMode = (mode) => { input.isRaw = mode; };
+    const output = new PassThrough();
+    let printed = "";
+    const singleLinePrompt = new Promise<void>((resolve) => {
+      output.on("data", (chunk: Buffer) => {
+        printed += chunk.toString();
+        if (printed.includes("[X> ")) resolve();
+      });
+    });
+    const runs: Record<string, unknown>[] = [];
+    const cores: FakeCore[] = [];
+    let spawnCount = 0;
+    const session = runCli(["--inLF"], {
+      stdin: input, stdout: output, stderr: new PassThrough(),
+      cwd: process.cwd(), corePath: process.execPath,
+      spawnProcess: () => {
+        spawnCount += 1;
+        const core = new FakeCore(runs);
+        cores.push(core);
+        return core as never;
+      },
+      env: { NO_COLOR: "1" }, isTTY: true,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    input.write(Buffer.from("unfinished\u0003"));
+    await singleLinePrompt;
+    const runCompleted = new Promise<void>((resolve) => {
+      output.on("data", (chunk: Buffer) => {
+        if (/\b1\r?\n/.test(chunk.toString())) resolve();
+      });
+    });
+    input.write(Buffer.from("1\n"));
+    await runCompleted;
+    input.end();
+    expect(await session).toBe(0);
+    expect(spawnCount).toBe(1);
+    expect(cores).toHaveLength(1);
+    expect(cores[0].requests.filter((request) => request.type === "hello")).toHaveLength(1);
+    expect(cores[0].requests.filter((request) => request.type === "shutdown")).toHaveLength(1);
+    expect(runs.map((request) => (request.source as { text: string }).text)).toEqual(["1"]);
   });
 
   test("--inLF 缺失文件立即绑定，首次保存直接创建文件", async () => {
