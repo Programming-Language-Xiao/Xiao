@@ -5,7 +5,7 @@
 
 use std::collections::BTreeMap;
 use std::io::{self, BufReader, BufWriter, Read, Write};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, mpsc};
 use std::thread::{self, JoinHandle};
 
 use serde_json::json;
@@ -20,9 +20,13 @@ use super::request::{
     CORE_CRASH_CODE, OptimizationConfig, ProtocolError, ProtocolRequest, ProtocolTarget,
     SourceIdentity, ToolchainSpec,
 };
-use super::run::{protocol_error_response, run_request_response};
+use super::run::{
+    RunSessionFingerprint, protocol_error_response, run_request_response,
+    run_request_response_with_driver,
+};
 use super::test::test_request_response;
 use super::validate::{validate_source, validate_target, validate_versions};
+use crate::FrontendVmDriver;
 use crate::run::{CancellationToken, ExitCode};
 use xiao_codegen_llvm::Toolchain;
 use xiao_config::DependencyKind;
@@ -527,6 +531,17 @@ type SharedWriter<W> = Arc<Mutex<BufWriter<W>>>;
 /// 请求 ID 到取消令牌的登记表。
 type CancellationMap = Arc<Mutex<BTreeMap<String, CancellationToken>>>;
 
+/// 交给长驻会话线程的运行请求。
+struct SessionRunJob {
+    /// 原始协议请求。
+    request: ProtocolRequest,
+    /// 本次运行的取消令牌。
+    token: CancellationToken,
+}
+
+/// 长驻会话线程只接收 `run`，因此同一核心内的运行天然串行。
+type SessionSender = mpsc::Sender<SessionRunJob>;
+
 /// 在线程安全的输出锁上写入一条响应。
 fn write_response<W: Write>(writer: &SharedWriter<W>, response: &ProtocolResponse) {
     if let Ok(mut writer) = writer.lock() {
@@ -535,6 +550,41 @@ fn write_response<W: Write>(writer: &SharedWriter<W>, response: &ProtocolRespons
 }
 
 /// 在线程中执行运行/构建请求，并把 panic 转为稳定响应。
+fn session_worker_response(
+    request: ProtocolRequest,
+    token: CancellationToken,
+    driver: &mut FrontendVmDriver,
+    fingerprint: &mut Option<RunSessionFingerprint>,
+) -> ProtocolResponse {
+    match request {
+        ProtocolRequest::Run {
+            request_id,
+            protocol_version,
+            core_version,
+            language_version,
+            runtime_version: _,
+            target,
+            optimization,
+            source,
+            options,
+        } => run_request_response_with_driver(
+            request_id,
+            protocol_version,
+            core_version,
+            language_version,
+            target,
+            optimization,
+            source,
+            options,
+            token,
+            driver,
+            fingerprint,
+        ),
+        _ => unreachable!("会话线程只接收 run 请求"),
+    }
+}
+
+/// 直接执行一条运行/构建请求；适合协议单元测试和无状态调用方。
 pub(super) fn worker_response(
     request: ProtocolRequest,
     token: CancellationToken,
@@ -616,6 +666,53 @@ pub(super) fn worker_response(
     }
 }
 
+/// 启动长驻会话线程；线程退出前会排空已经入队的运行请求。
+fn spawn_session_worker<W: Write + Send + 'static>(
+    receiver: mpsc::Receiver<SessionRunJob>,
+    writer: SharedWriter<W>,
+    cancellations: CancellationMap,
+) -> JoinHandle<()> {
+    thread::spawn(move || {
+        let mut driver = FrontendVmDriver::new();
+        let mut fingerprint = None;
+        while let Ok(SessionRunJob { request, token }) = receiver.recv() {
+            let request_id = request_id_for(&request).expect("会话请求必须是 run");
+            let response = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                session_worker_response(request, token, &mut driver, &mut fingerprint)
+            }))
+            .unwrap_or_else(|_| {
+                driver.reset_session();
+                fingerprint = None;
+                core_crash_response(Some(request_id.clone()))
+            });
+            if let Ok(mut map) = cancellations.lock() {
+                map.remove(&request_id);
+            }
+            write_response(&writer, &response);
+        }
+    })
+}
+
+/// 将运行请求登记取消令牌并排入长驻会话线程。
+fn enqueue_session_job<W: Write + Send + 'static>(
+    request: ProtocolRequest,
+    writer: &SharedWriter<W>,
+    cancellations: &CancellationMap,
+    sender: &SessionSender,
+) {
+    let request_id = request_id_for(&request).expect("会话请求必须是 run");
+    let token = CancellationToken::new();
+    if let Ok(mut map) = cancellations.lock() {
+        map.insert(request_id.clone(), token.clone());
+    }
+    if sender.send(SessionRunJob { request, token }).is_err() {
+        if let Ok(mut map) = cancellations.lock() {
+            map.remove(&request_id);
+        }
+        write_response(writer, &core_crash_response(Some(request_id)));
+    }
+}
+
 /// 在拥有的输入/输出流上运行可取消的协议服务。
 pub fn serve<R, W>(reader: R, writer: W) -> Result<(), FrameError>
 where
@@ -626,6 +723,12 @@ where
     let writer = Arc::new(Mutex::new(BufWriter::new(writer)));
     let cancellations: CancellationMap = Arc::new(Mutex::new(BTreeMap::new()));
     let mut workers: Vec<JoinHandle<()>> = Vec::new();
+    let (session_sender, session_receiver) = mpsc::channel();
+    let session_worker = spawn_session_worker(
+        session_receiver,
+        Arc::clone(&writer),
+        Arc::clone(&cancellations),
+    );
     let mut first_frame = true;
     let mut negotiated = false;
 
@@ -672,11 +775,18 @@ where
                     break;
                 }
             }
-            request @ (ProtocolRequest::Run { .. }
-            | ProtocolRequest::Test { .. }
-            | ProtocolRequest::Build { .. }) => {
+            request @ ProtocolRequest::Run { .. } => {
                 if !negotiated {
-                    let request_id = request_id_for(&request).expect("run/test/build request id");
+                    let request_id = request_id_for(&request).expect("run 请求编号");
+                    let error = ProtocolError::version("必须先完成 hello 版本协商");
+                    write_response(&writer, &protocol_error_response(Some(request_id), &error));
+                    continue;
+                }
+                enqueue_session_job(request, &writer, &cancellations, &session_sender);
+            }
+            request @ (ProtocolRequest::Test { .. } | ProtocolRequest::Build { .. }) => {
+                if !negotiated {
+                    let request_id = request_id_for(&request).expect("test/build 请求编号");
                     let error = ProtocolError::version("必须先完成 hello 版本协商");
                     write_response(&writer, &protocol_error_response(Some(request_id), &error));
                     continue;
@@ -696,6 +806,8 @@ where
             }
         }
     }
+    drop(session_sender);
+    let _ = session_worker.join();
     for worker in workers {
         let _ = worker.join();
     }

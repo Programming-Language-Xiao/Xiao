@@ -18,11 +18,18 @@ use super::request::{
 use super::validate::{validate_source, validate_target, validate_versions};
 use crate::diagnostics::{DiagnosticOptions, DiagnosticSession, start_error_details};
 use crate::frontend::{FrontendContext, FrontendRequest};
-use crate::packages::PackageRegistry;
+use crate::packages::{PackageRegistry, PackageRegistryFingerprint};
 use crate::run::{
     CancellationToken, DriverError, DriverExecution, DriverOutcome, DriverPhase, DriverRequest,
     ExitCode, FrontendVmDriver,
 };
+
+/// 同一核心进程里可以安全复用模块实例的项目与环境身份。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(super) struct RunSessionFingerprint {
+    project_root: Option<PathBuf>,
+    packages: PackageRegistryFingerprint,
+}
 
 /// 将协议源码字段转换为既有前端请求。
 pub(super) fn frontend_request(
@@ -44,7 +51,7 @@ fn frontend_run_request(
     source: &SourceIdentity,
     language_version: &str,
     target: &ProtocolTarget,
-) -> Result<FrontendRequest, ProtocolError> {
+) -> Result<(FrontendRequest, RunSessionFingerprint), ProtocolError> {
     let mut request = frontend_request(source, language_version, target);
     if let Some(root) = source
         .path
@@ -70,8 +77,12 @@ fn frontend_run_request(
     let registry =
         PackageRegistry::from_environment(active_environment.as_deref().map(std::path::Path::new))
             .map_err(|error| ProtocolError::request("environment", error))?;
+    let fingerprint = RunSessionFingerprint {
+        project_root: request.context.project_root.clone(),
+        packages: registry.session_fingerprint(),
+    };
     request.context.package_registry = Some(registry);
-    Ok(request)
+    Ok((request, fingerprint))
 }
 
 /// 将协议 VM 参数交给生产 VM 自身的范围校验。
@@ -113,6 +124,38 @@ pub(super) fn run_request_response(
     options: RunOptions,
     cancellation: CancellationToken,
 ) -> ProtocolResponse {
+    let mut driver = FrontendVmDriver::new();
+    let mut fingerprint = None;
+    run_request_response_with_driver(
+        request_id,
+        protocol_version,
+        core_version,
+        language_version,
+        target,
+        optimization,
+        source,
+        options,
+        cancellation,
+        &mut driver,
+        &mut fingerprint,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+/// 在长驻核心会话的驱动器上执行一次运行请求。
+pub(super) fn run_request_response_with_driver(
+    request_id: String,
+    protocol_version: u16,
+    core_version: u32,
+    language_version: String,
+    target: ProtocolTarget,
+    optimization: OptimizationConfig,
+    source: SourceIdentity,
+    options: RunOptions,
+    cancellation: CancellationToken,
+    driver: &mut FrontendVmDriver,
+    session_fingerprint: &mut Option<RunSessionFingerprint>,
+) -> ProtocolResponse {
     if let Err(error) = validate_versions(protocol_version, core_version) {
         return protocol_error_response(Some(request_id), &error);
     }
@@ -133,10 +176,18 @@ pub(super) fn run_request_response(
     let diagnostic_config = optimization.diagnostics.clone();
     let module_name = source.module.clone();
     let source_name = source.path.clone();
-    let frontend = match frontend_run_request(&source, &language_version, &target) {
+    let (frontend, fingerprint) = match frontend_run_request(&source, &language_version, &target) {
         Ok(frontend) => frontend,
-        Err(error) => return protocol_error_response(Some(request_id), &error),
+        Err(error) => {
+            driver.reset_session();
+            *session_fingerprint = None;
+            return protocol_error_response(Some(request_id), &error);
+        }
     };
+    if session_fingerprint.as_ref() != Some(&fingerprint) {
+        driver.reset_session();
+        *session_fingerprint = Some(fingerprint);
+    }
     let mut driver_request = DriverRequest::new(frontend)
         .with_options(vm_options)
         .with_module_name(module_name.clone())
@@ -154,6 +205,7 @@ pub(super) fn run_request_response(
         module_name,
         source_name,
         diagnostic_config,
+        driver,
         &driver_request,
     )
 }
@@ -244,6 +296,7 @@ pub(super) fn run_with_diagnostics(
     module: String,
     source: Option<String>,
     config: Option<DiagnosticConfig>,
+    driver: &mut FrontendVmDriver,
     request: &DriverRequest,
 ) -> ProtocolResponse {
     let mut session = if debug {
@@ -256,7 +309,7 @@ pub(super) fn run_with_diagnostics(
         None
     };
     let measurement = xiao_runtime::start_memory_measurement();
-    let outcome = FrontendVmDriver::new().run(request);
+    let outcome = driver.run(request);
     let peak_live_bytes = measurement.peak_live_bytes();
     drop(measurement);
     if let Some(mut session) = session.take() {
