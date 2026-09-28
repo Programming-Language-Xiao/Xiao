@@ -158,7 +158,9 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
 
 struct ModuleInstance {
     program: Rc<TacProgram>,
+    source_name: String,
     exports: BTreeMap<String, RuntimeValue>,
+    instance_tables: BTreeSet<String>,
 }
 
 impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
@@ -289,13 +291,33 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         let Some(compiled) = compiled else {
             return Ok(());
         };
+        let instance_tables = compiled
+            .ir
+            .body
+            .iter()
+            .filter_map(|statement| {
+                if let xiao_ir::IrStatementKind::Table {
+                    name, table_kind, ..
+                } = &statement.kind
+                    && table_kind == "instance"
+                {
+                    Some(if name.backticked {
+                        format!("backtick:{}", name.text)
+                    } else {
+                        format!("ascii:{}", name.text)
+                    })
+                } else {
+                    None
+                }
+            })
+            .collect();
         let program = Rc::new(compiled.program);
+        let source_name = compiled.source_name;
         let previous_exports = self.current_exports.take();
         self.current_exports = Some(BTreeMap::new());
-        let result =
-            self.with_module_program(identity, &compiled.source_name, program.clone(), |vm| {
-                vm.execute(FuncId::new(0), &[], None)
-            });
+        let result = self.with_module_program(identity, &source_name, program.clone(), |vm| {
+            vm.execute(FuncId::new(0), &[], None)
+        });
         let exports = self.current_exports.take().unwrap_or_default();
         self.current_exports = previous_exports;
         if let Err(Fault::Error(error)) = result {
@@ -307,8 +329,15 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         } else {
             result?;
         }
-        self.initialized_modules
-            .insert(identity.to_owned(), ModuleInstance { program, exports });
+        self.initialized_modules.insert(
+            identity.to_owned(),
+            ModuleInstance {
+                program,
+                source_name,
+                exports,
+                instance_tables,
+            },
+        );
         self.sink.record(VmEvent::ModuleLoaded {
             module: identity.to_owned(),
         });
@@ -327,11 +356,16 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             }
         }
         self.initialize_module(identity)?;
-        self.initialized_modules
-            .get(identity)
-            .and_then(|module| module.exports.get(member))
-            .cloned()
-            .ok_or_else(|| self.module_fault(identity, format!("导出 {member} 不存在")))
+        let instance = self.initialized_modules.get(identity);
+        if let Some(value) = instance.and_then(|module| module.exports.get(member)) {
+            return Ok(value.clone());
+        }
+        if instance.is_some_and(|module| module.instance_tables.contains(member)) {
+            return Err(
+                self.module_fault(identity, format!("表构造器 {member} 暂不支持跨模块引用"))
+            );
+        }
+        Err(self.module_fault(identity, format!("导出 {member} 不存在")))
     }
 
     fn import_identity(&self, module: &str) -> String {
@@ -889,12 +923,14 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let result = if module.is_empty() || module == self.current_module {
                     self.execute(FuncId::new(index), &bound, instruction.dst)
                 } else {
-                    let program = self
+                    let (program, source_name) = self
                         .initialized_modules
                         .get(&module)
-                        .map(|instance| Rc::clone(&instance.program))
+                        .map(|instance| {
+                            (Rc::clone(&instance.program), instance.source_name.clone())
+                        })
                         .ok_or_else(|| self.module_fault(&module, "函数所属模块尚未初始化"))?;
-                    self.with_module_program(&module, &module, program, |vm| {
+                    self.with_module_program(&module, &source_name, program, |vm| {
                         vm.execute(FuncId::new(index), &bound, instruction.dst)
                     })
                 };

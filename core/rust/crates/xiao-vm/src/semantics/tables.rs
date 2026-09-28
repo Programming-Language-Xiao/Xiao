@@ -15,7 +15,7 @@ pub(super) struct TableContext {
     pub(super) depth: Cell<usize>,
     /// 回调和普通代码消费同一随机源。
     pub(super) random: RefCell<SeededRandom>,
-    singletons: RefCell<BTreeMap<u32, WeakHandle>>,
+    singletons: RefCell<BTreeMap<(String, u32), WeakHandle>>,
     program: RefCell<Option<Rc<TacProgram>>>,
     pending: RefCell<Vec<Fault>>,
     events: RefCell<Vec<VmEvent>>,
@@ -56,8 +56,11 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
         construct: bool,
         arguments: &[BoundArgument],
     ) -> Result<RuntimeValue, Fault> {
+        let key = (self.current_module.clone(), table);
         let definition = self
-            .program
+            .active_program
+            .as_deref()
+            .unwrap_or(self.program)
             .table_definitions
             .get(table as usize)
             .cloned()
@@ -65,14 +68,14 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
         if !construct {
             let singletons = self.tables.singletons.borrow();
             let weak = singletons
-                .get(&table)
+                .get(&key)
                 .ok_or_else(|| Fault::Error(XiaoError::invalid_value("单例声明尚未执行")))?;
             return TableInstance::from_weak(weak)
                 .map(RuntimeValue::Table)
                 .map_err(Fault::Error);
         }
         if definition.signature.kind == "singleton"
-            && self.tables.singletons.borrow().contains_key(&table)
+            && self.tables.singletons.borrow().contains_key(&key)
         {
             return Err(Fault::Error(XiaoError::invalid_value("单例声明被重复执行")));
         }
@@ -83,18 +86,17 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
         let mut runtime = TableDefinition::new(signature);
         if let Some(method) = definition.methods.get("ascii:drop").copied() {
             let program = self
-                .tables
-                .program
-                .borrow_mut()
-                .get_or_insert_with(|| {
-                    Rc::new(
-                        self.active_program
-                            .as_deref()
-                            .unwrap_or(self.program)
-                            .clone(),
-                    )
-                })
-                .clone();
+                .active_program
+                .as_ref()
+                .map(Rc::clone)
+                .unwrap_or_else(|| {
+                    self.tables
+                        .program
+                        .borrow_mut()
+                        .get_or_insert_with(|| Rc::new(self.program.clone()))
+                        .clone()
+                });
+            let module = self.current_module.clone();
             let context = Rc::clone(&self.tables);
             let options = self.options;
             let metadata = self.metadata.clone();
@@ -106,6 +108,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 }
                 let mut vm =
                     Vm::<C, HookSink>::new(&program, options, HookSink(Rc::clone(&context)));
+                vm.current_module = module.clone();
                 vm.metadata = metadata.clone();
                 vm.tables = Rc::clone(&context);
                 vm.pending_base = context.pending.borrow().len();
@@ -188,7 +191,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             self.tables
                 .singletons
                 .borrow_mut()
-                .insert(table, instance.downgrade());
+                .insert(key, instance.downgrade());
         }
         Ok(RuntimeValue::Table(instance))
     }

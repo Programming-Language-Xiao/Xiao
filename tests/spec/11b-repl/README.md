@@ -23,6 +23,7 @@ I3 的 `panel.json` 固定空命令面板标题、独立输入栏和分隔线；
 单行 readline 交接、多行面板开关、输入隔离和终端恢复由 `session.test.ts`、
 `multiline.test.ts` 覆盖，不依赖真实 TTY。
 
-I4a2 的 `module-loading.json` 固定项目内 `import` 的执行触发、跳过和再导出；
+I4a2 的 `module-loading.json` 固定项目内 `import` 的执行触发、跳过、再导出、
+共享目录根与反引号导出；
 `core/rust/crates/xiao-driver/tests/i4a2_module_loading.rs` 在隔离项目中执行向量，
 环境包的只读探针、首次引用、单次运行去重及失败重试由同目录的 Rust 测试覆盖。

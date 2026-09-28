@@ -436,14 +436,22 @@ impl<'ir> Lowerer<'ir> {
         if !self.current_block_terminated() {
             if name.is_empty() {
                 for export in &self.program.module_exports {
-                    let export_register = self
-                        .import_register(export, false)
-                        .or_else(|| {
-                            self.value_of_name(export, false)
-                                .and_then(|value| self.frame.value_regs.get(&value).copied())
-                        })
-                        .or_else(|| {
-                            self.function_index(export).map(|function| {
+                    if self.table_definitions.iter().any(|table| {
+                        table.signature.name == *export && table.signature.kind == "instance"
+                    }) {
+                        continue;
+                    }
+                    let export_register = [false, true].into_iter().find_map(|backticked| {
+                        self.import_register(export, backticked)
+                            .or_else(|| {
+                                self.value_of_name(export, backticked)
+                                    .and_then(|value| self.frame.value_regs.get(&value).copied())
+                            })
+                            .or_else(|| {
+                                if backticked {
+                                    return None;
+                                }
+                                let function = self.function_index(export)?;
                                 let register =
                                     self.new_binding_register(RegisterClass::ObjHandle, span);
                                 self.emit(TacInstr::with_dst(
@@ -451,13 +459,14 @@ impl<'ir> Lowerer<'ir> {
                                     register,
                                     span,
                                 ));
-                                register
+                                Some(register)
                             })
-                        });
-                    if let Some(register) = export_register {
+                            .map(|register| (register, backticked))
+                    });
+                    if let Some((register, backticked)) = export_register {
                         self.emit(TacInstr::new(
                             TacOp::ExportValue {
-                                name: name_key(export, false),
+                                name: name_key(export, backticked),
                                 value: register,
                             },
                             span,

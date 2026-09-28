@@ -258,6 +258,120 @@ fn reexported_import_and_aliased_nested_module_are_executable() {
 }
 
 #[test]
+fn imports_sharing_a_directory_root_are_merged() {
+    let workspace = Workspace::new();
+    workspace.write("app/http.xiao", "value = 20\n");
+    workspace.write("app/models.xiao", "value = 22\n");
+    let outcome = workspace.run(
+        "import app.http\nimport app.models\nif app.http.value + app.models.value != 42\n    raise ArithmeticError(code = \"SHARED_ROOT\")\n",
+    );
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(loaded(&outcome, "project:app.http"), 1);
+    assert_eq!(loaded(&outcome, "project:app.models"), 1);
+}
+
+#[test]
+fn explicit_project_import_overrides_same_named_package_root() {
+    let workspace = Workspace::new();
+    workspace.write("project/lib.xiao", "answer = 42\n");
+    let (layout, environment) = workspace.package_environment("answer = 7\n", None);
+    let source =
+        "import lib\nif lib.answer != 42\n    raise ArithmeticError(code = \"WRONG_ROOT\")\n";
+    let mut context = FrontendContext::host();
+    context.project_root = Some(workspace.0.join("project"));
+    context.package_registry =
+        Some(PackageRegistry::from_layout(&layout, &environment, false).expect("registry"));
+    let outcome = run(&DriverRequest::new(
+        FrontendRequest::from_text_at(source, workspace.0.join("project/main.xiao"))
+            .with_context(context),
+    ));
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(loaded(&outcome, "project:lib"), 1);
+    assert_eq!(loaded(&outcome, "package:lib.api"), 0);
+}
+
+#[test]
+fn importing_a_module_with_a_table_export_keeps_it_executable() {
+    let workspace = Workspace::new();
+    workspace.write(
+        "helper.xiao",
+        "[State]\n    count = 7\n[[Item]]\n    value = 7\n",
+    );
+    let outcome = workspace.run("import helper\nif helper.State.count != 7\n    raise ArithmeticError(code = \"SINGLETON\")\n");
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(loaded(&outcome, "project:helper"), 1);
+}
+
+#[test]
+fn singleton_table_ids_do_not_collide_across_modules() {
+    let workspace = Workspace::new();
+    workspace.write("helper.xiao", "[State]\n    count = 7\n");
+    let outcome = workspace.run("[State]\n    count = 3\nimport helper\nif State.count != 3\n    raise ArithmeticError(code = \"LOCAL_TABLE\")\nif helper.State.count != 7\n    raise ArithmeticError(code = \"IMPORTED_TABLE\")\n");
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(loaded(&outcome, "project:helper"), 1);
+}
+
+#[test]
+fn module_table_instances_use_their_own_program() {
+    let workspace = Workspace::new();
+    workspace.write(
+        "helper.xiao",
+        "[[Item]]\n    value = 7\ndef make() -> int\n    item = new Item()\n    return item.value\n",
+    );
+    let outcome = workspace.run("import helper\nif helper.make() != 7\n    raise ArithmeticError(code = \"MODULE_TABLE\")\n");
+    assert!(outcome.is_success(), "{outcome:?}");
+}
+
+#[test]
+fn backticked_module_export_keeps_its_binding_key() {
+    let workspace = Workspace::new();
+    workspace.write("helper.xiao", "`显示名` = 7\n");
+    let outcome = workspace.run("from helper import `显示名` as value\nif value != 7\n    raise ArithmeticError(code = \"BACKTICK_EXPORT\")\n");
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(loaded(&outcome, "project:helper"), 1);
+}
+
+#[test]
+fn imported_function_errors_keep_the_module_source_path() {
+    let workspace = Workspace::new();
+    workspace.write(
+        "helper.xiao",
+        "def fail() -> none\n    raise ArithmeticError(code = \"MODULE_FAILURE\")\n",
+    );
+    let outcome = workspace.run("import helper\nhelper.fail()\n");
+    let DriverOutcome::Executed(execution) = outcome else {
+        panic!("expected runtime result: {outcome:?}");
+    };
+    let xiao_vm::RunResult::Error(error) = execution.outcome.result else {
+        panic!("expected function failure");
+    };
+    assert!(
+        error.stack().iter().any(|frame| {
+            frame.module == "project:helper"
+                && frame
+                    .source
+                    .as_deref()
+                    .is_some_and(|source| source.ends_with("helper.xiao"))
+        }),
+        "{error:?}"
+    );
+}
+
+#[test]
+fn instance_table_export_has_an_explicit_unsupported_diagnostic() {
+    let workspace = Workspace::new();
+    workspace.write("helper.xiao", "[[Item]]\n    value = 7\n");
+    let outcome = workspace.run("import helper\nvalue = helper.Item\n");
+    let DriverOutcome::Executed(execution) = outcome else {
+        panic!("expected runtime result: {outcome:?}");
+    };
+    let xiao_vm::RunResult::Error(error) = execution.outcome.result else {
+        panic!("expected unsupported table reference");
+    };
+    assert!(error.message().contains("暂不支持跨模块引用"));
+}
+
+#[test]
 fn import_inside_module_function_waits_until_the_function_runs() {
     let workspace = Workspace::new();
     workspace.write("util.xiao", "answer = 15\n");

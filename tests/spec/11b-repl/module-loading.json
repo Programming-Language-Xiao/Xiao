@@ -21,6 +21,21 @@
       },
       "source": "from bridge import value\nif value != 9\n    raise ArithmeticError(code = \"REEXPORT\")\n",
       "loaded": ["project:base", "project:bridge"]
+    },
+    {
+      "name": "shared-directory-root",
+      "files": {
+        "app/http.xiao": "value = 20\n",
+        "app/models.xiao": "value = 22\n"
+      },
+      "source": "import app.http\nimport app.models\nif app.http.value + app.models.value != 42\n    raise ArithmeticError(code = \"ROOT\")\n",
+      "loaded": ["project:app.http", "project:app.models"]
+    },
+    {
+      "name": "backticked-export",
+      "files": { "helper.xiao": "`显示名` = 7\n" },
+      "source": "from helper import `显示名` as value\nif value != 7\n    raise ArithmeticError(code = \"BACKTICK\")\n",
+      "loaded": ["project:helper"]
     }
   ]
 }

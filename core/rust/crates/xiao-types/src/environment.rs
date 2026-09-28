@@ -22,6 +22,16 @@ pub struct Binding {
     pub constant: bool,
     /// 绑定上的数组路径约束；普通标量绑定为空。
     pub container_constraints: PathConstraintTree,
+    namespace_origin: Option<NamespaceOrigin>,
+}
+
+/// 区分环境包预登记与可合并的项目目录根，避免普通绑定误合并。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum NamespaceOrigin {
+    /// 尚未被显式项目导入覆盖的环境包根。
+    Package,
+    /// 未带别名的项目导入所绑定的根名称。
+    ImportedRoot,
 }
 
 impl Binding {
@@ -34,6 +44,7 @@ impl Binding {
             mutable: true,
             constant: false,
             container_constraints: PathConstraintTree::new(),
+            namespace_origin: None,
         }
     }
 
@@ -46,7 +57,27 @@ impl Binding {
             mutable: false,
             constant: true,
             container_constraints: PathConstraintTree::new(),
+            namespace_origin: None,
         }
+    }
+
+    /// 建立只供隐式包命名空间使用的预登记绑定。
+    pub(crate) fn package_root() -> Self {
+        let mut binding = Self::constant(TypeScheme::monomorphic(Type::Dynamic));
+        binding.namespace_origin = Some(NamespaceOrigin::Package);
+        binding
+    }
+
+    /// 建立允许其他同根项目导入合并的限定符绑定。
+    pub(crate) fn imported_root() -> Self {
+        let mut binding = Self::constant(TypeScheme::monomorphic(Type::Dynamic));
+        binding.namespace_origin = Some(NamespaceOrigin::ImportedRoot);
+        binding
+    }
+
+    /// 返回绑定来源，普通名称与显式别名均为 `None`。
+    pub(crate) const fn namespace_origin(&self) -> Option<NamespaceOrigin> {
+        self.namespace_origin
     }
 
     /// 返回绑定的实例化前方案。
@@ -133,6 +164,32 @@ impl TypeEnvironment {
         Ok(())
     }
 
+    /// 显式导入可覆盖包预登记；无别名的同根项目导入共享一个限定符。
+    pub(crate) fn declare_import(
+        &mut self,
+        name: String,
+        binding: Binding,
+        merge_root: bool,
+    ) -> Result<(), EnvironmentError> {
+        let scope = self.scopes.last_mut().expect("至少有全局作用域");
+        match scope.entry(name) {
+            std::collections::btree_map::Entry::Vacant(entry) => {
+                entry.insert(binding);
+                Ok(())
+            }
+            std::collections::btree_map::Entry::Occupied(mut entry) => {
+                match entry.get().namespace_origin() {
+                    Some(NamespaceOrigin::Package) => {
+                        entry.insert(binding);
+                        Ok(())
+                    }
+                    Some(NamespaceOrigin::ImportedRoot) if merge_root => Ok(()),
+                    _ => Err(EnvironmentError::Duplicate(entry.key().clone())),
+                }
+            }
+        }
+    }
+
     /// 声明一个普通可变名称。
     pub fn declare_mutable(
         &mut self,
@@ -162,6 +219,7 @@ impl TypeEnvironment {
                 mutable: true,
                 constant: false,
                 container_constraints: constraints,
+                namespace_origin: None,
             },
         )
     }

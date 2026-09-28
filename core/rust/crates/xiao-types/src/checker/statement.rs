@@ -562,11 +562,17 @@ impl<'source> TypeChecker<'source> {
             ImportStatement::Modules { imports, .. } => {
                 for item in imports {
                     let name = item.alias.unwrap_or(item.path.segments[0]);
-                    if let Err(error) = self.environment.declare(
-                        self.name_key(name),
+                    let binding = if item.alias.is_none() {
+                        crate::environment::Binding::imported_root()
+                    } else {
                         crate::environment::Binding::constant(
                             crate::types::TypeScheme::monomorphic(Type::Dynamic),
-                        ),
+                        )
+                    };
+                    if let Err(error) = self.environment.declare_import(
+                        self.name_key(name),
+                        binding,
+                        item.alias.is_none(),
                     ) {
                         self.environment_error(name.span, error);
                     }
@@ -575,10 +581,14 @@ impl<'source> TypeChecker<'source> {
             ImportStatement::From { imports, .. } => {
                 for item in imports {
                     let name = item.alias.unwrap_or(item.name);
-                    if let Err(error) =
-                        self.environment
-                            .declare_mutable(self.name_key(name), Type::Dynamic, true)
-                    {
+                    if let Err(error) = self.environment.declare_import(
+                        self.name_key(name),
+                        crate::environment::Binding::mutable(
+                            crate::types::TypeScheme::monomorphic(Type::Dynamic),
+                            true,
+                        ),
+                        false,
+                    ) {
                         self.environment_error(name.span, error);
                     }
                 }

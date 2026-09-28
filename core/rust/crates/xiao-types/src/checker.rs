@@ -14,7 +14,7 @@ use crate::environment::Binding;
 use crate::environment::TypeEnvironment;
 use crate::functions::FunctionSignature;
 use crate::numeric::ConstantValue;
-use crate::types::{Type, TypeScheme};
+use crate::types::Type;
 use crate::unify::TypeContext;
 
 #[cfg(test)]
@@ -173,10 +173,9 @@ impl<'source> TypeChecker<'source> {
     #[must_use]
     pub fn with_external_namespaces(mut self, namespaces: ExternalNamespaces) -> Self {
         for root in namespaces.members.keys().filter(|path| !path.contains('.')) {
-            let _ = self.environment.declare(
-                format!("ascii:{root}"),
-                Binding::constant(TypeScheme::monomorphic(Type::Dynamic)),
-            );
+            let _ = self
+                .environment
+                .declare(format!("ascii:{root}"), Binding::package_root());
         }
         self.external_namespaces = namespaces;
         self

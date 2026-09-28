@@ -20,6 +20,7 @@ use crate::diagnostics::{
     TABLE_CONSTRUCTOR_CODE, TABLE_DECLARATION_CODE, TABLE_INITIALIZER_CODE, TABLE_LIFECYCLE_CODE,
     TABLE_MEMBER_CODE, TABLE_VISIBILITY_CODE,
 };
+use crate::environment::{Binding, NamespaceOrigin};
 use crate::functions::{FunctionParameterSignature, FunctionSignature};
 use crate::set_types::SetType;
 use crate::tables::{TableMemberKind, TableMemberSignature, TableSignature, TableType};
@@ -653,10 +654,13 @@ impl<'source> TypeChecker<'source> {
         match expression {
             Expression::Name(name) if !name.backticked => {
                 let root = self.display_name(*name);
-                self.external_namespaces
-                    .members
-                    .contains_key(&root)
-                    .then_some(root)
+                (self.external_namespaces.members.contains_key(&root)
+                    && self
+                        .environment
+                        .lookup(&self.name_key(*name))
+                        .and_then(Binding::namespace_origin)
+                        == Some(NamespaceOrigin::Package))
+                .then_some(root)
             }
             Expression::Member { object, member, .. } if !member.backticked => {
                 let path = format!(
