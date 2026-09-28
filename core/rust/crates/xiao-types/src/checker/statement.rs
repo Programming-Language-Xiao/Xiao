@@ -3,7 +3,8 @@
 //! 语句模块只负责静态环境更新和语句级约束，复杂表达式规则由 `expression.rs` 提供。
 
 use xiao_syntax::{
-    AssignmentOperator, BinaryOperator, DeclaredType, Expression, IndexPath, ScalarType, Statement,
+    AssignmentOperator, BinaryOperator, DeclaredType, Expression, ImportStatement, IndexPath,
+    ScalarType, Statement,
 };
 
 use crate::conversion::{
@@ -64,9 +65,7 @@ impl<'source> TypeChecker<'source> {
                 value,
                 ..
             } => self.check_const_declaration(*target, *declared_type, value),
-            // 05-A/B 的导入解析由 `xiao-modules` 负责；当前类型检查器只保留
-            // 语句位置，不把跨文件名称错误地当成本地动态值。
-            Statement::Import { .. } => {}
+            Statement::Import { import, .. } => self.check_import(import),
             Statement::Function {
                 name,
                 parameters,
@@ -554,5 +553,36 @@ impl<'source> TypeChecker<'source> {
             expression.span(),
             format!("不能隐式把 {} 转换为 {}", source_type, target.as_str()),
         );
+    }
+}
+
+impl<'source> TypeChecker<'source> {
+    fn check_import(&mut self, import: &ImportStatement) {
+        match import {
+            ImportStatement::Modules { imports, .. } => {
+                for item in imports {
+                    let name = item.alias.unwrap_or(item.path.segments[0]);
+                    if let Err(error) = self.environment.declare(
+                        self.name_key(name),
+                        crate::environment::Binding::constant(
+                            crate::types::TypeScheme::monomorphic(Type::Dynamic),
+                        ),
+                    ) {
+                        self.environment_error(name.span, error);
+                    }
+                }
+            }
+            ImportStatement::From { imports, .. } => {
+                for item in imports {
+                    let name = item.alias.unwrap_or(item.name);
+                    if let Err(error) =
+                        self.environment
+                            .declare_mutable(self.name_key(name), Type::Dynamic, true)
+                    {
+                        self.environment_error(name.span, error);
+                    }
+                }
+            }
+        }
     }
 }

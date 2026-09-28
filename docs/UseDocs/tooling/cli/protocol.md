@@ -68,9 +68,11 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 要求显式 `import`，绝不按扫描顺序任选；读取失败为 `X11-REPL-PACKAGE-002`，
 `details` 给出环境、包名及底层原因。
 
-本请求**不预加载**模块，也不维持跨请求 VM 状态；首次引用的执行机制必须落在 VM，
-不能由客户端在 `run` 前调用此接口冒充加载。当前运行链尚未完成包模块执行接线，
-不能把协议查询成功当成运行时首次加载已实现。现有 `run` 每次新建 VM，跨请求复用归 I4b。
+本请求**不预加载**模块，也不维持跨请求 VM 状态。`run` 从当前环境的只读包映射登记
+包根，访问包内模块内容时由 VM 首次编译、初始化并缓存成功结果；未访问时不执行。
+本地项目的 `import` 则在执行到语句时初始化对应模块，两个来源使用不同的模块身份。
+加载失败为可恢复错误，携带包名、来源环境及底层原因，失败不缓存，后续引用可重试；
+不能由客户端在 `run` 前调用查询接口冒充加载。现有 `run` 每次新建 VM，跨请求复用归 I4b。
 共享机器样本见 `tests/spec/11x0-protocol/repl-packages-request.json` 和
 `tests/spec/11x0-protocol/repl-packages-response.json`。
 取消通过同一请求 ID 绑定 `CancellationToken`，其结果使用 `ArtifactRejected` 的进程码 2。

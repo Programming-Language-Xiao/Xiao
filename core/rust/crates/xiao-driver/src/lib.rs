@@ -6,6 +6,8 @@
 
 /// 统一前端请求、上下文、结果和编排器。
 mod frontend;
+/// 统一前端向 VM 提供按需模块编译的接线。
+mod module_loader;
 
 /// `-debug` 独立诊断进程与终端启动编排。
 pub mod diagnostics;

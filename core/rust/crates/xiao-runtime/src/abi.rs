@@ -310,9 +310,10 @@ fn runtime_to_value(value: &RuntimeValue) -> Result<XiaoValue, i32> {
             XiaoValueTag::Set,
             value.clone().into_strong_handle(),
         )),
-        RuntimeValue::TableDropView(_) | RuntimeValue::Error(_) => {
-            Err(XiaoAbiStatus::InvalidArgument.code())
-        }
+        RuntimeValue::TableDropView(_)
+        | RuntimeValue::Error(_)
+        | RuntimeValue::Module(_)
+        | RuntimeValue::ModuleFunction(_, _) => Err(XiaoAbiStatus::InvalidArgument.code()),
     }
 }
 

@@ -158,6 +158,7 @@ struct Frame {
     parameters: Vec<VReg>,
     /// 形参的精确名称绑定，也覆盖合成字段初始化函数的接收者。
     parameter_names: BTreeMap<String, VReg>,
+    import_names: BTreeMap<(u32, String), VReg>,
     used_scopes: Vec<u32>,
     scope_stack: Vec<u32>,
     /// 活动循环的跳转目标栈。
@@ -433,6 +434,39 @@ impl<'ir> Lowerer<'ir> {
         }
         self.lower_statements(body, "normal");
         if !self.current_block_terminated() {
+            if name.is_empty() {
+                for export in &self.program.module_exports {
+                    let export_register = self
+                        .import_register(export, false)
+                        .or_else(|| {
+                            self.value_of_name(export, false)
+                                .and_then(|value| self.frame.value_regs.get(&value).copied())
+                        })
+                        .or_else(|| {
+                            self.function_index(export).map(|function| {
+                                let register =
+                                    self.new_binding_register(RegisterClass::ObjHandle, span);
+                                self.emit(TacInstr::with_dst(
+                                    TacOp::LoadFunc(function),
+                                    register,
+                                    span,
+                                ));
+                                register
+                            })
+                        });
+                    if let Some(register) = export_register {
+                        self.emit(TacInstr::new(
+                            TacOp::ExportValue {
+                                name: name_key(export, false),
+                                value: register,
+                            },
+                            span,
+                        ));
+                    } else {
+                        self.record_unsupported(format!("模块导出 {export} 未能降低为顶层值"));
+                    }
+                }
+            }
             if let Some(scope) = function_scope {
                 self.exit_scope(scope, "normal");
             }
@@ -981,6 +1015,34 @@ impl<'ir> Lowerer<'ir> {
             })
             .map(|(value, _)| *value);
         active.or_else(|| candidates.first().map(|(value, _)| *value))
+    }
+
+    /// 按当前词法作用域选取导入绑定；内层普通绑定优先于外层导入。
+    fn import_register(&self, name: &str, backticked: bool) -> Option<VReg> {
+        let key = name_key(name, backticked);
+        let (import_depth, register) =
+            self.frame
+                .scope_stack
+                .iter()
+                .enumerate()
+                .rev()
+                .find_map(|(depth, scope)| {
+                    self.frame
+                        .import_names
+                        .get(&(*scope, key.clone()))
+                        .map(|register| (depth, *register))
+                })?;
+        let shadowed = self
+            .candidates_of_name(name, backticked)
+            .iter()
+            .any(|(_, scope)| {
+                self.frame
+                    .scope_stack
+                    .iter()
+                    .position(|active| active == scope)
+                    .is_some_and(|depth| depth > import_depth)
+            });
+        (!shadowed).then_some(register)
     }
 
     /// 列出同名绑定的 `(值编号, 所属作用域)` 候选。

@@ -46,6 +46,26 @@ fn frontend_run_request(
     target: &ProtocolTarget,
 ) -> Result<FrontendRequest, ProtocolError> {
     let mut request = frontend_request(source, language_version, target);
+    if let Some(root) = source
+        .path
+        .as_ref()
+        .and_then(|path| {
+            let path = std::path::Path::new(path);
+            (path.is_absolute() && path.is_file()).then(|| {
+                let directory = path.parent()?;
+                Some(
+                    path.ancestors()
+                        .skip(1)
+                        .find(|parent| parent.join("config.xiao").is_file())
+                        .unwrap_or(directory)
+                        .to_path_buf(),
+                )
+            })
+        })
+        .flatten()
+    {
+        request.context.project_root = Some(root);
+    }
     let active_environment = std::env::var_os("XIAO_ACTIVE_ENV");
     let registry =
         PackageRegistry::from_environment(active_environment.as_deref().map(std::path::Path::new))

@@ -39,6 +39,12 @@ pub struct IrProgram {
     pub config_present: bool,
     /// 外部包图中的稳定包身份摘要。
     pub external_packages: Vec<String>,
+    /// 自动可见的包根名称；字节码降低只能对这些根生成延迟命名空间。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub package_roots: Vec<String>,
+    /// 作为文件模块编译时需要发布的顶层符号；入口脚本为空。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub module_exports: Vec<String>,
     /// 程序入口模式。
     pub entry_mode: IrEntryMode,
     /// 主入口模块的递归语句树。
@@ -77,6 +83,8 @@ impl IrProgram {
             target: "host".to_owned(),
             config_present: false,
             external_packages: Vec::new(),
+            package_roots: Vec::new(),
+            module_exports: Vec::new(),
             entry_mode,
             body,
             modules: Vec::new(),
@@ -210,6 +218,9 @@ pub enum IrStatementKind {
     Import {
         /// 导入的稳定描述。
         description: String,
+        /// 逐项保留绑定与目标，以便语句执行点才初始化模块。
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        items: Vec<IrImportItem>,
     },
     /// 表声明。
     Table {
@@ -281,6 +292,19 @@ pub enum IrStatementKind {
         /// 要抛出的错误表达式。
         value: IrExpression,
     },
+}
+
+/// 一项绝对导入的运行时绑定信息。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct IrImportItem {
+    /// 要初始化的文件模块或目录命名空间。
+    pub module: String,
+    /// 选择导入的成员；普通模块导入时为空。
+    pub selected: Option<IrName>,
+    /// 本地绑定名称。
+    pub binding: IrName,
+    /// 普通导入无别名时绑定首段，其余情况绑定完整模块。
+    pub binding_module: String,
 }
 
 /// `elif` 分支。

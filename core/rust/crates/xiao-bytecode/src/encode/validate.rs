@@ -221,6 +221,7 @@ fn validate_op(
     match &instruction.op {
         TacOp::LoadConst(id) => check_const(program, *id),
         TacOp::LoadFunc(id) => check_func(program, *id),
+        TacOp::ExportValue { value, .. } => check_vreg(*value),
         TacOp::Move(value)
         | TacOp::Copy(value)
         | TacOp::Box(value)
@@ -358,7 +359,10 @@ fn validate_op(
             code.map_or(Ok(()), check_vreg)?;
             message.map_or(Ok(()), check_vreg)
         }
-        TacOp::RetFromSub | TacOp::LoadNone => Ok(()),
+        TacOp::RetFromSub
+        | TacOp::LoadNone
+        | TacOp::PackageRoot(_)
+        | TacOp::ImportModule { .. } => Ok(()),
         TacOp::Check {
             value, on_failure, ..
         } => {

@@ -1,0 +1,26 @@
+{
+  "stage": "11B-I4a2",
+  "cases": [
+    {
+      "name": "executed-import",
+      "files": { "helper.xiao": "value = 7\n" },
+      "source": "from helper import value\nif value != 7\n    raise ArithmeticError(code = \"IMPORT\")\n",
+      "loaded": ["project:helper"]
+    },
+    {
+      "name": "skipped-import",
+      "files": { "helper.xiao": "raise ArithmeticError(code = \"MUST_NOT_RUN\")\n" },
+      "source": "if false\n    import helper\n",
+      "loaded": []
+    },
+    {
+      "name": "reexported-value",
+      "files": {
+        "base.xiao": "value = 9\n",
+        "bridge.xiao": "from base import value\n"
+      },
+      "source": "from bridge import value\nif value != 9\n    raise ArithmeticError(code = \"REEXPORT\")\n",
+      "loaded": ["project:base", "project:bridge"]
+    }
+  ]
+}

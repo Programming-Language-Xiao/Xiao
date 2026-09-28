@@ -9,6 +9,8 @@ pub mod carrier;
 pub mod frame;
 /// 候选机型的载体实现；生产入口仍固定走栈式。
 pub mod machine;
+/// 环境包与本地模块的统一延迟编译回调。
+pub mod modules;
 /// 值运算的薄包装，语义核经它调用 Runtime 算子表。
 pub mod ops;
 /// 运行入口、结构化结果与运行指标。
@@ -30,6 +32,8 @@ pub use machine::hybrid::{
 pub use machine::register::{RegisterCarrier, RegisterLocation, TypedRegisterCarrier};
 /// 重导出栈式载体。
 pub use machine::stack::StackCarrier;
+/// VM 按需请求文件模块的公开边界。
+pub use modules::{CompiledModule, ModuleLoader};
 /// 重导出运行入口、结果与指标。
 pub use run::{
     CancellationSource, CancellationToken, DEFAULT_CHECKPOINT_INTERVAL, DEFAULT_MAX_CALL_DEPTH,

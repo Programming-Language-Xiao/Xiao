@@ -529,6 +529,11 @@ impl FrontendVmDriver {
         } else {
             vm_request
         };
+        let module_loader = crate::module_loader::DriverModuleLoader::new(
+            request.frontend.context.project_root.as_deref(),
+            request.frontend.context.package_registry.as_ref(),
+        );
+        let vm_request = vm_request.with_module_loader(&module_loader);
         let outcome = run_vm_request(&vm_request);
         // 方案 A 仍需在 VM 返回边界采样；VM 已经结束后发现控制信号时，控制结果
         // 优先于已完成的 VM 结果，避免把超时/取消伪装成成功。

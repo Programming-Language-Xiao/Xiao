@@ -456,6 +456,22 @@ pub enum TacOp {
     LoadNone,
     /// 加载函数引用。
     LoadFunc(FuncId),
+    /// 创建一个不触发加载的环境包根命名空间。
+    PackageRoot(String),
+    /// 在语句执行点初始化本地模块，并绑定所选命名空间。
+    ImportModule {
+        /// 要初始化的绝对模块路径。
+        module: String,
+        /// 导入语句实际绑定的命名空间路径。
+        binding_module: String,
+    },
+    /// 向当前文件模块发布一个已初始化的顶层值。
+    ExportValue {
+        /// 公开名称，区分反引号前缀。
+        name: String,
+        /// 当前帧的值寄存器。
+        value: VReg,
+    },
     /// 转移所有权：源寄存器随之失效，不做引用计数增减。
     Move(VReg),
     /// 复制值：源寄存器保持有效，堆值多持一次引用。

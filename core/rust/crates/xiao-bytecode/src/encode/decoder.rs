@@ -417,6 +417,15 @@ fn decode_op(
         0 => TacOp::LoadConst(ConstId::new(index(reader, "ConstId")?)),
         1 => TacOp::LoadNone,
         2 => TacOp::LoadFunc(FuncId::new(index(reader, "FuncId")?)),
+        41 => TacOp::PackageRoot(reader.string("root")?),
+        42 => TacOp::ImportModule {
+            module: reader.string("module")?,
+            binding_module: reader.string("binding_module")?,
+        },
+        43 => TacOp::ExportValue {
+            name: reader.string("export")?,
+            value: VReg::new(index(reader, "VReg")?),
+        },
         3 => TacOp::Move(VReg::new(index(reader, "VReg")?)),
         4 => TacOp::Copy(VReg::new(index(reader, "VReg")?)),
         5 => TacOp::Box(VReg::new(index(reader, "VReg")?)),

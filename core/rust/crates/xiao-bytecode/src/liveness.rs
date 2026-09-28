@@ -292,6 +292,8 @@ pub(crate) fn instruction_use_def(
             }
         }
         TacOp::LoadConst(_)
+        | TacOp::PackageRoot(_)
+        | TacOp::ImportModule { .. }
         | TacOp::LoadNone
         | TacOp::LoadFunc(_)
         | TacOp::Jump(_)
@@ -299,6 +301,9 @@ pub(crate) fn instruction_use_def(
         | TacOp::RetFromSub
         | TacOp::EnterScope(_)
         | TacOp::ExitScope { .. } => {}
+        TacOp::ExportValue { value, .. } => {
+            uses.insert(*value);
+        }
     }
     if let Some(dst) = instruction.dst {
         defs.insert(dst);

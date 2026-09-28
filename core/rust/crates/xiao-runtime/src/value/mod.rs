@@ -162,6 +162,10 @@ impl StringHandle {
 /// Xiao Runtime 中可传递的最小值集合。
 #[derive(Clone, Debug)]
 pub enum RuntimeValue {
+    /// 尚未执行或已经缓存的模块命名空间身份。
+    Module(String),
+    /// 已初始化模块中的函数引用与函数表索引。
+    ModuleFunction(String, u32),
     /// 默认 64 位整数。
     Int(i64),
     /// 32 位整数。
@@ -205,6 +209,11 @@ impl PartialEq for RuntimeValue {
     /// 保守判为不相等，而不是把两个「读不到内容」的句柄当成相等。
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
+            (Self::Module(left), Self::Module(right)) => left == right,
+            (
+                Self::ModuleFunction(left_name, left_id),
+                Self::ModuleFunction(right_name, right_id),
+            ) => left_name == right_name && left_id == right_id,
             (Self::Int(left), Self::Int(right)) => left == right,
             (Self::Sint(left), Self::Sint(right)) => left == right,
             (Self::Lint(left), Self::Lint(right)) => left == right,
@@ -242,6 +251,11 @@ impl std::hash::Hash for RuntimeValue {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         std::mem::discriminant(self).hash(state);
         match self {
+            Self::Module(name) => name.hash(state),
+            Self::ModuleFunction(name, index) => {
+                name.hash(state);
+                index.hash(state);
+            }
             Self::Int(value) => value.hash(state),
             Self::Sint(value) => value.hash(state),
             Self::Lint(value) => value.hash(state),
@@ -279,6 +293,8 @@ impl RuntimeValue {
             Self::Bool(_) => ScalarType::Bool,
             Self::Str(_) => ScalarType::Str,
             Self::Table(_)
+            | Self::Module(_)
+            | Self::ModuleFunction(_, _)
             | Self::TableDropView(_)
             | Self::Array(_)
             | Self::Tuple(_)
@@ -297,6 +313,8 @@ impl RuntimeValue {
     #[must_use]
     pub fn type_name(&self) -> String {
         match self {
+            Self::Module(_) => "module".to_owned(),
+            Self::ModuleFunction(_, _) => "function".to_owned(),
             Self::Table(instance) => format!("table {}", instance.name()),
             Self::TableDropView(view) => format!("table {}", view.signature().name),
             Self::Array(_) => RuntimeTypeTag::Array.as_str().to_owned(),

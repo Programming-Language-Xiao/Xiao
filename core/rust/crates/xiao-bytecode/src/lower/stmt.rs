@@ -116,7 +116,48 @@ fn dispatch_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
                 statement.span,
             ));
         }
-        IrStatementKind::Function { .. } | IrStatementKind::Import { .. } => {}
+        IrStatementKind::Function { .. } => {}
+        IrStatementKind::Import { items, .. } => {
+            for item in items {
+                let module = lowerer.new_binding_register(RegisterClass::ObjHandle, statement.span);
+                lowerer.emit(TacInstr::with_dst(
+                    TacOp::ImportModule {
+                        module: item.module.clone(),
+                        binding_module: if item.selected.is_some() {
+                            item.module.clone()
+                        } else {
+                            item.binding_module.clone()
+                        },
+                    },
+                    module,
+                    statement.span,
+                ));
+                let binding = if let Some(selected) = &item.selected {
+                    let register =
+                        lowerer.new_binding_register(RegisterClass::Dynamic, statement.span);
+                    lowerer.emit(TacInstr::with_dst(
+                        TacOp::MemberGet {
+                            object: module,
+                            member: super::name_key(&selected.text, selected.backticked),
+                        },
+                        register,
+                        statement.span,
+                    ));
+                    register
+                } else {
+                    module
+                };
+                if let Some(scope) = lowerer.innermost_scope() {
+                    lowerer.frame.import_names.insert(
+                        (
+                            scope,
+                            super::name_key(&item.binding.text, item.binding.backticked),
+                        ),
+                        binding,
+                    );
+                }
+            }
+        }
         IrStatementKind::Try {
             body,
             catches,
@@ -320,14 +361,17 @@ pub(super) fn store_into(
     span: IrSpan,
     source: VReg,
 ) {
-    let Some(value) = lowerer.value_of_name_at(name, backticked, span) else {
+    let target = if let Some(register) = lowerer.import_register(name, backticked) {
+        register
+    } else if let Some(value) = lowerer.value_of_name_at(name, backticked, span) {
+        lowerer.register_of(value)
+    } else {
         lowerer.record_unsupported(format!(
             "绑定缺少生命周期条目（{}..{}）",
             span.start, span.end
         ));
         return;
     };
-    let target = lowerer.register_of(value);
     if target == source {
         return;
     }

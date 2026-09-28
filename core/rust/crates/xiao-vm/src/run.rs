@@ -273,6 +273,8 @@ pub struct RunRequest<'a> {
     pub event_capacity: usize,
     /// 可选的 VM 取消与截止时间来源。
     pub cancellation: Option<CancellationSource>,
+    /// 单次执行内由 VM 按需调用的模块编译器。
+    pub module_loader: Option<&'a dyn crate::modules::ModuleLoader>,
 }
 
 impl<'a> RunRequest<'a> {
@@ -287,6 +289,7 @@ impl<'a> RunRequest<'a> {
             source_name: "<memory>".to_owned(),
             event_capacity: DEFAULT_EVENT_CAPACITY,
             cancellation: None,
+            module_loader: None,
         }
     }
 
@@ -322,6 +325,13 @@ impl<'a> RunRequest<'a> {
     #[must_use]
     pub fn with_cancellation(mut self, cancellation: CancellationSource) -> Self {
         self.cancellation = Some(cancellation);
+        self
+    }
+
+    /// 安装按需模块编译入口；请求自身不执行任何模块代码。
+    #[must_use]
+    pub fn with_module_loader(mut self, loader: &'a dyn crate::modules::ModuleLoader) -> Self {
+        self.module_loader = Some(loader);
         self
     }
 
@@ -602,6 +612,7 @@ pub fn run_request(request: &RunRequest<'_>) -> RunOutcome {
         metadata,
     );
     vm.set_cancellation_source(request.cancellation.clone());
+    vm.set_module_loader(request.module_loader);
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     sink = vm.into_sink();

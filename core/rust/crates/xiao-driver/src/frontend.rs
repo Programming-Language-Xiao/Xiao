@@ -58,6 +58,8 @@ pub struct FrontendContext {
     pub package_namespaces: Option<ExternalNamespaces>,
     /// 环境包的只读静态映射，不是 VM 初始化缓存。
     pub package_registry: Option<PackageRegistry>,
+    /// 以模块身份编译时，需要在执行完顶层后导出的名称。
+    pub module_exports: Vec<String>,
     /// 目标平台描述，默认使用 `host`。
     pub target: String,
     /// 语言版本，默认使用 `0.1.0`。
@@ -310,6 +312,32 @@ impl FrontendCompiler {
             .as_ref()
             .map(|graph| graph.packages.clone())
             .unwrap_or_default();
+        ir.package_roots = request.context.package_registry.as_ref().map_or_else(
+            || {
+                request
+                    .context
+                    .package_namespaces
+                    .as_ref()
+                    .map_or_else(Vec::new, |namespaces| {
+                        namespaces
+                            .members
+                            .keys()
+                            .filter(|path| !path.contains('.'))
+                            .cloned()
+                            .collect()
+                    })
+            },
+            |registry| {
+                registry
+                    .namespaces
+                    .members
+                    .keys()
+                    .filter(|path| !path.contains('.'))
+                    .cloned()
+                    .collect()
+            },
+        );
+        ir.module_exports = request.context.module_exports.clone();
 
         let validation = IrValidator::new().validate(&ir);
         if !validation.is_success() {

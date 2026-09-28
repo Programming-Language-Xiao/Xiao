@@ -277,6 +277,9 @@ fn lower_literal(
 
 /// 降低名称引用：读取同名局部槽，或加载函数引用。
 fn lower_name(lowerer: &mut Lowerer<'_>, name: &str, backticked: bool, span: IrSpan) -> VReg {
+    if let Some(register) = lowerer.import_register(name, backticked) {
+        return register;
+    }
     if let Some(register) = lowerer
         .frame
         .parameter_names
@@ -302,6 +305,21 @@ fn lower_name(lowerer: &mut Lowerer<'_>, name: &str, backticked: bool, span: IrS
         let register = lowerer.new_register(RegisterClass::ObjHandle, span);
         lowerer.emit(TacInstr::with_dst(
             TacOp::LoadFunc(function),
+            register,
+            span,
+        ));
+        return register;
+    }
+    if !backticked
+        && lowerer
+            .program
+            .package_roots
+            .iter()
+            .any(|root| root == name)
+    {
+        let register = lowerer.new_register(RegisterClass::ObjHandle, span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::PackageRoot(name.to_owned()),
             register,
             span,
         ));

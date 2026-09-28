@@ -56,6 +56,9 @@ pub(super) fn opcode(op: &TacOp) -> u8 {
         TacOp::LoadTable { .. } => 38,
         TacOp::MemberGet { .. } => 39,
         TacOp::MemberSet { .. } => 40,
+        TacOp::PackageRoot(_) => 41,
+        TacOp::ImportModule { .. } => 42,
+        TacOp::ExportValue { .. } => 43,
     }
 }
 

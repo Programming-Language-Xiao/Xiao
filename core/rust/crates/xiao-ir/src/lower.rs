@@ -14,8 +14,9 @@ use xiao_source::{SourceFile, SourceSpan};
 use xiao_syntax::{
     AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, CatchClause, DeclaredType,
     DictEntry, DictKey, ElifBranch, EntryMode, Expression, FunctionParameter,
-    FunctionParameterKind, FunctionTypeAnnotation, IndexPath, LiteralKind, Name, PathSegment,
-    Program, RandomMode, Selector, SelectorItem, Statement, TableKind, TypeTerm, UnaryOperator,
+    FunctionParameterKind, FunctionTypeAnnotation, ImportStatement, IndexPath, LiteralKind, Name,
+    PathSegment, Program, RandomMode, Selector, SelectorItem, Statement, TableKind, TypeTerm,
+    UnaryOperator,
 };
 use xiao_types::{ArrayType, DictType, SetType, TableValueKind, Type, TypeCheckResult};
 
@@ -180,8 +181,47 @@ impl<'a> Lowerer<'a> {
                 declared_type: declared_type.map(|ty| ty.as_str().to_owned()),
                 value: self.expression(value),
             },
-            Statement::Import { .. } => IrStatementKind::Import {
+            Statement::Import { import, .. } => IrStatementKind::Import {
                 description: self.source.slice(statement.span()).to_owned(),
+                items: match import {
+                    ImportStatement::Modules { imports, .. } => imports
+                        .iter()
+                        .map(|item| {
+                            let segments = item
+                                .path
+                                .segments
+                                .iter()
+                                .map(|segment| segment.unquoted_text(self.source))
+                                .collect::<Vec<_>>();
+                            IrImportItem {
+                                module: segments.join("."),
+                                selected: None,
+                                binding: self.name(item.alias.unwrap_or(item.path.segments[0])),
+                                binding_module: if item.alias.is_some() {
+                                    segments.join(".")
+                                } else {
+                                    segments[0].to_owned()
+                                },
+                            }
+                        })
+                        .collect(),
+                    ImportStatement::From {
+                        module, imports, ..
+                    } => imports
+                        .iter()
+                        .map(|item| IrImportItem {
+                            module: module
+                                .segments
+                                .iter()
+                                .map(|segment| segment.unquoted_text(self.source))
+                                .collect::<Vec<_>>()
+                                .join("."),
+                            selected: Some(self.name(item.name)),
+                            binding: self.name(item.alias.unwrap_or(item.name)),
+                            binding_module: String::new(),
+                        })
+                        .collect(),
+                },
             },
             Statement::Table {
                 name, kind, body, ..

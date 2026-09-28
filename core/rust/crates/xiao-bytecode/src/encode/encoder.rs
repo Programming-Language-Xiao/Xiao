@@ -303,6 +303,18 @@ fn encode_op(
         TacOp::LoadConst(id) => writer.index(id.get(), "ConstId"),
         TacOp::LoadNone | TacOp::RetFromSub => Ok(()),
         TacOp::LoadFunc(id) => writer.index(id.get(), "FuncId"),
+        TacOp::PackageRoot(root) => writer.string(root),
+        TacOp::ImportModule {
+            module,
+            binding_module,
+        } => {
+            writer.string(module)?;
+            writer.string(binding_module)
+        }
+        TacOp::ExportValue { name, value } => {
+            writer.string(name)?;
+            writer.index(value.get(), "VReg")
+        }
         TacOp::Move(value)
         | TacOp::Copy(value)
         | TacOp::Box(value)

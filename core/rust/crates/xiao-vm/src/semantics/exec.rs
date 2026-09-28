@@ -7,16 +7,17 @@
 //! `order` 逐条释放。动态错误发生时按同一份计划展开当前作用域栈。
 
 use std::cell::Cell;
+use std::collections::{BTreeMap, BTreeSet};
 use std::rc::Rc;
 use xiao_bytecode::{
     BlockId, FuncId, PcMap, TacArgument, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
     TacProgram, VReg, build_pc_map,
 };
 use xiao_diagnostics::{
-    BackendLocation, CONTAINER_HASHABILITY_CODE, FatalError, ITERABLE_CODE, NUMERIC_OVERFLOW_CODE,
-    RANDOM_COUNT_CODE, RANDOM_SEED_CODE, SELECTOR_BOUNDS_CODE, SELECTOR_STEP_CODE,
-    SET_COMPARISON_CODE, SET_MEMBERSHIP_CODE, SET_OPERATION_CODE, StackFrame, TYPE_MISMATCH_CODE,
-    XiaoError,
+    BackendLocation, CONTAINER_HASHABILITY_CODE, DiagnosticParam, FatalError, ITERABLE_CODE,
+    NUMERIC_OVERFLOW_CODE, RANDOM_COUNT_CODE, RANDOM_SEED_CODE, SELECTOR_BOUNDS_CODE,
+    SELECTOR_STEP_CODE, SET_COMPARISON_CODE, SET_MEMBERSHIP_CODE, SET_OPERATION_CODE, StackFrame,
+    TYPE_MISMATCH_CODE, XiaoError,
 };
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
 use xiao_source::SourceSpan;
@@ -27,6 +28,7 @@ mod tables;
 
 use crate::carrier::{Carrier, CarrierContext, MapPoint};
 use crate::frame::Frame;
+use crate::modules::ModuleLoader;
 use crate::ops;
 use crate::run::{CancellationSource, RunResult, VmMetrics, VmOptions};
 use crate::sink::{VmEvent, VmEventSink};
@@ -130,6 +132,12 @@ impl VmMetadata {
 /// 三地址解释器。
 pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     program: &'p TacProgram,
+    active_program: Option<Rc<TacProgram>>,
+    module_loader: Option<&'p dyn ModuleLoader>,
+    initialized_modules: BTreeMap<String, ModuleInstance>,
+    initializing_modules: BTreeSet<String>,
+    current_module: String,
+    current_exports: Option<BTreeMap<String, RuntimeValue>>,
     frames: Vec<Frame<C>>,
     sink: S,
     metrics: VmMetrics,
@@ -148,6 +156,11 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     checkpoint_counter: Rc<Cell<u64>>,
 }
 
+struct ModuleInstance {
+    program: Rc<TacProgram>,
+    exports: BTreeMap<String, RuntimeValue>,
+}
+
 impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     /// 创建一个解释器。
     pub fn new(program: &'p TacProgram, options: VmOptions, sink: S) -> Self {
@@ -163,6 +176,12 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     ) -> Self {
         Self {
             program,
+            active_program: None,
+            module_loader: None,
+            initialized_modules: BTreeMap::new(),
+            initializing_modules: BTreeSet::new(),
+            current_module: String::new(),
+            current_exports: None,
             frames: Vec::new(),
             sink,
             metrics: VmMetrics::default(),
@@ -192,6 +211,136 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     /// 设置当前执行共享的取消与截止时间来源。
     pub(crate) fn set_cancellation_source(&mut self, cancellation: Option<CancellationSource>) {
         self.cancellation = cancellation;
+    }
+
+    pub(crate) fn set_module_loader(&mut self, loader: Option<&'p dyn ModuleLoader>) {
+        self.module_loader = loader;
+    }
+
+    fn module_fault(&self, identity: &str, cause: impl std::fmt::Display) -> Fault {
+        let mut package_context = None;
+        let label = if let Some(name) = identity.strip_prefix("package:") {
+            let root = name.split('.').next().unwrap_or(name);
+            let environment = self
+                .module_loader
+                .and_then(|loader| loader.environment(identity))
+                .unwrap_or("未知环境");
+            package_context = Some((root.to_owned(), environment.to_owned()));
+            format!("包 {root}（来源环境 {environment}）模块 {name}")
+        } else {
+            format!(
+                "项目模块 {}",
+                identity.strip_prefix("project:").unwrap_or(identity)
+            )
+        };
+        let mut error = XiaoError::invalid_value(format!("{label} 加载失败: {cause}"));
+        if let Some((root, environment)) = package_context {
+            error = error
+                .with_param("package", DiagnosticParam::Text(root))
+                .with_param("environment", DiagnosticParam::Text(environment));
+        }
+        Fault::Error(error)
+    }
+
+    fn with_module_program<T>(
+        &mut self,
+        identity: &str,
+        source_name: &str,
+        program: Rc<TacProgram>,
+        execute: impl FnOnce(&mut Self) -> Result<T, Fault>,
+    ) -> Result<T, Fault> {
+        let previous_program = self.active_program.replace(program.clone());
+        let previous_module = std::mem::replace(&mut self.current_module, identity.to_owned());
+        let previous_metadata = std::mem::replace(
+            &mut self.metadata,
+            VmMetadata::new(identity.to_owned(), source_name.to_owned(), None),
+        );
+        let previous_map = std::mem::replace(
+            &mut self.pc_map,
+            build_pc_map(&program, xiao_bytecode::OperandWidth::Leb128).ok(),
+        );
+        let result = execute(self);
+        self.pc_map = previous_map;
+        self.metadata = previous_metadata;
+        self.current_module = previous_module;
+        self.active_program = previous_program;
+        result
+    }
+
+    fn initialize_module(&mut self, identity: &str) -> Result<(), Fault> {
+        if self.initialized_modules.contains_key(identity) {
+            return Ok(());
+        }
+        if !self.initializing_modules.insert(identity.to_owned()) {
+            return Err(self.module_fault(identity, "循环初始化"));
+        }
+        let result = self.initialize_uncached(identity);
+        self.initializing_modules.remove(identity);
+        result
+    }
+
+    fn initialize_uncached(&mut self, identity: &str) -> Result<(), Fault> {
+        let loader = self
+            .module_loader
+            .ok_or_else(|| self.module_fault(identity, "未注册模块编译器"))?;
+        let compiled = loader
+            .compile(identity)
+            .map_err(|error| self.module_fault(identity, error))?;
+        let Some(compiled) = compiled else {
+            return Ok(());
+        };
+        let program = Rc::new(compiled.program);
+        let previous_exports = self.current_exports.take();
+        self.current_exports = Some(BTreeMap::new());
+        let result =
+            self.with_module_program(identity, &compiled.source_name, program.clone(), |vm| {
+                vm.execute(FuncId::new(0), &[], None)
+            });
+        let exports = self.current_exports.take().unwrap_or_default();
+        self.current_exports = previous_exports;
+        if let Err(Fault::Error(error)) = result {
+            let wrapped =
+                self.module_fault(identity, format!("{}: {}", error.code(), error.message()));
+            if let Fault::Error(wrapper) = wrapped {
+                return Err(Fault::Error(wrapper.with_cause(error)));
+            }
+        } else {
+            result?;
+        }
+        self.initialized_modules
+            .insert(identity.to_owned(), ModuleInstance { program, exports });
+        self.sink.record(VmEvent::ModuleLoaded {
+            module: identity.to_owned(),
+        });
+        Ok(())
+    }
+
+    fn module_member(&mut self, identity: &str, member: &str) -> Result<RuntimeValue, Fault> {
+        if let Some(name) = member.strip_prefix("ascii:") {
+            let child = format!("{identity}.{name}");
+            if self
+                .module_loader
+                .is_some_and(|loader| loader.contains(&child))
+            {
+                self.initialize_module(&child)?;
+                return Ok(RuntimeValue::Module(child));
+            }
+        }
+        self.initialize_module(identity)?;
+        self.initialized_modules
+            .get(identity)
+            .and_then(|module| module.exports.get(member))
+            .cloned()
+            .ok_or_else(|| self.module_fault(identity, format!("导出 {member} 不存在")))
+    }
+
+    fn import_identity(&self, module: &str) -> String {
+        if let Some(path) = self.current_module.strip_prefix("package:") {
+            let root = path.split('.').next().unwrap_or(path);
+            format!("package:{root}.{module}")
+        } else {
+            format!("project:{module}")
+        }
     }
 
     /// 在一次指令完成后轮询取消检查点。
@@ -278,7 +427,8 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         arguments: &[BoundArgument],
         return_to: Option<VReg>,
     ) -> Result<Option<RuntimeValue>, Fault> {
-        let program = self.program;
+        let active_program = self.active_program.clone();
+        let program = active_program.as_deref().unwrap_or(self.program);
         let Some(function) = program.functions.get(target.get() as usize) else {
             return Err(Fault::Error(XiaoError::invalid_value(format!(
                 "函数索引 {} 不存在",
@@ -403,7 +553,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 if function == FuncId::new(0) {
                     self.metadata.entry_span
                 } else {
-                    self.program
+                    self.active_program
+                        .as_deref()
+                        .unwrap_or(self.program)
                         .functions
                         .get(function.get() as usize)
                         .map(|item| item.span)
@@ -495,14 +647,50 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     fn step(&mut self, function: &TacFunction, instruction: &TacInstr) -> Result<Flow, Fault> {
         match &instruction.op {
             TacOp::LoadConst(id) => {
-                let Some(constant) = self.program.constants.get(*id) else {
+                let Some(constant) = self
+                    .active_program
+                    .as_deref()
+                    .unwrap_or(self.program)
+                    .constants
+                    .get(*id)
+                else {
                     return Err(Fault::Error(XiaoError::invalid_value("常量索引不存在")));
                 };
                 let value = constant_value(constant)?;
                 self.write_operand(instruction.dst, value);
             }
             TacOp::LoadNone => self.write_operand(instruction.dst, RuntimeValue::None),
-            TacOp::LoadFunc(_) | TacOp::Box(_) | TacOp::Unbox(_) => {
+            TacOp::PackageRoot(root) => {
+                self.write_operand(
+                    instruction.dst,
+                    RuntimeValue::Module(format!("package:{root}")),
+                );
+            }
+            TacOp::ImportModule {
+                module,
+                binding_module,
+            } => {
+                let identity = self.import_identity(module);
+                self.initialize_module(&identity)?;
+                self.write_operand(
+                    instruction.dst,
+                    RuntimeValue::Module(self.import_identity(binding_module)),
+                );
+            }
+            TacOp::ExportValue { name, value } => {
+                let exported = self.read(*value)?;
+                let Some(exports) = self.current_exports.as_mut() else {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "导出指令只允许在文件模块内",
+                    )));
+                };
+                exports.insert(name.clone(), exported);
+            }
+            TacOp::LoadFunc(id) => self.write_operand(
+                instruction.dst,
+                RuntimeValue::ModuleFunction(self.current_module.clone(), id.get()),
+            ),
+            TacOp::Box(_) | TacOp::Unbox(_) => {
                 return Err(Fault::Error(XiaoError::invalid_value(
                     "该指令形态尚未在解释器中实现",
                 )));
@@ -641,7 +829,14 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                         )));
                     }
                 };
-                if *plan as usize >= self.program.random_seed_plans.len() {
+                if *plan as usize
+                    >= self
+                        .active_program
+                        .as_deref()
+                        .unwrap_or(self.program)
+                        .random_seed_plans
+                        .len()
+                {
                     return Err(Fault::Error(XiaoError::invalid_value(
                         "随机种子计划索引不存在",
                     )));
@@ -680,10 +875,36 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     self.write(register, value.unwrap_or(RuntimeValue::None));
                 }
             }
-            TacOp::CallDynamic { .. } => {
-                return Err(Fault::Error(XiaoError::invalid_value(
-                    "动态派发调用尚未在解释器中实现",
-                )));
+            TacOp::CallDynamic { callee, arguments } => {
+                let RuntimeValue::ModuleFunction(module, index) = self.read(*callee)? else {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "调用目标不是可执行的模块函数",
+                    )));
+                };
+                let bound = self.bind(arguments)?;
+                self.note_map_point(MapPoint::CallSite);
+                if let Some(frame) = self.frames.last_mut() {
+                    frame.carrier.begin_call();
+                }
+                let result = if module.is_empty() || module == self.current_module {
+                    self.execute(FuncId::new(index), &bound, instruction.dst)
+                } else {
+                    let program = self
+                        .initialized_modules
+                        .get(&module)
+                        .map(|instance| Rc::clone(&instance.program))
+                        .ok_or_else(|| self.module_fault(&module, "函数所属模块尚未初始化"))?;
+                    self.with_module_program(&module, &module, program, |vm| {
+                        vm.execute(FuncId::new(index), &bound, instruction.dst)
+                    })
+                };
+                if let Some(frame) = self.frames.last_mut() {
+                    frame.carrier.end_call();
+                }
+                let value = result?;
+                if let Some(register) = instruction.dst {
+                    self.write(register, value.unwrap_or(RuntimeValue::None));
+                }
             }
             TacOp::LoadTable {
                 table,
@@ -695,7 +916,10 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 self.write_operand(instruction.dst, value);
             }
             TacOp::MemberGet { object, member } => {
-                let value = tables::member_get(&self.read(*object)?, member)?;
+                let value = match self.read(*object)? {
+                    RuntimeValue::Module(identity) => self.module_member(&identity, member)?,
+                    other => tables::member_get(&other, member)?,
+                };
                 self.write_operand(instruction.dst, value);
             }
             TacOp::MemberSet {
@@ -1311,7 +1535,8 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
 
     /// 执行一个冻结释放计划，按 `order` 逐条释放。
     fn run_plan(&mut self, function: &TacFunction, scope: u32, exit: &str) {
-        let program = self.program;
+        let active_program = self.active_program.clone();
+        let program = active_program.as_deref().unwrap_or(self.program);
         let Some(plan) = program
             .plans
             .iter()

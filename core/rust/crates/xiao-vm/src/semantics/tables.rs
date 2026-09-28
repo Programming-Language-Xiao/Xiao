@@ -86,7 +86,14 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 .tables
                 .program
                 .borrow_mut()
-                .get_or_insert_with(|| Rc::new(self.program.clone()))
+                .get_or_insert_with(|| {
+                    Rc::new(
+                        self.active_program
+                            .as_deref()
+                            .unwrap_or(self.program)
+                            .clone(),
+                    )
+                })
                 .clone();
             let context = Rc::clone(&self.tables);
             let options = self.options;

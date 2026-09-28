@@ -17,6 +17,8 @@ pub struct PackageModule {
     pub environment: PathBuf,
     /// 文件模块的完整路径。
     pub source: PathBuf,
+    /// 所在包源码对象根目录。
+    pub project_root: PathBuf,
     /// 静态发现的导出名称。
     pub exports: BTreeSet<String>,
 }
@@ -107,6 +109,7 @@ impl PackageRegistry {
                         package: root.clone(),
                         environment: environment.to_path_buf(),
                         source: record.path.clone(),
+                        project_root: object_path.clone(),
                         exports: record
                             .symbols
                             .values()
