@@ -506,6 +506,7 @@ dependencies = [
  "xiao-codegen-llvm",
  "xiao-config",
  "xiao-diagnostics",
+ "xiao-i18n",
  "xiao-ir",
  "xiao-lifetime",
  "xiao-modules",
@@ -517,6 +518,10 @@ dependencies = [
  "xiao-types",
  "xiao-vm",
 ]
+
+[[package]]
+name = "xiao-i18n"
+version = "0.1.0"
 
 [[package]]
 name = "xiao-ir"
