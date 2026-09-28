@@ -13,7 +13,7 @@ use serde_json::json;
 use super::build;
 use super::config::parse_environment_config;
 use super::frame::{FrameError, decode_frame, read_frame, write_frame};
-use super::localize::with_run_locale;
+use super::localize::{request_locale, with_locale};
 use super::mapping::{protocol_error_body, protocol_error_from_error};
 use super::message::{CORE_VERSION, CoreVersions, PROTOCOL_VERSION, ProtocolResponse};
 use super::package_view::repl_packages_response;
@@ -63,7 +63,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             optimization,
             source,
             options,
-        } => with_run_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale, || {
             run_request_response(
                 request_id,
                 protocol_version,
@@ -82,27 +82,31 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             core_version,
             language_version,
             runtime_version: _,
+            locale,
             target,
             optimization,
             cases,
             options,
-        } => test_request_response(
-            request_id,
-            protocol_version,
-            core_version,
-            language_version,
-            target,
-            optimization,
-            cases,
-            options,
-            CancellationToken::new(),
-        ),
+        } => with_locale(request_id.clone(), locale, || {
+            test_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                language_version,
+                target,
+                optimization,
+                cases,
+                options,
+                CancellationToken::new(),
+            )
+        }),
         ProtocolRequest::Build {
             request_id,
             protocol_version,
             core_version,
             language_version,
             runtime_version: _,
+            locale,
             target,
             optimization,
             source,
@@ -110,20 +114,22 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             llvm_ir_output,
             toolchain,
             config_text,
-        } => build_request_response(
-            request_id,
-            protocol_version,
-            core_version,
-            language_version,
-            target,
-            optimization,
-            source,
-            output,
-            llvm_ir_output,
-            toolchain,
-            config_text,
-            &CancellationToken::new(),
-        ),
+        } => with_locale(request_id.clone(), locale, || {
+            build_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                language_version,
+                target,
+                optimization,
+                source,
+                output,
+                llvm_ir_output,
+                toolchain,
+                config_text,
+                &CancellationToken::new(),
+            )
+        }),
         ProtocolRequest::Environment {
             request_id,
             protocol_version,
@@ -131,35 +137,42 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             project_root,
             logical_name,
             config_text,
+            locale,
             target,
             toolchain,
-        } => environment_request_response(
-            request_id,
-            protocol_version,
-            core_version,
-            project_root,
-            logical_name,
-            config_text,
-            target,
-            toolchain,
-        ),
+        } => with_locale(request_id.clone(), locale, || {
+            environment_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                project_root,
+                logical_name,
+                config_text,
+                target,
+                toolchain,
+            )
+        }),
         ProtocolRequest::ReplPackages {
             request_id,
             protocol_version,
             core_version,
+            locale,
             active_environment,
             module_path,
-        } => repl_packages_response(
-            request_id,
-            protocol_version,
-            core_version,
-            active_environment,
-            module_path,
-        ),
+        } => with_locale(request_id.clone(), locale, || {
+            repl_packages_response(
+                request_id,
+                protocol_version,
+                core_version,
+                active_environment,
+                module_path,
+            )
+        }),
         ProtocolRequest::Package {
             request_id,
             protocol_version,
             core_version,
+            locale,
             operation,
             project_root,
             active_environment,
@@ -173,24 +186,26 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             development,
             target,
             toolchain,
-        } => package_request_response(
-            request_id,
-            protocol_version,
-            core_version,
-            operation,
-            project_root,
-            active_environment,
-            config_text,
-            keep_extra,
-            locked,
-            frozen,
-            package_name,
-            package_path,
-            package_version,
-            development,
-            target,
-            toolchain,
-        ),
+        } => with_locale(request_id.clone(), locale, || {
+            package_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                operation,
+                project_root,
+                active_environment,
+                config_text,
+                keep_extra,
+                locked,
+                frozen,
+                package_name,
+                package_path,
+                package_version,
+                development,
+                target,
+                toolchain,
+            )
+        }),
         ProtocolRequest::Cancel {
             request_id,
             protocol_version,
@@ -572,7 +587,7 @@ fn session_worker_response(
             optimization,
             source,
             options,
-        } => with_run_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale, || {
             run_request_response_with_driver(
                 request_id,
                 protocol_version,
@@ -608,7 +623,7 @@ pub(super) fn worker_response(
             optimization,
             source,
             options,
-        } => with_run_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale, || {
             run_request_response(
                 request_id,
                 protocol_version,
@@ -627,27 +642,31 @@ pub(super) fn worker_response(
             core_version,
             language_version,
             runtime_version: _,
+            locale,
             target,
             optimization,
             cases,
             options,
-        } => test_request_response(
-            request_id,
-            protocol_version,
-            core_version,
-            language_version,
-            target,
-            optimization,
-            cases,
-            options,
-            token,
-        ),
+        } => with_locale(request_id.clone(), locale, || {
+            test_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                language_version,
+                target,
+                optimization,
+                cases,
+                options,
+                token,
+            )
+        }),
         ProtocolRequest::Build {
             request_id,
             protocol_version,
             core_version,
             language_version,
             runtime_version: _,
+            locale,
             target,
             optimization,
             source,
@@ -655,20 +674,22 @@ pub(super) fn worker_response(
             llvm_ir_output,
             toolchain,
             config_text,
-        } => build_request_response(
-            request_id,
-            protocol_version,
-            core_version,
-            language_version,
-            target,
-            optimization,
-            source,
-            output,
-            llvm_ir_output,
-            toolchain,
-            config_text,
-            &token,
-        ),
+        } => with_locale(request_id.clone(), locale, || {
+            build_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                language_version,
+                target,
+                optimization,
+                source,
+                output,
+                llvm_ir_output,
+                toolchain,
+                config_text,
+                &token,
+            )
+        }),
         request @ (ProtocolRequest::Environment { .. }
         | ProtocolRequest::Package { .. }
         | ProtocolRequest::ReplPackages { .. }) => dispatch(request),
@@ -687,13 +708,16 @@ fn spawn_session_worker<W: Write + Send + 'static>(
         let mut fingerprint = None;
         while let Ok(SessionRunJob { request, token }) = receiver.recv() {
             let request_id = request_id_for(&request).expect("会话请求必须是 run");
+            let locale = request_locale(&request);
             let response = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 session_worker_response(request, token, &mut driver, &mut fingerprint)
             }))
             .unwrap_or_else(|_| {
                 driver.reset_session();
                 fingerprint = None;
-                core_crash_response(Some(request_id.clone()))
+                with_locale(request_id.clone(), locale, || {
+                    core_crash_response(Some(request_id.clone()))
+                })
             });
             if let Ok(mut map) = cancellations.lock() {
                 map.remove(&request_id);
@@ -916,6 +940,7 @@ fn spawn_worker<W: Write + Send + 'static>(
     workers: &mut Vec<JoinHandle<()>>,
 ) {
     let request_id = request_id_for(&request).expect("run/test/build request id");
+    let locale = request_locale(&request);
     let token = CancellationToken::new();
     if let Ok(mut map) = cancellations.lock() {
         map.insert(request_id.clone(), token.clone());
@@ -926,7 +951,11 @@ fn spawn_worker<W: Write + Send + 'static>(
         let response = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             worker_response(request, token)
         }))
-        .unwrap_or_else(|_| core_crash_response(Some(request_id.clone())));
+        .unwrap_or_else(|_| {
+            with_locale(request_id.clone(), locale, || {
+                core_crash_response(Some(request_id.clone()))
+            })
+        });
         if let Ok(mut map) = cancellations_clone.lock() {
             map.remove(&request_id);
         }

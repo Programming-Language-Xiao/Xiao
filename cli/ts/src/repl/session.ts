@@ -98,7 +98,7 @@ async function runSingleLineReplLoop(context: ReplContext): Promise<number> {
       if (next.value.trim().length > 0) {
         try {
           const client = context.protocolClient!;
-          const packages = await client.replPackages(env.XIAO_ACTIVE_ENV ?? null);
+          const packages = await client.replPackages(env.XIAO_ACTIVE_ENV ?? null, null, context.locale?.tag);
           if (packages.response.type === "error") {
             const packageError = renderProtocolResponse(packages.response, {
               color: context.color, isTTY: context.isTTY,

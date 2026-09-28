@@ -49,6 +49,7 @@ export async function executePackageCommand(
   const request: PackageRequest = {
     type: "package", request_id: `package-${crypto.randomUUID()}`,
     protocol_version: PROTOCOL_VERSION, core_version: CORE_VERSION,
+    ...(context.locale === undefined ? {} : { locale: context.locale.tag }),
     operation: command.kind, project_root: projectRoot,
     active_environment: (context.env ?? process.env).XIAO_ACTIVE_ENV ?? null,
     config_text: configText, keep_extra: command.kind === "sync" && command.keepExtra,

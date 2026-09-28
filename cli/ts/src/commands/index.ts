@@ -100,6 +100,7 @@ async function executeVenv(
       executablePath: context.executablePath,
       spawnProcess: context.spawnProcess,
       toolchain: context.environmentToolchain,
+      locale: context.locale?.tag,
       signal: context.signal,
     });
     await requestActivation(created.path, context.env ?? process.env);
@@ -158,7 +159,13 @@ function executeDeactivate(command: Extract<ParsedCommand, { kind: "deactivate" 
 /** 发现、读取并通过项目测试协议执行所有测试源码。 */
 async function executeTest(command: Extract<ParsedCommand, { kind: "test" }>, context: CommandContext): Promise<RenderedDiagnostic> {
   const cwd = context.cwd ?? process.cwd();
-  const options = renderOptions(command.options, context);
+  let locale: LocaleContext;
+  try {
+    locale = context.locale ?? await resolveEffectiveLocale({ cwd, env: context.env });
+  } catch (error) {
+    return renderCliError(error, renderOptions(command.options, context));
+  }
+  const options = { ...renderOptions(command.options, context), locale: locale.tag };
   try {
     const files = await discoverProjectTests(command.project ?? ".", cwd);
     const sources = [] as Array<{ module: string; path: string; text: string }>;
@@ -186,6 +193,7 @@ async function executeTest(command: Extract<ParsedCommand, { kind: "test" }>, co
     const result = await client.testSources(sources, {
       timeoutMs: command.timeoutMs ?? null,
       signal: context.signal,
+      locale: locale.tag,
     });
     return renderProtocolResponse(result.response, options);
   } catch (error) {
@@ -240,7 +248,13 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
 async function executeBuild(command: Extract<ParsedCommand, { kind: "build" }>, context: CommandContext): Promise<RenderedDiagnostic> {
   const cwd = context.cwd ?? process.cwd();
   const path = resolve(cwd, command.file);
-  const options = renderOptions(command.options, context);
+  let locale: LocaleContext;
+  try {
+    locale = context.locale ?? await resolveEffectiveLocale({ cwd, env: context.env });
+  } catch (error) {
+    return renderCliError(error, renderOptions(command.options, context));
+  }
+  const options = { ...renderOptions(command.options, context), locale: locale.tag };
   let source: string;
   try {
     const bytes = await readFile(path);
@@ -272,6 +286,7 @@ async function executeBuild(command: Extract<ParsedCommand, { kind: "build" }>, 
       toolchain: toolchain.toolchain,
       debug: command.options.debug,
       configText,
+      locale: locale.tag,
       signal: context.signal,
     });
     return renderProtocolResponse(result.response, options);

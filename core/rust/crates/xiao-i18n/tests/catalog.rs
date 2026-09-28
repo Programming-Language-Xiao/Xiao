@@ -32,8 +32,15 @@ fn builtin_catalog_preserves_default_text_and_normalizes_aliases() {
         "request cancelled"
     );
     assert_eq!(LocaleContext::from_config("ZH").expect("zh").tag(), "zh-CN");
-    assert_eq!(LocaleContext::from_config("EN-us").expect("en").tag(), "en-US");
+    assert_eq!(
+        LocaleContext::from_config("EN-us").expect("en").tag(),
+        "en-US"
+    );
     assert_eq!(LocaleContext::new("ZH-cn").tag(), "zh-CN");
+    assert_eq!(
+        Catalog::new("EN-us", Vec::new()).expect("catalog").locale,
+        "en-US"
+    );
     assert_eq!(
         LocaleContext::from_config("xx").expect_err("invalid locale"),
         "X11-CONFIG-002"

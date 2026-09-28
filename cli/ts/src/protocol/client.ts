@@ -88,6 +88,8 @@ export interface SourceBuildOptions {
   diagnostics?: DiagnosticConfig | null;
   /** 已读取的 config.xiao 原文。 */
   configText?: string | null;
+  /** 本次构建的规范语言。 */
+  locale?: "zh-CN" | "en-US";
   /** 取消信号。 */
   signal?: AbortSignal;
 }
@@ -104,6 +106,8 @@ export interface EnvironmentMetadataOptions {
   target?: ProtocolTarget;
   /** 工具链发现结果。 */
   toolchain: ToolchainSpec;
+  /** 环境诊断使用的规范语言。 */
+  locale?: "zh-CN" | "en-US";
   /** 取消信号。 */
   signal?: AbortSignal;
 }
@@ -136,6 +140,8 @@ export interface SourceTestOptions {
   checkpointsEnabled?: boolean;
   /** 两次取消检查点之间执行的指令数。 */
   checkpointInterval?: number;
+  /** 本次测试的规范语言。 */
+  locale?: "zh-CN" | "en-US";
   /** 取消信号。 */
   signal?: AbortSignal;
 }
@@ -239,6 +245,7 @@ export class ProtocolClient {
       core_version: CORE_VERSION,
       language_version: options.languageVersion ?? "0.1.0",
       runtime_version: options.runtimeVersion ?? "0.1.0",
+      ...(options.locale === undefined ? {} : { locale: options.locale }),
       target,
       optimization: { level: 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
       source: { module, path: sourcePath, text: sourceText },
@@ -260,6 +267,7 @@ export class ProtocolClient {
       project_root: options.projectRoot,
       logical_name: options.logicalName ?? null,
       config_text: options.configText ?? null,
+      ...(options.locale === undefined ? {} : { locale: options.locale }),
       target: options.target ?? hostTarget(),
       toolchain: options.toolchain,
     };
@@ -267,8 +275,8 @@ export class ProtocolClient {
   }
 
   /** 只读查询 REPL 包根；旧核心缺少独立能力时返回空视图。 */
-  async replPackages(activeEnvironment?: string | null, modulePath?: string | null): Promise<CoreCallResult> {
-    const cacheKey = `${activeEnvironment ?? "<global>"}\0${modulePath ?? ""}`;
+  async replPackages(activeEnvironment?: string | null, modulePath?: string | null, locale?: "zh-CN" | "en-US"): Promise<CoreCallResult> {
+    const cacheKey = `${activeEnvironment ?? "<global>"}\0${modulePath ?? ""}\0${locale ?? ""}`;
     const cached = this.options.keepAlive === true ? this.replPackageCalls.get(cacheKey) : undefined;
     if (cached !== undefined) return cached;
     const request: ReplPackagesRequest = {
@@ -276,6 +284,7 @@ export class ProtocolClient {
       request_id: requestId("repl-packages"),
       protocol_version: PROTOCOL_VERSION,
       core_version: CORE_VERSION,
+      ...(locale === undefined ? {} : { locale }),
       active_environment: activeEnvironment ?? null,
       module_path: modulePath ?? null,
     };
@@ -301,6 +310,7 @@ export class ProtocolClient {
       core_version: CORE_VERSION,
       language_version: options.languageVersion ?? "0.1.0",
       runtime_version: options.runtimeVersion ?? "0.1.0",
+      ...(options.locale === undefined ? {} : { locale: options.locale }),
       target,
       optimization: { level: 0, debug: false, diagnostics: null },
       cases: sources.map((source) => {

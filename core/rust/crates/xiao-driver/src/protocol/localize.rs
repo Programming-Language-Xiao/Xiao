@@ -4,12 +4,14 @@ use std::collections::BTreeMap;
 
 use xiao_i18n::{Fallback, LocaleContext, MessageParam, MessageRenderer, builtin_renderer};
 
-use super::message::{ProtocolErrorBody, ProtocolParam, ProtocolReport, ProtocolResponse};
-use super::request::ProtocolError;
+use super::message::{
+    ProtocolDiagnostic, ProtocolErrorBody, ProtocolParam, ProtocolReport, ProtocolResponse,
+};
+use super::request::{ProtocolError, ProtocolRequest};
 use super::run::protocol_error_response;
 
 /// 旧客户端没有 locale 时沿用原响应；有效语言只在请求入口创建一次。
-pub(super) fn with_run_locale(
+pub(super) fn with_locale(
     request_id: String,
     locale: Option<String>,
     execute: impl FnOnce() -> ProtocolResponse,
@@ -34,17 +36,20 @@ pub(super) fn with_run_locale(
             report,
             ..
         } => {
-            for diagnostic in diagnostics {
-                diagnostic.text = Some(render_text(
-                    &renderer,
-                    &context,
-                    &diagnostic.message_id,
-                    &diagnostic.params,
-                    &diagnostic.message,
-                ));
-            }
+            localize_diagnostics(diagnostics, &renderer, &context);
             if let Some(report) = report {
                 localize_report(report, &renderer, &context);
+            }
+        }
+        ProtocolResponse::TestResult { tests, .. } => {
+            for test in tests {
+                localize_diagnostics(&mut test.diagnostics, &renderer, &context);
+                if let Some(report) = &mut test.report {
+                    localize_report(report, &renderer, &context);
+                }
+                if let Some(error) = &mut test.error {
+                    localize_error(error, &renderer, &context);
+                }
             }
         }
         ProtocolResponse::Error { error, report, .. } => {
@@ -56,6 +61,36 @@ pub(super) fn with_run_locale(
         _ => {}
     }
     response
+}
+
+pub(super) fn request_locale(request: &ProtocolRequest) -> Option<String> {
+    match request {
+        ProtocolRequest::Run { locale, .. }
+        | ProtocolRequest::Test { locale, .. }
+        | ProtocolRequest::Build { locale, .. }
+        | ProtocolRequest::Environment { locale, .. }
+        | ProtocolRequest::ReplPackages { locale, .. }
+        | ProtocolRequest::Package { locale, .. } => locale.clone(),
+        ProtocolRequest::Hello { .. }
+        | ProtocolRequest::Cancel { .. }
+        | ProtocolRequest::Shutdown { .. } => None,
+    }
+}
+
+fn localize_diagnostics(
+    diagnostics: &mut [ProtocolDiagnostic],
+    renderer: &MessageRenderer,
+    locale: &LocaleContext,
+) {
+    for diagnostic in diagnostics {
+        diagnostic.text = Some(render_text(
+            renderer,
+            locale,
+            &diagnostic.message_id,
+            &diagnostic.params,
+            &diagnostic.message,
+        ));
+    }
 }
 
 fn localize_report(

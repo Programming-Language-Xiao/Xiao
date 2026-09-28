@@ -466,7 +466,7 @@ async function runWithReplPackages(
   source: string,
   signal: AbortSignal,
 ): Promise<CoreCallResult> {
-  const packages = await client.replPackages(context.env.XIAO_ACTIVE_ENV ?? null);
+  const packages = await client.replPackages(context.env.XIAO_ACTIVE_ENV ?? null, null, context.locale?.tag);
   if (packages.response.type === "error") {
     const rendered = renderProtocolResponse(packages.response, {
       color: context.color, isTTY: context.isTTY,

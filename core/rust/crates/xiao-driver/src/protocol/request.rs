@@ -274,6 +274,9 @@ pub enum ProtocolRequest {
         language_version: String,
         /// Runtime 版本提示。
         runtime_version: String,
+        /// 生效语言；旧客户端省略时保持现有默认文本。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        locale: Option<String>,
         /// 目标条件。
         target: ProtocolTarget,
         /// 优化/调试配置。
@@ -295,6 +298,9 @@ pub enum ProtocolRequest {
         language_version: String,
         /// Runtime 版本提示。
         runtime_version: String,
+        /// 生效语言；旧客户端省略时保持现有默认文本。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        locale: Option<String>,
         /// 目标条件。
         target: ProtocolTarget,
         /// 优化/调试配置。
@@ -325,6 +331,9 @@ pub enum ProtocolRequest {
         logical_name: Option<String>,
         /// 可选项目配置源码；仅解析为静态配置树。
         config_text: Option<String>,
+        /// 生效语言；旧客户端省略时保持现有默认文本。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        locale: Option<String>,
         /// 目标平台描述。
         target: ProtocolTarget,
         /// 工具链路径与版本描述。
@@ -338,6 +347,9 @@ pub enum ProtocolRequest {
         protocol_version: u16,
         /// 统一核心版本。
         core_version: u32,
+        /// 生效语言；旧客户端省略时保持现有默认文本。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        locale: Option<String>,
         /// 已激活环境的绝对路径；省略时只查看全局环境。
         #[serde(default)]
         active_environment: Option<String>,
@@ -353,6 +365,9 @@ pub enum ProtocolRequest {
         protocol_version: u16,
         /// 核心版本。
         core_version: u32,
+        /// 生效语言；旧客户端省略时保持现有默认文本。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        locale: Option<String>,
         /// sync 或 install。
         operation: String,
         /// 项目根绝对路径。

@@ -261,8 +261,9 @@ describe("协议客户端", () => {
         return fake as never;
       },
     });
-    await Promise.all([client.replPackages("C:/project/dev"), client.replPackages("C:/project/dev")]);
+    await Promise.all([client.replPackages("C:/project/dev", null, "en-US"), client.replPackages("C:/project/dev", null, "en-US")]);
     expect(fake?.requests.map((value) => value.type)).toEqual(["hello", "repl_packages"]);
+    expect(fake?.requests.find((value) => value.type === "repl_packages")).toMatchObject({ locale: "en-US" });
     await client.shutdown();
   });
 
@@ -364,12 +365,13 @@ describe("协议客户端", () => {
     };
     const result = await client.buildSource("value = 1\n", {
       path: "main.xiao", output: "build/main.exe", llvmIrOutput: "build/main.ll",
-      toolchain, debug: true, configText: "[Runtime]\ncall_stack_depth = 64\n",
+      toolchain, debug: true, configText: "[Runtime]\ncall_stack_depth = 64\n", locale: "en-US",
     });
     expect(result.response.type).toBe("result");
     expect(fake?.requests.find((value) => value.type === "build")).toMatchObject({
       type: "build", source: { path: "main.xiao", text: "value = 1\n" },
       output: "build/main.exe", llvm_ir_output: "build/main.ll", config_text: "[Runtime]\ncall_stack_depth = 64\n",
+      locale: "en-US",
       optimization: { level: 0, debug: true },
     });
   });
@@ -386,11 +388,12 @@ describe("协议客户端", () => {
     const result = await client.testSources([
       { module: "tests/z-last", path: "tests/z-last.xiao", text: "value = 1\n" },
       { module: "tests/a-first", path: "tests/a-first.xiao", text: "value = 1\n" },
-    ], { timeoutMs: 25 });
+    ], { timeoutMs: 25, locale: "en-US" });
     expect(result.response.type).toBe("test_result");
     const request = fake?.requests.find((value) => value.type === "test");
     expect(request).toMatchObject({
       type: "test",
+      locale: "en-US",
       options: { timeout_ms: 25 },
       cases: [
         { module: "tests/z-last", path: "tests/z-last.xiao" },
@@ -412,6 +415,7 @@ describe("协议客户端", () => {
       projectRoot: "C:/project",
       logicalName: "dev",
       configText: "[project]\nname = \"demo\"\n",
+      locale: "en-US",
       target: { triple: "x86_64-pc-windows-msvc", pointer_width: 64, endian: "little", object_format: "coff" },
       toolchain: {
         clang: "clang", llvm_as: null, llc: null, runtime_library: null,
@@ -425,6 +429,7 @@ describe("协议客户端", () => {
       project_root: "C:/project",
       logical_name: "dev",
       config_text: "[project]\nname = \"demo\"\n",
+      locale: "en-US",
     });
     expect((result.response as { metadata: { environment_fingerprint: string } }).metadata.environment_fingerprint).toBe("environment-test");
   });

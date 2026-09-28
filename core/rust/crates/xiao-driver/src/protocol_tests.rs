@@ -112,6 +112,7 @@ fn repl_packages_request_validates_environment_without_renaming_package_operatio
         request_id: "invalid-view".to_owned(),
         protocol_version: PROTOCOL_VERSION,
         core_version: CORE_VERSION,
+        locale: None,
         active_environment: Some("relative/env".to_owned()),
         module_path: None,
     };
@@ -129,6 +130,7 @@ fn environment_request_generates_stable_metadata() {
         request_id: "environment-1".to_owned(),
         protocol_version: PROTOCOL_VERSION,
         core_version: CORE_VERSION,
+        locale: None,
         project_root: "C:/workspace/project".to_owned(),
         logical_name: Some("dev".to_owned()),
         config_text: Some("[project]\nname = \"demo\"\nversion = \"0.1.0\"\n".to_owned()),
@@ -200,6 +202,7 @@ fn package_request_missing_lock_does_not_create_environment() {
         request_id: "package-1".to_owned(),
         protocol_version: PROTOCOL_VERSION,
         core_version: CORE_VERSION,
+        locale: None,
         operation: "sync".to_owned(),
         project_root: project_root.to_string_lossy().into_owned(),
         active_environment: None,
@@ -243,6 +246,7 @@ fn test_request_rejects_empty_case_list() {
         request_id: "test-empty".to_owned(),
         protocol_version: PROTOCOL_VERSION,
         core_version: CORE_VERSION,
+        locale: None,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
         target: ProtocolTarget::host(),
@@ -267,6 +271,7 @@ fn test_request_preserves_case_order_and_aggregates_results() {
         request_id: "test-order".to_owned(),
         protocol_version: PROTOCOL_VERSION,
         core_version: CORE_VERSION,
+        locale: None,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
         target: ProtocolTarget::host(),
@@ -396,8 +401,10 @@ fn run_locale_is_optional_and_does_not_change_machine_error_fields() {
     let legacy = serde_json::to_value(dispatch(legacy)).expect("encode legacy response");
     assert!(legacy["error"].get("text").is_none());
 
-    let mut chinese = serde_json::to_value(dispatch(run(Some("ZH-cn")))).expect("encode zh response");
-    let mut english = serde_json::to_value(dispatch(run(Some("EN-us")))).expect("encode en response");
+    let mut chinese =
+        serde_json::to_value(dispatch(run(Some("ZH-cn")))).expect("encode zh response");
+    let mut english =
+        serde_json::to_value(dispatch(run(Some("EN-us")))).expect("encode en response");
     assert!(
         chinese["error"]["text"]
             .as_str()
@@ -450,7 +457,7 @@ fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
     let ProtocolResponse::Result {
         diagnostics: english,
         ..
-    } = super::localize::with_run_locale(
+    } = super::localize::with_locale(
         "locale-diagnostic".to_owned(),
         Some("en".to_owned()),
         response,
@@ -464,7 +471,7 @@ fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
     let ProtocolResponse::Result {
         diagnostics: chinese,
         ..
-    } = super::localize::with_run_locale(
+    } = super::localize::with_locale(
         "locale-diagnostic".to_owned(),
         Some("zh".to_owned()),
         response,
@@ -483,7 +490,7 @@ fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
             .params
             .insert("path".to_owned(), ProtocolParam::Text("a\nb".to_owned()));
     }
-    let ProtocolResponse::Result { diagnostics, .. } = super::localize::with_run_locale(
+    let ProtocolResponse::Result { diagnostics, .. } = super::localize::with_locale(
         "locale-diagnostic".to_owned(),
         Some("en-US".to_owned()),
         || unknown,
@@ -493,6 +500,50 @@ fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
     assert_eq!(
         diagnostics[0].text.as_deref(),
         Some("xiao.missing.example (path=\"a\\nb\")")
+    );
+}
+
+#[test]
+fn test_locale_renders_diagnostics_inside_each_case() {
+    let response = ProtocolResponse::TestResult {
+        request_id: "locale-test".to_owned(),
+        operation: "test".to_owned(),
+        exit_code: 1,
+        exit_name: "source_rejected".to_owned(),
+        total: 1,
+        passed: 0,
+        failed: 1,
+        tests: vec![ProtocolTestCaseResult {
+            path: "tests/main.xiao".to_owned(),
+            module: "tests/main".to_owned(),
+            exit_code: 1,
+            exit_name: "source_rejected".to_owned(),
+            diagnostics: vec![ProtocolDiagnostic {
+                code: "X11-TEST-001".to_owned(),
+                message_id: "xiao.status.cancelled".to_owned(),
+                severity: "error".to_owned(),
+                span: None,
+                params: Default::default(),
+                message: "请求已取消".to_owned(),
+                text: None,
+            }],
+            report: None,
+            events: vec![],
+            metrics: None,
+            value: None,
+            error: None,
+        }],
+    };
+    let ProtocolResponse::TestResult { tests, .. } =
+        super::localize::with_locale("locale-test".to_owned(), Some("en-US".to_owned()), || {
+            response
+        })
+    else {
+        panic!("expected test response");
+    };
+    assert_eq!(
+        tests[0].diagnostics[0].text.as_deref(),
+        Some("request cancelled")
     );
 }
 
@@ -611,6 +662,7 @@ fn build_request_round_trips_toolchain_and_config_fields() {
         request_id: "build-1".to_owned(),
         protocol_version: PROTOCOL_VERSION,
         core_version: CORE_VERSION,
+        locale: None,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
         target: ProtocolTarget::host(),
@@ -759,6 +811,7 @@ fn debug_build_requires_diagnostics_path() {
         request_id: "debug-build".to_owned(),
         protocol_version: PROTOCOL_VERSION,
         core_version: CORE_VERSION,
+        locale: None,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
         target: ProtocolTarget::host(),

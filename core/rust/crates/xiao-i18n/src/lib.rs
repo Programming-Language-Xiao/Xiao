@@ -77,7 +77,7 @@ pub struct Catalog {
 impl Catalog {
     /// 拒绝重复消息身份、无效格式和不匹配的模板签名。
     pub fn new(locale: impl Into<String>, entries: Vec<MessageTemplate>) -> Result<Self, String> {
-        let locale = locale.into();
+        let locale = normalize_locale_tag(locale.into());
         let mut registered = BTreeMap::new();
         for entry in entries {
             if entry.id.is_empty() || entry.text.is_empty() {
@@ -113,14 +113,9 @@ impl LocaleContext {
     /// 用已规范化的标签建立运行上下文。
     #[must_use]
     pub fn new(locale: impl Into<String>) -> Self {
-        let locale = locale.into();
-        let normalized = locale.to_ascii_lowercase();
-        let locale = match normalized.as_str() {
-            "zh" | "zh-cn" => "zh-CN".to_owned(),
-            "en" | "en-us" => "en-US".to_owned(),
-            _ => locale,
-        };
-        Self { locale }
+        Self {
+            locale: normalize_locale_tag(locale.into()),
+        }
     }
 
     /// 校验配置，只接受首批提供的两种语言及其别名。
@@ -135,6 +130,14 @@ impl LocaleContext {
     #[must_use]
     pub fn tag(&self) -> &str {
         &self.locale
+    }
+}
+
+fn normalize_locale_tag(locale: String) -> String {
+    match locale.to_ascii_lowercase().as_str() {
+        "zh" | "zh-cn" => "zh-CN".to_owned(),
+        "en" | "en-us" => "en-US".to_owned(),
+        _ => locale,
     }
 }
 

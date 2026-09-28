@@ -10,6 +10,7 @@ import { hostTarget } from "../platform/core.ts";
 import { discoverToolchainWithMetadata } from "../platform/toolchain.ts";
 import { createColorizer, stripAnsi, type ColorMode } from "../ui/color.ts";
 import type { ShellName } from "../commands/parser.ts";
+import type { SupportedLocale } from "../config/locale.ts";
 import { fishShellInitScript } from "./fish.ts";
 import { zshShellInitScript } from "./zsh.ts";
 
@@ -49,6 +50,8 @@ export interface EnvironmentCreationOptions {
   toolchain?: ToolchainSpec;
   /** 取消信号。 */
   signal?: AbortSignal;
+  /** 环境诊断使用的规范语言。 */
+  locale?: SupportedLocale;
 }
 
 /** 环境创建结果。 */
@@ -162,12 +165,13 @@ export async function createEnvironment(cwd: string, name?: string, options: Env
       configText,
       target: options.target ?? hostTarget(),
       toolchain,
+      locale: options.locale,
       signal: options.signal,
     });
     if (result.response.type === "error") {
       throw new EnvironmentCommandError(
         result.response.error.code,
-        result.response.error.message,
+        result.response.error.text ?? result.response.error.message,
         result.response.exit_code,
         { response: result.response },
       );

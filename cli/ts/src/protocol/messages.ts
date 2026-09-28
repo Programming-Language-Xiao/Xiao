@@ -88,6 +88,8 @@ export interface TestRequest {
   core_version: number;
   language_version: string;
   runtime_version: string;
+  /** 本次测试的可选语言标签；旧客户端可省略。 */
+  locale?: string | null;
   target: ProtocolTarget;
   optimization: OptimizationConfig;
   cases: SourceIdentity[];
@@ -124,6 +126,8 @@ export interface BuildRequest {
   core_version: number;
   language_version: string;
   runtime_version: string;
+  /** 本次构建的可选语言标签；旧客户端可省略。 */
+  locale?: string | null;
   target: ProtocolTarget;
   optimization: OptimizationConfig;
   source: SourceIdentity;
@@ -143,6 +147,8 @@ export interface EnvironmentRequest {
   project_root: string;
   logical_name: string | null;
   config_text: string | null;
+  /** 环境诊断使用的可选语言标签；旧客户端可省略。 */
+  locale?: string | null;
   target: ProtocolTarget;
   toolchain: ToolchainSpec;
 }
@@ -153,6 +159,8 @@ export interface ReplPackagesRequest {
   request_id: string;
   protocol_version: number;
   core_version: number;
+  /** REPL 包视图诊断使用的可选语言标签；旧客户端可省略。 */
+  locale?: string | null;
   active_environment?: string | null;
   module_path?: string | null;
 }
@@ -163,6 +171,8 @@ export interface PackageRequest {
   request_id: string;
   protocol_version: number;
   core_version: number;
+  /** 包操作诊断使用的可选语言标签；旧客户端可省略。 */
+  locale?: string | null;
   operation: "sync" | "install" | "lock" | "update" | "add" | "remove";
   project_root: string;
   active_environment: string | null;
