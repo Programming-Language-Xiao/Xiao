@@ -114,9 +114,10 @@ impl LocaleContext {
     #[must_use]
     pub fn new(locale: impl Into<String>) -> Self {
         let locale = locale.into();
-        let locale = match locale.as_str() {
-            "zh" => "zh-CN".to_owned(),
-            "en" => "en-US".to_owned(),
+        let normalized = locale.to_ascii_lowercase();
+        let locale = match normalized.as_str() {
+            "zh" | "zh-cn" => "zh-CN".to_owned(),
+            "en" | "en-us" => "en-US".to_owned(),
             _ => locale,
         };
         Self { locale }
@@ -124,8 +125,8 @@ impl LocaleContext {
 
     /// 校验配置，只接受首批提供的两种语言及其别名。
     pub fn from_config(value: &str) -> Result<Self, &'static str> {
-        match value {
-            "zh" | "zh-CN" | "en" | "en-US" => Ok(Self::new(value)),
+        match value.to_ascii_lowercase().as_str() {
+            "zh" | "zh-cn" | "en" | "en-us" => Ok(Self::new(value)),
             _ => Err("X11-CONFIG-002"),
         }
     }

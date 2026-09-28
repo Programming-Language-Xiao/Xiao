@@ -92,8 +92,9 @@ export function normalizeConfigValue(key: SupportedConfigKey, raw: string): bool
     if (raw === "false") return false;
     throw new CliConfigError(CONFIG_ERROR.invalidValue, "CLI.git.summary 只接受 true 或 false", null, { key, value: raw });
   }
-  if (raw === "zh" || raw === "zh-CN") return "zh-CN";
-  if (raw === "en" || raw === "en-US") return "en-US";
+  const normalized = raw.toLocaleLowerCase("en-US");
+  if (normalized === "zh" || normalized === "zh-cn") return "zh-CN";
+  if (normalized === "en" || normalized === "en-us") return "en-US";
   throw new CliConfigError(CONFIG_ERROR.invalidValue, "language.locale 只接受 zh、zh-CN、en 或 en-US", null, { key, value: raw });
 }
 

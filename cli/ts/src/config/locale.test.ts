@@ -15,9 +15,9 @@ describe("11C 生效语言", () => {
     try {
       const options = { cwd, globalPath };
       expect(await resolveEffectiveLocale(options)).toEqual({ tag: "zh-CN", source: "default" });
-      await writeFile(globalPath, '[language]\nlocale = "en"\n');
+      await writeFile(globalPath, '[language]\nlocale = "EN-us"\n');
       expect(await resolveEffectiveLocale(options)).toEqual({ tag: "en-US", source: "global" });
-      await writeFile(join(cwd, "config.xiao"), '[language]\nlocale = "zh"\n');
+      await writeFile(join(cwd, "config.xiao"), '[language]\nlocale = "ZH-cn"\n');
       const context = await resolveEffectiveLocale(options);
       expect(context).toEqual({ tag: "zh-CN", source: "project" });
       expect(Object.isFrozen(context)).toBe(true);

@@ -396,8 +396,8 @@ fn run_locale_is_optional_and_does_not_change_machine_error_fields() {
     let legacy = serde_json::to_value(dispatch(legacy)).expect("encode legacy response");
     assert!(legacy["error"].get("text").is_none());
 
-    let mut chinese = serde_json::to_value(dispatch(run(Some("zh")))).expect("encode zh response");
-    let mut english = serde_json::to_value(dispatch(run(Some("en")))).expect("encode en response");
+    let mut chinese = serde_json::to_value(dispatch(run(Some("ZH-cn")))).expect("encode zh response");
+    let mut english = serde_json::to_value(dispatch(run(Some("EN-us")))).expect("encode en response");
     assert!(
         chinese["error"]["text"]
             .as_str()
