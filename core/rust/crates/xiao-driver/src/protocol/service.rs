@@ -13,6 +13,7 @@ use serde_json::json;
 use super::build;
 use super::config::parse_environment_config;
 use super::frame::{FrameError, decode_frame, read_frame, write_frame};
+use super::localize::with_run_locale;
 use super::mapping::{protocol_error_body, protocol_error_from_error};
 use super::message::{CORE_VERSION, CoreVersions, PROTOCOL_VERSION, ProtocolResponse};
 use super::package_view::repl_packages_response;
@@ -57,21 +58,24 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             core_version,
             language_version,
             runtime_version: _,
+            locale,
             target,
             optimization,
             source,
             options,
-        } => run_request_response(
-            request_id,
-            protocol_version,
-            core_version,
-            language_version,
-            target,
-            optimization,
-            source,
-            options,
-            CancellationToken::new(),
-        ),
+        } => with_run_locale(request_id.clone(), locale, || {
+            run_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                language_version,
+                target,
+                optimization,
+                source,
+                options,
+                CancellationToken::new(),
+            )
+        }),
         ProtocolRequest::Test {
             request_id,
             protocol_version,
@@ -563,23 +567,26 @@ fn session_worker_response(
             core_version,
             language_version,
             runtime_version: _,
+            locale,
             target,
             optimization,
             source,
             options,
-        } => run_request_response_with_driver(
-            request_id,
-            protocol_version,
-            core_version,
-            language_version,
-            target,
-            optimization,
-            source,
-            options,
-            token,
-            driver,
-            fingerprint,
-        ),
+        } => with_run_locale(request_id.clone(), locale, || {
+            run_request_response_with_driver(
+                request_id,
+                protocol_version,
+                core_version,
+                language_version,
+                target,
+                optimization,
+                source,
+                options,
+                token,
+                driver,
+                fingerprint,
+            )
+        }),
         _ => unreachable!("会话线程只接收 run 请求"),
     }
 }
@@ -596,21 +603,24 @@ pub(super) fn worker_response(
             core_version,
             language_version,
             runtime_version: _,
+            locale,
             target,
             optimization,
             source,
             options,
-        } => run_request_response(
-            request_id,
-            protocol_version,
-            core_version,
-            language_version,
-            target,
-            optimization,
-            source,
-            options,
-            token,
-        ),
+        } => with_run_locale(request_id.clone(), locale, || {
+            run_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                language_version,
+                target,
+                optimization,
+                source,
+                options,
+                token,
+            )
+        }),
         ProtocolRequest::Test {
             request_id,
             protocol_version,

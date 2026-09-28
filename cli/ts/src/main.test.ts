@@ -102,6 +102,46 @@ class FakeCore extends EventEmitter {
 }
 
 describe("CLI 入口", () => {
+  test("运行入口仅以项目优先的规范语言发请求，配置无效时不启动核心", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-cli-run-locale-"));
+    const globalPath = join(directory, "global.xiao");
+    const projectPath = join(directory, "config.xiao");
+    const requests: Record<string, unknown>[] = [];
+    const stdout = new PassThrough();
+    const options = {
+      cwd: directory, stdout, stderr: new PassThrough(),
+      env: { XIAO_GLOBAL_CONFIG: globalPath, NO_COLOR: "1" },
+      corePath: process.execPath,
+      spawnProcess: () => new FakeCore(requests) as never,
+    };
+    try {
+      await writeFile(join(directory, "main.xiao"), "value = 1\n");
+      await writeFile(globalPath, '[language]\nlocale = "en"\n');
+      const helpOutput = new PassThrough();
+      let help = "";
+      helpOutput.on("data", (chunk: Buffer) => { help += chunk.toString(); });
+      expect(await runCli(["--help"], { ...options, stdout: helpOutput })).toBe(0);
+      expect(help).toContain("Usage:");
+      expect(help).toContain("xiao --inLF [file.xiao]");
+      expect(help).not.toContain("用法：");
+      expect(await runCli(["run", "main.xiao"], options)).toBe(0);
+      await writeFile(projectPath, '[language]\nlocale = "zh"\n');
+      expect(await runCli(["run", "main.xiao"], options)).toBe(0);
+      expect(requests.filter((request) => request.type === "run").map((request) => request.locale)).toEqual(["en-US", "zh-CN"]);
+      await writeFile(projectPath, "[language]\nlocale = 12\n");
+      const invalidOutput = new PassThrough();
+      let printed = "";
+      invalidOutput.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
+      expect(await runCli(["--json", "run", "main.xiao"], { ...options, stdout: invalidOutput })).toBe(78);
+      expect(JSON.parse(printed)).toMatchObject({
+        code: "X11-CONFIG-002", details: { path: projectPath, key: "language.locale", scope: "project" },
+      });
+      expect(requests.filter((request) => request.type === "run")).toHaveLength(2);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   test("无参数进入单行会话：执行、显示错误后继续，EOF 正常退出", async () => {
     const directory = await mkdtemp(join(tmpdir(), "xiao-cli-repl-"));
     const stdout = new PassThrough();
@@ -125,6 +165,7 @@ describe("CLI 入口", () => {
       expect(output).toContain("2\n");
       expect(errors).toContain("X11-REPL-TEST-001: 源码错误");
       expect(requests.map((request) => (request.source as { text: string }).text)).toEqual(["1", "bad", "2"]);
+      expect(requests.map((request) => request.locale)).toEqual(["zh-CN", "zh-CN", "zh-CN"]);
       expect(requests.every((request) => (request.optimization as { level: number }).level === 0)).toBe(true);
     } finally {
       await rm(directory, { recursive: true, force: true });
@@ -220,7 +261,7 @@ describe("CLI 入口", () => {
       input.end();
       expect(await session).toBe(0);
       expect(await readFile(join(directory, "new.xiao"), "utf8")).toBe("code");
-      expect(printed).not.toContain("Enter the save location");
+      expect(printed).not.toContain("输入保存位置");
     } finally {
       await rm(directory, { recursive: true, force: true });
     }

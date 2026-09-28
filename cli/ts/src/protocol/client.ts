@@ -60,6 +60,8 @@ export interface SourceRunOptions {
   diagnostics?: DiagnosticConfig | null;
   /** 取消信号。 */
   signal?: AbortSignal;
+  /** 运行实例的规范语言；旧核心可忽略此字段。 */
+  locale?: "zh-CN" | "en-US";
 }
 
 /** 源码原生构建请求的便捷参数。 */
@@ -210,6 +212,7 @@ export class ProtocolClient {
       core_version: CORE_VERSION,
       language_version: options.languageVersion ?? "0.1.0",
       runtime_version: options.runtimeVersion ?? "0.1.0",
+      ...(options.locale === undefined ? {} : { locale: options.locale }),
       target,
       optimization: { level: 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
       source: { module, path: sourcePath, text: sourceText },

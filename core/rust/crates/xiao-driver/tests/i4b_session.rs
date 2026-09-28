@@ -178,6 +178,7 @@ fn run_request(request_id: &str, path: &Path, source: &str) -> ProtocolRequest {
         core_version: CORE_VERSION,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
+        locale: None,
         target: ProtocolTarget::host(),
         optimization: Default::default(),
         source: SourceIdentity {

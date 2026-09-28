@@ -56,6 +56,7 @@ pub fn protocol_diagnostic(diagnostic: &Diagnostic) -> ProtocolDiagnostic {
         span: protocol_span(diagnostic.span()),
         params: protocol_params(diagnostic.params()),
         message: diagnostic.message().to_owned(),
+        text: None,
     }
 }
 
@@ -92,6 +93,7 @@ pub(super) fn protocol_report(report: &ReportRecord) -> ProtocolReport {
         message_id: report.message_id.clone(),
         params: protocol_params(&report.params),
         message: report.message.clone(),
+        text: None,
         location: protocol_span(report.location),
         context: protocol_params(&report.context),
         stack: report.stack.iter().map(protocol_stack_frame).collect(),
@@ -272,6 +274,7 @@ pub(super) fn protocol_error_body(
         code: code.into(),
         message_id: message_id.into(),
         message: message.into(),
+        text: None,
         phase,
         next_step,
         details,

@@ -61,14 +61,14 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
   for (const diagnostic of diagnostics) {
     if (!isRecord(diagnostic)) continue;
     const code = typeof diagnostic.code === "string" ? diagnostic.code : "X11-DIAGNOSTIC-001";
-    const message = typeof diagnostic.message === "string" ? diagnostic.message : code;
+    const message = protocolMessage(diagnostic, options.locale, code);
     lines.push(colorizer.color(diagnosticSeverity(diagnostic), `${code}: ${message}`));
   }
   if (response.type === "error") {
-    lines.push(renderProtocolError(response.error, colorizer));
+    lines.push(renderProtocolError(response.error, colorizer, options.locale));
   } else if (response.type === "result" && response.report !== null && isRecord(response.report)) {
     const code = typeof response.report.code === "string" ? response.report.code : response.exit_name;
-    const message = typeof response.report.message === "string" ? response.report.message : code;
+    const message = protocolMessage(response.report, options.locale, code);
     lines.push(colorizer.color("error", `${code}: ${message}`));
   }
   if (response.type === "result" && response.metrics !== null && isRecord(response.metrics) && response.exit_code === 0) {
@@ -114,13 +114,13 @@ function renderTestResult(
     for (const diagnostic of test.diagnostics) {
       if (!isRecord(diagnostic)) continue;
       const code = typeof diagnostic.code === "string" ? diagnostic.code : "X11-DIAGNOSTIC-001";
-      const message = typeof diagnostic.message === "string" ? diagnostic.message : code;
+      const message = protocolMessage(diagnostic, options.locale, code);
       lines.push(`  ${colorizer.color(diagnosticSeverity(diagnostic), `${code}: ${message}`)}`);
     }
-    if (test.error !== null) lines.push(`  ${renderProtocolError(test.error, colorizer)}`);
+    if (test.error !== null) lines.push(`  ${renderProtocolError(test.error, colorizer, options.locale)}`);
     if (test.report !== null && isRecord(test.report)) {
       const code = typeof test.report.code === "string" ? test.report.code : test.exit_name;
-      const message = typeof test.report.message === "string" ? test.report.message : code;
+      const message = protocolMessage(test.report, options.locale, code);
       lines.push(`  ${colorizer.color("error", `${code}: ${message}`)}`);
     }
   }
@@ -197,12 +197,23 @@ function normalizeCliError(error: unknown): NormalizedCliError {
 }
 
 /** 渲染协议错误体；状态判断已经在调用方读取结构化字段完成。 */
-function renderProtocolError(error: unknown, colorizer: Colorizer): string {
+function renderProtocolError(error: unknown, colorizer: Colorizer, locale?: "zh-CN" | "en-US"): string {
   if (!isRecord(error)) return colorizer.color("error", "X11-PROTOCOL-002: 协议错误响应无效");
   const code = typeof error.code === "string" ? error.code : "X11-PROTOCOL-002";
-  const message = typeof error.message === "string" ? error.message : code;
-  const nextStep = typeof error.next_step === "string" ? `（${error.next_step}）` : "";
+  const message = protocolMessage(error, locale, code);
+  const nextStep = locale !== "en-US" && typeof error.next_step === "string" ? `（${error.next_step}）` : "";
   return colorizer.color("error", `${code}: ${message}${nextStep}`);
+}
+
+/** Rust 已渲染的文本优先；旧核心在已选语言时退回稳定消息身份和参数。 */
+function protocolMessage(value: Record<string, unknown>, locale: "zh-CN" | "en-US" | undefined, code: string): string {
+  if (typeof value.text === "string" && value.text.length > 0) return value.text;
+  if (locale !== undefined && typeof value.message_id === "string") {
+    const params = isRecord(value.params) ? Object.entries(value.params).sort(([left], [right]) => left.localeCompare(right))
+      .map(([name, param]) => `${name}=${JSON.stringify(isRecord(param) && "value" in param ? param.value : param)}`) : [];
+    return `${value.message_id}${params.length === 0 ? "" : ` (${params.join(", ")})`}`;
+  }
+  return typeof value.message === "string" ? value.message : code;
 }
 
 /** 把协议诊断级别映射为少量语义色角色。 */

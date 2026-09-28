@@ -4,6 +4,8 @@ import { peakLiveBytes, type RenderedDiagnostic } from "../diagnostics/render.ts
 import type { ProtocolResponse } from "../protocol/messages.ts";
 import type { TerminalView } from "../ui/terminal.ts";
 import { separator } from "./confirm.ts";
+import { cliMessage } from "../i18n.ts";
+import type { SupportedLocale } from "../config/locale.ts";
 
 /** 一次完整执行交给输出段的显示数据。 */
 export interface RunDisplay {
@@ -35,6 +37,7 @@ export async function finishOutput(
   error: NodeJS.WritableStream,
   write: (stream: NodeJS.WritableStream, text: string) => Promise<void>,
   display: RunDisplay,
+  locale?: SupportedLocale,
 ): Promise<void> {
   const value = display.response?.type === "result" && display.response.exit_code === 0
     ? display.response.value : null;
@@ -44,16 +47,16 @@ export async function finishOutput(
   }
   await write(output, terminalLines(display.rendered.stdout));
   await write(error, terminalLines(display.rendered.stderr + display.coreStderr));
-  await write(output, `${separator(view)}\r\n${runSummary(display.elapsedMs, display.response)}\r\n`);
+  await write(output, `${separator(view)}\r\n${runSummary(display.elapsedMs, display.response, locale)}\r\n`);
   await write(output, "\r\n".repeat(Math.max(1, Math.floor(view.height))));
 }
 
 /** 格式化本次耗时和可选 Runtime 峰值对象字节。 */
-export function runSummary(elapsedMs: number, response: ProtocolResponse | null): string {
+export function runSummary(elapsedMs: number, response: ProtocolResponse | null, locale?: SupportedLocale): string {
   const seconds = Math.max(0, elapsedMs) / 1000;
   const bytes = peakLiveBytes(response);
   const memory = bytes === null ? "?MB" : `${(bytes / 1_000_000).toFixed(2)}MB`;
-  return `time:${seconds.toFixed(4)} memory:${memory}`;
+  return `${cliMessage("xiao.cli.repl.summary.time", locale)}:${seconds.toFixed(4)} ${cliMessage("xiao.cli.repl.summary.memory", locale)}:${memory}`;
 }
 
 /** 只读取结构化对象字段，不根据本地化文本判断执行状态。 */

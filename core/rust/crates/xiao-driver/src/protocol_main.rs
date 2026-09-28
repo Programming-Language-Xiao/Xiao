@@ -37,6 +37,7 @@ fn protocol_error_response(error: &FrameError) -> ProtocolResponse {
             code: error.code().to_owned(),
             message_id: "x11.protocol.frame".to_owned(),
             message: error.to_string(),
+            text: None,
             phase: Some("framing".to_owned()),
             next_step: Some("检查长度字段、UTF-8 和 JSON 后重试".to_owned()),
             details: std::collections::BTreeMap::new(),

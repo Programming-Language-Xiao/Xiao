@@ -40,3 +40,9 @@ test("分隔线使用灰色，独立提示符使用 #DCDCAD，去色后布局不
   expect(stripAnsi(frame)).toBe(renderConfirmation(view(80)));
   expect(stripAnsi(separator(view(80, true)))).toBe("─".repeat(80));
 });
+
+test("中文确认标题不改变三行宽度", () => {
+  const frame = renderConfirmation(view(40), "zh-CN").split("\r\n");
+  expect(frame[0]).toContain("按 Enter 确认并运行");
+  expect(frame.map(displayWidth)).toEqual([40, 1, 40]);
+});

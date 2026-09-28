@@ -84,7 +84,7 @@ test("单行 !panel! 临时接管 raw mode，Esc 后回单行且不执行控制�
   expect(await session).toBe(0);
   expect(input.isRaw).toBe(false);
   expect(errors).toBe("");
-  expect(printed).toContain("Command Panel");
+  expect(printed).toContain("命令面板");
   expect(printed.match(/Xiao \(c\) XiaoCZX/gu)?.length).toBe(1);
   expect(printed.match(/\[X>/gu)?.length).toBeGreaterThanOrEqual(2);
 });
@@ -106,7 +106,7 @@ test("单行面板识别 Kitty 面板键关闭后回到 readline", async () => {
   input.end();
   expect(await session).toBe(0);
   expect(input.isRaw).toBe(false);
-  expect(printed.match(/Command Panel/gu)?.length).toBeGreaterThanOrEqual(1);
+  expect(printed.match(/命令面板/gu)?.length).toBeGreaterThanOrEqual(1);
   expect(printed.match(/Xiao \(c\) XiaoCZX/gu)?.length).toBe(1);
 });
 
@@ -141,7 +141,7 @@ test("传统 Ctrl+P 不被猜成单行面板入口", async () => {
   await new Promise((resolve) => setTimeout(resolve, 0));
   input.write(Buffer.from("\u0010"));
   await new Promise((resolve) => setTimeout(resolve, 5));
-  expect(printed).not.toContain("Command Panel");
+  expect(printed).not.toContain("命令面板");
   controller.abort();
   expect(await session).toBe(130);
   input.end();

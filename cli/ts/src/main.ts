@@ -3,6 +3,7 @@
 import { parseArguments, CliArgumentError } from "./commands/parser.ts";
 import { executeCommand } from "./commands/index.ts";
 import { renderCliError } from "./diagnostics/render.ts";
+import { resolveEffectiveLocale } from "./config/locale.ts";
 import { runSingleLineRepl } from "./repl/session.ts";
 import { ProtocolClient, type SpawnCoreProcess } from "./protocol/client.ts";
 import type { GitProbeOptions } from "./ui/git.ts";
@@ -63,18 +64,22 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
     const command = parseArguments(argv);
     listenForInterrupt = controller !== undefined && command.kind !== "repl";
     if (listenForInterrupt) process.once("SIGINT", onInterrupt);
+    if (command.kind === "repl" && command.options.json) {
+      throw new CliArgumentError(command.multiline ? "多行交互会话不支持 --json" : "交互会话不支持 --json");
+    }
+    const locale = command.kind === "version" || command.kind === "config"
+      ? undefined : await resolveEffectiveLocale({ cwd: context.cwd, env });
     if (command.kind === "repl" && !command.multiline) {
-      if (command.options.json) throw new CliArgumentError("交互会话不支持 --json");
       return await runSingleLineRepl({
         input: io.stdin ?? process.stdin, output: stdout, error: stderr, write: writeSafely,
         cwd: context.cwd, env, isTTY: context.isTTY, color: command.options.color,
         debug: command.options.debug, version: cliPackage.version,
         corePath: context.corePath, spawnProcess: context.spawnProcess,
         executablePath: context.executablePath, signal, gitRunStatus: io.gitRunStatus,
+        locale,
       });
     }
     if (command.kind === "repl" && command.multiline) {
-      if (command.options.json) throw new CliArgumentError("多行交互会话不支持 --json");
       const protocolClient = new ProtocolClient({
         cwd: context.cwd, env, overridePath: context.corePath,
         spawnProcess: context.spawnProcess, executablePath: context.executablePath, keepAlive: true,
@@ -86,6 +91,7 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
           corePath: context.corePath, spawnProcess: context.spawnProcess,
           executablePath: context.executablePath, debug: command.options.debug,
           file: command.file, protocolClient,
+          locale,
         });
         if (result.exitCode === 130) {
           return await runSingleLineRepl({
@@ -95,6 +101,7 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
             corePath: context.corePath, spawnProcess: context.spawnProcess,
             executablePath: context.executablePath, signal, gitRunStatus: io.gitRunStatus,
             showBanner: false, protocolClient,
+            locale,
           });
         }
         return result.exitCode;
@@ -108,7 +115,7 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
         await protocolClient.shutdown();
       }
     }
-    const result = await executeCommand(command, { ...context, signal });
+    const result = await executeCommand(command, { ...context, signal, locale });
     await writeSafely(stdout, result.stdout);
     await writeSafely(stderr, result.stderr);
     return result.exitCode;

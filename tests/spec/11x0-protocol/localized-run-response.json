@@ -1,0 +1,23 @@
+{
+  "type": "result",
+  "request_id": "fixture-locale-1",
+  "operation": "run",
+  "exit_code": 1,
+  "exit_name": "source_rejected",
+  "diagnostics": [
+    {
+      "code": "X11-TEST-001",
+      "message_id": "xiao.status.cancelled",
+      "severity": "error",
+      "span": { "start": 0, "end": 5 },
+      "params": {},
+      "message": "请求已取消",
+      "text": "request cancelled"
+    }
+  ],
+  "report": null,
+  "events": [],
+  "metrics": null,
+  "value": null,
+  "artifact": null
+}

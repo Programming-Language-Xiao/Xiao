@@ -29,6 +29,14 @@ function writeSafely(stream: NodeJS.WritableStream, text: string): Promise<void>
   return new Promise((resolve, reject) => stream.write(text, (error?: Error | null) => error ? reject(error) : resolve()));
 }
 
+async function waitFor(condition: () => boolean | Promise<boolean>): Promise<void> {
+  const deadline = Date.now() + 2_000;
+  while (!await condition()) {
+    if (Date.now() >= deadline) throw new Error("多行会话未在期限内完成界面转换");
+    await new Promise((resolve) => setTimeout(resolve, 2));
+  }
+}
+
 test("raw mode 保留真实多行、剔除 !outLF!，Ctrl+C 恢复状态并返回新提示符码", async () => {
   const input = rawInput();
   const output = new PassThrough();
@@ -99,20 +107,20 @@ test("未绑定保存剔除控制行，建立绑定后再次保存直接写回",
       input, output, error: new PassThrough(), write: writeSafely,
       env: { NO_COLOR: "1" }, isTTY: true, color: "never", cwd: directory,
     });
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitFor(() => input.isRaw && input.listenerCount("data") > 0);
     input.write(Buffer.from("code\r!save!\r"));
-    await new Promise((resolve) => setTimeout(resolve, 5));
+    await waitFor(() => printed.includes("输入保存位置"));
     input.write(Buffer.from("main.xiao\r"));
-    await new Promise((resolve) => setTimeout(resolve, 15));
+    await waitFor(async () => await readFile(join(directory, "main.xiao"), "utf8").catch(() => null) === "code");
+    await waitFor(() => printed.lastIndexOf("    1|code") > printed.lastIndexOf("输入保存位置"));
     input.write(Buffer.from("\r!save!\r"));
-    await new Promise((resolve) => setTimeout(resolve, 15));
     input.end();
     const result = await session;
     expect(result.state.lines).toEqual(["code"]);
     expect(result.state.filePath).toBe(join(directory, "main.xiao"));
     expect(result.commands).toEqual(["save", "save"]);
     expect(await readFile(join(directory, "main.xiao"), "utf8")).toBe("code");
-    expect(printed).toContain("Enter the save location");
+    expect(printed).toContain("输入保存位置");
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
@@ -131,17 +139,17 @@ test("首次保存到已有 .xiao 文件直接覆盖且不进入运行确认", a
       input, output, error: new PassThrough(), write: writeSafely,
       env: {}, isTTY: true, color: "never", cwd: directory,
     });
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitFor(() => input.isRaw && input.listenerCount("data") > 0);
     input.write(Buffer.from("new\r!save!\r"));
-    await new Promise((resolve) => setTimeout(resolve, 5));
+    await waitFor(() => printed.includes("输入保存位置"));
     input.write(Buffer.from("main.xiao\r"));
-    await new Promise((resolve) => setTimeout(resolve, 15));
+    await waitFor(async () => await readFile(path, "utf8").catch(() => null) === "new");
     input.end();
     const result = await session;
     expect(result.state.filePath).toBe(path);
     expect(await readFile(path, "utf8")).toBe("new");
-    expect(printed).toContain("Enter the save location");
-    expect(printed).not.toContain("Press Enter to confirm and run");
+    expect(printed).toContain("输入保存位置");
+    expect(printed).not.toContain("按 Enter 确认并运行");
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
@@ -151,15 +159,18 @@ test("未绑定缓冲区的 Kitty Ctrl+Shift+S 进入路径保存", async () => 
   const directory = await mkdtemp(join(tmpdir(), "xiao-repl-kitty-save-"));
   try {
     const input = rawInput();
+    const output = new PassThrough();
+    let printed = "";
+    output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
     const session = runMultilineSession({
-      input, output: new PassThrough(), error: new PassThrough(), write: writeSafely,
+      input, output, error: new PassThrough(), write: writeSafely,
       env: {}, isTTY: true, color: "never", cwd: directory,
     });
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitFor(() => input.isRaw && input.listenerCount("data") > 0);
     input.write(Buffer.from("code\u001b[?0u\u001b[?28u\u001b[115;6u"));
-    await new Promise((resolve) => setTimeout(resolve, 5));
+    await waitFor(() => printed.includes("输入保存位置"));
     input.write(Buffer.from("main.xiao\r"));
-    await new Promise((resolve) => setTimeout(resolve, 15));
+    await waitFor(async () => await readFile(join(directory, "main.xiao"), "utf8").catch(() => null) === "code");
     input.end();
     const result = await session;
     expect(result.state.filePath).toBe(join(directory, "main.xiao"));
@@ -218,8 +229,8 @@ test("!panel! 剔除控制行，面板输入与回车不进入源码", async () 
   expect(result.state.lines).toEqual(["code"]);
   expect(result.state.cursor).toEqual({ line: 0, column: 4 });
   expect(result.commands).toEqual(["panel"]);
-  expect(printed).toContain("Command Panel");
-  expect(printed).not.toContain("Press Enter to confirm and run");
+  expect(printed).toContain("命令面板");
+  expect(printed).not.toContain("按 Enter 确认并运行");
 });
 
 test("同一输入块里的面板键不能在界面出现前立刻关闭面板", async () => {
@@ -284,7 +295,7 @@ test("临时 raw 面板从独立入口打开，Esc 结束后恢复终端", async
   expect(result.exitCode).toBe(0);
   expect(result.state.lines).toEqual([""]);
   expect(input.isRaw).toBe(false);
-  expect(printed).toContain("Command Panel");
+  expect(printed).toContain("命令面板");
   input.end();
 });
 
@@ -309,7 +320,7 @@ test("已载入文件用 Kitty 保存键直接写回，不进入路径界面", a
     expect(result.state.filePath).toBe(path);
     expect(result.state.lines).toEqual(["Xold", "second"]);
     expect(await readFile(path, "utf8")).toBe("Xold\nsecond");
-    expect(printed).not.toContain("Enter the save location");
+    expect(printed).not.toContain("输入保存位置");
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
@@ -429,11 +440,14 @@ test("首次保存失败仍未绑定，保留路径输入供修复后重试", as
   try {
     let fail = true;
     const input = rawInput();
+    const output = new PassThrough();
+    let printed = "";
+    output.on("data", (chunk: Buffer) => { printed += chunk.toString(); });
     const error = new PassThrough();
     let errors = "";
     error.on("data", (chunk: Buffer) => { errors += chunk.toString(); });
     const session = runMultilineSession({
-      input, output: new PassThrough(), error, write: writeSafely,
+      input, output, error, write: writeSafely,
       env: {}, isTTY: true, color: "never", cwd: directory,
       fileSystem: {
         ...nativeReplFileSystem,
@@ -446,13 +460,13 @@ test("首次保存失败仍未绑定，保留路径输入供修复后重试", as
         },
       },
     });
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitFor(() => input.isRaw && input.listenerCount("data") > 0);
     input.write(Buffer.from("code\r!save!\r"));
-    await new Promise((resolve) => setTimeout(resolve, 5));
+    await waitFor(() => printed.includes("输入保存位置"));
     input.write(Buffer.from("main.xiao\r"));
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await waitFor(() => printed.includes("X11-CLI-SAVE-002"));
     input.write(Buffer.from("\r"));
-    await new Promise((resolve) => setTimeout(resolve, 15));
+    await waitFor(async () => await readFile(join(directory, "main.xiao"), "utf8").catch(() => null) === "code");
     input.end();
     const result = await session;
     expect(errors).toContain("X11-CLI-SAVE-002");
@@ -532,7 +546,7 @@ test("确认态忽略源码字符，Esc 无损取消且不执行", async () => {
   const result = await session;
   expect(called).toBe(false);
   expect(result.state.lines).toEqual(["code"]);
-  expect(printed).toContain("Press Enter to confirm and run");
+  expect(printed).toContain("按 Enter 确认并运行");
 });
 
 test("同一输入块中的第二个 Enter 不得绕过可见确认态", async () => {
@@ -552,7 +566,7 @@ test("同一输入块中的第二个 Enter 不得绕过可见确认态", async (
   const result = await session;
   expect(called).toBe(false);
   expect(result.state.lines).toEqual(["code"]);
-  expect(printed).toContain("Press Enter to confirm and run");
+  expect(printed).toContain("按 Enter 确认并运行");
 });
 
 test("确认后调用完整源码并恢复覆盖模式、剪贴板和光标", async () => {
@@ -589,7 +603,7 @@ test("确认后调用完整源码并恢复覆盖模式、剪贴板和光标", as
   expect(result.state.overwrite).toBe(true);
   expect(result.state.killBuffer).toBe("second");
   expect(printed).toContain("42\r\n");
-  expect(printed).toContain("memory:2.00MB\r\n");
+  expect(printed).toContain("内存:2.00MB\r\n");
   expect(input.isRaw).toBe(false);
 });
 
@@ -657,7 +671,7 @@ test("确认态尺寸变化重画标题，输出期间不重排历史内容", as
   await new Promise((resolve) => setTimeout(resolve, 15));
   input.end();
   await session;
-  expect(printed).toContain("─ Press Enter to confirm");
+  expect(printed).toContain("─ 按 Enter 确认并运行");
   expect(printed).toContain("─".repeat(40) + "\r\n");
 });
 
@@ -683,7 +697,7 @@ test("核心执行失败仍结束输出段并保留编辑状态", async () => {
   expect(result.state.lines).toEqual(["code"]);
   expect(result.state.cursor).toEqual({ line: 0, column: 4 });
   expect(errors).toContain("X11-CLI-001: 核心不可用\r\n");
-  expect(printed).toContain("memory:?MB\r\n");
+  expect(printed).toContain("内存:?MB\r\n");
   expect(input.isRaw).toBe(false);
 });
 
@@ -741,7 +755,7 @@ test("Kitty 所有按键确认后 Shift+Enter 进入确认态", async () => {
   const result = await session;
   expect(commands).toEqual(["run"]);
   expect(result.state.lines).toEqual(["code"]);
-  expect(printed).toContain("Press Enter to confirm and run");
+  expect(printed).toContain("按 Enter 确认并运行");
   expect(printed).toContain("\u001b[<u");
 });
 

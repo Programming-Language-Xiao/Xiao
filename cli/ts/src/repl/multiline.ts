@@ -3,6 +3,7 @@
 import type { ReplContext } from "./session.ts";
 import { ProtocolClient, type CoreCallResult, type SpawnCoreProcess } from "../protocol/client.ts";
 import { renderCliError, renderProtocolResponse } from "../diagnostics/render.ts";
+import { resolveEffectiveLocale } from "../config/locale.ts";
 import { dispatchControl, type ControlCommand } from "./commands.ts";
 import { applyKey, editorSource, initialEditorState, MAX_LOGICAL_LINES, positionCursor, selectRange, type EditorCursor, type EditorState } from "./editor.ts";
 import { flushPendingKeys, initialKeyParserState, parseKeys, type KeyEvent, type KeyParserState } from "./keys.ts";
@@ -15,7 +16,7 @@ import { applySaveKey, initialSaveInput, renderSaveInput, wrapNotice } from "./s
 import { initialKeyboardProbe, keyboardReport, keyboardTimeout, KITTY_POP, KITTY_PUSH, KITTY_QUERY, MOUSE_DISABLE, MOUSE_ENABLE, type KeyboardProbe, type TerminalView } from "../ui/terminal.ts";
 
 /** 可注入的终端边界、核心进程和控制指令消费点。 */
-export interface MultilineContext extends Pick<ReplContext, "input" | "output" | "error" | "write" | "env" | "isTTY" | "color" | "signal"> {
+export interface MultilineContext extends Pick<ReplContext, "input" | "output" | "error" | "write" | "env" | "isTTY" | "color" | "signal" | "locale"> {
   terminalSize?: { width: number; height: number };
   onCommand?: (command: ControlCommand, state: EditorState) => void;
   cwd?: string;
@@ -53,8 +54,9 @@ export class MultilineTerminalError extends Error {
 
 /** 建立逐字节循环，关闭时恢复 raw mode、键盘模式、粘贴模式与光标。 */
 export async function runMultilineSession(context: MultilineContext): Promise<MultilineResult> {
+  const locale = context.locale ?? await resolveEffectiveLocale({ cwd: context.cwd, env: context.env });
   if (context.executeSource !== undefined && context.protocolClient === undefined) {
-    return runMultilineSessionLoop(context);
+    return runMultilineSessionLoop({ ...context, locale });
   }
   const client = context.protocolClient ?? new ProtocolClient({
     cwd: context.cwd, env: context.env, overridePath: context.corePath,
@@ -62,7 +64,7 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
   });
   const ownsClient = context.protocolClient === undefined;
   try {
-    return await runMultilineSessionLoop({ ...context, protocolClient: client });
+    return await runMultilineSessionLoop({ ...context, locale, protocolClient: client });
   } finally {
     if (ownsClient) await client.shutdown();
   }
@@ -108,18 +110,18 @@ async function runMultilineSessionLoop(context: MultilineContext): Promise<Multi
   const redraw = async () => {
     if (mode === "output") return;
     if (mode === "confirm") {
-      await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${renderConfirmation(view())}\u001b[2;2H\u001b[?25h`);
+      await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${renderConfirmation(view(), context.locale?.tag)}\u001b[2;2H\u001b[?25h`);
       confirmationReady = true;
       return;
     }
     if (mode === "save") {
-      const frame = renderSaveInput(saveInput, view());
+      const frame = renderSaveInput(saveInput, view(), context.locale?.tag);
       await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${frame.text}\u001b[${frame.cursorRow};${frame.cursorColumn}H\u001b[?25h`);
       saveReady = true;
       return;
     }
     if (mode === "panel") {
-      const frame = renderPanel(panelState, view());
+      const frame = renderPanel(panelState, view(), context.locale?.tag);
       await context.write(output, `\u001b[?25l\u001b[H\u001b[2J${frame.text}\u001b[${frame.cursorRow};${frame.cursorColumn}H\u001b[?25h`);
       panelReady = true;
       return;
@@ -176,6 +178,7 @@ async function runMultilineSessionLoop(context: MultilineContext): Promise<Multi
     } catch (failure) {
       const rendered = renderCliError(failure, {
         color: context.color, isTTY: context.isTTY,
+        locale: context.locale?.tag,
         noColor: context.env.NO_COLOR !== undefined,
         term: context.env.TERM, colorTerm: context.env.COLORTERM,
       });
@@ -220,6 +223,7 @@ async function runMultilineSessionLoop(context: MultilineContext): Promise<Multi
         response: result.response,
         rendered: renderProtocolResponse(result.response, {
           color: context.color, isTTY: context.isTTY,
+          locale: context.locale?.tag,
           noColor: context.env.NO_COLOR !== undefined,
           term: context.env.TERM, colorTerm: context.env.COLORTERM,
         }),
@@ -231,6 +235,7 @@ async function runMultilineSessionLoop(context: MultilineContext): Promise<Multi
         response: null,
         rendered: renderCliError(failure, {
           color: context.color, isTTY: context.isTTY,
+          locale: context.locale?.tag,
           noColor: context.env.NO_COLOR !== undefined,
           term: context.env.TERM, colorTerm: context.env.COLORTERM,
         }),
@@ -239,7 +244,7 @@ async function runMultilineSessionLoop(context: MultilineContext): Promise<Multi
     } finally {
       process.off("SIGINT", onInterrupt);
       try {
-        if (display !== null) await finishOutput(view(), output, context.error, context.write, display);
+        if (display !== null) await finishOutput(view(), output, context.error, context.write, display, context.locale?.tag);
       } finally {
         setRawMode(true);
         await context.write(output, "\u001b[?2004h" + MOUSE_ENABLE + (keyboard.kittyKeys ? KITTY_PUSH : ""));
@@ -278,7 +283,7 @@ async function runMultilineSessionLoop(context: MultilineContext): Promise<Multi
       }
       if (mode === "save") {
         if ("kittyOnly" in parsedKey && parsedKey.kittyOnly && !keyboard.kittyKeys) continue;
-        const result = applySaveKey(saveInput, parsedKey);
+        const result = applySaveKey(saveInput, parsedKey, context.locale?.tag);
         saveInput = result.state;
         if (result.action === "cancel") {
           mode = "edit";
@@ -465,11 +470,12 @@ async function runWithReplPackages(
   if (packages.response.type === "error") {
     const rendered = renderProtocolResponse(packages.response, {
       color: context.color, isTTY: context.isTTY,
+      locale: context.locale?.tag,
       noColor: context.env.NO_COLOR !== undefined, term: context.env.TERM, colorTerm: context.env.COLORTERM,
     });
     await context.write(context.error, rendered.stderr);
   }
-  return client.runSource(source, { debug: context.debug, signal });
+  return client.runSource(source, { debug: context.debug, signal, locale: context.locale?.tag });
 }
 
 /** 把粘贴中的真实换行按 Enter 语义交给控制指令分派，同时保留整次插入的行数原子性。 */

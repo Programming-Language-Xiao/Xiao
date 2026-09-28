@@ -41,6 +41,11 @@ test("保存标题、独立提示符和水平滚动路径适配窄终端", () =>
   expect(frame.cursorColumn).toBeLessThanOrEqual(20);
 });
 
+test("中文保存标题及校验错误走同一语言", () => {
+  expect(renderSaveInput(initialSaveInput(), view, "zh-CN").text).toContain("输入保存位置");
+  expect(applySaveKey(initialSaveInput(), { kind: "paste", text: "\n" }, "en-US").state.error).toContain("Paths cannot contain");
+});
+
 for (const vector of vectors.cases) {
   test(`${vector.width} 列保存态共享规格与实际渲染一致`, () => {
     expect(renderSaveInput(initialSaveInput(), { ...view, width: vector.width }).text).toBe(vector.expected);

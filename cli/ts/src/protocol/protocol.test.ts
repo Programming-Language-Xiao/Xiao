@@ -14,6 +14,17 @@ async function fixture(name: string): Promise<unknown> {
 }
 
 describe("X0-A 长度前缀协议", () => {
+  test("共享本地化运行夹具保留 locale 请求与可选 text 响应", async () => {
+    const request = validateMessage(await fixture("localized-run-request.json"));
+    expect(request).toMatchObject({ type: "run", locale: "en-US" });
+    expect(decodeFrame<unknown>(encodeFrame(request))).toEqual(request);
+    const response = validateMessage(await fixture("localized-run-response.json"));
+    expect(response).toMatchObject({ type: "result", exit_code: 1, diagnostics: [{
+      code: "X11-TEST-001", message_id: "xiao.status.cancelled", text: "request cancelled",
+    }] });
+    expect(decodeFrame<unknown>(encodeFrame(response))).toEqual(response);
+    expect((validateMessage(await fixture("debug-run-request.json")) as { locale?: string }).locale).toBeUndefined();
+  });
   test("REPL 包视图请求和接口响应共用 Rust 夹具，且不复用包管理请求", async () => {
     const request = validateMessage(await fixture("repl-packages-request.json"));
     expect(request).toMatchObject({ type: "repl_packages", module_path: "lib.api" });

@@ -534,6 +534,7 @@ dependencies = [
  "xiao-codegen-llvm",
  "xiao-config",
  "xiao-diagnostics",
+ "xiao-i18n",
  "xiao-ir",
  "xiao-lifetime",
  "xiao-modules",

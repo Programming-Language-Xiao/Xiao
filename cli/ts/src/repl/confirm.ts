@@ -1,12 +1,14 @@
 /** 确认、保存与面板共用的终端模态视觉边界。 */
 
 import { createColorizer } from "../ui/color.ts";
+import { cliMessage } from "../i18n.ts";
+import type { SupportedLocale } from "../config/locale.ts";
 import type { TerminalView } from "../ui/terminal.ts";
 import { displayWidth } from "../ui/width.ts";
 import { graphemes } from "./editor.ts";
 
 /** 冻结的默认确认标题，11C 可只替换可见文案。 */
-export const CONFIRM_TITLE = "Press Enter to confirm and run ↩︎";
+export const CONFIRM_TITLE = cliMessage("xiao.cli.repl.confirm");
 
 /** 按显示列宽生成自适应分隔线，可在前段嵌入标题。 */
 export function separator(view: TerminalView, title = ""): string {
@@ -26,8 +28,8 @@ export function separator(view: TerminalView, title = ""): string {
 }
 
 /** 绘制确认态三行：嵌入标题的分隔线、独立提示符、下方分隔线。 */
-export function renderConfirmation(view: TerminalView): string {
-  return `${separator(view, CONFIRM_TITLE)}\r\n${modalPrompt(view)}\r\n${separator(view)}`;
+export function renderConfirmation(view: TerminalView, locale?: SupportedLocale): string {
+  return `${separator(view, cliMessage("xiao.cli.repl.confirm", locale))}\r\n${modalPrompt(view)}\r\n${separator(view)}`;
 }
 
 /** 确认、保存和后续面板共用的独立提示符配色。 */

@@ -174,10 +174,18 @@ export async function readConfigValue(
   key: SupportedConfigKey,
   options: ConfigEditorOptions = {},
 ): Promise<boolean | "zh-CN" | "en-US" | undefined> {
-  const { text } = await readConfig(scope, options);
-  const found = findValue(text, key);
-  if (found === null) return undefined;
-  return normalizeConfigValue(key, found);
+  const { path, text } = await readConfig(scope, options);
+  try {
+    if (key === "language.locale") validateDocumentShape(text, path);
+    const found = key === "language.locale" ? findLocaleValue(text) : findValue(text, key);
+    if (found === null) return undefined;
+    return normalizeConfigValue(key, found);
+  } catch (error) {
+    if (key !== "language.locale" || !(error instanceof CliConfigError)) throw error;
+    throw new CliConfigError(error.code, error.message.replace(`${error.code}: `, ""), path, {
+      ...error.details, scope, key, supported_locales: ["zh-CN", "en-US"],
+    });
+  }
 }
 
 /** 在保留原始布局的前提下更新目标表和键。 */
@@ -383,6 +391,32 @@ function findValue(text: string, key: SupportedConfigKey): string | null {
     if (dictionaryText.includes("}")) break;
   }
   return null;
+}
+
+/** 语言只接受引号内的标量，并拒绝同一配置中的重复节或重复键。 */
+function findLocaleValue(text: string): string | null {
+  const lines = splitLines(text);
+  const sections = lines.filter((line) => parseHeader(line.content) === "language");
+  if (sections.some((line) => !/^\s*\[language\]\s*$/u.test(stripComment(line.content)))) {
+    throw new CliConfigError(CONFIG_ERROR.nonCanonical, "[language] 配置节必须使用小写形式");
+  }
+  if (sections.length > 1) throw new CliConfigError(CONFIG_ERROR.malformed, "[language] 配置节重复");
+  const range = locateSection(lines, "language");
+  if (range === null) return null;
+  let locale: string | null = null;
+  for (let index = range[0] + 1; index < range[1]; index += 1) {
+    const source = stripComment(lines[index].content);
+    if (/^\s*locale\s*=/iu.test(source) && !/^\s*locale\s*=/u.test(source)) {
+      throw new CliConfigError(CONFIG_ERROR.nonCanonical, "language.locale 配置键必须使用小写形式");
+    }
+    const assignment = /^\s*locale\s*=\s*(.*?)\s*$/u.exec(source);
+    if (assignment === null) continue;
+    if (locale !== null) throw new CliConfigError(CONFIG_ERROR.malformed, "language.locale 配置键重复");
+    const quoted = /^(?:"([^"]*)"|'([^']*)')$/u.exec(assignment[1]);
+    if (quoted === null) throw new CliConfigError(CONFIG_ERROR.invalidValue, "language.locale 必须是引号内的字符串");
+    locale = quoted[1] ?? quoted[2];
+  }
+  return locale;
 }
 
 /** 删除字符串外的注释，保留引号中的井号。 */

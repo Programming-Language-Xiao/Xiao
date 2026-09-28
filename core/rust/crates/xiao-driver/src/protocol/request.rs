@@ -250,6 +250,9 @@ pub enum ProtocolRequest {
         language_version: String,
         /// Runtime 版本提示。
         runtime_version: String,
+        /// 生效语言；旧客户端省略时保持现有默认文本。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        locale: Option<String>,
         /// 目标条件。
         target: ProtocolTarget,
         /// 优化/调试配置。

@@ -90,6 +90,9 @@ pub struct ProtocolDiagnostic {
     pub params: BTreeMap<String, ProtocolParam>,
     /// 当前语言预览文本。
     pub message: String,
+    /// 新客户端优先使用的可选本地化展示文本。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
 }
 
 /// 统一调用栈帧。
@@ -135,6 +138,9 @@ pub struct ProtocolReport {
     pub params: BTreeMap<String, ProtocolParam>,
     /// 当前语言预览文本。
     pub message: String,
+    /// 不改变错误身份的可选本地化展示文本。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
     /// 直接源码位置。
     pub location: Option<ProtocolSpan>,
     /// 操作上下文。
@@ -227,6 +233,9 @@ pub struct ProtocolErrorBody {
     pub message_id: String,
     /// 未本地化的预览文本。
     pub message: String,
+    /// 可选本地化展示文本。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
     /// 可选阶段名。
     pub phase: Option<String>,
     /// 可执行的下一步。

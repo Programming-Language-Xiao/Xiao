@@ -71,4 +71,24 @@ describe("CLI 诊断呈现", () => {
     expect(rendered.stderr).toContain("tests/case.xiao");
     expect(rendered.stderr).toContain("X11-TEST-001");
   });
+
+  test("本地化 text 只影响终端文本，机器字段保持原样", () => {
+    const response = {
+      type: "result" as const, request_id: "locale", operation: "run" as const,
+      exit_code: 1, exit_name: "source_rejected",
+      diagnostics: [{ code: "X01-TEST", message_id: "xiao.status.cancelled", message: "请求已取消",
+        text: "request cancelled", params: {}, severity: "error" }],
+      report: null, events: [], metrics: null, value: null, artifact: null,
+    };
+    const human = renderProtocolResponse(response, { locale: "en-US" });
+    expect(human.stderr).toContain("X01-TEST: request cancelled");
+    expect(human.stderr).not.toContain("请求已取消");
+    const machine = JSON.parse(renderProtocolResponse(response, { locale: "en-US", json: true }).stdout);
+    expect(machine.diagnostics[0]).toMatchObject({ code: "X01-TEST", message_id: "xiao.status.cancelled",
+      message: "请求已取消", text: "request cancelled", params: {} });
+    const oldCore = { ...response, diagnostics: [{ ...response.diagnostics[0], text: undefined }] };
+    expect(renderProtocolResponse(oldCore, { locale: "en-US" }).stderr).toContain("xiao.status.cancelled");
+    expect(renderProtocolResponse(oldCore, { locale: "zh-CN" }).stderr).toContain("xiao.status.cancelled");
+    expect(renderProtocolResponse(oldCore).stderr).toContain("请求已取消");
+  });
 });

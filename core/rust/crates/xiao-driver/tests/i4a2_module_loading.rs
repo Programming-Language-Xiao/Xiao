@@ -169,6 +169,7 @@ fn protocol_run_loads_a_project_import_from_the_source_path() {
         core_version: CORE_VERSION,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
+        locale: None,
         target: ProtocolTarget::host(),
         optimization: OptimizationConfig::default(),
         source: SourceIdentity {

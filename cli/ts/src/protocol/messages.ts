@@ -72,6 +72,8 @@ export interface RunRequest {
   core_version: number;
   language_version: string;
   runtime_version: string;
+  /** 本次运行的可选语言标签；旧客户端可省略。 */
+  locale?: string | null;
   target: ProtocolTarget;
   optimization: OptimizationConfig;
   source: SourceIdentity;
@@ -201,6 +203,8 @@ export interface ProtocolErrorBody {
   code: string;
   message_id: string;
   message: string;
+  /** Rust 核心提供的可选本地化人类文本。 */
+  text?: string | null;
   phase: string | null;
   next_step: string | null;
   details: Record<string, unknown>;

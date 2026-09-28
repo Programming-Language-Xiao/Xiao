@@ -10,6 +10,8 @@ mod build;
 mod config;
 /// 长度前缀 JSON 帧的编解码。
 mod frame;
+/// 可选请求语言及人类文本的单一渲染边界。
+mod localize;
 /// 内部运行结果到协议类型的映射。
 mod mapping;
 /// 协议版本、消息和响应类型。

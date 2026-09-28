@@ -3,6 +3,7 @@
 import { createInterface } from "node:readline";
 
 import { readConfigValue } from "../config/editor.ts";
+import { resolveEffectiveLocale, type LocaleContext } from "../config/locale.ts";
 import { renderCliError, renderProtocolResponse } from "../diagnostics/render.ts";
 import { ProtocolClient, type CoreClientOptions } from "../protocol/client.ts";
 import { probeGitSummary, type GitProbeOptions } from "../ui/git.ts";
@@ -11,6 +12,7 @@ import { runMultilineSession, MultilineTerminalError } from "./multiline.ts";
 
 /** 标准流和配置/执行依赖由 CLI 入口传入，便于无终端集成验证。 */
 export interface ReplContext {
+  locale?: LocaleContext;
   input: NodeJS.ReadableStream;
   output: NodeJS.WritableStream;
   error: NodeJS.WritableStream;
@@ -38,13 +40,14 @@ export async function runSingleLineRepl(context: ReplContext): Promise<number> {
   if ((context.input as NodeJS.ReadableStream & { readableEnded?: boolean }).readableEnded) {
     return context.signal?.aborted ? 130 : 0;
   }
+  const locale = context.locale ?? await resolveEffectiveLocale({ cwd: context.cwd, env: context.env });
   const client = context.protocolClient ?? new ProtocolClient({
     cwd: context.cwd, env: context.env, overridePath: context.corePath,
     spawnProcess: context.spawnProcess, executablePath: context.executablePath, keepAlive: true,
   });
   const ownsClient = context.protocolClient === undefined;
   try {
-    return await runSingleLineReplLoop({ ...context, protocolClient: client });
+    return await runSingleLineReplLoop({ ...context, locale, protocolClient: client });
   } finally {
     if (ownsClient) await client.shutdown();
   }
@@ -99,13 +102,15 @@ async function runSingleLineReplLoop(context: ReplContext): Promise<number> {
           if (packages.response.type === "error") {
             const packageError = renderProtocolResponse(packages.response, {
               color: context.color, isTTY: context.isTTY,
+              locale: context.locale?.tag,
               noColor: env.NO_COLOR !== undefined, term: env.TERM, colorTerm: env.COLORTERM,
             });
             await write(error, packageError.stderr);
           }
-          const result = await client.runSource(next.value, { signal: context.signal });
+          const result = await client.runSource(next.value, { signal: context.signal, locale: context.locale?.tag });
           const rendered = renderProtocolResponse(result.response, {
             color: context.color, isTTY: context.isTTY,
+            locale: context.locale?.tag,
             noColor: env.NO_COLOR !== undefined, term: env.TERM, colorTerm: env.COLORTERM,
           });
           if (result.response.type === "result" && result.response.exit_code === 0
@@ -119,6 +124,7 @@ async function runSingleLineReplLoop(context: ReplContext): Promise<number> {
         } catch (failure) {
           const rendered = renderCliError(failure, {
             color: context.color, isTTY: context.isTTY,
+            locale: context.locale?.tag,
             noColor: env.NO_COLOR !== undefined, term: env.TERM, colorTerm: env.COLORTERM,
           });
           await write(error, rendered.stderr);
@@ -163,7 +169,7 @@ async function currentPrompt(context: ReplContext): Promise<string> {
       ?? await readConfigValue("global", "CLI.git.summary", config)
       ?? false) === true;
   } catch (failure) {
-    if (context.debug) await context.write(context.error, renderCliError(failure).stderr);
+    if (context.debug) await context.write(context.error, renderCliError(failure, { locale: context.locale?.tag }).stderr);
   }
   const result = enabled ? await probeGitSummary(context.cwd, {
     env: context.env, timeoutMs: 250, runStatus: context.gitRunStatus,

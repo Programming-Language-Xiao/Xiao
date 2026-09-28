@@ -19,6 +19,7 @@ path = "src/protocol_main.rs"
 
 [dependencies]
 xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-i18n = { path = "../xiao-i18n" }
 xiao-source = { path = "../xiao-source" }
 xiao-config = { path = "../xiao-config" }
 xiao-syntax = { path = "../xiao-syntax" }

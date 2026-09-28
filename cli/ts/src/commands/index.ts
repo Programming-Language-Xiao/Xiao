@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 
 import { findProjectConfig, writeConfigValue, type ConfigEditorOptions } from "../config/editor.ts";
+import { resolveEffectiveLocale, type LocaleContext } from "../config/locale.ts";
 import { ProtocolClient, type CoreClientOptions } from "../protocol/client.ts";
 import type { ToolchainSpec } from "../protocol/messages.ts";
 import { renderCliError, renderProtocolResponse, CLI_EXIT_CODES, type DiagnosticRenderOptions, type RenderedDiagnostic } from "../diagnostics/render.ts";
@@ -21,6 +22,8 @@ import { executePackageCommand } from "../packages/index.ts";
 
 /** 命令执行上下文；IO 由入口注入，便于管道和测试。 */
 export interface CommandContext {
+  /** 单次 CLI 调用创建、向下透传的有效语言。 */
+  locale?: LocaleContext;
   /** 当前工作目录。 */
   cwd?: string;
   /** 环境变量。 */
@@ -60,7 +63,7 @@ export class CliCommandError extends Error {
 
 /** 执行一条已解析命令并返回终端输出。 */
 export async function executeCommand(command: ParsedCommand, context: CommandContext = {}): Promise<RenderedDiagnostic> {
-  if (command.kind === "help") return { stdout: helpText(), stderr: "", exitCode: 0 };
+  if (command.kind === "help") return { stdout: helpText(context.locale?.tag), stderr: "", exitCode: 0 };
   if (command.kind === "version") return { stdout: "xiao 0.1.0\n", stderr: "", exitCode: 0 };
   if (command.kind === "repl") {
     const message = command.multiline ? "多行会话须由 CLI 入口提供标准输入与输出"
@@ -191,13 +194,21 @@ async function executeTest(command: Extract<ParsedCommand, { kind: "test" }>, co
 }
 
 /** 返回入口使用的帮助文本，避免命令解析器和执行器各维护一份。 */
-export function helpText(): string {
-  return parserHelpText();
+export function helpText(locale?: LocaleContext["tag"]): string {
+  return parserHelpText(locale);
 }
 
 /** 读取源码并通过协议客户端执行 `run`。 */
 async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, context: CommandContext): Promise<RenderedDiagnostic> {
-  const path = resolve(context.cwd ?? process.cwd(), command.file);
+  const cwd = context.cwd ?? process.cwd();
+  const options = renderOptions(command.options, context);
+  let locale: LocaleContext;
+  try {
+    locale = context.locale ?? await resolveEffectiveLocale({ cwd, env: context.env });
+  } catch (error) {
+    return renderCliError(error, options);
+  }
+  const path = resolve(cwd, command.file);
   let source: string;
   try {
     const bytes = await readFile(path);
@@ -217,8 +228,9 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
       module: moduleFromPath(path),
       debug: command.options.debug,
       signal: context.signal,
+      locale: locale.tag,
     });
-    return renderProtocolResponse(result.response, renderOptions(command.options, context));
+    return renderProtocolResponse(result.response, { ...options, locale: locale.tag });
   } catch (error) {
     return renderCliError(error, renderOptions(command.options, context));
   }
@@ -289,6 +301,7 @@ async function executeConfig(command: Extract<ParsedCommand, { kind: "config" }>
 function renderOptions(options: { json: boolean; color: "auto" | "always" | "never" }, context: CommandContext): DiagnosticRenderOptions {
   return {
     json: options.json,
+    locale: context.locale?.tag,
     color: options.color,
     isTTY: context.isTTY ?? Boolean(process.stderr.isTTY),
     noColor: (context.env ?? process.env).NO_COLOR !== undefined,

@@ -6,6 +6,10 @@ import { stripAnsi } from "../ui/color.ts";
 import type { TerminalView } from "../ui/terminal.ts";
 import { displayWidth } from "../ui/width.ts";
 import { applyPanelKey, initialPanelState, renderPanel } from "./panel.ts";
+
+test("中文面板标题仍使用固定控制词", () => {
+  expect(renderPanel(initialPanelState(), view(40), "zh-CN").text).toContain("命令面板");
+});
 import vectors from "../../../../tests/spec/11b-repl/panel.json";
 
 /** 明确注入颜色与尺寸，避免宿主终端影响测试。 */

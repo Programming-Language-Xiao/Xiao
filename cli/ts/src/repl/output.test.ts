@@ -50,5 +50,6 @@ test("输出段只追加分隔线、长输出和摘要，完全不清屏", async
 test("raw mode 输出统一 CRLF，旧核心缺失内存字段不伪报为零", () => {
   expect(terminalLines("a\nb\r\nc")).toBe("a\r\nb\r\nc\r\n");
   expect(runSummary(0, response(null, {}))).toBe("time:0.0000 memory:?MB");
+  expect(runSummary(0, response(null, {}), "zh-CN")).toBe("时间:0.0000 内存:?MB");
   expect(runSummary(0, response(null, { peak_live_bytes: Number.MAX_SAFE_INTEGER + 1 }))).toBe("time:0.0000 memory:?MB");
 });

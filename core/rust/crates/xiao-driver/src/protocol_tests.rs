@@ -316,6 +316,7 @@ fn service_requires_hello_as_first_frame() {
         core_version: CORE_VERSION,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
+        locale: None,
         target: ProtocolTarget::host(),
         optimization: OptimizationConfig::default(),
         source: SourceIdentity {
@@ -354,6 +355,7 @@ fn frame_and_request_errors_keep_distinct_codes() {
         core_version: CORE_VERSION,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
+        locale: None,
         target: ProtocolTarget::host(),
         optimization: OptimizationConfig::default(),
         source: SourceIdentity {
@@ -370,6 +372,131 @@ fn frame_and_request_errors_keep_distinct_codes() {
 }
 
 #[test]
+fn run_locale_is_optional_and_does_not_change_machine_error_fields() {
+    let run = |locale: Option<&str>| ProtocolRequest::Run {
+        request_id: "locale-run".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        locale: locale.map(str::to_owned),
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig::default(),
+        source: SourceIdentity {
+            module: "  ".to_owned(),
+            path: None,
+            text: "value = 1\n".to_owned(),
+        },
+        options: RunOptions::default(),
+    };
+    let legacy_request = serde_json::to_value(run(None)).expect("encode legacy run");
+    assert!(legacy_request.get("locale").is_none());
+    let legacy: ProtocolRequest =
+        serde_json::from_value(legacy_request).expect("decode legacy run");
+    let legacy = serde_json::to_value(dispatch(legacy)).expect("encode legacy response");
+    assert!(legacy["error"].get("text").is_none());
+
+    let mut chinese = serde_json::to_value(dispatch(run(Some("zh")))).expect("encode zh response");
+    let mut english = serde_json::to_value(dispatch(run(Some("en")))).expect("encode en response");
+    assert!(
+        chinese["error"]["text"]
+            .as_str()
+            .is_some_and(|text| !text.is_empty())
+    );
+    assert!(
+        english["error"]["text"]
+            .as_str()
+            .is_some_and(|text| !text.is_empty())
+    );
+    chinese["error"]
+        .as_object_mut()
+        .expect("error body")
+        .remove("text");
+    english["error"]
+        .as_object_mut()
+        .expect("error body")
+        .remove("text");
+    assert_eq!(chinese, legacy);
+    assert_eq!(english, legacy);
+
+    let ProtocolResponse::Error { error, .. } = dispatch(run(Some("de-DE"))) else {
+        panic!("unsupported locale must be rejected");
+    };
+    assert_eq!(error.code, REQUEST_ERROR_CODE);
+}
+
+#[test]
+fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
+    let response = || ProtocolResponse::Result {
+        request_id: "locale-diagnostic".to_owned(),
+        operation: "run".to_owned(),
+        exit_code: 1,
+        exit_name: "source_rejected".to_owned(),
+        diagnostics: vec![ProtocolDiagnostic {
+            code: "X11-TEST-001".to_owned(),
+            message_id: "xiao.status.cancelled".to_owned(),
+            severity: "error".to_owned(),
+            span: None,
+            params: Default::default(),
+            message: "请求已取消".to_owned(),
+            text: None,
+        }],
+        report: None,
+        events: vec![],
+        metrics: None,
+        value: None,
+        artifact: None,
+    };
+    let ProtocolResponse::Result {
+        diagnostics: english,
+        ..
+    } = super::localize::with_run_locale(
+        "locale-diagnostic".to_owned(),
+        Some("en".to_owned()),
+        response,
+    )
+    else {
+        panic!("expected run response");
+    };
+    assert_eq!(english[0].text.as_deref(), Some("request cancelled"));
+    assert_eq!(english[0].message, "请求已取消");
+
+    let ProtocolResponse::Result {
+        diagnostics: chinese,
+        ..
+    } = super::localize::with_run_locale(
+        "locale-diagnostic".to_owned(),
+        Some("zh".to_owned()),
+        response,
+    )
+    else {
+        panic!("expected run response");
+    };
+    assert_eq!(chinese[0].text.as_deref(), Some("请求已取消"));
+    assert_eq!(english[0].code, chinese[0].code);
+    assert_eq!(english[0].message_id, chinese[0].message_id);
+
+    let mut unknown = response();
+    if let ProtocolResponse::Result { diagnostics, .. } = &mut unknown {
+        diagnostics[0].message_id = "xiao.missing.example".to_owned();
+        diagnostics[0]
+            .params
+            .insert("path".to_owned(), ProtocolParam::Text("a\nb".to_owned()));
+    }
+    let ProtocolResponse::Result { diagnostics, .. } = super::localize::with_run_locale(
+        "locale-diagnostic".to_owned(),
+        Some("en-US".to_owned()),
+        || unknown,
+    ) else {
+        panic!("expected run response");
+    };
+    assert_eq!(
+        diagnostics[0].text.as_deref(),
+        Some("xiao.missing.example (path=\"a\\nb\")")
+    );
+}
+
+#[test]
 /// 取消令牌映射到冻结的产物拒绝进程码。
 fn real_source_run_maps_cancel_to_artifact_rejected() {
     let token = CancellationToken::new();
@@ -380,6 +507,7 @@ fn real_source_run_maps_cancel_to_artifact_rejected() {
         core_version: CORE_VERSION,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
+        locale: None,
         target: ProtocolTarget::host(),
         optimization: OptimizationConfig::default(),
         source: SourceIdentity {
@@ -407,6 +535,7 @@ fn real_source_run_returns_structured_result_without_text_parsing() {
         core_version: CORE_VERSION,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
+        locale: None,
         target: ProtocolTarget::host(),
         optimization: OptimizationConfig::default(),
         source: SourceIdentity {
@@ -439,6 +568,7 @@ fn service_round_trips_hello_run_and_shutdown_frames() {
         core_version: CORE_VERSION,
         language_version: "0.1.0".to_owned(),
         runtime_version: "0.1.0".to_owned(),
+        locale: None,
         target: ProtocolTarget::host(),
         optimization: OptimizationConfig::default(),
         source: SourceIdentity {

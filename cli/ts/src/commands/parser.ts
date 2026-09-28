@@ -1,5 +1,8 @@
 /** `xiao` 命令行参数解析；不承载编译器或 Runtime 语义。 */
 
+import { cliMessage } from "../i18n.ts";
+import type { SupportedLocale } from "../config/locale.ts";
+
 /** 全局 CLI 选项。 */
 export interface GlobalCliOptions {
   /** 颜色模式。 */
@@ -105,29 +108,8 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
 }
 
 /** 返回稳定帮助文本。 */
-export function helpText(): string {
-  return [
-    "xiao 0.1.0",
-    "用法：",
-    "  xiao run <file.xiao> [-debug] [--json] [--color=auto|always|never]",
-    "  xiao <file.xiao> [-debug]                运行源码快捷方式",
-    "  xiao config [--global] <key.path> <value>",
-    "  xiao test [project] [--timeout <ms>]     运行项目 tests/**/*.xiao",
-    "  xiao build -o <output> <file.xiao> [-debug] [--emit-llvm <path>] [--json]",
-    "  xiao venv [name]                         创建项目环境并输出激活提示",
-    "  xiao sync [--keep-extra] [--locked|--frozen] 同步依赖并激活环境",
-    "  xiao install [project-or-config-path]    安装已有锁文件到激活或全局环境（别名：i）",
-    "  xiao lock                              创建锁文件或核对现有锁文件，不动环境",
-    "  xiao update                            显式重解并更新锁文件，不动环境",
-    "  xiao add <package> --path <path> [--version <range>] [--dev]  添加本地依赖并重新锁定",
-    "  xiao remove <package> [--dev]           删除依赖并重新锁定",
-    "  xiao shell-init <bash|zsh|fish|powershell|cmd> [--install|--uninstall] [--profile <绝对路径>]",
-    "  xiao deactivate                          取消当前 Shell 环境激活",
-    "  xiao --inLF [file.xiao]                  多行编辑或打开源码文件",
-    "  xiao --help | --version",
-    "",
-    "无参数 xiao 启动单行交互会话；--inLF [file.xiao] 进入多行编辑。",
-  ].join("\n") + "\n";
+export function helpText(locale: SupportedLocale = "zh-CN"): string {
+  return cliMessage("xiao.cli.help", locale);
 }
 
 /** 解析环境创建命令；名称为空时使用冻结的默认环境。 */

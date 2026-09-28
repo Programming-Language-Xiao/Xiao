@@ -15,6 +15,10 @@ const RESPONSE_FIXTURE: &str =
 /// Rust 与 TypeScript 共用的 debug 运行请求样本。
 const DEBUG_REQUEST_FIXTURE: &str =
     include_str!("../../../../../tests/spec/11x0-protocol/debug-run-request.json");
+const LOCALIZED_REQUEST_FIXTURE: &str =
+    include_str!("../../../../../tests/spec/11x0-protocol/localized-run-request.json");
+const LOCALIZED_RESPONSE_FIXTURE: &str =
+    include_str!("../../../../../tests/spec/11x0-protocol/localized-run-response.json");
 /// Rust 与 TypeScript 共用的项目测试请求样本。
 const TEST_REQUEST_FIXTURE: &str =
     include_str!("../../../../../tests/spec/11x0-protocol/test-request.json");
@@ -138,6 +142,7 @@ fn runtime_peak_metric_is_backward_compatible_and_tracks_containers() {
             core_version: CORE_VERSION,
             language_version: "0.1.0".to_owned(),
             runtime_version: "0.1.0".to_owned(),
+            locale: None,
             target: ProtocolTarget::host(),
             optimization: OptimizationConfig::default(),
             source: SourceIdentity {
@@ -187,6 +192,41 @@ fn debug_fixture_round_trips_without_text_parsing() {
     let frame = encode_frame(&request).expect("encode");
     let decoded: ProtocolRequest = decode_frame(&frame[FRAME_LENGTH_BYTES..]).expect("decode");
     assert_eq!(decoded, request);
+}
+
+#[test]
+fn localized_run_fixtures_keep_optional_fields_separate_from_machine_identity() {
+    let request: ProtocolRequest =
+        serde_json::from_str(LOCALIZED_REQUEST_FIXTURE).expect("localized request");
+    let ProtocolRequest::Run { locale, .. } = &request else {
+        panic!("localized fixture must be a run request");
+    };
+    assert_eq!(locale.as_deref(), Some("en-US"));
+    let frame = encode_frame(&request).expect("encode request");
+    assert_eq!(
+        decode_frame::<ProtocolRequest>(&frame[FRAME_LENGTH_BYTES..]).expect("decode request"),
+        request
+    );
+
+    let response: ProtocolResponse =
+        serde_json::from_str(LOCALIZED_RESPONSE_FIXTURE).expect("localized response");
+    let ProtocolResponse::Result {
+        diagnostics,
+        exit_code,
+        ..
+    } = &response
+    else {
+        panic!("localized fixture must be a result");
+    };
+    assert_eq!(*exit_code, 1);
+    assert_eq!(diagnostics[0].code, "X11-TEST-001");
+    assert_eq!(diagnostics[0].message_id, "xiao.status.cancelled");
+    assert_eq!(diagnostics[0].text.as_deref(), Some("request cancelled"));
+    let frame = encode_frame(&response).expect("encode response");
+    assert_eq!(
+        decode_frame::<ProtocolResponse>(&frame[FRAME_LENGTH_BYTES..]).expect("decode response"),
+        response
+    );
 }
 
 #[test]
