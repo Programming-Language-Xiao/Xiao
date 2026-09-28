@@ -11,7 +11,8 @@ use xiao_bytecode::{TacProgram, lower_program};
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord};
 use xiao_vm::{
     CancellationSource, DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome,
-    RunRequest as VmRunRequest, RunResult, VmEvent, VmOptions, run_request as run_vm_request,
+    RunRequest as VmRunRequest, RunResult, VmEvent, VmOptions, VmSession,
+    run_request_with_session as run_vm_request_with_session,
 };
 
 /// 可跨线程共享的 VM 取消令牌。
@@ -438,25 +439,51 @@ impl DriverOutcome {
     }
 }
 
-/// 前端到 VM 的无状态内部驱动器。
-#[derive(Clone, Copy, Debug, Default)]
-pub struct FrontendVmDriver;
+/// 前端到 VM 的会话级内部驱动器。
+pub struct FrontendVmDriver {
+    session: VmSession,
+}
+
+impl std::fmt::Debug for FrontendVmDriver {
+    /// 仅展示驱动器类型；模块缓存属于运行时内部状态。
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter.write_str("FrontendVmDriver")
+    }
+}
+
+impl Default for FrontendVmDriver {
+    /// 创建一个空会话驱动器。
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl FrontendVmDriver {
-    /// 创建一个无状态驱动器。
+    /// 创建一个空会话驱动器。
     #[must_use]
-    pub const fn new() -> Self {
-        Self
+    pub fn new() -> Self {
+        Self {
+            session: VmSession::new(),
+        }
+    }
+
+    /// 丢弃模块缓存和表运行时状态，开始新的会话。
+    pub fn reset_session(&mut self) {
+        self.session = VmSession::new();
     }
 
     /// 编译并执行一次内部运行请求。
     #[must_use]
-    pub fn run(&self, request: &DriverRequest) -> DriverOutcome {
+    pub fn run(&mut self, request: &DriverRequest) -> DriverOutcome {
         let control = match ControlWindow::start(&request.control) {
             Ok(control) => control,
-            Err(error) => return DriverOutcome::Rejected(*error),
+            Err(error) => {
+                self.reset_session();
+                return DriverOutcome::Rejected(*error);
+            }
         };
         if let Some(error) = control.check() {
+            self.reset_session();
             return DriverOutcome::Rejected(error);
         }
         let artifact = match FrontendCompiler::new().compile(&request.frontend) {
@@ -464,6 +491,7 @@ impl FrontendVmDriver {
             Err(error) => return DriverOutcome::Frontend(error),
         };
         if let Some(error) = control.check() {
+            self.reset_session();
             return DriverOutcome::Rejected(error);
         }
         self.run_artifact_with_control(&artifact, request, &control)
@@ -472,15 +500,19 @@ impl FrontendVmDriver {
     /// 执行一份已经由前端产出的 IR，不重新解析或重新推断语义。
     #[must_use]
     pub fn run_artifact(
-        &self,
+        &mut self,
         artifact: &FrontendArtifact,
         request: &DriverRequest,
     ) -> DriverOutcome {
         let control = match ControlWindow::start(&request.control) {
             Ok(control) => control,
-            Err(error) => return DriverOutcome::Rejected(*error),
+            Err(error) => {
+                self.reset_session();
+                return DriverOutcome::Rejected(*error);
+            }
         };
         if let Some(error) = control.check() {
+            self.reset_session();
             return DriverOutcome::Rejected(error);
         }
         self.run_artifact_with_control(artifact, request, &control)
@@ -488,7 +520,7 @@ impl FrontendVmDriver {
 
     /// 在同一控制窗口内降低并执行产物。
     fn run_artifact_with_control(
-        &self,
+        &mut self,
         artifact: &FrontendArtifact,
         request: &DriverRequest,
         control: &ControlWindow,
@@ -496,6 +528,7 @@ impl FrontendVmDriver {
         let ir = artifact.ir();
         let program = lower_program(ir);
         if let Some(error) = control.check() {
+            self.reset_session();
             return DriverOutcome::Rejected(error);
         }
         self.execute_program(
@@ -509,7 +542,7 @@ impl FrontendVmDriver {
 
     /// 交给 B0-B 生产入口；该函数不改变入口函数或载体。
     fn execute_program(
-        &self,
+        &mut self,
         ir: &xiao_ir::IrProgram,
         diagnostics: Vec<Diagnostic>,
         program: TacProgram,
@@ -517,6 +550,7 @@ impl FrontendVmDriver {
         control: &ControlWindow,
     ) -> DriverOutcome {
         if let Some(error) = control.check() {
+            self.reset_session();
             return DriverOutcome::Rejected(error);
         }
         let vm_request = VmRunRequest::new(ir, &program)
@@ -534,13 +568,17 @@ impl FrontendVmDriver {
             request.frontend.context.package_registry.as_ref(),
         );
         let vm_request = vm_request.with_module_loader(&module_loader);
-        let outcome = run_vm_request(&vm_request);
+        let session = std::mem::take(&mut self.session);
+        let (outcome, session) = run_vm_request_with_session(&vm_request, session);
+        self.session = session;
         // 方案 A 仍需在 VM 返回边界采样；VM 已经结束后发现控制信号时，控制结果
         // 优先于已完成的 VM 结果，避免把超时/取消伪装成成功。
         if let Some(error) = control.check() {
+            self.reset_session();
             return DriverOutcome::Rejected(error);
         }
         if let Some(error) = DriverError::from_vm_outcome(&outcome) {
+            self.reset_session();
             return DriverOutcome::Rejected(error);
         }
         DriverOutcome::Executed(DriverExecution {
@@ -550,10 +588,11 @@ impl FrontendVmDriver {
     }
 }
 
-/// 使用无状态驱动器编译并执行一次请求。
+/// 使用新会话驱动器编译并执行一次请求。
 #[must_use]
 pub fn run(request: &DriverRequest) -> DriverOutcome {
-    FrontendVmDriver::new().run(request)
+    let mut driver = FrontendVmDriver::new();
+    driver.run(request)
 }
 
 /// `run` 的语义别名，供编排代码按请求动作命名。

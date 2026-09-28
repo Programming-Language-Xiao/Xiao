@@ -129,12 +129,46 @@ impl VmMetadata {
     }
 }
 
+/// 同一核心会话内跨 `run` 保留的模块运行时状态。
+///
+/// 主程序的调用帧不属于会话；每次请求仍然创建新的 `Vm` 和新的入口帧。
+/// 这里只保存成功初始化的文件模块及其表运行时状态，因此模块可以在后续
+/// 请求中复用，而普通顶层绑定不会泄漏到下一次请求。
+pub struct VmSession {
+    initialized_modules: BTreeMap<String, ModuleInstance>,
+    tables: std::rc::Rc<tables::TableContext>,
+}
+
+impl Default for VmSession {
+    /// 创建空的会话状态。
+    fn default() -> Self {
+        Self {
+            initialized_modules: BTreeMap::new(),
+            tables: std::rc::Rc::new(tables::TableContext::default()),
+        }
+    }
+}
+
+impl VmSession {
+    /// 创建空的会话状态。
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// 判断状态是否仍满足下一次运行的复用条件。
+    #[must_use]
+    pub fn is_healthy(&self) -> bool {
+        self.tables.depth.get() == 0 && !self.tables.fatal.get() && self.tables.is_clean()
+    }
+}
+
 /// 三地址解释器。
 pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     program: &'p TacProgram,
     active_program: Option<Rc<TacProgram>>,
     module_loader: Option<&'p dyn ModuleLoader>,
-    initialized_modules: BTreeMap<String, ModuleInstance>,
+    session: VmSession,
     initializing_modules: BTreeSet<String>,
     current_module: String,
     current_exports: Option<BTreeMap<String, RuntimeValue>>,
@@ -144,8 +178,6 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     options: VmOptions,
     /// 运行开始前建立的一次性只读 pc 映射；热路径只做查表。
     pc_map: Option<PcMap>,
-    /// 普通帧与析构帧共享的表生命周期、调用深度和可复现随机源。
-    tables: std::rc::Rc<tables::TableContext>,
     /// 当前回调不能消费进入前已经挂起的清理错误。
     pending_base: usize,
     /// 模块和源码身份。
@@ -166,7 +198,13 @@ struct ModuleInstance {
 impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     /// 创建一个解释器。
     pub fn new(program: &'p TacProgram, options: VmOptions, sink: S) -> Self {
-        Self::new_with_metadata(program, options, sink, VmMetadata::legacy(program))
+        Self::new_with_metadata(
+            program,
+            options,
+            sink,
+            VmMetadata::legacy(program),
+            VmSession::new(),
+        )
     }
 
     /// 创建一个带模块/源码身份的解释器。
@@ -175,12 +213,13 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         options: VmOptions,
         sink: S,
         metadata: VmMetadata,
+        session: VmSession,
     ) -> Self {
         Self {
             program,
             active_program: None,
             module_loader: None,
-            initialized_modules: BTreeMap::new(),
+            session,
             initializing_modules: BTreeSet::new(),
             current_module: String::new(),
             current_exports: None,
@@ -189,7 +228,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             metrics: VmMetrics::default(),
             options,
             pc_map: build_pc_map(program, xiao_bytecode::OperandWidth::Leb128).ok(),
-            tables: std::rc::Rc::new(tables::TableContext::default()),
             pending_base: 0,
             metadata,
             cancellation: None,
@@ -200,7 +238,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     /// 创建一个使用指定种子的解释器。
     pub fn new_with_seed(program: &'p TacProgram, options: VmOptions, sink: S, seed: u128) -> Self {
         let vm = Self::new(program, options, sink);
-        vm.tables.random.borrow_mut().reseed(seed);
+        vm.session.tables.random.borrow_mut().reseed(seed);
         vm
     }
 
@@ -217,6 +255,12 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
 
     pub(crate) fn set_module_loader(&mut self, loader: Option<&'p dyn ModuleLoader>) {
         self.module_loader = loader;
+    }
+
+    /// 判断当前 VM 是否已经清空所有请求级执行状态，且会话状态可复用。
+    #[must_use]
+    pub(crate) fn session_is_healthy(&self) -> bool {
+        self.frames.is_empty() && self.initializing_modules.is_empty() && self.session.is_healthy()
     }
 
     fn module_fault(&self, identity: &str, cause: impl std::fmt::Display) -> Fault {
@@ -270,7 +314,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     }
 
     fn initialize_module(&mut self, identity: &str) -> Result<(), Fault> {
-        if self.initialized_modules.contains_key(identity) {
+        if self.session.initialized_modules.contains_key(identity) {
             return Ok(());
         }
         if !self.initializing_modules.insert(identity.to_owned()) {
@@ -329,7 +373,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         } else {
             result?;
         }
-        self.initialized_modules.insert(
+        self.session.initialized_modules.insert(
             identity.to_owned(),
             ModuleInstance {
                 program,
@@ -356,7 +400,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             }
         }
         self.initialize_module(identity)?;
-        let instance = self.initialized_modules.get(identity);
+        let instance = self.session.initialized_modules.get(identity);
         if let Some(value) = instance.and_then(|module| module.exports.get(member)) {
             return Ok(value.clone());
         }
@@ -406,6 +450,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         self.sink
     }
 
+    /// 取出事件接收器和会话状态，供生产入口在请求结束后保存模块缓存。
+    pub(crate) fn into_parts(self) -> (S, VmSession) {
+        (self.sink, self.session)
+    }
+
     /// 从脚本入口开始执行。
     pub fn run(&mut self) -> RunResult {
         self.run_with_value().0
@@ -413,6 +462,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
 
     /// 从统一入口执行并保留显式返回值，供运行入口构造结构化结果。
     pub(crate) fn run_with_value(&mut self) -> (RunResult, Option<RuntimeValue>) {
+        self.session.tables.reset_program();
         self.run_with_arguments(&[])
     }
 
@@ -426,7 +476,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     ) -> (RunResult, Option<RuntimeValue>) {
         if let Err(error) = self.options.validate() {
             let fatal = FatalError::runtime_invariant(format!("运行参数无效：{error}"));
-            self.tables.fatal.set(true);
+            self.session.tables.fatal.set(true);
             self.sink.record(VmEvent::FatalRaised {
                 code: fatal.code().to_owned(),
             });
@@ -469,16 +519,16 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 target.get()
             ))));
         };
-        if self.tables.depth.get() >= self.options.max_call_depth {
+        if self.session.tables.depth.get() >= self.options.max_call_depth {
             let fatal = FatalError::stack_overflow(format!(
                 "调用深度超过上限 {}",
                 self.options.max_call_depth
             ));
-            self.tables.fatal.set(true);
+            self.session.tables.fatal.set(true);
             return Err(Fault::Fatal(fatal));
         }
-        let depth = self.tables.depth.get() + 1;
-        self.tables.depth.set(depth);
+        let depth = self.session.tables.depth.get() + 1;
+        self.session.tables.depth.set(depth);
         self.metrics.max_call_depth = self.metrics.max_call_depth.max(depth);
         let carrier = C::empty(CarrierContext {
             program,
@@ -504,7 +554,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             Ok(value) => Ok(value),
             Err(fault) => {
                 if matches!(fault, Fault::Fatal(_)) {
-                    self.tables.fatal.set(true);
+                    self.session.tables.fatal.set(true);
                 }
                 self.unwind(&fault);
                 Err(fault)
@@ -531,7 +581,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 .saturating_add(carrier_metrics.call_save_count);
         }
         let outcome = self.finish_table_effects(outcome);
-        self.tables.depth.set(depth - 1);
+        self.session.tables.depth.set(depth - 1);
         self.sink.record(VmEvent::FunctionReturned {
             function: function.name.clone(),
             depth,
@@ -833,7 +883,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     &plan,
                     step.as_ref(),
                     &counts,
-                    &mut *self.tables.random.borrow_mut(),
+                    &mut *self.session.tables.random.borrow_mut(),
                 )
                 .map_err(Fault::Error)?;
                 self.write_operand(instruction.dst, value);
@@ -875,7 +925,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                         "随机种子计划索引不存在",
                     )));
                 }
-                self.tables.random.borrow_mut().reseed(seed);
+                self.session.tables.random.borrow_mut().reseed(seed);
             }
             TacOp::Jump(target) => return Ok(Flow::Jump(*target)),
             TacOp::BranchIf {
@@ -924,6 +974,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     self.execute(FuncId::new(index), &bound, instruction.dst)
                 } else {
                     let (program, source_name) = self
+                        .session
                         .initialized_modules
                         .get(&module)
                         .map(|instance| {
@@ -1599,7 +1650,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             });
             drop(released);
             self.sync_table_events();
-            if self.tables.fatal.get() {
+            if self.session.tables.fatal.get() {
                 break;
             }
         }

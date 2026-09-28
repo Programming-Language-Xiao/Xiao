@@ -39,11 +39,11 @@ pub use run::{
     CancellationSource, CancellationToken, DEFAULT_CHECKPOINT_INTERVAL, DEFAULT_MAX_CALL_DEPTH,
     MAX_MAX_CALL_DEPTH, RunOutcome, RunRequest, RunRequestError, RunResult, VM_OPTIONS_CODE,
     VM_REQUEST_CODE, VmMetrics, VmOptions, VmOptionsError, run, run_checked, run_hybrid,
-    run_production, run_register, run_request, run_with, run_with_machine_seed, run_with_seed,
-    run_with_values,
+    run_production, run_register, run_request, run_request_with_session, run_with,
+    run_with_machine_seed, run_with_seed, run_with_values,
 };
 /// 重导出语义核与终止原因。
-pub use semantics::{Fault, Vm};
+pub use semantics::{Fault, Vm, VmSession};
 /// 重导出调试事件与接收器。
 pub use sink::{
     BoundedSink, DEFAULT_EVENT_CAPACITY, MAX_EVENT_CAPACITY, NullSink, RecordingSink, VmEvent,

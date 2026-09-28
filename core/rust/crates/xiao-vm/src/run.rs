@@ -17,7 +17,7 @@ use crate::machine::hybrid::HybridCarrier;
 use crate::machine::register::RegisterCarrier;
 use crate::machine::stack::StackCarrier;
 use crate::semantics::VmMetadata;
-use crate::semantics::{BoundArgument, Vm};
+use crate::semantics::{BoundArgument, Vm, VmSession};
 use crate::sink::{
     BoundedSink, DEFAULT_EVENT_CAPACITY, MAX_EVENT_CAPACITY, RecordingSink, VmEvent, VmEventSink,
 };
@@ -583,6 +583,19 @@ pub fn run_hybrid(program: &xiao_bytecode::TacProgram, options: VmOptions) -> Ru
 /// 未捕获的普通错误和 Fatal 都通过 [`RunOutcome::report`] 提供统一报告。
 #[must_use]
 pub fn run_request(request: &RunRequest<'_>) -> RunOutcome {
+    run_request_with_session(request, VmSession::new()).0
+}
+
+/// 使用已有会话状态执行一份前端 IR 对应的 TAC。
+///
+/// 每次请求仍然新建主程序 VM；只有成功初始化的模块和表运行时状态会被
+/// 返回给调用方。任何运行时错误、致命故障、取消或不完整的清理状态都会
+/// 丢弃整份会话，避免下一次请求继承不确定状态。
+#[must_use]
+pub fn run_request_with_session(
+    request: &RunRequest<'_>,
+    session: VmSession,
+) -> (RunOutcome, VmSession) {
     let mut sink = BoundedSink::new(request.event_capacity);
     let entry_span = request.entry_span();
     if let Err(error) = verify_for_execution(request.ir, request.program) {
@@ -590,14 +603,20 @@ pub fn run_request(request: &RunRequest<'_>) -> RunOutcome {
         sink.record(VmEvent::FatalRaised {
             code: fatal.code().to_owned(),
         });
-        return production_outcome(RunResult::Fatal(fatal), None, VmMetrics::default(), sink);
+        return (
+            production_outcome(RunResult::Fatal(fatal), None, VmMetrics::default(), sink),
+            VmSession::new(),
+        );
     }
     if let Err(error) = request.validate() {
         let fatal = request_fatal(&error, entry_span);
         sink.record(VmEvent::FatalRaised {
             code: fatal.code().to_owned(),
         });
-        return production_outcome(RunResult::Fatal(fatal), None, VmMetrics::default(), sink);
+        return (
+            production_outcome(RunResult::Fatal(fatal), None, VmMetrics::default(), sink),
+            VmSession::new(),
+        );
     }
 
     let metadata = VmMetadata::new(
@@ -610,13 +629,21 @@ pub fn run_request(request: &RunRequest<'_>) -> RunOutcome {
         request.options,
         sink,
         metadata,
+        session,
     );
     vm.set_cancellation_source(request.cancellation.clone());
     vm.set_module_loader(request.module_loader);
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
-    sink = vm.into_sink();
-    production_outcome(result, value, metrics, sink)
+    let healthy = vm.session_is_healthy();
+    let (vm_sink, session) = vm.into_parts();
+    sink = vm_sink;
+    let session = if healthy && result.is_success() {
+        session
+    } else {
+        VmSession::new()
+    };
+    (production_outcome(result, value, metrics, sink), session)
 }
 
 /// `run_request` 的生产入口别名，供驱动器按动作命名调用。

@@ -38,6 +38,18 @@ impl Default for TableContext {
     }
 }
 
+impl TableContext {
+    /// 清除请求级的备用程序引用，让下一次运行绑定当前主程序。
+    pub(super) fn reset_program(&self) {
+        self.program.borrow_mut().take();
+    }
+
+    /// 判断表运行时没有遗留待处理故障或事件。
+    pub(super) fn is_clean(&self) -> bool {
+        self.pending.borrow().is_empty() && self.events.borrow().is_empty()
+    }
+}
+
 /// 析构帧的事件缓冲；外层执行器在生命周期边界顺序回放。
 struct HookSink(Rc<TableContext>);
 
@@ -66,7 +78,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             .cloned()
             .ok_or_else(|| Fault::Error(XiaoError::invalid_value("表定义索引不存在")))?;
         if !construct {
-            let singletons = self.tables.singletons.borrow();
+            let singletons = self.session.tables.singletons.borrow();
             let weak = singletons
                 .get(&key)
                 .ok_or_else(|| Fault::Error(XiaoError::invalid_value("单例声明尚未执行")))?;
@@ -75,7 +87,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 .map_err(Fault::Error);
         }
         if definition.signature.kind == "singleton"
-            && self.tables.singletons.borrow().contains_key(&key)
+            && self.session.tables.singletons.borrow().contains_key(&key)
         {
             return Err(Fault::Error(XiaoError::invalid_value("单例声明被重复执行")));
         }
@@ -90,14 +102,15 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 .as_ref()
                 .map(Rc::clone)
                 .unwrap_or_else(|| {
-                    self.tables
+                    self.session
+                        .tables
                         .program
                         .borrow_mut()
                         .get_or_insert_with(|| Rc::new(self.program.clone()))
                         .clone()
                 });
             let module = self.current_module.clone();
-            let context = Rc::clone(&self.tables);
+            let context = Rc::clone(&self.session.tables);
             let options = self.options;
             let metadata = self.metadata.clone();
             let cancellation = self.cancellation.clone();
@@ -110,7 +123,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                     Vm::<C, HookSink>::new(&program, options, HookSink(Rc::clone(&context)));
                 vm.current_module = module.clone();
                 vm.metadata = metadata.clone();
-                vm.tables = Rc::clone(&context);
+                vm.session.tables = Rc::clone(&context);
                 vm.pending_base = context.pending.borrow().len();
                 vm.cancellation = cancellation.clone();
                 vm.checkpoint_counter = Rc::clone(&checkpoint_counter);
@@ -173,12 +186,20 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 Ok(()) => Ok(()),
                 Err(Fault::Error(error)) => Err(error),
                 Err(Fault::Fatal(fatal)) => {
-                    self.tables.fatal.set(true);
-                    self.tables.pending.borrow_mut().push(Fault::Fatal(fatal));
+                    self.session.tables.fatal.set(true);
+                    self.session
+                        .tables
+                        .pending
+                        .borrow_mut()
+                        .push(Fault::Fatal(fatal));
                     Err(XiaoError::invalid_value("构造被致命故障中断"))
                 }
                 Err(Fault::Cancelled) => {
-                    self.tables.pending.borrow_mut().push(Fault::Cancelled);
+                    self.session
+                        .tables
+                        .pending
+                        .borrow_mut()
+                        .push(Fault::Cancelled);
                     Err(XiaoError::invalid_value("构造被取消中断"))
                 }
             }
@@ -188,7 +209,8 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
         }
         let instance = self.finish_table_effects(instance.map_err(Fault::Error))?;
         if definition.signature.kind == "singleton" {
-            self.tables
+            self.session
+                .tables
                 .singletons
                 .borrow_mut()
                 .insert(key, instance.downgrade());
@@ -198,13 +220,13 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
 
     /// 回放已经同步完成的钩子事件和指标，保持外层释放动作的原顺序。
     pub(super) fn sync_table_events(&mut self) {
-        let events = std::mem::take(&mut *self.tables.events.borrow_mut());
+        let events = std::mem::take(&mut *self.session.tables.events.borrow_mut());
         for event in events {
             self.sink.record(event);
         }
         self.metrics = add_metrics(
             self.metrics,
-            self.tables.metrics.replace(VmMetrics::default()),
+            self.session.tables.metrics.replace(VmMetrics::default()),
         );
     }
 
@@ -215,6 +237,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
     ) -> Result<T, Fault> {
         self.sync_table_events();
         let pending = self
+            .session
             .tables
             .pending
             .borrow_mut()
@@ -234,7 +257,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             };
         }
         if matches!(result, Err(Fault::Fatal(_))) {
-            self.tables.fatal.set(true);
+            self.session.tables.fatal.set(true);
         }
         result
     }
