@@ -202,13 +202,13 @@ pub(super) fn run_request_response_with_driver(
     if let Some(timeout) = timeout {
         driver_request = driver_request.with_timeout(timeout);
     }
+    let diagnostics = diagnostic_options(diagnostic_config, locale);
     run_with_diagnostics(
         request_id,
         debug,
         module_name,
         source_name,
-        locale,
-        diagnostic_config,
+        diagnostics,
         driver,
         &driver_request,
     )
@@ -306,17 +306,12 @@ pub(super) fn run_with_diagnostics(
     debug: bool,
     module: String,
     source: Option<String>,
-    locale: Option<String>,
-    config: Option<DiagnosticConfig>,
+    diagnostics: DiagnosticOptions,
     driver: &mut FrontendVmDriver,
     request: &DriverRequest,
 ) -> ProtocolResponse {
     let mut session = if debug {
-        match DiagnosticSession::start(
-            module.clone(),
-            source.clone(),
-            &diagnostic_options(config, locale),
-        ) {
+        match DiagnosticSession::start(module.clone(), source.clone(), &diagnostics) {
             Ok(session) => Some(session),
             Err(error) => return diagnostic_start_response(request_id, error),
         }

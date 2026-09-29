@@ -276,12 +276,14 @@ impl DiagnosticSession {
             .any(|target| target_matches(target, &diagnostic) && target.mirror);
         if (!focused || mirrored) && level >= self.file_level {
             self.write_log(&DiagnosticMessage::Event {
-                event: diagnostic.clone(),
+                event: Box::new(diagnostic.clone()),
             });
         }
         self.write_focus_logs(&diagnostic, level);
         if level >= self.terminal_level {
-            self.send(&DiagnosticMessage::Event { event: diagnostic });
+            self.send(&DiagnosticMessage::Event {
+                event: Box::new(diagnostic),
+            });
         }
     }
 
@@ -341,7 +343,7 @@ impl DiagnosticSession {
                 continue;
             }
             let message = DiagnosticMessage::Event {
-                event: event.clone(),
+                event: Box::new(event.clone()),
             };
             if let Ok(line) = serde_json::to_string(&message) {
                 if writeln!(target.writer, "{line}")

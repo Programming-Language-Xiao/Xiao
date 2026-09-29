@@ -162,7 +162,7 @@ pub enum DiagnosticMessage {
     /// 一条事件。
     Event {
         /// 结构化事件。
-        event: DiagnosticEvent,
+        event: Box<DiagnosticEvent>,
     },
     /// 程序结束时的最终指标快照。
     Final {

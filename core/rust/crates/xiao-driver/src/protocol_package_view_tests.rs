@@ -2,8 +2,11 @@
 use super::*;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 use xiao_package::ENVIRONMENT_METADATA_FILE;
+
+static NEXT_WORKSPACE: AtomicU64 = AtomicU64::new(0);
 
 /// 为包视图测试创建单独的环境目录，永不使用用户的全局缓存。
 struct Workspace {
@@ -18,8 +21,11 @@ impl Workspace {
             .duration_since(UNIX_EPOCH)
             .expect("clock")
             .as_nanos();
-        let root =
-            std::env::temp_dir().join(format!("xiao-repl-packages-{}-{stamp}", std::process::id()));
+        let sequence = NEXT_WORKSPACE.fetch_add(1, Ordering::Relaxed);
+        let root = std::env::temp_dir().join(format!(
+            "xiao-repl-packages-{}-{stamp}-{sequence}",
+            std::process::id()
+        ));
         fs::create_dir(&root).expect("create workspace");
         let layout = CacheLayout::from_xiao_home(Some(&root.join("home")), &root).expect("layout");
         Self { root, layout }

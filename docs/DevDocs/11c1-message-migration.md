@@ -276,6 +276,21 @@ CLI 自有文案       **部分已搬**：帮助、确认、保存、面板、�
 
 ---
 
+## 十一、阶段收尾（2026-09-29）
+
+- Rust 内置目录已补齐到已判定的核心消息；覆盖检查得到 **317 个目录键**，源码扫描的
+  6 个额外命中均为测试示例、LLVM 内部标签或锁文件名：`xiao.continue`、`xiao.trap`、
+  `xiao.error.example`、`xiao.error.missing`、`xiao.lock.json`、`xiao.missing.example`，
+  不进入用户目录。
+- `XiaoError`、Fatal 报告、协议诊断、结构化 Runtime 日志和 `-debug` 窗口共用
+  `xiao-i18n` 渲染器；缺少 `message` 参数时统一回退到原始文本，机器字段不变。
+- CLI 状态目录已覆盖环境、Shell 钩子、包操作、构建摘要、测试统计、配置写回和 Git
+  降级提示；`zh-CN` 保留原有中文文案，`en-US` 只改变人类可读文本。
+- `xiao-codegen-llvm` 的 `CodegenError` 仍是后端内部结构，原生构建出口由驱动器统一包装为
+  `x11.driver.native_build`，因此不另造一套后端消息身份。
+- `.xar` 启动入口语言元数据、L3 语言包插件和 L4 完整跨平台验收继续登记为后续债项，
+  本批不声称已完成。
+
 ## 相关页面
 
 - [11C-0. 消息目录与接入](11c0-localization-core.md) —— **`.290-306` 是本批范围来源**
