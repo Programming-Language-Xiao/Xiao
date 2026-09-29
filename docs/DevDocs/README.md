@@ -94,7 +94,8 @@
 | 09-B0-E | [VM 中途取消检查点](09b0e-vm-cancellation-checkpoint.md) | `B0-C-CANCEL-001` 的出口：VM 热循环内的中途检查点、可注入取消源、清理/退出码回归、**单独记录**的性能对照 | 已完成（`Fault::Cancelled` 独立通道、`run_blocks`/`run_subroutine` 检查点、CLI `AbortSignal`、退出码 2 回归；别名层清理仍拆出；**三处收尾见 §九**） |
 | 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 进行中（N0-A/N0-B 已落地；**N0-C 交接文档已就绪**；N0-D 与用户可见 CLI 仍后置） |
 | 10E | [N0-C 错误路径与源码映射](10e-n0c-error-paths-and-mapping.md) | 统一错误路径降低到原生 ABI、`try`/`catch`/`finally` 展开、源码映射与诊断事件、`-debug` 独立诊断窗口、**字节码差分** | 待开工（N0-C。**验收主体是差分**；N0-D 不在本批——先正确性后验证） |
-| 10F | [N0-C 专项审核：`try`/`catch`/`finally` 的 LLVM 控制流](10f-n0c-audit-try-finally.md) | 复核 `31fb944` 对 `emit_try_cleanup` 的「结构性控制流问题」判定；限定 `try`/`catch`/`finally` 的原生发射与 `llvm-as` 验收 | **待独立审核**（`cargo test --workspace` 红；`llvm-as` 拒绝带 `finally` 的产物） |
+| 10F | [N0-C 专项审核：`try`/`catch`/`finally` 的 LLVM 控制流](10f-n0c-audit-try-finally.md) | 复核 `31fb944` 对 `emit_try_cleanup` 的「结构性控制流问题」判定；限定 `try`/`catch`/`finally` 的原生发射与 `llvm-as` 验收 | 已复核（§七：`91a3392` 修复 16 种形态通过真实 `llvm-as`） |
+| 10G | [N0-C-2 错误边界与字节码差分](10g-n0c2-error-boundary-and-differential.md) | N0-C 第 5、7 步 + §3.1：语言上下文接入、平台异常捕获与报告（三平台）、字节码差分（输出/错误/释放记录三样逐项对照） | 待开工（**验收主体是差分**；诊断/-debug 与 UseDocs 归 N0-C-3） |
 | 10A | [LLVM 原生构建闭环](10a-n0-native-closure.md) | 手写 IR 文本 + 外部工具链、`xiao-runtime-abi`、四批交付（N0-A 纯静态 → N0-D 验证裁剪） | N0-A 已完成；N0-B Runtime ABI 已接续落地（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 功能复现；WSL/容器仅作功能证据） |
 | 10B | [N0-B Runtime ABI](10b-n0-runtime-abi.md) | 动态值的 ABI 表示、真实引用计数与 `Weak`、容器与表 ABI、正常路径的释放计划 | 已落地（ABI/容器/表/正常释放计划；异常展开留 N0-C） |
 | 10C | [原生 Runtime 链接缺陷修复交接](10c-native-runtime-link-fix.md) | `LNK1120` 的完整证据、Rust staticlib 原生库查询、MSVC ABI 调用约定修复与实际链接结果 | 已完成（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 动态 Runtime 功能闭环通过；WSL/容器仅作功能证据） |
