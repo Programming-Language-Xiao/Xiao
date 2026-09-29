@@ -57,7 +57,11 @@
       "diagnostics": [
         {
           "code": "X02-TYPE-004",
-          "message_id": "x02.type.compound_result_mismatch"
+          "message_id": "x02.type.compound_result_mismatch",
+          "params": {
+            "result": "set<int | str>",
+            "expected": "set<int>"
+          }
         }
       ]
     }

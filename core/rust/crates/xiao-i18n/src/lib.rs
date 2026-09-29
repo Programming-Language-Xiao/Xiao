@@ -417,6 +417,111 @@ pub fn builtin_renderer() -> MessageRenderer {
     add_entry(
         &mut chinese,
         &mut english,
+        "x02.type.undefined_name",
+        "未定义名称 {name}",
+        "undefined name {name}",
+        &[("name", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x02.type.assignment_mismatch",
+        "不能把 {actual} 赋给已锁定的 {expected}",
+        "cannot assign {actual} to locked {expected}",
+        &[("actual", text), ("expected", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x02.type.uninitialized_read",
+        "名称 {name} 在复合赋值前不能读取",
+        "name {name} cannot be read before compound assignment",
+        &[("name", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x02.type.invalid_compound_operands",
+        "复合赋值不能作用于 {left} 和 {right}",
+        "compound assignment cannot operate on {left} and {right}",
+        &[("left", text), ("right", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x02.type.compound_result_mismatch",
+        "复合赋值结果 {result} 不符合 {expected}",
+        "compound assignment result {result} does not match {expected}",
+        &[("result", text), ("expected", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x02.type.implicit_conversion",
+        "不能隐式把 {source} 转换为 {target}",
+        "cannot implicitly convert {source} to {target}",
+        &[("source", text), ("target", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x02.type.call_arity",
+        "函数需要 {expected} 个参数，实际得到 {actual}",
+        "function expects {expected} arguments but received {actual}",
+        &[("expected", integer), ("actual", integer)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x04.type.for_requires_iterable",
+        "for 的右侧必须是可迭代容器，实际为 {actual_type}",
+        "the right side of for must be iterable, got {actual_type}",
+        &[("actual_type", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x04.type.condition_requires_bool",
+        "条件必须是 bool，实际为 {actual_type}",
+        "condition must be bool, got {actual_type}",
+        &[("actual_type", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x02.type.non_name_assignment_target",
+        "P2 只支持标量名称的复合赋值",
+        "P2 compound assignment supports scalar names only",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x02.type.non_constant_initializer",
+        "const 的初始化表达式必须能在编译期求值",
+        "a const initializer must be evaluable at compile time",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x02.type.conversion_arity",
+        "标量转换函数必须接收一个参数",
+        "a scalar conversion function must receive one argument",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x07.type.fatal_constructor",
+        "FatalError 不能构造为可恢复错误对象",
+        "FatalError cannot be constructed as a recoverable error",
+        no_params,
+    );
+
+    add_entry(
+        &mut chinese,
+        &mut english,
         "runtime.type_mismatch",
         "期望类型 {expected}，实际为 {actual}",
         "expected type {expected}, got {actual}",

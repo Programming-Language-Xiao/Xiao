@@ -32,11 +32,15 @@ impl<'source> TypeChecker<'source> {
 
     /// 追加未定义名称诊断。
     pub(super) fn undefined_name(&mut self, name: xiao_syntax::Name) {
-        self.type_error(
+        self.type_error_with_params(
             UNDEFINED_NAME_CODE,
             "x02.type.undefined_name",
             name.span,
             format!("未定义名称 {}", self.display_name(name)),
+            [(
+                "name".to_owned(),
+                DiagnosticParam::Text(self.display_name(name)),
+            )],
         );
     }
 

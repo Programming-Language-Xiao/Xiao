@@ -2,6 +2,7 @@
 //!
 //! 语句模块只负责静态环境更新和语句级约束，复杂表达式规则由 `expression.rs` 提供。
 
+use xiao_diagnostics::DiagnosticParam;
 use xiao_syntax::{
     AssignmentOperator, BinaryOperator, DeclaredType, Expression, ImportStatement, IndexPath,
     ScalarType, Statement,
@@ -134,11 +135,21 @@ impl<'source> TypeChecker<'source> {
                 );
             }
             if !self.types_compatible_for_assignment(&value_type, &existing_type) {
-                self.type_error(
+                self.type_error_with_params(
                     ASSIGNMENT_TYPE_MISMATCH_CODE,
                     "x02.type.assignment_mismatch",
                     target.span,
                     format!("不能把 {} 赋给已锁定的 {}", value_type, existing_type),
+                    [
+                        (
+                            "actual".to_owned(),
+                            DiagnosticParam::Text(value_type.to_string()),
+                        ),
+                        (
+                            "expected".to_owned(),
+                            DiagnosticParam::Text(existing_type.to_string()),
+                        ),
+                    ],
                 );
             } else {
                 if value_type.is_container() && !binding.container_constraints.is_empty() {
@@ -204,11 +215,15 @@ impl<'source> TypeChecker<'source> {
         };
         let initialized = binding.initialized;
         if !initialized {
-            self.type_error(
+            self.type_error_with_params(
                 UNINITIALIZED_READ_CODE,
                 "x02.type.uninitialized_read",
                 name.span,
                 format!("名称 {} 在复合赋值前不能读取", self.display_name(name)),
+                [(
+                    "name".to_owned(),
+                    DiagnosticParam::Text(self.display_name(name)),
+                )],
             );
         }
         let left_type = self.context.instantiate(binding.scheme());
@@ -268,11 +283,21 @@ impl<'source> TypeChecker<'source> {
                     }
                     _ => {
                         operation_valid = false;
-                        self.type_error(
+                        self.type_error_with_params(
                             INVALID_OPERANDS_CODE,
                             "x02.type.invalid_compound_operands",
                             target.span(),
                             format!("复合赋值不能作用于 {} 和 {}", left_type, right_type),
+                            [
+                                (
+                                    "left".to_owned(),
+                                    DiagnosticParam::Text(left_type.to_string()),
+                                ),
+                                (
+                                    "right".to_owned(),
+                                    DiagnosticParam::Text(right_type.to_string()),
+                                ),
+                            ],
                         );
                         Type::Dynamic
                     }
@@ -280,11 +305,21 @@ impl<'source> TypeChecker<'source> {
             }
         } else {
             operation_valid = false;
-            self.type_error(
+            self.type_error_with_params(
                 INVALID_OPERANDS_CODE,
                 "x02.type.invalid_compound_operands",
                 target.span(),
                 format!("复合赋值不能作用于 {} 和 {}", left_type, right_type),
+                [
+                    (
+                        "left".to_owned(),
+                        DiagnosticParam::Text(left_type.to_string()),
+                    ),
+                    (
+                        "right".to_owned(),
+                        DiagnosticParam::Text(right_type.to_string()),
+                    ),
+                ],
             );
             Type::Dynamic
         };
@@ -357,11 +392,21 @@ impl<'source> TypeChecker<'source> {
             && !dynamic_operation
             && !self.types_compatible_for_assignment(&result_type, left_type)
         {
-            self.type_error(
+            self.type_error_with_params(
                 ASSIGNMENT_TYPE_MISMATCH_CODE,
                 "x02.type.compound_result_mismatch",
                 target.span(),
                 format!("复合赋值结果 {} 不符合 {}", result_type, left_type),
+                [
+                    (
+                        "result".to_owned(),
+                        DiagnosticParam::Text(result_type.to_string()),
+                    ),
+                    (
+                        "expected".to_owned(),
+                        DiagnosticParam::Text(left_type.to_string()),
+                    ),
+                ],
             );
         } else if operation_valid {
             if let Err(error) = self.environment.assign(key) {
@@ -547,11 +592,21 @@ impl<'source> TypeChecker<'source> {
             return;
         }
 
-        self.type_error(
+        self.type_error_with_params(
             ASSIGNMENT_TYPE_MISMATCH_CODE,
             "x02.type.implicit_conversion",
             expression.span(),
             format!("不能隐式把 {} 转换为 {}", source_type, target.as_str()),
+            [
+                (
+                    "source".to_owned(),
+                    DiagnosticParam::Text(source_type.to_string()),
+                ),
+                (
+                    "target".to_owned(),
+                    DiagnosticParam::Text(target.as_str().to_owned()),
+                ),
+            ],
         );
     }
 }

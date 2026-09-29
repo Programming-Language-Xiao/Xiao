@@ -3,7 +3,7 @@
 //! 表达式模块负责递归类型化并保留原有诊断/运行时检查顺序；
 //! 容器、函数和表的专门规则仍由各自子模块提供。
 
-use xiao_diagnostics::error_kind_of;
+use xiao_diagnostics::{DiagnosticParam, error_kind_of};
 use xiao_source::SourceSpan;
 use xiao_syntax::{
     BinaryOperator, CallArgument, Expression, LiteralKind, ScalarType, UnaryOperator,
@@ -631,7 +631,7 @@ impl<'source> TypeChecker<'source> {
         } = callee_type
         {
             if parameters.len() != argument_types.len() {
-                self.type_error(
+                self.type_error_with_params(
                     INVALID_OPERANDS_CODE,
                     "x02.type.call_arity",
                     span,
@@ -640,6 +640,16 @@ impl<'source> TypeChecker<'source> {
                         parameters.len(),
                         argument_types.len()
                     ),
+                    [
+                        (
+                            "expected".to_owned(),
+                            DiagnosticParam::Integer(parameters.len() as i128),
+                        ),
+                        (
+                            "actual".to_owned(),
+                            DiagnosticParam::Integer(argument_types.len() as i128),
+                        ),
+                    ],
                 );
             } else {
                 for (expected, actual) in parameters.iter().zip(argument_types.iter()) {
