@@ -2,7 +2,9 @@
 
 use std::collections::BTreeMap;
 
-use xiao_i18n::{LocaleContext, MessageParam, MessageRenderer, builtin_renderer};
+use xiao_i18n::{
+    LocaleContext, MessageParam, MessageRenderer, builtin_renderer, render_with_original_message,
+};
 
 use super::message::{
     ProtocolDiagnostic, ProtocolErrorBody, ProtocolParam, ProtocolReport, ProtocolResponse,
@@ -148,6 +150,5 @@ fn render_text(
             (key.clone(), param)
         })
         .collect();
-    let rendered = renderer.render(locale, id, &params);
-    rendered.text
+    render_with_original_message(renderer, locale, id, &params, original).text
 }

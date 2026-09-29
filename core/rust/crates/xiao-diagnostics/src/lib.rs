@@ -7,7 +7,9 @@ use std::collections::BTreeMap;
 use std::fmt::{self, Display, Formatter};
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use xiao_i18n::{LocaleContext, MessageParam, MessageRenderer as CatalogRenderer};
+use xiao_i18n::{
+    LocaleContext, MessageParam, MessageRenderer as CatalogRenderer, render_with_original_message,
+};
 use xiao_source::SourceSpan;
 
 /// 独立诊断进程的帧协议和终端渲染辅助模块。
@@ -1374,9 +1376,14 @@ fn localized_message(
     if locale.tag() == "zh-CN" {
         return report.message.clone();
     }
-    renderer
-        .render(locale, &report.message_id, &catalog_params(&report.params))
-        .text
+    render_with_original_message(
+        renderer,
+        locale,
+        &report.message_id,
+        &catalog_params(&report.params),
+        &report.message,
+    )
+    .text
 }
 
 /// 使用共享内置消息渲染器生成当前语言下的多行报告。

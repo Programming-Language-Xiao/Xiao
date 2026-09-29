@@ -247,6 +247,34 @@ impl MessageRenderer {
     }
 }
 
+/// 先按结构化参数渲染；目录只要求原始整句时，安全地以 `message` 参数重试。
+///
+/// 该入口供协议、报告、日志和独立诊断窗口共享，避免每个输出边界复制不同的
+/// 缺参回退逻辑。原始文本只作为展示参数，不会写回机器字段。
+#[must_use]
+pub fn render_with_original_message(
+    renderer: &MessageRenderer,
+    locale: &LocaleContext,
+    id: &str,
+    params: &BTreeMap<String, MessageParam>,
+    original: &str,
+) -> RenderedMessage {
+    let rendered = renderer.render(locale, id, params);
+    if !rendered.format_failed || params.contains_key("message") {
+        return rendered;
+    }
+    let fallback_params = BTreeMap::from([(
+        "message".to_owned(),
+        MessageParam::Text(original.to_owned()),
+    )]);
+    let fallback = renderer.render(locale, id, &fallback_params);
+    if fallback.format_failed {
+        rendered
+    } else {
+        fallback
+    }
+}
+
 fn identity_text(id: &str, params: &BTreeMap<String, MessageParam>) -> String {
     if params.is_empty() {
         return id.to_owned();
@@ -736,6 +764,533 @@ pub fn builtin_renderer() -> MessageRenderer {
         no_params,
     );
 
+    let syntax_entries = [
+        ("x01.lex.inconsistent_indent", "syntax error: {message}"),
+        ("x01.lex.invalid_backtick_escape", "syntax error: {message}"),
+        ("x01.lex.invalid_character", "syntax error: {message}"),
+        ("x01.lex.invalid_escape", "syntax error: {message}"),
+        ("x01.lex.invalid_number", "syntax error: {message}"),
+        ("x01.lex.unmatched_delimiter", "syntax error: {message}"),
+        ("x01.lex.unterminated_backtick", "syntax error: {message}"),
+        ("x01.lex.unterminated_delimiter", "syntax error: {message}"),
+        (
+            "x01.lex.unterminated_doc_comment",
+            "syntax error: {message}",
+        ),
+        ("x01.lex.unterminated_string", "syntax error: {message}"),
+        ("x01.parse.empty_selector", "syntax error: {message}"),
+        ("x01.parse.invalid_assignment", "syntax error: {message}"),
+        (
+            "x01.parse.invalid_assignment_target",
+            "syntax error: {message}",
+        ),
+        ("x01.parse.invalid_cast_target", "syntax error: {message}"),
+        ("x01.parse.invalid_expression", "syntax error: {message}"),
+        ("x01.parse.invalid_path_segment", "syntax error: {message}"),
+        ("x01.parse.invalid_random_count", "syntax error: {message}"),
+        (
+            "x01.parse.missing_assignment_value",
+            "syntax error: {message}",
+        ),
+        ("x01.parse.missing_call_argument", "syntax error: {message}"),
+        ("x01.parse.missing_delimiter", "syntax error: {message}"),
+        ("x01.parse.missing_expression", "syntax error: {message}"),
+        (
+            "x01.parse.missing_group_expression",
+            "syntax error: {message}",
+        ),
+        ("x01.parse.missing_member_name", "syntax error: {message}"),
+        ("x01.parse.missing_new_callee", "syntax error: {message}"),
+        ("x01.parse.missing_path_segment", "syntax error: {message}"),
+        ("x01.parse.missing_random_count", "syntax error: {message}"),
+        (
+            "x01.parse.missing_range_endpoint",
+            "syntax error: {message}",
+        ),
+        ("x01.parse.missing_step", "syntax error: {message}"),
+        ("x01.parse.missing_tuple_element", "syntax error: {message}"),
+        ("x01.parse.missing_unary_operand", "syntax error: {message}"),
+        ("x01.parse.new_call_parentheses", "syntax error: {message}"),
+        ("x01.parse.step_without_selector", "syntax error: {message}"),
+        (
+            "x01.parse.trailing_selector_comma",
+            "syntax error: {message}",
+        ),
+        ("x01.parse.unsupported_block", "syntax error: {message}"),
+        (
+            "x01.parse.unsupported_expression",
+            "syntax error: {message}",
+        ),
+        ("x02.parse.invalid_declaration", "syntax error: {message}"),
+        (
+            "x02.parse.invalid_declaration_tail",
+            "syntax error: {message}",
+        ),
+        (
+            "x02.parse.invalid_declaration_target",
+            "syntax error: {message}",
+        ),
+        (
+            "x02.parse.invalid_declaration_value",
+            "syntax error: {message}",
+        ),
+        ("x02.parse.missing_const_value", "syntax error: {message}"),
+        (
+            "x03.parse.const_path_not_supported",
+            "syntax error: {message}",
+        ),
+        (
+            "x03.parse.const_set_type_not_supported",
+            "syntax error: {message}",
+        ),
+        (
+            "x03.parse.empty_set_type_annotation",
+            "syntax error: {message}",
+        ),
+        ("x03.parse.invalid_dict_key", "syntax error: {message}"),
+        ("x03.parse.invalid_set_separator", "syntax error: {message}"),
+        (
+            "x03.parse.invalid_set_type_annotation",
+            "syntax error: {message}",
+        ),
+        ("x03.parse.invalid_set_type_term", "syntax error: {message}"),
+        ("x03.parse.missing_array_element", "syntax error: {message}"),
+        ("x03.parse.missing_dict_equal", "syntax error: {message}"),
+        ("x03.parse.missing_dict_value", "syntax error: {message}"),
+        ("x03.parse.missing_set_comma", "syntax error: {message}"),
+        ("x03.parse.missing_set_element", "syntax error: {message}"),
+        ("x03.parse.mixed_brace_entries", "syntax error: {message}"),
+        (
+            "x03.parse.set_type_path_not_supported",
+            "syntax error: {message}",
+        ),
+        (
+            "x03.parse.trailing_set_type_pipe",
+            "syntax error: {message}",
+        ),
+        ("x04.parse.control_header_tail", "syntax error: {message}"),
+        ("x04.parse.duplicate_main", "syntax error: {message}"),
+        ("x04.parse.empty_block", "syntax error: {message}"),
+        ("x04.parse.for_header_tail", "syntax error: {message}"),
+        ("x04.parse.for_missing_in", "syntax error: {message}"),
+        ("x04.parse.for_missing_iterable", "syntax error: {message}"),
+        ("x04.parse.function_header_tail", "syntax error: {message}"),
+        ("x04.parse.function_parentheses", "syntax error: {message}"),
+        ("x04.parse.invalid_parameter", "syntax error: {message}"),
+        ("x04.parse.invalid_return", "syntax error: {message}"),
+        ("x04.parse.invalid_return_type", "syntax error: {message}"),
+        ("x04.parse.loop_control_tail", "syntax error: {message}"),
+        ("x04.parse.main_tail", "syntax error: {message}"),
+        ("x04.parse.missing_block_newline", "syntax error: {message}"),
+        ("x04.parse.missing_condition", "syntax error: {message}"),
+        ("x04.parse.missing_function_name", "syntax error: {message}"),
+        ("x04.parse.missing_indent", "syntax error: {message}"),
+        ("x04.parse.return_tail", "syntax error: {message}"),
+        ("x04.parse.unexpected_indent", "syntax error: {message}"),
+        ("x05.parse.empty_table_body", "syntax error: {message}"),
+        ("x05.parse.import_tail", "syntax error: {message}"),
+        ("x05.parse.invalid_import_alias", "syntax error: {message}"),
+        ("x05.parse.invalid_table_member", "syntax error: {message}"),
+        ("x05.parse.invalid_table_name", "syntax error: {message}"),
+        ("x05.parse.missing_from_import", "syntax error: {message}"),
+        ("x05.parse.missing_import_alias", "syntax error: {message}"),
+        ("x05.parse.missing_import_name", "syntax error: {message}"),
+        ("x05.parse.missing_import_path", "syntax error: {message}"),
+        (
+            "x05.parse.missing_import_segment",
+            "syntax error: {message}",
+        ),
+        ("x05.parse.missing_table_indent", "syntax error: {message}"),
+        ("x05.parse.nested_table", "syntax error: {message}"),
+        ("x05.parse.relative_import", "syntax error: {message}"),
+        ("x05.parse.table_body_newline", "syntax error: {message}"),
+        ("x05.parse.table_header_tail", "syntax error: {message}"),
+        ("x05.parse.trailing_import_comma", "syntax error: {message}"),
+        (
+            "x05.parse.unexpected_table_indent",
+            "syntax error: {message}",
+        ),
+        ("x05.parse.wildcard_import", "syntax error: {message}"),
+        ("x07.parse.catch_header_tail", "syntax error: {message}"),
+        ("x07.parse.catch_missing_as", "syntax error: {message}"),
+        ("x07.parse.missing_handler", "syntax error: {message}"),
+        ("x07.parse.missing_raise_value", "syntax error: {message}"),
+        ("x07.parse.raise_tail", "syntax error: {message}"),
+    ];
+    for (id, english_text) in syntax_entries {
+        add_entry(
+            &mut chinese,
+            &mut english,
+            id,
+            "{message}",
+            english_text,
+            &[("message", text)],
+        );
+    }
+
+    let remaining_entries = [
+        ("x01.lex.invalid", "lexer error: {message}"),
+        ("x02.type.arithmetic_error", "type error: {message}"),
+        ("x02.type.assign_immutable", "type error: {message}"),
+        ("x02.type.duplicate_declaration", "type error: {message}"),
+        ("x02.type.invalid_binary_operands", "type error: {message}"),
+        ("x02.type.invalid_conversion", "type error: {message}"),
+        ("x02.type.invalid_string_boolean", "type error: {message}"),
+        ("x02.type.invalid_unary_operand", "type error: {message}"),
+        ("x02.type.member_not_scalar", "type error: {message}"),
+        ("x02.type.unification_error", "type error: {message}"),
+        ("x03.type.array_element_mismatch", "type error: {message}"),
+        (
+            "x03.type.container_binding_expected",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.container_redeclaration_mismatch",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.duplicate_container_declaration",
+            "type error: {message}",
+        ),
+        ("x03.type.duplicate_dictionary_key", "type error: {message}"),
+        ("x03.type.index_out_of_bounds", "type error: {message}"),
+        ("x03.type.invalid_path", "type error: {message}"),
+        ("x03.type.invalid_path_segment", "type error: {message}"),
+        ("x03.type.key_not_found", "type error: {message}"),
+        ("x03.type.path_requires_container", "type error: {message}"),
+        ("x03.type.random_count_integer", "type error: {message}"),
+        ("x03.type.random_count_negative", "type error: {message}"),
+        ("x03.type.random_count_range", "type error: {message}"),
+        ("x03.type.random_empty_source", "type error: {message}"),
+        ("x03.type.random_seed_arity", "type error: {message}"),
+        ("x03.type.random_seed_integer", "type error: {message}"),
+        ("x03.type.random_seed_non_negative", "type error: {message}"),
+        ("x03.type.random_seed_range", "type error: {message}"),
+        (
+            "x03.type.random_without_replacement_exhausted",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.selector_assignment_immutable",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.selector_assignment_operator",
+            "type error: {message}",
+        ),
+        ("x03.type.selector_assignment_plan", "type error: {message}"),
+        (
+            "x03.type.selector_assignment_random",
+            "type error: {message}",
+        ),
+        ("x03.type.selector_assignment_root", "type error: {message}"),
+        (
+            "x03.type.selector_assignment_scalar_required",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.selector_assignment_target",
+            "type error: {message}",
+        ),
+        ("x03.type.selector_assignment_type", "type error: {message}"),
+        ("x03.type.selector_invalid_index", "type error: {message}"),
+        (
+            "x03.type.selector_range_unordered_path",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.selector_source_not_ordered",
+            "type error: {message}",
+        ),
+        ("x03.type.selector_step_integer", "type error: {message}"),
+        ("x03.type.selector_step_zero", "type error: {message}"),
+        (
+            "x03.type.selector_unordered_advanced",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.set_comparison_requires_sets",
+            "type error: {message}",
+        ),
+        ("x03.type.set_constructor_arity", "type error: {message}"),
+        ("x03.type.set_duplicate_element", "type error: {message}"),
+        (
+            "x03.type.set_element_type_mismatch",
+            "type error: {message}",
+        ),
+        ("x03.type.set_index_unsupported", "type error: {message}"),
+        (
+            "x03.type.set_initializer_requires_set",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.set_membership_element_mismatch",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.set_membership_requires_set",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.set_operation_requires_sets",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.set_type_path_not_supported",
+            "type error: {message}",
+        ),
+        ("x03.type.set_unhashable_element", "type error: {message}"),
+        (
+            "x03.type.set_unhashable_membership",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.typed_prefix_requires_container",
+            "type error: {message}",
+        ),
+        ("x04.type.break_outside_loop", "type error: {message}"),
+        ("x04.type.call_argument", "type error: {message}"),
+        ("x04.type.call_argument_type", "type error: {message}"),
+        ("x04.type.continue_outside_loop", "type error: {message}"),
+        ("x04.type.default_parameter_type", "type error: {message}"),
+        ("x04.type.duplicate_function", "type error: {message}"),
+        ("x04.type.implicit_none_return", "type error: {message}"),
+        ("x04.type.return_mismatch", "type error: {message}"),
+        ("x04.type.return_outside_function", "type error: {message}"),
+        ("x04.type.star_argument_type", "type error: {message}"),
+        ("x04.type.unresolved_parameter", "type error: {message}"),
+        ("x04.type.unresolved_return", "type error: {message}"),
+        (
+            "x05.config.dictionary_requires_equals",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.dotted_table_forbidden",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.duplicate_dictionary_key",
+            "configuration error: {message}",
+        ),
+        ("x05.config.duplicate_key", "configuration error: {message}"),
+        (
+            "x05.config.duplicate_table",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.executable_member_forbidden",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.indented_table_header",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.instance_table_forbidden",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.integer_out_of_range",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.invalid_backtick_name",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.invalid_dependency_constraint",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.invalid_dependency_git",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.invalid_dependency_path",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.invalid_dependency_source",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.invalid_dictionary_key",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.invalid_export_path",
+            "configuration error: {message}",
+        ),
+        ("x05.config.invalid_float", "configuration error: {message}"),
+        (
+            "x05.config.invalid_source_git_ref",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.invalid_string",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.invalid_table_name",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.missing_array_comma",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.missing_dependency_path",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.missing_dictionary_comma",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.missing_equals",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.missing_project_field",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.missing_project_table",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.missing_source_field",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.missing_table_close",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.nested_table_forbidden",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.non_literal_value",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.sign_requires_number",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.top_level_requires_table",
+            "configuration error: {message}",
+        ),
+        (
+            "x05.config.trailing_expression_forbidden",
+            "configuration error: {message}",
+        ),
+        ("x05.config.type_mismatch", "configuration error: {message}"),
+        (
+            "x05.config.unknown_dependency_field",
+            "configuration error: {message}",
+        ),
+        ("x05.config.unknown_field", "configuration error: {message}"),
+        (
+            "x05.config.unknown_source_field",
+            "configuration error: {message}",
+        ),
+        ("x05.config.unknown_table", "configuration error: {message}"),
+        ("x05.module.case_fold_conflict", "module error: {message}"),
+        (
+            "x05.module.file_namespace_conflict",
+            "module error: {message}",
+        ),
+        (
+            "x05.module.import_binding_conflict",
+            "module error: {message}",
+        ),
+        ("x05.module.import_cycle", "module error: {message}"),
+        ("x05.module.invalid_file_name", "module error: {message}"),
+        (
+            "x05.module.invalid_qualifier_use",
+            "module error: {message}",
+        ),
+        ("x05.module.invalid_utf8", "module error: {message}"),
+        (
+            "x05.module.missing_import_symbol",
+            "module error: {message}",
+        ),
+        (
+            "x05.module.missing_import_target",
+            "module error: {message}",
+        ),
+        (
+            "x05.module.namespace_case_fold_conflict",
+            "module error: {message}",
+        ),
+        ("x05.module.non_utf8_path", "module error: {message}"),
+        (
+            "x05.module.project_root_not_directory",
+            "module error: {message}",
+        ),
+        ("x05.module.read_directory", "module error: {message}"),
+        ("x05.module.read_file", "module error: {message}"),
+        ("x05.module.read_file_type", "module error: {message}"),
+        (
+            "x05.package.invalid_metadata",
+            "package metadata error: {message}",
+        ),
+        ("x05.type.assign_method", "type error: {message}"),
+        ("x05.type.constructor_argument", "type error: {message}"),
+        (
+            "x05.type.constructor_argument_type",
+            "type error: {message}",
+        ),
+        ("x05.type.constructor_arity", "type error: {message}"),
+        ("x05.type.drop_arity", "type error: {message}"),
+        ("x05.type.duplicate_table", "type error: {message}"),
+        ("x05.type.duplicate_table_member", "type error: {message}"),
+        (
+            "x05.type.dynamic_table_initializer",
+            "type error: {message}",
+        ),
+        ("x05.type.invalid_table_member", "type error: {message}"),
+        ("x05.type.lifecycle_return", "type error: {message}"),
+        ("x05.type.method_default_parameter", "type error: {message}"),
+        (
+            "x05.type.method_implicit_none_return",
+            "type error: {message}",
+        ),
+        ("x05.type.method_requires_self", "type error: {message}"),
+        ("x05.type.new_requires_table", "type error: {message}"),
+        ("x05.type.private_table_member", "type error: {message}"),
+        (
+            "x05.type.singleton_not_constructible",
+            "type error: {message}",
+        ),
+        (
+            "x05.type.table_field_type_mismatch",
+            "type error: {message}",
+        ),
+        ("x05.type.unknown_table", "type error: {message}"),
+        ("x05.type.unknown_table_member", "type error: {message}"),
+        ("x06.lifetime.dynamic_check", "lifetime error: {message}"),
+        ("x06.lifetime.invalid_edge", "lifetime error: {message}"),
+        ("x06.lifetime.strong_cycle", "lifetime error: {message}"),
+        ("x06.lifetime.unknown_value", "lifetime error: {message}"),
+        ("x07.type.catch_order", "type error: {message}"),
+        ("x07.type.fatal_not_catchable", "type error: {message}"),
+        ("x07.type.invalid_catch_type", "type error: {message}"),
+        ("x07.type.raise_requires_error", "type error: {message}"),
+    ];
+    for (id, english_text) in remaining_entries {
+        add_entry(
+            &mut chinese,
+            &mut english,
+            id,
+            "{message}",
+            english_text,
+            &[("message", text)],
+        );
+    }
+
     add_entry(
         &mut chinese,
         &mut english,
@@ -751,6 +1306,158 @@ pub fn builtin_renderer() -> MessageRenderer {
         "请求已取消",
         "request cancelled",
         no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.protocol.frame",
+        "{message}",
+        "protocol framing failed: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.protocol.request",
+        "{message}",
+        "invalid protocol request: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.protocol.optimization_unavailable",
+        "{message}",
+        "optimization is unavailable: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.protocol.test_response",
+        "{message}",
+        "invalid test response: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.driver.native_build",
+        "{message}",
+        "native build failed: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.driver.rejected",
+        "{message}",
+        "driver rejected the request: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.diagnostics.start_failed",
+        "{message}",
+        "diagnostics startup failed: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.diagnostics.activation_cleanup_failed",
+        "{message}",
+        "unable to clean up diagnostics activation: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.diagnostics.activation_write_failed",
+        "{message}",
+        "unable to write diagnostics activation: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.diagnostics.component_copy_failed",
+        "{message}",
+        "unable to stage the diagnostics component: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.repl.package.root_conflict",
+        "{message}",
+        "package root conflict: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.repl.package.view_failed",
+        "{message}",
+        "unable to query the package view: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x05.package.operation",
+        "{message}",
+        "package operation failed: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "fatal.runtime_invariant",
+        "{message}",
+        "runtime invariant failure: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "fatal.corrupt_artifact",
+        "{message}",
+        "corrupt artifact: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "fatal.out_of_memory",
+        "{message}",
+        "out of memory: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "fatal.stack_overflow",
+        "{message}",
+        "stack overflow: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "fatal.hardware",
+        "{message}",
+        "hardware failure: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "fatal.internal",
+        "{message}",
+        "internal failure: {message}",
+        &[("message", text)],
     );
     add_entry(
         &mut chinese,

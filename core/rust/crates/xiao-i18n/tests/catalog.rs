@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use xiao_i18n::{
     Catalog, Fallback, LocaleContext, MessageParam, MessageRenderer, MessageTemplate, ParamKind,
-    builtin_renderer,
+    builtin_renderer, render_with_original_message,
 };
 
 fn entry(text: &str) -> MessageTemplate {
@@ -114,4 +114,19 @@ fn interpolation_does_not_reprocess_inserted_user_text() {
             .text,
         "{count} (7)"
     );
+}
+
+#[test]
+fn missing_message_parameter_retries_with_original_text() {
+    let renderer = builtin_renderer();
+    let result = render_with_original_message(
+        &renderer,
+        &LocaleContext::new("en-US"),
+        "fatal.stack_overflow",
+        &BTreeMap::new(),
+        "调用栈已耗尽",
+    );
+    assert_eq!(result.fallback, Fallback::Exact);
+    assert!(!result.format_failed);
+    assert_eq!(result.text, "stack overflow: 调用栈已耗尽");
 }
