@@ -7,8 +7,8 @@ use std::collections::BTreeMap;
 use std::fmt::{self, Display, Formatter};
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use xiao_source::SourceSpan;
 use xiao_i18n::{LocaleContext, MessageParam, MessageRenderer as CatalogRenderer};
+use xiao_source::SourceSpan;
 
 /// 独立诊断进程的帧协议和终端渲染辅助模块。
 pub mod window;
@@ -1501,11 +1501,7 @@ mod tests {
         let error = XiaoError::type_mismatch("str", "int");
         let report = error.report();
         let renderer = xiao_i18n::builtin_renderer();
-        let english = render_localized_text(
-            &report,
-            &LocaleContext::new("en-US"),
-            &renderer,
-        );
+        let english = render_localized_text(&report, &LocaleContext::new("en-US"), &renderer);
         assert!(english.contains("expected type str, got int"));
         let chinese = render_localized_text(&report, &LocaleContext::default(), &renderer);
         assert!(chinese.contains("期望类型 str，实际为 int"));

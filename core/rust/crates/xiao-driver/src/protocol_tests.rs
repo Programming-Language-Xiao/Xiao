@@ -483,6 +483,35 @@ fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
     assert_eq!(english[0].code, chinese[0].code);
     assert_eq!(english[0].message_id, chinese[0].message_id);
 
+    let original = || ProtocolResponse::Result {
+        request_id: "locale-default-text".to_owned(),
+        operation: "run".to_owned(),
+        exit_code: 1,
+        exit_name: "source_rejected".to_owned(),
+        diagnostics: vec![ProtocolDiagnostic {
+            code: "X11-TEST-001".to_owned(),
+            message_id: "xiao.status.cancelled".to_owned(),
+            severity: "error".to_owned(),
+            span: None,
+            params: Default::default(),
+            message: "原始中文文本".to_owned(),
+            text: None,
+        }],
+        report: None,
+        events: vec![],
+        metrics: None,
+        value: None,
+        artifact: None,
+    };
+    let ProtocolResponse::Result { diagnostics, .. } = super::localize::with_locale(
+        "locale-default-text".to_owned(),
+        Some("zh-CN".to_owned()),
+        original,
+    ) else {
+        panic!("expected run response");
+    };
+    assert_eq!(diagnostics[0].text.as_deref(), Some("原始中文文本"));
+
     let mut unknown = response();
     if let ProtocolResponse::Result { diagnostics, .. } = &mut unknown {
         diagnostics[0].message_id = "xiao.missing.example".to_owned();

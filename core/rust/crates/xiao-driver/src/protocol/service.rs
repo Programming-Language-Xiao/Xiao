@@ -63,12 +63,13 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             optimization,
             source,
             options,
-        } => with_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale.clone(), || {
             run_request_response(
                 request_id,
                 protocol_version,
                 core_version,
                 language_version,
+                locale,
                 target,
                 optimization,
                 source,
@@ -87,12 +88,13 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             optimization,
             cases,
             options,
-        } => with_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale.clone(), || {
             test_request_response(
                 request_id,
                 protocol_version,
                 core_version,
                 language_version,
+                locale,
                 target,
                 optimization,
                 cases,
@@ -587,12 +589,13 @@ fn session_worker_response(
             optimization,
             source,
             options,
-        } => with_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale.clone(), || {
             run_request_response_with_driver(
                 request_id,
                 protocol_version,
                 core_version,
                 language_version,
+                locale,
                 target,
                 optimization,
                 source,
@@ -623,12 +626,13 @@ pub(super) fn worker_response(
             optimization,
             source,
             options,
-        } => with_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale.clone(), || {
             run_request_response(
                 request_id,
                 protocol_version,
                 core_version,
                 language_version,
+                locale,
                 target,
                 optimization,
                 source,
@@ -647,12 +651,13 @@ pub(super) fn worker_response(
             optimization,
             cases,
             options,
-        } => with_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale.clone(), || {
             test_request_response(
                 request_id,
                 protocol_version,
                 core_version,
                 language_version,
+                locale,
                 target,
                 optimization,
                 cases,

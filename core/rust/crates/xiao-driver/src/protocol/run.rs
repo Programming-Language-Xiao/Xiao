@@ -118,6 +118,7 @@ pub(super) fn run_request_response(
     protocol_version: u16,
     core_version: u32,
     language_version: String,
+    locale: Option<String>,
     target: ProtocolTarget,
     optimization: OptimizationConfig,
     source: SourceIdentity,
@@ -131,6 +132,7 @@ pub(super) fn run_request_response(
         protocol_version,
         core_version,
         language_version,
+        locale,
         target,
         optimization,
         source,
@@ -148,6 +150,7 @@ pub(super) fn run_request_response_with_driver(
     protocol_version: u16,
     core_version: u32,
     language_version: String,
+    locale: Option<String>,
     target: ProtocolTarget,
     optimization: OptimizationConfig,
     source: SourceIdentity,
@@ -204,6 +207,7 @@ pub(super) fn run_request_response_with_driver(
         debug,
         module_name,
         source_name,
+        locale,
         diagnostic_config,
         driver,
         &driver_request,
@@ -242,9 +246,15 @@ fn run_response(
 }
 
 /// 把协议诊断配置转换成 Runtime 会话配置。
-fn diagnostic_options(config: Option<DiagnosticConfig>) -> DiagnosticOptions {
+fn diagnostic_options(
+    config: Option<DiagnosticConfig>,
+    locale: Option<String>,
+) -> DiagnosticOptions {
     let Some(config) = config else {
-        return DiagnosticOptions::default();
+        return DiagnosticOptions {
+            locale,
+            ..DiagnosticOptions::default()
+        };
     };
     DiagnosticOptions {
         terminal_level: config.terminal_level,
@@ -252,6 +262,7 @@ fn diagnostic_options(config: Option<DiagnosticConfig>) -> DiagnosticOptions {
         log_dir: config.log_dir.map(PathBuf::from),
         log_file: config.log_file.map(PathBuf::from),
         stacktrace: config.stacktrace,
+        locale,
         focus: config
             .focus
             .into_iter()
@@ -295,13 +306,17 @@ pub(super) fn run_with_diagnostics(
     debug: bool,
     module: String,
     source: Option<String>,
+    locale: Option<String>,
     config: Option<DiagnosticConfig>,
     driver: &mut FrontendVmDriver,
     request: &DriverRequest,
 ) -> ProtocolResponse {
     let mut session = if debug {
-        match DiagnosticSession::start(module.clone(), source.clone(), &diagnostic_options(config))
-        {
+        match DiagnosticSession::start(
+            module.clone(),
+            source.clone(),
+            &diagnostic_options(config, locale),
+        ) {
             Ok(session) => Some(session),
             Err(error) => return diagnostic_start_response(request_id, error),
         }

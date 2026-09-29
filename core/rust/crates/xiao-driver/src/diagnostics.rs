@@ -45,6 +45,8 @@ pub struct DiagnosticOptions {
     pub log_file: Option<PathBuf>,
     /// 堆栈详细程度。
     pub stacktrace: Option<String>,
+    /// 诊断窗口使用的规范语言标签。
+    pub locale: Option<String>,
     /// 模块/源码聚焦规则的稳定摘要。
     pub focus: Vec<DiagnosticFocus>,
 }
@@ -183,14 +185,18 @@ impl DiagnosticSession {
                 .to_owned(),
             candidates: Vec::new(),
         })?;
-        let (mut child, summaries) =
-            launch_terminal(&renderer, &endpoint.to_string(), &token, options).map_err(
-                |summaries| DiagnosticStartError {
-                    code: DIAGNOSTIC_START_CODE,
-                    message: "所有终端候选均无法启动；未执行用户代码".to_owned(),
-                    candidates: summaries,
-                },
-            )?;
+        let (mut child, summaries) = launch_terminal(
+            &renderer,
+            &endpoint.to_string(),
+            &token,
+            options.locale.as_deref().unwrap_or("zh-CN"),
+            options,
+        )
+        .map_err(|summaries| DiagnosticStartError {
+            code: DIAGNOSTIC_START_CODE,
+            message: "所有终端候选均无法启动；未执行用户代码".to_owned(),
+            candidates: summaries,
+        })?;
         let (mut stream, _) = match accept_connection(&listener, &token, child.id()) {
             Ok(connection) => connection,
             Err(error) => {
@@ -361,6 +367,16 @@ pub fn terminal_candidates(
     endpoint: &str,
     token: &str,
 ) -> Vec<TerminalCandidate> {
+    terminal_candidates_with_locale(platform, renderer, endpoint, token, "zh-CN")
+}
+
+fn terminal_candidates_with_locale(
+    platform: &str,
+    renderer: &Path,
+    endpoint: &str,
+    token: &str,
+    locale: &str,
+) -> Vec<TerminalCandidate> {
     let renderer = renderer.display().to_string();
     let args = |prefix: &[&str]| {
         prefix
@@ -372,6 +388,8 @@ pub fn terminal_candidates(
                 endpoint.to_owned(),
                 "--token".to_owned(),
                 token.to_owned(),
+                "--locale".to_owned(),
+                locale.to_owned(),
             ])
             .collect::<Vec<_>>()
     };
@@ -388,10 +406,11 @@ pub fn terminal_candidates(
                 args: vec![
                     "/c".to_owned(),
                     format!(
-                        "start \"Xiao diagnostics\" {} --connect {} --token {}",
+                        "start \"Xiao diagnostics\" {} --connect {} --token {} --locale {}",
                         windows_quote(&renderer),
                         windows_quote(endpoint),
-                        windows_quote(token)
+                        windows_quote(token),
+                        windows_quote(locale)
                     ),
                 ],
             },
@@ -402,10 +421,11 @@ pub fn terminal_candidates(
                     "-NoProfile".to_owned(),
                     "-Command".to_owned(),
                     format!(
-                        "Start-Process -FilePath '{}' -ArgumentList '--connect','{}','--token','{}'",
+                        "Start-Process -FilePath '{}' -ArgumentList '--connect','{}','--token','{}','--locale','{}'",
                         renderer.replace('\'', "''"),
                         endpoint.replace('\'', "''"),
-                        token.replace('\'', "''")
+                        token.replace('\'', "''"),
+                        locale.replace('\'', "''")
                     ),
                 ],
             },
@@ -417,10 +437,11 @@ pub fn terminal_candidates(
                 args: vec![
                     "-e".to_owned(),
                     format!(
-                        "tell application \"Terminal\" to do script \"{} --connect {} --token {}\"",
+                        "tell application \"Terminal\" to do script \"{} --connect {} --token {} --locale {}\"",
                         shell_quote(&renderer),
                         shell_quote(endpoint),
-                        shell_quote(token)
+                        shell_quote(token),
+                        shell_quote(locale)
                     ),
                 ],
             },
@@ -436,6 +457,8 @@ pub fn terminal_candidates(
                     endpoint.to_owned(),
                     "--token".to_owned(),
                     token.to_owned(),
+                    "--locale".to_owned(),
+                    locale.to_owned(),
                 ],
             },
         ],
@@ -469,6 +492,7 @@ fn launch_terminal(
     renderer: &Path,
     endpoint: &str,
     token: &str,
+    locale: &str,
     _options: &DiagnosticOptions,
 ) -> Result<(Child, Vec<TerminalCandidateSummary>), Vec<TerminalCandidateSummary>> {
     let platform = if cfg!(windows) {
@@ -478,7 +502,7 @@ fn launch_terminal(
     } else {
         "linux"
     };
-    let candidates = terminal_candidates(platform, renderer, endpoint, token);
+    let candidates = terminal_candidates_with_locale(platform, renderer, endpoint, token, locale);
     let mut summaries = Vec::with_capacity(candidates.len());
     for candidate in candidates {
         let result = Command::new(&candidate.command)
@@ -819,6 +843,18 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec!["terminal-osascript", "terminal-open"]
         );
+    }
+
+    #[test]
+    /// 所有终端候选都必须透传规范语言标签。
+    fn terminal_candidates_forward_locale() {
+        let renderer = Path::new("xiao-diagnostics");
+        for candidate in
+            terminal_candidates_with_locale("linux", renderer, "127.0.0.1:1", "token", "en-US")
+        {
+            assert!(candidate.args.iter().any(|arg| arg == "--locale"));
+            assert!(candidate.args.iter().any(|arg| arg == "en-US"));
+        }
     }
 
     #[test]

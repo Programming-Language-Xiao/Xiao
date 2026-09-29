@@ -84,7 +84,11 @@ impl Catalog {
                 return Err("消息身份和模板不得为空".to_owned());
             }
             let fields = template_fields(&entry.text)?;
-            let declared = entry.params.keys().cloned().collect::<std::collections::BTreeSet<_>>();
+            let declared = entry
+                .params
+                .keys()
+                .cloned()
+                .collect::<std::collections::BTreeSet<_>>();
             if !fields.is_subset(&declared) {
                 return Err(format!("消息 {} 的参数签名与模板不一致", entry.id));
             }
@@ -305,11 +309,7 @@ fn interpolate(
     Ok(text)
 }
 
-fn template(
-    id: &str,
-    text: &str,
-    params: &[(&str, ParamKind)],
-) -> MessageTemplate {
+fn template(id: &str, text: &str, params: &[(&str, ParamKind)]) -> MessageTemplate {
     MessageTemplate {
         id: id.to_owned(),
         text: text.to_owned(),
@@ -361,6 +361,22 @@ pub fn builtin_renderer() -> MessageRenderer {
         "Xiao 诊断",
         "Xiao diagnostics",
         no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "xiao.debug.standalone_ready",
+        "原生调试产物已启动；诊断事件通道已就绪。",
+        "native debug artifact started; diagnostic event channel is ready.",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "xiao.debug.session_end",
+        "诊断会话结束：{reason}",
+        "diagnostic session ended: {reason}",
+        &[("reason", ParamKind::Text)],
     );
 
     let text = ParamKind::Text;
@@ -639,6 +655,21 @@ pub fn builtin_renderer() -> MessageRenderer {
         "请求已取消",
         "request cancelled",
         no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "xiao.debug.status",
+        "运行 {elapsed} ms | 内存 {memory} / 峰值 {peak} B | 错误 {errors} | 断点 {breakpoints} | 钩子 {hooks}",
+        "run {elapsed} ms | memory {memory} / peak {peak} B | errors {errors} | breakpoints {breakpoints} | hooks {hooks}",
+        &[
+            ("elapsed", text),
+            ("memory", text),
+            ("peak", text),
+            ("errors", text),
+            ("breakpoints", text),
+            ("hooks", text),
+        ],
     );
 
     MessageRenderer::new(vec![

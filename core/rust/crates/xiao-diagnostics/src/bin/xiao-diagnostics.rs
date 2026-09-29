@@ -2,7 +2,7 @@
 //!
 //! 该进程只消费 Runtime 发送的结构化事件并绘制 TUI；它没有执行用户代码的入口。
 
-use std::collections::VecDeque;
+use std::collections::{BTreeMap, VecDeque};
 use std::env;
 use std::io::{self, Write};
 use std::net::TcpStream;
@@ -14,6 +14,7 @@ use xiao_diagnostics::window::{
     DIAGNOSTIC_PROTOCOL_VERSION, DiagnosticFrameError, DiagnosticMessage, DiagnosticMetrics,
     read_message, write_message,
 };
+use xiao_i18n::{LocaleContext, MessageParam, builtin_renderer};
 
 /// 窗口滚动区域保留的最大事件行数。
 const MAX_VISIBLE_EVENTS: usize = 80;
@@ -28,7 +29,11 @@ fn main() {
         }
     };
     if let Err(error) = if arguments.standalone {
-        run_standalone(arguments.parent_pid, arguments.ready_file.as_deref())
+        run_standalone(
+            arguments.parent_pid,
+            arguments.ready_file.as_deref(),
+            &arguments.locale,
+        )
     } else {
         run(arguments)
     } {
@@ -44,6 +49,7 @@ struct Arguments {
     standalone: bool,
     parent_pid: Option<u32>,
     ready_file: Option<PathBuf>,
+    locale: String,
 }
 
 impl Arguments {
@@ -57,6 +63,7 @@ impl Arguments {
         let mut standalone = false;
         let mut parent_pid = None;
         let mut ready_file = None;
+        let mut locale = LocaleContext::default().tag().to_owned();
         while let Some(value) = values.next() {
             match value.as_str() {
                 "--connect" => endpoint = values.next(),
@@ -79,8 +86,20 @@ impl Arguments {
                             .ok_or_else(|| "缺少 --ready-file 的值".to_owned())?,
                     ));
                 }
+                "--locale" => {
+                    let value = values
+                        .next()
+                        .ok_or_else(|| "缺少 --locale 的值".to_owned())?;
+                    locale = LocaleContext::from_config(&value)
+                        .map_err(|_| "--locale 只接受 zh、zh-CN、en 或 en-US".to_owned())?
+                        .tag()
+                        .to_owned();
+                }
                 "--help" | "-h" => {
-                    return Err("用法：xiao-diagnostics --connect <地址> --token <令牌>".to_owned());
+                    return Err(
+                        "用法：xiao-diagnostics --connect <地址> --token <令牌> [--locale <语言>]"
+                            .to_owned(),
+                    );
                 }
                 other => return Err(format!("未知参数：{other}")),
             }
@@ -94,6 +113,7 @@ impl Arguments {
             standalone,
             parent_pid,
             ready_file,
+            locale,
         })
     }
 }
@@ -107,6 +127,7 @@ fn run(arguments: Arguments) -> Result<(), DiagnosticFrameError> {
         &DiagnosticMessage::Hello {
             protocol_version: DIAGNOSTIC_PROTOCOL_VERSION,
             token: arguments.token.unwrap_or_default(),
+            locale: arguments.locale.clone(),
             renderer: format!("xiao-diagnostics/{}", env!("CARGO_PKG_VERSION")),
         },
     )?;
@@ -127,18 +148,23 @@ fn run(arguments: Arguments) -> Result<(), DiagnosticFrameError> {
                     events.pop_front();
                 }
                 events.push_back(format_event(&event, color));
-                render(&events, &metrics, color)?;
+                render(&events, &metrics, color, &arguments.locale)?;
             }
             Some(DiagnosticMessage::Final {
                 metrics: final_metrics,
             }) => {
                 metrics = final_metrics;
-                render(&events, &metrics, color)?;
+                render(&events, &metrics, color, &arguments.locale)?;
             }
             Some(DiagnosticMessage::Close { reason }) => {
-                render(&events, &metrics, color)?;
+                render(&events, &metrics, color, &arguments.locale)?;
                 if !reason.is_empty() {
-                    eprintln!("诊断会话结束：{reason}");
+                    let params =
+                        BTreeMap::from([("reason".to_owned(), MessageParam::Text(reason))]);
+                    eprintln!(
+                        "{}",
+                        localized_message(&arguments.locale, "xiao.debug.session_end", &params)
+                    );
                 }
                 return Ok(());
             }
@@ -152,9 +178,13 @@ fn run(arguments: Arguments) -> Result<(), DiagnosticFrameError> {
 fn run_standalone(
     parent_pid: Option<u32>,
     ready_file: Option<&std::path::Path>,
+    locale: &str,
 ) -> Result<(), DiagnosticFrameError> {
-    println!("Xiao diagnostics");
-    println!("原生调试产物已启动；诊断事件通道已就绪。");
+    println!("{}", localized_title(locale));
+    println!(
+        "{}",
+        localized_message(locale, "xiao.debug.standalone_ready", &BTreeMap::new())
+    );
     io::stdout().flush()?;
     if let Some(path) = ready_file {
         std::fs::write(path, b"ready\n")?;
@@ -239,23 +269,49 @@ fn format_event(event: &xiao_diagnostics::window::DiagnosticEvent, color: bool) 
 }
 
 /// 重绘滚动区域和固定状态栏。
-fn render(events: &VecDeque<String>, metrics: &DiagnosticMetrics, color: bool) -> io::Result<()> {
+fn render(
+    events: &VecDeque<String>,
+    metrics: &DiagnosticMetrics,
+    color: bool,
+    locale: &str,
+) -> io::Result<()> {
     let mut output = String::new();
     output.push_str("\x1b[2J\x1b[H");
-    output.push_str("Xiao diagnostics\n\n");
+    output.push_str(&localized_title(locale));
+    output.push_str("\n\n");
     for event in events {
         output.push_str(event);
         output.push('\n');
     }
-    let status = format!(
-        "运行 {:>6} ms | 内存 {:>8} / 峰值 {:>8} B | 错误 {:>3} | 断点 {:>3} | 钩子 {:>3}",
-        metrics.elapsed_ms,
-        metrics.current_memory_bytes,
-        metrics.peak_memory_bytes,
-        metrics.error_count,
-        metrics.breakpoint_hits,
-        metrics.hook_count,
-    );
+    let params = BTreeMap::from([
+        (
+            "elapsed".to_owned(),
+            MessageParam::Text(format!("{:>6}", metrics.elapsed_ms)),
+        ),
+        (
+            "memory".to_owned(),
+            MessageParam::Text(format!("{:>8}", metrics.current_memory_bytes)),
+        ),
+        (
+            "peak".to_owned(),
+            MessageParam::Text(format!("{:>8}", metrics.peak_memory_bytes)),
+        ),
+        (
+            "errors".to_owned(),
+            MessageParam::Text(format!("{:>3}", metrics.error_count)),
+        ),
+        (
+            "breakpoints".to_owned(),
+            MessageParam::Text(format!("{:>3}", metrics.breakpoint_hits)),
+        ),
+        (
+            "hooks".to_owned(),
+            MessageParam::Text(format!("{:>3}", metrics.hook_count)),
+        ),
+    ]);
+    let status = builtin_renderer()
+        .render(&LocaleContext::new(locale), "xiao.debug.status", &params)
+        .text;
     if color {
         output.push_str("\x1b[7m");
     }
@@ -267,6 +323,20 @@ fn render(events: &VecDeque<String>, metrics: &DiagnosticMetrics, color: bool) -
     let mut stdout = io::stdout().lock();
     stdout.write_all(output.as_bytes())?;
     stdout.flush()
+}
+
+fn localized_title(locale: &str) -> String {
+    localized_message(locale, "xiao.debug.title", &BTreeMap::new())
+}
+
+fn localized_message(
+    locale: &str,
+    message_id: &str,
+    params: &BTreeMap<String, MessageParam>,
+) -> String {
+    builtin_renderer()
+        .render(&LocaleContext::new(locale), message_id, params)
+        .text
 }
 
 #[cfg(test)]
@@ -340,5 +410,20 @@ mod tests {
         )
         .expect("独立模式就绪文件");
         assert_eq!(arguments.ready_file, Some(PathBuf::from("ready.marker")));
+    }
+
+    #[test]
+    /// 调试窗口把语言别名规范化后再传给握手。
+    fn locale_argument_is_normalized() {
+        let arguments = Arguments::parse(
+            [
+                "--standalone".to_owned(),
+                "--locale".to_owned(),
+                "EN-us".to_owned(),
+            ]
+            .into_iter(),
+        )
+        .expect("语言参数");
+        assert_eq!(arguments.locale, "en-US");
     }
 }

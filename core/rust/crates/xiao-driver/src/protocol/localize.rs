@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 
-use xiao_i18n::{Fallback, LocaleContext, MessageParam, MessageRenderer, builtin_renderer};
+use xiao_i18n::{LocaleContext, MessageParam, MessageRenderer, builtin_renderer};
 
 use super::message::{
     ProtocolDiagnostic, ProtocolErrorBody, ProtocolParam, ProtocolReport, ProtocolResponse,
@@ -134,6 +134,9 @@ fn render_text(
     params: &BTreeMap<String, ProtocolParam>,
     original: &str,
 ) -> String {
+    if locale.tag() == "zh-CN" {
+        return original.to_owned();
+    }
     let params = params
         .iter()
         .map(|(key, value)| {
@@ -146,10 +149,5 @@ fn render_text(
         })
         .collect();
     let rendered = renderer.render(locale, id, &params);
-    if locale.tag() == "zh-CN" && rendered.fallback == Fallback::Identity && !rendered.format_failed
-    {
-        original.to_owned()
-    } else {
-        rendered.text
-    }
+    rendered.text
 }

@@ -136,6 +136,9 @@ pub enum DiagnosticMessage {
         protocol_version: u16,
         /// Runtime 生成的一次性令牌。
         token: String,
+        /// 本次诊断会话使用的规范语言标签。
+        #[serde(default = "default_locale")]
+        locale: String,
         /// 窗口进程版本文本。
         renderer: String,
     },
@@ -159,6 +162,10 @@ pub enum DiagnosticMessage {
         /// 关闭原因，供窗口显示。
         reason: String,
     },
+}
+
+fn default_locale() -> String {
+    "zh-CN".to_owned()
 }
 
 /// 诊断帧错误。
