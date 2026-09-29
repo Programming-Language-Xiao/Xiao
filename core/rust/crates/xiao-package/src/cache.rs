@@ -18,6 +18,10 @@ use crate::diagnostics::{
     CACHE_HOME_UNAVAILABLE_CODE, CACHE_INVALID_INPUT_CODE, CACHE_INVALID_SOURCE_CODE,
     CACHE_OBJECT_CORRUPT_CODE,
 };
+use xiao_i18n::{
+    LANGUAGE_PACK_MANIFEST_FILE, LanguagePack, LanguagePackCacheKey, LanguagePackCompatibility,
+    LanguagePackError, LanguagePackManifest,
+};
 
 /// `XIAO_HOME` 环境变量名。
 pub const XIAO_HOME_ENV: &str = "XIAO_HOME";
@@ -25,6 +29,10 @@ pub const XIAO_HOME_ENV: &str = "XIAO_HOME";
 pub const SOURCE_OBJECT_KIND: &str = "source";
 /// 源码对象摘要算法名。
 pub const SOURCE_OBJECT_ALGORITHM: &str = "sha256";
+/// 语言资源对象类型名。
+pub const LANGUAGE_PACK_OBJECT_KIND: &str = "language";
+/// 语言资源对象摘要算法名。
+pub const LANGUAGE_PACK_OBJECT_ALGORITHM: &str = "sha256";
 /// 已物化环境目录的元数据标记文件名，用于排除生成内容。
 const GENERATED_ENVIRONMENT_METADATA_FILE: &str = ".xiao-environment.json";
 /// 项目锁文件由 E2A 管理，不属于包源码对象内容。
@@ -66,6 +74,17 @@ pub struct CacheObject {
     /// 对象的稳定引用。
     pub reference: CacheObjectReference,
     /// 全局缓存中的实际目录路径。
+    pub path: PathBuf,
+}
+
+/// 已通过清单、兼容性和摘要校验的只读语言资源对象。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LanguagePackObject {
+    /// 包含目录版本、Xiao 版本、Runtime ABI 和资源摘要的缓存键。
+    pub key: LanguagePackCacheKey,
+    /// 已验证的资源清单。
+    pub manifest: LanguagePackManifest,
+    /// 全局缓存中的只读目录路径。
     pub path: PathBuf,
 }
 
@@ -133,6 +152,15 @@ impl CacheLayout {
         self.cache_root().join("objects/metadata/sha256")
     }
 
+    /// 返回语言资源对象根目录。
+    #[must_use]
+    pub fn language_pack_objects_root(&self) -> PathBuf {
+        self.cache_root()
+            .join("objects")
+            .join(LANGUAGE_PACK_OBJECT_KIND)
+            .join(LANGUAGE_PACK_OBJECT_ALGORITHM)
+    }
+
     /// 按源身份摘要隔离的快照目录根。
     #[must_use]
     pub fn snapshots_root(&self) -> PathBuf {
@@ -161,6 +189,15 @@ impl CacheLayout {
     pub fn source_object_path(&self, digest: &str) -> Result<PathBuf, CacheError> {
         validate_digest(digest)?;
         Ok(self.source_objects_root().join(&digest[..2]).join(digest))
+    }
+
+    /// 根据完整语言资源键构造只读缓存对象目录。
+    pub fn language_pack_object_path(
+        &self,
+        key: &LanguagePackCacheKey,
+    ) -> Result<PathBuf, CacheError> {
+        validate_digest(&key.content_digest)?;
+        Ok(self.language_pack_objects_root().join(key.relative_path()))
     }
 
     /// 根据逻辑名称构造全局环境目录。
@@ -194,6 +231,7 @@ impl CacheStore {
             layout.source_objects_root(),
             layout.temporary_root(),
             layout.environments_root(),
+            layout.language_pack_objects_root(),
         ];
         for root in roots {
             fs::create_dir_all(&root).map_err(|error| CacheError::HomeUnavailable {
@@ -321,6 +359,104 @@ impl CacheStore {
         })
     }
 
+    /// 将经过验证的语言包导入 11A 共用的不可变内容缓存。
+    pub fn import_language_pack_directory(
+        &self,
+        source_root: impl AsRef<Path>,
+    ) -> Result<LanguagePackObject, LanguagePackCacheError> {
+        let compatibility = LanguagePackCompatibility::current();
+        let pack = LanguagePack::load_directory(source_root, &compatibility)?;
+        let key = pack.cache_key_for(&compatibility)?;
+        let object_path = self.layout.language_pack_object_path(&key)?;
+        if fs::symlink_metadata(&object_path).is_ok() {
+            match self.verify_language_pack_object(&key) {
+                Ok(object) => return Ok(object),
+                Err(LanguagePackCacheError::Cache(CacheError::ObjectCorrupt { .. })) => {}
+                Err(error) => return Err(error),
+            }
+        }
+        let temporary_path = self.write_language_pack(&pack, &key)?;
+        if let Some(parent) = object_path.parent() {
+            fs::create_dir_all(parent).map_err(|error| CacheError::Write {
+                path: parent.to_path_buf(),
+                operation: "创建语言资源对象分片目录",
+                message: error.to_string(),
+            })?;
+        }
+        if let Err(error) = fs::rename(&temporary_path, &object_path) {
+            remove_tree(&temporary_path);
+            if error.kind() != std::io::ErrorKind::AlreadyExists {
+                return Err(CacheError::Write {
+                    path: object_path,
+                    operation: "提交语言资源缓存对象",
+                    message: error.to_string(),
+                }
+                .into());
+            }
+        } else {
+            set_tree_read_only(&object_path)?;
+        }
+        self.verify_language_pack_object(&key)
+    }
+
+    /// 读取并重新验证一个语言资源缓存对象；摘要不匹配时不会继续使用。
+    pub fn verify_language_pack_object(
+        &self,
+        key: &LanguagePackCacheKey,
+    ) -> Result<LanguagePackObject, LanguagePackCacheError> {
+        let object_path = self.layout.language_pack_object_path(key)?;
+        let compatibility = LanguagePackCompatibility::current();
+        let pack = match LanguagePack::load_directory(&object_path, &compatibility) {
+            Ok(pack) => pack,
+            Err(error) => {
+                if fs::symlink_metadata(&object_path).is_ok() {
+                    let quarantine = quarantine_object(&object_path).ok();
+                    return Err(CacheError::ObjectCorrupt {
+                        path: object_path,
+                        expected: key.content_digest.clone(),
+                        actual: Some(error.to_string()),
+                        quarantine,
+                    }
+                    .into());
+                }
+                return Err(CacheError::Write {
+                    path: object_path,
+                    operation: "读取语言资源缓存对象",
+                    message: error.to_string(),
+                }
+                .into());
+            }
+        };
+        let actual_key = pack.cache_key_for(&compatibility)?;
+        if &actual_key != key {
+            let quarantine = quarantine_object(&object_path).ok();
+            return Err(CacheError::ObjectCorrupt {
+                path: object_path,
+                expected: key.content_digest.clone(),
+                actual: Some(actual_key.content_digest),
+                quarantine,
+            }
+            .into());
+        }
+        Ok(LanguagePackObject {
+            key: actual_key,
+            manifest: pack.manifest().clone(),
+            path: object_path,
+        })
+    }
+
+    /// 从缓存对象读取经过验证的语言包目录。
+    pub fn load_language_pack_object(
+        &self,
+        key: &LanguagePackCacheKey,
+    ) -> Result<LanguagePack, LanguagePackCacheError> {
+        let object = self.verify_language_pack_object(key)?;
+        Ok(LanguagePack::load_directory(
+            object.path,
+            &LanguagePackCompatibility::current(),
+        )?)
+    }
+
     /// 将内存中的一致性快照写入同文件系统暂存目录。
     fn write_snapshot(
         &self,
@@ -362,6 +498,48 @@ impl CacheStore {
                     })?;
                 }
             }
+        }
+        Ok(temporary_path)
+    }
+
+    fn write_language_pack(
+        &self,
+        pack: &LanguagePack,
+        key: &LanguagePackCacheKey,
+    ) -> Result<PathBuf, LanguagePackCacheError> {
+        let id = NEXT_TEMP_OBJECT.fetch_add(1, Ordering::Relaxed);
+        let temporary_path = self
+            .layout
+            .temporary_root()
+            .join(format!(".language-{}-{id}", key.content_digest));
+        fs::create_dir(&temporary_path).map_err(|error| CacheError::Write {
+            path: temporary_path.clone(),
+            operation: "创建语言资源缓存暂存目录",
+            message: error.to_string(),
+        })?;
+        fs::write(
+            temporary_path.join(LANGUAGE_PACK_MANIFEST_FILE),
+            pack.manifest_bytes(),
+        )
+        .map_err(|error| CacheError::Write {
+            path: temporary_path.join(LANGUAGE_PACK_MANIFEST_FILE),
+            operation: "写入语言资源清单",
+            message: error.to_string(),
+        })?;
+        for (relative_path, bytes) in pack.resources() {
+            let path = temporary_path.join(Path::new(relative_path));
+            if let Some(parent) = path.parent() {
+                fs::create_dir_all(parent).map_err(|error| CacheError::Write {
+                    path: parent.to_path_buf(),
+                    operation: "创建语言资源目录",
+                    message: error.to_string(),
+                })?;
+            }
+            fs::write(&path, bytes).map_err(|error| CacheError::Write {
+                path,
+                operation: "写入语言资源目录",
+                message: error.to_string(),
+            })?;
         }
         Ok(temporary_path)
     }
@@ -417,6 +595,49 @@ pub enum CacheError {
         quarantine: Option<PathBuf>,
     },
 }
+
+/// 语言资源缓存导入、验证或底层缓存操作错误。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum LanguagePackCacheError {
+    /// 底层不可变缓存错误。
+    Cache(CacheError),
+    /// 语言包清单、资源或兼容性错误。
+    LanguagePack(Box<LanguagePackError>),
+}
+
+impl LanguagePackCacheError {
+    /// 返回底层错误的稳定诊断编号。
+    #[must_use]
+    pub const fn code(&self) -> &'static str {
+        match self {
+            Self::Cache(error) => error.code(),
+            Self::LanguagePack(error) => error.code(),
+        }
+    }
+}
+
+impl From<CacheError> for LanguagePackCacheError {
+    fn from(error: CacheError) -> Self {
+        Self::Cache(error)
+    }
+}
+
+impl From<LanguagePackError> for LanguagePackCacheError {
+    fn from(error: LanguagePackError) -> Self {
+        Self::LanguagePack(Box::new(error))
+    }
+}
+
+impl Display for LanguagePackCacheError {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Cache(error) => Display::fmt(error, formatter),
+            Self::LanguagePack(error) => Display::fmt(error, formatter),
+        }
+    }
+}
+
+impl std::error::Error for LanguagePackCacheError {}
 
 impl CacheError {
     /// 返回稳定诊断编号。

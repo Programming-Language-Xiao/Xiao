@@ -2,11 +2,23 @@
 
 use std::collections::BTreeMap;
 
+use serde::{Deserialize, Serialize};
+
+mod language_pack;
+
+/// 重导出资源型语言包的清单、校验、缓存键和进程内降级接口。
+pub use language_pack::{
+    LANGUAGE_PACK_MANIFEST_FILE, LANGUAGE_PACK_MANIFEST_VERSION, LanguagePack,
+    LanguagePackActivation, LanguagePackCacheKey, LanguagePackCompatibility, LanguagePackError,
+    LanguagePackManifest, LanguagePackRegistry, LanguagePackRuntime, digest_resources,
+};
+
 /// 内置消息目录的格式版本。
 pub const CATALOG_VERSION: u16 = 1;
 
 /// 一条占位参数所允许的类型。
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum ParamKind {
     /// 不翻译的文本值。
     Text,
@@ -54,7 +66,8 @@ impl MessageParam {
 }
 
 /// 单个目录条目及其需要的参数签名。
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct MessageTemplate {
     /// 不随语言改变的消息身份。
     pub id: String,
@@ -77,6 +90,21 @@ pub struct Catalog {
 impl Catalog {
     /// 拒绝重复消息身份、无效格式和不匹配的模板签名。
     pub fn new(locale: impl Into<String>, entries: Vec<MessageTemplate>) -> Result<Self, String> {
+        Self::new_with_signature_mode(locale, entries, false)
+    }
+
+    pub(crate) fn new_strict(
+        locale: impl Into<String>,
+        entries: Vec<MessageTemplate>,
+    ) -> Result<Self, String> {
+        Self::new_with_signature_mode(locale, entries, true)
+    }
+
+    fn new_with_signature_mode(
+        locale: impl Into<String>,
+        entries: Vec<MessageTemplate>,
+        strict_signature: bool,
+    ) -> Result<Self, String> {
         let locale = normalize_locale_tag(locale.into());
         let mut registered = BTreeMap::new();
         for entry in entries {
@@ -89,7 +117,9 @@ impl Catalog {
                 .keys()
                 .cloned()
                 .collect::<std::collections::BTreeSet<_>>();
-            if !fields.is_subset(&declared) {
+            if (strict_signature && fields != declared)
+                || (!strict_signature && !fields.is_subset(&declared))
+            {
                 return Err(format!("消息 {} 的参数签名与模板不一致", entry.id));
             }
             if registered.insert(entry.id.clone(), entry).is_some() {
@@ -105,6 +135,17 @@ impl Catalog {
 
     fn get(&self, id: &str) -> Option<&MessageTemplate> {
         self.entries.get(id)
+    }
+
+    pub(crate) fn entries(&self) -> &BTreeMap<String, MessageTemplate> {
+        &self.entries
+    }
+
+    pub(crate) fn from_entries(
+        locale: impl Into<String>,
+        entries: impl IntoIterator<Item = MessageTemplate>,
+    ) -> Result<Self, String> {
+        Self::new(locale, entries.into_iter().collect())
     }
 }
 
@@ -177,6 +218,7 @@ pub struct RenderedMessage {
 }
 
 /// 所有组件共享的无副作用渲染器。
+#[derive(Clone, Debug)]
 pub struct MessageRenderer {
     catalogs: BTreeMap<String, Catalog>,
 }
@@ -203,6 +245,10 @@ impl MessageRenderer {
         Ok(Self {
             catalogs: registered,
         })
+    }
+
+    pub(crate) fn catalogs_snapshot(&self) -> Vec<Catalog> {
+        self.catalogs.values().cloned().collect()
     }
 
     /// 按精确标签、基础语言、英语目录和消息身份的顺序安全渲染。

@@ -551,6 +551,12 @@ dependencies = [
 [[package]]
 name = "xiao-i18n"
 version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "sha2",
+ "xiao-runtime-abi",
+]
 
 [[package]]
 name = "xiao-ir"
@@ -604,6 +610,7 @@ dependencies = [
  "xiao-codegen-llvm",
  "xiao-config",
  "xiao-diagnostics",
+ "xiao-i18n",
  "xiao-modules",
  "xiao-source",
 ]

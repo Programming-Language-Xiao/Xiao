@@ -57,7 +57,9 @@ pub use adapters::{
 /// 重导出本地源码缓存接口。
 pub use cache::{
     CacheError, CacheLayout, CacheObject, CacheObjectKind, CacheObjectReference, CacheStore,
-    SOURCE_OBJECT_ALGORITHM, SOURCE_OBJECT_KIND, XIAO_HOME_ENV, source_directory_digest,
+    LANGUAGE_PACK_OBJECT_ALGORITHM, LANGUAGE_PACK_OBJECT_KIND, LanguagePackCacheError,
+    LanguagePackObject, SOURCE_OBJECT_ALGORITHM, SOURCE_OBJECT_KIND, XIAO_HOME_ENV,
+    source_directory_digest,
 };
 /// 重导出依赖写回接口。
 pub use config_edit::{DependencyEdit, edit_dependency, write_config_edit};
