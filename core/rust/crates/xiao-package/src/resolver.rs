@@ -326,7 +326,7 @@ impl ResolverState {
         if requested_name != identity.name {
             self.push_package_diagnostic(
                 PACKAGE_IDENTITY_CONFLICT_CODE,
-                "x05.package.identity_conflict",
+                "x05.package.identity_mismatch",
                 identity.clone(),
                 package_root.to_path_buf(),
                 span,

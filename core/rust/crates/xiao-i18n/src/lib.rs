@@ -84,7 +84,8 @@ impl Catalog {
                 return Err("消息身份和模板不得为空".to_owned());
             }
             let fields = template_fields(&entry.text)?;
-            if fields != entry.params.keys().cloned().collect() {
+            let declared = entry.params.keys().cloned().collect::<std::collections::BTreeSet<_>>();
+            if !fields.is_subset(&declared) {
                 return Err(format!("消息 {} 的参数签名与模板不一致", entry.id));
             }
             if registered.insert(entry.id.clone(), entry).is_some() {
@@ -304,28 +305,240 @@ fn interpolate(
     Ok(text)
 }
 
-/// 返回首批可用的中英双语内置消息目录。
+fn template(
+    id: &str,
+    text: &str,
+    params: &[(&str, ParamKind)],
+) -> MessageTemplate {
+    MessageTemplate {
+        id: id.to_owned(),
+        text: text.to_owned(),
+        params: params
+            .iter()
+            .map(|(name, kind)| ((*name).to_owned(), *kind))
+            .collect(),
+    }
+}
+
+fn add_entry(
+    chinese: &mut Vec<MessageTemplate>,
+    english: &mut Vec<MessageTemplate>,
+    id: &str,
+    chinese_text: &str,
+    english_text: &str,
+    params: &[(&str, ParamKind)],
+) {
+    chinese.push(template(id, chinese_text, params));
+    english.push(template(id, english_text, params));
+}
+
+/// 返回内置的中英双语消息目录。
 #[must_use]
 pub fn builtin_renderer() -> MessageRenderer {
-    let entries = [
-        ("xiao.status.ready", "就绪", "ready"),
-        ("xiao.status.cancelled", "请求已取消", "request cancelled"),
-        ("xiao.debug.title", "Xiao 诊断", "Xiao diagnostics"),
-    ];
-    let catalog = |tag: &str, index: usize| {
-        Catalog::new(
-            tag,
-            entries
-                .iter()
-                .map(|(id, zh, en)| MessageTemplate {
-                    id: (*id).to_owned(),
-                    text: if index == 0 { *zh } else { *en }.to_owned(),
-                    params: BTreeMap::new(),
-                })
-                .collect(),
-        )
-        .expect("内置目录经过测试验证")
-    };
-    MessageRenderer::new(vec![catalog("zh-CN", 0), catalog("en-US", 1)])
-        .expect("内置目录参数签名一致")
+    let mut chinese = Vec::new();
+    let mut english = Vec::new();
+    let no_params = &[];
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "xiao.status.ready",
+        "就绪",
+        "ready",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "xiao.status.cancelled",
+        "请求已取消",
+        "request cancelled",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "xiao.debug.title",
+        "Xiao 诊断",
+        "Xiao diagnostics",
+        no_params,
+    );
+
+    let text = ParamKind::Text;
+    let integer = ParamKind::Integer;
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x05.package.config_read",
+        "无法读取包配置 {path}：{reason}",
+        "unable to read package configuration {path}: {reason}",
+        &[("path", text), ("reason", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x05.package.missing_dependency",
+        "无法读取依赖包配置 {path}：{reason}",
+        "unable to read dependency package configuration {path}: {reason}",
+        &[("path", text), ("reason", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x05.package.git_dependency_unresolved",
+        "Git 依赖 \"{package}\" 尚未进入本地路径同步；远程版本解析留待 E3D",
+        "Git dependency \"{package}\" has not been synchronized locally; remote version resolution is deferred to E3D",
+        &[("package", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x05.package.identity_mismatch",
+        "依赖名称 \"{requested}\" 指向了包 \"{actual}\"，包名必须一致",
+        "dependency name \"{requested}\" points to package \"{actual}\"; package names must match",
+        &[("requested", text), ("actual", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x05.package.identity_conflict",
+        "包名 \"{package}\" 同时绑定到 {first} 和 {second}",
+        "package \"{package}\" is bound to both {first} and {second}",
+        &[("package", text), ("first", text), ("second", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x05.package.dependency_cycle",
+        "包依赖环：{cycle}",
+        "package dependency cycle: {cycle}",
+        &[("cycle", text)],
+    );
+
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.type_mismatch",
+        "期望类型 {expected}，实际为 {actual}",
+        "expected type {expected}, got {actual}",
+        &[("expected", text), ("actual", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.use_after_release",
+        "对象已经释放，不能继续访问",
+        "object has already been released and cannot be accessed",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.weak_upgrade",
+        "弱引用指向的对象已经释放",
+        "the object referenced by the weak reference has been released",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.table_state",
+        "表状态应为 {expected}，实际为 {actual}",
+        "expected table state {expected}, got {actual}",
+        &[("expected", text), ("actual", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.division_by_zero",
+        "除数不能为零",
+        "division by zero while evaluating {operator}",
+        &[("operator", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.index_out_of_bounds",
+        "容器索引超出长度",
+        "container index {index} is outside length {length}",
+        &[("container", text), ("length", integer), ("index", integer)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.key_not_found",
+        "字典中不存在该键",
+        "key {key} was not found in {container}",
+        &[("container", text), ("key", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.unhashable_element",
+        "该类型的值不能作为集合元素或字典键",
+        "a value of this type cannot be used as a set element or dictionary key",
+        &[("type_name", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.set_operation_requires_sets",
+        "集合运算要求两侧都是集合",
+        "set operations require sets on both sides",
+        &[("type_name", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.set_comparison_requires_sets",
+        "集合比较要求两侧都是集合",
+        "set comparisons require sets on both sides",
+        &[("type_name", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.set_membership_requires_hashable",
+        "成员判定的左操作数必须是可哈希值",
+        "the left operand of membership testing must be hashable",
+        &[("type_name", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.iterable_required",
+        "for 的右侧必须是可迭代容器",
+        "the right side of for must be an iterable container",
+        &[("type_name", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.cross_thread",
+        "首版 Runtime 对象不能跨线程传递",
+        "Runtime objects cannot be transferred across threads in this release",
+        no_params,
+    );
+
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.protocol.core_crash",
+        "Rust 核心处理请求时发生内部崩溃",
+        "the Rust core crashed while handling the request",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x11.protocol.cancelled",
+        "请求已取消",
+        "request cancelled",
+        no_params,
+    );
+
+    MessageRenderer::new(vec![
+        Catalog::new("zh-CN", chinese).expect("内置中文目录经过测试验证"),
+        Catalog::new("en-US", english).expect("内置英文目录经过测试验证"),
+    ])
+    .expect("内置目录参数签名一致")
 }
