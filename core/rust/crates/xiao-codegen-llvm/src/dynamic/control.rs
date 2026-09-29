@@ -1,13 +1,51 @@
 //! 动态降低器的语句、条件与控制流发射。
 
-use xiao_ir::{IrExpression, IrExpressionKind, IrStatement, IrStatementKind, IrType};
+use xiao_diagnostics::{CatchTypeKind, error_kind_of};
+use xiao_ir::{
+    IrCatchClause, IrExpression, IrExpressionKind, IrSpan, IrStatement, IrStatementKind, IrType,
+};
 
-use super::{DynamicGenerator, LoopLabels, VALUE_TYPE};
+use super::{CleanupContext, DynamicGenerator, LoopLabels, VALUE_TYPE};
 use crate::error::{CodegenError, Result};
+
+/// 一个控制转移的最终目的地。
+#[derive(Clone, Debug)]
+enum ControlExitTarget {
+    /// 返回动态入口的观察值或成功退出。
+    Return,
+    /// 跳转到已生成的循环或合流块。
+    Branch(String),
+}
+
+/// 一条受保护区域的清理发射参数。
+struct TryCleanup<'a> {
+    /// 要执行的 `finally` 主体。
+    region: CleanupContext<'a>,
+    /// 当前退出边名称。
+    protected_exit: &'static str,
+    /// 清理成功后的目标块。
+    success_target: String,
+    /// 清理失败后的外层错误派发块。
+    failure_target: String,
+    /// 生成标签的稳定前缀。
+    label_prefix: String,
+}
+
+/// 清理失败路径上的作用域和退出类别。
+struct CleanupFailure {
+    /// 第一个待释放作用域。
+    first_scope: Option<u32>,
+    /// 第二个待释放作用域。
+    second_scope: Option<u32>,
+    /// 可恢复错误的释放计划类别。
+    recoverable_exit: &'static str,
+    /// 清理完成后的错误派发目标。
+    failure_target: String,
+}
 
 impl<'a> DynamicGenerator<'a> {
     /// 发射一条顶层语句；异常展开留给 N0-C。
-    fn emit_statement(&mut self, statement: &IrStatement) -> Result<()> {
+    fn emit_statement(&mut self, statement: &'a IrStatement) -> Result<()> {
         match &statement.kind {
             IrStatementKind::Assignment { target, value }
             | IrStatementKind::ConstDeclaration { target, value, .. } => {
@@ -60,8 +98,7 @@ impl<'a> DynamicGenerator<'a> {
                     self.record_observation(&emitted, &value_type);
                     self.release_value(emitted);
                 }
-                self.release_for_exit("return")?;
-                self.emit_observation_return();
+                self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
                 self.terminated = true;
             }
             IrStatementKind::If {
@@ -73,14 +110,18 @@ impl<'a> DynamicGenerator<'a> {
             IrStatementKind::While { condition, body } => self.emit_while(condition, body)?,
             IrStatementKind::For { .. }
             | IrStatementKind::Function { .. }
-            | IrStatementKind::Import { .. }
-            | IrStatementKind::Try { .. }
-            | IrStatementKind::Raise { .. } => {
+            | IrStatementKind::Import { .. } => {
                 return Err(CodegenError::Unsupported {
-                    feature: "动态模块中的控制流/函数/异常语句".to_owned(),
+                    feature: "动态模块中的函数或导入语句".to_owned(),
                     span: Some(statement.span),
                 });
             }
+            IrStatementKind::Try {
+                body,
+                catches,
+                finally_body,
+            } => self.emit_try(body, catches, finally_body.as_deref(), statement.span)?,
+            IrStatementKind::Raise { value } => self.emit_raise(value, statement.span)?,
             IrStatementKind::ExtendedAssignment {
                 target,
                 operator,
@@ -106,7 +147,11 @@ impl<'a> DynamicGenerator<'a> {
                         message: "动态 break 不在循环中".to_owned(),
                     });
                 };
-                self.emit(format!("  br label %{}", labels.end));
+                self.emit_nonlocal_exit_from_depth(
+                    "break",
+                    ControlExitTarget::Branch(labels.end),
+                    labels.cleanup_depth,
+                )?;
                 self.terminated = true;
             }
             IrStatementKind::Continue => {
@@ -115,7 +160,11 @@ impl<'a> DynamicGenerator<'a> {
                         message: "动态 continue 不在循环中".to_owned(),
                     });
                 };
-                self.emit(format!("  br label %{}", labels.condition));
+                self.emit_nonlocal_exit_from_depth(
+                    "continue",
+                    ControlExitTarget::Branch(labels.condition),
+                    labels.cleanup_depth,
+                )?;
                 self.terminated = true;
             }
         }
@@ -123,7 +172,7 @@ impl<'a> DynamicGenerator<'a> {
     }
 
     /// 在当前基本块依次发射语句，遇到终止边后停止。
-    pub(super) fn emit_statements(&mut self, statements: &[IrStatement]) -> Result<()> {
+    pub(super) fn emit_statements(&mut self, statements: &'a [IrStatement]) -> Result<()> {
         for statement in statements {
             if self.terminated {
                 break;
@@ -133,13 +182,449 @@ impl<'a> DynamicGenerator<'a> {
         Ok(())
     }
 
+    /// 发射主动 `raise`，先把错误值交给 Runtime，再跳入当前最内层错误派发块。
+    fn emit_raise(&mut self, expression: &IrExpression, span: IrSpan) -> Result<()> {
+        let value = self.emit_expression(expression)?;
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let location = self.emit_error_location(span);
+        let status = self.next_temp();
+        self.emit(format!(
+            "  {status} = call i32 @xiao_runtime_error_raise_value(ptr {input}, ptr {location})"
+        ));
+        self.emit(format!(
+            "  call void @xiao_runtime_value_release(ptr {input})"
+        ));
+        self.check_status_at(&status, span);
+        self.emit(format!("  br label %{}", self.error_target()));
+        self.terminated = true;
+        Ok(())
+    }
+
+    /// 发射原生 `try`/`catch`/`finally` 展开。
+    ///
+    /// 每条进入处理器的路径都保持 `finally -> drop -> catch/继续传播`；Fatal
+    /// 在派发入口直接进入统一终点，不执行普通处理器或释放计划。
+    fn emit_try(
+        &mut self,
+        body: &'a [IrStatement],
+        catches: &'a [IrCatchClause],
+        finally_body: Option<&'a [IrStatement]>,
+        span: IrSpan,
+    ) -> Result<()> {
+        for catch in catches {
+            if !matches!(
+                error_kind_of(&catch.error_type.text),
+                Some(CatchTypeKind::AnyRecoverable | CatchTypeKind::Recoverable(_))
+            ) {
+                return Err(CodegenError::Unsupported {
+                    feature: format!("原生 catch 类型 {}", catch.error_type.text),
+                    span: Some(catch.error_type.span),
+                });
+            }
+        }
+
+        let outer_target = self.error_target();
+        let dispatch = self.next_label("dynamic.try.dispatch");
+        let normal_exit = self.next_label("dynamic.try.normal");
+        let continuation = self.next_label("dynamic.try.continue");
+        let try_scope = self.region_scope(span, "try");
+        let finally_scope = self.region_scope(span, "finally");
+
+        let cleanup_snapshot = self.cleanup_stack.clone();
+        self.cleanup_stack.push(CleanupContext {
+            finally_body,
+            finally_scope,
+            protected_scope: try_scope,
+            failure_target: outer_target.clone(),
+        });
+        self.push_error_context(dispatch.clone());
+        self.emit_statements(body)?;
+        self.pop_error_context();
+        self.cleanup_stack = cleanup_snapshot;
+        if !self.terminated {
+            self.emit(format!("  br label %{normal_exit}"));
+            self.terminated = true;
+        }
+
+        self.terminated = true;
+        self.emit_label(&normal_exit);
+        self.emit_try_cleanup(TryCleanup {
+            region: CleanupContext {
+                finally_body,
+                finally_scope,
+                protected_scope: try_scope,
+                failure_target: outer_target.clone(),
+            },
+            protected_exit: "normal",
+            success_target: continuation.clone(),
+            failure_target: outer_target.clone(),
+            label_prefix: "dynamic.try.normal.finally".to_owned(),
+        })?;
+
+        if !self.terminated {
+            self.emit(format!("  br label %{continuation}"));
+            self.terminated = true;
+        }
+        self.emit_label(&dispatch);
+        let class = self.next_temp();
+        self.emit(format!("  {class} = call i32 @xiao_runtime_error_class()"));
+        let fatal = self.next_temp();
+        let recoverable = self.next_label("dynamic.try.recoverable");
+        self.emit(format!("  {fatal} = icmp eq i32 {class}, 2"));
+        self.emit(format!(
+            "  br i1 {fatal}, label %{}, label %{recoverable}",
+            self.error_terminal_label
+        ));
+        self.emit_label(&recoverable);
+
+        let unmatched = self.next_label("dynamic.try.unmatched");
+        let catch_labels = catches
+            .iter()
+            .enumerate()
+            .map(|(index, _)| self.next_label(&format!("dynamic.try.catch{index}")))
+            .collect::<Vec<_>>();
+        let mut next_match = recoverable;
+        for (index, catch) in catches.iter().enumerate() {
+            if index > 0 {
+                self.emit_label(&next_match);
+            }
+            let error_type = self.emit_bytes_value(catch.error_type.text.as_bytes());
+            let error_type = self.emit_bytes_argument(&error_type);
+            let matched = self.next_temp();
+            self.emit(format!(
+                "  {matched} = call i32 @xiao_runtime_error_matches({error_type})"
+            ));
+            let is_match = self.next_temp();
+            let next = if index + 1 == catches.len() {
+                unmatched.clone()
+            } else {
+                self.next_label("dynamic.try.next-catch")
+            };
+            self.emit(format!("  {is_match} = icmp eq i32 {matched}, 1"));
+            self.emit(format!(
+                "  br i1 {is_match}, label %{}, label %{next}",
+                catch_labels[index]
+            ));
+            next_match = next;
+        }
+        if catches.is_empty() {
+            self.emit(format!("  br label %{unmatched}"));
+            self.terminated = true;
+        }
+
+        self.emit_label(&unmatched);
+        self.emit_try_cleanup(TryCleanup {
+            region: CleanupContext {
+                finally_body,
+                finally_scope,
+                protected_scope: try_scope,
+                failure_target: outer_target.clone(),
+            },
+            protected_exit: "unmatched_error",
+            success_target: outer_target.clone(),
+            failure_target: outer_target.clone(),
+            label_prefix: "dynamic.try.unmatched.finally".to_owned(),
+        })?;
+
+        if !self.terminated {
+            self.emit(format!("  br label %{outer_target}"));
+            self.terminated = true;
+        }
+
+        for (index, catch) in catches.iter().enumerate() {
+            self.emit_label(&catch_labels[index]);
+            let catch_body_label = self.next_label(&format!("dynamic.try.catch{index}.body"));
+            self.emit_try_cleanup(TryCleanup {
+                region: CleanupContext {
+                    finally_body,
+                    finally_scope,
+                    protected_scope: try_scope,
+                    failure_target: outer_target.clone(),
+                },
+                protected_exit: "catch",
+                success_target: catch_body_label.clone(),
+                failure_target: outer_target.clone(),
+                label_prefix: format!("dynamic.try.catch{index}.finally"),
+            })?;
+            if !self.terminated {
+                self.emit_label(&catch_body_label);
+            }
+
+            let error_slot = self.next_temp();
+            self.emit(format!("  {error_slot} = alloca {VALUE_TYPE}"));
+            self.emit(format!(
+                "  store {VALUE_TYPE} zeroinitializer, ptr {error_slot}"
+            ));
+            let take_status = self.next_temp();
+            self.emit(format!(
+                "  {take_status} = call i32 @xiao_runtime_error_take(ptr {error_slot})"
+            ));
+            self.check_status_at(&take_status, catch.span);
+            let error_value = self.next_temp();
+            self.emit(format!(
+                "  {error_value} = load {VALUE_TYPE}, ptr {error_slot}"
+            ));
+            self.store_slot(&catch.binding, error_value)?;
+
+            let catch_failure = self.next_label(&format!("dynamic.try.catch{index}.fail"));
+            let catch_scope = self.region_scope(catch.span, "catch");
+            let cleanup_snapshot = self.cleanup_stack.clone();
+            self.cleanup_stack.push(CleanupContext {
+                finally_body: None,
+                finally_scope: None,
+                protected_scope: catch_scope,
+                failure_target: outer_target.clone(),
+            });
+            self.push_error_context(catch_failure.clone());
+            self.emit_statements(&catch.body)?;
+            self.pop_error_context();
+            self.cleanup_stack = cleanup_snapshot;
+            if !self.terminated {
+                self.release_for_scope(catch_scope, "normal")?;
+                self.emit(format!("  br label %{continuation}"));
+                self.terminated = true;
+            }
+            self.emit_label(&catch_failure);
+            self.emit_error_cleanup_failure(CleanupFailure {
+                first_scope: catch_scope,
+                second_scope: None,
+                recoverable_exit: "unmatched_error",
+                failure_target: outer_target.clone(),
+            })?;
+            self.terminated = true;
+        }
+
+        self.emit_label(&continuation);
+        Ok(())
+    }
+
+    /// 发射一条 `finally` 后接作用域释放的路径。
+    fn emit_try_cleanup(&mut self, cleanup: TryCleanup<'a>) -> Result<()> {
+        let TryCleanup {
+            region,
+            protected_exit,
+            success_target,
+            failure_target,
+            label_prefix,
+        } = cleanup;
+        if let Some(finally_body) = region.finally_body {
+            let failure = self.next_label(&format!("{label_prefix}.fail"));
+            let success = self.next_label(&format!("{label_prefix}.success"));
+            let cleanup_snapshot = self.cleanup_stack.clone();
+            self.cleanup_stack.push(CleanupContext {
+                finally_body: None,
+                finally_scope: region.finally_scope,
+                protected_scope: region.protected_scope,
+                failure_target: region.failure_target.clone(),
+            });
+            self.push_error_context(failure.clone());
+            self.emit_statements(finally_body)?;
+            self.pop_error_context();
+            self.cleanup_stack = cleanup_snapshot;
+            let continues = !self.terminated;
+            if continues {
+                self.release_for_scope_with_target(
+                    region.finally_scope,
+                    "normal",
+                    &region.failure_target,
+                )?;
+                self.release_for_scope_with_target(
+                    region.protected_scope,
+                    protected_exit,
+                    &region.failure_target,
+                )?;
+                self.emit(format!("  br label %{success}"));
+                self.terminated = true;
+            }
+            self.emit_label(&failure);
+            self.emit_error_cleanup_failure(CleanupFailure {
+                first_scope: region.finally_scope,
+                second_scope: region.protected_scope,
+                recoverable_exit: "unmatched_error",
+                failure_target,
+            })?;
+            if continues {
+                self.emit_label(&success);
+            }
+        } else {
+            self.release_for_scope_with_target(
+                region.protected_scope,
+                protected_exit,
+                &region.failure_target,
+            )?;
+            if !self.terminated {
+                self.emit(format!("  br label %{success_target}"));
+                self.terminated = true;
+            }
+        }
+        Ok(())
+    }
+
+    /// 发射一条非局部退出边，并依次完成当前受保护作用域的清理。
+    fn emit_nonlocal_exit_from_depth(
+        &mut self,
+        exit: &str,
+        target: ControlExitTarget,
+        cleanup_depth: usize,
+    ) -> Result<()> {
+        if cleanup_depth > self.cleanup_stack.len() {
+            return Err(CodegenError::InvalidIr {
+                message: format!("动态 {exit} 退出的清理深度无效"),
+            });
+        }
+        while self.cleanup_stack.len() > cleanup_depth {
+            let region = self
+                .cleanup_stack
+                .pop()
+                .ok_or_else(|| CodegenError::InvalidIr {
+                    message: format!("动态 {exit} 退出缺少作用域清理区域"),
+                })?;
+            self.emit_cleanup_context(region, exit, &target)?;
+            if self.terminated {
+                return Ok(());
+            }
+        }
+
+        match target {
+            ControlExitTarget::Return => {
+                self.with_error_target(self.error_terminal_label.clone(), |generator| {
+                    generator.release_for_exit("return")
+                })?;
+                self.emit_observation_return();
+            }
+            ControlExitTarget::Branch(label) => {
+                self.emit(format!("  br label %{label}"));
+            }
+        }
+        Ok(())
+    }
+
+    /// 发射一个已弹出区域的 `finally -> drop` 清理链。
+    fn emit_cleanup_context(
+        &mut self,
+        region: CleanupContext<'a>,
+        protected_exit: &str,
+        _target: &ControlExitTarget,
+    ) -> Result<()> {
+        if let Some(finally_body) = region.finally_body {
+            let failure = self.next_label("dynamic.nonlocal.finally.fail");
+            let success = self.next_label("dynamic.nonlocal.finally.success");
+            let cleanup_snapshot = self.cleanup_stack.clone();
+            self.cleanup_stack.push(CleanupContext {
+                finally_body: None,
+                finally_scope: region.finally_scope,
+                protected_scope: region.protected_scope,
+                failure_target: region.failure_target.clone(),
+            });
+            self.push_error_context(failure.clone());
+            self.emit_statements(finally_body)?;
+            self.pop_error_context();
+            self.cleanup_stack = cleanup_snapshot;
+            let continues = !self.terminated;
+            if continues {
+                self.release_for_scope_with_target(
+                    region.finally_scope,
+                    "normal",
+                    &region.failure_target,
+                )?;
+                self.release_for_scope_with_target(
+                    region.protected_scope,
+                    protected_exit,
+                    &region.failure_target,
+                )?;
+                self.emit(format!("  br label %{success}"));
+                self.terminated = true;
+            }
+            self.emit_label(&failure);
+            self.emit_error_cleanup_failure(CleanupFailure {
+                first_scope: region.finally_scope,
+                second_scope: region.protected_scope,
+                recoverable_exit: "unmatched_error",
+                failure_target: region.failure_target,
+            })?;
+            if continues {
+                self.emit_label(&success);
+            }
+        } else {
+            self.release_for_scope_with_target(
+                region.protected_scope,
+                protected_exit,
+                &region.failure_target,
+            )?;
+        }
+        Ok(())
+    }
+
+    /// 在指定错误目标下发射释放计划，避免重新进入已经离开的 `try`。
+    fn release_for_scope_with_target(
+        &mut self,
+        scope: Option<u32>,
+        exit: &str,
+        error_target: &str,
+    ) -> Result<()> {
+        self.with_error_target(error_target.to_owned(), |generator| {
+            generator.release_for_scope(scope, exit)
+        })
+    }
+
+    /// 临时切换当前 ABI 失败边的目标块。
+    fn with_error_target<T>(
+        &mut self,
+        target: String,
+        operation: impl FnOnce(&mut Self) -> Result<T>,
+    ) -> Result<T> {
+        self.push_error_context(target);
+        let result = operation(self);
+        self.pop_error_context();
+        result
+    }
+
+    /// 清理错误路径上的两个嵌套作用域；Fatal 仍直接终止。
+    fn emit_error_cleanup_failure(&mut self, cleanup: CleanupFailure) -> Result<()> {
+        let class = self.next_temp();
+        self.emit(format!("  {class} = call i32 @xiao_runtime_error_class()"));
+        let fatal = self.next_temp();
+        let recoverable = self.next_label("dynamic.error-cleanup.recoverable");
+        self.emit(format!("  {fatal} = icmp eq i32 {class}, 2"));
+        self.emit(format!(
+            "  br i1 {fatal}, label %{}, label %{recoverable}",
+            self.error_terminal_label
+        ));
+        self.emit_label(&recoverable);
+        self.release_for_scope_with_target(
+            cleanup.first_scope,
+            cleanup.recoverable_exit,
+            &cleanup.failure_target,
+        )?;
+        self.release_for_scope_with_target(
+            cleanup.second_scope,
+            cleanup.recoverable_exit,
+            &cleanup.failure_target,
+        )?;
+        self.emit(format!("  br label %{}", cleanup.failure_target));
+        self.terminated = true;
+        Ok(())
+    }
+
+    /// 查找由前端生命周期分析登记的区域作用域。
+    fn region_scope(&self, span: IrSpan, kind: &str) -> Option<u32> {
+        self.program
+            .ownership
+            .scopes
+            .iter()
+            .find(|scope| scope.kind == kind && scope.span == span)
+            .map(|scope| scope.id)
+    }
+
     /// 发射布尔 `if`/`elif`/`else` 链并在可达分支汇合。
     fn emit_if(
         &mut self,
         condition: &IrExpression,
-        body: &[IrStatement],
-        elif_branches: &[xiao_ir::IrElifBranch],
-        else_body: Option<&[IrStatement]>,
+        body: &'a [IrStatement],
+        elif_branches: &'a [xiao_ir::IrElifBranch],
+        else_body: Option<&'a [IrStatement]>,
     ) -> Result<()> {
         let condition = self.emit_condition(condition)?;
         let then_label = self.next_label("dynamic.if.then");
@@ -150,7 +635,9 @@ impl<'a> DynamicGenerator<'a> {
         ));
         self.terminated = true;
         self.emit_label(&then_label);
+        let cleanup_snapshot = self.cleanup_stack.clone();
         self.emit_statements(body)?;
+        self.cleanup_stack = cleanup_snapshot;
         if !self.terminated {
             self.emit(format!("  br label %{merge_label}"));
             self.terminated = true;
@@ -174,8 +661,8 @@ impl<'a> DynamicGenerator<'a> {
     /// 递归发射 `elif` 链。
     fn emit_elif_chain(
         &mut self,
-        branches: &[xiao_ir::IrElifBranch],
-        else_body: Option<&[IrStatement]>,
+        branches: &'a [xiao_ir::IrElifBranch],
+        else_body: Option<&'a [IrStatement]>,
         merge_label: &str,
     ) -> Result<()> {
         let branch = &branches[0];
@@ -187,7 +674,9 @@ impl<'a> DynamicGenerator<'a> {
         ));
         self.terminated = true;
         self.emit_label(&then_label);
+        let cleanup_snapshot = self.cleanup_stack.clone();
         self.emit_statements(&branch.body)?;
+        self.cleanup_stack = cleanup_snapshot;
         if !self.terminated {
             self.emit(format!("  br label %{merge_label}"));
             self.terminated = true;
@@ -202,7 +691,7 @@ impl<'a> DynamicGenerator<'a> {
     }
 
     /// 发射 `while` 基本块，并为 `break`/`continue` 暴露当前循环目标。
-    fn emit_while(&mut self, condition: &IrExpression, body: &[IrStatement]) -> Result<()> {
+    fn emit_while(&mut self, condition: &IrExpression, body: &'a [IrStatement]) -> Result<()> {
         let condition_label = self.next_label("dynamic.while.cond");
         let body_label = self.next_label("dynamic.while.body");
         let end_label = self.next_label("dynamic.while.end");
@@ -215,11 +704,14 @@ impl<'a> DynamicGenerator<'a> {
         ));
         self.terminated = true;
         self.emit_label(&body_label);
+        let cleanup_snapshot = self.cleanup_stack.clone();
         self.loop_stack.push(LoopLabels {
             condition: condition_label.clone(),
             end: end_label.clone(),
+            cleanup_depth: self.cleanup_stack.len(),
         });
         let body_result = self.emit_statements(body);
+        self.cleanup_stack = cleanup_snapshot;
         self.loop_stack.pop();
         body_result?;
         if !self.terminated {

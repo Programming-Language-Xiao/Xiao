@@ -40,18 +40,41 @@ impl<'a> DynamicGenerator<'a> {
                 message: "动态释放计划缺少唯一 program 根作用域".to_owned(),
             });
         }
+        let has_plan = self
+            .program
+            .ownership
+            .release_plans
+            .iter()
+            .any(|plan| plan.exit == exit && root_scopes.contains(&plan.scope));
+        if !has_plan {
+            return Err(CodegenError::InvalidIr {
+                message: format!("动态释放计划缺少 program/{exit} 退出边"),
+            });
+        }
+        self.release_for_scope(root_scopes.iter().next().copied(), exit)
+    }
+
+    /// 按指定作用域执行一条释放边；没有该边时表示该作用域没有需要释放的值。
+    pub(super) fn release_for_scope(&mut self, scope: Option<u32>, exit: &str) -> Result<()> {
+        if self.program.ownership.scopes.is_empty()
+            && self.program.ownership.values.is_empty()
+            && self.program.ownership.release_plans.is_empty()
+        {
+            return Ok(());
+        }
+        let Some(scope) = scope else {
+            return Ok(());
+        };
         let mut plans = self
             .program
             .ownership
             .release_plans
             .iter()
-            .filter(|plan| plan.exit == exit && root_scopes.contains(&plan.scope))
+            .filter(|plan| plan.exit == exit && plan.scope == scope)
             .collect::<Vec<_>>();
         plans.sort_by_key(|plan| std::cmp::Reverse(plan.scope));
         if plans.is_empty() {
-            return Err(CodegenError::InvalidIr {
-                message: format!("动态释放计划缺少 program/{exit} 退出边"),
-            });
+            return Ok(());
         }
         let mut emitted_values = BTreeSet::new();
         let mut emitted_slots = BTreeSet::new();

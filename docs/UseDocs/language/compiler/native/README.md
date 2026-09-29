@@ -4,7 +4,7 @@ title: 前端到 LLVM 原生内部驱动器
 status: verified
 audience: contributor
 module: rust.xiao-codegen-llvm
-stage: "10B"
+stage: "10B/10C"
 version: "0.1.0"
 related:
   - ../README.md
@@ -17,7 +17,7 @@ related:
 
 # 前端到 LLVM 原生内部驱动器
 
-状态：`verified`，对应 N0-A/N0-B。调用方把真实 Xiao 源码交给统一
+状态：`verified`，对应 N0-A/N0-B/N0-C。调用方把真实 Xiao 源码交给统一
 `FrontendCompiler`，再把同一份已验证的 `IrProgram` 交给 `xiao-codegen-llvm`；本页面描述
 Rust 内部接口。用户可见的 `xiao build` 已由 X0-E 接入，用法见
 [原生构建命令](../../../tooling/cli/build.md)。
@@ -35,8 +35,11 @@ Runtime 留给 N0-C。含字符串、动态值、数组、元组、字典、集�
 作用域计划，块级释放计划留给后续批次。表方法、构造参数和其他未接入函数表的表体语句
 仍会结构化拒绝。
 
-N0-B 的正常作用域退出、`return` 释放按前端 `IrOwnership.release_plans` 发射；异常展开
-与 `try`/`catch`/`finally` 的错误路径属于 N0-C。
+N0-B 的正常作用域退出、`return` 释放按前端 `IrOwnership.release_plans` 发射。N0-C 进一步
+把 `raise`、`try`/`catch`/`finally`、源码位置和统一错误 ABI 接入动态原生路径；可恢复错误
+保留 `code`、`message_id`、参数、位置与退出码，清理阶段的次生错误进入 `suppressed`。
+Fatal 不进入普通 `catch`，清理阶段的 Fatal 会直接进入终止块，当前不宣称可恢复路径的
+清理记录与字节码完全等价。
 
 ## 工具链与指纹
 

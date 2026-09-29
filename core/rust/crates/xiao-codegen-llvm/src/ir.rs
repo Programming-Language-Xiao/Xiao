@@ -43,6 +43,17 @@ pub struct NativeStartup {
     pub diagnostics_path: String,
 }
 
+/// 一个原生错误/诊断位置映射条目。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct NativeSourceMapEntry {
+    /// 在生成文本中的稳定序号。
+    pub ordinal: u32,
+    /// 逻辑节点标签。
+    pub label: String,
+    /// 对应的 Xiao 源码区间。
+    pub span: IrSpan,
+}
+
 impl CodegenOptions {
     /// 创建指定目标的默认选项。
     #[must_use]
@@ -95,6 +106,8 @@ pub struct LlvmModule {
     pub runtime_abi_version: Option<u64>,
     /// 后端版本和目标字段组成的可追踪指纹（工具版本在构建驱动器中补入）。
     pub codegen_fingerprint: String,
+    /// 供 Runtime 错误、诊断事件和调试器消费的源码映射表。
+    pub source_map: Vec<NativeSourceMapEntry>,
 }
 
 /// 验证输入 IR，并返回第一个结构化错误。
@@ -112,6 +125,77 @@ pub fn validate_program(program: &IrProgram) -> Result<()> {
         });
     }
     Ok(())
+}
+
+/// 从同一份类型化 IR 建立稳定的原生源码映射摘要。
+pub(crate) fn source_map_for_program(program: &IrProgram) -> Vec<NativeSourceMapEntry> {
+    fn collect(
+        statements: &[IrStatement],
+        entries: &mut Vec<NativeSourceMapEntry>,
+        next: &mut u32,
+    ) {
+        for statement in statements {
+            let label = match &statement.kind {
+                IrStatementKind::Try { .. } => "try",
+                IrStatementKind::Raise { .. } => "raise",
+                IrStatementKind::Return { .. } => "return",
+                IrStatementKind::If { .. } => "if",
+                IrStatementKind::While { .. } => "while",
+                IrStatementKind::For { .. } => "for",
+                _ => "statement",
+            };
+            entries.push(NativeSourceMapEntry {
+                ordinal: *next,
+                label: label.to_owned(),
+                span: statement.span,
+            });
+            *next = next.saturating_add(1);
+            match &statement.kind {
+                IrStatementKind::If {
+                    body,
+                    elif_branches,
+                    else_body,
+                    ..
+                } => {
+                    collect(body, entries, next);
+                    for branch in elif_branches {
+                        collect(&branch.body, entries, next);
+                    }
+                    if let Some(body) = else_body {
+                        collect(body, entries, next);
+                    }
+                }
+                IrStatementKind::While { body, .. }
+                | IrStatementKind::For { body, .. }
+                | IrStatementKind::Function { body, .. } => collect(body, entries, next),
+                IrStatementKind::Try {
+                    body,
+                    catches,
+                    finally_body,
+                } => {
+                    collect(body, entries, next);
+                    for catch in catches {
+                        entries.push(NativeSourceMapEntry {
+                            ordinal: *next,
+                            label: "catch".to_owned(),
+                            span: catch.span,
+                        });
+                        *next = next.saturating_add(1);
+                        collect(&catch.body, entries, next);
+                    }
+                    if let Some(body) = finally_body {
+                        collect(body, entries, next);
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    let mut entries = Vec::new();
+    let mut next = 0;
+    collect(&program.body, &mut entries, &mut next);
+    entries
 }
 
 /// 将一份已验证的类型化 IR 降低成 LLVM 文本。
@@ -264,6 +348,12 @@ impl<'a> ModuleGenerator<'a> {
             "target triple = \"{}\"\n\n",
             escape_llvm(&self.options.target.triple)
         ));
+        for entry in source_map_for_program(self.program) {
+            text.push_str(&format!(
+                "; xiao.source-map {} {}..{}\n",
+                entry.label, entry.span.start, entry.span.end
+            ));
+        }
         for declaration in &self.declarations {
             text.push_str(declaration);
             text.push('\n');
@@ -295,6 +385,7 @@ impl<'a> ModuleGenerator<'a> {
             runtime_components: Vec::new(),
             runtime_abi_version: None,
             codegen_fingerprint: fingerprint,
+            source_map: source_map_for_program(self.program),
         })
     }
 

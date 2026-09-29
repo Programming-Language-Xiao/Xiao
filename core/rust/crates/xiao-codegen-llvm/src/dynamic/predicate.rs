@@ -124,20 +124,8 @@ fn statement_uses_runtime(statement: &IrStatement) -> bool {
             expression_uses_runtime(iterable) || body.iter().any(statement_uses_runtime)
         }
         IrStatementKind::Return { value } => value.as_ref().is_some_and(expression_uses_runtime),
-        IrStatementKind::Raise { value } => expression_uses_runtime(value),
-        IrStatementKind::Try {
-            body,
-            catches,
-            finally_body,
-        } => {
-            body.iter().any(statement_uses_runtime)
-                || catches
-                    .iter()
-                    .any(|catch| catch.body.iter().any(statement_uses_runtime))
-                || finally_body
-                    .as_deref()
-                    .is_some_and(|body| body.iter().any(statement_uses_runtime))
-        }
+        IrStatementKind::Raise { .. } => true,
+        IrStatementKind::Try { .. } => true,
         IrStatementKind::Table { .. } => true,
         IrStatementKind::Function {
             parameters,

@@ -47,6 +47,7 @@ impl<'a> DynamicGenerator<'a> {
                 } => {
                     self.collect_slots(body)?;
                     for catch in catches {
+                        self.insert_slot(&catch.binding)?;
                         self.collect_slots(&catch.body)?;
                     }
                     if let Some(body) = finally_body {
@@ -220,11 +221,13 @@ impl<'a> DynamicGenerator<'a> {
             .iter()
             .filter(|scope| scope.id != root)
             .find(|scope| {
-                self.program
-                    .ownership
-                    .release_plans
-                    .iter()
-                    .any(|plan| plan.scope == scope.id && !plan.actions.is_empty())
+                !matches!(scope.kind.as_str(), "try" | "catch" | "finally")
+                    && self
+                        .program
+                        .ownership
+                        .release_plans
+                        .iter()
+                        .any(|plan| plan.scope == scope.id && !plan.actions.is_empty())
             })
         {
             return Err(CodegenError::Unsupported {

@@ -1,6 +1,7 @@
 //! 动态降低器的容器构造与表描述符发射。
 
-use xiao_ir::{IrExpression, IrSpan};
+use xiao_diagnostics::error_kind_of;
+use xiao_ir::{IrExpression, IrExpressionKind, IrSpan};
 
 use super::predicate::abi_field_type;
 use super::text::escape_bytes;
@@ -168,12 +169,15 @@ impl<'a> DynamicGenerator<'a> {
         arguments: &[xiao_ir::IrCallArgument],
         span: IrSpan,
     ) -> Result<String> {
-        let xiao_ir::IrExpressionKind::Name { name } = &callee.kind else {
+        let IrExpressionKind::Name { name } = &callee.kind else {
             return Err(CodegenError::Unsupported {
                 feature: "动态表构造目标".to_owned(),
                 span: Some(span),
             });
         };
+        if error_kind_of(&name.text).is_some() {
+            return self.emit_error_new(&name.text, arguments, span);
+        }
         let signature = self
             .program
             .table_signatures

@@ -11,6 +11,7 @@ impl<'a> DynamicGenerator<'a> {
         let entry_return = if observed { "i64" } else { "void" };
         self.emit(format!("define {entry_return} @xiao_entry() {{"));
         self.emit("entry:".to_owned());
+        self.emit("  call void @xiao_runtime_error_clear()".to_owned());
         let compatibility = self.next_temp();
         self.emit(format!(
             "  {compatibility} = call i32 @xiao_runtime_abi_is_compatible(i32 {ABI_MAJOR_VERSION}, i32 {ABI_MINOR_VERSION})"
@@ -46,8 +47,21 @@ impl<'a> DynamicGenerator<'a> {
             self.emit_observation_return();
             self.terminated = true;
         }
+        self.emit(format!("{}:", self.error_terminal_label));
+        self.emit("  call void @xiao_runtime_error_report()".to_owned());
+        let error_code = self.next_temp();
+        self.emit(format!(
+            "  {error_code} = call i32 @xiao_runtime_error_exit_code()"
+        ));
+        if observed {
+            let error_code_i64 = self.next_temp();
+            self.emit(format!("  {error_code_i64} = sext i32 {error_code} to i64"));
+            self.emit(format!("  ret i64 {error_code_i64}"));
+        } else {
+            self.emit("  ret void".to_owned());
+        }
         self.emit("abi.fail:".to_owned());
-        self.emit("  call void @llvm.trap()".to_owned());
+        self.emit("  call void @xiao_runtime_fatal_abi()".to_owned());
         self.emit("  unreachable".to_owned());
         self.emit("}".to_owned());
         self.emit(String::new());
@@ -60,7 +74,7 @@ impl<'a> DynamicGenerator<'a> {
         let entry = if observed {
             "  %xiao_exit = call i64 @xiao_entry()\n  %xiao_exit_code = trunc i64 %xiao_exit to i32\n  ret i32 %xiao_exit_code\n"
         } else {
-            "  call void @xiao_entry()\n  ret i32 0\n"
+            "  call void @xiao_entry()\n  %xiao_exit_code = call i32 @xiao_runtime_error_exit_code()\n  ret i32 %xiao_exit_code\n"
         };
         if self.options.debug_startup.is_none() {
             return format!("define i32 @main() {{\nentry:\n{entry}}}\n");

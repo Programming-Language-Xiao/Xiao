@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 1;
+pub const ABI_MINOR_VERSION: u32 = 2;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -50,6 +50,8 @@ pub enum XiaoAbiStatus {
     RuntimeError = 6,
     /// 请求的 ABI 主版本不兼容。
     VersionMismatch = 7,
+    /// Runtime 报告了不可恢复故障；调用方不得把它路由到 Xiao `catch`。
+    Fatal = 8,
 }
 
 impl XiaoAbiStatus {
@@ -92,6 +94,168 @@ pub struct XiaoAbiSpan {
     pub start: u64,
     /// 结束字节偏移（不包含）。
     pub end: u64,
+}
+
+/// 错误位置是否包含有效源码区间。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiErrorLocation {
+    /// 源码字节区间。
+    pub span: XiaoAbiSpan,
+    /// 非零表示 `span` 有效。
+    pub present: u8,
+    /// 为固定布局保留的字节。
+    pub _reserved: [u8; 7],
+}
+
+impl XiaoAbiErrorLocation {
+    /// 创建一个没有源码位置的错误位置。
+    #[must_use]
+    pub const fn none() -> Self {
+        Self {
+            span: XiaoAbiSpan { start: 0, end: 0 },
+            present: 0,
+            _reserved: [0; 7],
+        }
+    }
+
+    /// 创建一个带源码区间的错误位置。
+    #[must_use]
+    pub const fn from_span(span: XiaoAbiSpan) -> Self {
+        Self {
+            span,
+            present: 1,
+            _reserved: [0; 7],
+        }
+    }
+}
+
+/// 错误报告的机器类别。
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct XiaoErrorClass(u32);
+
+#[allow(non_upper_case_globals)]
+impl XiaoErrorClass {
+    /// 没有挂起错误。
+    pub const None: Self = Self(0);
+    /// 可被 Xiao `catch` 捕获的错误。
+    pub const Recoverable: Self = Self(1);
+    /// 不得被 Xiao `catch` 捕获的致命故障。
+    pub const Fatal: Self = Self(2);
+
+    /// 从 ABI 原始值构造类别。
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Self {
+        Self(raw)
+    }
+
+    /// 返回 ABI 原始类别。
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        self.0
+    }
+}
+
+/// 错误参数的机器值类别。
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct XiaoErrorParamKind(u32);
+
+#[allow(non_upper_case_globals)]
+impl XiaoErrorParamKind {
+    /// 文本参数。
+    pub const Text: Self = Self(1);
+    /// 有符号整数参数。
+    pub const Integer: Self = Self(2);
+    /// 布尔参数。
+    pub const Boolean: Self = Self(3);
+
+    /// 从 ABI 原始值构造参数类别。
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Self {
+        Self(raw)
+    }
+
+    /// 返回 ABI 原始参数类别。
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        self.0
+    }
+}
+
+/// 错误报告的固定宽度摘要；其中的字节视图只在当前 ABI 调用期间有效。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiErrorSnapshot {
+    /// 可恢复、致命或无错误类别。
+    pub class: XiaoErrorClass,
+    /// Runtime 错误类别的稳定数值。
+    pub kind: u32,
+    /// 进程内错误事件编号。
+    pub error_id: u64,
+    /// 稳定错误码。
+    pub code: XiaoAbiBytes,
+    /// 消息目录键。
+    pub message_id: XiaoAbiBytes,
+    /// 源码位置。
+    pub location: XiaoAbiErrorLocation,
+    /// 对应宿主进程退出码；无错误时为零。
+    pub exit_code: i32,
+    /// 调用栈帧数量。
+    pub stack_depth: u32,
+    /// 结构化参数数量。
+    pub param_count: u32,
+}
+
+/// 一个结构化错误参数；文本视图只在当前 ABI 调用期间有效。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiErrorParam {
+    /// 稳定参数名。
+    pub key: XiaoAbiBytes,
+    /// 参数值类别。
+    pub kind: XiaoErrorParamKind,
+    /// 整数或布尔参数的固定宽度载荷。
+    pub integer: i64,
+    /// 文本参数视图；非文本参数为空。
+    pub text: XiaoAbiBytes,
+}
+
+/// 一个统一堆栈帧摘要；所有字符串视图只在当前 ABI 调用期间有效。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiStackFrame {
+    /// 模块名。
+    pub module: XiaoAbiBytes,
+    /// 函数名。
+    pub function: XiaoAbiBytes,
+    /// 源文件名；缺失时为空。
+    pub source: XiaoAbiBytes,
+    /// 源码位置。
+    pub location: XiaoAbiErrorLocation,
+    /// 字节码偏移；缺失时为 `-1`。
+    pub bytecode_offset: i64,
+    /// 原生地址；缺失时为 `-1`。
+    pub native_address: i64,
+    /// 内联深度；缺失时为 `-1`。
+    pub inline_depth: i32,
+    /// 用户帧为 `0`，Runtime 帧为 `1`。
+    pub frame_kind: u32,
+}
+
+/// 原生 Runtime 发出的诊断事件；实现侧转交给既有诊断会话，不负责本地化。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoAbiDiagnosticEvent {
+    /// 稳定事件类型。
+    pub event_type: XiaoAbiBytes,
+    /// 可选错误码。
+    pub code: XiaoAbiBytes,
+    /// 可选消息目录键。
+    pub message_id: XiaoAbiBytes,
+    /// 事件源码位置。
+    pub location: XiaoAbiErrorLocation,
 }
 
 /// 一个不拥有输入内存的 UTF-8 字节视图。
@@ -383,6 +547,50 @@ unsafe extern "C" {
     /// 判断一个生成产物所需版本是否可由当前 Runtime 满足。
     pub fn xiao_runtime_abi_is_compatible(required_major: u32, required_minor: u32) -> i32;
 
+    /// 清除当前线程的挂起错误；普通成功路径必须在进入新一轮执行前调用。
+    pub fn xiao_runtime_error_clear();
+    /// 返回当前线程挂起错误的机器类别：`0` 无错误、`1` 可恢复、`2` 致命。
+    pub fn xiao_runtime_error_class() -> u32;
+    /// 为挂起的 Runtime 错误补上触发它的源码位置。
+    pub fn xiao_runtime_error_attach_span(start: u64, end: u64) -> i32;
+    /// 创建一个可恢复错误值；`FatalError` 或未知错误类型不会伪装成可恢复值。
+    pub fn xiao_runtime_error_new(
+        type_name: XiaoAbiBytes,
+        code: XiaoAbiBytes,
+        message: XiaoAbiBytes,
+        location: *const XiaoAbiErrorLocation,
+    ) -> XiaoValue;
+    /// 创建一个可恢复错误并放入当前线程的挂起错误槽。
+    pub fn xiao_runtime_error_raise_type(
+        type_name: XiaoAbiBytes,
+        code: XiaoAbiBytes,
+        message: XiaoAbiBytes,
+        location: XiaoAbiErrorLocation,
+    ) -> i32;
+    /// 将 `XiaoValueTag::Error` 值复制为当前线程的挂起错误。
+    pub fn xiao_runtime_error_raise_value(
+        value: *const XiaoValue,
+        location: XiaoAbiErrorLocation,
+    ) -> i32;
+    /// 判断挂起的可恢复错误是否匹配给定的语言错误类型名。
+    pub fn xiao_runtime_error_matches(error_type: XiaoAbiBytes) -> i32;
+    /// 把挂起的可恢复错误取成拥有的 `XiaoValueTag::Error` 值；失败时保留挂起错误。
+    pub fn xiao_runtime_error_take(out: *mut XiaoValue) -> i32;
+    /// 读取当前线程挂起错误的机器字段。
+    pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
+    /// 读取当前线程挂起错误的第 `index` 个结构化参数。
+    pub fn xiao_runtime_error_param(index: usize, out: *mut XiaoAbiErrorParam) -> i32;
+    /// 读取当前线程挂起错误的第 `index` 个堆栈帧。
+    pub fn xiao_runtime_error_stack_frame(index: usize, out: *mut XiaoAbiStackFrame) -> i32;
+    /// 返回当前线程挂起错误对应的稳定宿主退出码。
+    pub fn xiao_runtime_error_exit_code() -> i32;
+    /// 将当前挂起错误写成既有诊断路径可消费的机器摘要。
+    pub fn xiao_runtime_error_report();
+    /// 将一个诊断事件交给已建立的诊断会话；无会话时仍保留确定性失败状态。
+    pub fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticEvent) -> i32;
+    /// 处理 ABI/平台边界致命故障；该函数不会返回，也不会进入 Xiao `catch`。
+    pub fn xiao_runtime_fatal_abi() -> !;
+
     /// 保留一个强句柄并返回同一 ABI 盒子地址；每次成功调用都必须配对一次 release。
     pub fn xiao_runtime_retain(handle: XiaoHandle) -> XiaoHandle;
     /// 释放一个强句柄；空指针安全，无需调用方先判断。
@@ -407,6 +615,8 @@ unsafe extern "C" {
     pub fn xiao_runtime_value_release_weak(value: *mut XiaoValue) -> i32;
     /// 从弱句柄构造析构观察值并增加一次弱引用。
     pub fn xiao_runtime_value_weak(handle: XiaoWeakHandle) -> XiaoValue;
+    /// 从错误强句柄构造 `XiaoValueTag::Error`；句柄所有权转移到返回值。
+    pub fn xiao_runtime_value_error(handle: XiaoHandle) -> XiaoValue;
     /// 构造内联 64 位整数值。
     pub fn xiao_runtime_value_int(value: i64) -> XiaoValue;
     /// 构造内联 32 位整数值。
@@ -539,8 +749,8 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0001);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0002);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 1);
+        assert_eq!(ABI_MINOR_VERSION, 2);
     }
 }

@@ -1,6 +1,7 @@
 //! 动态降低器的表达式、字面量与表字段访问发射。
 
-use xiao_ir::{IrExpression, IrExpressionKind, IrName, IrSpan, IrType};
+use xiao_diagnostics::{CatchTypeKind, error_kind_of};
+use xiao_ir::{IrCallArgument, IrExpression, IrExpressionKind, IrName, IrSpan, IrType};
 
 use super::predicate::name_key;
 use super::text::{escape_bytes, format_float, is_identity_cast, parse_i32, parse_i64, unquote};
@@ -45,6 +46,89 @@ impl<'a> DynamicGenerator<'a> {
             | IrExpressionKind::Selector { .. } => Err(CodegenError::Unsupported {
                 feature: "动态表达式运算或成员访问".to_owned(),
                 span: Some(expression.span),
+            }),
+        }
+    }
+
+    /// 发射前端已定义的可恢复错误构造器。
+    ///
+    /// N0-C 只消费 `code`/`message` 两个字符串参数；不把普通动态调用误当作
+    /// 错误构造，也不允许 `FatalError` 经由值 ABI 混入普通错误通道。
+    pub(super) fn emit_error_new(
+        &mut self,
+        type_name: &str,
+        arguments: &[IrCallArgument],
+        span: IrSpan,
+    ) -> Result<String> {
+        if matches!(error_kind_of(type_name), Some(CatchTypeKind::Fatal)) {
+            return Err(CodegenError::Unsupported {
+                feature: "FatalError 不能构造为可恢复错误值".to_owned(),
+                span: Some(span),
+            });
+        }
+        if error_kind_of(type_name).is_none() {
+            return Err(CodegenError::InvalidIr {
+                message: format!("未知错误类型 {type_name}"),
+            });
+        }
+        let mut code = None;
+        let mut message = None;
+        for (index, argument) in arguments.iter().enumerate() {
+            let text = self.emit_error_text_argument(argument, span)?;
+            match argument.name.as_ref().map(|name| name.text.as_str()) {
+                Some("code") if code.is_none() => code = Some(text),
+                Some("message") if message.is_none() => message = Some(text),
+                Some(name @ ("code" | "message")) => {
+                    return Err(CodegenError::InvalidIr {
+                        message: format!("错误构造参数 {name} 重复"),
+                    });
+                }
+                Some(name) => {
+                    return Err(CodegenError::Unsupported {
+                        feature: format!("错误构造参数 {name}"),
+                        span: Some(argument.span),
+                    });
+                }
+                None if index == 0 && code.is_none() => code = Some(text),
+                None if index == 1 && message.is_none() => message = Some(text),
+                None => {
+                    return Err(CodegenError::Unsupported {
+                        feature: "错误构造参数（只支持 code/message）".to_owned(),
+                        span: Some(argument.span),
+                    });
+                }
+            }
+        }
+        let type_value = self.emit_bytes_value(type_name.as_bytes());
+        let code_value = self.emit_bytes_value(code.as_deref().unwrap_or_default().as_bytes());
+        let message_value =
+            self.emit_bytes_value(message.as_deref().unwrap_or_default().as_bytes());
+        let type_argument = self.emit_bytes_argument(&type_value);
+        let code_argument = self.emit_bytes_argument(&code_value);
+        let message_argument = self.emit_bytes_argument(&message_value);
+        let location = self.emit_error_location(span);
+        let value = self.emit_value_call(
+            "xiao_runtime_error_new",
+            &format!("{type_argument}, {code_argument}, {message_argument}, ptr {location}"),
+        );
+        self.check_pending_error_at(span);
+        Ok(value)
+    }
+
+    /// 发射错误构造参数中的稳定文本。
+    fn emit_error_text_argument(
+        &mut self,
+        argument: &IrCallArgument,
+        span: IrSpan,
+    ) -> Result<String> {
+        match &argument.value.kind {
+            IrExpressionKind::Literal { literal, text } if literal == "str" => unquote(text)
+                .ok_or_else(|| CodegenError::InvalidIr {
+                    message: format!("错误构造字符串无法解码（{}..{}）", span.start, span.end),
+                }),
+            _ => Err(CodegenError::Unsupported {
+                feature: "动态错误构造参数（当前只支持字符串字面量）".to_owned(),
+                span: Some(argument.value.span),
             }),
         }
     }

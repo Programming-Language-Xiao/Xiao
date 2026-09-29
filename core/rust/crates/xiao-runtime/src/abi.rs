@@ -8,11 +8,14 @@
 //! 同一个 ABI 句柄。并发/原子实现需要单独的 ABI 版本与生命周期契约。
 
 use std::cell::RefCell;
+use std::io::Write;
 use std::slice;
 
 use xiao_runtime_abi::{
-    ABI_MAJOR_VERSION, ABI_MINOR_VERSION, XiaoAbiBytes, XiaoAbiMutBytes, XiaoAbiStatus,
-    XiaoFieldType, XiaoHandle, XiaoOpaqueHandle, XiaoOpaqueWeakHandle, XiaoTableDescriptor,
+    ABI_MAJOR_VERSION, ABI_MINOR_VERSION, XiaoAbiBytes, XiaoAbiDiagnosticEvent,
+    XiaoAbiErrorLocation, XiaoAbiErrorParam, XiaoAbiErrorSnapshot, XiaoAbiMutBytes, XiaoAbiSpan,
+    XiaoAbiStackFrame, XiaoAbiStatus, XiaoErrorClass, XiaoErrorParamKind, XiaoFieldType,
+    XiaoHandle, XiaoOpaqueHandle, XiaoOpaqueWeakHandle, XiaoTableDescriptor,
     XiaoTableFieldDescriptor, XiaoValue, XiaoValuePayload, XiaoValueTag, XiaoWeakHandle,
 };
 use xiao_source::SourceSpan;
@@ -21,12 +24,26 @@ use xiao_types::{TableMemberSignature, TableSignature, Type, Visibility};
 
 use crate::containers::{ArrayHandle, DictHandle, DictKind, SetHandle, TupleHandle};
 use crate::errors::{
-    CONTAINER_INDEX_CODE, CONTAINER_KEY_CODE, INVALID_HANDLE_CODE, RuntimeError, RuntimeResult,
-    USE_AFTER_RELEASE_CODE, WEAK_UPGRADE_CODE,
+    CONTAINER_INDEX_CODE, CONTAINER_KEY_CODE, DiagnosticParam, FatalError, FatalKind, FrameKind,
+    INVALID_HANDLE_CODE, RuntimeError, RuntimeResult, USE_AFTER_RELEASE_CODE, WEAK_UPGRADE_CODE,
+    XiaoErrorKind,
 };
 use crate::memory::{RuntimeTypeTag, StrongHandle, WeakHandle};
 use crate::tables::{TableDefinition, TableInstance};
 use crate::value::{RuntimeValue, StringHandle};
+
+/// 当前线程尚未交给原生控制流消费的错误。
+enum PendingError {
+    /// 可由 Xiao `catch` 消费的错误。
+    Recoverable(RuntimeError),
+    /// 不得进入 Xiao `catch` 的致命故障。
+    Fatal(FatalError),
+}
+
+thread_local! {
+    /// N0-C 原生错误的单线程传播槽；它不跨线程，也不替代 Runtime 的错误对象。
+    static PENDING_ERROR: RefCell<Option<PendingError>> = const { RefCell::new(None) };
+}
 
 /// ABI 盒子的魔数；用于在仍可读取的盒子中拒绝明显类型错配。
 ///
@@ -37,6 +54,8 @@ const ABI_HANDLE_MAGIC: u64 = 0x5849_414F_4142_4931;
 const ABI_KIND_STRONG: u32 = 1;
 /// ABI 弱句柄盒子的种类标记。
 const ABI_KIND_WEAK: u32 = 2;
+/// ABI 错误句柄盒子的种类标记。
+const ABI_KIND_ERROR: u32 = 3;
 
 /// ABI 强句柄的内部盒子；其地址就是 C 侧不透明句柄地址。
 ///
@@ -59,15 +78,102 @@ struct AbiWeak {
     inners: RefCell<Vec<WeakHandle>>,
 }
 
+/// ABI 错误句柄盒子；错误对象不参与 Runtime 对象头的强/弱引用计数。
+#[repr(C)]
+struct AbiError {
+    magic: u64,
+    kind: u32,
+    _reserved: u32,
+    inners: RefCell<Vec<RuntimeError>>,
+}
+
+/// 将错误放入当前线程传播槽。
+fn set_pending_error(error: PendingError) {
+    PENDING_ERROR.with(|pending| {
+        *pending.borrow_mut() = Some(error);
+    });
+}
+
+/// 将可恢复错误放入当前线程传播槽。
+fn set_pending_runtime_error(error: RuntimeError) {
+    PENDING_ERROR.with(|pending| {
+        let mut pending = pending.borrow_mut();
+        match pending.as_mut() {
+            None => *pending = Some(PendingError::Recoverable(error)),
+            Some(PendingError::Recoverable(primary)) => primary.push_suppressed(error),
+            Some(PendingError::Fatal(_)) => {}
+        }
+    });
+}
+
+/// 返回当前线程的错误类别。
+fn pending_class() -> XiaoErrorClass {
+    PENDING_ERROR.with(|pending| match pending.borrow().as_ref() {
+        None => XiaoErrorClass::None,
+        Some(PendingError::Recoverable(_)) => XiaoErrorClass::Recoverable,
+        Some(PendingError::Fatal(_)) => XiaoErrorClass::Fatal,
+    })
+}
+
+/// 把 ABI 的源码位置转换为 Runtime 源码位置。
+fn source_span(location: XiaoAbiErrorLocation) -> Option<SourceSpan> {
+    (location.present != 0)
+        .then(|| SourceSpan::new(location.span.start as usize, location.span.end as usize))
+        .flatten()
+}
+
+/// 把 Runtime 源码位置转换为 ABI 固定布局。
+fn abi_location(location: Option<SourceSpan>) -> XiaoAbiErrorLocation {
+    location.map_or_else(XiaoAbiErrorLocation::none, |span| {
+        XiaoAbiErrorLocation::from_span(XiaoAbiSpan {
+            start: span.start() as u64,
+            end: span.end() as u64,
+        })
+    })
+}
+
+/// 把字符串借用为 ABI 字节视图。
+fn abi_bytes(value: &str) -> XiaoAbiBytes {
+    XiaoAbiBytes {
+        ptr: value.as_ptr(),
+        len: value.len(),
+    }
+}
+
+/// 把 Runtime 错误类别编码为稳定 ABI 数值。
+fn error_kind_code(kind: XiaoErrorKind) -> u32 {
+    match kind {
+        XiaoErrorKind::Memory => 1,
+        XiaoErrorKind::Type => 2,
+        XiaoErrorKind::Arithmetic => 3,
+        XiaoErrorKind::Table => 4,
+        XiaoErrorKind::Concurrency => 5,
+        XiaoErrorKind::Resource => 6,
+        XiaoErrorKind::Other => 7,
+    }
+}
+
+/// 将当前线程状态的失败码映射到稳定宿主退出码。
+fn pending_exit_code() -> i32 {
+    match pending_class() {
+        XiaoErrorClass::None => 0,
+        XiaoErrorClass::Recoverable => 3,
+        XiaoErrorClass::Fatal => 4,
+        _ => 4,
+    }
+}
+
 /// 把 Runtime 错误映射到 ABI 稳定状态码。
 fn status_from_error(error: &RuntimeError) -> i32 {
-    match error.code() {
+    let status = match error.code() {
         INVALID_HANDLE_CODE | USE_AFTER_RELEASE_CODE | WEAK_UPGRADE_CODE => {
             XiaoAbiStatus::InvalidHandle.code()
         }
         CONTAINER_INDEX_CODE | CONTAINER_KEY_CODE => XiaoAbiStatus::OutOfBounds.code(),
         _ => XiaoAbiStatus::RuntimeError.code(),
-    }
+    };
+    set_pending_runtime_error(error.clone());
+    status
 }
 
 /// 将任意 Runtime 结果映射为 ABI 状态码。
@@ -120,6 +226,17 @@ fn box_weak(inner: WeakHandle) -> XiaoWeakHandle {
     .cast::<XiaoOpaqueWeakHandle>()
 }
 
+/// 把一个可恢复错误装进 ABI 错误盒子。
+fn box_error(inner: RuntimeError) -> XiaoHandle {
+    Box::into_raw(Box::new(AbiError {
+        magic: ABI_HANDLE_MAGIC,
+        kind: ABI_KIND_ERROR,
+        _reserved: 0,
+        inners: RefCell::new(vec![inner]),
+    }))
+    .cast::<XiaoOpaqueHandle>()
+}
+
 /// 借用 ABI 强句柄盒子；调用方必须传入 Runtime 返回且尚未 release 的有效地址。
 ///
 /// 魔数只能拦截仍可读取的明显类型错误；释放后的悬空裸指针不属于 ABI 合法输入。
@@ -146,6 +263,67 @@ unsafe fn weak_ref<'a>(handle: XiaoWeakHandle) -> Result<&'a AbiWeak, i32> {
         return Err(XiaoAbiStatus::InvalidHandle.code());
     }
     Ok(weak)
+}
+
+/// 借用 ABI 错误盒子；调用方必须传入 Runtime 返回且尚未归还的错误句柄。
+unsafe fn error_ref<'a>(handle: XiaoHandle) -> Result<&'a AbiError, i32> {
+    if handle.is_null() {
+        return Err(XiaoAbiStatus::Null.code());
+    }
+    let error = unsafe { &*handle.cast::<AbiError>() };
+    if error.magic != ABI_HANDLE_MAGIC || error.kind != ABI_KIND_ERROR {
+        return Err(XiaoAbiStatus::InvalidHandle.code());
+    }
+    Ok(error)
+}
+
+/// 克隆 ABI 错误盒子中的一个错误对象。
+unsafe fn clone_error(handle: XiaoHandle) -> Result<RuntimeError, i32> {
+    let error = unsafe { error_ref(handle) }?;
+    error
+        .inners
+        .borrow()
+        .last()
+        .cloned()
+        .ok_or(XiaoAbiStatus::InvalidHandle.code())
+}
+
+/// 增加 ABI 错误盒子的一份拥有引用。
+unsafe fn retain_error(handle: XiaoHandle) -> Result<XiaoHandle, i32> {
+    let error = unsafe { error_ref(handle) }?;
+    let clone = error
+        .inners
+        .borrow()
+        .last()
+        .cloned()
+        .ok_or(XiaoAbiStatus::InvalidHandle.code())?;
+    error.inners.borrow_mut().push(clone);
+    Ok(handle)
+}
+
+/// 释放 ABI 错误盒子的一份拥有引用。
+unsafe fn release_error(handle: XiaoHandle) {
+    if handle.is_null() {
+        return;
+    }
+    let should_drop = {
+        let Ok(error) = (unsafe { error_ref(handle) }) else {
+            return;
+        };
+        let mut inners = error.inners.borrow_mut();
+        if inners.len() > 1 {
+            let _ = inners.pop();
+            false
+        } else if inners.len() == 1 {
+            let _ = inners.pop();
+            true
+        } else {
+            false
+        }
+    };
+    if should_drop {
+        unsafe { drop(Box::from_raw(handle.cast::<AbiError>())) };
+    }
 }
 
 /// 克隆 ABI 强句柄内部计数并返回新的 Runtime 句柄。
@@ -251,10 +429,8 @@ unsafe fn value_to_runtime(value: &XiaoValue) -> Result<RuntimeValue, i32> {
                 handle,
             ))?))
         }
-        // 析构视图和错误展开属于 N0-C；它们不能被伪装成可拥有 ABI 值。
-        XiaoValueTag::TableDropView | XiaoValueTag::Error => {
-            Err(XiaoAbiStatus::InvalidArgument.code())
-        }
+        XiaoValueTag::Error => Ok(RuntimeValue::error(unsafe { clone_error(payload.handle) }?)),
+        XiaoValueTag::TableDropView => Err(XiaoAbiStatus::InvalidArgument.code()),
         _ => Err(XiaoAbiStatus::InvalidArgument.code()),
     }
 }
@@ -310,8 +486,8 @@ fn runtime_to_value(value: &RuntimeValue) -> Result<XiaoValue, i32> {
             XiaoValueTag::Set,
             value.clone().into_strong_handle(),
         )),
+        RuntimeValue::Error(error) => Ok(value_from_owned_error((**error).clone())),
         RuntimeValue::TableDropView(_)
-        | RuntimeValue::Error(_)
         | RuntimeValue::Module(_)
         | RuntimeValue::ModuleFunction(_, _) => Err(XiaoAbiStatus::InvalidArgument.code()),
     }
@@ -323,6 +499,16 @@ fn value_from_owned_handle(tag: XiaoValueTag, handle: StrongHandle) -> XiaoValue
         tag,
         payload: XiaoValuePayload {
             handle: box_strong(handle),
+        },
+    }
+}
+
+/// 用已经拥有的可恢复错误构造 ABI 值；所有权转移到错误盒子。
+fn value_from_owned_error(error: RuntimeError) -> XiaoValue {
+    XiaoValue {
+        tag: XiaoValueTag::Error,
+        payload: XiaoValuePayload {
+            handle: box_error(error),
         },
     }
 }
@@ -458,6 +644,420 @@ pub extern "C" fn xiao_runtime_abi_minor_version() -> u32 {
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_abi_is_compatible(required_major: u32, required_minor: u32) -> i32 {
     i32::from(required_major == ABI_MAJOR_VERSION && required_minor <= ABI_MINOR_VERSION)
+}
+
+/// 清除当前线程挂起的原生错误。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_clear() {
+    PENDING_ERROR.with(|pending| {
+        *pending.borrow_mut() = None;
+    });
+}
+
+/// 返回当前线程挂起错误的机器类别。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_class() -> u32 {
+    pending_class().raw()
+}
+
+/// 为挂起错误附加源码位置；没有挂起错误时建立一个确定性的可恢复 Runtime 错误。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_attach_span(start: u64, end: u64) -> i32 {
+    let Some(span) = SourceSpan::new(start as usize, end as usize) else {
+        return XiaoAbiStatus::InvalidArgument.code();
+    };
+    PENDING_ERROR.with(|pending| {
+        let mut pending = pending.borrow_mut();
+        if pending.is_none() {
+            *pending = Some(PendingError::Recoverable(RuntimeError::invalid_value(
+                "Runtime ABI 调用失败",
+            )));
+        }
+        match pending.as_mut() {
+            Some(PendingError::Recoverable(error)) => {
+                *error = error.clone().with_location(span);
+            }
+            Some(PendingError::Fatal(error)) => {
+                *error = error.clone().with_location(span);
+            }
+            None => unreachable!(),
+        }
+    });
+    XiaoAbiStatus::Ok.code()
+}
+
+/// 创建一个拥有错误对象的 ABI 值。
+///
+/// 该入口只负责构造可恢复错误；`FatalError` 和未知名称进入独立的 Fatal 槽，
+/// 由原生控制流统一终止，不能被普通 `catch` 伪装成成功值。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_new(
+    type_name: XiaoAbiBytes,
+    code: XiaoAbiBytes,
+    message: XiaoAbiBytes,
+    location: *const XiaoAbiErrorLocation,
+) -> XiaoValue {
+    let type_name = match unsafe { utf8(type_name) } {
+        Ok(value) if !value.is_empty() => value,
+        Ok(_) => {
+            set_pending_runtime_error(RuntimeError::invalid_value("错误类型名称不能为空"));
+            return XiaoValue::none();
+        }
+        Err(_) => {
+            set_pending_runtime_error(RuntimeError::invalid_value("错误类型名称不是有效 UTF-8"));
+            return XiaoValue::none();
+        }
+    };
+    let code = match unsafe { utf8(code) } {
+        Ok(value) if !value.is_empty() => Some(value),
+        Ok(_) => None,
+        Err(_) => {
+            set_pending_runtime_error(RuntimeError::invalid_value("错误码不是有效 UTF-8"));
+            return XiaoValue::none();
+        }
+    };
+    let message = match unsafe { utf8(message) } {
+        Ok(value) if !value.is_empty() => Some(value),
+        Ok(_) => None,
+        Err(_) => {
+            set_pending_runtime_error(RuntimeError::invalid_value("错误消息不是有效 UTF-8"));
+            return XiaoValue::none();
+        }
+    };
+    let location = if location.is_null() {
+        None
+    } else {
+        let location = unsafe { &*location };
+        if location.present == 0 {
+            None
+        } else {
+            let Some(span) =
+                SourceSpan::new(location.span.start as usize, location.span.end as usize)
+            else {
+                set_pending_runtime_error(RuntimeError::invalid_value("错误源码位置无效"));
+                return XiaoValue::none();
+            };
+            Some(span)
+        }
+    };
+    let Some(mut error) =
+        RuntimeError::from_type_name(&type_name, code.as_deref(), message.as_deref())
+    else {
+        set_pending_error(PendingError::Fatal(FatalError::internal(format!(
+            "未知或不可恢复的错误类型 {type_name}"
+        ))));
+        return XiaoValue::none();
+    };
+    if let Some(location) = location {
+        error = error.with_location(location);
+    }
+    value_from_owned_error(error)
+}
+
+/// 创建并挂起一个语言层可恢复错误。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_raise_type(
+    type_name: XiaoAbiBytes,
+    code: XiaoAbiBytes,
+    message: XiaoAbiBytes,
+    location: XiaoAbiErrorLocation,
+) -> i32 {
+    let type_name = match unsafe { utf8(type_name) } {
+        Ok(value) => value,
+        Err(status) => return status,
+    };
+    let code = match unsafe { utf8(code) } {
+        Ok(value) if !value.is_empty() => Some(value),
+        Ok(_) => None,
+        Err(status) => return status,
+    };
+    let message = match unsafe { utf8(message) } {
+        Ok(value) if !value.is_empty() => Some(value),
+        Ok(_) => None,
+        Err(status) => return status,
+    };
+    let Some(mut error) =
+        RuntimeError::from_type_name(&type_name, code.as_deref(), message.as_deref())
+    else {
+        set_pending_error(PendingError::Fatal(FatalError::internal(format!(
+            "未知或不可恢复的错误类型 {type_name}"
+        ))));
+        return XiaoAbiStatus::Fatal.code();
+    };
+    if let Some(span) = source_span(location) {
+        error = error.with_location(span);
+    }
+    set_pending_runtime_error(error);
+    XiaoAbiStatus::Ok.code()
+}
+
+/// 将 `XiaoValueTag::Error` 值复制为挂起的可恢复错误。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_raise_value(
+    value: *const XiaoValue,
+    location: XiaoAbiErrorLocation,
+) -> i32 {
+    if value.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let value = unsafe { &*value };
+    let Ok(RuntimeValue::Error(error)) = (unsafe { value_to_runtime(value) }) else {
+        set_pending_runtime_error(RuntimeError::type_mismatch(
+            "error",
+            format!("ABI tag {}", value.tag.raw()),
+        ));
+        return XiaoAbiStatus::RuntimeError.code();
+    };
+    let mut error = *error;
+    if let Some(span) = source_span(location) {
+        error = error.with_location(span);
+    }
+    set_pending_runtime_error(error);
+    XiaoAbiStatus::Ok.code()
+}
+
+/// 判断当前挂起的可恢复错误是否匹配语言层错误类型名。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_matches(error_type: XiaoAbiBytes) -> i32 {
+    let Ok(error_type) = (unsafe { utf8(error_type) }) else {
+        return 0;
+    };
+    PENDING_ERROR.with(|pending| match pending.borrow().as_ref() {
+        Some(PendingError::Recoverable(error)) => i32::from(
+            xiao_diagnostics::error_kind_of(&error_type)
+                .is_some_and(|kind| kind.matches(error.kind())),
+        ),
+        Some(PendingError::Fatal(_)) | None => 0,
+    })
+}
+
+/// 把挂起的可恢复错误取成拥有的错误值。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_take(out: *mut XiaoValue) -> i32 {
+    if out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let error = PENDING_ERROR.with(|pending| pending.borrow_mut().take());
+    match error {
+        Some(PendingError::Recoverable(error)) => unsafe {
+            write_value(out, value_from_owned_error(error))
+                .map_or_else(|status| status, |_| XiaoAbiStatus::Ok.code())
+        },
+        Some(PendingError::Fatal(error)) => {
+            set_pending_error(PendingError::Fatal(error));
+            XiaoAbiStatus::Fatal.code()
+        }
+        None => XiaoAbiStatus::InvalidArgument.code(),
+    }
+}
+
+/// 从 Runtime 错误类别返回固定宽度数值。
+fn error_kind_snapshot(kind: XiaoErrorKind) -> u32 {
+    error_kind_code(kind)
+}
+
+/// 从 Fatal 类别返回固定宽度数值。
+fn fatal_kind_snapshot(kind: FatalKind) -> u32 {
+    match kind {
+        FatalKind::RuntimeInvariant => 1,
+        FatalKind::CorruptArtifact => 2,
+        FatalKind::OutOfMemory => 3,
+        FatalKind::StackOverflow => 4,
+        FatalKind::Hardware => 5,
+        FatalKind::Internal => 6,
+    }
+}
+
+/// 填充当前线程错误的固定宽度快照。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32 {
+    if out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let empty = XiaoAbiBytes {
+        ptr: std::ptr::null(),
+        len: 0,
+    };
+    let snapshot = PENDING_ERROR.with(|pending| match pending.borrow().as_ref() {
+        Some(PendingError::Recoverable(error)) => XiaoAbiErrorSnapshot {
+            class: XiaoErrorClass::Recoverable,
+            kind: error_kind_snapshot(error.kind()),
+            error_id: error.error_id(),
+            code: abi_bytes(error.code()),
+            message_id: abi_bytes(error.message_id()),
+            location: abi_location(error.location()),
+            exit_code: 3,
+            stack_depth: error.stack().len() as u32,
+            param_count: error.params().len() as u32,
+        },
+        Some(PendingError::Fatal(error)) => XiaoAbiErrorSnapshot {
+            class: XiaoErrorClass::Fatal,
+            kind: fatal_kind_snapshot(error.kind()),
+            error_id: error.error_id(),
+            code: abi_bytes(error.code()),
+            message_id: abi_bytes(error.message_id()),
+            location: abi_location(error.location()),
+            exit_code: 4,
+            stack_depth: error.stack().len() as u32,
+            param_count: error.params().len() as u32,
+        },
+        None => XiaoAbiErrorSnapshot {
+            class: XiaoErrorClass::None,
+            kind: 0,
+            error_id: 0,
+            code: empty,
+            message_id: empty,
+            location: XiaoAbiErrorLocation::none(),
+            exit_code: 0,
+            stack_depth: 0,
+            param_count: 0,
+        },
+    });
+    unsafe { *out = snapshot };
+    XiaoAbiStatus::Ok.code()
+}
+
+/// 填充当前线程错误的第一个结构化参数。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_param(index: usize, out: *mut XiaoAbiErrorParam) -> i32 {
+    if out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let empty = XiaoAbiBytes {
+        ptr: std::ptr::null(),
+        len: 0,
+    };
+    let parameter = PENDING_ERROR.with(|pending| {
+        let pending = pending.borrow();
+        let params = pending.as_ref().map(|error| match error {
+            PendingError::Recoverable(error) => error.params(),
+            PendingError::Fatal(error) => error.params(),
+        })?;
+        params.iter().nth(index).map(|(key, value)| {
+            let (kind, integer, text) = match value {
+                DiagnosticParam::Text(value) => (XiaoErrorParamKind::Text, 0, abi_bytes(value)),
+                DiagnosticParam::Integer(value) => {
+                    (XiaoErrorParamKind::Integer, *value as i64, empty)
+                }
+                DiagnosticParam::Boolean(value) => {
+                    (XiaoErrorParamKind::Boolean, i64::from(*value), empty)
+                }
+            };
+            XiaoAbiErrorParam {
+                key: abi_bytes(key),
+                kind,
+                integer,
+                text,
+            }
+        })
+    });
+    let Some(parameter) = parameter else {
+        return XiaoAbiStatus::OutOfBounds.code();
+    };
+    unsafe { *out = parameter };
+    XiaoAbiStatus::Ok.code()
+}
+
+/// 填充当前线程错误的第一个统一堆栈帧。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_stack_frame(index: usize, out: *mut XiaoAbiStackFrame) -> i32 {
+    if out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let frame = PENDING_ERROR.with(|pending| {
+        let pending = pending.borrow();
+        let frames = pending.as_ref().map(|error| match error {
+            PendingError::Recoverable(error) => error.stack(),
+            PendingError::Fatal(error) => error.stack(),
+        });
+        frames.and_then(|frames| frames.get(index).cloned())
+    });
+    let Some(frame) = frame else {
+        return XiaoAbiStatus::OutOfBounds.code();
+    };
+    let empty = XiaoAbiBytes {
+        ptr: std::ptr::null(),
+        len: 0,
+    };
+    let backend = frame.backend;
+    let output = XiaoAbiStackFrame {
+        module: abi_bytes(&frame.module),
+        function: abi_bytes(&frame.function),
+        source: frame.source.as_deref().map_or(empty, abi_bytes),
+        location: abi_location(frame.span),
+        bytecode_offset: backend.bytecode_offset.map_or(-1, |value| value as i64),
+        native_address: backend.native_address.map_or(-1, |value| value as i64),
+        inline_depth: backend.inline_depth.map_or(-1, |value| value as i32),
+        frame_kind: u32::from(matches!(frame.kind, FrameKind::Runtime)),
+    };
+    unsafe { *out = output };
+    XiaoAbiStatus::Ok.code()
+}
+
+/// 返回当前线程挂起错误的稳定宿主退出码。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_exit_code() -> i32 {
+    pending_exit_code()
+}
+
+/// 把当前挂起错误写成不依赖语言目录的机器诊断摘要。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_report() {
+    PENDING_ERROR.with(|pending| {
+        let pending = pending.borrow();
+        let Some(error) = pending.as_ref() else {
+            return;
+        };
+        let (class, code, message_id, message, location) = match error {
+            PendingError::Recoverable(error) => (
+                "recoverable",
+                error.code(),
+                error.message_id(),
+                error.message(),
+                error.location(),
+            ),
+            PendingError::Fatal(error) => (
+                "fatal",
+                error.code(),
+                error.message_id(),
+                error.message(),
+                error.location(),
+            ),
+        };
+        let location = location.map_or_else(
+            || "<none>".to_owned(),
+            |span| format!("{}..{}", span.start(), span.end()),
+        );
+        let line = format!(
+            "xiao-error class={class} code={code} message_id={message_id} span={location}: {message}\n"
+        );
+        let _ = std::io::stderr().write_all(line.as_bytes());
+    });
+}
+
+/// 记录一个结构化诊断事件；本函数不查找目录，也不执行本地化。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticEvent) -> i32 {
+    if event.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let event = unsafe { &*event };
+    if unsafe { bytes(event.event_type) }.is_err()
+        || unsafe { bytes(event.code) }.is_err()
+        || unsafe { bytes(event.message_id) }.is_err()
+    {
+        return XiaoAbiStatus::Null.code();
+    }
+    XiaoAbiStatus::Ok.code()
+}
+
+/// 处理 ABI 边界致命故障；该入口永远不会返回。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_fatal_abi() -> ! {
+    let _ = std::io::stderr().write_all(
+        b"xiao-error class=fatal code=X07-FATAL-006 message_id=fatal.internal span=<none>\n",
+    );
+    std::process::exit(4)
 }
 
 /// 保留强句柄；空指针安全地返回空指针。
@@ -634,6 +1234,13 @@ pub extern "C" fn xiao_runtime_value_copy(value: *const XiaoValue, out: *mut Xia
                 Ok(())
             }
         }
+        XiaoValueTag::Error => match unsafe { retain_error(value.payload.handle) } {
+            Ok(handle) => {
+                copied.payload = XiaoValuePayload { handle };
+                Ok(())
+            }
+            Err(error) => Err(error),
+        },
         XiaoValueTag::TableDropView => {
             let handle = xiao_runtime_weak_retain(unsafe { value.payload.weak_handle });
             if handle.is_null() {
@@ -671,6 +1278,7 @@ pub extern "C" fn xiao_runtime_value_release(value: *mut XiaoValue) {
         | XiaoValueTag::DictTable
         | XiaoValueTag::DictColumn
         | XiaoValueTag::Set => xiao_runtime_release(unsafe { value.payload.handle }),
+        XiaoValueTag::Error => unsafe { release_error(value.payload.handle) },
         XiaoValueTag::TableDropView => {
             xiao_runtime_weak_release(unsafe { value.payload.weak_handle });
         }
@@ -721,6 +1329,18 @@ pub extern "C" fn xiao_runtime_value_weak(handle: XiaoWeakHandle) -> XiaoValue {
                 weak_handle: retained,
             },
         }
+    }
+}
+
+/// 从错误强句柄构造错误值；调用方将句柄所有权转移给返回值。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_error(handle: XiaoHandle) -> XiaoValue {
+    if unsafe { error_ref(handle) }.is_err() {
+        return XiaoValue::none();
+    }
+    XiaoValue {
+        tag: XiaoValueTag::Error,
+        payload: XiaoValuePayload { handle },
     }
 }
 
@@ -1289,6 +1909,35 @@ mod tests {
     }
 
     #[test]
+    fn pending_runtime_error_preserves_primary_and_suppresses_secondary() {
+        PENDING_ERROR.with(|pending| *pending.borrow_mut() = None);
+        let primary = RuntimeError::invalid_value("primary");
+        let secondary = RuntimeError::invalid_value("secondary");
+        set_pending_runtime_error(primary.clone());
+        set_pending_runtime_error(secondary.clone());
+        PENDING_ERROR.with(|pending| {
+            let pending = pending.borrow();
+            let Some(PendingError::Recoverable(error)) = pending.as_ref() else {
+                panic!("应保留可恢复主错误");
+            };
+            assert_eq!(error.code(), primary.code());
+            assert_eq!(error.message_id(), primary.message_id());
+            assert_eq!(error.suppressed(), &[secondary]);
+        });
+        PENDING_ERROR.with(|pending| *pending.borrow_mut() = None);
+    }
+
+    #[test]
+    fn pending_fatal_error_is_not_replaced_by_runtime_error() {
+        PENDING_ERROR.with(|pending| {
+            *pending.borrow_mut() = Some(PendingError::Fatal(FatalError::internal("fatal")))
+        });
+        set_pending_runtime_error(RuntimeError::invalid_value("secondary"));
+        assert_eq!(pending_class(), XiaoErrorClass::Fatal);
+        PENDING_ERROR.with(|pending| *pending.borrow_mut() = None);
+    }
+
+    #[test]
     /// 强句柄复制和显式释放必须保持对象存活直到最后一份引用归还。
     fn strong_value_copy_uses_runtime_counts() {
         let mut raw = std::ptr::null_mut();
@@ -1611,5 +2260,58 @@ mod tests {
             XiaoAbiStatus::Null.code()
         );
         assert_eq!(length, 0);
+    }
+
+    #[test]
+    /// 错误构造入口必须保留机器字段和源码位置，并返回拥有的错误值。
+    fn error_value_constructor_preserves_identity() {
+        xiao_runtime_error_clear();
+        let location = XiaoAbiErrorLocation::from_span(XiaoAbiSpan { start: 4, end: 9 });
+        let mut value = xiao_runtime_error_new(
+            bytes("ArithmeticError"),
+            bytes("N0-C"),
+            bytes("failed"),
+            &location,
+        );
+        assert_eq!(value.tag, XiaoValueTag::Error);
+        let RuntimeValue::Error(error) = (unsafe { value_to_runtime(&value) }).expect("错误值")
+        else {
+            panic!("错误构造器返回了非错误值");
+        };
+        assert_eq!(error.code(), "N0-C");
+        assert_eq!(error.message_id(), "runtime.user_error");
+        assert_eq!(error.location(), SourceSpan::new(4, 9));
+        xiao_runtime_value_release(&mut value);
+    }
+
+    #[test]
+    /// `FatalError` 构造必须进入 Fatal 槽，而不能产生可捕获错误值。
+    fn fatal_error_constructor_never_returns_recoverable_value() {
+        xiao_runtime_error_clear();
+        let location = XiaoAbiErrorLocation::from_span(XiaoAbiSpan { start: 1, end: 2 });
+        let value = xiao_runtime_error_new(
+            bytes("FatalError"),
+            bytes("fatal"),
+            bytes("fatal"),
+            &location,
+        );
+        assert_eq!(value.tag, XiaoValueTag::None);
+        let mut snapshot = XiaoAbiErrorSnapshot {
+            class: XiaoErrorClass::None,
+            kind: 0,
+            error_id: 0,
+            code: bytes(""),
+            message_id: bytes(""),
+            location: XiaoAbiErrorLocation::none(),
+            exit_code: 0,
+            stack_depth: 0,
+            param_count: 0,
+        };
+        assert_eq!(
+            xiao_runtime_error_snapshot(&mut snapshot),
+            XiaoAbiStatus::Ok.code()
+        );
+        assert_eq!(snapshot.class, XiaoErrorClass::Fatal);
+        xiao_runtime_error_clear();
     }
 }

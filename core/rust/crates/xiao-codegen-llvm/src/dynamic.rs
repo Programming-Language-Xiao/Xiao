@@ -7,12 +7,12 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use xiao_ir::{IrExpression, IrProgram};
+use xiao_ir::{IrExpression, IrProgram, IrSpan, IrStatement};
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 
 use crate::CODEGEN_VERSION;
 use crate::error::{CodegenError, Result};
-use crate::ir::{CodegenOptions, LlvmModule, validate_program};
+use crate::ir::{CodegenOptions, LlvmModule, source_map_for_program, validate_program};
 use crate::text::{escape_llvm, stable_hash};
 
 #[cfg(test)]
@@ -56,6 +56,28 @@ const BYTES_TYPE: &str = "%xiao.bytes";
 const TABLE_FIELD_TYPE: &str = "%xiao.table.field";
 /// 表描述符的 LLVM 结构名。
 const TABLE_DESCRIPTOR_TYPE: &str = "%xiao.table.descriptor";
+/// 错误位置的 LLVM 固定布局；实际传递使用指针，避免目标 ABI 聚合参数差异。
+const ERROR_LOCATION_TYPE: &str = "%xiao.error.location";
+
+/// 动态原生错误处理上下文的最小标签。
+#[derive(Clone, Debug)]
+struct ErrorContext {
+    /// 处理当前错误的 LLVM 基本块。
+    dispatch: String,
+}
+
+/// 当前非局部退出需要经过的作用域清理区域。
+#[derive(Clone, Debug)]
+struct CleanupContext<'a> {
+    /// 该区域的 `finally` 主体；`None` 表示只需要释放作用域。
+    finally_body: Option<&'a [IrStatement]>,
+    /// `finally` 作用域编号。
+    finally_scope: Option<u32>,
+    /// 受保护主体或 `catch` 作用域编号。
+    protected_scope: Option<u32>,
+    /// 清理失败后的外层错误派发目标。
+    failure_target: String,
+}
 
 /// 将一份含动态值的 IR 降低为调用 Runtime ABI 的 LLVM 文本。
 pub(crate) fn lower_program(program: &IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
@@ -91,6 +113,7 @@ struct Slot {
 struct LoopLabels {
     condition: String,
     end: String,
+    cleanup_depth: usize,
 }
 
 /// 动态 LLVM 文本生成器。
@@ -110,6 +133,9 @@ struct DynamicGenerator<'a> {
     table_initializers: BTreeMap<String, Vec<(String, IrExpression)>>,
     observation_slot: Option<usize>,
     declared_runtime_components: BTreeSet<String>,
+    error_stack: Vec<ErrorContext>,
+    error_terminal_label: String,
+    cleanup_stack: Vec<CleanupContext<'a>>,
 }
 
 impl<'a> DynamicGenerator<'a> {
@@ -131,6 +157,9 @@ impl<'a> DynamicGenerator<'a> {
             table_initializers: BTreeMap::new(),
             observation_slot: None,
             declared_runtime_components: BTreeSet::new(),
+            error_stack: Vec::new(),
+            error_terminal_label: "xiao.error.terminal".to_owned(),
+            cleanup_stack: Vec::new(),
         }
     }
 
@@ -164,6 +193,15 @@ impl<'a> DynamicGenerator<'a> {
         text.push_str(&format!(
             "{TABLE_DESCRIPTOR_TYPE} = type {{ {BYTES_TYPE}, i32, ptr, i64 }}\n\n"
         ));
+        text.push_str(&format!(
+            "{ERROR_LOCATION_TYPE} = type {{ i64, i64, i8, [7 x i8] }}\n\n"
+        ));
+        for entry in source_map_for_program(self.program) {
+            text.push_str(&format!(
+                "; xiao.source-map {} {}..{}\n",
+                entry.label, entry.span.start, entry.span.end
+            ));
+        }
         for global in &self.globals {
             text.push_str(global);
             text.push('\n');
@@ -200,6 +238,7 @@ impl<'a> DynamicGenerator<'a> {
             runtime_components: components,
             runtime_abi_version: Some(ABI_ENCODED_VERSION),
             codegen_fingerprint: fingerprint,
+            source_map: source_map_for_program(self.program),
         })
     }
 
@@ -228,21 +267,57 @@ impl<'a> DynamicGenerator<'a> {
         label
     }
 
-    /// 检查一个 Runtime C ABI 状态码；失败边统一进入不可恢复 trap。
+    /// 返回当前错误应跳转到的 LLVM 基本块。
+    fn error_target(&self) -> String {
+        self.error_stack
+            .last()
+            .map(|context| context.dispatch.clone())
+            .unwrap_or_else(|| self.error_terminal_label.clone())
+    }
+
+    /// 检查一个 Runtime C ABI 状态码；失败边进入统一错误路由。
     fn check_status(&mut self, status: &str) {
+        self.check_status_at(status, self.program.span);
+    }
+
+    /// 检查一个 Runtime C ABI 状态码并保留触发调用的源码位置。
+    fn check_status_at(&mut self, status: &str, span: IrSpan) {
         let ok = self.next_temp();
         let label = format!("abi.ok{}", self.next_label);
         self.next_label += 1;
+        let failed = format!("abi.status.fail{}", self.next_label);
+        self.next_label += 1;
         self.emit(format!("  {ok} = icmp eq i32 {status}, 0"));
-        self.emit(format!("  br i1 {ok}, label %{label}, label %abi.fail"));
+        self.emit(format!("  br i1 {ok}, label %{label}, label %{failed}"));
+        self.emit(format!("{failed}:"));
+        self.emit(format!(
+            "  call i32 @xiao_runtime_error_attach_span(i64 {}, i64 {})",
+            span.start, span.end
+        ));
+        self.emit(format!("  br label %{}", self.error_target()));
         self.emit(format!("{label}:"));
     }
 
     /// 发射一个返回状态码的 Runtime 调用并在继续前检查结果。
     fn checked_status_call(&mut self, call: String) -> String {
+        self.checked_status_call_at(call, self.program.span)
+    }
+
+    /// 发射一个带源码位置的 Runtime 状态调用。
+    fn checked_status_call_at(&mut self, call: String, span: IrSpan) -> String {
         let status = self.next_temp();
         self.emit(format!("  {status} = call i32 {call}"));
-        self.check_status(&status);
+        self.check_status_at(&status, span);
         status
+    }
+
+    /// 记录一个原生错误处理上下文。
+    fn push_error_context(&mut self, dispatch: String) {
+        self.error_stack.push(ErrorContext { dispatch });
+    }
+
+    /// 离开当前原生错误处理上下文。
+    fn pop_error_context(&mut self) {
+        let _ = self.error_stack.pop();
     }
 }

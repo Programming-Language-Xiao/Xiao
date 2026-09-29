@@ -1,8 +1,9 @@
 //! 动态降低器的 Runtime ABI 声明与调用辅助。
 
 use super::predicate::statement_uses_container_abi;
-use super::{BYTES_TYPE, DynamicGenerator, VALUE_TYPE};
+use super::{BYTES_TYPE, DynamicGenerator, ERROR_LOCATION_TYPE, VALUE_TYPE};
 use crate::target::ObjectFormat;
+use xiao_ir::IrSpan;
 
 impl<'a> DynamicGenerator<'a> {
     /// 登记 Runtime ABI 声明，并记录可解释组件清单。
@@ -11,6 +12,26 @@ impl<'a> DynamicGenerator<'a> {
             .insert("declare void @llvm.trap()".to_owned());
         self.declarations
             .insert("declare i32 @xiao_runtime_abi_is_compatible(i32, i32)".to_owned());
+        self.declarations
+            .insert("declare void @xiao_runtime_error_clear()".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_error_class()".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_error_attach_span(i64, i64)".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_error_exit_code()".to_owned());
+        self.declarations
+            .insert("declare void @xiao_runtime_error_report()".to_owned());
+        self.declarations
+            .insert("declare void @xiao_runtime_fatal_abi()".to_owned());
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_error_matches({})",
+            self.bytes_parameter_type()
+        ));
+        self.declarations
+            .insert("declare i32 @xiao_runtime_error_take(ptr)".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_error_raise_value(ptr, ptr)".to_owned());
         self.declarations
             .insert("declare void @xiao_runtime_release(ptr)".to_owned());
         self.declarations
@@ -21,6 +42,15 @@ impl<'a> DynamicGenerator<'a> {
             .insert("declare i32 @xiao_runtime_value_release_weak(ptr)".to_owned());
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_none", ""));
+        self.declarations.insert(self.value_declaration(
+            "xiao_runtime_error_new",
+            &format!(
+                "{}, {}, {}, ptr",
+                self.bytes_parameter_type(),
+                self.bytes_parameter_type(),
+                self.bytes_parameter_type()
+            ),
+        ));
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_int", "i64"));
         self.declarations
@@ -118,6 +148,50 @@ impl<'a> DynamicGenerator<'a> {
         } else {
             format!("{BYTES_TYPE} {value}")
         }
+    }
+
+    /// 生成一个固定布局的源码位置指针。
+    pub(super) fn emit_error_location(&mut self, span: IrSpan) -> String {
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {ERROR_LOCATION_TYPE}"));
+        let start = self.next_temp();
+        self.emit(format!(
+            "  {start} = insertvalue {ERROR_LOCATION_TYPE} zeroinitializer, i64 {}, 0",
+            span.start
+        ));
+        let end = self.next_temp();
+        self.emit(format!(
+            "  {end} = insertvalue {ERROR_LOCATION_TYPE} {start}, i64 {}, 1",
+            span.end
+        ));
+        let present = self.next_temp();
+        self.emit(format!(
+            "  {present} = insertvalue {ERROR_LOCATION_TYPE} {end}, i8 1, 2"
+        ));
+        self.emit(format!(
+            "  store {ERROR_LOCATION_TYPE} {present}, ptr {output}"
+        ));
+        output
+    }
+
+    /// 检查一个值构造器是否在 Runtime 中留下了挂起错误。
+    pub(super) fn check_pending_error_at(&mut self, span: IrSpan) {
+        let class = self.next_temp();
+        self.emit(format!("  {class} = call i32 @xiao_runtime_error_class()"));
+        let ok = self.next_temp();
+        let ok_label = self.next_label("abi.error.ok");
+        let failed_label = self.next_label("abi.error.fail");
+        self.emit(format!("  {ok} = icmp eq i32 {class}, 0"));
+        self.emit(format!(
+            "  br i1 {ok}, label %{ok_label}, label %{failed_label}"
+        ));
+        self.emit(format!("{failed_label}:"));
+        self.emit(format!(
+            "  call i32 @xiao_runtime_error_attach_span(i64 {}, i64 {})",
+            span.start, span.end
+        ));
+        self.emit(format!("  br label %{}", self.error_target()));
+        self.emit(format!("{ok_label}:"));
     }
 
     /// 生成一个 Runtime ABI 值返回函数的 LLVM 声明。
