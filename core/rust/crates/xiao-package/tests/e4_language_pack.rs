@@ -7,7 +7,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde_json::json;
-use xiao_i18n::digest_resources;
+use xiao_i18n::{LanguagePackCacheKey, digest_resources};
 use xiao_package::{
     CacheError, CacheLayout, CacheStore, LANGUAGE_PACK_OBJECT_KIND, LanguagePackCacheError,
 };
@@ -159,6 +159,30 @@ fn language_objects_are_isolated_read_only_and_reusable() {
         .load_language_pack_object(&object.key)
         .expect("load verified object");
     assert_eq!(loaded.manifest().plugin_id, "org.example.cache");
+}
+
+#[test]
+fn public_invalid_language_key_cannot_escape_cache_root() {
+    let workspace = Workspace::new();
+    let cache = workspace.cache();
+    let key = LanguagePackCacheKey {
+        catalog_version: 1,
+        xiao_version: "../escape".to_owned(),
+        runtime_abi: 1,
+        content_digest: "0".repeat(64),
+    };
+
+    let error = cache
+        .layout()
+        .language_pack_object_path(&key)
+        .expect_err("公开字段构造的非法缓存键必须拒绝");
+    assert!(matches!(
+        error,
+        CacheError::InvalidInput {
+            reason: "语言资源缓存键包含非法字段",
+            ..
+        }
+    ));
 }
 
 #[test]

@@ -196,7 +196,10 @@ impl CacheLayout {
         &self,
         key: &LanguagePackCacheKey,
     ) -> Result<PathBuf, CacheError> {
-        validate_digest(&key.content_digest)?;
+        key.validate().map_err(|_| CacheError::InvalidInput {
+            path: PathBuf::from("language-pack-cache-key"),
+            reason: "语言资源缓存键包含非法字段",
+        })?;
         Ok(self.language_pack_objects_root().join(key.relative_path()))
     }
 

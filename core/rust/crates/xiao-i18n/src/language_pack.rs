@@ -194,26 +194,32 @@ impl LanguagePackCacheKey {
         runtime_abi: u64,
         content_digest: impl Into<String>,
     ) -> Result<Self, LanguagePackError> {
-        let xiao_version = xiao_version.into();
-        let content_digest = content_digest.into();
-        if catalog_version == 0
-            || parse_version(&xiao_version).is_err()
-            || xiao_version
+        let key = Self {
+            catalog_version,
+            xiao_version: xiao_version.into(),
+            runtime_abi,
+            content_digest: content_digest.into(),
+        };
+        key.validate()?;
+        Ok(key)
+    }
+
+    /// 校验缓存键字段，供反序列化或公开字段构造后的缓存边界再次确认。
+    pub fn validate(&self) -> Result<(), LanguagePackError> {
+        if self.catalog_version == 0
+            || parse_version(&self.xiao_version).is_err()
+            || self
+                .xiao_version
                 .chars()
                 .any(|character| character.is_control() || matches!(character, '/' | '\\'))
-            || !valid_digest(&content_digest)
+            || !valid_digest(&self.content_digest)
         {
             return Err(LanguagePackError::Manifest {
                 path: PathBuf::from(LANGUAGE_PACK_MANIFEST_FILE),
                 message: "语言资源缓存键包含非法字段".to_owned(),
             });
         }
-        Ok(Self {
-            catalog_version,
-            xiao_version,
-            runtime_abi,
-            content_digest,
-        })
+        Ok(())
     }
 
     /// 返回不会与源码对象缓存混淆的相对对象路径。
