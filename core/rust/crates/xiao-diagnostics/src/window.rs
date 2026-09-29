@@ -105,6 +105,18 @@ pub struct DiagnosticEvent {
     pub function: Option<String>,
     /// 关联的结构化错误编号。
     pub error_id: Option<u64>,
+    /// 事件生成时使用的规范语言标签。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub locale: Option<String>,
+    /// 事件关联的稳定消息编号。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub message_id: Option<String>,
+    /// 消息目录参数；缺失时表示该事件没有可插值参数。
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub params: BTreeMap<String, Value>,
+    /// 按 `locale` 和共享目录渲染的人类可读文本。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
     /// 不改变语义的事件负载。
     pub payload: BTreeMap<String, Value>,
 }

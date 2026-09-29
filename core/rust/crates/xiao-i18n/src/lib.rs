@@ -546,6 +546,102 @@ pub fn builtin_renderer() -> MessageRenderer {
     add_entry(
         &mut chinese,
         &mut english,
+        "runtime.user_error",
+        "{message}",
+        "{message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.invalid_handle",
+        "{message}",
+        "invalid handle: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.refcount_invariant",
+        "{message}",
+        "reference-count invariant violated: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.table_init",
+        "{message}",
+        "table initialization failed: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.table_drop",
+        "{message}",
+        "table drop hook failed: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.numeric_overflow",
+        "{message}",
+        "numeric overflow: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.selector_bounds",
+        "{message}",
+        "selector bounds error: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.selector_step",
+        "{message}",
+        "selector step error: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.random_count",
+        "{message}",
+        "random selection count error: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.random_seed",
+        "{message}",
+        "random seed error: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.invalid_value",
+        "{message}",
+        "invalid value: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.allocation",
+        "无法分配 Runtime 对象",
+        "unable to allocate a Runtime object",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
         "runtime.use_after_release",
         "对象已经释放，不能继续访问",
         "object has already been released and cannot be accessed",

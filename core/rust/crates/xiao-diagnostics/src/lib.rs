@@ -544,6 +544,17 @@ struct XiaoErrorData {
 static NEXT_ERROR_ID: AtomicU64 = AtomicU64::new(1);
 
 impl XiaoError {
+    fn new_with_message(
+        kind: XiaoErrorKind,
+        code: impl Into<String>,
+        message_id: impl Into<String>,
+        message: impl Into<String>,
+    ) -> Self {
+        let message = message.into();
+        Self::new(kind, code, message_id, message.clone())
+            .with_param("message", DiagnosticParam::Text(message))
+    }
+
     /// 创建一条可恢复错误。
     #[must_use]
     pub fn new(
@@ -583,7 +594,7 @@ impl XiaoError {
             CatchTypeKind::AnyRecoverable => XiaoErrorKind::Other,
             CatchTypeKind::Fatal => return None,
         };
-        Some(Self::new(
+        Some(Self::new_with_message(
             kind,
             code.unwrap_or("X07-RUNTIME-ERROR"),
             "runtime.user_error",
@@ -594,7 +605,7 @@ impl XiaoError {
     /// 创建句柄无效错误。
     #[must_use]
     pub fn invalid_handle(message: impl Into<String>) -> Self {
-        Self::new(
+        Self::new_with_message(
             XiaoErrorKind::Memory,
             INVALID_HANDLE_CODE,
             "runtime.invalid_handle",
@@ -618,7 +629,7 @@ impl XiaoError {
     /// 创建引用计数不变量错误。
     #[must_use]
     pub fn refcount_invariant(message: impl Into<String>) -> Self {
-        Self::new(
+        Self::new_with_message(
             XiaoErrorKind::Memory,
             REFCOUNT_INVARIANT_CODE,
             "runtime.refcount_invariant",
@@ -662,7 +673,7 @@ impl XiaoError {
     /// 创建表初始化失败错误。
     #[must_use]
     pub fn table_init(message: impl Into<String>) -> Self {
-        Self::new(
+        Self::new_with_message(
             XiaoErrorKind::Table,
             TABLE_INIT_CODE,
             "runtime.table_init",
@@ -672,7 +683,7 @@ impl XiaoError {
     /// 创建表释放钩子失败错误。
     #[must_use]
     pub fn table_drop(message: impl Into<String>) -> Self {
-        Self::new(
+        Self::new_with_message(
             XiaoErrorKind::Table,
             TABLE_DROP_CODE,
             "runtime.table_drop",
@@ -682,7 +693,7 @@ impl XiaoError {
     /// 创建数值溢出错误。
     #[must_use]
     pub fn numeric_overflow(message: impl Into<String>) -> Self {
-        Self::new(
+        Self::new_with_message(
             XiaoErrorKind::Arithmetic,
             NUMERIC_OVERFLOW_CODE,
             "runtime.numeric_overflow",
@@ -787,7 +798,7 @@ impl XiaoError {
     /// 创建选择器边界或路径错误。
     #[must_use]
     pub fn selector_bounds(message: impl Into<String>) -> Self {
-        Self::new(
+        Self::new_with_message(
             XiaoErrorKind::Type,
             SELECTOR_BOUNDS_CODE,
             "runtime.selector_bounds",
@@ -798,7 +809,7 @@ impl XiaoError {
     /// 创建选择器步长错误。
     #[must_use]
     pub fn selector_step(message: impl Into<String>) -> Self {
-        Self::new(
+        Self::new_with_message(
             XiaoErrorKind::Type,
             SELECTOR_STEP_CODE,
             "runtime.selector_step",
@@ -809,7 +820,7 @@ impl XiaoError {
     /// 创建随机选择数量错误。
     #[must_use]
     pub fn random_count(message: impl Into<String>) -> Self {
-        Self::new(
+        Self::new_with_message(
             XiaoErrorKind::Type,
             RANDOM_COUNT_CODE,
             "runtime.random_count",
@@ -820,7 +831,7 @@ impl XiaoError {
     /// 创建随机种子错误。
     #[must_use]
     pub fn random_seed(message: impl Into<String>) -> Self {
-        Self::new(
+        Self::new_with_message(
             XiaoErrorKind::Type,
             RANDOM_SEED_CODE,
             "runtime.random_seed",
@@ -841,7 +852,7 @@ impl XiaoError {
     /// 创建一般值错误。
     #[must_use]
     pub fn invalid_value(message: impl Into<String>) -> Self {
-        Self::new(
+        Self::new_with_message(
             XiaoErrorKind::Type,
             INVALID_VALUE_CODE,
             "runtime.invalid_value",
@@ -1505,6 +1516,22 @@ mod tests {
         assert!(english.contains("expected type str, got int"));
         let chinese = render_localized_text(&report, &LocaleContext::default(), &renderer);
         assert!(chinese.contains("期望类型 str，实际为 int"));
+    }
+
+    #[test]
+    /// 英文目录保留调用方传入的 Runtime 原因参数。
+    fn localized_report_keeps_runtime_reason_parameter() {
+        let error = XiaoError::invalid_handle("寄存器为空");
+        assert_eq!(
+            error.params().get("message"),
+            Some(&DiagnosticParam::Text("寄存器为空".to_owned()))
+        );
+        let english = render_localized_text(
+            &error.report(),
+            &LocaleContext::new("en-US"),
+            &xiao_i18n::builtin_renderer(),
+        );
+        assert!(english.contains("invalid handle: 寄存器为空"));
     }
 
     #[test]

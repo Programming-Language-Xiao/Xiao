@@ -19,6 +19,7 @@ use xiao_diagnostics::window::{
     DiagnosticFrameError, DiagnosticMessage, DiagnosticMetrics, default_level, object_payload,
     read_message, write_message,
 };
+use xiao_i18n::{LocaleContext, MessageParam, builtin_renderer};
 use xiao_vm::VmEvent;
 
 /// 终端候选的来源，用于稳定失败诊断和平台复现记录。
@@ -104,6 +105,7 @@ pub struct DiagnosticSession {
     started: Instant,
     module: String,
     source: Option<String>,
+    locale: String,
     log: Option<BufWriter<File>>,
     focus_logs: Vec<FocusLog>,
     terminal_level: EventLevel,
@@ -226,12 +228,19 @@ impl DiagnosticSession {
         let _ = stream.set_write_timeout(Some(Duration::from_millis(20)));
         let (log, log_error) = open_log(options);
         let (focus_logs, focus_errors) = open_focus_logs(options);
+        let locale = options
+            .locale
+            .as_deref()
+            .and_then(|value| LocaleContext::from_config(value).ok())
+            .map(|context| context.tag().to_owned())
+            .unwrap_or_else(|| "zh-CN".to_owned());
         Ok(Self {
             stream: Some(stream),
             child: Some(child),
             started: Instant::now(),
             module: module.into(),
             source,
+            locale,
             log,
             focus_logs,
             terminal_level: EventLevel::parse(options.terminal_level.as_deref()),
@@ -243,11 +252,12 @@ impl DiagnosticSession {
 
     /// 发送一条 VM 事件；窗口中断时只降级为文件日志/丢弃。
     pub fn record(&mut self, event: &VmEvent) {
-        let diagnostic = vm_event_to_diagnostic(
+        let diagnostic = vm_event_to_diagnostic_with_locale(
             event,
             self.started.elapsed(),
             &self.module,
             self.source.as_deref(),
+            &self.locale,
         );
         self.metrics.error_count = self.metrics.error_count.saturating_add(u64::from(
             diagnostic.event_type == "error_raised" || diagnostic.event_type == "fatal_raised",
@@ -692,11 +702,23 @@ fn windows_quote(value: &str) -> String {
 }
 
 /// 把既有 VM 事件补齐跨进程诊断字段。
+#[cfg(test)]
 fn vm_event_to_diagnostic(
     event: &VmEvent,
     elapsed: Duration,
     module: &str,
     source: Option<&str>,
+) -> DiagnosticEvent {
+    vm_event_to_diagnostic_with_locale(event, elapsed, module, source, "zh-CN")
+}
+
+/// 把 VM 事件转换为带语言上下文的结构化诊断事件。
+fn vm_event_to_diagnostic_with_locale(
+    event: &VmEvent,
+    elapsed: Duration,
+    module: &str,
+    source: Option<&str>,
+    locale: &str,
 ) -> DiagnosticEvent {
     let (event_type, function, payload) = match event {
         VmEvent::ModuleLoaded { module } => ("module_loaded", None, json!({ "module": module })),
@@ -782,6 +804,31 @@ fn vm_event_to_diagnostic(
             json!({ "instructions": instructions, "max_call_depth": max_call_depth, "max_stack_depth": max_stack_depth, "releases": releases, "spill_count": spill_count, "stack_map_entries": stack_map_entries, "call_save_count": call_save_count, "dropped_events": dropped_events }),
         ),
     };
+    let (message_id, params) = match event {
+        VmEvent::ErrorRaised { message_id, .. } => {
+            (Some(message_id.clone()), BTreeMap::<String, Value>::new())
+        }
+        _ => (None, BTreeMap::<String, Value>::new()),
+    };
+    let text = message_id.as_deref().map(|message_id| {
+        let rendered_params = params
+            .iter()
+            .filter_map(|(key, value)| {
+                let value = match value {
+                    Value::String(value) => MessageParam::Text(value.clone()),
+                    Value::Number(value) => value
+                        .as_i64()
+                        .map(|value| MessageParam::Integer(value as i128))?,
+                    Value::Bool(value) => MessageParam::Boolean(*value),
+                    _ => return None,
+                };
+                Some((key.clone(), value))
+            })
+            .collect();
+        builtin_renderer()
+            .render(&LocaleContext::new(locale), message_id, &rendered_params)
+            .text
+    });
     DiagnosticEvent {
         monotonic_ns: elapsed.as_nanos(),
         level: default_level(event_type).to_owned(),
@@ -791,6 +838,10 @@ fn vm_event_to_diagnostic(
         node: Some(event_type.to_owned()),
         function,
         error_id: None,
+        locale: Some(locale.to_owned()),
+        message_id,
+        params,
+        text,
         payload: object_payload(payload),
     }
 }
@@ -874,6 +925,31 @@ mod tests {
         assert_eq!(event.source.as_deref(), Some("main.xiao"));
         assert_eq!(event.node.as_deref(), Some("module_loaded"));
         assert!(event.error_id.is_none());
+    }
+
+    #[test]
+    /// 错误事件在结构化日志中保留语言和共享目录文本。
+    fn runtime_error_events_keep_localized_message_fields() {
+        let event = vm_event_to_diagnostic_with_locale(
+            &VmEvent::ErrorRaised {
+                code: "X06-RUNTIME-004".to_owned(),
+                message_id: "runtime.use_after_release".to_owned(),
+            },
+            Duration::from_nanos(9),
+            "app",
+            None,
+            "en-US",
+        );
+        assert_eq!(event.locale.as_deref(), Some("en-US"));
+        assert_eq!(
+            event.message_id.as_deref(),
+            Some("runtime.use_after_release")
+        );
+        assert_eq!(
+            event.text.as_deref(),
+            Some("object has already been released and cannot be accessed")
+        );
+        assert!(event.params.is_empty());
     }
 
     #[test]
