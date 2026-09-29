@@ -8,6 +8,7 @@ use std::fmt::{self, Display, Formatter};
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use xiao_source::SourceSpan;
+use xiao_i18n::{LocaleContext, MessageParam, MessageRenderer as CatalogRenderer};
 
 /// 独立诊断进程的帧协议和终端渲染辅助模块。
 pub mod window;
@@ -1340,6 +1341,85 @@ pub fn render_text_with_renderer(report: &ReportRecord, renderer: &impl MessageR
     render_text(report, renderer)
 }
 
+fn catalog_params(params: &DiagnosticParams) -> BTreeMap<String, MessageParam> {
+    params
+        .iter()
+        .map(|(key, value)| {
+            let value = match value {
+                DiagnosticParam::Text(value) => MessageParam::Text(value.clone()),
+                DiagnosticParam::Integer(value) => MessageParam::Integer(*value),
+                DiagnosticParam::Boolean(value) => MessageParam::Boolean(*value),
+            };
+            (key.clone(), value)
+        })
+        .collect()
+}
+
+fn localized_message(
+    report: &ReportRecord,
+    locale: &LocaleContext,
+    renderer: &CatalogRenderer,
+) -> String {
+    if locale.tag() == "zh-CN" {
+        return report.message.clone();
+    }
+    renderer
+        .render(locale, &report.message_id, &catalog_params(&report.params))
+        .text
+}
+
+/// 使用共享内置消息渲染器生成当前语言下的多行报告。
+#[must_use]
+pub fn render_localized_text(
+    report: &ReportRecord,
+    locale: &LocaleContext,
+    renderer: &CatalogRenderer,
+) -> String {
+    fn render_one(
+        report: &ReportRecord,
+        locale: &LocaleContext,
+        renderer: &CatalogRenderer,
+        indent: usize,
+        output: &mut String,
+    ) {
+        let prefix = "  ".repeat(indent);
+        let title = match report.class {
+            ReportClass::Recoverable => "error",
+            ReportClass::Fatal => "fatal",
+        };
+        output.push_str(&format!(
+            "{prefix}{title} [{}]: {}\n",
+            report.code,
+            localized_message(report, locale, renderer)
+        ));
+        if let Some(location) = report.location {
+            output.push_str(&format!(
+                "{prefix}at bytes {}..{}\n",
+                location.start(),
+                location.end()
+            ));
+        }
+        for frame in &report.stack {
+            output.push_str(&format!(
+                "{prefix}at {}::{} ({:?})\n",
+                frame.module, frame.function, frame.kind
+            ));
+        }
+        if let Some(cause) = &report.cause {
+            output.push_str(&format!("{prefix}caused by:\n"));
+            render_one(cause, locale, renderer, indent + 1, output);
+        }
+        for suppressed in &report.suppressed {
+            output.push_str(&format!("{prefix}suppressed:\n"));
+            render_one(suppressed, locale, renderer, indent + 1, output);
+        }
+    }
+
+    let mut output = String::new();
+    render_one(report, locale, renderer, 0, &mut output);
+    output
+}
+
 /// 可恢复错误结果别名。
 pub type XiaoResult<T> = Result<T, XiaoError>;
 /// 兼容 Runtime 调用点的结果别名；错误本体已经统一为 `XiaoError`。
@@ -1413,6 +1493,22 @@ mod tests {
             diagnostic.params().get("expected"),
             Some(&DiagnosticParam::Text("bool".to_owned()))
         );
+    }
+
+    #[test]
+    /// 确认结构化报告和内置目录共享同一份双语渲染器。
+    fn localized_report_uses_catalog_and_preserves_default_text() {
+        let error = XiaoError::type_mismatch("str", "int");
+        let report = error.report();
+        let renderer = xiao_i18n::builtin_renderer();
+        let english = render_localized_text(
+            &report,
+            &LocaleContext::new("en-US"),
+            &renderer,
+        );
+        assert!(english.contains("expected type str, got int"));
+        let chinese = render_localized_text(&report, &LocaleContext::default(), &renderer);
+        assert!(chinese.contains("期望类型 str，实际为 int"));
     }
 
     #[test]
