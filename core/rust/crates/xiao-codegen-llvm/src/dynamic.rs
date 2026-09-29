@@ -136,6 +136,7 @@ struct DynamicGenerator<'a> {
     error_stack: Vec<ErrorContext>,
     error_terminal_label: String,
     cleanup_stack: Vec<CleanupContext<'a>>,
+    finally_stack_saves: Vec<String>,
 }
 
 impl<'a> DynamicGenerator<'a> {
@@ -160,6 +161,7 @@ impl<'a> DynamicGenerator<'a> {
             error_stack: Vec::new(),
             error_terminal_label: "xiao.error.terminal".to_owned(),
             cleanup_stack: Vec::new(),
+            finally_stack_saves: Vec::new(),
         }
     }
 
@@ -289,13 +291,15 @@ impl<'a> DynamicGenerator<'a> {
         self.next_label += 1;
         self.emit(format!("  {ok} = icmp eq i32 {status}, 0"));
         self.emit(format!("  br i1 {ok}, label %{label}, label %{failed}"));
-        self.emit(format!("{failed}:"));
+        self.terminated = true;
+        self.emit_label(&failed);
         self.emit(format!(
             "  call i32 @xiao_runtime_error_attach_span(i64 {}, i64 {})",
             span.start, span.end
         ));
         self.emit(format!("  br label %{}", self.error_target()));
-        self.emit(format!("{label}:"));
+        self.terminated = true;
+        self.emit_label(&label);
     }
 
     /// 发射一个返回状态码的 Runtime 调用并在继续前检查结果。
@@ -319,5 +323,26 @@ impl<'a> DynamicGenerator<'a> {
     /// 离开当前原生错误处理上下文。
     fn pop_error_context(&mut self) {
         let _ = self.error_stack.pop();
+    }
+
+    /// 为一次 `finally` 发射栈帧保存点，避免循环体内的临时 `alloca` 累积。
+    fn begin_finally_stack_frame(&mut self) -> String {
+        let save = self.next_temp();
+        self.emit(format!("  {save} = call ptr @llvm.stacksave()"));
+        self.finally_stack_saves.push(save.clone());
+        save
+    }
+
+    /// 在当前控制流边恢复最近的 `finally` 栈帧。
+    fn restore_finally_stack_frame(&mut self) {
+        if let Some(save) = self.finally_stack_saves.last().cloned() {
+            self.emit(format!("  call void @llvm.stackrestore(ptr {save})"));
+        }
+    }
+
+    /// 结束当前 `finally` 的栈帧跟踪；各控制流边已经分别发射恢复指令。
+    fn finish_finally_stack_frame(&mut self, save: &str) {
+        let current = self.finally_stack_saves.pop();
+        debug_assert_eq!(current.as_deref(), Some(save));
     }
 }

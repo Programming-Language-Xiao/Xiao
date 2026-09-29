@@ -179,11 +179,66 @@ if !self.terminated {
 
 ## 六、本次不负责
 
+本节记录原专项审核任务的范围；下节是后续按审核结论实施修复的记录。
+
 - **不改代码**——本档是审核任务，裁决与修法建议交回后再决定由谁实施。
 - **不审** ABI 形状、`suppressed` 语义、源码映射表、错误构造参数解析（另有结论）。
 - **不审** `xiao-runtime` 侧的平台异常处理缺口（`§3.1` 红线）与 `xiao_runtime_diagnostic_event`
   空壳——这两项已在别处记录为**未完成**，不在本次范围。
 - **不做** N0-D（三目标固定宽度、Runtime 裁剪验证）。
+
+## 七、复核结论与修复记录（2026-09-30）
+
+本次复核实际使用 `D:\msys64\ucrt64\bin\llvm-as.exe`，不是字符串片段断言。修复后执行：
+
+```powershell
+$env:XIAO_LLVM_AS = "D:\msys64\ucrt64\bin\llvm-as.exe"
+cargo test -p xiao-codegen-llvm --test n0_c_errors -- --ignored --nocapture
+```
+
+该测试把以下十六种形态逐一交给真实 `llvm-as`：无 `finally` 的 `try/catch`、单 `catch/finally`、多
+`catch`、嵌套 `try`、`catch` 再 `raise`、`finally` 内 `raise`、`return`、`break`、`continue`（含三种
+退出各自在 `finally` 作用域持有字符串的情形）、`try` 主体内的 `return`/`break`/`continue`，以及循环体内的
+`try/finally`；结果为 `1 passed, 0 failed`。默认不提供工具链时，同一测试显示为 `ignored`；显式使用
+`--ignored` 且缺少 `XIAO_LLVM_AS` 时会因配置错误失败。
+
+本次复核推翻了 §2.3 的边界结论：无 `finally` 的 `try/catch` 同样会因 catch body 标签被
+`terminated` 守卫跳过而生成非法 LLVM。缺陷因此不只在 `finally` 路径。
+
+结论是：缺陷不是需要重写整个降低器的无限范围问题，但确实共享一个基本块所有权契约。标签发射和
+`terminated` 状态不能互相代替；凡是已经发射终结指令的路径，后续仍要显式建立自己的基本块标签。
+本次提交完成了以下修复：
+
+1. `emit_try_cleanup` 的 `finally` 成功块现在跳转到传入的 `success_target`，并在跳转后更新
+   `terminated`；catch body 标签无条件发射，避免无 `finally` 或终结型 `finally` 把指令追加到旧基本块。
+2. `emit_cleanup_context` 在 `finally` 主体发生 `return`、`break` 或 `continue` 时，先释放
+   `finally_scope`，再释放受保护作用域；原有的失败边仍按 `finally -> protected -> outer error`
+   顺序处理。默认回归测试还构造了带所有权计划的 `finally` 字符串绑定，并检查其 ABI 槽释放
+   出现在 `ret void` 之前。
+3. `finally` 主体前后使用 `llvm.stacksave`/`llvm.stackrestore`。正常边、错误边和非局部退出边都
+   恢复保存点，按 LLVM 栈恢复语义避免循环迭代累积 finally 内的临时 `alloca`。测试检查保存/恢复
+   指令存在，并由真实 `llvm-as` 解析；本次没有执行长循环原生程序测量栈用量。Runtime 声明集中
+   登记这两个 LLVM intrinsic。
+4. `check_status_at` 以及同类的挂起错误检查改用统一的 `emit_label` 和终结状态更新，避免第三类
+   隐式标签破坏同一契约。
+5. `n0_c_errors` 的真实 LLVM 测试改为 `#[ignore]` 环境门控；显式运行时用 `expect` 检查
+   `XIAO_LLVM_AS`。非局部退出断言改为实际生成的 `ret void`、`dynamic.while.end` 和
+   `dynamic.while.cond` 目标。
+
+复核还确认 `emit_cleanup_context` 中的成功标签与 `emit_try_cleanup` 不能使用同一种终结策略。
+前者由 `emit_nonlocal_exit_from_depth` 的调用方继续处理：成功标签发射后必须保持
+`terminated = false`，调用方才会继续弹出外层清理区域，最后发射真实的 `ret` 或循环分支；把它
+提前标成已终结反而会截断外层清理。后者没有这样的后续目标处理，因此由清理器自己从成功块跳到
+`success_target` 并标记终结。这个边界已通过 `try` 主体内的 `return`、`break`、`continue` 三个
+真实 LLVM 用例验证。
+
+模块登记继续把 `rust.xiao-runtime-abi` 保持为 `10B/verified`。本审核只证明上述控制流产物能被
+LLVM 解析器接受，不能据此把完整 N0-C（运行时错误语义、源码映射和端到端原生回环）登记为
+`verified`；这些部分仍按 10E 的范围单独验收。
+
+后续建议：在每个新增清理发射器测试中同时保留真实 `llvm-as` 门禁和缺环境失败检查；若以后扩展
+`finally` 的异步或跨函数语义，应继续沿用“标签由调用方拥有、清理器只终结当前块”的契约，并为
+每条非局部边记录释放计划的实际调用序列。
 
 ---
 

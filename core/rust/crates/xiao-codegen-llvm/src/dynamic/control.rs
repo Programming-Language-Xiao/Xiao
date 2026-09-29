@@ -348,9 +348,7 @@ impl<'a> DynamicGenerator<'a> {
                 failure_target: outer_target.clone(),
                 label_prefix: format!("dynamic.try.catch{index}.finally"),
             })?;
-            if !self.terminated {
-                self.emit_label(&catch_body_label);
-            }
+            self.emit_label(&catch_body_label);
 
             let error_slot = self.next_temp();
             self.emit(format!("  {error_slot} = alloca {VALUE_TYPE}"));
@@ -412,6 +410,7 @@ impl<'a> DynamicGenerator<'a> {
         if let Some(finally_body) = region.finally_body {
             let failure = self.next_label(&format!("{label_prefix}.fail"));
             let success = self.next_label(&format!("{label_prefix}.success"));
+            let stack_save = self.begin_finally_stack_frame();
             let cleanup_snapshot = self.cleanup_stack.clone();
             self.cleanup_stack.push(CleanupContext {
                 finally_body: None,
@@ -425,6 +424,7 @@ impl<'a> DynamicGenerator<'a> {
             self.cleanup_stack = cleanup_snapshot;
             let continues = !self.terminated;
             if continues {
+                self.restore_finally_stack_frame();
                 self.release_for_scope_with_target(
                     region.finally_scope,
                     "normal",
@@ -439,6 +439,7 @@ impl<'a> DynamicGenerator<'a> {
                 self.terminated = true;
             }
             self.emit_label(&failure);
+            self.restore_finally_stack_frame();
             self.emit_error_cleanup_failure(CleanupFailure {
                 first_scope: region.finally_scope,
                 second_scope: region.protected_scope,
@@ -447,8 +448,16 @@ impl<'a> DynamicGenerator<'a> {
             })?;
             if continues {
                 self.emit_label(&success);
+                self.emit(format!("  br label %{success_target}"));
+                self.terminated = true;
             }
+            self.finish_finally_stack_frame(&stack_save);
         } else {
+            self.release_for_scope_with_target(
+                region.finally_scope,
+                protected_exit,
+                &region.failure_target,
+            )?;
             self.release_for_scope_with_target(
                 region.protected_scope,
                 protected_exit,
@@ -511,6 +520,7 @@ impl<'a> DynamicGenerator<'a> {
         if let Some(finally_body) = region.finally_body {
             let failure = self.next_label("dynamic.nonlocal.finally.fail");
             let success = self.next_label("dynamic.nonlocal.finally.success");
+            let stack_save = self.begin_finally_stack_frame();
             let cleanup_snapshot = self.cleanup_stack.clone();
             self.cleanup_stack.push(CleanupContext {
                 finally_body: None,
@@ -524,6 +534,7 @@ impl<'a> DynamicGenerator<'a> {
             self.cleanup_stack = cleanup_snapshot;
             let continues = !self.terminated;
             if continues {
+                self.restore_finally_stack_frame();
                 self.release_for_scope_with_target(
                     region.finally_scope,
                     "normal",
@@ -538,6 +549,7 @@ impl<'a> DynamicGenerator<'a> {
                 self.terminated = true;
             }
             self.emit_label(&failure);
+            self.restore_finally_stack_frame();
             self.emit_error_cleanup_failure(CleanupFailure {
                 first_scope: region.finally_scope,
                 second_scope: region.protected_scope,
@@ -547,7 +559,16 @@ impl<'a> DynamicGenerator<'a> {
             if continues {
                 self.emit_label(&success);
             }
+            self.finish_finally_stack_frame(&stack_save);
         } else {
+            if region.finally_scope.is_some() {
+                self.restore_finally_stack_frame();
+            }
+            self.release_for_scope_with_target(
+                region.finally_scope,
+                protected_exit,
+                &region.failure_target,
+            )?;
             self.release_for_scope_with_target(
                 region.protected_scope,
                 protected_exit,

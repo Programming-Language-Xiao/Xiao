@@ -31,9 +31,10 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 10C 的缺陷就是这么活下来的：那条测试从写出来那天起就没真跑过，
 **第一次真跑就失败了**。
 
-## 二、现状清单（2026-09-24 实测）
+## 二、现状清单（2026-09-30 更新；原始八条于 2026-09-24 实测）
 
-**8 个测试**在默认环境里静默跳过，涉及 **5 个环境变量**和一个真实终端能力：
+**9 个测试**依赖外部环境，涉及 **5 个环境变量**和一个真实终端能力；其中前 8 条是原有
+门控，N0-C 修复新增 1 条真实 LLVM 解析门控：
 
 | 文件 | 测试 |
 | --- | --- |
@@ -41,6 +42,7 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 | `xiao-codegen-llvm/tests/n0_a.rs` | `optional_corrupt_llvm_is_rejected` |
 | `xiao-codegen-llvm/tests/n0_a.rs` | `optional_entry_observation_tracks_runtime_branch` |
 | `xiao-codegen-llvm/tests/n0_b_dynamic.rs` | `optional_llvm_accepts_dynamic_table_module` |
+| `xiao-codegen-llvm/tests/n0_c_errors.rs` | `optional_llvm_accepts_error_path_module` |
 | `xiao-driver/tests/n0_a_native_driver.rs` | `optional_real_frontend_to_native_round_trip` |
 | `xiao-driver/tests/n0_a_native_driver.rs` | `optional_frontend_artifact_differential_round_trip` |
 | `xiao-driver/tests/n0_b_dynamic_native.rs` | `optional_dynamic_string_native_round_trip` |
@@ -57,7 +59,8 @@ n0_a_native_driver        6 passed    （2 个 optional 真跑并通过）
 n0_b_dynamic_native       6 passed, 1 FAILED   ← 唯一的失败，正是 10C
 ```
 
-**8 个里 1 个是坏的**。这个比例说明：静默跳过不是"省事"，是**在积累未验证的代码**。
+2026-09-24 的 8 个原有测试里 **1 个是坏的**。这个比例说明：把环境缺失写成条件 `return` 会
+让未执行的测试伪装成通过，并持续积累未验证的代码。
 
 ## 三、规范
 
@@ -186,7 +189,7 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 ## 五、门禁要求
 
 1. **默认门禁**：`cargo test` 的汇总里**记录 `ignored` 的数量**。
-   与本文 §2 的清单（当前 8 个）不一致时，要么是新增了环境依赖测试（好事，更新清单），
+   与本文 §2 的清单（当前 9 个）不一致时，要么是新增了环境依赖测试（好事，更新清单），
    要么是有人把测试从 `ignored` 改回了条件 `return`（**要拒绝**）。
 2. **每批至少一次齐备环境跑**：把对应平台的 §4 脚本跑一次，结果写进该批的交接记录。
    **这是唯一能证明那些测试还活着的动作。**
@@ -195,8 +198,8 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 
 ## 六、验收
 
-1. §2 清单里的 8 个测试**全部标了 `#[ignore]`**，且理由字符串能定位到本文 §4；
-2. 默认 `cargo test` 的汇总里能看到 `8 ignored`；
+1. §2 清单里的 9 个测试**全部标了 `#[ignore]`**，且理由字符串能定位到本文 §4；
+2. 默认 `cargo test` 的汇总里能看到 `9 ignored`；
 3. `cargo test -- --ignored` 在齐备环境里**全部执行**（10C 修复前允许 1 个失败，
    修复后必须全绿）；
 4. 缺环境时跑 `--ignored` 会**失败**，不是静默跳过（§3.2）；
@@ -204,13 +207,13 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 
 ## 七、落地记录（2026-09-24）
 
-§2 列出的 8 条测试现已全部使用 `#[ignore = "...；准备方式见 10D §4"]`：
-`xiao-codegen-llvm` 的 4 条、`xiao-driver` 的 3 条和诊断窗口的 1 条。默认运行
-`cargo test -p xiao-codegen-llvm -p xiao-driver` 另加诊断单元测试时的汇总为 8 ignored（分别为 3、1、2、1、1），
+§2 列出的 9 条测试现已全部使用 `#[ignore = "...；准备方式见 10D §4"]`：
+`xiao-codegen-llvm` 的 5 条、`xiao-driver` 的 3 条和诊断窗口的 1 条。默认运行
+`cargo test -p xiao-codegen-llvm -p xiao-driver` 另加诊断单元测试时的汇总为 9 ignored（分别为 3、1、1、2、1、1），
 没有把缺环境伪装成通过；显式运行 `--ignored` 时会用 `expect` 检查变量，Runtime 库路径
 不存在也会直接断言失败。
 
-在 Windows 原生环境按 §4 准备后，以下命令已完整执行 7 条工具链门控测试并全部通过；
+在 Windows 原生环境按 §4 准备后，以下历史记录已完整执行 7 条工具链门控测试并全部通过；
 真实终端测试另在同一环境中通过：
 
 ```text
@@ -227,7 +230,7 @@ MSYS2 UCRT64 clang/LLVM 22.1.8 和 Rust 1.96.0 均为 CI 运行 `35955788547` �
 本机历史记录中的 MSYS2 clang/llvm-as 22.1.2 仍符合同一准备方式。缺少 `XIAO_CLANG` 时
 单独执行 `optional_real_llvm_round_trip --ignored` 已确认会失败并给出配置错误。
 
-Windows 的 8 条环境门控结果已有完整记录；随后 Windows PowerShell 5.1 完整入口通过。
+此前 Windows 的 8 条环境门控结果已有完整记录；随后 Windows PowerShell 5.1 完整入口通过。
 Linux Docker amd64 的 `xvfb-run` 环境中新增真实终端测试也通过，8 条门控测试合计全部
 通过。GitHub Actions 的 `linux-amd64`、`linux-arm64` 与 `windows-amd64` 各自执行 8 条
 门控并全部通过；`macos-arm64` 因 CI 无 GUI 显式跳过真实终端测试，其他 7 条执行并通过，
@@ -237,6 +240,10 @@ Linux Docker amd64 的 `xvfb-run` 环境中新增真实终端测试也通过，8
 `X11-PROTOCOL-004` 版本失配回环通过。Docker arm64 本机仿真仍因 Docker Desktop QEMU 的
 `exec format error` 未执行，但原生 `ubuntu-24.04-arm` runner 已补足 ARM64 功能证据。WSL、
 容器和 CI runner 结果均不进入 09R3 性能数字。
+
+2026-09-30 的 N0-C 控制流修复新增了 `n0_c_errors::optional_llvm_accepts_error_path_module`，该测试
+在本机使用真实 `llvm-as` 对十六种 `try`/`catch`/`finally` 形态逐一解析，结果为 1 passed；它尚未纳入
+上述历史 CI 的完整 clang/Runtime 原生回环统计，不能把这次单独的 LLVM 解析结果写成端到端原生验证。
 
 ## 八、不负责
 

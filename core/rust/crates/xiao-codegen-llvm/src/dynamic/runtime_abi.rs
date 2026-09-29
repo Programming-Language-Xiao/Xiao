@@ -11,6 +11,10 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert("declare void @llvm.trap()".to_owned());
         self.declarations
+            .insert("declare ptr @llvm.stacksave()".to_owned());
+        self.declarations
+            .insert("declare void @llvm.stackrestore(ptr)".to_owned());
+        self.declarations
             .insert("declare i32 @xiao_runtime_abi_is_compatible(i32, i32)".to_owned());
         self.declarations
             .insert("declare void @xiao_runtime_error_clear()".to_owned());
@@ -185,13 +189,15 @@ impl<'a> DynamicGenerator<'a> {
         self.emit(format!(
             "  br i1 {ok}, label %{ok_label}, label %{failed_label}"
         ));
-        self.emit(format!("{failed_label}:"));
+        self.terminated = true;
+        self.emit_label(&failed_label);
         self.emit(format!(
             "  call i32 @xiao_runtime_error_attach_span(i64 {}, i64 {})",
             span.start, span.end
         ));
         self.emit(format!("  br label %{}", self.error_target()));
-        self.emit(format!("{ok_label}:"));
+        self.terminated = true;
+        self.emit_label(&ok_label);
     }
 
     /// 生成一个 Runtime ABI 值返回函数的 LLVM 声明。

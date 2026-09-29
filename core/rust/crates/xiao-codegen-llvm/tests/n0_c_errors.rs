@@ -2,8 +2,9 @@
 
 use xiao_codegen_llvm::{CodegenOptions, NativeBuild, TargetDescription, Toolchain, lower_program};
 use xiao_ir::{
-    IrCallArgument, IrCatchClause, IrEntryMode, IrExpression, IrExpressionKind, IrName, IrProgram,
-    IrSpan, IrStatement, IrStatementKind, IrType,
+    IrCallArgument, IrCatchClause, IrEntryMode, IrExpression, IrExpressionKind, IrName,
+    IrOwnership, IrProgram, IrReleaseAction, IrReleasePlan, IrScope, IrSpan, IrStatement,
+    IrStatementKind, IrType, IrValue,
 };
 
 fn span() -> IrSpan {
@@ -144,6 +145,257 @@ fn dynamic_control_program(statement: IrStatementKind) -> IrProgram {
     )
 }
 
+fn expression_statement(value: IrExpression) -> IrStatement {
+    IrStatement {
+        kind: IrStatementKind::Expression { value },
+        span: span(),
+        leading_docs: Vec::new(),
+    }
+}
+
+fn catch_clause(error_type: &str, body: Vec<IrStatement>) -> IrCatchClause {
+    IrCatchClause {
+        binding: name("error"),
+        error_type: name(error_type),
+        body,
+        span: span(),
+    }
+}
+
+fn try_statement(
+    body: Vec<IrStatement>,
+    catches: Vec<IrCatchClause>,
+    finally_body: Option<Vec<IrStatement>>,
+) -> IrStatement {
+    IrStatement {
+        kind: IrStatementKind::Try {
+            body,
+            catches,
+            finally_body,
+        },
+        span: span(),
+        leading_docs: Vec::new(),
+    }
+}
+
+fn program_from_statements(body: Vec<IrStatement>) -> IrProgram {
+    IrProgram::new(IrEntryMode::Script, body, span())
+}
+
+fn no_finally_catch_program() -> IrProgram {
+    program_from_statements(vec![try_statement(
+        vec![IrStatement {
+            kind: IrStatementKind::Raise {
+                value: error_constructor(),
+            },
+            span: span(),
+            leading_docs: Vec::new(),
+        }],
+        vec![catch_clause(
+            "ArithmeticError",
+            vec![expression_statement(string_literal("handled"))],
+        )],
+        None,
+    )])
+}
+
+fn multiple_catch_program() -> IrProgram {
+    program_from_statements(vec![try_statement(
+        vec![IrStatement {
+            kind: IrStatementKind::Raise {
+                value: error_constructor(),
+            },
+            span: span(),
+            leading_docs: Vec::new(),
+        }],
+        vec![
+            catch_clause(
+                "TypeError",
+                vec![expression_statement(string_literal("type"))],
+            ),
+            catch_clause(
+                "ArithmeticError",
+                vec![expression_statement(string_literal("arithmetic"))],
+            ),
+        ],
+        Some(vec![expression_statement(string_literal("cleanup"))]),
+    )])
+}
+
+fn nested_try_program() -> IrProgram {
+    let inner = try_statement(
+        vec![IrStatement {
+            kind: IrStatementKind::Raise {
+                value: error_constructor(),
+            },
+            span: span(),
+            leading_docs: Vec::new(),
+        }],
+        vec![catch_clause(
+            "ArithmeticError",
+            vec![expression_statement(string_literal("inner"))],
+        )],
+        Some(vec![expression_statement(string_literal("inner-cleanup"))]),
+    );
+    program_from_statements(vec![try_statement(
+        vec![inner],
+        vec![catch_clause(
+            "ArithmeticError",
+            vec![expression_statement(string_literal("outer"))],
+        )],
+        Some(vec![expression_statement(string_literal("outer-cleanup"))]),
+    )])
+}
+
+fn catch_raise_program() -> IrProgram {
+    program_from_statements(vec![try_statement(
+        vec![IrStatement {
+            kind: IrStatementKind::Raise {
+                value: error_constructor(),
+            },
+            span: span(),
+            leading_docs: Vec::new(),
+        }],
+        vec![catch_clause(
+            "ArithmeticError",
+            vec![IrStatement {
+                kind: IrStatementKind::Raise {
+                    value: error_constructor(),
+                },
+                span: span(),
+                leading_docs: Vec::new(),
+            }],
+        )],
+        Some(vec![expression_statement(string_literal("cleanup"))]),
+    )])
+}
+
+fn finally_control_program(statement: IrStatementKind) -> IrProgram {
+    let try_body = vec![expression_statement(string_literal("body"))];
+    let finally_body = vec![IrStatement {
+        kind: statement,
+        span: span(),
+        leading_docs: Vec::new(),
+    }];
+    program_from_statements(vec![IrStatement {
+        kind: IrStatementKind::While {
+            condition: dynamic_bool_literal(true),
+            body: vec![try_statement(try_body, Vec::new(), Some(finally_body))],
+        },
+        span: span(),
+        leading_docs: Vec::new(),
+    }])
+}
+
+fn finally_owned_control_program(statement: IrStatementKind, exit: &str) -> IrProgram {
+    let mut program = finally_control_program(statement);
+    let IrStatementKind::While { body, .. } = &mut program.body[0].kind else {
+        unreachable!();
+    };
+    let IrStatementKind::Try {
+        finally_body: Some(finally_body),
+        ..
+    } = &mut body[0].kind
+    else {
+        unreachable!();
+    };
+    finally_body.insert(
+        0,
+        IrStatement {
+            kind: IrStatementKind::Assignment {
+                target: name("cleanup"),
+                value: string_literal("owned cleanup value"),
+            },
+            span: span(),
+            leading_docs: Vec::new(),
+        },
+    );
+    program.ownership = IrOwnership {
+        scopes: vec![
+            IrScope {
+                id: 0,
+                parent: None,
+                kind: "program".to_owned(),
+                span: span(),
+                depth: 0,
+                values: Vec::new(),
+            },
+            IrScope {
+                id: 1,
+                parent: Some(0),
+                kind: "try".to_owned(),
+                span: span(),
+                depth: 1,
+                values: Vec::new(),
+            },
+            IrScope {
+                id: 2,
+                parent: Some(0),
+                kind: "finally".to_owned(),
+                span: span(),
+                depth: 1,
+                values: vec![1],
+            },
+        ],
+        values: vec![IrValue {
+            id: 1,
+            name: Some("cleanup".to_owned()),
+            scope: 2,
+            span: span(),
+            ty: Some(IrType::Scalar {
+                name: "str".to_owned(),
+            }),
+            storage: "heap_strong".to_owned(),
+            declaration_order: 0,
+            parameter: false,
+            constant: false,
+            temporary: false,
+            escapes: Vec::new(),
+        }],
+        release_plans: vec![
+            IrReleasePlan {
+                scope: 0,
+                exit: "normal".to_owned(),
+                actions: Vec::new(),
+                transferred: Vec::new(),
+            },
+            IrReleasePlan {
+                scope: 0,
+                exit: "return".to_owned(),
+                actions: Vec::new(),
+                transferred: Vec::new(),
+            },
+            IrReleasePlan {
+                scope: 2,
+                exit: exit.to_owned(),
+                actions: vec![IrReleaseAction {
+                    value: 1,
+                    order: 0,
+                    kind: "strong".to_owned(),
+                }],
+                transferred: Vec::new(),
+            },
+        ],
+        ..IrOwnership::default()
+    };
+    program
+}
+
+fn loop_try_finally_program() -> IrProgram {
+    program_from_statements(vec![IrStatement {
+        kind: IrStatementKind::While {
+            condition: dynamic_bool_literal(true),
+            body: vec![try_statement(
+                vec![expression_statement(string_literal("body"))],
+                Vec::new(),
+                Some(vec![expression_statement(string_literal("cleanup"))]),
+            )],
+        },
+        span: span(),
+        leading_docs: Vec::new(),
+    }])
+}
+
 #[test]
 /// `raise`、错误构造和处理器必须全部落到 Runtime ABI，而不是被拒绝或 trap。
 fn lowers_recoverable_error_path() {
@@ -168,20 +420,72 @@ fn lowers_recoverable_error_path() {
 }
 
 #[test]
+#[ignore = "需要 XIAO_LLVM_AS；准备方式见 10D §4"]
 /// 在提供 `llvm-as` 时，错误派发的所有基本块必须通过真正的 LLVM 解析器。
 fn optional_llvm_accepts_error_path_module() {
-    let Some(llvm_as) = std::env::var_os("XIAO_LLVM_AS") else {
-        return;
-    };
-    let module =
-        lower_program(&error_program(), &CodegenOptions::default()).expect("错误路径应降低");
-    NativeBuild::new()
-        .validate_llvm(
-            &module.text,
-            &TargetDescription::host(),
-            &Toolchain::new("unused").with_llvm_as(llvm_as),
-        )
-        .expect("llvm-as 应接受原生错误路径");
+    let llvm_as = std::env::var_os("XIAO_LLVM_AS")
+        .expect("显式运行 --ignored 时 XIAO_LLVM_AS 必须已设置；准备方式见 10D §4");
+    let programs = [
+        ("try-catch-finally", error_program()),
+        ("try-catch", no_finally_catch_program()),
+        ("multiple-catch", multiple_catch_program()),
+        ("nested-try", nested_try_program()),
+        ("catch-raise", catch_raise_program()),
+        (
+            "finally-owned-return",
+            finally_owned_control_program(IrStatementKind::Return { value: None }, "return"),
+        ),
+        (
+            "finally-owned-break",
+            finally_owned_control_program(IrStatementKind::Break, "break"),
+        ),
+        (
+            "finally-owned-continue",
+            finally_owned_control_program(IrStatementKind::Continue, "continue"),
+        ),
+        (
+            "finally-return",
+            finally_control_program(IrStatementKind::Return { value: None }),
+        ),
+        (
+            "finally-break",
+            finally_control_program(IrStatementKind::Break),
+        ),
+        (
+            "finally-continue",
+            finally_control_program(IrStatementKind::Continue),
+        ),
+        (
+            "finally-raise",
+            finally_control_program(IrStatementKind::Raise {
+                value: error_constructor(),
+            }),
+        ),
+        (
+            "try-return-finally",
+            dynamic_control_program(IrStatementKind::Return { value: None }),
+        ),
+        (
+            "try-break-finally",
+            dynamic_control_program(IrStatementKind::Break),
+        ),
+        (
+            "try-continue-finally",
+            dynamic_control_program(IrStatementKind::Continue),
+        ),
+        ("loop-try-finally", loop_try_finally_program()),
+    ];
+    for (name, program) in programs {
+        let module = lower_program(&program, &CodegenOptions::default())
+            .unwrap_or_else(|error| panic!("{name} 应降低: {error}"));
+        NativeBuild::new()
+            .validate_llvm(
+                &module.text,
+                &TargetDescription::host(),
+                &Toolchain::new("unused").with_llvm_as(llvm_as.clone()),
+            )
+            .unwrap_or_else(|error| panic!("llvm-as 应接受 {name}：{error}"));
+    }
 }
 
 #[test]
@@ -212,11 +516,59 @@ fn lowers_nonlocal_control_exits_through_cleanup_chain() {
         assert!(module.text.contains("dynamic.try.normal.finally"));
         assert!(module.text.contains("xiao_runtime_value_release"));
         let exit_marker = match exit {
-            "return" => "dynamic.return",
-            "break" => "dynamic.break",
-            "continue" => "dynamic.continue",
+            "return" => "ret void",
+            "break" => "br label %dynamic.while.end",
+            "continue" => "br label %dynamic.while.cond",
             _ => unreachable!(),
         };
         assert!(module.text.contains(exit_marker));
     }
+
+    let cases = [
+        (
+            IrStatementKind::Return { value: None },
+            "return",
+            "ret void",
+        ),
+        (
+            IrStatementKind::Break,
+            "break",
+            "br label %dynamic.while.end",
+        ),
+        (
+            IrStatementKind::Continue,
+            "continue",
+            "br label %dynamic.while.cond",
+        ),
+    ];
+    for (statement, exit, target) in cases {
+        let program = finally_owned_control_program(statement, exit);
+        let module = lower_program(&program, &CodegenOptions::default())
+            .unwrap_or_else(|error| panic!("带 finally 作用域释放计划的 {exit} 应降低: {error}"));
+        let finally_release = module
+            .text
+            .find("call void @xiao_runtime_value_release(ptr %slot0)")
+            .unwrap_or_else(|| panic!("{exit} 前应释放 finally 作用域拥有值"));
+        let exit_target = module
+            .text
+            .get(finally_release..)
+            .and_then(|text| text.find(target).map(|offset| finally_release + offset))
+            .unwrap_or_else(|| panic!("缺少 {exit} 的实际退出目标 {target}"));
+        assert!(
+            finally_release < exit_target,
+            "finally 作用域必须先释放再执行 {exit}"
+        );
+    }
+
+    let loop_module = lower_program(&loop_try_finally_program(), &CodegenOptions::default())
+        .expect("循环中的 try/finally 应降低");
+    let stack_save = loop_module
+        .text
+        .find("call ptr @llvm.stacksave()")
+        .expect("finally 入口应保存动态栈位置");
+    let stack_restore = loop_module
+        .text
+        .find("call void @llvm.stackrestore(ptr ")
+        .expect("finally 出口应恢复动态栈位置");
+    assert!(stack_save < stack_restore);
 }
