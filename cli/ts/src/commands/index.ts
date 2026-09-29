@@ -19,6 +19,7 @@ import {
 import { requestActivation } from "../environments/activation.ts";
 import { editShellProfile } from "../environments/profile.ts";
 import { executePackageCommand } from "../packages/index.ts";
+import { cliMessage } from "../i18n.ts";
 
 /** 命令执行上下文；IO 由入口注入，便于管道和测试。 */
 export interface CommandContext {
@@ -118,8 +119,14 @@ async function executeVenv(
         exitCode: 0,
       };
     }
+    const locale = context.locale?.tag ?? "zh-CN";
+    const activationMissing = !(context.env ?? process.env).XIAO_ACTIVATION_FILE;
+    const lines = [
+      cliMessage("xiao.cli.env.created", locale, { name: created.logicalName, path: created.path }),
+      ...(activationMissing ? [cliMessage("xiao.cli.env.activation_missing", locale)] : []),
+    ];
     return {
-      stdout: `已创建环境 ${created.logicalName}：${created.path}\n${(context.env ?? process.env).XIAO_ACTIVATION_FILE ? "" : "未检测到激活钩子；可手工将 XIAO_ACTIVE_ENV 设为以上绝对路径，或先在 Bash/zsh/fish/PowerShell 初始化对应的 shell-init 钩子。\n"}`,
+      stdout: `${lines.join("\n")}\n`,
       stderr: "",
       exitCode: 0,
     };
@@ -137,8 +144,16 @@ async function executeShellInit(
     if (command.action !== "print") {
       const result = await editShellProfile(command.shell, command.action, command.profile, context.env ?? process.env);
       if (command.options.json) return { stdout: `${JSON.stringify({ type: "shell_profile", shell: command.shell, ...result })}\n`, stderr: "", exitCode: 0 };
-      const status = result.changed ? (result.action === "install" ? "已安装" : "已移除") : "无需更改";
-      return { stdout: `${status} Shell 钩子：${result.profile}\n${result.backup === null ? "未改写既有文件，无备份。" : `备份：${result.backup}`}\n`, stderr: "", exitCode: 0 };
+      const locale = context.locale?.tag ?? "zh-CN";
+      const status = result.changed
+        ? result.action === "install"
+          ? cliMessage("xiao.cli.shell.hook.installed", locale, { profile: result.profile })
+          : cliMessage("xiao.cli.shell.hook.removed", locale, { profile: result.profile })
+        : cliMessage("xiao.cli.shell.hook.unchanged", locale, { profile: result.profile });
+      const backup = result.backup === null
+        ? cliMessage("xiao.cli.shell.no_backup", locale)
+        : cliMessage("xiao.cli.shell.backup", locale, { path: result.backup });
+      return { stdout: `${status}\n${backup}\n`, stderr: "", exitCode: 0 };
     }
     const script = shellInitScript(command.shell);
     if (command.options.json) return { stdout: `${JSON.stringify({ type: "shell_init", shell: command.shell, script })}\n`, stderr: "", exitCode: 0 };
@@ -306,7 +321,15 @@ async function executeConfig(command: Extract<ParsedCommand, { kind: "config" }>
     if (command.options.json) {
       return { stdout: `${JSON.stringify({ type: "config", path: result.path, key: command.key, value: result.value })}\n`, stderr: "", exitCode: 0 };
     }
-    return { stdout: `已更新 ${result.path}：${command.key} = ${String(result.value)}\n`, stderr: "", exitCode: 0 };
+    return {
+      stdout: `${cliMessage("xiao.cli.config.updated", context.locale?.tag ?? "zh-CN", {
+        path: result.path,
+        key: command.key,
+        value: String(result.value),
+      })}\n`,
+      stderr: "",
+      exitCode: 0,
+    };
   } catch (error) {
     return renderCliError(error, renderOptions(command.options, context));
   }

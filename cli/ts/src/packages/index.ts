@@ -12,6 +12,7 @@ import { ProtocolClient } from "../protocol/client.ts";
 import { CORE_VERSION, PROTOCOL_VERSION, type PackageRequest, type ToolchainSpec } from "../protocol/messages.ts";
 import { renderProtocolResponse, type RenderedDiagnostic, type DiagnosticRenderOptions } from "../diagnostics/render.ts";
 import type { CommandContext } from "../commands/index.ts";
+import { cliMessage, type CliMessageId } from "../i18n.ts";
 
 /** 安装只读显式目标或当前目录，不向上推断另一个项目。 */
 async function installProjectRoot(cwd: string, project?: string): Promise<string> {
@@ -29,6 +30,15 @@ const noBuildToolchain: ToolchainSpec = {
   native_static_libraries: [],
   versions: { clang: "", llvm_as: null, llc: null },
 };
+
+const packageMessageIds = {
+  sync: "xiao.cli.package.sync",
+  install: "xiao.cli.package.install",
+  lock: "xiao.cli.package.lock",
+  update: "xiao.cli.package.update",
+  add: "xiao.cli.package.add",
+  remove: "xiao.cli.package.remove",
+} as const satisfies Record<"sync" | "install" | "lock" | "update" | "add" | "remove", CliMessageId>;
 
 /** 执行包操作；别名 i 在解析后共享 install 分支。 */
 export async function executePackageCommand(
@@ -71,10 +81,11 @@ export async function executePackageCommand(
   if (command.options.json) return {
     stdout: `${JSON.stringify({ type: "package_result", ...response.result })}\n`, stderr: "", exitCode: 0,
   };
+  const locale = context.locale?.tag ?? "zh-CN";
   const instruction = response.result.activate && !(context.env ?? process.env).XIAO_ACTIVATION_FILE
-    ? "（未检测到激活钩子；可手工设置 XIAO_ACTIVE_ENV 为以上绝对路径，或在 Bash/zsh/fish/PowerShell 初始化 shell-init 钩子）" : "";
+    ? cliMessage("xiao.cli.package.activation_missing", locale) : "";
   return {
-    stdout: `${({ sync: "已同步", install: "已安装", lock: "已锁定", update: "已更新锁文件", add: "已添加依赖", remove: "已移除依赖" })[command.kind]}：${response.result.environment_path}${instruction}\n`,
+    stdout: `${cliMessage(packageMessageIds[command.kind], locale, { path: response.result.environment_path })}${instruction}\n`,
     stderr: "", exitCode: 0,
   };
 }

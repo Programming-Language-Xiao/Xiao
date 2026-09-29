@@ -91,4 +91,19 @@ describe("CLI 诊断呈现", () => {
     expect(renderProtocolResponse(oldCore, { locale: "zh-CN" }).stderr).toContain("xiao.status.cancelled");
     expect(renderProtocolResponse(oldCore).stderr).toContain("请求已取消");
   });
+
+  test("测试统计标签随 CLI 语言切换", () => {
+    const rendered = renderProtocolResponse({
+      type: "test_result",
+      request_id: "test-locale",
+      operation: "test",
+      exit_code: 0,
+      exit_name: "success",
+      total: 0,
+      passed: 0,
+      failed: 0,
+      tests: [],
+    }, { locale: "en-US" });
+    expect(rendered.stderr).toContain("test results  0/0 passed, failed 0");
+  });
 });

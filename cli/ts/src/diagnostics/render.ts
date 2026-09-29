@@ -9,6 +9,7 @@ import { CliConfigError } from "../config/editor.ts";
 import { CoreDiscoveryError } from "../platform/core.ts";
 import { ToolchainDiscoveryError } from "../platform/toolchain.ts";
 import { EnvironmentCommandError } from "../environments/index.ts";
+import { cliMessage } from "../i18n.ts";
 
 /** 渲染模式。 */
 export interface DiagnosticRenderOptions {
@@ -72,26 +73,28 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
     lines.push(colorizer.color("error", `${code}: ${message}`));
   }
   if (response.type === "result" && response.metrics !== null && isRecord(response.metrics) && response.exit_code === 0) {
+    const locale = options.locale ?? "zh-CN";
     const rows = [
-      { header: "状态", values: [localized(options.locale, "成功", "success")] },
-      { header: "退出码", values: [String(response.exit_code)] },
+      { header: cliMessage("xiao.cli.status.label", locale), values: [cliMessage("xiao.cli.status.success", locale)] },
+      { header: cliMessage("xiao.cli.status.exit_code", locale), values: [String(response.exit_code)] },
     ];
     // 表格只展示稳定字段，指标本身不参与退出判断。
     lines.push(renderTable(rows));
   }
   if (response.type === "result" && response.operation === "build" && response.artifact !== null && isRecord(response.artifact) && response.exit_code === 0) {
+    const locale = options.locale ?? "zh-CN";
     const executable = typeof response.artifact.executable === "string" ? response.artifact.executable : "<unknown>";
     const fingerprint = typeof response.artifact.toolchain_fingerprint === "string" ? response.artifact.toolchain_fingerprint : "<unknown>";
-    lines.push(`产物  ${executable}`);
-    lines.push(`指纹  ${fingerprint}`);
+    lines.push(cliMessage("xiao.cli.build.artifact", locale, { path: executable }));
+    lines.push(cliMessage("xiao.cli.build.fingerprint", locale, { value: fingerprint }));
     if (isRecord(response.artifact.diagnostic_activation) && typeof response.artifact.diagnostic_activation.path === "string") {
-      lines.push(`调试  ${response.artifact.diagnostic_activation.path}`);
+      lines.push(cliMessage("xiao.cli.build.debug", locale, { path: response.artifact.diagnostic_activation.path }));
     }
     if (typeof response.artifact.diagnostics_component === "string") {
-      lines.push(`诊断  ${response.artifact.diagnostics_component}`);
+      lines.push(cliMessage("xiao.cli.build.diagnostics", locale, { path: response.artifact.diagnostics_component }));
     }
     if (isRecord(response.artifact.runtime_config) && typeof response.artifact.runtime_config.path === "string") {
-      lines.push(`配置  ${response.artifact.runtime_config.path}`);
+      lines.push(cliMessage("xiao.cli.build.config", locale, { path: response.artifact.runtime_config.path }));
     }
   }
   const stderr = lines.length === 0 ? "" : `${lines.join("\n")}\n`;
@@ -104,12 +107,17 @@ function renderTestResult(
   colorizer: Colorizer,
   options: DiagnosticRenderOptions,
 ): RenderedDiagnostic {
+  const locale = options.locale ?? "zh-CN";
   const lines = [
-    `${localized(options.locale, "测试结果", "test results")}  ${response.passed}/${response.total} ${localized(options.locale, "通过", "passed")}，${localized(options.locale, "失败", "failed")} ${response.failed}`,
+    cliMessage("xiao.cli.test.summary", locale, {
+      passed: response.passed,
+      total: response.total,
+      failed: response.failed,
+    }),
   ];
   for (const test of response.tests) {
     const passed = test.exit_code === 0;
-    const status = passed ? localized(options.locale, "通过", "passed") : localized(options.locale, "失败", "failed");
+    const status = passed ? cliMessage("xiao.cli.test.passed", locale) : cliMessage("xiao.cli.test.failed", locale);
     lines.push(colorizer.color(passed ? "success" : "error", `${status}  ${test.path}  [${test.exit_code}]`));
     for (const diagnostic of test.diagnostics) {
       if (!isRecord(diagnostic)) continue;
@@ -219,11 +227,6 @@ function protocolMessage(value: Record<string, unknown>, locale: "zh-CN" | "en-U
 /** 把协议诊断级别映射为少量语义色角色。 */
 function diagnosticSeverity(value: Record<string, unknown>): "success" | "error" | "info" {
   return value.severity === "error" ? "error" : value.severity === "warning" ? "info" : "info";
-}
-
-/** 只替换人类状态文本，不参与错误或退出码计算。 */
-function localized(locale: "zh-CN" | "en-US" | undefined, chinese: string, english: string): string {
-  return locale === "en-US" ? english : chinese;
 }
 
 /** 根据终端能力创建颜色器。 */

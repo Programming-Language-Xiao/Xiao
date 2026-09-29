@@ -9,6 +9,7 @@ import { ProtocolClient, type CoreClientOptions } from "../protocol/client.ts";
 import { probeGitSummary, type GitProbeOptions } from "../ui/git.ts";
 import { renderReplBanner, renderReplPrompt } from "../ui/prompt.ts";
 import { runMultilineSession, MultilineTerminalError } from "./multiline.ts";
+import { cliMessage } from "../i18n.ts";
 
 /** 标准流和配置/执行依赖由 CLI 入口传入，便于无终端集成验证。 */
 export interface ReplContext {
@@ -175,7 +176,8 @@ async function currentPrompt(context: ReplContext): Promise<string> {
     env: context.env, timeoutMs: 250, runStatus: context.gitRunStatus,
   }) : null;
   if (context.debug && result?.diagnostic != null && result.diagnostic.reason !== "not-repository") {
-    await context.write(context.error, `${result.diagnostic.code}: Git 摘要已降级（${result.diagnostic.reason}）\n`);
+    const locale = context.locale?.tag ?? "zh-CN";
+    await context.write(context.error, `${result.diagnostic.code}: ${cliMessage("xiao.cli.repl.git.degraded", locale, { reason: result.diagnostic.reason })}\n`);
   }
   return renderReplPrompt({
     cwd: context.cwd,

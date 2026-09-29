@@ -57,12 +57,54 @@ const messages = {
   },
   "xiao.cli.repl.summary.time": { "zh-CN": "时间", "en-US": "time" },
   "xiao.cli.repl.summary.memory": { "zh-CN": "内存", "en-US": "memory" },
+  "xiao.cli.status.success": { "zh-CN": "成功", "en-US": "success" },
+  "xiao.cli.status.label": { "zh-CN": "状态", "en-US": "status" },
+  "xiao.cli.status.exit_code": { "zh-CN": "退出码", "en-US": "exit code" },
+  "xiao.cli.test.summary": { "zh-CN": "测试结果  {passed}/{total} 通过，失败 {failed}", "en-US": "test results  {passed}/{total} passed, failed {failed}" },
+  "xiao.cli.test.passed": { "zh-CN": "通过", "en-US": "passed" },
+  "xiao.cli.test.failed": { "zh-CN": "失败", "en-US": "failed" },
+  "xiao.cli.build.artifact": { "zh-CN": "产物  {path}", "en-US": "artifact  {path}" },
+  "xiao.cli.build.fingerprint": { "zh-CN": "指纹  {value}", "en-US": "fingerprint  {value}" },
+  "xiao.cli.build.debug": { "zh-CN": "调试  {path}", "en-US": "debug  {path}" },
+  "xiao.cli.build.diagnostics": { "zh-CN": "诊断  {path}", "en-US": "diagnostics  {path}" },
+  "xiao.cli.build.config": { "zh-CN": "配置  {path}", "en-US": "config  {path}" },
+  "xiao.cli.env.created": { "zh-CN": "已创建环境 {name}：{path}", "en-US": "created environment {name}: {path}" },
+  "xiao.cli.env.activation_missing": {
+    "zh-CN": "未检测到激活钩子；可手工将 XIAO_ACTIVE_ENV 设为以上绝对路径，或先在 Bash/zsh/fish/PowerShell 初始化对应的 shell-init 钩子。",
+    "en-US": "no activation hook detected; set XIAO_ACTIVE_ENV to the absolute path above, or initialize the shell-init hook for Bash/zsh/fish/PowerShell first.",
+  },
+  "xiao.cli.shell.hook.installed": { "zh-CN": "已安装 Shell 钩子：{profile}", "en-US": "installed shell hook: {profile}" },
+  "xiao.cli.shell.hook.removed": { "zh-CN": "已移除 Shell 钩子：{profile}", "en-US": "removed shell hook: {profile}" },
+  "xiao.cli.shell.hook.unchanged": { "zh-CN": "无需更改 Shell 钩子：{profile}", "en-US": "shell hook unchanged: {profile}" },
+  "xiao.cli.shell.no_backup": { "zh-CN": "未改写既有文件，无备份。", "en-US": "existing file unchanged; no backup created." },
+  "xiao.cli.shell.backup": { "zh-CN": "备份：{path}", "en-US": "backup: {path}" },
+  "xiao.cli.package.activation_missing": {
+    "zh-CN": "（未检测到激活钩子；可手工设置 XIAO_ACTIVE_ENV 为以上绝对路径，或在 Bash/zsh/fish/PowerShell 初始化 shell-init 钩子）",
+    "en-US": " (no activation hook detected; set XIAO_ACTIVE_ENV to the absolute path above, or initialize the shell-init hook for Bash/zsh/fish/PowerShell)",
+  },
+  "xiao.cli.package.sync": { "zh-CN": "已同步：{path}", "en-US": "synced: {path}" },
+  "xiao.cli.package.install": { "zh-CN": "已安装：{path}", "en-US": "installed: {path}" },
+  "xiao.cli.package.lock": { "zh-CN": "已锁定：{path}", "en-US": "locked: {path}" },
+  "xiao.cli.package.update": { "zh-CN": "已更新锁文件：{path}", "en-US": "lock file updated: {path}" },
+  "xiao.cli.package.add": { "zh-CN": "已添加依赖：{path}", "en-US": "dependency added: {path}" },
+  "xiao.cli.package.remove": { "zh-CN": "已移除依赖：{path}", "en-US": "dependency removed: {path}" },
+  "xiao.cli.config.updated": { "zh-CN": "已更新 {path}：{key} = {value}", "en-US": "updated {path}: {key} = {value}" },
+  "xiao.cli.repl.git.degraded": { "zh-CN": "Git 摘要已降级（{reason}）", "en-US": "Git summary degraded ({reason})" },
 } as const;
 
 /** CLI 自身消息的身份，不与 Rust 核心消息身份重名。 */
 export type CliMessageId = keyof typeof messages;
 
+/** CLI 消息的安全文本参数；参数值不参与二次模板解析。 */
+export type CliMessageParams = Readonly<Record<string, string | number>>;
+
 /** 只呈现 CLI 自己的界面文本；无上下文的独立渲染沿用原英文界面。 */
-export function cliMessage(id: CliMessageId, locale: SupportedLocale = "en-US"): string {
-  return messages[id][locale];
+export function cliMessage(
+  id: CliMessageId,
+  locale: SupportedLocale = "en-US",
+  params: CliMessageParams = {},
+): string {
+  return messages[id][locale].replace(/\{([A-Za-z0-9_]+)\}/gu, (placeholder, name: string) => (
+    Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : placeholder
+  ));
 }
