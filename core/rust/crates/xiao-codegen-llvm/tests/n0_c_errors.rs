@@ -1,5 +1,6 @@
 //! N0-C 原生错误路径与源码映射回归测试。
 
+use std::process::Command;
 use xiao_codegen_llvm::{
     CodegenOptions, NativeBuild, ObjectFormat, TargetDescription, Toolchain, lower_program,
 };
@@ -524,6 +525,96 @@ fn optional_llvm_accepts_error_path_module() {
             )
             .unwrap_or_else(|error| panic!("llvm-as 应接受 {name}：{error}"));
     }
+}
+
+#[test]
+#[ignore = "需要真实 clang；准备方式见 10D §4"]
+/// 真实原生循环证明 finally 的 stackrestore 不增长栈，并用去恢复反例证明路径确实执行。
+fn optional_stackrestore_runtime_probe() {
+    let clang = std::env::var_os("XIAO_CLANG")
+        .expect("显式运行 --ignored 时 XIAO_CLANG 必须已设置；准备方式见 10D §4");
+    let target = TargetDescription::host();
+    let toolchain = Toolchain::new(clang);
+    let temporary_root = std::env::temp_dir().join(format!(
+        "xiao-stackrestore-probe-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("系统时间")
+            .as_nanos()
+    ));
+    let restored_output = temporary_root.with_extension(if cfg!(windows) { "exe" } else { "bin" });
+    let leaking_output = temporary_root.with_file_name(format!(
+        "{}-leaking{}",
+        temporary_root
+            .file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("probe"),
+        if cfg!(windows) { ".exe" } else { ".bin" }
+    ));
+    let restored = compile_stack_probe(&toolchain, &target, &restored_output, true);
+    let leaking = compile_stack_probe(&toolchain, &target, &leaking_output, false);
+    assert_eq!(restored, 0, "带 stackrestore 的循环必须保持同一栈地址");
+    assert_eq!(leaking, 1, "去掉 stackrestore 的反例必须观察到栈地址变化");
+    let _ = std::fs::remove_file(restored_output);
+    let _ = std::fs::remove_file(leaking_output);
+}
+
+fn compile_stack_probe(
+    toolchain: &Toolchain,
+    target: &TargetDescription,
+    output: &std::path::Path,
+    restore: bool,
+) -> i32 {
+    let restore_literal = if restore { "true" } else { "false" };
+    let module = format!(
+        "target triple = \"{}\"\n\n\
+         declare ptr @llvm.stacksave()\n\
+         declare void @llvm.stackrestore(ptr)\n\n\
+         define i32 @main() {{\n\
+         entry:\n\
+           %same = call i1 @probe(i1 {restore_literal})\n\
+           %changed = xor i1 %same, true\n\
+           %code = zext i1 %changed to i32\n\
+           ret i32 %code\n\
+         }}\n\n\
+         define i1 @probe(i1 %restore) {{\n\
+         entry:\n\
+           br label %loop\n\
+         loop:\n\
+           %index = phi i64 [ 0, %entry ], [ %next, %continue ]\n\
+           %first = phi i64 [ 0, %entry ], [ %first_next, %continue ]\n\
+           %save = call ptr @llvm.stacksave()\n\
+           %buffer = alloca [4096 x i8], align 16\n\
+           %byte = getelementptr [4096 x i8], ptr %buffer, i64 0, i64 0\n\
+           store volatile i8 1, ptr %byte\n\
+           %address = ptrtoint ptr %byte to i64\n\
+           %is_first = icmp eq i64 %first, 0\n\
+           %first_next = select i1 %is_first, i64 %address, i64 %first\n\
+           %next = add i64 %index, 1\n\
+           %done = icmp eq i64 %next, 32\n\
+           br i1 %done, label %finish, label %restore_choice\n\
+         restore_choice:\n\
+           br i1 %restore, label %restore_stack, label %continue\n\
+         restore_stack:\n\
+           call void @llvm.stackrestore(ptr %save)\n\
+           br label %continue\n\
+         continue:\n\
+           br label %loop\n\
+         finish:\n\
+           %same = icmp eq i64 %first_next, %address\n\
+           ret i1 %same\n\
+         }}\n",
+        target.triple
+    );
+    toolchain
+        .compile_without_runtime(&module, target, output)
+        .expect("栈用量探针应能编译");
+    Command::new(output)
+        .status()
+        .expect("栈用量探针应能运行")
+        .code()
+        .expect("栈用量探针必须有退出码")
 }
 
 #[test]

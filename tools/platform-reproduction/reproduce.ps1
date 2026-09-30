@@ -128,6 +128,11 @@ Push-Location $repositoryRoot
 try {
     Invoke-Checked 'cargo' @('build', '--manifest-path', $cargoManifest, '-p', 'xiao-runtime', '--release')
     Invoke-Checked 'cargo' @('build', '--manifest-path', $cargoManifest, '-p', 'xiao-driver', '-p', 'xiao-diagnostics')
+    $diagnosticsPath = Join-Path $repositoryRoot 'core/rust/target/debug/xiao-diagnostics.exe'
+    if (-not (Test-Path -LiteralPath $diagnosticsPath -PathType Leaf)) {
+        throw "Diagnostics binary was not found: $diagnosticsPath"
+    }
+    $env:XIAO_DIAGNOSTICS_PATH = $diagnosticsPath
     $runtime = Join-Path $repositoryRoot 'core/rust/target/release/xiao_runtime.lib'
     if (-not (Test-Path -LiteralPath $runtime -PathType Leaf)) {
         throw "Runtime staticlib was not found: $runtime"
@@ -162,8 +167,10 @@ try {
     New-Item -ItemType Directory -Force -Path (Join-Path $sourceDirectory 'tests') | Out-Null
     $mainSource = Join-Path $sourceDirectory 'main.xiao'
     $testSource = Join-Path $sourceDirectory 'tests/smoke.xiao'
+    $debugSource = Join-Path $sourceDirectory 'debug.xiao'
     Write-Utf8NoBom $mainSource "value = 1 + 2`n"
     Write-Utf8NoBom $testSource "value = 1 + 2`n"
+    Write-Utf8NoBom $debugSource "value = `"debug window`"`n"
 
     $nativeOutput = Join-Path $temporaryRoot 'native.exe'
     $llvmOutput = Join-Path $temporaryRoot 'native.ll'
@@ -174,12 +181,39 @@ try {
     if (-not (Test-Path -LiteralPath $nativeOutput -PathType Leaf) -or (Get-Item -LiteralPath $nativeOutput).Length -eq 0) { throw 'xiao build did not produce an artifact' }
     if (-not (Test-Path -LiteralPath $llvmOutput -PathType Leaf) -or (Get-Item -LiteralPath $llvmOutput).Length -eq 0) { throw 'xiao build did not produce LLVM output' }
 
+    $normalRunOutput = & $nativeOutput 2>&1
+    $normalRunStatus = $LASTEXITCODE
+    if ($normalRunStatus -ne 0) { throw "ordinary native artifact failed ($normalRunStatus)" }
+    if (($normalRunOutput -join "`n") -match 'X11-DIAGNOSTIC-START-001') { throw 'ordinary native artifact attempted diagnostic startup' }
+
     $debugOutput = Join-Path $temporaryRoot 'debug-native.exe'
-    $debugJson = & $cli '--json' 'build' '-debug' '-o' $debugOutput $mainSource '-O0'
+    $debugJson = & $cli '--json' 'build' '-debug' '-o' $debugOutput $debugSource '-O0'
     if ($LASTEXITCODE -ne 0) { throw 'xiao -debug build failed' }
     $debugResponse = ($debugJson -join "`n") | ConvertFrom-Json
     if ($debugResponse.type -ne 'result' -or $debugResponse.exit_code -ne 0) { throw 'xiao -debug build protocol fields are invalid' }
     if (-not (Test-Path -LiteralPath $debugOutput -PathType Leaf) -or (Get-Item -LiteralPath $debugOutput).Length -eq 0) { throw 'xiao -debug build did not produce an artifact' }
+
+    $debugRunOutput = & $debugOutput 2>&1
+    $debugRunStatus = $LASTEXITCODE
+    if ($debugRunStatus -ne 0 -and (($debugRunOutput -join "`n") -notmatch 'X11-DIAGNOSTIC-START-001')) {
+        throw "debug native artifact failed without a stable diagnostic startup summary ($debugRunStatus)"
+    }
+    $debugRunOutput | Write-Output
+    Write-Output "debug native artifact exit: $debugRunStatus"
+
+    $guiDebugOutput = Join-Path $temporaryRoot 'debug-native-gui.exe'
+    Copy-Item -LiteralPath $debugOutput -Destination $guiDebugOutput
+    $editbin = Get-Command 'editbin.exe' -ErrorAction SilentlyContinue
+    if ($null -eq $editbin) { throw 'editbin.exe was not found; cannot verify the GUI subsystem debug artifact' }
+    & $editbin.Source '/subsystem:windows' $guiDebugOutput
+    if ($LASTEXITCODE -ne 0) { throw "editbin failed to set the GUI subsystem ($LASTEXITCODE)" }
+    $guiRunOutput = & $guiDebugOutput 2>&1
+    $guiRunStatus = $LASTEXITCODE
+    if ($guiRunStatus -ne 0 -and $guiRunStatus -ne 70) {
+        throw "GUI subsystem debug artifact returned an unexpected exit code ($guiRunStatus)"
+    }
+    $guiRunOutput | Write-Output
+    Write-Output "GUI subsystem debug artifact exit: $guiRunStatus"
 
     Write-ArtifactFormat @($nativeOutput, $debugOutput, $cli)
 

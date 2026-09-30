@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 4;
+pub const ABI_MINOR_VERSION: u32 = 5;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -595,6 +595,12 @@ unsafe extern "C" {
     pub fn xiao_runtime_error_report();
     /// 将一个诊断事件交给已建立的诊断会话；无会话时仍保留确定性失败状态。
     pub fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticEvent) -> i32;
+    /// 为动态原生产物建立本机诊断会话；失败时返回稳定的启动失败退出码。
+    pub fn xiao_runtime_diagnostic_prepare() -> i32;
+    /// 等待独立诊断进程完成握手；成功前不得执行用户代码。
+    pub fn xiao_runtime_diagnostic_ready() -> i32;
+    /// 发送最终指标并关闭原生诊断会话。
+    pub fn xiao_runtime_diagnostic_finish();
     /// 设置当前原生入口使用的不可变语言上下文。
     pub fn xiao_runtime_language_context_set(locale: XiaoAbiBytes) -> i32;
     /// 按 `XIAO_RUNTIME_RELEASE_TRACE_PATH` 开启当前线程的释放事件追踪。
@@ -778,8 +784,8 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0004);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0005);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 4);
+        assert_eq!(ABI_MINOR_VERSION, 5);
     }
 }

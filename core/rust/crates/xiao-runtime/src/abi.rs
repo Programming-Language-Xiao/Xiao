@@ -8,9 +8,20 @@
 //! 同一个 ABI 句柄。并发/原子实现需要单独的 ABI 版本与生命周期契约。
 
 use std::cell::RefCell;
+use std::collections::BTreeMap;
 use std::io::Write;
+use std::net::{TcpListener, TcpStream};
 use std::slice;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Mutex, OnceLock};
+use std::thread;
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
+use serde_json::{Value, json};
+use xiao_diagnostics::window::{
+    DIAGNOSTIC_PROTOCOL_VERSION, DiagnosticEvent, DiagnosticFrameError, DiagnosticMessage,
+    DiagnosticMetrics, default_level, read_message, write_message,
+};
 use xiao_diagnostics::{ReportRecord, render_builtin_localized_text, validated_locale_tag};
 use xiao_runtime_abi::{
     ABI_MAJOR_VERSION, ABI_MINOR_VERSION, XiaoAbiBytes, XiaoAbiDiagnosticEvent,
@@ -39,6 +50,55 @@ enum PendingError {
     Recoverable(RuntimeError),
     /// 不得进入 Xiao `catch` 的致命故障。
     Fatal(FatalError),
+}
+
+/// 原生调试产物与独立诊断进程之间的单进程会话。
+struct RuntimeDiagnosticSession {
+    listener: Option<TcpListener>,
+    stream: Option<TcpStream>,
+    token: String,
+    started: Instant,
+    metrics: DiagnosticMetrics,
+}
+
+/// 原生调试会话只允许有一个拥有者；普通产物不会创建它。
+fn diagnostic_session() -> &'static Mutex<Option<RuntimeDiagnosticSession>> {
+    static SESSION: OnceLock<Mutex<Option<RuntimeDiagnosticSession>>> = OnceLock::new();
+    SESSION.get_or_init(|| Mutex::new(None))
+}
+
+/// 原生启动桥和 Runtime 之间约定的失败退出码。
+const DIAGNOSTIC_START_EXIT_CODE: i32 = 70;
+
+/// 生成不会依赖目录、本地化或外部进程的会话令牌。
+fn diagnostic_session_token() -> String {
+    static SEQUENCE: AtomicU64 = AtomicU64::new(1);
+    let sequence = SEQUENCE.fetch_add(1, Ordering::Relaxed);
+    let nanos = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_or(0, |duration| duration.as_nanos());
+    format!("xiao-native-{nanos:032x}-{sequence:016x}")
+}
+
+/// 输出启动阶段的机器可见失败，不把窗口失败降级成普通运行。
+fn diagnostic_start_failure(message: impl std::fmt::Display) -> i32 {
+    eprintln!("X11-DIAGNOSTIC-START-001: {message}");
+    DIAGNOSTIC_START_EXIT_CODE
+}
+
+/// 向已握手的诊断会话发送一帧；通信中断只关闭输出，不污染用户错误槽。
+fn send_diagnostic_message(
+    session: &mut RuntimeDiagnosticSession,
+    message: &DiagnosticMessage,
+) -> Result<(), DiagnosticFrameError> {
+    let Some(stream) = session.stream.as_mut() else {
+        return Err(DiagnosticFrameError::Json("诊断会话尚未握手".to_owned()));
+    };
+    if let Err(error) = write_message(stream, message) {
+        session.stream = None;
+        return Err(error);
+    }
+    Ok(())
 }
 
 thread_local! {
@@ -1115,20 +1175,214 @@ pub extern "C" fn xiao_runtime_error_report() {
     write_runtime_report(class, &report, current_locale(), pending_exit_code());
 }
 
-/// 记录一个结构化诊断事件；本函数不查找目录，也不执行本地化。
+/// 为动态原生产物建立本机诊断监听端点；不查找目录，也不执行本地化。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_diagnostic_prepare() -> i32 {
+    let listener = match TcpListener::bind(("127.0.0.1", 0)) {
+        Ok(listener) => listener,
+        Err(error) => return diagnostic_start_failure(format!("无法创建本机诊断端点：{error}")),
+    };
+    if let Err(error) = listener.set_nonblocking(true) {
+        return diagnostic_start_failure(format!("无法配置本机诊断端点：{error}"));
+    }
+    let endpoint = match listener.local_addr() {
+        Ok(endpoint) => endpoint.to_string(),
+        Err(error) => return diagnostic_start_failure(format!("无法读取本机诊断端点：{error}")),
+    };
+    let token = diagnostic_session_token();
+    let mut session = match diagnostic_session().lock() {
+        Ok(session) => session,
+        Err(_) => return diagnostic_start_failure("诊断会话状态已损坏"),
+    };
+    if session.is_some() {
+        return diagnostic_start_failure("诊断会话已经存在");
+    }
+    unsafe {
+        std::env::set_var("XIAO_DIAGNOSTICS_ENDPOINT", &endpoint);
+        std::env::set_var("XIAO_DIAGNOSTICS_TOKEN", &token);
+    }
+    *session = Some(RuntimeDiagnosticSession {
+        listener: Some(listener),
+        stream: None,
+        token,
+        started: Instant::now(),
+        metrics: DiagnosticMetrics::default(),
+    });
+    XiaoAbiStatus::Ok.code()
+}
+
+/// 等待诊断窗口完成令牌握手；用户代码只能在此成功后开始执行。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_diagnostic_ready() -> i32 {
+    let mut session = match diagnostic_session().lock() {
+        Ok(session) => session,
+        Err(_) => return diagnostic_start_failure("诊断会话状态已损坏"),
+    };
+    let Some(session) = session.as_mut() else {
+        return diagnostic_start_failure("诊断会话尚未准备");
+    };
+    let Some(listener) = session.listener.take() else {
+        return if session.stream.is_some() {
+            XiaoAbiStatus::Ok.code()
+        } else {
+            diagnostic_start_failure("诊断监听端点已经被消费")
+        };
+    };
+    let deadline = Instant::now() + Duration::from_secs(10);
+    loop {
+        match listener.accept() {
+            Ok((mut stream, _)) => {
+                if let Err(error) = stream.set_read_timeout(Some(Duration::from_secs(2))) {
+                    return diagnostic_start_failure(format!("无法配置诊断握手：{error}"));
+                }
+                let message = match read_message(&mut stream) {
+                    Ok(Some(message)) => message,
+                    Ok(None) => return diagnostic_start_failure("诊断进程在握手前退出"),
+                    Err(error) => {
+                        return diagnostic_start_failure(format!("诊断握手读取失败：{error}"));
+                    }
+                };
+                let DiagnosticMessage::Hello {
+                    protocol_version,
+                    token,
+                    ..
+                } = message
+                else {
+                    return diagnostic_start_failure("诊断进程未发送 hello 握手");
+                };
+                if protocol_version != DIAGNOSTIC_PROTOCOL_VERSION || token != session.token {
+                    return diagnostic_start_failure("诊断进程握手版本或令牌不匹配");
+                }
+                if let Err(error) = write_message(
+                    &mut stream,
+                    &DiagnosticMessage::Ready {
+                        session_id: session.token.clone(),
+                    },
+                ) {
+                    return diagnostic_start_failure(format!("诊断窗口握手确认失败：{error}"));
+                }
+                let _ = stream.set_write_timeout(Some(Duration::from_millis(20)));
+                let _ = stream.set_read_timeout(None);
+                session.stream = Some(stream);
+                return XiaoAbiStatus::Ok.code();
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                if Instant::now() >= deadline {
+                    return diagnostic_start_failure("诊断进程未在 10 秒内连接");
+                }
+                thread::sleep(Duration::from_millis(10));
+            }
+            Err(error) => {
+                return diagnostic_start_failure(format!("等待诊断进程连接失败：{error}"));
+            }
+        }
+    }
+}
+
+/// 记录一个结构化诊断事件；机器字段原样透传，不查目录，也不执行本地化。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticEvent) -> i32 {
     if event.is_null() {
         return XiaoAbiStatus::Null.code();
     }
     let event = unsafe { &*event };
-    if unsafe { bytes(event.event_type) }.is_err()
-        || unsafe { bytes(event.code) }.is_err()
-        || unsafe { bytes(event.message_id) }.is_err()
-    {
-        return XiaoAbiStatus::Null.code();
+    let event_type = match unsafe { utf8(event.event_type) } {
+        Ok(value) => value,
+        Err(status) => return status,
+    };
+    let code = match unsafe { utf8(event.code) } {
+        Ok(value) => value,
+        Err(status) => return status,
+    };
+    let message_id = match unsafe { utf8(event.message_id) } {
+        Ok(value) => value,
+        Err(status) => return status,
+    };
+    let mut session = match diagnostic_session().lock() {
+        Ok(session) => session,
+        Err(_) => return XiaoAbiStatus::RuntimeError.code(),
+    };
+    let Some(session) = session.as_mut() else {
+        eprintln!("X11-DIAGNOSTIC-CHANNEL-001: 诊断事件没有已建立的会话");
+        return XiaoAbiStatus::RuntimeError.code();
+    };
+    if session.stream.is_none() {
+        return XiaoAbiStatus::RuntimeError.code();
     }
-    XiaoAbiStatus::Ok.code()
+    let location = if event.location.present != 0 {
+        json!({
+            "start": event.location.span.start,
+            "end": event.location.span.end,
+        })
+    } else {
+        Value::Null
+    };
+    let mut payload = BTreeMap::new();
+    payload.insert("code".to_owned(), Value::String(code.clone()));
+    payload.insert("message_id".to_owned(), Value::String(message_id.clone()));
+    payload.insert("location".to_owned(), location);
+    let diagnostic = DiagnosticEvent {
+        monotonic_ns: session
+            .started
+            .elapsed()
+            .as_nanos()
+            .min(u128::from(u64::MAX)) as u64,
+        level: default_level(&event_type).to_owned(),
+        event_type: event_type.clone(),
+        module: None,
+        source: None,
+        node: Some(event_type.clone()),
+        function: None,
+        error_id: None,
+        locale: Some(current_locale()),
+        message_id: (!message_id.is_empty()).then_some(message_id),
+        params: BTreeMap::new(),
+        text: None,
+        payload,
+    };
+    session.metrics.error_count = session.metrics.error_count.saturating_add(u64::from(
+        event_type.contains("error") || event_type.contains("fatal"),
+    ));
+    session.metrics.hook_count = session.metrics.hook_count.saturating_add(u64::from(
+        event_type.starts_with("handler_") || event_type.contains("hook"),
+    ));
+    send_diagnostic_message(
+        session,
+        &DiagnosticMessage::Event {
+            event: Box::new(diagnostic),
+        },
+    )
+    .map_or(XiaoAbiStatus::RuntimeError.code(), |_| {
+        XiaoAbiStatus::Ok.code()
+    })
+}
+
+/// 发送最终指标并关闭原生诊断会话；普通产物调用不到此入口。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_diagnostic_finish() {
+    let Ok(mut session) = diagnostic_session().lock() else {
+        return;
+    };
+    let Some(mut session) = session.take() else {
+        return;
+    };
+    session.metrics.elapsed_ms = session
+        .started
+        .elapsed()
+        .as_millis()
+        .min(u128::from(u64::MAX)) as u64;
+    let metrics = session.metrics.clone();
+    let _ = send_diagnostic_message(&mut session, &DiagnosticMessage::Final { metrics });
+    let _ = send_diagnostic_message(
+        &mut session,
+        &DiagnosticMessage::Close {
+            reason: "运行完成".to_owned(),
+        },
+    );
+    unsafe {
+        std::env::remove_var("XIAO_DIAGNOSTICS_ENDPOINT");
+        std::env::remove_var("XIAO_DIAGNOSTICS_TOKEN");
+    }
 }
 
 /// 处理 ABI 边界致命故障；该入口永远不会返回。
@@ -1161,6 +1415,34 @@ fn write_runtime_report(class: &str, report: &ReportRecord, locale: String, exit
         "xiao-error class={class} code={} message_id={} params={:?} span={location} exit_code={exit_code}\n{text}",
         report.code, report.message_id, report.params,
     );
+    let event_type = if class == "fatal" {
+        "fatal_raised"
+    } else {
+        "error_raised"
+    };
+    let event = XiaoAbiDiagnosticEvent {
+        event_type: XiaoAbiBytes {
+            ptr: event_type.as_ptr(),
+            len: event_type.len(),
+        },
+        code: XiaoAbiBytes {
+            ptr: report.code.as_ptr(),
+            len: report.code.len(),
+        },
+        message_id: XiaoAbiBytes {
+            ptr: report.message_id.as_ptr(),
+            len: report.message_id.len(),
+        },
+        location: report
+            .location
+            .map_or_else(XiaoAbiErrorLocation::none, |span| {
+                XiaoAbiErrorLocation::from_span(XiaoAbiSpan {
+                    start: span.start() as u64,
+                    end: span.end() as u64,
+                })
+            }),
+    };
+    let _ = xiao_runtime_diagnostic_event(&event);
     let _ = std::io::stderr().write_all(line.as_bytes());
 }
 
@@ -2068,423 +2350,7 @@ pub extern "C" fn xiao_runtime_write_i64(value: i64) -> i32 {
     }
 }
 
-#[cfg(test)]
 /// ABI 句柄、值复制和弱引用的回归测试。
-mod tests {
-    use super::*;
-
-    /// 把测试字符串借用为 ABI UTF-8 字节视图。
-    fn bytes(text: &str) -> XiaoAbiBytes {
-        XiaoAbiBytes {
-            ptr: text.as_ptr(),
-            len: text.len(),
-        }
-    }
-
-    #[test]
-    fn pending_runtime_error_preserves_primary_and_suppresses_secondary() {
-        PENDING_ERROR.with(|pending| *pending.borrow_mut() = None);
-        let primary = RuntimeError::invalid_value("primary");
-        let secondary = RuntimeError::invalid_value("secondary");
-        set_pending_runtime_error(primary.clone());
-        set_pending_runtime_error(secondary.clone());
-        PENDING_ERROR.with(|pending| {
-            let pending = pending.borrow();
-            let Some(PendingError::Recoverable(error)) = pending.as_ref() else {
-                panic!("应保留可恢复主错误");
-            };
-            assert_eq!(error.code(), primary.code());
-            assert_eq!(error.message_id(), primary.message_id());
-            assert_eq!(error.suppressed(), &[secondary]);
-        });
-        PENDING_ERROR.with(|pending| *pending.borrow_mut() = None);
-    }
-
-    #[test]
-    fn pending_fatal_error_is_not_replaced_by_runtime_error() {
-        PENDING_ERROR.with(|pending| {
-            *pending.borrow_mut() = Some(PendingError::Fatal(FatalError::internal("fatal")))
-        });
-        set_pending_runtime_error(RuntimeError::invalid_value("secondary"));
-        assert_eq!(pending_class(), XiaoErrorClass::Fatal);
-        PENDING_ERROR.with(|pending| *pending.borrow_mut() = None);
-    }
-
-    #[test]
-    /// 强句柄复制和显式释放必须保持对象存活直到最后一份引用归还。
-    fn strong_value_copy_uses_runtime_counts() {
-        let mut raw = std::ptr::null_mut();
-        assert_eq!(xiao_runtime_string_new(bytes("abi"), &mut raw), 0);
-        let mut value = xiao_runtime_value_str(raw);
-        let mut copy = XiaoValue::none();
-        assert_eq!(xiao_runtime_value_copy(&value, &mut copy), 0);
-        xiao_runtime_value_release(&mut value);
-        let mut output = [0_u8; 8];
-        let mut written = 0;
-        assert_eq!(
-            xiao_runtime_string_copy(
-                raw,
-                XiaoAbiMutBytes {
-                    ptr: output.as_mut_ptr(),
-                    capacity: output.len(),
-                },
-                &mut written,
-            ),
-            0
-        );
-        assert_eq!(&output[..written], b"abi");
-        xiao_runtime_value_release(&mut copy);
-        xiao_runtime_release(raw);
-    }
-
-    #[test]
-    /// 复制到已拥有值的输出槽时，旧句柄必须先释放而不能泄漏。
-    fn value_copy_replaces_existing_owned_output() {
-        let mut source_raw = std::ptr::null_mut();
-        assert_eq!(xiao_runtime_string_new(bytes("source"), &mut source_raw), 0);
-        let mut source = xiao_runtime_value_str(source_raw);
-        xiao_runtime_release(source_raw);
-
-        let mut old_raw = std::ptr::null_mut();
-        assert_eq!(xiao_runtime_string_new(bytes("old"), &mut old_raw), 0);
-        let old_weak = xiao_runtime_weak(old_raw);
-        let mut output = xiao_runtime_value_str(old_raw);
-        xiao_runtime_release(old_raw);
-
-        assert_eq!(xiao_runtime_value_copy(&source, &mut output), 0);
-        assert!(xiao_runtime_weak_upgrade(old_weak).is_null());
-
-        xiao_runtime_value_release(&mut source);
-        xiao_runtime_value_release(&mut output);
-        xiao_runtime_weak_release(old_weak);
-    }
-
-    #[test]
-    /// 弱句柄不阻止目标载荷在最后一个强句柄释放时销毁。
-    fn weak_upgrade_fails_after_last_strong_release() {
-        let mut raw = std::ptr::null_mut();
-        assert_eq!(xiao_runtime_string_new(bytes("weak"), &mut raw), 0);
-        let weak = xiao_runtime_weak(raw);
-        assert!(!weak.is_null());
-        xiao_runtime_release(raw);
-        assert!(xiao_runtime_weak_upgrade(weak).is_null());
-        xiao_runtime_weak_release(weak);
-    }
-
-    #[test]
-    /// 数组 ABI 会复制动态值并允许按位置读取。
-    fn array_round_trip_copies_values() {
-        let values = [XiaoValue::int(4), XiaoValue::bool(true)];
-        let mut raw = std::ptr::null_mut();
-        assert_eq!(
-            xiao_runtime_array_new(values.as_ptr(), values.len(), &mut raw),
-            0
-        );
-        let mut length = 0;
-        assert_eq!(xiao_runtime_array_len(raw, &mut length), 0);
-        assert_eq!(length, 2);
-        let mut item = XiaoValue::none();
-        assert_eq!(xiao_runtime_array_get(raw, 1, &mut item), 0);
-        assert_eq!(item.tag, XiaoValueTag::Bool);
-        assert_eq!(unsafe { item.payload.bool_value }, 1);
-        xiao_runtime_value_release(&mut item);
-        xiao_runtime_release(raw);
-    }
-
-    #[test]
-    /// ABI retain/release 在同一盒子上成对调用，且最后一次释放才销毁盒子。
-    fn retain_keeps_same_box_and_balances_count() {
-        let mut raw = std::ptr::null_mut();
-        assert_eq!(xiao_runtime_string_new(bytes("retain"), &mut raw), 0);
-        let retained = xiao_runtime_retain(raw);
-        assert_eq!(retained, raw);
-        xiao_runtime_release(raw);
-        let mut output = [0_u8; 8];
-        let mut written = 0;
-        assert_eq!(
-            xiao_runtime_string_copy(
-                retained,
-                XiaoAbiMutBytes {
-                    ptr: output.as_mut_ptr(),
-                    capacity: output.len(),
-                },
-                &mut written,
-            ),
-            0
-        );
-        assert_eq!(&output[..written], b"retain");
-        xiao_runtime_release(retained);
-    }
-
-    #[test]
-    /// 构造入口复用已有句柄槽时，旧对象必须在替换前释放。
-    fn handle_outputs_replace_previous_owner() {
-        let mut raw = std::ptr::null_mut();
-        assert_eq!(xiao_runtime_string_new(bytes("old"), &mut raw), 0);
-        let weak = xiao_runtime_weak(raw);
-        assert_eq!(xiao_runtime_string_new(bytes("new"), &mut raw), 0);
-        assert!(xiao_runtime_weak_upgrade(weak).is_null());
-
-        let mut output = [0_u8; 4];
-        let mut written = 0;
-        assert_eq!(
-            xiao_runtime_string_copy(
-                raw,
-                XiaoAbiMutBytes {
-                    ptr: output.as_mut_ptr(),
-                    capacity: output.len(),
-                },
-                &mut written,
-            ),
-            0
-        );
-        assert_eq!(&output[..written], b"new");
-        xiao_runtime_weak_release(weak);
-        xiao_runtime_release(raw);
-    }
-
-    #[test]
-    /// 外部伪造的未知标签必须返回稳定错误，不能让 Rust 读取非法枚举判别值。
-    fn rejects_unknown_value_tag() {
-        let value = XiaoValue {
-            tag: XiaoValueTag::from_raw(0xffff),
-            payload: XiaoValuePayload { raw: 0 },
-        };
-        let mut output = XiaoValue::none();
-        assert_eq!(
-            xiao_runtime_value_copy(&value, &mut output),
-            XiaoAbiStatus::InvalidArgument.code()
-        );
-    }
-
-    #[test]
-    /// 标量复制只复制固定载荷位，不应把整数或布尔值变成空值。
-    fn scalar_value_copy_preserves_payload() {
-        for value in [XiaoValue::int(-9), XiaoValue::bool(true)] {
-            let mut copied = XiaoValue::none();
-            assert_eq!(xiao_runtime_value_copy(&value, &mut copied), 0);
-            assert_eq!(copied.tag, value.tag);
-            match copied.tag {
-                XiaoValueTag::Int => assert_eq!(unsafe { copied.payload.i64_value }, -9),
-                XiaoValueTag::Bool => assert_eq!(unsafe { copied.payload.bool_value }, 1),
-                _ => unreachable!(),
-            }
-            xiao_runtime_value_release(&mut copied);
-        }
-    }
-
-    #[test]
-    /// 复制非法布尔载荷时必须拒绝，而不能把非零位伪装成合法值。
-    fn rejects_invalid_boolean_payload_on_copy() {
-        let value = XiaoValue {
-            tag: XiaoValueTag::Bool,
-            payload: XiaoValuePayload { bool_value: 2 },
-        };
-        let mut output = XiaoValue::none();
-        assert_eq!(
-            xiao_runtime_value_copy(&value, &mut output),
-            XiaoAbiStatus::InvalidArgument.code()
-        );
-        assert_eq!(output.tag, XiaoValueTag::None);
-    }
-
-    #[test]
-    /// 弱值释放入口必须拒绝强值并保留原值，避免错误地把强句柄当弱句柄弹出。
-    fn weak_release_rejects_strong_value() {
-        let mut raw = std::ptr::null_mut();
-        assert_eq!(xiao_runtime_string_new(bytes("strong"), &mut raw), 0);
-        let mut value = xiao_runtime_value_str(raw);
-        assert_eq!(
-            xiao_runtime_value_release_weak(&mut value),
-            XiaoAbiStatus::InvalidArgument.code()
-        );
-        assert_eq!(value.tag, XiaoValueTag::Str);
-        xiao_runtime_value_release(&mut value);
-        xiao_runtime_release(raw);
-    }
-
-    #[test]
-    /// 非表强句柄不能伪造表析构观察值。
-    fn weak_value_rejects_non_table_target() {
-        let mut raw = std::ptr::null_mut();
-        assert_eq!(xiao_runtime_string_new(bytes("string"), &mut raw), 0);
-        let weak = xiao_runtime_weak(raw);
-        assert!(!weak.is_null());
-        let value = xiao_runtime_value_weak(weak);
-        assert_eq!(value.tag, XiaoValueTag::None);
-        xiao_runtime_weak_release(weak);
-        xiao_runtime_release(raw);
-    }
-
-    #[test]
-    /// 字典 ABI 拒绝重复键，避免查找顺序成为未定义语义。
-    fn dictionary_rejects_duplicate_keys() {
-        let keys = [bytes("duplicate"), bytes("duplicate")];
-        let values = [XiaoValue::int(1), XiaoValue::int(2)];
-        let mut raw = std::ptr::null_mut();
-        assert_eq!(
-            xiao_runtime_dict_new(0, keys.as_ptr(), values.as_ptr(), values.len(), &mut raw,),
-            XiaoAbiStatus::InvalidArgument.code()
-        );
-        assert!(raw.is_null());
-    }
-
-    #[test]
-    /// 表描述符驱动的 get/set 必须沿用字段类型和状态检查。
-    fn table_descriptor_round_trip() {
-        let field = XiaoTableFieldDescriptor {
-            name: bytes("count"),
-            ty: XiaoFieldType::Int,
-            public: 1,
-        };
-        let descriptor = XiaoTableDescriptor {
-            name: bytes("Counter"),
-            kind: 1,
-            fields: &field,
-            field_count: 1,
-        };
-        let mut raw = std::ptr::null_mut();
-        assert_eq!(xiao_runtime_table_new(&descriptor, &mut raw), 0);
-        let input = XiaoValue::int(7);
-        assert_eq!(xiao_runtime_table_set(raw, bytes("count"), &input), 0);
-        let mut output = XiaoValue::none();
-        assert_eq!(xiao_runtime_table_get(raw, bytes("count"), &mut output), 0);
-        assert_eq!(output.tag, XiaoValueTag::Int);
-        assert_eq!(unsafe { output.payload.i64_value }, 7);
-        xiao_runtime_value_release(&mut output);
-        xiao_runtime_release(raw);
-    }
-
-    #[test]
-    /// 表描述符中的未知字段类型和可见性编码必须返回稳定参数错误。
-    fn table_descriptor_rejects_unknown_metadata() {
-        let bad_type = XiaoTableFieldDescriptor {
-            name: bytes("value"),
-            ty: XiaoFieldType::from_raw(99),
-            public: 1,
-        };
-        let bad_public = XiaoTableFieldDescriptor {
-            name: bytes("other"),
-            ty: XiaoFieldType::Int,
-            public: 2,
-        };
-        for field in [bad_type, bad_public] {
-            let descriptor = XiaoTableDescriptor {
-                name: bytes("Bad"),
-                kind: 1,
-                fields: &field,
-                field_count: 1,
-            };
-            let mut raw = std::ptr::null_mut();
-            assert_eq!(
-                xiao_runtime_table_new(&descriptor, &mut raw),
-                XiaoAbiStatus::InvalidArgument.code()
-            );
-            assert!(raw.is_null());
-        }
-    }
-
-    #[test]
-    /// 表名和字段名为空时必须拒绝，避免生成不可寻址的语言成员身份。
-    fn table_descriptor_rejects_empty_names() {
-        let field = XiaoTableFieldDescriptor {
-            name: bytes(""),
-            ty: XiaoFieldType::Int,
-            public: 1,
-        };
-        let descriptor = XiaoTableDescriptor {
-            name: bytes("Record"),
-            kind: 1,
-            fields: &field,
-            field_count: 1,
-        };
-        let mut raw = std::ptr::null_mut();
-        assert_eq!(
-            xiao_runtime_table_new(&descriptor, &mut raw),
-            XiaoAbiStatus::InvalidArgument.code()
-        );
-        assert!(raw.is_null());
-
-        let descriptor = XiaoTableDescriptor {
-            name: bytes(""),
-            kind: 1,
-            fields: std::ptr::null(),
-            field_count: 0,
-        };
-        assert_eq!(
-            xiao_runtime_table_new(&descriptor, &mut raw),
-            XiaoAbiStatus::InvalidArgument.code()
-        );
-        assert!(raw.is_null());
-    }
-
-    #[test]
-    /// 长度输出在无效句柄上先清零，避免调用方继续使用旧结果。
-    fn length_outputs_are_zeroed_on_invalid_handle() {
-        let mut length = 42;
-        assert_eq!(
-            xiao_runtime_string_len(std::ptr::null_mut(), &mut length),
-            XiaoAbiStatus::Null.code()
-        );
-        assert_eq!(length, 0);
-        length = 42;
-        assert_eq!(
-            xiao_runtime_array_len(std::ptr::null_mut(), &mut length),
-            XiaoAbiStatus::Null.code()
-        );
-        assert_eq!(length, 0);
-    }
-
-    #[test]
-    /// 错误构造入口必须保留机器字段和源码位置，并返回拥有的错误值。
-    fn error_value_constructor_preserves_identity() {
-        xiao_runtime_error_clear();
-        let location = XiaoAbiErrorLocation::from_span(XiaoAbiSpan { start: 4, end: 9 });
-        let mut value = xiao_runtime_error_new(
-            bytes("ArithmeticError"),
-            bytes("N0-C"),
-            bytes("failed"),
-            &location,
-        );
-        assert_eq!(value.tag, XiaoValueTag::Error);
-        let RuntimeValue::Error(error) = (unsafe { value_to_runtime(&value) }).expect("错误值")
-        else {
-            panic!("错误构造器返回了非错误值");
-        };
-        assert_eq!(error.code(), "N0-C");
-        assert_eq!(error.message_id(), "runtime.user_error");
-        assert_eq!(error.location(), SourceSpan::new(4, 9));
-        xiao_runtime_value_release(&mut value);
-    }
-
-    #[test]
-    /// `FatalError` 构造必须进入 Fatal 槽，而不能产生可捕获错误值。
-    fn fatal_error_constructor_never_returns_recoverable_value() {
-        xiao_runtime_error_clear();
-        let location = XiaoAbiErrorLocation::from_span(XiaoAbiSpan { start: 1, end: 2 });
-        let value = xiao_runtime_error_new(
-            bytes("FatalError"),
-            bytes("fatal"),
-            bytes("fatal"),
-            &location,
-        );
-        assert_eq!(value.tag, XiaoValueTag::None);
-        let mut snapshot = XiaoAbiErrorSnapshot {
-            class: XiaoErrorClass::None,
-            kind: 0,
-            error_id: 0,
-            code: bytes(""),
-            message_id: bytes(""),
-            location: XiaoAbiErrorLocation::none(),
-            exit_code: 0,
-            stack_depth: 0,
-            param_count: 0,
-        };
-        assert_eq!(
-            xiao_runtime_error_snapshot(&mut snapshot),
-            XiaoAbiStatus::Ok.code()
-        );
-        assert_eq!(snapshot.class, XiaoErrorClass::Fatal);
-        xiao_runtime_error_clear();
-    }
-}
+#[cfg(test)]
+#[path = "abi_tests.rs"]
+mod tests;

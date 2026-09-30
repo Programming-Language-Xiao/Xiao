@@ -104,6 +104,15 @@ fn debug_startup_shim_precedes_user_entry() {
 }
 
 #[test]
+/// 普通静态产物不得携带调试启动调用或尝试自动开窗。
+fn ordinary_static_artifact_does_not_activate_diagnostics() {
+    let module = lower_program(&compile_scalar_program(), &CodegenOptions::default())
+        .expect("应生成普通静态 IR");
+    assert!(!module.text.contains("xiao_native_debug_start"));
+    assert!(!module.text.contains("xiao_runtime_diagnostic_"));
+}
+
+#[test]
 /// 同一前端 IR 应生成固定宽度标量、函数和入口。
 fn lowers_scalar_calls_and_control_flow() {
     let total_name = || IrExpression {

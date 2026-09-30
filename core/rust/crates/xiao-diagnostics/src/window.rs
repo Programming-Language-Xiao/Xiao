@@ -90,7 +90,7 @@ pub fn read_activation(
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DiagnosticEvent {
     /// 从会话建立起计算的单调纳秒时间。
-    pub monotonic_ns: u128,
+    pub monotonic_ns: u64,
     /// `trace`、`debug`、`info`、`warn` 或 `error`。
     pub level: String,
     /// 稳定事件类型名。
@@ -125,7 +125,7 @@ pub struct DiagnosticEvent {
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DiagnosticMetrics {
     /// 程序运行时间（毫秒）。
-    pub elapsed_ms: u128,
+    pub elapsed_ms: u64,
     /// 当前内存占用；Runtime 尚未提供采样时为零。
     pub current_memory_bytes: u64,
     /// 内存峰值；Runtime 尚未提供采样时为零。

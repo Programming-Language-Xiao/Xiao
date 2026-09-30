@@ -10,6 +10,7 @@ use std::process::Command;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::error::{CodegenError, Result};
+use crate::ir::NativeStartup;
 use crate::target::TargetDescription;
 use crate::text::stable_hash;
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
@@ -274,7 +275,7 @@ impl Toolchain {
         output: impl AsRef<Path>,
         runtime_library: Option<&Path>,
         inherit_configured_runtime: bool,
-        diagnostics_path: &Path,
+        startup: &NativeStartup,
     ) -> Result<PathBuf> {
         self.compile_inner(
             text,
@@ -282,7 +283,7 @@ impl Toolchain {
             output,
             runtime_library,
             inherit_configured_runtime,
-            Some(diagnostics_path),
+            Some(startup),
         )
     }
 
@@ -294,7 +295,7 @@ impl Toolchain {
         output: impl AsRef<Path>,
         runtime_library: Option<&Path>,
         inherit_configured_runtime: bool,
-        diagnostics_path: Option<&Path>,
+        startup: Option<&NativeStartup>,
     ) -> Result<PathBuf> {
         let output = output.as_ref().to_path_buf();
         if let Some(parent) = output.parent().filter(|path| !path.as_os_str().is_empty()) {
@@ -318,13 +319,19 @@ impl Toolchain {
             path_text(&output),
         ];
         let mut startup_object = None;
-        if let Some(diagnostics_path) = diagnostics_path {
+        if let Some(startup) = startup {
             let source = TempFile::new("xiao-startup", "c")?;
-            fs::write(&source.path, startup_source(diagnostics_path, target)).map_err(|error| {
-                CodegenError::Io {
-                    path: source.path.clone(),
-                    message: error.to_string(),
-                }
+            fs::write(
+                &source.path,
+                startup_source(
+                    Path::new(&startup.diagnostics_path),
+                    target,
+                    &startup.locale,
+                ),
+            )
+            .map_err(|error| CodegenError::Io {
+                path: source.path.clone(),
+                message: error.to_string(),
             })?;
             let object = source.path.with_extension(
                 if matches!(target.object_format, crate::target::ObjectFormat::Coff) {
@@ -432,7 +439,11 @@ fn run_command(path: &Path, args: &[&str], name: &str) -> Result<CommandResult> 
 }
 
 /// 生成跨平台的最小诊断启动 shim；它只创建诊断进程，不执行 Xiao 代码。
-fn startup_source(diagnostics_path: &Path, target: &TargetDescription) -> String {
+fn startup_source(
+    diagnostics_path: &Path,
+    target: &TargetDescription,
+    diagnostics_locale: &str,
+) -> String {
     let diagnostics_name = diagnostics_file_name(diagnostics_path, target);
     if matches!(target.object_format, crate::target::ObjectFormat::Coff) {
         /// Windows 原生调试入口使用的独立控制台与就绪握手模板。
@@ -444,6 +455,7 @@ fn startup_source(diagnostics_path: &Path, target: &TargetDescription) -> String
 #include <wchar.h>
 
 static const wchar_t xiao_renderer_name[] = __XIAO_DIAGNOSTICS_NAME__;
+static const wchar_t xiao_locale[] = __XIAO_DIAGNOSTICS_LOCALE__;
 
 static int xiao_startup_error(const char *reason, DWORD code) {
   fprintf(stderr, "X11-DIAGNOSTIC-START-001: %s (%lu)\n", reason, (unsigned long)code);
@@ -490,6 +502,46 @@ int xiao_native_debug_start(void) {
     renderer = adjacent;
   }
 
+  wchar_t endpoint[32768];
+  wchar_t token[32768];
+  DWORD endpoint_length = GetEnvironmentVariableW(
+      L"XIAO_DIAGNOSTICS_ENDPOINT", endpoint,
+      (DWORD)(sizeof(endpoint) / sizeof(endpoint[0])));
+  DWORD token_length = GetEnvironmentVariableW(
+      L"XIAO_DIAGNOSTICS_TOKEN", token,
+      (DWORD)(sizeof(token) / sizeof(token[0])));
+  if (endpoint_length >= (DWORD)(sizeof(endpoint) / sizeof(endpoint[0])) ||
+      token_length >= (DWORD)(sizeof(token) / sizeof(token[0]))) {
+    return xiao_startup_error("diagnostic session settings are too long", ERROR_BUFFER_OVERFLOW);
+  }
+  if ((endpoint_length == 0) != (token_length == 0)) {
+    return xiao_startup_error("diagnostic session settings are incomplete", ERROR_INVALID_DATA);
+  }
+  if (endpoint_length != 0) {
+    wchar_t command_line[32768];
+    int command_length = swprintf(
+        command_line, sizeof(command_line) / sizeof(command_line[0]),
+        L"\"%ls\" --connect \"%ls\" --token \"%ls\" --locale \"%ls\"",
+        renderer, endpoint, token, xiao_locale);
+    if (command_length < 0 ||
+        command_length >= (int)(sizeof(command_line) / sizeof(command_line[0]))) {
+      return xiao_startup_error("diagnostic command line is too long", ERROR_BUFFER_OVERFLOW);
+    }
+    STARTUPINFOW startup;
+    PROCESS_INFORMATION process;
+    ZeroMemory(&startup, sizeof(startup));
+    ZeroMemory(&process, sizeof(process));
+    startup.cb = sizeof(startup);
+    if (!CreateProcessW(renderer, command_line, NULL, NULL, FALSE,
+                        CREATE_NEW_CONSOLE | CREATE_UNICODE_ENVIRONMENT,
+                        NULL, NULL, &startup, &process)) {
+      return xiao_startup_error("cannot create the diagnostic console", GetLastError());
+    }
+    CloseHandle(process.hThread);
+    CloseHandle(process.hProcess);
+    return 0;
+  }
+
   wchar_t temporary_directory[MAX_PATH];
   wchar_t ready_file[MAX_PATH];
   DWORD temporary_length = GetTempPathW(MAX_PATH, temporary_directory);
@@ -506,8 +558,8 @@ int xiao_native_debug_start(void) {
   wchar_t command_line[32768];
   int command_length = swprintf(
       command_line, sizeof(command_line) / sizeof(command_line[0]),
-      L"\"%ls\" --standalone --parent-pid %lu --ready-file \"%ls\"",
-      renderer, (unsigned long)_getpid(), ready_file);
+      L"\"%ls\" --standalone --parent-pid %lu --ready-file \"%ls\" --locale \"%ls\"",
+      renderer, (unsigned long)_getpid(), ready_file, xiao_locale);
   if (command_length < 0 ||
       command_length >= (int)(sizeof(command_line) / sizeof(command_line[0]))) {
     return xiao_startup_error("diagnostic command line is too long", ERROR_BUFFER_OVERFLOW);
@@ -559,10 +611,15 @@ int xiao_native_debug_start(void) {
   return xiao_startup_error("diagnostic readiness timed out", ERROR_TIMEOUT);
 }
 "#;
-        return WINDOWS_SOURCE.replace(
-            "__XIAO_DIAGNOSTICS_NAME__",
-            &c_utf16_array_initializer(&diagnostics_name),
-        );
+        return WINDOWS_SOURCE
+            .replace(
+                "__XIAO_DIAGNOSTICS_NAME__",
+                &c_utf16_array_initializer(&diagnostics_name),
+            )
+            .replace(
+                "__XIAO_DIAGNOSTICS_LOCALE__",
+                &c_utf16_array_initializer(diagnostics_locale),
+            );
     }
 
     /// POSIX 原生调试入口使用的进程启动与就绪握手模板。
@@ -581,6 +638,7 @@ int xiao_native_debug_start(void) {
 
 extern char **environ;
 static const char xiao_renderer_name[] = __XIAO_DIAGNOSTICS_NAME__;
+static const char xiao_locale[] = __XIAO_DIAGNOSTICS_LOCALE__;
 
 static int xiao_startup_error(const char *reason, int code) {
   fprintf(stderr, "X11-DIAGNOSTIC-START-001: %s (%d)\n", reason, code);
@@ -613,6 +671,47 @@ static int xiao_adjacent_renderer(char *buffer, size_t capacity) {
   return 0;
 }
 
+static int xiao_spawn_terminal(char *const diagnostic_args[], pid_t *child) {
+#if defined(__APPLE__)
+  char *terminal_args[32];
+  size_t count = 0;
+  terminal_args[count++] = "open";
+  terminal_args[count++] = "-a";
+  terminal_args[count++] = "Terminal";
+  terminal_args[count++] = "--args";
+  for (size_t index = 0; diagnostic_args[index] != NULL; ++index) {
+    terminal_args[count++] = diagnostic_args[index];
+  }
+  terminal_args[count] = NULL;
+  return posix_spawnp(child, "open", NULL, NULL, terminal_args, environ);
+#else
+  const char *commands[] = {
+      "x-terminal-emulator",
+      "gnome-terminal",
+      "konsole",
+      "xterm",
+  };
+  int last_status = ENOENT;
+  for (size_t candidate = 0; candidate < sizeof(commands) / sizeof(commands[0]); ++candidate) {
+    char *terminal_args[32];
+    size_t count = 0;
+    terminal_args[count++] = (char *)commands[candidate];
+    terminal_args[count++] =
+        (char *)(candidate == 0 || candidate == 2 || candidate == 3 ? "-e" : "--");
+    for (size_t index = 0; diagnostic_args[index] != NULL; ++index) {
+      terminal_args[count++] = diagnostic_args[index];
+    }
+    terminal_args[count] = NULL;
+    last_status = posix_spawnp(
+        child, commands[candidate], NULL, NULL, terminal_args, environ);
+    if (last_status == 0) {
+      return 0;
+    }
+  }
+  return last_status;
+#endif
+}
+
 int xiao_native_debug_start(void) {
   const char *configured = getenv("XIAO_DIAGNOSTICS_PATH");
   char adjacent[32768];
@@ -623,6 +722,29 @@ int xiao_native_debug_start(void) {
       return xiao_startup_error("cannot resolve the adjacent diagnostic component", adjacent_error);
     }
     renderer = adjacent;
+  }
+  const char *endpoint = getenv("XIAO_DIAGNOSTICS_ENDPOINT");
+  const char *token = getenv("XIAO_DIAGNOSTICS_TOKEN");
+  if ((endpoint && endpoint[0]) != (token && token[0])) {
+    return xiao_startup_error("diagnostic session settings are incomplete", EINVAL);
+  }
+  if (endpoint && endpoint[0]) {
+    char *diagnostic_args[] = {
+        (char *)renderer,
+        (char *)"--connect",
+        (char *)endpoint,
+        (char *)"--token",
+        (char *)token,
+        (char *)"--locale",
+        (char *)xiao_locale,
+        NULL,
+    };
+    pid_t child = 0;
+    int status = xiao_spawn_terminal(diagnostic_args, &child);
+    if (status != 0) {
+      return xiao_startup_error("cannot create the diagnostic terminal", status);
+    }
+    return 0;
   }
   char parent[32];
   snprintf(parent, sizeof(parent), "%ld", (long)getpid());
@@ -637,38 +759,28 @@ int xiao_native_debug_start(void) {
     return xiao_startup_error("cannot prepare the readiness marker", errno);
   }
 
-  char *const argv[] = {
+  char *diagnostic_args[] = {
       (char *)renderer,
       (char *)"--standalone",
       (char *)"--parent-pid",
       parent,
       (char *)"--ready-file",
       ready_file,
+      (char *)"--locale",
+      (char *)xiao_locale,
       NULL,
   };
   pid_t child = 0;
-  int status = posix_spawn(&child, renderer, NULL, NULL, argv, environ);
+  int status = xiao_spawn_terminal(diagnostic_args, &child);
   if (status != 0) {
     unlink(ready_file);
-    return xiao_startup_error("cannot create the diagnostic process", status);
+    return xiao_startup_error("cannot create the diagnostic terminal", status);
   }
 
   for (int attempt = 0; attempt < 500; ++attempt) {
     if (access(ready_file, F_OK) == 0) {
       unlink(ready_file);
       return 0;
-    }
-    int child_status = 0;
-    pid_t state = waitpid(child, &child_status, WNOHANG);
-    if (state == child) {
-      unlink(ready_file);
-      return xiao_startup_error("diagnostic process exited before readiness", child_status);
-    }
-    if (state < 0) {
-      int error = errno;
-      kill(child, SIGTERM);
-      unlink(ready_file);
-      return xiao_startup_error("cannot wait for diagnostic readiness", error);
     }
     usleep(10000);
   }
@@ -679,10 +791,15 @@ int xiao_native_debug_start(void) {
   return xiao_startup_error("diagnostic readiness timed out", ETIMEDOUT);
 }
 "#;
-    POSIX_SOURCE.replace(
-        "__XIAO_DIAGNOSTICS_NAME__",
-        &c_string_literal(&diagnostics_name),
-    )
+    POSIX_SOURCE
+        .replace(
+            "__XIAO_DIAGNOSTICS_NAME__",
+            &c_string_literal(&diagnostics_name),
+        )
+        .replace(
+            "__XIAO_DIAGNOSTICS_LOCALE__",
+            &c_string_literal(diagnostics_locale),
+        )
 }
 
 /// 从构建时组件路径提取可随原生产物搬迁的相邻文件名。
@@ -905,6 +1022,7 @@ mod tests {
         let source = startup_source(
             Path::new(r"C:\Xiao 工具\xiao-diagnostics.exe"),
             &TargetDescription::windows_x86_64(),
+            "zh-CN",
         );
         assert!(source.contains("CreateProcessW"));
         assert!(source.contains("CREATE_NEW_CONSOLE"));
@@ -922,8 +1040,13 @@ mod tests {
         let source = startup_source(
             Path::new("/opt/xiao/bin/xiao-diagnostics"),
             &TargetDescription::linux_x86_64(),
+            "zh-CN",
         );
         assert!(source.contains("posix_spawn"));
+        assert!(source.contains("x-terminal-emulator"));
+        assert!(source.contains("gnome-terminal"));
+        assert!(source.contains("konsole"));
+        assert!(source.contains("xterm"));
         assert!(source.contains("/proc/self/exe"));
         assert!(source.contains("_NSGetExecutablePath"));
         assert!(source.contains("--ready-file"));
@@ -945,8 +1068,10 @@ mod tests {
             "xiao-diagnostics"
         );
 
-        let source = startup_source(windows_path, &TargetDescription::windows_x86_64());
+        let source = startup_source(windows_path, &TargetDescription::windows_x86_64(), "en-US");
         assert!(source.contains("0x0078"));
+        assert!(source.contains("0x0065"));
+        assert!(!source.contains("__XIAO_DIAGNOSTICS_LOCALE__"));
         assert!(!source.contains("C:\\\\build"));
     }
 

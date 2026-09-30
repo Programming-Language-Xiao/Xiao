@@ -625,6 +625,7 @@ name = "xiao-runtime"
 version = "0.1.0"
 dependencies = [
  "libc",
+ "serde_json",
  "xiao-diagnostics",
  "xiao-lifetime",
  "xiao-runtime-abi",

@@ -182,6 +182,7 @@ fn prepare_build(request_id: &str, inputs: BuildInputs) -> Result<BuildPlan, Pro
             .with_codegen_options(build_codegen_options(
                 &optimization,
                 diagnostics_path.as_deref(),
+                locale.as_deref(),
                 request_id,
                 target_description,
             )?);
@@ -205,6 +206,7 @@ fn prepare_build(request_id: &str, inputs: BuildInputs) -> Result<BuildPlan, Pro
 fn build_codegen_options(
     optimization: &OptimizationConfig,
     diagnostics_path: Option<&str>,
+    locale: Option<&str>,
     request_id: &str,
     target: TargetDescription,
 ) -> Result<CodegenOptions, ProtocolResponse> {
@@ -218,7 +220,9 @@ fn build_codegen_options(
             &ProtocolError::build("调试构建缺少 xiao-diagnostics 路径；请随分发包携带诊断组件"),
         ));
     };
-    Ok(options.with_debug_startup(path))
+    Ok(options
+        .with_locale(locale.unwrap_or("zh-CN"))
+        .with_debug_startup(path))
 }
 
 /// 清理上一次调试构建的激活位，防止失败重建沿用旧状态。

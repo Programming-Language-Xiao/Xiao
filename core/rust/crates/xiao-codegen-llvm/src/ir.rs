@@ -43,6 +43,8 @@ pub struct CodegenOptions {
 pub struct NativeStartup {
     /// 随产物携带的独立诊断进程路径。
     pub diagnostics_path: String,
+    /// 启动诊断窗口时使用的规范语言标签。
+    pub locale: String,
 }
 
 /// 一个原生错误/诊断位置映射条目。
@@ -80,6 +82,7 @@ impl CodegenOptions {
     pub fn with_debug_startup(mut self, diagnostics_path: impl Into<String>) -> Self {
         self.debug_startup = Some(NativeStartup {
             diagnostics_path: diagnostics_path.into(),
+            locale: self.locale.clone(),
         });
         self
     }
@@ -88,6 +91,9 @@ impl CodegenOptions {
     #[must_use]
     pub fn with_locale(mut self, locale: impl Into<String>) -> Self {
         self.locale = locale.into();
+        if let Some(startup) = &mut self.debug_startup {
+            startup.locale = self.locale.clone();
+        }
         self
     }
 }

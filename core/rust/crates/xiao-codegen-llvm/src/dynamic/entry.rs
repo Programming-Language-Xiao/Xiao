@@ -97,15 +97,17 @@ impl<'a> DynamicGenerator<'a> {
     /// 发射带可选调试启动检查的 C `main` 适配器。
     fn main_adapter(&self, observed: bool) -> String {
         let entry = if observed {
-            "  %xiao_exit = call i64 @xiao_entry()\n  %xiao_exit_code = trunc i64 %xiao_exit to i32\n  ret i32 %xiao_exit_code\n"
+            "  %xiao_exit = call i64 @xiao_entry()\n  %xiao_exit_code = trunc i64 %xiao_exit to i32\n"
         } else {
-            "  call void @xiao_entry()\n  %xiao_exit_code = call i32 @xiao_runtime_error_exit_code()\n  ret i32 %xiao_exit_code\n"
+            "  call void @xiao_entry()\n  %xiao_exit_code = call i32 @xiao_runtime_error_exit_code()\n"
         };
         if self.options.debug_startup.is_none() {
-            return format!("define i32 @main() {{\nentry:\n{entry}}}\n");
+            return format!(
+                "define i32 @main() {{\nentry:\n{entry}  ret i32 %xiao_exit_code\n}}\n"
+            );
         }
         format!(
-            "define i32 @main() {{\nentry:\n  %xiao_debug_status = call i32 @xiao_native_debug_start()\n  %xiao_debug_ok = icmp eq i32 %xiao_debug_status, 0\n  br i1 %xiao_debug_ok, label %xiao.user, label %xiao.debug.fail\nxiao.user:\n{entry}xiao.debug.fail:\n  ret i32 %xiao_debug_status\n}}\n"
+            "define i32 @main() {{\nentry:\n  %xiao_debug_prepare = call i32 @xiao_runtime_diagnostic_prepare()\n  %xiao_debug_prepare_ok = icmp eq i32 %xiao_debug_prepare, 0\n  br i1 %xiao_debug_prepare_ok, label %xiao.debug.start, label %xiao.debug.prepare.fail\nxiao.debug.prepare.fail:\n  ret i32 %xiao_debug_prepare\nxiao.debug.start:\n  %xiao_debug_status = call i32 @xiao_native_debug_start()\n  %xiao_debug_ok = icmp eq i32 %xiao_debug_status, 0\n  br i1 %xiao_debug_ok, label %xiao.debug.ready, label %xiao.debug.fail\nxiao.debug.fail:\n  ret i32 %xiao_debug_status\nxiao.debug.ready:\n  %xiao_debug_ready = call i32 @xiao_runtime_diagnostic_ready()\n  %xiao_debug_ready_ok = icmp eq i32 %xiao_debug_ready, 0\n  br i1 %xiao_debug_ready_ok, label %xiao.user, label %xiao.debug.ready.fail\nxiao.debug.ready.fail:\n  ret i32 %xiao_debug_ready\nxiao.user:\n{entry}  call void @xiao_runtime_diagnostic_finish()\n  ret i32 %xiao_exit_code\n}}\n"
         )
     }
 

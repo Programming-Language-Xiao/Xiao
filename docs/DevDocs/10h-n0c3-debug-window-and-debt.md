@@ -334,6 +334,30 @@ X11-DIAGNOSTIC-START-001: 未知参数：--locale
 
 ---
 
+## 十一、实施记录（2026-09-30）
+
+本批代码已按冻结条款落地：
+
+1. `platform-reproduction.yml` 增加定时触发并保留手动触发；Linux/macOS/Windows 复现脚本
+   都会实际运行普通与 `-debug` 原生产物，普通产物的诊断反向断言和调试失败摘要断言已接入。
+2. `optional_stackrestore_runtime_probe` 使用真实 clang 编译并运行恢复/去恢复两种循环，
+   Windows 主机结果为 `1 passed`；它不再把 `llvm-as` 解析结果冒充栈用量实测。
+3. Runtime 诊断 ABI 已建立本机端点、令牌握手、事件转交、Final/Close 生命周期和稳定启动
+   失败码 `X11-DIAGNOSTIC-START-001`；事件不查目录、不本地化，机器字段和源码位置进入结构化负载。
+4. 动态调试原生产物在用户代码前完成准备、启动、握手，普通静态/动态产物不声明或调用诊断
+   生命周期；Windows shim 的 locale 占位符、POSIX 终端候选链和失败可观测路径均有回归覆盖。
+5. `DiagnosticEvent` 和 `DiagnosticMetrics` 的协议数值字段改为可由 JSON 稳定编码的 `u64`，
+   运行时纳秒/毫秒值采用饱和转换，避免首个事件或 Final 帧断链。
+6. `10D` 已登记 11 条环境门控测试，`10G` 已记录 `stackrestore` 欠账清算；模块登记暂标为
+   `draft`，因为 Linux/macOS 的运行期证据仍需定时工作流实际执行后再升级为 `verified`。
+
+针对性验证已通过：`xiao-runtime` 诊断会话单测、`xiao-codegen-llvm` 普通/调试 IR 反向测试、
+Windows `stackrestore` 真实运行探针，以及受影响 Rust crate 的编译检查。最终门禁中的完整
+workspace 测试、Clippy、Bun/TypeScript 检查、文档覆盖和 Windows 原生复现脚本均已通过；
+Linux/macOS 的运行期证据仍需定时工作流在对应 runner 上补齐，不能由本机 Windows 结果替代。
+
+---
+
 ## 相关页面
 
 - [10. LLVM 原生后端](10-native-backend.md) —— **权威规范**；`:60`/`:61`/`:62`、验收 `:72`/`:73`/`:74`

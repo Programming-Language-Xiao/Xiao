@@ -33,8 +33,8 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 
 ## 二、现状清单（2026-09-30 更新；原始八条于 2026-09-24 实测）
 
-**10 个测试**依赖外部环境，涉及 **5 个环境变量**和一个真实终端能力；其中前 8 条是原有
-门控，N0-C 修复新增 2 条错误路径/差分门控：
+**11 个测试**依赖外部环境，涉及 **5 个环境变量**和一个真实终端能力；其中前 8 条是原有
+门控，N0-C 修复新增 3 条错误路径/差分/栈用量门控：
 
 | 文件 | 测试 |
 | --- | --- |
@@ -43,6 +43,7 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 | `xiao-codegen-llvm/tests/n0_a.rs` | `optional_entry_observation_tracks_runtime_branch` |
 | `xiao-codegen-llvm/tests/n0_b_dynamic.rs` | `optional_llvm_accepts_dynamic_table_module` |
 | `xiao-codegen-llvm/tests/n0_c_errors.rs` | `optional_llvm_accepts_error_path_module` |
+| `xiao-codegen-llvm/tests/n0_c_errors.rs` | `optional_stackrestore_runtime_probe` |
 | `xiao-driver/tests/n0_a_native_driver.rs` | `optional_real_frontend_to_native_round_trip` |
 | `xiao-driver/tests/n0_a_native_driver.rs` | `optional_frontend_artifact_differential_round_trip` |
 | `xiao-driver/tests/n0_a_native_driver.rs` | `optional_native_catch_does_not_terminate` |
@@ -190,7 +191,7 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 ## 五、门禁要求
 
 1. **默认门禁**：`cargo test` 的汇总里**记录 `ignored` 的数量**。
-   与本文 §2 的清单（当前 10 个）不一致时，要么是新增了环境依赖测试（好事，更新清单），
+   与本文 §2 的清单（当前 11 个）不一致时，要么是新增了环境依赖测试（好事，更新清单），
    要么是有人把测试从 `ignored` 改回了条件 `return`（**要拒绝**）。
 2. **每批至少一次齐备环境跑**：把对应平台的 §4 脚本跑一次，结果写进该批的交接记录。
    **这是唯一能证明那些测试还活着的动作。**
@@ -199,8 +200,8 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 
 ## 六、验收
 
-1. §2 清单里的 10 个测试**全部标了 `#[ignore]`**，且理由字符串能定位到本文 §4；
-2. 默认 `cargo test` 的汇总里能看到 `10 ignored`；
+1. §2 清单里的 11 个测试**全部标了 `#[ignore]`**，且理由字符串能定位到本文 §4；
+2. 默认 `cargo test` 的汇总里能看到 `11 ignored`；
 3. `cargo test -- --ignored` 在齐备环境里**全部执行**（10C 修复前允许 1 个失败，
    修复后必须全绿）；
 4. 缺环境时跑 `--ignored` 会**失败**，不是静默跳过（§3.2）；
@@ -208,9 +209,9 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 
 ## 七、落地记录（2026-09-24）
 
-§2 列出的 10 条测试现已全部使用 `#[ignore = "...；准备方式见 10D §4"]`：
-`xiao-codegen-llvm` 的 5 条、`xiao-driver` 的 4 条和诊断窗口的 1 条。默认运行
-`cargo test -p xiao-codegen-llvm -p xiao-driver` 另加诊断单元测试时的汇总为 10 ignored（分别为 3、1、1、2、1、1、1），
+§2 列出的 11 条测试现已全部使用 `#[ignore = "...；准备方式见 10D §4"]`：
+`xiao-codegen-llvm` 的 6 条、`xiao-driver` 的 4 条和诊断窗口的 1 条。默认运行
+`cargo test -p xiao-codegen-llvm -p xiao-driver` 另加诊断单元测试时的汇总为 11 ignored，
 没有把缺环境伪装成通过；显式运行 `--ignored` 时会用 `expect` 检查变量，Runtime 库路径
 不存在也会直接断言失败。
 
@@ -264,6 +265,19 @@ n0_a_native_driver::optional_frontend_artifact_differential_round_trip 1 passed
 本次记录包含 1 条真实 `llvm-as` 解析验证和 2 条 Windows 原生运行期证据；Linux/macOS
 runner 尚未执行同一套平台异常报告矩阵，也不能用 `llvm-as` 的解析通过替代跨平台运行期
 或 `stackrestore` 栈用量测量。
+
+### 7.2 N0-C-3 `stackrestore` 原生栈用量实测（2026-09-30）
+
+在同一 Windows 原生 LLVM 环境中设置 `XIAO_CLANG` 后，显式执行
+`optional_stackrestore_runtime_probe --ignored`，结果为 `1 passed, 0 failed`。探针让原生
+循环反复执行保存栈指针、分配 4096 字节局部槽、`finally` 恢复栈指针的路径；带
+`llvm.stackrestore` 的程序退出码为 `0`，去掉恢复调用的反例退出码为 `1`，因此同时证明
+路径实际执行且恢复分支没有随迭代累积栈用量。该结果是 Windows 主机证据；Linux/macOS
+仍由平台复现工作流补跑，不能把本机结果写成三平台结论。
+
+真实终端门控现在优先使用显式的 `CARGO_BIN_EXE_xiao-diagnostics`（若测试上下文提供）或
+`XIAO_DIAGNOSTICS_PATH`，不再无条件拾取 `core/rust/target/debug/xiao-diagnostics` 的旧产物。
+平台复现脚本仍在构建当前诊断组件后设置该显式路径，避免 `--locale` 协议变化被旧二进制遮蔽。
 
 ## 八、不负责
 

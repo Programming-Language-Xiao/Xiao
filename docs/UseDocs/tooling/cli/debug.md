@@ -18,6 +18,10 @@ related:
 前端/VM 执行前创建独立诊断进程，诊断进程再打开新的终端 TUI；用户程序的标准输出仍由
 原运行进程拥有，诊断文本不会混入它。
 
+原生 `xiao build -debug` 产物也会在自身入口建立一次性本机回环会话，再启动旁置的
+`xiao-diagnostics` 并等待令牌握手；直接运行可执行文件即可触发这条链路，不需要再次经过
+`xiao` 启动器。普通原生产物不会生成这些诊断生命周期调用，也不会尝试开窗。
+
 诊断进程使用本机回环套接字和一次性令牌握手。事件以八字节大端长度前缀的结构化 JSON
 发送，窗口显示模块、函数、作用域、释放、处理器、错误、堆栈和指标事件。窗口最后一行
 固定显示运行时间、当前/峰值内存、运行时错误数、断点命中数和钩子数。默认等级为 `info`；
@@ -39,8 +43,11 @@ related:
 
 终端候选顺序固定为：Windows 的 `wt.exe`、`cmd.exe start`、PowerShell；Linux 的
 `x-terminal-emulator`、`gnome-terminal`、`konsole`、`xterm`；macOS 的 `osascript`、
-`open -a Terminal`。候选来源会进入结构化启动失败详情。Windows 原生是当前可宣称的
-端到端平台；Linux Docker 只提供功能/构建证据，Linux 原生、WSL 和 macOS 仍待复现。
+`open -a Terminal`。原生启动 shim 在 POSIX 上复用 Linux/macOS 的终端候选，在 Windows
+上使用 `CREATE_NEW_CONSOLE`；候选失败、握手失败和就绪超时都返回稳定的
+`X11-DIAGNOSTIC-START-001`，不静默跳过。候选来源会进入结构化启动失败详情。Windows
+原生是当前可宣称的端到端平台；Linux Docker 只提供功能/构建证据，Linux 原生、WSL 和
+macOS 仍待复现。
 
 独立分发目录随 `xiao-core` 一并携带 `xiao-diagnostics`。调试原生构建的旁置
 `<可执行文件>.xiao-debug.json` 是持久激活位；普通构建不会生成该文件，也不会因 `[debug]`
@@ -49,3 +56,7 @@ related:
 进原生入口。Windows shim 使用新控制台并等待诊断进程写入一次性就绪标记；创建失败、诊断
 进程提前退出或就绪超时都会在执行用户代码前返回 `X11-DIAGNOSTIC-START-001`。构建用法和
 工具链环境变量见 [`xiao build`](build.md)。
+
+平台复现或调试测试可通过 `XIAO_DIAGNOSTICS_PATH` 显式指定当前诊断组件；修改
+`xiao-diagnostics` 的参数或握手协议后，应先重建该组件，避免开发树中残留的旧
+`target/debug/xiao-diagnostics` 掩盖新版本行为。

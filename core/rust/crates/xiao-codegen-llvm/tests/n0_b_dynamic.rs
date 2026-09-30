@@ -527,3 +527,32 @@ fn dynamic_entry_observation_is_explicit() {
     assert!(module.text.contains("extractvalue %xiao.value"));
     assert!(module.text.contains("store i64 %t"));
 }
+
+#[test]
+/// 普通动态产物不得生成调试会话生命周期调用。
+fn ordinary_dynamic_artifact_does_not_activate_diagnostics() {
+    let module = lower_program(
+        &expression_program(literal("str", "\"ordinary\"", "str")),
+        &CodegenOptions::default(),
+    )
+    .expect("应生成普通动态 IR");
+    assert!(!module.text.contains("xiao_native_debug_start"));
+    assert!(!module.text.contains("xiao_runtime_diagnostic_prepare"));
+    assert!(!module.text.contains("xiao_runtime_diagnostic_ready"));
+    assert!(!module.text.contains("xiao_runtime_diagnostic_finish"));
+}
+
+#[test]
+/// 调试动态产物必须包含完整的诊断会话生命周期调用。
+fn debug_dynamic_artifact_activates_diagnostic_session() {
+    let options = CodegenOptions::default().with_debug_startup("xiao-diagnostics");
+    let module = lower_program(
+        &expression_program(literal("str", "\"debug\"", "str")),
+        &options,
+    )
+    .expect("应生成调试动态 IR");
+    assert!(module.text.contains("xiao_runtime_diagnostic_prepare"));
+    assert!(module.text.contains("xiao_runtime_diagnostic_ready"));
+    assert!(module.text.contains("xiao_runtime_diagnostic_finish"));
+    assert!(module.text.contains("xiao_native_debug_start"));
+}

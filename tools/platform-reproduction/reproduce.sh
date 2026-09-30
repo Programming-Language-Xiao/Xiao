@@ -112,6 +112,13 @@ printf '\n== 准备 Rust 核心和 Runtime ==\n'
 (cd "$repository_root" && cargo build --manifest-path "$cargo_manifest" -p xiao-runtime --release)
 (cd "$repository_root" && cargo build --manifest-path "$cargo_manifest" -p xiao-driver -p xiao-diagnostics)
 
+diagnostics_path="$repository_root/core/rust/target/debug/xiao-diagnostics"
+if [[ ! -x "$diagnostics_path" ]]; then
+    printf '找不到测试使用的诊断产物：%s\n' "$diagnostics_path" >&2
+    exit 1
+fi
+export XIAO_DIAGNOSTICS_PATH="$diagnostics_path"
+
 runtime_library="$repository_root/core/rust/target/release/libxiao_runtime.a"
 if [[ ! -f "$runtime_library" ]]; then
     printf '找不到 Runtime staticlib：%s\n' "$runtime_library" >&2
@@ -159,6 +166,7 @@ source_directory="$temporary_root/source"
 mkdir -p "$source_directory/tests" "$temporary_root/outside"
 printf 'value = 1 + 2\n' > "$source_directory/main.xiao"
 printf 'value = 1 + 2\n' > "$source_directory/tests/smoke.xiao"
+printf 'value = "debug window"\n' > "$source_directory/debug.xiao"
 
 native_output="$temporary_root/native"
 llvm_output="$temporary_root/native.ll"
@@ -170,11 +178,40 @@ printf '%s\n' "$build_json"
 [[ -x "$native_output" && -s "$llvm_output" ]]
 
 debug_output="$temporary_root/debug-native"
-debug_json="$($cli_path --json build -debug -o "$debug_output" "$source_directory/main.xiao" -O0)"
+debug_json="$($cli_path --json build -debug -o "$debug_output" "$source_directory/debug.xiao" -O0)"
 printf '%s\n' "$debug_json"
 [[ "$debug_json" == *'"type":"result"'* ]]
 [[ "$debug_json" == *'"exit_code":0'* ]]
 [[ -x "$debug_output" ]]
+
+normal_run_log="$temporary_root/normal-run.log"
+set +e
+"$native_output" >"$normal_run_log" 2>&1
+normal_status=$?
+set -e
+[[ "$normal_status" -eq 0 ]]
+if grep -q 'X11-DIAGNOSTIC-START-001' "$normal_run_log"; then
+    printf '普通原生产物意外触发诊断启动：\n' >&2
+    cat "$normal_run_log" >&2
+    exit 1
+fi
+
+debug_run_log="$temporary_root/debug-run.log"
+set +e
+if [[ "$host_system" == "Linux" && "${XIAO_USE_XVFB:-0}" == "1" && -x "$(command -v xvfb-run 2>/dev/null || true)" ]]; then
+    xvfb-run -a "$debug_output" >"$debug_run_log" 2>&1
+else
+    "$debug_output" >"$debug_run_log" 2>&1
+fi
+debug_status=$?
+set -e
+if [[ "$debug_status" -ne 0 ]] && ! grep -q 'X11-DIAGNOSTIC-START-001' "$debug_run_log"; then
+    printf '调试原生产物失败但没有稳定诊断启动摘要（退出码 %s）：\n' "$debug_status" >&2
+    cat "$debug_run_log" >&2
+    exit 1
+fi
+printf '调试原生产物运行结果：exit=%s\n' "$debug_status"
+cat "$debug_run_log"
 
 cp "$source_directory/main.xiao" "$temporary_root/outside/main.xiao"
 printf '\n== 同目录核心发现 ==\n'

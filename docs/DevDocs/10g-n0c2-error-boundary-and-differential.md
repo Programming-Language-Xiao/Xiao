@@ -58,8 +58,8 @@
 - **差分已落地**：`optional_frontend_artifact_differential_round_trip` 使用同一份前端
   `FrontendArtifact`，逐项对照 caught/unmatched 两条错误路径的输出、机器错误字段和
   Runtime 释放事件；两侧释放事件来自 `xiao-runtime` 同一层 memory hook。
-- **当前保留暂停项**：`stackrestore` 目前已由生成器和真实 `llvm-as` 解析测试覆盖，尚未
-  完成“长循环原生程序”的实际栈用量测量；本机也未替代 Linux/macOS 做跨平台运行期实测。
+- **当时保留的暂停项已由 N0-C-3 清算**：`optional_stackrestore_runtime_probe` 在 Windows
+  原生 LLVM 环境中完成长循环原生程序实测；Linux/macOS 的平台运行期证据仍由 10H 工作流补跑。
 
 ### 本批不还的债
 
@@ -69,7 +69,7 @@
 | UseDocs 的原生排错路径与登记收尾 | **N0-C-3**（10E 第 8 步） |
 | 三目标固定宽度、Runtime 裁剪验证 | **N0-D** |
 | 用户可见 `xiao build` | 11 / X0 |
-| `stackrestore` 的循环栈用量**实测**（10F §七 自述"未执行长循环原生程序测量"） | 仍暂停；见 §八 第 8 条和“实施结果与暂停原因” |
+| `stackrestore` 的循环栈用量**实测**（10F §七 自述"未执行长循环原生程序测量"） | **已由 10H 在 Windows 清算**；Linux/macOS 仍待平台工作流 |
 
 ---
 
@@ -274,8 +274,8 @@ Windows 工具链下两条路径均已通过；Linux/macOS 的运行期差分矩
 9. **原生侧再实现一套消息渲染**（§3.3）——本仓头号病史，现有 `xiao_runtime_error_report` 就是例子。
 10. **新增依赖只提交一个 lock 文件**（§六 第 9 条）——`31fb944` 的翻车方式。
 11. **只跑部分 crate 就说门禁全绿**（§六 第 9 条）。
-12. **把 `stackrestore` 的解析验证当成栈用量实测**（§一 债项表）——当前只有生成器覆盖和真实
-    `llvm-as` 解析通过，长循环原生程序的实际栈用量仍未测，不能提前宣称完成。
+12. **把 `stackrestore` 的解析验证当成栈用量实测**（§一 债项表）——该欠账已由 10H 的
+    Windows 长循环原生探针清算；Linux/macOS 仍不能用本机结果替代平台运行期证据。
 
 ---
 
@@ -287,7 +287,7 @@ Windows 工具链下两条路径均已通过；Linux/macOS 的运行期差分矩
 | **字节码差分**（§3.5，验收主体） | ✅ Windows 已通过 | 同一份 IR 对照输出、错误字段（含位置/退出码）和释放事件序列；跨平台 runner 待补 |
 | **释放记录对照有效** | ✅ 已通过 | 钩子只在 `xiao-runtime` 一处实现，事件含对象身份、动作和序号 |
 | **语言上下文**（§3.3） | ✅ 已完成 | 原生入口传入 locale，统一渲染器负责文本；机器字段保持跨后端一致 |
-| **`stackrestore` 栈用量实测** | ⏸ 暂停 | 生成器覆盖和真实 `llvm-as` 解析已通过；长循环原生程序的实际栈用量尚未测量 |
+| **`stackrestore` 栈用量实测** | ⚠️ Windows 已通过 | `optional_stackrestore_runtime_probe` 的恢复路径退出码为 0，去恢复反例退出码为 1；Linux/macOS 平台工作流待补 |
 | **不回归** | ✅ 已通过 | `cargo test --manifest-path core/rust/Cargo.toml --workspace` 已通过 |
 | **门禁与登记** | ✅ 已通过 | `bun run check`、`bun test`、Rust 格式检查和 `git diff --check` 已通过；新增测试已登记进 `10D §2` |
 
@@ -297,24 +297,23 @@ Windows 工具链下两条路径均已通过；Linux/macOS 的运行期差分矩
 
 本批 N0-C-2 的代码路径已完成收口：语言上下文、平台异常报告、可恢复错误边界、共享
 释放追踪和 caught/unmatched 差分均已接通；当前可复现的运行期证据来自 Windows 工具链，
-并已把机器错误字段、退出码和释放事件序列纳入对照。
+并已把机器错误字段、退出码和释放事件序列纳入对照。N0-C-3 已在 10H 接通诊断会话、
+原生 `-debug` 启动和 UseDocs 收尾；本页只保留跨平台证据边界。
 
 本阶段明确暂停以下事项，不能把它们写成已完成：
 
 1. 当前环境只有 Windows 运行期证据，尚未在 Linux/macOS runner 上执行平台异常报告矩阵。
-2. `stackrestore` 已有生成器覆盖和真实 `llvm-as` 解析验证，但还没有完成长循环
-   `try/finally` 原生程序的实际栈用量测量。
-3. 不能把 LLVM 文本解析结果冒充跨平台运行期证据，也不能把它冒充栈增长测量结论。
-4. N0-C-3 的诊断事件、`-debug` 独立诊断进程和 UseDocs 收尾仍按文档范围暂不处理。
+2. `stackrestore` 的长循环原生程序已在 Windows 实测；Linux/macOS 仍需对应 runner 补跑。
+3. 不能把 LLVM 文本解析结果冒充跨平台运行期证据，也不能把 Windows 结果扩写成三平台结论。
 
-因此，本阶段提交代表“实现完成、Windows 证据收口、跨平台运行期与栈测量保留待推进”，
-不代表三平台矩阵、`stackrestore` 栈用量或 N0-C-3 已验收。
+因此，本阶段记录代表“实现完成、Windows 证据收口、Linux/macOS 运行期矩阵保留待推进”，
+不代表三平台矩阵已经全部验收。
 
 ---
 
 ## 十一、不负责与不要重复做的事
 
-- **不做 N0-C-3**：诊断事件、`-debug` 构建标志、独立诊断进程启动入口、UseDocs 收尾——§3.6。
+- **N0-C-3 已由 10H 收口**：本页不重开诊断事件、`-debug` 启动入口或 UseDocs 设计。
 - **不做 N0-D**（三目标固定宽度、Runtime 裁剪验证、调试构建标志的产物级验证）。
 - **不做用户可见 `xiao build`**——11 / X0。
 - **不重开** `10F §七` 冻结的展开契约（标签所有权与终结状态分离）。

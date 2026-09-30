@@ -289,7 +289,8 @@ impl DiagnosticSession {
 
     /// 发送最终指标并关闭诊断子进程。
     pub fn finish(mut self) {
-        self.metrics.elapsed_ms = self.started.elapsed().as_millis();
+        self.metrics.elapsed_ms =
+            self.started.elapsed().as_millis().min(u128::from(u64::MAX)) as u64;
         self.write_log(&DiagnosticMessage::Final {
             metrics: self.metrics.clone(),
         });
@@ -832,7 +833,7 @@ fn vm_event_to_diagnostic_with_locale(
             .text
     });
     DiagnosticEvent {
-        monotonic_ns: elapsed.as_nanos(),
+        monotonic_ns: elapsed.as_nanos().min(u128::from(u64::MAX)) as u64,
         level: default_level(event_type).to_owned(),
         event_type: event_type.to_owned(),
         module: Some(module.to_owned()),
@@ -958,11 +959,34 @@ mod tests {
     #[ignore = "需要真实终端模拟器；准备方式见 10D §4.2"]
     /// 在具备终端环境时验证真实窗口握手。
     fn real_terminal_session_is_environment_gated() {
-        let _ = DiagnosticSession::start(
+        let configured_path = option_env!("CARGO_BIN_EXE_xiao-diagnostics")
+            .map(PathBuf::from)
+            .or_else(|| std::env::var_os("CARGO_BIN_EXE_xiao-diagnostics").map(PathBuf::from))
+            .or_else(|| std::env::var_os("XIAO_DIAGNOSTICS_PATH").map(PathBuf::from))
+            .expect(
+                "显式运行 --ignored 时必须提供 CARGO_BIN_EXE_xiao-diagnostics 或 XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4.2",
+            );
+        assert!(
+            configured_path.is_file(),
+            "诊断进程产物不存在：{}",
+            configured_path.display()
+        );
+        let previous_path = std::env::var_os("XIAO_DIAGNOSTICS_PATH");
+        unsafe {
+            std::env::set_var("XIAO_DIAGNOSTICS_PATH", &configured_path);
+        }
+        let result = DiagnosticSession::start(
             "test",
             Some("test.xiao".to_owned()),
             &DiagnosticOptions::default(),
-        )
-        .expect("已准备终端时应能启动诊断会话");
+        );
+        unsafe {
+            if let Some(previous_path) = previous_path {
+                std::env::set_var("XIAO_DIAGNOSTICS_PATH", previous_path);
+            } else {
+                std::env::remove_var("XIAO_DIAGNOSTICS_PATH");
+            }
+        }
+        result.expect("已准备终端时应能启动诊断会话");
     }
 }

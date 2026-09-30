@@ -114,7 +114,7 @@ impl NativeBuild {
                     .then_some(request.toolchain.runtime_library.as_deref())
                     .flatten(),
                 module.uses_runtime,
-                std::path::Path::new(&startup.diagnostics_path),
+                startup,
             )?
         } else if module.uses_runtime {
             request.toolchain.compile_with_runtime(

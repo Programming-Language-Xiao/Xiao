@@ -34,6 +34,14 @@ impl<'a> DynamicGenerator<'a> {
             .insert("declare i32 @xiao_runtime_error_exit_code()".to_owned());
         self.declarations
             .insert("declare void @xiao_runtime_error_report()".to_owned());
+        if self.options.debug_startup.is_some() {
+            self.declarations
+                .insert("declare i32 @xiao_runtime_diagnostic_prepare()".to_owned());
+            self.declarations
+                .insert("declare i32 @xiao_runtime_diagnostic_ready()".to_owned());
+            self.declarations
+                .insert("declare void @xiao_runtime_diagnostic_finish()".to_owned());
+        }
         self.declarations
             .insert("declare void @xiao_runtime_fatal_abi()".to_owned());
         self.declarations.insert(format!(
