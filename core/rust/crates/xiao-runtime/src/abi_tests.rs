@@ -1,5 +1,6 @@
 //! ABI 句柄、值复制和原生诊断会话的回归测试。
 use super::*;
+use std::sync::{Mutex, OnceLock};
 
 /// 把测试字符串借用为 ABI UTF-8 字节视图。
 fn bytes(text: &str) -> XiaoAbiBytes {
@@ -7,6 +8,13 @@ fn bytes(text: &str) -> XiaoAbiBytes {
         ptr: text.as_ptr(),
         len: text.len(),
     }
+}
+
+fn diagnostic_test_lock() -> std::sync::MutexGuard<'static, ()> {
+    static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+    LOCK.get_or_init(|| Mutex::new(()))
+        .lock()
+        .expect("诊断测试锁")
 }
 
 #[test]
@@ -419,6 +427,9 @@ fn fatal_error_constructor_never_returns_recoverable_value() {
 #[test]
 /// 诊断 ABI 必须完成握手、透传事件字段并发送 Final/Close 生命周期消息。
 fn diagnostic_session_forwards_events_and_closes() {
+    let _lock = diagnostic_test_lock();
+    let previous_endpoint = std::env::var_os("XIAO_DIAGNOSTICS_ENDPOINT");
+    let previous_token = std::env::var_os("XIAO_DIAGNOSTICS_TOKEN");
     xiao_runtime_diagnostic_finish();
     assert_eq!(
         xiao_runtime_language_context_set(bytes("en-US")),
@@ -485,10 +496,63 @@ fn diagnostic_session_forwards_events_and_closes() {
         read_message(&mut stream).expect("读取关闭消息"),
         Some(DiagnosticMessage::Close { .. })
     ));
-    assert!(std::env::var_os("XIAO_DIAGNOSTICS_ENDPOINT").is_none());
+    assert_eq!(
+        std::env::var_os("XIAO_DIAGNOSTICS_ENDPOINT"),
+        previous_endpoint
+    );
+    assert_eq!(std::env::var_os("XIAO_DIAGNOSTICS_TOKEN"), previous_token);
 
     assert_eq!(
         xiao_runtime_diagnostic_event(&abi_event),
         XiaoAbiStatus::RuntimeError.code()
     );
+}
+
+#[test]
+/// 握手失败必须丢弃会话、恢复环境，并允许下一次准备重新建立端点。
+fn diagnostic_ready_failure_cleans_session_and_environment() {
+    let _lock = diagnostic_test_lock();
+    let previous_endpoint = std::env::var_os("XIAO_DIAGNOSTICS_ENDPOINT");
+    let previous_token = std::env::var_os("XIAO_DIAGNOSTICS_TOKEN");
+    unsafe {
+        std::env::set_var("XIAO_DIAGNOSTICS_ENDPOINT", "previous-endpoint");
+        std::env::set_var("XIAO_DIAGNOSTICS_TOKEN", "previous-token");
+    }
+
+    assert_eq!(xiao_runtime_diagnostic_prepare(), XiaoAbiStatus::Ok.code());
+    let endpoint = std::env::var("XIAO_DIAGNOSTICS_ENDPOINT").expect("诊断端点");
+    let token = std::env::var("XIAO_DIAGNOSTICS_TOKEN").expect("诊断令牌");
+    let mut stream = TcpStream::connect(endpoint).expect("连接诊断端点");
+    write_message(
+        &mut stream,
+        &DiagnosticMessage::Hello {
+            protocol_version: DIAGNOSTIC_PROTOCOL_VERSION,
+            token: format!("{token}-wrong"),
+            locale: "zh-CN".to_owned(),
+            renderer: "runtime-test".to_owned(),
+        },
+    )
+    .expect("发送错误握手");
+    assert_eq!(xiao_runtime_diagnostic_ready(), DIAGNOSTIC_START_EXIT_CODE);
+    assert_eq!(
+        std::env::var("XIAO_DIAGNOSTICS_ENDPOINT").as_deref(),
+        Ok("previous-endpoint")
+    );
+    assert_eq!(
+        std::env::var("XIAO_DIAGNOSTICS_TOKEN").as_deref(),
+        Ok("previous-token")
+    );
+
+    assert_eq!(xiao_runtime_diagnostic_prepare(), XiaoAbiStatus::Ok.code());
+    xiao_runtime_diagnostic_finish();
+    unsafe {
+        match previous_endpoint {
+            Some(value) => std::env::set_var("XIAO_DIAGNOSTICS_ENDPOINT", value),
+            None => std::env::remove_var("XIAO_DIAGNOSTICS_ENDPOINT"),
+        }
+        match previous_token {
+            Some(value) => std::env::set_var("XIAO_DIAGNOSTICS_TOKEN", value),
+            None => std::env::remove_var("XIAO_DIAGNOSTICS_TOKEN"),
+        }
+    }
 }

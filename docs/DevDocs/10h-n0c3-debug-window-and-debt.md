@@ -350,6 +350,8 @@ X11-DIAGNOSTIC-START-001: 未知参数：--locale
    运行时纳秒/毫秒值采用饱和转换，避免首个事件或 Final 帧断链。
 6. `10D` 已登记 11 条环境门控测试，`10G` 已记录 `stackrestore` 欠账清算；模块登记暂标为
    `draft`，因为 Linux/macOS 的运行期证据仍需定时工作流实际执行后再升级为 `verified`。
+7. 自审核补强了失败收口：握手/启动失败会清理会话并恢复原环境变量，POSIX 超时回收子进程
+   有界且可升级为强制终止，macOS 原生 shim 补齐 `osascript` 候选；独立窗口父进程编号拒绝零值。
 
 针对性验证已通过：`xiao-runtime` 诊断会话单测、`xiao-codegen-llvm` 普通/调试 IR 反向测试、
 Windows `stackrestore` 真实运行探针，以及受影响 Rust crate 的编译检查。最终门禁中的完整

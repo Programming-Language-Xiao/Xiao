@@ -555,4 +555,14 @@ fn debug_dynamic_artifact_activates_diagnostic_session() {
     assert!(module.text.contains("xiao_runtime_diagnostic_ready"));
     assert!(module.text.contains("xiao_runtime_diagnostic_finish"));
     assert!(module.text.contains("xiao_native_debug_start"));
+    assert!(
+        module
+            .text
+            .contains("xiao.debug.fail:\n  call void @xiao_runtime_diagnostic_finish()")
+    );
+    assert!(
+        module
+            .text
+            .contains("xiao.debug.ready.fail:\n  call void @xiao_runtime_diagnostic_finish()")
+    );
 }

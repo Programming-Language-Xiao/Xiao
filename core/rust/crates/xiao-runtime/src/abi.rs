@@ -57,6 +57,8 @@ struct RuntimeDiagnosticSession {
     listener: Option<TcpListener>,
     stream: Option<TcpStream>,
     token: String,
+    previous_endpoint: Option<std::ffi::OsString>,
+    previous_token: Option<std::ffi::OsString>,
     started: Instant,
     metrics: DiagnosticMetrics,
 }
@@ -84,6 +86,27 @@ fn diagnostic_session_token() -> String {
 fn diagnostic_start_failure(message: impl std::fmt::Display) -> i32 {
     eprintln!("X11-DIAGNOSTIC-START-001: {message}");
     DIAGNOSTIC_START_EXIT_CODE
+}
+
+/// 恢复会话建立前的进程环境，避免调试 ABI 把宿主已有配置永久覆盖。
+fn restore_diagnostic_environment(session: &RuntimeDiagnosticSession) {
+    unsafe {
+        match &session.previous_endpoint {
+            Some(value) => std::env::set_var("XIAO_DIAGNOSTICS_ENDPOINT", value),
+            None => std::env::remove_var("XIAO_DIAGNOSTICS_ENDPOINT"),
+        }
+        match &session.previous_token {
+            Some(value) => std::env::set_var("XIAO_DIAGNOSTICS_TOKEN", value),
+            None => std::env::remove_var("XIAO_DIAGNOSTICS_TOKEN"),
+        }
+    }
+}
+
+/// 丢弃尚未完成或已经中断的会话，并恢复其进程环境。
+fn discard_diagnostic_session(session: &mut Option<RuntimeDiagnosticSession>) {
+    if let Some(session) = session.take() {
+        restore_diagnostic_environment(&session);
+    }
 }
 
 /// 向已握手的诊断会话发送一帧；通信中断只关闭输出，不污染用户错误槽。
@@ -1197,6 +1220,8 @@ pub extern "C" fn xiao_runtime_diagnostic_prepare() -> i32 {
     if session.is_some() {
         return diagnostic_start_failure("诊断会话已经存在");
     }
+    let previous_endpoint = std::env::var_os("XIAO_DIAGNOSTICS_ENDPOINT");
+    let previous_token = std::env::var_os("XIAO_DIAGNOSTICS_TOKEN");
     unsafe {
         std::env::set_var("XIAO_DIAGNOSTICS_ENDPOINT", &endpoint);
         std::env::set_var("XIAO_DIAGNOSTICS_TOKEN", &token);
@@ -1205,6 +1230,8 @@ pub extern "C" fn xiao_runtime_diagnostic_prepare() -> i32 {
         listener: Some(listener),
         stream: None,
         token,
+        previous_endpoint,
+        previous_token,
         started: Instant::now(),
         metrics: DiagnosticMetrics::default(),
     });
@@ -1218,63 +1245,74 @@ pub extern "C" fn xiao_runtime_diagnostic_ready() -> i32 {
         Ok(session) => session,
         Err(_) => return diagnostic_start_failure("诊断会话状态已损坏"),
     };
-    let Some(session) = session.as_mut() else {
-        return diagnostic_start_failure("诊断会话尚未准备");
-    };
-    let Some(listener) = session.listener.take() else {
-        return if session.stream.is_some() {
-            XiaoAbiStatus::Ok.code()
-        } else {
-            diagnostic_start_failure("诊断监听端点已经被消费")
+    let result = (|| -> Result<i32, String> {
+        let Some(session) = session.as_mut() else {
+            return Err("诊断会话尚未准备".to_owned());
         };
-    };
-    let deadline = Instant::now() + Duration::from_secs(10);
-    loop {
-        match listener.accept() {
-            Ok((mut stream, _)) => {
-                if let Err(error) = stream.set_read_timeout(Some(Duration::from_secs(2))) {
-                    return diagnostic_start_failure(format!("无法配置诊断握手：{error}"));
-                }
-                let message = match read_message(&mut stream) {
-                    Ok(Some(message)) => message,
-                    Ok(None) => return diagnostic_start_failure("诊断进程在握手前退出"),
-                    Err(error) => {
-                        return diagnostic_start_failure(format!("诊断握手读取失败：{error}"));
+        let Some(listener) = session.listener.take() else {
+            return if session.stream.is_some() {
+                Ok(XiaoAbiStatus::Ok.code())
+            } else {
+                Err("诊断监听端点已经被消费".to_owned())
+            };
+        };
+        let deadline = Instant::now() + Duration::from_secs(10);
+        loop {
+            match listener.accept() {
+                Ok((mut stream, _)) => {
+                    stream
+                        .set_read_timeout(Some(Duration::from_secs(2)))
+                        .map_err(|error| format!("无法配置诊断握手：{error}"))?;
+                    stream
+                        .set_write_timeout(Some(Duration::from_secs(2)))
+                        .map_err(|error| format!("无法配置诊断握手：{error}"))?;
+                    let message = match read_message(&mut stream) {
+                        Ok(Some(message)) => message,
+                        Ok(None) => return Err("诊断进程在握手前退出".to_owned()),
+                        Err(error) => return Err(format!("诊断握手读取失败：{error}")),
+                    };
+                    let DiagnosticMessage::Hello {
+                        protocol_version,
+                        token,
+                        ..
+                    } = message
+                    else {
+                        return Err("诊断进程未发送 hello 握手".to_owned());
+                    };
+                    if protocol_version != DIAGNOSTIC_PROTOCOL_VERSION || token != session.token {
+                        return Err("诊断进程握手版本或令牌不匹配".to_owned());
                     }
-                };
-                let DiagnosticMessage::Hello {
-                    protocol_version,
-                    token,
-                    ..
-                } = message
-                else {
-                    return diagnostic_start_failure("诊断进程未发送 hello 握手");
-                };
-                if protocol_version != DIAGNOSTIC_PROTOCOL_VERSION || token != session.token {
-                    return diagnostic_start_failure("诊断进程握手版本或令牌不匹配");
+                    write_message(
+                        &mut stream,
+                        &DiagnosticMessage::Ready {
+                            session_id: session.token.clone(),
+                        },
+                    )
+                    .map_err(|error| format!("诊断窗口握手确认失败：{error}"))?;
+                    stream
+                        .set_write_timeout(Some(Duration::from_millis(20)))
+                        .map_err(|error| format!("无法配置诊断事件写入：{error}"))?;
+                    stream
+                        .set_read_timeout(None)
+                        .map_err(|error| format!("无法完成诊断握手：{error}"))?;
+                    session.stream = Some(stream);
+                    return Ok(XiaoAbiStatus::Ok.code());
                 }
-                if let Err(error) = write_message(
-                    &mut stream,
-                    &DiagnosticMessage::Ready {
-                        session_id: session.token.clone(),
-                    },
-                ) {
-                    return diagnostic_start_failure(format!("诊断窗口握手确认失败：{error}"));
+                Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                    if Instant::now() >= deadline {
+                        return Err("诊断进程未在 10 秒内连接".to_owned());
+                    }
+                    thread::sleep(Duration::from_millis(10));
                 }
-                let _ = stream.set_write_timeout(Some(Duration::from_millis(20)));
-                let _ = stream.set_read_timeout(None);
-                session.stream = Some(stream);
-                return XiaoAbiStatus::Ok.code();
+                Err(error) => return Err(format!("等待诊断进程连接失败：{error}")),
             }
-            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
-                if Instant::now() >= deadline {
-                    return diagnostic_start_failure("诊断进程未在 10 秒内连接");
-                }
-                thread::sleep(Duration::from_millis(10));
-            }
-            Err(error) => {
-                return diagnostic_start_failure(format!("等待诊断进程连接失败：{error}"));
-            }
+        }
+    })();
+    match result {
+        Ok(status) => status,
+        Err(message) => {
+            discard_diagnostic_session(&mut session);
+            diagnostic_start_failure(message)
         }
     }
 }
@@ -1307,6 +1345,7 @@ pub extern "C" fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticE
         return XiaoAbiStatus::RuntimeError.code();
     };
     if session.stream.is_none() {
+        eprintln!("X11-DIAGNOSTIC-CHANNEL-001: 诊断事件没有已建立的通道");
         return XiaoAbiStatus::RuntimeError.code();
     }
     let location = if event.location.present != 0 {
@@ -1352,9 +1391,13 @@ pub extern "C" fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticE
             event: Box::new(diagnostic),
         },
     )
-    .map_or(XiaoAbiStatus::RuntimeError.code(), |_| {
-        XiaoAbiStatus::Ok.code()
-    })
+    .map_or_else(
+        |error| {
+            eprintln!("X11-DIAGNOSTIC-CHANNEL-001: {error}");
+            XiaoAbiStatus::RuntimeError.code()
+        },
+        |_| XiaoAbiStatus::Ok.code(),
+    )
 }
 
 /// 发送最终指标并关闭原生诊断会话；普通产物调用不到此入口。
@@ -1379,10 +1422,7 @@ pub extern "C" fn xiao_runtime_diagnostic_finish() {
             reason: "运行完成".to_owned(),
         },
     );
-    unsafe {
-        std::env::remove_var("XIAO_DIAGNOSTICS_ENDPOINT");
-        std::env::remove_var("XIAO_DIAGNOSTICS_TOKEN");
-    }
+    restore_diagnostic_environment(&session);
 }
 
 /// 处理 ABI 边界致命故障；该入口永远不会返回。

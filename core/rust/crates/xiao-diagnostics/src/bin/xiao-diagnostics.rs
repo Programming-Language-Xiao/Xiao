@@ -70,14 +70,15 @@ impl Arguments {
                 "--token" => token = values.next(),
                 "--standalone" => standalone = true,
                 "--parent-pid" => {
-                    parent_pid = values
+                    let value = values
                         .next()
                         .ok_or_else(|| "缺少 --parent-pid 的值".to_owned())?
                         .parse::<u32>()
-                        .ok();
-                    if parent_pid.is_none() {
+                        .map_err(|_| "--parent-pid 必须是正整数".to_owned())?;
+                    if value == 0 {
                         return Err("--parent-pid 必须是正整数".to_owned());
                     }
+                    parent_pid = Some(value);
                 }
                 "--ready-file" => {
                     ready_file = Some(PathBuf::from(
@@ -385,6 +386,22 @@ mod tests {
         )
         .err()
         .expect("非法 pid");
+        assert!(error.contains("正整数"));
+    }
+
+    #[test]
+    /// 零进程编号也必须拒绝，避免独立窗口误监控整个进程组。
+    fn zero_parent_pid_is_rejected() {
+        let error = Arguments::parse(
+            [
+                "--standalone".to_owned(),
+                "--parent-pid".to_owned(),
+                "0".to_owned(),
+            ]
+            .into_iter(),
+        )
+        .err()
+        .expect("零 pid");
         assert!(error.contains("正整数"));
     }
 

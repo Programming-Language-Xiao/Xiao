@@ -671,8 +671,117 @@ static int xiao_adjacent_renderer(char *buffer, size_t capacity) {
   return 0;
 }
 
+#if defined(__APPLE__)
+static int xiao_append_text(
+    char *buffer, size_t capacity, size_t *length, const char *text) {
+  size_t text_length = strlen(text);
+  if (*length + text_length + 1 > capacity) {
+    return ENAMETOOLONG;
+  }
+  memcpy(buffer + *length, text, text_length);
+  *length += text_length;
+  buffer[*length] = '\0';
+  return 0;
+}
+
+static int xiao_append_shell_argument(
+    char *buffer, size_t capacity, size_t *length, const char *value) {
+  int status = xiao_append_text(buffer, capacity, length, "'");
+  if (status != 0) {
+    return status;
+  }
+  for (const unsigned char *cursor = (const unsigned char *)value; *cursor != '\0'; ++cursor) {
+    status = *cursor == '\''
+        ? xiao_append_text(buffer, capacity, length, "'\\''")
+        : xiao_append_text(buffer, capacity, length, (char[]){(char)*cursor, '\0'});
+    if (status != 0) {
+      return status;
+    }
+  }
+  return xiao_append_text(buffer, capacity, length, "'");
+}
+
+static int xiao_append_applescript_text(
+    char *buffer, size_t capacity, size_t *length, const char *value) {
+  for (const unsigned char *cursor = (const unsigned char *)value; *cursor != '\0'; ++cursor) {
+    const char *escaped = NULL;
+    char character[2] = {(char)*cursor, '\0'};
+    switch (*cursor) {
+      case '\\':
+        escaped = "\\\\";
+        break;
+      case '"':
+        escaped = "\\\"";
+        break;
+      case '\n':
+        escaped = "\\n";
+        break;
+      case '\r':
+        escaped = "\\r";
+        break;
+      case '\t':
+        escaped = "\\t";
+        break;
+      default:
+        if (*cursor < 0x20) {
+          return EINVAL;
+        }
+        escaped = character;
+        break;
+    }
+    int status = xiao_append_text(buffer, capacity, length, escaped);
+    if (status != 0) {
+      return status;
+    }
+  }
+  return 0;
+}
+
+static int xiao_spawn_macos_terminal(char *const diagnostic_args[], pid_t *child) {
+  char command[32768];
+  size_t command_length = 0;
+  for (size_t index = 0; diagnostic_args[index] != NULL; ++index) {
+    if (index != 0) {
+      int separator_status = xiao_append_text(command, sizeof(command), &command_length, " ");
+      if (separator_status != 0) {
+        return separator_status;
+      }
+    }
+    int argument_status = xiao_append_shell_argument(
+        command, sizeof(command), &command_length, diagnostic_args[index]);
+    if (argument_status != 0) {
+      return argument_status;
+    }
+  }
+
+  char script[32768];
+  size_t script_length = 0;
+  int status = xiao_append_text(
+      script, sizeof(script), &script_length,
+      "tell application \"Terminal\" to do script \"");
+  if (status != 0) {
+    return status;
+  }
+  status = xiao_append_applescript_text(
+      script, sizeof(script), &script_length, command);
+  if (status != 0) {
+    return status;
+  }
+  status = xiao_append_text(script, sizeof(script), &script_length, "\"");
+  if (status != 0) {
+    return status;
+  }
+  char *script_args[] = {"osascript", "-e", script, NULL};
+  return posix_spawnp(child, "osascript", NULL, NULL, script_args, environ);
+}
+#endif
+
 static int xiao_spawn_terminal(char *const diagnostic_args[], pid_t *child) {
 #if defined(__APPLE__)
+  int osascript_status = xiao_spawn_macos_terminal(diagnostic_args, child);
+  if (osascript_status == 0) {
+    return 0;
+  }
   char *terminal_args[32];
   size_t count = 0;
   terminal_args[count++] = "open";
@@ -710,6 +819,26 @@ static int xiao_spawn_terminal(char *const diagnostic_args[], pid_t *child) {
   }
   return last_status;
 #endif
+}
+
+static void xiao_stop_child(pid_t child) {
+  if (child <= 0) {
+    return;
+  }
+  (void)kill(child, SIGTERM);
+  for (int attempt = 0; attempt < 100; ++attempt) {
+    pid_t result = waitpid(child, NULL, WNOHANG);
+    if (result == child || (result < 0 && errno == ECHILD)) {
+      return;
+    }
+    if (result < 0 && errno != EINTR) {
+      break;
+    }
+    usleep(10000);
+  }
+  (void)kill(child, SIGKILL);
+  while (waitpid(child, NULL, 0) < 0 && errno == EINTR) {
+  }
 }
 
 int xiao_native_debug_start(void) {
@@ -785,8 +914,7 @@ int xiao_native_debug_start(void) {
     usleep(10000);
   }
 
-  kill(child, SIGTERM);
-  waitpid(child, NULL, 0);
+  xiao_stop_child(child);
   unlink(ready_file);
   return xiao_startup_error("diagnostic readiness timed out", ETIMEDOUT);
 }
@@ -1047,9 +1175,13 @@ mod tests {
         assert!(source.contains("gnome-terminal"));
         assert!(source.contains("konsole"));
         assert!(source.contains("xterm"));
+        assert!(source.contains("osascript"));
+        assert!(source.contains("do script"));
         assert!(source.contains("/proc/self/exe"));
         assert!(source.contains("_NSGetExecutablePath"));
         assert!(source.contains("--ready-file"));
+        assert!(source.contains("WNOHANG"));
+        assert!(source.contains("SIGKILL"));
         assert!(source.contains("waitpid"));
         assert!(source.contains("diagnostic readiness timed out"));
     }
