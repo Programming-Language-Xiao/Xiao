@@ -78,11 +78,14 @@ impl<'source> TypeChecker<'source> {
     }
 
     /// 检查 `raise` 只能抛出可恢复错误对象或动态错误边界。
+    ///
+    /// 动态值不登记 `dynamic_conversion`：`raise` 的 Runtime ABI 是错误
+    /// 边界本身，负责校验并传播错误对象；如果在这里先做通用动态转换，
+    /// 合法的错误值会被错误地改写成 `TypeError`，原生降低也无法与字节码
+    /// 的 `Raise` 语义保持一致。
     pub(super) fn check_raise_statement(&mut self, value: &Expression, span: SourceSpan) {
         let ty = self.check_expression(value);
-        if ty.is_dynamic() || matches!(ty, Type::Variable(_)) {
-            self.push_runtime_check(span, RuntimeCheckKind::DynamicConversion);
-        } else {
+        if !ty.is_dynamic() && !matches!(ty, Type::Variable(_)) {
             self.type_error(
                 RAISE_TYPE_CODE,
                 "x07.type.raise_requires_error",

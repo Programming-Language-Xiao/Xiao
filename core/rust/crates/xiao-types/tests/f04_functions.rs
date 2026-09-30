@@ -200,6 +200,19 @@ fn rejects_non_error_raise_value() {
 }
 
 #[test]
+/// 动态错误构造由 `raise` 的 Runtime 边界校验，不应重复登记通用动态转换。
+fn keeps_dynamic_raise_at_error_boundary() {
+    let result = check("raise ArithmeticError(code = \"dynamic\")\n");
+    assert!(result.is_success(), "diagnostics: {:?}", result.diagnostics);
+    assert!(
+        !result
+            .runtime_checks()
+            .iter()
+            .any(|check| check.kind == RuntimeCheckKind::DynamicConversion)
+    );
+}
+
+#[test]
 /// `FatalError` 不得被普通 `catch` 捕获，宽泛处理器必须放在具体类型之后。
 fn enforces_catch_recovery_boundaries() {
     let fatal = check("try\n    raise error\ncatch fatal as FatalError\n    print(fatal)\n");

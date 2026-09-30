@@ -132,7 +132,12 @@ impl FrontendNativeDriver {
             request.toolchain.clone(),
             request.output.clone(),
         )
-        .with_options(request.codegen_options.clone());
+        .with_options(
+            request
+                .codegen_options
+                .clone()
+                .with_locale(request.frontend.context.locale.clone()),
+        );
         if let Some(path) = &request.llvm_ir_output {
             backend_request = backend_request.with_llvm_ir_output(path.clone());
         }

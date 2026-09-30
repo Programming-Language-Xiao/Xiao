@@ -11,6 +11,7 @@ use std::cell::RefCell;
 use std::io::Write;
 use std::slice;
 
+use xiao_diagnostics::{ReportRecord, render_builtin_localized_text, validated_locale_tag};
 use xiao_runtime_abi::{
     ABI_MAJOR_VERSION, ABI_MINOR_VERSION, XiaoAbiBytes, XiaoAbiDiagnosticEvent,
     XiaoAbiErrorLocation, XiaoAbiErrorParam, XiaoAbiErrorSnapshot, XiaoAbiMutBytes, XiaoAbiSpan,
@@ -43,6 +44,8 @@ enum PendingError {
 thread_local! {
     /// N0-C 原生错误的单线程传播槽；它不跨线程，也不替代 Runtime 的错误对象。
     static PENDING_ERROR: RefCell<Option<PendingError>> = const { RefCell::new(None) };
+    /// 当前原生入口的不可变语言上下文。
+    static CURRENT_LOCALE: RefCell<Option<String>> = const { RefCell::new(None) };
 }
 
 /// ABI 盒子的魔数；用于在仍可读取的盒子中拒绝明显类型错配。
@@ -347,6 +350,30 @@ unsafe fn expect_strong(handle: XiaoHandle, expected: RuntimeTypeTag) -> Result<
     Ok(strong)
 }
 
+/// 消费 ABI 强句柄盒子中的最后一份强引用，不增加 Runtime 引用计数。
+///
+/// 该入口供原生降低器把 `string_new`/容器构造返回的拥有句柄直接转移进
+/// `XiaoValue`；它避免“先复制值、再释放原句柄”在 VM/原生差分中形成额外
+/// 的运行期释放事件。若盒子中还有 `retain` 产生的其他引用，只移出最新一份，
+/// 盒子本身继续由剩余引用持有。
+unsafe fn take_strong(handle: XiaoHandle, expected: RuntimeTypeTag) -> Result<StrongHandle, i32> {
+    let strong_ptr = handle.cast::<AbiStrong>();
+    let (inner, empty) = {
+        let strong = unsafe { strong_ref(handle) }?;
+        let mut inners = strong.inners.borrow_mut();
+        let current = inners.last().ok_or(XiaoAbiStatus::InvalidHandle.code())?;
+        if current.type_tag() != expected {
+            return Err(XiaoAbiStatus::InvalidHandle.code());
+        }
+        let inner = inners.pop().ok_or(XiaoAbiStatus::InvalidHandle.code())?;
+        (inner, inners.is_empty())
+    };
+    if empty {
+        unsafe { drop(Box::from_raw(strong_ptr)) };
+    }
+    Ok(inner)
+}
+
 /// 把 ABI 字节视图解码为拥有的 UTF-8 字符串。
 unsafe fn utf8(view: XiaoAbiBytes) -> Result<String, i32> {
     let bytes = unsafe { bytes(view) }?;
@@ -643,6 +670,7 @@ pub extern "C" fn xiao_runtime_abi_minor_version() -> u32 {
 /// 检查生成代码所需的主/次版本是否由当前 Runtime 满足。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_abi_is_compatible(required_major: u32, required_minor: u32) -> i32 {
+    crate::crash::install_platform_failure_reporter();
     i32::from(required_major == ABI_MAJOR_VERSION && required_minor <= ABI_MINOR_VERSION)
 }
 
@@ -652,6 +680,36 @@ pub extern "C" fn xiao_runtime_error_clear() {
     PENDING_ERROR.with(|pending| {
         *pending.borrow_mut() = None;
     });
+}
+
+/// 设置当前原生入口的不可变语言上下文；实际目录查找和插值仍由统一诊断渲染器完成。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_language_context_set(locale: XiaoAbiBytes) -> i32 {
+    let locale = match unsafe { utf8(locale) } {
+        Ok(locale) => locale,
+        Err(status) => return status,
+    };
+    let locale = match validated_locale_tag(&locale) {
+        Ok(locale) => locale,
+        Err(_) => {
+            set_pending_runtime_error(RuntimeError::invalid_value("语言上下文无效"));
+            return XiaoAbiStatus::InvalidArgument.code();
+        }
+    };
+    CURRENT_LOCALE.with(|current| *current.borrow_mut() = Some(locale));
+    XiaoAbiStatus::Ok.code()
+}
+
+/// 开启原生运行期释放事件追踪。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_release_trace_begin() {
+    crate::memory::start_release_trace_from_env();
+}
+
+/// 刷新原生运行期释放事件追踪文件。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_release_trace_flush() {
+    crate::memory::flush_release_trace();
 }
 
 /// 返回当前线程挂起错误的机器类别。
@@ -754,6 +812,48 @@ pub extern "C" fn xiao_runtime_error_new(
     value_from_owned_error(error)
 }
 
+#[unsafe(no_mangle)]
+/// 从 ABI 字符串值构造错误对象，并保留传入源码位置。
+pub extern "C" fn xiao_runtime_error_new_values(
+    type_name: XiaoAbiBytes,
+    code: *const XiaoValue,
+    message: *const XiaoValue,
+    location: *const XiaoAbiErrorLocation,
+) -> XiaoValue {
+    let code = match unsafe { error_text_value(code) } {
+        Ok(value) => value,
+        Err(()) => return XiaoValue::none(),
+    };
+    let message = match unsafe { error_text_value(message) } {
+        Ok(value) => value,
+        Err(()) => return XiaoValue::none(),
+    };
+    xiao_runtime_error_new(
+        type_name,
+        abi_bytes(code.as_deref().unwrap_or_default()),
+        abi_bytes(message.as_deref().unwrap_or_default()),
+        location,
+    )
+}
+
+unsafe fn error_text_value(value: *const XiaoValue) -> Result<Option<String>, ()> {
+    if value.is_null() {
+        return Ok(None);
+    }
+    let runtime = unsafe { value_to_runtime(&*value) }.map_err(|_| {
+        set_pending_runtime_error(RuntimeError::invalid_value("错误文本值句柄无效"));
+    })?;
+    let text = match runtime {
+        RuntimeValue::Str(handle) => status(handle.to_string()).map_err(|_| ())?,
+        RuntimeValue::Lint(text) | RuntimeValue::Lfloat(text) => text,
+        other => {
+            set_pending_runtime_error(RuntimeError::type_mismatch("str", other.type_name()));
+            return Err(());
+        }
+    };
+    Ok(Some(text))
+}
+
 /// 创建并挂起一个语言层可恢复错误。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_error_raise_type(
@@ -809,7 +909,7 @@ pub extern "C" fn xiao_runtime_error_raise_value(
         return XiaoAbiStatus::RuntimeError.code();
     };
     let mut error = *error;
-    if let Some(span) = source_span(location) {
+    if let Some(span) = source_span(location).filter(|_| error.location().is_none()) {
         error = error.with_location(span);
     }
     set_pending_runtime_error(error);
@@ -1003,36 +1103,16 @@ pub extern "C" fn xiao_runtime_error_exit_code() -> i32 {
 /// 把当前挂起错误写成不依赖语言目录的机器诊断摘要。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_error_report() {
-    PENDING_ERROR.with(|pending| {
-        let pending = pending.borrow();
-        let Some(error) = pending.as_ref() else {
-            return;
-        };
-        let (class, code, message_id, message, location) = match error {
-            PendingError::Recoverable(error) => (
-                "recoverable",
-                error.code(),
-                error.message_id(),
-                error.message(),
-                error.location(),
-            ),
-            PendingError::Fatal(error) => (
-                "fatal",
-                error.code(),
-                error.message_id(),
-                error.message(),
-                error.location(),
-            ),
-        };
-        let location = location.map_or_else(
-            || "<none>".to_owned(),
-            |span| format!("{}..{}", span.start(), span.end()),
-        );
-        let line = format!(
-            "xiao-error class={class} code={code} message_id={message_id} span={location}: {message}\n"
-        );
-        let _ = std::io::stderr().write_all(line.as_bytes());
+    let report = PENDING_ERROR.with(|pending| {
+        pending.borrow().as_ref().map(|error| match error {
+            PendingError::Recoverable(error) => ("recoverable", error.report()),
+            PendingError::Fatal(error) => ("fatal", error.report()),
+        })
     });
+    let Some((class, report)) = report else {
+        return;
+    };
+    write_runtime_report(class, &report, current_locale(), pending_exit_code());
 }
 
 /// 记录一个结构化诊断事件；本函数不查找目录，也不执行本地化。
@@ -1054,10 +1134,34 @@ pub extern "C" fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticE
 /// 处理 ABI 边界致命故障；该入口永远不会返回。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_fatal_abi() -> ! {
-    let _ = std::io::stderr().write_all(
-        b"xiao-error class=fatal code=X07-FATAL-006 message_id=fatal.internal span=<none>\n",
-    );
+    let error = FatalError::internal("Runtime ABI 边界失败");
+    let report = error.report();
+    write_runtime_report("fatal", &report, current_locale(), 4);
     std::process::exit(4)
+}
+
+/// 返回当前线程的规范语言标签；未设置时使用默认语言。
+fn current_locale() -> String {
+    CURRENT_LOCALE.with(|current| {
+        current
+            .borrow()
+            .clone()
+            .unwrap_or_else(|| "zh-CN".to_owned())
+    })
+}
+
+/// 通过统一诊断报告记录输出 ABI 的机器摘要与人类可读文本。
+fn write_runtime_report(class: &str, report: &ReportRecord, locale: String, exit_code: i32) {
+    let location = report.location.map_or_else(
+        || "<none>".to_owned(),
+        |span| format!("{}..{}", span.start(), span.end()),
+    );
+    let text = render_builtin_localized_text(report, &locale);
+    let line = format!(
+        "xiao-error class={class} code={} message_id={} params={:?} span={location} exit_code={exit_code}\n{text}",
+        report.code, report.message_id, report.params,
+    );
+    let _ = std::io::stderr().write_all(line.as_bytes());
 }
 
 /// 保留强句柄；空指针安全地返回空指针。
@@ -1458,6 +1562,14 @@ pub extern "C" fn xiao_runtime_value_str(handle: XiaoHandle) -> XiaoValue {
         .unwrap_or_else(|_| XiaoValue::none())
 }
 
+/// 消费字符串强句柄并包装为 ABI 字符串值。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_str_owned(handle: XiaoHandle) -> XiaoValue {
+    unsafe { take_strong(handle, RuntimeTypeTag::String) }
+        .map(|handle| value_from_owned_handle(XiaoValueTag::Str, handle))
+        .unwrap_or_else(|_| XiaoValue::none())
+}
+
 /// 将字符串强句柄包装为任意精度整数文本值。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_lint(handle: XiaoHandle) -> XiaoValue {
@@ -1466,10 +1578,26 @@ pub extern "C" fn xiao_runtime_value_lint(handle: XiaoHandle) -> XiaoValue {
         .unwrap_or_else(|_| XiaoValue::none())
 }
 
+/// 消费字符串强句柄并包装为任意精度整数文本值。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_lint_owned(handle: XiaoHandle) -> XiaoValue {
+    unsafe { take_strong(handle, RuntimeTypeTag::String) }
+        .map(|handle| value_from_owned_handle(XiaoValueTag::Lint, handle))
+        .unwrap_or_else(|_| XiaoValue::none())
+}
+
 /// 将字符串强句柄包装为任意精度浮点文本值。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_lfloat(handle: XiaoHandle) -> XiaoValue {
     unsafe { expect_strong(handle, RuntimeTypeTag::String) }
+        .map(|handle| value_from_owned_handle(XiaoValueTag::Lfloat, handle))
+        .unwrap_or_else(|_| XiaoValue::none())
+}
+
+/// 消费字符串强句柄并包装为任意精度浮点文本值。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_lfloat_owned(handle: XiaoHandle) -> XiaoValue {
+    unsafe { take_strong(handle, RuntimeTypeTag::String) }
         .map(|handle| value_from_owned_handle(XiaoValueTag::Lfloat, handle))
         .unwrap_or_else(|_| XiaoValue::none())
 }
@@ -1544,6 +1672,14 @@ pub extern "C" fn xiao_runtime_value_array(handle: XiaoHandle) -> XiaoValue {
         .unwrap_or_else(|_| XiaoValue::none())
 }
 
+#[unsafe(no_mangle)]
+/// 消费数组强句柄并将其所有权转移到 ABI 数组值，不额外增加引用。
+pub extern "C" fn xiao_runtime_value_array_owned(handle: XiaoHandle) -> XiaoValue {
+    unsafe { take_strong(handle, RuntimeTypeTag::Array) }
+        .map(|handle| value_from_owned_handle(XiaoValueTag::Array, handle))
+        .unwrap_or_else(|_| XiaoValue::none())
+}
+
 /// 构造元组对象。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_tuple_new(
@@ -1610,6 +1746,14 @@ pub extern "C" fn xiao_runtime_tuple_get(
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_tuple(handle: XiaoHandle) -> XiaoValue {
     unsafe { expect_strong(handle, RuntimeTypeTag::Tuple) }
+        .map(|handle| value_from_owned_handle(XiaoValueTag::Tuple, handle))
+        .unwrap_or_else(|_| XiaoValue::none())
+}
+
+#[unsafe(no_mangle)]
+/// 消费元组强句柄并将其所有权转移到 ABI 元组值，不额外增加引用。
+pub extern "C" fn xiao_runtime_value_tuple_owned(handle: XiaoHandle) -> XiaoValue {
+    unsafe { take_strong(handle, RuntimeTypeTag::Tuple) }
         .map(|handle| value_from_owned_handle(XiaoValueTag::Tuple, handle))
         .unwrap_or_else(|_| XiaoValue::none())
 }
@@ -1720,6 +1864,19 @@ pub extern "C" fn xiao_runtime_value_dict(handle: XiaoHandle, kind: u32) -> Xiao
         .unwrap_or_else(|_| XiaoValue::none())
 }
 
+#[unsafe(no_mangle)]
+/// 消费字典强句柄并将其所有权转移到对应的 ABI 字典值，不额外增加引用。
+pub extern "C" fn xiao_runtime_value_dict_owned(handle: XiaoHandle, kind: u32) -> XiaoValue {
+    let (tag, expected) = match kind {
+        0 => (XiaoValueTag::DictTable, RuntimeTypeTag::DictTable),
+        1 => (XiaoValueTag::DictColumn, RuntimeTypeTag::DictColumn),
+        _ => return XiaoValue::none(),
+    };
+    unsafe { take_strong(handle, expected) }
+        .map(|handle| value_from_owned_handle(tag, handle))
+        .unwrap_or_else(|_| XiaoValue::none())
+}
+
 /// 构造集合对象。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_set_new(
@@ -1791,6 +1948,14 @@ pub extern "C" fn xiao_runtime_set_contains(
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_set(handle: XiaoHandle) -> XiaoValue {
     unsafe { expect_strong(handle, RuntimeTypeTag::Set) }
+        .map(|handle| value_from_owned_handle(XiaoValueTag::Set, handle))
+        .unwrap_or_else(|_| XiaoValue::none())
+}
+
+#[unsafe(no_mangle)]
+/// 消费集合强句柄并将其所有权转移到 ABI 集合值，不额外增加引用。
+pub extern "C" fn xiao_runtime_value_set_owned(handle: XiaoHandle) -> XiaoValue {
+    unsafe { take_strong(handle, RuntimeTypeTag::Set) }
         .map(|handle| value_from_owned_handle(XiaoValueTag::Set, handle))
         .unwrap_or_else(|_| XiaoValue::none())
 }
@@ -1880,6 +2045,14 @@ pub extern "C" fn xiao_runtime_table_set(
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_table(handle: XiaoHandle) -> XiaoValue {
     unsafe { expect_strong(handle, RuntimeTypeTag::Table) }
+        .map(|handle| value_from_owned_handle(XiaoValueTag::Table, handle))
+        .unwrap_or_else(|_| XiaoValue::none())
+}
+
+#[unsafe(no_mangle)]
+/// 消费表强句柄并将其所有权转移到 ABI 表值，不额外增加引用。
+pub extern "C" fn xiao_runtime_value_table_owned(handle: XiaoHandle) -> XiaoValue {
+    unsafe { take_strong(handle, RuntimeTypeTag::Table) }
         .map(|handle| value_from_owned_handle(XiaoValueTag::Table, handle))
         .unwrap_or_else(|_| XiaoValue::none())
 }

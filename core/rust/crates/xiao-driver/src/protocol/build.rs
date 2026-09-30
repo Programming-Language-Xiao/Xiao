@@ -33,6 +33,7 @@ use crate::run::{CancellationToken, ExitCode};
 /// `build_response` 的已拥有输入，便于把准备阶段与执行阶段分开。
 struct BuildInputs {
     language_version: String,
+    locale: Option<String>,
     target: ProtocolTarget,
     optimization: OptimizationConfig,
     source: SourceIdentity,
@@ -100,6 +101,7 @@ pub(super) fn build_toolchain(
 pub(super) fn build_response(
     request_id: String,
     language_version: String,
+    locale: Option<String>,
     target: ProtocolTarget,
     optimization: OptimizationConfig,
     source: SourceIdentity,
@@ -124,6 +126,7 @@ pub(super) fn build_response(
 
     let inputs = BuildInputs {
         language_version,
+        locale,
         target,
         optimization,
         source,
@@ -151,6 +154,7 @@ pub(super) fn build_response(
 fn prepare_build(request_id: &str, inputs: BuildInputs) -> Result<BuildPlan, ProtocolResponse> {
     let BuildInputs {
         language_version,
+        locale,
         target,
         optimization,
         source,
@@ -172,7 +176,7 @@ fn prepare_build(request_id: &str, inputs: BuildInputs) -> Result<BuildPlan, Pro
         .map_err(|error| protocol_error_response(Some(request_id.to_owned()), &error))?;
     let frozen_config = freeze_runtime_config(&output, config_text.as_deref())
         .map_err(|error| protocol_error_response(Some(request_id.to_owned()), &error))?;
-    let frontend = frontend_request(&source, &language_version, &target);
+    let frontend = frontend_request(&source, &language_version, &target, locale.as_deref());
     let mut request =
         NativeBuildRequest::new(frontend, target_description.clone(), toolchain, output)
             .with_codegen_options(build_codegen_options(

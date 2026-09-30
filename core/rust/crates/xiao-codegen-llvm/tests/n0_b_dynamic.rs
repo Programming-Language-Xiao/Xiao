@@ -217,15 +217,13 @@ fn emits_windows_indirect_runtime_abi_calls() {
         &CodegenOptions::for_target(TargetDescription::windows_x86_64()),
     )
     .expect("Windows 动态字符串应降低");
+    assert!(module.text.contains(
+        "declare void @xiao_runtime_value_str_owned(ptr sret(%xiao.value) align 8, ptr)"
+    ));
     assert!(
         module
             .text
-            .contains("declare void @xiao_runtime_value_str(ptr sret(%xiao.value) align 8, ptr)")
-    );
-    assert!(
-        module
-            .text
-            .contains("call void @xiao_runtime_value_str(ptr sret(%xiao.value)")
+            .contains("call void @xiao_runtime_value_str_owned(ptr sret(%xiao.value)")
     );
     assert!(
         module
@@ -246,7 +244,7 @@ fn emits_sysv_runtime_value_layout() {
     assert!(
         module
             .text
-            .contains("declare %xiao.value @xiao_runtime_value_str(ptr)")
+            .contains("declare %xiao.value @xiao_runtime_value_str_owned(ptr)")
     );
     assert!(!module.text.contains("i32, i32, i64"));
 }

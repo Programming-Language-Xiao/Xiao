@@ -1052,12 +1052,18 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     .as_deref()
                     .and_then(runtime_check_code)
                     .or(code.as_deref());
-                let error = XiaoError::from_type_name(type_name, default_code, message.as_deref())
-                    .ok_or_else(|| {
-                        Fault::Error(XiaoError::invalid_value(format!(
-                            "未知或不可恢复的错误类型 {type_name}"
-                        )))
-                    })?;
+                let mut error =
+                    XiaoError::from_type_name(type_name, default_code, message.as_deref())
+                        .ok_or_else(|| {
+                            Fault::Error(XiaoError::invalid_value(format!(
+                                "未知或不可恢复的错误类型 {type_name}"
+                            )))
+                        })?;
+                if let Some(location) =
+                    SourceSpan::new(instruction.span.start, instruction.span.end)
+                {
+                    error = error.with_location(location);
+                }
                 self.write_operand(instruction.dst, RuntimeValue::error(error));
             }
             TacOp::CallSub { sub } => {

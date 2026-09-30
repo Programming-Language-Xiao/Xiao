@@ -36,10 +36,12 @@ pub(super) fn frontend_request(
     source: &SourceIdentity,
     language_version: &str,
     target: &ProtocolTarget,
+    locale: Option<&str>,
 ) -> FrontendRequest {
     let mut context = FrontendContext::host();
     context.language_version = language_version.to_owned();
     context.target = target.triple.clone();
+    context.locale = locale.unwrap_or("zh-CN").to_owned();
     let request = match &source.path {
         Some(path) => FrontendRequest::from_text_at(source.text.clone(), path.clone()),
         None => FrontendRequest::from_text(source.text.clone()),
@@ -51,8 +53,9 @@ fn frontend_run_request(
     source: &SourceIdentity,
     language_version: &str,
     target: &ProtocolTarget,
+    locale: Option<&str>,
 ) -> Result<(FrontendRequest, RunSessionFingerprint), ProtocolError> {
-    let mut request = frontend_request(source, language_version, target);
+    let mut request = frontend_request(source, language_version, target, locale);
     if let Some(root) = source
         .path
         .as_ref()
@@ -179,14 +182,15 @@ pub(super) fn run_request_response_with_driver(
     let diagnostic_config = optimization.diagnostics.clone();
     let module_name = source.module.clone();
     let source_name = source.path.clone();
-    let (frontend, fingerprint) = match frontend_run_request(&source, &language_version, &target) {
-        Ok(frontend) => frontend,
-        Err(error) => {
-            driver.reset_session();
-            *session_fingerprint = None;
-            return protocol_error_response(Some(request_id), &error);
-        }
-    };
+    let (frontend, fingerprint) =
+        match frontend_run_request(&source, &language_version, &target, locale.as_deref()) {
+            Ok(frontend) => frontend,
+            Err(error) => {
+                driver.reset_session();
+                *session_fingerprint = None;
+                return protocol_error_response(Some(request_id), &error);
+            }
+        };
     if session_fingerprint.as_ref() != Some(&fingerprint) {
         driver.reset_session();
         *session_fingerprint = Some(fingerprint);

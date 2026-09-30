@@ -40,14 +40,38 @@ impl<'a> DynamicGenerator<'a> {
             IrExpressionKind::Member { object, member } => {
                 self.emit_table_get(object, member, expression.span)
             }
+            IrExpressionKind::Call { callee, arguments } => {
+                self.emit_call(callee, arguments, expression.span)
+            }
             IrExpressionKind::Binary { .. }
             | IrExpressionKind::Unary { .. }
-            | IrExpressionKind::Call { .. }
             | IrExpressionKind::Selector { .. } => Err(CodegenError::Unsupported {
                 feature: "动态表达式运算或成员访问".to_owned(),
                 span: Some(expression.span),
             }),
         }
+    }
+
+    /// 发射动态普通调用；当前只开放前端已识别的错误构造器。
+    fn emit_call(
+        &mut self,
+        callee: &IrExpression,
+        arguments: &[IrCallArgument],
+        span: IrSpan,
+    ) -> Result<String> {
+        let IrExpressionKind::Name { name } = &callee.kind else {
+            return Err(CodegenError::Unsupported {
+                feature: "动态函数调用".to_owned(),
+                span: Some(span),
+            });
+        };
+        if error_kind_of(&name.text).is_some() {
+            return self.emit_error_new(&name.text, arguments, span);
+        }
+        Err(CodegenError::Unsupported {
+            feature: "动态函数调用".to_owned(),
+            span: Some(span),
+        })
     }
 
     /// 发射前端已定义的可恢复错误构造器。
@@ -75,9 +99,13 @@ impl<'a> DynamicGenerator<'a> {
         let mut message = None;
         for (index, argument) in arguments.iter().enumerate() {
             let text = self.emit_error_text_argument(argument, span)?;
+            let value = self.emit_text_value(text.as_bytes(), "xiao_runtime_value_str_owned")?;
+            let slot = self.next_temp();
+            self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
+            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
             match argument.name.as_ref().map(|name| name.text.as_str()) {
-                Some("code") if code.is_none() => code = Some(text),
-                Some("message") if message.is_none() => message = Some(text),
+                Some("code") if code.is_none() => code = Some((slot, value)),
+                Some("message") if message.is_none() => message = Some((slot, value)),
                 Some(name @ ("code" | "message")) => {
                     return Err(CodegenError::InvalidIr {
                         message: format!("错误构造参数 {name} 重复"),
@@ -89,8 +117,8 @@ impl<'a> DynamicGenerator<'a> {
                         span: Some(argument.span),
                     });
                 }
-                None if index == 0 && code.is_none() => code = Some(text),
-                None if index == 1 && message.is_none() => message = Some(text),
+                None if index == 0 && code.is_none() => code = Some((slot, value)),
+                None if index == 1 && message.is_none() => message = Some((slot, value)),
                 None => {
                     return Err(CodegenError::Unsupported {
                         feature: "错误构造参数（只支持 code/message）".to_owned(),
@@ -100,17 +128,22 @@ impl<'a> DynamicGenerator<'a> {
             }
         }
         let type_value = self.emit_bytes_value(type_name.as_bytes());
-        let code_value = self.emit_bytes_value(code.as_deref().unwrap_or_default().as_bytes());
-        let message_value =
-            self.emit_bytes_value(message.as_deref().unwrap_or_default().as_bytes());
         let type_argument = self.emit_bytes_argument(&type_value);
-        let code_argument = self.emit_bytes_argument(&code_value);
-        let message_argument = self.emit_bytes_argument(&message_value);
+        let code_argument = code.as_ref().map_or("null", |(slot, _)| slot.as_str());
+        let message_argument = message.as_ref().map_or("null", |(slot, _)| slot.as_str());
         let location = self.emit_error_location(span);
         let value = self.emit_value_call(
-            "xiao_runtime_error_new",
-            &format!("{type_argument}, {code_argument}, {message_argument}, ptr {location}"),
+            "xiao_runtime_error_new_values",
+            &format!(
+                "{type_argument}, ptr {code_argument}, ptr {message_argument}, ptr {location}"
+            ),
         );
+        if let Some((_, code)) = code {
+            self.release_value(code);
+        }
+        if let Some((_, message)) = message {
+            self.release_value(message);
+        }
         self.check_pending_error_at(span);
         Ok(value)
     }
@@ -249,7 +282,7 @@ impl<'a> DynamicGenerator<'a> {
                 if scalar_name == Some("lint") {
                     return self.emit_text_value(
                         text.replace('_', "").as_bytes(),
-                        "xiao_runtime_value_lint",
+                        "xiao_runtime_value_lint_owned",
                     );
                 }
                 if literal == "sint" || scalar_name == Some("sint") {
@@ -262,7 +295,7 @@ impl<'a> DynamicGenerator<'a> {
                 if scalar_name == Some("lfloat") {
                     return self.emit_text_value(
                         text.replace('_', "").as_bytes(),
-                        "xiao_runtime_value_lfloat",
+                        "xiao_runtime_value_lfloat_owned",
                     );
                 }
                 if literal == "sfloat" || scalar_name == Some("sfloat") {
@@ -287,9 +320,9 @@ impl<'a> DynamicGenerator<'a> {
                 }),
             },
             "none" => Ok(self.none_value()),
-            "str" => self.emit_string_literal(text, span, "xiao_runtime_value_str"),
-            "lint" => self.emit_string_literal(text, span, "xiao_runtime_value_lint"),
-            "lfloat" => self.emit_string_literal(text, span, "xiao_runtime_value_lfloat"),
+            "str" => self.emit_string_literal(text, span, "xiao_runtime_value_str_owned"),
+            "lint" => self.emit_string_literal(text, span, "xiao_runtime_value_lint_owned"),
+            "lfloat" => self.emit_string_literal(text, span, "xiao_runtime_value_lfloat_owned"),
             other => Err(CodegenError::Unsupported {
                 feature: format!("动态字面量 {other}"),
                 span: Some(span),
@@ -346,7 +379,6 @@ impl<'a> DynamicGenerator<'a> {
         let raw = self.next_temp();
         self.emit(format!("  {raw} = load ptr, ptr {handle}"));
         let value = self.emit_value_call(constructor, &format!("ptr {raw}"));
-        self.emit(format!("  call void @xiao_runtime_release(ptr {raw})"));
         Ok(value)
     }
 }

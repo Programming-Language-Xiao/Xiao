@@ -18,6 +18,14 @@ impl<'a> DynamicGenerator<'a> {
             .insert("declare i32 @xiao_runtime_abi_is_compatible(i32, i32)".to_owned());
         self.declarations
             .insert("declare void @xiao_runtime_error_clear()".to_owned());
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_language_context_set({})",
+            self.bytes_parameter_type()
+        ));
+        self.declarations
+            .insert("declare void @xiao_runtime_release_trace_begin()".to_owned());
+        self.declarations
+            .insert("declare void @xiao_runtime_release_trace_flush()".to_owned());
         self.declarations
             .insert("declare i32 @xiao_runtime_error_class()".to_owned());
         self.declarations
@@ -55,6 +63,10 @@ impl<'a> DynamicGenerator<'a> {
                 self.bytes_parameter_type()
             ),
         ));
+        self.declarations.insert(self.value_declaration(
+            "xiao_runtime_error_new_values",
+            &format!("{}, ptr, ptr, ptr", self.bytes_parameter_type()),
+        ));
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_int", "i64"));
         self.declarations
@@ -72,25 +84,39 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_str", "ptr"));
         self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_str_owned", "ptr"));
+        self.declarations
             .insert(self.value_declaration("xiao_runtime_value_lint", "ptr"));
         self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_lint_owned", "ptr"));
+        self.declarations
             .insert(self.value_declaration("xiao_runtime_value_lfloat", "ptr"));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_lfloat_owned", "ptr"));
         self.declarations
             .insert("declare i32 @xiao_runtime_array_new(ptr, i64, ptr)".to_owned());
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_array", "ptr"));
         self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_array_owned", "ptr"));
+        self.declarations
             .insert("declare i32 @xiao_runtime_tuple_new(ptr, i64, ptr)".to_owned());
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_tuple", "ptr"));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_tuple_owned", "ptr"));
         self.declarations
             .insert("declare i32 @xiao_runtime_dict_new(i32, ptr, ptr, i64, ptr)".to_owned());
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_dict", "ptr, i32"));
         self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_dict_owned", "ptr, i32"));
+        self.declarations
             .insert("declare i32 @xiao_runtime_set_new(ptr, i64, ptr)".to_owned());
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_set", "ptr"));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_set_owned", "ptr"));
         self.declarations
             .insert("declare i32 @xiao_runtime_table_new(ptr, ptr)".to_owned());
         self.declarations.insert(format!(
@@ -103,6 +129,8 @@ impl<'a> DynamicGenerator<'a> {
         ));
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_table", "ptr"));
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_value_table_owned", "ptr"));
         self.declared_runtime_components.insert("value".to_owned());
         self.declared_runtime_components.insert("rc".to_owned());
         if self.program_uses_container_abi() {

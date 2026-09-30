@@ -6,14 +6,165 @@
 use std::any::Any;
 use std::cell::{Cell, RefCell};
 use std::fmt::{self, Debug, Formatter};
+use std::fs;
 use std::marker::PhantomData;
 use std::mem::ManuallyDrop;
+use std::path::PathBuf;
 use std::ptr::NonNull;
 use std::rc::Rc;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::errors::{RuntimeError, RuntimeResult};
+
+/// 运行期释放动作类别。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ReleaseAction {
+    /// 归还一个强引用。
+    StrongRelease,
+    /// 销毁对象载荷。
+    Destroy,
+    /// 归还一个弱引用。
+    WeakRelease,
+}
+
+impl ReleaseAction {
+    /// 返回差分报告使用的稳定动作名称。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::StrongRelease => "strong_release",
+            Self::Destroy => "destroy",
+            Self::WeakRelease => "weak_release",
+        }
+    }
+}
+
+/// 一条运行期对象释放事件。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ReleaseEvent {
+    /// 当前追踪会话中的单调序号。
+    pub sequence: u64,
+    /// 当前追踪会话分配的稳定对象身份。
+    pub object_id: u64,
+    /// 释放动作。
+    pub action: ReleaseAction,
+}
+
+#[derive(Default)]
+struct ReleaseTraceState {
+    enabled: bool,
+    next_object_id: u64,
+    next_sequence: u64,
+    path: Option<PathBuf>,
+    events: Vec<ReleaseEvent>,
+}
+
+thread_local! {
+    static RELEASE_TRACE: RefCell<ReleaseTraceState> = RefCell::new(ReleaseTraceState::default());
+}
+
+/// 一次运行期释放追踪会话的作用域。
+pub struct ReleaseTraceGuard {
+    previous_enabled: bool,
+    previous_path: Option<PathBuf>,
+}
+
+impl Drop for ReleaseTraceGuard {
+    fn drop(&mut self) {
+        RELEASE_TRACE.with(|trace| {
+            let mut trace = trace.borrow_mut();
+            trace.enabled = self.previous_enabled;
+            trace.path = self.previous_path.take();
+        });
+    }
+}
+
+/// 在当前线程开启运行期释放事件追踪。
+#[must_use]
+pub fn start_release_trace() -> ReleaseTraceGuard {
+    RELEASE_TRACE.with(|trace| {
+        let mut trace = trace.borrow_mut();
+        let guard = ReleaseTraceGuard {
+            previous_enabled: trace.enabled,
+            previous_path: trace.path.take(),
+        };
+        trace.enabled = true;
+        trace.next_object_id = 1;
+        trace.next_sequence = 0;
+        trace.path = None;
+        trace.events.clear();
+        guard
+    })
+}
+
+/// 按原生产物环境变量开启释放追踪；缺少路径时保持默认关闭。
+pub fn start_release_trace_from_env() {
+    let path = std::env::var_os("XIAO_RUNTIME_RELEASE_TRACE_PATH").map(PathBuf::from);
+    RELEASE_TRACE.with(|trace| {
+        let mut trace = trace.borrow_mut();
+        trace.enabled = path.is_some();
+        trace.next_object_id = 1;
+        trace.next_sequence = 0;
+        trace.path = path;
+        trace.events.clear();
+    });
+}
+
+/// 取出当前线程已经记录的释放事件。
+#[must_use]
+pub fn take_release_events() -> Vec<ReleaseEvent> {
+    RELEASE_TRACE.with(|trace| std::mem::take(&mut trace.borrow_mut().events))
+}
+
+/// 将当前线程释放事件写入原生产物指定的差分文件。
+pub fn flush_release_trace() {
+    let (path, events) = RELEASE_TRACE.with(|trace| {
+        let mut trace = trace.borrow_mut();
+        (trace.path.clone(), std::mem::take(&mut trace.events))
+    });
+    let Some(path) = path else {
+        return;
+    };
+    let mut output = String::new();
+    for event in events {
+        output.push_str(&format!(
+            "{}\t{}\t{}\n",
+            event.sequence,
+            event.object_id,
+            event.action.as_str()
+        ));
+    }
+    let _ = fs::write(path, output);
+}
+
+fn trace_object_allocation() -> u64 {
+    RELEASE_TRACE.with(|trace| {
+        let mut trace = trace.borrow_mut();
+        if !trace.enabled {
+            return 0;
+        }
+        let object_id = trace.next_object_id;
+        trace.next_object_id = trace.next_object_id.saturating_add(1);
+        object_id
+    })
+}
+
+fn trace_release(object_id: u64, action: ReleaseAction) {
+    RELEASE_TRACE.with(|trace| {
+        let mut trace = trace.borrow_mut();
+        if !trace.enabled || object_id == 0 {
+            return;
+        }
+        let sequence = trace.next_sequence;
+        trace.next_sequence = trace.next_sequence.saturating_add(1);
+        trace.events.push(ReleaseEvent {
+            sequence,
+            object_id,
+            action,
+        });
+    });
+}
 
 /// Runtime 堆对象的类型标签。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -162,6 +313,7 @@ pub(crate) trait ObjectPayload: Any {
 /// Runtime 对象的私有不透明头，承载计数和销毁状态。
 struct ObjectHeader {
     type_tag: RuntimeTypeTag,
+    object_id: u64,
     strong_count: Cell<usize>,
     weak_count: Cell<usize>,
     layout: ObjectLayout,
@@ -456,6 +608,7 @@ impl Drop for WeakHandle {
     /// 释放弱句柄；最后一个弱句柄同时释放对象头分配。
     fn drop(&mut self) {
         let header = unsafe { self.ptr.as_ref() };
+        trace_release(header.object_id, ReleaseAction::WeakRelease);
         let count = header
             .strategy
             .decrement(header.weak_count.get())
@@ -471,9 +624,11 @@ impl Drop for WeakHandle {
 pub(crate) fn allocate_payload(payload: Box<dyn ObjectPayload>) -> RuntimeResult<StrongHandle> {
     let layout = payload.layout();
     let bytes = object_bytes(&*payload);
+    let object_id = trace_object_allocation();
     let measurement = ACTIVE_MEASUREMENT.with(|active| active.borrow().clone());
     let header = Box::new(ObjectHeader {
         type_tag: payload.type_tag(),
+        object_id,
         strong_count: Cell::new(1),
         // 一个隐式弱引用保证强引用归零后对象头仍可供 Weak 查询。
         weak_count: Cell::new(1),
@@ -584,6 +739,7 @@ fn refresh_memory_usage(ptr: NonNull<ObjectHeader>) {
 /// 减少强计数，并在最后一个强引用释放时销毁载荷。
 unsafe fn release_strong(ptr: NonNull<ObjectHeader>) -> RuntimeResult<()> {
     let header = unsafe { ptr.as_ref() };
+    trace_release(header.object_id, ReleaseAction::StrongRelease);
     let current = header.strong_count.get();
     let next = header.strategy.decrement(current)?;
     header.strong_count.set(next);
@@ -603,6 +759,7 @@ unsafe fn release_strong(ptr: NonNull<ObjectHeader>) -> RuntimeResult<()> {
 /// 执行一次载荷释放钩子并拆除载荷存储。
 unsafe fn destroy_payload(ptr: NonNull<ObjectHeader>) -> Option<RuntimeError> {
     let header = unsafe { ptr.as_ref() };
+    trace_release(header.object_id, ReleaseAction::Destroy);
     if header.destroyed.replace(true) {
         return Some(RuntimeError::refcount_invariant("对象载荷被重复释放"));
     }
@@ -627,7 +784,8 @@ unsafe fn free_header(ptr: NonNull<ObjectHeader>) {
 /// 对象头计数、弱引用存活和载荷释放的回归测试。
 mod tests {
     use super::{
-        ObjectLayout, ObjectPayload, RuntimeTypeTag, allocate_payload, start_memory_measurement,
+        ObjectLayout, ObjectPayload, ReleaseAction, RuntimeTypeTag, allocate_payload,
+        start_memory_measurement, start_release_trace, take_release_events,
     };
     use crate::containers::ArrayHandle;
     use crate::errors::RuntimeResult;
@@ -721,6 +879,34 @@ mod tests {
         assert_eq!(dropped.get(), 1);
         assert!(!weak.is_alive());
         assert!(weak.upgrade().is_err());
+    }
+
+    #[test]
+    /// 运行期释放追踪默认关闭，开启后记录对象身份、动作和单调序号。
+    fn release_trace_records_shared_runtime_events() {
+        let _trace = start_release_trace();
+        let dropped = std::rc::Rc::new(std::cell::Cell::new(0));
+        let handle = allocate_payload(Box::new(Probe {
+            dropped: dropped.clone(),
+        }))
+        .expect("应分配对象");
+        let weak = handle.downgrade();
+        handle.try_release().expect("强引用释放应成功");
+        drop(weak);
+        let events = take_release_events();
+        assert_eq!(events.len(), 3);
+        assert_eq!(events[0].action, ReleaseAction::StrongRelease);
+        assert_eq!(events[1].action, ReleaseAction::Destroy);
+        assert_eq!(events[2].action, ReleaseAction::WeakRelease);
+        assert!(events.iter().all(|event| event.object_id != 0));
+        assert_eq!(
+            events
+                .iter()
+                .map(|event| event.sequence)
+                .collect::<Vec<_>>(),
+            vec![0, 1, 2]
+        );
+        assert_eq!(dropped.get(), 1);
     }
 
     #[test]

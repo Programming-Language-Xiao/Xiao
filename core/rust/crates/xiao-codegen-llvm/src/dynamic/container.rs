@@ -48,12 +48,11 @@ impl<'a> DynamicGenerator<'a> {
         let raw = self.next_temp();
         self.emit(format!("  {raw} = load ptr, ptr {handle}"));
         let constructor = if tuple {
-            "xiao_runtime_value_tuple"
+            "xiao_runtime_value_tuple_owned"
         } else {
-            "xiao_runtime_value_array"
+            "xiao_runtime_value_array_owned"
         };
         let value = self.emit_value_call(constructor, &format!("ptr {raw}"));
-        self.emit(format!("  call void @xiao_runtime_release(ptr {raw})"));
         Ok(value)
     }
 
@@ -122,9 +121,10 @@ impl<'a> DynamicGenerator<'a> {
         }
         let raw = self.next_temp();
         self.emit(format!("  {raw} = load ptr, ptr {handle}"));
-        let value =
-            self.emit_value_call("xiao_runtime_value_dict", &format!("ptr {raw}, i32 {kind}"));
-        self.emit(format!("  call void @xiao_runtime_release(ptr {raw})"));
+        let value = self.emit_value_call(
+            "xiao_runtime_value_dict_owned",
+            &format!("ptr {raw}, i32 {kind}"),
+        );
         Ok(value)
     }
 
@@ -157,8 +157,7 @@ impl<'a> DynamicGenerator<'a> {
         }
         let raw = self.next_temp();
         self.emit(format!("  {raw} = load ptr, ptr {handle}"));
-        let value = self.emit_value_call("xiao_runtime_value_set", &format!("ptr {raw}"));
-        self.emit(format!("  call void @xiao_runtime_release(ptr {raw})"));
+        let value = self.emit_value_call("xiao_runtime_value_set_owned", &format!("ptr {raw}"));
         Ok(value)
     }
 
@@ -219,8 +218,7 @@ impl<'a> DynamicGenerator<'a> {
             ));
             self.release_value(value);
         }
-        let value = self.emit_value_call("xiao_runtime_value_table", &format!("ptr {raw}"));
-        self.emit(format!("  call void @xiao_runtime_release(ptr {raw})"));
+        let value = self.emit_value_call("xiao_runtime_value_table_owned", &format!("ptr {raw}"));
         Ok(value)
     }
 

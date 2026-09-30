@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 2;
+pub const ABI_MINOR_VERSION: u32 = 4;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -560,6 +560,13 @@ unsafe extern "C" {
         message: XiaoAbiBytes,
         location: *const XiaoAbiErrorLocation,
     ) -> XiaoValue;
+    /// 从借用的 Runtime 文本值构造可恢复错误；缺省参数传空指针，调用方保留值所有权。
+    pub fn xiao_runtime_error_new_values(
+        type_name: XiaoAbiBytes,
+        code: *const XiaoValue,
+        message: *const XiaoValue,
+        location: *const XiaoAbiErrorLocation,
+    ) -> XiaoValue;
     /// 创建一个可恢复错误并放入当前线程的挂起错误槽。
     pub fn xiao_runtime_error_raise_type(
         type_name: XiaoAbiBytes,
@@ -588,6 +595,12 @@ unsafe extern "C" {
     pub fn xiao_runtime_error_report();
     /// 将一个诊断事件交给已建立的诊断会话；无会话时仍保留确定性失败状态。
     pub fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticEvent) -> i32;
+    /// 设置当前原生入口使用的不可变语言上下文。
+    pub fn xiao_runtime_language_context_set(locale: XiaoAbiBytes) -> i32;
+    /// 按 `XIAO_RUNTIME_RELEASE_TRACE_PATH` 开启当前线程的释放事件追踪。
+    pub fn xiao_runtime_release_trace_begin();
+    /// 将当前线程的释放事件写入追踪文件并清空事件缓冲。
+    pub fn xiao_runtime_release_trace_flush();
     /// 处理 ABI/平台边界致命故障；该函数不会返回，也不会进入 Xiao `catch`。
     pub fn xiao_runtime_fatal_abi() -> !;
 
@@ -645,10 +658,16 @@ unsafe extern "C" {
     ) -> i32;
     /// 从字符串强句柄构造 `XiaoValueTag::Str`。
     pub fn xiao_runtime_value_str(handle: XiaoHandle) -> XiaoValue;
+    /// 消费字符串强句柄并构造 `XiaoValueTag::Str`；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_str_owned(handle: XiaoHandle) -> XiaoValue;
     /// 从字符串强句柄构造任意精度整数文本值。
     pub fn xiao_runtime_value_lint(handle: XiaoHandle) -> XiaoValue;
+    /// 消费字符串强句柄并构造任意精度整数文本值；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_lint_owned(handle: XiaoHandle) -> XiaoValue;
     /// 从字符串强句柄构造任意精度浮点文本值。
     pub fn xiao_runtime_value_lfloat(handle: XiaoHandle) -> XiaoValue;
+    /// 消费字符串强句柄并构造任意精度浮点文本值；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_lfloat_owned(handle: XiaoHandle) -> XiaoValue;
 
     /// 从值数组构造数组对象；Runtime 会复制每个输入值的所有权。`out` 遵循字符串构造
     /// 入口的已初始化句柄槽契约。
@@ -663,6 +682,8 @@ unsafe extern "C" {
     pub fn xiao_runtime_array_get(handle: XiaoHandle, index: usize, out: *mut XiaoValue) -> i32;
     /// 从数组强句柄构造 `XiaoValueTag::Array`。
     pub fn xiao_runtime_value_array(handle: XiaoHandle) -> XiaoValue;
+    /// 消费数组强句柄并构造 `XiaoValueTag::Array`；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_array_owned(handle: XiaoHandle) -> XiaoValue;
 
     /// 从值数组构造元组对象；`out` 遵循已初始化句柄槽契约。
     pub fn xiao_runtime_tuple_new(
@@ -676,6 +697,8 @@ unsafe extern "C" {
     pub fn xiao_runtime_tuple_get(handle: XiaoHandle, index: usize, out: *mut XiaoValue) -> i32;
     /// 从元组强句柄构造 `XiaoValueTag::Tuple`。
     pub fn xiao_runtime_value_tuple(handle: XiaoHandle) -> XiaoValue;
+    /// 消费元组强句柄并构造 `XiaoValueTag::Tuple`；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_tuple_owned(handle: XiaoHandle) -> XiaoValue;
 
     /// 按表或列形态从键值数组构造字典；`out` 遵循已初始化句柄槽契约。
     pub fn xiao_runtime_dict_new(
@@ -692,6 +715,8 @@ unsafe extern "C" {
     -> i32;
     /// 从字典强句柄构造对应标签的 ABI 值。
     pub fn xiao_runtime_value_dict(handle: XiaoHandle, kind: u32) -> XiaoValue;
+    /// 消费字典强句柄并构造对应标签的 ABI 值；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_dict_owned(handle: XiaoHandle, kind: u32) -> XiaoValue;
 
     /// 从值数组构造集合并执行可哈希与去重检查；`out` 遵循已初始化句柄槽契约。
     pub fn xiao_runtime_set_new(
@@ -709,6 +734,8 @@ unsafe extern "C" {
     ) -> i32;
     /// 从集合强句柄构造 `XiaoValueTag::Set`。
     pub fn xiao_runtime_value_set(handle: XiaoHandle) -> XiaoValue;
+    /// 消费集合强句柄并构造 `XiaoValueTag::Set`；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_set_owned(handle: XiaoHandle) -> XiaoValue;
 
     /// 按静态字段描述构造一个表实例或单例表；`out` 遵循已初始化句柄槽契约。
     pub fn xiao_runtime_table_new(
@@ -729,6 +756,8 @@ unsafe extern "C" {
     ) -> i32;
     /// 从表强句柄构造 `XiaoValueTag::Table`。
     pub fn xiao_runtime_value_table(handle: XiaoHandle) -> XiaoValue;
+    /// 消费表强句柄并构造 `XiaoValueTag::Table`；调用成功后不得再次释放句柄。
+    pub fn xiao_runtime_value_table_owned(handle: XiaoHandle) -> XiaoValue;
 
     /// 把一个固定宽度整数写到标准输出，返回 C 风格状态码。
     pub fn xiao_runtime_write_i64(value: i64) -> i32;
@@ -749,8 +778,8 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0002);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0004);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 2);
+        assert_eq!(ABI_MINOR_VERSION, 4);
     }
 }

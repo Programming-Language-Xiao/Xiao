@@ -1,6 +1,8 @@
 //! N0-C 原生错误路径与源码映射回归测试。
 
-use xiao_codegen_llvm::{CodegenOptions, NativeBuild, TargetDescription, Toolchain, lower_program};
+use xiao_codegen_llvm::{
+    CodegenOptions, NativeBuild, ObjectFormat, TargetDescription, Toolchain, lower_program,
+};
 use xiao_ir::{
     IrCallArgument, IrCatchClause, IrEntryMode, IrExpression, IrExpressionKind, IrName,
     IrOwnership, IrProgram, IrReleaseAction, IrReleasePlan, IrScope, IrSpan, IrStatement,
@@ -34,7 +36,7 @@ fn string_literal(text: &str) -> IrExpression {
 
 fn error_constructor() -> IrExpression {
     IrExpression {
-        kind: IrExpressionKind::NewCall {
+        kind: IrExpressionKind::Call {
             callee: Box::new(IrExpression {
                 kind: IrExpressionKind::Name {
                     name: name("ArithmeticError"),
@@ -366,6 +368,12 @@ fn finally_owned_control_program(statement: IrStatementKind, exit: &str) -> IrPr
                 transferred: Vec::new(),
             },
             IrReleasePlan {
+                scope: 0,
+                exit: "unmatched_error".to_owned(),
+                actions: Vec::new(),
+                transferred: Vec::new(),
+            },
+            IrReleasePlan {
                 scope: 2,
                 exit: exit.to_owned(),
                 actions: vec![IrReleaseAction {
@@ -402,7 +410,7 @@ fn lowers_recoverable_error_path() {
     let module =
         lower_program(&error_program(), &CodegenOptions::default()).expect("错误路径应降低");
     for marker in [
-        "@xiao_runtime_error_new",
+        "@xiao_runtime_error_new_values",
         "@xiao_runtime_error_raise_value",
         "@xiao_runtime_error_matches",
         "@xiao_runtime_error_take",
@@ -417,6 +425,36 @@ fn lowers_recoverable_error_path() {
     }
     assert!(module.text.contains("xiao.source-map try 10..22"));
     assert!(module.text.contains("xiao.source-map raise 10..22"));
+}
+
+#[test]
+/// 原生入口必须传入语言上下文并开启共享释放追踪；语言变化也必须改变动态指纹。
+fn emits_language_context_and_release_trace_hooks() {
+    let target = TargetDescription::host();
+    let zh = lower_program(
+        &error_program(),
+        &CodegenOptions::for_target(target.clone()),
+    )
+    .expect("中文默认错误路径应降低");
+    let english = lower_program(
+        &error_program(),
+        &CodegenOptions::for_target(target.clone()).with_locale("en-US"),
+    )
+    .expect("英文错误路径应降低");
+
+    assert!(english.text.contains("@xiao_runtime_release_trace_begin"));
+    assert!(english.text.contains("@xiao_runtime_release_trace_flush"));
+    assert!(english.text.contains("@xiao_runtime_language_context_set"));
+    assert!(english.text.contains("c\"en-US\\00\""));
+    assert_ne!(zh.codegen_fingerprint, english.codegen_fingerprint);
+
+    let language_parameter = match target.object_format {
+        ObjectFormat::Coff => "declare i32 @xiao_runtime_language_context_set(ptr)",
+        ObjectFormat::Elf | ObjectFormat::MachO => {
+            "declare i32 @xiao_runtime_language_context_set(%xiao.bytes)"
+        }
+    };
+    assert!(english.text.contains(language_parameter));
 }
 
 #[test]

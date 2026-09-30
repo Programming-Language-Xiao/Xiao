@@ -46,6 +46,8 @@ impl ExternalModuleGraph {
 /// 前端项目上下文。
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct FrontendContext {
+    /// 一次执行固定使用的规范语言标签。
+    pub locale: String,
     /// 可选项目根；提供时会运行本地模块发现和依赖解析。
     pub project_root: Option<PathBuf>,
     /// 已规范化的 `config.xiao`；前端只读取声明树，不执行配置值。
@@ -71,6 +73,7 @@ impl FrontendContext {
     #[must_use]
     pub fn host() -> Self {
         Self {
+            locale: "zh-CN".to_owned(),
             target: "host".to_owned(),
             language_version: "0.1.0".to_owned(),
             ..Self::default()
@@ -89,6 +92,13 @@ impl FrontendContext {
     #[must_use]
     pub fn with_external_modules(mut self, graph: ExternalModuleGraph) -> Self {
         self.external_modules = Some(graph);
+        self
+    }
+
+    /// 设置一次执行固定使用的规范语言标签。
+    #[must_use]
+    pub fn with_locale(mut self, locale: impl Into<String>) -> Self {
+        self.locale = locale.into();
         self
     }
 }

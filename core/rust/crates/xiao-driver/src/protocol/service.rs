@@ -116,12 +116,13 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             llvm_ir_output,
             toolchain,
             config_text,
-        } => with_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale.clone(), || {
             build_request_response(
                 request_id,
                 protocol_version,
                 core_version,
                 language_version,
+                locale,
                 target,
                 optimization,
                 source,
@@ -142,7 +143,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             locale,
             target,
             toolchain,
-        } => with_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale.clone(), || {
             environment_request_response(
                 request_id,
                 protocol_version,
@@ -161,7 +162,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             locale,
             active_environment,
             module_path,
-        } => with_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale.clone(), || {
             repl_packages_response(
                 request_id,
                 protocol_version,
@@ -188,7 +189,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             development,
             target,
             toolchain,
-        } => with_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale.clone(), || {
             package_request_response(
                 request_id,
                 protocol_version,
@@ -271,6 +272,7 @@ fn build_request_response(
     protocol_version: u16,
     core_version: u32,
     language_version: String,
+    locale: Option<String>,
     target: ProtocolTarget,
     optimization: OptimizationConfig,
     source: SourceIdentity,
@@ -289,6 +291,7 @@ fn build_request_response(
     build::build_response(
         request_id,
         language_version,
+        locale,
         target,
         optimization,
         source,
@@ -679,12 +682,13 @@ pub(super) fn worker_response(
             llvm_ir_output,
             toolchain,
             config_text,
-        } => with_locale(request_id.clone(), locale, || {
+        } => with_locale(request_id.clone(), locale.clone(), || {
             build_request_response(
                 request_id,
                 protocol_version,
                 core_version,
                 language_version,
+                locale,
                 target,
                 optimization,
                 source,

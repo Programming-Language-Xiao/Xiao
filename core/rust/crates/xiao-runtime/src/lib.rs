@@ -6,6 +6,8 @@
 
 /// 稳定 C ABI 的 Runtime 符号实现；公开布局来自 `xiao-runtime-abi`。
 mod abi;
+/// 平台级未处理异常的最小机器报告入口。
+mod crash;
 
 /// 数组、元组、字典表、字典列和集合的运行对象。
 pub mod containers;
@@ -39,7 +41,9 @@ pub use errors::{
 /// 重导出对象头和强/弱句柄类型。
 pub use memory::{
     CounterStrategyKind, MemoryMeasurement, NonAtomicRefCount, ObjectLayout, RefCountStrategy,
-    RuntimeTypeTag, StrongHandle, WeakHandle, start_memory_measurement,
+    ReleaseAction, ReleaseEvent, ReleaseTraceGuard, RuntimeTypeTag, StrongHandle, WeakHandle,
+    flush_release_trace, start_memory_measurement, start_release_trace,
+    start_release_trace_from_env, take_release_events,
 };
 /// 重导出表定义、钩子和生命周期状态。
 pub use tables::{
@@ -47,8 +51,14 @@ pub use tables::{
     TableObject, TableState,
 };
 /// 重导出释放计划测试驱动器和展开结果。
-pub use testing::{
-    CatchRoute, ReleaseEvent, ReleaseExecution, RuntimeBinding, RuntimeDriver, UnwindExecution,
-};
+pub use testing::{CatchRoute, ReleaseExecution, RuntimeBinding, RuntimeDriver, UnwindExecution};
 /// 重导出 Runtime 标量和字符串值。
 pub use value::{RuntimeValue, StringHandle};
+
+/// 安装当前平台的最小未处理异常报告器。
+///
+/// 原生 ABI 入口会自动调用此初始化；宿主集成测试和嵌入式启动器也可以显式提前安装，
+/// 但平台异常仍然只会生成 Fatal 机器报告，不会进入 Xiao `catch`。
+pub fn install_platform_failure_reporter() {
+    crash::install_platform_failure_reporter();
+}

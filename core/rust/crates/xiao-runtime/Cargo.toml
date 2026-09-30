@@ -15,6 +15,7 @@ path = "src/lib.rs"
 crate-type = ["rlib", "staticlib"]
 
 [dependencies]
+libc = "0.2"
 xiao-runtime-abi = { path = "../xiao-runtime-abi" }
 xiao-diagnostics = { path = "../xiao-diagnostics" }
 xiao-lifetime = { path = "../xiao-lifetime" }

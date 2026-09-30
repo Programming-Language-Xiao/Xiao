@@ -34,6 +34,8 @@ pub struct CodegenOptions {
     pub entry_observation: EntryObservation,
     /// 调试原生产物启动 shim；普通构建为 `None`。
     pub debug_startup: Option<NativeStartup>,
+    /// 原生 Runtime 使用的规范语言标签；目录渲染仍由共享诊断 crate 完成。
+    pub locale: String,
 }
 
 /// 原生产物启动 shim 的静态配置。
@@ -62,6 +64,7 @@ impl CodegenOptions {
             target,
             entry_observation: EntryObservation::Ignore,
             debug_startup: None,
+            locale: "zh-CN".to_owned(),
         }
     }
 
@@ -78,6 +81,13 @@ impl CodegenOptions {
         self.debug_startup = Some(NativeStartup {
             diagnostics_path: diagnostics_path.into(),
         });
+        self
+    }
+
+    /// 设置原生 Runtime 使用的规范语言标签。
+    #[must_use]
+    pub fn with_locale(mut self, locale: impl Into<String>) -> Self {
+        self.locale = locale.into();
         self
     }
 }

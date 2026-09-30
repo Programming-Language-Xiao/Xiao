@@ -1438,6 +1438,22 @@ pub fn render_localized_text(
     output
 }
 
+/// 使用既有内置目录和标准渲染器生成报告文本。
+///
+/// Runtime、VM 和原生入口都通过这个门面渲染人类可读文本；调用方只传入不可变的
+/// 语言标签，不得在执行后端复制目录查找或插值逻辑。
+#[must_use]
+pub fn render_builtin_localized_text(report: &ReportRecord, locale: &str) -> String {
+    let locale = LocaleContext::from_config(locale).unwrap_or_default();
+    let renderer = xiao_i18n::builtin_renderer();
+    render_localized_text(report, &locale, &renderer)
+}
+
+/// 校验并规范化一份来自 CLI/原生产物的语言标签。
+pub fn validated_locale_tag(value: &str) -> Result<String, &'static str> {
+    LocaleContext::from_config(value).map(|locale| locale.tag().to_owned())
+}
+
 /// 可恢复错误结果别名。
 pub type XiaoResult<T> = Result<T, XiaoError>;
 /// 兼容 Runtime 调用点的结果别名；错误本体已经统一为 `XiaoError`。
@@ -1523,6 +1539,19 @@ mod tests {
         assert!(english.contains("expected type str, got int"));
         let chinese = render_localized_text(&report, &LocaleContext::default(), &renderer);
         assert!(chinese.contains("期望类型 str，实际为 int"));
+    }
+
+    #[test]
+    /// 统一本地化门面校验语言标签并保留稳定机器字段。
+    fn builtin_localized_facade_preserves_report_identity() {
+        let error = XiaoError::type_mismatch("str", "int");
+        let report = error.report();
+        let english = render_builtin_localized_text(&report, "EN-us");
+        assert!(english.contains("expected type str, got int"));
+        assert_eq!(validated_locale_tag("EN-us"), Ok("en-US".to_owned()));
+        assert!(validated_locale_tag("not-a-locale").is_err());
+        assert_eq!(report.code, error.code());
+        assert_eq!(report.message_id, error.message_id());
     }
 
     #[test]
