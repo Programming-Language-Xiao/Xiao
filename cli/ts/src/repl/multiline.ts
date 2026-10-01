@@ -73,7 +73,10 @@ export async function runMultilineSession(context: MultilineContext): Promise<Mu
 /** 使用已建立的客户端执行 raw mode 编辑循环。 */
 async function runMultilineSessionLoop(context: MultilineContext): Promise<MultilineResult> {
   const input = context.input as NodeJS.ReadableStream & { setRawMode?: (mode: boolean) => void; isRaw?: boolean };
-  if (typeof input.setRawMode !== "function") throw new MultilineTerminalError();
+  const inputIsTTY = (input as NodeJS.ReadStream & { isTTY?: boolean }).isTTY;
+  if (!context.isTTY || inputIsTTY === false || typeof input.setRawMode !== "function") {
+    throw new MultilineTerminalError();
+  }
   const setRawMode = input.setRawMode.bind(input);
   const output = context.output as NodeJS.WritableStream & { columns?: number; rows?: number };
   const wasRaw = Boolean(input.isRaw);
