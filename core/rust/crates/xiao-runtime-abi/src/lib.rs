@@ -581,7 +581,8 @@ unsafe extern "C" {
     ) -> i32;
     /// 判断挂起的可恢复错误是否匹配给定的语言错误类型名。
     pub fn xiao_runtime_error_matches(error_type: XiaoAbiBytes) -> i32;
-    /// 把挂起的可恢复错误取成拥有的 `XiaoValueTag::Error` 值；失败时保留挂起错误。
+    /// 把挂起的可恢复错误取成拥有的 `XiaoValueTag::Error` 值；`out` 必须是已初始化且
+    /// 不含弱表观察值的槽，弱表观察值只能由 `xiao_runtime_value_copy` 覆盖；失败时保留挂起错误。
     pub fn xiao_runtime_error_take(out: *mut XiaoValue) -> i32;
     /// 读取当前线程挂起错误的机器字段。
     pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
@@ -630,6 +631,8 @@ unsafe extern "C" {
     pub fn xiao_runtime_value_copy(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// 释放一个 ABI 值拥有的句柄；标量和空值无操作。
     pub fn xiao_runtime_value_release(value: *mut XiaoValue);
+    /// 只释放 ABI 值中的强句柄；弱值保持不变，标量重置为空值。
+    pub fn xiao_runtime_value_release_strong(value: *mut XiaoValue);
     /// 只释放 ABI 值中的弱句柄；强值或标量返回错误码且不改变值。
     pub fn xiao_runtime_value_release_weak(value: *mut XiaoValue) -> i32;
     /// 从弱句柄构造析构观察值并增加一次弱引用。
@@ -684,7 +687,7 @@ unsafe extern "C" {
     ) -> i32;
     /// 返回数组长度；`out` 非空时失败会写零。
     pub fn xiao_runtime_array_len(handle: XiaoHandle, out: *mut usize) -> i32;
-    /// 复制数组指定元素到调用方；`out` 必须是已初始化值槽，成功时替换并释放旧值。
+    /// 复制数组指定元素到调用方；`out` 必须是已初始化且不含弱表观察值的槽，成功时替换并释放旧值。
     pub fn xiao_runtime_array_get(handle: XiaoHandle, index: usize, out: *mut XiaoValue) -> i32;
     /// 从数组强句柄构造 `XiaoValueTag::Array`。
     pub fn xiao_runtime_value_array(handle: XiaoHandle) -> XiaoValue;
@@ -699,7 +702,7 @@ unsafe extern "C" {
     ) -> i32;
     /// 返回元组长度；`out` 非空时失败会写零。
     pub fn xiao_runtime_tuple_len(handle: XiaoHandle, out: *mut usize) -> i32;
-    /// 复制元组指定元素到调用方；`out` 必须是已初始化值槽，成功时替换并释放旧值。
+    /// 复制元组指定元素到调用方；`out` 必须是已初始化且不含弱表观察值的槽，成功时替换并释放旧值。
     pub fn xiao_runtime_tuple_get(handle: XiaoHandle, index: usize, out: *mut XiaoValue) -> i32;
     /// 从元组强句柄构造 `XiaoValueTag::Tuple`。
     pub fn xiao_runtime_value_tuple(handle: XiaoHandle) -> XiaoValue;
@@ -716,7 +719,7 @@ unsafe extern "C" {
     ) -> i32;
     /// 返回字典条目数量；`out` 非空时失败会写零。
     pub fn xiao_runtime_dict_len(handle: XiaoHandle, out: *mut usize) -> i32;
-    /// 按 UTF-8 键复制字典值；`out` 必须是已初始化值槽，成功时替换并释放旧值。
+    /// 按 UTF-8 键复制字典值；`out` 必须是已初始化且不含弱表观察值的槽，成功时替换并释放旧值。
     pub fn xiao_runtime_dict_get(handle: XiaoHandle, key: XiaoAbiBytes, out: *mut XiaoValue)
     -> i32;
     /// 从字典强句柄构造对应标签的 ABI 值。
@@ -748,7 +751,7 @@ unsafe extern "C" {
         descriptor: *const XiaoTableDescriptor,
         out: *mut XiaoHandle,
     ) -> i32;
-    /// 按字段名读取表字段并复制值；`out` 必须是已初始化值槽，成功时替换并释放旧值。
+    /// 按字段名读取表字段并复制值；`out` 必须是已初始化且不含弱表观察值的槽，成功时替换并释放旧值。
     pub fn xiao_runtime_table_get(
         handle: XiaoHandle,
         field: XiaoAbiBytes,

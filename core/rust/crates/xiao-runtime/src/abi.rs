@@ -642,15 +642,20 @@ unsafe fn write_handle(out: *mut XiaoHandle, handle: XiaoHandle) -> Result<(), i
     Ok(())
 }
 
-/// 将值替换到调用方输出槽，并释放槽中原有的拥有值。
+/// 将值替换到调用方输出槽，并释放槽中原有的强拥有值。
 ///
-/// 调用方必须先把槽初始化为有效的 `XiaoValue`（通常是 `none`）；这样 Runtime 才能在
-/// 覆盖前正确归还旧句柄。失败时新值由本函数回收，旧值保持不变。
+/// 调用方必须先把槽初始化为有效值；弱表观察值只能通过值复制路径覆盖。
+/// 失败时新值由本函数回收，旧值保持不变。
 unsafe fn write_value(out: *mut XiaoValue, value: XiaoValue) -> Result<(), i32> {
     if out.is_null() {
         let mut value = value;
         xiao_runtime_value_release_strong(&mut value);
         return Err(XiaoAbiStatus::Null.code());
+    }
+    if unsafe { (*out).tag } == XiaoValueTag::TableDropView {
+        let mut value = value;
+        xiao_runtime_value_release_strong(&mut value);
+        return Err(XiaoAbiStatus::InvalidArgument.code());
     }
     xiao_runtime_value_release_strong(out);
     unsafe { *out = value };
@@ -1052,6 +1057,9 @@ pub extern "C" fn xiao_runtime_error_matches(error_type: XiaoAbiBytes) -> i32 {
 pub extern "C" fn xiao_runtime_error_take(out: *mut XiaoValue) -> i32 {
     if out.is_null() {
         return XiaoAbiStatus::Null.code();
+    }
+    if unsafe { (*out).tag } == XiaoValueTag::TableDropView {
+        return XiaoAbiStatus::InvalidArgument.code();
     }
     let error = PENDING_ERROR.with(|pending| pending.borrow_mut().take());
     match error {
@@ -1746,14 +1754,15 @@ pub extern "C" fn xiao_runtime_value_release(value: *mut XiaoValue) {
     *value = XiaoValue::none();
 }
 
-/// 只释放 ABI 值中的强句柄；LLVM 普通释放路径使用此窄入口以保持 Runtime 裁剪边界。
+/// 只释放 ABI 值中的强句柄；弱值保持原样，标量则重置为空值。LLVM 普通释放路径使用
+/// 此窄入口以保持 Runtime 裁剪边界。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_release_strong(value: *mut XiaoValue) {
     if value.is_null() {
         return;
     }
     let value = unsafe { &mut *value };
-    match value.tag {
+    let should_clear = match value.tag {
         XiaoValueTag::Str
         | XiaoValueTag::Lint
         | XiaoValueTag::Lfloat
@@ -1762,11 +1771,20 @@ pub extern "C" fn xiao_runtime_value_release_strong(value: *mut XiaoValue) {
         | XiaoValueTag::Tuple
         | XiaoValueTag::DictTable
         | XiaoValueTag::DictColumn
-        | XiaoValueTag::Set => xiao_runtime_release(unsafe { value.payload.handle }),
-        XiaoValueTag::Error => unsafe { release_error(value.payload.handle) },
-        _ => {}
+        | XiaoValueTag::Set => {
+            xiao_runtime_release(unsafe { value.payload.handle });
+            true
+        }
+        XiaoValueTag::Error => {
+            unsafe { release_error(value.payload.handle) };
+            true
+        }
+        XiaoValueTag::TableDropView => false,
+        _ => true,
+    };
+    if should_clear {
+        *value = XiaoValue::none();
     }
-    *value = XiaoValue::none();
 }
 
 /// 只释放 ABI 值中的弱句柄；这是释放计划 `weak` 动作的窄入口。

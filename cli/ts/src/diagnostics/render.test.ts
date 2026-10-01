@@ -130,7 +130,7 @@ describe("CLI 诊断呈现", () => {
           object_format: "coff",
           declared_components: ["value", "rc"],
           observed_components: ["value", "rc"],
-          runtime_symbols: ["xiao_runtime_value_none", "xiao_runtime_value_release"],
+          runtime_symbols: ["xiao_runtime_value_none", "xiao_runtime_value_release_strong"],
           dependencies: [],
           diagnostic_symbols: [],
           verification: "unverified-coff-exports",
