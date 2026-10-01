@@ -153,6 +153,10 @@ pub struct OptimizationReport {
     pub input_fingerprint: String,
     /// 输出 IR 指纹。
     pub output_fingerprint: String,
+    /// 输入 IR 的可比较成本指标。
+    pub input_cost: CostMetrics,
+    /// 输出 IR 的可比较成本指标。
+    pub output_cost: CostMetrics,
     /// Pass 执行报告。
     pub passes: Vec<PassReport>,
     /// 最终验证状态。
@@ -169,6 +173,8 @@ impl OptimizationReport {
             config_fingerprint: String::new(),
             input_fingerprint: String::new(),
             output_fingerprint: String::new(),
+            input_cost: CostMetrics::default(),
+            output_cost: CostMetrics::default(),
             passes: Vec::new(),
             validation: ValidationStatus::Passed,
         }
@@ -184,6 +190,35 @@ pub struct OptimizationResult {
     pub report: OptimizationReport,
     /// 输入、规范化和各 Pass 的回滚快照。
     pub snapshots: Vec<IrSnapshot>,
+}
+
+/// 代码尺寸、控制流、所有权和检查数量的可比较基线指标。
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct CostMetrics {
+    /// 快照 JSON 字节数。
+    pub snapshot_bytes: usize,
+    /// 控制流基本块数量。
+    pub control_flow_blocks: usize,
+    /// 源码映射区间数量。
+    pub source_mapped_spans: usize,
+    /// 所有权值槽数量。
+    pub ownership_values: usize,
+    /// 运行时检查数量。
+    pub runtime_checks: usize,
+}
+
+impl CostMetrics {
+    /// 从快照和只读事实建立指标。
+    #[must_use]
+    pub fn from_snapshot(snapshot: &IrSnapshot, facts: &ProgramFacts) -> Self {
+        Self {
+            snapshot_bytes: snapshot.json.len(),
+            control_flow_blocks: facts.control_flow_blocks,
+            source_mapped_spans: facts.source_mapped_spans,
+            ownership_values: facts.ownership.values,
+            runtime_checks: facts.runtime_checks,
+        }
+    }
 }
 
 /// 优化管线失败；其中保留最后一份有效快照，阻止未验证结果外泄。
@@ -272,6 +307,8 @@ impl OptimizationPipeline {
             .map_err(OptimizationError::Config)?;
         let mut snapshots = vec![input.clone(), normalized_snapshot.clone()];
         let mut current = normalized;
+        let initial_facts = ProgramFacts::from_program(&current);
+        let input_cost = CostMetrics::from_snapshot(&normalized_snapshot, &initial_facts);
         let mut reports = vec![PassReport {
             metadata: PassMetadata {
                 name: "normalize".to_owned(),
@@ -367,6 +404,8 @@ impl OptimizationPipeline {
             }
         }
         let output = snapshot("output", &current)?;
+        let output_facts = ProgramFacts::from_program(&current);
+        let output_cost = CostMetrics::from_snapshot(&output, &output_facts);
         snapshots.push(output.clone());
         Ok(OptimizationResult {
             program: current,
@@ -376,6 +415,8 @@ impl OptimizationPipeline {
                 config_fingerprint: config_fingerprint.as_str().to_owned(),
                 input_fingerprint: input.fingerprint,
                 output_fingerprint: output.fingerprint,
+                input_cost,
+                output_cost,
                 passes: reports,
                 validation: ValidationStatus::Passed,
             },
