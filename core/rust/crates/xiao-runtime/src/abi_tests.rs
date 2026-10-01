@@ -240,6 +240,82 @@ fn weak_release_rejects_strong_value() {
 }
 
 #[test]
+/// 窄强值释放入口遇到弱值时必须保持值不变，交由弱值入口完成释放。
+fn strong_release_leaves_weak_value_for_weak_entry() {
+    let field = XiaoTableFieldDescriptor {
+        name: bytes("id"),
+        ty: XiaoFieldType::Int,
+        public: 1,
+    };
+    let descriptor = XiaoTableDescriptor {
+        name: bytes("Record"),
+        kind: 1,
+        fields: &field,
+        field_count: 1,
+    };
+    let mut raw = std::ptr::null_mut();
+    assert_eq!(xiao_runtime_table_new(&descriptor, &mut raw), 0);
+    let weak = xiao_runtime_weak(raw);
+    assert!(!weak.is_null());
+    let mut value = xiao_runtime_value_weak(weak);
+    assert_eq!(value.tag, XiaoValueTag::TableDropView);
+
+    xiao_runtime_value_release_strong(&mut value);
+    assert_eq!(value.tag, XiaoValueTag::TableDropView);
+
+    assert_eq!(xiao_runtime_value_release_weak(&mut value), 0);
+    assert_eq!(value.tag, XiaoValueTag::None);
+    xiao_runtime_weak_release(weak);
+    xiao_runtime_release(raw);
+}
+
+#[test]
+/// 强值输出入口拒绝弱观察值槽，并保留尚未取出的错误。
+fn error_take_rejects_weak_output_slot() {
+    let field = XiaoTableFieldDescriptor {
+        name: bytes("id"),
+        ty: XiaoFieldType::Int,
+        public: 1,
+    };
+    let descriptor = XiaoTableDescriptor {
+        name: bytes("Record"),
+        kind: 1,
+        fields: &field,
+        field_count: 1,
+    };
+    let mut raw = std::ptr::null_mut();
+    assert_eq!(xiao_runtime_table_new(&descriptor, &mut raw), 0);
+    let weak = xiao_runtime_weak(raw);
+    let mut output = xiao_runtime_value_weak(weak);
+    assert_eq!(output.tag, XiaoValueTag::TableDropView);
+
+    xiao_runtime_error_clear();
+    assert_eq!(
+        xiao_runtime_error_raise_type(
+            bytes("ArithmeticError"),
+            bytes("N0-C"),
+            bytes("failed"),
+            XiaoAbiErrorLocation::none(),
+        ),
+        XiaoAbiStatus::Ok.code()
+    );
+    assert_eq!(
+        xiao_runtime_error_take(&mut output),
+        XiaoAbiStatus::InvalidArgument.code()
+    );
+    assert_eq!(
+        xiao_runtime_error_class(),
+        XiaoErrorClass::Recoverable.raw()
+    );
+    assert_eq!(output.tag, XiaoValueTag::TableDropView);
+
+    xiao_runtime_error_clear();
+    assert_eq!(xiao_runtime_value_release_weak(&mut output), 0);
+    xiao_runtime_weak_release(weak);
+    xiao_runtime_release(raw);
+}
+
+#[test]
 /// 非表强句柄不能伪造表析构观察值。
 fn weak_value_rejects_non_table_target() {
     let mut raw = std::ptr::null_mut();

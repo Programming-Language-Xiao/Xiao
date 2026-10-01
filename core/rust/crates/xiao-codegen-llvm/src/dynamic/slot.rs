@@ -281,7 +281,7 @@ impl<'a> DynamicGenerator<'a> {
                 message: format!("名称 {} 没有动态值槽", name.text),
             })?;
         self.emit(format!(
-            "  call void @xiao_runtime_value_release(ptr %slot{})",
+            "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
             slot.index
         ));
         self.emit(format!(

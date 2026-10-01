@@ -23,7 +23,8 @@ mod toolchain;
 
 /// 产物层符号、依赖和 Runtime 组成验证接口。
 pub use artifact::{
-    ArtifactInspection, ArtifactRuntimeComposition, inspect_artifact, verify_artifact,
+    ArtifactInspection, ArtifactRuntimeComposition, ArtifactVerification, inspect_artifact,
+    verify_artifact,
 };
 /// 构建请求、原生产物和运行观察接口。
 pub use build::{BuildRequest, NativeArtifact, NativeBuild, NativeRun, NativeRunResult};

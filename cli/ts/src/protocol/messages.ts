@@ -351,6 +351,8 @@ export interface ProtocolArtifactRuntime {
   unclassified_runtime_symbols?: string[];
   dependencies: string[];
   diagnostic_symbols: string[];
+  /** 产物观察可信度；COFF 导出表只能作为未验证的自报事实。 */
+  verification?: string;
 }
 
 /** 固化运行时配置的旁置文件摘要。 */

@@ -34,6 +34,13 @@ const RUNTIME_SYMBOL_PREFIX: &str = "xiao_runtime_";
 const DEBUG_START_SYMBOL: &str = "xiao_native_debug_start";
 /// Runtime 诊断钩子的统一前缀。
 const DIAGNOSTIC_SYMBOL_PREFIX: &str = "xiao_runtime_diagnostic_";
+/// 只有这些符号表示调试启动激活位；普通错误报告也会链接 `diagnostic_event`。
+const DEBUG_ACTIVATION_SYMBOLS: &[&str] = &[
+    DEBUG_START_SYMBOL,
+    "xiao_runtime_diagnostic_prepare",
+    "xiao_runtime_diagnostic_ready",
+    "xiao_runtime_diagnostic_finish",
+];
 
 /// 产物中可观察到的对象格式事实。
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -71,6 +78,28 @@ pub struct ArtifactRuntimeComposition {
     pub dependencies: Vec<String>,
     /// 与调试启动或诊断钩子有关的实际符号。
     pub diagnostic_symbols: Vec<String>,
+    /// 产物组件观察的可信度；COFF 导出表由链接参数主动写入，不能证明内部节已裁剪。
+    pub verification: ArtifactVerification,
+}
+
+/// 产物 Runtime 组成观察的可信度。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ArtifactVerification {
+    /// ELF/Mach-O 符号表提供了链接后事实。
+    Complete,
+    /// COFF 当前只能读取由链接参数主动写入的导出表。
+    UnverifiedCoffExports,
+}
+
+impl ArtifactVerification {
+    /// 返回协议和诊断使用的稳定标识。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Complete => "complete",
+            Self::UnverifiedCoffExports => "unverified-coff-exports",
+        }
+    }
 }
 
 /// 读取并解析指定目标的链接后产物。
@@ -110,6 +139,11 @@ pub fn verify_artifact(
         .filter(|dependency| is_runtime_dependency(dependency))
         .cloned()
         .collect::<Vec<_>>();
+    let verification = if inspection.object_format == ObjectFormat::Coff {
+        ArtifactVerification::UnverifiedCoffExports
+    } else {
+        ArtifactVerification::Complete
+    };
 
     if declared_components.is_empty() && !runtime_symbols.is_empty() {
         return Err(artifact_error(
@@ -129,41 +163,41 @@ pub fn verify_artifact(
             ),
         ));
     }
-    let missing = declared_components
-        .iter()
-        .filter(|component| !observed_components.iter().any(|item| item == *component))
-        .cloned()
-        .collect::<Vec<_>>();
-    if !missing.is_empty() {
-        return Err(artifact_error(
-            path,
-            format!(
-                "产物未观察到 IR 层登记的 Runtime 组件：{}",
-                missing.join(", ")
-            ),
-        ));
-    }
-    let unexpected = observed_components
-        .iter()
-        .filter(|component| !declared_components.iter().any(|item| item == *component))
-        .cloned()
-        .collect::<Vec<_>>();
-    if !unexpected.is_empty() {
-        return Err(artifact_error(
-            path,
-            format!(
-                "产物观察到未由 IR 登记的 Runtime 组件：{}",
-                unexpected.join(", ")
-            ),
-        ));
+    if verification == ArtifactVerification::Complete {
+        let missing = declared_components
+            .iter()
+            .filter(|component| !observed_components.iter().any(|item| item == *component))
+            .cloned()
+            .collect::<Vec<_>>();
+        if !missing.is_empty() {
+            return Err(artifact_error(
+                path,
+                format!(
+                    "产物未观察到 IR 层登记的 Runtime 组件：{}",
+                    missing.join(", ")
+                ),
+            ));
+        }
+        let unexpected = observed_components
+            .iter()
+            .filter(|component| !declared_components.iter().any(|item| item == *component))
+            .cloned()
+            .collect::<Vec<_>>();
+        if !unexpected.is_empty() {
+            return Err(artifact_error(
+                path,
+                format!(
+                    "产物观察到未由 IR 登记的 Runtime 组件：{}",
+                    unexpected.join(", ")
+                ),
+            ));
+        }
     }
 
     let diagnostic_symbols = inspection
         .symbols
         .iter()
-        .filter(|symbol| {
-            *symbol == DEBUG_START_SYMBOL || symbol.starts_with(DIAGNOSTIC_SYMBOL_PREFIX)
-        })
+        .filter(|symbol| DEBUG_ACTIVATION_SYMBOLS.contains(&symbol.as_str()))
         .cloned()
         .collect::<Vec<_>>();
     let has_debug_start = diagnostic_symbols
@@ -193,6 +227,7 @@ pub fn verify_artifact(
         unclassified_runtime_symbols: unclassified_symbols,
         dependencies: inspection.dependencies,
         diagnostic_symbols,
+        verification,
     })
 }
 
@@ -1081,6 +1116,7 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
         || symbol.starts_with("xiao_runtime_release_trace_")
         || symbol == "xiao_runtime_value_copy"
         || symbol == "xiao_runtime_value_release"
+        || symbol == "xiao_runtime_value_release_strong"
         || symbol == "xiao_runtime_value_release_weak"
     {
         components.insert("rc".to_owned());
@@ -1252,8 +1288,8 @@ mod tests {
     use std::path::Path;
 
     use super::{
-        ArtifactRuntimeComposition, byte_at, components_for_symbols, normalize_symbol,
-        parse_artifact, unclassified_runtime_symbols, verify_artifact,
+        ArtifactRuntimeComposition, ArtifactVerification, byte_at, components_for_symbols,
+        normalize_symbol, parse_artifact, unclassified_runtime_symbols, verify_artifact,
     };
     use crate::{ObjectFormat, TargetDescription};
 
@@ -1321,6 +1357,7 @@ mod tests {
             unclassified_runtime_symbols: Vec::new(),
             dependencies: Vec::new(),
             diagnostic_symbols: Vec::new(),
+            verification: ArtifactVerification::Complete,
         };
         assert_eq!(
             composition.declared_components,
@@ -1435,6 +1472,14 @@ mod tests {
                 .expect("容器组件必须来自链接后符号");
             assert_eq!(composition.observed_components, vec!["containers"]);
             assert_eq!(composition.runtime_symbols, vec!["xiao_runtime_array_new"]);
+            assert_eq!(
+                composition.verification,
+                if target.object_format == ObjectFormat::Coff {
+                    ArtifactVerification::UnverifiedCoffExports
+                } else {
+                    ArtifactVerification::Complete
+                }
+            );
         }
     }
 

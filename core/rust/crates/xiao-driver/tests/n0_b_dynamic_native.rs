@@ -161,7 +161,7 @@ fn frontend_dynamic_string_lowers_with_release_plan() {
     assert!(
         module
             .text
-            .contains("call void @xiao_runtime_value_release(ptr %slot0)")
+            .contains("call void @xiao_runtime_value_release_strong(ptr %slot0)")
     );
 }
 

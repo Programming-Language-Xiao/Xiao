@@ -130,9 +130,10 @@ describe("CLI 诊断呈现", () => {
           object_format: "coff",
           declared_components: ["value", "rc"],
           observed_components: ["value", "rc"],
-          runtime_symbols: ["xiao_runtime_value_none", "xiao_runtime_value_release"],
+          runtime_symbols: ["xiao_runtime_value_none", "xiao_runtime_value_release_strong"],
           dependencies: [],
           diagnostic_symbols: [],
+          verification: "unverified-coff-exports",
         },
         diagnostic_activation: null,
         diagnostics_component: null,
@@ -141,6 +142,7 @@ describe("CLI 诊断呈现", () => {
     }, { isTTY: false, color: "auto" });
     expect(rendered.exitCode).toBe(0);
     expect(rendered.stderr).toContain("产物 Runtime  coff  组件 value, rc");
+    expect(rendered.stderr).toContain("COFF 导出表未验证裁剪");
     expect(rendered.stderr).not.toContain("undefined");
   });
 });
