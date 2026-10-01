@@ -1008,7 +1008,10 @@ fn make_tree_writable(root: &Path) {
             }
         }
     }
+    #[cfg(not(unix))]
     let mut permissions = metadata.permissions();
+    #[cfg(unix)]
+    let permissions = metadata.permissions();
     #[cfg(not(unix))]
     #[allow(clippy::permissions_set_readonly_false)]
     permissions.set_readonly(false);

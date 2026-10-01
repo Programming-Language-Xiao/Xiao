@@ -1,6 +1,7 @@
 /** 11A-E0 环境目录、提示符状态和 Shell 钩子协议回归。 */
 
 import { describe, expect, test } from "bun:test";
+import { join, resolve } from "node:path";
 
 import {
   activatePromptState,
@@ -14,8 +15,10 @@ import { stripAnsi } from "../ui/color.ts";
 
 describe("项目环境边界", () => {
   test("默认和显式目录遵循冻结规则", () => {
-    expect(environmentLayout("C:/project")).toMatchObject({ logicalName: "venv", directoryName: ".venv", path: "C:\\project\\.venv" });
-    expect(environmentLayout("C:/project", "dev")).toMatchObject({ logicalName: "dev", directoryName: "dev", path: "C:\\project\\dev" });
+    const projectRoot = process.platform === "win32" ? "C:\\project" : "/home/project";
+    const resolvedRoot = resolve(projectRoot);
+    expect(environmentLayout(projectRoot)).toMatchObject({ logicalName: "venv", directoryName: ".venv", path: join(resolvedRoot, ".venv") });
+    expect(environmentLayout(projectRoot, "dev")).toMatchObject({ logicalName: "dev", directoryName: "dev", path: join(resolvedRoot, "dev") });
   });
 
   test("提示符状态重复激活、切换和取消不叠加", () => {
