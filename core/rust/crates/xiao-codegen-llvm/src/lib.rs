@@ -4,6 +4,8 @@
 //! 静态标量和控制流写成 LLVM IR 文本。LLVM 开发库不是 Rust 编译期依赖；验证、目标文件
 //! 生成和链接都通过调用方显式注入的外部工具链完成。
 
+/// 链接后原生产物的对象格式、符号和 Runtime 组成检查。
+mod artifact;
 /// 原生产物构建请求和运行观察适配。
 mod build;
 /// 动态值、容器、表和正常释放计划的 Runtime ABI 降低。
@@ -19,14 +21,18 @@ mod text;
 /// 外部 LLVM 工具链调用和指纹。
 mod toolchain;
 
+/// 产物层符号、依赖和 Runtime 组成验证接口。
+pub use artifact::{
+    ArtifactInspection, ArtifactRuntimeComposition, inspect_artifact, verify_artifact,
+};
 /// 构建请求、原生产物和运行观察接口。
 pub use build::{BuildRequest, NativeArtifact, NativeBuild, NativeRun, NativeRunResult};
 /// 后端失败类型和统一结果别名。
 pub use error::{CodegenError, Result};
 /// LLVM 文本降低选项、入口观察策略和降低入口。
 pub use ir::{
-    CodegenOptions, EntryObservation, LlvmModule, NativeSourceMapEntry, NativeStartup,
-    validate_program,
+    BASELINE_OPTIMIZATION_LEVEL, CodegenOptions, EntryObservation, LlvmModule,
+    NativeSourceMapEntry, NativeStartup, validate_program,
 };
 /// 目标字节序、对象格式和规范化目标描述。
 pub use target::{Endian, ObjectFormat, TargetDescription};
@@ -46,6 +52,15 @@ pub const CODEGEN_VERSION: u32 = 2;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
+    if options.optimization_level != BASELINE_OPTIMIZATION_LEVEL {
+        return Err(CodegenError::Unsupported {
+            feature: format!(
+                "优化级别 {} 尚未接入，当前只允许 -O0",
+                options.optimization_level
+            ),
+            span: None,
+        });
+    }
     if dynamic::program_uses_runtime(program) {
         dynamic::lower_program(program, options)
     } else {

@@ -25,6 +25,9 @@ pub enum EntryObservation {
     ExitCode,
 }
 
+/// N0-D 可独立生成的未优化基线级别。
+pub const BASELINE_OPTIMIZATION_LEVEL: u8 = 0;
+
 /// N0-A 代码生成选项。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CodegenOptions {
@@ -36,6 +39,8 @@ pub struct CodegenOptions {
     pub debug_startup: Option<NativeStartup>,
     /// 原生 Runtime 使用的规范语言标签；目录渲染仍由共享诊断 crate 完成。
     pub locale: String,
+    /// 代码生成优化级别；N0-D 只允许并记录 `0`。
+    pub optimization_level: u8,
 }
 
 /// 原生产物启动 shim 的静态配置。
@@ -67,6 +72,7 @@ impl CodegenOptions {
             entry_observation: EntryObservation::Ignore,
             debug_startup: None,
             locale: "zh-CN".to_owned(),
+            optimization_level: BASELINE_OPTIMIZATION_LEVEL,
         }
     }
 
@@ -96,6 +102,18 @@ impl CodegenOptions {
         }
         self
     }
+
+    /// 设置代码生成优化级别；当前只接受未优化基线。
+    pub fn with_optimization_level(mut self, level: u8) -> Result<Self> {
+        if level != BASELINE_OPTIMIZATION_LEVEL {
+            return Err(CodegenError::Unsupported {
+                feature: format!("优化级别 {level} 尚未接入，当前只允许 -O0"),
+                span: None,
+            });
+        }
+        self.optimization_level = level;
+        Ok(self)
+    }
 }
 
 impl Default for CodegenOptions {
@@ -124,6 +142,8 @@ pub struct LlvmModule {
     pub codegen_fingerprint: String,
     /// 供 Runtime 错误、诊断事件和调试器消费的源码映射表。
     pub source_map: Vec<NativeSourceMapEntry>,
+    /// 本模块使用的优化级别；N0-D 基线固定为 `0`。
+    pub optimization_level: u8,
 }
 
 /// 验证输入 IR，并返回第一个结构化错误。
@@ -386,8 +406,9 @@ impl<'a> ModuleGenerator<'a> {
             "xiao-codegen-{CODEGEN_VERSION}-{}",
             stable_hash(
                 format!(
-                    "{};{}",
+                    "{};optimization={};{}",
                     CODEGEN_VERSION,
+                    self.options.optimization_level,
                     self.options.target.fingerprint_fields()
                 )
                 .as_bytes()
@@ -402,6 +423,7 @@ impl<'a> ModuleGenerator<'a> {
             runtime_abi_version: None,
             codegen_fingerprint: fingerprint,
             source_map: source_map_for_program(self.program),
+            optimization_level: self.options.optimization_level,
         })
     }
 

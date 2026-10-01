@@ -401,6 +401,12 @@ pub struct ProtocolArtifact {
     pub uses_runtime: bool,
     /// Runtime 组件列表。
     pub runtime_components: Vec<String>,
+    /// 产物使用的优化级别；N0-D 基线为 `0`。
+    #[serde(default)]
+    pub optimization_level: u8,
+    /// 链接后产物观察到的 Runtime 组成事实。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub artifact_runtime: Option<ProtocolArtifactRuntime>,
     /// `-debug` 构建生成的持久激活位；普通构建为空。
     #[serde(default)]
     pub diagnostic_activation: Option<ProtocolDiagnosticActivation>,
@@ -410,6 +416,23 @@ pub struct ProtocolArtifact {
     /// 构建时固化的运行时配置旁置文件。
     #[serde(default)]
     pub runtime_config: Option<ProtocolRuntimeConfig>,
+}
+
+/// 链接后产物的 Runtime 组成诊断摘要；只报告观察事实，不推断成因。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ProtocolArtifactRuntime {
+    /// 产物对象格式。
+    pub object_format: String,
+    /// IR 层登记的组件。
+    pub declared_components: Vec<String>,
+    /// 符号表中观察到的组件。
+    pub observed_components: Vec<String>,
+    /// 与组件匹配的 Runtime 符号。
+    pub runtime_symbols: Vec<String>,
+    /// 产物声明的外部库依赖。
+    pub dependencies: Vec<String>,
+    /// 调试启动或诊断钩子符号。
+    pub diagnostic_symbols: Vec<String>,
 }
 
 /// 固化运行时配置的旁置文件摘要。

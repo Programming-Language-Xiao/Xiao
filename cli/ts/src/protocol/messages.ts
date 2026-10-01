@@ -332,11 +332,23 @@ export interface ProtocolArtifact {
   toolchain_fingerprint: string;
   uses_runtime: boolean;
   runtime_components: string[];
+  optimization_level?: number;
+  artifact_runtime?: ProtocolArtifactRuntime | null;
   diagnostic_activation?: ProtocolDiagnosticActivation | null;
   /** 随调试产物复制的独立诊断组件。 */
   diagnostics_component?: string | null;
   /** 构建时固化的运行时配置旁置文件。 */
   runtime_config?: ProtocolRuntimeConfig | null;
+}
+
+/** 链接后产物的 Runtime 组成事实。 */
+export interface ProtocolArtifactRuntime {
+  object_format: string;
+  declared_components: string[];
+  observed_components: string[];
+  runtime_symbols: string[];
+  dependencies: string[];
+  diagnostic_symbols: string[];
 }
 
 /** 固化运行时配置的旁置文件摘要。 */

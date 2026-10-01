@@ -54,12 +54,64 @@ impl TargetDescription {
                 message: format!("指针宽度必须是 32 或 64（收到 {pointer_width}）"),
             });
         }
-        Ok(Self {
+        let target = Self {
             triple,
             pointer_width,
             endian,
             object_format,
-        })
+        };
+        target.validate()?;
+        Ok(target)
+    }
+
+    /// 验证固定宽度、已知平台三元组与对象格式之间的一致性。
+    pub fn validate(&self) -> Result<()> {
+        if self.triple.trim().is_empty() {
+            return Err(CodegenError::InvalidTarget {
+                message: "target triple 不能为空".to_owned(),
+            });
+        }
+        if !matches!(self.pointer_width, 32 | 64) {
+            return Err(CodegenError::InvalidTarget {
+                message: format!("指针宽度必须是 32 或 64（收到 {}）", self.pointer_width),
+            });
+        }
+        let architecture = self.triple.split('-').next().unwrap_or_default();
+        let expected_width = match architecture {
+            "x86_64" | "aarch64" | "arm64" => Some(64),
+            "i386" | "i686" | "arm" | "armv7" => Some(32),
+            _ => None,
+        };
+        if let Some(expected_width) = expected_width
+            && self.pointer_width != expected_width
+        {
+            return Err(CodegenError::InvalidTarget {
+                message: format!(
+                    "目标架构 {} 要求 {} 位指针（收到 {}）",
+                    architecture, expected_width, self.pointer_width
+                ),
+            });
+        }
+        let expected_format = if self.triple.contains("windows") {
+            Some(ObjectFormat::Coff)
+        } else if self.triple.contains("apple") || self.triple.contains("darwin") {
+            Some(ObjectFormat::MachO)
+        } else if self.triple.contains("linux") {
+            Some(ObjectFormat::Elf)
+        } else {
+            None
+        };
+        if let Some(expected_format) = expected_format
+            && self.object_format != expected_format
+        {
+            return Err(CodegenError::InvalidTarget {
+                message: format!(
+                    "目标三元组 {} 要求 {:?} 对象格式（收到 {:?}）",
+                    self.triple, expected_format, self.object_format
+                ),
+            });
+        }
+        Ok(())
     }
 
     /// 创建 Windows x86_64 MSVC 目标描述。
@@ -183,6 +235,18 @@ impl TargetDescription {
     }
 }
 
+impl ObjectFormat {
+    /// 返回协议和产物诊断使用的稳定对象格式名称。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Coff => "coff",
+            Self::Elf => "elf",
+            Self::MachO => "macho",
+        }
+    }
+}
+
 #[cfg(test)]
 /// 目标描述的架构回归测试。
 mod tests {
@@ -212,5 +276,46 @@ mod tests {
         } else {
             panic!("当前测试只覆盖 Windows、macOS 和 Linux")
         }
+    }
+
+    #[test]
+    /// 三种受控目标都必须保留固定宽度字段和对象格式，不依赖宿主工具链。
+    fn controlled_targets_validate_equally() {
+        let targets = [
+            TargetDescription::windows_x86_64(),
+            TargetDescription::linux_x86_64(),
+            TargetDescription::macos_x86_64(),
+        ];
+        for target in targets {
+            target.validate().expect("受控目标应通过固定宽度校验");
+            assert_eq!(target.pointer_width, 64);
+            assert_eq!(target.endian, Endian::Little);
+        }
+    }
+
+    #[test]
+    /// 已知平台的窄化、空三元组和对象格式错配必须被结构化拒绝。
+    fn invalid_fixed_width_and_format_are_rejected() {
+        let narrow = TargetDescription::new(
+            "x86_64-unknown-linux-gnu",
+            32,
+            Endian::Little,
+            ObjectFormat::Elf,
+        )
+        .expect_err("x86_64 不能声明为 32 位");
+        assert!(narrow.to_string().contains("要求 64 位"));
+
+        let mismatch = TargetDescription::new(
+            "aarch64-apple-darwin",
+            64,
+            Endian::Little,
+            ObjectFormat::Elf,
+        )
+        .expect_err("macOS 不能声明为 ELF");
+        assert!(mismatch.to_string().contains("MachO"));
+
+        let empty = TargetDescription::new("  ", 64, Endian::Little, ObjectFormat::Elf)
+            .expect_err("空三元组必须拒绝");
+        assert!(empty.to_string().contains("不能为空"));
     }
 }

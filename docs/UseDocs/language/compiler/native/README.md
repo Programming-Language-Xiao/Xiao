@@ -4,7 +4,7 @@ title: 前端到 LLVM 原生内部驱动器
 status: verified
 audience: contributor
 module: rust.xiao-codegen-llvm
-stage: "10B/10C"
+stage: "10B/10C/10I"
 version: "0.1.0"
 related:
   - ../README.md
@@ -17,7 +17,7 @@ related:
 
 # 前端到 LLVM 原生内部驱动器
 
-状态：`verified`，对应 N0-A/N0-B/N0-C。调用方把真实 Xiao 源码交给统一
+状态：`verified`，对应 N0-A/N0-B/N0-C/N0-D。调用方把真实 Xiao 源码交给统一
 `FrontendCompiler`，再把同一份已验证的 `IrProgram` 交给 `xiao-codegen-llvm`；本页面描述
 Rust 内部接口。用户可见的 `xiao build` 已由 X0-E 接入，用法见
 [原生构建命令](../../../tooling/cli/build.md)。
@@ -59,5 +59,13 @@ Fatal 不进入普通 `catch`，清理阶段的 Fatal 会直接进入终止块�
 不能把 Rust 内部枚举布局当作语言契约。Runtime ABI 主版本为 1，当前次版本为 1；布局、
 标签或所有权契约改变时必须升主版本。
 
-动态模块的 `LlvmModule::runtime_components` 是生成器声明的 ABI 组件清单，供构建诊断解释
-产物组成；它不承诺未使用的 Runtime 实现会被链接器裁剪。
+动态模块的 `LlvmModule::runtime_components` 是生成器声明的 ABI 组件清单。N0-D 在链接完成后
+读取最终产物的对象格式、符号和依赖，生成 `NativeArtifact::artifact_runtime`；构建协议会把
+声明组件、观察到的组件、代表符号、外部依赖和调试符号原样提供给诊断出口。声明与观察组件
+不一致时构建失败，因此纯静态标量产物不能携带 Runtime 组件，动态容器/表程序必须在产物层
+留下对应事实。Windows PE/COFF 通过仅导出已声明组件的代表符号提供可观察证据；这不是对
+平台运行期依赖的推理。
+
+N0-D 的三种对象格式（COFF、ELF、Mach-O）使用等价的受控解析路径。未优化基线固定记录为
+`optimization_level = 0`（即 `-O0`）；其他优化级别不属于当前后端契约，留给第 15 阶段与
+该基线做语义差分。

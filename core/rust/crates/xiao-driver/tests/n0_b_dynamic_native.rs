@@ -43,16 +43,69 @@ fn optional_dynamic_string_native_round_trip() {
     let request = NativeBuildRequest::new(
         FrontendRequest::from_text("value = \"heap\"\n"),
         target,
-        toolchain,
+        toolchain.clone(),
         &output,
     );
     let result = FrontendNativeDriver::new()
         .build(&request)
         .expect("动态源码应完成原生构建");
+    assert_eq!(result.native.optimization_level, 0);
+    assert!(result.native.module.uses_runtime);
+    assert!(
+        result
+            .native
+            .artifact_runtime
+            .observed_components
+            .contains(&"value".to_owned())
+    );
+    assert!(
+        result
+            .native
+            .artifact_runtime
+            .observed_components
+            .contains(&"rc".to_owned())
+    );
+    assert!(!result.native.artifact_runtime.runtime_symbols.is_empty());
     let run = xiao_codegen_llvm::NativeRun::new(&result.native)
         .run()
         .expect("动态原生程序应可启动");
     assert_eq!(run.status, Some(0), "stderr: {}", run.stderr);
+
+    let array_request = NativeBuildRequest::new(
+        FrontendRequest::from_text("values = [1, 2]\n"),
+        TargetDescription::host(),
+        toolchain.clone(),
+        root.join(if cfg!(windows) { "array.exe" } else { "array" }),
+    );
+    let array = FrontendNativeDriver::new()
+        .build(&array_request)
+        .expect("容器程序应完成原生链接");
+    assert!(
+        array
+            .native
+            .module
+            .runtime_components
+            .contains(&"containers".to_owned())
+    );
+    assert!(
+        array
+            .native
+            .artifact_runtime
+            .observed_components
+            .contains(&"containers".to_owned())
+    );
+    assert!(
+        array
+            .native
+            .artifact_runtime
+            .runtime_symbols
+            .iter()
+            .any(|symbol| symbol.starts_with("xiao_runtime_array_"))
+    );
+    let array_run = xiao_codegen_llvm::NativeRun::new(&array.native)
+        .run()
+        .expect("容器产物应可启动");
+    assert_eq!(array_run.status, Some(0), "stderr: {}", array_run.stderr);
     let _ = std::fs::remove_dir_all(root);
 }
 

@@ -63,6 +63,13 @@ pub enum CodegenError {
         /// 验证错误原因。
         message: String,
     },
+    /// 链接后的原生产物未通过对象格式或 Runtime 裁剪验证。
+    ArtifactVerification {
+        /// 被检查的产物路径。
+        path: PathBuf,
+        /// 验证失败原因。
+        message: String,
+    },
 }
 
 impl Display for CodegenError {
@@ -91,6 +98,13 @@ impl Display for CodegenError {
             } => write!(formatter, "工具 {tool} 失败（状态 {status:?}）：{stderr}"),
             Self::Io { path, message } => write!(formatter, "{}：{message}", path.display()),
             Self::InvalidLlvm { message } => write!(formatter, "LLVM IR 无效：{message}"),
+            Self::ArtifactVerification { path, message } => {
+                write!(
+                    formatter,
+                    "原生产物验证失败（{}）：{message}",
+                    path.display()
+                )
+            }
         }
     }
 }

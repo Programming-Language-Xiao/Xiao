@@ -11,7 +11,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::error::{CodegenError, Result};
 use crate::ir::NativeStartup;
-use crate::target::TargetDescription;
+use crate::target::{ObjectFormat, TargetDescription};
 use crate::text::stable_hash;
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 
@@ -243,7 +243,7 @@ impl Toolchain {
         target: &TargetDescription,
         output: impl AsRef<Path>,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, None, false, None)
+        self.compile_inner(text, target, output, None, None, &[])
     }
 
     /// 验证 LLVM IR 后仅链接 IR 自身；即便工具链配置过 Runtime，也不会继承它。
@@ -253,7 +253,7 @@ impl Toolchain {
         target: &TargetDescription,
         output: impl AsRef<Path>,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, None, false, None)
+        self.compile_inner(text, target, output, None, None, &[])
     }
 
     /// 验证 LLVM IR 后调用 clang，并按需链接调用方注入的 Runtime 静态库。
@@ -264,7 +264,27 @@ impl Toolchain {
         output: impl AsRef<Path>,
         runtime_library: Option<&Path>,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, runtime_library, true, None)
+        self.compile_with_runtime_components(text, target, output, runtime_library, &[])
+    }
+
+    /// 验证 LLVM IR、链接 Runtime，并为 COFF 产物导出已声明组件的代表符号。
+    pub fn compile_with_runtime_components(
+        &self,
+        text: &str,
+        target: &TargetDescription,
+        output: impl AsRef<Path>,
+        runtime_library: Option<&Path>,
+        runtime_components: &[String],
+    ) -> Result<PathBuf> {
+        let runtime_library = runtime_library.or(self.runtime_library.as_deref());
+        self.compile_inner(
+            text,
+            target,
+            output,
+            runtime_library,
+            None,
+            runtime_components,
+        )
     }
 
     /// 验证 LLVM IR、链接 Runtime，并把调试启动 shim 链接进原生产物。
@@ -277,13 +297,37 @@ impl Toolchain {
         inherit_configured_runtime: bool,
         startup: &NativeStartup,
     ) -> Result<PathBuf> {
+        self.compile_with_startup_shim_components(
+            text,
+            target,
+            output,
+            if inherit_configured_runtime {
+                runtime_library.or(self.runtime_library.as_deref())
+            } else {
+                runtime_library
+            },
+            startup,
+            &[],
+        )
+    }
+
+    /// 验证 LLVM IR、链接调试启动 shim，并为 COFF 产物导出组成代表符号。
+    pub fn compile_with_startup_shim_components(
+        &self,
+        text: &str,
+        target: &TargetDescription,
+        output: impl AsRef<Path>,
+        runtime_library: Option<&Path>,
+        startup: &NativeStartup,
+        runtime_components: &[String],
+    ) -> Result<PathBuf> {
         self.compile_inner(
             text,
             target,
             output,
             runtime_library,
-            inherit_configured_runtime,
             Some(startup),
+            runtime_components,
         )
     }
 
@@ -294,8 +338,8 @@ impl Toolchain {
         target: &TargetDescription,
         output: impl AsRef<Path>,
         runtime_library: Option<&Path>,
-        inherit_configured_runtime: bool,
         startup: Option<&NativeStartup>,
+        runtime_components: &[String],
     ) -> Result<PathBuf> {
         let output = output.as_ref().to_path_buf();
         if let Some(parent) = output.parent().filter(|path| !path.as_os_str().is_empty()) {
@@ -313,6 +357,7 @@ impl Toolchain {
         let mut args = vec![
             "-target".to_owned(),
             target.triple.clone(),
+            "-O0".to_owned(),
             "-Wno-override-module".to_owned(),
             path_text(&temp.path),
             "-o".to_owned(),
@@ -364,14 +409,17 @@ impl Toolchain {
                     stderr: result.stderr,
                 });
             }
-            args.insert(3, path_text(&object));
+            args.insert(4, path_text(&object));
             startup_object = Some(object);
         }
-        let runtime_library = if inherit_configured_runtime {
-            runtime_library.or(self.runtime_library.as_deref())
-        } else {
-            runtime_library
-        };
+        if matches!(target.object_format, ObjectFormat::Coff) {
+            if startup.is_some() {
+                args.push("-Wl,/export:xiao_native_debug_start".to_owned());
+            }
+            for symbol in runtime_export_symbols(runtime_components) {
+                args.push(format!("-Wl,/export:{symbol}"));
+            }
+        }
         if let Some(runtime_library) = runtime_library {
             if self.native_static_libraries.is_empty() {
                 if let Some(object) = startup_object.take() {
@@ -408,6 +456,25 @@ impl Toolchain {
         }
         Ok(output)
     }
+}
+
+/// 返回每个 Runtime 组件在 COFF 产物中使用的稳定代表符号。
+fn runtime_export_symbols(components: &[String]) -> Vec<&'static str> {
+    let mut symbols = Vec::new();
+    for component in components {
+        let symbol = match component.as_str() {
+            "value" => "xiao_runtime_value_none",
+            "rc" => "xiao_runtime_value_release",
+            "weak" => "xiao_runtime_value_release_weak",
+            "containers" => "xiao_runtime_array_new",
+            "tables" => "xiao_runtime_table_new",
+            _ => continue,
+        };
+        if !symbols.contains(&symbol) {
+            symbols.push(symbol);
+        }
+    }
+    symbols
 }
 
 /// 运行结果的内部轻量包装，避免把 `std::process::Output` 暴露为 ABI。

@@ -758,6 +758,36 @@ fn build_request_round_trips_toolchain_and_config_fields() {
 }
 
 #[test]
+/// 构建产物的 Runtime 组成事实必须在协议 JSON 中保持可逆。
+fn artifact_runtime_facts_round_trip() {
+    let artifact = ProtocolArtifact {
+        executable: "build/main.exe".to_owned(),
+        llvm_ir_output: None,
+        toolchain_fingerprint: "xiao-fnv1a64-test".to_owned(),
+        uses_runtime: true,
+        runtime_components: vec!["value".to_owned(), "rc".to_owned()],
+        optimization_level: 0,
+        artifact_runtime: Some(ProtocolArtifactRuntime {
+            object_format: "coff".to_owned(),
+            declared_components: vec!["value".to_owned(), "rc".to_owned()],
+            observed_components: vec!["value".to_owned(), "rc".to_owned()],
+            runtime_symbols: vec![
+                "xiao_runtime_value_none".to_owned(),
+                "xiao_runtime_value_release".to_owned(),
+            ],
+            dependencies: Vec::new(),
+            diagnostic_symbols: Vec::new(),
+        }),
+        diagnostic_activation: None,
+        diagnostics_component: None,
+        runtime_config: None,
+    };
+    let encoded = serde_json::to_vec(&artifact).expect("编码产物事实");
+    let decoded: ProtocolArtifact = serde_json::from_slice(&encoded).expect("解码产物事实");
+    assert_eq!(decoded, artifact);
+}
+
+#[test]
 /// config.xiao 只固化静态树，并明确允许普通配置覆盖。
 fn runtime_config_freeze_is_deterministic_and_validated() {
     let frozen = freeze_runtime_config(

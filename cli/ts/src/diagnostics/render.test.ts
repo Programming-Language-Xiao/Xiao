@@ -106,4 +106,41 @@ describe("CLI 诊断呈现", () => {
     }, { locale: "en-US" });
     expect(rendered.stderr).toContain("test results  0/0 passed, failed 0");
   });
+
+  test("构建成功展示链接后产物的 Runtime 事实", () => {
+    const rendered = renderProtocolResponse({
+      type: "result",
+      request_id: "build-runtime",
+      operation: "build",
+      exit_code: 0,
+      exit_name: "success",
+      diagnostics: [],
+      report: null,
+      events: [],
+      metrics: null,
+      value: null,
+      artifact: {
+        executable: "build/main.exe",
+        llvm_ir_output: null,
+        toolchain_fingerprint: "xiao-fnv1a64-test",
+        uses_runtime: true,
+        runtime_components: ["value", "rc"],
+        optimization_level: 0,
+        artifact_runtime: {
+          object_format: "coff",
+          declared_components: ["value", "rc"],
+          observed_components: ["value", "rc"],
+          runtime_symbols: ["xiao_runtime_value_none", "xiao_runtime_value_release"],
+          dependencies: [],
+          diagnostic_symbols: [],
+        },
+        diagnostic_activation: null,
+        diagnostics_component: null,
+        runtime_config: null,
+      },
+    }, { isTTY: false, color: "auto" });
+    expect(rendered.exitCode).toBe(0);
+    expect(rendered.stderr).toContain("产物 Runtime  coff  组件 value, rc");
+    expect(rendered.stderr).not.toContain("undefined");
+  });
 });

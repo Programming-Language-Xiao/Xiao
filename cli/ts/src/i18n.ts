@@ -65,6 +65,7 @@ const messages = {
   "xiao.cli.test.failed": { "zh-CN": "失败", "en-US": "failed" },
   "xiao.cli.build.artifact": { "zh-CN": "产物  {path}", "en-US": "artifact  {path}" },
   "xiao.cli.build.fingerprint": { "zh-CN": "指纹  {value}", "en-US": "fingerprint  {value}" },
+  "xiao.cli.build.runtime": { "zh-CN": "产物 Runtime  {format}  组件 {components}", "en-US": "artifact Runtime  {format}  components {components}" },
   "xiao.cli.build.debug": { "zh-CN": "调试  {path}", "en-US": "debug  {path}" },
   "xiao.cli.build.diagnostics": { "zh-CN": "诊断  {path}", "en-US": "diagnostics  {path}" },
   "xiao.cli.build.config": { "zh-CN": "配置  {path}", "en-US": "config  {path}" },

@@ -226,7 +226,8 @@ impl<'a> DynamicGenerator<'a> {
             "xiao-codegen-{CODEGEN_VERSION}-{}",
             stable_hash(
                 format!(
-                    "{CODEGEN_VERSION};dynamic;abi={ABI_ENCODED_VERSION};locale={};{}",
+                    "{CODEGEN_VERSION};dynamic;optimization={};abi={ABI_ENCODED_VERSION};locale={};{}",
+                    self.options.optimization_level,
                     self.options.locale,
                     self.options.target.fingerprint_fields()
                 )
@@ -242,6 +243,7 @@ impl<'a> DynamicGenerator<'a> {
             runtime_abi_version: Some(ABI_ENCODED_VERSION),
             codegen_fingerprint: fingerprint,
             source_map: source_map_for_program(self.program),
+            optimization_level: self.options.optimization_level,
         })
     }
 

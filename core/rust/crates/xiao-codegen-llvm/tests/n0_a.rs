@@ -647,19 +647,53 @@ fn optional_real_llvm_round_trip() {
     if let Some(llvm_as) = llvm_as {
         toolchain = toolchain.with_llvm_as(llvm_as);
     }
+    let target = configured_native_target();
     let request = xiao_codegen_llvm::BuildRequest::new(
         compile_scalar_program(),
-        configured_native_target(),
-        toolchain,
+        target.clone(),
+        toolchain.clone(),
         &output,
     )
     .with_llvm_ir_output(&ir_path);
     let artifact = NativeBuild::new().build(&request).expect("LLVM 构建");
     assert!(artifact.executable.exists());
+    assert_eq!(artifact.optimization_level, 0);
+    assert_eq!(artifact.module.optimization_level, 0);
+    assert!(!artifact.module.uses_runtime);
+    assert!(artifact.module.runtime_components.is_empty());
+    assert!(artifact.artifact_runtime.declared_components.is_empty());
+    assert!(artifact.artifact_runtime.observed_components.is_empty());
+    assert!(artifact.artifact_runtime.runtime_symbols.is_empty());
+    assert!(artifact.artifact_runtime.diagnostic_symbols.is_empty());
     let run = xiao_codegen_llvm::NativeRun::new(&artifact)
         .run()
         .expect("启动");
     assert_eq!(run.status, Some(0), "stderr: {}", run.stderr);
+
+    let debug_output = root.join(if cfg!(windows) {
+        "scalar-debug.exe"
+    } else {
+        "scalar-debug"
+    });
+    let debug_options = xiao_codegen_llvm::CodegenOptions::for_target(target.clone())
+        .with_debug_startup("xiao-diagnostics.exe");
+    let debug_request = xiao_codegen_llvm::BuildRequest::new(
+        compile_scalar_program(),
+        target,
+        toolchain,
+        &debug_output,
+    )
+    .with_options(debug_options);
+    let debug_artifact = NativeBuild::new()
+        .build(&debug_request)
+        .expect("调试原生构建应保留启动符号证据");
+    assert!(
+        debug_artifact
+            .artifact_runtime
+            .diagnostic_symbols
+            .iter()
+            .any(|symbol| symbol == "xiao_native_debug_start")
+    );
     let _ = std::fs::remove_dir_all(root);
 }
 

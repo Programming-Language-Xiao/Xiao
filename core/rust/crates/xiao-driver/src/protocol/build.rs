@@ -18,7 +18,8 @@ use super::config::{
 };
 use super::mapping::{exit_name, protocol_diagnostic, protocol_error_body};
 use super::message::{
-    ProtocolArtifact, ProtocolDiagnosticActivation, ProtocolResponse, ProtocolRuntimeConfig,
+    ProtocolArtifact, ProtocolArtifactRuntime, ProtocolDiagnosticActivation, ProtocolResponse,
+    ProtocolRuntimeConfig,
 };
 use super::request::{
     BUILD_ERROR_CODE, OptimizationConfig, ProtocolError, ProtocolTarget, SourceIdentity,
@@ -377,10 +378,26 @@ fn finalize_build(
             toolchain_fingerprint: result.native.toolchain_fingerprint.to_string(),
             uses_runtime: result.native.module.uses_runtime,
             runtime_components: result.native.module.runtime_components,
+            optimization_level: result.native.optimization_level,
+            artifact_runtime: Some(protocol_artifact_runtime(&result.native.artifact_runtime)),
             diagnostic_activation,
             diagnostics_component,
             runtime_config,
         }),
+    }
+}
+
+/// 将后端产物验证事实转换为协议摘要，不在协议层解释组件成因。
+fn protocol_artifact_runtime(
+    composition: &xiao_codegen_llvm::ArtifactRuntimeComposition,
+) -> ProtocolArtifactRuntime {
+    ProtocolArtifactRuntime {
+        object_format: composition.object_format.as_str().to_owned(),
+        declared_components: composition.declared_components.clone(),
+        observed_components: composition.observed_components.clone(),
+        runtime_symbols: composition.runtime_symbols.clone(),
+        dependencies: composition.dependencies.clone(),
+        diagnostic_symbols: composition.diagnostic_symbols.clone(),
     }
 }
 

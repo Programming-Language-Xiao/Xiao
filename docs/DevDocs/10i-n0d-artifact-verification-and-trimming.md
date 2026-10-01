@@ -191,6 +191,23 @@ Runtime 组成可解释 **未做**：10:79 要求「构建产物的 Runtime 组�
 
 ⚠️ `module-registry.json` 同步；新增门控测试要**同步 `10D §2` 清单**。
 
+### 实施记录（2026-10-01）
+
+本批已完成以下落点：
+
+- `artifact.rs` 内置解析 COFF/PE、ELF 和 Mach-O 的符号、导出/导入与动态依赖，链接完成后
+  校验 Runtime 声明组件、观察组件和调试启动符号；纯静态产物出现 Runtime 符号、组件缺失、
+  组件多出或普通产物携带调试符号时均结构化失败。
+- Windows 链接器默认不保留最终 PE 的 COFF 符号表，构建因此只为已登记组件导出稳定代表符号，
+  并为 `-debug` 导出 `xiao_native_debug_start`；这让验证依赖最终文件的导出表，而不是依赖
+  `dumpbin`/`nm` 或宿主工具链发现。
+- Mach-O fat 文件按 fat 头和目标 slice 分别解析字节序；PE RVA 映射覆盖 headers 与文件内 section，
+  ELF/Mach-O 缺少可用符号表时明确拒绝，避免剥离产物静默通过。
+- `NativeArtifact` 与协议新增 `artifact_runtime` 和 `optimization_level`；CLI 人类输出只展示
+  对象格式和观察到的组件。基线固定为 `-O0`/`optimization_level = 0`，没有实现第 15 阶段优化。
+- 复用既有环境门控回环：静态 Windows clang 回环和动态 Runtime 回环均验证通过；受控夹具覆盖三种
+  对象格式、Runtime 正反例、调试符号正反例、剥离符号表失败和 fat Mach-O slice。
+
 ---
 
 ## 六、硬约束

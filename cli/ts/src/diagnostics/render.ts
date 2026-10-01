@@ -87,6 +87,14 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
     const fingerprint = typeof response.artifact.toolchain_fingerprint === "string" ? response.artifact.toolchain_fingerprint : "<unknown>";
     lines.push(cliMessage("xiao.cli.build.artifact", locale, { path: executable }));
     lines.push(cliMessage("xiao.cli.build.fingerprint", locale, { value: fingerprint }));
+    if (isRecord(response.artifact.artifact_runtime)) {
+      const runtime = response.artifact.artifact_runtime;
+      const format = typeof runtime.object_format === "string" ? runtime.object_format : "unknown";
+      const observed = Array.isArray(runtime.observed_components)
+        ? runtime.observed_components.filter((item): item is string => typeof item === "string").join(", ")
+        : "";
+      lines.push(cliMessage("xiao.cli.build.runtime", locale, { format, components: observed || "none" }));
+    }
     if (isRecord(response.artifact.diagnostic_activation) && typeof response.artifact.diagnostic_activation.path === "string") {
       lines.push(cliMessage("xiao.cli.build.debug", locale, { path: response.artifact.diagnostic_activation.path }));
     }

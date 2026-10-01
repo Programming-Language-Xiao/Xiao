@@ -72,7 +72,16 @@ Windows 原生构建需要在 Visual Studio Developer Command Prompt（例如 `v
 ## 输出与调试构建
 
 普通构建生成可执行文件；若提供 `--emit-llvm`，同时生成 LLVM 文本。构建响应带产物路径、
-工具链指纹和目标信息。
+工具链指纹和目标信息，并在 `artifact.artifact_runtime` 中报告链接后产物事实：
+`object_format`（`coff`/`elf`/`macho`）、IR 声明的 `declared_components`、符号表或导出表中
+观察到的 `observed_components`、`runtime_symbols`、外部 `dependencies` 和调试相关
+`diagnostic_symbols`。`artifact.optimization_level` 当前固定为 `0`。
+
+这些字段只表示最终文件中实际可观察到的对象格式、符号和依赖，不解释组件为什么被带入，也
+不替代平台运行期测试；构建验证在链接后完成，组件证据不完整或与 IR 登记不一致时构建失败。
+纯静态标量产物的 Runtime 组件和 Runtime 符号列表为空；动态产物的声明组件与观察组件必须
+一致。Windows PE/COFF 的代表符号由构建链接阶段按声明导出，以避免默认链接器剥离 COFF
+符号表后无法验证。
 
 `-debug` 构建会在用户入口前启动独立的 `xiao-diagnostics`，并把诊断组件复制到可执行文件
 目录。启动桥只记录组件文件名，运行时从自身可执行文件目录寻找相邻组件，所以将可执行文件

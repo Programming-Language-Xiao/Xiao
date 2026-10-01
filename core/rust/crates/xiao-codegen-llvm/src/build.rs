@@ -7,6 +7,7 @@ use std::process::Command;
 use xiao_ir::IrProgram;
 
 use crate::CODEGEN_VERSION;
+use crate::artifact::{ArtifactRuntimeComposition, verify_artifact};
 use crate::error::{CodegenError, Result};
 use crate::ir::{CodegenOptions, LlvmModule};
 use crate::lower_program;
@@ -70,6 +71,10 @@ pub struct NativeArtifact {
     pub executable: PathBuf,
     /// LLVM 工具链与目标组成的指纹。
     pub toolchain_fingerprint: ToolchainFingerprint,
+    /// 链接后产物的 Runtime 组成、依赖和调试符号证据。
+    pub artifact_runtime: ArtifactRuntimeComposition,
+    /// 产物使用的优化级别；N0-D 基线固定为 `0`。
+    pub optimization_level: u8,
 }
 
 /// 原生构建驱动器；它不解析命令行，也不发现工具链。
@@ -105,7 +110,7 @@ impl NativeBuild {
                     message: "调试构建缺少独立诊断进程路径".to_owned(),
                 });
             }
-            request.toolchain.compile_with_startup_shim(
+            request.toolchain.compile_with_startup_shim_components(
                 &module.text,
                 &request.options.target,
                 &request.output,
@@ -113,15 +118,16 @@ impl NativeBuild {
                     .uses_runtime
                     .then_some(request.toolchain.runtime_library.as_deref())
                     .flatten(),
-                module.uses_runtime,
                 startup,
+                &module.runtime_components,
             )?
         } else if module.uses_runtime {
-            request.toolchain.compile_with_runtime(
+            request.toolchain.compile_with_runtime_components(
                 &module.text,
                 &request.options.target,
                 &request.output,
                 None,
+                &module.runtime_components,
             )?
         } else {
             request.toolchain.compile_without_runtime(
@@ -129,6 +135,18 @@ impl NativeBuild {
                 &request.options.target,
                 &request.output,
             )?
+        };
+        let artifact_runtime = match verify_artifact(
+            &executable,
+            &request.options.target,
+            &module.runtime_components,
+            request.options.debug_startup.is_some(),
+        ) {
+            Ok(evidence) => evidence,
+            Err(error) => {
+                let _ = fs::remove_file(&executable);
+                return Err(error);
+            }
         };
         if let Some(path) = &request.llvm_ir_output
             && let Err(error) = write_llvm_artifact(path, &module.text)
@@ -143,6 +161,8 @@ impl NativeBuild {
             module,
             executable,
             toolchain_fingerprint: fingerprint,
+            artifact_runtime,
+            optimization_level: request.options.optimization_level,
         })
     }
 
