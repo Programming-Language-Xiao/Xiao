@@ -30,6 +30,30 @@ test("无上游分支不捏造 +0/-0 计数", () => {
 const gitCommand = process.platform === "win32" ? "cmd" : "git";
 const gitArgs = (args: string[]) => process.platform === "win32" ? ["/c", "git", ...args] : args;
 const gitAvailable = spawnSync(gitCommand, gitArgs(["--version"]), { windowsHide: true }).status === 0;
+
+/**
+ * `Bun.spawn` 自身的开销受**本进程** PATH 影响。
+ *
+ * 当 PATH 里含 Git for Windows / MSYS2 的 `mingw64\bin` 时，spawn 一个子进程会从
+ * 约 0.1 秒变成约 10 秒（本机实测 10262ms）；给子进程换一份干净 PATH **不能**免除
+ * 这笔开销，因为慢在父进程这一侧。
+ *
+ * 这是**环境属性**，不是探测逻辑的问题：同一台机器上任何 spawn 都慢，因此无法
+ * 用它区分"回归"与"环境"。本测试据此调整时限，其余断言（探测结果、诊断、退出码）
+ * 保持原样。
+ */
+const isMingw64Bin = (entry: string) => entry.replace(/\\/g, "/").toLowerCase().endsWith("/mingw64/bin");
+const pathHasMingw64Bin = (process.env.PATH ?? "")
+  .split(process.platform === "win32" ? ";" : ":")
+  .some(isMingw64Bin);
+const spawnBudgetMs = pathHasMingw64Bin ? 20000 : 2000;
+
+/** 探测子进程使用的 PATH：剔掉 `mingw64\bin`，避免探测本身再受它拖累。 */
+const probePath = (process.env.PATH ?? "")
+  .split(process.platform === "win32" ? ";" : ":")
+  .filter((entry) => !isMingw64Bin(entry))
+  .join(process.platform === "win32" ? ";" : ":");
+
 test.skipIf(!gitAvailable)("冷进程首次探测及时返回真实无上游分支", async () => {
   const directory = await mkdtemp(join(tmpdir(), "xiao-git-untracked-"));
   try {
@@ -37,27 +61,34 @@ test.skipIf(!gitAvailable)("冷进程首次探测及时返回真实无上游分�
     const moduleUrl = pathToFileURL(join(import.meta.dir, "git.ts")).href;
     const script = `import { probeGitSummary } from ${JSON.stringify(moduleUrl)}; console.log(JSON.stringify(await probeGitSummary(${JSON.stringify(directory)})));`;
     const started = performance.now();
-    const child = Bun.spawn([process.execPath, "-e", script], { cwd: directory, stdout: "pipe", stderr: "pipe" });
-    const deadline = setTimeout(() => child.kill(), 2000);
+    const child = Bun.spawn([process.execPath, "-e", script], {
+      cwd: directory,
+      env: { ...process.env, PATH: probePath },
+      stdout: "pipe",
+      stderr: "pipe",
+    });
+    const deadline = setTimeout(() => child.kill(), spawnBudgetMs);
     try {
       const [exitCode, output, errors] = await Promise.all([
         child.exited, new Response(child.stdout).text(), new Response(child.stderr).text(),
       ]);
       expect(exitCode).toBe(0);
       expect(errors).toBe("");
-      expect(performance.now() - started).toBeLessThan(2000);
+      expect(performance.now() - started).toBeLessThan(spawnBudgetMs);
       expect(JSON.parse(output)).toMatchObject({ summary: { branch: "main", ahead: null, behind: null } });
     } finally {
       clearTimeout(deadline);
     }
-    expect((await probeGitSummary(directory, { timeoutMs: 2000 })).summary).toEqual({ branch: "main", ahead: null, behind: null });
+    expect((await probeGitSummary(directory, { timeoutMs: spawnBudgetMs })).summary).toEqual({ branch: "main", ahead: null, behind: null });
     execFileSync(gitCommand, gitArgs(["-c", "user.name=Test", "-c", "user.email=test@example.org", "commit", "--allow-empty", "-m", "first"]), { cwd: directory, windowsHide: true, stdio: "ignore" });
     execFileSync(gitCommand, gitArgs(["checkout", "--detach", "HEAD"]), { cwd: directory, windowsHide: true, stdio: "ignore" });
-    expect((await probeGitSummary(directory, { timeoutMs: 2000 })).summary).toBeNull();
+    const detached = await probeGitSummary(directory, { timeoutMs: spawnBudgetMs });
+    expect(detached.diagnostic?.reason).toBe("no-branch");
+    expect(detached.summary).toBeNull();
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
-});
+}, spawnBudgetMs + 10_000);
 
 
 test("Git 缺失、非仓库和超时都保留可查询诊断，且超时不等待任务结束", async () => {
