@@ -92,7 +92,7 @@
 | 09-B0-C | [前端到 VM 内部驱动器](09b0c-frontend-to-vm-driver.md) | `xiao-driver` 的运行驱动器、三段错误的统一结构化表示、取消/超时边界 | 已完成（内部驱动器、公共契约测试和 UseDocs 已落地；`B0-C-CANCEL-001` 转入 [09-B0-E](09b0e-vm-cancellation-checkpoint.md)） |
 | 09-B0-D | [退出码冻结与 Linux 容器实测](09b0d-exit-codes-and-linux-verification.md) | `ExitCode` 的语义与取值冻结、`DriverOutcome` 上的稳定派生、locale 中立性断言、容器实测记录 | 已完成（退出码契约与测试已落地；Linux 容器结果见交接文档；不改变 Windows 原生冻结口径） |
 | 09-B0-E | [VM 中途取消检查点](09b0e-vm-cancellation-checkpoint.md) | `B0-C-CANCEL-001` 的出口：VM 热循环内的中途检查点、可注入取消源、清理/退出码回归、**单独记录**的性能对照 | 已完成（`Fault::Cancelled` 独立通道、`run_blocks`/`run_subroutine` 检查点、CLI `AbortSignal`、退出码 2 回归；别名层清理仍拆出；**三处收尾见 §九**） |
-| 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | 进行中（N0-A/N0-B 已落地；**N0-C 交接文档已就绪**；N0-D 与用户可见 CLI 仍后置） |
+| 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | **N0-A/B/C/D 全部交付**（N0-C 见 10E–10J，N0-D 见 10I/10K）；用户可见 `xiao build` 属 X0（11 阶段）；仅余 PE 内部节裁剪证据债（标 `unverified-coff-exports`） |
 | 10E | [N0-C 错误路径与源码映射](10e-n0c-error-paths-and-mapping.md) | 统一错误路径降低到原生 ABI、`try`/`catch`/`finally` 展开、源码映射与诊断事件、`-debug` 独立诊断窗口、**字节码差分** | 待开工（N0-C。**验收主体是差分**；N0-D 不在本批——先正确性后验证） |
 | 10F | [N0-C 专项审核：`try`/`catch`/`finally` 的 LLVM 控制流](10f-n0c-audit-try-finally.md) | 复核 `31fb944` 对 `emit_try_cleanup` 的「结构性控制流问题」判定；限定 `try`/`catch`/`finally` 的原生发射与 `llvm-as` 验收 | 已复核（§七：`91a3392` 修复 16 种形态通过真实 `llvm-as`） |
 | 10G | [N0-C-2 错误边界与字节码差分](10g-n0c2-error-boundary-and-differential.md) | N0-C 第 5、7 步 + §3.1：语言上下文接入、平台异常捕获与报告（三平台）、字节码差分（输出/错误/释放记录三样逐项对照） | 已交付（`d95b6ae`；Windows 门控全绿已实测；**跨平台与栈用量实测为欠账**，见 10H §二） |
@@ -146,7 +146,8 @@
 | 11C-1 | [文案搬运与渲染器贯通](11c1-message-migration.md) | Rust 侧各 crate 文案逐条判定与搬运、两套目录补全、`XiaoError`/日志/`-debug` 窗口用**同一渲染器**、CLI 其余状态文案 | **已完成**（Rust 119 组 / CLI 230 全绿；目录 **317 键**，`xiao-driver` 清零）。§3.5 台账由审核补了 `xiao-ir` 与 `xiao-syntax/lexer.rs` 两行 |
 | 11C-2 | [语言包插件与安全](11c2-language-pack-plugins.md) | 资源型插件清单、**不执行插件代码**、安装复用 11A 链路（锁文件/源优先级/不可变缓存/来源审计）、命名空间冲突拒绝、缓存键含目录版本与 ABI、**进程内降级/进程间严格** | **已完成**（清单、冲突、只读缓存、降级和 UseDocs 已交付；`.xar` 与 L4 跨平台发布不在本批） |
 | 11C | [国际化、系统提示与语言包插件](11c-localization.md) | `[language]` 配置、中英内置目录、统一错误文案和资源型语言包插件 | 进行中（L0–L3 已交付；**L4 跨平台与发布验收未开始**） |
-| 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 未开始 |
+| 13 | [优化契约与统一管线](13-optimization-contract.md) | 语义保持边界、优化配置指纹、共享 Pass 管理和验证 | 待开工（**实施交接见 13A**；本阶段**不做具体优化**，那是 14/15/16） |
+| 13A | [优化契约与统一管线的实施](13a-optimization-boundary-implementation.md) | 把「可以怎样变换程序」的边界立起来：`-O0` 也走完整管线（生成/规范化/验证）、共享 Pass 接口与 IR 验证器、快照与回滚、效果/所有权只读接口、优化指纹（时间戳与临时路径不入产物）、未优化 vs 优化的三样差分 | 待开工（**`-O0` 不是直通**是本批头号翻车点；4 条待定决策不得擅自冻结） |
 | 14 | [字节码优化与 `.xiaoc` 产物](14-bytecode-optimization.md) | 单模块分段字节码、默认缓存、加载验证和调试映射 | 未开始 |
 | 15 | [LLVM 原生优化与链接](15-native-optimization.md) | 原生优化级别、Runtime 裁剪、链接和跨平台基线 | 未开始 |
 | 16 | [SHA-256 内容寻址与二进制索引](16-content-addressed-artifacts.md) | 整文件摘要、归档/全局 Protobuf 索引和缓存维护 | 未开始 |
