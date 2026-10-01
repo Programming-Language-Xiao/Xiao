@@ -177,6 +177,30 @@ export XIAO_TARGET_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
 5. **CI 四平台全绿**——**含 `macos-arm64`**（`-dead_strip`）；
 6. **不回归**：10J 已验过的内容（平台异常、释放追踪、差分、`-debug` 三不）保持绿。
 
+### 本次交付验证记录
+
+修复提交：`6177931`（`fix(10k): verify runtime trimming across object formats`）。
+
+本地 Ubuntu 验证使用 Rust `1.96.0`、LLVM 21、Xvfb 和独立 Bun 缓存完成：
+
+- `cargo clippy --workspace --all-targets -- -D warnings` 通过；
+- `XIAO_USE_XVFB=1 bash tools/platform-reproduction/reproduce.sh native` 通过；
+- Linux 两条差分用例通过，纯静态 ELF 未观察到 Runtime 组件，容器反例仍观察到 `containers`；
+- 普通 ELF 不含 Runtime 组件，`-debug` 仅观察到声明的 `rc`/`value`，未误带入 `weak`。
+
+跨平台 CI run [`36850150346`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/36850150346)
+于 2026-10-01 完成，四个平台均成功：
+
+| 平台 | Job | 结果 |
+| --- | --- | --- |
+| `linux-amd64` | `110329621734` | ✅ success |
+| `windows-amd64` | `110329621893` | ✅ success |
+| `linux-arm64` | `110329622030` | ✅ success |
+| `macos-arm64` | `110329622127` | ✅ success |
+
+Windows 的成功只证明 COFF 导出表观测路径和构建验证流程通过；该平台仍标记为
+`unverified-coff-exports`，不把导出表当作 PE 内部节裁剪的证据。
+
 ---
 
 ## 八、本次不负责
