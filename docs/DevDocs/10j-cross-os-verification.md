@@ -173,7 +173,7 @@ unsafe fn install_unix_signal(signal: libc::c_int) {
 - Rust 1.96.0：`cargo clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets -- -D warnings` 通过。
 - Linux 门控：`cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored` 通过；`platform_failure_report_is_machine_readable` 单独运行通过，真实子进程退出码为 139 且机器字段齐全。
 - Linux 原生回环：`XIAO_USE_XVFB=1 bash tools/platform-reproduction/reproduce.sh native` 通过（Rust 1.96.0、LLVM/Clang 21.1.8、Xvfb；Bun 缓存使用独立临时目录）。普通 native、`-debug` native、同目录/PATH/开发回环和协议失配均通过。
-- 四平台 CI 尚未产生本次修复后的结果；下一步必须触发 `platform-reproduction.yml`，并确认 `macos-arm64` 与 `windows-amd64`。若 macOS 报出不同的 `libc`/`sigaction` 问题，按 CI 报错单独修复。
+- 四平台 CI 已通过：[run 36805985940](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/36805985940) 的 `linux-amd64`、`linux-arm64`、`macos-arm64`、`windows-amd64` 均为 `success`；macOS Unix 分支未出现额外的 `libc`/`sigaction` 问题。
 
 ---
 
