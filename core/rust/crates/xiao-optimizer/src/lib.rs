@@ -11,7 +11,10 @@ pub use config::{
     OptimizationLevel,
 };
 /// 未优化与优化结果的统一语义差分口径。
-pub use differential::{DifferentialDifference, DifferentialObservation, compare_observations};
+pub use differential::{
+    DifferentialCase, DifferentialCaseReport, DifferentialDifference, DifferentialObservation,
+    DifferentialSuiteReport, compare_observations, run_o0_differential_suite,
+};
 /// IR 效果、所有权和别名只读事实。
 pub use facts::{AliasFacts, EffectFacts, OwnershipFacts, ProgramFacts};
 /// 共享 Pass 接口、快照、验证和流水线报告。

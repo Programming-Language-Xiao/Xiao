@@ -294,6 +294,8 @@ fn optional_real_frontend_to_native_round_trip() {
 fn optional_frontend_artifact_differential_round_trip() {
     let (target, toolchain) = configured_dynamic_toolchain();
     let cases = [
+        ("dynamic-string", "payload = \"held\"\n"),
+        ("dynamic-array", "values = [1, 2]\n"),
         (
             "caught",
             "payload = \"held\"\ntry\n    raise ArithmeticError(code = \"CAUGHT\")\ncatch err as ArithmeticError\n    handled = \"yes\"\nfinally\n    cleanup = \"done\"\n",
