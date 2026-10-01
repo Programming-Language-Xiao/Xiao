@@ -676,7 +676,7 @@ fn lowers_nonlocal_control_exits_through_cleanup_chain() {
             .unwrap_or_else(|error| panic!("带 finally 作用域释放计划的 {exit} 应降低: {error}"));
         let finally_release = module
             .text
-            .find("call void @xiao_runtime_value_release(ptr %slot0)")
+            .find("call void @xiao_runtime_value_release_strong(ptr %slot0)")
             .unwrap_or_else(|| panic!("{exit} 前应释放 finally 作用域拥有值"));
         let exit_target = module
             .text

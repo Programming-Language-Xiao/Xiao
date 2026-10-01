@@ -399,6 +399,7 @@ fn protocol_artifact_runtime(
         unclassified_runtime_symbols: composition.unclassified_runtime_symbols.clone(),
         dependencies: composition.dependencies.clone(),
         diagnostic_symbols: composition.diagnostic_symbols.clone(),
+        verification: composition.verification.as_str().to_owned(),
     }
 }
 

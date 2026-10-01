@@ -194,7 +194,7 @@ impl<'a> DynamicGenerator<'a> {
             "  {status} = call i32 @xiao_runtime_error_raise_value(ptr {input}, ptr {location})"
         ));
         self.emit(format!(
-            "  call void @xiao_runtime_value_release(ptr {input})"
+            "  call void @xiao_runtime_value_release_strong(ptr {input})"
         ));
         self.check_status_at(&status, span);
         self.emit(format!("  br label %{}", self.error_target()));

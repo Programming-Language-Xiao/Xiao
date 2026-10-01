@@ -96,6 +96,28 @@ for symbol in runtime_export_symbols(runtime_components) {
 
 macOS 对应的是 `-Wl,-dead_strip`（Mach-O 的节粒度天然更细，通常不需要 `-fdata-sections` 那半）。
 
+### 4.1.1 本次 Linux 修复落点
+
+`Toolchain::compile_inner` 现在按对象格式加入 ELF 的
+`-ffunction-sections -fdata-sections -Wl,--gc-sections`，以及 Mach-O 的
+`-ffunction-sections -Wl,-dead_strip`；调试启动 shim 的 C 编译也按函数分节。
+验证器继续读取最终符号表，未放宽组件超集检查。
+
+弱表析构值此前复用了普通 ABI 槽覆盖路径，导致普通错误/字符串路径把
+`xiao_runtime_weak_release` 牵进 ELF。现已拆分普通强值覆盖和可含弱值的复制覆盖，
+并新增 `xiao_runtime_value_release_strong` 作为 LLVM 普通释放窄入口；公开兼容 ABI
+仍保留完整弱值处理。弱组件不会再因通用清理路径被错误保留。调试符号判定也收窄为真正的激活入口
+（`xiao_native_debug_start` 与 prepare/ready/finish），普通 Runtime 的
+`xiao_runtime_diagnostic_event` 不再被误判为 `-debug` 激活位。
+
+Linux 实测：10K 复现中的 `optional_frontend_artifact_differential_round_trip` 与
+`optional_native_catch_does_not_terminate` 均通过；容器反例仍观察到 `containers`，
+字符串动态样例仍观察到 `value`/`rc`。
+
+Windows 的 `artifact_runtime.verification` 现在明确为
+`unverified-coff-exports`；ELF/Mach-O 为 `complete`。CLI/协议会保留这一事实，
+Windows 的 CI 绿色只表示构建与导出表边界通过，不把它升级成 PE 内部节裁剪证据。
+
 ### 4.2 Windows：让验证能看见真相（**请自行判断，别默认照做**）
 
 可选方向，**各有代价，需要你给出结论而不是直接选一个**：
@@ -149,7 +171,9 @@ export XIAO_TARGET_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
    `artifact_runtime.observed_components` 为空——**不是只在 Windows 上成立**；
 3. **反例仍成立**：用了容器的程序产物里**能看到**对应组件；
 4. **Windows 的自证问题有明确结论**（修了 / 记录为未验证 / 换观测面），
-   **不允许保留原样而宣称通过**；
+   **不允许保留原样而宣称通过**；本批保留 COFF 导出表作为现有可见观测面，
+   并在四平台 CI 中确认构建/验证路径通过；PE COFF 真正未导出的内部节仍不声称已被
+   导出表证明裁掉。
 5. **CI 四平台全绿**——**含 `macos-arm64`**（`-dead_strip`）；
 6. **不回归**：10J 已验过的内容（平台异常、释放追踪、差分、`-debug` 三不）保持绿。
 

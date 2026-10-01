@@ -778,6 +778,7 @@ fn artifact_runtime_facts_round_trip() {
             unclassified_runtime_symbols: Vec::new(),
             dependencies: Vec::new(),
             diagnostic_symbols: Vec::new(),
+            verification: "complete".to_owned(),
         }),
         diagnostic_activation: None,
         diagnostics_component: None,

@@ -14,7 +14,7 @@ impl<'a> DynamicGenerator<'a> {
         self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
         self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
         self.emit(format!(
-            "  call void @xiao_runtime_value_release(ptr {slot})"
+            "  call void @xiao_runtime_value_release_strong(ptr {slot})"
         ));
     }
 
@@ -117,7 +117,7 @@ impl<'a> DynamicGenerator<'a> {
                 }
                 match action.kind.as_str() {
                     "strong" => self.emit(format!(
-                        "  call void @xiao_runtime_value_release(ptr %slot{})",
+                        "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
                         slot.index
                     )),
                     "weak" => {
@@ -145,7 +145,7 @@ impl<'a> DynamicGenerator<'a> {
         slots.sort_by_key(|slot| std::cmp::Reverse(slot.index));
         for slot in slots {
             self.emit(format!(
-                "  call void @xiao_runtime_value_release(ptr %slot{})",
+                "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
                 slot.index
             ));
         }

@@ -649,12 +649,45 @@ unsafe fn write_handle(out: *mut XiaoHandle, handle: XiaoHandle) -> Result<(), i
 unsafe fn write_value(out: *mut XiaoValue, value: XiaoValue) -> Result<(), i32> {
     if out.is_null() {
         let mut value = value;
-        xiao_runtime_value_release(&mut value);
+        xiao_runtime_value_release_strong(&mut value);
         return Err(XiaoAbiStatus::Null.code());
     }
-    xiao_runtime_value_release(out);
+    xiao_runtime_value_release_strong(out);
     unsafe { *out = value };
     Ok(())
+}
+
+/// 覆盖一个可能包含弱表观察值的 ABI 槽；仅由值复制路径使用。
+unsafe fn write_value_any(out: *mut XiaoValue, value: XiaoValue) -> Result<(), i32> {
+    if out.is_null() {
+        let mut value = value;
+        release_value_slot(&mut value);
+        return Err(XiaoAbiStatus::Null.code());
+    }
+    release_value_slot(unsafe { &mut *out });
+    unsafe { *out = value };
+    Ok(())
+}
+
+/// 释放任意 ABI 值槽；内部覆盖路径也可能接收到表析构观察值。
+fn release_value_slot(value: &mut XiaoValue) {
+    match value.tag {
+        XiaoValueTag::Str
+        | XiaoValueTag::Lint
+        | XiaoValueTag::Lfloat
+        | XiaoValueTag::Table
+        | XiaoValueTag::Array
+        | XiaoValueTag::Tuple
+        | XiaoValueTag::DictTable
+        | XiaoValueTag::DictColumn
+        | XiaoValueTag::Set => xiao_runtime_release(unsafe { value.payload.handle }),
+        XiaoValueTag::Error => unsafe { release_error(value.payload.handle) },
+        XiaoValueTag::TableDropView => {
+            xiao_runtime_weak_release(unsafe { value.payload.weak_handle });
+        }
+        _ => {}
+    }
+    *value = XiaoValue::none();
 }
 
 /// 读取表字段类型描述。
@@ -1681,7 +1714,7 @@ pub extern "C" fn xiao_runtime_value_copy(value: *const XiaoValue, out: *mut Xia
         _ => Err(XiaoAbiStatus::InvalidArgument.code()),
     };
     match result {
-        Ok(()) => unsafe { write_value(out, copied) }
+        Ok(()) => unsafe { write_value_any(out, copied) }
             .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code()),
         Err(error) => error,
     }
@@ -1708,6 +1741,29 @@ pub extern "C" fn xiao_runtime_value_release(value: *mut XiaoValue) {
         XiaoValueTag::TableDropView => {
             xiao_runtime_weak_release(unsafe { value.payload.weak_handle });
         }
+        _ => {}
+    }
+    *value = XiaoValue::none();
+}
+
+/// 只释放 ABI 值中的强句柄；LLVM 普通释放路径使用此窄入口以保持 Runtime 裁剪边界。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_release_strong(value: *mut XiaoValue) {
+    if value.is_null() {
+        return;
+    }
+    let value = unsafe { &mut *value };
+    match value.tag {
+        XiaoValueTag::Str
+        | XiaoValueTag::Lint
+        | XiaoValueTag::Lfloat
+        | XiaoValueTag::Table
+        | XiaoValueTag::Array
+        | XiaoValueTag::Tuple
+        | XiaoValueTag::DictTable
+        | XiaoValueTag::DictColumn
+        | XiaoValueTag::Set => xiao_runtime_release(unsafe { value.payload.handle }),
+        XiaoValueTag::Error => unsafe { release_error(value.payload.handle) },
         _ => {}
     }
     *value = XiaoValue::none();

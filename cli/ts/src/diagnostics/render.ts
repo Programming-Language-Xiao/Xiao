@@ -93,7 +93,10 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
       const observed = Array.isArray(runtime.observed_components)
         ? runtime.observed_components.filter((item): item is string => typeof item === "string").join(", ")
         : "";
-      lines.push(cliMessage("xiao.cli.build.runtime", locale, { format, components: observed || "none" }));
+      const verification = runtime.verification === "unverified-coff-exports"
+        ? cliMessage("xiao.cli.build.runtime_unverified", locale)
+        : "";
+      lines.push(cliMessage("xiao.cli.build.runtime", locale, { format, components: observed || "none" }) + verification);
     }
     if (isRecord(response.artifact.diagnostic_activation) && typeof response.artifact.diagnostic_activation.path === "string") {
       lines.push(cliMessage("xiao.cli.build.debug", locale, { path: response.artifact.diagnostic_activation.path }));

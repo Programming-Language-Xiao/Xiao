@@ -436,6 +436,9 @@ pub struct ProtocolArtifactRuntime {
     pub dependencies: Vec<String>,
     /// 调试启动或诊断钩子符号。
     pub diagnostic_symbols: Vec<String>,
+    /// 产物观察可信度；COFF 导出表只能作为未验证的自报事实。
+    #[serde(default)]
+    pub verification: String,
 }
 
 /// 固化运行时配置的旁置文件摘要。

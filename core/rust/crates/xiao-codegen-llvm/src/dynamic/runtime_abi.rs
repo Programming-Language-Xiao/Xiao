@@ -57,7 +57,7 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert("declare i32 @xiao_runtime_value_copy(ptr, ptr)".to_owned());
         self.declarations
-            .insert("declare void @xiao_runtime_value_release(ptr)".to_owned());
+            .insert("declare void @xiao_runtime_value_release_strong(ptr)".to_owned());
         self.declarations
             .insert("declare i32 @xiao_runtime_value_release_weak(ptr)".to_owned());
         self.declarations

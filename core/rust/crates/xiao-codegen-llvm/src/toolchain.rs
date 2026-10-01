@@ -363,6 +363,18 @@ impl Toolchain {
             "-o".to_owned(),
             path_text(&output),
         ];
+        match target.object_format {
+            ObjectFormat::Elf => args.extend([
+                "-ffunction-sections".to_owned(),
+                "-fdata-sections".to_owned(),
+                "-Wl,--gc-sections".to_owned(),
+            ]),
+            ObjectFormat::MachO => args.extend([
+                "-ffunction-sections".to_owned(),
+                "-Wl,-dead_strip".to_owned(),
+            ]),
+            ObjectFormat::Coff => {}
+        }
         let mut startup_object = None;
         if let Some(startup) = startup {
             let source = TempFile::new("xiao-startup", "c")?;
@@ -392,6 +404,7 @@ impl Toolchain {
                 path_text(&source.path),
                 "-o".to_owned(),
                 path_text(&object),
+                "-ffunction-sections".to_owned(),
             ];
             let compile_refs = compile_args.iter().map(String::as_str).collect::<Vec<_>>();
             let result = match run_command(&self.clang, &compile_refs, "clang-startup-shim") {
@@ -464,7 +477,7 @@ fn runtime_export_symbols(components: &[String]) -> Vec<&'static str> {
     for component in components {
         let symbol = match component.as_str() {
             "value" => "xiao_runtime_value_none",
-            "rc" => "xiao_runtime_value_release",
+            "rc" => "xiao_runtime_value_release_strong",
             "weak" => "xiao_runtime_value_release_weak",
             "containers" => "xiao_runtime_array_new",
             "tables" => "xiao_runtime_table_new",
