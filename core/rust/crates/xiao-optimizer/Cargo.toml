@@ -12,3 +12,8 @@ workspace = true
 
 [lib]
 path = "src/lib.rs"
+
+[dependencies]
+xiao-ir = { path = "../xiao-ir" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

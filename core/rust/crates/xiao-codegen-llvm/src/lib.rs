@@ -44,6 +44,8 @@ pub use toolchain::{
     Toolchain, ToolchainFingerprint, ToolchainVersions, parse_native_static_libraries,
     query_native_static_libraries,
 };
+/// 共享优化器的稳定报告类型。
+pub use xiao_optimizer::OptimizationReport;
 
 /// 后端接口版本；参与原生产物指纹。
 ///
@@ -53,18 +55,32 @@ pub const CODEGEN_VERSION: u32 = 2;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
-    if options.optimization_level != BASELINE_OPTIMIZATION_LEVEL {
-        return Err(CodegenError::Unsupported {
-            feature: format!(
-                "优化级别 {} 尚未接入，当前只允许 -O0",
-                options.optimization_level
-            ),
+    let level = xiao_optimizer::OptimizationLevel::try_from(options.optimization_level).map_err(
+        |error| CodegenError::Unsupported {
+            feature: error.to_string(),
             span: None,
-        });
-    }
-    if dynamic::program_uses_runtime(program) {
-        dynamic::lower_program(program, options)
+        },
+    )?;
+    let mut config =
+        xiao_optimizer::OptimizationConfig::baseline(options.target.fingerprint_fields())
+            .with_level(level);
+    config.debug_info = options.debug_startup.is_some();
+    config.diagnostic_events = options.debug_startup.is_some();
+    let pipeline = xiao_optimizer::OptimizationPipeline::new(config).map_err(|error| {
+        CodegenError::InvalidIr {
+            message: error.to_string(),
+        }
+    })?;
+    let optimized = pipeline
+        .run(program)
+        .map_err(|error| CodegenError::InvalidIr {
+            message: error.to_string(),
+        })?;
+    let mut module = if dynamic::program_uses_runtime(&optimized.program) {
+        dynamic::lower_program(&optimized.program, options)?
     } else {
-        ir::lower_static_program(program, options)
-    }
+        ir::lower_static_program(&optimized.program, options)?
+    };
+    module.optimization_report = optimized.report;
+    Ok(module)
 }

@@ -465,6 +465,7 @@ dependencies = [
  "xiao-diagnostics",
  "xiao-ir",
  "xiao-lifetime",
+ "xiao-optimizer",
  "xiao-syntax",
  "xiao-types",
 ]
@@ -475,6 +476,7 @@ version = "0.1.0"
 dependencies = [
  "xiao-diagnostics",
  "xiao-ir",
+ "xiao-optimizer",
  "xiao-runtime-abi",
  "xiao-types",
 ]
@@ -562,6 +564,15 @@ dependencies = [
  "xiao-diagnostics",
  "xiao-source",
  "xiao-syntax",
+]
+
+[[package]]
+name = "xiao-optimizer"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "xiao-ir",
 ]
 
 [[package]]

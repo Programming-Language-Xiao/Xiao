@@ -109,7 +109,18 @@ impl ScopeIndex {
 /// 降低一个已验证的 `IrProgram`。
 #[must_use]
 pub fn lower_program(program: &IrProgram) -> TacProgram {
-    let mut lowerer = Lowerer::new(program);
+    let normalized = match xiao_optimizer::run_baseline(program, program.target.clone()) {
+        Ok(result) => result.program,
+        Err(error) => {
+            let mut lowerer = Lowerer::new(program);
+            lowerer
+                .unsupported
+                .push(format!("共享优化管线失败：{error}"));
+            lowerer.run();
+            return lowerer.finish();
+        }
+    };
+    let mut lowerer = Lowerer::new(&normalized);
     lowerer.run();
     lowerer.finish()
 }

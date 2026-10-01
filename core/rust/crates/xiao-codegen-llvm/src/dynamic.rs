@@ -8,6 +8,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use xiao_ir::{IrExpression, IrProgram, IrSpan, IrStatement};
+use xiao_optimizer::OptimizationReport;
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 
 use crate::CODEGEN_VERSION;
@@ -244,6 +245,7 @@ impl<'a> DynamicGenerator<'a> {
             codegen_fingerprint: fingerprint,
             source_map: source_map_for_program(self.program),
             optimization_level: self.options.optimization_level,
+            optimization_report: OptimizationReport::empty(),
         })
     }
 

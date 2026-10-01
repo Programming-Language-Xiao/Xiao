@@ -10,6 +10,7 @@ use xiao_ir::{
     IR_VERSION, IrExpression, IrExpressionKind, IrName, IrProgram, IrSpan, IrStatement,
     IrStatementKind, IrType,
 };
+use xiao_optimizer::OptimizationReport;
 
 use crate::CODEGEN_VERSION;
 use crate::error::{CodegenError, Result};
@@ -144,6 +145,8 @@ pub struct LlvmModule {
     pub source_map: Vec<NativeSourceMapEntry>,
     /// 本模块使用的优化级别；N0-D 基线固定为 `0`。
     pub optimization_level: u8,
+    /// 共享优化管线的规范化、验证和 Pass 报告。
+    pub optimization_report: OptimizationReport,
 }
 
 /// 验证输入 IR，并返回第一个结构化错误。
@@ -424,6 +427,7 @@ impl<'a> ModuleGenerator<'a> {
             codegen_fingerprint: fingerprint,
             source_map: source_map_for_program(self.program),
             optimization_level: self.options.optimization_level,
+            optimization_report: OptimizationReport::empty(),
         })
     }
 
