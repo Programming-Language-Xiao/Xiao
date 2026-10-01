@@ -427,8 +427,11 @@ pub struct ProtocolArtifactRuntime {
     pub declared_components: Vec<String>,
     /// 符号表中观察到的组件。
     pub observed_components: Vec<String>,
-    /// 与组件匹配的 Runtime 符号。
+    /// 产物中观察到的 Runtime 符号。
     pub runtime_symbols: Vec<String>,
+    /// 未能映射到已知组件的 Runtime 符号；保留未来 ABI 的观察事实。
+    #[serde(default)]
+    pub unclassified_runtime_symbols: Vec<String>,
     /// 产物声明的外部库依赖。
     pub dependencies: Vec<String>,
     /// 调试启动或诊断钩子符号。

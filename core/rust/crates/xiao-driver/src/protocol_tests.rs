@@ -775,6 +775,7 @@ fn artifact_runtime_facts_round_trip() {
                 "xiao_runtime_value_none".to_owned(),
                 "xiao_runtime_value_release".to_owned(),
             ],
+            unclassified_runtime_symbols: Vec::new(),
             dependencies: Vec::new(),
             diagnostic_symbols: Vec::new(),
         }),
@@ -785,6 +786,19 @@ fn artifact_runtime_facts_round_trip() {
     let encoded = serde_json::to_vec(&artifact).expect("编码产物事实");
     let decoded: ProtocolArtifact = serde_json::from_slice(&encoded).expect("解码产物事实");
     assert_eq!(decoded, artifact);
+
+    let mut legacy = serde_json::to_value(&artifact).expect("编码旧产物事实");
+    legacy
+        .get_mut("artifact_runtime")
+        .and_then(Value::as_object_mut)
+        .expect("产物事实对象")
+        .remove("unclassified_runtime_symbols");
+    let decoded_legacy: ProtocolArtifact =
+        serde_json::from_value(legacy).expect("旧产物事实应兼容");
+    let runtime = decoded_legacy
+        .artifact_runtime
+        .expect("旧产物事实应保留 Runtime 摘要");
+    assert!(runtime.unclassified_runtime_symbols.is_empty());
 }
 
 #[test]

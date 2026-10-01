@@ -347,6 +347,8 @@ export interface ProtocolArtifactRuntime {
   declared_components: string[];
   observed_components: string[];
   runtime_symbols: string[];
+  /** 未能映射到已知组件的 Runtime 符号；旧服务端可能省略。 */
+  unclassified_runtime_symbols?: string[];
   dependencies: string[];
   diagnostic_symbols: string[];
 }

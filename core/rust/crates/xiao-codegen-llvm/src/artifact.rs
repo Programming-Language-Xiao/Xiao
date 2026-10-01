@@ -63,8 +63,10 @@ pub struct ArtifactRuntimeComposition {
     pub declared_components: Vec<String>,
     /// 产物符号表中实际观察到的 Runtime 组件。
     pub observed_components: Vec<String>,
-    /// 与 Runtime 组件匹配的实际符号。
+    /// 产物符号表中观察到的 Runtime 符号。
     pub runtime_symbols: Vec<String>,
+    /// 未能映射到已知 Runtime 组件的符号；用于保留未来 ABI 的事实。
+    pub unclassified_runtime_symbols: Vec<String>,
     /// 产物声明的外部库依赖。
     pub dependencies: Vec<String>,
     /// 与调试启动或诊断钩子有关的实际符号。
@@ -101,6 +103,13 @@ pub fn verify_artifact(
         .cloned()
         .collect::<Vec<_>>();
     let observed_components = components_for_symbols(&runtime_symbols);
+    let unclassified_symbols = unclassified_runtime_symbols(&runtime_symbols);
+    let runtime_dependencies = inspection
+        .dependencies
+        .iter()
+        .filter(|dependency| is_runtime_dependency(dependency))
+        .cloned()
+        .collect::<Vec<_>>();
 
     if declared_components.is_empty() && !runtime_symbols.is_empty() {
         return Err(artifact_error(
@@ -108,6 +117,15 @@ pub fn verify_artifact(
             format!(
                 "纯静态模块的产物包含 Runtime 符号：{}",
                 runtime_symbols.join(", ")
+            ),
+        ));
+    }
+    if declared_components.is_empty() && !runtime_dependencies.is_empty() {
+        return Err(artifact_error(
+            path,
+            format!(
+                "纯静态模块的产物包含 Runtime 动态依赖：{}",
+                runtime_dependencies.join(", ")
             ),
         ));
     }
@@ -172,6 +190,7 @@ pub fn verify_artifact(
         declared_components,
         observed_components,
         runtime_symbols,
+        unclassified_runtime_symbols: unclassified_symbols,
         dependencies: inspection.dependencies,
         diagnostic_symbols,
     })
@@ -479,13 +498,7 @@ fn macho_fat_slice<'a>(
         Endian::Little
     };
     let count = read_u32(bytes, 4, endian, path, "Mach-O fat 架构数量")?;
-    let expected_cpu = if target.triple.starts_with("x86_64-") {
-        0x0100_0007
-    } else if target.triple.starts_with("aarch64-") {
-        0x0100_000c
-    } else {
-        0
-    };
+    let expected_cpu = macho_cpu_type(target);
     let entry_size = if is_64 { 32_u64 } else { 20_u64 };
     for index in 0..count as u64 {
         let offset = 8_u64
@@ -497,7 +510,9 @@ fn macho_fat_slice<'a>(
             .ok_or_else(|| artifact_error(path, "Mach-O fat 偏移溢出".to_owned()))?;
         let entry = checked_range(bytes, offset, entry_size, path, "Mach-O fat 架构项")?;
         let cpu = read_u32(entry, 0, endian, path, "Mach-O CPU 类型")?;
-        if expected_cpu != 0 && cpu != expected_cpu {
+        if let Some(expected_cpu) = expected_cpu
+            && cpu != expected_cpu
+        {
             continue;
         }
         let slice_offset = if is_64 {
@@ -554,12 +569,7 @@ fn parse_macho_thin(
             "Mach-O 字节序与目标描述不一致".to_owned(),
         ));
     }
-    let expected_cpu = match target.triple.split('-').next().unwrap_or_default() {
-        "x86_64" => Some(0x0100_0007),
-        "aarch64" | "arm64" => Some(0x0100_000c),
-        "i386" | "i686" => Some(0x0000_0007),
-        _ => None,
-    };
+    let expected_cpu = macho_cpu_type(target);
     if let Some(expected_cpu) = expected_cpu
         && cpu != expected_cpu
     {
@@ -946,9 +956,12 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
                             break;
                         }
                         if value & ordinal_mask == 0 {
+                            let name_rva = value.checked_add(2).ok_or_else(|| {
+                                artifact_error(path, "PE import symbol 偏移溢出".to_owned())
+                            })?;
                             let name = c_string_at_rva(
                                 bytes,
-                                value + 2,
+                                name_rva,
                                 &sections,
                                 header_size,
                                 path,
@@ -958,10 +971,14 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
                                 symbols.insert(normalize_symbol(name));
                             }
                         }
-                        thunk_index += 1;
+                        thunk_index = thunk_index
+                            .checked_add(1)
+                            .ok_or_else(|| artifact_error(path, "PE thunk 索引溢出".to_owned()))?;
                     }
                 }
-                descriptor_index += 1;
+                descriptor_index = descriptor_index.checked_add(1).ok_or_else(|| {
+                    artifact_error(path, "PE import descriptor 索引溢出".to_owned())
+                })?;
             }
         }
     }
@@ -1042,35 +1059,86 @@ fn normalized_components(components: &[String]) -> Vec<String> {
 fn components_for_symbols(symbols: &[String]) -> Vec<String> {
     let mut components = BTreeSet::new();
     for symbol in symbols {
-        if symbol.starts_with("xiao_runtime_value_")
-            || symbol == "xiao_runtime_string_new"
-            || symbol == "xiao_runtime_error_new"
-            || symbol == "xiao_runtime_error_new_values"
-        {
-            components.insert("value".to_owned());
-        }
-        if symbol == "xiao_runtime_release"
-            || symbol == "xiao_runtime_value_copy"
-            || symbol == "xiao_runtime_value_release"
-            || symbol == "xiao_runtime_value_release_weak"
-        {
-            components.insert("rc".to_owned());
-        }
-        if symbol == "xiao_runtime_value_release_weak" {
-            components.insert("weak".to_owned());
-        }
-        if symbol.starts_with("xiao_runtime_array_")
-            || symbol.starts_with("xiao_runtime_tuple_")
-            || symbol.starts_with("xiao_runtime_dict_")
-            || symbol.starts_with("xiao_runtime_set_")
-        {
-            components.insert("containers".to_owned());
-        }
-        if symbol.starts_with("xiao_runtime_table_") {
-            components.insert("tables".to_owned());
-        }
+        add_components_for_symbol(symbol, &mut components);
     }
     components.into_iter().collect()
+}
+
+/// 将一个 Runtime 符号登记到它所属的组件集合。
+fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
+    if symbol.starts_with("xiao_runtime_value_")
+        || symbol.starts_with("xiao_runtime_string_")
+        || symbol.starts_with("xiao_runtime_error_")
+        || symbol.starts_with("xiao_runtime_abi_")
+        || symbol.starts_with("xiao_runtime_language_context_")
+        || symbol.starts_with("xiao_runtime_fatal_")
+        || symbol == "xiao_runtime_write_i64"
+    {
+        components.insert("value".to_owned());
+    }
+    if symbol == "xiao_runtime_release"
+        || symbol == "xiao_runtime_retain"
+        || symbol.starts_with("xiao_runtime_release_trace_")
+        || symbol == "xiao_runtime_value_copy"
+        || symbol == "xiao_runtime_value_release"
+        || symbol == "xiao_runtime_value_release_weak"
+    {
+        components.insert("rc".to_owned());
+    }
+    if symbol.starts_with("xiao_runtime_weak_")
+        || symbol == "xiao_runtime_value_weak"
+        || symbol == "xiao_runtime_value_release_weak"
+    {
+        components.insert("weak".to_owned());
+    }
+    if symbol.starts_with("xiao_runtime_array_")
+        || symbol.starts_with("xiao_runtime_tuple_")
+        || symbol.starts_with("xiao_runtime_dict_")
+        || symbol.starts_with("xiao_runtime_set_")
+        || symbol.starts_with("xiao_runtime_value_array_")
+        || symbol.starts_with("xiao_runtime_value_tuple_")
+        || symbol.starts_with("xiao_runtime_value_dict_")
+        || symbol.starts_with("xiao_runtime_value_set_")
+    {
+        components.insert("containers".to_owned());
+    }
+    if symbol.starts_with("xiao_runtime_table_") || symbol.starts_with("xiao_runtime_value_table_")
+    {
+        components.insert("tables".to_owned());
+    }
+}
+
+/// 返回无法映射到已知组件且不属于调试诊断钩子的 Runtime 符号。
+fn unclassified_runtime_symbols(symbols: &[String]) -> Vec<String> {
+    symbols
+        .iter()
+        .filter(|symbol| {
+            !symbol.starts_with(DIAGNOSTIC_SYMBOL_PREFIX) && {
+                let mut components = BTreeSet::new();
+                add_components_for_symbol(symbol, &mut components);
+                components.is_empty()
+            }
+        })
+        .cloned()
+        .collect()
+}
+
+/// 判断外部依赖是否看起来属于 Xiao Runtime。
+fn is_runtime_dependency(dependency: &str) -> bool {
+    let dependency = dependency.to_ascii_lowercase();
+    ["xiao-runtime", "xiao_runtime", "xiao.runtime"]
+        .iter()
+        .any(|marker| dependency.contains(marker))
+}
+
+/// 返回目标 Mach-O 使用的 CPU 类型；未知架构保留旧的首个 slice 兼容行为。
+fn macho_cpu_type(target: &TargetDescription) -> Option<u32> {
+    match target.triple.split('-').next().unwrap_or_default() {
+        "x86_64" => Some(0x0100_0007),
+        "aarch64" | "arm64" => Some(0x0100_000c),
+        "i386" | "i686" => Some(0x0000_0007),
+        _ => None,
+    }
 }
 
 /// 统一 Mach-O 前导下划线，同时保留其他符号名称。
@@ -1092,8 +1160,10 @@ fn artifact_error(path: &Path, message: String) -> CodegenError {
 
 /// 安全读取产物中的单个字节。
 fn byte_at(bytes: &[u8], offset: u64, path: &Path, context: &str) -> Result<u8> {
+    let offset =
+        usize::try_from(offset).map_err(|_| artifact_error(path, format!("{context} 偏移溢出")))?;
     bytes
-        .get(offset as usize)
+        .get(offset)
         .copied()
         .ok_or_else(|| artifact_error(path, format!("{context} 超出产物边界")))
 }
@@ -1164,13 +1234,15 @@ fn read_u64(bytes: &[u8], offset: u64, endian: Endian, path: &Path, context: &st
 
 /// 尝试从指定偏移读取小端 32 位整数。
 fn read_le_u32(bytes: &[u8], offset: usize) -> Option<u32> {
-    let bytes = bytes.get(offset..offset + 4)?;
+    let end = offset.checked_add(4)?;
+    let bytes = bytes.get(offset..end)?;
     Some(u32::from_le_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
 }
 
 /// 尝试从指定偏移读取大端 32 位整数。
 fn read_be_u32(bytes: &[u8], offset: usize) -> Option<u32> {
-    let bytes = bytes.get(offset..offset + 4)?;
+    let end = offset.checked_add(4)?;
+    let bytes = bytes.get(offset..end)?;
     Some(u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]))
 }
 
@@ -1180,8 +1252,8 @@ mod tests {
     use std::path::Path;
 
     use super::{
-        ArtifactRuntimeComposition, components_for_symbols, normalize_symbol, parse_artifact,
-        verify_artifact,
+        ArtifactRuntimeComposition, byte_at, components_for_symbols, normalize_symbol,
+        parse_artifact, unclassified_runtime_symbols, verify_artifact,
     };
     use crate::{ObjectFormat, TargetDescription};
 
@@ -1213,6 +1285,31 @@ mod tests {
         );
     }
 
+    /// 未知 Runtime 符号不能静默丢失，诊断钩子则由独立字段记录。
+    #[test]
+    fn keeps_unclassified_runtime_symbols_visible() {
+        assert_eq!(
+            unclassified_runtime_symbols(&[
+                "xiao_runtime_value_int".to_owned(),
+                "xiao_runtime_diagnostic_prepare".to_owned(),
+                "xiao_runtime_future_feature".to_owned(),
+            ]),
+            vec!["xiao_runtime_future_feature"]
+        );
+    }
+
+    /// 不可窄化到当前地址宽度的偏移必须返回结构化错误。
+    #[test]
+    fn rejects_byte_offset_that_cannot_fit_usize() {
+        let error = byte_at(&[1], u64::MAX, Path::new("byte-fixture"), "字节")
+            .expect_err("超大偏移必须拒绝");
+        if usize::BITS < 64 {
+            assert!(error.to_string().contains("偏移溢出"));
+        } else {
+            assert!(error.to_string().contains("超出产物边界"));
+        }
+    }
+
     /// 确认声明组件和观察组件在诊断摘要中保持独立。
     #[test]
     fn composition_keeps_declared_and_observed_components_separate() {
@@ -1221,6 +1318,7 @@ mod tests {
             declared_components: vec!["value".to_owned()],
             observed_components: vec!["value".to_owned()],
             runtime_symbols: vec!["xiao_runtime_value_int".to_owned()],
+            unclassified_runtime_symbols: Vec::new(),
             dependencies: Vec::new(),
             diagnostic_symbols: Vec::new(),
         };
@@ -1282,6 +1380,34 @@ mod tests {
         let _ = std::fs::remove_file(&path);
         let error = result.expect_err("纯静态产物不能含 Runtime 符号");
         assert!(error.to_string().contains("包含 Runtime 符号"));
+    }
+
+    /// 纯静态产物即使没有 Runtime 符号，也不能携带 Runtime 动态依赖。
+    #[test]
+    fn static_artifact_with_runtime_dependency_is_rejected() {
+        let error = verify_fixture(
+            "static-runtime-dependency",
+            &elf_fixture_with_dependency("main", "libxiao-runtime.so"),
+            &TargetDescription::linux_x86_64(),
+            &[],
+            false,
+        )
+        .expect_err("纯静态产物不能依赖 Runtime 动态库");
+        assert!(error.to_string().contains("Runtime 动态依赖"));
+    }
+
+    /// 动态产物保留 Runtime 依赖事实，但不因依赖名本身被拒绝。
+    #[test]
+    fn dynamic_artifact_reports_runtime_dependency_fact() {
+        let composition = verify_fixture(
+            "dynamic-runtime-dependency",
+            &elf_fixture_with_dependency("xiao_runtime_value_int", "libxiao-runtime.so"),
+            &TargetDescription::linux_x86_64(),
+            &["value"],
+            false,
+        )
+        .expect("动态产物的 Runtime 依赖应保留为事实");
+        assert_eq!(composition.dependencies, vec!["libxiao-runtime.so"]);
     }
 
     /// 确认三个对象格式都能观察到已声明的 Runtime 组件。
@@ -1380,6 +1506,35 @@ mod tests {
         assert!(inspection.has_symbol("xiao_runtime_array_new"));
     }
 
+    /// fat Mach-O 必须选择 arm64 slice，而不是因架构未匹配而误读第一个 slice。
+    #[test]
+    fn parses_arm64_slice_from_fat_macho() {
+        let x86 = macho_fixture_with_cpu("_x86_marker", 0x0100_0007);
+        let arm64 = macho_fixture_with_cpu("_xiao_runtime_array_new", 0x0100_000c);
+        let x86_offset = 0x100_u32;
+        let arm64_offset = 0x200_u32;
+        let mut fat = vec![0_u8; arm64_offset as usize + arm64.len()];
+        fat[..4].copy_from_slice(&0xcafebabe_u32.to_be_bytes());
+        fat[4..8].copy_from_slice(&2_u32.to_be_bytes());
+        put_be_u32(&mut fat, 8, 0x0100_0007);
+        put_be_u32(&mut fat, 16, x86_offset);
+        put_be_u32(&mut fat, 20, x86.len() as u32);
+        put_be_u32(&mut fat, 28, 0x0100_000c);
+        put_be_u32(&mut fat, 36, arm64_offset);
+        put_be_u32(&mut fat, 40, arm64.len() as u32);
+        fat[x86_offset as usize..x86_offset as usize + x86.len()].copy_from_slice(&x86);
+        fat[arm64_offset as usize..arm64_offset as usize + arm64.len()].copy_from_slice(&arm64);
+
+        let inspection = parse_artifact(
+            Path::new("fat-macho-arm64"),
+            &fat,
+            &TargetDescription::macos_aarch64(),
+        )
+        .expect("应选择 arm64 fat slice");
+        assert!(inspection.has_symbol("xiao_runtime_array_new"));
+        assert!(!inspection.has_symbol("x86_marker"));
+    }
+
     /// 将内存中的受控对象格式夹具写入临时文件并执行验证。
     fn verify_fixture(
         name: &str,
@@ -1431,12 +1586,53 @@ mod tests {
         bytes
     }
 
+    /// 构造包含一个符号和一个 DT_NEEDED 依赖的最小 ELF 夹具。
+    fn elf_fixture_with_dependency(symbol: &str, dependency: &str) -> Vec<u8> {
+        let symbol_strings = format!("\0{symbol}\0");
+        let dependency_offset = symbol_strings.len();
+        let strings = format!("{symbol_strings}{dependency}\0").into_bytes();
+        let mut bytes = vec![0_u8; 0x300];
+        bytes[..4].copy_from_slice(b"\x7fELF");
+        bytes[4] = 2;
+        bytes[5] = 1;
+        bytes[6] = 1;
+        put_u16(&mut bytes, 18, 0x003e);
+        put_u64(&mut bytes, 40, 0x100);
+        put_u16(&mut bytes, 58, 64);
+        put_u16(&mut bytes, 60, 4);
+        let symtab = 0x200;
+        let strtab = 0x240;
+        put_u32(&mut bytes, 0x140 + 4, 2);
+        put_u64(&mut bytes, 0x140 + 24, symtab);
+        put_u64(&mut bytes, 0x140 + 32, 48);
+        put_u32(&mut bytes, 0x140 + 40, 2);
+        put_u64(&mut bytes, 0x140 + 56, 24);
+        put_u32(&mut bytes, 0x180 + 4, 3);
+        put_u64(&mut bytes, 0x180 + 24, strtab);
+        put_u64(&mut bytes, 0x180 + 32, strings.len() as u64);
+        put_u32(&mut bytes, 0x1c0 + 4, 6);
+        put_u64(&mut bytes, 0x1c0 + 24, 0x280);
+        put_u64(&mut bytes, 0x1c0 + 32, 32);
+        put_u32(&mut bytes, 0x1c0 + 40, 2);
+        put_u64(&mut bytes, 0x1c0 + 56, 16);
+        put_u64(&mut bytes, 0x280, 1);
+        put_u64(&mut bytes, 0x288, dependency_offset as u64);
+        put_u32(&mut bytes, symtab as usize + 24, 1);
+        bytes[strtab as usize..strtab as usize + strings.len()].copy_from_slice(&strings);
+        bytes
+    }
+
     /// 构造包含一个符号的最小 Mach-O 夹具。
     fn macho_fixture(symbol: &str) -> Vec<u8> {
+        macho_fixture_with_cpu(symbol, 0x0100_0007)
+    }
+
+    /// 构造包含一个符号和指定 CPU 类型的最小 Mach-O 夹具。
+    fn macho_fixture_with_cpu(symbol: &str, cpu: u32) -> Vec<u8> {
         let strings = format!("\0{symbol}\0").into_bytes();
         let mut bytes = vec![0_u8; 0x120];
         bytes[..4].copy_from_slice(&0xfeedfacfu32.to_le_bytes());
-        put_u32(&mut bytes, 4, 0x0100_0007);
+        put_u32(&mut bytes, 4, cpu);
         put_u32(&mut bytes, 16, 1);
         put_u32(&mut bytes, 20, 24);
         put_u32(&mut bytes, 32, 2);
@@ -1480,6 +1676,11 @@ mod tests {
     /// 向夹具写入小端 32 位整数。
     fn put_u32(bytes: &mut [u8], offset: usize, value: u32) {
         bytes[offset..offset + 4].copy_from_slice(&value.to_le_bytes());
+    }
+
+    /// 向夹具写入大端 32 位整数。
+    fn put_be_u32(bytes: &mut [u8], offset: usize, value: u32) {
+        bytes[offset..offset + 4].copy_from_slice(&value.to_be_bytes());
     }
 
     /// 向夹具写入小端 64 位整数。

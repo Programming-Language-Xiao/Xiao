@@ -396,6 +396,7 @@ fn protocol_artifact_runtime(
         declared_components: composition.declared_components.clone(),
         observed_components: composition.observed_components.clone(),
         runtime_symbols: composition.runtime_symbols.clone(),
+        unclassified_runtime_symbols: composition.unclassified_runtime_symbols.clone(),
         dependencies: composition.dependencies.clone(),
         diagnostic_symbols: composition.diagnostic_symbols.clone(),
     }

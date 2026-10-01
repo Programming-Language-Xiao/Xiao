@@ -75,7 +75,8 @@ Windows 原生构建需要在 Visual Studio Developer Command Prompt（例如 `v
 工具链指纹和目标信息，并在 `artifact.artifact_runtime` 中报告链接后产物事实：
 `object_format`（`coff`/`elf`/`macho`）、IR 声明的 `declared_components`、符号表或导出表中
 观察到的 `observed_components`、`runtime_symbols`、外部 `dependencies` 和调试相关
-`diagnostic_symbols`。`artifact.optimization_level` 当前固定为 `0`。
+`diagnostic_symbols`，以及无法映射到已知组件的 `unclassified_runtime_symbols`。
+`artifact.optimization_level` 当前固定为 `0`。
 
 这些字段只表示最终文件中实际可观察到的对象格式、符号和依赖，不解释组件为什么被带入，也
 不替代平台运行期测试；构建验证在链接后完成，组件证据不完整或与 IR 登记不一致时构建失败。
