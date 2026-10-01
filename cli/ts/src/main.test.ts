@@ -311,7 +311,12 @@ describe("CLI 入口", () => {
       await writeFile(join(directory, "config.xiao"), "[CLI]\ngit = { summary = true }\n");
       const code = await runCli(["-debug"], {
         stdin: Readable.from([]), stdout, stderr, cwd: directory,
-        env: { ...process.env, PATH: "", NO_COLOR: "1", XIAO_GLOBAL_CONFIG: join(directory, "global.xiao") }, isTTY: false,
+        env: {
+          ...process.env,
+          PATH: process.platform === "win32" ? "Z:\\__xiao_missing__" : "/__xiao_missing__",
+          NO_COLOR: "1",
+          XIAO_GLOBAL_CONFIG: join(directory, "global.xiao"),
+        },
       });
       expect(code).toBe(0);
       expect(output).toContain(`${directory} [X>`);

@@ -126,13 +126,14 @@ describe("命令取消接线", () => {
     await writeFile(activationFile, "");
     try {
       const syncContext = environmentContext();
-      const env = { ...process.env, XIAO_ACTIVATION_FILE: activationFile, XIAO_ACTIVE_ENV: "C:\\env\\dev" };
+      const activeEnvironment = process.platform === "win32" ? "C:\\env\\dev" : join(directory, "env", "dev");
+      const env = { ...process.env, XIAO_ACTIVATION_FILE: activationFile, XIAO_ACTIVE_ENV: activeEnvironment };
       const syncResult = await executeCommand(parseArguments(["sync", "--keep-extra", "--locked"]), { ...syncContext, cwd: directory, env });
       expect(syncResult.exitCode).toBe(0);
       expect(syncContext.fake.requests.find((value) => value.type === "package")).toMatchObject({
-        operation: "sync", active_environment: "C:\\env\\dev", keep_extra: true, locked: true, frozen: false, config_text: config,
+        operation: "sync", active_environment: activeEnvironment, keep_extra: true, locked: true, frozen: false, config_text: config,
       });
-      expect(await readFile(activationFile, "utf8")).toBe("XIAO_ACTIVE_ENV='C:\\env\\dev'\nexport XIAO_ACTIVE_ENV\n");
+      expect(await readFile(activationFile, "utf8")).toBe(`XIAO_ACTIVE_ENV='${activeEnvironment}'\nexport XIAO_ACTIVE_ENV\n`);
       const results = [];
       for (const alias of ["install", "i"]) {
         await writeFile(activationFile, "unchanged");

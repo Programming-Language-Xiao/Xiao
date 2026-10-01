@@ -26,7 +26,7 @@ fn install() {
 
 #[cfg(unix)]
 unsafe fn install_alternate_signal_stack() {
-    let size = (libc::SIGSTKSZ as usize).saturating_mul(4);
+    let size = libc::SIGSTKSZ.saturating_mul(4);
     let stack = vec![0_u8; size].into_boxed_slice();
     let stack = Box::leak(stack);
     let alternate = libc::stack_t {
@@ -34,16 +34,20 @@ unsafe fn install_alternate_signal_stack() {
         ss_flags: 0,
         ss_size: stack.len(),
     };
-    let _ = libc::sigaltstack(&alternate, std::ptr::null_mut());
+    unsafe {
+        let _ = libc::sigaltstack(&alternate, std::ptr::null_mut());
+    }
 }
 
 #[cfg(unix)]
 unsafe fn install_unix_signal(signal: libc::c_int) {
-    let mut action: libc::sigaction = std::mem::zeroed();
-    action.sa_sigaction = signal_handler as usize;
-    action.sa_flags = libc::SA_SIGINFO | libc::SA_ONSTACK;
-    libc::sigemptyset(&mut action.sa_mask);
-    let _ = libc::sigaction(signal, &action, std::ptr::null_mut());
+    unsafe {
+        let mut action: libc::sigaction = std::mem::zeroed();
+        action.sa_sigaction = signal_handler as *const () as usize;
+        action.sa_flags = libc::SA_SIGINFO | libc::SA_ONSTACK;
+        libc::sigemptyset(&mut action.sa_mask);
+        let _ = libc::sigaction(signal, &action, std::ptr::null_mut());
+    }
 }
 
 #[cfg(unix)]

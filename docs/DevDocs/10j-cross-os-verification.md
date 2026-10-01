@@ -166,6 +166,15 @@ unsafe fn install_unix_signal(signal: libc::c_int) {
 6. **不回归**：Windows 本机的四项门禁仍绿（`cargo test --workspace`、clippy、
    `bun run check`、门控 `--ignored`）。
 
+### 5.1 本次执行记录（2026-10-01）
+
+- 已按 §4.1 修复 `core/rust/crates/xiao-runtime/src/crash.rs`：Unix 两个 `unsafe fn` 的不安全操作均放入显式 `unsafe {}`，`SIGSTKSZ` 使用平台原生 `usize`，并将 `signal_handler` 转换改为 `as *const () as usize`；未使用 `#[allow(...)]`。
+- 为使 `-D warnings` 在 Linux 通过，修正 `xiao-package/src/cache.rs` 的 Unix 条件编译可变性；为使跨平台 CLI 测试向量与宿主一致，修正 Git 缺失、激活路径和环境布局测试的宿主路径假设。
+- Rust 1.96.0：`cargo clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets -- -D warnings` 通过。
+- Linux 门控：`cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored` 通过；`platform_failure_report_is_machine_readable` 单独运行通过，真实子进程退出码为 139 且机器字段齐全。
+- Linux 原生回环：`XIAO_USE_XVFB=1 bash tools/platform-reproduction/reproduce.sh native` 通过（Rust 1.96.0、LLVM/Clang 21.1.8、Xvfb；Bun 缓存使用独立临时目录）。普通 native、`-debug` native、同目录/PATH/开发回环和协议失配均通过。
+- 四平台 CI 已通过：[run 36805985940](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/36805985940) 的 `linux-amd64`、`linux-arm64`、`macos-arm64`、`windows-amd64` 均为 `success`；macOS Unix 分支未出现额外的 `libc`/`sigaction` 问题。
+
 ---
 
 ## 六、本次不负责
