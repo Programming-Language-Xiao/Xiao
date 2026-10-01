@@ -308,7 +308,7 @@ impl OptimizationPipeline {
         let mut snapshots = vec![input.clone(), normalized_snapshot.clone()];
         let mut current = normalized;
         let initial_facts = ProgramFacts::from_program(&current);
-        let input_cost = CostMetrics::from_snapshot(&normalized_snapshot, &initial_facts);
+        let input_cost = CostMetrics::from_snapshot(&input, &initial_facts);
         let mut reports = vec![PassReport {
             metadata: PassMetadata {
                 name: "normalize".to_owned(),
@@ -365,6 +365,7 @@ impl OptimizationPipeline {
         for pass in &self.passes {
             let metadata = pass.metadata();
             let before = snapshot(&format!("before:{}", metadata.name), &current)?;
+            snapshots.push(before.clone());
             let mut candidate = current.clone();
             let facts = ProgramFacts::from_program(&current);
             let result = pass.run(&mut candidate, &facts);
@@ -390,7 +391,6 @@ impl OptimizationPipeline {
                         output_fingerprint: after.fingerprint.clone(),
                         validation: ValidationStatus::Passed,
                     });
-                    snapshots.push(before);
                     snapshots.push(after);
                     current = candidate;
                 }
@@ -544,6 +544,24 @@ mod tests {
         }
     }
 
+    struct SkippingPass;
+
+    impl OptimizationPass for SkippingPass {
+        fn metadata(&self) -> PassMetadata {
+            PassMetadata {
+                name: "test.skipping".to_owned(),
+                version: 1,
+                assumptions: PassAssumptions::default(),
+            }
+        }
+
+        fn run(&self, _program: &mut IrProgram, _facts: &ProgramFacts) -> PassResult {
+            PassResult::Skipped {
+                reason: SkipReason::NoBenefit,
+            }
+        }
+    }
+
     #[test]
     fn normalizes_config_and_fingerprint_independently_of_input_order() {
         let first = OptimizationConfig::baseline("elf")
@@ -616,6 +634,21 @@ mod tests {
         assert_eq!(name, "test.failing");
         assert_eq!(message, "测试失败");
         assert_eq!(last_valid.label, "before:test.failing");
+    }
+
+    #[test]
+    fn skipped_pass_keeps_its_input_snapshot() {
+        let result = OptimizationPipeline::new(OptimizationConfig::baseline("elf"))
+            .expect("配置")
+            .with_pass(SkippingPass)
+            .run(&empty_program())
+            .expect("跳过 Pass");
+        assert!(
+            result
+                .snapshots
+                .iter()
+                .any(|snapshot| snapshot.label == "before:test.skipping")
+        );
     }
 
     #[test]
