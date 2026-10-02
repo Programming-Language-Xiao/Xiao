@@ -753,6 +753,16 @@ fn remove_unreachable_blocks(function: &mut TacFunction) -> bool {
     protected_successors(function, &mut graph);
     let mut reachable = BTreeSet::new();
     let mut pending = vec![function.entry];
+    for handler in &function.handlers {
+        // 处理器表本身是异常边；即使保护区没有正常前驱，也必须保留整段
+        // 保护区和 handler 入口，避免清理后无法重建 `[start, end)` 边界。
+        pending.push(handler.handler);
+        pending.extend(
+            (handler.protected.0.get()
+                ..handler.protected.1.get().min(function.blocks.len() as u32))
+                .map(BlockId::new),
+        );
+    }
     while let Some(block) = pending.pop() {
         if !reachable.insert(block) {
             continue;
@@ -987,7 +997,8 @@ fn instruction_registers(instruction: &crate::tac::TacInstr) -> Vec<crate::tac::
 mod tests {
     use super::*;
     use crate::tac::{
-        BlockId, CategoryMap, RegisterClass, TacAbi, TacBlock, TacFunction, TacInstr, VReg,
+        BlockId, CategoryMap, RegisterClass, TacAbi, TacBlock, TacFunction, TacHandler, TacInstr,
+        VReg,
     };
     use xiao_ir::IR_VERSION;
 
@@ -1120,5 +1131,44 @@ mod tests {
         assert!(result.report.passes.iter().any(|pass| {
             pass.metadata.name == "bytecode.unreachable-block" && pass.status == PassStatus::Applied
         }));
+    }
+
+    #[test]
+    fn unreachable_protected_region_is_kept_for_handler_remapping() {
+        let mut program = program_with_duplicate_constants();
+        program.functions[0].blocks.push(crate::tac::TacBlock {
+            id: BlockId::new(1),
+            scope: 0,
+            instructions: vec![TacInstr::new(
+                TacOp::Return { value: None },
+                xiao_ir::IrSpan::new(2, 3),
+            )],
+        });
+        program.functions[0].blocks.push(crate::tac::TacBlock {
+            id: BlockId::new(2),
+            scope: 0,
+            instructions: vec![TacInstr::new(
+                TacOp::Return { value: None },
+                xiao_ir::IrSpan::new(3, 4),
+            )],
+        });
+        program.functions[0].handlers.push(TacHandler {
+            protected: (BlockId::new(1), BlockId::new(2)),
+            handler: BlockId::new(2),
+            scope: 0,
+            exit: "catch".to_owned(),
+            catch_type: Some("Error".to_owned()),
+            binding: None,
+        });
+        let result = optimize_bytecode(
+            &program,
+            OptimizationConfig::baseline("portable").with_level(OptimizationLevel::O1),
+        )
+        .expect("异常保护区优化");
+        assert_eq!(result.program.functions[0].blocks.len(), 3);
+        assert_eq!(
+            result.program.functions[0].handlers[0].handler,
+            BlockId::new(2)
+        );
     }
 }
