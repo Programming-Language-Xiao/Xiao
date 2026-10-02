@@ -115,6 +115,7 @@ $env:XIAO_TARGET_TRIPLE = $hostTriple
 $env:XIAO_CLANG = (Get-Command clang).Source
 $env:XIAO_LLVM_AS = (Get-Command llvm-as).Source
 $env:XIAO_LLC = (Get-Command llc).Source
+$env:XIAO_STRIP = (Get-Command llvm-strip).Source
 
 Write-Output "Platform: Windows/$env:PROCESSOR_ARCHITECTURE"
 Write-Output "Rust: $(& rustc --version)"

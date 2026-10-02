@@ -33,7 +33,7 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 
 ## 二、现状清单（2026-09-30 更新；原始八条于 2026-09-24 实测）
 
-**11 个测试**依赖外部环境，涉及 **5 个环境变量**和一个真实终端能力；其中前 8 条是原有
+**16 个测试**依赖外部环境，涉及 **6 个环境变量**和一个真实终端能力；其中前 8 条是原有
 门控，N0-C 修复新增 3 条错误路径/差分/栈用量门控：
 
 | 文件 | 测试 |
@@ -49,8 +49,13 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 | `xiao-driver/tests/n0_a_native_driver.rs` | `optional_native_catch_does_not_terminate` |
 | `xiao-driver/tests/n0_b_dynamic_native.rs` | `optional_dynamic_string_native_round_trip` |
 | `xiao-driver/src/diagnostics.rs` | `real_terminal_session_is_environment_gated` |
+| `xiao-codegen-llvm/tests/15e_ci_gated.rs` | `real_artifact_strip_modes_all_optimization_levels` |
+| `xiao-codegen-llvm/tests/15e_ci_gated.rs` | `real_debug_activation_survives_all_optimization_levels` |
+| `xiao-codegen-llvm/tests/15e_ci_gated.rs` | `real_symbol_table_and_debug_path_evidence` |
+| `xiao-codegen-llvm/tests/15e_ci_gated.rs` | `real_artifact_reproducibility_is_byte_comparable` |
+| `xiao-codegen-llvm/tests/15e_ci_gated.rs` | `ci_performance_baseline_is_platform_scoped` |
 
-环境变量：`XIAO_CLANG`、`XIAO_LLVM_AS`、`XIAO_LLC`、`XIAO_RUNTIME_LIBRARY`、`XIAO_TARGET_TRIPLE`。
+环境变量：`XIAO_CLANG`、`XIAO_LLVM_AS`、`XIAO_LLC`、`XIAO_STRIP`、`XIAO_RUNTIME_LIBRARY`、`XIAO_TARGET_TRIPLE`。
 
 **齐备环境下的实测结果**（10C 发现时跑的）：
 
@@ -120,6 +125,7 @@ set PATH=<MSYS2_ROOT>\ucrt64\bin;%PATH%
 set XIAO_CLANG=<MSYS2_ROOT>\ucrt64\bin\clang.exe
 set XIAO_LLVM_AS=<MSYS2_ROOT>\ucrt64\bin\llvm-as.exe
 set XIAO_LLC=<MSYS2_ROOT>\ucrt64\bin\llc.exe
+set XIAO_STRIP=<MSYS2_ROOT>\ucrt64\bin\llvm-strip.exe
 set XIAO_RUNTIME_LIBRARY=<REPO>\core\rust\target\release\xiao_runtime.lib
 set XIAO_TARGET_TRIPLE=x86_64-pc-windows-msvc
 cd /d <REPO>\core\rust
@@ -146,6 +152,7 @@ cargo build --manifest-path core/rust/Cargo.toml -p xiao-runtime --release
 export XIAO_CLANG="$(command -v clang)"
 export XIAO_LLVM_AS="$(command -v llvm-as)"
 export XIAO_LLC="$(command -v llc)"
+export XIAO_STRIP="$(command -v llvm-strip)"
 export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
 export XIAO_TARGET_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
 cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
@@ -191,7 +198,7 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 ## 五、门禁要求
 
 1. **默认门禁**：`cargo test` 的汇总里**记录 `ignored` 的数量**。
-   与本文 §2 的清单（当前 11 个）不一致时，要么是新增了环境依赖测试（好事，更新清单），
+   与本文 §2 的清单（当前 16 个）不一致时，要么是新增了环境依赖测试（好事，更新清单），
    要么是有人把测试从 `ignored` 改回了条件 `return`（**要拒绝**）。
 2. **每批至少一次齐备环境跑**：把对应平台的 §4 脚本跑一次，结果写进该批的交接记录。
    **这是唯一能证明那些测试还活着的动作。**
@@ -200,8 +207,8 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 
 ## 六、验收
 
-1. §2 清单里的 11 个测试**全部标了 `#[ignore]`**，且理由字符串能定位到本文 §4；
-2. 默认 `cargo test` 的汇总里能看到 `11 ignored`；
+1. §2 清单里的 16 个测试**全部标了 `#[ignore]`**，且理由字符串能定位到本文 §4；
+2. 默认 `cargo test` 的汇总里能看到 `16 ignored`；
 3. `cargo test -- --ignored` 在齐备环境里**全部执行**（10C 修复前允许 1 个失败，
    修复后必须全绿）；
 4. 缺环境时跑 `--ignored` 会**失败**，不是静默跳过（§3.2）；
@@ -209,11 +216,14 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 
 ## 七、落地记录（2026-09-24）
 
-§2 列出的 11 条测试现已全部使用 `#[ignore = "...；准备方式见 10D §4"]`：
+原有 §2 清单的 11 条测试现已全部使用 `#[ignore = "...；准备方式见 10D §4"]`：
 `xiao-codegen-llvm` 的 6 条、`xiao-driver` 的 4 条和诊断窗口的 1 条。默认运行
 `cargo test -p xiao-codegen-llvm -p xiao-driver` 另加诊断单元测试时的汇总为 11 ignored，
 没有把缺环境伪装成通过；显式运行 `--ignored` 时会用 `expect` 检查变量，Runtime 库路径
 不存在也会直接断言失败。
+
+15E 新增的 5 条真实产物门控已追加到 §2，默认汇总因此为 16 ignored；显式运行需要
+`XIAO_STRIP` 和 `XIAO_DIAGNOSTICS_PATH`，并由 `reproduce.sh`/`reproduce.ps1` 准备。
 
 在 Windows 原生环境按 §4 准备后，以下历史记录已完整执行 7 条工具链门控测试并全部通过；
 真实终端测试另在同一环境中通过：

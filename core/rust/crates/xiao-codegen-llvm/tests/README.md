@@ -8,3 +8,7 @@
 `XIAO_CLANG`、需要汇编验证的测试还要提供 `XIAO_LLVM_AS`，并设置
 `XIAO_TARGET_TRIPLE`；缺变量应失败而不是静默返回。Windows 原生准备方式见
 `docs/DevDocs/10d-environment-gated-test-spec.md` §4。
+
+`15e_ci_gated.rs` 额外门控真实链接产物的 strip 三态、O0-O3 调试激活位、符号表与调试
+路径、重复构建字节比较和平台独立性能基线；显式运行还需要 `XIAO_LLC`、`XIAO_STRIP`
+和 `XIAO_DIAGNOSTICS_PATH`。

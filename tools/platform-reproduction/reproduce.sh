@@ -74,8 +74,9 @@ resolve_tool() {
 export XIAO_CLANG="$(resolve_tool "${XIAO_CLANG:-}" clang)"
 export XIAO_LLVM_AS="$(resolve_tool "${XIAO_LLVM_AS:-}" llvm-as)"
 export XIAO_LLC="$(resolve_tool "${XIAO_LLC:-}" llc)"
+export XIAO_STRIP="$(resolve_tool "${XIAO_STRIP:-}" llvm-strip)"
 
-for required_tool in "$XIAO_CLANG" "$XIAO_LLVM_AS" "$XIAO_LLC"; do
+for required_tool in "$XIAO_CLANG" "$XIAO_LLVM_AS" "$XIAO_LLC" "$XIAO_STRIP"; do
     if [[ ! -x "$required_tool" ]]; then
         printf '工具不可执行：%s\n' "$required_tool" >&2
         exit 1

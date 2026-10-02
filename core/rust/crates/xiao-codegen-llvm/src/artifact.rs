@@ -565,10 +565,7 @@ fn parse_elf(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Ar
             path,
             "ELF 字符串表",
         )?;
-        if (section.section_type == 2 || section.section_type == 11)
-            && section.size > 0
-            && !strings.is_empty()
-        {
+        if section.section_type == 2 && section.size > 0 && !strings.is_empty() {
             usable_symbol_table = true;
         }
         let default_entry_size = if is_64 { 24 } else { 16 };

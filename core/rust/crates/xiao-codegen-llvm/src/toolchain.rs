@@ -441,6 +441,10 @@ impl Toolchain {
             "-o".to_owned(),
             path_text(&output),
         ];
+        if startup.is_some() {
+            // 调试产物必须携带真实调试信息，门控才能检查路径归一化与 strip 边界。
+            args.push("-g".to_owned());
+        }
         match target.object_format {
             ObjectFormat::Elf => args.extend([
                 "-ffunction-sections".to_owned(),
@@ -479,6 +483,7 @@ impl Toolchain {
                 "-target".to_owned(),
                 target.triple.clone(),
                 "-c".to_owned(),
+                "-g".to_owned(),
                 path_text(&source.path),
                 "-o".to_owned(),
                 path_text(&object),
