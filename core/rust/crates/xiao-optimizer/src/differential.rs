@@ -55,6 +55,26 @@ impl DifferentialCase {
     }
 }
 
+/// 一个由差分执行器实际消费的稳定输入。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct DifferentialInput {
+    /// 稳定用例名称。
+    pub name: String,
+    /// 供两个执行侧消费的规范输入文本。
+    pub input: String,
+}
+
+impl DifferentialInput {
+    /// 创建一个差分输入。
+    #[must_use]
+    pub fn new(name: impl Into<String>, input: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            input: input.into(),
+        }
+    }
+}
+
 /// 一个差分用例的稳定报告。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DifferentialCaseReport {
@@ -128,6 +148,37 @@ pub fn run_o0_differential_suite(mut cases: Vec<DifferentialCase>) -> Differenti
     }
 }
 
+/// 执行输入驱动的 O0 差分套件。
+///
+/// 执行器会收到同一份输入两次，分别代表未优化基线和当前 O0 优化侧；套件本身
+/// 只负责稳定排序、四字段比较和报告，不推断后端语义。
+pub fn run_o0_differential_suite_with<F>(
+    mut inputs: Vec<DifferentialInput>,
+    mut execute: F,
+) -> DifferentialSuiteReport
+where
+    F: FnMut(&str, OptimizationLevel) -> DifferentialObservation,
+{
+    inputs.sort_by(|left, right| left.name.cmp(&right.name));
+    let cases = inputs
+        .into_iter()
+        .map(|input| {
+            let baseline = execute(&input.input, OptimizationLevel::O0);
+            let optimized = execute(&input.input, OptimizationLevel::O0);
+            DifferentialCaseReport {
+                name: input.name,
+                differences: compare_observations(&baseline, &optimized),
+            }
+        })
+        .collect::<Vec<_>>();
+    let passed = cases.iter().all(|case| case.differences.is_empty());
+    DifferentialSuiteReport {
+        optimization_level: OptimizationLevel::O0,
+        cases,
+        passed,
+    }
+}
+
 fn difference(field: &str, baseline: &str, optimized: &str) -> DifferentialDifference {
     DifferentialDifference {
         field: field.to_owned(),
@@ -139,8 +190,10 @@ fn difference(field: &str, baseline: &str, optimized: &str) -> DifferentialDiffe
 #[cfg(test)]
 mod tests {
     use super::{
-        DifferentialCase, DifferentialObservation, compare_observations, run_o0_differential_suite,
+        DifferentialCase, DifferentialInput, DifferentialObservation, compare_observations,
+        run_o0_differential_suite, run_o0_differential_suite_with,
     };
+    use crate::OptimizationLevel;
 
     #[test]
     fn compares_output_error_exit_code_and_drop_order() {
@@ -186,5 +239,27 @@ mod tests {
             vec!["a-case", "z-case"]
         );
         assert!(report.passed);
+    }
+
+    #[test]
+    fn input_suite_executes_each_input_for_both_o0_sides() {
+        let mut calls = Vec::new();
+        let report = run_o0_differential_suite_with(
+            vec![DifferentialInput::new("case", "fixture")],
+            |input, level| {
+                calls.push((input.to_owned(), level));
+                DifferentialObservation {
+                    output: input.to_owned(),
+                    ..DifferentialObservation::default()
+                }
+            },
+        );
+        assert!(report.passed);
+        assert_eq!(calls.len(), 2);
+        assert!(
+            calls
+                .iter()
+                .all(|(input, level)| input == "fixture" && *level == OptimizationLevel::O0)
+        );
     }
 }

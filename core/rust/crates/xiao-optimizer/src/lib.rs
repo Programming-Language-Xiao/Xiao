@@ -12,8 +12,9 @@ pub use config::{
 };
 /// 未优化与优化结果的统一语义差分口径。
 pub use differential::{
-    DifferentialCase, DifferentialCaseReport, DifferentialDifference, DifferentialObservation,
-    DifferentialSuiteReport, compare_observations, run_o0_differential_suite,
+    DifferentialCase, DifferentialCaseReport, DifferentialDifference, DifferentialInput,
+    DifferentialObservation, DifferentialSuiteReport, compare_observations,
+    run_o0_differential_suite, run_o0_differential_suite_with,
 };
 /// IR 效果、所有权和别名只读事实。
 pub use facts::{AliasFacts, EffectFacts, OwnershipFacts, ProgramFacts};

@@ -1,7 +1,8 @@
 //! 13B 边界输入与 O0 差分基线夹具。
 
 use xiao_optimizer::{
-    DifferentialCase, DifferentialObservation, OptimizationLevel, run_o0_differential_suite,
+    DifferentialCase, DifferentialInput, DifferentialObservation, OptimizationLevel,
+    run_o0_differential_suite, run_o0_differential_suite_with,
 };
 use xiao_syntax::RandomMode;
 use xiao_types::{SeededRandom, sample_indices};
@@ -16,6 +17,32 @@ fn observation(
         error: error.map(str::to_owned),
         exit_code,
         drops: vec!["value:1:release".to_owned(), "value:2:release".to_owned()],
+    }
+}
+
+fn execute_boundary(input: &str, level: OptimizationLevel) -> DifferentialObservation {
+    assert_eq!(level, OptimizationLevel::O0);
+    match input {
+        "overflow:i32:max+1" | "overflow:i32:min-1" => observation("", Some("numeric-overflow"), 3),
+        "narrowing:sint:max" => observation("2147483647", None, 0),
+        "narrowing:sint:max+1" => observation("", Some("narrowing-overflow"), 3),
+        "dynamic:type-mismatch" => observation("", Some("dynamic-type-mismatch"), 3),
+        "container:dict-table" => observation("{a:1,b:2}", None, 0),
+        "container:dict-column" => observation("[a,b]", None, 0),
+        "container:set-index" => observation("", Some("set-index-unsupported"), 3),
+        "random:without" => {
+            let mut random = SeededRandom::new(42);
+            let values = sample_indices(4, 4, RandomMode::WithoutReplacement, &mut random)
+                .expect("无放回边界应成功");
+            observation(format!("{values:?}"), None, 0)
+        }
+        "random:with" => {
+            let mut random = SeededRandom::new(42);
+            let values = sample_indices(2, 8, RandomMode::WithReplacement, &mut random)
+                .expect("放回边界应成功");
+            observation(format!("{values:?}"), None, 0)
+        }
+        other => panic!("未知边界输入 {other}"),
     }
 }
 
@@ -127,4 +154,28 @@ fn dynamic_checks_and_container_order_are_boundary_cases() {
     let suite = run_o0_differential_suite(cases);
     assert!(suite.passed);
     assert_eq!(suite.cases.len(), 4);
+}
+
+#[test]
+/// 输入驱动套件必须实际执行同一输入两次，而不是只比较预构造观察值。
+fn input_driven_boundary_suite_executes_both_o0_sides() {
+    let inputs = [
+        ("overflow-max", "overflow:i32:max+1"),
+        ("overflow-min", "overflow:i32:min-1"),
+        ("narrowing-max", "narrowing:sint:max"),
+        ("narrowing-overflow", "narrowing:sint:max+1"),
+        ("random-without", "random:without"),
+        ("random-with", "random:with"),
+        ("dynamic-check", "dynamic:type-mismatch"),
+        ("dict-table", "container:dict-table"),
+        ("dict-column", "container:dict-column"),
+        ("set-index", "container:set-index"),
+    ]
+    .into_iter()
+    .map(|(name, input)| DifferentialInput::new(name, input))
+    .collect();
+    let report = run_o0_differential_suite_with(inputs, execute_boundary);
+    assert_eq!(report.optimization_level, OptimizationLevel::O0);
+    assert!(report.passed);
+    assert_eq!(report.cases.len(), 10);
 }
