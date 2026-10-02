@@ -11,6 +11,8 @@ pub mod encode;
 pub mod liveness;
 /// `IrProgram` 到统一三地址模型的单向降低。
 pub mod lower;
+/// 复用 13A 契约的字节码优化 Pass、快照与验证管线。
+pub mod optimize;
 /// 调用签名表与形参类别。
 pub mod sig;
 /// 统一三地址数据模型。
@@ -34,6 +36,13 @@ pub use liveness::{LiveInterval, Liveness, analyze as analyze_liveness};
 pub use lower::{
     TAC_BYTECODE_ABI_VERSION, TAC_RUNTIME_ABI_VERSION, TacReleaseAction, TacReleasePlan,
     lower_program,
+};
+/// 重导出字节码优化管线与报告。
+pub use optimize::{
+    BytecodeFacts, BytecodeOptimizationError, BytecodeOptimizationPass,
+    BytecodeOptimizationPipeline, BytecodeOptimizationReport, BytecodeOptimizationResult,
+    BytecodeSnapshot, ConstantPoolDedupPass, ConstantPoolPass, JumpSimplifyPass, RedundantMovePass,
+    SlotLayoutPass, UnreachableBlockPass, optimize_bytecode, optimize_bytecode_checked,
 };
 /// 重导出调用签名表与形参类别。
 pub use sig::{CallSig, CallSigTable, ParamKind};

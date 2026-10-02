@@ -95,6 +95,63 @@ pub struct DifferentialSuiteReport {
     pub passed: bool,
 }
 
+/// 三方差分执行对象：源码直跑、未优化字节码和优化字节码。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ThreeWayExecutionSide {
+    /// 源码直跑。
+    Source,
+    /// 未优化字节码。
+    UnoptimizedBytecode,
+    /// 优化字节码。
+    OptimizedBytecode,
+}
+
+/// 三方差分观察值。
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ThreeWayObservation {
+    /// 标准输出。
+    pub output: String,
+    /// 错误摘要；没有错误时为空。
+    pub error: Option<String>,
+    /// 固定随机源产生的可观察序列。
+    pub random: Vec<String>,
+    /// 按冻结顺序记录的释放事件。
+    pub drops: Vec<String>,
+}
+
+/// 三方差分的单字段差异。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ThreeWayDifference {
+    /// 差异字段名：`output`、`error`、`random` 或 `drops`。
+    pub field: String,
+    /// 源码直跑观察值。
+    pub source: String,
+    /// 未优化字节码观察值。
+    pub unoptimized: String,
+    /// 优化字节码观察值。
+    pub optimized: String,
+}
+
+/// 三方差分用例报告。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ThreeWayCaseReport {
+    /// 稳定用例名称。
+    pub name: String,
+    /// 逐字段差异。
+    pub differences: Vec<ThreeWayDifference>,
+}
+
+/// 三方差分套件报告。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ThreeWaySuiteReport {
+    /// 当前优化侧实际使用的级别。
+    pub optimization_level: OptimizationLevel,
+    /// 按用例名排序的报告。
+    pub cases: Vec<ThreeWayCaseReport>,
+    /// 是否三个观察对象逐项一致。
+    pub passed: bool,
+}
+
 /// 比较未优化和优化执行结果，返回稳定排序的差异列表。
 #[must_use]
 pub fn compare_observations(
@@ -179,6 +236,92 @@ where
     }
 }
 
+/// 比较源码、未优化字节码和优化字节码的四类可观察结果。
+#[must_use]
+pub fn compare_three_observations(
+    source: &ThreeWayObservation,
+    unoptimized: &ThreeWayObservation,
+    optimized: &ThreeWayObservation,
+) -> Vec<ThreeWayDifference> {
+    let mut differences = Vec::new();
+    if !(source.output == unoptimized.output && source.output == optimized.output) {
+        differences.push(three_way_difference(
+            "output",
+            &source.output,
+            &unoptimized.output,
+            &optimized.output,
+        ));
+    }
+    if !(source.error == unoptimized.error && source.error == optimized.error) {
+        differences.push(three_way_difference(
+            "error",
+            &format!("{:?}", source.error),
+            &format!("{:?}", unoptimized.error),
+            &format!("{:?}", optimized.error),
+        ));
+    }
+    if !(source.random == unoptimized.random && source.random == optimized.random) {
+        differences.push(three_way_difference(
+            "random",
+            &format!("{:?}", source.random),
+            &format!("{:?}", unoptimized.random),
+            &format!("{:?}", optimized.random),
+        ));
+    }
+    if !(source.drops == unoptimized.drops && source.drops == optimized.drops) {
+        differences.push(three_way_difference(
+            "drops",
+            &format!("{:?}", source.drops),
+            &format!("{:?}", unoptimized.drops),
+            &format!("{:?}", optimized.drops),
+        ));
+    }
+    differences
+}
+
+/// 执行输入驱动的三方差分套件；输入按名称排序，避免未定义顺序。
+#[must_use]
+pub fn run_three_way_differential_suite_with<F>(
+    inputs: Vec<DifferentialInput>,
+    execute: F,
+) -> ThreeWaySuiteReport
+where
+    F: FnMut(&str, ThreeWayExecutionSide) -> ThreeWayObservation,
+{
+    run_three_way_differential_suite_with_level(inputs, OptimizationLevel::O1, execute)
+}
+
+/// 执行三方差分并显式记录优化侧级别。
+#[must_use]
+pub fn run_three_way_differential_suite_with_level<F>(
+    mut inputs: Vec<DifferentialInput>,
+    optimization_level: OptimizationLevel,
+    mut execute: F,
+) -> ThreeWaySuiteReport
+where
+    F: FnMut(&str, ThreeWayExecutionSide) -> ThreeWayObservation,
+{
+    inputs.sort_by(|left, right| left.name.cmp(&right.name));
+    let cases = inputs
+        .into_iter()
+        .map(|input| {
+            let source = execute(&input.input, ThreeWayExecutionSide::Source);
+            let unoptimized = execute(&input.input, ThreeWayExecutionSide::UnoptimizedBytecode);
+            let optimized = execute(&input.input, ThreeWayExecutionSide::OptimizedBytecode);
+            ThreeWayCaseReport {
+                name: input.name,
+                differences: compare_three_observations(&source, &unoptimized, &optimized),
+            }
+        })
+        .collect::<Vec<_>>();
+    let passed = cases.iter().all(|case| case.differences.is_empty());
+    ThreeWaySuiteReport {
+        optimization_level,
+        cases,
+        passed,
+    }
+}
+
 fn difference(field: &str, baseline: &str, optimized: &str) -> DifferentialDifference {
     DifferentialDifference {
         field: field.to_owned(),
@@ -187,11 +330,27 @@ fn difference(field: &str, baseline: &str, optimized: &str) -> DifferentialDiffe
     }
 }
 
+fn three_way_difference(
+    field: &str,
+    source: &str,
+    unoptimized: &str,
+    optimized: &str,
+) -> ThreeWayDifference {
+    ThreeWayDifference {
+        field: field.to_owned(),
+        source: source.to_owned(),
+        unoptimized: unoptimized.to_owned(),
+        optimized: optimized.to_owned(),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{
-        DifferentialCase, DifferentialInput, DifferentialObservation, compare_observations,
+        DifferentialCase, DifferentialInput, DifferentialObservation, ThreeWayExecutionSide,
+        ThreeWayObservation, compare_observations, compare_three_observations,
         run_o0_differential_suite, run_o0_differential_suite_with,
+        run_three_way_differential_suite_with,
     };
     use crate::OptimizationLevel;
 
@@ -260,6 +419,42 @@ mod tests {
             calls
                 .iter()
                 .all(|(input, level)| input == "fixture" && *level == OptimizationLevel::O0)
+        );
+    }
+
+    #[test]
+    fn three_way_suite_compares_random_sequence_and_all_sides() {
+        let observation = ThreeWayObservation {
+            output: "ok".to_owned(),
+            error: None,
+            random: vec!["2".to_owned(), "1".to_owned()],
+            drops: vec!["v1".to_owned()],
+        };
+        assert!(compare_three_observations(&observation, &observation, &observation).is_empty());
+        let mut calls = Vec::new();
+        let report = run_three_way_differential_suite_with(
+            vec![DifferentialInput::new("three", "fixture")],
+            |input, side| {
+                calls.push((input.to_owned(), side));
+                observation.clone()
+            },
+        );
+        assert!(report.passed);
+        assert_eq!(calls.len(), 3);
+        assert!(
+            calls
+                .iter()
+                .any(|(_, side)| *side == ThreeWayExecutionSide::Source)
+        );
+        assert!(
+            calls
+                .iter()
+                .any(|(_, side)| *side == ThreeWayExecutionSide::UnoptimizedBytecode)
+        );
+        assert!(
+            calls
+                .iter()
+                .any(|(_, side)| *side == ThreeWayExecutionSide::OptimizedBytecode)
         );
     }
 }

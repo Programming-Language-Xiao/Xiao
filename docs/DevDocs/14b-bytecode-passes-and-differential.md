@@ -302,6 +302,29 @@
 
 ---
 
+## 本批实现记录
+
+当前实现落在 `core/rust/crates/xiao-bytecode/src/optimize.rs` 和
+`core/rust/crates/xiao-optimizer/src/differential.rs`。字节码管线复用 13A 的
+`OptimizationConfig`、`PassAssumptions`、`SkipReason`、`PassReport` 和验证状态，
+不新增第二套配置或 Pass 假设体系。
+
+已实现的保守 Pass 为：
+
+- `bytecode.constant-pool`：按位比较浮点常量，规范化重复常量索引；
+- `bytecode.redundant-move`：删除目标寄存器等于源寄存器的无副作用自移动；
+- `bytecode.jump-simplify`：把两个目标相同的条件分支改成无条件跳转；
+- `bytecode.unreachable-block` 与 `bytecode.slot-layout`：当前证明条件不足，明确报告
+  `proof-unavailable` 并保留前后相同快照，不伪装成完成优化。
+
+每个 Pass 都记录 `before:*`/`after:*` 快照；候选 TAC 会重新编码、解码并比较规范字节序列，
+`run_checked` 还会调用 09 验证器对账 IR 的释放计划和错误路径。验证或 Pass 失败时错误对象
+保留未优化参考程序和最后有效快照，未冻结“回退还是报错”的待定决策。
+
+`xiao-optimizer` 新增三方差分模型，分别执行源码、未优化字节码和优化字节码，比较输出、
+错误、固定随机序列和 `drop` 顺序；当前报告显式携带优化级别。运行时仍没有任何 quickening
+写回 `.xiaoc` 的入口，公开产物保持不可变。
+
 ## 相关页面
 
 - [14. 字节码优化与 `.xiaoc` 产物](14-bytecode-optimization.md) —— **权威规范**；`14.5`–`14.8`、`14.10`–`14.13`、语义与性能验收
