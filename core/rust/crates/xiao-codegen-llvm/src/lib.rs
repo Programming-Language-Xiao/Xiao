@@ -6,6 +6,8 @@
 
 /// 链接后原生产物的对象格式、符号和 Runtime 组成检查。
 mod artifact;
+/// 15B 固定条件性能基线与噪声阈值。
+mod baseline;
 /// 原生产物构建请求和运行观察适配。
 mod build;
 /// 动态值、容器、表和正常释放计划的 Runtime ABI 降低。
@@ -16,6 +18,8 @@ mod error;
 mod ir;
 /// 15A LLVM Pass 映射、开关和 Runtime 裁剪报告。
 mod optimization;
+/// 15B 可复现构建比较与差异白名单。
+mod reproducible;
 /// 规范化目标描述和固定宽度约束。
 mod target;
 /// LLVM 文本转义和构建指纹的共用纯函数。
@@ -27,6 +31,11 @@ mod toolchain;
 pub use artifact::{
     ArtifactInspection, ArtifactRuntimeComposition, ArtifactVerification, inspect_artifact,
     verify_artifact,
+};
+/// 性能基线模型。
+pub use baseline::{
+    BaselineCondition, BaselineError, PerformanceBaseline, PerformanceSample, PerformanceSpread,
+    measure_baseline,
 };
 /// 构建请求、原生产物和运行观察接口。
 pub use build::{BuildRequest, NativeArtifact, NativeBuild, NativeRun, NativeRunResult};
@@ -40,6 +49,11 @@ pub use ir::{
 /// LLVM Pass 计划和可证明 Runtime 裁剪报告。
 pub use optimization::{
     LlvmOptimizationPlan, LlvmOptimizationReport, LlvmPassKind, LlvmPassSwitches,
+};
+/// 可复现构建比较模型。
+pub use reproducible::{
+    ReproducibilityReport, ReproducibleDifference, ReproducibleDifferenceKind,
+    compare_reproducible_builds, normalize_llvm_text,
 };
 /// 目标字节序、对象格式和规范化目标描述。
 pub use target::{Endian, ObjectFormat, TargetDescription};

@@ -1234,31 +1234,33 @@ mod tests {
                 xiao_ir::IrSpan::new(12, 13),
             ),
         ]);
-        let count_observable = |items: &[TacInstr]| {
+        let observable_sequence = |items: &[TacInstr]| {
             items
                 .iter()
-                .filter(|instruction| {
-                    matches!(
-                        instruction.op,
-                        TacOp::PackageRoot(_)
-                            | TacOp::ImportModule { .. }
-                            | TacOp::Copy(_)
-                            | TacOp::Release { .. }
-                            | TacOp::RandomSeed { .. }
-                            | TacOp::MakeError { .. }
-                            | TacOp::Check { .. }
-                            | TacOp::MemberSet { .. }
-                    )
+                .filter_map(|instruction| {
+                    // 与 14B §3.1 的七类逐项对应：PackageRoot/ImportModule=模块加载，
+                    // Copy=引用计数增加，Release=drop，RandomSeed=随机，MakeError=错误构造，
+                    // Check(data_race)=数据竞争检查，MemberSet=外部可观察写入。
+                    Some(match &instruction.op {
+                        TacOp::PackageRoot(_) | TacOp::ImportModule { .. } => "module-load",
+                        TacOp::Copy(_) => "refcount",
+                        TacOp::Release { .. } => "drop",
+                        TacOp::RandomSeed { .. } => "random",
+                        TacOp::MakeError { .. } => "error-construction",
+                        TacOp::Check { kind, .. } if kind == "data_race" => "data-race-check",
+                        TacOp::MemberSet { .. } => "observable-write",
+                        _ => return None,
+                    })
                 })
-                .count()
+                .collect::<Vec<_>>()
         };
-        let before = count_observable(&instructions.clone());
+        let before = observable_sequence(&instructions.clone());
         let result = optimize_bytecode(
             &program,
             OptimizationConfig::baseline("portable").with_level(OptimizationLevel::O1),
         )
         .expect("可观察操作优化");
-        let after = count_observable(&result.program.functions[0].blocks[0].instructions);
+        let after = observable_sequence(&result.program.functions[0].blocks[0].instructions);
         assert_eq!(before, after);
     }
 }
