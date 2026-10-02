@@ -49,6 +49,10 @@ pub struct ArtifactInspection {
     pub object_format: ObjectFormat,
     /// 从符号表、导出表和导入表收集的符号名。
     pub symbols: Vec<String>,
+    /// 按产物符号表原始顺序读取的符号；PE 导出/导入观测可能为空。
+    pub symbol_order: Vec<String>,
+    /// 是否读取到了真实对象格式符号表。
+    pub symbol_table_readable: bool,
     /// 从动态依赖或 PE 导入表收集的库名。
     pub dependencies: Vec<String>,
 }
@@ -59,6 +63,54 @@ impl ArtifactInspection {
     pub fn has_symbol(&self, symbol: &str) -> bool {
         self.symbols.iter().any(|item| item == symbol)
     }
+
+    /// 返回排序后的符号顺序，用于跨链接器的确定性比较。
+    #[must_use]
+    pub fn normalized_symbol_order(&self) -> Vec<String> {
+        let mut symbols = self.symbol_order.clone();
+        symbols.sort();
+        symbols
+    }
+}
+
+/// 链接器符号表的可验证状态。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SymbolTableStatus {
+    /// 读取到了真实对象格式符号表。
+    Readable,
+    /// 当前格式只能观察导出/导入表，不能证明内部符号。
+    Unavailable,
+}
+
+/// 符号表规范化报告。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SymbolTableReport {
+    /// 对象格式。
+    pub object_format: ObjectFormat,
+    /// 符号表状态。
+    pub status: SymbolTableStatus,
+    /// 原始符号顺序。
+    pub original_order: Vec<String>,
+    /// 规范化排序后的顺序。
+    pub normalized_order: Vec<String>,
+}
+
+/// 读取链接后产物的符号表并建立规范化报告。
+pub fn inspect_symbol_table(
+    path: impl AsRef<Path>,
+    target: &TargetDescription,
+) -> Result<SymbolTableReport> {
+    let inspection = inspect_artifact(path, target)?;
+    Ok(SymbolTableReport {
+        object_format: inspection.object_format,
+        status: if inspection.symbol_table_readable {
+            SymbolTableStatus::Readable
+        } else {
+            SymbolTableStatus::Unavailable
+        },
+        original_order: inspection.symbol_order.clone(),
+        normalized_order: inspection.normalized_symbol_order(),
+    })
 }
 
 /// Runtime 裁剪验证后可供构建诊断消费的事实摘要。
@@ -366,6 +418,7 @@ fn parse_elf(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Ar
     }
 
     let mut symbols = BTreeSet::new();
+    let mut symbol_order = Vec::new();
     let mut dependencies = BTreeSet::new();
     let mut usable_symbol_table = false;
     for section in &sections {
@@ -417,7 +470,9 @@ fn parse_elf(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Ar
             }
             let name = c_string(strings, name_offset, path, "ELF symbol name")?;
             if !name.is_empty() {
-                symbols.insert(normalize_symbol(name));
+                let name = normalize_symbol(name);
+                symbols.insert(name.clone());
+                symbol_order.push(name);
             }
         }
     }
@@ -482,6 +537,8 @@ fn parse_elf(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Ar
     Ok(ArtifactInspection {
         object_format: ObjectFormat::Elf,
         symbols: symbols.into_iter().collect(),
+        symbol_order,
+        symbol_table_readable: true,
         dependencies: dependencies.into_iter().collect(),
     })
 }
@@ -626,6 +683,7 @@ fn parse_macho_thin(
         "Mach-O load commands",
     )?;
     let mut symbols = BTreeSet::new();
+    let mut symbol_order = Vec::new();
     let mut dependencies = BTreeSet::new();
     let mut symbol_table = None;
     let mut cursor = 0_u64;
@@ -680,7 +738,9 @@ fn parse_macho_thin(
             }
             let name = c_string(strings, name_offset, path, "Mach-O symbol name")?;
             if !name.is_empty() {
-                symbols.insert(normalize_symbol(name));
+                let name = normalize_symbol(name);
+                symbols.insert(name.clone());
+                symbol_order.push(name);
             }
         }
     }
@@ -693,6 +753,8 @@ fn parse_macho_thin(
     Ok(ArtifactInspection {
         object_format: ObjectFormat::MachO,
         symbols: symbols.into_iter().collect(),
+        symbol_order,
+        symbol_table_readable: true,
         dependencies: dependencies.into_iter().collect(),
     })
 }
@@ -811,6 +873,7 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
         });
     }
     let mut symbols = BTreeSet::new();
+    let mut symbol_order = Vec::new();
     let mut dependencies = BTreeSet::new();
     if symbol_table_offset != 0 && symbol_count != 0 {
         let table = checked_range(
@@ -843,7 +906,9 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
             let entry = &table[start..start + 18];
             let name = coff_symbol_name(entry, strings, path)?;
             if !name.is_empty() {
-                symbols.insert(normalize_symbol(name));
+                let name = normalize_symbol(name);
+                symbols.insert(name.clone());
+                symbol_order.push(name);
             }
             let auxiliary = entry[17] as u64;
             index = index
@@ -917,7 +982,9 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
                     "PE export name",
                 )?;
                 if !name.is_empty() {
-                    symbols.insert(normalize_symbol(name));
+                    let name = normalize_symbol(name);
+                    symbols.insert(name.clone());
+                    symbol_order.push(name);
                 }
             }
         }
@@ -1003,7 +1070,9 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
                                 "PE import symbol",
                             )?;
                             if !name.is_empty() {
-                                symbols.insert(normalize_symbol(name));
+                                let name = normalize_symbol(name);
+                                symbols.insert(name.clone());
+                                symbol_order.push(name);
                             }
                         }
                         thunk_index = thunk_index
@@ -1020,6 +1089,8 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
     Ok(ArtifactInspection {
         object_format: ObjectFormat::Coff,
         symbols: symbols.into_iter().collect(),
+        symbol_order,
+        symbol_table_readable: false,
         dependencies: dependencies.into_iter().collect(),
     })
 }
