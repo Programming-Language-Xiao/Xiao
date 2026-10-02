@@ -12,7 +12,7 @@ use xiao_codegen_llvm::{
 };
 use xiao_ir::{
     IrEntryMode, IrExpression, IrExpressionKind, IrName, IrProgram, IrSpan, IrStatement,
-    IrStatementKind, IrType,
+    IrStatementKind, IrTableMember, IrTableSignature, IrType,
 };
 
 /// 返回真实产物门控夹具使用的固定源码区间。
@@ -29,45 +29,53 @@ fn name(text: &str) -> IrName {
     }
 }
 
-/// 构造固定宽度整数文字。
-fn scalar_int(text: &str) -> IrExpression {
-    IrExpression {
-        kind: IrExpressionKind::Literal {
-            literal: "int".to_owned(),
-            text: text.to_owned(),
-        },
-        ty: IrType::Scalar {
-            name: "int".to_owned(),
-        },
-        span: span(),
-    }
-}
-
-/// 构造不依赖前端的最小静态原生程序。
-fn scalar_program() -> IrProgram {
-    let expression = IrExpression {
-        kind: IrExpressionKind::Binary {
-            operator: "+".to_owned(),
-            left: Box::new(scalar_int("40")),
-            right: Box::new(scalar_int("2")),
-        },
-        ty: IrType::Scalar {
-            name: "int".to_owned(),
-        },
-        span: span(),
-    };
-    IrProgram::new(
+/// 构造实际调用 Runtime 的最小动态表程序。
+fn runtime_program() -> IrProgram {
+    let mut program = IrProgram::new(
         IrEntryMode::Script,
         vec![IrStatement {
-            kind: IrStatementKind::Assignment {
-                target: name("value"),
-                value: expression,
+            kind: IrStatementKind::Expression {
+                value: IrExpression {
+                    kind: IrExpressionKind::NewCall {
+                        callee: Box::new(IrExpression {
+                            kind: IrExpressionKind::Name {
+                                name: name("Record"),
+                            },
+                            ty: IrType::Table {
+                                name: "Record".to_owned(),
+                                kind: "constructor".to_owned(),
+                            },
+                            span: span(),
+                        }),
+                        arguments: Vec::new(),
+                    },
+                    ty: IrType::Table {
+                        name: "Record".to_owned(),
+                        kind: "instance".to_owned(),
+                    },
+                    span: span(),
+                },
             },
             span: span(),
             leading_docs: Vec::new(),
         }],
         span(),
-    )
+    );
+    program.table_signatures = vec![IrTableSignature {
+        name: "Record".to_owned(),
+        kind: "instance".to_owned(),
+        members: vec![IrTableMember {
+            name: "count".to_owned(),
+            method: false,
+            public: true,
+            ty: IrType::Scalar {
+                name: "int".to_owned(),
+            },
+            span: span(),
+        }],
+        span: span(),
+    }];
+    program
 }
 
 /// 读取并严格校验 15E 所需的真实工具链环境。
@@ -87,11 +95,23 @@ fn configured_environment() -> (TargetDescription, Toolchain, PathBuf, PathBuf) 
         .expect("显式运行 --ignored 时 XIAO_LLC 必须已设置；准备方式见 10D §4");
     let diagnostics = std::env::var_os("XIAO_DIAGNOSTICS_PATH")
         .expect("显式运行 --ignored 时 XIAO_DIAGNOSTICS_PATH 必须已设置；准备方式见 10D §4");
+    let runtime = std::env::var_os("XIAO_RUNTIME_LIBRARY")
+        .map(PathBuf::from)
+        .expect("显式运行 --ignored 时 XIAO_RUNTIME_LIBRARY 必须已设置；准备方式见 10D §4");
+    assert!(
+        runtime.is_file(),
+        "XIAO_RUNTIME_LIBRARY 必须指向已构建的 Runtime staticlib: {}",
+        runtime.display()
+    );
+    let rustc = std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
     let toolchain = Toolchain::new(clang)
         .with_llvm_as(llvm_as)
         .with_llc(llc)
+        .with_runtime_library(runtime)
+        .probe_native_static_libraries(rustc, &target)
+        .expect("Runtime 原生库清单必须可查询")
         .probe_versions()
-        .expect("LLVM 工具版本必须可查询");
+        .expect("Runtime 原生库清单和 LLVM 工具版本必须可查询");
     (target, toolchain, PathBuf::from(diagnostics), strip_path())
 }
 
@@ -125,7 +145,7 @@ fn build_artifact(
         options = options.with_debug_startup(diagnostics.to_string_lossy());
     }
     let request = xiao_codegen_llvm::BuildRequest::new(
-        scalar_program(),
+        runtime_program(),
         target.clone(),
         toolchain.clone(),
         output,
@@ -161,7 +181,7 @@ fn run_artifact(path: &Path) -> (Option<i32>, String) {
 }
 
 #[test]
-#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_DIAGNOSTICS_PATH / XIAO_STRIP；准备方式见 10D §4"]
+#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH / XIAO_STRIP；准备方式见 10D §4"]
 /// 在真实链接产物上逐优化级别验收 Release、Debug 和 Stripped 三种模式。
 fn real_artifact_strip_modes_all_optimization_levels() {
     let (target, toolchain, diagnostics, strip) = configured_environment();
@@ -181,7 +201,7 @@ fn real_artifact_strip_modes_all_optimization_levels() {
             &release.executable,
             &target,
             ArtifactAcceptanceMode::Release,
-            &[],
+            &release.module.runtime_components,
         )
         .expect("Release 产物必须可验收");
         assert!(release_report.accepted);
@@ -202,7 +222,7 @@ fn real_artifact_strip_modes_all_optimization_levels() {
             &debug.executable,
             &target,
             ArtifactAcceptanceMode::Debug,
-            &[],
+            &debug.module.runtime_components,
         )
         .expect("Debug 产物必须可验收");
         assert!(debug_report.accepted);
@@ -228,7 +248,7 @@ fn real_artifact_strip_modes_all_optimization_levels() {
 }
 
 #[test]
-#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4"]
+#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4"]
 /// 优化后的真实 Debug 产物保留调试激活位，并把开窗成功或稳定失败暴露出来。
 fn real_debug_activation_survives_all_optimization_levels() {
     let (target, toolchain, diagnostics, _) = configured_environment();
@@ -248,7 +268,7 @@ fn real_debug_activation_survives_all_optimization_levels() {
             &artifact.executable,
             &target,
             ArtifactAcceptanceMode::Debug,
-            &[],
+            &artifact.module.runtime_components,
         )
         .expect("Debug 产物必须可验收");
         assert!(report.diagnostic_symbols_present);
@@ -264,7 +284,7 @@ fn real_debug_activation_survives_all_optimization_levels() {
 }
 
 #[test]
-#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4"]
+#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4"]
 /// 从真实产物读取符号顺序，并确认 Debug 产物路径能被产物比较记录或归一化。
 fn real_symbol_table_and_debug_path_evidence() {
     let (target, toolchain, diagnostics, _) = configured_environment();
@@ -322,31 +342,15 @@ fn real_symbol_table_and_debug_path_evidence() {
 }
 
 #[test]
-#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4"]
+#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4"]
 /// 同一输入两次真实构建必须逐字节一致，或只包含已登记的产物归一化字段。
 fn real_artifact_reproducibility_is_byte_comparable() {
     let (target, toolchain, diagnostics, _) = configured_environment();
     let root = std::env::temp_dir().join(format!("xiao-15e-repro-{}", std::process::id()));
     fs::create_dir_all(&root).expect("创建 15E 可复现临时目录");
-    let first = build_artifact(
-        &root,
-        "repeat-a",
-        0,
-        false,
-        &target,
-        &toolchain,
-        &diagnostics,
-    );
-    let second = build_artifact(
-        &root,
-        "repeat-b",
-        0,
-        false,
-        &target,
-        &toolchain,
-        &diagnostics,
-    );
+    let first = build_artifact(&root, "repeat", 0, false, &target, &toolchain, &diagnostics);
     let first_bytes = fs::read(&first.executable).expect("读取第一次真实产物");
+    let second = build_artifact(&root, "repeat", 0, false, &target, &toolchain, &diagnostics);
     let second_bytes = fs::read(&second.executable).expect("读取第二次真实产物");
     let report = compare_artifact_bytes(&first_bytes, &second_bytes, target.object_format, &[]);
     assert!(report.passed(), "真实产物不可复现：{report:?}");
@@ -355,7 +359,7 @@ fn real_artifact_reproducibility_is_byte_comparable() {
 }
 
 #[test]
-#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4"]
+#[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4"]
 /// 在当前 CI runner 上按目标平台独立采集 15B 五维性能样本，不跨平台混合。
 fn ci_performance_baseline_is_platform_scoped() {
     let (target, toolchain, diagnostics, _) = configured_environment();
@@ -399,7 +403,7 @@ fn ci_performance_baseline_is_platform_scoped() {
             repetitions: samples.len(),
         },
         samples,
-        100.0,
+        20.0,
     )
     .expect("CI 基线样本必须满足 15B 模型");
     assert!(

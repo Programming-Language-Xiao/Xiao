@@ -33,7 +33,7 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 
 ## 二、现状清单（2026-09-30 更新；原始八条于 2026-09-24 实测）
 
-**16 个测试**依赖外部环境，涉及 **6 个环境变量**和一个真实终端能力；其中前 8 条是原有
+**16 个测试**依赖外部环境，涉及 **7 个环境变量**和一个真实终端能力；其中前 8 条是原有
 门控，N0-C 修复新增 3 条错误路径/差分/栈用量门控：
 
 | 文件 | 测试 |
@@ -55,7 +55,7 @@ let Some(clang) = std::env::var_os("XIAO_CLANG") else {
 | `xiao-codegen-llvm/tests/15e_ci_gated.rs` | `real_artifact_reproducibility_is_byte_comparable` |
 | `xiao-codegen-llvm/tests/15e_ci_gated.rs` | `ci_performance_baseline_is_platform_scoped` |
 
-环境变量：`XIAO_CLANG`、`XIAO_LLVM_AS`、`XIAO_LLC`、`XIAO_STRIP`、`XIAO_RUNTIME_LIBRARY`、`XIAO_TARGET_TRIPLE`。
+环境变量：`XIAO_CLANG`、`XIAO_LLVM_AS`、`XIAO_LLC`、`XIAO_STRIP`、`XIAO_RUNTIME_LIBRARY`、`XIAO_TARGET_TRIPLE`、`XIAO_DIAGNOSTICS_PATH`。
 
 **齐备环境下的实测结果**（10C 发现时跑的）：
 

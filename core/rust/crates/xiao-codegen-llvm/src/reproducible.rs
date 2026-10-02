@@ -234,6 +234,7 @@ fn normalize_artifact(bytes: &[u8], format: ObjectFormat) -> (Vec<u8>, Vec<Strin
         {
             normalized[pe_offset + 8..pe_offset + 12].fill(0);
             fields.push("PE.TimeDateStamp".to_owned());
+            normalize_pe_debug_timestamps(&mut normalized, pe_offset, &mut fields);
         }
     }
     for (start, end) in absolute_path_ranges(&normalized) {
@@ -241,6 +242,129 @@ fn normalize_artifact(bytes: &[u8], format: ObjectFormat) -> (Vec<u8>, Vec<Strin
         fields.push(format!("artifact-path@0x{start:x}"));
     }
     (normalized, fields)
+}
+
+/// 归一化 PE 调试目录中的链接器时间戳。
+///
+/// 链接器除了 COFF 文件头外，还会在 `IMAGE_DEBUG_DIRECTORY` 写入同一个时间戳；
+/// 只清理文件头会让两次真实链接仍然在 POGO/CodeView 目录处产生一字节差异。
+fn normalize_pe_debug_timestamps(bytes: &mut [u8], pe_offset: usize, fields: &mut Vec<String>) {
+    let Some(coff_offset) = pe_offset.checked_add(4) else {
+        return;
+    };
+    let Some(section_count) = read_le_u16(bytes, coff_offset + 2) else {
+        return;
+    };
+    let Some(optional_size) = read_le_u16(bytes, coff_offset + 16) else {
+        return;
+    };
+    let Some(optional_offset) = coff_offset.checked_add(20) else {
+        return;
+    };
+    let Some(optional_end) = optional_offset.checked_add(optional_size as usize) else {
+        return;
+    };
+    if optional_end > bytes.len() {
+        return;
+    }
+    let Some(optional_magic) = read_le_u16(bytes, optional_offset) else {
+        return;
+    };
+    let (directory_count_offset, directories_offset) = match optional_magic {
+        0x10b => (92_usize, 96_usize),
+        0x20b => (108_usize, 112_usize),
+        _ => return,
+    };
+    let Some(directory_count) = read_le_u32(bytes, optional_offset + directory_count_offset) else {
+        return;
+    };
+    if directory_count <= 6 || optional_offset + directories_offset + 6 * 8 + 8 > optional_end {
+        return;
+    }
+    let debug_directory = optional_offset + directories_offset + 6 * 8;
+    let Some(debug_rva) = read_le_u32(bytes, debug_directory) else {
+        return;
+    };
+    let Some(debug_size) = read_le_u32(bytes, debug_directory + 4) else {
+        return;
+    };
+    if debug_rva == 0 || debug_size < 28 {
+        return;
+    }
+    let section_offset = optional_end;
+    let mut sections = Vec::with_capacity(section_count as usize);
+    for index in 0..section_count as usize {
+        let Some(offset) = section_offset.checked_add(index.saturating_mul(40)) else {
+            return;
+        };
+        let Some(end) = offset.checked_add(40) else {
+            return;
+        };
+        if end > bytes.len() {
+            return;
+        }
+        let Some(virtual_address) = read_le_u32(bytes, offset + 12) else {
+            return;
+        };
+        let Some(raw_size) = read_le_u32(bytes, offset + 16) else {
+            return;
+        };
+        let Some(raw_offset) = read_le_u32(bytes, offset + 20) else {
+            return;
+        };
+        sections.push((virtual_address, raw_size, raw_offset));
+    }
+    let Some(debug_offset) = pe_rva_to_file_offset(debug_rva, &sections, bytes.len()) else {
+        return;
+    };
+    let count = (debug_size as usize) / 28;
+    for index in 0..count {
+        let Some(entry_offset) = debug_offset.checked_add(index.saturating_mul(28)) else {
+            return;
+        };
+        let Some(timestamp_end) = entry_offset.checked_add(8) else {
+            return;
+        };
+        if timestamp_end > bytes.len() {
+            return;
+        }
+        bytes[entry_offset + 4..entry_offset + 8].fill(0);
+        fields.push(format!(
+            "PE.DebugDirectory.TimeDateStamp@0x{entry_offset:x}"
+        ));
+    }
+}
+
+/// 从产物字节中安全读取小端 16 位字段。
+fn read_le_u16(bytes: &[u8], offset: usize) -> Option<u16> {
+    let end = offset.checked_add(2)?;
+    let value = bytes.get(offset..end)?;
+    Some(u16::from_le_bytes([value[0], value[1]]))
+}
+
+/// 从产物字节中安全读取小端 32 位字段。
+fn read_le_u32(bytes: &[u8], offset: usize) -> Option<u32> {
+    let end = offset.checked_add(4)?;
+    let value = bytes.get(offset..end)?;
+    Some(u32::from_le_bytes([value[0], value[1], value[2], value[3]]))
+}
+
+/// 将 PE 调试目录 RVA 映射为文件偏移。
+fn pe_rva_to_file_offset(
+    rva: u32,
+    sections: &[(u32, u32, u32)],
+    file_length: usize,
+) -> Option<usize> {
+    for (virtual_address, raw_size, raw_offset) in sections {
+        if rva < *virtual_address || rva - *virtual_address >= *raw_size {
+            continue;
+        }
+        let offset = (*raw_offset as usize).checked_add((rva - *virtual_address) as usize)?;
+        if offset < file_length {
+            return Some(offset);
+        }
+    }
+    (rva as usize <= file_length).then_some(rva as usize)
 }
 
 /// 找出调试信息中常见的 ASCII 绝对路径。
@@ -337,6 +461,34 @@ mod tests {
         let report = compare_artifact_bytes(&first, &second, ObjectFormat::Coff, &[]);
         assert!(report.identical);
         assert_eq!(report.normalized_fields, vec!["PE.TimeDateStamp"]);
+    }
+
+    #[test]
+    fn normalizes_pe_debug_directory_timestamp() {
+        let mut first = vec![0_u8; 0x220];
+        first[0x3c..0x40].copy_from_slice(&0x80_u32.to_le_bytes());
+        first[0x80..0x84].copy_from_slice(b"PE\0\0");
+        first[0x88..0x8c].copy_from_slice(&1_u32.to_le_bytes());
+        let coff = 0x84;
+        first[coff + 16..coff + 18].copy_from_slice(&0xf0_u16.to_le_bytes());
+        let optional = coff + 20;
+        first[optional..optional + 2].copy_from_slice(&0x20b_u16.to_le_bytes());
+        first[optional + 108..optional + 112].copy_from_slice(&7_u32.to_le_bytes());
+        let debug_directory = optional + 112 + 6 * 8;
+        first[debug_directory..debug_directory + 4].copy_from_slice(&0x180_u32.to_le_bytes());
+        first[debug_directory + 4..debug_directory + 8].copy_from_slice(&28_u32.to_le_bytes());
+        first[0x184..0x188].copy_from_slice(&1_u32.to_le_bytes());
+        let mut second = first.clone();
+        second[0x88..0x8c].copy_from_slice(&2_u32.to_le_bytes());
+        second[0x184..0x188].copy_from_slice(&2_u32.to_le_bytes());
+        let report = compare_artifact_bytes(&first, &second, ObjectFormat::Coff, &[]);
+        assert!(report.identical);
+        assert!(
+            report
+                .normalized_fields
+                .iter()
+                .any(|field| field.starts_with("PE.DebugDirectory.TimeDateStamp@"))
+        );
     }
 
     #[test]

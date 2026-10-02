@@ -283,16 +283,18 @@ ignored_command=(cargo test --manifest-path "$cargo_manifest" --workspace -- --i
 新增 `core/rust/crates/xiao-codegen-llvm/tests/15e_ci_gated.rs`，共 5 条 `#[ignore]`
 门控，均要求显式配置工具链环境，不缺变量静默跳过：
 
-- 真实 clang 链接产物在 O0-O3 上分别验收 Release、Debug、Stripped；strip 后产物必须
+- 真实 clang + Runtime staticlib 链接产物在 O0-O3 上分别验收 Release、Debug、Stripped；strip 后产物必须
   仍可运行，且 `Stripped` 报告明确给出不可再验证诊断；
 - Debug 激活位在 O0-O3 的真实产物中保留，运行结果为成功或稳定诊断失败；
 - 真实符号表顺序、调试路径归一化字段和重复 Release 产物字节比较；
 - 按当前 CI runner 的目标与工具链独立采集 15B 五维基线，样本只输出到日志，不进入产物指纹。
+  门控使用 20% 的显式噪声阈值；超过阈值会失败并保留平台样本，不能跨平台混合解释。
 
 `toolchain.rs` 现在为 Debug 产物传递 `-g`，使路径门控实际覆盖 DWARF/PDB/CodeView；
 `artifact.rs` 只有 ELF `.symtab`、Mach-O `LC_SYMTAB` 或实际 COFF 符号表可读时才报告
 `Readable`。`reproduce.sh`/`reproduce.ps1` 仅增加 `XIAO_STRIP` 工具准备，workflow 未改，
-现有 `--ignored` 会自动覆盖新增测试。
+现有 `--ignored` 会自动覆盖新增测试。产物比较同时归一化 PE 调试目录中的链接器时间戳，
+避免真实 Runtime 链接重复构建因 POGO/CodeView 时间字段产生未解释差异。
 
 本机 Windows 原生工具链已跑通 5 条新增门控：strip/Debug O0-O3、真实符号与路径、
 Release 重复字节比较、平台独立基线均通过。其他平台须由四平台 CI 按 Windows → Linux →
