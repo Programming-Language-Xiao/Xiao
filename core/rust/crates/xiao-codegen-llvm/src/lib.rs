@@ -43,7 +43,7 @@ pub use build::{BuildRequest, NativeArtifact, NativeBuild, NativeRun, NativeRunR
 pub use error::{CodegenError, Result};
 /// LLVM 文本降低选项、入口观察策略和降低入口。
 pub use ir::{
-    BASELINE_OPTIMIZATION_LEVEL, CodegenOptions, EntryObservation, LlvmModule,
+    BASELINE_OPTIMIZATION_LEVEL, CodegenOptions, EntryObservation, LlvmModule, NativeInlineFrame,
     NativeSourceMapEntry, NativeStartup, validate_program,
 };
 /// LLVM Pass 计划和可证明 Runtime 裁剪报告。
@@ -52,8 +52,9 @@ pub use optimization::{
 };
 /// 可复现构建比较模型。
 pub use reproducible::{
-    ReproducibilityReport, ReproducibleDifference, ReproducibleDifferenceKind,
-    compare_reproducible_builds, normalize_llvm_text,
+    ArtifactReproducibilityReport, ReproducibilityReport, ReproducibleDifference,
+    ReproducibleDifferenceKind, compare_artifact_bytes, compare_reproducible_builds,
+    normalize_llvm_text,
 };
 /// 目标字节序、对象格式和规范化目标描述。
 pub use target::{Endian, ObjectFormat, TargetDescription};

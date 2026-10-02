@@ -2,6 +2,8 @@
 
 use std::collections::BTreeSet;
 
+use crate::target::ObjectFormat;
+
 /// 可复现比较中允许的差异类别。
 #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
 pub enum ReproducibleDifferenceKind {
@@ -55,6 +57,8 @@ pub struct ReproducibilityReport {
     pub whitelist: Vec<ReproducibleDifference>,
     /// 未被白名单解释的差异名称。
     pub unexpected_differences: Vec<String>,
+    /// 明确执行过的归一化字段。
+    pub normalized_fields: Vec<String>,
 }
 
 impl ReproducibilityReport {
@@ -62,6 +66,61 @@ impl ReproducibilityReport {
     #[must_use]
     pub fn passed(&self) -> bool {
         self.unexpected_differences.is_empty()
+    }
+}
+
+/// 产物层逐字节可复现比较报告。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ArtifactReproducibilityReport {
+    /// 第一次归一化产物摘要。
+    pub first_fingerprint: String,
+    /// 第二次归一化产物摘要。
+    pub second_fingerprint: String,
+    /// 归一化后的字节是否完全一致。
+    pub identical: bool,
+    /// 明确执行过的字段归一化。
+    pub normalized_fields: Vec<String>,
+    /// 未被白名单解释的差异。
+    pub unexpected_differences: Vec<String>,
+}
+
+impl ArtifactReproducibilityReport {
+    /// 判断产物比较是否通过。
+    #[must_use]
+    pub fn passed(&self) -> bool {
+        self.identical || self.unexpected_differences.is_empty()
+    }
+}
+
+/// 比较两个链接后产物，并显式归一化 PE `TimeDateStamp`。
+#[must_use]
+pub fn compare_artifact_bytes(
+    first: &[u8],
+    second: &[u8],
+    format: ObjectFormat,
+    whitelist: &[ReproducibleDifference],
+) -> ArtifactReproducibilityReport {
+    let (first, mut normalized_fields) = normalize_artifact(first, format);
+    let (second, second_fields) = normalize_artifact(second, format);
+    normalized_fields.extend(second_fields);
+    normalized_fields.sort();
+    normalized_fields.dedup();
+    let identical = first == second;
+    let allowed = whitelist
+        .iter()
+        .map(|item| item.kind.as_str())
+        .collect::<BTreeSet<_>>();
+    let unexpected_differences = if !identical && !allowed.contains("binary-layout") {
+        vec!["artifact-bytes".to_owned()]
+    } else {
+        Vec::new()
+    };
+    ArtifactReproducibilityReport {
+        first_fingerprint: stable_hash(&first),
+        second_fingerprint: stable_hash(&second),
+        identical,
+        normalized_fields,
+        unexpected_differences,
     }
 }
 
@@ -135,6 +194,12 @@ pub fn compare_reproducible_builds(
         symbols_identical,
         whitelist,
         unexpected_differences: unexpected,
+        normalized_fields: vec![
+            "xiao-build-time comments".to_owned(),
+            "xiao-temp-path comments".to_owned(),
+            "absolute path tokens".to_owned(),
+            "xiao-symbol comment order".to_owned(),
+        ],
     }
 }
 
@@ -150,6 +215,28 @@ fn normalize_line(line: &str) -> String {
         }
     }
     normalized
+}
+
+fn normalize_artifact(bytes: &[u8], format: ObjectFormat) -> (Vec<u8>, Vec<String>) {
+    let mut normalized = bytes.to_vec();
+    let mut fields = Vec::new();
+    if format == ObjectFormat::Coff && normalized.len() >= 0x40 {
+        let pe_offset = u32::from_le_bytes([
+            normalized[0x3c],
+            normalized[0x3d],
+            normalized[0x3e],
+            normalized[0x3f],
+        ]) as usize;
+        if pe_offset
+            .checked_add(12)
+            .is_some_and(|end| end <= normalized.len())
+            && normalized.get(pe_offset..pe_offset + 4) == Some(b"PE\0\0")
+        {
+            normalized[pe_offset + 8..pe_offset + 12].fill(0);
+            fields.push("PE.TimeDateStamp".to_owned());
+        }
+    }
+    (normalized, fields)
 }
 
 fn stable_hash(bytes: &[u8]) -> String {
@@ -195,5 +282,18 @@ mod tests {
         );
         assert!(report.passed());
         assert_eq!(report.whitelist.len(), 1);
+    }
+
+    #[test]
+    fn normalizes_pe_timestamp_and_records_the_field() {
+        let mut first = vec![0_u8; 0x100];
+        first[0x3c..0x40].copy_from_slice(&0x80_u32.to_le_bytes());
+        first[0x80..0x84].copy_from_slice(b"PE\0\0");
+        first[0x88..0x8c].copy_from_slice(&1_u32.to_le_bytes());
+        let mut second = first.clone();
+        second[0x88..0x8c].copy_from_slice(&2_u32.to_le_bytes());
+        let report = compare_artifact_bytes(&first, &second, ObjectFormat::Coff, &[]);
+        assert!(report.identical);
+        assert_eq!(report.normalized_fields, vec!["PE.TimeDateStamp"]);
     }
 }

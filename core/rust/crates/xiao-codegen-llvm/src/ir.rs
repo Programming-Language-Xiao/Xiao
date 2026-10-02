@@ -63,6 +63,17 @@ pub struct NativeSourceMapEntry {
     pub label: String,
     /// 对应的 Xiao 源码区间。
     pub span: IrSpan,
+    /// 优化/内联后仍可还原的调用帧；未发生内联时为空。
+    pub inline_stack: Vec<NativeInlineFrame>,
+}
+
+/// 一个可还原的内联调用帧。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct NativeInlineFrame {
+    /// 内联函数逻辑名称。
+    pub function: String,
+    /// 该帧对应的源码区间。
+    pub span: IrSpan,
 }
 
 impl CodegenOptions {
@@ -152,6 +163,23 @@ pub struct LlvmModule {
     pub native_optimization_report: LlvmOptimizationReport,
 }
 
+impl LlvmModule {
+    /// 按 LLVM 生成序号查找源码映射。
+    #[must_use]
+    pub fn source_map_at(&self, ordinal: u32) -> Option<&NativeSourceMapEntry> {
+        self.source_map
+            .iter()
+            .find(|entry| entry.ordinal == ordinal)
+    }
+
+    /// 返回某个生成序号对应的内联调用帧；没有内联时返回空切片。
+    #[must_use]
+    pub fn inline_stack_at(&self, ordinal: u32) -> &[NativeInlineFrame] {
+        self.source_map_at(ordinal)
+            .map_or(&[], |entry| entry.inline_stack.as_slice())
+    }
+}
+
 /// 验证输入 IR，并返回第一个结构化错误。
 pub fn validate_program(program: &IrProgram) -> Result<()> {
     if program.version != IR_VERSION {
@@ -190,6 +218,7 @@ pub(crate) fn source_map_for_program(program: &IrProgram) -> Vec<NativeSourceMap
                 ordinal: *next,
                 label: label.to_owned(),
                 span: statement.span,
+                inline_stack: Vec::new(),
             });
             *next = next.saturating_add(1);
             match &statement.kind {
@@ -221,6 +250,7 @@ pub(crate) fn source_map_for_program(program: &IrProgram) -> Vec<NativeSourceMap
                             ordinal: *next,
                             label: "catch".to_owned(),
                             span: catch.span,
+                            inline_stack: Vec::new(),
                         });
                         *next = next.saturating_add(1);
                         collect(&catch.body, entries, next);
