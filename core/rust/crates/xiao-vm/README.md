@@ -8,6 +8,10 @@ Rust 字节码唯一执行实现：解释循环、调用栈、局部槽、模块
 
 09 最小运行闭环；14 接入优化 `.xiaoc` 加载和只读验证；后续可在独立阶段加入 JIT，不原地修改公开字节码。
 
+`load_xiaoc` 和 `run_xiaoc` 是正式产物入口：只有 `xiao-bytecode::decode_xiaoc` 完成魔数、
+版本、目录边界、完整性、Runtime ABI、源码映射和 09R 指令流检查后，VM 才会建立执行实例。
+加载失败直接返回稳定的 `XiaocError`，不会执行任何指令。
+
 ## 模块放置
 
 `src/` 下按 `interpreter`、`stack`、`loader`、`debug` 和 `random` 分模块；REPL 缓冲区放在 TypeScript CLI。

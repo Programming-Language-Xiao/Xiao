@@ -281,3 +281,22 @@
 - [13B. 差分套件与边界输入](13b-differential-suite-and-boundary-inputs.md) —— `14.10` 要用的套件
 - [10D. 环境门控测试规范](10d-environment-gated-test-spec.md) —— `#[ignore]` 与 §2 清单
 - [17. `.xar` 字节码归档与启动](17-xar-archive.md) —— 压缩由它负责
+
+## 本批实现记录
+
+当前实现落在 `core/rust/crates/xiao-bytecode/src/xiaoc.rs`，并由 `xiao-bytecode` 根模块
+重导出。文件头使用显式小端字段和 `header_size` 扩展边界；目录头声明目录项长度与版本，
+当前项包含 56 字节基础字段，未来扩展可被旧加载器按长度跳过。首版分区编号为
+`metadata/strings/types/constants/imports/functions/instructions/source-map`（1–8），
+调试符号和源码正文为可选分区（9–10）；这只冻结本批实际使用的编号，不冻结未使用编号
+的未来分配策略。
+
+`encode_xiaoc` 对分区按固定顺序写入，字符串和元数据列表按字典序规范化，分区不压缩并以
+FNV-1a 64 位摘要校验。`decode_xiaoc` 在建立 `XiaocFile` 前拒绝错误魔数、主版本、保留
+字段、未知必需分区/功能位、越界或重叠分区、压缩长度不一致、摘要错误、错误 Runtime ABI
+和非法 09R 指令流；未知可选分区只按声明长度跳过。`xiaoc-check` 提供只读格式检查，
+`xiao_vm::load_xiaoc`/`run_xiaoc` 确保检查失败时不执行任何指令。
+
+平台降级策略、完整调试信息和源码正文的 CLI/隐私策略、REPL 缓存回收策略以及未来主版本
+迁移周期仍按本交接文档第三节保留为待定决策；本批没有擅自冻结它们。字节码优化 Pass 和
+三方差分继续由 14B 负责。

@@ -33,6 +33,9 @@ pub const VM_REQUEST_CODE: &str = "X09-VM-002";
 /// 默认的指令检查点间隔。
 pub const DEFAULT_CHECKPOINT_INTERVAL: usize = 1024;
 
+/// `.xiaoc` 加载失败时使用的错误类型别名。
+pub type XiaocLoadError = xiao_bytecode::XiaocError;
+
 /// 可跨线程共享的取消信号。
 #[derive(Clone, Debug, Default)]
 pub struct CancellationToken {
@@ -497,6 +500,20 @@ fn request_fatal(error: &RunRequestError, entry_span: xiao_ir::IrSpan) -> FatalE
 #[must_use]
 pub fn run(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcome {
     run_with::<StackCarrier>(program, options)
+}
+
+/// 加载一份 `.xiaoc` 并在验证成功后执行。
+///
+/// 解码、边界、完整性、09R 指令流和 Runtime ABI 检查全部通过前不会建立 VM，
+/// 因而损坏产物不会执行任何指令。
+pub fn run_xiaoc(bytes: &[u8], options: VmOptions) -> Result<RunOutcome, XiaocLoadError> {
+    let file = xiao_bytecode::decode_xiaoc(bytes)?;
+    Ok(run(&file.program, options))
+}
+
+/// 只加载并返回已经通过验证的 `.xiaoc`。
+pub fn load_xiaoc(bytes: &[u8]) -> Result<xiao_bytecode::XiaocFile, XiaocLoadError> {
+    xiao_bytecode::decode_xiaoc(bytes)
 }
 
 /// 使用指定静态载体运行一份三地址产物并记录全部事件。

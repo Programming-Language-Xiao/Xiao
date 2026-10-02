@@ -17,6 +17,8 @@ pub mod sig;
 pub mod tac;
 /// 三地址自校验与释放序列对账。
 pub mod verify;
+/// 正式 `.xiaoc` 单模块容器、编解码器与严格边界检查。
+pub mod xiaoc;
 
 /// 重导出 CFG 与活跃分析入口。
 pub use cfg::{jump_targets, protected_successors, successors};
@@ -45,6 +47,16 @@ pub use tac::{
 pub use verify::{
     TAC_INTERNAL_CONSISTENCY_CODE, TAC_STRUCTURE_CODE, TacVerification, TacVerificationError,
     verify_for_execution, verify_production, verify_program,
+};
+/// 重导出正式 `.xiaoc` 编解码接口。
+pub use xiaoc::{
+    FILE_FLAG_DEBUG_ACTIVE, FILE_FLAG_EMBEDDED_LOCALE, FILE_FLAG_PLATFORM_CONSTRAINED,
+    MAX_SECTION_COUNT, SECTION_FLAG_REQUIRED, SUPPORTED_FILE_FLAGS, SUPPORTED_REQUIRED_FEATURES,
+    XIAOC_DIRECTORY_ENTRY_MIN_SIZE, XIAOC_DIRECTORY_HEADER_SIZE, XIAOC_DIRECTORY_VERSION,
+    XIAOC_FORMAT_MAJOR, XIAOC_FORMAT_MINOR, XIAOC_HEADER_MIN_SIZE, XIAOC_MAGIC, XiaocError,
+    XiaocFile, XiaocHeader, XiaocInspection, XiaocMetadata, XiaocOptions, XiaocPlatform,
+    XiaocSection, XiaocSectionKind, decode_file, decode_xiaoc, encode_file, encode_xiaoc,
+    encode_xiaoc_with_options, inspect_xiaoc, validate_xiaoc,
 };
 
 /// 09R 冻结产物的兼容重导出层；沿革见 09R2D，冻结依据见 09R3。
