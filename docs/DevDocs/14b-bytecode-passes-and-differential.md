@@ -314,8 +314,8 @@
 - `bytecode.constant-pool`：按位比较浮点常量，规范化重复常量索引；
 - `bytecode.redundant-move`：删除目标寄存器等于源寄存器的无副作用自移动；
 - `bytecode.jump-simplify`：把两个目标相同的条件分支改成无条件跳转；
-- `bytecode.unreachable-block` 与 `bytecode.slot-layout`：当前证明条件不足，明确报告
-  `proof-unavailable` 并保留前后相同快照，不伪装成完成优化。
+- `bytecode.unreachable-block` 与 `bytecode.slot-layout`：只在 CFG/寄存器重映射能证明安全
+  且确有收益时应用，否则明确报告 `no-benefit` 或 `proof-unavailable` 并保留相同快照。
 
 每个 Pass 都记录 `before:*`/`after:*` 快照；候选 TAC 会重新编码、解码并比较规范字节序列，
 `run_checked` 还会调用 09 验证器对账 IR 的释放计划和错误路径。验证或 Pass 失败时错误对象

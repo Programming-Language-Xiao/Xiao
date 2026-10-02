@@ -5,6 +5,7 @@
 //! 程序前重新进行结构编码/解码验证；提供 [`BytecodeOptimizationPipeline::run_checked`]
 //! 时还会用输入 IR 对账 TAC 的释放计划与错误路径。
 
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{Display, Formatter};
 
 use xiao_ir::IrProgram;
@@ -14,8 +15,12 @@ use xiao_optimizer::{
     ValidationStatus,
 };
 
+use crate::cfg::{protected_successors, successors};
 use crate::encode::{EncodeOptions, OperandWidth, decode, encode};
-use crate::tac::{ConstId, ConstPool, TacConstant, TacOp, TacProgram};
+use crate::liveness::instruction_use_def;
+use crate::tac::{
+    BlockId, CategoryMap, ConstId, ConstPool, TacConstant, TacFunction, TacOp, TacProgram, VReg,
+};
 use crate::{TacVerification, verify_program};
 
 /// 字节码 Pass 运行时可读取的只读规模事实。
@@ -690,9 +695,17 @@ impl BytecodeOptimizationPass for UnreachableBlockPass {
         }
     }
 
-    fn run(&self, _program: &mut TacProgram, _facts: &BytecodeFacts) -> PassResult {
-        PassResult::Skipped {
-            reason: SkipReason::ProofUnavailable,
+    fn run(&self, program: &mut TacProgram, _facts: &BytecodeFacts) -> PassResult {
+        let mut changed = false;
+        for function in &mut program.functions {
+            changed |= remove_unreachable_blocks(function);
+        }
+        if changed {
+            PassResult::Applied { changed: true }
+        } else {
+            PassResult::Skipped {
+                reason: SkipReason::NoBenefit,
+            }
         }
     }
 }
@@ -713,10 +726,246 @@ impl BytecodeOptimizationPass for SlotLayoutPass {
         }
     }
 
-    fn run(&self, _program: &mut TacProgram, _facts: &BytecodeFacts) -> PassResult {
-        PassResult::Skipped {
-            reason: SkipReason::ProofUnavailable,
+    fn run(&self, program: &mut TacProgram, _facts: &BytecodeFacts) -> PassResult {
+        let mut changed = false;
+        for (index, function) in program.functions.iter_mut().enumerate() {
+            let function_changed = compact_registers(function, &program.plans);
+            if index == 0 && function_changed {
+                program.categories = function.categories.clone();
+            }
+            changed |= function_changed;
         }
+        if changed {
+            PassResult::Applied { changed: true }
+        } else {
+            PassResult::Skipped {
+                reason: SkipReason::NoBenefit,
+            }
+        }
+    }
+}
+
+fn remove_unreachable_blocks(function: &mut TacFunction) -> bool {
+    if function.blocks.is_empty() {
+        return false;
+    }
+    let mut graph = successors(function);
+    protected_successors(function, &mut graph);
+    let mut reachable = BTreeSet::new();
+    let mut pending = vec![function.entry];
+    while let Some(block) = pending.pop() {
+        if !reachable.insert(block) {
+            continue;
+        }
+        if let Some(targets) = graph.get(&block) {
+            pending.extend(targets.iter().copied());
+        }
+    }
+    if reachable.len() == function.blocks.len() {
+        return false;
+    }
+    let mut remap = BTreeMap::new();
+    let mut next = 0_u32;
+    for block in &function.blocks {
+        if reachable.contains(&block.id) {
+            remap.insert(block.id, BlockId::new(next));
+            next += 1;
+        }
+    }
+    function
+        .blocks
+        .retain(|block| reachable.contains(&block.id));
+    for block in &mut function.blocks {
+        let old_id = block.id;
+        if let Some(new_id) = remap.get(&old_id).copied() {
+            block.id = new_id;
+            for instruction in &mut block.instructions {
+                remap_block_targets(&mut instruction.op, &remap);
+            }
+        }
+    }
+    function.entry = remap[&function.entry];
+    for handler in &mut function.handlers {
+        let old_start = handler.protected.0;
+        let old_end = handler.protected.1;
+        handler.protected = (
+            BlockId::new(reachable.iter().filter(|id| **id < old_start).count() as u32),
+            BlockId::new(reachable.iter().filter(|id| **id < old_end).count() as u32),
+        );
+        handler.handler = remap[&handler.handler];
+    }
+    true
+}
+
+fn remap_block_targets(op: &mut TacOp, remap: &BTreeMap<BlockId, BlockId>) {
+    match op {
+        TacOp::Jump(target) | TacOp::CallSub { sub: target } => {
+            if let Some(mapped) = remap.get(target) {
+                *target = *mapped;
+            }
+        }
+        TacOp::BranchIf {
+            if_true, if_false, ..
+        } => {
+            if let Some(mapped) = remap.get(if_true) {
+                *if_true = *mapped;
+            }
+            if let Some(mapped) = remap.get(if_false) {
+                *if_false = *mapped;
+            }
+        }
+        TacOp::Check { on_failure, .. } => {
+            if let Some(mapped) = remap.get(on_failure) {
+                *on_failure = *mapped;
+            }
+        }
+        _ => {}
+    }
+}
+
+fn compact_registers(function: &mut TacFunction, plans: &[crate::lower::TacReleasePlan]) -> bool {
+    let mut registers = BTreeSet::new();
+    registers.extend(function.parameters.iter().copied());
+    registers.extend(function.locals.iter().copied());
+    registers.extend(function.value_registers.values().copied());
+    for block in &function.blocks {
+        for instruction in &block.instructions {
+            let (uses, defs) = instruction_use_def(function, instruction, plans);
+            registers.extend(uses);
+            registers.extend(defs);
+        }
+    }
+    let remap = registers
+        .iter()
+        .enumerate()
+        .map(|(index, register)| (*register, VReg::new(index as u32)))
+        .collect::<BTreeMap<_, _>>();
+    if remap.iter().all(|(old, new)| old == new) {
+        return false;
+    }
+    for register in &mut function.parameters {
+        *register = remap[register];
+    }
+    for register in &mut function.locals {
+        *register = remap[register];
+    }
+    for register in function.value_registers.values_mut() {
+        *register = remap[register];
+    }
+    let old_categories = function.categories.iter().collect::<Vec<_>>();
+    let mut categories = CategoryMap::new();
+    for (old, class) in old_categories.into_iter().enumerate() {
+        if let Some(mapped) = remap.get(&VReg::new(old as u32)) {
+            categories.insert(*mapped, class);
+        }
+    }
+    function.categories = categories;
+    for handler in &mut function.handlers {
+        if let Some(binding) = handler.binding.as_mut() {
+            *binding = remap[binding];
+        }
+    }
+    for block in &mut function.blocks {
+        for instruction in &mut block.instructions {
+            if let Some(dst) = instruction.dst.as_mut() {
+                *dst = remap[dst];
+            }
+            remap_registers(&mut instruction.op, &remap);
+        }
+    }
+    true
+}
+
+fn remap_registers(op: &mut TacOp, remap: &BTreeMap<VReg, VReg>) {
+    let map = |register: &mut VReg| *register = remap[register];
+    match op {
+        TacOp::LoadConst(_)
+        | TacOp::LoadNone
+        | TacOp::LoadFunc(_)
+        | TacOp::PackageRoot(_)
+        | TacOp::ImportModule { .. }
+        | TacOp::Jump(_)
+        | TacOp::Return { value: None }
+        | TacOp::RetFromSub
+        | TacOp::RunReleasePlan { .. }
+        | TacOp::EnterScope(_)
+        | TacOp::ExitScope { .. } => {}
+        TacOp::ExportValue { value, .. }
+        | TacOp::Move(value)
+        | TacOp::Copy(value)
+        | TacOp::Box(value)
+        | TacOp::Unbox(value)
+        | TacOp::Release { value, .. }
+        | TacOp::Transfer { value }
+        | TacOp::Cast { value, .. }
+        | TacOp::Len { source: value } => map(value),
+        TacOp::Arith { left, right, .. }
+        | TacOp::Compare { left, right, .. }
+        | TacOp::SetOp { left, right, .. }
+        | TacOp::SetCompare { left, right, .. } => {
+            map(left);
+            map(right);
+        }
+        TacOp::NewArray { elements }
+        | TacOp::NewTuple { elements }
+        | TacOp::NewSet { elements } => {
+            elements.iter_mut().for_each(map);
+        }
+        TacOp::NewDictTable { entries } | TacOp::NewDictColumn { entries } => {
+            entries.iter_mut().for_each(|(_, value)| map(value));
+        }
+        TacOp::IndexGet { source, .. } => map(source),
+        TacOp::SelectorApply {
+            source,
+            step,
+            random_counts,
+            ..
+        } => {
+            map(source);
+            if let Some(step) = step {
+                map(step);
+            }
+            random_counts.iter_mut().flatten().for_each(map);
+        }
+        TacOp::BroadcastAssign { root, value, .. } => {
+            map(root);
+            map(value);
+        }
+        TacOp::RandomSeed { value, .. } => map(value),
+        TacOp::BranchIf { condition, .. } => map(condition),
+        TacOp::Call { arguments, .. } | TacOp::CallDynamic { arguments, .. } => {
+            arguments
+                .iter_mut()
+                .for_each(|argument| map(&mut argument.value));
+            if let TacOp::CallDynamic { callee, .. } = op {
+                map(callee);
+            }
+        }
+        TacOp::Return { value: Some(value) } | TacOp::Raise { value } => map(value),
+        TacOp::MakeError { code, message, .. } => {
+            if let Some(code) = code {
+                map(code);
+            }
+            if let Some(message) = message {
+                map(message);
+            }
+        }
+        TacOp::Check { value, .. } => map(value),
+        TacOp::IndexGetDynamic { source, index } => {
+            map(source);
+            map(index);
+        }
+        TacOp::LoadTable { arguments, .. } => {
+            arguments
+                .iter_mut()
+                .for_each(|argument| map(&mut argument.value));
+        }
+        TacOp::MemberGet { object, .. } => map(object),
+        TacOp::MemberSet { object, value, .. } => {
+            map(object);
+            map(value);
+        }
+        TacOp::CallSub { .. } => {}
     }
 }
 
@@ -835,5 +1084,41 @@ mod tests {
                 .iter()
                 .all(|pass| pass.status == PassStatus::Skipped)
         );
+    }
+
+    #[test]
+    fn unreachable_block_pass_remaps_targets_and_keeps_execution_blocks() {
+        let mut program = program_with_duplicate_constants();
+        program.functions[0].blocks[0]
+            .instructions
+            .push(TacInstr::new(
+                TacOp::Jump(BlockId::new(2)),
+                xiao_ir::IrSpan::new(1, 2),
+            ));
+        program.functions[0].blocks.push(crate::tac::TacBlock {
+            id: BlockId::new(1),
+            scope: 0,
+            instructions: vec![TacInstr::new(
+                TacOp::Return { value: None },
+                xiao_ir::IrSpan::new(2, 3),
+            )],
+        });
+        program.functions[0].blocks.push(crate::tac::TacBlock {
+            id: BlockId::new(2),
+            scope: 0,
+            instructions: vec![TacInstr::new(
+                TacOp::Return { value: None },
+                xiao_ir::IrSpan::new(3, 4),
+            )],
+        });
+        let result = optimize_bytecode(
+            &program,
+            OptimizationConfig::baseline("portable").with_level(OptimizationLevel::O1),
+        )
+        .expect("优化");
+        assert_eq!(result.program.functions[0].blocks.len(), 2);
+        assert!(result.report.passes.iter().any(|pass| {
+            pass.metadata.name == "bytecode.unreachable-block" && pass.status == PassStatus::Applied
+        }));
     }
 }
