@@ -475,6 +475,7 @@ pub fn encode_xiaoc_with_options(
     options: XiaocOptions,
 ) -> Result<Vec<u8>, XiaocError> {
     let metadata = metadata.normalize()?;
+    validate_metadata_against_program(&metadata, program)?;
     if contains_absolute_path(&program.abi.target) {
         return Err(XiaocError::InvalidMetadata(
             "程序目标描述不得包含绝对路径".to_owned(),
@@ -559,6 +560,8 @@ pub fn encode_xiaoc_with_options(
     let header_size = XIAOC_HEADER_MIN_SIZE
         .checked_add(options.header_extension.len())
         .ok_or_else(|| XiaocError::InvalidBounds("头部长度溢出".to_owned()))?;
+    let header_size_u32 = u32::try_from(header_size)
+        .map_err(|_| XiaocError::InvalidBounds("头部长度超出 u32".to_owned()))?;
     let directory_offset = align_up(header_size as u64, 8)?;
     let directory_size = (XIAOC_DIRECTORY_HEADER_SIZE as u64)
         .checked_add(
@@ -591,7 +594,7 @@ pub fn encode_xiaoc_with_options(
     header.extend_from_slice(&XIAOC_MAGIC);
     put_u16(&mut header, XIAOC_FORMAT_MAJOR);
     put_u16(&mut header, XIAOC_FORMAT_MINOR);
-    put_u32(&mut header, header_size as u32);
+    put_u32(&mut header, header_size_u32);
     put_u32(&mut header, flags);
     put_u32(&mut header, entries.len() as u32);
     put_u64(&mut header, directory_offset);
@@ -638,13 +641,24 @@ pub fn decode_xiaoc(bytes: &[u8]) -> Result<XiaocFile, XiaocError> {
     let (header, entries) = parse_container(bytes)?;
     let metadata_entry = required_entry(&entries, XiaocSectionKind::Metadata)?;
     let metadata = parse_metadata(&metadata_entry.data)?;
+    if metadata_bytes(&metadata)? != metadata_entry.data {
+        return Err(XiaocError::InvalidMetadata(
+            "元数据没有使用规范排序或编码".to_owned(),
+        ));
+    }
     let instruction_entry = required_entry(&entries, XiaocSectionKind::Instructions)?;
     let encoded = decode_encoded(&instruction_entry.data)
         .map_err(|error| XiaocError::InvalidInstructionStream(error.to_string()))?;
+    if encoded.bytes != instruction_entry.data {
+        return Err(XiaocError::InvalidInstructionStream(
+            "指令流没有使用规范编码".to_owned(),
+        ));
+    }
     let program = encoded
         .decode()
         .map_err(|error| XiaocError::InvalidInstructionStream(error.to_string()))?;
-    validate_table_sections(&entries, &program, &encoded)?;
+    validate_metadata_against_program(&metadata, &program)?;
+    validate_table_sections(&entries, &metadata, &program, &encoded)?;
     if program.abi.runtime_abi_version < header.runtime_abi_min
         || program.abi.runtime_abi_version > header.runtime_abi_max
     {
@@ -659,6 +673,18 @@ pub fn decode_xiaoc(bytes: &[u8]) -> Result<XiaocFile, XiaocError> {
     if metadata.debug_active != (header.flags & FILE_FLAG_DEBUG_ACTIVE != 0) {
         return Err(XiaocError::InvalidMetadata(
             "调试激活位与文件标志不一致".to_owned(),
+        ));
+    }
+    if matches!(metadata.platform, XiaocPlatform::Constrained { .. })
+        != (header.flags & FILE_FLAG_PLATFORM_CONSTRAINED != 0)
+    {
+        return Err(XiaocError::InvalidMetadata(
+            "平台约束标志与元数据不一致".to_owned(),
+        ));
+    }
+    if metadata.embedded_locale.is_some() != (header.flags & FILE_FLAG_EMBEDDED_LOCALE != 0) {
+        return Err(XiaocError::InvalidMetadata(
+            "嵌入文案目录标志与元数据不一致".to_owned(),
         ));
     }
     Ok(XiaocFile {
@@ -965,17 +991,50 @@ fn required_entry(
 
 fn validate_table_sections(
     entries: &[XiaocSection],
+    metadata: &XiaocMetadata,
     program: &TacProgram,
     encoded: &EncodedProgram,
 ) -> Result<(), XiaocError> {
-    validate_strings(required_entry(entries, XiaocSectionKind::Strings)?)?;
-    validate_types(required_entry(entries, XiaocSectionKind::Types)?)?;
+    let strings = required_entry(entries, XiaocSectionKind::Strings)?;
+    validate_strings(strings)?;
+    if strings_bytes(program, metadata)? != strings.data {
+        return Err(XiaocError::InvalidField {
+            field: "strings".to_owned(),
+            message: "字符串表与程序内容不一致".to_owned(),
+        });
+    }
+    let types = required_entry(entries, XiaocSectionKind::Types)?;
+    validate_types(types)?;
+    if types_bytes(program)? != types.data {
+        return Err(XiaocError::InvalidField {
+            field: "types".to_owned(),
+            message: "类型/签名表与程序内容不一致".to_owned(),
+        });
+    }
     let functions = required_entry(entries, XiaocSectionKind::Functions)?;
     validate_functions(functions, program, encoded)?;
+    if functions_bytes(encoded)? != functions.data {
+        return Err(XiaocError::InvalidField {
+            field: "functions".to_owned(),
+            message: "函数表与指令目录不一致".to_owned(),
+        });
+    }
     let constants = required_entry(entries, XiaocSectionKind::Constants)?;
     validate_constants(constants, program)?;
+    if constants_bytes(program)? != constants.data {
+        return Err(XiaocError::InvalidField {
+            field: "constants".to_owned(),
+            message: "常量池与程序内容不一致".to_owned(),
+        });
+    }
     let imports = required_entry(entries, XiaocSectionKind::Imports)?;
     validate_zero_table(imports, "imports")?;
+    if imports_bytes()? != imports.data {
+        return Err(XiaocError::InvalidField {
+            field: "imports".to_owned(),
+            message: "导入表与首版规范不一致".to_owned(),
+        });
+    }
     if encoded.functions.len() != program.functions.len() {
         return Err(XiaocError::InvalidInstructionStream(
             "函数目录数量不一致".to_owned(),
@@ -983,6 +1042,12 @@ fn validate_table_sections(
     }
     let source_map = required_entry(entries, XiaocSectionKind::SourceMap)?;
     validate_source_map(source_map, encoded)?;
+    if source_map_bytes(encoded)? != source_map.data {
+        return Err(XiaocError::InvalidField {
+            field: "source_map".to_owned(),
+            message: "源码映射与指令目录不一致".to_owned(),
+        });
+    }
     Ok(())
 }
 
@@ -1396,6 +1461,33 @@ fn normalize_strings(mut values: Vec<String>) -> Vec<String> {
     values.sort();
     values.dedup();
     values
+}
+
+fn validate_metadata_against_program(
+    metadata: &XiaocMetadata,
+    program: &TacProgram,
+) -> Result<(), XiaocError> {
+    if metadata.ir_version != program.abi.ir_version {
+        return Err(XiaocError::InvalidMetadata(format!(
+            "ir_version {} 与程序 {} 不一致",
+            metadata.ir_version, program.abi.ir_version
+        )));
+    }
+    if metadata.language_version != program.abi.language_version {
+        return Err(XiaocError::InvalidMetadata(format!(
+            "language_version {} 与程序 {} 不一致",
+            metadata.language_version, program.abi.language_version
+        )));
+    }
+    if let XiaocPlatform::Constrained { target, .. } = &metadata.platform {
+        if target != &program.abi.target {
+            return Err(XiaocError::InvalidMetadata(format!(
+                "目标约束 {} 与程序目标 {} 不一致",
+                target, program.abi.target
+            )));
+        }
+    }
+    Ok(())
 }
 
 fn contains_absolute_path(value: &str) -> bool {
