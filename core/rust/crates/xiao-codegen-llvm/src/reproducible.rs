@@ -114,10 +114,18 @@ pub fn compare_reproducible_builds(
         .map(|item| item.kind.as_str())
         .collect::<BTreeSet<_>>();
     let mut unexpected = Vec::new();
-    if !llvm_identical && !allowed.contains("binary-layout") {
+    if !llvm_identical
+        && !allowed.contains("binary-layout")
+        && !allowed.contains("toolchain-version")
+        && !allowed.contains("target")
+    {
         unexpected.push("llvm-text".to_owned());
     }
-    if !symbols_identical && !allowed.contains("binary-layout") {
+    if !symbols_identical
+        && !allowed.contains("binary-layout")
+        && !allowed.contains("toolchain-version")
+        && !allowed.contains("target")
+    {
         unexpected.push("symbols".to_owned());
     }
     ReproducibilityReport {

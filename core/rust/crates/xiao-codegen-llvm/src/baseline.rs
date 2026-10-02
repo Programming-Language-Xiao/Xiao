@@ -74,6 +74,8 @@ pub enum BaselineError {
     },
     /// 噪声阈值不是有限非负值。
     InvalidNoiseThreshold,
+    /// 样本包含非有限浮点值。
+    InvalidSample,
 }
 
 impl Display for BaselineError {
@@ -87,6 +89,7 @@ impl Display for BaselineError {
                 )
             }
             Self::InvalidNoiseThreshold => formatter.write_str("噪声阈值必须是有限非负值"),
+            Self::InvalidSample => formatter.write_str("性能样本时间必须是有限非负值"),
         }
     }
 }
@@ -110,6 +113,13 @@ pub fn measure_baseline(
     }
     if !noise_threshold_percent.is_finite() || noise_threshold_percent < 0.0 {
         return Err(BaselineError::InvalidNoiseThreshold);
+    }
+    if samples.iter().any(|sample| {
+        [sample.compile_ms, sample.startup_ms, sample.runtime_ms]
+            .into_iter()
+            .any(|value| !value.is_finite() || value < 0.0)
+    }) {
+        return Err(BaselineError::InvalidSample);
     }
     let median = PerformanceSample {
         compile_ms: median(samples.iter().map(|sample| sample.compile_ms)),
@@ -147,6 +157,18 @@ pub fn measure_baseline(
         median,
         spread_percent,
     })
+}
+
+impl PerformanceBaseline {
+    /// 判断所有五个维度是否都落在声明的噪声阈值内。
+    #[must_use]
+    pub fn within_noise_threshold(&self) -> bool {
+        self.spread_percent.compile_ms <= self.noise_threshold_percent
+            && self.spread_percent.startup_ms <= self.noise_threshold_percent
+            && self.spread_percent.runtime_ms <= self.noise_threshold_percent
+            && self.spread_percent.peak_memory_percent <= self.noise_threshold_percent
+            && self.spread_percent.artifact_percent <= self.noise_threshold_percent
+    }
 }
 
 fn median<I>(values: I) -> f64
@@ -252,5 +274,18 @@ mod tests {
     fn rejects_uncontrolled_sample_shapes() {
         let error = measure_baseline(condition(), Vec::new(), 10.0).expect_err("样本数量");
         assert!(matches!(error, BaselineError::SampleCount { .. }));
+    }
+
+    #[test]
+    fn rejects_non_finite_samples_and_exposes_noise_gate() {
+        let mut samples = vec![PerformanceSample::default(); 3];
+        samples[0].runtime_ms = f64::NAN;
+        assert!(matches!(
+            measure_baseline(condition(), samples, 10.0),
+            Err(BaselineError::InvalidSample)
+        ));
+        let baseline = measure_baseline(condition(), vec![PerformanceSample::default(); 3], 0.0)
+            .expect("零噪声基线");
+        assert!(baseline.within_noise_threshold());
     }
 }

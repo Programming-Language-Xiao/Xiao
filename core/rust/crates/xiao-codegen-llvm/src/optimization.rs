@@ -37,6 +37,8 @@ pub struct LlvmPassSwitches {
 /// 15A 的 LLVM 优化计划。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct LlvmOptimizationPlan {
+    /// 13A 规范化配置指纹。
+    pub config_fingerprint: String,
     /// 规范化优化级别。
     pub level: OptimizationLevel,
     /// 目标指纹字段。
@@ -120,6 +122,7 @@ impl LlvmOptimizationPlan {
             llvm_version
         );
         Ok(Self {
+            config_fingerprint: config_fingerprint.as_str().to_owned(),
             level,
             target: target.fingerprint_fields(),
             llvm_version,
@@ -129,6 +132,21 @@ impl LlvmOptimizationPlan {
             disabled_extensions,
             fingerprint: format!("xiao-llvm-fnv1a64-{}", stable_hash(canonical.as_bytes())),
         })
+    }
+
+    /// 用实际探测到的 LLVM 版本更新计划和指纹。
+    #[must_use]
+    pub fn with_llvm_version(mut self, llvm_version: impl Into<String>) -> Self {
+        self.llvm_version = llvm_version.into();
+        let canonical = format!(
+            "config={};level={};target={};llvm={};passes=function;extensions=cross-module:off,link-time:off,target-specific:off",
+            self.config_fingerprint,
+            self.level.as_u8(),
+            self.target,
+            self.llvm_version
+        );
+        self.fingerprint = format!("xiao-llvm-fnv1a64-{}", stable_hash(canonical.as_bytes()));
+        self
     }
 }
 
@@ -182,6 +200,13 @@ impl LlvmOptimizationReport {
             removed_runtime_components: removed,
             runtime_reasons: reasons,
         }
+    }
+
+    /// 用实际工具链版本回填报告，保持 Runtime 裁剪事实不变。
+    #[must_use]
+    pub fn with_llvm_version(self, llvm_version: impl Into<String>) -> Self {
+        let plan = self.plan.with_llvm_version(llvm_version);
+        Self::from_plan(plan, &self.retained_runtime_components)
     }
 }
 

@@ -161,13 +161,21 @@ impl NativeBuild {
             let _ = fs::remove_file(&executable);
             return Err(error);
         }
+        let llvm_version = if request.toolchain.versions.clang.trim().is_empty() {
+            "unknown"
+        } else {
+            request.toolchain.versions.clang.as_str()
+        };
+        let native_optimization_report = module
+            .native_optimization_report
+            .clone()
+            .with_llvm_version(llvm_version);
         let fingerprint = request.toolchain.fingerprint_with_optimization(
             &request.options.target,
             CODEGEN_VERSION,
             request.options.optimization_level,
-            &module.native_optimization_report.plan.fingerprint,
+            &native_optimization_report.plan.fingerprint,
         );
-        let native_optimization_report = module.native_optimization_report.clone();
         Ok(NativeArtifact {
             module,
             executable,
