@@ -153,7 +153,7 @@
 | 14A | [`.xiaoc` 格式与编解码](14a-xiaoc-format-and-codec.md) | 单模块确定性二进制：**非定长**的文件头与可跳过目录项、未知必需拒绝/未知可选跳过、稳定排序与无宿主依赖、不压缩、平台无关优先、格式检查工具与模糊测试、VM 只接受验证过的产物 | 已交付（`0673fee`+`f9411a1`：分区 1–8、字典序规范化、FNV-1a 摘要、`malformed_random_bytes_never_panic`、`run_xiaoc` 检查全通过前不建 VM） |
 | 14B | [字节码优化 Pass 与三方差分](14b-bytecode-passes-and-differential.md) | 14 阶段收尾批：窥孔/跳转/常量池/槽布局 Pass、**每个 Pass 前后快照**、优化后五项重新验证、**三方差分**（源码/未优化字节码/优化字节码 × 输出/错误/随机序列/drop）、调试回溯、quickening 与不可变 `.xiaoc` 分离 | 进行中（字节码优化管线、保守 Pass、逐 Pass 快照/验证和三方差分骨架已实现；不可证明的 Pass 明确跳过） |
 | 15 | [LLVM 原生优化与链接](15-native-optimization.md) | 原生优化级别、Runtime 裁剪、链接和跨平台基线 | 待开工（拆两批：**15A Pass 映射与裁剪**、15B 调试/可复现构建与性能基线） |
-| 15A | [LLVM Pass 映射与 Runtime 裁剪](15a-native-pass-mapping-and-runtime-trimming.md) | 规范化配置→LLVM Pass 管线、Pass 开关（**建开关但不默认启用**）、**依据调用图与效果摘要的可证明裁剪**、Pass 报告并入 13A 指纹；**先清 14B 两笔债**（释放点显式断言、七类可观察操作逐类核查） | 待开工（**`15.3` 是 10K「`unverified-coff-exports`」那笔债的正面回答**；平台顺序固定 Windows→Linux→macOS） |
+| 15A | [LLVM Pass 映射与 Runtime 裁剪](15a-native-pass-mapping-and-runtime-trimming.md) | 规范化配置→LLVM Pass 管线、Pass 开关（**建开关但不默认启用**）、**依据调用图与效果摘要的可证明裁剪**、Pass 报告并入 13A 指纹；**先清 14B 两笔债**（释放点显式断言、七类可观察操作逐类核查） | 进行中（LLVM 安全优化计划、O0–O3 开关、计划指纹和可解释裁剪报告已接入；跨平台实测与四方差分继续补齐） |
 | 16 | [SHA-256 内容寻址与二进制索引](16-content-addressed-artifacts.md) | 整文件摘要、归档/全局 Protobuf 索引和缓存维护 | 未开始 |
 | 17 | [`.xar` 字节码归档与启动](17-xar-archive.md) | ZIP/ZIP64 归档、第三方依赖、资源与双击启动 | 未开始 |
 | 18 | [优化与产物 CLI 接入](18-optimization-cli.md) | TypeScript CLI、默认 `-O0`、缓存/验证/打包命令 | 未开始 |

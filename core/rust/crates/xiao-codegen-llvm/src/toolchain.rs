@@ -171,8 +171,20 @@ impl Toolchain {
         target: &TargetDescription,
         codegen_version: u32,
     ) -> ToolchainFingerprint {
+        self.fingerprint_with_optimization(target, codegen_version, 0, "baseline")
+    }
+
+    /// 计算包含 LLVM 优化级别和 Pass 计划指纹的稳定构建指纹。
+    #[must_use]
+    pub fn fingerprint_with_optimization(
+        &self,
+        target: &TargetDescription,
+        codegen_version: u32,
+        optimization_level: u8,
+        optimization_fingerprint: &str,
+    ) -> ToolchainFingerprint {
         let canonical = format!(
-            "codegen={codegen_version};abi={ABI_ENCODED_VERSION};runtime={};native={};{};clang={};llvm-as={};llc={};rustc={}",
+            "codegen={codegen_version};abi={ABI_ENCODED_VERSION};optimization={optimization_level};plan={optimization_fingerprint};runtime={};native={};{};clang={};llvm-as={};llc={};rustc={}",
             self.runtime_library
                 .as_deref()
                 .map(runtime_fingerprint)
@@ -243,7 +255,7 @@ impl Toolchain {
         target: &TargetDescription,
         output: impl AsRef<Path>,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, None, None, &[])
+        self.compile_inner(text, target, output, None, None, &[], 0)
     }
 
     /// 验证 LLVM IR 后仅链接 IR 自身；即便工具链配置过 Runtime，也不会继承它。
@@ -253,7 +265,18 @@ impl Toolchain {
         target: &TargetDescription,
         output: impl AsRef<Path>,
     ) -> Result<PathBuf> {
-        self.compile_inner(text, target, output, None, None, &[])
+        self.compile_inner(text, target, output, None, None, &[], 0)
+    }
+
+    /// 按指定安全优化级别验证并编译不使用 Runtime 的模块。
+    pub fn compile_without_runtime_at_level(
+        &self,
+        text: &str,
+        target: &TargetDescription,
+        output: impl AsRef<Path>,
+        optimization_level: u8,
+    ) -> Result<PathBuf> {
+        self.compile_inner(text, target, output, None, None, &[], optimization_level)
     }
 
     /// 验证 LLVM IR 后调用 clang，并按需链接调用方注入的 Runtime 静态库。
@@ -284,6 +307,29 @@ impl Toolchain {
             runtime_library,
             None,
             runtime_components,
+            0,
+        )
+    }
+
+    /// 按指定安全优化级别验证、编译并链接 Runtime。
+    pub fn compile_with_runtime_components_at_level(
+        &self,
+        text: &str,
+        target: &TargetDescription,
+        output: impl AsRef<Path>,
+        runtime_library: Option<&Path>,
+        runtime_components: &[String],
+        optimization_level: u8,
+    ) -> Result<PathBuf> {
+        let runtime_library = runtime_library.or(self.runtime_library.as_deref());
+        self.compile_inner(
+            text,
+            target,
+            output,
+            runtime_library,
+            None,
+            runtime_components,
+            optimization_level,
         )
     }
 
@@ -328,10 +374,35 @@ impl Toolchain {
             runtime_library,
             Some(startup),
             runtime_components,
+            0,
+        )
+    }
+
+    /// 按指定安全优化级别验证、编译并链接调试启动 shim。
+    #[allow(clippy::too_many_arguments)]
+    pub fn compile_with_startup_shim_components_at_level(
+        &self,
+        text: &str,
+        target: &TargetDescription,
+        output: impl AsRef<Path>,
+        runtime_library: Option<&Path>,
+        startup: &NativeStartup,
+        runtime_components: &[String],
+        optimization_level: u8,
+    ) -> Result<PathBuf> {
+        self.compile_inner(
+            text,
+            target,
+            output,
+            runtime_library,
+            Some(startup),
+            runtime_components,
+            optimization_level,
         )
     }
 
     /// 按是否继承配置中的 Runtime 库执行一次验证、编译和链接。
+    #[allow(clippy::too_many_arguments)]
     fn compile_inner(
         &self,
         text: &str,
@@ -340,8 +411,15 @@ impl Toolchain {
         runtime_library: Option<&Path>,
         startup: Option<&NativeStartup>,
         runtime_components: &[String],
+        optimization_level: u8,
     ) -> Result<PathBuf> {
         let output = output.as_ref().to_path_buf();
+        if optimization_level > 3 {
+            return Err(CodegenError::ToolchainUnavailable {
+                tool: "clang".to_owned(),
+                message: format!("优化级别 {optimization_level} 超出 O0–O3"),
+            });
+        }
         if let Some(parent) = output.parent().filter(|path| !path.as_os_str().is_empty()) {
             fs::create_dir_all(parent).map_err(|error| CodegenError::Io {
                 path: parent.to_path_buf(),
@@ -357,7 +435,7 @@ impl Toolchain {
         let mut args = vec![
             "-target".to_owned(),
             target.triple.clone(),
-            "-O0".to_owned(),
+            format!("-O{optimization_level}"),
             "-Wno-override-module".to_owned(),
             path_text(&temp.path),
             "-o".to_owned(),

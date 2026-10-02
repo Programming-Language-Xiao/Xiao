@@ -8,7 +8,8 @@
 
 ## 工程期
 
-10 建立未优化原生闭环；15 接入 `-O0`–`-O3`、Runtime 裁剪、链接和性能基线；平台顺序为 Windows → Linux → macOS。
+10 建立未优化原生闭环；15A 接入 `-O0`–`-O3` 的安全 LLVM 参数、可解释 Runtime 裁剪和
+构建指纹；15B 再接入调试/可复现构建与性能基线。平台顺序为 Windows → Linux → macOS。
 
 ## 模块放置
 
@@ -17,6 +18,11 @@
 `src/target.rs` 放置规范化目标，`src/toolchain.rs` 放置显式工具链适配，`src/build.rs` 放置
 内部构建/运行观察面。稳定 Runtime ABI 位于独立的 `xiao-runtime-abi` crate；`.app`/签名
 编排由平台与发布工具负责。
+
+`optimization.rs` 复用 13A 的规范化配置，生成只启用函数内安全优化的 LLVM 计划；跨模块、
+LTO、PGO 和目标特化开关默认关闭，并拒绝快速数学/未定义回绕等不安全扩展。计划指纹包含
+级别、目标字段和 LLVM 版本摘要。`LlvmOptimizationReport` 同时解释 Runtime 组件依据 IR
+效果摘要保留或删除的原因，不把链接器最终删掉什么当作裁剪证明。
 
 ## N0-B 动态降低器
 

@@ -14,6 +14,8 @@ mod dynamic;
 mod error;
 /// 类型化 IR 到 LLVM 文本的降低实现。
 mod ir;
+/// 15A LLVM Pass 映射、开关和 Runtime 裁剪报告。
+mod optimization;
 /// 规范化目标描述和固定宽度约束。
 mod target;
 /// LLVM 文本转义和构建指纹的共用纯函数。
@@ -34,6 +36,10 @@ pub use error::{CodegenError, Result};
 pub use ir::{
     BASELINE_OPTIMIZATION_LEVEL, CodegenOptions, EntryObservation, LlvmModule,
     NativeSourceMapEntry, NativeStartup, validate_program,
+};
+/// LLVM Pass 计划和可证明 Runtime 裁剪报告。
+pub use optimization::{
+    LlvmOptimizationPlan, LlvmOptimizationReport, LlvmPassKind, LlvmPassSwitches,
 };
 /// 目标字节序、对象格式和规范化目标描述。
 pub use target::{Endian, ObjectFormat, TargetDescription};
@@ -66,6 +72,7 @@ pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> 
             .with_level(level);
     config.debug_info = options.debug_startup.is_some();
     config.diagnostic_events = options.debug_startup.is_some();
+    let native_config = config.clone();
     let pipeline = xiao_optimizer::OptimizationPipeline::new(config).map_err(|error| {
         CodegenError::InvalidIr {
             message: error.to_string(),
@@ -82,5 +89,9 @@ pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> 
         ir::lower_static_program(&optimized.program, options)?
     };
     module.optimization_report = optimized.report;
+    let plan = LlvmOptimizationPlan::from_config(&native_config, &options.target, "unknown")
+        .map_err(|message| CodegenError::InvalidIr { message })?;
+    module.native_optimization_report =
+        LlvmOptimizationReport::from_plan(plan, &module.runtime_components);
     Ok(module)
 }

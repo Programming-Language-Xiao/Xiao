@@ -75,6 +75,8 @@ pub struct NativeArtifact {
     pub artifact_runtime: ArtifactRuntimeComposition,
     /// 产物使用的优化级别；N0-D 基线固定为 `0`。
     pub optimization_level: u8,
+    /// LLVM Pass 映射与 Runtime 裁剪的可解释报告。
+    pub native_optimization_report: crate::optimization::LlvmOptimizationReport,
 }
 
 /// 原生构建驱动器；它不解析命令行，也不发现工具链。
@@ -110,30 +112,35 @@ impl NativeBuild {
                     message: "调试构建缺少独立诊断进程路径".to_owned(),
                 });
             }
-            request.toolchain.compile_with_startup_shim_components(
-                &module.text,
-                &request.options.target,
-                &request.output,
-                module
-                    .uses_runtime
-                    .then_some(request.toolchain.runtime_library.as_deref())
-                    .flatten(),
-                startup,
-                &module.runtime_components,
-            )?
+            request
+                .toolchain
+                .compile_with_startup_shim_components_at_level(
+                    &module.text,
+                    &request.options.target,
+                    &request.output,
+                    module
+                        .uses_runtime
+                        .then_some(request.toolchain.runtime_library.as_deref())
+                        .flatten(),
+                    startup,
+                    &module.runtime_components,
+                    request.options.optimization_level,
+                )?
         } else if module.uses_runtime {
-            request.toolchain.compile_with_runtime_components(
+            request.toolchain.compile_with_runtime_components_at_level(
                 &module.text,
                 &request.options.target,
                 &request.output,
                 None,
                 &module.runtime_components,
+                request.options.optimization_level,
             )?
         } else {
-            request.toolchain.compile_without_runtime(
+            request.toolchain.compile_without_runtime_at_level(
                 &module.text,
                 &request.options.target,
                 &request.output,
+                request.options.optimization_level,
             )?
         };
         let artifact_runtime = match verify_artifact(
@@ -154,15 +161,20 @@ impl NativeBuild {
             let _ = fs::remove_file(&executable);
             return Err(error);
         }
-        let fingerprint = request
-            .toolchain
-            .fingerprint(&request.options.target, CODEGEN_VERSION);
+        let fingerprint = request.toolchain.fingerprint_with_optimization(
+            &request.options.target,
+            CODEGEN_VERSION,
+            request.options.optimization_level,
+            &module.native_optimization_report.plan.fingerprint,
+        );
+        let native_optimization_report = module.native_optimization_report.clone();
         Ok(NativeArtifact {
             module,
             executable,
             toolchain_fingerprint: fingerprint,
             artifact_runtime,
             optimization_level: request.options.optimization_level,
+            native_optimization_report,
         })
     }
 

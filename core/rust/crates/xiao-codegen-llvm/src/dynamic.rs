@@ -246,6 +246,10 @@ impl<'a> DynamicGenerator<'a> {
             source_map: source_map_for_program(self.program),
             optimization_level: self.options.optimization_level,
             optimization_report: OptimizationReport::empty(),
+            native_optimization_report: crate::optimization::LlvmOptimizationReport::empty(
+                &self.options.target,
+                self.options.optimization_level,
+            ),
         })
     }
 

@@ -1171,4 +1171,94 @@ mod tests {
             BlockId::new(2)
         );
     }
+
+    #[test]
+    fn optimization_pipeline_preserves_observable_operation_families() {
+        let mut program = program_with_duplicate_constants();
+        program.random_seed_plans.push(xiao_ir::IrRandomSeedPlan {
+            span: xiao_ir::IrSpan::new(4, 5),
+            value: Some(1),
+            dynamic: false,
+        });
+        let instructions = &mut program.functions[0].blocks[0].instructions;
+        instructions.extend([
+            TacInstr::new(
+                TacOp::PackageRoot("pkg".to_owned()),
+                xiao_ir::IrSpan::new(5, 6),
+            ),
+            TacInstr::new(
+                TacOp::ImportModule {
+                    module: "pkg.mod".to_owned(),
+                    binding_module: "pkg".to_owned(),
+                },
+                xiao_ir::IrSpan::new(6, 7),
+            ),
+            TacInstr::new(TacOp::Copy(VReg::new(0)), xiao_ir::IrSpan::new(7, 8)),
+            TacInstr::new(
+                TacOp::Release {
+                    value: VReg::new(0),
+                    kind: xiao_lifetime::ReleaseActionKind::Strong,
+                },
+                xiao_ir::IrSpan::new(8, 9),
+            ),
+            TacInstr::new(
+                TacOp::RandomSeed {
+                    value: VReg::new(0),
+                    plan: 0,
+                },
+                xiao_ir::IrSpan::new(9, 10),
+            ),
+            TacInstr::new(
+                TacOp::MakeError {
+                    type_name: "ValueError".to_owned(),
+                    code: None,
+                    message: None,
+                },
+                xiao_ir::IrSpan::new(10, 11),
+            ),
+            TacInstr::new(
+                TacOp::Check {
+                    kind: "data_race".to_owned(),
+                    value: VReg::new(0),
+                    on_failure: BlockId::new(0),
+                    expected: None,
+                },
+                xiao_ir::IrSpan::new(11, 12),
+            ),
+            TacInstr::new(
+                TacOp::MemberSet {
+                    object: VReg::new(0),
+                    member: "ascii:value".to_owned(),
+                    value: VReg::new(0),
+                },
+                xiao_ir::IrSpan::new(12, 13),
+            ),
+        ]);
+        let count_observable = |items: &[TacInstr]| {
+            items
+                .iter()
+                .filter(|instruction| {
+                    matches!(
+                        instruction.op,
+                        TacOp::PackageRoot(_)
+                            | TacOp::ImportModule { .. }
+                            | TacOp::Copy(_)
+                            | TacOp::Release { .. }
+                            | TacOp::RandomSeed { .. }
+                            | TacOp::MakeError { .. }
+                            | TacOp::Check { .. }
+                            | TacOp::MemberSet { .. }
+                    )
+                })
+                .count()
+        };
+        let before = count_observable(&instructions.clone());
+        let result = optimize_bytecode(
+            &program,
+            OptimizationConfig::baseline("portable").with_level(OptimizationLevel::O1),
+        )
+        .expect("可观察操作优化");
+        let after = count_observable(&result.program.functions[0].blocks[0].instructions);
+        assert_eq!(before, after);
+    }
 }

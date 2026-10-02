@@ -335,6 +335,25 @@ Runtime 裁剪     **未建立为"可证明"**：10K 判定当前在 PE 上无�
 
 ---
 
+## 本批实现记录
+
+当前落点为 `core/rust/crates/xiao-codegen-llvm/src/optimization.rs`、`ir.rs`、`build.rs`
+和 `toolchain.rs`。LLVM 侧复用 13A 的 `OptimizationConfig` 与配置指纹，生成
+`LlvmOptimizationPlan`：`O0`–`O3` 映射到安全的 `-O0`–`-O3`，快速数学、未定义溢出回绕、
+LTO、PGO、向量化和目标特化保持关闭；跨模块、链接时和目标特化 Pass 只登记为关闭开关。
+
+`LlvmOptimizationReport` 随模块和原生产物携带，包含目标字段、LLVM 版本摘要、计划指纹、
+启用的 Pass 类别，以及依据 IR Runtime 效果摘要计算出的组件保留/删除原因。Runtime 裁剪
+报告在链接前生成，链接后产物检查仍是独立证据，避免把链接器偶然删除误当作可证明裁剪。
+
+`Toolchain` 现在按构建级别传递安全优化参数，默认构建保持 `O0`；构建指纹同时包含优化级别
+和计划指纹。调试/可复现构建与性能基线仍由 15B 负责，平台实测顺序按 Windows → Linux →
+macOS 推进。
+
+`xiao-optimizer` 已提供四方差分骨架，固定比较输出、退出码、错误类别、随机序列、容器顺序
+和 `drop` 记录；布局、体积和时间不进入差异字段。实际跨平台原生回环和 Windows → Linux →
+macOS 的门控运行记录仍需在具备对应 LLVM/Runtime 工具链后推进。
+
 ## 相关页面
 
 - [15. LLVM 原生优化与链接](15-native-optimization.md) —— **权威规范**；`15.1`–`15.11`、4 条验收、4 条待定决策

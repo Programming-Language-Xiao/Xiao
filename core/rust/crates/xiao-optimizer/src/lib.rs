@@ -13,10 +13,13 @@ pub use config::{
 /// 未优化与优化结果的统一语义差分口径。
 pub use differential::{
     DifferentialCase, DifferentialCaseReport, DifferentialDifference, DifferentialInput,
-    DifferentialObservation, DifferentialSuiteReport, ThreeWayCaseReport, ThreeWayDifference,
-    ThreeWayExecutionSide, ThreeWayObservation, ThreeWaySuiteReport, compare_observations,
-    compare_three_observations, run_o0_differential_suite, run_o0_differential_suite_with,
-    run_three_way_differential_suite_with, run_three_way_differential_suite_with_level,
+    DifferentialObservation, DifferentialSuiteReport, FourWayCaseReport, FourWayDifference,
+    FourWayExecutionSide, FourWayObservation, FourWaySuiteReport, ThreeWayCaseReport,
+    ThreeWayDifference, ThreeWayExecutionSide, ThreeWayObservation, ThreeWaySuiteReport,
+    compare_four_observations, compare_observations, compare_three_observations,
+    run_four_way_differential_suite_with, run_o0_differential_suite,
+    run_o0_differential_suite_with, run_three_way_differential_suite_with,
+    run_three_way_differential_suite_with_level,
 };
 /// IR 效果、所有权和别名只读事实。
 pub use facts::{AliasFacts, EffectFacts, OwnershipFacts, ProgramFacts};

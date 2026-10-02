@@ -14,6 +14,7 @@ use xiao_optimizer::OptimizationReport;
 
 use crate::CODEGEN_VERSION;
 use crate::error::{CodegenError, Result};
+use crate::optimization::LlvmOptimizationReport;
 use crate::target::TargetDescription;
 use crate::text::{escape_llvm, stable_hash};
 
@@ -40,7 +41,7 @@ pub struct CodegenOptions {
     pub debug_startup: Option<NativeStartup>,
     /// 原生 Runtime 使用的规范语言标签；目录渲染仍由共享诊断 crate 完成。
     pub locale: String,
-    /// 代码生成优化级别；N0-D 只允许并记录 `0`。
+    /// 代码生成优化级别；首组对外级别为 `0..=3`。
     pub optimization_level: u8,
 }
 
@@ -104,11 +105,11 @@ impl CodegenOptions {
         self
     }
 
-    /// 设置代码生成优化级别；当前只接受未优化基线。
+    /// 设置代码生成优化级别；禁止超出首组 `O0`–`O3`。
     pub fn with_optimization_level(mut self, level: u8) -> Result<Self> {
-        if level != BASELINE_OPTIMIZATION_LEVEL {
+        if level > 3 {
             return Err(CodegenError::Unsupported {
-                feature: format!("优化级别 {level} 尚未接入，当前只允许 -O0"),
+                feature: format!("优化级别 {level} 超出首组 O0–O3"),
                 span: None,
             });
         }
@@ -147,6 +148,8 @@ pub struct LlvmModule {
     pub optimization_level: u8,
     /// 共享优化管线的规范化、验证和 Pass 报告。
     pub optimization_report: OptimizationReport,
+    /// 15A LLVM Pass 映射和 Runtime 裁剪报告。
+    pub native_optimization_report: LlvmOptimizationReport,
 }
 
 /// 验证输入 IR，并返回第一个结构化错误。
@@ -428,6 +431,10 @@ impl<'a> ModuleGenerator<'a> {
             source_map: source_map_for_program(self.program),
             optimization_level: self.options.optimization_level,
             optimization_report: OptimizationReport::empty(),
+            native_optimization_report: crate::optimization::LlvmOptimizationReport::empty(
+                &self.options.target,
+                self.options.optimization_level,
+            ),
         })
     }
 

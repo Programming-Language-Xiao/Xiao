@@ -152,6 +152,71 @@ pub struct ThreeWaySuiteReport {
     pub passed: bool,
 }
 
+/// 15A 四方差分执行对象。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum FourWayExecutionSide {
+    /// 未优化原生。
+    UnoptimizedNative,
+    /// 优化原生。
+    OptimizedNative,
+    /// 未优化字节码。
+    UnoptimizedBytecode,
+    /// 优化字节码。
+    OptimizedBytecode,
+}
+
+/// 四方差分观察值；允许布局、体积和时间在观察对象之外独立记录。
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct FourWayObservation {
+    /// 标准输出。
+    pub output: String,
+    /// 结构化错误类别。
+    pub error: Option<String>,
+    /// 进程退出码。
+    pub exit_code: i32,
+    /// 固定随机源序列。
+    pub random: Vec<String>,
+    /// 容器遍历顺序。
+    pub containers: Vec<String>,
+    /// 释放事件顺序。
+    pub drops: Vec<String>,
+}
+
+/// 四方差分字段差异。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct FourWayDifference {
+    /// 差异字段。
+    pub field: String,
+    /// 未优化原生观察值。
+    pub unoptimized_native: String,
+    /// 优化原生观察值。
+    pub optimized_native: String,
+    /// 未优化字节码观察值。
+    pub unoptimized_bytecode: String,
+    /// 优化字节码观察值。
+    pub optimized_bytecode: String,
+}
+
+/// 四方差分用例报告。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct FourWayCaseReport {
+    /// 稳定用例名称。
+    pub name: String,
+    /// 六类不允许差异。
+    pub differences: Vec<FourWayDifference>,
+}
+
+/// 四方差分套件报告。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct FourWaySuiteReport {
+    /// 原生/字节码优化侧级别。
+    pub optimization_level: OptimizationLevel,
+    /// 按名称排序的用例。
+    pub cases: Vec<FourWayCaseReport>,
+    /// 是否所有对象逐项一致。
+    pub passed: bool,
+}
+
 /// 比较未优化和优化执行结果，返回稳定排序的差异列表。
 #[must_use]
 pub fn compare_observations(
@@ -322,6 +387,117 @@ where
     }
 }
 
+/// 比较四个执行对象的六类语言可观察结果。
+#[must_use]
+pub fn compare_four_observations(
+    unoptimized_native: &FourWayObservation,
+    optimized_native: &FourWayObservation,
+    unoptimized_bytecode: &FourWayObservation,
+    optimized_bytecode: &FourWayObservation,
+) -> Vec<FourWayDifference> {
+    let values = |field: &str| -> Option<FourWayDifference> {
+        let (a, b, c, d) = match field {
+            "output" => (
+                unoptimized_native.output.clone(),
+                optimized_native.output.clone(),
+                unoptimized_bytecode.output.clone(),
+                optimized_bytecode.output.clone(),
+            ),
+            "error" => (
+                format!("{:?}", unoptimized_native.error),
+                format!("{:?}", optimized_native.error),
+                format!("{:?}", unoptimized_bytecode.error),
+                format!("{:?}", optimized_bytecode.error),
+            ),
+            "exit_code" => (
+                unoptimized_native.exit_code.to_string(),
+                optimized_native.exit_code.to_string(),
+                unoptimized_bytecode.exit_code.to_string(),
+                optimized_bytecode.exit_code.to_string(),
+            ),
+            "random" => (
+                format!("{:?}", unoptimized_native.random),
+                format!("{:?}", optimized_native.random),
+                format!("{:?}", unoptimized_bytecode.random),
+                format!("{:?}", optimized_bytecode.random),
+            ),
+            "containers" => (
+                format!("{:?}", unoptimized_native.containers),
+                format!("{:?}", optimized_native.containers),
+                format!("{:?}", unoptimized_bytecode.containers),
+                format!("{:?}", optimized_bytecode.containers),
+            ),
+            "drops" => (
+                format!("{:?}", unoptimized_native.drops),
+                format!("{:?}", optimized_native.drops),
+                format!("{:?}", unoptimized_bytecode.drops),
+                format!("{:?}", optimized_bytecode.drops),
+            ),
+            _ => return None,
+        };
+        if a == b && a == c && a == d {
+            None
+        } else {
+            Some(FourWayDifference {
+                field: field.to_owned(),
+                unoptimized_native: a,
+                optimized_native: b,
+                unoptimized_bytecode: c,
+                optimized_bytecode: d,
+            })
+        }
+    };
+    [
+        "output",
+        "error",
+        "exit_code",
+        "random",
+        "containers",
+        "drops",
+    ]
+    .into_iter()
+    .filter_map(values)
+    .collect()
+}
+
+/// 执行输入驱动的四方差分套件。
+#[must_use]
+pub fn run_four_way_differential_suite_with<F>(
+    mut inputs: Vec<DifferentialInput>,
+    optimization_level: OptimizationLevel,
+    mut execute: F,
+) -> FourWaySuiteReport
+where
+    F: FnMut(&str, FourWayExecutionSide) -> FourWayObservation,
+{
+    inputs.sort_by(|left, right| left.name.cmp(&right.name));
+    let cases = inputs
+        .into_iter()
+        .map(|input| {
+            let unoptimized_native = execute(&input.input, FourWayExecutionSide::UnoptimizedNative);
+            let optimized_native = execute(&input.input, FourWayExecutionSide::OptimizedNative);
+            let unoptimized_bytecode =
+                execute(&input.input, FourWayExecutionSide::UnoptimizedBytecode);
+            let optimized_bytecode = execute(&input.input, FourWayExecutionSide::OptimizedBytecode);
+            FourWayCaseReport {
+                name: input.name,
+                differences: compare_four_observations(
+                    &unoptimized_native,
+                    &optimized_native,
+                    &unoptimized_bytecode,
+                    &optimized_bytecode,
+                ),
+            }
+        })
+        .collect::<Vec<_>>();
+    let passed = cases.iter().all(|case| case.differences.is_empty());
+    FourWaySuiteReport {
+        optimization_level,
+        cases,
+        passed,
+    }
+}
+
 fn difference(field: &str, baseline: &str, optimized: &str) -> DifferentialDifference {
     DifferentialDifference {
         field: field.to_owned(),
@@ -456,5 +632,33 @@ mod tests {
                 .iter()
                 .any(|(_, side)| *side == ThreeWayExecutionSide::OptimizedBytecode)
         );
+    }
+
+    #[test]
+    fn four_way_suite_keeps_six_language_fields_and_ignores_cost_fields() {
+        let observation = super::FourWayObservation {
+            output: "ok".to_owned(),
+            error: None,
+            exit_code: 0,
+            random: vec!["1".to_owned()],
+            containers: vec!["a".to_owned(), "b".to_owned()],
+            drops: vec!["v1".to_owned()],
+        };
+        assert!(
+            super::compare_four_observations(
+                &observation,
+                &observation,
+                &observation,
+                &observation
+            )
+            .is_empty()
+        );
+        let report = super::run_four_way_differential_suite_with(
+            vec![DifferentialInput::new("four", "fixture")],
+            OptimizationLevel::O2,
+            |_, _| observation.clone(),
+        );
+        assert!(report.passed);
+        assert_eq!(report.optimization_level, OptimizationLevel::O2);
     }
 }
