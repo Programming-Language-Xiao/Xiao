@@ -101,6 +101,9 @@ impl LlvmOptimizationPlan {
             return Err("LLVM 15A 禁止快速数学、未定义回绕、LTO、向量化和目标特化".to_owned());
         }
         let level = normalized.level;
+        let config_fingerprint = normalized
+            .fingerprint()
+            .map_err(|error| error.to_string())?;
         let mut compiler_flags = vec![format!("-O{}", level.as_u8())];
         // 这些参数明确禁止，不能因为调用方传了自定义 pass 名称就悄悄加入。
         compiler_flags.retain(|flag| !flag.contains("ffast-math") && !flag.contains("fwrapv"));
@@ -110,7 +113,8 @@ impl LlvmOptimizationPlan {
         disabled_extensions.insert("target-specific".to_owned(), "default-disabled".to_owned());
         let llvm_version = llvm_version.into();
         let canonical = format!(
-            "level={};target={};llvm={};passes=function;extensions=cross-module:off,link-time:off,target-specific:off",
+            "config={};level={};target={};llvm={};passes=function;extensions=cross-module:off,link-time:off,target-specific:off",
+            config_fingerprint.as_str(),
             level.as_u8(),
             target.fingerprint_fields(),
             llvm_version
