@@ -29,6 +29,7 @@ function writeSafely(stream: NodeJS.WritableStream, text: string): Promise<void>
   return new Promise((resolve, reject) => stream.write(text, (error?: Error | null) => error ? reject(error) : resolve()));
 }
 
+/** 等待多行会话完成异步界面状态转换，超时即让测试失败。 */
 async function waitFor(condition: () => boolean | Promise<boolean>): Promise<void> {
   const deadline = Date.now() + 2_000;
   while (!await condition()) {

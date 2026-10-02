@@ -281,9 +281,21 @@
 ## 本批实现记录
 
 `artifact.rs` 现在保留三种对象格式的符号表原始顺序，并提供
-`inspect_symbol_table`：ELF/Mach-O 标记为 `Readable`，PE 继续明确标记
-`Unavailable`（只观察导入/导出表），不会把不可读符号表当作一致。15C 的产物比较接口
-仍负责 PE `TimeDateStamp` 归一化和字段记录。
+`inspect_symbol_table`：ELF/Mach-O 始终从对应真实表读取；PE 在 COFF 符号表存在且可读时
+标记为 `Readable`，默认没有该表时标记 `Unavailable`（只观察导入/导出表）。不会把
+不可读符号表当作一致。15C 的产物比较接口
+仍负责 PE `TimeDateStamp` 归一化和字段记录；新增
+`compare_symbol_table_reports`，任一侧不可读时返回 `Unavailable`，只有两侧真实符号表
+都可读才比较规范化顺序。
+
+`reproducible.rs` 沿用 15C 的 `normalized_fields` 机制扫描调试信息中的
+`C:\...`、`/tmp/...`、`/home/...` 和 `/Users/...` ASCII 绝对路径，原地改写为等长零字节，
+并记录 `artifact-path@<offset>` 字段。这样路径差异不会被静默忽略，产物长度也不因归一化改变。
+
+`artifact.rs` 新增 `Release`、`Debug`、`Stripped` 三种独立验收模式。
+`Stripped` 在符号表不可读时只返回明确的“不可再验证”诊断；解析错误仍失败，避免损坏
+产物或其他错误静默通过。真实 Windows/Linux/macOS 工具链下、各 `-O` 级别的运行门控和
+调试信息发布保留策略仍按本文待补项处理。
 
 15C 的源码映射现在携带可还原的 `inline_stack`，优化降低器没有执行内联时为空；真实
 strip/调试符号/诊断窗口的跨优化级别产物门控仍需要对应平台工具链，未用开发机结果冒充

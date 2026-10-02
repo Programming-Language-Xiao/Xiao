@@ -82,6 +82,43 @@ pub enum SymbolTableStatus {
     Unavailable,
 }
 
+/// 两份符号表报告的可验证比较结果。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SymbolTableComparison {
+    /// 两份可读符号表的规范化顺序一致。
+    Identical,
+    /// 两份可读符号表的对象格式或规范化顺序不同。
+    Different,
+    /// 至少一份符号表不可读，不能据此判定一致。
+    Unavailable,
+}
+
+/// 独立产物验收模式。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ArtifactAcceptanceMode {
+    /// 普通发布产物。
+    Release,
+    /// 带独立诊断启动能力的调试产物。
+    Debug,
+    /// 已请求剥离符号的产物。
+    Stripped,
+}
+
+/// strip/调试/诊断的独立产物验收结果。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ArtifactModeReport {
+    /// 验收模式。
+    pub mode: ArtifactAcceptanceMode,
+    /// 符号表状态。
+    pub symbol_table: SymbolTableStatus,
+    /// 是否观察到调试激活符号。
+    pub diagnostic_symbols_present: bool,
+    /// 是否通过当前模式的独立边界。
+    pub accepted: bool,
+    /// 未通过或明确不可验证时的稳定说明。
+    pub diagnostic: Option<String>,
+}
+
 /// 符号表规范化报告。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SymbolTableReport {
@@ -113,6 +150,98 @@ pub fn inspect_symbol_table(
     })
 }
 
+/// 比较两份链接后符号表报告。
+///
+/// 只有两份报告都明确读取到了真实符号表时才会返回 `Identical` 或 `Different`；
+/// 任一侧不可读都返回 `Unavailable`，避免把“看不见”当成“顺序一致”。
+#[must_use]
+pub fn compare_symbol_table_reports(
+    first: &SymbolTableReport,
+    second: &SymbolTableReport,
+) -> SymbolTableComparison {
+    if first.status != SymbolTableStatus::Readable || second.status != SymbolTableStatus::Readable {
+        return SymbolTableComparison::Unavailable;
+    }
+    if first.object_format == second.object_format
+        && first.normalized_order == second.normalized_order
+    {
+        SymbolTableComparison::Identical
+    } else {
+        SymbolTableComparison::Different
+    }
+}
+
+/// 对真实产物执行独立的 release/debug/stripped 模式检查。
+///
+/// `Stripped` 模式遇到不可读符号表时返回 `accepted = true` 并保留明确诊断，
+/// 表示“剥离状态符合请求，但符号层不可再验证”；任何其他解析失败仍返回错误。
+pub fn verify_artifact_mode(
+    path: impl AsRef<Path>,
+    target: &TargetDescription,
+    mode: ArtifactAcceptanceMode,
+    declared_components: &[String],
+) -> Result<ArtifactModeReport> {
+    let path = path.as_ref();
+    match mode {
+        ArtifactAcceptanceMode::Release | ArtifactAcceptanceMode::Debug => {
+            let composition = verify_artifact(
+                path,
+                target,
+                declared_components,
+                mode == ArtifactAcceptanceMode::Debug,
+            )?;
+            let symbol_table = if composition.verification == ArtifactVerification::Complete {
+                SymbolTableStatus::Readable
+            } else {
+                SymbolTableStatus::Unavailable
+            };
+            Ok(ArtifactModeReport {
+                mode,
+                symbol_table,
+                diagnostic_symbols_present: !composition.diagnostic_symbols.is_empty(),
+                accepted: true,
+                diagnostic: (symbol_table == SymbolTableStatus::Unavailable).then(|| {
+                    "产物符号表不可读；Runtime 组成仅作不可验证观察，不能证明内部裁剪".to_owned()
+                }),
+            })
+        }
+        ArtifactAcceptanceMode::Stripped => match inspect_artifact(path, target) {
+            Ok(inspection) => Ok(ArtifactModeReport {
+                mode,
+                symbol_table: if inspection.symbol_table_readable {
+                    SymbolTableStatus::Readable
+                } else {
+                    SymbolTableStatus::Unavailable
+                },
+                diagnostic_symbols_present: inspection
+                    .symbols
+                    .iter()
+                    .any(|symbol| DEBUG_ACTIVATION_SYMBOLS.contains(&symbol.as_str())),
+                accepted: !inspection.symbol_table_readable,
+                diagnostic: Some(if inspection.symbol_table_readable {
+                    "请求 stripped，但产物仍保留可读符号表".to_owned()
+                } else {
+                    "产物符号不可读；strip 状态明确，但符号层不再可验证".to_owned()
+                }),
+            }),
+            Err(error) => {
+                let message = error.to_string();
+                if message.contains("缺少可验证的符号表") {
+                    Ok(ArtifactModeReport {
+                        mode,
+                        symbol_table: SymbolTableStatus::Unavailable,
+                        diagnostic_symbols_present: false,
+                        accepted: true,
+                        diagnostic: Some(message),
+                    })
+                } else {
+                    Err(error)
+                }
+            }
+        },
+    }
+}
+
 /// Runtime 裁剪验证后可供构建诊断消费的事实摘要。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ArtifactRuntimeComposition {
@@ -130,16 +259,16 @@ pub struct ArtifactRuntimeComposition {
     pub dependencies: Vec<String>,
     /// 与调试启动或诊断钩子有关的实际符号。
     pub diagnostic_symbols: Vec<String>,
-    /// 产物组件观察的可信度；COFF 导出表由链接参数主动写入，不能证明内部节已裁剪。
+    /// 产物组件观察的可信度；没有可读 COFF 表时，导出表由链接参数主动写入，不能证明内部节已裁剪。
     pub verification: ArtifactVerification,
 }
 
 /// 产物 Runtime 组成观察的可信度。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ArtifactVerification {
-    /// ELF/Mach-O 符号表提供了链接后事实。
+    /// ELF/Mach-O 或实际存在的 COFF 符号表提供了链接后事实。
     Complete,
-    /// COFF 当前只能读取由链接参数主动写入的导出表。
+    /// COFF 没有可读的内部符号表，只能观察由链接参数主动写入的导出表。
     UnverifiedCoffExports,
 }
 
@@ -191,11 +320,12 @@ pub fn verify_artifact(
         .filter(|dependency| is_runtime_dependency(dependency))
         .cloned()
         .collect::<Vec<_>>();
-    let verification = if inspection.object_format == ObjectFormat::Coff {
-        ArtifactVerification::UnverifiedCoffExports
-    } else {
-        ArtifactVerification::Complete
-    };
+    let verification =
+        if inspection.object_format == ObjectFormat::Coff && !inspection.symbol_table_readable {
+            ArtifactVerification::UnverifiedCoffExports
+        } else {
+            ArtifactVerification::Complete
+        };
 
     if declared_components.is_empty() && !runtime_symbols.is_empty() {
         return Err(artifact_error(
@@ -875,6 +1005,7 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
     let mut symbols = BTreeSet::new();
     let mut symbol_order = Vec::new();
     let mut dependencies = BTreeSet::new();
+    let mut symbol_table_readable = false;
     if symbol_table_offset != 0 && symbol_count != 0 {
         let table = checked_range(
             bytes,
@@ -900,6 +1031,7 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
             "COFF 字符串表长度",
         )? as u64;
         let strings = checked_range(bytes, string_offset, string_size, path, "COFF 字符串表")?;
+        symbol_table_readable = !strings.is_empty();
         let mut index = 0_u64;
         while index < symbol_count {
             let start = (index as usize) * 18;
@@ -984,7 +1116,6 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
                 if !name.is_empty() {
                     let name = normalize_symbol(name);
                     symbols.insert(name.clone());
-                    symbol_order.push(name);
                 }
             }
         }
@@ -1072,7 +1203,6 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
                             if !name.is_empty() {
                                 let name = normalize_symbol(name);
                                 symbols.insert(name.clone());
-                                symbol_order.push(name);
                             }
                         }
                         thunk_index = thunk_index
@@ -1090,7 +1220,7 @@ fn parse_pe(path: &Path, bytes: &[u8], target: &TargetDescription) -> Result<Art
         object_format: ObjectFormat::Coff,
         symbols: symbols.into_iter().collect(),
         symbol_order,
-        symbol_table_readable: false,
+        symbol_table_readable,
         dependencies: dependencies.into_iter().collect(),
     })
 }
@@ -1359,8 +1489,11 @@ mod tests {
     use std::path::Path;
 
     use super::{
-        ArtifactRuntimeComposition, ArtifactVerification, byte_at, components_for_symbols,
+        ArtifactAcceptanceMode, ArtifactRuntimeComposition, ArtifactVerification,
+        SymbolTableComparison, SymbolTableReport, SymbolTableStatus, byte_at,
+        compare_symbol_table_reports, components_for_symbols, inspect_symbol_table,
         normalize_symbol, parse_artifact, unclassified_runtime_symbols, verify_artifact,
+        verify_artifact_mode,
     };
     use crate::{ObjectFormat, TargetDescription};
 
@@ -1543,14 +1676,7 @@ mod tests {
                 .expect("容器组件必须来自链接后符号");
             assert_eq!(composition.observed_components, vec!["containers"]);
             assert_eq!(composition.runtime_symbols, vec!["xiao_runtime_array_new"]);
-            assert_eq!(
-                composition.verification,
-                if target.object_format == ObjectFormat::Coff {
-                    ArtifactVerification::UnverifiedCoffExports
-                } else {
-                    ArtifactVerification::Complete
-                }
-            );
+            assert_eq!(composition.verification, ArtifactVerification::Complete);
         }
     }
 
@@ -1571,6 +1697,95 @@ mod tests {
         let error = verify_fixture("missing-debug", &elf_fixture("main"), &target, &[], true)
             .expect_err("调试构建不能缺少启动符号");
         assert!(error.to_string().contains("缺少 xiao_native_debug_start"));
+    }
+
+    /// 三种产物模式必须分别返回独立的验收事实。
+    #[test]
+    fn verifies_release_debug_and_stripped_modes_independently() {
+        let target = TargetDescription::linux_x86_64();
+        let release = verify_fixture_mode(
+            "release-mode",
+            &elf_fixture("main"),
+            &target,
+            ArtifactAcceptanceMode::Release,
+        )
+        .expect("发布模式应通过");
+        assert!(release.accepted);
+        assert_eq!(release.symbol_table, SymbolTableStatus::Readable);
+        assert!(!release.diagnostic_symbols_present);
+
+        let debug = verify_fixture_mode(
+            "debug-mode",
+            &elf_fixture("xiao_native_debug_start"),
+            &target,
+            ArtifactAcceptanceMode::Debug,
+        )
+        .expect("调试模式应通过");
+        assert!(debug.accepted);
+        assert!(debug.diagnostic_symbols_present);
+
+        let mut stripped_bytes = elf_fixture("main");
+        put_u16(&mut stripped_bytes, 60, 0);
+        let stripped = verify_fixture_mode(
+            "stripped-mode",
+            &stripped_bytes,
+            &target,
+            ArtifactAcceptanceMode::Stripped,
+        )
+        .expect("剥离模式应明确接受不可读符号表");
+        assert!(stripped.accepted);
+        assert_eq!(stripped.symbol_table, SymbolTableStatus::Unavailable);
+        assert!(stripped.diagnostic.is_some());
+    }
+
+    /// 任一侧符号表不可读时，比较结果必须保持不可验证。
+    #[test]
+    fn symbol_table_comparison_never_equates_unavailable_reports() {
+        let readable = SymbolTableReport {
+            object_format: ObjectFormat::Elf,
+            status: SymbolTableStatus::Readable,
+            original_order: vec!["b".to_owned(), "a".to_owned()],
+            normalized_order: vec!["a".to_owned(), "b".to_owned()],
+        };
+        let same = readable.clone();
+        assert_eq!(
+            compare_symbol_table_reports(&readable, &same),
+            SymbolTableComparison::Identical
+        );
+        let unavailable = SymbolTableReport {
+            object_format: ObjectFormat::Coff,
+            status: SymbolTableStatus::Unavailable,
+            original_order: Vec::new(),
+            normalized_order: Vec::new(),
+        };
+        assert_eq!(
+            compare_symbol_table_reports(&readable, &unavailable),
+            SymbolTableComparison::Unavailable
+        );
+    }
+
+    /// PE 有 COFF 表时可读；移除该表后只保留不可验证的导入/导出观测。
+    #[test]
+    fn pe_symbol_table_status_reflects_actual_coff_table() {
+        let target = TargetDescription::windows_x86_64();
+        let readable = inspect_fixture_symbol_table(
+            "pe-readable-symbols",
+            &pe_fixture("xiao_runtime_value_int"),
+            &target,
+        )
+        .expect("带 COFF 表的 PE 应可读");
+        assert_eq!(readable.status, SymbolTableStatus::Readable);
+
+        let mut stripped = pe_fixture("xiao_runtime_value_int");
+        put_u32(&mut stripped, 0x4c, 0);
+        put_u32(&mut stripped, 0x50, 0);
+        let unavailable = inspect_fixture_symbol_table("pe-no-coff-symbols", &stripped, &target)
+            .expect("没有 COFF 表的 PE 应返回不可验证状态");
+        assert_eq!(unavailable.status, SymbolTableStatus::Unavailable);
+        assert_eq!(
+            compare_symbol_table_reports(&readable, &unavailable),
+            SymbolTableComparison::Unavailable
+        );
     }
 
     /// 拒绝缺少可验证符号表的剥离产物。
@@ -1671,6 +1886,35 @@ mod tests {
                 .collect::<Vec<_>>(),
             debug,
         );
+        let _ = std::fs::remove_file(path);
+        result
+    }
+
+    /// 将内存中的夹具写入临时文件并执行指定模式验收。
+    fn verify_fixture_mode(
+        name: &str,
+        bytes: &[u8],
+        target: &TargetDescription,
+        mode: ArtifactAcceptanceMode,
+    ) -> crate::Result<super::ArtifactModeReport> {
+        let path =
+            std::env::temp_dir().join(format!("xiao-artifact-mode-{name}-{}", std::process::id()));
+        std::fs::write(&path, bytes).expect("写入模式夹具");
+        let result = verify_artifact_mode(&path, target, mode, &[]);
+        let _ = std::fs::remove_file(path);
+        result
+    }
+
+    /// 将夹具写入临时文件并读取符号表状态。
+    fn inspect_fixture_symbol_table(
+        name: &str,
+        bytes: &[u8],
+        target: &TargetDescription,
+    ) -> crate::Result<SymbolTableReport> {
+        let path =
+            std::env::temp_dir().join(format!("xiao-symbol-table-{name}-{}", std::process::id()));
+        std::fs::write(&path, bytes).expect("写入符号表夹具");
+        let result = inspect_symbol_table(&path, target);
         let _ = std::fs::remove_file(path);
         result
     }

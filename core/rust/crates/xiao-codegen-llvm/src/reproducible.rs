@@ -236,7 +236,49 @@ fn normalize_artifact(bytes: &[u8], format: ObjectFormat) -> (Vec<u8>, Vec<Strin
             fields.push("PE.TimeDateStamp".to_owned());
         }
     }
+    for (start, end) in absolute_path_ranges(&normalized) {
+        normalized[start..end].fill(0);
+        fields.push(format!("artifact-path@0x{start:x}"));
+    }
     (normalized, fields)
+}
+
+/// 找出调试信息中常见的 ASCII 绝对路径。
+///
+/// 归一化只改写路径自身的字节并保持长度不变；路径位置仍被记录在报告中，
+/// 因而不会把无法解释的差异静默吞掉。调试信息通常以 NUL 结尾，遇到非打印
+/// 字节时也会停止，避免越过二进制字段。
+fn absolute_path_ranges(bytes: &[u8]) -> Vec<(usize, usize)> {
+    let mut ranges = Vec::new();
+    let mut index = 0;
+    while index < bytes.len() {
+        let is_windows = index + 2 < bytes.len()
+            && bytes[index].is_ascii_alphabetic()
+            && bytes[index + 1] == b':'
+            && matches!(bytes[index + 2], b'/' | b'\\');
+        let is_unix = bytes[index..].starts_with(b"/tmp/")
+            || bytes[index..].starts_with(b"/home/")
+            || bytes[index..].starts_with(b"/Users/");
+        if !is_windows && !is_unix {
+            index += 1;
+            continue;
+        }
+        let mut end = index;
+        while end < bytes.len() {
+            let byte = bytes[end];
+            if byte == 0 || !(byte.is_ascii_graphic() || byte == b' ') {
+                break;
+            }
+            end += 1;
+        }
+        if end > index + if is_windows { 3 } else { 1 } {
+            ranges.push((index, end));
+            index = end;
+        } else {
+            index += 1;
+        }
+    }
+    ranges
 }
 
 fn stable_hash(bytes: &[u8]) -> String {
@@ -295,5 +337,35 @@ mod tests {
         let report = compare_artifact_bytes(&first, &second, ObjectFormat::Coff, &[]);
         assert!(report.identical);
         assert_eq!(report.normalized_fields, vec!["PE.TimeDateStamp"]);
+    }
+
+    #[test]
+    fn normalizes_debug_paths_in_place_and_records_offsets() {
+        let first = b"prefix C:\\build\\xiao\\alpha.cpp\0suffix /home/a/src.cpp\0";
+        let second = b"prefix C:\\build\\xiao\\bravo.cpp\0suffix /home/b/src.cpp\0";
+        assert_eq!(first.len(), second.len());
+        let report = compare_artifact_bytes(first, second, ObjectFormat::Elf, &[]);
+        assert!(report.identical);
+        assert!(
+            report
+                .normalized_fields
+                .iter()
+                .any(|field| field.starts_with("artifact-path@0x"))
+        );
+        assert_eq!(first.len(), second.len());
+    }
+
+    #[test]
+    fn records_unix_and_windows_path_fields_separately() {
+        let bytes = b"C:\\work\\x.cpp\0/home/user/x.cpp\0/Users/user/y.cpp\0/tmp/z.cpp\0";
+        let report = compare_artifact_bytes(bytes, bytes, ObjectFormat::MachO, &[]);
+        assert_eq!(
+            report
+                .normalized_fields
+                .iter()
+                .filter(|field| field.starts_with("artifact-path@0x"))
+                .count(),
+            4
+        );
     }
 }

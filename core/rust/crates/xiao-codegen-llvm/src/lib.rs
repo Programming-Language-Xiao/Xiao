@@ -29,8 +29,10 @@ mod toolchain;
 
 /// 产物层符号、依赖和 Runtime 组成验证接口。
 pub use artifact::{
-    ArtifactInspection, ArtifactRuntimeComposition, ArtifactVerification, SymbolTableReport,
-    SymbolTableStatus, inspect_artifact, inspect_symbol_table, verify_artifact,
+    ArtifactAcceptanceMode, ArtifactInspection, ArtifactModeReport, ArtifactRuntimeComposition,
+    ArtifactVerification, SymbolTableComparison, SymbolTableReport, SymbolTableStatus,
+    compare_symbol_table_reports, inspect_artifact, inspect_symbol_table, verify_artifact,
+    verify_artifact_mode,
 };
 /// 性能基线模型。
 pub use baseline::{
