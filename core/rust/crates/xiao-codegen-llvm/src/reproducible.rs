@@ -258,11 +258,56 @@ fn normalize_artifact(bytes: &[u8], format: ObjectFormat) -> (Vec<u8>, Vec<Strin
             normalize_pe_debug_timestamps(&mut normalized, pe_offset, &mut fields);
         }
     }
+    if format == ObjectFormat::Elf {
+        normalize_elf_build_ids(&mut normalized, &mut fields);
+    }
     for (start, end) in absolute_path_ranges(&normalized) {
         normalized[start..end].fill(0);
         fields.push(format!("artifact-path@0x{start:x}"));
     }
     (normalized, fields)
+}
+
+/// 归一化 ELF 链接器生成的 GNU build-id。
+///
+/// build-id 是对链接输入的摘要；输入中包含临时对象路径时，重复构建会得到不同
+/// 的 note 描述字节。它和 PE 时间戳一样属于链接器元数据，不能作为程序语义差异。
+fn normalize_elf_build_ids(bytes: &mut [u8], fields: &mut Vec<String>) {
+    let mut offset = 0_usize;
+    while offset.saturating_add(16) <= bytes.len() {
+        let little = bytes[offset..offset + 4] == [4, 0, 0, 0]
+            && bytes[offset + 12..offset + 16] == *b"GNU\0";
+        let big = bytes[offset..offset + 4] == [0, 0, 0, 4]
+            && bytes[offset + 12..offset + 16] == *b"GNU\0";
+        if !little && !big {
+            offset += 1;
+            continue;
+        }
+        let description_size = if little {
+            u32::from_le_bytes(bytes[offset + 4..offset + 8].try_into().unwrap())
+        } else {
+            u32::from_be_bytes(bytes[offset + 4..offset + 8].try_into().unwrap())
+        } as usize;
+        let note_type = if little {
+            u32::from_le_bytes(bytes[offset + 8..offset + 12].try_into().unwrap())
+        } else {
+            u32::from_be_bytes(bytes[offset + 8..offset + 12].try_into().unwrap())
+        };
+        if note_type != 3 {
+            offset += 1;
+            continue;
+        }
+        let description_start = (offset + 16 + 3) & !3;
+        let Some(description_end) = description_start.checked_add(description_size) else {
+            break;
+        };
+        if description_end > bytes.len() {
+            break;
+        }
+        bytes[description_start..description_end].fill(0);
+        fields.push(format!("ELF.GNU.BuildId@0x{description_start:x}"));
+        offset = description_end;
+    }
 }
 
 /// 归一化 PE 调试目录中的链接器时间戳。
@@ -509,6 +554,24 @@ mod tests {
                 .normalized_fields
                 .iter()
                 .any(|field| field.starts_with("PE.DebugDirectory.TimeDateStamp@"))
+        );
+    }
+
+    #[test]
+    fn normalizes_elf_gnu_build_id() {
+        let mut first = vec![0_u8; 64];
+        first[0..4].copy_from_slice(&4_u32.to_le_bytes());
+        first[4..8].copy_from_slice(&4_u32.to_le_bytes());
+        first[8..12].copy_from_slice(&3_u32.to_le_bytes());
+        first[12..16].copy_from_slice(b"GNU\0");
+        first[16..20].copy_from_slice(&[1, 2, 3, 4]);
+        let mut second = first.clone();
+        second[16..20].copy_from_slice(&[5, 6, 7, 8]);
+        let report = compare_artifact_bytes(&first, &second, ObjectFormat::Elf, &[]);
+        assert!(report.identical);
+        assert_eq!(
+            report.normalized_fields,
+            vec!["ELF.GNU.BuildId@0x10".to_owned()]
         );
     }
 
