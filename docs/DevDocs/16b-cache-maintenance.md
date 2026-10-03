@@ -267,6 +267,18 @@ core/rust/Cargo.toml                members 增加 crates/xiao-lock
 - **不重开** 16A 的索引格式、16A-FIX 的 `validate_archive_index` 与契约常量；
 - **不改** 11A-E1 的 `~/.xiao/` 与 `XIAO_HOME` 决策。
 
+## 本批实现记录
+
+`xiao-lock` 已成为全仓唯一的跨进程缓存锁，迁移了原 `EntryLock` 的 owner、超时、
+陈旧回收和二次比对语义；`xiao-package` 的错误码与既有文案保持不变，`xiao-artifacts`
+的 `IndexLock` 与旧 `entry_lock.rs` 已删除。索引读取不再创建锁文件，写入仍使用统一锁，
+因此只读缓存目录可以离线读取。
+
+`ArtifactStore::collect_references` 从项目锁文件、归档索引和显式引用现算保护集合；任何
+来源读取失败都返回错误，不把它当作无引用。`plan_cleanup` 只读扫描并生成删除计划，
+`apply_cleanup` 重新验证后才删除，期间发现损坏对象会沿用 16A 隔离路径。实现只提供
+显式清理，不记录访问时间、不做 LRU，也不接入 CLI。
+
 ## 相关页面
 
 - [16. SHA-256 内容寻址与二进制索引](16-content-addressed-artifacts.md) —— **权威规范**；§「缓存维护」`16.9`–`16.12`、`:21` 的锁可清理要求、`:70` 的不写访问时间

@@ -13,10 +13,10 @@ use crate::diagnostics::{
     SOURCE_CACHE_CORRUPT_CODE, SOURCE_CACHE_IO_CODE, SOURCE_INVALID_CODE,
     SOURCE_SNAPSHOT_OWNER_CODE,
 };
-use crate::entry_lock::EntryLock;
 use crate::jcs::jcs_digest;
 use crate::lockfile::atomic_write_file;
 use crate::source::SourceError;
+use xiao_lock::EntryLock;
 
 #[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -67,7 +67,8 @@ impl SnapshotStore {
     pub fn save(&self, index: &IndexSnapshot) -> Result<StoredSnapshot, SourceError> {
         verify_index(index, &index.manifest.source_id)?;
         let directory = self.source_directory(&index.manifest.source_id)?;
-        let _guard = EntryLock::acquire(&directory.join("current.lock"))?;
+        let _guard = EntryLock::acquire(&directory.join("current.lock"))
+            .map_err(crate::source_lock_error)?;
         let path = directory.join(format!("{}.json", index.manifest.snapshot_id));
         if path.exists() {
             let previous = self.read_snapshot(&path, &index.manifest.source_id)?;

@@ -17,6 +17,7 @@ members = [
     "crates/xiao-optimizer",
     "crates/xiao-codegen-llvm",
     "crates/xiao-package",
+    "crates/xiao-lock",
     "crates/xiao-artifacts",
     "crates/xiao-xar",
     "crates/xiao-platform",

@@ -6,6 +6,7 @@
 #![allow(clippy::result_large_err)]
 
 use sha2::{Digest, Sha256};
+use std::collections::BTreeSet;
 use std::fmt::{Display, Formatter};
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
@@ -141,6 +142,91 @@ pub struct ObjectReference {
     pub path: PathBuf,
 }
 
+/// 清理时保护的一条对象引用；`None` 表示该摘要在所有对象命名空间中都保留。
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct CacheReference {
+    /// 对象类型；未知来源时使用 `None` 采取保守保护。
+    pub object_kind: Option<ObjectKind>,
+    /// 完整 SHA-256 摘要。
+    pub digest: Digest256,
+}
+
+impl CacheReference {
+    /// 创建指定命名空间的精确引用。
+    #[must_use]
+    pub const fn exact(object_kind: ObjectKind, digest: Digest256) -> Self {
+        Self {
+            object_kind: Some(object_kind),
+            digest,
+        }
+    }
+
+    /// 创建保护所有命名空间中同摘要对象的引用。
+    #[must_use]
+    pub const fn any_namespace(digest: Digest256) -> Self {
+        Self {
+            object_kind: None,
+            digest,
+        }
+    }
+}
+
+/// 清理前现算的引用集合，不写入缓存。
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct ReferenceSet {
+    references: BTreeSet<CacheReference>,
+}
+
+impl ReferenceSet {
+    /// 创建空引用集合。
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// 加入一条引用。
+    pub fn insert(&mut self, reference: CacheReference) {
+        self.references.insert(reference);
+    }
+
+    /// 返回规范排序的引用。
+    pub fn iter(&self) -> impl Iterator<Item = &CacheReference> {
+        self.references.iter()
+    }
+
+    fn protects(&self, kind: ObjectKind, digest: Digest256) -> bool {
+        self.references
+            .contains(&CacheReference::exact(kind, digest))
+            || self
+                .references
+                .contains(&CacheReference::any_namespace(digest))
+    }
+}
+
+/// 两阶段清理的只读计划。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CleanupPlan {
+    candidates: Vec<ObjectReference>,
+    quarantine_candidates: Vec<PathBuf>,
+}
+
+impl CleanupPlan {
+    /// 返回本计划准备删除的已验证对象。
+    #[must_use]
+    pub fn candidates(&self) -> &[ObjectReference] {
+        &self.candidates
+    }
+}
+
+/// 清理执行结果。
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct CleanupReport {
+    /// 成功删除的对象。
+    pub removed: Vec<ObjectReference>,
+    /// 执行期间发现并隔离的损坏对象路径。
+    pub quarantined: Vec<PathBuf>,
+}
+
 /// 对象操作失败原因。
 #[derive(Debug)]
 pub enum ArtifactError {
@@ -177,6 +263,10 @@ pub enum ArtifactError {
     },
     /// 索引编码或解码失败。
     Index(String),
+    /// 缓存维护或引用来源读取失败。
+    Maintenance(String),
+    /// 跨进程锁失败。
+    Lock(String),
     /// 索引主版本或记录类型不支持。
     UnsupportedIndexVersion {
         /// 收到的主版本。
@@ -209,6 +299,8 @@ impl Display for ArtifactError {
                 path.display()
             ),
             Self::Index(message) => write!(formatter, "索引错误：{message}"),
+            Self::Maintenance(message) => write!(formatter, "缓存维护错误：{message}"),
+            Self::Lock(message) => write!(formatter, "锁错误：{message}"),
             Self::UnsupportedIndexVersion { major, record_type } => write!(
                 formatter,
                 "不支持的索引主版本或记录类型：major={major}、type={record_type}"
@@ -491,6 +583,165 @@ impl ArtifactStore {
         Ok(objects)
     }
 
+    /// 从项目 `xiao.lock.json`、归档索引和显式引用现算保护集合。
+    ///
+    /// 任一显式来源缺失、损坏或无法解析都会失败，调用方不得把失败来源当作无引用。
+    pub fn collect_references(
+        &self,
+        project_lock: Option<&Path>,
+        archive_indexes: &[PathBuf],
+        explicit: &[CacheReference],
+    ) -> Result<ReferenceSet, ArtifactError> {
+        let mut references = ReferenceSet::new();
+        for reference in explicit {
+            references.insert(reference.clone());
+        }
+        if let Some(path) = project_lock {
+            collect_project_lock_references(path, &mut references)?;
+        }
+        for path in archive_indexes {
+            let bytes = fs::read(path).map_err(|error| {
+                ArtifactError::Maintenance(format!("无法读取归档索引 {}：{error}", path.display()))
+            })?;
+            let index = ArchiveIndex::decode(&bytes)?;
+            for entry in index.entries {
+                references.insert(CacheReference::exact(entry.object_kind, entry.digest));
+            }
+        }
+        Ok(references)
+    }
+
+    /// 只读扫描所有命名空间，生成不修改文件系统的清理计划。
+    pub fn plan_cleanup(&self, protected: &ReferenceSet) -> Result<CleanupPlan, ArtifactError> {
+        let mut candidates = Vec::new();
+        let mut quarantine_candidates = Vec::new();
+        for kind in [
+            ObjectKind::Source,
+            ObjectKind::Xiaoc,
+            ObjectKind::Native,
+            ObjectKind::Xar,
+            ObjectKind::Language,
+        ] {
+            let (objects, invalid) = self.scan_read_only(kind)?;
+            quarantine_candidates.extend(invalid);
+            for object in objects {
+                if !protected.protects(kind, object.digest) {
+                    candidates.push(object);
+                }
+            }
+        }
+        candidates.sort_by(|left, right| {
+            left.kind
+                .cmp(&right.kind)
+                .then(left.digest.cmp(&right.digest))
+        });
+        Ok(CleanupPlan {
+            candidates,
+            quarantine_candidates,
+        })
+    }
+
+    /// 在调用方确认计划后重新验证并删除对象；损坏对象会进入隔离区而不是被删除。
+    pub fn apply_cleanup(&self, plan: &CleanupPlan) -> Result<CleanupReport, ArtifactError> {
+        let _lock = xiao_lock::EntryLock::acquire(&self.root.join("maintenance.lock"))
+            .map_err(lock_error)?;
+        let mut report = CleanupReport::default();
+        for path in &plan.quarantine_candidates {
+            if path.exists() {
+                report.quarantined.push(self.quarantine_path(path)?);
+            }
+        }
+        for candidate in &plan.candidates {
+            let expected_path = self.object_path(candidate.kind, candidate.digest);
+            if candidate.path != expected_path {
+                return Err(ArtifactError::Maintenance(
+                    "清理计划包含不属于对象存储的路径".to_owned(),
+                ));
+            }
+            match self.read_checked(candidate.kind, candidate.digest, Some(candidate.length)) {
+                Ok(_) => match fs::remove_file(&candidate.path) {
+                    Ok(()) => report.removed.push(candidate.clone()),
+                    Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+                    Err(error) => return Err(ArtifactError::Io(error)),
+                },
+                Err(ArtifactError::CorruptObject { quarantine, .. }) => {
+                    if let Some(path) = quarantine {
+                        report.quarantined.push(path);
+                    }
+                }
+                Err(ArtifactError::Io(error)) if error.kind() == io::ErrorKind::NotFound => {}
+                Err(error) => return Err(error),
+            }
+        }
+        Ok(report)
+    }
+
+    fn scan_read_only(
+        &self,
+        kind: ObjectKind,
+    ) -> Result<(Vec<ObjectReference>, Vec<PathBuf>), ArtifactError> {
+        let root = self.root.join("objects").join(kind.as_str()).join("sha256");
+        let mut objects = Vec::new();
+        let mut invalid = Vec::new();
+        if !root.exists() {
+            return Ok((objects, invalid));
+        }
+        for shard in fs::read_dir(&root)? {
+            let shard = shard?.path();
+            if !shard.is_dir() {
+                continue;
+            }
+            for entry in fs::read_dir(&shard)? {
+                let path = entry?.path();
+                if !path.is_file() {
+                    continue;
+                }
+                if path.extension().and_then(|value| value.to_str()) != Some(kind.extension()) {
+                    invalid.push(path);
+                    continue;
+                }
+                let Some(stem) = path.file_stem().and_then(|value| value.to_str()) else {
+                    invalid.push(path);
+                    continue;
+                };
+                let digest = match Digest256::parse(stem) {
+                    Ok(digest) => digest,
+                    Err(_) => {
+                        invalid.push(path);
+                        continue;
+                    }
+                };
+                if path
+                    .parent()
+                    .and_then(Path::file_name)
+                    .and_then(|value| value.to_str())
+                    != Some(&digest.as_hex()[..2])
+                {
+                    invalid.push(path);
+                    continue;
+                }
+                let bytes = fs::read(&path)?;
+                if Digest256::of_bytes(&bytes) != digest {
+                    invalid.push(path);
+                    continue;
+                }
+                if kind == ObjectKind::Xiaoc && xiao_bytecode::validate_xiaoc(&bytes).is_err() {
+                    invalid.push(path);
+                    continue;
+                }
+                objects.push(ObjectReference {
+                    kind,
+                    digest,
+                    length: bytes.len() as u64,
+                    path,
+                });
+            }
+        }
+        objects.sort_by_key(|object| object.digest);
+        invalid.sort();
+        Ok((objects, invalid))
+    }
+
     fn quarantine_path(&self, path: &Path) -> Result<PathBuf, ArtifactError> {
         let sequence = NEXT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
         let name = path
@@ -557,6 +808,42 @@ impl ArtifactStore {
     }
 }
 
+fn collect_project_lock_references(
+    path: &Path,
+    references: &mut ReferenceSet,
+) -> Result<(), ArtifactError> {
+    let text = fs::read_to_string(path).map_err(|error| {
+        ArtifactError::Maintenance(format!("无法读取项目锁文件 {}：{error}", path.display()))
+    })?;
+    let value: serde_json::Value = serde_json::from_str(&text).map_err(|error| {
+        ArtifactError::Maintenance(format!("项目锁文件 {} 无效：{error}", path.display()))
+    })?;
+    let packages = value
+        .get("packages")
+        .and_then(serde_json::Value::as_object)
+        .ok_or_else(|| ArtifactError::Maintenance("项目锁文件缺少 packages".to_owned()))?;
+    for package in packages.values() {
+        let content_digest = package
+            .get("content_digest")
+            .and_then(serde_json::Value::as_str)
+            .ok_or_else(|| {
+                ArtifactError::Maintenance("项目锁包条目缺少 content_digest".to_owned())
+            })?;
+        let digest = Digest256::parse(content_digest)?;
+        references.insert(CacheReference::exact(ObjectKind::Source, digest));
+        if let Some(artifact) = package.get("source_artifact") {
+            let digest = artifact
+                .get("digest")
+                .and_then(serde_json::Value::as_str)
+                .ok_or_else(|| {
+                    ArtifactError::Maintenance("source_artifact 缺少 digest".to_owned())
+                })?;
+            references.insert(CacheReference::any_namespace(Digest256::parse(digest)?));
+        }
+    }
+    Ok(())
+}
+
 /// 索引快照的原子读写边界。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct IndexStore {
@@ -573,14 +860,14 @@ impl IndexStore {
 
     /// 原子写入全局缓存索引快照。
     pub fn write_global(&self, index: &GlobalIndex) -> Result<PathBuf, ArtifactError> {
-        let _lock = IndexLock::acquire(&self.root.join("global.index.lock"))?;
+        let _lock = xiao_lock::EntryLock::acquire(&self.root.join("global.index.lock"))
+            .map_err(lock_error)?;
         let path = self.root.join("global.index.pb");
         write_index_atomic(&path, &index.encode()?)
     }
 
     /// 读取并解码全局缓存索引。
     pub fn read_global(&self) -> Result<GlobalIndex, ArtifactError> {
-        let _lock = IndexLock::acquire(&self.root.join("global.index.lock"))?;
         GlobalIndex::decode(&fs::read(self.root.join("global.index.pb"))?)
     }
 
@@ -607,7 +894,7 @@ impl IndexStore {
         if let Some(parent) = lock.parent() {
             fs::create_dir_all(parent)?;
         }
-        let _lock = IndexLock::acquire(&lock)?;
+        let _lock = xiao_lock::EntryLock::acquire(&lock).map_err(lock_error)?;
         write_index_atomic(path.as_ref(), &index.encode()?)
     }
 
@@ -617,7 +904,6 @@ impl IndexStore {
         if let Some(parent) = lock.parent() {
             fs::create_dir_all(parent)?;
         }
-        let _lock = IndexLock::acquire(&lock)?;
         ArchiveIndex::decode(&fs::read(path)?)
     }
 }
@@ -690,25 +976,8 @@ fn replace_file(temporary: &Path, destination: &Path) -> io::Result<()> {
     }
 }
 
-struct IndexLock {
-    path: PathBuf,
-    _file: File,
-}
-
-impl IndexLock {
-    fn acquire(path: &Path) -> Result<Self, ArtifactError> {
-        let file = OpenOptions::new().write(true).create_new(true).open(path)?;
-        Ok(Self {
-            path: path.to_path_buf(),
-            _file: file,
-        })
-    }
-}
-
-impl Drop for IndexLock {
-    fn drop(&mut self) {
-        let _ = fs::remove_file(&self.path);
-    }
+fn lock_error(error: xiao_lock::LockError) -> ArtifactError {
+    ArtifactError::Lock(format!("{}：{error}", error.path().display()))
 }
 
 fn files_equal(first: &Path, second: &Path) -> Result<bool, ArtifactError> {
@@ -1459,12 +1728,18 @@ mod tests {
     }
 
     #[test]
-    fn xiaoc_contract_constants_have_one_authoritative_source() {
-        let source = include_str!("lib.rs");
-        let implementation = source.split("#[cfg(test)]").next().unwrap();
-        assert!(!implementation.contains("72"));
-        assert!(!implementation.contains("0x1a"));
-        assert!(!implementation.contains("XIAOC\\r\\n\\x1a"));
+    fn xiaoc_validation_comes_from_authoritative_codec() {
+        let root = temp_root("authoritative-xiaoc-validation");
+        let store = ArtifactStore::open(&root).unwrap();
+        let error = store.put_xiaoc(&[]).unwrap_err();
+        match error {
+            ArtifactError::InvalidObject { reason, .. } => {
+                assert!(reason.contains("XIAOC-001"));
+                assert!(!reason.contains("不是完整规范 `.xiaoc` 文件"));
+            }
+            other => panic!("`.xiaoc` 校验错误类型错误：{other:?}"),
+        }
+        let _ = fs::remove_dir_all(root);
     }
 
     #[test]
@@ -1480,6 +1755,7 @@ mod tests {
         assert!(path.is_file());
         assert_eq!(store.read_global().unwrap(), index);
         assert!(!root.join("global.index.tmp").exists());
+        assert!(!root.join("global.index.lock").exists());
         let _ = fs::remove_dir_all(root);
     }
 
@@ -1517,6 +1793,88 @@ mod tests {
             1
         );
         assert!(!root.join("indexes/global.index.lock").exists());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cleanup_plan_protects_project_lock_references_and_apply_is_explicit() {
+        let root = temp_root("maintenance");
+        let store = ArtifactStore::open(&root).unwrap();
+        let protected = store.put(ObjectKind::Source, b"protected-source").unwrap();
+        let removable = store.put(ObjectKind::Native, b"removable-native").unwrap();
+        let lock_path = root.join("xiao.lock.json");
+        fs::write(
+            &lock_path,
+            format!(
+                r#"{{"packages":{{"main":{{"content_digest":"{}"}}}}}}"#,
+                protected.digest
+            ),
+        )
+        .unwrap();
+        let references = store
+            .collect_references(Some(&lock_path), &[], &[])
+            .unwrap();
+        let plan = store.plan_cleanup(&references).unwrap();
+        assert_eq!(plan.candidates(), std::slice::from_ref(&removable));
+        assert!(!root.join("maintenance.lock").exists());
+        assert!(store.read(ObjectKind::Source, protected.digest).is_ok());
+
+        let report = store.apply_cleanup(&plan).unwrap();
+        assert_eq!(report.removed, vec![removable]);
+        assert!(matches!(
+            store.read(ObjectKind::Native, Digest256::of_bytes(b"removable-native")),
+            Err(ArtifactError::Io(error)) if error.kind() == io::ErrorKind::NotFound
+        ));
+        assert!(!root.join("maintenance.lock").exists());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cleanup_reference_source_failure_is_conservative() {
+        let root = temp_root("maintenance-failure");
+        let store = ArtifactStore::open(&root).unwrap();
+        let object = store.put(ObjectKind::Native, b"keep-on-error").unwrap();
+        let lock_path = root.join("broken.lock.json");
+        fs::write(&lock_path, b"not-json").unwrap();
+        assert!(
+            store
+                .collect_references(Some(&lock_path), &[], &[])
+                .is_err()
+        );
+        assert!(store.read(ObjectKind::Native, object.digest).is_ok());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cleanup_revalidates_and_quarantines_object_changed_after_plan() {
+        let root = temp_root("maintenance-corrupt");
+        let store = ArtifactStore::open(&root).unwrap();
+        let object = store.put(ObjectKind::Native, b"before-plan").unwrap();
+        let plan = store.plan_cleanup(&ReferenceSet::new()).unwrap();
+        make_writable(&object.path);
+        fs::write(&object.path, b"after-plan-tamper").unwrap();
+        let report = store.apply_cleanup(&plan).unwrap();
+        assert_eq!(report.removed, Vec::<ObjectReference>::new());
+        assert_eq!(report.quarantined.len(), 1);
+        assert!(!object.path.exists());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cleanup_plan_defers_invalid_object_isolation_until_apply() {
+        let root = temp_root("maintenance-invalid");
+        let store = ArtifactStore::open(&root).unwrap();
+        let shard = root.join("objects/native/sha256/00");
+        fs::create_dir_all(&shard).unwrap();
+        let invalid = shard.join("bad-name.bin");
+        fs::write(&invalid, b"invalid-name").unwrap();
+        let plan = store.plan_cleanup(&ReferenceSet::new()).unwrap();
+        assert!(plan.candidates().is_empty());
+        assert!(invalid.exists());
+        let report = store.apply_cleanup(&plan).unwrap();
+        assert_eq!(report.removed.len(), 0);
+        assert_eq!(report.quarantined.len(), 1);
+        assert!(!invalid.exists());
         let _ = fs::remove_dir_all(root);
     }
 }

@@ -6,9 +6,9 @@ use std::fs;
 use crate::adapters::HttpStaticAdapter;
 use crate::cache::CacheStore;
 use crate::diagnostics::{SOURCE_CACHE_IO_CODE, SOURCE_DIGEST_MISMATCH_CODE, SOURCE_INVALID_CODE};
-use crate::entry_lock::EntryLock;
 use crate::lockfile::atomic_write_file;
 use crate::source::{SourceDeclaration, SourceError, SourceList, valid_digest};
+use xiao_lock::EntryLock;
 
 pub(crate) fn load(
     declarations: &[SourceDeclaration],
@@ -42,8 +42,12 @@ pub(crate) fn load(
             .cache_root()
             .join("locks/source-lists")
             .join(format!("{}.lock", import.digest));
-        let _guard = EntryLock::acquire(&lock_path)
-            .map_err(|error| SourceError::new(error.code, "源列表缓存锁不可用"))?;
+        let _guard = EntryLock::acquire(&lock_path).map_err(|_| {
+            SourceError::new(
+                crate::diagnostics::SOURCE_CACHE_IO_CODE,
+                "源列表缓存锁不可用",
+            )
+        })?;
         let text = match fs::read_to_string(&path) {
             Ok(text) => text,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {

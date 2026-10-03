@@ -20,6 +20,7 @@
       "core/rust/crates/xiao-optimizer",
       "core/rust/crates/xiao-codegen-llvm",
       "core/rust/crates/xiao-package",
+      "core/rust/crates/xiao-lock",
       "core/rust/crates/xiao-artifacts",
       "core/rust/crates/xiao-xar",
       "core/rust/crates/xiao-platform",

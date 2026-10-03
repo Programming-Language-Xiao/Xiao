@@ -10,8 +10,6 @@ mod config_edit;
 mod credentials;
 /// 11A-D1 包粒度的稳定诊断编号。
 mod diagnostics;
-/// 缓存条目的跨进程排他创建与陈旧锁回收。
-mod entry_lock;
 /// 项目环境布局、指纹和元数据物化。
 mod environment;
 /// 离线快速路径、三态回退与有界包源并行。
@@ -48,6 +46,14 @@ mod source_lists;
 mod sync;
 /// 冻结的 SemVer 2.0.0 版本与部分区间约束。
 mod version;
+
+/// 将统一锁错误转换为 11A 既有的源缓存错误码和文案。
+pub(crate) fn source_lock_error(error: xiao_lock::LockError) -> source::SourceError {
+    source::SourceError::new(
+        diagnostics::SOURCE_CACHE_IO_CODE,
+        format!("缓存锁 {}：{error}", error.path().display()),
+    )
+}
 
 /// 重导出统一索引与正文读取边界。
 pub use adapters::{

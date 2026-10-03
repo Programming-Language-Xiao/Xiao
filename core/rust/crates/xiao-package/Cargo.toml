@@ -18,6 +18,7 @@ xiao-config = { path = "../xiao-config" }
 xiao-codegen-llvm = { path = "../xiao-codegen-llvm" }
 xiao-diagnostics = { path = "../xiao-diagnostics" }
 xiao-i18n = { path = "../xiao-i18n" }
+xiao-lock = { path = "../xiao-lock" }
 xiao-modules = { path = "../xiao-modules" }
 xiao-source = { path = "../xiao-source" }
 serde = { version = "1.0", features = ["derive"] }

@@ -11,9 +11,9 @@ use sha2::{Digest, Sha256};
 use crate::adapters::PackageSourceAdapter;
 use crate::cache::{CacheObject, CacheStore, source_directory_digest};
 use crate::diagnostics::{SOURCE_CACHE_IO_CODE, TRUST_ARCHIVE_CODE, TRUST_ARTIFACT_CODE};
-use crate::entry_lock::EntryLock;
 use crate::federation::ArtifactReference;
 use crate::source::{SourceDescriptor, SourceError};
+use xiao_lock::EntryLock;
 
 static NEXT_EXTRACT: AtomicU64 = AtomicU64::new(0);
 const MAX_ENTRIES: usize = 16_384;
@@ -117,8 +117,12 @@ pub(crate) fn import_artifact(
         .cache_root()
         .join("locks/remote-artifacts")
         .join(format!("{}.lock", artifact.digest));
-    let _guard = EntryLock::acquire(&lock_path)
-        .map_err(|error| SourceError::new(error.code, "无法获取远程正文条目锁"))?;
+    let _guard = EntryLock::acquire(&lock_path).map_err(|_| {
+        SourceError::new(
+            crate::diagnostics::SOURCE_CACHE_IO_CODE,
+            "无法获取远程正文条目锁",
+        )
+    })?;
     if let Some(digest) = expected_content {
         match cache.verify_source_object(digest) {
             Ok(object) => return Ok(object),

@@ -558,6 +558,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "xiao-lock"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "xiao-modules"
 version = "0.1.0"
 dependencies = [
@@ -589,6 +597,7 @@ dependencies = [
  "xiao-config",
  "xiao-diagnostics",
  "xiao-i18n",
+ "xiao-lock",
  "xiao-modules",
  "xiao-source",
 ]

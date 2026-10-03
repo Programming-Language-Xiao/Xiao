@@ -10,13 +10,13 @@ use sha2::{Digest, Sha256};
 
 use crate::cache::CacheLayout;
 use crate::diagnostics::{SOURCE_CACHE_CORRUPT_CODE, SOURCE_CACHE_IO_CODE, SOURCE_INVALID_CODE};
-use crate::entry_lock::EntryLock;
 use crate::federation::{
     FederatedRecord, IndexPackage, SourceListFingerprint, SourceSnapshot, federate,
 };
 use crate::jcs::canonicalize_json;
 use crate::lockfile::atomic_write_file;
 use crate::source::{SourceError, valid_digest};
+use xiao_lock::EntryLock;
 
 static NEXT_METADATA: AtomicU64 = AtomicU64::new(0);
 
@@ -39,7 +39,8 @@ impl MetadataCache {
         let bytes = canonicalize_json(&text)?;
         let digest = format!("{:x}", Sha256::digest(&bytes));
         let object = self.object_path(&digest)?;
-        let _guard = EntryLock::acquire(&object.with_extension("lock"))?;
+        let _guard =
+            EntryLock::acquire(&object.with_extension("lock")).map_err(crate::source_lock_error)?;
         if let Some(existing) = self.read(&digest)? {
             if existing != *package {
                 return Err(cache_corrupt("同摘要元数据不一致"));
@@ -186,7 +187,8 @@ impl FederationCache {
     ) -> Result<(), SourceError> {
         self.validate(index)?;
         let path = self.index_path(&index.config_fingerprint, &index.sources);
-        let _guard = EntryLock::acquire(&path.with_extension("lock"))?;
+        let _guard =
+            EntryLock::acquire(&path.with_extension("lock")).map_err(crate::source_lock_error)?;
         writer(&path, &serde_json::to_vec(index).map_err(cache_corrupt)?).map_err(cache_io)
     }
 

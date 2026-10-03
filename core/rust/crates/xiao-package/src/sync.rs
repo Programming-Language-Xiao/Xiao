@@ -11,8 +11,9 @@ use xiao_source::SourceFile;
 
 use crate::cache::{CacheLayout, CacheStore};
 use crate::config_edit::{DependencyEdit, edit_dependency, write_config_edit};
-use crate::diagnostics::{SYNC_ENVIRONMENT_CODE, SYNC_INVALID_INPUT_CODE, SYNC_LOCK_REQUIRED_CODE};
-use crate::entry_lock::EntryLock;
+use crate::diagnostics::{
+    SOURCE_CACHE_IO_CODE, SYNC_ENVIRONMENT_CODE, SYNC_INVALID_INPUT_CODE, SYNC_LOCK_REQUIRED_CODE,
+};
 use crate::environment::{
     ENVIRONMENT_METADATA_FILE, EnvironmentLayout, build_environment_metadata_with_mappings,
     materialize_environment_with_mappings, read_environment_metadata, update_environment_metadata,
@@ -27,6 +28,7 @@ use crate::mapping::{
 use crate::remote;
 use crate::resolver::{resolve_project, resolve_project_with_document};
 use crate::version::{Version, VersionRequirement};
+use xiao_lock::EntryLock;
 
 /// 用户选择的包操作。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -179,7 +181,8 @@ fn acquire_operation_lock(
         .cache_root()
         .join("locks/package-operations")
         .join(format!("{digest:x}.lock"));
-    EntryLock::acquire(&lock_path).map_err(|error| failure(error.code, "无法获取项目包操作锁"))
+    EntryLock::acquire(&lock_path)
+        .map_err(|_| failure(SOURCE_CACHE_IO_CODE, "无法获取项目包操作锁"))
 }
 
 fn valid_resolution(
