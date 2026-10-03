@@ -100,13 +100,15 @@ pub fn compare_artifact_bytes(
     format: ObjectFormat,
     whitelist: &[ReproducibleDifference],
 ) -> ArtifactReproducibilityReport {
-    let (first, mut normalized_fields) = normalize_artifact(first, format);
-    let (second, second_fields) = normalize_artifact(second, format);
+    let first_raw = first;
+    let second_raw = second;
+    let (_first, mut normalized_fields) = normalize_artifact(first_raw, format);
+    let (_second, second_fields) = normalize_artifact(second_raw, format);
     normalized_fields.extend(second_fields);
     normalized_fields.sort();
     normalized_fields.dedup();
-    let first_comparable = remove_absolute_path_ranges(&first);
-    let second_comparable = remove_absolute_path_ranges(&second);
+    let first_comparable = remove_absolute_path_ranges(first_raw, format);
+    let second_comparable = remove_absolute_path_ranges(second_raw, format);
     let identical = first_comparable == second_comparable;
     let allowed = whitelist
         .iter()
@@ -130,18 +132,22 @@ pub fn compare_artifact_bytes(
 ///
 /// `normalize_artifact` 仍然对原字节执行等长零填充，保留产物长度和字段位置；
 /// 比较副本额外移除路径区间，用于处理两次构建中路径长度不同导致的后续字节偏移。
-fn remove_absolute_path_ranges(bytes: &[u8]) -> Vec<u8> {
+fn remove_absolute_path_ranges(bytes: &[u8], format: ObjectFormat) -> Vec<u8> {
+    let (normalized, _) = normalize_artifact(bytes, format);
     let ranges = absolute_path_ranges(bytes);
     if ranges.is_empty() {
-        return bytes.to_vec();
+        return normalized;
     }
-    let mut result = Vec::with_capacity(bytes.len());
+    let mut result = Vec::with_capacity(normalized.len());
     let mut cursor = 0;
     for (start, end) in ranges {
-        result.extend_from_slice(&bytes[cursor..start]);
+        if start > normalized.len() || end > normalized.len() || start < cursor {
+            return normalized;
+        }
+        result.extend_from_slice(&normalized[cursor..start]);
         cursor = end;
     }
-    result.extend_from_slice(&bytes[cursor..]);
+    result.extend_from_slice(&normalized[cursor..]);
     result
 }
 
