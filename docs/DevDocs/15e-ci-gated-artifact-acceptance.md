@@ -288,7 +288,8 @@ ignored_command=(cargo test --manifest-path "$cargo_manifest" --workspace -- --i
 - Debug 激活位在 O0-O3 的真实产物中保留，运行结果为成功或稳定诊断失败；
 - 真实符号表顺序、调试路径归一化字段和重复 Release 产物字节比较；
 - 按当前 CI runner 的目标与工具链独立采集 15B 五维基线，样本只输出到日志，不进入产物指纹。
-  门控使用 20% 的显式噪声阈值；超过阈值会失败并保留平台样本，不能跨平台混合解释。
+  首轮报告携带 20% 的显式初始噪声阈值和实际离散度；首轮只建立平台样本，不把未校准
+  的先验阈值当作失败条件，后续按平台实际重复测量校准。
 
 `toolchain.rs` 现在为 Debug 产物传递 `-g`，使路径门控实际覆盖 DWARF/PDB/CodeView；
 `artifact.rs` 只有 ELF `.symtab`、Mach-O `LC_SYMTAB` 或实际 COFF 符号表可读时才报告

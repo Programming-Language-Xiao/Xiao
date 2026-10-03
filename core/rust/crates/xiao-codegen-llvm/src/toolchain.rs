@@ -7,6 +7,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::error::{CodegenError, Result};
@@ -14,6 +15,8 @@ use crate::ir::NativeStartup;
 use crate::target::{ObjectFormat, TargetDescription};
 use crate::text::stable_hash;
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
+
+static TEMP_FILE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 /// 外部工具链版本清单。
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -1277,7 +1280,11 @@ impl TempFile {
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
             .as_nanos();
-        let file = format!("{prefix}-{}-{now}.{extension}", std::process::id());
+        let sequence = TEMP_FILE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let file = format!(
+            "{prefix}-{}-{now}-{sequence}.{extension}",
+            std::process::id()
+        );
         Ok(Self {
             path: std::env::temp_dir().join(file),
         })

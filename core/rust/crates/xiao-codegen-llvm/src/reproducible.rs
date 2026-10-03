@@ -105,7 +105,9 @@ pub fn compare_artifact_bytes(
     normalized_fields.extend(second_fields);
     normalized_fields.sort();
     normalized_fields.dedup();
-    let identical = first == second;
+    let first_comparable = remove_absolute_path_ranges(&first);
+    let second_comparable = remove_absolute_path_ranges(&second);
+    let identical = first_comparable == second_comparable;
     let allowed = whitelist
         .iter()
         .map(|item| item.kind.as_str())
@@ -116,12 +118,31 @@ pub fn compare_artifact_bytes(
         Vec::new()
     };
     ArtifactReproducibilityReport {
-        first_fingerprint: stable_hash(&first),
-        second_fingerprint: stable_hash(&second),
+        first_fingerprint: stable_hash(&first_comparable),
+        second_fingerprint: stable_hash(&second_comparable),
         identical,
         normalized_fields,
         unexpected_differences,
     }
+}
+
+/// 从比较副本中移除已明确记录的绝对路径区间。
+///
+/// `normalize_artifact` 仍然对原字节执行等长零填充，保留产物长度和字段位置；
+/// 比较副本额外移除路径区间，用于处理两次构建中路径长度不同导致的后续字节偏移。
+fn remove_absolute_path_ranges(bytes: &[u8]) -> Vec<u8> {
+    let ranges = absolute_path_ranges(bytes);
+    if ranges.is_empty() {
+        return bytes.to_vec();
+    }
+    let mut result = Vec::with_capacity(bytes.len());
+    let mut cursor = 0;
+    for (start, end) in ranges {
+        result.extend_from_slice(&bytes[cursor..start]);
+        cursor = end;
+    }
+    result.extend_from_slice(&bytes[cursor..]);
+    result
 }
 
 /// 规范化 LLVM 文本中的路径、时间和符号顺序敏感注释。
