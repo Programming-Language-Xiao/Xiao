@@ -160,7 +160,7 @@
 | 15E | [真实产物验收上 CI 门控](15e-ci-gated-artifact-acceptance.md) | 15 阶段收口批：把 15D 的**受控夹具**推到**工具链真实产物**（strip 三态各 `-O` 级别、真实符号表顺序、调试路径、重复构建逐字节比较、按平台记录的基线）；**⭐ 不改 CI 配置**——`reproduce.sh:131` 的 `--ignored` 已覆盖四平台 | 已接入（5 条 `#[ignore]` 真实产物门控、O0-O3 strip/Debug、符号与路径、重复构建、平台独立基线；已同步 10D §2，CI 四平台实测待运行） |
 | 16 | [SHA-256 内容寻址与二进制索引](16-content-addressed-artifacts.md) | 整文件摘要、归档/全局 Protobuf 索引和缓存维护 | 待开工（拆两批：**16A 对象与索引**、16B 缓存维护） |
 | 16A | [内容寻址对象与二进制索引](16a-content-addressed-objects-and-indexes.md) | `.xiaoc` 完整文件 SHA-256（**不含摘要字段自身**）、64 字符小写 + 两位分片命名、流式哈希与**碰撞比完整字节**、**五类对象命名空间分离**、两种 Protobuf 索引的确定性序列化与原子提交、扫描重建（**仅全局缓存**） | 已交付对象与索引核心（`ArtifactStore`、流式摘要、碰撞/隔离、五类命名空间、归档/全局索引确定性 wire 编解码）；归档接入与缓存维护归后续批次 |
-| 16A-FIX | [内容寻址边界的编解码对称与单一来源修复](16a-fix-content-addressed-boundaries.md) | 抽出 `validate_archive_index` 供 encode/decode **共用**、删除重复的 `XIAOC_MAGIC` 与裸 `72`、登记索引锁崩溃残留归 16B | 待开工（审核发现 4 项，本批修 2 项，另 2 项见该文档 §五） |
+| 16A-FIX | [内容寻址边界的编解码对称与单一来源修复](16a-fix-content-addressed-boundaries.md) | 抽出 `validate_archive_index` 供 encode/decode **共用**、删除重复的 `XIAOC_MAGIC` 与裸 `72`、登记索引锁崩溃残留归 16B | 已完成（入口校验对称、`.xiaoc` 契约单一来源、回归与架构约束测试全绿；索引锁残留与文档覆盖警告按 §五登记） |
 | 17 | [`.xar` 字节码归档与启动](17-xar-archive.md) | ZIP/ZIP64 归档、第三方依赖、资源与双击启动 | 未开始 |
 | 18 | [优化与产物 CLI 接入](18-optimization-cli.md) | TypeScript CLI、默认 `-O0`、缓存/验证/打包命令 | 未开始 |
 | 20 | [内置函数与标准库：边界、契约与实施路线](20-builtins-and-standard-library.md) | intrinsic 单一来源契约、官方标准库与普通包边界、外部资源句柄、能力模型和分阶段接入 | 方向稿（跨 09–17 实施；不替代各阶段格式契约） |

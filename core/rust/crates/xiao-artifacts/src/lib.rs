@@ -15,8 +15,6 @@ use std::sync::atomic::{AtomicU64, Ordering};
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
-/// `.xiaoc` 文件魔数。
-pub const XIAOC_MAGIC: &[u8; 8] = b"XIAOC\r\n\x1a";
 /// 首版索引主版本。
 pub const INDEX_SCHEMA_MAJOR: u32 = 1;
 /// 首版索引次版本。
@@ -381,14 +379,8 @@ impl ArtifactStore {
         })
     }
 
-    /// 写入完整 `.xiaoc` 对象并检查魔数和最小文件长度。
+    /// 写入完整 `.xiaoc` 对象并执行权威格式校验。
     pub fn put_xiaoc(&self, bytes: &[u8]) -> Result<ObjectReference, ArtifactError> {
-        if bytes.len() < 72 || bytes.get(..8) != Some(XIAOC_MAGIC) {
-            return Err(ArtifactError::InvalidObject {
-                path: PathBuf::from("<memory>"),
-                reason: "不是完整规范 `.xiaoc` 文件".to_owned(),
-            });
-        }
         xiao_bytecode::validate_xiaoc(bytes).map_err(|error| ArtifactError::InvalidObject {
             path: PathBuf::from("<memory>"),
             reason: format!("`.xiaoc` 格式校验失败：{error}"),
@@ -429,11 +421,7 @@ impl ArtifactStore {
                 quarantine,
             });
         }
-        if kind == ObjectKind::Xiaoc
-            && (bytes.len() < 72
-                || bytes.get(..8) != Some(XIAOC_MAGIC)
-                || xiao_bytecode::validate_xiaoc(&bytes).is_err())
-        {
+        if kind == ObjectKind::Xiaoc && xiao_bytecode::validate_xiaoc(&bytes).is_err() {
             let quarantine = self.quarantine_path(&path).ok();
             return Err(ArtifactError::CorruptObject {
                 path,
@@ -817,21 +805,18 @@ impl ArchiveIndex {
                 record_type: ARCHIVE_INDEX_RECORD_TYPE,
             });
         }
+        validate_archive_index(self)?;
         let mut entries = self.entries.clone();
         entries.sort_by(|left, right| {
             left.logical_path
                 .cmp(&right.logical_path)
                 .then(left.digest.cmp(&right.digest))
         });
-        if self.entry.is_empty() {
-            return Err(ArtifactError::Index("归档索引缺少入口".to_owned()));
-        }
         let mut output = Vec::new();
         put_varint_field(&mut output, 1, self.schema_major as u64);
         put_varint_field(&mut output, 2, self.schema_minor as u64);
         put_bytes_field(&mut output, 3, self.entry.as_bytes());
         for entry in entries {
-            validate_archive_entry(&entry)?;
             put_bytes_field(&mut output, 4, &encode_archive_entry(&entry)?);
         }
         put_varint_field(&mut output, 5, u64::from(ARCHIVE_INDEX_RECORD_TYPE));
@@ -875,6 +860,7 @@ impl ArchiveIndex {
         if required_features != INDEX_REQUIRED_FEATURES {
             return Err(ArtifactError::Index("归档索引包含未知必需能力".to_owned()));
         }
+        validate_archive_index(&index)?;
         index.entries.sort_by(|left, right| {
             left.logical_path
                 .cmp(&right.logical_path)
@@ -1009,6 +995,16 @@ fn encode_archive_entry(entry: &ArchiveEntry) -> Result<Vec<u8>, ArtifactError> 
     Ok(output)
 }
 
+fn validate_archive_index(index: &ArchiveIndex) -> Result<(), ArtifactError> {
+    if index.entry.is_empty() {
+        return Err(ArtifactError::Index("归档索引缺少入口".to_owned()));
+    }
+    for entry in &index.entries {
+        validate_archive_entry(entry)?;
+    }
+    Ok(())
+}
+
 fn validate_archive_entry(entry: &ArchiveEntry) -> Result<(), ArtifactError> {
     if entry.logical_path.is_empty() || entry.module.is_empty() || entry.target.is_empty() {
         return Err(ArtifactError::Index("归档索引条目缺少必需字段".to_owned()));
@@ -1049,13 +1045,7 @@ fn decode_archive_entry(bytes: &[u8]) -> Result<ArchiveEntry, ArtifactError> {
             _ => reader.skip(wire)?,
         }
     }
-    if entry.logical_path.is_empty()
-        || entry.module.is_empty()
-        || entry.target.is_empty()
-        || !has_kind
-        || !has_digest
-        || !has_length
-    {
+    if !has_kind || !has_digest || !has_length {
         return Err(ArtifactError::Index("归档索引条目缺少必需字段".to_owned()));
     }
     Ok(entry)
@@ -1454,6 +1444,27 @@ mod tests {
         let mut updated = index;
         updated.upsert(replacement.clone());
         assert_eq!(updated.find("request"), Some(&replacement));
+    }
+
+    #[test]
+    fn archive_index_entry_validation_is_symmetric() {
+        let missing_entry = [0x08, 0x01, 0x10, 0x00, 0x28, 0x01, 0x30, 0x00];
+        let empty_entry = [0x08, 0x01, 0x10, 0x00, 0x1a, 0x00, 0x28, 0x01, 0x30, 0x00];
+        let non_empty_entry = [
+            0x08, 0x01, 0x10, 0x00, 0x1a, 0x03, b'm', b'a', b'i', 0x28, 0x01, 0x30, 0x00,
+        ];
+        assert!(ArchiveIndex::decode(&missing_entry).is_err());
+        assert!(ArchiveIndex::decode(&empty_entry).is_err());
+        assert_eq!(ArchiveIndex::decode(&non_empty_entry).unwrap().entry, "mai");
+    }
+
+    #[test]
+    fn xiaoc_contract_constants_have_one_authoritative_source() {
+        let source = include_str!("lib.rs");
+        let implementation = source.split("#[cfg(test)]").next().unwrap();
+        assert!(!implementation.contains("72"));
+        assert!(!implementation.contains("0x1a"));
+        assert!(!implementation.contains("XIAOC\\r\\n\\x1a"));
     }
 
     #[test]
