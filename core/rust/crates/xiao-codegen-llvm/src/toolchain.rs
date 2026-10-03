@@ -453,6 +453,8 @@ impl Toolchain {
                 "-ffunction-sections".to_owned(),
                 "-fdata-sections".to_owned(),
                 "-Wl,--gc-sections".to_owned(),
+                // 临时 LLVM 输入路径会进入链接器 build-id；可复现产物不携带该机器元数据。
+                "-Wl,--build-id=none".to_owned(),
             ]),
             ObjectFormat::MachO => args.extend([
                 "-ffunction-sections".to_owned(),
