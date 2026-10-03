@@ -4,6 +4,7 @@ use std::fs;
 use std::io::{BufReader, Cursor, Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -19,6 +20,8 @@ use xiao_driver::{
 use xiao_package::{CacheLayout, ENVIRONMENT_METADATA_FILE};
 use xiao_vm::VmEvent;
 
+static WORKSPACE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
 struct Workspace(PathBuf);
 
 impl Workspace {
@@ -27,7 +30,11 @@ impl Workspace {
             .duration_since(UNIX_EPOCH)
             .expect("clock")
             .as_nanos();
-        let path = std::env::temp_dir().join(format!("xiao-i4b-{}-{stamp}", std::process::id()));
+        let sequence = WORKSPACE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let path = std::env::temp_dir().join(format!(
+            "xiao-i4b-{}-{stamp}-{sequence}",
+            std::process::id()
+        ));
         fs::create_dir(&path).expect("workspace");
         Self(path)
     }
