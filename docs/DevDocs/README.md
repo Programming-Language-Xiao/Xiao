@@ -38,9 +38,12 @@
 
 下面的顺序是实施顺序，不只是文档分类。先完成 `00A` 工程骨架，再从 `01` 向 `19` 推进；`12` 仍是贯穿所有阶段的测试门槛。后续阶段可以提前完善规格，但不能绕过前置阶段当前可执行的退出条件开始正式实现。尚缺后置消费者才能运行的集成测试会作为显式债项带入对应后续阶段，不能被误记为已经通过。
 
+**`01`–`11` 的阶段级「进行中」已逐条核实**（2026-10-03）：**没有一个是状态滞后，每个都有真实的验收缺口**。
+逐条结论、证据与三类处置建议见 [12A. 阶段验收核实记录](12a-stage-acceptance-audit.md)。
+
 | 顺序 | 阶段与文档 | 主要交付物 | 状态 |
 | --- | --- | --- | --- |
-| 00A | [工程框架与目录布局](00a-project-layout.md) | Rust 核心、TypeScript CLI、平台、测试、工具和资源骨架 | 进行中 |
+| 00A | [工程框架与目录布局](00a-project-layout.md) | Rust 核心、TypeScript CLI、平台、测试、工具和资源骨架 | **已完成**（文档覆盖率实测 91.91% ≥ 90%、公共 API 100% = 100%，见 [12A](12a-stage-acceptance-audit.md)） |
 | 00A.1 | [工作区与质量门禁实现方案](00a-a0-workspace-and-checkers.md) | 实际 workspace 清单、目录检查、UseDocs 登记和覆盖率报告契约 | 已完成 |
 | 00C | [文档 lint 接线实现交接](00c-doc-lint-wiring.md) | 20 个 Rust crate 的 `missing_docs` 接线、44 个字段 Rustdoc、两套口径复测（提交 `6d296c3`） | 已完成（方案 B） |
 | 00D | [Rust AST 适配器协议 v2 修正交接](00d-doc-adapter-protocol-v2-fixes.md) | `Declaration.end_line` 真实语义、大纲 `lines` 口径统一、`declaration_head` 文档对齐、`outline` 请求开关、协议 UseDoc 同步 | 已完成 |
@@ -168,6 +171,7 @@
 | 20A-研究 | [intrinsic 契约与 20 的批次切分（待审）](20a-intrinsics-contract-research.md) | 裁定 20A/20B 能否分开、`print`/`input` 的签名规则、契约 crate 形态与 `IntrinsicId` 编码；含类型层 5 处名称分派的实测盘点 | **待审**（决策前置件；未审不得据以实施） |
 | 20AB | [intrinsic 契约与最小生产入口](20ab-intrinsics-contract-and-minimal-entry.md) | 契约 crate 与声明数据文件、5 处名称分派迁移为查表、`print`(可变参数)/`input` 接入 VM 与 LLVM 两条路径；含**移除验证** | 待开工（**20A+20B 合并批**；四项高影响决策已定，见研究文档） |
 | 21 | [单线程 RC、强环与并发模型：架构建议讨论稿](21-rc-cycles-and-concurrency.md) | 一份外部架构建议的完整收录、逐条前提核实（含出处）、五个待议问题与初步评估 | 讨论稿（跨 06/07/20；结论落回各阶段文档前不得实现） |
+| 12A | [阶段验收核实记录（01–11）](12a-stage-acceptance-audit.md) | 逐条核实 01–11 的验收标准：缺口清单、证据、三类处置建议；含三条**跨阶段共因**（LLVM 不支持选择器、快照测试不在 CI、有实现缺断言） | **核实已完成**（结论：无一是状态滞后，`00A` 可标已完成，其余各有真实缺口） |
 | 21A | [单线程 RC、强环与并发模型决策交接](21a-rc-cycles-and-concurrency-handoff.md) | 收束 21 的待议问题，固定 DAG、`CrossThread`、原子计数债项、`Arena` 边界和 07-D 后置交接 | 已完成文档决策；实现后置 |
 | 19 | [优化、兼容性与发布验收](19-optimization-release.md) | LLVM 原生 Java 对照、版本矩阵、跨平台和安全发布 | 未开始 |
 
