@@ -109,7 +109,20 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
     }
   }
   const stderr = lines.length === 0 ? "" : `${lines.join("\n")}\n`;
-  return { stdout: "", stderr, exitCode: responseExitCode(response) };
+  const stdout = response.type === "result" ? intrinsicOutput(response.events) : "";
+  return { stdout, stderr, exitCode: responseExitCode(response) };
+}
+
+/** 将 VM 的结构化 intrinsic 输出还原为人类 CLI 的标准输出；JSON 模式保留事件原样。 */
+function intrinsicOutput(events: unknown[]): string {
+  return events
+    .filter(isRecord)
+    .filter((event) => event.kind === "intrinsic_output")
+    .map((event) => {
+      const data = isRecord(event.data) ? event.data : null;
+      return data !== null && typeof data.text === "string" ? data.text : "";
+    })
+    .join("");
 }
 
 /** 渲染项目测试的逐用例路径、统计和结构化诊断。 */

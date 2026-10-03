@@ -3,6 +3,7 @@
 //! 本模块集中处理转换规则依赖的检查器状态；无状态的常量运算仍由
 //! [`super::constant`] 提供，避免把表达式检查和声明检查耦合到同一文件。
 
+use xiao_intrinsics::{IntrinsicDecl, IntrinsicKind, by_name};
 use xiao_syntax::{BinaryOperator, Expression, LiteralKind, ScalarType};
 
 use crate::conversion::{is_float, is_integer};
@@ -16,10 +17,20 @@ use super::TypeChecker;
 use super::constant::{convert_constant, decode_string, eval_const_binary, eval_const_unary};
 
 impl<'source> TypeChecker<'source> {
-    /// 识别未被反引号包裹的标量转换构造器。
+    /// 识别未被反引号包裹且已登记在契约表中的标量转换构造器。
     pub(super) fn scalar_callee(&self, callee: &Expression) -> Option<ScalarType> {
-        let name = self.simple_callee_name(callee)?;
-        ScalarType::from_name(&name)
+        let declaration = self.intrinsic_decl(callee)?;
+        (declaration.kind == IntrinsicKind::ScalarConversion)
+            .then(|| ScalarType::from_name(declaration.public_name))
+            .flatten()
+    }
+
+    /// 读取普通源码名称对应的 intrinsic 契约；反引号名称永远不会进入契约表。
+    pub(super) fn intrinsic_decl(&self, callee: &Expression) -> Option<&'static IntrinsicDecl> {
+        let Expression::Name(name) = callee else {
+            return None;
+        };
+        (!name.backticked).then(|| by_name(name.unquoted_text(self.source)))?
     }
 
     /// 检查已知常量是否满足转换的内容约束；动态值留给运行时检查。
@@ -84,19 +95,7 @@ impl<'source> TypeChecker<'source> {
         }
     }
 
-    /// 读取普通名称调用者文本；反引号名称不视为内建函数。
-    pub(super) fn simple_callee_name(&self, callee: &Expression) -> Option<String> {
-        let Expression::Name(name) = callee else {
-            return None;
-        };
-        if name.backticked {
-            return None;
-        }
-        Some(name.unquoted_text(self.source).to_owned())
-    }
-
-    /// 返回任意名称调用者的规范化环境键；内建函数仍由
-    /// [`Self::simple_callee_name`] 单独限制为普通 ASCII 名称。
+    /// 返回普通名称调用者的规范化环境键；内置入口由契约表单独解析。
     pub(super) fn function_callee_key(&self, callee: &Expression) -> Option<String> {
         let Expression::Name(name) = callee else {
             return None;

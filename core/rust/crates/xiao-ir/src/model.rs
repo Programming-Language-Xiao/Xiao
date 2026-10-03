@@ -426,6 +426,13 @@ pub enum IrExpressionKind {
         /// 参数。
         arguments: Vec<IrCallArgument>,
     },
+    /// 由类型层契约表登记的 intrinsic 调用；机器身份只保存稳定 ID。
+    IntrinsicCall {
+        /// 稳定 IntrinsicId 数字。
+        id: u32,
+        /// 已求值参数描述。
+        arguments: Vec<IrCallArgument>,
+    },
     /// `new` 构造调用。
     NewCall {
         /// 构造目标。

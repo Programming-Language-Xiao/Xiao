@@ -100,10 +100,47 @@ impl CallSig {
         }
     }
 
+    /// 创建由契约表驱动的 intrinsic 签名。
+    ///
+    /// 09R3 已冻结 Call 指令的两个索引字段，不能新增 opcode。这里复用变参槽位
+    /// 的已有可选索引编码保存 ID 的低/高 16 位；空参数签名不会与合法 Xiao 函数
+    /// 冲突，因为函数的可变参数形参本身至少占一个参数槽。
+    #[must_use]
+    pub fn intrinsic(id: u32) -> Self {
+        Self {
+            parameter_names: Vec::new(),
+            parameter_kinds: Vec::new(),
+            parameter_types: Vec::new(),
+            has_defaults: Vec::new(),
+            var_args_slot: Some((id & 0xffff) as usize),
+            kw_args_slot: Some((id >> 16) as usize),
+            return_type: IrType::Dynamic,
+        }
+    }
+
+    /// 读取 intrinsic 签名中保存的稳定 ID。
+    #[must_use]
+    pub fn intrinsic_id(&self) -> Option<u32> {
+        if self.parameter_names.is_empty()
+            && self.parameter_kinds.is_empty()
+            && self.parameter_types.is_empty()
+            && self.has_defaults.is_empty()
+            && self.return_type == IrType::Dynamic
+        {
+            let low = self.var_args_slot? as u32;
+            let high = self.kw_args_slot? as u32;
+            Some(low | (high << 16))
+        } else {
+            None
+        }
+    }
+
     /// 判断签名是否全动态。
     #[must_use]
     pub fn is_dynamic(&self) -> bool {
-        self.parameter_types.is_empty() && self.parameter_names.is_empty()
+        self.intrinsic_id().is_none()
+            && self.parameter_types.is_empty()
+            && self.parameter_names.is_empty()
     }
 
     /// 判断签名是否含可变参数。
@@ -163,5 +200,22 @@ impl CallSigTable {
     /// 从保持原始索引顺序的条目重建签名表。
     pub(crate) fn from_entries(entries: Vec<CallSig>) -> Self {
         Self { entries }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::CallSig;
+
+    #[test]
+    fn intrinsic_id_round_trips_full_u32_through_two_u16_slots() {
+        let signature = CallSig::intrinsic(0xdead_beef);
+        assert_eq!(signature.intrinsic_id(), Some(0xdead_beef));
+    }
+
+    #[test]
+    fn zero_intrinsic_id_is_preserved_for_validator_rejection() {
+        let signature = CallSig::intrinsic(0);
+        assert_eq!(signature.intrinsic_id(), Some(0));
     }
 }

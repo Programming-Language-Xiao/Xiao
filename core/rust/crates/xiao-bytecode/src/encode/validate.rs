@@ -66,6 +66,17 @@ pub(super) fn check_version(field: &str, actual: u32, expected: u32) -> Result<(
 /// 槽位越界不会在当前编码里报错（它只是个编号），但运行期会按槽位去被调方帧
 /// 取寄存器，取到的是别人的值——所以必须在编码期挡住。
 pub(super) fn validate_signature(signature: &CallSig) -> Result<(), EncodeError> {
+    if let Some(id) = signature.intrinsic_id() {
+        if xiao_intrinsics::IntrinsicId::new(id)
+            .and_then(xiao_intrinsics::active_by_id)
+            .is_none()
+        {
+            return Err(EncodeError::InvalidFormat(format!(
+                "未知或已废弃的 intrinsic ID {id}"
+            )));
+        }
+        return Ok(());
+    }
     let lengths = [
         signature.parameter_names.len(),
         signature.parameter_kinds.len(),
@@ -340,8 +351,28 @@ fn validate_op(
             signature,
             arguments,
         } => {
-            check_func(program, *callee)?;
-            check_sig(program, *signature)?;
+            let intrinsic_id = program
+                .signatures
+                .get(*signature)
+                .and_then(crate::sig::CallSig::intrinsic_id);
+            if let Some(id) = intrinsic_id {
+                if *callee != FuncId::new(0) {
+                    return Err(EncodeError::InvalidFormat(
+                        "intrinsic Call 必须使用保留入口函数编号 0".to_owned(),
+                    ));
+                }
+                if xiao_intrinsics::IntrinsicId::new(id)
+                    .and_then(xiao_intrinsics::active_by_id)
+                    .is_none()
+                {
+                    return Err(EncodeError::InvalidFormat(format!(
+                        "未知或已废弃的 intrinsic ID {id}"
+                    )));
+                }
+            } else {
+                check_func(program, *callee)?;
+                check_sig(program, *signature)?;
+            }
             for argument in arguments {
                 check_vreg(argument.value)?;
             }

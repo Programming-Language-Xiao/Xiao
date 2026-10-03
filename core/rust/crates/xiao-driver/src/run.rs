@@ -694,6 +694,29 @@ mod tests {
     }
 
     #[test]
+    /// `print` 必须沿前端、IR、TAC 和 VM 契约入口产生结构化输出且返回成功。
+    fn print_intrinsic_reaches_vm_output_event() {
+        let outcome = run(&request("print(\"hello world!\")\n"));
+        let DriverOutcome::Executed(execution) = outcome else {
+            panic!("print 应成功执行");
+        };
+        assert!(execution.outcome.result.is_success());
+        assert!(execution.events().iter().any(|event| matches!(
+            event,
+            VmEvent::IntrinsicOutput { text } if text == "hello world!\n"
+        )));
+    }
+
+    #[test]
+    /// 已有规则的标量转换和 set/error 构造也必须经由契约 ID 在 VM 中完成。
+    fn migrated_intrinsics_keep_existing_vm_semantics() {
+        assert!(run(&request("value = int(1)\n")).is_success());
+        assert!(run(&request("value = set()\n")).is_success());
+        let outcome = run(&request("value = TypeError(\"code\")\n"));
+        assert!(outcome.is_success());
+    }
+
+    #[test]
     /// 前端错误应保留结构化诊断，并且不产生 VM 报告。
     fn frontend_failure_keeps_structured_diagnostics() {
         let outcome = run(&request("if 1\n    value = 1\n"));

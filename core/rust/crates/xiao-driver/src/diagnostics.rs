@@ -724,6 +724,7 @@ fn vm_event_to_diagnostic_with_locale(
     locale: &str,
 ) -> DiagnosticEvent {
     let (event_type, function, payload) = match event {
+        VmEvent::IntrinsicOutput { text } => ("intrinsic_output", None, json!({ "text": text })),
         VmEvent::ModuleLoaded { module } => ("module_loaded", None, json!({ "module": module })),
         VmEvent::FunctionEntered { function, depth } => (
             "function_entered",

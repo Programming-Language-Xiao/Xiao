@@ -17,6 +17,7 @@ path = "src/lib.rs"
 xiao-bytecode = { path = "../xiao-bytecode" }
 xiao-ir = { path = "../xiao-ir" }
 xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-intrinsics = { path = "../xiao-intrinsics" }
 xiao-lifetime = { path = "../xiao-lifetime" }
 xiao-runtime = { path = "../xiao-runtime" }
 xiao-types = { path = "../xiao-types" }

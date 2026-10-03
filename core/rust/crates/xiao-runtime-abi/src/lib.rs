@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 6;
+pub const ABI_MINOR_VERSION: u32 = 7;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -770,6 +770,10 @@ unsafe extern "C" {
 
     /// 把一个固定宽度整数写到标准输出，返回 C 风格状态码。
     pub fn xiao_runtime_write_i64(value: i64) -> i32;
+    /// 把一组值按空格分隔并追加换行后写到标准输出。
+    pub fn xiao_runtime_print_values(values: *const XiaoValue, count: usize) -> i32;
+    /// 可选提示后从标准输入读取一行；失败时返回 `none` 并写入挂起错误槽。
+    pub fn xiao_runtime_input(prompt: *const XiaoValue, has_prompt: u8) -> XiaoValue;
 }
 
 #[cfg(test)]
@@ -787,8 +791,8 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0006);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0007);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 6);
+        assert_eq!(ABI_MINOR_VERSION, 7);
     }
 }

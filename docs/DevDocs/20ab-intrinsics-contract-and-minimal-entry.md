@@ -228,6 +228,17 @@ core/rust/Cargo.toml                   members 登记新 crate
   特别是第 3 条（Runtime ABI 的稳定调用约定）与第 6 条（首批 `os` API），
   它们归 20D 或更后。
 
+## 十、当前实施状态
+
+- `xiao-intrinsics` 已以构建期生成的 `intrinsics.json` 为唯一声明来源；类型层、IR、字节码验证器、VM
+  和 LLVM 降低器均按稳定 ID 消费，名称不进入机器分派。
+- VM 已实现标量转换、`set`、错误构造、`print` 和 `input`；`print` 通过结构化事件进入协议与 CLI
+  标准输出，返回值仍为 `none`。Runtime ABI 已提供 `xiao_runtime_print_values`，并由动态 LLVM
+  `print` 调用，调用后按既有所有权规则释放实参。
+- LLVM `input` 已通过稳定 `xiao_runtime_input` ABI 接通动态降低器；提示参数、EOF 和读取失败均
+  走挂起错误槽，调用方继续按既有值所有权规则释放提示值。真实 stdin 工具链门控仍按 10D
+  环境要求执行，未设置工具链时不伪造原生运行通过。
+
 ## 相关页面
 
 - [20. 内置函数与标准库](20-builtins-and-standard-library.md) —— **权威方向稿**；§三 契约单一来源、§六 测试族、§七 阶段安排、§八 仍待冻结的问题

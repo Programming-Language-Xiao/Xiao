@@ -1306,6 +1306,8 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
         || symbol.starts_with("xiao_runtime_language_context_")
         || symbol.starts_with("xiao_runtime_fatal_")
         || symbol == "xiao_runtime_write_i64"
+        || symbol == "xiao_runtime_print_values"
+        || symbol == "xiao_runtime_input"
     {
         components.insert("value".to_owned());
     }

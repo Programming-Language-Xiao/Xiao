@@ -19,6 +19,7 @@ use xiao_diagnostics::{
     SELECTOR_STEP_CODE, SET_COMPARISON_CODE, SET_MEMBERSHIP_CODE, SET_OPERATION_CODE, StackFrame,
     TYPE_MISMATCH_CODE, XiaoError,
 };
+use xiao_intrinsics::{AbiBinding, IntrinsicId, VmBinding, active_by_id};
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
 use xiao_source::SourceSpan;
 use xiao_syntax::ScalarType;
@@ -943,18 +944,37 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 return Ok(Flow::Jump(if flag { *if_true } else { *if_false }));
             }
             TacOp::Call {
-                callee, arguments, ..
+                callee,
+                signature,
+                arguments,
             } => {
                 let bound = self.bind(arguments)?;
-                self.note_map_point(MapPoint::CallSite);
-                if let Some(frame) = self.frames.last_mut() {
-                    frame.carrier.begin_call();
-                }
-                let value = self.execute(*callee, &bound, instruction.dst);
-                if let Some(frame) = self.frames.last_mut() {
-                    frame.carrier.end_call();
-                }
-                let value = value?;
+                let intrinsic_id = self
+                    .active_program
+                    .as_deref()
+                    .unwrap_or(self.program)
+                    .signatures
+                    .get(*signature)
+                    .and_then(xiao_bytecode::CallSig::intrinsic_id)
+                    .and_then(IntrinsicId::new);
+                let value = if let Some(intrinsic_id) = intrinsic_id {
+                    if *callee != FuncId::new(0) {
+                        return Err(Fault::Error(XiaoError::invalid_value(
+                            "intrinsic Call 必须使用保留入口函数编号 0",
+                        )));
+                    }
+                    self.execute_intrinsic(intrinsic_id, &bound, instruction.span)?
+                } else {
+                    self.note_map_point(MapPoint::CallSite);
+                    if let Some(frame) = self.frames.last_mut() {
+                        frame.carrier.begin_call();
+                    }
+                    let value = self.execute(*callee, &bound, instruction.dst);
+                    if let Some(frame) = self.frames.last_mut() {
+                        frame.carrier.end_call();
+                    }
+                    value?
+                };
                 if let Some(register) = instruction.dst {
                     self.write(register, value.unwrap_or(RuntimeValue::None));
                 }
@@ -1787,6 +1807,174 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         Ok(bound)
     }
 
+    /// 按稳定 ID 校验声明并执行绑定的宿主能力。
+    fn execute_intrinsic(
+        &mut self,
+        id: IntrinsicId,
+        arguments: &[BoundArgument],
+        span: xiao_ir::IrSpan,
+    ) -> Result<Option<RuntimeValue>, Fault> {
+        let declaration = active_by_id(id).ok_or_else(|| {
+            Fault::Error(XiaoError::invalid_value(format!("未知 intrinsic ID {id}")))
+        })?;
+        match declaration.vm_binding {
+            VmBinding::ScalarCast => {
+                if declaration.signature.arity != xiao_intrinsics::Arity::One
+                    || arguments.len() != 1
+                    || arguments[0].keyword.is_some()
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "标量转换 intrinsic 必须接收一个位置参数",
+                    )));
+                }
+                let target = scalar_type_for_value_type(declaration.signature.return_type)
+                    .ok_or_else(|| {
+                        Fault::Error(XiaoError::invalid_value(
+                            "标量转换 intrinsic 的返回类型不是标量",
+                        ))
+                    })?;
+                let value = arguments[0]
+                    .value
+                    .convert_to(target)
+                    .map_err(Fault::Error)?;
+                Ok(Some(value))
+            }
+            VmBinding::SetNew => {
+                if declaration.signature.arity != xiao_intrinsics::Arity::Zero
+                    || !arguments.is_empty()
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "set intrinsic 不接受参数",
+                    )));
+                }
+                Ok(Some(ops::new_set(Vec::new()).map_err(Fault::Error)?))
+            }
+            VmBinding::MakeError => {
+                if arguments.iter().any(|argument| {
+                    argument
+                        .keyword
+                        .as_deref()
+                        .is_some_and(|name| name != "code" && name != "message")
+                }) {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "错误构造只接受 code/message 参数",
+                    )));
+                }
+                if declaration.public_name == "FatalError" {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "FatalError 不能构造为可恢复错误",
+                    )));
+                }
+                let pending_check = self
+                    .frames
+                    .last_mut()
+                    .and_then(|frame| frame.pending_check_kind.take());
+                let mut code = None;
+                let mut message = None;
+                for (index, argument) in arguments.iter().enumerate() {
+                    let text = runtime_text(&argument.value)?;
+                    match argument.keyword.as_deref() {
+                        Some("code") if code.is_none() => code = Some(text),
+                        Some("message") if message.is_none() => message = Some(text),
+                        None if index == 0 && code.is_none() => code = Some(text),
+                        None if index == 1 && message.is_none() => message = Some(text),
+                        _ => {
+                            return Err(Fault::Error(XiaoError::invalid_value(
+                                "错误构造参数重复或位置无效",
+                            )));
+                        }
+                    }
+                }
+                let default_code = pending_check
+                    .as_deref()
+                    .and_then(runtime_check_code)
+                    .or(code.as_deref());
+                let mut error = XiaoError::from_type_name(
+                    declaration.public_name,
+                    default_code,
+                    message.as_deref(),
+                )
+                .ok_or_else(|| {
+                    Fault::Error(XiaoError::invalid_value(format!(
+                        "未知或不可恢复的错误类型 {}",
+                        declaration.public_name
+                    )))
+                })?;
+                if let Some(location) = SourceSpan::new(span.start, span.end) {
+                    error = error.with_location(location);
+                }
+                Ok(Some(RuntimeValue::error(error)))
+            }
+            VmBinding::Print => {
+                if declaration.abi_binding != AbiBinding::Print
+                    || declaration.capability != xiao_intrinsics::Capability::Stdout
+                    || declaration.effects != xiao_intrinsics::Effects::WritesStdout
+                    || declaration.signature.return_type != xiao_intrinsics::ValueType::None
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "print 契约与 VM/ABI 绑定不一致",
+                    )));
+                }
+                if arguments.iter().any(|argument| argument.keyword.is_some()) {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "print 不接受关键字或展开实参",
+                    )));
+                }
+                let mut text = arguments
+                    .iter()
+                    .map(|argument| intrinsic_value_text(&argument.value))
+                    .collect::<Result<Vec<_>, _>>()?
+                    .join(" ");
+                text.push('\n');
+                self.sink.record(VmEvent::IntrinsicOutput { text });
+                Ok(Some(RuntimeValue::None))
+            }
+            VmBinding::Input => {
+                if declaration.abi_binding != AbiBinding::Input
+                    || declaration.capability != xiao_intrinsics::Capability::Stdin
+                    || declaration.effects != xiao_intrinsics::Effects::ReadsStdin
+                    || declaration.signature.arity != xiao_intrinsics::Arity::OptionalOne
+                    || declaration.signature.return_type != xiao_intrinsics::ValueType::Str
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "input 契约与 VM/ABI 绑定不一致",
+                    )));
+                }
+                if arguments.len() > 1
+                    || arguments.iter().any(|argument| argument.keyword.is_some())
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "input 最多接受一个位置提示参数",
+                    )));
+                }
+                if let Some(prompt) = arguments.first() {
+                    if !matches!(prompt.value, RuntimeValue::Str(_)) {
+                        return Err(Fault::Error(XiaoError::type_mismatch(
+                            "str",
+                            prompt.value.type_name(),
+                        )));
+                    }
+                    let prompt = intrinsic_value_text(&prompt.value)?;
+                    self.sink.record(VmEvent::IntrinsicOutput { text: prompt });
+                }
+                let mut line = String::new();
+                let bytes = std::io::stdin()
+                    .read_line(&mut line)
+                    .map_err(|_| Fault::Error(XiaoError::invalid_value("读取标准输入失败")))?;
+                if bytes == 0 {
+                    return Err(Fault::Error(XiaoError::invalid_value("标准输入已结束")));
+                }
+                while line.ends_with(['\n', '\r']) {
+                    line.pop();
+                }
+                Ok(Some(RuntimeValue::new_string(line).map_err(Fault::Error)?))
+            }
+            _ => Err(Fault::Error(XiaoError::invalid_value(format!(
+                "intrinsic ID {id} 尚未绑定 VM 实现"
+            )))),
+        }
+    }
+
     /// 读取当前帧的一个寄存器。
     fn read(&self, register: VReg) -> Result<RuntimeValue, Fault> {
         let Some(frame) = self.frames.last() else {
@@ -1824,6 +2012,26 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             self.write(register, value);
         }
     }
+}
+
+/// 将 intrinsic 输出值格式化为稳定文本，并把 Runtime 错误转成 VM 故障。
+fn intrinsic_value_text(value: &RuntimeValue) -> Result<String, Fault> {
+    value.display_text().map_err(Fault::Error)
+}
+
+/// 将契约签名的标量结果类别映射为 Runtime 转换目标。
+fn scalar_type_for_value_type(value_type: xiao_intrinsics::ValueType) -> Option<ScalarType> {
+    Some(match value_type {
+        xiao_intrinsics::ValueType::Int => ScalarType::Int,
+        xiao_intrinsics::ValueType::Sint => ScalarType::Sint,
+        xiao_intrinsics::ValueType::Float => ScalarType::Float,
+        xiao_intrinsics::ValueType::Sfloat => ScalarType::Sfloat,
+        xiao_intrinsics::ValueType::Bool => ScalarType::Bool,
+        xiao_intrinsics::ValueType::Str => ScalarType::Str,
+        xiao_intrinsics::ValueType::Lint => ScalarType::Lint,
+        xiao_intrinsics::ValueType::Lfloat => ScalarType::Lfloat,
+        _ => return None,
+    })
 }
 
 /// 把常量池条目转成运行时值。

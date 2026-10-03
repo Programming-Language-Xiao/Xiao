@@ -61,6 +61,10 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert("declare i32 @xiao_runtime_value_release_weak(ptr)".to_owned());
         self.declarations
+            .insert("declare i32 @xiao_runtime_print_values(ptr, i64)".to_owned());
+        self.declarations
+            .insert(self.value_declaration("xiao_runtime_input", "ptr, i8"));
+        self.declarations
             .insert(self.value_declaration("xiao_runtime_value_none", ""));
         self.declarations.insert(self.value_declaration(
             "xiao_runtime_error_new",

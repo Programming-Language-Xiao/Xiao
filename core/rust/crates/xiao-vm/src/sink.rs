@@ -16,6 +16,11 @@ pub const MAX_EVENT_CAPACITY: usize = 1_000_000;
 /// 一条结构化调试事件。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VmEvent {
+    /// intrinsic 写入标准输出的文本片段。
+    IntrinsicOutput {
+        /// 原样文本；文本中包含该调用应产生的换行。
+        text: String,
+    },
     /// 模块开始执行。
     ModuleLoaded {
         /// 运行请求提供的逻辑模块身份。
@@ -299,6 +304,6 @@ impl VmEventSink for BoundedSink {
 fn is_priority_event(event: &VmEvent) -> bool {
     matches!(
         event,
-        VmEvent::ErrorRaised { .. } | VmEvent::FatalRaised { .. }
+        VmEvent::IntrinsicOutput { .. } | VmEvent::ErrorRaised { .. } | VmEvent::FatalRaised { .. }
     )
 }

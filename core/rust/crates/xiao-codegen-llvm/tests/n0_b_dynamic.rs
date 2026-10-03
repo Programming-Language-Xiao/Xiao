@@ -335,6 +335,62 @@ fn lowers_array_and_preserves_runtime_components() {
 }
 
 #[test]
+/// `print` intrinsic 必须在动态 LLVM 文本中声明并调用稳定 Runtime ABI。
+fn lowers_print_intrinsic_to_runtime_abi() {
+    let print = IrExpression {
+        kind: IrExpressionKind::IntrinsicCall {
+            id: 19,
+            arguments: vec![xiao_ir::IrCallArgument {
+                kind: "positional".to_owned(),
+                name: None,
+                value: literal("str", "\"hello\"", "str"),
+                span: span(),
+            }],
+        },
+        ty: IrType::None,
+        span: span(),
+    };
+    let module = lower_program(&expression_program(print), &CodegenOptions::default())
+        .expect("print 应降低到动态 Runtime ABI");
+    assert!(
+        module
+            .text
+            .contains("declare i32 @xiao_runtime_print_values(ptr, i64)")
+    );
+    assert!(
+        module
+            .text
+            .contains("call i32 @xiao_runtime_print_values(ptr")
+    );
+    validate_with_llvm_as(&module.text);
+}
+
+#[test]
+/// `input` intrinsic 使用返回值 ABI 和挂起错误槽，不退化为未实现的名称调用。
+fn lowers_input_intrinsic_to_runtime_abi() {
+    let input = IrExpression {
+        kind: IrExpressionKind::IntrinsicCall {
+            id: 20,
+            arguments: vec![xiao_ir::IrCallArgument {
+                kind: "positional".to_owned(),
+                name: None,
+                value: literal("str", "\"prompt: \"", "str"),
+                span: span(),
+            }],
+        },
+        ty: IrType::Scalar {
+            name: "str".to_owned(),
+        },
+        span: span(),
+    };
+    let module = lower_program(&expression_program(input), &CodegenOptions::default())
+        .expect("input 应降低到动态 Runtime ABI");
+    assert!(module.text.contains("xiao_runtime_input"));
+    assert!(module.text.contains("xiao_runtime_error_class"));
+    validate_with_llvm_as(&module.text);
+}
+
+#[test]
 /// 字符串转义必须复用类型层解码，避免原生和字节码看到不同的文本。
 fn decodes_string_escapes_before_llvm_emission() {
     let program = expression_program(literal("str", "\"a\\n\\t\\\\b\"", "str"));

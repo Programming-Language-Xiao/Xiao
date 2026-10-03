@@ -280,6 +280,29 @@ impl std::hash::Hash for RuntimeValue {
 }
 
 impl RuntimeValue {
+    /// 返回 intrinsic 输出使用的稳定文本表示。
+    pub fn display_text(&self) -> RuntimeResult<String> {
+        Ok(match self {
+            Self::Module(_) | Self::ModuleFunction(_, _) => self.type_name(),
+            Self::Int(value) => value.to_string(),
+            Self::Sint(value) => value.to_string(),
+            Self::Lint(value) | Self::Lfloat(value) => value.clone(),
+            Self::Float(value) => value.to_string(),
+            Self::Sfloat(value) => value.to_string(),
+            Self::Bool(value) => value.to_string(),
+            Self::Str(handle) => return handle.to_string(),
+            Self::None => "none".to_owned(),
+            Self::Error(_) => "error".to_owned(),
+            Self::Table(_)
+            | Self::TableDropView(_)
+            | Self::Array(_)
+            | Self::Tuple(_)
+            | Self::DictTable(_)
+            | Self::DictColumn(_)
+            | Self::Set(_) => format!("{self:?}"),
+        })
+    }
+
     /// 返回对应的静态标量类型；表和空值返回 `None`。
     #[must_use]
     pub const fn scalar_type(&self) -> Option<ScalarType> {

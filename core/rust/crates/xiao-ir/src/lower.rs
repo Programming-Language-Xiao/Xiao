@@ -475,13 +475,22 @@ impl<'a> Lowerer<'a> {
             },
             Expression::Call {
                 callee, arguments, ..
-            } => IrExpressionKind::Call {
-                callee: Box::new(self.expression(callee)),
-                arguments: arguments
+            } => {
+                let lowered_arguments = arguments
                     .iter()
                     .map(|argument| self.call_argument(argument))
-                    .collect(),
-            },
+                    .collect();
+                match self.type_result.intrinsic_id_at(expression.span()) {
+                    Some(id) => IrExpressionKind::IntrinsicCall {
+                        id: id.get(),
+                        arguments: lowered_arguments,
+                    },
+                    None => IrExpressionKind::Call {
+                        callee: Box::new(self.expression(callee)),
+                        arguments: lowered_arguments,
+                    },
+                }
+            }
             Expression::NewCall {
                 callee, arguments, ..
             } => IrExpressionKind::NewCall {
@@ -829,6 +838,7 @@ fn lower_modules(project: &ProjectModuleResult, source: &SourceFile) -> Vec<IrMo
                     nodes: Vec::new(),
                     diagnostics: Vec::new(),
                     runtime_checks: Vec::new(),
+                    intrinsic_calls: BTreeMap::new(),
                     environment: xiao_types::TypeEnvironment::new(),
                     materialization_plans: Vec::new(),
                     selection_plans: Vec::new(),

@@ -190,6 +190,15 @@ pub fn verify_for_execution(
 fn validate_signatures(tac: &TacProgram, result: &mut TacVerification) {
     for (index, signature) in tac.signatures.iter().enumerate() {
         let path = format!("signatures[{index}]");
+        if let Some(id) = signature.intrinsic_id() {
+            if xiao_intrinsics::IntrinsicId::new(id)
+                .and_then(xiao_intrinsics::active_by_id)
+                .is_none()
+            {
+                push_error(result, path, format!("未知或已废弃的 intrinsic ID {id}"));
+            }
+            continue;
+        }
         let lengths = [
             signature.parameter_names.len(),
             signature.parameter_kinds.len(),
@@ -747,8 +756,30 @@ fn validate_instruction_references(
         TacOp::Call {
             callee, signature, ..
         } => {
-            check_function_reference(tac, *callee, &format!("{path}.callee"), result);
-            check_signature_reference(tac, *signature, &format!("{path}.signature"), result);
+            let contract = tac.signatures.get(*signature);
+            let intrinsic_id = contract.and_then(CallSig::intrinsic_id);
+            if let Some(id) = intrinsic_id {
+                if *callee != crate::tac::FuncId::new(0) {
+                    push_error(
+                        result,
+                        format!("{path}.callee"),
+                        "intrinsic Call 必须使用保留入口函数编号 0",
+                    );
+                }
+                if xiao_intrinsics::IntrinsicId::new(id)
+                    .and_then(xiao_intrinsics::active_by_id)
+                    .is_none()
+                {
+                    push_error(
+                        result,
+                        format!("{path}.signature"),
+                        format!("未知或已废弃的 intrinsic ID {id}"),
+                    );
+                }
+            } else {
+                check_function_reference(tac, *callee, &format!("{path}.callee"), result);
+                check_signature_reference(tac, *signature, &format!("{path}.signature"), result);
+            }
         }
         TacOp::Check {
             value,
@@ -833,6 +864,26 @@ fn validate_call(
     let Some(signature) = tac.signatures.get(*signature_id) else {
         return;
     };
+    if let Some(id) = signature.intrinsic_id() {
+        if *callee != crate::tac::FuncId::new(0) {
+            push_error(
+                result,
+                format!("{path}.callee"),
+                "intrinsic Call 必须使用保留入口函数编号 0",
+            );
+        }
+        if xiao_intrinsics::IntrinsicId::new(id)
+            .and_then(xiao_intrinsics::active_by_id)
+            .is_none()
+        {
+            push_error(
+                result,
+                format!("{path}.signature"),
+                format!("未知或已废弃的 intrinsic ID {id}"),
+            );
+        }
+        return;
+    }
     let Some(target) = tac.functions.get(callee.get() as usize) else {
         return;
     };

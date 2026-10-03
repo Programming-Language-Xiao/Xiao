@@ -453,6 +453,32 @@ fn validate_expression(expression: &IrExpression, path: &str, result: &mut IrVal
                 );
             }
         }
+        IrExpressionKind::IntrinsicCall { id, arguments } => {
+            let intrinsic =
+                xiao_intrinsics::IntrinsicId::new(*id).and_then(xiao_intrinsics::active_by_id);
+            if intrinsic.is_none() {
+                result.errors.push(error(
+                    path,
+                    "intrinsic ID 未登记、为零或已废弃",
+                    Some(expression.span),
+                ));
+            }
+            for (index, argument) in arguments.iter().enumerate() {
+                if let Some(name) = &argument.name {
+                    validate_name(name, &format!("{path}.arguments[{index}].name"), result);
+                }
+                validate_expression(
+                    &argument.value,
+                    &format!("{path}.arguments[{index}].value"),
+                    result,
+                );
+                validate_span(
+                    argument.span,
+                    &format!("{path}.arguments[{index}].span"),
+                    result,
+                );
+            }
+        }
         IrExpressionKind::Member { object, member } => {
             validate_expression(object, &format!("{path}.object"), result);
             validate_name(member, &format!("{path}.member"), result);

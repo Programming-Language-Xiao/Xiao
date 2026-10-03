@@ -6,6 +6,7 @@
 //! 但仍不创建 Runtime 集合对象或执行集合操作。
 
 use xiao_diagnostics::DiagnosticParam;
+use xiao_intrinsics::IntrinsicKind;
 use xiao_source::SourceSpan;
 use xiao_syntax::{BinaryOperator, CallArgument, Expression, Name, SetTypeAnnotation, TypeTerm};
 
@@ -181,10 +182,12 @@ impl<'source> TypeChecker<'source> {
     /// 判断表达式是否是未被反引号包裹的 `set` 构造器名称。
     pub(super) fn is_set_constructor(&self, expression: &Expression) -> bool {
         match expression {
-            Expression::Name(_) => self.simple_callee_name(expression).as_deref() == Some("set"),
-            Expression::Call { callee, .. } => {
-                self.simple_callee_name(callee).as_deref() == Some("set")
-            }
+            Expression::Name(_) => self
+                .intrinsic_decl(expression)
+                .is_some_and(|decl| decl.kind == IntrinsicKind::SetConstructor),
+            Expression::Call { callee, .. } => self
+                .intrinsic_decl(callee)
+                .is_some_and(|decl| decl.kind == IntrinsicKind::SetConstructor),
             _ => false,
         }
     }

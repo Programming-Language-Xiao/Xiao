@@ -13,6 +13,7 @@
       "core/rust/crates/xiao-lifetime",
       "core/rust/crates/xiao-modules",
       "core/rust/crates/xiao-ir",
+      "core/rust/crates/xiao-intrinsics",
       "core/rust/crates/xiao-runtime",
       "core/rust/crates/xiao-runtime-abi",
       "core/rust/crates/xiao-bytecode",

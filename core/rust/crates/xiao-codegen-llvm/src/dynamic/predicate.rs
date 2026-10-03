@@ -173,6 +173,23 @@ fn expression_uses_runtime(expression: &IrExpression) -> bool {
                         .iter()
                         .any(|argument| expression_uses_runtime(&argument.value))
             }
+            IrExpressionKind::IntrinsicCall { id, arguments } => {
+                let intrinsic_requires_runtime = xiao_intrinsics::IntrinsicId::new(*id)
+                    .and_then(xiao_intrinsics::active_by_id)
+                    .is_some_and(|declaration| {
+                        matches!(
+                            declaration.kind,
+                            xiao_intrinsics::IntrinsicKind::Print
+                                | xiao_intrinsics::IntrinsicKind::Input
+                                | xiao_intrinsics::IntrinsicKind::SetConstructor
+                                | xiao_intrinsics::IntrinsicKind::ErrorConstructor
+                        )
+                    });
+                intrinsic_requires_runtime
+                    || arguments
+                        .iter()
+                        .any(|argument| expression_uses_runtime(&argument.value))
+            }
             IrExpressionKind::Member { object, .. } => expression_uses_runtime(object),
             IrExpressionKind::Selector { source, step, .. } => {
                 expression_uses_runtime(source)
@@ -304,6 +321,9 @@ fn expression_uses_container_abi(expression: &IrExpression) -> bool {
                         .iter()
                         .any(|argument| expression_uses_container_abi(&argument.value))
             }
+            IrExpressionKind::IntrinsicCall { arguments, .. } => arguments
+                .iter()
+                .any(|argument| expression_uses_container_abi(&argument.value)),
             IrExpressionKind::Member { object, .. } => expression_uses_container_abi(object),
             IrExpressionKind::Selector { source, step, .. } => {
                 expression_uses_container_abi(source)

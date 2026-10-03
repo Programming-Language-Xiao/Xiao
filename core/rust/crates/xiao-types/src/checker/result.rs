@@ -147,6 +147,8 @@ pub struct TypeCheckResult {
     pub diagnostics: Vec<Diagnostic>,
     /// 需要由 Runtime 或后端执行的动态检查。
     pub runtime_checks: Vec<RuntimeCheck>,
+    /// 按调用源码区间登记的稳定 intrinsic ID；后端不重新解析源码名称。
+    pub intrinsic_calls: BTreeMap<(usize, usize), xiao_intrinsics::IntrinsicId>,
     /// 检查结束时的环境快照，供后续 IR 阶段消费。
     pub environment: TypeEnvironment,
     /// 空数组路径声明对应的静态物化计划。
@@ -207,6 +209,14 @@ impl TypeCheckResult {
     #[must_use]
     pub fn runtime_checks(&self) -> &[RuntimeCheck] {
         &self.runtime_checks
+    }
+
+    /// 返回调用源码区间对应的稳定 intrinsic ID。
+    #[must_use]
+    pub fn intrinsic_id_at(&self, span: SourceSpan) -> Option<xiao_intrinsics::IntrinsicId> {
+        self.intrinsic_calls
+            .get(&(span.start(), span.end()))
+            .copied()
     }
 
     /// 返回诊断的只读视图。

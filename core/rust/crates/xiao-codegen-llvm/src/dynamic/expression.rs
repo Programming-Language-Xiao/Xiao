@@ -43,11 +43,103 @@ impl<'a> DynamicGenerator<'a> {
             IrExpressionKind::Call { callee, arguments } => {
                 self.emit_call(callee, arguments, expression.span)
             }
+            IrExpressionKind::IntrinsicCall { id, arguments } => {
+                self.emit_intrinsic(*id, arguments, expression.span)
+            }
             IrExpressionKind::Binary { .. }
             | IrExpressionKind::Unary { .. }
             | IrExpressionKind::Selector { .. } => Err(CodegenError::Unsupported {
                 feature: "动态表达式运算或成员访问".to_owned(),
                 span: Some(expression.span),
+            }),
+        }
+    }
+
+    /// 发射由契约表标识的动态 intrinsic。`print` 走稳定 Runtime ABI；`input`
+    /// 暂不在 LLVM 动态入口伪造实现，明确报告工具链边界。
+    fn emit_intrinsic(
+        &mut self,
+        id: u32,
+        arguments: &[IrCallArgument],
+        span: IrSpan,
+    ) -> Result<String> {
+        let declaration = xiao_intrinsics::IntrinsicId::new(id)
+            .and_then(xiao_intrinsics::active_by_id)
+            .ok_or_else(|| CodegenError::InvalidIr {
+                message: format!("未知或已废弃的 intrinsic ID {id}"),
+            })?;
+        match declaration.vm_binding {
+            xiao_intrinsics::VmBinding::Print => {
+                let mut values = Vec::with_capacity(arguments.len());
+                for argument in arguments {
+                    if argument.kind != "positional" || argument.name.is_some() {
+                        return Err(CodegenError::Unsupported {
+                            feature: "print 的关键字或展开实参".to_owned(),
+                            span: Some(argument.span),
+                        });
+                    }
+                    values.push(self.emit_expression(&argument.value)?);
+                }
+                let array = if values.is_empty() {
+                    None
+                } else {
+                    let array = self.next_temp();
+                    self.emit(format!(
+                        "  {array} = alloca {VALUE_TYPE}, i64 {}",
+                        values.len()
+                    ));
+                    for (index, value) in values.iter().enumerate() {
+                        let slot = self.next_temp();
+                        self.emit(format!(
+                            "  {slot} = getelementptr inbounds {VALUE_TYPE}, ptr {array}, i64 {index}"
+                        ));
+                        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+                    }
+                    Some(array)
+                };
+                let pointer = array.as_deref().unwrap_or("null");
+                self.checked_status_call_at(
+                    format!(
+                        "@xiao_runtime_print_values(ptr {pointer}, i64 {})",
+                        values.len()
+                    ),
+                    span,
+                );
+                for value in values {
+                    self.release_value(value);
+                }
+                Ok(self.none_value())
+            }
+            xiao_intrinsics::VmBinding::Input => {
+                if arguments.len() > 1
+                    || arguments
+                        .iter()
+                        .any(|argument| argument.kind != "positional" || argument.name.is_some())
+                {
+                    return Err(CodegenError::Unsupported {
+                        feature: "input 的关键字或展开实参".to_owned(),
+                        span: Some(span),
+                    });
+                }
+                let (prompt, prompt_slot) = if let Some(argument) = arguments.first() {
+                    let value = self.emit_expression(&argument.value)?;
+                    let slot = self.next_temp();
+                    self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
+                    self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+                    (format!("ptr {slot}, i8 1"), Some(value))
+                } else {
+                    ("ptr null, i8 0".to_owned(), None)
+                };
+                let value = self.emit_value_call("xiao_runtime_input", &prompt);
+                if let Some(prompt) = prompt_slot {
+                    self.release_value(prompt);
+                }
+                self.check_pending_error_at(span);
+                Ok(value)
+            }
+            _ => Err(CodegenError::Unsupported {
+                feature: format!("动态 intrinsic {}", declaration.public_name),
+                span: Some(span),
             }),
         }
     }

@@ -1032,6 +1032,9 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
             IrExpressionKind::Call { callee, arguments } => {
                 self.emit_call(callee, arguments, expected, expression.span)
             }
+            IrExpressionKind::IntrinsicCall { id, arguments } => {
+                self.emit_intrinsic(*id, arguments, expected, expression.span)
+            }
             IrExpressionKind::Cast {
                 expression: inner,
                 target,
@@ -1052,6 +1055,37 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                 Err(unsupported("动态值或容器表达式", Some(expression.span)))
             }
         }
+    }
+
+    /// 发射固定宽度标量 intrinsic；复杂入口由动态 Runtime 路径消费。
+    fn emit_intrinsic(
+        &mut self,
+        id: u32,
+        arguments: &[xiao_ir::IrCallArgument],
+        expected: Scalar,
+        span: IrSpan,
+    ) -> Result<(String, Scalar)> {
+        let declaration = xiao_intrinsics::IntrinsicId::new(id)
+            .and_then(xiao_intrinsics::active_by_id)
+            .ok_or_else(|| CodegenError::InvalidIr {
+                message: format!("未知或已废弃的 intrinsic ID {id}"),
+            })?;
+        if declaration.kind != xiao_intrinsics::IntrinsicKind::ScalarConversion {
+            return Err(unsupported(
+                format!("静态 intrinsic {}", declaration.public_name),
+                Some(span),
+            ));
+        }
+        let Some(argument) = arguments.first() else {
+            return Err(unsupported("标量 intrinsic 缺少参数", Some(span)));
+        };
+        if arguments.len() != 1 || argument.kind != "positional" || argument.name.is_some() {
+            return Err(unsupported("标量 intrinsic 参数形态", Some(span)));
+        }
+        let target = scalar_for_intrinsic_type(declaration.signature.return_type, span)?;
+        let (value, source) = self.emit_expression(&argument.value)?;
+        let value = self.cast_value(value, source, target, span)?;
+        Ok((self.cast_value(value, target, expected, span)?, expected))
     }
 
     /// 发射静态函数调用并检查参数和返回类型。
@@ -1832,6 +1866,24 @@ fn scalar_name_type(name: &str, span: IrSpan) -> Result<Scalar> {
         },
         span,
     )
+}
+
+/// 将契约签名的标量结果类别映射到静态 LLVM 类别。
+fn scalar_for_intrinsic_type(
+    value_type: xiao_intrinsics::ValueType,
+    span: IrSpan,
+) -> Result<Scalar> {
+    match value_type {
+        xiao_intrinsics::ValueType::Int => Ok(Scalar::Int),
+        xiao_intrinsics::ValueType::Sint => Ok(Scalar::Sint),
+        xiao_intrinsics::ValueType::Float => Ok(Scalar::Float),
+        xiao_intrinsics::ValueType::Sfloat => Ok(Scalar::Sfloat),
+        xiao_intrinsics::ValueType::Bool => Ok(Scalar::Bool),
+        _ => Err(unsupported(
+            "静态 intrinsic 返回值不是固定宽度标量",
+            Some(span),
+        )),
+    }
 }
 
 /// 返回内部标量类别的 Xiao 名称。

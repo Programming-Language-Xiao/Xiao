@@ -10,6 +10,7 @@ members = [
     "crates/xiao-lifetime",
     "crates/xiao-modules",
     "crates/xiao-ir",
+    "crates/xiao-intrinsics",
     "crates/xiao-runtime",
     "crates/xiao-runtime-abi",
     "crates/xiao-bytecode",

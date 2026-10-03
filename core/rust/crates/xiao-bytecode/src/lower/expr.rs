@@ -3,7 +3,6 @@
 //! 每个表达式降低为一条或数条指令并把结果放进一个新的虚拟寄存器。这里只做
 //! 1:1 语义展开：类型来自 `IrExpression.ty`，本模块不重新推断。
 
-use xiao_diagnostics::error_kind_of;
 use xiao_ir::{
     IrCallArgument, IrDictEntry, IrExpression, IrExpressionKind, IrSelector, IrSelectorItem,
     IrSpan, IrType,
@@ -36,6 +35,9 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
         } => lower_binary(lowerer, operator, left, right, expression),
         IrExpressionKind::Call { callee, arguments } => {
             lower_call(lowerer, callee, arguments, expression)
+        }
+        IrExpressionKind::IntrinsicCall { id, arguments } => {
+            lower_intrinsic_call(lowerer, *id, arguments, expression)
         }
         IrExpressionKind::NewCall { callee, arguments } => {
             lowerer.lower_new(callee, arguments, expression.span)
@@ -609,29 +611,6 @@ fn lower_call(
             return register;
         }
     }
-    if let IrExpressionKind::Name { name } = &callee.kind {
-        if !name.backticked && ScalarType::from_name(&name.text).is_some() && arguments.len() == 1 {
-            return lower_cast(lowerer, &arguments[0].value, &name.text, expression);
-        }
-    }
-    if arguments.is_empty()
-        && matches!(
-            &callee.kind,
-            IrExpressionKind::Name { name } if !name.backticked && name.text == "set"
-        )
-    {
-        return build_container(
-            lowerer,
-            TacOp::NewSet {
-                elements: Vec::new(),
-            },
-            expression.span,
-            &expression.ty,
-        );
-    }
-    if let Some(register) = lower_error_constructor(lowerer, callee, arguments, expression) {
-        return register;
-    }
     if is_random_seed_call(callee) {
         let Some(argument) = arguments.first() else {
             return lower_unsupported(lowerer, "random.seed 参数", expression.span);
@@ -692,6 +671,52 @@ fn lower_call(
     register
 }
 
+/// 将契约表登记的 intrinsic 降低为现有 Call 编码。
+///
+/// FuncId(0) 在生产 TAC 中是脚本入口，不能作为普通被调函数；这里把它
+/// 保留为 intrinsic 标记，SigId 直接携带固定宽度的 IntrinsicId。这样
+/// 不增加 09R3 opcode；稳定 u32 ID 拆入既有调用签名的两个 u16 槽位，Leb128
+/// 和定宽目标都复用原有编码字段。
+fn lower_intrinsic_call(
+    lowerer: &mut Lowerer<'_>,
+    id: u32,
+    arguments: &[IrCallArgument],
+    expression: &IrExpression,
+) -> VReg {
+    if xiao_intrinsics::IntrinsicId::new(id)
+        .and_then(xiao_intrinsics::active_by_id)
+        .is_none()
+    {
+        lowerer.record_unsupported(format!("未知 intrinsic ID {id}"));
+        return lower_unsupported(lowerer, "intrinsic", expression.span);
+    }
+    let arguments = arguments
+        .iter()
+        .map(|argument| {
+            let value = lowerer.lower_expression(&argument.value);
+            match argument.name.as_ref() {
+                Some(name) => TacArgument::keyword(name.text.clone(), value),
+                None => TacArgument::positional(value),
+            }
+        })
+        .collect::<Vec<_>>();
+    let class = Lowerer::class_of_type(&expression.ty);
+    let register = lowerer.new_register(class, expression.span);
+    let signature = lowerer
+        .signatures
+        .intern(crate::sig::CallSig::intrinsic(id));
+    lowerer.emit(TacInstr::with_dst(
+        TacOp::Call {
+            callee: crate::tac::FuncId::new(0),
+            signature,
+            arguments,
+        },
+        register,
+        expression.span,
+    ));
+    register
+}
+
 /// 判断 IR 调用是否为内建 `random.seed`。
 fn is_random_seed_call(callee: &IrExpression) -> bool {
     let IrExpressionKind::Member { object, member } = &callee.kind else {
@@ -700,62 +725,6 @@ fn is_random_seed_call(callee: &IrExpression) -> bool {
     matches!(&object.kind, IrExpressionKind::Name { name } if !name.backticked && name.text == "random")
         && !member.backticked
         && member.text == "seed"
-}
-
-/// 识别 `raise ErrorType(code = ..., message = ...)` 使用的错误构造式。
-///
-/// 普通调用仍然保留原有静态/动态派发路径；只有错误类型名单中的裸名称才
-/// 降低为 `MakeError`，从而避免 Runtime 再解析源码文本。
-fn lower_error_constructor(
-    lowerer: &mut Lowerer<'_>,
-    callee: &IrExpression,
-    arguments: &[IrCallArgument],
-    expression: &IrExpression,
-) -> Option<VReg> {
-    let IrExpressionKind::Name { name } = &callee.kind else {
-        return None;
-    };
-    if name.backticked || error_kind_of(&name.text).is_none() {
-        return None;
-    }
-    if name.text == "FatalError" {
-        lowerer.record_unsupported("FatalError 不能构造为可恢复错误".to_owned());
-        // 类型层会拒绝该构造；这里仍给手工构造的 IR 一个确定的安全值，
-        // 避免退化成 `CallDynamic` 后在 VM 中伪装成普通可恢复错误。
-        let register = lowerer.new_register(RegisterClass::None, expression.span);
-        lowerer.emit(TacInstr::with_dst(
-            TacOp::LoadNone,
-            register,
-            expression.span,
-        ));
-        return Some(register);
-    }
-    let mut code = None;
-    let mut message = None;
-    for (index, argument) in arguments.iter().enumerate() {
-        let value = lowerer.lower_expression(&argument.value);
-        match argument.name.as_ref().map(|name| name.text.as_str()) {
-            Some("code") => code = Some(value),
-            Some("message") => message = Some(value),
-            None if index == 0 => code = Some(value),
-            None if index == 1 => message = Some(value),
-            _ => lowerer.record_unsupported(format!(
-                "错误构造参数尚未降低（{}..{}）",
-                argument.span.start, argument.span.end
-            )),
-        }
-    }
-    let register = lowerer.new_register(RegisterClass::Dynamic, expression.span);
-    lowerer.emit(TacInstr::with_dst(
-        TacOp::MakeError {
-            type_name: name.text.clone(),
-            code,
-            message,
-        },
-        register,
-        expression.span,
-    ));
-    Some(register)
 }
 
 /// 降低显式转换。

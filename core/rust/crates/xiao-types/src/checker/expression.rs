@@ -4,6 +4,7 @@
 //! 容器、函数和表的专门规则仍由各自子模块提供。
 
 use xiao_diagnostics::{DiagnosticParam, error_kind_of};
+use xiao_intrinsics::IntrinsicKind;
 use xiao_source::SourceSpan;
 use xiao_syntax::{
     BinaryOperator, CallArgument, Expression, LiteralKind, ScalarType, UnaryOperator,
@@ -501,6 +502,7 @@ impl<'source> TypeChecker<'source> {
             return result;
         }
         if self.is_set_constructor(callee) {
+            self.record_intrinsic_call(callee, span);
             return self.check_set_constructor(arguments, span);
         }
         if self
@@ -513,15 +515,40 @@ impl<'source> TypeChecker<'source> {
                 .unwrap_or(Type::Dynamic);
         }
         if let Some(target) = self.scalar_callee(callee) {
+            self.record_intrinsic_call(callee, span);
             return self.check_scalar_call(target, arguments, span);
         }
-        if self.simple_callee_name(callee).as_deref() == Some("input") {
+        if self
+            .intrinsic_decl(callee)
+            .is_some_and(|decl| decl.kind == IntrinsicKind::Input)
+        {
+            self.record_intrinsic_call(callee, span);
+            if arguments.len() > 1 {
+                self.type_error(
+                    INVALID_OPERANDS_CODE,
+                    "x02.type.call_arity",
+                    span,
+                    "input 最多接受一个提示参数".to_owned(),
+                );
+            }
             for argument in arguments {
-                self.check_expression(&argument.value);
+                let argument_type = self.check_expression(&argument.value);
+                if argument_type != Type::scalar(ScalarType::Str) {
+                    self.type_error(
+                        INVALID_OPERANDS_CODE,
+                        "x02.type.call_argument",
+                        argument.value.span(),
+                        format!("input 提示参数必须是 str，实际为 {}", argument_type),
+                    );
+                }
             }
             return Type::scalar(ScalarType::Str);
         }
-        if self.simple_callee_name(callee).as_deref() == Some("print") {
+        if self
+            .intrinsic_decl(callee)
+            .is_some_and(|decl| decl.kind == IntrinsicKind::Print)
+        {
+            self.record_intrinsic_call(callee, span);
             for argument in arguments {
                 self.check_expression(&argument.value);
             }
@@ -537,7 +564,12 @@ impl<'source> TypeChecker<'source> {
         arguments: &[CallArgument],
         span: SourceSpan,
     ) -> Option<Type> {
-        let name = self.simple_callee_name(callee)?;
+        let declaration = self.intrinsic_decl(callee)?;
+        if declaration.kind != IntrinsicKind::ErrorConstructor {
+            return None;
+        }
+        self.record_intrinsic_call(callee, span);
+        let name = declaration.public_name;
         if name == "FatalError" {
             for argument in arguments {
                 self.check_expression(&argument.value);
@@ -550,13 +582,23 @@ impl<'source> TypeChecker<'source> {
             );
             return Some(Type::Dynamic);
         }
-        if error_kind_of(&name).is_some() {
+        if error_kind_of(name).is_some() {
             for argument in arguments {
                 self.check_expression(&argument.value);
             }
             return Some(Type::Dynamic);
         }
         None
+    }
+
+    /// 将已选中的契约声明记录到类型结果，供 IR 直接消费稳定 ID。
+    fn record_intrinsic_call(&mut self, callee: &Expression, span: SourceSpan) {
+        if let Some(id) = self
+            .intrinsic_decl(callee)
+            .and_then(|declaration| xiao_intrinsics::IntrinsicId::new(declaration.id.get()))
+        {
+            self.intrinsic_calls.insert((span.start(), span.end()), id);
+        }
     }
 
     /// 检查标量转换构造器调用并记录必要的运行时转换检查。
