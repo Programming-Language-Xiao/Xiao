@@ -35,5 +35,5 @@ related:
 
 ## 当前边界
 
-表体字段初始化必须是静态纯表达式。正式 `xiao run` 尚未开放，方法值的动态调用仍未
-接通；运行期行为见 [Runtime 表生命周期](../memory/runtime/table-lifecycle.md)。
+表体字段初始化必须是静态纯表达式。方法值的动态调用仍未接通；
+运行期行为见 [Runtime 表生命周期](../memory/runtime/table-lifecycle.md)。

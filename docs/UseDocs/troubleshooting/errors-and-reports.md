@@ -77,7 +77,7 @@ Fatal 报告仍然保留原因、位置和调用栈，便于提交可复现报�
 
 09R2 研究 VM 已执行有序容器选择、随机抽样、事务性广播、集合运算和 `for` 迭代；上述
 `X06-RUNTIME-017..024` 均是可恢复 `XiaoError`，会沿当前帧 handler、`finally` 和释放计划
-传播。研究 VM 仍不等于生产 `xiao run`，正式 `.xiaoc` 加载和用户可见命令由后续阶段开放。
+传播。生产 `xiao run` 与正式 `.xiaoc` 已分别由 11/X0 与 14A 交付，见[命令行参考](../tooling/cli/README.md)。
 
 ## 报告与语言
 

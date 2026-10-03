@@ -20,4 +20,4 @@
 运行代码前可先阅读[开始使用](../getting-started/README.md)；语言错误的恢复方法见[故障排查](../troubleshooting/README.md)。
 
 函数、控制流和入口页面的 `verified` 只覆盖 04 阶段静态解析与类型检查；内存页面的
-`verified` 只覆盖 06-A 静态生命周期计划。当前版本仍不表示已经执行 Xiao 程序。
+`verified` 只覆盖 06-A 静态生命周期计划。程序执行已由 09/10 阶段与 11/X0 交付，见[命令行参考](../tooling/cli/README.md)。

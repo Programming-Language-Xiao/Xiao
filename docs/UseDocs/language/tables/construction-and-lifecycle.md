@@ -48,4 +48,4 @@ user = new User(1)
 最后一个强引用释放时执行一次 `drop`，析构期间的 `self` 只读。
 
 实际释放与失败回滚见 [Runtime 表生命周期](../memory/runtime/table-lifecycle.md)。
-正式 `xiao run` 尚未开放，研究执行器通过测试入口验证上述行为。
+上述行为既可由研究执行器通过测试入口验证，也可由 `xiao run` 执行，见[命令行参考](../../tooling/cli/README.md)。

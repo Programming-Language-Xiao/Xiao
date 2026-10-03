@@ -17,7 +17,7 @@ related:
 # 错误控制流
 
 Xiao 首版错误控制流提供 `try`、`catch`、`finally` 和 `raise`。07-B 已完成语法树、静态边界、生命周期
-退出计划和 Runtime 测试驱动器；这不代表字节码 VM 或 LLVM 已经能执行用户程序。
+退出计划和 Runtime 测试驱动器；字节码 VM 与 LLVM 原生后端随后由 09/10 阶段交付，用户命令见[命令行参考](../../tooling/cli/README.md)。
 
 ## 基本写法
 

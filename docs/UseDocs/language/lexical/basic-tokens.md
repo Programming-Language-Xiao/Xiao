@@ -16,7 +16,7 @@ related:
 
 [返回词法主题索引](README.md) · [上一页：最小 Token 流](minimal-tokens.md)
 
-本页说明 Xiao 0.1 已验证的 L1 词法形状。它描述源码如何被前端识别，不代表当前版本已经能执行赋值、函数或容器程序。
+本页说明 Xiao 0.1 已验证的 L1 词法形状。它描述源码如何被前端识别；赋值、函数与容器程序的执行能力见[命令行参考](../../tooling/cli/README.md)。
 
 ## 可以识别的内容
 
@@ -48,6 +48,7 @@ L1 接受常用的换行、制表和引号转义，例如 `"a\\n b"`。字符串
 
 ## 当前边界
 
-反引号 UTF-8 名称、注释和缩进已经在 L2 词法层验证；AST 和可执行语法仍在后续里程碑。请阅读[反引号名称](backtick-identifiers.md)和[注释与缩进](comments-and-indentation.md)了解新增 Token，再查看[最小 Token 流](minimal-tokens.md)核对 EOF 与 CRLF 细节；遇到错误位置问题，请查看[结构化诊断](../../troubleshooting/diagnostics-structure.md)。
+反引号 UTF-8 名称、注释和缩进已经在 L2 词法层验证；AST 与语法细节见[语言指南](../README.md)。
+请阅读[反引号名称](backtick-identifiers.md)和[注释与缩进](comments-and-indentation.md)了解新增 Token，再查看[最小 Token 流](minimal-tokens.md)核对 EOF 与 CRLF 细节；遇到错误位置问题，请查看[结构化诊断](../../troubleshooting/diagnostics-structure.md)。
 
 下一步阅读[基础变量与表达式](../basics/README.md)。
