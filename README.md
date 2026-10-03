@@ -145,6 +145,12 @@ tests/spec/      规格输入、正反例与快照
 resources/brand/ Logo 与静态品牌资源
 ```
 
+## 仓库活跃度
+
+<p align="center">
+  <img src="https://repobeats.axiom.co/api/embed/998c3122d6f0c7bd813f3e42e6d084b26e1a3024.svg" width="100%" alt="Repobeats 分析图像">
+</p>
+
 ## 许可证
 
 [MIT](./LICENSE)
