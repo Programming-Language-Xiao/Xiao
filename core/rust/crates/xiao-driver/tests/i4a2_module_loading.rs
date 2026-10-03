@@ -2,6 +2,7 @@
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde_json::json;
@@ -14,6 +15,8 @@ use xiao_driver::{DriverOutcome, DriverRequest, FrontendContext, FrontendRequest
 use xiao_package::{CacheLayout, ENVIRONMENT_METADATA_FILE};
 use xiao_vm::VmEvent;
 
+static WORKSPACE_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
 struct Workspace(PathBuf);
 
 impl Workspace {
@@ -22,7 +25,11 @@ impl Workspace {
             .duration_since(UNIX_EPOCH)
             .expect("clock")
             .as_nanos();
-        let path = std::env::temp_dir().join(format!("xiao-i4a2-{}-{stamp}", std::process::id()));
+        let sequence = WORKSPACE_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let path = std::env::temp_dir().join(format!(
+            "xiao-i4a2-{}-{stamp}-{sequence}",
+            std::process::id()
+        ));
         fs::create_dir(&path).expect("workspace");
         Self(path)
     }
