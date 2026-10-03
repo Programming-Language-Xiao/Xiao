@@ -296,7 +296,9 @@ ignored_command=(cargo test --manifest-path "$cargo_manifest" --workspace -- --i
 `Readable`。`reproduce.sh`/`reproduce.ps1` 仅增加 `XIAO_STRIP` 工具准备，workflow 未改，
 现有 `--ignored` 会自动覆盖新增测试。产物比较同时归一化 PE 调试目录中的链接器时间戳，
 避免真实 Runtime 链接重复构建因 POGO/CodeView 时间字段产生未解释差异；ELF 链接关闭
-机器路径相关的 GNU build-id，比较层仍能识别并记录已有 build-id 元数据。
+机器路径相关的 GNU build-id，比较层仍能识别并记录已有 build-id 元数据；Linux ELF
+链接器仍可能因临时输入路径改变节布局，门控沿用 15B 的 `BinaryLayout` 白名单并写明原因，
+不把该差异伪装成字节完全一致。
 
 本机 Windows 原生工具链已跑通 5 条新增门控：strip/Debug O0-O3、真实符号与路径、
 Release 重复字节比较、平台独立基线均通过。其他平台须由四平台 CI 按 Windows → Linux →
