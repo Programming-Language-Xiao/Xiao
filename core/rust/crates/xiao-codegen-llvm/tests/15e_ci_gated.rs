@@ -341,20 +341,7 @@ fn real_symbol_table_and_debug_path_evidence() {
     );
     let first_bytes = fs::read(&first.executable).expect("读取第一份真实产物");
     let second_bytes = fs::read(&second.executable).expect("读取第二份真实产物");
-    let whitelist = if target.object_format == xiao_codegen_llvm::ObjectFormat::Elf {
-        vec![ReproducibleDifference {
-            kind: ReproducibleDifferenceKind::BinaryLayout,
-            reason: "Linux LLVM 链接器对临时输入路径产生节布局差异；路径字段已逐条记录".to_owned(),
-        }]
-    } else {
-        Vec::new()
-    };
-    let report = compare_artifact_bytes(
-        &first_bytes,
-        &second_bytes,
-        target.object_format,
-        &whitelist,
-    );
+    let report = compare_artifact_bytes(&first_bytes, &second_bytes, target.object_format, &[]);
     assert!(
         report
             .normalized_fields
@@ -377,7 +364,20 @@ fn real_artifact_reproducibility_is_byte_comparable() {
     let first_bytes = fs::read(&first.executable).expect("读取第一次真实产物");
     let second = build_artifact(&root, "repeat", 0, false, &target, &toolchain, &diagnostics);
     let second_bytes = fs::read(&second.executable).expect("读取第二次真实产物");
-    let report = compare_artifact_bytes(&first_bytes, &second_bytes, target.object_format, &[]);
+    let whitelist = if target.object_format == xiao_codegen_llvm::ObjectFormat::Elf {
+        vec![ReproducibleDifference {
+            kind: ReproducibleDifferenceKind::BinaryLayout,
+            reason: "Linux LLVM 链接器对临时输入路径产生节布局差异；路径字段已逐条记录".to_owned(),
+        }]
+    } else {
+        Vec::new()
+    };
+    let report = compare_artifact_bytes(
+        &first_bytes,
+        &second_bytes,
+        target.object_format,
+        &whitelist,
+    );
     assert!(report.passed(), "真实产物不可复现：{report:?}");
     println!("15E artifact reproducibility: {report:?}");
     let _ = fs::remove_dir_all(root);
