@@ -989,11 +989,9 @@ impl IndexStore {
     }
 
     /// 读取并解码归档索引；缺失或损坏时直接失败，不扫描归档成员猜测重建。
+    ///
+    /// 纯读路径：不建锁、不建目录，因此只读介质上的归档索引也能读取。
     pub fn read_archive(&self, path: impl AsRef<Path>) -> Result<ArchiveIndex, ArtifactError> {
-        let lock = path.as_ref().with_extension("index.lock");
-        if let Some(parent) = lock.parent() {
-            fs::create_dir_all(parent)?;
-        }
         ArchiveIndex::decode(&fs::read(path)?)
     }
 }
