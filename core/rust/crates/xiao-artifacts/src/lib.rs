@@ -12,17 +12,23 @@ use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
+
 /// `.xiaoc` 文件魔数。
 pub const XIAOC_MAGIC: &[u8; 8] = b"XIAOC\r\n\x1a";
 /// 首版索引主版本。
 pub const INDEX_SCHEMA_MAJOR: u32 = 1;
 /// 首版索引次版本。
 pub const INDEX_SCHEMA_MINOR: u32 = 0;
+/// 首版索引没有额外必需能力位。
+pub const INDEX_REQUIRED_FEATURES: u64 = 0;
 /// 首版归档索引记录类型。
 pub const ARCHIVE_INDEX_RECORD_TYPE: u32 = 1;
 /// 首版全局缓存索引记录类型。
 pub const GLOBAL_INDEX_RECORD_TYPE: u32 = 2;
 
+/// 进程内临时文件和隔离文件的单调序列。
 static NEXT_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 /// 内容寻址对象的独立命名空间。
@@ -286,20 +292,38 @@ impl ArtifactStore {
             if read == 0 {
                 break;
             }
-            file.write_all(&buffer[..read])?;
+            if let Err(error) = file.write_all(&buffer[..read]) {
+                let _ = fs::remove_file(&temporary);
+                return Err(ArtifactError::Io(error));
+            }
             hasher.update(&buffer[..read]);
-            length = length
-                .checked_add(read as u64)
-                .ok_or(ArtifactError::SizeOverflow)?;
+            length = length.checked_add(read as u64).ok_or_else(|| {
+                let _ = fs::remove_file(&temporary);
+                ArtifactError::SizeOverflow
+            })?;
         }
-        file.sync_all()?;
+        if let Err(error) = file.sync_all() {
+            let _ = fs::remove_file(&temporary);
+            return Err(ArtifactError::Io(error));
+        }
         drop(file);
+        if let Err(error) = make_immutable(&temporary) {
+            let _ = fs::remove_file(&temporary);
+            return Err(error);
+        }
         let digest = Digest256(hasher.finalize().into());
         let path = self.object_path(kind, digest);
         if path.exists() {
-            let equal = files_equal(&path, &temporary)?;
-            let _ = fs::remove_file(&temporary);
+            let equal = match files_equal(&path, &temporary) {
+                Ok(equal) => equal,
+                Err(error) => {
+                    let _ = fs::remove_file(&temporary);
+                    return Err(error);
+                }
+            };
             if equal {
+                let _ = fs::remove_file(&temporary);
+                make_immutable(&path)?;
                 return Ok(ObjectReference {
                     kind,
                     digest,
@@ -307,7 +331,7 @@ impl ArtifactStore {
                     path,
                 });
             }
-            let quarantine = self.quarantine_path(&path)?;
+            let quarantine = self.quarantine_collision(&path, &temporary)?;
             return Err(ArtifactError::HashCollision {
                 path: quarantine,
                 digest,
@@ -317,12 +341,22 @@ impl ArtifactStore {
             path: path.clone(),
             reason: "对象没有父目录".to_owned(),
         })?;
-        fs::create_dir_all(parent)?;
+        if let Err(error) = fs::create_dir_all(parent) {
+            let _ = fs::remove_file(&temporary);
+            return Err(ArtifactError::Io(error));
+        }
         if let Err(error) = fs::rename(&temporary, &path) {
             if error.kind() == io::ErrorKind::AlreadyExists {
-                let equal = files_equal(&path, &temporary)?;
-                let _ = fs::remove_file(&temporary);
+                let equal = match files_equal(&path, &temporary) {
+                    Ok(equal) => equal,
+                    Err(error) => {
+                        let _ = fs::remove_file(&temporary);
+                        return Err(error);
+                    }
+                };
                 if equal {
+                    let _ = fs::remove_file(&temporary);
+                    make_immutable(&path)?;
                     return Ok(ObjectReference {
                         kind,
                         digest,
@@ -330,7 +364,7 @@ impl ArtifactStore {
                         path,
                     });
                 }
-                let quarantine = self.quarantine_path(&path)?;
+                let quarantine = self.quarantine_collision(&path, &temporary)?;
                 return Err(ArtifactError::HashCollision {
                     path: quarantine,
                     digest,
@@ -355,6 +389,10 @@ impl ArtifactStore {
                 reason: "不是完整规范 `.xiaoc` 文件".to_owned(),
             });
         }
+        xiao_bytecode::validate_xiaoc(bytes).map_err(|error| ArtifactError::InvalidObject {
+            path: PathBuf::from("<memory>"),
+            reason: format!("`.xiaoc` 格式校验失败：{error}"),
+        })?;
         self.put(ObjectKind::Xiaoc, bytes)
     }
 
@@ -391,7 +429,11 @@ impl ArtifactStore {
                 quarantine,
             });
         }
-        if kind == ObjectKind::Xiaoc && (bytes.len() < 72 || bytes.get(..8) != Some(XIAOC_MAGIC)) {
+        if kind == ObjectKind::Xiaoc
+            && (bytes.len() < 72
+                || bytes.get(..8) != Some(XIAOC_MAGIC)
+                || xiao_bytecode::validate_xiaoc(&bytes).is_err())
+        {
             let quarantine = self.quarantine_path(&path).ok();
             return Err(ArtifactError::CorruptObject {
                 path,
@@ -421,20 +463,34 @@ impl ArtifactStore {
                     continue;
                 }
                 if path.extension().and_then(|value| value.to_str()) != Some(kind.extension()) {
+                    self.quarantine_path(&path)?;
                     continue;
                 }
                 let Some(stem) = path.file_stem().and_then(|value| value.to_str()) else {
+                    self.quarantine_path(&path)?;
                     continue;
                 };
                 let digest = match Digest256::parse(stem) {
                     Ok(value) => value,
-                    Err(_) => continue,
+                    Err(_) => {
+                        self.quarantine_path(&path)?;
+                        continue;
+                    }
                 };
-                let bytes = fs::read(&path)?;
-                if Digest256::of_bytes(&bytes) != digest {
-                    let _ = self.quarantine_path(&path);
+                if path
+                    .parent()
+                    .and_then(Path::file_name)
+                    .and_then(|value| value.to_str())
+                    != Some(&digest.as_hex()[..2])
+                {
+                    self.quarantine_path(&path)?;
                     continue;
                 }
+                let bytes = match self.read_checked(kind, digest, None) {
+                    Ok(bytes) => bytes,
+                    Err(ArtifactError::CorruptObject { .. }) => continue,
+                    Err(error) => return Err(error),
+                };
                 objects.push(ObjectReference {
                     kind,
                     digest,
@@ -456,11 +512,60 @@ impl ArtifactStore {
         let destination = self
             .root
             .join("quarantine")
-            .join(format!("{name}.corrupt-{sequence}"));
+            .join(format!("{name}.corrupt-{}-{sequence}", std::process::id()));
         if path.exists() {
             fs::rename(path, &destination)?;
         }
         Ok(destination)
+    }
+
+    fn quarantine_collision(
+        &self,
+        existing: &Path,
+        incoming: &Path,
+    ) -> Result<PathBuf, ArtifactError> {
+        let existing_quarantine = self.quarantine_path(existing)?;
+        let _incoming_quarantine = self.quarantine_path(incoming)?;
+        Ok(existing_quarantine)
+    }
+
+    /// 扫描所有已验证对象并重建全局索引。
+    pub fn rebuild_global<F>(&self, mut describe: F) -> Result<GlobalIndex, ArtifactError>
+    where
+        F: FnMut(&ObjectReference) -> Option<GlobalRecord>,
+    {
+        let mut records = Vec::new();
+        for kind in [
+            ObjectKind::Source,
+            ObjectKind::Xiaoc,
+            ObjectKind::Native,
+            ObjectKind::Xar,
+            ObjectKind::Language,
+        ] {
+            for object in self.scan(kind)? {
+                if let Some(record) = describe(&object) {
+                    if record.object_kind != object.kind
+                        || record.digest != object.digest
+                        || record.length != object.length
+                    {
+                        return Err(ArtifactError::Index(
+                            "扫描重建回调返回的对象引用不匹配".to_owned(),
+                        ));
+                    }
+                    records.push(record);
+                }
+            }
+        }
+        records.sort_by(|left, right| {
+            left.request_key
+                .cmp(&right.request_key)
+                .then(left.digest.cmp(&right.digest))
+        });
+        Ok(GlobalIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            records,
+        })
     }
 }
 
@@ -480,13 +585,28 @@ impl IndexStore {
 
     /// 原子写入全局缓存索引快照。
     pub fn write_global(&self, index: &GlobalIndex) -> Result<PathBuf, ArtifactError> {
+        let _lock = IndexLock::acquire(&self.root.join("global.index.lock"))?;
         let path = self.root.join("global.index.pb");
         write_index_atomic(&path, &index.encode()?)
     }
 
     /// 读取并解码全局缓存索引。
     pub fn read_global(&self) -> Result<GlobalIndex, ArtifactError> {
+        let _lock = IndexLock::acquire(&self.root.join("global.index.lock"))?;
         GlobalIndex::decode(&fs::read(self.root.join("global.index.pb"))?)
+    }
+
+    /// 扫描已验证对象、加锁并原子提交重建后的全局索引。
+    pub fn rebuild_global_atomic<F>(
+        &self,
+        artifacts: &ArtifactStore,
+        describe: F,
+    ) -> Result<PathBuf, ArtifactError>
+    where
+        F: FnMut(&ObjectReference) -> Option<GlobalRecord>,
+    {
+        let index = artifacts.rebuild_global(describe)?;
+        self.write_global(&index)
     }
 
     /// 原子写入归档索引；归档调用方负责把该字节作为唯一索引成员提交。
@@ -495,11 +615,21 @@ impl IndexStore {
         path: impl AsRef<Path>,
         index: &ArchiveIndex,
     ) -> Result<PathBuf, ArtifactError> {
+        let lock = path.as_ref().with_extension("index.lock");
+        if let Some(parent) = lock.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let _lock = IndexLock::acquire(&lock)?;
         write_index_atomic(path.as_ref(), &index.encode()?)
     }
 
     /// 读取并解码归档索引；缺失或损坏时直接失败，不扫描归档成员猜测重建。
     pub fn read_archive(&self, path: impl AsRef<Path>) -> Result<ArchiveIndex, ArtifactError> {
+        let lock = path.as_ref().with_extension("index.lock");
+        if let Some(parent) = lock.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let _lock = IndexLock::acquire(&lock)?;
         ArchiveIndex::decode(&fs::read(path)?)
     }
 }
@@ -514,11 +644,83 @@ fn write_index_atomic(path: &Path, bytes: &[u8]) -> Result<PathBuf, ArtifactErro
         .write(true)
         .create_new(true)
         .open(&temporary)?;
-    file.write_all(bytes)?;
-    file.sync_all()?;
+    if let Err(error) = file.write_all(bytes) {
+        let _ = fs::remove_file(&temporary);
+        return Err(ArtifactError::Io(error));
+    }
+    if let Err(error) = file.sync_all() {
+        let _ = fs::remove_file(&temporary);
+        return Err(ArtifactError::Io(error));
+    }
     drop(file);
-    fs::rename(&temporary, path)?;
+    if let Err(error) = replace_file(&temporary, path) {
+        let _ = fs::remove_file(&temporary);
+        return Err(ArtifactError::Io(error));
+    }
     Ok(path.to_path_buf())
+}
+
+fn make_immutable(path: &Path) -> Result<(), ArtifactError> {
+    let mut permissions = fs::metadata(path)?.permissions();
+    #[cfg(unix)]
+    permissions.set_mode(0o444);
+    #[cfg(not(unix))]
+    permissions.set_readonly(true);
+    fs::set_permissions(path, permissions)?;
+    Ok(())
+}
+
+#[cfg(not(windows))]
+fn replace_file(temporary: &Path, destination: &Path) -> io::Result<()> {
+    fs::rename(temporary, destination)
+}
+
+#[cfg(windows)]
+fn replace_file(temporary: &Path, destination: &Path) -> io::Result<()> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Storage::FileSystem::{
+        MOVEFILE_REPLACE_EXISTING, MOVEFILE_WRITE_THROUGH, MoveFileExW,
+    };
+    let source: Vec<u16> = temporary.as_os_str().encode_wide().chain(Some(0)).collect();
+    let target: Vec<u16> = destination
+        .as_os_str()
+        .encode_wide()
+        .chain(Some(0))
+        .collect();
+    // SAFETY: both strings are NUL-terminated UTF-16 buffers owned for this call.
+    let replaced = unsafe {
+        MoveFileExW(
+            source.as_ptr(),
+            target.as_ptr(),
+            MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH,
+        )
+    };
+    if replaced == 0 {
+        Err(io::Error::last_os_error())
+    } else {
+        Ok(())
+    }
+}
+
+struct IndexLock {
+    path: PathBuf,
+    _file: File,
+}
+
+impl IndexLock {
+    fn acquire(path: &Path) -> Result<Self, ArtifactError> {
+        let file = OpenOptions::new().write(true).create_new(true).open(path)?;
+        Ok(Self {
+            path: path.to_path_buf(),
+            _file: file,
+        })
+    }
+}
+
+impl Drop for IndexLock {
+    fn drop(&mut self) {
+        let _ = fs::remove_file(&self.path);
+    }
 }
 
 fn files_equal(first: &Path, second: &Path) -> Result<bool, ArtifactError> {
@@ -621,13 +823,19 @@ impl ArchiveIndex {
                 .cmp(&right.logical_path)
                 .then(left.digest.cmp(&right.digest))
         });
+        if self.entry.is_empty() {
+            return Err(ArtifactError::Index("归档索引缺少入口".to_owned()));
+        }
         let mut output = Vec::new();
         put_varint_field(&mut output, 1, self.schema_major as u64);
         put_varint_field(&mut output, 2, self.schema_minor as u64);
         put_bytes_field(&mut output, 3, self.entry.as_bytes());
         for entry in entries {
+            validate_archive_entry(&entry)?;
             put_bytes_field(&mut output, 4, &encode_archive_entry(&entry)?);
         }
+        put_varint_field(&mut output, 5, u64::from(ARCHIVE_INDEX_RECORD_TYPE));
+        put_varint_field(&mut output, 6, INDEX_REQUIRED_FEATURES);
         Ok(output)
     }
 
@@ -640,6 +848,8 @@ impl ArchiveIndex {
             entry: String::new(),
             entries: Vec::new(),
         };
+        let mut record_type = None;
+        let mut required_features = INDEX_REQUIRED_FEATURES;
         while let Some((field, wire)) = reader.next_key()? {
             match field {
                 1 => index.schema_major = reader.varint(wire)? as u32,
@@ -648,6 +858,8 @@ impl ArchiveIndex {
                 4 => index
                     .entries
                     .push(decode_archive_entry(reader.bytes(wire)?)?),
+                5 => record_type = Some(reader.varint(wire)? as u32),
+                6 => required_features = reader.varint(wire)?,
                 _ => reader.skip(wire)?,
             }
         }
@@ -656,6 +868,12 @@ impl ArchiveIndex {
                 major: index.schema_major,
                 record_type: ARCHIVE_INDEX_RECORD_TYPE,
             });
+        }
+        if record_type != Some(ARCHIVE_INDEX_RECORD_TYPE) {
+            return Err(ArtifactError::Index("归档索引记录类型不匹配".to_owned()));
+        }
+        if required_features != INDEX_REQUIRED_FEATURES {
+            return Err(ArtifactError::Index("归档索引包含未知必需能力".to_owned()));
         }
         index.entries.sort_by(|left, right| {
             left.logical_path
@@ -685,8 +903,11 @@ impl GlobalIndex {
         put_varint_field(&mut output, 1, self.schema_major as u64);
         put_varint_field(&mut output, 2, self.schema_minor as u64);
         for record in records {
+            validate_global_record(&record)?;
             put_bytes_field(&mut output, 3, &encode_global_record(&record)?);
         }
+        put_varint_field(&mut output, 4, u64::from(GLOBAL_INDEX_RECORD_TYPE));
+        put_varint_field(&mut output, 5, INDEX_REQUIRED_FEATURES);
         Ok(output)
     }
 
@@ -698,6 +919,8 @@ impl GlobalIndex {
             schema_minor: 0,
             records: Vec::new(),
         };
+        let mut record_type = None;
+        let mut required_features = INDEX_REQUIRED_FEATURES;
         while let Some((field, wire)) = reader.next_key()? {
             match field {
                 1 => index.schema_major = reader.varint(wire)? as u32,
@@ -705,6 +928,8 @@ impl GlobalIndex {
                 3 => index
                     .records
                     .push(decode_global_record(reader.bytes(wire)?)?),
+                4 => record_type = Some(reader.varint(wire)? as u32),
+                5 => required_features = reader.varint(wire)?,
                 _ => reader.skip(wire)?,
             }
         }
@@ -713,6 +938,12 @@ impl GlobalIndex {
                 major: index.schema_major,
                 record_type: GLOBAL_INDEX_RECORD_TYPE,
             });
+        }
+        if record_type != Some(GLOBAL_INDEX_RECORD_TYPE) {
+            return Err(ArtifactError::Index("全局索引记录类型不匹配".to_owned()));
+        }
+        if required_features != INDEX_REQUIRED_FEATURES {
+            return Err(ArtifactError::Index("全局索引包含未知必需能力".to_owned()));
         }
         index.records.sort_by(|left, right| {
             left.request_key
@@ -728,6 +959,43 @@ impl GlobalIndex {
             .iter()
             .find(|record| record.request_key == request_key)
     }
+
+    /// 按对象类型和摘要反查所有构建请求。
+    pub fn find_by_digest(
+        &self,
+        object_kind: ObjectKind,
+        digest: Digest256,
+    ) -> impl Iterator<Item = &GlobalRecord> {
+        self.records
+            .iter()
+            .filter(move |record| record.object_kind == object_kind && record.digest == digest)
+    }
+
+    /// 按目标、优化级别和代码生成版本筛选构建记录。
+    pub fn find_matching(
+        &self,
+        target: &str,
+        optimization_level: u32,
+        codegen_version: u32,
+    ) -> impl Iterator<Item = &GlobalRecord> {
+        self.records.iter().filter(move |record| {
+            record.target == target
+                && record.optimization_level == optimization_level
+                && record.codegen_version == codegen_version
+        })
+    }
+
+    /// 按构建请求键追加或替换记录，并保持规范排序。
+    pub fn upsert(&mut self, record: GlobalRecord) {
+        self.records
+            .retain(|existing| existing.request_key != record.request_key);
+        self.records.push(record);
+        self.records.sort_by(|left, right| {
+            left.request_key
+                .cmp(&right.request_key)
+                .then(left.digest.cmp(&right.digest))
+        });
+    }
 }
 
 fn encode_archive_entry(entry: &ArchiveEntry) -> Result<Vec<u8>, ArtifactError> {
@@ -739,6 +1007,13 @@ fn encode_archive_entry(entry: &ArchiveEntry) -> Result<Vec<u8>, ArtifactError> 
     put_bytes_field(&mut output, 5, entry.target.as_bytes());
     put_varint_field(&mut output, 6, entry.length);
     Ok(output)
+}
+
+fn validate_archive_entry(entry: &ArchiveEntry) -> Result<(), ArtifactError> {
+    if entry.logical_path.is_empty() || entry.module.is_empty() || entry.target.is_empty() {
+        return Err(ArtifactError::Index("归档索引条目缺少必需字段".to_owned()));
+    }
+    Ok(())
 }
 
 fn decode_archive_entry(bytes: &[u8]) -> Result<ArchiveEntry, ArtifactError> {
@@ -776,6 +1051,7 @@ fn decode_archive_entry(bytes: &[u8]) -> Result<ArchiveEntry, ArtifactError> {
     }
     if entry.logical_path.is_empty()
         || entry.module.is_empty()
+        || entry.target.is_empty()
         || !has_kind
         || !has_digest
         || !has_length
@@ -795,6 +1071,13 @@ fn encode_global_record(record: &GlobalRecord) -> Result<Vec<u8>, ArtifactError>
     put_varint_field(&mut output, 6, record.codegen_version as u64);
     put_varint_field(&mut output, 7, record.length);
     Ok(output)
+}
+
+fn validate_global_record(record: &GlobalRecord) -> Result<(), ArtifactError> {
+    if record.request_key.is_empty() || record.target.is_empty() || record.codegen_version == 0 {
+        return Err(ArtifactError::Index("全局索引记录缺少必需字段".to_owned()));
+    }
+    Ok(())
 }
 
 fn decode_global_record(bytes: &[u8]) -> Result<GlobalRecord, ArtifactError> {
@@ -887,6 +1170,9 @@ impl<'a> ProtoReader<'a> {
             return Ok(None);
         }
         let key = self.read_varint()?;
+        if key >> 3 > 0x1fff_ffff {
+            return Err(ArtifactError::Index("Protobuf 字段号超出范围".to_owned()));
+        }
         let field = (key >> 3) as u32;
         let wire = (key & 7) as u8;
         if field == 0 {
@@ -896,13 +1182,16 @@ impl<'a> ProtoReader<'a> {
     }
     fn read_varint(&mut self) -> Result<u64, ArtifactError> {
         let mut value = 0_u64;
-        for shift in (0..70).step_by(7) {
+        for index in 0..10 {
             let byte = *self
                 .bytes
                 .get(self.offset)
                 .ok_or_else(|| ArtifactError::Index("Protobuf varint 截断".to_owned()))?;
             self.offset += 1;
-            value |= u64::from(byte & 0x7f) << shift;
+            if index == 9 && byte > 1 {
+                return Err(ArtifactError::Index("Protobuf varint 溢出".to_owned()));
+            }
+            value |= u64::from(byte & 0x7f) << (index * 7);
             if byte & 0x80 == 0 {
                 return Ok(value);
             }
@@ -922,7 +1211,8 @@ impl<'a> ProtoReader<'a> {
                 "Protobuf 长度字段 wire 类型错误".to_owned(),
             ));
         }
-        let length = self.read_varint()? as usize;
+        let length =
+            usize::try_from(self.read_varint()?).map_err(|_| ArtifactError::SizeOverflow)?;
         let end = self
             .offset
             .checked_add(length)
@@ -978,6 +1268,10 @@ impl<'a> ProtoReader<'a> {
 mod tests {
     use super::*;
     use std::time::{SystemTime, UNIX_EPOCH};
+    use xiao_bytecode::{
+        TAC_BYTECODE_ABI_VERSION, TAC_RUNTIME_ABI_VERSION, TAC_VERSION, TacAbi, TacProgram,
+        XiaocMetadata, encode_xiaoc,
+    };
 
     fn temp_root(label: &str) -> PathBuf {
         let stamp = SystemTime::now()
@@ -990,12 +1284,45 @@ mod tests {
         ))
     }
 
+    fn valid_xiaoc() -> Vec<u8> {
+        let program = TacProgram {
+            version: TAC_VERSION,
+            abi: TacAbi {
+                bytecode_abi_version: TAC_BYTECODE_ABI_VERSION,
+                runtime_abi_version: TAC_RUNTIME_ABI_VERSION,
+                ir_version: 1,
+                language_version: "0.1.0".to_owned(),
+                target: "portable".to_owned(),
+            },
+            constants: Default::default(),
+            signatures: Default::default(),
+            functions: Vec::new(),
+            categories: Default::default(),
+            plans: Vec::new(),
+            selection_plans: Vec::new(),
+            broadcast_assignment_plans: Vec::new(),
+            random_seed_plans: Vec::new(),
+            table_definitions: Vec::new(),
+            unsupported: Vec::new(),
+        };
+        encode_xiaoc(&program, XiaocMetadata::default()).unwrap()
+    }
+
+    fn make_writable(path: &Path) {
+        let mut permissions = fs::metadata(path).unwrap().permissions();
+        #[cfg(unix)]
+        permissions.set_mode(0o644);
+        #[cfg(windows)]
+        #[allow(clippy::permissions_set_readonly_false)]
+        permissions.set_readonly(false);
+        fs::set_permissions(path, permissions).unwrap();
+    }
+
     #[test]
     fn digest_and_sharded_xiaoc_object_are_deterministic() {
         let root = temp_root("digest");
         let store = ArtifactStore::open(&root).unwrap();
-        let mut bytes = XIAOC_MAGIC.to_vec();
-        bytes.resize(72, 0);
+        let bytes = valid_xiaoc();
         let object = store.put_xiaoc(&bytes).unwrap();
         assert_eq!(object.digest.as_hex().len(), 64);
         assert_eq!(
@@ -1015,9 +1342,50 @@ mod tests {
         let root = temp_root("corrupt");
         let store = ArtifactStore::open(&root).unwrap();
         let object = store.put(ObjectKind::Native, b"native-one").unwrap();
+        make_writable(&object.path);
         fs::write(&object.path, b"tampered").unwrap();
         let error = store.read(ObjectKind::Native, object.digest).unwrap_err();
         assert!(matches!(error, ArtifactError::CorruptObject { .. }));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn objects_are_read_only_and_hash_collisions_quarantine_both_inputs() {
+        let root = temp_root("collision");
+        let store = ArtifactStore::open(&root).unwrap();
+        let incoming = b"incoming-content";
+        let digest = Digest256::of_bytes(incoming);
+        let existing = store.object_path(ObjectKind::Native, digest);
+        fs::create_dir_all(existing.parent().unwrap()).unwrap();
+        fs::write(&existing, b"different-content").unwrap();
+        let error = store.put(ObjectKind::Native, incoming).unwrap_err();
+        assert!(matches!(error, ArtifactError::HashCollision { .. }));
+        assert!(!existing.exists());
+        let quarantined = fs::read_dir(root.join("quarantine"))
+            .unwrap()
+            .filter_map(Result::ok)
+            .count();
+        assert_eq!(quarantined, 2);
+
+        let object = store.put(ObjectKind::Native, b"immutable").unwrap();
+        assert!(fs::metadata(object.path).unwrap().permissions().readonly());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn scan_quarantines_objects_with_invalid_names_or_shards() {
+        let root = temp_root("scan-boundary");
+        let store = ArtifactStore::open(&root).unwrap();
+        let shard = root.join("objects/native/sha256/00");
+        fs::create_dir_all(&shard).unwrap();
+        fs::write(shard.join("not-a-digest.bin"), b"bad-name").unwrap();
+        fs::write(
+            shard.join(format!("{}.bin", Digest256::of_bytes(b"wrong-shard"))),
+            b"wrong-shard",
+        )
+        .unwrap();
+        assert!(store.scan(ObjectKind::Native).unwrap().is_empty());
+        assert_eq!(fs::read_dir(root.join("quarantine")).unwrap().count(), 2);
         let _ = fs::remove_dir_all(root);
     }
 
@@ -1042,12 +1410,50 @@ mod tests {
         assert_eq!(GlobalIndex::decode(&first).unwrap(), index);
         let bad = GlobalIndex {
             schema_major: 2,
-            ..index
+            ..index.clone()
         };
         assert!(matches!(
             bad.encode(),
             Err(ArtifactError::UnsupportedIndexVersion { .. })
         ));
+
+        let mut wrong_type = first.clone();
+        wrong_type.extend_from_slice(&[0x20, 0x63]);
+        assert!(matches!(
+            GlobalIndex::decode(&wrong_type),
+            Err(ArtifactError::Index(_))
+        ));
+
+        let archive = ArchiveIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            entry: "main.xiaoc".to_owned(),
+            entries: vec![ArchiveEntry {
+                logical_path: "objects/xiaoc/main.xiaoc".to_owned(),
+                object_kind: ObjectKind::Xiaoc,
+                digest,
+                module: "main".to_owned(),
+                target: "portable".to_owned(),
+                length: 5,
+            }],
+        };
+        assert_eq!(
+            ArchiveIndex::decode(&archive.encode().unwrap()).unwrap(),
+            archive
+        );
+
+        let replacement = GlobalRecord {
+            request_key: "request".to_owned(),
+            object_kind: ObjectKind::Native,
+            digest,
+            target: "x86_64-unknown-linux-gnu".to_owned(),
+            optimization_level: 3,
+            codegen_version: 2,
+            length: 5,
+        };
+        let mut updated = index;
+        updated.upsert(replacement.clone());
+        assert_eq!(updated.find("request"), Some(&replacement));
     }
 
     #[test]
@@ -1063,6 +1469,43 @@ mod tests {
         assert!(path.is_file());
         assert_eq!(store.read_global().unwrap(), index);
         assert!(!root.join("global.index.tmp").exists());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn global_index_can_rebuild_from_verified_objects_and_query_both_directions() {
+        let root = temp_root("rebuild");
+        let artifacts = ArtifactStore::open(root.join("objects")).unwrap();
+        let object = artifacts.put(ObjectKind::Native, b"native").unwrap();
+        let indexes = IndexStore::open(root.join("indexes")).unwrap();
+        indexes
+            .rebuild_global_atomic(&artifacts, |reference| {
+                Some(GlobalRecord {
+                    request_key: "request".to_owned(),
+                    object_kind: reference.kind,
+                    digest: reference.digest,
+                    target: "x86_64-unknown-linux-gnu".to_owned(),
+                    optimization_level: 2,
+                    codegen_version: 2,
+                    length: reference.length,
+                })
+            })
+            .unwrap();
+        let index = indexes.read_global().unwrap();
+        assert_eq!(index.find("request").unwrap().digest, object.digest);
+        assert_eq!(
+            index
+                .find_by_digest(ObjectKind::Native, object.digest)
+                .count(),
+            1
+        );
+        assert_eq!(
+            index
+                .find_matching("x86_64-unknown-linux-gnu", 2, 2)
+                .count(),
+            1
+        );
+        assert!(!root.join("indexes/global.index.lock").exists());
         let _ = fs::remove_dir_all(root);
     }
 }
