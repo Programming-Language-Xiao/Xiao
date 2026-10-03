@@ -196,6 +196,7 @@ fn process_alive(_pid: u32) -> Option<bool> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::process::{Command, Stdio};
 
     fn temp_path(label: &str) -> PathBuf {
         std::env::temp_dir().join(format!(
@@ -225,6 +226,58 @@ mod tests {
         assert!(text.contains("nonce"));
         assert!(!text.contains(path.to_string_lossy().as_ref()));
         drop(lock);
+        assert!(!path.exists());
+    }
+
+    #[test]
+    fn child_process_holds_lock_until_parent_kills_it() {
+        let Ok(path) = std::env::var("XIAO_LOCK_CHILD_PATH") else {
+            return;
+        };
+        let ready = std::env::var_os("XIAO_LOCK_CHILD_READY").unwrap();
+        let _lock = EntryLock::acquire(Path::new(&path)).unwrap();
+        fs::write(ready, b"ready").unwrap();
+        loop {
+            thread::sleep(Duration::from_secs(1));
+        }
+    }
+
+    #[test]
+    fn lock_is_recovered_after_holding_process_is_terminated() {
+        let path = temp_path("terminated");
+        let ready = path.with_extension("ready");
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .arg("--exact")
+            .arg("tests::child_process_holds_lock_until_parent_kills_it")
+            .arg("--nocapture")
+            .env("XIAO_LOCK_CHILD_PATH", &path)
+            .env("XIAO_LOCK_CHILD_READY", &ready)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap();
+        let deadline = Instant::now() + Duration::from_secs(10);
+        while !ready.exists() {
+            if let Some(status) = child.try_wait().unwrap() {
+                let _ = fs::remove_file(&path);
+                let _ = fs::remove_file(&ready);
+                panic!("持锁子进程提前退出：{status}");
+            }
+            if Instant::now() >= deadline {
+                let _ = child.kill();
+                let _ = child.wait();
+                panic!("子进程未能取得锁");
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+        child.kill().unwrap();
+        child.wait().unwrap();
+
+        let started = Instant::now();
+        let lock = EntryLock::acquire(&path).unwrap();
+        assert!(started.elapsed() < LOCK_WAIT);
+        drop(lock);
+        let _ = fs::remove_file(ready);
         assert!(!path.exists());
     }
 }

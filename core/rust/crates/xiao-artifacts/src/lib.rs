@@ -359,6 +359,8 @@ impl ArtifactStore {
         kind: ObjectKind,
         reader: &mut impl Read,
     ) -> Result<ObjectReference, ArtifactError> {
+        let _maintenance = xiao_lock::EntryLock::acquire(&self.root.join("maintenance.lock"))
+            .map_err(lock_error)?;
         let sequence = NEXT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
         let temporary = self
             .root
@@ -641,8 +643,15 @@ impl ArtifactStore {
         })
     }
 
-    /// 在调用方确认计划后重新验证并删除对象；损坏对象会进入隔离区而不是被删除。
-    pub fn apply_cleanup(&self, plan: &CleanupPlan) -> Result<CleanupReport, ArtifactError> {
+    /// 在调用方确认计划并重扫引用后，重新验证并删除仍未引用的对象。
+    ///
+    /// 调用方必须在执行期间暂停会发布对象引用的构建与归档操作；来源读取失败时不能调用本方法。
+    /// 损坏对象会进入隔离区而不是被删除。
+    pub fn apply_cleanup(
+        &self,
+        plan: &CleanupPlan,
+        current_references: &ReferenceSet,
+    ) -> Result<CleanupReport, ArtifactError> {
         let _lock = xiao_lock::EntryLock::acquire(&self.root.join("maintenance.lock"))
             .map_err(lock_error)?;
         let mut report = CleanupReport::default();
@@ -652,6 +661,9 @@ impl ArtifactStore {
             }
         }
         for candidate in &plan.candidates {
+            if current_references.protects(candidate.kind, candidate.digest) {
+                continue;
+            }
             let expected_path = self.object_path(candidate.kind, candidate.digest);
             if candidate.path != expected_path {
                 return Err(ArtifactError::Maintenance(
@@ -818,30 +830,108 @@ fn collect_project_lock_references(
     let value: serde_json::Value = serde_json::from_str(&text).map_err(|error| {
         ArtifactError::Maintenance(format!("项目锁文件 {} 无效：{error}", path.display()))
     })?;
+    let lock_version = value
+        .get("lock_version")
+        .and_then(serde_json::Value::as_u64)
+        .ok_or_else(|| ArtifactError::Maintenance("项目锁文件缺少 lock_version".to_owned()))?;
+    if lock_version != 1 && lock_version != 2 {
+        return Err(ArtifactError::Maintenance(
+            "项目锁文件 lock_version 不受支持".to_owned(),
+        ));
+    }
+    if value
+        .get("config_fingerprint")
+        .and_then(serde_json::Value::as_str)
+        .is_none_or(str::is_empty)
+    {
+        return Err(ArtifactError::Maintenance(
+            "项目锁文件缺少 config_fingerprint".to_owned(),
+        ));
+    }
+    let root = value
+        .get("root")
+        .and_then(serde_json::Value::as_object)
+        .ok_or_else(|| ArtifactError::Maintenance("项目锁文件缺少 root".to_owned()))?;
+    let root_key = lock_package_key(root)?;
     let packages = value
         .get("packages")
         .and_then(serde_json::Value::as_object)
         .ok_or_else(|| ArtifactError::Maintenance("项目锁文件缺少 packages".to_owned()))?;
-    for package in packages.values() {
-        let content_digest = package
-            .get("content_digest")
-            .and_then(serde_json::Value::as_str)
-            .ok_or_else(|| {
-                ArtifactError::Maintenance("项目锁包条目缺少 content_digest".to_owned())
-            })?;
+    if !packages.contains_key(&root_key) {
+        return Err(ArtifactError::Maintenance(
+            "项目锁文件 packages 缺少 root 条目".to_owned(),
+        ));
+    }
+    for (stored_key, package) in packages {
+        let package = package
+            .as_object()
+            .ok_or_else(|| ArtifactError::Maintenance("项目锁包条目不是对象".to_owned()))?;
+        let package_key = lock_package_key(package)?;
+        if stored_key != &package_key {
+            return Err(ArtifactError::Maintenance(
+                "项目锁包条目键与身份不一致".to_owned(),
+            ));
+        }
+        if package
+            .get("dependencies")
+            .and_then(serde_json::Value::as_object)
+            .is_none()
+        {
+            return Err(ArtifactError::Maintenance(
+                "项目锁包条目缺少 dependencies".to_owned(),
+            ));
+        }
+        let content_digest = package_string(package, "content_digest")?;
         let digest = Digest256::parse(content_digest)?;
         references.insert(CacheReference::exact(ObjectKind::Source, digest));
         if let Some(artifact) = package.get("source_artifact") {
-            let digest = artifact
-                .get("digest")
-                .and_then(serde_json::Value::as_str)
-                .ok_or_else(|| {
-                    ArtifactError::Maintenance("source_artifact 缺少 digest".to_owned())
-                })?;
+            if lock_version < 2 {
+                return Err(ArtifactError::Maintenance(
+                    "旧版项目锁不能包含 source_artifact".to_owned(),
+                ));
+            }
+            let artifact = artifact
+                .as_object()
+                .ok_or_else(|| ArtifactError::Maintenance("source_artifact 不是对象".to_owned()))?;
+            let digest = package_string(artifact, "digest")?;
+            if package_string(artifact, "location")?.is_empty()
+                || artifact
+                    .get("length")
+                    .and_then(serde_json::Value::as_u64)
+                    .is_none_or(|length| length == 0)
+            {
+                return Err(ArtifactError::Maintenance(
+                    "source_artifact 的位置或长度无效".to_owned(),
+                ));
+            }
             references.insert(CacheReference::any_namespace(Digest256::parse(digest)?));
         }
     }
     Ok(())
+}
+
+fn package_string<'a>(
+    package: &'a serde_json::Map<String, serde_json::Value>,
+    field: &str,
+) -> Result<&'a str, ArtifactError> {
+    package
+        .get(field)
+        .and_then(serde_json::Value::as_str)
+        .filter(|value| !value.is_empty())
+        .ok_or_else(|| ArtifactError::Maintenance(format!("项目锁包条目缺少 {field}")))
+}
+
+fn lock_package_key(
+    package: &serde_json::Map<String, serde_json::Value>,
+) -> Result<String, ArtifactError> {
+    let name = package_string(package, "name")?;
+    let version = package_string(package, "version")?;
+    let source = package
+        .get("source")
+        .and_then(serde_json::Value::as_object)
+        .ok_or_else(|| ArtifactError::Maintenance("项目锁包条目缺少 source".to_owned()))?;
+    let source_id = package_string(source, "source_id")?;
+    Ok(format!("{name}@{version}[{source_id}]"))
 }
 
 /// 索引快照的原子读写边界。
@@ -1760,6 +1850,34 @@ mod tests {
     }
 
     #[test]
+    fn indexes_remain_readable_while_their_write_locks_are_held() {
+        let root = temp_root("readonly-index");
+        let store = IndexStore::open(&root).unwrap();
+        let global = GlobalIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            records: Vec::new(),
+        };
+        store.write_global(&global).unwrap();
+        let archive_path = root.join("sample.index.pb");
+        let archive = ArchiveIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            entry: "main.xiaoc".to_owned(),
+            entries: Vec::new(),
+        };
+        store.write_archive(&archive_path, &archive).unwrap();
+
+        let _global_lock = xiao_lock::EntryLock::acquire(&root.join("global.index.lock")).unwrap();
+        let _archive_lock =
+            xiao_lock::EntryLock::acquire(&archive_path.with_extension("index.lock")).unwrap();
+        assert_eq!(store.read_global().unwrap(), global);
+        assert_eq!(store.read_archive(&archive_path).unwrap(), archive);
+        drop((_global_lock, _archive_lock));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
     fn global_index_can_rebuild_from_verified_objects_and_query_both_directions() {
         let root = temp_root("rebuild");
         let artifacts = ArtifactStore::open(root.join("objects")).unwrap();
@@ -1806,7 +1924,7 @@ mod tests {
         fs::write(
             &lock_path,
             format!(
-                r#"{{"packages":{{"main":{{"content_digest":"{}"}}}}}}"#,
+                r#"{{"lock_version":2,"config_fingerprint":"config","root":{{"name":"main","version":"0.1.0","source":{{"source_id":"path:/main","alias":null,"display_name":"main"}}}},"packages":{{"main@0.1.0[path:/main]":{{"name":"main","version":"0.1.0","source":{{"source_id":"path:/main","alias":null,"display_name":"main"}},"content_digest":"{}","dependencies":{{}},"precompiled_variants":[],"target_conditions":[]}}}}}}"#,
                 protected.digest
             ),
         )
@@ -1819,7 +1937,7 @@ mod tests {
         assert!(!root.join("maintenance.lock").exists());
         assert!(store.read(ObjectKind::Source, protected.digest).is_ok());
 
-        let report = store.apply_cleanup(&plan).unwrap();
+        let report = store.apply_cleanup(&plan, &references).unwrap();
         assert_eq!(report.removed, vec![removable]);
         assert!(matches!(
             store.read(ObjectKind::Native, Digest256::of_bytes(b"removable-native")),
@@ -1841,6 +1959,16 @@ mod tests {
                 .collect_references(Some(&lock_path), &[], &[])
                 .is_err()
         );
+        fs::write(
+            &lock_path,
+            br#"{"lock_version":2,"config_fingerprint":"x","root":{},"packages":{}}"#,
+        )
+        .unwrap();
+        assert!(
+            store
+                .collect_references(Some(&lock_path), &[], &[])
+                .is_err()
+        );
         assert!(store.read(ObjectKind::Native, object.digest).is_ok());
         let _ = fs::remove_dir_all(root);
     }
@@ -1853,7 +1981,7 @@ mod tests {
         let plan = store.plan_cleanup(&ReferenceSet::new()).unwrap();
         make_writable(&object.path);
         fs::write(&object.path, b"after-plan-tamper").unwrap();
-        let report = store.apply_cleanup(&plan).unwrap();
+        let report = store.apply_cleanup(&plan, &ReferenceSet::new()).unwrap();
         assert_eq!(report.removed, Vec::<ObjectReference>::new());
         assert_eq!(report.quarantined.len(), 1);
         assert!(!object.path.exists());
@@ -1871,10 +1999,58 @@ mod tests {
         let plan = store.plan_cleanup(&ReferenceSet::new()).unwrap();
         assert!(plan.candidates().is_empty());
         assert!(invalid.exists());
-        let report = store.apply_cleanup(&plan).unwrap();
+        let report = store.apply_cleanup(&plan, &ReferenceSet::new()).unwrap();
         assert_eq!(report.removed.len(), 0);
         assert_eq!(report.quarantined.len(), 1);
         assert!(!invalid.exists());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cleanup_rechecks_references_added_after_plan_creation() {
+        let root = temp_root("maintenance-new-reference");
+        let store = ArtifactStore::open(&root).unwrap();
+        let object = store.put(ObjectKind::Native, b"newly-referenced").unwrap();
+        let plan = store.plan_cleanup(&ReferenceSet::new()).unwrap();
+        assert_eq!(plan.candidates(), std::slice::from_ref(&object));
+
+        let mut current_references = ReferenceSet::new();
+        current_references.insert(CacheReference::exact(object.kind, object.digest));
+        let report = store.apply_cleanup(&plan, &current_references).unwrap();
+        assert!(report.removed.is_empty());
+        assert!(store.read(object.kind, object.digest).is_ok());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cleanup_archive_reference_protects_its_object() {
+        let root = temp_root("maintenance-archive-reference");
+        let store = ArtifactStore::open(root.join("cache")).unwrap();
+        let object = store.put(ObjectKind::Xiaoc, &valid_xiaoc()).unwrap();
+        let index_store = IndexStore::open(root.join("indexes")).unwrap();
+        let archive_path = root.join("archive-index.pb");
+        let archive = ArchiveIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            entry: "main.xiaoc".to_owned(),
+            entries: vec![ArchiveEntry {
+                logical_path: "objects/xiaoc/main.xiaoc".to_owned(),
+                object_kind: ObjectKind::Xiaoc,
+                digest: object.digest,
+                module: "main".to_owned(),
+                target: "portable".to_owned(),
+                length: object.length,
+            }],
+        };
+        index_store.write_archive(&archive_path, &archive).unwrap();
+        let references = store
+            .collect_references(None, std::slice::from_ref(&archive_path), &[])
+            .unwrap();
+        let plan = store.plan_cleanup(&references).unwrap();
+        assert!(plan.candidates().is_empty());
+        let report = store.apply_cleanup(&plan, &references).unwrap();
+        assert!(report.removed.is_empty());
+        assert!(store.read(ObjectKind::Xiaoc, object.digest).is_ok());
         let _ = fs::remove_dir_all(root);
     }
 }
