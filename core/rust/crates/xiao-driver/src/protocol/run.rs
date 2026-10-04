@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use serde_json::Value;
+use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
 
 use super::mapping::{
     exit_name, protocol_diagnostic, protocol_error_body, protocol_error_from_error, protocol_event,
@@ -24,7 +25,10 @@ use crate::run::{
     CancellationToken, DriverError, DriverExecution, DriverOutcome, DriverPhase, DriverRequest,
     ExitCode, FrontendVmDriver,
 };
-use xiao_xar::{ARCHIVE_MISSING_OBJECT_CODE, XarRunError, XarRunOptions, decode_xar, run_archive};
+use xiao_xar::{
+    ARCHIVE_LANGUAGE_FALLBACK_CODE, ARCHIVE_MISSING_OBJECT_CODE, XarLanguageResolution,
+    XarRunError, XarRunOptions, decode_xar, resolve_language_locale, run_archive,
+};
 
 /// 同一核心进程里可以安全复用模块实例的项目与环境身份。
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -160,20 +164,13 @@ pub(super) fn run_archive_request_response(
     debug: bool,
     cancellation: CancellationToken,
 ) -> ProtocolResponse {
-    let effective_locale = if locale.is_none() {
-        fs::read(&path)
-            .ok()
-            .and_then(|bytes| decode_xar(&bytes).ok())
-            .map(|archive| archive.index().language_locale.clone())
-            .filter(|value| {
-                matches!(
-                    value.to_ascii_lowercase().as_str(),
-                    "zh" | "zh-cn" | "en" | "en-us"
-                )
-            })
-    } else {
-        locale.clone()
-    };
+    let effective_locale = fs::read(&path)
+        .ok()
+        .and_then(|bytes| decode_xar(&bytes).ok())
+        .map(|archive| {
+            resolve_language_locale(&archive.index().language_locale, locale.as_deref()).effective
+        })
+        .or_else(|| locale.clone());
     if effective_locale != locale {
         return super::localize::with_locale(request_id.clone(), effective_locale.clone(), || {
             run_archive_request_response_inner(
@@ -242,13 +239,14 @@ fn run_archive_request_response_inner(
         Ok(archive) => archive,
         Err(error) => return xar_run_error_response(request_id, path, classify_xar_error(error)),
     };
+    let language = resolve_language_locale(&archive.index().language_locale, locale.as_deref());
     let (vm_options, _event_capacity, _timeout) = match run_options(&options) {
         Ok(value) => value,
         Err(error) => return protocol_error_response(Some(request_id), &error),
     };
     let debug_active = debug || archive.index().debug_activation;
     let diagnostic_options = crate::diagnostics::DiagnosticOptions {
-        locale: locale.clone(),
+        locale: Some(language.effective.clone()),
         ..Default::default()
     };
     let mut diagnostic_session = if debug_active {
@@ -269,6 +267,7 @@ fn run_archive_request_response_inner(
         XarRunOptions {
             runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
             platform: ProtocolTarget::host().triple,
+            language_locale: Some(language.effective.clone()),
             vm_options,
         },
     );
@@ -276,9 +275,13 @@ fn run_archive_request_response_inner(
     drop(measurement);
     let result = match result {
         Ok(outcome) => {
+            let mut diagnostics = Vec::new();
+            if language.fallback {
+                diagnostics.push(archive_language_fallback_diagnostic(&language));
+            }
             let execution = DriverExecution {
                 outcome,
-                diagnostics: Vec::new(),
+                diagnostics,
             };
             DriverOutcome::Executed(execution)
         }
@@ -358,6 +361,29 @@ fn archive_error_response(
         report: None,
         exit_code: ExitCode::ArtifactRejected.as_process_code(),
     }
+}
+
+fn archive_language_fallback_diagnostic(resolution: &XarLanguageResolution) -> Diagnostic {
+    Diagnostic::new(
+        ARCHIVE_LANGUAGE_FALLBACK_CODE,
+        "x17.xar.language_fallback",
+        Severity::Warning,
+        None,
+        format!(
+            "归档请求语言 {:?} 没有可用内置目录，已回落到 {:?}",
+            resolution.requested, resolution.effective
+        ),
+    )
+    .with_params([
+        (
+            "requested".to_owned(),
+            DiagnosticParam::Text(resolution.requested.clone()),
+        ),
+        (
+            "effective".to_owned(),
+            DiagnosticParam::Text(resolution.effective.clone()),
+        ),
+    ])
 }
 
 #[allow(clippy::too_many_arguments)]

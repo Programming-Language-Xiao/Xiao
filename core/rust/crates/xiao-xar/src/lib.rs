@@ -58,11 +58,15 @@ pub const ARCHIVE_VERSION_INCOMPATIBLE_CODE: &str = "X17-XAR-007";
 pub const ARCHIVE_DEPENDENCY_UNSATISFIED_CODE: &str = "X17-XAR-008";
 /// 归档校验失败的稳定诊断编号。
 pub const ARCHIVE_VALIDATION_FAILED_CODE: &str = "X17-XAR-009";
+/// 归档语言资源降级的稳定诊断编号。
+pub const ARCHIVE_LANGUAGE_FALLBACK_CODE: &str = "X17-XAR-010";
 
 mod runner;
 
 /// 17C 归档入口校验、Runtime/平台检查与统一 VM 运行入口。
-pub use runner::{XarRunError, XarRunOptions, run_archive};
+pub use runner::{
+    XarLanguageResolution, XarRunError, XarRunOptions, resolve_language_locale, run_archive,
+};
 const ZIP_LOCAL_SIGNATURE: u32 = 0x0403_4b50;
 const ZIP_CENTRAL_SIGNATURE: u32 = 0x0201_4b50;
 const ZIP_EOCD_SIGNATURE: u32 = 0x0605_4b50;
@@ -2310,6 +2314,19 @@ mod tests {
         )
         .unwrap_err();
         assert_eq!(entry_error.code(), ARCHIVE_VALIDATION_FAILED_CODE);
+    }
+
+    #[test]
+    fn archive_language_resolution_obeys_default_override_and_fallback() {
+        let archive_default = resolve_language_locale("en-US", None);
+        assert_eq!(archive_default.effective, "en-US");
+        assert!(!archive_default.fallback);
+        let explicit = resolve_language_locale("en-US", Some("zh-CN"));
+        assert_eq!(explicit.effective, "zh-CN");
+        assert!(!explicit.fallback);
+        let fallback = resolve_language_locale("xx-XX", None);
+        assert_eq!(fallback.effective, "zh-CN");
+        assert!(fallback.fallback);
     }
 
     #[test]

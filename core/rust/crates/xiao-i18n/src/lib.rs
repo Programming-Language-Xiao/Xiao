@@ -1388,6 +1388,14 @@ pub fn builtin_renderer() -> MessageRenderer {
     add_entry(
         &mut chinese,
         &mut english,
+        "x17.xar.language_fallback",
+        "归档请求语言 {requested} 没有可用内置目录，已回落到 {effective}",
+        "archive locale {requested} has no built-in catalog; fell back to {effective}",
+        &[("requested", text), ("effective", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
         "x11.driver.native_build",
         "{message}",
         "native build failed: {message}",

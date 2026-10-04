@@ -3,6 +3,7 @@
 use std::fmt::{Display, Formatter};
 
 use xiao_artifacts::ArtifactError;
+use xiao_i18n::LocaleContext;
 
 use super::{
     ARCHIVE_DEPENDENCY_UNSATISFIED_CODE, ARCHIVE_MISSING_OBJECT_CODE,
@@ -17,6 +18,8 @@ pub struct XarRunOptions {
     pub runtime_abi: u64,
     /// 当前宿主目标三元组；空字符串表示调用方暂不施加平台筛选。
     pub platform: String,
+    /// 调用方显式指定的语言；为空时采用归档索引默认值。
+    pub language_locale: Option<String>,
     /// 传给统一 VM 入口的执行参数。
     pub vm_options: xiao_vm::VmOptions,
 }
@@ -26,8 +29,45 @@ impl Default for XarRunOptions {
         Self {
             runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
             platform: String::new(),
+            language_locale: None,
             vm_options: xiao_vm::VmOptions::default(),
         }
+    }
+}
+
+/// 归档运行时解析出的语言上下文。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct XarLanguageResolution {
+    /// 请求或归档携带的原始语言标签。
+    pub requested: String,
+    /// 实际用于内置目录渲染的规范标签。
+    pub effective: String,
+    /// 是否因为缺少内置目录而发生回落。
+    pub fallback: bool,
+}
+
+/// 按显式参数、归档默认值、`zh-CN` 缺省顺序解析语言。
+#[must_use]
+pub fn resolve_language_locale(
+    archive_locale: &str,
+    explicit_locale: Option<&str>,
+) -> XarLanguageResolution {
+    let requested = explicit_locale
+        .filter(|value| !value.trim().is_empty())
+        .or_else(|| (!archive_locale.trim().is_empty()).then_some(archive_locale))
+        .unwrap_or("zh-CN")
+        .to_owned();
+    match LocaleContext::from_config(&requested) {
+        Ok(context) => XarLanguageResolution {
+            requested,
+            effective: context.tag().to_owned(),
+            fallback: false,
+        },
+        Err(_) => XarLanguageResolution {
+            requested,
+            effective: "zh-CN".to_owned(),
+            fallback: true,
+        },
     }
 }
 
@@ -93,6 +133,10 @@ pub fn run_archive(
     options: XarRunOptions,
 ) -> Result<xiao_vm::RunOutcome, XarRunError> {
     let archive = decode_xar(bytes).map_err(classify_run_error)?;
+    let _language = resolve_language_locale(
+        &archive.index().language_locale,
+        options.language_locale.as_deref(),
+    );
     let index = archive.index();
     if options.runtime_abi < index.runtime_abi_min || options.runtime_abi > index.runtime_abi_max {
         return Err(XarRunError::VersionIncompatible(format!(

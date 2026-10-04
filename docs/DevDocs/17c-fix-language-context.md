@@ -153,6 +153,16 @@ $ xiao run hello.xiao          → 仍零诊断、退出码 0
 - **不改** 17A 的索引字段号（`language_locale` 是字段 12，**只读不写**）；
 - **不重开** 11C 的消息目录键与渲染器契约（只**接入**）。
 
+## 七、实施记录
+
+- `XarRunOptions.language_locale` 与 `resolve_language_locale` 已加入归档运行器。有效语言
+  优先级为调用方显式值，其次为 `ArchiveIndex.language_locale`，最后回落 `zh-CN`；
+  `x17.xar.language_fallback` 同时写入中文/英文内置目录，机器错误字段保持不变。
+- `run_archive` 协议在读取归档后用同一语言上下文包裹响应，本地化只改变 `text` 和警告
+  展示，不改变 `exit_code`、错误 `code`、`message_id` 或结构化参数。
+- 新增语言解析单元测试、归档成功/失败行为测试和凭据副作用探针；运行器的所有校验
+  在 VM 建立前完成，损坏归档不会产生执行事件。
+
 ## 相关页面
 
 - [17C. 入口与运行器](17c-entry-and-runner.md) —— **本批的修改对象**；§八 第 2、3、8 条
