@@ -6,11 +6,12 @@
 
 ## 工程期
 
-16；14/17/18 提供字节码、归档和 CLI 接入。
+16；17B 追加 `resource` 与 `debug` 内容寻址命名空间，14/17/18 提供字节码、归档和 CLI 接入。
 
 ## 模块放置
 
-对象存储、SHA-256、原子事务、缓存淘汰和 Protobuf 索引放在 `src/`；归档索引组合由 `xiao-xar` 完成。
+对象存储、SHA-256、原子事务、缓存淘汰和 Protobuf 索引放在 `src/`；`ObjectKind::Resource`
+与 `ObjectKind::Debug` 追加在既有 wire 编号之后，归档索引组合由 `xiao-xar` 完成。
 
 ## 约束
 

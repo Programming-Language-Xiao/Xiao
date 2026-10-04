@@ -4,7 +4,7 @@ title: 配置错误与修复
 status: verified
 audience: learner
 module: rust.xiao-config
-stage: "05-D/11A-D1/E3A"
+stage: "05-D/11A-D1/E3A/17B"
 version: "0.1.0"
 related:
   - README.md
@@ -37,6 +37,8 @@ related:
 | `X05-CONFIG-014` | 依赖版本约束不是非空静态字符串 | 填写版本约束文本，或删除该字段 |
 | `X05-CONFIG-015` | 依赖来源引用不是非空静态字符串 | 填写 alias/source_id 约束文本，或删除该字段 |
 | `X05-CONFIG-016` | Git 依赖引用冲突、缺失或地址不安全 | 指定安全 HTTPS 仓库和唯一的 `rev`/`tag`/`branch`，不要并用 `path`/`source` |
+| `X05-CONFIG-017` | 资源归档内逻辑路径不安全 | 使用不含空段、`.`、`..`、反斜杠或绝对前缀的相对路径 |
+| `X05-CONFIG-018` | 资源来源路径不安全 | 使用项目根相对的单个文件路径，不要声明目录、卷标或穿越路径 |
 
 远程索引依赖可仅声明 `version`（加可选 `source`）；无 `path`/`git`/`version` 时
 仍报告缺少必需字段。TAR、锁定产物和凭据权限失败分别使用独立的

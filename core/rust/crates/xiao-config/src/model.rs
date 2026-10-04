@@ -41,6 +41,16 @@ impl ConfigDocument {
         self.span
     }
 
+    /// 返回已经通过校验的显式资源映射，按逻辑路径确定性排序。
+    ///
+    /// 键是归档内逻辑路径，值必须是项目根相对的来源文件字符串；该访问器只
+    /// 暴露静态配置节点，不读取文件系统，也不执行配置。
+    pub fn resource_entries(&self) -> impl Iterator<Item = (&String, &ConfigEntry)> {
+        self.table("resources")
+            .into_iter()
+            .flat_map(ConfigTable::iter)
+    }
+
     /// 返回不含源码区间的版本化类型化指纹输入。
     ///
     /// 该编码使用明确的类型标签、元素数量和字节长度边界，不是 RFC 8785/JCS。

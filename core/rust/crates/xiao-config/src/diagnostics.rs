@@ -43,6 +43,10 @@ pub const INVALID_DEPENDENCY_CONSTRAINT_CODE: &str = "X05-CONFIG-014";
 pub const INVALID_DEPENDENCY_SOURCE_CODE: &str = "X05-CONFIG-015";
 /// Git 依赖引用、互斥字段或仓库地址不合法。
 pub const INVALID_DEPENDENCY_GIT_CODE: &str = "X05-CONFIG-016";
+/// 资源归档内逻辑路径不符合规范时使用的编号。
+pub const INVALID_RESOURCE_LOGICAL_PATH_CODE: &str = "X05-CONFIG-017";
+/// 资源来源路径不是项目根内显式文件时使用的编号。
+pub const INVALID_RESOURCE_SOURCE_PATH_CODE: &str = "X05-CONFIG-018";
 
 /// 判断诊断列表是否包含错误级别项目。
 #[must_use]

@@ -4,7 +4,7 @@ title: 静态配置语法
 status: verified
 audience: learner
 module: rust.xiao-config
-stage: "05-D/11A-D1/E3A"
+stage: "05-D/11A-D1/E3A/17B"
 version: "0.1.0"
 related:
   - README.md
@@ -33,6 +33,20 @@ api = "src/api.xiao"
 
 `project.name` 与 `project.version` 都必须是非空字符串。`exports` 的键是包外名称，
 值是项目根相对、以 `.xiao` 结尾的模块路径；绝对路径和 `..` 路径会被拒绝。
+
+## 显式资源
+
+17B 的 `[resources]` 表把归档内逻辑路径映射到项目根相对的单个来源文件：
+
+```xiao
+[resources]
+"assets/logo.png" = "assets/logo.png"
+"assets/data.json" = "data/data.json"
+```
+
+资源键和值都必须是规范的相对文件路径。空段、`.`、`..`、绝对路径、卷标和反斜杠
+都会被拒绝；值不能是目录、数组或字典。打包器只读取表中列出的文件，不扫描项目目录，
+也不会读取环境变量或凭据目录。
 
 ## 静态值
 

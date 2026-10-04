@@ -6,9 +6,9 @@
 ## 文件职责
 
 - `lib.rs`：模块装配和稳定公共重导出，不承载解析状态。
-- `model.rs`：不可执行的表、条目和值模型。
+- `model.rs`：不可执行的表、条目和值模型，以及 `[resources]` 静态映射访问器。
 - `parser.rs`：Token 流解析和字面量解码。
-- `validation.rs`：保留表、严格字段与路径规则。
+- `validation.rs`：保留表、严格字段与项目/资源路径规则。
 - `diagnostics.rs`：配置错误编号和结果别名。
 - `dependencies.rs`：D1 本地路径依赖声明及运行时/开发期分类提取。
 

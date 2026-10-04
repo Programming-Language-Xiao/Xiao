@@ -2,8 +2,9 @@
 
 use xiao_config::{
     ConfigValue, DUPLICATE_KEY_CODE, DUPLICATE_TABLE_CODE, INVALID_EXPORT_PATH_CODE,
-    MISSING_REQUIRED_CODE, UNKNOWN_FIELD_CODE, UNKNOWN_TABLE_CODE, UNSUPPORTED_CONSTRUCT_CODE,
-    parse_config, parse_config_project,
+    INVALID_RESOURCE_LOGICAL_PATH_CODE, INVALID_RESOURCE_SOURCE_PATH_CODE, MISSING_REQUIRED_CODE,
+    UNKNOWN_FIELD_CODE, UNKNOWN_TABLE_CODE, UNSUPPORTED_CONSTRUCT_CODE, parse_config,
+    parse_config_project,
 };
 use xiao_source::SourceFile;
 
@@ -150,6 +151,62 @@ fn normalizes_relative_export_path() {
         .value
         .as_str();
     assert_eq!(path, Some("src/api.xiao"));
+}
+
+#[test]
+/// 资源表只接受显式的逻辑路径到项目文件映射。
+fn accepts_explicit_resource_mapping() {
+    let source = format!(
+        "{}[resources]\n\"assets/logo.png\" = \"assets/logo.png\"\n",
+        project_prefix()
+    );
+    let document = parse_config_project(&SourceFile::from_text(&source)).expect("资源表应合法");
+    let entry = document
+        .table("resources")
+        .expect("resources")
+        .get("assets/logo.png")
+        .expect("资源映射");
+    assert_eq!(entry.value.as_str(), Some("assets/logo.png"));
+    let entries = document.resource_entries().collect::<Vec<_>>();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].0, "assets/logo.png");
+}
+
+#[test]
+/// 资源逻辑路径和来源路径都拒绝穿越、绝对路径及反斜杠。
+fn rejects_unsafe_resource_paths() {
+    for (logical, source, expected) in [
+        (
+            "../logo.png",
+            "assets/logo.png",
+            INVALID_RESOURCE_LOGICAL_PATH_CODE,
+        ),
+        (
+            "assets/logo.png",
+            "../logo.png",
+            INVALID_RESOURCE_SOURCE_PATH_CODE,
+        ),
+        (
+            "assets\\\\logo.png",
+            "assets/logo.png",
+            INVALID_RESOURCE_LOGICAL_PATH_CODE,
+        ),
+        (
+            "assets/logo.png",
+            "C:/secret",
+            INVALID_RESOURCE_SOURCE_PATH_CODE,
+        ),
+    ] {
+        let source_text = format!(
+            "{}[resources]\n\"{}\" = \"{}\"\n",
+            project_prefix(),
+            logical,
+            source
+        );
+        let errors = parse_config_project(&SourceFile::from_text(&source_text))
+            .expect_err("不安全资源路径应失败");
+        assert!(errors.iter().any(|error| error.code() == expected));
+    }
 }
 
 #[test]

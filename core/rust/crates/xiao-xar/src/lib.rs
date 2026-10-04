@@ -8,16 +8,21 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{Display, Formatter};
+use std::fs;
 use std::io::{self, Cursor, Read, Write};
+use std::path::{Path, PathBuf};
 
 use crc32fast::Hasher as Crc32;
 use flate2::Compression;
 use flate2::read::DeflateDecoder;
 use flate2::write::DeflateEncoder;
 use xiao_artifacts::{
-    ArchiveIndex, ArtifactError, Digest256, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
+    ArchiveEntry, ArchiveIndex, ArtifactError, Digest256, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR,
+    ObjectKind,
 };
 use xiao_bytecode::validate_xiaoc;
+use xiao_diagnostics::{Diagnostic, DiagnosticParam};
+use xiao_source::SourceSpan;
 
 /// `.xar` 中唯一的索引成员路径。
 pub const XAR_INDEX_PATH: &str = "META-INF/xiao/index.pb";
@@ -35,6 +40,16 @@ pub const MAX_INDEX_SIZE: u64 = 16 * 1024 * 1024;
 pub const MAX_MEMBER_SIZE: u64 = 512 * 1024 * 1024;
 /// 压缩比超过该值的成员按 ZIP bomb 拒绝。
 pub const MAX_COMPRESSION_RATIO: u64 = 1_000;
+/// 缺失显式资源的稳定诊断编号。
+pub const MISSING_RESOURCE_CODE: &str = "X17-XAR-001";
+/// 资源逻辑路径重复的稳定诊断编号。
+pub const DUPLICATE_LOGICAL_PATH_CODE: &str = "X17-XAR-002";
+/// 资源内容摘要不匹配的稳定诊断编号。
+pub const RESOURCE_DIGEST_MISMATCH_CODE: &str = "X17-XAR-003";
+/// 访问未声明资源的稳定诊断编号。
+pub const UNDECLARED_RESOURCE_ACCESS_CODE: &str = "X17-XAR-004";
+/// 资源路径不满足归档规范的稳定诊断编号。
+pub const INVALID_RESOURCE_PATH_CODE: &str = "X17-XAR-005";
 const ZIP_LOCAL_SIGNATURE: u32 = 0x0403_4b50;
 const ZIP_CENTRAL_SIGNATURE: u32 = 0x0201_4b50;
 const ZIP_EOCD_SIGNATURE: u32 = 0x0605_4b50;
@@ -105,6 +120,530 @@ impl XarObject {
             bytes,
         }
     }
+}
+
+/// `config.xiao` 中的一条显式资源声明。
+///
+/// `logical_path` 是归档内的用户可见路径，`source_path` 是项目根相对的单个
+/// 文件路径。收集器只会读取这条声明指向的文件，不会遍历任何目录。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ResourceDeclaration {
+    /// 归档内逻辑路径。
+    pub logical_path: String,
+    /// 项目根相对的来源文件路径。
+    pub source_path: PathBuf,
+    /// 配置声明对应的源码区间；程序化调用可以省略。
+    pub span: Option<SourceSpan>,
+}
+
+impl ResourceDeclaration {
+    /// 创建不携带源码区间的资源声明。
+    #[must_use]
+    pub fn new(logical_path: impl Into<String>, source_path: impl Into<PathBuf>) -> Self {
+        Self {
+            logical_path: logical_path.into(),
+            source_path: source_path.into(),
+            span: None,
+        }
+    }
+
+    /// 附加配置源码区间，便于稳定诊断定位。
+    #[must_use]
+    pub const fn with_span(mut self, span: SourceSpan) -> Self {
+        self.span = Some(span);
+        self
+    }
+}
+
+/// 已读取并计算内容摘要的资源。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CollectedResource {
+    /// 归档内逻辑路径。
+    pub logical_path: String,
+    /// 项目根相对的来源文件路径。
+    pub source_path: PathBuf,
+    /// 资源内容摘要。
+    pub digest: Digest256,
+    /// 资源完整字节。
+    pub bytes: Vec<u8>,
+}
+
+impl CollectedResource {
+    /// 将资源转换为 `resource` 命名空间的内容寻址对象。
+    #[must_use]
+    pub fn as_object(&self) -> XarObject {
+        XarObject {
+            kind: ObjectKind::Resource,
+            digest: self.digest,
+            bytes: self.bytes.clone(),
+        }
+    }
+}
+
+/// 调试对象的独立收集开关。
+///
+/// 两个开关互不影响；默认值对应标准发布包，只保留 `.xiaoc` 自带的紧凑源码
+/// 位置映射，不把完整符号或源码正文带入归档。
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+pub struct DiagnosticObjectOptions {
+    /// 是否收集完整调试符号对象。
+    pub include_debug: bool,
+    /// 是否收集源码正文对象。
+    pub include_source: bool,
+}
+
+/// 调试/源码对象及其 `.xiaoc` 来源信息。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CollectedDiagnosticObjects {
+    /// `.xiaoc` 中的完整调试符号对象；未选择或不存在时为空。
+    pub debug: Option<XarObject>,
+    /// `.xiaoc` 中的源码正文对象；未选择或不存在时为空。
+    pub source: Option<XarObject>,
+}
+
+/// 资源阶段的稳定错误。每个错误都可转为带 `message_id`、结构化参数和源码区间
+/// 的统一诊断；I/O 错误单独保留为系统错误，不会猜测或读取未声明输入。
+#[derive(Debug)]
+pub enum ResourceError {
+    /// 稳定的结构化资源诊断。
+    Diagnostic(Diagnostic),
+    /// 项目根或显式文件读取失败。
+    Io(io::Error),
+}
+
+impl ResourceError {
+    /// 返回结构化诊断；I/O 错误没有伪造的源码诊断。
+    #[must_use]
+    pub fn diagnostic(&self) -> Option<&Diagnostic> {
+        match self {
+            Self::Diagnostic(diagnostic) => Some(diagnostic),
+            Self::Io(_) => None,
+        }
+    }
+}
+
+impl Display for ResourceError {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Diagnostic(diagnostic) => formatter.write_str(diagnostic.message()),
+            Self::Io(error) => write!(formatter, "资源读取失败：{error}"),
+        }
+    }
+}
+
+impl std::error::Error for ResourceError {}
+
+/// 从项目根收集显式声明的资源。
+///
+/// 该函数只对声明中的来源路径执行 `read`，不会调用 `read_dir`、环境变量或
+/// 凭据目录。物理路径会经过规范化后的根目录检查，符号链接指向根外也会拒绝。
+pub fn collect_resources(
+    project_root: impl AsRef<Path>,
+    declarations: &[ResourceDeclaration],
+) -> Result<Vec<CollectedResource>, ResourceError> {
+    let root = fs::canonicalize(project_root.as_ref()).map_err(ResourceError::Io)?;
+    let mut seen = BTreeSet::new();
+    let mut collected = Vec::with_capacity(declarations.len());
+    for declaration in declarations {
+        validate_logical_path_for_resource(&declaration.logical_path, declaration.span)?;
+        validate_source_path(&declaration.source_path, declaration.span)?;
+        if !seen.insert(declaration.logical_path.clone()) {
+            return Err(ResourceError::Diagnostic(resource_diagnostic(
+                DUPLICATE_LOGICAL_PATH_CODE,
+                "x17.xar.duplicate_logical_path",
+                declaration.span,
+                format!("资源逻辑路径重复：{}", declaration.logical_path),
+                [(
+                    "logical_path",
+                    DiagnosticParam::Text(declaration.logical_path.clone()),
+                )],
+            )));
+        }
+        let path = root.join(&declaration.source_path);
+        let canonical = fs::canonicalize(&path).map_err(|error| {
+            if error.kind() == io::ErrorKind::NotFound {
+                ResourceError::Diagnostic(resource_diagnostic(
+                    MISSING_RESOURCE_CODE,
+                    "x17.xar.missing_resource",
+                    declaration.span,
+                    format!("资源文件缺失：{}", declaration.source_path.display()),
+                    [
+                        (
+                            "logical_path",
+                            DiagnosticParam::Text(declaration.logical_path.clone()),
+                        ),
+                        (
+                            "source_path",
+                            DiagnosticParam::Text(declaration.source_path.display().to_string()),
+                        ),
+                    ],
+                ))
+            } else {
+                ResourceError::Io(error)
+            }
+        })?;
+        if !canonical.starts_with(&root) {
+            return Err(ResourceError::Diagnostic(resource_diagnostic(
+                INVALID_RESOURCE_PATH_CODE,
+                "x17.xar.resource_outside_project",
+                declaration.span,
+                format!(
+                    "资源来源路径越出项目根：{}",
+                    declaration.source_path.display()
+                ),
+                [(
+                    "source_path",
+                    DiagnosticParam::Text(declaration.source_path.display().to_string()),
+                )],
+            )));
+        }
+        if !canonical.is_file() {
+            return Err(ResourceError::Diagnostic(resource_diagnostic(
+                MISSING_RESOURCE_CODE,
+                "x17.xar.missing_resource",
+                declaration.span,
+                format!(
+                    "资源声明必须指向文件：{}",
+                    declaration.source_path.display()
+                ),
+                [
+                    (
+                        "logical_path",
+                        DiagnosticParam::Text(declaration.logical_path.clone()),
+                    ),
+                    (
+                        "source_path",
+                        DiagnosticParam::Text(declaration.source_path.display().to_string()),
+                    ),
+                ],
+            )));
+        }
+        let bytes = fs::read(&canonical).map_err(ResourceError::Io)?;
+        let digest = Digest256::of_bytes(&bytes);
+        collected.push(CollectedResource {
+            logical_path: declaration.logical_path.clone(),
+            source_path: declaration.source_path.clone(),
+            digest,
+            bytes,
+        });
+    }
+    collected.sort_by(|left, right| left.logical_path.cmp(&right.logical_path));
+    Ok(collected)
+}
+
+/// 将资源对象和索引映射追加到归档构造器。
+pub fn append_resource_entries(
+    index: &mut ArchiveIndex,
+    resources: &[CollectedResource],
+    module: &str,
+    target: &str,
+) -> Result<Vec<XarObject>, XarError> {
+    if module.is_empty() || target.is_empty() {
+        return Err(XarError::InvalidIndex("资源索引缺少模块或目标".to_owned()));
+    }
+    let existing = index
+        .entries
+        .iter()
+        .map(|entry| entry.logical_path.as_str())
+        .collect::<BTreeSet<_>>();
+    let mut logical_paths = existing;
+    let mut objects = BTreeMap::new();
+    let mut entries = Vec::with_capacity(resources.len());
+    for resource in resources {
+        validate_logical_path(&resource.logical_path)?;
+        if !logical_paths.insert(resource.logical_path.as_str()) {
+            return Err(XarError::Resource(ResourceError::Diagnostic(
+                resource_diagnostic(
+                    DUPLICATE_LOGICAL_PATH_CODE,
+                    "x17.xar.duplicate_logical_path",
+                    None,
+                    format!("资源逻辑路径重复：{}", resource.logical_path),
+                    [(
+                        "logical_path",
+                        DiagnosticParam::Text(resource.logical_path.clone()),
+                    )],
+                ),
+            )));
+        }
+        if Digest256::of_bytes(&resource.bytes) != resource.digest {
+            return Err(XarError::Resource(ResourceError::Diagnostic(
+                resource_diagnostic(
+                    RESOURCE_DIGEST_MISMATCH_CODE,
+                    "x17.xar.resource_digest_mismatch",
+                    None,
+                    format!("资源摘要不匹配：{}", resource.logical_path),
+                    [(
+                        "logical_path",
+                        DiagnosticParam::Text(resource.logical_path.clone()),
+                    )],
+                ),
+            )));
+        }
+        let object = resource.as_object();
+        objects
+            .entry((object.kind, object.digest))
+            .or_insert(object);
+        entries.push(ArchiveEntry {
+            logical_path: resource.logical_path.clone(),
+            object_kind: ObjectKind::Resource,
+            digest: resource.digest,
+            module: module.to_owned(),
+            target: target.to_owned(),
+            length: resource.bytes.len() as u64,
+        });
+    }
+    index.entries.extend(entries);
+    Ok(objects.into_values().collect())
+}
+
+/// 从 `.xiaoc` 可选分区提取独立的调试和源码对象。
+pub fn collect_diagnostic_objects(
+    xiaoc_bytes: &[u8],
+    options: DiagnosticObjectOptions,
+) -> Result<CollectedDiagnosticObjects, XarError> {
+    let file = xiao_bytecode::decode_xiaoc(xiaoc_bytes)
+        .map_err(|error| XarError::InvalidMember(format!("`.xiaoc` 校验失败：{error}")))?;
+    let debug = options
+        .include_debug
+        .then(|| {
+            file.sections
+                .iter()
+                .find(|section| section.kind == Some(xiao_bytecode::XiaocSectionKind::DebugSymbols))
+                .map(|section| XarObject::from_bytes(ObjectKind::Debug, section.data.clone()))
+        })
+        .flatten();
+    let source = options
+        .include_source
+        .then(|| {
+            file.sections
+                .iter()
+                .find(|section| section.kind == Some(xiao_bytecode::XiaocSectionKind::Source))
+                .map(|section| XarObject::from_bytes(ObjectKind::Source, section.data.clone()))
+        })
+        .flatten();
+    Ok(CollectedDiagnosticObjects { debug, source })
+}
+
+/// 重新生成归档使用的 `.xiaoc`：完整调试符号和源码正文始终移出 `.xiaoc`，由
+/// [`collect_diagnostic_objects`] 按两个独立开关生成归档对象；紧凑 `source-map`
+/// 分区始终保留。
+pub fn prepare_xiaoc_for_archive(
+    xiaoc_bytes: &[u8],
+    options: DiagnosticObjectOptions,
+) -> Result<Vec<u8>, XarError> {
+    let file = xiao_bytecode::decode_xiaoc(xiaoc_bytes)
+        .map_err(|error| XarError::InvalidMember(format!("`.xiaoc` 校验失败：{error}")))?;
+    let mut metadata = file.metadata.clone();
+    if !options.include_debug {
+        metadata.debug_active = false;
+        metadata.diagnostic_component_version.clear();
+    }
+    let rebuilt = xiao_bytecode::encode_xiaoc_with_options(
+        &file.program,
+        metadata,
+        xiao_bytecode::XiaocOptions {
+            operand_width: file.encoded.operand_width,
+            header_extension: file.header.extension,
+            // 可选正文改由归档中的独立对象承载；`.xiaoc` 始终只保留紧凑映射。
+            debug_symbols: None,
+            source: None,
+        },
+    )
+    .map_err(|error| XarError::InvalidMember(format!("`.xiaoc` 重建失败：{error}")))?;
+    Ok(rebuilt)
+}
+
+/// 为 `.xiaoc`、调试符号和源码正文追加索引映射与对象。
+///
+/// 调试和源码逻辑路径采用入口路径加固定后缀，因而不会覆盖模块入口；两个
+/// 选项彼此独立。调用者仍需在 `index.entry` 中设置真正的执行入口。
+pub fn append_xiaoc_entries(
+    index: &mut ArchiveIndex,
+    logical_path: &str,
+    module: &str,
+    target: &str,
+    xiaoc_bytes: &[u8],
+    options: DiagnosticObjectOptions,
+) -> Result<Vec<XarObject>, XarError> {
+    validate_logical_path(logical_path)?;
+    let prepared = prepare_xiaoc_for_archive(xiaoc_bytes, options)?;
+    let diagnostic = collect_diagnostic_objects(xiaoc_bytes, options)?;
+    let xiaoc = XarObject::from_bytes(ObjectKind::Xiaoc, prepared);
+    let mut objects = vec![xiaoc.clone()];
+    let mut entries = vec![ArchiveEntry {
+        logical_path: logical_path.to_owned(),
+        object_kind: ObjectKind::Xiaoc,
+        digest: xiaoc.digest,
+        module: module.to_owned(),
+        target: target.to_owned(),
+        length: xiaoc.bytes.len() as u64,
+    }];
+    for (suffix, object) in [(".debug", diagnostic.debug), (".source", diagnostic.source)] {
+        let Some(object) = object else {
+            continue;
+        };
+        let logical = format!("{logical_path}{suffix}");
+        validate_logical_path(&logical)?;
+        entries.push(ArchiveEntry {
+            logical_path: logical,
+            object_kind: object.kind,
+            digest: object.digest,
+            module: module.to_owned(),
+            target: target.to_owned(),
+            length: object.bytes.len() as u64,
+        });
+        objects.push(object);
+    }
+    let existing = index
+        .entries
+        .iter()
+        .map(|entry| entry.logical_path.as_str())
+        .collect::<BTreeSet<_>>();
+    if entries
+        .iter()
+        .any(|entry| existing.contains(entry.logical_path.as_str()))
+    {
+        return Err(XarError::Resource(ResourceError::Diagnostic(
+            resource_diagnostic(
+                DUPLICATE_LOGICAL_PATH_CODE,
+                "x17.xar.duplicate_logical_path",
+                None,
+                "归档逻辑路径重复".to_owned(),
+                [(
+                    "logical_path",
+                    DiagnosticParam::Text(logical_path.to_owned()),
+                )],
+            ),
+        )));
+    }
+    index.entries.extend(entries);
+    Ok(objects)
+}
+
+/// 校验资源摘要，供归档写入和读取路径共用。
+pub fn validate_resource_digest(
+    logical_path: &str,
+    expected: Digest256,
+    bytes: &[u8],
+    span: Option<SourceSpan>,
+) -> Result<(), ResourceError> {
+    let actual = Digest256::of_bytes(bytes);
+    if actual == expected {
+        return Ok(());
+    }
+    Err(ResourceError::Diagnostic(resource_diagnostic(
+        RESOURCE_DIGEST_MISMATCH_CODE,
+        "x17.xar.resource_digest_mismatch",
+        span,
+        format!("资源摘要不匹配：{logical_path}"),
+        [
+            (
+                "logical_path",
+                DiagnosticParam::Text(logical_path.to_owned()),
+            ),
+            ("expected", DiagnosticParam::Text(expected.as_hex())),
+            ("actual", DiagnosticParam::Text(actual.as_hex())),
+        ],
+    )))
+}
+
+/// 校验一次资源访问是否在声明集合中；运行期可直接复用此判据。
+pub fn require_declared_resource(
+    logical_path: &str,
+    declarations: &[ResourceDeclaration],
+    span: Option<SourceSpan>,
+) -> Result<(), ResourceError> {
+    if declarations
+        .iter()
+        .any(|declaration| declaration.logical_path == logical_path)
+    {
+        return Ok(());
+    }
+    Err(ResourceError::Diagnostic(resource_diagnostic(
+        UNDECLARED_RESOURCE_ACCESS_CODE,
+        "x17.xar.undeclared_resource_access",
+        span,
+        format!("访问了未声明资源：{logical_path}"),
+        [(
+            "logical_path",
+            DiagnosticParam::Text(logical_path.to_owned()),
+        )],
+    )))
+}
+
+fn resource_diagnostic<I>(
+    code: &str,
+    message_id: &str,
+    span: Option<SourceSpan>,
+    message: String,
+    params: I,
+) -> Diagnostic
+where
+    I: IntoIterator<Item = (&'static str, DiagnosticParam)>,
+{
+    Diagnostic::new(
+        code,
+        message_id,
+        xiao_diagnostics::Severity::Error,
+        span,
+        message,
+    )
+    .with_params(
+        params
+            .into_iter()
+            .map(|(key, value)| (key.to_owned(), value)),
+    )
+}
+
+fn validate_logical_path_for_resource(
+    path: &str,
+    span: Option<SourceSpan>,
+) -> Result<(), ResourceError> {
+    if let Err(error) = validate_logical_path(path) {
+        return Err(ResourceError::Diagnostic(resource_diagnostic(
+            INVALID_RESOURCE_PATH_CODE,
+            "x17.xar.invalid_resource_path",
+            span,
+            error.to_string(),
+            [("path", DiagnosticParam::Text(path.to_owned()))],
+        )));
+    }
+    Ok(())
+}
+
+fn validate_source_path(path: &Path, span: Option<SourceSpan>) -> Result<(), ResourceError> {
+    let text = path.to_str().ok_or_else(|| {
+        ResourceError::Diagnostic(resource_diagnostic(
+            INVALID_RESOURCE_PATH_CODE,
+            "x17.xar.invalid_resource_source_path",
+            span,
+            "资源来源路径不是 UTF-8".to_owned(),
+            std::iter::empty(),
+        ))
+    })?;
+    let safe = !path.is_absolute()
+        && !text.is_empty()
+        && !text.chars().any(char::is_control)
+        && !text.starts_with('/')
+        && !text.starts_with('\\')
+        && !text.contains('\\')
+        && !text.split('/').any(|segment| segment.contains(':'))
+        && text
+            .split('/')
+            .all(|segment| !segment.is_empty() && segment != "." && segment != "..")
+        && path
+            .components()
+            .all(|component| matches!(component, std::path::Component::Normal(_)));
+    if safe {
+        return Ok(());
+    }
+    Err(ResourceError::Diagnostic(resource_diagnostic(
+        INVALID_RESOURCE_PATH_CODE,
+        "x17.xar.invalid_resource_source_path",
+        span,
+        format!("资源来源路径不安全：{text}"),
+        [("source_path", DiagnosticParam::Text(text.to_owned()))],
+    )))
 }
 
 /// 已通过中央目录结构检查的成员摘要。
@@ -217,6 +756,59 @@ impl XarBuilder {
             return Err(XarError::DuplicateObject(object.kind, object.digest));
         }
         self.objects.push(object);
+        Ok(())
+    }
+
+    /// 收集资源并将内容寻址对象及其逻辑路径映射加入归档。
+    pub fn add_resources(
+        &mut self,
+        resources: &[CollectedResource],
+        module: &str,
+        target: &str,
+    ) -> Result<(), XarError> {
+        let mut index = self.index.clone();
+        let objects = append_resource_entries(&mut index, resources, module, target)?;
+        for object in objects {
+            if !self
+                .objects
+                .iter()
+                .any(|existing| existing.kind == object.kind && existing.digest == object.digest)
+            {
+                self.add_object(object)?;
+            }
+        }
+        self.index = index;
+        Ok(())
+    }
+
+    /// 加入一个 `.xiaoc` 模块以及按开关选择的独立调试/源码对象。
+    pub fn add_xiaoc(
+        &mut self,
+        logical_path: &str,
+        module: &str,
+        target: &str,
+        xiaoc_bytes: &[u8],
+        options: DiagnosticObjectOptions,
+    ) -> Result<(), XarError> {
+        let mut index = self.index.clone();
+        let objects = append_xiaoc_entries(
+            &mut index,
+            logical_path,
+            module,
+            target,
+            xiaoc_bytes,
+            options,
+        )?;
+        for object in objects {
+            if !self
+                .objects
+                .iter()
+                .any(|existing| existing.kind == object.kind && existing.digest == object.digest)
+            {
+                self.add_object(object)?;
+            }
+        }
+        self.index = index;
         Ok(())
     }
 
@@ -339,6 +931,8 @@ pub enum XarError {
     },
     /// 底层对象索引错误。
     Artifact(ArtifactError),
+    /// 资源声明、收集或运行期访问错误。
+    Resource(ResourceError),
     /// 底层输入输出错误。
     Io(io::Error),
     /// DEFLATE 解码错误。
@@ -369,6 +963,7 @@ impl Display for XarError {
                 "归档摘要不匹配：{path} 期望 {expected} 实际 {actual}"
             ),
             Self::Artifact(error) => Display::fmt(error, formatter),
+            Self::Resource(error) => Display::fmt(error, formatter),
             Self::Io(error) => write!(formatter, "归档 I/O 错误：{error}"),
             Self::Compression(message) => write!(formatter, "归档压缩错误：{message}"),
             Self::Integrity(message) => write!(formatter, "归档完整性错误：{message}"),
@@ -377,6 +972,17 @@ impl Display for XarError {
 }
 
 impl std::error::Error for XarError {}
+
+impl XarError {
+    /// 返回资源阶段携带的结构化诊断。
+    #[must_use]
+    pub fn diagnostic(&self) -> Option<&Diagnostic> {
+        match self {
+            Self::Resource(error) => error.diagnostic(),
+            _ => None,
+        }
+    }
+}
 
 impl From<io::Error> for XarError {
     fn from(error: io::Error) -> Self {
@@ -387,6 +993,12 @@ impl From<io::Error> for XarError {
 impl From<ArtifactError> for XarError {
     fn from(error: ArtifactError) -> Self {
         Self::Artifact(error)
+    }
+}
+
+impl From<ResourceError> for XarError {
+    fn from(error: ResourceError) -> Self {
+        Self::Resource(error)
     }
 }
 
@@ -422,18 +1034,56 @@ fn encode_with_options(
     let mut object_map = BTreeMap::new();
     for object in objects {
         if Digest256::of_bytes(&object.bytes) != object.digest {
+            let actual = Digest256::of_bytes(&object.bytes);
+            if object.kind == ObjectKind::Resource {
+                return Err(XarError::Resource(ResourceError::Diagnostic(
+                    resource_diagnostic(
+                        RESOURCE_DIGEST_MISMATCH_CODE,
+                        "x17.xar.resource_digest_mismatch",
+                        None,
+                        "资源对象摘要不匹配".to_owned(),
+                        [
+                            (
+                                "path",
+                                DiagnosticParam::Text(object_member_path(
+                                    object.kind,
+                                    object.digest,
+                                )),
+                            ),
+                            ("expected", DiagnosticParam::Text(object.digest.as_hex())),
+                            ("actual", DiagnosticParam::Text(actual.as_hex())),
+                        ],
+                    ),
+                )));
+            }
             return Err(XarError::DigestMismatch {
                 path: object_member_path(object.kind, object.digest),
                 expected: object.digest,
-                actual: Digest256::of_bytes(&object.bytes),
+                actual,
             });
         }
         if object.bytes.len() as u64 > MAX_MEMBER_SIZE {
             return Err(XarError::SizeLimit("对象过大".to_owned()));
         }
         if object.kind == ObjectKind::Xiaoc {
-            validate_xiaoc(&object.bytes)
+            let file = xiao_bytecode::decode_xiaoc(&object.bytes)
                 .map_err(|error| XarError::InvalidMember(format!("`.xiaoc` 校验失败：{error}")))?;
+            if file.metadata.debug_active != index.debug_activation {
+                return Err(XarError::InvalidIndex(
+                    "`.xiaoc` 调试激活位与归档索引不一致".to_owned(),
+                ));
+            }
+            if file.sections.iter().any(|section| {
+                matches!(
+                    section.kind,
+                    Some(xiao_bytecode::XiaocSectionKind::DebugSymbols)
+                        | Some(xiao_bytecode::XiaocSectionKind::Source)
+                )
+            }) {
+                return Err(XarError::InvalidMember(
+                    "完整调试符号和源码正文必须作为独立归档对象".to_owned(),
+                ));
+            }
         }
         let key = (object.kind, object.digest);
         if object_map.insert(key, object).is_some() {
@@ -513,14 +1163,10 @@ fn validate_archive_index(index: &ArchiveIndex) -> Result<(), XarError> {
         return Err(XarError::InvalidIndex("缺少系统文案语言默认值".to_owned()));
     }
     let mut logical_paths = BTreeSet::new();
-    let mut objects = BTreeSet::new();
     for entry in &index.entries {
         validate_logical_path(&entry.logical_path)?;
         if !logical_paths.insert(entry.logical_path.as_bytes().to_vec()) {
             return Err(XarError::InvalidIndex("索引逻辑路径重复".to_owned()));
-        }
-        if !objects.insert((entry.object_kind, entry.digest)) {
-            return Err(XarError::InvalidIndex("索引对象摘要重复".to_owned()));
         }
         if entry.length > MAX_MEMBER_SIZE {
             return Err(XarError::SizeLimit("索引对象长度超限".to_owned()));
@@ -543,10 +1189,29 @@ fn validate_members_against_index(archive: &XarArchive) -> Result<(), XarError> 
         }
         let bytes = decode_member(&archive.bytes, member)?;
         if Digest256::of_bytes(&bytes) != entry.digest {
+            let actual = Digest256::of_bytes(&bytes);
+            if entry.object_kind == ObjectKind::Resource {
+                return Err(XarError::Resource(ResourceError::Diagnostic(
+                    resource_diagnostic(
+                        RESOURCE_DIGEST_MISMATCH_CODE,
+                        "x17.xar.resource_digest_mismatch",
+                        None,
+                        format!("资源摘要不匹配：{}", entry.logical_path),
+                        [
+                            (
+                                "logical_path",
+                                DiagnosticParam::Text(entry.logical_path.clone()),
+                            ),
+                            ("expected", DiagnosticParam::Text(entry.digest.as_hex())),
+                            ("actual", DiagnosticParam::Text(actual.as_hex())),
+                        ],
+                    ),
+                )));
+            }
             return Err(XarError::DigestMismatch {
                 path,
                 expected: entry.digest,
-                actual: Digest256::of_bytes(&bytes),
+                actual,
             });
         }
         if entry.object_kind == ObjectKind::Xiaoc {
@@ -569,14 +1234,13 @@ fn validate_members_against_index(archive: &XarArchive) -> Result<(), XarError> 
     Ok(())
 }
 
-fn validate_logical_path(path: &str) -> Result<(), XarError> {
+/// 校验归档索引和资源共用的逻辑路径。
+pub fn validate_logical_path(path: &str) -> Result<(), XarError> {
     if path.is_empty()
         || path.starts_with('/')
         || path.contains('\\')
-        || path
-            .split('/')
-            .next()
-            .is_some_and(|segment| segment.contains(':'))
+        || path.chars().any(char::is_control)
+        || path.split('/').any(|segment| segment.contains(':'))
     {
         return Err(XarError::InvalidIndex(format!("逻辑路径不安全：{path}")));
     }
@@ -903,7 +1567,7 @@ fn parse_zip(bytes: &[u8]) -> Result<ParsedZip, XarError> {
             .map_err(|_| XarError::InvalidMember("成员路径不是 UTF-8".to_owned()))?
             .to_owned();
         validate_physical_path(&name)?;
-        if !paths.insert(name.clone()) {
+        if !paths.insert(name.clone()) && name != XAR_INDEX_PATH {
             return Err(XarError::InvalidMember("物理成员重复".to_owned()));
         }
         let extra = &bytes[cursor + 46 + name_len..end_header];
@@ -1278,7 +1942,14 @@ fn push_u64(output: &mut Vec<u8>, value: u64) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::atomic::AtomicU64;
     use xiao_artifacts::ArchiveEntry;
+    use xiao_bytecode::{
+        TAC_BYTECODE_ABI_VERSION, TAC_RUNTIME_ABI_VERSION, TAC_VERSION, TacAbi, TacProgram,
+        XiaocMetadata, XiaocOptions,
+    };
+
+    static NEXT_TEST_ID: AtomicU64 = AtomicU64::new(0);
 
     fn index_for(bytes: &[u8]) -> (ArchiveIndex, XarObject) {
         let object = XarObject::from_bytes(ObjectKind::Source, bytes);
@@ -1303,6 +1974,39 @@ mod tests {
             language_locale: "zh-CN".to_owned(),
         };
         (index, object)
+    }
+
+    fn empty_xiaoc_with_optional_sections() -> Vec<u8> {
+        let program = TacProgram {
+            version: TAC_VERSION,
+            abi: TacAbi {
+                bytecode_abi_version: TAC_BYTECODE_ABI_VERSION,
+                runtime_abi_version: TAC_RUNTIME_ABI_VERSION,
+                ir_version: 1,
+                language_version: "0.1.0".to_owned(),
+                target: "portable".to_owned(),
+            },
+            constants: Default::default(),
+            signatures: Default::default(),
+            functions: Vec::new(),
+            categories: Default::default(),
+            plans: Vec::new(),
+            selection_plans: Vec::new(),
+            broadcast_assignment_plans: Vec::new(),
+            random_seed_plans: Vec::new(),
+            table_definitions: Vec::new(),
+            unsupported: Vec::new(),
+        };
+        xiao_bytecode::encode_xiaoc_with_options(
+            &program,
+            XiaocMetadata::default(),
+            XiaocOptions {
+                debug_symbols: Some(b"debug-symbols".to_vec()),
+                source: Some(b"source-text".to_vec()),
+                ..Default::default()
+            },
+        )
+        .unwrap()
     }
 
     #[test]
@@ -1394,5 +2098,259 @@ mod tests {
         let eocd = multi_volume.len() - 22;
         multi_volume[eocd + 4..eocd + 6].copy_from_slice(&1_u16.to_le_bytes());
         assert!(decode_xar(&multi_volume).is_err());
+    }
+
+    #[test]
+    fn rejects_all_index_logical_path_boundary_forms() {
+        for path in ["", "a//b", "a/./b", "a/../b", r"a\b", "/a/b", "C:/a"] {
+            let (mut index, object) = index_for(b"path-boundary");
+            index.entry = path.to_owned();
+            index.entries[0].logical_path = path.to_owned();
+            assert!(
+                encode_xar(&index, std::slice::from_ref(&object)).is_err(),
+                "{path:?}"
+            );
+        }
+        let (mut duplicate, object) = index_for(b"duplicate-logical");
+        duplicate.entries.push(duplicate.entries[0].clone());
+        assert!(encode_xar(&duplicate, std::slice::from_ref(&object)).is_err());
+    }
+
+    #[test]
+    fn rejects_missing_and_duplicate_index_headers() {
+        let (index, object) = index_for(b"index-boundary");
+        let mut missing = encode_xar(&index, std::slice::from_ref(&object)).unwrap();
+        let eocd = missing.len() - 22;
+        missing[eocd + 8..eocd + 12].fill(0);
+        missing[eocd + 12..eocd + 16].fill(0);
+        assert!(matches!(
+            decode_xar(&missing),
+            Err(XarError::MissingMember(_))
+        ));
+
+        let mut duplicate = encode_xar(&index, std::slice::from_ref(&object)).unwrap();
+        let eocd = duplicate.len() - 22;
+        duplicate[eocd + 10..eocd + 12].copy_from_slice(&3_u16.to_le_bytes());
+        assert!(decode_xar(&duplicate).is_err());
+    }
+
+    #[test]
+    fn rejects_out_of_bounds_member_lengths_and_unknown_required_versions() {
+        let (index, object) = index_for(b"length-boundary");
+        let bytes = encode_xar(&index, std::slice::from_ref(&object)).unwrap();
+        let central = bytes
+            .windows(4)
+            .position(|window| window == ZIP_CENTRAL_SIGNATURE.to_le_bytes())
+            .unwrap();
+        let mut oversized = bytes.clone();
+        oversized[central + 24..central + 28].copy_from_slice(&u32::MAX.to_le_bytes());
+        assert!(decode_xar(&oversized).is_err());
+
+        let mut unknown_version = bytes;
+        unknown_version[central + 6..central + 8].copy_from_slice(&46_u16.to_le_bytes());
+        assert!(decode_xar(&unknown_version).is_err());
+    }
+
+    #[test]
+    fn explicit_resources_are_content_addressed_and_never_scanned() {
+        let root = std::env::temp_dir().join(format!(
+            "xiao-xar-resource-{}-{}",
+            std::process::id(),
+            NEXT_TEST_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+        ));
+        std::fs::create_dir_all(root.join("assets")).unwrap();
+        std::fs::write(root.join("assets/logo.png"), b"logo").unwrap();
+        std::fs::write(root.join("secret.txt"), b"must-not-be-scanned").unwrap();
+        let resources = collect_resources(
+            &root,
+            &[ResourceDeclaration::new(
+                "assets/logo.png",
+                "assets/logo.png",
+            )],
+        )
+        .unwrap();
+        assert_eq!(resources.len(), 1);
+        assert_eq!(resources[0].digest, Digest256::of_bytes(b"logo"));
+        assert!(
+            !resources
+                .iter()
+                .any(|resource| resource.logical_path == "secret.txt")
+        );
+        assert!(matches!(
+            collect_resources(
+                &root,
+                &[ResourceDeclaration::new("assets/logo.png", "missing.bin")]
+            ),
+            Err(ResourceError::Diagnostic(diagnostic))
+                if diagnostic.code() == MISSING_RESOURCE_CODE
+        ));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn identical_resources_share_one_physical_object_and_keep_two_mappings() {
+        let (mut index, source) = index_for(b"entry");
+        let digest = Digest256::of_bytes(b"same-resource");
+        let resources = vec![
+            CollectedResource {
+                logical_path: "assets/a.bin".to_owned(),
+                source_path: PathBuf::from("assets/a.bin"),
+                digest,
+                bytes: b"same-resource".to_vec(),
+            },
+            CollectedResource {
+                logical_path: "assets/b.bin".to_owned(),
+                source_path: PathBuf::from("assets/b.bin"),
+                digest,
+                bytes: b"same-resource".to_vec(),
+            },
+        ];
+        let objects = append_resource_entries(&mut index, &resources, "main", "portable").unwrap();
+        assert_eq!(objects.len(), 1);
+        let mut all_objects = vec![source];
+        all_objects.extend(objects);
+        let archive = decode_xar(&encode_xar(&index, &all_objects).unwrap()).unwrap();
+        assert_eq!(
+            archive
+                .members()
+                .iter()
+                .filter(|member| member.path.starts_with("objects/resource/"))
+                .count(),
+            1
+        );
+        assert_eq!(
+            archive
+                .index()
+                .entries
+                .iter()
+                .filter(|entry| entry.object_kind == ObjectKind::Resource)
+                .count(),
+            2
+        );
+    }
+
+    #[test]
+    fn resource_diagnostics_cover_duplicate_digest_and_undeclared_access() {
+        let root = std::env::temp_dir().join(format!(
+            "xiao-xar-duplicate-{}-{}",
+            std::process::id(),
+            NEXT_TEST_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        std::fs::write(root.join("a"), b"a").unwrap();
+        let duplicate = collect_resources(
+            &root,
+            &[
+                ResourceDeclaration::new("a", "a"),
+                ResourceDeclaration::new("a", "b"),
+            ],
+        )
+        .unwrap_err();
+        assert_eq!(
+            duplicate.diagnostic().unwrap().code(),
+            DUPLICATE_LOGICAL_PATH_CODE
+        );
+        std::fs::remove_dir_all(root).unwrap();
+
+        let mismatch = validate_resource_digest(
+            "assets/a",
+            Digest256::of_bytes(b"expected"),
+            b"actual",
+            None,
+        )
+        .unwrap_err();
+        assert_eq!(
+            mismatch.diagnostic().unwrap().code(),
+            RESOURCE_DIGEST_MISMATCH_CODE
+        );
+        let undeclared = require_declared_resource("assets/a", &[], None).unwrap_err();
+        assert_eq!(
+            undeclared.diagnostic().unwrap().code(),
+            UNDECLARED_RESOURCE_ACCESS_CODE
+        );
+    }
+
+    #[test]
+    fn debug_and_source_objects_are_independent_and_standard_xiaoc_is_trimmed() {
+        let input = empty_xiaoc_with_optional_sections();
+        let standard = prepare_xiaoc_for_archive(&input, DiagnosticObjectOptions::default())
+            .expect("标准 .xiaoc 应可重建");
+        let standard_file = xiao_bytecode::decode_xiaoc(&standard).unwrap();
+        assert!(standard_file.sections.iter().all(|section| !matches!(
+            section.kind,
+            Some(xiao_bytecode::XiaocSectionKind::DebugSymbols)
+                | Some(xiao_bytecode::XiaocSectionKind::Source)
+        )));
+
+        let both = collect_diagnostic_objects(
+            &input,
+            DiagnosticObjectOptions {
+                include_debug: true,
+                include_source: true,
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            both.debug.as_ref().map(|object| object.kind),
+            Some(ObjectKind::Debug)
+        );
+        assert_eq!(
+            both.source.as_ref().map(|object| object.kind),
+            Some(ObjectKind::Source)
+        );
+        let only_debug = collect_diagnostic_objects(
+            &input,
+            DiagnosticObjectOptions {
+                include_debug: true,
+                include_source: false,
+            },
+        )
+        .unwrap();
+        assert!(only_debug.debug.is_some());
+        assert!(only_debug.source.is_none());
+    }
+
+    #[test]
+    fn standard_and_debug_packages_have_identical_runtime_observations() {
+        let input = empty_xiaoc_with_optional_sections();
+        let standard = prepare_xiaoc_for_archive(&input, DiagnosticObjectOptions::default())
+            .expect("标准包 .xiaoc");
+        let debug = prepare_xiaoc_for_archive(
+            &input,
+            DiagnosticObjectOptions {
+                include_debug: true,
+                include_source: true,
+            },
+        )
+        .expect("调试包 .xiaoc");
+        let standard_out =
+            xiao_vm::run_xiaoc(&standard, xiao_vm::VmOptions::default()).expect("标准包应可执行");
+        let debug_out =
+            xiao_vm::run_xiaoc(&debug, xiao_vm::VmOptions::default()).expect("调试包应可执行");
+        assert_eq!(
+            standard_out.result.error_code(),
+            debug_out.result.error_code()
+        );
+        assert_eq!(
+            format!("{:?}", standard_out.value),
+            format!("{:?}", debug_out.value)
+        );
+        assert_eq!(standard_out.metrics, debug_out.metrics);
+        assert_eq!(standard_out.events, debug_out.events);
+        assert_eq!(standard_out.dropped_events, debug_out.dropped_events);
+        assert_eq!(
+            standard_out.report.as_ref().map(|report| (
+                &report.class,
+                &report.code,
+                &report.message_id,
+                &report.params
+            )),
+            debug_out.report.as_ref().map(|report| (
+                &report.class,
+                &report.code,
+                &report.message_id,
+                &report.params
+            ))
+        );
     }
 }

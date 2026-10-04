@@ -44,6 +44,10 @@ pub enum ObjectKind {
     Xar,
     /// 语言包消息目录。
     Language,
+    /// 应用资源对象。
+    Resource,
+    /// 独立的完整调试符号对象。
+    Debug,
 }
 
 impl ObjectKind {
@@ -56,6 +60,8 @@ impl ObjectKind {
             Self::Native => "native",
             Self::Xar => "xar",
             Self::Language => "language",
+            Self::Resource => "resource",
+            Self::Debug => "debug",
         }
     }
 
@@ -66,6 +72,8 @@ impl ObjectKind {
             Self::Native => "bin",
             Self::Xar => "xar",
             Self::Language => "language",
+            Self::Resource => "resource",
+            Self::Debug => "debug",
         }
     }
 }
@@ -623,6 +631,8 @@ impl ArtifactStore {
             ObjectKind::Native,
             ObjectKind::Xar,
             ObjectKind::Language,
+            ObjectKind::Resource,
+            ObjectKind::Debug,
         ] {
             let (objects, invalid) = self.scan_read_only(kind)?;
             quarantine_candidates.extend(invalid);
@@ -792,6 +802,8 @@ impl ArtifactStore {
             ObjectKind::Native,
             ObjectKind::Xar,
             ObjectKind::Language,
+            ObjectKind::Resource,
+            ObjectKind::Debug,
         ] {
             for object in self.scan(kind)? {
                 if let Some(record) = describe(&object) {
@@ -1517,7 +1529,16 @@ fn decode_global_record(bytes: &[u8]) -> Result<GlobalRecord, ArtifactError> {
 }
 
 fn object_kind_number(kind: ObjectKind) -> u64 {
-    kind as u64 + 1
+    match kind {
+        // 1..=5 已由 16A 冻结；新命名空间只能追加。
+        ObjectKind::Source => 1,
+        ObjectKind::Xiaoc => 2,
+        ObjectKind::Native => 3,
+        ObjectKind::Xar => 4,
+        ObjectKind::Language => 5,
+        ObjectKind::Resource => 6,
+        ObjectKind::Debug => 7,
+    }
 }
 fn object_kind_from_number(value: u64) -> Result<ObjectKind, ArtifactError> {
     match value {
@@ -1526,6 +1547,8 @@ fn object_kind_from_number(value: u64) -> Result<ObjectKind, ArtifactError> {
         3 => Ok(ObjectKind::Native),
         4 => Ok(ObjectKind::Xar),
         5 => Ok(ObjectKind::Language),
+        6 => Ok(ObjectKind::Resource),
+        7 => Ok(ObjectKind::Debug),
         _ => Err(ArtifactError::Index(format!("未知对象类型：{value}"))),
     }
 }
@@ -1861,6 +1884,32 @@ mod tests {
         assert!(ArchiveIndex::decode(&missing_entry).is_err());
         assert!(ArchiveIndex::decode(&empty_entry).is_err());
         assert_eq!(ArchiveIndex::decode(&non_empty_entry).unwrap().entry, "mai");
+    }
+
+    #[test]
+    fn archive_index_rejects_unknown_required_features() {
+        let index = ArchiveIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            entry: "main.xiaoc".to_owned(),
+            entries: Vec::new(),
+            dependency_lock_digest: String::new(),
+            runtime_abi_min: 0,
+            runtime_abi_max: 0,
+            platform: String::new(),
+            debug_activation: false,
+            language_locale: String::new(),
+        };
+        let mut bytes = index.encode().unwrap();
+        let feature = bytes
+            .windows(2)
+            .rposition(|window| window == [0x30, 0x00])
+            .expect("必需能力字段");
+        bytes[feature + 1] = 1;
+        assert!(matches!(
+            ArchiveIndex::decode(&bytes),
+            Err(ArtifactError::Index(_))
+        ));
     }
 
     #[test]

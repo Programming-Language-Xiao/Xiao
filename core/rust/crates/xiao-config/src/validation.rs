@@ -28,6 +28,7 @@ const RESERVED_TABLES: &[&str] = &[
     "package",
     "project",
     "runtime",
+    "resources",
     "sources",
     "toolchain",
     "vm",
@@ -73,6 +74,7 @@ fn validate(
                 validate_dependency_table(table, &mut diagnostics)
             }
             "sources" => validate_source_table(table, &mut diagnostics),
+            "resources" => validate_resources_table(table, &mut diagnostics),
             // CLI、Debug、VM、工具链和构建相关表在本阶段只保留静态值。
             _ => {}
         }
@@ -92,6 +94,40 @@ fn validate(
         Ok(normalize(document))
     } else {
         Err(diagnostics)
+    }
+}
+
+/// 检查显式资源映射。键是归档内逻辑路径，值是项目根相对来源文件。
+///
+/// 资源表故意不接受目录、数组或字典值：每一项都必须对应一次明确的文件读取，
+/// 这样收集器无需遍历项目目录，也不会把环境或凭据作为隐式输入带入归档。
+fn validate_resources_table(table: &ConfigTable, diagnostics: &mut ConfigDiagnostics) {
+    for (logical_path, entry) in &table.entries {
+        if !is_safe_resource_path(logical_path) {
+            diagnostics.push(error(
+                INVALID_RESOURCE_LOGICAL_PATH_CODE,
+                "x05.config.invalid_resource_logical_path",
+                entry.span,
+                format!("资源逻辑路径 {logical_path:?} 必须是项目根相对规范路径"),
+                [("path", DiagnosticParam::Text(logical_path.clone()))],
+            ));
+        }
+        let ConfigValue::String(source_path) = &entry.value else {
+            diagnostics.push(type_error(entry.span, logical_path, "str", &entry.value));
+            continue;
+        };
+        if !is_safe_resource_path(source_path) {
+            diagnostics.push(error(
+                INVALID_RESOURCE_SOURCE_PATH_CODE,
+                "x05.config.invalid_resource_source_path",
+                entry.span,
+                format!("资源 {logical_path:?} 的来源路径必须位于项目根内"),
+                [
+                    ("logical_path", DiagnosticParam::Text(logical_path.clone())),
+                    ("source_path", DiagnosticParam::Text(source_path.clone())),
+                ],
+            ));
+        }
     }
 }
 
@@ -420,11 +456,30 @@ fn is_relative_dependency_path(path: &str) -> bool {
         || path.chars().any(char::is_control)
         || path.starts_with('/')
         || path.starts_with('\\')
-        || path.as_bytes().get(1) == Some(&b':')
+        || path.contains(':')
     {
         return false;
     }
     true
+}
+
+/// 判断资源逻辑路径或来源路径是否为安全的项目根相对文件路径。
+///
+/// 这里拒绝反斜杠而不是先替换它，避免在不同宿主平台上把 `a\\..\\b` 解释成
+/// 与当前平台相关的另一条路径。空段、`.`、`..` 和卷标也全部拒绝，规范化由
+/// 声明者直接提供，收集器随后只执行该单个文件的读取。
+fn is_safe_resource_path(path: &str) -> bool {
+    if path.is_empty()
+        || path.chars().any(char::is_control)
+        || path.starts_with('/')
+        || path.starts_with('\\')
+        || path.contains('\\')
+        || path.as_bytes().get(1) == Some(&b':')
+    {
+        return false;
+    }
+    path.split('/')
+        .all(|segment| !segment.is_empty() && segment != "." && segment != "..")
 }
 
 /// 构造类型错误诊断。
