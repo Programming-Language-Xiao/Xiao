@@ -266,6 +266,19 @@ cli/ts/src/commands/                                  双击/无关联时的命�
 - **不重开** 17A 的容器与索引、17B 的资源语法、17C 的 CLI 与错误码、
   11X0-C 的产物发现、11X0-D 的三处裁定。
 
+## 十、实施记录
+
+- `cli/ts/src/platform/file-association.ts` 交付 Windows、Linux、macOS 三平台关联模型，
+  只生成注册位置、命令模板和卸载动作，不写注册表、`.desktop` 或 `Info.plist`。
+  `archiveLaunchContract` 固定 `-xar <path>` 参数、独立于桌面 cwd、继承标准流并原样转发退出码。
+- `xiao-xar::ArchiveAuditRecord` 与 `audit_archive` 提供机器可读校验记录：归档摘要、索引版本、
+  已验证成员数、Runtime ABI/平台判定、debug 激活位和语言上下文；记录不包含凭据或环境变量值。
+- 17C-FIX 承接回归已落到 `xiao-driver/tests/d17c_archive.rs`：成功路径断言 `IntrinsicOutput`
+  的 `hello world!` 与成功结果，损坏归档通过事件观察器断言没有执行事件；关联契约测试覆盖
+  三平台设计、cwd、参数、标准流和退出码。
+- `run_archive` 已复用 11X0-D 的 `DiagnosticSession`：归档 debug 激活位或 `-debug` 时先完成
+  窗口握手，失败在 VM 前返回；新增安装提示走 CLI 双语目录。
+
 ## 相关页面
 
 - [17. `.xar` 字节码归档与启动](17-xar-archive.md) —— **权威规范**；§启动流程、`:27` 不自解释、`:29` 调试窗口、`:75` 临时内容、`17.14`–`17.18`

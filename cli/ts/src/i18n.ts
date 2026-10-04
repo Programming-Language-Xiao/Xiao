@@ -52,6 +52,10 @@ const messages = {
       "Run xiao without arguments for an interactive prompt; --inLF [file.xiao] opens the multiline editor.",
     ].join("\n") + "\n",
   },
+  "xiao.cli.archive.no_association": {
+    "zh-CN": "未安装 .xar 文件关联；请安装 xiao Runtime 后使用 xiao -xar <file.xar>。",
+    "en-US": "No .xar file association is installed; install Xiao Runtime and use xiao -xar <file.xar>.",
+  },
   "xiao.cli.repl.confirm": { "zh-CN": "按 Enter 确认并运行 ↩︎", "en-US": "Press Enter to confirm and run ↩︎" },
   "xiao.cli.repl.panel": { "zh-CN": "命令面板", "en-US": "Command Panel" },
   "xiao.cli.repl.save": { "zh-CN": "输入保存位置", "en-US": "Enter the save location" },

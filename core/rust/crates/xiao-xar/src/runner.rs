@@ -2,7 +2,8 @@
 
 use std::fmt::{Display, Formatter};
 
-use xiao_artifacts::ArtifactError;
+use serde::Serialize;
+use xiao_artifacts::{ArtifactError, Digest256};
 use xiao_i18n::LocaleContext;
 
 use super::{
@@ -44,6 +45,73 @@ pub struct XarLanguageResolution {
     pub effective: String,
     /// 是否因为缺少内置目录而发生回落。
     pub fallback: bool,
+}
+
+/// 一次归档校验的机器可读审计记录，不包含凭据、环境变量值或用户源码。
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+pub struct ArchiveAuditRecord {
+    /// 完整归档字节摘要。
+    pub archive_digest: String,
+    /// 索引 Schema 版本。
+    pub index_schema_major: u32,
+    /// 索引 Schema 次版本。
+    pub index_schema_minor: u32,
+    /// 已验证的物理成员数量。
+    pub verified_member_count: usize,
+    /// 归档声明的平台。
+    pub archive_platform: String,
+    /// 本次校验使用的宿主平台。
+    pub host_platform: String,
+    /// 当前 Runtime ABI 是否满足归档范围。
+    pub runtime_abi_compatible: bool,
+    /// 当前平台是否满足归档约束。
+    pub platform_compatible: bool,
+    /// 归档调试激活位。
+    pub debug_activation: bool,
+    /// 请求或归档默认语言。
+    pub language_requested: String,
+    /// 实际使用的语言。
+    pub language_effective: String,
+    /// 是否发生语言回落。
+    pub language_fallback: bool,
+}
+
+impl ArchiveAuditRecord {
+    /// 以确定性 JSON 字节输出审计记录。
+    pub fn to_json_bytes(&self) -> Result<Vec<u8>, serde_json::Error> {
+        serde_json::to_vec(self)
+    }
+}
+
+/// 只做归档校验并生成机器可读审计记录，不建立 VM。
+pub fn audit_archive(
+    bytes: &[u8],
+    options: &XarRunOptions,
+) -> Result<ArchiveAuditRecord, XarRunError> {
+    let archive = decode_xar(bytes).map_err(classify_run_error)?;
+    let index = archive.index();
+    let language =
+        resolve_language_locale(&index.language_locale, options.language_locale.as_deref());
+    let runtime_abi_compatible = options.runtime_abi >= index.runtime_abi_min
+        && options.runtime_abi <= index.runtime_abi_max;
+    let platform_compatible = options.platform.is_empty()
+        || index.platform.is_empty()
+        || index.platform == "portable"
+        || index.platform == options.platform;
+    Ok(ArchiveAuditRecord {
+        archive_digest: Digest256::of_bytes(bytes).as_hex(),
+        index_schema_major: index.schema_major,
+        index_schema_minor: index.schema_minor,
+        verified_member_count: archive.members().len(),
+        archive_platform: index.platform.clone(),
+        host_platform: options.platform.clone(),
+        runtime_abi_compatible,
+        platform_compatible,
+        debug_activation: index.debug_activation,
+        language_requested: language.requested,
+        language_effective: language.effective,
+        language_fallback: language.fallback,
+    })
 }
 
 /// 按显式参数、归档默认值、`zh-CN` 缺省顺序解析语言。
@@ -181,6 +249,19 @@ pub fn run_archive(
         .map_err(classify_run_error)?;
     xiao_vm::run_xiaoc(&entry_bytes, options.vm_options)
         .map_err(|error| XarRunError::Validation(format!("入口 `.xiaoc` 执行前校验失败：{error}")))
+}
+
+/// 运行归档并把已产生的 VM 事件交给调用方观察；校验失败时回调不会被调用。
+pub fn run_archive_with_event_observer(
+    bytes: &[u8],
+    options: XarRunOptions,
+    mut observe: impl FnMut(&xiao_vm::VmEvent),
+) -> Result<xiao_vm::RunOutcome, XarRunError> {
+    let outcome = run_archive(bytes, options)?;
+    for event in &outcome.events {
+        observe(event);
+    }
+    Ok(outcome)
 }
 
 fn classify_run_error(error: XarError) -> XarRunError {

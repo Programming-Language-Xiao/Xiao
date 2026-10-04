@@ -20,6 +20,7 @@ import { requestActivation } from "../environments/activation.ts";
 import { editShellProfile } from "../environments/profile.ts";
 import { executePackageCommand } from "../packages/index.ts";
 import { cliMessage } from "../i18n.ts";
+import { noAssociationPrompt } from "../platform/file-association.ts";
 
 /** 命令执行上下文；IO 由入口注入，便于管道和测试。 */
 export interface CommandContext {
@@ -286,6 +287,14 @@ async function executeArchive(command: Extract<ParsedCommand, { kind: "xar" }>, 
     });
     return renderProtocolResponse(result.response, { ...options, locale: locale.tag });
   } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error
+      && typeof (error as { code?: unknown }).code === "string"
+      && (error as { code: string }).code.startsWith("X11-CLI-CORE")) {
+      return renderCliError(
+        new CliCommandError("X11-CLI-XAR-ASSOCIATION-001", noAssociationPrompt(locale.tag), CLI_EXIT_CODES.usage, { archive: path }),
+        options,
+      );
+    }
     return renderCliError(error, options);
   }
 }
