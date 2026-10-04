@@ -30,21 +30,37 @@ $ xiao run hello.xiao          → 仍零诊断、退出码 0
 
 ## 二、问题清单
 
-### 2.1 **`language_locale` 被序列化但运行时未消费**（验收 8 的实质缺口）
+### 2.1 **`language_locale` 的消费不完整**（验收 8 的实质缺口）
 
-`grep language_locale` 全仓命中的**只有 `xiao-artifacts`**（字段定义、编解码、测试）：
+> **⚠️ 本节在审核后更正过。** 初版写的是「被序列化但运行时**未消费**」，
+> 并称 `xiao-xar` 的 runner 与 `xiao-driver` 的协议里**零命中**——**这个判断不准确**。
+> 更正记录与原因见 §八。**以下是更正后的描述。**
 
-- `xiao-artifacts/src/lib.rs:1147` 字段定义、`:1220` 编码（字段 12）、`:1256` 解码；
-- **`xiao-xar` 的 runner 与 `xiao-driver` 的协议里零命中**。
+**17C 的实际做法**（`xiao-driver/src/protocol/run.rs`，重构前）：
 
-**结果**：归档里记着「构建时语言是 `zh-CN`」，**运行时完全不看它**。
+```rust
+let effective_locale = if locale.is_none() {
+    fs::read(&path).ok()
+        .and_then(|bytes| decode_xar(&bytes).ok())
+        .map(|archive| archive.index().language_locale.clone())
+        .filter(|value| matches!(value.to_ascii_lowercase().as_str(), "zh" | "zh-cn" | "en" | "en-us"))
+} else {
+    locale.clone()
+};
+```
 
-**更要紧的是**：`XarRunOptions`（`xiao-xar/src/runner.rs:14`）只有 `runtime_abi` / `platform` /
-`vm_options`——**没有任何语言上下文的入口**，所以这不是"忘了读一个字段"，
-而是**整条归档执行路径没有接语言上下文**。
+**所以协议层是读了的**，只是有三处不足：
+
+1. **白名单过滤**——只有 `zh` / `zh-cn` / `en` / `en-us` 四个值被接受，
+   其他语言（如 `ja-JP`）被**静默丢弃**，且**没有任何诊断**说明发生了什么；
+2. **没有降级状态**——无法区分「用上了归档声明的语言」与「回落到了别处」，
+   这正是 `17.13` 第 2 句要的「**语言资源缺失时仍能输出可读的内置诊断**」所缺的；
+3. **`XarRunOptions` 没有语言入口**（`xiao-xar/src/runner.rs:14` 只有
+   `runtime_abi` / `platform` / `vm_options`）——协议层的本地化**包不到运行器内部**：
+   `run_archive` 自己产生的错误消息（四类 `XarRunError`）走的是**无语言上下文**的路径。
 
 **`17.13` 的原文**：「接入第 11C 阶段的语言上下文和内置消息目录；**归档记录构建时语言默认值**，
-**语言资源缺失时仍能输出可读的内置诊断**」。**两条都不满足**。
+**语言资源缺失时仍能输出可读的内置诊断**」。**第 1 句部分满足（协议层），第 2 句不满足**。
 
 ### 2.2 **成功路径没有回归测试**（验收 2 的强度缺口）
 
@@ -162,6 +178,35 @@ $ xiao run hello.xiao          → 仍零诊断、退出码 0
   展示，不改变 `exit_code`、错误 `code`、`message_id` 或结构化参数。
 - 新增语言解析单元测试、归档成功/失败行为测试和凭据副作用探针；运行器的所有校验
   在 VM 建立前完成，损坏归档不会产生执行事件。
+
+## 八、审核更正记录
+
+### 8.1 「运行时未消费」的判断是错的
+
+本文件初版 §2.1 写「`language_locale` 被序列化但运行时**未消费**」，
+并称 `xiao-xar` 的 runner 与 `xiao-driver` 的协议里**零命中**。
+
+**这个判断不成立**：17C 的 `protocol/run.rs` 里**确实读了**
+`archive.index().language_locale`（更正后的代码引用见 §2.1）。
+
+**出错的原因**：审核时跑的 grep 是
+
+```bash
+grep -rn "language_locale" ... | grep -v "17a\|index_for" | head -8
+```
+
+`xiao-artifacts` 里该字段命中很多（字段定义、编解码、多个测试夹具），
+**`head -8` 把它们全部占满**，`run.rs` 的命中根本没机会显示；
+`grep -v` 的过滤条件也过宽。**这是一次「截断式 grep 导致的假阴性」。**
+
+**为什么保留这条更正**：它不改变 17C-FIX 的**结论**（§2.1 的三处不足成立、
+修复仍有价值），但**改变问题的性质**——从「整条路径没接」变成「接了但接得粗糙」。
+二者的修复面不同：前者要**新建**语言入口，后者是在既有读取上**补**白名单之外的降级、
+降级状态与运行器内部入口。
+
+**教训（写给后来者）**：用 `grep` 下「**零命中**」这类**全称否定**的结论时，
+**不得**同时用 `head` 截断、或用过宽的 `-v` 过滤——两者都会把「没看到」伪装成「不存在」。
+先确认命中总数（`grep -c`），再决定怎么取样。
 
 ## 相关页面
 
