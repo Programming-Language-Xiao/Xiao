@@ -769,6 +769,7 @@ dependencies = [
  "flate2",
  "xiao-artifacts",
  "xiao-bytecode",
+ "xiao-config",
  "xiao-diagnostics",
  "xiao-source",
  "xiao-vm",

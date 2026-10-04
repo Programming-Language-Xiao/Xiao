@@ -155,6 +155,40 @@ impl ResourceDeclaration {
     }
 }
 
+/// 将已通过 `xiao-config` 校验的 `[resources]` 表转换为带源码区间的声明。
+///
+/// 转换只读取配置树中的静态字符串，不访问文件系统；实际文件读取仍由
+/// [`collect_resources`] 完成。
+pub fn resource_declarations_from_config(
+    document: &xiao_config::ConfigDocument,
+) -> Result<Vec<ResourceDeclaration>, ResourceError> {
+    let mut declarations = Vec::new();
+    for (logical_path, entry) in document.resource_entries() {
+        let Some(source_path) = entry.value.as_str() else {
+            return Err(ResourceError::Diagnostic(resource_diagnostic(
+                INVALID_RESOURCE_PATH_CODE,
+                "x17.xar.resource_declaration_type",
+                Some(entry.span),
+                format!("资源 {logical_path:?} 的来源路径必须是字符串"),
+                [("logical_path", DiagnosticParam::Text(logical_path.clone()))],
+            )));
+        };
+        declarations.push(
+            ResourceDeclaration::new(logical_path.clone(), source_path).with_span(entry.span),
+        );
+    }
+    Ok(declarations)
+}
+
+/// 从已校验的 `config.xiao` 文档收集显式资源，并保留声明源码区间。
+pub fn collect_config_resources(
+    project_root: impl AsRef<Path>,
+    document: &xiao_config::ConfigDocument,
+) -> Result<Vec<CollectedResource>, ResourceError> {
+    let declarations = resource_declarations_from_config(document)?;
+    collect_resources(project_root, &declarations)
+}
+
 /// 已读取并计算内容摘要的资源。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct CollectedResource {
@@ -1948,6 +1982,8 @@ mod tests {
         TAC_BYTECODE_ABI_VERSION, TAC_RUNTIME_ABI_VERSION, TAC_VERSION, TacAbi, TacProgram,
         XiaocMetadata, XiaocOptions,
     };
+    use xiao_config::parse_config_project;
+    use xiao_source::SourceFile;
 
     static NEXT_TEST_ID: AtomicU64 = AtomicU64::new(0);
 
@@ -2184,6 +2220,28 @@ mod tests {
             Err(ResourceError::Diagnostic(diagnostic))
                 if diagnostic.code() == MISSING_RESOURCE_CODE
         ));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn config_resource_bridge_preserves_source_span() {
+        let document = parse_config_project(&SourceFile::from_text(
+            "[project]\nname = \"demo\"\nversion = \"1\"\n[resources]\n\"assets/a\" = \"assets/a\"\n",
+        ))
+        .unwrap();
+        let declarations = resource_declarations_from_config(&document).unwrap();
+        assert_eq!(declarations.len(), 1);
+        assert!(declarations[0].span.is_some());
+
+        let root = std::env::temp_dir().join(format!(
+            "xiao-xar-config-resource-{}-{}",
+            std::process::id(),
+            NEXT_TEST_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+        ));
+        std::fs::create_dir_all(root.join("assets")).unwrap();
+        std::fs::write(root.join("assets/a"), b"config-resource").unwrap();
+        let resources = collect_config_resources(&root, &document).unwrap();
+        assert_eq!(resources[0].bytes, b"config-resource");
         std::fs::remove_dir_all(root).unwrap();
     }
 

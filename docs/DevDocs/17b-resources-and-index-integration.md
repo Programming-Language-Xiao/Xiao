@@ -245,7 +245,8 @@ docs/DevDocs/05d-config-static-closure.md  登记新表与新字段（白名单�
 
 - `[resources]` 已登记到 `xiao-config` 的顶层白名单。表项采用
   `"归档逻辑路径" = "项目根相对来源文件"` 形式；`ConfigDocument::resource_entries`
-  只暴露静态节点，校验使用 `X05-CONFIG-017`/`018`，不执行配置、不访问文件系统。
+  只暴露静态节点，`resource_declarations_from_config` 保留每个条目的 `SourceSpan`；校验
+  使用 `X05-CONFIG-017`/`018`，不执行配置、不访问文件系统。
 - `xiao-xar::collect_resources` 逐项执行显式文件读取，拒绝绝对路径、空段、`.`、`..`、
   反斜杠和根外符号链接；实现没有目录遍历、环境变量或凭据读取路径。资源通过
   `ObjectKind::Resource`、`append_resource_entries` 写入内容寻址对象并建立逻辑路径索引。

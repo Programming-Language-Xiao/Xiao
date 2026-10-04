@@ -16,6 +16,7 @@ path = "src/lib.rs"
 [dependencies]
 xiao-artifacts = { path = "../xiao-artifacts" }
 xiao-bytecode = { path = "../xiao-bytecode" }
+xiao-config = { path = "../xiao-config" }
 xiao-diagnostics = { path = "../xiao-diagnostics" }
 xiao-source = { path = "../xiao-source" }
 crc32fast = "1.4"

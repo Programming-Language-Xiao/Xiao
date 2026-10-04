@@ -14,8 +14,9 @@
 ZIP 读写、归档清单、入口解析、成员安全和验证放在 `src/`；平台文件关联放在 `xiao-platform`/CLI。
 
 17A 的公开格式入口是 `encode_xar`、`decode_xar`、`validate_xar`、`list_xar` 和
-`XarBuilder`；17B 另提供 `collect_resources`、`append_resource_entries`、
-`collect_diagnostic_objects`、`prepare_xiaoc_for_archive` 和 `append_xiaoc_entries`。
+`XarBuilder`；17B 另提供 `resource_declarations_from_config`、`collect_config_resources`、
+`collect_resources`、`append_resource_entries`、`collect_diagnostic_objects`、
+`prepare_xiaoc_for_archive` 和 `append_xiaoc_entries`。
 成功打开后，`XarArchive` 只暴露已经通过结构、索引、摘要和载荷校验的内容。
 
 ## 禁止事项
