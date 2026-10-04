@@ -10,6 +10,28 @@ use super::{
     value_to_runtime,
 };
 
+#[cfg(test)]
+static TEST_OUTPUT: std::sync::OnceLock<std::sync::Mutex<Vec<String>>> = std::sync::OnceLock::new();
+
+#[cfg(test)]
+fn record_test_output(text: String) {
+    TEST_OUTPUT
+        .get_or_init(|| std::sync::Mutex::new(Vec::new()))
+        .lock()
+        .expect("测试输出锁不应中毒")
+        .push(text);
+}
+
+#[cfg(test)]
+fn take_test_output() -> Vec<String> {
+    std::mem::take(
+        &mut *TEST_OUTPUT
+            .get_or_init(|| std::sync::Mutex::new(Vec::new()))
+            .lock()
+            .expect("测试输出锁不应中毒"),
+    )
+}
+
 /// 格式化一组 ABI 值并写入标准输出；调用方继续拥有并释放传入值。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_print_values(values: *const XiaoValue, count: usize) -> i32 {
@@ -32,8 +54,15 @@ pub extern "C" fn xiao_runtime_print_values(values: *const XiaoValue, count: usi
             Err(error) => return status_from_error(&error),
         }
     }
+    let output = format!("{}\n", rendered.join(" "));
     let mut stdout = std::io::stdout().lock();
-    if writeln!(stdout, "{}", rendered.join(" ")).is_ok() {
+    if stdout
+        .write_all(output.as_bytes())
+        .and_then(|_| stdout.flush())
+        .is_ok()
+    {
+        #[cfg(test)]
+        record_test_output(output);
         XiaoAbiStatus::Ok.code()
     } else {
         XiaoAbiStatus::RuntimeError.code()
@@ -116,6 +145,7 @@ mod tests {
     use std::ptr;
 
     use super::{xiao_runtime_input, xiao_runtime_print_values};
+    use xiao_runtime_abi::XiaoValue;
     use xiao_runtime_abi::{XiaoAbiStatus, XiaoErrorClass};
 
     #[test]
@@ -125,6 +155,17 @@ mod tests {
             xiao_runtime_print_values(ptr::null(), 1),
             XiaoAbiStatus::InvalidArgument.code()
         );
+    }
+
+    #[test]
+    /// 符号保留但输出行为被破坏时，该运行期用例必须失败。
+    fn removal_verification_print_wrapper_writes_stdout_behavior() {
+        let value = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_print_values(&value, 1),
+            XiaoAbiStatus::Ok.code()
+        );
+        assert_eq!(super::take_test_output(), vec!["none\n".to_owned()]);
     }
 
     #[test]

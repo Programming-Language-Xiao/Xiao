@@ -6,11 +6,15 @@
 
 ## 工程期
 
-17；18 由 CLI 提供 `build -xar` 与 `-xar` 路由；19 做发布和损坏恢复验收。
+17A 已交付物理格式与编解码；17B–17D 继续接入资源、运行器和平台入口；18 由 CLI 提供
+`build -xar` 与 `-xar` 路由；19 做发布和损坏恢复验收。
 
 ## 模块放置
 
 ZIP 读写、归档清单、入口解析、成员安全和验证放在 `src/`；平台文件关联放在 `xiao-platform`/CLI。
+
+17A 的公开格式入口是 `encode_xar`、`decode_xar`、`validate_xar`、`list_xar` 和
+`XarBuilder`；成功打开后，`XarArchive` 只暴露已经通过结构、索引、摘要和载荷校验的内容。
 
 ## 禁止事项
 

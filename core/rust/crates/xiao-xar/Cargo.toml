@@ -12,3 +12,9 @@ workspace = true
 
 [lib]
 path = "src/lib.rs"
+
+[dependencies]
+xiao-artifacts = { path = "../xiao-artifacts" }
+xiao-bytecode = { path = "../xiao-bytecode" }
+crc32fast = "1.4"
+flate2 = { version = "=1.1.10", default-features = false, features = ["rust_backend"] }

@@ -1121,6 +1121,18 @@ pub struct ArchiveIndex {
     pub entry: String,
     /// 按规范键排序的对象条目。
     pub entries: Vec<ArchiveEntry>,
+    /// 依赖锁文件摘要；旧索引缺省为空。
+    pub dependency_lock_digest: String,
+    /// 归档要求的最低 Runtime ABI 编码。
+    pub runtime_abi_min: u64,
+    /// 归档允许的最高 Runtime ABI 编码。
+    pub runtime_abi_max: u64,
+    /// 平台约束的规范文本；无约束时为空。
+    pub platform: String,
+    /// 是否要求启动时强制打开调试诊断。
+    pub debug_activation: bool,
+    /// 构建时有效的系统文案语言默认值。
+    pub language_locale: String,
 }
 
 /// 全局缓存索引中的构建引用记录。
@@ -1178,6 +1190,24 @@ impl ArchiveIndex {
         }
         put_varint_field(&mut output, 5, u64::from(ARCHIVE_INDEX_RECORD_TYPE));
         put_varint_field(&mut output, 6, INDEX_REQUIRED_FEATURES);
+        if !self.dependency_lock_digest.is_empty() {
+            put_bytes_field(&mut output, 7, self.dependency_lock_digest.as_bytes());
+        }
+        if self.runtime_abi_min != 0 {
+            put_varint_field(&mut output, 8, self.runtime_abi_min);
+        }
+        if self.runtime_abi_max != 0 {
+            put_varint_field(&mut output, 9, self.runtime_abi_max);
+        }
+        if !self.platform.is_empty() {
+            put_bytes_field(&mut output, 10, self.platform.as_bytes());
+        }
+        if self.debug_activation {
+            put_varint_field(&mut output, 11, 1);
+        }
+        if !self.language_locale.is_empty() {
+            put_bytes_field(&mut output, 12, self.language_locale.as_bytes());
+        }
         Ok(output)
     }
 
@@ -1189,6 +1219,12 @@ impl ArchiveIndex {
             schema_minor: 0,
             entry: String::new(),
             entries: Vec::new(),
+            dependency_lock_digest: String::new(),
+            runtime_abi_min: 0,
+            runtime_abi_max: 0,
+            platform: String::new(),
+            debug_activation: false,
+            language_locale: String::new(),
         };
         let mut record_type = None;
         let mut required_features = INDEX_REQUIRED_FEATURES;
@@ -1200,6 +1236,12 @@ impl ArchiveIndex {
                 4 => index
                     .entries
                     .push(decode_archive_entry(reader.bytes(wire)?)?),
+                7 => index.dependency_lock_digest = reader.string(wire)?,
+                8 => index.runtime_abi_min = reader.varint(wire)?,
+                9 => index.runtime_abi_max = reader.varint(wire)?,
+                10 => index.platform = reader.string(wire)?,
+                11 => index.debug_activation = reader.varint(wire)? != 0,
+                12 => index.language_locale = reader.string(wire)?,
                 5 => record_type = Some(reader.varint(wire)? as u32),
                 6 => required_features = reader.varint(wire)?,
                 _ => reader.skip(wire)?,
@@ -1783,6 +1825,12 @@ mod tests {
                 target: "portable".to_owned(),
                 length: 5,
             }],
+            dependency_lock_digest: String::new(),
+            runtime_abi_min: 0,
+            runtime_abi_max: 0,
+            platform: String::new(),
+            debug_activation: false,
+            language_locale: String::new(),
         };
         assert_eq!(
             ArchiveIndex::decode(&archive.encode().unwrap()).unwrap(),
@@ -1813,6 +1861,27 @@ mod tests {
         assert!(ArchiveIndex::decode(&missing_entry).is_err());
         assert!(ArchiveIndex::decode(&empty_entry).is_err());
         assert_eq!(ArchiveIndex::decode(&non_empty_entry).unwrap().entry, "mai");
+    }
+
+    #[test]
+    fn archive_index_extended_metadata_round_trips_without_changing_old_fields() {
+        let index = ArchiveIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            entry: "main.xiaoc".to_owned(),
+            entries: Vec::new(),
+            dependency_lock_digest:
+                "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef".to_owned(),
+            runtime_abi_min: 0x0001_0007,
+            runtime_abi_max: 0x0001_0008,
+            platform: "x86_64-pc-windows-msvc".to_owned(),
+            debug_activation: true,
+            language_locale: "zh-CN".to_owned(),
+        };
+        assert_eq!(
+            ArchiveIndex::decode(&index.encode().unwrap()).unwrap(),
+            index
+        );
     }
 
     #[test]
@@ -1863,6 +1932,12 @@ mod tests {
             schema_minor: INDEX_SCHEMA_MINOR,
             entry: "main.xiaoc".to_owned(),
             entries: Vec::new(),
+            dependency_lock_digest: String::new(),
+            runtime_abi_min: 0,
+            runtime_abi_max: 0,
+            platform: String::new(),
+            debug_activation: false,
+            language_locale: String::new(),
         };
         store.write_archive(&archive_path, &archive).unwrap();
 
@@ -2039,6 +2114,12 @@ mod tests {
                 target: "portable".to_owned(),
                 length: object.length,
             }],
+            dependency_lock_digest: String::new(),
+            runtime_abi_min: 0,
+            runtime_abi_max: 0,
+            platform: String::new(),
+            debug_activation: false,
+            language_locale: String::new(),
         };
         index_store.write_archive(&archive_path, &archive).unwrap();
         let references = store
