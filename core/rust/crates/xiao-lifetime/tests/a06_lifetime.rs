@@ -424,6 +424,49 @@ fn dynamic_values_are_conservative() {
 }
 
 #[test]
+/// intrinsic 调用的被调名称不属于用户值，`print` 不能制造生命周期诊断。
+fn print_intrinsic_does_not_create_lifetime_diagnostics() {
+    let result = analyze("print(\"hello world!\")\n");
+    assert!(
+        result.dynamic_checks.is_empty(),
+        "print 不应产生动态生命周期检查: {:?}",
+        result.diagnostics
+    );
+    assert!(
+        result.diagnostics.is_empty(),
+        "print 不应产生生命周期诊断: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+/// 普通标量声明保持干净，防止 intrinsic 修复误改既有生命周期诊断基线。
+fn plain_scalar_declaration_keeps_diagnostics_empty() {
+    let result = analyze("int a = 1\n");
+    assert!(
+        result.diagnostics.is_empty(),
+        "普通标量声明不应产生生命周期诊断: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
+/// `input` 的 `str` 返回值仍进入正常生命周期对象分析，但不继承未知名称诊断。
+fn input_intrinsic_keeps_string_lifetime_without_dynamic_check() {
+    let result = analyze("value = input()\n");
+    assert!(
+        result.dynamic_checks.is_empty(),
+        "input 的已冻结 str 返回值不应产生动态检查: {:?}",
+        result.diagnostics
+    );
+    assert!(
+        result.values.values().any(|value| {
+            value.name.as_deref() == Some("ascii:value") && value.storage.is_heap()
+        })
+    );
+}
+
+#[test]
 /// 动态检查失败计划释放已建立绑定，且所有计划都无重复动作。
 fn failure_plans_are_idempotent() {
     let result = analyze("value = unknown()\n");

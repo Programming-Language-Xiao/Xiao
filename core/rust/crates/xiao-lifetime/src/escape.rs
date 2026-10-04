@@ -1629,19 +1629,44 @@ impl<'source> EscapeAnalyzer<'source> {
             | Expression::NewCall {
                 callee, arguments, ..
             } => {
-                let mut facts = self.analyze_expression(callee);
+                let intrinsic = matches!(expression, Expression::Call { .. })
+                    .then(|| self.types.intrinsic_id_at(expression.span()))
+                    .flatten()
+                    .and_then(xiao_intrinsics::active_by_id);
+                let mut facts = if intrinsic.is_some() {
+                    ExpressionFacts {
+                        ty: ty.clone(),
+                        ..ExpressionFacts::default()
+                    }
+                } else {
+                    self.analyze_expression(callee)
+                };
                 for argument in arguments {
                     facts.merge(self.analyze_expression(&argument.value));
                 }
                 facts.ty = ty.clone().or(facts.ty);
-                facts.produced = self.make_temporary(expression.span(), ty.clone());
+                if intrinsic.is_some() {
+                    // 契约表已经给出调用类别和返回类型；被调名称不是用户值，
+                    // 不能进入未知名称/动态值路径。返回 `none` 不创建值，
+                    // `input` 的 `str` 返回值仍建立正常生命周期对象。
+                    facts.dynamic = false;
+                }
+                facts.produced = if intrinsic.is_some_and(|declaration| {
+                    declaration.signature.return_type == xiao_intrinsics::ValueType::None
+                }) {
+                    None
+                } else {
+                    self.make_temporary(expression.span(), facts.ty.clone())
+                };
                 facts.referents = facts.produced.into_iter().collect();
                 if matches!(expression, Expression::NewCall { .. }) {
                     facts.construct = true;
                 }
-                facts.dynamic |= ty
-                    .as_ref()
-                    .is_none_or(|value| matches!(value, Type::Dynamic | Type::Variable(_)));
+                if intrinsic.is_none() {
+                    facts.dynamic |= ty
+                        .as_ref()
+                        .is_none_or(|value| matches!(value, Type::Dynamic | Type::Variable(_)));
+                }
                 facts
             }
             Expression::Member { object, .. } => {
@@ -1664,9 +1689,14 @@ impl<'source> EscapeAnalyzer<'source> {
         };
         if self
             .types
-            .runtime_checks()
-            .iter()
-            .any(|check| check.span == expression.span())
+            .intrinsic_id_at(expression.span())
+            .and_then(xiao_intrinsics::active_by_id)
+            .is_none()
+            && self
+                .types
+                .runtime_checks()
+                .iter()
+                .any(|check| check.span == expression.span())
         {
             facts.dynamic = true;
             let value = facts.produced.or_else(|| facts.references.first().copied());

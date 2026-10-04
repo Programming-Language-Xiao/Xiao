@@ -599,6 +599,7 @@ name = "xiao-lifetime"
 version = "0.1.0"
 dependencies = [
  "xiao-diagnostics",
+ "xiao-intrinsics",
  "xiao-source",
  "xiao-syntax",
  "xiao-types",

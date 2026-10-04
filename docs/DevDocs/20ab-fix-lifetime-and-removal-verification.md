@@ -189,6 +189,29 @@ input()                 → 按 §3.2 的裁定产出应有的结果
 - **不无差别重写**既有的生命周期诊断（§3.3）——只处理 intrinsic 相关的那两条；
 - **不实施 17**——本批只负责让 17 的端到端验收输出干净。
 
+## 七、实施记录
+
+### 7.1 生命周期修复
+
+- xiao-lifetime 新增对 TypeCheckResult::intrinsic_id_at 的消费，按契约 ID 识别调用；调用分支不再分析
+  intrinsic 被调名称，因此不会把入口名称当作未知用户值。
+- 契约声明返回 none 的入口不创建生命周期值；返回 str 的入口仍创建正常堆值。print 和 input
+  的回归分别验证 dynamic_checks 为空，且 input() 仍有字符串值对象。
+- xiao-lifetime 源码没有新增任何按 print/input 名称判断；名称只在类型层前端适配契约表。
+
+### 7.2 三项真删移除验证
+
+以下验证均在当前实现上先临时删除目标环节，观察专门用例失败，再恢复并重新运行用例：
+
+| 环节 | 临时删除 | 失败证据 | 恢复证据 |
+| --- | --- | --- | --- |
+| 契约表项 | intrinsics.json 的 id=19 print 行 | cargo test -p xiao-driver removal_verification_print_contract_and_vm_binding 失败于“print 移除验证应成功执行” | 恢复该行后同命令通过 |
+| VM 绑定 | xiao-vm/src/semantics/exec.rs 的 VmBinding::Print 分派 arm | 同一用例失败于 execution.outcome.result.is_success() | 恢复 arm 后同命令通过 |
+| ABI 包装 | xiao-runtime/src/abi_io.rs 的 xiao_runtime_print_values 实现 | cargo test -p xiao-runtime removal_verification_print_wrapper_rejects_null_nonempty_input --lib 编译失败，报告 unresolved import | 恢复包装后 cargo test -p xiao-runtime removal_verification --lib 两项通过 |
+
+这三项不是对符号或常量存在性的重复断言：第一项走真实前端到 VM，第二项走真实 intrinsic 分派，第三项
+调用 ABI 包装的参数边界行为。任一消费者被删除，专门用例都会先失败。
+
 ## 相关页面
 
 - [20AB. intrinsic 契约与最小生产入口](20ab-intrinsics-contract-and-minimal-entry.md) —— **本批的修改对象**；§八 第 4 条即 §2.1 的来源

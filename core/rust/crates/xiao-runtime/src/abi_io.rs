@@ -110,3 +110,28 @@ pub extern "C" fn xiao_runtime_input(prompt: *const XiaoValue, has_prompt: u8) -
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::ptr;
+
+    use super::{xiao_runtime_input, xiao_runtime_print_values};
+    use xiao_runtime_abi::{XiaoAbiStatus, XiaoErrorClass};
+
+    #[test]
+    /// 真实调用输出包装的参数边界；删除 ABI 包装会使该语义用例失败。
+    fn removal_verification_print_wrapper_rejects_null_nonempty_input() {
+        assert_eq!(
+            xiao_runtime_print_values(ptr::null(), 1),
+            XiaoAbiStatus::InvalidArgument.code()
+        );
+    }
+
+    #[test]
+    /// 真实调用输入包装的契约边界；非法提示标志必须进入挂起错误槽。
+    fn removal_verification_input_wrapper_rejects_invalid_prompt_flag() {
+        let _ = xiao_runtime_input(ptr::null(), 2);
+        assert_eq!(super::super::pending_class(), XiaoErrorClass::Recoverable);
+        super::super::xiao_runtime_error_clear();
+    }
+}

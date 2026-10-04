@@ -701,9 +701,28 @@ mod tests {
             panic!("print 应成功执行");
         };
         assert!(execution.outcome.result.is_success());
+        assert!(
+            execution.diagnostics().is_empty(),
+            "print 的 JSON diagnostics 应为空: {:?}",
+            execution.diagnostics()
+        );
         assert!(execution.events().iter().any(|event| matches!(
             event,
             VmEvent::IntrinsicOutput { text } if text == "hello world!\n"
+        )));
+    }
+
+    #[test]
+    /// 真实生产入口消费契约表和 VM 绑定；删除任一环节都必须使该行为用例失败。
+    fn removal_verification_print_contract_and_vm_binding() {
+        let outcome = run(&request("print(\"removal probe\")\n"));
+        let DriverOutcome::Executed(execution) = outcome else {
+            panic!("print 移除验证应成功执行");
+        };
+        assert!(execution.outcome.result.is_success());
+        assert!(execution.events().iter().any(|event| matches!(
+            event,
+            VmEvent::IntrinsicOutput { text } if text == "removal probe\n"
         )));
     }
 
