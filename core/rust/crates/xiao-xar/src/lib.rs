@@ -61,6 +61,7 @@ pub const ARCHIVE_VALIDATION_FAILED_CODE: &str = "X17-XAR-009";
 
 mod runner;
 
+/// 17C 归档入口校验、Runtime/平台检查与统一 VM 运行入口。
 pub use runner::{XarRunError, XarRunOptions, run_archive};
 const ZIP_LOCAL_SIGNATURE: u32 = 0x0403_4b50;
 const ZIP_CENTRAL_SIGNATURE: u32 = 0x0201_4b50;
