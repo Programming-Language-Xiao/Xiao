@@ -166,12 +166,12 @@
 | 16A-FIX | [内容寻址边界的编解码对称与单一来源修复](16a-fix-content-addressed-boundaries.md) | 抽出 `validate_archive_index` 供 encode/decode **共用**、删除重复的 `XIAOC_MAGIC` 与裸 `72`、登记索引锁崩溃残留归 16B | 已完成（入口校验对称、`.xiaoc` 契约单一来源、回归与架构约束测试全绿；索引锁残留与文档覆盖警告按 §五登记） |
 | 16B | [缓存维护](16b-cache-maintenance.md) | `16.9` 引用扫描、`16.10` 两阶段显式清理与损坏隔离（**不做 LRU**）、`16.11` 离线读取、`16.12` 多进程与终止恢复；**统一两套跨进程锁** | 已完成（`xiao-lock` 唯一锁实现、保守引用集合、两阶段清理、离线验证读取与回归测试；不含 LRU/CLI） |
 | 17 | [`.xar` 字节码归档与启动](17-xar-archive.md) | ZIP/ZIP64 归档、第三方依赖、资源与双击启动 | 进行中（拆四批：**17A** 格式与编解码、**17B** 资源与索引接入、**17C** 入口与运行器、**17D** 平台关联与调试窗口；前置已满足——`.xiaoc`/内容寻址/CLI/`print` 均已交付） |
-| 17A | [归档格式与编解码](17a-archive-format-and-codec.md) | 受限 ZIP/ZIP64 容器（**自写容器 + `flate2`**）、成员按字节序与固定时间戳、`STORE`/`DEFLATE-6` 选择、`ArchiveIndex` 扩展五个字段、**负例测试为主体** | 待开工（四项决策已定：自写容器、压缩器进指纹、扩展而非重开索引、先验证再暴露） |
+| 17A | [归档格式与编解码](17a-archive-format-and-codec.md) | 受限 ZIP/ZIP64 容器（**自写容器 + `flate2`**）、成员按字节序与固定时间戳、`STORE`/`DEFLATE-6` 选择、`ArchiveIndex` 扩展五个字段、**负例测试为主体**；另承接 20AB-FIX §7.3 的一项移除验证补强 | 待开工（四项决策已定：自写容器、压缩器进指纹、扩展而非重开索引、先验证再暴露） |
 | 18 | [优化与产物 CLI 接入](18-optimization-cli.md) | TypeScript CLI、默认 `-O0`、缓存/验证/打包命令 | 未开始 |
 | 20 | [内置函数与标准库：边界、契约与实施路线](20-builtins-and-standard-library.md) | intrinsic 单一来源契约、官方标准库与普通包边界、外部资源句柄、能力模型和分阶段接入 | 方向稿（跨 09–17 实施；不替代各阶段格式契约） |
 | 20A-研究 | [intrinsic 契约与 20 的批次切分（待审）](20a-intrinsics-contract-research.md) | 裁定 20A/20B 能否分开、`print`/`input` 的签名规则、契约 crate 形态与 `IntrinsicId` 编码；含类型层 5 处名称分派的实测盘点 | **待审**（决策前置件；未审不得据以实施） |
 | 20AB | [intrinsic 契约与最小生产入口](20ab-intrinsics-contract-and-minimal-entry.md) | 契约 crate 与声明数据文件、5 处名称分派迁移为查表、`print`(可变参数)/`input` 接入 VM 与 LLVM 两条路径；含**移除验证** | 实现已交付（契约表、VM/LLVM `print`/`input`、Runtime ABI 接通；**`print` 实测可用**）。**审核发现两项未达标**，见 20AB-FIX |
-| 20AB-FIX | [生命周期诊断与移除验证](20ab-fix-lifetime-and-removal-verification.md) | 补 20AB §八 第 4 条的**移除验证**（删表项/VM 绑定/ABI 包装任一环节则用例必须失败）、修 `print` 的两条 `X06-LIFETIME-005` 诊断（含 `DynamicValue` 兜底文本，违反方向稿 §六 1） | 已完成（生命周期契约消费、`print`/`input` 回归、三项真删验证均已通过） |
+| 20AB-FIX | [生命周期诊断与移除验证](20ab-fix-lifetime-and-removal-verification.md) | 补 20AB §八 第 4 条的**移除验证**（删表项/VM 绑定/ABI 包装任一环节则用例必须失败）、修 `print` 的两条 `X06-LIFETIME-005` 诊断（含 `DynamicValue` 兜底文本，违反方向稿 §六 1） | 已完成（生命周期契约消费、`print`/`input` 回归、三项真删验证均已通过；**ABI 包装那项的失败证据是编译失败，其运行期补强转 17A §2.9**） |
 | 21 | [单线程 RC、强环与并发模型：架构建议讨论稿](21-rc-cycles-and-concurrency.md) | 一份外部架构建议的完整收录、逐条前提核实（含出处）、五个待议问题与初步评估 | 讨论稿（跨 06/07/20；结论落回各阶段文档前不得实现） |
 | 12A | [阶段验收核实记录（01–11）](12a-stage-acceptance-audit.md) | 逐条核实 01–11 的验收标准：缺口清单、证据、三类处置建议；含三条**跨阶段共因**（LLVM 不支持选择器、快照测试不在 CI、有实现缺断言） | **核实已完成**（结论：无一是状态滞后，`00A` 可标已完成，其余各有真实缺口） |
 | 21A | [单线程 RC、强环与并发模型决策交接](21a-rc-cycles-and-concurrency-handoff.md) | 收束 21 的待议问题，固定 DAG、`CrossThread`、原子计数债项、`Arena` 边界和 07-D 后置交接 | 已完成文档决策；实现后置 |
