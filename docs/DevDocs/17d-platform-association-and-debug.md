@@ -273,11 +273,18 @@ cli/ts/src/commands/                                  双击/无关联时的命�
   `archiveLaunchContract` 固定 `-xar <path>` 参数、独立于桌面 cwd、继承标准流并原样转发退出码。
 - `xiao-xar::ArchiveAuditRecord` 与 `audit_archive` 提供机器可读校验记录：归档摘要、索引版本、
   已验证成员数、Runtime ABI/平台判定、debug 激活位和语言上下文；记录不包含凭据或环境变量值。
+  记录形式冻结为协议 `result.audit` 的 JSON 对象（库层仍可直接调用 `to_json_bytes()`）；
+  运行期错误则放在同一错误帧 `details.audit`，源码运行和原生构建不提供这些可选字段，
+  不另写默认日志文件，调用方可按请求编号持久化该字段。
 - 17C-FIX 承接回归已落到 `xiao-driver/tests/d17c_archive.rs`：成功路径断言 `IntrinsicOutput`
   的 `hello world!` 与成功结果，损坏归档通过事件观察器断言没有执行事件；关联契约测试覆盖
   三平台设计、cwd、参数、标准流和退出码。
 - `run_archive` 已复用 11X0-D 的 `DiagnosticSession`：归档 debug 激活位或 `-debug` 时先完成
   窗口握手，失败在 VM 前返回；新增安装提示走 CLI 双语目录。
+- `d17c_archive` 增加了诊断渲染器缺失的拒绝回归：归档声明调试激活位时窗口启动失败返回
+  `X11-DIAGNOSTIC-START-001`，响应没有执行事件。
+- 归档协议现在把 `RunOptions` 的事件容量、超时和取消信号传入生产 VM；超时或取消在窗口
+  启动前、启动后和 VM 返回边界均检查，避免归档路径静默忽略统一运行控制。
 
 ## 相关页面
 

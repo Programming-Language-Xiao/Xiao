@@ -1,6 +1,7 @@
 //! 构建协议的帧边界、兼容性、原生输出与旁置文件回归测试。
 
 use super::*;
+use crate::DRIVER_TIMEOUT_CODE;
 use std::io::Cursor;
 use std::sync::Arc;
 
@@ -125,6 +126,27 @@ fn run_archive_missing_file_has_stable_error() {
     };
     assert_eq!(error.code, xiao_xar::ARCHIVE_MISSING_OBJECT_CODE);
     assert_eq!(exit_code, ExitCode::ArtifactRejected.as_process_code());
+}
+
+#[test]
+/// 归档协议不能静默忽略统一运行选项中的零时限。
+fn run_archive_honors_zero_timeout_before_reading_archive() {
+    let response = dispatch(ProtocolRequest::RunArchive {
+        request_id: "archive-timeout".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: Some("zh-CN".to_owned()),
+        path: "definitely-missing-test-archive.xar".to_owned(),
+        options: RunOptions {
+            timeout_ms: Some(0),
+            ..RunOptions::default()
+        },
+        debug: false,
+    });
+    let ProtocolResponse::Error { error, .. } = response else {
+        panic!("零时限必须在读取归档前拒绝");
+    };
+    assert_eq!(error.code, DRIVER_TIMEOUT_CODE);
 }
 
 #[test]
@@ -475,6 +497,7 @@ fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
         metrics: None,
         value: None,
         artifact: None,
+        audit: None,
     };
     let ProtocolResponse::Result {
         diagnostics: english,
@@ -524,6 +547,7 @@ fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
         metrics: None,
         value: None,
         artifact: None,
+        audit: None,
     };
     let ProtocolResponse::Result { diagnostics, .. } = super::localize::with_locale(
         "locale-default-text".to_owned(),

@@ -313,6 +313,9 @@ pub enum ProtocolResponse {
         value: Option<ProtocolValue>,
         /// 可选原生构建产物摘要。
         artifact: Option<ProtocolArtifact>,
+        /// 归档运行前生成的机器可读校验记录；源码和构建结果为空。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        audit: Option<xiao_xar::ArchiveAuditRecord>,
     },
     /// 环境指纹元数据生成成功。
     EnvironmentResult {

@@ -257,6 +257,24 @@ export interface ResultResponse {
   metrics: unknown | null;
   value: unknown | null;
   artifact: unknown | null;
+  /** 归档运行前的机器可读校验记录；源码和构建结果为 null。 */
+  audit?: ArchiveAuditRecord | null;
+}
+
+/** 归档启动前校验的稳定摘要；不包含路径、凭据或环境变量值。 */
+export interface ArchiveAuditRecord {
+  archive_digest: string;
+  index_schema_major: number;
+  index_schema_minor: number;
+  verified_member_count: number;
+  archive_platform: string;
+  host_platform: string;
+  runtime_abi_compatible: boolean;
+  platform_compatible: boolean;
+  debug_activation: boolean;
+  language_requested: string;
+  language_effective: string;
+  language_fallback: boolean;
 }
 
 /** 环境指纹元数据。 */

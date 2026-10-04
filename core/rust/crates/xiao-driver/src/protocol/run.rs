@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 use std::fs;
 use std::path::PathBuf;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use serde_json::Value;
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
@@ -22,12 +22,13 @@ use crate::diagnostics::{DiagnosticOptions, DiagnosticSession, start_error_detai
 use crate::frontend::{FrontendContext, FrontendRequest};
 use crate::packages::{PackageRegistry, PackageRegistryFingerprint};
 use crate::run::{
-    CancellationToken, DriverError, DriverExecution, DriverOutcome, DriverPhase, DriverRequest,
-    ExitCode, FrontendVmDriver,
+    CancellationToken, DRIVER_TIMEOUT_CODE, DriverError, DriverExecution, DriverOutcome,
+    DriverPhase, DriverRequest, ExitCode, FrontendVmDriver,
 };
 use xiao_xar::{
-    ARCHIVE_LANGUAGE_FALLBACK_CODE, ARCHIVE_MISSING_OBJECT_CODE, XarLanguageResolution,
-    XarRunError, XarRunOptions, decode_xar, resolve_language_locale, run_archive,
+    ARCHIVE_LANGUAGE_FALLBACK_CODE, ARCHIVE_MISSING_OBJECT_CODE, ArchiveAuditRecord,
+    XarLanguageResolution, XarRunError, XarRunOptions, audit_archive, decode_xar,
+    resolve_language_locale, run_archive_with_control,
 };
 
 /// 同一核心进程里可以安全复用模块实例的项目与环境身份。
@@ -214,6 +215,25 @@ fn run_archive_request_response_inner(
     if cancellation.is_cancelled() {
         return cancelled_error_response(request_id);
     }
+    let (vm_options, event_capacity, timeout) = match run_options(&options) {
+        Ok(value) => value,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let deadline = match timeout {
+        Some(timeout) => match Instant::now().checked_add(timeout) {
+            Some(deadline) => Some(deadline),
+            None => {
+                return protocol_error_response(
+                    Some(request_id),
+                    &ProtocolError::request("options.timeout_ms", "超时期限超出宿主时钟可表示范围"),
+                );
+            }
+        },
+        None => None,
+    };
+    if deadline.is_some_and(|deadline| Instant::now() >= deadline) {
+        return archive_timeout_response(request_id);
+    }
     if path.trim().is_empty() {
         return archive_error_response(
             request_id,
@@ -237,12 +257,33 @@ fn run_archive_request_response_inner(
     };
     let archive = match decode_xar(&bytes) {
         Ok(archive) => archive,
-        Err(error) => return xar_run_error_response(request_id, path, classify_xar_error(error)),
+        Err(error) => {
+            return xar_run_error_response(request_id, path, classify_xar_error(error), None);
+        }
     };
+    if cancellation.is_cancelled() {
+        return cancelled_error_response(request_id);
+    }
+    if deadline.is_some_and(|deadline| Instant::now() >= deadline) {
+        return archive_timeout_response(request_id);
+    }
     let language = resolve_language_locale(&archive.index().language_locale, locale.as_deref());
-    let (vm_options, _event_capacity, _timeout) = match run_options(&options) {
-        Ok(value) => value,
-        Err(error) => return protocol_error_response(Some(request_id), &error),
+    let mut cancellation_source =
+        xiao_vm::CancellationSource::new().with_token(cancellation.clone());
+    if let Some(deadline) = deadline {
+        cancellation_source = cancellation_source.with_deadline(deadline);
+    }
+    let xar_options = XarRunOptions {
+        runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
+        platform: ProtocolTarget::host().triple,
+        language_locale: Some(language.effective.clone()),
+        vm_options,
+        event_capacity,
+        debug,
+    };
+    let audit = match audit_archive(&bytes, &xar_options) {
+        Ok(audit) => audit,
+        Err(error) => return xar_run_error_response(request_id, path, error, None),
     };
     let debug_active = debug || archive.index().debug_activation;
     let diagnostic_options = crate::diagnostics::DiagnosticOptions {
@@ -261,18 +302,34 @@ fn run_archive_request_response_inner(
     } else {
         None
     };
+    if cancellation.is_cancelled() {
+        if let Some(session) = diagnostic_session.take() {
+            session.finish();
+        }
+        return cancelled_error_response(request_id);
+    }
+    if deadline.is_some_and(|deadline| Instant::now() >= deadline) {
+        if let Some(session) = diagnostic_session.take() {
+            session.finish();
+        }
+        return archive_timeout_response(request_id);
+    }
     let measurement = xiao_runtime::start_memory_measurement();
-    let result = run_archive(
-        &bytes,
-        XarRunOptions {
-            runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
-            platform: ProtocolTarget::host().triple,
-            language_locale: Some(language.effective.clone()),
-            vm_options,
-        },
-    );
+    let result = run_archive_with_control(&bytes, xar_options, Some(cancellation_source));
     let peak_live_bytes = measurement.peak_live_bytes();
     drop(measurement);
+    if cancellation.is_cancelled() {
+        if let Some(session) = diagnostic_session.take() {
+            session.finish();
+        }
+        return cancelled_error_response(request_id);
+    }
+    if deadline.is_some_and(|deadline| Instant::now() >= deadline) {
+        if let Some(session) = diagnostic_session.take() {
+            session.finish();
+        }
+        return archive_timeout_response(request_id);
+    }
     let result = match result {
         Ok(outcome) => {
             let mut diagnostics = Vec::new();
@@ -289,9 +346,21 @@ fn run_archive_request_response_inner(
             if let Some(session) = diagnostic_session.take() {
                 session.finish();
             }
-            return xar_run_error_response(request_id, path, error);
+            return xar_run_error_response(request_id, path, error, Some(audit));
         }
     };
+    if cancellation.is_cancelled() {
+        if let Some(session) = diagnostic_session.take() {
+            session.finish();
+        }
+        return cancelled_error_response(request_id);
+    }
+    if deadline.is_some_and(|deadline| Instant::now() >= deadline) {
+        if let Some(session) = diagnostic_session.take() {
+            session.finish();
+        }
+        return archive_timeout_response(request_id);
+    }
     if let Some(mut session) = diagnostic_session.take() {
         if let DriverOutcome::Executed(execution) = &result {
             for event in execution.events() {
@@ -300,7 +369,13 @@ fn run_archive_request_response_inner(
         }
         session.finish();
     }
-    run_response_for_operation(request_id, result, peak_live_bytes, "run_archive")
+    run_response_for_operation_with_audit(
+        request_id,
+        result,
+        peak_live_bytes,
+        "run_archive",
+        Some(audit),
+    )
 }
 
 fn classify_xar_error(error: xiao_xar::XarError) -> XarRunError {
@@ -329,14 +404,22 @@ fn xar_run_error_response(
     request_id: String,
     path: String,
     error: XarRunError,
+    audit: Option<ArchiveAuditRecord>,
 ) -> ProtocolResponse {
-    archive_error_response(
+    let mut response = archive_error_response(
         request_id,
         error.code(),
         error.message_id(),
         error.message().to_owned(),
         path,
-    )
+    );
+    if let Some(audit) = audit
+        && let Ok(value) = serde_json::to_value(audit)
+        && let ProtocolResponse::Error { error, .. } = &mut response
+    {
+        error.details.insert("audit".to_owned(), value);
+    }
+    response
 }
 
 fn archive_error_response(
@@ -357,6 +440,26 @@ fn archive_error_response(
             Some("archive_validation".to_owned()),
             Some("检查归档、Runtime 和目标平台后重试".to_owned()),
             details,
+        ),
+        report: None,
+        exit_code: ExitCode::ArtifactRejected.as_process_code(),
+    }
+}
+
+/// 归档运行在驱动器控制边界超时时返回与源码路径一致的稳定错误。
+fn archive_timeout_response(request_id: String) -> ProtocolResponse {
+    ProtocolResponse::Error {
+        request_id: Some(request_id),
+        error: protocol_error_body(
+            DRIVER_TIMEOUT_CODE,
+            "x11.driver.rejected",
+            "运行在驱动器边界超过超时期限",
+            Some("control".to_owned()),
+            Some("增大 timeout_ms 后重试".to_owned()),
+            BTreeMap::from([(
+                "code".to_owned(),
+                Value::String(DRIVER_TIMEOUT_CODE.to_owned()),
+            )]),
         ),
         report: None,
         exit_code: ExitCode::ArtifactRejected.as_process_code(),
@@ -474,6 +577,17 @@ fn run_response_for_operation(
     peak_live_bytes: u64,
     operation: &str,
 ) -> ProtocolResponse {
+    run_response_for_operation_with_audit(request_id, outcome, peak_live_bytes, operation, None)
+}
+
+/// 将运行结果转换为协议响应，并在归档路径附带校验审计记录。
+fn run_response_for_operation_with_audit(
+    request_id: String,
+    outcome: DriverOutcome,
+    peak_live_bytes: u64,
+    operation: &str,
+    audit: Option<ArchiveAuditRecord>,
+) -> ProtocolResponse {
     let exit_code = outcome.exit_code();
     match outcome {
         DriverOutcome::Frontend(error) => ProtocolResponse::Result {
@@ -491,6 +605,7 @@ fn run_response_for_operation(
             metrics: None,
             value: None,
             artifact: None,
+            audit: None,
         },
         DriverOutcome::Rejected(error) => rejected_response(request_id, exit_code, &error),
         DriverOutcome::Executed(execution) => executed_response(
@@ -499,6 +614,7 @@ fn run_response_for_operation(
             &execution,
             peak_live_bytes,
             operation,
+            audit,
         ),
     }
 }
@@ -633,6 +749,7 @@ fn executed_response(
     execution: &DriverExecution,
     peak_live_bytes: u64,
     operation: &str,
+    audit: Option<ArchiveAuditRecord>,
 ) -> ProtocolResponse {
     let outcome = &execution.outcome;
     let value = outcome.value.as_ref().map(protocol_value);
@@ -655,6 +772,7 @@ fn executed_response(
         )),
         value,
         artifact: None,
+        audit,
     }
 }
 

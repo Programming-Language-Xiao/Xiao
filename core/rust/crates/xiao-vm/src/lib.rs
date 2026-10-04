@@ -41,6 +41,7 @@ pub use run::{
     VM_REQUEST_CODE, VmMetrics, VmOptions, VmOptionsError, XiaocLoadError, load_xiaoc, run,
     run_checked, run_hybrid, run_production, run_register, run_request, run_request_with_session,
     run_with, run_with_machine_seed, run_with_seed, run_with_values, run_xiaoc,
+    run_xiaoc_production,
 };
 /// 重导出语义核与终止原因。
 pub use semantics::{Fault, Vm, VmSession};

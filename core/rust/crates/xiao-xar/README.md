@@ -18,7 +18,9 @@ ZIP 读写、归档清单、入口解析、成员安全和验证放在 `src/`；
 `collect_resources`、`append_resource_entries`、`collect_diagnostic_objects`、
 `prepare_xiaoc_for_archive` 和 `append_xiaoc_entries`；17C 提供 `run_archive`、
 `run_archive_with_event_observer`、`XarRunOptions`、`XarRunError` 以及不含敏感值的
-`ArchiveAuditRecord`/`audit_archive`。
+`ArchiveAuditRecord`/`audit_archive`。`XarRunOptions` 的事件容量和显式调试位沿用生产
+VM/诊断入口；需要取消/截止时间时使用 `run_archive_with_control`。协议层把审计记录放在
+`run_archive` 结果帧的 `audit` 字段。
 成功打开后，`XarArchive` 只暴露已经通过结构、索引、摘要和载荷校验的内容。
 
 ## 禁止事项

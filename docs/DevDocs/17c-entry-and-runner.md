@@ -247,7 +247,7 @@ docs/DevDocs/17c-entry-and-runner.md  本文件（含实施记录）
 
 - `xiao-xar::run_archive` 先调用 `decode_xar` 完整验证归档，再检查 Runtime ABI、平台和
   索引入口，入口必须指向 `.xiaoc` 对象；未通过任何前置检查都不会进入 VM。运行成功后
-  只调用既有 `xiao-vm::run_xiaoc`，不复制执行语义。
+  调用 `xiao-vm::run_xiaoc_production`，沿用生产事件容量和取消/截止时间控制，不复制执行语义。
 - 新增 `X17-XAR-006`（缺少对象）、`007`（版本不兼容）、`008`（依赖/平台不满足）和
   `009`（校验失败），由 `run_archive` 协议响应携带 `message_id`、归档路径和阶段详情。
   语言上下文仍由协议既有 `with_locale` 入口渲染，缺少目录时保留可读原文。

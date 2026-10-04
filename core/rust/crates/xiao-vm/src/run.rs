@@ -511,6 +511,26 @@ pub fn run_xiaoc(bytes: &[u8], options: VmOptions) -> Result<RunOutcome, XiaocLo
     Ok(run(&file.program, options))
 }
 
+/// 以生产事件接收器加载并运行一份 `.xiaoc`。
+///
+/// 归档和其他已经物化的字节码入口使用这个函数，以便继续复用同一套 VM
+/// 语义，同时保留生产入口的事件容量和取消/截止时间控制。字节码校验失败
+/// 发生在建立 VM 之前；事件容量的范围由上层协议或归档运行器在调用前校验。
+pub fn run_xiaoc_production(
+    bytes: &[u8],
+    options: VmOptions,
+    event_capacity: usize,
+    cancellation: Option<CancellationSource>,
+) -> Result<RunOutcome, XiaocLoadError> {
+    let file = xiao_bytecode::decode_xiaoc(bytes)?;
+    let sink = BoundedSink::new(event_capacity);
+    let mut vm = Vm::<StackCarrier, BoundedSink>::new(&file.program, options, sink);
+    vm.set_cancellation_source(cancellation);
+    let (result, value) = vm.run_with_value();
+    let metrics = vm.metrics();
+    Ok(production_outcome(result, value, metrics, vm.into_sink()))
+}
+
 /// 只加载并返回已经通过验证的 `.xiaoc`。
 pub fn load_xiaoc(bytes: &[u8]) -> Result<xiao_bytecode::XiaocFile, XiaocLoadError> {
     xiao_bytecode::decode_xiaoc(bytes)

@@ -2,7 +2,7 @@
 
 use std::fmt::{Display, Formatter};
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use xiao_artifacts::{ArtifactError, Digest256};
 use xiao_i18n::LocaleContext;
 
@@ -23,6 +23,10 @@ pub struct XarRunOptions {
     pub language_locale: Option<String>,
     /// 传给统一 VM 入口的执行参数。
     pub vm_options: xiao_vm::VmOptions,
+    /// 生产事件接收器容量；协议入口与源码运行保持同一范围。
+    pub event_capacity: usize,
+    /// 调用方是否显式请求独立诊断窗口。
+    pub debug: bool,
 }
 
 impl Default for XarRunOptions {
@@ -32,6 +36,8 @@ impl Default for XarRunOptions {
             platform: String::new(),
             language_locale: None,
             vm_options: xiao_vm::VmOptions::default(),
+            event_capacity: xiao_vm::DEFAULT_EVENT_CAPACITY,
+            debug: false,
         }
     }
 }
@@ -48,7 +54,7 @@ pub struct XarLanguageResolution {
 }
 
 /// 一次归档校验的机器可读审计记录，不包含凭据、环境变量值或用户源码。
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ArchiveAuditRecord {
     /// 完整归档字节摘要。
     pub archive_digest: String,
@@ -107,7 +113,7 @@ pub fn audit_archive(
         host_platform: options.platform.clone(),
         runtime_abi_compatible,
         platform_compatible,
-        debug_activation: index.debug_activation,
+        debug_activation: index.debug_activation || options.debug,
         language_requested: language.requested,
         language_effective: language.effective,
         language_fallback: language.fallback,
@@ -200,12 +206,28 @@ pub fn run_archive(
     bytes: &[u8],
     options: XarRunOptions,
 ) -> Result<xiao_vm::RunOutcome, XarRunError> {
+    run_archive_with_control(bytes, options, None)
+}
+
+/// 打开、验证并运行归档，同时接入生产 VM 的取消与截止时间来源。
+pub fn run_archive_with_control(
+    bytes: &[u8],
+    options: XarRunOptions,
+    cancellation: Option<xiao_vm::CancellationSource>,
+) -> Result<xiao_vm::RunOutcome, XarRunError> {
     let archive = decode_xar(bytes).map_err(classify_run_error)?;
     let _language = resolve_language_locale(
         &archive.index().language_locale,
         options.language_locale.as_deref(),
     );
     let index = archive.index();
+    if options.event_capacity == 0 || options.event_capacity > xiao_vm::MAX_EVENT_CAPACITY {
+        return Err(XarRunError::Validation(format!(
+            "事件容量必须位于 1..={}（收到 {}）",
+            xiao_vm::MAX_EVENT_CAPACITY,
+            options.event_capacity
+        )));
+    }
     if options.runtime_abi < index.runtime_abi_min || options.runtime_abi > index.runtime_abi_max {
         return Err(XarRunError::VersionIncompatible(format!(
             "Runtime ABI {} 不在归档要求的 {}..={} 范围内",
@@ -247,8 +269,13 @@ pub fn run_archive(
     let entry_bytes = archive
         .read_object(entry.object_kind, entry.digest)
         .map_err(classify_run_error)?;
-    xiao_vm::run_xiaoc(&entry_bytes, options.vm_options)
-        .map_err(|error| XarRunError::Validation(format!("入口 `.xiaoc` 执行前校验失败：{error}")))
+    xiao_vm::run_xiaoc_production(
+        &entry_bytes,
+        options.vm_options,
+        options.event_capacity,
+        cancellation,
+    )
+    .map_err(|error| XarRunError::Validation(format!("入口 `.xiaoc` 执行前校验失败：{error}")))
 }
 
 /// 运行归档并把已产生的 VM 事件交给调用方观察；校验失败时回调不会被调用。
