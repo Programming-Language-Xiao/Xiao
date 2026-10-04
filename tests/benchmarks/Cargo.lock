@@ -747,6 +747,7 @@ dependencies = [
  "xiao-bytecode",
  "xiao-config",
  "xiao-diagnostics",
+ "xiao-i18n",
  "xiao-runtime-abi",
  "xiao-source",
  "xiao-vm",
