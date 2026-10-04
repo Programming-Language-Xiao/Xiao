@@ -19,8 +19,7 @@ xiao-bytecode = { path = "../xiao-bytecode" }
 xiao-config = { path = "../xiao-config" }
 xiao-diagnostics = { path = "../xiao-diagnostics" }
 xiao-source = { path = "../xiao-source" }
+xiao-runtime-abi = { path = "../xiao-runtime-abi" }
+xiao-vm = { path = "../xiao-vm" }
 crc32fast = "1.4"
 flate2 = { version = "=1.1.10", default-features = false, features = ["rust_backend"] }
-
-[dev-dependencies]
-xiao-vm = { path = "../xiao-vm" }

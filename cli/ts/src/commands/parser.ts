@@ -21,6 +21,7 @@ export type ParsedCommand =
   | { kind: "help"; options: GlobalCliOptions }
   | { kind: "version"; options: GlobalCliOptions }
   | { kind: "run"; file: string; options: GlobalCliOptions }
+  | { kind: "xar"; file: string; options: GlobalCliOptions }
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
   | { kind: "test"; project?: string; timeoutMs?: number; options: GlobalCliOptions }
   | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; optimizationLevel: 0; args: readonly string[]; options: GlobalCliOptions }
@@ -66,6 +67,7 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     if (rest.length > 0) throw new CliArgumentError("--version 不接受额外参数");
     return { kind: "version", options };
   }
+  if (positional.includes("-xar")) return parseArchive(positional, options);
   if (command === "--inLF") {
     if (rest.length > 1) throw new CliArgumentError("--inLF 最多接受一个 .xiao 文件路径");
     if (rest.length === 1 && !rest[0].endsWith(".xiao")) {
@@ -74,7 +76,11 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     return rest.length === 0 ? { kind: "repl", multiline: true, options }
       : { kind: "repl", multiline: true, file: rest[0], options };
   }
-  if (command === "run") return parseRun(rest, options);
+  if (command === "run") {
+    if (rest.includes("-xar")) return parseArchive(rest, options);
+    return parseRun(rest, options);
+  }
+  if (command === "-xar") return parseArchive(rest, options);
   if (command === "config") return parseConfig(rest, options);
   if (command === "test") {
     return parseTest(rest, options);
@@ -100,11 +106,24 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     return { kind: "deactivate", options };
   }
   if (command.endsWith(".xiao")) {
+    if (rest.length === 1 && rest[0] === "-xar") return { kind: "xar", file: command, options };
     if (rest.length > 0) throw new CliArgumentError("源码快捷运行只接受一个 .xiao 文件");
     return { kind: "run", file: command, options };
   }
   if (command.startsWith("-")) throw new CliArgumentError(`未知选项：${command}`);
   throw new CliArgumentError(`未知命令：${command}`);
+}
+
+/** 解析两种等价的归档运行形式，`-xar` 与路径先后均可。 */
+function parseArchive(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  const values = args.filter((argument) => argument !== "-xar" && argument !== "run");
+  if (args.filter((argument) => argument === "-xar").length > 1 || values.length !== 1) {
+    throw new CliArgumentError("-xar 需要且只需要一个归档路径");
+  }
+  if (!values[0].toLowerCase().endsWith(".xar")) {
+    throw new CliArgumentError("-xar 的输入必须是 .xar 归档");
+  }
+  return { kind: "xar", file: values[0], options };
 }
 
 /** 返回稳定帮助文本。 */

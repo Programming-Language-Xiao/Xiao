@@ -106,6 +106,28 @@ fn hello_advertises_test_capability() {
 }
 
 #[test]
+/// 归档运行请求在文件缺失时返回 17C 稳定错误码，不进入 VM。
+fn run_archive_missing_file_has_stable_error() {
+    let response = dispatch(ProtocolRequest::RunArchive {
+        request_id: "archive-missing".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: Some("zh-CN".to_owned()),
+        path: "definitely-missing-test-archive.xar".to_owned(),
+        options: RunOptions::default(),
+        debug: false,
+    });
+    let ProtocolResponse::Error {
+        error, exit_code, ..
+    } = response
+    else {
+        panic!("缺失归档必须返回 error 响应");
+    };
+    assert_eq!(error.code, xiao_xar::ARCHIVE_MISSING_OBJECT_CODE);
+    assert_eq!(exit_code, ExitCode::ArtifactRejected.as_process_code());
+}
+
+#[test]
 /// 包视图缺少可选环境和模块字段仍能解码，激活环境不能使用相对路径。
 fn repl_packages_request_validates_environment_without_renaming_package_operation() {
     let request = ProtocolRequest::ReplPackages {

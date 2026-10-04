@@ -11,6 +11,7 @@ import {
   type ProtocolResponse,
   type ProtocolTarget,
   type RunRequest,
+  type RunArchiveRequest,
   type TestRequest,
   type BuildRequest,
   type EnvironmentRequest,
@@ -62,6 +63,26 @@ export interface SourceRunOptions {
   signal?: AbortSignal;
   /** 运行实例的规范语言；旧核心可忽略此字段。 */
   locale?: "zh-CN" | "en-US";
+}
+
+/** 归档运行请求的便捷参数。 */
+export interface ArchiveRunOptions {
+  /** VM 调用深度。 */
+  maxCallDepth?: number;
+  /** 事件容量；核心保留字段以兼容统一运行选项。 */
+  eventCapacity?: number;
+  /** 驱动器边界超时（毫秒）。 */
+  timeoutMs?: number | null;
+  /** VM 热循环检查点。 */
+  checkpointsEnabled?: boolean;
+  /** 检查点间隔。 */
+  checkpointInterval?: number;
+  /** 是否显式请求诊断会话。 */
+  debug?: boolean;
+  /** 本次运行的规范语言。 */
+  locale?: "zh-CN" | "en-US";
+  /** 取消信号。 */
+  signal?: AbortSignal;
 }
 
 /** 源码原生构建请求的便捷参数。 */
@@ -233,6 +254,27 @@ export class ProtocolClient {
     return this.call(request, options.signal);
   }
 
+  /** 使用唯一索引运行一个 `.xar` 归档。 */
+  async runArchive(path: string, options: ArchiveRunOptions = {}): Promise<CoreCallResult> {
+    const request: RunArchiveRequest = {
+      type: "run_archive",
+      request_id: requestId("run-archive"),
+      protocol_version: PROTOCOL_VERSION,
+      core_version: CORE_VERSION,
+      ...(options.locale === undefined ? {} : { locale: options.locale }),
+      path,
+      debug: options.debug ?? false,
+      options: {
+        max_call_depth: options.maxCallDepth ?? 1024,
+        event_capacity: options.eventCapacity ?? 256,
+        timeout_ms: options.timeoutMs ?? null,
+        checkpoints_enabled: options.checkpointsEnabled ?? true,
+        checkpoint_interval: options.checkpointInterval ?? 1024,
+      },
+    };
+    return this.call(request, options.signal);
+  }
+
   /** 使用真实 Xiao 源码发送一次 `build` 请求。 */
   async buildSource(sourceText: string, options: SourceBuildOptions): Promise<CoreCallResult> {
     const target = options.target ?? hostTarget();
@@ -329,7 +371,7 @@ export class ProtocolClient {
   }
 
   /** 使用已经规范化的协议运行请求发送一次调用。 */
-  async call(request: RunRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  async call(request: RunRequest | RunArchiveRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (this.shutdownPromise !== null) throw new CoreClientError("X11-CLI-CORE-003", "核心会话已关闭", 4);
     const execute = () => this.callNow(request, signal);
     const result = this.operation.then(execute, execute);
@@ -348,7 +390,7 @@ export class ProtocolClient {
   }
 
   /** 串行执行一次协议调用，避免同一客户端的帧写入互相交错。 */
-  private async callNow(request: RunRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  private async callNow(request: RunRequest | RunArchiveRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     await this.ensureStarted(signal);
     const child = this.child;
@@ -364,6 +406,9 @@ export class ProtocolClient {
     try {
       if (request.type === "package" && !helloResponse.capabilities.includes("package")) {
         throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 package 能力，请升级 xiao-core", 2);
+      }
+      if (request.type === "run_archive" && !helloResponse.capabilities.includes("run_archive")) {
+        throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 run_archive 能力，请升级 xiao-core", 2);
       }
 
       if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);

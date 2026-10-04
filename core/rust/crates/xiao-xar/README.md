@@ -6,7 +6,7 @@
 
 ## 工程期
 
-17A 已交付物理格式与编解码；17B 已接入显式资源、独立调试/源码对象和稳定资源诊断；17C–17D 继续接入运行器和平台入口；18 由 CLI 提供
+17A 已交付物理格式与编解码；17B 已接入显式资源、独立调试/源码对象和稳定资源诊断；17C 已接入归档运行器与 `run_archive` 入口；17D 继续接入平台入口；18 由 CLI 提供
 `build -xar` 与 `-xar` 路由；19 做发布和损坏恢复验收。
 
 ## 模块放置
@@ -16,7 +16,8 @@ ZIP 读写、归档清单、入口解析、成员安全和验证放在 `src/`；
 17A 的公开格式入口是 `encode_xar`、`decode_xar`、`validate_xar`、`list_xar` 和
 `XarBuilder`；17B 另提供 `resource_declarations_from_config`、`collect_config_resources`、
 `collect_resources`、`append_resource_entries`、`collect_diagnostic_objects`、
-`prepare_xiaoc_for_archive` 和 `append_xiaoc_entries`。
+`prepare_xiaoc_for_archive` 和 `append_xiaoc_entries`；17C 提供 `run_archive`、
+`XarRunOptions` 和 `XarRunError`。
 成功打开后，`XarArchive` 只暴露已经通过结构、索引、摘要和载荷校验的内容。
 
 ## 禁止事项

@@ -4,7 +4,7 @@ title: Rust 核心进程协议
 status: verified
 audience: CLI 集成开发者
 module: rust.xiao-driver
-stage: 11X0
+stage: 11X0/17C
 related:
   - ../../../DevDocs/11x0-cli-protocol-and-toolchain.md
   - README.md
@@ -14,7 +14,7 @@ related:
 # Rust 核心进程协议
 
 X0-A 的核心入口是 `xiao-core` 子进程。调用方先发送一个 `hello` 帧完成版本协商，
-再发送 `run`、`test`、`build`、`environment`、`package`、`repl_packages`、`cancel` 或 `shutdown`。本页描述已经验证的机器边界；用户可见的
+再发送 `run`、`run_archive`、`test`、`build`、`environment`、`package`、`repl_packages`、`cancel` 或 `shutdown`。本页描述已经验证的机器边界；用户可见的
 `xiao` 命令、项目测试和独立分发已经接入；`xiao build` 及主机工具链发现也已接入 X0-E。
 
 ## 帧格式
@@ -46,6 +46,14 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 锁文件状态。错误依旧走 `error`，CLI 不重新判定目标或生成锁文件。
 `package` 是以 `hello.capabilities` 协商的兼容新增操作；不支持时 CLI 在发送请求前失败，
 不把旧核心的未知请求当作可用功能。
+
+## 归档运行
+
+`run_archive` 请求携带 `path`、统一 `RunOptions` 和 `debug` 位。核心读取 `.xar` 后，
+按固定顺序验证唯一索引、全部对象、Runtime ABI、目标平台和入口，成功后才调用统一 VM。
+入口只取 `ArchiveIndex.entry`，不会从成员扫描猜测。归档运行结果仍使用 `result` 的
+`exit_code`、`exit_name`、报告、事件和指标字段，操作名为 `run_archive`；执行前失败沿用
+`X17-XAR-006`（缺少对象）、`007`（版本不兼容）、`008`（运行条件不满足）和 `009`（校验失败）。
 
 ## REPL 环境包视图（I4a）
 

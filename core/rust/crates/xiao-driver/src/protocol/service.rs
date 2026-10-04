@@ -77,6 +77,26 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
                 CancellationToken::new(),
             )
         }),
+        ProtocolRequest::RunArchive {
+            request_id,
+            protocol_version,
+            core_version,
+            locale,
+            path,
+            options,
+            debug,
+        } => with_locale(request_id.clone(), locale.clone(), || {
+            super::run::run_archive_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                locale,
+                path,
+                options,
+                debug,
+                CancellationToken::new(),
+            )
+        }),
         ProtocolRequest::Test {
             request_id,
             protocol_version,
@@ -244,6 +264,7 @@ fn hello_response(
             versions,
             capabilities: vec![
                 "run".to_owned(),
+                "run_archive".to_owned(),
                 "test".to_owned(),
                 "build".to_owned(),
                 "environment".to_owned(),
@@ -608,6 +629,26 @@ fn session_worker_response(
                 fingerprint,
             )
         }),
+        ProtocolRequest::RunArchive {
+            request_id,
+            protocol_version,
+            core_version,
+            locale,
+            path,
+            options,
+            debug,
+        } => with_locale(request_id.clone(), locale.clone(), || {
+            super::run::run_archive_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                locale,
+                path,
+                options,
+                debug,
+                token,
+            )
+        }),
         _ => unreachable!("会话线程只接收 run 请求"),
     }
 }
@@ -640,6 +681,26 @@ pub(super) fn worker_response(
                 optimization,
                 source,
                 options,
+                token,
+            )
+        }),
+        ProtocolRequest::RunArchive {
+            request_id,
+            protocol_version,
+            core_version,
+            locale,
+            path,
+            options,
+            debug,
+        } => with_locale(request_id.clone(), locale.clone(), || {
+            super::run::run_archive_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                locale,
+                path,
+                options,
+                debug,
                 token,
             )
         }),
@@ -743,7 +804,7 @@ fn enqueue_session_job<W: Write + Send + 'static>(
     cancellations: &CancellationMap,
     sender: &SessionSender,
 ) {
-    let request_id = request_id_for(&request).expect("会话请求必须是 run");
+    let request_id = request_id_for(&request).expect("会话请求必须是 run 或 run_archive");
     let token = CancellationToken::new();
     if let Ok(mut map) = cancellations.lock() {
         map.insert(request_id.clone(), token.clone());
@@ -818,7 +879,7 @@ where
                     break;
                 }
             }
-            request @ ProtocolRequest::Run { .. } => {
+            request @ (ProtocolRequest::Run { .. } | ProtocolRequest::RunArchive { .. }) => {
                 if !negotiated {
                     let request_id = request_id_for(&request).expect("run 请求编号");
                     let error = ProtocolError::version("必须先完成 hello 版本协商");
@@ -870,6 +931,7 @@ fn reject_non_hello_first_frame(request: &ProtocolRequest) -> Option<ProtocolRes
 fn request_id_for(request: &ProtocolRequest) -> Option<String> {
     match request {
         ProtocolRequest::Run { request_id, .. }
+        | ProtocolRequest::RunArchive { request_id, .. }
         | ProtocolRequest::Test { request_id, .. }
         | ProtocolRequest::Build { request_id, .. }
         | ProtocolRequest::Environment { request_id, .. }

@@ -1,6 +1,7 @@
 //! 真实源码到 VM 的运行路径与运行响应。
 
 use std::collections::BTreeMap;
+use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -23,6 +24,7 @@ use crate::run::{
     CancellationToken, DriverError, DriverExecution, DriverOutcome, DriverPhase, DriverRequest,
     ExitCode, FrontendVmDriver,
 };
+use xiao_xar::{ARCHIVE_MISSING_OBJECT_CODE, XarRunError, XarRunOptions, decode_xar, run_archive};
 
 /// 同一核心进程里可以安全复用模块实例的项目与环境身份。
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -146,6 +148,218 @@ pub(super) fn run_request_response(
     )
 }
 
+/// 执行 `.xar`：先完成容器、索引、对象、Runtime 和平台验证，再进入统一 VM。
+#[allow(clippy::too_many_arguments)]
+pub(super) fn run_archive_request_response(
+    request_id: String,
+    protocol_version: u16,
+    core_version: u32,
+    locale: Option<String>,
+    path: String,
+    options: RunOptions,
+    debug: bool,
+    cancellation: CancellationToken,
+) -> ProtocolResponse {
+    let effective_locale = if locale.is_none() {
+        fs::read(&path)
+            .ok()
+            .and_then(|bytes| decode_xar(&bytes).ok())
+            .map(|archive| archive.index().language_locale.clone())
+            .filter(|value| {
+                matches!(
+                    value.to_ascii_lowercase().as_str(),
+                    "zh" | "zh-cn" | "en" | "en-us"
+                )
+            })
+    } else {
+        locale.clone()
+    };
+    if effective_locale != locale {
+        return super::localize::with_locale(request_id.clone(), effective_locale.clone(), || {
+            run_archive_request_response_inner(
+                request_id,
+                protocol_version,
+                core_version,
+                effective_locale,
+                path,
+                options,
+                debug,
+                cancellation,
+            )
+        });
+    }
+    run_archive_request_response_inner(
+        request_id,
+        protocol_version,
+        core_version,
+        locale,
+        path,
+        options,
+        debug,
+        cancellation,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn run_archive_request_response_inner(
+    request_id: String,
+    protocol_version: u16,
+    core_version: u32,
+    locale: Option<String>,
+    path: String,
+    options: RunOptions,
+    debug: bool,
+    cancellation: CancellationToken,
+) -> ProtocolResponse {
+    if let Err(error) = validate_versions(protocol_version, core_version) {
+        return protocol_error_response(Some(request_id), &error);
+    }
+    if cancellation.is_cancelled() {
+        return cancelled_error_response(request_id);
+    }
+    if path.trim().is_empty() {
+        return archive_error_response(
+            request_id,
+            ARCHIVE_MISSING_OBJECT_CODE,
+            "x17.xar.archive_missing_object",
+            "归档路径不能为空".to_owned(),
+            path,
+        );
+    }
+    let bytes = match fs::read(&path) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            return archive_error_response(
+                request_id,
+                ARCHIVE_MISSING_OBJECT_CODE,
+                "x17.xar.archive_missing_object",
+                format!("无法读取归档：{error}"),
+                path,
+            );
+        }
+    };
+    let archive = match decode_xar(&bytes) {
+        Ok(archive) => archive,
+        Err(error) => return xar_run_error_response(request_id, path, classify_xar_error(error)),
+    };
+    let (vm_options, _event_capacity, _timeout) = match run_options(&options) {
+        Ok(value) => value,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let debug_active = debug || archive.index().debug_activation;
+    let diagnostic_options = crate::diagnostics::DiagnosticOptions {
+        locale: locale.clone(),
+        ..Default::default()
+    };
+    let mut diagnostic_session = if debug_active {
+        match crate::diagnostics::DiagnosticSession::start(
+            archive.index().entry.clone(),
+            Some(path.clone()),
+            &diagnostic_options,
+        ) {
+            Ok(session) => Some(session),
+            Err(error) => return diagnostic_start_response(request_id, error),
+        }
+    } else {
+        None
+    };
+    let measurement = xiao_runtime::start_memory_measurement();
+    let result = run_archive(
+        &bytes,
+        XarRunOptions {
+            runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
+            platform: ProtocolTarget::host().triple,
+            vm_options,
+        },
+    );
+    let peak_live_bytes = measurement.peak_live_bytes();
+    drop(measurement);
+    let result = match result {
+        Ok(outcome) => {
+            let execution = DriverExecution {
+                outcome,
+                diagnostics: Vec::new(),
+            };
+            DriverOutcome::Executed(execution)
+        }
+        Err(error) => {
+            if let Some(session) = diagnostic_session.take() {
+                session.finish();
+            }
+            return xar_run_error_response(request_id, path, error);
+        }
+    };
+    if let Some(mut session) = diagnostic_session.take() {
+        if let DriverOutcome::Executed(execution) = &result {
+            for event in execution.events() {
+                session.record(event);
+            }
+        }
+        session.finish();
+    }
+    run_response_for_operation(request_id, result, peak_live_bytes, "run_archive")
+}
+
+fn classify_xar_error(error: xiao_xar::XarError) -> XarRunError {
+    match error {
+        xiao_xar::XarError::MissingMember(path) => XarRunError::MissingObject(path),
+        xiao_xar::XarError::Artifact(xiao_artifacts::ArtifactError::UnsupportedIndexVersion {
+            major,
+            ..
+        }) => XarRunError::VersionIncompatible(format!("不支持的归档索引主版本 {major}")),
+        xiao_xar::XarError::Artifact(xiao_artifacts::ArtifactError::Index(message))
+            if message.contains("未知必需") =>
+        {
+            XarRunError::VersionIncompatible(message)
+        }
+        xiao_xar::XarError::Unsupported(message) if message.contains("版本") => {
+            XarRunError::VersionIncompatible(message)
+        }
+        xiao_xar::XarError::InvalidIndex(message) if message.contains("版本") => {
+            XarRunError::VersionIncompatible(message)
+        }
+        other => XarRunError::Validation(other.to_string()),
+    }
+}
+
+fn xar_run_error_response(
+    request_id: String,
+    path: String,
+    error: XarRunError,
+) -> ProtocolResponse {
+    archive_error_response(
+        request_id,
+        error.code(),
+        error.message_id(),
+        error.message().to_owned(),
+        path,
+    )
+}
+
+fn archive_error_response(
+    request_id: String,
+    code: &str,
+    message_id: &str,
+    message: String,
+    path: String,
+) -> ProtocolResponse {
+    let mut details = BTreeMap::new();
+    details.insert("path".to_owned(), Value::String(path));
+    ProtocolResponse::Error {
+        request_id: Some(request_id),
+        error: protocol_error_body(
+            code,
+            message_id,
+            message,
+            Some("archive_validation".to_owned()),
+            Some("检查归档、Runtime 和目标平台后重试".to_owned()),
+            details,
+        ),
+        report: None,
+        exit_code: ExitCode::ArtifactRejected.as_process_code(),
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 /// 在长驻核心会话的驱动器上执行一次运行请求。
 pub(super) fn run_request_response_with_driver(
@@ -224,11 +438,21 @@ fn run_response(
     outcome: DriverOutcome,
     peak_live_bytes: u64,
 ) -> ProtocolResponse {
+    run_response_for_operation(request_id, outcome, peak_live_bytes, "run")
+}
+
+/// 将驱动器结果转换成指定协议操作的统一运行响应。
+fn run_response_for_operation(
+    request_id: String,
+    outcome: DriverOutcome,
+    peak_live_bytes: u64,
+    operation: &str,
+) -> ProtocolResponse {
     let exit_code = outcome.exit_code();
     match outcome {
         DriverOutcome::Frontend(error) => ProtocolResponse::Result {
             request_id,
-            operation: "run".to_owned(),
+            operation: operation.to_owned(),
             exit_code: exit_code.as_process_code(),
             exit_name: exit_name(exit_code).to_owned(),
             diagnostics: error
@@ -243,9 +467,13 @@ fn run_response(
             artifact: None,
         },
         DriverOutcome::Rejected(error) => rejected_response(request_id, exit_code, &error),
-        DriverOutcome::Executed(execution) => {
-            executed_response(request_id, exit_code, &execution, peak_live_bytes)
-        }
+        DriverOutcome::Executed(execution) => executed_response(
+            request_id,
+            exit_code,
+            &execution,
+            peak_live_bytes,
+            operation,
+        ),
     }
 }
 
@@ -378,12 +606,13 @@ fn executed_response(
     exit_code: ExitCode,
     execution: &DriverExecution,
     peak_live_bytes: u64,
+    operation: &str,
 ) -> ProtocolResponse {
     let outcome = &execution.outcome;
     let value = outcome.value.as_ref().map(protocol_value);
     ProtocolResponse::Result {
         request_id,
-        operation: "run".to_owned(),
+        operation: operation.to_owned(),
         exit_code: exit_code.as_process_code(),
         exit_name: exit_name(exit_code).to_owned(),
         diagnostics: execution

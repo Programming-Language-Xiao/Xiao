@@ -37,6 +37,15 @@ describe("xiao 命令解析", () => {
     expect(debugRun.kind === "run" && debugRun.options.debug).toBe(true);
   });
 
+  test("两种归档运行形式及选项顺序保持同一命令", () => {
+    expect(parseArguments(["-xar", "app.xar"])).toMatchObject({ kind: "xar", file: "app.xar" });
+    expect(parseArguments(["run", "-xar", "app.xar", "-debug"])).toMatchObject({ kind: "xar", file: "app.xar", options: { debug: true } });
+    expect(parseArguments(["app.xar", "-xar"])).toMatchObject({ kind: "xar", file: "app.xar" });
+    for (const args of [["-xar"], ["-xar", "a.xiao"], ["-xar", "a.xar", "b.xar"]]) {
+      expect(() => parseArguments(args)).toThrow(CliArgumentError);
+    }
+  });
+
   test("单行 REPL 与多行文件入口互不混淆", () => {
     expect(parseArguments([]).kind).toBe("repl");
     expect(parseArguments(["--inLF"])).toMatchObject({ kind: "repl", multiline: true });

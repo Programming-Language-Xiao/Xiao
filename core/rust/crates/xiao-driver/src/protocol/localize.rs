@@ -68,6 +68,7 @@ pub(super) fn with_locale(
 pub(super) fn request_locale(request: &ProtocolRequest) -> Option<String> {
     match request {
         ProtocolRequest::Run { locale, .. }
+        | ProtocolRequest::RunArchive { locale, .. }
         | ProtocolRequest::Test { locale, .. }
         | ProtocolRequest::Build { locale, .. }
         | ProtocolRequest::Environment { locale, .. }

@@ -85,6 +85,7 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
   if (command.kind === "build") {
     return executeBuild(command, context);
   }
+  if (command.kind === "xar") return executeArchive(command, context);
   if (command.kind === "config") return executeConfig(command, context);
   return executeRun(command, context);
 }
@@ -256,6 +257,36 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
     return renderProtocolResponse(result.response, { ...options, locale: locale.tag });
   } catch (error) {
     return renderCliError(error, renderOptions(command.options, context));
+  }
+}
+
+/** 通过唯一的 `run_archive` 协议操作运行 `.xar`；不在 CLI 猜测入口或依赖。 */
+async function executeArchive(command: Extract<ParsedCommand, { kind: "xar" }>, context: CommandContext): Promise<RenderedDiagnostic> {
+  const cwd = context.cwd ?? process.cwd();
+  const options = renderOptions(command.options, context);
+  let locale: LocaleContext;
+  try {
+    locale = context.locale ?? await resolveEffectiveLocale({ cwd, env: context.env });
+  } catch (error) {
+    return renderCliError(error, options);
+  }
+  const path = resolve(cwd, command.file);
+  try {
+    const client = new ProtocolClient({
+      cwd,
+      env: context.env,
+      overridePath: context.corePath,
+      executablePath: context.executablePath,
+      spawnProcess: context.spawnProcess,
+    });
+    const result = await client.runArchive(path, {
+      debug: command.options.debug,
+      locale: locale.tag,
+      signal: context.signal,
+    });
+    return renderProtocolResponse(result.response, { ...options, locale: locale.tag });
+  } catch (error) {
+    return renderCliError(error, options);
   }
 }
 

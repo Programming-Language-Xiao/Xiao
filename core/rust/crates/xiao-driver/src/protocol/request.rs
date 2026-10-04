@@ -262,6 +262,25 @@ pub enum ProtocolRequest {
         /// VM 参数。
         options: RunOptions,
     },
+    /// 打开唯一 `.xar` 归档、完成全部校验后运行索引入口。
+    RunArchive {
+        /// 请求编号，用于取消和响应关联。
+        request_id: String,
+        /// 协议版本。
+        protocol_version: u16,
+        /// 统一核心版本。
+        core_version: u32,
+        /// 生效语言；旧客户端省略时使用默认语言。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        locale: Option<String>,
+        /// `.xar` 文件路径；由核心直接读取并验证。
+        path: String,
+        /// VM 参数。
+        options: RunOptions,
+        /// 是否显式请求诊断会话；归档索引的激活位不会被该字段关闭。
+        #[serde(default)]
+        debug: bool,
+    },
     /// 使用真实源码顺序执行项目测试用例。
     Test {
         /// 请求编号，用于取消和响应关联。

@@ -19,6 +19,7 @@ path = "src/protocol_main.rs"
 
 [dependencies]
 xiao-diagnostics = { path = "../xiao-diagnostics" }
+xiao-artifacts = { path = "../xiao-artifacts" }
 xiao-i18n = { path = "../xiao-i18n" }
 xiao-source = { path = "../xiao-source" }
 xiao-config = { path = "../xiao-config" }
@@ -29,6 +30,7 @@ xiao-lifetime = { path = "../xiao-lifetime" }
 xiao-ir = { path = "../xiao-ir" }
 xiao-bytecode = { path = "../xiao-bytecode" }
 xiao-vm = { path = "../xiao-vm" }
+xiao-xar = { path = "../xiao-xar" }
 xiao-codegen-llvm = { path = "../xiao-codegen-llvm" }
 xiao-package = { path = "../xiao-package" }
 xiao-runtime = { path = "../xiao-runtime" }

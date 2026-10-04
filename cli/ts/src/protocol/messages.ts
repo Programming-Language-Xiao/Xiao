@@ -80,6 +80,18 @@ export interface RunRequest {
   options: RunOptions;
 }
 
+/** 归档运行请求；入口与依赖只由 Rust 核心从唯一索引读取。 */
+export interface RunArchiveRequest {
+  type: "run_archive";
+  request_id: string;
+  protocol_version: number;
+  core_version: number;
+  locale?: string | null;
+  path: string;
+  options: RunOptions;
+  debug: boolean;
+}
+
 /** 项目测试请求；cases 顺序就是核心执行和结果返回顺序。 */
 export interface TestRequest {
   type: "test";
@@ -206,7 +218,7 @@ export interface ShutdownRequest {
 }
 
 /** 所有请求消息的联合类型。 */
-export type ProtocolRequest = HelloRequest | RunRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest | CancelRequest | ShutdownRequest;
+export type ProtocolRequest = HelloRequest | RunRequest | RunArchiveRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest | CancelRequest | ShutdownRequest;
 
 /** 机器可读协议错误。 */
 export interface ProtocolErrorBody {
@@ -236,7 +248,7 @@ export interface HelloResponse {
 export interface ResultResponse {
   type: "result";
   request_id: string;
-  operation: "run" | "build";
+  operation: "run" | "run_archive" | "build";
   exit_code: number;
   exit_name: string;
   diagnostics: unknown[];

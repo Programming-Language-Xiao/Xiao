@@ -50,6 +50,18 @@ pub const RESOURCE_DIGEST_MISMATCH_CODE: &str = "X17-XAR-003";
 pub const UNDECLARED_RESOURCE_ACCESS_CODE: &str = "X17-XAR-004";
 /// 资源路径不满足归档规范的稳定诊断编号。
 pub const INVALID_RESOURCE_PATH_CODE: &str = "X17-XAR-005";
+/// 归档入口或索引对象缺失的稳定诊断编号。
+pub const ARCHIVE_MISSING_OBJECT_CODE: &str = "X17-XAR-006";
+/// Runtime/格式版本不兼容的稳定诊断编号。
+pub const ARCHIVE_VERSION_INCOMPATIBLE_CODE: &str = "X17-XAR-007";
+/// 依赖、目标平台或运行条件未满足的稳定诊断编号。
+pub const ARCHIVE_DEPENDENCY_UNSATISFIED_CODE: &str = "X17-XAR-008";
+/// 归档校验失败的稳定诊断编号。
+pub const ARCHIVE_VALIDATION_FAILED_CODE: &str = "X17-XAR-009";
+
+mod runner;
+
+pub use runner::{XarRunError, XarRunOptions, run_archive};
 const ZIP_LOCAL_SIGNATURE: u32 = 0x0403_4b50;
 const ZIP_CENTRAL_SIGNATURE: u32 = 0x0201_4b50;
 const ZIP_EOCD_SIGNATURE: u32 = 0x0605_4b50;
@@ -2243,6 +2255,60 @@ mod tests {
         let resources = collect_config_resources(&root, &document).unwrap();
         assert_eq!(resources[0].bytes, b"config-resource");
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn resource_collection_side_effect_probe_excludes_credentials_and_environment_marker() {
+        let root = std::env::temp_dir().join(format!(
+            "xiao-xar-side-effect-probe-{}-{}",
+            std::process::id(),
+            NEXT_TEST_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+        ));
+        std::fs::create_dir_all(root.join("assets")).unwrap();
+        std::fs::create_dir_all(root.join("xiao-home")).unwrap();
+        let secret = b"XIAO_HOME_CREDENTIAL_SIDE_EFFECT_PROBE";
+        std::fs::write(root.join("assets/declared"), b"declared").unwrap();
+        std::fs::write(root.join("xiao-home/credentials"), secret).unwrap();
+        let resources = collect_resources(
+            &root,
+            &[ResourceDeclaration::new(
+                "assets/declared",
+                "assets/declared",
+            )],
+        )
+        .unwrap();
+        let (mut index, entry_object) = index_for(b"entry");
+        let resource_objects =
+            append_resource_entries(&mut index, &resources, "main", "portable").unwrap();
+        let mut objects = vec![entry_object];
+        objects.extend(resource_objects);
+        let archive = encode_xar(&index, &objects).unwrap();
+        assert!(!archive.windows(secret.len()).any(|window| window == secret));
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn archive_runner_checks_runtime_before_entry_execution() {
+        let (index, object) = index_for(b"not-xiaoc-entry");
+        let archive = encode_xar(&index, std::slice::from_ref(&object)).unwrap();
+        let version_error = run_archive(
+            &archive,
+            XarRunOptions {
+                runtime_abi: 0,
+                ..Default::default()
+            },
+        )
+        .unwrap_err();
+        assert_eq!(version_error.code(), ARCHIVE_VERSION_INCOMPATIBLE_CODE);
+        let entry_error = run_archive(
+            &archive,
+            XarRunOptions {
+                runtime_abi: 1,
+                ..Default::default()
+            },
+        )
+        .unwrap_err();
+        assert_eq!(entry_error.code(), ARCHIVE_VALIDATION_FAILED_CODE);
     }
 
     #[test]
