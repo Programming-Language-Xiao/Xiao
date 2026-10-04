@@ -743,6 +743,8 @@ version = "0.1.0"
 dependencies = [
  "crc32fast",
  "flate2",
+ "serde",
+ "serde_json",
  "xiao-artifacts",
  "xiao-bytecode",
  "xiao-config",
