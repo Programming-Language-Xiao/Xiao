@@ -28,6 +28,21 @@ pub struct DifferentialDifference {
     pub optimized: String,
 }
 
+/// 多路差分中以第一路为基线的一项点名差异。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct NamedDifferentialDifference {
+    /// 基线一侧名称。
+    pub baseline_side: String,
+    /// 偏离一侧名称。
+    pub compared_side: String,
+    /// 差异字段名。
+    pub field: String,
+    /// 基线字段值。
+    pub baseline: String,
+    /// 偏离字段值。
+    pub compared: String,
+}
+
 /// 一个未优化/优化结果对照用例。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DifferentialCase {
@@ -249,6 +264,33 @@ pub fn compare_observations(
         ));
     }
     differences
+}
+
+/// 以第一路为基线比较任意数量的观察对象。
+///
+/// 所有字段比较仍由 [`compare_observations`] 完成，调用方只负责提供稳定的
+/// 侧名称。结果顺序固定为输入顺序、字段顺序，适合跨平台报告直接序列化。
+#[must_use]
+pub fn compare_named_observations(
+    sides: &[(&str, DifferentialObservation)],
+) -> Vec<NamedDifferentialDifference> {
+    let Some((baseline_side, baseline)) = sides.first() else {
+        return Vec::new();
+    };
+    sides[1..]
+        .iter()
+        .flat_map(|(compared_side, compared)| {
+            compare_observations(baseline, compared).into_iter().map(|difference| {
+                NamedDifferentialDifference {
+                    baseline_side: (*baseline_side).to_owned(),
+                    compared_side: (*compared_side).to_owned(),
+                    field: difference.field,
+                    baseline: difference.baseline,
+                    compared: difference.optimized,
+                }
+            })
+        })
+        .collect()
 }
 
 /// 执行当前 O0 基线差分套件；用例按名称排序以清除未定义输入顺序。
@@ -524,7 +566,8 @@ fn three_way_difference(
 mod tests {
     use super::{
         DifferentialCase, DifferentialInput, DifferentialObservation, ThreeWayExecutionSide,
-        ThreeWayObservation, compare_observations, compare_three_observations,
+        ThreeWayObservation, compare_named_observations, compare_observations,
+        compare_three_observations,
         run_o0_differential_suite, run_o0_differential_suite_with,
         run_three_way_differential_suite_with,
     };
@@ -555,6 +598,23 @@ mod tests {
     fn equal_observations_have_no_difference() {
         let observation = DifferentialObservation::default();
         assert!(compare_observations(&observation, &observation).is_empty());
+    }
+
+    #[test]
+    fn named_comparison_reuses_the_same_field_order_and_names_sides() {
+        let baseline = DifferentialObservation::default();
+        let changed = DifferentialObservation {
+            output: "changed".to_owned(),
+            ..DifferentialObservation::default()
+        };
+        let differences = compare_named_observations(&[
+            ("Windows", baseline),
+            ("Linux", changed),
+        ]);
+        assert_eq!(differences.len(), 1);
+        assert_eq!(differences[0].baseline_side, "Windows");
+        assert_eq!(differences[0].compared_side, "Linux");
+        assert_eq!(differences[0].field, "output");
     }
 
     #[test]

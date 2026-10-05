@@ -20,7 +20,9 @@ use xiao_driver::{
     FrontendRequest, FrontendVmDriver, NativeBuildRequest, PROTOCOL_VERSION, ProtocolRequest,
     ProtocolResponse, ProtocolTarget, RunOptions, SourceIdentity, dispatch, run,
 };
-use xiao_optimizer::{OptimizationConfig, OptimizationLevel};
+use xiao_optimizer::{
+    DifferentialObservation, OptimizationConfig, OptimizationLevel, compare_named_observations,
+};
 use xiao_runtime::{start_release_trace, take_release_events};
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 use xiao_xar::{XarObject, encode_xar};
@@ -121,39 +123,48 @@ fn source_observation(source: &str, level: OptimizationLevel) -> Observation {
     .with_optimization_level(level)))
 }
 
-/// 逐字段列出两路的差异；一致时为空。
-fn field_differences(left: &Observation, right: &Observation) -> Vec<String> {
-    let mut differences = Vec::new();
-    if left.output != right.output {
-        differences.push(format!("输出 {:?} ≠ {:?}", left.output, right.output));
+fn optimizer_observation(observation: &Observation) -> DifferentialObservation {
+    DifferentialObservation {
+        output: observation.output.clone(),
+        error: observation.error.clone(),
+        exit_code: observation.exit_code,
+        drops: observation.drops.clone(),
     }
-    if left.error != right.error {
-        differences.push(format!("错误身份 {:?} ≠ {:?}", left.error, right.error));
-    }
-    if left.exit_code != right.exit_code {
-        differences.push(format!("退出码 {} ≠ {}", left.exit_code, right.exit_code));
-    }
-    if left.drops != right.drops {
-        differences.push(format!("drop 顺序 {:?} ≠ {:?}", left.drops, right.drops));
-    }
-    differences
 }
 
 /// 以第一路为基线，逐路比较；每条不一致都点名基线与偏离的那一路。
 fn disagreements(sides: &[(&str, Observation)]) -> Vec<String> {
-    let Some((base_name, base)) = sides.first() else {
-        return Vec::new();
-    };
-    sides[1..]
+    let converted = sides
         .iter()
-        .filter_map(|(name, observed)| {
-            let differences = field_differences(base, observed);
-            (!differences.is_empty()).then(|| {
-                format!(
-                    "「{base_name}」与「{name}」不一致：{}",
-                    differences.join("；")
-                )
-            })
+        .map(|(name, observation)| (*name, optimizer_observation(observation)))
+        .collect::<Vec<_>>();
+    let differences = compare_named_observations(&converted);
+    let mut reports: Vec<(String, String, Vec<String>)> = Vec::new();
+    for difference in differences {
+            let field = match difference.field.as_str() {
+                "output" => format!("输出 {:?} ≠ {:?}", difference.baseline, difference.compared),
+                "error" => format!("错误身份 {} ≠ {}", difference.baseline, difference.compared),
+                "exit_code" => format!("退出码 {} ≠ {}", difference.baseline, difference.compared),
+                "drops" => format!("drop 顺序 {} ≠ {}", difference.baseline, difference.compared),
+                other => format!("字段 {other}：{} ≠ {}", difference.baseline, difference.compared),
+            };
+            if let Some((baseline, compared, fields)) = reports.last_mut()
+                && baseline == &difference.baseline_side
+                && compared == &difference.compared_side
+            {
+                fields.push(field);
+            } else {
+                reports.push((
+                    difference.baseline_side,
+                    difference.compared_side,
+                    vec![field],
+                ));
+            }
+    }
+    reports
+        .into_iter()
+        .map(|(baseline, compared, fields)| {
+            format!("「{baseline}」与「{compared}」不一致：{}", fields.join("；"))
         })
         .collect()
 }
