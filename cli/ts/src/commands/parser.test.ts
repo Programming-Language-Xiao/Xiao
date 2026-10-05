@@ -69,6 +69,7 @@ describe("xiao 命令解析", () => {
       expect("optimizationLevel" in command && command.optimizationLevel).toBe(0);
     }
     expect(parseArguments(["run", "main.xiao", "-O2"])).toMatchObject({ optimizationLevel: 2, optimizationExplicit: true });
+    expect(parseArguments(["main.xiao", "-O1"])).toMatchObject({ kind: "run", optimizationLevel: 1, optimizationExplicit: true });
     expect(parseArguments(["-xar", "app.xar", "-O3"])).toMatchObject({ optimizationLevel: 3, optimizationExplicit: true });
     for (const argument of ["-Ox", "-O4", "-O10"]) {
       expect(() => parseArguments(["build", "main.xiao", argument])).toThrow("X11-CLI-OPT-001");

@@ -112,9 +112,23 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     return { kind: "deactivate", options };
   }
   if (command.endsWith(".xiao")) {
-    if (rest.length === 1 && rest[0] === "-xar") return { kind: "xar", file: command, optimizationLevel: 0, optimizationExplicit: false, options };
-    if (rest.length > 0) throw new CliArgumentError("源码快捷运行只接受一个 .xiao 文件");
-    return { kind: "run", file: command, optimizationLevel: 0, optimizationExplicit: false, options };
+    let optimizationLevel: OptimizationLevel = 0;
+    let optimizationExplicit = false;
+    let archive = false;
+    for (const argument of rest) {
+      if (argument === "-xar") {
+        if (archive) throw new CliArgumentError("-xar 不可重复");
+        archive = true;
+      } else if (argument.startsWith("-O")) {
+        optimizationLevel = parseOptimizationLevel(argument);
+        optimizationExplicit = true;
+      } else {
+        throw new CliArgumentError("源码快捷运行只接受一个 .xiao 文件和可选优化级别");
+      }
+    }
+    return archive
+      ? { kind: "xar", file: command, optimizationLevel, optimizationExplicit, options }
+      : { kind: "run", file: command, optimizationLevel, optimizationExplicit, options };
   }
   if (command.startsWith("-")) throw new CliArgumentError(`未知选项：${command}`);
   throw new CliArgumentError(`未知命令：${command}`);
