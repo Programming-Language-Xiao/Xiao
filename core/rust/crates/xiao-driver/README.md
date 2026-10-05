@@ -44,6 +44,11 @@
 消费的错误；取消、超时和其它执行前拒绝统一为 `ArtifactRejected`。CLI 接线仍由 11/X0
 调用 `as_process_code()` 完成。契约测试位于 `tests/b0_d_exit_codes.rs`。
 
+18B 将 13A/14B 字节码优化管线接入非零 `OptimizationLevel` 的生产运行路径；O0 保留
+既有验证基线，O1--O3 执行标准保守 Pass 后再进入同一 VM。LLVM 原生构建在 Pass 注册完成
+前会以 `passes_not_registered` 结构化拒绝。协议另提供只验证产物的 `verify` 和 16B 两阶段
+缓存维护的 `cache` 操作，CLI 不复制哈希、ZIP 或 `.xiaoc` 校验逻辑。
+
 ## 10A 前端到 LLVM 内部驱动器
 
 `src/native.rs` 提供 `NativeBuildRequest`、`FrontendNativeDriver` 和

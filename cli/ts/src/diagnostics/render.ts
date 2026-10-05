@@ -108,6 +108,19 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
       lines.push(cliMessage("xiao.cli.build.config", locale, { path: response.artifact.runtime_config.path }));
     }
   }
+  if (response.type === "result" && (response.operation === "verify" || response.operation === "cache") && isRecord(response.value) && typeof response.value.value === "string" && response.exit_code === 0) {
+    const locale = options.locale ?? "zh-CN";
+    try {
+      const summary = JSON.parse(response.value.value) as Record<string, unknown>;
+      if (response.operation === "verify") {
+        lines.push(cliMessage("xiao.cli.verify.success", locale, { kind: String(summary.kind ?? "artifact") }));
+      } else {
+        lines.push(cliMessage("xiao.cli.cache.status", locale, { action: String(summary.action ?? "cache"), status: String(summary.status ?? "unknown") }));
+      }
+    } catch {
+      lines.push(response.value.value);
+    }
+  }
   const stderr = lines.length === 0 ? "" : `${lines.join("\n")}\n`;
   const stdout = response.type === "result" ? intrinsicOutput(response.events) : "";
   return { stdout, stderr, exitCode: responseExitCode(response) };

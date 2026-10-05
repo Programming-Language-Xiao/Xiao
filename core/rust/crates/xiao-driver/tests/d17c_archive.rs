@@ -191,6 +191,34 @@ fn archive_protocol_result_carries_machine_readable_audit() {
 }
 
 #[test]
+fn verify_protocol_validates_xar_without_running_user_code() {
+    let path = std::env::temp_dir().join(format!("xiao-d17d-verify-{}.xar", std::process::id()));
+    std::fs::write(&path, archive_for("print(\"must not run\")\n")).expect("应写入验证归档");
+    let response = dispatch(ProtocolRequest::Verify {
+        request_id: "verify-xar".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        path: path.display().to_string(),
+        detail: true,
+    });
+    let _ = std::fs::remove_file(&path);
+    let ProtocolResponse::Result {
+        operation,
+        value: Some(value),
+        events,
+        exit_code,
+        ..
+    } = response
+    else {
+        panic!("合法 xar 应返回验证结果");
+    };
+    assert_eq!(operation, "verify");
+    assert_eq!(exit_code, 0);
+    assert!(events.is_empty());
+    assert!(value.value.contains("\"kind\":\"xar\""));
+}
+
+#[test]
 fn archive_validation_error_keeps_audit_in_error_details() {
     let source_archive =
         xiao_xar::decode_xar(&archive_for("print(\"platform\")\n")).expect("应解码测试归档");

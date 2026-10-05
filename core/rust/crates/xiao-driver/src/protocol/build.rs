@@ -542,10 +542,14 @@ fn unsupported_optimization_response(request_id: String, level: u8) -> ProtocolR
         error: protocol_error_body(
             UNSUPPORTED_OPERATION_CODE,
             "x11.protocol.optimization_unavailable",
-            "X0-A 只接受优化级别 0",
+            "LLVM 原生后端的优化 Pass 尚未接入，当前只支持优化级别 0",
             Some("build".to_owned()),
-            Some("使用 level=0，优化接线留给后续阶段".to_owned()),
-            BTreeMap::from([("level".to_owned(), json!(level))]),
+            Some("使用 level=0，或等待 LLVM 优化 Pass 接入".to_owned()),
+            BTreeMap::from([
+                ("level".to_owned(), json!(level)),
+                ("backend".to_owned(), json!("llvm")),
+                ("reason".to_owned(), json!("passes_not_registered")),
+            ]),
         ),
         report: None,
         exit_code: ExitCode::ArtifactRejected.as_process_code(),

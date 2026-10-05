@@ -31,6 +31,7 @@ xiao-ir = { path = "../xiao-ir" }
 xiao-bytecode = { path = "../xiao-bytecode" }
 xiao-vm = { path = "../xiao-vm" }
 xiao-xar = { path = "../xiao-xar" }
+xiao-optimizer = { path = "../xiao-optimizer" }
 xiao-codegen-llvm = { path = "../xiao-codegen-llvm" }
 xiao-package = { path = "../xiao-package" }
 xiao-runtime = { path = "../xiao-runtime" }

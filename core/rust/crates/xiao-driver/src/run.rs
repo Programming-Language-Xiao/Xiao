@@ -9,6 +9,7 @@ use std::time::{Duration, Instant};
 
 use xiao_bytecode::{TacProgram, lower_program};
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord};
+use xiao_optimizer::OptimizationLevel;
 use xiao_vm::{
     CancellationSource, DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome,
     RunRequest as VmRunRequest, RunResult, VmEvent, VmOptions, VmSession,
@@ -119,6 +120,8 @@ pub struct DriverRequest {
     pub frontend: FrontendRequest,
     /// 传给生产 VM 的规范化参数。
     pub options: VmOptions,
+    /// 交给 13A/14B 字节码优化管线的规范化级别。
+    pub optimization_level: OptimizationLevel,
     /// 事件和调用栈使用的逻辑模块名；为空时由驱动器推导。
     pub module_name: Option<String>,
     /// 事件和调用栈使用的源码名；为空时由驱动器推导。
@@ -136,6 +139,7 @@ impl DriverRequest {
         Self {
             frontend,
             options: VmOptions::default(),
+            optimization_level: OptimizationLevel::O0,
             module_name: None,
             source_name: None,
             event_capacity: DEFAULT_EVENT_CAPACITY,
@@ -147,6 +151,13 @@ impl DriverRequest {
     #[must_use]
     pub const fn with_options(mut self, options: VmOptions) -> Self {
         self.options = options;
+        self
+    }
+
+    /// 设置交给字节码优化管线的级别。
+    #[must_use]
+    pub const fn with_optimization_level(mut self, level: OptimizationLevel) -> Self {
+        self.optimization_level = level;
         self
     }
 
@@ -553,6 +564,31 @@ impl FrontendVmDriver {
             self.reset_session();
             return DriverOutcome::Rejected(error);
         }
+        let program = if request.optimization_level == OptimizationLevel::O0 {
+            program
+        } else {
+            let optimization = xiao_optimizer::OptimizationConfig::baseline(
+                request.frontend.context.target.clone(),
+            )
+            .with_level(request.optimization_level);
+            match xiao_bytecode::optimize_bytecode_checked(ir, &program, optimization) {
+                Ok(result) => result.program,
+                Err(error) => {
+                    self.reset_session();
+                    return DriverOutcome::Rejected(DriverError {
+                        phase: DriverPhase::Verification,
+                        code: "X09-DRIVER-OPT-001".to_owned(),
+                        path: None,
+                        message: format!("字节码优化管线失败：{error}"),
+                        report: None,
+                    });
+                }
+            }
+        };
+        if let Some(error) = control.check() {
+            self.reset_session();
+            return DriverOutcome::Rejected(error);
+        }
         let vm_request = VmRunRequest::new(ir, &program)
             .with_options(request.options)
             .with_module_name(request.resolved_module_name())
@@ -733,6 +769,25 @@ mod tests {
         assert!(run(&request("value = set()\n")).is_success());
         let outcome = run(&request("value = TypeError(\"code\")\n"));
         assert!(outcome.is_success());
+    }
+
+    #[test]
+    /// O1--O3 进入生产字节码管线后仍保留统一 VM 的输出与成功结果。
+    fn nonzero_optimization_levels_run_through_bytecode_pipeline() {
+        for level in [
+            OptimizationLevel::O1,
+            OptimizationLevel::O2,
+            OptimizationLevel::O3,
+        ] {
+            let outcome = run(&request("print(\"optimized\")\n").with_optimization_level(level));
+            let DriverOutcome::Executed(execution) = outcome else {
+                panic!("非零优化级别应进入生产 VM");
+            };
+            assert!(execution.outcome.result.is_success());
+            assert!(execution.outcome.events.iter().any(|event| {
+                matches!(event, VmEvent::IntrinsicOutput { text } if text == "optimized\n")
+            }));
+        }
     }
 
     #[test]

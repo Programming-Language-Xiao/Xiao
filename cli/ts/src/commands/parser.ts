@@ -24,6 +24,8 @@ export type ParsedCommand =
   | { kind: "run"; file: string; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
   | { kind: "xar"; file: string; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
+  | { kind: "verify"; file: string; detail: boolean; options: GlobalCliOptions }
+  | { kind: "cache"; action: "list" | "verify" | "rebuild" | "clean"; apply: boolean; options: GlobalCliOptions }
   | { kind: "test"; project?: string; timeoutMs?: number; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
   | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; xar: boolean; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; args: readonly string[]; options: GlobalCliOptions }
   | { kind: "venv"; name?: string; options: GlobalCliOptions }
@@ -88,6 +90,8 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
   }
   if (command === "-xar") return parseArchive(rest, options);
   if (command === "config") return parseConfig(rest, options);
+  if (command === "verify") return parseVerify(rest, options);
+  if (command === "cache") return parseCache(rest, options);
   if (command === "test") {
     return parseTest(rest, options);
   }
@@ -366,6 +370,34 @@ function parseConfig(args: readonly string[], options: GlobalCliOptions): Parsed
   }
   if (values.length !== 2) throw new CliArgumentError("config 需要 <key.path> 和 <value>");
   return { kind: "config", key: values[0], value: values[1], global: isGlobal, options };
+}
+
+/** 解析只验证产物的命令。 */
+function parseVerify(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  let detail = false;
+  const values = args.filter((argument) => {
+    if (argument === "--detail") {
+      if (detail) throw new CliArgumentError("verify --detail 不可重复");
+      detail = true;
+      return false;
+    }
+    return true;
+  });
+  if (values.length !== 1) throw new CliArgumentError("verify 需要且只需要一个 .xiaoc 或 .xar 路径");
+  const lower = values[0].toLocaleLowerCase("en-US");
+  if (!lower.endsWith(".xiaoc") && !lower.endsWith(".xar")) throw new CliArgumentError("verify 只接受 .xiaoc 或 .xar");
+  return { kind: "verify", file: values[0], detail, options };
+}
+
+/** 解析 16B 两阶段缓存命令。 */
+function parseCache(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  const values = args.filter((argument) => argument !== "--apply");
+  const apply = args.includes("--apply");
+  if (values.length !== 1 || !["list", "verify", "rebuild", "clean"].includes(values[0])) {
+    throw new CliArgumentError("cache 需要 list、verify、rebuild 或 clean");
+  }
+  if (apply && values[0] !== "clean") throw new CliArgumentError("--apply 只能用于 cache clean");
+  return { kind: "cache", action: values[0] as "list" | "verify" | "rebuild" | "clean", apply, options };
 }
 
 /** 提取颜色、JSON 等全局选项并保留其余位置参数。 */

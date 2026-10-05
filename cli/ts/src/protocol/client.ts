@@ -12,6 +12,8 @@ import {
   type ProtocolTarget,
   type RunRequest,
   type RunArchiveRequest,
+  type VerifyRequest,
+  type CacheRequest,
   type TestRequest,
   type BuildRequest,
   type EnvironmentRequest,
@@ -86,6 +88,24 @@ export interface ArchiveRunOptions {
   debug?: boolean;
   /** 本次运行的规范语言。 */
   locale?: "zh-CN" | "en-US";
+  /** 取消信号。 */
+  signal?: AbortSignal;
+}
+
+/** 产物验证选项。 */
+export interface VerifyOptions {
+  /** 是否返回成员/索引详细摘要。 */
+  detail?: boolean;
+  /** 取消信号。 */
+  signal?: AbortSignal;
+}
+
+/** 缓存维护选项。 */
+export interface CacheOptions {
+  /** 缓存动作。 */
+  action: "list" | "verify" | "rebuild" | "clean";
+  /** clean 是否执行已有计划。 */
+  apply?: boolean;
   /** 取消信号。 */
   signal?: AbortSignal;
 }
@@ -284,6 +304,32 @@ export class ProtocolClient {
     return this.call(request, options.signal);
   }
 
+  /** 只验证一个 `.xiaoc` 或 `.xar`。 */
+  async verify(path: string, options: VerifyOptions = {}): Promise<CoreCallResult> {
+    const request: VerifyRequest = {
+      type: "verify",
+      request_id: requestId("verify"),
+      protocol_version: PROTOCOL_VERSION,
+      core_version: CORE_VERSION,
+      path,
+      detail: options.detail ?? false,
+    };
+    return this.call(request, options.signal);
+  }
+
+  /** 查询或维护全局内容寻址缓存。 */
+  async cache(options: CacheOptions): Promise<CoreCallResult> {
+    const request: CacheRequest = {
+      type: "cache",
+      request_id: requestId("cache"),
+      protocol_version: PROTOCOL_VERSION,
+      core_version: CORE_VERSION,
+      action: options.action,
+      apply: options.apply ?? false,
+    };
+    return this.call(request, options.signal);
+  }
+
   /** 使用真实 Xiao 源码发送一次 `build` 请求。 */
   async buildSource(sourceText: string, options: SourceBuildOptions): Promise<CoreCallResult> {
     const target = options.target ?? hostTarget();
@@ -380,7 +426,7 @@ export class ProtocolClient {
   }
 
   /** 使用已经规范化的协议运行请求发送一次调用。 */
-  async call(request: RunRequest | RunArchiveRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  async call(request: RunRequest | RunArchiveRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (this.shutdownPromise !== null) throw new CoreClientError("X11-CLI-CORE-003", "核心会话已关闭", 4);
     const execute = () => this.callNow(request, signal);
     const result = this.operation.then(execute, execute);
@@ -399,7 +445,7 @@ export class ProtocolClient {
   }
 
   /** 串行执行一次协议调用，避免同一客户端的帧写入互相交错。 */
-  private async callNow(request: RunRequest | RunArchiveRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  private async callNow(request: RunRequest | RunArchiveRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     await this.ensureStarted(signal);
     const child = this.child;
@@ -418,6 +464,12 @@ export class ProtocolClient {
       }
       if (request.type === "run_archive" && !helloResponse.capabilities.includes("run_archive")) {
         throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 run_archive 能力，请升级 xiao-core", 2);
+      }
+      if (request.type === "verify" && !helloResponse.capabilities.includes("verify")) {
+        throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 verify 能力，请升级 xiao-core", 2);
+      }
+      if (request.type === "cache" && !helloResponse.capabilities.includes("cache")) {
+        throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 cache 能力，请升级 xiao-core", 2);
       }
 
       if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);

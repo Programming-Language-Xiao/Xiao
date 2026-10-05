@@ -92,6 +92,26 @@ export interface RunArchiveRequest {
   debug: boolean;
 }
 
+/** 只验证 `.xiaoc`/`.xar`，不构建、不执行用户代码。 */
+export interface VerifyRequest {
+  type: "verify";
+  request_id: string;
+  protocol_version: number;
+  core_version: number;
+  path: string;
+  detail: boolean;
+}
+
+/** 16B 缓存查询或两阶段维护请求。 */
+export interface CacheRequest {
+  type: "cache";
+  request_id: string;
+  protocol_version: number;
+  core_version: number;
+  action: "list" | "verify" | "rebuild" | "clean";
+  apply: boolean;
+}
+
 /** 项目测试请求；cases 顺序就是核心执行和结果返回顺序。 */
 export interface TestRequest {
   type: "test";
@@ -218,7 +238,7 @@ export interface ShutdownRequest {
 }
 
 /** 所有请求消息的联合类型。 */
-export type ProtocolRequest = HelloRequest | RunRequest | RunArchiveRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest | CancelRequest | ShutdownRequest;
+export type ProtocolRequest = HelloRequest | RunRequest | RunArchiveRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest | CancelRequest | ShutdownRequest;
 
 /** 机器可读协议错误。 */
 export interface ProtocolErrorBody {
@@ -248,7 +268,7 @@ export interface HelloResponse {
 export interface ResultResponse {
   type: "result";
   request_id: string;
-  operation: "run" | "run_archive" | "build";
+  operation: "run" | "run_archive" | "build" | "verify" | "cache";
   exit_code: number;
   exit_name: string;
   diagnostics: unknown[];

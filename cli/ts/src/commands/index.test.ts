@@ -2,7 +2,7 @@
 
 import { describe, expect, test } from "bun:test";
 import { EventEmitter } from "node:events";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { PassThrough } from "node:stream";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -59,7 +59,7 @@ class EnvironmentFakeCore extends EventEmitter {
     if (request.type === "hello") {
       this.stdout.write(Buffer.from(encodeFrame({
         type: "hello", request_id: request.request_id, accepted: true, protocol_version: 1,
-        core_version: 1, versions: {}, capabilities: ["environment", "package"], error: null,
+       core_version: 1, versions: {}, capabilities: ["run", "environment", "package"], error: null,
       })));
     } else if (request.type === "environment") {
       const logicalName = typeof request.logical_name === "string" ? request.logical_name : "venv";
@@ -85,6 +85,11 @@ class EnvironmentFakeCore extends EventEmitter {
           created: request.operation === "sync", changed: true,
           activate: request.operation === "sync", lock_status: request.operation === "sync" ? "created" : null,
         },
+      })));
+    } else if (request.type === "run") {
+      this.stdout.write(Buffer.from(encodeFrame({
+        type: "result", request_id: request.request_id, operation: "run", exit_code: 0,
+        exit_name: "success", diagnostics: [], report: null, events: [], metrics: null, value: null, artifact: null,
       })));
     } else if (request.type === "shutdown") {
       this.stdout.write(Buffer.from(encodeFrame({ type: "shutdown", request_id: request.request_id })));
@@ -221,6 +226,37 @@ describe("命令取消接线", () => {
       });
       expect(result.exitCode).toBe(2);
       expect(result.stderr).toContain("X11-PROTOCOL-005");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("run -O2 只读取配置和锁文件，不改写内容或 mtime", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-cli-optimization-side-effect-"));
+    const sourcePath = join(directory, "main.xiao");
+    const configPath = join(directory, "config.xiao");
+    const lockPath = join(directory, "xiao.lock");
+    const config = "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[Optimization]\nlevel = 1\n";
+    const lock = "lock-content\n";
+    await writeFile(sourcePath, "print(\"side effect\")\n", "utf8");
+    await writeFile(configPath, config, "utf8");
+    await writeFile(lockPath, lock, "utf8");
+    try {
+      const context = environmentContext();
+      const beforeConfig = await stat(configPath);
+      const beforeLock = await stat(lockPath);
+      const result = await executeCommand(parseArguments(["run", sourcePath, "-O2"]), {
+        ...context,
+        cwd: directory,
+      });
+      expect(result.exitCode).toBe(0);
+      expect(context.fake.requests.find((request) => request.type === "run")).toMatchObject({
+        optimization: { level: 2 },
+      });
+      expect(await readFile(configPath, "utf8")).toBe(config);
+      expect(await readFile(lockPath, "utf8")).toBe(lock);
+      expect((await stat(configPath)).mtimeMs).toBe(beforeConfig.mtimeMs);
+      expect((await stat(lockPath)).mtimeMs).toBe(beforeLock.mtimeMs);
     } finally {
       await rm(directory, { recursive: true, force: true });
     }

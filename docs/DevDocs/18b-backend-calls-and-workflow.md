@@ -297,6 +297,24 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.9 ②）
   17 的容器与运行契约；
 - **不实施** 19 的发布验收。
 
+## 十、实施记录
+
+- 新增协议请求 `verify` 和 `cache`。命令形态冻结为
+  `xiao verify <file.xiaoc|file.xar> [--detail]`，以及
+  `xiao cache <list|verify|rebuild|clean> [--apply]`；`clean` 默认只返回计划，只有
+  `--apply` 才调用 16B 的 `apply_cleanup`。
+- `verify` 由 Rust 核心调用 `decode_xiaoc`/`decode_xar`，CLI 只搬运结构化摘要；成功结果
+  使用 `operation=verify` 和 `value.kind=verification`，错误使用稳定 `X11-VERIFY-*`。
+  `cache` 的结果使用 `operation=cache` 和 `value.kind=cache`，不在 TypeScript 重写摘要或
+  清理逻辑。
+- 字节码运行路径现在把 13A/14B 的 `optimize_bytecode_checked` 接入生产驱动器：O0
+  保留既有验证基线，O1--O3 执行标准保守 Pass 并继续经统一 VM 验证；协议不再错误拒绝
+  非零运行级别。LLVM 原生路径暂保留稳定的 `passes_not_registered` 拒绝字段，明确说明
+  该后端的 Pass 尚未注册。
+- 18A 的配置/锁文件不落盘探针已提升为 `commands/index.test.ts` 的真实 `run -O2` 命令
+  回归，断言项目配置和锁文件内容、mtime 均不变；`-O1` 既有测试改动原因也已在 18A
+  实施记录登记。本批不把命令行缓存维护误写回项目配置。
+
 ## 相关页面
 
 - [18. 优化与产物 CLI 接入](18-optimization-cli.md) —— **权威规范**；§产物生命周期、`18.5`–`18.8`、`:57` 的命令冻结要求

@@ -104,6 +104,8 @@ fn hello_advertises_test_capability() {
             .iter()
             .any(|capability| capability == "repl_packages")
     );
+    assert!(capabilities.iter().any(|capability| capability == "verify"));
+    assert!(capabilities.iter().any(|capability| capability == "cache"));
 }
 
 #[test]
@@ -147,6 +149,48 @@ fn run_archive_honors_zero_timeout_before_reading_archive() {
         panic!("零时限必须在读取归档前拒绝");
     };
     assert_eq!(error.code, DRIVER_TIMEOUT_CODE);
+}
+
+#[test]
+/// verify 对缺失产物只返回结构化验证错误，不进入任何运行路径。
+fn verify_missing_artifact_has_stable_error() {
+    let ProtocolResponse::Error {
+        error, exit_code, ..
+    } = dispatch(ProtocolRequest::Verify {
+        request_id: "verify-missing".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        path: "missing-artifact.xiaoc".to_owned(),
+        detail: true,
+    })
+    else {
+        panic!("缺失产物必须返回验证错误");
+    };
+    assert_eq!(error.code, "X11-VERIFY-001");
+    assert_eq!(exit_code, ExitCode::ArtifactRejected.as_process_code());
+}
+
+#[test]
+/// cache list 走只读协议路径并返回机器可读摘要。
+fn cache_list_returns_structured_result() {
+    let ProtocolResponse::Result {
+        operation,
+        value: Some(value),
+        exit_code,
+        ..
+    } = dispatch(ProtocolRequest::Cache {
+        request_id: "cache-list".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        action: "list".to_owned(),
+        apply: false,
+    })
+    else {
+        panic!("cache list 必须返回结构化结果");
+    };
+    assert_eq!(operation, "cache");
+    assert_eq!(value.kind, "cache");
+    assert_eq!(exit_code, ExitCode::Success.as_process_code());
 }
 
 #[test]
@@ -683,6 +727,38 @@ fn real_source_run_returns_structured_result_without_text_parsing() {
     assert_eq!(exit_code, ExitCode::Success.as_process_code());
     assert_eq!(exit_name, "success");
     assert!(metrics.is_some());
+}
+
+#[test]
+/// 协议层允许 O1 并经由生产字节码优化管线执行，不再命中旧的零级别拒绝。
+fn protocol_run_accepts_nonzero_optimization_level() {
+    let response = dispatch(ProtocolRequest::Run {
+        request_id: "run-o1".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        locale: None,
+        target: ProtocolTarget::host(),
+        optimization: OptimizationConfig {
+            level: 1,
+            ..OptimizationConfig::default()
+        },
+        source: SourceIdentity {
+            module: "main".to_owned(),
+            path: Some("main.xiao".to_owned()),
+            text: "print(\"optimized\")\n".to_owned(),
+        },
+        options: RunOptions::default(),
+    });
+    let ProtocolResponse::Result {
+        exit_code, events, ..
+    } = response
+    else {
+        panic!("O1 应返回结构化运行结果");
+    };
+    assert_eq!(exit_code, ExitCode::Success.as_process_code());
+    assert!(events.iter().any(|event| event.kind == "intrinsic_output"));
 }
 
 #[test]

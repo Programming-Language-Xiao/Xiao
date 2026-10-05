@@ -7,6 +7,7 @@ use std::time::{Duration, Instant};
 
 use serde_json::Value;
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
+use xiao_optimizer::OptimizationLevel;
 
 use super::mapping::{
     exit_name, protocol_diagnostic, protocol_error_body, protocol_error_from_error, protocol_event,
@@ -511,12 +512,15 @@ pub(super) fn run_request_response_with_driver(
     if let Err(error) = validate_source(&source).and_then(|_| validate_target(&target)) {
         return protocol_error_response(Some(request_id), &error);
     }
-    if optimization.level != 0 {
-        return protocol_error_response(
-            Some(request_id),
-            &ProtocolError::request("optimization.level", "X0-A 只接受优化级别 0"),
-        );
-    }
+    let optimization_level = match OptimizationLevel::try_from(optimization.level) {
+        Ok(level) => level,
+        Err(error) => {
+            return protocol_error_response(
+                Some(request_id),
+                &ProtocolError::request("optimization.level", error.to_string()),
+            );
+        }
+    };
     let (vm_options, event_capacity, timeout) = match run_options(&options) {
         Ok(value) => value,
         Err(error) => return protocol_error_response(Some(request_id), &error),
@@ -540,6 +544,7 @@ pub(super) fn run_request_response_with_driver(
     }
     let mut driver_request = DriverRequest::new(frontend)
         .with_options(vm_options)
+        .with_optimization_level(optimization_level)
         .with_module_name(module_name.clone())
         .with_event_capacity(event_capacity)
         .with_cancellation(cancellation);

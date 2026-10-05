@@ -27,6 +27,7 @@ use super::run::{
 };
 use super::test::test_request_response;
 use super::validate::{validate_source, validate_target, validate_versions};
+use super::verify::{cache_response, verify_response};
 use crate::FrontendVmDriver;
 use crate::run::{CancellationToken, ExitCode};
 use xiao_codegen_llvm::Toolchain;
@@ -97,6 +98,20 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
                 CancellationToken::new(),
             )
         }),
+        ProtocolRequest::Verify {
+            request_id,
+            protocol_version,
+            core_version,
+            path,
+            detail,
+        } => verify_response(request_id, protocol_version, core_version, path, detail),
+        ProtocolRequest::Cache {
+            request_id,
+            protocol_version,
+            core_version,
+            action,
+            apply,
+        } => cache_response(request_id, protocol_version, core_version, action, apply),
         ProtocolRequest::Test {
             request_id,
             protocol_version,
@@ -265,6 +280,8 @@ fn hello_response(
             capabilities: vec![
                 "run".to_owned(),
                 "run_archive".to_owned(),
+                "verify".to_owned(),
+                "cache".to_owned(),
                 "test".to_owned(),
                 "build".to_owned(),
                 "environment".to_owned(),
@@ -704,6 +721,20 @@ pub(super) fn worker_response(
                 token,
             )
         }),
+        ProtocolRequest::Verify {
+            request_id,
+            protocol_version,
+            core_version,
+            path,
+            detail,
+        } => verify_response(request_id, protocol_version, core_version, path, detail),
+        ProtocolRequest::Cache {
+            request_id,
+            protocol_version,
+            core_version,
+            action,
+            apply,
+        } => cache_response(request_id, protocol_version, core_version, action, apply),
         ProtocolRequest::Test {
             request_id,
             protocol_version,
@@ -888,7 +919,10 @@ where
                 }
                 enqueue_session_job(request, &writer, &cancellations, &session_sender);
             }
-            request @ (ProtocolRequest::Test { .. } | ProtocolRequest::Build { .. }) => {
+            request @ (ProtocolRequest::Test { .. }
+            | ProtocolRequest::Build { .. }
+            | ProtocolRequest::Verify { .. }
+            | ProtocolRequest::Cache { .. }) => {
                 if !negotiated {
                     let request_id = request_id_for(&request).expect("test/build 请求编号");
                     let error = ProtocolError::version("必须先完成 hello 版本协商");
@@ -932,6 +966,8 @@ fn request_id_for(request: &ProtocolRequest) -> Option<String> {
     match request {
         ProtocolRequest::Run { request_id, .. }
         | ProtocolRequest::RunArchive { request_id, .. }
+        | ProtocolRequest::Verify { request_id, .. }
+        | ProtocolRequest::Cache { request_id, .. }
         | ProtocolRequest::Test { request_id, .. }
         | ProtocolRequest::Build { request_id, .. }
         | ProtocolRequest::Environment { request_id, .. }

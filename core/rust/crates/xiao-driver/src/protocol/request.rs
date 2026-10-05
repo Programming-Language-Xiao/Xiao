@@ -281,6 +281,34 @@ pub enum ProtocolRequest {
         #[serde(default)]
         debug: bool,
     },
+    /// 只验证一份 `.xiaoc` 或 `.xar`，不创建 VM、不执行用户代码。
+    Verify {
+        /// 请求编号。
+        request_id: String,
+        /// 协议版本。
+        protocol_version: u16,
+        /// 统一核心版本。
+        core_version: u32,
+        /// 待验证的文件路径。
+        path: String,
+        /// 是否返回更详细的成员/索引摘要。
+        #[serde(default)]
+        detail: bool,
+    },
+    /// 通过 16B 两阶段 API 查询或维护缓存。
+    Cache {
+        /// 请求编号。
+        request_id: String,
+        /// 协议版本。
+        protocol_version: u16,
+        /// 统一核心版本。
+        core_version: u32,
+        /// `list`、`verify`、`rebuild` 或 `clean`。
+        action: String,
+        /// `clean` 是否执行已经生成的计划。
+        #[serde(default)]
+        apply: bool,
+    },
     /// 使用真实源码顺序执行项目测试用例。
     Test {
         /// 请求编号，用于取消和响应关联。

@@ -88,6 +88,8 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
     return executeBuild(command, context);
   }
   if (command.kind === "xar") return executeArchive(command, context);
+  if (command.kind === "verify") return executeVerify(command, context);
+  if (command.kind === "cache") return executeCache(command, context);
   if (command.kind === "config") return executeConfig(command, context);
   return executeRun(command, context);
 }
@@ -412,6 +414,46 @@ async function executeConfig(command: Extract<ParsedCommand, { kind: "config" }>
     };
   } catch (error) {
     return renderCliError(error, renderOptions(command.options, context));
+  }
+}
+
+/** 通过 Rust 校验器验证 `.xiaoc` 或 `.xar`，不在 CLI 重写格式逻辑。 */
+async function executeVerify(command: Extract<ParsedCommand, { kind: "verify" }>, context: CommandContext): Promise<RenderedDiagnostic> {
+  const cwd = context.cwd ?? process.cwd();
+  const options = renderOptions(command.options, context);
+  try {
+    const client = new ProtocolClient({
+      cwd,
+      env: context.env,
+      overridePath: context.corePath,
+      executablePath: context.executablePath,
+      spawnProcess: context.spawnProcess,
+    });
+    const result = await client.verify(resolve(cwd, command.file), {
+      detail: command.detail,
+      signal: context.signal,
+    });
+    return renderProtocolResponse(result.response, options);
+  } catch (error) {
+    return renderCliError(error, options);
+  }
+}
+
+/** 通过 Rust 16B API 查询或执行缓存维护；clean 默认只返回计划。 */
+async function executeCache(command: Extract<ParsedCommand, { kind: "cache" }>, context: CommandContext): Promise<RenderedDiagnostic> {
+  const options = renderOptions(command.options, context);
+  try {
+    const client = new ProtocolClient({
+      cwd: context.cwd,
+      env: context.env,
+      overridePath: context.corePath,
+      executablePath: context.executablePath,
+      spawnProcess: context.spawnProcess,
+    });
+    const result = await client.cache({ action: command.action, apply: command.apply, signal: context.signal });
+    return renderProtocolResponse(result.response, options);
+  } catch (error) {
+    return renderCliError(error, options);
   }
 }
 

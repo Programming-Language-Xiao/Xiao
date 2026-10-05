@@ -111,4 +111,12 @@ describe("xiao 命令解析", () => {
     expect(() => parseArguments(["--color=rainbow"])).toThrow("X11-CLI-ARG-001");
     expect(() => parseArguments(["config", "unknown.path", "true"])).not.toThrow();
   });
+
+  test("18B 只新增 verify/cache 顶层命令", () => {
+    expect(parseArguments(["verify", "main.xiaoc", "--detail"])).toMatchObject({ kind: "verify", file: "main.xiaoc", detail: true });
+    expect(parseArguments(["cache", "clean"])).toMatchObject({ kind: "cache", action: "clean", apply: false });
+    expect(parseArguments(["cache", "clean", "--apply"])).toMatchObject({ kind: "cache", action: "clean", apply: true });
+    expect(() => parseArguments(["verify", "main.xiao"])).toThrow("X11-CLI-ARG-001");
+    expect(() => parseArguments(["cache", "list", "--apply"])).toThrow("X11-CLI-ARG-001");
+  });
 });

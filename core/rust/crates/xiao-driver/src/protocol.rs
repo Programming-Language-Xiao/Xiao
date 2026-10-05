@@ -28,6 +28,8 @@ mod service;
 mod test;
 /// 协议版本、源码和目标校验。
 mod validate;
+/// 只验证产物和通过 16B API 维护缓存。
+mod verify;
 
 #[cfg(test)]
 #[allow(unused_imports)]

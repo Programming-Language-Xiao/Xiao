@@ -75,6 +75,8 @@ pub(super) fn request_locale(request: &ProtocolRequest) -> Option<String> {
         | ProtocolRequest::ReplPackages { locale, .. }
         | ProtocolRequest::Package { locale, .. } => locale.clone(),
         ProtocolRequest::Hello { .. }
+        | ProtocolRequest::Verify { .. }
+        | ProtocolRequest::Cache { .. }
         | ProtocolRequest::Cancel { .. }
         | ProtocolRequest::Shutdown { .. } => None,
     }
