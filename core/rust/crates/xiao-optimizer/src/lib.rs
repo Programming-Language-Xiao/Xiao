@@ -19,6 +19,7 @@ pub use differential::{
     ThreeWayDifference, ThreeWayExecutionSide, ThreeWayObservation, ThreeWaySuiteReport,
     compare_four_observations, compare_named_observations, compare_observations,
     compare_three_observations,
+    normalize_process_termination,
     run_four_way_differential_suite_with, run_o0_differential_suite,
     run_o0_differential_suite_with, run_three_way_differential_suite_with,
     run_three_way_differential_suite_with_level,

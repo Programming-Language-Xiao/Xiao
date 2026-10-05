@@ -241,10 +241,10 @@ docs/DevDocs/18c-*.md 与 18b-*.md        逐条收口评估与四入口结论�
 - 生产路径拒绝 `finally` 内无条件 `return`/`raise`：`-O0` 报 `X09-BYTECODE-002`
   （`finally 子程序没有可达 RetFromSub`），`-O1`–`-O3` 在优化前验证处换成
   `X09-DRIVER-OPT-001`；研究路径的 VM 用例（`r2_stack.rs`）能跑通同一源码。回归样本
-  已写成 `#[ignore]` 用例 `finally_with_unconditional_exit_runs_in_production`，归 14 阶段。
+  已按 09R2C/14 归属修复验证器，并恢复 `finally_with_unconditional_exit_runs_in_production`。
 - 模块初始化中 `raise ArithmeticError(code = "BROKEN")` 对外报 `X06-RUNTIME-012`，用户给的
-  `BROKEN` 没有保留；回归用例只固定了“各级别一致且带稳定码”，未断言 `BROKEN`。是否属于
-  预期还需要 09/11 的维护者确认。
+  `BROKEN` 没有保留；19B 已按星崽裁定暂时保持现状，并把它登记为后续 09/11 输入。回归用例
+  继续只固定各级别一致且带稳定码，不把现状误写成已解决。
 - 原生后端有三类失败，性质不同：
   - **回归**：`ArithmeticError(...)` 报 `Unsupported { 动态 intrinsic ArithmeticError }`。读代码判断是
     20AB 的 `cd08ca0` 引入的（前端改降成 `IntrinsicCall`，LLVM 的 `emit_intrinsic` 只接了
@@ -254,7 +254,8 @@ docs/DevDocs/18c-*.md 与 18b-*.md        逐条收口评估与四入口结论�
     差分用例里 `caught`、`unmatched` 的 `native_gap` 登记因此是在掩盖回归，修复后须摘除；
   - **空缺**：动态模块中的函数定义与导入语句被 `Unsupported` 拒绝；
   - **行为差异**：整数溢出在原生以非法指令终止，没有 `xiao-error` 摘要。
-  差分用例以 `native_gap` 登记为“未覆盖”并写明原因，缺口消失时会报错提醒摘除登记。
+  差分用例以 `native_gap` 登记为“未覆盖”并写明原因，缺口消失时会报错提醒摘除登记；动态模块
+  函数/导入和整数溢出两项按星崽裁定不并入 19B，登记为 15 后续功能。
 
 ### 本机实跑清单（2026-10-06，Windows 11，`x86_64-pc-windows-msvc`）
 

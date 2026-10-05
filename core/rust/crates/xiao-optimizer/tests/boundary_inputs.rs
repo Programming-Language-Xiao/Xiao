@@ -16,6 +16,7 @@ fn observation(
         output: output.into(),
         error: error.map(str::to_owned),
         exit_code,
+        termination: String::new(),
         drops: vec!["value:1:release".to_owned(), "value:2:release".to_owned()],
     }
 }

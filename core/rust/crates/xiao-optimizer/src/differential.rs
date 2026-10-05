@@ -13,6 +13,9 @@ pub struct DifferentialObservation {
     pub error: Option<String>,
     /// 进程或 VM 退出码。
     pub exit_code: i32,
+    /// 规范化的进程终止方式：`exit:<code>` 或 `signal:<name>`。
+    #[serde(default)]
+    pub termination: String,
     /// 按冻结顺序记录的释放事件。
     pub drops: Vec<String>,
 }
@@ -256,6 +259,13 @@ pub fn compare_observations(
             &optimized.exit_code.to_string(),
         ));
     }
+    if baseline.termination != optimized.termination {
+        differences.push(difference(
+            "termination",
+            &baseline.termination,
+            &optimized.termination,
+        ));
+    }
     if baseline.drops != optimized.drops {
         differences.push(difference(
             "drops",
@@ -291,6 +301,18 @@ pub fn compare_named_observations(
             })
         })
         .collect()
+}
+
+/// 把各平台子进程状态归一化为可比较的文本。
+///
+/// Unix 进程被信号终止时没有普通退出码，Windows 则可能给出异常状态值；
+/// 这两个事实必须保留为不同类别，不能用 `unwrap_or(-1)` 抹平。
+#[must_use]
+pub fn normalize_process_termination(code: Option<i32>, signal: Option<&str>) -> String {
+    if let Some(signal) = signal {
+        return format!("signal:{signal}");
+    }
+    code.map_or_else(|| "unknown".to_owned(), |code| format!("exit:{code}"))
 }
 
 /// 执行当前 O0 基线差分套件；用例按名称排序以清除未定义输入顺序。
@@ -567,7 +589,7 @@ mod tests {
     use super::{
         DifferentialCase, DifferentialInput, DifferentialObservation, ThreeWayExecutionSide,
         ThreeWayObservation, compare_named_observations, compare_observations,
-        compare_three_observations,
+        compare_three_observations, normalize_process_termination,
         run_o0_differential_suite, run_o0_differential_suite_with,
         run_three_way_differential_suite_with,
     };
@@ -579,12 +601,14 @@ mod tests {
             output: "a".to_owned(),
             error: None,
             exit_code: 0,
+            termination: String::new(),
             drops: vec!["v1".to_owned(), "v2".to_owned()],
         };
         let optimized = DifferentialObservation {
             output: "b".to_owned(),
             error: Some("E".to_owned()),
             exit_code: 3,
+            termination: String::new(),
             drops: vec!["v2".to_owned(), "v1".to_owned()],
         };
         let fields = compare_observations(&baseline, &optimized)
@@ -615,6 +639,16 @@ mod tests {
         assert_eq!(differences[0].baseline_side, "Windows");
         assert_eq!(differences[0].compared_side, "Linux");
         assert_eq!(differences[0].field, "output");
+    }
+
+    #[test]
+    fn process_termination_keeps_exit_and_signal_distinct() {
+        assert_eq!(normalize_process_termination(Some(3), None), "exit:3");
+        assert_eq!(normalize_process_termination(None, Some("SIGINT")), "signal:SIGINT");
+        assert_ne!(
+            normalize_process_termination(Some(-1), None),
+            normalize_process_termination(None, Some("SIGINT"))
+        );
     }
 
     #[test]

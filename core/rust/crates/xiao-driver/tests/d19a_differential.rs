@@ -22,6 +22,7 @@ use xiao_driver::{
 };
 use xiao_optimizer::{
     DifferentialObservation, OptimizationConfig, OptimizationLevel, compare_named_observations,
+    normalize_process_termination,
 };
 use xiao_runtime::{start_release_trace, take_release_events};
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
@@ -32,6 +33,7 @@ struct Observation {
     output: String,
     error: Option<String>,
     exit_code: i32,
+    termination: String,
     drops: Vec<String>,
 }
 
@@ -99,6 +101,10 @@ const CASES: [Case; 7] = [
 fn outcome_observation(outcome: &DriverOutcome) -> Observation {
     let mut observed = Observation {
         exit_code: i32::from(outcome.exit_code().as_process_code()),
+        termination: normalize_process_termination(
+            Some(i32::from(outcome.exit_code().as_process_code())),
+            None,
+        ),
         error: outcome.code().map(ToOwned::to_owned),
         ..Observation::default()
     };
@@ -128,6 +134,7 @@ fn optimizer_observation(observation: &Observation) -> DifferentialObservation {
         output: observation.output.clone(),
         error: observation.error.clone(),
         exit_code: observation.exit_code,
+        termination: observation.termination.clone(),
         drops: observation.drops.clone(),
     }
 }
@@ -266,6 +273,7 @@ fn response_observation(response: ProtocolResponse) -> Observation {
     };
     let mut observed = Observation {
         exit_code: i32::from(exit_code),
+        termination: normalize_process_termination(Some(i32::from(exit_code)), None),
         error: report.map(|report| report.code),
         ..Observation::default()
     };
@@ -534,6 +542,18 @@ fn native_error_code(stderr: &str) -> Option<String> {
     Some(rest.split_once(' ')?.0.to_owned())
 }
 
+#[cfg(unix)]
+fn native_termination(status: &std::process::ExitStatus) -> String {
+    use std::os::unix::process::ExitStatusExt;
+    let signal = status.signal().map(|signal| format!("SIG{signal}"));
+    normalize_process_termination(status.code(), signal.as_deref())
+}
+
+#[cfg(not(unix))]
+fn native_termination(status: &std::process::ExitStatus) -> String {
+    normalize_process_termination(status.code(), None)
+}
+
 fn release_tuples(text: &str) -> Vec<String> {
     text.lines()
         .filter(|line| !line.trim().is_empty())
@@ -625,6 +645,7 @@ fn native_side_matches_the_vm_sides_on_every_case() {
             output: String::from_utf8_lossy(&run_output.stdout).into_owned(),
             error: native_error_code(&stderr),
             exit_code: run_output.status.code().unwrap_or(-1),
+            termination: native_termination(&run_output.status),
             drops: Vec::new(),
         };
         let vm_side = Observation {
