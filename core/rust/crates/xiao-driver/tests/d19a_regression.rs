@@ -126,11 +126,8 @@ fn drop_sequences_are_identical_and_non_empty() {
     }
 }
 
-/// 已知缺口：`finally` 内无条件 `return`/`raise` 时，生产路径的字节码验证以
-/// `X09-BYTECODE-002` 拒绝，而 O1–O3 在优化前验证处换成 `X09-DRIVER-OPT-001`。
-/// 研究路径的 VM 用例（`r2_stack.rs`）能跑通同一源码。属于 14 阶段，待修复后取消 ignore。
+/// `finally` 内无条件 `return`/`raise` 必须沿生产路径执行，并保持释放顺序。
 #[test]
-#[ignore = "已知缺口：finally 内无条件 return/raise 被生产验证拒绝，见注释"]
 fn finally_with_unconditional_exit_runs_in_production() {
     let returning = "def f() -> int\n    try\n        payload = \"try-payload\"\n    finally\n        return 2\nresult = f()\n";
     let seen = across_levels("return", returning);

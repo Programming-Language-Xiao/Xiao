@@ -1065,6 +1065,13 @@ fn validate_subroutines(
                     has_return = true;
                     reachable_returns.insert(block_id);
                 }
+                // `finally` 是通过 CallSub 进入的，但它本身可以合法地以
+                // `return`/`raise` 结束当前函数。此时控制权不会回到调用点，
+                // 因而不需要再发出 RetFromSub；把这种终止块视为子程序的
+                // 有效终点，避免生产验证器误拒绝合法的 finally 控制流。
+                if matches!(instruction.op, TacOp::Return { .. } | TacOp::Raise { .. }) {
+                    has_return = true;
+                }
                 for successor in jump_targets(&instruction.op) {
                     // 子程序跳回入口之前的块会把控制权交还给调用点，不能继续
                     // 当作子程序正文遍历。
