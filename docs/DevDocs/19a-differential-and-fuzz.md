@@ -245,10 +245,16 @@ docs/DevDocs/18c-*.md 与 18b-*.md        逐条收口评估与四入口结论�
 - 模块初始化中 `raise ArithmeticError(code = "BROKEN")` 对外报 `X06-RUNTIME-012`，用户给的
   `BROKEN` 没有保留；回归用例只固定了“各级别一致且带稳定码”，未断言 `BROKEN`。是否属于
   预期还需要 09/11 的维护者确认。
-- 原生后端：`ArithmeticError` 动态 intrinsic 与函数定义被 `Unsupported` 拒绝，整数溢出以
-  非法指令终止而不是 `xiao-error` 摘要。`n0_a_native_driver.rs` 的两个 ignored 用例在
-  本机同样失败，与本批改动无关。差分用例以 `native_gap` 登记为“未覆盖”并写明原因，缺口
-  消失时会报错提醒摘除登记。
+- 原生后端有三类失败，性质不同：
+  - **回归**：`ArithmeticError(...)` 报 `Unsupported { 动态 intrinsic ArithmeticError }`。读代码判断是
+    20AB 的 `cd08ca0` 引入的（前端改降成 `IntrinsicCall`，LLVM 的 `emit_intrinsic` 只接了
+    `print`/`input`），未经二分验证。`n0_a_native_driver.rs` 的两个 ignored 用例因此失败，
+    平台复现工作流 10-05 的定时运行已在四个平台变红。**本条初稿曾写“与本批改动无关”，
+    并把它当作后端既有空缺登记，这是错的；详见 [19B](19b-cross-platform-and-release.md) §2.1。**
+    差分用例里 `caught`、`unmatched` 的 `native_gap` 登记因此是在掩盖回归，修复后须摘除；
+  - **空缺**：动态模块中的函数定义与导入语句被 `Unsupported` 拒绝；
+  - **行为差异**：整数溢出在原生以非法指令终止，没有 `xiao-error` 摘要。
+  差分用例以 `native_gap` 登记为“未覆盖”并写明原因，缺口消失时会报错提醒摘除登记。
 
 ### 本机实跑清单（2026-10-06，Windows 11，`x86_64-pc-windows-msvc`）
 
