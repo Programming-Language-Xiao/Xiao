@@ -286,6 +286,30 @@ cli/ts/src/commands/                                  双击/无关联时的命�
 - 归档协议现在把 `RunOptions` 的事件容量、超时和取消信号传入生产 VM；超时或取消在窗口
   启动前、启动后和 VM 返回边界均检查，避免归档路径静默忽略统一运行控制。
 
+### 17 阶段收口评估（18A 承接）
+
+按 [17 规范](17-xar-archive.md) 的 8 条验收标准逐条核对：
+
+| 规范验收 | 结论 | 证据 |
+| --- | --- | --- |
+| 归档可验证、入口唯一 | 满足 | `xiao-xar::decode_xar`、`run_archive` 及 `d17c_archive` 成功路径用例 |
+| 索引、对象、资源执行前完整校验 | 满足 | 17A/17B 负例套件、`invalid_archive_produces_no_execution_events` |
+| 双击与命令行共用执行接口 | 满足 | `file-association.test.ts` 的 cwd、标准流、退出码契约 |
+| 缺依赖/入口/对象不部分执行 | 满足 | `X17-XAR-006..009` 与无执行事件回归 |
+| ZIP 成员与元数据可复现 | 满足 | 17A 确定性编码及 ZIP/ZIP64 测试 |
+| 标准包映射紧凑且资源显式 | 满足 | 17B 标准/调试包差分与资源副作用探针 |
+| `-debug` 窗口及通信中断不改变结果 | 满足（受控验证） | `DiagnosticSession` 握手失败拒绝、断线降级单测；真实终端测试仍按 10D 环境门控 |
+| 语言默认值、双语文案和机器字段稳定 | 满足 | 17C-FIX 语言解析/回落测试、CLI 双语文案测试 |
+
+两处补强也已留下可证伪依据：运行器从内存字节加载并由
+`archive_runner_does_not_create_temporary_files` 断言不创建临时文件；承接回归的
+「删了会红」记录如下。
+
+| 被删除的实现 | 应失败的测试 | 失败判据 |
+| --- | --- | --- |
+| `run_archive` 的入口校验/执行前解码 | `archive_success_preserves_intrinsic_output_and_success_result` | 无法得到 `hello world!` 或 `is_success()` 为假 |
+| `run_archive_with_event_observer` 的校验前拒绝边界 | `invalid_archive_produces_no_execution_events` | 事件列表出现用户代码事件 |
+
 ## 相关页面
 
 - [17. `.xar` 字节码归档与启动](17-xar-archive.md) —— **权威规范**；§启动流程、`:27` 不自解释、`:29` 调试窗口、`:75` 临时内容、`17.14`–`17.18`

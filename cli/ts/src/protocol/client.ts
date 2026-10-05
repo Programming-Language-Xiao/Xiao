@@ -20,6 +20,7 @@ import {
   type ToolchainSpec,
 } from "./messages.ts";
 import { discoverCoreWithMetadata, hostTarget, type CoreDiscoveryOptions, type CoreDiscoverySource } from "../platform/core.ts";
+import type { OptimizationLevel } from "../config/optimization.ts";
 
 /** 核心客户端运行选项。 */
 export interface CoreClientOptions extends CoreDiscoveryOptions {
@@ -45,6 +46,8 @@ export interface SourceRunOptions {
   languageVersion?: string;
   /** Runtime 版本。 */
   runtimeVersion?: string;
+  /** 18A 归一化的优化级别。 */
+  optimizationLevel?: OptimizationLevel;
   /** VM 调用深度。 */
   maxCallDepth?: number;
   /** 事件容量。 */
@@ -69,6 +72,8 @@ export interface SourceRunOptions {
 export interface ArchiveRunOptions {
   /** VM 调用深度。 */
   maxCallDepth?: number;
+  /** 18A 归一化的优化级别；归档运行暂只保留协议形状。 */
+  optimizationLevel?: OptimizationLevel;
   /** 事件容量；核心保留字段以兼容统一运行选项。 */
   eventCapacity?: number;
   /** 驱动器边界超时（毫秒）。 */
@@ -97,6 +102,8 @@ export interface SourceBuildOptions {
   languageVersion?: string;
   /** Runtime 版本。 */
   runtimeVersion?: string;
+  /** 18A 归一化的优化级别。 */
+  optimizationLevel?: OptimizationLevel;
   /** 原生可执行输出路径。 */
   output: string;
   /** 可选 LLVM 文本输出路径。 */
@@ -155,6 +162,8 @@ export interface SourceTestOptions {
   timeoutMs?: number | null;
   /** VM 调用深度。 */
   maxCallDepth?: number;
+  /** 18A 归一化的优化级别。 */
+  optimizationLevel?: OptimizationLevel;
   /** 事件容量。 */
   eventCapacity?: number;
   /** 是否在 VM 热循环中启用取消检查点。 */
@@ -241,7 +250,7 @@ export class ProtocolClient {
       runtime_version: options.runtimeVersion ?? "0.1.0",
       ...(options.locale === undefined ? {} : { locale: options.locale }),
       target,
-      optimization: { level: 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
+      optimization: { level: options.optimizationLevel ?? 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
       source: { module, path: sourcePath, text: sourceText },
       options: {
         max_call_depth: options.maxCallDepth ?? 1024,
@@ -289,7 +298,7 @@ export class ProtocolClient {
       runtime_version: options.runtimeVersion ?? "0.1.0",
       ...(options.locale === undefined ? {} : { locale: options.locale }),
       target,
-      optimization: { level: 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
+      optimization: { level: options.optimizationLevel ?? 0, debug: options.debug ?? false, diagnostics: options.diagnostics ?? null },
       source: { module, path: sourcePath, text: sourceText },
       output: options.output,
       llvm_ir_output: options.llvmIrOutput ?? null,
@@ -354,7 +363,7 @@ export class ProtocolClient {
       runtime_version: options.runtimeVersion ?? "0.1.0",
       ...(options.locale === undefined ? {} : { locale: options.locale }),
       target,
-      optimization: { level: 0, debug: false, diagnostics: null },
+      optimization: { level: options.optimizationLevel ?? 0, debug: false, diagnostics: null },
       cases: sources.map((source) => {
         const path = source.path ?? null;
         return { module: source.module ?? moduleName(path), path, text: source.text };

@@ -57,6 +57,24 @@ describe("xiao 命令解析", () => {
     expect(parseArguments(["-debug"]).kind).toBe("repl");
   });
 
+  test("五个入口在没有显式参数时统一保留 O0 缺省", () => {
+    const commands = [
+      parseArguments(["run", "main.xiao"]),
+      parseArguments(["main.xiao"]),
+      parseArguments([]),
+      parseArguments(["build", "main.xiao"]),
+      parseArguments(["build", "-xar", "main.xiao"]),
+    ];
+    for (const command of commands) {
+      expect("optimizationLevel" in command && command.optimizationLevel).toBe(0);
+    }
+    expect(parseArguments(["run", "main.xiao", "-O2"])).toMatchObject({ optimizationLevel: 2, optimizationExplicit: true });
+    expect(parseArguments(["-xar", "app.xar", "-O3"])).toMatchObject({ optimizationLevel: 3, optimizationExplicit: true });
+    for (const argument of ["-Ox", "-O4", "-O10"]) {
+      expect(() => parseArguments(["build", "main.xiao", argument])).toThrow("X11-CLI-OPT-001");
+    }
+  });
+
   test("build 默认产物、LLVM 输出和优化级别保持冻结", () => {
     const command = parseArguments(["build", "src/main.xiao", "--emit-llvm", "out/main.ll", "-debug"]);
     expect(command).toMatchObject({ kind: "build", file: "src/main.xiao", llvmIrOutput: "out/main.ll" });
@@ -65,7 +83,7 @@ describe("xiao 命令解析", () => {
       expect(command.optimizationLevel).toBe(0);
       expect(command.options.debug).toBe(true);
     }
-    expect(() => parseArguments(["build", "main.xiao", "-O1"])).toThrow("X11-CLI-ARG-001");
+    expect(parseArguments(["build", "main.xiao", "-O1"])).toMatchObject({ kind: "build", optimizationLevel: 1, optimizationExplicit: true });
   });
 
   test("环境命令解析默认名、显式名、Shell 和取消激活", () => {

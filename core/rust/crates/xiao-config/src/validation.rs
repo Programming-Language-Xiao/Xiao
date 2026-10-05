@@ -70,6 +70,7 @@ fn validate(
             "project" => validate_project_table(table, &mut diagnostics),
             "exports" => validate_exports_table(table, &mut diagnostics),
             "language" => validate_language_table(table, &mut diagnostics),
+            "optimization" => validate_optimization_table(table, &mut diagnostics),
             "dependencies" | "devdependencies" => {
                 validate_dependency_table(table, &mut diagnostics)
             }
@@ -267,6 +268,58 @@ fn validate_language_table(table: &ConfigTable, diagnostics: &mut ConfigDiagnost
     if let Some(entry) = table.entries.get("locale") {
         if !matches!(&entry.value, ConfigValue::String(value) if !value.trim().is_empty()) {
             diagnostics.push(type_error(entry.span, "locale", "str", &entry.value));
+        }
+    }
+}
+
+/// 检查 13A 优化配置允许的静态字段。
+///
+/// 这里仅建立声明式配置边界，不创建优化器对象，也不执行任何 Pass；级别和列表
+/// 的规范化由 CLI 归一化层消费同一组字段完成。
+fn validate_optimization_table(table: &ConfigTable, diagnostics: &mut ConfigDiagnostics) {
+    check_known_fields(
+        table,
+        &[
+            "level",
+            "pass_set",
+            "debug_info",
+            "source_map",
+            "diagnostic_events",
+            "allow_cpu_specialization",
+            "allow_lto",
+            "experimental_passes",
+        ],
+        diagnostics,
+    );
+    if let Some(entry) = table.entries.get("level") {
+        if !matches!(&entry.value, ConfigValue::Integer(level) if (0..=3).contains(level)) {
+            diagnostics.push(error(
+                CONFIG_INVALID_VALUE_CODE,
+                "x05.config.invalid_optimization_level",
+                entry.span,
+                "优化级别必须是 0、1、2 或 3".to_owned(),
+                [("field", DiagnosticParam::Text("level".to_owned()))],
+            ));
+        }
+    }
+    for field in [
+        "debug_info",
+        "source_map",
+        "diagnostic_events",
+        "allow_cpu_specialization",
+        "allow_lto",
+    ] {
+        if let Some(entry) = table.entries.get(field)
+            && !matches!(entry.value, ConfigValue::Boolean(_))
+        {
+            diagnostics.push(type_error(entry.span, field, "bool", &entry.value));
+        }
+    }
+    for field in ["pass_set", "experimental_passes"] {
+        if let Some(entry) = table.entries.get(field)
+            && !matches!(&entry.value, ConfigValue::Array(values) if values.iter().all(|value| matches!(value, ConfigValue::String(text) if !text.trim().is_empty() && !text.chars().any(char::is_control))))
+        {
+            diagnostics.push(type_error(entry.span, field, "array[str]", &entry.value));
         }
     }
 }
@@ -621,5 +674,25 @@ mod tests {
                 .iter()
                 .any(|error| error.code() == super::MISSING_REQUIRED_CODE)
         );
+    }
+
+    #[test]
+    /// 优化表沿用 13A 字段并接受 O0--O3 的静态声明。
+    fn accepts_optimization_configuration_fields() {
+        let source = SourceFile::from_text(
+            "[optimization]\nlevel = 2\npass_set = [\"fold\"]\ndebug_info = false\nsource_map = true\ndiagnostic_events = true\nallow_cpu_specialization = false\nallow_lto = false\nexperimental_passes = []\n",
+        );
+        assert!(parse_config(&source).is_ok());
+    }
+
+    #[test]
+    /// 优化级别超出冻结范围时使用既有配置值错误边界。
+    fn rejects_invalid_optimization_level() {
+        let source = SourceFile::from_text("[Optimization]\nlevel = 4\n");
+        let errors = parse_config(&source).expect_err("非法优化级别应失败");
+        assert!(errors.iter().any(|error| {
+            error.code() == super::CONFIG_INVALID_VALUE_CODE
+                && error.message_id() == "x05.config.invalid_optimization_level"
+        }));
     }
 }

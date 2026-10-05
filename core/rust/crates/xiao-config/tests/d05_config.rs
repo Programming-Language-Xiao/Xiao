@@ -45,6 +45,16 @@ fn accepts_multiline_arrays() {
 }
 
 #[test]
+/// 18A 的优化表进入同一静态配置白名单并接受 O0--O3。
+fn accepts_optimization_table() {
+    let source = format!(
+        "{}[Optimization]\nlevel = 3\npass_set = [\"fold\"]\ndebug_info = false\nsource_map = true\ndiagnostic_events = false\nallow_cpu_specialization = false\nallow_lto = false\nexperimental_passes = []\n",
+        project_prefix()
+    );
+    assert!(parse_config_project(&SourceFile::from_text(&source)).is_ok());
+}
+
+#[test]
 /// 重复键和重复表头必须分别给出稳定诊断。
 fn rejects_duplicate_keys_and_tables() {
     let duplicate_key = "[project]\nname = \"a\"\nname = \"b\"\nversion = \"1\"\n".to_owned();

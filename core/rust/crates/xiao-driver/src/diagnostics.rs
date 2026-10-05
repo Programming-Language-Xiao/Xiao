@@ -932,6 +932,31 @@ mod tests {
     }
 
     #[test]
+    /// 诊断通信中断后，事件记录降级为无窗口路径且不影响运行侧事件处理。
+    fn disconnected_window_does_not_change_event_handling() {
+        let mut session = DiagnosticSession {
+            stream: None,
+            child: None,
+            started: Instant::now(),
+            module: "app".to_owned(),
+            source: Some("main.xiao".to_owned()),
+            locale: "zh-CN".to_owned(),
+            log: None,
+            focus_logs: Vec::new(),
+            terminal_level: EventLevel::Info,
+            file_level: EventLevel::Info,
+            metrics: DiagnosticMetrics::default(),
+            log_error: None,
+        };
+        session.record(&VmEvent::ModuleLoaded {
+            module: "app".to_owned(),
+        });
+        assert_eq!(session.metrics().error_count, 0);
+        assert_eq!(session.metrics().hook_count, 0);
+        session.finish();
+    }
+
+    #[test]
     /// 错误事件在结构化日志中保留语言和共享目录文本。
     fn runtime_error_events_keep_localized_message_fields() {
         let event = vm_event_to_diagnostic_with_locale(

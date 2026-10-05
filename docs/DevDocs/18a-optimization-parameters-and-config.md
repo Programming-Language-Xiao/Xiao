@@ -24,7 +24,7 @@
 | 环节 | 现状 | 判定 |
 | --- | --- | --- |
 | `-O` 参数 | **不存在**（CLI 无优化级别解析） | 本批落地 |
-| `[Optimization]` 表 | **不在白名单**（05D 的 `RESERVED_TABLES` 里没有） | 本批扩展 |
+| `[Optimization]` 表 | Rust 白名单已预留规范化的 `optimization` 表，但**没有字段校验** | 本批补齐字段语义 |
 | 优化配置与指纹 | 13A 已交付（配置、指纹、Pass 接口、快照回滚） | **归一化的目标**，直接对接 |
 | 输入路由 | `run`/`build`/`test` 各自解析，**互斥/缺失诊断未统一** | 本批统一 |
 | 帮助文本 | `cli/ts/src/i18n.ts` 有基础帮助 | 本批补优化/语言的呈现 |
@@ -262,6 +262,20 @@ docs/DevDocs/17d-*.md          补收口评估、窗口中断验证与两处小�
   （规范 `:57` 说「仍需在本阶段冻结」——留给 18B/18C，本批不擅自定）；
 - **不重开** 13A 的配置与指纹、05D 的编号、11C 的目录、17 的容器与 CLI 形式；
 - **不实施** 19 的发布验收。
+
+## 十、实施记录
+
+- `[Optimization]`（解析时大小写规范化为 `optimization`）登记字段冻结为：`level`、
+  `pass_set`、`debug_info`、`source_map`、`diagnostic_events`、`allow_cpu_specialization`、
+  `allow_lto`、`experimental_passes`。Rust 配置边界沿用 `X05-CONFIG-001..018` 的既有
+  诊断形态，级别越界使用 `X05-CONFIG-010` + `x05.config.invalid_optimization_level`。
+- CLI 的 `-O0` 至 `-O3` 已由纯解析器统一识别；解析结果同时保留 `optimizationExplicit`，
+  使缺省 `0` 不会错误覆盖项目/全局配置。归一化优先级固定为命令行 > 项目 > 全局 > O0，
+  输出 `OptimizationConfig.level` 与有效语言，列表字段按 13A 规则去空白、去重、排序。
+- 新增输入路由模块只产出 `config`、`main-source`、`source`、`xiaoc`、`xar` 五类结构化
+  判定，不执行输入内容；多路径、缺失、未知扩展名和意图冲突分别返回稳定 `X11-CLI-INPUT-*`。
+- 17 阶段收口评估、断线降级验证、内存加载无临时文件断言及「删了会红」表已回填
+  `17d-platform-association-and-debug.md`，主表的 17 完成声明现在有逐条证据支撑。
 
 ## 相关页面
 

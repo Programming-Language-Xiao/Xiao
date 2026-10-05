@@ -16,6 +16,8 @@
 - `src/model.rs`：`ConfigDocument`、表、条目和值类型。
 - `src/parser.rs`：复用 `xiao-syntax::Lexer` 的 Token 到配置树转换。
 - `src/validation.rs`：表/字段白名单、项目身份和导出路径校验。
+- `[optimization]`：登记 13A 的 `level`、Pass 列表、调试/源码映射、诊断事件和目标开关；
+  级别只接受 0--3，字段只做静态类型校验。
 - `[resources]`：键为归档逻辑路径、值为项目根相对单文件路径；只保存静态声明，
   不读取目录、凭据或环境变量。
 - `src/diagnostics.rs`：`X05-CONFIG-*` 稳定诊断编号。

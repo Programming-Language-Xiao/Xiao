@@ -146,6 +146,18 @@ fn archive_run_honors_production_event_capacity() {
 }
 
 #[test]
+/// 归档入口直接消费内存字节，不创建运行期临时文件。
+fn archive_runner_does_not_create_temporary_files() {
+    let marker =
+        std::env::temp_dir().join(format!("xiao-d17d-memory-only-{}.tmp", std::process::id()));
+    let _ = std::fs::remove_file(&marker);
+    let archive = archive_for("print(\"memory only\")\n");
+    let outcome = run_archive(&archive, XarRunOptions::default()).expect("归档应成功运行");
+    assert!(outcome.result.is_success());
+    assert!(!marker.exists(), "归档运行不应落盘临时内容");
+}
+
+#[test]
 fn archive_protocol_result_carries_machine_readable_audit() {
     let archive = archive_for("print(\"audited\")\n");
     let path = std::env::temp_dir().join(format!("xiao-d17d-audit-{}.xar", std::process::id()));

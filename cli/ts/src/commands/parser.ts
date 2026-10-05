@@ -2,6 +2,7 @@
 
 import { cliMessage } from "../i18n.ts";
 import type { SupportedLocale } from "../config/locale.ts";
+import { parseOptimizationLevel, type OptimizationLevel } from "../config/optimization.ts";
 
 /** 全局 CLI 选项。 */
 export interface GlobalCliOptions {
@@ -20,11 +21,11 @@ export type ShellName = "bash" | "zsh" | "fish" | "powershell" | "cmd";
 export type ParsedCommand =
   | { kind: "help"; options: GlobalCliOptions }
   | { kind: "version"; options: GlobalCliOptions }
-  | { kind: "run"; file: string; options: GlobalCliOptions }
-  | { kind: "xar"; file: string; options: GlobalCliOptions }
+  | { kind: "run"; file: string; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
+  | { kind: "xar"; file: string; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
-  | { kind: "test"; project?: string; timeoutMs?: number; options: GlobalCliOptions }
-  | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; optimizationLevel: 0; args: readonly string[]; options: GlobalCliOptions }
+  | { kind: "test"; project?: string; timeoutMs?: number; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
+  | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; xar: boolean; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; args: readonly string[]; options: GlobalCliOptions }
   | { kind: "venv"; name?: string; options: GlobalCliOptions }
   | { kind: "sync"; keepExtra: boolean; locked: boolean; frozen: boolean; options: GlobalCliOptions }
   | { kind: "install"; project?: string; options: GlobalCliOptions }
@@ -34,7 +35,7 @@ export type ParsedCommand =
   | { kind: "remove"; packageName: string; dev: boolean; options: GlobalCliOptions }
   | { kind: "shell-init"; shell: ShellName; action: "print" | "install" | "uninstall"; profile?: string; options: GlobalCliOptions }
   | { kind: "deactivate"; options: GlobalCliOptions }
-  | { kind: "repl"; multiline?: boolean; file?: string; options: GlobalCliOptions };
+  | { kind: "repl"; multiline?: boolean; file?: string; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions };
 
 /** 参数解析异常。 */
 export class CliArgumentError extends Error {
@@ -57,7 +58,12 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
   if (argv.some((argument) => argument === "--help" || argument === "-h")) return { kind: "help", options };
   if (argv.some((argument, index) => (argument === "-v" || argument === "--version") &&
     ((positional[0] !== "add" && positional[0] !== "remove") || index < argv.indexOf(positional[0])))) return { kind: "version", options };
-  if (positional.length === 0) return { kind: "repl", options };
+  if (positional.length === 0) return { kind: "repl", optimizationLevel: 0, optimizationExplicit: false, options };
+  if (positional.every((argument) => argument.startsWith("-O"))) {
+    let optimizationLevel: OptimizationLevel = 0;
+    for (const argument of positional) optimizationLevel = parseOptimizationLevel(argument);
+    return { kind: "repl", optimizationLevel, optimizationExplicit: true, options };
+  }
   const [command, ...rest] = positional;
   if (command === "--help" || command === "-h") {
     if (rest.length > 0) throw new CliArgumentError("--help 不接受额外参数");
@@ -67,14 +73,14 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     if (rest.length > 0) throw new CliArgumentError("--version 不接受额外参数");
     return { kind: "version", options };
   }
-  if (positional.includes("-xar")) return parseArchive(positional, options);
+  if (positional.includes("-xar") && command !== "build") return parseArchive(positional, options);
   if (command === "--inLF") {
     if (rest.length > 1) throw new CliArgumentError("--inLF 最多接受一个 .xiao 文件路径");
     if (rest.length === 1 && !rest[0].endsWith(".xiao")) {
       throw new CliArgumentError("--inLF 当前只支持 .xiao 文件；其他扩展名留待后续扩展", "X11-CLI-SAVE-001");
     }
-    return rest.length === 0 ? { kind: "repl", multiline: true, options }
-      : { kind: "repl", multiline: true, file: rest[0], options };
+    return rest.length === 0 ? { kind: "repl", multiline: true, optimizationLevel: 0, optimizationExplicit: false, options }
+      : { kind: "repl", multiline: true, file: rest[0], optimizationLevel: 0, optimizationExplicit: false, options };
   }
   if (command === "run") {
     if (rest.includes("-xar")) return parseArchive(rest, options);
@@ -106,9 +112,9 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
     return { kind: "deactivate", options };
   }
   if (command.endsWith(".xiao")) {
-    if (rest.length === 1 && rest[0] === "-xar") return { kind: "xar", file: command, options };
+    if (rest.length === 1 && rest[0] === "-xar") return { kind: "xar", file: command, optimizationLevel: 0, optimizationExplicit: false, options };
     if (rest.length > 0) throw new CliArgumentError("源码快捷运行只接受一个 .xiao 文件");
-    return { kind: "run", file: command, options };
+    return { kind: "run", file: command, optimizationLevel: 0, optimizationExplicit: false, options };
   }
   if (command.startsWith("-")) throw new CliArgumentError(`未知选项：${command}`);
   throw new CliArgumentError(`未知命令：${command}`);
@@ -116,14 +122,24 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
 
 /** 解析两种等价的归档运行形式，`-xar` 与路径先后均可。 */
 function parseArchive(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
-  const values = args.filter((argument) => argument !== "-xar" && argument !== "run");
+  let optimizationLevel: OptimizationLevel = 0;
+  let optimizationExplicit = false;
+  const values = args.filter((argument) => {
+    if (argument === "-xar" || argument === "run") return false;
+    if (argument.startsWith("-O")) {
+      optimizationLevel = parseOptimizationLevel(argument);
+      optimizationExplicit = true;
+      return false;
+    }
+    return true;
+  });
   if (args.filter((argument) => argument === "-xar").length > 1 || values.length !== 1) {
     throw new CliArgumentError("-xar 需要且只需要一个归档路径");
   }
   if (!values[0].toLowerCase().endsWith(".xar")) {
     throw new CliArgumentError("-xar 的输入必须是 .xar 归档");
   }
-  return { kind: "xar", file: values[0], options };
+  return { kind: "xar", file: values[0], optimizationLevel, optimizationExplicit, options };
 }
 
 /** 返回稳定帮助文本。 */
@@ -218,8 +234,15 @@ function parseShellInit(args: readonly string[], options: GlobalCliOptions): Par
 function parseTest(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
   let project: string | undefined;
   let timeoutMs: number | undefined;
+  let optimizationLevel: OptimizationLevel = 0;
+  let optimizationExplicit = false;
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
+    if (argument.startsWith("-O")) {
+      optimizationLevel = parseOptimizationLevel(argument);
+      optimizationExplicit = true;
+      continue;
+    }
     if (argument === "--timeout") {
       const value = args[++index];
       if (value === undefined || !/^\d+$/u.test(value)) throw new CliArgumentError("test --timeout 需要非负整数毫秒");
@@ -231,24 +254,40 @@ function parseTest(args: readonly string[], options: GlobalCliOptions): ParsedCo
     if (project !== undefined) throw new CliArgumentError("test 最多接受一个项目路径");
     project = argument;
   }
-  return { kind: "test", project, timeoutMs, options };
+  return { kind: "test", project, timeoutMs, optimizationLevel, optimizationExplicit, options };
 }
 
 /** 校验 `run` 的单一源码参数。 */
 function parseRun(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
-  if (args.length !== 1) throw new CliArgumentError("run 需要且只需要一个 .xiao 文件");
-  if (!args[0].toLowerCase().endsWith(".xiao")) throw new CliArgumentError("run 的输入必须是 .xiao 文件");
-  return { kind: "run", file: args[0], options };
+  let optimizationLevel: OptimizationLevel = 0;
+  let optimizationExplicit = false;
+  const positional = args.filter((argument) => {
+    if (argument.startsWith("-O")) {
+      optimizationLevel = parseOptimizationLevel(argument);
+      optimizationExplicit = true;
+      return false;
+    }
+    return true;
+  });
+  if (positional.length !== 1) throw new CliArgumentError("run 需要且只需要一个 .xiao 文件");
+  if (!positional[0].toLowerCase().endsWith(".xiao")) throw new CliArgumentError("run 的输入必须是 .xiao 文件");
+  return { kind: "run", file: positional[0], optimizationLevel, optimizationExplicit, options };
 }
 
 /** 解析已经冻结的原生构建参数。 */
 function parseBuild(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
   let output: string | undefined;
   let llvmIrOutput: string | null = null;
-  let optimizationLevel: 0 = 0;
+  let xar = false;
+  let optimizationLevel: OptimizationLevel = 0;
+  let optimizationExplicit = false;
   const positional: string[] = [];
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
+    if (argument === "-xar") {
+      xar = true;
+      continue;
+    }
     if (argument === "-o" || argument === "--output") {
       const value = args[index + 1];
       if (!value || value.startsWith("-")) throw new CliArgumentError(`${argument} 需要一个输出路径`);
@@ -275,12 +314,10 @@ function parseBuild(args: readonly string[], options: GlobalCliOptions): ParsedC
       llvmIrOutput = value;
       continue;
     }
-    if (argument === "-O0") {
-      optimizationLevel = 0;
+    if (argument.startsWith("-O")) {
+      optimizationLevel = parseOptimizationLevel(argument);
+      optimizationExplicit = true;
       continue;
-    }
-    if (/^-O\d+$/u.test(argument) || argument.startsWith("-O")) {
-      throw new CliArgumentError(`当前只支持 -O0，不支持优化级别：${argument}`);
     }
     if (argument.startsWith("-")) throw new CliArgumentError(`build 不支持选项：${argument}`);
     positional.push(argument);
@@ -295,7 +332,9 @@ function parseBuild(args: readonly string[], options: GlobalCliOptions): ParsedC
     file,
     output: output ?? `build/${defaultName}`,
     llvmIrOutput,
+    xar,
     optimizationLevel,
+    optimizationExplicit,
     args,
     options,
   };

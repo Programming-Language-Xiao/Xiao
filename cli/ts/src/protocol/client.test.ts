@@ -336,6 +336,7 @@ describe("协议客户端", () => {
       },
     });
     await client.runSource("value = 1\n", {
+      optimizationLevel: 2,
       debug: true,
       diagnostics: { terminal_level: "trace", file_level: "debug", log_dir: "logs" },
     });
@@ -343,7 +344,7 @@ describe("协议客户端", () => {
     expect(request).toMatchObject({
       type: "run",
       optimization: {
-        level: 0,
+         level: 2,
         debug: true,
         diagnostics: { terminal_level: "trace", file_level: "debug", log_dir: "logs" },
       },

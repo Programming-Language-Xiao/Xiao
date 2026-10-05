@@ -5,6 +5,7 @@ import { basename, resolve } from "node:path";
 
 import { findProjectConfig, writeConfigValue, type ConfigEditorOptions } from "../config/editor.ts";
 import { resolveEffectiveLocale, type LocaleContext } from "../config/locale.ts";
+import { resolveOptimization } from "../config/optimization.ts";
 import { ProtocolClient, type CoreClientOptions } from "../protocol/client.ts";
 import type { ToolchainSpec } from "../protocol/messages.ts";
 import { renderCliError, renderProtocolResponse, CLI_EXIT_CODES, type DiagnosticRenderOptions, type RenderedDiagnostic } from "../diagnostics/render.ts";
@@ -207,8 +208,17 @@ async function executeTest(command: Extract<ParsedCommand, { kind: "test" }>, co
       executablePath: context.executablePath,
       spawnProcess: context.spawnProcess,
     });
+    const normalizedOptimization = await resolveOptimization({
+      cwd,
+      env: context.env,
+      cli: {
+        ...(command.optimizationExplicit ? { level: command.optimizationLevel } : {}),
+        locale: locale.tag,
+      },
+    });
     const result = await client.testSources(sources, {
       timeoutMs: command.timeoutMs ?? null,
+      optimizationLevel: normalizedOptimization.level,
       signal: context.signal,
       locale: locale.tag,
     });
@@ -242,6 +252,15 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
     return renderCliError(new CliCommandError("X11-CLI-FILE-001", `无法读取源码 ${path}：${String(error)}`, CLI_EXIT_CODES.usage, { path }), renderOptions(command.options, context));
   }
   try {
+    const normalizedOptimization = await resolveOptimization({
+      cwd,
+      env: context.env,
+      cli: {
+        ...(command.optimizationExplicit ? { level: command.optimizationLevel } : {}),
+        ...(command.options.debug ? { debugInfo: true } : {}),
+        locale: locale.tag,
+      },
+    });
     const client = new ProtocolClient({
       cwd: context.cwd,
       env: context.env,
@@ -251,6 +270,7 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
     const result = await client.runSource(source, {
       path,
       module: moduleFromPath(path),
+      optimizationLevel: normalizedOptimization.level,
       debug: command.options.debug,
       signal: context.signal,
       locale: locale.tag,
@@ -273,6 +293,15 @@ async function executeArchive(command: Extract<ParsedCommand, { kind: "xar" }>, 
   }
   const path = resolve(cwd, command.file);
   try {
+    const normalizedOptimization = await resolveOptimization({
+      cwd,
+      env: context.env,
+      cli: {
+        ...(command.optimizationExplicit ? { level: command.optimizationLevel } : {}),
+        ...(command.options.debug ? { debugInfo: true } : {}),
+        locale: locale.tag,
+      },
+    });
     const client = new ProtocolClient({
       cwd,
       env: context.env,
@@ -281,6 +310,7 @@ async function executeArchive(command: Extract<ParsedCommand, { kind: "xar" }>, 
       spawnProcess: context.spawnProcess,
     });
     const result = await client.runArchive(path, {
+      optimizationLevel: normalizedOptimization.level,
       debug: command.options.debug,
       locale: locale.tag,
       signal: context.signal,
@@ -320,6 +350,15 @@ async function executeBuild(command: Extract<ParsedCommand, { kind: "build" }>, 
   try {
     const configPath = await findProjectConfig(cwd);
     const configText = configPath === null ? null : await readFile(configPath, "utf8");
+    const normalizedOptimization = await resolveOptimization({
+      cwd,
+      env: context.env,
+      cli: {
+        ...(command.optimizationExplicit ? { level: command.optimizationLevel } : {}),
+        ...(command.options.debug ? { debugInfo: true } : {}),
+        locale: locale.tag,
+      },
+    });
     const toolchain = await discoverToolchainWithMetadata({
       cwd,
       env: context.env,
@@ -336,6 +375,7 @@ async function executeBuild(command: Extract<ParsedCommand, { kind: "build" }>, 
     const result = await client.buildSource(source, {
       path,
       module: moduleFromPath(path),
+      optimizationLevel: normalizedOptimization.level,
       output: resolve(cwd, command.output),
       llvmIrOutput: command.llvmIrOutput === null ? null : resolve(cwd, command.llvmIrOutput),
       toolchain: toolchain.toolchain,
