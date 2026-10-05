@@ -10,6 +10,15 @@ import { PassThrough, Readable } from "node:stream";
 import { runCli, writeSafely } from "./main.ts";
 import { decodePayload, encodeFrame } from "./protocol/codec.ts";
 
+/** 等待异步 CLI 会话达到指定状态，避免固定睡眠在并行测试下竞态。 */
+async function waitFor(condition: () => boolean | Promise<boolean>): Promise<void> {
+  const deadline = Date.now() + 2_000;
+  while (!await condition()) {
+    if (Date.now() >= deadline) throw new Error("CLI 会话未在期限内完成状态转换");
+    await new Promise((resolve) => setTimeout(resolve, 2));
+  }
+}
+
 /** 在 CLI 入口测试中模拟返回失败用例的核心进程。 */
 class FakeCore extends EventEmitter {
   readonly stdin = new PassThrough();
@@ -255,9 +264,9 @@ describe("CLI 入口", () => {
         stdin: input, stdout: output, stderr: new PassThrough(), cwd: directory,
         env: { NO_COLOR: "1" }, isTTY: true,
       });
-      await new Promise((resolve) => setTimeout(resolve, 5));
+      await waitFor(() => input.isRaw && input.listenerCount("data") > 0);
       input.write(Buffer.from("code\r!save!\r"));
-      await new Promise((resolve) => setTimeout(resolve, 15));
+      await waitFor(async () => await readFile(join(directory, "new.xiao"), "utf8").catch(() => null) === "code");
       input.end();
       expect(await session).toBe(0);
       expect(await readFile(join(directory, "new.xiao"), "utf8")).toBe("code");
