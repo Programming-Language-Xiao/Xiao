@@ -23,7 +23,7 @@ pub struct DifferentialObservation {
 /// 一项稳定的语义差分。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct DifferentialDifference {
-    /// 差异字段名：`output`、`error`、`exit_code` 或 `drops`。
+    /// 差异字段名：`output`、`error`、`exit_code`、`termination` 或 `drops`。
     pub field: String,
     /// 未优化基线值。
     pub baseline: String,
@@ -290,15 +290,15 @@ pub fn compare_named_observations(
     sides[1..]
         .iter()
         .flat_map(|(compared_side, compared)| {
-            compare_observations(baseline, compared).into_iter().map(|difference| {
-                NamedDifferentialDifference {
+            compare_observations(baseline, compared)
+                .into_iter()
+                .map(|difference| NamedDifferentialDifference {
                     baseline_side: (*baseline_side).to_owned(),
                     compared_side: (*compared_side).to_owned(),
                     field: difference.field,
                     baseline: difference.baseline,
                     compared: difference.optimized,
-                }
-            })
+                })
         })
         .collect()
 }
@@ -589,9 +589,8 @@ mod tests {
     use super::{
         DifferentialCase, DifferentialInput, DifferentialObservation, ThreeWayExecutionSide,
         ThreeWayObservation, compare_named_observations, compare_observations,
-        compare_three_observations, normalize_process_termination,
-        run_o0_differential_suite, run_o0_differential_suite_with,
-        run_three_way_differential_suite_with,
+        compare_three_observations, normalize_process_termination, run_o0_differential_suite,
+        run_o0_differential_suite_with, run_three_way_differential_suite_with,
     };
     use crate::OptimizationLevel;
 
@@ -601,21 +600,24 @@ mod tests {
             output: "a".to_owned(),
             error: None,
             exit_code: 0,
-            termination: String::new(),
+            termination: "exit:0".to_owned(),
             drops: vec!["v1".to_owned(), "v2".to_owned()],
         };
         let optimized = DifferentialObservation {
             output: "b".to_owned(),
             error: Some("E".to_owned()),
             exit_code: 3,
-            termination: String::new(),
+            termination: "signal:SIGILL".to_owned(),
             drops: vec!["v2".to_owned(), "v1".to_owned()],
         };
         let fields = compare_observations(&baseline, &optimized)
             .into_iter()
             .map(|difference| difference.field)
             .collect::<Vec<_>>();
-        assert_eq!(fields, vec!["output", "error", "exit_code", "drops"]);
+        assert_eq!(
+            fields,
+            vec!["output", "error", "exit_code", "termination", "drops"]
+        );
     }
 
     #[test]
@@ -625,16 +627,14 @@ mod tests {
     }
 
     #[test]
+    /// 命名比较应复用共享字段顺序并报告两侧名称。
     fn named_comparison_reuses_the_same_field_order_and_names_sides() {
         let baseline = DifferentialObservation::default();
         let changed = DifferentialObservation {
             output: "changed".to_owned(),
             ..DifferentialObservation::default()
         };
-        let differences = compare_named_observations(&[
-            ("Windows", baseline),
-            ("Linux", changed),
-        ]);
+        let differences = compare_named_observations(&[("Windows", baseline), ("Linux", changed)]);
         assert_eq!(differences.len(), 1);
         assert_eq!(differences[0].baseline_side, "Windows");
         assert_eq!(differences[0].compared_side, "Linux");
@@ -642,9 +642,13 @@ mod tests {
     }
 
     #[test]
+    /// 正常退出和信号终止不能被压成同一个占位码。
     fn process_termination_keeps_exit_and_signal_distinct() {
         assert_eq!(normalize_process_termination(Some(3), None), "exit:3");
-        assert_eq!(normalize_process_termination(None, Some("SIGINT")), "signal:SIGINT");
+        assert_eq!(
+            normalize_process_termination(None, Some("SIGINT")),
+            "signal:SIGINT"
+        );
         assert_ne!(
             normalize_process_termination(Some(-1), None),
             normalize_process_termination(None, Some("SIGINT"))

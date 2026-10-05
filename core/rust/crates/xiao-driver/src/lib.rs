@@ -12,6 +12,8 @@ mod module_loader;
 /// `-debug` 独立诊断进程与终端启动编排。
 pub mod diagnostics;
 
+/// 19B 由当前格式和 ABI 常量生成的兼容矩阵。
+mod compatibility;
 /// 前端到 LLVM 原生后端的内部构建驱动器。
 mod native;
 /// 环境包源码及其只读静态接口。
@@ -20,6 +22,12 @@ mod packages;
 pub mod protocol;
 /// 前端产物到生产 VM 的内部运行驱动器。
 mod run;
+
+/// 重导出兼容矩阵和当前版本清单。
+pub use compatibility::{
+    CompatibilityAction, CompatibilityAxis, CompatibilityCell, CompatibilityVersions,
+    compatibility_matrix, current_compatibility_versions,
+};
 
 /// 重导出统一前端公共接口。
 pub use frontend::{

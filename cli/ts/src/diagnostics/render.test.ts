@@ -183,4 +183,37 @@ describe("CLI 诊断呈现", () => {
     expect(english).toContain("native optimization backend  clang");
     expect(english).toContain("Xiao LLVM passes are not registered");
   });
+
+  test("verify 只展示 Rust 生成的发布报告字段", () => {
+    const rendered = renderProtocolResponse({
+      type: "result",
+      request_id: "verify-report",
+      operation: "verify",
+      exit_code: 0,
+      exit_name: "success",
+      diagnostics: [],
+      report: null,
+      events: [],
+      metrics: null,
+      artifact: null,
+      value: {
+        kind: "verification",
+        value: JSON.stringify({
+          kind: "xiaoc",
+          release_report: {
+            artifact_sha256: "a".repeat(64),
+            target_platform: "portable",
+            runtime_abi: { min: 1, max: 1 },
+            toolchain: "xiao-codegen-llvm/2",
+            reproducibility: { status: "not-measured" },
+            signature: { status: "unsigned" },
+          },
+        }),
+      },
+    }, { isTTY: false, color: "auto" });
+    expect(rendered.stderr).toContain("发布摘要");
+    expect(rendered.stderr).toContain("portable");
+    expect(rendered.stderr).toContain("not-measured");
+    expect(rendered.stderr).toContain("SHA-256 只保证完整性");
+  });
 });

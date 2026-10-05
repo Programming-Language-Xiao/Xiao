@@ -129,6 +129,7 @@ fn source_observation(source: &str, level: OptimizationLevel) -> Observation {
     .with_optimization_level(level)))
 }
 
+/// 将 19A 观察值映射到共享优化器差分模型。
 fn optimizer_observation(observation: &Observation) -> DifferentialObservation {
     DifferentialObservation {
         output: observation.output.clone(),
@@ -148,30 +149,39 @@ fn disagreements(sides: &[(&str, Observation)]) -> Vec<String> {
     let differences = compare_named_observations(&converted);
     let mut reports: Vec<(String, String, Vec<String>)> = Vec::new();
     for difference in differences {
-            let field = match difference.field.as_str() {
-                "output" => format!("输出 {:?} ≠ {:?}", difference.baseline, difference.compared),
-                "error" => format!("错误身份 {} ≠ {}", difference.baseline, difference.compared),
-                "exit_code" => format!("退出码 {} ≠ {}", difference.baseline, difference.compared),
-                "drops" => format!("drop 顺序 {} ≠ {}", difference.baseline, difference.compared),
-                other => format!("字段 {other}：{} ≠ {}", difference.baseline, difference.compared),
-            };
-            if let Some((baseline, compared, fields)) = reports.last_mut()
-                && baseline == &difference.baseline_side
-                && compared == &difference.compared_side
-            {
-                fields.push(field);
-            } else {
-                reports.push((
-                    difference.baseline_side,
-                    difference.compared_side,
-                    vec![field],
-                ));
-            }
+        let field = match difference.field.as_str() {
+            "output" => format!("输出 {:?} ≠ {:?}", difference.baseline, difference.compared),
+            "error" => format!("错误身份 {} ≠ {}", difference.baseline, difference.compared),
+            "exit_code" => format!("退出码 {} ≠ {}", difference.baseline, difference.compared),
+            "drops" => format!(
+                "drop 顺序 {} ≠ {}",
+                difference.baseline, difference.compared
+            ),
+            other => format!(
+                "字段 {other}：{} ≠ {}",
+                difference.baseline, difference.compared
+            ),
+        };
+        if let Some((baseline, compared, fields)) = reports.last_mut()
+            && baseline == &difference.baseline_side
+            && compared == &difference.compared_side
+        {
+            fields.push(field);
+        } else {
+            reports.push((
+                difference.baseline_side,
+                difference.compared_side,
+                vec![field],
+            ));
+        }
     }
     reports
         .into_iter()
         .map(|(baseline, compared, fields)| {
-            format!("「{baseline}」与「{compared}」不一致：{}", fields.join("；"))
+            format!(
+                "「{baseline}」与「{compared}」不一致：{}",
+                fields.join("；")
+            )
         })
         .collect()
 }
@@ -543,6 +553,7 @@ fn native_error_code(stderr: &str) -> Option<String> {
 }
 
 #[cfg(unix)]
+/// 读取 Unix 进程的退出码或信号并规范化。
 fn native_termination(status: &std::process::ExitStatus) -> String {
     use std::os::unix::process::ExitStatusExt;
     let signal = status.signal().map(|signal| format!("SIG{signal}"));
@@ -550,6 +561,7 @@ fn native_termination(status: &std::process::ExitStatus) -> String {
 }
 
 #[cfg(not(unix))]
+/// 在没有 POSIX 信号字段的平台使用退出码规范化。
 fn native_termination(status: &std::process::ExitStatus) -> String {
     normalize_process_termination(status.code(), None)
 }

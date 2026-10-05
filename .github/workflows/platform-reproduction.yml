@@ -131,3 +131,42 @@ jobs:
           path: artifacts/
           if-no-files-found: warn
           retention-days: 30
+
+  summarize:
+    name: Ordered platform evidence summary
+    if: always()
+    needs: reproduce
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download reproduction evidence
+        uses: actions/download-artifact@v7
+        with:
+          pattern: xiao-platform-reproduction-*
+          path: evidence
+
+      - name: Write ordered summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo '## Xiao platform reproduction'
+            echo
+            echo '报告顺序固定为 Windows → Linux → macOS；矩阵任务仍并行执行。'
+            echo
+            for platform in windows-amd64 linux-amd64 linux-arm64 macos-arm64; do
+              log="evidence/xiao-platform-reproduction-${platform}/${platform}.log"
+              echo "### ${platform}"
+              if [[ ! -f "$log" ]]; then
+                echo '- 状态：未核实（未找到上传日志）'
+                echo
+                continue
+              fi
+              if grep -q 'Platform reproduction completed:' "$log"; then
+                echo '- 状态：通过'
+              else
+                echo '- 状态：失败或未完成；请查看该平台原始日志'
+              fi
+              grep -E '^(runner|os|arch|platform)=|^Platform reproduction completed:' "$log" || true
+              echo
+            done
+          } >> "$GITHUB_STEP_SUMMARY"

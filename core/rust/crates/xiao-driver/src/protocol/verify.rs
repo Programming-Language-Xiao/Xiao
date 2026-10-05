@@ -11,8 +11,11 @@ use super::message::{ProtocolResponse, ProtocolValue};
 use super::run::protocol_error_response;
 use super::validate::validate_versions;
 use crate::run::ExitCode;
-use xiao_artifacts::{ArtifactStore, GlobalRecord, IndexStore, ObjectKind};
+use xiao_artifacts::{ArtifactStore, Digest256, GlobalRecord, IndexStore, ObjectKind};
 use xiao_package::CacheLayout;
+
+/// 未实现签名时必须随报告显示的完整性边界。
+const UNSIGNED_INTEGRITY_WARNING: &str = "SHA-256 只保证完整性，不代表发布者可信";
 
 /// 只验证 `.xiaoc` 或 `.xar`，不创建 VM、不执行用户代码。
 pub(super) fn verify_response(
@@ -78,6 +81,7 @@ pub(super) fn verify_response(
                     "runtime_abi_max": file.header.runtime_abi_max,
                     "detail": detail,
                     "details": details,
+                    "release_report": xiaoc_release_report(&file, &bytes),
                 })
             }
             Err(error) => {
@@ -92,19 +96,27 @@ pub(super) fn verify_response(
         "xar" => match xiao_xar::decode_xar(&bytes) {
             Ok(archive) => {
                 let details = if detail {
-                    json!({
-                        "members": archive
-                            .members()
-                            .iter()
-                            .map(|member| json!({
+                    let members = archive
+                        .members()
+                        .iter()
+                        .map(|member| {
+                            let digest = archive
+                                .read_member(&member.path)
+                                .map(|bytes| Digest256::of_bytes(&bytes).as_hex())
+                                .unwrap_or_default();
+                            json!({
                                 "path": member.path,
                                 "compression": format!("{:?}", member.compression),
                                 "compressed_size": member.compressed_size,
                                 "uncompressed_size": member.uncompressed_size,
                                 "crc32": member.crc32,
                                 "local_header_offset": member.local_header_offset,
-                            }))
-                            .collect::<Vec<_>>(),
+                                "sha256": digest,
+                            })
+                        })
+                        .collect::<Vec<_>>();
+                    json!({
+                        "members": members,
                         "entries": archive
                             .index()
                             .entries
@@ -132,6 +144,7 @@ pub(super) fn verify_response(
                     "entry": archive.index().entry,
                     "detail": detail,
                     "details": details,
+                    "release_report": xar_release_report(&archive, &bytes),
                 })
             }
             Err(error) => {
@@ -168,6 +181,121 @@ pub(super) fn verify_response(
         artifact: None,
         audit: None,
         cache: None,
+    }
+}
+
+/// 为单模块 `.xiaoc` 生成发布报告。
+fn xiaoc_release_report(file: &xiao_bytecode::XiaocFile, bytes: &[u8]) -> Value {
+    json!({
+        "schema_version": 1,
+        "artifact_sha256": Digest256::of_bytes(bytes).as_hex(),
+        "source_digest": file.metadata.source_digest,
+        "dependency_lock_digest": file.metadata.dependency_lock_digest,
+        "optimization_fingerprint": file.metadata.optimization_fingerprint,
+        "toolchain": format!("xiao-codegen-llvm/{}", xiao_codegen_llvm::CODEGEN_VERSION),
+        "xiaoc_objects": [{
+            "module_id": file.metadata.module_id,
+            "sha256": Digest256::of_bytes(bytes).as_hex(),
+            "bytes": bytes.len(),
+        }],
+        "archive_members": [],
+        "target_platform": xiaoc_platform_label(&file.metadata.platform),
+        "runtime_abi": {
+            "min": file.header.runtime_abi_min,
+            "max": file.header.runtime_abi_max,
+        },
+        "reproducibility": {
+            "status": "not-measured",
+            "allowed_differences": [],
+        },
+        "signature": {
+            "status": "unsigned",
+            "warning": UNSIGNED_INTEGRITY_WARNING,
+        },
+    })
+}
+
+/// 为已验证 `.xar` 生成发布报告。
+fn xar_release_report(archive: &xiao_xar::XarArchive, bytes: &[u8]) -> Value {
+    let index = archive.index();
+    let xiaoc_metadata = index
+        .entries
+        .iter()
+        .filter(|entry| entry.object_kind == ObjectKind::Xiaoc)
+        .filter_map(|entry| {
+            archive
+                .read_object(ObjectKind::Xiaoc, entry.digest)
+                .ok()
+                .and_then(|bytes| xiao_bytecode::decode_xiaoc(&bytes).ok())
+                .map(|file| {
+                    (
+                        file.metadata.source_digest,
+                        file.metadata.optimization_fingerprint,
+                    )
+                })
+        })
+        .collect::<Vec<_>>();
+    let xiaoc_objects = index
+        .entries
+        .iter()
+        .filter(|entry| entry.object_kind == ObjectKind::Xiaoc)
+        .map(|entry| {
+            json!({
+                "logical_path": entry.logical_path,
+                "module_id": entry.module,
+                "sha256": entry.digest.as_hex(),
+                "bytes": entry.length,
+            })
+        })
+        .collect::<Vec<_>>();
+    json!({
+        "schema_version": 1,
+        "artifact_sha256": Digest256::of_bytes(bytes).as_hex(),
+        "source_digest": xiaoc_metadata
+            .first()
+            .map_or(Value::Null, |(digest, _)| Value::String(digest.clone())),
+        "dependency_lock_digest": index.dependency_lock_digest,
+        "optimization_fingerprint": xiaoc_metadata.first().map_or_else(
+            || Value::Null,
+            |(_, fingerprint)| Value::String(fingerprint.clone()),
+        ),
+        "toolchain": xiao_xar::XAR_TOOLCHAIN_FINGERPRINT,
+        "xiaoc_objects": xiaoc_objects,
+        "archive_members": archive.members().iter().map(|member| json!({
+            "path": member.path,
+            "compressed_size": member.compressed_size,
+            "uncompressed_size": member.uncompressed_size,
+            "sha256": archive.read_member(&member.path)
+                .map(|bytes| Digest256::of_bytes(&bytes).as_hex())
+                .unwrap_or_default(),
+        })).collect::<Vec<_>>(),
+        "target_platform": index.platform,
+        "runtime_abi": {
+            "min": index.runtime_abi_min,
+            "max": index.runtime_abi_max,
+        },
+        "reproducibility": {
+            "status": "not-measured",
+            "allowed_differences": [],
+        },
+        "signature": {
+            "status": "unsigned",
+            "warning": UNSIGNED_INTEGRITY_WARNING,
+        },
+    })
+}
+
+/// 将 `.xiaoc` 平台约束转换为不含宿主路径的报告标签。
+fn xiaoc_platform_label(platform: &xiao_bytecode::XiaocPlatform) -> String {
+    match platform {
+        xiao_bytecode::XiaocPlatform::Independent => "portable".to_owned(),
+        xiao_bytecode::XiaocPlatform::Constrained { target, features } => {
+            if features.is_empty() {
+                target.clone()
+            } else {
+                format!("{target};features={}", features.join(","))
+            }
+        }
     }
 }
 

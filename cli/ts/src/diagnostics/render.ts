@@ -147,6 +147,26 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
       const summary = JSON.parse(response.value.value) as Record<string, unknown>;
       if (response.operation === "verify") {
         lines.push(cliMessage("xiao.cli.verify.success", locale, { kind: String(summary.kind ?? "artifact") }));
+        const release = isRecord(summary.release_report) ? summary.release_report : null;
+        if (release !== null) {
+          const runtime = isRecord(release.runtime_abi) ? release.runtime_abi : null;
+          const reproducibility = isRecord(release.reproducibility) ? release.reproducibility : null;
+          lines.push(cliMessage("xiao.cli.verify.digest", locale, {
+            digest: String(release.artifact_sha256 ?? "unknown"),
+          }));
+          lines.push(cliMessage("xiao.cli.verify.release", locale, {
+            platform: String(release.target_platform ?? "unknown"),
+            abi: runtime === null ? "unknown" : `${String(runtime.min ?? "?")}..${String(runtime.max ?? "?")}`,
+            toolchain: String(release.toolchain ?? "unknown"),
+          }));
+          if (reproducibility !== null) {
+            lines.push(cliMessage("xiao.cli.verify.reproducibility", locale, {
+              status: String(reproducibility.status ?? "unknown"),
+            }));
+          }
+          const signature = isRecord(release.signature) ? release.signature : null;
+          if (signature?.status === "unsigned") lines.push(cliMessage("xiao.cli.verify.unsigned", locale));
+        }
       } else {
         lines.push(cliMessage("xiao.cli.cache.status", locale, { action: String(summary.action ?? "cache"), status: String(summary.status ?? "unknown") }));
       }
