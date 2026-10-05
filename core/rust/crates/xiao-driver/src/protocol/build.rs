@@ -8,6 +8,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use serde_json::json;
+use xiao_artifacts::Digest256;
 use xiao_codegen_llvm::{CodegenOptions, TargetDescription, Toolchain, ToolchainVersions};
 use xiao_diagnostics::window::{
     DIAGNOSTIC_START_CODE, DiagnosticActivation, activation_path, write_activation,
@@ -358,6 +359,22 @@ fn finalize_build(
             return response;
         }
     };
+    let object_digest = match fs::read(&result.native.executable) {
+        Ok(bytes) => Some(Digest256::of_bytes(&bytes).as_hex()),
+        Err(error) => {
+            cleanup_after_failure(
+                &result,
+                llvm_ir_output.as_deref(),
+                staged_diagnostics_component,
+                diagnostics_component.as_deref(),
+                diagnostic_activation.as_ref(),
+            );
+            return protocol_error_response(
+                Some(request_id),
+                &ProtocolError::build(format!("无法读取已验证原生产物以计算摘要：{error}")),
+            );
+        }
+    };
 
     ProtocolResponse::Result {
         request_id,
@@ -381,6 +398,15 @@ fn finalize_build(
             uses_runtime: result.native.module.uses_runtime,
             runtime_components: result.native.module.runtime_components,
             optimization_level: result.native.optimization_level,
+            optimization_fingerprint: Some(
+                result
+                    .native
+                    .native_optimization_report
+                    .plan
+                    .fingerprint
+                    .clone(),
+            ),
+            object_digest,
             artifact_runtime: Some(protocol_artifact_runtime(&result.native.artifact_runtime)),
             diagnostic_activation,
             diagnostics_component,

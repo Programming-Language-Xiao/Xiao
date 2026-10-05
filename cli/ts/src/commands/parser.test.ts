@@ -120,4 +120,18 @@ describe("xiao 命令解析", () => {
     expect(() => parseArguments(["verify", "main.xiao"])).toThrow("X11-CLI-ARG-001");
     expect(() => parseArguments(["cache", "list", "--apply"])).toThrow("X11-CLI-ARG-001");
   });
+
+  test("18C 文件关联动作和非交互详细选项保持稳定", () => {
+    expect(parseArguments(["--json", "--non-interactive", "--verbose", "association", "install", "--platform=linux", "--xiao", "/opt/xiao"])).toMatchObject({
+      kind: "association",
+      action: "install",
+      platform: "linux",
+      executable: "/opt/xiao",
+      options: { json: true, nonInteractive: true, verbose: true },
+    });
+    expect(parseArguments(["file-association", "check"]).kind).toBe("association");
+    for (const args of [["association"], ["association", "install", "install"], ["association", "install", "--platform=freebsd"]]) {
+      expect(() => parseArguments(args)).toThrow(CliArgumentError);
+    }
+  });
 });

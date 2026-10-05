@@ -34,6 +34,16 @@ describe("18A 优化归一化", () => {
     expect(layer.passSet).toEqual(["fold", "fold"]);
   });
 
+  test("18C [debug] 配置只提供诊断设置，由 -debug 决定是否激活窗口", () => {
+    const layer = parseOptimizationLayer("[debug]\nterminal_level = \"info\"\nfile_level = \"debug\"\nlog_dir = \"logs\"\nfocus = [\n { module = \"app.net\", output = \"logs/net.log\", mirror = true }\n]\n");
+    expect(layer).toMatchObject({ diagnostics: { terminal_level: "info", file_level: "debug", log_dir: "logs", focus: [{ module: "app.net", output: "logs/net.log", mirror: true }] } });
+    const withoutActivation = normalizeOptimization({}, layer);
+    expect(withoutActivation.config.debug).toBe(false);
+    expect(withoutActivation.config.diagnostics).toMatchObject({ terminal_level: "info", file_level: "debug", log_dir: "logs", focus: [{ module: "app.net", output: "logs/net.log", mirror: true }] });
+    const activated = normalizeOptimization({}, layer, { debugInfo: true });
+    expect(activated.config.debug).toBe(true);
+  });
+
   test("归一化 O2 不写回项目配置或锁文件", async () => {
     const directory = await mkdtemp(join(tmpdir(), "xiao-optimization-side-effect-"));
     const configPath = join(directory, "config.xiao");

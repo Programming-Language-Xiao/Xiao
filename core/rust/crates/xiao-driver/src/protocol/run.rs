@@ -166,6 +166,7 @@ pub(super) fn run_archive_request_response(
     locale: Option<String>,
     path: String,
     options: RunOptions,
+    diagnostic_config: Option<DiagnosticConfig>,
     debug: bool,
     cancellation: CancellationToken,
 ) -> ProtocolResponse {
@@ -185,6 +186,7 @@ pub(super) fn run_archive_request_response(
                 effective_locale,
                 path,
                 options,
+                diagnostic_config,
                 debug,
                 cancellation,
             )
@@ -197,6 +199,7 @@ pub(super) fn run_archive_request_response(
         locale,
         path,
         options,
+        diagnostic_config,
         debug,
         cancellation,
     )
@@ -211,6 +214,7 @@ pub(super) fn run_xiaoc_request_response(
     locale: Option<String>,
     path: String,
     options: RunOptions,
+    diagnostic_config: Option<DiagnosticConfig>,
     debug: bool,
     cancellation: CancellationToken,
 ) -> ProtocolResponse {
@@ -267,10 +271,8 @@ pub(super) fn run_xiaoc_request_response(
             .map_or("", |(locale, _)| locale),
         locale.as_deref(),
     );
-    let diagnostics_options = crate::diagnostics::DiagnosticOptions {
-        locale: Some(effective_locale.effective.clone()),
-        ..Default::default()
-    };
+    let diagnostics_options =
+        diagnostic_options(diagnostic_config, Some(effective_locale.effective.clone()));
     let mut diagnostic_session = if debug || file.metadata.debug_active {
         match crate::diagnostics::DiagnosticSession::start(
             file.metadata.module_id.clone(),
@@ -367,6 +369,7 @@ fn run_archive_request_response_inner(
     locale: Option<String>,
     path: String,
     options: RunOptions,
+    diagnostic_config: Option<DiagnosticConfig>,
     debug: bool,
     cancellation: CancellationToken,
 ) -> ProtocolResponse {
@@ -447,10 +450,8 @@ fn run_archive_request_response_inner(
         Err(error) => return xar_run_error_response(request_id, path, error, None),
     };
     let debug_active = debug || archive.index().debug_activation;
-    let diagnostic_options = crate::diagnostics::DiagnosticOptions {
-        locale: Some(language.effective.clone()),
-        ..Default::default()
-    };
+    let diagnostic_options =
+        diagnostic_options(diagnostic_config, Some(language.effective.clone()));
     let mut diagnostic_session = if debug_active {
         match crate::diagnostics::DiagnosticSession::start(
             archive.index().entry.clone(),

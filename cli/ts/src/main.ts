@@ -62,6 +62,9 @@ export async function runCli(argv: readonly string[] = process.argv.slice(2), io
   let listenForInterrupt = false;
   try {
     const command = parseArguments(argv);
+    if (command.kind === "repl" && command.options.nonInteractive) {
+      throw new CliArgumentError("非交互模式不能启动交互式 REPL", "X11-CLI-NONINTERACTIVE-001");
+    }
     listenForInterrupt = controller !== undefined && command.kind !== "repl";
     if (listenForInterrupt) process.once("SIGINT", onInterrupt);
     if (command.kind === "repl" && command.options.json) {

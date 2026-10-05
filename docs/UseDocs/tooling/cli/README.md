@@ -22,6 +22,9 @@ X0-A 已验证核心协议的[长度前缀与结构化结果](protocol.md)；X0-
 X0-D 已提供 [`-debug` 诊断窗口](debug.md)：诊断事件走独立 Rust 进程和本机回环通道，
 不会污染用户程序标准输出。
 
+18C 已提供 [`.xar` 文件关联](file-association.md)：安装、检查和移除均有机器可读结果，
+并支持非交互与详细日志模式。
+
 X0-T 已接入 [`xiao test`](test.md)：它递归发现项目 `tests/**/*.xiao`，按稳定路径顺序执行，
 并返回逐用例结构化结果；它仍不替代 `cargo test` 或 `bun test`。
 

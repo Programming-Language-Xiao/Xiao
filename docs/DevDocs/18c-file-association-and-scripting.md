@@ -232,6 +232,39 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.6）
 - **不做**平台相关原生组件（规范 `:47` 末句仍是后续决策）；
 - **不擅自冻结** `optimize`/`pack`/`inspect` 的形态——18B §2.1 已定**不新增**。
 
+## 十、实施记录
+
+- `cli/ts/src/platform/file-association.ts` 现在提供独立的 `installFileAssociation`、
+  `checkFileAssociation`、`uninstallFileAssociation` 和 `manageFileAssociation`。Windows 使用
+  当前用户注册表，Linux 使用用户 `.desktop` 与 MIME 文件，macOS 使用用户 `.app` 的
+  `Info.plist` 并调用 LaunchServices；三者都复用已发现的 `xiao` 路径，检查路径只读。
+  macOS 非 macOS 主机默认拒绝真实写入，只有显式 `XIAO_ALLOW_MACOS_ASSOCIATION=1` 才能在
+  门控测试中运行，结果保留 `gated` 字段，因此没有把 macOS 写成已验证。
+- 新增 `xiao association <install|check|uninstall>`（别名 `file-association`），支持
+  `--platform`、`--xiao`、`--json`、`--verbose` 和 `--non-interactive`。机器结果只写标准输出，
+  详细记录写标准错误；无参数 REPL 在非交互模式下明确拒绝，不等待输入。关联执行体的重复
+  安装、只读检查和卸载均有测试，Linux 测试使用隔离用户目录，Windows/macOS 使用注入的
+  平台命令；macOS 的真实系统注册仍待 macOS 环境复现。
+- 18B 的源码、`.xiaoc` 和 `.xar` 运行结果继续使用实际缓存对象摘要、`cache.optimization`
+  和 `audit` 版本字段；原生构建结果追加实际 LLVM 优化计划指纹与已验证可执行文件摘要。
+  这些字段进入人类输出和 `--json`，没有在 TypeScript 重算哈希或优化指纹。
+- `[debug]` 的终端等级、文件等级、日志目录、日志文件、堆栈设置和 `focus` 聚焦规则现在作为静态配置解析，
+  与 `-debug` 的激活位合并后传给源码、`.xiaoc`、`.xar` 和构建协议；仅有 `[debug]` 不会
+  自动开窗。关联和脚本模式不改变 11X0-D 的窗口机制，GUI 子系统与 macOS 真实注册继续按
+  环境门控记录。
+- 18B 承接项已再次核对并补足 18A 实施记录：`parser.test.ts` 中
+  `["build", "main.xiao", "-O1"]` 从过时的非法断言改为合法断言，理由是 `-O1` 已冻结并实现。
+- 中断场景新增 `xiao-artifacts` 的失败读取器测试，证明对象临时文件会清理；重复执行、只读
+  索引和并发锁沿用 16A/16B/`xiao-lock` 的可证伪测试，关联层另有重复安装、检查无副作用和
+  卸载测试。没有声明 GUI 子系统或 macOS 在当前环境已验收。
+
+### 18 阶段收口评估
+
+18.1–18.8 已由 18A/18B 交付并在本批回归；18.9–18.12 已由本批关联接口、非交互 JSON、
+实际使用记录和缓存/索引破坏场景接通；18.13 的配置合并已接入，窗口本身沿用 11X0-D，
+但 macOS 真实 LaunchServices 与 Windows GUI 子系统行为仍需对应宿主环境复现。因此 18 阶段
+代码链路已收口，跨宿主发布验收继续按 10D/19 的门控口径保留待复现状态。
+
 ## 相关页面
 
 - [18. 优化与产物 CLI 接入](18-optimization-cli.md) —— **权威规范**；§平台发布、`18.9`–`18.13`

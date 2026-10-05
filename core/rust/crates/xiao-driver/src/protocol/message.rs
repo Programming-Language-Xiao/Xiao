@@ -474,6 +474,12 @@ pub struct ProtocolArtifact {
     /// 产物使用的优化级别；N0-D 基线为 `0`。
     #[serde(default)]
     pub optimization_level: u8,
+    /// 实际 LLVM 优化计划指纹。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub optimization_fingerprint: Option<String>,
+    /// 已验证原生产物文件的 SHA-256 摘要。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub object_digest: Option<String>,
     /// 链接后产物观察到的 Runtime 组成事实。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub artifact_runtime: Option<ProtocolArtifactRuntime>,

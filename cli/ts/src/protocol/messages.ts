@@ -89,6 +89,7 @@ export interface RunArchiveRequest {
   locale?: string | null;
   path: string;
   options: RunOptions;
+  diagnostics?: DiagnosticConfig | null;
   debug: boolean;
 }
 
@@ -101,6 +102,7 @@ export interface RunXiaocRequest {
   locale?: string | null;
   path: string;
   options: RunOptions;
+  diagnostics?: DiagnosticConfig | null;
   debug: boolean;
 }
 
@@ -432,6 +434,8 @@ export interface ProtocolArtifact {
   uses_runtime: boolean;
   runtime_components: string[];
   optimization_level?: number;
+  optimization_fingerprint?: string | null;
+  object_digest?: string | null;
   artifact_runtime?: ProtocolArtifactRuntime | null;
   diagnostic_activation?: ProtocolDiagnosticActivation | null;
   /** 随调试产物复制的独立诊断组件。 */

@@ -108,6 +108,12 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
     const fingerprint = typeof response.artifact.toolchain_fingerprint === "string" ? response.artifact.toolchain_fingerprint : "<unknown>";
     lines.push(cliMessage("xiao.cli.build.artifact", locale, { path: executable }));
     lines.push(cliMessage("xiao.cli.build.fingerprint", locale, { value: fingerprint }));
+    if (typeof response.artifact.optimization_fingerprint === "string") {
+      lines.push(cliMessage("xiao.cli.build.optimization", locale, { value: response.artifact.optimization_fingerprint }));
+    }
+    if (typeof response.artifact.object_digest === "string") {
+      lines.push(cliMessage("xiao.cli.build.digest", locale, { value: response.artifact.object_digest }));
+    }
     if (isRecord(response.artifact.artifact_runtime)) {
       const runtime = response.artifact.artifact_runtime;
       const format = typeof runtime.object_format === "string" ? runtime.object_format : "unknown";

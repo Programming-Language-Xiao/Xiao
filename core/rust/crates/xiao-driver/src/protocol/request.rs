@@ -277,6 +277,9 @@ pub enum ProtocolRequest {
         path: String,
         /// VM 参数。
         options: RunOptions,
+        /// `[debug]` 诊断输出配置；不单独激活窗口。
+        #[serde(default)]
+        diagnostics: Option<DiagnosticConfig>,
         /// 是否显式请求诊断会话；归档索引的激活位不会被该字段关闭。
         #[serde(default)]
         debug: bool,
@@ -296,6 +299,9 @@ pub enum ProtocolRequest {
         path: String,
         /// VM 参数。
         options: RunOptions,
+        /// `[debug]` 诊断输出配置；不单独激活窗口。
+        #[serde(default)]
+        diagnostics: Option<DiagnosticConfig>,
         /// 是否显式请求诊断会话。
         #[serde(default)]
         debug: bool,

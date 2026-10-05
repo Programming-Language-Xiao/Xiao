@@ -85,6 +85,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             locale,
             path,
             options,
+            diagnostics,
             debug,
         } => with_locale(request_id.clone(), locale.clone(), || {
             super::run::run_archive_request_response(
@@ -94,6 +95,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
                 locale,
                 path,
                 options,
+                diagnostics,
                 debug,
                 CancellationToken::new(),
             )
@@ -105,6 +107,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             locale,
             path,
             options,
+            diagnostics,
             debug,
         } => with_locale(request_id.clone(), locale.clone(), || {
             run_xiaoc_request_response(
@@ -114,6 +117,7 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
                 locale,
                 path,
                 options,
+                diagnostics,
                 debug,
                 CancellationToken::new(),
             )
@@ -674,6 +678,7 @@ fn session_worker_response(
             locale,
             path,
             options,
+            diagnostics,
             debug,
         } => with_locale(request_id.clone(), locale.clone(), || {
             super::run::run_archive_request_response(
@@ -683,6 +688,7 @@ fn session_worker_response(
                 locale,
                 path,
                 options,
+                diagnostics,
                 debug,
                 token,
             )
@@ -694,6 +700,7 @@ fn session_worker_response(
             locale,
             path,
             options,
+            diagnostics,
             debug,
         } => with_locale(request_id.clone(), locale.clone(), || {
             run_xiaoc_request_response(
@@ -703,6 +710,7 @@ fn session_worker_response(
                 locale,
                 path,
                 options,
+                diagnostics,
                 debug,
                 token,
             )
@@ -749,6 +757,7 @@ pub(super) fn worker_response(
             locale,
             path,
             options,
+            diagnostics,
             debug,
         } => with_locale(request_id.clone(), locale.clone(), || {
             super::run::run_archive_request_response(
@@ -758,6 +767,7 @@ pub(super) fn worker_response(
                 locale,
                 path,
                 options,
+                diagnostics,
                 debug,
                 token,
             )
@@ -769,6 +779,7 @@ pub(super) fn worker_response(
             locale,
             path,
             options,
+            diagnostics,
             debug,
         } => with_locale(request_id.clone(), locale.clone(), || {
             run_xiaoc_request_response(
@@ -778,6 +789,7 @@ pub(super) fn worker_response(
                 locale,
                 path,
                 options,
+                diagnostics,
                 debug,
                 token,
             )

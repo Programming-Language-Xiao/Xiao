@@ -87,6 +87,8 @@ export interface ArchiveRunOptions {
   checkpointInterval?: number;
   /** 是否显式请求诊断会话。 */
   debug?: boolean;
+  /** `[debug]` 与 `-debug` 合并后的诊断输出配置。 */
+  diagnostics?: DiagnosticConfig | null;
   /** 本次运行的规范语言。 */
   locale?: "zh-CN" | "en-US";
   /** 取消信号。 */
@@ -107,6 +109,8 @@ export interface XiaocRunOptions {
   checkpointInterval?: number;
   /** 是否显式请求诊断会话。 */
   debug?: boolean;
+  /** `[debug]` 与 `-debug` 合并后的诊断输出配置。 */
+  diagnostics?: DiagnosticConfig | null;
   /** 本次运行的规范语言。 */
   locale?: "zh-CN" | "en-US";
   /** 取消信号。 */
@@ -313,6 +317,7 @@ export class ProtocolClient {
       core_version: CORE_VERSION,
       ...(options.locale === undefined ? {} : { locale: options.locale }),
       path,
+      diagnostics: options.diagnostics ?? null,
       debug: options.debug ?? false,
       options: {
         max_call_depth: options.maxCallDepth ?? 1024,
@@ -334,6 +339,7 @@ export class ProtocolClient {
       core_version: CORE_VERSION,
       ...(options.locale === undefined ? {} : { locale: options.locale }),
       path,
+      diagnostics: options.diagnostics ?? null,
       debug: options.debug ?? false,
       options: {
         max_call_depth: options.maxCallDepth ?? 1024,

@@ -4,7 +4,7 @@
  * `OptimizationConfig` 和有效语言。13A 的 Rust 优化器仍是配置与指纹的语义来源。
  */
 
-import type { OptimizationConfig } from "../protocol/messages.ts";
+import type { DiagnosticConfig, OptimizationConfig } from "../protocol/messages.ts";
 import { readConfig, type ConfigEditorOptions, type ConfigScope } from "./editor.ts";
 import type { SupportedLocale } from "./locale.ts";
 
@@ -21,6 +21,8 @@ export interface OptimizationLayer {
   allowLto?: boolean;
   passSet?: readonly string[];
   experimentalPasses?: readonly string[];
+  /** `[debug]` 的诊断输出配置；它本身不激活窗口。 */
+  diagnostics?: DiagnosticConfig | null;
   locale?: SupportedLocale;
 }
 
@@ -97,10 +99,11 @@ export function normalizeOptimization(
   const diagnosticEvents = Boolean(pick("diagnosticEvents", false));
   const allowCpuSpecialization = Boolean(pick("allowCpuSpecialization", false));
   const allowLto = Boolean(pick("allowLto", false));
+  const diagnostics = mergeDiagnostics(global.diagnostics, project.diagnostics, cli.diagnostics);
   const config: OptimizationConfig = {
     level,
     debug: Boolean(pick("debugInfo", false)),
-    diagnostics: pick("diagnosticEvents", false) ? null : null,
+    diagnostics,
   };
   return Object.freeze({
     level,
@@ -115,17 +118,77 @@ export function normalizeOptimization(
   });
 }
 
+/** 按命令行 > 项目 > 全局逐字段合并 `[debug]`，避免项目只覆盖一个输出项时丢失其余设置。 */
+function mergeDiagnostics(...layers: readonly (DiagnosticConfig | null | undefined)[]): DiagnosticConfig | null {
+  const result: DiagnosticConfig = {};
+  let present = false;
+  for (const layer of layers) {
+    if (layer === null || layer === undefined) continue;
+    present = true;
+    if (layer.terminal_level !== undefined) result.terminal_level = layer.terminal_level;
+    if (layer.file_level !== undefined) result.file_level = layer.file_level;
+    if (layer.log_dir !== undefined) result.log_dir = layer.log_dir;
+    if (layer.log_file !== undefined) result.log_file = layer.log_file;
+    if (layer.stacktrace !== undefined) result.stacktrace = layer.stacktrace;
+    if (layer.focus !== undefined) result.focus = layer.focus;
+  }
+  return present ? result : null;
+}
+
 /** 从声明式配置文本读取本批登记的 `[optimization]` 字段；不执行文本。 */
 export function parseOptimizationLayer(text: string, path = "config.xiao"): OptimizationLayer {
   let table = "";
   const layer: OptimizationLayer = {};
   const lines = text.replaceAll("\r\n", "\n").replaceAll("\r", "\n").split("\n");
-  for (const rawLine of lines) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+    const rawLine = lines[lineIndex];
     const line = rawLine.replace(/#.*/u, "").trim();
     if (line.length === 0) continue;
     const header = /^\[([^\]]+)\]$/u.exec(line);
     if (header !== null) {
       table = header[1].trim().toLocaleLowerCase("en-US");
+      continue;
+    }
+    if (table === "debug") {
+      const entry = /^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/u.exec(line);
+      if (entry === null) throw new OptimizationConfigError("X11-CONFIG-004", `配置行无法解析：${rawLine}`, { path });
+      const [, key] = entry;
+      let rawValue = entry[2];
+      const allowed = ["terminal_level", "file_level", "log_dir", "log_file", "stacktrace", "focus"];
+      if (!allowed.includes(key)) throw new OptimizationConfigError("X11-CONFIG-001", `debug 中不支持字段：${key}`, { path, field: key });
+      if (key === "focus") {
+        while (!rawValue.endsWith("]") && lineIndex + 1 < lines.length) {
+          lineIndex += 1;
+          rawValue += lines[lineIndex].trim();
+        }
+        if (!rawValue.startsWith("[") || !rawValue.endsWith("]")) throw new OptimizationConfigError("X11-CONFIG-002", "focus 必须是字典数组", { path, field: key });
+        const focus = [...rawValue.matchAll(/\{([^{}]*)\}/gu)].map((match) => {
+          const fields = match[1];
+          const readString = (name: string): string | null => {
+            const value = new RegExp(String.raw`${name}\s*=\s*"((?:[^"\\]|\\.)*)"`, "u").exec(fields)?.[1];
+            return value === undefined ? null : value.replaceAll('\\"', '"').replaceAll("\\\\", "\\");
+          };
+          const output = readString("output");
+          if (output === null || output.length === 0) throw new OptimizationConfigError("X11-CONFIG-002", "focus.output 必须是非空字符串", { path, field: key });
+          const mirrorText = /mirror\s*=\s*(true|false)/u.exec(fields)?.[1];
+          return { module: readString("module"), source: readString("source"), output, level: readString("level"), mirror: mirrorText === "true" };
+        });
+        if (focus.length === 0 && rawValue !== "[]") throw new OptimizationConfigError("X11-CONFIG-002", "focus 必须包含字典项", { path, field: key });
+        const diagnostics = layer.diagnostics ?? {};
+        diagnostics.focus = focus;
+        layer.diagnostics = diagnostics;
+        continue;
+      }
+      const match = /^(?:"((?:[^"\\]|\\.)*)"|'([^']*)')$/u.exec(rawValue);
+      if (match === null) throw new OptimizationConfigError("X11-CONFIG-002", `${key} 必须是字符串`, { path, field: key });
+      const value = (match[1] ?? match[2] ?? "").replaceAll('\\"', '"').replaceAll("\\\\", "\\");
+      const diagnostics = layer.diagnostics ?? {};
+      if (key === "terminal_level") diagnostics.terminal_level = value;
+      if (key === "file_level") diagnostics.file_level = value;
+      if (key === "log_dir") diagnostics.log_dir = value;
+      if (key === "log_file") diagnostics.log_file = value;
+      if (key === "stacktrace") diagnostics.stacktrace = value;
+      layer.diagnostics = diagnostics;
       continue;
     }
     if (table !== "optimization") continue;

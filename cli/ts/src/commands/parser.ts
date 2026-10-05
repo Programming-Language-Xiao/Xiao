@@ -12,6 +12,10 @@ export interface GlobalCliOptions {
   json: boolean;
   /** 强制运行时诊断窗口。 */
   debug: boolean;
+  /** 不等待输入、不显示交互确认。 */
+  nonInteractive: boolean;
+  /** 输出详细过程日志到 stderr。 */
+  verbose: boolean;
 }
 
 /** 11A-E4 支持的 Shell 名称。 */
@@ -26,6 +30,7 @@ export type ParsedCommand =
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
   | { kind: "verify"; file: string; detail: boolean; options: GlobalCliOptions }
   | { kind: "cache"; action: "list" | "verify" | "rebuild" | "clean"; apply: boolean; options: GlobalCliOptions }
+  | { kind: "association"; action: "install" | "check" | "uninstall"; platform?: "win32" | "linux" | "darwin"; executable?: string; options: GlobalCliOptions }
   | { kind: "test"; project?: string; timeoutMs?: number; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
   | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; xar: boolean; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; args: readonly string[]; options: GlobalCliOptions }
   | { kind: "venv"; name?: string; options: GlobalCliOptions }
@@ -92,6 +97,7 @@ export function parseArguments(argv: readonly string[]): ParsedCommand {
   if (command === "config") return parseConfig(rest, options);
   if (command === "verify") return parseVerify(rest, options);
   if (command === "cache") return parseCache(rest, options);
+  if (command === "association" || command === "file-association") return parseAssociation(rest, options);
   if (command === "test") {
     return parseTest(rest, options);
   }
@@ -403,15 +409,55 @@ function parseCache(args: readonly string[], options: GlobalCliOptions): ParsedC
   return { kind: "cache", action: values[0] as "list" | "verify" | "rebuild" | "clean", apply, options };
 }
 
+/** 解析 `.xar` 文件关联的安装、检查和移除动作。 */
+function parseAssociation(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
+  let action: "install" | "check" | "uninstall" | undefined;
+  let platform: "win32" | "linux" | "darwin" | undefined;
+  let executable: string | undefined;
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === "install" || argument === "check" || argument === "uninstall") {
+      if (action !== undefined) throw new CliArgumentError("association 动作不可重复");
+      action = argument;
+      continue;
+    }
+    if (argument === "--platform" || argument === "--xiao") {
+      const value = args[++index];
+      if (!value || value.startsWith("-")) throw new CliArgumentError(`${argument} 需要一个值`);
+      if (argument === "--platform") {
+        if (value !== "win32" && value !== "linux" && value !== "darwin") throw new CliArgumentError("association 平台必须是 win32、linux 或 darwin");
+        platform = value;
+      } else executable = value;
+      continue;
+    }
+    if (argument.startsWith("--platform=") || argument.startsWith("--xiao=")) {
+      const [key, value] = argument.split("=", 2);
+      if (!value) throw new CliArgumentError(`${key} 需要一个值`);
+      if (key === "--platform") {
+        if (value !== "win32" && value !== "linux" && value !== "darwin") throw new CliArgumentError("association 平台必须是 win32、linux 或 darwin");
+        platform = value;
+      } else executable = value;
+      continue;
+    }
+    throw new CliArgumentError(`association 不支持选项：${argument}`);
+  }
+  if (action === undefined) throw new CliArgumentError("association 需要 install、check 或 uninstall");
+  return { kind: "association", action, ...(platform === undefined ? {} : { platform }), ...(executable === undefined ? {} : { executable }), options };
+}
+
 /** 提取颜色、JSON 等全局选项并保留其余位置参数。 */
 function parseGlobalOptions(argv: readonly string[]): { options: GlobalCliOptions; positional: string[] } {
   let color: GlobalCliOptions["color"] = "auto";
   let json = false;
   let debug = false;
+  let nonInteractive = false;
+  let verbose = false;
   const positional: string[] = [];
   for (const argument of argv) {
     if (argument === "--json") { json = true; continue; }
     if (argument === "-debug") { debug = true; continue; }
+    if (argument === "--non-interactive" || argument === "--noninteractive") { nonInteractive = true; continue; }
+    if (argument === "--verbose") { verbose = true; continue; }
     if (argument === "--color") throw new CliArgumentError("--color 必须写成 --color=auto|always|never");
     if (argument.startsWith("--color=")) {
       const candidate = argument.slice("--color=".length);
@@ -421,5 +467,5 @@ function parseGlobalOptions(argv: readonly string[]): { options: GlobalCliOption
     }
     positional.push(argument);
   }
-  return { options: { color, json, debug }, positional };
+  return { options: { color, json, debug, nonInteractive, verbose }, positional };
 }

@@ -130,6 +130,7 @@ fn direct_xiaoc_run_reuses_the_production_contract_and_verifies_bytes() {
         locale: None,
         path: path.display().to_string(),
         options: RunOptions::default(),
+        diagnostics: None,
         debug: false,
     });
     let _ = fs::remove_file(&path);
@@ -214,6 +215,7 @@ fn archive_protocol_result_carries_machine_readable_audit() {
         locale: Some("zh-CN".to_owned()),
         path: path.display().to_string(),
         options: RunOptions::default(),
+        diagnostics: None,
         debug: false,
     });
     let _ = std::fs::remove_file(&path);
@@ -290,6 +292,7 @@ fn archive_validation_error_keeps_audit_in_error_details() {
         locale: Some("zh-CN".to_owned()),
         path: path.display().to_string(),
         options: RunOptions::default(),
+        diagnostics: None,
         debug: false,
     });
     let _ = std::fs::remove_file(&path);
@@ -326,6 +329,7 @@ fn archive_debug_start_failure_rejects_before_returning_execution_events() {
         locale: Some("zh-CN".to_owned()),
         path: archive_path.display().to_string(),
         options: RunOptions::default(),
+        diagnostics: None,
         debug: false,
     });
     unsafe {

@@ -1822,6 +1822,33 @@ mod tests {
     }
 
     #[test]
+    fn interrupted_object_write_cleans_temporary_input() {
+        struct FailingReader {
+            emitted: bool,
+        }
+
+        impl Read for FailingReader {
+            fn read(&mut self, buffer: &mut [u8]) -> io::Result<usize> {
+                if self.emitted {
+                    return Err(io::Error::other("测试中断"));
+                }
+                self.emitted = true;
+                buffer[..4].copy_from_slice(b"part");
+                Ok(4)
+            }
+        }
+
+        let root = temp_root("interrupted-write");
+        let store = ArtifactStore::open(&root).unwrap();
+        let error = store
+            .put_reader(ObjectKind::Native, &mut FailingReader { emitted: false })
+            .unwrap_err();
+        assert!(matches!(error, ArtifactError::Io(_)));
+        assert_eq!(fs::read_dir(root.join("tmp")).unwrap().count(), 0);
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
     fn scan_quarantines_objects_with_invalid_names_or_shards() {
         let root = temp_root("scan-boundary");
         let store = ArtifactStore::open(&root).unwrap();

@@ -123,6 +123,7 @@ fn run_archive_missing_file_has_stable_error() {
         locale: Some("zh-CN".to_owned()),
         path: "definitely-missing-test-archive.xar".to_owned(),
         options: RunOptions::default(),
+        diagnostics: None,
         debug: false,
     });
     let ProtocolResponse::Error {
@@ -148,6 +149,7 @@ fn run_archive_honors_zero_timeout_before_reading_archive() {
             timeout_ms: Some(0),
             ..RunOptions::default()
         },
+        diagnostics: None,
         debug: false,
     });
     let ProtocolResponse::Error { error, .. } = response else {
@@ -896,6 +898,8 @@ fn artifact_runtime_facts_round_trip() {
         uses_runtime: true,
         runtime_components: vec!["value".to_owned(), "rc".to_owned()],
         optimization_level: 0,
+        optimization_fingerprint: None,
+        object_digest: None,
         artifact_runtime: Some(ProtocolArtifactRuntime {
             object_format: "coff".to_owned(),
             declared_components: vec!["value".to_owned(), "rc".to_owned()],

@@ -21,7 +21,7 @@ import { requestActivation } from "../environments/activation.ts";
 import { editShellProfile } from "../environments/profile.ts";
 import { executePackageCommand } from "../packages/index.ts";
 import { cliMessage } from "../i18n.ts";
-import { noAssociationPrompt } from "../platform/file-association.ts";
+import { manageFileAssociation, noAssociationPrompt, type AssociationPlatform } from "../platform/file-association.ts";
 
 /** 命令执行上下文；IO 由入口注入，便于管道和测试。 */
 export interface CommandContext {
@@ -90,6 +90,7 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
   if (command.kind === "xar") return executeArchive(command, context);
   if (command.kind === "verify") return executeVerify(command, context);
   if (command.kind === "cache") return executeCache(command, context);
+  if (command.kind === "association") return executeAssociation(command, context);
   if (command.kind === "config") return executeConfig(command, context);
   if (command.kind === "run" && command.file.toLocaleLowerCase("en-US").endsWith(".xiaoc")) {
     return executeXiaoc(command, context);
@@ -277,6 +278,7 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
       module: moduleFromPath(path),
       optimizationLevel: normalizedOptimization.level,
       debug: command.options.debug,
+      diagnostics: normalizedOptimization.config.diagnostics,
       signal: context.signal,
       locale: locale.tag,
     });
@@ -307,6 +309,14 @@ async function executeXiaoc(command: Extract<ParsedCommand, { kind: "run" }>, co
   }
   const path = resolve(cwd, command.file);
   try {
+    const normalizedOptimization = await resolveOptimization({
+      cwd,
+      env: context.env,
+      cli: {
+        ...(command.options.debug ? { debugInfo: true } : {}),
+        locale: locale.tag,
+      },
+    });
     const client = new ProtocolClient({
       cwd,
       env: context.env,
@@ -316,6 +326,7 @@ async function executeXiaoc(command: Extract<ParsedCommand, { kind: "run" }>, co
     });
     const result = await client.runXiaoc(path, {
       debug: command.options.debug,
+      diagnostics: normalizedOptimization.config.diagnostics,
       locale: locale.tag,
       signal: context.signal,
     });
@@ -356,6 +367,7 @@ async function executeArchive(command: Extract<ParsedCommand, { kind: "xar" }>, 
     const result = await client.runArchive(path, {
       optimizationLevel: normalizedOptimization.level,
       debug: command.options.debug,
+      diagnostics: normalizedOptimization.config.diagnostics,
       locale: locale.tag,
       signal: context.signal,
     });
@@ -424,6 +436,7 @@ async function executeBuild(command: Extract<ParsedCommand, { kind: "build" }>, 
       llvmIrOutput: command.llvmIrOutput === null ? null : resolve(cwd, command.llvmIrOutput),
       toolchain: toolchain.toolchain,
       debug: command.options.debug,
+      diagnostics: normalizedOptimization.config.diagnostics,
       configText,
       locale: locale.tag,
       signal: context.signal,
@@ -496,6 +509,31 @@ async function executeCache(command: Extract<ParsedCommand, { kind: "cache" }>, 
     return renderProtocolResponse(result.response, options);
   } catch (error) {
     return renderCliError(error, options);
+  }
+}
+
+/** 执行三平台 `.xar` 文件关联；详细日志永远写 stderr。 */
+async function executeAssociation(command: Extract<ParsedCommand, { kind: "association" }>, context: CommandContext): Promise<RenderedDiagnostic> {
+  try {
+    const result = await manageFileAssociation(command.action, {
+      platform: command.platform as AssociationPlatform | undefined,
+      executablePath: command.executable ?? context.executablePath,
+      env: context.env,
+    });
+    const payload = { ...result, exit_code: 0, exit_name: "success" };
+    const verbose = command.options.verbose
+      ? `${JSON.stringify({ type: "association_log", action: command.action, platform: result.platform, registration: result.registration, changed: result.changed })}\n`
+      : "";
+    if (command.options.json) return { stdout: `${JSON.stringify(payload)}\n`, stderr: verbose, exitCode: 0 };
+    const locale = context.locale?.tag ?? "zh-CN";
+    const status = result.installed
+      ? (result.matches ? "installed" : "mismatch")
+      : "absent";
+    const stdout = `${cliMessage("xiao.cli.association.result", locale, { action: command.action, platform: result.platform, status })}\n`;
+    const gate = result.gated ? `${cliMessage("xiao.cli.association.gated", locale)}\n` : "";
+    return { stdout: `${stdout}${gate}`, stderr: verbose, exitCode: 0 };
+  } catch (error) {
+    return renderCliError(error, renderOptions(command.options, context));
   }
 }
 
