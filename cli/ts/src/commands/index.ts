@@ -21,7 +21,7 @@ import { requestActivation } from "../environments/activation.ts";
 import { editShellProfile } from "../environments/profile.ts";
 import { executePackageCommand } from "../packages/index.ts";
 import { cliMessage } from "../i18n.ts";
-import { manageFileAssociation, noAssociationPrompt, type AssociationPlatform } from "../platform/file-association.ts";
+import { FileAssociationError, manageFileAssociation, noAssociationPrompt, type AssociationPlatform } from "../platform/file-association.ts";
 
 /** 命令执行上下文；IO 由入口注入，便于管道和测试。 */
 export interface CommandContext {
@@ -520,7 +520,21 @@ async function executeAssociation(command: Extract<ParsedCommand, { kind: "assoc
       executablePath: command.executable ?? context.executablePath,
       env: context.env,
     });
-    const payload = { ...result, exit_code: 0, exit_name: "success" };
+    const payload = {
+      type: "result",
+      request_id: "association",
+      operation: "association",
+      exit_code: 0,
+      exit_name: "success",
+      diagnostics: [],
+      report: null,
+      events: [],
+      metrics: null,
+      value: { kind: "association", value: JSON.stringify(result) },
+      artifact: null,
+      audit: null,
+      cache: null,
+    };
     const verbose = command.options.verbose
       ? `${JSON.stringify({ type: "association_log", action: command.action, platform: result.platform, registration: result.registration, changed: result.changed })}\n`
       : "";
@@ -533,6 +547,27 @@ async function executeAssociation(command: Extract<ParsedCommand, { kind: "assoc
     const gate = result.gated ? `${cliMessage("xiao.cli.association.gated", locale)}\n` : "";
     return { stdout: `${stdout}${gate}`, stderr: verbose, exitCode: 0 };
   } catch (error) {
+    if (command.options.json && error instanceof FileAssociationError) {
+      return {
+        stdout: `${JSON.stringify({
+          type: "error",
+          request_id: null,
+          error: {
+            code: error.code,
+            message_id: "x11.association.failed",
+            message: error.message.replace(`${error.code}: `, ""),
+            text: null,
+            phase: "association",
+            next_step: "检查已安装的 xiao 路径和当前用户权限",
+            details: error.details,
+          },
+          report: null,
+          exit_code: error.exitCode,
+        })}\n`,
+        stderr: "",
+        exitCode: error.exitCode,
+      };
+    }
     return renderCliError(error, renderOptions(command.options, context));
   }
 }
