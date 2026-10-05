@@ -542,6 +542,7 @@ fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
         value: None,
         artifact: None,
         audit: None,
+        cache: None,
     };
     let ProtocolResponse::Result {
         diagnostics: english,
@@ -592,6 +593,7 @@ fn run_locale_renders_known_message_and_preserves_missing_id_with_params() {
         value: None,
         artifact: None,
         audit: None,
+        cache: None,
     };
     let ProtocolResponse::Result { diagnostics, .. } = super::localize::with_locale(
         "locale-default-text".to_owned(),

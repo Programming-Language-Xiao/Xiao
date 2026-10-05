@@ -195,6 +195,21 @@ pub struct ProtocolValue {
     pub value: String,
 }
 
+/// 一次源码物化/校验的稳定缓存观察。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ProtocolCacheObservation {
+    /// `hit`、`written`、`session` 或 `fallback`。
+    pub status: String,
+    /// 对象命名空间。
+    pub object_kind: String,
+    /// 对象摘要；会话片段或编码失败时为空。
+    pub digest: Option<String>,
+    /// 是否完成完整对象校验。
+    pub verified: bool,
+    /// 回退原因。
+    pub reason: Option<String>,
+}
+
 /// REPL 中一个可登记的包根，身份包含来源与版本，不把同名包任意合并。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct ReplPackage {
@@ -316,6 +331,9 @@ pub enum ProtocolResponse {
         /// 归档运行前生成的机器可读校验记录；源码和构建结果为空。
         #[serde(default, skip_serializing_if = "Option::is_none")]
         audit: Option<xiao_xar::ArchiveAuditRecord>,
+        /// 源码 `.xiaoc` 物化和校验观察；归档/构建结果为空。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        cache: Option<ProtocolCacheObservation>,
     },
     /// 环境指纹元数据生成成功。
     EnvironmentResult {

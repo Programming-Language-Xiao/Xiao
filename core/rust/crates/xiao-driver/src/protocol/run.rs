@@ -13,6 +13,7 @@ use super::mapping::{
     exit_name, protocol_diagnostic, protocol_error_body, protocol_error_from_error, protocol_event,
     protocol_metrics, protocol_report, protocol_value,
 };
+use super::message::ProtocolCacheObservation;
 use super::message::ProtocolResponse;
 use super::request::{
     CANCELLED_ERROR_CODE, DiagnosticConfig, OptimizationConfig, ProtocolError, ProtocolTarget,
@@ -340,6 +341,7 @@ fn run_archive_request_response_inner(
             let execution = DriverExecution {
                 outcome,
                 diagnostics,
+                cache: None,
             };
             DriverOutcome::Executed(execution)
         }
@@ -611,6 +613,7 @@ fn run_response_for_operation_with_audit(
             value: None,
             artifact: None,
             audit: None,
+            cache: None,
         },
         DriverOutcome::Rejected(error) => rejected_response(request_id, exit_code, &error),
         DriverOutcome::Executed(execution) => executed_response(
@@ -778,6 +781,16 @@ fn executed_response(
         value,
         artifact: None,
         audit,
+        cache: execution
+            .cache
+            .as_ref()
+            .map(|cache| ProtocolCacheObservation {
+                status: cache.status.clone(),
+                object_kind: cache.object_kind.clone(),
+                digest: cache.digest.clone(),
+                verified: cache.verified,
+                reason: cache.reason.clone(),
+            }),
     }
 }
 

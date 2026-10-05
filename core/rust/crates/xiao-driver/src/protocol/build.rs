@@ -272,6 +272,7 @@ fn native_build_error_response(request_id: String, error: NativeDriverError) -> 
             value: None,
             artifact: None,
             audit: None,
+            cache: None,
         },
         NativeDriverError::Backend(error) => ProtocolResponse::Error {
             request_id: Some(request_id),
@@ -386,6 +387,7 @@ fn finalize_build(
             runtime_config,
         }),
         audit: None,
+        cache: None,
     }
 }
 

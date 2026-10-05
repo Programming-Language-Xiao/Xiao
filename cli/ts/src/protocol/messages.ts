@@ -279,6 +279,17 @@ export interface ResultResponse {
   artifact: unknown | null;
   /** 归档运行前的机器可读校验记录；源码和构建结果为 null。 */
   audit?: ArchiveAuditRecord | null;
+  /** 源码 `.xiaoc` 物化和校验观察；归档/构建结果为空。 */
+  cache?: CacheObservation | null;
+}
+
+/** 内容寻址缓存物化的稳定观察。 */
+export interface CacheObservation {
+  status: "hit" | "written" | "session" | "fallback" | string;
+  object_kind: string;
+  digest: string | null;
+  verified: boolean;
+  reason: string | null;
 }
 
 /** 归档启动前校验的稳定摘要；不包含路径、凭据或环境变量值。 */

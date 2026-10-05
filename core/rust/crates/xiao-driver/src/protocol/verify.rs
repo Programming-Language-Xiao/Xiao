@@ -106,6 +106,7 @@ pub(super) fn verify_response(
         }),
         artifact: None,
         audit: None,
+        cache: None,
     }
 }
 
@@ -252,6 +253,7 @@ fn cache_result(request_id: String, value: Value) -> ProtocolResponse {
         }),
         artifact: None,
         audit: None,
+        cache: None,
     }
 }
 

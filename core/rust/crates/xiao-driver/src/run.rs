@@ -7,9 +7,11 @@
 use std::fmt::{self, Display, Formatter};
 use std::time::{Duration, Instant};
 
-use xiao_bytecode::{TacProgram, lower_program};
+use xiao_artifacts::{ArtifactStore, Digest256, ObjectKind};
+use xiao_bytecode::{TacProgram, XiaocMetadata, encode_xiaoc, lower_program};
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord};
 use xiao_optimizer::OptimizationLevel;
+use xiao_package::CacheLayout;
 use xiao_vm::{
     CancellationSource, DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome,
     RunRequest as VmRunRequest, RunResult, VmEvent, VmOptions, VmSession,
@@ -346,6 +348,23 @@ pub struct DriverExecution {
     pub outcome: VmRunOutcome,
     /// 前端成功阶段保留的警告/信息诊断。
     pub diagnostics: Vec<Diagnostic>,
+    /// `.xiaoc` 物化到全局/会话缓存的机器可读观察。
+    pub cache: Option<CacheObservation>,
+}
+
+/// 一次源码物化的缓存观察；缓存失败只形成回退说明，不改变运行语义。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct CacheObservation {
+    /// `hit`、`written`、`session` 或 `fallback`。
+    pub status: String,
+    /// 对象命名空间。
+    pub object_kind: String,
+    /// 成功物化对象的摘要。
+    pub digest: Option<String>,
+    /// 是否经过完整对象校验。
+    pub verified: bool,
+    /// 回退或失败原因。
+    pub reason: Option<String>,
 }
 
 impl DriverExecution {
@@ -379,6 +398,7 @@ impl DriverExecution {
 /// 选择一个枚举而不是 `Result<RunOutcome, DriverError>`，是因为前端失败本身
 /// 不是一个可以压缩成单个错误的字符串：它必须保留完整诊断列表；同时执行后的
 /// `Error`/`Fatal` 仍需保留 VM 事件、指标和报告。调用方只需在一个位置区分三段。
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum DriverOutcome {
     /// 前端失败，没有产生可消费 IR。
@@ -589,6 +609,7 @@ impl FrontendVmDriver {
             self.reset_session();
             return DriverOutcome::Rejected(error);
         }
+        let cache = cache_xiaoc(&program, request);
         let vm_request = VmRunRequest::new(ir, &program)
             .with_options(request.options)
             .with_module_name(request.resolved_module_name())
@@ -620,7 +641,75 @@ impl FrontendVmDriver {
         DriverOutcome::Executed(DriverExecution {
             outcome,
             diagnostics,
+            cache,
         })
+    }
+}
+
+/// 将完整源码模块物化到全局内容寻址缓存；无项目根时保持会话隔离。
+fn cache_xiaoc(program: &TacProgram, request: &DriverRequest) -> Option<CacheObservation> {
+    if request.frontend.context.project_root.is_none() {
+        return Some(CacheObservation {
+            status: "session".to_owned(),
+            object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+            digest: None,
+            verified: false,
+            reason: Some("session_state".to_owned()),
+        });
+    }
+    let metadata = XiaocMetadata::new(request.resolved_module_name());
+    let bytes = match encode_xiaoc(program, metadata) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            return Some(CacheObservation {
+                status: "fallback".to_owned(),
+                object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+                digest: None,
+                verified: false,
+                reason: Some(format!("encode: {error}")),
+            });
+        }
+    };
+    let digest = Digest256::of_bytes(&bytes);
+    let store = match CacheLayout::from_environment() {
+        Ok(layout) => match ArtifactStore::open(layout.cache_root()) {
+            Ok(store) => store,
+            Err(error) => {
+                return Some(CacheObservation {
+                    status: "fallback".to_owned(),
+                    object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+                    digest: Some(digest.as_hex()),
+                    verified: false,
+                    reason: Some(format!("cache_open: {error}")),
+                });
+            }
+        },
+        Err(error) => {
+            return Some(CacheObservation {
+                status: "fallback".to_owned(),
+                object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+                digest: Some(digest.as_hex()),
+                verified: false,
+                reason: Some(format!("cache_layout: {error}")),
+            });
+        }
+    };
+    let existed = store.object_path(ObjectKind::Xiaoc, digest).is_file();
+    match store.put(ObjectKind::Xiaoc, &bytes) {
+        Ok(reference) => Some(CacheObservation {
+            status: if existed { "hit" } else { "written" }.to_owned(),
+            object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+            digest: Some(reference.digest.as_hex()),
+            verified: true,
+            reason: None,
+        }),
+        Err(error) => Some(CacheObservation {
+            status: "fallback".to_owned(),
+            object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
+            digest: Some(digest.as_hex()),
+            verified: false,
+            reason: Some(format!("cache_write: {error}")),
+        }),
     }
 }
 
