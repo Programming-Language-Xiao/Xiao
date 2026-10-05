@@ -1848,8 +1848,61 @@ mod tests {
         let _ = fs::remove_dir_all(root);
     }
 
+    const INDEX_FUZZ_ROUNDS: usize = 512;
+    const INDEX_FUZZ_MAX_INPUT: usize = 64 * 1024;
+
+    /// xorshift64*；只用于让变异可按种子重放。
+    struct FuzzRng(u64);
+
+    impl FuzzRng {
+        fn next(&mut self) -> u64 {
+            self.0 ^= self.0 >> 12;
+            self.0 ^= self.0 << 25;
+            self.0 ^= self.0 >> 27;
+            self.0.wrapping_mul(0x2545_F491_4F6C_DD1D)
+        }
+
+        fn below(&mut self, upper: usize) -> usize {
+            (self.next() % upper as u64) as usize
+        }
+    }
+
+    /// 返回变异后的字节和按顺序记录的变异步骤。
+    fn mutate_index_bytes(base: &[u8], seed: u64, round: usize) -> (Vec<u8>, Vec<String>) {
+        let mut rng = FuzzRng(seed ^ (round as u64 + 1).wrapping_mul(0x9E37_79B9));
+        let mut bytes = base.to_vec();
+        let mut steps = Vec::new();
+        for _ in 0..=rng.below(4) {
+            if bytes.is_empty() {
+                break;
+            }
+            let at = rng.below(bytes.len());
+            match rng.below(4) {
+                0 => {
+                    let mask = (rng.next() as u8) | 1;
+                    bytes[at] ^= mask;
+                    steps.push(format!("xor[{at}]^={mask:#04x}"));
+                }
+                1 => {
+                    bytes.remove(at);
+                    steps.push(format!("remove[{at}]"));
+                }
+                2 => {
+                    let value = rng.next() as u8;
+                    bytes.insert(at, value);
+                    steps.push(format!("insert[{at}]={value:#04x}"));
+                }
+                _ => {
+                    bytes.truncate(at);
+                    steps.push(format!("truncate@{at}"));
+                }
+            }
+        }
+        (bytes, steps)
+    }
+
     #[test]
-    fn deterministic_index_mutations_never_panic_or_exceed_input_bound() {
+    fn seeded_index_mutations_never_panic_and_are_rejected_without_io_errors() {
         let digest = Digest256::of_bytes(b"fuzz-index");
         let archive = ArchiveIndex {
             schema_major: INDEX_SCHEMA_MAJOR,
@@ -1884,24 +1937,42 @@ mod tests {
             }],
         };
         let seeds = [archive.encode().unwrap(), global.encode().unwrap()];
-        for (seed_index, seed) in seeds.into_iter().enumerate() {
-            for round in 0..256_usize {
-                let mut candidate = seed.clone();
-                let index = (round.wrapping_mul(19).wrapping_add(seed_index)) % candidate.len();
-                candidate[index] ^= (round as u8).wrapping_mul(17).wrapping_add(3);
-                candidate.truncate(candidate.len().min(64 * 1024));
+        assert!(
+            ArchiveIndex::decode(&seeds[0]).is_ok(),
+            "基线归档索引必须可解码"
+        );
+        assert!(
+            GlobalIndex::decode(&seeds[1]).is_ok(),
+            "基线全局索引必须可解码"
+        );
+        for (seed_index, base) in seeds.iter().enumerate() {
+            let seed = 0x0019_a004_u64 + seed_index as u64;
+            let (mut accepted, mut rejected) = (0_usize, 0_usize);
+            for round in 0..INDEX_FUZZ_ROUNDS {
+                let (candidate, steps) = mutate_index_bytes(base, seed, round);
+                assert!(candidate.len() <= INDEX_FUZZ_MAX_INPUT, "round={round}");
+                let context =
+                    format!("kind={seed_index} seed={seed:#x} round={round} steps={steps:?}");
                 let result = std::panic::catch_unwind(|| {
                     if seed_index == 0 {
-                        let _ = ArchiveIndex::decode(&candidate);
+                        ArchiveIndex::decode(&candidate).map(|_| ())
                     } else {
-                        let _ = GlobalIndex::decode(&candidate);
+                        GlobalIndex::decode(&candidate).map(|_| ())
                     }
-                });
-                assert!(
-                    result.is_ok(),
-                    "索引解析 seed={seed_index} round={round} 时 panic"
-                );
+                })
+                .unwrap_or_else(|_| panic!("索引解析 panic：{context}"));
+                match result {
+                    Ok(()) => accepted += 1,
+                    Err(ArtifactError::Io(error)) => {
+                        panic!("内存输入不应产生 IO 错误（{error}）：{context}")
+                    }
+                    Err(_) => rejected += 1,
+                }
             }
+            assert!(
+                rejected > INDEX_FUZZ_ROUNDS / 4,
+                "kind={seed_index} 变异应有相当部分被拒绝，实际 rejected={rejected} accepted={accepted}"
+            );
         }
     }
 

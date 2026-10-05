@@ -1,10 +1,12 @@
-//! 19A 四入口差分回归：源码、未优化 `.xiaoc`、优化 `.xiaoc` 和 `.xar`。
+//! 19A 多路差分回归：源码、REPL、未优化 `.xiaoc`、优化 `.xiaoc`、`.xar` 和原生。
 //!
-//! 原生 LLVM 真实产物需要 15E 的外部工具链门控；缺少工具链时由独立 ignored 用例
-//! 明确报告未覆盖，不把“少跑一路”当成通过。
+//! 比较的是可观察结果（输出、退出码、错误身份、`drop` 顺序），不是字节。不一致时
+//! 报告指出是哪两路。原生一路依赖 15E 的外部工具链：环境不齐时由独立用例写出
+//! “未覆盖”及原因，真实构建与比较放在 `#[ignore]` 用例里，不把少跑一路当成通过。
 
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 use xiao_artifacts::{
     ArchiveEntry, ArchiveIndex, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
@@ -12,12 +14,14 @@ use xiao_artifacts::{
 use xiao_bytecode::{
     XiaocMetadata, XiaocOptions, encode_xiaoc, encode_xiaoc_with_options, lower_program,
 };
+use xiao_codegen_llvm::{TargetDescription, Toolchain};
 use xiao_driver::{
-    CORE_VERSION, DriverOutcome, DriverRequest, FrontendCompiler, FrontendRequest,
-    PROTOCOL_VERSION, ProtocolRequest, ProtocolResponse, ProtocolTarget, RunOptions,
-    SourceIdentity, dispatch, run,
+    CORE_VERSION, DriverOutcome, DriverRequest, FrontendCompiler, FrontendNativeDriver,
+    FrontendRequest, FrontendVmDriver, NativeBuildRequest, PROTOCOL_VERSION, ProtocolRequest,
+    ProtocolResponse, ProtocolTarget, RunOptions, SourceIdentity, dispatch, run,
 };
 use xiao_optimizer::{OptimizationConfig, OptimizationLevel};
+use xiao_runtime::{start_release_trace, take_release_events};
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 use xiao_xar::{XarObject, encode_xar};
 
@@ -29,39 +33,162 @@ struct Observation {
     drops: Vec<String>,
 }
 
-fn source_observation(source: &str, level: OptimizationLevel) -> Observation {
-    let outcome =
-        run(&DriverRequest::new(FrontendRequest::from_text(source)).with_optimization_level(level));
-    match outcome {
-        DriverOutcome::Executed(execution) => {
-            let mut observed = Observation {
-                exit_code: if execution.outcome.result.is_success() {
-                    0
-                } else {
-                    1
-                },
-                error: execution.outcome.result.error_code().map(ToOwned::to_owned),
-                ..Observation::default()
-            };
-            for event in execution.events() {
-                match event {
-                    xiao_vm::VmEvent::IntrinsicOutput { text } => observed.output.push_str(text),
-                    xiao_vm::VmEvent::ValueReleased {
-                        scope, exit, kind, ..
-                    } => {
-                        observed.drops.push(format!("{scope}:{exit}:{kind}"));
-                    }
-                    _ => {}
-                }
+/// 一个差分用例，以及基线必须呈现的内容，防止“全是空结果”的空洞一致。
+struct Case {
+    label: &'static str,
+    source: &'static str,
+    output: &'static str,
+    error: Option<&'static str>,
+    has_drops: bool,
+}
+
+const CASES: [Case; 7] = [
+    Case {
+        label: "held-string",
+        source: "payload = \"held\"\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-array",
+        source: "values = [1, 2]\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "print",
+        source: "print(\"19A differential\")\n",
+        output: "19A differential\n",
+        error: None,
+        has_drops: false,
+    },
+    Case {
+        label: "overflow",
+        source: "def square(int value) -> int\n    return value * value\nresult = square(4000000000)\n",
+        output: "",
+        error: Some("X06-RUNTIME-009"),
+        has_drops: false,
+    },
+    Case {
+        label: "nested-finally-drops",
+        source: "def f() -> int\n    try\n        outer_try_payload = \"outer-try-payload\"\n        try\n            payload = \"inner-payload\"\n        finally\n            return 2\n    finally\n        outer_payload = \"outer-payload\"\nresult = f()\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "caught",
+        source: "payload = \"held\"\ntry\n    raise ArithmeticError(code = \"CAUGHT\")\ncatch err as ArithmeticError\n    handled = \"yes\"\nfinally\n    cleanup = \"done\"\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "unmatched",
+        source: "payload = \"held\"\nraise ArithmeticError(code = \"UNMATCHED\")\n",
+        output: "",
+        error: Some("UNMATCHED"),
+        has_drops: true,
+    },
+];
+
+fn outcome_observation(outcome: &DriverOutcome) -> Observation {
+    let mut observed = Observation {
+        exit_code: i32::from(outcome.exit_code().as_process_code()),
+        error: outcome.code().map(ToOwned::to_owned),
+        ..Observation::default()
+    };
+    if let DriverOutcome::Executed(execution) = outcome {
+        for event in execution.events() {
+            match event {
+                xiao_vm::VmEvent::IntrinsicOutput { text } => observed.output.push_str(text),
+                xiao_vm::VmEvent::ValueReleased {
+                    scope, exit, kind, ..
+                } => observed.drops.push(format!("{scope}:{exit}:{kind}")),
+                _ => {}
             }
-            observed
         }
-        other => Observation {
-            exit_code: other.exit_code().as_process_code() as i32,
-            error: other.code().map(ToOwned::to_owned),
-            ..Observation::default()
-        },
     }
+    observed
+}
+
+fn source_observation(source: &str, level: OptimizationLevel) -> Observation {
+    outcome_observation(&run(&DriverRequest::new(FrontendRequest::from_text(
+        source,
+    ))
+    .with_optimization_level(level)))
+}
+
+/// 逐字段列出两路的差异；一致时为空。
+fn field_differences(left: &Observation, right: &Observation) -> Vec<String> {
+    let mut differences = Vec::new();
+    if left.output != right.output {
+        differences.push(format!("输出 {:?} ≠ {:?}", left.output, right.output));
+    }
+    if left.error != right.error {
+        differences.push(format!("错误身份 {:?} ≠ {:?}", left.error, right.error));
+    }
+    if left.exit_code != right.exit_code {
+        differences.push(format!("退出码 {} ≠ {}", left.exit_code, right.exit_code));
+    }
+    if left.drops != right.drops {
+        differences.push(format!("drop 顺序 {:?} ≠ {:?}", left.drops, right.drops));
+    }
+    differences
+}
+
+/// 以第一路为基线，逐路比较；每条不一致都点名基线与偏离的那一路。
+fn disagreements(sides: &[(&str, Observation)]) -> Vec<String> {
+    let Some((base_name, base)) = sides.first() else {
+        return Vec::new();
+    };
+    sides[1..]
+        .iter()
+        .filter_map(|(name, observed)| {
+            let differences = field_differences(base, observed);
+            (!differences.is_empty()).then(|| {
+                format!(
+                    "「{base_name}」与「{name}」不一致：{}",
+                    differences.join("；")
+                )
+            })
+        })
+        .collect()
+}
+
+fn assert_sides_agree(case: &str, sides: &[(&str, Observation)]) {
+    let problems = disagreements(sides);
+    assert!(
+        problems.is_empty(),
+        "用例 {case}：\n{}",
+        problems.join("\n")
+    );
+}
+
+/// 基线必须真的呈现用例声明的内容，否则“一致”可能只是都为空。
+fn assert_baseline_matches_case(case: &Case, baseline: &Observation) {
+    assert_eq!(baseline.output, case.output, "{} 的基线输出", case.label);
+    assert_eq!(
+        baseline.error.as_deref(),
+        case.error,
+        "{} 的基线错误身份",
+        case.label
+    );
+    assert_eq!(
+        baseline.exit_code != 0,
+        case.error.is_some(),
+        "{} 的基线退出码",
+        case.label
+    );
+    assert_eq!(
+        !baseline.drops.is_empty(),
+        case.has_drops,
+        "{} 的基线 drop：{:?}",
+        case.label,
+        baseline.drops
+    );
 }
 
 fn materialize(source: &str, level: OptimizationLevel) -> Vec<u8> {
@@ -138,7 +265,25 @@ fn response_observation(response: ProtocolResponse) -> Observation {
                     observed.output.push_str(text);
                 }
             }
-            "value_released" => observed.drops.push(format!("{:?}", event.data)),
+            "value_released" => {
+                let field = |name: &str| {
+                    event
+                        .data
+                        .get(name)
+                        .map(|value| {
+                            value
+                                .as_str()
+                                .map_or_else(|| value.to_string(), str::to_owned)
+                        })
+                        .unwrap_or_default()
+                };
+                observed.drops.push(format!(
+                    "{}:{}:{}",
+                    field("scope"),
+                    field("exit"),
+                    field("kind")
+                ));
+            }
             _ => {}
         }
     }
@@ -164,18 +309,8 @@ fn repl_observation(source: &str) -> Observation {
     }))
 }
 
-#[test]
-fn source_bytecode_and_archive_observations_are_identical() {
-    let source = "print(\"19A differential\")\n";
-    let unoptimized = materialize(source, OptimizationLevel::O0);
-    let optimized = materialize(source, OptimizationLevel::O1);
-    let root = std::env::temp_dir().join(format!("xiao-19a-differential-{}", std::process::id()));
-    fs::create_dir_all(&root).expect("创建差分目录");
-    let unoptimized_path = root.join("unoptimized.xiaoc");
-    let optimized_path = root.join("optimized.xiaoc");
-    fs::write(&unoptimized_path, &unoptimized).expect("写入未优化产物");
-    fs::write(&optimized_path, &optimized).expect("写入优化产物");
-    let object = XarObject::from_bytes(ObjectKind::Xiaoc, optimized);
+fn write_archive(path: &Path, xiaoc: Vec<u8>) {
+    let object = XarObject::from_bytes(ObjectKind::Xiaoc, xiaoc);
     let index = ArchiveIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
         schema_minor: INDEX_SCHEMA_MINOR,
@@ -196,23 +331,87 @@ fn source_bytecode_and_archive_observations_are_identical() {
         debug_activation: false,
         language_locale: "zh-CN".to_owned(),
     };
-    let archive_path = root.join("program.xar");
-    fs::write(
-        &archive_path,
-        encode_xar(&index, &[object]).expect("编码归档"),
-    )
-    .expect("写入归档");
+    fs::write(path, encode_xar(&index, &[object]).expect("编码归档")).expect("写入归档");
+}
 
-    let baseline = source_observation(source, OptimizationLevel::O0);
-    let repl = repl_observation(source);
-    let unoptimized_observation = artifact_observation(&unoptimized_path, false);
-    let optimized_observation = artifact_observation(&optimized_path, false);
-    let archive_observation = artifact_observation(&archive_path, true);
-    assert_eq!(baseline, unoptimized_observation);
-    assert_eq!(baseline, repl);
-    assert_eq!(baseline, optimized_observation);
-    assert_eq!(optimized_observation, archive_observation);
+/// 跑完除原生外的所有路径，返回按“名称 → 观察”排列的列表，基线在最前。
+fn vm_side_observations(label: &str, source: &str) -> Vec<(&'static str, Observation)> {
+    let unoptimized = materialize(source, OptimizationLevel::O0);
+    let optimized = materialize(source, OptimizationLevel::O1);
+    let root = std::env::temp_dir().join(format!(
+        "xiao-19a-differential-{label}-{}",
+        std::process::id()
+    ));
+    fs::create_dir_all(&root).expect("创建差分目录");
+    let unoptimized_path = root.join("unoptimized.xiaoc");
+    let optimized_path = root.join("optimized.xiaoc");
+    let archive_path = root.join("program.xar");
+    fs::write(&unoptimized_path, &unoptimized).expect("写入未优化产物");
+    fs::write(&optimized_path, &optimized).expect("写入优化产物");
+    write_archive(&archive_path, optimized);
+
+    let sides = vec![
+        (
+            "源码 -O0",
+            source_observation(source, OptimizationLevel::O0),
+        ),
+        (
+            "源码 -O1",
+            source_observation(source, OptimizationLevel::O1),
+        ),
+        ("REPL", repl_observation(source)),
+        (
+            "未优化 .xiaoc",
+            artifact_observation(&unoptimized_path, false),
+        ),
+        ("优化 .xiaoc", artifact_observation(&optimized_path, false)),
+        ("优化 .xar", artifact_observation(&archive_path, true)),
+    ];
     let _ = fs::remove_dir_all(root);
+    sides
+}
+
+#[test]
+fn all_vm_sides_agree_on_every_case() {
+    for case in &CASES {
+        let sides = vm_side_observations(case.label, case.source);
+        assert_baseline_matches_case(case, &sides[0].1);
+        assert_sides_agree(case.label, &sides);
+    }
+}
+
+#[test]
+fn disagreement_report_names_the_two_sides_and_the_field() {
+    let base = Observation {
+        output: "a\n".to_owned(),
+        ..Observation::default()
+    };
+    let drifted = Observation {
+        exit_code: 1,
+        error: Some("X06-RUNTIME-009".to_owned()),
+        ..base.clone()
+    };
+    let sides = [
+        ("源码 -O0", base.clone()),
+        ("优化 .xiaoc", base),
+        ("优化 .xar", drifted),
+    ];
+    let problems = disagreements(&sides);
+    assert_eq!(problems.len(), 1, "{problems:?}");
+    assert!(problems[0].contains("「源码 -O0」"), "{problems:?}");
+    assert!(problems[0].contains("「优化 .xar」"), "{problems:?}");
+    assert!(!problems[0].contains("「优化 .xiaoc」"), "{problems:?}");
+    assert!(problems[0].contains("错误身份"), "{problems:?}");
+    assert!(problems[0].contains("退出码"), "{problems:?}");
+    assert!(!problems[0].contains("输出"), "{problems:?}");
+}
+
+#[test]
+fn baseline_check_rejects_a_vacuous_agreement() {
+    let case = &CASES[2];
+    let empty = Observation::default();
+    let result = std::panic::catch_unwind(|| assert_baseline_matches_case(case, &empty));
+    assert!(result.is_err(), "没有 drop 的基线不应被接受为该用例的基线");
 }
 
 #[test]
@@ -259,10 +458,217 @@ fn xiaoc_summaries_are_reproducible_and_level_debug_distinct() {
     );
 }
 
+const NATIVE_ENV: [&str; 3] = ["XIAO_CLANG", "XIAO_RUNTIME_LIBRARY", "XIAO_TARGET_TRIPLE"];
+
+/// 原生一路缺少哪些 15E 环境变量；为空表示可以构建。
+fn missing_native_environment() -> Vec<&'static str> {
+    NATIVE_ENV
+        .iter()
+        .copied()
+        .filter(|name| std::env::var_os(name).is_none())
+        .collect()
+}
+
+/// 原生一路的覆盖状态，供人读和断言共用。
+fn native_coverage_report(missing: &[&str]) -> String {
+    if missing.is_empty() {
+        "原生一路：已配置 15E 环境，由 ignored 用例实际构建并比较".to_owned()
+    } else {
+        format!(
+            "原生一路：未覆盖。缺少环境变量 {}；准备方式见 10D §4，\
+             运行 `cargo test -p xiao-driver --test d19a_differential -- --ignored` 以覆盖",
+            missing.join("、")
+        )
+    }
+}
+
 #[test]
-#[ignore = "需要 XIAO_CLANG、XIAO_LLVM_AS、XIAO_RUNTIME_LIBRARY、XIAO_TARGET_TRIPLE 和 XIAO_DIAGNOSTICS_PATH；由 15E 环境门控"]
-fn native_fourth_side_is_explicitly_covered_when_toolchain_is_provided() {
-    assert!(std::env::var_os("XIAO_CLANG").is_some());
-    assert!(std::env::var_os("XIAO_TARGET_TRIPLE").is_some());
-    assert_eq!(xiao_runtime_abi::ABI_ENCODED_VERSION, ABI_ENCODED_VERSION);
+fn native_side_reports_coverage_instead_of_silently_skipping() {
+    let report = native_coverage_report(&missing_native_environment());
+    eprintln!("[19A 差分] {report}");
+    assert!(report.starts_with("原生一路："));
+    let simulated = native_coverage_report(&["XIAO_CLANG", "XIAO_TARGET_TRIPLE"]);
+    assert!(simulated.contains("未覆盖"), "{simulated}");
+    assert!(simulated.contains("XIAO_CLANG"), "{simulated}");
+    assert!(simulated.contains("XIAO_TARGET_TRIPLE"), "{simulated}");
+    assert!(!simulated.contains("XIAO_RUNTIME_LIBRARY"), "{simulated}");
+}
+
+fn configured_native() -> (TargetDescription, Toolchain) {
+    let runtime =
+        PathBuf::from(std::env::var_os("XIAO_RUNTIME_LIBRARY").expect("XIAO_RUNTIME_LIBRARY"));
+    assert!(
+        runtime.is_file(),
+        "XIAO_RUNTIME_LIBRARY 必须指向已构建的 staticlib"
+    );
+    let target = TargetDescription::host();
+    assert_eq!(
+        std::env::var("XIAO_TARGET_TRIPLE").expect("XIAO_TARGET_TRIPLE"),
+        target.triple,
+        "XIAO_TARGET_TRIPLE 必须与当前 Rust 编译目标一致"
+    );
+    let rustc = std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
+    let toolchain = Toolchain::new(std::env::var_os("XIAO_CLANG").expect("XIAO_CLANG"))
+        .with_runtime_library(runtime)
+        .probe_native_static_libraries(rustc, &target)
+        .expect("rustc 应报告 Runtime staticlib 的原生库清单");
+    (target, toolchain)
+}
+
+fn native_error_code(stderr: &str) -> Option<String> {
+    let line = stderr
+        .lines()
+        .find(|line| line.starts_with("xiao-error "))?;
+    let (_, rest) = line.split_once(" code=")?;
+    Some(rest.split_once(' ')?.0.to_owned())
+}
+
+fn release_tuples(text: &str) -> Vec<String> {
+    text.lines()
+        .filter(|line| !line.trim().is_empty())
+        .map(|line| line.replace('\t', ":"))
+        .collect()
+}
+
+/// 原生后端已知与 VM 不一致的用例。缺口属于 15 阶段，本批只登记，不修。
+enum NativeGap {
+    /// 原生构建以 `Unsupported` 拒绝，`feature` 是拒绝信息里必须出现的片段。
+    BuildUnsupported { feature: &'static str },
+    /// 原生能构建，但可观察结果与 VM 不同。
+    Diverges { reason: &'static str },
+}
+
+fn native_gap(label: &str) -> Option<NativeGap> {
+    match label {
+        "overflow" => Some(NativeGap::Diverges {
+            reason: "原生整数溢出以非法指令终止，没有 xiao-error 机器摘要，退出码不是 3",
+        }),
+        "nested-finally-drops" => Some(NativeGap::BuildUnsupported {
+            feature: "动态模块中的函数或导入语句",
+        }),
+        "caught" | "unmatched" => Some(NativeGap::BuildUnsupported {
+            feature: "动态 intrinsic ArithmeticError",
+        }),
+        _ => None,
+    }
+}
+
+#[test]
+#[ignore = "需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
+fn native_side_matches_the_vm_sides_on_every_case() {
+    let missing = missing_native_environment();
+    assert!(missing.is_empty(), "{}", native_coverage_report(&missing));
+    let (target, toolchain) = configured_native();
+    let mut problems = Vec::new();
+    let mut uncovered = Vec::new();
+
+    for case in &CASES {
+        let gap = native_gap(case.label);
+        let frontend_request = FrontendRequest::from_text(case.source);
+        let artifact = FrontendCompiler::new()
+            .compile(&frontend_request)
+            .expect("差分源码应通过前端");
+        let root = std::env::temp_dir().join(format!(
+            "xiao-19a-native-{}-{}",
+            case.label,
+            std::process::id()
+        ));
+        fs::create_dir_all(&root).expect("创建原生差分目录");
+        let output = root.join(if cfg!(windows) {
+            "program.exe"
+        } else {
+            "program"
+        });
+        let request = NativeBuildRequest::new(
+            frontend_request.clone(),
+            target.clone(),
+            toolchain.clone(),
+            &output,
+        );
+        let native = match FrontendNativeDriver::new().build_artifact(&artifact, &request) {
+            Ok(native) => native,
+            Err(error) => {
+                let text = format!("{error:?}");
+                match gap {
+                    Some(NativeGap::BuildUnsupported { feature }) if text.contains(feature) => {
+                        uncovered.push(format!("{}：原生构建拒绝（{feature}）", case.label));
+                    }
+                    _ => problems.push(format!("用例 {}：原生构建失败：{text}", case.label)),
+                }
+                let _ = fs::remove_dir_all(root);
+                continue;
+            }
+        };
+
+        let trace_guard = start_release_trace();
+        let vm =
+            FrontendVmDriver::new().run_artifact(&artifact, &DriverRequest::new(frontend_request));
+        let vm_release = take_release_events();
+        drop(trace_guard);
+        let baseline = outcome_observation(&vm);
+
+        let trace_path = root.join("release-events.tsv");
+        let run_output = Command::new(&native.native.executable)
+            .env("XIAO_RUNTIME_RELEASE_TRACE_PATH", &trace_path)
+            .output()
+            .expect("应能启动原生程序");
+        let stderr = String::from_utf8_lossy(&run_output.stderr);
+        let native_side = Observation {
+            output: String::from_utf8_lossy(&run_output.stdout).into_owned(),
+            error: native_error_code(&stderr),
+            exit_code: run_output.status.code().unwrap_or(-1),
+            drops: Vec::new(),
+        };
+        let vm_side = Observation {
+            drops: Vec::new(),
+            ..baseline
+        };
+        let mut case_problems = Vec::new();
+        let found = disagreements(&[("VM（源码）", vm_side), ("原生", native_side)]);
+        if !found.is_empty() {
+            let first_line = stderr.lines().next().unwrap_or_default();
+            case_problems.push(format!(
+                "{}（原生 stderr 首行：{first_line:?}）",
+                found.join("；")
+            ));
+        }
+
+        let vm_tuples = vm_release
+            .iter()
+            .map(|event| {
+                format!(
+                    "{}:{}:{}",
+                    event.sequence,
+                    event.object_id,
+                    event.action.as_str()
+                )
+            })
+            .collect::<Vec<_>>();
+        let native_tuples = release_tuples(&fs::read_to_string(&trace_path).unwrap_or_default());
+        if vm_tuples != native_tuples {
+            case_problems.push(format!(
+                "「VM（源码）」与「原生」的 Runtime 释放序列不一致：{vm_tuples:?} ≠ {native_tuples:?}"
+            ));
+        }
+        let _ = fs::remove_dir_all(root);
+
+        match gap {
+            Some(NativeGap::Diverges { reason }) if !case_problems.is_empty() => {
+                uncovered.push(format!("{}：{reason}", case.label));
+            }
+            Some(_) => problems.push(format!(
+                "用例 {}：登记的原生缺口已不存在（原生构建并与 VM 一致），请从 native_gap 中移除",
+                case.label
+            )),
+            None => problems.extend(
+                case_problems
+                    .into_iter()
+                    .map(|problem| format!("用例 {}：{problem}", case.label)),
+            ),
+        }
+    }
+    for line in &uncovered {
+        eprintln!("[19A 差分] 原生未覆盖 {line}");
+    }
+    assert!(problems.is_empty(), "\n{}", problems.join("\n"));
 }

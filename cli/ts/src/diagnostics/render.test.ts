@@ -145,4 +145,42 @@ describe("CLI 诊断呈现", () => {
     expect(rendered.stderr).toContain("COFF 导出表未验证裁剪");
     expect(rendered.stderr).not.toContain("undefined");
   });
+
+  test("原生构建如实标注优化由 clang 完成、Xiao Pass 是否注册", () => {
+    const build = (passesRegistered: boolean) => ({
+      type: "result" as const,
+      request_id: "build-backend",
+      operation: "build",
+      exit_code: 0,
+      exit_name: "success",
+      diagnostics: [],
+      report: null,
+      events: [],
+      metrics: null,
+      value: null,
+      artifact: {
+        executable: "build/main.exe",
+        llvm_ir_output: null,
+        toolchain_fingerprint: "xiao-fnv1a64-test",
+        optimization_level: 2,
+        optimization_backend: "clang",
+        xiao_passes_registered: passesRegistered,
+      },
+    });
+    const options = { isTTY: false, color: "auto" as const };
+
+    const unregistered = renderProtocolResponse(build(false), options).stderr;
+    expect(unregistered).toContain("原生优化后端  clang");
+    expect(unregistered).toContain("Xiao LLVM Pass 尚未注册");
+    expect(unregistered).not.toContain("Xiao Pass 已注册");
+
+    const registered = renderProtocolResponse(build(true), options).stderr;
+    expect(registered).toContain("原生优化后端  clang");
+    expect(registered).toContain("Xiao Pass 已注册");
+    expect(registered).not.toContain("尚未注册");
+
+    const english = renderProtocolResponse(build(false), { ...options, locale: "en-US" }).stderr;
+    expect(english).toContain("native optimization backend  clang");
+    expect(english).toContain("Xiao LLVM passes are not registered");
+  });
 });

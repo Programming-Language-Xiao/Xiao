@@ -45,9 +45,16 @@
 调用 `as_process_code()` 完成。契约测试位于 `tests/b0_d_exit_codes.rs`。
 
 18B 将 13A/14B 字节码优化管线接入非零 `OptimizationLevel` 的生产运行路径；O0 保留
-既有验证基线，O1--O3 执行标准保守 Pass 后再进入同一 VM。LLVM 原生构建在 Pass 注册完成
-前会以 `passes_not_registered` 结构化拒绝。协议另提供只验证产物的 `verify` 和 16B 两阶段
-缓存维护的 `cache` 操作，CLI 不复制哈希、ZIP 或 `.xiaoc` 校验逻辑。
+既有验证基线，O1--O3 执行标准保守 Pass 后再进入同一 VM。LLVM 原生构建 O1--O3 由 clang
+的 `-O{n}` 优化，协议产物以 `optimization_backend="clang"` 和
+`xiao_passes_registered=false` 标明 Xiao 自己的 LLVM Pass 尚未注册。协议另提供只验证
+产物的 `verify` 和 16B 两阶段缓存维护的 `cache` 操作，CLI 不复制哈希、ZIP 或 `.xiaoc`
+校验逻辑。
+
+19A 的差分与回归测试位于 `tests/d19a_differential.rs`（源码、REPL、`.xiaoc`、`.xar` 多路比较，
+不一致时点名是哪两路；原生一路需 15E 环境变量，缺失时写出“未覆盖”及原因）和
+`tests/d19a_regression.rs`（溢出、动态值、容器路径、drop、模块初始化、跨线程诊断，各样本在
+`-O0`..`-O3` 下逐级比较）。
 
 ## 10A 前端到 LLVM 内部驱动器
 

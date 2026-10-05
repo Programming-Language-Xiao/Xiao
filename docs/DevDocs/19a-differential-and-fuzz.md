@@ -213,10 +213,61 @@ docs/DevDocs/18c-*.md 与 18b-*.md        逐条收口评估与四入口结论�
 - 新增 `d19a_differential.rs`，把同一源码依次运行源码、未优化 `.xiaoc`、优化 `.xiaoc`
   和 `.xar`，比较输出、错误、退出码和释放事件；原生真实产物侧保留独立 `#[ignore]`
   门控用例，缺少 15E 的环境变量时明确显示“未覆盖”，不会静默少跑一路。
-- 新增四组无新依赖的确定性变异测试：IR JSON（seed `0x19a01`）、`.xiaoc`（seed
-  `0x19a02`）、Protobuf 归档/全局索引（固定 `fuzz-index`）和 `.xar`（seed `0x19a03`）。
-  每组限制输入大小和 256 轮变异，目标是解析拒绝稳定且不 panic/越界/无界分配；重放命令
-  登记在 `tests/fuzz/README.md`。
+- 四组无新依赖的种子驱动变异测试：IR JSON（`0x19a001`）、`.xiaoc`（`0x19a002`）、
+  `.xar`（`0x19a003`）、Protobuf 归档/全局索引（`0x19a004`/`0x19a005`）。每组先断言基线能
+  解码，再做 512 轮多步变异（翻转、删除、插入、截断、填充），失败信息带种子、轮次和变异
+  步骤；拒绝必须有类别（IR 只能是 `Decode`/`UnsupportedVersion`，`.xiaoc` 必须带
+  `XIAOC-nnn` 稳定码，`.xar` 与索引不得出现 `Io` 错误），且被拒绝的变异必须占多数，防止
+  变异器退化。重放命令登记在 `tests/fuzz/README.md`。
+- 修正了初版模糊测试的两处问题：IR 基线 JSON 缺少 `IrProgram` 必填字段，所有变异在第一步
+  就被拒绝，等于什么都没测；测试名声称“不无界分配”，但只断言了输入长度。现在 IR 基线取自
+  `IrProgram::new(..).to_json()`，“不无界分配”的说法已删除，因为并没有测量过解析期的内存。
+- 19.3 新增 `xiao-types/tests/d19a_fixed_random.rs`（12 个用例）：期望值由独立的 BigInt
+  xorshift64* 实现算出，不取自被测实现；覆盖种子折叠、零种子回退、两种放回模式的抽取
+  顺序、错误边界不消耗随机数、`reseed` 重放。
+- 19.4 新增 `xiao-driver/tests/d19a_regression.rs`：溢出（`X06-RUNTIME-009`）、字符串转布尔
+  （`X06-RUNTIME-002`）、容器路径三类编译期错误（`X03-TYPE-003/004/005`）、drop 序列、模块
+  初始化复用与失败不缓存，每个样本在 `-O0`..`-O3` 下逐级比较。
+- 差分套件扩到 7 个用例（输出、溢出、嵌套 finally 的 drop、被捕获错误、未匹配错误、
+  持有字符串、持有数组），比较源码 `-O0/-O1`、REPL、未优化/优化 `.xiaoc`、`.xar`；每个用例
+  的基线必须真的呈现声明的输出、错误和 drop，防止“都是空结果”式的一致；不一致时报告写明
+  「A」与「B」哪两路、哪个字段。
+- 数据竞争：源码层没有能触发 `X06-RUNTIME-010` 的语法，VM 也不执行 `data_race` 检查，
+  只有 TAC 的 `Check{kind:"data_race"}` 分类。回归集因此只固定了诊断本身的身份（码、消息
+  键、类别），没有源码级样本；这一项不能算“已覆盖数据竞争行为”。
+
+### 本批发现、未修复的缺口（按规范回到对应阶段）
+
+- 生产路径拒绝 `finally` 内无条件 `return`/`raise`：`-O0` 报 `X09-BYTECODE-002`
+  （`finally 子程序没有可达 RetFromSub`），`-O1`–`-O3` 在优化前验证处换成
+  `X09-DRIVER-OPT-001`；研究路径的 VM 用例（`r2_stack.rs`）能跑通同一源码。回归样本
+  已写成 `#[ignore]` 用例 `finally_with_unconditional_exit_runs_in_production`，归 14 阶段。
+- 模块初始化中 `raise ArithmeticError(code = "BROKEN")` 对外报 `X06-RUNTIME-012`，用户给的
+  `BROKEN` 没有保留；回归用例只固定了“各级别一致且带稳定码”，未断言 `BROKEN`。是否属于
+  预期还需要 09/11 的维护者确认。
+- 原生后端：`ArithmeticError` 动态 intrinsic 与函数定义被 `Unsupported` 拒绝，整数溢出以
+  非法指令终止而不是 `xiao-error` 摘要。`n0_a_native_driver.rs` 的两个 ignored 用例在
+  本机同样失败，与本批改动无关。差分用例以 `native_gap` 登记为“未覆盖”并写明原因，缺口
+  消失时会报错提醒摘除登记。
+
+### 本机实跑清单（2026-10-06，Windows 11，`x86_64-pc-windows-msvc`）
+
+- 默认门禁已跑：`cargo test --workspace`（137 组结果，无失败）、
+  `cargo clippy --workspace --all-targets -- -D warnings`、`bun test`（286 通过、5 跳过）、
+  `bun run check`（退出码 0，含 `Cargo.lock` 无差异）。
+- 原生 ignored 用例 `native_side_matches_the_vm_sides_on_every_case` 已在本机实跑：
+  `print`、`held-string`、`held-array` 与 VM 的输出、退出码、错误身份、Runtime 释放序列
+  一致；`overflow`、`nested-finally-drops`、`caught`、`unmatched` 为已登记缺口。
+- 准备方式：按 10D §4 用 pwsh 导入 `vcvars64.bat`，再设置 `XIAO_CLANG`、`XIAO_LLVM_AS`、
+  `XIAO_LLC`、`XIAO_STRIP`、`XIAO_TARGET_TRIPLE=x86_64-pc-windows-msvc`，先
+  `cargo build --release -p xiao-runtime`，`XIAO_RUNTIME_LIBRARY` 指向
+  `core/rust/target/release/xiao_runtime.lib`，然后
+  `cargo test -p xiao-driver --test d19a_differential -- --ignored --nocapture`。
+- 本机未复现：macOS 与 Linux 的原生路径，以及 Windows GUI 子系统开窗。这些在 CI 平台复现
+  工作流下的结果本批没有核对，不在此声明为已验证。
+- 比较器说明：`d19a_differential.rs` 里的 `disagreements` 是在该测试文件内沿用其原有
+  `Observation` 模型扩出来的点名比较，没有复用 13B/14B `xiao-optimizer` 的差分模块；§2.2
+  “不另写比较器”在这一点上没有完全做到，后续可评估是否合并。
 - 18C 的 18 阶段收口结论已由 18C 逐条记录；四入口一致性新增 `d19a_differential` 的
   源码/字节码/归档回归，原生一路在无工具链时明确 ignored。macOS 真实注册和 Windows
   GUI 子系统继续按 10D/19 的宿主门控口径保留待复现。
