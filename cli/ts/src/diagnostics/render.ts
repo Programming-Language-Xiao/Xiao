@@ -81,6 +81,27 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
     // 表格只展示稳定字段，指标本身不参与退出判断。
     lines.push(renderTable(rows));
   }
+  if (response.type === "result" && response.cache !== null && isRecord(response.cache)) {
+    const locale = options.locale ?? "zh-CN";
+    const status = typeof response.cache.status === "string" ? response.cache.status : "unknown";
+    const kind = typeof response.cache.object_kind === "string" ? response.cache.object_kind : "unknown";
+    const digest = typeof response.cache.digest === "string" ? response.cache.digest : "-";
+    const verified = response.cache.verified === true ? "verified" : "unverified";
+    lines.push(`${cliMessage("xiao.cli.cache.observation", locale, { status, kind, digest, verified })}`);
+    if (response.cache.recompiled === true) {
+      const reason = typeof response.cache.recompile_reason === "string"
+        ? response.cache.recompile_reason
+        : "unknown";
+      lines.push(`${cliMessage("xiao.cli.cache.recompiled", locale, { reason })}`);
+    }
+    if (isRecord(response.cache.optimization)) {
+      const optimization = response.cache.optimization;
+      const level = typeof optimization.level === "number" ? optimization.level : 0;
+      const passes = Array.isArray(optimization.passes) ? optimization.passes : [];
+      const applied = passes.filter((pass) => isRecord(pass) && pass.status === "applied").length;
+      lines.push(`${cliMessage("xiao.cli.optimization.report", locale, { level, applied, total: passes.length })}`);
+    }
+  }
   if (response.type === "result" && response.operation === "build" && response.artifact !== null && isRecord(response.artifact) && response.exit_code === 0) {
     const locale = options.locale ?? "zh-CN";
     const executable = typeof response.artifact.executable === "string" ? response.artifact.executable : "<unknown>";

@@ -11,7 +11,7 @@ use super::message::{ProtocolResponse, ProtocolValue};
 use super::run::protocol_error_response;
 use super::validate::validate_versions;
 use crate::run::ExitCode;
-use xiao_artifacts::ArtifactStore;
+use xiao_artifacts::{ArtifactStore, GlobalRecord, IndexStore, ObjectKind};
 use xiao_package::CacheLayout;
 
 /// 只验证 `.xiaoc` 或 `.xar`，不创建 VM、不执行用户代码。
@@ -43,16 +43,43 @@ pub(super) fn verify_response(
         .to_ascii_lowercase();
     let summary = match lower.as_str() {
         "xiaoc" => match xiao_bytecode::decode_xiaoc(&bytes) {
-            Ok(file) => json!({
-                "kind": "xiaoc",
-                "valid": true,
-                "bytes": bytes.len(),
-                "format_major": file.header.format_major,
-                "format_minor": file.header.format_minor,
-                "runtime_abi_min": file.header.runtime_abi_min,
-                "runtime_abi_max": file.header.runtime_abi_max,
-                "detail": detail,
-            }),
+            Ok(file) => {
+                let details = if detail {
+                    match xiao_bytecode::inspect_xiaoc(&bytes) {
+                        Ok(inspection) => json!({
+                            "module_id": inspection.module_id,
+                            "optimization_fingerprint": inspection.optimization_fingerprint,
+                            "dependency_lock_digest": inspection.dependency_lock_digest,
+                            "sections": inspection
+                                .sections
+                                .into_iter()
+                                .map(|(name, bytes)| json!({ "name": name, "bytes": bytes }))
+                                .collect::<Vec<_>>(),
+                        }),
+                        Err(error) => {
+                            return verification_error(
+                                request_id,
+                                &path,
+                                "X11-VERIFY-002",
+                                format!("`.xiaoc` 详细校验失败：{error}"),
+                            );
+                        }
+                    }
+                } else {
+                    Value::Null
+                };
+                json!({
+                    "kind": "xiaoc",
+                    "valid": true,
+                    "bytes": bytes.len(),
+                    "format_major": file.header.format_major,
+                    "format_minor": file.header.format_minor,
+                    "runtime_abi_min": file.header.runtime_abi_min,
+                    "runtime_abi_max": file.header.runtime_abi_max,
+                    "detail": detail,
+                    "details": details,
+                })
+            }
             Err(error) => {
                 return verification_error(
                     request_id,
@@ -63,16 +90,50 @@ pub(super) fn verify_response(
             }
         },
         "xar" => match xiao_xar::decode_xar(&bytes) {
-            Ok(archive) => json!({
-                "kind": "xar",
-                "valid": true,
-                "bytes": bytes.len(),
-                "members": archive.members().len(),
-                "index_schema_major": archive.index().schema_major,
-                "index_schema_minor": archive.index().schema_minor,
-                "entry": archive.index().entry,
-                "detail": detail,
-            }),
+            Ok(archive) => {
+                let details = if detail {
+                    json!({
+                        "members": archive
+                            .members()
+                            .iter()
+                            .map(|member| json!({
+                                "path": member.path,
+                                "compression": format!("{:?}", member.compression),
+                                "compressed_size": member.compressed_size,
+                                "uncompressed_size": member.uncompressed_size,
+                                "crc32": member.crc32,
+                                "local_header_offset": member.local_header_offset,
+                            }))
+                            .collect::<Vec<_>>(),
+                        "entries": archive
+                            .index()
+                            .entries
+                            .iter()
+                            .map(|entry| json!({
+                                "logical_path": entry.logical_path,
+                                "object_kind": entry.object_kind.as_str(),
+                                "digest": entry.digest.as_hex(),
+                                "module": entry.module,
+                                "target": entry.target,
+                                "length": entry.length,
+                            }))
+                            .collect::<Vec<_>>(),
+                    })
+                } else {
+                    Value::Null
+                };
+                json!({
+                    "kind": "xar",
+                    "valid": true,
+                    "bytes": bytes.len(),
+                    "members": archive.members().len(),
+                    "index_schema_major": archive.index().schema_major,
+                    "index_schema_minor": archive.index().schema_minor,
+                    "entry": archive.index().entry,
+                    "detail": detail,
+                    "details": details,
+                })
+            }
             Err(error) => {
                 return verification_error(
                     request_id,
@@ -132,19 +193,68 @@ pub(super) fn cache_response(
         }
     };
     let cache_root = layout.cache_root();
+    if !matches!(action.as_str(), "list" | "verify" | "rebuild" | "clean") {
+        return cache_error(
+            request_id,
+            "X11-CACHE-006",
+            format!("不支持的 cache 操作：{action}"),
+        );
+    }
+    if apply && action != "clean" {
+        return cache_error(
+            request_id,
+            "X11-CACHE-007",
+            "只有 cache clean 支持 --apply".to_owned(),
+        );
+    }
     if action == "list" {
+        let store = ArtifactStore::open_read_only(&cache_root);
+        let mut inventories = Vec::new();
+        for kind in object_kinds() {
+            match store.inventory(kind) {
+                Ok(inventory) => inventories.push(json!({
+                    "kind": inventory.kind.as_str(),
+                    "verified_count": inventory.verified_count,
+                    "invalid_count": inventory.invalid_count,
+                    "verified_bytes": inventory.verified_bytes,
+                })),
+                Err(error) => {
+                    return cache_error(request_id, "X11-CACHE-002", error.to_string());
+                }
+            }
+        }
+        let object_count = inventories
+            .iter()
+            .filter_map(|entry| entry.get("verified_count").and_then(Value::as_u64))
+            .sum::<u64>();
+        let invalid_count = inventories
+            .iter()
+            .filter_map(|entry| entry.get("invalid_count").and_then(Value::as_u64))
+            .sum::<u64>();
+        let verified_bytes = inventories
+            .iter()
+            .filter_map(|entry| entry.get("verified_bytes").and_then(Value::as_u64))
+            .sum::<u64>();
         return cache_result(
             request_id,
             json!({
                 "action": "list",
                 "status": "observed",
                 "cache_root": cache_root,
+                "object_count": object_count,
+                "invalid_count": invalid_count,
+                "verified_bytes": verified_bytes,
+                "objects": inventories,
             }),
         );
     }
-    let store = match ArtifactStore::open(&cache_root) {
-        Ok(store) => store,
-        Err(error) => return cache_error(request_id, "X11-CACHE-002", error.to_string()),
+    let store = if action == "verify" || (action == "clean" && !apply) {
+        ArtifactStore::open_read_only(&cache_root)
+    } else {
+        match ArtifactStore::open(&cache_root) {
+            Ok(store) => store,
+            Err(error) => return cache_error(request_id, "X11-CACHE-002", error.to_string()),
+        }
     };
     let references = match store.collect_references(None, &[], &[]) {
         Ok(references) => references,
@@ -164,18 +274,48 @@ pub(super) fn cache_response(
                     "cache_root": cache_root,
                     "protected_references": references.iter().count(),
                     "candidate_count": plan.candidates().len(),
+                    "invalid_count": plan.invalid_count(),
                 }),
             )
         }
-        "rebuild" => cache_result(
-            request_id,
-            json!({
-                "action": "rebuild",
-                "status": "planned",
-                "cache_root": cache_root,
-                "protected_references": references.iter().count(),
-            }),
-        ),
+        "rebuild" => {
+            let indexes = match IndexStore::open(&cache_root) {
+                Ok(indexes) => indexes,
+                Err(error) => return cache_error(request_id, "X11-CACHE-004", error.to_string()),
+            };
+            let path = match indexes.rebuild_global_atomic(&store, |reference| {
+                Some(GlobalRecord {
+                    request_key: format!(
+                        "object:{}:{}",
+                        reference.kind.as_str(),
+                        reference.digest.as_hex()
+                    ),
+                    object_kind: reference.kind,
+                    digest: reference.digest,
+                    target: "unknown".to_owned(),
+                    optimization_level: 0,
+                    codegen_version: xiao_codegen_llvm::CODEGEN_VERSION,
+                    length: reference.length,
+                })
+            }) {
+                Ok(path) => path,
+                Err(error) => return cache_error(request_id, "X11-CACHE-004", error.to_string()),
+            };
+            let record_count = match indexes.read_global() {
+                Ok(index) => index.records.len(),
+                Err(error) => return cache_error(request_id, "X11-CACHE-004", error.to_string()),
+            };
+            cache_result(
+                request_id,
+                json!({
+                    "action": "rebuild",
+                    "status": "rebuilt",
+                    "cache_root": cache_root,
+                    "index": path,
+                    "record_count": record_count,
+                }),
+            )
+        }
         "clean" => {
             let plan = match store.plan_cleanup(&references) {
                 Ok(plan) => plan,
@@ -189,10 +329,16 @@ pub(super) fn cache_response(
                         "status": "planned",
                         "cache_root": cache_root,
                         "candidate_count": plan.candidates().len(),
+                        "invalid_count": plan.invalid_count(),
                     }),
                 );
             }
-            match store.apply_cleanup(&plan, &references) {
+            // 16B 要求执行阶段重新收集引用，避免计划生成后新发布的对象被误删。
+            let current_references = match store.collect_references(None, &[], &[]) {
+                Ok(references) => references,
+                Err(error) => return cache_error(request_id, "X11-CACHE-003", error.to_string()),
+            };
+            match store.apply_cleanup(&plan, &current_references) {
                 Ok(report) => cache_result(
                     request_id,
                     json!({
@@ -206,12 +352,20 @@ pub(super) fn cache_response(
                 Err(error) => cache_error(request_id, "X11-CACHE-005", error.to_string()),
             }
         }
-        _ => cache_error(
-            request_id,
-            "X11-CACHE-006",
-            format!("不支持的 cache 操作：{action}"),
-        ),
+        _ => unreachable!("cache 操作已经在入口校验"),
     }
+}
+
+fn object_kinds() -> [ObjectKind; 7] {
+    [
+        ObjectKind::Source,
+        ObjectKind::Xiaoc,
+        ObjectKind::Native,
+        ObjectKind::Xar,
+        ObjectKind::Language,
+        ObjectKind::Resource,
+        ObjectKind::Debug,
+    ]
 }
 
 fn verification_error(

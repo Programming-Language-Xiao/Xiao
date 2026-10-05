@@ -91,6 +91,9 @@ export async function executeCommand(command: ParsedCommand, context: CommandCon
   if (command.kind === "verify") return executeVerify(command, context);
   if (command.kind === "cache") return executeCache(command, context);
   if (command.kind === "config") return executeConfig(command, context);
+  if (command.kind === "run" && command.file.toLocaleLowerCase("en-US").endsWith(".xiaoc")) {
+    return executeXiaoc(command, context);
+  }
   return executeRun(command, context);
 }
 
@@ -280,6 +283,45 @@ async function executeRun(command: Extract<ParsedCommand, { kind: "run" }>, cont
     return renderProtocolResponse(result.response, { ...options, locale: locale.tag });
   } catch (error) {
     return renderCliError(error, renderOptions(command.options, context));
+  }
+}
+
+/** 通过 Rust 核心运行已验证的 `.xiaoc`，不在 CLI 解码或执行产物。 */
+async function executeXiaoc(command: Extract<ParsedCommand, { kind: "run" }>, context: CommandContext): Promise<RenderedDiagnostic> {
+  const cwd = context.cwd ?? process.cwd();
+  const options = renderOptions(command.options, context);
+  if (command.optimizationExplicit && command.optimizationLevel !== 0) {
+    return renderCliError(
+      new CliCommandError("X11-CLI-OPT-002", "已编译 `.xiaoc` 不能在运行时重新选择优化级别", CLI_EXIT_CODES.usage, {
+        path: command.file,
+        optimization_level: command.optimizationLevel,
+      }),
+      options,
+    );
+  }
+  let locale: LocaleContext;
+  try {
+    locale = context.locale ?? await resolveEffectiveLocale({ cwd, env: context.env });
+  } catch (error) {
+    return renderCliError(error, options);
+  }
+  const path = resolve(cwd, command.file);
+  try {
+    const client = new ProtocolClient({
+      cwd,
+      env: context.env,
+      overridePath: context.corePath,
+      executablePath: context.executablePath,
+      spawnProcess: context.spawnProcess,
+    });
+    const result = await client.runXiaoc(path, {
+      debug: command.options.debug,
+      locale: locale.tag,
+      signal: context.signal,
+    });
+    return renderProtocolResponse(result.response, { ...options, locale: locale.tag });
+  } catch (error) {
+    return renderCliError(error, options);
   }
 }
 

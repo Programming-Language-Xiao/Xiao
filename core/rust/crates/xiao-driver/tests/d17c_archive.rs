@@ -1,5 +1,6 @@
 //! 17C/17D 归档运行的成功路径和校验前拒绝回归。
 
+use std::fs;
 use std::sync::{Mutex, OnceLock};
 
 use xiao_artifacts::{
@@ -20,6 +21,13 @@ static DIAGNOSTIC_ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
 fn archive_for(source: &str) -> Vec<u8> {
     archive_for_with_debug(source, false)
+}
+
+fn xiaoc_for(source: &str) -> Vec<u8> {
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect("源码应通过前端");
+    encode_xiaoc(&lower_program(&artifact.ir), XiaocMetadata::new("main")).expect("应编码 .xiaoc")
 }
 
 fn archive_for_with_debug(source: &str, debug: bool) -> Vec<u8> {
@@ -104,6 +112,43 @@ fn archive_success_preserves_intrinsic_output_and_success_result() {
     assert!(outcome.events.iter().any(|event| {
         matches!(event, xiao_vm::VmEvent::IntrinsicOutput { text } if text == "hello world!\n")
     }));
+}
+
+#[test]
+fn direct_xiaoc_run_reuses_the_production_contract_and_verifies_bytes() {
+    let path = std::env::temp_dir().join(format!(
+        "xiao-direct-xiaoc-{}-{}.xiaoc",
+        std::process::id(),
+        std::thread::current().name().unwrap_or("test")
+    ));
+    let bytes = xiaoc_for("print(\"direct\")\n");
+    fs::write(&path, &bytes).expect("写入测试 .xiaoc");
+    let response = dispatch(ProtocolRequest::RunXiaoc {
+        request_id: "run-xiaoc".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: None,
+        path: path.display().to_string(),
+        options: RunOptions::default(),
+        debug: false,
+    });
+    let _ = fs::remove_file(&path);
+    let ProtocolResponse::Result {
+        operation,
+        exit_code,
+        events,
+        cache: Some(cache),
+        ..
+    } = response
+    else {
+        panic!("直接 .xiaoc 运行应返回统一结果");
+    };
+    assert_eq!(operation, "run_xiaoc");
+    assert_eq!(exit_code, 0);
+    assert!(events.iter().any(|event| event.kind == "intrinsic_output"));
+    assert_eq!(cache.status, "hit");
+    assert!(cache.verified);
+    assert!(!cache.recompiled);
 }
 
 #[test]

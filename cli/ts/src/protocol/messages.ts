@@ -92,6 +92,18 @@ export interface RunArchiveRequest {
   debug: boolean;
 }
 
+/** 运行已经验证的 `.xiaoc` 文件。 */
+export interface RunXiaocRequest {
+  type: "run_xiaoc";
+  request_id: string;
+  protocol_version: number;
+  core_version: number;
+  locale?: string | null;
+  path: string;
+  options: RunOptions;
+  debug: boolean;
+}
+
 /** 只验证 `.xiaoc`/`.xar`，不构建、不执行用户代码。 */
 export interface VerifyRequest {
   type: "verify";
@@ -238,7 +250,7 @@ export interface ShutdownRequest {
 }
 
 /** 所有请求消息的联合类型。 */
-export type ProtocolRequest = HelloRequest | RunRequest | RunArchiveRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest | CancelRequest | ShutdownRequest;
+export type ProtocolRequest = HelloRequest | RunRequest | RunArchiveRequest | RunXiaocRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest | CancelRequest | ShutdownRequest;
 
 /** 机器可读协议错误。 */
 export interface ProtocolErrorBody {
@@ -268,7 +280,7 @@ export interface HelloResponse {
 export interface ResultResponse {
   type: "result";
   request_id: string;
-  operation: "run" | "run_archive" | "build" | "verify" | "cache";
+  operation: "run" | "run_archive" | "run_xiaoc" | "build" | "verify" | "cache";
   exit_code: number;
   exit_name: string;
   diagnostics: unknown[];
@@ -289,7 +301,33 @@ export interface CacheObservation {
   object_kind: string;
   digest: string | null;
   verified: boolean;
+  recompiled?: boolean;
+  recompile_reason?: string | null;
   reason: string | null;
+  optimization?: OptimizationObservation | null;
+}
+
+/** 字节码优化管线的机器可读摘要。 */
+export interface OptimizationObservation {
+  level: number;
+  optimizer_version: number;
+  config_fingerprint: string;
+  input_fingerprint: string;
+  output_fingerprint: string;
+  validation: string;
+  passes: PassObservation[];
+}
+
+/** 一个字节码 Pass 的机器可读摘要。 */
+export interface PassObservation {
+  name: string;
+  version: number;
+  status: string;
+  skip_reason: string | null;
+  changed: boolean;
+  input_fingerprint: string;
+  output_fingerprint: string;
+  validation: string;
 }
 
 /** 归档启动前校验的稳定摘要；不包含路径、凭据或环境变量值。 */

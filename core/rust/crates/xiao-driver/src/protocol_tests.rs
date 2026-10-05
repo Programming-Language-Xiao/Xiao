@@ -106,6 +106,11 @@ fn hello_advertises_test_capability() {
     );
     assert!(capabilities.iter().any(|capability| capability == "verify"));
     assert!(capabilities.iter().any(|capability| capability == "cache"));
+    assert!(
+        capabilities
+            .iter()
+            .any(|capability| capability == "run_xiaoc")
+    );
 }
 
 #[test]

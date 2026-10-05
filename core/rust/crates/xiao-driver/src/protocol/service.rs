@@ -23,7 +23,7 @@ use super::request::{
 };
 use super::run::{
     RunSessionFingerprint, protocol_error_response, run_request_response,
-    run_request_response_with_driver,
+    run_request_response_with_driver, run_xiaoc_request_response,
 };
 use super::test::test_request_response;
 use super::validate::{validate_source, validate_target, validate_versions};
@@ -88,6 +88,26 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             debug,
         } => with_locale(request_id.clone(), locale.clone(), || {
             super::run::run_archive_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                locale,
+                path,
+                options,
+                debug,
+                CancellationToken::new(),
+            )
+        }),
+        ProtocolRequest::RunXiaoc {
+            request_id,
+            protocol_version,
+            core_version,
+            locale,
+            path,
+            options,
+            debug,
+        } => with_locale(request_id.clone(), locale.clone(), || {
+            run_xiaoc_request_response(
                 request_id,
                 protocol_version,
                 core_version,
@@ -280,6 +300,7 @@ fn hello_response(
             capabilities: vec![
                 "run".to_owned(),
                 "run_archive".to_owned(),
+                "run_xiaoc".to_owned(),
                 "verify".to_owned(),
                 "cache".to_owned(),
                 "test".to_owned(),
@@ -601,7 +622,7 @@ struct SessionRunJob {
     token: CancellationToken,
 }
 
-/// 长驻会话线程只接收 `run`，因此同一核心内的运行天然串行。
+/// 长驻会话线程接收三种运行入口，因此同一核心内的运行天然串行。
 type SessionSender = mpsc::Sender<SessionRunJob>;
 
 /// 在线程安全的输出锁上写入一条响应。
@@ -666,6 +687,26 @@ fn session_worker_response(
                 token,
             )
         }),
+        ProtocolRequest::RunXiaoc {
+            request_id,
+            protocol_version,
+            core_version,
+            locale,
+            path,
+            options,
+            debug,
+        } => with_locale(request_id.clone(), locale.clone(), || {
+            run_xiaoc_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                locale,
+                path,
+                options,
+                debug,
+                token,
+            )
+        }),
         _ => unreachable!("会话线程只接收 run 请求"),
     }
 }
@@ -711,6 +752,26 @@ pub(super) fn worker_response(
             debug,
         } => with_locale(request_id.clone(), locale.clone(), || {
             super::run::run_archive_request_response(
+                request_id,
+                protocol_version,
+                core_version,
+                locale,
+                path,
+                options,
+                debug,
+                token,
+            )
+        }),
+        ProtocolRequest::RunXiaoc {
+            request_id,
+            protocol_version,
+            core_version,
+            locale,
+            path,
+            options,
+            debug,
+        } => with_locale(request_id.clone(), locale.clone(), || {
+            run_xiaoc_request_response(
                 request_id,
                 protocol_version,
                 core_version,
@@ -835,7 +896,8 @@ fn enqueue_session_job<W: Write + Send + 'static>(
     cancellations: &CancellationMap,
     sender: &SessionSender,
 ) {
-    let request_id = request_id_for(&request).expect("会话请求必须是 run 或 run_archive");
+    let request_id =
+        request_id_for(&request).expect("会话请求必须是 run、run_archive 或 run_xiaoc");
     let token = CancellationToken::new();
     if let Ok(mut map) = cancellations.lock() {
         map.insert(request_id.clone(), token.clone());
@@ -910,7 +972,9 @@ where
                     break;
                 }
             }
-            request @ (ProtocolRequest::Run { .. } | ProtocolRequest::RunArchive { .. }) => {
+            request @ (ProtocolRequest::Run { .. }
+            | ProtocolRequest::RunArchive { .. }
+            | ProtocolRequest::RunXiaoc { .. }) => {
                 if !negotiated {
                     let request_id = request_id_for(&request).expect("run 请求编号");
                     let error = ProtocolError::version("必须先完成 hello 版本协商");
@@ -966,6 +1030,7 @@ fn request_id_for(request: &ProtocolRequest) -> Option<String> {
     match request {
         ProtocolRequest::Run { request_id, .. }
         | ProtocolRequest::RunArchive { request_id, .. }
+        | ProtocolRequest::RunXiaoc { request_id, .. }
         | ProtocolRequest::Verify { request_id, .. }
         | ProtocolRequest::Cache { request_id, .. }
         | ProtocolRequest::Test { request_id, .. }

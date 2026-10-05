@@ -6,7 +6,7 @@ const messages = {
     "zh-CN": [
       "xiao 0.1.0",
       "用法：",
-      "  xiao run <file.xiao> [-O0|-O1|-O2|-O3] [-debug] [--json] [--color=auto|always|never]",
+      "  xiao run <file.xiao|file.xiaoc> [-O0|-O1|-O2|-O3] [-debug] [--json] [--color=auto|always|never]",
       "  xiao -xar <file.xar> [-O0|-O1|-O2|-O3] [-debug] [--json]",
       "  xiao run -xar <file.xar> [-O0|-O1|-O2|-O3] [-debug] [--json]",
       "  xiao <file.xiao> [-O0|-O1|-O2|-O3] [-debug]  运行源码快捷方式",
@@ -32,7 +32,7 @@ const messages = {
     "en-US": [
       "xiao 0.1.0",
       "Usage:",
-      "  xiao run <file.xiao> [-O0|-O1|-O2|-O3] [-debug] [--json] [--color=auto|always|never]",
+      "  xiao run <file.xiao|file.xiaoc> [-O0|-O1|-O2|-O3] [-debug] [--json] [--color=auto|always|never]",
       "  xiao -xar <file.xar> [-O0|-O1|-O2|-O3] [-debug] [--json]",
       "  xiao run -xar <file.xar> [-O0|-O1|-O2|-O3] [-debug] [--json]",
       "  xiao <file.xiao> [-O0|-O1|-O2|-O3] [-debug]  Run a source file directly",
@@ -84,6 +84,9 @@ const messages = {
   "xiao.cli.build.config": { "zh-CN": "配置  {path}", "en-US": "config  {path}" },
   "xiao.cli.verify.success": { "zh-CN": "产物验证通过：{kind}", "en-US": "artifact verified: {kind}" },
   "xiao.cli.cache.status": { "zh-CN": "缓存 {action}：{status}", "en-US": "cache {action}: {status}" },
+  "xiao.cli.cache.observation": { "zh-CN": "缓存 {status}  {kind}  摘要 {digest}  校验 {verified}", "en-US": "cache {status}  {kind}  digest {digest}  verification {verified}" },
+  "xiao.cli.cache.recompiled": { "zh-CN": "重新物化：{reason}", "en-US": "re-materialized: {reason}" },
+  "xiao.cli.optimization.report": { "zh-CN": "优化 O{level}：已执行 {applied}/{total} 个 Pass", "en-US": "optimization O{level}: {applied}/{total} passes applied" },
   "xiao.cli.env.created": { "zh-CN": "已创建环境 {name}：{path}", "en-US": "created environment {name}: {path}" },
   "xiao.cli.env.activation_missing": {
     "zh-CN": "未检测到激活钩子；可手工将 XIAO_ACTIVE_ENV 设为以上绝对路径，或先在 Bash/zsh/fish/PowerShell 初始化对应的 shell-init 钩子。",

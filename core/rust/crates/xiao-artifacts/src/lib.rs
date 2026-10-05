@@ -224,6 +224,25 @@ impl CleanupPlan {
     pub fn candidates(&self) -> &[ObjectReference] {
         &self.candidates
     }
+
+    /// 返回扫描时发现的格式错误或摘要不匹配对象数量。
+    #[must_use]
+    pub fn invalid_count(&self) -> usize {
+        self.quarantine_candidates.len()
+    }
+}
+
+/// 一个对象命名空间的只读盘点结果。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ObjectInventory {
+    /// 对象命名空间。
+    pub kind: ObjectKind,
+    /// 通过摘要和格式校验的对象数量。
+    pub verified_count: usize,
+    /// 未通过命名、摘要或格式校验的对象数量。
+    pub invalid_count: usize,
+    /// 已验证对象的总字节数。
+    pub verified_bytes: u64,
 }
 
 /// 清理执行结果。
@@ -338,6 +357,12 @@ impl ArtifactStore {
         fs::create_dir_all(root.join("quarantine"))?;
         fs::create_dir_all(root.join("tmp"))?;
         Ok(Self { root })
+    }
+
+    /// 以只读方式打开对象根目录；不会创建目录或锁文件。
+    #[must_use]
+    pub fn open_read_only(root: impl Into<PathBuf>) -> Self {
+        Self { root: root.into() }
     }
 
     /// 返回对象根目录。
@@ -591,6 +616,18 @@ impl ArtifactStore {
         }
         objects.sort_by_key(|object| object.digest);
         Ok(objects)
+    }
+
+    /// 只读盘点一个命名空间，不隔离、不删除也不创建任何文件。
+    pub fn inventory(&self, kind: ObjectKind) -> Result<ObjectInventory, ArtifactError> {
+        let (objects, invalid) = self.scan_read_only(kind)?;
+        let verified_bytes = objects.iter().map(|object| object.length).sum();
+        Ok(ObjectInventory {
+            kind,
+            verified_count: objects.len(),
+            invalid_count: invalid.len(),
+            verified_bytes,
+        })
     }
 
     /// 从项目 `xiao.lock.json`、归档索引和显式引用现算保护集合。

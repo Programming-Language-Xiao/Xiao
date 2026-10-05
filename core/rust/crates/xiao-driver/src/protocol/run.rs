@@ -13,8 +13,10 @@ use super::mapping::{
     exit_name, protocol_diagnostic, protocol_error_body, protocol_error_from_error, protocol_event,
     protocol_metrics, protocol_report, protocol_value,
 };
-use super::message::ProtocolCacheObservation;
-use super::message::ProtocolResponse;
+use super::message::{
+    ProtocolCacheObservation, ProtocolOptimizationObservation, ProtocolPassObservation,
+    ProtocolResponse,
+};
 use super::request::{
     CANCELLED_ERROR_CODE, DiagnosticConfig, OptimizationConfig, ProtocolError, ProtocolTarget,
     RunOptions, SourceIdentity,
@@ -24,8 +26,8 @@ use crate::diagnostics::{DiagnosticOptions, DiagnosticSession, start_error_detai
 use crate::frontend::{FrontendContext, FrontendRequest};
 use crate::packages::{PackageRegistry, PackageRegistryFingerprint};
 use crate::run::{
-    CancellationToken, DRIVER_TIMEOUT_CODE, DriverError, DriverExecution, DriverOutcome,
-    DriverPhase, DriverRequest, ExitCode, FrontendVmDriver,
+    CacheObservation, CancellationToken, DRIVER_TIMEOUT_CODE, DriverError, DriverExecution,
+    DriverOutcome, DriverPhase, DriverRequest, ExitCode, FrontendVmDriver,
 };
 use xiao_xar::{
     ARCHIVE_LANGUAGE_FALLBACK_CODE, ARCHIVE_MISSING_OBJECT_CODE, ArchiveAuditRecord,
@@ -198,6 +200,163 @@ pub(super) fn run_archive_request_response(
         debug,
         cancellation,
     )
+}
+
+/// 执行已经物化的 `.xiaoc`：先完成格式、指令和摘要验证，再进入生产 VM。
+#[allow(clippy::too_many_arguments)]
+pub(super) fn run_xiaoc_request_response(
+    request_id: String,
+    protocol_version: u16,
+    core_version: u32,
+    locale: Option<String>,
+    path: String,
+    options: RunOptions,
+    debug: bool,
+    cancellation: CancellationToken,
+) -> ProtocolResponse {
+    if let Err(error) = validate_versions(protocol_version, core_version) {
+        return protocol_error_response(Some(request_id), &error);
+    }
+    if cancellation.is_cancelled() {
+        return cancelled_error_response(request_id);
+    }
+    let (vm_options, event_capacity, timeout) = match run_options(&options) {
+        Ok(value) => value,
+        Err(error) => return protocol_error_response(Some(request_id), &error),
+    };
+    let deadline = match timeout {
+        Some(timeout) => match Instant::now().checked_add(timeout) {
+            Some(deadline) => Some(deadline),
+            None => {
+                return protocol_error_response(
+                    Some(request_id),
+                    &ProtocolError::request("options.timeout_ms", "超时期限超出宿主时钟可表示范围"),
+                );
+            }
+        },
+        None => None,
+    };
+    if deadline.is_some_and(|deadline| Instant::now() >= deadline) {
+        return archive_timeout_response(request_id);
+    }
+    if path.trim().is_empty() {
+        return xiaoc_error_response(request_id, path, "`.xiaoc` 路径不能为空".to_owned());
+    }
+    let bytes = match fs::read(&path) {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            return xiaoc_error_response(request_id, path, format!("无法读取 `.xiaoc`：{error}"));
+        }
+    };
+    let file = match xiao_bytecode::decode_xiaoc(&bytes) {
+        Ok(file) => file,
+        Err(error) => {
+            return xiaoc_error_response(request_id, path, format!("`.xiaoc` 校验失败：{error}"));
+        }
+    };
+    if cancellation.is_cancelled() {
+        return cancelled_error_response(request_id);
+    }
+    if deadline.is_some_and(|deadline| Instant::now() >= deadline) {
+        return archive_timeout_response(request_id);
+    }
+    let effective_locale = resolve_language_locale(
+        file.metadata
+            .embedded_locale
+            .as_ref()
+            .map_or("", |(locale, _)| locale),
+        locale.as_deref(),
+    );
+    let diagnostics_options = crate::diagnostics::DiagnosticOptions {
+        locale: Some(effective_locale.effective.clone()),
+        ..Default::default()
+    };
+    let mut diagnostic_session = if debug || file.metadata.debug_active {
+        match crate::diagnostics::DiagnosticSession::start(
+            file.metadata.module_id.clone(),
+            Some(path.clone()),
+            &diagnostics_options,
+        ) {
+            Ok(session) => Some(session),
+            Err(error) => return diagnostic_start_response(request_id, error),
+        }
+    } else {
+        None
+    };
+    let mut cancellation_source = xiao_vm::CancellationSource::new().with_token(cancellation);
+    if let Some(deadline) = deadline {
+        cancellation_source = cancellation_source.with_deadline(deadline);
+    }
+    let measurement = xiao_runtime::start_memory_measurement();
+    let result = xiao_vm::run_xiaoc_production(
+        &bytes,
+        vm_options,
+        event_capacity,
+        Some(cancellation_source),
+    );
+    let peak_live_bytes = measurement.peak_live_bytes();
+    drop(measurement);
+    let outcome = match result {
+        Ok(outcome) => outcome,
+        Err(error) => {
+            if let Some(session) = diagnostic_session.take() {
+                session.finish();
+            }
+            return xiaoc_error_response(
+                request_id,
+                path,
+                format!("`.xiaoc` 执行前校验失败：{error}"),
+            );
+        }
+    };
+    let cache = CacheObservation {
+        status: "hit".to_owned(),
+        object_kind: xiao_artifacts::ObjectKind::Xiaoc.as_str().to_owned(),
+        digest: Some(xiao_artifacts::Digest256::of_bytes(&bytes).as_hex()),
+        verified: true,
+        recompiled: false,
+        recompile_reason: None,
+        reason: Some("artifact_verified".to_owned()),
+        optimization: None,
+    };
+    let diagnostics = if effective_locale.fallback {
+        vec![archive_language_fallback_diagnostic(&effective_locale)]
+    } else {
+        Vec::new()
+    };
+    let execution = DriverExecution {
+        outcome,
+        diagnostics,
+        cache: Some(cache),
+    };
+    if let Some(mut session) = diagnostic_session.take() {
+        for event in &execution.outcome.events {
+            session.record(event);
+        }
+        session.finish();
+    }
+    run_response_for_operation(
+        request_id,
+        DriverOutcome::Executed(execution),
+        peak_live_bytes,
+        "run_xiaoc",
+    )
+}
+
+fn xiaoc_error_response(request_id: String, path: String, message: String) -> ProtocolResponse {
+    ProtocolResponse::Error {
+        request_id: Some(request_id),
+        error: protocol_error_body(
+            "X11-XIAOC-001",
+            "x11.xiaoc.validation_failed",
+            message,
+            Some("artifact_validation".to_owned()),
+            Some("使用 verify 检查 `.xiaoc` 后重试".to_owned()),
+            BTreeMap::from([(String::from("path"), Value::String(path))]),
+        ),
+        report: None,
+        exit_code: ExitCode::ArtifactRejected.as_process_code(),
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -789,7 +948,33 @@ fn executed_response(
                 object_kind: cache.object_kind.clone(),
                 digest: cache.digest.clone(),
                 verified: cache.verified,
+                recompiled: cache.recompiled,
+                recompile_reason: cache.recompile_reason.clone(),
                 reason: cache.reason.clone(),
+                optimization: cache.optimization.as_ref().map(|optimization| {
+                    ProtocolOptimizationObservation {
+                        level: optimization.level,
+                        optimizer_version: optimization.optimizer_version,
+                        config_fingerprint: optimization.config_fingerprint.clone(),
+                        input_fingerprint: optimization.input_fingerprint.clone(),
+                        output_fingerprint: optimization.output_fingerprint.clone(),
+                        validation: optimization.validation.clone(),
+                        passes: optimization
+                            .passes
+                            .iter()
+                            .map(|pass| ProtocolPassObservation {
+                                name: pass.name.clone(),
+                                version: pass.version,
+                                status: pass.status.clone(),
+                                skip_reason: pass.skip_reason.clone(),
+                                changed: pass.changed,
+                                input_fingerprint: pass.input_fingerprint.clone(),
+                                output_fingerprint: pass.output_fingerprint.clone(),
+                                validation: pass.validation.clone(),
+                            })
+                            .collect(),
+                    }
+                }),
             }),
     }
 }

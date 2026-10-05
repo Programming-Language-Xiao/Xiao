@@ -206,8 +206,57 @@ pub struct ProtocolCacheObservation {
     pub digest: Option<String>,
     /// 是否完成完整对象校验。
     pub verified: bool,
+    /// 本次运行是否重新物化了对象。
+    #[serde(default)]
+    pub recompiled: bool,
+    /// 没有复用旧对象时的稳定原因。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub recompile_reason: Option<String>,
     /// 回退原因。
     pub reason: Option<String>,
+    /// 字节码优化管线报告；旧核心可以省略。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub optimization: Option<ProtocolOptimizationObservation>,
+}
+
+/// 字节码优化管线的机器可读摘要。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ProtocolOptimizationObservation {
+    /// 生效优化级别。
+    pub level: u8,
+    /// 优化器实现版本。
+    pub optimizer_version: u32,
+    /// 规范化配置指纹。
+    pub config_fingerprint: String,
+    /// 输入程序指纹。
+    pub input_fingerprint: String,
+    /// 输出程序指纹。
+    pub output_fingerprint: String,
+    /// 最终验证状态。
+    pub validation: String,
+    /// 每个 Pass 的执行摘要。
+    pub passes: Vec<ProtocolPassObservation>,
+}
+
+/// 一个字节码 Pass 的机器可读摘要。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct ProtocolPassObservation {
+    /// Pass 稳定名称。
+    pub name: String,
+    /// Pass 实现版本。
+    pub version: u32,
+    /// `applied` 或 `skipped`。
+    pub status: String,
+    /// 跳过原因；执行时为空。
+    pub skip_reason: Option<String>,
+    /// 是否改变程序。
+    pub changed: bool,
+    /// 输入快照指纹。
+    pub input_fingerprint: String,
+    /// 输出快照指纹。
+    pub output_fingerprint: String,
+    /// Pass 后验证状态。
+    pub validation: String,
 }
 
 /// REPL 中一个可登记的包根，身份包含来源与版本，不把同名包任意合并。

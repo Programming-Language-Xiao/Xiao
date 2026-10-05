@@ -281,6 +281,25 @@ pub enum ProtocolRequest {
         #[serde(default)]
         debug: bool,
     },
+    /// 打开唯一 `.xiaoc` 文件，完成格式与指令验证后运行入口。
+    RunXiaoc {
+        /// 请求编号，用于取消和响应关联。
+        request_id: String,
+        /// 协议版本。
+        protocol_version: u16,
+        /// 统一核心版本。
+        core_version: u32,
+        /// 生效语言；旧客户端省略时使用默认语言。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        locale: Option<String>,
+        /// `.xiaoc` 文件路径；由核心直接读取并验证。
+        path: String,
+        /// VM 参数。
+        options: RunOptions,
+        /// 是否显式请求诊断会话。
+        #[serde(default)]
+        debug: bool,
+    },
     /// 只验证一份 `.xiaoc` 或 `.xar`，不创建 VM、不执行用户代码。
     Verify {
         /// 请求编号。

@@ -287,8 +287,11 @@ function parseRun(args: readonly string[], options: GlobalCliOptions): ParsedCom
     }
     return true;
   });
-  if (positional.length !== 1) throw new CliArgumentError("run 需要且只需要一个 .xiao 文件");
-  if (!positional[0].toLowerCase().endsWith(".xiao")) throw new CliArgumentError("run 的输入必须是 .xiao 文件");
+  if (positional.length !== 1) throw new CliArgumentError("run 需要且只需要一个 .xiao 或 .xiaoc 文件");
+  const lower = positional[0].toLowerCase();
+  if (!lower.endsWith(".xiao") && !lower.endsWith(".xiaoc")) {
+    throw new CliArgumentError("run 的输入必须是 .xiao 或 .xiaoc 文件");
+  }
   return { kind: "run", file: positional[0], optimizationLevel, optimizationExplicit, options };
 }
 

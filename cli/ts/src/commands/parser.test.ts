@@ -29,6 +29,7 @@ describe("xiao 命令解析", () => {
 
   test("支持 run、源码快捷方式和全局输出选项", () => {
     expect(parseArguments(["run", "main.xiao", "--json"]).kind).toBe("run");
+    expect(parseArguments(["run", "main.xiaoc", "--json"])).toMatchObject({ kind: "run", file: "main.xiaoc" });
     expect(parseArguments(["main.xiao", "--color=always"]).kind).toBe("run");
     expect(parseArguments(["config", "--global", "CLI.git.summary", "true"]).kind).toBe("config");
     expect(parseArguments(["run", "--help"]).kind).toBe("help");

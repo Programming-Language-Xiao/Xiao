@@ -311,6 +311,18 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.9 ②）
   保留既有验证基线，O1--O3 执行标准保守 Pass 并继续经统一 VM 验证；协议不再错误拒绝
   非零运行级别。LLVM 原生路径暂保留稳定的 `passes_not_registered` 拒绝字段，明确说明
   该后端的 Pass 尚未注册。
+- 源码运行的 `.xiaoc` 元数据现在固化源码摘要和 13A 优化配置指纹；缓存观察同时返回
+  `recompiled`/`recompile_reason`、完整校验状态和逐 Pass 报告（级别、输入/输出指纹、
+  `applied`/`skipped` 与既有 `SkipReason`）。CLI 人类输出也展示命中、重新物化和 Pass
+  计数，`--json` 保留同一组机器字段。
+- `cache list` 使用只读对象盘点返回各命名空间的已验证数量、损坏数量和字节数；`cache
+  verify` 与无 `--apply` 的 `cache clean` 不创建缓存目录、不隔离对象；`cache rebuild`
+  真实调用 `IndexStore::rebuild_global_atomic` 写回全局索引，`clean --apply` 在删除前重新
+  收集引用并继续经过 16B 的二次校验。
+- `xiao run <file.xiaoc>` 新增 `run_xiaoc` 协议入口，先走权威 `.xiaoc` 解码器，再调用
+  `run_xiaoc_production`；它与源码/归档共用退出码、事件、指标、诊断会话和已验证缓存摘要。
+- `verify --detail` 现在由 Rust 校验器返回已验证的 `.xiaoc` 分区摘要及 `.xar` 成员/索引
+  摘要，TypeScript 仍只负责搬运和呈现。
 - 18A 的配置/锁文件不落盘探针已提升为 `commands/index.test.ts` 的真实 `run -O2` 命令
   回归，断言项目配置和锁文件内容、mtime 均不变；`-O1` 既有测试改动原因也已在 18A
   实施记录登记。本批不把命令行缓存维护误写回项目配置。

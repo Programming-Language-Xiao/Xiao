@@ -8,9 +8,11 @@ use std::fmt::{self, Display, Formatter};
 use std::time::{Duration, Instant};
 
 use xiao_artifacts::{ArtifactStore, Digest256, ObjectKind};
-use xiao_bytecode::{TacProgram, XiaocMetadata, encode_xiaoc, lower_program};
+use xiao_bytecode::{
+    BytecodeOptimizationReport, TacProgram, XiaocMetadata, encode_xiaoc, lower_program,
+};
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord};
-use xiao_optimizer::OptimizationLevel;
+use xiao_optimizer::{OptimizationLevel, PassStatus, ValidationStatus};
 use xiao_package::CacheLayout;
 use xiao_vm::{
     CancellationSource, DEFAULT_EVENT_CAPACITY, RunOutcome as VmRunOutcome,
@@ -363,8 +365,91 @@ pub struct CacheObservation {
     pub digest: Option<String>,
     /// 是否经过完整对象校验。
     pub verified: bool,
+    /// 本次运行是否因为缓存未命中而重新物化。
+    pub recompiled: bool,
+    /// 没有复用旧对象时的稳定原因。
+    pub recompile_reason: Option<String>,
     /// 回退或失败原因。
     pub reason: Option<String>,
+    /// 字节码优化管线的机器可读报告。
+    pub optimization: Option<OptimizationObservation>,
+}
+
+/// 字节码优化管线的稳定运行摘要。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct OptimizationObservation {
+    /// 生效优化级别。
+    pub level: u8,
+    /// 优化器实现版本。
+    pub optimizer_version: u32,
+    /// 规范化配置指纹。
+    pub config_fingerprint: String,
+    /// 输入程序指纹。
+    pub input_fingerprint: String,
+    /// 输出程序指纹。
+    pub output_fingerprint: String,
+    /// 最终验证状态。
+    pub validation: String,
+    /// 每个 Pass 的执行摘要。
+    pub passes: Vec<PassObservation>,
+}
+
+/// 一个字节码 Pass 的稳定执行摘要。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct PassObservation {
+    /// Pass 稳定名称。
+    pub name: String,
+    /// Pass 实现版本。
+    pub version: u32,
+    /// `applied` 或 `skipped`。
+    pub status: String,
+    /// 跳过原因；执行时为空。
+    pub skip_reason: Option<String>,
+    /// 是否改变程序。
+    pub changed: bool,
+    /// 输入快照指纹。
+    pub input_fingerprint: String,
+    /// 输出快照指纹。
+    pub output_fingerprint: String,
+    /// Pass 后验证状态。
+    pub validation: String,
+}
+
+impl OptimizationObservation {
+    fn from_report(report: &BytecodeOptimizationReport) -> Self {
+        Self {
+            level: report.level.as_u8(),
+            optimizer_version: report.optimizer_version,
+            config_fingerprint: report.config_fingerprint.clone(),
+            input_fingerprint: report.input_fingerprint.clone(),
+            output_fingerprint: report.output_fingerprint.clone(),
+            validation: validation_name(report.validation),
+            passes: report
+                .passes
+                .iter()
+                .map(|pass| PassObservation {
+                    name: pass.metadata.name.clone(),
+                    version: pass.metadata.version,
+                    status: match pass.status {
+                        PassStatus::Applied => "applied".to_owned(),
+                        PassStatus::Skipped => "skipped".to_owned(),
+                    },
+                    skip_reason: pass.skip_reason.clone(),
+                    changed: pass.changed,
+                    input_fingerprint: pass.input_fingerprint.clone(),
+                    output_fingerprint: pass.output_fingerprint.clone(),
+                    validation: validation_name(pass.validation),
+                })
+                .collect(),
+        }
+    }
+}
+
+fn validation_name(status: ValidationStatus) -> String {
+    match status {
+        ValidationStatus::Passed => "passed".to_owned(),
+        ValidationStatus::Failed => "failed".to_owned(),
+    }
 }
 
 impl DriverExecution {
@@ -584,15 +669,21 @@ impl FrontendVmDriver {
             self.reset_session();
             return DriverOutcome::Rejected(error);
         }
-        let program = if request.optimization_level == OptimizationLevel::O0 {
-            program
-        } else {
-            let optimization = xiao_optimizer::OptimizationConfig::baseline(
-                request.frontend.context.target.clone(),
-            )
-            .with_level(request.optimization_level);
+        let optimization =
+            xiao_optimizer::OptimizationConfig::baseline(request.frontend.context.target.clone())
+                .with_level(request.optimization_level);
+        let optimization_fingerprint = optimization
+            .fingerprint()
+            .ok()
+            .map(|fingerprint| fingerprint.as_str().to_owned());
+        let (program, optimization_report) =
             match xiao_bytecode::optimize_bytecode_checked(ir, &program, optimization) {
-                Ok(result) => result.program,
+                Ok(result) => (result.program, Some(result.report)),
+                Err(_error) if request.optimization_level == OptimizationLevel::O0 => {
+                    // O0 仍必须由生产 VM 保留既有 TAC 错误身份；优化器的额外
+                    // 对账失败不能把既有 X09-TAC-* 错误改写成新的包装码。
+                    (program, None)
+                }
                 Err(error) => {
                     self.reset_session();
                     return DriverOutcome::Rejected(DriverError {
@@ -603,13 +694,17 @@ impl FrontendVmDriver {
                         report: None,
                     });
                 }
-            }
-        };
+            };
         if let Some(error) = control.check() {
             self.reset_session();
             return DriverOutcome::Rejected(error);
         }
-        let cache = cache_xiaoc(&program, request);
+        let cache = cache_xiaoc(
+            &program,
+            request,
+            optimization_fingerprint,
+            optimization_report.as_ref(),
+        );
         let vm_request = VmRunRequest::new(ir, &program)
             .with_options(request.options)
             .with_module_name(request.resolved_module_name())
@@ -647,17 +742,30 @@ impl FrontendVmDriver {
 }
 
 /// 将完整源码模块物化到全局内容寻址缓存；无项目根时保持会话隔离。
-fn cache_xiaoc(program: &TacProgram, request: &DriverRequest) -> Option<CacheObservation> {
+fn cache_xiaoc(
+    program: &TacProgram,
+    request: &DriverRequest,
+    optimization_fingerprint: Option<String>,
+    optimization_report: Option<&BytecodeOptimizationReport>,
+) -> Option<CacheObservation> {
     if request.frontend.context.project_root.is_none() {
         return Some(CacheObservation {
             status: "session".to_owned(),
             object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
             digest: None,
             verified: false,
+            recompiled: true,
+            recompile_reason: Some("session_state".to_owned()),
             reason: Some("session_state".to_owned()),
+            optimization: optimization_report.map(OptimizationObservation::from_report),
         });
     }
-    let metadata = XiaocMetadata::new(request.resolved_module_name());
+    let mut metadata = XiaocMetadata::new(request.resolved_module_name()).with_source_digest(
+        Digest256::of_bytes(request.frontend.source.text().as_bytes()).as_hex(),
+    );
+    if let Some(fingerprint) = optimization_fingerprint {
+        metadata = metadata.with_optimization_fingerprint(fingerprint);
+    }
     let bytes = match encode_xiaoc(program, metadata) {
         Ok(bytes) => bytes,
         Err(error) => {
@@ -666,7 +774,10 @@ fn cache_xiaoc(program: &TacProgram, request: &DriverRequest) -> Option<CacheObs
                 object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
                 digest: None,
                 verified: false,
+                recompiled: true,
+                recompile_reason: Some("encode_failed".to_owned()),
                 reason: Some(format!("encode: {error}")),
+                optimization: optimization_report.map(OptimizationObservation::from_report),
             });
         }
     };
@@ -680,7 +791,10 @@ fn cache_xiaoc(program: &TacProgram, request: &DriverRequest) -> Option<CacheObs
                     object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
                     digest: Some(digest.as_hex()),
                     verified: false,
+                    recompiled: true,
+                    recompile_reason: Some("cache_unavailable".to_owned()),
                     reason: Some(format!("cache_open: {error}")),
+                    optimization: optimization_report.map(OptimizationObservation::from_report),
                 });
             }
         },
@@ -690,25 +804,38 @@ fn cache_xiaoc(program: &TacProgram, request: &DriverRequest) -> Option<CacheObs
                 object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
                 digest: Some(digest.as_hex()),
                 verified: false,
+                recompiled: true,
+                recompile_reason: Some("cache_unavailable".to_owned()),
                 reason: Some(format!("cache_layout: {error}")),
+                optimization: optimization_report.map(OptimizationObservation::from_report),
             });
         }
     };
     let existed = store.object_path(ObjectKind::Xiaoc, digest).is_file();
-    match store.put(ObjectKind::Xiaoc, &bytes) {
+    match store.put_xiaoc(&bytes) {
         Ok(reference) => Some(CacheObservation {
             status: if existed { "hit" } else { "written" }.to_owned(),
             object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
             digest: Some(reference.digest.as_hex()),
             verified: true,
-            reason: None,
+            recompiled: !existed,
+            recompile_reason: (!existed).then(|| "cache_miss".to_owned()),
+            reason: Some(if existed {
+                "cache_hit_verified".to_owned()
+            } else {
+                "cache_miss".to_owned()
+            }),
+            optimization: optimization_report.map(OptimizationObservation::from_report),
         }),
         Err(error) => Some(CacheObservation {
             status: "fallback".to_owned(),
             object_kind: ObjectKind::Xiaoc.as_str().to_owned(),
             digest: Some(digest.as_hex()),
             verified: false,
+            recompiled: true,
+            recompile_reason: Some("cache_write_failed".to_owned()),
             reason: Some(format!("cache_write: {error}")),
+            optimization: optimization_report.map(OptimizationObservation::from_report),
         }),
     }
 }

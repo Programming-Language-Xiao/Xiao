@@ -12,6 +12,7 @@ import {
   type ProtocolTarget,
   type RunRequest,
   type RunArchiveRequest,
+  type RunXiaocRequest,
   type VerifyRequest,
   type CacheRequest,
   type TestRequest,
@@ -77,6 +78,26 @@ export interface ArchiveRunOptions {
   /** 18A 归一化的优化级别；归档运行暂只保留协议形状。 */
   optimizationLevel?: OptimizationLevel;
   /** 事件容量；核心保留字段以兼容统一运行选项。 */
+  eventCapacity?: number;
+  /** 驱动器边界超时（毫秒）。 */
+  timeoutMs?: number | null;
+  /** VM 热循环检查点。 */
+  checkpointsEnabled?: boolean;
+  /** 检查点间隔。 */
+  checkpointInterval?: number;
+  /** 是否显式请求诊断会话。 */
+  debug?: boolean;
+  /** 本次运行的规范语言。 */
+  locale?: "zh-CN" | "en-US";
+  /** 取消信号。 */
+  signal?: AbortSignal;
+}
+
+/** 已验证 `.xiaoc` 文件运行参数。 */
+export interface XiaocRunOptions {
+  /** VM 调用深度。 */
+  maxCallDepth?: number;
+  /** 事件容量。 */
   eventCapacity?: number;
   /** 驱动器边界超时（毫秒）。 */
   timeoutMs?: number | null;
@@ -304,6 +325,27 @@ export class ProtocolClient {
     return this.call(request, options.signal);
   }
 
+  /** 使用统一生产 VM 运行一个已经物化的 `.xiaoc`。 */
+  async runXiaoc(path: string, options: XiaocRunOptions = {}): Promise<CoreCallResult> {
+    const request: RunXiaocRequest = {
+      type: "run_xiaoc",
+      request_id: requestId("run-xiaoc"),
+      protocol_version: PROTOCOL_VERSION,
+      core_version: CORE_VERSION,
+      ...(options.locale === undefined ? {} : { locale: options.locale }),
+      path,
+      debug: options.debug ?? false,
+      options: {
+        max_call_depth: options.maxCallDepth ?? 1024,
+        event_capacity: options.eventCapacity ?? 256,
+        timeout_ms: options.timeoutMs ?? null,
+        checkpoints_enabled: options.checkpointsEnabled ?? true,
+        checkpoint_interval: options.checkpointInterval ?? 1024,
+      },
+    };
+    return this.call(request, options.signal);
+  }
+
   /** 只验证一个 `.xiaoc` 或 `.xar`。 */
   async verify(path: string, options: VerifyOptions = {}): Promise<CoreCallResult> {
     const request: VerifyRequest = {
@@ -426,7 +468,7 @@ export class ProtocolClient {
   }
 
   /** 使用已经规范化的协议运行请求发送一次调用。 */
-  async call(request: RunRequest | RunArchiveRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  async call(request: RunRequest | RunArchiveRequest | RunXiaocRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (this.shutdownPromise !== null) throw new CoreClientError("X11-CLI-CORE-003", "核心会话已关闭", 4);
     const execute = () => this.callNow(request, signal);
     const result = this.operation.then(execute, execute);
@@ -445,7 +487,7 @@ export class ProtocolClient {
   }
 
   /** 串行执行一次协议调用，避免同一客户端的帧写入互相交错。 */
-  private async callNow(request: RunRequest | RunArchiveRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  private async callNow(request: RunRequest | RunArchiveRequest | RunXiaocRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     await this.ensureStarted(signal);
     const child = this.child;
@@ -464,6 +506,9 @@ export class ProtocolClient {
       }
       if (request.type === "run_archive" && !helloResponse.capabilities.includes("run_archive")) {
         throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 run_archive 能力，请升级 xiao-core", 2);
+      }
+      if (request.type === "run_xiaoc" && !helloResponse.capabilities.includes("run_xiaoc")) {
+        throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 run_xiaoc 能力，请升级 xiao-core", 2);
       }
       if (request.type === "verify" && !helloResponse.capabilities.includes("verify")) {
         throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 verify 能力，请升级 xiao-core", 2);
