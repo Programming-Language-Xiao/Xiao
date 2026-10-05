@@ -1,8 +1,11 @@
 /** 18A 优化参数、配置优先级和纯归一化回归。 */
 
 import { describe, expect, test } from "bun:test";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
-import { normalizeOptimization, parseOptimizationLayer, parseOptimizationLevel } from "./optimization.ts";
+import { normalizeOptimization, parseOptimizationLayer, parseOptimizationLevel, resolveOptimization } from "./optimization.ts";
 
 describe("18A 优化归一化", () => {
   test("只接受 O0 到 O3", () => {
@@ -29,5 +32,27 @@ describe("18A 优化归一化", () => {
     );
     expect(layer).toMatchObject({ level: 2, debugInfo: true, sourceMap: true });
     expect(layer.passSet).toEqual(["fold", "fold"]);
+  });
+
+  test("归一化 O2 不写回项目配置或锁文件", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-optimization-side-effect-"));
+    const configPath = join(directory, "config.xiao");
+    const lockPath = join(directory, "xiao.lock");
+    const config = "[project]\nname = \"demo\"\nversion = \"0.1.0\"\n[Optimization]\nlevel = 1\n";
+    const lock = "lock-content\n";
+    await writeFile(configPath, config, "utf8");
+    await writeFile(lockPath, lock, "utf8");
+    try {
+      const beforeConfig = await stat(configPath);
+      const beforeLock = await stat(lockPath);
+      const normalized = await resolveOptimization({ cwd: directory, cli: { level: 2 } });
+      expect(normalized.level).toBe(2);
+      expect(await readFile(configPath, "utf8")).toBe(config);
+      expect(await readFile(lockPath, "utf8")).toBe(lock);
+      expect((await stat(configPath)).mtimeMs).toBe(beforeConfig.mtimeMs);
+      expect((await stat(lockPath)).mtimeMs).toBe(beforeLock.mtimeMs);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });
