@@ -137,6 +137,9 @@ impl<'a> DynamicGenerator<'a> {
                 self.check_pending_error_at(span);
                 Ok(value)
             }
+            xiao_intrinsics::VmBinding::MakeError => {
+                self.emit_error_new(declaration.public_name, arguments, span)
+            }
             _ => Err(CodegenError::Unsupported {
                 feature: format!("动态 intrinsic {}", declaration.public_name),
                 span: Some(span),

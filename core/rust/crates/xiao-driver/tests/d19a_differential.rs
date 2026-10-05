@@ -546,9 +546,6 @@ fn native_gap(label: &str) -> Option<NativeGap> {
         "nested-finally-drops" => Some(NativeGap::BuildUnsupported {
             feature: "动态模块中的函数或导入语句",
         }),
-        "caught" | "unmatched" => Some(NativeGap::BuildUnsupported {
-            feature: "动态 intrinsic ArithmeticError",
-        }),
         _ => None,
     }
 }

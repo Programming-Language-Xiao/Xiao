@@ -390,6 +390,59 @@ fn lowers_input_intrinsic_to_runtime_abi() {
     validate_with_llvm_as(&module.text);
 }
 
+/// 构造带一个 `code` 字符串参数的错误构造 intrinsic 调用。
+fn error_constructor(id: u32) -> IrExpression {
+    IrExpression {
+        kind: IrExpressionKind::IntrinsicCall {
+            id,
+            arguments: vec![xiao_ir::IrCallArgument {
+                kind: "positional".to_owned(),
+                name: Some(name("code")),
+                value: literal("str", "\"CODE\"", "str"),
+                span: span(),
+            }],
+        },
+        ty: IrType::Dynamic,
+        span: span(),
+    }
+}
+
+#[test]
+/// 错误构造器经契约表降成 `IntrinsicCall` 后，仍必须走 `error_new_values` ABI，
+/// 不能落入“动态 intrinsic 未支持”；此前这条路径只被环境门控的用例覆盖。
+fn lowers_error_constructor_intrinsics_to_runtime_abi() {
+    for (id, type_name) in [(10, "Error"), (12, "ArithmeticError"), (17, "TypeError")] {
+        let module = lower_program(
+            &expression_program(error_constructor(id)),
+            &CodegenOptions::default(),
+        )
+        .unwrap_or_else(|error| panic!("{type_name} 应降低到动态 Runtime ABI：{error:?}"));
+        assert!(
+            module.text.contains("xiao_runtime_error_new_values"),
+            "{type_name} 缺少错误构造调用"
+        );
+        assert!(
+            module.text.contains(type_name),
+            "{type_name} 的类型名应进入发射文本"
+        );
+        validate_with_llvm_as(&module.text);
+    }
+}
+
+#[test]
+/// `FatalError` 不得经由值 ABI 混入普通错误通道，契约表迁移前后都应如此。
+fn fatal_error_intrinsic_is_still_rejected() {
+    let error = lower_program(
+        &expression_program(error_constructor(18)),
+        &CodegenOptions::default(),
+    )
+    .expect_err("FatalError 不应构造为可恢复错误值");
+    assert!(
+        format!("{error:?}").contains("FatalError"),
+        "拒绝原因应指明 FatalError：{error:?}"
+    );
+}
+
 #[test]
 /// 字符串转义必须复用类型层解码，避免原生和字节码看到不同的文本。
 fn decodes_string_escapes_before_llvm_emission() {
