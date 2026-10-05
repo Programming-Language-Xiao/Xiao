@@ -309,8 +309,9 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.9 ②）
   清理逻辑。
 - 字节码运行路径现在把 13A/14B 的 `optimize_bytecode_checked` 接入生产驱动器：O0
   保留既有验证基线，O1--O3 执行标准保守 Pass 并继续经统一 VM 验证；协议不再错误拒绝
-  非零运行级别。LLVM 原生路径暂保留稳定的 `passes_not_registered` 拒绝字段，明确说明
-  该后端的 Pass 尚未注册。
+  非零运行级别。19A 选择放开原生 O1–O3 后，LLVM 路径使用 clang 的 `-O` 参数，协议产物
+  以 `optimization_backend=clang` 和 `xiao_passes_registered=false` 明确说明 Xiao LLVM
+  Pass 尚未注册。
 - 源码运行的 `.xiaoc` 元数据现在固化源码摘要和 13A 优化配置指纹；缓存观察同时返回
   `recompiled`/`recompile_reason`、完整校验状态和逐 Pass 报告（级别、输入/输出指纹、
   `applied`/`skipped` 与既有 `SkipReason`）。CLI 人类输出也展示命中、重新物化和 Pass
@@ -326,6 +327,9 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.9 ②）
 - 18A 的配置/锁文件不落盘探针已提升为 `commands/index.test.ts` 的真实 `run -O2` 命令
   回归，断言项目配置和锁文件内容、mtime 均不变；`-O1` 既有测试改动原因也已在 18A
   实施记录登记。本批不把命令行缓存维护误写回项目配置。
+- 19A 的 `d19a_differential.rs` 补上四入口回归：源码、未优化 `.xiaoc`、优化 `.xiaoc`
+  和 `.xar` 比较输出、错误、退出码与释放事件；真实原生侧在缺少 15E 工具链时以显式
+  ignored/未覆盖报告处理，不把少跑一路误判为通过。
 
 ## 相关页面
 

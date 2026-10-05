@@ -114,6 +114,12 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
     if (typeof response.artifact.object_digest === "string") {
       lines.push(cliMessage("xiao.cli.build.digest", locale, { value: response.artifact.object_digest }));
     }
+    if (typeof response.artifact.optimization_backend === "string") {
+      const passes = response.artifact.xiao_passes_registered === true
+        ? cliMessage("xiao.cli.build.xiao_passes_registered", locale)
+        : cliMessage("xiao.cli.build.xiao_passes_unregistered", locale);
+      lines.push(cliMessage("xiao.cli.build.backend_optimization", locale, { backend: response.artifact.optimization_backend }) + passes);
+    }
     if (isRecord(response.artifact.artifact_runtime)) {
       const runtime = response.artifact.artifact_runtime;
       const format = typeof runtime.object_format === "string" ? runtime.object_format : "unknown";

@@ -435,6 +435,8 @@ export interface ProtocolArtifact {
   runtime_components: string[];
   optimization_level?: number;
   optimization_fingerprint?: string | null;
+  optimization_backend?: string | null;
+  xiao_passes_registered?: boolean;
   object_digest?: string | null;
   artifact_runtime?: ProtocolArtifactRuntime | null;
   diagnostic_activation?: ProtocolDiagnosticActivation | null;

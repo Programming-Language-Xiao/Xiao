@@ -26,10 +26,10 @@
 | --- | --- | --- |
 | 字节码优化 | `-O1`–`-O3` 已接入生产路径，5 个保守 Pass，逐 Pass 报告进 `cache.optimization` | 可做前后差分 |
 | 原生 `-O0` | 可构建可运行；`print` 已接通 | 可做字节码/原生差分 |
-| **原生 `-O1`–`-O3`** | **协议层拦截**：`xiao-driver/src/protocol/build.rs:119` 对 `level != 0` 直接返回 `passes_not_registered` | **见 §2.1，本批最大的前置问题** |
-| 原生工具链本身 | `toolchain.rs` 已把级别转成真实 clang `-O{n}`；`15e_ci_gated.rs:191`、`:269` 对 `0..=3` 逐级跑真实产物 | 工具链层已支持，只差协议闸门 |
-| 差分套件 | 13B/14B 已有三方差分与边界输入；原生一侧只覆盖 `-O0` | 本批补级别维度 |
-| 模糊测试 | 全仓没有结构化模糊测试 | 本批新建 |
+| **原生 `-O1`–`-O3`** | 已放行；代码生成把级别传给 clang，Xiao 自己的 LLVM Pass 仍未注册并由产物字段标注 | **按 §2.1 的 A 裁定纳入差分前置** |
+| 原生工具链本身 | `toolchain.rs` 把级别转成真实 clang `-O{n}`；`15e_ci_gated.rs` 对 `0..=3` 逐级跑真实产物 | 工具链和协议现在一致 |
+| 差分套件 | 13B/14B 已有三方差分与边界输入；19A 新增源码/字节码/归档入口回归，原生由 15E 门控 | 本批补级别维度 |
+| 模糊测试 | 19A 新增四类确定性解析变异测试 | 已有可重放入口 |
 | 本机环境 | PATH 中有 `/d/msys64/ucrt64/bin/{clang,llc,llvm-as,llvm-strip}`，但 `XIAO_CLANG` 等 6 个变量**均未设置** | 门控用例在本机默认不会跑，见 §2.6 |
 
 ### 本批边界
@@ -46,26 +46,29 @@
 | `19.15`–`19.18` | Java 对照与性能 | **不做**（19D） |
 ## 二、必须先冻结的 6 条
 
-### 2.1 **原生 `-O1`–`-O3` 闸门：待确认，本批不替你定**
+### 2.1 **原生 `-O1`–`-O3` 闸门：已裁定放开并如实标注**
+
+星崽在 19A 实施前选择了 **A**：原生 `-O1`–`-O3` 放行，结果明确标注为仅使用
+clang 优化，Xiao 自己的 LLVM Pass 尚未注册。
 
 **事实**：
 
-- `build.rs:119` 的闸门返回的文案是「LLVM 原生后端的优化 Pass 尚未接入」，原因字段
-  `passes_not_registered`；
+- 原先 `build.rs` 的闸门会以 `passes_not_registered` 拒绝非零级别，本批已按 A 移除；
+  产物现在报告 `optimization_backend="clang"` 和 `xiao_passes_registered=false`；
 - 但 `toolchain.rs` 已经把级别转成真实的 clang `-O{n}`，15E 的真实产物测试也逐级跑过 `0..=3`；
 - 真正没接的是 **Xiao 自己的 LLVM Pass 注册**（`xiao-optimizer` 的 `with_pass` 只有测试用假 Pass）。
 
-所以「三级优化已有实现」只对了一半：**clang 的优化级别能用，Xiao 自己的原生 Pass 没有**，
-闸门文案把两件事混在了一起。
+所以「三级优化已有实现」只对了一半：**clang 的优化级别能用，Xiao 自己的原生 Pass 没有**；
+本批把两件事分成独立的机器字段和用户文案。
 
-**待确认**（19A 开工前由你裁定，实施者不得自行选）：
+**裁定结果**：
 
 | 选项 | 含义 | 代价 |
 | --- | --- | --- |
-| **A. 放开闸门，如实标注** | 原生 `-O1`–`-O3` 走 clang 的优化，报告与文案写明「clang 优化，非 Xiao Pass」 | 19.1 与 19D 的 Java 对照才有真实的优化产物可比；要改文案与一条拒绝用例 |
-| **B. 保持闸门** | 原生只测 `-O0`，19.1 的原生一侧不含级别维度 | 「至少 Java」的发布结论长期只能写「数据不足」 |
+| **A. 放开闸门，如实标注** | **已选择**：原生 `-O1`–`O3` 走 clang 的优化，报告与文案写明「clang 优化，非 Xiao Pass」 | 原生差分可以覆盖真实 clang 级别；Xiao LLVM Pass 以 `xiao_passes_registered=false` 机器字段明确标注 |
+| **B. 保持闸门** | 未选择 | 不适用于本批实施结果 |
 
-推荐 A。但不论选哪个，**闸门文案必须改**：它现在对用户说的是不准确的话。
+闸门文案已改为准确说明后端，不再把 clang 优化与 Xiao Pass 注册混为一谈。
 
 ### 2.2 **差分比较的是「可观察结果」，不是字节**
 
@@ -201,6 +204,23 @@ docs/DevDocs/18c-*.md 与 18b-*.md        逐条收口评估与四入口结论�
 - **不改**优化算法、`.xiaoc` 格式、索引字段或信任规则；
 - **不实现** Xiao 自己的 LLVM Pass 注册——那属于 15 的后续工作，本批只处理闸门如何如实呈现。
 
+## 本批实施记录
+
+- 原生优化闸门按星崽选择的 **A** 处理：`xiao build -O1/-O2/-O3` 现在把级别传入
+  `CodegenOptions`，由 clang 执行对应 `-O`；协议产物记录 `optimization_backend="clang"`、
+  `xiao_passes_registered=false`、实际优化计划指纹和可执行文件摘要。用户文案明确说明
+  Xiao 自己的 LLVM Pass 尚未注册，不再把 clang 能力误报为 Xiao Pass。
+- 新增 `d19a_differential.rs`，把同一源码依次运行源码、未优化 `.xiaoc`、优化 `.xiaoc`
+  和 `.xar`，比较输出、错误、退出码和释放事件；原生真实产物侧保留独立 `#[ignore]`
+  门控用例，缺少 15E 的环境变量时明确显示“未覆盖”，不会静默少跑一路。
+- 新增四组无新依赖的确定性变异测试：IR JSON（seed `0x19a01`）、`.xiaoc`（seed
+  `0x19a02`）、Protobuf 归档/全局索引（固定 `fuzz-index`）和 `.xar`（seed `0x19a03`）。
+  每组限制输入大小和 256 轮变异，目标是解析拒绝稳定且不 panic/越界/无界分配；重放命令
+  登记在 `tests/fuzz/README.md`。
+- 18C 的 18 阶段收口结论已由 18C 逐条记录；四入口一致性新增 `d19a_differential` 的
+  源码/字节码/归档回归，原生一路在无工具链时明确 ignored。macOS 真实注册和 Windows
+  GUI 子系统继续按 10D/19 的宿主门控口径保留待复现。
+
 ## 相关页面
 
 - [19. 优化、兼容性与发布验收](19-optimization-release.md) —— 权威规范
@@ -208,4 +228,3 @@ docs/DevDocs/18c-*.md 与 18b-*.md        逐条收口评估与四入口结论�
 - [15E](15e-ci-gated-artifact-acceptance.md) —— 原生真实产物门控
 - [18B](18b-backend-calls-and-workflow.md)、[18C](18c-file-association-and-scripting.md) —— 本批回填的对象
 - [10D](10d-environment-gated-test-spec.md) —— 门控标记规范
-

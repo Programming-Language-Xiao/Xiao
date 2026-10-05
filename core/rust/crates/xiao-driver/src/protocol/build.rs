@@ -24,7 +24,7 @@ use super::message::{
 };
 use super::request::{
     BUILD_ERROR_CODE, OptimizationConfig, ProtocolError, ProtocolTarget, SourceIdentity,
-    ToolchainSpec, UNSUPPORTED_OPERATION_CODE,
+    ToolchainSpec,
 };
 use super::run::{cancelled_error_response, frontend_request, protocol_error_response};
 use crate::native::{
@@ -115,9 +115,6 @@ pub(super) fn build_response(
 ) -> ProtocolResponse {
     if cancellation.is_cancelled() {
         return cancelled_error_response(request_id);
-    }
-    if optimization.level != 0 {
-        return unsupported_optimization_response(request_id, optimization.level);
     }
     if output.trim().is_empty() {
         return protocol_error_response(
@@ -213,6 +210,15 @@ fn build_codegen_options(
     target: TargetDescription,
 ) -> Result<CodegenOptions, ProtocolResponse> {
     let options = CodegenOptions::for_target(target);
+    let options = match options.with_optimization_level(optimization.level) {
+        Ok(options) => options,
+        Err(error) => {
+            return Err(protocol_error_response(
+                Some(request_id.to_owned()),
+                &ProtocolError::build(error.to_string()),
+            ));
+        }
+    };
     if !optimization.debug {
         return Ok(options);
     }
@@ -406,6 +412,8 @@ fn finalize_build(
                     .fingerprint
                     .clone(),
             ),
+            optimization_backend: Some("clang".to_owned()),
+            xiao_passes_registered: false,
             object_digest,
             artifact_runtime: Some(protocol_artifact_runtime(&result.native.artifact_runtime)),
             diagnostic_activation,
@@ -560,27 +568,6 @@ fn cleanup_after_failure(
     }
     if let Some(activation) = activation {
         let _ = fs::remove_file(&activation.path);
-    }
-}
-
-/// 为尚未支持的非零优化级别构造稳定协议错误。
-fn unsupported_optimization_response(request_id: String, level: u8) -> ProtocolResponse {
-    ProtocolResponse::Error {
-        request_id: Some(request_id),
-        error: protocol_error_body(
-            UNSUPPORTED_OPERATION_CODE,
-            "x11.protocol.optimization_unavailable",
-            "LLVM 原生后端的优化 Pass 尚未接入，当前只支持优化级别 0",
-            Some("build".to_owned()),
-            Some("使用 level=0，或等待 LLVM 优化 Pass 接入".to_owned()),
-            BTreeMap::from([
-                ("level".to_owned(), json!(level)),
-                ("backend".to_owned(), json!("llvm")),
-                ("reason".to_owned(), json!("passes_not_registered")),
-            ]),
-        ),
-        report: None,
-        exit_code: ExitCode::ArtifactRejected.as_process_code(),
     }
 }
 

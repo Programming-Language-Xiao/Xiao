@@ -1849,6 +1849,63 @@ mod tests {
     }
 
     #[test]
+    fn deterministic_index_mutations_never_panic_or_exceed_input_bound() {
+        let digest = Digest256::of_bytes(b"fuzz-index");
+        let archive = ArchiveIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            entry: "main.xiaoc".to_owned(),
+            entries: vec![ArchiveEntry {
+                logical_path: "main.xiaoc".to_owned(),
+                object_kind: ObjectKind::Xiaoc,
+                digest,
+                module: "main".to_owned(),
+                target: "portable".to_owned(),
+                length: 1,
+            }],
+            dependency_lock_digest: String::new(),
+            runtime_abi_min: 1,
+            runtime_abi_max: 1,
+            platform: "portable".to_owned(),
+            debug_activation: false,
+            language_locale: "zh-CN".to_owned(),
+        };
+        let global = GlobalIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            records: vec![GlobalRecord {
+                request_key: "fuzz".to_owned(),
+                object_kind: ObjectKind::Native,
+                digest,
+                target: "portable".to_owned(),
+                optimization_level: 0,
+                codegen_version: 1,
+                length: 1,
+            }],
+        };
+        let seeds = [archive.encode().unwrap(), global.encode().unwrap()];
+        for (seed_index, seed) in seeds.into_iter().enumerate() {
+            for round in 0..256_usize {
+                let mut candidate = seed.clone();
+                let index = (round.wrapping_mul(19).wrapping_add(seed_index)) % candidate.len();
+                candidate[index] ^= (round as u8).wrapping_mul(17).wrapping_add(3);
+                candidate.truncate(candidate.len().min(64 * 1024));
+                let result = std::panic::catch_unwind(|| {
+                    if seed_index == 0 {
+                        let _ = ArchiveIndex::decode(&candidate);
+                    } else {
+                        let _ = GlobalIndex::decode(&candidate);
+                    }
+                });
+                assert!(
+                    result.is_ok(),
+                    "索引解析 seed={seed_index} round={round} 时 panic"
+                );
+            }
+        }
+    }
+
+    #[test]
     fn scan_quarantines_objects_with_invalid_names_or_shards() {
         let root = temp_root("scan-boundary");
         let store = ArtifactStore::open(&root).unwrap();

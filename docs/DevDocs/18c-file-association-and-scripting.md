@@ -260,10 +260,25 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.6）
 
 ### 18 阶段收口评估
 
-18.1–18.8 已由 18A/18B 交付并在本批回归；18.9–18.12 已由本批关联接口、非交互 JSON、
-实际使用记录和缓存/索引破坏场景接通；18.13 的配置合并已接入，窗口本身沿用 11X0-D，
-但 macOS 真实 LaunchServices 与 Windows GUI 子系统行为仍需对应宿主环境复现。因此 18 阶段
-代码链路已收口，跨宿主发布验收继续按 10D/19 的门控口径保留待复现状态。
+| 子任务 | 结论 | 证据 |
+| --- | --- | --- |
+| 18.1 优化参数 | 满足 | `parser.ts`、`optimization.test.ts`，O0–O3 与优先级回归 |
+| 18.2 配置归一化 | 满足 | `optimization.ts`；本批补 `[debug]` 逐字段合并测试 |
+| 18.3 输入路由 | 满足 | `input-routing.test.ts` 与 18B 的 `.xiaoc` 入口 |
+| 18.4 帮助/机器错误 | 满足 | 双语 `i18n.ts`、协议 JSON 测试 |
+| 18.5 后端调用 | 满足 | `xiao-driver` 协议、`d19a_differential.rs` |
+| 18.6 缓存展示 | 满足 | `cache.optimization`、对象摘要和关联命令 JSON |
+| 18.7 输出前验证 | 满足 | `verify`、`read_checked`、`.xiaoc`/`.xar` 运行前解码 |
+| 18.8 四入口运行契约 | 满足 | 19A `d19a_differential.rs` 比较源码、REPL 协议、`.xiaoc`、`.xar` |
+| 18.9 文件关联 | 满足（macOS 门控） | `file-association.ts` 三平台执行体、安装/检查/移除测试 |
+| 18.10 非交互与机器结果 | 满足 | `association` 命令、`--json` 统一 `result/error` 结构、`--verbose` stderr |
+| 18.11 中断/重复/只读/并发 | 满足 | `xiao-artifacts` 中断临时文件测试、16B 清理/只读测试、`xiao-lock` 并发测试 |
+| 18.12 使用记录 | 满足 | `cache.optimization`、`audit` schema、原生优化指纹/产物摘要字段 |
+| 18.13 `-debug` 全链路 | 部分满足（宿主门控） | `[debug]` 合并与协议传递已完成；macOS LaunchServices、Windows GUI 子系统待宿主复现 |
+| 18.14 语言/插件回退 | 满足 | 11C 归一化、归档语言回退诊断和既有 CLI 测试 |
+
+因此 18 阶段的代码链路和可测试契约已收口；跨宿主发布行为继续按 10D/19 的门控口径保留
+“待复现”，没有把受控环境或源码级证据写成三平台验收。
 
 ## 相关页面
 

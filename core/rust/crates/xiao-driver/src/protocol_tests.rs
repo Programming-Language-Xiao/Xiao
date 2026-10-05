@@ -899,6 +899,8 @@ fn artifact_runtime_facts_round_trip() {
         runtime_components: vec!["value".to_owned(), "rc".to_owned()],
         optimization_level: 0,
         optimization_fingerprint: None,
+        optimization_backend: None,
+        xiao_passes_registered: false,
         object_digest: None,
         artifact_runtime: Some(ProtocolArtifactRuntime {
             object_format: "coff".to_owned(),

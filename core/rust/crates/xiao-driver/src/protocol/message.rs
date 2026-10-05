@@ -477,6 +477,12 @@ pub struct ProtocolArtifact {
     /// 实际 LLVM 优化计划指纹。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub optimization_fingerprint: Option<String>,
+    /// 原生优化由哪个后端执行；本批为 `clang`。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub optimization_backend: Option<String>,
+    /// Xiao 自身 LLVM Pass 是否已注册。
+    #[serde(default)]
+    pub xiao_passes_registered: bool,
     /// 已验证原生产物文件的 SHA-256 摘要。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub object_digest: Option<String>,
