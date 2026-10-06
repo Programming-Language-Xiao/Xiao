@@ -4,7 +4,8 @@ use xiao_artifacts::{ArchiveIndex, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR};
 use xiao_bytecode::{XiaocMetadata, decode_xiaoc, encode_xiaoc, lower_program};
 use xiao_driver::{
     CompatibilityAction, CompatibilityAxis, CompatibilityEvidence, CompatibilityStatus,
-    FrontendCompiler, FrontendRequest, compatibility_matrix, current_compatibility_versions,
+    FrontendCompiler, FrontendRequest, TargetSupportStatus, compatibility_matrix,
+    current_compatibility_versions, target_support_matrix,
 };
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 
@@ -107,6 +108,23 @@ fn index_major_cell_is_backed_by_the_authoritative_codec() {
         })
         .expect("必须有索引主版本格子");
     assert_eq!(cell.evidence, CompatibilityEvidence::Verified);
+}
+
+#[test]
+/// 不支持目标必须出现在代码生成的平台清单中，并与未验证目标区分。
+fn target_support_matrix_distinguishes_unsupported_and_unverified() {
+    let cells = target_support_matrix();
+    assert!(cells.iter().any(|cell| {
+        cell.target == "riscv64-unknown-linux-gnu"
+            && cell.status == TargetSupportStatus::Unsupported
+    }));
+    assert!(cells.iter().any(|cell| {
+        cell.target == "x86_64-pc-windows-msvc"
+            && matches!(
+                cell.status,
+                TargetSupportStatus::Supported | TargetSupportStatus::Unverified
+            )
+    }));
 }
 
 #[test]

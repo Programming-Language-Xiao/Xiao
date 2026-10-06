@@ -80,7 +80,11 @@ impl TargetDescription {
         let expected_width = match architecture {
             "x86_64" | "aarch64" | "arm64" => Some(64),
             "i386" | "i686" | "arm" | "armv7" => Some(32),
-            _ => None,
+            _ => {
+                return Err(CodegenError::InvalidTarget {
+                    message: format!("目标架构 {architecture} 不受支持"),
+                });
+            }
         };
         if let Some(expected_width) = expected_width
             && self.pointer_width != expected_width
@@ -99,7 +103,9 @@ impl TargetDescription {
         } else if self.triple.contains("linux") {
             Some(ObjectFormat::Elf)
         } else {
-            None
+            return Err(CodegenError::InvalidTarget {
+                message: format!("目标平台 {} 不受支持", self.triple),
+            });
         };
         if let Some(expected_format) = expected_format
             && self.object_format != expected_format
@@ -317,5 +323,23 @@ mod tests {
         let empty = TargetDescription::new("  ", 64, Endian::Little, ObjectFormat::Elf)
             .expect_err("空三元组必须拒绝");
         assert!(empty.to_string().contains("不能为空"));
+
+        let unknown_arch = TargetDescription::new(
+            "riscv64-unknown-linux-gnu",
+            64,
+            Endian::Little,
+            ObjectFormat::Elf,
+        )
+        .expect_err("未支持的架构必须在工具链前拒绝");
+        assert!(unknown_arch.to_string().contains("架构 riscv64 不受支持"));
+
+        let unknown_platform = TargetDescription::new(
+            "x86_64-unknown-freebsd",
+            64,
+            Endian::Little,
+            ObjectFormat::Elf,
+        )
+        .expect_err("未支持的平台必须在工具链前拒绝");
+        assert!(unknown_platform.to_string().contains("目标平台"));
     }
 }

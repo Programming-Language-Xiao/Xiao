@@ -1,6 +1,7 @@
 //! 19B 兼容矩阵：把现有版本边界集中成可测试、可报告的数据。
 
 use serde::{Deserialize, Serialize};
+use xiao_codegen_llvm::TargetDescription;
 
 /// 矩阵中一个版本轴的稳定名称。
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -77,6 +78,71 @@ pub enum CompatibilityStatus {
     Deprecated,
     /// 已从当前核心移除的版本。
     Removed,
+}
+
+/// 目标平台清单中的验证状态。
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum TargetSupportStatus {
+    /// 当前宿主已完成目标描述和构建入口验证。
+    Supported,
+    /// 目标描述合法，但当前没有该宿主的实跑证据。
+    Unverified,
+    /// 目标描述在工具链前被稳定拒绝。
+    Unsupported,
+}
+
+/// 代码生成的目标平台清单项。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct TargetSupportCell {
+    /// 目标三元组。
+    pub target: String,
+    /// 当前证据状态。
+    pub status: TargetSupportStatus,
+    /// 状态原因或下一步说明。
+    pub reason: String,
+}
+
+/// 生成当前支持表和已知拒绝样本；状态不把跨平台缺失证据伪装成支持。
+#[must_use]
+pub fn target_support_matrix() -> Vec<TargetSupportCell> {
+    let host = TargetDescription::host();
+    let supported_targets = [
+        TargetDescription::windows_x86_64(),
+        TargetDescription::windows_aarch64(),
+        TargetDescription::linux_x86_64(),
+        TargetDescription::linux_aarch64(),
+        TargetDescription::macos_x86_64(),
+        TargetDescription::macos_aarch64(),
+    ];
+    let mut cells = supported_targets
+        .into_iter()
+        .map(|target| TargetSupportCell {
+            status: if target.triple == host.triple {
+                TargetSupportStatus::Supported
+            } else {
+                TargetSupportStatus::Unverified
+            },
+            target: target.triple,
+            reason: "目标描述可构造；跨宿主实跑证据按平台工作流登记".to_owned(),
+        })
+        .collect::<Vec<_>>();
+    for (triple, reason) in [
+        (
+            "riscv64-unknown-linux-gnu",
+            "架构 riscv64 不受支持，构建前拒绝",
+        ),
+        (
+            "x86_64-unknown-freebsd",
+            "目标平台 unknown-freebsd 不受支持，构建前拒绝",
+        ),
+    ] {
+        cells.push(TargetSupportCell {
+            target: triple.to_owned(),
+            status: TargetSupportStatus::Unsupported,
+            reason: reason.to_owned(),
+        });
+    }
+    cells
 }
 
 /// 兼容矩阵中的一格。
