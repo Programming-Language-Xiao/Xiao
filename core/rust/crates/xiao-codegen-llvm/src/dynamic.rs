@@ -409,6 +409,7 @@ impl<'a> DynamicGenerator<'a> {
         let symbol = self.function_symbol(&name.text);
         let mut generator = Self::new(self.program, self.options);
         generator.body = body;
+        generator.next_global = self.next_global;
         generator.function_mode = true;
         generator.function_definitions = self.function_definitions.clone();
         generator.error_terminal_label = "xiao.fn.error".to_owned();
@@ -477,6 +478,8 @@ impl<'a> DynamicGenerator<'a> {
         generator.emit("  ret void".to_owned());
         generator.emit("}".to_owned());
         generator.emit(String::new());
+        self.next_global = generator.next_global;
+        self.globals.extend(generator.globals);
         self.function_texts.push(generator.lines.join("\n"));
         Ok(())
     }

@@ -573,24 +573,16 @@ fn release_tuples(text: &str) -> Vec<String> {
         .collect()
 }
 
-/// 原生后端已知与 VM 不一致的用例。缺口属于 15 阶段，本批只登记，不修。
+/// 原生已能构建但释放序列仍与 VM 不同的后续缺口。
 enum NativeGap {
-    /// 原生构建以 `Unsupported` 拒绝，`feature` 是拒绝信息里必须出现的片段。
-    BuildUnsupported { feature: &'static str },
-    /// 原生能构建，但可观察结果与 VM 不同。
+    /// 说明差异来源，保持差分用例运行并如实登记。
     Diverges { reason: &'static str },
 }
 
 fn native_gap(label: &str) -> Option<NativeGap> {
-    match label {
-        "overflow" => Some(NativeGap::Diverges {
-            reason: "原生整数溢出以非法指令终止，没有 xiao-error 机器摘要，退出码不是 3",
-        }),
-        "nested-finally-drops" => Some(NativeGap::BuildUnsupported {
-            feature: "动态模块中的函数或导入语句",
-        }),
-        _ => None,
-    }
+    (label == "nested-finally-drops").then_some(NativeGap::Diverges {
+        reason: "原生动态函数的嵌套 finally 释放序列仍少一条作用域释放",
+    })
 }
 
 #[test]
@@ -600,8 +592,6 @@ fn native_side_matches_the_vm_sides_on_every_case() {
     assert!(missing.is_empty(), "{}", native_coverage_report(&missing));
     let (target, toolchain) = configured_native();
     let mut problems = Vec::new();
-    let mut uncovered = Vec::new();
-
     for case in &CASES {
         let gap = native_gap(case.label);
         let frontend_request = FrontendRequest::from_text(case.source);
@@ -629,12 +619,7 @@ fn native_side_matches_the_vm_sides_on_every_case() {
             Ok(native) => native,
             Err(error) => {
                 let text = format!("{error:?}");
-                match gap {
-                    Some(NativeGap::BuildUnsupported { feature }) if text.contains(feature) => {
-                        uncovered.push(format!("{}：原生构建拒绝（{feature}）", case.label));
-                    }
-                    _ => problems.push(format!("用例 {}：原生构建失败：{text}", case.label)),
-                }
+                problems.push(format!("用例 {}：原生构建失败：{text}", case.label));
                 let _ = fs::remove_dir_all(root);
                 continue;
             }
@@ -695,10 +680,10 @@ fn native_side_matches_the_vm_sides_on_every_case() {
 
         match gap {
             Some(NativeGap::Diverges { reason }) if !case_problems.is_empty() => {
-                uncovered.push(format!("{}：{reason}", case.label));
+                eprintln!("[19A 差分] 原生未覆盖 {}：{reason}", case.label);
             }
-            Some(_) => problems.push(format!(
-                "用例 {}：登记的原生缺口已不存在（原生构建并与 VM 一致），请从 native_gap 中移除",
+            Some(NativeGap::Diverges { .. }) => problems.push(format!(
+                "用例 {}：登记的原生缺口已不存在，请从 native_gap 中移除",
                 case.label
             )),
             None => problems.extend(
@@ -707,9 +692,6 @@ fn native_side_matches_the_vm_sides_on_every_case() {
                     .map(|problem| format!("用例 {}：{problem}", case.label)),
             ),
         }
-    }
-    for line in &uncovered {
-        eprintln!("[19A 差分] 原生未覆盖 {line}");
     }
     assert!(problems.is_empty(), "\n{}", problems.join("\n"));
 }

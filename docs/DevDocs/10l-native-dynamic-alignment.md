@@ -239,7 +239,7 @@ docs/DevDocs/README.md                                                 主表登
 3. 整数窄化范围检查 1 个；
 4. 浮点有限性检查的非有限分支和范围分支各 1 个，共 2 个。
 
-其中前 5 个经过 `branch_on_trap` 共享辅助，后 2 个在 `check_finite` 直接发射；每次遇到相应操作会按操作复制失败块，所以「7」是发射点模板数，不是任意程序固定生成 7 个块。Windows 19A 实测溢出退出为 `0xC000001D`，没有 `xiao-error` 摘要；VM 结果是 `X06-RUNTIME-009`。是否把这条债项并入本批仍由待定决策 2 决定。
+其中前 5 个经过 `branch_on_trap` 共享辅助，后 2 个在 `check_finite` 直接发射；每次遇到相应操作会按操作复制失败块，所以「7」是发射点模板数，不是任意程序固定生成 7 个块。Windows 19A 早期实测溢出退出为 `0xC000001D`，没有 `xiao-error` 摘要；扩大范围后，带 `numeric_range` 的动态路径已通过 Runtime ABI 对齐为 `X06-RUNTIME-009`，纯静态路径的 trap 模板仍保留。
 
 ### 11.5 结论与范围闸门
 
@@ -263,7 +263,7 @@ cargo test -p xiao-driver --test i4a2_module_loading module_loading_spec_vectors
 - VM 字节码降低在动态条件进入 `BranchIf` 前插入布尔转换，`boolean_condition` 现在得到稳定 `X06-RUNTIME-002`，不再在执行前触发 `X09-BYTECODE-002`。
 - 定向回归覆盖 Runtime ABI 算子、3 类语句、动态条件和 LLVM 文本降低；Windows 本机未配置 LLVM/Runtime staticlib 环境，因此原生可执行文件的跨平台实跑仍按 10D 门控记录。
 
-当前仍需后续实测确认的行为是高级范围/随机选择在原生路径上的完整结果序列，以及整数溢出从 `llvm.trap` 进入统一 `X06-RUNTIME-009` 的错误展开；这两项不在本次首轮接线中宣称完成。
+当前仍需后续实测确认的行为是高级范围/随机选择在原生路径上的完整结果序列，以及嵌套 `finally` 中动态函数的完整释放序列；19A 原生差分已将该释放差异登记为后续缺口。扩大范围首轮不宣称这两项完成。
 
 ## 相关页面
 
