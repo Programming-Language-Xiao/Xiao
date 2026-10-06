@@ -205,6 +205,19 @@ docs/DevDocs/README.md                                          主表登记
 4. **回归门**：是否新增随 push/PR 触发、跑原生 `--ignored` 用例的工作流。这是 10L 里就提过、至今未答的一项；本批的 H3 只解决「探测有断言」，不解决「CI 会跑」。
 5. **是否授权推送**并手动触发平台复现工作流：本地已领先远端 47 个提交。
 
+## 九、实施记录（2026-10-07）
+
+H1–H3、H6、H8 已完成并分别提交：`2447d1b`（函数体错误路由与差分）、`4362d39`（Runtime 注入与原生构建基线）、`75f94f8`（默认 LLVM 标签结构校验）、`b742489`（Runtime ABI 模块拆分）。H2 的结论是有意行为：动态模块必须由调用方通过 `Toolchain::with_runtime_library` 注入 Runtime staticlib，既有门控用例已显式注入并保持严格断言。
+
+受控环境为 Windows `x86_64-pc-windows-msvc`，使用 `XIAO_CLANG=D:\\msys64\\ucrt64\\bin\\clang.exe`、`XIAO_LLVM_AS=...\\llvm-as.exe`、已构建 `xiao_runtime.lib`。实跑命令及结果：
+
+- `cargo test -p xiao-driver --test n0_a_native_driver optional_real_frontend_to_native_round_trip -- --ignored`：通过；
+- `cargo test -p xiao-driver --test native_benchmark_probe -- --ignored --nocapture`：`deep-expression-arithmetic`、`scalar-overflow-and-bool-parity`、`named-local-loop`、`deep-call-recursion` 为 `built`；`container-dense` 如实拒绝，原因为动态表方法尚无函数表 ABI；
+- `cargo test -p xiao-driver --test d19a_differential -- --ignored --nocapture`：通过；`nested-finally-drops` 仍保留既有释放序列缺口登记；
+- `cargo test -p xiao-codegen-llvm --test n0_b_dynamic`：默认结构校验通过；缺少 `XIAO_LLVM_AS` 时只跳过外部汇编器，不跳过函数标签检查。
+
+H5 的“14 类检查”来源是星崽在本次会话确认“扩大范围”；H4 已回填 19D 与 10L。动态路径整数溢出已由 Runtime 检查接通，静态 `ir.rs` 的 7 处 `llvm.trap` 仍未接入 `X06-RUNTIME-009`。`nested-finally-drops` 的释放序列、高级范围/随机选择完整原生结果、Linux/macOS 原生运行记录和 §2.4 受控性能基线继续记为待补。`bun run check` 已从 H8 修复前的 `A0-SIZE-001` 红色状态恢复退出码 0；`cargo fmt --check`、workspace Clippy、Runtime 定向测试均通过。
+
 ## 相关页面
 
 - [10L. 原生动态入口与 VM 对齐](10l-native-dynamic-alignment.md) —— 上一批；枚举与实现记录

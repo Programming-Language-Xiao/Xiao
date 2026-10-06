@@ -261,7 +261,8 @@ cargo test -p xiao-driver --test i4a2_module_loading module_loading_spec_vectors
 - LLVM 动态降低器移除「`runtime_checks` 非空即拒绝」闸门，消费 `arithmetic`、`dynamic_conversion`、`numeric_range`、集合检查、字符串布尔、迭代、选择器步长/边界、随机数量/种子、哈希性和动态条件检查。
 - 动态 `for` 使用 Runtime 长度/元素入口；顶层动态函数使用独立 `%xiao.value` 指针调用约定；项目文件模块在导入点初始化一次，支持选定导出绑定和模块命名空间字典成员读取。
 - VM 字节码降低在动态条件进入 `BranchIf` 前插入布尔转换，`boolean_condition` 现在得到稳定 `X06-RUNTIME-002`，不再在执行前触发 `X09-BYTECODE-002`。
-- 定向回归覆盖 Runtime ABI 算子、3 类语句、动态条件和 LLVM 文本降低；Windows 本机未配置 LLVM/Runtime staticlib 环境，因此原生可执行文件的跨平台实跑仍按 10D 门控记录。
+- 定向回归覆盖 Runtime ABI 算子、3 类语句、动态条件和 LLVM 文本降低。10M 在 Windows `x86_64-pc-windows-msvc` 受控工具链上重跑了 `n0_a_native_driver --ignored`、`d19a_differential --ignored` 与 `native_benchmark_probe --ignored`；四个基准恢复可构建，函数体动态算术/布尔条件差分通过。
+- 动态路径的整数溢出已接通 Runtime 检查；静态 `ir.rs` 中 7 处 `llvm.trap` 仍未接入 `X06-RUNTIME-009` 统一错误路径，继续按 §4.3 单独跟踪。
 
 当前仍需后续实测确认的行为是高级范围/随机选择在原生路径上的完整结果序列，以及嵌套 `finally` 中动态函数的完整释放序列；19A 原生差分已将该释放差异登记为后续缺口。扩大范围首轮不宣称这两项完成。
 

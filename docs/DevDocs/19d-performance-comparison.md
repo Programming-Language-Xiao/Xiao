@@ -29,7 +29,7 @@
 | 09R3 报告 | 报告的 `platform` 是 `windows-native`，`baseline` 是「同一构建的栈式载体」，比较的是**三种 VM 载体**，不涉及 LLVM 原生，也没有 Java | **不能当作 19.16/19.17 的证据** |
 | 测量方法 | 零框架，`std::time::Instant`，3 次预热、11 次测量，中位数加四分位区间 | 可借鉴；**四分位区间不是置信区间**，19.17 要的是后者 |
 | Java 基线 | 已加入 `tests/benchmarks/java/Benchmark.java` 与 `baseline.json`；发行版族冻结为 Temurin/OpenJDK 21。本机 `java -version` 是 1.8.0_491，不能替代受控版本记录 | 受控小版本、硬件与运行记录待补 |
-| 原生能否构建基准程序 | Windows 探测已完成：4 个基准可构建；`container-dense` 因动态降低器对任一非空 `runtime_checks` 列表整体拒绝而失败，列表首项是 `numeric_range`，并非已确认的唯一缺口；Linux/macOS 未测 | 具体检查种类待 10L 枚举；性能对照按数据不足处理 |
+| 原生能否构建基准程序 | Windows 受控探测已完成：4 个基准可构建；`container-dense` 因动态表方法尚无函数表 ABI 而拒绝；Linux/macOS 未测 | 动态表方法 ABI 待后续；性能对照按数据不足处理 |
 | 原生 `-O1`–`-O3` | 只是 clang 的优化级别，Xiao 自己的 LLVM Pass 没注册（19A §2.1） | 基线必须写清这一点 |
 | 本机 | 只有 Windows。Linux 与 macOS 的数字只能来自 CI 或别的机器 | 见 §2.5 |
 
@@ -278,7 +278,7 @@ docs/DevDocs/README.md                                主表登记
 | `scalar-overflow-and-bool-parity` | 可构建 | 保留用例；Java/Xiao 溢出语义不同，结果只记数据不足，不参与通过判定 |
 | `named-local-loop` | 可构建 | 可进入后续测量 |
 | `deep-call-recursion` | 可构建 | 可进入后续测量 |
-| `container-dense` | 原生拒绝：动态降低器在处理具体种类前，因 `runtime_checks` 非空而整体拒绝；本次列表首项为 `numeric_range` | 数据不足；全部语句与检查种类由 10L 枚举，不把首项认作唯一缺口 |
+| `container-dense` | 原生拒绝：动态表方法尚无函数表 ABI（受控提交 `b742489`，Windows `x86_64-pc-windows-msvc`） | 数据不足；动态表方法 ABI 作为后续输入，不把拒绝原因归因于 `numeric_range` |
 
 这份探测只证明“能否进入原生测量”，没有产生 Java 对照结论。Linux/macOS 没有运行记录，统一记为未测。
 
