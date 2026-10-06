@@ -164,6 +164,10 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
               status: String(reproducibility.status ?? "unknown"),
             }));
           }
+          const revocation = isRecord(release.revocation) ? release.revocation : null;
+          if (revocation?.status === "unavailable") {
+            lines.push(cliMessage("xiao.cli.verify.revocation", locale));
+          }
           const signature = isRecord(release.signature) ? release.signature : null;
           if (signature?.status === "unsigned") lines.push(cliMessage("xiao.cli.verify.unsigned", locale));
         }

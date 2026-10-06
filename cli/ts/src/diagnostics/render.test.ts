@@ -206,6 +206,7 @@ describe("CLI 诊断呈现", () => {
             runtime_abi: { min: 1, max: 1 },
             toolchain: "xiao-codegen-llvm/2",
             reproducibility: { status: "not-measured" },
+            revocation: { status: "unavailable" },
             signature: { status: "unsigned" },
           },
         }),
@@ -214,6 +215,7 @@ describe("CLI 诊断呈现", () => {
     expect(rendered.stderr).toContain("发布摘要");
     expect(rendered.stderr).toContain("portable");
     expect(rendered.stderr).toContain("not-measured");
+    expect(rendered.stderr).toContain("撤销机制");
     expect(rendered.stderr).toContain("SHA-256 只保证完整性");
   });
 });

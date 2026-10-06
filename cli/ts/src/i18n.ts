@@ -93,6 +93,7 @@ const messages = {
   "xiao.cli.verify.digest": { "zh-CN": "发布摘要  {digest}", "en-US": "release digest  {digest}" },
   "xiao.cli.verify.release": { "zh-CN": "发布报告  平台 {platform}  Runtime ABI {abi}  工具链 {toolchain}", "en-US": "release report  platform {platform}  Runtime ABI {abi}  toolchain {toolchain}" },
   "xiao.cli.verify.reproducibility": { "zh-CN": "可复现性  {status}", "en-US": "reproducibility  {status}" },
+  "xiao.cli.verify.revocation": { "zh-CN": "撤销机制  当前不可用：等待信任模型冻结", "en-US": "revocation  unavailable until the trust model is frozen" },
   "xiao.cli.verify.unsigned": { "zh-CN": "未签名：SHA-256 只保证完整性，不代表发布者可信", "en-US": "unsigned: SHA-256 provides integrity only; it does not establish publisher trust" },
   "xiao.cli.cache.status": { "zh-CN": "缓存 {action}：{status}", "en-US": "cache {action}: {status}" },
   "xiao.cli.cache.observation": { "zh-CN": "缓存 {status}  {kind}  摘要 {digest}  校验 {verified}", "en-US": "cache {status}  {kind}  digest {digest}  verification {verified}" },

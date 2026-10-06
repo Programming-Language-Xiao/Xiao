@@ -11,7 +11,9 @@ use super::message::{ProtocolResponse, ProtocolValue};
 use super::run::protocol_error_response;
 use super::validate::validate_versions;
 use crate::run::ExitCode;
-use xiao_artifacts::{ArtifactStore, Digest256, GlobalRecord, IndexStore, ObjectKind};
+use xiao_artifacts::{
+    ArtifactStore, Digest256, GlobalRecord, IndexStore, ObjectKind, ReferenceSet,
+};
 use xiao_package::CacheLayout;
 
 /// 未实现签名时必须随报告显示的完整性边界。
@@ -204,11 +206,15 @@ fn xiaoc_release_report(file: &xiao_bytecode::XiaocFile, bytes: &[u8]) -> Value 
             "min": file.header.runtime_abi_min,
             "max": file.header.runtime_abi_max,
         },
-        "reproducibility": {
-            "status": "not-measured",
-            "allowed_differences": [],
-        },
-        "signature": {
+                    "reproducibility": {
+                        "status": "not-measured",
+                        "allowed_differences": [],
+                    },
+                    "revocation": {
+                        "status": "unavailable",
+                        "message": "当前没有撤销机制；撤销策略等待信任模型冻结",
+                    },
+                    "signature": {
             "status": "unsigned",
             "warning": UNSIGNED_INTEGRITY_WARNING,
         },
@@ -277,6 +283,10 @@ fn xar_release_report(archive: &xiao_xar::XarArchive, bytes: &[u8]) -> Value {
         "reproducibility": {
             "status": "not-measured",
             "allowed_differences": [],
+        },
+        "revocation": {
+            "status": "unavailable",
+            "message": "当前没有撤销机制；撤销策略等待信任模型冻结",
         },
         "signature": {
             "status": "unsigned",
@@ -384,10 +394,9 @@ pub(super) fn cache_response(
             Err(error) => return cache_error(request_id, "X11-CACHE-002", error.to_string()),
         }
     };
-    let references = match store.collect_references(None, &[], &[]) {
-        Ok(references) => references,
-        Err(error) => return cache_error(request_id, "X11-CACHE-003", error.to_string()),
-    };
+    // 当前 cache 顶层命令没有接收项目锁或归档索引路径；没有可枚举的引用来源时
+    // 必须保守保护所有已验证对象，不能把“未扫描到”当成“没有引用”。
+    let references = ReferenceSet::protect_all();
     match action.as_str() {
         "verify" => {
             let plan = match store.plan_cleanup(&references) {
@@ -400,6 +409,11 @@ pub(super) fn cache_response(
                     "action": "verify",
                     "status": "verified",
                     "cache_root": cache_root,
+                    "reference_mode": if references.is_conservative() {
+                        "conservative-all"
+                    } else {
+                        "scanned"
+                    },
                     "protected_references": references.iter().count(),
                     "candidate_count": plan.candidates().len(),
                     "invalid_count": plan.invalid_count(),
@@ -456,16 +470,18 @@ pub(super) fn cache_response(
                         "action": "clean",
                         "status": "planned",
                         "cache_root": cache_root,
+                        "reference_mode": if references.is_conservative() {
+                            "conservative-all"
+                        } else {
+                            "scanned"
+                        },
                         "candidate_count": plan.candidates().len(),
                         "invalid_count": plan.invalid_count(),
                     }),
                 );
             }
             // 16B 要求执行阶段重新收集引用，避免计划生成后新发布的对象被误删。
-            let current_references = match store.collect_references(None, &[], &[]) {
-                Ok(references) => references,
-                Err(error) => return cache_error(request_id, "X11-CACHE-003", error.to_string()),
-            };
+            let current_references = ReferenceSet::protect_all();
             match store.apply_cleanup(&plan, &current_references) {
                 Ok(report) => cache_result(
                     request_id,

@@ -183,6 +183,7 @@ impl CacheReference {
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct ReferenceSet {
     references: BTreeSet<CacheReference>,
+    protect_all: bool,
 }
 
 impl ReferenceSet {
@@ -190,6 +191,24 @@ impl ReferenceSet {
     #[must_use]
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// 创建保守保护集：在没有可读引用来源时保留所有已验证对象。
+    ///
+    /// 该模式只用于维护边界无法枚举引用来源的场景，避免把“没有扫描到”
+    /// 错误地解释为“没有引用”。
+    #[must_use]
+    pub const fn protect_all() -> Self {
+        Self {
+            references: BTreeSet::new(),
+            protect_all: true,
+        }
+    }
+
+    /// 判断该集合是否因引用来源不可枚举而采用全量保守保护。
+    #[must_use]
+    pub const fn is_conservative(&self) -> bool {
+        self.protect_all
     }
 
     /// 加入一条引用。
@@ -203,8 +222,10 @@ impl ReferenceSet {
     }
 
     fn protects(&self, kind: ObjectKind, digest: Digest256) -> bool {
-        self.references
-            .contains(&CacheReference::exact(kind, digest))
+        self.protect_all
+            || self
+                .references
+                .contains(&CacheReference::exact(kind, digest))
             || self
                 .references
                 .contains(&CacheReference::any_namespace(digest))
@@ -2284,6 +2305,23 @@ mod tests {
                 .is_err()
         );
         assert!(store.read(ObjectKind::Native, object.digest).is_ok());
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn conservative_reference_set_protects_objects_when_sources_are_unavailable() {
+        let root = temp_root("maintenance-protect-all");
+        let store = ArtifactStore::open(&root).unwrap();
+        let object = store
+            .put(ObjectKind::Native, b"protect-without-source")
+            .unwrap();
+        let plan = store.plan_cleanup(&ReferenceSet::protect_all()).unwrap();
+        assert!(plan.candidates().is_empty());
+        let report = store
+            .apply_cleanup(&plan, &ReferenceSet::protect_all())
+            .unwrap();
+        assert!(report.removed.is_empty());
+        assert!(store.read(object.kind, object.digest).is_ok());
         let _ = fs::remove_dir_all(root);
     }
 
