@@ -28,7 +28,7 @@
 | 基准程序与清单 | `tests/benchmarks/programs/` 有 4 个程序族，`manifest.json` 固定入口、实参和期望值 | 可复用源码 |
 | 09R3 报告 | 报告的 `platform` 是 `windows-native`，`baseline` 是「同一构建的栈式载体」，比较的是**三种 VM 载体**，不涉及 LLVM 原生，也没有 Java | **不能当作 19.16/19.17 的证据** |
 | 测量方法 | 零框架，`std::time::Instant`，3 次预热、11 次测量，中位数加四分位区间 | 可借鉴；**四分位区间不是置信区间**，19.17 要的是后者 |
-| Java 基线 | 仓库里没有 Java 参考实现，也没有冻结的发行版和版本。本机 `java -version` 是 1.8.0_491，另一个 `java.exe` 在 `D:\MC\bin`（看路径像是别的软件自带的） | 未冻结；本机的 Java 不适合直接当基线 |
+| Java 基线 | 已加入 `tests/benchmarks/java/Benchmark.java` 与 `baseline.json`；发行版族冻结为 Temurin/OpenJDK 21。本机 `java -version` 是 1.8.0_491，不能替代受控版本记录 | 受控小版本、硬件与运行记录待补 |
 | 原生能否构建基准程序 | **没有核实**。19A 实跑时，带 `try/finally` 的函数样本被原生拒绝（「动态模块中的函数或导入语句」），而只含一个 `def` 的溢出样本能构建。四个基准程序用到函数、递归、容器、`try/finally`、表与 `drop` | **可能是本批最大的阻塞**，见 §2.3 |
 | 原生 `-O1`–`-O3` | 只是 clang 的优化级别，Xiao 自己的 LLVM Pass 没注册（19A §2.1） | 基线必须写清这一点 |
 | 本机 | 只有 Windows。Linux 与 macOS 的数字只能来自 CI 或别的机器 | 见 §2.5 |
