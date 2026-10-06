@@ -1,0 +1,64 @@
+name: Xiao maintenance regression
+
+on:
+  push:
+    paths:
+      - ".github/workflows/maintenance-regression.yml"
+      - "core/rust/Cargo.toml"
+      - "core/rust/Cargo.lock"
+      - "core/rust/crates/xiao-artifacts/**"
+      - "core/rust/crates/xiao-bytecode/**"
+      - "core/rust/crates/xiao-driver/**"
+      - "core/rust/crates/xiao-xar/**"
+      - "tests/fuzz/**"
+  pull_request:
+    paths:
+      - ".github/workflows/maintenance-regression.yml"
+      - "core/rust/Cargo.toml"
+      - "core/rust/Cargo.lock"
+      - "core/rust/crates/xiao-artifacts/**"
+      - "core/rust/crates/xiao-bytecode/**"
+      - "core/rust/crates/xiao-driver/**"
+      - "core/rust/crates/xiao-xar/**"
+      - "tests/fuzz/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deterministic-maintenance:
+    name: Deterministic size and security regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@1.96.0
+        with:
+          components: rustfmt
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core/rust -> core/rust/target
+
+      - name: Check deterministic artifact size baseline
+        run: cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test artifact_size_regression
+
+      - name: Run parser and archive fuzz regressions
+        run: |
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-bytecode --test fuzz_xiaoc
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-xar --test fuzz_archive
+
+      - name: Run artifact and archive security boundaries
+        run: |
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-artifacts
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-xar
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test cross_platform_release --test release_report
