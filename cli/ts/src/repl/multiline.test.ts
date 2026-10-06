@@ -190,7 +190,7 @@ test("同一输入块不能绕过保存界面，q 和 Esc 无损取消", async (
       input, output: new PassThrough(), error: new PassThrough(), write: writeSafely,
       env: {}, isTTY: true, color: "never", cwd: directory,
     });
-    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitFor(() => input.isRaw && input.listenerCount("data") > 0);
     input.write(Buffer.from("code\r!save!\rmain.xiao\r"));
     await new Promise((resolve) => setTimeout(resolve, 5));
     input.write(Buffer.from("q\r"));
