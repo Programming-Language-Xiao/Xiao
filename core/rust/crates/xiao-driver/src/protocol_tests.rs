@@ -889,6 +889,46 @@ fn build_request_round_trips_toolchain_and_config_fields() {
 }
 
 #[test]
+/// 未知目标必须在 `xiao build` 的协议入口拒绝，不能进入工具链或产物写入。
+fn build_rejects_unknown_target_before_toolchain() {
+    let response = dispatch(ProtocolRequest::Build {
+        request_id: "build-unsupported-target".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: None,
+        language_version: "0.1.0".to_owned(),
+        runtime_version: "0.1.0".to_owned(),
+        target: ProtocolTarget {
+            triple: "riscv64-unknown-linux-gnu".to_owned(),
+            pointer_width: 64,
+            endian: "little".to_owned(),
+            object_format: "elf".to_owned(),
+        },
+        optimization: OptimizationConfig::default(),
+        source: SourceIdentity {
+            module: "main".to_owned(),
+            path: Some("main.xiao".to_owned()),
+            text: "value = 1\n".to_owned(),
+        },
+        output: std::env::temp_dir()
+            .join(format!(
+                "xiao-unsupported-target-{}.exe",
+                std::process::id()
+            ))
+            .display()
+            .to_string(),
+        llvm_ir_output: None,
+        toolchain: ToolchainSpec::default(),
+        config_text: None,
+    });
+    let ProtocolResponse::Error { error, .. } = response else {
+        panic!("未知目标必须在工具链前返回协议错误");
+    };
+    assert_eq!(error.code, REQUEST_ERROR_CODE);
+    assert!(error.message.contains("riscv64"));
+}
+
+#[test]
 /// 构建产物的 Runtime 组成事实必须在协议 JSON 中保持可逆。
 fn artifact_runtime_facts_round_trip() {
     let artifact = ProtocolArtifact {
