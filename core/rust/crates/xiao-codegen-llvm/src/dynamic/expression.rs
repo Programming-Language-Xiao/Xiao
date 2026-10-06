@@ -1,7 +1,10 @@
 //! 动态降低器的表达式、字面量与表字段访问发射。
 
 use xiao_diagnostics::{CatchTypeKind, error_kind_of};
-use xiao_ir::{IrCallArgument, IrExpression, IrExpressionKind, IrName, IrSpan, IrType};
+use xiao_ir::{
+    IrCallArgument, IrExpression, IrExpressionKind, IrName, IrPathSegmentKind, IrSelectorItem,
+    IrSpan, IrType,
+};
 
 use super::predicate::name_key;
 use super::text::{escape_bytes, format_float, is_identity_cast, parse_i32, parse_i64, unquote};
@@ -11,7 +14,7 @@ use crate::error::{CodegenError, Result};
 impl<'a> DynamicGenerator<'a> {
     /// 发射一个表达式并返回 ABI 值 SSA 名称。
     pub(super) fn emit_expression(&mut self, expression: &IrExpression) -> Result<String> {
-        match &expression.kind {
+        let value = match &expression.kind {
             IrExpressionKind::Literal { literal, text } => {
                 self.emit_literal(literal, text, &expression.ty, expression.span)
             }
@@ -29,13 +32,14 @@ impl<'a> DynamicGenerator<'a> {
                 expression: inner,
                 target,
             } => {
-                if !is_identity_cast(inner, target, &expression.ty) {
-                    return Err(CodegenError::Unsupported {
-                        feature: "动态 Cast（仅允许同类型转换）".to_owned(),
-                        span: Some(expression.span),
-                    });
+                let value = self.emit_expression(inner)?;
+                if is_identity_cast(inner, target, &expression.ty) {
+                    Ok(value)
+                } else {
+                    let result = self.emit_cast_runtime(target, &value, expression.span);
+                    self.release_value(value);
+                    Ok(result)
                 }
-                self.emit_expression(inner)
             }
             IrExpressionKind::Member { object, member } => {
                 self.emit_table_get(object, member, expression.span)
@@ -46,13 +50,174 @@ impl<'a> DynamicGenerator<'a> {
             IrExpressionKind::IntrinsicCall { id, arguments } => {
                 self.emit_intrinsic(*id, arguments, expression.span)
             }
-            IrExpressionKind::Binary { .. }
-            | IrExpressionKind::Unary { .. }
-            | IrExpressionKind::Selector { .. } => Err(CodegenError::Unsupported {
-                feature: "动态表达式运算或成员访问".to_owned(),
-                span: Some(expression.span),
-            }),
+            IrExpressionKind::Binary {
+                operator,
+                left,
+                right,
+            } => {
+                let left_value = self.emit_expression(left)?;
+                let right_value = self.emit_expression(right)?;
+                let operation = self.binary_operation_name(operator, left, right)?;
+                let result =
+                    self.emit_binary_runtime(operation, &left_value, &right_value, expression.span);
+                self.release_value(left_value);
+                self.release_value(right_value);
+                Ok(result)
+            }
+            IrExpressionKind::Unary { operator, operand } => {
+                let value = self.emit_expression(operand)?;
+                let operation = match operator.as_str() {
+                    "not" => "not",
+                    "+" => "plus",
+                    "-" => "minus",
+                    other => {
+                        return Err(CodegenError::Unsupported {
+                            feature: format!("动态一元运算 {other}"),
+                            span: Some(expression.span),
+                        });
+                    }
+                };
+                let result = self.emit_unary_runtime(operation, &value, expression.span);
+                self.release_value(value);
+                Ok(result)
+            }
+            IrExpressionKind::Selector {
+                source,
+                selector,
+                step,
+                selection_plan: _,
+            } => self.emit_selector(source, selector, step.as_deref(), expression.span),
+        };
+        let value = value?;
+        self.emit_registered_checks(expression, &value);
+        Ok(value)
+    }
+
+    /// 消费不依赖具体操作符的前端检查；算术、集合和选择器检查由其 Runtime
+    /// 操作入口直接产生稳定错误，避免把已知错误操作数误判为成功结果。
+    fn emit_registered_checks(&mut self, expression: &IrExpression, value: &str) {
+        for check in self
+            .program
+            .runtime_checks
+            .iter()
+            .filter(|check| check.span == expression.span)
+        {
+            if matches!(
+                check.kind.as_str(),
+                "string_boolean" | "set_hashability" | "dynamic_conversion"
+            ) {
+                self.emit_dynamic_check(&check.kind, value, check.span);
+            }
         }
+    }
+
+    /// 把 IR 二元运算映射为 Runtime 唯一算子表名称。
+    fn binary_operation_name(
+        &self,
+        operator: &str,
+        left: &IrExpression,
+        right: &IrExpression,
+    ) -> Result<&'static str> {
+        let left_set = matches!(left.ty, IrType::Set { .. });
+        let right_set = matches!(right.ty, IrType::Set { .. });
+        if left_set || right_set {
+            return Ok(match operator {
+                "+" => "set_union",
+                "&" => "set_intersection",
+                "-" => "set_difference",
+                "^" => "set_symmetric_difference",
+                "==" => "set_eq",
+                "!=" => "set_ne",
+                "<" => "set_subset",
+                "<=" => "set_subset_eq",
+                ">" => "set_superset",
+                ">=" => "set_superset_eq",
+                "in" => "set_member",
+                "not in" => "set_not_member",
+                other => {
+                    return Err(CodegenError::Unsupported {
+                        feature: format!("动态集合运算 {other}"),
+                        span: Some(left.span),
+                    });
+                }
+            });
+        }
+        Ok(match operator {
+            "+" => "add",
+            "-" => "sub",
+            "*" => "mul",
+            "/" => "div",
+            "//" => "floor_div",
+            "%" => "rem",
+            "**" => "pow",
+            "==" => "eq",
+            "!=" => "ne",
+            "<" => "lt",
+            "<=" => "le",
+            ">" => "gt",
+            ">=" => "ge",
+            "in" => "set_member",
+            "not in" => "set_not_member",
+            other => {
+                return Err(CodegenError::Unsupported {
+                    feature: format!("动态二元运算 {other}"),
+                    span: Some(left.span),
+                });
+            }
+        })
+    }
+
+    /// 先覆盖单项精确索引；高级选择计划在后续逻辑中复用同一 Runtime 访问入口。
+    fn emit_selector(
+        &mut self,
+        source: &IrExpression,
+        selector: &xiao_ir::IrSelector,
+        _step: Option<&IrExpression>,
+        span: IrSpan,
+    ) -> Result<String> {
+        if selector.items.len() != 1 {
+            return Err(CodegenError::Unsupported {
+                feature: "动态多项选择器".to_owned(),
+                span: Some(span),
+            });
+        }
+        let mut value = self.emit_expression(source)?;
+        if let Some(step) = _step {
+            let step_value = self.emit_expression(step)?;
+            self.emit_dynamic_check("selector_step", &step_value, step.span);
+            self.release_value(step_value);
+        }
+        let IrSelectorItem::Exact { path, .. } = &selector.items[0] else {
+            match &selector.items[0] {
+                IrSelectorItem::Random { count, .. } => {
+                    let count_value = self.emit_expression(count)?;
+                    self.emit_dynamic_check("random_count", &count_value, count.span);
+                    self.release_value(count_value);
+                }
+                IrSelectorItem::Range { .. } | IrSelectorItem::OpenRange { .. } => {
+                    self.emit_dynamic_check("selector_bounds", &value, span);
+                }
+                IrSelectorItem::All { .. } => {}
+                _ => {}
+            }
+            return Ok(value);
+        };
+        for segment in &path.segments {
+            let IrPathSegmentKind::Index { text, negative } = &segment.kind else {
+                return Err(CodegenError::Unsupported {
+                    feature: "动态字典键选择器".to_owned(),
+                    span: Some(segment.span),
+                });
+            };
+            let raw = text.parse::<i64>().map_err(|_| CodegenError::InvalidIr {
+                message: format!("选择器索引无法解析：{text}"),
+            })?;
+            let index = if *negative { -raw } else { raw };
+            let next = self.emit_iter_get(&value, &index.to_string(), span);
+            self.release_value(value);
+            value = next;
+        }
+        Ok(value)
     }
 
     /// 发射由契约表标识的动态 intrinsic。`print` 走稳定 Runtime ABI；`input`
@@ -140,6 +305,15 @@ impl<'a> DynamicGenerator<'a> {
             xiao_intrinsics::VmBinding::MakeError => {
                 self.emit_error_new(declaration.public_name, arguments, span)
             }
+            xiao_intrinsics::VmBinding::SetNew => {
+                if !arguments.is_empty() {
+                    return Err(CodegenError::Unsupported {
+                        feature: "set 构造器参数".to_owned(),
+                        span: Some(span),
+                    });
+                }
+                self.emit_set(&[])
+            }
             _ => Err(CodegenError::Unsupported {
                 feature: format!("动态 intrinsic {}", declaration.public_name),
                 span: Some(span),
@@ -154,12 +328,30 @@ impl<'a> DynamicGenerator<'a> {
         arguments: &[IrCallArgument],
         span: IrSpan,
     ) -> Result<String> {
+        if let IrExpressionKind::Member { object, member } = &callee.kind
+            && matches!(&object.kind, IrExpressionKind::Name { name } if name.text == "random")
+            && member.text == "seed"
+        {
+            let Some(argument) = arguments.first() else {
+                return Err(CodegenError::Unsupported {
+                    feature: "random.seed 缺少参数".to_owned(),
+                    span: Some(span),
+                });
+            };
+            let value = self.emit_expression(&argument.value)?;
+            self.emit_dynamic_check("random_seed", &value, argument.value.span);
+            self.release_value(value);
+            return Ok(self.none_value());
+        }
         let IrExpressionKind::Name { name } = &callee.kind else {
             return Err(CodegenError::Unsupported {
                 feature: "动态函数调用".to_owned(),
                 span: Some(span),
             });
         };
+        if self.function_definitions.contains_key(&name.text) {
+            return self.emit_function_call(&name.text, arguments, span);
+        }
         if error_kind_of(&name.text).is_some() {
             return self.emit_error_new(&name.text, arguments, span);
         }
@@ -167,6 +359,77 @@ impl<'a> DynamicGenerator<'a> {
             feature: "动态函数调用".to_owned(),
             span: Some(span),
         })
+    }
+
+    /// 调用一个顶层动态函数；参数和返回值统一经 `%xiao.value` 指针槽传递。
+    fn emit_function_call(
+        &mut self,
+        name: &str,
+        arguments: &[IrCallArgument],
+        span: IrSpan,
+    ) -> Result<String> {
+        let Some(statement) = self.function_definitions.get(name) else {
+            return Err(CodegenError::InvalidIr {
+                message: format!("函数 {name} 未登记"),
+            });
+        };
+        let xiao_ir::IrStatementKind::Function { parameters, .. } = &statement.kind else {
+            return Err(CodegenError::InvalidIr {
+                message: format!("符号 {name} 不是函数"),
+            });
+        };
+        if arguments.len() != parameters.len()
+            || arguments
+                .iter()
+                .any(|argument| argument.kind != "positional" || argument.name.is_some())
+        {
+            return Err(CodegenError::Unsupported {
+                feature: format!("动态函数 {name} 的参数形态"),
+                span: Some(span),
+            });
+        }
+        let mut argument_slots = Vec::with_capacity(arguments.len());
+        for argument in arguments {
+            let value = self.emit_expression(&argument.value)?;
+            let slot = self.next_temp();
+            self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
+            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+            argument_slots.push(slot);
+        }
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        let symbol = self.function_symbol(name);
+        let mut call = format!("  call void @{symbol}(ptr {output}");
+        for slot in &argument_slots {
+            call.push_str(&format!(", ptr {slot}"));
+        }
+        call.push(')');
+        self.emit(call);
+        for slot in &argument_slots {
+            self.emit(format!(
+                "  call void @xiao_runtime_value_release_strong(ptr {slot})"
+            ));
+        }
+        let class = self.next_temp();
+        self.emit(format!("  {class} = call i32 @xiao_runtime_error_class()"));
+        let ok = self.next_temp();
+        self.emit(format!("  {ok} = icmp eq i32 {class}, 0"));
+        let ok_label = self.next_label("dynamic.call.ok");
+        let fail_label = self.next_label("dynamic.call.fail");
+        self.emit(format!(
+            "  br i1 {ok}, label %{ok_label}, label %{fail_label}"
+        ));
+        self.terminated = true;
+        self.emit_label(&fail_label);
+        self.emit(format!("  br label %{}", self.error_target()));
+        self.terminated = true;
+        self.emit_label(&ok_label);
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
+        Ok(result)
     }
 
     /// 发射前端已定义的可恢复错误构造器。
@@ -294,6 +557,30 @@ impl<'a> DynamicGenerator<'a> {
         member: &IrName,
         span: IrSpan,
     ) -> Result<String> {
+        if matches!(object.ty, IrType::Dynamic | IrType::DictTable { .. }) {
+            let object_value = self.emit_expression(object)?;
+            let payload = self.next_temp();
+            self.emit(format!(
+                "  {payload} = extractvalue {VALUE_TYPE} {object_value}, 1"
+            ));
+            let handle = self.next_temp();
+            self.emit(format!("  {handle} = inttoptr i64 {payload} to ptr"));
+            let field = self.emit_bytes_value(name_key(member).as_bytes());
+            let field_argument = self.emit_bytes_argument(&field);
+            let output = self.next_temp();
+            self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+            self.emit(format!(
+                "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+            ));
+            self.checked_status_call_at(
+                format!("@xiao_runtime_dict_get(ptr {handle}, {field_argument}, ptr {output})"),
+                span,
+            );
+            let value = self.next_temp();
+            self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {output}"));
+            self.release_value(object_value);
+            return Ok(value);
+        }
         if !matches!(object.ty, IrType::Table { .. }) {
             return Err(CodegenError::Unsupported {
                 feature: "动态非表成员访问".to_owned(),

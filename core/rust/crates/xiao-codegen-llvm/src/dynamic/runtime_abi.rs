@@ -66,6 +66,26 @@ impl<'a> DynamicGenerator<'a> {
             .insert(self.value_declaration("xiao_runtime_input", "ptr, i8"));
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_none", ""));
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_value_binary({}, ptr, ptr, ptr)",
+            self.bytes_parameter_type()
+        ));
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_value_unary({}, ptr, ptr)",
+            self.bytes_parameter_type()
+        ));
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_value_cast({}, ptr, ptr)",
+            self.bytes_parameter_type()
+        ));
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_dynamic_check({}, ptr)",
+            self.bytes_parameter_type()
+        ));
+        self.declarations
+            .insert("declare i32 @xiao_runtime_value_iter_len(ptr, ptr)".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_value_iter_get(ptr, i64, ptr)".to_owned());
         self.declarations.insert(self.value_declaration(
             "xiao_runtime_error_new",
             &format!(
@@ -283,6 +303,134 @@ impl<'a> DynamicGenerator<'a> {
             ));
         }
         value
+    }
+
+    /// 发射一个稳定 ASCII 名称的字节视图，并转换为目标 ABI 的参数形态。
+    pub(super) fn emit_operation_argument(&mut self, name: &str) -> String {
+        let bytes = self.emit_bytes_value(name.as_bytes());
+        self.emit_bytes_argument(&bytes)
+    }
+
+    /// 发射 Runtime 二元运算并读取拥有的结果值。
+    pub(super) fn emit_binary_runtime(
+        &mut self,
+        operation: &str,
+        left: &str,
+        right: &str,
+        span: IrSpan,
+    ) -> String {
+        let operation = self.emit_operation_argument(operation);
+        let left_slot = self.next_temp();
+        self.emit(format!("  {left_slot} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {left}, ptr {left_slot}"));
+        let right_slot = self.next_temp();
+        self.emit(format!("  {right_slot} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {right}, ptr {right_slot}"));
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_value_binary({operation}, ptr {left_slot}, ptr {right_slot}, ptr {output})"),
+            span,
+        );
+        let value = self.next_temp();
+        self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {output}"));
+        value
+    }
+
+    /// 发射 Runtime 一元运算并读取拥有的结果值。
+    pub(super) fn emit_unary_runtime(
+        &mut self,
+        operation: &str,
+        value: &str,
+        span: IrSpan,
+    ) -> String {
+        let operation = self.emit_operation_argument(operation);
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_value_unary({operation}, ptr {input}, ptr {output})"),
+            span,
+        );
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
+        result
+    }
+
+    /// 发射 Runtime 显式转换并读取拥有的结果值。
+    pub(super) fn emit_cast_runtime(&mut self, target: &str, value: &str, span: IrSpan) -> String {
+        let target = self.emit_operation_argument(target);
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_value_cast({target}, ptr {input}, ptr {output})"),
+            span,
+        );
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
+        result
+    }
+
+    /// 发射一个动态检查并把失败路由到当前错误上下文。
+    pub(super) fn emit_dynamic_check(&mut self, kind: &str, value: &str, span: IrSpan) {
+        let kind = self.emit_operation_argument(kind);
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_dynamic_check({kind}, ptr {input})"),
+            span,
+        );
+    }
+
+    /// 发射动态迭代长度读取。
+    pub(super) fn emit_iter_len(&mut self, value: &str, span: IrSpan) -> String {
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca i64"));
+        self.emit(format!("  store i64 0, ptr {output}"));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_value_iter_len(ptr {input}, ptr {output})"),
+            span,
+        );
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load i64, ptr {output}"));
+        result
+    }
+
+    /// 发射动态迭代元素读取。
+    pub(super) fn emit_iter_get(&mut self, value: &str, index: &str, span: IrSpan) -> String {
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_value_iter_get(ptr {input}, i64 {index}, ptr {output})"),
+            span,
+        );
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
+        result
     }
 
     /// 判断程序是否实际构造容器，而不是仅仅声明了动态值。

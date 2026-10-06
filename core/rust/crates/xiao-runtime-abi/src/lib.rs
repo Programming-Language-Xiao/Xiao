@@ -651,6 +651,35 @@ unsafe extern "C" {
     pub fn xiao_runtime_value_bool(value: u8) -> XiaoValue;
     /// 构造空值。
     pub fn xiao_runtime_value_none() -> XiaoValue;
+    /// 按 Runtime 唯一算子表执行二元运算；`op` 使用稳定 ASCII 名称，`out` 为已初始化值槽。
+    pub fn xiao_runtime_value_binary(
+        op: XiaoAbiBytes,
+        left: *const XiaoValue,
+        right: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 按 Runtime 唯一算子表执行一元运算；`out` 为已初始化值槽。
+    pub fn xiao_runtime_value_unary(
+        op: XiaoAbiBytes,
+        value: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 执行显式标量转换；`target` 使用 `ScalarType::as_str()` 的稳定名称。
+    pub fn xiao_runtime_value_cast(
+        target: XiaoAbiBytes,
+        value: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 执行一个前端登记的动态检查；检查失败写入统一 Runtime 错误槽。
+    pub fn xiao_runtime_dynamic_check(kind: XiaoAbiBytes, value: *const XiaoValue) -> i32;
+    /// 返回动态可迭代值的元素数量。
+    pub fn xiao_runtime_value_iter_len(value: *const XiaoValue, out: *mut usize) -> i32;
+    /// 复制动态可迭代值的指定元素。
+    pub fn xiao_runtime_value_iter_get(
+        value: *const XiaoValue,
+        index: i64,
+        out: *mut XiaoValue,
+    ) -> i32;
 
     /// 从 UTF-8 字节复制字符串对象并返回强句柄值。
     ///

@@ -88,12 +88,6 @@ pub(crate) fn lower_program(program: &IrProgram, options: &CodegenOptions) -> Re
             message: "动态降低器收到纯静态程序".to_owned(),
         });
     }
-    if let Some(check) = program.runtime_checks.first() {
-        return Err(CodegenError::Unsupported {
-            feature: format!("动态运行时检查 {}（原生降低尚未接通）", check.kind),
-            span: Some(check.span),
-        });
-    }
     if options.target.pointer_width != 64 {
         return Err(CodegenError::Unsupported {
             feature: "N0-B 当前只接受 64 位 C ABI 目标".to_owned(),
@@ -121,6 +115,8 @@ struct LoopLabels {
 struct DynamicGenerator<'a> {
     program: &'a IrProgram,
     options: &'a CodegenOptions,
+    /// 当前生成上下文的语句体；入口使用 `program.body`，函数使用自身 body。
+    body: &'a [IrStatement],
     slots: BTreeMap<String, Slot>,
     value_slots: BTreeMap<u32, Slot>,
     declarations: BTreeSet<String>,
@@ -138,6 +134,17 @@ struct DynamicGenerator<'a> {
     error_terminal_label: String,
     cleanup_stack: Vec<CleanupContext<'a>>,
     finally_stack_saves: Vec<String>,
+    /// 当前程序中可调用的顶层函数定义。
+    function_definitions: BTreeMap<String, &'a IrStatement>,
+    /// 生成后追加到模块文本的函数定义。
+    function_texts: Vec<String>,
+    /// 是否正在生成一个动态函数体。
+    function_mode: bool,
+    /// 动态函数的返回槽和成功/错误出口。
+    function_return_slot: Option<String>,
+    function_return_label: Option<String>,
+    /// 已在当前入口初始化的模块，保证多次 import 只执行一次。
+    initialized_modules: BTreeSet<String>,
 }
 
 impl<'a> DynamicGenerator<'a> {
@@ -146,6 +153,7 @@ impl<'a> DynamicGenerator<'a> {
         Self {
             program,
             options,
+            body: &program.body,
             slots: BTreeMap::new(),
             value_slots: BTreeMap::new(),
             declarations: BTreeSet::new(),
@@ -163,13 +171,22 @@ impl<'a> DynamicGenerator<'a> {
             error_terminal_label: "xiao.error.terminal".to_owned(),
             cleanup_stack: Vec::new(),
             finally_stack_saves: Vec::new(),
+            function_definitions: BTreeMap::new(),
+            function_texts: Vec::new(),
+            function_mode: false,
+            function_return_slot: None,
+            function_return_label: None,
+            initialized_modules: BTreeSet::new(),
         }
     }
 
     /// 生成 ABI 类型、声明、入口和释放序列。
     fn generate(mut self) -> Result<LlvmModule> {
         self.collect_table_initializers()?;
-        self.collect_slots(self.program.body.as_slice())?;
+        self.collect_slots(self.body)?;
+        for module in &self.program.modules {
+            self.collect_slots(&module.body)?;
+        }
         self.collect_value_slots();
         self.validate_release_scope_boundary()?;
         if self.options.entry_observation == crate::ir::EntryObservation::ExitCode {
@@ -180,7 +197,26 @@ impl<'a> DynamicGenerator<'a> {
             self.declarations
                 .insert("declare i32 @xiao_native_debug_start()".to_owned());
         }
+        self.function_definitions = self
+            .program
+            .body
+            .iter()
+            .filter_map(|statement| match &statement.kind {
+                xiao_ir::IrStatementKind::Function { name, .. } => {
+                    Some((name.text.clone(), statement))
+                }
+                _ => None,
+            })
+            .collect();
         self.emit_entry()?;
+        let functions = self
+            .function_definitions
+            .values()
+            .copied()
+            .collect::<Vec<_>>();
+        for statement in functions {
+            self.emit_function_definition(statement)?;
+        }
         let mut text = String::new();
         text.push_str("; Xiao N0-B LLVM dynamic module\n");
         text.push_str(&format!("; target = {}\n", self.options.target.triple));
@@ -219,6 +255,10 @@ impl<'a> DynamicGenerator<'a> {
         text.push('\n');
         text.push_str(&self.lines.join("\n"));
         text.push('\n');
+        for function in &self.function_texts {
+            text.push_str(function);
+            text.push('\n');
+        }
         let components = self
             .declared_runtime_components
             .into_iter()
@@ -353,5 +393,101 @@ impl<'a> DynamicGenerator<'a> {
     fn finish_finally_stack_frame(&mut self, save: &str) {
         let current = self.finally_stack_saves.pop();
         debug_assert_eq!(current.as_deref(), Some(save));
+    }
+
+    /// 为一个顶层函数生成统一 `%xiao.value` 指针调用约定的 LLVM 定义。
+    fn emit_function_definition(&mut self, statement: &'a IrStatement) -> Result<()> {
+        let xiao_ir::IrStatementKind::Function {
+            name,
+            parameters,
+            body,
+            ..
+        } = &statement.kind
+        else {
+            return Ok(());
+        };
+        let symbol = self.function_symbol(&name.text);
+        let mut generator = Self::new(self.program, self.options);
+        generator.body = body;
+        generator.function_mode = true;
+        generator.function_definitions = self.function_definitions.clone();
+        generator.error_terminal_label = "xiao.fn.error".to_owned();
+        generator.collect_slots(body)?;
+        for parameter in parameters {
+            let key = crate::dynamic::predicate::name_key(&parameter.name);
+            let index = generator.slots.len();
+            generator.slots.entry(key).or_insert(Slot { index });
+        }
+        generator.function_return_slot = Some("%xiao.function.result".to_owned());
+        generator.function_return_label = Some("xiao.fn.return".to_owned());
+        generator.declare_runtime();
+        let mut signature = format!("define void @{symbol}(ptr %xiao.function.result");
+        for index in 0..parameters.len() {
+            signature.push_str(&format!(", ptr %xiao.arg{index}"));
+        }
+        signature.push_str(") {");
+        generator.emit(signature);
+        generator.emit("entry:".to_owned());
+        let function_slots = generator.slots.values().copied().collect::<Vec<_>>();
+        for slot in function_slots {
+            generator.emit(format!("  %slot{} = alloca {VALUE_TYPE}", slot.index));
+            generator.emit(format!(
+                "  store {VALUE_TYPE} zeroinitializer, ptr %slot{}",
+                slot.index
+            ));
+        }
+        for (index, parameter) in parameters.iter().enumerate() {
+            let key = crate::dynamic::predicate::name_key(&parameter.name);
+            let slot = generator.slots[&key];
+            let value = generator.next_temp();
+            generator.emit(format!(
+                "  {value} = load {VALUE_TYPE}, ptr %xiao.arg{index}"
+            ));
+            generator.emit(format!(
+                "  store {VALUE_TYPE} {value}, ptr %slot{}",
+                slot.index
+            ));
+        }
+        generator.emit_statements(body)?;
+        if !generator.terminated {
+            let none = generator.none_value();
+            generator.emit(format!(
+                "  store {VALUE_TYPE} {none}, ptr %xiao.function.result"
+            ));
+            generator.emit("  br label %xiao.fn.return".to_owned());
+            generator.terminated = true;
+        }
+        generator.emit("xiao.fn.return:".to_owned());
+        let function_slots = generator.slots.values().copied().collect::<Vec<_>>();
+        for slot in &function_slots {
+            generator.emit(format!(
+                "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
+                slot.index
+            ));
+        }
+        generator.emit("  ret void".to_owned());
+        generator.emit("xiao.fn.error:".to_owned());
+        for slot in &function_slots {
+            generator.emit(format!(
+                "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
+                slot.index
+            ));
+        }
+        generator.emit("  store %xiao.value zeroinitializer, ptr %xiao.function.result".to_owned());
+        generator.emit("  ret void".to_owned());
+        generator.emit("}".to_owned());
+        generator.emit(String::new());
+        self.function_texts.push(generator.lines.join("\n"));
+        Ok(())
+    }
+
+    /// 为顶层函数生成稳定的 LLVM 符号名。
+    fn function_symbol(&self, name: &str) -> String {
+        let index = self
+            .function_definitions
+            .keys()
+            .position(|candidate| candidate == name)
+            .unwrap_or(0);
+        format!("xiao.fn.{index}.{}", stable_hash(name.as_bytes()))
     }
 }

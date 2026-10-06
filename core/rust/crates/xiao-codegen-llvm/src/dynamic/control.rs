@@ -93,13 +93,36 @@ impl<'a> DynamicGenerator<'a> {
             }
             IrStatementKind::Return { value } => {
                 if let Some(value) = value {
-                    let value_type = value.ty.clone();
                     let emitted = self.emit_expression(value)?;
-                    self.record_observation(&emitted, &value_type);
-                    self.release_value(emitted);
+                    if let (true, Some(slot), Some(label)) = (
+                        self.function_mode,
+                        self.function_return_slot.clone(),
+                        self.function_return_label.clone(),
+                    ) {
+                        self.emit(format!("  store {VALUE_TYPE} {emitted}, ptr {slot}"));
+                        self.emit(format!("  br label %{label}"));
+                        self.terminated = true;
+                    } else {
+                        let value_type = value.ty.clone();
+                        self.record_observation(&emitted, &value_type);
+                        self.release_value(emitted);
+                        self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
+                        self.terminated = true;
+                    }
+                } else if self.function_mode {
+                    if let (Some(slot), Some(label)) = (
+                        self.function_return_slot.clone(),
+                        self.function_return_label.clone(),
+                    ) {
+                        let none = self.none_value();
+                        self.emit(format!("  store {VALUE_TYPE} {none}, ptr {slot}"));
+                        self.emit(format!("  br label %{label}"));
+                        self.terminated = true;
+                    }
+                } else {
+                    self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
+                    self.terminated = true;
                 }
-                self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
-                self.terminated = true;
             }
             IrStatementKind::If {
                 condition,
@@ -108,13 +131,43 @@ impl<'a> DynamicGenerator<'a> {
                 else_body,
             } => self.emit_if(condition, body, elif_branches, else_body.as_deref())?,
             IrStatementKind::While { condition, body } => self.emit_while(condition, body)?,
-            IrStatementKind::For { .. }
-            | IrStatementKind::Function { .. }
-            | IrStatementKind::Import { .. } => {
-                return Err(CodegenError::Unsupported {
-                    feature: "动态模块中的函数或导入语句".to_owned(),
-                    span: Some(statement.span),
-                });
+            IrStatementKind::For {
+                target,
+                iterable,
+                body,
+            } => self.emit_for(target, iterable, body)?,
+            IrStatementKind::Function { .. } => {}
+            IrStatementKind::Import { items, .. } => {
+                for item in items {
+                    if self.initialized_modules.insert(item.module.clone()) {
+                        let Some(module) = self
+                            .program
+                            .modules
+                            .iter()
+                            .find(|module| module.name == item.module)
+                        else {
+                            return Err(CodegenError::Unsupported {
+                                feature: format!("原生模块 {} 不在前端模块图中", item.module),
+                                span: Some(statement.span),
+                            });
+                        };
+                        self.emit_statements(&module.body)?;
+                        if item.selected.is_none() {
+                            let namespace = self.emit_module_namespace(module)?;
+                            self.store_slot(&item.binding, namespace)?;
+                            continue;
+                        }
+                    }
+                    if let Some(selected) = &item.selected {
+                        if selected.text != item.binding.text
+                            || selected.backticked != item.binding.backticked
+                        {
+                            let value = self.load_slot(selected)?;
+                            self.store_slot(&item.binding, value)?;
+                        }
+                        continue;
+                    }
+                }
             }
             IrStatementKind::Try {
                 body,
@@ -498,6 +551,12 @@ impl<'a> DynamicGenerator<'a> {
 
         match target {
             ControlExitTarget::Return => {
+                if self.function_mode {
+                    if let Some(label) = self.function_return_label.clone() {
+                        self.emit(format!("  br label %{label}"));
+                        return Ok(());
+                    }
+                }
                 self.with_error_target(self.error_terminal_label.clone(), |generator| {
                     generator.release_for_exit("return")
                 })?;
@@ -743,13 +802,75 @@ impl<'a> DynamicGenerator<'a> {
         Ok(())
     }
 
+    /// 发射 `for target in iterable`；来源只求值一次，索引和长度走 Runtime ABI。
+    fn emit_for(
+        &mut self,
+        target: &xiao_ir::IrName,
+        iterable: &IrExpression,
+        body: &'a [IrStatement],
+    ) -> Result<()> {
+        let source = self.emit_expression(iterable)?;
+        self.emit_dynamic_check("iterable", &source, iterable.span);
+        let length = self.emit_iter_len(&source, iterable.span);
+        let index_slot = self.next_temp();
+        self.emit(format!("  {index_slot} = alloca i64"));
+        self.emit(format!("  store i64 0, ptr {index_slot}"));
+        let condition_label = self.next_label("dynamic.for.cond");
+        let body_label = self.next_label("dynamic.for.body");
+        let advance_label = self.next_label("dynamic.for.advance");
+        let end_label = self.next_label("dynamic.for.end");
+        self.emit(format!("  br label %{condition_label}"));
+        self.terminated = true;
+        self.emit_label(&condition_label);
+        let index = self.next_temp();
+        self.emit(format!("  {index} = load i64, ptr {index_slot}"));
+        let condition = self.next_temp();
+        self.emit(format!("  {condition} = icmp ult i64 {index}, {length}"));
+        self.emit(format!(
+            "  br i1 {condition}, label %{body_label}, label %{end_label}"
+        ));
+        self.terminated = true;
+        self.emit_label(&body_label);
+        let element = self.emit_iter_get(&source, &index, target.span);
+        self.store_slot(target, element)?;
+        self.loop_stack.push(LoopLabels {
+            condition: advance_label.clone(),
+            end: end_label.clone(),
+            cleanup_depth: self.cleanup_stack.len(),
+        });
+        let cleanup_snapshot = self.cleanup_stack.clone();
+        let body_result = self.emit_statements(body);
+        self.cleanup_stack = cleanup_snapshot;
+        self.loop_stack.pop();
+        body_result?;
+        if !self.terminated {
+            self.emit(format!("  br label %{advance_label}"));
+            self.terminated = true;
+        }
+        self.emit_label(&advance_label);
+        let next = self.next_temp();
+        self.emit(format!("  {next} = add i64 {index}, 1"));
+        self.emit(format!("  store i64 {next}, ptr {index_slot}"));
+        self.emit(format!("  br label %{condition_label}"));
+        self.terminated = true;
+        self.emit_label(&end_label);
+        self.release_value(source);
+        Ok(())
+    }
+
     /// 从 ABI 动态值读取已类型检查的布尔载荷。
     fn emit_condition(&mut self, expression: &IrExpression) -> Result<String> {
         if !matches!(&expression.ty, IrType::Scalar { name } if name == "bool") {
-            return Err(CodegenError::Unsupported {
-                feature: "动态路径中的非 bool 条件".to_owned(),
-                span: Some(expression.span),
-            });
+            let value = self.emit_expression(expression)?;
+            self.emit_dynamic_check("boolean_condition", &value, expression.span);
+            let payload = self.next_temp();
+            self.emit(format!(
+                "  {payload} = extractvalue {VALUE_TYPE} {value}, 1"
+            ));
+            let output = self.next_temp();
+            self.emit(format!("  {output} = trunc i64 {payload} to i1"));
+            self.release_value(value);
+            return Ok(output);
         }
         match &expression.kind {
             IrExpressionKind::Unary { operator, operand } if operator == "not" => {

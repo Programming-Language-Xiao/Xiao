@@ -95,7 +95,7 @@
 | 09-B0-C | [前端到 VM 内部驱动器](09b0c-frontend-to-vm-driver.md) | `xiao-driver` 的运行驱动器、三段错误的统一结构化表示、取消/超时边界 | 已完成（内部驱动器、公共契约测试和 UseDocs 已落地；`B0-C-CANCEL-001` 转入 [09-B0-E](09b0e-vm-cancellation-checkpoint.md)） |
 | 09-B0-D | [退出码冻结与 Linux 容器实测](09b0d-exit-codes-and-linux-verification.md) | `ExitCode` 的语义与取值冻结、`DriverOutcome` 上的稳定派生、locale 中立性断言、容器实测记录 | 已完成（退出码契约与测试已落地；Linux 容器结果见交接文档；不改变 Windows 原生冻结口径） |
 | 09-B0-E | [VM 中途取消检查点](09b0e-vm-cancellation-checkpoint.md) | `B0-C-CANCEL-001` 的出口：VM 热循环内的中途检查点、可注入取消源、清理/退出码回归、**单独记录**的性能对照 | 已完成（`Fault::Cancelled` 独立通道、`run_blocks`/`run_subroutine` 检查点、CLI `AbortSignal`、退出码 2 回归；别名层清理仍拆出；**三处收尾见 §九**） |
-| 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | **N0-A/B/C/D 全部交付**（N0-C 见 10E–10J，N0-D 见 10I/10K）；动态入口仍拒绝部分语句与运行时检查，对齐见 10L（枚举完成，等待范围裁定）；用户可见 `xiao build` 属 X0（11 阶段）；仅余 PE 内部节裁剪证据债（标 `unverified-coff-exports`） |
+| 10 | [LLVM 原生后端](10-native-backend.md) | `xiao build` 的 LLVM 原生二进制（Windows → Linux → macOS） | **N0-A/B/C/D 全部交付**（N0-C 见 10E–10J，N0-D 见 10I/10K）；动态入口对齐实现见 10L（扩大范围首轮接线，溢出与高级选择结果待实测）；用户可见 `xiao build` 属 X0（11 阶段）；仅余 PE 内部节裁剪证据债（标 `unverified-coff-exports`） |
 | 10E | [N0-C 错误路径与源码映射](10e-n0c-error-paths-and-mapping.md) | 统一错误路径降低到原生 ABI、`try`/`catch`/`finally` 展开、源码映射与诊断事件、`-debug` 独立诊断窗口、**字节码差分** | 已交付（**验收主体是差分**；收口批为 10F–10K，N0-D 见 10I/10K） |
 | 10F | [N0-C 专项审核：`try`/`catch`/`finally` 的 LLVM 控制流](10f-n0c-audit-try-finally.md) | 复核 `31fb944` 对 `emit_try_cleanup` 的「结构性控制流问题」判定；限定 `try`/`catch`/`finally` 的原生发射与 `llvm-as` 验收 | 已复核（§七：`91a3392` 修复 16 种形态通过真实 `llvm-as`） |
 | 10G | [N0-C-2 错误边界与字节码差分](10g-n0c2-error-boundary-and-differential.md) | N0-C 第 5、7 步 + §3.1：语言上下文接入、平台异常捕获与报告（三平台）、字节码差分（输出/错误/释放记录三样逐项对照） | 已交付（`d95b6ae`；Windows 门控全绿已实测；**跨平台与栈用量实测为欠账**，见 10H §二） |
@@ -103,7 +103,7 @@
 | 10I | [N0-D 产物验证与裁剪](10i-n0d-artifact-verification-and-trimming.md) | 10 阶段**收尾批**：三目标（Coff/Elf/MachO）固定宽度与错误行为验证、**产物层** Runtime 裁剪验证（含反例）、Runtime 组成可解释、调试标志产物级验证、`-O0` 基线 | 已交付（`1d66f9c`+`a5a5e6d`）；**CI `36841654803` 暴露跨平台缺口，收口见 10K** |
 | 10J | [跨操作系统验证专项（Linux 侧交接）](10j-cross-os-verification.md) | CI 首跑（`36799534374`）四平台全红的收口：`crash.rs` 的 `#[cfg(unix)]` 分支从未在 Unix 上编译过（`unsafe_op_in_unsafe_fn` 等 lint 在 `-D warnings` 下变 error）；在 Linux 复现、修复、验证，macOS 靠 CI | 已交付（`6d55486`；CI `36805985940` 四平台全绿；macOS 无额外 libc 差异） |
 | 10K | [Runtime 裁剪验证的跨平台收口（Linux 侧交接）](10k-n0d-runtime-trimming-verification.md) | N0-D 在 CI 上只有 Windows 通过：ELF 产物观察到 `containers/tables/weak`（链接器没裁），而 **Windows 的绿是「自己导出、自己检查」的自证**——`10:78` 在 PE 上从未被验证过 | 已完成（`6177931` 修复 ELF/Mach-O 裁剪边界并明确 COFF 未验证能力；CI `36850150346` 四平台全绿；后续仅保留 PE 内部节证据债） |
-| 10L | [原生动态入口与 VM 对齐（N0-E）](10l-native-dynamic-alignment.md) | 先修 19D 审核的 G1–G3，再枚举原生动态入口拒绝的语句与运行时检查种类，向星崽汇报后按范围逐类对齐 VM；整数溢出单独决定 | 枚举阶段完成（2026-10-06）；3 类语句拒绝、8 类检查已触发、6 类未在规定语料触发；等待范围裁定 |
+| 10L | [原生动态入口与 VM 对齐（N0-E）](10l-native-dynamic-alignment.md) | 先修 19D 审核的 G1–G3，再枚举原生动态入口拒绝的语句与运行时检查种类，按确认范围逐类对齐 VM；整数溢出单独决定 | 扩大范围首轮接线（2026-10-06）；3 类语句与 14 类检查已接入，原生实跑和高级选择结果待补 |
 | 10A | [LLVM 原生构建闭环](10a-n0-native-closure.md) | 手写 IR 文本 + 外部工具链、`xiao-runtime-abi`、四批交付（N0-A 纯静态 → N0-D 验证裁剪） | N0-A 已完成；N0-B Runtime ABI 已接续落地（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 功能复现；WSL/容器仅作功能证据） |
 | 10B | [N0-B Runtime ABI](10b-n0-runtime-abi.md) | 动态值的 ABI 表示、真实引用计数与 `Weak`、容器与表 ABI、正常路径的释放计划 | 已落地（ABI/容器/表/正常释放计划；异常展开留 N0-C） |
 | 10C | [原生 Runtime 链接缺陷修复交接](10c-native-runtime-link-fix.md) | `LNK1120` 的完整证据、Rust staticlib 原生库查询、MSVC ABI 调用约定修复与实际链接结果 | 已完成（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 动态 Runtime 功能闭环通过；WSL/容器仅作功能证据） |

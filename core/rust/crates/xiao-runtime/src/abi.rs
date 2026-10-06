@@ -31,10 +31,10 @@ use xiao_runtime_abi::{
     XiaoTableFieldDescriptor, XiaoValue, XiaoValuePayload, XiaoValueTag, XiaoWeakHandle,
 };
 use xiao_source::SourceSpan;
-use xiao_syntax::TableKind;
+use xiao_syntax::{ScalarType, TableKind};
 use xiao_types::{TableMemberSignature, TableSignature, Type, Visibility};
 
-use crate::containers::{ArrayHandle, DictHandle, DictKind, SetHandle, TupleHandle};
+use crate::containers::{ArrayHandle, DictHandle, DictKind, SetHandle, TupleHandle, is_hashable};
 use crate::errors::{
     CONTAINER_INDEX_CODE, CONTAINER_KEY_CODE, DiagnosticParam, FatalError, FatalKind, FrameKind,
     INVALID_HANDLE_CODE, RuntimeError, RuntimeResult, USE_AFTER_RELEASE_CODE, WEAK_UPGRADE_CODE,
@@ -1881,6 +1881,380 @@ pub extern "C" fn xiao_runtime_value_bool(value: u8) -> XiaoValue {
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_none() -> XiaoValue {
     XiaoValue::none()
+}
+
+/// 从 ABI 字节视图读取一个稳定算子/检查名称。
+unsafe fn operation_name(view: XiaoAbiBytes) -> Result<String, i32> {
+    unsafe { utf8(view) }
+}
+
+/// 把两个 Runtime 集合按稳定名称执行集合运算或关系判断。
+fn set_operation(
+    left: &RuntimeValue,
+    right: &RuntimeValue,
+    op: &str,
+) -> RuntimeResult<RuntimeValue> {
+    let (RuntimeValue::Set(left), RuntimeValue::Set(right)) = (left, right) else {
+        return Err(match op {
+            "set_eq" | "set_ne" | "set_subset" | "set_subset_eq" | "set_superset"
+            | "set_superset_eq" => RuntimeError::set_comparison_requires_sets(
+                if !matches!(left, RuntimeValue::Set(_)) {
+                    left.type_name()
+                } else {
+                    right.type_name()
+                },
+            ),
+            _ => RuntimeError::set_operation_requires_sets(
+                if !matches!(left, RuntimeValue::Set(_)) {
+                    left.type_name()
+                } else {
+                    right.type_name()
+                },
+            ),
+        });
+    };
+    match op {
+        "set_union" => left.union(right).map(RuntimeValue::Set),
+        "set_intersection" => left.intersection(right).map(RuntimeValue::Set),
+        "set_difference" => left.difference(right).map(RuntimeValue::Set),
+        "set_symmetric_difference" => left.symmetric_difference(right).map(RuntimeValue::Set),
+        "set_eq" => left.equals(right).map(RuntimeValue::Bool),
+        "set_ne" => left.equals(right).map(|value| RuntimeValue::Bool(!value)),
+        "set_subset" => left.is_proper_subset(right).map(RuntimeValue::Bool),
+        "set_subset_eq" => left.is_subset(right).map(RuntimeValue::Bool),
+        "set_superset" => left.is_proper_superset(right).map(RuntimeValue::Bool),
+        "set_superset_eq" => left.is_superset(right).map(RuntimeValue::Bool),
+        _ => Err(RuntimeError::invalid_value(format!("未知集合运算 {op}"))),
+    }
+}
+
+/// 按 Runtime 唯一算子表执行二元运算。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_binary(
+    op: XiaoAbiBytes,
+    left: *const XiaoValue,
+    right: *const XiaoValue,
+    out: *mut XiaoValue,
+) -> i32 {
+    if left.is_null() || right.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let op = match unsafe { operation_name(op) } {
+        Ok(op) => op,
+        Err(error) => return error,
+    };
+    let left = match unsafe { value_to_runtime(&*left) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let right = match unsafe { value_to_runtime(&*right) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let result = match op.as_str() {
+        "add" => left.add(&right),
+        "sub" => left.subtract(&right),
+        "mul" => left.multiply(&right),
+        "div" => left.divide(&right),
+        "floor_div" => left.floor_divide(&right),
+        "rem" => left.remainder(&right),
+        "pow" => left.power(&right),
+        "eq" => Ok(RuntimeValue::Bool(left.equals(&right))),
+        "ne" => Ok(RuntimeValue::Bool(left.not_equals(&right))),
+        "lt" => left.less(&right).map(RuntimeValue::Bool),
+        "le" => left.less_equal(&right).map(RuntimeValue::Bool),
+        "gt" => left.greater(&right).map(RuntimeValue::Bool),
+        "ge" => left.greater_equal(&right).map(RuntimeValue::Bool),
+        "set_member" | "set_not_member" => {
+            if !is_hashable(&left) {
+                Err(RuntimeError::set_membership_requires_hashable(
+                    left.type_name(),
+                ))
+            } else if let RuntimeValue::Set(set) = &right {
+                set.contains(&left).map(|found| {
+                    RuntimeValue::Bool(if op == "set_member" { found } else { !found })
+                })
+            } else {
+                Err(RuntimeError::set_membership_requires_hashable(
+                    right.type_name(),
+                ))
+            }
+        }
+        op if op.starts_with("set_") => set_operation(&left, &right, op),
+        _ => Err(RuntimeError::invalid_value(format!(
+            "未知 Runtime 二元运算 {op}"
+        ))),
+    };
+    let result =
+        match status(result).and_then(|value| runtime_to_value(&value).map_err(|error| error)) {
+            Ok(value) => value,
+            Err(error) => return error,
+        };
+    unsafe { write_value(out, result) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
+/// 按 Runtime 唯一算子表执行一元运算。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_unary(
+    op: XiaoAbiBytes,
+    value: *const XiaoValue,
+    out: *mut XiaoValue,
+) -> i32 {
+    if value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let op = match unsafe { operation_name(op) } {
+        Ok(op) => op,
+        Err(error) => return error,
+    };
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let result = match op.as_str() {
+        "not" => value
+            .as_bool()
+            .map(|value| RuntimeValue::Bool(!value))
+            .ok_or_else(|| RuntimeError::type_mismatch("bool", value.type_name())),
+        "plus" => Ok(value.clone()),
+        "minus" => match value {
+            RuntimeValue::Int(value) => i64::checked_neg(value)
+                .map(RuntimeValue::Int)
+                .ok_or_else(|| RuntimeError::numeric_overflow("int 一元负号溢出")),
+            RuntimeValue::Sint(value) => i32::checked_neg(value)
+                .map(RuntimeValue::Sint)
+                .ok_or_else(|| RuntimeError::numeric_overflow("sint 一元负号溢出")),
+            RuntimeValue::Float(value) => Ok(RuntimeValue::Float(-value)),
+            RuntimeValue::Sfloat(value) => Ok(RuntimeValue::Sfloat(-value)),
+            other => Err(RuntimeError::type_mismatch("numeric", other.type_name())),
+        },
+        _ => Err(RuntimeError::invalid_value(format!(
+            "未知 Runtime 一元运算 {op}"
+        ))),
+    };
+    let result =
+        match status(result).and_then(|value| runtime_to_value(&value).map_err(|error| error)) {
+            Ok(value) => value,
+            Err(error) => return error,
+        };
+    unsafe { write_value(out, result) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
+/// 执行显式标量转换。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_cast(
+    target: XiaoAbiBytes,
+    value: *const XiaoValue,
+    out: *mut XiaoValue,
+) -> i32 {
+    if value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let target = match unsafe { operation_name(target) } {
+        Ok(target) => target,
+        Err(error) => return error,
+    };
+    let target = match target.as_str() {
+        "int" => ScalarType::Int,
+        "sint" => ScalarType::Sint,
+        "lint" => ScalarType::Lint,
+        "float" => ScalarType::Float,
+        "sfloat" => ScalarType::Sfloat,
+        "lfloat" => ScalarType::Lfloat,
+        "bool" => ScalarType::Bool,
+        "str" => ScalarType::Str,
+        _ => return XiaoAbiStatus::InvalidArgument.code(),
+    };
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let result = match status(value.convert_to(target))
+        .and_then(|value| runtime_to_value(&value).map_err(|error| error))
+    {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    unsafe { write_value(out, result) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
+/// 执行一个前端登记的动态检查。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_dynamic_check(kind: XiaoAbiBytes, value: *const XiaoValue) -> i32 {
+    if value.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let kind = match unsafe { operation_name(kind) } {
+        Ok(kind) => kind,
+        Err(error) => return error,
+    };
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let result = match kind.as_str() {
+        "string_boolean" => match value.convert_to(ScalarType::Bool) {
+            Ok(_) => Ok(()),
+            Err(_) => Err(RuntimeError::type_mismatch("bool", value.type_name())),
+        },
+        "iterable" => match value {
+            RuntimeValue::Array(_)
+            | RuntimeValue::Tuple(_)
+            | RuntimeValue::Str(_)
+            | RuntimeValue::Set(_)
+            | RuntimeValue::DictTable(_)
+            | RuntimeValue::DictColumn(_) => Ok(()),
+            other => Err(RuntimeError::iterable_required(other.type_name())),
+        },
+        "selector_step" => match value {
+            RuntimeValue::Int(0) | RuntimeValue::Sint(0) => {
+                Err(RuntimeError::selector_step("选择器步长不能为 0"))
+            }
+            RuntimeValue::Int(_) | RuntimeValue::Sint(_) => Ok(()),
+            other => Err(RuntimeError::selector_step(format!(
+                "选择器步长必须是整数，实际为 {}",
+                other.type_name()
+            ))),
+        },
+        "random_count" => match value {
+            RuntimeValue::Int(value) if value >= 0 => Ok(()),
+            RuntimeValue::Sint(value) if value >= 0 => Ok(()),
+            RuntimeValue::Int(_) | RuntimeValue::Sint(_) => {
+                Err(RuntimeError::random_count("随机抽取数量不能为负数"))
+            }
+            other => Err(RuntimeError::random_count(format!(
+                "随机抽取数量必须是整数，实际为 {}",
+                other.type_name()
+            ))),
+        },
+        "random_seed" => match value {
+            RuntimeValue::Int(value) if value >= 0 => Ok(()),
+            RuntimeValue::Sint(value) if value >= 0 => Ok(()),
+            RuntimeValue::Int(_) | RuntimeValue::Sint(_) => {
+                Err(RuntimeError::random_seed("随机种子不能为负数"))
+            }
+            other => Err(RuntimeError::random_seed(format!(
+                "随机种子必须是整数，实际为 {}",
+                other.type_name()
+            ))),
+        },
+        "set_hashability" | "set_membership" if !is_hashable(&value) => {
+            Err(if kind == "set_hashability" {
+                RuntimeError::unhashable_element(value.type_name())
+            } else {
+                RuntimeError::set_membership_requires_hashable(value.type_name())
+            })
+        }
+        "boolean_condition" => value
+            .as_bool()
+            .map(|_| ())
+            .ok_or_else(|| RuntimeError::type_mismatch("bool", value.type_name())),
+        _ => Ok(()),
+    };
+    status(result).map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
+/// 返回动态可迭代值的元素数量。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_iter_len(value: *const XiaoValue, out: *mut usize) -> i32 {
+    if value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let length = match &value {
+        RuntimeValue::Array(handle) => handle.len(),
+        RuntimeValue::Tuple(handle) => handle.len(),
+        RuntimeValue::Set(handle) => handle.len(),
+        RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle) => handle.len(),
+        RuntimeValue::Str(handle) => handle.len(),
+        other => {
+            let error = RuntimeError::iterable_required(other.type_name());
+            return status::<()>(Err(error))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+    };
+    unsafe { *out = length };
+    XiaoAbiStatus::Ok.code()
+}
+
+/// 复制动态可迭代值的指定元素。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_iter_get(
+    value: *const XiaoValue,
+    index: i64,
+    out: *mut XiaoValue,
+) -> i32 {
+    if value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let length = match &value {
+        RuntimeValue::Array(handle) => handle.len(),
+        RuntimeValue::Tuple(handle) => handle.len(),
+        RuntimeValue::Set(handle) => handle.len(),
+        RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle) => handle.len(),
+        RuntimeValue::Str(handle) => handle.len(),
+        other => {
+            return status::<()>(Err(RuntimeError::iterable_required(other.type_name())))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+    };
+    let normalized = if index < 0 {
+        (length as i64).checked_add(index)
+    } else {
+        Some(index)
+    }
+    .filter(|index| *index >= 0)
+    .and_then(|index| usize::try_from(index).ok())
+    .filter(|index| *index < length);
+    let Some(index) = normalized else {
+        return status::<()>(Err(RuntimeError::selector_bounds(format!(
+            "选择器或迭代索引 {} 超出运行时长度 {}",
+            index, length
+        ))))
+        .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+    };
+    let item = match &value {
+        RuntimeValue::Array(handle) => handle.element(index),
+        RuntimeValue::Tuple(handle) => handle.element(index),
+        RuntimeValue::Set(handle) => handle.with_elements(|items| items.get(index).cloned()),
+        RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle) => {
+            handle.with_entries(|entries| entries.get(index).map(|(_, value)| value.clone()))
+        }
+        RuntimeValue::Str(handle) => handle
+            .with_str(|text| {
+                text.chars()
+                    .nth(index)
+                    .map(|character| RuntimeValue::new_string(character.to_string()))
+            })
+            .and_then(|value| value.transpose()),
+        other => Err(RuntimeError::iterable_required(other.type_name())),
+    };
+    let item = match item {
+        Ok(Some(value)) => value,
+        Ok(None) => {
+            return status::<()>(Err(RuntimeError::selector_bounds(format!(
+                "选择器或迭代索引 {} 超出运行时长度 {}",
+                index, length
+            ))))
+            .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+        Err(error) => {
+            return status::<()>(Err(error))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+    };
+    let item = match runtime_to_value(&item) {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    unsafe { write_value(out, item) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
 }
 
 /// 从 UTF-8 字节构造字符串强句柄。

@@ -231,6 +231,21 @@ fn dynamic_random_seed_is_recoverable() {
 }
 
 #[test]
+/// 动态条件必须在进入 BranchIf 前转换为布尔寄存器，并保留类型错误身份。
+fn dynamic_boolean_condition_is_verified_and_recoverable() {
+    let program = load(
+        "def result(value) -> int\n    total = 0\n    for item in value\n        if item\n            total = 1\n    return total\nprobe = result([1])\n",
+    );
+    assert!(
+        program.unsupported.is_empty(),
+        "动态条件不应留下未支持项: {:?}",
+        program.unsupported
+    );
+    let outcome = run(&program, VmOptions::new());
+    assert_eq!(outcome.result.error_code(), Some(TYPE_MISMATCH_CODE));
+}
+
+#[test]
 /// 函数调用与循环应真的被执行，并记录调用深度。
 fn executes_calls_and_loops() {
     let source = "def count(int limit) -> int\n    total = 0\n    while total != limit\n        total = total + 1\n    return total\nresult = count(3)\n";

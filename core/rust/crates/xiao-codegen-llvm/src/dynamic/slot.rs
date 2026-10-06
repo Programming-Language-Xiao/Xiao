@@ -37,7 +37,11 @@ impl<'a> DynamicGenerator<'a> {
                 } if table_kind == "singleton" => {
                     self.insert_slot(name)?;
                 }
-                IrStatementKind::While { body, .. } | IrStatementKind::For { body, .. } => {
+                IrStatementKind::While { body, .. } => {
+                    self.collect_slots(body)?;
+                }
+                IrStatementKind::For { target, body, .. } => {
+                    self.insert_slot(target)?;
                     self.collect_slots(body)?;
                 }
                 IrStatementKind::Try {
@@ -54,10 +58,14 @@ impl<'a> DynamicGenerator<'a> {
                         self.collect_slots(body)?;
                     }
                 }
+                IrStatementKind::Import { items, .. } => {
+                    for item in items {
+                        self.insert_slot(&item.binding)?;
+                    }
+                }
                 IrStatementKind::Function { .. }
                 | IrStatementKind::Expression { .. }
                 | IrStatementKind::ExtendedAssignment { .. }
-                | IrStatementKind::Import { .. }
                 | IrStatementKind::Return { .. }
                 | IrStatementKind::Break
                 | IrStatementKind::Continue
@@ -189,6 +197,23 @@ impl<'a> DynamicGenerator<'a> {
                             *previous_scope,
                         );
                 if nested_shadow {
+                    let previous_kind = self
+                        .program
+                        .ownership
+                        .scopes
+                        .iter()
+                        .find(|scope| scope.id == *previous_scope)
+                        .map(|scope| scope.kind.as_str());
+                    let current_kind = self
+                        .program
+                        .ownership
+                        .scopes
+                        .iter()
+                        .find(|scope| scope.id == value.scope)
+                        .map(|scope| scope.kind.as_str());
+                    if previous_kind == Some("function") || current_kind == Some("function") {
+                        continue;
+                    }
                     return Err(CodegenError::Unsupported {
                         feature: format!("动态槽名称 {name} 在多个作用域遮蔽（待块级槽位降低）"),
                         span: Some(value.span),
@@ -221,13 +246,15 @@ impl<'a> DynamicGenerator<'a> {
             .iter()
             .filter(|scope| scope.id != root)
             .find(|scope| {
-                !matches!(scope.kind.as_str(), "try" | "catch" | "finally")
-                    && self
-                        .program
-                        .ownership
-                        .release_plans
-                        .iter()
-                        .any(|plan| plan.scope == scope.id && !plan.actions.is_empty())
+                !matches!(
+                    scope.kind.as_str(),
+                    "try" | "catch" | "finally" | "function" | "loop"
+                ) && self
+                    .program
+                    .ownership
+                    .release_plans
+                    .iter()
+                    .any(|plan| plan.scope == scope.id && !plan.actions.is_empty())
             })
         {
             return Err(CodegenError::Unsupported {

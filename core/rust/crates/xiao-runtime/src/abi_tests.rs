@@ -128,6 +128,29 @@ fn array_round_trip_copies_values() {
 }
 
 #[test]
+/// 原生动态算子和检查入口必须复用 Runtime 唯一算子表并保留稳定错误码。
+fn dynamic_operator_and_check_round_trip() {
+    let left = XiaoValue::int(6);
+    let right = XiaoValue::int(7);
+    let mut output = XiaoValue::none();
+    assert_eq!(
+        xiao_runtime_value_binary(bytes("mul"), &left, &right, &mut output),
+        0
+    );
+    assert_eq!(output.tag, XiaoValueTag::Int);
+    assert_eq!(unsafe { output.payload.i64_value }, 42);
+    xiao_runtime_value_release(&mut output);
+
+    let invalid = XiaoValue::int(1);
+    assert_eq!(
+        xiao_runtime_dynamic_check(bytes("boolean_condition"), &invalid),
+        6
+    );
+    assert_eq!(pending_class(), XiaoErrorClass::Recoverable);
+    PENDING_ERROR.with(|pending| *pending.borrow_mut() = None);
+}
+
+#[test]
 /// ABI retain/release 在同一盒子上成对调用，且最后一次释放才销毁盒子。
 fn retain_keeps_same_box_and_balances_count() {
     let mut raw = std::ptr::null_mut();

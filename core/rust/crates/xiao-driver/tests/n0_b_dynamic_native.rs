@@ -1,9 +1,12 @@
 //! N0-B 动态值经真实前端、LLVM 和 Runtime 静态库的闭环测试。
 
+use std::fs;
 use std::path::PathBuf;
 
 use xiao_codegen_llvm::{CodegenOptions, NativeBuild, TargetDescription, Toolchain};
-use xiao_driver::{FrontendCompiler, FrontendNativeDriver, FrontendRequest, NativeBuildRequest};
+use xiao_driver::{
+    FrontendCompiler, FrontendContext, FrontendNativeDriver, FrontendRequest, NativeBuildRequest,
+};
 
 #[test]
 #[ignore = "需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
@@ -132,6 +135,42 @@ fn frontend_dynamic_branch_lowers_without_reparsing() {
             )
             .expect("llvm-as 应接受前端动态分支模块");
     }
+}
+
+#[test]
+/// 动态入口的 `for`、顶层函数和项目模块导入必须共享同一份前端 IR 并完成 LLVM 降低。
+fn frontend_dynamic_statements_lower_without_rejection() {
+    let root = std::env::temp_dir().join(format!("xiao-n0-b-statements-{}", std::process::id()));
+    fs::create_dir_all(&root).expect("创建临时项目目录");
+    fs::write(root.join("helper.xiao"), "value = 7\n").expect("写入辅助模块");
+    let source = "from helper import value\ndef sum(items) -> int\n    total = 0\n    for item in items\n        total = total + item\n    return total\nvalues = [1, 2]\nresult = sum(values)\n";
+    let mut context = FrontendContext::host();
+    context.project_root = Some(root.clone());
+    let request =
+        FrontendRequest::from_text_at(source, root.join("main.xiao")).with_context(context);
+    let artifact = FrontendCompiler::new()
+        .compile(&request)
+        .expect("动态语句源码应通过前端");
+    let module = NativeBuild::new()
+        .lower(&artifact.ir, &CodegenOptions::default())
+        .expect("动态语句应完成 LLVM 降低");
+    assert!(module.text.contains("xiao.fn."));
+    assert!(module.text.contains("xiao_runtime_value_iter_len"));
+    let namespace_source = "import helper\nvalues = [1]\nprobe = helper.value\n";
+    let namespace_request =
+        FrontendRequest::from_text_at(namespace_source, root.join("namespace-main.xiao"))
+            .with_context({
+                let mut context = FrontendContext::host();
+                context.project_root = Some(root.clone());
+                context
+            });
+    let namespace_artifact = FrontendCompiler::new()
+        .compile(&namespace_request)
+        .expect("模块命名空间源码应通过前端");
+    NativeBuild::new()
+        .lower(&namespace_artifact.ir, &CodegenOptions::default())
+        .expect("模块命名空间成员访问应完成 LLVM 降低");
+    let _ = fs::remove_dir_all(root);
 }
 
 #[test]

@@ -513,7 +513,7 @@ fn lower_if(
         } else {
             lowerer.new_block(span)
         };
-        let value = lowerer.lower_expression(branch_condition);
+        let value = lower_condition(lowerer, branch_condition, span);
         lowerer.emit(TacInstr::new(
             TacOp::BranchIf {
                 condition: value,
@@ -553,7 +553,7 @@ fn lower_while(
     lowerer.switch_to(header);
     let body_block = lowerer.new_block(span);
     let exit = lowerer.new_block(span);
-    let value = lowerer.lower_expression(condition);
+    let value = lower_condition(lowerer, condition, span);
     lowerer.emit(TacInstr::new(
         TacOp::BranchIf {
             condition: value,
@@ -573,6 +573,28 @@ fn lower_while(
         lowerer.emit(TacInstr::new(TacOp::Jump(header), span));
     }
     lowerer.switch_to(exit);
+}
+
+/// 将动态条件显式转换为布尔寄存器；检查失败由 Cast 的统一 Runtime 错误路径处理。
+fn lower_condition(lowerer: &mut Lowerer<'_>, condition: &IrExpression, span: IrSpan) -> VReg {
+    let value = lowerer.lower_expression(condition);
+    if matches!(
+        condition.ty,
+        xiao_ir::IrType::Dynamic | xiao_ir::IrType::Variable { .. }
+    ) {
+        let result = lowerer.new_register(RegisterClass::Bool, span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::Cast {
+                value,
+                target: xiao_syntax::ScalarType::Bool,
+            },
+            result,
+            span,
+        ));
+        result
+    } else {
+        value
+    }
 }
 
 /// 降低 `for target in iterable`。

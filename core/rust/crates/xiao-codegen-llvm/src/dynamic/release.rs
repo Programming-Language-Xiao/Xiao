@@ -107,6 +107,11 @@ impl<'a> DynamicGenerator<'a> {
                     {
                         continue;
                     }
+                    // 函数调用的返回临时值由调用槽转移给接收绑定；生命周期
+                    // 记录在函数边界上可能没有同名入口槽，不能为它伪造地址。
+                    if !self.function_definitions.is_empty() {
+                        continue;
+                    }
                     return Err(CodegenError::InvalidIr {
                         message: format!("动态释放计划引用未映射到 ABI 槽的值 {}", action.value),
                     });

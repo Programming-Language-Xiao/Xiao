@@ -528,8 +528,8 @@ fn lowers_dynamic_boolean_if() {
 }
 
 #[test]
-/// 动态降低器不能把跨类型 Cast 当作同布局透传，尤其不能跳过字符串布尔检查。
-fn rejects_non_identity_dynamic_cast() {
+/// 动态跨类型 Cast 必须经 Runtime 唯一转换入口，不能把值按同布局透传。
+fn lowers_non_identity_dynamic_cast() {
     let cast = IrExpression {
         kind: IrExpressionKind::Cast {
             expression: Box::new(literal("str", "\"text\"", "str")),
@@ -540,9 +540,9 @@ fn rejects_non_identity_dynamic_cast() {
         },
         span: span(),
     };
-    let error = lower_program(&expression_program(cast), &CodegenOptions::default())
-        .expect_err("跨类型动态 Cast 必须拒绝");
-    assert!(error.to_string().contains("动态 Cast"));
+    let module = lower_program(&expression_program(cast), &CodegenOptions::default())
+        .expect("跨类型 Cast 应降到 Runtime");
+    assert!(module.text.contains("@xiao_runtime_value_cast"));
 }
 
 #[test]
@@ -564,17 +564,17 @@ fn accepts_identity_dynamic_cast() {
 }
 
 #[test]
-/// 前端登记但尚未由原生侧消费的 RuntimeCheck 必须结构化拒绝，不能静默丢语义。
-fn rejects_unlowered_runtime_check() {
+/// 前端登记的 RuntimeCheck 必须降到 Runtime ABI，不能再由动态入口整体拒绝。
+fn lowers_runtime_check_to_abi() {
     let mut program = expression_program(literal("str", "\"text\"", "str"));
     program.runtime_checks.push(IrRuntimeCheck {
         kind: "string_boolean".to_owned(),
         span: span(),
         expected: None,
     });
-    let error = lower_program(&program, &CodegenOptions::default())
-        .expect_err("未消费的 RuntimeCheck 必须拒绝");
-    assert!(error.to_string().contains("string_boolean"));
+    let module =
+        lower_program(&program, &CodegenOptions::default()).expect("RuntimeCheck 应降到 ABI");
+    assert!(module.text.contains("@xiao_runtime_dynamic_check"));
 }
 
 #[test]
