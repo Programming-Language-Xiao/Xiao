@@ -10,19 +10,21 @@ public final class Benchmark {
         }
         String id = args[0];
         long argument = Long.parseLong(args[1]);
-        if ("scalar-overflow-and-bool-parity".equals(id)) {
-            // Java 的 int/long 回绕与 Xiao 的溢出错误不具备可比语义。
-            System.out.println("error\tX06-RUNTIME-009");
-            return;
-        }
         long value = switch (id) {
             case "deep-expression-arithmetic" -> deepExpression(argument);
+            case "scalar-overflow-and-bool-parity" -> overflowParity(argument);
             case "named-local-loop" -> namedLocalLoop(argument);
             case "deep-call-recursion" -> deepCall(argument, 1, 2, 3, 4);
             case "container-dense" -> containerDense(argument);
             default -> throw new IllegalArgumentException("unknown benchmark: " + id);
         };
         System.out.println("success\t" + value);
+    }
+
+    private static long overflowParity(long value) {
+        // 保留 Java int 的真实回绕结果；它与 Xiao 的 X06-RUNTIME-009 只作不可比记录。
+        int input = (int) value;
+        return (long) (input * input);
     }
 
     private static long deep(long value) {
