@@ -1,7 +1,7 @@
 //! 动态降低器的容器构造与表描述符发射。
 
 use xiao_diagnostics::error_kind_of;
-use xiao_ir::{IrExpression, IrExpressionKind, IrSpan};
+use xiao_ir::{IrExpression, IrExpressionKind, IrName, IrSpan, IrType};
 
 use super::predicate::abi_field_type;
 use super::text::escape_bytes;
@@ -9,6 +9,31 @@ use super::{BYTES_TYPE, DynamicGenerator, TABLE_DESCRIPTOR_TYPE, TABLE_FIELD_TYP
 use crate::error::{CodegenError, Result};
 
 impl<'a> DynamicGenerator<'a> {
+    /// 把已执行模块的导出绑定物化为字典命名空间，供 `import module` 的成员访问读取。
+    pub(super) fn emit_module_namespace(&mut self, module: &xiao_ir::IrModule) -> Result<String> {
+        let entries = module
+            .symbols
+            .iter()
+            .filter(|symbol| symbol.kind == "value" || symbol.kind == "function")
+            .map(|symbol| xiao_ir::IrDictEntry {
+                key: format!("ascii:{}", symbol.name),
+                value: IrExpression {
+                    kind: IrExpressionKind::Name {
+                        name: IrName {
+                            text: symbol.name.clone(),
+                            backticked: false,
+                            span: symbol.span,
+                        },
+                    },
+                    ty: IrType::Dynamic,
+                    span: symbol.span,
+                },
+                span: symbol.span,
+            })
+            .collect::<Vec<_>>();
+        self.emit_dictionary(&entries, 0)
+    }
+
     /// 发射数组或元组构造。
     pub(super) fn emit_sequence(
         &mut self,
