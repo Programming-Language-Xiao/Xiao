@@ -4,7 +4,7 @@
   "status": "data-insufficient",
   "baseline": {
     "path": "tests/benchmarks/baseline.json",
-    "sha256": "627457fd7dedddaf82711f415eb46874fcbbf6cdada1020df133c1c71367a538",
+    "sha256": "627457fd7deddadf82711f415eb46874fcbbf6cdada1020df133c1c71367a538",
     "java": "Temurin/OpenJDK 21",
     "jvm_args_fixed": true,
     "native_optimizer": "clang -O2",

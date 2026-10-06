@@ -1,7 +1,10 @@
 //! 19C 体积回归：固定输入下的 `.xiaoc`/`.xar` 提交基线。
 
+use std::fs;
+use std::path::PathBuf;
+
 use xiao_artifacts::{
-    ArchiveEntry, ArchiveIndex, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
+    ArchiveEntry, ArchiveIndex, Digest256, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
 };
 use xiao_bytecode::{XiaocMetadata, encode_xiaoc, lower_program};
 use xiao_driver::{FrontendCompiler, FrontendRequest};
@@ -57,4 +60,32 @@ fn deterministic_artifacts_do_not_grow_past_committed_baseline() {
         "xiaoc 基线变化需显式审查"
     );
     assert_eq!(xar.len(), XAR_BASELINE_BYTES, "xar 基线变化需显式审查");
+}
+
+#[test]
+fn performance_report_hash_matches_baseline_file_bytes() {
+    let manifest_directory = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let repository_root = manifest_directory
+        .ancestors()
+        .nth(4)
+        .expect("xiao-driver crate 应位于仓库 core/rust/crates 下");
+    let baseline_bytes = fs::read(repository_root.join("tests/benchmarks/baseline.json"))
+        .expect("读取 19D 基线文件");
+    assert!(
+        !baseline_bytes.windows(2).any(|pair| pair == b"\r\n"),
+        "baseline.json 由 .gitattributes 固定为 LF，摘要按文件原始 UTF-8 字节计算"
+    );
+    let report: serde_json::Value = serde_json::from_slice(
+        &fs::read(repository_root.join("tests/benchmarks/reports/19d-performance.json"))
+            .expect("读取 19D 性能报告"),
+    )
+    .expect("19D 性能报告必须是 JSON");
+    let recorded_digest = report["baseline"]["sha256"]
+        .as_str()
+        .expect("报告必须登记基线摘要");
+    assert_eq!(
+        Digest256::of_bytes(&baseline_bytes).as_hex(),
+        recorded_digest,
+        "报告摘要必须匹配 baseline.json 的原始 UTF-8 字节"
+    );
 }
