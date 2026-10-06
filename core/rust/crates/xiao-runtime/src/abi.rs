@@ -1985,11 +1985,10 @@ pub extern "C" fn xiao_runtime_value_binary(
             "未知 Runtime 二元运算 {op}"
         ))),
     };
-    let result =
-        match status(result).and_then(|value| runtime_to_value(&value).map_err(|error| error)) {
-            Ok(value) => value,
-            Err(error) => return error,
-        };
+    let result = match status(result).and_then(|value| runtime_to_value(&value)) {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
     unsafe { write_value(out, result) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
 }
 
@@ -2032,11 +2031,10 @@ pub extern "C" fn xiao_runtime_value_unary(
             "未知 Runtime 一元运算 {op}"
         ))),
     };
-    let result =
-        match status(result).and_then(|value| runtime_to_value(&value).map_err(|error| error)) {
-            Ok(value) => value,
-            Err(error) => return error,
-        };
+    let result = match status(result).and_then(|value| runtime_to_value(&value)) {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
     unsafe { write_value(out, result) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
 }
 
@@ -2069,9 +2067,7 @@ pub extern "C" fn xiao_runtime_value_cast(
         Ok(value) => value,
         Err(error) => return error,
     };
-    let result = match status(value.convert_to(target))
-        .and_then(|value| runtime_to_value(&value).map_err(|error| error))
-    {
+    let result = match status(value.convert_to(target)).and_then(|value| runtime_to_value(&value)) {
         Ok(value) => value,
         Err(error) => return error,
     };
