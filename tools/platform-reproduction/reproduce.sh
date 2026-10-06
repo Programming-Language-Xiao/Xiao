@@ -261,4 +261,4 @@ printf '%s\n' "$mismatch_json"
 [[ "$mismatch_json" == *'"accepted":false'* ]]
 [[ "$mismatch_json" == *'"error_code":"X11-PROTOCOL-004"'* ]]
 
-printf '\n平台复现脚本完成：%s\n' "$host_triple"
+printf '\nPlatform reproduction completed: %s\n平台复现脚本完成：%s\n' "$host_triple" "$host_triple"
