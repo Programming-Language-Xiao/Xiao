@@ -77,9 +77,9 @@
     },
     {
       "id": "container-dense",
-      "native_build": "rejected:numeric_range-dynamic-runtime-check-not-connected",
+      "native_build": "rejected:runtime_checks-nonempty",
       "semantic_status": "data-insufficient",
-      "reason": "原生缺口归阶段 15，本批不修改基准输入或后端",
+      "reason": "动态降低器遇到任一非空 runtime_checks 列表即整体拒绝；本例首项为 numeric_range，不代表唯一缺口；具体类别待 10L 枚举",
       "paths": {
         "vm": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
         "native": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
