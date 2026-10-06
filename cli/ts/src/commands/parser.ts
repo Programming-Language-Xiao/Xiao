@@ -29,7 +29,7 @@ export type ParsedCommand =
   | { kind: "xar"; file: string; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
   | { kind: "config"; key: string; value: string; global: boolean; options: GlobalCliOptions }
   | { kind: "verify"; file: string; detail: boolean; options: GlobalCliOptions }
-  | { kind: "cache"; action: "list" | "verify" | "rebuild" | "clean"; apply: boolean; options: GlobalCliOptions }
+  | { kind: "cache"; action: "list" | "verify" | "rebuild" | "clean"; apply: boolean; projectPath?: string; archivePaths: string[]; references: string[]; options: GlobalCliOptions }
   | { kind: "association"; action: "install" | "check" | "uninstall"; platform?: "win32" | "linux" | "darwin"; executable?: string; options: GlobalCliOptions }
   | { kind: "test"; project?: string; timeoutMs?: number; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; options: GlobalCliOptions }
   | { kind: "build"; file: string; output: string; llvmIrOutput: string | null; xar: boolean; optimizationLevel: OptimizationLevel; optimizationExplicit: boolean; args: readonly string[]; options: GlobalCliOptions }
@@ -400,13 +400,46 @@ function parseVerify(args: readonly string[], options: GlobalCliOptions): Parsed
 
 /** 解析 16B 两阶段缓存命令。 */
 function parseCache(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
-  const values = args.filter((argument) => argument !== "--apply");
-  const apply = args.includes("--apply");
-  if (values.length !== 1 || !["list", "verify", "rebuild", "clean"].includes(values[0])) {
-    throw new CliArgumentError("cache 需要 list、verify、rebuild 或 clean");
+  let action: "list" | "verify" | "rebuild" | "clean" | undefined;
+  let apply = false;
+  let projectPath: string | undefined;
+  const archivePaths: string[] = [];
+  const references: string[] = [];
+  for (let index = 0; index < args.length; index += 1) {
+    const argument = args[index];
+    if (argument === "list" || argument === "verify" || argument === "rebuild" || argument === "clean") {
+      if (action !== undefined) throw new CliArgumentError("cache 动作不可重复");
+      action = argument;
+      continue;
+    }
+    if (argument === "--apply") {
+      if (apply) throw new CliArgumentError("--apply 不可重复");
+      apply = true;
+      continue;
+    }
+    const separator = argument.indexOf("=");
+    const flag = separator < 0 ? argument : argument.slice(0, separator);
+    const inline = separator < 0 ? undefined : argument.slice(separator + 1);
+    if (flag !== "--project" && flag !== "--project-path" && flag !== "--archive" && flag !== "--archive-path" && flag !== "--reference") {
+      throw new CliArgumentError(`cache 不支持选项：${argument}`);
+    }
+    const value = inline ?? args[++index];
+    if (!value || value.startsWith("--")) throw new CliArgumentError(`${flag} 需要一个值`);
+    if (flag === "--project" || flag === "--project-path") {
+      if (projectPath !== undefined) throw new CliArgumentError("--project 不可重复");
+      projectPath = value;
+    } else if (flag === "--archive" || flag === "--archive-path") {
+      archivePaths.push(value);
+    } else {
+      references.push(value);
+    }
   }
-  if (apply && values[0] !== "clean") throw new CliArgumentError("--apply 只能用于 cache clean");
-  return { kind: "cache", action: values[0] as "list" | "verify" | "rebuild" | "clean", apply, options };
+  if (action === undefined) throw new CliArgumentError("cache 需要 list、verify、rebuild 或 clean");
+  if (apply && action !== "clean") throw new CliArgumentError("--apply 只能用于 cache clean");
+  if (action !== "clean" && action !== "verify" && (projectPath !== undefined || archivePaths.length > 0 || references.length > 0)) {
+    throw new CliArgumentError("引用来源只能用于 cache verify 或 cache clean");
+  }
+  return { kind: "cache", action, apply, ...(projectPath === undefined ? {} : { projectPath }), archivePaths, references, options };
 }
 
 /** 解析 `.xar` 文件关联的安装、检查和移除动作。 */

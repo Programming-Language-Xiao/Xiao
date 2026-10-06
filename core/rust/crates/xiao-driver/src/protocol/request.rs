@@ -333,6 +333,15 @@ pub enum ProtocolRequest {
         /// `clean` 是否执行已经生成的计划。
         #[serde(default)]
         apply: bool,
+        /// 项目目录或 `xiao.lock.json` 路径；缺省表示没有项目来源。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        project_path: Option<String>,
+        /// `.xar` 归档路径列表；引用由驱动层先解出索引。
+        #[serde(default)]
+        archive_paths: Vec<String>,
+        /// 显式 SHA-256 摘要列表；摘要跨所有对象命名空间保守保护。
+        #[serde(default)]
+        references: Vec<String>,
     },
     /// 使用真实源码顺序执行项目测试用例。
     Test {

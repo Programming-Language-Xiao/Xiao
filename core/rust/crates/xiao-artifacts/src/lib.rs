@@ -660,6 +660,31 @@ impl ArtifactStore {
         archive_indexes: &[PathBuf],
         explicit: &[CacheReference],
     ) -> Result<ReferenceSet, ArtifactError> {
+        let indexes = archive_indexes
+            .iter()
+            .map(|path| {
+                let bytes = fs::read(path).map_err(|error| {
+                    ArtifactError::Maintenance(format!(
+                        "无法读取归档索引 {}：{error}",
+                        path.display()
+                    ))
+                })?;
+                ArchiveIndex::decode(&bytes)
+            })
+            .collect::<Result<Vec<_>, ArtifactError>>()?;
+        self.collect_references_from_indexes(project_lock, &indexes, explicit)
+    }
+
+    /// 从已经验证的归档索引、项目锁文件和显式摘要现算保护集合。
+    ///
+    /// `.xar` 是 ZIP 容器，调用方必须先在格式层完整解码它，再把这里的
+    /// [`ArchiveIndex`] 交给对象存储；本方法不会读取或解释归档容器字节。
+    pub fn collect_references_from_indexes(
+        &self,
+        project_lock: Option<&Path>,
+        archive_indexes: &[ArchiveIndex],
+        explicit: &[CacheReference],
+    ) -> Result<ReferenceSet, ArtifactError> {
         let mut references = ReferenceSet::new();
         for reference in explicit {
             references.insert(reference.clone());
@@ -668,11 +693,7 @@ impl ArtifactStore {
             collect_project_lock_references(path, &mut references)?;
         }
         for path in archive_indexes {
-            let bytes = fs::read(path).map_err(|error| {
-                ArtifactError::Maintenance(format!("无法读取归档索引 {}：{error}", path.display()))
-            })?;
-            let index = ArchiveIndex::decode(&bytes)?;
-            for entry in index.entries {
+            for entry in &path.entries {
                 references.insert(CacheReference::exact(entry.object_kind, entry.digest));
             }
         }

@@ -117,8 +117,12 @@ describe("xiao 命令解析", () => {
     expect(parseArguments(["verify", "main.xiaoc", "--detail"])).toMatchObject({ kind: "verify", file: "main.xiaoc", detail: true });
     expect(parseArguments(["cache", "clean"])).toMatchObject({ kind: "cache", action: "clean", apply: false });
     expect(parseArguments(["cache", "clean", "--apply"])).toMatchObject({ kind: "cache", action: "clean", apply: true });
+    expect(parseArguments(["cache", "clean", "--project", "./demo", "--archive", "demo.xar", "--archive", "extra.xar", "--reference", "a".repeat(64)])).toMatchObject({
+      kind: "cache", action: "clean", projectPath: "./demo", archivePaths: ["demo.xar", "extra.xar"], references: ["a".repeat(64)],
+    });
     expect(() => parseArguments(["verify", "main.xiao"])).toThrow("X11-CLI-ARG-001");
     expect(() => parseArguments(["cache", "list", "--apply"])).toThrow("X11-CLI-ARG-001");
+    expect(() => parseArguments(["cache", "list", "--project", "./demo"])).toThrow("X11-CLI-ARG-001");
   });
 
   test("18C 文件关联动作和非交互详细选项保持稳定", () => {

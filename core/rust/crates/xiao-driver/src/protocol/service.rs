@@ -27,7 +27,7 @@ use super::run::{
 };
 use super::test::test_request_response;
 use super::validate::{validate_source, validate_target, validate_versions};
-use super::verify::{cache_response, verify_response};
+use super::verify::{CacheSources, cache_response, verify_response};
 use crate::FrontendVmDriver;
 use crate::run::{CancellationToken, ExitCode};
 use xiao_codegen_llvm::Toolchain;
@@ -135,7 +135,21 @@ pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
             core_version,
             action,
             apply,
-        } => cache_response(request_id, protocol_version, core_version, action, apply),
+            project_path,
+            archive_paths,
+            references,
+        } => cache_response(
+            request_id,
+            protocol_version,
+            core_version,
+            action,
+            apply,
+            CacheSources {
+                project_path,
+                archive_paths,
+                explicit_references: references,
+            },
+        ),
         ProtocolRequest::Test {
             request_id,
             protocol_version,
@@ -807,7 +821,21 @@ pub(super) fn worker_response(
             core_version,
             action,
             apply,
-        } => cache_response(request_id, protocol_version, core_version, action, apply),
+            project_path,
+            archive_paths,
+            references,
+        } => cache_response(
+            request_id,
+            protocol_version,
+            core_version,
+            action,
+            apply,
+            CacheSources {
+                project_path,
+                archive_paths,
+                explicit_references: references,
+            },
+        ),
         ProtocolRequest::Test {
             request_id,
             protocol_version,

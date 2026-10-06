@@ -2,8 +2,45 @@
 
 use super::*;
 use crate::DRIVER_TIMEOUT_CODE;
+use std::env;
+use std::fs;
 use std::io::Cursor;
-use std::sync::Arc;
+use std::path::PathBuf;
+use std::sync::{Arc, Mutex, OnceLock};
+use std::time::{SystemTime, UNIX_EPOCH};
+use xiao_artifacts::{
+    ArchiveEntry, ArchiveIndex, ArtifactStore, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
+};
+use xiao_xar::{XarObject, encode_xar};
+
+static CACHE_ENV_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
+/// 为会修改 XIAO_HOME 的协议测试建立相互排斥的临时缓存目录。
+fn with_protocol_cache_home<T>(test: impl FnOnce(&PathBuf) -> T) -> T {
+    let _guard = CACHE_ENV_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let suffix = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock")
+        .as_nanos();
+    let home = env::temp_dir().join(format!("xiao-driver-cache-{}-{suffix}", std::process::id()));
+    let previous = env::var_os("XIAO_HOME");
+    unsafe {
+        env::set_var("XIAO_HOME", &home);
+    }
+    let result = test(&home);
+    unsafe {
+        if let Some(previous) = previous {
+            env::set_var("XIAO_HOME", previous);
+        } else {
+            env::remove_var("XIAO_HOME");
+        }
+    }
+    let _ = fs::remove_dir_all(&home);
+    result
+}
 
 /// 测试用的线程安全输出缓冲区。
 #[derive(Clone, Default)]
@@ -191,6 +228,9 @@ fn cache_list_returns_structured_result() {
         core_version: CORE_VERSION,
         action: "list".to_owned(),
         apply: false,
+        project_path: None,
+        archive_paths: Vec::new(),
+        references: Vec::new(),
     })
     else {
         panic!("cache list 必须返回结构化结果");
@@ -198,6 +238,174 @@ fn cache_list_returns_structured_result() {
     assert_eq!(operation, "cache");
     assert_eq!(value.kind, "cache");
     assert_eq!(exit_code, ExitCode::Success.as_process_code());
+}
+
+#[test]
+/// cache clean 通过协议读取显式摘要，真实删除未引用对象并保留被引用对象。
+fn cache_clean_protocol_deletes_unreferenced_objects() {
+    with_protocol_cache_home(|home| {
+        let store = ArtifactStore::open(home.join("cache")).expect("cache store");
+        let protected = store
+            .put(ObjectKind::Native, b"protocol-protected")
+            .expect("protected object");
+        let removable = store
+            .put(ObjectKind::Native, b"protocol-removable")
+            .expect("removable object");
+        let ProtocolResponse::Result {
+            value: Some(value), ..
+        } = dispatch(ProtocolRequest::Cache {
+            request_id: "cache-clean-explicit".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            action: "clean".to_owned(),
+            apply: true,
+            project_path: None,
+            archive_paths: Vec::new(),
+            references: vec![protected.digest.as_hex()],
+        })
+        else {
+            panic!("cache clean 应返回结构化结果");
+        };
+        let summary: Value = serde_json::from_str(&value.value).expect("cache summary");
+        assert_eq!(summary["status"], "applied");
+        assert_eq!(summary["removed_count"], 1);
+        assert!(store.read(protected.kind, protected.digest).is_ok());
+        assert!(store.read(removable.kind, removable.digest).is_err());
+    });
+}
+
+#[test]
+/// 项目目录来源会解析其中的 `xiao.lock.json`，而不是把目录当作摘要列表。
+fn cache_clean_protocol_reads_project_lock_from_directory() {
+    with_protocol_cache_home(|home| {
+        let store = ArtifactStore::open(home.join("cache")).expect("cache store");
+        let protected = store
+            .put(ObjectKind::Source, b"project-source")
+            .expect("project source");
+        let removable = store
+            .put(ObjectKind::Native, b"project-removable")
+            .expect("removable object");
+        let project = home.join("project");
+        fs::create_dir_all(&project).expect("project directory");
+        fs::write(
+            project.join("xiao.lock.json"),
+            format!(
+                r#"{{"lock_version":2,"config_fingerprint":"config","root":{{"name":"main","version":"0.1.0","source":{{"source_id":"path:/main","alias":null,"display_name":"main"}}}},"packages":{{"main@0.1.0[path:/main]":{{"name":"main","version":"0.1.0","source":{{"source_id":"path:/main","alias":null,"display_name":"main"}},"content_digest":"{}","dependencies":{{}},"precompiled_variants":[],"target_conditions":[]}}}}}}"#,
+                protected.digest
+            ),
+        )
+        .expect("project lock");
+        let ProtocolResponse::Result {
+            value: Some(value), ..
+        } = dispatch(ProtocolRequest::Cache {
+            request_id: "cache-clean-project".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            action: "clean".to_owned(),
+            apply: true,
+            project_path: Some(project.to_string_lossy().into_owned()),
+            archive_paths: Vec::new(),
+            references: Vec::new(),
+        })
+        else {
+            panic!("项目来源必须返回结构化结果");
+        };
+        let summary: Value = serde_json::from_str(&value.value).expect("cache summary");
+        assert_eq!(summary["removed_count"], 1);
+        assert!(store.read(protected.kind, protected.digest).is_ok());
+        assert!(store.read(removable.kind, removable.digest).is_err());
+    });
+}
+
+#[test]
+/// cache clean 先完整验证 `.xar`，再用归档索引保护其中的对象。
+fn cache_clean_protocol_reads_archive_references() {
+    with_protocol_cache_home(|home| {
+        let store = ArtifactStore::open(home.join("cache")).expect("cache store");
+        let protected = store
+            .put(ObjectKind::Native, b"archive-protected")
+            .expect("protected object");
+        let removable = store
+            .put(ObjectKind::Native, b"archive-removable")
+            .expect("removable object");
+        let archive_path = home.join("references.xar");
+        let logical_path = "objects/native/protected.bin".to_owned();
+        let index = ArchiveIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            entry: logical_path.clone(),
+            entries: vec![ArchiveEntry {
+                logical_path,
+                object_kind: protected.kind,
+                digest: protected.digest,
+                module: "main".to_owned(),
+                target: "portable".to_owned(),
+                length: protected.length,
+            }],
+            dependency_lock_digest: "0".repeat(64),
+            runtime_abi_min: 1,
+            runtime_abi_max: 1,
+            platform: String::new(),
+            debug_activation: false,
+            language_locale: "zh-CN".to_owned(),
+        };
+        let archive_bytes = encode_xar(
+            &index,
+            &[XarObject {
+                kind: protected.kind,
+                digest: protected.digest,
+                bytes: b"archive-protected".to_vec(),
+            }],
+        )
+        .expect("archive");
+        fs::write(&archive_path, archive_bytes).expect("archive file");
+        let ProtocolResponse::Result {
+            value: Some(value), ..
+        } = dispatch(ProtocolRequest::Cache {
+            request_id: "cache-clean-archive".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            action: "clean".to_owned(),
+            apply: true,
+            project_path: None,
+            archive_paths: vec![archive_path.to_string_lossy().into_owned()],
+            references: Vec::new(),
+        })
+        else {
+            panic!("归档引用必须返回结构化结果");
+        };
+        let summary: Value = serde_json::from_str(&value.value).expect("cache summary");
+        assert_eq!(summary["removed_count"], 1);
+        assert!(store.read(protected.kind, protected.digest).is_ok());
+        assert!(store.read(removable.kind, removable.digest).is_err());
+    });
+}
+
+#[test]
+/// 来源归档损坏时协议整体失败，不得因为读取失败而删除任何对象。
+fn cache_clean_protocol_rejects_broken_archive_before_deleting() {
+    with_protocol_cache_home(|home| {
+        let store = ArtifactStore::open(home.join("cache")).expect("cache store");
+        let object = store
+            .put(ObjectKind::Native, b"keep-on-broken-archive")
+            .expect("cache object");
+        let broken_archive = home.join("broken.xar");
+        fs::write(&broken_archive, b"not-a-xar").expect("broken archive");
+        let ProtocolResponse::Error { error, .. } = dispatch(ProtocolRequest::Cache {
+            request_id: "cache-clean-broken".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            action: "clean".to_owned(),
+            apply: true,
+            project_path: None,
+            archive_paths: vec![broken_archive.to_string_lossy().into_owned()],
+            references: Vec::new(),
+        }) else {
+            panic!("损坏归档必须返回错误");
+        };
+        assert_eq!(error.code, "X11-CACHE-004");
+        assert!(store.read(object.kind, object.digest).is_ok());
+    });
 }
 
 #[test]

@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
 
@@ -12,7 +12,7 @@ use super::run::protocol_error_response;
 use super::validate::validate_versions;
 use crate::run::ExitCode;
 use xiao_artifacts::{
-    ArtifactStore, Digest256, GlobalRecord, IndexStore, ObjectKind, ReferenceSet,
+    ArtifactStore, CacheReference, Digest256, GlobalRecord, IndexStore, ObjectKind, ReferenceSet,
 };
 use xiao_package::CacheLayout;
 
@@ -310,12 +310,23 @@ fn xiaoc_platform_label(platform: &xiao_bytecode::XiaocPlatform) -> String {
 }
 
 /// 使用 16B 的两阶段 API 维护缓存；`clean` 默认只生成计划。
+pub(super) struct CacheSources {
+    /// 项目目录或 `xiao.lock.json` 路径。
+    pub(super) project_path: Option<String>,
+    /// `.xar` 归档路径列表。
+    pub(super) archive_paths: Vec<String>,
+    /// 显式 SHA-256 摘要列表。
+    pub(super) explicit_references: Vec<String>,
+}
+
+/// 使用 16B 的两阶段 API 维护缓存；`clean` 默认只生成计划。
 pub(super) fn cache_response(
     request_id: String,
     protocol_version: u16,
     core_version: u32,
     action: String,
     apply: bool,
+    sources: CacheSources,
 ) -> ProtocolResponse {
     if let Err(error) = validate_versions(protocol_version, core_version) {
         return protocol_error_response(Some(request_id), &error);
@@ -394,9 +405,19 @@ pub(super) fn cache_response(
             Err(error) => return cache_error(request_id, "X11-CACHE-002", error.to_string()),
         }
     };
-    // 当前 cache 顶层命令没有接收项目锁或归档索引路径；没有可枚举的引用来源时
-    // 必须保守保护所有已验证对象，不能把“未扫描到”当成“没有引用”。
-    let references = ReferenceSet::protect_all();
+    let references = if matches!(action.as_str(), "verify" | "clean") {
+        match collect_cache_references(
+            &store,
+            sources.project_path.as_deref(),
+            &sources.archive_paths,
+            &sources.explicit_references,
+        ) {
+            Ok(references) => references,
+            Err(error) => return cache_error(request_id, "X11-CACHE-004", error),
+        }
+    } else {
+        ReferenceSet::protect_all()
+    };
     match action.as_str() {
         "verify" => {
             let plan = match store.plan_cleanup(&references) {
@@ -481,7 +502,15 @@ pub(super) fn cache_response(
                 );
             }
             // 16B 要求执行阶段重新收集引用，避免计划生成后新发布的对象被误删。
-            let current_references = ReferenceSet::protect_all();
+            let current_references = match collect_cache_references(
+                &store,
+                sources.project_path.as_deref(),
+                &sources.archive_paths,
+                &sources.explicit_references,
+            ) {
+                Ok(references) => references,
+                Err(error) => return cache_error(request_id, "X11-CACHE-005", error),
+            };
             match store.apply_cleanup(&plan, &current_references) {
                 Ok(report) => cache_result(
                     request_id,
@@ -489,6 +518,12 @@ pub(super) fn cache_response(
                         "action": "clean",
                         "status": "applied",
                         "cache_root": cache_root,
+                        "reference_mode": if current_references.is_conservative() {
+                            "conservative-all"
+                        } else {
+                            "scanned"
+                        },
+                        "protected_references": current_references.iter().count(),
                         "removed_count": report.removed.len(),
                         "quarantined_count": report.quarantined.len(),
                     }),
@@ -497,6 +532,54 @@ pub(super) fn cache_response(
             }
         }
         _ => unreachable!("cache 操作已经在入口校验"),
+    }
+}
+
+/// 读取一次 cache 请求显式声明的所有引用来源。
+///
+/// 没有任何来源时返回全量保护集；只要声明了来源，就必须全部成功读取，
+/// 否则调用方会在计划或执行前失败，绝不会把损坏来源当成“没有引用”。
+fn collect_cache_references(
+    store: &ArtifactStore,
+    project_path: Option<&str>,
+    archive_paths: &[String],
+    explicit_references: &[String],
+) -> Result<ReferenceSet, String> {
+    if project_path.is_none() && archive_paths.is_empty() && explicit_references.is_empty() {
+        return Ok(ReferenceSet::protect_all());
+    }
+
+    let project_lock = project_path.map(resolve_project_lock_path);
+    let explicit = explicit_references
+        .iter()
+        .map(|value| {
+            Digest256::parse(value)
+                .map(CacheReference::any_namespace)
+                .map_err(|error| format!("显式引用摘要无效 {value:?}：{error}"))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let indexes = archive_paths
+        .iter()
+        .map(|path| {
+            let bytes =
+                fs::read(path).map_err(|error| format!("无法读取归档 {path:?}：{error}"))?;
+            xiao_xar::decode_xar(&bytes)
+                .map(|archive| archive.index().clone())
+                .map_err(|error| format!("归档 {path:?} 校验失败：{error}"))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    store
+        .collect_references_from_indexes(project_lock.as_deref(), &indexes, &explicit)
+        .map_err(|error| error.to_string())
+}
+
+/// 把项目目录或锁文件路径统一转换成 `xiao.lock.json` 路径。
+fn resolve_project_lock_path(project_path: &str) -> PathBuf {
+    let path = Path::new(project_path);
+    if path.is_dir() {
+        path.join("xiao.lock.json")
+    } else {
+        path.to_owned()
     }
 }
 

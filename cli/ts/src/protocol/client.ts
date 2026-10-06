@@ -131,6 +131,12 @@ export interface CacheOptions {
   action: "list" | "verify" | "rebuild" | "clean";
   /** clean 是否执行已有计划。 */
   apply?: boolean;
+  /** 项目目录或 xiao.lock.json 路径。 */
+  projectPath?: string | null;
+  /** .xar 归档路径列表。 */
+  archivePaths?: string[];
+  /** 显式 SHA-256 摘要列表。 */
+  references?: string[];
   /** 取消信号。 */
   signal?: AbortSignal;
 }
@@ -374,6 +380,9 @@ export class ProtocolClient {
       core_version: CORE_VERSION,
       action: options.action,
       apply: options.apply ?? false,
+      project_path: options.projectPath ?? null,
+      archive_paths: options.archivePaths ?? [],
+      references: options.references ?? [],
     };
     return this.call(request, options.signal);
   }

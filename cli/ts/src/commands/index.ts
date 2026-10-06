@@ -505,7 +505,14 @@ async function executeCache(command: Extract<ParsedCommand, { kind: "cache" }>, 
       executablePath: context.executablePath,
       spawnProcess: context.spawnProcess,
     });
-    const result = await client.cache({ action: command.action, apply: command.apply, signal: context.signal });
+    const result = await client.cache({
+      action: command.action,
+      apply: command.apply,
+      projectPath: command.projectPath,
+      archivePaths: command.archivePaths,
+      references: command.references,
+      signal: context.signal,
+    });
     return renderProtocolResponse(result.response, options);
   } catch (error) {
     return renderCliError(error, options);

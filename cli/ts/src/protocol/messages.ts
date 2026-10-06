@@ -124,6 +124,12 @@ export interface CacheRequest {
   core_version: number;
   action: "list" | "verify" | "rebuild" | "clean";
   apply: boolean;
+  /** 项目目录或 xiao.lock.json；缺省时不声明项目来源。 */
+  project_path?: string | null;
+  /** 已验证的 .xar 归档路径；由 Rust 核心解出索引。 */
+  archive_paths?: string[];
+  /** 跨命名空间保守保护的 SHA-256 摘要列表。 */
+  references?: string[];
 }
 
 /** 项目测试请求；cases 顺序就是核心执行和结果返回顺序。 */
