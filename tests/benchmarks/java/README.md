@@ -10,5 +10,11 @@ success<TAB><value>
 在固定的 Temurin/OpenJDK 21 环境中编译和运行。`baseline.json` 固定 JVM 参数与统计协议；其中
 `resolved_version` 和摘要必须由受控机器填写，不能用开发机的 Java 版本替代。
 
+编译时显式指定 UTF-8，避免 JDK 17 等 Windows 环境按系统代码页读取源码：
+
+```text
+javac -encoding UTF-8 -d <classes-dir> tests/benchmarks/java/Benchmark.java
+```
+
 溢出用例保留用于语义记录；参考实现输出 Java `int` 的真实回绕结果，而 Xiao 输出
 `X06-RUNTIME-009`。两者不具备可比语义，因此只能记为「数据不足」，不参与性能通过或回归判定。
