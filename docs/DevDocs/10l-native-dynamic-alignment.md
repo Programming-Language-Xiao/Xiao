@@ -23,8 +23,8 @@
 
 | 环节 | 现状 | 判定 |
 | --- | --- | --- |
-| 动态入口语句 | `dynamic/control.rs:115` 把 `For`、`Function`、`Import` 三类语句统一报 `Unsupported`，文案只写「函数或导入语句」，漏了 `for` | 已枚举 3 类；等待范围裁定 |
-| 动态入口运行时检查 | `dynamic.rs:93`：只要 `runtime_checks` 非空就整体拒绝，不区分种类。19D 把 `container-dense` 被拒写成 `numeric_range`，那只是第一个命中的种类，不是唯一种类 | 已枚举 8 类已触发、6 类未在规定语料触发；等待范围裁定 |
+| 动态入口语句 | 原拒绝点已接入 `For`、`Function`、`Import`；旧错误文案漏报 `for` 的问题已随实现移除 | 首轮已接入；嵌套 `finally` 释放差异仍登记 |
+| 动态入口运行时检查 | 原 `dynamic.rs:93` 整体拒绝闸门已移除，14 类检查进入 Runtime/VM 对齐路径 | 首轮已接入；高级选择结果仍待原生实测 |
 | 整数溢出 | 原生以 `llvm.trap` 终止（19A 实测 Windows 退出码 `0xC000001D`，无 xiao-error 摘要）；VM 报 `X06-RUNTIME-009`。10A 把它登记为 N0-C 债项；我按关键词查了 10E 到 10I，没找到还债记录，但没有逐篇通读 | 疑似未还 |
 | 回归门 | 平台复现工作流每周一定时跑 `--ignored`；`maintenance-regression.yml` 的路径过滤含 `xiao-codegen-llvm`，但该文件里没有 ignored 或 native 步骤。20AB 的回归 10-04 引入，要等 10-05 的定时运行才红 | 缺 |
 
@@ -35,7 +35,7 @@
 | O6 条件 | 现状 | 判定 |
 | --- | --- | --- |
 | 1 兼容矩阵与升级/拒绝策略 | 矩阵已由代码生成；仍有 `Unverified` 格，我没统计个数 | 部分 |
-| 2 差分、模糊、损坏恢复、安全测试全部通过 | Windows 本机通过。原生差分 7 例里 `overflow`、`nested-finally-drops` 登记为未覆盖；Linux、macOS 没有运行记录 | **不满足**，本批相关 |
+| 2 差分、模糊、损坏恢复、安全测试全部通过 | Windows 受控原生差分已通过；`nested-finally-drops` 的释放序列仍登记为未覆盖；Linux、macOS 没有运行记录 | **不满足**，本批相关 |
 | 3 三平台一致 | 只有 Windows 的证据 | 未验证，等 CI 授权 |
 | 4 发布报告与重复构建白名单 | 报告已有；19B 记录白名单待实测，我没有重新核对最新状态 | 未核实 |
 | 5 相对 Java 的性能对照 | 全部「数据不足」，`container-dense` 原生被拒 | **不满足**，本批相关 |
