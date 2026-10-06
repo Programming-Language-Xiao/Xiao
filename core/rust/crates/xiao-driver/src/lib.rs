@@ -25,7 +25,8 @@ mod run;
 
 /// 重导出兼容矩阵和当前版本清单。
 pub use compatibility::{
-    CompatibilityAction, CompatibilityAxis, CompatibilityCell, CompatibilityVersions,
+    CompatibilityAction, CompatibilityAxis, CompatibilityCell, CompatibilityEvidence,
+    CompatibilityVersions,
     compatibility_matrix, current_compatibility_versions,
 };
 

@@ -56,6 +56,18 @@ pub enum CompatibilityAction {
     },
 }
 
+/// 该矩阵格子的证据状态。
+///
+/// `Unverified` 只用于当前没有对应产物字段或没有可复用真实解码入口的格子；
+/// 它不把“按现状推断”伪装成编码器/解码器已经证明的行为。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum CompatibilityEvidence {
+    /// 已由真实编码器/解码器或运行前校验路径验证。
+    Verified,
+    /// 当前只有现状记录，尚未有对应的真实产物测试。
+    Unverified,
+}
+
 /// 兼容矩阵中的一格。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct CompatibilityCell {
@@ -67,6 +79,8 @@ pub struct CompatibilityCell {
     pub runtime: String,
     /// 当前实现的行为。
     pub action: CompatibilityAction,
+    /// 该格子的证据状态。
+    pub evidence: CompatibilityEvidence,
 }
 
 /// 当前核心版本清单，供矩阵、发布报告和文档生成复用。
@@ -123,6 +137,7 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
             format!("{}.{}", current.xiaoc.0, current.xiaoc.1),
             format!("{}.{}", current.xiaoc.0, current.xiaoc.1),
             CompatibilityAction::Direct,
+            CompatibilityEvidence::Verified,
         ),
         cell(
             CompatibilityAxis::XiaocFormat,
@@ -131,6 +146,7 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
             CompatibilityAction::Reject {
                 code: "XIAOC-003".to_owned(),
             },
+            CompatibilityEvidence::Verified,
         ),
         cell(
             CompatibilityAxis::XiaocFormat,
@@ -139,12 +155,14 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
             CompatibilityAction::Reject {
                 code: "XIAOC-002".to_owned(),
             },
+            CompatibilityEvidence::Verified,
         ),
         cell(
             CompatibilityAxis::IndexSchema,
             format!("{}.{}", current.index_schema.0, current.index_schema.1),
             format!("{}.{}", current.index_schema.0, current.index_schema.1),
             CompatibilityAction::Direct,
+            CompatibilityEvidence::Verified,
         ),
         cell(
             CompatibilityAxis::IndexSchema,
@@ -153,6 +171,7 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
             CompatibilityAction::Reject {
                 code: "X17-XAR-007".to_owned(),
             },
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::IndexSchema,
@@ -161,24 +180,28 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
             CompatibilityAction::Reject {
                 code: "X17-XAR-007".to_owned(),
             },
+            CompatibilityEvidence::Verified,
         ),
         cell(
             CompatibilityAxis::XarFormat,
             "implicit-v1".to_owned(),
             format!("{}.{}", current.xar.0, current.xar.1),
             CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::XarFormat,
             "zip64-v1".to_owned(),
             format!("{}.{}", current.xar.0, current.xar.1),
             CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::RuntimeAbi,
             current.runtime_abi.to_string(),
             current.runtime_abi.to_string(),
             CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::RuntimeAbi,
@@ -187,12 +210,14 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
             CompatibilityAction::Reject {
                 code: "X17-XAR-007".to_owned(),
             },
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::IrVersion,
             current.ir.to_string(),
             current.ir.to_string(),
             CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::IrVersion,
@@ -201,36 +226,42 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
             CompatibilityAction::Reject {
                 code: "X08-IR-002".to_owned(),
             },
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::LanguageVersion,
             current.language.clone(),
             current.language.clone(),
             CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::LanguageVersion,
             "0.2.0".to_owned(),
             current.language.clone(),
             CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::OptimizationFingerprint,
             "same".to_owned(),
             "same".to_owned(),
             CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::OptimizationFingerprint,
             "different".to_owned(),
             "current".to_owned(),
             CompatibilityAction::Regenerate,
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::TargetPlatform,
             current.target.clone(),
             current.target,
             CompatibilityAction::Direct,
+            CompatibilityEvidence::Unverified,
         ),
         cell(
             CompatibilityAxis::TargetPlatform,
@@ -239,6 +270,7 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
             CompatibilityAction::Reject {
                 code: "X17-XAR-008".to_owned(),
             },
+            CompatibilityEvidence::Unverified,
         ),
     ]
 }
@@ -249,12 +281,14 @@ fn cell(
     artifact: String,
     runtime: String,
     action: CompatibilityAction,
+    evidence: CompatibilityEvidence,
 ) -> CompatibilityCell {
     CompatibilityCell {
         axis,
         artifact,
         runtime,
         action,
+        evidence,
     }
 }
 
