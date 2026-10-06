@@ -2,6 +2,9 @@
 use super::*;
 use std::sync::{Mutex, OnceLock};
 
+use serde_json::{Value, json};
+use xiao_diagnostics::window::{DIAGNOSTIC_PROTOCOL_VERSION, read_message};
+
 /// 把测试字符串借用为 ABI UTF-8 字节视图。
 fn bytes(text: &str) -> XiaoAbiBytes {
     XiaoAbiBytes {
