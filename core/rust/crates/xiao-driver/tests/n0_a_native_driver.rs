@@ -257,24 +257,22 @@ fn carries_inferred_function_signature_into_ir() {
 }
 
 #[test]
-#[ignore = "需要 XIAO_CLANG 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
-/// 提供工具链时，真实 Xiao 源码必须完整走前端再生成原生程序。
+#[ignore = "需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
+/// 提供动态 Runtime 工具链时，真实 Xiao 源码必须完整走前端再生成原生程序。
 fn optional_real_frontend_to_native_round_trip() {
-    let clang = std::env::var_os("XIAO_CLANG")
-        .expect("显式运行 --ignored 时 XIAO_CLANG 必须已设置；准备方式见 10D §4");
     let root = std::env::temp_dir().join(format!("xiao-driver-n0-a-{}", std::process::id()));
     let output = root.join(if cfg!(windows) {
         "program.exe"
     } else {
         "program"
     });
-    let target = configured_native_target();
+    let (target, toolchain) = configured_dynamic_toolchain();
     let request = NativeBuildRequest::new(
         FrontendRequest::from_text(
             "def count(limit)\n    total = 0\n    while total != limit\n        total = total + 1\n    return total\nresult = count(3)\n",
         ),
         target,
-        Toolchain::new(clang),
+        toolchain,
         &output,
     );
     let result = FrontendNativeDriver::new()

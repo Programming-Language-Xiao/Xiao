@@ -18,6 +18,18 @@ struct BenchmarkSpec {
     source: String,
 }
 
+/// Windows x86_64-pc-windows-msvc 受控环境的当前构建基线（2026-10-07）。
+///
+/// 这张表只记录构建能力，不把被拒程序伪装成性能数据；新增拒绝或已有程序转为
+/// 拒绝都会让门禁失败，原因由断言消息保留。
+const EXPECTED_BUILT: [&str; 4] = [
+    "deep-expression-arithmetic",
+    "scalar-overflow-and-bool-parity",
+    "named-local-loop",
+    "deep-call-recursion",
+];
+const EXPECTED_REJECTED: [(&str, &str); 1] = [("container-dense", "动态表方法")];
+
 /// 逐项探测 19D 清单；构建失败只作为数据不足记录，不在本批修原生后端。
 #[test]
 #[ignore = "需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
@@ -77,7 +89,30 @@ fn native_benchmark_probe_reports_every_manifest_program() {
         }
     }
     let _ = fs::remove_dir_all(&probe_root);
-    for result in results {
+    for result in &results {
         eprintln!("19D-NATIVE-PROBE {result}");
+    }
+    assert_eq!(
+        results.len(),
+        EXPECTED_BUILT.len() + EXPECTED_REJECTED.len(),
+        "manifest 基准数量变化，必须先更新受控构建基线"
+    );
+    for benchmark in EXPECTED_BUILT {
+        assert!(
+            results
+                .iter()
+                .any(|result| result == &format!("{benchmark}:built")),
+            "受控基线中的 {benchmark} 未构建成功：{results:?}"
+        );
+    }
+    for (benchmark, reason) in EXPECTED_REJECTED {
+        let result = results
+            .iter()
+            .find(|result| result.starts_with(&format!("{benchmark}:")))
+            .unwrap_or_else(|| panic!("受控基线缺少 {benchmark}：{results:?}"));
+        assert!(
+            result.contains("native-rejected") && result.contains(reason),
+            "{benchmark} 的拒绝原因变化：{result}"
+        );
     }
 }
