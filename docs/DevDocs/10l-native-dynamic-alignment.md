@@ -6,7 +6,7 @@
 > **一句话概括本批**：先修 19D 审核发现的小问题，并补一道能提前发现 20AB 那类回归的门；
 > 然后**先枚举、后动手**，把原生动态入口拒绝的语句和运行时检查逐类对齐 VM。枚举结果先向星崽汇报，再定范围。
 >
-> 状态：**规划稿（2026-10-06）**。文中「建议」未经星崽确认，确认项集中在末尾「待定决策」。
+> 状态：**枚举阶段完成，等待范围裁定（2026-10-06）**。后端尚未修改；文中「建议」未经星崽确认，确认项集中在末尾「待定决策」。
 
 ## 一、Agent 交接上下文
 
@@ -23,8 +23,8 @@
 
 | 环节 | 现状 | 判定 |
 | --- | --- | --- |
-| 动态入口语句 | `dynamic/control.rs:115` 把 `For`、`Function`、`Import` 三类语句统一报 `Unsupported`，文案只写「函数或导入语句」，漏了 `for` | 待枚举 |
-| 动态入口运行时检查 | `dynamic.rs:93`：只要 `runtime_checks` 非空就整体拒绝，不区分种类。19D 把 `container-dense` 被拒写成 `numeric_range`，那只是第一个命中的种类，不是唯一种类 | 待枚举 |
+| 动态入口语句 | `dynamic/control.rs:115` 把 `For`、`Function`、`Import` 三类语句统一报 `Unsupported`，文案只写「函数或导入语句」，漏了 `for` | 已枚举 3 类；等待范围裁定 |
+| 动态入口运行时检查 | `dynamic.rs:93`：只要 `runtime_checks` 非空就整体拒绝，不区分种类。19D 把 `container-dense` 被拒写成 `numeric_range`，那只是第一个命中的种类，不是唯一种类 | 已枚举 8 类已触发、6 类未在规定语料触发；等待范围裁定 |
 | 整数溢出 | 原生以 `llvm.trap` 终止（19A 实测 Windows 退出码 `0xC000001D`，无 xiao-error 摘要）；VM 报 `X06-RUNTIME-009`。10A 把它登记为 N0-C 债项；我按关键词查了 10E 到 10I，没找到还债记录，但没有逐篇通读 | 疑似未还 |
 | 回归门 | 平台复现工作流每周一定时跑 `--ignored`；`maintenance-regression.yml` 的路径过滤含 `xiao-codegen-llvm`，但该文件里没有 ignored 或 native 步骤。20AB 的回归 10-04 引入，要等 10-05 的定时运行才红 | 缺 |
 
@@ -56,7 +56,9 @@
 
 ### 4.1 **先枚举，后动手，枚举结果先向星崽汇报**
 
-范围现在是未知数：拒绝点有两处，各自覆盖多少种类没人数过。19D 的探测就是这样做的，做完先报，再定后续工作量。
+在枚举前范围是未知数：拒绝点有两处，各自覆盖多少种类没有人数过。19D 的探测就是这样做的，做完先报，再定后续工作量。
+
+本节的枚举步骤已经完成，结果和证据见第十一节；本提交后暂停，不进入 §4.2 的后端对齐。
 
 **冻结**：
 
@@ -178,6 +180,78 @@ docs/DevDocs/README.md                                                 主表登
 4. **是否授权推送本地提交并手动触发平台复现工作流**：本地已领先远端 37 个提交。19 的出口条件 3 和 5 的 Linux、macOS 证据都卡在这里。
 5. **Java 21 基线的来源确认**：19D 记作星崽 2026-10-06 的裁定，我在对话里没见到。请确认一句，确认后文档保持原样。
 6. **20C 是否要等本批**：20 号文档只列了 10 的原生 Runtime ABI 和 11A 包边界为前置，没有写动态入口的函数和导入支持。官方 Xiao 库若用 `def` 和 `import` 写成，就会撞上 §一 的拒绝点，这是我的推断，不是文档原文。建议本批枚举完再定。
+
+## 十一、枚举记录（2026-10-06）
+
+本节是 §4.1 要求的「先枚举、后动手」记录。本提交只改文档；临时探测测试在取数后删除，动态后端、VM、`native_gap` 和 CI 均未修改。
+
+### 11.1 取数范围与方法
+
+- 规定语料为 `tests/benchmarks/manifest.json` 的 5 个程序、19A `CASES` 的 7 个程序，以及 `tests/spec/09-bytecode` 递归发现的 79 个语义向量源码，共 **91 个**。Windows 本机一次性前端编译结果为 **91 成功、0 拒绝**。
+- 为补齐语句类别，另用 3 个最小源码观察 `For`、`Function`、`Import`；这 3 个不计入上面的 91 个语料统计。
+- 通过 `FrontendCompiler` 直接遍历 `IrProgram.runtime_checks`，没有只看首个检查；IR 递归计数只表示出现次数，不表示每个出现都从动态入口执行。
+- VM 行为取自现有 09R2 向量、11B 模块加载向量和一次性 `xiao-driver` VM 运行。没有把 VM 未能验证的用例记成成功或原生缺口。
+
+### 11.2 被动态入口拒绝的语句种类
+
+动态入口仍在 `core/rust/crates/xiao-codegen-llvm/src/dynamic/control.rs` 统一拒绝这三类 `IrStatementKind`。规定语料和最小例证中的 IR 递归计数为：`For` **15**、`Function` **195**、`Import` **1**；函数体内的计数包含在内。
+
+| 种类 | 最小源码 | VM 行为 | 当前原生状态与预计落点 |
+| --- | --- | --- | --- |
+| `For` | `items = [1, 2]`；`for item in items`；循环体写入 `total` | 成功；09R2G 的 `for` 向量也在三种 VM 载体通过 | 入口拒绝。预计涉及 `dynamic/control.rs` 的迭代控制流、Runtime 迭代 ABI，以及 `d19a_differential.rs` 的差分证据 |
+| `Function` | `def identity(int value) -> int`；返回 `value`；`probe = identity(1)` | 成功，调用深度进入 `identity` | 入口拒绝。预计涉及动态函数槽/调用与入口编排（`dynamic/control.rs`、`dynamic/slot.rs`、相关 Runtime ABI）及差分用例 |
+| `Import` | 11B `module-loading.json` 的 `from helper import value`，`helper.xiao` 导出 `value = 7` | 成功，结果加载 `project:helper` 一次；`i4a2_module_loading::module_loading_spec_vectors` 通过 | 入口拒绝。预计需要动态入口、模块加载上下文和 Runtime/驱动边界共同接线，不能只改拒绝文案 |
+
+`For`、`Function`、`Import` 是语句种类全集；静态路径中已有相应消费者不等于动态入口已经支持。`control.rs` 当前错误文案只写「函数或导入语句」，因此也漏报了 `for`，这是实现时要一并修正的诊断面。
+
+### 11.3 `runtime_checks` 全量枚举
+
+下面的 8 类在 91 个规定源码中实际出现，都会被 `dynamic.rs:93` 的「列表非空即拒绝」闸门挡住。`R1` 同时触发多个检查，分别用不同实参观察先失败的检查；这不是把一个错误重复计数。
+
+| 检查种类 | 最小源码/来源 | VM 行为 | 当前原生状态 |
+| --- | --- | --- | --- |
+| `arithmetic` | **R1**：`def result(value) -> int`；在动态 `for item in value` 中执行 `total = total + item`；`probe = result(["x"])` | `X06-RUNTIME-012`（动态算术的操作数类型不满足） | 已观测，入口整体拒绝；预计改动态表达式/Runtime ABI并保留检查 |
+| `dynamic_conversion` | **R1** 同一源码与实参 | 同上，`X06-RUNTIME-012`；检查列表同时含 `arithmetic` 和 `dynamic_conversion` | 已观测，入口整体拒绝；不得删除检查来换取构建 |
+| `iterable` | **R1** 同一函数，实参改为整数 `1` | `X06-RUNTIME-024` | 已观测，入口整体拒绝；预计接动态迭代检查与错误码 |
+| `numeric_range` | 19A `overflow`：`def square(int value) -> int`；返回 `value * value`；`result = square(4000000000)` | `X06-RUNTIME-009` | 已观测；整数溢出仍按 §4.3 单独决策，不在本枚举提交修复 |
+| `selector_bounds` | **R2**：`text = "你好"`；`char = text[-1]` | 成功 | 已观测，入口整体拒绝；预计接选择器边界检查并保持 `X06-RUNTIME-017` |
+| `set_operation` | 09R2F1 `runtime-operation-boundary-error`：函数内 `computed = value + {1}`，用动态数组实参调用 | `X06-RUNTIME-021` | 已观测，入口整体拒绝；预计接集合操作检查 |
+| `set_comparison` | 09R2F1 `runtime-comparison-boundary-error`：函数内 `return value == {1}`，用动态数组实参调用 | `X06-RUNTIME-022` | 已观测，入口整体拒绝；预计接集合比较检查 |
+| `set_membership` | 09R2F1 `runtime-membership-boundary-error`：函数内 `return value in {1}`，用动态数组实参调用 | `X06-RUNTIME-023` | 已观测，入口整体拒绝；预计接集合成员检查 |
+
+本次规定语料没有出现以下 6 类；它们不能写成「已从原生缺口消失」。为确认 VM 侧现有契约，另跑了最小补充源码，结果如下：
+
+| 未在规定语料触发的种类 | 补充最小源码 | VM 侧观察 | 枚举结论 |
+| --- | --- | --- | --- |
+| `string_boolean` | `def parse(str raw) -> bool`；返回 `raw as bool`；`probe = parse("yes")` | `X06-RUNTIME-002` | 规定语料未触发；保留为待枚举原生类别 |
+| `selector_step` | 动态 `step = choose(0)` 后执行 `values{step}[=]` | `X06-RUNTIME-018` | 规定语料未触发；保留为待枚举原生类别 |
+| `random_count` | 动态 `count = choose(3)` 后执行 `values[?count]`，候选数为 2 | `X06-RUNTIME-019` | 规定语料未触发；保留为待枚举原生类别 |
+| `random_seed` | 动态 `seed = choose(-1)` 后执行 `random.seed(seed)` | `X06-RUNTIME-020` | 规定语料未触发；保留为待枚举原生类别 |
+| `set_hashability` | `def make(value)`；构造 `{value}`；用 `[1]` 调用 | `X06-RUNTIME-016` | 规定语料未触发；保留为待枚举原生类别 |
+| `boolean_condition` | 动态 `for item in value` 后以 `if item` 作条件 | VM 在执行前验证失败：`X09-BYTECODE-002`（动态条件寄存器类别不匹配） | VM 侧当前没有可引用的成功/稳定 Runtime 错误结果，单列为 VM 未支持；不计入原生缺口 |
+
+### 11.4 整数溢出发射点量化
+
+`core/rust/crates/xiao-codegen-llvm/src/ir.rs` 当前没有把溢出转换成 `X06-RUNTIME-009`。源码层可见的 `llvm.trap` 发射模板共 **7 个点**：
+
+1. `llvm.s{add,sub,mul}.with.overflow` 的整数算术溢出分支 1 个共享调用点；
+2. 除零检查、最小整数除以 `-1` 检查各 1 个，共 2 个；
+3. 整数窄化范围检查 1 个；
+4. 浮点有限性检查的非有限分支和范围分支各 1 个，共 2 个。
+
+其中前 5 个经过 `branch_on_trap` 共享辅助，后 2 个在 `check_finite` 直接发射；每次遇到相应操作会按操作复制失败块，所以「7」是发射点模板数，不是任意程序固定生成 7 个块。Windows 19A 实测溢出退出为 `0xC000001D`，没有 `xiao-error` 摘要；VM 结果是 `X06-RUNTIME-009`。是否把这条债项并入本批仍由待定决策 2 决定。
+
+### 11.5 结论与范围闸门
+
+本次枚举得到 **3 类语句拒绝**、**8 类已在规定语料触发的 Runtime 检查**，以及 **6 类规定语料未触发的 Runtime 检查**。因此下一步实现范围不能默认覆盖全部 14 类：应由星崽先确认要接哪一组；确认前不改 `dynamic.rs`、`dynamic/control.rs`、Runtime ABI、`d19a_differential.rs` 或 CI。确认范围后，每类仍按 §4.2 单独提交 VM 对原生差分用例和 `native_gap` 摘除。
+
+取数命令（临时文件已删除）为：
+
+```text
+cd core/rust
+cargo test -p xiao-driver --test 10l-enum-tmp -- --nocapture
+cargo test -p xiao-driver --test i4a2_module_loading module_loading_spec_vectors -- --nocapture
+```
 
 ## 相关页面
 
