@@ -68,6 +68,17 @@ pub enum CompatibilityEvidence {
     Unverified,
 }
 
+/// 版本轴在当前发布周期中的生命周期状态。
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum CompatibilityStatus {
+    /// 当前发布仍支持的版本。
+    Current,
+    /// 已标记退役但尚未移除的版本。
+    Deprecated,
+    /// 已从当前核心移除的版本。
+    Removed,
+}
+
 /// 兼容矩阵中的一格。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct CompatibilityCell {
@@ -81,6 +92,8 @@ pub struct CompatibilityCell {
     pub action: CompatibilityAction,
     /// 该格子的证据状态。
     pub evidence: CompatibilityEvidence,
+    /// 版本轴生命周期状态；当前没有已废弃或已移除格子。
+    pub status: CompatibilityStatus,
 }
 
 /// 当前核心版本清单，供矩阵、发布报告和文档生成复用。
@@ -289,6 +302,7 @@ fn cell(
         runtime,
         action,
         evidence,
+        status: CompatibilityStatus::Current,
     }
 }
 

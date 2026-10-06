@@ -1,11 +1,11 @@
 //! 19B 兼容矩阵逐格回归。
 
-use xiao_driver::{
-    CompatibilityAction, CompatibilityAxis, CompatibilityEvidence, FrontendCompiler,
-    FrontendRequest, compatibility_matrix, current_compatibility_versions,
-};
 use xiao_artifacts::{ArchiveIndex, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR};
 use xiao_bytecode::{XiaocMetadata, decode_xiaoc, encode_xiaoc, lower_program};
+use xiao_driver::{
+    CompatibilityAction, CompatibilityAxis, CompatibilityEvidence, CompatibilityStatus,
+    FrontendCompiler, FrontendRequest, compatibility_matrix, current_compatibility_versions,
+};
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
 
 #[test]
@@ -27,6 +27,7 @@ fn every_generated_cell_has_an_explicit_action_and_stable_axis() {
             cell.evidence,
             CompatibilityEvidence::Verified | CompatibilityEvidence::Unverified
         ));
+        assert_eq!(cell.status, CompatibilityStatus::Current);
     }
 }
 
