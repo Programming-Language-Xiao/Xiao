@@ -2,6 +2,7 @@
 
 use std::fs;
 use std::path::PathBuf;
+use std::process::Command;
 
 use xiao_artifacts::{ArtifactStore, ObjectKind};
 use xiao_driver::{DriverOutcome, FrontendCompiler, FrontendRequest, run};
@@ -32,6 +33,19 @@ fn observed_output(outcome: &DriverOutcome) -> String {
         .unwrap_or_default()
 }
 
+#[cfg(unix)]
+/// 读取 Unix 子进程的信号终止信息。
+fn observed_signal(status: &std::process::ExitStatus) -> Option<String> {
+    use std::os::unix::process::ExitStatusExt;
+    status.signal().map(|value| format!("SIG{value}"))
+}
+
+#[cfg(not(unix))]
+/// Windows 等平台没有 POSIX 信号字段，返回明确的缺省值。
+fn observed_signal(_status: &std::process::ExitStatus) -> Option<String> {
+    None
+}
+
 #[test]
 /// LF 与 CRLF 源码应得到同一运行观察。
 fn lf_and_crlf_sources_have_the_same_runtime_observation() {
@@ -47,23 +61,32 @@ fn lf_and_crlf_sources_have_the_same_runtime_observation() {
     assert_eq!(left.code(), right.code());
     assert_eq!(left.exit_code(), right.exit_code());
     assert_eq!(observed_output(&left), observed_output(&right));
+    assert_eq!(observed_output(&left), "line\n");
 }
 
 #[test]
-/// 相对、绝对、空格和 Unicode 路径都应通过前端边界。
-fn absolute_relative_space_and_unicode_paths_are_accepted_by_frontend_boundary() {
+/// 相对、绝对、空格和 Unicode 路径都应编译并运行到相同的具体输出。
+fn absolute_relative_space_and_unicode_paths_are_accepted_by_runtime_boundary() {
     let root = temporary_root("路径 空格");
     let source_path = root.join("模块-中文.xiao");
-    let mut request = FrontendRequest::from_text_at("value = 1\n", &source_path);
+    let source = "print(\"path\")\n";
+    let mut request = FrontendRequest::from_text_at(source, &source_path);
     request.context.project_root = Some(root.clone());
     let artifact = FrontendCompiler::new()
         .compile(&request)
         .expect("含空格和 Unicode 的绝对路径应可编译");
     assert!(!artifact.ir.body.is_empty());
-    let relative = FrontendRequest::from_text_at("value = 1\n", "模块-中文.xiao");
-    FrontendCompiler::new()
+    let absolute_run = run(&xiao_driver::DriverRequest::new(request));
+    assert!(absolute_run.is_success());
+    assert_eq!(observed_output(&absolute_run), "path\n");
+    let relative = FrontendRequest::from_text_at(source, "模块-中文.xiao");
+    let relative_artifact = FrontendCompiler::new()
         .compile(&relative)
         .expect("相对路径应可编译");
+    let relative_run = run(&xiao_driver::DriverRequest::new(relative));
+    assert!(relative_run.is_success());
+    assert_eq!(observed_output(&relative_run), "path\n");
+    assert_eq!(artifact.ir.body.len(), relative_artifact.ir.body.len());
     let _ = fs::remove_dir_all(root);
 }
 
@@ -94,19 +117,28 @@ fn read_only_content_addressed_objects_remain_verifiable_on_each_host() {
 }
 
 #[test]
-/// Unix 信号和 Windows 中断退出码必须有明确替代表示。
+/// 真实子进程的 Unix 信号和 Windows 中断退出码必须有明确替代表示。
 fn process_termination_has_an_explicit_signal_or_exit_alternative() {
-    let normal = normalize_process_termination(Some(0), None);
-    assert_eq!(normal, "exit:0");
-    let observed = if cfg!(unix) {
-        normalize_process_termination(None, Some("SIGINT"))
+    let status = if cfg!(windows) {
+        Command::new("cmd")
+            .args(["/c", "exit", "130"])
+            .status()
+            .expect("应能启动 Windows 退出码探针")
     } else {
-        // Windows 没有 POSIX 信号状态，使用 CLI 的中断退出码作为明确替代。
-        normalize_process_termination(Some(130), None)
+        Command::new("sh")
+            .args(["-c", "kill -TERM $$"])
+            .status()
+            .expect("应能启动 Unix 信号探针")
     };
-    if cfg!(unix) {
-        assert_eq!(observed, "signal:SIGINT");
+    let signal = observed_signal(&status);
+    if cfg!(windows) {
+        assert_eq!(status.code(), Some(130));
+        assert_eq!(
+            normalize_process_termination(status.code(), signal.as_deref()),
+            "exit:130"
+        );
     } else {
-        assert_eq!(observed, "exit:130");
+        assert!(signal.is_some(), "Unix 探针必须由信号终止：{status:?}");
+        assert!(normalize_process_termination(None, signal.as_deref()).starts_with("signal:SIG"));
     }
 }

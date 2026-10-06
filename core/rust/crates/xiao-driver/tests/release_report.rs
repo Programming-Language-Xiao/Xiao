@@ -21,7 +21,10 @@ fn verify_detail_reports_rust_computed_integrity_and_reproducibility_fields() {
         .expect("源码应通过前端");
     let bytes = encode_xiaoc(
         &lower_program(artifact.ir()),
-        XiaocMetadata::new("release-report"),
+        XiaocMetadata::new("release-report")
+            .with_source_digest("source-digest-release")
+            .with_dependency_lock_digest("lock-digest-release")
+            .with_optimization_fingerprint("optimization-release"),
     )
     .expect("应编码 xiaoc");
     let path = std::env::temp_dir().join(format!("xiao-19b-report-{}.xiaoc", std::process::id()));
@@ -44,6 +47,9 @@ fn verify_detail_reports_rust_computed_integrity_and_reproducibility_fields() {
     assert_eq!(report["schema_version"], 1);
     assert_eq!(report["signature"]["status"], "unsigned");
     assert_eq!(report["reproducibility"]["status"], "not-measured");
+    assert_eq!(report["source_digest"], "source-digest-release");
+    assert_eq!(report["dependency_lock_digest"], "lock-digest-release");
+    assert_eq!(report["optimization_fingerprint"], "optimization-release");
     assert_eq!(
         report["artifact_sha256"].as_str().unwrap_or_default().len(),
         64
@@ -60,7 +66,9 @@ fn verify_detail_reports_archive_members_and_object_digests() {
         .expect("源码应通过前端");
     let xiaoc = encode_xiaoc(
         &lower_program(artifact.ir()),
-        XiaocMetadata::new("archive-report"),
+        XiaocMetadata::new("archive-report")
+            .with_source_digest("source-digest-archive")
+            .with_optimization_fingerprint("optimization-archive"),
     )
     .expect("应编码 xiaoc");
     let object = XarObject::from_bytes(ObjectKind::Xiaoc, xiaoc);
@@ -103,8 +111,27 @@ fn verify_detail_reports_archive_members_and_object_digests() {
     let summary: serde_json::Value = serde_json::from_str(&value.value).expect("验证摘要 JSON");
     let report = &summary["release_report"];
     assert_eq!(report["target_platform"], "portable");
-    assert_eq!(report["optimization_fingerprint"], "xiao-opt-unset");
+    assert_eq!(report["source_digest"], "source-digest-archive");
+    assert_eq!(report["optimization_fingerprint"], "optimization-archive");
+    assert_eq!(
+        report["dependency_lock_digest"],
+        "0000000000000000000000000000000000000000000000000000000000000000"
+    );
     assert_eq!(report["archive_members"].as_array().map(Vec::len), Some(2));
     assert_eq!(report["xiaoc_objects"].as_array().map(Vec::len), Some(1));
+    assert!(
+        report["archive_members"][0]["sha256"]
+            .as_str()
+            .unwrap_or_default()
+            .len()
+            == 64
+    );
+    assert!(
+        report["archive_members"][1]["sha256"]
+            .as_str()
+            .unwrap_or_default()
+            .len()
+            == 64
+    );
     let _ = fs::remove_file(path);
 }
