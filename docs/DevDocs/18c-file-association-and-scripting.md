@@ -256,7 +256,8 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.6）
   `["build", "main.xiao", "-O1"]` 从过时的非法断言改为合法断言，理由是 `-O1` 已冻结并实现。
 - 中断场景新增 `xiao-artifacts` 的失败读取器测试，证明对象临时文件会清理；重复执行、只读
   索引和并发锁沿用 16A/16B/`xiao-lock` 的可证伪测试，关联层另有重复安装、检查无副作用和
-  卸载测试。没有声明 GUI 子系统或 macOS 在当前环境已验收。
+  卸载测试。19C 已在 Windows 本机对调试原生产物执行 GUI 子系统行为验证；macOS LaunchServices
+  与 Linux 桌面开窗仍无宿主证据，继续标记未验证。
 
 ### 18 阶段收口评估
 
@@ -274,7 +275,7 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.6）
 | 18.10 非交互与机器结果 | 满足 | `association` 命令、`--json` 统一 `result/error` 结构、`--verbose` stderr |
 | 18.11 中断/重复/只读/并发 | 满足 | `xiao-artifacts` 中断临时文件测试、16B 清理/只读测试、`xiao-lock` 并发测试 |
 | 18.12 使用记录 | 满足 | `cache.optimization`、`audit` schema、原生优化指纹/产物摘要字段 |
-| 18.13 `-debug` 全链路 | 部分满足（宿主门控） | `[debug]` 合并与协议传递已完成；macOS LaunchServices、Windows GUI 子系统待宿主复现 |
+| 18.13 `-debug` 全链路 | 部分满足（宿主门控） | `[debug]` 合并与协议传递已完成；Windows GUI 子系统已在本机行为验证，macOS LaunchServices 与 Linux 桌面开窗仍待宿主复现 |
 | 18.14 语言/插件回退 | 满足 | 11C 归一化、归档语言回退诊断和既有 CLI 测试 |
 
 因此 18 阶段的代码链路和可测试契约已收口；跨宿主发布行为继续按 10D/19 的门控口径保留
