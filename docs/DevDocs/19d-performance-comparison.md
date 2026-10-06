@@ -282,6 +282,18 @@ docs/DevDocs/README.md                                主表登记
 
 这份探测只证明“能否进入原生测量”，没有产生 Java 对照结论。Linux/macOS 没有运行记录，统一记为未测。
 
+### 基线材料与统计协议
+
+`tests/benchmarks/baseline.json` 固定 Temurin/OpenJDK 21、JVM 参数、clang `-O2`、3 次预热、
+11 次测量和固定种子的 10,000 次百分位自助法区间；`tests/benchmarks/java/Benchmark.java`
+按 `manifest.json` 的四个可比程序族提供无依赖参考实现，溢出用例输出真实 Java `int` 回绕结果，
+不伪造 Xiao 错误。参考源码已用本机 `javac 17.0.10` 做语法编译检查，但本机 Java 运行时是 1.8，
+因此没有把该检查当成基线取数。
+
+`tests/benchmarks/reports/19d-performance.json` 记录了每个程序、VM/原生/Java 路径和
+Windows/Linux/macOS 平台的当前状态：Windows 只有探测而没有受控性能样本，记「数据不足」；
+Linux/macOS 记「未测」；CI 记「诊断性」。阈值未冻结，报告没有任何「通过」或「回归」。
+
 ### 当前阻塞
 
 受控环境的 Java 21 与 Xiao 运行记录、固定硬件信息、性能阈值和 CI 运行号仍缺。Windows 原生探测
