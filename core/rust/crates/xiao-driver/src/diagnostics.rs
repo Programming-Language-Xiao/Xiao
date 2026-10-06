@@ -274,12 +274,13 @@ impl DiagnosticSession {
             .focus_logs
             .iter()
             .any(|target| target_matches(target, &diagnostic) && target.mirror);
+        let log_diagnostic = redact_event_for_log(&diagnostic);
         if (!focused || mirrored) && level >= self.file_level {
             self.write_log(&DiagnosticMessage::Event {
-                event: Box::new(diagnostic.clone()),
+                event: Box::new(log_diagnostic.clone()),
             });
         }
-        self.write_focus_logs(&diagnostic, level);
+        self.write_focus_logs(&log_diagnostic, level);
         if level >= self.terminal_level {
             self.send(&DiagnosticMessage::Event {
                 event: Box::new(diagnostic),
@@ -356,6 +357,59 @@ impl DiagnosticSession {
                 }
             }
         }
+    }
+}
+
+/// 对持久化日志做最小敏感字段脱敏；终端事件仍保留原始结构，避免改变运行语义。
+fn redact_event_for_log(event: &DiagnosticEvent) -> DiagnosticEvent {
+    let mut redacted = event.clone();
+    redacted.params = redacted
+        .params
+        .into_iter()
+        .map(|(key, value)| (key.clone(), redact_value(&key, value)))
+        .collect();
+    redacted.payload = redacted
+        .payload
+        .into_iter()
+        .map(|(key, value)| (key.clone(), redact_value(&key, value)))
+        .collect();
+    redacted
+}
+
+/// 递归处理常见凭据字段，未知字段保持原值以免丢失诊断上下文。
+fn redact_value(key: &str, value: Value) -> Value {
+    let sensitive = key.to_ascii_lowercase();
+    if [
+        "password",
+        "passwd",
+        "token",
+        "secret",
+        "credential",
+        "authorization",
+        "api_key",
+    ]
+    .iter()
+    .any(|name| sensitive.contains(name))
+    {
+        return Value::String("<redacted>".to_owned());
+    }
+    match value {
+        Value::Object(object) => Value::Object(
+            object
+                .into_iter()
+                .map(|(child_key, child)| {
+                    let redacted = redact_value(&child_key, child);
+                    (child_key, redacted)
+                })
+                .collect(),
+        ),
+        Value::Array(values) => Value::Array(
+            values
+                .into_iter()
+                .map(|child| redact_value("value", child))
+                .collect(),
+        ),
+        other => other,
     }
 }
 
@@ -508,6 +562,13 @@ fn launch_terminal(
     locale: &str,
     _options: &DiagnosticOptions,
 ) -> Result<(Child, Vec<TerminalCandidateSummary>), Vec<TerminalCandidateSummary>> {
+    if !renderer.is_file() {
+        return Err(vec![TerminalCandidateSummary {
+            command: renderer.display().to_string(),
+            source: "renderer",
+            reason: "诊断渲染器不存在或不可读".to_owned(),
+        }]);
+    }
     let platform = if cfg!(windows) {
         "windows"
     } else if cfg!(target_os = "macos") {
@@ -979,6 +1040,88 @@ mod tests {
             Some("object has already been released and cannot be accessed")
         );
         assert!(event.params.is_empty());
+    }
+
+    #[test]
+    /// 持久化诊断日志递归脱敏常见凭据字段。
+    fn persistent_diagnostic_logs_redact_sensitive_payloads() {
+        let mut event = vm_event_to_diagnostic(
+            &VmEvent::ModuleLoaded {
+                module: "app".to_owned(),
+            },
+            Duration::from_nanos(1),
+            "app",
+            None,
+        );
+        event.payload.insert(
+            "metadata".to_owned(),
+            json!({"token": "secret-value", "safe": "kept"}),
+        );
+        let redacted = redact_event_for_log(&event);
+        assert_eq!(
+            redacted.payload["metadata"]["token"],
+            Value::String("<redacted>".to_owned())
+        );
+        assert_eq!(redacted.payload["metadata"]["safe"], "kept");
+    }
+
+    #[test]
+    /// 聚焦规则同时按模块和源码匹配，避免把事件写入错误文件。
+    fn focus_rules_match_module_and_source() {
+        let event = vm_event_to_diagnostic(
+            &VmEvent::ModuleLoaded {
+                module: "app".to_owned(),
+            },
+            Duration::from_nanos(1),
+            "app",
+            Some("main.xiao"),
+        );
+        let file = std::env::temp_dir().join(format!("xiao-focus-{}.jsonl", std::process::id()));
+        let focus = FocusLog {
+            writer: BufWriter::new(File::create(&file).expect("创建聚焦日志")),
+            module: Some("app".to_owned()),
+            source: Some("main.xiao".to_owned()),
+            level: EventLevel::Info,
+            mirror: false,
+        };
+        assert!(target_matches(&focus, &event));
+        assert!(!target_matches(
+            &FocusLog {
+                source: Some("other.xiao".to_owned()),
+                ..focus
+            },
+            &event
+        ));
+        let _ = fs::remove_file(file);
+    }
+
+    #[test]
+    /// 日志目标不可写时返回明确记录错误，运行会话仍可继续。
+    fn unwritable_log_target_is_reported_without_startup_failure() {
+        let directory = std::env::temp_dir().join(format!("xiao-log-dir-{}", std::process::id()));
+        fs::create_dir_all(&directory).expect("创建日志目录");
+        let (log, error) = open_log(&DiagnosticOptions {
+            log_file: Some(directory.clone()),
+            ..DiagnosticOptions::default()
+        });
+        assert!(log.is_none());
+        assert!(error.is_some());
+        let _ = fs::remove_dir_all(directory);
+    }
+
+    #[test]
+    /// 没有可执行渲染器时，启动候选逐个失败并返回可审计摘要。
+    fn missing_terminal_renderer_is_an_explicit_startup_failure() {
+        let result = launch_terminal(
+            Path::new("xiao-diagnostics-does-not-exist"),
+            "127.0.0.1:1",
+            "token",
+            "zh-CN",
+            &DiagnosticOptions::default(),
+        );
+        let summaries = result.expect_err("不存在的终端候选必须整体失败");
+        assert!(!summaries.is_empty());
+        assert!(summaries.iter().all(|summary| !summary.reason.is_empty()));
     }
 
     #[test]

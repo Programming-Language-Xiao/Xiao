@@ -111,7 +111,7 @@ describe("CLI 诊断呈现", () => {
     const rendered = renderProtocolResponse({
       type: "result",
       request_id: "build-runtime",
-      operation: "build",
+      operation: "build" as const,
       exit_code: 0,
       exit_name: "success",
       diagnostics: [],
@@ -150,7 +150,7 @@ describe("CLI 诊断呈现", () => {
     const build = (passesRegistered: boolean) => ({
       type: "result" as const,
       request_id: "build-backend",
-      operation: "build",
+      operation: "build" as const,
       exit_code: 0,
       exit_name: "success",
       diagnostics: [],
