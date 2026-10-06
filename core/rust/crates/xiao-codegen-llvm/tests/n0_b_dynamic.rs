@@ -1,11 +1,14 @@
 //! N0-B 动态表 ABI 降低回归测试。
 
+use std::collections::BTreeSet;
+
 use xiao_codegen_llvm::{
     CodegenOptions, EntryObservation, NativeBuild, TargetDescription, Toolchain, lower_program,
 };
 use xiao_ir::{
-    IrArrayShape, IrDictEntry, IrEntryMode, IrExpression, IrExpressionKind, IrName, IrProgram,
-    IrRuntimeCheck, IrSpan, IrStatement, IrStatementKind, IrTableMember, IrTableSignature, IrType,
+    IrArrayShape, IrDictEntry, IrEntryMode, IrExpression, IrExpressionKind, IrName, IrParameter,
+    IrProgram, IrRuntimeCheck, IrSpan, IrStatement, IrStatementKind, IrTableMember,
+    IrTableSignature, IrType,
 };
 
 /// 构造一段最小测试源码区间。
@@ -36,6 +39,100 @@ fn literal(literal: &str, text: &str, ty: &str) -> IrExpression {
     }
 }
 
+/// 检查每个 LLVM 函数体内的分支标签引用都有同函数体内的定义。
+fn assert_function_labels_are_defined(text: &str) {
+    let mut in_function = false;
+    let mut labels = BTreeSet::new();
+    let mut references = Vec::new();
+    for line in text.lines() {
+        if line.starts_with("define ") {
+            in_function = true;
+            labels.clear();
+            references.clear();
+        }
+        if !in_function {
+            continue;
+        }
+        let trimmed = line.trim();
+        if let Some(label) = trimmed.strip_suffix(':') {
+            labels.insert(label.to_owned());
+        }
+        let mut rest = trimmed;
+        while let Some(index) = rest.find("label %") {
+            rest = &rest[index + 7..];
+            let label = rest
+                .split(|character: char| character == ',' || character.is_whitespace())
+                .next()
+                .expect("标签引用不能为空");
+            references.push(label.to_owned());
+            rest = &rest[label.len()..];
+        }
+        if trimmed == "}" {
+            for reference in &references {
+                assert!(
+                    labels.contains(reference),
+                    "LLVM 函数体引用了未定义标签 %{reference}; labels={labels:?}"
+                );
+            }
+            in_function = false;
+        }
+    }
+}
+
+#[test]
+/// 函数体动态条件的错误路由必须引用本函数自己的终点标签。
+fn function_body_dynamic_condition_has_closed_labels() {
+    let parameter = IrParameter {
+        name: name("value"),
+        kind: "positional".to_owned(),
+        ty: IrType::Dynamic,
+        default: None,
+        span: span(),
+    };
+    let condition = IrExpression {
+        kind: IrExpressionKind::Name {
+            name: name("value"),
+        },
+        ty: IrType::Scalar {
+            name: "bool".to_owned(),
+        },
+        span: span(),
+    };
+    let mut program = IrProgram::new(
+        IrEntryMode::Script,
+        vec![IrStatement {
+            kind: IrStatementKind::Function {
+                name: name("check"),
+                parameters: vec![parameter],
+                return_type: IrType::Scalar {
+                    name: "int".to_owned(),
+                },
+                body: vec![IrStatement {
+                    kind: IrStatementKind::If {
+                        condition,
+                        body: Vec::new(),
+                        elif_branches: Vec::new(),
+                        else_body: None,
+                    },
+                    span: span(),
+                    leading_docs: Vec::new(),
+                }],
+            },
+            span: span(),
+            leading_docs: Vec::new(),
+        }],
+        span(),
+    );
+    program.runtime_checks.push(IrRuntimeCheck {
+        kind: "boolean_condition".to_owned(),
+        span: span(),
+        expected: None,
+    });
+    let module =
+        lower_program(&program, &CodegenOptions::default()).expect("函数体动态条件应生成 LLVM");
+    assert_function_labels_are_defined(&module.text);
+}
+
 /// 把一个动态表达式包装为最小脚本程序。
 fn expression_program(value: IrExpression) -> IrProgram {
     IrProgram::new(
@@ -49,9 +146,11 @@ fn expression_program(value: IrExpression) -> IrProgram {
     )
 }
 
-/// 在设置了 `XIAO_LLVM_AS` 时用真实汇编器校验动态模块。
+/// 默认用结构检查校验每个函数体的标签；有 `XIAO_LLVM_AS` 时再追加真实汇编器校验。
 fn validate_with_llvm_as(text: &str) {
+    assert_function_labels_are_defined(text);
     let Some(llvm_as) = std::env::var_os("XIAO_LLVM_AS") else {
+        eprintln!("N0-B LLVM 校验：未设置 XIAO_LLVM_AS，已完成不依赖外部工具的函数标签结构校验");
         return;
     };
     NativeBuild::new()
