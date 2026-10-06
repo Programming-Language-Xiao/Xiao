@@ -25,3 +25,7 @@ cargo run --release --manifest-path tests/benchmarks/Cargo.toml
 工具仍使用 `xiao_bytecode::research::...` 兼容别名，B0 迁移不改基准源码或冻结报告。
 报告重新生成前应确认使用 `core/rust/rust-toolchain.toml` 的 `1.96.0`；任何指令集、ABI 或
 编码改动都会使本轮数字作废并要求重新冻结。
+
+19D 的 Java 对照材料位于 `baseline.json`、`java/` 和 `reports/19d-performance.json`。基线固定
+Temurin/OpenJDK 21、JVM 参数和百分位自助法协议；没有固定硬件上的受控运行记录时，报告只允许
+写「数据不足」，CI 数字只作诊断。
