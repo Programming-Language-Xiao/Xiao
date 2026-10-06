@@ -8,7 +8,12 @@ on:
       - "core/rust/Cargo.lock"
       - "core/rust/crates/xiao-artifacts/**"
       - "core/rust/crates/xiao-bytecode/**"
+      - "core/rust/crates/xiao-codegen-llvm/**"
       - "core/rust/crates/xiao-driver/**"
+      - "core/rust/crates/xiao-ir/**"
+      - "core/rust/crates/xiao-optimizer/**"
+      - "core/rust/crates/xiao-syntax/**"
+      - "core/rust/crates/xiao-types/**"
       - "core/rust/crates/xiao-xar/**"
       - "tests/fuzz/**"
   pull_request:
@@ -18,7 +23,12 @@ on:
       - "core/rust/Cargo.lock"
       - "core/rust/crates/xiao-artifacts/**"
       - "core/rust/crates/xiao-bytecode/**"
+      - "core/rust/crates/xiao-codegen-llvm/**"
       - "core/rust/crates/xiao-driver/**"
+      - "core/rust/crates/xiao-ir/**"
+      - "core/rust/crates/xiao-optimizer/**"
+      - "core/rust/crates/xiao-syntax/**"
+      - "core/rust/crates/xiao-types/**"
       - "core/rust/crates/xiao-xar/**"
       - "tests/fuzz/**"
   workflow_dispatch:
@@ -31,9 +41,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deterministic-maintenance:
-    name: Deterministic size and security regression
-    runs-on: ubuntu-24.04
+  deterministic-size:
+    name: Deterministic artifact size regression (Windows baseline)
+    runs-on: windows-2025
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -51,6 +61,22 @@ jobs:
 
       - name: Check deterministic artifact size baseline
         run: cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test artifact_size_regression
+
+  security-maintenance:
+    name: Deterministic parser and artifact security regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@1.96.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core/rust -> core/rust/target
 
       - name: Run parser and archive fuzz regressions
         run: |
