@@ -1,6 +1,8 @@
 //! 19C 体积回归：固定输入下的 `.xiaoc`/`.xar` 提交基线。
 
-use xiao_artifacts::{ArchiveEntry, ArchiveIndex, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind};
+use xiao_artifacts::{
+    ArchiveEntry, ArchiveIndex, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR, ObjectKind,
+};
 use xiao_bytecode::{XiaocMetadata, encode_xiaoc, lower_program};
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_runtime_abi::ABI_ENCODED_VERSION;
@@ -49,6 +51,10 @@ fn artifacts() -> (Vec<u8>, Vec<u8>) {
 #[test]
 fn deterministic_artifacts_do_not_grow_past_committed_baseline() {
     let (xiaoc, xar) = artifacts();
-    assert_eq!(xiaoc.len(), XIAOC_BASELINE_BYTES, "xiaoc 基线变化需显式审查");
+    assert_eq!(
+        xiaoc.len(),
+        XIAOC_BASELINE_BYTES,
+        "xiaoc 基线变化需显式审查"
+    );
     assert_eq!(xar.len(), XAR_BASELINE_BYTES, "xar 基线变化需显式审查");
 }

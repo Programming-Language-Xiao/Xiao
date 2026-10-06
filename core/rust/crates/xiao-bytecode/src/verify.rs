@@ -1077,8 +1077,7 @@ fn validate_subroutines(
                     // 入口块，属于子程序外部。入口自身的回边仍要保留，入口之后
                     // 的块则是 finally 正文在降低时追加的分支块。
                     let is_entry_back_edge = successor == *target;
-                    let is_finally_body_block = successor.get()
-                        > target.get().saturating_add(1);
+                    let is_finally_body_block = successor.get() > target.get().saturating_add(1);
                     if is_entry_back_edge || is_finally_body_block {
                         queue.push_back(successor);
                     }
