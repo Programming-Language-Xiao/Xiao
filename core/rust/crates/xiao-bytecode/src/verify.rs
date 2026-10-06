@@ -1073,9 +1073,13 @@ fn validate_subroutines(
                     has_return = true;
                 }
                 for successor in jump_targets(&instruction.op) {
-                    // 子程序跳回入口之前的块会把控制权交还给调用点，不能继续
-                    // 当作子程序正文遍历。
-                    if successor >= *target {
+                    // 降低器在 finally 入口之后预先分配 continuation；它紧随
+                    // 入口块，属于子程序外部。入口自身的回边仍要保留，入口之后
+                    // 的块则是 finally 正文在降低时追加的分支块。
+                    let is_entry_back_edge = successor == *target;
+                    let is_finally_body_block = successor.get()
+                        > target.get().saturating_add(1);
+                    if is_entry_back_edge || is_finally_body_block {
                         queue.push_back(successor);
                     }
                 }
@@ -1311,8 +1315,8 @@ fn push_error(result: &mut TacVerification, path: impl Into<String>, message: im
 mod tests {
     use super::*;
     use crate::{
-        CallSigTable, ConstPool, TacAbi, TacBlock, TacConstant, TacFunction, TacInstr, TacOp,
-        TacProgram,
+        CallSigTable, ConstPool, TacAbi, TacBlock, TacConstant, TacFunction, TacHandler, TacInstr,
+        TacOp, TacProgram,
     };
     use std::collections::BTreeMap;
     use xiao_ir::{IR_VERSION, IrEntryMode, IrSpan};
@@ -1388,5 +1392,60 @@ mod tests {
         );
         tac.categories.insert(register, RegisterClass::ObjHandle);
         assert!(verify_program(&ir, &tac).errors.is_empty());
+    }
+
+    #[test]
+    /// finally 子程序不能靠跳转落入紧随其后的 continuation 终止。
+    fn finally_subroutine_cannot_fall_through_into_continuation() {
+        let (ir, mut tac) = empty_program();
+        tac.functions[0].blocks = vec![
+            TacBlock {
+                id: BlockId::new(0),
+                scope: 0,
+                instructions: vec![
+                    TacInstr::new(
+                        TacOp::CallSub {
+                            sub: BlockId::new(1),
+                        },
+                        IrSpan::new(0, 0),
+                    ),
+                    TacInstr::new(TacOp::Return { value: None }, IrSpan::new(0, 0)),
+                ],
+            },
+            TacBlock {
+                id: BlockId::new(1),
+                scope: 0,
+                instructions: vec![TacInstr::new(
+                    TacOp::Jump(BlockId::new(2)),
+                    IrSpan::new(0, 0),
+                )],
+            },
+            TacBlock {
+                id: BlockId::new(2),
+                scope: 0,
+                instructions: vec![TacInstr::new(
+                    TacOp::Return { value: None },
+                    IrSpan::new(0, 0),
+                )],
+            },
+        ];
+        tac.functions[0].handlers = vec![TacHandler {
+            protected: (BlockId::new(0), BlockId::new(1)),
+            handler: BlockId::new(1),
+            scope: 0,
+            exit: "finally".to_owned(),
+            catch_type: None,
+            binding: None,
+        }];
+
+        let verification = verify_program(&ir, &tac);
+        assert!(
+            verification
+                .errors
+                .iter()
+                .any(|error| error.contains("没有可达 RetFromSub")),
+            "缺少 RetFromSub 的 finally 不能借后继 return 伪装成合法终点：{:?}",
+            verification.errors
+        );
     }
 }
