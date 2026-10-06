@@ -58,10 +58,23 @@ impl<'a> DynamicGenerator<'a> {
                 let left_value = self.emit_expression(left)?;
                 let right_value = self.emit_expression(right)?;
                 let operation = self.binary_operation_name(operator, left, right)?;
+                let outer_target = self.error_target();
+                let failure_label = self.next_label("dynamic.binary.fail");
+                let continuation_label = self.next_label("dynamic.binary.continue");
+                self.push_error_context(failure_label.clone());
                 let result =
                     self.emit_binary_runtime(operation, &left_value, &right_value, expression.span);
+                self.pop_error_context();
+                self.release_value(left_value.clone());
+                self.release_value(right_value.clone());
+                self.emit(format!("  br label %{continuation_label}"));
+                self.terminated = true;
+                self.emit_label(&failure_label);
                 self.release_value(left_value);
                 self.release_value(right_value);
+                self.emit(format!("  br label %{outer_target}"));
+                self.terminated = true;
+                self.emit_label(&continuation_label);
                 Ok(result)
             }
             IrExpressionKind::Unary { operator, operand } => {

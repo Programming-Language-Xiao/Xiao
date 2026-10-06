@@ -46,7 +46,7 @@ struct Case {
     has_drops: bool,
 }
 
-const CASES: [Case; 7] = [
+const CASES: [Case; 9] = [
     Case {
         label: "held-string",
         source: "payload = \"held\"\n",
@@ -94,6 +94,20 @@ const CASES: [Case; 7] = [
         source: "payload = \"held\"\nraise ArithmeticError(code = \"UNMATCHED\")\n",
         output: "",
         error: Some("UNMATCHED"),
+        has_drops: true,
+    },
+    Case {
+        label: "function-dynamic-arithmetic",
+        source: "def add(value) -> int\n    return value + 1\nprobe = add(2)\n",
+        output: "",
+        error: None,
+        has_drops: false,
+    },
+    Case {
+        label: "function-dynamic-condition",
+        source: "def check(values) -> int\n    for item in values\n        if item\n            return 1\n    return 0\nprobe = check([1])\n",
+        output: "",
+        error: Some("X06-RUNTIME-002"),
         has_drops: true,
     },
 ];

@@ -440,12 +440,8 @@ impl<'a> DynamicGenerator<'a> {
         for (index, parameter) in parameters.iter().enumerate() {
             let key = crate::dynamic::predicate::name_key(&parameter.name);
             let slot = generator.slots[&key];
-            let value = generator.next_temp();
-            generator.emit(format!(
-                "  {value} = load {VALUE_TYPE}, ptr %xiao.arg{index}"
-            ));
-            generator.emit(format!(
-                "  store {VALUE_TYPE} {value}, ptr %slot{}",
+            generator.checked_status_call(format!(
+                "@xiao_runtime_value_copy(ptr %xiao.arg{index}, ptr %slot{})",
                 slot.index
             ));
         }

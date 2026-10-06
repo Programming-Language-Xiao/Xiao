@@ -809,7 +809,11 @@ impl<'a> DynamicGenerator<'a> {
         iterable: &IrExpression,
         body: &'a [IrStatement],
     ) -> Result<()> {
+        let outer_target = self.error_target();
         let source = self.emit_expression(iterable)?;
+        let failure_label = self.next_label("dynamic.for.fail");
+        let continuation_label = self.next_label("dynamic.for.continue");
+        self.push_error_context(failure_label.clone());
         self.emit_dynamic_check("iterable", &source, iterable.span);
         let length = self.emit_iter_len(&source, iterable.span);
         let index_slot = self.next_temp();
@@ -854,7 +858,15 @@ impl<'a> DynamicGenerator<'a> {
         self.emit(format!("  br label %{condition_label}"));
         self.terminated = true;
         self.emit_label(&end_label);
+        self.release_value(source.clone());
+        self.emit(format!("  br label %{continuation_label}"));
+        self.terminated = true;
+        self.pop_error_context();
+        self.emit_label(&failure_label);
         self.release_value(source);
+        self.emit(format!("  br label %{outer_target}"));
+        self.terminated = true;
+        self.emit_label(&continuation_label);
         Ok(())
     }
 
@@ -901,8 +913,9 @@ impl<'a> DynamicGenerator<'a> {
                 let tag_ok = self.next_temp();
                 self.emit(format!("  {tag_ok} = icmp eq i32 {tag}, 1"));
                 let valid_label = self.next_label("dynamic.bool.ok");
+                let failure_target = self.error_target();
                 self.emit(format!(
-                    "  br i1 {tag_ok}, label %{valid_label}, label %abi.fail"
+                    "  br i1 {tag_ok}, label %{valid_label}, label %{failure_target}"
                 ));
                 self.terminated = true;
                 self.emit_label(&valid_label);
