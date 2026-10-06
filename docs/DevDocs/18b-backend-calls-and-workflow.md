@@ -301,8 +301,9 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.9 ②）
 
 - 新增协议请求 `verify` 和 `cache`。命令形态冻结为
   `xiao verify <file.xiaoc|file.xar> [--detail]`，以及
-  `xiao cache <list|verify|rebuild|clean> [--apply]`；`clean` 默认只返回计划，只有
-  `--apply` 才调用 16B 的 `apply_cleanup`。
+  `xiao cache <list|verify|rebuild|clean> [--apply] [--project <path>] [--archive <file.xar>]
+  [--reference <sha256>]`；`clean` 默认只返回计划，只有 `--apply` 才调用 16B 的
+  `apply_cleanup`。来源参数可重复归档和摘要；缺省来源时沿用 16B 的全量保护规则。
 - `verify` 由 Rust 核心调用 `decode_xiaoc`/`decode_xar`，CLI 只搬运结构化摘要；成功结果
   使用 `operation=verify` 和 `value.kind=verification`，错误使用稳定 `X11-VERIFY-*`。
   `cache` 的结果使用 `operation=cache` 和 `value.kind=cache`，不在 TypeScript 重写摘要或

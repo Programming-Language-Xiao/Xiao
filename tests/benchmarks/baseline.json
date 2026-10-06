@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "baseline_id": "java-temurin-openjdk-21",
+  "status": "pending-controlled-run",
+  "runtime": {
+    "distribution": "Eclipse Temurin / OpenJDK",
+    "major_version": 21,
+    "resolved_version": null,
+    "jvm_args": [
+      "-Xms256m",
+      "-Xmx256m",
+      "-XX:+UseSerialGC",
+      "-Dfile.encoding=UTF-8"
+    ],
+    "version_command": "java -version",
+    "version_text_sha256": null
+  },
+  "native": {
+    "optimizer": "clang",
+    "optimization_level": "O2",
+    "xiao_passes_registered": false
+  },
+  "protocol": {
+    "warmup_iterations": 3,
+    "measurement_iterations": 11,
+    "confidence_level": 0.95,
+    "interval": "percentile-bootstrap",
+    "bootstrap_resamples": 10000,
+    "bootstrap_seed": 19015,
+    "noise_policy": "record-host-load-and-background-processes; do-not-discard-samples"
+  },
+  "workloads": [
+    {
+      "id": "deep-expression-arithmetic",
+      "reference": "java/Benchmark.java",
+      "semantic_comparison": "comparable",
+      "performance_status": "pending-controlled-run"
+    },
+    {
+      "id": "scalar-overflow-and-bool-parity",
+      "reference": "java/Benchmark.java",
+      "semantic_comparison": "data-insufficient-overflow-semantics",
+      "performance_status": "data-insufficient",
+      "reason": "Xiao raises X06-RUNTIME-009 while Java int/long wraps by default"
+    },
+    {
+      "id": "named-local-loop",
+      "reference": "java/Benchmark.java",
+      "semantic_comparison": "comparable",
+      "performance_status": "pending-controlled-run"
+    },
+    {
+      "id": "deep-call-recursion",
+      "reference": "java/Benchmark.java",
+      "semantic_comparison": "comparable",
+      "performance_status": "pending-controlled-run"
+    },
+    {
+      "id": "container-dense",
+      "reference": "java/Benchmark.java",
+      "semantic_comparison": "comparable-when-native-supported",
+      "performance_status": "data-insufficient",
+      "reason": "Windows native probe rejected numeric_range; gap belongs to stage 15"
+    }
+  ],
+  "threshold": {
+    "status": "unset",
+    "allowed_error": null,
+    "regression_limit": null
+  },
+  "platforms": {
+    "windows-native": "pending-controlled-run",
+    "linux": "not-measured",
+    "macos": "not-measured",
+    "ci": "diagnostic-only"
+  }
+}
