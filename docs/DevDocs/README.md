@@ -111,7 +111,8 @@
 | 10Q-I6 | [函数清理链重构](10q-i6-cleanup-followup.md) | 函数返回、嵌套 finally 与作用域释放顺序 | 10R 的 7ca6bdf 已实现，Windows 严格差分通过，豁免摘除 |
 | 10R | [释放账目收口与原生 CI 门控（N0-J）](10r-release-accounting-and-native-ci-gate.md) | Windows 原生门控、I6 清理链、扩展释放账目、静态溢出立项与 ABI 顺序 | I6 已修；最终CI 37614663496 绿、变异37608705803红，已撤回恢复绿；扩展账目已记录；表用户 drop 原生受方法 ABI 拒绝；审核确认门控与 I6 有效，余四处 Drops 差异与跨平台证据并入 10S |
 | 10S | [跨平台证据刷新与释放账目收口（N0-K）](10s-cross-platform-evidence-and-release-closeout.md) | 用星崽的图形化 Linux 裸机补第三平台证据、手动刷新 `platform-reproduction`（macOS 唯一来源）、逐调用收口四处释放差异、Linux 桌面开窗取证、A1 表方法 ABI 只做准备 | 实施中（2026-10-07）；四处释放差异已逐调用定位并保留仅 Drops 豁免；A1 清单完成；四平台 CI 37642937815 通过（macOS 跳过真实终端且调试窗口为稳定失败路径），裸机新版与桌面开窗证据待补 |
-| 10S-Linux | [裸机 Linux 证据采集交接](10s-linux-bare-metal-handoff.md) | 写给 Ubuntu 机器操作者：前置包与工具链版本、`reproduce.sh native` 的跑法与「不设 XIAO_USE_XVFB」、环境采集清单、诊断窗口行为证据的判据、回传模板 | 已收 PR #3 原始失败回传；修复版复跑与可见窗口证据待补（2026-10-07） |
+| 10S-Linux | [裸机 Linux 证据采集交接](10s-linux-bare-metal-handoff.md) | 写给 Ubuntu 机器操作者：前置包与工具链版本、`reproduce.sh native` 的跑法与「不设 XIAO_USE_XVFB」、环境采集清单、诊断窗口行为证据的判据、回传模板 | 已收 PR #3 原始失败回传（该 PR 已关闭，内容经 `4fab901` 原样并入）；**本档为上一轮，勿再按它执行**，新一轮见 10T-Linux |
+| 10T-Linux | [裸机 Linux 复跑与诊断窗口定位交接](10t-linux-bare-metal-handoff.md) | 写给 Ubuntu 机器操作者：修复后提交 `0735846` 的复跑、窗口相关环境采集（`x-terminal-emulator` 指向与各终端模拟器）、`pgrep` 观察与换 `xterm` 的对照、回传模板 | 待执行（2026-10-08） |
 | 10T | [表方法 ABI 实现（A1 / N0-L）](10t-table-method-abi-implementation.md) | 按 10S-A1 清单实现新描述符与调用入口、Runtime 侧初始化/`drop`、codegen 方法函数表，最后移除方法拒绝点；`table-user-drop` 转真执行、`container-dense` 可构建可比对 | A1 实际接通（2026-10-08）；ABI 1.8、代码生成 4、构建探针 5/5、容器 80 轮与 VM 同为 28760；Windows 完整矩阵通过，最终跨平台 CI 待回填；裸机/窗口证据待补。星崽已接受口径差异并授权 Linux push 门控 |
 | 10S-A1 | [表方法 ABI 开工清单](10s-a1-table-method-abi-preparation.md) | 描述符、函数表、所有权与 drop 时机、版本边界、影响 crate 和验收用例 | 准备清单已完成；本批不实现 |
 | 10R-溢出后续 | [静态溢出统一错误路径](10r-static-overflow-followup.md) | 七处 trap 模板、语言错误与平台 Fatal 分界及验收 | 仅立项，未实现 |

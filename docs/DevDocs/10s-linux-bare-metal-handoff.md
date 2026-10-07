@@ -1,5 +1,12 @@
 # 10S-Linux：裸机 Linux 证据采集交接
 
+> ⚠️ **这是上一轮的交接档（2026-10-07），请勿再按本档执行。** 该轮已跑完：结果见
+> [回传](10s-linux-bare-metal-results-20261007.md)与[日志](10s-linux-bare-metal-log-20261007.md)——
+> 因 ELF/Mach-O 的 `weak` 组件可达性问题失败，窗口也未出现。**新一轮请按
+> [10T-Linux 交接](10t-linux-bare-metal-handoff.md) 执行**（修复后的提交 + 窗口定位步骤）。
+>
+> 保留本档是为了让后人看到当轮的原始要求与判据。
+
 > **这是一份独立交接档，写给那台 Ubuntu 机器的操作者。** 由 [10S](10s-cross-platform-evidence-and-release-closeout.md) 派生。
 > 需要这台机器是因为：19 的出口条件 3 要求三平台一致，而 `tools/platform-reproduction/README.md` 明确写
 > 「Docker/WSL 结果是功能证据，**不能冒充裸机验收**」；除 Windows 外，目前只有这台机器能提供裸机 Linux。
