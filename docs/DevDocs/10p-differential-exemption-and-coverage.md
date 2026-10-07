@@ -186,6 +186,26 @@ docs/DevDocs/README.md                                      主表登记
 - **不改** VM 的选择器语义；
 - **不推送**、不触发工作流，除非星崽授权。
 
+## 九、实施记录（2026-10-07）
+
+J1 已由 `f42e38a` 完成：`native_gap` 现在声明机器可读的 `GapField::Drops`，只豁免释放序列；输出、错误、退出码和终止方式继续严格比较。变异实验中临时恢复源值返回后，range/random 两条因输出错值失败；恢复选择器实现后，Windows `x86_64-pc-windows-msvc` 受控 `d19a_differential --ignored` 通过，已知释放差异仍只打印为 drops-only 未覆盖。
+
+J2 已由 `be7b635` 完成判定与局部修复：选择结果构造不再把源值别名重复加入临时释放列表。受控序列显示额外 `strong_release` 发生在动态检查借用转换的 Runtime 追踪口径，未观察到提前销毁；因此保留选择器释放 `native_gap`，不把它与 I6 的嵌套 `finally` 少释放混合处理。
+
+J3 已在 [19D](19d-performance-comparison.md) 按 [12](12-tests-and-milestones.md) O6 原文五条重做对账，补上兼容矩阵条目；本批不宣布 19 收口。I3/I4 仍未授权，未新增 CI、未推送、未触发工作流。
+
+### 剩余拒绝面枚举（仅登记，不在本批实现）
+
+| 拒绝文案/形状 | 最小源码形状 | VM 对照 | 需要修改 | 分类与建议 |
+| --- | --- | --- | --- | --- |
+| 动态表方法 | 表体含 `def method(...)` | VM 支持 | `dynamic/container.rs`、Runtime 函数表 ABI | 原生缺口；独立批次 |
+| 表构造参数 | `Table(arg = value)` | VM 有构造约束 | `dynamic/container.rs`、Runtime 表构造 ABI | 原生缺口；独立 ABI 批次 |
+| 表字段复合/扩展赋值 | `table.field += value` 或动态扩展目标 | VM 支持部分路径 | `dynamic/control.rs`、`dynamic/container.rs` | 原生缺口；先补语义向量 |
+| 动态函数调用 | 动态值作为 callee | VM 仅接受已解析函数签名 | `dynamic/expression.rs`、函数表 ABI | 能力边界未冻结；暂不并入 |
+| 动态非表成员访问/写入 | `value.member` | VM 有运行时诊断路径 | `dynamic/expression.rs` | 原生缺口；后续定范围 |
+| 动态错误构造非字符串参数 | `ArithmeticError(code = value)` | VM 拒绝非文本参数 | 前端/Runtime 错误 ABI | 两边均拒绝，保持一致 |
+| 多项/动态字典键选择器 | 多个选择项或键路径 | VM 支持部分语义 | `dynamic/expression.rs` | 原生拒绝；后续选择器批次 |
+
 ## 待定决策
 
 1. **是否新增跑原生 `--ignored` 的 CI 作业**（I3，第四次提出）。J1 的变异实验说明这类回归只能靠人工发现；

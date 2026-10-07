@@ -108,6 +108,7 @@
 | 10N | [原生选择器正确性与剩余覆盖（N0-G）](10n-native-selector-correctness.md) | 修复范围/随机选择静默错值，补齐选择器差分，枚举动态剩余拒绝面并对账 19 O6 | I1/I2/I5/I6 已完成（2026-10-07）；动态表方法、CI 原生门控与跨平台证据待后续；审核发现豁免会吞掉值差异、选择器多一次释放、O6 对账条目不对应，并入 10P |
 | 10P | [差分豁免收敛与剩余拒绝面（N0-H）](10p-differential-exemption-and-coverage.md) | 先让缺口豁免只豁免声明的字段（否则新用例等于没有守门），再判定选择器多出的那次释放、修嵌套 `finally` 的少释放，按规范五条重做 19 O6 对账，并枚举剩余拒绝面 | 规划稿（2026-10-07）；5 项待星崽决定 |
 | 10N | [原生选择器正确性与剩余覆盖（N0-G）](10n-native-selector-correctness.md) | 先修 I1 静默错值（原生 `values[1~2]`、`values[?2]` 返回整个数组）并补选择器差分用例，再判定 I6 释放差异与剩余拒绝面，最后对 19 的 O6 逐条对账 | 规划稿（2026-10-07）；6 项待星崽决定 |
+| 10P | [差分豁免收敛与剩余拒绝面（N0-H）](10p-differential-exemption-and-coverage.md) | 将差分豁免限定到声明字段，判定选择器释放差异，按 O6 原文逐条对账并登记剩余拒绝面 | J1/J2/J3 已完成（2026-10-07）；CI 原生门控、I6 与动态表方法 ABI 待后续 |
 | 10A | [LLVM 原生构建闭环](10a-n0-native-closure.md) | 手写 IR 文本 + 外部工具链、`xiao-runtime-abi`、四批交付（N0-A 纯静态 → N0-D 验证裁剪） | N0-A 已完成；N0-B Runtime ABI 已接续落地（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 功能复现；WSL/容器仅作功能证据） |
 | 10B | [N0-B Runtime ABI](10b-n0-runtime-abi.md) | 动态值的 ABI 表示、真实引用计数与 `Weak`、容器与表 ABI、正常路径的释放计划 | 已落地（ABI/容器/表/正常释放计划；异常展开留 N0-C） |
 | 10C | [原生 Runtime 链接缺陷修复交接](10c-native-runtime-link-fix.md) | `LNK1120` 的完整证据、Rust staticlib 原生库查询、MSVC ABI 调用约定修复与实际链接结果 | 已完成（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 动态 Runtime 功能闭环通过；WSL/容器仅作功能证据） |
