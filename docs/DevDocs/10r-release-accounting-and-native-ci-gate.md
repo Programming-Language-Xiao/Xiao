@@ -6,7 +6,7 @@
 > **一句话概括本批**：**把 19 的 O6 条件 2 从「差两条」推到「能收」**——补上原生 CI 门控、
 > 修 I6 的清理链、把释放核对扩到容器与 `try`/`catch`，并给静态溢出建立项。
 >
-> 状态：**实现与本地验证完成，最终 CI 观测中（2026-10-07）**。星崽已就上一轮 5 项待定决策给出答复（见 §二），
+> 状态：**实现与 Windows CI 验证完成（2026-10-07）**。星崽已就上一轮 5 项待定决策给出答复（见 §二），
 > 仍未定的收在末尾「待定决策」。
 
 ## 一、Agent 交接上下文
@@ -304,3 +304,5 @@ ed93cd5（代码为7ca6bdf）上 cargo test --workspace、workspace Clippy --all
 受控三组 ignored 命令最终通过：d19a_differential 1项（内部27个用例）、n0_a_native_driver 3项、native_benchmark_probe 1项。测试环境与CI步骤一致：release Runtime、debug diagnostics、MSYS2 clang/llvm-as/llc，宿主Windows x86_64-pc-windows-msvc。探测四项built，container-dense仍明确拒绝表方法ABI。table-user-drop的VM/原生拒绝测试默认执行，独立确认未静默丢弃drop。
 
 仍不宣称 O6 条件2全部满足：选择器和普通表实例Drops差异仍登记，用户drop原生ABI未实现；三平台完整原生运行和Java性能对照仍待补。CI Linux/macOS扩展、平台复现手动刷新、静态溢出排期未擅自裁定。
+
+最终推送 0d07ee4 的维护回归 [37614663496](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37614663496) 已成功：新增 Windows 原生作业、Windows 体积作业与 Ubuntu 安全作业全部为绿。该运行包含 I6 修复及扩展用例。后续仅补文档，不将 Ubuntu 安全绿灯写成 Linux 原生验证。

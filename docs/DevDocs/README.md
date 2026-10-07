@@ -109,7 +109,7 @@
 | 10P | [差分豁免收敛与剩余拒绝面（N0-H）](10p-differential-exemption-and-coverage.md) | 先让缺口豁免只豁免声明的字段（否则新用例等于没有守门），再判定选择器多出的那次释放、修嵌套 `finally` 的少释放，按规范五条重做 19 O6 对账，并枚举剩余拒绝面 | 实现中（2026-10-07）；J1/J2/J3 已提交，I6 未做；审核发现两条选择器用例无分辨力、失败信息丢证据、释放差异未核对，并入 10Q |
 | 10Q | [用例区分度与释放账目核对（N0-I）](10q-selector-case-strength-and-release-audit.md) | 聚合断言、完整失败证据和释放对照取证 | K2/K3/K4 已实施；已推 c4b3cb3，维护回归 37604955900 绿（不含原生）；[I6](10q-i6-cleanup-followup.md) 已由 10R 修复 |
 | 10Q-I6 | [函数清理链重构](10q-i6-cleanup-followup.md) | 函数返回、嵌套 finally 与作用域释放顺序 | 10R 的 7ca6bdf 已实现，Windows 严格差分通过，豁免摘除 |
-| 10R | [释放账目收口与原生 CI 门控（N0-J）](10r-release-accounting-and-native-ci-gate.md) | Windows 原生门控、I6 清理链、扩展释放账目、静态溢出立项与 ABI 顺序 | 本地实现与正常/故意失败 CI 取证完成；最终推送验证中；表用户 drop 原生受方法 ABI 拒绝 |
+| 10R | [释放账目收口与原生 CI 门控（N0-J）](10r-release-accounting-and-native-ci-gate.md) | Windows 原生门控、I6 清理链、扩展释放账目、静态溢出立项与 ABI 顺序 | I6 已修；最终CI 37614663496 绿、变异37608705803红，已撤回恢复绿；扩展账目已记录；表用户 drop 原生受方法 ABI 拒绝 |
 | 10R-溢出后续 | [静态溢出统一错误路径](10r-static-overflow-followup.md) | 七处 trap 模板、语言错误与平台 Fatal 分界及验收 | 仅立项，未实现 |
 | 10A | [LLVM 原生构建闭环](10a-n0-native-closure.md) | 手写 IR 文本 + 外部工具链、`xiao-runtime-abi`、四批交付（N0-A 纯静态 → N0-D 验证裁剪） | N0-A 已完成；N0-B Runtime ABI 已接续落地（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 功能复现；WSL/容器仅作功能证据） |
 | 10B | [N0-B Runtime ABI](10b-n0-runtime-abi.md) | 动态值的 ABI 表示、真实引用计数与 `Weak`、容器与表 ABI、正常路径的释放计划 | 已落地（ABI/容器/表/正常释放计划；异常展开留 N0-C） |
