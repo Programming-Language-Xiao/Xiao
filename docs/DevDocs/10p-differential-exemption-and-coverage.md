@@ -196,15 +196,15 @@ J3 已在 [19D](19d-performance-comparison.md) 按 [12](12-tests-and-milestones.
 
 ### 剩余拒绝面枚举（仅登记，不在本批实现）
 
-| 拒绝文案/形状 | 最小源码形状 | VM 对照 | 需要修改 | 分类与建议 |
-| --- | --- | --- | --- | --- |
-| 动态表方法 | 表体含 `def method(...)` | VM 支持 | `dynamic/container.rs`、Runtime 函数表 ABI | 原生缺口；独立批次 |
-| 表构造参数 | `Table(arg = value)` | VM 有构造约束 | `dynamic/container.rs`、Runtime 表构造 ABI | 原生缺口；独立 ABI 批次 |
-| 表字段复合/扩展赋值 | `table.field += value` 或动态扩展目标 | VM 支持部分路径 | `dynamic/control.rs`、`dynamic/container.rs` | 原生缺口；先补语义向量 |
-| 动态函数调用 | 动态值作为 callee | VM 仅接受已解析函数签名 | `dynamic/expression.rs`、函数表 ABI | 能力边界未冻结；暂不并入 |
-| 动态非表成员访问/写入 | `value.member` | VM 有运行时诊断路径 | `dynamic/expression.rs` | 原生缺口；后续定范围 |
-| 动态错误构造非字符串参数 | `ArithmeticError(code = value)` | VM 拒绝非文本参数 | 前端/Runtime 错误 ABI | 两边均拒绝，保持一致 |
-| 多项/动态字典键选择器 | 多个选择项或键路径 | VM 支持部分语义 | `dynamic/expression.rs` | 原生拒绝；后续选择器批次 |
+| 拒绝文案/形状 | 最小源码形状 | VM 对照 | 需要修改 | 分类与建议 | ABI 顺序（10R） |
+| --- | --- | --- | --- | --- | --- |
+| 动态表方法 | 表体含 `def method(...)` | VM 支持 | `dynamic/container.rs`、Runtime 函数表 ABI | 原生缺口；独立批次 | A1 函数表与生命周期钩子 ABI |
+| 表构造参数 | `Table(arg = value)` | VM 有构造约束 | `dynamic/container.rs`、Runtime 表构造 ABI | 原生缺口；独立 ABI 批次 | A2 初始化参数 ABI |
+| 表字段复合/扩展赋值 | `table.field += value` 或动态扩展目标 | VM 支持部分路径 | `dynamic/control.rs`、`dynamic/container.rs` | 原生缺口；先补语义向量 | B1 纯降低与诊断 |
+| 动态函数调用 | 动态值作为 callee | VM 仅接受已解析函数签名 | `dynamic/expression.rs`、函数表 ABI | 能力边界未冻结；暂不并入 | A3 函数值调用 ABI |
+| 动态非表成员访问/写入 | `value.member` | VM 有运行时诊断路径 | `dynamic/expression.rs` | 原生缺口；后续定范围 | B1 纯降低与诊断 |
+| 动态错误构造非字符串参数 | `ArithmeticError(code = value)` | VM 拒绝非文本参数 | 前端/Runtime 错误 ABI | 两边均拒绝，保持一致 | 保持拒绝，不实现 |
+| 多项/动态字典键选择器 | 多个选择项或键路径 | VM 支持部分语义 | `dynamic/expression.rs` | 原生拒绝；后续选择器批次 | B2 选择计划与形状 |
 
 ## 待定决策
 
