@@ -288,6 +288,18 @@ fn generic_value_copy_registers_weak_dependency_only_when_called() {
         ("values = [1, 2]\n", false),
         ("values = [1, 2]\ncopy = values\n", true),
         (
+            "def unused(str value) -> str\n    return value\nvalues = [1, 2]\n",
+            false,
+        ),
+        (
+            "def unused(str value) -> str\n    return value\ndef called() -> str\n    return \"ok\"\nresult = called()\n",
+            true,
+        ),
+        (
+            "def recurse(int depth) -> int\n    if depth == 0\n        return 0\n    return recurse(depth - 1)\nresult = recurse(2)\n",
+            true,
+        ),
+        (
             "def f() -> str\n    try\n        return \"old\"\n    finally\n        raise ArithmeticError(code = \"FINAL\")\nresult = f()\n",
             false,
         ),

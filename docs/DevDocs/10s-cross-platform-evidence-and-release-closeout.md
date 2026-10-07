@@ -6,7 +6,7 @@
 > **一句话概括本批**：**把「三平台」从只有 Windows 变成「Windows 门禁 + Linux 裸机 + macOS CI」，
 > 并把剩下四处释放差异逐调用收掉**，让 19 的 O6 条件 2 和 3 有可判定的依据。
 >
-> 状态：**规划稿（2026-10-07）**。星崽本轮补充了可用宿主（见 §1.2），据此调整跨平台安排。
+> 状态：**实施中（2026-10-07）；释放差异与 A1 准备已完成，CI 修复复跑中，裸机新版与可见窗口证据待补**。星崽本轮补充了可用宿主（见 §1.2），据此调整跨平台安排。
 
 ## 一、Agent 交接上下文
 
@@ -256,6 +256,8 @@ docs/DevDocs/README.md                              主表登记
 [37634885776](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37634885776)（77d1a24）：Windows 通过；Linux amd64/arm64、macOS arm64 均在 function-heap-return-error 与 function-finally-raises 失败，错误为「产物未观察到 IR 层登记的 Runtime 组件：weak」。上一轮的 13 项漏登记已消除，但正常返回死块中的 value_copy 被错误计入依赖；finally 必定抛错使这些块无入口路径，LLVM 删除后产物不含 weak。
 
 修复将复制 ABI 的传递依赖登记移到完整模块生成后，按各函数入口和 br 边遍历可达块；显式弱引用计划仍独立登记。不强制链接无用组件，不放宽产物校验。回归覆盖两条死返回路径，以及抛错前参数复制仍需 weak 的反例。Windows 受控原生差分、Rust workspace、fmt、Clippy 通过；跨平台结果以后续运行记录为准。macOS 真实终端仍显式跳过，Linux CI 仍为 Xvfb。
+
+第三轮 [37638188213](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37638188213)（f42f2c7）的 Linux 已通过差分，随后四条原生基准构建探针失败：这些源码只定义函数、未调用，函数内部复制被计入依赖，而链接器移除了未调用函数。最终实现统一从 main 的 entry 出发，同时遍历直接调用和基本块跳转；访问键为函数名与标签，覆盖循环/递归而不串用同名标签。新增未调用函数、被调用函数和递归的正反例；不以强制保留符号或降低构建探针断言消除红灯。
 
 ## 十、表实例逐调用核对
 
