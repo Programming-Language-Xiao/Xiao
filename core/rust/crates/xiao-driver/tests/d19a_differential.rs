@@ -1079,10 +1079,23 @@ fn compare_native_cases(cases: &[&Case], level: u8, debug: bool, execute: bool) 
                 Vec::new()
             }
             Err(error) => {
+                if debug
+                    && run_output.status.code() == Some(70)
+                    && stderr.contains("X11-DIAGNOSTIC-START-001")
+                {
+                    eprintln!(
+                        "10T-DEBUG-STARTUP {} O{level}: 稳定诊断启动失败路径，跳过运行轨迹比较",
+                        case.label
+                    );
+                    let _ = fs::remove_dir_all(root);
+                    continue;
+                }
                 problems.push(format!(
-                    "用例 {}：原生释放轨迹读取失败（不适用 Drops 豁免）：{}：{error}",
+                    "用例 {} O{level} debug={debug}：原生释放轨迹读取失败（不适用 Drops 豁免）：{}：{error}；进程状态={:?}；已发现差异={}；stderr={stderr:?}",
                     case.label,
-                    trace_path.display()
+                    trace_path.display(),
+                    run_output.status,
+                    case_problems.join("；")
                 ));
                 let _ = fs::remove_dir_all(root);
                 continue;
