@@ -211,3 +211,26 @@ docs/DevDocs/README.md                                       主表登记
 - [10M. 原生动态入口回归修复与验证闭环](10m-native-regression-and-verification.md) —— 变异验证的做法
 - [09R2b](09r2b-selector-execution.md)、[09R2c](09r2c-exception-control-flow.md) —— 选择器与释放语义
 - [19A. 差分与模糊测试](19a-differential-and-fuzz.md) —— 差分机制与 `GapField`
+
+## 九、释放审计原始数据（2026-10-07，修复 I6 前）
+
+受控 Windows x86_64-pc-windows-msvc，基于 0b98371。轨迹格式为 sequence:object_id:action；只记录释放和销毁，不记录 retain，不能仅凭总数证明引用平衡。对象编号仅在一次执行内可比，销毁位置从 0 起算。下表使用 K2 聚合后的范围用例。
+
+| 路径 | VM 事件数 / 对象数 / 销毁位置 | 原生事件数 / 对象数 / 销毁位置 |
+| --- | --- | --- |
+| held-array [1,2] | 2 / 1 / 1:对象1 | 2 / 1 / 1:对象1 |
+| selector-range-downstream 聚合 | 10 / 2 / 7:对象2、9:对象1 | 13 / 2 / 10:对象2、12:对象1 |
+| 同一范围源码，仅临时关闭 selector_bounds ABI 检查 | 10 / 2 / 7:对象2、9:对象1 | 12 / 2 / 9:对象2、11:对象1 |
+| nested-finally-drops | 6 / 3 / 1:对象3、3:对象2、5:对象1 | 4 / 2 / 1:对象1、3:对象2 |
+
+对照实验只删除 emit_selector 中一次 xiao_runtime_dynamic_check 调用，范围原生源对象 strong_release 从四次变成三次，总事件减少一条；实验后恢复检查。该 ABI 的 value_to_runtime → expect_strong → clone_strong 增加一个拥有引用，函数返回时 RuntimeValue 析构归还同一个引用，因此不是对源槽的重复释放。聚合循环另有两条释放事件差异，不能把 13 对 10 全归因于选择器检查。VM 仍是冻结语义基准；原生 ABI 适配产生的临时引用事件暂按 drops 字段登记。
+
+I6 轨迹更正：原生少的是整个外层 finally 对象的构造和销毁，且先销毁对象1后销毁对象2。代码中函数 return 直接跳 xiao.fn.return，绕过 cleanup_stack；函数生成器也未建立 value_slots，无法消费作用域释放计划。所以这不是单纯追踪口径问题，需要恢复 finally 执行及清理顺序。
+
+## 十、实施结论与后续（2026-10-07）
+
+- K3：8186b72 恢复严格失败和豁免日志的两路完整释放序列，不新增测试；K2 变异中的全选失败实际输出含 VM 11 条和原生 5 条轨迹。
+- K2：0b98371 将范围、随机、开区间改为全结果逐元素求和。正常 VM 输出分别为 5、7、3；临时返回源值后三条都输出 10，并各自报告输出差异，受控测试进程退出 101。恢复后通过。全选只负责释放路径。
+- K4：第九节包含三路径数据及检查开关对照。范围多出的一次来自 xiao_runtime_dynamic_check 的 value_to_runtime 克隆/析构；没有删检查、过滤轨迹或更改 VM。聚合后总差异另含循环 ABI 临时引用，释放豁免继续限定为 Drops。10P 的源别名条件修改未改变此范围用例轨迹，不能当作本缺口修复。
+- K1/I6：未完成修复。试验补 return 清理跳转及 value_slots 后，原生恢复 6 条事件、3 个对象，销毁位置为 1:对象2、3:对象3、5:对象1；VM 为 1:对象3、3:对象2、5:对象1。执行恢复但顺序仍错，试修已撤回。转入 [10Q-I6 函数清理链重构](10q-i6-cleanup-followup.md)，明确保留缺口，不宣称 I6 已完成。验收第 4 条采用“说明未做原因与去向”分支。
+- I3/I4：未新增工作流、未推送、未触发 CI。Linux/macOS 无本批运行号，仍未验证。其余拒绝面、静态溢出和受控 Java 取数不并入。

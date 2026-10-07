@@ -634,11 +634,13 @@ const DROPS_ONLY: &[GapField] = &[GapField::Drops];
 
 fn native_gap(label: &str) -> Option<NativeGap> {
     let reason = match label {
-        "nested-finally-drops" => "原生动态函数的嵌套 finally 释放序列仍少一条作用域释放",
+        "nested-finally-drops" => {
+            "10Q-I6 后续：函数 return 绕过外层 finally；清理链需同时修复执行与释放顺序"
+        }
         "selector-range-downstream"
         | "selector-random-downstream"
         | "selector-open-range-downstream" => {
-            "原生选择结果值已与 VM 对齐，但容器释放序列仍有额外差异"
+            "10Q/K4：selector_bounds ABI 克隆并归还借用转换引用，聚合循环另有临时引用事件；仅释放轨迹暂未对齐"
         }
         _ => return None,
     };
