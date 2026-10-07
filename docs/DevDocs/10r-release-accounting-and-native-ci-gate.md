@@ -234,3 +234,21 @@ docs/DevDocs/README.md                                     L1/L3：状态更正�
 - [10D. 环境依赖测试专项规范](10d-environment-gated-test-spec.md) §4 —— 门控环境的准备与三个坑
 - [12. 测试与开发里程碑](12-tests-and-milestones.md) O6 —— 收口对账的权威条目
 - [19D. 性能对照](19d-performance-comparison.md) —— 收口对账的落点
+
+## 九、扩展账目基线（2026-10-07）
+
+测量基于 1cedecd 加本批测试，Windows x86_64-pc-windows-msvc，MSYS2 clang、release xiao_runtime.lib、debug xiao-diagnostics.exe。轨迹只记录释放与销毁，不记录 retain；对象数为轨迹中不同对象编号数，销毁位置从零计。
+
+| 长期用例 | VM 事件数/对象数/销毁位置 | 原生事件数/对象数/销毁位置 | 结论 |
+| --- | --- | --- | --- |
+| held-tuple，字符串单元素元组 | 5/2/2:对象2、4:对象1 | 同 VM | 一致 |
+| held-dict-table，name=held | 5/2/2:对象2、4:对象1 | 同 VM | 一致 |
+| held-dict-column，name=held | 5/2/2:对象2、4:对象1 | 同 VM | 一致 |
+| held-set，字符串单元素集合 | 5/2/2:对象2、4:对象1 | 同 VM | 一致 |
+| held-table-instance，value=7 | 6/1/5:对象1 | 4/1/3:对象1 | Drops 暂登记；构造/初始化临时引用数量待逐调用核对，不在取数阶段修改 |
+| caught，命中 ArithmeticError | 9/4/2:对象2、4:对象3、6:对象4、8:对象1 | 同 VM | 一致，复用既有用例 |
+| unmatched，未命中错误 | 5/2/2:对象2、4:对象1 | 同 VM | 一致，复用既有用例 |
+| finally-normal | 4/2/1:对象2、3:对象1 | 同 VM | 一致 |
+| table-user-drop，drop 打印 drop | 9/2/5:对象1、8:对象2 | 无原生产物 | 动态表方法 ABI 拒绝；独立长期测试验证 VM 的输出/drop 基线及原生拒绝，不新增构建失败豁免 |
+
+源码均保留在 d19a_differential.rs；正常原生差分打印两路完整 10R-TRACE，供日志取证。表实例差异首次令测试失败，登记原因后仍只豁免 Drops，值/错误/终止方式继续严格比较。用户 drop 的原生轨迹无法在本批取得，归属下一批表方法 ABI，不伪造为一致或零事件。

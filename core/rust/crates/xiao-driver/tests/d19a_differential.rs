@@ -46,7 +46,49 @@ struct Case {
     has_drops: bool,
 }
 
-const CASES: [Case; 13] = [
+const CASES: [Case; 19] = [
+    Case {
+        label: "held-tuple",
+        source: "value = (\"held\",)\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-dict-table",
+        source: "value = {name = \"held\"}\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-dict-column",
+        source: "value = <name = \"held\">\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-set",
+        source: "value = {\"held\"}\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "held-table-instance",
+        source: "[[Item]]\n    value = 7\nitem = new Item()\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "finally-normal",
+        source: "try\n    payload = \"try\"\nfinally\n    cleanup = \"finally\"\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
     Case {
         label: "held-string",
         source: "payload = \"held\"\n",
@@ -452,6 +494,30 @@ fn all_vm_sides_agree_on_every_case() {
     }
 }
 
+/// 用户 drop 需要尚未接入的表方法 ABI；明确验证拒绝，不以 Drops 豁免构建失败。
+#[test]
+fn table_drop_native_rejection_remains_visible() {
+    let case = Case {
+        label: "table-user-drop",
+        source: "[[Item]]\n    value = 7\n    def drop(self) -> none\n        print(\"drop\")\nitem = new Item()\n",
+        output: "drop\n",
+        error: None,
+        has_drops: true,
+    };
+    let guard = start_release_trace();
+    let baseline = source_observation(case.source, OptimizationLevel::O0);
+    let events = take_release_events();
+    drop(guard);
+    assert_baseline_matches_case(&case, &baseline);
+    eprintln!("10R-TRACE table-user-drop VM={events:?} NATIVE=未构建：表方法 ABI 未接入");
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(case.source))
+        .expect("drop 源码应通过前端");
+    let error = xiao_codegen_llvm::lower_program(artifact.ir(), &Default::default())
+        .expect_err("未接入表方法 ABI 前不能静默丢弃 drop");
+    assert!(error.to_string().contains("动态表方法"), "{error}");
+}
+
 #[test]
 fn disagreement_report_names_the_two_sides_and_the_field() {
     let base = Observation {
@@ -480,7 +546,7 @@ fn disagreement_report_names_the_two_sides_and_the_field() {
 
 #[test]
 fn baseline_check_rejects_a_vacuous_agreement() {
-    let case = &CASES[2];
+    let case = CASES.iter().find(|case| case.label == "print").unwrap();
     let empty = Observation::default();
     let result = std::panic::catch_unwind(|| assert_baseline_matches_case(case, &empty));
     assert!(result.is_err(), "没有 drop 的基线不应被接受为该用例的基线");
@@ -634,6 +700,9 @@ const DROPS_ONLY: &[GapField] = &[GapField::Drops];
 
 fn native_gap(label: &str) -> Option<NativeGap> {
     let reason = match label {
+        "held-table-instance" => {
+            "10R 账目后续：同一表实例 VM 五次 strong_release、原生三次，均仅一次 destroy；构造/字段初始化 ABI 临时引用差异待逐调用核对，本批不改释放逻辑"
+        }
         "nested-finally-drops" => {
             "10Q-I6 后续：函数 return 绕过外层 finally；清理链需同时修复执行与释放顺序"
         }
@@ -757,6 +826,10 @@ fn native_side_matches_the_vm_sides_on_every_case() {
                 continue;
             }
         };
+        eprintln!(
+            "10R-TRACE {} VM={vm_tuples:?} NATIVE={native_tuples:?}",
+            case.label
+        );
         let release_mismatch = vm_tuples != native_tuples;
         let _ = fs::remove_dir_all(root);
 
