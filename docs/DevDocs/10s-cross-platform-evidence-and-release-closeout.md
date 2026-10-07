@@ -318,6 +318,8 @@ Ubuntu 裸机修复版复跑待星崽回传；先前 PR #3 的失败原文保留
 
 运行 [37641117877](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37641117877)，检出 **5abaf15**。以下为四个实际复现作业的结论，不以汇总作业代替：
 
+该轮四个平台作业最终均为 success，但工作流整体被 GitHub 标为 failure，且没有创建汇总作业。2026-10-07 15:16 UTC 官方状态页报告 [Git Operations、Pull Requests 与 Actions 服务故障](https://stspg.io/96smrcth8bpg)；同一时间推送遇到 Internal Server Error，重试推送成功，重试失败作业则被拒绝（This workflow run cannot be retried）。因此这里只记录四平台作业通过，不称整轮工作流全绿。随后运行 [37642937815](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37642937815)（16310a4，仅追加验收文档）已完成：Windows、Linux amd64、Linux arm64、macOS 及汇总作业全部 success，整轮 conclusion=success。最终全绿运行号以此为准；代码与 5abaf15 相同，跳过项与宿主证据边界不变。
+
 | 平台 | 结果 | 证据边界 |
 | --- | --- | --- |
 | Windows amd64 | 通过 | 原生测试、打包、发现、协议与 GUI 子系统脚本；最新 Rust 实现的 push 维护门控 37639850074 亦通过 |
