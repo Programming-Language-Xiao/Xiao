@@ -46,7 +46,7 @@ struct Case {
     has_drops: bool,
 }
 
-const CASES: [Case; 9] = [
+const CASES: [Case; 13] = [
     Case {
         label: "held-string",
         source: "payload = \"held\"\n",
@@ -108,6 +108,34 @@ const CASES: [Case; 9] = [
         source: "def check(values) -> int\n    for item in values\n        if item\n            return 1\n    return 0\nprobe = check([1])\n",
         output: "",
         error: Some("X06-RUNTIME-002"),
+        has_drops: true,
+    },
+    Case {
+        label: "selector-range-downstream",
+        source: "values = [1, 2, 3, 4]\npart = values[1~2]\nprint(part[0])\n",
+        output: "2\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "selector-random-downstream",
+        source: "values = [1, 2, 3, 4]\npart = values[?2]\nprint(part[0])\n",
+        output: "3\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "selector-all-downstream",
+        source: "values = [1, 2, 3, 4]\npart = values[=]\nprint(part[3])\n",
+        output: "4\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "selector-open-range-downstream",
+        source: "values = [1, 2, 3, 4]\npart = values[<2]\nprint(part[0])\n",
+        output: "1\n",
+        error: None,
         has_drops: true,
     },
 ];
@@ -594,9 +622,16 @@ enum NativeGap {
 }
 
 fn native_gap(label: &str) -> Option<NativeGap> {
-    (label == "nested-finally-drops").then_some(NativeGap::Diverges {
-        reason: "原生动态函数的嵌套 finally 释放序列仍少一条作用域释放",
-    })
+    let reason = match label {
+        "nested-finally-drops" => "原生动态函数的嵌套 finally 释放序列仍少一条作用域释放",
+        "selector-range-downstream"
+        | "selector-random-downstream"
+        | "selector-open-range-downstream" => {
+            "原生选择结果值已与 VM 对齐，但容器释放序列仍有额外差异"
+        }
+        _ => return None,
+    };
+    Some(NativeGap::Diverges { reason })
 }
 
 #[test]
