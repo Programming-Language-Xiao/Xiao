@@ -288,6 +288,18 @@ fn generic_value_copy_registers_weak_dependency_only_when_called() {
         ("values = [1, 2]\n", false),
         ("values = [1, 2]\ncopy = values\n", true),
         (
+            "def f() -> str\n    try\n        return \"old\"\n    finally\n        raise ArithmeticError(code = \"FINAL\")\nresult = f()\n",
+            false,
+        ),
+        (
+            "def f() -> int\n    try\n        payload = \"try\"\n        return 1\n    finally\n        raise ArithmeticError(code = \"FINAL\")\nresult = f()\n",
+            false,
+        ),
+        (
+            "def f(str value) -> str\n    try\n        return value\n    finally\n        raise ArithmeticError(code = \"FINAL\")\nresult = f(\"x\")\n",
+            true,
+        ),
+        (
             "def f(str value) -> str\n    return value\nresult = f(\"x\")\n",
             true,
         ),

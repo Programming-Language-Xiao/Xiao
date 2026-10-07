@@ -5,6 +5,52 @@ use super::{BYTES_TYPE, DynamicGenerator, ERROR_LOCATION_TYPE, VALUE_TYPE};
 use crate::target::ObjectFormat;
 use xiao_ir::IrSpan;
 
+/// 检查生成模块中是否有从函数入口可达的通用复制调用。
+///
+/// 这里只分析本降低器发射的基本块与 `br` 边，不折叠运行时条件。
+/// 每个函数的标签空间独立；声明和无前驱的 finally 后续块不构成依赖。
+pub(super) fn has_reachable_value_copy(text: &str) -> bool {
+    use std::collections::{BTreeMap, BTreeSet};
+
+    for function in text.split("define ").skip(1) {
+        let mut blocks: BTreeMap<&str, Vec<&str>> = BTreeMap::new();
+        let mut current = None;
+        for line in function.lines().skip(1) {
+            let line = line.trim();
+            if line == "}" {
+                break;
+            }
+            if let Some(label) = line.strip_suffix(':') {
+                current = Some(label);
+                blocks.entry(label).or_default();
+            } else if let Some(label) = current {
+                blocks.entry(label).or_default().push(line);
+            }
+        }
+        let mut pending = vec!["entry"];
+        let mut visited = BTreeSet::new();
+        while let Some(label) = pending.pop() {
+            if !visited.insert(label) {
+                continue;
+            }
+            let Some(lines) = blocks.get(label) else {
+                continue;
+            };
+            for line in lines {
+                if line.contains("call i32 @xiao_runtime_value_copy(") {
+                    return true;
+                }
+                if line.starts_with("br ") {
+                    for target in line.split("label %").skip(1) {
+                        pending.push(target.split(',').next().unwrap_or(target).trim());
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
 impl<'a> DynamicGenerator<'a> {
     /// 登记 Runtime ABI 声明，并记录可解释组件清单。
     pub(super) fn declare_runtime(&mut self) {
