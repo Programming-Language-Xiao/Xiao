@@ -320,6 +320,6 @@ Rust workspace 全量通过。Clippy 发现的两处测试字符串不必要借�
 
 ## 十一、最终跨平台与宿主交接
 
-最终功能提交为 **17098d4**，完整平台运行 **37691607332**，维护门控 **37691605211**。已确认 Linux amd64/arm64 完整复现与 Linux push 原生门控通过（包括 Xvfb 中调试执行）；Windows/macOS 的最终结论继续核对后回填。
+最终功能提交为 **58e8ecc**，完整平台运行 **37693571709**，维护门控随该提交触发并通过。Windows、Linux amd64/arm64、macOS 及汇总作业全部 success；Linux push 原生门控也通过（包括 Xvfb 中调试执行）。macOS 真实终端与调试执行仍显式跳过，不能写成窗口验收通过。
 
 N4 已交接星崽在裸机检出 17098d4 复跑，命令与窗口判据见 [Linux 交接](10s-linux-bare-metal-handoff.md)。不设 XIAO_USE_XVFB；窗口必须肉眼可见并记录截图及结束行为。当前尚未收到本批裸机回传，仍记待补，不把 Linux CI 的 Xvfb 当成裸机桌面证据。
