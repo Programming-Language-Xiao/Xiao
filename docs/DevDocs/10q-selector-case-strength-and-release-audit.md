@@ -7,7 +7,7 @@
 > **一句话概括本批**：让每条选择器用例都能真的判出对错，把失败证据还回来，
 > 然后**按路径做一次释放账目核对**，而不是继续逐条打补丁。
 >
-> 状态：**规划稿（2026-10-07）**。「建议」处未经星崽确认，确认项集中在末尾「待定决策」。
+> 状态：**K2/K3/K4 已实施；K1 已明确交接（2026-10-07）**。I6 未修复，原因和具名后续任务见第十节；CI 与推送仍待授权。
 
 ## 一、Agent 交接上下文
 
@@ -234,3 +234,11 @@ I6 轨迹更正：原生少的是整个外层 finally 对象的构造和销毁�
 - K4：第九节包含三路径数据及检查开关对照。范围多出的一次来自 xiao_runtime_dynamic_check 的 value_to_runtime 克隆/析构；没有删检查、过滤轨迹或更改 VM。聚合后总差异另含循环 ABI 临时引用，释放豁免继续限定为 Drops。10P 的源别名条件修改未改变此范围用例轨迹，不能当作本缺口修复。
 - K1/I6：未完成修复。试验补 return 清理跳转及 value_slots 后，原生恢复 6 条事件、3 个对象，销毁位置为 1:对象2、3:对象3、5:对象1；VM 为 1:对象3、3:对象2、5:对象1。执行恢复但顺序仍错，试修已撤回。转入 [10Q-I6 函数清理链重构](10q-i6-cleanup-followup.md)，明确保留缺口，不宣称 I6 已完成。验收第 4 条采用“说明未做原因与去向”分支。
 - I3/I4：未新增工作流、未推送、未触发 CI。Linux/macOS 无本批运行号，仍未验证。其余拒绝面、静态溢出和受控 Java 取数不并入。
+
+### 最终验证（e1990ef，Windows）
+
+工具配置：XIAO_CLANG=D:/msys64/ucrt64/bin/clang.exe，XIAO_LLVM_AS 同目录 llvm-as.exe，XIAO_TARGET_TRIPLE=x86_64-pc-windows-msvc；XIAO_RUNTIME_LIBRARY 指向 core/rust/target/debug/xiao_runtime.lib；XIAO_DIAGNOSTICS_PATH 指向同目录 xiao-diagnostics.exe（文件存在）。
+
+受控执行 cargo test -p xiao-driver --test n0_a_native_driver --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture：分别 3/1/1 项通过，差分仍明确打印四个 Drops 缺口。探测四项 built，container-dense 仍以“动态表方法（ABI 尚未携带函数表）”拒绝。此结果不等于无豁免的完整原生语义验收。
+
+cargo test --workspace、workspace 全 targets Clippy -D warnings、cargo fmt --all -- --check、bun run check 均退出 0；bun test 为 287 pass / 5 skip / 0 fail。没有修改 Cargo.lock、VM 语义、CI 或用户原有的 xiao-xar/tests/README.md。
