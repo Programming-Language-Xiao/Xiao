@@ -298,7 +298,9 @@ impl<'a> DynamicGenerator<'a> {
                 "  {ptr} = getelementptr {VALUE_TYPE}, ptr {array}, i64 {index}"
             ));
             self.emit(format!("  store {VALUE_TYPE} {value}, ptr {ptr}"));
-            temporaries.push(value);
+            if value != source {
+                temporaries.push(value);
+            }
         }
         let handle = self.next_temp();
         self.emit(format!("  {handle} = alloca ptr"));
