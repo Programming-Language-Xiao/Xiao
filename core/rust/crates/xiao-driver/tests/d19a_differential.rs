@@ -112,19 +112,20 @@ const CASES: [Case; 13] = [
     },
     Case {
         label: "selector-range-downstream",
-        source: "values = [1, 2, 3, 4]\npart = values[1~2]\nprint(part[0])\n",
-        output: "2\n",
+        source: "values = [1, 2, 3, 4]\npart = values[1~2]\ntotal = 0\nfor item in part\n    total = total + item\nprint(total)\n",
+        output: "5\n",
         error: None,
         has_drops: true,
     },
     Case {
         label: "selector-random-downstream",
-        source: "values = [1, 2, 3, 4]\npart = values[?2]\nprint(part[0])\n",
-        output: "3\n",
+        source: "values = [1, 2, 3, 4]\npart = values[?2]\ntotal = 0\nfor item in part\n    total = total + item\nprint(total)\n",
+        output: "7\n",
         error: None,
         has_drops: true,
     },
     Case {
+        // 全选与源数组值相同；本例仅守释放路径，值区分度由聚合用例负责。
         label: "selector-all-downstream",
         source: "values = [1, 2, 3, 4]\npart = values[=]\nprint(part[3])\n",
         output: "4\n",
@@ -133,8 +134,8 @@ const CASES: [Case; 13] = [
     },
     Case {
         label: "selector-open-range-downstream",
-        source: "values = [1, 2, 3, 4]\npart = values[<2]\nprint(part[0])\n",
-        output: "1\n",
+        source: "values = [1, 2, 3, 4]\npart = values[<2]\ntotal = 0\nfor item in part\n    total = total + item\nprint(total)\n",
+        output: "3\n",
         error: None,
         has_drops: true,
     },
