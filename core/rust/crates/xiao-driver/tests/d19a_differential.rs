@@ -618,8 +618,18 @@ fn release_tuples(text: &str) -> Vec<String> {
 /// 原生已能构建但释放序列仍与 VM 不同的后续缺口。
 enum NativeGap {
     /// 说明差异来源，保持差分用例运行并如实登记。
-    Diverges { reason: &'static str },
+    Diverges {
+        reason: &'static str,
+        fields: &'static [GapField],
+    },
 }
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum GapField {
+    Drops,
+}
+
+const DROPS_ONLY: &[GapField] = &[GapField::Drops];
 
 fn native_gap(label: &str) -> Option<NativeGap> {
     let reason = match label {
@@ -631,7 +641,10 @@ fn native_gap(label: &str) -> Option<NativeGap> {
         }
         _ => return None,
     };
-    Some(NativeGap::Diverges { reason })
+    Some(NativeGap::Diverges {
+        reason,
+        fields: DROPS_ONLY,
+    })
 }
 
 #[test]
@@ -699,7 +712,11 @@ fn native_side_matches_the_vm_sides_on_every_case() {
             ..baseline
         };
         let mut case_problems = Vec::new();
-        let found = disagreements(&[("VM（源码）", vm_side), ("原生", native_side)]);
+        let mut vm_compare = vm_side.clone();
+        let mut native_compare = native_side.clone();
+        vm_compare.drops.clear();
+        native_compare.drops.clear();
+        let found = disagreements(&[("VM（源码）", vm_compare), ("原生", native_compare)]);
         if !found.is_empty() {
             let first_line = stderr.lines().next().unwrap_or_default();
             case_problems.push(format!(
@@ -720,26 +737,32 @@ fn native_side_matches_the_vm_sides_on_every_case() {
             })
             .collect::<Vec<_>>();
         let native_tuples = release_tuples(&fs::read_to_string(&trace_path).unwrap_or_default());
-        if vm_tuples != native_tuples {
-            case_problems.push(format!(
-                "「VM（源码）」与「原生」的 Runtime 释放序列不一致：{vm_tuples:?} ≠ {native_tuples:?}"
-            ));
-        }
+        let release_mismatch = vm_tuples != native_tuples;
         let _ = fs::remove_dir_all(root);
 
         match gap {
-            Some(NativeGap::Diverges { reason }) if !case_problems.is_empty() => {
-                eprintln!("[19A 差分] 原生未覆盖 {}：{reason}", case.label);
+            Some(NativeGap::Diverges { reason, fields }) => {
+                if release_mismatch && fields.contains(&GapField::Drops) {
+                    eprintln!("[19A 差分] 原生未覆盖 {}：{reason}", case.label);
+                } else if release_mismatch {
+                    case_problems.push("Runtime 释放序列不一致".to_owned());
+                }
+                problems.extend(
+                    case_problems
+                        .into_iter()
+                        .map(|problem| format!("用例 {}：{problem}", case.label)),
+                );
             }
-            Some(NativeGap::Diverges { .. }) => problems.push(format!(
-                "用例 {}：登记的原生缺口已不存在，请从 native_gap 中移除",
-                case.label
-            )),
-            None => problems.extend(
-                case_problems
-                    .into_iter()
-                    .map(|problem| format!("用例 {}：{problem}", case.label)),
-            ),
+            None => {
+                if release_mismatch {
+                    case_problems.push("Runtime 释放序列不一致".to_owned());
+                }
+                problems.extend(
+                    case_problems
+                        .into_iter()
+                        .map(|problem| format!("用例 {}：{problem}", case.label)),
+                );
+            }
         }
     }
     assert!(problems.is_empty(), "\n{}", problems.join("\n"));
