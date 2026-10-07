@@ -763,7 +763,7 @@ fn native_gap(label: &str) -> Option<NativeGap> {
             "10Q/K4：selector_bounds ABI 克隆并归还借用转换引用，聚合循环另有临时引用事件；仅释放轨迹暂未对齐"
         }
         "selector-random-downstream" => {
-            "10Q/K4 后续：随机选择使用 value_select ABI，不经过 selector_bounds；其释放差异尚未逐调用定位，仅暂豁免 Drops"
+            "10S：随机 value_select 批量借用转换相较 VM 逐路径读取少一次源释放，原生循环的 SSA 持有和 iterable 检查多两次结果释放，净多一次；成对实验见 10S §十一，仅豁免 Drops"
         }
         _ => return None,
     };
