@@ -275,7 +275,7 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.6）
 | 18.10 非交互与机器结果 | 满足 | `association` 命令、`--json` 统一 `result/error` 结构、`--verbose` stderr |
 | 18.11 中断/重复/只读/并发 | 满足 | `xiao-artifacts` 中断临时文件测试、16B 清理/只读测试、`xiao-lock` 并发测试 |
 | 18.12 使用记录 | 满足 | `cache.optimization`、`audit` schema、原生优化指纹/产物摘要字段 |
-| 18.13 `-debug` 全链路 | 部分满足（宿主门控） | `[debug]` 合并与协议传递已完成；Windows GUI 子系统已在本机行为验证，macOS LaunchServices 与 Linux 桌面开窗仍待宿主复现 |
+| 18.13 `-debug` 全链路 | 部分满足（宿主门控） | `[debug]` 合并与协议传递已完成；Windows GUI 子系统已在本机行为验证，Linux 已有裸机回传但未见窗口，待新版复跑与截图；macOS 无桌面宿主且 CI 跳过真实终端，LaunchServices/窗口未验证 |
 | 18.14 语言/插件回退 | 满足 | 11C 归一化、归档语言回退诊断和既有 CLI 测试 |
 
 因此 18 阶段的代码链路和可测试契约已收口；跨宿主发布行为继续按 10D/19 的门控口径保留
@@ -288,3 +288,7 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.6）
 - [18B. 后端调用与可诊断工作流](18b-backend-calls-and-workflow.md) —— **上一批**；§2.9 ② 是本批 §2.6 的来源
 - [11X0-D. `-debug` 与诊断窗口](11x0d-debug-diagnostics-window.md) —— 窗口机制（已交付）
 - [10D. 环境依赖测试专项规范](10d-environment-gated-test-spec.md) —— 门控标记与清单同步
+
+### 10S 对 18.13 的证据补记（2026-10-07）
+
+Windows原生GUI子系统沿用既有行为证据。Linux的[裸机回传](10s-linux-bare-metal-results-20261007.md)已取得：Wayland桌面、未启用Xvfb；终端测试ok但窗口未肉眼可见、无截图，未满足桌面开窗验收。macOS无桌面宿主，CI显式跳过真实终端，LaunchServices/窗口继续未验证（本批不可得），不能以矩阵任务成功代替。
