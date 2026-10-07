@@ -743,9 +743,12 @@ fn native_side_matches_the_vm_sides_on_every_case() {
         match gap {
             Some(NativeGap::Diverges { reason, fields }) => {
                 if release_mismatch && fields.contains(&GapField::Drops) {
-                    eprintln!("[19A 差分] 原生未覆盖 {}：{reason}", case.label);
+                    eprintln!(
+                        "[19A 差分] 原生未覆盖 {}：{reason}；VM（源码）={vm_tuples:?}；原生={native_tuples:?}",
+                        case.label
+                    );
                 } else if release_mismatch {
-                    case_problems.push("Runtime 释放序列不一致".to_owned());
+                    case_problems.push(format!("「VM（源码）」与「原生」的 Runtime 释放序列不一致：{vm_tuples:?} ≠ {native_tuples:?}"));
                 }
                 problems.extend(
                     case_problems
@@ -755,7 +758,7 @@ fn native_side_matches_the_vm_sides_on_every_case() {
             }
             None => {
                 if release_mismatch {
-                    case_problems.push("Runtime 释放序列不一致".to_owned());
+                    case_problems.push(format!("「VM（源码）」与「原生」的 Runtime 释放序列不一致：{vm_tuples:?} ≠ {native_tuples:?}"));
                 }
                 problems.extend(
                     case_problems
