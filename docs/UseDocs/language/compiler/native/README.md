@@ -56,7 +56,7 @@ Fatal 不进入普通 `catch`，清理阶段的 Fatal 会直接进入终止块�
 
 静态标量程序的产物不链接完整 `xiao-vm` 或 `xiao-runtime`。动态能力使用独立
 `xiao-runtime-abi` 的不透明强/弱句柄、固定布局 tagged value、容器入口和表描述符；
-不能把 Rust 内部枚举布局当作语言契约。Runtime ABI 主版本为 1，当前次版本为 1；布局、
+不能把 Rust 内部枚举布局当作语言契约。Runtime ABI 主版本为 1，当前次版本为 8；布局、
 标签或所有权契约改变时必须升主版本。
 
 动态模块的 `LlvmModule::runtime_components` 是生成器声明的 ABI 组件清单。N0-D 在链接完成后

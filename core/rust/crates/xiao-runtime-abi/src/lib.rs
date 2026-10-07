@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 7;
+pub const ABI_MINOR_VERSION: u32 = 8;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -536,10 +536,115 @@ pub struct XiaoTableDescriptor {
     pub field_count: usize,
 }
 
+/// 新表描述符的独立布局版本；旧 `XiaoTableDescriptor` 保持原布局。
+pub const TABLE_DESCRIPTOR_VERSION: u32 = 1;
+
+/// 方法元数据中的动态类型；其他值使用既有 `XiaoValueTag`，不新增值标签。
+pub const TABLE_METHOD_DYNAMIC_TYPE: u32 = u32::MAX;
+
+/// 表方法、字段初始化和生命周期回调的统一 C 调用约定。
+///
+/// receiver 与 arguments 仅在调用期间借用；需要持有时显式复制。out 指向已初始化
+/// 的 none 槽，成功返回唯一拥有的结果，失败保持 none。析构 receiver 为弱只读视图，
+/// 不得复活、写入、逃逸或跨线程。回调代码必须在全部相关实例存活期间有效。
+pub type XiaoTableCallback = unsafe extern "C" fn(
+    receiver: *const XiaoValue,
+    arguments: *const XiaoValue,
+    argument_count: usize,
+    out: *mut XiaoValue,
+) -> i32;
+
+/// 注册式表方法描述；名称和参数类型数组由 Runtime 复制。
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct XiaoTableMethodDescriptor {
+    /// 含名字空间前缀的规范成员名。
+    pub name: XiaoAbiBytes,
+    /// 由 `table_method_signature_id` 生成的签名标识。
+    pub signature_id: u64,
+    /// 不含 receiver 的参数值标签；动态参数使用 `TABLE_METHOD_DYNAMIC_TYPE`。
+    pub parameter_types: *const u32,
+    /// 固定参数个数，零参数时 parameter_types 可为空。
+    pub parameter_count: usize,
+    /// 返回值标签，规则同 parameter_types。
+    pub return_type: u32,
+    /// 1 为公开，0 为私有；后端仍须完成静态可见性检查。
+    pub public: u8,
+    /// 必须非空的方法实现。
+    pub callback: Option<XiaoTableCallback>,
+}
+
+/// 独立的表方法描述符；只由新增入口消费，不改变旧描述符的所有权契约。
+#[repr(C)]
+#[derive(Clone, Copy, Debug)]
+pub struct XiaoTableDescriptorV2 {
+    /// 本结构的字节大小，用于拒绝截短或未知布局。
+    pub struct_size: u32,
+    /// 必须等于 `TABLE_DESCRIPTOR_VERSION`。
+    pub version: u32,
+    /// 原有名称、种类和字段元数据，保持原结构布局。
+    pub fields: XiaoTableDescriptor,
+    /// 稳定排序的方法数组；数量为零时可为空。
+    pub methods: *const XiaoTableMethodDescriptor,
+    /// 方法数组长度。
+    pub method_count: usize,
+    /// 字段初始化回调，执行于 FieldsInitializing 状态，返回 none。
+    pub initialize_fields: Option<XiaoTableCallback>,
+    /// 零显式参数的 init 回调；须与方法表 ascii:init 一致。
+    pub init: Option<XiaoTableCallback>,
+    /// drop 回调；须与方法表 ascii:drop 一致，接收弱只读视图。
+    pub drop: Option<XiaoTableCallback>,
+}
+
+/// 对 ABI 类型标签和参数顺序生成确定性的签名 ID；不依赖主机字节序或地址。
+#[must_use]
+pub fn table_method_signature_id(parameters: &[u32], result: u32) -> u64 {
+    let mut hash = 0xcbf2_9ce4_8422_2325_u64;
+    for byte in (parameters.len() as u64)
+        .to_le_bytes()
+        .into_iter()
+        .chain(parameters.iter().flat_map(|tag| tag.to_le_bytes()))
+        .chain(result.to_le_bytes())
+    {
+        hash = (hash ^ u64::from(byte)).wrapping_mul(0x0100_0000_01b3);
+    }
+    hash
+}
+
 // ABI 版本兼容检查：新增入口使用次版本，改变布局/标签/所有权契约必须升主版本。
 // 这些声明由 `xiao-runtime` 提供实现；ABI crate 本身不定义同名符号，避免出现两份
 // Runtime。调用方必须保证 `required_major`/`required_minor` 是编译产物记录的版本。
 unsafe extern "C" {
+    /// 复制 V2 元数据并经既有状态机执行字段初始化、零参数 init 与失败回滚。
+    /// 失败时 out 为 null；成功后调用方唯一拥有表强句柄。
+    pub fn xiao_runtime_table_new_v2(
+        descriptor: *const XiaoTableDescriptorV2,
+        out: *mut XiaoHandle,
+    ) -> i32;
+    /// 调用静态检查过的方法；校验名称、签名 ID、参数个数/标签，失败输出 none。
+    /// receiver 和参数借用，返回结果唯一拥有；drop 只能由生命周期状态机触发。
+    pub fn xiao_runtime_table_call(
+        receiver: *const XiaoValue,
+        method: XiaoAbiBytes,
+        signature_id: u64,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 读取普通表或析构弱只读视图字段；字段访问已经过静态可见性检查。
+    pub fn xiao_runtime_table_get_value(
+        receiver: *const XiaoValue,
+        field: XiaoAbiBytes,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 写入普通表字段；拒绝析构弱只读视图。
+    pub fn xiao_runtime_table_set_value(
+        receiver: *const XiaoValue,
+        field: XiaoAbiBytes,
+        value: *const XiaoValue,
+    ) -> i32;
+    /// 归还回调中可能是强值或析构弱只读视图的临时拥有值，并清空槽。
+    pub fn xiao_runtime_value_release_any(value: *mut XiaoValue);
     /// 返回 Runtime 支持的 ABI 主版本。
     pub fn xiao_runtime_abi_version() -> u32;
     /// 返回 Runtime 支持的 ABI 次版本。
@@ -820,8 +925,98 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0007);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0008);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 7);
+        assert_eq!(ABI_MINOR_VERSION, 8);
+    }
+
+    #[test]
+    /// 新布局与旧描述符分别锁定，避免新增回调意外改变旧 ABI。
+    fn table_callback_layout_is_independent() {
+        use super::{XiaoTableDescriptor, XiaoTableDescriptorV2, XiaoTableMethodDescriptor};
+        use std::mem::{align_of, offset_of, size_of};
+        assert_eq!(size_of::<XiaoTableDescriptor>(), 40);
+        assert_eq!(size_of::<XiaoTableMethodDescriptor>(), 56);
+        assert_eq!(offset_of!(XiaoTableMethodDescriptor, callback), 48);
+        assert_eq!(size_of::<XiaoTableDescriptorV2>(), 88);
+        assert_eq!(align_of::<XiaoTableDescriptorV2>(), 8);
+        assert_eq!(offset_of!(XiaoTableDescriptorV2, fields), 8);
+        assert_eq!(offset_of!(XiaoTableDescriptorV2, methods), 48);
+        assert_eq!(offset_of!(XiaoTableDescriptorV2, drop), 80);
+    }
+
+    #[test]
+    #[ignore = "需要 XIAO_CLANG；准备方式见 10D §4，交叉验证 MSVC/Linux/macOS C ABI 布局"]
+    /// 使用实际 clang 三目标布局规则，回调只返回 i32，所有聚合值通过指针传递。
+    fn table_callback_c_layout_matches_three_targets() {
+        use std::io::Write;
+        use std::process::{Command, Stdio};
+        let clang = std::env::var_os("XIAO_CLANG").expect("必须配置 XIAO_CLANG，见 10D §4");
+        let source = r#"
+typedef __SIZE_TYPE__ usize;
+typedef unsigned int u32;
+typedef unsigned long long u64;
+typedef struct { u32 tag; u64 payload; } Value;
+typedef struct { const unsigned char *ptr; usize len; } Bytes;
+typedef int (*Callback)(const Value *, const Value *, usize, Value *);
+typedef struct { Bytes name; u32 kind; const void *fields; usize count; } Old;
+typedef struct { Bytes name; u64 signature; const u32 *types; usize count;
+                 u32 result; unsigned char visible; Callback callback; } Method;
+typedef struct { u32 size; u32 version; Old fields; const Method *methods;
+                 usize count; Callback fields_init; Callback init; Callback drop; } New;
+_Static_assert(sizeof(Value) == 16, "value");
+_Static_assert(sizeof(Old) == 40, "old descriptor");
+_Static_assert(sizeof(Method) == 56, "method");
+_Static_assert(__builtin_offsetof(Method, callback) == 48, "callback offset");
+_Static_assert(sizeof(New) == 88, "new descriptor");
+_Static_assert(_Alignof(New) == 8, "alignment");
+_Static_assert(__builtin_offsetof(New, fields) == 8, "old fields offset");
+_Static_assert(__builtin_offsetof(New, methods) == 48, "methods offset");
+_Static_assert(__builtin_offsetof(New, drop) == 80, "drop offset");
+int invoke(Callback fn, const Value *receiver, const Value *args, usize count, Value *out) {
+    return fn(receiver, args, count, out);
+}
+"#;
+        for target in [
+            "x86_64-pc-windows-msvc",
+            "x86_64-unknown-linux-gnu",
+            "aarch64-apple-darwin",
+        ] {
+            let mut child = Command::new(&clang)
+                .args([
+                    "-target",
+                    target,
+                    "-x",
+                    "c",
+                    "-std=c11",
+                    "-fsyntax-only",
+                    "-",
+                ])
+                .stdin(Stdio::piped())
+                .stderr(Stdio::piped())
+                .spawn()
+                .expect("运行 clang");
+            child
+                .stdin
+                .take()
+                .expect("stdin")
+                .write_all(source.as_bytes())
+                .expect("写入 C 布局探针");
+            let output = child.wait_with_output().expect("等待 clang");
+            assert!(
+                output.status.success(),
+                "{target}: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    }
+
+    #[test]
+    /// 参数数量、顺序及返回标签均进入稳定签名，调用方不能用错误签名调用回调。
+    fn table_signature_distinguishes_argument_and_result_types() {
+        use super::table_method_signature_id as signature;
+        assert_ne!(signature(&[1, 2], 3), signature(&[2, 1], 3));
+        assert_ne!(signature(&[1], 2), signature(&[1, 2], 0));
+        assert_ne!(signature(&[1], 2), signature(&[1], 3));
     }
 }

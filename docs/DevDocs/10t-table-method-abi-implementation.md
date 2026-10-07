@@ -231,3 +231,11 @@ docs/DevDocs/README.md                               主表登记
 星崽已确认接受 10S 四条有机制和成对实验依据的 Drops 口径差异，并授权 Linux 加入现有 push/PR 原生门控。仅接受这四项登记，不预先接受 A1 新路径的差异；O6 条件 2 在 A1 及其余验收完成前保持部分。
 
 N1 已将 macOS 的真实终端显式跳过、调试产物 exit=70 稳定失败路径与窗口未验证写入 10S 证据表的结果单元格。N3 将按本批稳定提交手动运行原有平台复现；手动复现与定时使用同一作业路径，但触发事件仍如实记 workflow_dispatch，不伪称 schedule 已执行。Linux push 门控复用现有维护工作流矩阵，运行与 Windows 相同的原生差分和构建探针；裸机及窗口证据仍单独采集。
+
+### ABI 检查点
+
+独立 XiaoTableDescriptorV2 采用 size/version + 旧字段描述 + 方法数组 + 字段/init/drop 回调；旧描述符不变。方法记录规范名、由既有值标签生成的确定性签名 ID、参数标签数组、返回标签、可见性及非空回调。动态类型使用单独的元数据通配标识，不新增运行时值标签；类型事实只由已检查 IR 提供。
+
+Runtime ABI 次版本 7 → 8（主版本仍 1），同步修改既有 version_encoding_is_stable 的两个字面量断言。现有产物指纹和归档/报告的版本要求均读取 ABI_ENCODED_VERSION，旧 Runtime 将拒绝要求 1.8 的产物。当前仅加入边界声明，LLVM 方法拒绝仍保留；Runtime 实现在下一检查点接入。
+
+前置提交 e99c81e 的维护运行 [37653713650](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37653713650) 全绿，新增 Linux 原生门控与 Windows 原生门控分别通过。ABI 检查点本机 Rust workspace、fmt、Clippy、Bun 全量与仓库检查通过；Windows 六项受控原生测试通过，clang 对 Windows x64、Linux x64、macOS arm64 的 C 布局探针通过。该交叉布局探针不冒充 Unix 原生运行，后者继续由提交后的门控确认。
