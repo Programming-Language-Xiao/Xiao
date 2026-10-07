@@ -280,3 +280,28 @@ fn function_local_shadowing_cannot_alias_release_slots() {
         assert!(error.to_string().contains("遮蔽"), "{error}");
     }
 }
+
+#[test]
+/// 可达的通用值复制会链接弱句柄分支，声明必须包含其传递依赖。
+fn generic_value_copy_registers_weak_dependency_only_when_called() {
+    for (source, expected) in [
+        ("values = [1, 2]\n", false),
+        ("values = [1, 2]\ncopy = values\n", true),
+        (
+            "def f(str value) -> str\n    return value\nresult = f(\"x\")\n",
+            true,
+        ),
+    ] {
+        let artifact = FrontendCompiler::new()
+            .compile(&FrontendRequest::from_text(source))
+            .expect("依赖探针源码");
+        let module = NativeBuild::new()
+            .lower(&artifact.ir, &CodegenOptions::default())
+            .expect("依赖探针降低");
+        assert_eq!(
+            module.runtime_components.iter().any(|item| item == "weak"),
+            expected,
+            "{source}"
+        );
+    }
+}

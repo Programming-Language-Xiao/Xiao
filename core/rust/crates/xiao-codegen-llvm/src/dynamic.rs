@@ -364,6 +364,11 @@ impl<'a> DynamicGenerator<'a> {
 
     /// 发射一个带源码位置的 Runtime 状态调用。
     fn checked_status_call_at(&mut self, call: String, span: IrSpan) -> String {
+        // 通用复制 ABI 支持 TableDropView，函数实现实际可达 weak_retain/weak_release；
+        // ELF/Mach-O 会观察到这些符号，不能只按源码是否出现 weak 计划登记。
+        if call.starts_with("@xiao_runtime_value_copy(") {
+            self.declared_runtime_components.insert("weak".to_owned());
+        }
         let status = self.next_temp();
         self.emit(format!("  {status} = call i32 {call}"));
         self.check_status_at(&status, span);
@@ -520,6 +525,8 @@ impl<'a> DynamicGenerator<'a> {
         generator.emit(String::new());
         self.next_global = generator.next_global;
         self.globals.extend(generator.globals);
+        self.declared_runtime_components
+            .extend(generator.declared_runtime_components);
         self.function_texts.push(generator.lines.join("\n"));
         Ok(())
     }

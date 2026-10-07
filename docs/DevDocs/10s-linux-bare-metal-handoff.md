@@ -55,8 +55,10 @@ cd Xiao
 git checkout <上面确定的提交>
 
 # 一次跑完：门控测试 + CLI 打包 + 协议检查；脚本会自己构建 Runtime 与诊断程序
+set -o pipefail
 bash tools/platform-reproduction/reproduce.sh native 2>&1 | tee /tmp/xiao-native.log
-echo "exit=$?"
+status=${PIPESTATUS[0]}
+echo "exit=$status"
 ```
 
 **关于 `XIAO_USE_XVFB`**：**不要设置它**。脚本只在 `XIAO_USE_XVFB=1` 时才用 `xvfb-run` 包一层，
