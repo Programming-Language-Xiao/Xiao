@@ -241,3 +241,12 @@ docs/DevDocs/README.md                              主表登记
 - [10D. 环境依赖测试专项规范](10d-environment-gated-test-spec.md) §4 —— 门控环境准备
 - [12. 测试与开发里程碑](12-tests-and-milestones.md) O6 —— 收口对账的权威条目
 - `tools/platform-reproduction/README.md` —— 各平台证据的定位与边界
+
+## 九、首轮跨平台与裸机证据（2026-10-07）
+
+手动运行 [37631381063](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37631381063) 使用0ae4850。Windows失败于旧数组产物符号断言；Linux amd64/arm64及macOS arm64均失败于通用值复制导致weak组件可达但未登记。macOS日志明确跳过真实终端用例；Linux CI设置XIAO_USE_XVFB=1，只是虚拟显示功能证据。不得把汇总作业成功当作四平台成功。
+
+星崽通过 [PR #3](https://github.com/Programming-Language-Xiao/Xiao/pull/3) 回传Ubuntu裸机结果；本批原样接入ce6dc578的两份证据文件，不修改原始日志、不将PR视为已合并：
+[环境与结果](10s-linux-bare-metal-results-20261007.md)、[完整日志](10s-linux-bare-metal-log-20261007.md)。Ubuntu26.04.1/x86_64/glibc2.43，Rust1.96.0、Bun1.4.0、LLVM21.1.8，Wayland桌面、DISPLAY=:0，未设Xvfb；直接执行脚本退出101，13条原生差分构建因weak未登记失败，未到打包。真实终端测试返回ok，但操作者未看到窗口、无截图，Linux C档仍未验证通过。它是真实裸机失败证据，不是裸机验收通过。
+
+交接命令已修正：管道执行通过PIPESTATUS[0]保存脚本退出码；rustc -vV保留完整host信息。PR实际命令使用直接重定向，退出101未被tee掩盖。

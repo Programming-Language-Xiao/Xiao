@@ -73,7 +73,7 @@ echo "exit=$?"
 cat /etc/os-release | head -3          # 发行版与版本
 uname -m                               # 架构（预期 x86_64）
 ldd --version | head -1                # glibc 版本
-rustc -vV | head -2                    # rustc 版本与 host 三元组
+rustc -vV                    # rustc 版本与 host 三元组
 bun --version
 clang --version | head -1
 llvm-as --version | head -1
