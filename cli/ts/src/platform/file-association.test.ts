@@ -69,6 +69,8 @@ describe(".xar 文件关联契约", () => {
     const home = await mkdtemp(join(tmpdir(), "xiao-association-platforms-"));
     const executable = join(home, "xiao.exe");
     await Bun.write(executable, "xiao");
+    // macOS 路径按 X_OK 校验；测试夹具在 Unix 宿主也必须具备执行位。
+    await chmod(executable, 0o755);
     const calls: string[] = [];
     const runner = async (command: string, args: readonly string[]) => {
       calls.push(`${command} ${args.join(" ")}`);

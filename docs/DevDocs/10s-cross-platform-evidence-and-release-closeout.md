@@ -259,6 +259,8 @@ docs/DevDocs/README.md                              主表登记
 
 第三轮 [37638188213](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37638188213)（f42f2c7）的 Linux 已通过差分，随后四条原生基准构建探针失败：这些源码只定义函数、未调用，函数内部复制被计入依赖，而链接器移除了未调用函数。最终实现统一从 main 的 entry 出发，同时遍历直接调用和基本块跳转；访问键为函数名与标签，覆盖循环/递归而不串用同名标签。新增未调用函数、被调用函数和递归的正反例；不以强制保留符号或降低构建探针断言消除红灯。
 
+第三轮最终 Windows 通过，macOS 与两项 Linux 同样失败于四个基准构建探针。第四轮 [37639853098](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37639853098)（248429f）中，两项 Linux 的原生测试（含差分与基准探针）已通过，随后 Bun 文件关联测试失败：跨平台注入用例创建的 xiao.exe 夹具未设置 Unix 执行位，macOS 路径按 X_OK 检查时正确拒绝。修复仅为夹具补 0755，保持生产权限检查和安装断言不变。同期 Windows 维护门控 [37639850074](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37639850074) 通过。
+
 ## 十、表实例逐调用核对
 
 以下成对实验在 Windows x86_64-pc-windows-msvc、77d1a24 基础上进行，使用本机 clang/llvm-as、release Runtime 和诊断渲染器，运行受控 d19a_differential。每次仅修改表中所列一处，采数后恢复；实验变更未并入生产代码。事件序号从 0 开始，包含 strong_release 与 destroy，不包含 retain。
