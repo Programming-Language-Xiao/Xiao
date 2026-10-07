@@ -8,6 +8,47 @@ use super::{DynamicGenerator, VALUE_TYPE};
 use crate::error::{CodegenError, Result};
 
 impl<'a> DynamicGenerator<'a> {
+    /// 函数退出仅消费所属作用域的冻结计划，已清空槽重复经过出口时无操作。
+    pub(super) fn release_function_scopes(&mut self, exit: &str) -> Result<()> {
+        let Some(root) = self.function_scope else {
+            self.release_all_slots_fallback();
+            return Ok(());
+        };
+        let mut scopes = self
+            .program
+            .ownership
+            .scopes
+            .iter()
+            .filter(|scope| {
+                super::predicate::scope_is_ancestor(&self.program.ownership.scopes, root, scope.id)
+            })
+            .map(|scope| scope.id)
+            .collect::<Vec<_>>();
+        scopes.sort_unstable_by(|a, b| b.cmp(a));
+        for scope in scopes {
+            self.release_for_scope(Some(scope), exit)?;
+            // LLVM 表达式读取返回绑定时已复制一份到调用方结果槽；计划中的
+            // transferred 对应 VM 的移动语义，这里还须归还函数持有的原引用。
+            if exit == "return" {
+                let transferred = self
+                    .program
+                    .ownership
+                    .release_plans
+                    .iter()
+                    .filter(|plan| plan.scope == scope && plan.exit == exit)
+                    .flat_map(|plan| plan.transferred.iter())
+                    .filter_map(|value| self.value_slots.get(value).copied())
+                    .collect::<Vec<_>>();
+                for slot in transferred {
+                    self.emit(format!(
+                        "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
+                        slot.index
+                    ));
+                }
+            }
+        }
+        Ok(())
+    }
     /// 释放一个临时 ABI 值。
     pub(super) fn release_value(&mut self, value: String) {
         let slot = self.next_temp();

@@ -94,13 +94,27 @@ impl<'a> DynamicGenerator<'a> {
             IrStatementKind::Return { value } => {
                 if let Some(value) = value {
                     let emitted = self.emit_expression(value)?;
-                    if let (true, Some(slot), Some(label)) = (
+                    if let (true, Some(slot), Some(_label)) = (
                         self.function_mode,
                         self.function_return_slot.clone(),
                         self.function_return_label.clone(),
                     ) {
+                        self.emit("  call void @xiao_runtime_error_clear()".to_owned());
+                        self.emit(format!(
+                            "  call void @xiao_runtime_value_release_strong(ptr {slot})"
+                        ));
                         self.emit(format!("  store {VALUE_TYPE} {emitted}, ptr {slot}"));
-                        self.emit(format!("  br label %{label}"));
+                        // 名称读取已复制引用；临时结果则在最终 return 时复制，
+                        // 与 VM 读取返回寄存器后归还帧内临时引用的次序一致。
+                        let mut returned = value;
+                        while let IrExpressionKind::Group { expression } = &returned.kind {
+                            returned = expression;
+                        }
+                        let temporary = !matches!(returned.kind, IrExpressionKind::Name { .. });
+                        self.emit(format!(
+                            "  store i1 {temporary}, ptr %xiao.return.temporary"
+                        ));
+                        self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
                         self.terminated = true;
                     } else {
                         let value_type = value.ty.clone();
@@ -110,13 +124,18 @@ impl<'a> DynamicGenerator<'a> {
                         self.terminated = true;
                     }
                 } else if self.function_mode {
-                    if let (Some(slot), Some(label)) = (
+                    if let (Some(slot), Some(_label)) = (
                         self.function_return_slot.clone(),
                         self.function_return_label.clone(),
                     ) {
                         let none = self.none_value();
+                        self.emit("  call void @xiao_runtime_error_clear()".to_owned());
+                        self.emit(format!(
+                            "  call void @xiao_runtime_value_release_strong(ptr {slot})"
+                        ));
                         self.emit(format!("  store {VALUE_TYPE} {none}, ptr {slot}"));
-                        self.emit(format!("  br label %{label}"));
+                        self.emit("  store i1 false, ptr %xiao.return.temporary".to_owned());
+                        self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
                         self.terminated = true;
                     }
                 } else {
@@ -536,6 +555,7 @@ impl<'a> DynamicGenerator<'a> {
                 message: format!("动态 {exit} 退出的清理深度无效"),
             });
         }
+        let pending_snapshot = self.pending_return_releases.clone();
         while self.cleanup_stack.len() > cleanup_depth {
             let region = self
                 .cleanup_stack
@@ -545,6 +565,7 @@ impl<'a> DynamicGenerator<'a> {
                 })?;
             self.emit_cleanup_context(region, exit, &target)?;
             if self.terminated {
+                self.pending_return_releases = pending_snapshot;
                 return Ok(());
             }
         }
@@ -552,6 +573,11 @@ impl<'a> DynamicGenerator<'a> {
         match target {
             ControlExitTarget::Return => {
                 if self.function_mode {
+                    let pending = std::mem::take(&mut self.pending_return_releases);
+                    for (scope, release_exit) in pending {
+                        self.release_for_scope(scope, &release_exit)?;
+                    }
+                    self.pending_return_releases = pending_snapshot;
                     if let Some(label) = self.function_return_label.clone() {
                         self.emit(format!("  br label %{label}"));
                         return Ok(());
@@ -599,11 +625,16 @@ impl<'a> DynamicGenerator<'a> {
                     "normal",
                     &region.failure_target,
                 )?;
-                self.release_for_scope_with_target(
-                    region.protected_scope,
-                    protected_exit,
-                    &region.failure_target,
-                )?;
+                if self.function_mode && protected_exit == "return" {
+                    self.pending_return_releases
+                        .push((region.protected_scope, protected_exit.to_owned()));
+                } else {
+                    self.release_for_scope_with_target(
+                        region.protected_scope,
+                        protected_exit,
+                        &region.failure_target,
+                    )?;
+                }
                 self.emit(format!("  br label %{success}"));
                 self.terminated = true;
             }
@@ -622,6 +653,13 @@ impl<'a> DynamicGenerator<'a> {
         } else {
             if region.finally_scope.is_some() {
                 self.restore_finally_stack_frame();
+            }
+            if self.function_mode && protected_exit == "return" {
+                self.pending_return_releases
+                    .push((region.finally_scope, protected_exit.to_owned()));
+                self.pending_return_releases
+                    .push((region.protected_scope, protected_exit.to_owned()));
+                return Ok(());
             }
             self.release_for_scope_with_target(
                 region.finally_scope,

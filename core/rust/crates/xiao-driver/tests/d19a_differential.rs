@@ -46,7 +46,63 @@ struct Case {
     has_drops: bool,
 }
 
-const CASES: [Case; 19] = [
+const CASES: [Case; 27] = [
+    Case {
+        label: "function-heap-return-overridden",
+        source: "def f() -> str\n    try\n        return \"old\"\n    finally\n        return \"new\"\nprint(f())\n",
+        output: "new\n",
+        error: None,
+        has_drops: false,
+    },
+    Case {
+        label: "function-heap-return-error",
+        source: "def f() -> str\n    try\n        return \"old\"\n    finally\n        raise ArithmeticError(code = \"FINAL\")\nresult = f()\n",
+        output: "",
+        error: Some("FINAL"),
+        has_drops: false,
+    },
+    Case {
+        label: "function-scope-isolation",
+        source: "def first() -> str\n    value = \"first\"\n    try\n        return value\n    finally\n        cleanup = \"one\"\ndef second() -> str\n    value = \"second\"\n    try\n        return value\n    finally\n        cleanup = \"two\"\nprint(first())\nprint(second())\n",
+        output: "first\nsecond\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-return-heap",
+        source: "def f() -> str\n    payload = \"value\"\n    try\n        return payload\n    finally\n        cleanup = \"cleanup\"\nprint(f())\n",
+        output: "value\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-finally-overrides-return",
+        source: "def f() -> int\n    try\n        payload = \"try\"\n        return 1\n    finally\n        cleanup = \"finally\"\n        return 2\nprint(f())\n",
+        output: "2\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-finally-raises",
+        source: "def f() -> int\n    try\n        payload = \"try\"\n        return 1\n    finally\n        raise ArithmeticError(code = \"FINAL\")\nresult = f()\n",
+        output: "",
+        error: Some("FINAL"),
+        has_drops: true,
+    },
+    Case {
+        label: "function-finally-overrides-error",
+        source: "def f() -> int\n    try\n        payload = \"try\"\n        raise ArithmeticError(code = \"PRIMARY\")\n    finally\n        return 2\nprint(f())\n",
+        output: "2\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-empty-return",
+        source: "def f() -> none\n    payload = \"local\"\n    return\nf()\n",
+        output: "",
+        error: None,
+        has_drops: true,
+    },
     Case {
         label: "held-tuple",
         source: "value = (\"held\",)\n",
@@ -702,9 +758,6 @@ fn native_gap(label: &str) -> Option<NativeGap> {
     let reason = match label {
         "held-table-instance" => {
             "10R 账目后续：同一表实例 VM 五次 strong_release、原生三次，均仅一次 destroy；构造/字段初始化 ABI 临时引用差异待逐调用核对，本批不改释放逻辑"
-        }
-        "nested-finally-drops" => {
-            "10Q-I6 后续：函数 return 绕过外层 finally；清理链需同时修复执行与释放顺序"
         }
         "selector-range-downstream" | "selector-open-range-downstream" => {
             "10Q/K4：selector_bounds ABI 克隆并归还借用转换引用，聚合循环另有临时引用事件；仅释放轨迹暂未对齐"

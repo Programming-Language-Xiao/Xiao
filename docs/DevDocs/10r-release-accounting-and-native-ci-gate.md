@@ -252,3 +252,21 @@ docs/DevDocs/README.md                                     L1/L3：状态更正�
 | table-user-drop，drop 打印 drop | 9/2/5:对象1、8:对象2 | 无原生产物 | 动态表方法 ABI 拒绝；独立长期测试验证 VM 的输出/drop 基线及原生拒绝，不新增构建失败豁免 |
 
 源码均保留在 d19a_differential.rs；正常原生差分打印两路完整 10R-TRACE，供日志取证。表实例差异首次令测试失败，登记原因后仍只豁免 Drops，值/错误/终止方式继续严格比较。用户 drop 的原生轨迹无法在本批取得，归属下一批表方法 ABI，不伪造为一致或零事件。
+
+## 十、I6 清理链修复
+
+函数 return 改为挂起结果后展开 cleanup_stack；在运行外层 finally 前暂存内层作用域释放，最后按内到外消费计划，避免提前销毁。结果槽位于调用方栈上，finally 的 stackrestore 不会回收它。覆盖返回归还旧结果，finally return 清除可恢复挂起错误；错误出口归还未返回的结果，Fatal 跳过普通清理。函数值映射只收集当前函数作用域及其子作用域，入口排除函数内部值；正式函数出口按作用域计划处理，不再按名字枚举槽位代替计划。返回临时值在最终返回点复制后归还帧内引用，返回命名绑定则归还计划标记 transferred 的原引用，匹配 VM 的返回寄存器读取与帧结束行为。
+
+| 用例 | 改前 VM / 原生 | 改后 VM / 原生 |
+| --- | --- | --- |
+| nested-finally-drops | VM 6事件/3对象，销毁1:对象3、3:对象2、5:对象1；原生4事件/2对象，销毁1:对象1、3:对象2 | 两路6事件/3对象，销毁1:对象3、3:对象2、5:对象1 |
+| function-return-heap | 新增边界 | 两路6事件/2对象，销毁1:对象2、5:对象1，输出value |
+| function-finally-overrides-return | 新增边界 | 两路4事件/2对象，销毁1:对象2、3:对象1，输出2 |
+| function-finally-raises | 新增边界 | 两路5事件/2对象，销毁2:对象2、4:对象1，错误FINAL |
+| function-finally-overrides-error | 新增边界 | 两路5事件/2对象，销毁2:对象2、4:对象1，输出2，无PRIMARY错误 |
+| function-empty-return | 新增边界 | 两路2事件/1对象，销毁1:对象1 |
+| function-heap-return-overridden | 新增边界 | 两路6事件/2对象，销毁1:对象1、5:对象2，输出new |
+| function-heap-return-error | 新增边界 | 两路5事件/2对象，销毁2:对象2、4:对象1，错误FINAL |
+| function-scope-isolation | 新增边界 | 两路12事件/4对象，销毁1:对象2、5:对象1、7:对象4、11:对象3 |
+
+修复后原有 nested-finally-drops 先触发“登记的 Drops 差异已消失”，随后摘除登记。没有修改 VM，没有扩大豁免字段；选择器及普通表实例原有差异仍打印而非宣称解决。

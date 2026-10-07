@@ -143,6 +143,10 @@ struct DynamicGenerator<'a> {
     /// 动态函数的返回槽和成功/错误出口。
     function_return_slot: Option<String>,
     function_return_label: Option<String>,
+    /// 当前函数所属生命周期作用域；隔离不同函数的同名值。
+    function_scope: Option<u32>,
+    /// 返回展开先运行所有外层 finally，再按内到外顺序执行挂起的释放计划。
+    pending_return_releases: Vec<(Option<u32>, String)>,
     /// 已在当前入口初始化的模块，保证多次 import 只执行一次。
     initialized_modules: BTreeSet<String>,
 }
@@ -176,6 +180,8 @@ impl<'a> DynamicGenerator<'a> {
             function_mode: false,
             function_return_slot: None,
             function_return_label: None,
+            function_scope: None,
+            pending_return_releases: Vec::new(),
             initialized_modules: BTreeSet::new(),
         }
     }
@@ -411,6 +417,13 @@ impl<'a> DynamicGenerator<'a> {
         generator.body = body;
         generator.next_global = self.next_global;
         generator.function_mode = true;
+        generator.function_scope = generator
+            .program
+            .ownership
+            .scopes
+            .iter()
+            .find(|scope| scope.kind == "function" && scope.span == statement.span)
+            .map(|scope| scope.id);
         generator.function_definitions = self.function_definitions.clone();
         generator.error_terminal_label = "xiao.fn.error".to_owned();
         generator.collect_slots(body)?;
@@ -419,6 +432,7 @@ impl<'a> DynamicGenerator<'a> {
             let index = generator.slots.len();
             generator.slots.entry(key).or_insert(Slot { index });
         }
+        generator.collect_value_slots();
         generator.function_return_slot = Some("%xiao.function.result".to_owned());
         generator.function_return_label = Some("xiao.fn.return".to_owned());
         generator.declare_runtime();
@@ -429,6 +443,8 @@ impl<'a> DynamicGenerator<'a> {
         signature.push_str(") {");
         generator.emit(signature);
         generator.emit("entry:".to_owned());
+        generator.emit("  %xiao.return.temporary = alloca i1".to_owned());
+        generator.emit("  store i1 false, ptr %xiao.return.temporary".to_owned());
         let function_slots = generator.slots.values().copied().collect::<Vec<_>>();
         for slot in function_slots {
             generator.emit(format!("  %slot{} = alloca {VALUE_TYPE}", slot.index));
@@ -455,21 +471,49 @@ impl<'a> DynamicGenerator<'a> {
             generator.terminated = true;
         }
         generator.emit("xiao.fn.return:".to_owned());
-        let function_slots = generator.slots.values().copied().collect::<Vec<_>>();
-        for slot in &function_slots {
-            generator.emit(format!(
-                "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
-                slot.index
-            ));
-        }
+        let temporary = generator.next_temp();
+        generator.emit(format!(
+            "  {temporary} = load i1, ptr %xiao.return.temporary"
+        ));
+        generator.emit(format!(
+            "  br i1 {temporary}, label %xiao.fn.return.copy, label %xiao.fn.return.cleanup"
+        ));
+        generator.emit_label("xiao.fn.return.copy");
+        let copied = generator.next_temp();
+        generator.emit(format!("  {copied} = alloca {VALUE_TYPE}"));
+        generator.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {copied}"
+        ));
+        generator.checked_status_call(format!(
+            "@xiao_runtime_value_copy(ptr %xiao.function.result, ptr {copied})"
+        ));
+        generator.emit(
+            "  call void @xiao_runtime_value_release_strong(ptr %xiao.function.result)".to_owned(),
+        );
+        let value = generator.next_temp();
+        generator.emit(format!("  {value} = load {VALUE_TYPE}, ptr {copied}"));
+        generator.emit(format!(
+            "  store {VALUE_TYPE} {value}, ptr %xiao.function.result"
+        ));
+        generator.emit("  br label %xiao.fn.return.cleanup".to_owned());
+        generator.emit_label("xiao.fn.return.cleanup");
+        generator.release_function_scopes("return")?;
         generator.emit("  ret void".to_owned());
         generator.emit("xiao.fn.error:".to_owned());
-        for slot in &function_slots {
-            generator.emit(format!(
-                "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
-                slot.index
-            ));
-        }
+        let class = generator.next_temp();
+        generator.emit(format!("  {class} = call i32 @xiao_runtime_error_class()"));
+        let fatal = generator.next_temp();
+        generator.emit(format!("  {fatal} = icmp eq i32 {class}, 2"));
+        generator.emit(format!(
+            "  br i1 {fatal}, label %xiao.fn.error.return, label %xiao.fn.error.cleanup"
+        ));
+        generator.emit_label("xiao.fn.error.cleanup");
+        generator.release_function_scopes("unmatched_error")?;
+        generator.emit(
+            "  call void @xiao_runtime_value_release_strong(ptr %xiao.function.result)".to_owned(),
+        );
+        generator.emit("  br label %xiao.fn.error.return".to_owned());
+        generator.emit_label("xiao.fn.error.return");
         generator.emit("  store %xiao.value zeroinitializer, ptr %xiao.function.result".to_owned());
         generator.emit("  ret void".to_owned());
         generator.emit("}".to_owned());

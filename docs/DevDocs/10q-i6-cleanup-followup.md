@@ -1,6 +1,6 @@
 # 10Q-I6：函数清理链重构后续任务
 
-来源：[10Q 释放审计](10q-selector-case-strength-and-release-audit.md)。状态：未实现。
+来源：[10Q 释放审计](10q-selector-case-strength-and-release-audit.md)。状态：10R 已实现并在 Windows 受控差分验证；实现、改后数据及边界用例见 [10R](10r-release-accounting-and-native-ci-gate.md)。下文保留修复前问题与验收输入。
 
 最小复现为 `d19a_differential.rs` 中的 `nested-finally-drops`，不得删除或弱化比较。
 现状 VM 的销毁对象顺序为 3→2→1，原生为 1→2，外层 finally 未执行。

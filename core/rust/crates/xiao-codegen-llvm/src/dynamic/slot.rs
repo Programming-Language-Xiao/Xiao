@@ -152,6 +152,16 @@ impl<'a> DynamicGenerator<'a> {
     /// 将前端所有权值编号关联到同名 ABI 槽，后续只消费冻结的释放计划。
     pub(super) fn collect_value_slots(&mut self) {
         for value in &self.program.ownership.values {
+            if let Some(root) = self.function_scope {
+                if !scope_is_ancestor(&self.program.ownership.scopes, root, value.scope) {
+                    continue;
+                }
+            } else if self.program.ownership.scopes.iter().any(|scope| {
+                scope.kind == "function"
+                    && scope_is_ancestor(&self.program.ownership.scopes, scope.id, value.scope)
+            }) {
+                continue;
+            }
             let Some(name) = value.name.as_deref() else {
                 continue;
             };
