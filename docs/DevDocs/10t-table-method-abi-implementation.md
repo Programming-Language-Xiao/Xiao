@@ -239,3 +239,13 @@ N1 已将 macOS 的真实终端显式跳过、调试产物 exit=70 稳定失败�
 Runtime ABI 次版本 7 → 8（主版本仍 1），同步修改既有 version_encoding_is_stable 的两个字面量断言。现有产物指纹和归档/报告的版本要求均读取 ABI_ENCODED_VERSION，旧 Runtime 将拒绝要求 1.8 的产物。当前仅加入边界声明，LLVM 方法拒绝仍保留；Runtime 实现在下一检查点接入。
 
 前置提交 e99c81e 的维护运行 [37653713650](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37653713650) 全绿，新增 Linux 原生门控与 Windows 原生门控分别通过。ABI 检查点本机 Rust workspace、fmt、Clippy、Bun 全量与仓库检查通过；Windows 六项受控原生测试通过，clang 对 Windows x64、Linux x64、macOS arm64 的 C 布局探针通过。该交叉布局探针不冒充 Unix 原生运行，后者继续由提交后的门控确认。
+
+### Runtime 中间态（LLVM 仍拒绝）
+
+新增 abi_tables 模块复制方法元数据，校验结构版本/长度、重复字段/方法、签名与生命周期回调一致性，复用 TableInstance::with_initializer 和 with_drop_executor。定义以 Rc 持有后端不可变元数据，不建立全局实例注册表。普通参数仅借用；返回类型或错误状态不符时回收输出，保持调用方 none。
+
+析构使用独立不透明弱视图盒子，内部仅保存 TableDropView，不保存或升级对象强句柄；原有弱句柄布局对外不变。复制/释放分派可识别此盒子，写入与复活被拒绝，回调外字段与方法借用均失败。回调隔离外层错误槽，初始化包装/清理抑制链仍由原状态机组装；隐式 StrongHandle::drop 的回调错误转交 ABI 传播边界，Fatal 绕过普通 drop。VM 代码未改。
+
+七项新增 ABI 回归覆盖方法返回参与计算（7→init 9→add 11）、元数据离开构造作用域后的调用、借用前后真实强计数、共享引用/弱观察失效、析构视图失效、初始化错误链、嵌套析构错误、Fatal 与坏元数据。Windows 六项受控原生测试及全量门禁通过；container-dense 和 table-user-drop 仍按原断言拒绝。push 矩阵增加 Runtime/ABI 单元测试及三目标 C 布局探针，保障中间态在 Unix 也执行新边界测试。
+
+ABI 提交 49b0c32 的维护运行 [37655760509](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37655760509) 全绿，Windows/Linux 原生作业分别成功。最初 Git 代理出现 TLS 握手失败，使用单次命令直连完成推送，未改全局配置。

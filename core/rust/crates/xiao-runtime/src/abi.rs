@@ -46,6 +46,8 @@ mod abi_diagnostics;
 mod abi_dynamic;
 #[path = "abi_io.rs"]
 mod abi_io;
+#[path = "abi_tables.rs"]
+mod abi_tables;
 #[allow(unused_imports)]
 pub(crate) use abi_diagnostics::{
     xiao_runtime_diagnostic_event, xiao_runtime_diagnostic_finish, xiao_runtime_diagnostic_prepare,
@@ -55,6 +57,11 @@ pub(crate) use abi_diagnostics::{
 pub(crate) use abi_dynamic::{
     xiao_runtime_dynamic_check, xiao_runtime_string_copy, xiao_runtime_string_len,
     xiao_runtime_string_new, xiao_runtime_value_iter_get, xiao_runtime_value_iter_len,
+};
+#[allow(unused_imports)]
+pub(crate) use abi_tables::{
+    xiao_runtime_table_call, xiao_runtime_table_get_value, xiao_runtime_table_new_v2,
+    xiao_runtime_table_set_value, xiao_runtime_value_release_any,
 };
 
 /// 当前线程尚未交给原生控制流消费的错误。
@@ -1385,6 +1392,9 @@ pub extern "C" fn xiao_runtime_weak_retain(handle: XiaoWeakHandle) -> XiaoWeakHa
     if handle.is_null() {
         return std::ptr::null_mut();
     }
+    if unsafe { abi_tables::retain_drop_view(handle) } {
+        return handle;
+    }
     let Ok(weak) = (unsafe { weak_ref(handle) }) else {
         return std::ptr::null_mut();
     };
@@ -1405,6 +1415,9 @@ pub extern "C" fn xiao_runtime_weak_retain(handle: XiaoWeakHandle) -> XiaoWeakHa
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_weak_release(handle: XiaoWeakHandle) {
     if handle.is_null() {
+        return;
+    }
+    if unsafe { abi_tables::release_drop_view(handle) } {
         return;
     }
     let should_drop = {

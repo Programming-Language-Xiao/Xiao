@@ -67,6 +67,8 @@ pub struct TableDefinition {
     hooks: TableHooks,
     /// 后端生命周期边界的可捕获回调；不参与字段指令派发。
     contextual_drop: Option<ContextualDrop>,
+    /// 后端复制后的不可变调用元数据，不参与语言级状态机。
+    execution_metadata: Option<Rc<dyn Any>>,
 }
 
 /// 持有后端执行上下文的析构回调。
@@ -80,6 +82,7 @@ impl Debug for TableDefinition {
             .field("signature", &self.signature)
             .field("hooks", &self.hooks)
             .field("contextual_drop", &self.contextual_drop.is_some())
+            .field("execution_metadata", &self.execution_metadata.is_some())
             .finish()
     }
 }
@@ -92,6 +95,7 @@ impl TableDefinition {
             signature,
             hooks: TableHooks::none(),
             contextual_drop: None,
+            execution_metadata: None,
         }
     }
 
@@ -102,6 +106,7 @@ impl TableDefinition {
             signature,
             hooks,
             contextual_drop: None,
+            execution_metadata: None,
         }
     }
 
@@ -113,6 +118,17 @@ impl TableDefinition {
     ) -> Self {
         self.contextual_drop = Some(Rc::new(callback));
         self
+    }
+
+    /// 附加后端拥有的元数据；回调与实例共享其生命周期，不使用全局注册表。
+    pub(crate) fn with_execution_metadata<T: Any>(mut self, metadata: Rc<T>) -> Self {
+        self.execution_metadata = Some(metadata);
+        self
+    }
+
+    /// 借用并共享已复制的后端元数据，不增加表对象强引用。
+    pub(crate) fn execution_metadata<T: Any>(&self) -> Option<Rc<T>> {
+        self.execution_metadata.as_ref()?.clone().downcast().ok()
     }
 
     /// 返回静态表签名。
@@ -372,6 +388,19 @@ pub struct TableDropView {
 }
 
 impl TableDropView {
+    /// 后端回调只可在 Dropping 状态借用此视图，即使方法本身不读字段也须检查。
+    pub(crate) fn validate_callback_borrow(&self) -> RuntimeResult<()> {
+        let data = self
+            .data
+            .upgrade()
+            .ok_or_else(RuntimeError::use_after_release)?;
+        let state = data.borrow().state;
+        if state != TableState::Dropping {
+            return Err(RuntimeError::table_state("dropping", state.as_str()));
+        }
+        Ok(())
+    }
+
     /// 返回接收者的静态表身份。
     #[must_use]
     pub fn signature(&self) -> &TableSignature {

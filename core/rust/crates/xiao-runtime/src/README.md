@@ -14,3 +14,6 @@
   `abi_dynamic.rs`，原生诊断握手与事件入口在 `abi_diagnostics.rs`；异常对象与展开仍留给 N0-C。
 - `errors/`：结构化 Runtime 错误和展开累加器。
 - `testing/`：只用于规格测试的释放计划驱动器。
+
+- `abi_tables.rs`：10T 注册式表方法、元数据复制、弱只读析构视图与错误边界；
+  `abi_table_tests.rs` 覆盖初始化回滚、别名、视图失效和非法元数据。

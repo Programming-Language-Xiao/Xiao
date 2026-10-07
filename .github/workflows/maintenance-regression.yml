@@ -174,6 +174,10 @@ jobs:
           foreach ($artifact in @($env:XIAO_RUNTIME_LIBRARY, $env:XIAO_DIAGNOSTICS_PATH)) {
             if (-not (Test-Path $artifact)) { throw "Required artifact missing: $artifact" }
           }
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime-abi -- --ignored
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture
           exit $LASTEXITCODE
 
@@ -195,4 +199,6 @@ jobs:
           export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime-abi -- --ignored
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture
