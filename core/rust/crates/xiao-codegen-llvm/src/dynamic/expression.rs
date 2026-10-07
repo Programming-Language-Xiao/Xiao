@@ -196,10 +196,33 @@ impl<'a> DynamicGenerator<'a> {
         span: IrSpan,
     ) -> Result<String> {
         if selector.items.len() != 1 {
-            return Err(CodegenError::Unsupported {
-                feature: "动态多项选择器".to_owned(),
-                span: Some(span),
-            });
+            if _step.is_some()
+                || selector
+                    .items
+                    .iter()
+                    .any(|item| !matches!(item, IrSelectorItem::Exact { .. }))
+            {
+                return Err(CodegenError::Unsupported {
+                    feature: "动态混合多项选择器".to_owned(),
+                    span: Some(span),
+                });
+            }
+            let plan = selection_plan
+                .and_then(|id| self.program.selection_plans.get(id as usize))
+                .or_else(|| {
+                    self.program
+                        .selection_plans
+                        .iter()
+                        .find(|plan| plan.span == span)
+                })
+                .ok_or_else(|| CodegenError::InvalidIr {
+                    message: "多项选择器缺少规范选择计划".to_owned(),
+                })?;
+            let paths = plan.selected_paths.clone();
+            let value = self.emit_expression(source)?;
+            let selected = self.emit_selection_paths(&value, &paths, span)?;
+            self.release_value(value);
+            return Ok(selected);
         }
         let mut value = self.emit_expression(source)?;
         if let Some(step) = _step {
@@ -440,6 +463,11 @@ impl<'a> DynamicGenerator<'a> {
             self.release_value(value);
             return Ok(self.none_value());
         }
+        if let IrExpressionKind::Member { object, member } = &callee.kind
+            && matches!(object.ty, IrType::Table { .. })
+        {
+            return self.emit_table_method_call(object, member, arguments, span);
+        }
         let IrExpressionKind::Name { name } = &callee.kind else {
             return Err(CodegenError::Unsupported {
                 feature: "动态函数调用".to_owned(),
@@ -505,10 +533,9 @@ impl<'a> DynamicGenerator<'a> {
         }
         call.push(')');
         self.emit(call);
+        let release = self.value_release_symbol();
         for slot in &argument_slots {
-            self.emit(format!(
-                "  call void @xiao_runtime_value_release_strong(ptr {slot})"
-            ));
+            self.emit(format!("  call void @{release}(ptr {slot})"));
         }
         let class = self.next_temp();
         self.emit(format!("  {class} = call i32 @xiao_runtime_error_class()"));
@@ -685,6 +712,9 @@ impl<'a> DynamicGenerator<'a> {
             });
         }
         let object_value = self.emit_expression(object)?;
+        if self.callback.is_some() {
+            return self.emit_callback_field_get(object_value, member, span);
+        }
         let payload = self.next_temp();
         self.emit(format!(
             "  {payload} = extractvalue {VALUE_TYPE} {object_value}, 1"
@@ -722,6 +752,9 @@ impl<'a> DynamicGenerator<'a> {
             });
         }
         let object_value = self.emit_expression(object)?;
+        if self.callback.is_some() {
+            return self.emit_callback_field_set(object_value, member, value, span);
+        }
         let object_payload = self.next_temp();
         self.emit(format!(
             "  {object_payload} = extractvalue {VALUE_TYPE} {object_value}, 1"

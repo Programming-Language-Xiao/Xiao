@@ -249,3 +249,15 @@ Runtime ABI 次版本 7 → 8（主版本仍 1），同步修改既有 version_e
 七项新增 ABI 回归覆盖方法返回参与计算（7→init 9→add 11）、元数据离开构造作用域后的调用、借用前后真实强计数、共享引用/弱观察失效、析构视图失效、初始化错误链、嵌套析构错误、Fatal 与坏元数据。Windows 六项受控原生测试及全量门禁通过；container-dense 和 table-user-drop 仍按原断言拒绝。push 矩阵增加 Runtime/ABI 单元测试及三目标 C 布局探针，保障中间态在 Unix 也执行新边界测试。
 
 ABI 提交 49b0c32 的维护运行 [37655760509](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37655760509) 全绿，Windows/Linux 原生作业分别成功。最初 Git 代理出现 TLS 握手失败，使用单次命令直连完成推送，未改全局配置。
+
+Runtime 提交 08c5983 的维护运行 [37656742203](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37656742203) 与完整平台复现 [37656744315](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37656744315) 均全绿；Windows、Linux amd64/arm64、macOS 分别成功。后者为 workflow_dispatch，验证与定时共用的作业路径，不改写成 schedule 事件；macOS 真实终端仍跳过，Linux CI 仍为 Xvfb。
+
+### LLVM 回调生成检查点（构造拒绝仍保留）
+
+方法按表名和成员键预登记，生成四个指针/长度参数、返回 i32 的独立回调；字段初始化合成为独立局部帧。方法共用原有函数返回、finally 和错误清理，参数按源码顺序求值后绑定固定参数/默认值。字段值入口支持弱只读 receiver，普通函数被表回调调用时也按实际值标签归还临时槽。已清空的弱槽不再次调用 weak_release，避免显式 return 与统一出口重复经过时出错。
+
+CODEGEN_VERSION 2 → 3，隔离旧生成文本与缓存。三目标文本布局断言及实际 clang 编译探针覆盖回调参数、CFG 和支配关系。构造处 emit_table_descriptor 的方法拒绝及 table-user-drop 既有断言仍保留；尚不宣称表方法可执行。
+
+container-dense 的方法拒绝前还有 values[0, 2] 的多项精确选择缺口。本检查点复用前端 selected_paths 接通该必要路径，并新增 3/7/11/19 的差分用例，要求结果为 11；不扩展混合/动态选择语义。原生构建探针继续在表方法处拒绝，未放松拒绝原因断言。
+
+本机 Rust workspace、fmt、Clippy、Bun 287 通过/5 跳过及仓库检查通过；受控原生现为七项（新增三目标回调 IR 编译探针），全部通过。多项精确选择用例的 VM/原生完整轨迹相同：9 事件、2 对象，销毁位置 6:对象2、8:对象1，无新增 Drops 豁免。

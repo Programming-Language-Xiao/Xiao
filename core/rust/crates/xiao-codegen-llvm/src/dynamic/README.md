@@ -19,6 +19,7 @@ release.rs          临时值释放、所有权释放计划和退出边
 control.rs          顶层语句、条件、if/elif/else、while、break/continue
 expression.rs       表达式、字面量、字符串和表字段读写
 container.rs        数组/元组、字典、集合、表构造和表描述符
+methods.rs          表方法与字段回调、参数绑定、弱只读 receiver 和失败清理
 ```
 
 ## 依赖边界
@@ -38,3 +39,6 @@ container.rs        数组/元组、字典、集合、表构造和表描述符
 禁止的兄弟模块导入；`tests/n0_a.rs` 与 `tests/n0_b_dynamic.rs` 继续作为 LLVM 文本、
 Runtime ABI 和静态/动态边界的行为证据。拆分只移动实现，不升 `CODEGEN_VERSION`，生成的
 LLVM 文本和 Runtime 组件清单必须保持不变。
+
+10T 将字段初始化映射为独立帧，方法与普通函数共用返回和异常清理；固定回调为四个指针/长度参数返回 i32。
+旧方法构造拒绝保留到新描述符真正接通，版本 3 的代码生成指纹区分新回调文本。

@@ -57,12 +57,12 @@ pub(super) fn scope_is_ancestor(
     false
 }
 
-/// 返回最近的函数作用域；程序及模块入口为 None，不将内层函数归到外层帧。
+/// 返回最近的函数或表字段辅助帧；程序及模块入口为 None，不混用不同帧的同名槽。
 pub(super) fn scope_function_owner(scopes: &[xiao_ir::IrScope], id: u32) -> Option<u32> {
     let mut current = Some(id);
     while let Some(id) = current {
         let scope = scopes.iter().find(|scope| scope.id == id)?;
-        if scope.kind == "function" {
+        if matches!(scope.kind.as_str(), "function" | "table") {
             return Some(id);
         }
         current = scope.parent;

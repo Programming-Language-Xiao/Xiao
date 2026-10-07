@@ -329,3 +329,76 @@ fn generic_value_copy_registers_weak_dependency_only_when_called() {
         );
     }
 }
+
+/// 方法互调、缺省参数与弱析构接收者共用的真实前端输入。
+const TABLE_CALLBACK_SOURCE: &str = "[[Item]]\n    value = 7\n    def read(self) -> int\n        return self.value\n    def add(self, int amount = 2) -> int\n        return self.read() + amount\n    def drop(self) -> none\n        observed = self.read()\n";
+
+#[test]
+/// 注册式方法回调在三个目标都使用指针实参和 i32 状态；构造拒绝在接通前仍保留。
+fn table_callbacks_use_pointer_arguments_on_windows_and_sysv() {
+    let source = TABLE_CALLBACK_SOURCE;
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect("方法源码");
+    for triple in [
+        "x86_64-pc-windows-msvc",
+        "x86_64-unknown-linux-gnu",
+        "aarch64-apple-darwin",
+    ] {
+        let format = if triple.contains("windows") {
+            xiao_codegen_llvm::ObjectFormat::Coff
+        } else if triple.contains("apple") {
+            xiao_codegen_llvm::ObjectFormat::MachO
+        } else {
+            xiao_codegen_llvm::ObjectFormat::Elf
+        };
+        let target = TargetDescription::new(triple, 64, xiao_codegen_llvm::Endian::Little, format)
+            .expect("目标");
+        let module = NativeBuild::new()
+            .lower(&artifact.ir, &CodegenOptions::for_target(target))
+            .expect("方法定义降低");
+        for index in 0..3 {
+            assert!(module.text.contains(&format!("define i32 @xiao.table.0.method.{index}(ptr %xiao.receiver, ptr %xiao.arguments, i64 %xiao.argument.count, ptr %xiao.function.result)")), "{triple}");
+        }
+        assert!(module.text.contains("define i32 @xiao.table.0.fields("));
+        assert!(
+            module
+                .text
+                .contains("getelementptr %xiao.value, ptr %xiao.arguments, i64 0")
+        );
+        assert!(module.text.contains("@xiao_runtime_table_get_value(ptr"));
+        assert!(module.text.contains("@xiao_runtime_table_call(ptr"));
+        assert!(module.text.contains("@xiao_runtime_value_release_any(ptr"));
+        let bytes = if triple.contains("windows") {
+            "ptr"
+        } else {
+            "%xiao.bytes"
+        };
+        assert!(module.text.contains(&format!(
+            "declare i32 @xiao_runtime_table_call(ptr, {bytes}, i64, ptr, i64, ptr)"
+        )));
+    }
+}
+
+#[test]
+#[ignore = "需要 XIAO_CLANG；准备方式见 10D §4"]
+/// 使用三目标实际 LLVM 编译器验证回调的 CFG、指针参数和支配关系。
+fn optional_table_callback_ir_validates_three_targets() {
+    let clang = std::env::var_os("XIAO_CLANG").expect("XIAO_CLANG，见 10D §4");
+    let toolchain = Toolchain::new(clang);
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(TABLE_CALLBACK_SOURCE))
+        .expect("方法源码");
+    for target in [
+        TargetDescription::windows_x86_64(),
+        TargetDescription::linux_x86_64(),
+        TargetDescription::macos_aarch64(),
+    ] {
+        let module = NativeBuild::new()
+            .lower(&artifact.ir, &CodegenOptions::for_target(target.clone()))
+            .expect("方法降低");
+        toolchain
+            .validate_llvm_ir(&module.text, &target)
+            .unwrap_or_else(|error| panic!("{}: {error}", target.triple));
+    }
+}

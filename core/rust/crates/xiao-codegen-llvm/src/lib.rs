@@ -72,9 +72,9 @@ pub use xiao_optimizer::OptimizationReport;
 
 /// 后端接口版本；参与原生产物指纹。
 ///
-/// 版本 2 固定了 COFF 目标的 Runtime `sret`/间接聚合参数调用约定；旧版本生成的动态
-/// LLVM 文本不能与当前 MSVC Runtime ABI 混用。
-pub const CODEGEN_VERSION: u32 = 2;
+/// 版本 3 增加 ABI 1.8 表回调帧与清理，保留版本 2 的 COFF `sret`/间接参数约定。
+/// 该版本进入工具链/产物指纹，避免旧方法拒绝或旧清理文本命中缓存。
+pub const CODEGEN_VERSION: u32 = 3;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {

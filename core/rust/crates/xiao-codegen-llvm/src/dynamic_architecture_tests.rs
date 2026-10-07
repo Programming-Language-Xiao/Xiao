@@ -24,6 +24,7 @@ fn module_dependency_direction_is_acyclic() {
     let facade = include_str!("dynamic.rs");
     for declaration in [
         "#[path = \"dynamic/container.rs\"]",
+        "#[path = \"dynamic/methods.rs\"]",
         "#[path = \"dynamic/control.rs\"]",
         "#[path = \"dynamic/entry.rs\"]",
         "#[path = \"dynamic/expression.rs\"]",
@@ -86,6 +87,7 @@ fn module_dependency_direction_is_acyclic() {
     let control = include_str!("dynamic/control.rs");
     let expression = include_str!("dynamic/expression.rs");
     let container = include_str!("dynamic/container.rs");
+    let methods = include_str!("dynamic/methods.rs");
     let modules = [
         ("runtime_abi.rs", runtime_abi),
         ("entry.rs", entry),
@@ -94,6 +96,7 @@ fn module_dependency_direction_is_acyclic() {
         ("control.rs", control),
         ("expression.rs", expression),
         ("container.rs", container),
+        ("methods.rs", methods),
     ];
     for (name, source) in modules {
         assert_no_dependency(name, source, "crate::dynamic");

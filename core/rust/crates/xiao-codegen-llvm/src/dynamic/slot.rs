@@ -105,12 +105,8 @@ impl<'a> DynamicGenerator<'a> {
                         ..
                     } => (target, value),
                     IrStatementKind::Declaration { value: None, .. } => continue,
-                    IrStatementKind::Function { .. } => {
-                        return Err(CodegenError::Unsupported {
-                            feature: "动态表方法（ABI 尚未携带函数表）".to_owned(),
-                            span: Some(member.span),
-                        });
-                    }
+                    // 方法体由独立回调生成；构造处仍保留方法描述符拒绝，直至接通 V2。
+                    IrStatementKind::Function { .. } => continue,
                     _ => {
                         return Err(CodegenError::Unsupported {
                             feature: "动态表声明/初始化".to_owned(),
@@ -234,7 +230,7 @@ impl<'a> DynamicGenerator<'a> {
             .find(|scope| {
                 !matches!(
                     scope.kind.as_str(),
-                    "try" | "catch" | "finally" | "function" | "loop"
+                    "try" | "catch" | "finally" | "function" | "loop" | "table"
                 ) && self
                     .program
                     .ownership
@@ -293,10 +289,8 @@ impl<'a> DynamicGenerator<'a> {
             .ok_or_else(|| CodegenError::InvalidIr {
                 message: format!("名称 {} 没有动态值槽", name.text),
             })?;
-        self.emit(format!(
-            "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
-            slot.index
-        ));
+        let release = self.value_release_symbol();
+        self.emit(format!("  call void @{release}(ptr %slot{})", slot.index));
         self.emit(format!(
             "  store {VALUE_TYPE} {value}, ptr %slot{}",
             slot.index

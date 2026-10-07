@@ -32,6 +32,9 @@ mod entry;
 #[path = "dynamic/expression.rs"]
 /// 动态表达式、字面量和表字段访问发射。
 mod expression;
+#[path = "dynamic/methods.rs"]
+/// 表方法注册、字段辅助函数与指针回调适配。
+mod methods;
 #[path = "dynamic/predicate.rs"]
 /// 纯 IR Runtime/容器谓词和稳定名称辅助。
 mod predicate;
@@ -136,6 +139,10 @@ struct DynamicGenerator<'a> {
     finally_stack_saves: Vec<String>,
     /// 当前程序中可调用的顶层函数定义。
     function_definitions: BTreeMap<String, &'a IrStatement>,
+    /// 表名与规范成员名共同定位方法，隔离不同表的同名函数。
+    method_definitions: BTreeMap<(String, String), &'a IrStatement>,
+    /// 当前回调上下文；字段初始化使用合成帧，其余方法消费原函数释放计划。
+    callback: Option<methods::CallbackContext>,
     /// 生成后追加到模块文本的函数定义。
     function_texts: Vec<String>,
     /// 是否正在生成一个动态函数体。
@@ -176,6 +183,8 @@ impl<'a> DynamicGenerator<'a> {
             cleanup_stack: Vec::new(),
             finally_stack_saves: Vec::new(),
             function_definitions: BTreeMap::new(),
+            method_definitions: BTreeMap::new(),
+            callback: None,
             function_texts: Vec::new(),
             function_mode: false,
             function_return_slot: None,
@@ -189,6 +198,7 @@ impl<'a> DynamicGenerator<'a> {
     /// 生成 ABI 类型、声明、入口和释放序列。
     fn generate(mut self) -> Result<LlvmModule> {
         self.collect_table_initializers()?;
+        self.collect_table_methods();
         self.collect_slots(self.body)?;
         for module in &self.program.modules {
             self.collect_slots(&module.body)?;
@@ -223,6 +233,7 @@ impl<'a> DynamicGenerator<'a> {
         for statement in functions {
             self.emit_function_definition(statement)?;
         }
+        self.emit_table_callbacks()?;
         let mut text = String::new();
         text.push_str("; Xiao N0-B LLVM dynamic module\n");
         text.push_str(&format!("; target = {}\n", self.options.target.triple));
@@ -407,7 +418,16 @@ impl<'a> DynamicGenerator<'a> {
     }
 
     /// 为一个顶层函数生成统一 `%xiao.value` 指针调用约定的 LLVM 定义。
-    fn emit_function_definition(&mut self, statement: &'a IrStatement) -> Result<()> {
+    fn emit_function_definition(&mut self, statement: &IrStatement) -> Result<()> {
+        self.emit_function_with_callback(statement, None)
+    }
+
+    /// 顶层函数和表回调共用控制流、值槽与清理逻辑，仅调整 C 入口/出口形态。
+    fn emit_function_with_callback(
+        &mut self,
+        statement: &IrStatement,
+        callback: Option<methods::CallbackContext>,
+    ) -> Result<()> {
         let xiao_ir::IrStatementKind::Function {
             name,
             parameters,
@@ -417,8 +437,12 @@ impl<'a> DynamicGenerator<'a> {
         else {
             return Ok(());
         };
-        let symbol = self.function_symbol(&name.text);
-        let mut generator = Self::new(self.program, self.options);
+        let symbol = callback.as_ref().map_or_else(
+            || self.function_symbol(&name.text),
+            |context| context.symbol.clone(),
+        );
+        let mut generator = DynamicGenerator::new(self.program, self.options);
+        generator.callback = callback;
         generator.body = body;
         generator.next_global = self.next_global;
         generator.function_mode = true;
@@ -430,6 +454,8 @@ impl<'a> DynamicGenerator<'a> {
             .find(|scope| scope.kind == "function" && scope.span == statement.span)
             .map(|scope| scope.id);
         generator.function_definitions = self.function_definitions.clone();
+        generator.method_definitions = self.method_definitions.clone();
+        generator.table_initializers = self.table_initializers.clone();
         generator.error_terminal_label = "xiao.fn.error".to_owned();
         generator.collect_slots(body)?;
         for parameter in parameters {
@@ -437,15 +463,28 @@ impl<'a> DynamicGenerator<'a> {
             let index = generator.slots.len();
             generator.slots.entry(key).or_insert(Slot { index });
         }
-        generator.collect_value_slots();
+        if !generator
+            .callback
+            .as_ref()
+            .is_some_and(|context| context.fields)
+        {
+            generator.collect_value_slots();
+        }
         generator.function_return_slot = Some("%xiao.function.result".to_owned());
         generator.function_return_label = Some("xiao.fn.return".to_owned());
         generator.declare_runtime();
-        let mut signature = format!("define void @{symbol}(ptr %xiao.function.result");
-        for index in 0..parameters.len() {
-            signature.push_str(&format!(", ptr %xiao.arg{index}"));
-        }
-        signature.push_str(") {");
+        let signature = if generator.callback.is_some() {
+            format!(
+                "define i32 @{symbol}(ptr %xiao.receiver, ptr %xiao.arguments, i64 %xiao.argument.count, ptr %xiao.function.result) {{"
+            )
+        } else {
+            let mut signature = format!("define void @{symbol}(ptr %xiao.function.result");
+            for index in 0..parameters.len() {
+                signature.push_str(&format!(", ptr %xiao.arg{index}"));
+            }
+            signature.push_str(") {");
+            signature
+        };
         generator.emit(signature);
         generator.emit("entry:".to_owned());
         generator.emit("  %xiao.return.temporary = alloca i1".to_owned());
@@ -461,8 +500,20 @@ impl<'a> DynamicGenerator<'a> {
         for (index, parameter) in parameters.iter().enumerate() {
             let key = crate::dynamic::predicate::name_key(&parameter.name);
             let slot = generator.slots[&key];
+            let argument = if generator.callback.is_none() {
+                format!("%xiao.arg{index}")
+            } else if index == 0 {
+                "%xiao.receiver".to_owned()
+            } else {
+                let argument = generator.next_temp();
+                generator.emit(format!(
+                    "  {argument} = getelementptr {VALUE_TYPE}, ptr %xiao.arguments, i64 {}",
+                    index - 1
+                ));
+                argument
+            };
             generator.checked_status_call(format!(
-                "@xiao_runtime_value_copy(ptr %xiao.arg{index}, ptr %slot{})",
+                "@xiao_runtime_value_copy(ptr {argument}, ptr %slot{})",
                 slot.index
             ));
         }
@@ -492,9 +543,8 @@ impl<'a> DynamicGenerator<'a> {
         generator.checked_status_call(format!(
             "@xiao_runtime_value_copy(ptr %xiao.function.result, ptr {copied})"
         ));
-        generator.emit(
-            "  call void @xiao_runtime_value_release_strong(ptr %xiao.function.result)".to_owned(),
-        );
+        let release = generator.value_release_symbol();
+        generator.emit(format!("  call void @{release}(ptr %xiao.function.result)"));
         let value = generator.next_temp();
         generator.emit(format!("  {value} = load {VALUE_TYPE}, ptr {copied}"));
         generator.emit(format!(
@@ -503,7 +553,14 @@ impl<'a> DynamicGenerator<'a> {
         generator.emit("  br label %xiao.fn.return.cleanup".to_owned());
         generator.emit_label("xiao.fn.return.cleanup");
         generator.release_function_scopes("return")?;
-        generator.emit("  ret void".to_owned());
+        generator.emit(
+            if generator.callback.is_some() {
+                "  ret i32 0"
+            } else {
+                "  ret void"
+            }
+            .to_owned(),
+        );
         generator.emit("xiao.fn.error:".to_owned());
         let class = generator.next_temp();
         generator.emit(format!("  {class} = call i32 @xiao_runtime_error_class()"));
@@ -514,13 +571,18 @@ impl<'a> DynamicGenerator<'a> {
         ));
         generator.emit_label("xiao.fn.error.cleanup");
         generator.release_function_scopes("unmatched_error")?;
-        generator.emit(
-            "  call void @xiao_runtime_value_release_strong(ptr %xiao.function.result)".to_owned(),
-        );
+        let release = generator.value_release_symbol();
+        generator.emit(format!("  call void @{release}(ptr %xiao.function.result)"));
         generator.emit("  br label %xiao.fn.error.return".to_owned());
         generator.emit_label("xiao.fn.error.return");
         generator.emit("  store %xiao.value zeroinitializer, ptr %xiao.function.result".to_owned());
-        generator.emit("  ret void".to_owned());
+        if generator.callback.is_some() {
+            let status = generator.next_temp();
+            generator.emit(format!("  {status} = call i32 @xiao_runtime_error_class()"));
+            generator.emit(format!("  ret i32 {status}"));
+        } else {
+            generator.emit("  ret void".to_owned());
+        }
         generator.emit("}".to_owned());
         generator.emit(String::new());
         self.next_global = generator.next_global;

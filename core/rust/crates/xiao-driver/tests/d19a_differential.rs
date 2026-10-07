@@ -46,7 +46,14 @@ struct Case {
     has_drops: bool,
 }
 
-const CASES: [Case; 27] = [
+const CASES: [Case; 28] = [
+    Case {
+        label: "selector-multiple-exact",
+        source: "values = [3, 7, 11, 19]\nselected = values[0, 2]\nprint(selected[1])\n",
+        output: "11\n",
+        error: None,
+        has_drops: true,
+    },
     Case {
         label: "function-heap-return-overridden",
         source: "def f() -> str\n    try\n        return \"old\"\n    finally\n        return \"new\"\nprint(f())\n",

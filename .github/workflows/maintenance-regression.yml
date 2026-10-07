@@ -178,7 +178,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime-abi -- --ignored
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test n0_b_dynamic_native --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture
           exit $LASTEXITCODE
 
       - name: Build runtime and run Linux native gates
@@ -201,4 +201,4 @@ jobs:
           test -x "$XIAO_DIAGNOSTICS_PATH"
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime-abi -- --ignored
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test n0_b_dynamic_native --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture

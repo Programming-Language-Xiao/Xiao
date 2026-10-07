@@ -8,8 +8,20 @@ use super::{DynamicGenerator, VALUE_TYPE};
 use crate::error::{CodegenError, Result};
 
 impl<'a> DynamicGenerator<'a> {
+    /// 表回调可把只读视图借给普通函数；这类程序的临时/强槽需按实际值标签归还。
+    pub(super) fn value_release_symbol(&self) -> &'static str {
+        if self.callback.is_some() || !self.method_definitions.is_empty() {
+            "xiao_runtime_value_release_any"
+        } else {
+            "xiao_runtime_value_release_strong"
+        }
+    }
     /// 函数退出仅消费所属作用域的冻结计划，已清空槽重复经过出口时无操作。
     pub(super) fn release_function_scopes(&mut self, exit: &str) -> Result<()> {
+        if self.callback.as_ref().is_some_and(|context| context.fields) {
+            self.release_all_slots_fallback();
+            return Ok(());
+        }
         let Some(root) = self.function_scope else {
             self.release_all_slots_fallback();
             return Ok(());
@@ -41,10 +53,8 @@ impl<'a> DynamicGenerator<'a> {
                     .filter_map(|value| self.value_slots.get(value).copied())
                     .collect::<Vec<_>>();
                 for slot in transferred {
-                    self.emit(format!(
-                        "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
-                        slot.index
-                    ));
+                    let release = self.value_release_symbol();
+                    self.emit(format!("  call void @{release}(ptr %slot{})", slot.index));
                 }
             }
         }
@@ -55,9 +65,8 @@ impl<'a> DynamicGenerator<'a> {
         let slot = self.next_temp();
         self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
         self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
-        self.emit(format!(
-            "  call void @xiao_runtime_value_release_strong(ptr {slot})"
-        ));
+        let release = self.value_release_symbol();
+        self.emit(format!("  call void @{release}(ptr {slot})"));
     }
 
     /// 按冻结的所有权计划释放某类正常退出边；旧手工 IR 无计划时才使用稳定兜底。
@@ -163,17 +172,30 @@ impl<'a> DynamicGenerator<'a> {
                     continue;
                 }
                 match action.kind.as_str() {
-                    "strong" => self.emit(format!(
-                        "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
-                        slot.index
-                    )),
+                    "strong" => {
+                        let release = self.value_release_symbol();
+                        self.emit(format!("  call void @{release}(ptr %slot{})", slot.index));
+                    }
                     "weak" => {
+                        // 显式 return 的清理和统一函数出口可能经过同一槽；None 已归还。
+                        let tag = self.next_temp();
+                        self.emit(format!("  {tag} = load i32, ptr %slot{}", slot.index));
+                        let present = self.next_temp();
+                        self.emit(format!("  {present} = icmp ne i32 {tag}, 0"));
+                        let release = self.next_label("weak.release");
+                        let done = self.next_label("weak.released");
+                        self.emit(format!(
+                            "  br i1 {present}, label %{release}, label %{done}"
+                        ));
+                        self.emit_label(&release);
                         let status = self.next_temp();
                         self.emit(format!(
                             "  {status} = call i32 @xiao_runtime_value_release_weak(ptr %slot{})",
                             slot.index
                         ));
                         self.check_status(&status);
+                        self.emit(format!("  br label %{done}"));
+                        self.emit_label(&done);
                     }
                     other => {
                         return Err(CodegenError::InvalidIr {
@@ -191,10 +213,8 @@ impl<'a> DynamicGenerator<'a> {
         let mut slots = self.slots.values().copied().collect::<Vec<_>>();
         slots.sort_by_key(|slot| std::cmp::Reverse(slot.index));
         for slot in slots {
-            self.emit(format!(
-                "  call void @xiao_runtime_value_release_strong(ptr %slot{})",
-                slot.index
-            ));
+            let release = self.value_release_symbol();
+            self.emit(format!("  call void @{release}(ptr %slot{})", slot.index));
         }
     }
 }

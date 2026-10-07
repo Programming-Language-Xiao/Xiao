@@ -45,7 +45,9 @@ pub(super) fn has_reachable_value_copy(text: &str) -> bool {
             continue;
         };
         for line in lines {
-            if line.contains("call i32 @xiao_runtime_value_copy(") {
+            if line.contains("call i32 @xiao_runtime_value_copy(")
+                || line.contains("call void @xiao_runtime_value_release_any(")
+            {
                 return true;
             }
             if line.starts_with("br ") {
@@ -66,6 +68,20 @@ pub(super) fn has_reachable_value_copy(text: &str) -> bool {
 impl<'a> DynamicGenerator<'a> {
     /// 登记 Runtime ABI 声明，并记录可解释组件清单。
     pub(super) fn declare_runtime(&mut self) {
+        self.declarations
+            .insert("declare void @xiao_runtime_value_release_any(ptr)".to_owned());
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_table_call(ptr, {}, i64, ptr, i64, ptr)",
+            self.bytes_parameter_type()
+        ));
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_table_get_value(ptr, {}, ptr)",
+            self.bytes_parameter_type()
+        ));
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_table_set_value(ptr, {}, ptr)",
+            self.bytes_parameter_type()
+        ));
         self.declarations
             .insert("declare void @llvm.trap()".to_owned());
         self.declarations
