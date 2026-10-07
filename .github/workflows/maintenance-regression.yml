@@ -16,6 +16,11 @@ on:
       - "core/rust/crates/xiao-types/**"
       - "core/rust/crates/xiao-xar/**"
       - "tests/fuzz/**"
+      - "tests/benchmarks/**"
+      - "core/rust/crates/xiao-runtime/**"
+      - "core/rust/crates/xiao-runtime-abi/**"
+      - "core/rust/crates/xiao-vm/**"
+      - "core/rust/crates/xiao-lifetime/**"
   pull_request:
     paths:
       - ".github/workflows/maintenance-regression.yml"
@@ -31,6 +36,11 @@ on:
       - "core/rust/crates/xiao-types/**"
       - "core/rust/crates/xiao-xar/**"
       - "tests/fuzz/**"
+      - "tests/benchmarks/**"
+      - "core/rust/crates/xiao-runtime/**"
+      - "core/rust/crates/xiao-runtime-abi/**"
+      - "core/rust/crates/xiao-vm/**"
+      - "core/rust/crates/xiao-lifetime/**"
   workflow_dispatch:
 
 permissions:
@@ -88,3 +98,71 @@ jobs:
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-artifacts
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-xar
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test cross_platform_release --test release_report
+
+  native-regression:
+    name: Native differential regression (Windows)
+    runs-on: windows-2025
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@1.96.0
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core/rust -> core/rust/target
+      - name: Install Windows LLVM
+        id: msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-clang
+            mingw-w64-ucrt-x86_64-llvm
+      - name: Build runtime and run native gates
+        env:
+          XIAO_LLVM_ROOT: ${{ steps.msys2.outputs.msys2-location }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $installation = (& $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath | Select-Object -First 1)
+          if (-not $installation) { throw 'MSVC installation missing' }
+          $vcvars = Join-Path $installation 'VC/Auxiliary/Build/vcvars64.bat'
+          $batch = '"' + $vcvars + '" >nul && set'
+          $environment = & cmd.exe /d /s /c $batch
+          if ($LASTEXITCODE -ne 0) { throw 'vcvars64 failed' }
+          foreach ($line in $environment) {
+            $separator = $line.IndexOf('=')
+            if ($separator -gt 0) {
+              Set-Item -Path ('Env:' + $line.Substring(0, $separator)) -Value $line.Substring($separator + 1)
+            }
+          }
+          # Prepend the MSVC linker after importing vcvars; never resolve Git's link.exe.
+          $linkerBin = Join-Path $env:VCToolsInstallDir 'bin/Hostx64/x64'
+          if (-not (Test-Path "$linkerBin/link.exe")) { throw 'MSVC link.exe missing' }
+          $env:PATH = "$linkerBin;$env:PATH"
+          $llvmBin = Join-Path $env:XIAO_LLVM_ROOT 'ucrt64/bin'
+          foreach ($tool in @('clang', 'llvm-as', 'llc')) {
+            if (-not (Test-Path "$llvmBin/$tool.exe")) { throw "Missing LLVM tool: $tool" }
+          }
+          $env:XIAO_CLANG = "$llvmBin/clang.exe"
+          $env:XIAO_LLVM_AS = "$llvmBin/llvm-as.exe"
+          $env:XIAO_LLC = "$llvmBin/llc.exe"
+          $env:XIAO_TARGET_TRIPLE = ((& rustc -vV | Select-String '^host:').ToString().Split(':', 2)[1]).Trim()
+          if ($LASTEXITCODE -ne 0) { throw 'rustc host probe failed' }
+          cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo build --manifest-path core/rust/Cargo.toml -p xiao-diagnostics
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:XIAO_RUNTIME_LIBRARY = Join-Path $pwd 'core/rust/target/release/xiao_runtime.lib'
+          $env:XIAO_DIAGNOSTICS_PATH = Join-Path $pwd 'core/rust/target/debug/xiao-diagnostics.exe'
+          foreach ($artifact in @($env:XIAO_RUNTIME_LIBRARY, $env:XIAO_DIAGNOSTICS_PATH)) {
+            if (-not (Test-Path $artifact)) { throw "Required artifact missing: $artifact" }
+          }
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture
+          exit $LASTEXITCODE
