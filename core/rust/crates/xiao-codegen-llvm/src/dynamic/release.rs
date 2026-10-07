@@ -20,7 +20,8 @@ impl<'a> DynamicGenerator<'a> {
             .scopes
             .iter()
             .filter(|scope| {
-                super::predicate::scope_is_ancestor(&self.program.ownership.scopes, root, scope.id)
+                super::predicate::scope_function_owner(&self.program.ownership.scopes, scope.id)
+                    == Some(root)
             })
             .map(|scope| scope.id)
             .collect::<Vec<_>>();

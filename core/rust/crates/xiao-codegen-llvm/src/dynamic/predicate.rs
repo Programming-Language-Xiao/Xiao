@@ -57,6 +57,19 @@ pub(super) fn scope_is_ancestor(
     false
 }
 
+/// 返回最近的函数作用域；程序及模块入口为 None，不将内层函数归到外层帧。
+pub(super) fn scope_function_owner(scopes: &[xiao_ir::IrScope], id: u32) -> Option<u32> {
+    let mut current = Some(id);
+    while let Some(id) = current {
+        let scope = scopes.iter().find(|scope| scope.id == id)?;
+        if scope.kind == "function" {
+            return Some(id);
+        }
+        current = scope.parent;
+    }
+    None
+}
+
 /// 判断类型是否需要 Runtime 对象或 ABI 值。
 fn type_uses_runtime(ty: &IrType) -> bool {
     match ty {

@@ -263,3 +263,20 @@ fn frontend_static_shadowed_slot_is_rejected() {
         .expect_err("纯静态遮蔽不能覆盖祖先槽位");
     assert!(error.to_string().contains("动态槽") || error.to_string().contains("遮蔽"));
 }
+
+#[test]
+/// 函数局部或参数被 try 内声明遮蔽时，不能因 function 特判共用同一 ABI 槽。
+fn function_local_shadowing_cannot_alias_release_slots() {
+    for source in [
+        "def f() -> str\n    value = \"outer\"\n    try\n        str value = \"inner\"\n    finally\n        marker = 1\n    return value\nprint(f())\n",
+        "def f(str value) -> str\n    try\n        str value = \"inner\"\n    finally\n        marker = 1\n    return value\nprint(f(\"outer\"))\n",
+    ] {
+        let artifact = FrontendCompiler::new()
+            .compile(&FrontendRequest::from_text(source))
+            .expect("函数内显式遮蔽应通过前端");
+        let error = NativeBuild::new()
+            .lower(&artifact.ir, &CodegenOptions::default())
+            .expect_err("块级槽未接入前必须拒绝函数内同名槽覆盖");
+        assert!(error.to_string().contains("遮蔽"), "{error}");
+    }
+}

@@ -306,3 +306,11 @@ ed93cd5（代码为7ca6bdf）上 cargo test --workspace、workspace Clippy --all
 仍不宣称 O6 条件2全部满足：选择器和普通表实例Drops差异仍登记，用户drop原生ABI未实现；三平台完整原生运行和Java性能对照仍待补。CI Linux/macOS扩展、平台复现手动刷新、静态溢出排期未擅自裁定。
 
 最终推送 0d07ee4 的维护回归 [37614663496](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37614663496) 已成功：新增 Windows 原生作业、Windows 体积作业与 Ubuntu 安全作业全部为绿。该运行包含 I6 修复及扩展用例。后续仅补文档，不将 Ubuntu 安全绿灯写成 Linux 原生验证。
+
+### 10R 自审核补正：函数内遮蔽（2026-10-07）
+
+发现旧校验把任一绑定位于 function 作用域的遮蔽一律放行：函数局部/参数 value 被 try 内 str value 遮蔽时，两条所有权记录指向同一个ABI槽。新增前端回归在修复前失败（期望拒绝却成功生成共用slot的LLVM）。
+
+补正以最近的函数作用域作为帧身份，遮蔽检查按帧和名称分组，并比较所有已见祖先/后代作用域；不再因为作用域种类为function而跳过冲突。value_slots与函数出口计划使用同一帧归属规则，排除内层函数的记录。不同函数同名变量仍由既有function-scope-isolation受控差分验证；本批未接入块级槽位，对同帧嵌套声明保持结构化拒绝，不用错误共享槽位冒充支持。
+
+补正验证：新增局部变量/参数遮蔽回归修前报“期望拒绝却生成LLVM”，修后通过；n0_b_dynamic_native 默认8通过/1显式门控，受控三组ignored仍1+3+1通过。Rust workspace全量、Clippy全targets -D warnings、fmt、Bun全量（287通过/5跳过/0失败）通过。用户原有xiao-xar/tests/README.md未纳入。

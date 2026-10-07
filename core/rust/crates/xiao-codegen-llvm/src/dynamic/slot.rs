@@ -152,14 +152,9 @@ impl<'a> DynamicGenerator<'a> {
     /// 将前端所有权值编号关联到同名 ABI 槽，后续只消费冻结的释放计划。
     pub(super) fn collect_value_slots(&mut self) {
         for value in &self.program.ownership.values {
-            if let Some(root) = self.function_scope {
-                if !scope_is_ancestor(&self.program.ownership.scopes, root, value.scope) {
-                    continue;
-                }
-            } else if self.program.ownership.scopes.iter().any(|scope| {
-                scope.kind == "function"
-                    && scope_is_ancestor(&self.program.ownership.scopes, scope.id, value.scope)
-            }) {
+            if super::predicate::scope_function_owner(&self.program.ownership.scopes, value.scope)
+                != self.function_scope
+            {
                 continue;
             }
             let Some(name) = value.name.as_deref() else {
@@ -193,47 +188,28 @@ impl<'a> DynamicGenerator<'a> {
         // 当前 N0-B 的槽表按稳定名称索引，尚未携带词法作用域。遮蔽绑定若继续
         // 进入降低会把内层值写进外层槽，并丢失外层值的释放动作；在块级槽位接入
         // 前必须把这种 IR 结构化拒绝。
-        let mut binding_scopes = BTreeMap::<String, u32>::new();
+        let mut binding_scopes = BTreeMap::<(Option<u32>, String), Vec<u32>>::new();
         for value in &self.program.ownership.values {
             let Some(name) = value.name.as_deref() else {
                 continue;
             };
-            if let Some(previous_scope) = binding_scopes.get(name) {
-                let nested_shadow =
-                    scope_is_ancestor(&self.program.ownership.scopes, *previous_scope, value.scope)
-                        || scope_is_ancestor(
-                            &self.program.ownership.scopes,
-                            value.scope,
-                            *previous_scope,
-                        );
-                if nested_shadow {
-                    let previous_kind = self
-                        .program
-                        .ownership
-                        .scopes
-                        .iter()
-                        .find(|scope| scope.id == *previous_scope)
-                        .map(|scope| scope.kind.as_str());
-                    let current_kind = self
-                        .program
-                        .ownership
-                        .scopes
-                        .iter()
-                        .find(|scope| scope.id == value.scope)
-                        .map(|scope| scope.kind.as_str());
-                    if previous_kind == Some("function") || current_kind == Some("function") {
-                        continue;
-                    }
-                    return Err(CodegenError::Unsupported {
-                        feature: format!("动态槽名称 {name} 在多个作用域遮蔽（待块级槽位降低）"),
-                        span: Some(value.span),
-                    });
-                }
-                if *previous_scope == value.scope || !nested_shadow {
-                    continue;
-                }
-            } else {
-                binding_scopes.insert(name.to_owned(), value.scope);
+            let owner =
+                super::predicate::scope_function_owner(&self.program.ownership.scopes, value.scope);
+            let previous = binding_scopes.entry((owner, name.to_owned())).or_default();
+            if previous.iter().any(|scope| {
+                *scope != value.scope
+                    && (scope_is_ancestor(&self.program.ownership.scopes, *scope, value.scope)
+                        || scope_is_ancestor(&self.program.ownership.scopes, value.scope, *scope))
+            }) {
+                return Err(CodegenError::Unsupported {
+                    feature: format!(
+                        "动态槽名称 {name} 在同一函数帧的多个作用域遮蔽（待块级槽位降低）"
+                    ),
+                    span: Some(value.span),
+                });
+            }
+            if !previous.contains(&value.scope) {
+                previous.push(value.scope);
             }
         }
         let roots = self
