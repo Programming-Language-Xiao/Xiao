@@ -202,9 +202,6 @@ impl<'a> DynamicGenerator<'a> {
             });
         }
         let mut value = self.emit_expression(source)?;
-        if !matches!(selector.items[0], IrSelectorItem::Exact { .. }) {
-            return Ok(value);
-        }
         if let Some(step) = _step {
             let step_value = self.emit_expression(step)?;
             self.emit_dynamic_check("selector_step", &step_value, step.span);
