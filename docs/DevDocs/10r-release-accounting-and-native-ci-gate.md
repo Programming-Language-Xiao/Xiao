@@ -6,7 +6,7 @@
 > **一句话概括本批**：**把 19 的 O6 条件 2 从「差两条」推到「能收」**——补上原生 CI 门控、
 > 修 I6 的清理链、把释放核对扩到容器与 `try`/`catch`，并给静态溢出建立项。
 >
-> 状态：**规划稿（2026-10-07）**。星崽已就上一轮 5 项待定决策给出答复（见 §二），
+> 状态：**实现与本地验证完成，最终 CI 观测中（2026-10-07）**。星崽已就上一轮 5 项待定决策给出答复（见 §二），
 > 仍未定的收在末尾「待定决策」。
 
 ## 一、Agent 交接上下文
@@ -286,3 +286,21 @@ docs/DevDocs/README.md                                     L1/L3：状态更正�
 
 静态数值错误另建 [立项记录](10r-static-overflow-followup.md)，沿用 10L 的七处模板口径，
 明确语言数值错误与真正平台非法指令的界线、影响面和三平台验收；本批未改 ir.rs。
+
+## 十二、CI 证据与授权执行记录
+
+- L1：远端 c4b3cb3 的维护回归 [37604955900](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37604955900) 成功，仅体积和安全；10Q 状态与主表已更正。
+- L3：10Q-I6 已登记并链接；扫描同名 followup 文件时只有该项。新静态溢出后续也进主表；清理了旧 10N/10P 重复主表行。
+- L2：1cedecd 正常推送运行 [37608034196](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37608034196) 成功，包括新增 Windows 原生作业。
+- 隔离分支 test/10r-native-mutation 的 6c5156f 只把非 Exact 选择器返回值改回源值，没有改断言或豁免；运行 [37608705803](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37608705803) 的原生作业失败，日志分别报告范围 5≠10、随机 7≠10、开区间 3≠10。
+- 33e18cb 已撤回隔离分支的故意缺陷，恢复运行 [37609550782](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37609550782) 成功；该分支未合并 main。
+- worktree 的提交钩子误判其 .git/worktrees 提交信息位于仓库外，故在主工作区用同一 repo-check commit-msg --file 校验消息通过后，仅对隔离分支提交使用临时 hooksPath；主分支提交钩子正常运行。没有跳过源代码或测试验证。
+- 最新 platform-reproduction 为 37297705564（2026-10-05，失败）。本批未手动刷新，不把 Ubuntu 安全作业当作 Linux 原生证据。Linux/macOS 原生门控是否加入维护工作流仍待定；保留既有跨平台定时/手动作业。
+
+## 十三、本地最终验证与边界
+
+ed93cd5（代码为7ca6bdf）上 cargo test --workspace、workspace Clippy --all-targets -D warnings、fmt --check、bun run check 通过；Bun 首轮并行构建期间 CLI --inLF 定时输入用例失败，构建结束后全量复跑为287 pass/5 skip/0 fail，未修改该测试或放宽等待断言。保留此时序波动说明，不宣称首轮全绿。
+
+受控三组 ignored 命令最终通过：d19a_differential 1项（内部27个用例）、n0_a_native_driver 3项、native_benchmark_probe 1项。测试环境与CI步骤一致：release Runtime、debug diagnostics、MSYS2 clang/llvm-as/llc，宿主Windows x86_64-pc-windows-msvc。探测四项built，container-dense仍明确拒绝表方法ABI。table-user-drop的VM/原生拒绝测试默认执行，独立确认未静默丢弃drop。
+
+仍不宣称 O6 条件2全部满足：选择器和普通表实例Drops差异仍登记，用户drop原生ABI未实现；三平台完整原生运行和Java性能对照仍待补。CI Linux/macOS扩展、平台复现手动刷新、静态溢出排期未擅自裁定。

@@ -7,7 +7,7 @@
 > **一句话概括本批**：让每条选择器用例都能真的判出对错，把失败证据还回来，
 > 然后**按路径做一次释放账目核对**，而不是继续逐条打补丁。
 >
-> 状态：**K2/K3/K4 已实施；K1 已明确交接（2026-10-07）**。I6 未修复，原因和具名后续任务见第十节；截至 10R：已推送 c4b3cb3，维护回归 37604955900 成功（不含原生）；原生 CI 作业已授权。
+> 状态：**K2/K3/K4 已实施；K1 已明确交接（2026-10-07）**。I6 当批未修复，后由 10R 的 7ca6bdf 修复并摘除豁免；历史原因和交接见第十节；截至 10R：已推送 c4b3cb3，维护回归 37604955900 成功（不含原生）；原生 CI 作业已授权。
 
 ## 一、Agent 交接上下文
 
@@ -253,3 +253,5 @@ cargo test --workspace、workspace 全 targets Clippy -D warnings、cargo fmt --
 自审核变异证据：将轨迹读取路径改为不存在的文件，selector-range-downstream 报“原生释放轨迹读取失败（不适用 Drops 豁免）”，退出 101；将读取到的轨迹临时替换为 VM 轨迹，四个登记用例均报“登记的 Drops 差异已消失”，退出 101。变异均已恢复，不提交测试绕过开关。
 
 补正后的验证：Windows d19a_differential --include-ignored 为 6 passed / 0 failed；workspace 全 targets Clippy -D warnings、fmt 检查及 bun run check 均退出 0。本次仅改差分验收逻辑与记录，没有重跑上一轮已通过且未受影响的全量 Rust/Bun 测试，不将旧结果冒充本次重跑。
+
+10R 接续更新：7ca6bdf 已恢复函数 finally 调度与计划释放，nested-finally-drops 两路均为6条事件、3个对象、销毁顺序3→2→1；原豁免已移除，扩展账目和CI证据见 [10R](10r-release-accounting-and-native-ci-gate.md)。
