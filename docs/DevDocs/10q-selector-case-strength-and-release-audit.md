@@ -242,3 +242,14 @@ I6 轨迹更正：原生少的是整个外层 finally 对象的构造和销毁�
 受控执行 cargo test -p xiao-driver --test n0_a_native_driver --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture：分别 3/1/1 项通过，差分仍明确打印四个 Drops 缺口。探测四项 built，container-dense 仍以“动态表方法（ABI 尚未携带函数表）”拒绝。此结果不等于无豁免的完整原生语义验收。
 
 cargo test --workspace、workspace 全 targets Clippy -D warnings、cargo fmt --all -- --check、bun run check 均退出 0；bun test 为 287 pass / 5 skip / 0 fail。没有修改 Cargo.lock、VM 语义、CI 或用户原有的 xiao-xar/tests/README.md。
+
+### 自审核补正（2026-10-07）
+
+1. 原生门控单独运行时，也断言 VM 满足 Case 声明的输出、错误、退出码及 drop 基线，避免依赖另一个默认测试才能验证基线。
+2. 轨迹读取错误不再默认为空列表：动态 Runtime 产物缺轨迹必须失败，不允许 Drops 豁免吞掉证据丢失。纯静态产物确认 uses_runtime=false 且 VM 无释放事件时，才接受 NotFound；其他读取错误仍失败。
+3. 已登记 Drops 差异消失时要求删除过期登记，恢复早期差分守卫的失效提醒。值字段依旧独立严格比较。
+4. 随机选择的豁免理由纠正：它走 value_select，不经过 selector_bounds；其释放差异未完成逐调用对照定位，不能套用范围检查的结论。第九节实验仅证明范围源码中 selector_bounds 带来的那一个平衡引用，不能据此证明全部选择器/循环路径无泄漏。表中的对象数为轨迹出现的不同对象编号数量，不是独立的分配计数。
+
+自审核变异证据：将轨迹读取路径改为不存在的文件，selector-range-downstream 报“原生释放轨迹读取失败（不适用 Drops 豁免）”，退出 101；将读取到的轨迹临时替换为 VM 轨迹，四个登记用例均报“登记的 Drops 差异已消失”，退出 101。变异均已恢复，不提交测试绕过开关。
+
+补正后的验证：Windows d19a_differential --include-ignored 为 6 passed / 0 failed；workspace 全 targets Clippy -D warnings、fmt 检查及 bun run check 均退出 0。本次仅改差分验收逻辑与记录，没有重跑上一轮已通过且未受影响的全量 Rust/Bun 测试，不将旧结果冒充本次重跑。

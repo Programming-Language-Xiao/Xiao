@@ -637,10 +637,11 @@ fn native_gap(label: &str) -> Option<NativeGap> {
         "nested-finally-drops" => {
             "10Q-I6 后续：函数 return 绕过外层 finally；清理链需同时修复执行与释放顺序"
         }
-        "selector-range-downstream"
-        | "selector-random-downstream"
-        | "selector-open-range-downstream" => {
+        "selector-range-downstream" | "selector-open-range-downstream" => {
             "10Q/K4：selector_bounds ABI 克隆并归还借用转换引用，聚合循环另有临时引用事件；仅释放轨迹暂未对齐"
+        }
+        "selector-random-downstream" => {
+            "10Q/K4 后续：随机选择使用 value_select ABI，不经过 selector_bounds；其释放差异尚未逐调用定位，仅暂豁免 Drops"
         }
         _ => return None,
     };
@@ -696,6 +697,7 @@ fn native_side_matches_the_vm_sides_on_every_case() {
         let vm_release = take_release_events();
         drop(trace_guard);
         let baseline = outcome_observation(&vm);
+        assert_baseline_matches_case(case, &baseline);
 
         let trace_path = root.join("release-events.tsv");
         let run_output = Command::new(&native.native.executable)
@@ -715,11 +717,7 @@ fn native_side_matches_the_vm_sides_on_every_case() {
             ..baseline
         };
         let mut case_problems = Vec::new();
-        let mut vm_compare = vm_side.clone();
-        let mut native_compare = native_side.clone();
-        vm_compare.drops.clear();
-        native_compare.drops.clear();
-        let found = disagreements(&[("VM（源码）", vm_compare), ("原生", native_compare)]);
+        let found = disagreements(&[("VM（源码）", vm_side), ("原生", native_side)]);
         if !found.is_empty() {
             let first_line = stderr.lines().next().unwrap_or_default();
             case_problems.push(format!(
@@ -739,7 +737,26 @@ fn native_side_matches_the_vm_sides_on_every_case() {
                 )
             })
             .collect::<Vec<_>>();
-        let native_tuples = release_tuples(&fs::read_to_string(&trace_path).unwrap_or_default());
+        let native_tuples = match fs::read_to_string(&trace_path) {
+            Ok(text) => release_tuples(&text),
+            // 纯静态产物不链接 Runtime，也不会生成轨迹；只有 VM 同样无释放时接受。
+            Err(error)
+                if error.kind() == std::io::ErrorKind::NotFound
+                    && !native.native.module.uses_runtime
+                    && vm_tuples.is_empty() =>
+            {
+                Vec::new()
+            }
+            Err(error) => {
+                problems.push(format!(
+                    "用例 {}：原生释放轨迹读取失败（不适用 Drops 豁免）：{}：{error}",
+                    case.label,
+                    trace_path.display()
+                ));
+                let _ = fs::remove_dir_all(root);
+                continue;
+            }
+        };
         let release_mismatch = vm_tuples != native_tuples;
         let _ = fs::remove_dir_all(root);
 
@@ -752,6 +769,10 @@ fn native_side_matches_the_vm_sides_on_every_case() {
                     );
                 } else if release_mismatch {
                     case_problems.push(format!("「VM（源码）」与「原生」的 Runtime 释放序列不一致：{vm_tuples:?} ≠ {native_tuples:?}"));
+                } else if fields.contains(&GapField::Drops) {
+                    case_problems.push(
+                        "登记的 Drops 差异已消失，请移除 native_gap；其他字段仍严格比较".to_owned(),
+                    );
                 }
                 problems.extend(
                     case_problems
