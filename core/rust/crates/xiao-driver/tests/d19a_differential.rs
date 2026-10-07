@@ -757,7 +757,7 @@ const DROPS_ONLY: &[GapField] = &[GapField::Drops];
 fn native_gap(label: &str) -> Option<NativeGap> {
     let reason = match label {
         "held-table-instance" => {
-            "10R 账目后续：同一表实例 VM 五次 strong_release、原生三次，均仅一次 destroy；构造/字段初始化 ABI 临时引用差异待逐调用核对，本批不改释放逻辑"
+            "10S：VM 字段初始化额外持有 receiver 与字段函数参数帧，两次临时引用归还使 VM 五次 strong_release、原生三次；双方每字段各归还一次且最终仅一次 destroy，成对实验见 10S §十；仅豁免 Drops，保留 VM 语义基准"
         }
         "selector-range-downstream" | "selector-open-range-downstream" => {
             "10Q/K4：selector_bounds ABI 克隆并归还借用转换引用，聚合循环另有临时引用事件；仅释放轨迹暂未对齐"

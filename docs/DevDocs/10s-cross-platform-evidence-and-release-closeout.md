@@ -256,3 +256,18 @@ docs/DevDocs/README.md                              主表登记
 [37634885776](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37634885776)（77d1a24）：Windows 通过；Linux amd64/arm64、macOS arm64 均在 function-heap-return-error 与 function-finally-raises 失败，错误为「产物未观察到 IR 层登记的 Runtime 组件：weak」。上一轮的 13 项漏登记已消除，但正常返回死块中的 value_copy 被错误计入依赖；finally 必定抛错使这些块无入口路径，LLVM 删除后产物不含 weak。
 
 修复将复制 ABI 的传递依赖登记移到完整模块生成后，按各函数入口和 br 边遍历可达块；显式弱引用计划仍独立登记。不强制链接无用组件，不放宽产物校验。回归覆盖两条死返回路径，以及抛错前参数复制仍需 weak 的反例。Windows 受控原生差分、Rust workspace、fmt、Clippy 通过；跨平台结果以后续运行记录为准。macOS 真实终端仍显式跳过，Linux CI 仍为 Xvfb。
+
+## 十、表实例逐调用核对
+
+以下成对实验在 Windows x86_64-pc-windows-msvc、77d1a24 基础上进行，使用本机 clang/llvm-as、release Runtime 和诊断渲染器，运行受控 d19a_differential。每次仅修改表中所列一处，采数后恢复；实验变更未并入生产代码。事件序号从 0 开始，包含 strong_release 与 destroy，不包含 retain。
+
+| 对照 | VM 事件/对象/destroy 位置 | 原生事件/对象/destroy 位置 |
+| --- | --- | --- |
+| 原用例：Item.value = 7 | 6 / 1 / 5 | 4 / 1 / 3 |
+| 仅跳过原生初值 setter | 6 / 1 / 5 | 3 / 1 / 2 |
+| 仅跳过 VM 字段函数 execute（保留 receiver） | 4 / 1 / 3 | 4 / 1 / 3 |
+| 双方增加第二个标量字段 other = 8 | 7 / 1 / 6 | 5 / 1 / 4 |
+
+Runtime tables::initialize 的 callback_view 克隆与归还是双方共有的一次临时释放。VM semantics/tables.rs 构造 receiver 时克隆实例，再把参数复制进字段函数帧；字段 set 读取 receiver 产生逐字段临时引用。原生 table_set 则通过 clone_strong 临时持有实例并在写入结束归还。双方每增加一个字段都增加一次释放；固定差二来自 VM 的 receiver 与字段函数参数帧。跳过字段函数减少参数帧和字段读取两次，跳过原生 setter 减少一次，与逐调用机制一致。
+
+判定：当前用例是适配层临时持有的追踪口径差异，保留仅 Drops 豁免并更新原因。VM 字段函数执行及其生命周期是既有语言语义基准，不能为了事件数一致改 VM 或给原生人造持有。双方对象仅销毁一次且发生在最后释放后；该结论结合所有权调用链与成对实验，不从总数相等推导一般性无泄漏，也不宣称表用户 drop 已覆盖（仍受 A1 拒绝）。
