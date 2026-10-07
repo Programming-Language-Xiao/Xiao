@@ -100,8 +100,16 @@ jobs:
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test cross_platform_release --test release_report
 
   native-regression:
-    name: Native differential regression (Windows)
-    runs-on: windows-2025
+    name: Native differential regression (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-2025
+          - name: Linux
+            os: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     defaults:
       run:
@@ -116,6 +124,7 @@ jobs:
         with:
           workspaces: core/rust -> core/rust/target
       - name: Install Windows LLVM
+        if: runner.os == 'Windows'
         id: msys2
         uses: msys2/setup-msys2@v2
         with:
@@ -125,6 +134,7 @@ jobs:
             mingw-w64-ucrt-x86_64-clang
             mingw-w64-ucrt-x86_64-llvm
       - name: Build runtime and run native gates
+        if: runner.os == 'Windows'
         env:
           XIAO_LLVM_ROOT: ${{ steps.msys2.outputs.msys2-location }}
         run: |
@@ -166,3 +176,23 @@ jobs:
           }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture
           exit $LASTEXITCODE
+
+      - name: Build runtime and run Linux native gates
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y clang llvm
+          export XIAO_CLANG="$(command -v clang)"
+          export XIAO_LLVM_AS="$(command -v llvm-as)"
+          export XIAO_LLC="$(command -v llc)"
+          export XIAO_TARGET_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
+          test -n "$XIAO_TARGET_TRIPLE"
+          cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
+          cargo build --manifest-path core/rust/Cargo.toml -p xiao-diagnostics
+          export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
+          export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
+          test -f "$XIAO_RUNTIME_LIBRARY"
+          test -x "$XIAO_DIAGNOSTICS_PATH"
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture

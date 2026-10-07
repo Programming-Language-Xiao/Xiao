@@ -325,7 +325,7 @@ Ubuntu 裸机修复版复跑待星崽回传；先前 PR #3 的失败原文保留
 | Windows amd64 | 通过 | 原生测试、打包、发现、协议与 GUI 子系统脚本；最新 Rust 实现的 push 维护门控 37639850074 亦通过 |
 | Linux amd64 | 通过 | 原生测试含差分及四个可构建基准、Bun 286 通过/6 跳过、打包及协议；调试原生产物 exit=0，使用 Xvfb |
 | Linux arm64 | 通过 | 同一完整复现脚本通过；使用 Xvfb，不能计为裸机桌面证据 |
-| macOS arm64 | 通过（含明确跳过/失败路径验收） | 日志显式跳过 real_terminal_session_is_environment_gated；Bun 287 通过/5 跳过；调试原生产物实际 exit=70，输出 X11-DIAGNOSTIC-START-001「诊断进程未在 10 秒内连接」，脚本接受这一稳定启动失败路径。不能写成窗口打开成功 |
+| macOS arm64 | 功能复现通过；真实终端显式跳过，调试产物 exit=70 稳定失败路径验收，窗口未验证 | 日志显式跳过 real_terminal_session_is_environment_gated；Bun 287 通过/5 跳过；调试原生产物实际 exit=70，输出 X11-DIAGNOSTIC-START-001「诊断进程未在 10 秒内连接」，脚本接受这一稳定启动失败路径。不能写成窗口打开成功 |
 
 上一轮 37639853098 的两项 Linux 失败原文保留；重跑按既有 concurrency 配置取消其尚未完成的 Windows/macOS，不能把被取消项记通过。最终修复包含：通用复制 weak 传递依赖登记、从 main 可达调用图排除死块/未调用函数、COFF 数组代表符号恢复、Unix 关联测试夹具执行位。没有放宽产物校验、差分字段或权限检查。
 

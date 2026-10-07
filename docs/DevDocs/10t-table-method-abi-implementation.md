@@ -6,7 +6,7 @@
 > **一句话概括本批**：**把表方法从「明确拒绝」变成「真实执行」**，让 `table-user-drop` 能真跑、
 > `container-dense` 能构建能比对，从而解开 19.16 与 [10P](10p-differential-exemption-and-coverage.md) 枚举里 A1 那一格。
 >
-> 状态：**规划稿（2026-10-08）**。上一批的教训（Windows-only 门控漏掉 ELF/Mach-O 问题）直接决定了本批的验证要求（§2.3）。
+> 状态：**实施中（2026-10-08）**。上一批的教训（Windows-only 门控漏掉 ELF/Mach-O 问题）直接决定了本批的验证要求（§2.3）。
 
 ## 一、Agent 交接上下文
 
@@ -223,3 +223,11 @@ docs/DevDocs/README.md                               主表登记
 - [09R2h. 表声明执行闭环](09r2h-table-declarations.md) —— VM 侧表语义基准
 - [10B. N0-B Runtime ABI](10b-n0-runtime-abi.md) —— 所有权与释放边界
 - [19D. 性能对照](19d-performance-comparison.md) —— `container-dense` 与 O6 对账的落点
+
+## 九、实施记录
+
+### N1–N3 与已确认决定
+
+星崽已确认接受 10S 四条有机制和成对实验依据的 Drops 口径差异，并授权 Linux 加入现有 push/PR 原生门控。仅接受这四项登记，不预先接受 A1 新路径的差异；O6 条件 2 在 A1 及其余验收完成前保持部分。
+
+N1 已将 macOS 的真实终端显式跳过、调试产物 exit=70 稳定失败路径与窗口未验证写入 10S 证据表的结果单元格。N3 将按本批稳定提交手动运行原有平台复现；手动复现与定时使用同一作业路径，但触发事件仍如实记 workflow_dispatch，不伪称 schedule 已执行。Linux push 门控复用现有维护工作流矩阵，运行与 Windows 相同的原生差分和构建探针；裸机及窗口证据仍单独采集。
