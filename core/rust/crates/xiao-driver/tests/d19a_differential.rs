@@ -760,7 +760,7 @@ fn native_gap(label: &str) -> Option<NativeGap> {
             "10S：VM 字段初始化额外持有 receiver 与字段函数参数帧，两次临时引用归还使 VM 五次 strong_release、原生三次；双方每字段各归还一次且最终仅一次 destroy，成对实验见 10S §十；仅豁免 Drops，保留 VM 语义基准"
         }
         "selector-range-downstream" | "selector-open-range-downstream" => {
-            "10Q/K4：selector_bounds ABI 克隆并归还借用转换引用，聚合循环另有临时引用事件；仅释放轨迹暂未对齐"
+            "10S：selector_bounds 借用转换多一次源释放，原生循环 SSA 持有和 iterable 检查各多一次结果释放，共多三次；两对象销毁顺序一致，成对实验见 10S §十二，仅豁免 Drops"
         }
         "selector-random-downstream" => {
             "10S：随机 value_select 批量借用转换相较 VM 逐路径读取少一次源释放，原生循环的 SSA 持有和 iterable 检查多两次结果释放，净多一次；成对实验见 10S §十一，仅豁免 Drops"
