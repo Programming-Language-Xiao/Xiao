@@ -86,6 +86,8 @@ impl<'a> DynamicGenerator<'a> {
             .insert("declare i32 @xiao_runtime_value_iter_len(ptr, ptr)".to_owned());
         self.declarations
             .insert("declare i32 @xiao_runtime_value_iter_get(ptr, i64, ptr)".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_value_select(ptr, i64, ptr, ptr)".to_owned());
         self.declarations.insert(self.value_declaration(
             "xiao_runtime_error_new",
             &format!(
@@ -431,6 +433,32 @@ impl<'a> DynamicGenerator<'a> {
         let result = self.next_temp();
         self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
         result
+    }
+
+    /// 调用 Runtime 执行确定性随机选择，并返回拥有的数组值。
+    pub(super) fn emit_random_select(
+        &mut self,
+        source: &str,
+        count: &str,
+        mode: &str,
+        span: IrSpan,
+    ) -> String {
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {source}, ptr {input}"));
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        let mode = self.emit_operation_argument(mode);
+        self.checked_status_call_at(
+            format!("@xiao_runtime_value_select(ptr {input}, i64 {count}, {mode}, ptr {output})"),
+            span,
+        );
+        let value = self.next_temp();
+        self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {output}"));
+        value
     }
 
     /// 判断程序是否实际构造容器，而不是仅仅声明了动态值。

@@ -567,12 +567,15 @@ fn runtime_export_symbols(components: &[String]) -> Vec<&'static str> {
             "value" => "xiao_runtime_value_none",
             "rc" => "xiao_runtime_value_release_strong",
             "weak" => "xiao_runtime_value_release_weak",
-            "containers" => "xiao_runtime_array_new",
+            "containers" => "xiao_runtime_value_select",
             "tables" => "xiao_runtime_table_new",
             _ => continue,
         };
         if !symbols.contains(&symbol) {
             symbols.push(symbol);
+        }
+        if component == "containers" && !symbols.contains(&"xiao_runtime_value_select") {
+            symbols.push("xiao_runtime_value_select");
         }
     }
     symbols

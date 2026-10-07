@@ -1335,6 +1335,7 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
         || symbol.starts_with("xiao_runtime_value_tuple_")
         || symbol.starts_with("xiao_runtime_value_dict_")
         || symbol.starts_with("xiao_runtime_value_set_")
+        || symbol == "xiao_runtime_value_select"
     {
         components.insert("containers".to_owned());
     }

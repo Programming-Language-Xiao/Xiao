@@ -2,14 +2,18 @@
 
 use super::{
     box_strong, expect_strong, mut_bytes, operation_name, runtime_to_value, status, utf8,
-    value_to_runtime, write_handle, write_value,
+    value_from_owned_handle, value_to_runtime, write_handle, write_value,
 };
-use crate::containers::is_hashable;
+use crate::containers::{ArrayHandle, is_hashable};
 use crate::errors::RuntimeError;
 use crate::memory::RuntimeTypeTag;
 use crate::value::{RuntimeValue, StringHandle};
-use xiao_runtime_abi::{XiaoAbiBytes, XiaoAbiMutBytes, XiaoAbiStatus, XiaoHandle, XiaoValue};
+use xiao_runtime_abi::{
+    XiaoAbiBytes, XiaoAbiMutBytes, XiaoAbiStatus, XiaoHandle, XiaoValue, XiaoValueTag,
+};
+use xiao_syntax::RandomMode;
 use xiao_syntax::ScalarType;
+use xiao_types::{SeededRandom, sample_indices};
 
 /// 执行一个前端登记的动态检查。
 #[unsafe(no_mangle)]
@@ -188,6 +192,84 @@ pub extern "C" fn xiao_runtime_value_iter_get(
         Err(error) => return error,
     };
     unsafe { write_value(out, item) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
+/// 按冻结的种子 0 语义执行动态随机选择并返回数组值。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_select(
+    value: *const XiaoValue,
+    count: i64,
+    mode: XiaoAbiBytes,
+    out: *mut XiaoValue,
+) -> i32 {
+    if value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let count = match usize::try_from(count) {
+        Ok(count) => count,
+        Err(_) => return XiaoAbiStatus::InvalidArgument.code(),
+    };
+    let mode = match unsafe { utf8(mode) } {
+        Ok(mode) => mode,
+        Err(error) => return error,
+    };
+    let source = match unsafe { value_to_runtime(&*value) } {
+        Ok(source) => source,
+        Err(error) => return error,
+    };
+    let values = match &source {
+        RuntimeValue::Array(handle) => match handle.with_elements(|values| values.to_vec()) {
+            Ok(values) => values,
+            Err(error) => return status::<()>(Err(error)).map_or_else(|error| error, |_| 0),
+        },
+        RuntimeValue::Tuple(handle) => match handle.with_elements(|values| values.to_vec()) {
+            Ok(values) => values,
+            Err(error) => return status::<()>(Err(error)).map_or_else(|error| error, |_| 0),
+        },
+        RuntimeValue::DictColumn(handle) => match handle.with_entries(|entries| {
+            entries
+                .iter()
+                .map(|(_, value)| value.clone())
+                .collect::<Vec<_>>()
+        }) {
+            Ok(values) => values,
+            Err(error) => return status::<()>(Err(error)).map_or_else(|error| error, |_| 0),
+        },
+        RuntimeValue::Str(handle) => match handle.with_str(|text| {
+            text.chars()
+                .map(|character| RuntimeValue::new_string(character.to_string()))
+                .collect::<Result<Vec<_>, _>>()
+        }) {
+            Ok(Ok(values)) => values,
+            Ok(Err(error)) => return status::<()>(Err(error)).map_or_else(|error| error, |_| 0),
+            Err(error) => return status::<()>(Err(error)).map_or_else(|error| error, |_| 0),
+        },
+        _ => return XiaoAbiStatus::InvalidArgument.code(),
+    };
+    let mode = match mode.as_str() {
+        "without_replacement" => RandomMode::WithoutReplacement,
+        "with_replacement" => RandomMode::WithReplacement,
+        _ => return XiaoAbiStatus::InvalidArgument.code(),
+    };
+    let mut random = SeededRandom::new(0);
+    let indices = match sample_indices(values.len(), count, mode, &mut random) {
+        Ok(indices) => indices,
+        Err(error) => {
+            let runtime_error = RuntimeError::random_count(error.to_string());
+            return status::<()>(Err(runtime_error))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+    };
+    let selected = indices
+        .into_iter()
+        .map(|index| values[index].clone())
+        .collect::<Vec<_>>();
+    let handle = match status(ArrayHandle::new(selected)) {
+        Ok(handle) => handle.into_strong_handle(),
+        Err(error) => return error,
+    };
+    let result = value_from_owned_handle(XiaoValueTag::Array, handle);
+    unsafe { write_value(out, result) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
 }
 
 /// 从 UTF-8 字节构造字符串强句柄。

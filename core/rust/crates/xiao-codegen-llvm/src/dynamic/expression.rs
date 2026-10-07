@@ -98,8 +98,14 @@ impl<'a> DynamicGenerator<'a> {
                 source,
                 selector,
                 step,
-                selection_plan: _,
-            } => self.emit_selector(source, selector, step.as_deref(), expression.span),
+                selection_plan,
+            } => self.emit_selector(
+                source,
+                selector,
+                step.as_deref(),
+                *selection_plan,
+                expression.span,
+            ),
         };
         let value = value?;
         self.emit_registered_checks(expression, &value);
@@ -186,6 +192,7 @@ impl<'a> DynamicGenerator<'a> {
         source: &IrExpression,
         selector: &xiao_ir::IrSelector,
         _step: Option<&IrExpression>,
+        selection_plan: Option<u32>,
         span: IrSpan,
     ) -> Result<String> {
         if selector.items.len() != 1 {
@@ -202,10 +209,17 @@ impl<'a> DynamicGenerator<'a> {
         }
         let IrSelectorItem::Exact { path, .. } = &selector.items[0] else {
             match &selector.items[0] {
-                IrSelectorItem::Random { count, .. } => {
+                IrSelectorItem::Random { count, mode, .. } => {
                     let count_value = self.emit_expression(count)?;
                     self.emit_dynamic_check("random_count", &count_value, count.span);
+                    let count_payload = self.next_temp();
+                    self.emit(format!(
+                        "  {count_payload} = extractvalue {VALUE_TYPE} {count_value}, 1"
+                    ));
+                    let selected = self.emit_random_select(&value, &count_payload, mode, span);
                     self.release_value(count_value);
+                    self.release_value(value);
+                    return Ok(selected);
                 }
                 IrSelectorItem::Range { .. } | IrSelectorItem::OpenRange { .. } => {
                     self.emit_dynamic_check("selector_bounds", &value, span);
@@ -213,7 +227,24 @@ impl<'a> DynamicGenerator<'a> {
                 IrSelectorItem::All { .. } => {}
                 _ => {}
             }
-            return Ok(value);
+            let plan = selection_plan
+                .and_then(|id| self.program.selection_plans.get(id as usize))
+                .or_else(|| {
+                    self.program
+                        .selection_plans
+                        .iter()
+                        .find(|plan| plan.span == span)
+                });
+            let Some(plan) = plan else {
+                self.release_value(value);
+                return Err(CodegenError::Unsupported {
+                    feature: "动态选择器缺少规范选择计划".to_owned(),
+                    span: Some(span),
+                });
+            };
+            let selected = self.emit_selection_paths(&value, &plan.selected_paths, span)?;
+            self.release_value(value);
+            return Ok(selected);
         };
         for segment in &path.segments {
             let IrPathSegmentKind::Index { text, negative } = &segment.kind else {
@@ -231,6 +262,57 @@ impl<'a> DynamicGenerator<'a> {
             value = next;
         }
         Ok(value)
+    }
+
+    /// 按类型阶段生成的静态路径镜像构造选择结果数组。
+    fn emit_selection_paths(
+        &mut self,
+        source: &str,
+        paths: &[xiao_ir::IrSelectionPath],
+        span: IrSpan,
+    ) -> Result<String> {
+        let array = self.next_temp();
+        self.emit(format!(
+            "  {array} = alloca {VALUE_TYPE}, i64 {}",
+            paths.len()
+        ));
+        let mut temporaries = Vec::with_capacity(paths.len());
+        for (index, path) in paths.iter().enumerate() {
+            let mut value = source.to_owned();
+            for segment in path {
+                let xiao_ir::IrSelectionPathSegment::Index { resolved, raw } = segment else {
+                    return Err(CodegenError::Unsupported {
+                        feature: "动态字典键选择器".to_owned(),
+                        span: Some(span),
+                    });
+                };
+                let index = resolved.map_or(*raw, |value| value as i128) as i64;
+                let next = self.emit_iter_get(&value, &index.to_string(), span);
+                if value != source {
+                    self.release_value(value);
+                }
+                value = next;
+            }
+            let ptr = self.next_temp();
+            self.emit(format!(
+                "  {ptr} = getelementptr {VALUE_TYPE}, ptr {array}, i64 {index}"
+            ));
+            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {ptr}"));
+            temporaries.push(value);
+        }
+        let handle = self.next_temp();
+        self.emit(format!("  {handle} = alloca ptr"));
+        self.emit(format!("  store ptr null, ptr {handle}"));
+        self.checked_status_call(format!(
+            "@xiao_runtime_array_new(ptr {array}, i64 {}, ptr {handle})",
+            paths.len()
+        ));
+        for value in temporaries {
+            self.release_value(value);
+        }
+        let raw = self.next_temp();
+        self.emit(format!("  {raw} = load ptr, ptr {handle}"));
+        Ok(self.emit_value_call("xiao_runtime_value_array_owned", &format!("ptr {raw}")))
     }
 
     /// 发射由契约表标识的动态 intrinsic。`print` 走稳定 Runtime ABI；`input`
