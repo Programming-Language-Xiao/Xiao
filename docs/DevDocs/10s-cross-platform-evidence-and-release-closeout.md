@@ -303,3 +303,11 @@ VM SelectorApply 读取源一次，再对每条选中路径通过 read_ir_path/i
 原生 bounds 检查借用转换克隆源并归还，使源对象前缀从三次变为四次；关闭后恢复三次。循环结果侧机制与 §十一相同：额外的 SSA 持有和 iterable 检查各归还一次临时引用，关闭后者减少一次结果释放。源侧多一、结果侧多二，解释全部三次差值；两种关闭实验虽然总数相同，所减少的是不同对象的释放。
 
 VM 使用既有选择器读取与循环指令语义，因此继续作为可观察语义基准；原生适配 ABI 的额外借用转换不能倒逼 VM 改写生命周期。判定当前两例为追踪口径差异，保留仅 Drops 豁免并写入具体机制，四例均不再登记「未定位」。不添加豁免字段，不削弱输出或完整轨迹比较，不宣称 O6 条件 2 全部满足。
+
+## 十三、本机验证与剩余输入
+
+26bc75b 实现的 Windows x86_64-pc-windows-msvc 验证：Rust workspace 全量、workspace all-targets Clippy（-D warnings）、fmt、bun run check 通过；本轮 Bun 测试 287 通过、5 跳过。受控环境同时指定 XIAO_TARGET_TRIPLE、XIAO_CLANG、XIAO_LLVM_AS、XIAO_LLC、XIAO_STRIP、XIAO_RUNTIME_LIBRARY 与 XIAO_DIAGNOSTICS_PATH，运行 n0_a_native_driver 三项、n0_b_dynamic_native 一项、d19a_differential 一项、native_benchmark_probe 一项，共六项 ignored 测试通过。构建探针仍为四例可构建、container-dense 因表方法 ABI 拒绝，不是性能通过。
+
+M1 保持既有 Windows push 门控，未获新增 Linux push 门控的决定；Linux/macOS 通过现有定时/手动矩阵取证。M2 刷新暴露的组件登记问题已修，运行结果逐次留存；M3 四处差异的机制与对照数据见 §十至十二，仍仅豁免 Drops；M4 继续明确 macOS 无桌面宿主且 CI 跳过真实终端。A1 [开工清单](10s-a1-table-method-abi-preparation.md)已完成，本批未实现。
+
+Ubuntu 裸机修复版复跑待星崽回传；先前 PR #3 的失败原文保留。Linux 可见窗口、截图与关窗后退出证据仍缺，macOS 真实窗口本批不可得；19C/18C 和 19D O6 已同步，不宣布 10S 全部验收或 19 收口。引用计数常态化、静态溢出排期与长期 macOS 标准仍按待定决策保留。
