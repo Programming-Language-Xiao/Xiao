@@ -105,7 +105,8 @@
 | 10K | [Runtime 裁剪验证的跨平台收口（Linux 侧交接）](10k-n0d-runtime-trimming-verification.md) | N0-D 在 CI 上只有 Windows 通过：ELF 产物观察到 `containers/tables/weak`（链接器没裁），而 **Windows 的绿是「自己导出、自己检查」的自证**——`10:78` 在 PE 上从未被验证过 | 已完成（`6177931` 修复 ELF/Mach-O 裁剪边界并明确 COFF 未验证能力；CI `36850150346` 四平台全绿；后续仅保留 PE 内部节证据债） |
 | 10L | [原生动态入口与 VM 对齐（N0-E）](10l-native-dynamic-alignment.md) | 先修 19D 审核的 G1–G3，再枚举原生动态入口拒绝的语句与运行时检查种类，按确认范围逐类对齐 VM；整数溢出单独决定 | 扩大范围首轮接线（2026-10-06）；3 类语句与 14 类检查已接入；**2026-10-07 审核实测发现原生构建回归（四个基准程序被 clang 拒绝），并入 10M** |
 | 10M | [原生动态入口回归修复与验证闭环（N0-F）](10m-native-regression-and-verification.md) | 修 H1–H8：`%abi.fail` 未定义标签导致的基准程序构建回归、函数体动态差分、探测基线、LLVM 结构校验、Runtime ABI 拆分与文档回填 | 已完成（2026-10-07）；Windows 受控原生差分与 19D 探测通过，Linux/macOS 与性能基线待补；审核实测发现原生范围/随机选择静默返回源值，并入 10N |
-| 10N | [原生选择器正确性与剩余覆盖（N0-G）](10n-native-selector-correctness.md) | 修复范围/随机选择静默错值，补齐选择器差分，枚举动态剩余拒绝面并对账 19 O6 | I1/I2/I5/I6 已完成（2026-10-07）；动态表方法、CI 原生门控与跨平台证据待后续 |
+| 10N | [原生选择器正确性与剩余覆盖（N0-G）](10n-native-selector-correctness.md) | 修复范围/随机选择静默错值，补齐选择器差分，枚举动态剩余拒绝面并对账 19 O6 | I1/I2/I5/I6 已完成（2026-10-07）；动态表方法、CI 原生门控与跨平台证据待后续；审核发现豁免会吞掉值差异、选择器多一次释放、O6 对账条目不对应，并入 10P |
+| 10P | [差分豁免收敛与剩余拒绝面（N0-H）](10p-differential-exemption-and-coverage.md) | 先让缺口豁免只豁免声明的字段（否则新用例等于没有守门），再判定选择器多出的那次释放、修嵌套 `finally` 的少释放，按规范五条重做 19 O6 对账，并枚举剩余拒绝面 | 规划稿（2026-10-07）；5 项待星崽决定 |
 | 10N | [原生选择器正确性与剩余覆盖（N0-G）](10n-native-selector-correctness.md) | 先修 I1 静默错值（原生 `values[1~2]`、`values[?2]` 返回整个数组）并补选择器差分用例，再判定 I6 释放差异与剩余拒绝面，最后对 19 的 O6 逐条对账 | 规划稿（2026-10-07）；6 项待星崽决定 |
 | 10A | [LLVM 原生构建闭环](10a-n0-native-closure.md) | 手写 IR 文本 + 外部工具链、`xiao-runtime-abi`、四批交付（N0-A 纯静态 → N0-D 验证裁剪） | N0-A 已完成；N0-B Runtime ABI 已接续落地（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 功能复现；WSL/容器仅作功能证据） |
 | 10B | [N0-B Runtime ABI](10b-n0-runtime-abi.md) | 动态值的 ABI 表示、真实引用计数与 `Weak`、容器与表 ABI、正常路径的释放计划 | 已落地（ABI/容器/表/正常释放计划；异常展开留 N0-C） |
