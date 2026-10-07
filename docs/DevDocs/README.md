@@ -112,6 +112,7 @@
 | 10R | [释放账目收口与原生 CI 门控（N0-J）](10r-release-accounting-and-native-ci-gate.md) | Windows 原生门控、I6 清理链、扩展释放账目、静态溢出立项与 ABI 顺序 | I6 已修；最终CI 37614663496 绿、变异37608705803红，已撤回恢复绿；扩展账目已记录；表用户 drop 原生受方法 ABI 拒绝；审核确认门控与 I6 有效，余四处 Drops 差异与跨平台证据并入 10S |
 | 10S | [跨平台证据刷新与释放账目收口（N0-K）](10s-cross-platform-evidence-and-release-closeout.md) | 用星崽的图形化 Linux 裸机补第三平台证据、手动刷新 `platform-reproduction`（macOS 唯一来源）、逐调用收口四处释放差异、Linux 桌面开窗取证、A1 表方法 ABI 只做准备 | 规划稿（2026-10-07）；4 项待星崽决定 |
 | 10S-Linux | [裸机 Linux 证据采集交接](10s-linux-bare-metal-handoff.md) | 写给 Ubuntu 机器操作者：前置包与工具链版本、`reproduce.sh native` 的跑法与「不设 XIAO_USE_XVFB」、环境采集清单、诊断窗口行为证据的判据、回传模板 | 待执行（2026-10-07） |
+| 10S-A1 | [表方法 ABI 开工清单](10s-a1-table-method-abi-preparation.md) | 描述符、函数表、所有权与 drop 时机、版本边界、影响 crate 和验收用例 | 准备清单已完成；本批不实现 |
 | 10R-溢出后续 | [静态溢出统一错误路径](10r-static-overflow-followup.md) | 七处 trap 模板、语言错误与平台 Fatal 分界及验收 | 仅立项，未实现 |
 | 10A | [LLVM 原生构建闭环](10a-n0-native-closure.md) | 手写 IR 文本 + 外部工具链、`xiao-runtime-abi`、四批交付（N0-A 纯静态 → N0-D 验证裁剪） | N0-A 已完成；N0-B Runtime ABI 已接续落地（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 功能复现；WSL/容器仅作功能证据） |
 | 10B | [N0-B Runtime ABI](10b-n0-runtime-abi.md) | 动态值的 ABI 表示、真实引用计数与 `Weak`、容器与表 ABI、正常路径的释放计划 | 已落地（ABI/容器/表/正常释放计划；异常展开留 N0-C） |
