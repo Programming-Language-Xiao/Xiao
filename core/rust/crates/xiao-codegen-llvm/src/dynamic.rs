@@ -60,6 +60,10 @@ const BYTES_TYPE: &str = "%xiao.bytes";
 const TABLE_FIELD_TYPE: &str = "%xiao.table.field";
 /// 表描述符的 LLVM 结构名。
 const TABLE_DESCRIPTOR_TYPE: &str = "%xiao.table.descriptor";
+/// ABI 1.8 方法元数据的固定 C 布局。
+const TABLE_METHOD_TYPE: &str = "%xiao.table.method";
+/// ABI 1.8 独立表描述符，保留旧字段描述符作为内嵌字段。
+const TABLE_DESCRIPTOR_V2_TYPE: &str = "%xiao.table.descriptor.v2";
 /// 错误位置的 LLVM 固定布局；实际传递使用指针，避免目标 ABI 聚合参数差异。
 const ERROR_LOCATION_TYPE: &str = "%xiao.error.location";
 
@@ -132,7 +136,6 @@ struct DynamicGenerator<'a> {
     loop_stack: Vec<LoopLabels>,
     table_initializers: BTreeMap<String, Vec<(String, IrExpression)>>,
     observation_slot: Option<usize>,
-    declared_runtime_components: BTreeSet<String>,
     error_stack: Vec<ErrorContext>,
     error_terminal_label: String,
     cleanup_stack: Vec<CleanupContext<'a>>,
@@ -150,6 +153,14 @@ struct DynamicGenerator<'a> {
     /// 动态函数的返回槽和成功/错误出口。
     function_return_slot: Option<String>,
     function_return_label: Option<String>,
+    /// 每个 return 表达式的帧内拥有槽，直到函数退出才归还被 finally 覆盖的临时值。
+    return_sites: Vec<(*const IrExpression, String)>,
+    /// 返回值和语句临时对象共享帧内创建顺序，错误出口也可归还。
+    frame_temporaries: Vec<String>,
+    /// 语句临时槽按表达式节点复用，循环不累计拥有引用。
+    statement_sites: Vec<((*const IrExpression, *const IrExpression), String)>,
+    /// 当前语句的临时对象，嵌套 finally 语句使用独立列表。
+    statement_temporaries: Vec<String>,
     /// 当前函数所属生命周期作用域；隔离不同函数的同名值。
     function_scope: Option<u32>,
     /// 返回展开先运行所有外层 finally，再按内到外顺序执行挂起的释放计划。
@@ -177,7 +188,6 @@ impl<'a> DynamicGenerator<'a> {
             loop_stack: Vec::new(),
             table_initializers: BTreeMap::new(),
             observation_slot: None,
-            declared_runtime_components: BTreeSet::new(),
             error_stack: Vec::new(),
             error_terminal_label: "xiao.error.terminal".to_owned(),
             cleanup_stack: Vec::new(),
@@ -189,6 +199,10 @@ impl<'a> DynamicGenerator<'a> {
             function_mode: false,
             function_return_slot: None,
             function_return_label: None,
+            return_sites: Vec::new(),
+            frame_temporaries: Vec::new(),
+            statement_sites: Vec::new(),
+            statement_temporaries: Vec::new(),
             function_scope: None,
             pending_return_releases: Vec::new(),
             initialized_modules: BTreeSet::new(),
@@ -250,6 +264,10 @@ impl<'a> DynamicGenerator<'a> {
             "{TABLE_DESCRIPTOR_TYPE} = type {{ {BYTES_TYPE}, i32, ptr, i64 }}\n\n"
         ));
         text.push_str(&format!(
+            "{TABLE_METHOD_TYPE} = type {{ {BYTES_TYPE}, i64, ptr, i64, i32, i8, ptr }}\n"
+        ));
+        text.push_str(&format!("{TABLE_DESCRIPTOR_V2_TYPE} = type {{ i32, i32, {TABLE_DESCRIPTOR_TYPE}, ptr, i64, ptr, ptr, ptr }}\n\n"));
+        text.push_str(&format!(
             "{ERROR_LOCATION_TYPE} = type {{ i64, i64, i8, [7 x i8] }}\n\n"
         ));
         for entry in source_map_for_program(self.program) {
@@ -276,15 +294,7 @@ impl<'a> DynamicGenerator<'a> {
             text.push_str(function);
             text.push('\n');
         }
-        // finally 总是抛错时，正常返回块仍可能被发射，但链接前会被 LLVM 删除。
-        // 传递依赖必须按入口可达调用登记，不能把死块中的复制算作产物依赖。
-        if runtime_abi::has_reachable_value_copy(&text) {
-            self.declared_runtime_components.insert("weak".to_owned());
-        }
-        let components = self
-            .declared_runtime_components
-            .into_iter()
-            .collect::<Vec<_>>();
+        let components = runtime_abi::reachable_runtime_components(&text);
         let fingerprint = format!(
             "xiao-codegen-{CODEGEN_VERSION}-{}",
             stable_hash(
@@ -487,6 +497,8 @@ impl<'a> DynamicGenerator<'a> {
         };
         generator.emit(signature);
         generator.emit("entry:".to_owned());
+        generator.emit("  %xiao.return.source = alloca ptr".to_owned());
+        generator.emit("  store ptr null, ptr %xiao.return.source".to_owned());
         generator.emit("  %xiao.return.temporary = alloca i1".to_owned());
         generator.emit("  store i1 false, ptr %xiao.return.temporary".to_owned());
         let function_slots = generator.slots.values().copied().collect::<Vec<_>>();
@@ -519,6 +531,7 @@ impl<'a> DynamicGenerator<'a> {
         }
         generator.emit_statements(body)?;
         if !generator.terminated {
+            generator.emit("  store ptr null, ptr %xiao.return.source".to_owned());
             let none = generator.none_value();
             generator.emit(format!(
                 "  store {VALUE_TYPE} {none}, ptr %xiao.function.result"
@@ -526,33 +539,54 @@ impl<'a> DynamicGenerator<'a> {
             generator.emit("  br label %xiao.fn.return".to_owned());
             generator.terminated = true;
         }
-        generator.emit("xiao.fn.return:".to_owned());
-        let temporary = generator.next_temp();
-        generator.emit(format!(
-            "  {temporary} = load i1, ptr %xiao.return.temporary"
-        ));
-        generator.emit(format!(
-            "  br i1 {temporary}, label %xiao.fn.return.copy, label %xiao.fn.return.cleanup"
-        ));
-        generator.emit_label("xiao.fn.return.copy");
-        let copied = generator.next_temp();
-        generator.emit(format!("  {copied} = alloca {VALUE_TYPE}"));
-        generator.emit(format!(
-            "  store {VALUE_TYPE} zeroinitializer, ptr {copied}"
-        ));
-        generator.checked_status_call(format!(
-            "@xiao_runtime_value_copy(ptr %xiao.function.result, ptr {copied})"
-        ));
-        let release = generator.value_release_symbol();
-        generator.emit(format!("  call void @{release}(ptr %xiao.function.result)"));
-        let value = generator.next_temp();
-        generator.emit(format!("  {value} = load {VALUE_TYPE}, ptr {copied}"));
-        generator.emit(format!(
-            "  store {VALUE_TYPE} {value}, ptr %xiao.function.result"
-        ));
-        generator.emit("  br label %xiao.fn.return.cleanup".to_owned());
-        generator.emit_label("xiao.fn.return.cleanup");
+        generator.emit_label("xiao.fn.return");
         generator.release_function_scopes("return")?;
+        let scope_status = generator.next_temp();
+        generator.emit(format!(
+            "  {scope_status} = call i32 @xiao_runtime_error_class()"
+        ));
+        generator.check_status_at(&scope_status, statement.span);
+        if generator.return_sites.is_empty() {
+            generator.emit("  br label %xiao.fn.return.cleanup".to_owned());
+        } else {
+            let source = generator.next_temp();
+            generator.emit(format!("  {source} = load ptr, ptr %xiao.return.source"));
+            let present = generator.next_temp();
+            generator.emit(format!("  {present} = icmp ne ptr {source}, null"));
+            generator.emit(format!(
+                "  br i1 {present}, label %xiao.fn.return.value, label %xiao.fn.return.cleanup"
+            ));
+            generator.emit_label("xiao.fn.return.value");
+            let temporary = generator.next_temp();
+            generator.emit(format!(
+                "  {temporary} = load i1, ptr %xiao.return.temporary"
+            ));
+            generator.emit(format!(
+                "  br i1 {temporary}, label %xiao.fn.return.copy, label %xiao.fn.return.move"
+            ));
+            generator.emit_label("xiao.fn.return.copy");
+            generator.checked_status_call(format!(
+                "@xiao_runtime_value_copy(ptr {source}, ptr %xiao.function.result)"
+            ));
+            generator.emit("  br label %xiao.fn.return.cleanup".to_owned());
+            generator.emit_label("xiao.fn.return.move");
+            let value = generator.next_temp();
+            generator.emit(format!("  {value} = load {VALUE_TYPE}, ptr {source}"));
+            generator.emit(format!(
+                "  store {VALUE_TYPE} {value}, ptr %xiao.function.result"
+            ));
+            generator.emit(format!(
+                "  store {VALUE_TYPE} zeroinitializer, ptr {source}"
+            ));
+            generator.emit("  br label %xiao.fn.return.cleanup".to_owned());
+        }
+        generator.emit_label("xiao.fn.return.cleanup");
+        generator.release_frame_temporaries();
+        let cleanup_status = generator.next_temp();
+        generator.emit(format!(
+            "  {cleanup_status} = call i32 @xiao_runtime_error_class()"
+        ));
+        generator.check_status_at(&cleanup_status, statement.span);
         generator.emit(
             if generator.callback.is_some() {
                 "  ret i32 0"
@@ -571,6 +605,7 @@ impl<'a> DynamicGenerator<'a> {
         ));
         generator.emit_label("xiao.fn.error.cleanup");
         generator.release_function_scopes("unmatched_error")?;
+        generator.release_frame_temporaries();
         let release = generator.value_release_symbol();
         generator.emit(format!("  call void @{release}(ptr %xiao.function.result)"));
         generator.emit("  br label %xiao.fn.error.return".to_owned());
@@ -585,10 +620,9 @@ impl<'a> DynamicGenerator<'a> {
         }
         generator.emit("}".to_owned());
         generator.emit(String::new());
+        generator.initialize_frame_temporaries();
         self.next_global = generator.next_global;
         self.globals.extend(generator.globals);
-        self.declared_runtime_components
-            .extend(generator.declared_runtime_components);
         self.function_texts.push(generator.lines.join("\n"));
         Ok(())
     }

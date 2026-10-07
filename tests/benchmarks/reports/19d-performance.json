@@ -20,7 +20,7 @@
   "platforms": {
     "windows-native": {
       "status": "data-insufficient",
-      "reason": "只有原生可构建性探测，没有固定硬件上的 Java/Xiao 性能运行记录"
+      "reason": "已有原生构建与 VM 功能比对，没有固定硬件上的 Java/Xiao 性能运行记录"
     },
     "linux": {
       "status": "not-measured"
@@ -77,9 +77,9 @@
     },
     {
       "id": "container-dense",
-      "native_build": "rejected:runtime_checks-nonempty",
+      "native_build": "built",
       "semantic_status": "data-insufficient",
-      "reason": "动态降低器遇到任一非空 runtime_checks 列表即整体拒绝；本例首项为 numeric_range，不代表唯一缺口；具体类别待 10L 枚举",
+      "reason": "10T 已接通表方法；Windows 原生与 VM 实跑 80 轮均为 28760。仍缺受控 Java/Xiao 性能样本，不判性能通过",
       "paths": {
         "vm": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
         "native": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },

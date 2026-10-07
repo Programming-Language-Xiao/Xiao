@@ -46,7 +46,147 @@ struct Case {
     has_drops: bool,
 }
 
-const CASES: [Case; 28] = [
+const CASES: [Case; 48] = [
+    Case {
+        label: "table-temporary-drop-caught",
+        source: "[[Item]]\n    value = 7\n    def read(self) -> int\n        return self.value\n    def drop(self) -> none\n        raise ArithmeticError(code = \"DROP\")\ntry\n    print((new Item()).read())\ncatch err as TableError\n    print(\"caught\")\nprint(\"after\")\n",
+        output: "7\ncaught\nafter\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-temporary-condition",
+        source: "[[Item]]\n    value = 7\n    def ready(self) -> bool\n        return false\n    def drop(self) -> none\n        print(\"drop\")\nif (new Item()).ready()\n    print(\"unexpected\")\nprint(\"after\")\n",
+        output: "after\ndrop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-heap-default-arguments",
+        source: "[[Item]]\n    value = 7\n    def echo(self, str text = \"hello\") -> str\n        return text\nitem = new Item()\nprint(item.echo(), item.echo())\n",
+        output: "hello hello\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "function-for-rebind",
+        source: "def visit(values) -> none\n    for value in values\n        print(value)\n        values = [9, 8]\nvisit([1, 2])\n",
+        output: "1\n8\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-temporary-receiver",
+        source: "[[Item]]\n    value = 7\n    def read(self) -> int\n        return self.value\n    def drop(self) -> none\n        print(\"drop\")\nprint((new Item()).read())\n",
+        output: "7\ndrop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-temporary-field",
+        source: "[[Item]]\n    value = 7\n    def drop(self) -> none\n        print(\"drop\")\nprint((new Item()).value)\n",
+        output: "7\ndrop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-temporary-heap-return",
+        source: "[[Item]]\n    text = \"held\"\n    def read(self) -> str\n        return self.text\n    def drop(self) -> none\n        print(\"drop\")\nprint((new Item()).read())\n",
+        output: "held\ndrop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-unused-definition",
+        source: "[[Unused]]\n    value = 7\n    def read(self) -> int\n        values = [1, 2]\n        return values[1]\n",
+        output: "",
+        error: None,
+        has_drops: false,
+    },
+    Case {
+        label: "dictionary-key-selectors",
+        source: "mapping = {\"first\" = 5, \"second\" = 9}\ncolumn = <first = 7, second = 11>\nprint(mapping[first] + column[second])\n",
+        output: "16\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-methods-private-default",
+        source: "[[Item]]\n    value = 2\n    def _read(self) -> int\n        return self.value\n    def add(self, int amount = 3) -> int\n        self.value += amount\n        return self._read()\n[[Other]]\n    value = 40\n    def _read(self) -> int\n        return self.value\n    def read(self) -> int\n        return self._read()\nitem = new Item()\nother = new Other()\nprint(item.add() + item.add(amount = 4) + other.read())\n",
+        output: "54\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-fields-init-order",
+        source: "[[Item]]\n    first = 3\n    second = 7\n    def init(self) -> none\n        self.second += self.first\n    def read(self) -> int\n        return self.second\nitem = new Item()\nprint(item.read())\n",
+        output: "10\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-shared-drop-order",
+        source: "[[First]]\n    value = 11\n    def drop(self) -> none\n        print(self.value)\n[[Second]]\n    value = 22\n    def drop(self) -> none\n        print(self.value)\nfirst = new First()\nsecond = new Second()\nalias = first\n",
+        output: "22\n11\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-return-heap",
+        source: "[[Item]]\n    text = \"held\"\n    def read(self) -> str\n        return self.text\nitem = new Item()\nprint(item.read())\n",
+        output: "held\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-return-finally",
+        source: "[[Item]]\n    value = 1\n    def read(self) -> str\n        try\n            return \"old\"\n        finally\n            return \"new\"\nitem = new Item()\nprint(item.read())\n",
+        output: "new\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-method-raises",
+        source: "[[Item]]\n    value = 1\n    def fail(self, str text) -> none\n        raise ArithmeticError(code = \"METHOD\")\nitem = new Item()\nitem.fail(\"payload\")\n",
+        output: "",
+        error: Some("METHOD"),
+        has_drops: true,
+    },
+    Case {
+        label: "table-init-failure",
+        source: "[[Item]]\n    value = 7\n    def init(self) -> none\n        raise ArithmeticError(code = \"INIT\")\n    def drop(self) -> none\n        print(\"cleanup\")\n        raise ArithmeticError(code = \"DROP\")\nitem = new Item()\n",
+        output: "cleanup\n",
+        error: Some("X06-RUNTIME-007"),
+        has_drops: true,
+    },
+    Case {
+        label: "table-drop-failure",
+        source: "[[Item]]\n    value = 7\n    def drop(self) -> none\n        raise ArithmeticError(code = \"DROP\")\nitem = new Item()\n",
+        output: "",
+        error: Some("X06-RUNTIME-008"),
+        has_drops: true,
+    },
+    Case {
+        label: "table-drop-calls-read",
+        source: "[[Item]]\n    value = 7\n    def read(self) -> int\n        return self.value\n    def drop(self) -> none\n        print(self.read())\nitem = new Item()\n",
+        output: "7\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-drop-explicit-return",
+        source: "[[Item]]\n    value = 7\n    def drop(self) -> none\n        print(\"drop\")\n        return\nitem = new Item()\n",
+        output: "drop\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-user-drop",
+        source: "[[Item]]\n    value = 7\n    def drop(self) -> none\n        print(\"drop\")\nitem = new Item()\n",
+        output: "drop\n",
+        error: None,
+        has_drops: true,
+    },
     Case {
         label: "selector-multiple-exact",
         source: "values = [3, 7, 11, 19]\nselected = values[0, 2]\nprint(selected[1])\n",
@@ -557,28 +697,23 @@ fn all_vm_sides_agree_on_every_case() {
     }
 }
 
-/// 用户 drop 需要尚未接入的表方法 ABI；明确验证拒绝，不以 Drops 豁免构建失败。
+/// 原拒绝用例进入统一差分清单；默认门禁检查真实源码会注册 drop 回调。
 #[test]
-fn table_drop_native_rejection_remains_visible() {
-    let case = Case {
-        label: "table-user-drop",
-        source: "[[Item]]\n    value = 7\n    def drop(self) -> none\n        print(\"drop\")\nitem = new Item()\n",
-        output: "drop\n",
-        error: None,
-        has_drops: true,
-    };
-    let guard = start_release_trace();
+fn table_drop_registers_a_real_callback() {
+    let case = CASES
+        .iter()
+        .find(|case| case.label == "table-user-drop")
+        .expect("drop 用例必须在完整差分清单中");
     let baseline = source_observation(case.source, OptimizationLevel::O0);
-    let events = take_release_events();
-    drop(guard);
-    assert_baseline_matches_case(&case, &baseline);
-    eprintln!("10R-TRACE table-user-drop VM={events:?} NATIVE=未构建：表方法 ABI 未接入");
+    assert_baseline_matches_case(case, &baseline);
     let artifact = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(case.source))
-        .expect("drop 源码应通过前端");
-    let error = xiao_codegen_llvm::lower_program(artifact.ir(), &Default::default())
-        .expect_err("未接入表方法 ABI 前不能静默丢弃 drop");
-    assert!(error.to_string().contains("动态表方法"), "{error}");
+        .expect("drop 前端");
+    let module = xiao_codegen_llvm::lower_program(artifact.ir(), &Default::default())
+        .expect("真实 drop 应降低");
+    assert!(module.text.contains("@xiao_runtime_table_new_v2("));
+    assert!(module.text.contains("ptr @xiao.table.0.method.0"));
+    assert!(module.text.contains("define i32 @xiao.table.0.method.0("));
 }
 
 #[test]
@@ -763,14 +898,11 @@ const DROPS_ONLY: &[GapField] = &[GapField::Drops];
 
 fn native_gap(label: &str) -> Option<NativeGap> {
     let reason = match label {
-        "held-table-instance" => {
-            "10S：VM 字段初始化额外持有 receiver 与字段函数参数帧，两次临时引用归还使 VM 五次 strong_release、原生三次；双方每字段各归还一次且最终仅一次 destroy，成对实验见 10S §十；仅豁免 Drops，保留 VM 语义基准"
-        }
         "selector-range-downstream" | "selector-open-range-downstream" => {
-            "10S：selector_bounds 借用转换多一次源释放，原生循环 SSA 持有和 iterable 检查各多一次结果释放，共多三次；两对象销毁顺序一致，成对实验见 10S §十二，仅豁免 Drops"
+            "10T：名称迭代来源已借用并逐轮重读；剩余 selector_bounds 多一次源释放、iterable 检查多一次结果释放，共多两次。两对象销毁顺序一致，沿用 10S 成对依据并在 10T 回填新读数，仅豁免 Drops"
         }
         "selector-random-downstream" => {
-            "10S：随机 value_select 批量借用转换相较 VM 逐路径读取少一次源释放，原生循环的 SSA 持有和 iterable 检查多两次结果释放，净多一次；成对实验见 10S §十一，仅豁免 Drops"
+            "10T：随机 value_select 批量借用转换相较 VM 逐路径读取少一次源释放，iterable 检查多一次结果释放；总数相同但完整轨迹仍不同。名称来源额外 SSA 持有已移除，机制见 10S/10T，仅豁免 Drops"
         }
         _ => return None,
     };
@@ -783,19 +915,62 @@ fn native_gap(label: &str) -> Option<NativeGap> {
 #[test]
 #[ignore = "需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
 fn native_side_matches_the_vm_sides_on_every_case() {
+    compare_native_cases(&CASES.iter().collect::<Vec<_>>(), 0, false, true);
+}
+
+/// A1 的构造、方法与生命周期用例；普通表也必须在优化后保持完整释放轨迹。
+fn table_cases() -> Vec<&'static Case> {
+    CASES
+        .iter()
+        .filter(|case| case.label.starts_with("table-") || case.label == "held-table-instance")
+        .collect()
+}
+
+#[test]
+#[ignore = "需要受控原生工具链；准备方式见 10D §4"]
+/// O0 由全量原生差分覆盖，本例逐级验证 O1–O3 的值、错误与完整释放轨迹。
+fn native_table_methods_o1_o3_match_vm() {
+    for level in 1..=3 {
+        compare_native_cases(&table_cases(), level, false, true);
+    }
+}
+
+#[test]
+#[ignore = "需要受控工具链、XIAO_DIAGNOSTICS_PATH 和终端；准备方式见 10D §4"]
+/// 调试产物在 O0–O3 实际执行同一方法/生命周期矩阵；没有终端时必须由工作流显式跳过。
+fn native_table_methods_debug_execution_o0_o3() {
+    for level in 0..=3 {
+        compare_native_cases(&table_cases(), level, true, true);
+    }
+}
+
+#[cfg(target_os = "macos")]
+#[test]
+#[ignore = "需要受控原生工具链与 XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4"]
+/// macOS 的独立调试构建证据，仅验证链接/符号/产物，不冒充无 GUI 宿主上的运行。
+fn native_table_methods_macos_debug_builds_o0_o3() {
+    for level in 0..=3 {
+        compare_native_cases(&table_cases(), level, true, false);
+    }
+}
+
+/// 共用严格比较器，优化和调试矩阵不得另立更宽松的值/错误/释放比较规则。
+fn compare_native_cases(cases: &[&Case], level: u8, debug: bool, execute: bool) {
     let missing = missing_native_environment();
     assert!(missing.is_empty(), "{}", native_coverage_report(&missing));
     let (target, toolchain) = configured_native();
     let mut problems = Vec::new();
-    for case in &CASES {
+    for case in cases {
         let gap = native_gap(case.label);
         let frontend_request = FrontendRequest::from_text(case.source);
         let artifact = FrontendCompiler::new()
             .compile(&frontend_request)
             .expect("差分源码应通过前端");
         let root = std::env::temp_dir().join(format!(
-            "xiao-19a-native-{}-{}",
+            "xiao-19a-native-{}-o{}-debug{}-{}",
             case.label,
+            level,
+            debug,
             std::process::id()
         ));
         fs::create_dir_all(&root).expect("创建原生差分目录");
@@ -804,12 +979,21 @@ fn native_side_matches_the_vm_sides_on_every_case() {
         } else {
             "program"
         });
+        let mut options = xiao_codegen_llvm::CodegenOptions::for_target(target.clone());
+        options.optimization_level = level;
+        if debug {
+            let diagnostics = std::env::var_os("XIAO_DIAGNOSTICS_PATH")
+                .expect("调试矩阵必须配置诊断组件，见 10D §4");
+            assert!(Path::new(&diagnostics).is_file(), "诊断组件必须已构建");
+            options = options.with_debug_startup(diagnostics.to_string_lossy());
+        }
         let request = NativeBuildRequest::new(
             frontend_request.clone(),
             target.clone(),
             toolchain.clone(),
             &output,
-        );
+        )
+        .with_codegen_options(options);
         let native = match FrontendNativeDriver::new().build_artifact(&artifact, &request) {
             Ok(native) => native,
             Err(error) => {
@@ -820,6 +1004,18 @@ fn native_side_matches_the_vm_sides_on_every_case() {
             }
         };
 
+        if !execute {
+            eprintln!(
+                "10T-DEBUG-BUILD {} O{level} target={} built=true executed=false（独立构建证据）",
+                case.label, target.triple
+            );
+            let _ = fs::remove_dir_all(root);
+            continue;
+        }
+        eprintln!(
+            "10T-MODE {} O{level} debug={debug} target={}",
+            case.label, target.triple
+        );
         let trace_guard = start_release_trace();
         let vm =
             FrontendVmDriver::new().run_artifact(&artifact, &DriverRequest::new(frontend_request));
@@ -834,6 +1030,12 @@ fn native_side_matches_the_vm_sides_on_every_case() {
             .output()
             .expect("应能启动原生程序");
         let stderr = String::from_utf8_lossy(&run_output.stderr);
+        if case.label == "table-init-failure" {
+            assert!(
+                stderr.contains("INIT") && stderr.contains("DROP"),
+                "初始化原因与清理错误都必须出现在原生报告中：{stderr}"
+            );
+        }
         let native_side = Observation {
             output: String::from_utf8_lossy(&run_output.stdout).into_owned(),
             error: native_error_code(&stderr),

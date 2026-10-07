@@ -16,19 +16,23 @@ struct Manifest {
 struct BenchmarkSpec {
     id: String,
     source: String,
+    entry: String,
+    arguments: Vec<i64>,
+    expected_value: Option<i64>,
 }
 
 /// Windows x86_64-pc-windows-msvc 受控环境的当前构建基线（2026-10-07）。
 ///
 /// 这张表只记录构建能力，不把被拒程序伪装成性能数据；新增拒绝或已有程序转为
 /// 拒绝都会让门禁失败，原因由断言消息保留。
-const EXPECTED_BUILT: [&str; 4] = [
+const EXPECTED_BUILT: [&str; 5] = [
     "deep-expression-arithmetic",
     "scalar-overflow-and-bool-parity",
     "named-local-loop",
     "deep-call-recursion",
+    "container-dense",
 ];
-const EXPECTED_REJECTED: [(&str, &str); 1] = [("container-dense", "动态表方法")];
+const EXPECTED_REJECTED: [(&str, &str); 0] = [];
 
 /// 逐项探测 19D 清单；构建失败只作为数据不足记录，不在本批修原生后端。
 #[test]
@@ -71,7 +75,19 @@ fn native_benchmark_probe_reports_every_manifest_program() {
         let source_path = repository_root
             .join("tests/benchmarks")
             .join(&benchmark.source);
-        let source = fs::read_to_string(&source_path).expect("读取基准源码");
+        let mut source = fs::read_to_string(&source_path).expect("读取基准源码");
+        if benchmark.id == "container-dense" {
+            source.push_str(&format!(
+                "\nprint({}({}))\n",
+                benchmark.entry,
+                benchmark
+                    .arguments
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ));
+        }
         let frontend_request = FrontendRequest::from_text_at(&source, &source_path);
         let artifact = match compiler.compile(&frontend_request) {
             Ok(artifact) => artifact,
@@ -84,7 +100,52 @@ fn native_benchmark_probe_reports_every_manifest_program() {
         let request =
             NativeBuildRequest::new(frontend_request, target.clone(), toolchain.clone(), &output);
         match driver.build_artifact(&artifact, &request) {
-            Ok(_) => results.push(format!("{}:built", benchmark.id)),
+            Ok(native) => {
+                if benchmark.id == "container-dense" {
+                    let result = std::process::Command::new(&native.native.executable)
+                        .output()
+                        .expect("运行容器基准");
+                    assert!(
+                        result.status.success(),
+                        "{}",
+                        String::from_utf8_lossy(&result.stderr)
+                    );
+                    let expected = format!(
+                        "{}\n",
+                        benchmark.expected_value.expect("容器基准必须有预期结果")
+                    );
+                    assert_eq!(
+                        String::from_utf8_lossy(&result.stdout),
+                        expected,
+                        "原生必须真正执行 80 轮容器基准"
+                    );
+                    let vm = xiao_driver::FrontendVmDriver::new().run_artifact(
+                        &artifact,
+                        &xiao_driver::DriverRequest::new(FrontendRequest::from_text_at(
+                            &source,
+                            &source_path,
+                        )),
+                    );
+                    assert!(vm.is_success(), "VM 容器基准失败：{vm:?}");
+                    let xiao_driver::DriverOutcome::Executed(execution) = vm else {
+                        panic!("应执行 VM");
+                    };
+                    let vm_output = execution
+                        .events()
+                        .iter()
+                        .filter_map(|event| match event {
+                            xiao_vm::VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+                            _ => None,
+                        })
+                        .collect::<String>();
+                    assert_eq!(vm_output, expected);
+                    eprintln!(
+                        "10T-CONTAINER-DENSE native=VM={}（80 轮，非性能取数）",
+                        expected.trim()
+                    );
+                }
+                results.push(format!("{}:built", benchmark.id));
+            }
             Err(error) => results.push(format!("{}:native-rejected:{error}", benchmark.id)),
         }
     }

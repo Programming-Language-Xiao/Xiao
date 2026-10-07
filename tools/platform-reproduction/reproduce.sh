@@ -131,8 +131,8 @@ export XIAO_TARGET_TRIPLE="$target_triple"
 printf '\n== 环境门控测试（显式 --ignored） ==\n'
 ignored_command=(cargo test --manifest-path "$cargo_manifest" --workspace -- --ignored)
 if [[ "${XIAO_SKIP_REAL_TERMINAL_TEST:-0}" == "1" && "$host_system" == "Darwin" ]]; then
-    printf 'macOS CI 无 GUI 会话，显式跳过真实终端测试：real_terminal_session_is_environment_gated\n'
-    ignored_command+=(--skip real_terminal_session_is_environment_gated)
+    printf 'macOS CI 无 GUI 会话，显式跳过真实终端测试：real_terminal_session_is_environment_gated、native_table_methods_debug_execution_o0_o3；表方法调试构建仍单独验证\n'
+    ignored_command+=(--skip real_terminal_session_is_environment_gated --skip native_table_methods_debug_execution_o0_o3)
 fi
 if [[ "${XIAO_USE_XVFB:-0}" == "1" && "$host_system" == "Linux" && -x "$(command -v xvfb-run 2>/dev/null || true)" ]]; then
     (cd "$repository_root" && xvfb-run -a "${ignored_command[@]}")

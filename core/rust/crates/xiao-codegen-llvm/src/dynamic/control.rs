@@ -46,6 +46,7 @@ struct CleanupFailure {
 impl<'a> DynamicGenerator<'a> {
     /// 发射一条顶层语句；异常展开留给 N0-C。
     fn emit_statement(&mut self, statement: &'a IrStatement) -> Result<()> {
+        let outer_temporaries = std::mem::take(&mut self.statement_temporaries);
         match &statement.kind {
             IrStatementKind::Assignment { target, value }
             | IrStatementKind::ConstDeclaration { target, value, .. } => {
@@ -70,7 +71,13 @@ impl<'a> DynamicGenerator<'a> {
                 let value_type = value.ty.clone();
                 let emitted = self.emit_expression(value)?;
                 self.record_observation(&emitted, &value_type);
-                self.release_value(emitted);
+                if !self.statement_temporaries.is_empty()
+                    && super::predicate::is_heap_temporary(value)
+                {
+                    self.own_statement_temporary(value, &emitted);
+                } else {
+                    self.release_value(emitted);
+                }
             }
             IrStatementKind::Table {
                 body, table_kind, ..
@@ -94,16 +101,12 @@ impl<'a> DynamicGenerator<'a> {
             IrStatementKind::Return { value } => {
                 if let Some(value) = value {
                     let emitted = self.emit_expression(value)?;
-                    if let (true, Some(slot), Some(_label)) = (
+                    if let (true, Some(_slot), Some(_label)) = (
                         self.function_mode,
                         self.function_return_slot.clone(),
                         self.function_return_label.clone(),
                     ) {
                         self.emit("  call void @xiao_runtime_error_clear()".to_owned());
-                        self.emit(format!(
-                            "  call void @xiao_runtime_value_release_strong(ptr {slot})"
-                        ));
-                        self.emit(format!("  store {VALUE_TYPE} {emitted}, ptr {slot}"));
                         // 名称读取已复制引用；临时结果则在最终 return 时复制，
                         // 与 VM 读取返回寄存器后归还帧内临时引用的次序一致。
                         let mut returned = value;
@@ -111,9 +114,7 @@ impl<'a> DynamicGenerator<'a> {
                             returned = expression;
                         }
                         let temporary = !matches!(returned.kind, IrExpressionKind::Name { .. });
-                        self.emit(format!(
-                            "  store i1 {temporary}, ptr %xiao.return.temporary"
-                        ));
+                        self.store_return_site(value, &emitted, temporary);
                         self.emit_nonlocal_exit_from_depth("return", ControlExitTarget::Return, 0)?;
                         self.terminated = true;
                     } else {
@@ -129,6 +130,7 @@ impl<'a> DynamicGenerator<'a> {
                         self.function_return_label.clone(),
                     ) {
                         let none = self.none_value();
+                        self.emit("  store ptr null, ptr %xiao.return.source".to_owned());
                         self.emit("  call void @xiao_runtime_error_clear()".to_owned());
                         self.emit(format!(
                             "  call void @xiao_runtime_value_release_strong(ptr {slot})"
@@ -199,19 +201,17 @@ impl<'a> DynamicGenerator<'a> {
                 operator,
                 value,
             } => {
-                if operator != "=" {
-                    return Err(CodegenError::Unsupported {
-                        feature: "动态表字段复合赋值".to_owned(),
-                        span: Some(statement.span),
-                    });
-                }
                 let IrExpressionKind::Member { object, member } = &target.kind else {
                     return Err(CodegenError::Unsupported {
                         feature: "动态扩展赋值".to_owned(),
                         span: Some(statement.span),
                     });
                 };
-                self.emit_table_set(object, member, value, statement.span)?;
+                if operator == "=" {
+                    self.emit_table_set(object, member, value, statement.span)?;
+                } else {
+                    self.emit_table_compound_set(target, operator, value, statement.span)?;
+                }
             }
             IrStatementKind::Break => {
                 let Some(labels) = self.loop_stack.last().cloned() else {
@@ -240,6 +240,10 @@ impl<'a> DynamicGenerator<'a> {
                 self.terminated = true;
             }
         }
+        if !self.terminated {
+            self.flush_statement_temporaries(statement.span);
+        }
+        self.statement_temporaries = outer_temporaries;
         Ok(())
     }
 
@@ -586,6 +590,8 @@ impl<'a> DynamicGenerator<'a> {
                 self.with_error_target(self.error_terminal_label.clone(), |generator| {
                     generator.release_for_exit("return")
                 })?;
+                self.release_frame_temporaries();
+                self.check_pending_error_at(self.program.span);
                 self.emit_observation_return();
             }
             ControlExitTarget::Branch(label) => {
@@ -848,7 +854,14 @@ impl<'a> DynamicGenerator<'a> {
         body: &'a [IrStatement],
     ) -> Result<()> {
         let outer_target = self.error_target();
-        let source = self.emit_expression(iterable)?;
+        let borrowed_source = self.borrow_named_slot(iterable);
+        let source = if let Some(slot) = &borrowed_source {
+            let value = self.next_temp();
+            self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {slot}"));
+            value
+        } else {
+            self.emit_expression(iterable)?
+        };
         let failure_label = self.next_label("dynamic.for.fail");
         let continuation_label = self.next_label("dynamic.for.continue");
         self.push_error_context(failure_label.clone());
@@ -873,7 +886,15 @@ impl<'a> DynamicGenerator<'a> {
         ));
         self.terminated = true;
         self.emit_label(&body_label);
-        let element = self.emit_iter_get(&source, &index, target.span);
+        // VM 的名称来源保留绑定寄存器；循环体重新赋值后，下一轮读取同一个绑定的新值。
+        let current_source = if let Some(slot) = &borrowed_source {
+            let value = self.next_temp();
+            self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {slot}"));
+            value
+        } else {
+            source.clone()
+        };
+        let element = self.emit_iter_get(&current_source, &index, target.span);
         self.store_slot(target, element)?;
         self.loop_stack.push(LoopLabels {
             condition: advance_label.clone(),
@@ -896,12 +917,16 @@ impl<'a> DynamicGenerator<'a> {
         self.emit(format!("  br label %{condition_label}"));
         self.terminated = true;
         self.emit_label(&end_label);
-        self.release_value(source.clone());
+        if borrowed_source.is_none() {
+            self.release_value(source.clone());
+        }
         self.emit(format!("  br label %{continuation_label}"));
         self.terminated = true;
         self.pop_error_context();
         self.emit_label(&failure_label);
-        self.release_value(source);
+        if borrowed_source.is_none() {
+            self.release_value(source);
+        }
         self.emit(format!("  br label %{outer_target}"));
         self.terminated = true;
         self.emit_label(&continuation_label);
@@ -910,6 +935,15 @@ impl<'a> DynamicGenerator<'a> {
 
     /// 从 ABI 动态值读取已类型检查的布尔载荷。
     fn emit_condition(&mut self, expression: &IrExpression) -> Result<String> {
+        let outer = std::mem::take(&mut self.statement_temporaries);
+        let result = self.emit_condition_value(expression)?;
+        // VM 的条件临时寄存器跨控制流边由帧持有；不混入普通语句末尾的刷新列表。
+        self.statement_temporaries = outer;
+        Ok(result)
+    }
+
+    /// 发射条件值，不提前归还控制流边上的堆接收者。
+    fn emit_condition_value(&mut self, expression: &IrExpression) -> Result<String> {
         if !matches!(&expression.ty, IrType::Scalar { name } if name == "bool") {
             let value = self.emit_expression(expression)?;
             self.emit_dynamic_check("boolean_condition", &value, expression.span);

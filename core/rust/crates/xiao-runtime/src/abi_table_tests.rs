@@ -6,6 +6,8 @@ use xiao_runtime_abi::{XiaoFieldType, XiaoTableMethodDescriptor};
 thread_local! {
     static EVENTS: RefCell<Vec<i64>> = const { RefCell::new(Vec::new()) };
     static ESCAPED_VIEW: RefCell<XiaoValue> = const { RefCell::new(XiaoValue::none()) };
+    static FAILED_TABLE: RefCell<Option<crate::memory::WeakHandle>> = const { RefCell::new(None) };
+    static INITIALIZED_FIELD: RefCell<Option<crate::memory::WeakHandle>> = const { RefCell::new(None) };
 }
 
 /// 字段初始化必须发生在 init 之前，并允许经编译字段入口写入。
@@ -15,7 +17,19 @@ unsafe extern "C" fn fields(
     _: usize,
     _: *mut XiaoValue,
 ) -> i32 {
-    xiao_runtime_table_set_value(receiver, abi_bytes("ascii:value"), &XiaoValue::int(7))
+    let status =
+        xiao_runtime_table_set_value(receiver, abi_bytes("ascii:value"), &XiaoValue::int(7));
+    if status != 0 {
+        return status;
+    }
+    let handle = StringHandle::new("owned initializer field")
+        .unwrap()
+        .into_strong_handle();
+    INITIALIZED_FIELD.with(|slot| *slot.borrow_mut() = Some(handle.downgrade()));
+    let mut value = value_from_owned_handle(XiaoValueTag::Str, handle);
+    let status = xiao_runtime_table_set_value(receiver, abi_bytes("ascii:owned"), &value);
+    xiao_runtime_value_release_any(&mut value);
+    status
 }
 
 /// init 读取已初始化字段并改变最终值，便于识别执行次序错误。
@@ -96,11 +110,14 @@ unsafe extern "C" fn drop_probe(
 
 /// 错误 init 用于检查状态机包装和失败输出。
 unsafe extern "C" fn init_fail(
-    _: *const XiaoValue,
+    receiver: *const XiaoValue,
     _: *const XiaoValue,
     _: usize,
     _: *mut XiaoValue,
 ) -> i32 {
+    let strong = unsafe { strong_ref((*receiver).payload.handle) }.unwrap();
+    FAILED_TABLE
+        .with(|slot| *slot.borrow_mut() = Some(strong.inners.borrow().last().unwrap().downgrade()));
     status_from_error(&RuntimeError::invalid_value("init failure"))
 }
 
@@ -150,6 +167,14 @@ fn construct(
         ty: XiaoFieldType::Int,
         public: 1,
     };
+    let fields = [
+        field,
+        XiaoTableFieldDescriptor {
+            name: abi_bytes("ascii:owned"),
+            ty: XiaoFieldType::Str,
+            public: 1,
+        },
+    ];
     let parameters = [XiaoValueTag::Int.raw()];
     let methods = [
         method(
@@ -167,12 +192,12 @@ fn construct(
         fields: XiaoTableDescriptor {
             name: abi_bytes("Item"),
             kind: 1,
-            fields: &field,
-            field_count: 1,
+            fields: fields.as_ptr(),
+            field_count: fields.len(),
         },
         methods: methods.as_ptr(),
         method_count: methods.len(),
-        initialize_fields: Some(fields),
+        initialize_fields: Some(self::fields),
         init: Some(init_callback),
         drop: Some(drop_callback),
     };
@@ -283,6 +308,18 @@ fn native_init_failure_preserves_cause_and_cleanup_error() {
     xiao_runtime_error_clear();
     EVENTS.with(|events| events.borrow_mut().clear());
     assert!(construct(init_fail, drop_fail, add).is_err());
+    FAILED_TABLE.with(|slot| {
+        assert!(
+            slot.borrow_mut().take().unwrap().upgrade().is_err(),
+            "失败的表必须已销毁"
+        )
+    });
+    INITIALIZED_FIELD.with(|slot| {
+        assert!(
+            slot.borrow_mut().take().unwrap().upgrade().is_err(),
+            "回滚必须归还已初始化的堆字段"
+        )
+    });
     PENDING_ERROR.with(|slot| {
         let slot = slot.borrow();
         let Some(PendingError::Recoverable(error)) = slot.as_ref() else {
@@ -438,4 +475,20 @@ fn native_drop_failure_is_suppressed_by_existing_primary() {
         );
     });
     xiao_runtime_error_clear();
+}
+
+#[test]
+/// 非空输出槽属于非法调用，必须保留原句柄而不是先覆盖为 null 丢失所有权。
+fn native_constructor_rejects_an_occupied_output_slot() {
+    xiao_runtime_error_clear();
+    let mut value = construct(init, drop_read, add).unwrap();
+    let original = unsafe { value.payload.handle };
+    let mut output = original;
+    assert_eq!(
+        xiao_runtime_table_new_v2(std::ptr::null(), &mut output),
+        XiaoAbiStatus::InvalidArgument.code()
+    );
+    assert_eq!(output, original);
+    assert_eq!(strong_count(&value), 1);
+    xiao_runtime_value_release_any(&mut value);
 }

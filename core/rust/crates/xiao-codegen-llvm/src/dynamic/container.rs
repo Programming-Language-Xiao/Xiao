@@ -217,32 +217,16 @@ impl<'a> DynamicGenerator<'a> {
                 span: Some(span),
             });
         }
-        let descriptor = self.emit_table_descriptor(&signature)?;
+        let fields = self.emit_table_descriptor(&signature)?;
+        let descriptor = self.emit_table_descriptor_v2(&signature, &fields)?;
         let handle = self.next_temp();
         self.emit(format!("  {handle} = alloca ptr"));
         self.emit(format!("  store ptr null, ptr {handle}"));
         self.checked_status_call(format!(
-            "@xiao_runtime_table_new(ptr {descriptor}, ptr {handle})"
+            "@xiao_runtime_table_new_v2(ptr {descriptor}, ptr {handle})"
         ));
         let raw = self.next_temp();
         self.emit(format!("  {raw} = load ptr, ptr {handle}"));
-        let initializers = self
-            .table_initializers
-            .get(&name.text)
-            .cloned()
-            .unwrap_or_default();
-        for (field, initializer) in initializers {
-            let value = self.emit_expression(&initializer)?;
-            let field_bytes = self.emit_bytes_value(field.as_bytes());
-            let field_argument = self.emit_bytes_argument(&field_bytes);
-            let value_slot = self.next_temp();
-            self.emit(format!("  {value_slot} = alloca {VALUE_TYPE}"));
-            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {value_slot}"));
-            self.checked_status_call(format!(
-                "@xiao_runtime_table_set(ptr {raw}, {field_argument}, ptr {value_slot})"
-            ));
-            self.release_value(value);
-        }
         let value = self.emit_value_call("xiao_runtime_value_table_owned", &format!("ptr {raw}"));
         Ok(value)
     }
@@ -250,21 +234,18 @@ impl<'a> DynamicGenerator<'a> {
     /// 发射静态表描述符及字段数组。
     fn emit_table_descriptor(&mut self, signature: &xiao_ir::IrTableSignature) -> Result<String> {
         // 先还原一次 Runtime 签名，确保 ABI 描述仍由 xiao-ir 的唯一表接口来源校验。
-        // 字段描述 ABI 目前不携带方法函数表，因此含方法的表必须显式拒绝，不能把方法
-        // 静默伪装成字段。
+        // 旧字段结构仅携带字段，方法由独立 V2 方法数组携带。
         if signature.runtime_signature().is_none() {
             return Err(CodegenError::InvalidIr {
                 message: format!("表 {} 的 IR 签名无法还原为 Runtime 签名", signature.name),
             });
         }
-        if signature.members.iter().any(|member| member.method) {
-            return Err(CodegenError::Unsupported {
-                feature: "动态表方法（ABI 尚未携带函数表）".to_owned(),
-                span: Some(signature.span),
-            });
-        }
-
-        let field_count = signature.members.len();
+        let members = signature
+            .members
+            .iter()
+            .filter(|member| !member.method)
+            .collect::<Vec<_>>();
+        let field_count = members.len();
         let fields = if field_count == 0 {
             "null".to_owned()
         } else {
@@ -274,7 +255,7 @@ impl<'a> DynamicGenerator<'a> {
             ));
             fields
         };
-        for (index, member) in signature.members.iter().enumerate() {
+        for (index, member) in members.iter().enumerate() {
             let field_type =
                 abi_field_type(&member.ty).ok_or_else(|| CodegenError::Unsupported {
                     feature: "动态表字段类型".to_owned(),

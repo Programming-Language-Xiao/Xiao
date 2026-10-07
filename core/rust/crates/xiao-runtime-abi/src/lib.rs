@@ -615,8 +615,10 @@ pub fn table_method_signature_id(parameters: &[u32], result: u32) -> u64 {
 // 这些声明由 `xiao-runtime` 提供实现；ABI crate 本身不定义同名符号，避免出现两份
 // Runtime。调用方必须保证 `required_major`/`required_minor` 是编译产物记录的版本。
 unsafe extern "C" {
+    /// 设置当前线程原生会话的确定性随机种子；接受非负 int/sint/lint，失败不改变状态。
+    pub fn xiao_runtime_random_seed(value: *const XiaoValue) -> i32;
     /// 复制 V2 元数据并经既有状态机执行字段初始化、零参数 init 与失败回滚。
-    /// 失败时 out 为 null；成功后调用方唯一拥有表强句柄。
+    /// out 必须指向已初始化的 null 槽；失败保持 null，成功后调用方唯一拥有表强句柄。
     pub fn xiao_runtime_table_new_v2(
         descriptor: *const XiaoTableDescriptorV2,
         out: *mut XiaoHandle,

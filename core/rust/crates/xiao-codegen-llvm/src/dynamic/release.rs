@@ -8,9 +8,139 @@ use super::{DynamicGenerator, VALUE_TYPE};
 use crate::error::{CodegenError, Result};
 
 impl<'a> DynamicGenerator<'a> {
+    /// 返回表达式像 VM 临时寄存器一样归当前帧拥有；循环再次执行同一位置时先覆盖旧值。
+    pub(super) fn store_return_site(
+        &mut self,
+        expression: &xiao_ir::IrExpression,
+        value: &str,
+        temporary: bool,
+    ) {
+        // 节点身份区分共享源码区间的 IR；编号只按首次发射顺序，绝不把地址写入文本。
+        let site = expression as *const xiao_ir::IrExpression;
+        let slot =
+            if let Some((_, slot)) = self.return_sites.iter().find(|(known, _)| *known == site) {
+                slot.clone()
+            } else {
+                let slot = format!("%xiao.return.site{}", self.return_sites.len());
+                self.return_sites.push((site, slot.clone()));
+                self.frame_temporaries.push(slot.clone());
+                slot
+            };
+        let release = self.value_release_symbol();
+        self.emit(format!("  call void @{release}(ptr {slot})"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+        self.emit(format!("  store ptr {slot}, ptr %xiao.return.source"));
+        self.emit(format!(
+            "  store i1 {temporary}, ptr %xiao.return.temporary"
+        ));
+    }
+
+    /// 函数作用域计划执行后，按帧槽顺序归还返回临时值，包括被 finally 覆盖的值。
+    pub(super) fn release_frame_temporaries(&mut self) {
+        let slots = self.frame_temporaries.clone();
+        let release = self.value_release_symbol();
+        for slot in slots {
+            self.emit(format!("  call void @{release}(ptr {slot})"));
+        }
+    }
+
+    /// 把表达式已经拥有的值移入语句临时槽，不增加引用；终止边交给统一帧清理。
+    pub(super) fn own_statement_temporary(
+        &mut self,
+        expression: &xiao_ir::IrExpression,
+        value: &str,
+    ) -> String {
+        self.own_statement_temporary_at(expression, expression, value)
+    }
+
+    /// 缺省实参的表达式会被多个调用复用，因此还以调用接收者节点区分求值站点。
+    fn own_statement_temporary_at(
+        &mut self,
+        expression: &xiao_ir::IrExpression,
+        context: &xiao_ir::IrExpression,
+        value: &str,
+    ) -> String {
+        let site = (
+            expression as *const xiao_ir::IrExpression,
+            context as *const xiao_ir::IrExpression,
+        );
+        let slot = if let Some((_, slot)) = self
+            .statement_sites
+            .iter()
+            .find(|(known, _)| *known == site)
+        {
+            slot.clone()
+        } else {
+            let slot = format!("%xiao.statement.site{}", self.statement_sites.len());
+            self.statement_sites.push((site, slot.clone()));
+            self.frame_temporaries.push(slot.clone());
+            slot
+        };
+        let release = self.value_release_symbol();
+        self.emit(format!("  call void @{release}(ptr {slot})"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+        if !self.statement_temporaries.contains(&slot) {
+            self.statement_temporaries.push(slot.clone());
+        }
+        slot
+    }
+
+    /// 调用实参需要一份绑定引用；堆表达式原值另由语句帧持有，不能在调用返回时提前销毁。
+    pub(super) fn store_call_argument(
+        &mut self,
+        expression: &xiao_ir::IrExpression,
+        context: &xiao_ir::IrExpression,
+        value: &str,
+        slot: &str,
+    ) {
+        if super::predicate::is_heap_temporary(expression) {
+            let owner = self.own_statement_temporary_at(expression, context, value);
+            self.checked_status_call_at(
+                format!("@xiao_runtime_value_copy(ptr {owner}, ptr {slot})"),
+                expression.span,
+            );
+        } else {
+            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+        }
+    }
+
+    /// 普通语句消费完结果后归还临时对象，析构错误仍进入当前 try/catch 的错误边。
+    pub(super) fn flush_statement_temporaries(&mut self, span: xiao_ir::IrSpan) {
+        let slots = std::mem::take(&mut self.statement_temporaries);
+        if slots.is_empty() {
+            return;
+        }
+        let release = self.value_release_symbol();
+        for slot in slots {
+            self.emit(format!("  call void @{release}(ptr {slot})"));
+        }
+        self.check_pending_error_at(span);
+    }
+
+    /// 全部临时槽放在入口，避免 finally 的 stackrestore 使尚需清理的地址失效。
+    pub(super) fn initialize_frame_temporaries(&mut self) {
+        let entry = self
+            .lines
+            .iter()
+            .position(|line| line == "entry:")
+            .expect("函数入口")
+            + 1;
+        let allocations = self
+            .frame_temporaries
+            .iter()
+            .flat_map(|slot| {
+                [
+                    format!("  {slot} = alloca {VALUE_TYPE}"),
+                    format!("  store {VALUE_TYPE} zeroinitializer, ptr {slot}"),
+                ]
+            })
+            .collect::<Vec<_>>();
+        self.lines.splice(entry..entry, allocations);
+    }
+
     /// 表回调可把只读视图借给普通函数；这类程序的临时/强槽需按实际值标签归还。
     pub(super) fn value_release_symbol(&self) -> &'static str {
-        if self.callback.is_some() || !self.method_definitions.is_empty() {
+        if self.callback.is_some() || (self.function_mode && !self.method_definitions.is_empty()) {
             "xiao_runtime_value_release_any"
         } else {
             "xiao_runtime_value_release_strong"

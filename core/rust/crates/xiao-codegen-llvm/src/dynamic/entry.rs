@@ -52,6 +52,10 @@ impl<'a> DynamicGenerator<'a> {
         }
         if !self.terminated {
             self.release_for_exit("normal")?;
+            self.release_frame_temporaries();
+            let status = self.next_temp();
+            self.emit(format!("  {status} = call i32 @xiao_runtime_error_class()"));
+            self.check_status(&status);
             self.emit("  call void @xiao_runtime_release_trace_flush()".to_owned());
             self.emit_observation_return();
             self.terminated = true;
@@ -69,6 +73,7 @@ impl<'a> DynamicGenerator<'a> {
         self.terminated = true;
         self.emit_label(&recoverable);
         self.release_for_exit("unmatched_error")?;
+        self.release_frame_temporaries();
         self.emit(format!("  br label %{report}"));
         self.terminated = true;
         self.emit_label(&report);
@@ -91,6 +96,7 @@ impl<'a> DynamicGenerator<'a> {
         self.emit("}".to_owned());
         self.emit(String::new());
         self.emit(self.main_adapter(observed));
+        self.initialize_frame_temporaries();
         Ok(())
     }
 

@@ -378,15 +378,17 @@ fn member_read_program() -> IrProgram {
 }
 
 #[test]
-/// 动态表成员读取必须从两字段 `%xiao.value` 的 payload 字段取出句柄。
-///
-/// `%xiao.value` 恒为 `{ i32, i64 }`，有效索引只有 0 和 1。取索引 2 会越界，
-/// 把 union payload 拆到不存在的第三个寄存器——这个缺陷曾经真实存在，
-/// 而当时没有任何断言检查索引（只断言了 `extractvalue %xiao.value` 前缀），
-/// 所以它在两轮解耦与多次门禁里都没有被发现。
-fn dynamic_table_member_reads_payload_at_index_one() {
-    let module = lower_program(&member_read_program(), &CodegenOptions::default())
-        .expect("动态表成员读取应降低");
+/// A1 字段读取传入完整值指针；标量观测仍须从两字段 value 的索引 1 读取 payload。
+/// 继续钉住历史上的索引 2 越界回归，不要求把弱视图错误地提取为强句柄。
+fn dynamic_table_member_uses_value_pointer_and_valid_payload_index() {
+    let options = CodegenOptions::default().with_entry_observation(EntryObservation::ExitCode);
+    let module = lower_program(&member_read_program(), &options).expect("动态表成员读取应降低");
+    assert!(
+        module
+            .text
+            .contains("call i32 @xiao_runtime_table_get_value(ptr")
+    );
+    assert!(!module.text.contains("call i32 @xiao_runtime_table_get("));
     let indexed: Vec<&str> = module
         .text
         .lines()
@@ -394,7 +396,7 @@ fn dynamic_table_member_reads_payload_at_index_one() {
         .collect();
     assert!(
         !indexed.is_empty(),
-        "动态表成员读取应当产生 extractvalue；实际生成：\n{}",
+        "标量观测应当产生 payload extractvalue；实际生成：\n{}",
         module.text
     );
     for line in indexed {

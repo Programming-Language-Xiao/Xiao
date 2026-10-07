@@ -1288,8 +1288,8 @@ fn normalized_components(components: &[String]) -> Vec<String> {
         .collect()
 }
 
-/// 根据产物中观察到的 Runtime 符号映射组件名称。
-fn components_for_symbols(symbols: &[String]) -> Vec<String> {
+/// 按共享 ABI 符号归属映射组件；生成调用图和链接后观测使用同一映射。
+pub(crate) fn components_for_symbols(symbols: &[String]) -> Vec<String> {
     let mut components = BTreeSet::new();
     for symbol in symbols {
         add_components_for_symbol(symbol, &mut components);
@@ -1305,6 +1305,7 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
         || symbol.starts_with("xiao_runtime_abi_")
         || symbol.starts_with("xiao_runtime_language_context_")
         || symbol.starts_with("xiao_runtime_fatal_")
+        || symbol == "xiao_runtime_random_seed"
         || symbol == "xiao_runtime_write_i64"
         || symbol == "xiao_runtime_print_values"
         || symbol == "xiao_runtime_input"
@@ -1317,6 +1318,7 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
         || symbol == "xiao_runtime_value_copy"
         || symbol == "xiao_runtime_value_release"
         || symbol == "xiao_runtime_value_release_strong"
+        || symbol == "xiao_runtime_value_release_any"
         || symbol == "xiao_runtime_value_release_weak"
     {
         components.insert("rc".to_owned());

@@ -9,7 +9,7 @@
 判断结果。
 
 `n0_a_native_driver.rs` 和 `n0_b_dynamic_native.rs` 是 LLVM/Runtime 外部工具链测试。它们
-使用 `#[ignore]` 门控：默认运行汇总中显示 3 条 ignored，显式执行
+使用 `#[ignore]` 门控：默认运行汇总明确列出环境依赖用例，显式执行
 `cargo test -p xiao-driver -- --ignored` 才会运行；显式运行必须提供
 `XIAO_CLANG` 和 `XIAO_TARGET_TRIPLE`；动态 Runtime 测试还需要
 `XIAO_LLVM_AS`、`XIAO_RUNTIME_LIBRARY`，并会用传入的 `rustc` 查询
@@ -18,3 +18,6 @@ Windows 原生准备方式见 `docs/DevDocs/10d-environment-gated-test-spec.md` 
 
 `x0_a_protocol.rs` 与 `tests/spec/11x0-protocol` 验证 Rust/TypeScript 共用的帧和消息样本；
 它们只检查机器字段，不解析人类可读诊断文本。
+
+10T 的 `d19a_differential.rs` 复用严格比较器验证表回调 O0–O3 与调试执行；macOS CI 显式跳过 GUI 执行、单独验证调试构建。
+`native_benchmark_probe.rs` 对 container-dense 追加入口并实跑 80 轮、对照 VM 的 28760；这不是性能取数。

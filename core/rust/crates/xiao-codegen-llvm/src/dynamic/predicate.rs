@@ -38,6 +38,15 @@ pub(super) fn name_key(name: &IrName) -> String {
     )
 }
 
+/// 与 VM 临时寄存器的边界一致：名称是已有绑定，其余堆值表达式拥有语句级临时值。
+pub(super) fn is_heap_temporary(expression: &IrExpression) -> bool {
+    match &expression.kind {
+        IrExpressionKind::Group { expression } => is_heap_temporary(expression),
+        IrExpressionKind::Name { .. } => false,
+        _ => type_uses_runtime(&expression.ty),
+    }
+}
+
 /// 判断一个生命周期作用域是否是另一个作用域的祖先。
 pub(super) fn scope_is_ancestor(
     scopes: &[xiao_ir::IrScope],
@@ -209,140 +218,6 @@ fn expression_uses_runtime(expression: &IrExpression) -> bool {
             IrExpressionKind::Selector { source, step, .. } => {
                 expression_uses_runtime(source)
                     || step.as_deref().is_some_and(expression_uses_runtime)
-            }
-            IrExpressionKind::Literal { .. } | IrExpressionKind::Name { .. } => false,
-        }
-}
-
-/// 判断类型是否需要数组、元组、字典或集合的 Runtime ABI。
-fn type_uses_container_abi(ty: &IrType) -> bool {
-    match ty {
-        IrType::Array { .. }
-        | IrType::Tuple { .. }
-        | IrType::DictTable { .. }
-        | IrType::DictColumn { .. }
-        | IrType::Set { .. } => true,
-        IrType::Function {
-            parameters,
-            return_type,
-        } => parameters.iter().any(type_uses_container_abi) || type_uses_container_abi(return_type),
-        _ => false,
-    }
-}
-
-/// 递归判断语句是否实际触及容器值。
-pub(super) fn statement_uses_container_abi(statement: &IrStatement) -> bool {
-    match &statement.kind {
-        IrStatementKind::Expression { value }
-        | IrStatementKind::Assignment { value, .. }
-        | IrStatementKind::ConstDeclaration { value, .. } => expression_uses_container_abi(value),
-        IrStatementKind::ExtendedAssignment { target, value, .. } => {
-            expression_uses_container_abi(target) || expression_uses_container_abi(value)
-        }
-        IrStatementKind::Declaration {
-            declared_type,
-            value,
-            ..
-        } => {
-            type_uses_container_abi(declared_type)
-                || value.as_ref().is_some_and(expression_uses_container_abi)
-        }
-        IrStatementKind::If {
-            condition,
-            body,
-            elif_branches,
-            else_body,
-        } => {
-            expression_uses_container_abi(condition)
-                || body.iter().any(statement_uses_container_abi)
-                || elif_branches.iter().any(|branch| {
-                    expression_uses_container_abi(&branch.condition)
-                        || branch.body.iter().any(statement_uses_container_abi)
-                })
-                || else_body
-                    .as_deref()
-                    .is_some_and(|body| body.iter().any(statement_uses_container_abi))
-        }
-        IrStatementKind::While { condition, body } => {
-            expression_uses_container_abi(condition)
-                || body.iter().any(statement_uses_container_abi)
-        }
-        IrStatementKind::For { iterable, body, .. } => {
-            expression_uses_container_abi(iterable) || body.iter().any(statement_uses_container_abi)
-        }
-        IrStatementKind::Return { value } => {
-            value.as_ref().is_some_and(expression_uses_container_abi)
-        }
-        IrStatementKind::Raise { value } => expression_uses_container_abi(value),
-        IrStatementKind::Try {
-            body,
-            catches,
-            finally_body,
-        } => {
-            body.iter().any(statement_uses_container_abi)
-                || catches
-                    .iter()
-                    .any(|catch| catch.body.iter().any(statement_uses_container_abi))
-                || finally_body
-                    .as_deref()
-                    .is_some_and(|body| body.iter().any(statement_uses_container_abi))
-        }
-        IrStatementKind::Table { body, .. } => body.iter().any(statement_uses_container_abi),
-        IrStatementKind::Function {
-            parameters,
-            return_type,
-            body,
-            ..
-        } => {
-            parameters
-                .iter()
-                .any(|parameter| type_uses_container_abi(&parameter.ty))
-                || type_uses_container_abi(return_type)
-                || body.iter().any(statement_uses_container_abi)
-        }
-        IrStatementKind::Import { .. } | IrStatementKind::Break | IrStatementKind::Continue => {
-            false
-        }
-    }
-}
-
-/// 递归判断表达式是否实际构造或访问容器值。
-fn expression_uses_container_abi(expression: &IrExpression) -> bool {
-    type_uses_container_abi(&expression.ty)
-        || match &expression.kind {
-            IrExpressionKind::Array { elements }
-            | IrExpressionKind::Tuple { elements }
-            | IrExpressionKind::Set { elements } => {
-                elements.iter().any(expression_uses_container_abi)
-            }
-            IrExpressionKind::DictTable { entries } | IrExpressionKind::DictColumn { entries } => {
-                entries
-                    .iter()
-                    .any(|entry| expression_uses_container_abi(&entry.value))
-            }
-            IrExpressionKind::Group { expression }
-            | IrExpressionKind::Cast { expression, .. }
-            | IrExpressionKind::Unary {
-                operand: expression,
-                ..
-            } => expression_uses_container_abi(expression),
-            IrExpressionKind::Binary { left, right, .. } => {
-                expression_uses_container_abi(left) || expression_uses_container_abi(right)
-            }
-            IrExpressionKind::Call { callee, arguments }
-            | IrExpressionKind::NewCall { callee, arguments } => {
-                expression_uses_container_abi(callee)
-                    || arguments
-                        .iter()
-                        .any(|argument| expression_uses_container_abi(&argument.value))
-            }
-            IrExpressionKind::IntrinsicCall { arguments, .. } => arguments
-                .iter()
-                .any(|argument| expression_uses_container_abi(&argument.value)),
-            IrExpressionKind::Member { object, .. } => expression_uses_container_abi(object),
-            IrExpressionKind::Selector { source, step, .. } => {
-                expression_uses_container_abi(source)
-                    || step.as_deref().is_some_and(expression_uses_container_abi)
             }
             IrExpressionKind::Literal { .. } | IrExpressionKind::Name { .. } => false,
         }

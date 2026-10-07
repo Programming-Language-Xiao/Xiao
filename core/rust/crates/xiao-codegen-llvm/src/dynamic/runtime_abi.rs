@@ -1,16 +1,15 @@
 //! 动态降低器的 Runtime ABI 声明与调用辅助。
 
-use super::predicate::statement_uses_container_abi;
 use super::{BYTES_TYPE, DynamicGenerator, ERROR_LOCATION_TYPE, VALUE_TYPE};
 use crate::target::ObjectFormat;
 use xiao_ir::IrSpan;
 
-/// 检查从程序 main 入口可达的通用复制调用。
+/// 按 main 可达基本块、直接调用和注册函数地址计算 Runtime 组件。
 ///
-/// 只分析本降低器发射的直接调用与 `br` 边，不折叠运行时条件。
+/// 只分析本降低器发射的调用、描述符函数地址与 `br` 边，不折叠运行时条件。
 /// 未调用的函数和无前驱的 finally 后续块均不构成链接依赖；
 /// 函数与块共同作为访问键，使同名标签、循环及递归保持独立且可终止。
-pub(super) fn has_reachable_value_copy(text: &str) -> bool {
+pub(super) fn reachable_runtime_components(text: &str) -> Vec<String> {
     use std::collections::{BTreeMap, BTreeSet};
 
     let mut blocks: BTreeMap<(&str, &str), Vec<&str>> = BTreeMap::new();
@@ -35,6 +34,7 @@ pub(super) fn has_reachable_value_copy(text: &str) -> bool {
             }
         }
     }
+    let mut symbols = BTreeSet::new();
     let mut pending = vec![("main", "entry")];
     let mut visited = BTreeSet::new();
     while let Some(key) = pending.pop() {
@@ -45,29 +45,52 @@ pub(super) fn has_reachable_value_copy(text: &str) -> bool {
             continue;
         };
         for line in lines {
-            if line.contains("call i32 @xiao_runtime_value_copy(")
-                || line.contains("call void @xiao_runtime_value_release_any(")
-            {
-                return true;
-            }
             if line.starts_with("br ") {
                 for target in line.split("label %").skip(1) {
                     pending.push((key.0, target.split(',').next().unwrap_or(target).trim()));
                 }
-            } else if (line.starts_with("call ") || line.contains(" = call "))
-                && let Some((_, callee)) = line.split_once('@')
-                && let Some((name, _)) = callee.split_once('(')
-            {
-                pending.push((name, "entry"));
+            }
+            // 描述符通过 insertvalue/store 持有回调地址；只追直接 call 会漏掉整个方法体。
+            if !line.starts_with(';') {
+                for reference in line.split('@').skip(1) {
+                    let symbol = reference
+                        .split(|c: char| !c.is_ascii_alphanumeric() && c != '_' && c != '.')
+                        .next()
+                        .unwrap_or("");
+                    if symbol.starts_with("xiao_runtime_") {
+                        symbols.insert(symbol.to_owned());
+                    }
+                    pending.push((symbol, "entry"));
+                }
             }
         }
     }
-    false
+    let mut components =
+        crate::artifact::components_for_symbols(&symbols.iter().cloned().collect::<Vec<_>>());
+    // 这些 ABI 实现处理 TableDropView 或调用其回调，传递可达弱句柄归还分支。
+    if symbols.iter().any(|symbol| {
+        matches!(
+            symbol.as_str(),
+            "xiao_runtime_value_copy"
+                | "xiao_runtime_value_release_any"
+                | "xiao_runtime_table_new_v2"
+                | "xiao_runtime_table_call"
+        )
+    }) {
+        components.push("weak".to_owned());
+    }
+    components.sort();
+    components.dedup();
+    components
 }
 
 impl<'a> DynamicGenerator<'a> {
     /// 登记 Runtime ABI 声明，并记录可解释组件清单。
     pub(super) fn declare_runtime(&mut self) {
+        self.declarations
+            .insert("declare i32 @xiao_runtime_random_seed(ptr)".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_table_new_v2(ptr, ptr)".to_owned());
         self.declarations
             .insert("declare void @xiao_runtime_value_release_any(ptr)".to_owned());
         self.declarations.insert(format!(
@@ -215,6 +238,10 @@ impl<'a> DynamicGenerator<'a> {
             .insert(self.value_declaration("xiao_runtime_value_tuple_owned", "ptr"));
         self.declarations
             .insert("declare i32 @xiao_runtime_dict_new(i32, ptr, ptr, i64, ptr)".to_owned());
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_dict_get(ptr, {}, ptr)",
+            self.bytes_parameter_type()
+        ));
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_dict", "ptr, i32"));
         self.declarations
@@ -239,25 +266,6 @@ impl<'a> DynamicGenerator<'a> {
             .insert(self.value_declaration("xiao_runtime_value_table", "ptr"));
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_table_owned", "ptr"));
-        self.declared_runtime_components.insert("value".to_owned());
-        self.declared_runtime_components.insert("rc".to_owned());
-        if self.program_uses_container_abi() {
-            self.declared_runtime_components
-                .insert("containers".to_owned());
-        }
-        if self
-            .program
-            .ownership
-            .release_plans
-            .iter()
-            .flat_map(|plan| plan.actions.iter())
-            .any(|action| action.kind == "weak")
-        {
-            self.declared_runtime_components.insert("weak".to_owned());
-        }
-        if !self.program.table_signatures.is_empty() {
-            self.declared_runtime_components.insert("tables".to_owned());
-        }
     }
 
     /// 判断目标 C ABI 是否把 16 字节 `XiaoValue` 通过隐藏返回槽传递。
@@ -385,6 +393,30 @@ impl<'a> DynamicGenerator<'a> {
     pub(super) fn emit_operation_argument(&mut self, name: &str) -> String {
         let bytes = self.emit_bytes_value(name.as_bytes());
         self.emit_bytes_argument(&bytes)
+    }
+
+    /// 按前端规范键读取字典表/字典列，键采用与字段访问相同的 C 字节视图约定。
+    pub(super) fn emit_dict_key_get(&mut self, source: &str, key: &str, span: IrSpan) -> String {
+        let payload = self.next_temp();
+        self.emit(format!(
+            "  {payload} = extractvalue {VALUE_TYPE} {source}, 1"
+        ));
+        let handle = self.next_temp();
+        self.emit(format!("  {handle} = inttoptr i64 {payload} to ptr"));
+        let key = self.emit_bytes_value(key.as_bytes());
+        let key = self.emit_bytes_argument(&key);
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_dict_get(ptr {handle}, {key}, ptr {output})"),
+            span,
+        );
+        let value = self.next_temp();
+        self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {output}"));
+        value
     }
 
     /// 发射 Runtime 二元运算并读取拥有的结果值。
@@ -533,10 +565,5 @@ impl<'a> DynamicGenerator<'a> {
         let value = self.next_temp();
         self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {output}"));
         value
-    }
-
-    /// 判断程序是否实际构造容器，而不是仅仅声明了动态值。
-    fn program_uses_container_abi(&self) -> bool {
-        self.program.body.iter().any(statement_uses_container_abi)
     }
 }

@@ -161,12 +161,15 @@ jobs:
                 echo
                 continue
               fi
-              if grep -q 'Platform reproduction completed:' "$log"; then
+              if grep -Eq '^(Platform reproduction completed:|平台复现脚本完成：)' "$log"; then
                 echo '- 状态：通过'
               else
                 echo '- 状态：失败或未完成；请查看该平台原始日志'
               fi
-              grep -E '^(runner|os|arch|platform)=|^Platform reproduction completed:' "$log" || true
+              grep -E '^(runner|os|arch|platform)=|^(Platform reproduction completed:|平台复现脚本完成：)' "$log" || true
+              if [[ "$platform" == "macos-arm64" ]]; then
+                echo '- 窗口证据：真实终端与表方法调试执行测试显式跳过；调试构建单独验证，稳定启动失败不代表窗口已打开。'
+              fi
               echo
             done
           } >> "$GITHUB_STEP_SUMMARY"

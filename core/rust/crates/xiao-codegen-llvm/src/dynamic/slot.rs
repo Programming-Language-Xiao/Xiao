@@ -79,7 +79,7 @@ impl<'a> DynamicGenerator<'a> {
     /// 收集表字段默认值，确保真实表源码不会在原生路径被静默丢弃。
     ///
     /// 字段值在每次 `new`/singleton 构造时重新求值；这与字节码侧的字段辅助函数
-    /// 保持一致。方法和其他表体语句需要函数表或异常边，当前批次明确结构化拒绝。
+    /// 保持一致。方法由独立函数表收集；字段辅助函数复用同一初始化与异常边。
     pub(super) fn collect_table_initializers(&mut self) -> Result<()> {
         for statement in &self.program.body {
             let IrStatementKind::Table { name, body, .. } = &statement.kind else {
@@ -105,7 +105,7 @@ impl<'a> DynamicGenerator<'a> {
                         ..
                     } => (target, value),
                     IrStatementKind::Declaration { value: None, .. } => continue,
-                    // 方法体由独立回调生成；构造处仍保留方法描述符拒绝，直至接通 V2。
+                    // 方法体由独立回调和 V2 方法数组生成，不混作字段。
                     IrStatementKind::Function { .. } => continue,
                     _ => {
                         return Err(CodegenError::Unsupported {

@@ -1,6 +1,6 @@
 # 10S-A1：表方法与生命周期 ABI 开工清单
 
-状态：仅准备，不实现。来源：[10S](10s-cross-platform-evidence-and-release-closeout.md)。
+状态：本清单由 [10T](10t-table-method-abi-implementation.md) 实现；10S 本身仅准备。来源：[10S](10s-cross-platform-evidence-and-release-closeout.md)。
 
 现有数据链：IR 的表签名可还原 Runtime TableSignature，成员已区分 method；
 字节码表定义另存方法函数编号与字段初始化函数，VM 通过 TableInstance::with_initializer

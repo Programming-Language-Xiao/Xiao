@@ -15,6 +15,38 @@ use xiao_syntax::RandomMode;
 use xiao_syntax::ScalarType;
 use xiao_types::{SeededRandom, sample_indices};
 
+thread_local! {
+    /// 同一原生执行会话共享随机状态；仅显式 seed 重置，选择操作持续推进。
+    static RANDOM: std::cell::RefCell<SeededRandom> = const { std::cell::RefCell::new(SeededRandom::new(0)) };
+}
+
+/// 与 VM 共用确定性随机源和种子规则，不把纯动态检查偷换成重置操作。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_random_seed(value: *const XiaoValue) -> i32 {
+    if value.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let seed = match value {
+        RuntimeValue::Int(value) if value >= 0 => Ok(value as u128),
+        RuntimeValue::Sint(value) if value >= 0 => Ok(value as u128),
+        RuntimeValue::Lint(value) => value
+            .parse::<u128>()
+            .map_err(|_| RuntimeError::random_seed("种子无效")),
+        _ => Err(RuntimeError::random_seed("种子必须是非负整数")),
+    };
+    match status(seed) {
+        Ok(seed) => {
+            RANDOM.with(|random| random.borrow_mut().reseed(seed));
+            XiaoAbiStatus::Ok.code()
+        }
+        Err(error) => error,
+    }
+}
+
 /// 执行一个前端登记的动态检查。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_dynamic_check(kind: XiaoAbiBytes, value: *const XiaoValue) -> i32 {
@@ -251,8 +283,9 @@ pub extern "C" fn xiao_runtime_value_select(
         "with_replacement" => RandomMode::WithReplacement,
         _ => return XiaoAbiStatus::InvalidArgument.code(),
     };
-    let mut random = SeededRandom::new(0);
-    let indices = match sample_indices(values.len(), count, mode, &mut random) {
+    let indices = match RANDOM
+        .with(|random| sample_indices(values.len(), count, mode, &mut *random.borrow_mut()))
+    {
         Ok(indices) => indices,
         Err(error) => {
             let runtime_error = RuntimeError::random_count(error.to_string());

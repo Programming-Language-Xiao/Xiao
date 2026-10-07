@@ -301,8 +301,8 @@ pub extern "C" fn xiao_runtime_table_new_v2(
     if out.is_null() {
         return XiaoAbiStatus::Null.code();
     }
-    unsafe {
-        *out = std::ptr::null_mut();
+    if !unsafe { *out }.is_null() {
+        return XiaoAbiStatus::InvalidArgument.code();
     }
     let (definition, metadata) = match unsafe { copy_definition(descriptor) } {
         Ok(value) => value,
@@ -416,27 +416,49 @@ pub extern "C" fn xiao_runtime_table_get_value(
         return XiaoAbiStatus::Null.code();
     }
     let receiver = unsafe { &*receiver };
-    if receiver.tag == XiaoValueTag::Table {
-        return xiao_runtime_table_get(unsafe { receiver.payload.handle }, field, out);
-    }
-    if receiver.tag != XiaoValueTag::TableDropView {
+    if !matches!(
+        receiver.tag,
+        XiaoValueTag::Table | XiaoValueTag::TableDropView
+    ) {
         return XiaoAbiStatus::InvalidArgument.code();
     }
     let operation = || -> Result<XiaoValue, i32> {
         let field = unsafe { utf8(field) }?;
+        if receiver.tag == XiaoValueTag::Table {
+            let handle = unsafe { clone_strong(receiver.payload.handle) }?;
+            let instance = status(TableInstance::from_strong_handle(handle))?;
+            let value = status(instance.get_compiled_field(&field))?
+                .ok_or(XiaoAbiStatus::OutOfBounds.code())?;
+            return runtime_into_value(value);
+        }
         let view = unsafe { drop_view_ref(receiver.payload.weak_handle) }
             .ok_or(XiaoAbiStatus::InvalidHandle.code())?;
         let views = view.views.borrow();
         let view = views.last().ok_or(XiaoAbiStatus::InvalidHandle.code())?;
         let value =
             status(view.get_compiled_field(&field))?.ok_or(XiaoAbiStatus::OutOfBounds.code())?;
-        runtime_to_value(&value)
+        runtime_into_value(value)
     };
     match operation() {
         Ok(value) => unsafe { write_value(out, value) }
             .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code()),
         Err(error) => error,
     }
+}
+
+/// 字段读取已经返回一个拥有值，直接转移进 ABI，避免再次克隆后马上归还。
+fn runtime_into_value(value: RuntimeValue) -> Result<XiaoValue, i32> {
+    let (tag, handle) = match value {
+        RuntimeValue::Str(value) => (XiaoValueTag::Str, value.into_strong_handle()),
+        RuntimeValue::Table(value) => (XiaoValueTag::Table, value.into_strong_handle()),
+        RuntimeValue::Array(value) => (XiaoValueTag::Array, value.into_strong_handle()),
+        RuntimeValue::Tuple(value) => (XiaoValueTag::Tuple, value.into_strong_handle()),
+        RuntimeValue::DictTable(value) => (XiaoValueTag::DictTable, value.into_strong_handle()),
+        RuntimeValue::DictColumn(value) => (XiaoValueTag::DictColumn, value.into_strong_handle()),
+        RuntimeValue::Set(value) => (XiaoValueTag::Set, value.into_strong_handle()),
+        other => return runtime_to_value(&other),
+    };
+    Ok(value_from_owned_handle(tag, handle))
 }
 
 /// 普通表值字段写入；析构视图不拥有可写或可升级的表句柄。

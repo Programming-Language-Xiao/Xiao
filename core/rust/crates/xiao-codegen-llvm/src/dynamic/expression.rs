@@ -42,6 +42,12 @@ impl<'a> DynamicGenerator<'a> {
                 }
             }
             IrExpressionKind::Member { object, member } => {
+                if matches!(expression.ty, IrType::Function { .. }) {
+                    return Err(CodegenError::Unsupported {
+                        feature: "动态表方法值（A3）".to_owned(),
+                        span: Some(expression.span),
+                    });
+                }
                 self.emit_table_get(object, member, expression.span)
             }
             IrExpressionKind::Call { callee, arguments } => {
@@ -131,7 +137,7 @@ impl<'a> DynamicGenerator<'a> {
     }
 
     /// 把 IR 二元运算映射为 Runtime 唯一算子表名称。
-    fn binary_operation_name(
+    pub(super) fn binary_operation_name(
         &self,
         operator: &str,
         left: &IrExpression,
@@ -270,17 +276,18 @@ impl<'a> DynamicGenerator<'a> {
             return Ok(selected);
         };
         for segment in &path.segments {
-            let IrPathSegmentKind::Index { text, negative } = &segment.kind else {
-                return Err(CodegenError::Unsupported {
-                    feature: "动态字典键选择器".to_owned(),
-                    span: Some(segment.span),
-                });
+            let next = match &segment.kind {
+                IrPathSegmentKind::Name { name } => {
+                    self.emit_dict_key_get(&value, &name.text, segment.span)
+                }
+                IrPathSegmentKind::Index { text, negative } => {
+                    let raw = text.parse::<i64>().map_err(|_| CodegenError::InvalidIr {
+                        message: format!("选择器索引无法解析：{text}"),
+                    })?;
+                    let index = if *negative { -raw } else { raw };
+                    self.emit_iter_get(&value, &index.to_string(), span)
+                }
             };
-            let raw = text.parse::<i64>().map_err(|_| CodegenError::InvalidIr {
-                message: format!("选择器索引无法解析：{text}"),
-            })?;
-            let index = if *negative { -raw } else { raw };
-            let next = self.emit_iter_get(&value, &index.to_string(), span);
             self.release_value(value);
             value = next;
         }
@@ -303,14 +310,15 @@ impl<'a> DynamicGenerator<'a> {
         for (index, path) in paths.iter().enumerate() {
             let mut value = source.to_owned();
             for segment in path {
-                let xiao_ir::IrSelectionPathSegment::Index { resolved, raw } = segment else {
-                    return Err(CodegenError::Unsupported {
-                        feature: "动态字典键选择器".to_owned(),
-                        span: Some(span),
-                    });
+                let next = match segment {
+                    xiao_ir::IrSelectionPathSegment::Key(key) => {
+                        self.emit_dict_key_get(&value, key, span)
+                    }
+                    xiao_ir::IrSelectionPathSegment::Index { resolved, raw } => {
+                        let index = resolved.map_or(*raw, |value| value as i128) as i64;
+                        self.emit_iter_get(&value, &index.to_string(), span)
+                    }
                 };
-                let index = resolved.map_or(*raw, |value| value as i128) as i64;
-                let next = self.emit_iter_get(&value, &index.to_string(), span);
                 if value != source {
                     self.release_value(value);
                 }
@@ -356,6 +364,7 @@ impl<'a> DynamicGenerator<'a> {
         match declaration.vm_binding {
             xiao_intrinsics::VmBinding::Print => {
                 let mut values = Vec::with_capacity(arguments.len());
+                let mut deferred = Vec::with_capacity(arguments.len());
                 for argument in arguments {
                     if argument.kind != "positional" || argument.name.is_some() {
                         return Err(CodegenError::Unsupported {
@@ -363,7 +372,14 @@ impl<'a> DynamicGenerator<'a> {
                             span: Some(argument.span),
                         });
                     }
-                    values.push(self.emit_expression(&argument.value)?);
+                    let value = self.emit_expression(&argument.value)?;
+                    let keep = !self.statement_temporaries.is_empty()
+                        && super::predicate::is_heap_temporary(&argument.value);
+                    if keep {
+                        self.own_statement_temporary(&argument.value, &value);
+                    }
+                    deferred.push(keep);
+                    values.push(value);
                 }
                 let array = if values.is_empty() {
                     None
@@ -390,8 +406,10 @@ impl<'a> DynamicGenerator<'a> {
                     ),
                     span,
                 );
-                for value in values {
-                    self.release_value(value);
+                for (value, deferred) in values.into_iter().zip(deferred) {
+                    if !deferred {
+                        self.release_value(value);
+                    }
                 }
                 Ok(self.none_value())
             }
@@ -441,7 +459,7 @@ impl<'a> DynamicGenerator<'a> {
         }
     }
 
-    /// 发射动态普通调用；当前只开放前端已识别的错误构造器。
+    /// 发射已静态解析的顶层函数、表方法与错误构造调用。
     fn emit_call(
         &mut self,
         callee: &IrExpression,
@@ -459,7 +477,13 @@ impl<'a> DynamicGenerator<'a> {
                 });
             };
             let value = self.emit_expression(&argument.value)?;
-            self.emit_dynamic_check("random_seed", &value, argument.value.span);
+            let slot = self.next_temp();
+            self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
+            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+            self.checked_status_call_at(
+                format!("@xiao_runtime_random_seed(ptr {slot})"),
+                argument.value.span,
+            );
             self.release_value(value);
             return Ok(self.none_value());
         }
@@ -518,7 +542,8 @@ impl<'a> DynamicGenerator<'a> {
             let value = self.emit_expression(&argument.value)?;
             let slot = self.next_temp();
             self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
-            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+            self.emit(format!("  store {VALUE_TYPE} zeroinitializer, ptr {slot}"));
+            self.store_call_argument(&argument.value, &argument.value, &value, &slot);
             argument_slots.push(slot);
         }
         let output = self.next_temp();
@@ -711,30 +736,7 @@ impl<'a> DynamicGenerator<'a> {
                 span: Some(span),
             });
         }
-        let object_value = self.emit_expression(object)?;
-        if self.callback.is_some() {
-            return self.emit_callback_field_get(object_value, member, span);
-        }
-        let payload = self.next_temp();
-        self.emit(format!(
-            "  {payload} = extractvalue {VALUE_TYPE} {object_value}, 1"
-        ));
-        let handle = self.next_temp();
-        self.emit(format!("  {handle} = inttoptr i64 {payload} to ptr"));
-        let field = self.emit_bytes_value(name_key(member).as_bytes());
-        let field_argument = self.emit_bytes_argument(&field);
-        let output = self.next_temp();
-        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
-        self.emit(format!(
-            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
-        ));
-        self.checked_status_call(format!(
-            "@xiao_runtime_table_get(ptr {handle}, {field_argument}, ptr {output})"
-        ));
-        let value = self.next_temp();
-        self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {output}"));
-        self.release_value(object_value);
-        Ok(value)
+        self.emit_callback_field_get(object, member, span)
     }
 
     /// 向动态表写入一个字段值，并归还表达式临时所有权。
@@ -751,30 +753,7 @@ impl<'a> DynamicGenerator<'a> {
                 span: Some(span),
             });
         }
-        let object_value = self.emit_expression(object)?;
-        if self.callback.is_some() {
-            return self.emit_callback_field_set(object_value, member, value, span);
-        }
-        let object_payload = self.next_temp();
-        self.emit(format!(
-            "  {object_payload} = extractvalue {VALUE_TYPE} {object_value}, 1"
-        ));
-        let object_handle = self.next_temp();
-        self.emit(format!(
-            "  {object_handle} = inttoptr i64 {object_payload} to ptr"
-        ));
-        let field = self.emit_bytes_value(name_key(member).as_bytes());
-        let field_argument = self.emit_bytes_argument(&field);
-        let emitted = self.emit_expression(value)?;
-        let value_slot = self.next_temp();
-        self.emit(format!("  {value_slot} = alloca {VALUE_TYPE}"));
-        self.emit(format!("  store {VALUE_TYPE} {emitted}, ptr {value_slot}"));
-        self.checked_status_call(format!(
-            "@xiao_runtime_table_set(ptr {object_handle}, {field_argument}, ptr {value_slot})"
-        ));
-        self.release_value(emitted);
-        self.release_value(object_value);
-        Ok(())
+        self.emit_callback_field_set(object, member, value, span)
     }
 
     /// 发射标量或字符串字面量。

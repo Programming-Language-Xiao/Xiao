@@ -187,7 +187,8 @@ jobs:
         run: |
           set -euo pipefail
           sudo apt-get update
-          sudo apt-get install -y clang llvm
+          sudo apt-get install -y clang llvm xvfb xterm
+          sudo update-alternatives --set x-terminal-emulator /usr/bin/xterm
           export XIAO_CLANG="$(command -v clang)"
           export XIAO_LLVM_AS="$(command -v llvm-as)"
           export XIAO_LLC="$(command -v llc)"
@@ -201,4 +202,4 @@ jobs:
           test -x "$XIAO_DIAGNOSTICS_PATH"
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime-abi -- --ignored
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test n0_b_dynamic_native --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture
+          xvfb-run -a cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test n0_a_native_driver --test n0_b_dynamic_native --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture

@@ -108,7 +108,7 @@ fn module_dependency_direction_is_acyclic() {
         assert_no_dependency(name, source, "super::runtime_abi");
         assert_no_dependency(name, source, "super::slot");
     }
-    assert!(runtime_abi.contains("super::predicate"));
+    assert!(runtime_abi.contains("reachable_runtime_components"));
     assert!(slot.contains("super::predicate"));
     assert!(expression.contains("super::predicate"));
     assert!(expression.contains("super::text"));

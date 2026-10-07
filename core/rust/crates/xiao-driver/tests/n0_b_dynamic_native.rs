@@ -334,6 +334,52 @@ fn generic_value_copy_registers_weak_dependency_only_when_called() {
 const TABLE_CALLBACK_SOURCE: &str = "[[Item]]\n    value = 7\n    def read(self) -> int\n        return self.value\n    def add(self, int amount = 2) -> int\n        return self.read() + amount\n    def drop(self) -> none\n        observed = self.read()\n";
 
 #[test]
+/// 接通 A1 不绕过私有成员和参数类型检查，也不提前开放 A2/A3。
+fn table_methods_preserve_static_checks_and_followup_boundaries() {
+    let prefix = "[[Item]]\n    value = 1\n    def _read(self) -> int\n        return self.value\n    def add(self, int amount) -> int\n        return self.value + amount\nitem = new Item()\n";
+    for suffix in ["item._read()\n", "item.add(\"bad\")\n", "item.add()\n"] {
+        assert!(
+            FrontendCompiler::new()
+                .compile(&FrontendRequest::from_text(format!("{prefix}{suffix}")))
+                .is_err(),
+            "{suffix}"
+        );
+    }
+    for (source, reason) in [
+        ("[[Item]]\n    value = 1\n    def init(self, int amount) -> none\n        self.value = amount\nitem = new Item(2)\n".to_owned(), "动态表构造参数"),
+        (format!("{prefix}callback = item.add\n"), "A3"),
+    ] {
+        let artifact = FrontendCompiler::new().compile(&FrontendRequest::from_text(&source)).expect("后续边界源码应通过静态前端");
+        let error = NativeBuild::new().lower(&artifact.ir, &CodegenOptions::default()).expect_err("A2/A3 仍明确拒绝");
+        assert!(error.to_string().contains(reason), "{error}");
+    }
+}
+
+#[test]
+/// 回调地址进入描述符才可达；未构造表中的数组方法不能强行登记进产物。
+fn runtime_components_follow_registered_callbacks() {
+    let source = "[[Item]]\n    value = 7\n    def read(self) -> int\n        values = [1, 2]\n        return values[1]\n";
+    for (suffix, expected) in [("", false), ("item = new Item()\n", true)] {
+        let artifact = FrontendCompiler::new()
+            .compile(&FrontendRequest::from_text(format!("{source}{suffix}")))
+            .expect("回调可达性源码");
+        let module = NativeBuild::new()
+            .lower(&artifact.ir, &CodegenOptions::default())
+            .expect("回调可达性降低");
+        for component in ["tables", "containers", "weak"] {
+            assert_eq!(
+                module
+                    .runtime_components
+                    .iter()
+                    .any(|item| item == component),
+                expected,
+                "{component}: {suffix}"
+            );
+        }
+    }
+}
+
+#[test]
 /// 注册式方法回调在三个目标都使用指针实参和 i32 状态；构造拒绝在接通前仍保留。
 fn table_callbacks_use_pointer_arguments_on_windows_and_sysv() {
     let source = TABLE_CALLBACK_SOURCE;

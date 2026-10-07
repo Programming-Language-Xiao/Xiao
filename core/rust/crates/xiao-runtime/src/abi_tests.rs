@@ -5,6 +5,70 @@ use std::sync::{Mutex, OnceLock};
 use serde_json::{Value, json};
 use xiao_diagnostics::window::{DIAGNOSTIC_PROTOCOL_VERSION, read_message};
 
+#[test]
+/// 原生随机选择持续推进与 VM 共用的随机源；显式重置可复现，非法种子不改状态。
+fn native_random_seed_controls_a_persistent_sequence() {
+    xiao_runtime_error_clear();
+    let values = [
+        XiaoValue::int(0),
+        XiaoValue::int(1),
+        XiaoValue::int(2),
+        XiaoValue::int(3),
+    ];
+    let mut handle = std::ptr::null_mut();
+    assert_eq!(
+        xiao_runtime_array_new(values.as_ptr(), values.len(), &mut handle),
+        0
+    );
+    let mut array = xiao_runtime_value_array_owned(handle);
+    assert_eq!(abi_dynamic::xiao_runtime_random_seed(&XiaoValue::int(7)), 0);
+    let mut reference = xiao_types::SeededRandom::new(7);
+    for round in 0..6 {
+        if round == 2 {
+            assert_ne!(
+                abi_dynamic::xiao_runtime_random_seed(&XiaoValue::int(-1)),
+                0
+            );
+            xiao_runtime_error_clear();
+        }
+        if round == 4 {
+            assert_eq!(abi_dynamic::xiao_runtime_random_seed(&XiaoValue::int(7)), 0);
+            reference.reseed(7);
+        }
+        let expected = xiao_types::sample_indices(
+            4,
+            1,
+            xiao_syntax::RandomMode::WithoutReplacement,
+            &mut reference,
+        )
+        .unwrap();
+        let mut selected = XiaoValue::none();
+        assert_eq!(
+            abi_dynamic::xiao_runtime_value_select(
+                &array,
+                1,
+                bytes("without_replacement"),
+                &mut selected
+            ),
+            0
+        );
+        let RuntimeValue::Array(result) = (unsafe { value_to_runtime(&selected) }).unwrap() else {
+            panic!("必须返回数组");
+        };
+        result
+            .with_elements(|elements| {
+                assert!(
+                    matches!(elements[0], RuntimeValue::Int(value) if value == expected[0] as i64)
+                )
+            })
+            .unwrap();
+        drop(result);
+        xiao_runtime_value_release_any(&mut selected);
+    }
+    xiao_runtime_value_release_any(&mut array);
+    assert_eq!(abi_dynamic::xiao_runtime_random_seed(&XiaoValue::int(0)), 0);
+}
+
 /// 把测试字符串借用为 ABI UTF-8 字节视图。
 fn bytes(text: &str) -> XiaoAbiBytes {
     XiaoAbiBytes {
