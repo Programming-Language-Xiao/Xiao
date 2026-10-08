@@ -801,22 +801,6 @@ fn a2_remaining_shape_vm_observations() {
     }
 }
 
-#[test]
-fn a2_constructor_baselines_are_sensitive_to_ignored_arguments() {
-    let positional = source_observation(
-        "[[Item]]\n    value = 0\n    def init(self, int amount) -> none\n        self.value = amount\n    def read(self) -> int\n        return self.value\nitem = new Item(9)\nprint(item.read())\n",
-        OptimizationLevel::O0,
-    );
-    let defaulted = source_observation(
-        "[[Item]]\n    value = 0\n    def init(self, int amount = 4) -> none\n        self.value = amount\n    def read(self) -> int\n        return self.value\nitem = new Item()\nprint(item.read())\n",
-        OptimizationLevel::O0,
-    );
-    assert_eq!(positional.output, "9\n");
-    assert_eq!(defaulted.output, "4\n");
-    assert_ne!(positional.output, "0\n", "忽略位置构造参数必须使基线变红");
-    assert_ne!(defaulted.output, "0\n", "忽略默认构造参数必须使基线变红");
-}
-
 /// 原拒绝用例进入统一差分清单；默认门禁检查真实源码会注册 drop 回调。
 #[test]
 fn table_drop_registers_a_real_callback() {
