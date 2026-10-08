@@ -193,6 +193,7 @@ fn run_standalone(
     }
     let Some(parent_pid) = parent_pid else {
         thread::sleep(Duration::from_secs(1));
+        hold_after_close(locale)?;
         return Ok(());
     };
     while process_is_alive(parent_pid) {
