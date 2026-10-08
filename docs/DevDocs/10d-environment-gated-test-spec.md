@@ -200,7 +200,7 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
 **调试模式的 ignored 用例会真的启动诊断窗口**。规模最大的一个是
 `xiao-driver/tests/d19a_differential.rs` 的 `native_table_methods_debug_execution_o0_o3`：
 它把 18 个表用例在 `O0`–`O3` 各跑一遍，即 **72 次调试产物执行，每次开一个诊断窗口**。
-窗口是按诊断会话的存活期关闭的，因此本地跑起来会看到**连续弹窗**；这不是缺陷。
+窗口在诊断会话结束后默认额外保持约 5 秒，因此本地跑起来会看到**连续弹窗**；这不是缺陷。
 
 按 [10V](10v-diagnostic-window-hold.md)，渲染器在会话结束后会**保持最后一屏约 5 秒**
 （`XIAO_DIAGNOSTICS_HOLD_MS`，未设置时默认 `5000`，设为 `0` 立即关闭；
