@@ -207,6 +207,7 @@ docs/DevDocs/README.md                                         主表登记
 ### A2 第一阶段已完成
 
 - 在既有 V2 描述符和注册式 callback 上新增兼容入口 `xiao_runtime_table_new_v2_with_args`；旧 `xiao_runtime_table_new_v2` 仍转发为空参数调用，ABI 主版本不变。
+- 因新增兼容入口，Runtime ABI 次版本由 1.8 升至 1.9，并同步更新版本断言。
 - Runtime 继续复用 `TableInstance::with_initializer`：字段初始化先执行，`ascii:init` 接收借用参数数组，参数标签/个数按已复制的 init 签名校验；失败仍由原状态机组装主因、cause 和 suppressed 链，输出句柄保持 null。
 - LLVM 构造路径按源码位置/关键字绑定显式参数并补齐默认值，生成 `%xiao.value` 数组，调用期间借用，返回表句柄继续唯一拥有。两处 A2 拒绝点已撤销；A3 拒绝保持不变。
 - 已更新原生回归测试：带 `def init(self, int amount)` 的 `new Item(2)` 可降低；方法值赋值仍明确拒绝。
