@@ -222,6 +222,7 @@ xiao-repo-check all        # 按固定顺序执行全部检查
 | `A0-SIZE-001` | 单个项目维护源文件超过 2500 物理行，或其豁免说明不完整 |
 | `A0-DOCS-001` | 模块登记路径、UseDocs 元数据或 Markdown 链接失效 |
 | `A0-DOCS-002` | 已完成模块缺少 `verified` UseDocs |
+| `A0-DOCS-004` | DevDocs 主索引重复登记同一相对页面链接 |
 | `A0-COVERAGE-001` | 公共 API 100% 或全仓库 90% 门槛未达 |
 | `A0-COVERAGE-002` | 单个声明缺少代码文档 |
 | `A0-PARSER-001` | 源文件 AST 解析失败，或超长文件结构大纲不可用 |

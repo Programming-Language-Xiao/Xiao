@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { checkLayout } from "../src/layout.ts";
 import { checkCommitMessage } from "../src/commit.ts";
 import { parseArguments, runCommand } from "../src/cli.ts";
-import { checkMarkdownLinks, checkUseDocs, scanMarkdownDirectory } from "../src/docs.ts";
+import { checkDevDocs, checkMarkdownLinks, checkUseDocs, scanMarkdownDirectory } from "../src/docs.ts";
 import { findRepositoryRoot } from "../src/manifest.ts";
 import { renderJson, renderSarif, renderText } from "../src/report.ts";
 import { checkFileSizes, countPhysicalLines, exemptionMissingSections, MAX_SOURCE_LINES, renderOutlineDetails } from "../src/size.ts";
@@ -288,6 +288,33 @@ describe("Markdown 链接负例", () => {
       }];
       const diagnostics = checkMarkdownLinks(directory, pages);
       expect(diagnostics.some((item) => item.code === "A0-DOCS-001" && item.message.includes("链接目标不存在"))).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("DevDocs 主索引唯一性", () => {
+  test("同一页面重复登记时失败并列出规则号", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-index-"));
+    try {
+      mkdirSync(join(directory, "docs", "DevDocs"), { recursive: true });
+      writeFileSync(join(directory, "docs", "DevDocs", "README.md"), "## 实际开发顺序\n\n| A | [页面](a.md) |\n| B | [页面](a.md) |\n", "utf8");
+      writeFileSync(join(directory, "docs", "DevDocs", "a.md"), "# 页面\n", "utf8");
+      const diagnostics = checkDevDocs(directory);
+      expect(diagnostics.some((item) => item.code === "A0-DOCS-004" && item.message.includes("a.md"))).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("单次登记通过唯一性检查", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-index-once-"));
+    try {
+      mkdirSync(join(directory, "docs", "DevDocs"), { recursive: true });
+      writeFileSync(join(directory, "docs", "DevDocs", "README.md"), "## 实际开发顺序\n\n| A | [页面](a.md) |\n", "utf8");
+      writeFileSync(join(directory, "docs", "DevDocs", "a.md"), "# 页面\n", "utf8");
+      expect(checkDevDocs(directory).filter((item) => item.code === "A0-DOCS-004")).toEqual([]);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

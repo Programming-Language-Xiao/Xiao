@@ -149,7 +149,65 @@ export function checkUseDocs(root: string, registry: ModuleRegistry): Diagnostic
  */
 export function checkDevDocs(root: string): Diagnostic[] {
   const scanned = scanMarkdownDirectory(root, "docs/DevDocs");
-  return [...scanned.diagnostics, ...checkMarkdownLinks(root, scanned.pages)];
+  return [
+    ...scanned.diagnostics,
+    ...checkMarkdownLinks(root, scanned.pages),
+    ...checkDevDocsIndexUniqueness(root, scanned.pages),
+  ];
+}
+
+/**
+ * 确保 DevDocs 主索引中的同一目标页面只登记一次。
+ *
+ * 主索引重复登记会让同一批次出现互相矛盾的状态；链接唯一性与断链检查
+ * 互补，必须在解析成功的目标路径上比较，而不是比较显示文字。
+ */
+function checkDevDocsIndexUniqueness(root: string, pages: MarkdownPage[]): Diagnostic[] {
+  const index = pages.find((page) => page.path.toLowerCase() === "docs/devdocs/readme.md");
+  if (!index) return [];
+  const occurrences = new Map<string, number[]>();
+  let content: string;
+  try {
+    content = readText(resolveRepoPath(root, index.path));
+  } catch {
+    return [];
+  }
+  // README 后面的说明文字可以再次引用页面；唯一性规则只约束主表的登记行。
+  const contentLines = content.split(/\r?\n/u);
+  const start = contentLines.findIndex((line) => line.trim() === "## 实际开发顺序");
+  if (start < 0) return [];
+  const endOffset = contentLines.slice(start + 1).findIndex((line) => /^##\s+/u.test(line.trim()));
+  const end = endOffset < 0 ? contentLines.length : start + 1 + endOffset;
+  const tableLinks = contentLines.slice(start, end).flatMap((line, offset) => {
+    if (!line.trimStart().startsWith("|")) return [];
+    const match = line.match(/\[[^\]]*\]\(([^)\s]+)(?:\s+"[^"]*")?\)/u);
+    return match ? [{ rawLink: match[1], line: start + offset + 1 }] : [];
+  });
+  for (const { rawLink, line } of tableLinks) {
+    if (isExternalLink(rawLink) || rawLink.startsWith("mailto:")) continue;
+    const [rawTarget] = splitAnchor(rawLink);
+    if (!rawTarget) continue;
+    let targetPath: string;
+    try {
+      targetPath = repoRelative(root, resolveMarkdownTarget(root, index.path, decodeURIComponent(rawTarget)));
+    } catch {
+      continue;
+    }
+    const identity = decodeURIComponent(rawLink).replaceAll("\\", "/");
+    const lines = occurrences.get(identity) ?? [];
+    lines.push(line);
+    occurrences.set(identity, lines);
+  }
+  const diagnostics: Diagnostic[] = [];
+  for (const [target, lines] of occurrences) {
+    if (lines.length < 2) continue;
+    diagnostics.push({
+      ...docsDiagnostic("A0-DOCS-004", index.path, `DevDocs 主索引重复登记页面：${target}（${lines.length} 次）`, "a0.docs.duplicate_index_link"),
+      line: lines[0],
+      details: lines.map((line) => `第 ${line} 行`),
+    });
+  }
+  return diagnostics;
 }
 
 /** 解析 Markdown 页面中的元数据、标题和链接。 */
