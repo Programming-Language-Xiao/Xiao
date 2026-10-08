@@ -191,6 +191,12 @@ docs/DevDocs/README.md                                          主表登记
 - 开关为环境变量 `XIAO_DIAGNOSTICS_HOLD_MS`：未设置默认 5000 ms，设置为 `0` 明确关闭；非法值或超过 3600000 ms 会以诊断通道错误退出，不静默回退。
 - 平台复现脚本和维护回归的 Windows/Linux 原生作业均显式设置 `XIAO_DIAGNOSTICS_HOLD_MS=0`，调试矩阵仍执行，不删用例。交互取证可不设置变量，窗口会保留 5 秒。
 - 提示文案已加入中英双语 i18n。C 档仍需裸机截图，本改动不替代取证。
+- **审核补正（2026-10-08）**：规划 §2.3 第 2 条要求「本地跑 ignored 会开大量窗口」写进文档，
+  实现漏了。已补进 [10D](10d-environment-gated-test-spec.md) §4.5：窗口规模（72 次调试执行）、
+  `XIAO_DIAGNOSTICS_HOLD_MS` 的语义与默认值、推荐用 `--skip` 消窗，并说明走 `reproduce.sh`/CI
+  时窗口闪退是**预期**的（那些路径显式设了 `0`）。
+- **审核实测（2026-10-08）**：保持本身已验证有效——`--standalone` 预览在默认下耗时 **6170 ms**
+  并打印保持提示，`XIAO_DIAGNOSTICS_HOLD_MS=0` 时耗时 **1154 ms** 且不打印。用法说明见 10D §4.5。
 
 ## 待定决策
 

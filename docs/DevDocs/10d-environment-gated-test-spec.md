@@ -195,6 +195,31 @@ cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored
     Linux 使用 `x86_64-unknown-linux-gnu` 或 `aarch64-unknown-linux-gnu`，macOS 使用
     `x86_64-apple-darwin` 或 `aarch64-apple-darwin`。
 
+### 4.5 本地跑 ignored 套件会开大量诊断窗口
+
+**调试模式的 ignored 用例会真的启动诊断窗口**。规模最大的一个是
+`xiao-driver/tests/d19a_differential.rs` 的 `native_table_methods_debug_execution_o0_o3`：
+它把 18 个表用例在 `O0`–`O3` 各跑一遍，即 **72 次调试产物执行，每次开一个诊断窗口**。
+窗口是按诊断会话的存活期关闭的，因此本地跑起来会看到**连续弹窗**；这不是缺陷。
+
+按 [10V](10v-diagnostic-window-hold.md)，渲染器在会话结束后会**保持最后一屏约 5 秒**
+（`XIAO_DIAGNOSTICS_HOLD_MS`，未设置时默认 `5000`，设为 `0` 立即关闭；
+非法值或大于 `3600000` 会以明确错误退出，不静默回退）。**保持只改变窗口停留时间，
+不减少窗口数量**。
+
+本地跑 ignored 套件时，推荐显式跳过那条调试矩阵，就不会有窗口：
+
+```text
+XIAO_DIAGNOSTICS_HOLD_MS=0 cargo test -p xiao-driver --test d19a_differential -- --ignored \
+    --skip native_table_methods_debug_execution_o0_o3
+```
+
+- `--skip` 才是消掉窗口的开关；`=0` 只是让其余偶尔开窗的用例不留恋；
+- **不要**用「删用例或少执行」来减少窗口——那条调试矩阵是调试路径的覆盖来源；
+- `tools/platform-reproduction/reproduce.sh`、`reproduce.ps1` 与维护回归的
+  Windows/Linux 原生作业都已显式设置 `XIAO_DIAGNOSTICS_HOLD_MS=0`，
+  所以**走这些脚本时窗口闪退是预期的**——要观察保持效果就不要经由它们。
+
 ## 五、门禁要求
 
 1. **默认门禁**：`cargo test` 的汇总里**记录 `ignored` 的数量**。
