@@ -202,6 +202,21 @@ docs/DevDocs/README.md                                         主表登记
 - **不改** VM 的表语义、构造语义与释放语义；
 - **不改** A1 已冻结的 V2 描述符布局与回调形态（只按版本规则扩展）。
 
+## 实施记录（2026-10-08）
+
+### A2 第一阶段已完成
+
+- 在既有 V2 描述符和注册式 callback 上新增兼容入口 `xiao_runtime_table_new_v2_with_args`；旧 `xiao_runtime_table_new_v2` 仍转发为空参数调用，ABI 主版本不变。
+- Runtime 继续复用 `TableInstance::with_initializer`：字段初始化先执行，`ascii:init` 接收借用参数数组，参数标签/个数按已复制的 init 签名校验；失败仍由原状态机组装主因、cause 和 suppressed 链，输出句柄保持 null。
+- LLVM 构造路径按源码位置/关键字绑定显式参数并补齐默认值，生成 `%xiao.value` 数组，调用期间借用，返回表句柄继续唯一拥有。两处 A2 拒绝点已撤销；A3 拒绝保持不变。
+- 已更新原生回归测试：带 `def init(self, int amount)` 的 `new Item(2)` 可降低；方法值赋值仍明确拒绝。
+
+本阶段验证：`cargo test -p xiao-runtime -p xiao-codegen-llvm` 全部通过；A2/A3 边界回归 `cargo test -p xiao-driver --test n0_b_dynamic_native table_methods_preserve_static_checks_and_followup_boundaries` 通过。完整差分、默认值/缺参/多参、类型不符和初始化失败释放账目仍是下一阶段工作，未宣称 A2 收口。
+
+### N5–N7 回填
+
+裸机 Linux 复跑记录已回填到 10T、19C、19D 和本目录索引：提交 `74b272d70bde3eaeb9f8619426a5bc0594f6cfcd`，Ubuntu 26.04.1、`virt=none`、无 Xvfb，脚本退出码 0。窗口仍无持续显示和截图，C 档保持未通过。交接程序已改为固定 `/usr/bin/xterm` 后运行真实 `xiao run -debug` 持续程序，并要求记录 `pgrep`、截图和关窗行为。
+
 ## 待定决策
 
 1. **A3 若判为「原生缺口」是否在本批实现**：建议先出清单、下一批实现；本批只取证与改判。

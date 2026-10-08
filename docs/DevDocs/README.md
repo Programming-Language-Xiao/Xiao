@@ -114,7 +114,7 @@
 | 10S-Linux | [裸机 Linux 证据采集交接](10s-linux-bare-metal-handoff.md) | 写给 Ubuntu 机器操作者：前置包与工具链版本、`reproduce.sh native` 的跑法与「不设 XIAO_USE_XVFB」、环境采集清单、诊断窗口行为证据的判据、回传模板 | 已收 PR #3 原始失败回传（该 PR 已关闭，内容经 `4fab901` 原样并入）；**本档为上一轮，勿再按它执行**，新一轮见 10T-Linux |
 | 10T-Linux | [裸机 Linux 复跑与诊断窗口定位交接](10t-linux-bare-metal-handoff.md) | 写给 Ubuntu 机器操作者：修复后提交 `0735846` 的复跑、窗口相关环境采集（`x-terminal-emulator` 指向与各终端模拟器）、`pgrep` 观察与换 `xterm` 的对照、回传模板 | 待执行（2026-10-08） |
 | 10T | [表方法 ABI 实现（A1 / N0-L）](10t-table-method-abi-implementation.md) | 按 10S-A1 清单实现新描述符与调用入口、Runtime 侧初始化/`drop`、codegen 方法函数表，最后移除方法拒绝点；`table-user-drop` 转真执行、`container-dense` 可构建可比对 | A1 实际接通（2026-10-08）；ABI 1.8、代码生成 4、构建探针 5/5、容器 80 轮与 VM 同为 28760；Windows 完整矩阵通过，裸机 Linux 复跑退出码 0（PR #4 已合并），窗口仍无截图故 19.14 C 档未通过；星崽已接受口径差异并授权 Linux push 门控。证据回填与窗口取证程序修正并入 10U |
-| 10U | [表构造参数与函数值 ABI（A2 / A3 / N0-M）](10u-table-construction-and-function-value-abi.md) | 先回填刚合并的裸机证据、把窗口取证改成真实 `-debug` 运行；再按 ABI 顺序实现 A2 表构造参数；**A3 先冻结能力边界再决定是否实现**（可能判为「两边都拒绝」而非缺口） | 规划稿（2026-10-08）；5 项待星崽决定 |
+| 10U | [表构造参数与函数值 ABI（A2 / A3 / N0-M）](10u-table-construction-and-function-value-abi.md) | 回填裸机证据、修正真实 `-debug` 窗口取证并接通 A2 初始化参数；A3 仍先冻结能力边界 | 实施中（2026-10-08）；A2 V2 init 参数入口与 LLVM 构造路径已接通，A3 待 VM 取证；Linux 窗口 C 档仍未通过 |
 | 10S-A1 | [表方法 ABI 开工清单](10s-a1-table-method-abi-preparation.md) | 描述符、函数表、所有权与 drop 时机、版本边界、影响 crate 和验收用例 | 准备清单已完成；本批不实现 |
 | 10R-溢出后续 | [静态溢出统一错误路径](10r-static-overflow-followup.md) | 七处 trap 模板、语言错误与平台 Fatal 分界及验收 | 仅立项，未实现 |
 | 10A | [LLVM 原生构建闭环](10a-n0-native-closure.md) | 手写 IR 文本 + 外部工具链、`xiao-runtime-abi`、四批交付（N0-A 纯静态 → N0-D 验证裁剪） | N0-A 已完成；N0-B Runtime ABI 已接续落地（Windows 原生、Linux amd64/arm64 与 macOS arm64 CI 功能复现；WSL/容器仅作功能证据） |

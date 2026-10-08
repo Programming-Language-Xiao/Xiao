@@ -623,6 +623,13 @@ unsafe extern "C" {
         descriptor: *const XiaoTableDescriptorV2,
         out: *mut XiaoHandle,
     ) -> i32;
+    /// 带初始化参数的新表入口；参数数组在调用期间借用，失败保持 null。
+    pub fn xiao_runtime_table_new_v2_with_args(
+        descriptor: *const XiaoTableDescriptorV2,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoHandle,
+    ) -> i32;
     /// 调用静态检查过的方法；校验名称、签名 ID、参数个数/标签，失败输出 none。
     /// receiver 和参数借用，返回结果唯一拥有；drop 只能由生命周期状态机触发。
     pub fn xiao_runtime_table_call(

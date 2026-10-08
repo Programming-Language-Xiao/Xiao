@@ -74,6 +74,7 @@ pub(super) fn reachable_runtime_components(text: &str) -> Vec<String> {
             "xiao_runtime_value_copy"
                 | "xiao_runtime_value_release_any"
                 | "xiao_runtime_table_new_v2"
+                | "xiao_runtime_table_new_v2_with_args"
                 | "xiao_runtime_table_call"
         )
     }) {
@@ -91,6 +92,9 @@ impl<'a> DynamicGenerator<'a> {
             .insert("declare i32 @xiao_runtime_random_seed(ptr)".to_owned());
         self.declarations
             .insert("declare i32 @xiao_runtime_table_new_v2(ptr, ptr)".to_owned());
+        self.declarations.insert(
+            "declare i32 @xiao_runtime_table_new_v2_with_args(ptr, ptr, i64, ptr)".to_owned(),
+        );
         self.declarations
             .insert("declare void @xiao_runtime_value_release_any(ptr)".to_owned());
         self.declarations.insert(format!(

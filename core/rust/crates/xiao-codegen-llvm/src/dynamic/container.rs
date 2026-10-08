@@ -1,9 +1,9 @@
 //! 动态降低器的容器构造与表描述符发射。
 
 use xiao_diagnostics::error_kind_of;
-use xiao_ir::{IrExpression, IrExpressionKind, IrName, IrSpan, IrType};
+use xiao_ir::{IrExpression, IrExpressionKind, IrName, IrSpan, IrStatementKind, IrType};
 
-use super::predicate::abi_field_type;
+use super::predicate::{abi_field_type, name_key};
 use super::text::escape_bytes;
 use super::{BYTES_TYPE, DynamicGenerator, TABLE_DESCRIPTOR_TYPE, TABLE_FIELD_TYPE, VALUE_TYPE};
 use crate::error::{CodegenError, Result};
@@ -211,11 +211,77 @@ impl<'a> DynamicGenerator<'a> {
             .ok_or_else(|| CodegenError::InvalidIr {
                 message: format!("表 {} 没有登记签名", name.text),
             })?;
-        if !arguments.is_empty() {
+        let init = self
+            .method_definitions
+            .get(&(name.text.clone(), "ascii:init".to_owned()))
+            .copied();
+        let init_parameters = init.and_then(|statement| match &statement.kind {
+            IrStatementKind::Function { parameters, .. } => Some(&parameters[1..]),
+            _ => None,
+        });
+        if !arguments.is_empty() && init_parameters.is_none() {
             return Err(CodegenError::Unsupported {
-                feature: "动态表构造参数（需运行时 init 调用支持）".to_owned(),
+                feature: "动态表构造参数缺少 init".to_owned(),
                 span: Some(span),
             });
+        }
+        let init_parameters = init_parameters.unwrap_or(&[]);
+        let mut argument_values = Vec::with_capacity(init_parameters.len());
+        let mut assigned = vec![false; init_parameters.len()];
+        for argument in arguments {
+            let index = if let Some(name) = &argument.name {
+                init_parameters
+                    .iter()
+                    .position(|parameter| name_key(&parameter.name) == name_key(name))
+            } else if argument.kind == "positional" {
+                assigned.iter().position(|assigned| !assigned)
+            } else {
+                None
+            }
+            .ok_or_else(|| CodegenError::Unsupported {
+                feature: "表构造参数形态".to_owned(),
+                span: Some(span),
+            })?;
+            if assigned[index] {
+                return Err(CodegenError::InvalidIr {
+                    message: "重复的表构造参数".to_owned(),
+                });
+            }
+            argument_values.push((index, self.emit_expression(&argument.value)?));
+            assigned[index] = true;
+        }
+        for (index, parameter) in init_parameters.iter().enumerate() {
+            if !assigned[index] {
+                let default =
+                    parameter
+                        .default
+                        .as_ref()
+                        .ok_or_else(|| CodegenError::Unsupported {
+                            feature: format!("缺少表构造参数 {}", parameter.name.text),
+                            span: Some(span),
+                        })?;
+                argument_values.push((index, self.emit_expression(default)?));
+            }
+        }
+        let argument_array = self.next_temp();
+        self.emit(format!(
+            "  {argument_array} = alloca {VALUE_TYPE}, i64 {}",
+            init_parameters.len()
+        ));
+        let mut argument_slots = Vec::with_capacity(init_parameters.len());
+        for index in 0..init_parameters.len() {
+            let slot = self.next_temp();
+            self.emit(format!(
+                "  {slot} = getelementptr {VALUE_TYPE}, ptr {argument_array}, i64 {index}"
+            ));
+            self.emit(format!("  store {VALUE_TYPE} zeroinitializer, ptr {slot}"));
+            argument_slots.push(slot);
+        }
+        for (index, value) in argument_values {
+            self.emit(format!(
+                "  store {VALUE_TYPE} {value}, ptr {}",
+                argument_slots[index]
+            ));
         }
         let fields = self.emit_table_descriptor(&signature)?;
         let descriptor = self.emit_table_descriptor_v2(&signature, &fields)?;
@@ -223,8 +289,14 @@ impl<'a> DynamicGenerator<'a> {
         self.emit(format!("  {handle} = alloca ptr"));
         self.emit(format!("  store ptr null, ptr {handle}"));
         self.checked_status_call(format!(
-            "@xiao_runtime_table_new_v2(ptr {descriptor}, ptr {handle})"
+            "@xiao_runtime_table_new_v2_with_args(ptr {descriptor}, ptr {argument_array}, i64 {}, ptr {handle})",
+            init_parameters.len()
         ));
+        for slot in argument_slots {
+            self.emit(format!(
+                "  call void @xiao_runtime_value_release_any(ptr {slot})"
+            ));
+        }
         let raw = self.next_temp();
         self.emit(format!("  {raw} = load ptr, ptr {handle}"));
         let value = self.emit_value_call("xiao_runtime_value_table_owned", &format!("ptr {raw}"));

@@ -178,8 +178,7 @@ unsafe fn copy_definition(
         match (methods.get(name), callback) {
             (None, None) => {}
             (Some(method), Some(callback))
-                if method.parameter_types.is_empty()
-                    && method.return_type == XiaoValueTag::None.raw()
+                if method.return_type == XiaoValueTag::None.raw()
                     && std::ptr::fn_addr_eq(method.callback, callback) => {}
             _ => return Err(XiaoAbiStatus::InvalidArgument.code()),
         }
@@ -298,6 +297,17 @@ pub extern "C" fn xiao_runtime_table_new_v2(
     descriptor: *const XiaoTableDescriptorV2,
     out: *mut XiaoHandle,
 ) -> i32 {
+    xiao_runtime_table_new_v2_with_args(descriptor, std::ptr::null(), 0, out)
+}
+
+/// 带初始化参数的新表入口；参数数组仅在调用期间借用，成功后不由 Runtime 保存。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_table_new_v2_with_args(
+    descriptor: *const XiaoTableDescriptorV2,
+    arguments: *const XiaoValue,
+    argument_count: usize,
+    out: *mut XiaoHandle,
+) -> i32 {
     if out.is_null() {
         return XiaoAbiStatus::Null.code();
     }
@@ -308,17 +318,35 @@ pub extern "C" fn xiao_runtime_table_new_v2(
         Ok(value) => value,
         Err(error) => return error,
     };
+    let arguments = match unsafe { metadata_slice(arguments, argument_count) } {
+        Ok(arguments) => arguments,
+        Err(error) => return error,
+    };
     let previous = PENDING_ERROR.with(|pending| pending.borrow_mut().take());
     let instance = TableInstance::with_initializer(definition, |instance| {
         let mut receiver =
             value_from_owned_handle(XiaoValueTag::Table, instance.clone().into_strong_handle());
         let result = (|| {
-            for callback in [metadata.initialize_fields, metadata.init]
-                .into_iter()
-                .flatten()
-            {
+            if let Some(callback) = metadata.initialize_fields {
                 let mut value =
                     invoke_callback(callback, &receiver, &[], XiaoValueTag::None.raw())?;
+                release_value_slot(&mut value);
+            }
+            if let Some(callback) = metadata.init {
+                let method = metadata
+                    .methods
+                    .get("ascii:init")
+                    .ok_or_else(|| RuntimeError::invalid_value("表描述符缺少 init 签名"))?;
+                if arguments.len() != method.parameter_types.len()
+                    || arguments
+                        .iter()
+                        .zip(&method.parameter_types)
+                        .any(|(value, expected)| !matches_type(value, *expected))
+                {
+                    return Err(RuntimeError::invalid_value("表构造参数不符合 init 签名"));
+                }
+                let mut value =
+                    invoke_callback(callback, &receiver, arguments, XiaoValueTag::None.raw())?;
                 release_value_slot(&mut value);
             }
             Ok(())

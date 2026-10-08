@@ -79,23 +79,36 @@ echo "exit=$?"
 
 ### 5.2 跑并观察
 
-在 §四 的脚本运行期间留意：
+脚本完成后另取窗口证据；不要用门控测试充当窗口证据。先固定终端：
+
+```bash
+sudo update-alternatives --set x-terminal-emulator /usr/bin/xterm
+```
+
+用一个能持续数秒的程序运行真实调试入口（例如含延时/循环的最小程序）：
+
+```bash
+xiao run -debug ./window-probe.xiao
+```
+
+程序运行期间观察并截图，记录窗口是否持续到程序结束，以及关窗后进程的退出行为。
+若窗口仍未出现，同时记录：
 
 ```bash
 # 另开一个终端，在脚本跑到门控测试阶段时执行
-pgrep -a xiao-diagnostics        # 诊断渲染进程有没有起来
-pgrep -a xterm; pgrep -a gnome-terminal; pgrep -a konsole   # 终端模拟器有没有起来
+pgrep -a xiao-diagnostics
+pgrep -a xterm
 ```
 
 看到窗口就**截图**；没看到就把上面几条的输出连同**当时的时间点**记下来。
 
 ### 5.3 如果窗口没出现，做一次对照
 
-把终端候选换成 CI 用的那个，再跑一次**只针对窗口那一步**的检查，并记录两次的差别：
+把终端候选固定为 CI 使用的 xterm，再运行上面的真实 `-debug` 程序并记录差别：
 
 ```bash
 sudo update-alternatives --set x-terminal-emulator /usr/bin/xterm   # 与 CI 的 Linux 作业一致
-# 然后重跑 §四 的命令（或至少重跑门控测试那一段），重复 5.2 的观察
+# 然后重复真实 `xiao run -debug` 观察
 ```
 
 **两次的结果都要回传**：默认设置下的表现，与换成 `xterm` 之后的表现。这能区分
@@ -103,7 +116,6 @@ sudo update-alternatives --set x-terminal-emulator /usr/bin/xterm   # 与 CI 的
 
 ### 5.4 什么算通过
 
-- 门控测试里 `real_terminal_session_is_environment_gated` 是 **`ok`**（不是 `ignored`、也不是被 `--skip` 跳过）；
 - **窗口肉眼可见**（大致是滚动区域 + 状态栏的 TUI）；
 - **一张截图**；
 - 关掉窗口后进程能正常结束，不卡住。

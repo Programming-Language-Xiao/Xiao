@@ -61,7 +61,8 @@ pub(crate) use abi_dynamic::{
 #[allow(unused_imports)]
 pub(crate) use abi_tables::{
     xiao_runtime_table_call, xiao_runtime_table_get_value, xiao_runtime_table_new_v2,
-    xiao_runtime_table_set_value, xiao_runtime_value_release_any,
+    xiao_runtime_table_new_v2_with_args, xiao_runtime_table_set_value,
+    xiao_runtime_value_release_any,
 };
 
 /// 当前线程尚未交给原生控制流消费的错误。

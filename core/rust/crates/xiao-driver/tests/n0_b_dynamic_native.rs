@@ -334,7 +334,7 @@ fn generic_value_copy_registers_weak_dependency_only_when_called() {
 const TABLE_CALLBACK_SOURCE: &str = "[[Item]]\n    value = 7\n    def read(self) -> int\n        return self.value\n    def add(self, int amount = 2) -> int\n        return self.read() + amount\n    def drop(self) -> none\n        observed = self.read()\n";
 
 #[test]
-/// 接通 A1 不绕过私有成员和参数类型检查，也不提前开放 A2/A3。
+/// 接通 A1 不绕过私有成员和参数类型检查，同时验证 A2 构造参数已进入原生路径。
 fn table_methods_preserve_static_checks_and_followup_boundaries() {
     let prefix = "[[Item]]\n    value = 1\n    def _read(self) -> int\n        return self.value\n    def add(self, int amount) -> int\n        return self.value + amount\nitem = new Item()\n";
     for suffix in ["item._read()\n", "item.add(\"bad\")\n", "item.add()\n"] {
@@ -345,14 +345,21 @@ fn table_methods_preserve_static_checks_and_followup_boundaries() {
             "{suffix}"
         );
     }
-    for (source, reason) in [
-        ("[[Item]]\n    value = 1\n    def init(self, int amount) -> none\n        self.value = amount\nitem = new Item(2)\n".to_owned(), "动态表构造参数"),
-        (format!("{prefix}callback = item.add\n"), "A3"),
-    ] {
-        let artifact = FrontendCompiler::new().compile(&FrontendRequest::from_text(&source)).expect("后续边界源码应通过静态前端");
-        let error = NativeBuild::new().lower(&artifact.ir, &CodegenOptions::default()).expect_err("A2/A3 仍明确拒绝");
-        assert!(error.to_string().contains(reason), "{error}");
-    }
+    let source = "[[Item]]\n    value = 1\n    def init(self, int amount) -> none\n        self.value = amount\nitem = new Item(2)\n";
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect("A2 构造参数源码");
+    NativeBuild::new()
+        .lower(&artifact.ir, &CodegenOptions::default())
+        .expect("A2 构造参数应降低到 V2 init ABI");
+    let source = format!("{prefix}callback = item.add\n");
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(&source))
+        .expect("A3 边界源码应通过静态前端");
+    let error = NativeBuild::new()
+        .lower(&artifact.ir, &CodegenOptions::default())
+        .expect_err("A3 仍明确拒绝");
+    assert!(error.to_string().contains("A3"), "{error}");
 }
 
 #[test]

@@ -241,7 +241,7 @@ docs/DevDocs/19b-*.md                         R5：统一 D3、D4 的记录；�
 - **19.14 A 档**：`xiao-driver` 自动化覆盖凭据字段脱敏、聚焦模块/源码路由、日志目标不可写、渲染器缺失启动失败、指标保持和通信中断语义；默认测试明确显示 1 个真实终端用例按环境门控跳过。截图暴露的 Windows 原始“找不到文件”问题已通过启动前渲染器存在性检查改为 Xiao 稳定失败路径 `X11-DIAGNOSTIC-START-001`。
 - **19.14 B 档**：Windows `x86_64-pc-windows-msvc` 本机运行 `reproduce.ps1 -Mode native` 最终通过；`editbin /subsystem:windows` 后的调试原生产物返回 `exit=0`，与普通调试产物、脱离 `xiao` 的相邻组件发现和版本失配检查一起通过。该证据是本机行为证据，不代表 CI 或其他平台。
 - **F3/F6 限定**：B 档脚本的行为判据来自调试启动桥等待诊断进程 readiness marker 后用户入口才继续，并观察 GUI 子系统产物真实退出结果；脚本没有额外枚举窗口进程。Unix 完成标记和信号分支没有本机运行记录，仍等待 Linux/macOS 证据。
-- **19.14 C 档**：Linux 已有 Ubuntu 裸机失败回传，终端测试返回 ok 但操作者未见窗口、无截图，开窗仍未验证；macOS 缺桌面宿主且 CI 显式跳过真实终端，LaunchServices/窗口仍未验证。
+- **19.14 C 档**：Linux Ubuntu 裸机复跑已成功（提交 `74b272d70bde3eaeb9f8619426a5bc0594f6cfcd`，未使用 Xvfb），但终端窗口仅闪现、无截图，开窗仍未验证；macOS 缺桌面宿主且 CI 显式跳过真实终端，LaunchServices/窗口仍未验证。窗口后续必须用真实 `xiao run -debug` 程序取证。
 
 ### 当前剩余待决事项
 

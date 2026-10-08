@@ -103,12 +103,6 @@ impl<'a> DynamicGenerator<'a> {
                     message: "表方法缺少 receiver 参数".to_owned(),
                 });
             }
-            if member.name == "ascii:init" && parameters.len() != 1 {
-                return Err(CodegenError::Unsupported {
-                    feature: "动态表构造参数（A2）".to_owned(),
-                    span: Some(statement.span),
-                });
-            }
             let parameter_types = parameters[1..]
                 .iter()
                 .map(|parameter| method_type(&parameter.ty))
