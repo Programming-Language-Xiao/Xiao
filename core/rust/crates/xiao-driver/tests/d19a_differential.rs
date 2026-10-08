@@ -46,7 +46,7 @@ struct Case {
     has_drops: bool,
 }
 
-const CASES: [Case; 48] = [
+const CASES: [Case; 53] = [
     Case {
         label: "table-temporary-drop-caught",
         source: "[[Item]]\n    value = 7\n    def read(self) -> int\n        return self.value\n    def drop(self) -> none\n        raise ArithmeticError(code = \"DROP\")\ntry\n    print((new Item()).read())\ncatch err as TableError\n    print(\"caught\")\nprint(\"after\")\n",
@@ -384,6 +384,41 @@ const CASES: [Case; 48] = [
         error: None,
         has_drops: true,
     },
+    Case {
+        label: "table-constructor-positional",
+        source: "[[Item]]\n    value = 0\n    def init(self, int amount) -> none\n        self.value = amount\n    def read(self) -> int\n        return self.value\nitem = new Item(9)\nprint(item.read())\n",
+        output: "9\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-constructor-default",
+        source: "[[Item]]\n    value = 0\n    def init(self, int amount = 4) -> none\n        self.value = amount\n    def read(self) -> int\n        return self.value\nitem = new Item()\nprint(item.read())\n",
+        output: "4\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-constructor-keyword",
+        source: "[[Item]]\n    value = 0\n    def init(self, int amount, int bonus = 1) -> none\n        self.value = amount + bonus\n    def read(self) -> int\n        return self.value\nitem = new Item(amount = 5, bonus = 3)\nprint(item.read())\n",
+        output: "8\n",
+        error: None,
+        has_drops: true,
+    },
+    Case {
+        label: "table-constructor-failure",
+        source: "[[Item]]\n    value = 0\n    def init(self, int amount) -> none\n        raise ArithmeticError(code = \"INIT_ARG\")\n    def drop(self) -> none\n        print(\"cleanup\")\nitem = new Item(2)\n",
+        output: "cleanup\n",
+        error: Some("X06-RUNTIME-007"),
+        has_drops: true,
+    },
+    Case {
+        label: "table-constructor-evaluation-order",
+        source: "def mark(int value) -> int\n    print(value)\n    return value\n[[Item]]\n    value = 0\n    def init(self, int first, int second) -> none\n        self.value = first + second\nitem = new Item(mark(1), mark(2))\n",
+        output: "1\n2\n",
+        error: None,
+        has_drops: true,
+    },
 ];
 
 fn outcome_observation(outcome: &DriverOutcome) -> Observation {
@@ -694,6 +729,75 @@ fn all_vm_sides_agree_on_every_case() {
         let sides = vm_side_observations(case.label, case.source);
         assert_baseline_matches_case(case, &sides[0].1);
         assert_sides_agree(case.label, &sides);
+    }
+}
+
+#[test]
+fn a3_vm_boundary_observations() {
+    let sources = [
+        (
+            "member-value",
+            "[[Item]]\n    def read(self) -> int\n        return 1\nitem = new Item()\nvalue = item.read\n",
+        ),
+        (
+            "assigned-value",
+            "[[Item]]\n    def read(self) -> int\n        return 1\nitem = new Item()\nvalue = item.read\nprint(value)\n",
+        ),
+        (
+            "passed-value",
+            "def take(value) -> none\n    print(value)\n[[Item]]\n    def read(self) -> int\n        return 1\nitem = new Item()\ntake(item.read)\n",
+        ),
+        (
+            "callee-value",
+            "[[Item]]\n    def read(self) -> int\n        return 1\nitem = new Item()\nvalue = item.read()\nprint(value)\n",
+        ),
+    ];
+    for (label, source) in sources {
+        let observation = source_observation(source, OptimizationLevel::O0);
+        eprintln!(
+            "10W-A3 {label}: output={:?} error={:?} exit={}",
+            observation.output, observation.error, observation.exit_code
+        );
+        if label == "callee-value" {
+            assert_eq!(observation.output, "1\n");
+            assert_eq!(observation.error, None);
+            assert_eq!(observation.exit_code, 0);
+        } else {
+            assert_eq!(observation.output, "");
+            assert_eq!(observation.error.as_deref(), Some("X09-BYTECODE-001"));
+            assert_eq!(observation.exit_code, 2);
+        }
+    }
+}
+
+#[test]
+fn a2_remaining_shape_vm_observations() {
+    let sources = [
+        (
+            "missing-init",
+            "[[Item]]\n    value = 1\nitem = new Item(2)\n",
+        ),
+        (
+            "unsupported-kind",
+            "[[Item]]\n    def init(self, int amount) -> none\n        pass\nitem = new Item(value = 2)\n",
+        ),
+    ];
+    for (label, source) in sources {
+        let observation = source_observation(source, OptimizationLevel::O0);
+        eprintln!(
+            "10W-A2 {label}: output={:?} error={:?} exit={}",
+            observation.output, observation.error, observation.exit_code
+        );
+        assert_eq!(observation.output, "");
+        assert_eq!(observation.exit_code, 1);
+        assert_eq!(
+            observation.error.as_deref(),
+            Some(match label {
+                "missing-init" => "X05-TYPE-004",
+                "unsupported-kind" => "X02-TYPE-001",
+                _ => unreachable!(),
+            })
+        );
     }
 }
 

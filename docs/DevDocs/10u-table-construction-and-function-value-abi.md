@@ -214,6 +214,8 @@ docs/DevDocs/README.md                                         主表登记
 
 本阶段验证：`cargo test -p xiao-runtime -p xiao-codegen-llvm` 全部通过；A2/A3 边界回归 `cargo test -p xiao-driver --test n0_b_dynamic_native table_methods_preserve_static_checks_and_followup_boundaries` 通过。完整差分、默认值/缺参/多参、类型不符和初始化失败释放账目仍是下一阶段工作，未宣称 A2 收口。
 
+10W 已补充 `d19a_differential` 的 A2 VM 基线：位置参数、默认参数、关键字参数、实参求值顺序和初始化失败回滚；A3 VM 取证显示方法值赋值/传参统一为 `X09-BYTECODE-001`，直接 `obj.method()` 输出 `1` 且退出码 0。原生仍拒绝方法值 ABI，因此 A3 改判为两边一致拒绝。
+
 ### N5–N7 回填
 
 裸机 Linux 复跑记录已回填到 10T、19C、19D 和本目录索引：提交 `74b272d70bde3eaeb9f8619426a5bc0594f6cfcd`，Ubuntu 26.04.1、`virt=none`、无 Xvfb，脚本退出码 0。窗口仍无持续显示和截图，C 档保持未通过。交接程序已改为固定 `/usr/bin/xterm` 后运行真实 `xiao run -debug` 持续程序，并要求记录 `pgrep`、截图和关窗行为。

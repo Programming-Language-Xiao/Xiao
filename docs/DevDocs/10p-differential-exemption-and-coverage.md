@@ -199,9 +199,9 @@ J3 已在 [19D](19d-performance-comparison.md) 按 [12](12-tests-and-milestones.
 | 拒绝文案/形状 | 最小源码形状 | VM 对照 | 需要修改 | 分类与建议 | ABI 顺序（10R） |
 | --- | --- | --- | --- | --- | --- |
 | 动态表方法 | 表体含 `def method(...)` | VM 支持 | 独立 V2 描述符、Runtime 回调、LLVM 方法帧 | 10T 已接通；最终验收见 10T | A1 已实现，A2/A3 不在本批 |
-| 表构造参数 | `Table(arg = value)` | VM 有构造约束 | `dynamic/container.rs`、Runtime 表构造 ABI | A2 已接通 V2 init 参数借用入口；仍需完整 VM/原生差分与失败回滚证据 | 10U |
+| 表构造参数 | `Table(arg = value)` | VM 有构造约束 | `dynamic/container.rs`、Runtime 表构造 ABI | A2 已接通 V2 init 参数借用入口；10W 已加入位置、默认值、关键字、求值顺序和失败回滚 VM 基线，原生受控矩阵待执行 | 10W |
 | 表字段复合/扩展赋值 | `table.field += value` 或动态扩展目标 | VM 支持部分路径 | `dynamic/control.rs`、`dynamic/methods.rs` | 10T 已接通表字段复合赋值；其他动态扩展目标仍拒绝 | B1 部分完成 |
-| 动态函数调用 | 动态值作为 callee | VM 仅接受已解析函数签名 | `dynamic/expression.rs`、函数表 ABI | 能力边界未冻结；暂不并入 | A3 函数值调用 ABI |
+| 动态函数调用 | 动态值作为 callee | VM 仅支持已解析 `obj.method()`；方法值赋值/传参报 `X09-BYTECODE-001` | `dynamic/expression.rs`、函数表 ABI | VM 与原生均拒绝一等方法值；直接 callee 走已解析调用，不属于 A3 缺口 | 10W VM 取证 |
 | 动态非表成员访问/写入 | `value.member` | VM 有运行时诊断路径 | `dynamic/expression.rs` | 原生缺口；后续定范围 | B1 纯降低与诊断 |
 | 动态错误构造非字符串参数 | `ArithmeticError(code = value)` | VM 拒绝非文本参数 | 前端/Runtime 错误 ABI | 两边均拒绝，保持一致 | 保持拒绝，不实现 |
 | 多项/动态字典键选择器 | 多个选择项或键路径 | VM 支持部分语义 | `dynamic/expression.rs` | 10T 为 container-dense 接通多项精确路径和静态键读取；混合动态形态仍拒绝 | B2 部分完成 |
