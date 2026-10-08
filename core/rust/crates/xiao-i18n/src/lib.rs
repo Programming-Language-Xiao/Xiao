@@ -452,6 +452,14 @@ pub fn builtin_renderer() -> MessageRenderer {
         "diagnostic session ended: {reason}",
         &[("reason", ParamKind::Text)],
     );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "xiao.debug.hold_notice",
+        "诊断窗口将在短暂保留后关闭（可设置 XIAO_DIAGNOSTICS_HOLD_MS=0 关闭保持）。",
+        "diagnostic window will close after a short hold (set XIAO_DIAGNOSTICS_HOLD_MS=0 to disable).",
+        no_params,
+    );
 
     let text = ParamKind::Text;
     let integer = ParamKind::Integer;

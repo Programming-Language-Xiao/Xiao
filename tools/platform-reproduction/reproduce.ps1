@@ -134,6 +134,7 @@ try {
         throw "Diagnostics binary was not found: $diagnosticsPath"
     }
     $env:XIAO_DIAGNOSTICS_PATH = $diagnosticsPath
+    $env:XIAO_DIAGNOSTICS_HOLD_MS = '0'
     $runtime = Join-Path $repositoryRoot 'core/rust/target/release/xiao_runtime.lib'
     if (-not (Test-Path -LiteralPath $runtime -PathType Leaf)) {
         throw "Runtime staticlib was not found: $runtime"

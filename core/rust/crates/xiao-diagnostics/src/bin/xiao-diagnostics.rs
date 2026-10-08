@@ -167,6 +167,7 @@ fn run(arguments: Arguments) -> Result<(), DiagnosticFrameError> {
                         localized_message(&arguments.locale, "xiao.debug.session_end", &params)
                     );
                 }
+                hold_after_close(&arguments.locale)?;
                 return Ok(());
             }
             Some(DiagnosticMessage::Ready { .. } | DiagnosticMessage::Hello { .. }) => {}
@@ -197,7 +198,39 @@ fn run_standalone(
     while process_is_alive(parent_pid) {
         thread::sleep(Duration::from_millis(200));
     }
+    hold_after_close(locale)?;
     Ok(())
+}
+
+/// 会话结束后短暂保留最后一屏；设置为 0 可供测试和 CI 明确关闭。
+fn hold_after_close(locale: &str) -> Result<(), DiagnosticFrameError> {
+    let milliseconds = parse_hold_milliseconds(env::var_os("XIAO_DIAGNOSTICS_HOLD_MS"))?;
+    if milliseconds == 0 {
+        return Ok(());
+    }
+    println!(
+        "{}",
+        localized_message(locale, "xiao.debug.hold_notice", &BTreeMap::new())
+    );
+    io::stdout().flush()?;
+    thread::sleep(Duration::from_millis(milliseconds));
+    Ok(())
+}
+
+fn parse_hold_milliseconds(value: Option<std::ffi::OsString>) -> Result<u64, DiagnosticFrameError> {
+    let Some(value) = value else { return Ok(5000) };
+    let value = value.to_str().ok_or_else(|| {
+        DiagnosticFrameError::Json("XIAO_DIAGNOSTICS_HOLD_MS 必须是 UTF-8 整数".to_owned())
+    })?;
+    let milliseconds = value.parse::<u64>().map_err(|_| {
+        DiagnosticFrameError::Json("XIAO_DIAGNOSTICS_HOLD_MS 必须是 0 到 3600000 的整数".to_owned())
+    })?;
+    if milliseconds > 3_600_000 {
+        return Err(DiagnosticFrameError::Json(
+            "XIAO_DIAGNOSTICS_HOLD_MS 必须是 0 到 3600000 的整数".to_owned(),
+        ));
+    }
+    Ok(milliseconds)
 }
 
 /// 判断生成该窗口的原生产物是否仍在运行。
@@ -343,7 +376,7 @@ fn localized_message(
 #[cfg(test)]
 /// 独立模式和连接模式的命令行边界测试。
 mod tests {
-    use super::Arguments;
+    use super::{Arguments, parse_hold_milliseconds};
     use std::path::PathBuf;
 
     #[test]
@@ -442,5 +475,13 @@ mod tests {
         )
         .expect("语言参数");
         assert_eq!(arguments.locale, "en-US");
+    }
+
+    #[test]
+    fn hold_duration_defaults_and_rejects_invalid_values() {
+        assert_eq!(parse_hold_milliseconds(None).unwrap(), 5000);
+        assert_eq!(parse_hold_milliseconds(Some("0".into())).unwrap(), 0);
+        assert!(parse_hold_milliseconds(Some("3600001".into())).is_err());
+        assert!(parse_hold_milliseconds(Some("later".into())).is_err());
     }
 }

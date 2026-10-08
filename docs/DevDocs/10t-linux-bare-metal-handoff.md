@@ -85,13 +85,13 @@ echo "exit=$?"
 sudo update-alternatives --set x-terminal-emulator /usr/bin/xterm
 ```
 
-用一个能持续数秒的程序运行真实调试入口（例如含延时/循环的最小程序）：
+用真实调试入口运行程序（窗口结束后默认会保留 5 秒，因此短程序也可取证）：
 
 ```bash
 xiao run -debug ./window-probe.xiao
 ```
 
-程序运行期间观察并截图，记录窗口是否持续到程序结束，以及关窗后进程的退出行为。
+程序运行及结束后的保持期间观察并截图，记录窗口是否显示最终状态，以及关窗后进程的退出行为。
 若窗口仍未出现，同时记录：
 
 ```bash

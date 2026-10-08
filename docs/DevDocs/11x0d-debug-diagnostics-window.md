@@ -338,3 +338,6 @@ X0-E 的 Windows 原生启动桥使用 `CreateProcessW(CREATE_NEW_CONSOLE)`，�
 真实终端测试使用 `#[ignore]` 显式门控；默认测试输出会显示 ignored 数量，不用条件 `return`
 静默跳过。当前只宣称 Windows 原生端到端口径；Linux Docker 仅作构建/功能证据，Linux
 原生、WSL 和 macOS 仍列入待复现清单。
+### 会话结束后的窗口保持补充（10V）
+
+诊断渲染器在收到 `Close` 或 standalone 父进程结束后，会在最后一屏显示关闭提示并默认保持 5 秒；设置 `XIAO_DIAGNOSTICS_HOLD_MS=0` 可供测试与 CI 显式关闭。该保持只发生在渲染器进程中，Runtime 的 `finish()` 仍不等待渲染器，故不改变程序退出码、事件、指标或日志。变量非法或超过 3600000 ms 会明确报告诊断通道错误。

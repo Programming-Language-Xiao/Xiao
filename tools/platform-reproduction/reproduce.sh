@@ -119,6 +119,7 @@ if [[ ! -x "$diagnostics_path" ]]; then
     exit 1
 fi
 export XIAO_DIAGNOSTICS_PATH="$diagnostics_path"
+export XIAO_DIAGNOSTICS_HOLD_MS=0
 
 runtime_library="$repository_root/core/rust/target/release/libxiao_runtime.a"
 if [[ ! -f "$runtime_library" ]]; then
