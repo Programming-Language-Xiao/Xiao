@@ -319,6 +319,42 @@ describe("DevDocs 主索引唯一性", () => {
       rmSync(directory, { recursive: true, force: true });
     }
   });
+
+  test("同一目标的不同锚点允许分别登记", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-index-anchor-"));
+    try {
+      mkdirSync(join(directory, "docs", "DevDocs"), { recursive: true });
+      writeFileSync(join(directory, "docs", "DevDocs", "README.md"), "## 实际开发顺序\n\n| A | [页面](a.md#one) |\n| B | [页面](a.md#two) |\n", "utf8");
+      writeFileSync(join(directory, "docs", "DevDocs", "a.md"), "# 页面\n## One\n## Two\n", "utf8");
+      expect(checkDevDocs(directory).filter((item) => item.code === "A0-DOCS-004")).toEqual([]);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("同一目标的相同锚点仍然报重复", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-index-same-anchor-"));
+    try {
+      mkdirSync(join(directory, "docs", "DevDocs"), { recursive: true });
+      writeFileSync(join(directory, "docs", "DevDocs", "README.md"), "## 实际开发顺序\n\n| A | [页面](a.md#one) |\n| B | [页面](a.md#one) |\n", "utf8");
+      writeFileSync(join(directory, "docs", "DevDocs", "a.md"), "# 页面\n## One\n", "utf8");
+      expect(checkDevDocs(directory).some((item) => item.code === "A0-DOCS-004")).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  test("同一行第二个链接不参与唯一性检查", () => {
+    const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-index-second-link-"));
+    try {
+      mkdirSync(join(directory, "docs", "DevDocs"), { recursive: true });
+      writeFileSync(join(directory, "docs", "DevDocs", "README.md"), "## 实际开发顺序\n\n| A | [页面](a.md)，补充见 [B](b.md) |\n| C | [页面](c.md)，补充见 [B](b.md) |\n", "utf8");
+      for (const file of ["a.md", "b.md", "c.md"]) writeFileSync(join(directory, "docs", "DevDocs", file), `# ${file}\n`, "utf8");
+      expect(checkDevDocs(directory).filter((item) => item.code === "A0-DOCS-004")).toEqual([]);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("规格夹具执行入口门禁", () => {

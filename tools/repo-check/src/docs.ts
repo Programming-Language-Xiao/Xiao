@@ -157,10 +157,10 @@ export function checkDevDocs(root: string): Diagnostic[] {
 }
 
 /**
- * 确保 DevDocs 主索引中的同一目标页面只登记一次。
+ * 确保 DevDocs 实际开发主表中的同一链接字符串只登记一次。
  *
- * 主索引重复登记会让同一批次出现互相矛盾的状态；链接唯一性与断链检查
- * 互补，必须在解析成功的目标路径上比较，而不是比较显示文字。
+ * 链接字符串包含锚点，因此同一页面的不同锚点可以服务不同子批次；每行只取
+ * 第一个链接，行内补充引用属于注记。该规则与断链检查互补，不比较显示文字。
  */
 function checkDevDocsIndexUniqueness(root: string, pages: MarkdownPage[]): Diagnostic[] {
   const index = pages.find((page) => page.path.toLowerCase() === "docs/devdocs/readme.md");
@@ -187,9 +187,9 @@ function checkDevDocsIndexUniqueness(root: string, pages: MarkdownPage[]): Diagn
     if (isExternalLink(rawLink) || rawLink.startsWith("mailto:")) continue;
     const [rawTarget] = splitAnchor(rawLink);
     if (!rawTarget) continue;
-    let targetPath: string;
     try {
-      targetPath = repoRelative(root, resolveMarkdownTarget(root, index.path, decodeURIComponent(rawTarget)));
+      // 仅验证路径语法；链接是否存在和锚点是否存在由 A0-DOCS-001 负责。
+      resolveMarkdownTarget(root, index.path, decodeURIComponent(rawTarget));
     } catch {
       continue;
     }
