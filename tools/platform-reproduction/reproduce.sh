@@ -107,7 +107,6 @@ cleanup() {
 trap cleanup EXIT
 
 cargo_manifest="$repository_root/core/rust/Cargo.toml"
-benchmark_manifest="$repository_root/tests/benchmarks/Cargo.toml"
 
 printf '\n== 准备 Rust 核心和 Runtime ==\n'
 (cd "$repository_root" && cargo build --manifest-path "$cargo_manifest" -p xiao-runtime --release)
@@ -141,15 +140,7 @@ else
     (cd "$repository_root" && "${ignored_command[@]}")
 fi
 
-printf '\n== Rust/TypeScript 门禁 ==\n'
-(cd "$repository_root" && cargo test --manifest-path "$cargo_manifest" -p xiao-driver)
-(cd "$repository_root" && bun install --frozen-lockfile)
-(cd "$repository_root" && bun test)
-(cd "$repository_root" && bunx tsc --noEmit -p tsconfig.json)
-(cd "$repository_root" && cargo check --manifest-path "$benchmark_manifest")
-(cd "$repository_root" && bun run check)
-(cd "$repository_root" && bun run check:coverage)
-(cd "$repository_root" && cargo fmt --all --manifest-path "$cargo_manifest" -- --check)
+bash "$repository_root/tools/gates/run.sh"
 
 printf '\n== 打包、发现、构建和协议回环 ==\n'
 package_directory="$temporary_root/package"

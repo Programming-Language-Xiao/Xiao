@@ -1,0 +1,58 @@
+name: Xiao workspace gates
+
+on:
+  push:
+    paths:
+      - ".github/workflows/workspace-gates.yml"
+      - "tools/**"
+      - "cli/**"
+      - "docs/**"
+      - "package.json"
+      - "bun.lock"
+      - "bunfig.toml"
+      - "tsconfig.json"
+      - "tsconfig.*"
+      - "core/rust/rust-toolchain.toml"
+  pull_request:
+    paths:
+      - ".github/workflows/workspace-gates.yml"
+      - "tools/**"
+      - "cli/**"
+      - "docs/**"
+      - "package.json"
+      - "bun.lock"
+      - "bunfig.toml"
+      - "tsconfig.json"
+      - "tsconfig.*"
+      - "core/rust/rust-toolchain.toml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-workspace-gates:
+    name: Linux workspace gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.1
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@1.96.0
+        with:
+          components: rustfmt, clippy
+
+      - name: Run workspace gates
+        shell: bash
+        run: bash tools/gates/run.sh

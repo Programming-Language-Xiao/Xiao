@@ -108,8 +108,13 @@ if ($Mode -eq 'docker') {
 Initialize-MsvcEnvironment
 
 $cargoManifest = Join-Path $repositoryRoot 'core/rust/Cargo.toml'
-$benchmarkManifest = Join-Path $repositoryRoot 'tests/benchmarks/Cargo.toml'
 $bunPath = (Get-Command bun).Source
+$gitPath = (Get-Command git.exe).Source
+$gitInstallDirectory = Split-Path (Split-Path $gitPath -Parent) -Parent
+$gitBashPath = Join-Path $gitInstallDirectory 'bin/bash.exe'
+if (-not (Test-Path -LiteralPath $gitBashPath -PathType Leaf)) {
+    throw "Git Bash was not found: $gitBashPath"
+}
 $hostTriple = (& rustc -vV | Select-String '^host:').ToString().Split(':', 2)[1].Trim()
 $env:XIAO_TARGET_TRIPLE = $hostTriple
 $env:XIAO_CLANG = (Get-Command clang).Source
@@ -142,14 +147,7 @@ try {
     $env:XIAO_RUNTIME_LIBRARY = $runtime
 
     Invoke-Checked 'cargo' @('test', '--manifest-path', $cargoManifest, '--workspace', '--', '--ignored')
-    Invoke-Checked 'cargo' @('test', '--manifest-path', $cargoManifest, '-p', 'xiao-driver')
-    Invoke-Checked 'bun' @('install', '--frozen-lockfile')
-    Invoke-Checked 'bun' @('test')
-    Invoke-Checked 'bunx' @('tsc', '--noEmit', '-p', 'tsconfig.json')
-    Invoke-Checked 'cargo' @('check', '--manifest-path', $benchmarkManifest)
-    Invoke-Checked 'bun' @('run', 'check')
-    Invoke-Checked 'bun' @('run', 'check:coverage')
-    Invoke-Checked 'cargo' @('fmt', '--all', '--manifest-path', $cargoManifest, '--', '--check')
+    Invoke-Checked $gitBashPath @('tools/gates/run.sh')
 
     $temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) "xiao-platform-reproduction-$PID"
     New-Item -ItemType Directory -Force -Path $temporaryRoot | Out-Null

@@ -8,17 +8,24 @@
 > **一句话概括本批**：**让「改了门禁代码」和「改了文档」在 push 时就有 CI 信号**，
 > 并让这段门禁命令保持**单一来源**，不再各抄一份。
 >
-> 状态：**规划稿（2026-10-09）**。待定决策集中在末尾。
+> 状态：**已实施，远程验收待补**。已按建议新建 Linux 工作区门禁，不加入 `cargo test --workspace`。
+
+## 实施记录
+
+- 新增 `.github/workflows/workspace-gates.yml`，在 push/PR 的 `tools/**`、`cli/**`、`docs/**`、Bun/TypeScript 配置、Rust toolchain 文件和工作流自身变化时运行，使用 Linux、Bun 1.4.1、Rust 1.96，超时 20 分钟。
+- 抽出 `tools/gates/run.sh` 作为门禁命令唯一来源；`reproduce.sh native`、`reproduce.ps1 native` 和新工作流都调用它。周定时 `platform-reproduction.yml` 未改变职责和调度。
+- 门禁命令保留原顺序：`cargo test -p xiao-driver`、冻结 Bun 安装、Bun 测试、TypeScript 检查、benchmark `cargo check`、`bun run check`、覆盖率检查和 fmt。
+- 本地完整 `tools/gates/run.sh` 在 Git Bash 下退出码 0；另行 `cargo test --workspace`、`bun run check` 与 `bun run check:docs` 均通过。全量 workspace 测试只用于本地验收，没有加入 push 作业。新工作流只复用既有 checkout、Bun 和 Rust 工具链 action，超时为 20 分钟。推送后的真实工作流运行号与临时违规变红/恢复运行号需在推送后补入本节，不能用本地结果替代。
 
 ## 一、Agent 交接上下文
 
 ### 1.1 接手前提
 
 1. [10R](10r-release-accounting-and-native-ci-gate.md) §（CI 门控那节）—— **「不另建工作流、路径过滤沿用现有」的口径出处**；
-   本批要说明为什么它**不适用于**这个纯 bun 作业；
+   本批要说明它为何不适用于覆盖 `tools/`、`cli/`、`docs/` 的独立工作区门禁；
 2. [10D](10d-environment-gated-test-spec.md) —— 门控测试与环境准备的既有规范；
 3. [00A](00a-a0-workspace-and-checkers.md) —— `A0-*` 规则清单（本批要保护的就是这些规则自己）；
-4. `.github/workflows/maintenance-regression.yml`、`.github/workflows/platform-reproduction.yml`、`tools/platform-reproduction/reproduce.sh` —— 现状的三处事实来源。
+4. `.github/workflows/maintenance-regression.yml`、`.github/workflows/platform-reproduction.yml`、`tools/platform-reproduction/reproduce.sh` 和 `reproduce.ps1` —— 现状事实来源。
 
 ### 1.2 现状盘点（2026-10-09，审核实测）
 
@@ -56,6 +63,7 @@ cargo fmt --all -- --check
 ```
 
 它只被 `platform-reproduction.yml` 调用，**而该工作流不响应 push**。
+Windows 周定时入口 `reproduce.ps1` 当时另有一份相同清单；实施时须一并委托共享脚本，才能保证平台入口与 push 工作流只有一个命令来源。
 
 ### 这次缺口造成的实际后果（不是假设）
 
@@ -113,10 +121,10 @@ cargo fmt --all -- --check
      `tools/**`、`cli/**`、`docs/**`、`package.json`、`tsconfig.json`、`tsconfig` 相关文件与该工作流自身；
    - **(b) 留在 `maintenance-regression.yml` 里扩宽 `paths`**——代价是 docs-only 的推送
      也会拉起三个 Rust 作业（`deterministic-size` 在 `windows-2025` 上，最贵）；
-3. **建议 (a)**。理由：10R 那句「不另建工作流、路径过滤沿用现有」是针对**原生差分作业**说的——
-   它要与既有作业共用 Rust/原生工具链准备，另开工作流会重复那一套。而本作业是**纯 bun**，
-   与那三个作业**不共享任何准备步骤**，「沿用」在此处不成立；把它的 `paths` 塞进同一个文件，
-   只会让两个不想互相牵动的触发条件绑死；
+3. **建议 (a)**。理由：10R 那句「不另建工作流、路径过滤沿用现有」针对**原生差分作业**；
+   本批工作区门禁覆盖 Bun/文档和轻量 Rust 检查，不运行 LLVM、GUI 准备或原生差分矩阵。
+   GitHub 的 `paths` 是工作流级，把它们并入 `maintenance-regression.yml` 会让 docs-only 推送也启动三个 Rust 作业；
+   独立工作流保留独立触发范围，不改变原生作业与周定时平台复现；
 4. **不引入第三方变更文件过滤器**（`dorny/paths-filter` 之类）：为一个作业级过滤新增一个
    供应链依赖与一份 `permissions` 面，代价大于收益；真要作业级门控，用 (a) 更干净。
 
@@ -124,14 +132,13 @@ cargo fmt --all -- --check
 
 **冻结**：
 
-1. 现状的命令清单**已经在 `reproduce.sh:146-155`**；新作业若再抄一遍，
+1. 现状的命令清单**已经在 `reproduce.sh:146-155`**，Windows 入口也重复了一份；新作业若再抄一遍，
    就出现两份副本——**这正是本批一路在治的毛病**（同一定义多处副本，改一处漏一处）；
 2. 两条可选做法，**选一条并在提交说明里写清**：
-   - **把门禁段抽成脚本**（如 `tools/gates/run.sh`），`reproduce.sh` 与新作业**都调用它**；
+   - **把门禁段抽成脚本**（如 `tools/gates/run.sh`），`reproduce.sh`、`reproduce.ps1` 与新作业**都调用它**；
    - 或**给 `reproduce.sh` 加一个只跑门禁的 mode**（如 `reproduce.sh gates`），新作业调用该 mode；
-3. 无论哪条，**`reproduce.sh` 的既有行为不得改变**——周定时的全量回归要继续跑它原来那些步骤；
-4. Windows 侧是否也要跑这组门禁：**本批只做 Linux 作业**（与 `security-maintenance` 同构）。
-   若星崽要求 Windows 覆盖，按待定决策 2 另议——不要在实现时顺手加，`windows-2025` 的分钟成本最高。
+3. 无论哪条，**平台复现既有行为不得改变**——周定时的全量回归要继续跑原有步骤；
+4. Windows 侧是否也要有 push 门禁：**本批只做 Linux 作业**（与 `security-maintenance` 同构），Windows 周定时复现仍执行共享门禁脚本。
 
 ### 2.4 **C4：必须证明新作业「真的会红」，且推送后由真实运行确认**
 
@@ -168,7 +175,7 @@ cargo fmt --all -- --check
 .github/workflows/workspace-gates.yml（新）        方案 (a)：push/PR 触发，paths 覆盖 tools/**、cli/**、
                                                    docs/**、package.json、tsconfig.json 及其自身
 tools/gates/run.sh（新）或 tools/platform-reproduction/reproduce.sh    §2.3：门禁命令的单一来源
-tools/platform-reproduction/reproduce.sh            §2.3 第 3 条：既有行为不得改变
+tools/platform-reproduction/reproduce.sh / reproduce.ps1              §2.3：平台入口委托共享门禁，复现行为不变
 docs/DevDocs/10r-release-accounting-and-native-ci-gate.md   §2.2：说明 10R 口径的适用范围边界
 docs/DevDocs/10d-environment-gated-test-spec.md      回填「哪些门禁在 push 时跑、哪些只在周定时跑」
 docs/DevDocs/README.md                              主表登记
@@ -178,7 +185,7 @@ docs/DevDocs/README.md                              主表登记
 
 1. **路径过滤与作业必须一起加**（§2.1 第 1 条）——只加过滤是无效改动；
 2. `bun install` 必须 `--frozen-lockfile`（§2.1 第 3 条）；
-3. **命令清单只能有一份**（§2.3）；`reproduce.sh` 既有行为不变；
+3. **命令清单只能有一份**（§2.3）；`reproduce.sh` 与 `reproduce.ps1` 既有复现行为不变；
 4. **验收必须包含推送后的真实运行号**与一次**真的变红**（§2.4）——本地绿不算；
 5. 不动既有作业、调度与 `platform-reproduction.yml` 的职责（§2.5）；
 6. 不新增第三方 action；`oven-sh/setup-bun` 复用既有 pin（`@v2`，bun `1.4.1`）；
@@ -189,7 +196,7 @@ docs/DevDocs/README.md                              主表登记
 ## 五、分步提交
 
 1. **定方案**：在本文档或提交说明里写明选 (a) 还是 (b) 与理由（§2.2）；
-2. **抽命令单一来源**：§2.3 二选一；确认 `reproduce.sh` 行为不变（本地跑一次 `reproduce.sh native` 的门禁段或至少 `bun run check`）；
+2. **抽命令单一来源**：§2.3 二选一；确认两种平台入口的复现行为不变（本地跑共享门禁脚本或至少 `bun run check`）；
 3. **加工作流与路径过滤**：按所选方案；复用既有 action pin；设 `timeout-minutes`；
 4. **推送并确认真实触发**：`gh run list` 看到新工作流、且为 success；
 5. **让它变红**：临时制造一次 `A0-DOCS-004` 违规（README 加重复链接）→ 推送 → 确认新作业红 → 恢复 → 确认转绿；
@@ -215,7 +222,7 @@ docs/DevDocs/README.md                              主表登记
 
 1. **`tools/`、`cli/`、`docs/`、`package.json`、`tsconfig.json` 的改动在 push 后确实会触发 CI**，
    并有对应的运行号为证；
-2. 新作业跑的门禁命令与 `reproduce.sh` **来自同一份定义**（§2.3），且 `reproduce.sh` 既有行为未变；
+2. 新作业跑的门禁命令与 `reproduce.sh`、`reproduce.ps1` **来自同一份定义**（§2.3），且平台复现步骤未变；
 3. **有一次真实的「变红」证据**：临时违规 → 新作业红 → 恢复 → 绿，运行号写在提交说明里（§2.4）；
 4. `bun install` 带 `--frozen-lockfile`；作业有 `timeout-minutes`；未新增第三方 action；
 5. 现有三个作业、`platform-reproduction.yml` 的调度与职责**均未改变**；
@@ -227,20 +234,16 @@ docs/DevDocs/README.md                              主表登记
 
 - **不改** `platform-reproduction.yml` 的调度与步骤（§2.5）；
 - **不改**现有三个 Rust 作业；
-- **不做**原生差分门控矩阵、不做平台复现脚本本身；
+- **不做**原生差分门控矩阵或平台复现逻辑调整；两个平台入口只将已有门禁清单委托给共享脚本；
 - **不引入**变更文件过滤器等第三方 action；
-- **不做** Windows 侧的门禁作业（除非按待定决策 2 另行决定）；
+- **不做** Windows 侧的 push 门禁作业（按已冻结决策 2）；
 - **不做** B 系列、19 收口相关的任何事。
 
-## 待定决策
+## 已冻结决策
 
-1. **方案 (a) 新建工作流 还是 (b) 扩宽现有工作流的 `paths`**——建议 (a)（§2.2 第 3 条）。
-   这条偏离了 [10R](10r-release-accounting-and-native-ci-gate.md) 的「不另建工作流」口径，
-   需要星崽确认该口径的适用范围确实限于「与原生作业共享准备步骤」的情形。
-2. **是否也要 Windows 侧覆盖**：`windows-2025` 的分钟成本最高，本批建议只做 Linux。
-3. **`cargo test --workspace` 要不要进 push 门禁**：目前 push 时跑的是三个精选作业，
-   全量 workspace 测试只在周定时跑。这属于**覆盖面**的取舍，与本批的「路径缺口」是两件事，
-   本批不顺手扩，避免把两件事混在一起谈。
+1. 采用方案 (a)：新增 `workspace-gates.yml`，让 docs-only 和工作区门禁变更拥有独立的 workflow-level 路径过滤，不触发原有三个 Rust 作业。
+2. Push 门禁只跑 Linux；Windows 继续由周定时平台复现覆盖，不增加 Windows push job。
+3. Push 门禁不加入 `cargo test --workspace`；该命令已按本地验收要求单独运行，不把更大的覆盖面混入本批 CI 触发修复。
 
 ## 相关页面
 

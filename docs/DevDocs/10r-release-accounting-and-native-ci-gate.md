@@ -314,3 +314,7 @@ ed93cd5（代码为7ca6bdf）上 cargo test --workspace、workspace Clippy --all
 补正以最近的函数作用域作为帧身份，遮蔽检查按帧和名称分组，并比较所有已见祖先/后代作用域；不再因为作用域种类为function而跳过冲突。value_slots与函数出口计划使用同一帧归属规则，排除内层函数的记录。不同函数同名变量仍由既有function-scope-isolation受控差分验证；本批未接入块级槽位，对同帧嵌套声明保持结构化拒绝，不用错误共享槽位冒充支持。
 
 补正验证：新增局部变量/参数遮蔽回归修前报“期望拒绝却生成LLVM”，修后通过；n0_b_dynamic_native 默认8通过/1显式门控，受控三组ignored仍1+3+1通过。Rust workspace全量、Clippy全targets -D warnings、fmt、Bun全量（287通过/5跳过/0失败）通过。用户原有xiao-xar/tests/README.md未纳入。
+
+### Push 门禁口径补充（10Z-CI覆盖）
+
+10R 中“不另建工作流、沿用现有路径过滤”的约束针对共享 Rust/原生工具链准备的原生作业。`workspace-gates.yml` 是独立的工作区门禁入口，覆盖 `tools/`、`cli/`、`docs/`、Bun/TypeScript 配置与 Rust toolchain 文件变化；它运行 Bun/文档检查及轻量 Rust 检查，不承担原生差分和平台复现，也不复用原生作业的路径过滤。这不改变既有原生作业或周定时平台复现的调度。

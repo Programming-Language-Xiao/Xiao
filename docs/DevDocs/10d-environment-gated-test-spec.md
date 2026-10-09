@@ -314,6 +314,10 @@ runner 尚未执行同一套平台异常报告矩阵，也不能用 `llvm-as` �
 `XIAO_DIAGNOSTICS_PATH`，不再无条件拾取 `core/rust/target/debug/xiao-diagnostics` 的旧产物。
 平台复现脚本仍在构建当前诊断组件后设置该显式路径，避免 `--locale` 协议变化被旧二进制遮蔽。
 
+## Push 与周定时门禁分工（10Z-CI覆盖）
+
+`workspace-gates.yml` 在 push/PR 的 `tools/`、`cli/`、`docs/`、Bun/TypeScript 配置、Rust toolchain 文件或自身变化时运行轻量工作区门禁，命令来自 `tools/gates/run.sh`。`reproduce.sh` 与 Windows 的 `reproduce.ps1` 也调用同一脚本，避免平台复现与 push 门禁中的 Rust/Bun 清单分叉。`platform-reproduction.yml` 的周一定时与手动运行继续负责四平台、原生构建、打包和协议回环；它未被新工作流替代。push 门禁只覆盖 Linux，不加入全量 `cargo test --workspace`。
+
 ## 八、不负责
 
 - **不改变这些测试的断言内容**——本文只管"它们有没有跑"，不管"它们断得对不对"；
