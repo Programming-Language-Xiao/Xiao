@@ -4,43 +4,15 @@ on:
   push:
     paths:
       - ".github/workflows/maintenance-regression.yml"
-      - "core/rust/Cargo.toml"
-      - "core/rust/Cargo.lock"
-      - "core/rust/crates/xiao-artifacts/**"
-      - "core/rust/crates/xiao-bytecode/**"
-      - "core/rust/crates/xiao-codegen-llvm/**"
-      - "core/rust/crates/xiao-driver/**"
-      - "core/rust/crates/xiao-ir/**"
-      - "core/rust/crates/xiao-optimizer/**"
-      - "core/rust/crates/xiao-syntax/**"
-      - "core/rust/crates/xiao-types/**"
-      - "core/rust/crates/xiao-xar/**"
+      - "core/rust/**"
       - "tests/fuzz/**"
       - "tests/benchmarks/**"
-      - "core/rust/crates/xiao-runtime/**"
-      - "core/rust/crates/xiao-runtime-abi/**"
-      - "core/rust/crates/xiao-vm/**"
-      - "core/rust/crates/xiao-lifetime/**"
   pull_request:
     paths:
       - ".github/workflows/maintenance-regression.yml"
-      - "core/rust/Cargo.toml"
-      - "core/rust/Cargo.lock"
-      - "core/rust/crates/xiao-artifacts/**"
-      - "core/rust/crates/xiao-bytecode/**"
-      - "core/rust/crates/xiao-codegen-llvm/**"
-      - "core/rust/crates/xiao-driver/**"
-      - "core/rust/crates/xiao-ir/**"
-      - "core/rust/crates/xiao-optimizer/**"
-      - "core/rust/crates/xiao-syntax/**"
-      - "core/rust/crates/xiao-types/**"
-      - "core/rust/crates/xiao-xar/**"
+      - "core/rust/**"
       - "tests/fuzz/**"
       - "tests/benchmarks/**"
-      - "core/rust/crates/xiao-runtime/**"
-      - "core/rust/crates/xiao-runtime-abi/**"
-      - "core/rust/crates/xiao-vm/**"
-      - "core/rust/crates/xiao-lifetime/**"
   workflow_dispatch:
 
 permissions:
@@ -51,6 +23,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  workspace-default-tests:
+    name: Rust workspace default tests (Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@1.96.0
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core/rust -> core/rust/target
+
+      - name: Run default workspace tests
+        run: cargo test --manifest-path core/rust/Cargo.toml --workspace
+
   deterministic-size:
     name: Deterministic artifact size regression (Windows baseline)
     runs-on: windows-2025

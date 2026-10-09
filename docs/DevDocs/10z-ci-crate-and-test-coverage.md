@@ -8,7 +8,15 @@
 > **一句话概括本批**：**把「枚举式覆盖范围」换成「目录 glob」从根上消除漏项**，
 > 并让**全量默认测试**至少在一个自动触发的地方跑起来。
 >
-> 状态：**规划稿（2026-10-09）**。待定决策集中在末尾。
+> 状态：**实施中（2026-10-09）**。星崽已选择 P1：在 `maintenance-regression.yml` 新增 Linux workspace 默认测试作业；其余决策按文档建议执行。
+
+## 实施记录
+
+- `maintenance-regression.yml` 的 Rust 路径过滤已由 13 条 crate 枚举收敛为 `core/rust/**`，覆盖 `Cargo.toml`、锁文件、工具链和全部 23 个 workspace 成员；`tests/fuzz/**` 与 `tests/benchmarks/**` 保持独立路径。
+- 新增 `workspace-default-tests` Linux 作业，运行不带 `--ignored` 的 `cargo test --manifest-path core/rust/Cargo.toml --workspace`，超时 20 分钟；平台复现中的 `--workspace -- --ignored` 保持独立。
+- 删除 `workspace-gates.yml` 中不存在的 `bunfig.toml`；其余字面路径已逐项核对存在，模式条目另按 glob 处理。
+- 在 00A 增加枚举式覆盖清单的权威来源、成员数/差集和路径存在性对账规则，并在 10D 校准默认测试与 `--ignored` 的职责边界。
+- 真实 push 触发、全量测试负例和恢复运行号将在本节与提交说明中回填；本地 `cargo test --workspace`、`bun test`、`bun run check`、`bunx tsc --noEmit -p tsconfig.json` 作为推送前门禁。
 
 ## 一、Agent 交接上下文
 
@@ -244,15 +252,11 @@ docs/DevDocs/README.md                           主表登记
 - **不做** Windows 侧的全量测试作业（成本另议，本批只做 Linux）；
 - **不改** `platform-reproduction.yml` 的调度；**不改**上一轮工作流的结构。
 
-## 待定决策
+## 已冻结决策
 
-1. **全量默认测试放哪（P1 / P2）**——建议 P1（`maintenance-regression.yml` 内新增作业，push 触发）。
-   需要星崽拍板的是**成本**：实测暖缓存 135 s，CI 冷缓存更久，但仍在 20 分钟量级内。
-   若星崽认为 push 时长不可接受，选 P2（只进周定时，滞后最长 7 天）。
-2. **Windows 侧要不要也覆盖这 10 个 crate**：`core/rust/**` 的 glob 会自动把它们带进 push 过滤，
-   但 `maintenance-regression` 只有部分作业是 Windows。本批只保证 Linux 侧真的跑到，Windows 另议。
-3. **是否顺带加一条机器检查**（工作流 `paths` 里字面条目的存在性）——本批按 §2.3 第 5 条先不加，
-   若这类错误再犯再考虑。
+1. 采用 **P1**：在 `maintenance-regression.yml` 新增 Linux workspace 默认测试作业，push/PR 自动运行；暖缓存实测约 135 秒，作业超时保持 20 分钟。
+2. Windows 不新增全量测试作业；`core/rust/**` 的 glob 负责路径触发，Windows 侧覆盖范围另行评估。
+3. 本批不新增路径存在性机器检查，先按 00A 的人工权威来源与差集对账规则执行。
 
 ## 相关页面
 

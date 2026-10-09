@@ -229,6 +229,10 @@ XIAO_DIAGNOSTICS_HOLD_MS=0 cargo test -p xiao-driver --test d19a_differential --
    **这是唯一能证明那些测试还活着的动作。**
 3. **`ignored` 数归零不一定是好事**：它可能意味着有人为了"门禁好看"把它们改成了
    条件 `return`——那正是本文要防的形态。
+4. **默认 workspace 测试与环境门控轮次分开记账**：`cargo test --manifest-path core/rust/Cargo.toml --workspace`
+   不带 `--ignored`，运行所有默认测试；`cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored`
+   只运行显式标记的环境依赖测试。前者由维护回归的 Linux workspace 作业自动触发，后者由平台复现流程在准备齐备环境后运行，
+   二者不能互相替代。
 
 ## 六、验收
 
