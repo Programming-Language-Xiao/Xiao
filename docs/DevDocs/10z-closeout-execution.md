@@ -9,7 +9,9 @@
 > **一句话概括本批**：**把 10Y/10Z 的未完成项收束成一条可执行的收尾序列**，做完就关 10 系列；
 > 并**冻结「不再开新的工具侧批次」**——门禁与 CI 覆盖已经收口，除非它阻塞主线。
 >
-> 状态：**规划稿（2026-10-09）**。待定决策集中在末尾。
+> 状态：**可开工（2026-10-09）**。§1.3 已把第一步（Y1 的原生变异红色证据）与第二步的起点写成
+> 可照做的粒度（含本机实测的变异点、环境值、命令与预期红色输出），实现交由实现的 Agent；
+> 星崽已确认本批由实现的 Agent 执行。待定决策集中在末尾。
 
 ## 一、Agent 交接上下文
 
@@ -109,6 +111,82 @@ ir.rs:493        "*args/**kwargs 形参"
 | Z-3 / Z-4 欠格与收口 | —— | **做**（被前面阻塞） |
 | 新的工具侧批次 | 门禁 / CI / 文档规则 | **不做**（见 §2.3） |
 | 20C/20D、静态溢出 | —— | **不做**（归 20 系列） |
+
+### 1.3 开工起点（第一步的可执行规格）
+
+**阅读顺序**：本节 → [10Y](10y-b-series-triage-rework.md) §2.1–§2.4（分类与变异的方法，**必须通读**）
+→ [10D](10d-environment-gated-test-spec.md) §4 / §4.5（受控原生环境与本地跑 ignored 的命令）
+→ [10P](10p-differential-exemption-and-coverage.md) 的枚举表（Y3 的回写对象）。
+
+下面把 **Y1** 与 **Y3 的第一条**写到可以直接照做的粒度。**这些值是审核 2026-10-09 在本机实测过的**，
+Agent 不必重新摸索；若与本机实际不符，以实际为准并记录差异。
+
+#### 第一步：Y1 的原生变异红色证据
+
+**(1) 变异点**——`core/rust/crates/xiao-codegen-llvm/src/dynamic/container.rs:280-284`，
+表构造参数槽的写入：
+
+```rust
+        for (index, value) in argument_values {
+            self.emit(format!(
+                "  store {VALUE_TYPE} {value}, ptr {}",
+                argument_slots[index]
+            ));
+        }
+```
+
+把它改成一律写 `zeroinitializer`（即“忽略全部构造参数”），例如把 `{value}` 换成 `zeroinitializer`
+并让 `value` 不再被使用（`let _ = value;`，否则 clippy 会拦）。
+
+**必须落在原生降低层**——改 VM、改前端、或另写 `#[test]` 都不算（[10Y](10y-b-series-triage-rework.md) §2.1 第 1、3 条）。
+
+**(2) 环境**——按 [10D](10d-environment-gated-test-spec.md) §4 准备。本机实测可用的一组值
+（**机器相关，仅作参照**）：`vcvars64.bat` 在
+`C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\`；
+MSYS2 在 `D:\msys64`（用 `ucrt64\bin` 下的 `clang/llvm-as/llc/llvm-strip`）；
+`XIAO_RUNTIME_LIBRARY=core\rust\target\release\xiao_runtime.lib`（**先 `cargo build --release -p xiao-runtime`**）；
+`XIAO_TARGET_TRIPLE=x86_64-pc-windows-msvc`；**并设 `XIAO_DIAGNOSTICS_HOLD_MS=0`**
+（否则调试矩阵会堆窗口，见 10D §4.5）。
+
+**(3) 命令**（定向执行，避免整轮 5 分钟）：
+
+```text
+cargo test -p xiao-driver --test d19a_differential -- --ignored --exact native_side_matches_the_vm_sides_on_every_case
+```
+
+**(4) 期望的红色**（审核实测原文，机器不同数字可能有出入）：
+
+```text
+用例 table-constructor-positional：「VM（源码）」与「原生」不一致：输出 "9\n" ≠ ""；
+    错误身份 None ≠ Some("X06-RUNTIME-007")；退出码 0 ≠ 3
+用例 table-constructor-default：   输出 "4\n" ≠ ""
+用例 table-constructor-keyword：   输出 "8\n" ≠ ""
+用例 table-constructor-evaluation-order：错误身份 None ≠ Some("X06-RUNTIME-007")
+用例 table-constructor-failure：   Runtime 释放序列不一致
+test result: FAILED. 0 passed; 1 failed
+```
+
+**红信号是 `X06-RUNTIME-007` + 退出码 3，与输出 `"0\n"` 无关**——10X 当年那两条
+`assert_ne!(…, "0\n")` 就是照着想象写的（[10Y](10y-b-series-triage-rework.md) §2.1 第 6 条）。
+**只要能跑出「至少两条 `table-constructor-*` 不一致」即可算达标**，不必逐字与上面对齐。
+
+**(5) 恢复与证明**：`git checkout -- core/rust/crates/xiao-codegen-llvm/src/dynamic/container.rs`，
+然后 `git diff --quiet HEAD -- <该文件>` 必须通过；**再跑一次干净基线确认转绿**
+（审核实测：`native_side_matches_the_vm_sides_on_every_case ... ok`，约 73 s）。
+
+**(6) 回填**：把变异点（文件与行）、红色输出、恢复证明写进提交说明，并回填
+[10W](10w-a2-closeout-and-a3-boundary.md) 与 [10Y](10y-b-series-triage-rework.md) 的实施记录。
+
+#### 第二步（Y3 的第一条）：先跑权威枚举，再逐条填
+
+```bash
+grep -rn 'feature: *"' core/rust/crates/xiao-codegen-llvm/src/
+```
+
+**这是唯一权威来源**；把结果与 §1.2 的 28 处基线对账，**写出差集**再动手。
+之后按 [10Y](10y-b-series-triage-rework.md) §2.4 逐条填
+（最小源码 / VM 实跑输出 / 三分类 / 可达性），回写 [10P](10p-differential-exemption-and-coverage.md)（**加列不抹旧判定**）。
+**`dynamic/` 之外那 4 处的归属必须单独判定**（§2.2 第 3 条）。
 
 ## 二、必须先冻结的 5 条
 
@@ -214,7 +292,7 @@ docs/DevDocs/README.md                                    主表登记 + 10 系�
 
 ## 五、分步提交
 
-1. **Y1**：原生变异 → 受控原生门控跑红 → 贴输出 → 恢复并证明干净 → 回填 10W；
+1. **Y1**：原生变异 → 受控原生门控跑红 → 贴输出 → 恢复并证明干净 → 回填 10W（**精确起点见 §1.3**）；
 2. **Y3**：按 §2.2 逐条实跑 20 处 + 判定 `dynamic/` 外 4 处 → 回写 10P（加列）→ **提交只含文档**；
 3. **停下来汇报**：真缺口条数、各自需要什么、依赖哪些阶段；等星崽定 Z-1 范围；
 4. **Z-1**：有缺口按 B1 → B2 实现（每条含差分用例与原生侧变异验证）；无缺口则如实关闭并写明理由；
