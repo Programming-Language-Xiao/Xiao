@@ -216,7 +216,7 @@ J3 已在 [19D](19d-performance-comparison.md) 按 [12](12-tests-and-milestones.
 | --- | --- | --- | --- |
 | `container.rs:198` 动态表构造目标 | `new (value)(1)`；前端拒绝，无 VM 产物 | 原生拒绝且 VM 也不该支持 | 静态表名是语言构造契约，不属 B |
 | `container.rs:224` 缺少 init | `new Item(2)`；`X05-TYPE-004`，退出 1 | 两边都拒绝 | 前端阶段拒绝，未找到可达原生分支 |
-| `container.rs:242` 构造参数形态 | `new Item(other = 2)`；`X05-TYPE-004`，退出 1 | 两边都拒绝 | 前端参数匹配拒绝 |
+| `container.rs:242` 构造参数形态 | `new Item(other = 2)`；`X05-TYPE-004`「init 不存在该关键字参数」，退出 1 | 两边都拒绝 | 前端参数匹配拒绝。**改判说明（审核，2026-10-09）**：本行的码与 [10W](10w-a2-closeout-and-a3-boundary.md)/[10X](10x-b-series-triage.md) 旧记录的 `X02-TYPE-001` 不同，**本行的 `X05-TYPE-004` 才是实测值**——旧记录那个码来自探针源码里 `pass` 未定义，与构造参数形态无关。分类不变，勘误已回填 10W/10X |
 | `container.rs:333` 动态表字段类型 | 不支持字段容器/函数类型；VM 类型阶段拒绝 | 原生拒绝且 VM 也不该支持 | ABI 字段类型由冻结签名限定 |
 | `control.rs:206` 动态扩展赋值 | `def write(value); value.member = 1; write({member = 0})`；`X06-RUNTIME-002`，退出 3 | 原生缺口候选 | 入口可达；当前探针命中 dict_table/table 类型边界，需补 table/dynamic 对照 |
 | `expression.rs:47` 表方法值（A3） | 10W：`X09-BYTECODE-001`，退出 2 | 两边一致拒绝 | A3 已冻结，不重复取证 |
