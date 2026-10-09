@@ -50,6 +50,13 @@ tests/benchmarks/**         tests/fuzz/**
 **不在其中的关键路径**：`tools/**`（repo-check、doc-coverage —— **就是那些替我们抓别人问题的检查器**）、
 `cli/**`、`docs/**`、`package.json`、`tsconfig.json`。
 
+> **补注（审核，2026-10-09）**：上面这份「18 条」是**照抄 `maintenance-regression.yml` 的枚举**写下的，
+> 当时**没有拿它跟 `core/rust/Cargo.toml` 的 `members` 对账**。实际 workspace 有 **23 个成员**，
+> 该枚举只列了 13 个——**另有 10 个 crate 的改动 push 后两个工作流都不触发**，
+> 且**没有任何工作流跑全量默认测试**。本批只覆盖了 `tools/`、`cli/`、`docs/` 三个目录；
+> 这两处缺口见 [10Z-CI覆盖2](10z-ci-crate-and-test-coverage.md)。
+> **教训**：枚举式清单只查了一部分，就把「还剩几个没查」变成了未知数。
+
 **唯一跑 bun 侧门禁的地方**是 `reproduce.sh:146-155` 的「Rust/TypeScript 门禁」段：
 
 ```sh
