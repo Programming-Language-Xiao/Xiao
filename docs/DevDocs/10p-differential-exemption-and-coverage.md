@@ -6,7 +6,7 @@
 > **一句话概括本批**：先让豁免只能豁免它声明的字段，把守门能力还回来；再判定选择器多出来的那次释放；
 > 然后按规范重做 19 的 O6 对账，并把剩余拒绝面枚举清楚。
 >
-> 状态：**规划稿（2026-10-07）**。「建议」处未经星崽确认，确认项集中在末尾「待定决策」。
+> 状态：**Y3 分类记录（2026-10-09）**。本次只补代码权威枚举、VM 探针结果、分类与可达性；不实现 B1/B2。
 
 ## 一、Agent 交接上下文
 
@@ -205,6 +205,44 @@ J3 已在 [19D](19d-performance-comparison.md) 按 [12](12-tests-and-milestones.
 | 动态非表成员访问/写入 | `value.member` | VM 有运行时诊断路径 | `dynamic/expression.rs` | 原生缺口候选，尚未完成最小源码实跑与可达性分类 | B1 分类中 |
 | 动态错误构造非字符串参数 | `ArithmeticError(code = value)` | VM 拒绝非文本参数 | 前端/Runtime 错误 ABI | 两边均拒绝，保持一致 | 保持拒绝，不实现 |
 | 多项/动态字典键选择器 | 多个选择项或键路径 | VM 支持部分语义 | `dynamic/expression.rs` | 10T 为 container-dense 接通多项精确路径和静态键读取；混合动态形态仍待 VM 分类 | B2 分类中 |
+
+### Y3 代码权威对账与 VM 分类（2026-10-09）
+
+权威命令为 `rg -n 'feature:' core/rust/crates/xiao-codegen-llvm/src -g '*.rs'`，共 28 处字符串出现。24 处位于 `dynamic/`，与 10X 旧清单的 24 行差集为空；另有 4 处位于 `dynamic/` 外：`dynamic.rs:100` 的 64 位 C ABI 目标约束、`ir.rs:315` 函数值、`ir.rs:319` 动态或容器类型、`ir.rs:493` `*args/**kwargs` 形参。后四项属于目标/IR 层独立边界，不把它们默认为 B 系列语言拒绝面。
+
+以下是新增分类列。旧表的历史判定保留不改；本表记录当前 VM 探针的最小源码、稳定结果、分类和可达性。探针使用 `bun cli/ts/src/main.ts --json run <临时目录>/main.xiao`，所有源文件置于独立项目目录下。
+
+| 代码位置/拒绝面 | VM 最小探针与结果 | 分类 | 可达性/依赖 |
+| --- | --- | --- | --- |
+| `container.rs:198` 动态表构造目标 | `new (value)(1)`；前端拒绝，无 VM 产物 | 原生拒绝且 VM 也不该支持 | 静态表名是语言构造契约，不属 B |
+| `container.rs:224` 缺少 init | `new Item(2)`；`X05-TYPE-004`，退出 1 | 两边都拒绝 | 前端阶段拒绝，未找到可达原生分支 |
+| `container.rs:242` 构造参数形态 | `new Item(other = 2)`；`X05-TYPE-004`，退出 1 | 两边都拒绝 | 前端参数匹配拒绝 |
+| `container.rs:333` 动态表字段类型 | 不支持字段容器/函数类型；VM 类型阶段拒绝 | 原生拒绝且 VM 也不该支持 | ABI 字段类型由冻结签名限定 |
+| `control.rs:206` 动态扩展赋值 | `def write(value); value.member = 1; write({member = 0})`；`X06-RUNTIME-002`，退出 3 | 原生缺口候选 | 入口可达；当前探针命中 dict_table/table 类型边界，需补 table/dynamic 对照 |
+| `expression.rs:47` 表方法值（A3） | 10W：`X09-BYTECODE-001`，退出 2 | 两边一致拒绝 | A3 已冻结，不重复取证 |
+| `expression.rs:212` 动态混合多项选择器 | 混合精确与范围形状；前端拒绝 | 两边都拒绝 | 选择器类型规则已拒绝 |
+| `expression.rs:270` 缺少规范选择计划 | 合法动态范围/随机选择 VM 可执行；无计划 IR 被原生拒绝 | 原生缺口候选 | 依赖 IR 选择计划生产契约 |
+| `expression.rs:371` print 关键字/展开 | `print(value = 1)`；`X06-RUNTIME-012`，退出 3 | 两边都拒绝 | VM 已有稳定拒绝 |
+| `expression.rs:423` input 关键字/展开 | `input(prompt = "x")`；VM 入口拒绝 | 两边都拒绝 | 只接受位置 prompt |
+| `expression.rs:449` set 构造器参数 | `set(1)`；`X03-TYPE-018`，退出 1 | 两边都拒绝 | `set()` 固定零参数 |
+| `expression.rs:475` random.seed 缺参 | `random.seed()`；`X03-TYPE-014`，退出 1 | 两边都拒绝 | 类型层参数个数门禁 |
+| `expression.rs:497/508` 动态函数调用 | `def apply(value); return value(1); result = apply(0)`；`X06-RUNTIME-012`，退出 3 | 原生拒绝且 VM 也不该支持 | 一等动态 callee 属 A3/函数值 ABI，单独立项 |
+| `expression.rs:596` FatalError 构造 | `raise FatalError(code = "x")`；`X07-TYPE-003`，退出 1 | 两边都拒绝 | Fatal 不进入可恢复错误 ABI |
+| `expression.rs:631` 错误构造参数名 | `ArithmeticError(foo = "x")`；`X06-RUNTIME-012`，退出 3 | 两边都拒绝 | VM 已拒绝未知参数 |
+| `expression.rs:670` 错误构造动态参数 | `code = "x"; ArithmeticError(code = code)`；`X06-RUNTIME-012`，退出 3 | 两边都拒绝 | 当前契约只接受字符串字面量 |
+| `expression.rs:735` 动态非表成员访问 | `def read(value); return value.member; read({member = 1})`；`X06-RUNTIME-002`，退出 3 | 原生缺口候选 | 入口可达，当前探针是 dict_table；需 table/dynamic 对照 |
+| `expression.rs:752` 动态非表字段写入 | `def write(value); value.member = 1; write({member = 0})`；`X06-RUNTIME-002`，退出 3 | 原生缺口候选 | 与成员读取同源，依赖动态表写入契约 |
+| `methods.rs:53` 函数值 ABI（A3） | 10W：一等方法值 `X09-BYTECODE-001`，退出 2 | 两边一致拒绝 | A3 单独 ABI 立项 |
+| `methods.rs:491` 动态表方法接收者 | 动态 receiver 方法调用；VM 类型/运行时拒绝 | 原生拒绝且 VM 也不该支持 | 静态 `obj.method()` 已支持，动态 receiver 属方法 ABI |
+| `methods.rs:552` 表方法参数形态 | 未知关键字/展开参数；VM 参数匹配拒绝 | 两边都拒绝 | 方法参数契约已有 VM/前端门禁 |
+| `slot.rs:112` 动态表声明/初始化 | 表体含非法语句；VM 前端拒绝 | 原生拒绝且 VM 也不该支持 | 动态表体只接受冻结字段/方法形状 |
+| `slot.rs:126` 动态表字段初始化 | 重复字段/方法同名字段；VM 类型层拒绝 | 两边都拒绝 | 签名唯一性校验已覆盖 |
+| `dynamic.rs:100` 64 位 C ABI 目标 | 32 位目标进入动态降低 | 独立目标平台约束 | 不属于 B 系列 |
+| `ir.rs:315` 函数值 | 静态函数值进入 N0-A 标量降低 | 独立 IR/ABI 边界 | A3 独立登记 |
+| `ir.rs:319` 动态或容器类型 | 容器进入静态标量降低 | 独立 IR 分流约束 | 不是语言拒绝 |
+| `ir.rs:493` `*args/**kwargs` 形参 | 函数带可变参数；N0-A 签名拒绝 | 独立函数 ABI 边界 | 后续函数调用 ABI 立项 |
+
+**Y3 阶段结论**：已完成 28 处权威字符串对账与最小 VM 探针记录。明确的原生缺口候选为动态扩展赋值、动态选择计划缺失、动态成员读写 3 组；三组仍需 table/dynamic 形态对照才能最终定类。A3、构造参数、错误构造、随机/集合参数等为两边一致拒绝或防御性边界；目标平台与 IR 层 4 处登记为独立项。本提交只记录分类，不实现 B1/B2。
 
 ## 待定决策
 
