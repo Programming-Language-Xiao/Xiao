@@ -779,7 +779,7 @@ fn a2_remaining_shape_vm_observations() {
         ),
         (
             "unsupported-kind",
-            "[[Item]]\n    def init(self, int amount) -> none\n        pass\nitem = new Item(value = 2)\n",
+            "[[Item]]\n    value = 0\n    def init(self, int amount) -> none\n        self.value = amount\nitem = new Item(other = 2)\n",
         ),
     ];
     for (label, source) in sources {
@@ -794,7 +794,7 @@ fn a2_remaining_shape_vm_observations() {
             observation.error.as_deref(),
             Some(match label {
                 "missing-init" => "X05-TYPE-004",
-                "unsupported-kind" => "X02-TYPE-001",
+                "unsupported-kind" => "X05-TYPE-004",
                 _ => unreachable!(),
             })
         );

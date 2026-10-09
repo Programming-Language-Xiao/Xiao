@@ -12,7 +12,7 @@
 
 - 新增 5 条 `table-constructor-*` 差分基线，覆盖位置参数、默认值、关键字参数、实参求值顺序和初始化失败回滚。基线包含输出、错误身份、退出码和释放存在性，`all_vm_sides_agree_on_every_case` 已通过。
 - A3 VM 实跑结果：方法值赋值和传参均为 `X09-BYTECODE-001`、退出码 2；直接 `obj.method()` 输出 `1`、退出码 0。由此将 A3 改判为“两边一致拒绝一等方法值”，不改后端。
-- A2 剩余形状 VM 取证：无 `init` 的构造参数为 `X05-TYPE-004`，关键字形态不符为 `X02-TYPE-001`；保持原生分类拒绝，不放宽后端判定。
+- A2 剩余形状 VM 取证：无 `init` 与关键字形态不符均为 `X05-TYPE-004`；保持原生分类拒绝，不放宽后端判定。关键字形态的旧 `X02-TYPE-001` 记录由下方勘误解释并更正。
   **勘误（审核，2026-10-09）**：后半句的 `X02-TYPE-001` **是错的**——那是探针源码里 `pass` 未定义造成的
   （`X02-TYPE-001`「未定义名称 pass」，`pass` 不是 Xiao 的关键字）。用合法函数体重跑同一形状，
   真实错误是 **`X05-TYPE-004`「init 不存在该关键字参数」**（连同上一条「init 缺少必需构造参数」），退出码 1 不变。
@@ -227,11 +227,11 @@ docs/DevDocs/README.md                                         主表登记
 4. **裸机轮次**：本批是否需要新的裸机 Linux 轮次（例如为 A2 的构造参数取证），
    还是等 A2/A3 全收口后集中做一次。
 
-## 待修代码（审核提出，2026-10-09）
+## 待修代码（审核提出，2026-10-09；已修复）
 
-**`xiao-driver/tests/d19a_differential.rs` 的 `a2_remaining_shape_vm_observations` 断言错了对象。**
+**`xiao-driver/tests/d19a_differential.rs` 的 `a2_remaining_shape_vm_observations` 断言错了对象，已在本轮修复。**
 
-现状（`:781-782` 与 `:797`）：
+修复前（`:781-782` 与 `:797`）：
 
 ```rust
 (
@@ -251,9 +251,8 @@ docs/DevDocs/README.md                                         主表登记
    `"[[Item]]\n    value = 0\n    def init(self, int amount) -> none\n        self.value = amount\nitem = new Item(other = 2)\n"`；
 2. 把该分支的期望码从 `X02-TYPE-001` 改成 **`X05-TYPE-004`**。
 
-**验收**：改完该用例仍应通过；并且**改之前它也必须通过**——这正说明它此前测错了东西，
-「改前失败、改后通过」不是这里要的证据。要的是**期望码与实跑一致**，
-提交说明里贴出 `X05-TYPE-004` 加「init 不存在该关键字参数」的实跑输出。
+**修复与验收**：源码已改为合法 `init` 函数体和未知关键字 `new Item(other = 2)`，期望码改为 `X05-TYPE-004`。
+定向测试 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test d19a_differential a2_remaining_shape_vm_observations -- --nocapture` 通过，输出为 `missing-init: error=Some("X05-TYPE-004") exit=1` 与 `unsupported-kind: error=Some("X05-TYPE-004") exit=1`。改动测的是构造参数形态，不再被非法 `pass` 诊断掩盖。
 
 > 顺带记一条方法教训：**探针源码本身可能有缺陷**。`X02-TYPE-001` 这个码一路穿过了 10W、10X
 > 与两次人工审核，因为它「看起来是个合理的前端错误码」。取证时要把**诊断文案**一起看，
