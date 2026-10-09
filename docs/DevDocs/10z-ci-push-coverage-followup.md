@@ -8,14 +8,14 @@
 > **一句话概括本批**：**让「改了门禁代码」和「改了文档」在 push 时就有 CI 信号**，
 > 并让这段门禁命令保持**单一来源**，不再各抄一份。
 >
-> 状态：**已实施，远程验收待补**。已按建议新建 Linux 工作区门禁，不加入 `cargo test --workspace`。
+> 状态：**已实施（远程验收完成）**。本批新建的 Linux 工作区门禁不运行 `cargo test --workspace`；全量默认测试由后续 10Z-CI覆盖2 的维护回归作业补上。
 
 ## 实施记录
 
 - 新增 `.github/workflows/workspace-gates.yml`，在 push/PR 的 `tools/**`、`cli/**`、`docs/**`、Bun/TypeScript 配置、Rust toolchain 文件和工作流自身变化时运行，使用 Linux、Bun 1.4.1、Rust 1.96，超时 20 分钟。
 - 抽出 `tools/gates/run.sh` 作为门禁命令唯一来源；`reproduce.sh native`、`reproduce.ps1 native` 和新工作流都调用它。周定时 `platform-reproduction.yml` 未改变职责和调度。
 - 门禁命令保留原顺序：`cargo test -p xiao-driver`、冻结 Bun 安装、Bun 测试、TypeScript 检查、benchmark `cargo check`、`bun run check`、覆盖率检查和 fmt。
-- 本地完整 `tools/gates/run.sh` 在 Git Bash 下退出码 0；另行 `cargo test --workspace`、`bun run check` 与 `bun run check:docs` 均通过。全量 workspace 测试只用于本地验收，没有加入 push 作业。新工作流只复用既有 checkout、Bun 和 Rust 工具链 action，超时为 20 分钟。
+- 本地完整 `tools/gates/run.sh` 在 Git Bash 下退出码 0；另行 `cargo test --workspace`、`bun run check` 与 `bun run check:docs` 均通过。全量 workspace 测试不属于本批 `workspace-gates` 作业，已由 10Z-CI覆盖2 的维护回归作业自动运行。新工作流只复用既有 checkout、Bun 和 Rust 工具链 action，超时为 20 分钟。
 - 远程验收：干净提交 `9f00404` 的 push 运行 [37869869134](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37869869134) 成功；临时在主表加入重复链接的负例提交 `e2c1e7a`，运行 [37871964485](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37871964485) 在 `Run workspace gates` 失败并报告 `A0-DOCS-004`；还原提交 `6aedc72` 的运行 [37879955296](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37879955296) 成功。负例已删除，分支最终工作区门禁为绿。
 
 ## 一、Agent 交接上下文

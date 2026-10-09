@@ -320,7 +320,7 @@ runner 尚未执行同一套平台异常报告矩阵，也不能用 `llvm-as` �
 
 ## Push 与周定时门禁分工（10Z-CI覆盖）
 
-`workspace-gates.yml` 在 push/PR 的 `tools/`、`cli/`、`docs/`、Bun/TypeScript 配置、Rust toolchain 文件或自身变化时运行轻量工作区门禁，命令来自 `tools/gates/run.sh`。`reproduce.sh` 与 Windows 的 `reproduce.ps1` 也调用同一脚本，避免平台复现与 push 门禁中的 Rust/Bun 清单分叉。`platform-reproduction.yml` 的周一定时与手动运行继续负责四平台、原生构建、打包和协议回环；它未被新工作流替代。push 门禁只覆盖 Linux，不加入全量 `cargo test --workspace`。
+`workspace-gates.yml` 在 push/PR 的 `tools/`、`cli/`、`docs/`、Bun/TypeScript 配置、Rust toolchain 文件或自身变化时运行轻量工作区门禁，命令来自 `tools/gates/run.sh`。`reproduce.sh` 与 Windows 的 `reproduce.ps1` 也调用同一脚本，避免平台复现与 push 门禁中的 Rust/Bun 清单分叉。`platform-reproduction.yml` 的周一定时与手动运行继续负责四平台、原生构建、打包和协议回环；它未被新工作流替代。`workspace-gates` push 门禁只覆盖 Linux，默认 workspace 测试由 `maintenance-regression.yml` 的独立 Linux 作业运行，环境依赖测试仍由平台复现的 `--ignored` 轮次运行。
 
 ## 八、不负责
 
