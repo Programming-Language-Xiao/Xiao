@@ -6,7 +6,7 @@
 > **一句话概括本批**：先让豁免只能豁免它声明的字段，把守门能力还回来；再判定选择器多出来的那次释放；
 > 然后按规范重做 19 的 O6 对账，并把剩余拒绝面枚举清楚。
 >
-> 状态：**Y3 分类记录（2026-10-09）**。本次只补代码权威枚举、VM 探针结果、分类与可达性；不实现 B1/B2。
+> 状态：**Y3 初步对账（2026-10-09）**。本次补代码权威枚举和已完成的 VM 探针；完整 Y3 逐条分类尚未完成，不实现 B1/B2。
 
 ## 一、Agent 交接上下文
 
@@ -210,7 +210,7 @@ J3 已在 [19D](19d-performance-comparison.md) 按 [12](12-tests-and-milestones.
 
 权威命令为 `rg -n 'feature:' core/rust/crates/xiao-codegen-llvm/src -g '*.rs'`，共 28 处字符串出现。24 处位于 `dynamic/`，与 10X 旧清单的 24 行差集为空；另有 4 处位于 `dynamic/` 外：`dynamic.rs:100` 的 64 位 C ABI 目标约束、`ir.rs:315` 函数值、`ir.rs:319` 动态或容器类型、`ir.rs:493` `*args/**kwargs` 形参。后四项属于目标/IR 层独立边界，不把它们默认为 B 系列语言拒绝面。
 
-以下是新增分类列。旧表的历史判定保留不改；本表记录当前 VM 探针的最小源码、稳定结果、分类和可达性。探针使用 `bun cli/ts/src/main.ts --json run <临时目录>/main.xiao`，所有源文件置于独立项目目录下。
+以下是新增初步对账列。旧表的历史判定保留不改；本表记录当前已执行的 VM 探针和待补形态。探针使用 `bun cli/ts/src/main.ts --json run <临时目录>/main.xiao`，所有源文件置于独立项目目录下；没有实际输出的行只登记待补，不视为最终分类。
 
 | 代码位置/拒绝面 | VM 最小探针与结果 | 分类 | 可达性/依赖 |
 | --- | --- | --- | --- |
@@ -229,7 +229,7 @@ J3 已在 [19D](19d-performance-comparison.md) 按 [12](12-tests-and-milestones.
 | `expression.rs:497/508` 动态函数调用 | `def apply(value); return value(1); result = apply(0)`；`X06-RUNTIME-012`，退出 3 | 原生拒绝且 VM 也不该支持 | 一等动态 callee 属 A3/函数值 ABI，单独立项 |
 | `expression.rs:596` FatalError 构造 | `raise FatalError(code = "x")`；`X07-TYPE-003`，退出 1 | 两边都拒绝 | Fatal 不进入可恢复错误 ABI |
 | `expression.rs:631` 错误构造参数名 | `ArithmeticError(foo = "x")`；`X06-RUNTIME-012`，退出 3 | 两边都拒绝 | VM 已拒绝未知参数 |
-| `expression.rs:670` 错误构造动态参数 | `code = "x"; ArithmeticError(code = code)`；`X06-RUNTIME-012`，退出 3 | 两边都拒绝 | 当前契约只接受字符串字面量 |
+| `expression.rs:670` 错误构造动态参数 | `code = "x"; ArithmeticError(code = code)`；VM 实际进入 `runtime_error`，错误身份为用户错误 `x`，退出 3 | 待补：VM 接受、原生拒绝，可能为原生缺口 | 该探针证明不能归入“两边都拒绝”；需补最小错误身份/原生差分后定类 |
 | `expression.rs:735` 动态非表成员访问 | `def read(value); return value.member; read({member = 1})`；`X06-RUNTIME-002`，退出 3 | 原生缺口候选 | 入口可达，当前探针是 dict_table；需 table/dynamic 对照 |
 | `expression.rs:752` 动态非表字段写入 | `def write(value); value.member = 1; write({member = 0})`；`X06-RUNTIME-002`，退出 3 | 原生缺口候选 | 与成员读取同源，依赖动态表写入契约 |
 | `methods.rs:53` 函数值 ABI（A3） | 10W：一等方法值 `X09-BYTECODE-001`，退出 2 | 两边一致拒绝 | A3 单独 ABI 立项 |
@@ -242,7 +242,7 @@ J3 已在 [19D](19d-performance-comparison.md) 按 [12](12-tests-and-milestones.
 | `ir.rs:319` 动态或容器类型 | 容器进入静态标量降低 | 独立 IR 分流约束 | 不是语言拒绝 |
 | `ir.rs:493` `*args/**kwargs` 形参 | 函数带可变参数；N0-A 签名拒绝 | 独立函数 ABI 边界 | 后续函数调用 ABI 立项 |
 
-**Y3 阶段结论**：已完成 28 处权威字符串对账与最小 VM 探针记录。明确的原生缺口候选为动态扩展赋值、动态选择计划缺失、动态成员读写 3 组；三组仍需 table/dynamic 形态对照才能最终定类。A3、构造参数、错误构造、随机/集合参数等为两边一致拒绝或防御性边界；目标平台与 IR 层 4 处登记为独立项。本提交只记录分类，不实现 B1/B2。
+**初步结论**：已完成 28 处权威字符串对账，并对部分可达形态取得 VM 输出。动态扩展赋值、动态选择计划缺失、动态成员读写是原生缺口候选；动态错误构造参数也已发现 VM 接受而原生拒绝的待补信号。上述 4 组仍缺完整 table/dynamic 或原生差分对照，不能算最终分类。A3、构造参数、随机/集合参数等已有两边一致拒绝或防御性边界证据；目标平台与 IR 层 4 处登记为独立项。Y3 仍未完成，不实现 B1/B2。
 
 ## 待定决策
 
