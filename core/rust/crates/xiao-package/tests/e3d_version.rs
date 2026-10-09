@@ -52,11 +52,6 @@ fn all_frozen_requirement_forms_and_boundaries() {
 }
 
 #[test]
-fn ci_workspace_default_test_negative_probe() {
-    assert_eq!(1, 2, "temporary CI negative probe");
-}
-
-#[test]
 fn precedence_ignores_build_and_compares_prerelease_identifiers() {
     for (lower, higher) in [
         ("1.0.0-alpha", "1.0.0-alpha.1"),
