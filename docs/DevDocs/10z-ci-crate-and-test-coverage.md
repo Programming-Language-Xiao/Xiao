@@ -8,7 +8,7 @@
 > **一句话概括本批**：**把「枚举式覆盖范围」换成「目录 glob」从根上消除漏项**，
 > 并让**全量默认测试**至少在一个自动触发的地方跑起来。
 >
-> 状态：**实施中（2026-10-09）**。星崽已选择 P1：在 `maintenance-regression.yml` 新增 Linux workspace 默认测试作业；其余决策按文档建议执行。
+> 状态：**已实施（2026-10-09）**。星崽已选择 P1：在 `maintenance-regression.yml` 新增 Linux workspace 默认测试作业；其余决策按文档建议执行。
 
 ## 实施记录
 
@@ -16,7 +16,9 @@
 - 新增 `workspace-default-tests` Linux 作业，运行不带 `--ignored` 的 `cargo test --manifest-path core/rust/Cargo.toml --workspace`，超时 20 分钟；平台复现中的 `--workspace -- --ignored` 保持独立。
 - 删除 `workspace-gates.yml` 中不存在的 `bunfig.toml`；其余字面路径已逐项核对存在，模式条目另按 glob 处理。
 - 在 00A 增加枚举式覆盖清单的权威来源、成员数/差集和路径存在性对账规则，并在 10D 校准默认测试与 `--ignored` 的职责边界。
-- 真实 push 触发、全量测试负例和恢复运行号将在本节与提交说明中回填；本地 `cargo test --workspace`、`bun test`、`bun run check`、`bunx tsc --noEmit -p tsconfig.json` 作为推送前门禁。
+- 本地 `cargo test --workspace`、`bun test`、`bun run check`、`bunx tsc --noEmit -p tsconfig.json` 均通过，作为推送前门禁。
+- 真实验收：基础提交 `c65c1f3` 的维护回归 [37901742722](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37901742722) 与 workspace 门禁 [37901742681](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37901742681) 均成功，其中 workspace 默认测试作业通过；此前未覆盖的 `xiao-package` 临时改动 `289ffe8` 触发维护回归 [37902915111](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37902915111) 成功，恢复提交 `e8b62fd` 的回归 [37903817498](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37903817498) 也成功。
+- 全量测试负例：临时提交 `36bda89` 的维护回归 [37904957067](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37904957067) 中，`Rust workspace default tests (Linux)` 作业失败；日志命中 `ci_workspace_default_test_negative_probe`、`temporary CI negative probe`，退出码 101。删除负例的恢复提交 `3e8de28` 的回归 [37905880682](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/37905880682) 全部成功。
 
 ## 一、Agent 交接上下文
 
