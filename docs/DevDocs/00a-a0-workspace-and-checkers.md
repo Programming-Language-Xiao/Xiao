@@ -13,7 +13,7 @@
 
 ### 当前状态与边界
 
-- 当前仓库已经包含 Rust/Bun workspace manifest、20 个 Rust crate 骨架、三个 TypeScript workspace 包，以及 A0 目录、单文件行数与覆盖率检查器；20 个 Rust workspace 成员均已 opt-in 到共享 `missing_docs` lint。
+- 当前仓库已经包含 Rust/Bun workspace manifest、23 个 Rust crate 骨架、三个 TypeScript workspace 包，以及 A0 目录、单文件行数与覆盖率检查器；23 个 Rust workspace 成员均已 opt-in 到共享 `missing_docs` lint。
 - `A0-SIZE-001` 已按 2500 物理行上限启用。`xiao-bytecode` 的研究编码器和
   `xiao-syntax/parser.rs` 均已拆为门面与职责子模块；当前没有已登记的尺寸债务，
   `check:layout` 与 `check` 应保持通过，不得补豁免说明掩盖新的超长文件。
@@ -49,7 +49,7 @@ A0 不把一个容易漂移的列表当作全部事实，而是交叉核对三�
 
 ### Rust workspace 成员（已冻结）
 
-`core/rust/Cargo.toml` 使用 virtual workspace，成员必须逐项列出，禁止 `crates/*` 等宽泛 glob。当前包含 19 个语言核心 crate 和 1 个仅供文档工具调用的内部 AST 适配 crate：
+`core/rust/Cargo.toml` 使用 virtual workspace，成员必须逐项列出，禁止 `crates/*` 等宽泛 glob。当前包含 22 个语言核心 crate 和 1 个仅供文档工具调用的内部 AST 适配 crate：
 
 1. `xiao-source`
 2. `xiao-diagnostics`
@@ -60,17 +60,20 @@ A0 不把一个容易漂移的列表当作全部事实，而是交叉核对三�
 7. `xiao-lifetime`
 8. `xiao-modules`
 9. `xiao-ir`
-10. `xiao-runtime`
-11. `xiao-bytecode`
-12. `xiao-vm`
-13. `xiao-optimizer`
-14. `xiao-codegen-llvm`
-15. `xiao-package`
-16. `xiao-artifacts`
-17. `xiao-xar`
-18. `xiao-platform`
-19. `xiao-driver`
-20. `xiao-doc-coverage-rust`（内部工具适配器，不属于 Xiao Runtime）
+10. `xiao-intrinsics`
+11. `xiao-runtime`
+12. `xiao-runtime-abi`
+13. `xiao-bytecode`
+14. `xiao-vm`
+15. `xiao-optimizer`
+16. `xiao-codegen-llvm`
+17. `xiao-package`
+18. `xiao-lock`
+19. `xiao-artifacts`
+20. `xiao-xar`
+21. `xiao-platform`
+22. `xiao-driver`
+23. `xiao-doc-coverage-rust`（内部工具适配器，不属于 Xiao Runtime）
 
 每个成员都必须有自己的 `Cargo.toml`、源码目录和同级 `README.md`。A0 可以使用最小可编译库骨架，但不得在骨架中加入语言功能或复制其他 crate 的职责。`Cargo.lock` 在首次引入依赖后提交，并由 CI 验证未被构建命令偷偷更新。
 
@@ -330,7 +333,7 @@ A0 创建了 UseDocs 的多级目录、总索引、主题索引和模板，并�
 
 ### 工作区与目录
 
-- Cargo 的 19 个成员、Bun 的实际成员、政策清单和文件系统完全一致。
+- Cargo 的 23 个成员、Bun 的实际成员、政策清单和文件系统完全一致。
 - 每个源目录都有同级 README，README 能定位职责、工程期、依赖边界和对应模块。
 - 路径越界、符号链接逃逸、大小写冲突、重复包名和未登记源目录均能稳定失败。
 
