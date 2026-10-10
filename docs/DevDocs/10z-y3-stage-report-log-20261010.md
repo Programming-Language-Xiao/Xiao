@@ -152,3 +152,12 @@ xiao-error class=recoverable code=X06-RUNTIME-012 message_id=runtime.invalid_val
 error [X06-RUNTIME-012]: Runtime ABI 调用失败
 at bytes 34..46
 ```
+
+## 前端选择计划正式测试
+
+命令：`cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test y3_selector_plan -- --nocapture`（退出码 0）
+```text
+selection_plans=5 selector_plan_references=5
+test legal_selector_forms_always_carry_a_plan_reference ... ok
+test result: ok. 1 passed; 0 failed
+```
