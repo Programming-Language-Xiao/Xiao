@@ -20,7 +20,7 @@ cargo run --release --manifest-path tests/benchmarks/Cargo.toml
 工具只用 `std::time::Instant`，不引入 `criterion`。报告写入 `reports/`：语义差分、性能、
 内存（峰值工作集、`stack_map_entries`、`spill_count`、`call_save_count`）和编码体积；每份都
 带平台、协议、布局版本和 opcode 范围。`09r3-freeze.json` 只根据性能报告选择主机型，并明确
-记录 Linux/macOS 的待复现状态。WSL 与容器只用于开发，数字不计入验收。
+记录 Linux 受控取数结果与 macOS 的不可验证状态。WSL 与容器只用于开发，数字不计入验收。
 
 工具仍使用 `xiao_bytecode::research::...` 兼容别名，B0 迁移不改基准源码或冻结报告。
 报告重新生成前应确认使用 `core/rust/rust-toolchain.toml` 的 `1.96.0`；任何指令集、ABI 或

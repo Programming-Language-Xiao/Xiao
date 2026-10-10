@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "baseline_id": "java-temurin-openjdk-21",
-  "status": "pending-controlled-run",
+  "baseline_id": "java-temurin-openjdk-21-linux-20261011",
+  "status": "controlled-linux-measured-threshold-frozen",
   "runtime": {
     "distribution": "Eclipse Temurin / OpenJDK",
     "major_version": 21,
-    "resolved_version": null,
+    "resolved_version": "21.0.12.1",
     "jvm_args": [
       "-Xms256m",
       "-Xmx256m",
@@ -13,7 +13,7 @@
       "-Dfile.encoding=UTF-8"
     ],
     "version_command": "java -version",
-    "version_text_sha256": null
+    "version_text_sha256": "090529cc57d5e09cfeca2aab50e770ab397b6d26d0382b67e2b4e2fd91a40c41"
   },
   "native": {
     "optimizer": "clang",
@@ -34,44 +34,44 @@
       "id": "deep-expression-arithmetic",
       "reference": "java/Benchmark.java",
       "semantic_comparison": "comparable",
-      "performance_status": "pending-controlled-run"
+      "performance_status": "measured"
     },
     {
       "id": "scalar-overflow-and-bool-parity",
       "reference": "java/Benchmark.java",
       "semantic_comparison": "data-insufficient-overflow-semantics",
       "performance_status": "data-insufficient",
-      "reason": "Xiao raises X06-RUNTIME-009 while Java int/long wraps by default"
+      "reason": "Xiao raises X06-RUNTIME-009 while Java int/long wraps by default; Linux controlled run preserved this semantic mismatch"
     },
     {
       "id": "named-local-loop",
       "reference": "java/Benchmark.java",
       "semantic_comparison": "comparable",
-      "performance_status": "pending-controlled-run"
+      "performance_status": "measured"
     },
     {
       "id": "deep-call-recursion",
       "reference": "java/Benchmark.java",
       "semantic_comparison": "comparable",
-      "performance_status": "pending-controlled-run"
+      "performance_status": "measured"
     },
     {
       "id": "container-dense",
       "reference": "java/Benchmark.java",
-      "semantic_comparison": "comparable-when-native-supported",
-      "performance_status": "data-insufficient",
-      "reason": "Windows native probe rejected numeric_range; gap belongs to stage 15"
+      "semantic_comparison": "comparable",
+      "performance_status": "measured",
+      "reason": "Linux controlled run built and measured all three sides; Windows native probe history rejected numeric_range, so platform observations remain separate"
     }
   ],
   "threshold": {
-    "status": "unset",
-    "allowed_error": null,
-    "regression_limit": null
+    "status": "frozen",
+    "allowed_error": 0.1,
+    "regression_limit": 0.1
   },
   "platforms": {
-    "windows-native": "pending-controlled-run",
-    "linux": "not-measured",
-    "macos": "not-measured",
+    "windows-native": "data-insufficient",
+    "linux": "measured",
+    "macos": "unverifiable",
     "ci": "diagnostic-only"
   }
 }

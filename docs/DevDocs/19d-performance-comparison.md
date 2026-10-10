@@ -28,8 +28,8 @@
 | 基准程序与清单 | `tests/benchmarks/programs/` 有 4 个程序族，`manifest.json` 固定入口、实参和期望值 | 可复用源码 |
 | 09R3 报告 | 报告的 `platform` 是 `windows-native`，`baseline` 是「同一构建的栈式载体」，比较的是**三种 VM 载体**，不涉及 LLVM 原生，也没有 Java | **不能当作 19.16/19.17 的证据** |
 | 测量方法 | 零框架，`std::time::Instant`，3 次预热、11 次测量，中位数加四分位区间 | 可借鉴；**四分位区间不是置信区间**，19.17 要的是后者 |
-| Java 基线 | 已加入 `tests/benchmarks/java/Benchmark.java` 与 `baseline.json`；发行版族冻结为 Temurin/OpenJDK 21。本机 `java -version` 是 1.8.0_491，不能替代受控版本记录 | 受控小版本、硬件与运行记录待补 |
-| 原生能否构建基准程序 | 10T Windows 受控探测：5 个基准可构建；`container-dense` 80 轮原生/VM 均为 28760；最终跨平台记录见 10T | 可构建不等于性能达标；受控性能样本仍待补 |
+| Java 基线 | 已加入 `tests/benchmarks/java/Benchmark.java` 与 `baseline.json`；Linux 受控轮次固定为 Temurin/OpenJDK 21.0.12.1，版本摘要已回填 | Windows 无专用受控主机，macOS 无宿主；不以本机版本替代 |
+| 原生能否构建基准程序 | Linux 受控轮次 4 个可比基准成功测量，溢出用例因语义不一致数据不足；`container-dense` 在 Linux 上已据实改判为可比 | Windows 的 `numeric_range` 拒绝观察仍单独保留；平台差异不混合 |
 | 原生 `-O1`–`-O3` | 只是 clang 的优化级别，Xiao 自己的 LLVM Pass 没注册（19A §2.1） | 基线必须写清这一点 |
 | 本机 | 只有 Windows。Linux 与 macOS 的数字只能来自 CI 或别的机器 | 见 §2.5 |
 
@@ -40,7 +40,7 @@
 | 前置 F1–F8 | 19C 审核返工项（§2.1） | **做**，每项单独提交并标注归属阶段 |
 | `19.15` | 固定 Java 参考实现、基准套件、硬件/系统矩阵、预热/重复协议 | **做**，但 Java 版本等取值要星崽冻结（§2.2） |
 | `19.16` | 分别测 VM 与 LLVM 原生：冷启动、稳态、峰值内存、编译时间、产物体积 | **做**，先过原生可构建性探测（§2.3） |
-| `19.17` | 每项相对 Java 的比值与置信区间，按阈值判通过、回归或数据不足 | **做**判定流程；阈值未冻结时只能出「数据不足」 |
+| `19.17` | 每项相对 Java 的比值与置信区间，按阈值判通过、回归或数据不足 | **已完成 Linux 判定流程**；跨平台条件仍受 Windows 标缺与 macOS 不可验证限制 |
 | `19.18` | 未达标工作负载的可追溯报告 | **做**报告结构，不改测试输入来「修复」结果 |
 | `19.13` 性能半边 | 把性能回归接入持续集成 | **做**轻量触发与诊断记录；正式判定仍等阈值和固定硬件 |
 
@@ -132,7 +132,7 @@
   不同口径的数字不互相比较；
 - Linux 受控主机已有运行记录：4 个基准为 `measured`，1 个因 Java/Xiao 溢出语义不同为
   `data-insufficient`；Windows 仍标缺、macOS 仍不可验证。
-- §2.4 的阈值尚未冻结，不能据此写通过或回归结论。
+- Linux 受控轮次完成后，阈值已冻结为 10% 误差/回归预算；四个可比工作负载的原生/Java 比值与保守 bootstrap 区间已写入 19D 报告，平台覆盖不足仍使 O6 条件 5 整体不满足。
 
 ### 2.5 **证据按平台分档，没有运行记录的平台写「未测」**
 
@@ -282,7 +282,7 @@ docs/DevDocs/README.md                                主表登记
 | `deep-call-recursion` | 可构建 | 可进入后续测量 |
 | `container-dense` | 10T 已构建并实跑：Windows 原生与 VM 的 80 轮结果均为 28760 | 性能数据仍不足；旧 `b742489` 拒绝记录属于历史，A1 功能缺口已解开 |
 
-这份探测只证明“能否进入原生测量”，没有产生 Java 对照结论。跨平台功能记录见 10T；Linux/macOS 的受控性能仍未测。
+这份探测只证明“能否进入原生测量”，没有产生 Java 对照结论。Linux 受控性能取数已由 10Z 结果文档归档；Windows 性能标缺、macOS 不可验证。
 
 ### 基线材料与统计协议
 
@@ -290,19 +290,18 @@ docs/DevDocs/README.md                                主表登记
 11 次测量和固定种子的 10,000 次百分位自助法区间；`tests/benchmarks/java/Benchmark.java`
 按 `manifest.json` 的四个可比程序族提供无依赖参考实现，溢出用例输出真实 Java `int` 回绕结果，
 不伪造 Xiao 错误。参考源码已用本机 `javac 17.0.10` 做语法编译检查，但本机 Java 运行时是 1.8，
-因此没有把该检查当成基线取数。
+因此没有把该检查当成基线取数；Linux 受控轮次使用 21.0.12.1。
 
 `tests/benchmarks/reports/19d-performance.json` 记录了每个程序、VM/原生/Java 路径和
-Windows/Linux/macOS 平台的当前状态：Windows 只有探测而没有受控性能样本，记「数据不足」；
-Linux/macOS 记「未测」；CI 记「诊断性」。阈值未冻结，报告没有任何「通过」或「回归」。
+Windows/Linux/macOS 平台的当前状态：Windows 标缺，Linux 已有受控实测，macOS 不可验证；CI 记「诊断性」。
+阈值已冻结，但平台覆盖不足，报告不作跨平台通过或回归结论。
 
 ### 当前阻塞
 
-受控环境的 Java 21 与 Xiao 运行记录、固定硬件信息、性能阈值和 CI 运行号仍缺。Windows 原生探测
-不等于性能取数；§2.4 的受控环境性能基线目前如实记为「待补」，Linux/macOS 记为「未测」。
-在这些证据补齐前，19.17 只能输出「数据不足」，不能写通过或回归。
+Windows 专用受控性能主机、macOS 宿主和 B1 成对释放实验仍缺。Linux 受控性能与阈值依据已归档，
+但 19.17 的跨平台条件仍为「数据不足/不满足」，不能写整体通过或回归。
 
-### 19 O6 出口条件对账（截至 2026-10-07）
+### 19 O6 出口条件对账（截至 2026-10-11）
 
 | O6 条件（12 原文） | 状态 | 证据与限制 |
 | --- | --- | --- |
@@ -310,7 +309,7 @@ Linux/macOS 记「未测」；CI 记「诊断性」。阈值未冻结，报告�
 | 2. 优化前后、不同后端、不同归档入口的差分、模糊、损坏恢复和安全测试全部通过。 | 部分 | 10T 已接通 table-user-drop、摘除普通表实例豁免，新表方法严格比较；10W 已加入 A2 构造参数 VM 基线并将 A3 方法值边界改判为两边一致拒绝；10Z-Y3 的 B1 已统一字典成员错误身份（VM/原生均 `X06-RUNTIME-002`），C 类错误程序按两边都拒绝关闭；④ 动态错误构造参数仍是已立项的原生缺口，见 [10Z-D](10z-dynamic-error-constructor-followup.md)；维护回归 `37756208604` 的 Windows/Linux 原生作业已完成 A2 O0-O3 与调试矩阵；Linux 原始性能数据已回填，macOS 调试执行受宿主限制，不能写成全路径覆盖 |
 | 3. SHA-256 完整性验证、资源上限、路径安全、权限和离线缓存行为在三平台一致；签名/信任未实现时有明确提示。 | 部分 | Windows 本机与 CI 证据存在；Linux 裸机提交 `74b272d70bde3eaeb9f8619426a5bc0594f6cfcd` 的 `reproduce.sh native` 退出码 0，且未使用 Xvfb。**`19.14` 的 Linux 桌面开窗 C 档已通过（2026-10-10，PR #5 合并 `efa9fd2`）**：`xiao run -debug` 的窗口确实出现并保持，两张截图归档，检出 `69f6ff5`，环境为 Ubuntu 26.04.1 裸机（`virtualization: none`）、Wayland 会话、`x-terminal-emulator → /usr/bin/terminator`；证据见 [10Z Linux 结果](10z-linux-bare-metal-results-20261010.md)。条件 3 的**五子项**仍未在三平台一致（见下方逐格盘点：**另外两个平台的默认测试从未运行**）。四平台 CI 37693571709 通过；macOS 只有 CI，真实终端显式跳过。签名/信任仍明确未实现 |
 | 4. 发布报告可追溯源码、依赖锁、工具链、优化指纹、对象摘要和归档成员，且重复构建差异在白名单内。 | 部分 | 15 系列报告与 Windows 证据通过；10S 最终四平台 CI 37693571709 通过，代码提交 58e8ecc，检出 16310a4（代码同 5abaf15），历次失败与裸机来源均保留；完整三平台白名单复核仍待补 |
-| 5. `xiao build` 的 LLVM 原生发布构建完成相对于已冻结 Java 基线的性能对照，并按 Windows → Linux → macOS 记录结果；Rust 字节码 VM 只保留独立性能报告。基准、版本或阈值未冻结时不得宣称“至少达到 Java”。 | 不满足 | Windows 本轮按决定标缺（无专用受控主机，不使用本机数字）；macOS 无宿主、不可验证；**Linux 已完成受控三路原始取数**（[10Z 结果](10z-performance-measurement-results-20261011.md)：4 个 `measured`、1 个 `data-insufficient`，bootstrap 确定性通过），**但阈值尚未冻结，因此条件 5 仍不满足**。审核核对过报告与人工清单：受控主机 Ubuntu 26.04.1 裸机（`virt=none`、i5-12450H、14 GiB，与 C 档同一台），Temurin/OpenJDK **21.0.12**，协议与冻结值逐项一致（预热 3 / 测量 11 / percentile-bootstrap / 10000 / seed 19015），`bootstrap_determinism.byte_identical=true`，`summary = 5/4/1`（`container-dense` 在 Linux 上为 `measured`，其原 `data-insufficient` 理由来自 **Windows** 观察）。原始 JSON、完整日志和环境清单见结果文档附件；**冻结阈值后本条的最终判定归 Z-4** |
+| 5. `xiao build` 的 LLVM 原生发布构建完成相对于已冻结 Java 基线的性能对照，并按 Windows → Linux → macOS 记录结果；Rust 字节码 VM 只保留独立性能报告。基准、版本或阈值未冻结时不得宣称“至少达到 Java”。 | 不满足 | Windows 本轮按决定标缺（无专用受控主机，不使用本机数字）；macOS 无宿主、不可验证；**Linux 已完成受控三路原始取数**（[10Z 结果](10z-performance-measurement-results-20261011.md)：4 个 `measured`、1 个 `data-insufficient`，bootstrap 确定性通过），**10% 阈值已冻结并给出依据，但 Windows/macOS 覆盖边界仍使条件 5 不满足**。受控主机 Ubuntu 26.04.1 裸机（`virt=none`、i5-12450H、14 GiB，与 C 档同一台），Temurin/OpenJDK **21.0.12.1**，协议逐项一致（预热 3 / 测量 11 / percentile-bootstrap / 10000 / seed 19015）；`container-dense` 在 Linux 上为 `measured`，其原 `data-insufficient` 理由来自 **Windows** 观察。原始 JSON、完整日志和环境清单见结果文档附件。|
 
 因此本批不宣布 19 收口。
 

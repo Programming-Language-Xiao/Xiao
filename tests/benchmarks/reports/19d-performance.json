@@ -4,8 +4,8 @@
   "status": "data-insufficient",
   "baseline": {
     "path": "tests/benchmarks/baseline.json",
-    "sha256": "627457fd7deddadf82711f415eb46874fcbbf6cdada1020df133c1c71367a538",
-    "java": "Temurin/OpenJDK 21",
+    "sha256": "5df18ed7272b49d3d869201fdbfdaa9450fd8ad21bcde3bdd64af4bb62eb9fe0",
+    "java": "Temurin/OpenJDK 21.0.12.1",
     "jvm_args_fixed": true,
     "native_optimizer": "clang -O2",
     "xiao_passes_registered": false
@@ -15,18 +15,20 @@
     "confidence_level": 0.95,
     "bootstrap_resamples": 10000,
     "seed": 19015,
-    "sample_status": "pending-controlled-run"
+    "sample_status": "controlled-linux-measured"
   },
   "platforms": {
     "windows-native": {
       "status": "data-insufficient",
-      "reason": "已有原生构建与 VM 功能比对，没有固定硬件上的 Java/Xiao 性能运行记录"
+      "reason": "无专用 Windows 受控性能主机；保留历史原生探测，不以开发机数字替代"
     },
     "linux": {
-      "status": "not-measured"
+      "status": "measured",
+      "report": "docs/DevDocs/assets/10z-performance-20261011/performance-report.json"
     },
     "macos": {
-      "status": "not-measured"
+      "status": "unverifiable",
+      "reason": "无可用 macOS 宿主，无法取得同口径真实终端数据"
     },
     "ci": {
       "status": "diagnostic-only",
@@ -39,9 +41,21 @@
       "native_build": "built",
       "semantic_status": "comparable",
       "paths": {
-        "vm": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
-        "native": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
-        "java": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" }
+        "vm": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        },
+        "native": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        },
+        "java": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        }
       }
     },
     {
@@ -50,9 +64,21 @@
       "semantic_status": "data-insufficient-overflow-semantics",
       "reason": "Xiao raises X06-RUNTIME-009 while Java int/long wraps by default",
       "paths": {
-        "vm": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
-        "native": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
-        "java": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" }
+        "vm": {
+          "windows-native": "data-insufficient",
+          "linux": "data-insufficient",
+          "macos": "unverifiable"
+        },
+        "native": {
+          "windows-native": "data-insufficient",
+          "linux": "data-insufficient",
+          "macos": "unverifiable"
+        },
+        "java": {
+          "windows-native": "data-insufficient",
+          "linux": "data-insufficient",
+          "macos": "unverifiable"
+        }
       }
     },
     {
@@ -60,9 +86,21 @@
       "native_build": "built",
       "semantic_status": "comparable",
       "paths": {
-        "vm": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
-        "native": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
-        "java": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" }
+        "vm": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        },
+        "native": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        },
+        "java": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        }
       }
     },
     {
@@ -70,26 +108,84 @@
       "native_build": "built",
       "semantic_status": "comparable",
       "paths": {
-        "vm": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
-        "native": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
-        "java": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" }
+        "vm": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        },
+        "native": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        },
+        "java": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        }
       }
     },
     {
       "id": "container-dense",
       "native_build": "built",
-      "semantic_status": "data-insufficient",
-      "reason": "10T 已接通表方法；Windows 原生与 VM 实跑 80 轮均为 28760。仍缺受控 Java/Xiao 性能样本，不判性能通过",
+      "semantic_status": "comparable",
+      "reason": "Linux 受控轮次已测 Java/原生/VM；Windows 原生探测历史曾拒绝 numeric_range，作为独立平台观察保留",
       "paths": {
-        "vm": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
-        "native": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" },
-        "java": { "windows-native": "data-insufficient", "linux": "not-measured", "macos": "not-measured" }
+        "vm": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        },
+        "native": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        },
+        "java": {
+          "windows-native": "data-insufficient",
+          "linux": "measured",
+          "macos": "unverifiable"
+        }
       }
     }
   ],
   "threshold": {
-    "status": "unset",
-    "pass_or_regression_allowed": false
+    "status": "frozen",
+    "allowed_error": 0.1,
+    "regression_limit": 0.1,
+    "basis": {
+      "controlled_run": "Linux 2026-10-11；Ubuntu 26.04.1 裸机；OpenJDK 21.0.12.1",
+      "rule": "原生/Java 中位数比值及保守 percentile-bootstrap 比值区间均须低于 1.10；VM 比值仅作诊断",
+      "error_sources": [
+        "计时包含进程启动与运行时初始化",
+        "已记录主机负载与后台进程",
+        "未剔除离群样本"
+      ],
+      "native_to_java_median_ratio": {
+        "deep-expression-arithmetic": 0.048192,
+        "named-local-loop": 0.09317,
+        "deep-call-recursion": 0.023792,
+        "container-dense": 0.067172
+      },
+      "native_to_java_conservative_interval": {
+        "deep-expression-arithmetic": [
+          0.041863,
+          0.056535
+        ],
+        "named-local-loop": [
+          0.067597,
+          0.114699
+        ],
+        "deep-call-recursion": [
+          0.021863,
+          0.026
+        ],
+        "container-dense": [
+          0.062545,
+          0.078737
+        ]
+      }
+    }
   },
-  "conclusion": "未取得受控环境数据；所有性能项保持数据不足，CI 数字即使产生也只作诊断。"
+  "conclusion": "Linux 受控轮次完成 4/5 个可比工作负载取数，溢出语义差异保持数据不足。10% 阈值依据既有性能政策冻结；Windows 标缺、macOS 不可验证，O6 条件 5 整体仍不满足。"
 }
