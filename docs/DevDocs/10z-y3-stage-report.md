@@ -319,6 +319,8 @@ native dynamic-error: build-mv198imb-y2v0yt6m  X11-PROTOCOL-007 动态错误构�
 
 ## 相关页面
 
+- **[10Z-Z1. Y3 收口结论与 Z-1 范围](10z-z1-scope-and-gap-verdict.md) —— 四组的收口判定与口径决策输入（本文的结论页）**
+
 - [10Z-收尾. 10 系列收束](10z-closeout-execution.md) —— 本批的序列与 S1 入口条件；§1.0 是上一轮审核补正
 - [10P. 差分豁免收敛与剩余拒绝面](10p-differential-exemption-and-coverage.md) —— Y3 的回写对象与 28 行分类表
 - [10X. B 系列取证与分类](10x-b-series-triage.md) §2.2 —— 分类方法与三分类口径
