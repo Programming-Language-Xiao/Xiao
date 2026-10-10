@@ -676,10 +676,13 @@ version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "xiao-artifacts",
  "xiao-bytecode",
+ "xiao-codegen-llvm",
  "xiao-diagnostics",
  "xiao-driver",
  "xiao-runtime",
+ "xiao-types",
  "xiao-vm",
 ]
 
