@@ -6,3 +6,5 @@
 三侧语义互校，再以独立子进程记录整进程挂钟样本、主机负载、后台进程和确定性
 percentile-bootstrap 统计。它不修改 09R3 的 `src/main.rs` 或既有报告；受控性能结论
 必须由受控主机运行后另行回填。
+
+`tools/gates/run.sh` 会执行本工作区的 `cargo test` 和驱动器 `--self-test`，保证语义闸门与 bootstrap 自证有自动执行点。

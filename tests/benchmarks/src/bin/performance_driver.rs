@@ -260,7 +260,16 @@ struct DriverReport {
     protocol: ProtocolReport,
     environment: EnvironmentReport,
     bootstrap_determinism: DeterminismEvidence,
+    summary: ReportSummary,
     cases: Vec<CaseReport>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+/// 10Z 驱动器内部实现声明。
+struct ReportSummary {
+    measured_cases: usize,
+    data_insufficient_cases: usize,
+    total_cases: usize,
 }
 
 #[derive(Clone, Debug)]
@@ -848,13 +857,8 @@ fn run_driver(
             &classes,
         )?);
     }
-    let status = if cases.iter().all(|case| {
-        case.performance_status == "measured" || case.performance_status == "data-insufficient"
-    }) {
-        "development-evidence"
-    } else {
-        "failed"
-    };
+    let (summary, status) =
+        summarize_case_statuses(cases.iter().map(|case| case.performance_status.as_str()));
     Ok(DriverReport {
         report_version: REPORT_VERSION,
         stage: "10Z".to_owned(),
@@ -876,8 +880,39 @@ fn run_driver(
         },
         environment,
         bootstrap_determinism: bootstrap_determinism_evidence(),
+        summary,
         cases,
     })
+}
+
+/// 10Z 驱动器内部实现声明。
+fn summarize_case_statuses<'a, I>(statuses: I) -> (ReportSummary, &'static str)
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    let mut summary = ReportSummary {
+        measured_cases: 0,
+        data_insufficient_cases: 0,
+        total_cases: 0,
+    };
+    let mut unknown_status = false;
+    for status in statuses {
+        summary.total_cases += 1;
+        match status {
+            "measured" => summary.measured_cases += 1,
+            "data-insufficient" => summary.data_insufficient_cases += 1,
+            _ => unknown_status = true,
+        }
+    }
+    let status = if summary.measured_cases > 0
+        && !unknown_status
+        && summary.measured_cases + summary.data_insufficient_cases == summary.total_cases
+    {
+        "development-evidence"
+    } else {
+        "failed"
+    };
+    (summary, status)
 }
 
 /// 10Z 驱动器内部实现声明。
@@ -1516,7 +1551,7 @@ mod tests {
 
     use super::{
         BenchmarkSpec, SideOutcome, compare_expected, java_version_matches, parse_cli,
-        parse_native_level, summarize_samples,
+        parse_native_level, summarize_case_statuses, summarize_samples,
     };
 
     #[test]
@@ -1572,5 +1607,15 @@ mod tests {
         assert_eq!(parse_native_level("O2").unwrap(), 2);
         assert!(parse_native_level("O4").is_err());
         assert!(parse_native_level("fast").is_err());
+    }
+
+    #[test]
+    /// 10Z 驱动器不得把全量数据不足伪装成开发证据。
+    fn all_data_insufficient_cases_are_a_failed_report() {
+        let (summary, status) = summarize_case_statuses(["data-insufficient", "data-insufficient"]);
+        assert_eq!(summary.measured_cases, 0);
+        assert_eq!(summary.data_insufficient_cases, 2);
+        assert_eq!(summary.total_cases, 2);
+        assert_eq!(status, "failed");
     }
 }

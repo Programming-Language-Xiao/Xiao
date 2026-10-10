@@ -14,6 +14,8 @@ bun install --frozen-lockfile
 bun test
 bunx tsc --noEmit -p tsconfig.json
 cargo check --manifest-path "$benchmark_manifest"
+cargo test --manifest-path "$benchmark_manifest"
+cargo run --quiet --manifest-path "$benchmark_manifest" --bin performance_driver -- --self-test
 bun run check
 bun run check:coverage
 cargo fmt --all --manifest-path "$cargo_manifest" -- --check
