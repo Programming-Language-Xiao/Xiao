@@ -130,6 +130,25 @@ NATIVE = ["0:1:strong_release", "1:1:strong_release", "2:1:strong_release", "3:1
 
 （文案改了要重跑一次受控差分确认仍通过；reason 字符串本身不影响判定逻辑。）
 
+**审核已排除的一条路（2026-10-11，供接手的人省一轮排查）**：
+**缺口不在 codegen 的释放**——B1 改完之后，`emit_table_get` 的动态分支仍然调用
+`self.release_value(object_value);`（`xiao-codegen-llvm/src/dynamic/expression.rs`，
+在 `@xiao_runtime_dynamic_member_get` 调用之后）。**所以不是「codegen 漏了一次 release」。**
+
+**该查哪**：新 Runtime 入口里的
+
+```rust
+let value = match unsafe { value_to_runtime(&*value) } { … };
+```
+
+——**`value_to_runtime` 有没有多持一次引用**。判据是我手里那条轨迹：两侧 `strong_release`
+**都是 4 条**，而**轨迹只记 release/destroy、不记 retain**（[10Q](10q-selector-case-strength-and-release-audit.md) 定的口径）。
+因此「原生多持一次、且那次从未释放」正好产出这个形态——**引用计数停在 1，永远到不了 0，所以没有 destroy**。
+这与**泄漏**一致。
+
+**成对实验**：只改一处（补上那次释放，或直接审 `value_to_runtime` 的返回是否拥有强引用）→ 采数 →
+看 `destroy` 是否出现、轨迹是否与 VM 逐项一致 → 恢复。
+
 ## 四、按三种口径，Z-1 分别要做什么
 
 | 裁定 | Z-1 的产出 | 对 19 的 O6 条件 2 |
