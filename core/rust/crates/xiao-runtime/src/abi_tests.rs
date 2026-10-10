@@ -1,5 +1,6 @@
 //! ABI 句柄、值复制和原生诊断会话的回归测试。
 use super::*;
+use crate::{start_release_trace, take_release_events};
 use std::sync::{Mutex, OnceLock};
 
 use serde_json::{Value, json};
@@ -215,6 +216,37 @@ fn dynamic_operator_and_check_round_trip() {
     );
     assert_eq!(pending_class(), XiaoErrorClass::Recoverable);
     PENDING_ERROR.with(|pending| *pending.borrow_mut() = None);
+}
+
+#[test]
+/// 动态成员拒绝字典值时，借用转换产生的临时强引用必须与输入值一起归零并销毁对象。
+fn dynamic_member_type_error_releases_input_value() {
+    xiao_runtime_error_clear();
+    let trace = start_release_trace();
+    let keys = [bytes("member")];
+    let values = [XiaoValue::int(1)];
+    let mut raw = std::ptr::null_mut();
+    assert_eq!(
+        xiao_runtime_dict_new(0, keys.as_ptr(), values.as_ptr(), 1, &mut raw),
+        XiaoAbiStatus::Ok.code()
+    );
+    let mut value = xiao_runtime_value_dict_owned(raw, 0);
+    let mut output = XiaoValue::none();
+    assert_eq!(
+        xiao_runtime_dynamic_member_get(&value, bytes("member"), &mut output),
+        XiaoAbiStatus::RuntimeError.code()
+    );
+    xiao_runtime_value_release_strong(&mut value);
+    let events = take_release_events();
+    drop(trace);
+    assert_eq!(
+        events
+            .iter()
+            .map(|event| event.action.as_str())
+            .collect::<Vec<_>>(),
+        vec!["strong_release", "strong_release", "destroy"]
+    );
+    xiao_runtime_error_clear();
 }
 
 #[test]

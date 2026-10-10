@@ -87,7 +87,8 @@ VM 运行期 `X06-RUNTIME-002` vs 原生**编译期**拒绝（`X11-PROTOCOL-007`
 
 ### B1 附带新增的释放豁免：登记描述与轨迹不符（审核补正，2026-10-10）
 
-B1 在 `d19a_differential.rs` 的 `native_gap` 里**新增了一条豁免**（只豁免 Drops），登记文案是：
+B1 在 `d19a_differential.rs` 的 `native_gap` 里**新增了一条豁免**（只豁免 Drops）。原登记文案是
+（现已按本节补正）：
 
 > 「B1：错误身份已与 VM 对齐；动态成员错误路径的**原生临时值释放仍比 VM 少一次**，仅豁免 Drops」
 
@@ -122,8 +123,8 @@ NATIVE = ["0:1:strong_release", "1:1:strong_release", "2:1:strong_release", "3:1
 **在判定之前，不要把这条豁免当作「已解释的差异」**——[10Q](10q-selector-case-strength-and-release-audit.md) 的 K4 与
 [10Z-收尾](10z-closeout-execution.md) §六 第 6 条（「只比释放总数，不看对象数、销毁位置与持有机制」）说的就是它这个形态。
 
-**要改的代码文案（交实现方，属实现改动）**：`d19a_differential.rs` 的 `native_gap` 里，
-把 `dynamic-dict-member-error-identity` 的 reason 改为与轨迹一致的写法，例如
+**代码文案已补正**：`d19a_differential.rs` 的 `native_gap` 中，
+`dynamic-dict-member-error-identity` 的 reason 现已采用与轨迹一致的写法：
 
 > 「B1：错误身份已与 VM 对齐。原生侧**无 destroy 事件**（对象未归零），VM 在事件 4 销毁对象 1；
 > 事件数 VM 5 / 原生 4，对象数 1。**性质待判**：泄漏还是追踪口径，见 10Z-Z1。仅豁免 Drops。」
@@ -148,6 +149,11 @@ let value = match unsafe { value_to_runtime(&*value) } { … };
 
 **成对实验**：只改一处（补上那次释放，或直接审 `value_to_runtime` 的返回是否拥有强引用）→ 采数 →
 看 `destroy` 是否出现、轨迹是否与 VM 逐项一致 → 恢复。
+
+本批已补 Runtime ABI 回归夹具 `abi::tests::dynamic_member_type_error_releases_input_value`：
+直接把字典值传入 `xiao_runtime_dynamic_member_get` 时，轨迹为两次 `strong_release` 后出现
+`destroy`，因此单独的 `value_to_runtime` 借用转换路径可以归零；原生函数实参/临时槽组合的
+受控差异仍未由这条夹具覆盖，不能据此提前撤销豁免或认定泄漏已修复。
 
 ## 四、按三种口径，Z-1 分别要做什么
 
