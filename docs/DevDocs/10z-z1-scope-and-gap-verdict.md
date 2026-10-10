@@ -85,6 +85,51 @@ VM 运行期 `X06-RUNTIME-002` vs 原生**编译期**拒绝（`X11-PROTOCOL-007`
 的证据要求都要适用），明显超出「收尾」的量级。按 [10Z](10z-19-closeout-and-b-series-implementation.md) §2.2 第 5 条，
 **工作量超出就单独立项**。落点见[动态错误构造参数后续立项](10z-dynamic-error-constructor-followup.md)。
 
+### B1 附带新增的释放豁免：登记描述与轨迹不符（审核补正，2026-10-10）
+
+B1 在 `d19a_differential.rs` 的 `native_gap` 里**新增了一条豁免**（只豁免 Drops），登记文案是：
+
+> 「B1：错误身份已与 VM 对齐；动态成员错误路径的**原生临时值释放仍比 VM 少一次**，仅豁免 Drops」
+
+审核在受控原生环境跑 `native_side_matches_the_vm_sides_on_every_case`（整体 **passed，39.84 s**），
+取该用例两侧轨迹：
+
+```text
+VM     = ["0:1:strong_release", "1:1:strong_release", "2:1:strong_release", "3:1:strong_release", "4:1:destroy"]
+NATIVE = ["0:1:strong_release", "1:1:strong_release", "2:1:strong_release", "3:1:strong_release"]
+```
+
+**与登记不符**：两侧 `strong_release` **都是 4 条，一次不少**。差的不是释放，是 **`destroy`**——
+**原生侧完全没有 destroy 事件，即对象 `1` 从未被销毁**。所以这不是「少一次释放」，
+而是「**少一次销毁**」，性质比登记的重。
+
+**按 [10Z-收尾](10z-closeout-execution.md) §2.2 第 6 条补全四要素**（原登记一项未给）：
+
+| 要素 | 实测 |
+| --- | --- |
+| **事件数** | VM **5** / 原生 **4** |
+| **对象数** | **1**（只涉及对象 id `1`） |
+| **销毁位置** | VM 在事件索引 **4** 为 `1:destroy`；**原生无** |
+| **引用持有机制** | **待判**——需成对实验区分「原生错误路径少一次 release」与「新 ABI 经 `*const XiaoValue` 多持一次引用」；两种都指向对象未归零 |
+
+**待判项（交实现方）**：这是**真泄漏**还是**追踪口径差异**。
+
+- 判为**泄漏**（对象在本应释放的路径上没有归零）→ **应当修**，不能用 Drops 豁免一笔带过。
+  Drops 豁免的用途是「已知且有明确依据的**追踪口径**差异」（[10S](10s-cross-platform-evidence-and-release-closeout.md)/[10T](10t-table-method-abi-implementation.md) 那几条），
+  不是给「对象没销毁」用的；
+- 判为**口径** → 按上表四要素把依据登记全，再保留豁免。
+
+**在判定之前，不要把这条豁免当作「已解释的差异」**——[10Q](10q-selector-case-strength-and-release-audit.md) 的 K4 与
+[10Z-收尾](10z-closeout-execution.md) §六 第 6 条（「只比释放总数，不看对象数、销毁位置与持有机制」）说的就是它这个形态。
+
+**要改的代码文案（交实现方，属实现改动）**：`d19a_differential.rs` 的 `native_gap` 里，
+把 `dynamic-dict-member-error-identity` 的 reason 改为与轨迹一致的写法，例如
+
+> 「B1：错误身份已与 VM 对齐。原生侧**无 destroy 事件**（对象未归零），VM 在事件 4 销毁对象 1；
+> 事件数 VM 5 / 原生 4，对象数 1。**性质待判**：泄漏还是追踪口径，见 10Z-Z1。仅豁免 Drops。」
+
+（文案改了要重跑一次受控差分确认仍通过；reason 字符串本身不影响判定逻辑。）
+
 ## 四、按三种口径，Z-1 分别要做什么
 
 | 裁定 | Z-1 的产出 | 对 19 的 O6 条件 2 |
@@ -122,6 +167,10 @@ core/rust/crates/xiao-codegen-llvm/…                       B1 已实现，含�
 6. `cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit` 全绿。
 
 ## 已定裁定
+
+0. **B1 新增的释放豁免**：登记描述与实测轨迹不符（不是「少一次释放」而是「**少 destroy**」，
+   即对象从未销毁），四要素已按实测补全；**「泄漏还是追踪口径」为待判项**，
+   由实现方做成对实验判定后再定修或继续豁免（见 §三 末尾）。
 
 1. **B**：算低优先级错误身份缺口；B1 已统一为 `X06-RUNTIME-002`。
 2. **C**：算两边都拒绝；原生更早拒绝错误程序，不进入 B 实现。

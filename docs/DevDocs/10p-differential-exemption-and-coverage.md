@@ -251,7 +251,7 @@ J3 已在 [19D](19d-performance-comparison.md) 按 [12](12-tests-and-milestones.
 | 代码位置/候选组 | 10P 原判定（保留） | 本次双侧证据 | 当前分类 | 可达性/后续 |
 | --- | --- | --- | --- | --- |
 | `control.rs:206` 动态扩展赋值 | 原生缺口候选 | 表 `Item`：VM/原生均输出 `42`、退出 0；字典：VM `X06-RUNTIME-002` 退出 3，原生构建拒绝“动态非表字段写入” | 表形态不是缺口；字典形态按 C 关闭为两边都拒绝 | 入口可达；不进入 B1 |
-| `expression.rs:735/:752` 动态成员读写 | 原生缺口候选 | 表读取/写入均同值；字典读取修复前为 VM `X06-RUNTIME-002`、原生 `X06-RUNTIME-012`，B1 后原生也为 `X06-RUNTIME-002`；标量读取仍为 VM 运行期拒绝、原生编译期拒绝 | 表形态不是缺口；B 已修复；标量形态按 C 关闭 | 入口可达；B1 使用统一动态成员 Runtime ABI |
+| `expression.rs:735/:752` 动态成员读写 | 原生缺口候选 | 表读取/写入均同值；字典读取修复前为 VM `X06-RUNTIME-002`、原生 `X06-RUNTIME-012`，B1 后原生也为 `X06-RUNTIME-002`；标量读取仍为 VM 运行期拒绝、原生编译期拒绝 | 表形态不是缺口；B 已修复；标量形态按 C 关闭 | 入口可达；B1 使用统一动态成员 Runtime ABI。**B1 附带新增一条仅 Drops 的豁免，其登记描述与实测轨迹不符**（实测：两侧 `strong_release` 均 4 条，原生**无 destroy 事件**，即对象未归零），四要素与「泄漏还是口径」的待判项见 [10Z-Z1](10z-z1-scope-and-gap-verdict.md) §三 末尾 |
 | `expression.rs:270` 动态选择计划缺失 | 原生缺口候选 | 范围、随机、全选、开区间、多项精确五形态 VM/原生均输出 `5/7/4/3/4`；正式测试 `xiao-driver/tests/y3_selector_plan.rs` 输出 `selection_plans=5`、引用 `5` | 防御性不可达，暂不实现 | 合法源码未产生无计划 IR；后端守卫保留 |
 | `expression.rs:670` 动态错误构造参数 | 待补：VM 接受、原生拒绝 | `code = "DYNAMIC"`：VM 运行到用户错误 `DYNAMIC`、退出 3；原生构建拒绝“动态错误构造参数（当前只支持字符串字面量）” | 原生缺口，已单独立项，不纳入 Z-1 | 入口可达；见 [10Z-D](10z-dynamic-error-constructor-followup.md) |
 
