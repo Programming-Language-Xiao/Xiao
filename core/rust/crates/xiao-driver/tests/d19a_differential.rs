@@ -1010,7 +1010,7 @@ const DROPS_ONLY: &[GapField] = &[GapField::Drops];
 fn native_gap(label: &str) -> Option<NativeGap> {
     let reason = match label {
         "dynamic-dict-member-error-identity" => {
-            "B1：错误身份已与 VM 对齐；动态成员错误路径的原生临时值释放仍比 VM 少一次，仅豁免 Drops"
+            "B1：错误身份已与 VM 对齐。原生侧无 destroy 事件（对象未归零），VM 在事件 4 销毁对象 1；事件数 VM 5 / 原生 4，对象数 1。性质待判：泄漏还是追踪口径，见 10Z-Z1。仅豁免 Drops"
         }
         "selector-range-downstream" | "selector-open-range-downstream" => {
             "10T：名称迭代来源已借用并逐轮重读；剩余 selector_bounds 多一次源释放、iterable 检查多一次结果释放，共多两次。两对象销毁顺序一致，沿用 10S 成对依据并在 10T 回填新读数，仅豁免 Drops"
