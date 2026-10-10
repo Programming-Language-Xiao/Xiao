@@ -139,6 +139,27 @@
      `baseline_id` 与 sha256 要随之更新（那是基线变更，要在提交说明里写清）；
 5. **原始数字要留在产物里**（每轮的样本），不只留统计量——便于第三方复核。
 
+6. **报告必须有分层汇总，顶层状态不得把「一条都没测成」与「全部测成」等同**
+   （审核 2026-10-10 实测发现，`ad87d64`/`9ea4cc7` 的驱动器具现这个缺陷）：
+
+   **缺陷形态**：顶层 `status` 的判据是
+   `cases.iter().all(|c| c.performance_status == "measured" || c.performance_status == "data-insufficient")`
+   → `"development-evidence"`，否则 `"failed"`；而报告里**没有任何汇总计数**。
+   于是「5/5 全测成」与「0/5 一条没测成」得到**同一个顶层状态**。
+
+   **它与 `9ea4cc7` 的第一条加固叠加**：那条把「原生输出不是单个整数」从**硬错误**改成逐条
+   `Failed` → `data-insufficient`（这个改动本身是对的：一条 workload 坏了不该废掉整轮，
+   且该 case 确实记 reason、`performance: None` 不产数字）；但配合上面的判据，
+   **一次系统性跑坏会以 `"development-evidence"` 收场而不是 `"failed"`**。
+
+   **冻结**：
+
+   - 报告必须含分层汇总：至少 `measured_cases` / `data_insufficient_cases` / `total_cases`；
+   - 顶层 `status` 的判据要改：**`measured_cases == 0` 时不得为 `"development-evidence"`**
+     （应为 `"failed"` 或等价的明确状态）——**「一条都没测成」不是证据，是失败**；
+   - 理由与本批一路的教训同源：**绿只说明没被覆盖的那部分通过了**。第三方拿到报告必须能
+     **一眼**判断这轮到底取没取到数，而不是去数 `cases` 数组。
+
 ### 2.6 **D6：开发在本机，取数在受控主机**
 
 **冻结**：
@@ -205,7 +226,12 @@ docs/DevDocs/README.md                             主表登记
 9. **阈值没冻结却写「达到 Java」**（D5 第 4 条）；
 10. **拿本机/CI 数字充当受控取数**（D6）；
 11. **只留统计量不留原始样本**，第三方无法复核（D5 第 5 条）；
-12. **提交没写正文**。
+12. **让「一条都没测成」看起来像「全部测成」**——把硬错误降级成逐条 `data-insufficient`
+    而不给汇总，顶层状态就分不出这两者（D5 第 6 条，`ad87d64`/`9ea4cc7` 已具现）；
+13. **把 `--self-test` 当摆设**：它已能输出 `bootstrap_byte_identical` 与
+    `semantic_guard_rejects_wrong_value` 两项，但**没接进任何门禁**（与 `15e_ci_gated`
+    同处境）——有证据能力不等于有执行点；接进 `bun run check` 或 CI 成本极低；
+14. **提交没写正文**。
 
 ## 七、验收
 
@@ -213,6 +239,8 @@ docs/DevDocs/README.md                             主表登记
 2. 计时按协议（预热 3 / 测量 11）执行，**构建与编译不计入**，**每次测量后校验输出**；
 3. **bootstrap 确定性**：同输入两次运行输出逐字节相同（贴出两次输出）；
 4. **不剔除离群样本**，主机负载与后台进程有记录；原始样本随产物落盘；
+   **报告含分层汇总**，且 `measured_cases == 0` 时顶层状态**不是** `"development-evidence"`
+   （D5 第 6 条）——有反例证据：喂一组全 `data-insufficient` 的输入，确认状态不是「有证据」；
 5. `baseline.json` 的槽位与 `reports/19d-performance.json` 的 `platforms.linux` 已按实测回填；
    `windows-native` 标缺、`macos` 不可验证，**没有混口径**；
 6. **取数前不写达标结论**（阈值 `unset`）；**取数完成后阈值已冻结**，且冻结有依据
