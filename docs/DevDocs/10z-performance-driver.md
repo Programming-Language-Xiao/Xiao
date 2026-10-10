@@ -7,7 +7,10 @@
 > **一句话概括**：**做出那个跑协议、出可复核数字的驱动器**；开发与自测在本机即可，
 > 只有**取数**需要受控主机。做完它，Z-2 才具备开轮次的条件。
 >
-> 状态：**可开工（2026-10-10）**。星崽已裁定四项（落点＝独立二进制、VM 侧自测、
+> 状态：**已实施（2026-10-11）**。驱动器已落地并接入 CI（`tools/gates/run.sh` 跑它的单元测试与
+> `--self-test`）；**取数尚未开始**，见 [10Z-取数交接](10z-performance-measurement-handoff.md)。
+>
+> 历史：**可开工（2026-10-10）**。星崽已裁定四项（落点＝独立二进制、VM 侧自测、
 > `container-dense` 据实改判、取数后立即冻结阈值），见末尾「已定决策」。
 
 ## 一、Agent 交接上下文
@@ -216,7 +219,8 @@ tests/benchmarks/baseline.json                     D5：回填槽位
 tests/benchmarks/reports/19d-performance.json      D5：platforms.linux 与 statistics
 tests/benchmarks/java/Benchmark.java               仅在 Java 侧需要按协议多跑时（否则不动）
 docs/DevDocs/19d-performance-comparison.md         D5：口径与结论回填
-docs/DevDocs/10z-linux-bare-metal-handoff.md       §〇 与 §七：驱动器就绪后解除「本轮不做取数」
+docs/DevDocs/10z-linux-bare-metal-handoff.md       §〇 与 §七：**已回填**——驱动器就绪，取数由 10Z-取数交接承接
+docs/DevDocs/10z-performance-measurement-handoff.md  新：受控主机的取数交接（本批之后交给操作者）
 docs/DevDocs/README.md                             主表登记
 ```
 
@@ -246,7 +250,8 @@ docs/DevDocs/README.md                             主表登记
    并同步 `baseline_id`/sha256；随后按阈值出判定；
 7. **接执行点（D7）**：把 `tests/benchmarks` 的测试与 `--self-test` 接进 `tools/gates/run.sh`，
    并做一次「让它变红」的验证（破坏一个断言 → 门禁红 → 恢复转绿）；
-8. **文档**：19D 的口径与结论；解除 [10Z-Linux 交接](10z-linux-bare-metal-handoff.md) §〇 的「本轮不做取数」；
+8. **文档**：19D 的口径与结论；把取数交给 [10Z-取数交接](10z-performance-measurement-handoff.md)（原「解除 10Z-Linux §〇 的本轮不做取数」已随该交接的落地完成）；
+9. **全量门禁**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit`。
 9. **全量门禁**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit`。
 
 ## 六、最可能翻车的地方
@@ -309,6 +314,27 @@ docs/DevDocs/README.md                             主表登记
 ## 待定决策
 
 （无。四项已由星崽裁定，见上。）
+
+## 实施记录（2026-10-11）
+
+- 驱动器落地在 `tests/benchmarks/src/bin/performance_driver.rs`（`ad87d64`），后续 `9ea4cc7` 加固四项、
+  `c45f2d0` 补报告汇总与门禁接线。**`tests/benchmarks/src/main.rs`（09R3 设施）一行未动**（D4 第 1 条）。
+- **D1–D6 经审核逐条核对属实**（不读声明，直接查代码）：语义校验先行且 `--self-test` 输出
+  `semantic_guard_rejects_wrong_value=true`；计时区间由 `Instant::now()` 紧接 `.output()` 界定，
+  构建不在内；warmup 与 measurement **两个循环里都校验输出**；无剔除离群样本的逻辑；
+  `BOOTSTRAP_RESAMPLES=10_000` / `BOOTSTRAP_SEED=19_015` / `CONFIDENCE_LEVEL=0.95`，
+  用 `xiao_types::SeededRandom`，并**校验 `baseline.json` 的协议就是冻结值**；
+  `XIAO_CLANG`/`XIAO_RUNTIME_LIBRARY` 缺失时明确失败；报告含**原始样本 `samples_ns`** 与 `version_text_sha256`。
+- **D5 第 6 条已完成**：`ReportSummary { measured_cases, data_insufficient_cases, total_cases }`；
+  顶层 `status` 仅在 `measured_cases > 0` 且无未知状态且计数自洽时为 `development-evidence`，否则 `failed`。
+  审核**做了独立故障注入**——把 `measured_cases > 0` 改回 `true`（即重新引入当初那个缺陷），
+  单元测试 `all_data_insufficient_cases_are_a_failed_report` **FAILED**；还原后 6 个测试全绿。
+- **D7 已完成**：`tools/gates/run.sh` 加了 `cargo test --manifest-path tests/benchmarks/Cargo.toml`
+  与 `--self-test` 两条；审核实跑完整 `run.sh` **退出码 0、171 秒**。推送后 CI 日志证实
+  **`performance_driver.rs` 与 `src/main.rs` 的单元测试都跑起来了**、`--self-test` 也执行了
+  （两项 `true`）——**09R3 设施那笔「测试无执行点」的先前欠账一并还清**。
+- **取数未开始**：需受控主机（Temurin 21 + 固定硬件），交给 [10Z-取数交接](10z-performance-measurement-handoff.md)。
+  驱动器本机跑不了全场（本机 `java` 是 1.8，按设计会被版本校验拒绝），**「自检通」不等于「取数能跑通」**。
 
 ## 相关页面
 
