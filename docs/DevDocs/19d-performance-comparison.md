@@ -85,10 +85,11 @@
 
 **冻结**：
 
-- 本机 `java -version` 的结果（1.8）不作基线；基线清单固定记录 Temurin/OpenJDK 21 的完整
-  版本文本和 JVM 参数，不能只写一个大版本号；
+- 基线清单固定记录 Temurin/OpenJDK 21 的完整版本文本和 JVM 参数，不能只写一个大版本号；
+  Linux 受控取数已记录 OpenJDK 21.0.12 的实际版本文本，原始报告见
+  [10Z 性能取数结果](10z-performance-measurement-results-20261011.md)；
 - 当前固定参数写入 `tests/benchmarks/baseline.json`：`-Xms256m`、`-Xmx256m`、
-  `-XX:+UseSerialGC`、`-Dfile.encoding=UTF-8`；受控主机的实际 `java -version` 文本和摘要仍待补；
+  `-XX:+UseSerialGC`、`-Dfile.encoding=UTF-8`；
 - 原生发布参数按 `-O2` 记录为 clang 优化，明确 `xiao_passes_registered=false`，不把 Xiao
   LLVM Pass 尚未注册误报为已启用；
 - Java 参考实现与 Xiao 程序**必须算同一件事**，用 `manifest.json` 里的期望值互相校验输出；
@@ -129,10 +130,9 @@
   **不得**为了凑出稳态而改基准输入；
 - Windows 上的峰值内存口径沿用 09R3 的「峰值工作集」，Linux、macOS 用什么口径要单独写明，
   不同口径的数字不互相比较；
-- 本机只有 Windows。Linux 与 macOS 的数字只有在拿到 CI 或别的机器的运行记录后才写，
-  否则一律写「未测」。
-- §2.4 的固定硬件受控环境取数目前没有运行记录；本批只完成原生可构建性探测，性能基线明确记为
-  「待补」，不能用探测提交或 CI 托管机数字代替。
+- Linux 受控主机已有运行记录：4 个基准为 `measured`，1 个因 Java/Xiao 溢出语义不同为
+  `data-insufficient`；Windows 仍标缺、macOS 仍不可验证。
+- §2.4 的阈值尚未冻结，不能据此写通过或回归结论。
 
 ### 2.5 **证据按平台分档，没有运行记录的平台写「未测」**
 
@@ -307,10 +307,10 @@ Linux/macOS 记「未测」；CI 记「诊断性」。阈值未冻结，报告�
 | O6 条件（12 原文） | 状态 | 证据与限制 |
 | --- | --- | --- |
 | 1. 已冻结优化级别、字节码格式、索引 Schema、`.xar` 版本和目标平台具有完整兼容矩阵与升级/拒绝策略。 | 部分 | 主要格式、版本与目标拒绝策略已冻结；兼容矩阵仍保留 Unverified 格，三平台完整验收未齐 |
-| 2. 优化前后、不同后端、不同归档入口的差分、模糊、损坏恢复和安全测试全部通过。 | 部分 | 10T 已接通 table-user-drop、摘除普通表实例豁免，新表方法严格比较；10W 已加入 A2 构造参数 VM 基线并将 A3 方法值边界改判为两边一致拒绝；10Z-Y3 的 B1 已统一字典成员错误身份（VM/原生均 `X06-RUNTIME-002`），C 类错误程序按两边都拒绝关闭；④ 动态错误构造参数仍是已立项的原生缺口，见 [10Z-D](10z-dynamic-error-constructor-followup.md)；维护回归 `37756208604` 的 Windows/Linux 原生作业已完成 A2 O0-O3 与调试矩阵；性能数据仍待补，macOS 调试执行受宿主限制，不能写成全路径覆盖 |
+| 2. 优化前后、不同后端、不同归档入口的差分、模糊、损坏恢复和安全测试全部通过。 | 部分 | 10T 已接通 table-user-drop、摘除普通表实例豁免，新表方法严格比较；10W 已加入 A2 构造参数 VM 基线并将 A3 方法值边界改判为两边一致拒绝；10Z-Y3 的 B1 已统一字典成员错误身份（VM/原生均 `X06-RUNTIME-002`），C 类错误程序按两边都拒绝关闭；④ 动态错误构造参数仍是已立项的原生缺口，见 [10Z-D](10z-dynamic-error-constructor-followup.md)；维护回归 `37756208604` 的 Windows/Linux 原生作业已完成 A2 O0-O3 与调试矩阵；Linux 原始性能数据已回填，macOS 调试执行受宿主限制，不能写成全路径覆盖 |
 | 3. SHA-256 完整性验证、资源上限、路径安全、权限和离线缓存行为在三平台一致；签名/信任未实现时有明确提示。 | 部分 | Windows 本机与 CI 证据存在；Linux 裸机提交 `74b272d70bde3eaeb9f8619426a5bc0594f6cfcd` 的 `reproduce.sh native` 退出码 0，且未使用 Xvfb。**`19.14` 的 Linux 桌面开窗 C 档已通过（2026-10-10，PR #5 合并 `efa9fd2`）**：`xiao run -debug` 的窗口确实出现并保持，两张截图归档，检出 `69f6ff5`，环境为 Ubuntu 26.04.1 裸机（`virtualization: none`）、Wayland 会话、`x-terminal-emulator → /usr/bin/terminator`；证据见 [10Z Linux 结果](10z-linux-bare-metal-results-20261010.md)。条件 3 的**五子项**仍未在三平台一致（见下方逐格盘点：**另外两个平台的默认测试从未运行**）。四平台 CI 37693571709 通过；macOS 只有 CI，真实终端显式跳过。签名/信任仍明确未实现 |
 | 4. 发布报告可追溯源码、依赖锁、工具链、优化指纹、对象摘要和归档成员，且重复构建差异在白名单内。 | 部分 | 15 系列报告与 Windows 证据通过；10S 最终四平台 CI 37693571709 通过，代码提交 58e8ecc，检出 16310a4（代码同 5abaf15），历次失败与裸机来源均保留；完整三平台白名单复核仍待补 |
-| 5. `xiao build` 的 LLVM 原生发布构建完成相对于已冻结 Java 基线的性能对照，并按 Windows → Linux → macOS 记录结果；Rust 字节码 VM 只保留独立性能报告。基准、版本或阈值未冻结时不得宣称“至少达到 Java”。 | 不满足 | Windows 本轮按决定标缺（无专用受控主机，不使用本机数字）；macOS 无宿主、不可验证；**Linux 的计时驱动器已就绪（[10Z-驱动](10z-performance-driver.md)，已接入 CI）**，取数由 [10Z-取数交接](10z-performance-measurement-handoff.md) 承接、**尚未执行**——注意它**不再与 C 档同一轮**（C 档已完成；原「同一轮」的前提是两侧都有测量工具，该前提当时不成立）。受控 Temurin/OpenJDK 21、固定硬件、三路原始数据和阈值仍缺；**取数完成后立即冻结阈值** |
+| 5. `xiao build` 的 LLVM 原生发布构建完成相对于已冻结 Java 基线的性能对照，并按 Windows → Linux → macOS 记录结果；Rust 字节码 VM 只保留独立性能报告。基准、版本或阈值未冻结时不得宣称“至少达到 Java”。 | 不满足 | Windows 本轮按决定标缺（无专用受控主机）；macOS 无宿主、不可验证；**Linux 已完成受控三路原始取数**（[10Z 结果](10z-performance-measurement-results-20261011.md)：4 个 `measured`、1 个 `data-insufficient`，bootstrap 确定性通过），但阈值尚未冻结，因此条件 5 仍不满足；原始 JSON、完整日志和环境清单见结果文档附件。 |
 
 因此本批不宣布 19 收口。
 

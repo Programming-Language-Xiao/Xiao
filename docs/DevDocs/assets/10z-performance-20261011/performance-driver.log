@@ -1,0 +1,76 @@
+   Compiling serde_core v1.0.229
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+   Compiling cfg-if v1.0.5
+   Compiling zmij v1.0.23
+   Compiling serde v1.0.229
+   Compiling version_check v0.9.5
+   Compiling itoa v1.0.18
+   Compiling typenum v1.20.1
+   Compiling serde_json v1.0.151
+   Compiling memchr v2.8.3
+   Compiling cpufeatures v0.2.17
+   Compiling xiao-runtime-abi v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-runtime-abi)
+   Compiling xiao-source v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-source)
+   Compiling libc v0.2.189
+   Compiling generic-array v0.14.7
+   Compiling find-msvc-tools v0.1.14
+   Compiling shlex v2.0.1
+   Compiling zeroize v1.9.0
+   Compiling untrusted v0.9.0
+   Compiling cc v1.5.1
+   Compiling httparse v1.10.1
+   Compiling rustls-pki-types v1.15.1
+   Compiling log v0.4.34
+   Compiling crc32fast v1.5.2
+   Compiling bytes v1.12.1
+   Compiling rustls v0.23.45
+   Compiling syn v3.0.6
+   Compiling once_cell v1.21.4
+   Compiling subtle v2.6.1
+   Compiling adler2 v2.0.1
+   Compiling base64 v0.23.1
+   Compiling simd-adler32 v0.3.10
+   Compiling webpki-roots v1.0.9
+   Compiling miniz_oxide v0.9.1
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling utf8-zero v0.8.1
+   Compiling digest v0.10.7
+   Compiling getrandom v0.2.17
+   Compiling http v1.5.0
+   Compiling filetime v0.2.29
+   Compiling sha2 v0.10.9
+   Compiling percent-encoding v2.3.2
+   Compiling flate2 v1.1.10
+   Compiling tar v0.4.46
+   Compiling ring v0.17.14
+   Compiling ureq-proto v0.6.4
+   Compiling serde_derive v1.0.229
+   Compiling xiao-i18n v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-i18n)
+   Compiling xiao-lock v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-lock)
+   Compiling xiao-intrinsics v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-intrinsics)
+   Compiling xiao-diagnostics v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-syntax)
+   Compiling xiao-types v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-types)
+   Compiling xiao-modules v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-modules)
+   Compiling xiao-config v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-config)
+   Compiling xiao-lifetime v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-ir)
+   Compiling rustls-webpki v0.103.15
+   Compiling xiao-optimizer v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-bytecode)
+   Compiling xiao-codegen-llvm v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-codegen-llvm)
+   Compiling xiao-artifacts v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-artifacts)
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-package)
+   Compiling xiao-runtime v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-runtime)
+   Compiling xiao-vm v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-vm)
+   Compiling xiao-xar v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-xar)
+   Compiling xiao-driver v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/core/rust/crates/xiao-driver)
+   Compiling xiao-r3-benchmarks v0.1.0 (/home/xiaocz/Projsct/Xiao/Xiao/tests/benchmarks)
+    Finished `release` profile [optimized] target(s) in 1m 01s
+     Running `tests/benchmarks/target/release/performance_driver --output /tmp/10z-performance-report.json`
+10Z-PERFORMANCE-DRIVER report=/tmp/10z-performance-report.json cases=5 status=development-evidence
+10Z-PERFORMANCE-DRIVER note=本机/CI 数字仅作功能证据，不写入受控性能结论
