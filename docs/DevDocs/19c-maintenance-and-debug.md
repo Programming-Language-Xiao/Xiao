@@ -242,6 +242,8 @@ docs/DevDocs/19b-*.md                         R5：统一 D3、D4 的记录；�
 - **19.14 B 档**：Windows `x86_64-pc-windows-msvc` 本机运行 `reproduce.ps1 -Mode native` 最终通过；`editbin /subsystem:windows` 后的调试原生产物返回 `exit=0`，与普通调试产物、脱离 `xiao` 的相邻组件发现和版本失配检查一起通过。该证据是本机行为证据，不代表 CI 或其他平台。
 - **F3/F6 限定**：B 档脚本的行为判据来自调试启动桥等待诊断进程 readiness marker 后用户入口才继续，并观察 GUI 子系统产物真实退出结果；脚本没有额外枚举窗口进程。Unix 完成标记和信号分支没有本机运行记录，仍等待 Linux/macOS 证据。
 - **19.14 C 档**：Linux Ubuntu 裸机复跑已成功（提交 `74b272d70bde3eaeb9f8619426a5bc0594f6cfcd`，未使用 Xvfb），但终端窗口仅闪现、无截图，开窗仍未验证；macOS 缺桌面宿主且 CI 显式跳过真实终端，LaunchServices/窗口仍未验证。窗口后续必须用真实 `xiao run -debug` 程序取证。
+  **（2026-10-10 更新）Linux 那一格已通过**：真实 `xiao run -debug` 的窗口确实出现并保持、两张截图归档，检出 `69f6ff5`，成功环境为 Ubuntu 26.04.1 裸机（`virtualization: none`）+ **Wayland** + **`x-terminal-emulator → /usr/bin/terminator`**；证据见 [10Z Linux 结果](10z-linux-bare-metal-results-20261010.md)（PR #5 合并 `efa9fd2`）。
+  **前两轮「测试 ok 但无窗口」由此有了可比对照**——上面那组环境就是成功的那一组。macOS 一格仍为**不可验证**（无宿主、CI 显式跳过真实终端）。
 
 ### 当前剩余待决事项
 
@@ -259,5 +261,9 @@ docs/DevDocs/19b-*.md                         R5：统一 D3、D4 的记录；�
 - [18C](18c-file-association-and-scripting.md) —— `18.13` 的遗留说明
 
 ### 10S 宿主证据更新（2026-10-07）
+
+> **本节是 10S 当轮的历史记录，勿据此判断现状。** Linux 那一格此后已于 **2026-10-10 通过**
+> （PR #5 合并 `efa9fd2`，见 [10Z Linux 结果](10z-linux-bare-metal-results-20261010.md)）；
+> 现状以本文上方「`19.14` C 档」那条为准。
 
 19.14 C 档：Linux 已收到 [Ubuntu裸机回传](10s-linux-bare-metal-results-20261007.md)，不是无宿主；但真实终端测试虽返回ok，操作者未看到窗口且无截图，桌面开窗仍未验证通过。macOS仅有CI，platform-reproduction显式跳过真实终端用例，缺Mac桌面宿主，因此LaunchServices/真实终端窗口证据本批不可得，仍记未验证。虚拟显示Linux CI及macOS编译结果均不能替代这一档行为证据。
