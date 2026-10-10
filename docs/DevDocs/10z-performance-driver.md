@@ -30,6 +30,7 @@
 | VM 侧 | `tests/benchmarks/src/main.rs`（09R3）**有**计时，但它测的是**三种字节码机载体**，README 明说「没有……LLVM 原生对照」 | 有计时，**但对象不同** |
 | 驱动器是否存在 | `grep -rln "javac\|java -Xms\|Benchmark.class"` 在 `*.sh`/`*.ps1`/`*.rs`/`*.ts`/`*.yml` **零命中**；对 `.exe` 重复计时的地方**零命中** | **不存在** |
 | 可复用件 | `tests/benchmarks/src/main.rs:816` 的 `percentile()`（**无 bootstrap**）；`xiao-types::SeededRandom`（已由 `d19a_fixed_random.rs` 独立金标测试的确定性 PRNG） | 可复用 |
+| **执行点** | `tests/benchmarks` 是**独立工作区**；全仓库对它的调用**只有 `cargo check`**（`tools/gates/run.sh:16`、`package.json` 的 `check:lock`），**没有任何 `cargo test`**。故驱动器的单元测试、`--self-test`、以及 09R3 设施 `src/main.rs` 的测试**都没有自动执行点** | **缺口**，见 D7 |
 
 **关键不对称（决定驱动器的结构）**：
 
@@ -51,7 +52,7 @@
 | **阈值冻结** | 取数完成后**立即**冻结并出判定 | **做**（D5 第 4 条） |
 | 调优 | 为达标而改实现 | **不做**——本批只取数与冻结阈值 |
 
-## 二、必须先冻结的 6 条
+## 二、必须先冻结的 7 条
 
 ### 2.1 **D1：两阶段——先语义校验，再计时**
 
@@ -172,6 +173,40 @@
 4. 驱动器自身要有**受控主机的自检**：缺 `java`、`javac`、`XIAO_CLANG` 等依赖时**明确失败**，
    不静默跳过（沿用 [10D](10d-environment-gated-test-spec.md) §3.2 的口径）。
 
+### 2.7 **D7：证据必须有执行点——有测试不等于有人在跑它**
+
+**事实（审核 2026-10-10 实测）**：`tests/benchmarks` 是**独立工作区**（有自己的 `Cargo.toml`
+与 `Cargo.lock`），而全仓库对它的调用**只有 `cargo check`**
+（`tools/gates/run.sh:16` 与 `package.json` 的 `check:lock`），**没有任何 `cargo test`**。
+于是下面三样**都没有自动执行点**：
+
+| 有证据能力 | 自动执行点 |
+| --- | --- |
+| 驱动器的 `#[cfg(test)] mod tests` | **无** |
+| 驱动器的 `--self-test`（输出 `bootstrap_byte_identical` 与 `semantic_guard_rejects_wrong_value`） | **无** |
+| 09R3 设施 `tests/benchmarks/src/main.rs` 的测试 | **无**（**先前欠账**，非本批引入） |
+
+注：`maintenance-regression.yml` 的 `workspace-default-tests` 跑的是
+`cargo test --manifest-path **core/rust**/Cargo.toml --workspace`——**不含** `tests/benchmarks`。
+
+**冻结**：
+
+1. **必须接上执行点**：把 `cargo test --manifest-path tests/benchmarks/Cargo.toml` 接进
+   [tools/gates/run.sh](../../tools/gates/run.sh)——它已被 `workspace-gates.yml`（push）
+   与 `reproduce.sh`（周定时四平台）**都调用**，是现成的执行点；
+2. **`--self-test` 不能留在无人跑的状态**：它输出的两项正是 D1 与 D3 的硬证据。
+   把它**并进同一执行点**，或写成单元测试由 `cargo test` 带上——二者选一；
+3. **接上之后要证明它真的在跑**：临时破坏一个期望值/断言，确认门禁**变红**，再恢复并确认转绿。
+   （这与 [10Z-唯一性](10z-index-uniqueness-followup.md) §2.5、[10Z-CI覆盖](10z-ci-push-coverage-followup.md) §2.4 同一条要求。）
+4. **成本可议，但不可以两个都不接**：若整套测试显著拉长 push 门禁，**最低限度接 `--self-test`**
+   （最轻，且正好覆盖两项硬证据）；接哪一层由实施方按实测成本定，**在提交说明里写明选了哪层与理由**；
+5. **09R3 设施的测试一并受益，但不得因此改动它的行为**（D4 第 1 条仍有效）——
+   只是让它从「有人手跑」变成「有执行点」。
+
+**理由**：这条与本批一路的教训同源——**有证据能力不等于有执行点**。
+审核在驱动器上逐条核过 D1–D6 都落实了，但**那些证据此前一次都没被自动跑过**；
+`15e_ci_gated`（条件 4 的可复现构建比较）就是同一个处境的先例。
+
 ## 三、落点
 
 ```text
@@ -209,8 +244,10 @@ docs/DevDocs/README.md                             主表登记
 5. **只在受控主机上取数**（本步之前的一切都在本机做）：环境清单先落盘，再跑，再回传原始数字；
 6. **冻结阈值**（取数完立即，见 D5 第 4 条）：填 `threshold` 三项 + 写出冻结依据，
    并同步 `baseline_id`/sha256；随后按阈值出判定；
-7. **文档**：19D 的口径与结论；解除 [10Z-Linux 交接](10z-linux-bare-metal-handoff.md) §〇 的「本轮不做取数」；
-8. **全量门禁**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit`。
+7. **接执行点（D7）**：把 `tests/benchmarks` 的测试与 `--self-test` 接进 `tools/gates/run.sh`，
+   并做一次「让它变红」的验证（破坏一个断言 → 门禁红 → 恢复转绿）；
+8. **文档**：19D 的口径与结论；解除 [10Z-Linux 交接](10z-linux-bare-metal-handoff.md) §〇 的「本轮不做取数」；
+9. **全量门禁**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit`。
 
 ## 六、最可能翻车的地方
 
@@ -228,9 +265,8 @@ docs/DevDocs/README.md                             主表登记
 11. **只留统计量不留原始样本**，第三方无法复核（D5 第 5 条）；
 12. **让「一条都没测成」看起来像「全部测成」**——把硬错误降级成逐条 `data-insufficient`
     而不给汇总，顶层状态就分不出这两者（D5 第 6 条，`ad87d64`/`9ea4cc7` 已具现）；
-13. **把 `--self-test` 当摆设**：它已能输出 `bootstrap_byte_identical` 与
-    `semantic_guard_rejects_wrong_value` 两项，但**没接进任何门禁**（与 `15e_ci_gated`
-    同处境）——有证据能力不等于有执行点；接进 `bun run check` 或 CI 成本极低；
+13. **把 `--self-test` 与单元测试当摆设**：两者都能产出硬证据，但**都没接进任何门禁**
+    （与 `15e_ci_gated` 同处境）——**有证据能力不等于有执行点**（D7）；
 14. **提交没写正文**。
 
 ## 七、验收
@@ -247,6 +283,8 @@ docs/DevDocs/README.md                             主表登记
    （比值 / 置信区间 / 误差来源），并按阈值给出了「通过 / 回归 / 数据不足」的判定；
    `baseline_id` 与 sha256 随冻结同步更新；
 7. **09R3 的冻结设施与报告未被改动**（`git diff` 可证）；
+   **且它的测试现在有执行点**（D7：`tests/benchmarks` 已接进 `tools/gates/run.sh`）；
+   **执行点有一次「让它变红」的验证**（D7 第 3 条）；
 8. 取数在受控主机上完成，环境清单在跑之前落盘；
 9. `cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit` 全绿；
 10. 没有通过放宽断言、跳过校验或缩小范围换来的绿。
