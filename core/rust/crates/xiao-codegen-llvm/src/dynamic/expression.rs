@@ -708,12 +708,11 @@ impl<'a> DynamicGenerator<'a> {
     ) -> Result<String> {
         if matches!(object.ty, IrType::Dynamic | IrType::DictTable { .. }) {
             let object_value = self.emit_expression(object)?;
-            let payload = self.next_temp();
+            let object_slot = self.next_temp();
+            self.emit(format!("  {object_slot} = alloca {VALUE_TYPE}"));
             self.emit(format!(
-                "  {payload} = extractvalue {VALUE_TYPE} {object_value}, 1"
+                "  store {VALUE_TYPE} {object_value}, ptr {object_slot}"
             ));
-            let handle = self.next_temp();
-            self.emit(format!("  {handle} = inttoptr i64 {payload} to ptr"));
             let field = self.emit_bytes_value(name_key(member).as_bytes());
             let field_argument = self.emit_bytes_argument(&field);
             let output = self.next_temp();
@@ -722,7 +721,9 @@ impl<'a> DynamicGenerator<'a> {
                 "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
             ));
             self.checked_status_call_at(
-                format!("@xiao_runtime_dict_get(ptr {handle}, {field_argument}, ptr {output})"),
+                format!(
+                    "@xiao_runtime_dynamic_member_get(ptr {object_slot}, {field_argument}, ptr {output})"
+                ),
                 span,
             );
             let value = self.next_temp();

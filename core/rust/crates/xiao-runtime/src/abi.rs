@@ -2168,6 +2168,41 @@ pub extern "C" fn xiao_runtime_dict_get(
     unsafe { write_value(out, value) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
 }
 
+/// 按 UTF-8 键读取动态成员；只有真实表值允许成员访问。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_dynamic_member_get(
+    value: *const XiaoValue,
+    key: XiaoAbiBytes,
+    out: *mut XiaoValue,
+) -> i32 {
+    if value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let key = match unsafe { utf8(key) } {
+        Ok(key) => key,
+        Err(error) => return error,
+    };
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let result = match value {
+        RuntimeValue::Table(table) => table.get(&key).and_then(|value| {
+            value.ok_or_else(|| RuntimeError::invalid_value(format!("表没有成员 {key}")))
+        }),
+        other => Err(RuntimeError::type_mismatch("table", other.type_name())),
+    };
+    let value = match status(result) {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let value = match runtime_to_value(&value) {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    unsafe { write_value(out, value) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
 /// 将字典强句柄包装为 ABI 值并增加一次引用。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_dict(handle: XiaoHandle, kind: u32) -> XiaoValue {

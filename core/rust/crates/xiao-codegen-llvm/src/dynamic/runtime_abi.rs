@@ -246,6 +246,10 @@ impl<'a> DynamicGenerator<'a> {
             "declare i32 @xiao_runtime_dict_get(ptr, {}, ptr)",
             self.bytes_parameter_type()
         ));
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_dynamic_member_get(ptr, {}, ptr)",
+            self.bytes_parameter_type()
+        ));
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_dict", "ptr, i32"));
         self.declarations

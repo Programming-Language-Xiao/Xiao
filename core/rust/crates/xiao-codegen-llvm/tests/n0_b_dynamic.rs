@@ -562,6 +562,37 @@ fn decodes_string_escapes_before_llvm_emission() {
 }
 
 #[test]
+/// 字典形态的动态成员访问必须走统一的表类型检查 ABI，而不能把字典句柄当字段表读取。
+fn dynamic_dictionary_member_reports_table_type_mismatch() {
+    let dictionary = IrExpression {
+        kind: IrExpressionKind::DictTable {
+            entries: vec![IrDictEntry {
+                key: "member".to_owned(),
+                value: literal("integer", "1", "int"),
+                span: span(),
+            }],
+        },
+        ty: IrType::DictTable {
+            entries: Vec::new(),
+        },
+        span: span(),
+    };
+    let member = IrExpression {
+        kind: IrExpressionKind::Member {
+            object: Box::new(dictionary),
+            member: name("member"),
+        },
+        ty: IrType::Dynamic,
+        span: span(),
+    };
+    let module = lower_program(&expression_program(member), &CodegenOptions::default())
+        .expect("字典成员访问应降低为统一错误路径");
+    assert!(module.text.contains("@xiao_runtime_dynamic_member_get"));
+    assert!(!module.text.contains("call i32 @xiao_runtime_dict_get"));
+    validate_with_llvm_as(&module.text);
+}
+
+#[test]
 /// 字典构造使用已规范化键，并登记容器 ABI 组件。
 fn lowers_dictionary_with_runtime_component() {
     let dictionary = IrExpression {

@@ -5,12 +5,11 @@
 > 「原生编译期拒绝」**，由实现侧复核发现并按真实运行结果更正——那处结论是审核**从代码推断的、没跑过原生侧**；
 > 归因与教训见 §一 末尾。
 >
-> **一句话概括**：动态成员读写和动态扩展赋值在表形态下两边输出一致；非表形态两边都拒绝，
-> 但拒绝阶段/错误身份仍按口径待定。合法的五种选择形态均有选择计划且原生输出与 VM 一致，
-> `动态选择器缺少规范选择计划` 暂判为防御性不可达；动态错误构造参数另有一组待定对照。
+> **一句话概括**：动态成员读写和动态扩展赋值的表形态一致；B 的字典错误身份差分已由 B1 修复，
+> C 的错误程序按两边都拒绝关闭。合法的五种选择形态均有选择计划；D 动态错误构造参数转独立后续立项。
 >
-> 状态：**Y3 对照完成，待星崽定拒绝阶段口径和 Z-1 范围**。按 [10Z-收尾](10z-closeout-execution.md) §2.1 的 S1，
-> 本阶段不开工实现。
+> 状态：**Y3/Z-1 裁定完成，B1 已修复；D 转独立立项**。按 [10Z-收尾](10z-closeout-execution.md) §2.1，
+> 本阶段不实现 D。
 
 ## 一、给星崽的汇报
 
@@ -21,7 +20,7 @@
 | --- | --- | --- |
 | 两边一致拒绝 / 独立边界 | **21** | 含 A3 与构造参数形状（引用既有结论，不重复取证） |
 | `dynamic/` 外的独立项 | **4** | 目标平台与 IR 层边界，[10Z-收尾](10z-closeout-execution.md) §2.2 第 3 条已要求单独判定 |
-| **Y3 原生缺口候选** | **4 组（对应 5 处），均已完成对照** | ①/② 的表形态一致；非表形态两边均拒绝但阶段或错误身份不同，口径待定；③ 未发现无计划 IR；④ 待定 |
+| **Y3 原生缺口候选** | **4 组（对应 5 处），均已完成对照** | B1 已修复错误身份差分；C 按两边都拒绝关闭；③ 计划守卫由正式测试固定；④ 转独立立项 |
 
 候选组按语义合并，成员读取和成员写入的两处权威字符串合为①组；权威枚举仍是 28 处，表中的“条数”和“组数”不直接相加。
 四组候选的最终对照如下。所有原生命令均在同一台 Windows 受控工具链上执行；环境见 §2.1.1，原始输出见 §2.3.1。
@@ -61,15 +60,15 @@ print(read(1))
 ```
 
 字典读取的 VM 原始 JSON 为 `X06-RUNTIME-002`、消息“期望类型 table，实际为 dict_table”、退出码 3；
-原生 `build` 成功，但带诊断启动 shim 的产物运行原始 stderr 为
-`xiao-error class=recoverable code=X06-RUNTIME-012 message_id=runtime.invalid_value ... exit_code=3`，
-退出码 3。标量读取的 VM 同样为 `X06-RUNTIME-002`、退出码 3；原生 `build` 原始 stderr 为
+修复前原生 `build` 成功但带诊断启动 shim 的产物运行为 `X06-RUNTIME-012`。Z-1 的 B1 修复后，
+原生产物同样报告 `X06-RUNTIME-002`、退出码 3（复核行见 §2.3.2）。标量读取的 VM 同样为
+`X06-RUNTIME-002`、退出码 3；原生 `build` 原始 stderr 为
 `X11-PROTOCOL-007: 原生后端不支持 动态非表成员访问（34..46）`，构建退出码 2。
 
 代码原因是 `emit_table_get` 先对 `IrType::Dynamic | IrType::DictTable` 发射
 `xiao_runtime_dict_get`，只有之后才进入“动态非表成员访问”守卫；调用点的参数推断会分别得到
-`DictTable` 或标量。因此本组的结论是：表形态不是缺口；非表形态都没有“VM 成功、原生拒绝”
-的结果，但拒绝阶段或错误身份有差异，归入待定决策 1，不能再写成单一分歧。
+`DictTable` 或标量。因此本组的结论是：表形态不是缺口；B1 已统一字典接收者的错误身份；
+标量接收者属于 C 类错误程序，按两边都拒绝关闭。
 
 
 ### ② 动态扩展赋值（`control.rs:206`）—— **表形态已对照；非表形态两边均拒绝**
@@ -93,8 +92,7 @@ VM 的 `--json` 原始结果含 `"exit_code":0`、`"intrinsic_output":{"text":"4
 字典形态仍使用最小探针 `write({member = 0})`：VM 原始 JSON 为
 `X06-RUNTIME-002`、退出码 3；原生 `build` 原始 stderr 为
 `X11-PROTOCOL-007: 原生后端不支持 动态非表字段写入（29..45）`，构建退出码 2。
-按 §2.2 第二行，这是“两边都拒绝”；是否把运行期语言错误与编译期能力边界视为差分，
-与①共用待定决策 1。
+按 §2.2 第二行，这是“两边都拒绝”；C 裁定关闭，不进入 B 实现。
 
 ### ③ 动态选择计划缺失（`expression.rs:270`）—— **前端可达性已证伪，暂判防御性不可达**
 
@@ -238,7 +236,7 @@ Microsoft (R) Incremental Linker Version 14.51.36256.0
 
 ### 2.3.1 已实跑原始行
 
-本次原始 CLI 行的关键字段如下（请求编号和 Windows 路径均保留，未用预期值代替实际结果）。
+本次原始 CLI 行的关键字段如下（请求编号和 Windows 路径均保留，未用预期值代替实际结果）；
 完整的 VM JSON、原生构建 stderr/stdout 和产物运行输出见[原始对照日志](10z-y3-stage-report-log-20261010.md)，
 下面的表只做索引，不能替代日志原文：
 
@@ -258,7 +256,7 @@ VM dynamic-error: run-mv197nb0-8y7dh0ee  user_error=DYNAMIC  exit_code=3
 native table-read:   build-mv17nxqt-viqg5gdq  build exit_code=0; stdout=7; run exit_code=0
 native table-write:  build-mv17mkg4-meu5g0qx  build exit_code=0; stdout=42; run exit_code=0
 native selector:     build-mv17znsi-hp93zx56  build exit_code=0; stdout=5\n7\n4\n3\n4\n; run exit_code=0
-native dict-read:    build-mv18f2qy-9hrvj77  build exit_code=0; debug run X06-RUNTIME-012; exit_code=3
+native dict-read (pre-B1): build-mv18f2qy-9hrvj77  build exit_code=0; debug run X06-RUNTIME-012; exit_code=3
 native dict-write:   build-mv17tt0y-9vqryi24  X11-PROTOCOL-007 动态非表字段写入; build exit_code=2
 native scalar-read:  build-mv18j5az-2svb245j  X11-PROTOCOL-007 动态非表成员访问; build exit_code=2
 native dynamic-error: build-mv198imb-y2v0yt6m  X11-PROTOCOL-007 动态错误构造参数; build exit_code=2
@@ -267,16 +265,30 @@ native dynamic-error: build-mv198imb-y2v0yt6m  X11-PROTOCOL-007 动态错误构�
 上述每一行都来自对应命令的 stdout/stderr；构建成功后又单独启动了输出中的 `.exe`，
 没有把“构建成功”当成语义成功。
 
+### 2.3.2 B1 修复后复核
+
+在同一受控 Windows 工具链重建 Runtime 与核心后，字典成员读取复核为：
+
+```text
+native dict-read (post-B1): build-mv20jzlp-lmqfixb9  build exit_code=0
+xiao-error class=recoverable code=X06-RUNTIME-002 message_id=runtime.type_mismatch
+error [X06-RUNTIME-002]: 期望类型 table，实际为 dict_table
+RUN_EXIT=3
+```
+
+B1 同时新增 `d19a_differential` 的 `dynamic-dict-member-error-identity` 用例与 LLVM/Runtime ABI 单测；
+D 的动态错误构造参数没有混入本修复。受控 Windows 原生 `d19a_differential --ignored`
+复跑中该用例的输出、错误身份和退出码均已对齐；仍有一条仅 Drops 的后续差异豁免，未扩大 B1 的错误身份口径。
+
 ### 2.4 落点与顺序
 
-1. ②③④ 三组已补齐两侧对照，并回写 [10P](10p-differential-exemption-and-coverage.md)；旧判定保留，
-   新增列说明本次证据和改判依据；
-2. ① 组已按表、字典、标量三种接收者形态拆开记录；表形态一致，非表形态的阶段/错误身份口径待定；
-3. 四组对照已经完成，**停在汇报节点**；星崽确认拒绝阶段口径后再定 Z-1 范围。
+1. 四组对照已回写 [10P](10p-differential-exemption-and-coverage.md)；旧判定保留，新增列记录裁定依据；
+2. B1 已统一字典成员错误身份；C 类错误程序按两边都拒绝关闭；D 已转独立立项；
+3. Y3/Z-1 裁定已完成，后续只实现已确认的 B1，D 不进入 Z-1。
 
 ## 三、不要做的事
 
-- **不改后端**：本阶段只分类；判为缺口也要先汇报，实现按 [10Z](10z-19-closeout-and-b-series-implementation.md) §2.2 走；
+- **不实现 D 后续项**：B1 已按 [10Z](10z-19-closeout-and-b-series-implementation.md) §2.2 落地；D 按独立立项文档推进；
 - **不重跑已有结论**：A3、构造参数形状、以及审核已实测的①组表形态，引用即可；
 - **不要开新的工具侧批次**（[10Z-收尾](10z-closeout-execution.md) §2.3 的冻结仍然有效）；
 - **不要用 VM 单侧结果冒充对照**——本组的整个教训就是「只有 VM 侧方法」；
@@ -288,7 +300,7 @@ native dynamic-error: build-mv198imb-y2v0yt6m  X11-PROTOCOL-007 动态错误构�
 2. **用字典形态冒充表形态**：①组的探针原本就是 `{member = 1}` 字典，命中 `dict_table` 边界，
    与「动态表成员访问」不是一回事；
 3. **只看构建成功就下结论**：还要**运行产物**看实际输出——`xiao build` 成功不等于语义正确；
-4. **把编译期拒绝直接当成缺口**（或直接当成一致），不区分「两边都拒绝」的两种形态（待定决策 1）；
+4. **把编译期拒绝直接当成缺口**：C 已按两边都拒绝关闭；只有合法程序 D 保留为独立原生缺口；
 5. **③组按①②的模板跑**：它要判的是「前端会不会产出无计划 IR」，不是「接收者是什么类型」；
 6. **摘要当证据**（§2.3 第 2 条）；
 7. 顺手改后端或开新批（§三）。
@@ -299,27 +311,20 @@ native dynamic-error: build-mv198imb-y2v0yt6m  X11-PROTOCOL-007 动态错误构�
 2. 每条判定都能对上 §2.2 的三行表之一，且写明依据；
 3. 结论与探针源码都在文档或提交说明里可复现；
 4. 10P 的旧判定未被抹掉，改判附依据；
-5. 没有改后端、没有开新批；
+5. B1 已完成最小 Runtime/LLVM ABI 修复；D 未实现、未开新的工具侧批次；
 6. `bun run check` / `cargo test --workspace` / `bun test` / `bunx tsc --noEmit` 全绿。
 
-## 待定决策
+## 已定裁定
 
-1. **非表接收者的拒绝阶段/错误身份算不算缺口？**（①组的字典读取、标量读取和②组字典写入共用）
-   - **算一致**：两边都拒绝该程序；编译期拒绝、运行期拒绝以及同类运行期错误码的差异只登记，不进入 B 实现。
-   - **算缺口**：按差分测试“四样都要比”的口径，阶段或错误身份的可观察差异需要单独消除。
-   审核**建议先按“算一致”处理**：这些程序都没有 VM 成功结果，原生的拒绝是既有能力边界；
-   把所有非表接收者的阶段差异一律列为缺口会把范围放大到整个拒绝面。若星崽要求严格对齐，
-   再把具体形态分别立项，不能把字典读取的 `X06-RUNTIME-002`/`X06-RUNTIME-012` 与标量编译期拒绝混为一项。
-2. **Z-1 的范围**：四组对照已完成，待上项口径确认。**建议**只对「VM 成功产出结果而原生拒绝」的条目排实现；
-   本次四组没有发现这类结果，若按建议口径则只改文档。
-3. **③组若判为防御性不可达**：是否要给那处 `Unsupported` 加一条守卫/注释，标注「前端不会产出该形态」？
-   （属实现改动，本阶段不做，先登记。）
-4. **③组前端计划探针已提交**：`xiao-driver/tests/y3_selector_plan.rs` 固化
-   `selection_plans=5` 与五个 `selection_plan: Some(...)` 引用，测试命令和输出见③组。
+1. **B**：算低优先级错误身份缺口；B1 已通过统一动态成员 Runtime ABI 修复为 `X06-RUNTIME-002`。
+2. **C**：算两边都拒绝；原生更早拒绝错误程序，不进入 B 实现。
+3. **D**：登记为合法程序的原生缺口并单独立项，不纳入 Z-1。
+4. **③守卫**：正式 `y3_selector_plan` 测试已固定计划生产契约；代码注释可后续整理，不阻塞收口。
 
 ## 相关页面
 
 - **[10Z-Z1. Y3 收口结论与 Z-1 范围](10z-z1-scope-and-gap-verdict.md) —— 四组的收口判定与口径决策输入（本文的结论页）**
+- [10Z-D. 动态错误构造参数后续立项](10z-dynamic-error-constructor-followup.md) —— D 类原生缺口的后续范围
 
 - [10Z-收尾. 10 系列收束](10z-closeout-execution.md) —— 本批的序列与 S1 入口条件；§1.0 是上一轮审核补正
 - [10P. 差分豁免收敛与剩余拒绝面](10p-differential-exemption-and-coverage.md) —— Y3 的回写对象与 28 行分类表

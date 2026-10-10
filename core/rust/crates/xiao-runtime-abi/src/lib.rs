@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 9;
+pub const ABI_MINOR_VERSION: u32 = 10;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -865,6 +865,12 @@ unsafe extern "C" {
     /// 按 UTF-8 键复制字典值；`out` 必须是已初始化且不含弱表观察值的槽，成功时替换并释放旧值。
     pub fn xiao_runtime_dict_get(handle: XiaoHandle, key: XiaoAbiBytes, out: *mut XiaoValue)
     -> i32;
+    /// 按 UTF-8 键读取动态成员；表值走字段读取，其他值返回 `table` 类型错误。
+    pub fn xiao_runtime_dynamic_member_get(
+        value: *const XiaoValue,
+        key: XiaoAbiBytes,
+        out: *mut XiaoValue,
+    ) -> i32;
     /// 从字典强句柄构造对应标签的 ABI 值。
     pub fn xiao_runtime_value_dict(handle: XiaoHandle, kind: u32) -> XiaoValue;
     /// 消费字典强句柄并构造对应标签的 ABI 值；调用成功后不得再次释放句柄。
@@ -934,9 +940,9 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0009);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_000A);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 9);
+        assert_eq!(ABI_MINOR_VERSION, 10);
     }
 
     #[test]

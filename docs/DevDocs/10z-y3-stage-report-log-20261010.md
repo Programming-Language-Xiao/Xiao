@@ -161,3 +161,13 @@ selection_plans=5 selector_plan_references=5
 test legal_selector_forms_always_carry_a_plan_reference ... ok
 test result: ok. 1 passed; 0 failed
 ```
+
+## B1 修复后原生复核
+
+命令：受控 Runtime 重建后 `xiao build -debug`，再运行 `dict-read/debug.exe`；构建退出码 0，运行退出码 3。
+```text
+build-mv20jzlp-lmqfixb9  build exit_code=0
+xiao-error class=recoverable code=X06-RUNTIME-002 message_id=runtime.type_mismatch
+error [X06-RUNTIME-002]: 期望类型 table，实际为 dict_table
+RUN_EXIT=3
+```
