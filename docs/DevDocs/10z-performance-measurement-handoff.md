@@ -130,6 +130,40 @@ XIAO_CLANG / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE 的实际取值：
 
 **只要结论不要原始数据的回传会被退回**。
 
+### 6.1 归档的产物与**入链**要求
+
+**命名沿用 2026-10-11 那一轮已跑通的形态**（那一轮实测可行，不要另起格式）：
+
+```text
+docs/DevDocs/10z-performance-measurement-results-<日期>.md     判读与各基准一览
+docs/DevDocs/assets/10z-performance-<日期>/performance-report.json   驱动器报告（含原始样本）
+docs/DevDocs/assets/10z-performance-<日期>/performance-driver.log    完整驱动器日志
+docs/DevDocs/assets/10z-performance-<日期>/environment.txt           人工环境清单
+```
+
+**⚠ 新建的 `.md` 页面必须至少有一条入链**——`docs/DevDocs/` 下**除 README 外每个页面都要能从
+主题索引到达**（`A0-DOCS-001` 的孤立页规则）。没有入链时 `bun run check` 退出 1，
+push 上去 `Linux workspace gates` **直接红**。
+
+**2026-10-11 那一轮就因为漏了这条把 PR 挂红了**（只有 results → 交接的单向链接，
+results 自己没有入链）。所以：
+
+1. **让接收方文档链过去**：把 results 记进 [10Z-驱动](10z-performance-driver.md) 或
+   [19D](19d-performance-comparison.md)（**这一条必须有人做**，只靠 results 自己链出去不够）；
+2. results 里链到三个附件（那一轮做对了，保持）；
+3. **图片/`.json`/`.log`/`.txt` 本身不是 md 页面，不受孤立页规则约束**——受约束的是引用它们的那个 md。
+
+**提交前本地跑一次**：
+
+```bash
+bun run check
+```
+
+看到 `[error] A0-DOCS-001 … 页面没有入链` 就是这个问题。**别等 CI 报**——本地几秒，CI 一两分钟还得再走一轮。
+
+> 这条要求与 [10Z-Linux 交接](10z-linux-bare-metal-handoff.md) §6.1 是同一条。
+> **两份交接各写一遍是刻意的**：它们是各自独立交给操作者的文档，不能指望对方读了另一份。
+
 ## 七、先别做的事
 
 1. **不要剔除离群样本**——协议写死 `record-host-load-and-background-processes; do-not-discard-samples`，

@@ -333,8 +333,31 @@ docs/DevDocs/README.md                             主表登记
   与 `--self-test` 两条；审核实跑完整 `run.sh` **退出码 0、171 秒**。推送后 CI 日志证实
   **`performance_driver.rs` 与 `src/main.rs` 的单元测试都跑起来了**、`--self-test` 也执行了
   （两项 `true`）——**09R3 设施那笔「测试无执行点」的先前欠账一并还清**。
-- **取数未开始**：需受控主机（Temurin 21 + 固定硬件），交给 [10Z-取数交接](10z-performance-measurement-handoff.md)。
-  驱动器本机跑不了全场（本机 `java` 是 1.8，按设计会被版本校验拒绝），**「自检通」不等于「取数能跑通」**。
+- **取数已执行（2026-10-11，[PR #6](https://github.com/Programming-Language-Xiao/Xiao/pull/6)）**：受控主机 Ubuntu 26.04.1 裸机
+  （`virt=none`、i5-12450H、14 GiB，与 C 档同一台），Temurin/OpenJDK **21.0.12**。审核核对报告 JSON 与人工清单，
+  逐项对上：协议与冻结值一致、`byte_identical=true`、`summary = 5/4/1`、顶层 `status=development-evidence`
+  （**且 `measured_cases=4 > 0`，不是「0 条测成」那个形态**）、唯一 `data-insufficient` 是溢出那条且 reason 正确。
+  **`container-dense` 在 Linux 上是 `measured`**——它在 `baseline.json` 里的 `data-insufficient` 理由是
+  「**Windows** native probe rejected numeric_range」，这正是「必须在 Linux 重新跑再判」的兑现。
+  证据文件 `10z-performance-measurement-results-20261011.md` 与 `assets/10z-performance-20261011/`（PR #6 合并后补页内链接）。
+
+### 已登记、待实现方处理（2026-10-11 审核）
+
+1. **`host_cpu_model()` 在有 CPU 型号的 Linux 机器上返回 `unavailable`**：报告里
+   `cpu_model = "unavailable: /proc/cpuinfo model missing"`，而人工清单里有
+   `Model name: 12th Gen Intel(R) Core(TM) i5-12450H`——**两者不一致**。
+   机制很可能是 `/proc/cpuinfo` 用**制表符**分隔（`model name\t:`）而代码匹配的是字面量 `"model name:"`，
+   于是 x86 Linux 上永不命中。影响有限（人工清单补上了，这正是「人工清单不依赖驱动器正确性」的用途），
+   但它让报告的 HostSnapshot 少一格、**换机器时容易没人注意**。修法：容忍分隔符，或改用 `lscpu`。
+2. **`baseline.json` 未按实测回填**（D5 第 1 条）：PR #6 是纯归档，未改 `baseline.json`。
+   需回填 `status`、`runtime.resolved_version`、`version_text_sha256`、各 workload 的 `performance_status`、
+   **`platforms.linux` 由 `not-measured` 改为实测**。
+3. **`container-dense` 据实改判**（星崽 2026-10-10 已定）：它在 Linux 实测 `measured`，
+   要把 `baseline.json` 里那条「gap belongs to stage 15」的理由改掉，**并写明 Linux 与 Windows 的平台差异**——
+   只改 Linux 槽位而留着 Windows 的结论不改，会让清单自相矛盾。
+4. **阈值尚未冻结**（D5 第 4 条；星崽裁定「取数完立即冻结」）：需填 `threshold` 的
+   `status`/`allowed_error`/`regression_limit` 并写出**冻结依据**（比值、置信区间、误差来源），
+   同步 `baseline_id` 与 sha256。**冻结后才谈条件 5 的最终判定**（归 Z-4）。
 
 ## 相关页面
 
