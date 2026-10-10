@@ -210,6 +210,7 @@ struct ProtocolReport {
 struct HostSnapshot {
     os: String,
     arch: String,
+    cpu_model: String,
     kernel: String,
     memory: String,
     parallelism: usize,
@@ -270,6 +271,7 @@ struct Cli {
     self_test: bool,
     worker_vm: Option<PathBuf>,
     worker_max_call_depth: Option<usize>,
+    help: bool,
 }
 
 /// 10Z 驱动器内部实现声明。
@@ -286,6 +288,10 @@ fn main() -> ExitCode {
 /// 10Z 驱动器内部实现声明。
 fn real_main() -> Result<()> {
     let cli = parse_cli(env::args_os().skip(1))?;
+    if cli.help {
+        print_help();
+        return Ok(());
+    }
     if let Some(path) = cli.worker_vm {
         return run_vm_worker(&path, cli.worker_max_call_depth);
     }
@@ -351,6 +357,7 @@ where
     let mut self_test = false;
     let mut worker_vm = None;
     let mut worker_max_call_depth = None;
+    let mut help = false;
     let mut index = 0;
     while index < args.len() {
         let argument = args[index].to_string_lossy();
@@ -388,12 +395,7 @@ where
                     })?);
             }
             "--help" | "-h" => {
-                println!(
-                    "用法：performance_driver [--id <benchmark>] [--output <path>]\n\
-                     自检：performance_driver --self-test\n\
-                     内部 VM worker：performance_driver --worker-vm <path>"
-                );
-                return Err(driver_error("帮助已显示"));
+                help = true;
             }
             unknown => return Err(driver_error(format!("未知参数：{unknown}"))),
         }
@@ -419,7 +421,17 @@ where
         self_test,
         worker_vm,
         worker_max_call_depth,
+        help,
     })
+}
+
+/// 10Z 驱动器内部实现声明。
+fn print_help() {
+    println!(
+        "用法：performance_driver [--id <benchmark>] [--output <path>]\n\
+         自检：performance_driver --self-test\n\
+         内部 VM worker：performance_driver --worker-vm <path> --max-call-depth <n>"
+    );
 }
 
 /// 10Z 驱动器内部实现声明。
@@ -571,8 +583,9 @@ fn prepare_dependencies(baseline: &Baseline) -> Result<Dependencies> {
         .map_err(|error| driver_error(format!("探测 Runtime 原生静态库失败：{error}")))?
         .probe_versions()
         .map_err(|error| driver_error(format!("读取 LLVM 工具链版本失败：{error}")))?;
+    let native_level = parse_native_level(&baseline.native.optimization_level)?;
     let build_fingerprint = toolchain
-        .fingerprint(&target, CODEGEN_VERSION)
+        .fingerprint_with_optimization(&target, CODEGEN_VERSION, native_level, "baseline")
         .as_str()
         .to_owned();
     let rustc_version_text = toolchain.versions.rustc.clone().unwrap_or_default();
@@ -1163,11 +1176,16 @@ fn parse_native_output(output: &Output) -> Result<SideOutcome> {
             raw,
         });
     }
-    let value = String::from_utf8_lossy(&output.stdout)
+    match String::from_utf8_lossy(&output.stdout)
         .trim()
         .parse::<i64>()
-        .map_err(|error| driver_error(format!("原生输出不是单个整数：{error}")))?;
-    Ok(SideOutcome::Success { value, raw })
+    {
+        Ok(value) => Ok(SideOutcome::Success { value, raw }),
+        Err(error) => Ok(SideOutcome::Failed {
+            reason: format!("原生输出不是单个整数：{error}"),
+            raw,
+        }),
+    }
 }
 
 /// 10Z 驱动器内部实现声明。
@@ -1361,12 +1379,37 @@ fn collect_host_snapshot() -> HostSnapshot {
     HostSnapshot {
         os: env::consts::OS.to_owned(),
         arch: env::consts::ARCH.to_owned(),
+        cpu_model: host_cpu_model(),
         kernel: host_kernel(),
         memory: host_memory(),
         parallelism: std::thread::available_parallelism().map_or(1, std::num::NonZeroUsize::get),
         load,
         background_processes,
         process_listing_note,
+    }
+}
+
+/// 10Z 驱动器内部实现声明。
+fn host_cpu_model() -> String {
+    if cfg!(target_os = "linux") {
+        fs::read_to_string("/proc/cpuinfo")
+            .ok()
+            .and_then(|value| {
+                value.lines().find_map(|line| {
+                    line.strip_prefix("model name:")
+                        .or_else(|| line.strip_prefix("Hardware:"))
+                        .map(str::trim)
+                        .filter(|model| !model.is_empty())
+                        .map(ToOwned::to_owned)
+                })
+            })
+            .unwrap_or_else(|| "unavailable: /proc/cpuinfo model missing".to_owned())
+    } else if cfg!(target_os = "windows") {
+        env::var("PROCESSOR_IDENTIFIER")
+            .unwrap_or_else(|_| "unavailable: PROCESSOR_IDENTIFIER missing".to_owned())
+    } else {
+        command_version("sysctl", "-n hw.model")
+            .unwrap_or_else(|| "unavailable: sysctl hw.model failed".to_owned())
     }
 }
 
@@ -1469,7 +1512,12 @@ fn run_self_test() -> Result<()> {
 #[cfg(test)]
 /// 10Z 驱动器自检模块。
 mod tests {
-    use super::{BenchmarkSpec, SideOutcome, compare_expected, summarize_samples};
+    use std::ffi::OsString;
+
+    use super::{
+        BenchmarkSpec, SideOutcome, compare_expected, java_version_matches, parse_cli,
+        parse_native_level, summarize_samples,
+    };
 
     #[test]
     /// 10Z 驱动器内部实现声明。
@@ -1501,5 +1549,28 @@ mod tests {
             },
         );
         assert!(!observation.matches_expected);
+    }
+
+    #[test]
+    /// 10Z 驱动器帮助参数不应被报告为运行失败。
+    fn help_is_a_successful_cli_state() {
+        let cli = parse_cli([OsString::from("--help")]).expect("help should parse");
+        assert!(cli.help);
+    }
+
+    #[test]
+    /// 10Z 驱动器按 Java 版本字符串识别旧式与现代主版本。
+    fn java_version_major_matching_is_stable() {
+        assert!(java_version_matches("openjdk version \"21.0.4\"", 21));
+        assert!(java_version_matches("java version \"1.8.0_491\"", 8));
+        assert!(!java_version_matches("openjdk version \"17.0.12\"", 21));
+    }
+
+    #[test]
+    /// 10Z 驱动器只接受冻结的 O0 到 O3 原生级别。
+    fn native_level_parser_rejects_unfrozen_values() {
+        assert_eq!(parse_native_level("O2").unwrap(), 2);
+        assert!(parse_native_level("O4").is_err());
+        assert!(parse_native_level("fast").is_err());
     }
 }
