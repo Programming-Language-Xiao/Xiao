@@ -1429,15 +1429,7 @@ fn host_cpu_model() -> String {
     if cfg!(target_os = "linux") {
         fs::read_to_string("/proc/cpuinfo")
             .ok()
-            .and_then(|value| {
-                value.lines().find_map(|line| {
-                    line.strip_prefix("model name:")
-                        .or_else(|| line.strip_prefix("Hardware:"))
-                        .map(str::trim)
-                        .filter(|model| !model.is_empty())
-                        .map(ToOwned::to_owned)
-                })
-            })
+            .and_then(|value| parse_cpu_model(&value))
             .unwrap_or_else(|| "unavailable: /proc/cpuinfo model missing".to_owned())
     } else if cfg!(target_os = "windows") {
         env::var("PROCESSOR_IDENTIFIER")
@@ -1446,6 +1438,20 @@ fn host_cpu_model() -> String {
         command_version("sysctl", "-n hw.model")
             .unwrap_or_else(|| "unavailable: sysctl hw.model failed".to_owned())
     }
+}
+
+/// 从 Linux 的冒号分隔字段中提取 CPU 型号，兼容字段名后的空格和制表符。
+fn parse_cpu_model(text: &str) -> Option<String> {
+    text.lines().find_map(|line| {
+        let (key, value) = line.split_once(':')?;
+        let key = key.trim();
+        if key.eq_ignore_ascii_case("model name") || key.eq_ignore_ascii_case("hardware") {
+            let value = value.trim();
+            (!value.is_empty()).then(|| value.to_owned())
+        } else {
+            None
+        }
+    })
 }
 
 /// 10Z 驱动器内部实现声明。
@@ -1551,7 +1557,7 @@ mod tests {
 
     use super::{
         BenchmarkSpec, SideOutcome, compare_expected, java_version_matches, parse_cli,
-        parse_native_level, summarize_case_statuses, summarize_samples,
+        parse_cpu_model, parse_native_level, summarize_case_statuses, summarize_samples,
     };
 
     #[test]
@@ -1617,5 +1623,12 @@ mod tests {
         assert_eq!(summary.data_insufficient_cases, 2);
         assert_eq!(summary.total_cases, 2);
         assert_eq!(status, "failed");
+    }
+
+    #[test]
+    /// Linux CPU 字段在冒号前后使用制表符时仍应提取真实型号。
+    fn cpu_model_parser_accepts_linux_field_separators() {
+        let text = "processor\t: 0\nmodel name\t: 12th Gen Test CPU\n";
+        assert_eq!(parse_cpu_model(text).as_deref(), Some("12th Gen Test CPU"));
     }
 }
