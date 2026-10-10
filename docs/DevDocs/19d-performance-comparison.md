@@ -314,6 +314,105 @@ Linux/macOS 记「未测」；CI 记「诊断性」。阈值未冻结，报告�
 
 因此本批不宣布 19 收口。
 
+### O6 条件 1/3/4 欠格逐格盘点（10Z-Z3，2026-10-10）
+
+**本节只做盘点与分类**（把「部分」拆成格子），**不改状态判定**；上表的状态由 Z-4 终局对账刷新。
+上表仍标「截至 2026-10-07」——**该日期已过时**（B1、Y3、B 类裁定都是 10-10 的事），一并在 Z-4 处理。
+
+分类口径：**能补**（本批或可预期的环境内能补，写清怎么补）/ **需环境**（写清缺哪台机器或哪个作业）/
+**无法补**（写清为什么，结构性原因要指出）。
+
+#### 条件 1 —— 兼容矩阵：**18 格，13 格未验证**
+
+权威来源：`core/rust/crates/xiao-driver/src/compatibility.rs` 的 `compatibility_matrix()`。
+实测（审核读取枚举）：**18 格，其中 `CompatibilityEvidence::Unverified` 13 格**。
+代码自注：`Unverified` **只用于「当前没有对应产物字段或没有可复用真实解码入口」的格子**——
+即这是**诚实标注**，不是漏做。
+
+| 轴 | 格 | 证据 | 判定 |
+| --- | --- | --- | --- |
+| `XiaocFormat` | Direct / minor+1 Reject / major+1 Reject | **已验证 ×3** | 无欠格 |
+| `IndexSchema` | Direct / major+1 Reject | **已验证 ×2** | 无欠格 |
+| `IndexSchema` | minor+1 Reject | 未验证 | **能补**——权威解码器已在（major+1 那格就是它背书的），补一条次版本拒绝的真实入口即可 |
+| `XarFormat` | `implicit-v1` / `zip64-v1` Direct ×2 | 未验证 | **无法补（结构性）**——`.xar` **没有独立写入的容器版本字段**，没有可比对的字段。要补先得冻结该字段，属规格改动，**应单独立项** |
+| `RuntimeAbi` | Direct / `outside-supported-range` Reject ×2 | 未验证 | **能补（需先有真实入口）**——拒绝路径 `X17-XAR-007` 可做成例；「有入口」是前提 |
+| `IrVersion` | Direct / +1 Reject ×2 | 未验证 | **能补（同 RuntimeAbi）**——`X08-IR-002` 可做成例 |
+| `LanguageVersion` | Direct ×2（含 `0.2.0`） | 未验证 | **无法补（结构性）**——语言版本「**由请求上下文决定**」、**无门控**（代码自注），没有可验证的拒绝行为；补要先冻结语言版本门控，属规格改动 |
+| `OptimizationFingerprint` | Direct / Regenerate ×2 | 未验证 | **能补**——指纹变化会重新生成，可用真实产物对比（15E 已有该能力） |
+| `TargetPlatform` | Direct / Reject ×2 | 未验证 | 见下（目标支持表） |
+
+**目标支持表 6 个目标**（`target_support_matrix()`，**按宿主运行时计算**：非宿主一律 `Unverified`，
+理由字符串为「目标描述可构造；跨宿主实跑证据按平台工作流登记」）：
+
+| 目标 | 实际执行环境（实测） | 判定 |
+| --- | --- | --- |
+| `windows_x86_64` | 本机 + CI `windows-2025` | 能补（已在跑；宿主格自动 `Supported`） |
+| `linux_x86_64` | CI `ubuntu-24.04` + 裸机 Linux | 能补 |
+| `linux_aarch64` | CI `ubuntu-24.04-arm` | 能补 |
+| `macos_aarch64` | CI `macos-14` | 能补 |
+| **`macos_x86_64`** | **无**——CI 只有 `macos-14`（arm64） | **无法补**：除非加 Intel macOS runner，否则**该格永远 `Unverified`**；或明确把它降为「不支持并给出拒绝原因」 |
+| **`windows_aarch64`** | **无** | **无法补**：同上 |
+
+> **结构性说明（要紧）**：矩阵**按宿主运行时计算**，非宿主恒为 `Unverified`。
+> 所以「补齐矩阵」**不可能靠单一宿主完成**——正确做法是每个平台各自跑一遍（各自把自己那格变成 `Supported`）。
+> 本次盘点的价值就在把「**哪两个目标根本没有执行环境**」列出来（上表末两行）：
+> 这两格**不是没做，是做不了**；要么加 runner，要么改口径为「不支持」。
+
+#### 条件 3 —— 五子项 × 平台：**测试存在，但只在 Linux 上跑过**
+
+条件 3 要求「SHA-256 完整性验证、资源上限、路径安全、权限和离线缓存行为**在三平台一致**」。
+
+**子项与测试面（实测定位）**：
+
+| 子项 | 测试所在 |
+| --- | --- |
+| SHA-256 完整性 | `xiao-driver/tests/release_report.rs`、`xiao-package/tests/e1_cache.rs` |
+| 资源上限 / 路径安全 / 权限 | `xiao-driver/tests/cross_platform_release.rs`、`xiao-package/tests/{e1_cache,e2a_lockfile,e2b_sync,e3c_remote}.rs` |
+| 离线缓存 | `xiao-package/tests/{e3a_source,e3b_cache,e3c_remote}.rs` |
+
+**执行点（实测）与结论**：
+
+| 触发 | 跑什么 | 覆盖哪些 crate 的**默认**测试 |
+| --- | --- | --- |
+| push（`workspace-default-tests`，**Linux**） | `cargo test --workspace` | 全部（**但只在 Linux**） |
+| push（`security-maintenance`，ubuntu） | 精选 `-p` 目标 | xiao-artifacts / xiao-xar / 部分 xiao-driver |
+| push（`deterministic-size`，windows） | 仅 `artifact_size_regression` | 无 |
+| 周定时四平台（`reproduce.sh`） | `cargo test -p xiao-driver` + `cargo test --workspace -- --ignored` | 仅 xiao-driver 默认；**其余 crate 只跑被忽略的** |
+
+**结论（这是条件 3 真正的欠格）**：`xiao-package`（15 个测试文件）、`xiao-artifacts`、`xiao-i18n` 等的
+**默认测试在 Windows 与 macOS 上从未运行**——它们只在 Linux 的 push 作业里跑过。
+因此「**三平台一致**」目前**没有证据支撑**，不是「跑过但结果不同」，而是「**另外两个平台没跑**」。
+
+- 判定：**需环境（可补）**——把 `cargo test --workspace`（或至少上述几个 crate）接进
+  Windows 与 macOS 的执行点。可选：加进周定时的 `reproduce.sh` 门禁段（四个平台一起），
+  或按 10Z-CI覆盖2 的 P1 模式加作业。**代价是 CI 时长**，属要星崽定的取舍。
+- **窗口截图（`19.14` C 档）不在本条**——它是 Z-2 的裸机轮次，见 [10Z](10z-19-closeout-and-b-series-implementation.md) §2.3。
+
+#### 条件 4 —— 发布报告与白名单：**机制齐、执行点只有周定时、白名单只覆盖 ELF**
+
+| 组成 | 实测 |
+| --- | --- |
+| 白名单机制 | `xiao-codegen-llvm/src/reproducible.rs`：`ReproducibleDifference` 逐条带 `reason`；未被解释的差异进 `unexpected_differences` |
+| 实测入口 | `xiao-codegen-llvm/tests/15e_ci_gated.rs::real_artifact_reproducibility_is_byte_comparable`（**`#[ignore]`**）：同输入建两次、逐字节比 |
+| **白名单实际内容** | **只有 1 条，且只在 ELF**：`BinaryLayout`，理由「Linux LLVM 链接器对临时输入路径产生节布局差异；路径字段已逐条记录」。**COFF（Windows）与 Mach-O（macOS）的白名单为空 → 要求逐字节相同** |
+| 执行点 | **没有任何工作流/脚本按名字跑它**（实测 grep 为空）；它靠**周定时四平台的 `cargo test --workspace -- --ignored`** 带上 |
+
+- 判定：**能补（需逐条复核 + 留档）**——「完整三平台白名单复核」缺的不是机制，是
+  **把四个平台各自的 `15e` 输出按平台留档**，并明确「白名单为空」在 COFF/Mach-O 上是**结论**（逐字节相同）
+  还是**尚未遇到差异**。两者写法不同，不能混。
+- **`XarFormat` 与 `LanguageVersion` 那两类「无法补」不属本条**——它们是条件 1 的结构性欠格。
+
+#### 盘点结论
+
+| 条件 | 欠格性质 | 处置建议 |
+| --- | --- | --- |
+| **1** | 13/18 格未验证；其中**结构性无法补 4 格**（`XarFormat` ×2、`LanguageVersion` ×2）、**目标表 2 格无执行环境**（`macos_x86_64`、`windows_aarch64`）、其余 **能补** | 能补的排进后续批次；无法补的**在收口声明里显式写明「无法补 + 原因」**，不计入缺口 |
+| **3** | **两个平台的默认测试从未运行**，「三平台一致」无证据 | 需星崽定：把哪些 crate 的默认测试接进 Windows/macOS 执行点（涉 CI 时长） |
+| **4** | 机制齐；缺**按平台留档的逐条复核** | 能补，纯记录工作 |
+
+**因此条件 1/3/4 在 Z-4 里仍不能写「满足」**——但本盘点把它们从「部分」拆成了
+**可执行的格子 + 明确的无法补项**，Z-4 只需按上表填状态并写明覆盖边界。
+
 ## 十、相关页面
 
 - [19. 优化、兼容性与发布验收](19-optimization-release.md) —— 权威规范
