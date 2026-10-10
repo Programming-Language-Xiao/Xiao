@@ -169,6 +169,28 @@ DISPLAY / WAYLAND_DISPLAY / XDG_SESSION_TYPE：
 
 **只要结论不要原始输出的回传会被退回**——本项目此前多次栽在「只写摘要」上。
 
+### 6.1 ⚠ 新建的页面**必须至少有一条入链**（否则 PR 会被 CI 拦下）
+
+`docs/DevDocs/` 下**除 README 外每个 `.md` 页面都要能从主题索引到达**——这是 `A0-DOCS-001`
+的**孤立页规则**。没有入链时 `bun run check` 会退出 1，push 上去 `Linux workspace gates` **直接红**。
+
+**具体做法（沿用前两轮惯例）**：
+
+1. **results 与 log 互相链接**——各给一条指向对方的链接（只单向链的话，被链的那页有入链、
+   另一页就是孤立页）；
+2. 让**接收批次文档**也链过去（本轮的接收方是 [10Z-收尾](10z-closeout-execution.md)）；
+3. 截图放 `docs/DevDocs/assets/<轮次>/` 下，在 results 里用图片链接引用——
+   **图片本身不是 md 页面、不受孤立页规则约束**，但**引用它的那个 md 页面要能被链到**。
+
+**提交前请本地跑一次**：
+
+```bash
+bun run check
+```
+
+看到 `[error] A0-DOCS-001 … 页面没有入链` 就是这个问题。**别等 CI 报**——本地跑几秒钟，
+CI 要一两分钟，而且红的 PR 还得再走一轮。
+
 ## 七、先别做的事（本轮方案待定）
 
 **本轮的取数部分**有三种处置，**需要星崽先定**：
@@ -194,6 +216,10 @@ DISPLAY / WAYLAND_DISPLAY / XDG_SESSION_TYPE：
 ```text
 检出提交（git log --oneline -1）：
 本轮目标：19.14 C 档（Linux）
+
+== 提交前自检 ==
+bun run check 本地跑过吗（退出码）：          ← 见 §6.1，必须本地跑过
+results 与 log 互相链接了吗：是 / 否
 
 == 环境（跑之前落盘）==
 <粘贴 §五 的清单>
