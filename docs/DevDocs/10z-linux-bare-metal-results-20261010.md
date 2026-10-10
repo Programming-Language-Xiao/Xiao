@@ -4,6 +4,8 @@
 `69f6ff57f7bcafe87817eb61498735fbad89fbdd`。机器是 Ubuntu 裸机桌面环境，未使用
 WSL、Docker 或 Xvfb。
 
+原始命令输出见：[10Z Linux 窗口取证日志](10z-linux-bare-metal-log-20261010.md)。
+
 ## C 档判定
 
 判定：**通过**。
