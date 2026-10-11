@@ -1,0 +1,4 @@
+def square(int value) -> int
+    return value * value
+
+print(square(4000000000))
