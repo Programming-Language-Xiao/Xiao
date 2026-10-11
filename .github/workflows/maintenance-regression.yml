@@ -42,6 +42,11 @@ jobs:
       - name: Run default workspace tests
         run: cargo test --manifest-path core/rust/Cargo.toml --workspace
 
+      - name: Run benchmark workspace tests and driver self-test
+        run: |
+          cargo test --manifest-path tests/benchmarks/Cargo.toml
+          cargo run --quiet --manifest-path tests/benchmarks/Cargo.toml --bin performance_driver -- --self-test
+
   deterministic-size:
     name: Deterministic artifact size regression (Windows baseline)
     runs-on: windows-2025

@@ -4,6 +4,12 @@
 
 本次使用 Ubuntu 26.04.1 x86_64 裸机、Ubuntu OpenJDK 21.0.12、Clang 21 和 Rust 1.96.0。Java 21 通过本地解压的 apt 包提供，未修改系统安装。
 
+> **基线身份注记（10Z 收口审核）**：本报告在阈值冻结前生成，报告 JSON 中的
+> `baseline_id=java-temurin-openjdk-21`、`baseline_status=pending-controlled-run` 保留为当时的原始事实。
+> 阈值冻结后的最终基线身份以 `tests/benchmarks/baseline.json` 为准：
+> `java-temurin-openjdk-21-linux-20261011`，文件摘要为
+> `6017605e7669334e68355f445b27e2e02858a4251031e7a90f0da3a9ecf6f9d6`；归档 JSON 不重写。
+
 ## 判读
 
 - 顶层 `status`：`development-evidence`；

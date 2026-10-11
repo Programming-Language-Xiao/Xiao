@@ -66,7 +66,9 @@
   "threshold": {
     "status": "frozen",
     "allowed_error": 0.1,
-    "regression_limit": 0.1
+    "regression_limit": 0.1,
+    "rule": "原生/Java 中位数比值及其保守 percentile-bootstrap 区间必须不超过 1.0；allowed_error 只表示测量容忍预算，不放宽达到 Java 的判据",
+    "regression_rule": "后续同平台复测的原生/Java 比值相对本次冻结比值上升超过 10% 或超过 1.0 时判为回归"
   },
   "platforms": {
     "windows-native": "data-insufficient",

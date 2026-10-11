@@ -226,9 +226,11 @@ docs/DevDocs/README.md                                  10 系列状态与主表
 Linux 受控报告来自 [10Z 性能取数结果](10z-performance-measurement-results-20261011.md)，实际记录为
 4 个 `measured`、1 个 `data-insufficient`，基线 Java 为 OpenJDK 21.0.12.1。`baseline.json`
 已同步版本摘要 `090529cc57d5e09cfeca2aab50e770ab397b6d26d0382b67e2b4e2fd91a40c41`，
-基线文件摘要为 `5df18ed7272b49d3d869201fdbfdaa9450fd8ad21bcde3bdd64af4bb62eb9fe0`。
+基线文件摘要为 `6017605e7669334e68355f445b27e2e02858a4251031e7a90f0da3a9ecf6f9d6`。
 
-阈值已冻结为 `allowed_error = 0.10`、`regression_limit = 0.10`。依据是现有性能政策的 10% 误差/回归预算，
+阈值已冻结为 `allowed_error = 0.10`、`regression_limit = 0.10`。本批针对「原生/Java」新定的达标判据是
+中位数比值及其保守 bootstrap 区间**不超过 1.0**；`allowed_error` 只表示测量容忍预算，不放宽达到 Java 的判据，
+`regression_limit` 表示后续同平台复测相对本次冻结比值上升超过 10% 即判回归。
 且 Linux 四个可比工作负载的原生/Java 中位数比值为 `0.048192`、`0.093170`、`0.023792`、`0.067172`，
 保守 bootstrap 比值区间分别为 `[0.041863, 0.056535]`、`[0.067597, 0.114699]`、
 `[0.021863, 0.026000]`、`[0.062545, 0.078737]`。计时包含整进程启动与运行时初始化，主机负载和后台进程已记录，

@@ -4,7 +4,7 @@
   "status": "data-insufficient",
   "baseline": {
     "path": "tests/benchmarks/baseline.json",
-    "sha256": "5df18ed7272b49d3d869201fdbfdaa9450fd8ad21bcde3bdd64af4bb62eb9fe0",
+    "sha256": "6017605e7669334e68355f445b27e2e02858a4251031e7a90f0da3a9ecf6f9d6",
     "java": "Temurin/OpenJDK 21.0.12.1",
     "jvm_args_fixed": true,
     "native_optimizer": "clang -O2",
@@ -20,7 +20,7 @@
   "platforms": {
     "windows-native": {
       "status": "data-insufficient",
-      "reason": "无专用 Windows 受控性能主机；保留历史原生探测，不以开发机数字替代"
+      "reason": "尚未在专用 Windows 受控性能主机取得 Java/Xiao 基线，故性能数据不足；保留历史原生探测，不以开发机数字替代"
     },
     "linux": {
       "status": "measured",
@@ -155,7 +155,8 @@
     "regression_limit": 0.1,
     "basis": {
       "controlled_run": "Linux 2026-10-11；Ubuntu 26.04.1 裸机；OpenJDK 21.0.12.1",
-      "rule": "原生/Java 中位数比值及保守 percentile-bootstrap 比值区间均须低于 1.10；VM 比值仅作诊断",
+      "rule": "原生/Java 中位数比值及保守 percentile-bootstrap 比值区间均须不超过 1.0；allowed_error 只表示测量容忍预算，不放宽达到 Java 的判据；VM 比值仅作诊断",
+      "regression_rule": "后续同平台复测的原生/Java 比值相对本次冻结比值上升超过 10% 或超过 1.0 时判为回归",
       "error_sources": [
         "计时包含进程启动与运行时初始化",
         "已记录主机负载与后台进程",

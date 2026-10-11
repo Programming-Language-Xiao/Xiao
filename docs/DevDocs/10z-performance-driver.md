@@ -185,18 +185,19 @@
 
 | 有证据能力 | 自动执行点 |
 | --- | --- |
-| 驱动器的 `#[cfg(test)] mod tests` | **无** |
-| 驱动器的 `--self-test`（输出 `bootstrap_byte_identical` 与 `semantic_guard_rejects_wrong_value`） | **无** |
-| 09R3 设施 `tests/benchmarks/src/main.rs` 的测试 | **无**（**先前欠账**，非本批引入） |
+| 驱动器的 `#[cfg(test)] mod tests` | `maintenance-regression.yml` 的 benchmark 工作区测试（修复后执行点） |
+| 驱动器的 `--self-test`（输出 `bootstrap_byte_identical` 与 `semantic_guard_rejects_wrong_value`） | `maintenance-regression.yml` 的同一 Linux 作业（修复后执行点） |
+| 09R3 设施 `tests/benchmarks/src/main.rs` 的测试 | 同一 `cargo test --manifest-path tests/benchmarks/Cargo.toml` 执行点；此前欠账非本批引入 |
 
-注：`maintenance-regression.yml` 的 `workspace-default-tests` 跑的是
-`cargo test --manifest-path **core/rust**/Cargo.toml --workspace`——**不含** `tests/benchmarks`。
+注：`maintenance-regression.yml` 的 `workspace-default-tests` 同时保留
+`cargo test --manifest-path core/rust/Cargo.toml --workspace`，并新增独立的
+`tests/benchmarks/Cargo.toml` 测试与 `--self-test`；两者工作区边界不混合。
 
 **冻结**：
 
 1. **必须接上执行点**：把 `cargo test --manifest-path tests/benchmarks/Cargo.toml` 接进
-   [tools/gates/run.sh](../../tools/gates/run.sh)——它已被 `workspace-gates.yml`（push）
-   与 `reproduce.sh`（周定时四平台）**都调用**，是现成的执行点；
+   [tools/gates/run.sh](../../tools/gates/run.sh)，并在 `maintenance-regression.yml` 的
+   `tests/benchmarks/**` 触发路径下直接执行；周定时 `reproduce.sh` 仍复用 `run.sh`；
 2. **`--self-test` 不能留在无人跑的状态**：它输出的两项正是 D1 与 D3 的硬证据。
    把它**并进同一执行点**，或写成单元测试由 `cargo test` 带上——二者选一；
 3. **接上之后要证明它真的在跑**：临时破坏一个期望值/断言，确认门禁**变红**，再恢复并确认转绿。
@@ -329,10 +330,10 @@ docs/DevDocs/README.md                             主表登记
   顶层 `status` 仅在 `measured_cases > 0` 且无未知状态且计数自洽时为 `development-evidence`，否则 `failed`。
   审核**做了独立故障注入**——把 `measured_cases > 0` 改回 `true`（即重新引入当初那个缺陷），
   单元测试 `all_data_insufficient_cases_are_a_failed_report` **FAILED**；还原后 6 个测试全绿。
-- **D7 已完成**：`tools/gates/run.sh` 加了 `cargo test --manifest-path tests/benchmarks/Cargo.toml`
-  与 `--self-test` 两条；审核实跑完整 `run.sh` **退出码 0、171 秒**。推送后 CI 日志证实
-  **`performance_driver.rs` 与 `src/main.rs` 的单元测试都跑起来了**、`--self-test` 也执行了
-  （两项 `true`）——**09R3 设施那笔「测试无执行点」的先前欠账一并还清**。
+- **D7 已接入执行点**：`tools/gates/run.sh` 加了 `cargo test --manifest-path tests/benchmarks/Cargo.toml`
+  与 `--self-test` 两条；`maintenance-regression.yml` 的 Linux 默认测试作业也直接执行这两条，
+  且该工作流的 `tests/benchmarks/**` 路径过滤已覆盖。此前只改 `tests/benchmarks/**` 不会触发
+  `workspace-gates.yml` 的事实已登记为审核返工；本次尚未取得修复后 GitHub 推送运行号，不能把本地门禁当作 CI 事实。
 - **取数已执行（2026-10-11，[PR #6](https://github.com/Programming-Language-Xiao/Xiao/pull/6)）**：受控主机 Ubuntu 26.04.1 裸机
   （`virt=none`、i5-12450H、14 GiB，与 C 档同一台），Temurin/OpenJDK **21.0.12**。审核核对报告 JSON 与人工清单，
   逐项对上：协议与冻结值一致、`byte_identical=true`、`summary = 5/4/1`、顶层 `status=development-evidence`
