@@ -164,16 +164,33 @@ fn native_capability_probe_records_each_module() {
         let run = NativeRun::new(&native.native)
             .run()
             .expect("已链接的原生产物应能启动");
-        if id == "strings-path" {
-            println!(
-                "20C-PROBE module={id} path=llvm-native layer=process status={:?} stdout={:?} stderr={:?}",
-                run.status, run.stdout, run.stderr
-            );
-        } else {
-            println!(
-                "20C-PROBE module={id} path=llvm-native layer=process status={:?} stderr={:?}",
-                run.status, run.stderr
-            );
+        match id {
+            "strings-path" => {
+                assert_eq!(run.status, Some(0), "字符串/路径原生进程失败：{run:?}");
+                assert_eq!(run.stdout, "lib/core\n");
+                assert!(
+                    run.stderr.is_empty(),
+                    "成功路径不应输出 stderr：{}",
+                    run.stderr
+                );
+                println!(
+                    "20C-PROBE module={id} path=llvm-native layer=process status={:?} stdout={:?} stderr={:?}",
+                    run.status, run.stdout, run.stderr
+                );
+            }
+            "arithmetic-error" => {
+                assert_eq!(run.status, Some(3), "算术/错误原生进程状态不一致：{run:?}");
+                assert!(
+                    run.stderr.contains("X06-RUNTIME-009"),
+                    "原生 stderr 缺少稳定溢出错误码：{}",
+                    run.stderr
+                );
+                println!(
+                    "20C-PROBE module={id} path=llvm-native layer=process status={:?} stderr={:?}",
+                    run.status, run.stderr
+                );
+            }
+            _ => unreachable!("探测清单含未知模块"),
         }
     }
     let _ = fs::remove_dir_all(root);

@@ -252,7 +252,7 @@ baseline_status = "pending-controlled-run"
 上述「已核销」只表示本审核项的文档或执行点已落地，不改变 10Z 收口声明中
 T4 受控复跑、B1 成对实验、Z-4 和 O6 条件缺口的原判定。
 
-## 三、落点
+## 四、落点
 
 ```text
 docs/DevDocs/19d-performance-comparison.md               F-1 状态块第 11–12 行；F-5 §2.5 补口径扩用一句
@@ -265,7 +265,7 @@ docs/DevDocs/10z-performance-measurement-results-*.md     F-4 注记（选甲时
 docs/DevDocs/10z-performance-driver.md                   F-3 D7 实施记录补「触发路径」一句，并改正原「已完成」的表述
 ```
 
-## 四、验收
+## 五、验收
 
 1. **F-1**：19D 顶部状态块**内部无矛盾**，且与 §2.4、§落点、README 主表三处同口径；
 2. **F-2**：`baseline.json` 单独打开就能说清两个数各是什么的上限；依据的出处要么正确、要么标明是新定判据；
@@ -276,7 +276,7 @@ docs/DevDocs/10z-performance-driver.md                   F-3 D7 实施记录补�
 5. **F-5**：19D §2.5 有一句授权性说明；`windows-native` 的理由文字与标签同口径；
 6. **通用**：`bun run check` 退出码 0；提交标题带类型前缀、正文非空。
 
-## 五、已定决策与仍待补证
+## 六、已定决策与仍待补证
 
 1. **F-2 的达标线**：星崽已裁定采用 A，判据为 `≤ 1.0`；`allowed_error` 只表示测量容忍预算，
    不放宽达到 Java 的发布判据。
