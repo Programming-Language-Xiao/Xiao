@@ -1,1 +1,2 @@
 tests/benchmarks/baseline.json text eol=lf
+*.xiao text eol=lf
