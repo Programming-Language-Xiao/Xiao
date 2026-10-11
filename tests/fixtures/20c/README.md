@@ -6,6 +6,8 @@
 | --- | --- | --- |
 | `strings-path.xiao` | 字符串拼接形成相对路径 | VM 与 LLVM 原生输出 `lib/core` |
 | `arithmetic-error.xiao` | 函数算术、运行期整数溢出与错误路径 | VM 保留 `X06-RUNTIME-009`；原生结果按实际后端/链接/进程状态记录 |
+| `strings-path-representative.xiao` | 路径字符串的条件、循环和索引 | VM 与 LLVM 原生输出 `c` |
+| `arithmetic-representative.xiao` | 除法、取模、数字转文本和字符串拼接 | VM/LLVM 在类型层拒绝 `X02-TYPE-006`（当前不支持 `int` 到 `str` 转换） |
 
 夹具由 `core/rust/crates/xiao-driver/tests/c20_capability_probe.rs` 读取。这里不添加
 intrinsic、不绕过类型检查，也不把探测结果当作官方库接口承诺。

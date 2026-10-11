@@ -17,6 +17,21 @@ const PROBES: [(&str, &str, Option<&str>); 2] = [
     ("arithmetic-error", "arithmetic-error.xiao", None),
 ];
 
+const REPRESENTATIVE_PROBES: [(&str, &str, Option<&str>, Option<&str>); 2] = [
+    (
+        "strings-path-representative",
+        "strings-path-representative.xiao",
+        Some("c\n"),
+        None,
+    ),
+    (
+        "arithmetic-representative",
+        "arithmetic-representative.xiao",
+        None,
+        Some("X02-TYPE-006"),
+    ),
+];
+
 fn repository_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .ancestors()
@@ -48,8 +63,17 @@ fn vm_output(outcome: &DriverOutcome) -> String {
         .collect()
 }
 
+fn first_frontend_code(error: &xiao_driver::FrontendError) -> &str {
+    error
+        .diagnostics()
+        .iter()
+        .find(|diagnostic| diagnostic.is_error())
+        .or_else(|| error.diagnostics().first())
+        .map_or("<none>", |diagnostic| diagnostic.code())
+}
+
 #[test]
-/// 两个探测夹具必须先经过完整前端，再在 VM 中给出可复核的结果或错误码。
+/// 两个最小夹具和代表性操作夹具必须给出可复核的 VM 结果或前端错误码。
 fn vm_capability_probe_records_each_module() {
     let compiler = FrontendCompiler::new();
     for (id, file, expected_output) in PROBES {
@@ -79,6 +103,34 @@ fn vm_capability_probe_records_each_module() {
             }
             _ => unreachable!("探测清单含未知模块"),
         }
+    }
+    for (id, file, expected_output, expected_code) in REPRESENTATIVE_PROBES {
+        let path = fixture_path(file);
+        let request = source_request(&path);
+        let artifact = match compiler.compile(&request) {
+            Ok(artifact) => artifact,
+            Err(error) => {
+                assert_eq!(
+                    Some(first_frontend_code(&error)),
+                    expected_code,
+                    "代表性探测的前端错误身份不一致：{id}"
+                );
+                println!(
+                    "20C-PROBE module={id} path=vm layer=type code={}",
+                    first_frontend_code(&error)
+                );
+                continue;
+            }
+        };
+        let expected_output = expected_output.expect("成功代表性探测应有输出");
+        let outcome = xiao_driver::FrontendVmDriver::new()
+            .run_artifact(&artifact, &DriverRequest::new(request));
+        assert!(outcome.is_success(), "代表性探测失败：{id} {outcome:?}");
+        assert_eq!(vm_output(&outcome), expected_output);
+        println!(
+            "20C-PROBE module={id} path=vm result=success output={:?}",
+            expected_output
+        );
     }
 }
 
@@ -192,6 +244,72 @@ fn native_capability_probe_records_each_module() {
             }
             _ => unreachable!("探测清单含未知模块"),
         }
+    }
+    for (id, file, expected_output, expected_code) in REPRESENTATIVE_PROBES {
+        let path = fixture_path(file);
+        let request = source_request(&path);
+        let artifact = match compiler.compile(&request) {
+            Ok(artifact) => artifact,
+            Err(error) => {
+                let code = first_frontend_code(&error);
+                assert_eq!(
+                    Some(code),
+                    expected_code,
+                    "代表性原生探测错误身份不一致：{id}"
+                );
+                println!("20C-PROBE module={id} path=llvm-native layer=frontend code={code}");
+                continue;
+            }
+        };
+        let expected_output = expected_output.expect("成功代表性探测应有输出");
+        assert!(
+            expected_code.is_none(),
+            "成功代表性探测不应声明前端错误：{id}"
+        );
+        let output = root.join(if cfg!(windows) {
+            format!("{id}.exe")
+        } else {
+            id.to_owned()
+        });
+        let native_request =
+            NativeBuildRequest::new(request, target.clone(), toolchain.clone(), output);
+        let native = match FrontendNativeDriver::new().build_artifact(&artifact, &native_request) {
+            Ok(native) => native,
+            Err(error) => {
+                match error {
+                    NativeDriverError::Frontend(frontend) => {
+                        let code = frontend
+                            .diagnostics()
+                            .iter()
+                            .find(|diagnostic| diagnostic.is_error())
+                            .or_else(|| frontend.diagnostics().first())
+                            .map_or("<none>", |diagnostic| diagnostic.code());
+                        println!(
+                            "20C-PROBE module={id} path=llvm-native layer=frontend code={code}"
+                        );
+                    }
+                    NativeDriverError::Backend(backend) => {
+                        println!(
+                            "20C-PROBE module={id} path=llvm-native layer=backend detail={backend}"
+                        );
+                    }
+                }
+                continue;
+            }
+        };
+        let run = NativeRun::new(&native.native)
+            .run()
+            .expect("已链接的代表性原生产物应能启动");
+        assert_eq!(run.status, Some(0), "代表性原生进程失败：{id} {run:?}");
+        assert_eq!(run.stdout, expected_output);
+        assert!(
+            run.stderr.is_empty(),
+            "代表性成功路径不应输出 stderr：{run:?}"
+        );
+        println!(
+            "20C-PROBE module={id} path=llvm-native layer=process status={:?} stdout={:?} stderr={:?}",
+            run.status, run.stdout, run.stderr
+        );
     }
     let _ = fs::remove_dir_all(root);
 }

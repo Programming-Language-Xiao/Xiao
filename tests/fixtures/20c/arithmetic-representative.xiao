@@ -1,0 +1,6 @@
+def decimal_pair(int value) -> str
+    tens = value // 10
+    ones = value % 10
+    return (tens as str) + (ones as str)
+
+print(decimal_pair(42))

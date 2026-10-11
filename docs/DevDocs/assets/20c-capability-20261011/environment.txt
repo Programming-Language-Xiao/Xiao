@@ -4,6 +4,6 @@ target=x86_64-pc-windows-msvc
 rustc=1.96.0 (ac68faa20 2026-05-25)
 llvm=22.1.2
 clang=22.1.2 (MSYS2 UCRT64)
-fixtures=tests/fixtures/20c/strings-path.xiao,tests/fixtures/20c/arithmetic-error.xiao
+fixtures=tests/fixtures/20c/strings-path.xiao,tests/fixtures/20c/arithmetic-error.xiao,tests/fixtures/20c/strings-path-representative.xiao,tests/fixtures/20c/arithmetic-representative.xiao
 vm_command=cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test c20_capability_probe -- --nocapture
 native_command=cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test c20_capability_probe -- --ignored --nocapture

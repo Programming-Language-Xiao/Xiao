@@ -1,4 +1,8 @@
 20C-PROBE module=strings-path path=vm result=success output=lib/core
 20C-PROBE module=arithmetic-error path=vm layer=runtime code=X06-RUNTIME-009
+20C-PROBE module=strings-path-representative path=vm result=success output="c\n"
+20C-PROBE module=arithmetic-representative path=vm layer=type code=X02-TYPE-006
 20C-PROBE module=strings-path path=llvm-native layer=process status=Some(0) stdout="lib/core\n" stderr=""
 20C-PROBE module=arithmetic-error path=llvm-native layer=process status=Some(3) stderr="X11-DIAGNOSTIC-CHANNEL-001: 诊断事件没有已建立的会话\nxiao-error class=recoverable code=X06-RUNTIME-009 message_id=runtime.numeric_overflow params={\"message\": Text(\"int 运算溢出\")} span=40..53 exit_code=3\nerror [X06-RUNTIME-009]: int 运算溢出\nat bytes 40..53\n"
+20C-PROBE module=strings-path-representative path=llvm-native layer=process status=Some(0) stdout="c\n" stderr=""
+20C-PROBE module=arithmetic-representative path=llvm-native layer=frontend code=X02-TYPE-006

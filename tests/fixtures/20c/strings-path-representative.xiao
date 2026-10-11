@@ -1,0 +1,10 @@
+def choose_segment(str base, str leaf) -> str
+    combined = base + "/" + leaf
+    if combined[0] == "l"
+        index = 0
+        while index != 4
+            index = index + 1
+        return combined[4]
+    return "?"
+
+print(choose_segment("lib", "core"))
