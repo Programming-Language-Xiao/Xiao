@@ -40,10 +40,10 @@ Z-3（欠格逐格盘点）**完成**、**Z-4 未开始**。
 
 | # | 内容 | 依据 |
 | --- | --- | --- |
-| T1 | **阈值尚未冻结**（`threshold` 三项 + 冻结依据 + 同步 `baseline_id`/sha256） | [10Z-驱动](10z-performance-driver.md) D5 第 4 条；星崽裁定「取数完立即冻结」 |
-| T2 | `baseline.json` **未按实测回填**（`status`、`resolved_version`、`version_text_sha256`、各 workload `performance_status`、`platforms.linux`） | 同上 D5 第 1 条 |
-| T3 | **`container-dense` 据实改判**：Linux 上已 `measured`，而条目理由写的是「**Windows** native probe rejected numeric_range」——要改掉并**写明平台差异** | 星崽 2026-10-10 裁定 |
-| T4 | **`host_cpu_model()` 缺陷**：在有 CPU 型号的 Linux 机器上返回 `unavailable`（很可能是 `/proc/cpuinfo` 用**制表符**而代码匹配字面量 `"model name:"`） | [10Z-驱动](10z-performance-driver.md) 实施记录 |
+| T1 | **已完成**：阈值冻结为 `allowed_error=0.10`、`regression_limit=0.10`，依据已写入报告与本声明，baseline SHA 已同步 | [10Z-驱动](10z-performance-driver.md) D5 第 4 条 |
+| T2 | **已完成**：`baseline.json` 已回填版本摘要、各 workload 状态和 `platforms.linux` | [10Z-驱动](10z-performance-driver.md) D5 第 1 条 |
+| T3 | **已完成**：`container-dense` 已改为 Linux 可比实测，并保留 Windows `numeric_range` 观察为平台差异 | 星崽 2026-10-10 裁定 |
+| T4 | **代码已修，受控复跑未完成**：Linux CPU 型号字段已兼容制表符；修复前/后的同机受控输出仍待补 | [10Z-驱动](10z-performance-driver.md) 实施记录 |
 
 **外加一笔判定**：**B1 的释放性质**（泄漏还是追踪口径）——已收窄到「原生调用点的实参/临时槽组合」
 （Runtime 入口本身已由 [10Z-Z1](10z-z1-scope-and-gap-verdict.md) §三 末尾的夹具证明能归零），仍待成对实验。
