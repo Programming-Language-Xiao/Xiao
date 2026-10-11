@@ -12,6 +12,7 @@ on:
       - "tsconfig.json"
       - "tsconfig.*"
       - "core/rust/rust-toolchain.toml"
+      - ".gitattributes"
   pull_request:
     paths:
       - ".github/workflows/workspace-gates.yml"
@@ -23,6 +24,7 @@ on:
       - "tsconfig.json"
       - "tsconfig.*"
       - "core/rust/rust-toolchain.toml"
+      - ".gitattributes"
   workflow_dispatch:
 
 permissions:

@@ -8,6 +8,7 @@ on:
       - "tests/fuzz/**"
       - "tests/benchmarks/**"
       - "tests/fixtures/**"
+      - ".gitattributes"
   pull_request:
     paths:
       - ".github/workflows/maintenance-regression.yml"
@@ -15,6 +16,7 @@ on:
       - "tests/fuzz/**"
       - "tests/benchmarks/**"
       - "tests/fixtures/**"
+      - ".gitattributes"
   workflow_dispatch:
 
 permissions:
