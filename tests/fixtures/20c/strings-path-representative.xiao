@@ -1,10 +1,9 @@
-def choose_segment(str base, str leaf) -> str
+def find_separator(str base, str leaf) -> str
     combined = base + "/" + leaf
-    if combined[0] == "l"
-        index = 0
-        while index != 4
-            index = index + 1
-        return combined[4]
-    return "?"
+    marker = "?"
+    for c in combined
+        if c == "/"
+            marker = c
+    return marker
 
-print(choose_segment("lib", "core"))
+print(find_separator("lib", "core"))

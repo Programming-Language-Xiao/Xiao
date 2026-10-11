@@ -17,12 +17,18 @@ const PROBES: [(&str, &str, Option<&str>); 2] = [
     ("arithmetic-error", "arithmetic-error.xiao", None),
 ];
 
-const REPRESENTATIVE_PROBES: [(&str, &str, Option<&str>, Option<&str>); 2] = [
+const REPRESENTATIVE_PROBES: [(&str, &str, Option<&str>, Option<&str>); 3] = [
     (
         "strings-path-representative",
         "strings-path-representative.xiao",
-        Some("c\n"),
+        Some("/\n"),
         None,
+    ),
+    (
+        "strings-index-boundary",
+        "strings-index-boundary.xiao",
+        None,
+        Some("X03-TYPE-003"),
     ),
     (
         "arithmetic-representative",
@@ -275,27 +281,7 @@ fn native_capability_probe_records_each_module() {
             NativeBuildRequest::new(request, target.clone(), toolchain.clone(), output);
         let native = match FrontendNativeDriver::new().build_artifact(&artifact, &native_request) {
             Ok(native) => native,
-            Err(error) => {
-                match error {
-                    NativeDriverError::Frontend(frontend) => {
-                        let code = frontend
-                            .diagnostics()
-                            .iter()
-                            .find(|diagnostic| diagnostic.is_error())
-                            .or_else(|| frontend.diagnostics().first())
-                            .map_or("<none>", |diagnostic| diagnostic.code());
-                        println!(
-                            "20C-PROBE module={id} path=llvm-native layer=frontend code={code}"
-                        );
-                    }
-                    NativeDriverError::Backend(backend) => {
-                        println!(
-                            "20C-PROBE module={id} path=llvm-native layer=backend detail={backend}"
-                        );
-                    }
-                }
-                continue;
-            }
+            Err(error) => panic!("代表性原生构建失败：{id} {error}"),
         };
         let run = NativeRun::new(&native.native)
             .run()
