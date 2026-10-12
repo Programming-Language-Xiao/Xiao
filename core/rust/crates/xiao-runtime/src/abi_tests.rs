@@ -700,10 +700,36 @@ fn diagnostic_session_forwards_events_and_closes() {
     );
     assert_eq!(std::env::var_os("XIAO_DIAGNOSTICS_TOKEN"), previous_token);
 
+    // 普通运行没有诊断会话；事件不适用且不应把本地错误报告升级成失败。
     assert_eq!(
         xiao_runtime_diagnostic_event(&abi_event),
-        XiaoAbiStatus::RuntimeError.code()
+        XiaoAbiStatus::Ok.code()
     );
+}
+
+#[test]
+/// 普通错误报告只写本地报告，不在没有握手会话时激活诊断事件通道。
+fn ordinary_error_report_does_not_activate_diagnostic_sink() {
+    let _lock = diagnostic_test_lock();
+    xiao_runtime_diagnostic_finish();
+    xiao_runtime_error_clear();
+    assert_eq!(
+        xiao_runtime_error_raise_type(
+            bytes("ArithmeticError"),
+            bytes("X06-RUNTIME-009"),
+            bytes("overflow"),
+            XiaoAbiErrorLocation::from_span(XiaoAbiSpan { start: 4, end: 9 }),
+        ),
+        XiaoAbiStatus::Ok.code()
+    );
+    xiao_runtime_error_report();
+    assert!(
+        diagnostic_event_sink()
+            .lock()
+            .expect("诊断事件入口锁")
+            .is_none()
+    );
+    xiao_runtime_error_clear();
 }
 
 #[test]

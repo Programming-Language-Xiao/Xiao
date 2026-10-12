@@ -84,6 +84,43 @@ struct RuntimeDiagnosticSession {
     metrics: DiagnosticMetrics,
 }
 
+/// 已完成握手的诊断事件发送入口。
+///
+/// 用函数指针把普通错误报告与诊断事件实现解耦：未启用 `-debug` 时，静态产物不会
+/// 因为本地错误报告而形成对诊断事件对象和网络库的链接引用。
+type DiagnosticEventSink = extern "C" fn(*const XiaoAbiDiagnosticEvent) -> i32;
+
+/// 当前已完成握手的诊断事件入口；普通产物保持为空。
+fn diagnostic_event_sink() -> &'static Mutex<Option<DiagnosticEventSink>> {
+    static SINK: OnceLock<Mutex<Option<DiagnosticEventSink>>> = OnceLock::new();
+    SINK.get_or_init(|| Mutex::new(None))
+}
+
+/// 登记已完成握手的诊断事件入口。
+pub(crate) fn register_diagnostic_event_sink(sink: DiagnosticEventSink) {
+    if let Ok(mut current) = diagnostic_event_sink().lock() {
+        *current = Some(sink);
+    }
+}
+
+/// 清除诊断事件入口，避免下一次普通运行继承旧会话。
+pub(crate) fn clear_diagnostic_event_sink() {
+    if let Ok(mut current) = diagnostic_event_sink().lock() {
+        *current = None;
+    }
+}
+
+/// 仅在诊断会话已经完成握手时转交事件。
+fn emit_diagnostic_event(event: &XiaoAbiDiagnosticEvent) {
+    let sink = diagnostic_event_sink()
+        .lock()
+        .ok()
+        .and_then(|current| *current);
+    if let Some(sink) = sink {
+        let _ = sink(event as *const XiaoAbiDiagnosticEvent);
+    }
+}
+
 /// 原生调试会话只允许有一个拥有者；普通产物不会创建它。
 fn diagnostic_session() -> &'static Mutex<Option<RuntimeDiagnosticSession>> {
     static SESSION: OnceLock<Mutex<Option<RuntimeDiagnosticSession>>> = OnceLock::new();
@@ -125,6 +162,7 @@ fn restore_diagnostic_environment(session: &RuntimeDiagnosticSession) {
 
 /// 丢弃尚未完成或已经中断的会话，并恢复其进程环境。
 fn discard_diagnostic_session(session: &mut Option<RuntimeDiagnosticSession>) {
+    clear_diagnostic_event_sink();
     if let Some(session) = session.take() {
         restore_diagnostic_environment(&session);
     }
@@ -1317,7 +1355,7 @@ fn write_runtime_report(class: &str, report: &ReportRecord, locale: String, exit
                 })
             }),
     };
-    let _ = xiao_runtime_diagnostic_event(&event);
+    emit_diagnostic_event(&event);
     let _ = std::io::stderr().write_all(line.as_bytes());
 }
 

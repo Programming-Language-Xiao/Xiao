@@ -13,9 +13,9 @@ use xiao_diagnostics::window::{
 use xiao_runtime_abi::{XiaoAbiDiagnosticEvent, XiaoAbiStatus};
 
 use super::{
-    RuntimeDiagnosticSession, current_locale, diagnostic_session, diagnostic_session_token,
-    diagnostic_start_failure, discard_diagnostic_session, restore_diagnostic_environment,
-    send_diagnostic_message, utf8,
+    RuntimeDiagnosticSession, clear_diagnostic_event_sink, current_locale, diagnostic_session,
+    diagnostic_session_token, diagnostic_start_failure, discard_diagnostic_session,
+    register_diagnostic_event_sink, restore_diagnostic_environment, send_diagnostic_message, utf8,
 };
 
 /// 为动态原生产物建立本机诊断监听端点；不查找目录，也不执行本地化。
@@ -129,7 +129,10 @@ pub extern "C" fn xiao_runtime_diagnostic_ready() -> i32 {
         }
     })();
     match result {
-        Ok(status) => status,
+        Ok(status) => {
+            register_diagnostic_event_sink(xiao_runtime_diagnostic_event);
+            status
+        }
         Err(message) => {
             discard_diagnostic_session(&mut session);
             diagnostic_start_failure(message)
@@ -161,8 +164,8 @@ pub extern "C" fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticE
         Err(_) => return XiaoAbiStatus::RuntimeError.code(),
     };
     let Some(session) = session.as_mut() else {
-        eprintln!("X11-DIAGNOSTIC-CHANNEL-001: 诊断事件没有已建立的会话");
-        return XiaoAbiStatus::RuntimeError.code();
+        // 普通运行没有诊断会话；本地错误报告已经完成，事件在这里不适用。
+        return XiaoAbiStatus::Ok.code();
     };
     if session.stream.is_none() {
         eprintln!("X11-DIAGNOSTIC-CHANNEL-001: 诊断事件没有已建立的通道");
@@ -223,6 +226,7 @@ pub extern "C" fn xiao_runtime_diagnostic_event(event: *const XiaoAbiDiagnosticE
 /// 发送最终指标并关闭原生诊断会话；普通产物调用不到此入口。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_diagnostic_finish() {
+    clear_diagnostic_event_sink();
     let Ok(mut session) = diagnostic_session().lock() else {
         return;
     };

@@ -244,6 +244,8 @@ docs/DevDocs/19b-*.md                         R5：统一 D3、D4 的记录；�
 - **19.14 C 档**：Linux Ubuntu 裸机复跑已成功（提交 `74b272d70bde3eaeb9f8619426a5bc0594f6cfcd`，未使用 Xvfb），但终端窗口仅闪现、无截图，开窗仍未验证；macOS 缺桌面宿主且 CI 显式跳过真实终端，LaunchServices/窗口仍未验证。窗口后续必须用真实 `xiao run -debug` 程序取证。
   **（2026-10-10 更新）Linux 那一格已通过**：真实 `xiao run -debug` 的窗口确实出现并保持、两张截图归档，检出 `69f6ff5`，成功环境为 Ubuntu 26.04.1 裸机（`virtualization: none`）+ **Wayland** + **`x-terminal-emulator → /usr/bin/terminator`**；证据见 [10Z Linux 结果](10z-linux-bare-metal-results-20261010.md)（PR #5 合并 `efa9fd2`）。
   **前两轮「测试 ok 但无窗口」由此有了可比对照**——上面那组环境就是成功的那一组。macOS 一格仍为**不可验证**（无宿主、CI 显式跳过真实终端）。
+- **10R-D1 同步（2026-10-12）**：普通错误报告只保留本地报告，不因没有调试会话发送诊断事件；
+  完成握手的 `-debug` 会话仍发送事件，握手后的通信失败仍按原规则报告。
 
 ### 当前剩余待决事项
 
