@@ -618,6 +618,83 @@ fn lowers_dynamic_error_constructor_arguments_to_runtime_abi() {
 }
 
 #[test]
+/// 函数参数作为错误构造参数时必须借用函数帧槽，不能误取外层同名绑定。
+fn function_error_constructor_borrows_parameter_slots() {
+    let parameter = |text: &str| IrParameter {
+        name: name(text),
+        kind: "positional".to_owned(),
+        ty: IrType::Scalar {
+            name: "str".to_owned(),
+        },
+        default: None,
+        span: span(),
+    };
+    let argument = |text: &str| xiao_ir::IrCallArgument {
+        kind: "positional".to_owned(),
+        name: Some(name(text)),
+        value: IrExpression {
+            kind: IrExpressionKind::Name { name: name(text) },
+            ty: IrType::Scalar {
+                name: "str".to_owned(),
+            },
+            span: span(),
+        },
+        span: span(),
+    };
+    let error = error_constructor_with_arguments(12, vec![argument("code"), argument("message")]);
+    let program = IrProgram::new(
+        IrEntryMode::Script,
+        vec![
+            IrStatement {
+                kind: IrStatementKind::Assignment {
+                    target: name("code"),
+                    value: literal("str", "\"outer\"", "str"),
+                },
+                span: span(),
+                leading_docs: Vec::new(),
+            },
+            IrStatement {
+                kind: IrStatementKind::Function {
+                    name: name("fail"),
+                    parameters: vec![parameter("code"), parameter("message")],
+                    return_type: IrType::None,
+                    body: vec![IrStatement {
+                        kind: IrStatementKind::Raise { value: error },
+                        span: span(),
+                        leading_docs: Vec::new(),
+                    }],
+                },
+                span: span(),
+                leading_docs: Vec::new(),
+            },
+        ],
+        span(),
+    );
+    let module = lower_program(&program, &CodegenOptions::default())
+        .expect("函数参数错误构造应降低到 Runtime ABI");
+    let function_start = module
+        .text
+        .find("define void @xiao.fn.")
+        .expect("应生成函数定义");
+    let function = &module.text[function_start..];
+    let function_end = function.find("\n}\n").expect("函数定义应闭合");
+    let function = &function[..function_end];
+    assert_eq!(
+        function
+            .matches("call i32 @xiao_runtime_value_copy")
+            .count(),
+        2,
+        "只有两个参数入帧复制；错误构造应直接借用参数槽"
+    );
+    assert!(
+        function.contains("@xiao_runtime_error_new_values")
+            && function.contains("ptr %slot0, ptr %slot1"),
+        "错误构造应使用当前函数的 code/message 参数槽"
+    );
+    validate_with_llvm_as(&module.text);
+}
+
+#[test]
 /// 非文本动态错误参数保留到 Runtime，由 Runtime 返回稳定类型错误。
 fn lowers_non_text_error_constructor_argument_to_runtime_check() {
     let value = IrExpression {

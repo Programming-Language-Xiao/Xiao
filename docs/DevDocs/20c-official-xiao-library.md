@@ -440,7 +440,7 @@ Windows 边界证据见 [10R-实现](10r-static-overflow-implementation.md) §�
 | 3 | Xiao 源码是规范实现；预编译对象只允许作为本地/构建缓存物化，不作为发布身份，也不作为普通包发布；`.xar` 接线归 20E | 20 方向稿 §二 2.1、§八第 4 条；源码继续作为长期语言集成测试 |
 | 4 | 标准库身份字段冻结为 `language_version`、`stdlib_interface_version`、`runtime_abi_major`、`runtime_abi_minor`、`target`；字段可读、可比较，构建前可检查 | 现有 `CompatibilityVersions`、Runtime ABI 1.12；归档消费延后 20E |
 | 5 | 官方库由工具链专用加载器/命名空间提供，不写入 `PackageRegistry` 普通依赖图；必须有负例证明普通依赖求解不会解析官方库 | 11A 官方库边界；实现时增加加载器与普通包解析隔离用例 |
-| 6 | 未来源码落点为顶层 `stdlib/`，配套元数据 crate 为 `core/rust/crates/xiao-standard-library`；每个模块同步 crate README、UseDocs、DevDocs 阶段索引和兼容元数据；冻结前不创建目录 | 00A 目录门槛、20 方向稿 §六；落点只登记，不提前建库代码 |
+| 6 | Xiao 源码落点为顶层 `stdlib/`，配套元数据 crate 为 `core/rust/crates/xiao-standard-library`；每个模块同步 crate README、UseDocs、DevDocs 阶段索引和兼容元数据；冻结后先建立最小入口骨架，模块实现另批推进 | 00A 目录门槛、20 方向稿 §六；入口骨架已按 [20C-入口](20c-entry-and-skeleton.md) 落地 |
 
 这六条是架构冻结，不代表标准库模块已经实现，也不解除 10R 的后续门禁；20C 入口批只创建
 `stdlib/` 与 `xiao-standard-library` 骨架，`text`/`path` 模块实现仍须满足下一批守卫。

@@ -6,13 +6,15 @@
 > 而它给的理由（O6 缺口、B1、T4）**不是关闭条件**——按文档自己写死的条件，那七项**已经全满足**。
 >
 > **一句话概括**：**先把「关」按条件判一次（并写出 §2.5 第 5 条要求的带走清单），
-> 再把 20C 的六条冻结点裁定，然后才谈写库**——下一阶段的第一步不是写官方库。
+> 再把 20C 的六条冻结点裁定，随后完成入口骨架与隔离门禁，再谈写库模块**。
 >
 > 状态：**关闭已裁定并执行（2026-10-12）**。星崽裁定「**可以关闭，但未完成项要在基线中写明、以及卡在哪里**」——
 > 已按 §2.5 七项判关闭，遗留项逐条写入 [00. 决策基线](00-decisions.md)「10 系列关闭与遗留项」并写明卡点；
-> 20C 六条已按星崽裁定冻结（§3.2.1）；N-2 已按实测选择甲并在 [20C-入口](20c-entry-and-skeleton.md) 实施。
+> 20C 六条已按星崽裁定冻结（§3.2.1）；N-1/N-2/N-3 与依赖负例已在
+> [20C-入口](20c-entry-and-skeleton.md) 实施。
 > **仍待补证据**：10R 排期/边界与 F-3 真实推送验证。
-> 第二轮审核登记的 **N-1/N-2/N-3**：落点触及两处工程清单（无门禁兜底）与一处兼容身份结构，见 §3.8、§3.4。
+> 入口实现已补齐第二轮审核登记的 **N-1/N-2/N-3**：三处工程清单、`.xiao` 发现门禁、并列身份块和普通依赖负例均有落点；
+> 当前只剩官方模块实现与外部证据，见 §3.6、§3.8。
 
 ## 一、Agent 交接上下文
 
@@ -49,13 +51,13 @@
 - **B1 释放性质未判** → §2.1 第 2 条：**「不是关 10 的前置」**，做不完如实登记；
 - **T4 受控复跑未补** → 同上，依赖外部受控主机。
 
-**表 B：本批的一项已完成冻结与两组待处理事项**
+**表 B：本批冻结项与入口实施状态（2026-10-13）**
 
 | 项 | 现状 | 依据 |
 | --- | --- | --- |
-| **关闭判定与归属清单** | 没有一处写过「按 §2.5 判 → 可以关闭」；§2.5 **第 5 条**要求的「未完成项逐条写明归属 + README 写成事实」也没做 | §2.5 第 5 条、§2.7 第 3 条 |
+| **关闭判定与归属清单** | 已按 §2.5 判定可以关闭；未完成项已逐条写入基线、README 和收口文档并标明卡点 | §2.5 第 5 条、§2.7 第 3 条 |
 | **20C §3.2 六条** | 已按拟稿冻结并写入 §3.2.1；第 3、4 条的结论仍明确来自本次架构裁定，不等同于 20E 已实现 | [20C](20c-official-xiao-library.md) §3.2.1；**已完成，不再列为欠项** |
-| **N-1/N-2/N-3（落点清单与兼容身份）** | 冻结出的落点（`stdlib/` + `xiao-standard-library`）触及两处工程清单与一处身份结构，其中 `codeRoots` 与 00A 顶层目录**无门禁兜底**；`sourceExtensions` 里**没有 `.xiao`**；身份字段与 `CompatibilityVersions` **形状不一致** | 审核实测（§3.8、§3.4） |
+| **N-1/N-2/N-3（落点清单与兼容身份）** | 已由 [20C-入口](20c-entry-and-skeleton.md) 同笔完成：`stdlib/`、`xiao-standard-library`、三处工程清单、`.xiao` 发现与并列 `StandardLibraryIdentity` 均已落地；普通依赖负例也已补齐 | 审核实测（§3.8、§3.4）；入口实施见 [20C-入口](20c-entry-and-skeleton.md) §4 |
 
 ### 1.3 本批边界
 
@@ -65,7 +67,7 @@
 | 带走清单 | §2.5 第 5 条要求的逐条归属 | **做**（§2.2） |
 | 20C 六条冻结 | 六条已按拟稿裁定；冻结结果落在 20C §3.2.1 | **已完成**（§三） |
 | F-3 收或带走 | `tests/benchmarks/**` 的触发正例与负例 | **做或带走**（§四） |
-| 写官方库代码 | 首批模块实现 | **不做**——等六条冻结 + 静态溢出归位 |
+| 写官方库代码 | 首批模块实现 | **不做**——六条与入口已冻结/落地，`text`/`path` 模块另批实施 |
 | O6 缺口的补齐 | 条件 1/2/3/4 的欠格、条件 5 的跨平台 | **不做**，按 §2.2 归属 |
 | 新的工具侧批次 | —— | **不做**（[10Z-收尾](10z-closeout-execution.md) §2.3 的冻结仍有效） |
 
@@ -147,13 +149,12 @@
 - **依据**：方向稿 §一要求「供构建产物和 `.xar` 启动器检查兼容性」；现有 `CompatibilityVersions`（`xiao-driver/src/compatibility.rs:167`）。
 - **冻结**：字段为 `language_version`、`stdlib_interface_version`、`runtime_abi_major`、
   `runtime_abi_minor`、`target`；身份可读、可比较，归档消费延后 20E。
-- **⚠ N-3（审核实测，实现前必须说清）**：这组字段与它引用的 `CompatibilityVersions` **形状不一致**——
+- **N-3（已解决）**：这组字段与它引用的 `CompatibilityVersions` **形状不一致**——
   现有的（`xiao-driver/src/compatibility.rs:167`）是 `language: String`、`ir: u32`、`xiaoc: (u16,u16)`、
   `index_schema: (u32,u32)`、`xar: (u16,u16)`、**`runtime_abi: u64`（单个编码版本）**、`target: String`；
   冻结的写法是 `language_version`（命名不同）与 `runtime_abi_major`/`runtime_abi_minor`（**把单个编码 u64 拆成两个字段**）。
-  **实现前必须写明两者关系**：是**新增一套并列的标准库元数据块**（`CompatibilityVersions` 不动），
-  还是**扩展既有的公共结构**——后者要**先列出受影响的消费者**（19 的兼容矩阵、发布报告、文档生成）。
-  **不许**在实现时顺手改公共类型。
+  已采用**新增一套并列的标准库元数据块**（`CompatibilityVersions` 不动），
+  由 `xiao-driver::StandardLibraryIdentity` 提供；19 的兼容矩阵、发布报告和文档生成消费者不变。
 
 ### 3.5 不进普通依赖求解（已冻结；要有**可检查**落点）
 
@@ -167,8 +168,8 @@
 - **定什么**：目录/crate 归属，以及每个模块要更新的 crate README、UseDocs、阶段索引、兼容元数据。
 - **依据**：[00A](00a-project-layout.md) 的目录与质量门槛；20AB 已有一份可照抄的同步清单。
 - **冻结**：源码落点为顶层 `stdlib/`，元数据 crate 为 `core/rust/crates/xiao-standard-library`；
-  每个模块同步 crate README、UseDocs、DevDocs 阶段索引和兼容元数据。关闭判定、10R 排期和负例守卫完成前，
-  不创建目录、不注册依赖、不写 `.xar` 兼容字段。
+  每个模块同步 crate README、UseDocs、DevDocs 阶段索引和兼容元数据。关闭判定、10R 排期和负例守卫完成后，
+  入口批已创建最小骨架并注册工程清单；普通依赖隔离与 `.xar` 兼容字段仍按后续模块/20E 守卫执行。
 
 ### 3.7 **与静态溢出的门禁（星崽已裁定，要在本批排期上体现）**
 
@@ -183,37 +184,28 @@
    那是**裁定变更**，必须在 [20C](20c-official-xiao-library.md) §3.3 写明变更与理由，**不许默认跳过**；
 3. 本批**不实现** 10R 的内容，只登记门禁与排期。
 
-### 3.8 **落点触到的工程清单：三处，只有一处有门禁兜底**（N-1、N-2）
+### 3.8 **落点触到的工程清单与 `.xiao` 发现门禁（已实施）**（N-1、N-2）
 
-**事实（审核 2026-10-12 实测，全部可逐行核对）**：冻结出来的落点（顶层 `stdlib/` + crate
-`core/rust/crates/xiao-standard-library`）会同时触到**三处工程枚举清单**；身份字段的形状另在 §3.4 登记为 N-3：
+**实施前事实（审核 2026-10-12 实测，全部可逐行核对）**：冻结出来的落点（顶层 `stdlib/` + crate
+`core/rust/crates/xiao-standard-library`）同时触到**三处工程枚举清单**；身份字段的形状另在 §3.4 登记为 N-3。
+入口批已按该结论同笔修正，当前清单如下：
 
 | 权威清单 | 现状 | 新建时会不会红 |
 | --- | --- | --- |
-| `tools/repo-check/repository.manifest.json` 的 `rust.members`（**23 项**枚举） | 无 `xiao-standard-library` | **会红** ✅——`tools/repo-check/src/workspace.ts:189-193` 的 `compareMembers` **双向对账**，报 `A0-WORKSPACE-001: workspace 存在未登记成员` |
-| 同文件的 `codeRoots`（`["core/rust","cli/ts","tools","tests"]`） | **无 `stdlib/`** | **不会红** ⚠️——`layout.ts:58` 只**遍历 `codeRoots` 去发现源目录**；`layout.ts:44-55` 只校验「清单里的目录**存在**」，**不校验「仓库里的目录都被登记」** |
-| [00A](00a-project-layout.md) 的**顶层目录**清单（`core/ cli/ tests/ tools/ resources/ docs/DevDocs/`） | **无 `stdlib/`** | 无门禁，纯文档——但 00A 自称布局权威，且 §199 写着「创建**本文件列出的**顶层目录」 |
+| `tools/repo-check/repository.manifest.json` 的 `rust.members` | 已登记 `xiao-standard-library`（23 → 24） | `compareMembers` 双向对账通过 |
+| 同文件的 `codeRoots` | 已登记 `stdlib/`（4 → 5） | `layout.ts` 发现与存在性检查通过 |
+| [00A](00a-project-layout.md) 的**顶层目录**清单 | 已登记 `stdlib/`（7 → 8） | 文档清单与目录同步 |
 
-**N-2：`sourceExtensions` 不含 `.xiao`。** `repository.manifest.json` 的 `sourceExtensions = ['.rs','.ts','.tsx']`；
-在整个 `tools/repo-check` 里检索 `.xiao`，**一处都没有**。⇒ 即便把 `stdlib/` 加进 `codeRoots`，
-**官方库的 Xiao 源码目录也不会被源目录发现**，`A0-LAYOUT-001` 的 README/交接信息要求**管不到它**——
-而 [20C](20c-official-xiao-library.md) 的验收里恰好有一条「每个模块同步 crate README、UseDocs、阶段索引、兼容元数据」。
-**没有门禁兜底，就只能靠人记得。**
+**N-2：已按方案甲纳入 `.xiao`。** `repository.manifest.json` 的 `sourceExtensions` 已包含 `.xiao`；
+既有 9 个 `.xiao` 文件所在的两个目录完成 README/登记实测，`A0-LAYOUT-005` 要求每个含 `.xiao`
+的 `stdlib/**` 目录精确出现在 `module-registry.json` 模块 `code` 中，并同步 UseDocs、DevDocs 与兼容元数据落点。
 
-**冻结（建目录之前必须完成）**：
+**实施记录（2026-10-12）**：
 
-1. 在**同一提交**中先准备 `codeRoots`、00A 顶层目录和 `rust.members` 三处清单修改，
-   再加入 `stdlib/`、README 与 `xiao-standard-library`；提交树中清单和目录必须同时存在，
-   并在提交说明里**写出清单差集**。**审核实测（2026-10-12）**：若按「先补清单、再建目录」分成两笔，
-   仅把 `stdlib` 加进 `codeRoots` 就会让门禁**直接红**——`A0-MANIFEST-002`（代码根目录不存在）
-   加 `A0-LAYOUT-004`（无法读取目录），退出码 1；所以**必须同笔**，这不是风格问题；
-2. **不许**出现「目录已进入历史而清单未更新」的中间提交——这是本仓库反复出现的「改了一处、漏了另一处」；
-3. N-2 二选一（**要星崽定**，见 §七）：
-   - **甲**：把 `.xiao` 纳入 `sourceExtensions`——**先实测**对既有 9 个 `.xiao` 所在目录的影响
-     （`tests/fixtures/20c/` 有 README，但是否满足 `A0-LAYOUT-001` 的「交接信息」？`tests/benchmarks/programs/` 呢？）；
-   - **乙**：为官方库源码目录**另立一条目录规则**（例如 `stdlib/**` 必须有模块 README），不污染通用 `sourceExtensions`；
-4. 这三条与 §3.6 的「裁定前不创建目录」守卫**叠加**：守卫管「什么时候能建」，
-   本节管「建的时候清单必须与目录同笔落地」。
+1. 入口批在同一提交中完成 `codeRoots`、00A 顶层目录、`rust.members`、`stdlib/`、README 与
+   `xiao-standard-library`；提交说明写明 4→5、7→8、23→24 的清单差集。
+2. `.xiao` 已纳入通用发现；既有 9 个文件所在目录和同步门禁通过，后续新增目录必须继续补齐 README/登记信息。
+3. 入口骨架不写 `.xar` 兼容字段、不加入普通依赖图；模块实现另按 §3.6 和 20C-入口的守卫推进。
 
 ## 四、F-3：收掉还是带走
 
