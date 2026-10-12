@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 10;
+pub const ABI_MINOR_VERSION: u32 = 11;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -693,6 +693,19 @@ unsafe extern "C" {
         value: *const XiaoValue,
         location: XiaoAbiErrorLocation,
     ) -> i32;
+    /// 构造数值类可恢复错误并附加固定宽度源码区间。
+    ///
+    /// `kind=0` 表示数值溢出/非有限结果，`kind=1` 表示除数为零；`operator` 只在后者
+    /// 使用。文本视图只在当前调用期间有效，Runtime 不保存调用方指针。
+    pub fn xiao_runtime_error_raise_numeric(
+        kind: u32,
+        operator: *const u8,
+        operator_len: usize,
+        message: *const u8,
+        message_len: usize,
+        start: u64,
+        end: u64,
+    ) -> i32;
     /// 判断挂起的可恢复错误是否匹配给定的语言错误类型名。
     pub fn xiao_runtime_error_matches(error_type: XiaoAbiBytes) -> i32;
     /// 把挂起的可恢复错误取成拥有的 `XiaoValueTag::Error` 值；`out` 必须是已初始化且
@@ -940,9 +953,9 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_000A);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_000B);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 10);
+        assert_eq!(ABI_MINOR_VERSION, 11);
     }
 
     #[test]

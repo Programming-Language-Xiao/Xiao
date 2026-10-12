@@ -9,7 +9,7 @@
 > **一句话概括**：**批的不是「把 trap 换成 call」，是「静态产物要不要从此链接 Runtime」**——
 > 这决定了产物体积、可重复构建白名单和精确字节基线的走向，而立项文档把它列成了一行影响面。
 >
-> 状态：**已裁定（2026-10-12）**。链接探测已完成；审核侧按星崽给的准绳（**可持续/可维护/可扩展**）
+> 状态：**D1、D5、D2 已实现（2026-10-12）**。链接探测已完成；审核侧按星崽给的准绳（**可持续/可维护/可扩展**）
 > 把原来五项待定**全部裁定**（§五 D1–D7）：**拆开报告与诊断事件**、范围取**乙**（不含静态
 > `catch`/`finally` 传播）、错误身份按运行时既有映射**定死**（窄化用 009）、10Z-D **并批**、
 > 19D 基线**先补测再按基线变更处置**、顺序锁死（§五 D6）、静态异常路由另立批次（D7）。
@@ -17,8 +17,9 @@
 > 审核补了三条（§2.1.2、§2.1.3）：表 C 的「静态从不链接 Runtime」要加 debug 限定；
 > **D5 实测四个基准与 19C 基线均走 Runtime 路径**（前三个由 `runtime_checks` 触发）⇒ **O-1 会动 19D 的性能基线**；
 > **O-2 要避开 `WS2_32` 就得拆「报告/诊断事件」，而那正是上一轮判过「不要删」的那一行**。
-> **裁定已落（§五 D1–D7）**；D6 的 `(0)` 解耦与 `(1)` 逐程序补测已完成，下一步是
-> `(2)` 失败块 → `(3)` 10Z-D → `(4)` 基线判与 F-3。
+> **裁定已落（§五 D1–D7）**；D6 的 `(0)` 解耦、`(1)` 逐程序补测和 `(2)` 失败块接通道已完成。
+> `(3)` 10Z-D 动态参数、`(4)` 19D 基线判定与 F-3 仍是后续工作；静态 `catch`/`finally` 清理链按 D7
+> 单独登记。
 
 ## 一、Agent 交接上下文
 
@@ -37,23 +38,23 @@
 
 **表 A：7 个发射点（以代码为准，`core/rust/crates/xiao-codegen-llvm/src/ir.rs`）**
 
-| # | 位置 | 触发条件 | 今天的失败方式 |
-| --- | --- | --- | --- |
-| 1 | `ir.rs:1350` → `branch_on_trap`（`ir.rs:1716`） | 整数算术溢出（`llvm.*.with.overflow` 位） | `llvm.trap` |
-| 2 | `ir.rs:1515` → 同上 | 整数除/模的**除数为 0** | `llvm.trap` |
-| 3 | `ir.rs:1527` → 同上 | 最小值除/模 **-1** | `llvm.trap` |
-| 4 | `ir.rs:1622` → 同上 | 整数**窄化越界** | `llvm.trap` |
-| 5 | `ir.rs:1692` → 同上 | 浮点有限性/范围（`hi \|\| lo \|\| nan`） | `llvm.trap` |
-| 6 | `ir.rs:1395`（`finite.trap`） | `check_finite` 的 **NaN 分支** | `llvm.trap` |
-| 7 | `ir.rs:1406`（`finite.range_trap`） | `check_finite` 的**越界分支** | `llvm.trap` |
+| # | 位置 | 触发条件 | 实施前 | 当前实现 |
+| --- | --- | --- | --- | --- |
+| 1 | `checked_integer_bin` → `branch_on_failure` | 整数算术溢出（`llvm.*.with.overflow` 位） | `llvm.trap` | `xiao_runtime_error_raise_numeric(kind=0)` |
+| 2 | `floor_div`/`floor_rem` → `branch_on_failure` | 整数除/模的**除数为 0** | `llvm.trap` | `kind=1`，保留 `//` 除零身份 |
+| 3 | `check_divisor` → `branch_on_failure` | 最小值除/模 **-1** | `llvm.trap` | `kind=0`，`X06-RUNTIME-009` |
+| 4 | `cast_value` → `branch_on_failure` | 整数**窄化越界** | `llvm.trap` | `kind=0`，`X06-RUNTIME-009` |
+| 5 | `float_bin` → `check_finite` | 浮点有限性/范围（`hi \|\| lo \|\| nan`） | `llvm.trap` | `kind=0`，`X06-RUNTIME-009` |
+| 6 | `check_finite` 的 NaN 分支 | 非有限浮点结果 | `llvm.trap` | `kind=0`，`X06-RUNTIME-009` |
+| 7 | `check_finite` 的越界分支 | 浮点结果超出表示范围 | `llvm.trap` | `kind=0`，`X06-RUNTIME-009` |
 
-⇒ 「7 个发射点模板」= **5 处走 `branch_on_trap` + 2 处直接发 trap**（`check_finite` 的两条）。
+⇒ 「7 个发射点模板」= **5 处走 `branch_on_failure` + 2 处由 `check_finite` 发射失败块**。
 
 **表 B：好消息——span 的管道已经铺好了**
 
-`branch_on_trap(&mut self, condition: String, _span: IrSpan)` 与
-`check_finite(&mut self, value, ty, span: IrSpan)` **都收 span**，但函数体里 `_span` 未用、`check_finite` 末尾写着 `let _ = span;`。
-⇒ **7 处全部已有 span 在手**，本批要做的是**用掉它**，不是新铺管道。
+`branch_on_failure(&mut self, condition, span, failure)` 与
+`check_finite(&mut self, value, ty, span: IrSpan)` **都收 span**；D2 已将 span 传给
+`xiao_runtime_error_raise_numeric`，不再丢弃位置，也没有为 7 处重新铺一套位置管道。
 
 **表 C：坏消息——那条通道没有下游（这是本批真正的范围问题）**
 
@@ -111,7 +112,7 @@
 
 ### 2.1.1 **Windows 受控静态夹具探测记录（2026-10-12）**
 
-本次探测只生成临时夹具，没有修改 `ir.rs` 或正式测试。固定目标为
+本次探测只生成临时夹具，没有修改 `ir.rs` 或正式测试；以下是 D1 实施前的历史基线。固定目标为
 `x86_64-pc-windows-msvc`，工具为 clang 22.1.2，Runtime 为当前 release
 `xiao_runtime.lib`（20,792,154 字节）。三份样本来自同一份静态标量 LLVM IR：
 
@@ -129,7 +130,7 @@
 `xiao_runtime_diagnostic_ready` 或 `xiao_runtime_diagnostic_finish`，但仍出现
 `WS2_32.dll`。原因已逐行核对：`xiao_runtime_error_report` 的
 `write_runtime_report` 无条件调用 `xiao_runtime_diagnostic_event`（`xiao-runtime/src/abi.rs:1282-1322`），
-因此普通错误报告会把诊断事件的网络通道一并拉入。当前实现可以证明“没有自动启动握手”，
+因此当时的普通错误报告会把诊断事件的网络通道一并拉入。该历史实现可以证明“没有自动启动握手”，
 却**不能**证明“没有隐式链接诊断窗口通道”；这项验收在拆分报告与诊断事件之前保持未通过。
 
 重复链接的原始 PE 字节在每个样本中只差两个链接时间戳（文件头和调试目录）；按 15C
@@ -137,8 +138,8 @@
 没有新增可重复构建白名单项。这个结果只说明现有归一化仍有效，不把原始时间戳差异伪装成字节相同。
 
 **夹具探测结论**：静态路径接入 Runtime 的代价不是零；只读错误身份入口已经使产物约增至 2.03 倍，
-调用现有完整报告入口约增至 4.77 倍并引入 `WS2_32.dll`。在确定是否接受该链接面、以及是否先把
-普通错误报告与诊断事件拆开之前，本批不修改 7 处失败块。
+调用现有完整报告入口约增至 4.77 倍并引入 `WS2_32.dll`。这组数字用于解释为什么先做 D1；
+D1 已拆开普通错误报告与诊断事件，D2 再把 7 处失败块接入 Runtime 可恢复错误路径。
 
 ### 2.1.2 **审核复核与两条补测要求（2026-10-12）**
 
@@ -177,8 +178,8 @@
 ### 2.1.3 **两条新增的跨阶段后果（审核实测，本批必须一起登记）**
 
 **O-1：10R 会动 19D 的性能基线。** 19.16 测的是**整进程挂钟**（冷启动含在内），
-而 D5 实测的四个基准都走 Runtime 报告路径；D1 会从它们的产物中移除诊断事件网络依赖，
-**冷启动和产物剖面可能被影响**。⇒ 10R 一旦落地，19D 的受控取数与**已冻结的 10% 阈值**可能都要按
+而 D5 实测的四个基准都走 Runtime 报告路径；D1 已从它们的产物中移除诊断事件网络依赖，
+**冷启动和产物剖面可能被影响**。⇒ 10R 落地后，19D 的受控取数与**已冻结的 10% 阈值**可能都要按
 **基线变更流程**重取/重判（`baseline.json` 的 `threshold` 与 sha256 同步、摘要回写）。
 **这不是「顺手改一个数」**，是那次冻结明文规定的基线变更。
 **审核补记**：本条是我 10R 规划里**漏掉**的跨阶段后果（规划只看代码，没接性能面）。
@@ -246,6 +247,8 @@
 1. 先查清现有符号够不够（表 C 已列出四个 `xiao_runtime_error_*`）；**够用就不动 ABI**，
    不够才扩展——**不许**先把版本号升了再找理由；
 2. 若扩展：主/次版本、**工具链指纹**与**旧 Runtime 拒绝策略**必须一致（10T/10U 的版本规则）；
+   D2 新增 `xiao_runtime_error_raise_numeric`，次版本由 1.10 提升为 **1.11**；静态入口先调用
+   `xiao_runtime_abi_is_compatible(1, 11)`，旧次版本由 Runtime 按兼容函数拒绝；
 3. **不得**隐式链接完整诊断窗口（同 §2.1 第 1 条）。
 
 ### 2.6 **体积/白名单的基线变更要走流程，不许顺手改数字**
@@ -283,11 +286,11 @@
 ## 三、落点
 
 ```text
-core/rust/crates/xiao-codegen-llvm/src/ir.rs             7 处失败块；branch_on_trap/check_finite 用掉 span
-core/rust/crates/xiao-codegen-llvm/src/dynamic/runtime_abi.rs   ABI 声明面（若需新符号）
-core/rust/crates/xiao-runtime/src/abi.rs                  Runtime 侧实现（若需新符号）
-core/rust/crates/xiao-runtime-abi/src/lib.rs              ABI 符号与版本常量
-core/rust/crates/xiao-driver/tests/d19a_differential.rs    原生/VM 差分用例（错误身份、span、退出码）
+core/rust/crates/xiao-codegen-llvm/src/ir.rs             7 处失败块；branch_on_failure/check_finite 使用 span
+core/rust/crates/xiao-runtime/src/abi.rs                  Runtime ABI 汇总与兼容检查
+core/rust/crates/xiao-runtime/src/abi_numeric.rs           静态数值错误入口实现
+core/rust/crates/xiao-runtime-abi/src/lib.rs              ABI 符号与版本常量（次版本 1.11）
+core/rust/crates/xiao-codegen-llvm/tests/n0_a.rs            静态边界、Fatal/可恢复分界和真实端到端夹具
 core/rust/crates/xiao-driver/tests/artifact_size_regression.rs  体积基线（若链接面变化，按基线变更走）
 docs/DevDocs/10r-static-overflow-followup.md              实施记录回填（立项 → 已实现）
 docs/DevDocs/10z-dynamic-error-constructor-followup.md     §2.7 并批时一并收口
@@ -380,9 +383,10 @@ docs/DevDocs/README.md                                    本批登记与状态
 
 ### D4 **10Z-D 并批**
 
-**裁定**：并入本批。**理由**：两者都在改「原生可恢复错误的发射与报告面」，共用同一套差分用例、
-同一份文档落点；而 10Z-D 需要**新符号** `xiao_runtime_error_new_values` ⇒ **那次 ABI 变更由本批一次完成**，
-不让两批各自动一次错误面与兼容矩阵。
+**裁定**：规划上并入本批，但当前交付只完成了静态数值错误入口；10Z-D 的动态 `code`/`message`
+参数仍保持字面量限制，转后续实现。`xiao_runtime_error_new_values` 已在既有 ABI 中存在，D2 新增的是
+`xiao_runtime_error_raise_numeric`，因此本批实际把 ABI 次版本提升到 1.11；D4 完成时必须以该版本为基线
+重新核对兼容矩阵，不得把未实现写成已收口。
 
 ### D5 **19D 基线：先补测，再按基线变更流程处置**（对应 O-1）
 
@@ -401,8 +405,8 @@ docs/DevDocs/README.md                                    本批登记与状态
 ```text
 (0) D1 解耦 + 10E/10V/19C 同步 + 三个边界用例
 (1) D5 逐程序补测（含依赖面；预期 WS2_32 消失）
-(2) 7 处失败块接错误槽（D3 的身份表；span 用起来）
-(3) 10Z-D 并入（新符号 + 差分用例）
+(2) 7 处失败块接错误槽（D3 的身份表；span 用起来）——已完成
+(3) 10Z-D 动态参数（现有错误构造 ABI + 差分用例）——待后续
 (4) 19D 基线判与 F-3（§2.8）
 ```
 
@@ -412,6 +416,31 @@ docs/DevDocs/README.md                                    本批登记与状态
 与 10R 是**两件事**：10R 管「数值失败怎么报」，它管「错误能不能被捕获与清理」。
 **登记为 10R 后续段**，并在门禁上写明：静态异常路由落地前，
 「沿 `catch`/`finally` 清理链传播」这条验收**不适用**（而不是「未通过」）。
+
+## 六、实施回填（2026-10-12）
+
+### 6.1 D2 已完成的实现面
+
+7 个失败模板现在统一走 `branch_on_failure` 或 `check_finite` 的失败块，调用
+`xiao_runtime_error_raise_numeric(kind, operator, message, start, end)`，随后使用现有
+`xiao_runtime_error_report` 输出机器摘要，再读取 `xiao_runtime_error_exit_code` 并结束进程。
+`kind=0` 固定映射 `X06-RUNTIME-009`（数值溢出、窄化越界、最小值除负一和浮点非有限），
+`kind=1` 映射 `X06-RUNTIME-013`（整除/取模除零；`%` 沿 Runtime 现有契约保留 `//` 算子参数）。
+成功路径的 checked intrinsic、向下整除和浮点检查结果没有放宽。
+
+Runtime ABI 次版本由 1.10 提升为 **1.11**，新增入口的文本只在调用期间借用，不保存 LLVM
+全局量的外部指针。静态 `main` 在进入用户入口前调用 `xiao_runtime_abi_is_compatible(1, 11)`；
+Runtime 单元测试覆盖旧次版本 1.10/当前 1.11 接受、未来 1.12 和错误主版本拒绝。
+
+### 6.2 已完成验证与边界
+
+- Windows `x86_64-pc-windows-msvc` 受控工具链实跑：13 个静态数值边界用例通过；语言级溢出退出码为
+  `3`、错误码为 `X06-RUNTIME-009`、span 为 `0..1`，除零为 `X06-RUNTIME-013`；普通报告产物不含
+  `WS2_32.dll`。
+- 外部 `llvm.trap` 夹具仍由平台 Fatal 处理器报告 `X07-FATAL-005`，与语言级数值失败分流。
+- `cargo test -p xiao-runtime-abi -p xiao-runtime -p xiao-codegen-llvm --lib` 已通过；跨平台裸机证据、
+  19D 受控性能基线判定和 F-3 触发正/负例仍未在本批宣称完成。
+- 静态 `catch`/`finally` 清理链和错误传播仍按 D7 不适用；10Z-D 的动态错误参数仍是待后续缺口。
 
 ## 相关页面
 

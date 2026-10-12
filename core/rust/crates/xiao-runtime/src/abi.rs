@@ -46,6 +46,8 @@ mod abi_diagnostics;
 mod abi_dynamic;
 #[path = "abi_io.rs"]
 mod abi_io;
+#[path = "abi_numeric.rs"]
+mod abi_numeric;
 #[path = "abi_tables.rs"]
 mod abi_tables;
 #[allow(unused_imports)]
@@ -58,6 +60,8 @@ pub(crate) use abi_dynamic::{
     xiao_runtime_dynamic_check, xiao_runtime_string_copy, xiao_runtime_string_len,
     xiao_runtime_string_new, xiao_runtime_value_iter_get, xiao_runtime_value_iter_len,
 };
+#[allow(unused_imports)]
+pub(crate) use abi_numeric::xiao_runtime_error_raise_numeric;
 #[allow(unused_imports)]
 pub(crate) use abi_tables::{
     xiao_runtime_table_call, xiao_runtime_table_get_value, xiao_runtime_table_new_v2,
@@ -240,7 +244,7 @@ fn set_pending_error(error: PendingError) {
 }
 
 /// 将可恢复错误放入当前线程传播槽。
-fn set_pending_runtime_error(error: RuntimeError) {
+pub(super) fn set_pending_runtime_error(error: RuntimeError) {
     PENDING_ERROR.with(|pending| {
         let mut pending = pending.borrow_mut();
         match pending.as_mut() {
@@ -517,7 +521,7 @@ unsafe fn take_strong(handle: XiaoHandle, expected: RuntimeTypeTag) -> Result<St
 }
 
 /// 把 ABI 字节视图解码为拥有的 UTF-8 字符串。
-unsafe fn utf8(view: XiaoAbiBytes) -> Result<String, i32> {
+pub(super) unsafe fn utf8(view: XiaoAbiBytes) -> Result<String, i32> {
     let bytes = unsafe { bytes(view) }?;
     std::str::from_utf8(bytes)
         .map(str::to_owned)
@@ -901,7 +905,10 @@ pub extern "C" fn xiao_runtime_error_class() -> u32 {
 /// 为挂起错误附加源码位置；没有挂起错误时建立一个确定性的可恢复 Runtime 错误。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_error_attach_span(start: u64, end: u64) -> i32 {
-    let Some(span) = SourceSpan::new(start as usize, end as usize) else {
+    let (Ok(start), Ok(end)) = (usize::try_from(start), usize::try_from(end)) else {
+        return XiaoAbiStatus::InvalidArgument.code();
+    };
+    let Some(span) = SourceSpan::new(start, end) else {
         return XiaoAbiStatus::InvalidArgument.code();
     };
     PENDING_ERROR.with(|pending| {

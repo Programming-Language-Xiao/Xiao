@@ -2,7 +2,7 @@
 //!
 //! 这一层只接受固定宽度标量。局部槽采用显式 `alloca`，因此分支和循环不需要为尚未
 //! 接入的 Runtime 值制造 phi 表或隐藏布局；所有可能溢出的算术都先检查，再继续或进入
-//! `llvm.trap` 失败块。
+//! Runtime 可恢复错误报告块。
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -11,6 +11,7 @@ use xiao_ir::{
     IrStatementKind, IrType,
 };
 use xiao_optimizer::OptimizationReport;
+use xiao_runtime_abi::{ABI_ENCODED_VERSION, ABI_MAJOR_VERSION, ABI_MINOR_VERSION};
 
 use crate::CODEGEN_VERSION;
 use crate::error::{CodegenError, Result};
@@ -145,11 +146,11 @@ pub struct LlvmModule {
     pub target: TargetDescription,
     /// 共用的 Xiao 入口符号。
     pub entry_symbol: String,
-    /// N0-A 模块是否调用 Runtime ABI；纯静态模块固定为 `false`。
+    /// N0-A 模块是否调用 Runtime ABI；不含数值失败检查的纯静态模块为 `false`。
     pub uses_runtime: bool,
-    /// 生成模块实际需要的 Runtime 组件名称；静态模块为空。
+    /// 生成模块实际需要的 Runtime 组件名称；不使用 Runtime 的模块为空。
     pub runtime_components: Vec<String>,
-    /// 动态模块要求的 Runtime ABI 编码版本；静态模块没有该依赖。
+    /// 模块要求的 Runtime ABI 编码版本；不使用 Runtime 的模块没有该依赖。
     pub runtime_abi_version: Option<u64>,
     /// 后端版本和目标字段组成的可追踪指纹（工具版本在构建驱动器中补入）。
     pub codegen_fingerprint: String,
@@ -363,6 +364,15 @@ struct FunctionSignature {
     return_type: Scalar,
 }
 
+/// 静态数值检查失败的 Runtime 错误身份与报告文本。
+#[derive(Clone, Debug)]
+enum StaticFailure {
+    /// 数值溢出或非有限结果。
+    NumericOverflow(String),
+    /// 整除/取模的除数为零。
+    DivisionByZero(String),
+}
+
 /// 一个局部变量在 LLVM 栈上的槽位描述。
 #[derive(Clone, Copy, Debug)]
 struct Slot {
@@ -376,6 +386,8 @@ struct ModuleGenerator<'a> {
     options: &'a CodegenOptions,
     functions: BTreeMap<String, FunctionSignature>,
     declarations: BTreeSet<String>,
+    globals: BTreeMap<String, String>,
+    uses_runtime: bool,
     next_temp: usize,
     next_label: usize,
 }
@@ -388,6 +400,8 @@ impl<'a> ModuleGenerator<'a> {
             options,
             functions: BTreeMap::new(),
             declarations: BTreeSet::new(),
+            globals: BTreeMap::new(),
+            uses_runtime: false,
             next_temp: 0,
             next_label: 0,
         }
@@ -395,7 +409,6 @@ impl<'a> ModuleGenerator<'a> {
 
     /// 生成声明、函数、入口和可追踪指纹。
     fn generate(&mut self) -> Result<LlvmModule> {
-        self.declaration("declare void @llvm.trap()");
         if self.options.debug_startup.is_some() {
             self.declaration("declare i32 @xiao_native_debug_start()");
         }
@@ -426,6 +439,13 @@ impl<'a> ModuleGenerator<'a> {
                 entry.label, entry.span.start, entry.span.end
             ));
         }
+        for global in self.globals.values() {
+            text.push_str(global);
+            text.push('\n');
+        }
+        if !self.globals.is_empty() {
+            text.push('\n');
+        }
         for declaration in &self.declarations {
             text.push_str(declaration);
             text.push('\n');
@@ -454,9 +474,13 @@ impl<'a> ModuleGenerator<'a> {
             text,
             target: self.options.target.clone(),
             entry_symbol: "xiao_entry".to_owned(),
-            uses_runtime: false,
-            runtime_components: Vec::new(),
-            runtime_abi_version: None,
+            uses_runtime: self.uses_runtime,
+            runtime_components: if self.uses_runtime {
+                vec!["value".to_owned()]
+            } else {
+                Vec::new()
+            },
+            runtime_abi_version: self.uses_runtime.then_some(ABI_ENCODED_VERSION),
             codegen_fingerprint: fingerprint,
             source_map: source_map_for_program(self.program),
             optimization_level: self.options.optimization_level,
@@ -617,17 +641,50 @@ impl<'a> ModuleGenerator<'a> {
         } else {
             "  call void @xiao_entry()\n  ret i32 0\n"
         };
+        let compatibility = if self.uses_runtime {
+            format!(
+                "  %xiao_runtime_abi_status = call i32 @xiao_runtime_abi_is_compatible(i32 {ABI_MAJOR_VERSION}, i32 {ABI_MINOR_VERSION})\n  %xiao_runtime_abi_ok = icmp eq i32 %xiao_runtime_abi_status, 1\n  br i1 %xiao_runtime_abi_ok, label %xiao.runtime.ok, label %xiao.runtime.incompatible\nxiao.runtime.incompatible:\n  call void @xiao_runtime_fatal_abi()\n  unreachable\nxiao.runtime.ok:\n"
+            )
+        } else {
+            String::new()
+        };
         if self.options.debug_startup.is_none() {
-            return format!("define i32 @main() {{\nentry:\n{entry}}}\n");
+            return format!("define i32 @main() {{\nentry:\n{compatibility}{entry}}}\n");
         }
         format!(
-            "define i32 @main() {{\nentry:\n  %xiao_debug_status = call i32 @xiao_native_debug_start()\n  %xiao_debug_ok = icmp eq i32 %xiao_debug_status, 0\n  br i1 %xiao_debug_ok, label %xiao.user, label %xiao.debug.fail\nxiao.user:\n{entry}xiao.debug.fail:\n  ret i32 %xiao_debug_status\n}}\n"
+            "define i32 @main() {{\nentry:\n  %xiao_debug_status = call i32 @xiao_native_debug_start()\n  %xiao_debug_ok = icmp eq i32 %xiao_debug_status, 0\n  br i1 %xiao_debug_ok, label %xiao.user, label %xiao.debug.fail\nxiao.user:\n{compatibility}{entry}xiao.debug.fail:\n  ret i32 %xiao_debug_status\n}}\n"
         )
     }
 
     /// 登记一条去重的 LLVM 声明。
     fn declaration(&mut self, text: impl Into<String>) {
         self.declarations.insert(text.into());
+    }
+
+    /// 登记一个静态错误路径使用的 UTF-8 字节全局量。
+    fn error_bytes_global(&mut self, key: &str, bytes: &[u8]) -> String {
+        let name = format!("@.xiao.error.{key}");
+        self.globals.entry(name.clone()).or_insert_with(|| {
+            format!(
+                "{name} = private unnamed_addr constant [{} x i8] c\"{}\\00\"",
+                bytes.len() + 1,
+                escape_static_error_bytes(bytes),
+            )
+        });
+        name
+    }
+
+    /// 登记静态可恢复数值错误所需的 Runtime/进程退出声明。
+    fn declare_static_error_runtime(&mut self) {
+        self.uses_runtime = true;
+        self.declaration(
+            "declare i32 @xiao_runtime_error_raise_numeric(i32, ptr, i64, ptr, i64, i64, i64)",
+        );
+        self.declaration("declare i32 @xiao_runtime_abi_is_compatible(i32, i32)");
+        self.declaration("declare void @xiao_runtime_fatal_abi()");
+        self.declaration("declare void @xiao_runtime_error_report()");
+        self.declaration("declare i32 @xiao_runtime_error_exit_code()");
+        self.declaration("declare void @exit(i32)");
     }
 
     /// 分配下一个模块级临时值编号。
@@ -1298,7 +1355,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                 }
             }
             "/" => self.float_bin("fdiv", common, left, right, span)?,
-            "//" => self.floor_div(common, left, right, span)?,
+            "//" => self.floor_div(common, left, right, "//", span)?,
             "%" => self.floor_rem(common, left, right, span)?,
             "**" => self.power(common, left, right, result, span)?,
             _ => return Err(unsupported(format!("二元运算 {operator}"), Some(span))),
@@ -1347,7 +1404,11 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
             "  {overflow} = extractvalue {{{}, i1}} {pair}, 1",
             ty.llvm()
         ));
-        self.branch_on_trap(overflow, span);
+        self.branch_on_failure(
+            overflow,
+            span,
+            StaticFailure::NumericOverflow(format!("{} 运算溢出", scalar_name(ty))),
+        );
         Ok(value)
     }
 
@@ -1392,9 +1453,10 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         self.emit_line(format!("  br i1 {ordered}, label %{ok}, label %{trap}"));
         self.terminated = true;
         self.emit_label(trap);
-        self.emit_line("  call void @llvm.trap()");
-        self.emit_line("  unreachable");
-        self.terminated = true;
+        self.emit_static_failure(
+            span,
+            StaticFailure::NumericOverflow(format!("{} 运算产生非有限值", scalar_name(ty))),
+        );
         self.emit_label(&ok);
         let finite_ok = self.module.next_label("finite.continue");
         let range_trap = self.module.next_label("finite.range_trap");
@@ -1403,9 +1465,10 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         ));
         self.terminated = true;
         self.emit_label(&range_trap);
-        self.emit_line("  call void @llvm.trap()");
-        self.emit_line("  unreachable");
-        self.terminated = true;
+        self.emit_static_failure(
+            span,
+            StaticFailure::NumericOverflow(format!("{} 运算产生非有限值", scalar_name(ty))),
+        );
         self.emit_label(finite_ok);
         let _ = span;
         Ok(())
@@ -1417,12 +1480,13 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         ty: Scalar,
         left: String,
         right: String,
+        operation: &str,
         span: IrSpan,
     ) -> Result<String> {
         if !ty.is_integer() {
             return Err(unsupported("浮点整除", Some(span)));
         }
-        self.check_divisor(ty, left.clone(), right.clone(), span)?;
+        self.check_divisor(ty, left.clone(), right.clone(), operation, span)?;
         let quotient = self.module.next_temp();
         let remainder = self.module.next_temp();
         self.emit_line(format!("  {quotient} = sdiv {} {left}, {right}", ty.llvm()));
@@ -1491,7 +1555,8 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         if !ty.is_integer() {
             return Err(unsupported("浮点取模", Some(span)));
         }
-        let quotient = self.floor_div(ty, left.clone(), right.clone(), span)?;
+        // Runtime 的 `%` 复用整除零检查，除零错误身份参数因此也是 `//`。
+        let quotient = self.floor_div(ty, left.clone(), right.clone(), "//", span)?;
         let product = self.module.next_temp();
         self.emit_line(format!(
             "  {product} = mul {} {quotient}, {right}",
@@ -1508,11 +1573,16 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         ty: Scalar,
         left: String,
         right: String,
+        operation: &str,
         span: IrSpan,
     ) -> Result<()> {
         let zero = self.module.next_temp();
         self.emit_line(format!("  {zero} = icmp eq {} {right}, 0", ty.llvm()));
-        self.branch_on_trap(zero, span);
+        self.branch_on_failure(
+            zero,
+            span,
+            StaticFailure::DivisionByZero(operation.to_owned()),
+        );
         let min = if ty == Scalar::Int {
             i64::MIN.to_string()
         } else {
@@ -1524,7 +1594,11 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         self.emit_line(format!("  {neg_one} = icmp eq {} {right}, -1", ty.llvm()));
         let invalid = self.module.next_temp();
         self.emit_line(format!("  {invalid} = and i1 {min_cmp}, {neg_one}"));
-        self.branch_on_trap(invalid, span);
+        self.branch_on_failure(
+            invalid,
+            span,
+            StaticFailure::NumericOverflow(format!("{} 整除溢出", scalar_name(ty))),
+        );
         Ok(())
     }
 
@@ -1619,7 +1693,14 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                     source.llvm()
                 ));
                 self.emit_line(format!("  {bad} = or i1 {hi}, {lo}"));
-                self.branch_on_trap(bad, span);
+                self.branch_on_failure(
+                    bad,
+                    span,
+                    StaticFailure::NumericOverflow(format!(
+                        "转换结果超出 {} 的表示范围",
+                        scalar_name(target)
+                    )),
+                );
                 let temp = self.module.next_temp();
                 self.emit_line(format!(
                     "  {temp} = trunc {} {value} to {}",
@@ -1689,7 +1770,14 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
             self.emit_line(format!("  {bad} = or i1 {hi}, {lo}"));
             let bad2 = self.module.next_temp();
             self.emit_line(format!("  {bad2} = or i1 {bad}, {nan}"));
-            self.branch_on_trap(bad2, span);
+            self.branch_on_failure(
+                bad2,
+                span,
+                StaticFailure::NumericOverflow(format!(
+                    "转换结果超出 {} 的表示范围",
+                    scalar_name(target)
+                )),
+            );
             let temp = self.module.next_temp();
             self.emit_line(format!(
                 "  {temp} = fptosi {} {value} to {}",
@@ -1712,19 +1800,71 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         temp
     }
 
-    /// 把失败条件分支到 `llvm.trap`，并继续生成成功块。
-    fn branch_on_trap(&mut self, condition: String, _span: IrSpan) {
-        let trap = self.module.next_label("xiao.trap");
+    /// 把失败条件分支到可恢复 Runtime 错误报告，并继续生成成功块。
+    fn branch_on_failure(&mut self, condition: String, span: IrSpan, failure: StaticFailure) {
+        let failure_label = self.module.next_label("xiao.failure");
         let continue_label = self.module.next_label("xiao.continue");
         self.emit_line(format!(
-            "  br i1 {condition}, label %{trap}, label %{continue_label}"
+            "  br i1 {condition}, label %{failure_label}, label %{continue_label}"
         ));
         self.terminated = true;
-        self.emit_label(trap);
-        self.emit_line("  call void @llvm.trap()");
+        self.emit_label(failure_label);
+        self.emit_static_failure(span, failure);
+        self.emit_label(continue_label);
+    }
+
+    /// 构造静态数值错误、写出标准报告并以 Runtime 退出码结束进程。
+    fn emit_static_failure(&mut self, span: IrSpan, failure: StaticFailure) {
+        self.module.declare_static_error_runtime();
+        let (kind, operator, message) = match &failure {
+            StaticFailure::NumericOverflow(message) => (0, "", message.clone()),
+            StaticFailure::DivisionByZero(operator) => {
+                (1, operator.as_str(), "除数不能为零".to_owned())
+            }
+        };
+        let (operator_pointer, operator_length) =
+            self.emit_error_bytes("operator", operator.as_bytes());
+        let message_key = format!("message-{}", stable_hash(message.as_bytes()));
+        let (message_pointer, message_length) =
+            self.emit_error_bytes(&message_key, message.as_bytes());
+        let status = self.module.next_temp();
+        self.emit_line(format!(
+            "  {status} = call i32 @xiao_runtime_error_raise_numeric(i32 {kind}, ptr {operator_pointer}, i64 {operator_length}, ptr {message_pointer}, i64 {message_length}, i64 {}, i64 {})",
+            span.start,
+            span.end,
+        ));
+        let accepted = self.module.next_temp();
+        self.emit_line(format!("  {accepted} = icmp eq i32 {status}, 0"));
+        let report_label = self.module.next_label("xiao.error.report");
+        let abi_failure_label = self.module.next_label("xiao.error.abi.failure");
+        self.emit_line(format!(
+            "  br i1 {accepted}, label %{report_label}, label %{abi_failure_label}"
+        ));
+        self.terminated = true;
+        self.emit_label(abi_failure_label);
+        self.emit_line("  call void @xiao_runtime_fatal_abi()");
         self.emit_line("  unreachable");
         self.terminated = true;
-        self.emit_label(continue_label);
+        self.emit_label(report_label);
+        self.emit_line("  call void @xiao_runtime_error_report()");
+        let exit_code = self.module.next_temp();
+        self.emit_line(format!(
+            "  {exit_code} = call i32 @xiao_runtime_error_exit_code()"
+        ));
+        self.emit_line(format!("  call void @exit(i32 {exit_code})"));
+        self.emit_line("  unreachable");
+        self.terminated = true;
+    }
+
+    /// 发射一个静态错误使用的 ABI 字节值。
+    fn emit_error_bytes(&mut self, key: &str, bytes: &[u8]) -> (String, usize) {
+        let global = self.module.error_bytes_global(key, bytes);
+        let pointer = self.module.next_temp();
+        self.emit_line(format!(
+            "  {pointer} = getelementptr inbounds [{} x i8], ptr {global}, i64 0, i64 0",
+            bytes.len() + 1
+        ));
+        (pointer, bytes.len())
     }
 
     /// 为尚未显式返回的函数发射默认返回值。
@@ -1964,6 +2104,17 @@ fn invalid_literal(text: String, span: IrSpan) -> CodegenError {
     CodegenError::InvalidIr {
         message: format!("字面量 {text:?} 无法编码（{}..{}）", span.start, span.end),
     }
+}
+
+/// 把 UTF-8 字节转成 LLVM `c"..."` 常量中的稳定十六进制转义。
+fn escape_static_error_bytes(bytes: &[u8]) -> String {
+    bytes
+        .iter()
+        .map(|byte| match byte {
+            0x20..=0x21 | 0x23..=0x5b | 0x5d..=0x7e => char::from(*byte).to_string(),
+            _ => format!("\\{byte:02X}"),
+        })
+        .collect()
 }
 
 /// 以稳定科学计数法格式化浮点常量。

@@ -623,6 +623,92 @@ fn fatal_error_constructor_never_returns_recoverable_value() {
 }
 
 #[test]
+/// 静态数值 ABI 按类别映射 009/013，并保留固定宽度源码位置。
+fn numeric_error_abi_preserves_identity_and_span() {
+    xiao_runtime_error_clear();
+    assert_eq!(
+        xiao_runtime_error_raise_numeric(
+            0,
+            std::ptr::null(),
+            0,
+            bytes("int 运算溢出").ptr,
+            bytes("int 运算溢出").len,
+            40,
+            53
+        ),
+        XiaoAbiStatus::Ok.code()
+    );
+    let mut snapshot = XiaoAbiErrorSnapshot {
+        class: XiaoErrorClass::None,
+        kind: 0,
+        error_id: 0,
+        code: bytes(""),
+        message_id: bytes(""),
+        location: XiaoAbiErrorLocation::none(),
+        exit_code: 0,
+        stack_depth: 0,
+        param_count: 0,
+    };
+    assert_eq!(
+        xiao_runtime_error_snapshot(&mut snapshot),
+        XiaoAbiStatus::Ok.code()
+    );
+    let overflow_code = unsafe {
+        std::str::from_utf8_unchecked(std::slice::from_raw_parts(
+            snapshot.code.ptr,
+            snapshot.code.len,
+        ))
+    };
+    assert_eq!(overflow_code, "X06-RUNTIME-009");
+    assert_eq!(
+        snapshot.location,
+        XiaoAbiErrorLocation::from_span(XiaoAbiSpan { start: 40, end: 53 })
+    );
+    assert_eq!(snapshot.exit_code, 3);
+
+    xiao_runtime_error_clear();
+    let operator = bytes("//");
+    let message = bytes("除数不能为零");
+    assert_eq!(
+        xiao_runtime_error_raise_numeric(
+            1,
+            operator.ptr,
+            operator.len,
+            message.ptr,
+            message.len,
+            7,
+            12
+        ),
+        XiaoAbiStatus::Ok.code()
+    );
+    assert_eq!(
+        xiao_runtime_error_snapshot(&mut snapshot),
+        XiaoAbiStatus::Ok.code()
+    );
+    let division_code = unsafe {
+        std::str::from_utf8_unchecked(std::slice::from_raw_parts(
+            snapshot.code.ptr,
+            snapshot.code.len,
+        ))
+    };
+    assert_eq!(division_code, "X06-RUNTIME-013");
+    assert_eq!(
+        snapshot.location,
+        XiaoAbiErrorLocation::from_span(XiaoAbiSpan { start: 7, end: 12 })
+    );
+    xiao_runtime_error_clear();
+}
+
+#[test]
+/// Runtime 接受兼容次版本并拒绝旧主版本或未来次版本。
+fn abi_compatibility_accepts_old_minor_and_rejects_unsupported_versions() {
+    assert_eq!(xiao_runtime_abi_is_compatible(1, 10), 1);
+    assert_eq!(xiao_runtime_abi_is_compatible(1, 11), 1);
+    assert_eq!(xiao_runtime_abi_is_compatible(1, 12), 0);
+    assert_eq!(xiao_runtime_abi_is_compatible(2, 11), 0);
+}
+
+#[test]
 /// 诊断 ABI 必须完成握手、透传事件字段并发送 Final/Close 生命周期消息。
 fn diagnostic_session_forwards_events_and_closes() {
     let _lock = diagnostic_test_lock();

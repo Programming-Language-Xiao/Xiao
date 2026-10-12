@@ -85,6 +85,173 @@ fn compile_scalar_program() -> IrProgram {
     simple_program(vec![assignment("value", add)])
 }
 
+/// 构造一个运行时会溢出的 checked `int` 加法程序。
+fn compile_overflow_program() -> IrProgram {
+    let overflow = IrExpression {
+        kind: IrExpressionKind::Binary {
+            operator: "+".to_owned(),
+            left: Box::new(literal("int", &i64::MAX.to_string())),
+            right: Box::new(literal("int", "1")),
+        },
+        ty: scalar("int"),
+        span: span(),
+    };
+    simple_program(vec![assignment("value", overflow)])
+}
+
+/// 构造不包含失败检查的纯静态标量程序。
+fn compile_plain_static_program() -> IrProgram {
+    simple_program(vec![assignment("value", literal("bool", "true"))])
+}
+
+/// 构造一个固定宽度数值二元运算函数，并用给定边界参数调用它。
+fn numeric_binary_program(operator: &str, ty: &str, left: &str, right: &str) -> IrProgram {
+    let parameter_types = vec![scalar(ty), scalar(ty)];
+    let left_expression = IrExpression {
+        kind: IrExpressionKind::Name { name: name("left") },
+        ty: scalar(ty),
+        span: span(),
+    };
+    let right_expression = IrExpression {
+        kind: IrExpressionKind::Name {
+            name: name("right"),
+        },
+        ty: scalar(ty),
+        span: span(),
+    };
+    let value = IrExpression {
+        kind: IrExpressionKind::Binary {
+            operator: operator.to_owned(),
+            left: Box::new(left_expression),
+            right: Box::new(right_expression),
+        },
+        ty: scalar(ty),
+        span: span(),
+    };
+    let function = IrStatement {
+        kind: IrStatementKind::Function {
+            name: name("compute"),
+            parameters: ["left", "right"]
+                .into_iter()
+                .zip(parameter_types.iter())
+                .map(|(parameter, ty)| IrParameter {
+                    name: name(parameter),
+                    kind: "positional".to_owned(),
+                    ty: ty.clone(),
+                    default: None,
+                    span: span(),
+                })
+                .collect(),
+            return_type: scalar(ty),
+            body: vec![IrStatement {
+                kind: IrStatementKind::Return { value: Some(value) },
+                span: span(),
+                leading_docs: Vec::new(),
+            }],
+        },
+        span: span(),
+        leading_docs: Vec::new(),
+    };
+    let callee = IrExpression {
+        kind: IrExpressionKind::Name {
+            name: name("compute"),
+        },
+        ty: IrType::Function {
+            parameters: parameter_types,
+            return_type: Box::new(scalar(ty)),
+        },
+        span: span(),
+    };
+    let call = IrExpression {
+        kind: IrExpressionKind::Call {
+            callee: Box::new(callee),
+            arguments: [left, right]
+                .into_iter()
+                .map(|value| xiao_ir::IrCallArgument {
+                    kind: "positional".to_owned(),
+                    name: None,
+                    value: literal(ty, value),
+                    span: span(),
+                })
+                .collect(),
+        },
+        ty: scalar(ty),
+        span: span(),
+    };
+    simple_program(vec![
+        function,
+        IrStatement {
+            kind: IrStatementKind::Expression { value: call },
+            span: span(),
+            leading_docs: Vec::new(),
+        },
+    ])
+}
+
+/// 构造从指定整数/浮点来源窄化到目标标量的函数调用。
+fn narrowing_program(source_type: &str, target_type: &str, value: &str) -> IrProgram {
+    let parameter_type = scalar(source_type);
+    let parameter = IrExpression {
+        kind: IrExpressionKind::Name {
+            name: name("value"),
+        },
+        ty: parameter_type.clone(),
+        span: span(),
+    };
+    let function = IrStatement {
+        kind: IrStatementKind::Function {
+            name: name("narrow"),
+            parameters: vec![IrParameter {
+                name: name("value"),
+                kind: "positional".to_owned(),
+                ty: parameter_type.clone(),
+                default: None,
+                span: span(),
+            }],
+            return_type: scalar(target_type),
+            body: vec![IrStatement {
+                kind: IrStatementKind::Return {
+                    value: Some(parameter),
+                },
+                span: span(),
+                leading_docs: Vec::new(),
+            }],
+        },
+        span: span(),
+        leading_docs: Vec::new(),
+    };
+    let call = IrExpression {
+        kind: IrExpressionKind::Call {
+            callee: Box::new(IrExpression {
+                kind: IrExpressionKind::Name {
+                    name: name("narrow"),
+                },
+                ty: IrType::Function {
+                    parameters: vec![parameter_type],
+                    return_type: Box::new(scalar(target_type)),
+                },
+                span: span(),
+            }),
+            arguments: vec![xiao_ir::IrCallArgument {
+                kind: "positional".to_owned(),
+                name: None,
+                value: literal(source_type, value),
+                span: span(),
+            }],
+        },
+        ty: scalar(target_type),
+        span: span(),
+    };
+    simple_program(vec![
+        function,
+        IrStatement {
+            kind: IrStatementKind::Expression { value: call },
+            span: span(),
+            leading_docs: Vec::new(),
+        },
+    ])
+}
+
 #[test]
 /// 调试入口必须先调用原生启动 shim，再进入用户入口。
 fn debug_startup_shim_precedes_user_entry() {
@@ -221,7 +388,8 @@ fn lowers_scalar_calls_and_control_flow() {
     assert!(module.text.contains("define void @xiao_entry"));
     assert!(module.text.contains("define i32 @main"));
     assert!(module.text.contains("llvm.sadd.with.overflow.i64"));
-    assert!(!module.uses_runtime);
+    assert!(module.uses_runtime);
+    assert!(module.text.contains("xiao_runtime_error_raise_numeric"));
     if let Some(clang) = std::env::var_os("XIAO_CLANG") {
         let toolchain = Toolchain::new(clang);
         NativeBuild::new()
@@ -231,12 +399,19 @@ fn lowers_scalar_calls_and_control_flow() {
 }
 
 #[test]
-/// 溢出路径必须显式进入 trap，而不能生成裸回绕算术。
+/// 溢出路径必须进入统一可恢复错误报告，而不能生成裸回绕算术或非法指令。
 fn emits_checked_integer_arithmetic() {
     let program = compile_scalar_program();
     let module = lower_program(&program, &CodegenOptions::default()).expect("降低");
     assert!(module.text.contains("llvm.sadd.with.overflow.i64"));
-    assert!(module.text.contains("call void @llvm.trap()"));
+    assert!(module.text.contains("xiao_runtime_error_raise_numeric"));
+    assert!(module.text.contains("i32 0"), "溢出必须映射到数值错误类别");
+    assert!(
+        module
+            .text
+            .contains("int \\E8\\BF\\90\\E7\\AE\\97\\E6\\BA\\A2\\E5\\87\\BA")
+    );
+    assert!(!module.text.contains("call void @llvm.trap()"));
 }
 
 #[test]
@@ -649,7 +824,7 @@ fn optional_real_llvm_round_trip() {
     }
     let target = configured_native_target();
     let request = xiao_codegen_llvm::BuildRequest::new(
-        compile_scalar_program(),
+        compile_plain_static_program(),
         target.clone(),
         toolchain.clone(),
         &output,
@@ -678,7 +853,7 @@ fn optional_real_llvm_round_trip() {
     let debug_options = xiao_codegen_llvm::CodegenOptions::for_target(target.clone())
         .with_debug_startup("xiao-diagnostics.exe");
     let debug_request = xiao_codegen_llvm::BuildRequest::new(
-        compile_scalar_program(),
+        compile_plain_static_program(),
         target,
         toolchain,
         &debug_output,
@@ -712,4 +887,241 @@ fn optional_corrupt_llvm_is_rejected() {
         )
         .expect_err("损坏 IR 应拒绝");
     assert!(matches!(error, CodegenError::ToolchainFailed { .. }));
+}
+
+#[test]
+#[ignore = "需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
+/// 真实静态溢出必须返回 Runtime 可恢复错误、稳定 span 与退出码，而不是平台非法指令。
+fn optional_static_overflow_uses_recoverable_runtime_report() {
+    let clang = std::env::var_os("XIAO_CLANG").expect("XIAO_CLANG");
+    let runtime = std::path::PathBuf::from(
+        std::env::var_os("XIAO_RUNTIME_LIBRARY").expect("XIAO_RUNTIME_LIBRARY"),
+    );
+    assert!(runtime.is_file(), "Runtime staticlib 必须存在");
+    let target = configured_native_target();
+    let rustc = std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
+    let toolchain = Toolchain::new(clang)
+        .with_runtime_library(&runtime)
+        .probe_native_static_libraries(rustc, &target)
+        .expect("Runtime 原生库清单")
+        .probe_versions()
+        .expect("工具版本");
+    let output = std::env::temp_dir().join(format!(
+        "xiao-n0-a-static-overflow-{}.exe",
+        std::process::id()
+    ));
+    let artifact = NativeBuild::new()
+        .build(&xiao_codegen_llvm::BuildRequest::new(
+            compile_overflow_program(),
+            target,
+            toolchain,
+            &output,
+        ))
+        .expect("静态错误路径应可链接");
+    assert!(artifact.module.uses_runtime);
+    assert!(!artifact.module.text.contains("call void @llvm.trap()"));
+    assert!(
+        !artifact
+            .artifact_runtime
+            .dependencies
+            .iter()
+            .any(|dependency| dependency.eq_ignore_ascii_case("WS2_32.dll")),
+        "普通报告不能拉入诊断事件网络依赖：{:?}",
+        artifact.artifact_runtime.dependencies
+    );
+    let run = xiao_codegen_llvm::NativeRun::new(&artifact)
+        .run()
+        .expect("启动静态溢出产物");
+    assert_eq!(run.status, Some(3), "stderr: {}", run.stderr);
+    assert!(
+        run.stderr.contains("code=X06-RUNTIME-009"),
+        "{}",
+        run.stderr
+    );
+    assert!(run.stderr.contains("span=0..1"), "{}", run.stderr);
+    let _ = std::fs::remove_file(artifact.executable);
+}
+
+#[test]
+#[ignore = "需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
+/// 外部非法指令仍走平台 Fatal 处理器，不得改写成可恢复数值错误。
+fn optional_external_illegal_instruction_remains_fatal() {
+    let clang = std::env::var_os("XIAO_CLANG").expect("XIAO_CLANG");
+    let runtime = std::path::PathBuf::from(
+        std::env::var_os("XIAO_RUNTIME_LIBRARY").expect("XIAO_RUNTIME_LIBRARY"),
+    );
+    assert!(runtime.is_file(), "Runtime staticlib 必须存在");
+    let target = configured_native_target();
+    let rustc = std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
+    let toolchain = Toolchain::new(clang)
+        .with_runtime_library(&runtime)
+        .probe_native_static_libraries(rustc, &target)
+        .expect("Runtime 原生库清单")
+        .probe_versions()
+        .expect("工具版本");
+    let root =
+        std::env::temp_dir().join(format!("xiao-n0-a-external-fatal-{}", std::process::id()));
+    let output = root.join(if cfg!(windows) {
+        "external-fatal.exe"
+    } else {
+        "external-fatal"
+    });
+    let llvm = format!(
+        "target triple = \"{}\"\ndeclare i32 @xiao_runtime_abi_is_compatible(i32, i32)\ndeclare void @xiao_runtime_fatal_abi()\ndeclare void @llvm.trap()\ndefine i32 @main() {{\nentry:\n  %compatible = call i32 @xiao_runtime_abi_is_compatible(i32 {}, i32 {})\n  %ok = icmp eq i32 %compatible, 1\n  br i1 %ok, label %fatal.instruction, label %fatal.abi\nfatal.abi:\n  call void @xiao_runtime_fatal_abi()\n  unreachable\nfatal.instruction:\n  call void @llvm.trap()\n  unreachable\n}}\n",
+        target.triple,
+        xiao_runtime_abi::ABI_MAJOR_VERSION,
+        xiao_runtime_abi::ABI_MINOR_VERSION,
+    );
+    let executable = toolchain
+        .compile_with_runtime_components_at_level(&llvm, &target, &output, Some(&runtime), &[], 0)
+        .expect("Fatal 夹具应链接");
+    let run = xiao_codegen_llvm::NativeRun { executable }
+        .run()
+        .expect("启动 Fatal 夹具");
+    assert_eq!(run.status, Some(139), "stderr: {}", run.stderr);
+    assert!(
+        run.stderr.contains("class=fatal code=X07-FATAL-005"),
+        "{}",
+        run.stderr
+    );
+    assert!(!run.stderr.contains("class=recoverable"), "{}", run.stderr);
+    assert!(!run.stderr.contains("X06-RUNTIME-009"), "{}", run.stderr);
+    let _ = std::fs::remove_dir_all(root);
+}
+
+/// 在临时 Runtime 链接下编译并运行一个静态数值边界夹具。
+fn run_static_numeric_case(
+    label: &str,
+    program: IrProgram,
+    target: &TargetDescription,
+    toolchain: &Toolchain,
+) -> xiao_codegen_llvm::NativeRunResult {
+    let root = std::env::temp_dir().join(format!("xiao-n0-a-{label}-{}", std::process::id()));
+    let output = root.join(if cfg!(windows) { "case.exe" } else { "case" });
+    let artifact = NativeBuild::new()
+        .build(&xiao_codegen_llvm::BuildRequest::new(
+            program,
+            target.clone(),
+            toolchain.clone(),
+            &output,
+        ))
+        .unwrap_or_else(|error| panic!("{label} 应成功链接：{error}"));
+    assert!(artifact.module.uses_runtime, "{label} 必须使用错误 Runtime");
+    assert!(
+        !artifact
+            .artifact_runtime
+            .dependencies
+            .iter()
+            .any(|dependency| dependency.eq_ignore_ascii_case("WS2_32.dll")),
+        "{label} 不得链接诊断窗口通道：{:?}",
+        artifact.artifact_runtime.dependencies
+    );
+    let run = xiao_codegen_llvm::NativeRun::new(&artifact)
+        .run()
+        .unwrap_or_else(|error| panic!("{label} 应可启动：{error}"));
+    let _ = std::fs::remove_dir_all(root);
+    run
+}
+
+#[test]
+#[ignore = "需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
+/// 七类静态数值失败块分别验证边界内/外输入、错误身份、span 和退出码。
+fn optional_static_numeric_failure_boundaries_match_runtime_contract() {
+    let runtime = std::path::PathBuf::from(
+        std::env::var_os("XIAO_RUNTIME_LIBRARY").expect("XIAO_RUNTIME_LIBRARY"),
+    );
+    assert!(runtime.is_file(), "Runtime staticlib 必须存在");
+    let target = configured_native_target();
+    let rustc = std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
+    let toolchain = Toolchain::new(std::env::var_os("XIAO_CLANG").expect("XIAO_CLANG"))
+        .with_runtime_library(&runtime)
+        .probe_native_static_libraries(rustc, &target)
+        .expect("Runtime 原生库清单")
+        .probe_versions()
+        .expect("工具版本");
+    let cases = [
+        (
+            "integer-overflow-boundary-in",
+            numeric_binary_program("+", "int", "9223372036854775806", "1"),
+            None,
+        ),
+        (
+            "integer-overflow-boundary-out",
+            numeric_binary_program("+", "int", "9223372036854775807", "1"),
+            Some("X06-RUNTIME-009"),
+        ),
+        (
+            "division-boundary-in",
+            numeric_binary_program("//", "int", "12", "3"),
+            None,
+        ),
+        (
+            "division-boundary-out",
+            numeric_binary_program("//", "int", "12", "0"),
+            Some("X06-RUNTIME-013"),
+        ),
+        (
+            "minimum-division-boundary-in",
+            numeric_binary_program("//", "int", "-9223372036854775808", "1"),
+            None,
+        ),
+        (
+            "minimum-division-boundary-out",
+            numeric_binary_program("//", "int", "-9223372036854775808", "-1"),
+            Some("X06-RUNTIME-009"),
+        ),
+        (
+            "integer-narrow-boundary-in",
+            narrowing_program("int", "sint", "2147483647"),
+            None,
+        ),
+        (
+            "integer-narrow-boundary-out",
+            narrowing_program("int", "sint", "2147483648"),
+            Some("X06-RUNTIME-009"),
+        ),
+        (
+            "float-to-int-boundary-in",
+            narrowing_program("float", "sint", "2147483647.0"),
+            None,
+        ),
+        (
+            "float-to-int-boundary-out",
+            narrowing_program("float", "sint", "2147483648.0"),
+            Some("X06-RUNTIME-009"),
+        ),
+        (
+            "float-finite-boundary-in",
+            numeric_binary_program("*", "float", "1.5", "2.0"),
+            None,
+        ),
+        (
+            "float-nan-boundary-out",
+            numeric_binary_program("/", "float", "0.0", "0.0"),
+            Some("X06-RUNTIME-009"),
+        ),
+        (
+            "float-range-boundary-out",
+            numeric_binary_program("*", "float", "1.7976931348623157e308", "2.0"),
+            Some("X06-RUNTIME-009"),
+        ),
+    ];
+    for (label, program, expected_error) in cases {
+        let run = run_static_numeric_case(label, program, &target, &toolchain);
+        match expected_error {
+            None => {
+                assert_eq!(run.status, Some(0), "{label}: {}", run.stderr);
+                assert!(run.stderr.is_empty(), "{label}: {}", run.stderr);
+            }
+            Some(code) => {
+                assert_eq!(run.status, Some(3), "{label}: {}", run.stderr);
+                assert!(
+                    run.stderr.contains(&format!("code={code}")),
+                    "{label}: {}",
+                    run.stderr
+                );
+                assert!(run.stderr.contains("span=0..1"), "{label}: {}", run.stderr);
+            }
+        }
+    }
 }
