@@ -9,7 +9,8 @@
 > **一句话概括**：**批的不是「把 trap 换成 call」，是「静态产物要不要从此链接 Runtime」**——
 > 这决定了产物体积、可重复构建白名单和精确字节基线的走向，而立项文档把它列成了一行影响面。
 >
-> 状态：**规划稿（2026-10-12）**。**第一步是探测**（§2.1），不是先改代码；范围要不要拆段见 §五 第 1 条。
+> 状态：**规划稿 + 链接代价探测已完成（2026-10-12）**。**第一步是探测**（§2.1），不是先改代码；
+> 7 处失败块尚未修改，范围要不要拆段见 §五 第 1 条。
 
 ## 一、Agent 交接上下文
 
@@ -97,6 +98,33 @@
    - 是否影响**可重复构建白名单**（19 的 `19.18`/条件 4 与 10S 的白名单口径）；
 2. 探测**只读不改**：本步骤不修改 `ir.rs`，先出结论再动手；
 3. 结论**先汇报再继续**——它决定本批范围是「甲/乙」哪条（§五 第 1 条）。
+
+### 2.1.1 **Windows 受控探测记录（2026-10-12）**
+
+本次探测只生成临时夹具，没有修改 `ir.rs` 或正式测试。固定目标为
+`x86_64-pc-windows-msvc`，工具为 clang 22.1.2，Runtime 为当前 release
+`xiao_runtime.lib`（20,792,154 字节）。三份样本来自同一份静态标量 LLVM IR：
+
+| 样本 | 链接输入 | 产物字节数 | PE 运行时依赖 | 相对纯静态 |
+| --- | --- | ---: | --- | ---: |
+| `static` | 不引用 Runtime | 107,520 | `KERNEL32.dll` | 基线 |
+| `error-class` | 仅引用 `xiao_runtime_error_class` | 218,112 | `api-ms-win-core-synch-l1-2-0.dll`、`KERNEL32.dll`、`ntdll.dll` | +110,592（+102.9%） |
+| `error-report` | 再引用 `xiao_runtime_error_attach_span`、`xiao_runtime_error_exit_code`、`xiao_runtime_error_report` | 513,024 | 上述三项 + `WS2_32.dll` | +405,504（+377.1%） |
+
+`error-report` 样本没有调用 `xiao_runtime_diagnostic_prepare`、
+`xiao_runtime_diagnostic_ready` 或 `xiao_runtime_diagnostic_finish`，但仍出现
+`WS2_32.dll`。原因已逐行核对：`xiao_runtime_error_report` 的
+`write_runtime_report` 无条件调用 `xiao_runtime_diagnostic_event`（`xiao-runtime/src/abi.rs:1282-1322`），
+因此普通错误报告会把诊断事件的网络通道一并拉入。当前实现可以证明“没有自动启动握手”，
+却**不能**证明“没有隐式链接诊断窗口通道”；这项验收在拆分报告与诊断事件之前保持未通过。
+
+重复链接的原始 PE 字节在每个样本中只差两个链接时间戳（文件头和调试目录）；按 15C
+已有的 `PE.TimeDateStamp` 与 `PE.DebugDirectory.TimeDateStamp` 归一化后，三份样本均逐字节相同，
+没有新增可重复构建白名单项。这个结果只说明现有归一化仍有效，不把原始时间戳差异伪装成字节相同。
+
+**探测结论**：静态路径接入 Runtime 的代价不是零；只读错误身份入口已经使产物约增至 2.03 倍，
+调用现有完整报告入口约增至 4.77 倍并引入 `WS2_32.dll`。在确定是否接受该链接面、以及是否先把
+普通错误报告与诊断事件拆开之前，本批不修改 7 处失败块。
 
 ### 2.2 **七处模板逐条定身份，不许一律改成溢出码**
 
