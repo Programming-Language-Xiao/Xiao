@@ -491,21 +491,29 @@ fn lowers_input_intrinsic_to_runtime_abi() {
     validate_with_llvm_as(&module.text);
 }
 
-/// 构造带一个 `code` 字符串参数的错误构造 intrinsic 调用。
-fn error_constructor(id: u32) -> IrExpression {
+/// 构造带指定参数的错误构造 intrinsic 调用。
+fn error_constructor_with_arguments(
+    id: u32,
+    arguments: Vec<xiao_ir::IrCallArgument>,
+) -> IrExpression {
     IrExpression {
-        kind: IrExpressionKind::IntrinsicCall {
-            id,
-            arguments: vec![xiao_ir::IrCallArgument {
-                kind: "positional".to_owned(),
-                name: Some(name("code")),
-                value: literal("str", "\"CODE\"", "str"),
-                span: span(),
-            }],
-        },
+        kind: IrExpressionKind::IntrinsicCall { id, arguments },
         ty: IrType::Dynamic,
         span: span(),
     }
+}
+
+/// 构造带一个 `code` 字符串字面量参数的错误构造 intrinsic 调用。
+fn error_constructor(id: u32) -> IrExpression {
+    error_constructor_with_arguments(
+        id,
+        vec![xiao_ir::IrCallArgument {
+            kind: "positional".to_owned(),
+            name: Some(name("code")),
+            value: literal("str", "\"CODE\"", "str"),
+            span: span(),
+        }],
+    )
 }
 
 #[test]
@@ -528,6 +536,126 @@ fn lowers_error_constructor_intrinsics_to_runtime_abi() {
         );
         validate_with_llvm_as(&module.text);
     }
+}
+
+#[test]
+/// 动态 `code`/`message` 表达式必须借用 Runtime 值调用统一错误构造 ABI。
+fn lowers_dynamic_error_constructor_arguments_to_runtime_abi() {
+    let code = IrExpression {
+        kind: IrExpressionKind::Name { name: name("code") },
+        ty: IrType::Scalar {
+            name: "str".to_owned(),
+        },
+        span: span(),
+    };
+    let message = IrExpression {
+        kind: IrExpressionKind::Name {
+            name: name("message"),
+        },
+        ty: IrType::Scalar {
+            name: "str".to_owned(),
+        },
+        span: span(),
+    };
+    let program = IrProgram::new(
+        IrEntryMode::Script,
+        vec![
+            IrStatement {
+                kind: IrStatementKind::Assignment {
+                    target: name("code"),
+                    value: literal("str", "\"DYNAMIC\"", "str"),
+                },
+                span: span(),
+                leading_docs: Vec::new(),
+            },
+            IrStatement {
+                kind: IrStatementKind::Assignment {
+                    target: name("message"),
+                    value: literal("str", "\"dynamic message\"", "str"),
+                },
+                span: span(),
+                leading_docs: Vec::new(),
+            },
+            IrStatement {
+                kind: IrStatementKind::Expression {
+                    value: error_constructor_with_arguments(
+                        12,
+                        vec![
+                            xiao_ir::IrCallArgument {
+                                kind: "positional".to_owned(),
+                                name: Some(name("code")),
+                                value: code,
+                                span: span(),
+                            },
+                            xiao_ir::IrCallArgument {
+                                kind: "positional".to_owned(),
+                                name: Some(name("message")),
+                                value: message,
+                                span: span(),
+                            },
+                        ],
+                    ),
+                },
+                span: span(),
+                leading_docs: Vec::new(),
+            },
+        ],
+        span(),
+    );
+    let module = lower_program(&program, &CodegenOptions::default())
+        .expect("动态错误参数应降低到 Runtime ABI");
+    assert!(module.text.contains("xiao_runtime_error_new_values"));
+    assert!(module.text.contains("xiao_runtime_value_copy"));
+    assert!(
+        !module
+            .text
+            .contains("动态错误构造参数（当前只支持字符串字面量）")
+    );
+    validate_with_llvm_as(&module.text);
+}
+
+#[test]
+/// 非文本动态错误参数保留到 Runtime，由 Runtime 返回稳定类型错误。
+fn lowers_non_text_error_constructor_argument_to_runtime_check() {
+    let value = IrExpression {
+        kind: IrExpressionKind::Name { name: name("code") },
+        ty: IrType::Dynamic,
+        span: span(),
+    };
+    let program = IrProgram::new(
+        IrEntryMode::Script,
+        vec![
+            IrStatement {
+                kind: IrStatementKind::Assignment {
+                    target: name("code"),
+                    value: literal("integer", "7", "int"),
+                },
+                span: span(),
+                leading_docs: Vec::new(),
+            },
+            IrStatement {
+                kind: IrStatementKind::Expression {
+                    value: error_constructor_with_arguments(
+                        12,
+                        vec![xiao_ir::IrCallArgument {
+                            kind: "positional".to_owned(),
+                            name: Some(name("code")),
+                            value,
+                            span: span(),
+                        }],
+                    ),
+                },
+                span: span(),
+                leading_docs: Vec::new(),
+            },
+        ],
+        span(),
+    );
+    let module = lower_program(&program, &CodegenOptions::default())
+        .expect("非文本错误参数应交给 Runtime 检查");
+    assert!(module.text.contains("xiao_runtime_error_new_values"));
+    assert!(module.text.contains("xiao_runtime_error_class"));
+    validate_with_llvm_as(&module.text);
 }
 
 #[test]

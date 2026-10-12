@@ -605,8 +605,9 @@ impl<'a> DynamicGenerator<'a> {
         let mut code = None;
         let mut message = None;
         for (index, argument) in arguments.iter().enumerate() {
-            let text = self.emit_error_text_argument(argument, span)?;
-            let value = self.emit_text_value(text.as_bytes(), "xiao_runtime_value_str_owned")?;
+            // 参数表达式先按普通动态值发射；Runtime 的 `new_values` 负责检查它是否为文本，
+            // 这样变量、函数返回值和动态值都能与 VM 共享同一类型错误身份。
+            let value = self.emit_expression(&argument.value)?;
             let slot = self.next_temp();
             self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
             self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
@@ -653,24 +654,6 @@ impl<'a> DynamicGenerator<'a> {
         }
         self.check_pending_error_at(span);
         Ok(value)
-    }
-
-    /// 发射错误构造参数中的稳定文本。
-    fn emit_error_text_argument(
-        &mut self,
-        argument: &IrCallArgument,
-        span: IrSpan,
-    ) -> Result<String> {
-        match &argument.value.kind {
-            IrExpressionKind::Literal { literal, text } if literal == "str" => unquote(text)
-                .ok_or_else(|| CodegenError::InvalidIr {
-                    message: format!("错误构造字符串无法解码（{}..{}）", span.start, span.end),
-                }),
-            _ => Err(CodegenError::Unsupported {
-                feature: "动态错误构造参数（当前只支持字符串字面量）".to_owned(),
-                span: Some(argument.value.span),
-            }),
-        }
     }
 
     /// 发射一个不拥有输入内存的 ABI 字节视图。

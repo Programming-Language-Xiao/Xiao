@@ -304,12 +304,26 @@ Windows/Linux/macOS 平台的当前状态：Windows 标缺，Linux 已有受控�
 Windows 专用受控性能主机、macOS 宿主和 B1 成对释放实验仍缺。Linux 受控性能与阈值依据已归档，
 但 19.17 的跨平台条件仍为「数据不足/不满足」，不能写整体通过或回归。
 
+### 10R D1/D2/D4 影响复核（2026-10-12）
+
+本机没有 10D §4 所需的受控 LLVM/Runtime 工具链环境，因此本节只登记可复核的 IR/历史剖面，
+不冒充新的产物字节或性能取数：
+
+- D5 的五个样本在 D1 后仍为 `after == baseline`，且实际 `uses_runtime=true`；这些样本走已有
+  动态 Runtime 路径，没有覆盖 D2 新增的静态数值失败块，因此不能据此证明静态错误产物体积不变；
+- `xiao-codegen-llvm` 的静态纯标量夹具仍保持 `uses_runtime=false`，含 checked 数值检查的夹具标记
+  `uses_runtime=true`、Runtime ABI 版本为当前 1.12；这只证明编译剖面切换，未提供链接后字节数；
+- D4 动态错误参数已接入现有 Runtime 构造 ABI，未改变 19D 的四个基准源码或 `baseline.json` 输入。
+
+**O-1 当前判定：数据不足，暂不改 19D 基线。** 后续受控主机必须对 D2 静态数值夹具完成两次构建、
+产物体积/启动路径对照和必要的基线变更流程；在此之前不能写「不受影响」、通过或回归。
+
 ### 19 O6 出口条件对账（截至 2026-10-11）
 
 | O6 条件（12 原文） | 状态 | 证据与限制 |
 | --- | --- | --- |
 | 1. 已冻结优化级别、字节码格式、索引 Schema、`.xar` 版本和目标平台具有完整兼容矩阵与升级/拒绝策略。 | 部分 | 主要格式、版本与目标拒绝策略已冻结；兼容矩阵仍保留 Unverified 格，三平台完整验收未齐 |
-| 2. 优化前后、不同后端、不同归档入口的差分、模糊、损坏恢复和安全测试全部通过。 | 部分 | 10T 已接通 table-user-drop、摘除普通表实例豁免，新表方法严格比较；10W 已加入 A2 构造参数 VM 基线并将 A3 方法值边界改判为两边一致拒绝；10Z-Y3 的 B1 已统一字典成员错误身份（VM/原生均 `X06-RUNTIME-002`），C 类错误程序按两边都拒绝关闭；④ 动态错误构造参数仍是已立项的原生缺口，见 [10Z-D](10z-dynamic-error-constructor-followup.md)；维护回归 `37756208604` 的 Windows/Linux 原生作业已完成 A2 O0-O3 与调试矩阵；Linux 原始性能数据已回填，macOS 调试执行受宿主限制，不能写成全路径覆盖 |
+| 2. 优化前后、不同后端、不同归档入口的差分、模糊、损坏恢复和安全测试全部通过。 | 部分 | 10T 已接通 table-user-drop、摘除普通表实例豁免，新表方法严格比较；10W 已加入 A2 构造参数 VM 基线并将 A3 方法值边界改判为两边一致拒绝；10Z-Y3 的 B1 已统一字典成员错误身份（VM/原生均 `X06-RUNTIME-002`），C 类错误程序按两边都拒绝关闭；④ 动态错误构造参数的代码路径已接通（ABI 1.12），受控原生差分与失败清理证据仍待补；维护回归 `37756208604` 的 Windows/Linux 原生作业已完成 A2 O0-O3 与调试矩阵；Linux 原始性能数据已回填，macOS 调试执行受宿主限制，不能写成全路径覆盖 |
 | 3. SHA-256 完整性验证、资源上限、路径安全、权限和离线缓存行为在三平台一致；签名/信任未实现时有明确提示。 | 部分 | Windows 本机与 CI 证据存在；Linux 裸机提交 `74b272d70bde3eaeb9f8619426a5bc0594f6cfcd` 的 `reproduce.sh native` 退出码 0，且未使用 Xvfb。**`19.14` 的 Linux 桌面开窗 C 档已通过（2026-10-10，PR #5 合并 `efa9fd2`）**：`xiao run -debug` 的窗口确实出现并保持，两张截图归档，检出 `69f6ff5`，环境为 Ubuntu 26.04.1 裸机（`virtualization: none`）、Wayland 会话、`x-terminal-emulator → /usr/bin/terminator`；证据见 [10Z Linux 结果](10z-linux-bare-metal-results-20261010.md)。条件 3 的**五子项**仍未在三平台一致（见下方逐格盘点：**另外两个平台的默认测试从未运行**）。四平台 CI 37693571709 通过；macOS 只有 CI，真实终端显式跳过。签名/信任仍明确未实现 |
 | 4. 发布报告可追溯源码、依赖锁、工具链、优化指纹、对象摘要和归档成员，且重复构建差异在白名单内。 | 部分 | 15 系列报告与 Windows 证据通过；10S 最终四平台 CI 37693571709 通过，代码提交 58e8ecc，检出 16310a4（代码同 5abaf15），历次失败与裸机来源均保留；完整三平台白名单复核仍待补 |
 | 5. `xiao build` 的 LLVM 原生发布构建完成相对于已冻结 Java 基线的性能对照，并按 Windows → Linux → macOS 记录结果；Rust 字节码 VM 只保留独立性能报告。基准、版本或阈值未冻结时不得宣称“至少达到 Java”。 | 不满足 | Windows 本轮按决定标缺（无专用受控主机，不使用本机数字）；macOS 无宿主、不可验证；**Linux 已完成受控三路原始取数**（[10Z 结果](10z-performance-measurement-results-20261011.md)：4 个 `measured`、1 个 `data-insufficient`，bootstrap 确定性通过），**10% 阈值已冻结并给出依据，但 Windows/macOS 覆盖边界仍使条件 5 不满足**。受控主机 Ubuntu 26.04.1 裸机（`virt=none`、i5-12450H、14 GiB，与 C 档同一台），Temurin/OpenJDK **21.0.12.1**，协议逐项一致（预热 3 / 测量 11 / percentile-bootstrap / 10000 / seed 19015）；`container-dense` 在 Linux 上为 `measured`，其原 `data-insufficient` 理由来自 **Windows** 观察。原始 JSON、完整日志和环境清单见结果文档附件。|

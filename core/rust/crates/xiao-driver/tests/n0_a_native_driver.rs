@@ -302,6 +302,14 @@ fn optional_frontend_artifact_differential_round_trip() {
             "unmatched",
             "payload = \"held\"\nraise ArithmeticError(code = \"UNMATCHED\")\n",
         ),
+        (
+            "dynamic-error-constructor",
+            "code = \"DYNAMIC\"\nmessage = \"dynamic message\"\nraise ArithmeticError(code = code, message = message)\n",
+        ),
+        (
+            "dynamic-error-non-text",
+            "code = 7\nraise ArithmeticError(code = code)\n",
+        ),
     ];
     for (label, source) in cases {
         let (frontend_request, artifact, native, root) =

@@ -704,8 +704,9 @@ fn numeric_error_abi_preserves_identity_and_span() {
 fn abi_compatibility_accepts_old_minor_and_rejects_unsupported_versions() {
     assert_eq!(xiao_runtime_abi_is_compatible(1, 10), 1);
     assert_eq!(xiao_runtime_abi_is_compatible(1, 11), 1);
-    assert_eq!(xiao_runtime_abi_is_compatible(1, 12), 0);
-    assert_eq!(xiao_runtime_abi_is_compatible(2, 11), 0);
+    assert_eq!(xiao_runtime_abi_is_compatible(1, 12), 1);
+    assert_eq!(xiao_runtime_abi_is_compatible(1, 13), 0);
+    assert_eq!(xiao_runtime_abi_is_compatible(2, 12), 0);
 }
 
 #[test]

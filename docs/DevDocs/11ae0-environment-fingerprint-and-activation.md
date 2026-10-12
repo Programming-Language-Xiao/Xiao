@@ -153,7 +153,7 @@ $dev$ /home/project/xiao$
 | Shell | 改什么 | 已知坑 |
 | --- | --- | --- |
 | **bash/zsh** | `PS1`（zsh 还有 `PROMPT`/`RPROMPT`/`precmd`） | 须保存原值以便还原；`PS1` 里已有的 `\e` 转义要处理 |
-| **PowerShell** | `prompt` 函数（保存原 `Function:prompt` 脚本块） | ⚠️ **PS 5.1 不支持 `` `e `` 转义**，这是真实兼容坑（`11x0p1` 刚在 `reproduce.ps1` 上踩过 PowerShell 5.1 的坑） |
+| **PowerShell** | `prompt` 函数（保存原 `Function:prompt` 脚本块） | ⚠️ **PS 5.1 不支持 PowerShell ESC 转义**，这是真实兼容坑（`11x0p1` 刚在 `reproduce.ps1` 上踩过 PowerShell 5.1 的坑） |
 | **cmd.exe** | `PROMPT` 环境变量（`$E[32m`，需 VT） | **无法保存/还原任意原提示符**，也无法跨进程改父会话 → **必然降级** |
 
 **颜色降级**：`cli/ts/src/commands/parser.ts:6` 已有 `color: "auto" | "always" | "never"`，
@@ -172,7 +172,7 @@ $dev$ /home/project/xiao$
 
 ### 5.2 而 `12-tests:33` 的伪终端要求**适用**
 
-> 涉及**按键、粘贴、软换行与颜色的用例必须使用可控的伪终端或等价终端测试层，
+> 涉及**按键、粘贴、软换行与颜色的用例**必须使用可控的伪终端或等价终端测试层，
 > 不能只测试普通标准输入管道。
 
 条件 4 的「**绿色**前缀」正落在「颜色」与「交互终端行为」两个词上。**所以这是硬约束。**

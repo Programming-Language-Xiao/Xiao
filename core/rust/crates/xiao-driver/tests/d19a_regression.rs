@@ -83,6 +83,19 @@ fn numeric_overflow_is_reported_identically_at_every_level() {
 }
 
 #[test]
+fn dynamic_error_constructor_preserves_identity_and_rejects_non_text_values() {
+    let dynamic = "code = \"DYNAMIC\"\nmessage = \"dynamic message\"\nraise ArithmeticError(code = code, message = message)\n";
+    let seen = across_levels("dynamic-error-constructor", dynamic);
+    assert_eq!(seen.code.as_deref(), Some("DYNAMIC"));
+    assert_eq!(seen.exit, 3);
+
+    let non_text = "code = 7\nraise ArithmeticError(code = code)\n";
+    let seen = across_levels("dynamic-error-non-text", non_text);
+    assert_eq!(seen.code.as_deref(), Some("X06-RUNTIME-002"));
+    assert_eq!(seen.exit, 3);
+}
+
+#[test]
 fn dynamic_string_to_bool_boundary_is_stable() {
     for literal in ["true", "True", "false", "False"] {
         let source = format!(

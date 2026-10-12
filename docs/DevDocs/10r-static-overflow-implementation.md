@@ -9,16 +9,16 @@
 > **一句话概括**：**批的不是「把 trap 换成 call」，是「静态产物要不要从此链接 Runtime」**——
 > 这决定了产物体积、可重复构建白名单和精确字节基线的走向，而立项文档把它列成了一行影响面。
 >
-> 状态：**D1、D5、D2 已实现（2026-10-12）**。链接探测已完成；审核侧按星崽给的准绳（**可持续/可维护/可扩展**）
+> 状态：**D1、D5、D2、D4 已实现（2026-10-12）**。链接探测已完成；审核侧按星崽给的准绳（**可持续/可维护/可扩展**）
 > 把原来五项待定**全部裁定**（§五 D1–D7）：**拆开报告与诊断事件**、范围取**乙**（不含静态
-> `catch`/`finally` 传播）、错误身份按运行时既有映射**定死**（窄化用 009）、10Z-D **规划上并批但实现转后续**、
+> `catch`/`finally` 传播）、错误身份按运行时既有映射**定死**（窄化用 009）、10Z-D **已实现动态参数**、
 > 19D 基线**先补测再按基线变更处置**、顺序锁死（§五 D6）、静态异常路由另立批次（D7）。
 > 探测本身做对了（只读不改、明写「不能证明没有隐式链接诊断窗口通道」）；
 > 审核补了三条（§2.1.2、§2.1.3）：表 C 的「静态从不链接 Runtime」要加 debug 限定；
 > **D5 实测四个基准与 19C 基线均走 Runtime 路径**（前三个由 `runtime_checks` 触发）⇒ **O-1 会动 19D 的性能基线**；
 > **O-2 要避开 `WS2_32` 就得拆「报告/诊断事件」，而那正是上一轮判过「不要删」的那一行**。
 > **裁定已落（§五 D1–D7）**；D6 的 `(0)` 解耦、`(1)` 逐程序补测和 `(2)` 失败块接通道已完成。
-> `(3)` 10Z-D 动态参数、`(4)` 19D 基线判定与 F-3 仍是后续工作；静态 `catch`/`finally` 清理链按 D7
+> `(3)` 10Z-D 动态参数已完成；`(4)` 19D 基线判定与 F-3 仍是后续工作；静态 `catch`/`finally` 清理链按 D7
 > 单独登记。
 
 ## 一、Agent 交接上下文
@@ -90,7 +90,7 @@
 | ABI 版本与符号 | 是否需要新符号、主/次版本怎么动 | **做**（§2.5） |
 | 纯静态产物的体积/白名单 | 链接面变化后的精确基线处置 | **做**（§2.6） |
 | F-3 | `tests/benchmarks/**` 的触发正反例（10 系列遗留） | **顺手收掉**（§2.8） |
-| 10Z-D 动态错误构造参数 | —— | **规划上并批；本批未实现，转后续**（§五 D4） |
+| 10Z-D 动态错误构造参数 | —— | **已实现；受控原生差分与变异红色证据待外部执行点**（§五 D4） |
 | 20C 的落点准备（N-1/N-2/N-3） | `codeRoots`/00A/`sourceExtensions`/身份字段关系 | **不做**，归 20C 库代码之前那一批 |
 
 ## 二、必须先冻结的 8 条
@@ -289,7 +289,7 @@ D1 已拆开普通错误报告与诊断事件，D2 再把 7 处失败块接入 R
 core/rust/crates/xiao-codegen-llvm/src/ir.rs             7 处失败块；branch_on_failure/check_finite 使用 span
 core/rust/crates/xiao-runtime/src/abi.rs                  Runtime ABI 汇总与兼容检查
 core/rust/crates/xiao-runtime/src/abi_numeric.rs           静态数值错误入口实现
-core/rust/crates/xiao-runtime-abi/src/lib.rs              ABI 符号与版本常量（次版本 1.11）
+core/rust/crates/xiao-runtime-abi/src/lib.rs              ABI 符号与版本常量（当前次版本 1.12）
 core/rust/crates/xiao-codegen-llvm/tests/n0_a.rs            静态边界、Fatal/可恢复分界和真实端到端夹具
 core/rust/crates/xiao-driver/tests/artifact_size_regression.rs  体积基线（若链接面变化，按基线变更走）
 docs/DevDocs/10r-static-overflow-followup.md              实施记录回填（立项 → 已实现）
@@ -383,10 +383,9 @@ docs/DevDocs/README.md                                    本批登记与状态
 
 ### D4 **10Z-D 并批**
 
-**裁定**：规划上并入本批，但当前交付只完成了静态数值错误入口；10Z-D 的动态 `code`/`message`
-参数仍保持字面量限制，转后续实现。`xiao_runtime_error_new_values` 已在既有 ABI 中存在，D2 新增的是
-`xiao_runtime_error_raise_numeric`，因此本批实际把 ABI 次版本提升到 1.11；D4 完成时必须以该版本为基线
-重新核对兼容矩阵，不得把未实现写成已收口。
+**裁定**：规划上并入本批，D4 已完成 LLVM 动态参数发射与 Runtime 类型错误路由。
+`xiao_runtime_error_new_values` 沿用既有符号，ABI 次版本按收尾要求由 1.11 提升到 **1.12**；
+受控原生差分、失败清理和变异红色证据仍需外部执行点，不在本机宣称完成。
 
 ### D5 **19D 基线：先补测，再按基线变更流程处置**（对应 O-1）
 
@@ -428,9 +427,10 @@ docs/DevDocs/README.md                                    本批登记与状态
 `kind=1` 映射 `X06-RUNTIME-013`（整除/取模除零；`%` 沿 Runtime 现有契约保留 `//` 算子参数）。
 成功路径的 checked intrinsic、向下整除和浮点检查结果没有放宽。
 
-Runtime ABI 次版本由 1.10 提升为 **1.11**，新增入口的文本只在调用期间借用，不保存 LLVM
-全局量的外部指针。静态 `main` 在进入用户入口前调用 `xiao_runtime_abi_is_compatible(1, 11)`；
-Runtime 单元测试覆盖旧次版本 1.10/当前 1.11 接受、未来 1.12 和错误主版本拒绝。
+Runtime ABI 次版本由 1.10 经 D2 提升到 1.11，再由 D4 提升到 **1.12**；动态文本参数只在调用期间借用，
+不保存 LLVM 全局量的外部指针。静态/动态入口在进入用户入口前调用
+`xiao_runtime_abi_is_compatible(1, 12)`；Runtime 单元测试覆盖旧次版本 1.10/1.11、当前 1.12 接受，
+未来 1.13 和错误主版本拒绝。
 
 ### 6.2 已完成验证与边界
 
@@ -440,7 +440,7 @@ Runtime 单元测试覆盖旧次版本 1.10/当前 1.11 接受、未来 1.12 和
 - 外部 `llvm.trap` 夹具仍由平台 Fatal 处理器报告 `X07-FATAL-005`，与语言级数值失败分流。
 - `cargo test -p xiao-runtime-abi -p xiao-runtime -p xiao-codegen-llvm --lib` 已通过；跨平台裸机证据、
   19D 受控性能基线判定和 F-3 触发正/负例仍未在本批宣称完成。
-- 静态 `catch`/`finally` 清理链和错误传播仍按 D7 不适用；10Z-D 的动态错误参数仍是待后续缺口。
+- 静态 `catch`/`finally` 清理链和错误传播仍按 D7 不适用；10Z-D 受控原生差分、失败清理和变异红色证据仍待后续执行点。
 
 ## 相关页面
 
