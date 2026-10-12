@@ -18,7 +18,7 @@ code = "DYNAMIC"
 raise ArithmeticError(code = code)
 ```
 
-VM 运行到用户自己的 `raise`，报告错误码 `DYNAMIC`、退出码 3。原生构建返回
+VM 运行到用户自己的 `raise`，报告错误码 `DYNAMIC`、退出码 3。**实施前**原生构建返回
 `X11-PROTOCOL-007`，消息为“动态错误构造参数（当前只支持字符串字面量）”，构建退出码 2。
 这不是两边都拒绝的错误程序，而是语言允许的动态错误参数形态缺少原生产物。
 
