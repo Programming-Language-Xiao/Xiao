@@ -1,7 +1,8 @@
 //! 11A-E3D：多源 SemVer 选择与回溯的独立规格测试。
 
 use xiao_package::{
-    ArtifactReference, ConfiguredSource, IndexDependency, IndexPackage, SOURCE_AMBIGUOUS_CODE,
+    ArtifactReference, ConfiguredSource, IndexDependency, IndexPackage,
+    OFFICIAL_LIBRARY_DEPENDENCY_CODE, OFFICIAL_STANDARD_LIBRARY_PACKAGE, SOURCE_AMBIGUOUS_CODE,
     SOURCE_INVALID_CODE, SnapshotStatus, SolveRequirement, SourceDescriptor, SourceSnapshot,
     VERSION_UNSATISFIED_CODE, federate, solve_dependencies,
 };
@@ -71,6 +72,50 @@ fn requirement(name: &str, version: &str, source: Option<&str>) -> SolveRequirem
         version: version.to_owned(),
         source: source.map(str::to_owned),
     }
+}
+
+#[test]
+/// 官方标准库保留名不得由普通索引候选解析，且失败使用独立稳定诊断。
+fn official_standard_library_is_rejected_by_normal_dependency_solver() {
+    let first = source("first", 0);
+    let sources = [first.clone()];
+    let direct_snapshot = [snapshot(
+        &first,
+        vec![package(OFFICIAL_STANDARD_LIBRARY_PACKAGE, "1.0.0", &[])],
+    )];
+    let direct_records = federate(&direct_snapshot).unwrap();
+    let direct_error = solve_dependencies(
+        &sources,
+        &direct_snapshot,
+        &direct_records,
+        &[requirement(OFFICIAL_STANDARD_LIBRARY_PACKAGE, "*", None)],
+        None,
+    )
+    .expect_err("官方标准库不能作为直接普通依赖解析");
+    assert_eq!(direct_error.code, OFFICIAL_LIBRARY_DEPENDENCY_CODE);
+    assert_eq!(OFFICIAL_LIBRARY_DEPENDENCY_CODE, "X05-PACKAGE-006");
+
+    let transitive_snapshot = [snapshot(
+        &first,
+        vec![
+            package(
+                "app",
+                "1.0.0",
+                &[(OFFICIAL_STANDARD_LIBRARY_PACKAGE, "*", None)],
+            ),
+            package(OFFICIAL_STANDARD_LIBRARY_PACKAGE, "1.0.0", &[]),
+        ],
+    )];
+    let transitive_records = federate(&transitive_snapshot).unwrap();
+    let transitive_error = solve_dependencies(
+        &sources,
+        &transitive_snapshot,
+        &transitive_records,
+        &[requirement("app", "*", None)],
+        None,
+    )
+    .expect_err("传递依赖也不能把官方标准库加入普通依赖图");
+    assert_eq!(transitive_error.code, OFFICIAL_LIBRARY_DEPENDENCY_CODE);
 }
 
 #[test]

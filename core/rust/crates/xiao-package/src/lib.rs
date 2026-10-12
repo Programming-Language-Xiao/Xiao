@@ -119,7 +119,9 @@ pub use selection::select_source;
 /// 重导出已验证的可复用源快照存储。
 pub use snapshot_store::{SnapshotStore, StoredSnapshot};
 /// 重导出联邦索引约束求解接口。
-pub use solver::{ResolvedPackage, SolveRequirement, solve_dependencies};
+pub use solver::{
+    OFFICIAL_STANDARD_LIBRARY_PACKAGE, ResolvedPackage, SolveRequirement, solve_dependencies,
+};
 /// 重导出离线源契约。
 pub use source::{
     ConfiguredSource, SOURCE_PROTOCOL_VERSION, SourceDeclaration, SourceDescriptor, SourceError,

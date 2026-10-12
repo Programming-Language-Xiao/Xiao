@@ -1872,7 +1872,8 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let mut code = None;
                 let mut message = None;
                 for (index, argument) in arguments.iter().enumerate() {
-                    let text = runtime_text(&argument.value)?;
+                    let text = runtime_text(&argument.value)
+                        .map_err(|fault| attach_fault_span(fault, span.start, span.end))?;
                     match argument.keyword.as_deref() {
                         Some("code") if code.is_none() => code = Some(text),
                         Some("message") if message.is_none() => message = Some(text),
@@ -2101,6 +2102,17 @@ fn runtime_text(value: &RuntimeValue) -> Result<String, Fault> {
             "str",
             value.type_name(),
         ))),
+    }
+}
+
+/// 为错误构造参数的运行期类型错误补上构造表达式位置。
+fn attach_fault_span(fault: Fault, start: usize, end: usize) -> Fault {
+    let Some(location) = SourceSpan::new(start, end) else {
+        return fault;
+    };
+    match fault {
+        Fault::Error(error) => Fault::Error(error.with_location(location)),
+        other => other,
     }
 }
 

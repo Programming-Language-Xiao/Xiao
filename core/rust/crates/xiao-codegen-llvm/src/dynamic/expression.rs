@@ -605,15 +605,23 @@ impl<'a> DynamicGenerator<'a> {
         let mut code = None;
         let mut message = None;
         for (index, argument) in arguments.iter().enumerate() {
-            // 参数表达式先按普通动态值发射；Runtime 的 `new_values` 负责检查它是否为文本，
-            // 这样变量、函数返回值和动态值都能与 VM 共享同一类型错误身份。
-            let value = self.emit_expression(&argument.value)?;
-            let slot = self.next_temp();
-            self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
-            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+            // Runtime 的 `new_values` 负责检查参数是否为文本，这样变量、函数返回值和
+            // 动态值都能与 VM 共享同一类型错误身份。
+            // Runtime 入口只读参数槽并自行取得文本；已经存在的名称槽可以直接借用，
+            // 避免先复制一次再由 Runtime 再复制读取。复杂表达式仍放入拥有的临时槽。
+            let (slot, owned_value) =
+                if let Some(slot) = self.borrowed_error_argument_slot(&argument.value) {
+                    (slot, None)
+                } else {
+                    let value = self.emit_expression(&argument.value)?;
+                    let slot = self.next_temp();
+                    self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
+                    self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+                    (slot, Some(value))
+                };
             match argument.name.as_ref().map(|name| name.text.as_str()) {
-                Some("code") if code.is_none() => code = Some((slot, value)),
-                Some("message") if message.is_none() => message = Some((slot, value)),
+                Some("code") if code.is_none() => code = Some((slot, owned_value)),
+                Some("message") if message.is_none() => message = Some((slot, owned_value)),
                 Some(name @ ("code" | "message")) => {
                     return Err(CodegenError::InvalidIr {
                         message: format!("错误构造参数 {name} 重复"),
@@ -625,8 +633,8 @@ impl<'a> DynamicGenerator<'a> {
                         span: Some(argument.span),
                     });
                 }
-                None if index == 0 && code.is_none() => code = Some((slot, value)),
-                None if index == 1 && message.is_none() => message = Some((slot, value)),
+                None if index == 0 && code.is_none() => code = Some((slot, owned_value)),
+                None if index == 1 && message.is_none() => message = Some((slot, owned_value)),
                 None => {
                     return Err(CodegenError::Unsupported {
                         feature: "错误构造参数（只支持 code/message）".to_owned(),
@@ -646,14 +654,27 @@ impl<'a> DynamicGenerator<'a> {
                 "{type_argument}, ptr {code_argument}, ptr {message_argument}, ptr {location}"
             ),
         );
-        if let Some((_, code)) = code {
+        if let Some((_, Some(code))) = code {
             self.release_value(code);
         }
-        if let Some((_, message)) = message {
+        if let Some((_, Some(message))) = message {
             self.release_value(message);
         }
         self.check_pending_error_at(span);
         Ok(value)
+    }
+
+    /// 返回名称或分组名称对应的现有 ABI 槽，供只读 Runtime 参数直接借用。
+    fn borrowed_error_argument_slot(&self, expression: &IrExpression) -> Option<String> {
+        match &expression.kind {
+            IrExpressionKind::Group { expression } => self.borrowed_error_argument_slot(expression),
+            IrExpressionKind::Name { name } => self
+                .slots
+                .get(&name_key(name))
+                .or_else(|| self.slots.get(&name.text))
+                .map(|slot| format!("%slot{}", slot.index)),
+            _ => None,
+        }
     }
 
     /// 发射一个不拥有输入内存的 ABI 字节视图。

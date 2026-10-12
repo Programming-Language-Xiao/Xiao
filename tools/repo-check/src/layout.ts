@@ -82,9 +82,52 @@ export async function checkLoadedLayout(repository: LoadedRepository): Promise<D
     checkDirectoryReadme(root, member, manifest.readmeFile, diagnostics);
   }
   checkSourceDirectoryRegistration(discovered.directories, repository.registry, diagnostics);
+  checkOfficialLibraryRegistration(discovered.directories, repository.registry, diagnostics);
   const sizeResult = await checkFileSizes(root, manifest, discovered.files);
   diagnostics.push(...sizeResult.diagnostics);
   return diagnostics;
+}
+
+/**
+ * 校验官方标准库源码目录的同步登记。
+ *
+ * 每个包含 `.xiao` 源码的 `stdlib/**` 目录必须有精确的模块登记项，且同时
+ * 指向 UseDocs、DevDocs 和兼容身份代码；普通源码目录继续使用通用登记规则。
+ */
+function checkOfficialLibraryRegistration(
+  directories: Set<string>,
+  registry: LoadedRepository["registry"],
+  diagnostics: Diagnostic[],
+): void {
+  if (!registry) return;
+  for (const directory of directories) {
+    const normalized = normalizeRelativePath(directory);
+    if (normalized !== "stdlib" && !normalized.startsWith("stdlib/")) continue;
+    const module = registry.modules.find((item) => item.code
+      .map(normalizeRelativePath)
+      .some((pathValue) => pathValue === normalized));
+    if (!module) {
+      diagnostics.push(layoutDiagnostic(
+        "A0-LAYOUT-005",
+        directory,
+        "官方标准库源码目录必须在 module-registry.json 中有精确登记。",
+        "a0.layout.stdlib_registry_missing",
+      ));
+      continue;
+    }
+    const paths = [...module.code, ...module.usedocs].map(normalizeRelativePath);
+    const hasUseDocs = module.usedocs.some((pathValue) => normalizeRelativePath(pathValue).startsWith("docs/UseDocs/"));
+    const hasDevDocs = module.usedocs.some((pathValue) => normalizeRelativePath(pathValue).startsWith("docs/DevDocs/"));
+    const hasCompatibility = paths.some((pathValue) => pathValue.includes("compatibility"));
+    if (!hasUseDocs || !hasDevDocs || !hasCompatibility) {
+      diagnostics.push(layoutDiagnostic(
+        "A0-LAYOUT-005",
+        directory,
+        "官方标准库登记必须同时包含 UseDocs、DevDocs 和兼容身份落点。",
+        "a0.layout.stdlib_sync_metadata_missing",
+      ));
+    }
+  }
 }
 
 /** 确认发现的源码目录能从模块登记表的 code/tests 路径追溯。 */

@@ -113,6 +113,38 @@ describe("目录完整性负例", () => {
       rmSync(directory, { recursive: true, force: true });
     }
   }, 60_000);
+
+  test("官方标准库源码目录缺少同步登记时报告 A0-LAYOUT-005", async () => {
+    const directory = createStandardLibraryFixture("missing");
+    try {
+      const result = await checkLayout(directory);
+      expect(result.passed).toBe(false);
+      expect(result.diagnostics.some((item) => item.code === "A0-LAYOUT-005")).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  test("官方标准库登记缺少任一同步元数据时报告 A0-LAYOUT-005", async () => {
+    const directory = createStandardLibraryFixture("incomplete");
+    try {
+      const result = await checkLayout(directory);
+      expect(result.passed).toBe(false);
+      expect(result.diagnostics.some((item) => item.code === "A0-LAYOUT-005" && item.message.includes("兼容身份"))).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  test("官方标准库源码目录登记完整时通过 A0-LAYOUT-005", async () => {
+    const directory = createStandardLibraryFixture("complete");
+    try {
+      const result = await checkLayout(directory);
+      expect(result.diagnostics.filter((item) => item.code === "A0-LAYOUT-005")).toEqual([]);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }, 60_000);
 });
 
 describe("单文件行数门禁", () => {
@@ -501,5 +533,51 @@ function createLayoutFixture(withSourceReadme: boolean): string {
   if (withSourceReadme) writeFileSync(join(directory, "core", "rust", "crates", "fixture", "src", "README.md"), "# Source\n\n工程期 A0。\n\n职责：fixture。\n", "utf8");
   writeFileSync(join(directory, "pkg", "README.md"), "# Package\n\n工程期 A0。\n\n职责：fixture。\n", "utf8");
   writeFileSync(join(directory, "pkg", "src", "README.md"), "# Source\n\n工程期 A0。\n\n职责：fixture。\n", "utf8");
+  return directory;
+}
+
+/** 创建官方标准库同步登记的最小正/负例。 */
+function createStandardLibraryFixture(registration: "missing" | "incomplete" | "complete"): string {
+  const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-stdlib-"));
+  mkdirSync(join(directory, ".git"), { recursive: true });
+  mkdirSync(join(directory, "tools", "repo-check"), { recursive: true });
+  mkdirSync(join(directory, "stdlib", "text"), { recursive: true });
+  writeFileSync(join(directory, "stdlib", "README.md"), "# 标准库\n\n工程期 20C。\n\n职责：官方库。\n", "utf8");
+  writeFileSync(join(directory, "stdlib", "text", "README.md"), "# text\n\n工程期 20C。\n\n职责：模块。\n", "utf8");
+  writeFileSync(join(directory, "stdlib", "text", "text.xiao"), "return 1\n", "utf8");
+  const manifest = {
+    schemaVersion: 1,
+    rust: { manifest: "core/rust/Cargo.toml", members: ["core/rust/crates/fixture"] },
+    typescript: { manifest: "package.json", members: ["pkg"] },
+    codeRoots: ["stdlib", "core/rust", "pkg"],
+    sourceExtensions: [".rs", ".xiao"],
+    excludedDirectories: ["target", "node_modules"],
+    readmeFile: "README.md",
+    moduleRegistry: "docs/module-registry.json",
+  };
+  writeFileSync(join(directory, "tools", "repo-check", "repository.manifest.json"), JSON.stringify(manifest), "utf8");
+  mkdirSync(join(directory, "core", "rust", "crates", "fixture"), { recursive: true });
+  writeFileSync(join(directory, "core", "rust", "crates", "fixture", "README.md"), "# Fixture\n\n工程期 A0。\n\n职责：fixture。\n", "utf8");
+  mkdirSync(join(directory, "pkg", "src"), { recursive: true });
+  writeFileSync(join(directory, "pkg", "README.md"), "# Package\n\n工程期 A0。\n\n职责：fixture。\n", "utf8");
+  writeFileSync(join(directory, "pkg", "src", "README.md"), "# Source\n\n工程期 A0。\n\n职责：fixture。\n", "utf8");
+  mkdirSync(join(directory, "docs", "UseDocs"), { recursive: true });
+  mkdirSync(join(directory, "docs", "DevDocs"), { recursive: true });
+  writeFileSync(join(directory, "docs", "UseDocs", "library.md"), "---\nid: library\ntitle: library\nstatus: draft\naudience: contributor\nmodule: stdlib.text\nstage: 20C\n---\n# library\n", "utf8");
+  writeFileSync(join(directory, "docs", "DevDocs", "stdlib.md"), "# stdlib\n", "utf8");
+  mkdirSync(join(directory, "docs"), { recursive: true });
+  writeFileSync(join(directory, "docs", "module-registry.json"), JSON.stringify({
+    schemaVersion: 1,
+    modules: registration === "missing" ? [] : [{
+      id: "stdlib.text",
+      stage: "20C",
+      status: "draft",
+      code: ["stdlib/text", "core/rust/crates/fixture/src/compatibility.rs"],
+      tests: ["core/rust/crates/fixture"],
+      usedocs: registration === "complete"
+        ? ["docs/UseDocs/library.md", "docs/DevDocs/stdlib.md"]
+        : ["docs/UseDocs/library.md"],
+    }],
+  }), "utf8");
   return directory;
 }

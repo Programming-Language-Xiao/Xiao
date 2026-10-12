@@ -12,7 +12,7 @@ related:
 
 # 仓库完整性检查
 
-本工具检查 Xiao 仓库的 Bun/Cargo workspace、代码目录 README、单文件行数、模块登记和文档链接。它只读取仓库，不自动修改 manifest、源码或文档。
+本工具检查 Xiao 仓库的 Bun/Cargo workspace、代码目录 README、单文件行数、模块登记和文档链接。它也会校验 `stdlib/**` 的模块登记是否同时引用 UseDocs、DevDocs 和兼容身份落点。它只读取仓库，不自动修改 manifest、源码或文档。
 
 ## 运行方式
 

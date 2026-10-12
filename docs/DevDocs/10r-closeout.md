@@ -9,8 +9,7 @@
 > **一句话概括**：**把 10R 的出口条件逐条收干净——含两处「证据没有执行点 / 归档证据过期」的修补——
 > 再把 20C 的入口条件列成清单**；本批**不**动 20C 库代码。
 >
-> 状态：**实施中（2026-10-12）**。P-1/P-2 文档与工作流修补、10Z-D 代码接线已落地；真实 push 运行号、
-> 受控原生差分、F-3 变红/转绿和产物级重复构建仍待外部执行点。
+> 状态：**实施中（2026-10-12）**。P-1/P-2 文档与工作流修补、10Z-D 代码接线已落地；Windows 受控原生差分于 2026-10-13 通过；Linux/macOS 复跑、真实 push 运行号、F-3 变红/转绿和产物级重复构建仍待外部执行点。
 
 ## 一、Agent 交接上下文
 
@@ -34,9 +33,9 @@
 | --- | --- | --- | --- |
 | 1 | 链接代价探测 | **满足** | `10r-实现` §2.1.1/§2.1.4；审核复核根因与符号归属 |
 | 2 | 7 处逐条身份 + 边界内/外输入 | **满足** | `n0_a` 的 13 例边界测试（含除零 013），受控环境实跑通过 |
-| 3 | 身份一致（VM / 原生） | **部分** | 静态数值路径已有受控 Windows 证据；D4 动态参数的受控原生差分仍待外部执行点，见 §七 |
+| 3 | 身份一致（VM / 原生） | **部分** | 静态数值路径与 D4 动态错误参数已有 Windows 受控原生证据；Linux/macOS 复跑及故意变异红色证据仍待补，见 §七 |
 | 4 | 真非法指令仍 Fatal 的分界 | **满足** | `optional_external_illegal_instruction_remains_fatal`；报 `X07-FATAL-005` |
-| 5 | 产物：两次构建逐字节相同；体积按基线变更 | **部分** | 体积已测（§2.1.1/§2.1.4）；**D1/D2 之后的产物可重复性未验** |
+| 5 | 产物：两次构建逐字节相同；体积按基线变更 | **部分** | Windows workspace ignored 门禁已跑过 15E 通用 Runtime 产物两次比较并通过；10R 要求的 D1/D2 后静态数值剖面产物仍未测 |
 | 6 | ABI（版本/指纹/旧 Runtime 拒绝） | **满足** | ABI 次版本 1.12；旧 1.10/1.11 接受、1.13 与错误主版本拒绝 |
 | 7 | F-3 触发正/负例 | **未做** | 10 系列遗留 |
 | 8 | D1 的可复核证据 + 三个边界用例 | **满足** | 依赖面不含 `WS2_32.dll` 的断言；审核实跑复现「那行消失」 |
@@ -144,6 +143,18 @@ xiao-error class=recoverable code=X06-RUNTIME-009 … span=40..53 exit_code=3
 逐字节比对；时间戳类差异按 15C 的既有归一化处理，**并写明归一化了哪些字段**（沿用 D5 的做法）。
 这条是发布门槛（[10R-实现](10r-static-overflow-implementation.md) §2.6 第 3 条），不是可选项。
 
+**证据落点（20C 入口接线后）**：真实产物的逐字节断言位于
+`core/rust/crates/xiao-codegen-llvm/tests/15e_ci_gated.rs` 的
+`real_artifact_reproducibility_is_byte_comparable`。两平台维护回归的原生作业通过
+`cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored` 执行它；
+`XIAO_STRIP` 已由工作流设置，外部 push 运行号仍待补。原生作业明确跳过的 DNS、平台异常子进程和
+交互式诊断窗口用例及其理由登记在 [20C 入口](20c-entry-and-skeleton.md) §2.1；这些排除不覆盖 15E。
+
+**Windows 本机执行记录（2026-10-13）**：在 MSVC + MSYS2 LLVM 环境中完整执行 15E，
+`real_artifact_reproducibility_is_byte_comparable` 两次真实构建相同，归一化字段为
+`PE.DebugDirectory.TimeDateStamp` 与 `PE.TimeDateStamp`。该夹具是 15E 的通用 Runtime 表程序，
+不是 10R 要求的 D1/D2 后静态数值剖面样本；后者仍保持「未验」，不能用本次 15E 结果替代。
+
 ### 2.6 **F-3：触发正/负例（与 P-2 同一次做掉）**
 
 **冻结**：做法沿用 G-1 那轮（一次性分支、两个提交各只碰 `tests/benchmarks/**`：
@@ -221,16 +232,20 @@ docs/DevDocs/00-decisions.md                            遗留清单：F-3 若�
 
 ## 七、实施记录（2026-10-12）
 
-- **P-2**：Windows/Linux 维护回归的原生作业已加入
-  `cargo test -p xiao-codegen-llvm --test n0_a -- --ignored --nocapture`；本机未触发真实 push，
-  因此没有伪造运行号，也没有宣称 push 门已验证。
+- **P-2**：初始修补曾在 Windows/Linux 原生作业加入
+  `cargo test -p xiao-codegen-llvm --test n0_a -- --ignored --nocapture`；该枚举口径已由 20C P-3
+  的 `--workspace -- --ignored` 取代，本机未触发真实 push，因此没有伪造运行号或宣称 push 触发已验证。
 - **P-1**：`20c-capability-20261011/probe.log` 已按 D1 基线变更重出，当前 stderr 不再含无会话诊断事件提示；
   20C §3.1 表格改为当前记录，并保留旧提示作为 D1 前历史说明。
-- **10Z-D**：动态 `code`/`message` 现由 LLVM 发射表达式值并调用既有 `xiao_runtime_error_new_values`；
-  非文本值保留到 Runtime，返回稳定类型错误并进入现有错误路由。ABI 次版本已由 1.11 提升到 1.12，
-  结构测试覆盖动态文本与非文本参数；受控原生差分、失败清理和变异红色证据仍待外部执行点。
-- **O-1/可重复性**：19D 已新增影响复核，结论为**数据不足、不改 baseline.json**；当前环境没有受控链接工具链，
-  因此没有把 IR 确定性或历史体积数字冒充产物级两次构建证据。
+- **10Z-D**：动态 `code`/`message` 由 LLVM 调用 `xiao_runtime_error_new_values`；非文本值保留到 Runtime，
+  返回稳定类型错误并进入现有错误路由。ABI 次版本为 1.12。Windows 受控原生差分和释放轨迹于
+  2026-10-13 通过；变量参数改为借用输入槽，VM 对非文本参数补齐构造表达式 span。Linux/macOS 复跑及故意变异红色证据仍待外部执行点。
+- **Windows 全量 ignored 复跑（2026-10-13）**：与 P-3 工作流相同的 workspace 命令通过，
+  覆盖 15E、N0-A/B/C、C20、D19A 全量原生差分、O1–O3 表方法矩阵及 D4 成对错误构造用例；
+  `real_terminal_session_is_environment_gated` 与 `native_table_methods_debug_execution_o0_o3` 因 Windows runner
+  无交互终端而仅在 Windows job 排除，Linux 使用 Xvfb/xterm 执行。该本机运行不产生 GitHub Actions 运行号。
+- **O-1/可重复性**：19D 已新增影响复核，结论为**数据不足、不改 baseline.json**；本轮 Windows 受控链接只用于 D4 原生差分与 15E 门禁，
+  没有执行 19D 的受控性能取数，因此没有把原生差分或历史体积数字冒充为 O-1 结论。
 - **F-3**：尚未有真实 push 的正/负例运行号，继续保留在 00 决策基线的遗留清单。
 - **文档缺陷**：11AE0 两处标记和 15C 一处粗体已各修一行；20C 入口四项仍只登记，不创建 `stdlib/` 或注册 crate。
 

@@ -605,7 +605,10 @@ fn lowers_dynamic_error_constructor_arguments_to_runtime_abi() {
     let module = lower_program(&program, &CodegenOptions::default())
         .expect("动态错误参数应降低到 Runtime ABI");
     assert!(module.text.contains("xiao_runtime_error_new_values"));
-    assert!(module.text.contains("xiao_runtime_value_copy"));
+    assert!(
+        !module.text.contains("call i32 @xiao_runtime_value_copy"),
+        "错误构造的变量参数应直接借用，不生成句柄复制调用"
+    );
     assert!(
         !module
             .text

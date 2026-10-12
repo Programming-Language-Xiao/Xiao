@@ -1184,10 +1184,11 @@ fn compare_native_cases(cases: &[&Case], level: u8, debug: bool, execute: bool) 
             .collect::<Vec<_>>();
         let native_tuples = match fs::read_to_string(&trace_path) {
             Ok(text) => release_tuples(&text),
-            // 纯静态产物不链接 Runtime，也不会生成轨迹；只有 VM 同样无释放时接受。
+            // 纯静态产物不会生成轨迹；无堆生命周期用例即使因数值检查链接 Runtime，
+            // 只要 VM 也没有释放事件，就不应强求一个空轨迹文件。
             Err(error)
                 if error.kind() == std::io::ErrorKind::NotFound
-                    && !native.native.module.uses_runtime
+                    && (!native.native.module.uses_runtime || !case.has_drops)
                     && vm_tuples.is_empty() =>
             {
                 Vec::new()

@@ -34,6 +34,7 @@ cli/                          用户可见命令与终端交互
 tests/                        规格、单元、集成、差分、基准和模糊测试
 tools/                        文档覆盖率、构建编排、Schema 和发布工具
 resources/                    语言目录、Schema、模板等非代码资源
+stdlib/                       官方 Xiao 标准库规范源码（工程期 20C）
 docs/DevDocs/                 规格与 SOP（README 只做索引）
 ```
 
@@ -105,6 +106,7 @@ xiao-package ─→ xiao-codegen-llvm (共享工具链/稳定哈希接口)
 | `xiao-platform` | 主机路径、进程、窗口、工具链和平台 API 适配 | 10、11、19 | 修改公共 IR 语义 |
 | `xiao-driver` | 编译/运行/构建请求编排和跨 crate 稳定服务接口 | 08–18 | 终端 UI、翻译文本 |
 | `xiao-doc-coverage-rust` | A0 文档覆盖率工具使用的 `syn` AST 与 JSON 协议适配器 | A0.3–A0.4 | Xiao 语言语义、Runtime 和用户命令 |
+| `xiao-standard-library` | 20C 官方标准库的工程期元数据落点与加载边界 | 20C | 普通包依赖、`.xar` 字段、标准库模块实现 |
 
 每个 crate 的具体边界以其目录 README 为准；crate 名称是当前框架名称，不构成 Xiao 语言表面语法。
 

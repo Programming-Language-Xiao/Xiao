@@ -4,13 +4,16 @@ use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::diagnostics::{
-    SOURCE_AMBIGUOUS_CODE, SOURCE_INVALID_CODE, SOURCE_UNKNOWN_REFERENCE_CODE,
-    VERSION_UNSATISFIED_CODE,
+    OFFICIAL_LIBRARY_DEPENDENCY_CODE, SOURCE_AMBIGUOUS_CODE, SOURCE_INVALID_CODE,
+    SOURCE_UNKNOWN_REFERENCE_CODE, VERSION_UNSATISFIED_CODE,
 };
 use crate::federation::{FederatedRecord, IndexPackage, SourceSnapshot};
 use crate::selection::select_source;
 use crate::source::{ConfiguredSource, SourceError};
 use crate::version::{Version, VersionRequirement};
+
+/// 官方标准库的保留包名；它只由工具链专用加载器提供。
+pub const OFFICIAL_STANDARD_LIBRARY_PACKAGE: &str = "xiao-standard-library";
 
 /// 项目或传递依赖要求的包名、版本和可选来源。
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -62,6 +65,12 @@ struct State<'a> {
 
 impl State<'_> {
     fn require(&mut self, requirement: &SolveRequirement) -> Result<(), SourceError> {
+        if requirement.name == OFFICIAL_STANDARD_LIBRARY_PACKAGE {
+            return Err(SourceError::new(
+                OFFICIAL_LIBRARY_DEPENDENCY_CODE,
+                "官方标准库由工具链专用加载器提供，不是普通包依赖",
+            ));
+        }
         self.constraints
             .entry(requirement.name.clone())
             .or_default()

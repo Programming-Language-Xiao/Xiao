@@ -26,7 +26,8 @@
       "core/rust/crates/xiao-xar",
       "core/rust/crates/xiao-platform",
       "core/rust/crates/xiao-driver",
-      "core/rust/crates/xiao-doc-coverage-rust"
+      "core/rust/crates/xiao-doc-coverage-rust",
+      "core/rust/crates/xiao-standard-library"
     ]
   },
   "typescript": {
@@ -41,12 +42,14 @@
     "core/rust",
     "cli/ts",
     "tools",
-    "tests"
+    "tests",
+    "stdlib"
   ],
   "sourceExtensions": [
     ".rs",
     ".ts",
-    ".tsx"
+    ".tsx",
+    ".xiao"
   ],
   "excludedDirectories": [
     ".git",

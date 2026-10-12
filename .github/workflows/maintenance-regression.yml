@@ -157,12 +157,13 @@ jobs:
           if (-not (Test-Path "$linkerBin/link.exe")) { throw 'MSVC link.exe missing' }
           $env:PATH = "$linkerBin;$env:PATH"
           $llvmBin = Join-Path $env:XIAO_LLVM_ROOT 'ucrt64/bin'
-          foreach ($tool in @('clang', 'llvm-as', 'llc')) {
+          foreach ($tool in @('clang', 'llvm-as', 'llc', 'llvm-strip')) {
             if (-not (Test-Path "$llvmBin/$tool.exe")) { throw "Missing LLVM tool: $tool" }
           }
           $env:XIAO_CLANG = "$llvmBin/clang.exe"
           $env:XIAO_LLVM_AS = "$llvmBin/llvm-as.exe"
           $env:XIAO_LLC = "$llvmBin/llc.exe"
+          $env:XIAO_STRIP = "$llvmBin/llvm-strip.exe"
           $env:XIAO_TARGET_TRIPLE = ((& rustc -vV | Select-String '^host:').ToString().Split(':', 2)[1]).Trim()
           if ($LASTEXITCODE -ne 0) { throw 'rustc host probe failed' }
           cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
@@ -177,11 +178,13 @@ jobs:
           }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime-abi -- --ignored
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-codegen-llvm --test n0_a -- --ignored --nocapture
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test c20_capability_probe --test n0_a_native_driver --test n0_b_dynamic_native --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture
+          # Windows runner 没有交互式终端，窗口握手和调试执行仅在 Linux/Xvfb 作业运行。
+          # DNS 依赖和平台异常子进程由父用例驱动，两个平台都排除子测试本身。
+          cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored --nocapture `
+            --skip dns_resolution_failure_is_unavailable `
+            --skip platform_failure_child `
+            --skip real_terminal_session_is_environment_gated `
+            --skip native_table_methods_debug_execution_o0_o3
           exit $LASTEXITCODE
 
       - name: Build runtime and run Linux native gates
@@ -195,8 +198,10 @@ jobs:
           export XIAO_CLANG="$(command -v clang)"
           export XIAO_LLVM_AS="$(command -v llvm-as)"
           export XIAO_LLC="$(command -v llc)"
+          export XIAO_STRIP="$(command -v llvm-strip)"
           export XIAO_TARGET_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
           test -n "$XIAO_TARGET_TRIPLE"
+          test -x "$XIAO_STRIP"
           cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
           cargo build --manifest-path core/rust/Cargo.toml -p xiao-diagnostics
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
@@ -205,6 +210,8 @@ jobs:
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime-abi -- --ignored
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-codegen-llvm --test n0_a -- --ignored --nocapture
-          xvfb-run -a cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test c20_capability_probe --test n0_a_native_driver --test n0_b_dynamic_native --test d19a_differential --test native_benchmark_probe -- --ignored --nocapture
+          # Xvfb/xterm 和诊断组件已就绪，Linux push 门真实执行终端握手与 O0–O3 调试矩阵。
+          # 只排除外部 DNS 和由父用例驱动的平台异常子进程。
+          xvfb-run -a cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored --nocapture \
+            --skip dns_resolution_failure_is_unavailable \
+            --skip platform_failure_child

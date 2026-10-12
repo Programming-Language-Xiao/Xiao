@@ -8,6 +8,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::Deserialize;
 use xiao_package::{
+    OFFICIAL_LIBRARY_DEPENDENCY_CODE, OFFICIAL_STANDARD_LIBRARY_PACKAGE,
     PACKAGE_DEPENDENCY_CYCLE_CODE, PACKAGE_IDENTITY_CONFLICT_CODE, PACKAGE_MISSING_DEPENDENCY_CODE,
     resolve_project,
 };
@@ -175,6 +176,39 @@ fn preserves_dependency_constraints_and_source_shape() {
     );
     assert_eq!(root.source.alias, None);
     assert_ne!(root.source.source_id, root.source.display_name);
+}
+
+#[test]
+/// 本地路径解析也必须拒绝以官方库保留身份冒充普通依赖。
+fn official_standard_library_cannot_enter_local_path_dependency_graph() {
+    let project = TempProject::new();
+    project.write(
+        "config.xiao",
+        "[project]\nname = \"app\"\nversion = \"0.1.0\"\n[dependencies]\nstdlib = { path = \"stdlib\" }\n",
+    );
+    project.write(
+        "stdlib/config.xiao",
+        &format!(
+            "[project]\nname = \"{OFFICIAL_STANDARD_LIBRARY_PACKAGE}\"\nversion = \"1.0.0\"\n"
+        ),
+    );
+
+    let result = resolve_project(&project.path);
+    assert!(!result.is_success());
+    assert!(
+        result
+            .graph
+            .nodes
+            .keys()
+            .all(|identity| { identity.name != OFFICIAL_STANDARD_LIBRARY_PACKAGE }),
+        "官方标准库不得进入本地普通依赖图"
+    );
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|entry| { entry.diagnostic.code() == OFFICIAL_LIBRARY_DEPENDENCY_CODE })
+    );
 }
 
 #[test]

@@ -24,6 +24,7 @@ members = [
     "crates/xiao-platform",
     "crates/xiao-driver",
     "crates/xiao-doc-coverage-rust",
+    "crates/xiao-standard-library",
 ]
 
 [workspace.package]

@@ -13,6 +13,8 @@ pub const PACKAGE_DEPENDENCY_CYCLE_CODE: &str = "X05-PACKAGE-003";
 pub const PACKAGE_CONFIG_READ_CODE: &str = "X05-PACKAGE-004";
 /// 包配置缺少可构造身份的元数据时使用的编号。
 pub const PACKAGE_INVALID_METADATA_CODE: &str = "X05-PACKAGE-005";
+/// 官方标准库被当作普通包依赖请求时使用的稳定编号。
+pub const OFFICIAL_LIBRARY_DEPENDENCY_CODE: &str = "X05-PACKAGE-006";
 
 /// 环境目录已经存在或重复创建时使用的编号。
 pub const ENVIRONMENT_ALREADY_EXISTS_CODE: &str = "X05-ENV-001";

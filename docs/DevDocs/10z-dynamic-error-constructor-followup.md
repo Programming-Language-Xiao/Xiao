@@ -3,11 +3,11 @@
 > **来源**：[10Z-Z1](10z-z1-scope-and-gap-verdict.md) 的 D 裁定。`ArithmeticError(code = code)`
 > 是前端接受、VM 可执行的合法程序；**实施前**原生后端只接受字符串字面量，构建阶段拒绝动态参数。
 >
-> 状态：**已实现（2026-10-12，归入 10R 收尾）**；受控原生差分与变异红色证据仍待外部执行点补齐。
+> 状态：**已实现（2026-10-12，归入 10R 收尾）**。Windows 受控工具链上的 VM/LLVM 差分与释放轨迹已于 2026-10-13 通过；Linux/macOS 复跑和变异红色证据仍待补。
 >
 > 进度补记（2026-10-12）：LLVM 动态降低器现已对 `code`/`message` 发射表达式并借用
 > `xiao_runtime_error_new_values`；Runtime 对非文本值返回稳定类型错误，失败后沿现有错误路由传播。
-> ABI 次版本由 1.11 提升到 **1.12**，静态/动态入口统一使用同一兼容检查。受控原生差分和一次变异红色证据仍待外部执行点补齐。
+> ABI 次版本由 1.11 提升到 **1.12**，静态/动态入口统一使用同一兼容检查。Windows 本机受控差分已补；一次变异红色证据仍待外部执行点。
 
 ## 一、已确认缺口
 
@@ -45,6 +45,18 @@ VM 运行到用户自己的 `raise`，报告错误码 `DYNAMIC`、退出码 3。
 - `ArithmeticError(code = 1)` 等非法形态在两侧保持稳定拒绝；
 - `cargo test --workspace`、`clippy`、`fmt`、Bun/TypeScript 门禁及受控原生差分全绿；
 - 旧的 B/C 结论和 Z-1 范围不被重新打开。
+
+## 五、Windows 受控原生验证（2026-10-13）
+
+在 MSVC `vcvars64`、MSYS2 UCRT64 Clang/LLVM 22.1.2、Runtime release staticlib 与诊断程序构成的受控环境中，
+重新执行 `xiao-driver/tests/n0_a_native_driver.rs::optional_frontend_artifact_differential_round_trip`，
+覆盖动态 `code`/`message`、非文本参数、`catch`、未匹配传播和释放轨迹，全部通过；
+完整 Windows workspace ignored 门禁也通过，其中 `d19a_differential::native_side_matches_the_vm_sides_on_every_case`、
+O1–O3 表方法差分和 15E 五项均通过。
+
+审核实测修复了两处旧差分缺陷：LLVM 曾为变量错误参数额外复制句柄，导致释放轨迹比 VM 多一次；
+现在直接借用已拥有的输入槽。非文本参数的 VM 类型错误原先缺少构造表达式位置，现补上 IR span，
+与原生报告一致。Windows 受控证据不替代 Linux/macOS 复跑、一次故意变异的红色证据或真实 push 运行号。
 
 ## 相关页面
 

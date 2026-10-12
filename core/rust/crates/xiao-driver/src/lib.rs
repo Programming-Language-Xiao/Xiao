@@ -23,11 +23,12 @@ pub mod protocol;
 /// 前端产物到生产 VM 的内部运行驱动器。
 mod run;
 
-/// 重导出兼容矩阵和当前版本清单。
+/// 重导出兼容矩阵、当前版本清单和标准库身份。
 pub use compatibility::{
     CompatibilityAction, CompatibilityAxis, CompatibilityCell, CompatibilityEvidence,
-    CompatibilityStatus, CompatibilityVersions, TargetSupportCell, TargetSupportStatus,
-    compatibility_matrix, current_compatibility_versions, target_support_matrix,
+    CompatibilityStatus, CompatibilityVersions, STDLIB_INTERFACE_VERSION, StandardLibraryIdentity,
+    TargetSupportCell, TargetSupportStatus, compatibility_matrix, current_compatibility_versions,
+    current_standard_library_identity, target_support_matrix,
 };
 
 /// 重导出统一前端公共接口。

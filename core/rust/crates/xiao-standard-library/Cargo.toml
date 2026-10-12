@@ -1,0 +1,16 @@
+[package]
+name = "xiao-standard-library"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Xiao official standard library source metadata boundary"
+
+[lints]
+workspace = true
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]

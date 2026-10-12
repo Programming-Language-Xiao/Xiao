@@ -14,13 +14,14 @@ use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
 use xiao_source::{SourceFile, SourceSpan};
 
 use crate::diagnostics::{
-    PACKAGE_CONFIG_READ_CODE, PACKAGE_DEPENDENCY_CYCLE_CODE, PACKAGE_IDENTITY_CONFLICT_CODE,
-    PACKAGE_INVALID_METADATA_CODE, PACKAGE_MISSING_DEPENDENCY_CODE,
+    OFFICIAL_LIBRARY_DEPENDENCY_CODE, PACKAGE_CONFIG_READ_CODE, PACKAGE_DEPENDENCY_CYCLE_CODE,
+    PACKAGE_IDENTITY_CONFLICT_CODE, PACKAGE_INVALID_METADATA_CODE, PACKAGE_MISSING_DEPENDENCY_CODE,
 };
 use crate::model::{
     PackageDependency, PackageDiagnostic, PackageEdge, PackageGraph, PackageIdentity, PackageNode,
     PackageResolution, PackageSource,
 };
+use crate::solver::OFFICIAL_STANDARD_LIBRARY_PACKAGE;
 
 /// 只解析本地路径包的 D1 解析器。
 #[derive(Clone, Copy, Debug, Default)]
@@ -244,6 +245,17 @@ impl ResolverState {
             );
             return None;
         };
+        if identity.name == OFFICIAL_STANDARD_LIBRARY_PACKAGE {
+            self.push_path_diagnostic(
+                OFFICIAL_LIBRARY_DEPENDENCY_CODE,
+                "x05.package.official_library_dependency",
+                None,
+                package_root.clone(),
+                "官方标准库由工具链专用加载器提供，不能作为普通路径包依赖解析".to_owned(),
+                [("package", DiagnosticParam::Text(identity.name.clone()))],
+            );
+            return None;
+        }
         self.check_requested_name(
             requested_name.unwrap_or(&identity.name),
             &identity,
