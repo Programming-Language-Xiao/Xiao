@@ -11,7 +11,7 @@
 >
 > 状态：**D1、D5、D2 已实现（2026-10-12）**。链接探测已完成；审核侧按星崽给的准绳（**可持续/可维护/可扩展**）
 > 把原来五项待定**全部裁定**（§五 D1–D7）：**拆开报告与诊断事件**、范围取**乙**（不含静态
-> `catch`/`finally` 传播）、错误身份按运行时既有映射**定死**（窄化用 009）、10Z-D **并批**、
+> `catch`/`finally` 传播）、错误身份按运行时既有映射**定死**（窄化用 009）、10Z-D **规划上并批但实现转后续**、
 > 19D 基线**先补测再按基线变更处置**、顺序锁死（§五 D6）、静态异常路由另立批次（D7）。
 > 探测本身做对了（只读不改、明写「不能证明没有隐式链接诊断窗口通道」）；
 > 审核补了三条（§2.1.2、§2.1.3）：表 C 的「静态从不链接 Runtime」要加 debug 限定；
@@ -25,7 +25,7 @@
 
 ### 1.1 接手前提
 
-1. [10R-溢出后续](10r-static-overflow-followup.md) —— **立项文档**（目标、与 10E 的协调、影响面、验收）；
+1. [10R-溢出后续](10r-static-overflow-followup.md) —— **原始立项依据与后续记录**（目标、与 10E 的协调、影响面、验收）；
    本批是它的实现，**但范围要按 §2.1 的探测结果重写**；
 2. [10E](10e-n0c-error-paths-and-mapping.md) §3.4 与其他节 —— **平台 Fatal 与语言级错误的边界**；
 3. [09R2c](09r2c-exception-control-flow.md) —— **异常路由与清理链的既有设计与口径**（动态/VM 侧已实现）；
@@ -90,7 +90,7 @@
 | ABI 版本与符号 | 是否需要新符号、主/次版本怎么动 | **做**（§2.5） |
 | 纯静态产物的体积/白名单 | 链接面变化后的精确基线处置 | **做**（§2.6） |
 | F-3 | `tests/benchmarks/**` 的触发正反例（10 系列遗留） | **顺手收掉**（§2.8） |
-| 10Z-D 动态错误构造参数 | —— | **并批**（§五 D4） |
+| 10Z-D 动态错误构造参数 | —— | **规划上并批；本批未实现，转后续**（§五 D4） |
 | 20C 的落点准备（N-1/N-2/N-3） | `codeRoots`/00A/`sourceExtensions`/身份字段关系 | **不做**，归 20C 库代码之前那一批 |
 
 ## 二、必须先冻结的 8 条
@@ -293,7 +293,7 @@ core/rust/crates/xiao-runtime-abi/src/lib.rs              ABI 符号与版本常
 core/rust/crates/xiao-codegen-llvm/tests/n0_a.rs            静态边界、Fatal/可恢复分界和真实端到端夹具
 core/rust/crates/xiao-driver/tests/artifact_size_regression.rs  体积基线（若链接面变化，按基线变更走）
 docs/DevDocs/10r-static-overflow-followup.md              实施记录回填（立项 → 已实现）
-docs/DevDocs/10z-dynamic-error-constructor-followup.md     §2.7 并批时一并收口
+docs/DevDocs/10z-dynamic-error-constructor-followup.md     §2.7 规划上的并批对象；动态参数仍待后续
 docs/DevDocs/README.md                                    本批登记与状态
 ```
 
@@ -444,10 +444,10 @@ Runtime 单元测试覆盖旧次版本 1.10/当前 1.11 接受、未来 1.12 和
 
 ## 相关页面
 
-- [10R-溢出后续. 静态溢出统一错误路径](10r-static-overflow-followup.md) —— **立项文档**；本批实现它，但范围按本文 §五 **D2** 裁剪（并把「沿清理链传播」移到 D7 的后续段）
+- [10R-溢出后续. 静态溢出统一错误路径](10r-static-overflow-followup.md) —— **实现与后续记录**；本批按本文 §五 **D2** 完成静态数值路径（并把「沿清理链传播」移到 D7 的后续段）
 - [10E. N0-C 错误路径与映射](10e-n0c-error-paths-and-mapping.md) —— 平台 Fatal 与语言级错误的边界出处
 - [09R2c. 异常控制流实现交接文档](09r2c-exception-control-flow.md) —— 异常路由与清理链的既有设计（静态侧若走甲，参照它）
-- [10Z-D. 动态错误构造参数后续立项](10z-dynamic-error-constructor-followup.md) —— §2.7 的并批对象
+- [10Z-D. 动态错误构造参数后续立项](10z-dynamic-error-constructor-followup.md) —— §2.7 的规划并批对象，当前仍待后续实现
 - [10L. 原生动态对齐](10l-native-dynamic-alignment.md) §11.4 —— 7 处 trap 的量化出处
 - [19C. 维护策略与调试三平台](19c-maintenance-and-debug.md)、[19D. 性能对照](19d-performance-comparison.md) —— 体积基线与白名单口径
 - [20C-冻结. 10 系列关闭与 20C 六条冻结](20c-freeze-and-10-series-closeout.md) —— 本批是它 §3.7 那道门禁的兑现
