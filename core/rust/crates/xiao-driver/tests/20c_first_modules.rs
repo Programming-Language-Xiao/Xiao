@@ -3,6 +3,7 @@
 //! 测试通过保留的 `stdlib` 命名空间加载规范源码，避免把官方库伪装成普通包；
 //! 原生测试使用同一份调用者源码，在受控工具链缺失时保持 ignored。
 
+use std::collections::BTreeSet;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -15,6 +16,7 @@ use xiao_driver::{
 };
 use xiao_ir::IrStatementKind;
 use xiao_runtime::{ReleaseEvent, start_release_trace, take_release_events};
+use xiao_types::ExternalNamespaces;
 use xiao_vm::VmEvent;
 
 /// 避免并行模块回归复用相同临时项目路径。
@@ -259,6 +261,31 @@ fn project_cannot_shadow_the_reserved_standard_library_namespace() {
         .compile(&project.request(source))
         .expect_err("项目声明的 stdlib 路径必须被拒绝");
     assert!(error.diagnostics.iter().any(|item| {
+        item.code() == "X05-MODULE-003"
+            && item.message().contains("保留的官方标准库命名空间 stdlib")
+    }));
+
+    let plain_source = "print(\"project\")\n";
+    let plain_project = TestProject::new(plain_source);
+    plain_project.write("stdlib/placeholder.xiao", "value = 1\n");
+    let plain_error = FrontendCompiler::new()
+        .compile(&plain_project.request(plain_source))
+        .expect_err("即使入口不导入 stdlib，项目覆盖保留目录也必须被拒绝");
+    assert!(plain_error.diagnostics.iter().any(|item| {
+        item.code() == "X05-MODULE-003"
+            && item.message().contains("保留的官方标准库命名空间 stdlib")
+    }));
+
+    let mut package_members = std::collections::BTreeMap::new();
+    package_members.insert("stdlib".to_owned(), BTreeSet::new());
+    let mut package_context = xiao_driver::FrontendContext::host();
+    package_context.package_namespaces = Some(ExternalNamespaces {
+        members: package_members,
+    });
+    let package_error = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(plain_source).with_context(package_context))
+        .expect_err("普通包不得占用 stdlib 保留根");
+    assert!(package_error.diagnostics.iter().any(|item| {
         item.code() == "X05-MODULE-003"
             && item.message().contains("保留的官方标准库命名空间 stdlib")
     }));

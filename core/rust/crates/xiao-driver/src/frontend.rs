@@ -414,6 +414,28 @@ impl FrontendCompiler {
             }
             return Err(FrontendError { diagnostics });
         };
+        if project
+            .as_ref()
+            .is_some_and(uses_reserved_standard_library_namespace)
+        {
+            diagnostics.push(standard_library_namespace_conflict_diagnostic(
+                "项目不得声明",
+            ));
+            return Err(FrontendError { diagnostics });
+        }
+        let package_namespaces = request.context.package_namespaces.as_ref().or_else(|| {
+            request
+                .context
+                .package_registry
+                .as_ref()
+                .map(|registry| &registry.namespaces)
+        });
+        if package_namespaces.is_some_and(uses_reserved_standard_library_namespace_external) {
+            diagnostics.push(standard_library_namespace_conflict_diagnostic(
+                "普通包不得声明",
+            ));
+            return Err(FrontendError { diagnostics });
+        }
         if request.context.project_root.is_none()
             && standard_library_requested
             && is_project_import_shadowing_standard_library(program, &request.source)
@@ -466,21 +488,6 @@ impl FrontendCompiler {
                             &standard,
                         ));
                     }
-                }
-                if project
-                    .as_ref()
-                    .is_some_and(uses_reserved_standard_library_namespace)
-                {
-                    diagnostics.push(Diagnostic::new(
-                        "X05-MODULE-003",
-                        "x05.module.file_namespace_conflict",
-                        Severity::Error,
-                        None,
-                        format!(
-                            "项目不得声明保留的官方标准库命名空间 {STANDARD_LIBRARY_NAMESPACE}"
-                        ),
-                    ));
-                    return Err(FrontendError { diagnostics });
                 }
                 if diagnostics.iter().any(Diagnostic::is_error) {
                     return Err(FrontendError { diagnostics });
@@ -801,6 +808,27 @@ fn uses_reserved_standard_library_namespace(project: &ProjectModuleResult) -> bo
             .namespaces
             .keys()
             .any(|name| root.is_prefix_of(name))
+}
+
+/// 判断普通包或外部命名空间是否占用了官方标准库保留根。
+fn uses_reserved_standard_library_namespace_external(namespaces: &ExternalNamespaces) -> bool {
+    namespaces.members.keys().any(|name| {
+        name == STANDARD_LIBRARY_NAMESPACE
+            || name
+                .strip_prefix(STANDARD_LIBRARY_NAMESPACE)
+                .is_some_and(|suffix| suffix.starts_with('.'))
+    })
+}
+
+/// 构造统一的标准库保留命名空间冲突诊断。
+fn standard_library_namespace_conflict_diagnostic(subject: &str) -> Diagnostic {
+    Diagnostic::new(
+        "X05-MODULE-003",
+        "x05.module.file_namespace_conflict",
+        Severity::Error,
+        None,
+        format!("{subject}保留的官方标准库命名空间 {STANDARD_LIBRARY_NAMESPACE}"),
+    )
 }
 
 /// 判断入口是否把常规项目/包导入误当成标准库模块来覆盖。
