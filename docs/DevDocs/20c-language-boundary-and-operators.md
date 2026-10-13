@@ -107,9 +107,10 @@ class: Fatal, code: "X07-FATAL-002", message_id: "fatal.corrupt_artifact"
 
 ### 1.4 为什么这一条直到审核才被发现
 
-- **全仓库零覆盖**：`grep -rln " and " --include=*.xiao .` 只命中 `tests/fixtures/20c/second-case-conversion.xiao`，
+- **全仓库零覆盖**：此前 `grep -rln " and " --include=*.xiao .` 只命中 `tests/fixtures/20c/second-case-conversion.xiao`，
   它是 `44fe103` 自己新增的；而该夹具**在前端就被 `X02-TYPE-006` 拒掉**，从没走到后端——
-  **探测夹具自己把后端缺口盖住了**（§2.4）；
+  **探测夹具自己把后端缺口盖住了**（§2.4）。本批自审已将转换拒绝与逻辑算子拆为
+  `second-case-conversion.xiao` 和 `second-case-conversion-logic.xiao` 两个夹具。
 - **机制有单测、可达面无单测**：`xiao-bytecode/src/verify.rs:1370-1373` 的
   `production_entry_rejects_unsupported_as_internal_error` **手工塞了一条假的 `unsupported`**
   再断言被拒——它守的是**机制**，不是**可达性**；
@@ -166,9 +167,10 @@ class: Fatal, code: "X07-FATAL-002", message_id: "fatal.corrupt_artifact"
 
 ### 2.4 **遮蔽：大小写转换有两个独立阻塞项**
 
-**事实**：`tests/fixtures/20c/second-case-conversion.xiao` 同时含
-`:4` 的 `if c >= "A" and c <= "Z"` 与 `:5` 的 `str(int(c) + 32)`。
-前端在 `:5` 以 `X02-TYPE-006` 拒绝 ⇒ **`:4` 的 `and` 从未被执行**。
+**事实**：旧版 `tests/fixtures/20c/second-case-conversion.xiao` 同时含
+字符分类的 `and` 与 `str(int(c) + 32)`，前端在转换处以 `X02-TYPE-006` 拒绝，
+导致 `and` 从未被执行。本批自审已将两种拒绝拆为
+`second-case-conversion.xiao`（转换）与 `second-case-conversion-logic.xiao`（逻辑算子）。
 
 **冻结**：
 
@@ -371,7 +373,8 @@ core/rust/crates/xiao-bytecode/src/lower/expr.rs         §四：四个算子的
 core/rust/crates/xiao-codegen-llvm/src/ir.rs             §4.2：镜像纪律；接通后同批实现同语义
 core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs  §4.2 第 3 条：保留给真正未降低的构造
 core/rust/crates/xiao-driver/tests/                      §五：覆盖执行点（从枚举派生，无 `_` 兜底）
-tests/fixtures/20c/second-case-conversion.xiao           §2.4：拆成「只含一个待解释拒绝」的夹具
+tests/fixtures/20c/second-case-conversion.xiao           §2.4：只保留转换拒绝的夹具
+tests/fixtures/20c/second-case-conversion-logic.xiao     §2.4：单独执行逻辑算子拒绝
 tests/fixtures/20c/second-string-comparison.xiao         §2.1：按拆行后的结论调整
 docs/DevDocs/assets/20c-capability-20261011/probe.log    §四 接通后重出
 .github/workflows/maintenance-regression.yml             §5.2 第 3 条：确认原生半边真的被跑到（P-3 glob 口径）

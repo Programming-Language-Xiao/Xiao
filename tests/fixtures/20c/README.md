@@ -17,7 +17,8 @@
 | `second-string-accumulate.xiao` | 循环内字符串累积拼接 | 第二批候选：循环赋值与字符串拼接 |
 | `second-substring-lookahead.xiao` | 变量下标前瞻 | 复合表达式最先拒绝 `X01-PARSE-007`；根边界为单下标的 `X03-TYPE-003` |
 | `second-split-array.xiao` | 累积并构造数组结果 | VM/LLVM 在类型层拒绝 `X02-TYPE-005` |
-| `second-case-conversion.xiao` | 字符分类与 ASCII 小写转换尝试 | VM/LLVM 在类型层拒绝 `X02-TYPE-006` |
+| `second-case-conversion.xiao` | ASCII 小写转换的数字/文本转换尝试 | VM/LLVM 在类型层拒绝 `X02-TYPE-006` |
+| `second-case-conversion-logic.xiao` | 字符分类所需的 `and` 逻辑组合 | 语言边界批单独登记；当前 VM 为 `X09-BYTECODE-001`，原生为后端 Unsupported |
 | `second-set-membership.xiao` | 集合构造与 `in`/`not in` | VM/LLVM 输出 `ok`，仅保留探测结论 |
 
 夹具由 `core/rust/crates/xiao-driver/tests/c20_capability_probe.rs` 读取。这里不添加
