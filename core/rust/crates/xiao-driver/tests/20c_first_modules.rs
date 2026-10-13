@@ -13,6 +13,7 @@ use xiao_driver::{
 };
 use xiao_vm::VmEvent;
 
+/// 定位仓库根目录，以便测试读取与正式发布相同的 `stdlib/` 源码。
 fn repository_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .ancestors()
@@ -21,6 +22,7 @@ fn repository_root() -> PathBuf {
         .to_path_buf()
 }
 
+/// 读取指定首批标准库模块，并返回其稳定的源码路径与文本。
 fn module_source(module: &str) -> (PathBuf, String) {
     let path = repository_root()
         .join("stdlib")
@@ -29,10 +31,12 @@ fn module_source(module: &str) -> (PathBuf, String) {
     (path, source)
 }
 
+/// 用模块路径构造前端请求，保持 VM 与原生测试的输入完全一致。
 fn request(path: &Path, source: &str) -> FrontendRequest {
     FrontendRequest::from_text_at(source, path)
 }
 
+/// 提取成功执行结果中的标准输出事件，供 VM/原生结果对账使用。
 fn output(outcome: &DriverOutcome) -> String {
     outcome
         .as_executed()
@@ -45,6 +49,7 @@ fn output(outcome: &DriverOutcome) -> String {
         .collect()
 }
 
+/// 将标准库源码与调用者拼接后执行一次 VM 回归。
 fn run_vm(module: &str, caller: &str) -> DriverOutcome {
     let (path, module_source) = module_source(module);
     let source = format!("{module_source}\n{caller}");
@@ -55,6 +60,7 @@ fn run_vm(module: &str, caller: &str) -> DriverOutcome {
     FrontendVmDriver::new().run_artifact(&artifact, &DriverRequest::new(frontend_request))
 }
 
+/// 编译负例并返回首个错误诊断码，用于验证模块移除和类型边界。
 fn first_error_code(source_path: &Path, source: &str) -> Option<String> {
     let request = request(source_path, source);
     FrontendCompiler::new()
@@ -71,6 +77,7 @@ fn first_error_code(source_path: &Path, source: &str) -> Option<String> {
 }
 
 #[test]
+/// 验证 text 模块的 VM 结果、类型拒绝和移除边界。
 fn text_module_vm_result_and_removal_boundary_are_stable() {
     let caller = "if not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n";
     let outcome = run_vm("text", caller);
@@ -95,6 +102,7 @@ fn text_module_vm_result_and_removal_boundary_are_stable() {
 }
 
 #[test]
+/// 验证 path 模块的 VM 结果、类型拒绝和移除边界。
 fn path_module_vm_result_and_removal_boundary_are_stable() {
     let outcome = run_vm("path", "print(join(\"lib\", \"core\"))\n");
     assert!(outcome.is_success(), "path VM 调用失败：{outcome:?}");
@@ -117,6 +125,7 @@ fn path_module_vm_result_and_removal_boundary_are_stable() {
     );
 }
 
+/// 从受控环境变量加载并校验首批模块原生测试所需工具链。
 fn configured_native_toolchain() -> (TargetDescription, Toolchain) {
     let target = TargetDescription::host();
     let configured_triple = std::env::var("XIAO_TARGET_TRIPLE")
@@ -147,6 +156,7 @@ fn configured_native_toolchain() -> (TargetDescription, Toolchain) {
 
 #[test]
 #[ignore = "需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4"]
+/// 在受控原生工具链上核对两个首批模块的构建与运行输出。
 fn first_modules_match_native_results() {
     let (target, toolchain) = configured_native_toolchain();
     let root = std::env::temp_dir().join(format!("xiao-20c-first-modules-{}", std::process::id()));
