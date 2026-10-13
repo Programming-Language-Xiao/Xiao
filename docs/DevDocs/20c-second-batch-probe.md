@@ -217,7 +217,7 @@ docs/DevDocs/20c-official-xiao-library.md            §3.2.1 回写第二批清�
 2. **探测执行点**：VM 探测为 `c20_capability_probe::vm_capability_probe_records_each_module`；原生探测为同文件的
    ignored 用例，Windows 实跑使用 `x86_64-pc-windows-msvc`、clang/llvm-as 22.1.2、release Runtime staticlib 和诊断组件。
 3. **第二批实现**：`stdlib/text.xiao` 新增 `length(str text) -> int`，复用 `for c in text` 与整数累积；
-   VM 与 Windows LLVM 原生输出均为 `ok`。未冻结其他候选公共接口。
+   独立长度夹具的 VM 与 Windows LLVM 原生输出均为 `2`；首批模块回归的整体输出仍为 `ok`。未冻结其他候选公共接口。
 4. **状态**：`docs/UseDocs/library/text.md`、`path.md` 与 registry 两项仍为 `draft`；没有把本机记录当作 CI 运行号，
    真实 push、Linux/macOS 受控复跑和 10R 遗留证据继续按表 B 登记。
 
@@ -236,16 +236,12 @@ docs/DevDocs/20c-official-xiao-library.md            §3.2.1 回写第二批清�
 8. **通用**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit` 全绿；
    提交标题带类型前缀、正文非空。
 
-## 九、待定决策（给星崽）
+## 九、裁定结果与后续输入
 
-1. **第二批的候选范围**：本文 §3.1 的 7 条是否就是全部？要不要加/减（例如把「集合最小操作」单独拆一批）；
-2. **探测结论若大面积被边界挡住**：是**只交探测结论 + 语言缺口登记**（不写模块），
-   还是**先推动语言能力补齐**（那会变成一条语言侧批次，与本批的库目标不同）——
-   审核倾向**前者**：库先按能写的写，边界登记清楚，别把库批次变成语言批次；
-3. **子串查找类操作**：若探测确认需要前瞻/下标，是否**永久**排除在标准库之外（由调用方用 `for` 自组合），
-   还是登记为「等语言补齐后回来加」；
-4. **首批两模块的 `verified`**：等 CI/受控运行号，还是允许用**受控主机的本地记录**（带环境清单）作为依据——
-   审核倾向**前者**（CI 运行号可长期复核）。
+1. **候选范围**：按裁定完成 §3.1 的七项全部探测，不再追加候选。
+2. **语言边界**：按裁定只登记缺口，不在本批推动语言能力补齐；子串查找、字符串比较、切分和大小写转换等待后续语言/容器批次。
+3. **集合**：当前只保留双路径能力探测结论；通用容器参数类型和公共 API 形状冻结后再单独立项。
+4. **首批状态**：按裁定等待 CI 运行号，继续保持 `draft`；受控本机记录不能单独触发 `verified`。
 
 ## 相关页面
 
