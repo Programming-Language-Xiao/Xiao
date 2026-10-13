@@ -3,6 +3,9 @@
 use xiao_bytecode::TacProgram;
 use xiao_ir::IrProgram;
 
+/// 重导出官方标准库的权威命名空间常量，供 VM 与驱动器共用。
+pub use xiao_standard_library::{STANDARD_LIBRARY_NAMESPACE, STANDARD_LIBRARY_PREFIX};
+
 /// 由统一前端和字节码流水线编译的一份文件模块。
 #[derive(Debug)]
 pub struct CompiledModule {

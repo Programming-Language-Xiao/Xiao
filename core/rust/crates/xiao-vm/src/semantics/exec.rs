@@ -275,10 +275,21 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             package_context = Some((root.to_owned(), environment.to_owned()));
             format!("包 {root}（来源环境 {environment}）模块 {name}")
         } else {
-            format!(
-                "项目模块 {}",
-                identity.strip_prefix("project:").unwrap_or(identity)
-            )
+            if identity == crate::STANDARD_LIBRARY_NAMESPACE
+                || identity.starts_with(crate::STANDARD_LIBRARY_PREFIX)
+            {
+                format!(
+                    "官方标准库模块 {}",
+                    identity
+                        .strip_prefix(crate::STANDARD_LIBRARY_PREFIX)
+                        .unwrap_or(identity)
+                )
+            } else {
+                format!(
+                    "项目模块 {}",
+                    identity.strip_prefix("project:").unwrap_or(identity)
+                )
+            }
         };
         let mut error = XiaoError::invalid_value(format!("{label} 加载失败: {cause}"));
         if let Some((root, environment)) = package_context {
@@ -414,6 +425,22 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     }
 
     fn import_identity(&self, module: &str) -> String {
+        if module == crate::STANDARD_LIBRARY_NAMESPACE
+            || module.starts_with(crate::STANDARD_LIBRARY_PREFIX)
+        {
+            return module.to_owned();
+        }
+        if self.current_module == crate::STANDARD_LIBRARY_NAMESPACE
+            || self
+                .current_module
+                .starts_with(crate::STANDARD_LIBRARY_PREFIX)
+        {
+            return if module.is_empty() {
+                crate::STANDARD_LIBRARY_NAMESPACE.to_owned()
+            } else {
+                format!("{}.{module}", crate::STANDARD_LIBRARY_NAMESPACE)
+            };
+        }
         if let Some(path) = self.current_module.strip_prefix("package:") {
             let root = path.split('.').next().unwrap_or(path);
             format!("package:{root}.{module}")

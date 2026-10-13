@@ -1,17 +1,77 @@
 //! 20C 首批官方库模块的四件套回归。
 //!
-//! 测试直接读取 `stdlib/` 规范源码并追加最小调用者，避免把官方库伪装成普通包；
-//! 原生测试使用同一份源码和调用者，在受控工具链缺失时保持 ignored。
+//! 测试通过保留的 `stdlib` 命名空间加载规范源码，避免把官方库伪装成普通包；
+//! 原生测试使用同一份调用者源码，在受控工具链缺失时保持 ignored。
 
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::process::Command;
+use std::sync::atomic::{AtomicU64, Ordering};
 
-use xiao_codegen_llvm::{NativeRun, TargetDescription, Toolchain};
+use xiao_codegen_llvm::{TargetDescription, Toolchain};
 use xiao_driver::{
-    DriverOutcome, DriverRequest, FrontendCompiler, FrontendNativeDriver, FrontendRequest,
-    FrontendVmDriver, NativeBuildRequest, NativeDriverError,
+    DriverOutcome, DriverRequest, FrontendArtifact, FrontendCompiler, FrontendNativeDriver,
+    FrontendRequest, FrontendVmDriver, NativeBuildRequest, NativeDriverError,
 };
+use xiao_ir::IrStatementKind;
+use xiao_runtime::{ReleaseEvent, start_release_trace, take_release_events};
 use xiao_vm::VmEvent;
+
+/// 避免并行模块回归复用相同临时项目路径。
+static PROJECT_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+/// 为单个模块调用用例建立隔离项目，并在用例结束后安全清理。
+struct TestProject(PathBuf);
+
+impl TestProject {
+    /// 创建项目根并写入其唯一入口源码。
+    fn new(source: &str) -> Self {
+        let sequence = PROJECT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let root = std::env::temp_dir().join(format!(
+            "xiao-20c-project-{}-{sequence}",
+            std::process::id()
+        ));
+        fs::create_dir_all(&root).expect("创建隔离项目目录");
+        fs::write(root.join("main.xiao"), source).expect("写入隔离项目入口");
+        Self(root)
+    }
+
+    /// 返回项目入口路径。
+    fn main_path(&self) -> PathBuf {
+        self.0.join("main.xiao")
+    }
+
+    /// 从入口源码和项目根建立完整前端请求。
+    fn request(&self, source: &str) -> FrontendRequest {
+        let mut context = xiao_driver::FrontendContext::host();
+        context.project_root = Some(self.0.clone());
+        request(&self.main_path(), source).with_context(context)
+    }
+
+    /// 在临时项目中创建辅助模块或冲突夹具。
+    fn write(&self, relative: &str, source: &str) {
+        let path = self.0.join(relative);
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent).expect("创建临时模块父目录");
+        }
+        fs::write(path, source).expect("写入临时项目模块");
+    }
+}
+
+impl Drop for TestProject {
+    /// 仅清理本测试创建、且仍位于系统临时目录下的项目树。
+    fn drop(&mut self) {
+        if let (Ok(path), Ok(temp)) = (self.0.canonicalize(), std::env::temp_dir().canonicalize()) {
+            if path.starts_with(temp)
+                && path
+                    .file_name()
+                    .is_some_and(|name| name.to_string_lossy().starts_with("xiao-20c-project-"))
+            {
+                let _ = fs::remove_dir_all(path);
+            }
+        }
+    }
+}
 
 /// 定位仓库根目录，以便测试读取与正式发布相同的 `stdlib/` 源码。
 fn repository_root() -> PathBuf {
@@ -49,11 +109,60 @@ fn output(outcome: &DriverOutcome) -> String {
         .collect()
 }
 
-/// 将标准库源码与调用者拼接后执行一次 VM 回归。
+/// 判断执行事件中是否出现指定标准库模块的加载记录。
+fn loaded(outcome: &DriverOutcome, identity: &str) -> bool {
+    outcome
+        .as_executed()
+        .into_iter()
+        .flat_map(|execution| execution.events())
+        .any(|event| matches!(event, VmEvent::ModuleLoaded { module } if module == identity))
+}
+
+/// 统计 VM 侧 Runtime 对象最终销毁数。
+fn vm_destroy_count(events: &[ReleaseEvent]) -> usize {
+    events
+        .iter()
+        .filter(|event| event.action.as_str() == "destroy")
+        .count()
+}
+
+/// 统计原生产物输出的 Runtime 对象最终销毁数。
+fn native_destroy_count(path: &Path) -> usize {
+    let contents = fs::read_to_string(path).expect("原生产物应写出 Runtime 释放轨迹");
+    contents
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .filter(|line| {
+            let mut fields = line.split('\t');
+            let _sequence = fields.next().expect("释放轨迹缺少序号");
+            let _identity = fields.next().expect("释放轨迹缺少对象身份");
+            let action = fields.next().expect("释放轨迹缺少动作");
+            assert!(fields.next().is_none(), "释放轨迹字段过多：{line}");
+            action == "destroy"
+        })
+        .count()
+}
+
+/// 创建 LLVM 与 VM 差分共用的标准库静态链接产物。
+fn static_standard_library_artifact(artifact: &FrontendArtifact) -> FrontendArtifact {
+    let mut linked = artifact.clone();
+    linked.ir.body.retain(|statement| {
+        !matches!(
+            &statement.kind,
+            IrStatementKind::Import { items, .. }
+                if !items.is_empty()
+                    && items.iter().all(|item| {
+                        item.module.starts_with("stdlib.") && item.selected.is_some()
+                    })
+        )
+    });
+    linked
+}
+
+/// 通过工具链标准库加载器执行真实导入回归。
 fn run_vm(module: &str, caller: &str) -> DriverOutcome {
-    let (path, module_source) = module_source(module);
-    let source = format!("{module_source}\n{caller}");
-    let frontend_request = request(&path, &source);
+    let project = TestProject::new(caller);
+    let frontend_request = project.request(caller);
     let artifact = FrontendCompiler::new()
         .compile(&frontend_request)
         .unwrap_or_else(|error| panic!("{module} 模块 VM 编译失败：{error:?}"));
@@ -79,12 +188,14 @@ fn first_error_code(source_path: &Path, source: &str) -> Option<String> {
 #[test]
 /// 验证 text 模块的 VM 结果、类型拒绝和移除边界。
 fn text_module_vm_result_and_removal_boundary_are_stable() {
-    let caller = "if not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n";
+    let caller = "from stdlib.text import contains_char\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n";
     let outcome = run_vm("text", caller);
     assert!(outcome.is_success(), "text VM 调用失败：{outcome:?}");
     assert_eq!(output(&outcome), "ok\n");
+    assert!(loaded(&outcome, "stdlib.text"));
 
-    let (path, source) = module_source("text");
+    let path = repository_root().join("stdlib/text.xiao");
+    let (_, source) = module_source("text");
     let caller_without_module = "print(contains_char(\"lib/core\", \"/\"))\n";
     assert!(
         first_error_code(&path, caller_without_module).is_some(),
@@ -95,18 +206,135 @@ fn text_module_vm_result_and_removal_boundary_are_stable() {
         first_error_code(&path, &wrong_type).is_some(),
         "text 参数类型错误必须在前端拒绝"
     );
+    let imported_wrong_type = "from stdlib.text import contains_char\ncontains_char(1, \"/\")\n";
+    assert_eq!(
+        first_error_code(
+            &repository_root().join("tests/20c_text_wrong_type.xiao"),
+            imported_wrong_type
+        )
+        .as_deref(),
+        Some("X04-TYPE-002"),
+        "专用标准库签名必须保留稳定的调用参数诊断"
+    );
     assert!(
         !source.contains('[') && !source.contains("dict") && !source.contains("serialize"),
         "text 模块不得构造容器、序列化对象或字典键"
     );
+
+    assert!(
+        first_error_code(
+            &repository_root().join("tests/20c_missing_standard_module.xiao"),
+            "from stdlib.removed import value\nprint(value)\n"
+        )
+        .is_some(),
+        "未知标准库模块必须由前端以稳定模块诊断拒绝"
+    );
+
+    let missing_source = "from stdlib.removed import value\nprint(value)\n";
+    let missing_project = TestProject::new(missing_source);
+    let missing_error = FrontendCompiler::new()
+        .compile(&missing_project.request(missing_source))
+        .expect_err("未知标准库模块必须被拒绝");
+    assert_eq!(
+        missing_error
+            .diagnostics()
+            .iter()
+            .filter(|diagnostic| diagnostic.code() == "X05-MODULE-004")
+            .count(),
+        1,
+        "项目索引与标准库索引不得为同一未知标准库模块重复报告诊断"
+    );
+}
+
+#[test]
+/// 项目不得通过同名路径覆盖工具链保留的标准库命名空间。
+fn project_cannot_shadow_the_reserved_standard_library_namespace() {
+    let source = "from stdlib.text import contains_char\nprint(contains_char(\"x\", \"x\"))\n";
+    let project = TestProject::new(source);
+    project.write(
+        "stdlib/text.xiao",
+        "def contains_char(str text, str needle) -> bool\n    return false\n",
+    );
+    let error = FrontendCompiler::new()
+        .compile(&project.request(source))
+        .expect_err("项目声明的 stdlib 路径必须被拒绝");
+    assert!(error.diagnostics.iter().any(|item| {
+        item.code() == "X05-MODULE-003"
+            && item.message().contains("保留的官方标准库命名空间 stdlib")
+    }));
+}
+
+#[test]
+/// 标准库导入也必须能从项目辅助模块进入 VM/原生共享的项目索引。
+fn helper_module_can_import_standard_library() {
+    let source = "from helper import has_separator\nif not has_separator(\"lib/core\")\n    raise ArithmeticError(code = \"HELPER_TEXT\")\n";
+    let project = TestProject::new(source);
+    project.write(
+        "helper.xiao",
+        "from stdlib.text import contains_char\ndef has_separator(str value) -> bool\n    return contains_char(value, \"/\")\n",
+    );
+    let artifact = FrontendCompiler::new()
+        .compile(&project.request(source))
+        .unwrap_or_else(|error| panic!("辅助模块导入标准库失败：{error:?}"));
+    assert!(
+        artifact
+            .ir
+            .modules
+            .iter()
+            .any(|module| module.name == "stdlib.text"),
+        "项目辅助模块引用标准库时，标准库模块必须进入共享 IR 索引"
+    );
+    let outcome = FrontendVmDriver::new()
+        .run_artifact(&artifact, &DriverRequest::new(project.request(source)));
+    assert!(outcome.is_success(), "辅助模块标准库调用失败：{outcome:?}");
+    assert!(loaded(&outcome, "project:helper"));
+    assert!(loaded(&outcome, "stdlib.text"));
+
+    project.write("helper.xiao", "from stdlib.removed import value\n");
+    let missing_error = FrontendCompiler::new()
+        .compile(&project.request(source))
+        .expect_err("辅助模块的未知标准库导入不得被项目镜像过滤吞掉");
+    assert_eq!(
+        missing_error
+            .diagnostics()
+            .iter()
+            .filter(|diagnostic| diagnostic.code() == "X05-MODULE-004")
+            .count(),
+        1,
+        "辅助模块未知标准库导入必须产生唯一的稳定模块错误"
+    );
+}
+
+#[test]
+/// 移除 VM 的真实加载绑定后，即使前端保留静态函数也必须执行失败。
+fn standard_library_import_requires_vm_loader_binding() {
+    for source in [
+        "from stdlib.text import contains_char\nprint(contains_char(\"x\", \"x\"))\n",
+        "from stdlib.path import join\nprint(join(\"lib\", \"core\"))\n",
+    ] {
+        let artifact = FrontendCompiler::new()
+            .compile(&FrontendRequest::from_text(source))
+            .expect("标准库导入前端成功");
+        let program = xiao_bytecode::lower_program(&artifact.ir);
+        let outcome = xiao_vm::run_request(&xiao_vm::RunRequest::new(&artifact.ir, &program));
+        let xiao_vm::RunResult::Error(error) = outcome.result else {
+            panic!("移除 VM 加载绑定后必须失败：{outcome:?}");
+        };
+        assert_eq!(error.code(), "X06-RUNTIME-012");
+        assert!(error.message().contains("未注册模块编译器"));
+    }
 }
 
 #[test]
 /// 验证 path 模块的 VM 结果、类型拒绝和移除边界。
 fn path_module_vm_result_and_removal_boundary_are_stable() {
-    let outcome = run_vm("path", "print(join(\"lib\", \"core\"))\n");
+    let outcome = run_vm(
+        "path",
+        "from stdlib.path import join\nprint(join(\"lib\", \"core\"))\n",
+    );
     assert!(outcome.is_success(), "path VM 调用失败：{outcome:?}");
     assert_eq!(output(&outcome), "lib/core\n");
+    assert!(loaded(&outcome, "stdlib.path"));
 
     let (path, source) = module_source("path");
     let caller_without_module = "print(join(\"lib\", \"core\"))\n";
@@ -114,10 +342,15 @@ fn path_module_vm_result_and_removal_boundary_are_stable() {
         first_error_code(&path, caller_without_module).is_some(),
         "移除 path 模块实现后，调用者必须失败"
     );
-    let wrong_type = format!("{source}\nprint(join(\"lib\", 1))\n");
-    assert!(
-        first_error_code(&path, &wrong_type).is_some(),
-        "path 参数类型错误必须在前端拒绝"
+    let wrong_type = "from stdlib.path import join\nprint(join(\"lib\", 1))\n";
+    assert_eq!(
+        first_error_code(
+            &repository_root().join("tests/20c_path_wrong_type.xiao"),
+            wrong_type
+        )
+        .as_deref(),
+        Some("X04-TYPE-002"),
+        "path 导入签名必须保留稳定的调用参数诊断"
     );
     assert!(
         !source.contains('[') && !source.contains("dict") && !source.contains("serialize"),
@@ -163,16 +396,20 @@ fn first_modules_match_native_results() {
     fs::create_dir_all(&root).expect("创建首批模块原生测试目录");
     let cases = [
         (
+            "path",
+            "from stdlib.path import join\nprint(join(\"lib\", \"core\"))\n",
+            "lib/core\n",
+        ),
+        (
             "text",
-            "if not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n",
+            "from stdlib.text import contains_char\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n",
             "ok\n",
         ),
-        ("path", "print(join(\"lib\", \"core\"))\n", "lib/core\n"),
     ];
     for (module, caller, expected_stdout) in cases {
-        let (path, module_text) = module_source(module);
-        let source = format!("{module_text}\n{caller}");
-        let frontend_request = request(&path, &source);
+        let source = caller;
+        let project = TestProject::new(source);
+        let frontend_request = project.request(source);
         let artifact = FrontendCompiler::new()
             .compile(&frontend_request)
             .unwrap_or_else(|error| panic!("{module} 原生前端失败：{error:?}"));
@@ -182,7 +419,7 @@ fn first_modules_match_native_results() {
             module.to_owned()
         });
         let build_request = NativeBuildRequest::new(
-            frontend_request,
+            frontend_request.clone(),
             target.clone(),
             toolchain.clone(),
             output_path,
@@ -195,15 +432,44 @@ fn first_modules_match_native_results() {
                 }
                 NativeDriverError::Backend(backend) => panic!("{module} 原生后端失败：{backend}"),
             });
-        let run = NativeRun::new(&native.native)
-            .run()
+        let trace_path = root.join(format!("{module}.release-trace.tsv"));
+        let trace = start_release_trace();
+        let linked_artifact = static_standard_library_artifact(&artifact);
+        let vm = FrontendVmDriver::new()
+            .run_artifact(&linked_artifact, &DriverRequest::new(frontend_request));
+        let vm_releases = take_release_events();
+        drop(trace);
+        assert!(vm.is_success(), "{module} VM 执行失败：{vm:?}");
+        assert_eq!(output(&vm), expected_stdout, "{module} VM 输出不符");
+
+        let run = Command::new(&native.native.executable)
+            .env("XIAO_RUNTIME_RELEASE_TRACE_PATH", &trace_path)
+            .output()
             .unwrap_or_else(|error| panic!("{module} 原生产物启动失败：{error}"));
-        assert_eq!(run.status, Some(0), "{module} 原生退出状态不符：{run:?}");
-        assert_eq!(run.stdout, expected_stdout, "{module} VM/原生输出不一致");
+        let stdout = String::from_utf8_lossy(&run.stdout);
+        let stderr = String::from_utf8_lossy(&run.stderr);
+        assert_eq!(
+            run.status.code(),
+            Some(0),
+            "{module} 原生退出状态不符：{stderr}"
+        );
+        assert_eq!(stdout, expected_stdout, "{module} VM/原生输出不一致");
         assert!(
-            run.stderr.is_empty(),
-            "{module} 成功路径不应输出 stderr：{}",
-            run.stderr
+            stderr.is_empty(),
+            "{module} 成功路径不应输出 stderr：{stderr}"
+        );
+        assert_eq!(
+            linked_artifact.ir.ownership.release_plans, artifact.ir.ownership.release_plans,
+            "{module} 的静态链接不得改变前端冻结的释放动作顺序"
+        );
+        assert_eq!(
+            native.frontend.ir.ownership.release_plans, artifact.ir.ownership.release_plans,
+            "{module} LLVM 构建必须保留前端冻结的释放动作顺序"
+        );
+        assert_eq!(
+            native_destroy_count(&trace_path),
+            vm_destroy_count(&vm_releases),
+            "{module} VM/原生 Runtime 最终对象销毁数不一致"
         );
     }
     let _ = fs::remove_dir_all(root);

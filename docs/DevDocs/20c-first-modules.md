@@ -8,8 +8,8 @@
 > **一句话概括**：**在冻结的六条与探测边界内写 `text`/`path` 的首批操作**——**先把接口清单冻结，再实现**；
 > 并把 P-5 与两处口径订正一起并进来。
 >
-> 状态：**已实施（2026-10-13）**。接口清单已按星崽裁定冻结，源码、测试和同步元数据已落地；
-> 原生 ignored 测试仍需受控工具链运行记录，未把本机缺少的运行号写成通过。
+> 状态：**实现与本机双路径已验证（2026-10-13）**。固定 `stdlib` 加载器、`text`/`path` 源码、真实导入、VM/LLVM 构建和同步元数据已落地；
+> Windows 本机原生差分已实跑。push 门控运行号、Linux/macOS 受控复跑和 10R 遗留证据仍未回填，不据此宣称发布验收全部关闭。
 
 ## 一、Agent 交接上下文
 
@@ -151,14 +151,14 @@
 
 1. 模块写成 `stdlib/` 下的 `.xiao` 源码（**发布形式已冻结为源码**）；预编译对象只允许作为**本地/构建缓存**，
    **不作发布身份**、**不作为普通包发布**；
-2. 模块**不通过普通依赖解析**——由工具链专用加载器按固定命名空间提供（依赖求解负例已证明普通解析会拒绝）；
+2. 模块**不通过普通依赖解析**——VM 由工具链专用加载器按固定 `stdlib.` 命名空间提供；LLVM 将纯 Xiao 函数静态并入构建输入。普通包求解仍稳定拒绝标准库身份；
 3. **不许**写 `.xar` 兼容字段（归档接线归 20E）。
 
 ### 4.2 **每个模块的「四件套」验收（缺一不算完成）**
 
 取自方向稿 §6.1，逐条可查：
 
-1. **双路径差分**：同一模块在 VM 与 LLVM 原生上的**结果、错误身份、释放顺序**一致；
+1. **双路径差分**：同一冻结源码在 VM 与 LLVM 原生上的结果一致；错误身份按实际错误路径对照；两边保留相同 `IrOwnership.release_plans` 顺序且最终对象销毁数相同；
    **LLVM 尚不可用时不许伪造通过**（写「数据不足」）；
 2. **移除验证**：删掉模块、绑定或包装里的**任一**环节，专门用例必须失败——
    **只测「能编译」不算**（20AB 的教训、20AB-FIX 才补上）；
@@ -238,13 +238,14 @@ core/rust/crates/xiao-driver/src/compatibility.rs   §四 4.3：仅在破坏性�
 
 | 模块 | VM | LLVM 原生 | 移除验证 | 元数据与边界 |
 | --- | --- | --- | --- | --- |
-| `text` | `text_module_vm_result_and_removal_boundary_are_stable` 通过，输出 `ok` | `first_modules_match_native_results` 已加入受控 ignored 门禁，当前等待工具链运行号 | 去掉实现后调用者前端失败；错误参数类型前端拒绝 | `text.xiao`、`text.md`、UseDocs、入口测试和注册项已同步；源码无容器/序列化/`dynamic` 兜底 |
-| `path` | `path_module_vm_result_and_removal_boundary_are_stable` 通过，输出 `lib/core` | 同上，使用同一份源码和调用者 | 去掉实现后调用者前端失败；错误参数类型前端拒绝 | `path.xiao`、`path.md`、UseDocs、入口测试和注册项已同步；源码无容器/序列化/`dynamic` 兜底 |
+| `text` | `from stdlib.text import contains_char` 经固定命名空间加载，VM 输出 `ok` 并记录 `stdlib.text` 加载 | Windows x86_64-pc-windows-msvc 本机以 clang/llvm-as 22.1.2 与 Runtime staticlib 实跑通过 | 删除实现后加载失败；导入签名的错误类型前端拒绝 | `text.xiao`、README、UseDocs、入口回归和登记项已同步；源码无容器/序列化/`dynamic` 兜底 |
+| `path` | `from stdlib.path import join` 经固定命名空间加载，VM 输出 `lib/core` 并记录 `stdlib.path` 加载 | 同一 Windows 原生差分实跑通过 | 删除实现后加载失败；错误参数类型前端拒绝 | `path.xiao`、README、UseDocs、入口回归和登记项已同步；源码无容器/序列化/`dynamic` 兜底 |
 
-VM 测试命令为 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20c_first_modules`。
-原生测试由 Windows/Linux 两处 `--workspace -- --ignored` 作业执行；本地未设置受控工具链时只保留 ignored，
-不把数据不足写成原生通过。标准库接口版本仍为 1，Runtime ABI 主/次仍从 `xiao-runtime-abi` 常量读取，
-没有改 `.xar` 字段，也没有加入普通依赖图。
+VM 测试命令为 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20c_first_modules`；
+Windows 本机原生命令为 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20c_first_modules first_modules_match_native_results -- --ignored --exact`，使用 MSVC 链接器、clang/llvm-as 22.1.2 和 Runtime staticlib。
+VM 的按需加载回归单独确认固定命名空间、加载事件与移除失败；LLVM 将纯 Xiao 函数静态并入构建输入，差分回归让 VM/LLVM 消费相同的静态链接 IR。
+两边断言 `IrOwnership.release_plans` 顺序一致、Runtime 最终对象销毁数一致。ABI 追踪中的内部 retain/release 调用序列会受 LLVM 临时槽布局影响，不作为源语言释放计划顺序判据。
+该定向原生实跑尚不是真实 push 运行号；CI 门控与 Linux/macOS 仍待外部运行。标准库接口版本仍为 1，Runtime ABI 主/次仍从常量读取，没有改 `.xar` 字段，也没有加入普通依赖图。
 
 ## 相关页面
 

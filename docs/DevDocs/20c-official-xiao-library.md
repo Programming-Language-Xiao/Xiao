@@ -4,10 +4,10 @@
 > [20A/20B](20ab-intrinsics-contract-and-minimal-entry.md) 已交付（`20AB` + `20AB-FIX`），20C 的前置（**10 的原生 Runtime ABI、11A 的包/环境边界**）具备。
 >
 > **一句话概括**：能力探测与六条架构冻结已经完成；20C 入口批建立骨架、目录门禁和依赖隔离证据，
-> 20C-首批已按冻结接口实现 `text`/`path`。
+> 20C-首批已实现固定 `stdlib` VM 加载器和 LLVM 静态函数接线，并按冻结接口交付 `text`/`path`。
 >
-> 状态：**能力探测、六条冻结、入口骨架与首批模块已完成（2026-10-13）**。
-> 原生受控运行和 10 系列遗留证据仍按对应文档登记；入口守卫见 [20C-入口](20c-entry-and-skeleton.md)，
+> 状态：**能力探测、六条冻结、入口骨架、首批模块与 Windows 本机 VM/LLVM 实跑已完成（2026-10-13）**。
+> 真实 push 门控运行号、Linux/macOS 复跑和 10 系列遗留证据仍按对应文档登记；入口守卫见 [20C-入口](20c-entry-and-skeleton.md)，
 > 首批接口与四件套见 [20C-首批](20c-first-modules.md)。审核返工 **G-1–G-7** 是本页的历史验证记录：
 > **G-5 已修**（`9172066`，代表性夹具改为真实 `for c in s` 扫描 + 非字面量下标边界用例，审核复跑通过）；
 > **G-1 已全部验证**：维护回归 `38143017922`（两平台都跑了 5 条夹具）、只碰夹具的推送 `38160276950` **被触发**并**变红**、还原后 `38160754765` **转绿**；
@@ -445,14 +445,14 @@ Windows 边界证据见 [10R-实现](10r-static-overflow-implementation.md) §�
 | 6 | Xiao 源码落点为顶层 `stdlib/`，配套元数据 crate 为 `core/rust/crates/xiao-standard-library`；每个模块同步 crate README、UseDocs、DevDocs 阶段索引和兼容元数据；冻结后先建立最小入口骨架，模块实现另批推进 | 00A 目录门槛、20 方向稿 §六；入口骨架已按 [20C-入口](20c-entry-and-skeleton.md) 落地 |
 
 这六条是架构冻结，不解除 10R 的后续门禁；20C 入口批创建了骨架，20C-首批已在冻结范围内加入
-`text`/`path` 源码、模块文档和双路径测试。原生侧仍以受控工具链运行记录为准。
+`text`/`path` 源码、固定 VM 加载器、LLVM 静态函数接线和双路径测试。Windows 本机受控组件已实跑；真实 push 与 Linux/macOS 运行记录仍按遗留项跟踪。
 
 **20C 入口实施回写（2026-10-12）**：入口批次已创建最小 `stdlib/` 与
 `xiao-standard-library` 骨架，并把 `.xiao` 纳入通用目录发现。标准库身份以
 `xiao-driver::StandardLibraryIdentity` 并列提供；普通依赖求解对保留包名
 `xiao-standard-library` 返回 `X05-PACKAGE-006`，负例位于
 `xiao-package/tests/e3d_solver.rs`。`text`/`path` 源码模块已按冻结接口落在 `stdlib/`，
-模块实现不进入普通依赖图，也不写 `.xar` 兼容字段。
+模块实现不进入普通依赖图，也不写 `.xar` 兼容字段。固定 VM 加载身份为 `stdlib.text`/`stdlib.path`；LLVM 侧静态并入纯 Xiao 函数。
 
 ### 3.3 **与静态溢出的耦合（已裁定归 20C 之前）**
 
@@ -472,7 +472,9 @@ Windows 边界证据见 [10R-实现](10r-static-overflow-implementation.md) §�
 
 ### 3.4 **验收（取自方向稿 §6.1 中与 20C 相关的部分）**
 
-1. **双路径差分**：同一模块在 VM 与 LLVM 的结果、错误身份、释放顺序一致；
+1. **双路径差分**：同一模块在 VM 与 LLVM 的结果一致；错误身份按实际错误路径对照；
+   释放验收比较两边共享的 `IrOwnership.release_plans` 顺序与 Runtime 最终对象销毁数。
+   ABI 轨迹中的底层 retain/release 调用序列会受 LLVM 临时槽布局影响，不作为源语言释放计划的判据；
    **LLVM 尚不可用时不许伪造通过**（写「数据不足」，不写「通过」）；
 2. **容器边界**：官方库的值不进集合/字典键/常量池/序列化对象/`.xar`；
    类型名与错误参数**不出现 `dynamic` 等兜底文本**——`20AB-FIX` 修过同类问题，容易复发；

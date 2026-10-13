@@ -25,5 +25,12 @@ contains_char(str text, str needle) -> bool
 按迭代器式 `for c in text` 扫描文本；存在与 `needle` 相等的字符时返回 `true`，否则返回 `false`。
 参数必须是 `str`，类型错误由现有前端诊断；本接口不引入 intrinsic。
 
+```xiao
+from stdlib.text import contains_char
+
+if contains_char("lib/core", "/")
+    print("has separator")
+```
+
 本批不提供子串查找、切分、切片、大小写转换、格式化或集合操作。官方库不通过普通包依赖安装，
-接口兼容身份由 `StandardLibraryIdentity` 提供。
+`stdlib.` 是工具链保留命名空间，接口兼容身份由 `StandardLibraryIdentity` 提供。

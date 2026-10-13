@@ -23,6 +23,7 @@ xiao-runtime = { path = "../xiao-runtime" }
 xiao-types = { path = "../xiao-types" }
 xiao-syntax = { path = "../xiao-syntax" }
 xiao-source = { path = "../xiao-source" }
+xiao-standard-library = { path = "../xiao-standard-library" }
 
 [dev-dependencies]
 xiao-ir = { path = "../xiao-ir" }

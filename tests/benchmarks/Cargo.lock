@@ -575,6 +575,7 @@ dependencies = [
  "xiao-runtime",
  "xiao-runtime-abi",
  "xiao-source",
+ "xiao-standard-library",
  "xiao-syntax",
  "xiao-types",
  "xiao-vm",
@@ -709,6 +710,10 @@ name = "xiao-source"
 version = "0.1.0"
 
 [[package]]
+name = "xiao-standard-library"
+version = "0.1.0"
+
+[[package]]
 name = "xiao-syntax"
 version = "0.1.0"
 dependencies = [
@@ -737,6 +742,7 @@ dependencies = [
  "xiao-lifetime",
  "xiao-runtime",
  "xiao-source",
+ "xiao-standard-library",
  "xiao-syntax",
  "xiao-types",
 ]

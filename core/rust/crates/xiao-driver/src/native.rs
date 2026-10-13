@@ -3,6 +3,7 @@
 //! 本模块只编排既有 `FrontendCompiler` 和 `xiao-codegen-llvm`。它不解析 CLI 参数、不发现
 //! 工具链，也不复制类型检查；用户可见的 `xiao build` 留给 11/X0。
 
+use std::collections::BTreeSet;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 
@@ -10,6 +11,7 @@ use xiao_codegen_llvm::{
     BuildRequest, CodegenError, CodegenOptions, NativeArtifact, NativeBuild, TargetDescription,
     Toolchain,
 };
+use xiao_ir::{IrProgram, IrStatement, IrStatementKind};
 
 use crate::frontend::{FrontendArtifact, FrontendCompiler, FrontendError, FrontendRequest};
 
@@ -67,7 +69,7 @@ impl NativeBuildRequest {
 /// 前端成功且原生链接完成后的结果。
 #[derive(Debug)]
 pub struct NativeBuildResult {
-    /// 前端产物；与交给后端的 IR 是同一份值对象。
+    /// 前端原始产物；后端仅在副本中移除已静态接线的标准库导入。
     pub frontend: FrontendArtifact,
     /// 原生构建产物。
     pub native: NativeArtifact,
@@ -126,8 +128,12 @@ impl FrontendNativeDriver {
         frontend: &FrontendArtifact,
         request: &NativeBuildRequest,
     ) -> Result<NativeBuildResult, NativeDriverError> {
+        // 标准库首批模块仅导出纯 Xiao 函数：LLVM 将前端已静态链接进入口 IR 的函数
+        // 直接调用，不发射 VM 所需的模块初始化和动态命名空间物化。
+        let mut backend_ir = frontend.ir.clone();
+        strip_static_standard_imports(&mut backend_ir);
         let mut backend_request = BuildRequest::new(
-            frontend.ir.clone(),
+            backend_ir,
             request.target.clone(),
             request.toolchain.clone(),
             request.output.clone(),
@@ -149,4 +155,83 @@ impl FrontendNativeDriver {
             native,
         })
     }
+}
+
+/// 递归移除已静态链接的标准库函数导入，保留项目模块与非函数导入。
+fn strip_static_standard_imports(program: &mut IrProgram) {
+    /// 判断导入项是否对应已登记的纯 Xiao 标准库函数。
+    fn is_static_function_import(
+        functions: &BTreeSet<(String, String)>,
+        item: &xiao_ir::IrImportItem,
+    ) -> bool {
+        let Some(selected) = item.selected.as_ref() else {
+            return false;
+        };
+        if !item.module.starts_with("stdlib.")
+            || selected.text != item.binding.text
+            || selected.backticked != item.binding.backticked
+        {
+            return false;
+        }
+        functions.contains(&(item.module.clone(), selected.text.clone()))
+    }
+
+    /// 递归移除可静态链接的标准库函数导入语句。
+    fn strip(functions: &BTreeSet<(String, String)>, statements: &mut Vec<IrStatement>) {
+        for statement in statements.iter_mut() {
+            match &mut statement.kind {
+                IrStatementKind::Import { items, .. } => {
+                    items.retain(|item| !is_static_function_import(functions, item));
+                }
+                IrStatementKind::If {
+                    body,
+                    elif_branches,
+                    else_body,
+                    ..
+                } => {
+                    strip(functions, body);
+                    for branch in elif_branches {
+                        strip(functions, &mut branch.body);
+                    }
+                    if let Some(body) = else_body {
+                        strip(functions, body);
+                    }
+                }
+                IrStatementKind::For { body, .. }
+                | IrStatementKind::While { body, .. }
+                | IrStatementKind::Function { body, .. } => strip(functions, body),
+                IrStatementKind::Try {
+                    body,
+                    catches,
+                    finally_body,
+                } => {
+                    strip(functions, body);
+                    for catch in catches {
+                        strip(functions, &mut catch.body);
+                    }
+                    if let Some(body) = finally_body {
+                        strip(functions, body);
+                    }
+                }
+                _ => {}
+            }
+        }
+        statements.retain(|statement| {
+            !matches!(&statement.kind, IrStatementKind::Import { items, .. } if items.is_empty())
+        });
+    }
+
+    let functions = program
+        .modules
+        .iter()
+        .filter(|module| module.name.starts_with("stdlib.") && module.kind == "file")
+        .flat_map(|module| {
+            module
+                .symbols
+                .iter()
+                .filter(|symbol| symbol.kind == "function")
+                .map(|symbol| (module.name.clone(), symbol.name.clone()))
+        })
+        .collect::<BTreeSet<_>>();
+    strip(&functions, &mut program.body);
 }

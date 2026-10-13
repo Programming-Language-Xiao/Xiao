@@ -33,7 +33,9 @@ pub use machine::register::{RegisterCarrier, RegisterLocation, TypedRegisterCarr
 /// 重导出栈式载体。
 pub use machine::stack::StackCarrier;
 /// VM 按需请求文件模块的公开边界。
-pub use modules::{CompiledModule, ModuleLoader};
+pub use modules::{
+    CompiledModule, ModuleLoader, STANDARD_LIBRARY_NAMESPACE, STANDARD_LIBRARY_PREFIX,
+};
 /// 重导出运行入口、结果与指标。
 pub use run::{
     CancellationSource, CancellationToken, DEFAULT_CHECKPOINT_INTERVAL, DEFAULT_MAX_CALL_DEPTH,

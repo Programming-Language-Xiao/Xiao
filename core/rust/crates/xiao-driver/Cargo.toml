@@ -34,6 +34,7 @@ xiao-xar = { path = "../xiao-xar" }
 xiao-optimizer = { path = "../xiao-optimizer" }
 xiao-codegen-llvm = { path = "../xiao-codegen-llvm" }
 xiao-package = { path = "../xiao-package" }
+xiao-standard-library = { path = "../xiao-standard-library" }
 xiao-runtime = { path = "../xiao-runtime" }
 xiao-runtime-abi = { path = "../xiao-runtime-abi" }
 serde = { version = "1.0", features = ["derive"] }

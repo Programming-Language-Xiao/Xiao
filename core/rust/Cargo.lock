@@ -599,6 +599,7 @@ dependencies = [
  "xiao-runtime",
  "xiao-runtime-abi",
  "xiao-source",
+ "xiao-standard-library",
  "xiao-syntax",
  "xiao-types",
  "xiao-vm",
@@ -764,6 +765,7 @@ dependencies = [
  "xiao-lifetime",
  "xiao-runtime",
  "xiao-source",
+ "xiao-standard-library",
  "xiao-syntax",
  "xiao-types",
 ]

@@ -238,6 +238,24 @@ impl<'a> DynamicGenerator<'a> {
                 _ => None,
             })
             .collect();
+        // 官方 Xiao 模块仍由前端的固定命名空间提供。LLVM 产物是静态链接形态，
+        // 因此把其纯 Xiao 顶层函数加入同一符号表，使 `from stdlib.x import f`
+        // 能降低为直接函数调用；模块导入语句仍负责模块初始化与导出语义。
+        for module in self
+            .program
+            .modules
+            .iter()
+            .filter(|module| module.name.starts_with("stdlib.") && module.kind == "file")
+        {
+            for statement in &module.body {
+                let xiao_ir::IrStatementKind::Function { name, .. } = &statement.kind else {
+                    continue;
+                };
+                self.function_definitions
+                    .entry(name.text.clone())
+                    .or_insert(statement);
+            }
+        }
         self.emit_entry()?;
         let functions = self
             .function_definitions
