@@ -245,6 +245,7 @@ docs/DevDocs/20c-official-xiao-library.md            §3.2.1 回写第二批清�
 
 ## 相关页面
 
+- [20C-语言边界批. 逻辑/身份算子：语义裁定、双路径接通与探测覆盖](20c-language-boundary-and-operators.md) —— **本批 §九.2 推迟的「后续语言/容器批次」**；承接被边界挡住的四条候选，并修正本批 §3.3 第 1 行与第 4 行
 - [20C-首批. 官方库首批模块：`text` 与 `path`](20c-first-modules.md) —— **本批的前置**；§3.1 探测规矩、§4.2 四件套、§4.4 不许扩语言
 - [20C. 官方 Xiao 库：能力探测、模块清单与兼容身份](20c-official-xiao-library.md) —— §3.1 探测表与 §3.2.1 六条冻结（唯一权威）
 - [20C-入口. 20C 入口准备](20c-entry-and-skeleton.md) —— 骨架、`.xiao` 发现、身份块、依赖负例；§2.1 的 glob 口径
