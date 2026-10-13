@@ -2,7 +2,7 @@
 
 工程期：20C。
 
-本目录只保存 20C §3.1 的两个最小夹具和两条代表性操作夹具，不是官方标准库，也不进入普通包依赖求解。
+本目录保存 20C §3.1 的首批夹具与第二批七项候选探测夹具，不是官方标准库，也不进入普通包依赖求解。
 
 | 文件 | 探测范围 | 预期观察 |
 | --- | --- | --- |
@@ -11,6 +11,13 @@
 | `strings-path-representative.xiao` | 路径字符串的 `for c in s` 逐字符扫描与条件判断 | VM 与 LLVM 原生输出 `/` |
 | `strings-index-boundary.xiao` | 非字面量字符串下标边界 | VM/LLVM 在类型层拒绝 `X03-TYPE-003`（迭代器式语言的既定边界） |
 | `arithmetic-representative.xiao` | 除法、取模、数字转文本和字符串拼接 | VM/LLVM 在类型层拒绝 `X02-TYPE-006`（当前不支持 `int` 到 `str` 转换） |
+| `second-string-comparison.xiao` | 字符串相等与字典序比较 | VM/LLVM 均在类型层拒绝 `X02-TYPE-005` |
+| `second-count-length.xiao` | `for` 逐字符计数 | 第二批 `text.length` 的双路径依据，VM/LLVM 输出 `2` |
+| `second-string-accumulate.xiao` | 循环内字符串累积拼接 | 第二批候选：循环赋值与字符串拼接 |
+| `second-substring-lookahead.xiao` | 变量下标前瞻 | VM/LLVM 最先在解析层拒绝 `X01-PARSE-007` |
+| `second-split-array.xiao` | 累积并构造数组结果 | VM/LLVM 在类型层拒绝 `X02-TYPE-005` |
+| `second-case-conversion.xiao` | 字符分类与 ASCII 小写转换尝试 | VM/LLVM 在类型层拒绝 `X02-TYPE-006` |
+| `second-set-membership.xiao` | 集合构造与 `in`/`not in` | VM/LLVM 输出 `ok`，仅保留探测结论 |
 
 夹具由 `core/rust/crates/xiao-driver/tests/c20_capability_probe.rs` 读取。这里不添加
 intrinsic、不绕过类型检查，也不把探测结果当作官方库接口承诺。

@@ -1,0 +1,10 @@
+def lower_ascii(str text) -> str
+    result = ""
+    for c in text
+        if c >= "A" and c <= "Z"
+            result = result + str(int(c) + 32)
+        else
+            result = result + c
+    return result
+
+print(lower_ascii("AB"))

@@ -1,0 +1,9 @@
+def contains_pair(str text) -> bool
+    int index = 0
+    while index < 2
+        if text[index] == text[index + 1]
+            return true
+        index = index + 1
+    return false
+
+print(contains_pair("book"))

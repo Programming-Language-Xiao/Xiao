@@ -1,0 +1,10 @@
+def is_before(str left, str right) -> bool
+    return left < right
+
+if not is_before("apple", "banana")
+    raise ArithmeticError(code = "SECOND_STRING_COMPARE")
+if not "same" == "same"
+    raise ArithmeticError(code = "SECOND_STRING_COMPARE")
+if not "banana" > "apple"
+    raise ArithmeticError(code = "SECOND_STRING_COMPARE")
+print("ok")

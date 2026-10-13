@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use xiao_codegen_llvm::{TargetDescription, Toolchain};
+use xiao_codegen_llvm::{CodegenError, TargetDescription, Toolchain};
 use xiao_driver::{
     DriverOutcome, DriverRequest, FrontendArtifact, FrontendCompiler, FrontendNativeDriver,
     FrontendRequest, FrontendVmDriver, NativeBuildRequest, NativeDriverError,
@@ -190,7 +190,7 @@ fn first_error_code(source_path: &Path, source: &str) -> Option<String> {
 #[test]
 /// 验证 text 模块的 VM 结果、类型拒绝和移除边界。
 fn text_module_vm_result_and_removal_boundary_are_stable() {
-    let caller = "from stdlib.text import contains_char\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n";
+    let caller = "from stdlib.text import contains_char\nfrom stdlib.text import length\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif length(\"小雪\") != 2\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n";
     let outcome = run_vm("text", caller);
     assert!(outcome.is_success(), "text VM 调用失败：{outcome:?}");
     assert_eq!(output(&outcome), "ok\n");
@@ -217,6 +217,15 @@ fn text_module_vm_result_and_removal_boundary_are_stable() {
         .as_deref(),
         Some("X04-TYPE-002"),
         "专用标准库签名必须保留稳定的调用参数诊断"
+    );
+    assert_eq!(
+        first_error_code(
+            &repository_root().join("tests/20c_text_length_wrong_type.xiao"),
+            "from stdlib.text import length\nlength(1)\n",
+        )
+        .as_deref(),
+        Some("X04-TYPE-002"),
+        "text.length 导入签名必须保留稳定的调用参数诊断"
     );
     assert!(
         !source.contains('[') && !source.contains("dict") && !source.contains("serialize"),
@@ -333,7 +342,7 @@ fn helper_module_can_import_standard_library() {
 }
 
 #[test]
-/// 移除 VM 的真实加载绑定后，即使前端保留静态函数也必须执行失败。
+/// 不经 VM 加载绑定直接运行时，即使前端保留静态函数也必须失败。
 fn standard_library_import_requires_vm_loader_binding() {
     for source in [
         "from stdlib.text import contains_char\nprint(contains_char(\"x\", \"x\"))\n",
@@ -350,6 +359,51 @@ fn standard_library_import_requires_vm_loader_binding() {
         assert_eq!(error.code(), "X06-RUNTIME-012");
         assert!(error.message().contains("未注册模块编译器"));
     }
+}
+
+#[test]
+#[ignore = "需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4"]
+/// 删除 LLVM 标准库函数体的静态绑定后，原生构建必须在后端失败。
+fn removing_llvm_standard_library_function_binding_rejects_native_build() {
+    let (target, toolchain) = configured_native_toolchain();
+    let caller = "from stdlib.path import join\nprint(join(\"lib\", \"core\"))\n";
+    let project = TestProject::new(caller);
+    let request = project.request(caller);
+    let artifact = FrontendCompiler::new()
+        .compile(&request)
+        .expect("标准库原生移除夹具前端应通过");
+    let mut broken = artifact.clone();
+    broken.ir.body.retain(|statement| {
+        !matches!(
+            &statement.kind,
+            IrStatementKind::Function { name, .. } if name.text == "join"
+        )
+    });
+    broken
+        .ir
+        .modules
+        .iter_mut()
+        .find(|module| module.name == "stdlib.path")
+        .expect("前端产物应包含 stdlib.path 模块")
+        .body
+        .clear();
+    let output = std::env::temp_dir().join(format!(
+        "xiao-20c-removed-native-binding-{}.exe",
+        std::process::id()
+    ));
+    let result = FrontendNativeDriver::new().build_artifact(
+        &broken,
+        &NativeBuildRequest::new(request, target, toolchain, &output),
+    );
+    let _ = fs::remove_file(&output);
+    let failed_as_expected = matches!(
+        &result,
+        Err(NativeDriverError::Backend(CodegenError::Unsupported { .. }))
+    );
+    assert!(
+        failed_as_expected,
+        "删除 LLVM 标准库函数绑定后必须在原生后端拒绝：{result:?}"
+    );
 }
 
 #[test]
@@ -429,7 +483,7 @@ fn first_modules_match_native_results() {
         ),
         (
             "text",
-            "from stdlib.text import contains_char\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n",
+            "from stdlib.text import contains_char\nfrom stdlib.text import length\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif length(\"小雪\") != 2\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n",
             "ok\n",
         ),
     ];

@@ -1,0 +1,6 @@
+values = {"xiao", "rust"}
+if "xiao" not in values
+    raise ArithmeticError(code = "SECOND_SET")
+if "go" in values
+    raise ArithmeticError(code = "SECOND_SET")
+print("ok")

@@ -7,3 +7,9 @@ def contains_char(str text, str needle) -> bool
         if c == needle
             found = true
     return found
+
+def length(str text) -> int
+    count = 0
+    for c in text
+        count = count + 1
+    return count

@@ -163,7 +163,9 @@
 2. **移除验证**：删掉模块、绑定或包装里的**任一**环节，专门用例必须失败——
    **只测「能编译」不算**（20AB 的教训、20AB-FIX 才补上）；
 3. **容器边界与兜底文本**：模块的值不进集合/字典键/常量池/序列化对象/`.xar`；
-   类型名与错误参数**不出现 `dynamic` 等兜底文本**；
+   类型名与错误参数**不出现 `dynamic` 等兜底文本**。首批模块只传递 `str`/`bool`，不产生容器、资源或
+   可序列化句柄，因此“值进入容器/常量池/序列化对象”的子项对本批 **不适用**；下一批若涉及这些值，
+   必须重新加入真实断言，不得沿用本批的 N/A；
 4. **同步**：模块级 README、`stdlib/README.md`、crate README、UseDocs、DevDocs 阶段索引、
    `docs/module-registry.json` 的路径登记、以及**兼容元数据**——
    这条是 [00A](00a-project-layout.md) 从 A0 起的硬门槛，且**已由仓库检查器校验**（N-2 的机制）。
@@ -207,6 +209,17 @@ docs/UseDocs/library/…                              §四 4.2 第 4 条：UseD
 core/rust/crates/xiao-driver/src/compatibility.rs   §四 4.3：仅在破坏性改动时提升 STDLIB_INTERFACE_VERSION
 ```
 
+### 4.6 **`draft → verified` 状态门槛（P-6）**
+
+首批模块的 UseDocs 页面与 `docs/module-registry.json` 当前都保持 `draft`。只有同时满足以下三项，
+并在同一笔变更中把两处状态一起改为 `verified`，才允许宣称模块完成：
+
+1. 代码、测试和 UseDocs 页面齐全；
+2. VM/LLVM 双路径证据来自受控环境或 CI 的可复核运行记录；本机单独运行不构成状态转换依据；
+3. 页面自身的链接、示例和元数据检查通过。
+
+缺少受控/CI 运行记录时不得翻转状态；本批当前仍按该规则保留 `draft`。
+
 ## 六、验收
 
 1. **P-5**：差分判定的放宽已在 10P/19D 登记（含残留语义）；**没有**顺带放宽其它条件；
@@ -238,8 +251,8 @@ core/rust/crates/xiao-driver/src/compatibility.rs   §四 4.3：仅在破坏性�
 
 | 模块 | VM | LLVM 原生 | 移除验证 | 元数据与边界 |
 | --- | --- | --- | --- | --- |
-| `text` | `from stdlib.text import contains_char` 经固定命名空间加载，VM 输出 `ok` 并记录 `stdlib.text` 加载 | Windows x86_64-pc-windows-msvc 本机以 clang/llvm-as 22.1.2 与 Runtime staticlib 实跑通过 | 删除实现后加载失败；导入签名的错误类型前端拒绝 | `text.xiao`、README、UseDocs、入口回归和登记项已同步；源码无容器/序列化/`dynamic` 兜底 |
-| `path` | `from stdlib.path import join` 经固定命名空间加载，VM 输出 `lib/core` 并记录 `stdlib.path` 加载 | 同一 Windows 原生差分实跑通过 | 删除实现后加载失败；错误参数类型前端拒绝 | `path.xiao`、README、UseDocs、入口回归和登记项已同步；源码无容器/序列化/`dynamic` 兜底 |
+| `text` | `contains_char` 与第二批 `length(str text) -> int` 均经固定命名空间加载，VM 输出 `ok` 并记录 `stdlib.text` 加载 | Windows x86_64-pc-windows-msvc 本机以 clang/llvm-as 22.1.2 与 Runtime staticlib 实跑通过 | 删除实现后加载失败；不经 VM 绑定直接运行失败；导入签名的错误类型前端拒绝；原生函数体移除用例见 `removing_llvm_standard_library_function_binding_rejects_native_build` | `text.xiao`、README、UseDocs、入口回归和登记项已同步；源码无容器/序列化/`dynamic` 兜底 |
+| `path` | `from stdlib.path import join` 经固定命名空间加载，VM 输出 `lib/core` 并记录 `stdlib.path` 加载 | 同一 Windows 原生差分实跑通过 | 删除实现后加载失败；不经 VM 绑定直接运行失败；导入签名的错误类型前端拒绝；原生函数体移除用例覆盖同一绑定边界 | `path.xiao`、README、UseDocs、入口回归和登记项已同步；源码无容器/序列化/`dynamic` 兜底 |
 
 VM 测试命令为 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20c_first_modules`；
 Windows 本机原生命令为 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20c_first_modules first_modules_match_native_results -- --ignored --exact`，使用 MSVC 链接器、clang/llvm-as 22.1.2 和 Runtime staticlib。

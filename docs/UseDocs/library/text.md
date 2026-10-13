@@ -10,6 +10,7 @@ related:
   - README.md
   - path.md
   - ../../DevDocs/20c-first-modules.md
+  - ../../DevDocs/20c-second-batch-probe.md
 ---
 
 # 官方 `text` 模块
@@ -30,6 +31,20 @@ from stdlib.text import contains_char
 
 if contains_char("lib/core", "/")
     print("has separator")
+```
+
+## `length`
+
+```xiao
+length(str text) -> int
+```
+
+按 `for c in text` 逐字符计数，返回文本的 Unicode 码点数量；接口是纯 Xiao 实现，不新增 intrinsic。
+
+```xiao
+from stdlib.text import length
+
+print(length("小雪"))
 ```
 
 本批不提供子串查找、切分、切片、大小写转换、格式化或集合操作。官方库不通过普通包依赖安装，

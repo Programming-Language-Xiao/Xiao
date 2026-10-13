@@ -17,7 +17,7 @@ const PROBES: [(&str, &str, Option<&str>); 2] = [
     ("arithmetic-error", "arithmetic-error.xiao", None),
 ];
 
-const REPRESENTATIVE_PROBES: [(&str, &str, Option<&str>, Option<&str>); 3] = [
+const REPRESENTATIVE_PROBES: [(&str, &str, Option<&str>, Option<&str>); 10] = [
     (
         "strings-path-representative",
         "strings-path-representative.xiao",
@@ -35,6 +35,48 @@ const REPRESENTATIVE_PROBES: [(&str, &str, Option<&str>, Option<&str>); 3] = [
         "arithmetic-representative.xiao",
         None,
         Some("X02-TYPE-006"),
+    ),
+    (
+        "second-string-comparison",
+        "second-string-comparison.xiao",
+        None,
+        Some("X02-TYPE-005"),
+    ),
+    (
+        "second-count-length",
+        "second-count-length.xiao",
+        Some("2\n"),
+        None,
+    ),
+    (
+        "second-string-accumulate",
+        "second-string-accumulate.xiao",
+        Some("ok\n"),
+        None,
+    ),
+    (
+        "second-substring-lookahead",
+        "second-substring-lookahead.xiao",
+        None,
+        Some("X01-PARSE-007"),
+    ),
+    (
+        "second-split-array",
+        "second-split-array.xiao",
+        None,
+        Some("X02-TYPE-005"),
+    ),
+    (
+        "second-case-conversion",
+        "second-case-conversion.xiao",
+        None,
+        Some("X02-TYPE-006"),
+    ),
+    (
+        "second-set-membership",
+        "second-set-membership.xiao",
+        Some("ok\n"),
+        None,
     ),
 ];
 
@@ -79,7 +121,7 @@ fn first_frontend_code(error: &xiao_driver::FrontendError) -> &str {
 }
 
 #[test]
-/// 两个最小夹具和代表性操作夹具必须给出可复核的 VM 结果或前端错误码。
+/// 首批与第二批候选夹具必须给出可复核的 VM 结果或前端错误码。
 fn vm_capability_probe_records_each_module() {
     let compiler = FrontendCompiler::new();
     for (id, file, expected_output) in PROBES {
