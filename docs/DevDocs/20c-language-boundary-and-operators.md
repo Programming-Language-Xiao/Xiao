@@ -724,6 +724,7 @@ docs/DevDocs/assets/20c-capability-20261011/probe.log    §四受控原生重出
 
 ## 相关页面
 
+- [20C-原生门禁修复](20c-native-gates-red-fix.md) —— **本批的阻断项**：`167a03e` 推送后两个原生作业都红（`and`/`or` 的 `i1`/`i8`、`**` 裸赋值），本文 §1.3/§3.2.1/§5.x 的更正也记在那里
 - [20C-第二批. 能力探测与第二批接口清单](20c-second-batch-probe.md) —— **本批的前置**；§九.2 的推迟裁定与 §3.3 的表
 - [20C. 官方 Xiao 库](20c-official-xiao-library.md) —— §3.1 探测纪律、§3.2.1 六条冻结、§2.4 的验证纪律与三条教训
 - [09B0. 字节码闭环](09b0-bytecode-closure.md) §3.3/§3.4 —— **中心不变量**与 B0-A「补接通」的先例
