@@ -441,7 +441,7 @@ Windows 边界证据见 [10R-实现](10r-static-overflow-implementation.md) §�
 | 2 | 新增接口保持兼容；删除接口、改变签名/错误身份/释放顺序均为破坏性变化，必须提升标准库接口版本并返回稳定拒绝诊断；首版不设迁移别名窗口 | 20 方向稿 §一、§六；兼容身份进入构建产物元数据 |
 | 3 | Xiao 源码是规范实现；预编译对象只允许作为本地/构建缓存物化，不作为发布身份，也不作为普通包发布；`.xar` 接线归 20E | 20 方向稿 §二 2.1、§八第 4 条；源码继续作为长期语言集成测试 |
 | 4 | 标准库身份字段冻结为 `language_version`、`stdlib_interface_version`、`runtime_abi_major`、`runtime_abi_minor`、`target`；字段可读、可比较，构建前可检查 | 现有 `CompatibilityVersions`、Runtime ABI 1.12；归档消费延后 20E |
-| 5 | 官方库由工具链专用加载器/命名空间提供，不写入 `PackageRegistry` 普通依赖图；必须有负例证明普通依赖求解不会解析官方库 | 11A 官方库边界；实现时增加加载器与普通包解析隔离用例 |
+| 5 | 官方库由工具链专用加载器/命名空间提供，不写入 `PackageRegistry` 普通依赖图；项目目录和普通包外部命名空间不得占用保留根 `stdlib`；必须有负例证明普通依赖求解不会解析官方库 | 11A 官方库边界；实现时增加加载器、保留根冲突和普通包解析隔离用例 |
 | 6 | Xiao 源码落点为顶层 `stdlib/`，配套元数据 crate 为 `core/rust/crates/xiao-standard-library`；每个模块同步 crate README、UseDocs、DevDocs 阶段索引和兼容元数据；冻结后先建立最小入口骨架，模块实现另批推进 | 00A 目录门槛、20 方向稿 §六；入口骨架已按 [20C-入口](20c-entry-and-skeleton.md) 落地 |
 
 这六条是架构冻结，不解除 10R 的后续门禁；20C 入口批创建了骨架，20C-首批已在冻结范围内加入
@@ -453,6 +453,7 @@ Windows 边界证据见 [10R-实现](10r-static-overflow-implementation.md) §�
 `xiao-standard-library` 返回 `X05-PACKAGE-006`，负例位于
 `xiao-package/tests/e3d_solver.rs`。`text`/`path` 源码模块已按冻结接口落在 `stdlib/`，
 模块实现不进入普通依赖图，也不写 `.xar` 兼容字段。固定 VM 加载身份为 `stdlib.text`/`stdlib.path`；LLVM 侧静态并入纯 Xiao 函数。
+项目目录或普通包外部命名空间占用 `stdlib` 保留根时，前端以 `X05-MODULE-003` 拒绝，不因入口未导入标准库而放行。
 
 ### 3.3 **与静态溢出的耦合（已裁定归 20C 之前）**
 
