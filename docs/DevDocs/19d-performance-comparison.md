@@ -318,6 +318,15 @@ Windows 专用受控性能主机、macOS 宿主和 B1 成对释放实验仍缺�
 **O-1 当前判定：数据不足，暂不改 19D 基线。** 后续受控主机必须对 D2 静态数值夹具完成两次构建、
 产物体积/启动路径对照和必要的基线变更流程；在此之前不能写「不受影响」、通过或回归。
 
+### P-5 差分豁免口径登记（2026-10-13）
+
+`d19a_differential.rs::compare_native_cases` 的轨迹文件缺失判定已按 D2 订正：
+`uses_runtime` 不再能代表用例是否拥有可比较的释放轨迹，因此条件由仅检查
+`!native.module.uses_runtime` 改为 `!native.module.uses_runtime || !case.has_drops`。
+这只影响 `has_drops == false` 且 VM 没有释放事件的缺失轨迹：缺失文件按空轨迹接受，
+不再区分「文件不存在」和「文件为空」。输出、错误身份、退出码、终止方式及已有轨迹内容仍严格比较；
+该口径不扩展到其它字段。完整登记见 [10P](10p-differential-exemption-and-coverage.md) §2.7。
+
 ### 19 O6 出口条件对账（截至 2026-10-11）
 
 | O6 条件（12 原文） | 状态 | 证据与限制 |

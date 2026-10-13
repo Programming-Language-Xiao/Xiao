@@ -1,6 +1,6 @@
 # `xiao-standard-library`
 
-工程期 20C；这是官方标准库的最小 Rust 元数据 crate，不承载 `text` 或 `path` 的 Xiao 模块实现。
+工程期 20C；这是官方标准库的 Rust 元数据 crate，不承载 `text` 或 `path` 的 Xiao 模块实现。
 
 ## 职责与边界
 
@@ -9,4 +9,4 @@
 - 本 crate 不进入 `PackageRegistry` 普通依赖图，不提供普通包配置，不写入 `.xar` 兼容字段，也不发布预编译对象。
 - 后续模块实现必须同步本 README、`stdlib/` 下模块 README、UseDocs、DevDocs 阶段索引和兼容元数据。
 
-当前只提供可编译骨架；在下一批之前不得添加标准库模块代码。
+首批模块源码位于顶层 `stdlib/text.xiao` 与 `stdlib/path.xiao`；本 crate 仍只负责工程落点、兼容身份和加载边界。

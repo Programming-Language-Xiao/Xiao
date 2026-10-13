@@ -1,0 +1,5 @@
+# Xiao 官方 path 模块（20C 首批）。
+#
+# 路径规范化、绝对路径和平台分隔符属于后续批次；本批只提供已探测的拼接形状。
+def join(str base, str leaf) -> str
+    return base + "/" + leaf

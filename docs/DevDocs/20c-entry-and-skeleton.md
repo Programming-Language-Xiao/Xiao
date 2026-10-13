@@ -7,7 +7,7 @@
 > 正住着「两次构建逐字节相同」那条证据）。
 >
 > **一句话概括**：**先把 P-3 与 F-3 的登记修掉，再按 20C 的守卫把入口四项做成骨架**——
-> 本批**不写**库模块；`text`/`path` 的首批实现是下一批。
+> 入口批不写库模块；首批模块实现由 [20C-首批](20c-first-modules.md) 承接。
 >
 > 状态：**实施中（2026-10-12）**。P-3 接线、N-1/N-2/N-3 与依赖负例已落地；Windows 受控原生差分已于 2026-10-13 通过，Linux/macOS 复跑、真实 push 运行号、F-3 红/绿证据和产物级重复构建仍按 §三 如实登记。
 
@@ -44,6 +44,7 @@
 | **权威（11 个）** | `xiao-codegen-llvm/tests/`：`15e_ci_gated`、`n0_a`、`n0_b_dynamic`、`n0_c_errors`；`xiao-driver/tests/`：`c20_capability_probe`、`d19a_differential`、`n0_a_native_driver`、`n0_b_dynamic_native`、`native_benchmark_probe`；`xiao-package/tests/e3c_remote`；`xiao-runtime/tests/n0_c2_error_boundary` |
 | **CI 已覆盖（6 个）** | `c20_capability_probe`、`d19a_differential`、`n0_a_native_driver`、`n0_b_dynamic_native`、`native_benchmark_probe`、**`n0_a`**（本批新加） |
 | **差集（5 个）** | `n0_b_dynamic`（**该补**，`XIAO_LLVM_AS` 已有）、`n0_c_errors`（**该补**，同上）、`15e_ci_gated`（**接不上**：需要 `XIAO_STRIP`，两个原生作业**都没设置它**——逐行核过）、`e3c_remote`（理由正当：「CI 不依赖外部解析服务」）、`n0_c2_error_boundary`（理由正当：「由另一测试在子进程内调用」） |
+| **审核订正（2026-10-13）** | 上表是历史基线，只扫描 `core/rust/crates/*/tests/*.rs`，不能称为全仓库权威；按 `core/rust/crates/**` 的 glob 口径重新统计，实际为 **13 个文件 / 30 个 `#[ignore]` 用例**，另含 `xiao-driver/src/diagnostics.rs` 与 `xiao-runtime-abi/src/lib.rs` 两个内嵌测试文件。枚举数字只作历史对账，当前 push 覆盖以两处原生作业的 `--workspace -- --ignored` 和显式排除清单为准；`15e_ci_gated` 有周定时执行点（`reproduce.sh:132`），缺的是 push 门，不是完全没有执行点。 |
 
 **实施后的当前口径**：Windows/Linux 原生作业已统一执行
 `cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored`，并设置
@@ -72,7 +73,7 @@ Linux 已安装 Xvfb/xterm 并设置诊断程序，实际执行这两项。前�
 | N-1 骨架与清单同笔 | `stdlib/` + `xiao-standard-library` + 三处清单 | **做**（§四 4.1） |
 | N-2 / N-3 | `.xiao` 发现规则；身份块关系 | **做**（§四 4.2、4.3） |
 | 依赖求解负例 | 可检查的隔离证据 | **做**（§四 4.4） |
-| `text`/`path` 模块实现 | 首批官方库源码 | **不做**——下一批（§四 4.5 的守卫） |
+| `text`/`path` 模块实现 | 首批官方库源码 | **由 20C-首批承接并已落地**；本页只记录入口批守卫 |
 | 静态 `catch`/`finally` 清理链 | —— | **不做**（[10R-实现](10r-static-overflow-implementation.md) D7 另立） |
 
 ## 二、并进来的两条修补（先做）
@@ -138,7 +139,7 @@ Linux 已安装 Xvfb/xterm 并设置诊断程序，实际执行这两项。前�
 
 **实施结果（2026-10-12）**：三处清单与目录已在同一工作树落地：`codeRoots` 从 4 项变为 5 项，
 `rust.members` 从 23 项变为 24 项，00A 顶层目录从 7 项变为 8 项。`xiao-standard-library` 只有
-带 crate 文档的 `src/lib.rs`，没有 `text`/`path` 模块、普通依赖配置或 `.xar` 字段；
+带 crate 文档的 `src/lib.rs`，入口批当时没有 `text`/`path` 模块、普通依赖配置或 `.xar` 字段；
 `cargo test -p xiao-standard-library` 是其最小编译执行点。
 
 **冻结**：
@@ -213,8 +214,9 @@ Linux 已安装 Xvfb/xterm 并设置诊断程序，实际执行这两项。前�
 
 **冻结**：
 
-1. `stdlib/` 只允许有 **README 与最小骨架**；`text`/`path` 的**模块实现**是下一批；
-2. **不许**在本批：把探测夹具注册成普通依赖、把当前探测结果写进 `.xar` 兼容字段、
+1. 入口批提交时 `stdlib/` 只允许有 **README 与最小骨架**；`text`/`path` 模块已由后续
+   [20C-首批](20c-first-modules.md) 按独立四件套验收，当前不得把两批边界混写；
+2. **不许**在入口批：把探测夹具注册成普通依赖、把当前探测结果写进 `.xar` 兼容字段、
    为了让骨架编译而放宽任何门禁；
 3. 首批模块开工时，必须**逐条引用** [20C](20c-official-xiao-library.md) §3.2.1 的六条冻结与
    §3.1 的探测边界（`X02-TYPE-006`、`X03-TYPE-003` 都是**既定边界**，不是待修缺陷）。

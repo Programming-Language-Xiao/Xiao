@@ -1,0 +1,9 @@
+# Xiao 官方 text 模块（20C 首批）。
+#
+# 只使用已探测的 for 迭代器、条件判断和布尔赋值；不依赖 intrinsic。
+def contains_char(str text, str needle) -> bool
+    found = false
+    for c in text
+        if c == needle
+            found = true
+    return found

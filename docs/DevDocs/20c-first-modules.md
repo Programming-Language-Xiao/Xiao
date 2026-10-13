@@ -8,7 +8,8 @@
 > **一句话概括**：**在冻结的六条与探测边界内写 `text`/`path` 的首批操作**——**先把接口清单冻结，再实现**；
 > 并把 P-5 与两处口径订正一起并进来。
 >
-> 状态：**规划稿（2026-10-13）**。入口是 §二 的修补；**接口清单未定之前不写模块代码**（§三）。
+> 状态：**已实施（2026-10-13）**。接口清单已按星崽裁定冻结，源码、测试和同步元数据已落地；
+> 原生 ignored 测试仍需受控工具链运行记录，未把本机缺少的运行号写成通过。
 
 ## 一、Agent 交接上下文
 
@@ -37,7 +38,7 @@
 | 落点骨架与三处清单 | 同笔落地；`bun run check` 退出 0 | **具备** |
 | `.xiao` 发现与登记 | `sourceExtensions` 含 `.xiao`；`module-registry.json` 已登记 `stdlib` 条目 | **具备** |
 | 依赖求解负例 | `official_standard_library_is_rejected_by_normal_dependency_solver`（直接 + 传递，`X05-PACKAGE-006`）**有执行点** | **具备** |
-| **首批接口清单** | **未定** | **本批第一步**（§三） |
+| **首批接口清单** | 已冻结：`text.contains_char` 与 `path.join`，均为完整签名、纯 Xiao、无新增 intrinsic | **具备**（§三） |
 
 **表 B：仍然欠的证据（并列推进，不阻塞本批）**
 
@@ -62,7 +63,7 @@
 | --- | --- | --- |
 | **P-5 修补** | `d19a` 差分判定放宽的登记 | **做，排第一**（§二 2.1） |
 | **口径订正** | 权威计数与 `15e_ci_gated` 的执行点表述 | **做**（§二 2.2） |
-| 首批**接口清单** | 模块名、函数与签名、错误身份、明确不做的操作 | **做，且先冻结**（§三） |
+| 首批**接口清单** | 模块名、函数与签名、错误身份、明确不做的操作 | **已冻结并实施**（§三） |
 | `text` / `path` 实现 | 探测边界内的首批操作 | **做**（§四） |
 | 测试与元数据 | 双路径差分、错误路径、移除验证、容器边界、UseDocs/阶段索引/兼容元数据 | **做**（§四 4.2） |
 | 表 B 的欠项 | —— | **并列推进**，不阻塞 |
@@ -85,7 +86,7 @@
 
 **但它改的是差分豁免的接受条件**，而本仓库的惯例是这类判定改动要在
 [10P](10p-differential-exemption-and-coverage.md) / [19D](19d-performance-comparison.md) **登记**（「加列不抹旧判定」）；
-审核在三份文档里 grep 过，**一个字都没有**。
+该登记已在本批补齐。
 
 **冻结**：
 
@@ -131,9 +132,16 @@
 
 ### 3.2 **清单要能直接照着实现**
 
-**冻结**：接口清单逐条含 **模块名 / 函数名与完整签名 / 返回形状 / 错误身份（含错误码来源）/
-是否为纯 Xiao 实现 / 依赖哪些已探测操作**；并由星崽裁定正式模块名与接口范围
-（[20C](20c-official-xiao-library.md) §3.2.1 第 1 条：**本文只给边界，不代替裁定**）。
+**冻结结果（星崽裁定）**：
+
+| 模块 | 函数与完整签名 | 返回与错误身份 | 实现与探测依赖 |
+| --- | --- | --- | --- |
+| `text` | `contains_char(str text, str needle) -> bool` | 返回布尔值；参数类型错误由现有前端稳定诊断，成功路径不新增运行时错误 | 纯 Xiao；依赖 `for c in s`、字符比较、条件和布尔赋值 |
+| `path` | `join(str base, str leaf) -> str` | 返回字符串；参数类型错误由现有前端稳定诊断，成功路径不新增运行时错误 | 纯 Xiao；依赖已探测的字符串拼接 |
+
+本批明确不做：数字格式化（`X02-TYPE-006`）、变量下标/切片（`X03-TYPE-003`）、切分、子串查找、
+大小写转换、路径规范化、绝对路径、集合和任何新增 intrinsic。模块粒度冻结为单文件
+`stdlib/text.xiao` 与 `stdlib/path.xiao`。
 
 ## 四、实现与验收要求
 
@@ -189,7 +197,7 @@
 ## 五、落点
 
 ```text
-stdlib/text/…、stdlib/path/…                        §四 4.1：模块源码（.xiao）+ 模块级 README
+stdlib/text.xiao、stdlib/path.xiao                  §四 4.1：模块源码（.xiao）+ 模块级 README
 docs/DevDocs/20c-first-modules.md                   本文（含 §三 冻结的接口清单）
 docs/DevDocs/20c-official-xiao-library.md           §3.2.1 回写「首批接口清单已冻结」与实施状态
 docs/DevDocs/10p-differential-exemption-and-coverage.md、19d-performance-comparison.md   §2.1 P-5 登记
@@ -216,16 +224,27 @@ core/rust/crates/xiao-driver/src/compatibility.rs   §四 4.3：仅在破坏性�
 9. **通用**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit` 全绿；
    提交标题带类型前缀、正文非空。
 
-## 七、待定决策（给星崽）
+## 七、裁定结果与实施记录
 
-1. **首批接口清单的裁定**：模块名与接口范围（本文 §三 只给边界）；是否同批把「需要新增 intrinsic」的操作
-   列为**不做**（审核倾向不列，理由见 §3.1 第 2 条）；
-2. **补探测的顺序**：若某条期望的接口找不到对应的探测形状，是**先补探测再写这批**，
-   还是**把它移出首批**（审核倾向：**移出首批**——首批的价值是「能完整交付并验收」，不是覆盖面）；
-3. **`text`/`path` 的模块粒度**：单文件模块还是目录模块（影响 `module-registry.json` 登记的条目粒度）；
-4. **是否现在就把「库模块的门禁」写进 `00A`**（N-2 已让检查器校验路径登记，但「模块级 README 要有交接信息」
-   这类要求是否需要单独一条规则）——**若需要，属工具侧改动**，与「不开新的工具侧批次」的冻结冲突，
-   要么并入本批、要么另立。
+1. **接口范围**：按星崽裁定冻结 `text.contains_char(str text, str needle) -> bool` 与
+   `path.join(str base, str leaf) -> str`；两者均为纯 Xiao、无新增 intrinsic。
+2. **模块粒度**：按星崽裁定采用单文件 `stdlib/text.xiao`、`stdlib/path.xiao`，各自配模块 README、
+   UseDocs 和测试登记。
+3. **补探测策略**：首批不补探测；未被表 C 覆盖的数字格式化、变量下标、切分、切片、大小写转换、
+   路径规范化、集合和新增 intrinsic 均登记为后续范围。
+4. **工具侧门禁**：沿用已有 `A0-LAYOUT-005` 与 `workspace-default-tests`；本批不新增工具侧规则。
+
+## 八、实施记录（2026-10-13）
+
+| 模块 | VM | LLVM 原生 | 移除验证 | 元数据与边界 |
+| --- | --- | --- | --- | --- |
+| `text` | `text_module_vm_result_and_removal_boundary_are_stable` 通过，输出 `ok` | `first_modules_match_native_results` 已加入受控 ignored 门禁，当前等待工具链运行号 | 去掉实现后调用者前端失败；错误参数类型前端拒绝 | `text.xiao`、`text.md`、UseDocs、入口测试和注册项已同步；源码无容器/序列化/`dynamic` 兜底 |
+| `path` | `path_module_vm_result_and_removal_boundary_are_stable` 通过，输出 `lib/core` | 同上，使用同一份源码和调用者 | 去掉实现后调用者前端失败；错误参数类型前端拒绝 | `path.xiao`、`path.md`、UseDocs、入口测试和注册项已同步；源码无容器/序列化/`dynamic` 兜底 |
+
+VM 测试命令为 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20c_first_modules`。
+原生测试由 Windows/Linux 两处 `--workspace -- --ignored` 作业执行；本地未设置受控工具链时只保留 ignored，
+不把数据不足写成原生通过。标准库接口版本仍为 1，Runtime ABI 主/次仍从 `xiao-runtime-abi` 常量读取，
+没有改 `.xar` 字段，也没有加入普通依赖图。
 
 ## 相关页面
 
