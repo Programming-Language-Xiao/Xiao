@@ -12,9 +12,9 @@
 > 再按裁定把四个算子接通到两条路径，最后把「已接受构造不得进入 `unsupported`」做成**执行点**——
 > 让下一次同类缺口由门禁发现，而不是靠审核人肉撞出来。
 >
-> 状态（2026-10-13）：**§二 第一轮六笔已落地并审核通过**（`aac1237` + `fc114c8`，审核结论见 §2.0），
-> **第二轮四笔（F1–F4）已并入**；**§三 两条语义裁定待星崽**，§四/§五 未动。
-> **§5.0 的 harness 期望位扩展不需要任何裁定，可立即开工**——
+> 状态（2026-10-13）：**§二 第一轮六笔与第二轮 F1/F2/F4 已落地并审核通过**（`aac1237`、`fc114c8` 及本轮 harness 修订），
+> **§三 两条语义裁定待星崽**，§四/§五 未动。
+> **§5.0 的三态 harness 与 F1 夹具接线已完成**——
 > §三 的两条语义裁定**没有裁定结果之前不得动手写降低**（[00. 决策基线](00-decisions.md) 的既有纪律）。
 
 ## 一、Agent 交接上下文
@@ -229,7 +229,7 @@ class: Fatal, code: "X07-FATAL-002", message_id: "fatal.corrupt_artifact"
 
 ### 2.7 **F2（第二轮，前置）：探测 harness 缺「后端阶段拒绝」的期望位**
 
-**事实**：`c20_capability_probe.rs` 的 `REPRESENTATIVE_PROBES` 原生分支**只能表达两种期望**——
+**修复前事实**：`c20_capability_probe.rs` 的 `REPRESENTATIVE_PROBES` 原生分支**只能表达两种期望**——
 **前端拒绝**（`:309-312` 断言 `expected_code`；`:319-322` 另有一条「成功用例不许声明前端错误」）
 或**成功**（`:332` 后端构建失败直接 `panic!`；`:337` 断言 `run.status == Some(0)`）。
 **「后端阶段拒绝」没有表达位**，而 `second-case-conversion-logic` 的拒绝恰恰发生在后端
@@ -253,18 +253,22 @@ class: Fatal, code: "X07-FATAL-002", message_id: "fatal.corrupt_artifact"
 5. 扩展完**先对现有 13 项回归**：原有用例的期望一个都不许放松，
    松动的判据是「改完之后，删掉某个断言行数不变」——**删断言必须让某条用例红**。
 
-### 2.8 **F1（第二轮）：`second-case-conversion-logic.xiao` 没有执行点**
+**实施结果（已核销）**：`ProbeExpectation::{Success, Frontend, Backend}` 已接入；当前清单为
+`PROBES` 2 项 + `REPRESENTATIVE_PROBES` 12 项。`Backend` 同时断言前端先通过、VM 为
+`X09-BYTECODE-001`、原生为 `CodegenError::Unsupported`；旧用例期望未放松。
+
+### 2.8 **F1（第二轮）：`second-case-conversion-logic.xiao` 执行点已补（已核销）**
 
 **事实（三口径对账）**：
 
 | 口径 | 项数 | 差集 |
 | --- | --- | --- |
 | 磁盘 `tests/fixtures/20c/*.xiao` | **14** | —— |
-| `c20_capability_probe.rs` 清单（`PROBES` 2 + `REPRESENTATIVE_PROBES` 11） | **13** | **`{second-case-conversion-logic.xiao}`** |
+| `c20_capability_probe.rs` 清单（`PROBES` 2 + `REPRESENTATIVE_PROBES` 12） | **14** | **无差集** |
 | `tests/fixtures/20c/README.md` 表 | **14** | 与磁盘一致 |
 
-`fixture_path()` 只做路径拼接，**全测试目录没有 `read_dir`/glob**，所以该文件**不在任何执行路径上**。
-它的声明**是真的、只是没人守**——审核临时探针实测（用完即删）：
+`fixture_path()` 只做路径拼接，**全测试目录没有 `read_dir`/glob**；修复前该文件不在任何执行路径上，
+审核临时探针曾实测（用完即删）：
 
 ```text
 file=second-case-conversion-logic.xiao path=vm     success=false code=Some("X09-BYTECODE-001")
@@ -277,7 +281,7 @@ file=second-case-conversion-logic.xiao path=native layer=backend detail=原生�
 问题是**补上了声明却没补上门**——[10Z-驱动](10z-performance-driver.md) §2.7 D7 的同族问题**第四次出现**
 （F-3 → G-1 → §2.4 遮蔽 → 这里）。
 
-**冻结**：
+**冻结（已执行）**：
 
 1. 按 §2.7 扩出来的 **`Backend` 态**把它接进清单（VM 期望 `X09-BYTECODE-001`、
    原生期望含 `动态二元运算 and`），**先做负例**：故意把夹具里的 `and` 改成 `or`，
@@ -285,6 +289,9 @@ file=second-case-conversion-logic.xiao path=native layer=backend detail=原生�
 2. **验收口径固定为三口径对账**：磁盘 / 清单 / README 的**差集必须为空**，
    并把这三个数字写进实施记录——**不许只写「已接进清单」**；
 3. **以后新增探测夹具，一律同批接进清单**；只加文件不加清单等于没加（这条写进 §5.2）。
+
+**实施结果（已核销）**：磁盘、清单和 README 均为 **14 项**，差集为空；三态 harness 已执行该夹具，
+VM 断言 `X09-BYTECODE-001`，原生断言拒绝信息包含 `动态二元运算 and`。
 
 ### 2.9 **F3（第二轮）：§3.3 标题的计数与结果表不符** —— **已由规划侧当场修掉**
 
@@ -295,22 +302,21 @@ file=second-case-conversion-logic.xiao path=native layer=backend detail=原生�
 按 G-3 的先例（审核侧当场修掉并记录），本节**已当场改掉标题**，
 把「候选数」与「结果行数」分开表述。**不另开返工项。**
 
-### 2.10 **F4（第二轮）：`second-string-comparison.xiao` 未收窄，与新夹具重叠**
+### 2.10 **F4（第二轮）：`second-string-comparison.xiao` 收窄（已核销）**
 
-**事实**：`second-string-comparison.xiao:1-5` 仍是**参数比较**（`is_before` + 调用），
+**修复前事实**：`second-string-comparison.xiao:1-5` 曾是**参数比较**（`is_before` + 调用），
 与 §2.1 新增的 `second-string-comparison-parameters.xiao` **重复**——
 P-9 要的是「拆」，实现在**新增**之后没有**收窄**旧的。
 
 **判定（不要夸大）**：旧夹具里仍然**只有一个**待解释的拒绝（`:6` 的字面量比较），
 不违反 §2.4 第 3 条；期望码 `X02-TYPE-005` 也仍然正确。**纯冗余，不是遮蔽。**
 
-**冻结**：二选一，并在实施记录里写明选了哪个——
+**实施选择**：采用方案 1 **收窄**：
 
-1. **收窄**：把 `:1-5` 删掉，旧夹具只留字面量比较，名字与内容一致；
-2. **保留并写明**：保留参数比较作为「同一文件里接受面与拒绝面相邻」的样本，
-   在夹具 README 那一行补一句为什么留。
+删除旧夹具中的参数函数与调用，只保留字面量常量折叠拒绝；参数比较由
+`second-string-comparison-parameters.xiao` 单独覆盖，README 已分别说明。
 
-**不许**既不收窄也不写明——那会让下一个人以为这两条是同一个覆盖。
+不再让两个期望形态共享同一夹具。
 
 ## 三、语义裁定（**没有裁定，不得动 §四**）
 
@@ -493,9 +499,9 @@ docs/DevDocs/20c-second-batch-probe.md                   §2.1/§2.3/§2.4/§2.5
                                                           §2.9 的标题计数（**规划侧当场修掉**）
 core/rust/crates/xiao-driver/tests/c20_capability_probe.rs  §2.7：REPRESENTATIVE_PROBES 换成穷尽三态期望；
                                                           §2.8：接入未接线夹具；§五：覆盖执行点
-tests/fixtures/20c/second-case-conversion-logic.xiao     §2.8：接进清单（**当前无执行点**）
+tests/fixtures/20c/second-case-conversion-logic.xiao     §2.8：已接进三态清单并执行
 tests/fixtures/20c/second-case-conversion.xiao           §2.4（已落地）：只保留转换拒绝的夹具
-tests/fixtures/20c/second-string-comparison.xiao         §2.10：收窄，或在夹具 README 写明保留理由
+tests/fixtures/20c/second-string-comparison.xiao         §2.10：已收窄为字面量常量折叠
 tests/fixtures/20c/README.md                             §2.8/§2.10：三口径对账与保留理由
 docs/DevDocs/09b0-bytecode-closure.md                    §2.2（已落地）四个算子的缺口登记；§五 守卫的落点与运行号回填
 docs/DevDocs/00-decisions.md                             §3.3 裁定结论回填
@@ -512,8 +518,8 @@ docs/DevDocs/assets/20c-capability-20261011/probe.log    §四 接通后重出
 1. **第一轮六笔**：P-9 已拆行、P-10 已点名登记、P-11 已补层级、遮蔽已记名且夹具已拆、
    表 B 已拆分、审核侧更正已入档——**已由 `aac1237` + `fc114c8` 落地并通过审核实跑**（§2.0）；
 2. **第二轮四笔**：§2.7 的期望枚举**穷尽三态**且删掉任一态的断言会让用例红；
-   §2.8 夹具已接线，**且磁盘 / 清单 / README 三口径差集为空**（三个数字写进实施记录）；
-   §2.9 标题计数已修（规划侧当场）；§2.10 已收窄**或**已在夹具 README 写明保留理由；
+   §2.8 夹具已接线，**且磁盘 / 清单 / README 三口径差集为空**（14/14/14）；
+   §2.9 标题计数已修（规划侧当场）；§2.10 已收窄为字面量常量折叠夹具；
 3. **§5.0 顺序**：期望位扩展与夹具接线**先于** §5.1–§5.4 的守卫完成，
    且这两步**没有依赖任何语义裁定**——「本批全面阻塞」这个说法不成立；
 4. **裁定**：§3.1 与 §3.2 各自有**写明来源**的结论；**没有**「与审核倾向一致」冒充裁定；

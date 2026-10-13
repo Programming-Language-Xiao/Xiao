@@ -5,84 +5,89 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use xiao_codegen_llvm::{NativeRun, TargetDescription, Toolchain};
+use xiao_codegen_llvm::{CodegenError, NativeRun, TargetDescription, Toolchain};
 use xiao_driver::{
     DriverOutcome, DriverRequest, FrontendCompiler, FrontendNativeDriver, FrontendRequest,
     NativeBuildRequest, NativeDriverError,
 };
 use xiao_vm::VmEvent;
 
+/// 探测夹具的穷尽结果形状；不提供“任意失败”兜底，避免前端提前拒绝遮住后端缺口。
+#[derive(Clone, Copy, Debug)]
+enum ProbeExpectation {
+    /// VM 与原生都必须成功并输出指定文本。
+    Success(&'static str),
+    /// 两条路径都必须在前端以指定码拒绝。
+    Frontend(&'static str),
+    /// 前端必须通过；VM 进入稳定字节码拒绝，原生进入指定后端拒绝。
+    Backend(&'static str),
+}
+
 const PROBES: [(&str, &str, Option<&str>); 2] = [
     ("strings-path", "strings-path.xiao", Some("lib/core\n")),
     ("arithmetic-error", "arithmetic-error.xiao", None),
 ];
 
-const REPRESENTATIVE_PROBES: [(&str, &str, Option<&str>, Option<&str>); 11] = [
+const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 12] = [
     (
         "strings-path-representative",
         "strings-path-representative.xiao",
-        Some("/\n"),
-        None,
+        ProbeExpectation::Success("/\n"),
     ),
     (
         "strings-index-boundary",
         "strings-index-boundary.xiao",
-        None,
-        Some("X03-TYPE-003"),
+        ProbeExpectation::Frontend("X03-TYPE-003"),
     ),
     (
         "arithmetic-representative",
         "arithmetic-representative.xiao",
-        None,
-        Some("X02-TYPE-006"),
+        ProbeExpectation::Frontend("X02-TYPE-006"),
     ),
     (
         "second-string-comparison",
         "second-string-comparison.xiao",
-        None,
-        Some("X02-TYPE-005"),
+        ProbeExpectation::Frontend("X02-TYPE-005"),
     ),
     (
         "second-string-comparison-parameters",
         "second-string-comparison-parameters.xiao",
-        Some("ok\n"),
-        None,
+        ProbeExpectation::Success("ok\n"),
     ),
     (
         "second-count-length",
         "second-count-length.xiao",
-        Some("2\n"),
-        None,
+        ProbeExpectation::Success("2\n"),
     ),
     (
         "second-string-accumulate",
         "second-string-accumulate.xiao",
-        Some("ok\n"),
-        None,
+        ProbeExpectation::Success("ok\n"),
     ),
     (
         "second-substring-lookahead",
         "second-substring-lookahead.xiao",
-        None,
-        Some("X01-PARSE-007"),
+        ProbeExpectation::Frontend("X01-PARSE-007"),
     ),
     (
         "second-split-array",
         "second-split-array.xiao",
-        None,
-        Some("X02-TYPE-005"),
+        ProbeExpectation::Frontend("X02-TYPE-005"),
     ),
     (
         "second-case-conversion",
         "second-case-conversion.xiao",
-        None,
-        Some("X02-TYPE-006"),
+        ProbeExpectation::Frontend("X02-TYPE-006"),
+    ),
+    (
+        "second-case-conversion-logic",
+        "second-case-conversion-logic.xiao",
+        ProbeExpectation::Backend("动态二元运算 and"),
     ),
     (
         "second-set-membership",
         "second-set-membership.xiao",
-        Some("ok\n"),
-        None,
+        ProbeExpectation::Success("ok\n"),
     ),
 ];
 
@@ -158,33 +163,52 @@ fn vm_capability_probe_records_each_module() {
             _ => unreachable!("探测清单含未知模块"),
         }
     }
-    for (id, file, expected_output, expected_code) in REPRESENTATIVE_PROBES {
+    for (id, file, expectation) in REPRESENTATIVE_PROBES {
         let path = fixture_path(file);
         let request = source_request(&path);
         let artifact = match compiler.compile(&request) {
             Ok(artifact) => artifact,
             Err(error) => {
-                assert_eq!(
-                    Some(first_frontend_code(&error)),
-                    expected_code,
-                    "代表性探测的前端错误身份不一致：{id}"
-                );
+                match expectation {
+                    ProbeExpectation::Frontend(expected) => assert_eq!(
+                        first_frontend_code(&error),
+                        expected,
+                        "代表性探测的前端错误身份不一致：{id}"
+                    ),
+                    ProbeExpectation::Success(_) => {
+                        panic!("成功探测不得在前端拒绝：{id} {error:?}")
+                    }
+                    ProbeExpectation::Backend(_) => {
+                        panic!("后端拒绝探测必须先通过前端：{id} {error:?}")
+                    }
+                }
                 println!(
-                    "20C-PROBE module={id} path=vm layer=type code={}",
+                    "20C-PROBE module={id} path=vm layer=frontend code={}",
                     first_frontend_code(&error)
                 );
                 continue;
             }
         };
-        let expected_output = expected_output.expect("成功代表性探测应有输出");
         let outcome = xiao_driver::FrontendVmDriver::new()
             .run_artifact(&artifact, &DriverRequest::new(request));
-        assert!(outcome.is_success(), "代表性探测失败：{id} {outcome:?}");
-        assert_eq!(vm_output(&outcome), expected_output);
-        println!(
-            "20C-PROBE module={id} path=vm result=success output={:?}",
-            expected_output
-        );
+        match expectation {
+            ProbeExpectation::Success(expected_output) => {
+                assert!(outcome.is_success(), "代表性探测失败：{id} {outcome:?}");
+                assert_eq!(vm_output(&outcome), expected_output);
+                println!("20C-PROBE module={id} path=vm result=success output={expected_output:?}");
+            }
+            ProbeExpectation::Frontend(expected) => {
+                panic!("前端应提前拒绝 {id}，却进入 VM：{expected} {outcome:?}")
+            }
+            ProbeExpectation::Backend(_) => {
+                assert_eq!(
+                    outcome.code(),
+                    Some("X09-BYTECODE-001"),
+                    "后端探测 VM 错误身份不一致：{id} {outcome:?}"
+                );
+                println!("20C-PROBE module={id} path=vm layer=bytecode code=X09-BYTECODE-001");
+            }
+        }
     }
 }
 
@@ -299,27 +323,32 @@ fn native_capability_probe_records_each_module() {
             _ => unreachable!("探测清单含未知模块"),
         }
     }
-    for (id, file, expected_output, expected_code) in REPRESENTATIVE_PROBES {
+    for (id, file, expectation) in REPRESENTATIVE_PROBES {
         let path = fixture_path(file);
         let request = source_request(&path);
         let artifact = match compiler.compile(&request) {
             Ok(artifact) => artifact,
             Err(error) => {
-                let code = first_frontend_code(&error);
-                assert_eq!(
-                    Some(code),
-                    expected_code,
-                    "代表性原生探测错误身份不一致：{id}"
+                match expectation {
+                    ProbeExpectation::Frontend(expected) => assert_eq!(
+                        first_frontend_code(&error),
+                        expected,
+                        "代表性原生探测错误身份不一致：{id}"
+                    ),
+                    ProbeExpectation::Success(_) => {
+                        panic!("成功原生探测不得在前端拒绝：{id} {error:?}")
+                    }
+                    ProbeExpectation::Backend(_) => {
+                        panic!("后端拒绝探测必须先通过前端：{id} {error:?}")
+                    }
+                }
+                println!(
+                    "20C-PROBE module={id} path=llvm-native layer=frontend code={}",
+                    first_frontend_code(&error)
                 );
-                println!("20C-PROBE module={id} path=llvm-native layer=frontend code={code}");
                 continue;
             }
         };
-        let expected_output = expected_output.expect("成功代表性探测应有输出");
-        assert!(
-            expected_code.is_none(),
-            "成功代表性探测不应声明前端错误：{id}"
-        );
         let output = root.join(if cfg!(windows) {
             format!("{id}.exe")
         } else {
@@ -329,7 +358,30 @@ fn native_capability_probe_records_each_module() {
             NativeBuildRequest::new(request, target.clone(), toolchain.clone(), output);
         let native = match FrontendNativeDriver::new().build_artifact(&artifact, &native_request) {
             Ok(native) => native,
-            Err(error) => panic!("代表性原生构建失败：{id} {error}"),
+            Err(error) => match expectation {
+                ProbeExpectation::Backend(fragment) => {
+                    let NativeDriverError::Backend(CodegenError::Unsupported { feature, .. }) =
+                        error
+                    else {
+                        panic!("后端拒绝探测的错误形态不一致：{id} {error}");
+                    };
+                    assert!(
+                        feature.contains(fragment),
+                        "原生拒绝信息不含期望片段：{id} {feature}"
+                    );
+                    println!(
+                        "20C-PROBE module={id} path=llvm-native layer=backend detail={feature}"
+                    );
+                    continue;
+                }
+                ProbeExpectation::Success(_) => panic!("成功代表性原生构建失败：{id} {error}"),
+                ProbeExpectation::Frontend(expected) => {
+                    panic!("前端已应拒绝 {id}，却进入原生构建：{expected} {error}")
+                }
+            },
+        };
+        let ProbeExpectation::Success(expected_output) = expectation else {
+            panic!("前端/后端拒绝探测不应生成原生产物：{id}");
         };
         let run = NativeRun::new(&native.native)
             .run()
