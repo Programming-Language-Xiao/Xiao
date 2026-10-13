@@ -456,8 +456,9 @@ Windows 边界证据见 [10R-实现](10r-static-overflow-implementation.md) §�
 项目目录或普通包外部命名空间占用 `stdlib` 保留根时，前端以 `X05-MODULE-003` 拒绝，不因入口未导入标准库而放行。
 
 **20C 第二批探测与回写（2026-10-13）**：按 [20C-第二批](20c-second-batch-probe.md) 的七项候选完成
-VM/LLVM 双路径探测；逐字符计数、循环字符串累积、集合构造/成员判断双路径成功，字符串比较、变量下标前瞻、
-数组切分和大小写转换分别在 `X02-TYPE-005`、`X01-PARSE-007`、`X02-TYPE-005`、`X02-TYPE-006` 停下。
+VM/LLVM 双路径探测；逐字符计数、循环字符串累积、集合构造/成员判断和字符串参数比较双路径成功；
+字面量常量折叠、变量下标前瞻、数组切分和大小写转换分别在 `X02-TYPE-005`、`X01-PARSE-007`、
+`X02-TYPE-005`、`X02-TYPE-006` 停下。
 本批只新增 `text.length(str text) -> int`，实现位于既有 `stdlib/text.xiao`，不新增 intrinsic、不提升接口版本；
 UseDocs 与 registry 仍保持 `draft`，等待受控/CI 运行记录。
 

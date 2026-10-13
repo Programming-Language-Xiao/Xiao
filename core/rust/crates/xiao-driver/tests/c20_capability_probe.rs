@@ -17,7 +17,7 @@ const PROBES: [(&str, &str, Option<&str>); 2] = [
     ("arithmetic-error", "arithmetic-error.xiao", None),
 ];
 
-const REPRESENTATIVE_PROBES: [(&str, &str, Option<&str>, Option<&str>); 10] = [
+const REPRESENTATIVE_PROBES: [(&str, &str, Option<&str>, Option<&str>); 11] = [
     (
         "strings-path-representative",
         "strings-path-representative.xiao",
@@ -41,6 +41,12 @@ const REPRESENTATIVE_PROBES: [(&str, &str, Option<&str>, Option<&str>); 10] = [
         "second-string-comparison.xiao",
         None,
         Some("X02-TYPE-005"),
+    ),
+    (
+        "second-string-comparison-parameters",
+        "second-string-comparison-parameters.xiao",
+        Some("ok\n"),
+        None,
     ),
     (
         "second-count-length",

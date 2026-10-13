@@ -1,0 +1,16 @@
+def is_before(str left, str right) -> bool
+    return left < right
+
+def is_same(str left, str right) -> bool
+    return left == right
+
+def is_after(str left, str right) -> bool
+    return left > right
+
+if not is_before("apple", "banana")
+    raise ArithmeticError(code = "SECOND_STRING_COMPARE")
+if not is_same("same", "same")
+    raise ArithmeticError(code = "SECOND_STRING_COMPARE")
+if not is_after("banana", "apple")
+    raise ArithmeticError(code = "SECOND_STRING_COMPARE")
+print("ok")
