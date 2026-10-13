@@ -208,6 +208,20 @@ impl<'source> TypeChecker<'source> {
         }
         let left_type = self.check_expression(left);
         let right_type = self.check_expression(right);
+        if matches!(operator, BinaryOperator::Is | BinaryOperator::IsNot) {
+            self.type_error(
+                INVALID_OPERANDS_CODE,
+                "x02.type.invalid_binary_operands",
+                span,
+                format!(
+                    "运算 {} 不能作用于 {} 和 {}",
+                    operator.as_str(),
+                    left_type,
+                    right_type
+                ),
+            );
+            return Type::Dynamic;
+        }
         if super::set_operations::should_attempt_set_semantics(operator, &left_type, &right_type) {
             return self
                 .check_set_operation_types(operator, &left_type, &right_type, span)
@@ -303,8 +317,6 @@ impl<'source> TypeChecker<'source> {
                 | BinaryOperator::LessEqual
                 | BinaryOperator::Greater
                 | BinaryOperator::GreaterEqual
-                | BinaryOperator::Is
-                | BinaryOperator::IsNot
         );
         if matches!(operator, BinaryOperator::And | BinaryOperator::Or) {
             return self.infer_variable_boolean(&left, &right, left_variable, right_variable);

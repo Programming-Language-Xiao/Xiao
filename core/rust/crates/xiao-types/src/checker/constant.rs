@@ -187,16 +187,6 @@ pub(super) fn eval_const_binary(
             };
             Some(Ok(ConstantValue::Boolean(result)))
         }
-        BinaryOperator::Is | BinaryOperator::IsNot => {
-            let equal = constants_equal(&left, &right)?;
-            Some(Ok(ConstantValue::Boolean(
-                if operator == BinaryOperator::Is {
-                    equal
-                } else {
-                    !equal
-                },
-            )))
-        }
         BinaryOperator::And | BinaryOperator::Or => {
             let (ConstantValue::Boolean(left), ConstantValue::Boolean(right)) = (&left, &right)
             else {
@@ -210,8 +200,12 @@ pub(super) fn eval_const_binary(
                 },
             )))
         }
-        BinaryOperator::In | BinaryOperator::NotIn => None,
-        BinaryOperator::Intersect | BinaryOperator::SymmetricDifference => None,
+        BinaryOperator::In
+        | BinaryOperator::NotIn
+        | BinaryOperator::Intersect
+        | BinaryOperator::SymmetricDifference
+        | BinaryOperator::Is
+        | BinaryOperator::IsNot => None,
     }
 }
 

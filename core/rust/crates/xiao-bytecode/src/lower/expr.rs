@@ -398,6 +398,9 @@ fn lower_binary(
     right: &IrExpression,
     expression: &IrExpression,
 ) -> VReg {
+    if matches!(operator, "and" | "or") {
+        return lower_logical(lowerer, operator, left, right, expression);
+    }
     let left_register = lowerer.lower_expression(left);
     let right_register = lowerer.lower_expression(right);
     if let Some(op) = set_op(operator)
@@ -472,6 +475,93 @@ fn lower_binary(
         expression.span,
     ));
     register
+}
+
+/// 降低短路逻辑运算。
+///
+/// TAC 没有 phi 指令；结果寄存器由两个分支各自以 `Copy` 写入，并在合流块
+/// 被后续指令读取。右侧表达式只在需要它的块中降低，因此它的指令和临时值
+/// 都不会出现在短路边上。条件值沿用语句条件的动态转换规则，保证静态 bool
+/// 和运行时动态值在 VM 中共享同一条分支语义。
+fn lower_logical(
+    lowerer: &mut Lowerer<'_>,
+    operator: &str,
+    left: &IrExpression,
+    right: &IrExpression,
+    expression: &IrExpression,
+) -> VReg {
+    let left_value = lowerer.lower_expression(left);
+    let left_condition = lower_condition_register(lowerer, left, left_value, expression.span);
+    let result = lowerer.new_register(Lowerer::class_of_type(&expression.ty), expression.span);
+
+    let right_block = lowerer.new_block(expression.span);
+    let short_block = lowerer.new_block(expression.span);
+    let merge_block = lowerer.new_block(expression.span);
+    let (if_true, if_false) = if operator == "and" {
+        (right_block, short_block)
+    } else {
+        (short_block, right_block)
+    };
+    lowerer.emit(TacInstr::new(
+        TacOp::BranchIf {
+            condition: left_condition,
+            if_true,
+            if_false,
+        },
+        expression.span,
+    ));
+    // 左侧的临时值在分支前统一归还；右侧尚未降低，因而不可能被提前释放。
+    lowerer.flush_temporaries(expression.span);
+
+    lowerer.switch_to(short_block);
+    let short_value = lowerer.emit_constant(TacConstant::Bool(operator == "or"), expression.span);
+    lowerer.emit(TacInstr::with_dst(
+        TacOp::Copy(short_value),
+        result,
+        expression.span,
+    ));
+    if !lowerer.current_block_terminated() {
+        lowerer.emit(TacInstr::new(TacOp::Jump(merge_block), expression.span));
+    }
+
+    lowerer.switch_to(right_block);
+    let right_value = lowerer.lower_expression(right);
+    let right_condition = lower_condition_register(lowerer, right, right_value, expression.span);
+    lowerer.emit(TacInstr::with_dst(
+        TacOp::Copy(right_condition),
+        result,
+        expression.span,
+    ));
+    lowerer.flush_temporaries(expression.span);
+    if !lowerer.current_block_terminated() {
+        lowerer.emit(TacInstr::new(TacOp::Jump(merge_block), expression.span));
+    }
+
+    lowerer.switch_to(merge_block);
+    result
+}
+
+/// 把动态/未决类型的条件值转成 bool；静态 bool 直接复用原寄存器。
+fn lower_condition_register(
+    lowerer: &mut Lowerer<'_>,
+    condition: &IrExpression,
+    value: VReg,
+    span: IrSpan,
+) -> VReg {
+    if matches!(condition.ty, IrType::Dynamic | IrType::Variable { .. }) {
+        let result = lowerer.new_register(RegisterClass::Bool, span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::Cast {
+                value,
+                target: ScalarType::Bool,
+            },
+            result,
+            span,
+        ));
+        result
+    } else {
+        value
+    }
 }
 
 /// 判断 IR 类型是否是集合形状或运行时才确定的动态边界。

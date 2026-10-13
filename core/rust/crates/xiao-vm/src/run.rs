@@ -7,7 +7,9 @@ use std::sync::{
 };
 use std::time::Instant;
 
-use xiao_bytecode::{TacProgram, TacVerificationError, verify_for_execution};
+use xiao_bytecode::{
+    TAC_INTERNAL_CONSISTENCY_CODE, TacProgram, TacVerificationError, verify_for_execution,
+};
 use xiao_diagnostics::{DiagnosticParam, FatalError, ReportRecord, XiaoError};
 use xiao_ir::{IrEntryMode, IrProgram};
 use xiao_runtime::RuntimeValue;
@@ -455,22 +457,35 @@ fn research_outcome(
     }
 }
 
-/// 将验证错误转换为不可恢复的损坏产物故障。
+/// 将验证错误转换为用户可区分的不可恢复故障。
+///
+/// `X09-BYTECODE-001` 表示降低器没有兑现生产契约，产物本身未必损坏，
+/// 因而使用内部故障身份；`X09-BYTECODE-002` 才表示结构、引用或 ABI
+/// 产物损坏，继续使用损坏产物身份。
 fn verification_fatal(error: &TacVerificationError, entry_span: xiao_ir::IrSpan) -> FatalError {
     let location = xiao_source::SourceSpan::new(entry_span.start, entry_span.end);
-    let mut fatal = FatalError::corrupt_artifact(format!("生产执行前验证失败：{}", error))
-        .with_param(
-            "verification_code",
-            DiagnosticParam::Text(error.code.to_owned()),
-        )
-        .with_param(
-            "verification_path",
-            DiagnosticParam::Text(error.path.clone()),
-        )
-        .with_context(
-            "verification_message",
-            DiagnosticParam::Text(error.message.clone()),
-        );
+    let message = if error.code == TAC_INTERNAL_CONSISTENCY_CODE {
+        format!("生产执行前字节码降低一致性验证失败：{error}")
+    } else {
+        format!("生产执行前字节码结构验证失败：{error}")
+    };
+    let mut fatal = if error.code == TAC_INTERNAL_CONSISTENCY_CODE {
+        FatalError::internal(message)
+    } else {
+        FatalError::corrupt_artifact(message)
+    }
+    .with_param(
+        "verification_code",
+        DiagnosticParam::Text(error.code.to_owned()),
+    )
+    .with_param(
+        "verification_path",
+        DiagnosticParam::Text(error.path.clone()),
+    )
+    .with_context(
+        "verification_message",
+        DiagnosticParam::Text(error.message.clone()),
+    );
     if let Some(location) = location {
         fatal = fatal.with_location(location);
     }

@@ -934,7 +934,7 @@ impl<'a> DynamicGenerator<'a> {
     }
 
     /// 从 ABI 动态值读取已类型检查的布尔载荷。
-    fn emit_condition(&mut self, expression: &IrExpression) -> Result<String> {
+    pub(super) fn emit_condition(&mut self, expression: &IrExpression) -> Result<String> {
         let outer = std::mem::take(&mut self.statement_temporaries);
         let result = self.emit_condition_value(expression)?;
         // VM 的条件临时寄存器跨控制流边由帧持有；不混入普通语句末尾的刷新列表。

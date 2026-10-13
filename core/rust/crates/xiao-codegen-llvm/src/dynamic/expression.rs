@@ -61,27 +61,35 @@ impl<'a> DynamicGenerator<'a> {
                 left,
                 right,
             } => {
-                let left_value = self.emit_expression(left)?;
-                let right_value = self.emit_expression(right)?;
-                let operation = self.binary_operation_name(operator, left, right)?;
-                let outer_target = self.error_target();
-                let failure_label = self.next_label("dynamic.binary.fail");
-                let continuation_label = self.next_label("dynamic.binary.continue");
-                self.push_error_context(failure_label.clone());
-                let result =
-                    self.emit_binary_runtime(operation, &left_value, &right_value, expression.span);
-                self.pop_error_context();
-                self.release_value(left_value.clone());
-                self.release_value(right_value.clone());
-                self.emit(format!("  br label %{continuation_label}"));
-                self.terminated = true;
-                self.emit_label(&failure_label);
-                self.release_value(left_value);
-                self.release_value(right_value);
-                self.emit(format!("  br label %{outer_target}"));
-                self.terminated = true;
-                self.emit_label(&continuation_label);
-                Ok(result)
+                if matches!(operator.as_str(), "and" | "or") {
+                    self.emit_logical_short_circuit(operator, left, right, expression.span)
+                } else {
+                    let left_value = self.emit_expression(left)?;
+                    let right_value = self.emit_expression(right)?;
+                    let operation = self.binary_operation_name(operator, left, right)?;
+                    let outer_target = self.error_target();
+                    let failure_label = self.next_label("dynamic.binary.fail");
+                    let continuation_label = self.next_label("dynamic.binary.continue");
+                    self.push_error_context(failure_label.clone());
+                    let result = self.emit_binary_runtime(
+                        operation,
+                        &left_value,
+                        &right_value,
+                        expression.span,
+                    );
+                    self.pop_error_context();
+                    self.release_value(left_value.clone());
+                    self.release_value(right_value.clone());
+                    self.emit(format!("  br label %{continuation_label}"));
+                    self.terminated = true;
+                    self.emit_label(&failure_label);
+                    self.release_value(left_value);
+                    self.release_value(right_value);
+                    self.emit(format!("  br label %{outer_target}"));
+                    self.terminated = true;
+                    self.emit_label(&continuation_label);
+                    Ok(result)
+                }
             }
             IrExpressionKind::Unary { operator, operand } => {
                 let value = self.emit_expression(operand)?;
@@ -116,6 +124,62 @@ impl<'a> DynamicGenerator<'a> {
         let value = value?;
         self.emit_registered_checks(expression, &value);
         Ok(value)
+    }
+
+    /// 发射动态 ABI 值的短路逻辑运算。
+    ///
+    /// 条件通过统一的 `emit_condition` 读取并校验 bool 标签；结果在每条实际
+    /// 执行边构造为 ABI bool 值后写入合流槽。这样右侧表达式及其临时值只会
+    /// 出现在被选中的块中，和 VM 的 TAC 分支保持相同的生命周期边界。
+    fn emit_logical_short_circuit(
+        &mut self,
+        operator: &str,
+        left: &IrExpression,
+        right: &IrExpression,
+        span: IrSpan,
+    ) -> Result<String> {
+        let left = self.emit_condition(left)?;
+        let result_slot = self.next_temp();
+        self.emit(format!("  {result_slot} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {result_slot}"
+        ));
+        let right_label = self.next_label("dynamic.logical.right");
+        let short_label = self.next_label("dynamic.logical.short");
+        let merge_label = self.next_label("dynamic.logical.merge");
+        let (if_true, if_false) = if operator == "and" {
+            (&right_label, &short_label)
+        } else {
+            (&short_label, &right_label)
+        };
+        self.emit(format!(
+            "  br i1 {left}, label %{if_true}, label %{if_false}"
+        ));
+        self.terminated = true;
+
+        self.emit_label(&short_label);
+        let short = self.emit_value_call(
+            "xiao_runtime_value_bool",
+            if operator == "or" { "i8 1" } else { "i8 0" },
+        );
+        self.emit(format!("  store {VALUE_TYPE} {short}, ptr {result_slot}"));
+        self.emit(format!("  br label %{merge_label}"));
+        self.terminated = true;
+
+        self.emit_label(&right_label);
+        let right = self.emit_condition(right)?;
+        let right_value = self.emit_value_call("xiao_runtime_value_bool", &format!("i8 {right}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} {right_value}, ptr {result_slot}"
+        ));
+        self.emit(format!("  br label %{merge_label}"));
+        self.terminated = true;
+
+        self.emit_label(&merge_label);
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {result_slot}"));
+        let _ = span;
+        Ok(result)
     }
 
     /// 消费不依赖具体操作符的前端检查；算术、集合和选择器检查由其 Runtime

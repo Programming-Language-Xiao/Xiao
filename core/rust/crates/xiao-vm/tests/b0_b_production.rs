@@ -1,7 +1,9 @@
 //! B0-B 生产 VM 契约回归。
 
 use xiao_bytecode::lower_program;
-use xiao_diagnostics::{FATAL_CORRUPT_ARTIFACT_CODE, FATAL_RUNTIME_INVARIANT_CODE};
+use xiao_diagnostics::{
+    FATAL_CORRUPT_ARTIFACT_CODE, FATAL_INTERNAL_CODE, FATAL_RUNTIME_INVARIANT_CODE,
+};
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::IrEntryMode;
 use xiao_vm::{
@@ -49,10 +51,7 @@ fn production_rejects_unverified_tac_before_entering_vm() {
     tac.unsupported.push("测试注入的未降低构造".to_owned());
     let outcome = run_request(&RunRequest::new(&ir, &tac));
     assert!(matches!(outcome.result, RunResult::Fatal(_)));
-    assert_eq!(
-        outcome.result.error_code(),
-        Some(FATAL_CORRUPT_ARTIFACT_CODE)
-    );
+    assert_eq!(outcome.result.error_code(), Some(FATAL_INTERNAL_CODE));
     assert_eq!(
         outcome.report.as_ref().map(|report| report.class),
         Some(xiao_diagnostics::ReportClass::Fatal)

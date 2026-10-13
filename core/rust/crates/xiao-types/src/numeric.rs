@@ -211,7 +211,11 @@ pub fn binary_scalar_type(
         return Ok(ScalarType::Str);
     }
     if matches!(operator, BinaryOperator::Is | BinaryOperator::IsNot) {
-        return Ok(ScalarType::Bool);
+        return Err(NumericError::InvalidOperands {
+            operator,
+            left: Type::scalar(left),
+            right: Type::scalar(right),
+        });
     }
     if matches!(operator, BinaryOperator::Equal | BinaryOperator::NotEqual) {
         if left == right || (is_numeric(left) && is_numeric(right)) {

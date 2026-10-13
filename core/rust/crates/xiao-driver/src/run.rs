@@ -1037,7 +1037,38 @@ mod tests {
         };
         assert_eq!(error.phase(), DriverPhase::Verification);
         assert_eq!(error.code(), TAC_INTERNAL_CONSISTENCY_CODE);
-        assert!(error.report().is_some());
+        assert_eq!(
+            error.report().map(|report| report.message_id.as_str()),
+            Some("fatal.internal")
+        );
+    }
+
+    #[test]
+    /// TAC 结构/ABI 错误仍保持损坏产物身份，与降低器内部缺口区分。
+    fn structurally_invalid_tac_keeps_corrupt_artifact_diagnostic() {
+        let request = request("value = 1\n");
+        let artifact = FrontendCompiler::new()
+            .compile(&request.frontend)
+            .expect("前端应成功");
+        let mut program = lower_program(artifact.ir());
+        program.abi.ir_version = program.abi.ir_version.saturating_add(1);
+        let control = ControlWindow::start(&request.control).expect("控制窗口");
+        let outcome = FrontendVmDriver::new().execute_program(
+            artifact.ir(),
+            artifact.diagnostics().to_vec(),
+            program,
+            &request,
+            &control,
+        );
+        let DriverOutcome::Rejected(error) = outcome else {
+            panic!("结构损坏 TAC 必须被拒绝");
+        };
+        assert_eq!(error.phase(), DriverPhase::Verification);
+        assert_eq!(error.code(), "X09-BYTECODE-002");
+        assert_eq!(
+            error.report().map(|report| report.message_id.as_str()),
+            Some("fatal.corrupt_artifact")
+        );
     }
 
     #[test]

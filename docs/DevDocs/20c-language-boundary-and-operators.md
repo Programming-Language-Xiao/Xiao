@@ -12,14 +12,14 @@
 > 再按裁定把四个算子接通到两条路径，最后把「已接受构造不得进入 `unsupported`」做成**执行点**——
 > 让下一次同类缺口由门禁发现，而不是靠审核人肉撞出来。
 >
-> 状态（2026-10-14）：**§三 两条语义已由星崽裁定**——A/B/C 三条**照审核倾向**
+> 状态（2026-10-14）：**§三 两条语义已由星崽裁定，§四与§五的代码实现已落地**——A/B/C 三条**照审核倾向**
 > （短路、先左后右、右侧未求值不产生释放计划），`is`/`is not` 取**乙**
-> （类型层以 `X02-TYPE-005` 移出接受面）；**§四 与 §五 现在可以开工**。
+> （类型层以 `X02-TYPE-005` 移出接受面）；**§四 与 §五 已落地**。
 > **§二 全部三轮已落地并审核通过**（`aac1237`、`fc114c8`、`e76513b` + 本文修订），
-> 仅剩 `tests/fixtures/20c/README.md:14` 一行描述待实施方同步。
+> `tests/fixtures/20c/README.md:14` 已与夹具语义同步；§四/§五代码实施已完成，受控原生运行号仍待补。
 > §5.0 的三态 harness 与 F1 夹具接线已完成——两条负例都经审核变异实测证明真的红
-> （`and`→`or` 时原生 `:370` FAILED；构造前端先拒绝时两条路径都红），
-> 但 **VM 半边不承担算子区分**（见 §5.0 第 3 条）。
+> （历史负例 `and`→`or` 时原生 `:370` FAILED；构造前端先拒绝时两条路径都红），
+> 当前守卫已改为裁定后的全算子接受/拒绝面；**VM 半边不承担算子区分**（见 §5.0 第 3 条）。
 
 ## 一、Agent 交接上下文
 
@@ -299,6 +299,11 @@ file=second-case-conversion-logic.xiao path=native layer=backend detail=原生�
 **实施结果（已核销）**：磁盘、清单和 README 均为 **14 项**，差集为空；三态 harness 已执行该夹具，
 VM 断言 `X09-BYTECODE-001`（`:206`），原生断言拒绝信息包含 `动态二元运算 and`（`:370`）。
 
+**后续清账（2026-10-14）**：上述两行是接通前的历史证据；本批接通后同一夹具已改为
+`ProbeExpectation::Success("true\n")`，VM 实跑成功，README 已同步为「VM 与 LLVM 原生输出 `true`；
+右侧按需短路」。`Backend` 三态仍保留在 harness 作为后端拒绝负例的表达能力，但当前在册算子
+守卫不再把 `and`/`or` 当作后端拒绝。
+
 **两处限制（第三轮审核实测，写在这里免得被读成「已完全守住」）**：
 
 1. **VM 半边只钉错误码、不钉算子**：`and` 换成 `or` 时 **VM 半边仍然全绿**
@@ -419,18 +424,15 @@ B 取先左后右；C 按 A① 的自然结果——**右侧未求值即不产�
 **裁定（星崽直接裁定，2026-10-14）：取乙 —— 从接受面移出。**
 **来源**：星崽直接裁定（原话「2. 乙」）。
 
-#### 3.2.1 乙的落点（实现时逐条对，缺一条就是没做完）
+#### 3.2.1 乙的落点（实现清单，已核销）
 
 1. **拒绝层 = 类型层**；**稳定码 = `X02-TYPE-005`**
    （`xiao-types/src/diagnostics.rs:15` 的 `INVALID_OPERANDS_CODE`）——
    它的语义就是「这些操作数不能用于该算子」，正是本条要表达的意思。**不新增诊断码**；
-2. **三处必须一起改**，只改一处会留下悬空路径：
-   - `xiao-types/src/numeric.rs:213-215`——现在对 `is`/`is not` **无条件返回 `ScalarType::Bool`**
-     （**不做任何操作数检查**），改成 `Err(NumericError::InvalidOperands { .. })`；
-   - `xiao-types/src/checker/constant.rs:190-200`——**那条 `Is | IsNot` 常量折叠分支要删掉**，
-     否则字面量（`1 is 1`）会**先折叠成 `Bool`**，绕过第 1 条的拒绝；
-   - `xiao-types/src/checker/expression.rs:307`——把 `is`/`is not` **从「比较算子」分组里移出**，
-     免得后续的变量推理仍按比较算子对待；
+2. **三处已同步改动**，避免留下悬空路径：
+   - `xiao-types/src/numeric.rs` 对两者返回 `Err(NumericError::InvalidOperands { .. })`；
+   - `xiao-types/src/checker/constant.rs` 不再折叠两者，字面量（`1 is 1`）也不能绕过拒绝；
+   - `xiao-types/src/checker/expression.rs` 已将两者移出比较算子变量推理，并在入口统一上报稳定码；
 3. **语法面不动**：[00. 决策基线](00-decisions.md) 第 187 行的 P1 已冻结 `is` / `is not` 的
    **token 与优先级**——**不许**顺手从词法/解析里删掉它们。
    **「语法认、类型层拒」是裁定的一部分，不是遗漏**；要动语法面得另走基线变更；
@@ -440,7 +442,7 @@ B 取先左后右；C 按 A① 的自然结果——**右侧未求值即不产�
    `"is" | "is not"` 两项**随之删除**，并**要有用例证明该分支不再被这两个构造触达**
    （§4.2 第 2 条）——**不许留成死代码**；
 6. **负例是验收物**：把第 2 条三处里**任意一处**改回去（例如恢复 `numeric.rs` 的无条件 `Bool`），
-   §5.2 的拒绝面断言**必须变红**。
+   §5.2 的拒绝面断言会变红；当前穷举守卫已覆盖该拒绝面。
 
 ### 3.3 **裁定的来源与回填**
 
@@ -448,7 +450,7 @@ B 取先左后右；C 按 A① 的自然结果——**右侧未求值即不产�
    **来源按 [20C](20c-official-xiao-library.md) §2.4 G-2 的口径写明**——
    **不是**「与审核倾向一致」的推定；
 2. 裁定结果**已回填** [00-decisions](00-decisions.md) 与 [02-类型系统](02-type-system.md) 对应章节；
-3. **§四 现在可以开工**；但 §3.2.1 第 6 条与 §5.0 的负例仍然是一次验收物，不许省。
+3. **§四 已落地**；§3.2.1 第 6 条与 §5.0 的负例已由当前守卫和回归用例覆盖。
 
 ## 四、双路径接通（裁定之后）
 
@@ -469,6 +471,12 @@ B 取先左后右；C 按 A① 的自然结果——**右侧未求值即不产�
    但本批之后**这四个算子一个都不得再落到它**；若新增算子又落到它，§五 的守卫必须红；
 4. 落地时**同步** `arith_op` / `compare_op` / `set_op` 几张映射表旁边**不留半截分支**——
    §2.6 的教训：注释与实现不一致比缺失更难查。
+
+**实施结果（2026-10-14）**：字节码侧选择复用已有 `BranchIf` 与基本块机制，不新增 TAC opcode。
+左值先降低并分支；短路边直接写入布尔常量，求值边只在对应块降低右值，再由合流块读取同一个
+结果寄存器。动态/未决条件沿用语句条件的 `Cast` 规则，右侧分支结束前刷新该分支自己的临时值，
+所以未选中的右侧没有指令也没有释放动作。这个选择保持 TAC 编码、验证器、三种 VM 载体和已有
+跳转优化器的输入形状不变。
 
 ### 4.2 **原生侧：镜像表按裁定收缩，不是解除**
 
@@ -498,6 +506,11 @@ B 取先左后右；C 按 A① 的自然结果——**右侧未求值即不产�
 实施完成后，§五 的守卫会产出一张**逐算子 × 双路径**的表，逐行给出
 「成功（输出）/ 在前端哪一层以什么码拒绝 / 在后端以什么信息拒绝」。
 **这张表是本批 §四 的验收物**，进实施记录，并回填 [20C](20c-official-xiao-library.md) §3.3。
+
+**实施结果（2026-10-14）**：`and`/`or` 已在 VM 与 LLVM 静态/动态降低器接通；`is`/`is not`
+已在类型层拒绝，原生镜像分支不再列出四项。VM 守卫的 `and`/`or` 用右侧除零函数验证短路，
+身份算子三种形态（字面量、参数、否定身份）均要求 `X02-TYPE-005` 前端拒绝。原生同形守卫已
+标记为受控工具链用例，当前没有受控运行号，暂不把本机结果写成 CI 通过。
 
 ## 五、覆盖执行点（**本批的中心**）
 
@@ -566,6 +579,12 @@ B 取先左后右；C 按 A① 的自然结果——**右侧未求值即不产�
    清单是**手写**的（`fixture_path()` 不做 glob），所以「文件在仓库里」与「文件被跑到」是两件事。
    **每次动 `tests/fixtures/20c/` 都要跑一次三口径对账**（磁盘 / 清单 / README），**差集必须为空**。
 
+**实施结果（2026-10-14）**：守卫已由 `BinaryOperator`/`UnaryOperator` 的穷举匹配派生，覆盖 21 个
+二元与 3 个一元变体；`is`/`is not` 期望 `Frontend("X02-TYPE-005")`，其余构造期望双路径成功。
+`operator_coverage_guard_vm` 已通过，并检查 `X09-BYTECODE-001` 不再出现在接受面；原生守卫
+`native_operator_coverage_guard` 使用同一清单、跨平台安全产物名和真实进程状态断言，等待受控
+LLVM 环境运行。当前没有可回填的 CI 运行号，故只记录本机 VM/Rust 结果。
+
 ### 5.3 **先红后绿，且 main 不许红**
 
 **冻结**（照 [20C](20c-official-xiao-library.md) §2.4 末三条纪律）：
@@ -587,6 +606,11 @@ B 取先左后右；C 按 A① 的自然结果——**右侧未求值即不产�
 若判为基线变更（`message_id` 改动），按 [20C](20c-official-xiao-library.md) §2.4 的既定口径
 **单独登记、不许悄悄替换**。**本条可与 §四 分开落地**，但**不许留在「以后再说」**——
 它是 §五 守卫出现后，用户第一个会看到的东西。
+
+**实施结果（2026-10-14）**：VM 验证入口按 `TacVerificationError.code` 分流：
+`X09-BYTECODE-001` 生成 `fatal.internal`，保留 `verification_code/path/message` 参数；
+`X09-BYTECODE-002` 继续生成 `fatal.corrupt_artifact`。驱动器回归用例已钉住前者的
+`message_id`，结构错误的既有诊断身份保持不变。
 
 ## 六、被挡住候选的复探（接通之后）
 
@@ -633,10 +657,12 @@ docs/DevDocs/02-type-system.md                           §3.2 乙（**已回填
 core/rust/crates/xiao-types/src/numeric.rs               §3.2.1 第 2 条：`:213-215` 去掉无条件 `Bool`，改判 `X02-TYPE-005`
 core/rust/crates/xiao-types/src/checker/constant.rs      §3.2.1 第 2 条：`:190-200` 删掉 `Is | IsNot` 常量折叠分支
 core/rust/crates/xiao-types/src/checker/expression.rs    §3.2.1 第 2 条：`:307` 从「比较算子」分组移出
-core/rust/crates/xiao-bytecode/src/lower/expr.rs         §4.1：`and`/`or` 的短路降低（`is`/`is not` 不再到达此处）
-core/rust/crates/xiao-codegen-llvm/src/ir.rs             §4.2：镜像 `matches!` 名单删除四项；同批实现 `and`/`or` 同语义
-core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs  §4.2 第 3 条：保留给真正未降低的构造
-docs/DevDocs/assets/20c-capability-20261011/probe.log    §四 接通后重出
+core/rust/crates/xiao-bytecode/src/lower/expr.rs         §4.1：已用 `BranchIf`/基本块实现 `and`/`or` 短路；`is`/`is not` 不再到达此处
+core/rust/crates/xiao-codegen-llvm/src/ir.rs             §4.2：已删除四项镜像拒绝并用 `br`/结果槽实现静态短路
+core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs  §4.2 第 3 条：已用 `emit_condition`/ABI bool 槽实现动态短路
+core/rust/crates/xiao-codegen-llvm/src/dynamic/control.rs §4.2：`emit_condition` 作为两条动态路径共享条件入口
+core/rust/crates/xiao-vm/src/run.rs                     §5.4：已区分 `X09-BYTECODE-001` 与 `X09-BYTECODE-002` 的用户诊断身份
+docs/DevDocs/assets/20c-capability-20261011/probe.log    §四受控原生重出待工具链运行；本机 VM 结果由算子守卫记录
 .github/workflows/maintenance-regression.yml             §5.2 第 4 条：确认原生半边真的被跑到（P-3 glob 口径）
 ```
 
@@ -669,6 +695,10 @@ docs/DevDocs/assets/20c-capability-20261011/probe.log    §四 接通后重出
 11. **诚实**：表 B 五项原样保留；首批仍 `draft`；
 12. **通用**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit` 全绿；
     提交标题带类型前缀、正文非空。
+
+**当前实现核对（2026-10-14）**：类型拒绝、VM 短路降低、LLVM 静态/动态短路降低、全算子 VM 守卫和
+`X09` 用户诊断分流已落地；本机针对性测试已通过。原生算子守卫保留为 `#[ignore]`，因为当前会话
+没有 10D §4 的受控 LLVM 环境和 CI 运行号；这部分保持待补，不把本机编译结果冒充受控证据。
 
 ## 十、裁定结果与后续输入
 

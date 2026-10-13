@@ -1068,13 +1068,8 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                 left,
                 right,
             } => {
-                // 09-B0 的生产降低器尚未给逻辑/身份运算分配冻结 TAC 语义；原生侧
-                // 必须保持同一接受边界，不能用 eager LLVM 指令悄悄扩大语言子集。
-                if matches!(operator.as_str(), "and" | "or" | "is" | "is not") {
-                    return Err(unsupported(
-                        format!("运算 {operator}（生产字节码降低尚未接通）"),
-                        Some(expression.span),
-                    ));
+                if matches!(operator.as_str(), "and" | "or") {
+                    return self.emit_logical_short_circuit(operator, left, right, expression.span);
                 }
                 let (left, left_ty) = self.emit_expression(left)?;
                 let (right, right_ty) = self.emit_expression(right)?;
@@ -1112,6 +1107,59 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                 Err(unsupported("动态值或容器表达式", Some(expression.span)))
             }
         }
+    }
+
+    /// 发射静态标量的短路逻辑运算。
+    ///
+    /// 复用既有 `br`/标签控制流而不引入 phi：结果暂存于当前函数的 `alloca`，
+    /// 两条实际执行边各写一次，合流块再读取。右侧发射位于按需块内，因此
+    /// LLVM 文本与 VM TAC 都不会在短路边求值或释放右侧。
+    fn emit_logical_short_circuit(
+        &mut self,
+        operator: &str,
+        left: &IrExpression,
+        right: &IrExpression,
+        span: IrSpan,
+    ) -> Result<(String, Scalar)> {
+        let (left, left_ty) = self.emit_expression(left)?;
+        if left_ty != Scalar::Bool {
+            return Err(unsupported("非 bool 逻辑运算左值", Some(span)));
+        }
+
+        let result_slot = self.module.next_temp();
+        self.emit_line(format!("  {result_slot} = alloca i1"));
+        let right_label = self.module.next_label("logical.right");
+        let short_label = self.module.next_label("logical.short");
+        let merge_label = self.module.next_label("logical.merge");
+        let (if_true, if_false) = if operator == "and" {
+            (&right_label, &short_label)
+        } else {
+            (&short_label, &right_label)
+        };
+        self.emit_line(format!(
+            "  br i1 {left}, label %{if_true}, label %{if_false}"
+        ));
+        self.terminated = true;
+
+        self.emit_label(&short_label);
+        let short_value = if operator == "or" { "true" } else { "false" };
+        self.emit_line(format!("  store i1 {short_value}, ptr {result_slot}"));
+        self.emit_line(format!("  br label %{merge_label}"));
+        self.terminated = true;
+
+        self.emit_label(&right_label);
+        let (right, right_ty) = self.emit_expression(right)?;
+        if right_ty != Scalar::Bool {
+            return Err(unsupported("非 bool 逻辑运算右值", Some(span)));
+        }
+        self.emit_line(format!("  store i1 {right}, ptr {result_slot}"));
+        self.emit_line(format!("  br label %{merge_label}"));
+        self.terminated = true;
+
+        self.emit_label(&merge_label);
+        let result = self.module.next_temp();
+        self.emit_line(format!("  {result} = load i1, ptr {result_slot}"));
+        Ok((result, Scalar::Bool))
     }
 
     /// 发射固定宽度标量 intrinsic；复杂入口由动态 Runtime 路径消费。

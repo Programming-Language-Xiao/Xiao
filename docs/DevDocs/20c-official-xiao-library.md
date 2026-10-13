@@ -462,6 +462,18 @@ VM/LLVM 双路径探测；逐字符计数、循环字符串累积、集合构造
 本批只新增 `text.length(str text) -> int`，实现位于既有 `stdlib/text.xiao`，不新增 intrinsic、不提升接口版本；
 UseDocs 与 registry 仍保持 `draft`，等待受控/CI 运行记录。
 
+**20C 语言边界接通回写（2026-10-14）**：第二批复核发现的逻辑/身份算子已按
+[20C-语言边界](20c-language-boundary-and-operators.md) §三裁定处理。`and`/`or` 在字节码侧复用
+已有条件分支块和合流寄存器，在 LLVM 静态侧复用 `br`/标签与局部结果槽，在 LLVM 动态侧复用
+`emit_condition` 和 ABI bool 值；三处都只在需要的控制流边上降低右侧，因此短路边不会求值或释放右侧。
+`is`/`is not` 保留语法 token，但在类型层统一以 `X02-TYPE-005` 拒绝，常量折叠和变量推理均不能绕过。
+
+验收执行点已接入 `core/rust/crates/xiao-driver/tests/c20_capability_probe.rs`：
+`BinaryOperator`/`UnaryOperator` 的匹配无兜底分支，接受面要求 VM 成功，身份算子要求前端拒绝；
+`and`/`or` 的最小夹具右侧调用除零函数，用于验证短路而不是只验证静态结果；原生守卫的产物名
+通过字符安全映射生成。当前本机 VM、字节码、类型和 LLVM 代码单测已通过；原生 `#[ignore]` 守卫
+与受控 CI 运行号仍待外部工具链提供，首批模块的 `draft` 状态不变。
+
 ### 3.3 **与静态溢出的耦合（已裁定归 20C 之前）**
 
 **历史事实（10R D2 之前）**：静态路径的 **7 处 `llvm.trap`**（`ir.rs`，[10R-溢出后续](10r-static-overflow-followup.md)

@@ -138,6 +138,24 @@ fn frontend_dynamic_branch_lowers_without_reparsing() {
 }
 
 #[test]
+/// 动态程序中的逻辑运算也必须生成短路块，而不是退化为 Runtime eager 二元调用。
+fn frontend_dynamic_logical_short_circuit_lowers_without_eager_binary() {
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(
+            "text = \"runtime\"\nflag = true\ndef explode(int divisor) -> bool\n    return (1 // divisor) == 0\nresult = false and explode(0)\nchoice = true or explode(0)\n",
+        ))
+        .expect("动态逻辑源码应通过前端");
+    let module = NativeBuild::new()
+        .lower(&artifact.ir, &CodegenOptions::default())
+        .expect("动态逻辑 IR 应降低");
+    assert!(module.uses_runtime);
+    assert!(module.text.contains("dynamic.logical.right"));
+    assert!(module.text.contains("dynamic.logical.short"));
+    assert!(!module.text.contains("c\"and\\00\""));
+    assert!(!module.text.contains("c\"or\\00\""));
+}
+
+#[test]
 /// 动态入口的 `for`、顶层函数和项目模块导入必须共享同一份前端 IR 并完成 LLVM 降低。
 fn frontend_dynamic_statements_lower_without_rejection() {
     let root = std::env::temp_dir().join(format!("xiao-n0-b-statements-{}", std::process::id()));

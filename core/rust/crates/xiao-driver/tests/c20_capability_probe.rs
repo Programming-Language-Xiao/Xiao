@@ -10,10 +10,13 @@ use xiao_driver::{
     DriverOutcome, DriverRequest, FrontendCompiler, FrontendNativeDriver, FrontendRequest,
     NativeBuildRequest, NativeDriverError,
 };
+use xiao_syntax::{BinaryOperator, UnaryOperator};
 use xiao_vm::VmEvent;
 
 /// 探测夹具的穷尽结果形状；不提供“任意失败”兜底，避免前端提前拒绝遮住后端缺口。
 #[derive(Clone, Copy, Debug)]
+// 当前裁定后的在册算子没有后端拒绝项，但三态仍需保留给后端负例探针。
+#[allow(dead_code)]
 enum ProbeExpectation {
     /// VM 与原生都必须成功并输出指定文本。
     Success(&'static str),
@@ -82,7 +85,7 @@ const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 12] = [
     (
         "second-case-conversion-logic",
         "second-case-conversion-logic.xiao",
-        ProbeExpectation::Backend("动态二元运算 and"),
+        ProbeExpectation::Success("true\n"),
     ),
     (
         "second-set-membership",
@@ -90,6 +93,135 @@ const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 12] = [
         ProbeExpectation::Success("ok\n"),
     ),
 ];
+
+/// 算子守卫的来源枚举；新增算子时这里的穷举匹配会强制同步最小夹具。
+const BINARY_OPERATORS: [BinaryOperator; 21] = [
+    BinaryOperator::Power,
+    BinaryOperator::Multiply,
+    BinaryOperator::Divide,
+    BinaryOperator::FloorDivide,
+    BinaryOperator::Remainder,
+    BinaryOperator::Add,
+    BinaryOperator::Subtract,
+    BinaryOperator::Intersect,
+    BinaryOperator::SymmetricDifference,
+    BinaryOperator::Less,
+    BinaryOperator::LessEqual,
+    BinaryOperator::Greater,
+    BinaryOperator::GreaterEqual,
+    BinaryOperator::Equal,
+    BinaryOperator::NotEqual,
+    BinaryOperator::In,
+    BinaryOperator::NotIn,
+    BinaryOperator::Is,
+    BinaryOperator::IsNot,
+    BinaryOperator::And,
+    BinaryOperator::Or,
+];
+
+const UNARY_OPERATORS: [UnaryOperator; 3] = [
+    UnaryOperator::Plus,
+    UnaryOperator::Minus,
+    UnaryOperator::Not,
+];
+
+/// 按算子拼写生成跨平台安全的产物文件名片段。
+fn safe_operator_stem(operator: &str) -> String {
+    let mut stem = String::new();
+    for character in operator.chars() {
+        match character {
+            'a'..='z' | 'A'..='Z' | '0'..='9' | '_' => stem.push(character),
+            ' ' => stem.push('_'),
+            '+' => stem.push_str("plus"),
+            '-' => stem.push_str("minus"),
+            '*' => stem.push_str("star"),
+            '/' => stem.push_str("slash"),
+            '%' => stem.push_str("percent"),
+            '<' => stem.push_str("lt"),
+            '>' => stem.push_str("gt"),
+            '=' => stem.push_str("eq"),
+            '&' => stem.push_str("amp"),
+            '^' => stem.push_str("caret"),
+            other => stem.push_str(&format!("u{:02x}", other as u32)),
+        }
+    }
+    stem
+}
+
+/// 为每个二元算子提供独立、最小且可执行的源码与期望形状。
+fn binary_operator_probe(operator: BinaryOperator) -> (&'static str, ProbeExpectation) {
+    match operator {
+        BinaryOperator::Power => ("value = 2 ** 3\n", ProbeExpectation::Success("")),
+        BinaryOperator::Multiply => ("value = 2 * 3\n", ProbeExpectation::Success("")),
+        BinaryOperator::Divide => ("value = 6 / 3\n", ProbeExpectation::Success("")),
+        BinaryOperator::FloorDivide => ("value = 6 // 3\n", ProbeExpectation::Success("")),
+        BinaryOperator::Remainder => ("value = 6 % 3\n", ProbeExpectation::Success("")),
+        BinaryOperator::Add => ("value = 2 + 3\n", ProbeExpectation::Success("")),
+        BinaryOperator::Subtract => ("value = 3 - 2\n", ProbeExpectation::Success("")),
+        BinaryOperator::Intersect => ("value = {1} & {1}\n", ProbeExpectation::Success("")),
+        BinaryOperator::SymmetricDifference => {
+            ("value = {1} ^ {2}\n", ProbeExpectation::Success(""))
+        }
+        BinaryOperator::Less => ("value = 1 < 2\n", ProbeExpectation::Success("")),
+        BinaryOperator::LessEqual => ("value = 1 <= 2\n", ProbeExpectation::Success("")),
+        BinaryOperator::Greater => ("value = 2 > 1\n", ProbeExpectation::Success("")),
+        BinaryOperator::GreaterEqual => ("value = 2 >= 1\n", ProbeExpectation::Success("")),
+        BinaryOperator::Equal => ("value = 1 == 1\n", ProbeExpectation::Success("")),
+        BinaryOperator::NotEqual => ("value = 1 != 2\n", ProbeExpectation::Success("")),
+        BinaryOperator::In => ("value = 1 in {1}\n", ProbeExpectation::Success("")),
+        BinaryOperator::NotIn => ("value = 2 not in {1}\n", ProbeExpectation::Success("")),
+        BinaryOperator::Is => (
+            "value = 1 is 1\n",
+            ProbeExpectation::Frontend("X02-TYPE-005"),
+        ),
+        BinaryOperator::IsNot => (
+            "value = 1 is not 1\n",
+            ProbeExpectation::Frontend("X02-TYPE-005"),
+        ),
+        BinaryOperator::And => (
+            "def explode(int divisor) -> bool\n    return (1 // divisor) == 0\nvalue = false and explode(0)\n",
+            ProbeExpectation::Success(""),
+        ),
+        BinaryOperator::Or => (
+            "def explode(int divisor) -> bool\n    return (1 // divisor) == 0\nvalue = true or explode(0)\n",
+            ProbeExpectation::Success(""),
+        ),
+    }
+}
+
+/// 为每个一元算子提供独立、最小且可执行的源码与期望形状。
+fn unary_operator_probe(operator: UnaryOperator) -> (&'static str, ProbeExpectation) {
+    match operator {
+        UnaryOperator::Plus => ("value = +1\n", ProbeExpectation::Success("")),
+        UnaryOperator::Minus => ("value = -1\n", ProbeExpectation::Success("")),
+        UnaryOperator::Not => ("value = not true\n", ProbeExpectation::Success("")),
+    }
+}
+
+/// 返回算子守卫使用的穷举用例；期望由 `BinaryOperator`/`UnaryOperator` 的无兜底
+/// 匹配派生，避免只改手写文件清单而漏掉执行点。
+fn operator_probes() -> Vec<(String, String, ProbeExpectation)> {
+    let mut probes = Vec::with_capacity(BINARY_OPERATORS.len() + UNARY_OPERATORS.len());
+    for operator in BINARY_OPERATORS {
+        let spelling = operator.as_str();
+        let (source, expectation) = binary_operator_probe(operator);
+        probes.push((
+            format!("binary-{}", safe_operator_stem(spelling)),
+            source.to_owned(),
+            expectation,
+        ));
+    }
+    for operator in UNARY_OPERATORS {
+        let spelling = operator.as_str();
+        let (source, expectation) = unary_operator_probe(operator);
+        probes.push((
+            format!("unary-{}", safe_operator_stem(spelling)),
+            source.to_owned(),
+            expectation,
+        ));
+    }
+    probes
+}
 
 fn repository_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -212,6 +344,55 @@ fn vm_capability_probe_records_each_module() {
     }
 }
 
+#[test]
+/// 所有已接受算子必须在 VM 生产入口成功；身份算子必须在类型层先拒绝。
+fn operator_coverage_guard_vm() {
+    let compiler = FrontendCompiler::new();
+    for (id, source, expectation) in operator_probes() {
+        let request = FrontendRequest::from_text(source);
+        let artifact = match compiler.compile(&request) {
+            Ok(artifact) => artifact,
+            Err(error) => {
+                match expectation {
+                    ProbeExpectation::Frontend(expected) => assert_eq!(
+                        first_frontend_code(&error),
+                        expected,
+                        "算子守卫的前端错误身份不一致：{id}"
+                    ),
+                    ProbeExpectation::Success(_) => {
+                        panic!("已接受算子不得在前端拒绝：{id} {error:?}")
+                    }
+                    ProbeExpectation::Backend(_) => {
+                        panic!("算子守卫不应把构造留给后端拒绝：{id} {error:?}")
+                    }
+                }
+                continue;
+            }
+        };
+        let outcome = xiao_driver::FrontendVmDriver::new()
+            .run_artifact(&artifact, &DriverRequest::new(request));
+        match expectation {
+            ProbeExpectation::Success(expected_output) => {
+                assert!(
+                    outcome.is_success(),
+                    "算子守卫 VM 执行失败：{id} {outcome:?}"
+                );
+                assert_eq!(vm_output(&outcome), expected_output, "算子守卫输出：{id}");
+            }
+            ProbeExpectation::Frontend(expected) => {
+                panic!("身份算子必须在前端拒绝：{id} {expected} {outcome:?}")
+            }
+            ProbeExpectation::Backend(_) => {
+                assert_eq!(
+                    outcome.code(),
+                    Some("X09-BYTECODE-001"),
+                    "后端拒绝期望的 VM 错误身份不一致：{id} {outcome:?}"
+                );
+            }
+        }
+    }
+}
+
 fn configured_native_toolchain() -> (TargetDescription, Toolchain) {
     let target = TargetDescription::host();
     let configured_triple = std::env::var("XIAO_TARGET_TRIPLE")
@@ -234,6 +415,79 @@ fn configured_native_toolchain() -> (TargetDescription, Toolchain) {
     .probe_native_static_libraries(rustc, &target)
     .expect("应能读取 Runtime 原生库清单");
     (target, toolchain)
+}
+
+#[test]
+#[ignore = "需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4"]
+/// 原生算子守卫必须真的构建并运行每个已接受变体；文件名使用安全映射。
+fn native_operator_coverage_guard() {
+    let (target, toolchain) = configured_native_toolchain();
+    let compiler = FrontendCompiler::new();
+    let root = std::env::temp_dir().join(format!("xiao-20c-operator-{}", std::process::id()));
+    fs::create_dir_all(&root).expect("创建原生算子守卫目录");
+    for (id, source, expectation) in operator_probes() {
+        let request = FrontendRequest::from_text(source);
+        let artifact = match compiler.compile(&request) {
+            Ok(artifact) => artifact,
+            Err(error) => {
+                match expectation {
+                    ProbeExpectation::Frontend(expected) => assert_eq!(
+                        first_frontend_code(&error),
+                        expected,
+                        "算子守卫原生前端错误身份不一致：{id}"
+                    ),
+                    ProbeExpectation::Success(_) => {
+                        panic!("已接受算子不得在原生前端拒绝：{id} {error:?}")
+                    }
+                    ProbeExpectation::Backend(_) => {
+                        panic!("原生后端拒绝守卫必须先通过前端：{id} {error:?}")
+                    }
+                }
+                continue;
+            }
+        };
+        let output = root.join(if cfg!(windows) {
+            format!("{id}.exe")
+        } else {
+            id.clone()
+        });
+        let native_request =
+            NativeBuildRequest::new(request, target.clone(), toolchain.clone(), output);
+        let native = match FrontendNativeDriver::new().build_artifact(&artifact, &native_request) {
+            Ok(native) => native,
+            Err(error) => match expectation {
+                ProbeExpectation::Backend(fragment) => {
+                    let NativeDriverError::Backend(CodegenError::Unsupported { feature, .. }) =
+                        error
+                    else {
+                        panic!("后端拒绝形态不一致：{id} {error}");
+                    };
+                    assert!(
+                        feature.contains(fragment),
+                        "后端拒绝片段不一致：{id} {feature}"
+                    );
+                    continue;
+                }
+                ProbeExpectation::Success(_) => panic!("已接受算子原生构建失败：{id} {error}"),
+                ProbeExpectation::Frontend(expected) => {
+                    panic!("身份算子已应在前端拒绝：{id} {expected} {error}")
+                }
+            },
+        };
+        let ProbeExpectation::Success(expected_output) = expectation else {
+            panic!("拒绝期望不应生成原生产物：{id}");
+        };
+        let run = NativeRun::new(&native.native)
+            .run()
+            .expect("已链接的算子守卫产物应能启动");
+        assert_eq!(run.status, Some(0), "算子守卫原生进程失败：{id} {run:?}");
+        assert_eq!(run.stdout, expected_output, "算子守卫原生输出：{id}");
+        assert!(
+            run.stderr.is_empty(),
+            "算子守卫成功路径不应输出 stderr：{id} {run:?}"
+        );
+    }
+    let _ = fs::remove_dir_all(root);
 }
 
 #[test]

@@ -82,15 +82,16 @@ next_flag = flag - offset
   （`xiao-types/src/diagnostics.rs` 的 `INVALID_OPERANDS_CODE`）拒绝，
   **一律在进入后端之前拒绝**——不许出现「编译通过、后端报内部错误」。
 
-  **实现要同时改三处**（缺一处就会留下绕过路径，逐条见
+  **实现已同步改三处**（缺一处就会留下绕过路径，逐条见
   [20C-语言边界](20c-language-boundary-and-operators.md) §3.2.1）：
 
-  1. `xiao-types/src/numeric.rs:213-215`——现在对 `is`/`is not` **无条件返回 `Bool`**、
-     **不做任何操作数检查**，改成 `Err(NumericError::InvalidOperands { .. })`；
-  2. `xiao-types/src/checker/constant.rs:190-200`——**删掉那条 `Is | IsNot` 常量折叠分支**，
-     否则字面量（`1 is 1`）会先折叠成 `Bool`、**绕过第 1 条的拒绝**；
-  3. `xiao-types/src/checker/expression.rs:307`——把两者**从「比较算子」分组里移出**，
-     免得后续的变量推理仍按比较算子对待。
+  1. `xiao-types/src/numeric.rs` 已对两者返回 `Err(NumericError::InvalidOperands { .. })`；
+  2. `xiao-types/src/checker/constant.rs` 已把两者并入不折叠分支，字面量（`1 is 1`）不能绕过拒绝；
+  3. `xiao-types/src/checker/expression.rs` 已把两者从比较算子变量推理分组移出，并在二元检查入口统一上报
+     `X02-TYPE-005`。
+
+  `core/rust/crates/xiao-driver/tests/c20_capability_probe.rs` 的穷举算子守卫已覆盖字面量、变量和两条后端入口，
+  作为三处修改不能回退的执行点。
 
   **语法面不动**：两者的 token 与优先级由 [00. 决策基线](00-decisions.md) 的 P1 **原样冻结**，
   **不许**从词法/解析里删掉。**语法认、类型层拒**是裁定的一部分。

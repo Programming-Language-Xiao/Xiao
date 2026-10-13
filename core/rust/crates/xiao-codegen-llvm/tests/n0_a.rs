@@ -616,9 +616,26 @@ fn rejects_expanded_arguments() {
 }
 
 #[test]
-/// 逻辑和身份运算必须与当前生产字节码接受边界一致，不能被 LLVM eager 指令偷偷放行。
-fn rejects_unshared_logical_and_identity_operators() {
-    for operator in ["and", "or", "is", "is not"] {
+/// 逻辑运算必须走短路控制流；身份运算只允许由类型层拒绝。
+fn lowers_logical_and_rejects_identity_in_raw_ir() {
+    for operator in ["and", "or"] {
+        let expression = IrExpression {
+            kind: IrExpressionKind::Binary {
+                operator: operator.to_owned(),
+                left: Box::new(literal("bool", "true")),
+                right: Box::new(literal("bool", "false")),
+            },
+            ty: scalar("bool"),
+            span: span(),
+        };
+        let module = lower_program(
+            &simple_program(vec![assignment("value", expression)]),
+            &CodegenOptions::default(),
+        )
+        .expect("逻辑运算应降低");
+        assert!(module.text.contains("logical.merge"), "{operator}");
+    }
+    for operator in ["is", "is not"] {
         let expression = IrExpression {
             kind: IrExpressionKind::Binary {
                 operator: operator.to_owned(),
@@ -632,7 +649,7 @@ fn rejects_unshared_logical_and_identity_operators() {
             &simple_program(vec![assignment("value", expression)]),
             &CodegenOptions::default(),
         )
-        .expect_err("未共享的运算符必须拒绝");
+        .expect_err("原始 IR 中的身份运算必须拒绝");
         assert!(
             matches!(error, CodegenError::Unsupported { .. }),
             "{operator}"
