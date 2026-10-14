@@ -652,6 +652,8 @@ enum ProbeExpectation { … }
 
 ## 相关页面
 
+- [20C-门禁残余项修复](20c-native-gate-residuals-fix.md) —— **本专项 §5.2.1 第 2 条与 §11.1.1 的执行清单**：
+  两条残余项各自的最小实施/验证步骤与负例，单独成文
 - [20C-语言边界批](20c-language-boundary-and-operators.md) —— 本专项的 §五 与 §2.2/§3.2.1 都是它的冻结
 - [20C](20c-official-xiao-library.md) §2.4 —— 验证纪律、遮蔽教训、基线变更的登记口径
 - [10R-实现](10r-static-overflow-implementation.md) —— N-3 的归属文档
