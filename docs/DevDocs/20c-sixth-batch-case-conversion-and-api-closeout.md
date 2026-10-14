@@ -84,6 +84,9 @@ def format_int(int value) -> str
 
 **处置见 §五**（三选一，**由星崽定**）。
 
+**登记复核**：`docs/module-registry.json` 的条目按模块路径登记，不枚举函数名；因此撤回函数时保持
+`stdlib.xiao-standard-library-first-modules` 的模块登记不变，并在同一提交核对其路径/UseDocs 仍有效。
+
 ### 2.3 **F-3（中）：模块仍标 `verified`，而两个新接口没有 CI 记录**
 
 **事实**：`docs/UseDocs/library/text.md` 与 registry 的首批条目都是 `status: verified`；

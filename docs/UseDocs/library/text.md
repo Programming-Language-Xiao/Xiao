@@ -19,7 +19,8 @@ related:
 `text` 是 20C 首批官方 Xiao 模块，规范实现位于 [`stdlib/text.xiao`](../../../stdlib/text.xiao)。
 适用版本：Xiao `0.1.0`、Runtime ABI `1.12`。首批/第二批受控双路径证据：维护回归
 `38550284761`（Windows 作业 `115806283501`、Linux 作业 `115806283515`）；第五批候选复探的
-VM/LLVM 原生结果见 [20C-第五批](../../DevDocs/20c-fifth-batch-reprobe-and-library.md) §四。
+VM/LLVM 原生结果见 [20C-第五批](../../DevDocs/20c-fifth-batch-reprobe-and-library.md) §四；第五批的
+`format_int` 候选已按第六批收口撤回。
 
 ## `contains_char`
 
@@ -49,20 +50,6 @@ length(str text) -> int
 from stdlib.text import length
 
 print(length("小雪"))
-```
-
-## `format_int`
-
-```xiao
-format_int(int value) -> str
-```
-
-返回整数的十进制文本。实现只使用既有转换、循环和字符串拼接，不提供填充、对齐或进制选项。
-
-```xiao
-from stdlib.text import format_int
-
-print(format_int(42))
 ```
 
 ## `is_ascii_upper`

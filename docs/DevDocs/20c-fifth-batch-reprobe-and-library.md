@@ -8,8 +8,8 @@
 > 由结果决定这一批往库里加哪些接口、以及**哪些仍被语言边界挡住**；
 > 同时把第四批欠的两笔证据/登记并进来。
 >
-> 状态：**复探完成、库接口已实施（2026-10-15）**。六行双路径结果见 §4.3；
-> 只有数字格式化与 ASCII 大写分类进入最小 `text` 接口，大小写转换、字面量常量折叠、子串/切分和集合公共接口继续登记；
+> 状态：**复探完成、接口收口由第六批完成（2026-10-15）**。六行双路径结果见 §4.3；
+> 数字格式化候选已因零增量撤回，仅保留 ASCII 大写分类接口，大小写转换、字面量常量折叠、子串/切分和集合公共接口继续登记；
 > F-1 只完成登记与注释修正，未修复。
 
 ## 一、为什么是这一批
@@ -99,7 +99,7 @@ VM 使用 `cargo test -p xiao-driver --test c20_capability_probe -- --nocapture`
 
 | 候选 | VM | LLVM 原生 | 处置 |
 | --- | --- | --- | --- |
-| 数字格式化 | 成功，`n=42` | 成功，状态 `0`、`n=42` | **解封**；进入 `text.format_int(int value) -> str` 最小接口 |
+| 数字格式化 | 成功，`n=42` | 成功，状态 `0`、`n=42` | **探测解封**；第六批因与 `str(value)` 零增量撤回接口 |
 | 字符分类 | 成功，`true` | 成功，状态 `0`、`true` | **解封**；进入 `text.is_ascii_upper(str value) -> bool` 最小接口 |
 | 大小写转换 | 前端 `X02-TYPE-006` | 前端 `X02-TYPE-006` | **仍被挡**；最近前置是 `str` → `int` 码点转换 |
 | 字符串比较（字面量） | 前端 `X02-TYPE-005` | 前端 `X02-TYPE-005` | **仍被挡**；常量折叠路径未开放 |
@@ -116,8 +116,8 @@ VM 使用 `cargo test -p xiao-driver --test c20_capability_probe -- --nocapture`
 3. **不许新增 intrinsic、不许为写库扩语言**（[20C-首批](20c-first-modules.md) §4.4 原样有效）；
 4. **大小写转换若仍被挡**：按缺口登记（需要什么 = `str` → `int` 码点；当前以 `X02-TYPE-006` 被拒；
    阻塞哪条接口），**不修**——它的修复是**下一个语言批次**的事，本批只登记；
-5. **数字格式化若解封**：**先给最小接口**（不要一次把填充、对齐、进制都做进去），
-   本批只提供十进制 `text.format_int(int value) -> str`，并明确不做填充、对齐、进制。
+5. **数字格式化若解封**：**先给最小接口**（不要一次把填充、对齐、进制都做进去）；本批只完成探测，
+   第六批确认 `format_int` 相对 `str(value)` 没有真实语义增量，因此撤回接口。
 6. **字符分类若解封**：只提供复探覆盖的 ASCII 大写判断 `text.is_ascii_upper(str value) -> bool`，
    不扩到完整大小写转换、Unicode 分类或 `str` → `int`。
 
@@ -130,7 +130,7 @@ docs/DevDocs/20c-fourth-batch-int-to-str.md            R-a：§7.1 回填运行�
 docs/DevDocs/02-type-system.md                         R-b：F-1 的登记（与 lint/lfloat 算术债并列）
 core/rust/crates/xiao-runtime/src/value/ops.rs         R-b：`convert_to` 注释改回「算术与数值转换」
 tests/fixtures/20c/                                    复探夹具（一夹具一拒绝）
-stdlib/text.xiao + stdlib/text.md                      §五：新增 `format_int`/`is_ascii_upper`
+stdlib/text.xiao + stdlib/text.md                      §五：保留 `is_ascii_upper`（`format_int` 由第六批撤回）
 docs/UseDocs/library/text.md                            §五：新增接口说明与复探依据
 docs/module-registry.json                              §五：路径与身份登记
 ```
@@ -145,7 +145,7 @@ docs/module-registry.json                              §五：路径与身份�
 3. **复探**：六行**双路径**表；每行给「成功 / 在哪一层以什么码停下」；
    **没有**变量下标、临时 intrinsic 绕开；**结论先汇报**；
    仍被挡的缺口**登记已合并到一处**并写清各自最近的前置；
-4. **库清单**：`text.format_int` 与 `text.is_ascii_upper` 均能在复探表里找到双路径依据；
+4. **库清单**：`text.is_ascii_upper` 能在复探表里找到双路径依据；数字格式化虽可写但已按第六批撤回；
    **没有**为了塞候选而放宽边界；
    **没有**新增 intrinsic；范围外的东西写进「明确不做」；
 5. **诚实**：第四批 §8.1 的 F-1 **仍是既有缺口**，本批**不许**把它写成已修

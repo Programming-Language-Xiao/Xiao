@@ -190,7 +190,7 @@ fn first_error_code(source_path: &Path, source: &str) -> Option<String> {
 #[test]
 /// 验证 text 模块的 VM 结果、类型拒绝和移除边界。
 fn text_module_vm_result_and_removal_boundary_are_stable() {
-    let caller = "from stdlib.text import contains_char\nfrom stdlib.text import length\nfrom stdlib.text import format_int\nfrom stdlib.text import is_ascii_upper\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif length(\"小雪\") != 2\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif format_int(42) != \"42\"\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif not is_ascii_upper(\"A\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n";
+    let caller = "from stdlib.text import contains_char\nfrom stdlib.text import length\nfrom stdlib.text import is_ascii_upper\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif length(\"小雪\") != 2\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif not is_ascii_upper(\"A\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n";
     let outcome = run_vm("text", caller);
     assert!(outcome.is_success(), "text VM 调用失败：{outcome:?}");
     assert_eq!(output(&outcome), "ok\n");
@@ -226,15 +226,6 @@ fn text_module_vm_result_and_removal_boundary_are_stable() {
         .as_deref(),
         Some("X04-TYPE-002"),
         "text.length 导入签名必须保留稳定的调用参数诊断"
-    );
-    assert_eq!(
-        first_error_code(
-            &repository_root().join("tests/20c_text_format_int_wrong_type.xiao"),
-            "from stdlib.text import format_int\nformat_int(1.5)\n",
-        )
-        .as_deref(),
-        Some("X04-TYPE-002"),
-        "text.format_int 导入签名必须保留稳定的调用参数诊断"
     );
     assert!(
         !source.contains('[') && !source.contains("dict") && !source.contains("serialize"),
@@ -492,7 +483,7 @@ fn first_modules_match_native_results() {
         ),
         (
             "text",
-            "from stdlib.text import contains_char\nfrom stdlib.text import length\nfrom stdlib.text import format_int\nfrom stdlib.text import is_ascii_upper\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif length(\"小雪\") != 2\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif format_int(42) != \"42\"\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif not is_ascii_upper(\"A\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n",
+            "from stdlib.text import contains_char\nfrom stdlib.text import length\nfrom stdlib.text import is_ascii_upper\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif length(\"小雪\") != 2\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif not is_ascii_upper(\"A\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n",
             "ok\n",
         ),
     ];

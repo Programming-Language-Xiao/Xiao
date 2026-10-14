@@ -483,9 +483,9 @@ VM/LLVM 双路径探测；逐字符计数、循环字符串累积、集合构造
 大小写转换和浮点格式化仍不属于已验证官方库能力。
 
 **20C 第五批库侧回写（2026-10-15）**：复探以 VM/Windows LLVM 原生双路径成表，确认数字格式化与
-ASCII 大写分类可写；`text` 新增纯 Xiao 的 `format_int(int value) -> str` 与
-`is_ascii_upper(str value) -> bool`。两者不新增 intrinsic，也不扩展填充、对齐、进制、Unicode 分类或
-`str` → `int` 码点转换；大小写转换、字面量常量折叠、子串/切分和集合公共 API 仍按第五批表登记。
+ASCII 大写分类可写；`text` 保留纯 Xiao 的 `is_ascii_upper(str value) -> bool`。数字格式化候选因与
+`str(value)` 没有真实语义增量，已由第六批撤回；不新增 intrinsic，也不扩展填充、对齐、进制、Unicode 分类或
+`str` → `int` 码点转换；大小写转换、字面量常量折叠、子串/切分和集合公共 API 仍按第五/六批表登记。
 
 ### 3.3 **与静态溢出的耦合（已裁定归 20C 之前）**
 
