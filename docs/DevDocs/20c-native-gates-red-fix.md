@@ -355,6 +355,11 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 - **第 2 条（跨步骤遮蔽）与第 5 条（故意的红取证）仍待做**——
   本次是**第一次真跑**，但**全绿**，所以按第 5 条**不构成取证**。
 
+**本轮残余修复（2026-10-14，方案甲）**：`tools/gates/run.sh` 已把
+`cargo fmt --check`、`bun run check`、`check:coverage` 前置到所有 Rust 测试之前；
+benchmark 检查/测试/自测也排在 `cargo test -p xiao-driver` 之前，两个 cargo 测试仍保留
+`--no-fail-fast`。一次性分支的故意红运行与还原后的绿运行号见下方取证记录。
+
 ## 六、审核侧自己的账：§3.2.1 第 6 条**判据是错的**
 
 [20C-语言边界](20c-language-boundary-and-operators.md) §3.2.1 第 6 条冻结的是
@@ -553,6 +558,12 @@ block[3]  Copy, RunReleasePlan, ExitScope, Return                        ← 合
 
 **判据**：加上这条后，把右侧的释放人为挪到分支前，断言**必须变红**。
 **只比总数不算覆盖位置**——那正是 F-4 记的这一条。
+
+**本轮实施结果（2026-10-14）**：`c20_capability_probe.rs` 已追加 TAC 短路块
+`Release` 数为 0 的断言，以及 LLVM `xiao_runtime_value_release_` 位于
+`dynamic.logical.right` 至 `dynamic.logical.merge` 区间内的断言；原有 TAC/LLVM 总数断言保留。
+在 `xiao-bytecode/src/lower/expr.rs::lower_logical` 的 `short_block` 临时插入一条
+`TacOp::Release` 后，测试在短路块位置断言处失败；还原后完整探测测试恢复通过。
 
 ### 11.2 **F-B（低）**：N-1 的注释把新引入的转换写成了既有约定
 

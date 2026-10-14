@@ -7,7 +7,7 @@
 >
 > **一句话概括**：**R-1** 让脚本不再"前面一红、后面全不跑"；**R-2** 让短路释放的断言能看见**位置**。
 >
-> 状态（2026-10-14）：**待做**。两条都不影响 `main` 当前是绿的。
+> 状态（2026-10-14）：**实现已完成，验证记录已回填**。`main` 未引入故意失败。
 
 ## 一、为什么单独成文
 
@@ -58,6 +58,9 @@
 **倾向甲**：改动最小，且静态门禁本来就该"早失败"（文档/格式比测试便宜得多）。
 **不论选哪个，第 17 行 benchmarks 的 `cargo test` 也必须不再被第 12 行遮住。**
 
+**本次选择：甲。** 静态门禁在 benchmark 与 `xiao-driver` 测试之前执行；保留两个
+`cargo test` 的 `--no-fail-fast`，让 benchmark 测试也不会被 `xiao-driver` 测试遮住。
+
 ### 2.3 最小实施步骤
 
 1. 按 2.2 择一改 `tools/gates/run.sh`；
@@ -100,6 +103,17 @@
 > **任意一次全绿运行都不构成取证**——fail-fast 只在有失败时才显出差异，
 > 全绿时改前改后的行为完全一样。「脚本带上参数仍然正常」与「参数治好了遮蔽」是两件事。
 > **不许**用 `38522338905` 或任何绿跑把本条写成已取证。
+
+### 2.7 实施记录
+
+`tools/gates/run.sh` 已按方案甲调整为：`bun install` → `cargo fmt --check` →
+`bun run check` → `bun run check:coverage` → benchmark 检查/测试/自测 →
+`cargo test -p xiao-driver --no-fail-fast` → Bun 测试与 TypeScript 类型检查。
+因此静态门禁不会被任一 Rust 测试失败遮住，benchmark 测试也位于 `xiao-driver` 测试之前。
+
+R-1 的故意红验证使用一次性分支完成：失败的 `20c_first_modules` 二进制之后仍出现
+`Running` 行，且静态门禁的输出位于失败测试之前。红运行与还原后的绿运行号已回填到
+专项文档 §5.2.1；一次全绿的本机运行只作为回归检查，不作为 R-1 取证。
 
 ## 三、R-2 **释放位置断言**（`c20_capability_probe.rs`）
 
@@ -148,6 +162,11 @@ block[3]  Copy, RunReleasePlan, … ← 合流块：releases = 0 ✓
    「至少会为某件事红」的替代证据——**不许**因为不好做就跳过负例
    （[20AB-FIX](20ab-fix-lifetime-and-removal-verification.md) 的先例：失败证据可以是编译失败，
    但**必须有**，且**加了没有要写明**）。
+
+**实施记录（2026-10-14）**：正常降低与完整 `c20_capability_probe` 测试保持通过。
+临时在 `lower_logical` 的 `short_block` 插入一条 `TacOp::Release` 后，测试在
+「短路块不能释放未求值右侧的临时值」处失败（`test result: FAILED`）；总数断言尚未先行
+失败，证明新增位置断言确实能捕捉该变异。变异已还原，`xiao-bytecode` 工作树无残留改动。
 
 ### 3.5 落点（R-1 与 R-2 合并列出）
 

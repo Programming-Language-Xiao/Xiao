@@ -424,6 +424,64 @@ fn logical_short_circuit_keeps_shared_release_plans() {
         count_native_releases(&with_native.text) > count_native_releases(&without_native.text),
         "去掉右侧后 LLVM 释放序列应减少"
     );
+
+    let function = with_tac.functions.first().expect("脚本入口函数");
+    let short_block = function
+        .blocks
+        .iter()
+        .find_map(|block| {
+            block.instructions.iter().find_map(|instruction| {
+                if let TacOp::BranchIf { if_false, .. } = &instruction.op {
+                    Some(*if_false)
+                } else {
+                    None
+                }
+            })
+        })
+        .and_then(|block| {
+            function
+                .blocks
+                .iter()
+                .find(|candidate| candidate.id == block)
+        })
+        .expect("and 的短路块");
+    let short_release_count = short_block
+        .instructions
+        .iter()
+        .filter(|instruction| matches!(&instruction.op, TacOp::Release { .. }))
+        .count();
+    assert_eq!(
+        short_release_count, 0,
+        "短路块不能释放未求值右侧的临时值"
+    );
+
+    let right_start = with_native
+        .text
+        .find("\ndynamic.logical.right")
+        .expect("LLVM 右侧短路块");
+    let short_start = with_native
+        .text
+        .find("\ndynamic.logical.short")
+        .expect("LLVM 短路块");
+    let merge_start = with_native
+        .text
+        .find("\ndynamic.logical.merge")
+        .expect("LLVM 合流块");
+    assert!(
+        short_start < right_start && right_start < merge_start,
+        "LLVM 短路、右侧和合流标签顺序必须稳定"
+    );
+    assert!(
+        with_native.text[short_start..right_start]
+            .find("xiao_runtime_value_release_")
+            .is_none(),
+        "LLVM 短路块不能释放未求值右侧的临时值"
+    );
+    assert!(
+        with_native.text[right_start..merge_start].contains("xiao_runtime_value_release_"),
+        "LLVM 右侧释放必须位于 logical.right 之后"
+    );
+
     let outcome = xiao_driver::FrontendVmDriver::new().run_artifact(
         &vm_artifact,
         &DriverRequest::new(FrontendRequest::from_text(source)),
