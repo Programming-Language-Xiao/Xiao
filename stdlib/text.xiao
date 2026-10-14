@@ -13,3 +13,12 @@ def length(str text) -> int
     for c in text
         count = count + 1
     return count
+
+def format_int(int value) -> str
+    result = ""
+    for c in (value as str)
+        result = result + c
+    return result
+
+def is_ascii_upper(str value) -> bool
+    return value >= "A" and value <= "Z"

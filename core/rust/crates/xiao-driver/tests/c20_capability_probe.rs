@@ -32,7 +32,7 @@ const PROBES: [(&str, &str, Option<&str>); 2] = [
     ("arithmetic-error", "arithmetic-error.xiao", None),
 ];
 
-const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 13] = [
+const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 20] = [
     (
         "strings-path-representative",
         "strings-path-representative.xiao",
@@ -52,6 +52,41 @@ const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 13] = [
         "second-int-to-str",
         "second-int-to-str.xiao",
         ProbeExpectation::Success("42:42:42:42:42:42:42\n"),
+    ),
+    (
+        "fifth-number-formatting",
+        "fifth-number-formatting.xiao",
+        ProbeExpectation::Success("n=42\n"),
+    ),
+    (
+        "fifth-character-classification",
+        "fifth-character-classification.xiao",
+        ProbeExpectation::Success("true\n"),
+    ),
+    (
+        "fifth-case-conversion",
+        "fifth-case-conversion.xiao",
+        ProbeExpectation::Frontend("X02-TYPE-006"),
+    ),
+    (
+        "fifth-string-literal-comparison",
+        "fifth-string-literal-comparison.xiao",
+        ProbeExpectation::Frontend("X02-TYPE-005"),
+    ),
+    (
+        "fifth-substring-split",
+        "fifth-substring-split.xiao",
+        ProbeExpectation::Frontend("X01-PARSE-007"),
+    ),
+    (
+        "fifth-split-array",
+        "fifth-split-array.xiao",
+        ProbeExpectation::Frontend("X02-TYPE-005"),
+    ),
+    (
+        "fifth-set-membership",
+        "fifth-set-membership.xiao",
+        ProbeExpectation::Success("ok\n"),
     ),
     (
         "second-string-comparison",

@@ -2,7 +2,7 @@
 
 工程期：20C。
 
-本目录保存 20C §3.1 的首批夹具、第二批七项候选探测夹具和第四批转换夹具，不是官方标准库，也不进入普通包依赖求解。
+本目录保存 20C §3.1 的首批夹具、第二批七项候选探测夹具、第四批转换夹具和第五批复探夹具，不是官方标准库，也不进入普通包依赖求解。
 
 | 文件 | 探测范围 | 预期观察 |
 | --- | --- | --- |
@@ -12,6 +12,13 @@
 | `strings-index-boundary.xiao` | 非字面量字符串下标边界 | VM/LLVM 在类型层拒绝 `X03-TYPE-003`（迭代器式语言的既定边界） |
 | `arithmetic-representative.xiao` | 除法、取模、数字转文本和字符串拼接 | VM/LLVM 输出 `42`；本批 `int` → `str` 双路径依据 |
 | `second-int-to-str.xiao` | `int`/`sint`/`lint` 各自的 `as str`、`str(value)` 与异构数组动态值转换 | VM/LLVM 输出 `42:42:42:42:42:42:42`；本批整数族转换的双路径依据 |
+| `fifth-number-formatting.xiao` | 整数转文本、循环与字符串拼接 | VM/LLVM 输出 `n=42`；第五批数字格式化候选双路径依据 |
+| `fifth-character-classification.xiao` | ASCII 大写区间比较与 `and` | VM/LLVM 输出 `true`；第五批字符分类候选双路径依据 |
+| `fifth-case-conversion.xiao` | `str` → `int` 码点转换 | VM/LLVM 在前端拒绝 `X02-TYPE-006`；第五批大小写转换缺口依据 |
+| `fifth-string-literal-comparison.xiao` | 字面量字符串相等与序关系 | VM/LLVM 在前端拒绝 `X02-TYPE-005`；常量折叠缺口依据 |
+| `fifth-substring-split.xiao` | 非字面量字符串下标前瞻 | VM/LLVM 最先拒绝 `X01-PARSE-007`；子串候选缺口依据 |
+| `fifth-split-array.xiao` | 循环累积数组切分 | VM/LLVM 在类型层拒绝 `X02-TYPE-005`；切分候选缺口依据 |
+| `fifth-set-membership.xiao` | 集合构造与成员判断 | VM/LLVM 输出 `ok`；集合最小能力只保留探测结论 |
 | `second-string-comparison.xiao` | 字面量常量折叠的相等与字典序比较 | VM/LLVM 均在类型层拒绝 `X02-TYPE-005` |
 | `second-string-comparison-parameters.xiao` | 字符串参数的相等与字典序比较 | VM/LLVM 输出 `ok`；运行时序关系可用 |
 | `second-count-length.xiao` | `for` 逐字符计数 | 第二批 `text.length` 的双路径依据，VM/LLVM 输出 `2` |

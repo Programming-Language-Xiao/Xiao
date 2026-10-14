@@ -1,0 +1,7 @@
+def split_chars(str text)
+    parts = []
+    for c in text
+        parts = parts + [c]
+    return parts
+
+print(split_chars("ab"))

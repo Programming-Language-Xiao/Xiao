@@ -11,13 +11,15 @@ related:
   - path.md
   - ../../DevDocs/20c-first-modules.md
   - ../../DevDocs/20c-second-batch-probe.md
+  - ../../DevDocs/20c-fifth-batch-reprobe-and-library.md
 ---
 
 # 官方 `text` 模块
 
 `text` 是 20C 首批官方 Xiao 模块，规范实现位于 [`stdlib/text.xiao`](../../../stdlib/text.xiao)。
-适用版本：Xiao `0.1.0`、Runtime ABI `1.12`。受控双路径证据：维护回归
-`38550284761`（Windows 作业 `115806283501`、Linux 作业 `115806283515`）。
+适用版本：Xiao `0.1.0`、Runtime ABI `1.12`。首批/第二批受控双路径证据：维护回归
+`38550284761`（Windows 作业 `115806283501`、Linux 作业 `115806283515`）；第五批候选复探的
+VM/LLVM 原生结果见 [20C-第五批](../../DevDocs/20c-fifth-batch-reprobe-and-library.md) §四。
 
 ## `contains_char`
 
@@ -49,5 +51,33 @@ from stdlib.text import length
 print(length("小雪"))
 ```
 
-本批不提供子串查找、切分、切片、大小写转换、格式化或集合操作。官方库不通过普通包依赖安装，
+## `format_int`
+
+```xiao
+format_int(int value) -> str
+```
+
+返回整数的十进制文本。实现只使用既有转换、循环和字符串拼接，不提供填充、对齐或进制选项。
+
+```xiao
+from stdlib.text import format_int
+
+print(format_int(42))
+```
+
+## `is_ascii_upper`
+
+```xiao
+is_ascii_upper(str value) -> bool
+```
+
+判断文本是否位于 ASCII 大写字母区间 `"A"` 到 `"Z"`，不依赖 `str` → `int` 码点转换。
+
+```xiao
+from stdlib.text import is_ascii_upper
+
+print(is_ascii_upper("A"))
+```
+
+本批不提供填充/对齐/进制格式化、子串查找、切分、切片、完整大小写转换或集合操作。官方库不通过普通包依赖安装，
 `stdlib.` 是工具链保留命名空间，接口兼容身份由 `StandardLibraryIdentity` 提供。

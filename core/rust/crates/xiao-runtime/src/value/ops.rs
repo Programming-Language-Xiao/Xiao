@@ -205,8 +205,9 @@ impl RuntimeValue {
 
     /// 执行显式标量转换。
     ///
-    /// 只实现 02 阶段转换矩阵接受的组合；`lint` / `lfloat` 的算术仍是登记在案的
-    /// 债项，这里明确报错而不是给出近似结果。整数到 `str` 复用稳定文本表示。
+    /// 只实现 02 阶段转换矩阵接受的组合；`lint` / `lfloat` 的算术与数值转换仍是登记在案的
+    /// 债项，这里明确报错而不是给出近似结果。整数到 `str` 复用稳定文本表示；登记见
+    /// `docs/DevDocs/20c-fourth-batch-int-to-str.md` §8.1。
     pub fn convert_to(&self, target: ScalarType) -> RuntimeResult<Self> {
         let source = self.scalar_type().ok_or_else(|| {
             RuntimeError::invalid_value(format!("{} 不是标量，不能转换", self.type_name()))
