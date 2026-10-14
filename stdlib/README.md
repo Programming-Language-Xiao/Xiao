@@ -10,4 +10,7 @@
 - 本目录不放预编译发布对象、`.xar` 字段或普通包配置；预编译对象只允许作为本地构建缓存。
 - 每个新增 `.xiao` 模块必须在本目录登记 README、UseDocs、DevDocs 阶段索引和兼容元数据，并由仓库检查器校验路径登记。
 
+`stdlib.xiao-standard-library` 的 registry 条目是工具链骨架登记，维持 `draft`；它不适用
+`verified` 状态。可交付模块的状态只登记在 `stdlib.xiao-standard-library-first-modules`。
+
 首批模块源码、VM 加载、Windows 本机 LLVM 差分与移除验证已完成；第二批已按探测结果加入 `text.length`；真实 push 运行号和 Linux/macOS 受控复跑仍待补齐后，才能关闭发布验收。

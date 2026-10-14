@@ -9,7 +9,7 @@
 > 并把首批审核的四条修补一起并进来。
 >
 > 状态：**探测完成、清单已冻结并实现 `text.length`（2026-10-13）**。七项候选均完成 VM/LLVM 双路径探测；
-> 被既定边界挡住的操作只登记缺口，不扩语言；首批 UseDocs 与 registry 继续保持 `draft`。
+> 被既定边界挡住的操作只登记缺口，不扩语言；首批 UseDocs 与 registry 已按第三批受控双路径证据改为 `verified`。
 
 ## 一、Agent 交接上下文
 
@@ -36,7 +36,7 @@
 | VM 测试 | 5 用例（结果 / 类型 / 移除 / 命名空间 / 辅助模块导入）**本机通过** | **已实现** |
 | 原生差分 | 1 用例，受控环境**本机通过**（审核实跑 `ok`） | **已实现** |
 | 元数据与 UseDocs | 模块 `.md`、UseDocs 两页、registry 两条目齐全，交叉引用有效 | **已实现** |
-| **UseDocs 与 registry 状态** | **`status: draft`**（两处一致） | **未「完成」**——见 §二 P-6 |
+| **UseDocs 与 registry 状态** | 首批两页与首批 registry 条目均为 **`status: verified`**；骨架条目仍为 `draft` | **已完成**——第三批取得受控运行记录并同笔翻转 |
 
 **表 B：仍然欠的证据（并列推进，不阻塞本批）**
 
@@ -48,7 +48,7 @@
 | 10Z-D 的 Linux/macOS 受控复跑与**变异红色证据** | 需要受控机 | 10R 后续 |
 | 产物级两次构建（[10R-收尾](10r-closeout.md) §2.5） | 10R 指定的 D1/D2 静态数值剖面仍待实测 | 10R-收尾 |
 | O-1（19D 是否受影响） | 已判「数据不足」 | 19D |
-| 首批两个模块的**受控/CI 运行记录** | 拿到之后才谈 `draft → verified` | 本批/星崽推送 |
+| 首批两个模块的**受控/CI 运行记录** | 维护回归 `38550284761`：Windows `115806283501` / Linux `115806283515` 均通过 | **已完成**，第三批收口 |
 
 ### 1.3 本批边界
 
@@ -67,7 +67,7 @@
 ### 2.1 **P-6：「`draft → verified` 的条件」要写下来**
 
 **事实**：`docs/UseDocs/README.md:14` 的口径是「每个**完成**模块必须同时有代码、测试和 `verified` UseDocs 页面」，
-而首批两页与 registry 两条目现在都是 `status: draft` —— **状态一致、也诚实**（实施方自己写着原生运行记录待补），
+而首批两页与 registry 两条目在第三批之前都是 `status: draft` —— **状态一致、也诚实**（实施方自己写着原生运行记录待补），
 但**判定条件没写下来**，下一批可能无依据翻状态。
 
 **冻结**：
@@ -169,6 +169,8 @@ VM 运行命令为 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driv
 
 循环字符串累积是该实现的内部能力，不单独暴露接口；集合只完成能力探测，待通用容器参数类型和公共 API
 边界另批冻结。字面量常量折叠、子串查找、切分、大小写转换登记为语言/容器缺口，不在本批实现；参数比较已经由本次探测证明可用。
+四条被挡候选的后续登记统一收口到 [20C-第三批](20c-third-batch-reprobe-and-status.md) §三与 §五.2，
+本节不再为它们建立第二处缺口清单。
 
 ## 四、第二批接口清单（**探测之后已冻结**）
 
@@ -221,8 +223,8 @@ docs/DevDocs/20c-official-xiao-library.md            §3.2.1 回写第二批清�
    ignored 用例，Windows 实跑使用 `x86_64-pc-windows-msvc`、clang/llvm-as 22.1.2、release Runtime staticlib 和诊断组件。
 3. **第二批实现**：`stdlib/text.xiao` 新增 `length(str text) -> int`，复用 `for c in text` 与整数累积；
    独立长度夹具的 VM 与 Windows LLVM 原生输出均为 `2`；首批模块回归的整体输出仍为 `ok`。未冻结其他候选公共接口。
-4. **状态**：`docs/UseDocs/library/text.md`、`path.md` 与 registry 两项仍为 `draft`；没有把本机记录当作 CI 运行号，
-   真实 push、Linux/macOS 受控复跑和 10R 遗留证据继续按表 B 登记。
+4. **状态**：`docs/UseDocs/library/text.md`、`path.md` 与首批 registry 条目已在第三批以受控/CI
+   运行记录为依据改为 `verified`；骨架 registry 条目仍为 `draft`，10R 其它遗留证据继续按各自文档登记。
 
 ## 八、验收
 
@@ -234,7 +236,7 @@ docs/DevDocs/20c-official-xiao-library.md            §3.2.1 回写第二批清�
    **没有**新增 intrinsic；
 4. **四件套**：双路径差分（原生实跑）／移除验证（三处环节都覆盖）／容器边界（本批若涉及则真断言）／同步齐全；
 5. **兼容身份**：`STDLIB_INTERFACE_VERSION` 未无谓提升；ABI 主/次仍取自常量；
-6. **状态**：首批两模块仍为 `draft`（除非表 B 的运行记录已到手）；**没有**在缺记录时翻 `verified`；
+6. **状态**：首批两模块已在第三批同笔翻为 `verified`，骨架条目仍为 `draft`；没有在缺少受控记录时翻转状态；
 7. **表 B 诚实**：欠项与事实一致；
 8. **通用**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit` 全绿；
    提交标题带类型前缀、正文非空。
@@ -244,7 +246,7 @@ docs/DevDocs/20c-official-xiao-library.md            §3.2.1 回写第二批清�
 1. **候选范围**：按裁定完成 §3.1 的七项全部探测，不再追加候选。
 2. **语言边界**：按裁定只登记缺口，不在本批推动语言能力补齐；子串查找、字面量常量折叠、切分和大小写转换等待后续语言/容器批次；字符串参数比较已可用。
 3. **集合**：当前只保留双路径能力探测结论；通用容器参数类型和公共 API 形状冻结后再单独立项。
-4. **首批状态**：按裁定等待 CI 运行号，继续保持 `draft`；受控本机记录不能单独触发 `verified`。
+4. **首批状态**：第三批已取得维护回归运行号并同笔改为 `verified`；骨架条目仍为 `draft`，受控本机记录不能单独触发状态转换。
 
 ## 相关页面
 

@@ -8,8 +8,9 @@
 > **一句话概括**：**在冻结的六条与探测边界内写 `text`/`path` 的首批操作**——**先把接口清单冻结，再实现**；
 > 并把 P-5 与两处口径订正一起并进来。
 >
-> 状态：**实现与本机双路径已验证（2026-10-13）**。固定 `stdlib` 加载器、`text`/`path` 源码、真实导入、VM/LLVM 构建和同步元数据已落地；
-> Windows 本机原生差分已实跑。push 门控运行号、Linux/macOS 受控复跑和 10R 遗留证据仍未回填，不据此宣称发布验收全部关闭。
+> 状态：**实现与受控双路径已验证（2026-10-14）**。固定 `stdlib` 加载器、`text`/`path` 源码、真实导入、VM/LLVM 构建和同步元数据已落地；
+> 维护回归 `38550284761` 的 Windows 作业 `115806283501` 与 Linux 作业 `115806283515` 均记录
+> `first_modules_match_native_results ... ok`。本批只关闭首批模块状态门槛，10R 其它遗留证据仍按各自文档登记。
 
 ## 一、Agent 交接上下文
 
@@ -211,14 +212,15 @@ core/rust/crates/xiao-driver/src/compatibility.rs   §四 4.3：仅在破坏性�
 
 ### 4.6 **`draft → verified` 状态门槛（P-6）**
 
-首批模块的 UseDocs 页面与 `docs/module-registry.json` 当前都保持 `draft`。只有同时满足以下三项，
+首批模块的 UseDocs 页面与 `docs/module-registry.json` 已在本批同笔改为 `verified`。只有同时满足以下三项，
 并在同一笔变更中把两处状态一起改为 `verified`，才允许宣称模块完成：
 
 1. 代码、测试和 UseDocs 页面齐全；
 2. VM/LLVM 双路径证据来自受控环境或 CI 的可复核运行记录；本机单独运行不构成状态转换依据；
 3. 页面自身的链接、示例和元数据检查通过。
 
-缺少受控/CI 运行记录时不得翻转状态；本批当前仍按该规则保留 `draft`。
+本批已取得受控/CI 运行记录后翻转状态；骨架条目 `stdlib.xiao-standard-library` 仍为 `draft`，
+并在 `stdlib/README.md` 明确它不适用 `verified`。
 
 ## 六、验收
 
@@ -233,7 +235,7 @@ core/rust/crates/xiao-driver/src/compatibility.rs   §四 4.3：仅在破坏性�
    **ABI 主/次仍来自常量**；
 6. **不许扩语言**：语言缺口只登记、未实现；**没有**新增 intrinsic、**没有**把逻辑下沉 Rust；
 7. **执行点**：新增关键用例都能说清「push 时谁跑它」；
-8. **欠项如实**：表 B 四项与事实一致，**没有**被写成已完成；
+8. **欠项如实**：表 B 的 10R 遗留项仍按事实登记；首批模块状态转换的 CI 证据已写入 UseDocs，**没有**把其它遗留项写成已完成；
 9. **通用**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit` 全绿；
    提交标题带类型前缀、正文非空。
 
@@ -251,14 +253,14 @@ core/rust/crates/xiao-driver/src/compatibility.rs   §四 4.3：仅在破坏性�
 
 | 模块 | VM | LLVM 原生 | 移除验证 | 元数据与边界 |
 | --- | --- | --- | --- | --- |
-| `text` | `contains_char` 与第二批 `length(str text) -> int` 均经固定命名空间加载，VM 输出 `ok` 并记录 `stdlib.text` 加载 | Windows x86_64-pc-windows-msvc 本机以 clang/llvm-as 22.1.2 与 Runtime staticlib 实跑通过 | 删除实现后加载失败；不经 VM 绑定直接运行失败；导入签名的错误类型前端拒绝；原生函数体移除用例见 `removing_llvm_standard_library_function_binding_rejects_native_build` | `text.xiao`、README、UseDocs、入口回归和登记项已同步；源码无容器/序列化/`dynamic` 兜底 |
-| `path` | `from stdlib.path import join` 经固定命名空间加载，VM 输出 `lib/core` 并记录 `stdlib.path` 加载 | 同一 Windows 原生差分实跑通过 | 删除实现后加载失败；不经 VM 绑定直接运行失败；导入签名的错误类型前端拒绝；原生函数体移除用例覆盖同一绑定边界 | `path.xiao`、README、UseDocs、入口回归和登记项已同步；源码无容器/序列化/`dynamic` 兜底 |
+| `text` | `contains_char` 与第二批 `length(str text) -> int` 均经固定命名空间加载，VM 输出 `ok` 并记录 `stdlib.text` 加载 | 维护回归 `38550284761`：Windows `115806283501` 与 Linux `115806283515` 均 `first_modules_match_native_results ... ok` | 删除实现后加载失败；不经 VM 绑定直接运行失败；导入签名的错误类型前端拒绝；原生函数体移除用例见 `removing_llvm_standard_library_function_binding_rejects_native_build` | `text.xiao`、README、UseDocs、入口回归和登记项已同步；源码无容器/序列化/`dynamic` 兜底 |
+| `path` | `from stdlib.path import join` 经固定命名空间加载，VM 输出 `lib/core` 并记录 `stdlib.path` 加载 | 同一维护回归 `38550284761` 的 Windows `115806283501` 与 Linux `115806283515` 均通过 | 删除实现后加载失败；不经 VM 绑定直接运行失败；导入签名的错误类型前端拒绝；原生函数体移除用例覆盖同一绑定边界 | `path.xiao`、README、UseDocs、入口回归和登记项已同步；源码无容器/序列化/`dynamic` 兜底 |
 
 VM 测试命令为 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20c_first_modules`；
 Windows 本机原生命令为 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20c_first_modules first_modules_match_native_results -- --ignored --exact`，使用 MSVC 链接器、clang/llvm-as 22.1.2 和 Runtime staticlib。
 VM 的按需加载回归单独确认固定命名空间、加载事件与移除失败；LLVM 将纯 Xiao 函数静态并入构建输入，差分回归让 VM/LLVM 消费相同的静态链接 IR。
 两边断言 `IrOwnership.release_plans` 顺序一致、Runtime 最终对象销毁数一致。ABI 追踪中的内部 retain/release 调用序列会受 LLVM 临时槽布局影响，不作为源语言释放计划顺序判据。
-该定向原生实跑尚不是真实 push 运行号；CI 门控与 Linux/macOS 仍待外部运行。标准库接口版本仍为 1，Runtime ABI 主/次仍从常量读取，没有改 `.xar` 字段，也没有加入普通依赖图。
+标准库接口版本仍为 1，Runtime ABI 主/次仍从常量读取，没有改 `.xar` 字段，也没有加入普通依赖图。
 
 ## 相关页面
 
