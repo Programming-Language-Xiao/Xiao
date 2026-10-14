@@ -487,9 +487,12 @@ LLVM Runtime release 调用数；两条后端都证明去掉右侧会减少释�
 ```text
 block[0]  EnterScope, LoadConst, Move, Release, LoadConst, BranchIf      ← 左侧；分支前归还左侧
 block[1]  LoadConst, LoadConst, Arith, Compare, Copy, Release×3, Jump    ← 右侧块：3 条释放全在这里
-block[2]  LoadConst(false), Copy, Jump                                   ← 短路块：releases = 0 ✓
-block[3]  Copy, ReleasePlan, ExitScope, Return                           ← 合流块：releases = 0 ✓
+block[2]  LoadConst(ConstId(1)), Copy, Jump                              ← 短路块：releases = 0 ✓
+block[3]  Copy, RunReleasePlan, ExitScope, Return                        ← 合流块：releases = 0 ✓
 ```
+
+> 这是原始 dump 的**重排摘录**（原输出带 `VReg`/`BlockId` 等寄存器号与操作数）；
+> **指令名与「每块 releases 数」逐字来自 dump**，箭头的解释是审核加的。
 
 ⇒ **裁定 C 在实现上成立**：右侧的释放**全在右侧块内**，**短路块一条都没有**。
 （审核原本怀疑「释放被提到分支前」，**实测不成立**。）
