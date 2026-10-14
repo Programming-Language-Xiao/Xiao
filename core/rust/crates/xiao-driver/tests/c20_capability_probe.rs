@@ -450,10 +450,7 @@ fn logical_short_circuit_keeps_shared_release_plans() {
         .iter()
         .filter(|instruction| matches!(&instruction.op, TacOp::Release { .. }))
         .count();
-    assert_eq!(
-        short_release_count, 0,
-        "短路块不能释放未求值右侧的临时值"
-    );
+    assert_eq!(short_release_count, 0, "短路块不能释放未求值右侧的临时值");
 
     let right_start = with_native
         .text
