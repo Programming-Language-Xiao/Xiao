@@ -140,6 +140,9 @@
 
 ### 3.3 **探测实测结果：七项候选、八行结论（2026-10-13，Windows 受控工具链）**
 
+本节是第二批探测时的历史结果；其中大小写转换的 `X02-TYPE-006` 转换缺口已由
+[20C-第四批](20c-fourth-batch-int-to-str.md) 接通，大小写转换整体仍需后续复探。
+
 使用同一批夹具分别执行 VM 与 LLVM 原生路径；原生路径使用
 `x86_64-pc-windows-msvc`、clang/llvm-as 22.1.2、release Runtime staticlib 和诊断组件。
 VM 运行命令为 `cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test c20_capability_probe -- --nocapture`；
