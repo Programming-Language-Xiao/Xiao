@@ -316,7 +316,7 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 （本文上一版把落点写成 YAML 的 `cargo test` 步骤——**审核侧自己的笔误**，已改正。）
 
 **为什么这一条在这里同样成立**：`cargo test` 默认**遇第一个失败的测试二进制即停**。
-`run.sh:12` 的 `cargo test -p xiao-driver` 会拉起**多个测试二进制**
+修复前 `run.sh:12` 的 `cargo test -p xiao-driver` 会拉起**多个测试二进制**
 （`c20_capability_probe`、`20c_first_modules`、`d19a_differential`、…），
 不关掉 fail-fast，**排在失败者后面的那些二进制根本不会跑**。
 
@@ -327,9 +327,9 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 
 **冻结**：
 
-1. 两个 `cargo test` 都加 `--no-fail-fast`（**已落地**，`run.sh:12` 与 `:17`）；
+1. 两个 `cargo test` 都加 `--no-fail-fast`（**已落地**，修复前脚本的 `run.sh:12` 与 `:17`）；
 2. **跨步骤的遮蔽还没治——这是本条现在最要紧的一半**：
-   脚本第 3 行是 `set -Eeuo pipefail`，所以**第 12 行一红，第 13–21 行全部不跑**。
+   修复前脚本第 3 行是 `set -Eeuo pipefail`，所以**第 12 行一红，第 13–21 行全部不跑**。
    被遮住的恰恰是**纯静态门禁**：`bun run check`（文档与清单）、`cargo fmt --check`、`check:coverage`。
    ⇒ **二选一**，并在实施记录里写明选了哪个：
    - **把纯静态步骤前置**（`fmt`、`bun run check` 移到 `cargo test` 之前），
@@ -348,7 +348,7 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 
 **实施结果（2026-10-14）**：
 
-- **第 1 条已落地**：`run.sh:12` 与 `:17` 都带了 `--no-fail-fast`；
+- **第 1 条已落地**：修复前脚本的 `run.sh:12` 与 `:17` 都带了 `--no-fail-fast`；
 - **门禁在带上该参数后仍正常**：`5d32140` 的 workspace 门禁
   [38522338905](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38522338905) **success**，
   日志 25 行 `test result:`、0 失败；
