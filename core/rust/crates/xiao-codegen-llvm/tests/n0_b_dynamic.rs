@@ -467,6 +467,30 @@ fn lowers_print_intrinsic_to_runtime_abi() {
 }
 
 #[test]
+/// 标量构造式 `str(value)` 必须沿用 Runtime 转换 ABI，不能只支持 `as` 表达式。
+fn lowers_str_intrinsic_to_runtime_cast() {
+    let cast = IrExpression {
+        kind: IrExpressionKind::IntrinsicCall {
+            id: 7,
+            arguments: vec![xiao_ir::IrCallArgument {
+                kind: "positional".to_owned(),
+                name: None,
+                value: literal("integer", "42", "int"),
+                span: span(),
+            }],
+        },
+        ty: IrType::Scalar {
+            name: "str".to_owned(),
+        },
+        span: span(),
+    };
+    let module = lower_program(&expression_program(cast), &CodegenOptions::default())
+        .expect("str intrinsic 应降到 Runtime 转换 ABI");
+    assert!(module.text.contains("@xiao_runtime_value_cast"));
+    validate_with_llvm_as(&module.text);
+}
+
+#[test]
 /// `input` intrinsic 使用返回值 ABI 和挂起错误槽，不退化为未实现的名称调用。
 fn lowers_input_intrinsic_to_runtime_abi() {
     let input = IrExpression {

@@ -205,8 +205,8 @@ impl RuntimeValue {
 
     /// 执行显式标量转换。
     ///
-    /// 只实现 02 阶段转换矩阵接受的组合；`lint` / `lfloat` 的算术与转换仍是
-    /// 登记在案的债项，这里明确报错而不是给出近似结果。
+    /// 只实现 02 阶段转换矩阵接受的组合；`lint` / `lfloat` 的算术仍是登记在案的
+    /// 债项，这里明确报错而不是给出近似结果。整数到 `str` 复用稳定文本表示。
     pub fn convert_to(&self, target: ScalarType) -> RuntimeResult<Self> {
         let source = self.scalar_type().ok_or_else(|| {
             RuntimeError::invalid_value(format!("{} 不是标量，不能转换", self.type_name()))
@@ -222,6 +222,9 @@ impl RuntimeValue {
                 } else {
                     "false"
                 })
+            }
+            (ScalarType::Int | ScalarType::Sint | ScalarType::Lint, ScalarType::Str) => {
+                Self::new_string(self.display_text()?)
             }
             (ScalarType::Sint, ScalarType::Int) => Ok(Self::Int(i64::from(self.sint_value()?))),
             (ScalarType::Int, ScalarType::Sint) => i32::try_from(self.int_value()?)
@@ -599,6 +602,18 @@ mod tests {
         assert_eq!(
             RuntimeValue::Bool(true).convert_to(ScalarType::Str),
             Ok(text("true"))
+        );
+        assert_eq!(
+            RuntimeValue::Int(-42).convert_to(ScalarType::Str),
+            Ok(text("-42"))
+        );
+        assert_eq!(
+            RuntimeValue::Sint(-42).convert_to(ScalarType::Str),
+            Ok(text("-42"))
+        );
+        assert_eq!(
+            RuntimeValue::Lint("12345678901234567890".to_owned()).convert_to(ScalarType::Str),
+            Ok(text("12345678901234567890"))
         );
         assert_eq!(
             text("False").convert_to(ScalarType::Bool),

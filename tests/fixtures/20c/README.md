@@ -2,7 +2,7 @@
 
 工程期：20C。
 
-本目录保存 20C §3.1 的首批夹具与第二批七项候选探测夹具，不是官方标准库，也不进入普通包依赖求解。
+本目录保存 20C §3.1 的首批夹具、第二批七项候选探测夹具和第四批转换夹具，不是官方标准库，也不进入普通包依赖求解。
 
 | 文件 | 探测范围 | 预期观察 |
 | --- | --- | --- |
@@ -10,7 +10,8 @@
 | `arithmetic-error.xiao` | 函数算术、运行期整数溢出与错误路径 | VM 保留 `X06-RUNTIME-009`；原生结果按实际后端/链接/进程状态记录 |
 | `strings-path-representative.xiao` | 路径字符串的 `for c in s` 逐字符扫描与条件判断 | VM 与 LLVM 原生输出 `/` |
 | `strings-index-boundary.xiao` | 非字面量字符串下标边界 | VM/LLVM 在类型层拒绝 `X03-TYPE-003`（迭代器式语言的既定边界） |
-| `arithmetic-representative.xiao` | 除法、取模、数字转文本和字符串拼接 | VM/LLVM 在类型层拒绝 `X02-TYPE-006`（当前不支持 `int` 到 `str` 转换） |
+| `arithmetic-representative.xiao` | 除法、取模、数字转文本和字符串拼接 | VM/LLVM 输出 `42`；本批 `int` → `str` 双路径依据 |
+| `second-int-to-str.xiao` | `int`/`sint`/`lint` 各自的 `as str`、`str(value)` 与异构数组动态值转换 | VM/LLVM 输出 `42:42:42:42:42:42:42`；本批整数族转换的双路径依据 |
 | `second-string-comparison.xiao` | 字面量常量折叠的相等与字典序比较 | VM/LLVM 均在类型层拒绝 `X02-TYPE-005` |
 | `second-string-comparison-parameters.xiao` | 字符串参数的相等与字典序比较 | VM/LLVM 输出 `ok`；运行时序关系可用 |
 | `second-count-length.xiao` | `for` 逐字符计数 | 第二批 `text.length` 的双路径依据，VM/LLVM 输出 `2` |

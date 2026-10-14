@@ -28,7 +28,7 @@
 | # | 项 | 依据 | 处置 |
 | --- | --- | --- | --- |
 | **A-1** | 首批两模块 `draft → verified` | **审核实测**：维护回归 `38550284761` 的 Windows 作业 `115806283501` 与 Linux 作业 `115806283515` 都出现 `test first_modules_match_native_results ... ok`；VM 侧在 `Rust workspace default tests (Linux)` | **本批收口**（§四） |
-| **A-2** | 20C 语言边界批的**受控运行号** | 同上 + `c20_capability_probe` 原生半边两平台各 `2 passed`、各 **14 行 `20C-PROBE`** | 回填语言边界批状态头（**已完成**） |
+| **A-2** | 20C 语言边界批的**受控运行号** | 同上 + `c20_capability_probe` 原生半边两平台各 `2 passed`、各 **14 行 `20C-PROBE`** | 回填语言边界批**表 B/§1.3**（**已完成**） |
 
 ### 2.2 **文档与代码不符（本批改回事实）**
 

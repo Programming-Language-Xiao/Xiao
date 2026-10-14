@@ -105,6 +105,8 @@ small = value as sint
 bool flag = raw_text as bool
 bool other_flag = bool(raw_text)
 str rendered = flag as str
+str decimal = value as str
+str compact = str(value)
 ```
 
 第一行表示“读取 `value`，转换成 `sint`，再把结果赋给 `small`”。`sint as value` 的方向是错误的；把转换结果写回原变量时，仍必须遵守该变量已经锁定的类型。
@@ -112,6 +114,11 @@ str rendered = flag as str
 窄化、截断或高精度到低精度的转换必须经过显式 `as`，并在运行时检查是否溢出。
 
 `bool(value)` 是 `value as bool` 的构造式等价写法，两者共享转换矩阵、成功条件和错误类型。两种写法都产生新的 `bool` 值，不会原地修改 `value` 的类型槽。当前已经冻结的 `str -> bool` 输入只有 `"true"`、`"True"`、`"false"` 和 `"False"`；转换结果是对应布尔值，其他字符串报错。不能仅凭 `bool(value)` 的外形推导 Python 的“非空即真”等规则，其他源类型能否转为 `bool` 仍待单独确定。`bool -> str` 始终产生小写 `"true"` 或 `"false"`。
+
+当前显式标量转换矩阵还接受整数族到文本：`int`、`sint`、`lint` 的 `as str` 与
+`str(value)` 使用同一语义，结果是十进制文本，并复用 Runtime 的 `display_text()` 表示；
+这三个转换不会触发运行时范围检查。动态值的目标为 `str` 时仍走 Runtime 检查路径，实际值若为
+整数也必须得到同样的十进制文本。浮点到 `str`、整数字面量到文本的常量折叠尚未开放。
 
 因此，读取字符串后转换布尔值应使用新的静态变量接收结果：
 

@@ -32,7 +32,7 @@ const PROBES: [(&str, &str, Option<&str>); 2] = [
     ("arithmetic-error", "arithmetic-error.xiao", None),
 ];
 
-const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 12] = [
+const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 13] = [
     (
         "strings-path-representative",
         "strings-path-representative.xiao",
@@ -46,7 +46,12 @@ const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 12] = [
     (
         "arithmetic-representative",
         "arithmetic-representative.xiao",
-        ProbeExpectation::Frontend("X02-TYPE-006"),
+        ProbeExpectation::Success("42\n"),
+    ),
+    (
+        "second-int-to-str",
+        "second-int-to-str.xiao",
+        ProbeExpectation::Success("42:42:42:42:42:42:42\n"),
     ),
     (
         "second-string-comparison",

@@ -432,6 +432,21 @@ impl<'a> DynamicGenerator<'a> {
                 message: format!("未知或已废弃的 intrinsic ID {id}"),
             })?;
         match declaration.vm_binding {
+            xiao_intrinsics::VmBinding::ScalarCast => {
+                if arguments.len() != 1
+                    || arguments[0].kind != "positional"
+                    || arguments[0].name.is_some()
+                {
+                    return Err(CodegenError::Unsupported {
+                        feature: format!("{} 的转换参数形态", declaration.public_name),
+                        span: Some(span),
+                    });
+                }
+                let value = self.emit_expression(&arguments[0].value)?;
+                let result = self.emit_cast_runtime(declaration.public_name, &value, span);
+                self.release_value(value);
+                Ok(result)
+            }
             xiao_intrinsics::VmBinding::Print => {
                 let mut values = Vec::with_capacity(arguments.len());
                 let mut deferred = Vec::with_capacity(arguments.len());
