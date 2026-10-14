@@ -13,8 +13,10 @@
 > 三条处置已裁定——**N-2 修降低**、**N-3 按故障类别分派**、**`--no-fail-fast` 加进 workspace 门禁**（§10.1）。
 > `N-1` / `N-2` 属本批（20C 语言边界），`N-3` 属 10R。
 > **第二轮审核并入四笔返工**（§十一，**没有一条是红**）：F-A 释放对账是同义反复、
-> F-B/F-C/F-D 是注释与清单的留痕卫生。修复前的红色运行仍原样保留在 §一；
-> **回填的数字全部来自 CI 日志，不用本机结果代替**。
+> F-B/F-C/F-D 是注释与清单的留痕卫生；`c595c82` 已把这四笔改掉。
+> **第三轮审核并入四笔**（§十二，同样**没有一条是红**）：`--no-fail-fast` 只治了一半的遮蔽、
+> §5.2.1 的落点与判据要改（审核侧的账）、F-A 的新断言只比总数不比位置。
+> 修复前的红色运行仍原样保留在 §一；**回填的数字全部来自 CI 日志，不用本机结果代替**。
 
 ## 一、CI 判决（真运行号与作业号）
 
@@ -287,21 +289,37 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 ### 5.2.1 **workspace 门禁也要加 `--no-fail-fast`**（星崽直接裁定，2026-10-14）
 
 **裁定**：`--no-fail-fast` **同时加进 workspace 门禁**，不只两处原生作业。
-**来源**：星崽直接裁定。**落点**：`.github/workflows/workspace-gates.yml` 的 `cargo test` 步骤。
+**来源**：星崽直接裁定。
 
-**为什么这一条在 workspace 门禁上同样成立**：同一个坑的形状与平台无关——
-`cargo test` 默认**遇第一个失败的测试二进制即停**，于是「某个 crate 绿」可能只是
-「排在失败的 crate 后面、根本没跑」。workspace 门禁是 **push 门**，比原生作业更常触发，
-它一旦被这个形状静音，静音面比原生作业更大。
+**落点（更正）**：门禁的实际执行体是 **`tools/gates/run.sh`**，
+`.github/workflows/workspace-gates.yml` 只是调用它。**参数要落在脚本里，不是 YAML 里。**
+（本文上一版把落点写成 YAML 的 `cargo test` 步骤——**审核侧自己的笔误**，已改正。）
 
-`.github/workflows/workspace-gates.yml` 通过 `tools/gates/run.sh` 执行 Rust 门禁，因此实际参数落在该脚本。
+**为什么这一条在这里同样成立**：`cargo test` 默认**遇第一个失败的测试二进制即停**。
+`run.sh:12` 的 `cargo test -p xiao-driver` 会拉起**多个测试二进制**
+（`c20_capability_probe`、`20c_first_modules`、`d19a_differential`、…），
+不关掉 fail-fast，**排在失败者后面的那些二进制根本不会跑**。
+
+**覆盖面（必须写清，否则读者会读错）**：这个门禁**不是**整个 workspace——
+它跑的是 **`-p xiao-driver` + `tests/benchmarks`** 两个 `cargo test`，
+`xiao-types` / `xiao-codegen-llvm` / `xiao-vm` 等包的测试**不在其中**（那些走维护回归的 `--workspace`）。
+**「workspace 门禁」是它的历史名字，不是它对覆盖面的承诺。**
 
 **冻结**：
 
-1. 加 `--no-fail-fast`，并**在实施记录里写明**它是为了「不让前一个 crate 的失败遮住后面的 crate」；
-2. **判据是一次真运行**：日志里必须能看到**原本排在失败点之后**的 crate 也跑了——
-   **不许**只写「加了参数」（这正是 §5.2 在原生作业上踩过的：加了参数 ≠ 证明跑到了）；
-3. 本条与 §5.2 同源，**两条一起看**：先有「跑到」，才有资格谈「绿」。
+1. 两个 `cargo test` 都加 `--no-fail-fast`（**已落地**，`run.sh:12` 与 `:17`）；
+2. **跨步骤的遮蔽还没治——这是本条现在最要紧的一半**：
+   脚本第 3 行是 `set -Eeuo pipefail`，所以**第 12 行一红，第 13–21 行全部不跑**。
+   被遮住的恰恰是**纯静态门禁**：`bun run check`（文档与清单）、`cargo fmt --check`、`check:coverage`。
+   ⇒ **二选一**，并在实施记录里写明选了哪个：
+   - **把纯静态步骤前置**（`fmt`、`bun run check` 移到 `cargo test` 之前），
+     让它们不被 Rust 测试失败遮住；或
+   - 让脚本**收集全部失败再退出**（去掉 `-e` 的提前退出，逐条记结局）。
+   **判据**：故意让 `-p xiao-driver` 的一个测试二进制红，
+   **同一 `cargo test` 内它后面的二进制必须仍跑**，**且（若选前置）静态门禁也必须仍跑**；
+3. **判据不许写成「证明原本排在失败点之后的 crate 也跑了」**——那个形状在**这个脚本里不存在**
+   （它不遍历 crate）。这是本文上一版按原生作业的 `--workspace` 写下的措辞，**已按脚本的真实结构改正**；
+4. 本条与 §5.2 同源，**两条一起看**：先有「跑到」，才有资格谈「绿」。
 
 ## 六、审核侧自己的账：§3.2.1 第 6 条**判据是错的**
 
@@ -356,7 +374,8 @@ core/rust/crates/xiao-driver/tests/n0_b_dynamic_native.rs §5.1：同上
 core/rust/crates/xiao-runtime/src/crash.rs               N-3：Windows 侧用起 `record.code`（`:85-94`）按类别分派（§4.4）；Unix 侧**不改**
 core/rust/crates/xiao-driver/tests/c20_capability_probe.rs §5.4：双路径释放序列对账用例
 .github/workflows/maintenance-regression.yml             §5.2（已落地）：两处原生作业加 `--no-fail-fast`
-.github/workflows/workspace-gates.yml + tools/gates/run.sh §5.2.1（已裁定）：workspace 门禁实际执行的 cargo test 加 `--no-fail-fast`
+tools/gates/run.sh                                      §5.2.1：两个 cargo test 加 `--no-fail-fast`（已落地）；
+                                                         第 2 条：纯静态步骤前置或收集全部失败（**待做**）
 core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs  §11.2 F-B：注释改成事实
 core/rust/crates/xiao-driver/tests/c20_capability_probe.rs    §11.1 F-A：释放序列造可变量；§11.3 F-C：删 `allow(dead_code)` 并改注释
 core/rust/crates/xiao-syntax/src/ast.rs                  §11.4 F-D：`ALL` 上方注明它是手写清单、改枚举时必须核对
@@ -385,9 +404,12 @@ tests/fixtures/20c/README.md                             §七 第 1 条：`:21`
 8. **§5.5**：清单派生或加覆盖断言；
 9. **§六**：§3.2.1 第 6 条已改为「关掉全部拒绝点」；
 10. **§七**：两处声明已改回事实；`README:14` 已同步；
-11. **§5.2.1**：workspace 门禁已加 `--no-fail-fast`，且**有一次真运行证明**
-    原本排在失败点之后的 crate 也跑了（不许只写"加了参数"）；
-12. **§十一 四笔返工**：**F-A** 释放对账**造出可变量**（去掉右侧求值必须让它变红）；
+11. **§5.2.1**：两个 `cargo test` 已加 `--no-fail-fast`（已落地）；
+    **且跨步骤遮蔽已治**——故意让 `-p xiao-driver` 的一个测试二进制红时，
+    **同一 `cargo test` 内它后面的二进制必须仍跑**，**纯静态门禁（`fmt` / `bun run check`）也必须仍跑**；
+    落点写的是 `tools/gates/run.sh`（**不是** workflow YAML）；判据**不许**写成「crate 也跑了」（该形状不存在）；
+12. **§十一 四笔返工**：**F-A** 释放对账**造出可变量**；
+    **F-A 追加（§11.1.1）**：**短路块的 `Release` 数必须为 0**——把右侧释放挪到分支前必须让它变红；
     **F-B** 抽成共享 helper 或注释改成事实；**F-C** `#[allow(dead_code)]` 已删、
     注释已改、且删后若报 dead_code 是补用例而不是把 allow 加回来；
     **F-D** `ALL` 上方注明手写性质，§5.5 的措辞已从"已派生"改成事实；
@@ -413,10 +435,14 @@ tests/fixtures/20c/README.md                             §七 第 1 条：`:21`
 1. **`main` 转绿的方式**：**已按修前进落地**（`fb1f435`），绿色运行号见 §一；
 2. **`--no-fail-fast` 加进 workspace 门禁**：**已裁定**（星崽直接裁定，2026-10-14），
    落点与判据见 **§5.2.1**；
-3. **第二轮审核并入的四笔返工**（**没有一条是红**，但每条都让某个判据名不副实）
-   已完成，实施记录见 **§十一**：**F-A**（中，释放序列改为可变量对照）、
+3. **第二轮审核并入的四笔返工**（**没有一条是红**）**已由 `c595c82` 完成**，
+   实施记录见 **§十一**：**F-A**（中，释放序列改为可变量对照）、
    **F-B**（低，注释改为事实）、**F-C**（低，删除 `allow(dead_code)`）、
-   **F-D**（低，`ALL` 手写性质和维护代价已注明）。
+   **F-D**（低，`ALL` 手写性质和维护代价已注明）；
+4. **第三轮审核并入的四笔**（同样**没有一条是红**）见 **§十二**：
+   **第三轮-1** 跨步骤遮蔽未治（`set -Eeuo pipefail`，被遮的是纯静态门禁）；
+   **第三轮-2** §5.2.1 的落点与论证前提写歪（**审核侧自己的账**）；
+   **第三轮-3** 该节判据在脚本里不可达；**第三轮-4** F-A 的新断言只比总数不比位置。
 
 ## 十一、第二轮审核（审 `fb1f435`）并入的四笔返工
 
@@ -451,9 +477,44 @@ assert_eq!(vm_artifact.ir.ownership.release_plans, native_artifact.ir.ownership.
 **判据**：改完之后，**把右侧的求值去掉**（让短路不再发生），断言**必须变红**。
 **只断言「两次编译相等」不算对账**——那两条路径压根还没分叉。
 
-**实施结果（2026-10-14）**：已选择方案 2。测试现在用
+**实施结果（2026-10-14）**：已选择方案 2（并用方案 1 的对照臂）。测试现在用
 `false and ("a" + "b" == right_text)` 与去掉右侧的顶层对照，分别比较 TAC `Release` 指令数和
 LLVM Runtime release 调用数；两条后端都证明去掉右侧会减少释放序列，且短路运行仍通过。
+后半段的「`right` 从未被进入」保留。
+
+**实现是对的——审核实测（2026-10-14）**：审核 dump 了该程序的降低后 TAC 块结构（临时探针，用完即删）：
+
+```text
+block[0]  EnterScope, LoadConst, Move, Release, LoadConst, BranchIf      ← 左侧；分支前归还左侧
+block[1]  LoadConst, LoadConst, Arith, Compare, Copy, Release×3, Jump    ← 右侧块：3 条释放全在这里
+block[2]  LoadConst(false), Copy, Jump                                   ← 短路块：releases = 0 ✓
+block[3]  Copy, ReleasePlan, ExitScope, Return                           ← 合流块：releases = 0 ✓
+```
+
+⇒ **裁定 C 在实现上成立**：右侧的释放**全在右侧块内**，**短路块一条都没有**。
+（审核原本怀疑「释放被提到分支前」，**实测不成立**。）
+
+### 11.1.1 **F-4（低，第三轮审核）：新断言只比总数、不比位置**
+
+**事实**：新断言是 `count(with) > count(without)`（TAC 与 LLVM 各一条）。
+**把 `block[1]` 的 3 条 `Release` 挪到 `block[0]`（分支前）**，总数仍是 4，`4 > 1` **照样绿**——
+而**短路路径从此会释放从未创建的值**，正是裁定 C 要禁的那一类。
+
+> 口径：**「实现是对的」来自上面的 TAC dump（实跑）**；
+> **「断言对位置不敏感」是计数不变性的论证**（同一程序内指令重排不改变同类指令总数），**不是实跑**。
+> 两者分开标，免得把论证当成证据。
+
+**判定**：**实现不必改**；要补的是**判据的强度**。当前断言覆盖了
+「右侧完全没释放」（会红）与「右侧被提前求值」（由后半段那条红），
+**覆盖不到「释放被挪出右侧块」**。
+
+**冻结**：补一条**位置**断言——上面 dump 出的形状是可判定的：
+
+1. **TAC 侧**：**短路块的 `Release` 数必须为 0**（即 `logical.short` 对应的块内不得有 `Release`）；
+2. **LLVM 侧**：右侧的 `xiao_runtime_value_release_` 必须出现在 `logical.right` 标签**之后**。
+
+**判据**：加上这条后，把右侧的释放人为挪到分支前，断言**必须变红**。
+**只比总数不算覆盖位置**——那正是 F-4 记的这一条。
 
 ### 11.2 **F-B（低）**：N-1 的注释把新引入的转换写成了既有约定
 
@@ -518,6 +579,23 @@ enum ProbeExpectation { … }
 
 **实施结果（2026-10-14）**：`UnaryOperator::ALL` 与 `BinaryOperator::ALL` 上方已写明手写性质、
 完整性边界和维护纪律，守卫继续从两张清单读取。
+
+## 十二、第三轮审核（审 `c595c82`）并入的四笔
+
+出处：2026-10-14 审核 `c595c82`（第二轮四笔返工）。**四笔没有一笔是红**：
+`c595c82` 把 F-A/F-B/F-C/F-D 都真改了，四道门禁与 `cargo test --workspace`（1136 passed / 0 failed）全绿。
+以下四条是**判据与覆盖面**的修正，不撤销那四笔。
+
+| # | 项 | 落在哪 |
+| --- | --- | --- |
+| **第三轮-1** | `--no-fail-fast` **只治了一半的遮蔽**：`tools/gates/run.sh:3` 的 `set -Eeuo pipefail` 让**跨步骤**仍是失败即停，被遮住的恰是 `bun run check` / `fmt --check` / `check:coverage` 这些**纯静态门禁** | §5.2.1 第 2 条——**已改成冻结项** |
+| **第三轮-2** | §5.2.1 的**落点写错**（写成 workflow YAML，实际在 `tools/gates/run.sh`）、**论证前提与该脚本不符**（它只跑 `-p xiao-driver` + benchmarks，不是整个 workspace，也没有「crate 排队」这种形态） | §5.2.1 的落点段与覆盖面段——**已改正**（**审核侧自己的账**） |
+| **第三轮-3** | §5.2.1 的判据「证明原本排在失败点之后的 crate 也跑了」在**这个脚本里不可达** | §5.2.1 第 3 条——**已按脚本真实结构重写** |
+| **第三轮-4** | F-A 的新断言**只比总数、对位置不敏感**（实现是对的，见 §11.1 的 TAC dump） | **§11.1.1**——**已写成追加判据** |
+
+**审核侧的口径纪律（本轮再记一次）**：§11.1.1 把
+**「实现是对的」（实跑 TAC dump）** 与 **「断言不敏感」（计数不变性的论证）**
+**分开标注**——同一篇里既不能拿论证当证据，也不能因为论证顺手就省掉实跑。
 
 ## 相关页面
 
