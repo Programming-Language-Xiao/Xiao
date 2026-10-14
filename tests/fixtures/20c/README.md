@@ -18,7 +18,7 @@
 | `second-substring-lookahead.xiao` | 变量下标前瞻 | 复合表达式最先拒绝 `X01-PARSE-007`；根边界为单下标的 `X03-TYPE-003` |
 | `second-split-array.xiao` | 累积并构造数组结果 | VM/LLVM 在类型层拒绝 `X02-TYPE-005` |
 | `second-case-conversion.xiao` | ASCII 小写转换的数字/文本转换尝试 | VM/LLVM 在类型层拒绝 `X02-TYPE-006` |
-| `second-case-conversion-logic.xiao` | 字符分类所需的 `and` 逻辑组合 | VM 输出 `true`；LLVM 原生待受控运行号；右侧按需短路 |
+| `second-case-conversion-logic.xiao` | 字符分类所需的 `and` 逻辑组合 | VM 与 LLVM 原生均输出 `true`（维护回归 `38493485483` 两平台各 14 行 `20C-PROBE`）；右侧按需短路 |
 | `second-set-membership.xiao` | 集合构造与 `in`/`not in` | VM/LLVM 输出 `ok`，仅保留探测结论 |
 
 夹具由 `core/rust/crates/xiao-driver/tests/c20_capability_probe.rs` 读取。这里不添加

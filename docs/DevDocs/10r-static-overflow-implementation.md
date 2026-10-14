@@ -244,7 +244,9 @@ D1 已拆开普通错误报告与诊断事件，D2 再把 7 处失败块接入 R
 确认 `SIGILL` 的正确退出码是 `132`，此前 Windows 侧一律返回 `139` 的实现并未表达同一故障类别。
 按星崽直接裁定，Unix 映射保持不变，Windows 侧消费已有 `ExceptionRecord.code`：访问违例为 `139`、
 非法指令为 `132`、整数/浮点除零为 `136`、其他异常为 `134`。`n0_a` 的非法指令期望同步为 `132`，
-并新增访问违例用例覆盖第二类；这属于对外退出码基线变更，运行号待下一次受控原生门禁回填。
+并新增访问违例用例覆盖第二类；这属于对外退出码基线变更，运行号已回填：
+`fb1f435` 的维护回归 **38493485483**，两平台 `n0_a` 各 `7 passed; 0 failed`，
+`optional_external_illegal_instruction_remains_fatal` 与 `optional_external_access_violation_remains_fatal` 均 ok。
 
 ### 2.5 **ABI：先定「要不要新符号」，再定版本**
 

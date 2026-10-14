@@ -281,7 +281,9 @@ LLVM 动态侧以 `emit_condition` 和 ABI bool 槽保持同一控制流。`and`
 **20C 原生门禁修复回写（2026-10-14）**：N-1 的动态 bool ABI 已补 `i1` 到 Runtime `i8` 的统一扩展，
 N-2 的顶层常量整数幂已接入受检乘法降低；两项仍由原生守卫保留在接受面。N-3 属 10R，Windows
 异常处理器已改为读取 `ExceptionRecord.code`，按故障类别与 Unix 共用 `139/132/136/134` 四个退出码。
-修复后的绿色受控运行号尚未取得，不能以本机 Rust/LLVM 文本测试代替。
+修复后的绿色受控运行号已取得：`fb1f435` 的维护回归 **38493485483** 五个作业全绿
+（Windows `115623868914` / Linux `115623869640`），两平台 `c20_capability_probe` 原生半边各 `2 passed`、
+各 14 行 `20C-PROBE`；Linux 侧是加了 `--no-fail-fast` 之后**第一次真的跑到**该用例集。
 
 同时，VM 用户可见诊断已按错误性质区分：`X09-BYTECODE-001` 使用 `fatal.internal` 表示降低器与生产
 契约脱节，`X09-BYTECODE-002` 继续使用 `fatal.corrupt_artifact` 表示结构、引用或 ABI 产物损坏。
