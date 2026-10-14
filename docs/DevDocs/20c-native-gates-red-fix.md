@@ -10,9 +10,11 @@
 > 状态（2026-10-14）：**三条红已修复，`main` 已转绿**——`fb1f435` 推送后的维护回归
 > [38493485483](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38493485483) **五个作业全绿**
 > （含两个原生作业与首次带 `--no-fail-fast` 的 Linux 全量忽略套件）。
-> 两条处置已裁定——**N-2 修降低**、**N-3 按故障类别分派**（§10.1）。
+> 三条处置已裁定——**N-2 修降低**、**N-3 按故障类别分派**、**`--no-fail-fast` 加进 workspace 门禁**（§10.1）。
 > `N-1` / `N-2` 属本批（20C 语言边界），`N-3` 属 10R。
-> 修复前的红色运行仍原样保留在 §一；**回填的数字全部来自 CI 日志，不用本机结果代替**。
+> **第二轮审核并入四笔返工**（§十一，**没有一条是红**）：F-A 释放对账是同义反复、
+> F-B/F-C/F-D 是注释与清单的留痕卫生。修复前的红色运行仍原样保留在 §一；
+> **回填的数字全部来自 CI 日志，不用本机结果代替**。
 
 ## 一、CI 判决（真运行号与作业号）
 
@@ -277,10 +279,27 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 | # | 缺口 | 冻结 |
 | --- | --- | --- |
 | **5.1** | 两处新增**正向**断言只看 LLVM **文本**（`n0_a.rs` 的 `contains("logical.merge")`、`n0_b_dynamic_native.rs` 的 `contains("dynamic.logical.right")`），**从不交给 clang** | 正向断言**至少过一次 `llvm-as` 或完整构建**——「文本对」与「能编译」之间的差，正是 N-1 藏身之处 |
-| **5.2** | 工作流**没有 `--no-fail-fast`** ⇒ `cargo test` 遇第一个失败的测试二进制即停。Linux 上 `n0_a` 先挂，**c20 的穷举守卫与夹具探测在 Linux 上一条都没跑** | 两处原生作业加 `--no-fail-fast`；**否则「某平台绿」可能只是「没跑到」** |
-| **5.3** | `ProbeExpectation::Backend` 曾无任何用例构造，靠 `#[allow(dead_code)]` 压住 ⇒ 后端拒绝那段处理（含 VM `X09-BYTECODE-001` 断言）**无执行点** | 已加入 `backend-negative-member-value` 故意负例，撑住 VM/原生后端拒绝分支 |
-| **5.4** | 裁定 C（**右侧未求值不产生释放计划**、双路径 `release_plans` 逐字一致）原先**无执行点**：`d19a_differential` 里没有任何逻辑算子 | `c20_capability_probe::logical_short_circuit_keeps_shared_release_plans` 已补双编译路径对账，并确认右侧函数不入栈 |
-| **5.5** | `BINARY_OPERATORS` 曾是**手写的 21 项数组**（`match` 有编译器强制，**数组没有**） | 已从 `BinaryOperator::ALL`/`UnaryOperator::ALL` 派生；新增变体必须补中心枚举清单与穷举匹配 |
+| **5.2** | 工作流**没有 `--no-fail-fast`** ⇒ `cargo test` 遇第一个失败的测试二进制即停。Linux 上 `n0_a` 先挂，**c20 的穷举守卫与夹具探测在 Linux 上一条都没跑** | 两处原生作业**已加**（`fb1f435`），**workspace 门禁也已按裁定补上**（§5.2.1）；**否则「某平台绿」可能只是「没跑到」** |
+| **5.3** | `ProbeExpectation::Backend` 曾无任何用例构造，靠 `#[allow(dead_code)]` 压住 ⇒ 后端拒绝那段处理（含 VM `X09-BYTECODE-001` 断言）**无执行点** | 已加入 `backend-negative-member-value` 故意负例，撑住 VM/原生后端拒绝分支；**但 `#[allow(dead_code)]` 与过期注释仍在** ⇒ 见 §11 **F-C** |
+| **5.4** | 裁定 C（**右侧未求值不产生释放计划**、双路径 `release_plans` 逐字一致）原先**无执行点**：`d19a_differential` 里没有任何逻辑算子 | 已补 `logical_short_circuit_keeps_shared_release_plans`——**但它的 `release_plans` 断言是同义反复，裁定 C 的核心仍无执行点** ⇒ 见 §11 **F-A** |
+| **5.5** | `BINARY_OPERATORS` 曾是**手写的 21 项数组**（`match` 有编译器强制，**数组没有**） | 已从 `BinaryOperator::ALL`/`UnaryOperator::ALL` 派生（**改进**：紧挨枚举，加变体时 `as_str` 的穷尽匹配就在旁边）；**清单本身仍手写** ⇒ 见 §11 **F-D** |
+
+### 5.2.1 **workspace 门禁也要加 `--no-fail-fast`**（星崽直接裁定，2026-10-14）
+
+**裁定**：`--no-fail-fast` **同时加进 workspace 门禁**，不只两处原生作业。
+**来源**：星崽直接裁定。**落点**：`.github/workflows/workspace-gates.yml` 的 `cargo test` 步骤。
+
+**为什么这一条在 workspace 门禁上同样成立**：同一个坑的形状与平台无关——
+`cargo test` 默认**遇第一个失败的测试二进制即停**，于是「某个 crate 绿」可能只是
+「排在失败的 crate 后面、根本没跑」。workspace 门禁是 **push 门**，比原生作业更常触发，
+它一旦被这个形状静音，静音面比原生作业更大。
+
+**冻结**：
+
+1. 加 `--no-fail-fast`，并**在实施记录里写明**它是为了「不让前一个 crate 的失败遮住后面的 crate」；
+2. **判据是一次真运行**：日志里必须能看到**原本排在失败点之后**的 crate 也跑了——
+   **不许**只写「加了参数」（这正是 §5.2 在原生作业上踩过的：加了参数 ≠ 证明跑到了）；
+3. 本条与 §5.2 同源，**两条一起看**：先有「跑到」，才有资格谈「绿」。
 
 ## 六、审核侧自己的账：§3.2.1 第 6 条**判据是错的**
 
@@ -334,7 +353,11 @@ core/rust/crates/xiao-codegen-llvm/tests/n0_a.rs         §5.1：正向断言过
 core/rust/crates/xiao-driver/tests/n0_b_dynamic_native.rs §5.1：同上
 core/rust/crates/xiao-runtime/src/crash.rs               N-3：Windows 侧用起 `record.code`（`:85-94`）按类别分派（§4.4）；Unix 侧**不改**
 core/rust/crates/xiao-driver/tests/d19a_differential.rs  §5.4：双路径释放对账用例
-.github/workflows/maintenance-regression.yml             §5.2：两处原生作业加 `--no-fail-fast`
+.github/workflows/maintenance-regression.yml             §5.2（已落地）：两处原生作业加 `--no-fail-fast`
+.github/workflows/workspace-gates.yml                    §5.2.1（已裁定）：workspace 门禁也加 `--no-fail-fast`
+core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs  §11.2 F-B：抽 `emit_bool_to_abi` 或把注释改成事实
+core/rust/crates/xiao-driver/tests/c20_capability_probe.rs    §11.1 F-A：释放对账造可变量；§11.3 F-C：删 `allow(dead_code)` 并改注释
+core/rust/crates/xiao-syntax/src/ast.rs                  §11.4 F-D：`ALL` 上方注明它是手写清单、改枚举时必须核对
 docs/DevDocs/20c-language-boundary-and-operators.md       §1.3 加「语句上下文」栏；§3.2.1 第 6 条判据；状态头改回事实
 docs/DevDocs/10r-static-overflow-implementation.md       N-3 的归属与契约结论回填
 docs/DevDocs/09b0-bytecode-closure.md                    §5.2 结论回填（本专项的三个真运行号）
@@ -360,7 +383,13 @@ tests/fixtures/20c/README.md                             §七 第 1 条：`:21`
 8. **§5.5**：清单派生或加覆盖断言；
 9. **§六**：§3.2.1 第 6 条已改为「关掉全部拒绝点」；
 10. **§七**：两处声明已改回事实；`README:14` 已同步；
-11. **通用**：`cargo test --workspace`、clippy、fmt、`bun run check`、`bunx tsc --noEmit` 全绿；
+11. **§5.2.1**：workspace 门禁已加 `--no-fail-fast`，且**有一次真运行证明**
+    原本排在失败点之后的 crate 也跑了（不许只写"加了参数"）；
+12. **§十一 四笔返工**：**F-A** 释放对账**造出可变量**（去掉右侧求值必须让它变红）；
+    **F-B** 抽成共享 helper 或注释改成事实；**F-C** `#[allow(dead_code)]` 已删、
+    注释已改、且删后若报 dead_code 是补用例而不是把 allow 加回来；
+    **F-D** `ALL` 上方注明手写性质，§5.5 的措辞已从"已派生"改成事实；
+13. **通用**：`cargo test --workspace`、clippy、fmt、`bun run check`、`bunx tsc --noEmit` 全绿；
     提交标题带类型前缀、正文非空。
 
 ## 十、裁定结果与仍然待定
@@ -371,28 +400,109 @@ tests/fixtures/20c/README.md                             §七 第 1 条：`:21`
 | --- | --- | --- | --- |
 | 1 | **N-3** 的硬件故障退出码契约形态 | **按故障类别分派**——Unix 侧原样保留，Windows 侧按异常码分派到相同四个码 | §4.4 |
 | 2 | **N-2** 的处置 | **修降低**——`**` 留在接受面，让顶层裸赋值形态也能构建 | §3.4 |
+| 3 | **`--no-fail-fast` 的适用范围** | **workspace 门禁也加**——不只两处原生作业 | §5.2.1 |
 
-**来源**：星崽 **直接裁定**（原话「N-3 按故障类别分派。N-2 修降低」）。
+**来源**：星崽 **直接裁定**（原话「N-3 按故障类别分派。N-2 修降低」与「`--no-fail-fast` 加进 workspace」）。
 两条都**不是**「与审核倾向一致」的推定——N-2 尤其要注意：审核的倾向原本是**移出接受面**，
 **裁定取的是相反的一条**，按 G-2 的口径这不影响其效力，但**不许在后续文档里把它写成「按审核建议处理」**。
 
 ### 10.2 后续输入
 
 1. **`main` 转绿的方式**：**已按修前进落地**（`fb1f435`），绿色运行号见 §一；
-2. **仍然待定**：**`--no-fail-fast` 是否同时加进 workspace 门禁**？
-   （本文 §5.2 只要求了两处原生作业；workspace 门禁跑的是默认测试，红在哪一条不影响其余）
-3. **本轮审核留下的四条**（**没有一条是红**，都是留痕与判据卫生）：
-   - **F-A（中）**：`logical_short_circuit_keeps_shared_release_plans` 的 `release_plans` 断言
-     **是同义反复**（同一份 source 经同一个编译器两次 compile ⇒ 构造性相等），
-     与「双路径」和「短路」都无关；**裁定 C 的核心仍无执行点**。真正有效的是它后半段
-     「`right` 从未被进入」。见 §5.4 的追加要求；
-   - **F-B（低）**：N-1 新注释称该 `zext` 是「every other bool producer」的既有形状，
-     而全 crate 只有这一处 `zext i1 … to i8`；建议抽共享 helper 或把注释改成事实；
-   - **F-C（低）**：`ProbeExpectation` 上的 `#[allow(dead_code)]` 与其注释（「在册算子没有后端拒绝项」）
-     已过期——`Backend` 现有真实用例（`c20_capability_probe.rs:202`）。留着把
-     「枚举有变体没人构造」这个信号静音，正是 §5.3 要防的；
-   - **F-D（低）**：`BinaryOperator::ALL` 仍是手写 21 项（搬到 `ast.rs` 紧挨枚举是**改进**，
-     加变体时 `as_str` 的穷尽匹配就在旁边会编译不过），但仍非强制；§5.5 未回填说明。
+2. **`--no-fail-fast` 加进 workspace 门禁**：**已裁定**（星崽直接裁定，2026-10-14），
+   落点与判据见 **§5.2.1**；
+3. **第二轮审核并入的四笔返工**（**没有一条是红**，但每条都让某个判据名不副实）
+   已写成规格，见 **§十一**：**F-A**（中，`release_plans` 对账是同义反复）、
+   **F-B**（低，注释把新转换说成既有惯例）、**F-C**（低，`allow(dead_code)` 与注释过期）、
+   **F-D**（低，`ALL` 清单仍手写）。
+
+## 十一、第二轮审核（审 `fb1f435`）并入的四笔返工
+
+出处：2026-10-14 审核 `fb1f435`（三条红的修复）。**四笔没有一笔是红**——
+它们不阻塞 `main`，但**都让某条判据名不副实**，所以按返工项走、不按"留痕"走。
+
+### 11.1 **F-A（中）**：`release_plans` 对账是**同义反复**，裁定 C 的核心仍无执行点
+
+**事实**（`c20_capability_probe.rs::logical_short_circuit_keeps_shared_release_plans`）：
+
+```rust
+let source = "…result = false and right()\n";
+let vm_artifact     = compiler.compile(&FrontendRequest::from_text(source)).expect(…);
+let native_artifact = compiler.compile(&FrontendRequest::from_text(source)).expect(…);
+assert_eq!(vm_artifact.ir.ownership.release_plans, native_artifact.ir.ownership.release_plans,
+           "两条路径必须消费同一份 release_plans");
+```
+
+**同一份 `source`、同一个编译器、两次 `compile`** ⇒ 相等是**构造性必然**：
+这条断言与「双路径」无关、与「短路」也无关，**它永远不会红**。
+⇒ §5.4 名义上有了执行点，**裁定 C 的核心（右侧未求值 ⇒ 不产生释放计划）仍然没被测到**。
+
+**该用例真正有效的部分是后半段**——断言 `VmEvent::FunctionEntered { function: "right" }`
+**从未出现**，那是真的短路验证，保留。
+
+**冻结**：二选一，并在实施记录里写明选了哪个——
+
+1. **造出可变量**：比**同语义下「带右侧」与「不带右侧」**两份程序的 `release_plans`
+   （例如 `result = false and right()` 对 `result = false`），差异必须能用一句话解释；
+2. **比降低后的释放序列**：在 TAC / LLVM 侧比，而不是比前端 IR。
+
+**判据**：改完之后，**把右侧的求值去掉**（让短路不再发生），断言**必须变红**。
+**只断言「两次编译相等」不算对账**——那两条路径压根还没分叉。
+
+### 11.2 **F-B（低）**：N-1 的注释把新引入的转换写成了既有约定
+
+**事实**：`dynamic/expression.rs` 新增的注释称该 `zext i1 → i8` 是
+「the same zero-extension shape as **every other bool producer**」，
+而**全 crate 里 `zext i1 … to i8` 只有这一处**——既有的布尔生产者要么直接发 `i8` 常量
+（`constructor_call("xiao_runtime_value_bool", "i8", "1")`），要么根本不跨这道 ABI 边界。
+
+**判定**：**转换本身是对的**（计算得到的 `i1` 跨到 `i8` 形参，只能 `zext`），
+问题在注释把「新加的一处」说成了「已有惯例」。
+
+**冻结**：
+
+1. 二选一：**抽成共享 helper**（例如 `emit_bool_to_abi`，让下一处"计算得到的 bool 跨 ABI"
+   直接复用，不再各处手写 `zext`）**或**把注释**改成事实**
+   （「这是唯一一处把计算得到的 `i1` 跨到 bool ABI 的地方」）；
+2. 若选 helper：**下一次同类转换出现时，必须复用它**——否则就是补丁叠补丁。
+
+### 11.3 **F-C（低）**：`#[allow(dead_code)]` 与它的注释已过期
+
+**事实**：`ProbeExpectation` 上仍挂着
+
+```rust
+// 当前裁定后的在册算子没有后端拒绝项，但三态仍需保留给后端负例探针。
+#[allow(dead_code)]
+enum ProbeExpectation { … }
+```
+
+而 **`Backend` 现在有真实用例**（`c20_capability_probe.rs:202` 的 `backend-negative-member-value`）。
+⇒ 这个 `allow` 已经**什么都没在压**，但它的**副作用还在**：
+把「枚举有变体没人构造」这个信号**永久静音**——而那正是 §5.3 要防的东西。
+
+**冻结**：
+
+1. **删掉 `#[allow(dead_code)]`**；若删掉后编译报 dead_code，说明确有变体没人构造，
+   **那就去补用例，不是把 allow 加回来**；
+2. **同步改掉注释**：它现在描述的是「在册算子没有后端拒绝项」，与事实相反；
+3. **加一条纪律**：`allow(dead_code)` **不许**用来"先让它编过"——
+   本仓库已经有 §5.3 这个先例，同一个手法第二次出现就该进纪律。
+
+### 11.4 **F-D（低）**：`ALL` 清单仍是手写，只是搬了家
+
+**事实**：`BINARY_OPERATORS` 从测试挪到了 `xiao-syntax/src/ast.rs` 的 `BinaryOperator::ALL`
+（`UnaryOperator::ALL` 同理），紧挨枚举。**这是改进**——作者加变体时，
+`as_str` 的**穷尽匹配就在旁边**，会先编译不过，位置对。
+
+**但 completeness 仍非强制**：`ALL` 是手写的 21 项；加变体时「`as_str` 报错 → 补上」
+未必等于「顺手也补了 `ALL`」。漏了的话，守卫**不报错、只是不跑那一条**。
+
+**判定**：**纯 Rust 里没有廉价的全自动写法**（不引宏/derive 就数不出变体数），
+所以**不要求做到强制**，但要求把代价写清。
+
+**冻结**：在 `ALL` 上方补一句注释，写明它是**手写**清单、`as_str` 与守卫的穷尽匹配
+**都不能保证它完整**，改枚举时**必须同时核对这里**。**并把 §5.5 从「已派生」改成事实措辞**
+（「已搬到枚举旁，仍为手写」）。
 
 ## 相关页面
 
