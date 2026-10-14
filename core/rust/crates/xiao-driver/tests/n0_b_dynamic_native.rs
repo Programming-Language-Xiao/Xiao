@@ -153,6 +153,15 @@ fn frontend_dynamic_logical_short_circuit_lowers_without_eager_binary() {
     assert!(module.text.contains("dynamic.logical.short"));
     assert!(!module.text.contains("c\"and\\00\""));
     assert!(!module.text.contains("c\"or\\00\""));
+    if let Some(llvm_as) = std::env::var_os("XIAO_LLVM_AS") {
+        NativeBuild::new()
+            .validate_llvm(
+                &module.text,
+                &TargetDescription::host(),
+                &Toolchain::new("unused").with_llvm_as(llvm_as),
+            )
+            .expect("llvm-as 应接受动态短路模块");
+    }
 }
 
 #[test]

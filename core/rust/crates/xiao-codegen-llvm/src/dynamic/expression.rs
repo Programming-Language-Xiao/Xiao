@@ -168,7 +168,13 @@ impl<'a> DynamicGenerator<'a> {
 
         self.emit_label(&right_label);
         let right = self.emit_condition(right)?;
-        let right_value = self.emit_value_call("xiao_runtime_value_bool", &format!("i8 {right}"));
+        // `emit_condition` returns LLVM `i1`, while the frozen Runtime bool ABI uses
+        // `i8`.  Use the same zero-extension shape as every other bool producer before
+        // calling the ABI constructor; passing `i1` as `i8` makes clang reject the module.
+        let right_payload = self.next_temp();
+        self.emit(format!("  {right_payload} = zext i1 {right} to i8"));
+        let right_value =
+            self.emit_value_call("xiao_runtime_value_bool", &format!("i8 {right_payload}"));
         self.emit(format!(
             "  store {VALUE_TYPE} {right_value}, ptr {result_slot}"
         ));

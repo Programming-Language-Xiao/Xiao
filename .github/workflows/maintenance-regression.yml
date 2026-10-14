@@ -180,7 +180,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           # Windows runner 没有交互式终端，窗口握手和调试执行仅在 Linux/Xvfb 作业运行。
           # DNS 依赖和平台异常子进程由父用例驱动，两个平台都排除子测试本身。
-          cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored --nocapture `
+          cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture `
             --skip dns_resolution_failure_is_unavailable `
             --skip platform_failure_child `
             --skip real_terminal_session_is_environment_gated `
@@ -212,6 +212,6 @@ jobs:
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
           # Xvfb/xterm 和诊断组件已就绪，Linux push 门真实执行终端握手与 O0–O3 调试矩阵。
           # 只排除外部 DNS 和由父用例驱动的平台异常子进程。
-          xvfb-run -a cargo test --manifest-path core/rust/Cargo.toml --workspace -- --ignored --nocapture \
+          xvfb-run -a cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture \
             --skip dns_resolution_failure_is_unavailable \
             --skip platform_failure_child

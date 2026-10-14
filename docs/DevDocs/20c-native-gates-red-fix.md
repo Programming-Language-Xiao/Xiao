@@ -7,10 +7,9 @@
 > **一句话概括**：本文是三处红的**修复规格**——每条给出**真 CI 证据、根因定位到文件:行、最小复现、修法要求与负例**；
 > 外加「让下一次能自动发现」的五条执行点。
 >
-> 状态（2026-10-14）：**待修；两条处置已裁定**——**N-2 修降低**、**N-3 按故障类别分派**（§10.1）。
+> 状态（2026-10-14）：**代码修复已落地，待受控原生门禁复跑**；两条处置已裁定——**N-2 修降低**、**N-3 按故障类别分派**（§10.1）。
 > `N-1` / `N-2` 属本批（20C 语言边界），`N-3` 属 10R。
-> **N-1 与 N-2 未修之前 `main` 一直是红的**，与 [20C-语言边界](20c-language-boundary-and-operators.md) §5.3
-> 「main 不许红」的既有纪律冲突。
+> 修复前 `main` 曾因 N-1/N-2 保持红；当前工作区已补实现，但下一次受控运行号取得前，不能把门禁写成已绿。
 
 ## 一、CI 判决（真运行号与作业号）
 
@@ -185,7 +184,7 @@ Err(unsupported("动态整数幂", Some(span)))
 
 ### 3.5 连带：守卫**一红即停**
 
-`Power` 是 `BINARY_OPERATORS` 的**第 1 项** ⇒ 守卫 panic 后**后面 20 个变体一个都没跑到**。
+`Power` 是 `BinaryOperator::ALL` 的**第 1 项** ⇒ 旧版守卫 panic 后**后面 20 个变体一个都没跑到**。
 「穷举」在实践中退化成「只测第一个红的」。
 
 **冻结**：守卫**收集全部失败再一次性报**（跑完全部再断言），否则一次只能暴露一个缺口。
@@ -254,9 +253,9 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 | --- | --- | --- |
 | **5.1** | 两处新增**正向**断言只看 LLVM **文本**（`n0_a.rs` 的 `contains("logical.merge")`、`n0_b_dynamic_native.rs` 的 `contains("dynamic.logical.right")`），**从不交给 clang** | 正向断言**至少过一次 `llvm-as` 或完整构建**——「文本对」与「能编译」之间的差，正是 N-1 藏身之处 |
 | **5.2** | 工作流**没有 `--no-fail-fast`** ⇒ `cargo test` 遇第一个失败的测试二进制即停。Linux 上 `n0_a` 先挂，**c20 的穷举守卫与夹具探测在 Linux 上一条都没跑** | 两处原生作业加 `--no-fail-fast`；**否则「某平台绿」可能只是「没跑到」** |
-| **5.3** | `ProbeExpectation::Backend` 已无任何用例构造，靠 `#[allow(dead_code)]` 压住 ⇒ 后端拒绝那段处理（含 VM `X09-BYTECODE-001` 断言）**无执行点** | 要么连变体一起删，要么留一条**故意的后端负例**撑住它（§4.2 自己写着「不许留成死代码」） |
-| **5.4** | 裁定 C（**右侧未求值不产生释放计划**、双路径 `release_plans` 逐字一致）**无执行点**：`d19a_differential` 里没有任何逻辑算子 | 补双路径释放对账用例，或明确登记「本批未覆盖」——**不许让文档里的承诺一直悬空** |
-| **5.5** | `BINARY_OPERATORS` 是**手写的 21 项数组**（`match` 有编译器强制，**数组没有**） | 清单从同一处派生，或加覆盖性断言——新增变体时「给了探针」与「真的会跑」是两件事 |
+| **5.3** | `ProbeExpectation::Backend` 曾无任何用例构造，靠 `#[allow(dead_code)]` 压住 ⇒ 后端拒绝那段处理（含 VM `X09-BYTECODE-001` 断言）**无执行点** | 已加入 `backend-negative-member-value` 故意负例，撑住 VM/原生后端拒绝分支 |
+| **5.4** | 裁定 C（**右侧未求值不产生释放计划**、双路径 `release_plans` 逐字一致）原先**无执行点**：`d19a_differential` 里没有任何逻辑算子 | `c20_capability_probe::logical_short_circuit_keeps_shared_release_plans` 已补双编译路径对账，并确认右侧函数不入栈 |
+| **5.5** | `BINARY_OPERATORS` 曾是**手写的 21 项数组**（`match` 有编译器强制，**数组没有**） | 已从 `BinaryOperator::ALL`/`UnaryOperator::ALL` 派生；新增变体必须补中心枚举清单与穷举匹配 |
 
 ## 六、审核侧自己的账：§3.2.1 第 6 条**判据是错的**
 
@@ -279,15 +278,22 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 
 ## 七、两处**与事实不符的声明**（同一提交内）
 
-1. `tests/fixtures/20c/README.md:21` 写「`second-case-conversion-logic.xiao` …
-   **VM 与 LLVM 原生输出 `true`**；右侧按需短路」——**实测原生构建失败**（N-1），
-   这条声明把「期望」写成了「结果」；
-2. [20C-语言边界](20c-language-boundary-and-operators.md) 状态头写
-   「**`tests/fixtures/20c/README.md:14` 已与夹具语义同步**」——**`:14` 根本没改**，
-   仍是「字符串相等与字典序比较」，而夹具只剩字面量常量折叠（本次提交只改了 `:21`）。
+1. `tests/fixtures/20c/README.md:21` 曾写「`second-case-conversion-logic.xiao` …
+   **VM 与 LLVM 原生输出 `true`**」——修复前实测原生构建失败（N-1），该声明把「期望」写成了「结果」。
+   当前已改为「VM 输出 `true`；LLVM 原生待受控运行号」；
+2. [20C-语言边界](20c-language-boundary-and-operators.md) 状态头曾写
+   「**`tests/fixtures/20c/README.md:14` 已与夹具语义同步**」但当时 `:14` 未改，仍是宽泛的
+   字符串比较描述；当前已同步为「字面量常量折叠的相等与字典序比较」。
 
 **冻结**：两处**改回事实**；并且**未跑过的平台不许在 README 行里写成结果**——
 按 [20C](20c-official-xiao-library.md) 的既有口径写「待原生运行号」。
+
+**本地实施回写（2026-10-14）**：N-1 已在动态 LLVM 路径把条件 `i1` 零扩展为 Runtime ABI 所需的
+`i8`，静态路径同时保留并加入 `llvm-as` 可选校验；N-2 已将常量非负整数指数展开为带溢出检查的
+整数乘法，动态指数仍保留原有 Runtime 路径。守卫清单现在从 `BinaryOperator::ALL`/
+`UnaryOperator::ALL` 派生，并附带一条真实的后端拒绝负例；VM 守卫收集全部失败后一次报告。
+N-3 已接入 Windows `ExceptionRecord.code` 分派，并补非法指令/访问违例两类测试。受控 LLVM
+门禁尚未复跑，故运行号与 `main` 绿色状态仍待外部执行。
 
 ## 八、落点
 

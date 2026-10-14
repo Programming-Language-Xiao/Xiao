@@ -538,6 +538,36 @@ fn lowers_float_power_with_valid_intrinsic_signature() {
 }
 
 #[test]
+/// 顶层常量整数幂必须沿受检整数乘法路径降低，而不是误报动态整数幂。
+fn lowers_constant_integer_power_with_checked_multiplication() {
+    let power = IrExpression {
+        kind: IrExpressionKind::Binary {
+            operator: "**".to_owned(),
+            left: Box::new(literal("int", "2")),
+            right: Box::new(literal("int", "3")),
+        },
+        ty: scalar("int"),
+        span: span(),
+    };
+    let module = lower_program(
+        &simple_program(vec![assignment("value", power)]),
+        &CodegenOptions::default(),
+    )
+    .expect("常量整数幂应降低");
+    assert!(module.text.contains("llvm.smul.with.overflow.i64"));
+    assert!(!module.text.contains("动态整数幂"));
+    if let Some(llvm_as) = std::env::var_os("XIAO_LLVM_AS") {
+        NativeBuild::new()
+            .validate_llvm(
+                &module.text,
+                &TargetDescription::host(),
+                &Toolchain::new("unused").with_llvm_as(llvm_as),
+            )
+            .expect("llvm-as 应接受常量整数幂模块");
+    }
+}
+
+#[test]
 /// N0-B 把字符串值切到稳定 ABI，同时保留可解释的 Runtime 组件清单。
 fn lowers_runtime_values_with_abi() {
     let string_program = simple_program(vec![assignment(
@@ -634,6 +664,15 @@ fn lowers_logical_and_rejects_identity_in_raw_ir() {
         )
         .expect("逻辑运算应降低");
         assert!(module.text.contains("logical.merge"), "{operator}");
+        if let Some(llvm_as) = std::env::var_os("XIAO_LLVM_AS") {
+            NativeBuild::new()
+                .validate_llvm(
+                    &module.text,
+                    &TargetDescription::host(),
+                    &Toolchain::new("unused").with_llvm_as(llvm_as),
+                )
+                .unwrap_or_else(|error| panic!("{operator} LLVM 校验失败：{error}"));
+        }
     }
     for operator in ["is", "is not"] {
         let expression = IrExpression {
@@ -995,7 +1034,7 @@ fn optional_external_illegal_instruction_remains_fatal() {
     let run = xiao_codegen_llvm::NativeRun { executable }
         .run()
         .expect("启动 Fatal 夹具");
-    assert_eq!(run.status, Some(139), "stderr: {}", run.stderr);
+    assert_eq!(run.status, Some(132), "stderr: {}", run.stderr);
     assert!(
         run.stderr.contains("class=fatal code=X07-FATAL-005"),
         "{}",
@@ -1003,6 +1042,52 @@ fn optional_external_illegal_instruction_remains_fatal() {
     );
     assert!(!run.stderr.contains("class=recoverable"), "{}", run.stderr);
     assert!(!run.stderr.contains("X06-RUNTIME-009"), "{}", run.stderr);
+    let _ = std::fs::remove_dir_all(root);
+}
+
+#[test]
+#[ignore = "需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4"]
+/// 外部访问违例必须沿另一类平台故障映射到 139，验证 N-3 不是只写死一个码。
+fn optional_external_access_violation_remains_fatal() {
+    let clang = std::env::var_os("XIAO_CLANG").expect("XIAO_CLANG");
+    let runtime = std::path::PathBuf::from(
+        std::env::var_os("XIAO_RUNTIME_LIBRARY").expect("XIAO_RUNTIME_LIBRARY"),
+    );
+    assert!(runtime.is_file(), "Runtime staticlib 必须存在");
+    let target = configured_native_target();
+    let rustc = std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
+    let toolchain = Toolchain::new(clang)
+        .with_runtime_library(&runtime)
+        .probe_native_static_libraries(rustc, &target)
+        .expect("Runtime 原生库清单")
+        .probe_versions()
+        .expect("工具版本");
+    let root =
+        std::env::temp_dir().join(format!("xiao-n0-a-external-access-{}", std::process::id()));
+    let output = root.join(if cfg!(windows) {
+        "external-access.exe"
+    } else {
+        "external-access"
+    });
+    let llvm = format!(
+        "target triple = \"{}\"\ndeclare i32 @xiao_runtime_abi_is_compatible(i32, i32)\ndeclare void @xiao_runtime_fatal_abi()\ndefine i32 @main() {{\nentry:\n  %compatible = call i32 @xiao_runtime_abi_is_compatible(i32 {}, i32 {})\n  %ok = icmp eq i32 %compatible, 1\n  br i1 %ok, label %fatal.access, label %fatal.abi\nfatal.abi:\n  call void @xiao_runtime_fatal_abi()\n  unreachable\nfatal.access:\n  store i32 1, ptr null\n  unreachable\n}}\n",
+        target.triple,
+        xiao_runtime_abi::ABI_MAJOR_VERSION,
+        xiao_runtime_abi::ABI_MINOR_VERSION,
+    );
+    let executable = toolchain
+        .compile_with_runtime_components_at_level(&llvm, &target, &output, Some(&runtime), &[], 0)
+        .expect("访问违例夹具应链接");
+    let run = xiao_codegen_llvm::NativeRun { executable }
+        .run()
+        .expect("启动访问违例夹具");
+    assert_eq!(run.status, Some(139), "stderr: {}", run.stderr);
+    assert!(
+        run.stderr.contains("class=fatal code=X07-FATAL-005"),
+        "{}",
+        run.stderr
+    );
+    assert!(!run.stderr.contains("class=recoverable"), "{}", run.stderr);
     let _ = std::fs::remove_dir_all(root);
 }
 

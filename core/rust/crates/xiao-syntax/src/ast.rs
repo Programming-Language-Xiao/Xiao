@@ -117,6 +117,9 @@ pub enum UnaryOperator {
 }
 
 impl UnaryOperator {
+    /// P1 已冻结的一元运算符完整集合；覆盖守卫从此处派生清单。
+    pub const ALL: [Self; 3] = [Self::Plus, Self::Minus, Self::Not];
+
     /// 返回运算符的 Xiao 源码拼写。
     #[must_use]
     pub const fn as_str(self) -> &'static str {
@@ -176,6 +179,31 @@ pub enum BinaryOperator {
 }
 
 impl BinaryOperator {
+    /// P1 已冻结的二元运算符完整集合；覆盖守卫从此处派生清单。
+    pub const ALL: [Self; 21] = [
+        Self::Power,
+        Self::Multiply,
+        Self::Divide,
+        Self::FloorDivide,
+        Self::Remainder,
+        Self::Add,
+        Self::Subtract,
+        Self::Intersect,
+        Self::SymmetricDifference,
+        Self::Less,
+        Self::LessEqual,
+        Self::Greater,
+        Self::GreaterEqual,
+        Self::Equal,
+        Self::NotEqual,
+        Self::In,
+        Self::NotIn,
+        Self::Is,
+        Self::IsNot,
+        Self::And,
+        Self::Or,
+    ];
+
     /// 返回运算符的 Xiao 源码拼写。
     #[must_use]
     pub const fn as_str(self) -> &'static str {

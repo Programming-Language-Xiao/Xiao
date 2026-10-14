@@ -101,6 +101,17 @@ struct ExceptionPointers {
 type ExceptionFilter = unsafe extern "system" fn(*mut ExceptionPointers) -> i32;
 
 #[cfg(windows)]
+/// 把 Windows SEH 异常类别映射到与 Unix 信号处理器相同的退出码。
+fn windows_exception_exit_code(code: u32) -> u32 {
+    match code {
+        0xC0000005 => 139,              // EXCEPTION_ACCESS_VIOLATION
+        0xC000001D => 132,              // EXCEPTION_ILLEGAL_INSTRUCTION
+        0xC0000094 | 0xC000008E => 136, // integer / floating divide by zero
+        _ => 134,
+    }
+}
+
+#[cfg(windows)]
 #[link(name = "kernel32")]
 unsafe extern "system" {
     fn SetUnhandledExceptionFilter(filter: Option<ExceptionFilter>) -> Option<ExceptionFilter>;
@@ -116,9 +127,21 @@ unsafe extern "system" {
 }
 
 #[cfg(windows)]
-unsafe extern "system" fn unhandled_exception(_: *mut ExceptionPointers) -> i32 {
+unsafe extern "system" fn unhandled_exception(pointers: *mut ExceptionPointers) -> i32 {
     const STD_ERROR_HANDLE: u32 = u32::MAX - 11;
-    let message = b"xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware params={} span=<none> exit_code=139\r\n";
+    let exception_code = unsafe {
+        pointers
+            .as_ref()
+            .and_then(|pointers| pointers.record.as_ref())
+            .map_or(0, |record| record.code)
+    };
+    let exit_code = windows_exception_exit_code(exception_code);
+    let message = match exit_code {
+        139 => b"xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware params={} span=<none> exit_code=139\r\n" as &[u8],
+        132 => b"xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware params={} span=<none> exit_code=132\r\n",
+        136 => b"xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware params={} span=<none> exit_code=136\r\n",
+        _ => b"xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware params={} span=<none> exit_code=134\r\n",
+    };
     unsafe {
         let handle = GetStdHandle(STD_ERROR_HANDLE);
         let mut written = 0;
@@ -129,9 +152,23 @@ unsafe extern "system" fn unhandled_exception(_: *mut ExceptionPointers) -> i32 
             &mut written,
             std::ptr::null_mut(),
         );
-        ExitProcess(139);
+        ExitProcess(exit_code);
     }
 }
 
 #[cfg(not(any(unix, windows)))]
 fn install() {}
+
+#[cfg(all(test, windows))]
+mod tests {
+    use super::windows_exception_exit_code;
+
+    #[test]
+    fn windows_exception_classes_share_unix_exit_codes() {
+        assert_eq!(windows_exception_exit_code(0xC0000005), 139);
+        assert_eq!(windows_exception_exit_code(0xC000001D), 132);
+        assert_eq!(windows_exception_exit_code(0xC0000094), 136);
+        assert_eq!(windows_exception_exit_code(0xC000008E), 136);
+        assert_eq!(windows_exception_exit_code(0xC0000000), 134);
+    }
+}

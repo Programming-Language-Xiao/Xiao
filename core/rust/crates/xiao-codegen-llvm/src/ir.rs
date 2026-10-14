@@ -871,6 +871,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                     &IrType::Scalar {
                         name: scalar_name(slot.ty).to_owned(),
                     },
+                    None,
                 )?;
                 let result = self.cast_value(result, result_ty, slot.ty, target.span)?;
                 self.emit_line(format!(
@@ -1071,6 +1072,9 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                 if matches!(operator.as_str(), "and" | "or") {
                     return self.emit_logical_short_circuit(operator, left, right, expression.span);
                 }
+                let constant_exponent = (operator == "**")
+                    .then(|| constant_integer_literal(right))
+                    .flatten();
                 let (left, left_ty) = self.emit_expression(left)?;
                 let (right, right_ty) = self.emit_expression(right)?;
                 self.emit_binary_values(
@@ -1079,6 +1083,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                     (right, right_ty),
                     expression.span,
                     &expression.ty,
+                    constant_exponent,
                 )
             }
             IrExpressionKind::Call { callee, arguments } => {
@@ -1291,6 +1296,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         right_input: (String, Scalar),
         span: IrSpan,
         result_type: &IrType,
+        constant_exponent: Option<i128>,
     ) -> Result<(String, Scalar)> {
         let (left, left_ty) = left_input;
         let (right, right_ty) = right_input;
@@ -1405,7 +1411,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
             "/" => self.float_bin("fdiv", common, left, right, span)?,
             "//" => self.floor_div(common, left, right, "//", span)?,
             "%" => self.floor_rem(common, left, right, span)?,
-            "**" => self.power(common, left, right, result, span)?,
+            "**" => self.power(common, left, right, result, span, constant_exponent)?,
             _ => return Err(unsupported(format!("二元运算 {operator}"), Some(span))),
         };
         Ok((self.cast_value(value, common, result, span)?, result))
@@ -1650,7 +1656,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         Ok(())
     }
 
-    /// 发射浮点幂运算并拒绝尚未接入的动态整数幂。
+    /// 发射浮点幂运算，或把常量整数指数展开为受检乘法。
     fn power(
         &mut self,
         ty: Scalar,
@@ -1658,6 +1664,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
         right: String,
         result: Scalar,
         span: IrSpan,
+        constant_exponent: Option<i128>,
     ) -> Result<String> {
         if ty.is_float() {
             let intrinsic = if ty == Scalar::Float {
@@ -1681,10 +1688,28 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
             self.check_finite(value.clone(), ty, span)?;
             return Ok(value);
         }
-        // Dynamic integer exponents need a dedicated loop and are deliberately deferred to the
-        // Runtime batch. Constant exponents still exercise checked integer multiplication.
+        let Some(exponent) = constant_exponent else {
+            return Err(unsupported("动态整数幂", Some(span)));
+        };
+        if exponent < 0 {
+            return Err(unsupported("负整数幂", Some(span)));
+        }
+        // 常量指数在类型层已经按 checked_pow 语义求值；这里仍逐次使用同一条
+        // 带溢出检查的乘法发射路径，保证 LLVM 与 VM 的错误身份一致。
+        let mut remaining = exponent as u128;
+        let mut base = left;
+        let mut value = "1".to_owned();
+        while remaining > 0 {
+            if remaining & 1 == 1 {
+                value = self.checked_integer_bin("mul", ty, value, base.clone(), span)?;
+            }
+            remaining >>= 1;
+            if remaining > 0 {
+                base = self.checked_integer_bin("mul", ty, base.clone(), base, span)?;
+            }
+        }
         let _ = result;
-        Err(unsupported("动态整数幂", Some(span)))
+        Ok(value)
     }
 
     /// 发射固定宽度标量转换并检查窄化边界。
@@ -2144,6 +2169,19 @@ fn literal_value(ty: Scalar, text: &str, span: IrSpan) -> Result<String> {
             _ => Err(invalid_literal(text, span)),
         },
         Scalar::None => Ok("".to_owned()),
+    }
+}
+
+/// 提取可在静态 LLVM 路径展开的整数常量指数。
+fn constant_integer_literal(expression: &IrExpression) -> Option<i128> {
+    match &expression.kind {
+        IrExpressionKind::Group { expression } => constant_integer_literal(expression),
+        IrExpressionKind::Literal { literal, text }
+            if matches!(literal.as_str(), "integer" | "int" | "sint") =>
+        {
+            text.replace('_', "").parse().ok()
+        }
+        _ => None,
     }
 }
 

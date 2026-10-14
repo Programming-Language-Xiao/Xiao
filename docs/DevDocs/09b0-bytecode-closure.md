@@ -278,6 +278,11 @@ LLVM 动态侧以 `emit_condition` 和 ABI bool 槽保持同一控制流。`and`
 穷举守卫已覆盖全部一元/二元变体，并以 Windows 安全文件名映射准备原生守卫；当前本机 VM 与 Rust
 单测已通过，受控 LLVM/CI 运行号仍待外部环境补录，不把本机结果写成受控证据。
 
+**20C 原生门禁修复回写（2026-10-14）**：N-1 的动态 bool ABI 已补 `i1` 到 Runtime `i8` 的统一扩展，
+N-2 的顶层常量整数幂已接入受检乘法降低；两项仍由原生守卫保留在接受面。N-3 属 10R，Windows
+异常处理器已改为读取 `ExceptionRecord.code`，按故障类别与 Unix 共用 `139/132/136/134` 四个退出码。
+修复后的绿色受控运行号尚未取得，不能以本机 Rust/LLVM 文本测试代替。
+
 同时，VM 用户可见诊断已按错误性质区分：`X09-BYTECODE-001` 使用 `fatal.internal` 表示降低器与生产
 契约脱节，`X09-BYTECODE-002` 继续使用 `fatal.corrupt_artifact` 表示结构、引用或 ABI 产物损坏。
 
