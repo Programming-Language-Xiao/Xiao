@@ -588,7 +588,8 @@ B 取先左后右；C 按 A① 的自然结果——**右侧未求值即不产�
    清单是**手写**的（`fixture_path()` 不做 glob），所以「文件在仓库里」与「文件被跑到」是两件事。
    **每次动 `tests/fixtures/20c/` 都要跑一次三口径对账**（磁盘 / 清单 / README），**差集必须为空**。
 
-**实施结果（2026-10-14）**：守卫已由 `BinaryOperator`/`UnaryOperator` 的穷举匹配派生，覆盖 21 个
+**实施结果（2026-10-14）**：守卫读取枚举旁的手写 `BinaryOperator::ALL`/`UnaryOperator::ALL` 清单，
+覆盖 21 个
 二元与 3 个一元变体；`is`/`is not` 期望 `Frontend("X02-TYPE-005")`，其余构造期望双路径成功；
 另有一条 `Backend` 负例保持后端拒绝分支有执行点。
 `operator_coverage_guard_vm` 已通过，并检查 `X09-BYTECODE-001` 不再出现在接受面；原生守卫

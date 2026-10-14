@@ -5,7 +5,10 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use xiao_codegen_llvm::{CodegenError, NativeRun, TargetDescription, Toolchain};
+use xiao_bytecode::{TacOp, lower_program};
+use xiao_codegen_llvm::{
+    CodegenError, CodegenOptions, NativeBuild, NativeRun, TargetDescription, Toolchain,
+};
 use xiao_driver::{
     DriverOutcome, DriverRequest, FrontendCompiler, FrontendNativeDriver, FrontendRequest,
     NativeBuildRequest, NativeDriverError,
@@ -15,8 +18,6 @@ use xiao_vm::VmEvent;
 
 /// 探测夹具的穷尽结果形状；不提供“任意失败”兜底，避免前端提前拒绝遮住后端缺口。
 #[derive(Clone, Copy, Debug)]
-// 当前裁定后的在册算子没有后端拒绝项，但三态仍需保留给后端负例探针。
-#[allow(dead_code)]
 enum ProbeExpectation {
     /// VM 与原生都必须成功并输出指定文本。
     Success(&'static str),
@@ -386,28 +387,68 @@ fn operator_coverage_guard_vm() {
 }
 
 #[test]
-/// 短路右侧未执行时，VM 与原生共同消费的所有权释放计划仍保持逐字一致，且右侧函数不入栈。
+/// 短路右侧未执行时，两个后端的释放序列都比去掉右侧的程序多出对应临时值。
 fn logical_short_circuit_keeps_shared_release_plans() {
-    let source = "def right() -> bool\n    text = \"not evaluated\"\n    return true\nresult = false and right()\n";
+    let source = "right_text = \"ab\"\nresult = false and (\"a\" + \"b\" == right_text)\n";
+    let without_right = "right_text = \"ab\"\nresult = false\n";
     let compiler = FrontendCompiler::new();
     let vm_artifact = compiler
         .compile(&FrontendRequest::from_text(source))
-        .expect("短路释放夹具应通过前端");
-    let native_artifact = compiler
-        .compile(&FrontendRequest::from_text(source))
-        .expect("原生短路释放夹具应通过前端");
-    assert_eq!(
-        vm_artifact.ir.ownership.release_plans, native_artifact.ir.ownership.release_plans,
-        "两条路径必须消费同一份 release_plans"
+        .expect("短路夹具");
+    let without_artifact = compiler
+        .compile(&FrontendRequest::from_text(without_right))
+        .expect("无右侧对照夹具");
+    let with_tac = lower_program(vm_artifact.ir());
+    let without_tac = lower_program(without_artifact.ir());
+    let count_tac_releases = |program: &xiao_bytecode::TacProgram| {
+        program
+            .functions
+            .iter()
+            .flat_map(|function| function.blocks.iter())
+            .flat_map(|block| block.instructions.iter())
+            .filter(|instruction| matches!(instruction.op, TacOp::Release { .. }))
+            .count()
+    };
+    assert!(
+        count_tac_releases(&with_tac) > count_tac_releases(&without_tac),
+        "去掉右侧后 TAC 释放序列应减少"
+    );
+    let with_native = NativeBuild::new()
+        .lower(vm_artifact.ir(), &CodegenOptions::default())
+        .expect("原生短路夹具");
+    let without_native = NativeBuild::new()
+        .lower(without_artifact.ir(), &CodegenOptions::default())
+        .expect("原生无右侧对照夹具");
+    let count_native_releases = |text: &str| text.matches("xiao_runtime_value_release_").count();
+    assert!(
+        count_native_releases(&with_native.text) > count_native_releases(&without_native.text),
+        "去掉右侧后 LLVM 释放序列应减少"
     );
     let outcome = xiao_driver::FrontendVmDriver::new().run_artifact(
         &vm_artifact,
         &DriverRequest::new(FrontendRequest::from_text(source)),
     );
     assert!(outcome.is_success(), "短路执行失败：{outcome:?}");
-    assert!(!outcome.as_executed().into_iter().flat_map(|execution| execution.events()).any(
-        |event| matches!(event, VmEvent::FunctionEntered { function, .. } if function == "right")
-    ));
+    let side_effect_source = "def right() -> bool\n    text = \"not evaluated\"\n    return true\nresult = false and right()\n";
+    let side_effect_request = FrontendRequest::from_text(side_effect_source);
+    let side_effect_artifact = compiler
+        .compile(&side_effect_request)
+        .expect("短路副作用夹具");
+    let side_effect_outcome = xiao_driver::FrontendVmDriver::new().run_artifact(
+        &side_effect_artifact,
+        &DriverRequest::new(side_effect_request),
+    );
+    assert!(side_effect_outcome.is_success());
+    assert!(
+        !side_effect_outcome
+            .as_executed()
+            .into_iter()
+            .flat_map(|execution| execution.events())
+            .any(|event| matches!(
+                event,
+                VmEvent::FunctionEntered { function, .. } if function == "right"
+            ))
+    );
 }
 
 #[test]

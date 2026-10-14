@@ -282,7 +282,7 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 | **5.2** | 工作流**没有 `--no-fail-fast`** ⇒ `cargo test` 遇第一个失败的测试二进制即停。Linux 上 `n0_a` 先挂，**c20 的穷举守卫与夹具探测在 Linux 上一条都没跑** | 两处原生作业**已加**（`fb1f435`），**workspace 门禁也已按裁定补上**（§5.2.1）；**否则「某平台绿」可能只是「没跑到」** |
 | **5.3** | `ProbeExpectation::Backend` 曾无任何用例构造，靠 `#[allow(dead_code)]` 压住 ⇒ 后端拒绝那段处理（含 VM `X09-BYTECODE-001` 断言）**无执行点** | 已加入 `backend-negative-member-value` 故意负例，撑住 VM/原生后端拒绝分支；**但 `#[allow(dead_code)]` 与过期注释仍在** ⇒ 见 §11 **F-C** |
 | **5.4** | 裁定 C（**右侧未求值不产生释放计划**、双路径 `release_plans` 逐字一致）原先**无执行点**：`d19a_differential` 里没有任何逻辑算子 | 已补 `logical_short_circuit_keeps_shared_release_plans`——**但它的 `release_plans` 断言是同义反复，裁定 C 的核心仍无执行点** ⇒ 见 §11 **F-A** |
-| **5.5** | `BINARY_OPERATORS` 曾是**手写的 21 项数组**（`match` 有编译器强制，**数组没有**） | 已从 `BinaryOperator::ALL`/`UnaryOperator::ALL` 派生（**改进**：紧挨枚举，加变体时 `as_str` 的穷尽匹配就在旁边）；**清单本身仍手写** ⇒ 见 §11 **F-D** |
+| **5.5** | `BINARY_OPERATORS` 曾是**手写的 21 项数组**（`match` 有编译器强制，**数组没有**） | 已搬到 `BinaryOperator::ALL`/`UnaryOperator::ALL` 的枚举旁，但仍是手写清单；新增变体必须同时核对中心清单、`as_str` 与穷举匹配 ⇒ 见 §11 **F-D** |
 
 ### 5.2.1 **workspace 门禁也要加 `--no-fail-fast`**（星崽直接裁定，2026-10-14）
 
@@ -293,6 +293,8 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 `cargo test` 默认**遇第一个失败的测试二进制即停**，于是「某个 crate 绿」可能只是
 「排在失败的 crate 后面、根本没跑」。workspace 门禁是 **push 门**，比原生作业更常触发，
 它一旦被这个形状静音，静音面比原生作业更大。
+
+`.github/workflows/workspace-gates.yml` 通过 `tools/gates/run.sh` 执行 Rust 门禁，因此实际参数落在该脚本。
 
 **冻结**：
 
@@ -352,11 +354,11 @@ core/rust/crates/xiao-driver/tests/c20_capability_probe.rs      N-2：`**` 探�
 core/rust/crates/xiao-codegen-llvm/tests/n0_a.rs         §5.1：正向断言过 clang；N-3：`:998` 期望改 `132` + 至少两个故障类别
 core/rust/crates/xiao-driver/tests/n0_b_dynamic_native.rs §5.1：同上
 core/rust/crates/xiao-runtime/src/crash.rs               N-3：Windows 侧用起 `record.code`（`:85-94`）按类别分派（§4.4）；Unix 侧**不改**
-core/rust/crates/xiao-driver/tests/d19a_differential.rs  §5.4：双路径释放对账用例
+core/rust/crates/xiao-driver/tests/c20_capability_probe.rs §5.4：双路径释放序列对账用例
 .github/workflows/maintenance-regression.yml             §5.2（已落地）：两处原生作业加 `--no-fail-fast`
-.github/workflows/workspace-gates.yml                    §5.2.1（已裁定）：workspace 门禁也加 `--no-fail-fast`
-core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs  §11.2 F-B：抽 `emit_bool_to_abi` 或把注释改成事实
-core/rust/crates/xiao-driver/tests/c20_capability_probe.rs    §11.1 F-A：释放对账造可变量；§11.3 F-C：删 `allow(dead_code)` 并改注释
+.github/workflows/workspace-gates.yml + tools/gates/run.sh §5.2.1（已裁定）：workspace 门禁实际执行的 cargo test 加 `--no-fail-fast`
+core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs  §11.2 F-B：注释改成事实
+core/rust/crates/xiao-driver/tests/c20_capability_probe.rs    §11.1 F-A：释放序列造可变量；§11.3 F-C：删 `allow(dead_code)` 并改注释
 core/rust/crates/xiao-syntax/src/ast.rs                  §11.4 F-D：`ALL` 上方注明它是手写清单、改枚举时必须核对
 docs/DevDocs/20c-language-boundary-and-operators.md       §1.3 加「语句上下文」栏；§3.2.1 第 6 条判据；状态头改回事实
 docs/DevDocs/10r-static-overflow-implementation.md       N-3 的归属与契约结论回填
@@ -412,9 +414,9 @@ tests/fixtures/20c/README.md                             §七 第 1 条：`:21`
 2. **`--no-fail-fast` 加进 workspace 门禁**：**已裁定**（星崽直接裁定，2026-10-14），
    落点与判据见 **§5.2.1**；
 3. **第二轮审核并入的四笔返工**（**没有一条是红**，但每条都让某个判据名不副实）
-   已写成规格，见 **§十一**：**F-A**（中，`release_plans` 对账是同义反复）、
-   **F-B**（低，注释把新转换说成既有惯例）、**F-C**（低，`allow(dead_code)` 与注释过期）、
-   **F-D**（低，`ALL` 清单仍手写）。
+   已完成，实施记录见 **§十一**：**F-A**（中，释放序列改为可变量对照）、
+   **F-B**（低，注释改为事实）、**F-C**（低，删除 `allow(dead_code)`）、
+   **F-D**（低，`ALL` 手写性质和维护代价已注明）。
 
 ## 十一、第二轮审核（审 `fb1f435`）并入的四笔返工
 
@@ -423,7 +425,7 @@ tests/fixtures/20c/README.md                             §七 第 1 条：`:21`
 
 ### 11.1 **F-A（中）**：`release_plans` 对账是**同义反复**，裁定 C 的核心仍无执行点
 
-**事实**（`c20_capability_probe.rs::logical_short_circuit_keeps_shared_release_plans`）：
+**修复前事实**（`c20_capability_probe.rs::logical_short_circuit_keeps_shared_release_plans`）：
 
 ```rust
 let source = "…result = false and right()\n";
@@ -449,9 +451,13 @@ assert_eq!(vm_artifact.ir.ownership.release_plans, native_artifact.ir.ownership.
 **判据**：改完之后，**把右侧的求值去掉**（让短路不再发生），断言**必须变红**。
 **只断言「两次编译相等」不算对账**——那两条路径压根还没分叉。
 
+**实施结果（2026-10-14）**：已选择方案 2。测试现在用
+`false and ("a" + "b" == right_text)` 与去掉右侧的顶层对照，分别比较 TAC `Release` 指令数和
+LLVM Runtime release 调用数；两条后端都证明去掉右侧会减少释放序列，且短路运行仍通过。
+
 ### 11.2 **F-B（低）**：N-1 的注释把新引入的转换写成了既有约定
 
-**事实**：`dynamic/expression.rs` 新增的注释称该 `zext i1 → i8` 是
+**修复前事实**：`dynamic/expression.rs` 新增的注释称该 `zext i1 → i8` 是
 「the same zero-extension shape as **every other bool producer**」，
 而**全 crate 里 `zext i1 … to i8` 只有这一处**——既有的布尔生产者要么直接发 `i8` 常量
 （`constructor_call("xiao_runtime_value_bool", "i8", "1")`），要么根本不跨这道 ABI 边界。
@@ -466,9 +472,12 @@ assert_eq!(vm_artifact.ir.ownership.release_plans, native_artifact.ir.ownership.
    （「这是唯一一处把计算得到的 `i1` 跨到 bool ABI 的地方」）；
 2. 若选 helper：**下一次同类转换出现时，必须复用它**——否则就是补丁叠补丁。
 
+**实施结果（2026-10-14）**：选择改注释为事实，明确这是当前唯一把计算得到的 `i1` 跨到 bool ABI
+`i8` 的位置；转换本身保持不变。
+
 ### 11.3 **F-C（低）**：`#[allow(dead_code)]` 与它的注释已过期
 
-**事实**：`ProbeExpectation` 上仍挂着
+**修复前事实**：`ProbeExpectation` 上仍挂着
 
 ```rust
 // 当前裁定后的在册算子没有后端拒绝项，但三态仍需保留给后端负例探针。
@@ -488,6 +497,9 @@ enum ProbeExpectation { … }
 3. **加一条纪律**：`allow(dead_code)` **不许**用来"先让它编过"——
    本仓库已经有 §5.3 这个先例，同一个手法第二次出现就该进纪律。
 
+**实施结果（2026-10-14）**：已删除 `#[allow(dead_code)]`，并把注释改为当前三态守卫事实；
+`backend-negative-member-value` 保证 `Backend` 分支继续有真实执行点。
+
 ### 11.4 **F-D（低）**：`ALL` 清单仍是手写，只是搬了家
 
 **事实**：`BINARY_OPERATORS` 从测试挪到了 `xiao-syntax/src/ast.rs` 的 `BinaryOperator::ALL`
@@ -503,6 +515,9 @@ enum ProbeExpectation { … }
 **冻结**：在 `ALL` 上方补一句注释，写明它是**手写**清单、`as_str` 与守卫的穷尽匹配
 **都不能保证它完整**，改枚举时**必须同时核对这里**。**并把 §5.5 从「已派生」改成事实措辞**
 （「已搬到枚举旁，仍为手写」）。
+
+**实施结果（2026-10-14）**：`UnaryOperator::ALL` 与 `BinaryOperator::ALL` 上方已写明手写性质、
+完整性边界和维护纪律，守卫继续从两张清单读取。
 
 ## 相关页面
 

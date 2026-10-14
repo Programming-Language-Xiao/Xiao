@@ -117,7 +117,10 @@ pub enum UnaryOperator {
 }
 
 impl UnaryOperator {
-    /// P1 已冻结的一元运算符完整集合；覆盖守卫从此处派生清单。
+    /// P1 已冻结的一元运算符完整集合。
+    ///
+    /// 这是手写清单；`as_str` 和覆盖守卫的穷举匹配不能自动证明它完整。
+    /// 新增变体时必须同时核对本表、`as_str` 和守卫。
     pub const ALL: [Self; 3] = [Self::Plus, Self::Minus, Self::Not];
 
     /// 返回运算符的 Xiao 源码拼写。
@@ -179,7 +182,10 @@ pub enum BinaryOperator {
 }
 
 impl BinaryOperator {
-    /// P1 已冻结的二元运算符完整集合；覆盖守卫从此处派生清单。
+    /// P1 已冻结的二元运算符完整集合。
+    ///
+    /// 这是手写清单；`as_str` 和覆盖守卫的穷举匹配不能自动证明它完整。
+    /// 新增变体时必须同时核对本表、`as_str` 和守卫。
     pub const ALL: [Self; 21] = [
         Self::Power,
         Self::Multiply,
