@@ -404,8 +404,8 @@ benchmark 检查/测试/自测也排在 `cargo test -p xiao-driver` 之前，两
 `i8`，静态路径同时保留并加入 `llvm-as` 可选校验；N-2 已将常量非负整数指数展开为带溢出检查的
 整数乘法，动态指数仍保留原有 Runtime 路径。守卫清单现在从 `BinaryOperator::ALL`/
 `UnaryOperator::ALL` 派生，并附带一条真实的后端拒绝负例；VM 守卫收集全部失败后一次报告。
-N-3 已接入 Windows `ExceptionRecord.code` 分派，并补非法指令/访问违例两类测试。受控 LLVM
-门禁尚未复跑，故运行号与 `main` 绿色状态仍待外部执行。
+N-3 已接入 Windows `ExceptionRecord.code` 分派，并补非法指令/访问违例两类测试。该段记录当时
+受控 LLVM 门禁尚未复跑；本轮 workspace 遮蔽取证与恢复运行号见 §5.2.1。
 
 ## 八、落点
 
