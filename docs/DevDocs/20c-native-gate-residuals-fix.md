@@ -9,8 +9,8 @@
 >
 > 状态（2026-10-14）：**两条都已实现并取证**——R-1 走一次性分支的红/绿（`38534726488` / `38535786407`），
 > R-2 走本地变异；`main` 未引入故意失败，验证分支已删。
-> **第三轮审核并入三条**（§七，**没有一条是红**）：绿运行与提交的对应要写准、
-> 方案甲的清单宽度（`tsc` 也该前移）、远端 8 条历史一次性分支待清。
+> **第三轮审核并入三条**（§七，**没有一条是红**）：绿运行与提交的对应已写准、
+> 方案甲的清单宽度（**`tsc` 已一并前移**）、远端 8 条历史一次性分支**已清**（现只剩 `main`）。
 
 ## 一、为什么单独成文
 
@@ -68,9 +68,10 @@
 
 **清单宽度（第三轮审核补充）**：上面「甲」只点了**三项**静态门禁，实施方照做**无误**；
 但**同一理由还落在 `bunx tsc --noEmit` 上**——它是**纯静态类型检查**，
-现在仍排在 `cargo test -p xiao-driver` **之后** ⇒ 后者一红，它照样被遮住。
-`bun test` 是**动态套件**，要不要一起前移可另论（比 Rust 测试便宜、但比静态检查贵），
-**但至少 `tsc` 应当前移**。见 §七 的追加项。
+当时仍排在 `cargo test -p xiao-driver` **之后** ⇒ 后者一红，它照样被遮住。
+**已按 §七 的 R-1b 前置**（现行顺序：`bun install` → fmt → check → coverage → **tsc** →
+benchmark 三件 → `cargo test -p xiao-driver` → `bun test`）。
+`bun test` 是**动态套件**，要不要一起前移**另论**（比 Rust 测试便宜、但比静态检查贵）。
 
 ### 2.3 最小实施步骤
 
@@ -248,16 +249,20 @@ R-1 的取证经审核**拉原始日志与 API 逐条复核**（见 §2.7），R
 | # | 项 | 处置 |
 | --- | --- | --- |
 | **第三轮-1** | **绿运行与提交的对应不精确**：文档把绿运行 `38535786407` 挂在「提交 B `5b693cd`」上，而该运行的 `headSha` 是 `f5210a3`（= B + 步骤标签） | §2.7 **已改正**（含一条口径说明）；专项文档同步 |
-| **第三轮-2** | **方案甲的清单宽度**：`bunx tsc --noEmit` 同属纯静态，却仍在 `cargo test -p xiao-driver` 之后 | §2.2 **已补注**；**追加项见下** |
-| **第三轮-3** | **远端还留着 8 条历史一次性分支**：`codex/10j-cross-os-verification`、`codex/10k-runtime-trimming`、`codex/10z-ci-push-coverage-20261009`、`docs/10s-linux-evidence-20261007`、`docs/10t-linux-evidence-20261008`、`docs/10z-linux-window-evidence-20261010`、`docs/10z-performance-results-20261011`、`test/10r-native-mutation` | **清理项见下**（本轮那条验证分支**已删** ✓） |
+| **第三轮-2** | **方案甲的清单宽度**：`bunx tsc --noEmit` 同属纯静态，却仍在 `cargo test -p xiao-driver` 之后 | §2.2 **已补注**；**追加项 R-1b 已做**，见下 |
+| **第三轮-3** | **远端还留着 8 条历史一次性分支**：`codex/10j-cross-os-verification`、`codex/10k-runtime-trimming`、`codex/10z-ci-push-coverage-20261009`、`docs/10s-linux-evidence-20261007`、`docs/10t-linux-evidence-20261008`、`docs/10z-linux-window-evidence-20261010`、`docs/10z-performance-results-20261011`、`test/10r-native-mutation` | **已清（删前逐条核过）**，见下；本轮那条验证分支**早已删** ✓ |
 
-**追加项（R-1b，低）**：把 `bunx tsc --noEmit -p tsconfig.json` 一并前置到
-`cargo test -p xiao-driver` 之前。**不必另做取证**——§2.6 那套红/绿已经证明前移有效，
-这一步是**把同一个理由用全**。
+**追加项（R-1b，低）——已做（2026-10-14）**：`bunx tsc --noEmit -p tsconfig.json`
+已前置到 `bun run check:coverage` 之后、**两个 `cargo test` 之前**，
+与 fmt / 文档门禁同组。**未另做取证**——§2.6 那套红/绿已经证明前移有效，
+这一步是**把同一个理由用全**；`bash -n` 通过，本地整脚本跑通。
+`bun test`（**动态套件**，非静态）**仍在 `cargo test -p xiao-driver` 之后**，按原判断另论。
 
-**清理项（housekeeping，很低）**：删除上面 8 条历史一次性分支。
-它们都是过去一次性验证的遗留，「做完就删」这条纪律**本轮执行了**，
-只是历史没清；**清理时只删分支，不动 `main`**。
+**清理项（housekeeping，很低）——已做（2026-10-14）**：远端那 8 条历史一次性分支
+**已全部删除**，`git ls-remote --heads origin` 现在**只剩 `main`**。
+删前逐条核过：6 条未并入提交数为 **0**；`docs/10s-linux-evidence-20261007` 的那 1 笔
+（`ce6dc57`）所改的两个文件**与 `main` 上的内容逐字相同**（`git diff --quiet` 退出码 `0`）；
+`test/10r-native-mutation` 是「注入 + 移除」的一次性变异对，**本就该删**。
 
 ## 相关页面
 
