@@ -7,7 +7,10 @@
 >
 > **一句话概括**：**R-1** 让脚本不再"前面一红、后面全不跑"；**R-2** 让短路释放的断言能看见**位置**。
 >
-> 状态（2026-10-14）：**实现已完成，验证记录已回填**。`main` 未引入故意失败。
+> 状态（2026-10-14）：**两条都已实现并取证**——R-1 走一次性分支的红/绿（`38534726488` / `38535786407`），
+> R-2 走本地变异；`main` 未引入故意失败，验证分支已删。
+> **第三轮审核并入三条**（§七，**没有一条是红**）：绿运行与提交的对应要写准、
+> 方案甲的清单宽度（`tsc` 也该前移）、远端 8 条历史一次性分支待清。
 
 ## 一、为什么单独成文
 
@@ -62,6 +65,12 @@
 
 **本次选择：甲。** 静态门禁在 benchmark 与 `xiao-driver` 测试之前执行；保留两个
 `cargo test` 的 `--no-fail-fast`，让 benchmark 测试也不会被 `xiao-driver` 测试遮住。
+
+**清单宽度（第三轮审核补充）**：上面「甲」只点了**三项**静态门禁，实施方照做**无误**；
+但**同一理由还落在 `bunx tsc --noEmit` 上**——它是**纯静态类型检查**，
+现在仍排在 `cargo test -p xiao-driver` **之后** ⇒ 后者一红，它照样被遮住。
+`bun test` 是**动态套件**，要不要一起前移可另论（比 Rust 测试便宜、但比静态检查贵），
+**但至少 `tsc` 应当前移**。见 §七 的追加项。
 
 ### 2.3 最小实施步骤
 
@@ -121,11 +130,26 @@ R-1 的故意红验证使用一次性分支完成：失败的 `20c_first_modules
   `test result: FAILED` 后继续出现 `Running tests/artifact_size_regression.rs`，随后还跑到
   `c20_capability_probe` 等二进制；`bun run check` 与覆盖率输出均在失败前出现。
 - 绿运行 [38535786407](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38535786407)：
-  提交 B `5b693cd` 还原同一断言，随后带步骤标签的 workspace 门禁全绿；标签明确显示
+  **该运行的头是 `f5210a3`**——提交 B `5b693cd` 还原同一断言之后，又叠了一笔
+  步骤标签提交（即后来进主线的 `969f06a`），绿跑打在这笔上。标签明确显示
   `cargo fmt --check`、`bun run check`、`check:coverage` 均先于 benchmark 与 `xiao-driver` 测试。
+
+> **对应关系要写准（第三轮审核更正）**：本文上一版把绿运行挂在「提交 B `5b693cd`」上，
+> 而该运行的 `headSha` 是 `f5210a3`。**核的人会拿到对不上的 sha**——
+> 这正是本批反复强调的「证据要能对着原始输出逐字核」。
+> **正确表述：绿运行 `38535786407` 的头是 `f5210a3`（= B 还原 + 步骤标签）。**
 
 提交 A 只改动 Rust 测试文件，未命中 workflow 的 `push.paths`，因此按同一分支手动 dispatch
 workspace 门禁；这不改变提交 A 的故意红内容，也保留了从 `origin/main` 起分支的纪律。
+
+**审核复核（2026-10-14，第三轮）**：上面两条取证**由审核拉原始日志与 API 逐条核实**，不是照抄：
+红运行 `headSha = 3dc0d82` ✓ 与提交 A 一致；日志时间线 `bun run check` **08:23:26**、
+`check:coverage` **08:24:16**、失败 **08:25:03** ⇒ 静态门禁确实在失败之前；
+失败之后日志继续出现 `Running tests/artifact_size_regression.rs`、`b0_c_driver`、
+`b0_d_exit_codes`、**`c20_capability_probe`**、`compatibility_matrix`、`cross_platform_release`、
+`d17c_archive` 等 ✓；benchmarks 的 `Running` 也排在 `xiao_driver` 之前 ✓。
+另外核实：验证分支 `codex/20c-gate-residual-verify` **已从远端删除** ✓；
+`969f06a` 只加 `printf` 分界、`7aeaec0` 只把断言收成一行（**都没有放松**）。
 
 ## 三、R-2 **释放位置断言**（`c20_capability_probe.rs`）
 
@@ -214,6 +238,26 @@ docs/DevDocs/20c-native-gates-red-fix.md                 §5.2.1 与 §11.1.1 �
    总数断言保留；**变异让位置断言变红**并已还原（或按 §3.4 第 4 条写明原因 + 替代证据）；
 3. **回填**：专项 §5.2.1 与 §11.1.1 的实施结果与运行号；`main` 仍绿；
 4. **通用**：`cargo test --workspace`、clippy、fmt、`bun run check` 全绿；提交标题带类型前缀、正文非空。
+
+## 七、第三轮审核并入的三条（审 `f8dfc7c`…`43a127f`）
+
+出处：2026-10-14 审核残余项收口那一批。**三条没有一条是红**——
+R-1 的取证经审核**拉原始日志与 API 逐条复核**（见 §2.7），R-2 的位置断言经审核
+**独立变异复现**（在短路块插一条 `Release` ⇒ `c20_capability_probe.rs:453` 精确变红）。
+
+| # | 项 | 处置 |
+| --- | --- | --- |
+| **第三轮-1** | **绿运行与提交的对应不精确**：文档把绿运行 `38535786407` 挂在「提交 B `5b693cd`」上，而该运行的 `headSha` 是 `f5210a3`（= B + 步骤标签） | §2.7 **已改正**（含一条口径说明）；专项文档同步 |
+| **第三轮-2** | **方案甲的清单宽度**：`bunx tsc --noEmit` 同属纯静态，却仍在 `cargo test -p xiao-driver` 之后 | §2.2 **已补注**；**追加项见下** |
+| **第三轮-3** | **远端还留着 8 条历史一次性分支**：`codex/10j-cross-os-verification`、`codex/10k-runtime-trimming`、`codex/10z-ci-push-coverage-20261009`、`docs/10s-linux-evidence-20261007`、`docs/10t-linux-evidence-20261008`、`docs/10z-linux-window-evidence-20261010`、`docs/10z-performance-results-20261011`、`test/10r-native-mutation` | **清理项见下**（本轮那条验证分支**已删** ✓） |
+
+**追加项（R-1b，低）**：把 `bunx tsc --noEmit -p tsconfig.json` 一并前置到
+`cargo test -p xiao-driver` 之前。**不必另做取证**——§2.6 那套红/绿已经证明前移有效，
+这一步是**把同一个理由用全**。
+
+**清理项（housekeeping，很低）**：删除上面 8 条历史一次性分支。
+它们都是过去一次性验证的遗留，「做完就删」这条纪律**本轮执行了**，
+只是历史没清；**清理时只删分支，不动 `main`**。
 
 ## 相关页面
 

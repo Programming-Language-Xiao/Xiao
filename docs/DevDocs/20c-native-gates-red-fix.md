@@ -363,11 +363,16 @@ benchmark 检查/测试/自测也排在 `cargo test -p xiao-driver` 之前，两
 [38534726488](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38534726488)
 显示该二进制失败后仍出现 `Running tests/artifact_size_regression.rs`，随后继续运行
 `c20_capability_probe` 等二进制，且 `bun run check`、覆盖率输出均已在失败前出现。
-提交 B `5b693cd` 还原同一文件，绿运行
+提交 B `5b693cd` 还原同一文件；绿运行
 [38535786407](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38535786407)
-全绿；该运行还通过步骤标签逐字核对了 `cargo fmt --check`、`bun run check`、
+**的头是 `f5210a3`**（B 还原 + 后续步骤标签那笔，即后来进主线的 `969f06a`），
+该运行通过步骤标签逐字核对了 `cargo fmt --check`、`bun run check`、
 `check:coverage` 位于 benchmark 与 `xiao-driver` 测试之前。提交 A 只触碰 Rust 测试文件，
 由于 workflow 的 `push.paths` 未包含该路径，红运行按同一分支手动 dispatch。
+**上述取证已由审核拉原始日志与 API 逐条复核**（红运行 `headSha = 3dc0d82`、
+失败点 08:25:03 在 `bun run check` 08:23:26 与 `check:coverage` 08:24:16 之后、
+失败之后 `artifact_size_regression`/`c20_capability_probe` 等仍出现 `Running`）——
+详见[残余项文档](20c-native-gate-residuals-fix.md) §2.7。
 
 ## 六、审核侧自己的账：§3.2.1 第 6 条**判据是错的**
 
