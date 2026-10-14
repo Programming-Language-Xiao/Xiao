@@ -22,6 +22,9 @@ related:
 VM/LLVM 原生结果见 [20C-第五批](../../DevDocs/20c-fifth-batch-reprobe-and-library.md) §四；第五批的
 `format_int` 候选已按第六批收口撤回。
 
+第五批新增的 `is_ascii_upper` 尚未取得覆盖它的 CI 运行号；当前模块状态沿用首批/第二批的历史验证，
+待下一次维护回归覆盖后再补运行证据。
+
 ## `contains_char`
 
 ```xiao

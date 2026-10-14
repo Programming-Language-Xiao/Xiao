@@ -32,7 +32,7 @@ const PROBES: [(&str, &str, Option<&str>); 2] = [
     ("arithmetic-error", "arithmetic-error.xiao", None),
 ];
 
-const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 20] = [
+const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 21] = [
     (
         "strings-path-representative",
         "strings-path-representative.xiao",
@@ -87,6 +87,11 @@ const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 20] = [
         "fifth-set-membership",
         "fifth-set-membership.xiao",
         ProbeExpectation::Success("ok\n"),
+    ),
+    (
+        "sixth-case-conversion-reprobe",
+        "sixth-case-conversion-reprobe.xiao",
+        ProbeExpectation::Success("abcxyz\nabcxyz\naz-9\n\n"),
     ),
     (
         "second-string-comparison",

@@ -19,6 +19,7 @@
 | `fifth-substring-split.xiao` | 非字面量字符串下标前瞻 | VM/LLVM 最先拒绝 `X01-PARSE-007`；子串候选缺口依据 |
 | `fifth-split-array.xiao` | 循环累积数组切分 | VM/LLVM 在类型层拒绝 `X02-TYPE-005`；切分候选缺口依据 |
 | `fifth-set-membership.xiao` | 集合构造与成员判断 | VM/LLVM 输出 `ok`；集合最小能力只保留探测结论 |
+| `sixth-case-conversion-reprobe.xiao` | 不依赖 `str` → `int` 的 ASCII 大小写转换机械展开 | VM/LLVM 输出 `abcxyz`、`abcxyz`、`az-9` 和空行；实际 64 行，超过约 30 行规模线 |
 | `second-string-comparison.xiao` | 字面量常量折叠的相等与字典序比较 | VM/LLVM 均在类型层拒绝 `X02-TYPE-005` |
 | `second-string-comparison-parameters.xiao` | 字符串参数的相等与字典序比较 | VM/LLVM 输出 `ok`；运行时序关系可用 |
 | `second-count-length.xiao` | `for` 逐字符计数 | 第二批 `text.length` 的双路径依据，VM/LLVM 输出 `2` |
