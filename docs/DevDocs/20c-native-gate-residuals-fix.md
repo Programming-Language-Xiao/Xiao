@@ -112,8 +112,18 @@
 因此静态门禁不会被任一 Rust 测试失败遮住，benchmark 测试也位于 `xiao-driver` 测试之前。
 
 R-1 的故意红验证使用一次性分支完成：失败的 `20c_first_modules` 二进制之后仍出现
-`Running` 行，且静态门禁的输出位于失败测试之前。红运行与还原后的绿运行号已回填到
-专项文档 §5.2.1；一次全绿的本机运行只作为回归检查，不作为 R-1 取证。
+`Running` 行，且静态门禁的输出位于失败测试之前。真实取证如下：
+
+- 红运行 [38534726488](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38534726488)：
+  提交 A `3dc0d82` 只把 `20c_first_modules` 的一条输出断言改坏；日志在
+  `test result: FAILED` 后继续出现 `Running tests/artifact_size_regression.rs`，随后还跑到
+  `c20_capability_probe` 等二进制；`bun run check` 与覆盖率输出均在失败前出现。
+- 绿运行 [38535786407](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38535786407)：
+  提交 B `5b693cd` 还原同一断言，随后带步骤标签的 workspace 门禁全绿；标签明确显示
+  `cargo fmt --check`、`bun run check`、`check:coverage` 均先于 benchmark 与 `xiao-driver` 测试。
+
+提交 A 只改动 Rust 测试文件，未命中 workflow 的 `push.paths`，因此按同一分支手动 dispatch
+workspace 门禁；这不改变提交 A 的故意红内容，也保留了从 `origin/main` 起分支的纪律。
 
 ## 三、R-2 **释放位置断言**（`c20_capability_probe.rs`）
 

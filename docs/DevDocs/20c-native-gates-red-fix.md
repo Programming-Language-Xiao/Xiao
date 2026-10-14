@@ -16,9 +16,9 @@
 > F-B/F-C/F-D 是注释与清单的留痕卫生；`c595c82` 已把这四笔改掉。
 > **第三轮审核并入四笔**（§十二，同样**没有一条是红**）：`--no-fail-fast` 只治了一半的遮蔽、
 > §5.2.1 的落点与判据要改（审核侧的账）、F-A 的新断言只比总数不比位置。
-> **返工后的 CI**：`5d32140` 的维护回归 `38522338923` 与 workspace 门禁 `38522338905` **都绿**，
-> 但按 §5.2.1 第 5 条，**全绿运行不构成该条的取证**——本轮仍留两条待做
-> （§5.2.1 第 2 条的跨步骤遮蔽 + 故意红取证、§11.1.1 的位置断言）。
+> **返工后的 CI**：`5d32140` 的维护回归 `38522338923` 与 workspace 门禁 `38522338905` **都绿**；
+> 本轮残余项随后已完成一次性分支的故意红/还原绿验证（§5.2.1），并补齐释放位置断言及其变异证据（§11.1.1）。
+> **跨步骤遮蔽与位置断言现已闭环**：红运行 `38534726488`、还原后的绿运行 `38535786407`。
 > 修复前的红色运行仍原样保留在 §一；**回填的数字全部来自 CI 日志，不用本机结果代替**。
 
 ## 一、CI 判决（真运行号与作业号）
@@ -352,13 +352,22 @@ stderr: xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware para
 - **门禁在带上该参数后仍正常**：`5d32140` 的 workspace 门禁
   [38522338905](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38522338905) **success**，
   日志 25 行 `test result:`、0 失败；
-- **第 2 条（跨步骤遮蔽）与第 5 条（故意的红取证）仍待做**——
-  本次是**第一次真跑**，但**全绿**，所以按第 5 条**不构成取证**。
+- **前次记录**：第 2 条（跨步骤遮蔽）与第 5 条（故意的红取证）当时仍待做；
+  那次是**第一次真跑**且全绿，按第 5 条不构成取证。残余项已在本轮完成，见下方运行号。
 
 **本轮残余修复（2026-10-14，方案甲）**：`tools/gates/run.sh` 已把
 `cargo fmt --check`、`bun run check`、`check:coverage` 前置到所有 Rust 测试之前；
 benchmark 检查/测试/自测也排在 `cargo test -p xiao-driver` 之前，两个 cargo 测试仍保留
-`--no-fail-fast`。一次性分支的故意红运行与还原后的绿运行号见下方取证记录。
+`--no-fail-fast`。一次性分支从 `origin/main` 起步，提交 A `3dc0d82` 只破坏
+`20c_first_modules` 的一条输出断言；workspace 门禁红运行
+[38534726488](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38534726488)
+显示该二进制失败后仍出现 `Running tests/artifact_size_regression.rs`，随后继续运行
+`c20_capability_probe` 等二进制，且 `bun run check`、覆盖率输出均已在失败前出现。
+提交 B `5b693cd` 还原同一文件，绿运行
+[38535786407](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38535786407)
+全绿；该运行还通过步骤标签逐字核对了 `cargo fmt --check`、`bun run check`、
+`check:coverage` 位于 benchmark 与 `xiao-driver` 测试之前。提交 A 只触碰 Rust 测试文件，
+由于 workflow 的 `push.paths` 未包含该路径，红运行按同一分支手动 dispatch。
 
 ## 六、审核侧自己的账：§3.2.1 第 6 条**判据是错的**
 
@@ -414,7 +423,7 @@ core/rust/crates/xiao-runtime/src/crash.rs               N-3：Windows 侧用起
 core/rust/crates/xiao-driver/tests/c20_capability_probe.rs §5.4：双路径释放序列对账用例
 .github/workflows/maintenance-regression.yml             §5.2（已落地）：两处原生作业加 `--no-fail-fast`
 tools/gates/run.sh                                      §5.2.1：两个 cargo test 加 `--no-fail-fast`（已落地）；
-                                                         第 2 条：纯静态步骤前置或收集全部失败（**待做**）
+                                                         第 2 条：选择方案甲，纯静态步骤前置（已落地并取证）
 core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs  §11.2 F-B：注释改成事实
 core/rust/crates/xiao-driver/tests/c20_capability_probe.rs    §11.1 F-A：释放序列造可变量；§11.3 F-C：删 `allow(dead_code)` 并改注释
 core/rust/crates/xiao-syntax/src/ast.rs                  §11.4 F-D：`ALL` 上方注明它是手写清单、改枚举时必须核对
@@ -650,8 +659,12 @@ enum ProbeExpectation { … }
 [38522338923](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38522338923)
 五作业全绿、workspace 门禁 [38522338905](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38522338905) 绿——
 **§十一 的四笔与 §十二 的措辞更正都经受了 CI**。
-但**本轮至此仍未闭**：**§5.2.1 第 2 条**（跨步骤遮蔽）与 **§11.1.1**（位置断言）**仍待做**，
-且 §5.2.1 另有第 5 条——**全绿运行不构成该条的取证**。
+本轮已闭环：**§5.2.1 第 2 条**（跨步骤遮蔽）以故意红运行
+[38534726488](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38534726488)
+取证，并由还原后的绿运行
+[38535786407](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/38535786407)
+确认恢复；**§11.1.1** 的位置断言以临时 `TacOp::Release` 变异取证并已还原。
+§5.2.1 第 5 条仍有效：全绿运行本身不构成遮蔽修复的取证。
 
 **「绿跑」在本专项里能证明什么、不能证明什么（写死，免得后人误用）**：
 
