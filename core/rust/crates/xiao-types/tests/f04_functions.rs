@@ -213,6 +213,21 @@ fn keeps_dynamic_raise_at_error_boundary() {
 }
 
 #[test]
+/// 普通动态标量转换不再误用只服务于错误边界的 `dynamic_conversion` 守卫。
+fn ordinary_dynamic_scalar_casts_skip_error_boundary_check() {
+    let result = check(
+        "for value in [1, \"x\"]\n    str rendered = value as str\n    bool flag = value as bool\n    int count = value as int\n",
+    );
+    assert!(result.is_success(), "diagnostics: {:?}", result.diagnostics);
+    assert!(
+        !result
+            .runtime_checks()
+            .iter()
+            .any(|check| check.kind == RuntimeCheckKind::DynamicConversion)
+    );
+}
+
+#[test]
 /// `FatalError` 不得被普通 `catch` 捕获，宽泛处理器必须放在具体类型之后。
 fn enforces_catch_recovery_boundaries() {
     let fatal = check("try\n    raise error\ncatch fatal as FatalError\n    print(fatal)\n");

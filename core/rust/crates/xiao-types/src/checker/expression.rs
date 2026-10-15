@@ -10,7 +10,7 @@ use xiao_syntax::{
     BinaryOperator, CallArgument, Expression, LiteralKind, ScalarType, UnaryOperator,
 };
 
-use crate::conversion::{ConversionKind, can_assign, classify_conversion, is_integer, is_numeric};
+use crate::conversion::{ConversionKind, can_assign, classify_conversion, is_numeric};
 use crate::diagnostics::*;
 use crate::numeric::{
     binary_scalar_type, is_decimal_integer, parse_float_literal, parse_integer_literal,
@@ -660,13 +660,9 @@ impl<'source> TypeChecker<'source> {
                             arguments[0].value.span(),
                             RuntimeCheckKind::NumericRange,
                         ),
-                        ConversionKind::RuntimeChecked if is_integer(target) => {}
-                        ConversionKind::RuntimeChecked => {
-                            self.push_runtime_check(
-                                arguments[0].value.span(),
-                                RuntimeCheckKind::DynamicConversion,
-                            );
-                        }
+                        // `dynamic_conversion` 只属于错误边界；普通标量转换直接
+                        // 交给 Runtime 的 `convert_to`，不能把合法动态值误判成 Error。
+                        ConversionKind::RuntimeChecked => {}
                         ConversionKind::StrToInteger => {}
                         _ => {}
                     }
@@ -803,10 +799,9 @@ impl<'source> TypeChecker<'source> {
                         ConversionKind::NumericNarrowing => {
                             self.push_runtime_check(span, RuntimeCheckKind::NumericRange)
                         }
-                        ConversionKind::RuntimeChecked if is_integer(target) => {}
-                        ConversionKind::RuntimeChecked => {
-                            self.push_runtime_check(span, RuntimeCheckKind::DynamicConversion)
-                        }
+                        // `dynamic_conversion` 只属于错误边界；普通标量转换直接
+                        // 交给 Runtime 的 `convert_to`，不能把合法动态值误判成 Error。
+                        ConversionKind::RuntimeChecked => {}
                         ConversionKind::StrToInteger => {}
                         _ => {}
                     }
