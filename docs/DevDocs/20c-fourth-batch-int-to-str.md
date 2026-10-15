@@ -245,6 +245,12 @@ report: class=Fatal, X07-FATAL-002, message_id=fatal.corrupt_artifact
 ⇒ 同一份**被类型层接受**的源码，**原生能构建、VM 在生产验证阶段判 Fatal**——
 正是 [20C](20c-official-xiao-library.md) §3.4 第 1 条禁的**双路径不一致**。
 
+**第八批订正（2026-10-16）**：上表只覆盖本批实施时的顶层 `lint big` 形态，不能外推到
+函数形参。第八批补探发现 `lint`/`lfloat` 形参的根因是降低器按 ownership storage 类别
+把对象类值误登记为 `Int`；该历史边界与整数族转换已由
+[20C-第八批](20c-eighth-batch-conversion-and-dynamic-boundaries.md) 收口。本文保留当时
+的历史结果，不追溯改写本批实施结论。
+
 **归属：既有，不是本批引入。** 结构性论证（审核认为决定性）：本批只**新增** `(…, Str)` 那一格；
 `lint as int` 的**分类路径**（`is_numeric && is_numeric` ⇒ `NumericNarrowing`）与**降低路径**
 **都没被碰**，本批前后行为相同。

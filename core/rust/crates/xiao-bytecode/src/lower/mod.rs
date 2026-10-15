@@ -139,8 +139,6 @@ struct Lowerer<'ir> {
     plans: Vec<TacReleasePlan>,
     /// `IrValue.id` 到源码区间的映射，用于把释放动作还原成寄存器。
     value_spans: HashMap<u32, IrSpan>,
-    /// `IrValue.id` 到存储类别的映射。
-    value_storage: HashMap<u32, String>,
     /// `IrValue.id` 到所属作用域的映射，用于按作用域消歧同名绑定。
     value_scopes: HashMap<u32, u32>,
     /// 顶层函数名到函数索引的映射。
@@ -223,12 +221,6 @@ impl<'ir> Lowerer<'ir> {
             .iter()
             .map(|value| (value.id, value.span))
             .collect();
-        let value_storage = program
-            .ownership
-            .values
-            .iter()
-            .map(|value| (value.id, value.storage.clone()))
-            .collect();
         let plans = program
             .ownership
             .release_plans
@@ -245,7 +237,6 @@ impl<'ir> Lowerer<'ir> {
             indexed_signatures: BTreeMap::new(),
             plans,
             value_spans,
-            value_storage,
             value_scopes: program
                 .ownership
                 .values
@@ -531,12 +522,12 @@ impl<'ir> Lowerer<'ir> {
             let class = Lowerer::class_of_type(&parameter.ty);
             let register = self.new_binding_register(class, parameter.span);
             self.frame.parameters.push(register);
-            if parameter.name.text.starts_with('#') {
-                self.frame.parameter_names.insert(
-                    name_key(&parameter.name.text, parameter.name.backticked),
-                    register,
-                );
-            }
+            // 所有源码形参都必须优先命中精确参数寄存器；否则普通名称会退回
+            // ownership 的 storage 类别，把 lint/lfloat 的对象句柄误读成 int。
+            self.frame.parameter_names.insert(
+                name_key(&parameter.name.text, parameter.name.backticked),
+                register,
+            );
             self.frame.locals.push(register);
             if let Some(value) = self.value_of_name_at(
                 &parameter.name.text,
@@ -972,11 +963,23 @@ impl<'ir> Lowerer<'ir> {
 
     /// 返回某个 `IrValue` 的寄存器类别。
     fn class_for_value(&self, value: u32) -> RegisterClass {
-        match self.value_storage.get(&value).map(String::as_str) {
-            Some("stack") => RegisterClass::Int,
-            Some("heap_weak" | "heap_strong") => RegisterClass::ObjHandle,
-            _ => RegisterClass::Poly,
+        if let Some(value) = self
+            .program
+            .ownership
+            .values
+            .iter()
+            .find(|candidate| candidate.id == value)
+        {
+            if let Some(ty) = &value.ty {
+                return Self::class_of_type(ty);
+            }
+            return match value.storage.as_str() {
+                "stack" => RegisterClass::Int,
+                "heap_weak" | "heap_strong" => RegisterClass::ObjHandle,
+                _ => RegisterClass::Poly,
+            };
         }
+        RegisterClass::Poly
     }
 
     /// 按标量类型返回寄存器类别。

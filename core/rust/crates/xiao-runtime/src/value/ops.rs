@@ -205,7 +205,7 @@ impl RuntimeValue {
 
     /// 执行显式标量转换。
     ///
-    /// 只实现 02 阶段转换矩阵接受的组合；`lint` / `lfloat` 的算术与数值转换仍是登记在案的
+    /// 只实现 02 阶段转换矩阵接受的组合；`lfloat` 的算术与浮点方向转换仍是登记在案的
     /// 债项，这里明确报错而不是给出近似结果。整数到 `str` 复用稳定文本表示；登记见
     /// `docs/DevDocs/20c-fourth-batch-int-to-str.md` §8.1。
     pub fn convert_to(&self, target: ScalarType) -> RuntimeResult<Self> {
@@ -232,6 +232,14 @@ impl RuntimeValue {
             }
             (ScalarType::Sint, ScalarType::Int) => Ok(Self::Int(i64::from(self.sint_value()?))),
             (ScalarType::Int, ScalarType::Sint) => i32::try_from(self.int_value()?)
+                .map(Self::Sint)
+                .map_err(|_| range_error("sint")),
+            (ScalarType::Sint, ScalarType::Lint) => Ok(Self::Lint(self.sint_value()?.to_string())),
+            (ScalarType::Int, ScalarType::Lint) => Ok(Self::Lint(self.int_value()?.to_string())),
+            (ScalarType::Lint, ScalarType::Int) => i64::try_from(self.lint_value()?)
+                .map(Self::Int)
+                .map_err(|_| range_error("int")),
+            (ScalarType::Lint, ScalarType::Sint) => i32::try_from(self.lint_value()?)
                 .map(Self::Sint)
                 .map_err(|_| range_error("sint")),
             (ScalarType::Sfloat, ScalarType::Float) => {
@@ -379,6 +387,16 @@ impl RuntimeValue {
         match self {
             Self::Int(value) => Ok(*value),
             _ => Err(RuntimeError::type_mismatch("int", self.type_name())),
+        }
+    }
+
+    /// 读取任意精度整数载荷；文本损坏时复用统一非法值身份。
+    fn lint_value(&self) -> RuntimeResult<i128> {
+        match self {
+            Self::Lint(value) => value
+                .parse::<i128>()
+                .map_err(|_| RuntimeError::invalid_value("lint 不是合法的十进制整数")),
+            _ => Err(RuntimeError::type_mismatch("lint", self.type_name())),
         }
     }
 
@@ -741,11 +759,26 @@ mod tests {
     }
 
     #[test]
-    /// 验证 `lint` / `lfloat` 参与的转换明确报错，不给出近似结果。
+    /// 验证整数族与 `lint` 的精确加宽/窄化；浮点族仍明确保持未实现。
     fn high_precision_numerics_are_explicitly_unsupported() {
-        let error = RuntimeValue::Lint("1".to_owned())
+        assert_eq!(
+            RuntimeValue::Int(1).convert_to(ScalarType::Lint),
+            Ok(RuntimeValue::Lint("1".to_owned()))
+        );
+        assert_eq!(
+            RuntimeValue::Lint("1".to_owned()).convert_to(ScalarType::Int),
+            Ok(int(1))
+        );
+        assert_eq!(
+            RuntimeValue::Lint("2147483648".to_owned())
+                .convert_to(ScalarType::Sint)
+                .expect_err("sint 应越界")
+                .code(),
+            NUMERIC_OVERFLOW_CODE
+        );
+        let error = RuntimeValue::Lfloat("1.0".to_owned())
             .convert_to(ScalarType::Int)
-            .expect_err("应报错");
+            .expect_err("浮点族方向仍未实现");
         assert!(error.message().contains("尚未实现"));
     }
 }

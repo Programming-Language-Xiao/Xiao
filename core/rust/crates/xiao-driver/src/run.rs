@@ -1044,8 +1044,8 @@ mod tests {
     }
 
     #[test]
-    /// TAC 结构/ABI 错误仍保持损坏产物身份，与降低器内部缺口区分。
-    fn structurally_invalid_tac_keeps_corrupt_artifact_diagnostic() {
+    /// 进程内生成的 TAC 结构/ABI 错误统一使用编译器内部故障身份。
+    fn structurally_invalid_tac_uses_internal_diagnostic() {
         let request = request("value = 1\n");
         let artifact = FrontendCompiler::new()
             .compile(&request.frontend)
@@ -1067,7 +1067,7 @@ mod tests {
         assert_eq!(error.code(), "X09-BYTECODE-002");
         assert_eq!(
             error.report().map(|report| report.message_id.as_str()),
-            Some("fatal.corrupt_artifact")
+            Some("fatal.internal")
         );
     }
 

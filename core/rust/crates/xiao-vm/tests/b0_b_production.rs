@@ -1,9 +1,7 @@
 //! B0-B 生产 VM 契约回归。
 
 use xiao_bytecode::lower_program;
-use xiao_diagnostics::{
-    FATAL_CORRUPT_ARTIFACT_CODE, FATAL_INTERNAL_CODE, FATAL_RUNTIME_INVARIANT_CODE,
-};
+use xiao_diagnostics::{FATAL_INTERNAL_CODE, FATAL_RUNTIME_INVARIANT_CODE};
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::IrEntryMode;
 use xiao_vm::{
@@ -64,17 +62,14 @@ fn production_rejects_unverified_tac_before_entering_vm() {
     );
 }
 
-/// IR 结构损坏也必须在验证关卡返回 Fatal，而不是让后端解引用坏表。
+/// 进程内 IR 结构错误使用编译器内部 Fatal，而不是把编译器产物误报为外部损坏。
 #[test]
 fn production_rejects_invalid_ir_before_vm() {
     let (mut ir, tac) = compile("value = 1\n");
     ir.span = xiao_ir::IrSpan::new(10, 1);
     let outcome = run_request(&RunRequest::new(&ir, &tac));
     assert!(matches!(outcome.result, RunResult::Fatal(_)));
-    assert_eq!(
-        outcome.result.error_code(),
-        Some(FATAL_CORRUPT_ARTIFACT_CODE)
-    );
+    assert_eq!(outcome.result.error_code(), Some(FATAL_INTERNAL_CODE));
     assert!(
         !outcome
             .events

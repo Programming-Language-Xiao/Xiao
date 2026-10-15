@@ -14,8 +14,8 @@
 > **一句话概括**：**先按真实形状重述这笔债**（它比登记的大，而且性质不同），
 > 再定「两笔债是不是同一批做」与「诊断身份要不要补档位」。
 
-状态：**规划完成（2026-10-16）**：§九 四条**全部裁定**；
-根因与边界真值由 §五 补探钉死，之后才动代码。**未改任何代码。**
+状态：**已实施，CI 取证进行中（2026-10-16）**：§九 四条**全部裁定**；
+F-2 已独立提交并完成双平台维护回归，P-1/P-2 与诊断身份修复已落地，完整运行号见 §十一。
 
 ## 一、为什么是这一批
 
@@ -227,6 +227,22 @@ xiao-vm/src/run.rs:465   fn verification_fatal(error: &TacVerificationError, ...
 **判据**：第 1 问要落到**具体文件与行**（不许写「降低器某处」）；
 第 3 问必须**双路径**，且**以 CI 或受控环境为准**（本机单路径不算）。
 
+### 5.1 改动前补探真值（2026-10-16）
+
+| # | 形态 | VM | Windows 受控原生 | 结论 |
+| --- | --- | --- | --- | --- |
+| 1 | `lint`/`lfloat` 形参寄存器类别 | `X09-BYTECODE-002`，错误路径为 `xiao-bytecode/src/lower/mod.rs:965-979` 的 `class_for_value` | 同源旧代码可构建并运行 | 根因是按 `storage=stack` 映射为 `Int`；`class_of_type` 与 `declare_parameters` 已排除 |
+| 2 | `def ignore(lfloat v) -> str`，`v` 不使用 | `X09-BYTECODE-002` | 成功，输出 `ok` | `lfloat` 与 `lint` 形参同形，属于 P-1 |
+| 3 | `def f(lint v) -> int`、`def f(lint v) -> str` | `X09-BYTECODE-002` | 成功构建 | 形参方向与第四批顶层夹具不同，旧证据不能外推 |
+| 4 | `lint`/`lfloat` 形参的其它方向 | `lint → int/str` 到验证阶段；`lfloat → str` 先在类型层报 `X02-TYPE-006` | 已测的 `lint`/`lfloat` 形参成功构建 | 浮点方向仍按裁定留在下一批 |
+| 5 | 顶层 `lint big = 42` → `big as int` | 成功，输出 `42` | — | 顶层形态本来正常，作为 P-1 对照 |
+| 6 | `second-int-to-str.xiao` 的 `lint` 部分 | 只有顶层写法 | — | 第四批历史证据只覆盖顶层，不追溯改写 |
+
+第 1 问的具体排除链已落到代码：`class_of_type`（`mod.rs:985-997`）和
+`declare_parameters`（`mod.rs:520-540`）均按 `IrType` 给出 `ObjHandle`；真正错误的是
+`class_for_value` 原先只读取 ownership storage。临时探针已删除，永久断言见
+`core/rust/crates/xiao-driver/tests/eighth_batch.rs`。
+
 ## 六、落点（**待两道裁决后最终确定**）
 
 已核的现有事实（行号按 2026-10-15 的 `main`）：
@@ -311,6 +327,33 @@ docs/DevDocs/README.md                     阶段索引加本文一行
 （**我没找到**这条链路）。落点因此比选项窄，且**推翻一条既有决定**
 （`xiao-driver/src/run.rs:1048` 那个测试的规则）。逐条见 §4.2.1。
 **不许**拿「第 4 条已经裁过」当理由跳过 §4.2.1 里的连带。
+
+## 十、实施与自审核（2026-10-16）
+
+实现按裁定分为两笔，保持 F-2 与高精度数值路径的提交边界：
+
+| 项目 | 落点 | 自审核结论 |
+| --- | --- | --- |
+| F-2 | `xiao-types` 的 `check_scalar_call`/`check_cast` 不再把普通 `RuntimeChecked` 转成 `dynamic_conversion` | 动态 `str`/`bool`/整数转换统一进入 Runtime；错误边界的 `dynamic_conversion` 保留 |
+| P-1 | `xiao-bytecode` 的 `class_for_value` 优先使用 `IrValue.ty`；所有源码形参登记到 `parameter_names` | `lint`/`lfloat` 形参和从不使用的形参不再被错误分配为 `Int` |
+| P-2 | `RuntimeValue::convert_to` 新增 `int`/`sint` ↔ `lint` 精确加宽与解析/范围检查 | 窄化越界报既有 `X06-RUNTIME-009`；浮点/lfloat 方向未实现 |
+| 诊断身份 | `xiao-vm/src/run.rs:verification_fatal` 对进程内验证失败统一使用 `FatalError::internal` | 既有 `X07-FATAL-006`；`X07-FATAL-002` 保留给未来外部产物校验 |
+
+第 1 问的根因不是 `class_of_type` 或 `declare_parameters`，而是 `class_for_value` 只看
+ownership 的 storage 字段：`stack` 被写死映射为 `RegisterClass::Int`。因此普通 `lint`/`lfloat`
+绑定在函数调用参数位置与签名的 `ObjHandle` 不一致；修复改用同一 `IrValue.ty` 类型映射。
+
+永久夹具位于 `core/rust/crates/xiao-driver/tests/eighth_batch.rs`，覆盖动态普通值、错误边界、
+高精度形参、整数族方向和窄化越界；原生用例使用 `#[ignore]` 由维护回归执行。
+
+## 十一、补探与 CI 取证
+
+改动前补探已确认：VM 的 `lint`/`lfloat` 形参在生产验证阶段报 `X09-BYTECODE-002`，
+原生旧路径可构建；顶层 `lint` 形态在 VM 成功。根因落在 `xiao-bytecode/src/lower/mod.rs`
+的 `class_for_value`，而 `class_of_type` 与 `declare_parameters` 均已正确使用对象类别。
+
+F-2 独立提交 `acb0f90` 的维护回归 `38773875689` 已取双平台证据；P-1/P-2/诊断身份的完整
+运行号、原生作业和输出将在本批实现提交的 CI 完成后回填。浮点/lfloat 方向继续登记为下一批范围。
 
 ## 相关页面
 

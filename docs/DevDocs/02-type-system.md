@@ -127,10 +127,16 @@ Unicode 标量值，结果是该码点的整数；空串、多码点文本（包
 `0x10FFFF` 或落入 `0xD800..0xDFFF` 代理区的码点统一报 `X06-RUNTIME-012`。`chr` 是语言能力
 入口，不是标准库专用 intrinsic；浮点、布尔和字符串输入仍在类型层以 `X02-TYPE-006` 拒绝。
 
-`lint`/`lfloat` 与其它数值之间的显式转换仍是既有缺口：类型层目前会接受例如
-`lint as int`、`lint as float`，但原生路径可构建而 VM 在生产验证阶段以
-`X09-BYTECODE-002`（Fatal，`fatal.corrupt_artifact`）拒绝，说明降低器的寄存器类别与指令期望不一致。
-这笔债阻塞所有依赖 `lint` 数值转换的接口；本批只登记，不修复，也不新增诊断档位。
+第八批收口了 `lint`/`lfloat` 形参的降低边界：普通源码声明这两种对象类形参时，降低器必须按
+IR 值的静态类型登记 `ObjHandle`，不能按 ownership 的 `stack` 存储类别退回 `Int`。修复前
+形参即使从不使用也会在 VM 生产验证阶段报 `X09-BYTECODE-002`；该路径现在改报已有的
+`X07-FATAL-006`（`fatal.internal`），因为它消费的是本进程刚降低的产物。`X07-FATAL-002`
+（`fatal.corrupt_artifact`）保留给未来接入的外部产物校验路径。
+
+第八批同时接通整数族与 `lint` 的显式转换：`int`/`sint` 到 `lint` 是精确加宽，`lint` 到
+`int`/`sint` 解析十进制文本并做范围检查；窄化越界沿用 `X06-RUNTIME-009`。浮点族与
+`lfloat` 的方向仍是登记债项，本批不实现。动态标量转换不再误用错误边界的
+`dynamic_conversion` 守卫，普通值直接进入 Runtime 转换；该守卫仍只在错误边界生效。
 
 因此，读取字符串后转换布尔值应使用新的静态变量接收结果：
 
