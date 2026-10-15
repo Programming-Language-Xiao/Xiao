@@ -218,7 +218,7 @@ xiao-vm/src/run.rs:465   fn verification_fatal(error: &TacVerificationError, ...
 | # | 问题 | 为什么必须问 |
 | --- | --- | --- |
 | 1 | 那个 `int` 类**从哪来**：是 IR 的形参类型丢了 `lint`，还是别的路径写死了类别 | §3.4 已排除 `class_of_type` 与 `declare_parameters`；钉不住它就只能靠猜着改 |
-| 2 | `lfloat` 是不是与 `lint` **完全同形**（含 `lfloat` 形参 + `→ lfloat` 目标） | 本批已实测「`lfloat` 形参不使用」同样炸；其余形态待补 |
+| 2 | `lfloat` 是不是与 `lint` **完全同形**（含 `lfloat` 形参 + `→ lfloat` 目标） | 已实测「`lfloat` 形参不使用」与 `lint` 同形；浮点转换方向按裁定留下一批 |
 | 3 | **原生路径**对同一批形态是什么行为 | 登记的旧说法是「原生可构建」——**未经复核**，不许沿用；两条路径若不一致，处置与只坏一条**不同** |
 | 4 | 经 `lint`/`lfloat` 形参的所有**转换方向**（`→ int`/`sint`/`float`/`str`）是否同码 | 决定 P-1 修完后的验收断言集合 |
 | 5 | `→ lint`/`lfloat` 的 `X06-RUNTIME-012` 是否**只在形参场景**出现，顶层是否也不同 | 区分 P-1 与 P-2 的边界 |
