@@ -1,6 +1,7 @@
 # Xiao 官方 text 模块（20C 首批）。
 #
-# 只使用已探测的 for 迭代器、条件判断和布尔赋值；不依赖 intrinsic。
+# 主要使用已探测的 for 迭代器、条件判断和布尔赋值；`lower_ascii` 另使用语言内建
+# `int` 码点转换与第七批语言能力入口 `chr`，不依赖标准库专用 intrinsic。
 def contains_char(str text, str needle) -> bool
     found = false
     for c in text
@@ -20,7 +21,7 @@ def is_ascii_upper(str value) -> bool
 def lower_ascii(str value) -> str
     result = ""
     for c in value
-        if c >= "A" and c <= "Z"
+        if is_ascii_upper(c)
             result = result + chr(int(c) + 32)
         else
             result = result + c
