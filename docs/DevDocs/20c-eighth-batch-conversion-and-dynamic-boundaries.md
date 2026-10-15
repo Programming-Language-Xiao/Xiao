@@ -14,8 +14,8 @@
 > **一句话概括**：**先按真实形状重述这笔债**（它比登记的大，而且性质不同），
 > 再定「两笔债是不是同一批做」与「诊断身份要不要补档位」。
 
-状态：**已实施，CI 取证进行中（2026-10-16）**：§九 四条**全部裁定**；
-F-2 已独立提交并完成双平台维护回归，P-1/P-2 与诊断身份修复已落地，完整运行号见 §十一。
+状态：**已实施并完成 CI 取证（2026-10-16）**：§九 四条**全部裁定**；
+F-2 已独立提交并完成双平台维护回归，P-1/P-2 与诊断身份修复也已完成，运行号见 §十一。
 
 ## 一、为什么是这一批
 
@@ -352,8 +352,22 @@ ownership 的 storage 字段：`stack` 被写死映射为 `RegisterClass::Int`�
 原生旧路径可构建；顶层 `lint` 形态在 VM 成功。根因落在 `xiao-bytecode/src/lower/mod.rs`
 的 `class_for_value`，而 `class_of_type` 与 `declare_parameters` 均已正确使用对象类别。
 
-F-2 独立提交 `acb0f90` 的维护回归 `38773875689` 已取双平台证据；P-1/P-2/诊断身份的完整
-运行号、原生作业和输出将在本批实现提交的 CI 完成后回填。浮点/lfloat 方向继续登记为下一批范围。
+F-2 独立提交 `acb0f90` 的维护回归 `38773875689` 已取双平台证据；完整实现提交
+`3bb7605` 的维护回归 `38779535750` 与 workspace gates `38779535811` 均成功。Linux/Windows
+原生作业分别为 `116575834999`/`116575834732`，两边都执行
+`native_matches_eighth_batch_boundaries ... ok`；浮点/lfloat 方向继续登记为下一批范围。
+
+| 工作流/作业 | 运行号 | 实测执行点 |
+| --- | --- | --- |
+| `Xiao maintenance regression` | `38779535750` | 五个作业全成功；默认测试、Linux/Windows 原生和安全回归均通过 |
+| Linux 原生差分 | `116575834999` | `eighth_batch::native_matches_eighth_batch_boundaries ... ok` |
+| Windows 原生差分 | `116575834732` | `eighth_batch::native_matches_eighth_batch_boundaries ... ok` |
+| Linux 默认测试 | `116575834521` | Rust workspace default tests 与 benchmark self-test 成功 |
+| `Xiao workspace gates` | `38779535811` | workspace gates 成功，包含 `bun run check`、clippy、lock 和覆盖率门禁 |
+
+第八批 VM 夹具在维护回归默认测试作业中通过；受控 Windows 本机也独立执行了同一原生夹具。
+进程内结构验证错误现在报告 `fatal.internal`；`X07-FATAL-002` 未删除，只保留为未来外部
+产物校验路径的预留身份。
 
 ## 相关页面
 
