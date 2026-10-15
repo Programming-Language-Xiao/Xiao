@@ -11,9 +11,9 @@
 > **一句话概括**：**先裁定这一批做几条**（只做去程，还是去程 + 回程），
 > 再顺手补一个结构性缺口（`stdlib/**` 改动目前**零 CI 信号**，§二）。
 
-状态：**已实施（2026-10-15）**：§九 六条**全部裁定**已落地；`str` → 三种整数、`chr` 回程、
-`text.lower_ascii` 与 R-1/R-2 已完成。VM 与 Windows LLVM 受控本地双路径已通过；真实 push
-触发的 CI 运行号仍待补，不能用本机运行冒充远端取证。
+状态：**已实施并完成 CI 取证（2026-10-15）**：§九 六条**全部裁定**已落地；`str` → 三种整数、
+`chr` 回程、`text.lower_ascii` 与 R-1/R-2 已完成。真实 push 的工作区门禁与维护回归均已通过，
+运行号与原生作业见 §十一。
 
 ## 一、为什么是这一批
 
@@ -273,8 +273,8 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 
 1. **R-1**：`stdlib/**` 已在 `workspace-gates.yml` 的 `push` 与 `pull_request` 两处 `paths` 里；
    **有一次真实 push 的运行号**证明「只改 `stdlib/` 也能触发」——
-   本机跑过**不算**。实现提交尚未推送，运行号待补；`maintenance-regression.yml` 的 `paths`
-   **未被顺手扩大**；
+   本机跑过**不算**。维护回归运行 `38726737088` 与 Windows/Linux 原生作业已取证；
+   `maintenance-regression.yml` 的 `paths` **未被顺手扩大**；
 2. **R-2**：同一轻量工作流的两处 `paths` 已加入 `.github/workflows/platform-reproduction.yml`，
    使其自身改动获得工作区门禁信号；没有把它加入维护回归的原生矩阵；
 3. **裁决**：§四 的裁决以**直接裁定**记（[20C](20c-official-xiao-library.md) §2.4 **G-2**：
@@ -329,10 +329,23 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 原生测试中“动态函数调用”的误报，不改变标准库接口或转换边界。
 
 本地验证已通过：VM 第七批夹具 3 项通过，Windows LLVM 原生夹具 1 项通过；完整 Rust、clippy、fmt、Bun、
-仓库检查与 TypeScript 门禁均已通过。
+仓库检查与 TypeScript 门禁均已通过。远端工作区门禁与维护回归也已通过，真实 push 取证见 §十一。
 `workspace-gates` 的结构修改已独立提交为 `8a7e8ef`；功能实现和库接口随后另行提交，避免把
-触发面修复与语言补探混成一笔。按 R-1 的硬性要求，尚未执行真实 push，因此本批不能声称已取得
-远端运行号，也不能仅凭本机原生结果把新增库接口写成 CI 已覆盖。
+触发面修复与语言补探混成一笔。R-1 的真实 push 取证已由 `38726737126`（workspace gates）和
+`38726737088`（maintenance regression）完成；原生作业逐项记录见 §十一。
+
+## 十一、CI 取证（2026-10-15）
+
+| 工作流/作业 | 运行号 | 实测执行点 |
+| --- | --- | --- |
+| `Xiao workspace gates` | `38726737126` | Linux 工作区门禁成功 |
+| `Xiao maintenance regression` | `38726737088` | 五个作业全成功 |
+| Linux 默认测试 | `116394344161` | Rust workspace default tests 成功，包含第七批 VM 回归 |
+| Linux 原生差分 | `116394344192` | `first_modules_match_native_results` 通过；`seventh-str-int-and-char` 输出 `65`、`23567`、`38634`、`a`、`😀`、`abcxyz-az-9小` |
+| Windows 原生差分 | `116394343742` | `first_modules_match_native_results` 通过；同一第七批夹具逐字输出一致 |
+
+本次维护回归首次因标准库模块 lowering 的旧摘要路径暴露失败（运行 `38715001722`）；修复后上述
+`38726737088` 全绿。第七批没有借用失败运行作通过证据。
 
 ## 相关页面
 

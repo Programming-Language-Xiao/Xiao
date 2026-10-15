@@ -480,8 +480,7 @@ VM/LLVM 双路径探测；逐字符计数、循环字符串累积、集合构造
 **20C 第四批转换回写（2026-10-14）**：整数族 `int`/`sint`/`lint` → `str` 已接通，
 `as` 与 `str(value)` 共用 Runtime 的十进制文本表示；动态 LLVM 构造式也复用既有
 `xiao_runtime_value_cast`，没有新增 intrinsic。该转换解除数字格式化的一个前置，但数字格式化整体、
-完整 Unicode 大小写转换和浮点格式化仍不属于已验证官方库能力；第七批只新增 ASCII `lower_ascii`，
-且新增接口的远端 CI 运行号待补。
+完整 Unicode 大小写转换和浮点格式化仍不属于已验证官方库能力；第七批只新增 ASCII `lower_ascii`。
 
 **20C 第五批库侧回写（2026-10-15）**：复探以 VM/Windows LLVM 原生双路径成表，确认数字格式化与
 ASCII 大写分类可写；`text` 保留纯 Xiao 的 `is_ascii_upper(str value) -> bool`。数字格式化候选因与
@@ -492,8 +491,8 @@ ASCII 大写分类可写；`text` 保留纯 Xiao 的 `is_ascii_upper(str value) 
 接通 `str` → `int`/`sint`/`lint` 的单 Unicode 码点转换与 `chr` 回程；`chr` 作为语言能力进入
 `xiao-intrinsics` 契约表，但没有新增标准库专用 intrinsic。`text` 新增纯 Xiao
 `lower_ascii(str value) -> str`，只冻结 ASCII `A`–`Z` 到小写的规则，非 ASCII 与非字母原样保留。
-VM 与 Windows LLVM 的受控本地双路径已通过；真实 push 运行号待补，所以这里不把新增接口写成远端
-CI 已覆盖，也不提前改变模块既有 `verified` 依据。
+VM 与 Windows LLVM 的受控本地双路径已通过；维护回归 `38726737088` 已覆盖 Linux/Windows 原生作业，
+工作区门禁 `38726737126` 已通过。这里仍不改变模块既有 `verified` 依据。
 
 ### 3.3 **与静态溢出的耦合（已裁定归 20C 之前）**
 
