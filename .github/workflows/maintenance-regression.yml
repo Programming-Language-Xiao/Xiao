@@ -8,6 +8,7 @@ on:
       - "tests/fuzz/**"
       - "tests/benchmarks/**"
       - "tests/fixtures/**"
+      - "stdlib/**"
       - ".gitattributes"
   pull_request:
     paths:
@@ -16,6 +17,7 @@ on:
       - "tests/fuzz/**"
       - "tests/benchmarks/**"
       - "tests/fixtures/**"
+      - "stdlib/**"
       - ".gitattributes"
   workflow_dispatch:
 
