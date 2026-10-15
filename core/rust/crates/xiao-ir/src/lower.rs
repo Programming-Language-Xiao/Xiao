@@ -848,9 +848,18 @@ fn lower_modules(project: &ProjectModuleResult, source: &SourceFile) -> Vec<IrMo
                     function_signatures: BTreeMap::new(),
                     table_signatures: BTreeMap::new(),
                 };
+                // Standard-library module bodies are lowered into the native
+                // static-link path as well as the VM loader. Recheck their
+                // own source so scalar/`chr` intrinsic IDs survive lowering;
+                // ordinary project modules retain the historical summary-only
+                // lowering boundary.
+                let checked_types = name
+                    .to_string()
+                    .starts_with("stdlib.")
+                    .then(|| xiao_types::check(module_source, program));
                 let mut lowerer = Lowerer {
                     source: module_source,
-                    type_result: &empty_types,
+                    type_result: checked_types.as_ref().unwrap_or(&empty_types),
                     selection_plan_cursor: BTreeMap::new(),
                 };
                 lowerer.statements(&program.statements)

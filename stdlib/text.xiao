@@ -20,7 +20,7 @@ def is_ascii_upper(str value) -> bool
 def lower_ascii(str value) -> str
     result = ""
     for c in value
-        if is_ascii_upper(c)
+        if c >= "A" and c <= "Z"
             result = result + chr(int(c) + 32)
         else
             result = result + c

@@ -324,6 +324,10 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 | 动态值 | 标量构造/`as` 直接进入 Runtime 转换；动态赋值边界保持原规则 | VM 动态模块成员值可得到 `65`；原生模块字段仍受既有 `dict_table`/`table` 边界限制，不伪造成功证据 |
 | 库接口 | `stdlib/text.xiao` 新增纯 Xiao `lower_ascii(str value) -> str`，只转 ASCII `A`–`Z` | 不新增标准库专用 intrinsic；非 ASCII 与非字母原样保留 |
 
+自审核后补的原生回归修复：标准库模块函数现在在模块 lowering 时使用自身源码的类型结果，保留
+`int`/`chr` 等契约入口的 intrinsic ID；普通项目模块仍沿用摘要 lowering。该修复消除了首批 `path`
+原生测试中“动态函数调用”的误报，不改变标准库接口或转换边界。
+
 本地验证已通过：VM 第七批夹具 3 项通过，Windows LLVM 原生夹具 1 项通过；完整 Rust、clippy、fmt、Bun、
 仓库检查与 TypeScript 门禁均已通过。
 `workspace-gates` 的结构修改已独立提交为 `8a7e8ef`；功能实现和库接口随后另行提交，避免把
