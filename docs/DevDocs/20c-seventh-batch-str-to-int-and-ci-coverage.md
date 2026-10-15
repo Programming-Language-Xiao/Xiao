@@ -17,10 +17,11 @@
 **审核后并入四条返工（§十二）**：**F-1 / F-3 已执行并完成 CI 复核**（F-3 取甲「还原内联」，
 改动只在 `stdlib/text.xiao`）；**F-4 与 §十 的限定已由审核侧在本节所在提交里改完**；
 **F-2 取乙「只登记」**，作为下一批前置。
-**第二轮审核并入三条（§十三）**：**G-1** R-1 的触发取证被证伪（`38734698592` 那次 push
-带了两个 `docs/**`，属搭车）——取**甲：一次性分支做正例**，**待补**；
-**G-2** `stdlib/**` 在维护回归里缺席（**审核侧自己 §2.1 冻结第 2 条的洞**）——取**甲：加进维护回归**；
-**G-3** README 未区分 push 与 dispatch，已订正。G-1/G-2 的**动作待实现侧执行**。
+**第二轮审核并入三条（§十三）**：**G-1/G-2 已执行并完成 CI 取证**：一次性分支
+`audit/20c-stdlib-trigger-20261015` 只改 `stdlib/text.xiao`，workspace gates 与维护回归
+分别由 `38753601863`、`38753601939` 的真实 `push` 触发并成功；`maintenance-regression.yml`
+已由 `bfd3f69` 将 `stdlib/**` 加入 `push`/`pull_request` 白名单。**G-3** README 已区分
+push 与 dispatch；**G-1/G-2 的临时分支已删除，本文证据已回填**。
 
 ## 一、为什么是这一批
 
@@ -283,13 +284,11 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 
 ## 八、验收
 
-1. **R-1**：`stdlib/**` 已在 `workspace-gates.yml` 的 `push` 与 `pull_request` 两处 `paths` 里；
-   **有一次真实 push 的运行号**证明「只改 `stdlib/` 也能触发」——
-   本机跑过**不算**。~~`stdlib/**` 单独改动触发的 workspace gates 运行是 `38734698592`~~——
-   **这句已被第二轮审核证伪**（那次 push 同时带了两个 `docs/**` 文件，见 §13.1），
-   **R-1 的取证仍是空的、待补**；修复后的维护回归运行 `38736878202` 与 Windows/Linux 原生作业**成立**；
-   `maintenance-regression.yml` 的 `paths` 在**当时**未被顺手扩大，
-   但 §13.2 已裁定要**补上** `stdlib/**`；
+1. **R-1/G-2**：`stdlib/**` 已在 `workspace-gates.yml` 与 `maintenance-regression.yml` 的
+   `push`、`pull_request` 两处 `paths` 里；一次性分支只改 `stdlib/text.xiao`，真实 `push`
+   触发的 workspace gates `38753601863` 与维护回归 `38753601939` 均成功，证明轻量门禁和
+   双平台原生门禁都会被标准库改动触发。旧运行 `38734698592` 仍只作为被证伪的历史记录，
+   不承担 R-1 证据；临时分支已删除。
 2. **R-2**：同一轻量工作流的两处 `paths` 已加入 `.github/workflows/platform-reproduction.yml`，
    使其自身改动获得工作区门禁信号；没有把它加入维护回归的原生矩阵；
 3. **裁决**：§四 的裁决以**直接裁定**记（[20C](20c-official-xiao-library.md) §2.4 **G-2**：
@@ -346,23 +345,24 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 本地验证已通过：VM 第七批夹具 3 项通过，Windows LLVM 原生夹具 1 项通过；完整 Rust、clippy、fmt、Bun、
 仓库检查与 TypeScript 门禁均已通过。远端工作区门禁与维护回归也已通过，真实 push 与最新维护回归取证见 §十一。
 `workspace-gates` 的结构修改已独立提交为 `8a7e8ef`；功能实现和库接口随后另行提交，避免把
-触发面修复与语言补探混成一笔。~~R-1 的真实 push 取证由 `38734698592`（workspace gates）完成~~——
-**该句已被第二轮审核证伪，取证待补（§13.1）**；
-最新维护回归 `38736878202` 在同一 `7eeffbc` 提交上复核了 F-3，原生作业逐项记录见 §十一。
+触发面修复与语言补探混成一笔。G-2 的维护回归路径修复提交为 `bfd3f69`；G-1 的临时分支
+提交为 `6858a28`，只含 `stdlib/text.xiao` 的注释改动，两个 push 工作流运行号与原生作业
+逐项记录见 §十一。此前手动维护回归 `38736878202` 仍保留为 `7eeffbc` 上的 F-3 复核证据。
 
 ## 十一、CI 取证（2026-10-15）
 
 | 工作流/作业 | 运行号 | 实测执行点 |
 | --- | --- | --- |
-| `Xiao workspace gates` | `38734698592` | 该次 push **并非**只改 `stdlib/`（含两个 `docs/**` 文件），**不能**作为 R-1 的触发证据——见 §13.1 |
-| `Xiao maintenance regression` | `38736878202` | 五个作业全成功，基于最新 `7eeffbc` 手动触发 |
-| Linux 默认测试 | `116428319381` | Rust workspace default tests 成功，包含第七批 VM 回归 |
-| Linux 原生差分 | `116428319504` | `first_modules_match_native_results` 通过；第七批夹具逐字输出 `65`、`23567`、`38634`、`a`、`😀`、`abcxyz-az-9小` |
-| Windows 原生差分 | `116428319497` | `first_modules_match_native_results` 通过；同一第七批夹具逐字输出一致 |
+| `Xiao workspace gates` | `38753601863` | 临时分支 `6858a28` 的 `push`；只改 `stdlib/text.xiao`，workspace gates 成功 |
+| `Xiao maintenance regression` | `38753601939` | 同一临时分支的 `push`；五个作业全成功 |
+| Linux 默认测试 | `116486098784` | Rust workspace default tests 成功 |
+| Linux 原生差分 | `116486098841` | `first_modules_match_native_results ... ok`、`seventh_batch::native_matches_codepoint_round_trip_and_errors ... ok` |
+| Windows 原生差分 | `116486098536` | `first_modules_match_native_results ... ok`、`seventh_batch::native_matches_codepoint_round_trip_and_errors ... ok` |
 
 本次维护回归首次因标准库模块 lowering 的旧摘要路径暴露失败（运行 `38715001722`）；修复后
-`38726737088` 先行全绿，随后在还原模块内调用后的最新提交上由 `38736878202` 再次全绿。
-第七批没有借用失败运行作通过证据。
+`38726737088` 先行全绿，`38736878202` 再以手动派发方式复核 `7eeffbc`，随后标准库独立
+push 在 `38753601939` 再次完成五作业回归。第七批没有借用失败运行作通过证据；
+`38734698592` 因夹带 `docs/**` 仅保留为被证伪的历史记录。
 
 ## 十二、审核回填与勘误（审核侧，2026-10-15）
 
@@ -516,6 +516,10 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 **注意这条裁定的边界**：它只取**正例**（触发即够）。
 若要更强（证明门禁会因 stdlib 内容**变红**），那是 G-1 先例的形态，**本裁定没有要求**。
 
+**执行结果（已完成）**：临时分支 `audit/20c-stdlib-trigger-20261015` 的提交 `6858a28`
+只改 `stdlib/text.xiao`，触发 workspace gates `38753601863` 与维护回归 `38753601939`；
+两条运行均成功，分支已在取证后删除。
+
 ### 13.2 **G-2（中）：`stdlib/**` 在维护回归里缺席——审核侧自己的洞**
 
 本批 §2.1 冻结第 2 条原文：
@@ -537,6 +541,9 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 **裁定（星崽，2026-10-15）：甲——把 `stdlib/**` 加进维护回归。**
 在 `maintenance-regression.yml` 的 `push` 与 `pull_request` 两处 `paths` 补上 `stdlib/**`。
 **这推翻本批 §2.1 冻结第 2 条**；该条的依据（「由 fixtures 变动时的测试覆盖」）经核**不成立**。
+
+**执行结果（已完成）**：`bfd3f69` 已在两处 `paths` 加入 `stdlib/**`；随后 G-1 临时分支的
+`38753601939` 以真实 `push` 运行五个作业，Linux/Windows 原生作业均成功。
 
 ### 13.3 **G-3（低）：README 未区分「push 触发」与「手动派发」**
 
@@ -564,17 +571,16 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
   这正是 F-3 想恢复的那处覆盖，**现在有 CI 记录**；
 - `bun run check` = 0（审核侧现跑）。
 
-### 13.6 待实施清单（**交给实现侧**）
+### 13.6 执行记录
 
 | # | 改动 | 出处 | 备注 |
 | --- | --- | --- | --- |
-| 1 | 一次性分支：**只改 `stdlib/`** 一个文件，推上去确认工作区门禁触发，取证后删分支 | §13.1（G-1 甲） | **不许**夹带 `docs/**` 等；**不许**在 main 上做 |
-| 2 | `maintenance-regression.yml` 两处 `paths` 补 `stdlib/**` | §13.2（G-2 甲） | 注意该文件**自己在 paths 里**，所以这一笔会触发维护回归 |
-| 3 | 取证后回填本文 §八 第 1 条、§十一 与 `README.md` 的运行号，去掉「待补」 | §13.1 | 三处要**同笔** |
+| 1 | 一次性分支：**只改 `stdlib/`** 一个文件，推上去确认工作区门禁触发，取证后删分支 | §13.1（G-1 甲） | 已完成：`6858a28`；workspace gates `38753601863`；分支已删除 |
+| 2 | `maintenance-regression.yml` 两处 `paths` 补 `stdlib/**` | §13.2（G-2 甲） | 已完成：`bfd3f69`；维护回归 `38753601939` 成功 |
+| 3 | 取证后回填本文 §八 第 1 条、§十一 与 `README.md` 的运行号，去掉「待补」 | §13.1 | 已完成：本文提交与 `README.md` 同步回填 |
 
-**第 2 条的顺带效果**：补上之后，**第 1 条的一次性分支推送会同时触发两个工作流**——
-那反而是更强的证据（说明 `stdlib/` 现在既有轻量门禁也有原生门禁）。
-若两者都触发，**取证要分别记两个运行号**。
+**第 2 条的顺带效果已验证**：第 1 条的一次性分支推送同时触发两个工作流，分别取得
+`38753601863` 与 `38753601939`；这证明 `stdlib/` 现在既有轻量门禁也有原生门禁。
 
 ## 相关页面
 

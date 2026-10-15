@@ -491,8 +491,8 @@ ASCII 大写分类可写；`text` 保留纯 Xiao 的 `is_ascii_upper(str value) 
 接通 `str` → `int`/`sint`/`lint` 的单 Unicode 码点转换与 `chr` 回程；`chr` 作为语言能力进入
 `xiao-intrinsics` 契约表，但没有新增标准库专用 intrinsic。`text` 新增纯 Xiao
 `lower_ascii(str value) -> str`，只冻结 ASCII `A`–`Z` 到小写的规则，非 ASCII 与非字母原样保留。
-VM 与 Linux/Windows LLVM 的受控双路径已通过；最新维护回归 `38736878202` 已覆盖 Linux/Windows
-原生作业，工作区门禁 `38734698592` 已通过。这里仍不改变模块既有 `verified` 依据。
+VM 与 Linux/Windows LLVM 的受控双路径已通过；标准库独立 push 的维护回归 `38753601939` 已覆盖
+Linux/Windows 原生作业，workspace gates `38753601863` 也已通过。这里仍不改变模块既有 `verified` 依据。
 
 ### 3.3 **与静态溢出的耦合（已裁定归 20C 之前）**
 
