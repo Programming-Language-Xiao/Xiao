@@ -76,6 +76,27 @@ fn main() {
                     assert_eq!(row.effect, "pure", "标量转换必须是 pure: {}", row.name);
                     assert_eq!(row.capability, "none", "标量转换不应需要能力: {}", row.name);
                 }
+                "char_constructor" => {
+                    assert_eq!(row.arity, "one", "字符构造必须是一元: {}", row.name);
+                    assert_eq!(
+                        row.parameter_type, "dynamic",
+                        "字符构造参数必须是 dynamic: {}",
+                        row.name
+                    );
+                    assert_eq!(row.return_type, "str", "字符构造必须返回 str: {}", row.name);
+                    assert_eq!(
+                        row.vm_binding, "char_constructor",
+                        "字符构造缺少绑定: {}",
+                        row.name
+                    );
+                    assert_eq!(
+                        row.abi_binding, "none",
+                        "字符构造不应声明 ABI 绑定: {}",
+                        row.name
+                    );
+                    assert_eq!(row.effect, "pure", "字符构造必须是 pure: {}", row.name);
+                    assert_eq!(row.capability, "none", "字符构造不应需要能力: {}", row.name);
+                }
                 "set_constructor" => {
                     assert_eq!(row.arity, "zero", "set 构造必须是零元: {}", row.name);
                     assert_eq!(row.return_type, "set", "set 构造必须返回 set: {}", row.name);

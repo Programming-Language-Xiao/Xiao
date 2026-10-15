@@ -10,7 +10,7 @@ use xiao_syntax::{
     BinaryOperator, CallArgument, Expression, LiteralKind, ScalarType, UnaryOperator,
 };
 
-use crate::conversion::{ConversionKind, can_assign, classify_conversion, is_numeric};
+use crate::conversion::{ConversionKind, can_assign, classify_conversion, is_integer, is_numeric};
 use crate::diagnostics::*;
 use crate::numeric::{
     binary_scalar_type, is_decimal_integer, parse_float_literal, parse_integer_literal,
@@ -517,6 +517,10 @@ impl<'source> TypeChecker<'source> {
             self.record_intrinsic_call(callee, span);
             return self.check_set_constructor(arguments, span);
         }
+        if self.is_char_constructor(callee) {
+            self.record_intrinsic_call(callee, span);
+            return self.check_char_constructor(arguments, span);
+        }
         if self
             .function_callee_key(callee)
             .is_some_and(|key| self.function_signatures.contains_key(&key))
@@ -644,14 +648,28 @@ impl<'source> TypeChecker<'source> {
                     && !constant_known
                     && !self.has_errors_since(source_diagnostics)
                 {
-                    self.push_runtime_check(
-                        arguments[0].value.span(),
-                        match conversion.kind {
-                            ConversionKind::StrToBool => RuntimeCheckKind::StringBoolean,
-                            ConversionKind::RuntimeChecked => RuntimeCheckKind::DynamicConversion,
-                            _ => RuntimeCheckKind::NumericRange,
-                        },
-                    );
+                    // 标量转换本身就是 Runtime 的内容/范围检查入口；通用
+                    // dynamic_conversion 只服务于赋值槽和错误边界，不能在
+                    // `str -> int`/动态标量构造前把值提前拦掉。
+                    match conversion.kind {
+                        ConversionKind::StrToBool => self.push_runtime_check(
+                            arguments[0].value.span(),
+                            RuntimeCheckKind::StringBoolean,
+                        ),
+                        ConversionKind::NumericNarrowing => self.push_runtime_check(
+                            arguments[0].value.span(),
+                            RuntimeCheckKind::NumericRange,
+                        ),
+                        ConversionKind::RuntimeChecked if is_integer(target) => {}
+                        ConversionKind::RuntimeChecked => {
+                            self.push_runtime_check(
+                                arguments[0].value.span(),
+                                RuntimeCheckKind::DynamicConversion,
+                            );
+                        }
+                        ConversionKind::StrToInteger => {}
+                        _ => {}
+                    }
                 }
                 Type::scalar(target)
             }
@@ -665,6 +683,35 @@ impl<'source> TypeChecker<'source> {
                 Type::Dynamic
             }
         }
+    }
+
+    /// 检查 `chr` 的输入类型；码点范围与字符串长度留给 Runtime，避免常量折叠。
+    fn check_char_constructor(&mut self, arguments: &[CallArgument], span: SourceSpan) -> Type {
+        if arguments.len() != 1 {
+            self.type_error(
+                INVALID_OPERANDS_CODE,
+                "x02.type.conversion_arity",
+                span,
+                "chr 必须接收一个参数".to_string(),
+            );
+            return Type::Dynamic;
+        }
+        let source_type = self.check_expression(&arguments[0].value);
+        if source_type.is_dynamic()
+            || matches!(
+                source_type,
+                Type::Scalar(ScalarType::Sint | ScalarType::Int | ScalarType::Lint)
+            )
+        {
+            return Type::scalar(ScalarType::Str);
+        }
+        self.type_error(
+            INVALID_CONVERSION_CODE,
+            "x02.type.invalid_conversion",
+            arguments[0].value.span(),
+            format!("cannot convert {} to str character", source_type),
+        );
+        Type::Dynamic
     }
 
     /// 检查函数值调用的参数数量、参数类型和返回类型。
@@ -749,14 +796,20 @@ impl<'source> TypeChecker<'source> {
                     && !constant_known
                     && !self.has_errors_since(source_diagnostics)
                 {
-                    self.push_runtime_check(
-                        span,
-                        match conversion.kind {
-                            ConversionKind::StrToBool => RuntimeCheckKind::StringBoolean,
-                            ConversionKind::RuntimeChecked => RuntimeCheckKind::DynamicConversion,
-                            _ => RuntimeCheckKind::NumericRange,
-                        },
-                    );
+                    match conversion.kind {
+                        ConversionKind::StrToBool => {
+                            self.push_runtime_check(span, RuntimeCheckKind::StringBoolean)
+                        }
+                        ConversionKind::NumericNarrowing => {
+                            self.push_runtime_check(span, RuntimeCheckKind::NumericRange)
+                        }
+                        ConversionKind::RuntimeChecked if is_integer(target) => {}
+                        ConversionKind::RuntimeChecked => {
+                            self.push_runtime_check(span, RuntimeCheckKind::DynamicConversion)
+                        }
+                        ConversionKind::StrToInteger => {}
+                        _ => {}
+                    }
                 }
                 Type::scalar(target)
             }

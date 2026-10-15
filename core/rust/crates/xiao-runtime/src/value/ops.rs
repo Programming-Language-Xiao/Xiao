@@ -217,6 +217,9 @@ impl RuntimeValue {
         }
         match (source, target) {
             (ScalarType::Str, ScalarType::Bool) => self.convert_str_to_bool(),
+            (ScalarType::Str, ScalarType::Sint | ScalarType::Int | ScalarType::Lint) => {
+                self.convert_str_to_integer(target)
+            }
             (ScalarType::Bool, ScalarType::Str) => {
                 Self::new_string(if self.as_bool() == Some(true) {
                     "true"
@@ -311,6 +314,56 @@ impl RuntimeValue {
             )));
         }
         Ok(Self::Bool(text.eq_ignore_ascii_case("true")))
+    }
+
+    /// 将恰好一个 Unicode 标量值的文本转换为码点整数。
+    fn convert_str_to_integer(&self, target: ScalarType) -> RuntimeResult<Self> {
+        let Self::Str(handle) = self else {
+            return Err(RuntimeError::type_mismatch("str", self.type_name()));
+        };
+        let text = handle.to_string()?;
+        let mut characters = text.chars();
+        let Some(character) = characters.next() else {
+            return Err(RuntimeError::invalid_value(
+                "str 到整数码点要求文本恰好包含一个 Unicode 标量值",
+            ));
+        };
+        if characters.next().is_some() {
+            return Err(RuntimeError::invalid_value(
+                "str 到整数码点要求文本恰好包含一个 Unicode 标量值",
+            ));
+        }
+        let codepoint = i128::from(u32::from(character));
+        Ok(match target {
+            ScalarType::Sint => Self::Sint(codepoint as i32),
+            ScalarType::Int => Self::Int(codepoint as i64),
+            ScalarType::Lint => Self::Lint(codepoint.to_string()),
+            _ => unreachable!("调用方已限定整数目标"),
+        })
+    }
+
+    /// 将整数码点构造成恰好一个 Unicode 标量值的文本。
+    pub fn to_char(&self) -> RuntimeResult<Self> {
+        let codepoint = match self {
+            Self::Sint(value) => i128::from(*value),
+            Self::Int(value) => i128::from(*value),
+            Self::Lint(value) => value
+                .parse::<i128>()
+                .map_err(|_| RuntimeError::invalid_value("lint 不是合法的 Unicode 码点整数"))?,
+            other => {
+                return Err(RuntimeError::type_mismatch("integer", other.type_name()));
+            }
+        };
+        let codepoint = u32::try_from(codepoint)
+            .map_err(|_| RuntimeError::invalid_value("Unicode 码点必须在 0..=0x10FFFF 范围内"))?;
+        if (0xD800..=0xDFFF).contains(&codepoint) {
+            return Err(RuntimeError::invalid_value(
+                "Unicode 码点不能落在 UTF-16 代理区",
+            ));
+        }
+        let character = char::from_u32(codepoint)
+            .ok_or_else(|| RuntimeError::invalid_value("Unicode 码点必须对应合法标量值"))?;
+        Self::new_string(character.to_string())
     }
 
     /// 读取 `sint` 载荷。
@@ -491,7 +544,9 @@ fn range_error(name: &str) -> RuntimeError {
 /// 算术、比较、相等和显式转换的回归测试。
 mod tests {
     use super::RuntimeValue;
-    use crate::errors::{DIVISION_BY_ZERO_CODE, NUMERIC_OVERFLOW_CODE, RuntimeError};
+    use crate::errors::{
+        DIVISION_BY_ZERO_CODE, INVALID_VALUE_CODE, NUMERIC_OVERFLOW_CODE, RuntimeError,
+    };
     use xiao_syntax::ScalarType;
 
     /// 构造 `int` 值。
@@ -621,6 +676,43 @@ mod tests {
             Ok(RuntimeValue::Bool(false))
         );
         assert!(text("yes").convert_to(ScalarType::Bool).is_err());
+    }
+
+    #[test]
+    /// 验证字符串单码点转换覆盖 ASCII、非 ASCII 与三种整数宽度。
+    fn converts_single_codepoint_to_integer() {
+        assert_eq!(text("A").convert_to(ScalarType::Int), Ok(int(65)));
+        assert_eq!(
+            text("小").convert_to(ScalarType::Sint),
+            Ok(RuntimeValue::Sint(23567))
+        );
+        assert_eq!(
+            text("雪").convert_to(ScalarType::Lint),
+            Ok(RuntimeValue::Lint("38634".to_owned()))
+        );
+        for value in ["", "AB", "42"] {
+            assert_eq!(
+                code(
+                    text(value)
+                        .convert_to(ScalarType::Int)
+                        .expect_err("非法码点文本")
+                ),
+                INVALID_VALUE_CODE
+            );
+        }
+    }
+
+    #[test]
+    /// 验证 `chr` 拒绝负数、越界码点和 UTF-16 代理区。
+    fn constructs_and_rejects_unicode_scalar_values() {
+        assert_eq!(int(97).to_char(), Ok(text("a")));
+        assert_eq!(RuntimeValue::Sint(0x1F600).to_char(), Ok(text("😀")));
+        for value in [int(-1), int(0x11_0000), int(0xD800)] {
+            assert_eq!(
+                code(value.to_char().expect_err("非法 Unicode 码点")),
+                INVALID_VALUE_CODE
+            );
+        }
     }
 
     #[test]

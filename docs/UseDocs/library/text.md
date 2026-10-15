@@ -13,6 +13,7 @@ related:
   - ../../DevDocs/20c-second-batch-probe.md
   - ../../DevDocs/20c-fifth-batch-reprobe-and-library.md
   - ../../DevDocs/20c-sixth-batch-case-conversion-and-api-closeout.md
+  - ../../DevDocs/20c-seventh-batch-str-to-int-and-ci-coverage.md
 ---
 
 # 官方 `text` 模块
@@ -75,5 +76,23 @@ from stdlib.text import is_ascii_upper
 print(is_ascii_upper("A"))
 ```
 
-本批不提供填充/对齐/进制格式化、子串查找、切分、切片、完整大小写转换或集合操作。官方库不通过普通包依赖安装，
+## `lower_ascii`
+
+```xiao
+lower_ascii(str value) -> str
+```
+
+只把 ASCII `A`–`Z` 转成对应的小写码点，其他字符原样保留。该接口冻结 ASCII 范围，
+不承诺 Unicode 或 locale 大小写规则。
+
+```xiao
+from stdlib.text import lower_ascii
+
+print(lower_ascii("Az-9"))
+```
+
+本批不提供填充/对齐/进制格式化、子串查找、切分、切片、完整 Unicode 大小写转换或集合操作。官方库不通过普通包依赖安装，
 `stdlib.` 是工具链保留命名空间，接口兼容身份由 `StandardLibraryIdentity` 提供。
+
+第七批的 `lower_ascii` 已在 VM 与 Windows LLVM 受控本地路径通过；真实 push 的 CI 运行号待补，
+本机结果不替代远端覆盖证据。

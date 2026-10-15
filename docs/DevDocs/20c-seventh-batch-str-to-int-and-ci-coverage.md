@@ -11,8 +11,9 @@
 > **一句话概括**：**先裁定这一批做几条**（只做去程，还是去程 + 回程），
 > 再顺手补一个结构性缺口（`stdlib/**` 改动目前**零 CI 信号**，§二）。
 
-状态：**规划完成（2026-10-15）**：§九 六条**全部裁定**，边界真值由 §五 补探产出。
-未改任何代码。
+状态：**已实施（2026-10-15）**：§九 六条**全部裁定**已落地；`str` → 三种整数、`chr` 回程、
+`text.lower_ascii` 与 R-1/R-2 已完成。VM 与 Windows LLVM 受控本地双路径已通过；真实 push
+触发的 CI 运行号仍待补，不能用本机运行冒充远端取证。
 
 ## 一、为什么是这一批
 
@@ -61,8 +62,9 @@
 **事实**：另两个工作流各自只列了**自己**那个文件名，所以改 `platform-reproduction.yml`
 不会触发任何工作流——**守着其它一切的那个工作流，自己没有被守**。
 
-**处置见 §四**（要不要一起改，由星崽定）。它比 R-1 轻：它有 `workflow_dispatch`，
-改完可以手动派发一次自证。
+**本批随 R-1 一起处理**：在轻量 `workspace-gates.yml` 的 `push.paths` 与
+`pull_request.paths` 加入 `.github/workflows/platform-reproduction.yml`，让平台复现工作流
+的自身改动至少触发一次工作区门禁；不把平台复现的原生矩阵并入维护回归。
 
 ### 2.3 不是问题的（记下来免得下次重查）
 
@@ -197,22 +199,47 @@
 **判据**：第 1、2 两条**双路径同码**即算复核通过；第 3–5 条**先在探针里写真值**，
 再拿来当实现后的验收断言——**不许**先写实现再补真值。
 
-## 六、落点（**待两道裁决落地后才最终确定**）
+### 5.1 改动前补探实测结果（2026-10-15）
+
+下表记录实现前的真实基线。第 1 条沿用第五批同一夹具的 VM/Windows LLVM 双路径复核；第 2 条
+使用临时项目模块的动态成员值（实际值是 `str`），在旧实现中两条路径都被通用动态检查挡住。
+第 3–6 条先以 VM 探针取真值，原生入口在同一前端层给出相同拒绝身份。
+
+| # | 夹具形态 | VM | Windows LLVM 原生 | 实现前结论 |
+| --- | --- | --- | --- | --- |
+| 1 | `int("A")`、`"A" as int` | 前端 `X02-TYPE-006` | 前端 `X02-TYPE-006` | 去程缺臂 |
+| 2 | 动态 `str` 成员 → `int` | Runtime `X06-RUNTIME-002` | 进程状态 `3`，stderr `X06-RUNTIME-002` | 通用 `dynamic_conversion` 提前拦截，尚未到 `convert_to` |
+| 3 | `int("42")` / `"42" as int` | 前端 `X02-TYPE-006` | 前端 `X02-TYPE-006` | 多字符规则尚无实现入口 |
+| 4 | `"A" as sint`、`"A" as lint` | 前端 `X02-TYPE-006` | 前端 `X02-TYPE-006` | 三宽度均缺去程 |
+| 5 | 空串、多字符、`"小"` | 前端 `X02-TYPE-006` | 前端 `X02-TYPE-006` | 需由新 Runtime 语义分别给出空/多码点拒绝与非 ASCII 成功 |
+| 6 | `chr(-1)`、`chr(1114112)`、`chr(55296)` | 前端 `X02-TYPE-001`（`chr` 未定义） | 前端 `X02-TYPE-001` | 回程无语言入口 |
+
+补探结论先于实现成立：去程必须只接受一个 Unicode 码点，`"小"` 应成功、`"42"` 与空串应报
+`X06-RUNTIME-012`；回程三个非法边界也统一报 `X06-RUNTIME-012`。探针没有使用变量下标、临时
+intrinsic 或 Rust 下沉逻辑。
+
+### 5.2 统一历史探针的新真值
+
+第七批后，统一探测清单里的两个旧夹具也转为成功用例：`fifth-case-conversion.xiao` 输出 `65`；
+`second-case-conversion.xiao` 因其夹具把字符码点加 `32` 后直接打印整数，输出 `9798`。
+因此 `c20_capability_probe.rs` 已把两条历史期望从旧 `X02-TYPE-006` 改为 VM 成功输出，并新增
+`seventh-str-int-and-char.xiao` 条目。旧批次文档保留其当时的拒绝真值与历史结论，不追溯改写。
+
+## 六、落点（已按两道裁决落地）
 
 现有事实（已核，行号按 2026-10-15 的 `main`）：
 
 ```text
-core/rust/crates/xiao-types/src/conversion.rs:87-106   转换矩阵（去程要在此加臂）
-core/rust/crates/xiao-types/src/conversion.rs:111-114  requires_runtime_check（解析会失败 ⇒ 必须为 true）
+core/rust/crates/xiao-types/src/conversion.rs:87-106   转换矩阵（已加入 `StrToInteger`）
+core/rust/crates/xiao-types/src/conversion.rs:111-114  `requires_runtime_check`（去程保持 true）
 core/rust/crates/xiao-types/src/diagnostics.rs:17      INVALID_CONVERSION_CODE = "X02-TYPE-006"
-core/rust/crates/xiao-runtime/src/value/ops.rs:218-274 convert_to 的 match（运行时侧）
-core/rust/crates/xiao-runtime/src/value/ops.rs:303-314 convert_str_to_bool（最接近的先例：运行时检查 + 失败报错）
-core/rust/crates/xiao-runtime/src/value/ops.rs:261-268 (Lint|Lfloat, _) 的兜底——不是本批的对象，别顺手改
+core/rust/crates/xiao-runtime/src/value/ops.rs:218-274 `convert_to` 的 match（运行时侧）
+core/rust/crates/xiao-runtime/src/value/ops.rs:303-314 `convert_str_to_bool` 与码点转换并列
+core/rust/crates/xiao-runtime/src/value/ops.rs:261-268 `(Lint|Lfloat, _)` 的兜底——本批不扩数值债
 ```
 
 **诊断身份**：转换失败**复用现成的 `X06-RUNTIME-012`**（`xiao-diagnostics/src/lib.rs:41`
-的 `INVALID_VALUE_CODE`，`message_id = runtime.invalid_value`，经 `lib.rs:856` 的
-`RuntimeError::invalid_value` 产生）——`str as bool` 解析失败走的就是它。
+的 `INVALID_VALUE_CODE`，`message_id = runtime.invalid_value`，经 `RuntimeError::invalid_value` 产生）。
 **不需要新档位**，本批也不得顺手新增。
 
 **其余落点（去程 + 回程都取用时）**：
@@ -228,7 +255,7 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 
 ## 七、执行顺序（**顺序本身是约束**）
 
-1. **先做 R-1**（§2.1）并**推一次**——理由是顺序性的：本批后半段要往 `stdlib/` 加接口，
+1. **先做 R-1 与 R-2**（§2.1/§2.2）并**推一次**——理由是顺序性的：本批后半段要往 `stdlib/` 加接口，
    而**加完再补门禁**的话，那个接口的第一次 CI 记录仍然是「搭别的路径的车」得来的；
 2. **§五 补探**，成表，**结论先汇报**；
 3. **两道裁决**（§四）落定后再动代码；
@@ -246,16 +273,20 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 
 1. **R-1**：`stdlib/**` 已在 `workspace-gates.yml` 的 `push` 与 `pull_request` 两处 `paths` 里；
    **有一次真实 push 的运行号**证明「只改 `stdlib/` 也能触发」——
-   本机跑过**不算**；`maintenance-regression.yml` 的 `paths` **未被顺手扩大**；
-2. **裁决**：§四 的裁决以**直接裁定**记（[20C](20c-official-xiao-library.md) §2.4 **G-2**：
+   本机跑过**不算**。实现提交尚未推送，运行号待补；`maintenance-regression.yml` 的 `paths`
+   **未被顺手扩大**；
+2. **R-2**：同一轻量工作流的两处 `paths` 已加入 `.github/workflows/platform-reproduction.yml`，
+   使其自身改动获得工作区门禁信号；没有把它加入维护回归的原生矩阵；
+3. **裁决**：§四 的裁决以**直接裁定**记（[20C](20c-official-xiao-library.md) §2.4 **G-2**：
    一致不等于推定），并写明落点；
-3. **补探**：五问成表，每问给**层 + 码**；第 1、2 问双路径同码；第 3–5 问的真值先于实现存在；
+4. **补探**：六问成表，每问给**层 + 码**；第 1、2 问双路径同码；第 3–6 问的真值先于实现存在；
    **没有**用变量下标、临时 intrinsic 或 Rust 下沉绕开；
-4. **实现**（若取乙）：`str` → `int` 与回程**都**在转换矩阵里有臂、`requires_runtime_check == true`、
-   失败报 `X06-RUNTIME-012`；**没有**改 `int as str` 的既有语义；**没有**新增诊断档位；
+5. **实现**：`str` → `int`/`sint`/`lint` 与 `chr` 回程均已接通；去程转换对象的
+   `requires_runtime_check == true`，非法输入报 `X06-RUNTIME-012`；**没有**改 `int as str` 的既有语义；
+   **没有**新增诊断档位；
    **没有**顺带扩到浮点；
-5. **诚实**：本批**不许**把大小写转换写成「已解封」而不给接口与双路径证据；
-6. **通用**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit` 全绿；
+6. **诚实**：本批**不许**把大小写转换写成「已解封」而不给接口与双路径证据；
+7. **通用**：`cargo test --workspace`、clippy、fmt、`bun test`、`bun run check`、`bunx tsc --noEmit` 全绿；
    提交标题带类型前缀、正文非空。
 
 ## 九、裁定结果（星崽直接裁定，2026-10-15）
@@ -281,6 +312,24 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 **机制**与**命名**，两处都不在原选项的文字里——逐条见 §4.2.1。
 **不许**把第 2 条的裁定直接当成「回程已经定完了」。
 
+## 十、实施与自审核（2026-10-15）
+
+实现按裁定落在以下边界：
+
+| 项目 | 落点 | 自审核结论 |
+| --- | --- | --- |
+| 去程 | `ConversionKind::StrToInteger`；`int`、`sint`、`lint` 三个构造式与 `as` 共用矩阵 | 只接受恰好一个 Unicode 码点；不做常量折叠、不扩浮点 |
+| 回程 | `chr`，契约表新增 `CharConstructor` 类别和单一入口 | 只接受三种整数；不改变 `int as str` |
+| Runtime | VM `RuntimeValue::convert_to` 与 `to_char`；原生 Runtime ABI 同步接线 | 空串、多字符、负数、越界和代理区均为 `X06-RUNTIME-012` |
+| 动态值 | 标量构造/`as` 直接进入 Runtime 转换；动态赋值边界保持原规则 | VM 动态模块成员值可得到 `65`；原生模块字段仍受既有 `dict_table`/`table` 边界限制，不伪造成功证据 |
+| 库接口 | `stdlib/text.xiao` 新增纯 Xiao `lower_ascii(str value) -> str`，只转 ASCII `A`–`Z` | 不新增标准库专用 intrinsic；非 ASCII 与非字母原样保留 |
+
+本地验证已通过：VM 第七批夹具 3 项通过，Windows LLVM 原生夹具 1 项通过；完整 Rust、clippy、fmt、Bun、
+仓库检查与 TypeScript 门禁均已通过。
+`workspace-gates` 的结构修改已独立提交为 `8a7e8ef`；功能实现和库接口随后另行提交，避免把
+触发面修复与语言补探混成一笔。按 R-1 的硬性要求，尚未执行真实 push，因此本批不能声称已取得
+远端运行号，也不能仅凭本机原生结果把新增库接口写成 CI 已覆盖。
+
 ## 相关页面
 
 - [20C-第六批](20c-sixth-batch-case-conversion-and-api-closeout.md) —— **本批的直接前置**：§四乙 的登记与立项、§3.3 的规模线
@@ -288,4 +337,3 @@ docs/DevDocs/02-type-system.md            显式转换矩阵的更新（**与代
 - [20C-第四批](20c-fourth-batch-int-to-str.md) —— **`int` → `str` 十进制文本的冻结出处**（本批回程不能借它的道）
 - [20C-第二批](20c-second-batch-probe.md) §3.2 —— **复探口径的唯一出处**
 - [20C-门禁残余项](20c-native-gate-residuals-fix.md) §5.2.1 —— 「全绿运行不构成取证」与「本机不算数」
-- [02. 类型系统](02-type-system.md) §显式转换 —— 转换矩阵的规格面

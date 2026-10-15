@@ -32,7 +32,7 @@ const PROBES: [(&str, &str, Option<&str>); 2] = [
     ("arithmetic-error", "arithmetic-error.xiao", None),
 ];
 
-const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 21] = [
+const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 22] = [
     (
         "strings-path-representative",
         "strings-path-representative.xiao",
@@ -66,7 +66,12 @@ const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 21] = [
     (
         "fifth-case-conversion",
         "fifth-case-conversion.xiao",
-        ProbeExpectation::Frontend("X02-TYPE-006"),
+        ProbeExpectation::Success("65\n"),
+    ),
+    (
+        "seventh-str-int-and-char",
+        "seventh-str-int-and-char.xiao",
+        ProbeExpectation::Success("65\n23567\n38634\na\n😀\nabcxyz-az-9小\n"),
     ),
     (
         "fifth-string-literal-comparison",
@@ -126,7 +131,7 @@ const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 21] = [
     (
         "second-case-conversion",
         "second-case-conversion.xiao",
-        ProbeExpectation::Frontend("X02-TYPE-006"),
+        ProbeExpectation::Success("9798\n"),
     ),
     (
         "second-case-conversion-logic",

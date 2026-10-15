@@ -179,6 +179,8 @@ impl<'a> DynamicGenerator<'a> {
             "declare i32 @xiao_runtime_value_cast({}, ptr, ptr)",
             self.bytes_parameter_type()
         ));
+        self.declarations
+            .insert("declare i32 @xiao_runtime_value_chr(ptr, ptr)".to_owned());
         self.declarations.insert(format!(
             "declare i32 @xiao_runtime_dynamic_check({}, ptr)",
             self.bytes_parameter_type()
@@ -573,5 +575,24 @@ impl<'a> DynamicGenerator<'a> {
         let value = self.next_temp();
         self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {output}"));
         value
+    }
+
+    /// 发射整数码点到单字符文本的 Runtime 构造。
+    pub(super) fn emit_char_runtime(&mut self, value: &str, span: IrSpan) -> String {
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_value_chr(ptr {input}, ptr {output})"),
+            span,
+        );
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
+        result
     }
 }

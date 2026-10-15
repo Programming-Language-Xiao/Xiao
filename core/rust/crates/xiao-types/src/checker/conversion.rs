@@ -25,6 +25,12 @@ impl<'source> TypeChecker<'source> {
             .flatten()
     }
 
+    /// 识别按 Unicode 码点构造单字符字符串的 `chr` 入口。
+    pub(super) fn is_char_constructor(&self, callee: &Expression) -> bool {
+        self.intrinsic_decl(callee)
+            .is_some_and(|declaration| declaration.kind == IntrinsicKind::CharConstructor)
+    }
+
     /// 读取普通源码名称对应的 intrinsic 契约；反引号名称永远不会进入契约表。
     pub(super) fn intrinsic_decl(&self, callee: &Expression) -> Option<&'static IntrinsicDecl> {
         let Expression::Name(name) = callee else {

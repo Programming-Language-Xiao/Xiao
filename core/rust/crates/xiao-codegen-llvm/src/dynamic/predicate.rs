@@ -205,6 +205,7 @@ fn expression_uses_runtime(expression: &IrExpression) -> bool {
                             declaration.kind,
                             xiao_intrinsics::IntrinsicKind::Print
                                 | xiao_intrinsics::IntrinsicKind::Input
+                                | xiao_intrinsics::IntrinsicKind::CharConstructor
                                 | xiao_intrinsics::IntrinsicKind::SetConstructor
                                 | xiao_intrinsics::IntrinsicKind::ErrorConstructor
                         )

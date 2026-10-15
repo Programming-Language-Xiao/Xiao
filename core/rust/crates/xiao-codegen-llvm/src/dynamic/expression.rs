@@ -447,6 +447,21 @@ impl<'a> DynamicGenerator<'a> {
                 self.release_value(value);
                 Ok(result)
             }
+            xiao_intrinsics::VmBinding::CharConstructor => {
+                if arguments.len() != 1
+                    || arguments[0].kind != "positional"
+                    || arguments[0].name.is_some()
+                {
+                    return Err(CodegenError::Unsupported {
+                        feature: format!("{} 的构造参数形态", declaration.public_name),
+                        span: Some(span),
+                    });
+                }
+                let value = self.emit_expression(&arguments[0].value)?;
+                let result = self.emit_char_runtime(&value, span);
+                self.release_value(value);
+                Ok(result)
+            }
             xiao_intrinsics::VmBinding::Print => {
                 let mut values = Vec::with_capacity(arguments.len());
                 let mut deferred = Vec::with_capacity(arguments.len());

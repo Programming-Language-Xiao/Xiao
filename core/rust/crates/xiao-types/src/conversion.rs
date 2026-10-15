@@ -23,6 +23,8 @@ pub enum ConversionKind {
     StrToBool,
     /// `bool` 到小写 `str`。
     BoolToStr,
+    /// `str` 到单个 Unicode 码点整数。
+    StrToInteger,
     /// `int`/`sint`/`lint` 到十进制 `str`；不触发运行时检查。
     IntegerToStr,
     /// 源为动态值，需要运行时检查。
@@ -90,6 +92,8 @@ pub fn classify_conversion(
         ConversionKind::StrToBool
     } else if *source_scalar == ScalarType::Bool && target == ScalarType::Str {
         ConversionKind::BoolToStr
+    } else if *source_scalar == ScalarType::Str && is_integer(target) {
+        ConversionKind::StrToInteger
     } else if is_integer(*source_scalar) && target == ScalarType::Str {
         ConversionKind::IntegerToStr
     } else if is_numeric(*source_scalar) && is_numeric(target) {
@@ -110,7 +114,9 @@ pub fn classify_conversion(
         kind,
         requires_runtime_check: matches!(
             kind,
-            ConversionKind::NumericNarrowing | ConversionKind::StrToBool
+            ConversionKind::NumericNarrowing
+                | ConversionKind::StrToBool
+                | ConversionKind::StrToInteger
         ),
     })
 }
@@ -322,6 +328,12 @@ mod tests {
             .expect("str 到 bool 应可显式转换");
         assert_eq!(conversion.kind, ConversionKind::StrToBool);
         assert!(conversion.requires_runtime_check);
+        for target in [ScalarType::Sint, ScalarType::Int, ScalarType::Lint] {
+            let conversion = classify_conversion(&Type::scalar(ScalarType::Str), target)
+                .expect("str 到整数码点应可显式转换");
+            assert_eq!(conversion.kind, ConversionKind::StrToInteger);
+            assert!(conversion.requires_runtime_check);
+        }
         let conversion = classify_conversion(&Type::scalar(ScalarType::Int), ScalarType::Str)
             .expect("int 到 str 应可显式转换");
         assert_eq!(conversion.kind, ConversionKind::IntegerToStr);

@@ -50,6 +50,7 @@ pub enum DeclarationStatus {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum IntrinsicKind {
     ScalarConversion,
+    CharConstructor,
     SetConstructor,
     ErrorConstructor,
     Print,
@@ -102,6 +103,7 @@ pub enum Capability {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum VmBinding {
     ScalarCast,
+    CharConstructor,
     SetNew,
     MakeError,
     Print,
@@ -201,6 +203,18 @@ pub fn validate_table() -> Result<(), ContractError> {
                     if declaration.signature.arity != Arity::One
                         || declaration.signature.parameter != ValueType::Dynamic
                         || declaration.vm_binding != VmBinding::ScalarCast
+                        || declaration.abi_binding != AbiBinding::None
+                        || declaration.effects != Effects::Pure
+                        || declaration.capability != Capability::None
+                    {
+                        return Err(ContractError::SignatureMismatch(declaration.id));
+                    }
+                }
+                IntrinsicKind::CharConstructor => {
+                    if declaration.signature.arity != Arity::One
+                        || declaration.signature.parameter != ValueType::Dynamic
+                        || declaration.signature.return_type != ValueType::Str
+                        || declaration.vm_binding != VmBinding::CharConstructor
                         || declaration.abi_binding != AbiBinding::None
                         || declaration.effects != Effects::Pure
                         || declaration.capability != Capability::None

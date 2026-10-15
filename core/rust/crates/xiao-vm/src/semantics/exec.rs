@@ -1866,6 +1866,19 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     .map_err(Fault::Error)?;
                 Ok(Some(value))
             }
+            VmBinding::CharConstructor => {
+                if declaration.signature.arity != xiao_intrinsics::Arity::One
+                    || declaration.signature.parameter != xiao_intrinsics::ValueType::Dynamic
+                    || declaration.signature.return_type != xiao_intrinsics::ValueType::Str
+                    || arguments.len() != 1
+                    || arguments[0].keyword.is_some()
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "chr intrinsic 必须接收一个位置参数",
+                    )));
+                }
+                Ok(Some(arguments[0].value.to_char().map_err(Fault::Error)?))
+            }
             VmBinding::SetNew => {
                 if declaration.signature.arity != xiao_intrinsics::Arity::Zero
                     || !arguments.is_empty()

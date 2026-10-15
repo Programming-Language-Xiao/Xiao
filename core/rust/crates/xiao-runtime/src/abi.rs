@@ -1916,6 +1916,23 @@ pub extern "C" fn xiao_runtime_value_cast(
     unsafe { write_value(out, result) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
 }
 
+/// 执行整数码点到单字符文本的构造式转换。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_chr(value: *const XiaoValue, out: *mut XiaoValue) -> i32 {
+    if value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let result = match status(value.to_char()).and_then(|value| runtime_to_value(&value)) {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    unsafe { write_value(out, result) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
 /// 将字符串强句柄包装为 ABI 字符串值并增加一次引用。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_str(handle: XiaoHandle) -> XiaoValue {

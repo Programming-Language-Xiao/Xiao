@@ -16,3 +16,12 @@ def length(str text) -> int
 
 def is_ascii_upper(str value) -> bool
     return value >= "A" and value <= "Z"
+
+def lower_ascii(str value) -> str
+    result = ""
+    for c in value
+        if is_ascii_upper(c)
+            result = result + chr(int(c) + 32)
+        else
+            result = result + c
+    return result
