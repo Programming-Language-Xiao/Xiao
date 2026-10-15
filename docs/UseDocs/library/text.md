@@ -12,18 +12,24 @@ related:
   - ../../DevDocs/20c-first-modules.md
   - ../../DevDocs/20c-second-batch-probe.md
   - ../../DevDocs/20c-fifth-batch-reprobe-and-library.md
+  - ../../DevDocs/20c-sixth-batch-case-conversion-and-api-closeout.md
 ---
 
 # 官方 `text` 模块
 
 `text` 是 20C 首批官方 Xiao 模块，规范实现位于 [`stdlib/text.xiao`](../../../stdlib/text.xiao)。
 适用版本：Xiao `0.1.0`、Runtime ABI `1.12`。首批/第二批受控双路径证据：维护回归
-`38550284761`（Windows 作业 `115806283501`、Linux 作业 `115806283515`）；第五批候选复探的
-VM/LLVM 原生结果见 [20C-第五批](../../DevDocs/20c-fifth-batch-reprobe-and-library.md) §四；第五批的
-`format_int` 候选已按第六批收口撤回。
+`38550284761`（Windows 作业 `115806283501`、Linux 作业 `115806283515`）。
 
-第五批新增的 `is_ascii_upper` 尚未取得覆盖它的 CI 运行号；当前模块状态沿用首批/第二批的历史验证，
-待下一次维护回归覆盖后再补运行证据。
+第五批新增的 `is_ascii_upper` 由维护回归 `38682801761` 覆盖：**VM 路径**为 Linux 作业
+`116250888293`（`text_module_vm_result_and_removal_boundary_are_stable ... ok`）；
+**原生路径**为 Linux 作业 `116250888144` 与 Windows 作业 `116250888212`
+（均 `first_modules_match_native_results ... ok`）。三条作业全部成功；
+第六批的复探夹具 `sixth-case-conversion-reprobe` 也在同一次运行的两个原生作业上跑到，两平台输出逐字一致。
+取证与覆盖面说明见 [20C-第六批](../../DevDocs/20c-sixth-batch-case-conversion-and-api-closeout.md) §十。
+
+第五批候选复探的 VM/LLVM 原生结果见 [20C-第五批](../../DevDocs/20c-fifth-batch-reprobe-and-library.md) §四；
+第五批的 `format_int` 候选已按第六批收口撤回。
 
 ## `contains_char`
 
