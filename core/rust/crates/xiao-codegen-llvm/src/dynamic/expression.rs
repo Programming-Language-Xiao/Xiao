@@ -7,7 +7,10 @@ use xiao_ir::{
 };
 
 use super::predicate::name_key;
-use super::text::{escape_bytes, format_float, is_identity_cast, parse_i32, parse_i64, unquote};
+use super::text::{
+    escape_bytes, format_float, is_identity_cast, normalize_lfloat_zero, parse_i32, parse_i64,
+    unquote,
+};
 use super::{BYTES_TYPE, DynamicGenerator, VALUE_TYPE};
 use crate::error::{CodegenError, Result};
 
@@ -890,7 +893,7 @@ impl<'a> DynamicGenerator<'a> {
             "float" | "sfloat" => {
                 if scalar_name == Some("lfloat") {
                     return self.emit_text_value(
-                        text.replace('_', "").as_bytes(),
+                        normalize_lfloat_zero(text).as_bytes(),
                         "xiao_runtime_value_lfloat_owned",
                     );
                 }

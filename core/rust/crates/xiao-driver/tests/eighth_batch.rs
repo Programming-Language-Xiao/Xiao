@@ -128,10 +128,13 @@ lfloat precise = 1.234567890123456789
 lfloat negative_precise = -precise
 lfloat zero_float = 0.0
 lfloat negative_zero_float = -zero_float
+lfloat zero_float_precise = 0.00
 print(negative)
 print(negative_zero)
 print(negative_precise)
+print(zero_float)
 print(negative_zero_float)
+print(zero_float_precise)
 ";
     let project = TestProject::new(source);
     let outcome = vm_run(&project, source);
@@ -141,6 +144,8 @@ print(negative_zero_float)
         "-42
 0
 -1.234567890123456789
+0
+0
 0
 "
     );
@@ -210,11 +215,11 @@ fn native_matches_eighth_batch_boundaries() {
     assert_eq!(run.stdout, "42\nok\n");
     assert!(run.stderr.is_empty(), "成功夹具不应输出 stderr：{run:?}");
 
-    let unary = "lint zero = 0\nlint positive = 42\nlint negative = -positive\nlfloat precise = 1.234567890123456789\nlfloat negative_precise = -precise\nlfloat zero_float = 0.0\nlfloat negative_zero_float = -zero_float\nprint(negative)\nprint(-zero)\nprint(negative_precise)\nprint(negative_zero_float)\n";
+    let unary = "lint zero = 0\nlint positive = 42\nlint negative = -positive\nlfloat precise = 1.234567890123456789\nlfloat negative_precise = -precise\nlfloat zero_float = 0.0\nlfloat negative_zero_float = -zero_float\nlfloat zero_float_precise = 0.00\nprint(negative)\nprint(-zero)\nprint(negative_precise)\nprint(zero_float)\nprint(negative_zero_float)\nprint(zero_float_precise)\n";
     let project = TestProject::new(unary);
     let run = native_run(&project, unary, &target, &toolchain, "unary");
     assert_eq!(run.status, Some(0), "第八批原生高精度取负状态错误：{run:?}");
-    assert_eq!(run.stdout, "-42\n0\n-1.234567890123456789\n0\n");
+    assert_eq!(run.stdout, "-42\n0\n-1.234567890123456789\n0\n0\n0\n");
     assert!(run.stderr.is_empty(), "高精度取负不应输出 stderr：{run:?}");
 
     let dynamic = "for value in [1, \"A\"]\n    print(value as str)\n    print(value as int)\nfor value in [true, \"true\"]\n    print(value as bool)\n";

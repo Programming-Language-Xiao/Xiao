@@ -6,7 +6,10 @@ lfloat precise = 1.234567890123456789
 lfloat negative_precise = -precise
 lfloat zero_float = 0.0
 lfloat negative_zero_float = -zero_float
+lfloat zero_float_precise = 0.00
 print(negative)
 print(negative_zero)
 print(negative_precise)
+print(zero_float)
 print(negative_zero_float)
+print(zero_float_precise)
