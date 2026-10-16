@@ -185,7 +185,7 @@ impl Lowerer<'_> {
         let mut result = Vec::new();
         for argument in arguments {
             if !matches!(argument.kind.as_str(), "positional" | "keyword") {
-                self.record_unsupported("表方法的展开实参尚未降低".to_owned());
+                self.record_known_unsupported("表方法的展开实参尚未降低".to_owned());
             }
             let value = self.lower_expression(&argument.value);
             result.push(match &argument.name {

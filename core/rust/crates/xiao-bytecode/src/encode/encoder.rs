@@ -319,6 +319,7 @@ fn encode_op(
         | TacOp::Copy(value)
         | TacOp::Box(value)
         | TacOp::Unbox(value)
+        | TacOp::Negate(value)
         | TacOp::Raise { value }
         | TacOp::Transfer { value } => writer.index(value.get(), "VReg"),
         TacOp::Cast { value, target } => {

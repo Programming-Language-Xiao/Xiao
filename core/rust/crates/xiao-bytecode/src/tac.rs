@@ -499,6 +499,8 @@ pub enum TacOp {
         /// 右操作数。
         right: VReg,
     },
+    /// 高精度文本的一元负号；定宽数值仍使用 `Arith(0 - x)`。
+    Negate(VReg),
     /// 比较运算，结果写入 `dst`。
     Compare {
         /// 运算类别。

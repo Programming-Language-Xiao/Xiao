@@ -32,6 +32,11 @@ pub fn apply_arith(
     }
 }
 
+/// 执行一元负号，供高精度文本和定宽数值共用 Runtime 语义。
+pub fn apply_negate(value: &RuntimeValue) -> RuntimeResult<RuntimeValue> {
+    value.negate()
+}
+
 /// 取出两个集合操作数；任一不是集合就返回它的类型名供调用方构造稳定错误。
 ///
 /// 走到这里说明静态检查与运行时检查都没拦住——正常路径上动态边界会先被

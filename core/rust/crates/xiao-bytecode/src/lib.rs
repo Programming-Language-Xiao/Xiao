@@ -54,8 +54,8 @@ pub use tac::{
 };
 /// 重导出三地址验证入口与结果类型。
 pub use verify::{
-    TAC_INTERNAL_CONSISTENCY_CODE, TAC_STRUCTURE_CODE, TacVerification, TacVerificationError,
-    verify_for_execution, verify_production, verify_program,
+    TAC_INTERNAL_CONSISTENCY_CODE, TAC_KNOWN_UNSUPPORTED_CODE, TAC_STRUCTURE_CODE, TacVerification,
+    TacVerificationError, verify_for_execution, verify_production, verify_program,
 };
 /// 重导出正式 `.xiaoc` 编解码接口。
 pub use xiaoc::{

@@ -367,10 +367,10 @@ fn vm_capability_probe_records_each_module() {
             ProbeExpectation::Backend(_) => {
                 assert_eq!(
                     outcome.code(),
-                    Some("X09-BYTECODE-001"),
+                    Some("X09-BYTECODE-003"),
                     "后端探测 VM 错误身份不一致：{id} {outcome:?}"
                 );
-                println!("20C-PROBE module={id} path=vm layer=bytecode code=X09-BYTECODE-001");
+                println!("20C-PROBE module={id} path=vm layer=bytecode code=X09-BYTECODE-003");
             }
         }
     }
@@ -420,9 +420,9 @@ fn operator_coverage_guard_vm() {
                 failures.push(format!("{id}: 前端期望 {expected}，却进入 VM：{outcome:?}"));
             }
             ProbeExpectation::Backend(_) => {
-                if outcome.code() != Some("X09-BYTECODE-001") {
+                if outcome.code() != Some("X09-BYTECODE-003") {
                     failures.push(format!(
-                        "{id}: VM 码 {:?}，期望 X09-BYTECODE-001",
+                        "{id}: VM 码 {:?}，期望 X09-BYTECODE-003",
                         outcome.code()
                     ));
                 }

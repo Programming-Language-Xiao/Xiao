@@ -426,6 +426,7 @@ fn decode_op(
             name: reader.string("export")?,
             value: VReg::new(index(reader, "VReg")?),
         },
+        44 => TacOp::Negate(VReg::new(index(reader, "VReg")?)),
         3 => TacOp::Move(VReg::new(index(reader, "VReg")?)),
         4 => TacOp::Copy(VReg::new(index(reader, "VReg")?)),
         5 => TacOp::Box(VReg::new(index(reader, "VReg")?)),

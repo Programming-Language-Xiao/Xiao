@@ -829,6 +829,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let value = ops::apply_arith(*op, &left, &right).map_err(Fault::Error)?;
                 self.write_operand(instruction.dst, value);
             }
+            TacOp::Negate(value) => {
+                let value = self.read(*value)?;
+                let value = ops::apply_negate(&value).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
             TacOp::Compare { op, left, right } => {
                 let left = self.read(*left)?;
                 let right = self.read(*right)?;

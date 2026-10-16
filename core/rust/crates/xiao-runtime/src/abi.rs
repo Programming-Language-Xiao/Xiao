@@ -1858,17 +1858,7 @@ pub extern "C" fn xiao_runtime_value_unary(
             .map(|value| RuntimeValue::Bool(!value))
             .ok_or_else(|| RuntimeError::type_mismatch("bool", value.type_name())),
         "plus" => Ok(value.clone()),
-        "minus" => match value {
-            RuntimeValue::Int(value) => i64::checked_neg(value)
-                .map(RuntimeValue::Int)
-                .ok_or_else(|| RuntimeError::numeric_overflow("int 一元负号溢出")),
-            RuntimeValue::Sint(value) => i32::checked_neg(value)
-                .map(RuntimeValue::Sint)
-                .ok_or_else(|| RuntimeError::numeric_overflow("sint 一元负号溢出")),
-            RuntimeValue::Float(value) => Ok(RuntimeValue::Float(-value)),
-            RuntimeValue::Sfloat(value) => Ok(RuntimeValue::Sfloat(-value)),
-            other => Err(RuntimeError::type_mismatch("numeric", other.type_name())),
-        },
+        "minus" => value.negate(),
         _ => Err(RuntimeError::invalid_value(format!(
             "未知 Runtime 一元运算 {op}"
         ))),

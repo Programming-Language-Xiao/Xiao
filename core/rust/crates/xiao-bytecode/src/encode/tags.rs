@@ -7,7 +7,7 @@ use super::{
 use xiao_lifetime::ReleaseActionKind;
 use xiao_syntax::ScalarType;
 
-/// `TacOp` 到稳定 opcode 的映射，0–40 连续。
+/// `TacOp` 到稳定 opcode 的映射；新指令只能追加，不能重排旧编号。
 ///
 /// 这张表是格式的核心契约：**只能追加，不得重排**。调换两个编号会让旧字节被读
 /// 成另一种指令，而这种错误在往返测试里是看不出来的（编码器和解码器用的是同一
@@ -59,6 +59,7 @@ pub(super) fn opcode(op: &TacOp) -> u8 {
         TacOp::PackageRoot(_) => 41,
         TacOp::ImportModule { .. } => 42,
         TacOp::ExportValue { .. } => 43,
+        TacOp::Negate(_) => 44,
     }
 }
 

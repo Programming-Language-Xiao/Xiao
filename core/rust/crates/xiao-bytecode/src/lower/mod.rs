@@ -1151,6 +1151,12 @@ impl<'ir> Lowerer<'ir> {
         }
     }
 
+    /// 记录可达且已登记的未实现能力；验证器会给它独立的 `X09-BYTECODE-003` 身份。
+    pub(super) fn record_known_unsupported(&mut self, note: String) {
+        let note = format!("{}{}", crate::verify::TAC_KNOWN_UNSUPPORTED_PREFIX, note);
+        self.record_unsupported(note);
+    }
+
     /// 列出从最内层到 `stop_kind` 的作用域链。
     fn scope_chain_to(&self, stop_kind: &str) -> Vec<u32> {
         let mut chain = Vec::new();

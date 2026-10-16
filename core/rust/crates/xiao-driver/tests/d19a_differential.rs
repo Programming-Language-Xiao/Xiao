@@ -771,7 +771,7 @@ fn a3_vm_boundary_observations() {
             assert_eq!(observation.exit_code, 0);
         } else {
             assert_eq!(observation.output, "");
-            assert_eq!(observation.error.as_deref(), Some("X09-BYTECODE-001"));
+            assert_eq!(observation.error.as_deref(), Some("X09-BYTECODE-003"));
             assert_eq!(observation.exit_code, 2);
         }
     }

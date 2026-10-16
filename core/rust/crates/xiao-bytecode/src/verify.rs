@@ -20,6 +20,10 @@ use crate::tac::{
 
 /// TacProgram.unsupported 出现在生产路径时使用的稳定内部一致性编号。
 pub const TAC_INTERNAL_CONSISTENCY_CODE: &str = "X09-BYTECODE-001";
+/// 已知尚未实现的语言构造使用的稳定降低阶段编号。
+pub const TAC_KNOWN_UNSUPPORTED_CODE: &str = "X09-BYTECODE-003";
+/// `TacProgram.unsupported` 中标记已知未实现构造的内部前缀。
+pub const TAC_KNOWN_UNSUPPORTED_PREFIX: &str = "known-unsupported:";
 /// TAC 结构、引用或 ABI 不一致时使用的稳定验证编号。
 pub const TAC_STRUCTURE_CODE: &str = "X09-BYTECODE-002";
 
@@ -48,6 +52,15 @@ impl TacVerificationError {
     fn structure(path: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             code: TAC_STRUCTURE_CODE,
+            path: path.into(),
+            message: message.into(),
+        }
+    }
+
+    /// 创建已知未实现构造错误。
+    fn known_unsupported(path: impl Into<String>, message: impl Into<String>) -> Self {
+        Self {
+            code: TAC_KNOWN_UNSUPPORTED_CODE,
             path: path.into(),
             message: message.into(),
         }
@@ -112,10 +125,20 @@ pub fn verify_program(program: &IrProgram, tac: &TacProgram) -> TacVerification 
     };
 
     for (index, note) in tac.unsupported.iter().enumerate() {
-        result.internal_errors.push(TacVerificationError::internal(
-            format!("program.unsupported[{index}]"),
-            format!("生产字节码含未降低构造：{note}"),
-        ));
+        let path = format!("program.unsupported[{index}]");
+        if let Some(note) = note.strip_prefix(TAC_KNOWN_UNSUPPORTED_PREFIX) {
+            result
+                .internal_errors
+                .push(TacVerificationError::known_unsupported(
+                    path,
+                    format!("生产字节码含已知未实现构造：{note}"),
+                ));
+        } else {
+            result.internal_errors.push(TacVerificationError::internal(
+                path,
+                format!("生产字节码含未降低构造：{note}"),
+            ));
+        }
     }
     if tac.functions.is_empty() {
         push_error(&mut result, "program.functions", "函数表不能为空");
@@ -667,6 +690,13 @@ fn validate_instruction(
             function,
             instruction.dst,
             class_of_scalar(*target),
+            &format!("{path}.dst"),
+            result,
+        ),
+        TacOp::Negate(_) => expect_dst_class(
+            function,
+            instruction.dst,
+            RegisterClass::ObjHandle,
             &format!("{path}.dst"),
             result,
         ),
@@ -1374,6 +1404,17 @@ mod tests {
         let error = verify_production(&ir, &tac).expect_err("生产入口必须拒绝");
         assert_eq!(error.code, TAC_INTERNAL_CONSISTENCY_CODE);
         assert!(error.is_internal());
+    }
+
+    #[test]
+    /// 已知未实现构造与意外降低缺口必须落在不同的验证身份。
+    fn production_entry_distinguishes_known_unsupported() {
+        let (ir, mut tac) = empty_program();
+        tac.unsupported
+            .push(format!("{}表方法值尚未降低", TAC_KNOWN_UNSUPPORTED_PREFIX));
+        let error = verify_production(&ir, &tac).expect_err("应拒绝已知未实现构造");
+        assert_eq!(error.code, TAC_KNOWN_UNSUPPORTED_CODE);
+        assert!(!error.is_internal());
     }
 
     #[test]

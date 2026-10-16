@@ -80,14 +80,14 @@ fn all_types() -> Vec<IrType> {
     ]
 }
 
-/// 构造一份用满全部 41 个 opcode 的 TAC 程序。
+/// 构造一份覆盖当前全部 opcode 的 TAC 程序。
 ///
 /// 刻意把每个「难往返」的角落都填上：常量池里有大整数、位模式特殊的浮点
 /// （NaN 载荷、`-0.0`）、超长精度文本和带 `\0` 的中文串；签名表覆盖五种
 /// [`ParamKind`] 与 `*args`/`**kwargs` 槽位；函数带类别表、值→寄存器映射、
-/// handler、释放计划、选择计划与广播/种子计划；块从 41 条指令骤降到 1 条，条数不整齐。
+/// handler、释放计划、选择计划与广播/种子计划；块从 42 条指令骤降到 1 条，条数不整齐。
 ///
-/// 函数内的两条断言是**格式守卫**：`ops` 的顺序必须恰好产生 `0..41` 的
+/// 函数内的两条断言是**格式守卫**：旧 `ops` 的顺序必须保持 `0..41`，新指令只能追加。
 /// opcode。新增变体若插在表中间而不是追加到末尾，这里会先失败，而不是等到
 /// 某天有人拿旧字节解码才发现指令错位。
 fn all_ops_program() -> TacProgram {
@@ -293,10 +293,12 @@ fn all_ops_program() -> TacProgram {
             member: "ascii:value".to_owned(),
             value: VReg::new(26),
         },
+        TacOp::Negate(VReg::new(25)),
     ];
-    assert_eq!(ops.len(), 41);
+    assert_eq!(ops.len(), 42);
     let opcodes = ops.iter().map(opcode).collect::<Vec<_>>();
-    assert_eq!(opcodes, (0_u8..41).collect::<Vec<_>>());
+    assert_eq!(&opcodes[..41], (0_u8..41).collect::<Vec<_>>());
+    assert_eq!(opcodes[41], 44);
 
     let mut categories = CategoryMap::new();
     for (index, class) in [
@@ -480,7 +482,7 @@ fn all_opcodes_and_abi_fields_round_trip_in_both_widths() {
         validate_encoded(&encoded).expect("编码应可自校验");
         let decoded = decode(&encoded.bytes).expect("完整 TAC 应可解码");
         assert_program_eq(&program, &decoded);
-        assert_eq!(encoded.functions[0].blocks[0].instruction_pcs.len(), 41);
+        assert_eq!(encoded.functions[0].blocks[0].instruction_pcs.len(), 42);
         assert_eq!(encoded.span_at(0, 0, 7), Some(IrSpan::new(121, 123)));
         let pc = encoded.functions[0].blocks[0].instruction_pcs[7];
         assert_eq!(encoded.span_at_pc(0, pc), Some(IrSpan::new(121, 123)));

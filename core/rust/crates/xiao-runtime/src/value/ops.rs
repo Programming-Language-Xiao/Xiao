@@ -61,6 +61,23 @@ impl RuntimeValue {
         Ok(Self::Bool(boolean_parity(*value, amount)))
     }
 
+    /// 执行一元负号；高精度文本只翻转符号，不把值压进定宽整数或浮点。
+    pub fn negate(&self) -> RuntimeResult<Self> {
+        match self {
+            Self::Int(value) => i64::checked_neg(*value)
+                .map(Self::Int)
+                .ok_or_else(|| RuntimeError::numeric_overflow("int 一元负号溢出")),
+            Self::Sint(value) => i32::checked_neg(*value)
+                .map(Self::Sint)
+                .ok_or_else(|| RuntimeError::numeric_overflow("sint 一元负号溢出")),
+            Self::Float(value) => Ok(Self::Float(-value)),
+            Self::Sfloat(value) => Ok(Self::Sfloat(-value)),
+            Self::Lint(value) => toggle_decimal_sign(value, true).map(Self::Lint),
+            Self::Lfloat(value) => toggle_decimal_sign(value, false).map(Self::Lfloat),
+            other => Err(RuntimeError::type_mismatch("numeric", other.type_name())),
+        }
+    }
+
     /// 执行加法，包括字符串拼接和布尔整数调整。
     pub fn add(&self, other: &Self) -> RuntimeResult<Self> {
         if let Self::Bool(value) = self {
@@ -417,6 +434,31 @@ impl RuntimeValue {
     }
 }
 
+/// 翻转十进制文本的符号；`lint` 的零值统一为 `0`，`lfloat` 保留原精度文本。
+fn toggle_decimal_sign(value: &str, normalize_integer_zero: bool) -> RuntimeResult<String> {
+    let (negative, digits) = value
+        .strip_prefix('-')
+        .map_or((false, value), |rest| (true, rest));
+    if digits.is_empty()
+        || !digits
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || matches!(byte, b'.' | b'e' | b'E' | b'+' | b'-'))
+        || !digits.bytes().any(|byte| byte.is_ascii_digit())
+    {
+        return Err(RuntimeError::invalid_value(
+            "高精度数值不是合法的十进制文本",
+        ));
+    }
+    if normalize_integer_zero && digits.bytes().all(|byte| byte == b'0') {
+        return Ok("0".to_owned());
+    }
+    if negative {
+        Ok(digits.to_owned())
+    } else {
+        Ok(format!("-{digits}"))
+    }
+}
+
 /// 按冻结的奇偶规则调整布尔值。
 fn boolean_parity(value: bool, amount: i128) -> bool {
     if amount.unsigned_abs() % 2 == 0 {
@@ -592,6 +634,27 @@ mod tests {
         assert_eq!(
             RuntimeValue::Float(7.0).divide(&RuntimeValue::Float(2.0)),
             Ok(RuntimeValue::Float(3.5))
+        );
+    }
+
+    #[test]
+    /// 高精度一元负号只翻转文本符号，整数零归一化且浮点文本精度保留。
+    fn negates_high_precision_text_without_narrowing() {
+        assert_eq!(
+            RuntimeValue::Lint("42".to_owned()).negate(),
+            Ok(RuntimeValue::Lint("-42".to_owned()))
+        );
+        assert_eq!(
+            RuntimeValue::Lint("-42".to_owned()).negate(),
+            Ok(RuntimeValue::Lint("42".to_owned()))
+        );
+        assert_eq!(
+            RuntimeValue::Lint("0".to_owned()).negate(),
+            Ok(RuntimeValue::Lint("0".to_owned()))
+        );
+        assert_eq!(
+            RuntimeValue::Lfloat("1.234567890123456789".to_owned()).negate(),
+            Ok(RuntimeValue::Lfloat("-1.234567890123456789".to_owned()))
         );
     }
 

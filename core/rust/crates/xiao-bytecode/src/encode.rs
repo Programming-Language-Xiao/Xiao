@@ -52,7 +52,7 @@ pub const FORMAT_VERSION: u8 = 3;
 pub const OPCODE_MIN: u8 = 0;
 
 /// 当前冻结的最大 opcode。
-pub const OPCODE_MAX: u8 = 40;
+pub const OPCODE_MAX: u8 = 44;
 /// 集合元素数与块字节长度的上限。
 ///
 /// 解码端读到长度前缀后第一件事就是拿它做上界判断：没有这个上限，一段几字节

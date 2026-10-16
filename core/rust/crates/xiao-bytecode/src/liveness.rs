@@ -211,6 +211,9 @@ pub(crate) fn instruction_use_def(
         TacOp::Cast { value, .. } => {
             uses.insert(*value);
         }
+        TacOp::Negate(value) => {
+            uses.insert(*value);
+        }
         TacOp::Arith { left, right, .. }
         | TacOp::Compare { left, right, .. }
         | TacOp::SetOp { left, right, .. }

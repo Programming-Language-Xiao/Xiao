@@ -44,7 +44,7 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
         }
         IrExpressionKind::Member { object, member } => {
             if matches!(expression.ty, IrType::Function { .. }) {
-                lower_unsupported(lowerer, "表方法值的动态调用", expression.span)
+                lower_known_unsupported(lowerer, "表方法值的动态调用", expression.span)
             } else {
                 let object = lowerer.lower_expression(object);
                 let register =
@@ -253,13 +253,34 @@ fn lower_literal(
 ) -> VReg {
     let constant = match literal {
         "integer" => match scalar_of(&expression.ty) {
-            Some(ScalarType::Sint) => TacConstant::Sint(text.parse().unwrap_or_default()),
+            Some(ScalarType::Sint) => TacConstant::Sint(parse_literal_or_record(
+                lowerer,
+                text,
+                expression.span,
+                "sint",
+            )),
             Some(ScalarType::Lint) => TacConstant::Lint(text.to_owned()),
-            _ => TacConstant::Int(text.parse().unwrap_or_default()),
+            _ => TacConstant::Int(parse_literal_or_record(
+                lowerer,
+                text,
+                expression.span,
+                "int",
+            )),
         },
         "float" => match scalar_of(&expression.ty) {
-            Some(ScalarType::Sfloat) => TacConstant::Sfloat(text.parse().unwrap_or_default()),
-            _ => TacConstant::Float(text.parse().unwrap_or_default()),
+            Some(ScalarType::Sfloat) => TacConstant::Sfloat(parse_literal_or_record(
+                lowerer,
+                text,
+                expression.span,
+                "sfloat",
+            )),
+            Some(ScalarType::Lfloat) => TacConstant::Lfloat(text.to_owned()),
+            _ => TacConstant::Float(parse_literal_or_record(
+                lowerer,
+                text,
+                expression.span,
+                "float",
+            )),
         },
         "bool" => TacConstant::Bool(text == "true"),
         // 必须与类型层共用同一份解码。只剥引号而不解转义，会让带转义的字符串
@@ -276,6 +297,28 @@ fn lower_literal(
         }
     };
     lowerer.emit_constant(constant, expression.span)
+}
+
+/// 解析定宽字面量；失败时显式登记内部缺口，禁止静默变成零值。
+fn parse_literal_or_record<T>(
+    lowerer: &mut Lowerer<'_>,
+    text: &str,
+    span: IrSpan,
+    scalar: &str,
+) -> T
+where
+    T: std::str::FromStr + Default,
+{
+    match text.parse() {
+        Ok(value) => value,
+        Err(_) => {
+            lowerer.record_unsupported(format!(
+                "{scalar} 字面量无法解析（{text:?}，{}..{}）",
+                span.start, span.end
+            ));
+            T::default()
+        }
+    }
 }
 
 /// 降低名称引用：读取同名局部槽，或加载函数引用。
@@ -366,6 +409,16 @@ fn lower_unary(
             let Some(scalar) = scalar_of(&operand.ty) else {
                 return lower_unsupported(lowerer, "unary minus", expression.span);
             };
+            if matches!(scalar, ScalarType::Lint | ScalarType::Lfloat) {
+                let register =
+                    lowerer.new_register(Lowerer::class_of_type(&expression.ty), expression.span);
+                lowerer.emit(TacInstr::with_dst(
+                    TacOp::Negate(operand_register),
+                    register,
+                    expression.span,
+                ));
+                return register;
+            }
             let zero = match scalar {
                 ScalarType::Sint => TacConstant::Sint(0),
                 ScalarType::Int => TacConstant::Int(0),
@@ -729,7 +782,7 @@ fn lower_call(
             // `*`/`**` 展开尚未降低。只按 `name.is_some()` 区分关键字与位置会
             // 把展开实参静默当成普通实参，语义丢失且不报错。
             if argument.kind != "positional" && argument.kind != "keyword" {
-                lowerer.record_unsupported(format!(
+                lowerer.record_known_unsupported(format!(
                     "展开实参尚未降低：{}（{}..{}）",
                     argument.kind, argument.span.start, argument.span.end
                 ));
@@ -856,6 +909,12 @@ fn lower_cast(
 /// 记录一个本批次尚未降低的表达式形态，并返回占位寄存器。
 fn lower_unsupported(lowerer: &mut Lowerer<'_>, what: &str, span: IrSpan) -> VReg {
     lowerer.record_unsupported(format!("{what} 尚未降低（{}..{}）", span.start, span.end));
+    lowerer.new_register(RegisterClass::Poly, span)
+}
+
+/// 降低一个可达但已登记的未实现构造。
+fn lower_known_unsupported(lowerer: &mut Lowerer<'_>, what: &str, span: IrSpan) -> VReg {
+    lowerer.record_known_unsupported(format!("{what} 尚未降低（{}..{}）", span.start, span.end));
     lowerer.new_register(RegisterClass::Poly, span)
 }
 

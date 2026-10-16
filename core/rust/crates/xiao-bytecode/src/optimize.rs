@@ -908,6 +908,7 @@ fn remap_registers(op: &mut TacOp, remap: &BTreeMap<VReg, VReg>) {
         | TacOp::Release { value, .. }
         | TacOp::Transfer { value }
         | TacOp::Cast { value, .. }
+        | TacOp::Negate(value)
         | TacOp::Len { source: value } => map(value),
         TacOp::Arith { left, right, .. }
         | TacOp::Compare { left, right, .. }

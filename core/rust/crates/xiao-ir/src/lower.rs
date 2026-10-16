@@ -15,8 +15,8 @@ use xiao_syntax::{
     AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, CatchClause, DeclaredType,
     DictEntry, DictKey, ElifBranch, EntryMode, Expression, FunctionParameter,
     FunctionParameterKind, FunctionTypeAnnotation, ImportStatement, IndexPath, LiteralKind, Name,
-    PathSegment, Program, RandomMode, Selector, SelectorItem, Statement, TableKind, TypeTerm,
-    UnaryOperator,
+    PathSegment, Program, RandomMode, ScalarType, Selector, SelectorItem, Statement, TableKind,
+    TypeTerm, UnaryOperator,
 };
 use xiao_types::{ArrayType, DictType, SetType, TableValueKind, Type, TypeCheckResult};
 
@@ -169,7 +169,9 @@ impl<'a> Lowerer<'a> {
                 target: self.name(*target),
                 declared_type: lower_declared_type(declared_type),
                 constraint_path: constraint_path.as_ref().map(|path| self.path(path)),
-                value: value.as_ref().map(|expression| self.expression(expression)),
+                value: value
+                    .as_ref()
+                    .map(|expression| self.declaration_expression(expression, declared_type)),
             },
             Statement::ConstDeclaration {
                 target,
@@ -525,6 +527,19 @@ impl<'a> Lowerer<'a> {
         IrExpression { kind, ty, span }
     }
 
+    /// 为显式 `lfloat` 声明保留浮点字面量的十进制文本精度。
+    fn declaration_expression(
+        &mut self,
+        expression: &Expression,
+        declared_type: &DeclaredType,
+    ) -> IrExpression {
+        let mut lowered = self.expression(expression);
+        if matches!(declared_type, DeclaredType::Scalar(ScalarType::Lfloat)) {
+            retarget_lfloat_expression(&mut lowered);
+        }
+        lowered
+    }
+
     /// 降低字典条目。
     ///
     /// 键必须与类型层用同一套规范化：字符串键经 `decode_string_literal` 去掉
@@ -812,6 +827,34 @@ fn lower_declared_type(declared: &DeclaredType) -> IrType {
             empty: false,
             unknown: annotation.members.is_empty(),
         },
+    }
+}
+
+/// 将声明初值中直接参与取负的浮点节点标为 `lfloat`，使 lowering 保留原始文本。
+fn retarget_lfloat_expression(expression: &mut IrExpression) {
+    match &mut expression.kind {
+        IrExpressionKind::Literal { literal, .. } if literal == "float" => {
+            expression.ty = IrType::Scalar {
+                name: ScalarType::Lfloat.as_str().to_owned(),
+            };
+        }
+        IrExpressionKind::Group { expression: inner } => {
+            retarget_lfloat_expression(inner);
+            if matches!(inner.ty, IrType::Scalar { ref name } if name == "lfloat") {
+                expression.ty = IrType::Scalar {
+                    name: ScalarType::Lfloat.as_str().to_owned(),
+                };
+            }
+        }
+        IrExpressionKind::Unary { operand: inner, .. } => {
+            retarget_lfloat_expression(inner);
+            if matches!(inner.ty, IrType::Scalar { ref name } if name == "lfloat") {
+                expression.ty = IrType::Scalar {
+                    name: ScalarType::Lfloat.as_str().to_owned(),
+                };
+            }
+        }
+        _ => {}
     }
 }
 
