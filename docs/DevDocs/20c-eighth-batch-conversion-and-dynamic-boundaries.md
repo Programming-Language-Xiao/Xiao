@@ -17,9 +17,8 @@
 状态：**已实施并完成 CI 取证（2026-10-16）**：§九 四条**全部裁定**；
 F-2 已独立提交并完成双平台维护回归，P-1/P-2 与诊断身份修复也已完成，运行号见 §十一。
 **审核后并入三条（§十二）**：**H-1（高）** `lint` 大数值字面量静默变 `0`——**既有**，
-已裁定**直接修、不转登记**，**待实现侧执行**；**H-2（低）** P-1 的一处改动经变异实测不承重，注释所述理由已被另一处修复覆盖——
-已裁定**保留改动、把注释改成它维护的不变量**，**待实现侧执行**；
-**H-3（很低）** §十一 两处行号漂移。
+已裁定**直接修、不转登记**，现已修复并补回归；**H-2（低）** P-1 的一处改动经变异实测不承重，注释所述理由已被另一处修复覆盖——
+已保留改动并改成维护不变量；**H-3（很低）** §十一 两处行号已订正。
 
 ## 一、为什么是这一批
 
@@ -131,9 +130,9 @@ report:  class=Fatal, code=X07-FATAL-002, message_id=fatal.corrupt_artifact
 **尚未钉死的（不许在本文里写成已定）**：那个 `int` 类**从哪里来**。
 两个已核过的**排除项**：
 
-- `class_of_type`（`xiao-bytecode/src/lower/mod.rs:983-998`）**已经**把
-  `ScalarType::Lint | ScalarType::Lfloat` 映射成 `RegisterClass::ObjHandle`（`:989-991`）；
-- `declare_parameters`（`mod.rs:528-551`）用的就是它（`:531`）。
+- `class_of_type`（`xiao-bytecode/src/lower/mod.rs:986-1001`）**已经**把
+  `ScalarType::Lint | ScalarType::Lfloat` 映射成 `RegisterClass::ObjHandle`（`:992-994`）；
+- `declare_parameters`（`mod.rs:519-541`）用的就是它（`:522`）。
 
 ⇒ **`int` 类不是从这两处直接来的**。真源头是 §五 要钉的**第一问**。
 本文**只登记症状、作用域与排除项**，不写根因结论。
@@ -235,25 +234,25 @@ xiao-vm/src/run.rs:465   fn verification_fatal(error: &TacVerificationError, ...
 
 | # | 形态 | VM | Windows 受控原生 | 结论 |
 | --- | --- | --- | --- | --- |
-| 1 | `lint`/`lfloat` 形参寄存器类别 | `X09-BYTECODE-002`，错误路径为 `xiao-bytecode/src/lower/mod.rs:965-979` 的 `class_for_value` | 同源旧代码可构建并运行 | 根因是按 `storage=stack` 映射为 `Int`；`class_of_type` 与 `declare_parameters` 已排除 |
+| 1 | `lint`/`lfloat` 形参寄存器类别 | `X09-BYTECODE-002`，错误路径为 `xiao-bytecode/src/lower/mod.rs:965-983` 的 `class_for_value` | 同源旧代码可构建并运行 | 根因是按 `storage=stack` 映射为 `Int`；`class_of_type` 与 `declare_parameters` 已排除 |
 | 2 | `def ignore(lfloat v) -> str`，`v` 不使用 | `X09-BYTECODE-002` | 成功，输出 `ok` | `lfloat` 与 `lint` 形参同形，属于 P-1 |
 | 3 | `def f(lint v) -> int`、`def f(lint v) -> str` | `X09-BYTECODE-002` | 成功构建 | 形参方向与第四批顶层夹具不同，旧证据不能外推 |
 | 4 | `lint`/`lfloat` 形参的其它方向 | `lint → int/str` 到验证阶段；`lfloat → str` 先在类型层报 `X02-TYPE-006` | 已测的 `lint`/`lfloat` 形参成功构建 | 浮点方向仍按裁定留在下一批 |
 | 5 | 顶层 `lint big = 42` → `big as int` | 成功，输出 `42` | — | 顶层形态本来正常，作为 P-1 对照 |
 | 6 | `second-int-to-str.xiao` 的 `lint` 部分 | 只有顶层写法 | — | 第四批历史证据只覆盖顶层，不追溯改写 |
 
-第 1 问的具体排除链已落到代码：`class_of_type`（`mod.rs:985-997`）和
-`declare_parameters`（`mod.rs:520-540`）均按 `IrType` 给出 `ObjHandle`；真正错误的是
+第 1 问的具体排除链已落到代码：`class_of_type`（`mod.rs:986-1001`）和
+`declare_parameters`（`mod.rs:519-541`）均按 `IrType` 给出 `ObjHandle`；真正错误的是
 `class_for_value` 原先只读取 ownership storage。临时探针已删除，永久断言见
 `core/rust/crates/xiao-driver/tests/eighth_batch.rs`。
 
 ## 六、落点（**待两道裁决后最终确定**）
 
-已核的现有事实（行号按 2026-10-15 的 `main`）：
+已核的现有事实（行号按 2026-10-16 当前 `main`）：
 
 ```text
-xiao-bytecode/src/lower/mod.rs:983-998    class_of_type（已把 Lint|Lfloat 映射为 ObjHandle）
-xiao-bytecode/src/lower/mod.rs:528-551    declare_parameters（用 class_of_type）
+xiao-bytecode/src/lower/mod.rs:986-1001    class_of_type（已把 Lint|Lfloat 映射为 ObjHandle）
+xiao-bytecode/src/lower/mod.rs:519-541     declare_parameters（用 class_of_type）
 xiao-types/src/checker/expression.rs:663   F-2 的分叉点（`is_integer(target)` → 不推）
 xiao-types/src/checker/expression.rs:806   同上，第二处
 xiao-types/src/checker/expression.rs:667   DynamicConversion 推入点（第一处）
@@ -373,10 +372,10 @@ F-2 独立提交 `acb0f90` 的维护回归 `38773875689` 已取双平台证据�
 进程内结构验证错误现在报告 `fatal.internal`；`X07-FATAL-002` 未删除，只保留为未来外部
 产物校验路径的预留身份。
 
-## 十二、审核回填与勘误（审核侧，2026-10-16）
+## 十二、审核回填与勘误（审核侧与实现侧收口，2026-10-16）
 
 出处：2026-10-16 审核 `acb0f90`（F-2）/ `3bb7605`（P-1/P-2/诊断身份）/ `ebcc974` / `d36a5d3`。
-**实现本身成立**（逐条见 §12.4）；下面三条账，其中**一条高危、且不属于本批**。
+**实现本身成立**（逐条见 §12.4）；下面三条审核账已全部处理，其中**一条高危、且不属于本批**。
 
 ### 12.1 H-1（**高**）：`lint` 大数值字面量静默变 `0`（**直接修，不转登记**）
 
@@ -392,23 +391,26 @@ F-2 独立提交 `acb0f90` 的维护回归 `38773875689` 已取双平台证据�
 ⇒ **静默算错**，而且发生在语义是「**不限位宽**」的 `lint` 上；
 **同一个溢出在 `int` 上是正规前端错误**。用户会拿到一个看起来正常、值全错的程序。
 
-**裁定（星崽，2026-10-16）：直接修，不转登记。**
+**裁定（星崽，2026-10-16）：直接修，不转登记；已完成。**
 理由：静默给错值比报错严重一个量级，而 `lint` 的全部卖点就是「不限位宽」。
 
 **已钉死的边界（实现侧可直接用）**：坏的是**字面量本身**，不是转换——
 `lint b = <2^63>` 之后 `print(b)` 就已经是 `0`；分界**正好在 `i64::MAX`**。
 
-**未钉死的**：那个 `0` 是在哪一处产生的。已知线索：
-`BigInteger`（`xiao-types/src/numeric.rs:19`）**只存在于 `xiao-types`**，
-在 `xiao-ir`／`xiao-bytecode` 里**零命中**——
-说明检查器接受的大整数文本在**进入 IR 之前**就被丢掉了。
-**不许**在钉到具体行之前动手。
+**根因已钉死并完成修复**：`BigInteger`（`xiao-types/src/numeric.rs:19`）只存在于
+`xiao-types`，但大整数文本并没有在进入 IR 前丢失；它在 lowering 时仍以十进制文本存在。
+真正的丢失发生在 `xiao-bytecode` 的整数字面量分派：`lint` 错走了 `i64` 的
+`TacConstant::Int` 分支，`parse().unwrap_or_default()` 把溢出静默变成 `0`。
+实现已在 `core/rust/crates/xiao-bytecode/src/lower/expr.rs:254-258` 增加
+`ScalarType::Lint` 专用分支，直接把十进制文本保存为 `TacConstant::Lint`，不再经过 `i64`。
+永久回归覆盖 `i64::MAX + 1` 与 `i128::MAX`，两者均按原值输出。
 
-**「既有」是推断，不是实测**：`3bb7605` 的文件清单未触碰字面量/常量路径，
-且顶层字面量既不过 `class_for_value` 也不过形参。**但审核侧没有在 `3bb7605^` 上复跑**
-（那要另开 worktree 全量重建）。⇒ **实现侧复跑一次即可证实或证伪**（见 §12.5 第 4 条）。
+**既有性已完成实测**：在 H-1 修复前的 `3bb7605` 上，临时 VM 探针
+`lint big = 9223372036854775808` 的输出是 **`0\n`**；在其父提交
+`3bb7605^`（实际提交 `acb0f90`）上复跑同一探针，输出仍是 **`0\n`**。
+两次临时探针均在验证后删除。因此 H-1 确实是既有缺陷，而不是本次修复引入。
 
-### 12.2 H-2（低）：P-1 的两处改动，有一处对这条缺陷不承重
+### 12.2 H-2（低）：P-1 的两处改动，有一处对这条缺陷不承重（已完成）
 
 **变异 + 正对照（审核侧实测）**：
 
@@ -420,19 +422,23 @@ F-2 独立提交 `acb0f90` 的维护回归 `38773875689` 已取双平台证据�
 而它的注释写的理由（「否则普通名称会退回 storage 类别，把 `lint`/`lfloat` 误读成 int」）
 **已被 `class_for_value` 的修复覆盖**。
 
-**但不能断言它完全多余**：`declare_parameters` 上方（`:518`）另有一条注释暗示
+**但不能断言它完全多余**：`declare_parameters` 上方（`:517-518`）另有一条注释暗示
 「同一个值再分配寄存器会读到未写入槽位」的隐患，与**类别**无关——
 **只是没有证据显示它在修那个**。
 
-**裁定（星崽，2026-10-16）：甲——保留改动，把注释改成「它维护的不变量」。**
+**裁定（星崽，2026-10-16）：甲——保留改动，把注释改成「它维护的不变量」；已完成。**
 即：注释不再声称「否则会把 `lint`/`lfloat` 误读成 int」（那句已被实测证伪），
 改为陈述**不变量**：所有源码形参一律登记到 `parameter_names`，
 保证名称解析命中精确参数寄存器。**不许**在没拿到证据的情况下换一个因果理由写上去
 （那是把一句实测不成立的话换成另一句没证据的话）。
 
-### 12.3 H-3（很低）：§十一 的两处行号漂移
+当前注释位于 `core/rust/crates/xiao-bytecode/src/lower/mod.rs:525`，代码改动仍保留。
 
-`class_of_type` 写 `:985`、实际 `:986`；`declare_parameters` 写 `:520`、实际 `:519`。
+### 12.3 H-3（很低）：§十一 的两处行号漂移（已完成）
+
+§十一及相关交叉引用已统一为当前源码行号：`class_of_type` 为
+`core/rust/crates/xiao-bytecode/src/lower/mod.rs:986-1001`，
+`declare_parameters` 为 `.../mod.rs:519-541`；形参类别调用点为 `:522`。
 
 ### 12.4 成立的部分（不要让上面的账盖住）
 
@@ -455,14 +461,14 @@ F-2 独立提交 `acb0f90` 的维护回归 `38773875689` 已取双平台证据�
 **一条审核侧自己的更正**：本次 `bun test` 我曾报红一次，原因是**自己的 shell cwd 停在 `core/rust`**
 （那里没有测试文件）——**不是仓库问题**，从仓库根复跑即绿。
 
-### 12.5 待实施清单（**交给实现侧**）
+### 12.5 执行记录（**实现侧已完成**）
 
 | # | 改动 | 出处 | 备注 |
 | --- | --- | --- | --- |
-| 1 | **修 `lint` 大数值字面量静默变 `0`** | §12.1（H-1） | **直接修**，不转登记；**先钉具体行**，边界与线索已给 |
-| 2 | H-2：把 `parameter_names` 那处的注释**改成不变量**（保留改动） | §12.2 | 已裁定**甲**；**不许**换成另一个没有证据的因果理由 |
-| 3 | §十一 的两处行号订正 | §12.3 | 随本次或下次 |
-| 4 | 在 `3bb7605^` 上复跑一次，**证实或证伪** H-1 的「既有」判断 | §12.1 | 要工作结论，不要推断 |
+| 1 | **修 `lint` 大数值字面量静默变 `0`** | §12.1（H-1） | 已在 `lower/expr.rs:254-258` 增加 `ScalarType::Lint` 文本分支；永久 VM 回归覆盖 `i64::MAX + 1` 与 `i128::MAX` |
+| 2 | H-2：把 `parameter_names` 那处的注释**改成不变量**（保留改动） | §12.2 | 已保留代码改动，注释改为名称解析不变量 |
+| 3 | §十一 的两处行号订正 | §12.3 | 已统一为 `class_of_type:986-1001`、`declare_parameters:519-541` |
+| 4 | 在修复前版本上复跑一次，**证实或证伪** H-1 的「既有」判断 | §12.1 | 已在 `3bb7605` 与其父提交 `3bb7605^`（`acb0f90`）复跑；两次临时探针均输出 `0\n`，验证后删除 |
 
 ## 相关页面
 
