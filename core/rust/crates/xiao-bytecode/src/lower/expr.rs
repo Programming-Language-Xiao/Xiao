@@ -274,7 +274,9 @@ fn lower_literal(
                 expression.span,
                 "sfloat",
             )),
-            Some(ScalarType::Lfloat) => TacConstant::Lfloat(normalize_lfloat_literal(text)),
+            Some(ScalarType::Lfloat) => {
+                TacConstant::Lfloat(xiao_types::normalize_decimal_zero(text))
+            }
             _ => TacConstant::Float(parse_literal_or_record(
                 lowerer,
                 text,
@@ -318,22 +320,6 @@ where
             ));
             T::default()
         }
-    }
-}
-
-/// 规范化高精度浮点零值；非零文本保持原始十进制精度。
-fn normalize_lfloat_literal(text: &str) -> String {
-    let text = text.replace('_', "");
-    let digits = text
-        .strip_prefix('-')
-        .unwrap_or(&text)
-        .bytes()
-        .filter(|byte| byte.is_ascii_digit())
-        .collect::<Vec<_>>();
-    if !digits.is_empty() && digits.iter().all(|byte| *byte == b'0') {
-        "0".to_owned()
-    } else {
-        text
     }
 }
 

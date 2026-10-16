@@ -215,11 +215,14 @@ fn native_matches_eighth_batch_boundaries() {
     assert_eq!(run.stdout, "42\nok\n");
     assert!(run.stderr.is_empty(), "成功夹具不应输出 stderr：{run:?}");
 
-    let unary = "lint zero = 0\nlint positive = 42\nlint negative = -positive\nlfloat precise = 1.234567890123456789\nlfloat negative_precise = -precise\nlfloat zero_float = 0.0\nlfloat negative_zero_float = -zero_float\nlfloat zero_float_precise = 0.00\nprint(negative)\nprint(-zero)\nprint(negative_precise)\nprint(zero_float)\nprint(negative_zero_float)\nprint(zero_float_precise)\n";
+    let unary = "lint zero = 0\nlint positive = 42\nlint negative = -positive\nlfloat precise = 1.234567890123456789\nlfloat negative_precise = -precise\nlfloat zero_float = 0.0\nlfloat negative_zero_float = -zero_float\nlfloat zero_float_precise = 0.00\nlfloat zero_exponent = 0e5\nlfloat negative_zero_exponent = -zero_exponent\nlfloat zero_exponent_decimal = 0.0e0\nlfloat negative_zero_exponent_decimal = -zero_exponent_decimal\nlfloat zero_exponent_upper = 0E-3\nlfloat negative_zero_exponent_upper = -zero_exponent_upper\nlfloat nonzero_exponent = 1e10\nlfloat nonzero_decimal = 1.50\nprint(negative)\nprint(-zero)\nprint(negative_precise)\nprint(zero_float)\nprint(negative_zero_float)\nprint(zero_float_precise)\nprint(zero_exponent)\nprint(negative_zero_exponent)\nprint(zero_exponent_decimal)\nprint(negative_zero_exponent_decimal)\nprint(zero_exponent_upper)\nprint(negative_zero_exponent_upper)\nprint(nonzero_exponent)\nprint(nonzero_decimal)\n";
     let project = TestProject::new(unary);
     let run = native_run(&project, unary, &target, &toolchain, "unary");
     assert_eq!(run.status, Some(0), "第八批原生高精度取负状态错误：{run:?}");
-    assert_eq!(run.stdout, "-42\n0\n-1.234567890123456789\n0\n0\n0\n");
+    assert_eq!(
+        run.stdout,
+        "-42\n0\n-1.234567890123456789\n0\n0\n0\n0\n0\n0\n0\n0\n0\n1e10\n1.50\n"
+    );
     assert!(run.stderr.is_empty(), "高精度取负不应输出 stderr：{run:?}");
 
     let dynamic = "for value in [1, \"A\"]\n    print(value as str)\n    print(value as int)\nfor value in [true, \"true\"]\n    print(value as bool)\n";

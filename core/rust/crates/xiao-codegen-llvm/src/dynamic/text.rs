@@ -62,22 +62,6 @@ pub(super) fn unquote(text: &str) -> Option<String> {
     Some(xiao_types::decode_string_literal(text))
 }
 
-/// 规范化 `lfloat` 的零值；非零值保留十进制文本精度。
-pub(super) fn normalize_lfloat_zero(text: &str) -> String {
-    let text = text.replace('_', "");
-    let digits = text
-        .strip_prefix('-')
-        .unwrap_or(&text)
-        .bytes()
-        .filter(|byte| byte.is_ascii_digit())
-        .collect::<Vec<_>>();
-    if !digits.is_empty() && digits.iter().all(|byte| *byte == b'0') {
-        "0".to_owned()
-    } else {
-        text
-    }
-}
-
 /// 转义 LLVM C 字符串常量中的字节。
 pub(super) fn escape_bytes(bytes: &[u8]) -> String {
     let mut output = String::new();

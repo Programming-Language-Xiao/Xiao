@@ -123,6 +123,57 @@ pub fn is_decimal_integer(text: &str) -> bool {
     !text.is_empty() && text.bytes().all(|byte| byte.is_ascii_digit())
 }
 
+/// 判断十进制文本的尾数是否为零。
+///
+/// 下划线和首位符号不参与判断；`e`/`E` 后面的指数也不参与判断。
+/// 因此 `0e5`、`0.0e0` 和 `0E-3` 都是零，而 `1e10` 不是零。输入不合法或
+/// 不含数字时返回 `false`，合法性校验由具体的运行时入口负责。
+#[must_use]
+pub fn is_zero_decimal_mantissa(text: &str) -> bool {
+    let text = text.replace('_', "");
+    let unsigned = text
+        .strip_prefix('-')
+        .or_else(|| text.strip_prefix('+'))
+        .unwrap_or(&text);
+    let (mantissa, exponent) = unsigned
+        .split_once(['e', 'E'])
+        .map_or((unsigned, None), |(mantissa, exponent)| {
+            (mantissa, Some(exponent))
+        });
+    if let Some(exponent) = exponent {
+        let exponent = exponent
+            .strip_prefix('-')
+            .or_else(|| exponent.strip_prefix('+'))
+            .unwrap_or(exponent);
+        if exponent.is_empty() || !exponent.bytes().all(|byte| byte.is_ascii_digit()) {
+            return false;
+        }
+    }
+    let mut has_digit = false;
+    for byte in mantissa.bytes() {
+        if byte.is_ascii_digit() {
+            has_digit = true;
+            if byte != b'0' {
+                return false;
+            }
+        } else if byte != b'.' {
+            return false;
+        }
+    }
+    has_digit
+}
+
+/// 规范化十进制零值；非零文本仅移除数字分隔符并原样保留其余内容。
+#[must_use]
+pub fn normalize_decimal_zero(text: &str) -> String {
+    let normalized = text.replace('_', "");
+    if is_zero_decimal_mantissa(&normalized) {
+        "0".to_owned()
+    } else {
+        normalized
+    }
+}
+
 /// 解析有限十进制浮点文本。
 pub fn parse_float_literal(text: &str) -> Result<f64, NumericError> {
     let value = text
@@ -332,7 +383,7 @@ fn float_for_rank(rank: u8) -> ScalarType {
 mod tests {
     use super::{
         binary_scalar_type, boolean_integer_adjust, check_float_to_integer_range,
-        check_integer_range,
+        check_integer_range, is_zero_decimal_mantissa, normalize_decimal_zero,
     };
     use xiao_syntax::{BinaryOperator, ScalarType};
 
@@ -350,5 +401,22 @@ mod tests {
         assert!(
             check_float_to_integer_range(9_223_372_036_854_775_808.0, ScalarType::Int).is_err()
         );
+    }
+
+    #[test]
+    /// 指数不参与零值判定，非零文本和下划线仍按规范保留。
+    fn normalizes_decimal_zero_by_mantissa() {
+        for text in ["0e5", "0.0e0", "0E-3", "-0e5", "0_._0e1"] {
+            assert!(is_zero_decimal_mantissa(text), "应判为零：{text}");
+            assert_eq!(normalize_decimal_zero(text), "0");
+        }
+        for text in ["1e10", "1.50", "-1.50"] {
+            assert!(!is_zero_decimal_mantissa(text), "不应判为零：{text}");
+            assert_eq!(normalize_decimal_zero(text), text.replace('_', ""));
+        }
+        assert!(!is_zero_decimal_mantissa("e5"));
+        assert!(!is_zero_decimal_mantissa("0x0"));
+        assert!(!is_zero_decimal_mantissa("0e"));
+        assert!(!is_zero_decimal_mantissa("0efoo"));
     }
 }

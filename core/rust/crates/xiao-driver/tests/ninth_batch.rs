@@ -85,7 +85,7 @@ fn high_precision_negation_preserves_text_semantics() {
     assert!(outcome.is_success(), "高精度取负夹具失败：{outcome:?}");
     assert_eq!(
         output(&outcome),
-        "-42\n0\n-1.234567890123456789\n0\n0\n0\n",
+        "-42\n0\n-1.234567890123456789\n0\n0\n0\n0\n0\n0\n0\n0\n0\n1e10\n1.50\n",
         "高精度取负文本语义漂移：{source}"
     );
 }

@@ -33,7 +33,7 @@
 | `ninth-method-value.xiao` | 表方法值赋值的已知未实现降低边界 | 前端通过，VM 使用 `X09-BYTECODE-003` |
 | `ninth-expanded-argument.xiao` | 普通函数 `*args` 展开实参的已知未实现降低边界 | 前端通过，VM 使用 `X09-BYTECODE-003` |
 | `ninth-table-expanded-argument.xiao` | 表方法 `*args` 展开实参的已知未实现降低边界 | 前端通过，VM 使用 `X09-BYTECODE-003` |
-| `ninth-high-precision-negation.xiao` | `lint`/`lfloat` 一元负号与零规范化的文本语义 | VM 输出 `-42`、`0`、`-1.234567890123456789`、`0`、`0`、`0` |
+| `ninth-high-precision-negation.xiao` | `lint`/`lfloat` 一元负号与零规范化的文本语义，含指数形式 | VM/LLVM 原生输出 `-42`、`0`、`-1.234567890123456789`，所有零值行均为 `0`，非零指数/小数保留为 `1e10`、`1.50` |
 
 夹具由 `core/rust/crates/xiao-driver/tests/c20_capability_probe.rs` 读取。这里不添加
 intrinsic、不绕过类型检查，也不把探测结果当作官方库接口承诺。

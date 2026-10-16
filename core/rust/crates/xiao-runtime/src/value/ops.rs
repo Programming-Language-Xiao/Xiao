@@ -12,6 +12,7 @@
 //!   不静默退化为字符串比较。
 
 use xiao_syntax::ScalarType;
+use xiao_types::is_zero_decimal_mantissa;
 
 use super::RuntimeValue;
 use crate::errors::{RuntimeError, RuntimeResult};
@@ -449,12 +450,7 @@ fn toggle_decimal_sign(value: &str, normalize_zero: bool) -> RuntimeResult<Strin
             "高精度数值不是合法的十进制文本",
         ));
     }
-    if normalize_zero
-        && digits
-            .bytes()
-            .filter(|byte| byte.is_ascii_digit())
-            .all(|byte| byte == b'0')
-    {
+    if normalize_zero && is_zero_decimal_mantissa(digits) {
         return Ok("0".to_owned());
     }
     if negative {

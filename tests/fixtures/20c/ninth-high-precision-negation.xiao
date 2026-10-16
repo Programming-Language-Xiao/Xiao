@@ -7,9 +7,25 @@ lfloat negative_precise = -precise
 lfloat zero_float = 0.0
 lfloat negative_zero_float = -zero_float
 lfloat zero_float_precise = 0.00
+lfloat zero_exponent = 0e5
+lfloat negative_zero_exponent = -zero_exponent
+lfloat zero_exponent_decimal = 0.0e0
+lfloat negative_zero_exponent_decimal = -zero_exponent_decimal
+lfloat zero_exponent_upper = 0E-3
+lfloat negative_zero_exponent_upper = -zero_exponent_upper
+lfloat nonzero_exponent = 1e10
+lfloat nonzero_decimal = 1.50
 print(negative)
 print(negative_zero)
 print(negative_precise)
 print(zero_float)
 print(negative_zero_float)
 print(zero_float_precise)
+print(zero_exponent)
+print(negative_zero_exponent)
+print(zero_exponent_decimal)
+print(negative_zero_exponent_decimal)
+print(zero_exponent_upper)
+print(negative_zero_exponent_upper)
+print(nonzero_exponent)
+print(nonzero_decimal)

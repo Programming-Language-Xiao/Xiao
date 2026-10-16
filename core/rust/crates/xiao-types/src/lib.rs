@@ -65,7 +65,8 @@ pub use materialization::{build_plan, merge_constraints};
 pub use numeric::{
     ConstantValue, NumericError, NumericOperation, analyze_binary, binary_scalar_type,
     boolean_integer_adjust, check_float_range, check_float_to_integer_range, check_integer_range,
-    is_decimal_integer, parse_float_literal, parse_integer_literal,
+    is_decimal_integer, is_zero_decimal_mantissa, normalize_decimal_zero, parse_float_literal,
+    parse_integer_literal,
 };
 /// 重新导出容器路径转换和解析错误。
 pub use path_constraints::{
