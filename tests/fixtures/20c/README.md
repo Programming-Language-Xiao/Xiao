@@ -30,6 +30,10 @@
 | `second-case-conversion-logic.xiao` | 字符分类所需的 `and` 逻辑组合 | VM 与 LLVM 原生均输出 `true`（维护回归 `38493485483` 两平台各 14 行 `20C-PROBE`）；右侧按需短路 |
 | `second-set-membership.xiao` | 集合构造与 `in`/`not in` | VM/LLVM 输出 `ok`，仅保留探测结论 |
 | `seventh-str-int-and-char.xiao` | 三种整数宽度的 `str` → 码点与 `chr` 回程，以及 ASCII 小写接口 | VM/LLVM 输出 `65`、`23567`、`38634`、`a`、`😀`、`abcxyz-az-9小` |
+| `ninth-method-value.xiao` | 表方法值赋值的已知未实现降低边界 | 前端通过，VM 使用 `X09-BYTECODE-003` |
+| `ninth-expanded-argument.xiao` | 普通函数 `*args` 展开实参的已知未实现降低边界 | 前端通过，VM 使用 `X09-BYTECODE-003` |
+| `ninth-table-expanded-argument.xiao` | 表方法 `*args` 展开实参的已知未实现降低边界 | 前端通过，VM 使用 `X09-BYTECODE-003` |
+| `ninth-high-precision-negation.xiao` | `lint`/`lfloat` 一元负号的文本符号语义 | VM 输出 `-42`、`0`、`-1.234567890123456789`、`-0.0` |
 
 夹具由 `core/rust/crates/xiao-driver/tests/c20_capability_probe.rs` 读取。这里不添加
 intrinsic、不绕过类型检查，也不把探测结果当作官方库接口承诺。

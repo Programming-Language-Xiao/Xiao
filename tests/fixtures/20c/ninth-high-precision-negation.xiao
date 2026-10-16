@@ -1,0 +1,12 @@
+lint zero = 0
+lint positive = 42
+lint negative = -positive
+lint negative_zero = -zero
+lfloat precise = 1.234567890123456789
+lfloat negative_precise = -precise
+lfloat zero_float = 0.0
+lfloat negative_zero_float = -zero_float
+print(negative)
+print(negative_zero)
+print(negative_precise)
+print(negative_zero_float)

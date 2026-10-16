@@ -200,7 +200,7 @@ git show -M --stat <sha>     # 重命名检测下增删行数应为 0
 一眼确认。**任何行为改动都另开提交**——把"移动"与"改动"混在一笔里，正是 09R2H 那条
 ★ 约束要防的形态：审核者只能读 diff 反推意图，而他**没有义务**替你还原。
 
-### 3.3 中心不变量：生产路径上 `TacProgram.unsupported` 恒为空
+### 3.3 中心不变量：生产路径上 `TacProgram.unsupported` 只能含已分类拒绝项
 
 **这是 B0-A 最重要的一条，也是它真正的实质工作量。**
 
@@ -276,8 +276,9 @@ git show -M --stat <sha>     # 重命名检测下增删行数应为 0
    的唯一规则，并使用既有 `TYPE_MISMATCH_CODE`。降低测试确认检查位于 `Cast` 前，三载体
    回归覆盖四种合法拼写和非法拼写。
 
-因此不需要降级 §3.3 的不变量；非空 `unsupported` 只代表降低器与生产契约的内部缺口，
-由 `verify_production` 以 `X09-BYTECODE-001` 拒绝。
+因此不需要放松 §3.3 的不变量：未标记的 `unsupported` 只代表降低器与生产契约的内部缺口，
+由 `verify_production` 以 `X09-BYTECODE-001` 拒绝；已知且登记的未实现构造使用
+`X09-BYTECODE-003`，仍在生产入口以 Fatal 级别拒绝。
 
 > 无论走哪条路，**绝不能用 `record_unsupported` 给它（或任何东西）记账**——一记就把
 > 编码体积指标整条堵死，而且要到验收才流血。这条 09R2F1 已写过一次，这里再写一次。
@@ -334,8 +335,9 @@ N-2 的顶层常量整数幂已接入受检乘法降低；两项仍由原生守�
 B0-A 的落点如下：生产 `verify_program` 对每个函数使用局部 `TacFunction::categories`，
 将指令使用/定义和活跃区间逐一登记；程序级 `TacProgram::categories` 只保留兼容观察用途。
 `verify_production` / `verify_for_execution` 在编码器或执行器消费前返回结构化错误，
-`X09-BYTECODE-001` 专用于非空 `unsupported`，`X09-BYTECODE-002` 覆盖结构、引用和 ABI
-错误。释放计划由 `reconcile_release_plans` 在该生产验证路径中对账。未知 opcode、定宽
+`X09-BYTECODE-001` 专用于未标记的内部 `unsupported`，`X09-BYTECODE-003` 表示已登记的
+已知未实现构造，`X09-BYTECODE-002` 覆盖结构、引用和 ABI 错误。释放计划由
+`reconcile_release_plans` 在该生产验证路径中对账。未知 opcode、定宽
 溢出和解码边界仍由冻结编码器/解码器的同一输入校验负责，未改变版本字段或布局。
 
 ### 3.6 登记与文档同步（连带影响，必须同批）
