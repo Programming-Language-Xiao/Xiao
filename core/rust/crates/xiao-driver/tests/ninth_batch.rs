@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 
 use xiao_bytecode::lower_program;
 use xiao_driver::{DriverRequest, FrontendCompiler, FrontendRequest};
+use xiao_optimizer::OptimizationLevel;
 use xiao_vm::VmEvent;
 
 fn repository_root() -> PathBuf {
@@ -53,13 +54,22 @@ fn known_unsupported_boundaries_use_the_new_bytecode_code() {
             "夹具没有记录已知未实现构造：{name} {:?}",
             tac.unsupported
         );
-        let outcome = xiao_driver::FrontendVmDriver::new()
-            .run_artifact(&artifact, &DriverRequest::new(request));
-        assert_eq!(
-            outcome.code(),
-            Some("X09-BYTECODE-003"),
-            "已知未实现构造身份错误：{name} {outcome:?}"
-        );
+        for level in [
+            OptimizationLevel::O0,
+            OptimizationLevel::O1,
+            OptimizationLevel::O2,
+            OptimizationLevel::O3,
+        ] {
+            let outcome = xiao_driver::FrontendVmDriver::new().run_artifact(
+                &artifact,
+                &DriverRequest::new(request.clone()).with_optimization_level(level),
+            );
+            assert_eq!(
+                outcome.code(),
+                Some("X09-BYTECODE-003"),
+                "已知未实现构造身份错误：{name} {level:?} {outcome:?}"
+            );
+        }
     }
 }
 

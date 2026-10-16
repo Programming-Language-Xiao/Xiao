@@ -676,7 +676,13 @@ impl FrontendVmDriver {
             .fingerprint()
             .ok()
             .map(|fingerprint| fingerprint.as_str().to_owned());
-        let (program, optimization_report) =
+        // 先保留降低器已经登记的 unsupported，让所有优化级别都经过同一生产验证
+        // 入口；否则 O1–O3 会先把它包装成 X09-DRIVER-OPT-001，丢掉 X09-BYTECODE
+        // 的已知未实现/内部缺口分档。
+        let has_unsupported = !program.unsupported.is_empty();
+        let (program, optimization_report) = if has_unsupported {
+            (program, None)
+        } else {
             match xiao_bytecode::optimize_bytecode_checked(ir, &program, optimization) {
                 Ok(result) => (result.program, Some(result.report)),
                 Err(_error) if request.optimization_level == OptimizationLevel::O0 => {
@@ -694,7 +700,8 @@ impl FrontendVmDriver {
                         report: None,
                     });
                 }
-            };
+            }
+        };
         if let Some(error) = control.check() {
             self.reset_session();
             return DriverOutcome::Rejected(error);
