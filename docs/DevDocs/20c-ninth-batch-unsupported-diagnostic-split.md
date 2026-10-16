@@ -14,7 +14,7 @@
 状态：**已实施（2026-10-17）**：§五 补探完成；§九 两条裁定已落地；§十 Z-1–Z-3 已收口。
 已知未实现构造改报 `X09-BYTECODE-003`，`X09-BYTECODE-001` 保留给内部降低缺口；
 `lint`/`lfloat` 取负已按文本符号操作接通，算术其余方向继续登记。
-实现提交：`5abf234`；Z-2/Z-3 收口提交：`ae1eb02`；永久回归位于 `core/rust/crates/xiao-driver/tests/ninth_batch.rs`，
+实现提交：`5abf234`；Z-2/Z-3 收口提交：`6a96198`；永久回归位于 `core/rust/crates/xiao-driver/tests/ninth_batch.rs`，
 四个第九批夹具位于 `tests/fixtures/20c/`。
 
 推送后的受控 CI 已通过：maintenance regression `38860562360`（Linux 原生
