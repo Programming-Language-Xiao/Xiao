@@ -73,7 +73,7 @@ impl RuntimeValue {
             Self::Float(value) => Ok(Self::Float(-value)),
             Self::Sfloat(value) => Ok(Self::Sfloat(-value)),
             Self::Lint(value) => toggle_decimal_sign(value, true).map(Self::Lint),
-            Self::Lfloat(value) => toggle_decimal_sign(value, false).map(Self::Lfloat),
+            Self::Lfloat(value) => toggle_decimal_sign(value, true).map(Self::Lfloat),
             other => Err(RuntimeError::type_mismatch("numeric", other.type_name())),
         }
     }
@@ -434,8 +434,8 @@ impl RuntimeValue {
     }
 }
 
-/// 翻转十进制文本的符号；`lint` 的零值统一为 `0`，`lfloat` 保留原精度文本。
-fn toggle_decimal_sign(value: &str, normalize_integer_zero: bool) -> RuntimeResult<String> {
+/// 翻转十进制文本的符号；零值统一为 `0`，非零 `lfloat` 保留原精度文本。
+fn toggle_decimal_sign(value: &str, normalize_zero: bool) -> RuntimeResult<String> {
     let (negative, digits) = value
         .strip_prefix('-')
         .map_or((false, value), |rest| (true, rest));
@@ -449,7 +449,12 @@ fn toggle_decimal_sign(value: &str, normalize_integer_zero: bool) -> RuntimeResu
             "高精度数值不是合法的十进制文本",
         ));
     }
-    if normalize_integer_zero && digits.bytes().all(|byte| byte == b'0') {
+    if normalize_zero
+        && digits
+            .bytes()
+            .filter(|byte| byte.is_ascii_digit())
+            .all(|byte| byte == b'0')
+    {
         return Ok("0".to_owned());
     }
     if negative {
