@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/Bun-1.4-000000?logo=bun&logoColor=white" alt="Bun 1.4">
   <img src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-0078D4" alt="平台支持">
   <img src="https://img.shields.io/badge/license-MIT-yellow.svg" alt="MIT License">
+  <a href="https://deepwiki.com/Programming-Language-Xiao/Xiao"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
 <p align="center">
