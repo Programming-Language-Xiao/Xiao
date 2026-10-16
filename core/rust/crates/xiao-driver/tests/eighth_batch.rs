@@ -102,6 +102,15 @@ fn vm_accepts_high_precision_parameters_and_integer_conversions() {
     );
     assert_eq!(output(&outcome), "42\n42\n42\nok\n7\n");
 
+    let large_source = "lint big = 9223372036854775808\nprint(big)\nprint(170141183460469231731687303715884105727)\n";
+    let large_project = TestProject::new(large_source);
+    let large = vm_run(&large_project, large_source);
+    assert!(large.is_success(), "大 lint 字面量不应静默失败：{large:?}");
+    assert_eq!(
+        output(&large),
+        "9223372036854775808\n170141183460469231731687303715884105727\n"
+    );
+
     let invalid_source = "lint huge = 2147483648\nprint(huge as sint)\n";
     let invalid_project = TestProject::new(invalid_source);
     let invalid = vm_run(&invalid_project, invalid_source);

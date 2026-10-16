@@ -522,8 +522,8 @@ impl<'ir> Lowerer<'ir> {
             let class = Lowerer::class_of_type(&parameter.ty);
             let register = self.new_binding_register(class, parameter.span);
             self.frame.parameters.push(register);
-            // 所有源码形参都必须优先命中精确参数寄存器；否则普通名称会退回
-            // ownership 的 storage 类别，把 lint/lfloat 的对象句柄误读成 int。
+            // 所有源码形参一律登记到 parameter_names，保证名称解析命中
+            // 精确参数寄存器。
             self.frame.parameter_names.insert(
                 name_key(&parameter.name.text, parameter.name.backticked),
                 register,

@@ -254,6 +254,7 @@ fn lower_literal(
     let constant = match literal {
         "integer" => match scalar_of(&expression.ty) {
             Some(ScalarType::Sint) => TacConstant::Sint(text.parse().unwrap_or_default()),
+            Some(ScalarType::Lint) => TacConstant::Lint(text.to_owned()),
             _ => TacConstant::Int(text.parse().unwrap_or_default()),
         },
         "float" => match scalar_of(&expression.ty) {
