@@ -140,8 +140,8 @@ IR 值的静态类型登记 `ObjHandle`，不能按 ownership 的 `stack` 存储
 
 第九批把已知未实现的降低构造与内部降低缺口分档：前者使用 `X09-BYTECODE-003`，
 后者保留 `X09-BYTECODE-001`，两者都在生产入口以 Fatal 级别拒绝。`lint`/`lfloat`
-一元负号已按十进制文本翻转符号，`lint` 的零值归一化为 `0`，`lfloat` 保留 `-0.0`
-和原始小数精度；其它高精度算术仍是未实现债项，当前清单见[第九批](20c-ninth-batch-unsupported-diagnostic-split.md)。
+一元负号已按十进制文本翻转符号，`lint`/`lfloat` 的零值归一化为 `0`，非零 `lfloat`
+保留原始小数精度；其它高精度算术仍是未实现债项，当前清单见[第九批](20c-ninth-batch-unsupported-diagnostic-split.md)。
 
 因此，读取字符串后转换布尔值应使用新的静态变量接收结果：
 
