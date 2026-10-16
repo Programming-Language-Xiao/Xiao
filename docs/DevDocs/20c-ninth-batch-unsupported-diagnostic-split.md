@@ -21,6 +21,9 @@
 `116841648826`、Windows 原生 `116841648901`、默认测试 `116841649118`）和
 workspace gates `38860562267`（作业 `116841648439`）均成功。
 
+Z-2/Z-3 收口提交 `6a96198` 推送后的受控 CI 也已通过：maintenance regression
+`38932473938`（Linux/Windows 原生差分均成功）和 workspace gates `38932473862` 均成功。
+
 自审核又发现 O1–O3 会先把 `unsupported` 包装成 `X09-DRIVER-OPT-001`；
 `5676d6c` 已让所有优化级别回到同一生产验证入口，O0–O3 永久回归已补齐。
 修复后的 maintenance regression `38864944452` 五个作业全成功。
