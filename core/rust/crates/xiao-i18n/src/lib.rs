@@ -817,6 +817,30 @@ pub fn builtin_renderer() -> MessageRenderer {
         "Runtime objects cannot be transferred across threads in this release",
         no_params,
     );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.resource_closed",
+        "资源句柄已经关闭或已失效",
+        "resource handle is closed or invalid",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.capability_unavailable",
+        "当前能力上下文不允许此外部操作",
+        "the current capability context does not allow this external operation",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "x20.target.unsupported",
+        "目标平台不支持此操作：{message}",
+        "target platform does not support this operation: {message}",
+        &[("message", text)],
+    );
 
     let syntax_entries = [
         ("x01.lex.inconsistent_indent", "syntax error: {message}"),

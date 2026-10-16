@@ -63,6 +63,13 @@ pub const SET_COMPARISON_CODE: &str = "X06-RUNTIME-022";
 pub const SET_MEMBERSHIP_CODE: &str = "X06-RUNTIME-023";
 /// 动态值不能作为 `for in` 的可迭代对象。
 pub const ITERABLE_CODE: &str = "X06-RUNTIME-024";
+/// 资源句柄已经显式关闭或其最后一个强引用已经释放。
+pub const RESOURCE_CLOSED_CODE: &str = "X06-RUNTIME-025";
+/// 当前能力上下文不允许请求的外部操作。
+pub const CAPABILITY_UNAVAILABLE_CODE: &str = "X06-RUNTIME-026";
+
+/// 目标平台不支持请求的资源操作。
+pub const TARGET_UNSUPPORTED_CODE: &str = "X20-TARGET-001";
 
 /// 虚拟机不变量损坏。
 pub const FATAL_RUNTIME_INVARIANT_CODE: &str = "X07-FATAL-001";
