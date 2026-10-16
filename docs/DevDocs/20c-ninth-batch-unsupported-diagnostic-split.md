@@ -17,6 +17,10 @@
 实现提交：`5abf234`；永久回归位于 `core/rust/crates/xiao-driver/tests/ninth_batch.rs`，
 四个第九批夹具位于 `tests/fixtures/20c/`。
 
+推送后的受控 CI 已通过：maintenance regression `38860562360`（Linux 原生
+`116841648826`、Windows 原生 `116841648901`、默认测试 `116841649118`）和
+workspace gates `38860562267`（作业 `116841648439`）均成功。
+
 ## 一、为什么是这一批
 
 1. **第八批刚把「验证失败」的身份修对，同一批就暴露了另一半**：
