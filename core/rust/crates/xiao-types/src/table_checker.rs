@@ -247,9 +247,13 @@ impl<'source> TypeChecker<'source> {
                 Statement::Declaration {
                     target,
                     declared_type,
+                    constraint_path,
                     value,
                     ..
                 } => {
+                    if matches!(declared_type, DeclaredType::Resource(_)) {
+                        self.reject_resource_constraint_path(constraint_path.as_ref());
+                    }
                     self.check_table_field_declaration(
                         &mut signature,
                         *target,
@@ -402,21 +406,27 @@ impl<'source> TypeChecker<'source> {
         value: &Expression,
     ) {
         let value_type = self.check_expression(value);
-        self.require_pure_initializer(value);
         let field_type = declared_type
             .map(|declared| declared_type_to_type(declared, &mut self.context))
             .unwrap_or_else(|| value_type.clone());
-        if let Some(DeclaredType::Scalar(declared_type)) = declared_type {
-            self.check_explicit_target(value, &value_type, *declared_type, false);
-        } else if matches!(
-            declared_type,
-            Some(DeclaredType::Resource(_) | DeclaredType::Set(_))
-        ) {
+        if value_type.contains_resource_value() || field_type.contains_resource_value() {
             self.type_error(
                 NON_CONSTANT_CODE,
                 "x02.type.non_constant_initializer",
                 value.span(),
-                "资源或集合类型不能用于 const 初始化".to_owned(),
+                "资源及包含资源的容器不能用于 const 初始化".to_owned(),
+            );
+        } else {
+            self.require_pure_initializer(value);
+        }
+        if let Some(DeclaredType::Scalar(declared_type)) = declared_type {
+            self.check_explicit_target(value, &value_type, *declared_type, false);
+        } else if matches!(declared_type, Some(DeclaredType::Set(_))) {
+            self.type_error(
+                NON_CONSTANT_CODE,
+                "x02.type.non_constant_initializer",
+                value.span(),
+                "集合类型不能用于 const 初始化".to_owned(),
             );
         }
         let key = self.name_key(target);
@@ -579,6 +589,29 @@ impl<'source> TypeChecker<'source> {
         member: Name,
         span: SourceSpan,
     ) -> Type {
+        if let Some(path) = self.imported_namespace_path(object) {
+            self.check_expression(object);
+            if let Some(signature) = self
+                .module_functions
+                .get(&path)
+                .and_then(|members| members.get(&self.name_key(member)))
+            {
+                return Type::Function {
+                    parameters: signature
+                        .parameters
+                        .iter()
+                        .map(|parameter| parameter.ty.clone())
+                        .collect(),
+                    return_type: Box::new(signature.return_type.clone()),
+                };
+            }
+            if self
+                .module_functions
+                .contains_key(&format!("{path}.{}", self.display_name(member)))
+            {
+                return Type::Dynamic;
+            }
+        }
         if let Some(path) = self.external_namespace_path(object) {
             self.check_expression(object);
             let member_name = self.display_name(member);

@@ -7,6 +7,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{self, Display, Formatter};
 
 use crate::containers::PathConstraintTree;
+use crate::functions::FunctionSignature;
 use crate::types::{Type, TypeScheme, TypeVarId};
 
 /// 一个名称绑定及其初始化/可变状态。
@@ -23,6 +24,8 @@ pub struct Binding {
     /// 绑定上的数组路径约束；普通标量绑定为空。
     pub container_constraints: PathConstraintTree,
     namespace_origin: Option<NamespaceOrigin>,
+    imported_function: Option<FunctionSignature>,
+    imported_module: Option<String>,
 }
 
 /// 区分环境包预登记与可合并的项目目录根，避免普通绑定误合并。
@@ -45,6 +48,8 @@ impl Binding {
             constant: false,
             container_constraints: PathConstraintTree::new(),
             namespace_origin: None,
+            imported_function: None,
+            imported_module: None,
         }
     }
 
@@ -58,6 +63,8 @@ impl Binding {
             constant: true,
             container_constraints: PathConstraintTree::new(),
             namespace_origin: None,
+            imported_function: None,
+            imported_module: None,
         }
     }
 
@@ -78,6 +85,46 @@ impl Binding {
     /// 返回绑定来源，普通名称与显式别名均为 `None`。
     pub(crate) const fn namespace_origin(&self) -> Option<NamespaceOrigin> {
         self.namespace_origin
+    }
+
+    /// 为导入函数保留完整参数形状；不把它登记成本模块函数定义。
+    pub(crate) fn with_imported_function(mut self, signature: FunctionSignature) -> Self {
+        self.scheme = TypeScheme::monomorphic(Type::Function {
+            parameters: signature
+                .parameters
+                .iter()
+                .map(|parameter| parameter.ty.clone())
+                .collect(),
+            return_type: Box::new(signature.return_type.clone()),
+        });
+        self.imported_function = Some(signature);
+        self
+    }
+
+    /// 保留命名空间导入的真实模块路径，支持别名及逐级限定访问。
+    pub(crate) fn with_imported_module(mut self, module: String) -> Self {
+        self.imported_module = Some(module);
+        self
+    }
+
+    /// 当前绑定仍指向导入函数时返回它的完整签名。
+    pub(crate) fn imported_function(&self) -> Option<&FunctionSignature> {
+        self.imported_function.as_ref()
+    }
+
+    /// 当前绑定仍指向导入模块时返回真实路径。
+    pub(crate) fn imported_module(&self) -> Option<&str> {
+        self.imported_module.as_deref()
+    }
+
+    /// 赋值复制导入值时同步接口身份；普通赋值传入空值以清除旧身份。
+    pub(crate) fn set_imported_interfaces(
+        &mut self,
+        function: Option<FunctionSignature>,
+        module: Option<String>,
+    ) {
+        self.imported_function = function;
+        self.imported_module = module;
     }
 
     /// 返回绑定的实例化前方案。
@@ -220,6 +267,8 @@ impl TypeEnvironment {
                 constant: false,
                 container_constraints: constraints,
                 namespace_origin: None,
+                imported_function: None,
+                imported_module: None,
             },
         )
     }
@@ -305,6 +354,8 @@ impl TypeEnvironment {
             return Err(EnvironmentError::Immutable(name.to_owned()));
         }
         binding.initialized = true;
+        binding.imported_function = None;
+        binding.imported_module = None;
         Ok(())
     }
 

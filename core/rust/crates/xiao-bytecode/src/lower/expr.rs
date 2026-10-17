@@ -43,7 +43,11 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
             lowerer.lower_new(callee, arguments, expression.span)
         }
         IrExpressionKind::Member { object, member } => {
-            if matches!(expression.ty, IrType::Function { .. }) {
+            // 模块命名空间仍是动态载体；补全静态函数签名后，继续使用既有
+            // MemberGet/CallValue 路径，不能把模块函数误判成绑定表方法。
+            if matches!(expression.ty, IrType::Function { .. })
+                && !matches!(object.ty, IrType::Dynamic)
+            {
                 lower_known_unsupported(lowerer, "表方法值的动态调用", expression.span)
             } else {
                 let object = lowerer.lower_expression(object);

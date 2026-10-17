@@ -16,8 +16,14 @@ use xiao_ir::{IrProgram, IrValidationError, IrValidator, lower_program};
 use xiao_lifetime::analyze as analyze_lifetime;
 use xiao_modules::{ModuleName, ProjectModuleResult, analyze_project};
 use xiao_source::SourceFile;
-use xiao_syntax::{ImportStatement, ParseResult, Program, Statement, parse};
-use xiao_types::{ExternalNamespaces, TypeCheckResult, TypeChecker, check};
+use xiao_syntax::{
+    FunctionParameterKind, FunctionTypeAnnotation, ImportStatement, ParseResult, Program,
+    Statement, parse,
+};
+use xiao_types::{
+    ExternalNamespaces, FunctionParameterSignature, FunctionSignature, Type, TypeCheckResult,
+    TypeChecker,
+};
 use xiao_vm::STANDARD_LIBRARY_NAMESPACE;
 
 /// 前端流水线版本；用于请求/结果协商和快照元数据。
@@ -190,6 +196,77 @@ impl std::error::Error for FrontendIoError {}
 struct StandardLinkPlan {
     sources: BTreeMap<String, String>,
     import_spans: BTreeSet<(usize, usize)>,
+}
+
+/// 从规范标准库源码提取完整注解的函数接口；不执行模块，也不推断跨模块类型变量。
+fn standard_module_function_signatures(
+    standard: &ProjectModuleResult,
+) -> BTreeMap<String, BTreeMap<String, FunctionSignature>> {
+    /// 将闭合的标量、资源或空值注解映射成无跨模块类型变量的接口类型。
+    fn annotation_type(annotation: FunctionTypeAnnotation) -> Type {
+        match annotation {
+            FunctionTypeAnnotation::Scalar(scalar) => Type::Scalar(scalar),
+            FunctionTypeAnnotation::Resource(resource) => Type::Resource(resource),
+            FunctionTypeAnnotation::None => Type::None,
+        }
+    }
+    let mut modules = BTreeMap::new();
+    for (module, record) in &standard.modules {
+        let (Some(source), Some(program)) = (&record.source, &record.program) else {
+            continue;
+        };
+        let key = |name: xiao_syntax::Name| {
+            format!(
+                "{}:{}",
+                if name.backticked { "backtick" } else { "ascii" },
+                name.unquoted_text(source)
+            )
+        };
+        let mut signatures = BTreeMap::new();
+        for statement in &program.statements {
+            let Statement::Function {
+                name,
+                parameters,
+                return_type: Some(return_type),
+                span,
+                ..
+            } = statement
+            else {
+                continue;
+            };
+            let parameters = parameters
+                .iter()
+                .map(|parameter| {
+                    if matches!(
+                        parameter.kind,
+                        FunctionParameterKind::VarArgs | FunctionParameterKind::VarKeywords
+                    ) {
+                        return None;
+                    }
+                    Some(FunctionParameterSignature {
+                        name: key(parameter.name),
+                        kind: parameter.kind,
+                        ty: annotation_type(parameter.annotation?),
+                        has_default: parameter.default.is_some(),
+                    })
+                })
+                .collect::<Option<Vec<_>>>();
+            let Some(parameters) = parameters else {
+                continue;
+            };
+            signatures.insert(
+                key(*name),
+                FunctionSignature::new(
+                    key(*name),
+                    parameters,
+                    annotation_type(*return_type),
+                    *span,
+                ),
+            );
+        }
+        modules.insert(format!("{STANDARD_LIBRARY_NAMESPACE}.{module}"), signatures);
+    }
+    modules
 }
 
 /// 选择可安全静态链接的首批标准库函数导入。
@@ -527,13 +604,15 @@ impl FrontendCompiler {
                 .as_ref()
                 .map(|registry| &registry.namespaces)
         });
-        let type_result = if let Some(namespaces) = namespaces {
-            TypeChecker::new(&effective_source)
-                .with_external_namespaces(namespaces.clone())
-                .check_program(&effective_program)
-        } else {
-            check(&effective_source, &effective_program)
-        };
+        let mut checker = TypeChecker::new(&effective_source);
+        if let Some(namespaces) = namespaces {
+            checker = checker.with_external_namespaces(namespaces.clone());
+        }
+        if let Some(standard) = &standard_library {
+            checker = checker
+                .with_module_function_signatures(standard_module_function_signatures(standard));
+        }
+        let type_result = checker.check_program(&effective_program);
         diagnostics.extend(type_result.diagnostics.clone());
 
         let lifetime = analyze_lifetime(&effective_source, &effective_program, &type_result);

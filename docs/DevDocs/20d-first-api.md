@@ -432,6 +432,36 @@ push 触发的 [维护回归 `39041556630`](https://github.com/Programming-Langu
 错误码 `X06-RUNTIME-026`。因此 **F-1 阻断已关闭，20D 出口第 4 条已满足**。
 `process` 交付仍按冻结规划在后置批次登记。
 
+## 十三、追加自审核（2026-10-18）
+
+针对 §十二 的实现继续审核并复现三处遗漏，均已修正。导入签名的收口方式由星崽明确选择
+「接通这些导入的静态签名，保持现有后端支持范围」。
+
+| 问题 | 修复与边界 | 常驻回归 |
+| --- | --- | --- |
+| 资源路径注解被静默忽略 | 变量和表字段共用拒绝规则，`file`/`directory`/`resource` 携带容器路径统一报 `X03-TYPE-006`；推断资源数组、元组继续可用 | `resource_declarations_reject_ignored_path_constraints` |
+| 表资源常量只报一般纯度错误 | 递归检查初值及字段类型中的资源；单例/实例表及数组、元组、字典嵌套统一优先报 `X02-TYPE-008`；非资源纯容器常量规则保持原状 | `table_resource_constants_use_the_non_constant_diagnostic` |
+| 导入别名和限定调用丢失资源签名 | 从标准库 AST 提取完整注解函数头，绑定保留函数接口或模块路径，复用既有参数匹配器；作用域遮蔽、赋值覆盖、括号和导入值复制均纳入检查 | `imported_resource_signatures_preserve_type_boundaries`、`imported_resource_signatures_reject_invalid_argument_shapes`、`imported_resource_interfaces_respect_scope_and_reassignment` |
+
+实际落点为 `core/rust/crates/xiao-driver/src/frontend.rs`、
+`core/rust/crates/xiao-types/src/checker/{imports.rs,statement.rs,expression.rs}`、
+`src/{environment.rs,table_checker.rs,types.rs}`。模块接口不进入本地 `function_signatures`，
+没有新增 intrinsic，也没有放宽资源父子类型或容器边界。
+
+`core/rust/crates/xiao-bytecode/src/lower/expr.rs` 同步区分动态模块载体的函数成员与表方法：
+模块函数保留静态签名后继续使用既有 `MemberGet`/函数值调用，避免误报「表方法值的动态调用」。
+`imported_resource_calls_execute_in_vm_and_keep_native_boundary` 真实执行各导入形式，
+同时断言 LLVM 仍在工具链调用前拒绝这些非静态链接形式；未扩展原生后端的支持范围。
+
+本轮本地验证：`cargo test --workspace --no-fail-fast -j 2` 为
+**1184 passed / 0 failed / 36 ignored**；`tools/gates/run.sh` exit 0（含 fmt、Clippy、
+文档/覆盖率、TypeScript、基准自检、驱动器及 Bun 测试），Bun 为 **295 pass / 5 skip / 0 fail**。
+`20d_first_api` 默认运行 **15 passed / 2 ignored**；Windows 受控 LLVM 环境显式执行
+`native_os_module_matches_vm_output` 通过，五条 `20D-NATIVE` 输出及错误身份与 §12.1 相同，
+并继续覆盖 filesystem 缺位。两份 DevDocs 的逐行粗体配对检查通过。
+
+§12.1 的绿色运行仅对应旧修复提交；本轮 push 的三平台取证另行记录，不复用旧运行作为验收。
+
 ## 相关页面
 
 - [20D-冻结](20d-freeze-resource-contract.md) §2.5——**本批的直接前置**：签名、错误身份、平台清单

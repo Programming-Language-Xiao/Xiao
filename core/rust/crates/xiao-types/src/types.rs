@@ -178,6 +178,27 @@ impl Type {
         self.is_integer() || self.is_float()
     }
 
+    /// 判断值本身或容器成员是否包含资源；函数签名中的资源类型不是资源值。
+    pub(crate) fn contains_resource_value(&self) -> bool {
+        match self {
+            Self::Resource(_) => true,
+            Self::Array(ArrayType::Homogeneous { element, .. }) => {
+                element.contains_resource_value()
+            }
+            Self::Array(ArrayType::Heterogeneous { elements }) | Self::Tuple(elements) => {
+                elements.iter().any(Self::contains_resource_value)
+            }
+            Self::DictTable(dictionary) | Self::DictColumn(dictionary) => dictionary
+                .entries
+                .iter()
+                .any(|entry| entry.value.contains_resource_value()),
+            Self::Set(set) => set
+                .member_types()
+                .any(|member| member.contains_resource_value()),
+            _ => false,
+        }
+    }
+
     /// 收集类型中自由出现的变量。
     pub fn collect_free_vars(&self, output: &mut BTreeSet<TypeVarId>) {
         match self {

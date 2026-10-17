@@ -510,6 +510,9 @@ impl<'source> TypeChecker<'source> {
         if super::constant::is_random_seed_callee(callee, self.source) {
             return self.check_random_seed_call(arguments, span);
         }
+        if let Some(result) = self.check_imported_function_call(callee, arguments, span) {
+            return result;
+        }
         if let Some(result) = self.check_table_method_call(callee, arguments, span) {
             return result;
         }

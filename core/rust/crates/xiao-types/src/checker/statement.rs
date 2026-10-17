@@ -116,6 +116,8 @@ impl<'source> TypeChecker<'source> {
 
     /// 检查普通名称赋值，首次出现时建立单态绑定。
     fn check_simple_assignment(&mut self, target: xiao_syntax::Name, value: &Expression) {
+        let imported_function = self.imported_function_signature(value);
+        let imported_module = self.imported_namespace_path(value);
         let value_type = self.check_expression(value);
         let key = self.name_key(target);
         if let Some(binding) = self.environment.lookup(&key).cloned() {
@@ -161,11 +163,18 @@ impl<'source> TypeChecker<'source> {
                 }
                 if let Err(error) = self.environment.assign(&key) {
                     self.environment_error(target.span, error);
+                } else if let Some(binding) = self.environment.lookup_mut(&key) {
+                    binding.set_imported_interfaces(imported_function, imported_module);
                 }
             }
             return;
         }
-        if let Err(error) = self.environment.declare_mutable(key, value_type, true) {
+        let mut binding = crate::environment::Binding::mutable(
+            crate::types::TypeScheme::monomorphic(value_type),
+            true,
+        );
+        binding.set_imported_interfaces(imported_function, imported_module);
+        if let Err(error) = self.environment.declare(key, binding) {
             self.environment_error(target.span, error);
         }
     }
@@ -432,8 +441,21 @@ impl<'source> TypeChecker<'source> {
                 }
             }
             DeclaredType::Resource(resource) => {
+                self.reject_resource_constraint_path(constraint_path);
                 self.check_resource_declaration(target, *resource, value);
             }
+        }
+    }
+
+    /// 资源注解不提供容器路径约束；变量和表字段使用同一拒绝规则。
+    pub(super) fn reject_resource_constraint_path(&mut self, path: Option<&IndexPath>) {
+        if let Some(path) = path {
+            self.type_error(
+                INVALID_DECLARATION_PATH_CODE,
+                "x03.type.invalid_path",
+                path.span(),
+                "资源类型注解不能携带容器路径约束".to_owned(),
+            );
         }
     }
 
@@ -678,13 +700,33 @@ impl<'source> TypeChecker<'source> {
             ImportStatement::Modules { imports, .. } => {
                 for item in imports {
                     let name = item.alias.unwrap_or(item.path.segments[0]);
-                    let binding = if item.alias.is_none() {
+                    let mut binding = if item.alias.is_none() {
                         crate::environment::Binding::imported_root()
                     } else {
                         crate::environment::Binding::constant(
                             crate::types::TypeScheme::monomorphic(Type::Dynamic),
                         )
                     };
+                    let path = item
+                        .path
+                        .segments
+                        .iter()
+                        .map(|name| name.unquoted_text(self.source))
+                        .collect::<Vec<_>>()
+                        .join(".");
+                    if self.module_functions.contains_key(&path)
+                        || self
+                            .module_functions
+                            .keys()
+                            .any(|module| module.starts_with(&format!("{path}.")))
+                    {
+                        let path = if item.alias.is_some() {
+                            path
+                        } else {
+                            item.path.segments[0].unquoted_text(self.source).to_owned()
+                        };
+                        binding = binding.with_imported_module(path);
+                    }
                     if let Err(error) = self.environment.declare_import(
                         self.name_key(name),
                         binding,
@@ -694,17 +736,29 @@ impl<'source> TypeChecker<'source> {
                     }
                 }
             }
-            ImportStatement::From { imports, .. } => {
+            ImportStatement::From {
+                module, imports, ..
+            } => {
+                let module = module
+                    .segments
+                    .iter()
+                    .map(|name| name.unquoted_text(self.source))
+                    .collect::<Vec<_>>()
+                    .join(".");
                 for item in imports {
                     let name = item.alias.unwrap_or(item.name);
-                    if let Err(error) = self.environment.declare_import(
-                        self.name_key(name),
+                    let binding = self.typed_import_binding(
+                        &module,
+                        &self.name_key(item.name),
                         crate::environment::Binding::mutable(
                             crate::types::TypeScheme::monomorphic(Type::Dynamic),
                             true,
                         ),
-                        false,
-                    ) {
+                    );
+                    if let Err(error) =
+                        self.environment
+                            .declare_import(self.name_key(name), binding, false)
+                    {
                         self.environment_error(name.span, error);
                     }
                 }

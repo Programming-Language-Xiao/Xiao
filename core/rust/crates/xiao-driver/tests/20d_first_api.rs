@@ -109,6 +109,167 @@ fn directory_cannot_be_passed_to_read_text_at_type_check() {
     );
 }
 
+/// 同一调用体经函数别名、模块别名及逐级限定导入进入前端。
+fn imported_os_sources(body: &str) -> Vec<String> {
+    [
+        (
+            "from stdlib.os import open_file as imported_open_file, open_directory as imported_open_directory, read_text as imported_read_text, close as imported_close",
+            "imported_",
+        ),
+        ("import stdlib.os as platform", "platform."),
+        ("import stdlib.os", "stdlib.os."),
+        ("from stdlib import os", "os."),
+        ("from stdlib import os as platform", "platform."),
+        ("import stdlib as standard", "standard.os."),
+        ("import stdlib.os as platform", "(platform)."),
+    ]
+    .into_iter()
+    .map(|(import, prefix)| format!("{import}\n{}", body.replace("api.", prefix)))
+    .collect()
+}
+
+#[test]
+/// 导入形式不能把 directory 或 resource 静默抹成 dynamic 后传给 file 参数。
+fn imported_resource_signatures_preserve_type_boundaries() {
+    let project = Project::new();
+    for body in [
+        "handle = api.open_directory(\".\")\napi.read_text(handle)\n",
+        "resource handle = api.open_file(\"unused\")\napi.read_text(handle)\n",
+        "api.open_file(1)\n",
+        "api.close(1)\n",
+    ] {
+        for source in imported_os_sources(body) {
+            let error = FrontendCompiler::new()
+                .compile(&project.request(&source))
+                .expect_err("导入资源签名必须在编译期拒绝错误种类");
+            assert!(
+                error
+                    .diagnostics()
+                    .iter()
+                    .any(|d| d.code() == "X04-TYPE-002"),
+                "{source}: {error:?}"
+            );
+        }
+    }
+    for source in imported_os_sources(
+        "handle = api.open_file(\"unused\")\napi.close(handle)\nfolder = api.open_directory(\".\")\napi.close(folder)\nresource parent = handle\napi.close(parent)\ncopied = (api.close)\ncopied(handle)\ncopied(folder)\ncopied = copied\ncopied(parent)\n",
+    ) {
+        let artifact = compile(&project, &source);
+        let value = artifact
+            .ir
+            .body
+            .iter()
+            .find_map(|statement| match &statement.kind {
+                xiao_ir::IrStatementKind::Assignment { target, value }
+                    if target.text == "handle" =>
+                {
+                    Some(value)
+                }
+                _ => None,
+            })
+            .expect("应保留资源赋值");
+        assert_eq!(
+            value.ty,
+            xiao_ir::IrType::Resource {
+                kind: "file".to_owned()
+            }
+        );
+    }
+}
+
+#[test]
+/// 完整导入签名保留位置专用参数及固定参数数量。
+fn imported_resource_signatures_reject_invalid_argument_shapes() {
+    let project = Project::new();
+    for call in [
+        "api.open_file(path = \"unused\")",
+        "api.open_directory(path = \".\")",
+        "api.read_text(value = os_open_file(\"unused\"))",
+        "api.close(value = os_open_file(\"unused\"))",
+        "api.open_file(*[\"unused\"])",
+        "api.open_file(**{path = \"unused\"})",
+        "api.open_file()",
+        "api.open_file(\"unused\", \"extra\")",
+        "copied = (api.open_file)\ncopied(path = \"unused\")",
+    ] {
+        for source in imported_os_sources(&format!("{call}\n")) {
+            let error = FrontendCompiler::new()
+                .compile(&project.request(&source))
+                .expect_err("导入调用必须保留参数形状限制");
+            assert!(
+                error
+                    .diagnostics()
+                    .iter()
+                    .any(|d| d.code() == "X04-TYPE-002"),
+                "{source}: {error:?}"
+            );
+        }
+    }
+}
+
+#[test]
+/// 静态接口补齐后，既有 VM 导入方式仍可执行，LLVM 的模块支持边界保持原状。
+fn imported_resource_calls_execute_in_vm_and_keep_native_boundary() {
+    let project = Project::new();
+    let file = project.root.join("imported.txt");
+    fs::write(&file, "import-ok").expect("写入导入夹具");
+    let path = file.to_string_lossy().replace('\\', "/");
+    let body = format!(
+        "handle = api.open_file(\"{path}\")\nreader = (api.read_text)\nprint(reader(handle))\nfinish = (api.close)\nfinish(handle)\nfinish = finish\nfinish(handle)\n"
+    );
+    for source in imported_os_sources(&body) {
+        let artifact = compile(&project, &source);
+        let outcome = FrontendVmDriver::new()
+            .run_artifact(&artifact, &DriverRequest::new(project.request(&source)));
+        assert!(outcome.is_success(), "{source}: {outcome:?}");
+        let output: String = outcome
+            .as_executed()
+            .expect("进入 VM")
+            .events()
+            .iter()
+            .filter_map(|event| match event {
+                xiao_vm::VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(output, "import-ok\n", "{source}");
+        let result = FrontendNativeDriver::new().build_artifact(
+            &artifact,
+            &NativeBuildRequest::new(
+                project.request(&source),
+                TargetDescription::host(),
+                Toolchain::new("unused"),
+                project.root.join("unsupported"),
+            ),
+        );
+        assert!(
+            matches!(
+                result,
+                Err(NativeDriverError::Backend(
+                    xiao_codegen_llvm::CodegenError::Unsupported { .. }
+                        | xiao_codegen_llvm::CodegenError::InvalidIr { .. }
+                ))
+            ),
+            "{source}: {result:?}"
+        );
+    }
+}
+
+#[test]
+/// 只查询当前可见绑定，不能把函数形参或覆盖后的名字误认成旧模块。
+fn imported_resource_interfaces_respect_scope_and_reassignment() {
+    let project = Project::new();
+    for source in [
+        "import stdlib.os as platform\ndef local(platform) -> none\n    platform.read_text(1)\nlocal({read_text = 1})\n",
+        "from stdlib.os import open_file as opener\ndef local(opener) -> none\n    opener(1)\nlocal(1)\n",
+        "from stdlib import os\nos = {read_text = 1}\nvalue = os.read_text\n",
+        "from stdlib.os import open_file as opener\ndef replacement(str renamed) -> file\n    return os_open_file(renamed)\nopener = replacement\nhandle = opener(renamed = \"unused\")\n",
+        "from stdlib import os\nproxy = (os)\nfinish = proxy.close\nfinish(os_open_file(\"unused\"))\n",
+    ] {
+        compile(&project, source);
+    }
+}
+
 #[test]
 fn resource_const_is_rejected_with_non_constant_diagnostic() {
     let project = Project::new();
@@ -121,6 +282,71 @@ fn resource_const_is_rejected_with_non_constant_diagnostic() {
             .diagnostics()
             .iter()
             .any(|diagnostic| diagnostic.code() == "X02-TYPE-008")
+    );
+}
+
+#[test]
+/// 推断/显式资源与嵌套资源容器在表常量中共用冻结的常量错误身份。
+fn table_resource_constants_use_the_non_constant_diagnostic() {
+    let project = Project::new();
+    for table in ["[ResourceConst]", "[[ResourceConst]]"] {
+        for initializer in [
+            "const value = os_open_file(\"unused\")",
+            "const file value = os_open_file(\"unused\")",
+            "const resource value = os_open_directory(\".\")",
+            "const value = [os_open_file(\"unused\")]",
+            "const value = (os_open_file(\"unused\"),)",
+            "const value = {handle = os_open_file(\"unused\")}",
+        ] {
+            let source = format!("{table}\n    {initializer}\n");
+            let error = FrontendCompiler::new()
+                .compile(&project.request(&source))
+                .expect_err("表常量不能持有资源");
+            assert_eq!(
+                error
+                    .diagnostics()
+                    .iter()
+                    .find(|d| d.is_error())
+                    .map(|d| d.code()),
+                Some("X02-TYPE-008"),
+                "{source}: {error:?}"
+            );
+        }
+    }
+}
+
+#[test]
+/// 首批资源类型注解不应静默丢弃尚未接入的容器路径约束。
+fn resource_declarations_reject_ignored_path_constraints() {
+    let project = Project::new();
+    for (kind, initializer) in [
+        ("file", "os_open_file(\"unused\")"),
+        ("directory", "os_open_directory(\".\")"),
+        ("resource", "os_open_file(\"unused\")"),
+    ] {
+        for value in [String::new(), format!(" = {initializer}")] {
+            let source = format!("{kind} handle[1]{value}\n");
+            for source in [
+                source.clone(),
+                format!("[ResourcePath]\n    {source}"),
+                format!("[[ResourcePath]]\n    {source}"),
+            ] {
+                let error = FrontendCompiler::new()
+                    .compile(&project.request(&source))
+                    .expect_err("资源路径约束必须显式拒绝");
+                assert!(
+                    error
+                        .diagnostics()
+                        .iter()
+                        .any(|d| d.code() == "X03-TYPE-006"),
+                    "{source}: {error:?}"
+                );
+            }
+        }
+    }
+    compile(
+        &project,
+        "values = [os_open_file(\"unused\")]\npair = (os_open_directory(\".\"), 1)\n",
     );
 }
 

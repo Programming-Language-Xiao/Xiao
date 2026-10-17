@@ -21,3 +21,7 @@ Windows 原生准备方式见 `docs/DevDocs/10d-environment-gated-test-spec.md` 
 
 10T 的 `d19a_differential.rs` 复用严格比较器验证表回调 O0–O3 与调试执行；macOS CI 显式跳过 GUI 执行、单独验证调试构建。
 `native_benchmark_probe.rs` 对 container-dense 追加入口并实跑 80 轮、对照 VM 的 28760；这不是性能取数。
+
+`20d_first_api.rs` 覆盖 `os` 首批资源 API 的 VM/原生差分、能力与错误身份、资源常量和
+容器边界。导入签名回归覆盖函数/模块别名、限定路径、括号与函数值复制，并检查局部遮蔽、
+赋值覆盖及 LLVM 既有拒绝边界；原生差分继续在受控工具链下显式执行。

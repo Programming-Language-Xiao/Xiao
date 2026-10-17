@@ -11,7 +11,7 @@
 `selection_random.rs`、`selection_shape.rs` 和 `selector_checker.rs` 负责 C1 选择计划、
 抽样辅助和结果形状；`checker.rs` 是 AST 分派与结果装配门面，标量检查实现按职责拆在
 `checker/` 下的 `result.rs`、`constant.rs`、`conversion.rs`、`diagnostic.rs`、
-`expression.rs` 和 `statement.rs`，具体容器逻辑仍在 `container_checker.rs` 和 C1 选择器
+`expression.rs`、`imports.rs` 和 `statement.rs`，具体容器逻辑仍在 `container_checker.rs` 和 C1 选择器
 模块中实现。新增容器语义必须继续放入独立模块，禁止把检查器堆成跨层中心或形成循环依赖；
 检查器子模块的允许依赖见 `checker/README.md`。
 

@@ -42,6 +42,9 @@ mod expression;
 /// 04 函数定义、签名占位和调用参数检查。
 #[path = "function_checker.rs"]
 mod function_checker;
+/// 已声明模块接口的绑定和调用检查。
+#[path = "checker/imports.rs"]
+mod imports;
 /// 类型检查结果和运行时检查标记的公开模型。
 #[path = "checker/result.rs"]
 mod result;
@@ -78,6 +81,7 @@ pub struct TypeChecker<'source> {
     context: TypeContext,
     environment: TypeEnvironment,
     external_namespaces: ExternalNamespaces,
+    module_functions: BTreeMap<String, BTreeMap<String, FunctionSignature>>,
     diagnostics: Vec<Diagnostic>,
     nodes: Vec<TypedNode>,
     runtime_checks: Vec<RuntimeCheck>,
@@ -112,6 +116,7 @@ impl<'source> TypeChecker<'source> {
             context: TypeContext::new(),
             environment: TypeEnvironment::new(),
             external_namespaces: ExternalNamespaces::default(),
+            module_functions: BTreeMap::new(),
             diagnostics: Vec::new(),
             nodes: Vec::new(),
             runtime_checks: Vec::new(),
@@ -181,6 +186,16 @@ impl<'source> TypeChecker<'source> {
                 .declare(format!("ascii:{root}"), Binding::package_root());
         }
         self.external_namespaces = namespaces;
+        self
+    }
+
+    /// 注入已声明的模块函数接口；不执行导入、不改变后端的模块调用支持范围。
+    #[must_use]
+    pub fn with_module_function_signatures(
+        mut self,
+        functions: BTreeMap<String, BTreeMap<String, FunctionSignature>>,
+    ) -> Self {
+        self.module_functions = functions;
         self
     }
 }
