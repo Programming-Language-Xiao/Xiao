@@ -443,12 +443,15 @@ push 触发的 [维护回归 `39041556630`](https://github.com/Programming-Langu
 | 表资源常量只报一般纯度错误 | 递归检查初值及字段类型中的资源；单例/实例表及数组、元组、字典嵌套统一优先报 `X02-TYPE-008`；非资源纯容器常量规则保持原状 | `table_resource_constants_use_the_non_constant_diagnostic` |
 | 导入别名和限定调用丢失资源签名 | 从标准库 AST 提取完整注解函数头，绑定保留函数接口或模块路径，复用既有参数匹配器；作用域遮蔽、赋值覆盖、括号和导入值复制均纳入检查 | `imported_resource_signatures_preserve_type_boundaries`、`imported_resource_signatures_reject_invalid_argument_shapes`、`imported_resource_interfaces_respect_scope_and_reassignment` |
 
-实际落点为 `core/rust/crates/xiao-driver/src/frontend.rs`、
-`core/rust/crates/xiao-types/src/checker/{imports.rs,statement.rs,expression.rs}`、
-`src/{environment.rs,table_checker.rs,types.rs}`。模块接口不进入本地 `function_signatures`，
+函数头提取在 `core/rust/crates/xiao-driver/src/frontend.rs:202`，导入接口解析与调用检查在
+`core/rust/crates/xiao-types/src/checker/imports.rs:14`，绑定元数据在
+`core/rust/crates/xiao-types/src/environment.rs:91`，赋值复制与资源路径拒绝分别在
+`core/rust/crates/xiao-types/src/checker/statement.rs:118`、`:451`。
+表资源常量检查在 `core/rust/crates/xiao-types/src/table_checker.rs:401`，递归资源判定在
+`core/rust/crates/xiao-types/src/types.rs:182`。模块接口不进入本地 `function_signatures`，
 没有新增 intrinsic，也没有放宽资源父子类型或容器边界。
 
-`core/rust/crates/xiao-bytecode/src/lower/expr.rs` 同步区分动态模块载体的函数成员与表方法：
+`core/rust/crates/xiao-bytecode/src/lower/expr.rs:46` 同步区分动态模块载体的函数成员与表方法：
 模块函数保留静态签名后继续使用既有 `MemberGet`/函数值调用，避免误报「表方法值的动态调用」。
 `imported_resource_calls_execute_in_vm_and_keep_native_boundary` 真实执行各导入形式，
 同时断言 LLVM 仍在工具链调用前拒绝这些非静态链接形式；未扩展原生后端的支持范围。
@@ -460,7 +463,24 @@ push 触发的 [维护回归 `39041556630`](https://github.com/Programming-Langu
 `native_os_module_matches_vm_output` 通过，五条 `20D-NATIVE` 输出及错误身份与 §12.1 相同，
 并继续覆盖 filesystem 缺位。两份 DevDocs 的逐行粗体配对检查通过。
 
-§12.1 的绿色运行仅对应旧修复提交；本轮 push 的三平台取证另行记录，不复用旧运行作为验收。
+§12.1 的绿色运行仅对应旧修复提交；本轮三平台取证如下。
+
+### 13.1 本轮绿色 push 与日志对账
+
+修复提交：`a859f58bd1fb0976f749cc46873ba42a5ad644e7`。
+push 触发的 [维护回归 `39049068233`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39049068233)
+六个作业全部 **success**；同一提交的 [工作区门禁 `39049068211`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39049068211)
+也为 **success**（作业 `117443746489`）。
+
+| 平台 | 原生回归作业 | 日志核实 |
+| --- | --- | --- |
+| Windows | [117443747005](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39049068233/job/117443747005) | 原生专门夹具第 1177 行通过；新增六条回归均通过，默认专门夹具第 2297 行为 15 passed / 2 ignored |
+| Linux | [117443746678](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39049068233/job/117443746678) | 原生专门夹具第 963 行通过；新增六条回归均通过，默认专门夹具第 2271 行为 15 passed / 2 ignored |
+| macOS | [117443747019](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39049068233/job/117443747019) | 原生专门夹具第 925 行通过；新增六条回归均通过，默认专门夹具第 2137 行为 15 passed / 2 ignored |
+
+下载并核对三个作业的完整日志，逐一确认导入类型、参数形状、遮蔽/覆盖、VM 与 LLVM 边界、
+表资源常量以及资源路径约束六条新增回归均真实执行。三个日志中的五条 `20D-NATIVE`
+记录逐字相等，与 §12.1 的预期一致；本轮追加自审核的三项遗漏已关闭。
 
 ## 相关页面
 
