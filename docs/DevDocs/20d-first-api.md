@@ -260,7 +260,7 @@ docs/DevDocs/README.md                                    阶段索引加本文�
 | 三平台门禁 | `.github/workflows/maintenance-regression.yml`、`core/rust/crates/xiao-driver/tests/20d_first_api.rs` | push 矩阵包含 Windows、Linux、macOS；VM 夹具在三作业显式运行，受控工具链下的 ignored 原生夹具同时比较 VM/LLVM 的 `open_file`→`read_text`→`close` 输出；夹具还覆盖关闭后读取、缺能力、非 UTF-8、目录→`read_text` 编译期拒绝和相对路径形态 |
 
 本地自审核已运行：`cargo test -p xiao-runtime abi_resource`（3 项通过）、
-`cargo test -p xiao-driver --test 20d_first_api`（5 项通过）、相关 workspace crate 的
+`cargo test -p xiao-driver --test 20d_first_api`（6 项通过）、相关 workspace crate 的
 `cargo check` 与既有语法/类型/字节码/VM 回归均通过。三平台 push 结果以维护回归工作流为最终取证，
 本地单机运行不替代 macOS 作业证据。
 

@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use xiao_codegen_llvm::{TargetDescription, Toolchain};
+use xiao_codegen_llvm::{CodegenOptions, TargetDescription, Toolchain};
 use xiao_driver::{
     DriverOutcome, DriverRequest, FrontendCompiler, FrontendContext, FrontendNativeDriver,
     FrontendRequest, FrontendVmDriver, NativeBuildRequest, NativeDriverError,
@@ -130,6 +130,37 @@ fn filesystem_capability_bit_is_the_frozen_bit_zero() {
 }
 
 #[test]
+fn os_module_runtime_error_identities_are_stable_in_vm() {
+    let project = Project::new();
+    let missing = project
+        .root
+        .join("missing.txt")
+        .to_string_lossy()
+        .replace('\\', "/");
+    let missing_source =
+        format!("from stdlib.os import open_file\nhandle = open_file(\"{missing}\")\n");
+    let missing_artifact = compile(&project, &missing_source);
+    let missing_outcome = FrontendVmDriver::new().run_artifact(
+        &missing_artifact,
+        &DriverRequest::new(project.request(&missing_source)),
+    );
+    assert_eq!(missing_outcome.code(), Some("X06-RUNTIME-012"));
+
+    let file = project.root.join("closed.txt");
+    fs::write(&file, "closed\n").expect("写入关闭测试文件");
+    let closed_path = file.to_string_lossy().replace('\\', "/");
+    let closed_source = format!(
+        "from stdlib.os import open_file, read_text, close\nhandle = open_file(\"{closed_path}\")\nclose(handle)\ntext = read_text(handle)\n"
+    );
+    let closed_artifact = compile(&project, &closed_source);
+    let closed_outcome = FrontendVmDriver::new().run_artifact(
+        &closed_artifact,
+        &DriverRequest::new(project.request(&closed_source)),
+    );
+    assert_eq!(closed_outcome.code(), Some("X06-RUNTIME-025"));
+}
+
+#[test]
 #[ignore = "需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4"]
 fn native_os_module_matches_vm_output() {
     let clang =
@@ -176,7 +207,12 @@ fn native_os_module_matches_vm_output() {
     let native = FrontendNativeDriver::new()
         .build_artifact(
             &artifact,
-            &NativeBuildRequest::new(frontend_request.clone(), target, toolchain, output_path),
+            &NativeBuildRequest::new(
+                frontend_request.clone(),
+                target.clone(),
+                toolchain.clone(),
+                output_path,
+            ),
         )
         .unwrap_or_else(|error| match error {
             NativeDriverError::Frontend(error) => panic!("原生前端失败：{error}"),
@@ -200,4 +236,28 @@ fn native_os_module_matches_vm_output() {
     assert_eq!(run.status.code(), Some(0));
     assert_eq!(String::from_utf8_lossy(&run.stdout), vm_output);
     assert!(run.stderr.is_empty(), "原生成功路径不应有 stderr");
+
+    let denied_output = project.root.join(if cfg!(windows) {
+        "20d-first-api-native-denied.exe"
+    } else {
+        "20d-first-api-native-denied"
+    });
+    let denied_options = CodegenOptions::for_target(target.clone())
+        .with_capabilities(0)
+        .expect("零能力掩码应被接受");
+    let denied_native = FrontendNativeDriver::new()
+        .build_artifact(
+            &artifact,
+            &NativeBuildRequest::new(project.request(&source), target, toolchain, denied_output)
+                .with_codegen_options(denied_options),
+        )
+        .unwrap_or_else(|error| match error {
+            NativeDriverError::Frontend(error) => panic!("原生缺能力前端失败：{error}"),
+            NativeDriverError::Backend(error) => panic!("原生缺能力后端失败：{error}"),
+        });
+    let denied_run = Command::new(&denied_native.native.executable)
+        .output()
+        .expect("启动原生缺能力夹具");
+    assert_eq!(denied_run.status.code(), Some(3));
+    assert!(String::from_utf8_lossy(&denied_run.stderr).contains("X06-RUNTIME-026"));
 }
