@@ -9,6 +9,7 @@ use std::time::Instant;
 
 use xiao_bytecode::{TacProgram, TacVerificationError, verify_for_execution};
 use xiao_diagnostics::{DiagnosticParam, FatalError, ReportRecord, XiaoError};
+use xiao_intrinsics::{CapabilityMaskError, KNOWN_CAPABILITY_MASK, validate_capability_mask};
 use xiao_ir::{IrEntryMode, IrProgram};
 use xiao_runtime::RuntimeValue;
 
@@ -278,6 +279,8 @@ pub struct RunRequest<'a> {
     pub cancellation: Option<CancellationSource>,
     /// 单次执行内由 VM 按需调用的模块编译器。
     pub module_loader: Option<&'a dyn crate::modules::ModuleLoader>,
+    /// 本次执行允许的能力位；默认开启当前已知能力。
+    pub capabilities: u64,
 }
 
 impl<'a> RunRequest<'a> {
@@ -293,6 +296,7 @@ impl<'a> RunRequest<'a> {
             event_capacity: DEFAULT_EVENT_CAPACITY,
             cancellation: None,
             module_loader: None,
+            capabilities: KNOWN_CAPABILITY_MASK,
         }
     }
 
@@ -338,6 +342,13 @@ impl<'a> RunRequest<'a> {
         self
     }
 
+    /// 设置本次执行的能力位；未知位在请求构造时拒绝。
+    pub fn with_capabilities(mut self, capabilities: u64) -> Result<Self, CapabilityMaskError> {
+        validate_capability_mask(capabilities)?;
+        self.capabilities = capabilities;
+        Ok(self)
+    }
+
     /// 验证请求自身的规范化字段。
     pub fn validate(&self) -> Result<(), RunRequestError> {
         self.options.validate().map_err(|error| RunRequestError {
@@ -369,6 +380,11 @@ impl<'a> RunRequest<'a> {
                 message: "不能为空".to_owned(),
             });
         }
+        validate_capability_mask(self.capabilities).map_err(|error| RunRequestError {
+            code: VM_REQUEST_CODE,
+            field: "capabilities",
+            message: error.to_string(),
+        })?;
         Ok(())
     }
 
@@ -672,6 +688,7 @@ pub fn run_request_with_session(
         sink,
         metadata,
         session,
+        request.capabilities,
     );
     vm.set_cancellation_source(request.cancellation.clone());
     vm.set_module_loader(request.module_loader);

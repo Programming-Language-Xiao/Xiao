@@ -858,6 +858,17 @@ impl XiaoError {
             "首版 Runtime 对象不能跨线程传递",
         )
     }
+    /// 创建能力上下文拒绝错误。
+    #[must_use]
+    pub fn capability_unavailable(capability: impl Into<String>) -> Self {
+        Self::new(
+            XiaoErrorKind::Resource,
+            CAPABILITY_UNAVAILABLE_CODE,
+            "runtime.capability_unavailable",
+            "当前能力上下文不允许此外部操作",
+        )
+        .with_context("capability", DiagnosticParam::Text(capability.into()))
+    }
     /// 创建一般值错误。
     #[must_use]
     pub fn invalid_value(message: impl Into<String>) -> Self {

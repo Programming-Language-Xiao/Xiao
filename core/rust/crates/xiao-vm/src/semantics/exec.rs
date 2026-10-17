@@ -19,6 +19,7 @@ use xiao_diagnostics::{
     SELECTOR_STEP_CODE, SET_COMPARISON_CODE, SET_MEMBERSHIP_CODE, SET_OPERATION_CODE, StackFrame,
     TYPE_MISMATCH_CODE, XiaoError,
 };
+use xiao_intrinsics::KNOWN_CAPABILITY_MASK;
 use xiao_intrinsics::{AbiBinding, IntrinsicId, VmBinding, active_by_id};
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
 use xiao_source::SourceSpan;
@@ -187,6 +188,8 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     cancellation: Option<CancellationSource>,
     /// 跨普通调用帧和析构帧共享的检查点计数器。
     checkpoint_counter: Rc<Cell<u64>>,
+    /// 当前请求的不可变能力位。
+    capabilities: u64,
 }
 
 struct ModuleInstance {
@@ -205,6 +208,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             sink,
             VmMetadata::legacy(program),
             VmSession::new(),
+            KNOWN_CAPABILITY_MASK,
         )
     }
 
@@ -215,6 +219,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         sink: S,
         metadata: VmMetadata,
         session: VmSession,
+        capabilities: u64,
     ) -> Self {
         Self {
             program,
@@ -233,6 +238,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             metadata,
             cancellation: None,
             checkpoint_counter: Rc::new(Cell::new(0)),
+            capabilities,
         }
     }
 
@@ -1849,6 +1855,13 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         let declaration = active_by_id(id).ok_or_else(|| {
             Fault::Error(XiaoError::invalid_value(format!("未知 intrinsic ID {id}")))
         })?;
+        if let Some(bit) = declaration.capability.bit()
+            && self.capabilities & bit == 0
+        {
+            return Err(Fault::Error(XiaoError::capability_unavailable(
+                declaration.capability.as_str(),
+            )));
+        }
         match declaration.vm_binding {
             VmBinding::ScalarCast => {
                 if declaration.signature.arity != xiao_intrinsics::Arity::One

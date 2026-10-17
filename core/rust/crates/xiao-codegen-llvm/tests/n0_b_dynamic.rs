@@ -456,12 +456,12 @@ fn lowers_print_intrinsic_to_runtime_abi() {
     assert!(
         module
             .text
-            .contains("declare i32 @xiao_runtime_print_values(ptr, i64)")
+            .contains("declare i32 @xiao_runtime_print_values_with_capabilities(ptr, i64, i64)")
     );
     assert!(
         module
             .text
-            .contains("call i32 @xiao_runtime_print_values(ptr")
+            .contains("call i32 @xiao_runtime_print_values_with_capabilities(ptr")
     );
     validate_with_llvm_as(&module.text);
 }

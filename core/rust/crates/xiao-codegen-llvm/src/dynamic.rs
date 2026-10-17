@@ -317,8 +317,9 @@ impl<'a> DynamicGenerator<'a> {
             "xiao-codegen-{CODEGEN_VERSION}-{}",
             stable_hash(
                 format!(
-                    "{CODEGEN_VERSION};dynamic;optimization={};abi={ABI_ENCODED_VERSION};locale={};{}",
+                    "{CODEGEN_VERSION};dynamic;optimization={};abi={ABI_ENCODED_VERSION};capabilities={:016x};locale={};{}",
                     self.options.optimization_level,
+                    self.options.capabilities,
                     self.options.locale,
                     self.options.target.fingerprint_fields()
                 )

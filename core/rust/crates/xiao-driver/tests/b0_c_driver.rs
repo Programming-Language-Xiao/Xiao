@@ -6,6 +6,7 @@ use xiao_driver::{
     CancellationToken, DRIVER_CANCELLED_CODE, DRIVER_TIMEOUT_CODE, DriverOutcome, DriverPhase,
     DriverRequest, FrontendCompiler, FrontendRequest, FrontendVmDriver, run,
 };
+use xiao_intrinsics::{CAPABILITY_STDIN, CAPABILITY_STDOUT, KNOWN_CAPABILITY_MASK};
 
 /// 构造一份公共驱动器测试请求。
 fn request(source: &str) -> DriverRequest {
@@ -104,4 +105,31 @@ fn cancellation_and_timeout_are_stable_driver_boundary_results() {
     let timed_out = run(&request("value = 1\n").with_timeout(Duration::ZERO));
     assert_eq!(timed_out.code(), Some(DRIVER_TIMEOUT_CODE));
     assert!(matches!(timed_out, DriverOutcome::Rejected(_)));
+}
+
+#[test]
+/// VM 外部入口必须先检查请求能力；默认全开仍保持原有输出语义。
+fn capability_context_guards_vm_stdout_and_stdin() {
+    let default_outcome = run(&request("print(\"ok\")\n"));
+    assert!(default_outcome.is_success(), "默认能力应允许 stdout");
+
+    let stdout_request = DriverRequest::new(FrontendRequest::from_text("print(\"blocked\")\n"))
+        .with_capabilities(KNOWN_CAPABILITY_MASK & !CAPABILITY_STDOUT)
+        .expect("已知能力掩码应可构造");
+    let stdout_outcome = run(&stdout_request);
+    assert_eq!(stdout_outcome.code(), Some("X06-RUNTIME-026"));
+    assert!(matches!(stdout_outcome, DriverOutcome::Executed(_)));
+
+    let stdin_request = DriverRequest::new(FrontendRequest::from_text("value = input()\n"))
+        .with_capabilities(KNOWN_CAPABILITY_MASK & !CAPABILITY_STDIN)
+        .expect("已知能力掩码应可构造");
+    let stdin_outcome = run(&stdin_request);
+    assert_eq!(stdin_outcome.code(), Some("X06-RUNTIME-026"));
+    assert!(matches!(stdin_outcome, DriverOutcome::Executed(_)));
+
+    assert!(
+        DriverRequest::new(FrontendRequest::from_text("value = 1\n"))
+            .with_capabilities(1 << 7)
+            .is_err()
+    );
 }

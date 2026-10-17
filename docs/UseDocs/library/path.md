@@ -15,7 +15,7 @@ related:
 # 官方 `path` 模块
 
 `path` 是 20C 首批官方 Xiao 模块，规范实现位于 [`stdlib/path.xiao`](../../../stdlib/path.xiao)。
-适用版本：Xiao `0.1.0`、Runtime ABI `1.12`。受控双路径证据：维护回归
+适用版本：Xiao `0.1.0`、Runtime ABI `1.13`。受控双路径证据：维护回归
 `38550284761`（Windows 作业 `115806283501`、Linux 作业 `115806283515`）。
 
 ## `join`

@@ -99,6 +99,80 @@ pub enum Capability {
     Stdout,
     Stdin,
 }
+
+/// 文件系统能力位。
+pub const CAPABILITY_FILESYSTEM: u64 = 1 << 0;
+/// 时钟能力位。
+pub const CAPABILITY_CLOCK: u64 = 1 << 1;
+/// 进程能力位。
+pub const CAPABILITY_PROCESS: u64 = 1 << 2;
+/// 网络能力位。
+pub const CAPABILITY_NETWORK: u64 = 1 << 3;
+/// 原生扩展能力位。
+pub const CAPABILITY_NATIVE_EXTENSION: u64 = 1 << 4;
+/// 标准输出能力位。
+pub const CAPABILITY_STDOUT: u64 = 1 << 5;
+/// 标准输入能力位。
+pub const CAPABILITY_STDIN: u64 = 1 << 6;
+/// 当前已知能力位的完整掩码；默认请求使用它。
+pub const KNOWN_CAPABILITY_MASK: u64 = CAPABILITY_FILESYSTEM
+    | CAPABILITY_CLOCK
+    | CAPABILITY_PROCESS
+    | CAPABILITY_NETWORK
+    | CAPABILITY_NATIVE_EXTENSION
+    | CAPABILITY_STDOUT
+    | CAPABILITY_STDIN;
+
+/// 能力掩码越界错误。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct CapabilityMaskError {
+    /// 收到的掩码。
+    pub value: u64,
+}
+
+impl std::fmt::Display for CapabilityMaskError {
+    /// 输出稳定的字段和值。
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            formatter,
+            "能力掩码含未知位（收到 0x{:016x}，已知掩码 0x{:016x}）",
+            self.value, KNOWN_CAPABILITY_MASK
+        )
+    }
+}
+
+impl std::error::Error for CapabilityMaskError {}
+
+impl Capability {
+    /// 返回能力对应的位；`none` 不要求任何位。
+    #[must_use]
+    pub const fn bit(self) -> Option<u64> {
+        match self {
+            Self::None => None,
+            Self::Stdout => Some(CAPABILITY_STDOUT),
+            Self::Stdin => Some(CAPABILITY_STDIN),
+        }
+    }
+
+    /// 返回稳定的能力名称。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::None => "none",
+            Self::Stdout => "stdout",
+            Self::Stdin => "stdin",
+        }
+    }
+}
+
+/// 校验能力掩码只使用当前冻结的能力位。
+pub const fn validate_capability_mask(value: u64) -> Result<(), CapabilityMaskError> {
+    if value & !KNOWN_CAPABILITY_MASK == 0 {
+        Ok(())
+    } else {
+        Err(CapabilityMaskError { value })
+    }
+}
 /// VM 绑定键；实现层再把它映射为函数。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum VmBinding {
@@ -320,6 +394,13 @@ mod tests {
         let print = by_name("print").expect("print 声明");
         assert_eq!(print.signature.arity, Arity::Variadic);
         assert_eq!(print.signature.return_type, ValueType::None);
+    }
+    #[test]
+    fn capability_bits_cover_standard_streams_and_reject_unknown_bits() {
+        assert_eq!(Capability::Stdout.bit(), Some(CAPABILITY_STDOUT));
+        assert_eq!(Capability::Stdin.bit(), Some(CAPABILITY_STDIN));
+        assert!(validate_capability_mask(KNOWN_CAPABILITY_MASK).is_ok());
+        assert!(validate_capability_mask(1 << 7).is_err());
     }
     #[test]
     fn removed_ids_remain_tombstones() {

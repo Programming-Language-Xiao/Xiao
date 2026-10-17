@@ -12,6 +12,7 @@ use xiao_bytecode::{
     BytecodeOptimizationReport, TacProgram, XiaocMetadata, encode_xiaoc, lower_program,
 };
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, DiagnosticParams, ReportRecord};
+use xiao_intrinsics::{CapabilityMaskError, KNOWN_CAPABILITY_MASK, validate_capability_mask};
 use xiao_optimizer::{OptimizationLevel, PassStatus, ValidationStatus};
 use xiao_package::CacheLayout;
 use xiao_vm::{
@@ -134,6 +135,8 @@ pub struct DriverRequest {
     pub event_capacity: usize,
     /// 驱动器层取消/超时控制。
     pub control: RunControl,
+    /// 本次执行允许的能力位；默认开启当前已知能力。
+    pub capabilities: u64,
 }
 
 impl DriverRequest {
@@ -148,6 +151,7 @@ impl DriverRequest {
             source_name: None,
             event_capacity: DEFAULT_EVENT_CAPACITY,
             control: RunControl::default(),
+            capabilities: KNOWN_CAPABILITY_MASK,
         }
     }
 
@@ -191,6 +195,13 @@ impl DriverRequest {
     pub fn with_control(mut self, control: RunControl) -> Self {
         self.control = control;
         self
+    }
+
+    /// 设置本次执行的能力位；未知位在请求构造时拒绝。
+    pub fn with_capabilities(mut self, capabilities: u64) -> Result<Self, CapabilityMaskError> {
+        validate_capability_mask(capabilities)?;
+        self.capabilities = capabilities;
+        Ok(self)
     }
 
     /// 设置取消信号。
@@ -712,11 +723,25 @@ impl FrontendVmDriver {
             optimization_fingerprint,
             optimization_report.as_ref(),
         );
-        let vm_request = VmRunRequest::new(ir, &program)
+        let vm_request = match VmRunRequest::new(ir, &program)
             .with_options(request.options)
             .with_module_name(request.resolved_module_name())
             .with_source_name(request.resolved_source_name())
-            .with_event_capacity(request.event_capacity);
+            .with_event_capacity(request.event_capacity)
+            .with_capabilities(request.capabilities)
+        {
+            Ok(request) => request,
+            Err(error) => {
+                self.reset_session();
+                return DriverOutcome::Rejected(DriverError {
+                    phase: DriverPhase::Request,
+                    code: "X09-VM-002".to_owned(),
+                    path: Some("capabilities".to_owned()),
+                    message: error.to_string(),
+                    report: None,
+                });
+            }
+        };
         let vm_request = if let Some(source) = control.cancellation_source() {
             vm_request.with_cancellation(source)
         } else {

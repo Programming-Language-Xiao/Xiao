@@ -28,6 +28,7 @@ xiao-types = { path = "../xiao-types" }
 xiao-modules = { path = "../xiao-modules" }
 xiao-lifetime = { path = "../xiao-lifetime" }
 xiao-ir = { path = "../xiao-ir" }
+xiao-intrinsics = { path = "../xiao-intrinsics" }
 xiao-bytecode = { path = "../xiao-bytecode" }
 xiao-vm = { path = "../xiao-vm" }
 xiao-xar = { path = "../xiao-xar" }

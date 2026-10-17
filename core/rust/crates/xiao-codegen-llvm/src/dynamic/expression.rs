@@ -501,8 +501,9 @@ impl<'a> DynamicGenerator<'a> {
                 let pointer = array.as_deref().unwrap_or("null");
                 self.checked_status_call_at(
                     format!(
-                        "@xiao_runtime_print_values(ptr {pointer}, i64 {})",
-                        values.len()
+                        "@xiao_runtime_print_values_with_capabilities(ptr {pointer}, i64 {}, i64 {})",
+                        values.len(),
+                        self.options.capabilities
                     ),
                     span,
                 );
@@ -533,7 +534,10 @@ impl<'a> DynamicGenerator<'a> {
                 } else {
                     ("ptr null, i8 0".to_owned(), None)
                 };
-                let value = self.emit_value_call("xiao_runtime_input", &prompt);
+                let value = self.emit_value_call(
+                    "xiao_runtime_input_with_capabilities",
+                    &format!("{prompt}, i64 {}", self.options.capabilities),
+                );
                 if let Some(prompt) = prompt_slot {
                     self.release_value(prompt);
                 }

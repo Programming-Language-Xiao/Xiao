@@ -6,6 +6,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use xiao_intrinsics::{CapabilityMaskError, KNOWN_CAPABILITY_MASK, validate_capability_mask};
 use xiao_ir::{
     IR_VERSION, IrExpression, IrExpressionKind, IrName, IrProgram, IrSpan, IrStatement,
     IrStatementKind, IrType,
@@ -44,6 +45,8 @@ pub struct CodegenOptions {
     pub locale: String,
     /// 代码生成优化级别；首组对外级别为 `0..=3`。
     pub optimization_level: u8,
+    /// 原生 Runtime 请求携带的能力位；默认开启当前已知能力。
+    pub capabilities: u64,
 }
 
 /// 原生产物启动 shim 的静态配置。
@@ -87,6 +90,7 @@ impl CodegenOptions {
             debug_startup: None,
             locale: "zh-CN".to_owned(),
             optimization_level: BASELINE_OPTIMIZATION_LEVEL,
+            capabilities: KNOWN_CAPABILITY_MASK,
         }
     }
 
@@ -115,6 +119,16 @@ impl CodegenOptions {
             startup.locale = self.locale.clone();
         }
         self
+    }
+
+    /// 设置原生 Runtime 请求的能力位；未知位在构造时拒绝。
+    pub fn with_capabilities(
+        mut self,
+        capabilities: u64,
+    ) -> std::result::Result<Self, CapabilityMaskError> {
+        validate_capability_mask(capabilities)?;
+        self.capabilities = capabilities;
+        Ok(self)
     }
 
     /// 设置代码生成优化级别；禁止超出首组 `O0`–`O3`。

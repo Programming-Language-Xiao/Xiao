@@ -220,9 +220,9 @@ intrinsic 实现前冻结。
 启动、网络和原生扩展等边界。
 
 **20D-冻结回填（2026-10-17）**：能力上下文冻结为随 Runtime 请求携带的不可变 `u64`
-位集：bit 0–4 依次表示 `filesystem`、`clock`、`process`、`network`、`native_extension`；
-省略上下文等价于已知位全开。所有外部操作必须声明并检查对应能力，缺失时报
-`X06-RUNTIME-026`。上下文载体和拦截实现后置到 20D-能力上下文。
+位集：bit 0–6 依次表示 `filesystem`、`clock`、`process`、`network`、`native_extension`、
+`stdout`、`stdin`；其余位拒绝，省略上下文等价于已知位全开。所有外部操作必须声明并检查
+对应能力，缺失时报 `X06-RUNTIME-026`。上下文载体和拦截实现已由 20D-能力上下文接入。
 
 ### 5.2 平台顺序和一致性
 
@@ -230,9 +230,9 @@ intrinsic 实现前冻结。
 语言核心、intrinsic id、错误身份、释放顺序和用户可观察结果不因平台改变。没有某平台
 能力时应报告稳定的“能力不可用/目标不支持”错误，不静默改走另一种语义。
 
-字节码、原生程序和 `.xar` 必须使用同一能力契约。当前 LLVM 后端仍处于接口准备阶段，
-在它真正能调用 Runtime ABI 之前，只能声称字节码侧完成，不能声称 `os` 已实现双后端
-一致性。
+字节码、原生程序和 `.xar` 必须使用同一能力契约。20D-能力上下文已把现有 `print`/`input`
+的 VM 分派和原生 Runtime ABI 入口都接到同一掩码检查；资源 `os` API 仍以后续承载/API
+批次的双路径接线为准，不能把这两条现有入口的证据外推成资源 API 已实现。
 
 **20D-冻结回填（2026-10-17）**：首批 `os` 契约只包含
 `os.open_file(str path) -> file`、`os.open_directory(str path) -> directory` 和

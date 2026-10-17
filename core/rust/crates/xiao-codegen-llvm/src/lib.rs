@@ -79,6 +79,11 @@ pub const CODEGEN_VERSION: u32 = 4;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
+    xiao_intrinsics::validate_capability_mask(options.capabilities).map_err(|error| {
+        CodegenError::InvalidIr {
+            message: format!("能力上下文无效：{error}"),
+        }
+    })?;
     let level = xiao_optimizer::OptimizationLevel::try_from(options.optimization_level).map_err(
         |error| CodegenError::Unsupported {
             feature: error.to_string(),

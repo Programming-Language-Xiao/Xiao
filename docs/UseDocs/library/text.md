@@ -19,7 +19,7 @@ related:
 # 官方 `text` 模块
 
 `text` 是 20C 首批官方 Xiao 模块，规范实现位于 [`stdlib/text.xiao`](../../../stdlib/text.xiao)。
-适用版本：Xiao `0.1.0`、Runtime ABI `1.12`。首批/第二批受控双路径证据：维护回归
+适用版本：Xiao `0.1.0`、Runtime ABI `1.13`。首批/第二批受控双路径证据：维护回归
 `38550284761`（Windows 作业 `115806283501`、Linux 作业 `115806283515`）。
 
 第五批新增的 `is_ascii_upper` 由维护回归 `38682801761` 覆盖：**VM 路径**为 Linux 作业
