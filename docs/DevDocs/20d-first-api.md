@@ -8,7 +8,8 @@
 > 也是 **第一次生成资源值**——两份前置（[阶段计划](20d-platform-resources-stage-plan.md) §4.2 的
 > F-1 产物边界、ABI 1.14 门禁）都在本批到期。
 
-状态：**已实施（2026-10-17）**：六道裁定全部取甲；VM、LLVM 原生路径、Runtime ABI、标准库、产物边界与三平台维护回归已接通。
+状态：**已实施（2026-10-17），审核未通过**：六道裁定全部取甲；代码路径与三平台的 20D 原生差分均通过，
+但新加的 macOS 作业仍红（既有可移植性缺口），20D 出口第 4 条未取证；一条阻断项与五条尾账见 §十一。
 
 ## 一、为什么是这一批
 
@@ -278,6 +279,88 @@ docs/DevDocs/README.md                                    阶段索引加本文�
 1. `parse_declared_type` 改为显式识别资源关键字，不再把未知 token 伪装成 `int`；
 2. 普通函数调用的资源父类型兼容只在 `Type::Resource` 分支使用 `can_assign`，没有放宽数字或其它类型统一；
 3. `open_file` 和 `open_directory` 在能力检查后分别验证宿主目标种类，错误仍统一为 `X06-RUNTIME-012` 并保留 `reason`，没有引入平台专属错误码。
+
+## 十一、审核附录（2026-10-17）
+
+审核对象：`08a94c8`（实现）与 `a1a30b0`（测试加强）。方式是**自己跑**——读 diff、逐条核实现、
+跑全量门禁与 workspace 测试、对关键路径做临时探针（跑完即删、`git status` 为空），
+再核对两次 push 的维护回归与 workspace 门禁。
+
+### 11.1 通过的项（证据）
+
+| 项 | 证据 |
+| --- | --- |
+| 类型层 | `file`/`directory`/`resource` 关键字与名义类型；`directory`→`read_text`、非资源→`close` 编译期拒绝；`const file` → `X02-TYPE-008`；推断集合 `{f}` → `X03-TYPE-016` |
+| 父类型 | `file`/`directory` → `resource` 可赋值；`resource` 不隐式收窄；`function_checker` 只对资源分支特判 |
+| intrinsic 契约 | ID 22–25、`os_` 内部名、`filesystem` 能力与读写效果；`build.rs` 逐条断言 |
+| Runtime | 整文件 UTF-8、非 UTF-8 → `012` 带 `reason`、关闭后 → `025`、关闭幂等、别名共享、最后强引用只释放一次 |
+| 能力 | VM 分派前报 `026`；原生入口触碰宿主前报 `026`；ignored 原生负例断言退出码 3 且 stderr 含 `X06-RUNTIME-026` |
+| 产物边界 | 源级 `X02-TYPE-008` 可执行用例；降低/验证/编码 `X07-FATAL-002`；解码拒绝常量标签 11/17；`TacConstant` 未加资源变体 |
+| ABI | 1.14、标签 17、只用 `XiaoHandle` |
+| 标准库 | 薄包装；内部名与导出名分离；`module-registry` 为 `draft` |
+| 门禁 | `tools/gates/run.sh` exit 0；`cargo test --workspace` **1172 passed / 0 failed / 35 ignored**；`bun test` 295 pass / 5 skip / 0 fail |
+| 原生差分 | `native_os_module_matches_vm_output ... ok` **三平台都有**：Windows 日志第 1176 行、Linux 第 953 行、macOS 第 983 行（运行 `39029110186` 与 `39031224866` 的作业日志） |
+
+### 11.2 F-1（**阻断**）：macOS 作业红，20D 出口第 4 条未取证
+
+两次 push 的维护回归都在 macOS 作业上失败：
+
+- `08a94c8` → 运行 `39029110186`（macOS 作业 `117385821579`）
+- `a1a30b0` → 运行 `39031224866`（macOS 作业 `117391904090`）
+
+| 失败用例 | 现象 | 根因指向 |
+| --- | --- | --- |
+| `optional_external_illegal_instruction_remains_fatal`（`n0_a.rs:1037`） | 期望 `Some(132)`，macOS 实际 `None` | 进程被 SIGILL 终止时 `ExitStatus::code()` 为 `None`；退出码没有按 `128 + signal` 映射 |
+| `real_terminal_session_is_environment_gated`（`diagnostics.rs:1159`） | 「诊断进程 10 秒内未连接」 | macOS runner 没有终端；Windows 作业**显式跳过**这两条，macOS 作业没加同样的 `--skip` |
+| `native_table_methods_debug_execution_o0_o3`（`d19a_differential.rs:1145`） | 同类失败 | 同上：依赖终端/调试窗口，Windows 已跳过 |
+| `diagnostic_session_forwards_events_and_closes`（仅第一次运行） | 握手读取 `Resource temporarily unavailable (os error 35)` | `abi_diagnostics.rs` 把监听 socket 设为非阻塞后，BSD/macOS 的 `accept` **继承** `O_NONBLOCK`；代码只设读超时，没把已接受的流改回阻塞 |
+
+**必须说清楚**：20D 自己的三平台差分**没有失败**——`native_os_module_matches_vm_output` 在 macOS 作业日志第 983 行通过。
+红的是新作业带出来的**既有可移植性缺口**。但「main 绿」是硬要求，阶段出口第 4 条要的是
+**一次绿的维护回归**，不是「红运行里有一条绿子用例」。
+⇒ **F-1 是本批的阻断项**：补 Windows 同款 `--skip`、按平台映射信号退出码、
+在 `accept` 后显式 `set_nonblocking(false)`，然后重新取证。
+
+### 11.3 F-2（中）：移除验证没有记录
+
+阶段出口第 6 条要求「删掉 VM 绑定／ABI 包装／模块导出之一，专门用例必须失败」，§十 没有这条证据。
+审核侧代做了一次：把 `VmBinding::ResourceOpenFile` 改成不可达后，
+`os_module_opens_reads_and_closes_file_in_vm` **立即红**（`intrinsic ID 22 尚未绑定 VM 实现`）。
+用例是有效的，但**批次自己的验收记录缺这一条**，应补进 §十。
+
+### 11.4 F-3（中）：ABI 旧 Runtime 拒绝只测了一半
+
+`abi_tests.rs:733` 断言的是**新 Runtime** 接受 required 1.14、拒绝 1.15；
+「1.14 产物在 1.13 Runtime 上被拒」没有直接用例，只是由 `required_minor <= actual` 推出。
+§10.1 的「实际 1.13 Runtime 上启动检查失败」说过头了：应改成「由比较规则推出」，
+或把比较抽成参数化函数后补 `(1.14, 1.13) == false` 的用例。
+
+### 11.5 F-4（低）：`set<file>` 半接线
+
+`is_set_type_term_token` 已接受资源关键字，AST/降低/检查器也有 `TypeTerm::Resource`，
+但 `parse_set_type_term`（`parser.rs:508`）只认标量和 `none`；实测 `set<file> values = set()`
+得到 `X03-PARSE-005`。要么补全「先解析、再由类型层报不可哈希」，要么撤回死路径并让解析器成为唯一拒绝点。
+
+### 11.6 F-5（低）：关键字实参类型检查放行
+
+实测 `open_file(path = "x")` **编译通过**，VM 运行才报 `X06-RUNTIME-012`；原生 codegen 直接给 `Unsupported`。
+检查器应在类型阶段拒绝关键字实参（VM/原生已经这么做）。
+
+### 11.7 F-6（低）：相对路径没有常驻用例
+
+§十 声称夹具覆盖「相对路径形态」，实际夹具全用绝对路径。审核探针验证了进程 cwd 语义**是对的**
+（临时目录里 `open_file("relative.txt")` 输出 `relative-ok`），但这份证据没有入库。
+要么补一条永久用例，要么把 §十 的措辞改成「由探针验证，未入库」。
+
+### 11.8 观察
+
+- **O-1**：VM 自己用 `std::fs` 再做一遍打开/校验，与 Runtime ABI 的实现重复；计划原本要求 VM 调 Runtime。
+  两条路径目前语义一致，但存在漂移风险，建议后续合并到同一入口。
+- **O-2**：`xiao-standard-library/src/README.md` 仍写「工程期 20C」，而它现在也覆盖 20D 的 `os`。
+- **审核侧自账**：第一次 `tools/gates/run.sh` 的失败由审核侧临时探针文件触发 `cargo fmt --check`，
+  探针已删除、重跑 exit 0；**不记为实现的问题**。
+
+**审核结论**：实现主体通过；**F-1 未解决前，本批不能记为「验收通过」**，20D 出口第 4 条保持未满足。
 
 ## 相关页面
 
