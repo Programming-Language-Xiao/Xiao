@@ -32,8 +32,8 @@ pub use errors::{
     FATAL_OUT_OF_MEMORY_CODE, FATAL_RUNTIME_INVARIANT_CODE, FATAL_STACK_OVERFLOW_CODE, FatalError,
     FatalKind, FrameKind, INVALID_HANDLE_CODE, INVALID_VALUE_CODE, ITERABLE_CODE, MessageRenderer,
     NUMERIC_OVERFLOW_CODE, PreviewRenderer, RANDOM_COUNT_CODE, RANDOM_SEED_CODE,
-    REFCOUNT_INVARIANT_CODE, ReportClass, ReportRecord, RuntimeError, RuntimeErrorKind,
-    RuntimeResult, SELECTOR_BOUNDS_CODE, SELECTOR_STEP_CODE, SET_COMPARISON_CODE,
+    REFCOUNT_INVARIANT_CODE, RESOURCE_CLOSED_CODE, ReportClass, ReportRecord, RuntimeError,
+    RuntimeErrorKind, RuntimeResult, SELECTOR_BOUNDS_CODE, SELECTOR_STEP_CODE, SET_COMPARISON_CODE,
     SET_MEMBERSHIP_CODE, SET_OPERATION_CODE, StackFrame, TABLE_DROP_CODE, TABLE_INIT_CODE,
     TABLE_STATE_CODE, TYPE_MISMATCH_CODE, USE_AFTER_RELEASE_CODE, WEAK_UPGRADE_CODE, XiaoError,
     XiaoErrorKind, XiaoResult,
@@ -53,7 +53,7 @@ pub use tables::{
 /// 重导出释放计划测试驱动器和展开结果。
 pub use testing::{CatchRoute, ReleaseExecution, RuntimeBinding, RuntimeDriver, UnwindExecution};
 /// 重导出 Runtime 标量和字符串值。
-pub use value::{RuntimeValue, StringHandle};
+pub use value::{ExternalResourceHandle, ExternalResourceKind, RuntimeValue, StringHandle};
 
 /// 安装当前平台的最小未处理异常报告器。
 ///

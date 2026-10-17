@@ -38,7 +38,9 @@ use crate::errors::{
 };
 use crate::memory::{RuntimeTypeTag, StrongHandle, WeakHandle};
 use crate::tables::{TableDefinition, TableInstance};
-use crate::value::{RuntimeValue, StringHandle};
+use crate::value::{
+    EXTERNAL_RESOURCE_RUNTIME_TAG, ExternalResourceHandle, RuntimeValue, StringHandle,
+};
 
 #[path = "abi_diagnostics.rs"]
 mod abi_diagnostics;
@@ -602,6 +604,12 @@ unsafe fn value_to_runtime(value: &XiaoValue) -> Result<RuntimeValue, i32> {
                 handle,
             ))?))
         }
+        XiaoValueTag::ExternalResource => {
+            let handle = unsafe { expect_strong(payload.handle, EXTERNAL_RESOURCE_RUNTIME_TAG) }?;
+            Ok(RuntimeValue::ExternalResource(status(
+                ExternalResourceHandle::from_strong_handle(handle),
+            )?))
+        }
         XiaoValueTag::Error => Ok(RuntimeValue::error(unsafe { clone_error(payload.handle) }?)),
         XiaoValueTag::TableDropView => Err(XiaoAbiStatus::InvalidArgument.code()),
         _ => Err(XiaoAbiStatus::InvalidArgument.code()),
@@ -657,6 +665,10 @@ fn runtime_to_value(value: &RuntimeValue) -> Result<XiaoValue, i32> {
         )),
         RuntimeValue::Set(value) => Ok(value_from_owned_handle(
             XiaoValueTag::Set,
+            value.clone().into_strong_handle(),
+        )),
+        RuntimeValue::ExternalResource(value) => Ok(value_from_owned_handle(
+            XiaoValueTag::ExternalResource,
             value.clone().into_strong_handle(),
         )),
         RuntimeValue::Error(error) => Ok(value_from_owned_error((**error).clone())),
@@ -748,7 +760,8 @@ fn release_value_slot(value: &mut XiaoValue) {
         | XiaoValueTag::Tuple
         | XiaoValueTag::DictTable
         | XiaoValueTag::DictColumn
-        | XiaoValueTag::Set => xiao_runtime_release(unsafe { value.payload.handle }),
+        | XiaoValueTag::Set
+        | XiaoValueTag::ExternalResource => xiao_runtime_release(unsafe { value.payload.handle }),
         XiaoValueTag::Error => unsafe { release_error(value.payload.handle) },
         XiaoValueTag::TableDropView => {
             xiao_runtime_weak_release(unsafe { value.payload.weak_handle });
@@ -1537,7 +1550,8 @@ pub extern "C" fn xiao_runtime_value_copy(value: *const XiaoValue, out: *mut Xia
         | XiaoValueTag::Tuple
         | XiaoValueTag::DictTable
         | XiaoValueTag::DictColumn
-        | XiaoValueTag::Set => {
+        | XiaoValueTag::Set
+        | XiaoValueTag::ExternalResource => {
             let handle = xiao_runtime_retain(unsafe { value.payload.handle });
             if handle.is_null() {
                 Err(XiaoAbiStatus::InvalidHandle.code())
@@ -1589,7 +1603,8 @@ pub extern "C" fn xiao_runtime_value_release(value: *mut XiaoValue) {
         | XiaoValueTag::Tuple
         | XiaoValueTag::DictTable
         | XiaoValueTag::DictColumn
-        | XiaoValueTag::Set => xiao_runtime_release(unsafe { value.payload.handle }),
+        | XiaoValueTag::Set
+        | XiaoValueTag::ExternalResource => xiao_runtime_release(unsafe { value.payload.handle }),
         XiaoValueTag::Error => unsafe { release_error(value.payload.handle) },
         XiaoValueTag::TableDropView => {
             xiao_runtime_weak_release(unsafe { value.payload.weak_handle });
@@ -1616,7 +1631,8 @@ pub extern "C" fn xiao_runtime_value_release_strong(value: *mut XiaoValue) {
         | XiaoValueTag::Tuple
         | XiaoValueTag::DictTable
         | XiaoValueTag::DictColumn
-        | XiaoValueTag::Set => {
+        | XiaoValueTag::Set
+        | XiaoValueTag::ExternalResource => {
             xiao_runtime_release(unsafe { value.payload.handle });
             true
         }

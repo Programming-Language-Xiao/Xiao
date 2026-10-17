@@ -322,6 +322,8 @@ impl XiaoValueTag {
     pub const Set: Self = Self(15);
     /// 可恢复错误对象句柄。
     pub const Error: Self = Self(16);
+    /// 外部资源强句柄；首批种类由 Runtime 盒子内部标签区分。
+    pub const ExternalResource: Self = Self(17);
 
     /// 从 ABI 原始标签构造值；未知标签由 Runtime 入口拒绝。
     #[must_use]
@@ -338,7 +340,7 @@ impl XiaoValueTag {
     /// 判断标签是否属于当前 ABI 版本。
     #[must_use]
     pub const fn is_known(self) -> bool {
-        self.0 <= Self::Error.0
+        self.0 <= Self::ExternalResource.0
     }
 }
 
@@ -357,6 +359,7 @@ impl XiaoValueTag {
                 | Self::Set
                 | Self::Lint
                 | Self::Lfloat
+                | Self::ExternalResource
         )
     }
 

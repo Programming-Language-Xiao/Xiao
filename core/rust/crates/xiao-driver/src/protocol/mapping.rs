@@ -236,6 +236,9 @@ pub(super) fn protocol_value(value: &RuntimeValue) -> ProtocolValue {
         RuntimeValue::Str(value) => value
             .to_string()
             .unwrap_or_else(|_| "<invalid-string-handle>".to_owned()),
+        RuntimeValue::ExternalResource(_) => value
+            .display_text()
+            .unwrap_or_else(|_| "<invalid-resource-handle>".to_owned()),
         RuntimeValue::None => "none".to_owned(),
         RuntimeValue::Table(_)
         | RuntimeValue::Module(_)

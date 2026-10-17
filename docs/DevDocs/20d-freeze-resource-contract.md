@@ -422,7 +422,8 @@ docs/DevDocs/README.md                              阶段索引加本文一行
 - [03](03-collections.md) 已写数组/元组允许、集合/字典键拒绝以及常量/归档边界；
 - 诊断常量已登记 `X06-RUNTIME-025`、`X06-RUNTIME-026`、`X20-TARGET-001`，内置中英目录
   已登记 `runtime.resource_closed`、`runtime.capability_unavailable`、
-  `x20.target.unsupported`；没有接入资源 Runtime、能力上下文或 intrinsic 实现；
+  `x20.target.unsupported`；冻结批没有接入资源 Runtime，后续 20D-能力上下文和资源承载批已分别落地，
+  仍未接入任何资源 intrinsic；
 - 阶段索引已把本文状态更新为“冻结完成”。
 
 **满足了吗：是。** §四 的六条出口条件仍是后续实现批的验收门槛；本批只完成契约冻结和

@@ -869,6 +869,16 @@ impl XiaoError {
         )
         .with_context("capability", DiagnosticParam::Text(capability.into()))
     }
+    /// 创建已关闭或已失效资源句柄错误。
+    #[must_use]
+    pub fn resource_closed() -> Self {
+        Self::new(
+            XiaoErrorKind::Resource,
+            RESOURCE_CLOSED_CODE,
+            "runtime.resource_closed",
+            "资源句柄已经关闭或已失效",
+        )
+    }
     /// 创建一般值错误。
     #[must_use]
     pub fn invalid_value(message: impl Into<String>) -> Self {

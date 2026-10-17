@@ -1,6 +1,9 @@
 //! ABI 句柄、值复制和原生诊断会话的回归测试。
 use super::*;
-use crate::{start_release_trace, take_release_events};
+use crate::{
+    ExternalResourceHandle, ExternalResourceKind, RuntimeValue, start_release_trace,
+    take_release_events,
+};
 use std::sync::{Mutex, OnceLock};
 
 use serde_json::{Value, json};
@@ -313,6 +316,27 @@ fn rejects_unknown_value_tag() {
         xiao_runtime_value_copy(&value, &mut output),
         XiaoAbiStatus::InvalidArgument.code()
     );
+}
+
+#[test]
+/// 外部资源标签在 ABI 双向转换和复制释放路径上保持同一逻辑身份。
+fn external_resource_round_trips_through_abi_tag() {
+    let resource = ExternalResourceHandle::new(ExternalResourceKind::File).unwrap();
+    let value = RuntimeValue::ExternalResource(resource.clone());
+    let mut abi = runtime_to_value(&value).expect("资源应能转换为 ABI 值");
+    assert_eq!(abi.tag, XiaoValueTag::ExternalResource);
+    let round_trip = unsafe { value_to_runtime(&abi) }.expect("资源 ABI 值应能回转");
+    assert_eq!(round_trip, value);
+    let mut copied = XiaoValue::none();
+    assert_eq!(
+        xiao_runtime_value_copy(&abi, &mut copied),
+        XiaoAbiStatus::Ok.code()
+    );
+    let copied_value = unsafe { value_to_runtime(&copied) }.expect("复制后的资源 ABI 值应能回转");
+    assert_eq!(copied_value, value);
+    xiao_runtime_value_release(&mut copied);
+    xiao_runtime_value_release(&mut abi);
+    resource.ensure_open().expect("ABI 释放不应关闭别名");
 }
 
 #[test]

@@ -4,8 +4,9 @@
 //! 容器释放必须把每个元素逐个放开。
 
 use xiao_runtime::{
-    ArrayHandle, CONTAINER_HASHABILITY_CODE, DictHandle, DictKind, RuntimeValue, SetHandle,
-    StringHandle, TupleHandle,
+    ArrayHandle, CONTAINER_HASHABILITY_CODE, DictHandle, DictKind, ExternalResourceHandle,
+    ExternalResourceKind, ReleaseAction, RuntimeValue, SetHandle, StringHandle, TupleHandle,
+    start_release_trace, take_release_events,
 };
 
 /// 构造一个字符串值并返回它与底层句柄，便于断言引用计数。
@@ -83,6 +84,40 @@ fn set_rejects_unhashable_elements() {
     let nested = ArrayHandle::new(vec![RuntimeValue::Int(1)]).expect("数组应分配");
     let error = SetHandle::new(vec![RuntimeValue::Array(nested)]).expect_err("应拒绝数组元素");
     assert_eq!(error.code(), CONTAINER_HASHABILITY_CODE);
+}
+
+#[test]
+/// 资源允许进入数组和元组，但作为集合元素必须被可执行地拒绝。
+fn external_resource_container_boundaries_are_enforced() {
+    let resource = RuntimeValue::ExternalResource(
+        ExternalResourceHandle::new(ExternalResourceKind::File).expect("资源应分配"),
+    );
+    let array = ArrayHandle::new(vec![resource.clone()]).expect("数组应接受资源值");
+    let tuple = TupleHandle::new(vec![resource.clone()]).expect("元组应接受资源值");
+    assert_eq!(array.len(), 1);
+    assert_eq!(tuple.len(), 1);
+    let error = SetHandle::new(vec![resource]).expect_err("集合元素应拒绝资源");
+    assert_eq!(error.code(), CONTAINER_HASHABILITY_CODE);
+}
+
+#[test]
+/// 资源别名分别释放时只执行一次最终销毁钩子。
+fn external_resource_alias_release_destroys_once() {
+    let _trace = start_release_trace();
+    let resource =
+        ExternalResourceHandle::new(ExternalResourceKind::Directory).expect("资源应分配");
+    let alias = resource.clone();
+    resource.try_release().expect("首个别名应释放");
+    alias.try_release().expect("最后一个别名应释放");
+    let events = take_release_events();
+    assert_eq!(
+        events
+            .iter()
+            .filter(|event| event.action == ReleaseAction::Destroy)
+            .count(),
+        1,
+        "最后一个强引用只能销毁资源一次"
+    );
 }
 
 #[test]

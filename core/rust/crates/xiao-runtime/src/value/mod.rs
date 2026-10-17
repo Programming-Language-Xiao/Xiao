@@ -8,6 +8,7 @@
 mod ops;
 
 use std::any::Any;
+use std::cell::Cell;
 
 use xiao_syntax::ScalarType;
 
@@ -159,6 +160,170 @@ impl StringHandle {
     }
 }
 
+/// 首批外部资源的稳定种类标签。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum ExternalResourceKind {
+    /// 文件资源。
+    File,
+    /// 目录资源。
+    Directory,
+}
+
+impl ExternalResourceKind {
+    /// 返回语言可见的稳定种类名。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::File => "file",
+            Self::Directory => "directory",
+        }
+    }
+
+    /// 返回资源在类型名和显示值中共用的稳定文本。
+    #[must_use]
+    pub fn display_name(self) -> String {
+        format!("resource<{}>", self.as_str())
+    }
+}
+
+pub(crate) const EXTERNAL_RESOURCE_RUNTIME_TAG: RuntimeTypeTag = RuntimeTypeTag::Custom(17);
+
+/// 外部资源的内部载荷；首批只承载种类和关闭状态，不持有宿主裸句柄。
+#[derive(Debug)]
+struct ExternalResourceObject {
+    kind: ExternalResourceKind,
+    closed: Cell<bool>,
+}
+
+impl crate::memory::ObjectPayload for ExternalResourceObject {
+    /// 返回外部资源的内部 Runtime 标签。
+    fn type_tag(&self) -> RuntimeTypeTag {
+        EXTERNAL_RESOURCE_RUNTIME_TAG
+    }
+
+    /// 返回载荷布局摘要。
+    fn layout(&self) -> crate::memory::ObjectLayout {
+        crate::memory::ObjectLayout::for_type::<Self>(EXTERNAL_RESOURCE_RUNTIME_TAG)
+    }
+
+    /// 资源载荷没有本批宿主释放动作；关闭状态只需幂等落盘。
+    fn on_drop(&mut self) -> RuntimeResult<()> {
+        self.closed.set(true);
+        Ok(())
+    }
+
+    /// 暴露只读载荷视图。
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    /// 暴露可变载荷视图。
+    fn as_any_mut(&mut self) -> &mut dyn Any {
+        self
+    }
+}
+
+/// 统一外部资源的强句柄；首版保持单线程、不实现 `Send`/`Sync`。
+pub struct ExternalResourceHandle {
+    inner: StrongHandle,
+}
+
+impl std::fmt::Debug for ExternalResourceHandle {
+    /// 输出资源种类和引用计数，不泄漏宿主句柄。
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("ExternalResourceHandle")
+            .field("kind", &self.kind().map(ExternalResourceKind::as_str))
+            .field("strong_count", &self.strong_count())
+            .finish()
+    }
+}
+
+impl Clone for ExternalResourceHandle {
+    /// 复制同一个逻辑资源的强引用。
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+        }
+    }
+}
+
+impl ExternalResourceHandle {
+    /// 创建一个首批种类的空资源承载对象。
+    pub fn new(kind: ExternalResourceKind) -> RuntimeResult<Self> {
+        let inner = allocate_payload(Box::new(ExternalResourceObject {
+            kind,
+            closed: Cell::new(false),
+        }))?;
+        Ok(Self { inner })
+    }
+
+    /// 从已验证的强句柄恢复资源包装。
+    pub(crate) fn from_strong_handle(inner: StrongHandle) -> RuntimeResult<Self> {
+        if inner.type_tag() != EXTERNAL_RESOURCE_RUNTIME_TAG {
+            return Err(crate::errors::RuntimeError::invalid_handle(
+                "句柄不是外部资源",
+            ));
+        }
+        Ok(Self { inner })
+    }
+
+    /// 返回资源种类。
+    pub fn kind(&self) -> RuntimeResult<ExternalResourceKind> {
+        self.inner.with_payload(
+            EXTERNAL_RESOURCE_RUNTIME_TAG,
+            |object: &ExternalResourceObject| object.kind,
+        )
+    }
+
+    /// 判断资源是否已经关闭。
+    pub fn is_closed(&self) -> RuntimeResult<bool> {
+        self.inner.with_payload(
+            EXTERNAL_RESOURCE_RUNTIME_TAG,
+            |object: &ExternalResourceObject| object.closed.get(),
+        )
+    }
+
+    /// 显式关闭资源；重复关闭幂等。
+    pub fn close(&self) -> RuntimeResult<()> {
+        self.inner.with_payload_mut(
+            EXTERNAL_RESOURCE_RUNTIME_TAG,
+            |object: &mut ExternalResourceObject| object.closed.set(true),
+        )
+    }
+
+    /// 要求资源仍然可用；关闭或失效时返回稳定生命周期错误。
+    pub fn ensure_open(&self) -> RuntimeResult<()> {
+        if self.is_closed()? {
+            Err(crate::errors::RuntimeError::resource_closed())
+        } else {
+            Ok(())
+        }
+    }
+
+    /// 返回强引用计数。
+    #[must_use]
+    pub fn strong_count(&self) -> usize {
+        self.inner.strong_count()
+    }
+
+    /// 判断两个包装是否指向同一逻辑资源。
+    #[must_use]
+    pub fn same_resource(&self, other: &Self) -> bool {
+        self.inner.same_object(&other.inner)
+    }
+
+    /// 消耗包装并显式释放强引用。
+    pub fn try_release(self) -> RuntimeResult<()> {
+        self.inner.try_release()
+    }
+
+    /// 消耗包装并取得 ABI 不透明强句柄。
+    pub(crate) fn into_strong_handle(self) -> StrongHandle {
+        self.inner
+    }
+}
+
 /// Xiao Runtime 中可传递的最小值集合。
 #[derive(Clone, Debug)]
 pub enum RuntimeValue {
@@ -196,6 +361,8 @@ pub enum RuntimeValue {
     DictColumn(crate::containers::DictHandle),
     /// 集合对象。
     Set(crate::containers::SetHandle),
+    /// 外部资源对象；首批种类由 `ExternalResourceKind` 区分。
+    ExternalResource(ExternalResourceHandle),
     /// 可恢复错误对象；错误身份由 `XiaoError::error_id` 保持。
     Error(Box<XiaoError>),
     /// 空值。
@@ -232,6 +399,9 @@ impl PartialEq for RuntimeValue {
             (Self::DictTable(left), Self::DictTable(right)) => left.same_object(right),
             (Self::DictColumn(left), Self::DictColumn(right)) => left.same_object(right),
             (Self::Set(left), Self::Set(right)) => left.same_object(right),
+            (Self::ExternalResource(left), Self::ExternalResource(right)) => {
+                left.kind() == right.kind() && left.same_resource(right)
+            }
             (Self::Error(left), Self::Error(right)) => left == right,
             (Self::None, Self::None) => true,
             _ => false,
@@ -273,6 +443,7 @@ impl std::hash::Hash for RuntimeValue {
             | Self::DictTable(_)
             | Self::DictColumn(_)
             | Self::Set(_)
+            | Self::ExternalResource(_)
             | Self::Error(_)
             | Self::None => {}
         }
@@ -292,6 +463,10 @@ impl RuntimeValue {
             Self::Bool(value) => value.to_string(),
             Self::Str(handle) => return handle.to_string(),
             Self::None => "none".to_owned(),
+            Self::ExternalResource(resource) => {
+                let kind = resource.kind()?;
+                kind.display_name()
+            }
             Self::Error(_) => "error".to_owned(),
             Self::Table(_)
             | Self::TableDropView(_)
@@ -324,6 +499,7 @@ impl RuntimeValue {
             | Self::DictTable(_)
             | Self::DictColumn(_)
             | Self::Set(_)
+            | Self::ExternalResource(_)
             | Self::Error(_)
             | Self::None => return None,
         })
@@ -345,6 +521,10 @@ impl RuntimeValue {
             Self::DictTable(_) => RuntimeTypeTag::DictTable.as_str().to_owned(),
             Self::DictColumn(_) => RuntimeTypeTag::DictColumn.as_str().to_owned(),
             Self::Set(_) => RuntimeTypeTag::Set.as_str().to_owned(),
+            Self::ExternalResource(resource) => resource
+                .kind()
+                .map(ExternalResourceKind::display_name)
+                .unwrap_or_else(|_| "resource<invalid>".to_owned()),
             Self::Error(_) => "error".to_owned(),
             Self::None => "none".to_owned(),
             _ => self
@@ -386,7 +566,7 @@ impl RuntimeValue {
 #[cfg(test)]
 /// 标量运算和 UTF-8 字符串句柄的回归测试。
 mod tests {
-    use super::{RuntimeValue, StringHandle};
+    use super::{ExternalResourceHandle, ExternalResourceKind, RuntimeValue, StringHandle};
 
     #[test]
     /// 验证布尔值按整数奇偶翻转。
@@ -426,5 +606,20 @@ mod tests {
         let value = RuntimeValue::error(super::XiaoError::invalid_value("x"));
         assert_eq!(value.type_name(), "error");
         assert!(!crate::containers::is_hashable(&value));
+    }
+
+    #[test]
+    /// 资源别名共享逻辑身份，关闭幂等且关闭后返回稳定生命周期错误。
+    fn external_resource_aliases_share_identity_and_close_idempotently() {
+        let resource = ExternalResourceHandle::new(ExternalResourceKind::File).unwrap();
+        let alias = resource.clone();
+        let left = RuntimeValue::ExternalResource(resource);
+        let right = RuntimeValue::ExternalResource(alias.clone());
+        assert_eq!(left, right);
+        assert_eq!(left.type_name(), "resource<file>");
+        assert_eq!(left.display_text().unwrap(), "resource<file>");
+        alias.close().unwrap();
+        alias.close().unwrap();
+        assert_eq!(alias.ensure_open().unwrap_err().code(), "X06-RUNTIME-025");
     }
 }
