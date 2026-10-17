@@ -540,9 +540,7 @@ fn native_process_api_matches_vm() {
             Some(if expected_code.is_some() { 3 } else { 0 }),
             "{label}: {native:?}"
         );
-        let stdout = String::from_utf8(native.stdout)
-            .expect("UTF-8 输出")
-            .replace("\r\n", "\n");
+        let stdout = String::from_utf8(native.stdout).expect("UTF-8 输出");
         assert_eq!(stdout, expected_stdout, "{label}");
         let stderr = String::from_utf8_lossy(&native.stderr);
         if let Some(code) = expected_code {
