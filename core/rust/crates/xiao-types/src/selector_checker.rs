@@ -957,7 +957,11 @@ impl<'source> TypeChecker<'source> {
                     self.set_index_error(diagnostic_span);
                     return None;
                 }
-                Type::Table(_) | Type::Scalar(_) | Type::None | Type::Function { .. } => {
+                Type::Table(_)
+                | Type::Resource(_)
+                | Type::Scalar(_)
+                | Type::None
+                | Type::Function { .. } => {
                     self.path_kind_error(part, segment, diagnostic_span);
                     return None;
                 }
@@ -1305,7 +1309,8 @@ fn canonical_order_key(source: &Type, path: &SelectionPath) -> Option<Vec<usize>
             | Type::Scalar(_)
             | Type::None
             | Type::Function { .. }
-            | Type::Table(_) => return None,
+            | Type::Table(_)
+            | Type::Resource(_) => return None,
         }
     }
     Some(order)

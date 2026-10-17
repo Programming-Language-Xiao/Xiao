@@ -38,6 +38,11 @@ pub(super) fn validate_input(program: &TacProgram, width: OperandWidth) -> Resul
     )?;
     check_version("ir_version", program.abi.ir_version, IR_VERSION)?;
     if let Some(note) = program.unsupported.first() {
+        if note.starts_with(crate::verify::RESOURCE_CONSTANT_PREFIX) {
+            return Err(EncodeError::InvalidFormat(format!(
+                "X07-FATAL-002: 产物包含资源常量：{note}"
+            )));
+        }
         return Err(EncodeError::Unsupported(note.clone()));
     }
     for signature in program.signatures.iter() {

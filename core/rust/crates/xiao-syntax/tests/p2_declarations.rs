@@ -76,7 +76,7 @@ fn parses_const_declarations() {
     assert!(matches!(
         explicit,
         Statement::ConstDeclaration {
-            declared_type: Some(ScalarType::Int),
+            declared_type: Some(DeclaredType::Scalar(ScalarType::Int)),
             ..
         }
     ));

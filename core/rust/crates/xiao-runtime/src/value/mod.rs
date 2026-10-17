@@ -9,10 +9,13 @@ mod ops;
 
 use std::any::Any;
 use std::cell::Cell;
+use std::fs::File;
+use std::io::{Read, Seek, SeekFrom};
+use std::path::PathBuf;
 
 use xiao_syntax::ScalarType;
 
-use crate::errors::{RuntimeResult, XiaoError};
+use crate::errors::{DiagnosticParam, RuntimeError, RuntimeResult, XiaoError};
 use crate::memory::{
     ObjectLayout, ObjectPayload, RuntimeTypeTag, StrongHandle, WeakHandle, allocate_payload,
 };
@@ -188,11 +191,23 @@ impl ExternalResourceKind {
 
 pub(crate) const EXTERNAL_RESOURCE_RUNTIME_TAG: RuntimeTypeTag = RuntimeTypeTag::Custom(17);
 
-/// 外部资源的内部载荷；首批只承载种类和关闭状态，不持有宿主裸句柄。
+/// 外部资源的宿主载荷；目录首版只保存已验证路径，不持有平台目录句柄。
+#[derive(Debug)]
+enum ExternalResourcePayload {
+    /// 尚未绑定宿主对象的承载（仅供测试和 ABI 形状使用）。
+    Empty,
+    /// 已打开的文件。
+    File(File),
+    /// 已验证的目录路径。
+    Directory(PathBuf),
+}
+
+/// 外部资源的内部载荷。
 #[derive(Debug)]
 struct ExternalResourceObject {
     kind: ExternalResourceKind,
     closed: Cell<bool>,
+    payload: Option<ExternalResourcePayload>,
 }
 
 impl crate::memory::ObjectPayload for ExternalResourceObject {
@@ -206,9 +221,10 @@ impl crate::memory::ObjectPayload for ExternalResourceObject {
         crate::memory::ObjectLayout::for_type::<Self>(EXTERNAL_RESOURCE_RUNTIME_TAG)
     }
 
-    /// 资源载荷没有本批宿主释放动作；关闭状态只需幂等落盘。
+    /// 释放资源宿主载荷并把状态置为关闭；重复释放不产生第二次动作。
     fn on_drop(&mut self) -> RuntimeResult<()> {
         self.closed.set(true);
+        let _ = self.payload.take();
         Ok(())
     }
 
@@ -254,6 +270,27 @@ impl ExternalResourceHandle {
         let inner = allocate_payload(Box::new(ExternalResourceObject {
             kind,
             closed: Cell::new(false),
+            payload: Some(ExternalResourcePayload::Empty),
+        }))?;
+        Ok(Self { inner })
+    }
+
+    /// 从已打开的文件创建资源承载。
+    pub fn from_file(file: File) -> RuntimeResult<Self> {
+        let inner = allocate_payload(Box::new(ExternalResourceObject {
+            kind: ExternalResourceKind::File,
+            closed: Cell::new(false),
+            payload: Some(ExternalResourcePayload::File(file)),
+        }))?;
+        Ok(Self { inner })
+    }
+
+    /// 从已验证的目录路径创建资源承载。
+    pub fn from_directory(path: PathBuf) -> RuntimeResult<Self> {
+        let inner = allocate_payload(Box::new(ExternalResourceObject {
+            kind: ExternalResourceKind::Directory,
+            closed: Cell::new(false),
+            payload: Some(ExternalResourcePayload::Directory(path)),
         }))?;
         Ok(Self { inner })
     }
@@ -276,6 +313,17 @@ impl ExternalResourceHandle {
         )
     }
 
+    /// 返回目录资源保存的已验证路径；文件资源返回 `None`。
+    pub(crate) fn directory_path(&self) -> RuntimeResult<Option<PathBuf>> {
+        self.inner.with_payload(
+            EXTERNAL_RESOURCE_RUNTIME_TAG,
+            |object: &ExternalResourceObject| match object.payload.as_ref() {
+                Some(ExternalResourcePayload::Directory(path)) => Some(path.clone()),
+                _ => None,
+            },
+        )
+    }
+
     /// 判断资源是否已经关闭。
     pub fn is_closed(&self) -> RuntimeResult<bool> {
         self.inner.with_payload(
@@ -288,7 +336,10 @@ impl ExternalResourceHandle {
     pub fn close(&self) -> RuntimeResult<()> {
         self.inner.with_payload_mut(
             EXTERNAL_RESOURCE_RUNTIME_TAG,
-            |object: &mut ExternalResourceObject| object.closed.set(true),
+            |object: &mut ExternalResourceObject| {
+                object.closed.set(true);
+                let _ = object.payload.take();
+            },
         )
     }
 
@@ -299,6 +350,29 @@ impl ExternalResourceHandle {
         } else {
             Ok(())
         }
+    }
+
+    /// 读取文件的完整 UTF-8 文本；目录或空承载会返回稳定 Runtime 错误。
+    pub fn read_text(&self) -> RuntimeResult<String> {
+        self.ensure_open()?;
+        self.inner.with_payload_mut(
+            EXTERNAL_RESOURCE_RUNTIME_TAG,
+            |object: &mut ExternalResourceObject| {
+                let Some(payload) = object.payload.as_mut() else {
+                    return Err(RuntimeError::invalid_value("资源没有可读取的宿主载荷"));
+                };
+                let ExternalResourcePayload::File(file) = payload else {
+                    return Err(RuntimeError::invalid_value("directory 资源不能读取文本"));
+                };
+                file.seek(SeekFrom::Start(0))
+                    .map_err(|error| resource_io_error("定位文件", error))?;
+                let mut bytes = Vec::new();
+                file.read_to_end(&mut bytes)
+                    .map_err(|error| resource_io_error("读取文件", error))?;
+                String::from_utf8(bytes)
+                    .map_err(|error| resource_io_error("解码文件", error.utf8_error()))
+            },
+        )?
     }
 
     /// 返回强引用计数。
@@ -322,6 +396,12 @@ impl ExternalResourceHandle {
     pub(crate) fn into_strong_handle(self) -> StrongHandle {
         self.inner
     }
+}
+
+/// 把宿主 IO 或 UTF-8 失败映射为带原因参数的 Runtime 值错误。
+fn resource_io_error(operation: &str, error: impl std::fmt::Display) -> RuntimeError {
+    RuntimeError::invalid_value(format!("{operation}失败"))
+        .with_param("reason", DiagnosticParam::Text(error.to_string()))
 }
 
 /// Xiao Runtime 中可传递的最小值集合。

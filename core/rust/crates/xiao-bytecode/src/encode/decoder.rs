@@ -135,6 +135,11 @@ fn decode_constants(
             5 => TacConstant::Lfloat(reader.string("constant.lfloat")?),
             6 => TacConstant::Bool(read_bool(reader, "constant.bool")?),
             7 => TacConstant::Str(reader.string("constant.str")?),
+            11 | 17 => {
+                return Err(EncodeError::InvalidFormat(
+                    "X07-FATAL-002: 常量池不能包含资源值".to_owned(),
+                ));
+            }
             tag => {
                 return Err(EncodeError::InvalidEnum {
                     field: "constant.tag".to_owned(),
@@ -951,6 +956,9 @@ fn decode_type(reader: &mut Reader<'_>) -> Result<IrType, EncodeError> {
             kind: reader.string("type.table.kind")?,
         },
         10 => IrType::Dynamic,
+        11 => IrType::Resource {
+            kind: reader.string("type.resource.kind")?,
+        },
         tag => {
             return Err(EncodeError::InvalidEnum {
                 field: "type.tag".to_owned(),

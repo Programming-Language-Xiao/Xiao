@@ -372,6 +372,7 @@ fn declared_set_type(annotation: &SetTypeAnnotation) -> SetType {
         .map(|term| match term {
             TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
             TypeTerm::None => Type::None,
+            TypeTerm::Resource(resource) => Type::Resource(*resource),
         })
         .collect::<Vec<_>>();
     SetType::heterogeneous(members)

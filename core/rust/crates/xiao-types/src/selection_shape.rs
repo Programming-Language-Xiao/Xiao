@@ -55,6 +55,7 @@ pub fn direct_selection_children(root: &Type) -> Option<Vec<(ContainerPathSegmen
         | Type::Variable(_)
         | Type::Function { .. }
         | Type::Table(_)
+        | Type::Resource(_)
         | Type::None => None,
     }
 }

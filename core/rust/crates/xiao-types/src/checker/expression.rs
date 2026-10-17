@@ -570,7 +570,67 @@ impl<'source> TypeChecker<'source> {
             }
             return Type::None;
         }
+        if let Some(declaration) = self.intrinsic_decl(callee)
+            && matches!(
+                declaration.kind,
+                IntrinsicKind::ResourceOpenFile
+                    | IntrinsicKind::ResourceOpenDirectory
+                    | IntrinsicKind::ResourceClose
+                    | IntrinsicKind::ResourceReadText
+            )
+        {
+            self.record_intrinsic_call(callee, span);
+            return self.check_resource_intrinsic_call(declaration.kind, arguments, span);
+        }
         self.check_function_value_call(callee, arguments, span)
+    }
+
+    /// 检查首批资源 intrinsic 的静态参数和返回种类。
+    fn check_resource_intrinsic_call(
+        &mut self,
+        kind: IntrinsicKind,
+        arguments: &[CallArgument],
+        span: SourceSpan,
+    ) -> Type {
+        if arguments.len() != 1 {
+            self.type_error(
+                INVALID_OPERANDS_CODE,
+                "x02.type.call_arity",
+                span,
+                "资源 intrinsic 必须接收一个参数".to_owned(),
+            );
+            return Type::Dynamic;
+        }
+        let actual = self.check_expression(&arguments[0].value);
+        let (expected, result) = match kind {
+            IntrinsicKind::ResourceOpenFile | IntrinsicKind::ResourceOpenDirectory => (
+                Type::scalar(ScalarType::Str),
+                Type::Resource(if kind == IntrinsicKind::ResourceOpenFile {
+                    xiao_syntax::ResourceKind::File
+                } else {
+                    xiao_syntax::ResourceKind::Directory
+                }),
+            ),
+            IntrinsicKind::ResourceClose => (
+                Type::Resource(xiao_syntax::ResourceKind::Resource),
+                Type::None,
+            ),
+            IntrinsicKind::ResourceReadText => (
+                Type::Resource(xiao_syntax::ResourceKind::File),
+                Type::scalar(ScalarType::Str),
+            ),
+            _ => unreachable!(),
+        };
+        if !can_assign(&actual, &expected) {
+            self.type_error(
+                INVALID_OPERANDS_CODE,
+                "x02.type.call_argument",
+                arguments[0].value.span(),
+                format!("资源 intrinsic 需要 {}，实际为 {}", expected, actual),
+            );
+            return Type::Dynamic;
+        }
+        result
     }
 
     /// 检查内建错误对象构造调用，并处理不可捕获的 `FatalError`。

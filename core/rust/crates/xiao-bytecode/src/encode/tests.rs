@@ -23,7 +23,7 @@ fn instruction(index: usize, op: TacOp) -> TacInstr {
 
 /// 枚举 `IrType` 的每个变体，供类型编码覆盖测试使用。
 ///
-/// 包含三种数组形状、两种字典、`Table` 与 `Dynamic`。`Set` 刻意取
+/// 包含三种数组形状、两种字典、`Table`、资源类型与 `Dynamic`。`Set` 刻意取
 /// `allows_dynamic = true`、`empty = false`、`unknown = true` 这种非全零也
 /// 非全一的组合，这样三个标志写串顺序或写错一个都能被发现。
 fn all_types() -> Vec<IrType> {
@@ -75,6 +75,9 @@ fn all_types() -> Vec<IrType> {
         IrType::Table {
             name: "Point".to_owned(),
             kind: "record".to_owned(),
+        },
+        IrType::Resource {
+            kind: "file".to_owned(),
         },
         IrType::Dynamic,
     ]
@@ -493,6 +496,18 @@ fn all_opcodes_and_abi_fields_round_trip_in_both_widths() {
         sizes.push(encoded.bytes.len());
     }
     assert!(sizes[0] < sizes[1], "小编号下 LEB128 应比定宽编码更短");
+}
+
+#[test]
+/// 编码边界不能把资源常量降级成普通未支持构造。
+fn resource_constant_is_rejected_with_fatal_identity_at_encode_boundary() {
+    let mut program = all_ops_program();
+    program.unsupported.push(format!(
+        "{}测试资源",
+        crate::verify::RESOURCE_CONSTANT_PREFIX
+    ));
+    let error = encode(&program, OperandWidth::Leb128).expect_err("资源常量必须拒绝");
+    assert!(error.to_string().contains("X07-FATAL-002"));
 }
 
 #[test]

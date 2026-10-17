@@ -91,6 +91,7 @@ fn type_uses_runtime(ty: &IrType) -> bool {
         | IrType::DictColumn { .. }
         | IrType::Set { .. }
         | IrType::Table { .. }
+        | IrType::Resource { .. }
         | IrType::Variable { .. } => true,
         IrType::Function {
             parameters,

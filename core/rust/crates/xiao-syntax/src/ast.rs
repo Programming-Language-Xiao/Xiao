@@ -304,6 +304,40 @@ pub enum ScalarType {
     Bool,
 }
 
+/// 首批外部资源的语言类型种类。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum ResourceKind {
+    /// 文件资源。
+    File,
+    /// 目录资源。
+    Directory,
+    /// 接受首批资源种类的父类型。
+    Resource,
+}
+
+impl ResourceKind {
+    /// 返回资源类型的 Xiao 源码拼写。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::File => "file",
+            Self::Directory => "directory",
+            Self::Resource => "resource",
+        }
+    }
+
+    /// 按保留字还原资源类型；其它关键字返回 `None`。
+    #[must_use]
+    pub const fn from_keyword(keyword: KeywordKind) -> Option<Self> {
+        Some(match keyword {
+            KeywordKind::File => Self::File,
+            KeywordKind::Directory => Self::Directory,
+            KeywordKind::Resource => Self::Resource,
+            _ => return None,
+        })
+    }
+}
+
 impl ScalarType {
     /// 返回类型的 Xiao 源码拼写。
     #[must_use]
@@ -366,6 +400,8 @@ pub enum TypeTerm {
     Scalar(ScalarType),
     /// `none` 类型项。
     None,
+    /// 一个资源类型项。
+    Resource(ResourceKind),
 }
 
 impl TypeTerm {
@@ -375,6 +411,7 @@ impl TypeTerm {
         match self {
             Self::Scalar(scalar) => scalar.as_str(),
             Self::None => "none",
+            Self::Resource(resource) => resource.as_str(),
         }
     }
 }
@@ -412,6 +449,8 @@ pub enum DeclaredType {
     Scalar(ScalarType),
     /// C2-B `set<T>` 或 `set<T | U>` 集合声明。
     Set(SetTypeAnnotation),
+    /// `file`、`directory` 或 `resource` 资源声明。
+    Resource(ResourceKind),
 }
 
 impl DeclaredType {
@@ -421,6 +460,7 @@ impl DeclaredType {
         match self {
             Self::Scalar(scalar) => Some(*scalar),
             Self::Set(_) => None,
+            Self::Resource(_) => None,
         }
     }
 
@@ -430,6 +470,7 @@ impl DeclaredType {
         match self {
             Self::Scalar(_) => None,
             Self::Set(annotation) => Some(annotation),
+            Self::Resource(_) => None,
         }
     }
 }
@@ -480,6 +521,8 @@ pub enum FunctionTypeAnnotation {
     Scalar(ScalarType),
     /// `none` 类型。
     None,
+    /// 一个资源类型。
+    Resource(ResourceKind),
 }
 
 impl FunctionTypeAnnotation {
@@ -489,6 +532,7 @@ impl FunctionTypeAnnotation {
         match self {
             Self::Scalar(scalar) => scalar.as_str(),
             Self::None => "none",
+            Self::Resource(resource) => resource.as_str(),
         }
     }
 }
@@ -660,13 +704,13 @@ pub enum Statement {
     },
     /// 编译期常量声明，例如 `const PI = 3.14`。
     ///
-    /// 常量可以带可选标量类型前缀（`const int LIMIT = 1`）；初始化表达式
+    /// 常量可以带可选类型前缀（`const int LIMIT = 1`）；初始化表达式
     /// 必须存在，是否能够在编译期求值由类型检查阶段验证。
     ConstDeclaration {
         /// 常量目标名称。
         target: Name,
-        /// 可选的显式标量类型。
-        declared_type: Option<ScalarType>,
+        /// 可选的显式类型；资源类型在类型层被拒绝为常量。
+        declared_type: Option<DeclaredType>,
         /// 必需的初始化表达式。
         value: Expression,
         /// 与该语句相邻、按源码顺序出现的文档注释区间。
@@ -955,12 +999,15 @@ impl Statement {
         }
     }
 
-    /// 返回声明的显式类型；未带类型的常量和非声明语句返回 `None`。
+    /// 返回声明的显式标量类型；资源/集合注解和未带类型的常量返回 `None`。
     #[must_use]
     pub const fn declared_type(&self) -> Option<ScalarType> {
         match self {
             Self::Declaration { declared_type, .. } => declared_type.as_scalar(),
-            Self::ConstDeclaration { declared_type, .. } => *declared_type,
+            Self::ConstDeclaration { declared_type, .. } => match declared_type {
+                Some(DeclaredType::Scalar(scalar)) => Some(*scalar),
+                Some(DeclaredType::Set(_) | DeclaredType::Resource(_)) | None => None,
+            },
             _ => None,
         }
     }
@@ -970,7 +1017,7 @@ impl Statement {
     pub const fn type_annotation(&self) -> Option<&DeclaredType> {
         match self {
             Self::Declaration { declared_type, .. } => Some(declared_type),
-            Self::ConstDeclaration { .. } => None,
+            Self::ConstDeclaration { declared_type, .. } => declared_type.as_ref(),
             _ => None,
         }
     }

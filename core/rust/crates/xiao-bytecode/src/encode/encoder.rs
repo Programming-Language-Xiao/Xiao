@@ -726,6 +726,10 @@ fn encode_type(writer: &mut Writer, ty: &IrType) -> Result<(), EncodeError> {
             writer.string(kind)?;
         }
         IrType::Dynamic => writer.byte(10),
+        IrType::Resource { kind } => {
+            writer.byte(11);
+            writer.string(kind)?;
+        }
     }
     Ok(())
 }

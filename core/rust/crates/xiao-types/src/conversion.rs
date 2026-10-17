@@ -130,6 +130,9 @@ pub fn can_assign(source: &Type, target: &Type) -> bool {
     if source.is_container() && target.is_container() {
         return container_can_assign(source, target);
     }
+    if let (Type::Resource(source), Type::Resource(target)) = (source, target) {
+        return *target == xiao_syntax::ResourceKind::Resource || source == target;
+    }
     let (Type::Scalar(source), Type::Scalar(target)) = (source, target) else {
         return false;
     };

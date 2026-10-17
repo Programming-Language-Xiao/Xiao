@@ -6,13 +6,14 @@
 
 use xiao_ir::{
     IrCatchClause, IrElifBranch, IrExpression, IrExpressionKind, IrSpan, IrStatement,
-    IrStatementKind,
+    IrStatementKind, IrType,
 };
 
 use crate::lower::Lowerer;
 use crate::tac::{
     ArithOp, CompareOp, RegisterClass, TacConstant, TacHandler, TacInstr, TacOp, VReg,
 };
+use crate::verify::RESOURCE_CONSTANT_PREFIX;
 
 /// 降低一个语句列表，并在结束时按 `exit` 离开所属作用域。
 pub(super) fn lower_statements(lowerer: &mut Lowerer<'_>, statements: &[IrStatement], exit: &str) {
@@ -62,6 +63,21 @@ fn dispatch_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
             ..
         }
         | IrStatementKind::ConstDeclaration { target, value, .. } => {
+            if let IrStatementKind::ConstDeclaration {
+                declared_type,
+                value,
+                ..
+            } = &statement.kind
+                && (declared_type
+                    .as_deref()
+                    .is_some_and(|name| matches!(name, "file" | "directory" | "resource"))
+                    || matches!(value.ty, IrType::Resource { .. }))
+            {
+                lowerer.record_unsupported(format!(
+                    "{RESOURCE_CONSTANT_PREFIX}const 不能包含资源值（{}..{}）",
+                    statement.span.start, statement.span.end
+                ));
+            }
             let source = lowerer.lower_expression(value);
             store_into(
                 lowerer,

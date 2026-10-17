@@ -48,6 +48,7 @@ pub(super) fn method_type(ty: &IrType) -> Result<u32> {
         IrType::DictTable { .. } => XiaoValueTag::DictTable,
         IrType::DictColumn { .. } => XiaoValueTag::DictColumn,
         IrType::Set { .. } => XiaoValueTag::Set,
+        IrType::Resource { .. } => XiaoValueTag::ExternalResource,
         IrType::Function { .. } => {
             return Err(CodegenError::Unsupported {
                 feature: "动态函数值 ABI（A3）".to_owned(),

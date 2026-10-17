@@ -10,5 +10,9 @@
 - [`text`](text.md) —— `contains_char(str text, str needle) -> bool`，按迭代器式 `for` 扫描字符。
 - [`path`](path.md) —— `join(str base, str leaf) -> str`，按冻结的 `/` 拼接形状生成路径文本。
 
+## 20D 首批资源接口
+
+- [`os`](os.md) —— 文件/目录资源的 `open_file`、`open_directory`、`close` 与 `read_text`。
+
 首批与后续小批接口均是标准库接口版本 1 的兼容新增；当前 `text` 提供 ASCII 大写判断，
-不提供填充/对齐/进制格式化、数字格式化接口、切分/切片、完整大小写转换、路径规范化和文件系统访问。
+不提供填充/对齐/进制格式化、数字格式化接口、切分/切片、完整大小写转换或路径规范化；文件系统访问只通过 `os` 模块的冻结资源接口提供。

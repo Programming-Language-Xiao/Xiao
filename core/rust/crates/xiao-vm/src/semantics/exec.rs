@@ -8,6 +8,8 @@
 
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
+use std::fs::{File, metadata};
+use std::path::Path;
 use std::rc::Rc;
 use xiao_bytecode::{
     BlockId, FuncId, PcMap, TacArgument, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
@@ -21,7 +23,10 @@ use xiao_diagnostics::{
 };
 use xiao_intrinsics::KNOWN_CAPABILITY_MASK;
 use xiao_intrinsics::{AbiBinding, IntrinsicId, VmBinding, active_by_id};
-use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
+use xiao_runtime::{
+    CatchRoute, ExternalResourceHandle, ExternalResourceKind, RuntimeDriver, RuntimeError,
+    RuntimeValue, is_hashable,
+};
 use xiao_source::SourceSpan;
 use xiao_syntax::ScalarType;
 /// 表生命周期回调和执行上下文适配。
@@ -2028,6 +2033,111 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 }
                 Ok(Some(RuntimeValue::new_string(line).map_err(Fault::Error)?))
             }
+            VmBinding::ResourceOpenFile => {
+                validate_resource_contract(
+                    declaration,
+                    xiao_intrinsics::ValueType::Str,
+                    xiao_intrinsics::ValueType::File,
+                    xiao_intrinsics::Effects::ReadsFilesystem,
+                )?;
+                let path = one_positional_resource_argument(arguments, "os_open_file")?;
+                match metadata(Path::new(&path)) {
+                    Ok(metadata) if metadata.is_file() => {}
+                    Ok(_) => {
+                        return Err(Fault::Error(resource_io_error("打开文件", "目标不是文件")));
+                    }
+                    Err(error) => {
+                        return Err(Fault::Error(resource_io_error("打开文件", error)));
+                    }
+                }
+                let file = File::open(Path::new(&path))
+                    .map_err(|error| Fault::Error(resource_io_error("打开文件", error)))?;
+                Ok(Some(RuntimeValue::ExternalResource(
+                    ExternalResourceHandle::from_file(file).map_err(Fault::Error)?,
+                )))
+            }
+            VmBinding::ResourceOpenDirectory => {
+                validate_resource_contract(
+                    declaration,
+                    xiao_intrinsics::ValueType::Str,
+                    xiao_intrinsics::ValueType::Directory,
+                    xiao_intrinsics::Effects::ReadsFilesystem,
+                )?;
+                let path = one_positional_resource_argument(arguments, "os_open_directory")?;
+                match metadata(Path::new(&path)) {
+                    Ok(metadata) if metadata.is_dir() => {}
+                    Ok(_) => {
+                        return Err(Fault::Error(resource_io_error("打开目录", "目标不是目录")));
+                    }
+                    Err(error) => {
+                        return Err(Fault::Error(resource_io_error("打开目录", error)));
+                    }
+                }
+                Ok(Some(RuntimeValue::ExternalResource(
+                    ExternalResourceHandle::from_directory(path.into()).map_err(Fault::Error)?,
+                )))
+            }
+            VmBinding::ResourceClose => {
+                validate_resource_contract(
+                    declaration,
+                    xiao_intrinsics::ValueType::Resource,
+                    xiao_intrinsics::ValueType::None,
+                    xiao_intrinsics::Effects::WritesFilesystem,
+                )?;
+                if arguments.len() != 1
+                    || arguments[0].keyword.is_some()
+                    || !matches!(arguments[0].value, RuntimeValue::ExternalResource(_))
+                {
+                    return Err(Fault::Error(XiaoError::type_mismatch(
+                        "resource",
+                        arguments.first().map_or_else(
+                            || "none".to_owned(),
+                            |argument| argument.value.type_name(),
+                        ),
+                    )));
+                }
+                let RuntimeValue::ExternalResource(resource) = &arguments[0].value else {
+                    unreachable!();
+                };
+                resource.close().map_err(Fault::Error)?;
+                Ok(Some(RuntimeValue::None))
+            }
+            VmBinding::ResourceReadText => {
+                validate_resource_contract(
+                    declaration,
+                    xiao_intrinsics::ValueType::File,
+                    xiao_intrinsics::ValueType::Str,
+                    xiao_intrinsics::Effects::ReadsFilesystem,
+                )?;
+                if arguments.len() != 1
+                    || arguments[0].keyword.is_some()
+                    || !matches!(arguments[0].value, RuntimeValue::ExternalResource(_))
+                {
+                    return Err(Fault::Error(XiaoError::type_mismatch(
+                        "file",
+                        arguments.first().map_or_else(
+                            || "none".to_owned(),
+                            |argument| argument.value.type_name(),
+                        ),
+                    )));
+                }
+                let RuntimeValue::ExternalResource(resource) = &arguments[0].value else {
+                    unreachable!();
+                };
+                if resource.kind().map_err(Fault::Error)? != ExternalResourceKind::File {
+                    return Err(Fault::Error(XiaoError::type_mismatch(
+                        "file",
+                        resource
+                            .kind()
+                            .map(ExternalResourceKind::as_str)
+                            .unwrap_or("resource"),
+                    )));
+                }
+                Ok(Some(
+                    RuntimeValue::new_string(resource.read_text().map_err(Fault::Error)?)
+                        .map_err(Fault::Error)?,
+                ))
+            }
             _ => Err(Fault::Error(XiaoError::invalid_value(format!(
                 "intrinsic ID {id} 尚未绑定 VM 实现"
             )))),
@@ -2076,6 +2186,54 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
 /// 将 intrinsic 输出值格式化为稳定文本，并把 Runtime 错误转成 VM 故障。
 fn intrinsic_value_text(value: &RuntimeValue) -> Result<String, Fault> {
     value.display_text().map_err(Fault::Error)
+}
+
+/// 校验资源 intrinsic 的静态契约，避免 VM 绑定与生成表漂移。
+fn validate_resource_contract(
+    declaration: &xiao_intrinsics::IntrinsicDecl,
+    parameter: xiao_intrinsics::ValueType,
+    return_type: xiao_intrinsics::ValueType,
+    effects: xiao_intrinsics::Effects,
+) -> Result<(), Fault> {
+    if declaration.abi_binding == xiao_intrinsics::AbiBinding::None
+        || declaration.capability != xiao_intrinsics::Capability::Filesystem
+        || declaration.signature.arity != xiao_intrinsics::Arity::One
+        || declaration.signature.parameter != parameter
+        || declaration.signature.return_type != return_type
+        || declaration.effects != effects
+    {
+        return Err(Fault::Error(XiaoError::invalid_value(
+            "资源 intrinsic 契约与 VM/ABI 绑定不一致",
+        )));
+    }
+    Ok(())
+}
+
+/// 读取资源打开入口的唯一位置字符串参数。
+fn one_positional_resource_argument(
+    arguments: &[BoundArgument],
+    intrinsic: &str,
+) -> Result<String, Fault> {
+    if arguments.len() != 1 || arguments[0].keyword.is_some() {
+        return Err(Fault::Error(XiaoError::invalid_value(format!(
+            "{intrinsic} 必须接收一个位置参数",
+        ))));
+    }
+    let RuntimeValue::Str(value) = &arguments[0].value else {
+        return Err(Fault::Error(XiaoError::type_mismatch(
+            "str",
+            arguments[0].value.type_name(),
+        )));
+    };
+    value.to_string().map_err(Fault::Error)
+}
+
+/// 把宿主文件系统失败映射为稳定的 Runtime 错误并保留原因参数。
+fn resource_io_error(operation: &str, error: impl std::fmt::Display) -> RuntimeError {
+    RuntimeError::invalid_value(format!("{operation}失败")).with_param(
+        "reason",
+        xiao_runtime::DiagnosticParam::Text(error.to_string()),
+    )
 }
 
 /// 将契约签名的标量结果类别映射为 Runtime 转换目标。

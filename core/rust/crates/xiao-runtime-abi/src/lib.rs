@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 13;
+pub const ABI_MINOR_VERSION: u32 = 14;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -951,6 +951,26 @@ unsafe extern "C" {
         has_prompt: u8,
         capabilities: u64,
     ) -> XiaoValue;
+    /// 按当前能力上下文打开文件；缺少 filesystem 或宿主打开失败时返回 none 并设置错误槽。
+    pub fn xiao_runtime_resource_open_file_with_capabilities(
+        path: *const XiaoValue,
+        capabilities: u64,
+    ) -> XiaoValue;
+    /// 验证并打开目录路径；目录首版保存已验证路径而不暴露宿主目录句柄。
+    pub fn xiao_runtime_resource_open_directory_with_capabilities(
+        path: *const XiaoValue,
+        capabilities: u64,
+    ) -> XiaoValue;
+    /// 按当前能力上下文关闭文件或目录资源；重复关闭成功。
+    pub fn xiao_runtime_resource_close_with_capabilities(
+        value: *const XiaoValue,
+        capabilities: u64,
+    ) -> i32;
+    /// 按当前能力上下文读取文件的完整 UTF-8 文本；失败时返回 none 并设置错误槽。
+    pub fn xiao_runtime_resource_read_text_with_capabilities(
+        value: *const XiaoValue,
+        capabilities: u64,
+    ) -> XiaoValue;
 }
 
 #[cfg(test)]
@@ -968,9 +988,9 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_000D);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_000E);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 13);
+        assert_eq!(ABI_MINOR_VERSION, 14);
     }
 
     #[test]

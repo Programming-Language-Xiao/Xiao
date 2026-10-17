@@ -7,7 +7,7 @@
 use std::collections::BTreeSet;
 use std::fmt::{self, Display, Formatter};
 
-use xiao_syntax::ScalarType;
+use xiao_syntax::{ResourceKind, ScalarType};
 
 use crate::containers::{ArrayType, DictType};
 use crate::set_types::SetType;
@@ -59,6 +59,8 @@ pub enum Type {
     Set(SetType),
     /// 表声明、构造目标或已构造实例的静态身份。
     Table(TableType),
+    /// 外部资源类型；`file`/`directory` 是名义子类型，`resource` 是父类型。
+    Resource(ResourceKind),
     /// 动态值边界或错误恢复类型。
     Dynamic,
 }
@@ -215,7 +217,7 @@ impl Type {
                     element.collect_free_vars(output);
                 }
             }
-            Self::Table(_) => {}
+            Self::Table(_) | Self::Resource(_) => {}
             Self::Scalar(_) | Self::None | Self::Dynamic => {}
         }
     }
@@ -264,6 +266,7 @@ impl Display for Type {
             Self::DictColumn(dictionary) => write_dictionary(formatter, dictionary, true),
             Self::Set(set) => set.fmt(formatter),
             Self::Table(table) => table.fmt(formatter),
+            Self::Resource(resource) => formatter.write_str(resource.as_str()),
             Self::Dynamic => formatter.write_str("dynamic"),
         }
     }

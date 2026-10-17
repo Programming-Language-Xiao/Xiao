@@ -576,6 +576,11 @@ fn validate_type(ty: &IrType, path: &str, result: &mut IrValidationResult) {
                 result.errors.push(error(path, "表类型身份不完整", None));
             }
         }
+        IrType::Resource { kind } => {
+            if !matches!(kind.as_str(), "file" | "directory" | "resource") {
+                result.errors.push(error(path, "资源类型种类无效", None));
+            }
+        }
         IrType::None | IrType::Variable { .. } | IrType::Dynamic => {}
     }
 }

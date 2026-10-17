@@ -55,6 +55,10 @@ pub enum IntrinsicKind {
     ErrorConstructor,
     Print,
     Input,
+    ResourceOpenFile,
+    ResourceOpenDirectory,
+    ResourceClose,
+    ResourceReadText,
     Reserved,
 }
 /// 参数数量规则。
@@ -82,6 +86,9 @@ pub enum ValueType {
     Bool,
     Set,
     ErrorParameters,
+    File,
+    Directory,
+    Resource,
 }
 /// 可观察效果摘要。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -90,6 +97,8 @@ pub enum Effects {
     Allocates,
     WritesStdout,
     ReadsStdin,
+    ReadsFilesystem,
+    WritesFilesystem,
     None,
 }
 /// 能力需求。
@@ -98,6 +107,7 @@ pub enum Capability {
     None,
     Stdout,
     Stdin,
+    Filesystem,
 }
 
 /// 文件系统能力位。
@@ -151,6 +161,7 @@ impl Capability {
             Self::None => None,
             Self::Stdout => Some(CAPABILITY_STDOUT),
             Self::Stdin => Some(CAPABILITY_STDIN),
+            Self::Filesystem => Some(CAPABILITY_FILESYSTEM),
         }
     }
 
@@ -161,6 +172,7 @@ impl Capability {
             Self::None => "none",
             Self::Stdout => "stdout",
             Self::Stdin => "stdin",
+            Self::Filesystem => "filesystem",
         }
     }
 }
@@ -182,6 +194,10 @@ pub enum VmBinding {
     MakeError,
     Print,
     Input,
+    ResourceOpenFile,
+    ResourceOpenDirectory,
+    ResourceClose,
+    ResourceReadText,
     None,
 }
 /// Runtime ABI 绑定键。
@@ -190,6 +206,10 @@ pub enum AbiBinding {
     ErrorNew,
     Print,
     Input,
+    ResourceOpenFile,
+    ResourceOpenDirectory,
+    ResourceClose,
+    ResourceReadText,
     None,
 }
 /// 签名的后端无关部分。
@@ -332,6 +352,18 @@ pub fn validate_table() -> Result<(), ContractError> {
                         || declaration.capability != Capability::Stdin =>
                 {
                     return Err(ContractError::SignatureMismatch(declaration.id));
+                }
+                IntrinsicKind::ResourceOpenFile
+                | IntrinsicKind::ResourceOpenDirectory
+                | IntrinsicKind::ResourceClose
+                | IntrinsicKind::ResourceReadText => {
+                    if declaration.signature.arity != Arity::One
+                        || declaration.capability != Capability::Filesystem
+                        || declaration.abi_binding == AbiBinding::None
+                        || declaration.vm_binding == VmBinding::None
+                    {
+                        return Err(ContractError::SignatureMismatch(declaration.id));
+                    }
                 }
                 IntrinsicKind::ErrorConstructor
                     if declaration.signature.arity != Arity::Error

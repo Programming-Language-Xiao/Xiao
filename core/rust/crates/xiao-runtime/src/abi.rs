@@ -50,6 +50,8 @@ mod abi_dynamic;
 mod abi_io;
 #[path = "abi_numeric.rs"]
 mod abi_numeric;
+#[path = "abi_resource.rs"]
+mod abi_resource;
 #[path = "abi_tables.rs"]
 mod abi_tables;
 #[allow(unused_imports)]

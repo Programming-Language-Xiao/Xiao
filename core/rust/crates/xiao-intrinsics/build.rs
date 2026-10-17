@@ -134,6 +134,55 @@ fn main() {
                     assert_eq!(row.effect, "reads_stdin", "input 必须声明 stdin 效果");
                     assert_eq!(row.capability, "stdin", "input 必须声明 stdin 能力");
                 }
+                "resource_open_file"
+                | "resource_open_directory"
+                | "resource_close"
+                | "resource_read_text" => {
+                    assert_eq!(row.arity, "one", "资源 intrinsic 必须是一元: {}", row.name);
+                    assert_eq!(
+                        row.vm_binding, row.kind,
+                        "资源 intrinsic VM 绑定必须与类别对应: {}",
+                        row.name
+                    );
+                    assert_eq!(
+                        row.abi_binding, row.kind,
+                        "资源 intrinsic ABI 绑定必须与类别对应: {}",
+                        row.name
+                    );
+                    assert_eq!(
+                        row.capability, "filesystem",
+                        "资源 intrinsic 必须需要 filesystem 能力: {}",
+                        row.name
+                    );
+                    assert!(
+                        row.effect == "reads_filesystem" || row.effect == "writes_filesystem",
+                        "资源 intrinsic 必须声明文件系统效果: {}",
+                        row.name
+                    );
+                    match row.kind.as_str() {
+                        "resource_open_file" => {
+                            assert_eq!(row.parameter_type, "str");
+                            assert_eq!(row.return_type, "file");
+                            assert_eq!(row.effect, "reads_filesystem");
+                        }
+                        "resource_open_directory" => {
+                            assert_eq!(row.parameter_type, "str");
+                            assert_eq!(row.return_type, "directory");
+                            assert_eq!(row.effect, "reads_filesystem");
+                        }
+                        "resource_close" => {
+                            assert_eq!(row.parameter_type, "resource");
+                            assert_eq!(row.return_type, "none");
+                            assert_eq!(row.effect, "writes_filesystem");
+                        }
+                        "resource_read_text" => {
+                            assert_eq!(row.parameter_type, "file");
+                            assert_eq!(row.return_type, "str");
+                            assert_eq!(row.effect, "reads_filesystem");
+                        }
+                        _ => unreachable!(),
+                    }
+                }
                 "error_constructor" => {
                     assert_eq!(row.arity, "error", "错误构造签名不完整: {}", row.name);
                     assert_eq!(

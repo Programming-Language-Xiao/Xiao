@@ -544,6 +544,84 @@ impl<'a> DynamicGenerator<'a> {
                 self.check_pending_error_at(span);
                 Ok(value)
             }
+            xiao_intrinsics::VmBinding::ResourceOpenFile
+            | xiao_intrinsics::VmBinding::ResourceOpenDirectory => {
+                if arguments.len() != 1
+                    || arguments[0].kind != "positional"
+                    || arguments[0].name.is_some()
+                {
+                    return Err(CodegenError::Unsupported {
+                        feature: format!("{} 的参数形态", declaration.public_name),
+                        span: Some(span),
+                    });
+                }
+                let path = self.emit_expression(&arguments[0].value)?;
+                let path_slot = self.next_temp();
+                self.emit(format!("  {path_slot} = alloca {VALUE_TYPE}"));
+                self.emit(format!("  store {VALUE_TYPE} {path}, ptr {path_slot}"));
+                let symbol = match declaration.vm_binding {
+                    xiao_intrinsics::VmBinding::ResourceOpenFile => {
+                        "xiao_runtime_resource_open_file_with_capabilities"
+                    }
+                    xiao_intrinsics::VmBinding::ResourceOpenDirectory => {
+                        "xiao_runtime_resource_open_directory_with_capabilities"
+                    }
+                    _ => unreachable!(),
+                };
+                let result = self.emit_value_call(
+                    symbol,
+                    &format!("ptr {path_slot}, i64 {}", self.options.capabilities),
+                );
+                self.release_value(path);
+                self.check_pending_error_at(span);
+                Ok(result)
+            }
+            xiao_intrinsics::VmBinding::ResourceClose => {
+                if arguments.len() != 1
+                    || arguments[0].kind != "positional"
+                    || arguments[0].name.is_some()
+                {
+                    return Err(CodegenError::Unsupported {
+                        feature: "os_close 的参数形态".to_owned(),
+                        span: Some(span),
+                    });
+                }
+                let value = self.emit_expression(&arguments[0].value)?;
+                let value_slot = self.next_temp();
+                self.emit(format!("  {value_slot} = alloca {VALUE_TYPE}"));
+                self.emit(format!("  store {VALUE_TYPE} {value}, ptr {value_slot}"));
+                self.checked_status_call_at(
+                    format!(
+                        "@xiao_runtime_resource_close_with_capabilities(ptr {value_slot}, i64 {})",
+                        self.options.capabilities
+                    ),
+                    span,
+                );
+                self.release_value(value);
+                Ok(self.none_value())
+            }
+            xiao_intrinsics::VmBinding::ResourceReadText => {
+                if arguments.len() != 1
+                    || arguments[0].kind != "positional"
+                    || arguments[0].name.is_some()
+                {
+                    return Err(CodegenError::Unsupported {
+                        feature: "os_read_text 的参数形态".to_owned(),
+                        span: Some(span),
+                    });
+                }
+                let value = self.emit_expression(&arguments[0].value)?;
+                let value_slot = self.next_temp();
+                self.emit(format!("  {value_slot} = alloca {VALUE_TYPE}"));
+                self.emit(format!("  store {VALUE_TYPE} {value}, ptr {value_slot}"));
+                let result = self.emit_value_call(
+                    "xiao_runtime_resource_read_text_with_capabilities",
+                    &format!("ptr {value_slot}, i64 {}", self.options.capabilities),
+                );
+                self.release_value(value);
+                self.check_pending_error_at(span);
+                Ok(result)
+            }
             xiao_intrinsics::VmBinding::MakeError => {
                 self.emit_error_new(declaration.public_name, arguments, span)
             }

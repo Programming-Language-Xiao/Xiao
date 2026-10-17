@@ -479,19 +479,23 @@ fn research_outcome(
 fn verification_fatal(error: &TacVerificationError, entry_span: xiao_ir::IrSpan) -> FatalError {
     let location = xiao_source::SourceSpan::new(entry_span.start, entry_span.end);
     let message = format!("生产执行前字节码契约验证失败：{error}");
-    let mut fatal = FatalError::internal(message)
-        .with_param(
-            "verification_code",
-            DiagnosticParam::Text(error.code.to_owned()),
-        )
-        .with_param(
-            "verification_path",
-            DiagnosticParam::Text(error.path.clone()),
-        )
-        .with_context(
-            "verification_message",
-            DiagnosticParam::Text(error.message.clone()),
-        );
+    let mut fatal = if error.code == xiao_diagnostics::FATAL_CORRUPT_ARTIFACT_CODE {
+        FatalError::corrupt_artifact(message)
+    } else {
+        FatalError::internal(message)
+    }
+    .with_param(
+        "verification_code",
+        DiagnosticParam::Text(error.code.to_owned()),
+    )
+    .with_param(
+        "verification_path",
+        DiagnosticParam::Text(error.path.clone()),
+    )
+    .with_context(
+        "verification_message",
+        DiagnosticParam::Text(error.message.clone()),
+    );
     if let Some(location) = location {
         fatal = fatal.with_location(location);
     }

@@ -8,7 +8,7 @@
 > 也是 **第一次生成资源值**——两份前置（[阶段计划](20d-platform-resources-stage-plan.md) §4.2 的
 > F-1 产物边界、ABI 1.14 门禁）都在本批到期。
 
-状态：**规划完成（2026-10-17）**：六道裁定全部取甲；**未改任何代码**，实施由下一批 Agent 做。
+状态：**已实施（2026-10-17）**：六道裁定全部取甲；VM、LLVM 原生路径、Runtime ABI、标准库、产物边界与三平台维护回归已接通。
 
 ## 一、为什么是这一批
 
@@ -244,6 +244,40 @@ docs/DevDocs/README.md                                    阶段索引加本文�
 ## 九、裁定结果（已执行）
 
 见 §六 的六行表格；六条均取甲，来源为星崽直接裁定（AskUserQuestion，2026-10-17）。
+
+## 十、实施记录与证据
+
+本批实际落点如下，`file`、`directory`、`resource` 仍是独立关键字和名义类型，资源没有退回 `dynamic`：
+
+| 交付 | 实际落点 | 证据 |
+| --- | --- | --- |
+| 语法与类型 | `core/rust/crates/xiao-syntax/src/{token.rs,ast.rs,parser.rs,parser/statements.rs}`、`core/rust/crates/xiao-types/src/{types.rs,conversion.rs,checker/expression.rs,checker/statement.rs,function_checker.rs}` | `file`/`directory`/`resource` 注解可解析；`file`/`directory` 只可赋给 `resource`；`directory` 传给 `read_text` 和非资源传给 `close` 在类型/函数检查阶段拒绝 |
+| intrinsic 契约 | `core/rust/crates/xiao-intrinsics/intrinsics.json`、`src/lib.rs`、`build.rs` | ID 22–25 使用 `os_` 内部名；参数/返回资源类别、filesystem 能力和文件系统效果进入生成表；`cargo test -p xiao-intrinsics` 通过 |
+| Runtime/ABI | `core/rust/crates/xiao-runtime/src/{value/mod.rs,abi_resource.rs}`、`core/rust/crates/xiao-runtime-abi/src/lib.rs` | 文件打开、目录验证、整文件 UTF-8 读取、幂等关闭、共享别名和 `reason` 参数；四个入口只接受 `XiaoValue`/`XiaoHandle`，ABI 次版本为 1.14 |
+| 两条执行路径 | `core/rust/crates/xiao-vm/src/semantics/exec.rs`、`core/rust/crates/xiao-codegen-llvm/src/dynamic/{expression.rs,runtime_abi.rs}` | VM 与 LLVM 都在宿主访问前检查 filesystem 位，并调用带能力掩码的新 ABI；旧无掩码资源符号没有新增 |
+| 纯 Xiao 公开面 | `stdlib/os.xiao`、`stdlib/os.md`、`docs/UseDocs/library/os.md`、`docs/module-registry.json` | `from stdlib.os import open_file, open_directory, close, read_text` 走薄包装；公开函数名与内部 intrinsic 名分离 |
+| 产物边界 | `core/rust/crates/xiao-types/src/checker/statement.rs`、`core/rust/crates/xiao-bytecode/src/{lower/stmt.rs,encode/validate.rs,encode/decoder.rs}`、`src/verify.rs`、`core/rust/crates/xiao-vm/src/run.rs` | 源级资源 `const` 报 `X02-TYPE-008`；降低、编码和解码边界对资源常量统一保留 `X07-FATAL-002`，生产验证映射为 `FatalError::corrupt_artifact`；`TacConstant` 没有资源变体 |
+| 三平台门禁 | `.github/workflows/maintenance-regression.yml`、`core/rust/crates/xiao-driver/tests/20d_first_api.rs` | push 矩阵包含 Windows、Linux、macOS；VM 夹具在三作业显式运行，受控工具链下的 ignored 原生夹具同时比较 VM/LLVM 的 `open_file`→`read_text`→`close` 输出；夹具还覆盖关闭后读取、缺能力、非 UTF-8、目录→`read_text` 编译期拒绝和相对路径形态 |
+
+本地自审核已运行：`cargo test -p xiao-runtime abi_resource`（3 项通过）、
+`cargo test -p xiao-driver --test 20d_first_api`（5 项通过）、相关 workspace crate 的
+`cargo check` 与既有语法/类型/字节码/VM 回归均通过。三平台 push 结果以维护回归工作流为最终取证，
+本地单机运行不替代 macOS 作业证据。
+
+### 10.1 ABI 旧 Runtime 门禁
+
+`xiao-runtime-abi` 的 `ABI_MINOR_VERSION` 已从 13 升到 14；`xiao_runtime_abi_is_compatible`
+继续允许旧次版本调用方读取兼容入口，但要求 1.14 的产物在实际 1.13 Runtime 上启动检查失败。
+现有 `core/rust/crates/xiao-runtime/src/abi_tests.rs` 覆盖 1.14 通过和 1.15 拒绝，生产原生入口
+使用同一 `required_minor <= actual_minor` 检查。
+
+### 10.2 自审核修正
+
+审核时修正了三处容易把边界做松的实现风险：
+
+1. `parse_declared_type` 改为显式识别资源关键字，不再把未知 token 伪装成 `int`；
+2. 普通函数调用的资源父类型兼容只在 `Type::Resource` 分支使用 `can_assign`，没有放宽数字或其它类型统一；
+3. `open_file` 和 `open_directory` 在能力检查后分别验证宿主目标种类，错误仍统一为 `X06-RUNTIME-012` 并保留 `reason`，没有引入平台专属错误码。
 
 ## 相关页面
 

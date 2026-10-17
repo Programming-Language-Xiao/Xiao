@@ -65,7 +65,7 @@ impl<'source> TypeChecker<'source> {
                 declared_type,
                 value,
                 ..
-            } => self.check_const_declaration(*target, *declared_type, value),
+            } => self.check_const_declaration(*target, declared_type.as_ref(), value),
             Statement::Import { import, .. } => self.check_import(import),
             Statement::Function {
                 name,
@@ -431,6 +431,46 @@ impl<'source> TypeChecker<'source> {
                     self.check_scalar_declaration(target, *scalar, value);
                 }
             }
+            DeclaredType::Resource(resource) => {
+                self.check_resource_declaration(target, *resource, value);
+            }
+        }
+    }
+
+    /// 检查资源类型声明和可选初值。
+    fn check_resource_declaration(
+        &mut self,
+        target: xiao_syntax::Name,
+        declared_type: xiao_syntax::ResourceKind,
+        value: Option<&Expression>,
+    ) {
+        let key = self.name_key(target);
+        let value_type = value.map(|expression| self.check_expression(expression));
+        if let Some(value_type) = value_type.as_ref() {
+            let expected = Type::Resource(declared_type);
+            if !crate::can_assign(value_type, &expected) {
+                self.type_error(
+                    ASSIGNMENT_TYPE_MISMATCH_CODE,
+                    "x02.type.assignment_mismatch",
+                    target.span,
+                    format!("{} 不能赋给 {}", value_type, expected),
+                );
+            }
+        }
+        if self.environment.contains_current(&key) {
+            self.type_error(
+                DUPLICATE_DECLARATION_CODE,
+                "x02.type.duplicate_declaration",
+                target.span,
+                format!("名称 {} 已经声明", target.unquoted_text(self.source)),
+            );
+            return;
+        }
+        if let Err(error) =
+            self.environment
+                .declare_mutable(key, Type::Resource(declared_type), value.is_some())
+        {
+            self.environment_error(target.span, error);
         }
     }
 
@@ -469,33 +509,50 @@ impl<'source> TypeChecker<'source> {
     fn check_const_declaration(
         &mut self,
         target: xiao_syntax::Name,
-        declared_type: Option<ScalarType>,
+        declared_type: Option<&DeclaredType>,
         value: &Expression,
     ) {
         let key = self.name_key(target);
         let diagnostics_before_value = self.diagnostics.len();
         let value_type = self.check_expression(value);
-        if let Some(declared_type) = declared_type {
-            // `const` 不能把运行时检查当成合法初始化；即使源值是
-            // Dynamic，也只保留后面的 NON_CONSTANT 诊断。
-            self.check_explicit_target(value, &value_type, declared_type, false);
-        }
+        let forbidden_declared_type = match declared_type {
+            Some(DeclaredType::Scalar(declared_type)) => {
+                // `const` 不能把运行时检查当成合法初始化；即使源值是
+                // Dynamic，也只保留后面的 NON_CONSTANT 诊断。
+                self.check_explicit_target(value, &value_type, *declared_type, false);
+                false
+            }
+            Some(DeclaredType::Resource(_)) | Some(DeclaredType::Set(_)) => {
+                self.type_error(
+                    NON_CONSTANT_CODE,
+                    "x02.type.non_constant_initializer",
+                    value.span(),
+                    "资源或集合类型不能用于 const 初始化".to_string(),
+                );
+                true
+            }
+            None => false,
+        };
         let constant = self.eval_const(value);
         if let Some(constant) = constant {
-            let stored = if let Some(target) = declared_type {
-                super::constant::convert_constant(constant.clone(), target)
+            let stored = if let Some(DeclaredType::Scalar(target)) = declared_type {
+                super::constant::convert_constant(constant.clone(), *target)
+            } else if declared_type.is_some() {
+                None
             } else {
                 Some(constant)
             };
             if let Some(stored) = stored {
                 self.constant_values.insert(key.clone(), stored);
             }
-        } else if !self.diagnostics[diagnostics_before_value..]
-            .iter()
-            .any(|diagnostic| {
-                diagnostic.code() == ARITHMETIC_ERROR_CODE
-                    || diagnostic.code() == INVALID_CONVERSION_CODE
-            })
+        } else if !forbidden_declared_type
+            && !self.diagnostics[diagnostics_before_value..]
+                .iter()
+                .any(|diagnostic| {
+                    diagnostic.code() == ARITHMETIC_ERROR_CODE
+                        || diagnostic.code() == INVALID_CONVERSION_CODE
+                        || diagnostic.code() == NON_CONSTANT_CODE
+                })
         {
             self.type_error(
                 NON_CONSTANT_CODE,
@@ -516,7 +573,11 @@ impl<'source> TypeChecker<'source> {
         // 显式类型必须成为常量绑定的锁定类型，不能因为初始化表达式
         // 的推断类型更宽而丢失声明者的约束（例如 `const sint n = 1`）。
         let binding_type = declared_type
-            .map(Type::scalar)
+            .map(|declared| match declared {
+                DeclaredType::Scalar(scalar) => Type::scalar(*scalar),
+                DeclaredType::Resource(resource) => Type::Resource(*resource),
+                DeclaredType::Set(_) => Type::Dynamic,
+            })
             .unwrap_or_else(|| value_type.clone());
         let scheme = self.context.generalize(&self.environment, &binding_type);
         if let Err(error) = self.environment.declare_constant(key, scheme) {

@@ -720,6 +720,21 @@ pub(crate) fn runtime_value_matches(value: &RuntimeValue, expected: &Type) -> bo
                 .unwrap_or(false),
             _ => false,
         },
+        Type::Resource(expected) => match value {
+            RuntimeValue::ExternalResource(resource) => resource.kind().is_ok_and(|actual| {
+                matches!(
+                    (actual, expected),
+                    (
+                        crate::value::ExternalResourceKind::File,
+                        xiao_syntax::ResourceKind::File,
+                    ) | (
+                        crate::value::ExternalResourceKind::Directory,
+                        xiao_syntax::ResourceKind::Directory,
+                    ) | (_, xiao_syntax::ResourceKind::Resource)
+                )
+            }),
+            _ => false,
+        },
         Type::Array(array) => match value {
             RuntimeValue::Array(handle) => match array {
                 ArrayType::Unknown => true,

@@ -111,6 +111,8 @@ jobs:
             os: windows-2025
           - name: Linux
             os: ubuntu-24.04
+          - name: macOS
+            os: macos-14
     runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     defaults:
@@ -217,3 +219,41 @@ jobs:
           xvfb-run -a cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture \
             --skip dns_resolution_failure_is_unavailable \
             --skip platform_failure_child
+
+      - name: Build runtime and run macOS native gates
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          brew install llvm
+          llvm_root="$(brew --prefix llvm)"
+          export XIAO_CLANG="$llvm_root/bin/clang"
+          export XIAO_LLVM_AS="$llvm_root/bin/llvm-as"
+          export XIAO_LLC="$llvm_root/bin/llc"
+          export XIAO_STRIP="$llvm_root/bin/llvm-strip"
+          export XIAO_TARGET_TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
+          test -x "$XIAO_CLANG"
+          test -x "$XIAO_LLVM_AS"
+          test -x "$XIAO_LLC"
+          test -x "$XIAO_STRIP"
+          cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
+          cargo build --manifest-path core/rust/Cargo.toml -p xiao-diagnostics
+          export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
+          export XIAO_DIAGNOSTICS_PATH="$PWD/core/rust/target/debug/xiao-diagnostics"
+          export XIAO_DIAGNOSTICS_HOLD_MS=0
+          test -f "$XIAO_RUNTIME_LIBRARY"
+          test -x "$XIAO_DIAGNOSTICS_PATH"
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
+          cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture \
+            --skip dns_resolution_failure_is_unavailable \
+            --skip platform_failure_child
+
+      - name: Run 20D first API VM fixture (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20d_first_api
+
+      - name: Run 20D first API VM fixture (Linux and macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20d_first_api

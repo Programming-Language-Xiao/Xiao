@@ -7,12 +7,13 @@ use std::collections::BTreeSet;
 
 use crate::ast::{
     AssignmentOperator, CatchClause, ElifBranch, Expression, FunctionParameter,
-    FunctionParameterKind, FunctionTypeAnnotation, Name, ScalarType, Statement, TableKind,
+    FunctionParameterKind, FunctionTypeAnnotation, Name, ResourceKind, ScalarType, Statement,
+    TableKind,
 };
 use crate::diagnostics::*;
 use crate::parser::{
     Parser, assignment_operator, is_assignable_syntax, is_declaration_name_token,
-    is_scalar_type_token, is_statement_boundary, is_table_member_statement,
+    is_statement_boundary, is_table_member_statement, is_type_keyword_token,
 };
 use crate::token::{KeywordKind, Token, TokenKind};
 use xiao_source::SourceSpan;
@@ -620,10 +621,14 @@ impl<'source> Parser<'source> {
             self.bump();
             return Some(FunctionTypeAnnotation::None);
         }
-        if !is_scalar_type_token(self.current().kind())
+        if !is_type_keyword_token(self.current().kind())
             || self.lookahead_kind(1) == Some(TokenKind::LeftParen)
         {
             return None;
+        }
+        if let Some(resource) = ResourceKind::from_keyword(self.current().kind().keyword()?) {
+            self.bump();
+            return Some(FunctionTypeAnnotation::Resource(resource));
         }
         let scalar = ScalarType::from_keyword(self.current().kind().keyword()?)?;
         self.bump();

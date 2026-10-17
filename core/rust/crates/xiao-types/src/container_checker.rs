@@ -632,6 +632,7 @@ fn direct_children(
         | Type::Scalar(_)
         | Type::Set(_)
         | Type::Table(_)
+        | Type::Resource(_)
         | Type::None => {}
     }
     children

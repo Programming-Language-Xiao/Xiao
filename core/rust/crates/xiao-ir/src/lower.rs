@@ -180,7 +180,11 @@ impl<'a> Lowerer<'a> {
                 ..
             } => IrStatementKind::ConstDeclaration {
                 target: self.name(*target),
-                declared_type: declared_type.map(|ty| ty.as_str().to_owned()),
+                declared_type: declared_type.as_ref().map(|ty| match ty {
+                    DeclaredType::Scalar(scalar) => scalar.as_str().to_owned(),
+                    DeclaredType::Resource(resource) => resource.as_str().to_owned(),
+                    DeclaredType::Set(_) => "set".to_owned(),
+                }),
                 value: self.expression(value),
             },
             Statement::Import { import, .. } => IrStatementKind::Import {
@@ -676,6 +680,9 @@ pub fn lower_type(ty: &Type) -> IrType {
             name: table.name.clone(),
             kind: table_value_kind_name(table.kind).to_owned(),
         },
+        Type::Resource(resource) => IrType::Resource {
+            kind: resource.as_str().to_owned(),
+        },
     }
 }
 
@@ -812,6 +819,9 @@ fn lower_declared_type(declared: &DeclaredType) -> IrType {
         DeclaredType::Scalar(scalar) => IrType::Scalar {
             name: scalar.as_str().to_owned(),
         },
+        DeclaredType::Resource(resource) => IrType::Resource {
+            kind: resource.as_str().to_owned(),
+        },
         DeclaredType::Set(annotation) => IrType::Set {
             members: annotation
                 .members
@@ -821,6 +831,9 @@ fn lower_declared_type(declared: &DeclaredType) -> IrType {
                         name: scalar.as_str().to_owned(),
                     },
                     TypeTerm::None => IrType::None,
+                    TypeTerm::Resource(resource) => IrType::Resource {
+                        kind: resource.as_str().to_owned(),
+                    },
                 })
                 .collect(),
             allows_dynamic: false,
@@ -865,6 +878,9 @@ fn lower_function_annotation(annotation: FunctionTypeAnnotation) -> IrType {
             name: scalar.as_str().to_owned(),
         },
         FunctionTypeAnnotation::None => IrType::None,
+        FunctionTypeAnnotation::Resource(resource) => IrType::Resource {
+            kind: resource.as_str().to_owned(),
+        },
     }
 }
 

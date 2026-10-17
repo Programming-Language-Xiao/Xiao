@@ -208,12 +208,14 @@ fn resolve_segment(
             segment,
             kind: PathResolutionErrorKind::SetIndexUnsupported,
         }),
-        Type::Function { .. } | Type::Table(_) | Type::Scalar(_) | Type::None => {
-            Err(PathResolutionError {
-                segment,
-                kind: PathResolutionErrorKind::WrongSegment,
-            })
-        }
+        Type::Function { .. }
+        | Type::Table(_)
+        | Type::Resource(_)
+        | Type::Scalar(_)
+        | Type::None => Err(PathResolutionError {
+            segment,
+            kind: PathResolutionErrorKind::WrongSegment,
+        }),
     }
 }
 

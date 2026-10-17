@@ -15,8 +15,8 @@ use xiao_source::{SourceFile, SourceSpan};
 
 use crate::ast::{
     AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, DeclaredType, DictEntry,
-    DictKey, EntryMode, Expression, LiteralKind, Name, Program, ScalarType, SetTypeAnnotation,
-    Statement, TypeTerm, UnaryOperator,
+    DictKey, EntryMode, Expression, LiteralKind, Name, Program, ResourceKind, ScalarType,
+    SetTypeAnnotation, Statement, TypeTerm, UnaryOperator,
 };
 use crate::diagnostics::*;
 use crate::lexer::Lexer;
@@ -218,7 +218,7 @@ impl<'source> Parser<'source> {
         if self.at(TokenKind::Keyword(KeywordKind::Const)) {
             return true;
         }
-        (is_scalar_type_token(self.current().kind())
+        (is_type_keyword_token(self.current().kind())
             && self.lookahead_kind(1) != Some(TokenKind::LeftParen))
             || self.starts_set_type()
     }
@@ -377,7 +377,7 @@ impl<'source> Parser<'source> {
         if is_const {
             Some(Statement::ConstDeclaration {
                 target,
-                declared_type: declared_type.and_then(|declared| declared.as_scalar()),
+                declared_type,
                 value,
                 leading_docs,
                 span,
@@ -406,6 +406,12 @@ impl<'source> Parser<'source> {
             )
             .expect("标量类型关键字必须映射到 ScalarType");
             return Some(DeclaredType::Scalar(scalar));
+        }
+        if let Some(keyword) = self.current().kind().keyword()
+            && let Some(resource) = ResourceKind::from_keyword(keyword)
+        {
+            self.bump();
+            return Some(DeclaredType::Resource(resource));
         }
         self.starts_set_type()
             .then(|| self.parse_set_type_annotation())
@@ -1869,6 +1875,14 @@ fn is_expression_name_token(kind: TokenKind) -> bool {
 }
 
 /// 判断 Token 是否为 P2 支持的标量类型关键字。
+fn is_type_keyword_token(kind: TokenKind) -> bool {
+    is_scalar_type_token(kind)
+        || matches!(
+            kind,
+            TokenKind::Keyword(KeywordKind::File | KeywordKind::Directory | KeywordKind::Resource)
+        )
+}
+
 fn is_scalar_type_token(kind: TokenKind) -> bool {
     matches!(
         kind,
@@ -1887,7 +1901,7 @@ fn is_scalar_type_token(kind: TokenKind) -> bool {
 
 /// 判断 Token 是否可以作为 `set<...>` 的首个类型项。
 fn is_set_type_term_token(kind: TokenKind) -> bool {
-    is_scalar_type_token(kind) || kind == TokenKind::None
+    is_type_keyword_token(kind) || kind == TokenKind::None
 }
 
 /// 判断 Token 是否可作为声明目标名称。

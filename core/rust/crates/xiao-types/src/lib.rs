@@ -95,5 +95,7 @@ pub use types::{Scheme, Type, TypeScheme, TypeVarId};
 /// 重新导出 HM 统一上下文和替换结构。
 pub use unify::{Substitution, TypeContext, UnifyError};
 
+/// 重导出资源类型种类，供类型检查器和后端共享同一标签。
+pub use xiao_syntax::ResourceKind;
 /// 与语法层共享的标量类型别名，避免调用方同时依赖两个名字空间。
 pub use xiao_syntax::ScalarType;

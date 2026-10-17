@@ -659,6 +659,11 @@ pub enum IrType {
         /// 表种类稳定名称。
         kind: String,
     },
+    /// 外部资源类型；`kind` 使用 `file`/`directory`/`resource`。
+    Resource {
+        /// 资源种类稳定名称。
+        kind: String,
+    },
     /// 动态类型。
     Dynamic,
 }

@@ -138,7 +138,9 @@ impl Substitution {
                 Type::DictColumn(apply_dictionary(dictionary, self, seen))
             }
             Type::Set(set) => Type::Set(apply_set(set, self, seen)),
-            Type::Table(_) | Type::Scalar(_) | Type::None | Type::Dynamic => ty.clone(),
+            Type::Table(_) | Type::Resource(_) | Type::Scalar(_) | Type::None | Type::Dynamic => {
+                ty.clone()
+            }
         }
     }
 
@@ -356,7 +358,9 @@ fn substitute_quantified(ty: &Type, replacements: &BTreeMap<TypeVarId, Type>) ->
             Type::DictColumn(substitute_dictionary(dictionary, replacements))
         }
         Type::Set(set) => Type::Set(substitute_set(set, replacements)),
-        Type::Table(_) | Type::Scalar(_) | Type::None | Type::Dynamic => ty.clone(),
+        Type::Table(_) | Type::Resource(_) | Type::Scalar(_) | Type::None | Type::Dynamic => {
+            ty.clone()
+        }
     }
 }
 

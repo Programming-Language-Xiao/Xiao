@@ -77,6 +77,12 @@ pub enum KeywordKind {
     Str,
     /// 布尔类型关键字 `bool`。
     Bool,
+    /// 文件资源类型关键字 `file`。
+    File,
+    /// 目录资源类型关键字 `directory`。
+    Directory,
+    /// 外部资源父类型关键字 `resource`。
+    Resource,
 }
 
 impl KeywordKind {
@@ -116,6 +122,9 @@ impl KeywordKind {
             Self::Lfloat => "lfloat",
             Self::Str => "str",
             Self::Bool => "bool",
+            Self::File => "file",
+            Self::Directory => "directory",
+            Self::Resource => "resource",
         }
     }
 
@@ -155,6 +164,9 @@ impl KeywordKind {
             "lfloat" => Self::Lfloat,
             "str" => Self::Str,
             "bool" => Self::Bool,
+            "file" => Self::File,
+            "directory" => Self::Directory,
+            "resource" => Self::Resource,
             _ => return None,
         })
     }

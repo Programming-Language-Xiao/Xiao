@@ -471,6 +471,14 @@ impl<'source> TypeChecker<'source> {
         span: SourceSpan,
         message_id: &'static str,
     ) {
+        // 资源类型采用名义子类型关系：`file`/`directory` 可以传给
+        // `resource` 父参数，但不能把这条关系写进通用统一器。
+        if matches!(expected, Type::Resource(_))
+            && matches!(actual, Type::Resource(_))
+            && crate::can_assign(actual, expected)
+        {
+            return;
+        }
         if let Err(error) = self.context.unify(expected, actual) {
             self.type_error_with_params(
                 FUNCTION_CALL_CODE,
@@ -507,6 +515,7 @@ fn annotation_type(annotation: FunctionTypeAnnotation) -> Type {
     match annotation {
         FunctionTypeAnnotation::Scalar(scalar) => Type::scalar(scalar),
         FunctionTypeAnnotation::None => Type::None,
+        FunctionTypeAnnotation::Resource(resource) => Type::Resource(resource),
     }
 }
 
@@ -534,7 +543,7 @@ fn contains_unresolved_variable(ty: &Type) -> bool {
             .iter()
             .any(|entry| contains_unresolved_variable(&entry.value)),
         Type::Set(set) => set.member_types().any(contains_unresolved_variable),
-        Type::Table(_) | Type::Scalar(_) | Type::None | Type::Dynamic => false,
+        Type::Table(_) | Type::Resource(_) | Type::Scalar(_) | Type::None | Type::Dynamic => false,
     }
 }
 

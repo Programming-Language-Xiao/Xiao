@@ -11,14 +11,13 @@ use xiao_diagnostics::DiagnosticParam;
 use xiao_source::SourceSpan;
 use xiao_syntax::{
     CallArgument, CallArgumentKind, DeclaredType, Expression, FunctionParameter,
-    FunctionParameterKind, FunctionTypeAnnotation, Name, ScalarType, Statement, TableKind,
-    TypeTerm,
+    FunctionParameterKind, FunctionTypeAnnotation, Name, Statement, TableKind, TypeTerm,
 };
 
 use crate::containers::{ArrayType, DictType};
 use crate::diagnostics::{
-    TABLE_CONSTRUCTOR_CODE, TABLE_DECLARATION_CODE, TABLE_INITIALIZER_CODE, TABLE_LIFECYCLE_CODE,
-    TABLE_MEMBER_CODE, TABLE_VISIBILITY_CODE,
+    NON_CONSTANT_CODE, TABLE_CONSTRUCTOR_CODE, TABLE_DECLARATION_CODE, TABLE_INITIALIZER_CODE,
+    TABLE_LIFECYCLE_CODE, TABLE_MEMBER_CODE, TABLE_VISIBILITY_CODE,
 };
 use crate::environment::{Binding, NamespaceOrigin};
 use crate::functions::{FunctionParameterSignature, FunctionSignature};
@@ -127,7 +126,10 @@ impl<'source> TypeChecker<'source> {
                         key,
                         TableMemberSignature::field(
                             self.name_key(*target),
-                            declared_type.map(Type::scalar).unwrap_or(Type::Dynamic),
+                            declared_type
+                                .as_ref()
+                                .map(|declared| declared_type_to_type(declared, &mut self.context))
+                                .unwrap_or(Type::Dynamic),
                             target.span,
                         ),
                     )
@@ -261,7 +263,12 @@ impl<'source> TypeChecker<'source> {
                     value,
                     ..
                 } => {
-                    self.check_table_const_field(&mut signature, *target, *declared_type, value);
+                    self.check_table_const_field(
+                        &mut signature,
+                        *target,
+                        declared_type.as_ref(),
+                        value,
+                    );
                 }
                 Statement::Function {
                     name,
@@ -388,16 +395,26 @@ impl<'source> TypeChecker<'source> {
         &mut self,
         signature: &mut TableSignature,
         target: Name,
-        declared_type: Option<ScalarType>,
+        declared_type: Option<&DeclaredType>,
         value: &Expression,
     ) {
         let value_type = self.check_expression(value);
         self.require_pure_initializer(value);
         let field_type = declared_type
-            .map(Type::scalar)
+            .map(|declared| declared_type_to_type(declared, &mut self.context))
             .unwrap_or_else(|| value_type.clone());
-        if let Some(declared_type) = declared_type {
-            self.check_explicit_target(value, &value_type, declared_type, false);
+        if let Some(DeclaredType::Scalar(declared_type)) = declared_type {
+            self.check_explicit_target(value, &value_type, *declared_type, false);
+        } else if matches!(
+            declared_type,
+            Some(DeclaredType::Resource(_) | DeclaredType::Set(_))
+        ) {
+            self.type_error(
+                NON_CONSTANT_CODE,
+                "x02.type.non_constant_initializer",
+                value.span(),
+                "资源或集合类型不能用于 const 初始化".to_owned(),
+            );
         }
         let key = self.name_key(target);
         if let Some(member) = signature.members.get_mut(&key) {
@@ -991,6 +1008,7 @@ impl<'source> TypeChecker<'source> {
 fn declared_type_to_type(declared: &DeclaredType, _context: &mut super::TypeContext) -> Type {
     match declared {
         DeclaredType::Scalar(scalar) => Type::scalar(*scalar),
+        DeclaredType::Resource(resource) => Type::Resource(*resource),
         DeclaredType::Set(annotation) => {
             let members = annotation
                 .members
@@ -998,6 +1016,7 @@ fn declared_type_to_type(declared: &DeclaredType, _context: &mut super::TypeCont
                 .map(|term| match term {
                     TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
                     TypeTerm::None => Type::None,
+                    TypeTerm::Resource(resource) => Type::Resource(*resource),
                 })
                 .collect::<Vec<_>>();
             Type::Set(SetType::heterogeneous(members))
@@ -1010,6 +1029,7 @@ fn annotation_type(annotation: FunctionTypeAnnotation) -> Type {
     match annotation {
         FunctionTypeAnnotation::Scalar(scalar) => Type::scalar(scalar),
         FunctionTypeAnnotation::None => Type::None,
+        FunctionTypeAnnotation::Resource(resource) => Type::Resource(resource),
     }
 }
 

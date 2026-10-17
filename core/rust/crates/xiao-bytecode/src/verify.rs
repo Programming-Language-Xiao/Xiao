@@ -26,6 +26,8 @@ pub const TAC_KNOWN_UNSUPPORTED_CODE: &str = "X09-BYTECODE-003";
 pub const TAC_KNOWN_UNSUPPORTED_PREFIX: &str = "known-unsupported:";
 /// TAC 结构、引用或 ABI 不一致时使用的稳定验证编号。
 pub const TAC_STRUCTURE_CODE: &str = "X09-BYTECODE-002";
+/// 资源常量越过前端时的产物边界标记；最终由生产入口映射为 X07-FATAL-002。
+pub const RESOURCE_CONSTANT_PREFIX: &str = "resource-constant:";
 
 /// 一条生产验证错误。
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -61,6 +63,15 @@ impl TacVerificationError {
     fn known_unsupported(path: impl Into<String>, message: impl Into<String>) -> Self {
         Self {
             code: TAC_KNOWN_UNSUPPORTED_CODE,
+            path: path.into(),
+            message: message.into(),
+        }
+    }
+
+    /// 创建资源常量越过产物边界的致命错误。
+    fn resource_constant(path: impl Into<String>, message: impl Into<String>) -> Self {
+        Self {
+            code: "X07-FATAL-002",
             path: path.into(),
             message: message.into(),
         }
@@ -132,6 +143,13 @@ pub fn verify_program(program: &IrProgram, tac: &TacProgram) -> TacVerification 
                 .push(TacVerificationError::known_unsupported(
                     path,
                     format!("生产字节码含已知未实现构造：{note}"),
+                ));
+        } else if let Some(note) = note.strip_prefix(RESOURCE_CONSTANT_PREFIX) {
+            result
+                .internal_errors
+                .push(TacVerificationError::resource_constant(
+                    path,
+                    format!("产物包含资源常量：{note}"),
                 ));
         } else {
             result.internal_errors.push(TacVerificationError::internal(
@@ -1414,6 +1432,17 @@ mod tests {
             .push(format!("{}表方法值尚未降低", TAC_KNOWN_UNSUPPORTED_PREFIX));
         let error = verify_production(&ir, &tac).expect_err("应拒绝已知未实现构造");
         assert_eq!(error.code, TAC_KNOWN_UNSUPPORTED_CODE);
+        assert!(!error.is_internal());
+    }
+
+    #[test]
+    /// 资源常量越过降低边界必须保留 X07-FATAL-002 身份。
+    fn production_entry_rejects_resource_constant_boundary() {
+        let (ir, mut tac) = empty_program();
+        tac.unsupported
+            .push(format!("{RESOURCE_CONSTANT_PREFIX}测试资源"));
+        let error = verify_production(&ir, &tac).expect_err("资源常量必须被拒绝");
+        assert_eq!(error.code, "X07-FATAL-002");
         assert!(!error.is_internal());
     }
 

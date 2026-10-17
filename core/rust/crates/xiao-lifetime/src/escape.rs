@@ -758,7 +758,11 @@ impl<'source> EscapeAnalyzer<'source> {
                 span,
                 ..
             } => {
-                let ty = declared_type.map(Type::scalar);
+                let ty = declared_type.as_ref().map(|declared| match declared {
+                    xiao_syntax::DeclaredType::Scalar(scalar) => Type::scalar(*scalar),
+                    xiao_syntax::DeclaredType::Resource(resource) => Type::Resource(*resource),
+                    xiao_syntax::DeclaredType::Set(_) => Type::Dynamic,
+                });
                 let resolved_type = ty.or_else(|| self.type_for_span(value.span()));
                 let id = self.declare_binding(
                     *target,
@@ -1229,6 +1233,9 @@ impl<'source> EscapeAnalyzer<'source> {
                     parameter.annotation.map(|annotation| match annotation {
                         xiao_syntax::FunctionTypeAnnotation::Scalar(scalar) => Type::scalar(scalar),
                         xiao_syntax::FunctionTypeAnnotation::None => Type::None,
+                        xiao_syntax::FunctionTypeAnnotation::Resource(resource) => {
+                            Type::Resource(resource)
+                        }
                     })
                 });
             let _ = self.declare_binding(
@@ -1786,6 +1793,7 @@ impl<'source> EscapeAnalyzer<'source> {
     fn declared_type(&self, declared: &DeclaredType) -> Option<Type> {
         match declared {
             DeclaredType::Scalar(scalar) => Some(Type::scalar(*scalar)),
+            DeclaredType::Resource(resource) => Some(Type::Resource(*resource)),
             DeclaredType::Set(annotation) => {
                 let members = annotation
                     .members
@@ -1793,6 +1801,7 @@ impl<'source> EscapeAnalyzer<'source> {
                     .map(|term| match term {
                         TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
                         TypeTerm::None => Type::None,
+                        TypeTerm::Resource(resource) => Type::Resource(*resource),
                     })
                     .collect::<Vec<_>>();
                 Some(Type::Set(SetType::heterogeneous(members)))
@@ -1824,6 +1833,7 @@ pub(crate) fn storage_for_type(ty: Option<&Type>) -> StorageClass {
         | Some(Type::DictColumn(_))
         | Some(Type::Set(_))
         | Some(Type::Table(_))
+        | Some(Type::Resource(_))
         | None => StorageClass::HeapStrong,
     }
 }
