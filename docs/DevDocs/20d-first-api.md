@@ -8,8 +8,9 @@
 > 也是 **第一次生成资源值**——两份前置（[阶段计划](20d-platform-resources-stage-plan.md) §4.2 的
 > F-1 产物边界、ABI 1.14 门禁）都在本批到期。
 
-状态：**已完成审核返工与三平台验收（2026-10-17）**：§十一 的 F-1～F-6 与 O-1/O-2 均已关闭；
-维护回归 `39041556630` 六个作业全部成功，20D 出口第 4 条已取证。修复与绿色 push 证据见 §十二。
+状态：**已完成审核返工、三平台验收与复核（2026-10-18）**：§十一 的 F-1～F-6 与 O-1/O-2 均已关闭；
+维护回归 `39041556630` 与 `39049068233` 各六个作业全部成功，20D 出口第 4 条已取证；
+复核结论与 SIGBUS 基线注记见 §十四。
 
 ## 一、为什么是这一批
 
@@ -382,7 +383,7 @@ docs/DevDocs/README.md                                    阶段索引加本文�
 
 | 项 | 修复落点 | 验证与状态 |
 | --- | --- | --- |
-| F-1：平台故障 | `core/rust/crates/xiao-runtime/src/crash.rs:56`；`tests/n0_c2_error_boundary.rs` | 按故障类别映射冻结退出码，兼容 BSD 的 SIGBUS 编号；新增 SIGTRAP 处理，真实子进程覆盖 SIGSEGV/SIGBUS/SIGTRAP；三平台 CI 均通过，macOS 的两条外部平台 Fatal 用例也通过 |
+| F-1：平台故障 | `core/rust/crates/xiao-runtime/src/crash.rs:56`；`tests/n0_c2_error_boundary.rs` | 按故障类别映射冻结退出码；**SIGBUS 的实际退出码由 `128 + signal`（Linux 135 / macOS 138）改为 139，与处理器一直写出的 `exit_code=139` 消息对齐**；新增 SIGTRAP 处理，真实子进程覆盖 SIGSEGV/SIGBUS/SIGTRAP；三平台 CI 均通过，macOS 的两条外部平台 Fatal 用例也通过 |
 | F-1：握手 | `core/rust/crates/xiao-runtime/src/abi_diagnostics.rs:86`；`src/abi_tests.rs:740` | accept 后显式恢复阻塞模式，再设置超时；延迟 hello 的真实 socket 回归通过 |
 | F-1：终端 | `.github/workflows/maintenance-regression.yml:247` | macOS 仅排除与 Windows 相同的两个终端依赖用例；Linux/Xvfb 保留完整终端验证，macOS 资源差分与平台 Fatal 用例继续执行；三平台作业全绿，已关闭 |
 | F-2 | §10.3 | 本批实际完成 VM 绑定、ABI 包装、模块导出的三次变异验证，均如期失败并恢复 |
@@ -481,6 +482,42 @@ push 触发的 [维护回归 `39049068233`](https://github.com/Programming-Langu
 下载并核对三个作业的完整日志，逐一确认导入类型、参数形状、遮蔽/覆盖、VM 与 LLVM 边界、
 表资源常量以及资源路径约束六条新增回归均真实执行。三个日志中的五条 `20D-NATIVE`
 记录逐字相等，与 §12.1 的预期一致；本轮追加自审核的三项遗漏已关闭。
+
+## 十四、审核复核（2026-10-18）
+
+复核对象：`b956a0e`、`a859f58` 与两份证据回写（`9f4bdf9`、`3ef6ec0`）。
+方式是重跑与对日志：本地全量门禁 + 定向夹具 + 下载三平台作业日志逐行核对。
+
+### 14.1 关闭项复核
+
+| 项 | 复核证据 |
+| --- | --- |
+| F-1 平台故障 | `crash.rs:59` 显式注册 `SIGTRAP` 并按类别映射；macOS 日志 `optional_external_illegal_instruction_remains_fatal ... ok`（修复运行作业第 880 行） |
+| F-1 握手 | `abi_diagnostics.rs:86` accept 后 `set_nonblocking(false)`；延迟 hello 与既有握手两条用例在 macOS 第 599/611 行通过 |
+| F-1 终端 | macOS 作业补了与 Windows 相同的两条 `--skip`；Linux/Xvfb 仍保留完整终端验证 |
+| F-2 移除验证 | §10.3 的三次变异记录；审核侧复做 ABI 包装变异（`open_file` 换成 `open_directory`），`open_read_close_and_closed_alias_are_stable` **立即红**，随后还原、工作树为空 |
+| F-3 旧 ABI | `is_abi_compatible` 参数化；`resource_api_requires_runtime_1_14` 断言 `(1.14, 1.13) == false`，本地通过 |
+| F-4 `set<file>` | 解析器先接受、类型层报 `X03-TYPE-016`；用例覆盖 `file`/`directory`/`resource`/`int \| file`、空初始化与表字段 |
+| F-5 关键字实参 | 公开函数改为位置专用 `/`；内部 intrinsic 检查实参种类；关键字与展开实参均在前端拒绝 |
+| F-6 相对路径 | 子进程隔离 cwd 的 VM 用例 + 原生五组夹具（相对、目录、缺失、非 UTF-8、关闭后读取） |
+| O-1 / O-2 | VM 与 ABI 共用 `xiao-runtime/src/resources.rs`，`exec.rs` 不再直接用 `std::fs`；标准库 README 改为 20C/20D |
+| 追加自审核 | 导入签名用例断言 IR 里 `handle` 为 `IrType::Resource { kind: "file" }`；表常量与路径约束用例逐项断言 `X02-TYPE-008` / `X03-TYPE-006`，不是空壳 |
+
+### 14.2 绿色运行与本地门禁
+
+- `b956a0e`：维护回归 `39041556630` 六作业全绿；工作区门禁 `39041556594` 绿；
+- `a859f58`：维护回归 `39049068233` 六作业全绿；工作区门禁 `39049068211` 绿；
+- `9f4bdf9` / `3ef6ec0` 仅文档：只触发工作区门禁（`39042770446` / `39050163189`），均绿；
+- macOS 日志五条 `20D-NATIVE` 与 §13 表格逐字一致；`native_os_module_matches_vm_output ... ok` 第 925 行，默认夹具第 2137 行 `15 passed; 2 ignored`；
+- 本地：`tools/gates/run.sh` exit 0；`cargo test --workspace` **1184 passed / 0 failed / 36 ignored**（1178 + `a859f58` 新增 6 条）；`20d_first_api` 15 passed / 2 ignored；`bun test` 295 pass / 5 skip / 0 fail。
+
+### 14.3 SIGBUS 基线注记
+
+`SIGBUS` 的实际退出码由旧的 `_exit(128 + signal)`（Linux 135、macOS 138）改为类别映射的 **139**。
+旧处理器写出的消息里一直就是 `exit_code=139`，所以这次是**修正消息与真实退出码的不一致**，不是新一轮语义变更；
+但它是用户可观察的 Unix 基线变化，特此记下，避免以后被误读为无意改动。
+
+**复核结论：20D 首批 API 验收通过；F-1 阻断关闭，20D 出口第 4 条满足。**
 
 ## 相关页面
 
