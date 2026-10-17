@@ -265,11 +265,13 @@ docs/DevDocs/README.md                                阶段索引加本文一�
 `XiaoValueTag::ExternalResource = 17` 已加入（`xiao-runtime-abi/src/lib.rs:326`），
 `ABI_MINOR_VERSION` 仍是 13（同文件 `:18`），由能力上下文批的 `789d2a9` 升上来。
 
-功能上无风险：标签是**只追加**，兼容检查是
+本批范围内功能上无风险：标签是**只追加**，且本批没有生成资源值的 intrinsic；兼容检查是
 `required_minor <= ABI_MINOR_VERSION`（`xiao-runtime/src/abi.rs:871`），
-原生产物静态装入 Runtime，不存在「旧 Runtime 收到新标签」的路径。
+当前生产物静态装入同构 Runtime，不会让旧 Runtime 收到新标签。
 ⇒ **不必**单独升 1.14；但应补一句「标签随 1.13 发布，不再单独升次版本」，
-免得后来的人以为漏升。本节即记录。
+免得后来的人以为漏升。本节即记录。**这不是后续批次的通用豁免**：首批 API
+第一次生成或返回 `ExternalResource` 前，必须重新升 ABI 次版本（预期为 1.14）或
+增加等价的资源特性门禁，并用旧 Runtime 拒绝新标签的回归锁住边界。
 
 ## 相关页面
 
