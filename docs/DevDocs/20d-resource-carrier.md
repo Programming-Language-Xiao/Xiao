@@ -9,8 +9,9 @@
 > **而方向稿 §4.2 明写**：「当前 `xiao-runtime` 的 `is_hashable` 使用**排除式匹配**，
 > 新变体若漏加分支反而可能被误判为可哈希」——**这一批的全部风险就在这里**。
 
-状态：**已实施（2026-10-17）**：§六 三道**全部裁定**（均取甲——都选失败安全的一侧），
+状态：**已实施（2026-10-17）并审核通过**：§六 三道**全部裁定**（均取甲——都选失败安全的一侧），
 §三 九处检查点均已接线并有回归；本批仍未接任何 `os.*` intrinsic。
+审核证据与三条尾账见 §十一。
 
 ## 一、为什么是这一批
 
@@ -208,6 +209,67 @@ docs/DevDocs/README.md                                阶段索引加本文一�
   `os.open_file`、`os.close`、`os.read_text` intrinsic。
 
 **验收状态：已满足。** 资源承载已就位，下一批才可以接入首批 `os` API。
+
+## 十一、审核附录（2026-10-17）
+
+审核对象：`9412d2b`（实现）与 `ce0a86d`（自查补丁）。方式是**自己跑**——读 diff、逐处核代码，
+对四处静默点做**变异测试**（改坏 → 用例必须红 → 还原 → `git status --porcelain` 为空），
+再重跑全量门禁。
+
+### 11.1 通过的项（证据）
+
+| 项 | 证据 |
+| --- | --- |
+| 九处检查点 | 逐处读到显式臂；`display_text` 与 `type_name` 共用 `ExternalResourceKind::display_name()`（`value/mod.rs:184`），没有两处各拼一份 |
+| 既有 19 变体的判定 | 旧排除式排除的恰是 `Table`/`TableDropView`/`Array`/`Tuple`/`DictTable`/`DictColumn`/`Set`/`Error`；新正向表允许的恰是其余 11 个，**逐一相等**。用例 18 个在 `b06_runtime.rs:256`，`TableDropView` 由同文件 `:224` 覆盖，合计 19/19 |
+| 四处静默点的用例是真的 | 变异：资源加进允许表 → 单元与容器边界**同时红**；删 `type_name` 资源臂 → 实际值 `"dynamic"`；`PartialEq` 改 `false` → 别名用例红；`value_to_runtime` 改 `Err` → ABI 回转用例红；从允许表删 `Module` → 19 变体用例红。还原后五条用例全绿 |
+| 关闭 | 两次 `close` 幂等、`ensure_open` 报 `X06-RUNTIME-025`（i18n 已登记 `runtime.resource_closed`）、别名逐个释放只触发一次 `Destroy` |
+| 容器边界 | 数组/元组接受、集合**可执行地**拒绝（`CONTAINER_HASHABILITY_CODE`）；资源作**字典键**在当前 Runtime 不可达——`DictHandle` 的键类型是 `String`，属结构性拒绝而非漏测 |
+| ABI | 标签 17 只追加；`owns_strong_handle` 含资源；copy/release 路径齐全；载荷只有种类与关闭位，**无宿主裸指针**；句柄继承单线程标记，未实现 `Send`/`Sync` |
+| 没有 `os.*` | `xiao-intrinsics` 两次提交均未改动，全仓无 `os.open_file`/`os.close`/`os.read_text` |
+| 门禁 | `bash tools/gates/run.sh` exit 0；`cargo test --workspace --no-fail-fast` **1161 passed / 0 failed / 34 ignored**；`bun test` 295 pass / 5 skip / 0 fail |
+| CI | `9412d2b`：维护回归 `39010194102`、workspace 门禁 `39010194082`；`ce0a86d`：`39011432023`、`39011431951`——四次全成功 |
+
+### 11.2 F-1（中）：产物边界的**可执行拒绝**没有落地
+
+§四.5 与 §五.6 要求资源不得进入常量池 / `.xiaoc` / `.xar`，源级 `X02-TYPE-008`、
+产物级 `X07-FATAL-002`，且**不许只靠文档声明**。两次提交都没有改动
+`xiao-bytecode` / `xiao-xar` / `xiao-artifacts`；`FatalError::corrupt_artifact`
+只有构造器与单测，没有生产调用点。
+
+**实情是本批没有插入点**，这不是漏看：
+
+- `TacConstant`（`xiao-bytecode/src/tac.rs:232`）是 8 个标量变体的**封闭枚举**，资源进不去；
+- `resource` 类型还没有进入类型层，源级 `const` 根本写不出资源；
+- VM 当前只消费**本进程刚生成的 TAC**，外部 `.xiaoc` 校验没有接入
+  （`xiao-vm/src/run.rs:476-478` 的原注释）。
+
+⇒ **处置**：在「20D-首批 API」让 `resource<kind>` 进入类型层时**一并实现**两条拒绝，
+并把本条挂到该批的出口——已写进 [20D-规划](20d-platform-resources-stage-plan.md) §4.2。
+§十 的「验收状态：已满足」只覆盖 §八 那八条，**不覆盖 §四.5**。
+
+### 11.3 F-2（低）：裁定记录被事后改写，没记来源
+
+- `9412d2b` 把 §三 的「八处」改成「九处」。**改得对**——原稿自己列的是
+  #1–#4 + #5–#9 = 九处，标题却写八处；这是**审核侧自己的数错**（本会话第二次，
+  上一次是「六件事」对应 A–G 七项）。
+- `ce0a86d` 把 §6.1 的甲选项与 §九 裁定表由「只把标量与 `none`」改成
+  「标量、`none` 和既有内部模块身份」。**实质也对**——旧排除式本来就允许
+  `Module`/`ModuleFunction`，照原文字面实现反而会改掉既有语义。
+- **问题在记录**：两处都是裁定/规划**之后**的补正，却没有一行说明来源，
+  读起来像星崽当时裁的就是改后文本。按 [20C](20c-official-xiao-library.md) §2.4
+  **G-2** 的同一标准，补正也要留痕——本节即留痕，**裁定方向未变**。
+
+### 11.4 F-3（低）：ABI 次版本没有动，也没写是否故意
+
+`XiaoValueTag::ExternalResource = 17` 已加入（`xiao-runtime-abi/src/lib.rs:326`），
+`ABI_MINOR_VERSION` 仍是 13（同文件 `:18`），由能力上下文批的 `789d2a9` 升上来。
+
+功能上无风险：标签是**只追加**，兼容检查是
+`required_minor <= ABI_MINOR_VERSION`（`xiao-runtime/src/abi.rs:871`），
+原生产物静态装入 Runtime，不存在「旧 Runtime 收到新标签」的路径。
+⇒ **不必**单独升 1.14；但应补一句「标签随 1.13 发布，不再单独升次版本」，
+免得后来的人以为漏升。本节即记录。
 
 ## 相关页面
 
