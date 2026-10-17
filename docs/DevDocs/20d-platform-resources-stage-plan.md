@@ -170,6 +170,10 @@
 两个名义类型 + `resource` 父类型、裸名 intrinsic + `stdlib/os.xiao`、
 进程 cwd、维护回归加 macOS、ABI 1.14、保留关键字）。上表的两条前置都在该文中到期。
 
+**20D-进程 API 的实施规划也已单独成文**：[20d-process-api.md](20d-process-api.md)
+（五道裁定均甲：只 `spawn(str)` + `wait(process)`、OS 码 + 信号归一、
+`close_process` 只释放句柄、stdio/env/cwd 继承、process 用独立关闭入口）。它补齐出口条件 1 的最后一项；完成后必须写 20D 六条出口的对账。
+
 ## 五、不许（写下来免得做漏）
 
 1. **不许**在冻结之前写任何资源 intrinsic 的签名——§4.1 末句明写「在**第一个**资源
