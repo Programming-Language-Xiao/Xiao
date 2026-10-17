@@ -736,6 +736,38 @@ fn abi_compatibility_accepts_old_minor_and_rejects_unsupported_versions() {
 }
 
 #[test]
+/// 握手必须等待 accept 后才发送的 hello，覆盖 BSD 继承非阻塞标志的情况。
+fn diagnostic_ready_waits_for_delayed_hello() {
+    let _lock = diagnostic_test_lock();
+    xiao_runtime_diagnostic_finish();
+    assert_eq!(xiao_runtime_diagnostic_prepare(), XiaoAbiStatus::Ok.code());
+    let endpoint = std::env::var("XIAO_DIAGNOSTICS_ENDPOINT").expect("诊断端点");
+    let token = std::env::var("XIAO_DIAGNOSTICS_TOKEN").expect("诊断令牌");
+    let mut stream = TcpStream::connect(endpoint).expect("连接诊断端点");
+    let sender = std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        write_message(
+            &mut stream,
+            &DiagnosticMessage::Hello {
+                protocol_version: DIAGNOSTIC_PROTOCOL_VERSION,
+                token,
+                locale: "en-US".to_owned(),
+                renderer: "delayed-test".to_owned(),
+            },
+        )
+        .expect("发送延迟的 hello");
+        assert!(matches!(
+            read_message(&mut stream).expect("读取 ready"),
+            Some(DiagnosticMessage::Ready { .. })
+        ));
+    });
+    let ready = xiao_runtime_diagnostic_ready();
+    xiao_runtime_diagnostic_finish();
+    sender.join().expect("延迟握手线程");
+    assert_eq!(ready, XiaoAbiStatus::Ok.code());
+}
+
+#[test]
 /// 诊断 ABI 必须完成握手、透传事件字段并发送 Final/Close 生命周期消息。
 fn diagnostic_session_forwards_events_and_closes() {
     let _lock = diagnostic_test_lock();

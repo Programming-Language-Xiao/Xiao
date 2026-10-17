@@ -15,6 +15,8 @@ pub mod containers;
 pub mod errors;
 /// 不透明对象头、强/弱句柄和引用计数策略。
 pub mod memory;
+/// VM 与 Runtime ABI 共用的资源操作与能力检查。
+pub mod resources;
 /// 由 05-C 签名驱动的表对象和状态机。
 pub mod tables;
 /// 仅供规格测试使用的释放计划驱动器。

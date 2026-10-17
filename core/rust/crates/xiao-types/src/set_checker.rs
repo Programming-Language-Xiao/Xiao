@@ -102,6 +102,7 @@ impl<'source> TypeChecker<'source> {
     ) {
         let key = self.name_key(target);
         let expected_set = declared_set_type(annotation);
+        self.check_set_annotation_members(&expected_set, annotation.span);
         let expected = Type::Set(expected_set.clone());
 
         if constraint_path.is_some() {
@@ -132,6 +133,24 @@ impl<'source> TypeChecker<'source> {
             .declare_mutable(key, expected, value.is_some())
         {
             self.environment_error(target.span, error);
+        }
+    }
+
+    /// 变量和表字段共用注解成员的哈希边界；空集合也不能声明为资源集合。
+    pub(super) fn check_set_annotation_members(&mut self, set: &SetType, span: SourceSpan) {
+        for member in set.member_types() {
+            if hashability(member) == Hashability::Unhashable {
+                self.type_error_with_params(
+                    SET_UNHASHABLE_ELEMENT_CODE,
+                    "x03.type.set_unhashable_element",
+                    span,
+                    format!("类型 {} 不能作为集合元素", member),
+                    [(
+                        "actual_type".to_owned(),
+                        DiagnosticParam::Text(member.to_string()),
+                    )],
+                );
+            }
         }
     }
 

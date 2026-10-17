@@ -130,6 +130,117 @@ fn filesystem_capability_bit_is_the_frozen_bit_zero() {
 }
 
 #[test]
+/// 资源集合注解先解析，再由类型层统一拒绝不可哈希成员。
+fn resource_set_annotations_are_rejected_by_type_check() {
+    let project = Project::new();
+    for kind in ["file", "directory", "resource", "int | file"] {
+        for initializer in ["", " = set()"] {
+            let source = format!("set<{kind}> values{initializer}\n");
+            for source in [source.clone(), format!("[ResourceSet]\n    {source}")] {
+                let error = FrontendCompiler::new()
+                    .compile(&project.request(&source))
+                    .expect_err("资源类型不能成为集合成员");
+                assert!(
+                    error
+                        .diagnostics()
+                        .iter()
+                        .any(|d| d.code() == "X03-TYPE-016"),
+                    "{source}: {error:?}"
+                );
+                assert!(
+                    !error
+                        .diagnostics()
+                        .iter()
+                        .any(|d| d.code().contains("PARSE")),
+                    "{error:?}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+/// 内部入口和公开模块都在前端拒绝关键字/展开实参。
+fn resource_api_rejects_keyword_and_expanded_arguments_before_execution() {
+    let project = Project::new();
+    for call in [
+        "open_file(path = \"x\")",
+        "open_directory(path = \".\")",
+        "close(value = os_open_file(\"x\"))",
+        "read_text(value = os_open_file(\"x\"))",
+        "os_open_file(path = \"x\")",
+        "os_open_directory(path = \".\")",
+        "os_close(value = os_open_file(\"x\"))",
+        "os_read_text(value = os_open_file(\"x\"))",
+        "os_open_file(*[\"x\"])",
+        "os_open_file(**{path = \"x\"})",
+    ] {
+        let source =
+            format!("from stdlib.os import open_file, open_directory, close, read_text\n{call}\n");
+        let error = FrontendCompiler::new()
+            .compile(&project.request(&source))
+            .expect_err("资源入口不接受关键字/展开参数");
+        assert!(
+            error
+                .diagnostics()
+                .iter()
+                .any(|d| matches!(d.code(), "X02-TYPE-005" | "X04-TYPE-002")),
+            "{call}: {error:?}"
+        );
+    }
+}
+
+#[test]
+/// 在隔离子进程设置 cwd，避免并行测试修改当前进程工作目录。
+fn vm_relative_paths_use_process_cwd() {
+    let project = Project::new();
+    fs::create_dir(project.root.join("data")).expect("创建相对路径目录");
+    fs::write(project.root.join("data/relative.txt"), "relative-ok").expect("写夹具");
+    let child = Command::new(std::env::current_exe().expect("测试程序"))
+        .args([
+            "--exact",
+            "vm_relative_path_child",
+            "--ignored",
+            "--nocapture",
+        ])
+        .env("XIAO_20D_RELATIVE_PATH_CHILD", "1")
+        .current_dir(&project.root)
+        .output()
+        .expect("运行相对路径子进程");
+    assert!(
+        child.status.success(),
+        "{}",
+        String::from_utf8_lossy(&child.stderr)
+    );
+}
+
+#[test]
+#[ignore = "由 vm_relative_paths_use_process_cwd 在隔离 cwd 中调用"]
+fn vm_relative_path_child() {
+    if std::env::var_os("XIAO_20D_RELATIVE_PATH_CHILD").is_none() {
+        return;
+    }
+    let source = "from stdlib.os import open_file, read_text, close\nhandle = open_file(\"data/relative.txt\")\nprint(read_text(handle))\nclose(handle)\n";
+    let request = FrontendRequest::from_text(source);
+    let outcome = FrontendVmDriver::new().run(&DriverRequest::new(request));
+    assert!(outcome.is_success(), "{outcome:?}");
+    let output: String = outcome
+        .as_executed()
+        .expect("进入执行")
+        .events()
+        .iter()
+        .filter_map(|e| {
+            if let xiao_vm::VmEvent::IntrinsicOutput { text } = e {
+                Some(text.as_str())
+            } else {
+                None
+            }
+        })
+        .collect();
+    assert_eq!(output, "relative-ok\n");
+}
+
+#[test]
 fn os_module_runtime_error_identities_are_stable_in_vm() {
     let project = Project::new();
     let missing = project
@@ -248,8 +359,13 @@ fn native_os_module_matches_vm_output() {
     let denied_native = FrontendNativeDriver::new()
         .build_artifact(
             &artifact,
-            &NativeBuildRequest::new(project.request(&source), target, toolchain, denied_output)
-                .with_codegen_options(denied_options),
+            &NativeBuildRequest::new(
+                project.request(&source),
+                target.clone(),
+                toolchain.clone(),
+                denied_output,
+            )
+            .with_codegen_options(denied_options),
         )
         .unwrap_or_else(|error| match error {
             NativeDriverError::Frontend(error) => panic!("原生缺能力前端失败：{error}"),
@@ -260,4 +376,80 @@ fn native_os_module_matches_vm_output() {
         .expect("启动原生缺能力夹具");
     assert_eq!(denied_run.status.code(), Some(3));
     assert!(String::from_utf8_lossy(&denied_run.stderr).contains("X06-RUNTIME-026"));
+
+    fs::create_dir(project.root.join("data")).expect("相对路径目录");
+    fs::write(project.root.join("data/relative.txt"), "relative-ok").expect("相对路径夹具");
+    fs::write(project.root.join("binary.dat"), [0xff_u8, 0xfe_u8]).expect("二进制夹具");
+    for (label, source, expected_stdout, expected_code) in [
+        (
+            "relative",
+            "from stdlib.os import open_file, read_text, close\nhandle = open_file(\"data/relative.txt\")\nprint(read_text(handle))\nclose(handle)\n",
+            "relative-ok\n",
+            None,
+        ),
+        (
+            "directory",
+            "from stdlib.os import open_directory, close\nhandle = open_directory(\"data\")\nclose(handle)\nclose(handle)\nprint(handle)\n",
+            "resource<directory>\n",
+            None,
+        ),
+        (
+            "missing",
+            "from stdlib.os import open_file\nhandle = open_file(\"data/missing.txt\")\n",
+            "",
+            Some("X06-RUNTIME-012"),
+        ),
+        (
+            "utf8",
+            "from stdlib.os import open_file, read_text\nhandle = open_file(\"binary.dat\")\ntext = read_text(handle)\n",
+            "",
+            Some("X06-RUNTIME-012"),
+        ),
+        (
+            "closed",
+            "from stdlib.os import open_file, read_text, close\nhandle = open_file(\"data/relative.txt\")\nalias = handle\nclose(alias)\nclose(handle)\ntext = read_text(handle)\n",
+            "",
+            Some("X06-RUNTIME-025"),
+        ),
+    ] {
+        let artifact = compile(&project, source);
+        let output = project.root.join(format!(
+            "20d-{label}{}",
+            if cfg!(windows) { ".exe" } else { "" }
+        ));
+        let native = FrontendNativeDriver::new()
+            .build_artifact(
+                &artifact,
+                &NativeBuildRequest::new(
+                    project.request(source),
+                    target.clone(),
+                    toolchain.clone(),
+                    output,
+                ),
+            )
+            .unwrap_or_else(|error| panic!("{label} 原生构建失败：{error}"));
+        let run = Command::new(&native.native.executable)
+            .current_dir(&project.root)
+            .output()
+            .expect("启动原生夹具");
+        let stderr = String::from_utf8_lossy(&run.stderr);
+        assert_eq!(
+            run.status.code(),
+            Some(if expected_code.is_some() { 3 } else { 0 }),
+            "{label}: {stderr}"
+        );
+        assert_eq!(
+            String::from_utf8_lossy(&run.stdout),
+            expected_stdout,
+            "{label}"
+        );
+        match expected_code {
+            Some(code) => assert!(
+                stderr.contains(&format!("code={code} ")),
+                "{label}: {stderr}"
+            ),
+            None => assert!(stderr.is_empty(), "{label}: {stderr}"),
+        }
+        println!("20D-NATIVE {label}: stdout={expected_stdout:?} code={expected_code:?}");
+    }
 }

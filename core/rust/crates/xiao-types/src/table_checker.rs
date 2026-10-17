@@ -344,6 +344,9 @@ impl<'source> TypeChecker<'source> {
         value: Option<&Expression>,
     ) {
         let expected = declared_type_to_type(declared_type, &mut self.context);
+        if let (DeclaredType::Set(annotation), Type::Set(set)) = (declared_type, &expected) {
+            self.check_set_annotation_members(set, annotation.span);
+        }
         if let Some(value) = value {
             let actual = self.check_expression(value);
             self.require_pure_initializer(value);

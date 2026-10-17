@@ -20,11 +20,11 @@ use xiao_diagnostics::window::{
 };
 use xiao_diagnostics::{ReportRecord, render_builtin_localized_text, validated_locale_tag};
 use xiao_runtime_abi::{
-    ABI_MAJOR_VERSION, ABI_MINOR_VERSION, XiaoAbiBytes, XiaoAbiDiagnosticEvent,
-    XiaoAbiErrorLocation, XiaoAbiErrorParam, XiaoAbiErrorSnapshot, XiaoAbiMutBytes, XiaoAbiSpan,
-    XiaoAbiStackFrame, XiaoAbiStatus, XiaoErrorClass, XiaoErrorParamKind, XiaoFieldType,
-    XiaoHandle, XiaoOpaqueHandle, XiaoOpaqueWeakHandle, XiaoTableDescriptor,
-    XiaoTableFieldDescriptor, XiaoValue, XiaoValuePayload, XiaoValueTag, XiaoWeakHandle,
+    XiaoAbiBytes, XiaoAbiDiagnosticEvent, XiaoAbiErrorLocation, XiaoAbiErrorParam,
+    XiaoAbiErrorSnapshot, XiaoAbiMutBytes, XiaoAbiSpan, XiaoAbiStackFrame, XiaoAbiStatus,
+    XiaoErrorClass, XiaoErrorParamKind, XiaoFieldType, XiaoHandle, XiaoOpaqueHandle,
+    XiaoOpaqueWeakHandle, XiaoTableDescriptor, XiaoTableFieldDescriptor, XiaoValue,
+    XiaoValuePayload, XiaoValueTag, XiaoWeakHandle,
 };
 use xiao_source::SourceSpan;
 use xiao_syntax::{ScalarType, TableKind};
@@ -54,6 +54,8 @@ mod abi_numeric;
 mod abi_resource;
 #[path = "abi_tables.rs"]
 mod abi_tables;
+#[path = "abi_version.rs"]
+mod abi_version;
 #[allow(unused_imports)]
 pub(crate) use abi_diagnostics::{
     xiao_runtime_diagnostic_event, xiao_runtime_diagnostic_finish, xiao_runtime_diagnostic_prepare,
@@ -72,6 +74,8 @@ pub(crate) use abi_tables::{
     xiao_runtime_table_new_v2_with_args, xiao_runtime_table_set_value,
     xiao_runtime_value_release_any,
 };
+#[cfg(test)]
+use abi_version::xiao_runtime_abi_is_compatible;
 
 /// 当前线程尚未交给原生控制流消费的错误。
 enum PendingError {
@@ -852,25 +856,6 @@ unsafe fn value_slice(values: *const XiaoValue, length: usize) -> Result<Vec<Run
         .iter()
         .map(|value| unsafe { value_to_runtime(value) })
         .collect()
-}
-
-/// ABI 版本主入口。
-#[unsafe(no_mangle)]
-pub extern "C" fn xiao_runtime_abi_version() -> u32 {
-    ABI_MAJOR_VERSION
-}
-
-/// ABI 版本次入口。
-#[unsafe(no_mangle)]
-pub extern "C" fn xiao_runtime_abi_minor_version() -> u32 {
-    ABI_MINOR_VERSION
-}
-
-/// 检查生成代码所需的主/次版本是否由当前 Runtime 满足。
-#[unsafe(no_mangle)]
-pub extern "C" fn xiao_runtime_abi_is_compatible(required_major: u32, required_minor: u32) -> i32 {
-    crate::crash::install_platform_failure_reporter();
-    i32::from(required_major == ABI_MAJOR_VERSION && required_minor <= ABI_MINOR_VERSION)
 }
 
 /// 清除当前线程挂起的原生错误。

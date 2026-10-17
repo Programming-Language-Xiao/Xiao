@@ -1,220 +1,95 @@
-//! 首批 `os` 资源 intrinsic 的 Runtime ABI 实现。
+//! 首批 os 资源的 Runtime ABI；宿主语义统一委托 resources。
 
-use std::fs::{File, metadata};
-use std::path::Path;
-
-use xiao_intrinsics::{Capability, validate_capability_mask};
 use xiao_runtime_abi::{XiaoAbiStatus, XiaoValue};
 
 use super::{
     RuntimeError, RuntimeValue, runtime_to_value, set_pending_runtime_error, status_from_error,
     value_to_runtime,
 };
-use crate::value::ExternalResourceHandle;
+use crate::{RuntimeResult, resources};
 
-/// 在任何宿主访问前验证能力上下文。
-fn require_filesystem(capabilities: u64) -> Result<(), i32> {
-    if validate_capability_mask(capabilities).is_err() {
-        return Err(status_from_error(&RuntimeError::invalid_value(
-            "能力掩码包含未知位",
-        )));
-    }
-    if capabilities & Capability::Filesystem.bit().unwrap_or(0) == 0 {
-        return Err(status_from_error(&RuntimeError::capability_unavailable(
-            Capability::Filesystem.as_str(),
-        )));
-    }
-    Ok(())
-}
-
-/// 将宿主路径错误映射为带 `reason` 参数的稳定 Runtime 错误。
-fn path_error(operation: &str, error: impl std::fmt::Display) -> RuntimeError {
-    RuntimeError::invalid_value(format!("{operation}失败")).with_param(
-        "reason",
-        crate::errors::DiagnosticParam::Text(error.to_string()),
-    )
-}
-
-/// 从 Xiao 字符串值中借用宿主路径。
-unsafe fn path_from_value(value: *const XiaoValue) -> Result<String, i32> {
+/// 借用 ABI 实参并转换为 Runtime 值；值返回入口不能静默吞掉无效指针/标签。
+unsafe fn argument(value: *const XiaoValue) -> RuntimeResult<RuntimeValue> {
     if value.is_null() {
-        return Err(XiaoAbiStatus::Null.code());
+        return Err(RuntimeError::invalid_value("资源入口的参数指针为空"));
     }
-    let value = unsafe { value_to_runtime(&*value) }?;
-    let RuntimeValue::Str(value) = value else {
-        let error = RuntimeError::type_mismatch("str", value.type_name());
-        return Err(status_from_error(&error));
-    };
-    value.to_string().map_err(|error| status_from_error(&error))
+    unsafe { value_to_runtime(&*value) }.map_err(|status| {
+        RuntimeError::invalid_value(format!("资源入口的参数无效（状态码 {status}）"))
+    })
 }
 
-/// 打开文件并返回外部资源值。
+/// 把共用操作的结果转换为拥有的 ABI 值，失败保留挂起错误。
+fn result_value(result: RuntimeResult<RuntimeValue>) -> XiaoValue {
+    match result {
+        Ok(value) => match runtime_to_value(&value) {
+            Ok(value) => value,
+            Err(status) => {
+                set_pending_runtime_error(RuntimeError::invalid_value(format!(
+                    "资源返回值构造失败（状态码 {status}）"
+                )));
+                XiaoValue::none()
+            }
+        },
+        Err(error) => {
+            set_pending_runtime_error(error);
+            XiaoValue::none()
+        }
+    }
+}
+
+/// 先查能力、再解码借用参数，最后调用共用 Runtime 操作。
+fn resource_value_call(
+    value: *const XiaoValue,
+    capabilities: u64,
+    operation: fn(&RuntimeValue, u64) -> RuntimeResult<RuntimeValue>,
+) -> XiaoValue {
+    result_value(resources::require_filesystem(capabilities).and_then(|()| {
+        let value = unsafe { argument(value) }?;
+        operation(&value, capabilities)
+    }))
+}
+
+/// 打开文件并返回外部资源值；返回值由调用者释放。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_resource_open_file_with_capabilities(
     path: *const XiaoValue,
     capabilities: u64,
 ) -> XiaoValue {
-    if require_filesystem(capabilities).is_err() {
-        return XiaoValue::none();
-    }
-    let path = match unsafe { path_from_value(path) } {
-        Ok(path) => path,
-        Err(_) => return XiaoValue::none(),
-    };
-    match std::fs::metadata(Path::new(&path)) {
-        Ok(metadata) if metadata.is_file() => {}
-        Ok(_) => {
-            set_pending_runtime_error(path_error("打开文件", "目标不是文件"));
-            return XiaoValue::none();
-        }
-        Err(error) => {
-            set_pending_runtime_error(path_error("打开文件", error));
-            return XiaoValue::none();
-        }
-    }
-    let file = match File::open(Path::new(&path)) {
-        Ok(file) => file,
-        Err(error) => {
-            set_pending_runtime_error(path_error("打开文件", error));
-            return XiaoValue::none();
-        }
-    };
-    let resource = match ExternalResourceHandle::from_file(file) {
-        Ok(resource) => RuntimeValue::ExternalResource(resource),
-        Err(error) => {
-            set_pending_runtime_error(error);
-            return XiaoValue::none();
-        }
-    };
-    match runtime_to_value(&resource) {
-        Ok(value) => value,
-        Err(status) => {
-            set_pending_runtime_error(RuntimeError::invalid_value(format!(
-                "打开文件返回值构造失败（状态码 {status}）"
-            )));
-            XiaoValue::none()
-        }
-    }
+    resource_value_call(path, capabilities, resources::open_file)
 }
 
-/// 验证目录路径并返回目录资源值。
+/// 验证目录并返回资源值；首版仅保存路径。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_resource_open_directory_with_capabilities(
     path: *const XiaoValue,
     capabilities: u64,
 ) -> XiaoValue {
-    if require_filesystem(capabilities).is_err() {
-        return XiaoValue::none();
-    }
-    let path = match unsafe { path_from_value(path) } {
-        Ok(path) => path,
-        Err(_) => return XiaoValue::none(),
-    };
-    match metadata(Path::new(&path)) {
-        Ok(metadata) if metadata.is_dir() => {}
-        Ok(_) => {
-            set_pending_runtime_error(path_error("打开目录", "目标不是目录"));
-            return XiaoValue::none();
-        }
-        Err(error) => {
-            set_pending_runtime_error(path_error("打开目录", error));
-            return XiaoValue::none();
-        }
-    };
-    let resource = match ExternalResourceHandle::from_directory(path.into()) {
-        Ok(resource) => RuntimeValue::ExternalResource(resource),
-        Err(error) => {
-            set_pending_runtime_error(error);
-            return XiaoValue::none();
-        }
-    };
-    match runtime_to_value(&resource) {
-        Ok(value) => value,
-        Err(status) => {
-            set_pending_runtime_error(RuntimeError::invalid_value(format!(
-                "打开目录返回值构造失败（状态码 {status}）"
-            )));
-            XiaoValue::none()
-        }
-    }
+    resource_value_call(path, capabilities, resources::open_directory)
 }
 
-/// 关闭文件或目录资源；重复关闭沿用 Runtime 的幂等语义。
+/// 关闭借用资源；重复关闭成功，缺能力时不改变资源状态。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_resource_close_with_capabilities(
     value: *const XiaoValue,
     capabilities: u64,
 ) -> i32 {
-    if let Err(status) = require_filesystem(capabilities) {
-        return status;
-    }
-    if value.is_null() {
-        return XiaoAbiStatus::Null.code();
-    }
-    let value = match unsafe { value_to_runtime(&*value) } {
-        Ok(value) => value,
-        Err(status) => return status,
-    };
-    let RuntimeValue::ExternalResource(resource) = value else {
-        return status_from_error(&RuntimeError::type_mismatch("resource", value.type_name()));
-    };
-    // 目录资源的已验证路径属于承载状态；读取一次也让 ABI close 路径覆盖该载荷。
-    let _ = resource.directory_path();
-    match resource.close() {
+    let result = resources::require_filesystem(capabilities).and_then(|()| {
+        let value = unsafe { argument(value) }?;
+        resources::close(&value, capabilities)
+    });
+    match result {
         Ok(()) => XiaoAbiStatus::Ok.code(),
         Err(error) => status_from_error(&error),
     }
 }
 
-/// 读取文件的完整 UTF-8 文本。
+/// 返回文件的完整 UTF-8 文本；失败返回 none 并设置错误槽。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_resource_read_text_with_capabilities(
     value: *const XiaoValue,
     capabilities: u64,
 ) -> XiaoValue {
-    if require_filesystem(capabilities).is_err() {
-        return XiaoValue::none();
-    }
-    if value.is_null() {
-        set_pending_runtime_error(RuntimeError::invalid_value("read_text 的资源参数为空"));
-        return XiaoValue::none();
-    }
-    let value = match unsafe { value_to_runtime(&*value) } {
-        Ok(value) => value,
-        Err(status) => {
-            set_pending_runtime_error(RuntimeError::invalid_value(format!(
-                "read_text 资源参数无效（状态码 {status}）"
-            )));
-            return XiaoValue::none();
-        }
-    };
-    let RuntimeValue::ExternalResource(resource) = value else {
-        set_pending_runtime_error(RuntimeError::type_mismatch("file", value.type_name()));
-        return XiaoValue::none();
-    };
-    let text = match resource.read_text() {
-        Ok(text) => text,
-        Err(error) => {
-            set_pending_runtime_error(error);
-            return XiaoValue::none();
-        }
-    };
-    let value = match RuntimeValue::new_string(text) {
-        Ok(value) => value,
-        Err(error) => {
-            set_pending_runtime_error(error);
-            return XiaoValue::none();
-        }
-    };
-    match runtime_to_value(&value) {
-        Ok(value) => value,
-        Err(status) => {
-            set_pending_runtime_error(RuntimeError::invalid_value(format!(
-                "read_text 返回值构造失败（状态码 {status}）"
-            )));
-            XiaoValue::none()
-        }
-    }
+    resource_value_call(value, capabilities, resources::read_text)
 }
 
 #[cfg(test)]
@@ -271,6 +146,17 @@ mod tests {
         let mut resource =
             xiao_runtime_resource_open_file_with_capabilities(&path_value, KNOWN_CAPABILITY_MASK);
         assert_eq!(resource.tag, XiaoValueTag::ExternalResource);
+        let mut alias = XiaoValue::none();
+        assert_eq!(
+            super::super::xiao_runtime_value_copy(&resource, &mut alias),
+            XiaoAbiStatus::Ok.code()
+        );
+        assert_eq!(
+            xiao_runtime_resource_close_with_capabilities(&alias, 0),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        assert_eq!(error_code(), xiao_diagnostics::CAPABILITY_UNAVAILABLE_CODE);
+        super::super::xiao_runtime_error_clear();
         let mut text =
             xiao_runtime_resource_read_text_with_capabilities(&resource, KNOWN_CAPABILITY_MASK);
         let runtime = unsafe { value_to_runtime(&text) }.expect("读取返回值");
@@ -279,7 +165,7 @@ mod tests {
         };
         assert_eq!(text_handle.to_string().expect("文本"), "小雪\n");
         assert_eq!(
-            xiao_runtime_resource_close_with_capabilities(&resource, KNOWN_CAPABILITY_MASK),
+            xiao_runtime_resource_close_with_capabilities(&alias, KNOWN_CAPABILITY_MASK),
             XiaoAbiStatus::Ok.code()
         );
         assert_eq!(
@@ -292,9 +178,35 @@ mod tests {
         assert_eq!(closed.tag, XiaoValueTag::None);
         assert_eq!(error_code(), xiao_diagnostics::RESOURCE_CLOSED_CODE);
         release(&mut closed);
+        release(&mut alias);
         release(&mut resource);
         release(&mut path_value);
         let _ = fs::remove_file(path);
+        super::super::xiao_runtime_error_clear();
+    }
+
+    #[test]
+    /// 四条入口都先检查能力；值返回入口对无效参数必须留下可读取的错误。
+    fn every_entry_checks_capabilities_before_decoding_arguments() {
+        for operation in [
+            xiao_runtime_resource_open_file_with_capabilities,
+            xiao_runtime_resource_open_directory_with_capabilities,
+            xiao_runtime_resource_read_text_with_capabilities,
+        ] {
+            let value = operation(std::ptr::null(), 0);
+            assert_eq!(value.tag, XiaoValueTag::None);
+            assert_eq!(error_code(), xiao_diagnostics::CAPABILITY_UNAVAILABLE_CODE);
+            super::super::xiao_runtime_error_clear();
+            let value = operation(std::ptr::null(), KNOWN_CAPABILITY_MASK);
+            assert_eq!(value.tag, XiaoValueTag::None);
+            assert_eq!(error_code(), xiao_diagnostics::INVALID_VALUE_CODE);
+            super::super::xiao_runtime_error_clear();
+        }
+        assert_eq!(
+            xiao_runtime_resource_close_with_capabilities(std::ptr::null(), 0),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        assert_eq!(error_code(), xiao_diagnostics::CAPABILITY_UNAVAILABLE_CODE);
         super::super::xiao_runtime_error_clear();
     }
 

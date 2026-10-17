@@ -80,6 +80,11 @@ pub extern "C" fn xiao_runtime_diagnostic_ready() -> i32 {
         loop {
             match listener.accept() {
                 Ok((mut stream, _)) => {
+                    // BSD/macOS 的 accept 可能继承监听端点的非阻塞标志；
+                    // 握手必须等待完整帧，不能把暂时无数据当作通道失败。
+                    stream
+                        .set_nonblocking(false)
+                        .map_err(|error| format!("无法配置诊断连接：{error}"))?;
                     stream
                         .set_read_timeout(Some(Duration::from_secs(2)))
                         .map_err(|error| format!("无法配置诊断握手：{error}"))?;

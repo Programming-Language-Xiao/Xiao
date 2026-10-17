@@ -7,6 +7,9 @@
 ## 子目录
 
 - `value/`：标量、`str`、统一值和 `ExternalResource`（首批 `file`/`directory` 承载）。
+- `resources.rs`：VM 与原生 ABI 共用的文件/目录打开、读取、关闭和 filesystem 能力检查。
+- `abi_resource.rs`：资源的带能力 ABI 包装，负责参数解码、结果拥有权与错误槽。
+- `abi_version.rs`：ABI 版本查询及启动兼容比较，委托 ABI crate 的参数化规则。
 - `memory/`：不透明对象头、强/弱句柄和计数策略。
 - `tables/`：静态表签名与构造状态机。
 - `containers/`：数组、元组、字典表、字典列和集合（工程期 09R2）。

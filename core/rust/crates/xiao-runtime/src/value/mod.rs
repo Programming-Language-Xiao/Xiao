@@ -15,10 +15,11 @@ use std::path::PathBuf;
 
 use xiao_syntax::ScalarType;
 
-use crate::errors::{DiagnosticParam, RuntimeError, RuntimeResult, XiaoError};
+use crate::errors::{RuntimeError, RuntimeResult, XiaoError};
 use crate::memory::{
     ObjectLayout, ObjectPayload, RuntimeTypeTag, StrongHandle, WeakHandle, allocate_payload,
 };
+use crate::resources::io_error as resource_io_error;
 
 /// Xiao `str` 的堆载荷。
 #[derive(Debug)]
@@ -221,6 +222,14 @@ impl crate::memory::ObjectPayload for ExternalResourceObject {
         crate::memory::ObjectLayout::for_type::<Self>(EXTERNAL_RESOURCE_RUNTIME_TAG)
     }
 
+    /// 目录保存的路径缓冲区也属于资源载荷的内存占用。
+    fn owned_bytes(&self) -> usize {
+        match self.payload.as_ref() {
+            Some(ExternalResourcePayload::Directory(path)) => path.capacity(),
+            _ => 0,
+        }
+    }
+
     /// 释放资源宿主载荷并把状态置为关闭；重复释放不产生第二次动作。
     fn on_drop(&mut self) -> RuntimeResult<()> {
         self.closed.set(true);
@@ -313,17 +322,6 @@ impl ExternalResourceHandle {
         )
     }
 
-    /// 返回目录资源保存的已验证路径；文件资源返回 `None`。
-    pub(crate) fn directory_path(&self) -> RuntimeResult<Option<PathBuf>> {
-        self.inner.with_payload(
-            EXTERNAL_RESOURCE_RUNTIME_TAG,
-            |object: &ExternalResourceObject| match object.payload.as_ref() {
-                Some(ExternalResourcePayload::Directory(path)) => Some(path.clone()),
-                _ => None,
-            },
-        )
-    }
-
     /// 判断资源是否已经关闭。
     pub fn is_closed(&self) -> RuntimeResult<bool> {
         self.inner.with_payload(
@@ -396,12 +394,6 @@ impl ExternalResourceHandle {
     pub(crate) fn into_strong_handle(self) -> StrongHandle {
         self.inner
     }
-}
-
-/// 把宿主 IO 或 UTF-8 失败映射为带原因参数的 Runtime 值错误。
-fn resource_io_error(operation: &str, error: impl std::fmt::Display) -> RuntimeError {
-    RuntimeError::invalid_value(format!("{operation}失败"))
-        .with_param("reason", DiagnosticParam::Text(error.to_string()))
 }
 
 /// Xiao Runtime 中可传递的最小值集合。

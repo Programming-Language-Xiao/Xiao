@@ -20,6 +20,7 @@ fn install() {
         install_unix_signal(libc::SIGBUS);
         install_unix_signal(libc::SIGFPE);
         install_unix_signal(libc::SIGILL);
+        install_unix_signal(libc::SIGTRAP);
         install_unix_signal(libc::SIGABRT);
     }
 }
@@ -51,6 +52,17 @@ unsafe fn install_unix_signal(signal: libc::c_int) {
 }
 
 #[cfg(unix)]
+/// 按故障类别返回冻结的退出码；BSD 的信号编号不等同于 Linux。
+fn unix_signal_exit_code(signal: libc::c_int) -> libc::c_int {
+    match signal {
+        libc::SIGSEGV | libc::SIGBUS => 139,
+        libc::SIGFPE => 136,
+        libc::SIGILL | libc::SIGTRAP => 132,
+        _ => 134,
+    }
+}
+
+#[cfg(unix)]
 extern "C" fn signal_handler(signal: libc::c_int, _: *mut libc::siginfo_t, _: *mut libc::c_void) {
     let message = match signal {
         libc::SIGSEGV | libc::SIGBUS => {
@@ -59,7 +71,9 @@ extern "C" fn signal_handler(signal: libc::c_int, _: *mut libc::siginfo_t, _: *m
         libc::SIGFPE => {
             b"xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware params={} span=<none> exit_code=136\n"
         }
-        libc::SIGILL => {
+        // AArch64 的 llvm.trap 降为 brk，macOS 报 SIGTRAP；与 x86 的 SIGILL
+        // 同属外部硬件故障，保持跨平台诊断身份和退出码一致。
+        libc::SIGILL | libc::SIGTRAP => {
             b"xiao-error class=fatal code=X07-FATAL-005 message_id=fatal.hardware params={} span=<none> exit_code=132\n"
         }
         _ => {
@@ -68,7 +82,7 @@ extern "C" fn signal_handler(signal: libc::c_int, _: *mut libc::siginfo_t, _: *m
     };
     unsafe {
         let _ = libc::write(libc::STDERR_FILENO, message.as_ptr().cast(), message.len());
-        libc::_exit(128 + signal);
+        libc::_exit(unix_signal_exit_code(signal));
     }
 }
 
@@ -170,5 +184,20 @@ mod tests {
         assert_eq!(windows_exception_exit_code(0xC0000094), 136);
         assert_eq!(windows_exception_exit_code(0xC000008E), 136);
         assert_eq!(windows_exception_exit_code(0xC0000000), 134);
+    }
+}
+
+#[cfg(all(test, unix))]
+mod unix_tests {
+    use super::unix_signal_exit_code;
+
+    #[test]
+    fn hardware_signals_use_frozen_exit_codes() {
+        assert_eq!(unix_signal_exit_code(libc::SIGSEGV), 139);
+        assert_eq!(unix_signal_exit_code(libc::SIGBUS), 139);
+        assert_eq!(unix_signal_exit_code(libc::SIGFPE), 136);
+        assert_eq!(unix_signal_exit_code(libc::SIGILL), 132);
+        assert_eq!(unix_signal_exit_code(libc::SIGTRAP), 132);
+        assert_eq!(unix_signal_exit_code(libc::SIGABRT), 134);
     }
 }

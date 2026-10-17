@@ -592,12 +592,15 @@ impl<'source> TypeChecker<'source> {
         arguments: &[CallArgument],
         span: SourceSpan,
     ) -> Type {
-        if arguments.len() != 1 {
+        if arguments.len() != 1
+            || arguments[0].kind != xiao_syntax::CallArgumentKind::Positional
+            || arguments[0].name.is_some()
+        {
             self.type_error(
                 INVALID_OPERANDS_CODE,
                 "x02.type.call_arity",
                 span,
-                "资源 intrinsic 必须接收一个参数".to_owned(),
+                "资源 intrinsic 必须接收一个位置参数".to_owned(),
             );
             return Type::Dynamic;
         }

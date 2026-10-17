@@ -8,8 +8,8 @@
 > 也是 **第一次生成资源值**——两份前置（[阶段计划](20d-platform-resources-stage-plan.md) §4.2 的
 > F-1 产物边界、ABI 1.14 门禁）都在本批到期。
 
-状态：**已实施（2026-10-17），审核未通过**：六道裁定全部取甲；代码路径与三平台的 20D 原生差分均通过，
-但新加的 macOS 作业仍红（既有可移植性缺口），20D 出口第 4 条未取证；一条阻断项与五条尾账见 §十一。
+状态：**审核返工已实现，等待三平台 push 取证（2026-10-17）**：§十一 的 F-1～F-6 与 O-1/O-2
+均已落实代码、回归或验收记录；20D 出口第 4 条继续等待完整维护回归转绿，修复记录见 §十二。
 
 ## 一、为什么是这一批
 
@@ -255,22 +255,24 @@ docs/DevDocs/README.md                                    阶段索引加本文�
 | 语法与类型 | `core/rust/crates/xiao-syntax/src/{token.rs,ast.rs,parser.rs,parser/statements.rs}`、`core/rust/crates/xiao-types/src/{types.rs,conversion.rs,checker/expression.rs,checker/statement.rs,function_checker.rs}` | `file`/`directory`/`resource` 注解可解析；`file`/`directory` 只可赋给 `resource`；`directory` 传给 `read_text` 和非资源传给 `close` 在类型/函数检查阶段拒绝 |
 | intrinsic 契约 | `core/rust/crates/xiao-intrinsics/intrinsics.json`、`src/lib.rs`、`build.rs` | ID 22–25 使用 `os_` 内部名；参数/返回资源类别、filesystem 能力和文件系统效果进入生成表；`cargo test -p xiao-intrinsics` 通过 |
 | Runtime/ABI | `core/rust/crates/xiao-runtime/src/{value/mod.rs,abi_resource.rs}`、`core/rust/crates/xiao-runtime-abi/src/lib.rs` | 文件打开、目录验证、整文件 UTF-8 读取、幂等关闭、共享别名和 `reason` 参数；四个入口只接受 `XiaoValue`/`XiaoHandle`，ABI 次版本为 1.14 |
-| 两条执行路径 | `core/rust/crates/xiao-vm/src/semantics/exec.rs`、`core/rust/crates/xiao-codegen-llvm/src/dynamic/{expression.rs,runtime_abi.rs}` | VM 与 LLVM 都在宿主访问前检查 filesystem 位，并调用带能力掩码的新 ABI；旧无掩码资源符号没有新增 |
+| 两条执行路径 | `core/rust/crates/xiao-vm/src/semantics/exec.rs`、`core/rust/crates/xiao-codegen-llvm/src/dynamic/{expression.rs,runtime_abi.rs}`、`core/rust/crates/xiao-runtime/src/resources.rs` | VM 调用共用 Runtime 操作，LLVM 经带能力掩码的新 ABI 委托同一操作；两者均在宿主访问前检查 filesystem 位；旧无掩码资源符号没有新增 |
 | 纯 Xiao 公开面 | `stdlib/os.xiao`、`stdlib/os.md`、`docs/UseDocs/library/os.md`、`docs/module-registry.json` | `from stdlib.os import open_file, open_directory, close, read_text` 走薄包装；公开函数名与内部 intrinsic 名分离 |
 | 产物边界 | `core/rust/crates/xiao-types/src/checker/statement.rs`、`core/rust/crates/xiao-bytecode/src/{lower/stmt.rs,encode/validate.rs,encode/decoder.rs}`、`src/verify.rs`、`core/rust/crates/xiao-vm/src/run.rs` | 源级资源 `const` 报 `X02-TYPE-008`；降低、编码和解码边界对资源常量统一保留 `X07-FATAL-002`，生产验证映射为 `FatalError::corrupt_artifact`；`TacConstant` 没有资源变体 |
 | 三平台门禁 | `.github/workflows/maintenance-regression.yml`、`core/rust/crates/xiao-driver/tests/20d_first_api.rs` | push 矩阵包含 Windows、Linux、macOS；VM 夹具在三作业显式运行，受控工具链下的 ignored 原生夹具同时比较 VM/LLVM 的 `open_file`→`read_text`→`close` 输出；夹具还覆盖关闭后读取、缺能力、非 UTF-8、目录→`read_text` 编译期拒绝和相对路径形态 |
 
-本地自审核已运行：`cargo test -p xiao-runtime abi_resource`（3 项通过）、
-`cargo test -p xiao-driver --test 20d_first_api`（6 项通过）、相关 workspace crate 的
+返工后的定向验证：`cargo test -p xiao-runtime abi_resource`（4 项通过）、
+`cargo test -p xiao-driver --test 20d_first_api`（9 项通过，2 项 ignored）、相关 workspace crate 的
 `cargo check` 与既有语法/类型/字节码/VM 回归均通过。三平台 push 结果以维护回归工作流为最终取证，
 本地单机运行不替代 macOS 作业证据。
 
 ### 10.1 ABI 旧 Runtime 门禁
 
 `xiao-runtime-abi` 的 `ABI_MINOR_VERSION` 已从 13 升到 14；`xiao_runtime_abi_is_compatible`
-继续允许旧次版本调用方读取兼容入口，但要求 1.14 的产物在实际 1.13 Runtime 上启动检查失败。
-现有 `core/rust/crates/xiao-runtime/src/abi_tests.rs` 覆盖 1.14 通过和 1.15 拒绝，生产原生入口
-使用同一 `required_minor <= actual_minor` 检查。
+继续允许旧次版本调用方读取兼容入口。比较规则已抽成
+`core/rust/crates/xiao-runtime-abi/src/lib.rs:35` 的 `is_abi_compatible`，生产 ABI 调用同一函数；
+`resource_api_requires_runtime_1_14` 直接断言 required 1.14 / actual 1.13 拒绝、
+1.14 / 1.14 通过、旧产物配新 Runtime 通过、主版本不匹配拒绝。
+这是参数化启动比较回归，没有声称另行安装并执行一份旧 1.13 Runtime 二进制。
 
 ### 10.2 自审核修正
 
@@ -279,6 +281,18 @@ docs/DevDocs/README.md                                    阶段索引加本文�
 1. `parse_declared_type` 改为显式识别资源关键字，不再把未知 token 伪装成 `int`；
 2. 普通函数调用的资源父类型兼容只在 `Type::Resource` 分支使用 `can_assign`，没有放宽数字或其它类型统一；
 3. `open_file` 和 `open_directory` 在能力检查后分别验证宿主目标种类，错误仍统一为 `X06-RUNTIME-012` 并保留 `reason`，没有引入平台专属错误码。
+
+### 10.3 本批移除验证（返工实跑）
+
+三次变异分别执行并逐次恢复源码；每次都真实执行一个专门用例，测试退出码均为 101。
+
+| 临时移除点 | 必须失败的用例 | 实际失败 |
+| --- | --- | --- |
+| `exec.rs` 的 `VmBinding::ResourceOpenFile` 操作 | `20d_first_api::os_module_opens_reads_and_closes_file_in_vm` | VM 无法打开资源，成功断言失败 |
+| `abi_resource.rs` 的文件打开 ABI 包装操作 | `abi::abi_resource::tests::open_read_close_and_closed_alias_are_stable` | 返回标签为 0，期望的资源标签为 17 |
+| `stdlib/os.xiao` 的 `open_file` 导出 | `20d_first_api::os_module_opens_reads_and_closes_file_in_vm` | `X05-MODULE-005`，模块未导出 `open_file` |
+
+恢复后专门夹具与 Runtime 测试重新通过。变异内容均未提交。
 
 ## 十一、审核附录（2026-10-17）
 
@@ -361,6 +375,35 @@ docs/DevDocs/README.md                                    阶段索引加本文�
   探针已删除、重跑 exit 0；**不记为实现的问题**。
 
 **审核结论**：实现主体通过；**F-1 未解决前，本批不能记为「验收通过」**，20D 出口第 4 条保持未满足。
+
+## 十二、审核返工（2026-10-17）
+
+§十一 保留原审核事实。当前修复与证据如下；F-1 的代码修正不替代完整绿色 push 证据。
+
+| 项 | 修复落点 | 验证与状态 |
+| --- | --- | --- |
+| F-1：平台故障 | `core/rust/crates/xiao-runtime/src/crash.rs:56`；`tests/n0_c2_error_boundary.rs` | 按故障类别映射冻结退出码，兼容 BSD 的 SIGBUS 编号；新增 SIGTRAP 处理，真实子进程覆盖 SIGSEGV/SIGBUS/SIGTRAP；Windows 本机平台故障回归通过，Unix 路径由 CI 执行 |
+| F-1：握手 | `core/rust/crates/xiao-runtime/src/abi_diagnostics.rs:86`；`src/abi_tests.rs:740` | accept 后显式恢复阻塞模式，再设置超时；延迟 hello 的真实 socket 回归通过 |
+| F-1：终端 | `.github/workflows/maintenance-regression.yml:247` | macOS 仅排除与 Windows 相同的两个终端依赖用例；Linux/Xvfb 保留完整终端验证，macOS 资源差分与平台 Fatal 用例继续执行；等待 push 转绿 |
+| F-2 | §10.3 | 本批实际完成 VM 绑定、ABI 包装、模块导出的三次变异验证，均如期失败并恢复 |
+| F-3 | `core/rust/crates/xiao-runtime-abi/src/lib.rs:35`；`core/rust/crates/xiao-runtime/src/abi_version.rs:20` | 同一参数化比较函数明确覆盖 1.14 产物 / 1.13 Runtime 拒绝；版本入口独立为小模块，ABI 核心文件继续符合 2500 行门禁；已关闭 |
+| F-4 | `core/rust/crates/xiao-syntax/src/parser.rs:508`；`core/rust/crates/xiao-types/src/set_checker.rs:140`；`src/table_checker.rs:348` | `set<file/directory/resource>` 先解析，再统一报 `X03-TYPE-016`；变量/表字段、空初始化/未初始化、混合并集均有常驻负例；已关闭 |
+| F-5 | `stdlib/os.xiao:4`；`core/rust/crates/xiao-types/src/checker/expression.rs:589` | 公开函数使用已有 `/` 位置专用参数语法，内部 intrinsic 检查实参种类；关键字及展开实参在前端拒绝，两条后端无需承接无效调用；已关闭 |
+| F-6 | `core/rust/crates/xiao-driver/tests/20d_first_api.rs:195`；同文件原生夹具 | VM 子进程在隔离 cwd 下读取 `data/relative.txt`；原生夹具以同样相对路径读取并输出 `relative-ok`；Windows 本机双路径通过，三平台 CI 使用同一用例；已关闭 |
+| O-1/O-2 | `core/rust/crates/xiao-runtime/src/resources.rs:38`；`core/rust/crates/xiao-standard-library/src/README.md` | VM/ABI 共用打开、校验、读取、关闭与能力检查；移除 close 时无意义的目录路径复制，路径容量计入载荷内存；元数据 crate 阶段更新为 20C/20D |
+
+对 F-1 根因补充：CI 的空 stderr 与 `ExitStatus::code() == None` 说明处理器没有运行。
+本机 clang 的 AArch64/macOS 汇编探针确认 `llvm.trap` 降为 `brk #0x1`，对应 SIGTRAP，
+原处理器只注册 SIGILL。故本次同时补注册 SIGTRAP 与故障类别退出映射，没有放宽 Fatal 断言。
+
+返工后的 Windows 受控原生夹具已实跑通过，新增正常相对读取、目录重复关闭、文件不存在、
+非法 UTF-8、关闭后别名读取的输出/错误码断言；缺 filesystem 能力仍报 `X06-RUNTIME-026`。
+用户文档也已修正保留关键字 `file` 被误用为变量名的示例及 `os` 模块登记身份。
+
+本地返工门禁：`tools/gates/run.sh` exit 0（含 fmt、Clippy、文档/覆盖率、TypeScript、基准自检、
+驱动器测试和 Bun 测试）；`cargo test --workspace --no-fail-fast -j 2` 为
+**1178 passed / 0 failed / 36 ignored**；`bun test` 为 295 pass / 5 skip / 0 fail。
+两份 DevDocs 的逐行粗体配对检查通过。三平台维护回归的完整绿色运行号在取得后补入本节。
 
 ## 相关页面
 

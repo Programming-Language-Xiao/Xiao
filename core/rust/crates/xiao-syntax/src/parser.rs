@@ -504,7 +504,7 @@ impl<'source> Parser<'source> {
         ))
     }
 
-    /// 解析集合类型注解中的单个标量或 `none` 类型项。
+    /// 解析集合类型项；资源项的不可哈希限制由类型层统一诊断。
     fn parse_set_type_term(&mut self) -> Option<TypeTerm> {
         let token = self.current();
         if is_scalar_type_token(token.kind()) {
@@ -521,11 +521,17 @@ impl<'source> Parser<'source> {
             self.bump();
             return Some(TypeTerm::None);
         }
+        if let Some(keyword) = token.kind().keyword()
+            && let Some(resource) = ResourceKind::from_keyword(keyword)
+        {
+            self.bump();
+            return Some(TypeTerm::Resource(resource));
+        }
         self.push_error(
             INVALID_SET_TYPE_ANNOTATION_CODE,
             "x03.parse.invalid_set_type_term",
             token.span(),
-            "集合类型并集只能包含标量类型或 none".to_string(),
+            "集合类型并集只接受基础类型项".to_string(),
         );
         None
     }

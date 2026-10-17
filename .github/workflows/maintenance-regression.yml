@@ -244,9 +244,12 @@ jobs:
           test -f "$XIAO_RUNTIME_LIBRARY"
           test -x "$XIAO_DIAGNOSTICS_PATH"
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
+          # macOS runner 与 Windows 一样没有可交互终端；Linux/Xvfb 保留这两项执行证据。
           cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture \
             --skip dns_resolution_failure_is_unavailable \
-            --skip platform_failure_child
+            --skip platform_failure_child \
+            --skip real_terminal_session_is_environment_gated \
+            --skip native_table_methods_debug_execution_o0_o3
 
       - name: Run 20D first API VM fixture (Windows)
         if: runner.os == 'Windows'

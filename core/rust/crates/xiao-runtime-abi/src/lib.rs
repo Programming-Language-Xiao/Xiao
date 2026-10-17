@@ -30,6 +30,17 @@ pub const fn encoded_abi_version(major: u32, minor: u32) -> u64 {
 /// 当前 ABI 的可比较版本编码。
 pub const ABI_ENCODED_VERSION: u64 = encoded_abi_version(ABI_MAJOR_VERSION, ABI_MINOR_VERSION);
 
+/// 判断给定 Runtime 主/次版本是否满足产物要求；旧 Runtime 不接受较新的入口。
+#[must_use]
+pub const fn is_abi_compatible(
+    required_major: u32,
+    required_minor: u32,
+    actual_major: u32,
+    actual_minor: u32,
+) -> bool {
+    required_major == actual_major && required_minor <= actual_minor
+}
+
 /// C ABI 函数的稳定状态码。
 #[repr(i32)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -991,6 +1002,15 @@ mod tests {
         assert_eq!(ABI_ENCODED_VERSION, 0x0001_000E);
         assert_eq!(ABI_MAJOR_VERSION, 1);
         assert_eq!(ABI_MINOR_VERSION, 14);
+    }
+
+    #[test]
+    /// 首次产生资源的 1.14 产物必须在 1.13 Runtime 的启动比较处被拒绝。
+    fn resource_api_requires_runtime_1_14() {
+        assert!(!super::is_abi_compatible(1, 14, 1, 13));
+        assert!(super::is_abi_compatible(1, 14, 1, 14));
+        assert!(super::is_abi_compatible(1, 13, 1, 14));
+        assert!(!super::is_abi_compatible(1, 14, 2, 14));
     }
 
     #[test]

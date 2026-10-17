@@ -1,14 +1,14 @@
 # Xiao 官方 os 模块（20D 首批 API）。
 #
 # 公开函数只做薄包装；内部 intrinsic 使用 os_ 前缀，避免与本模块导出递归。
-def open_file(str path) -> file
+def open_file(str path, /) -> file
     return os_open_file(path)
 
-def open_directory(str path) -> directory
+def open_directory(str path, /) -> directory
     return os_open_directory(path)
 
-def close(resource value) -> none
+def close(resource value, /) -> none
     return os_close(value)
 
-def read_text(file value) -> str
+def read_text(file value, /) -> str
     return os_read_text(value)
