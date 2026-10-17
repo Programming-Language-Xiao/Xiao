@@ -183,6 +183,21 @@ fn main() {
                         _ => unreachable!(),
                     }
                 }
+                "process_spawn" | "process_wait" | "process_close" => {
+                    assert_eq!(row.arity, "one", "进程入口必须是一元");
+                    assert_eq!(row.capability, "process", "进程入口必须需要 process 能力");
+                    assert_eq!(row.vm_binding, row.kind, "进程入口 VM 绑定必须对应类别");
+                    assert_eq!(row.abi_binding, row.kind, "进程入口 ABI 绑定必须对应类别");
+                    let (parameter, result, effect) = match row.kind.as_str() {
+                        "process_spawn" => ("str", "process", "spawns_process"),
+                        "process_wait" => ("process", "int", "waits_process"),
+                        "process_close" => ("process", "none", "releases_process"),
+                        _ => unreachable!(),
+                    };
+                    assert_eq!(row.parameter_type, parameter);
+                    assert_eq!(row.return_type, result);
+                    assert_eq!(row.effect, effect);
+                }
                 "error_constructor" => {
                     assert_eq!(row.arity, "error", "错误构造签名不完整: {}", row.name);
                     assert_eq!(

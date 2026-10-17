@@ -59,6 +59,9 @@ pub enum IntrinsicKind {
     ResourceOpenDirectory,
     ResourceClose,
     ResourceReadText,
+    ProcessSpawn,
+    ProcessWait,
+    ProcessClose,
     Reserved,
 }
 /// 参数数量规则。
@@ -89,6 +92,7 @@ pub enum ValueType {
     File,
     Directory,
     Resource,
+    Process,
 }
 /// 可观察效果摘要。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -99,6 +103,9 @@ pub enum Effects {
     ReadsStdin,
     ReadsFilesystem,
     WritesFilesystem,
+    SpawnsProcess,
+    WaitsProcess,
+    ReleasesProcess,
     None,
 }
 /// 能力需求。
@@ -108,6 +115,7 @@ pub enum Capability {
     Stdout,
     Stdin,
     Filesystem,
+    Process,
 }
 
 /// 文件系统能力位。
@@ -162,6 +170,7 @@ impl Capability {
             Self::Stdout => Some(CAPABILITY_STDOUT),
             Self::Stdin => Some(CAPABILITY_STDIN),
             Self::Filesystem => Some(CAPABILITY_FILESYSTEM),
+            Self::Process => Some(CAPABILITY_PROCESS),
         }
     }
 
@@ -173,6 +182,7 @@ impl Capability {
             Self::Stdout => "stdout",
             Self::Stdin => "stdin",
             Self::Filesystem => "filesystem",
+            Self::Process => "process",
         }
     }
 }
@@ -198,6 +208,9 @@ pub enum VmBinding {
     ResourceOpenDirectory,
     ResourceClose,
     ResourceReadText,
+    ProcessSpawn,
+    ProcessWait,
+    ProcessClose,
     None,
 }
 /// Runtime ABI 绑定键。
@@ -210,6 +223,9 @@ pub enum AbiBinding {
     ResourceOpenDirectory,
     ResourceClose,
     ResourceReadText,
+    ProcessSpawn,
+    ProcessWait,
+    ProcessClose,
     None,
 }
 /// 签名的后端无关部分。
@@ -361,6 +377,47 @@ pub fn validate_table() -> Result<(), ContractError> {
                         || declaration.capability != Capability::Filesystem
                         || declaration.abi_binding == AbiBinding::None
                         || declaration.vm_binding == VmBinding::None
+                    {
+                        return Err(ContractError::SignatureMismatch(declaration.id));
+                    }
+                }
+                IntrinsicKind::ProcessSpawn
+                | IntrinsicKind::ProcessWait
+                | IntrinsicKind::ProcessClose => {
+                    let (parameter, result, effects, vm, abi) = match declaration.kind {
+                        IntrinsicKind::ProcessSpawn => (
+                            ValueType::Str,
+                            ValueType::Process,
+                            Effects::SpawnsProcess,
+                            VmBinding::ProcessSpawn,
+                            AbiBinding::ProcessSpawn,
+                        ),
+                        IntrinsicKind::ProcessWait => (
+                            ValueType::Process,
+                            ValueType::Int,
+                            Effects::WaitsProcess,
+                            VmBinding::ProcessWait,
+                            AbiBinding::ProcessWait,
+                        ),
+                        IntrinsicKind::ProcessClose => (
+                            ValueType::Process,
+                            ValueType::None,
+                            Effects::ReleasesProcess,
+                            VmBinding::ProcessClose,
+                            AbiBinding::ProcessClose,
+                        ),
+                        _ => unreachable!(),
+                    };
+                    if declaration.signature
+                        != (Signature {
+                            arity: Arity::One,
+                            parameter,
+                            return_type: result,
+                        })
+                        || declaration.capability != Capability::Process
+                        || declaration.effects != effects
+                        || declaration.vm_binding != vm
+                        || declaration.abi_binding != abi
                     {
                         return Err(ContractError::SignatureMismatch(declaration.id));
                     }

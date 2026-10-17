@@ -181,6 +181,15 @@ impl<'a> DynamicGenerator<'a> {
             "xiao_runtime_resource_read_text_with_capabilities",
             "ptr, i64",
         ));
+        self.declarations.insert(
+            self.value_declaration("xiao_runtime_process_spawn_with_capabilities", "ptr, i64"),
+        );
+        self.declarations.insert(
+            self.value_declaration("xiao_runtime_process_wait_with_capabilities", "ptr, i64"),
+        );
+        self.declarations.insert(
+            "declare i32 @xiao_runtime_process_close_with_capabilities(ptr, i64)".to_owned(),
+        );
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_none", ""));
         self.declarations.insert(format!(

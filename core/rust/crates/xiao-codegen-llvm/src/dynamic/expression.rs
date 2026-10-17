@@ -545,7 +545,8 @@ impl<'a> DynamicGenerator<'a> {
                 Ok(value)
             }
             xiao_intrinsics::VmBinding::ResourceOpenFile
-            | xiao_intrinsics::VmBinding::ResourceOpenDirectory => {
+            | xiao_intrinsics::VmBinding::ResourceOpenDirectory
+            | xiao_intrinsics::VmBinding::ProcessSpawn => {
                 if arguments.len() != 1
                     || arguments[0].kind != "positional"
                     || arguments[0].name.is_some()
@@ -566,6 +567,9 @@ impl<'a> DynamicGenerator<'a> {
                     xiao_intrinsics::VmBinding::ResourceOpenDirectory => {
                         "xiao_runtime_resource_open_directory_with_capabilities"
                     }
+                    xiao_intrinsics::VmBinding::ProcessSpawn => {
+                        "xiao_runtime_process_spawn_with_capabilities"
+                    }
                     _ => unreachable!(),
                 };
                 let result = self.emit_value_call(
@@ -576,13 +580,14 @@ impl<'a> DynamicGenerator<'a> {
                 self.check_pending_error_at(span);
                 Ok(result)
             }
-            xiao_intrinsics::VmBinding::ResourceClose => {
+            xiao_intrinsics::VmBinding::ResourceClose
+            | xiao_intrinsics::VmBinding::ProcessClose => {
                 if arguments.len() != 1
                     || arguments[0].kind != "positional"
                     || arguments[0].name.is_some()
                 {
                     return Err(CodegenError::Unsupported {
-                        feature: "os_close 的参数形态".to_owned(),
+                        feature: format!("{} 的参数形态", declaration.public_name),
                         span: Some(span),
                     });
                 }
@@ -590,9 +595,14 @@ impl<'a> DynamicGenerator<'a> {
                 let value_slot = self.next_temp();
                 self.emit(format!("  {value_slot} = alloca {VALUE_TYPE}"));
                 self.emit(format!("  store {VALUE_TYPE} {value}, ptr {value_slot}"));
+                let symbol = if declaration.vm_binding == xiao_intrinsics::VmBinding::ProcessClose {
+                    "xiao_runtime_process_close_with_capabilities"
+                } else {
+                    "xiao_runtime_resource_close_with_capabilities"
+                };
                 self.checked_status_call_at(
                     format!(
-                        "@xiao_runtime_resource_close_with_capabilities(ptr {value_slot}, i64 {})",
+                        "@{symbol}(ptr {value_slot}, i64 {})",
                         self.options.capabilities
                     ),
                     span,
@@ -600,13 +610,14 @@ impl<'a> DynamicGenerator<'a> {
                 self.release_value(value);
                 Ok(self.none_value())
             }
-            xiao_intrinsics::VmBinding::ResourceReadText => {
+            xiao_intrinsics::VmBinding::ResourceReadText
+            | xiao_intrinsics::VmBinding::ProcessWait => {
                 if arguments.len() != 1
                     || arguments[0].kind != "positional"
                     || arguments[0].name.is_some()
                 {
                     return Err(CodegenError::Unsupported {
-                        feature: "os_read_text 的参数形态".to_owned(),
+                        feature: format!("{} 的参数形态", declaration.public_name),
                         span: Some(span),
                     });
                 }
@@ -615,7 +626,11 @@ impl<'a> DynamicGenerator<'a> {
                 self.emit(format!("  {value_slot} = alloca {VALUE_TYPE}"));
                 self.emit(format!("  store {VALUE_TYPE} {value}, ptr {value_slot}"));
                 let result = self.emit_value_call(
-                    "xiao_runtime_resource_read_text_with_capabilities",
+                    if declaration.vm_binding == xiao_intrinsics::VmBinding::ProcessWait {
+                        "xiao_runtime_process_wait_with_capabilities"
+                    } else {
+                        "xiao_runtime_resource_read_text_with_capabilities"
+                    },
                     &format!("ptr {value_slot}, i64 {}", self.options.capabilities),
                 );
                 self.release_value(value);

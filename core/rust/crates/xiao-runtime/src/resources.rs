@@ -1,8 +1,8 @@
-//! VM 与原生 ABI 共用的文件系统资源操作；所有宿主访问都先验证能力。
+//! VM 与原生 ABI 共用的文件系统及进程操作；所有宿主访问都先验证能力。
 
 use std::fs::{File, metadata};
 
-use xiao_intrinsics::{CAPABILITY_FILESYSTEM, validate_capability_mask};
+use xiao_intrinsics::{Capability, validate_capability_mask};
 
 use crate::{
     DiagnosticParam, ExternalResourceHandle, ExternalResourceKind, RuntimeError, RuntimeResult,
@@ -11,11 +11,21 @@ use crate::{
 
 /// 在读取宿主状态或关闭句柄前验证冻结的 filesystem 能力位。
 pub(crate) fn require_filesystem(capabilities: u64) -> RuntimeResult<()> {
+    require_capability(capabilities, Capability::Filesystem)
+}
+
+/// 在创建、等待或释放子进程之前验证 process 位。
+pub(crate) fn require_process(capabilities: u64) -> RuntimeResult<()> {
+    require_capability(capabilities, Capability::Process)
+}
+
+/// 按静态契约验证冻结的能力位，不执行任何宿主操作。
+fn require_capability(capabilities: u64, capability: Capability) -> RuntimeResult<()> {
     if validate_capability_mask(capabilities).is_err() {
         return Err(RuntimeError::invalid_value("能力掩码包含未知位"));
     }
-    if capabilities & CAPABILITY_FILESYSTEM == 0 {
-        return Err(RuntimeError::capability_unavailable("filesystem"));
+    if capability.bit().is_some_and(|bit| capabilities & bit == 0) {
+        return Err(RuntimeError::capability_unavailable(capability.as_str()));
     }
     Ok(())
 }
@@ -63,7 +73,14 @@ pub fn open_directory(value: &RuntimeValue, capabilities: u64) -> RuntimeResult<
 pub fn close(value: &RuntimeValue, capabilities: u64) -> RuntimeResult<()> {
     require_filesystem(capabilities)?;
     match value {
-        RuntimeValue::ExternalResource(resource) => resource.close(),
+        RuntimeValue::ExternalResource(resource)
+            if matches!(
+                resource.kind()?,
+                ExternalResourceKind::File | ExternalResourceKind::Directory
+            ) =>
+        {
+            resource.close()
+        }
         _ => Err(RuntimeError::type_mismatch("resource", value.type_name())),
     }
 }
@@ -78,5 +95,41 @@ pub fn read_text(value: &RuntimeValue, capabilities: u64) -> RuntimeResult<Runti
             RuntimeValue::new_string(resource.read_text()?)
         }
         _ => Err(RuntimeError::type_mismatch("file", value.type_name())),
+    }
+}
+
+/// 无 shell、无参数地启动程序，继承 stdio、环境和 cwd，由宿主解析 PATH。
+pub fn spawn(value: &RuntimeValue, capabilities: u64) -> RuntimeResult<RuntimeValue> {
+    require_process(capabilities)?;
+    let program = path(value)?;
+    let child = std::process::Command::new(program)
+        .spawn()
+        .map_err(|error| io_error("启动子进程", error))?;
+    ExternalResourceHandle::from_process(child).map(RuntimeValue::ExternalResource)
+}
+
+/// 阻塞等待进程结束，重复调用返回缓存；缺能力时不等待或读取载荷。
+pub fn wait(value: &RuntimeValue, capabilities: u64) -> RuntimeResult<RuntimeValue> {
+    require_process(capabilities)?;
+    match value {
+        RuntimeValue::ExternalResource(resource)
+            if resource.kind()? == ExternalResourceKind::Process =>
+        {
+            resource.wait_process().map(RuntimeValue::Int)
+        }
+        _ => Err(RuntimeError::type_mismatch("process", value.type_name())),
+    }
+}
+
+/// 幂等释放进程句柄，不终止、不阻塞、不回收；未等待子进程可在 Unix 上留下僵尸。
+pub fn close_process(value: &RuntimeValue, capabilities: u64) -> RuntimeResult<()> {
+    require_process(capabilities)?;
+    match value {
+        RuntimeValue::ExternalResource(resource)
+            if resource.kind()? == ExternalResourceKind::Process =>
+        {
+            resource.close()
+        }
+        _ => Err(RuntimeError::type_mismatch("process", value.type_name())),
     }
 }

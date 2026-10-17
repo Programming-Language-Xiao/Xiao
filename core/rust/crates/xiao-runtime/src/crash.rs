@@ -5,6 +5,31 @@
 
 use std::sync::Once;
 
+/// 按进程 API 契约保留正常退出码；Unix 信号与 Windows SEH 分别归一。
+pub(crate) fn process_exit_code(status: std::process::ExitStatus) -> i64 {
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::ExitStatusExt;
+        status
+            .code()
+            .map(i64::from)
+            .unwrap_or_else(|| 128 + i64::from(status.signal().unwrap_or(0)))
+    }
+    #[cfg(windows)]
+    {
+        let code = status.code().unwrap_or(0) as u32;
+        if code & 0xC000_0000 == 0xC000_0000 {
+            i64::from(windows_exception_exit_code(code))
+        } else {
+            i64::from(code)
+        }
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        i64::from(status.code().unwrap_or(0))
+    }
+}
+
 static INSTALL: Once = Once::new();
 
 /// 安装当前平台的最小未处理异常报告器。
@@ -175,7 +200,7 @@ fn install() {}
 
 #[cfg(all(test, windows))]
 mod tests {
-    use super::windows_exception_exit_code;
+    use super::{process_exit_code, windows_exception_exit_code};
 
     #[test]
     fn windows_exception_classes_share_unix_exit_codes() {
@@ -185,11 +210,30 @@ mod tests {
         assert_eq!(windows_exception_exit_code(0xC000008E), 136);
         assert_eq!(windows_exception_exit_code(0xC0000000), 134);
     }
+
+    #[test]
+    /// 子进程的普通 OS 码保持原值，NTSTATUS 异常复用现有故障类别。
+    fn process_exit_codes_preserve_normal_values_and_map_exceptions() {
+        use std::os::windows::process::ExitStatusExt;
+        for (raw, expected) in [
+            (7, 7),
+            (0x8000_0001, 0x8000_0001),
+            (0xC000_0005, 139),
+            (0xC000_001D, 132),
+            (0xC000_0094, 136),
+            (0xC000_0000, 134),
+        ] {
+            assert_eq!(
+                process_exit_code(std::process::ExitStatus::from_raw(raw)),
+                expected
+            );
+        }
+    }
 }
 
 #[cfg(all(test, unix))]
 mod unix_tests {
-    use super::unix_signal_exit_code;
+    use super::{process_exit_code, unix_signal_exit_code};
 
     #[test]
     fn hardware_signals_use_frozen_exit_codes() {
@@ -199,5 +243,21 @@ mod unix_tests {
         assert_eq!(unix_signal_exit_code(libc::SIGILL), 132);
         assert_eq!(unix_signal_exit_code(libc::SIGTRAP), 132);
         assert_eq!(unix_signal_exit_code(libc::SIGABRT), 134);
+    }
+
+    #[test]
+    /// 进程 API 使用 128+signal，不能误用 Runtime 自身的硬件故障退出码。
+    fn process_status_preserves_exit_codes_and_signal_numbers() {
+        use std::os::unix::process::ExitStatusExt;
+        assert_eq!(
+            process_exit_code(std::process::ExitStatus::from_raw(7 << 8)),
+            7
+        );
+        for signal in [libc::SIGTERM, libc::SIGBUS, libc::SIGABRT] {
+            assert_eq!(
+                process_exit_code(std::process::ExitStatus::from_raw(signal)),
+                128 + i64::from(signal)
+            );
+        }
     }
 }

@@ -1310,6 +1310,7 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
         || symbol.starts_with("xiao_runtime_print_values")
         || symbol.starts_with("xiao_runtime_input")
         || symbol.starts_with("xiao_runtime_resource_")
+        || symbol.starts_with("xiao_runtime_process_")
     {
         components.insert("value".to_owned());
     }

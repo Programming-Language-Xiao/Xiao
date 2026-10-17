@@ -580,6 +580,9 @@ impl<'source> TypeChecker<'source> {
                     | IntrinsicKind::ResourceOpenDirectory
                     | IntrinsicKind::ResourceClose
                     | IntrinsicKind::ResourceReadText
+                    | IntrinsicKind::ProcessSpawn
+                    | IntrinsicKind::ProcessWait
+                    | IntrinsicKind::ProcessClose
             )
         {
             self.record_intrinsic_call(callee, span);
@@ -624,6 +627,18 @@ impl<'source> TypeChecker<'source> {
             IntrinsicKind::ResourceReadText => (
                 Type::Resource(xiao_syntax::ResourceKind::File),
                 Type::scalar(ScalarType::Str),
+            ),
+            IntrinsicKind::ProcessSpawn => (
+                Type::scalar(ScalarType::Str),
+                Type::Resource(xiao_syntax::ResourceKind::Process),
+            ),
+            IntrinsicKind::ProcessWait => (
+                Type::Resource(xiao_syntax::ResourceKind::Process),
+                Type::scalar(ScalarType::Int),
+            ),
+            IntrinsicKind::ProcessClose => (
+                Type::Resource(xiao_syntax::ResourceKind::Process),
+                Type::None,
             ),
             _ => unreachable!(),
         };

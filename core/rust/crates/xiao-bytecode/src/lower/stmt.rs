@@ -68,10 +68,9 @@ fn dispatch_statement(lowerer: &mut Lowerer<'_>, statement: &IrStatement) {
                 value,
                 ..
             } = &statement.kind
-                && (declared_type
-                    .as_deref()
-                    .is_some_and(|name| matches!(name, "file" | "directory" | "resource"))
-                    || matches!(value.ty, IrType::Resource { .. }))
+                && (declared_type.as_deref().is_some_and(|name| {
+                    matches!(name, "file" | "directory" | "process" | "resource")
+                }) || matches!(value.ty, IrType::Resource { .. }))
             {
                 lowerer.record_unsupported(format!(
                     "{RESOURCE_CONSTANT_PREFIX}const 不能包含资源值（{}..{}）",

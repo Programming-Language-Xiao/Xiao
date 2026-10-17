@@ -81,6 +81,8 @@ pub enum KeywordKind {
     File,
     /// 目录资源类型关键字 `directory`。
     Directory,
+    /// 子进程资源类型关键字 `process`。
+    Process,
     /// 外部资源父类型关键字 `resource`。
     Resource,
 }
@@ -124,6 +126,7 @@ impl KeywordKind {
             Self::Bool => "bool",
             Self::File => "file",
             Self::Directory => "directory",
+            Self::Process => "process",
             Self::Resource => "resource",
         }
     }
@@ -166,6 +169,7 @@ impl KeywordKind {
             "bool" => Self::Bool,
             "file" => Self::File,
             "directory" => Self::Directory,
+            "process" => Self::Process,
             "resource" => Self::Resource,
             _ => return None,
         })

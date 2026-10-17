@@ -8,7 +8,7 @@
 > **它不是「加两个 intrinsic」**：process 是第一个带**子进程生命周期**的资源——
 > `wait` 会阻塞、`close` 与回收的关系、僵尸语义都必须先定死，否则三平台行为会分叉。
 
-状态：**规划完成（2026-10-18）**：五道裁定全部取甲；**未改任何代码**，实施由下一批 Agent 做。
+状态：**已实施（2026-10-18）**：五道裁定及补充类型裁定已落地；VM、ABI 与 Windows 受控原生专门夹具通过。完整门禁与三平台 push 取证见 §十一（实施中持续回填）。
 
 ## 一、为什么是这一批
 
@@ -30,7 +30,7 @@
 | 平台 | Windows、Linux、macOS | 同上 §2.5 |
 | 本批边界 | `process` 单独立项；**首批 process API 由本批冻结** | 同上 §2.1 |
 
-## 三、本批冻结的契约（四道裁定之后）
+## 三、本批冻结的契约（五道裁定之后）
 
 | API | 签名 | 能力 | 失败身份 |
 | --- | --- | --- | --- |
@@ -95,7 +95,7 @@
 ### 4.4 ABI 与新符号
 
 - 标签 17 已存在，process 只是内部 kind，**不新增值标签**；
-- `spawn`/`wait` 需要新 ABI 符号，按 10R 的规则**升次版本到 1.15**；
+- `spawn`/`wait`/`close_process` 需要新 ABI 符号，按 10R 的规则**升次版本到 1.15**；
 - 旧 Runtime 拒绝新产物的回归沿用 `is_abi_compatible` 的参数化用例。
 
 ### 4.5 三平台差分需要确定性的子进程
@@ -178,6 +178,10 @@
 
 **来源**：星崽直接裁定（AskUserQuestion，2026-10-18）；五条均取甲。
 第五条是在写文档时核出「一个 intrinsic 只有一个静态能力位」之后补发的裁决。
+
+**补充类型裁定（星崽，2026-10-18）**：`resource` 继续只接受 `file`、`directory`；
+`process` 是独立名义类型，不可隐式赋给 `resource`。这是实施时针对父类型边界的直接选择，
+保留 `close(resource value)` 现有签名，同时阻断经父类型变量绕过进程关闭限制。
 按 [20C](20c-official-xiao-library.md) §2.4 **G-2**，以直接裁定记。
 
 **裁定一的连带，写在纸面上**：冻结文档里的 `os.spawn` 是**模块限定后的文档名**，
@@ -218,7 +222,7 @@ docs/DevDocs/20d-process-api.md                       本文
 core/rust/crates/xiao-syntax/src/{token.rs,ast.rs,parser.rs}    process 关键字与类型
 core/rust/crates/xiao-types/src/{types.rs,conversion.rs,checker/**}  类型与检查
 core/rust/crates/xiao-ir/src/{model.rs,lower.rs,tables.rs,validate.rs}  IR 种类
-core/rust/crates/xiao-intrinsics/{intrinsics.json,src/lib.rs,build.rs}  两条契约
+core/rust/crates/xiao-intrinsics/{intrinsics.json,src/lib.rs,build.rs}  三条进程契约
 core/rust/crates/xiao-runtime/src/{value/mod.rs,resources.rs,abi_resource.rs,crash.rs}
 core/rust/crates/xiao-runtime-abi/src/lib.rs           ABI 1.15 与新符号
 core/rust/crates/xiao-vm/src/semantics/exec.rs         VM 分派
@@ -234,6 +238,65 @@ docs/DevDocs/README.md                                 阶段索引
 ## 十、裁定结果（已执行）
 
 见 §七 的五号表格；五条均取甲，来源为星崽直接裁定（AskUserQuestion，2026-10-18）。
+
+## 十一、实施与验收记录（2026-10-18）
+
+### 11.1 实际落点
+
+| 交付 | 实际文件 | 已验证行为 |
+| --- | --- | --- |
+| 语言与类型 | `xiao-syntax/src/{token.rs,ast.rs,parser.rs}`、`xiao-types/src/{conversion.rs,checker/expression.rs}` | `process` 独立名义类型；`resource` 保留文件/目录边界；直接、别名、限定导入均拒绝错误种类和参数形状 |
+| IR 与容器/产物 | `xiao-ir/src/{tables.rs,validate.rs}`、`xiao-runtime/src/tables/mod.rs`、`xiao-bytecode/src/lower/stmt.rs` | 进程表字段保持静态种类；集合/字典键不可哈希；源级 `const`/表常量报 `X02-TYPE-008`，产物边界报 `X07-FATAL-002` |
+| intrinsic 契约 | `xiao-intrinsics/{intrinsics.json,src/lib.rs,build.rs}` | ID 26/27/28；静态 process 能力及 spawn/wait/release 效果；参数、返回、VM/ABI 绑定均验证 |
+| 共用宿主实现 | `xiao-runtime/src/{resources.rs,value/mod.rs,crash.rs}` | 无 shell 启动、继承上下文、阻塞等待与缓存、Unix `128+signal`、Windows 故障类别；关闭与最终释放只分离 |
+| VM / LLVM / ABI | `xiao-vm/src/semantics/exec.rs`、`xiao-codegen-llvm/src/dynamic/{expression.rs,runtime_abi.rs}`、`src/artifact.rs`、`xiao-runtime/src/abi_resource.rs` | 能力先于参数解码和宿主访问；三条带能力入口；新符号进入既有 value 组件映射；不新增值标签 |
+| ABI 版本 | `xiao-runtime-abi/src/lib.rs` | 1.15；直接比较 required 1.15 / actual 1.14 拒绝，旧产物配新 Runtime 通过 |
+| 公开面 | `stdlib/os.xiao`、`stdlib/os.md`、`docs/UseDocs/library/os.md`、`docs/module-registry.json` | 位置专用薄包装；单独 `close_process`；明确继承、退出码与 Unix 僵尸语义，条目保持 draft |
+| 确定性夹具 | `xiao-driver/src/bin/{process_child_exit7.rs,process_child_abort.rs}`、`tests/20d_process_api.rs` | 三平台相同子程序；控制文件握手验证关闭不等待、不终止及最终引用释放；继承测试在隔离进程执行 |
+| 三平台门禁 | `.github/workflows/maintenance-regression.yml` | 三平台显式运行文件/目录与进程 VM 夹具；两条 process 原生 ignored 用例由受控 workspace 作业执行 |
+
+上表 crate 路径均以 `core/rust/crates/` 为前缀；`tests/20d_process_api.rs` 属于 `xiao-driver`。
+不新增命令行参数、env/cwd 参数、捕获、管道或 shell 解释；没有新增 RuntimeValue 或 ABI 值标签。
+
+### 11.2 定向验证
+
+`20d_process_api` 默认 **9 passed / 3 ignored**；其中一条 ignored 是父用例驱动的隔离子进程，
+其余两条是受控原生用例。Windows 本机已显式运行两条原生用例，**2 passed / 0 failed**。
+`xiao-runtime --lib abi_resource` 为 **6 passed / 0 failed**，含 process 位先于参数解码、
+ABI 标签往返、错误关闭入口不改变状态、关闭幂等与关闭后 wait 的错误身份。
+
+原生差分记录为 cached（`resource<process>\n7\n7\n`）、closed（`025`）、missing（`012`）、
+denied（`026`）、signal（Windows `139`、Unix `143`）。信号一项按冻结的平台口径分别断言，
+其余四条逐字比较；两条路径都在能力缺位时拒绝，握手用例另证明未启动子进程。
+本机单路径记录不代替三平台 CI；完整门禁及 push 证据在后续小节回填。
+
+本批移除验证逐次修改并恢复源文件，均实际执行用例且退出码为 101：
+
+| 临时移除点 | 必须失败的专门用例 | 实际失败 |
+| --- | --- | --- |
+| VM 的 `ProcessSpawn` 宿主操作 | `process_vm_wait_caches_exit_code_and_preserves_kind` | VM 成功断言失败 |
+| `process_close` ABI 的共用关闭操作 | `process_abi_roundtrip_and_close_preserve_capability_and_alias_state` | 共享句柄未进入关闭状态，断言失败 |
+| `stdlib/os.xiao` 的 `spawn` 导出 | `process_vm_wait_caches_exit_code_and_preserves_kind` | `X05-MODULE-005`，标准库缺少导出 |
+
+三份源文件均按原始字节恢复，变异不提交；恢复后的完整工作区已重新通过。
+
+本地完整验证：`cargo test --workspace --no-fail-fast -j 2` 为
+**1197 passed / 0 failed / 39 ignored**；`tools/gates/run.sh` exit 0，包含 fmt、Clippy、
+文档/覆盖率、锁文件、TypeScript、基准自检、驱动器测试和 Bun 测试。
+Bun 为 **295 pass / 5 skip / 0 fail**；DevDocs 的逐行粗体配对检查通过。
+ABI 升版同时更新既有兼容断言：当前 Runtime 接受 1.15、拒绝未来 1.16；
+参数化旧 Runtime 门禁仍直接验证 `(required 1.15, actual 1.14) == false`。
+
+### 11.3 20D 出口实际对账
+
+| # | 实际状态与证据 |
+| --- | --- |
+| 1 | 实现已补齐文件/目录/进程 API 与能力上下文；三平台验收待本批 push 完成后关闭 |
+| 2 | 满足：七项冻结见冻结批；进程五道裁定及补充类型关系见本文 §三/§七，均先于对应实现 |
+| 3 | 本地通过：进程位负例和 ABI 参数前置校验；三平台由 process 专门夹具复跑 |
+| 4 | 待本批 Windows/Linux/macOS 完整绿色 push，文件/目录既有证据仍见首批 API §13.1 |
+| 5 | 满足：资源承载及首批 API 证据沿用；本批新增进程集合拒绝、表常量拒绝及手工越过前端的 IR 常量生产/编码拒绝 |
+| 6 | 满足：本批 VM 绑定、ABI 关闭操作、模块导出三次移除均使专门用例失败，见 §11.2；既有三次验证仍见首批 API §10.3 |
 
 ## 相关页面
 

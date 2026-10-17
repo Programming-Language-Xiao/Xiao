@@ -2078,6 +2078,43 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                         .map_err(Fault::Error)?,
                 ))
             }
+            VmBinding::ProcessSpawn | VmBinding::ProcessWait | VmBinding::ProcessClose => {
+                let (parameter, result, effect) = match declaration.vm_binding {
+                    VmBinding::ProcessSpawn => (
+                        xiao_intrinsics::ValueType::Str,
+                        xiao_intrinsics::ValueType::Process,
+                        xiao_intrinsics::Effects::SpawnsProcess,
+                    ),
+                    VmBinding::ProcessWait => (
+                        xiao_intrinsics::ValueType::Process,
+                        xiao_intrinsics::ValueType::Int,
+                        xiao_intrinsics::Effects::WaitsProcess,
+                    ),
+                    VmBinding::ProcessClose => (
+                        xiao_intrinsics::ValueType::Process,
+                        xiao_intrinsics::ValueType::None,
+                        xiao_intrinsics::Effects::ReleasesProcess,
+                    ),
+                    _ => unreachable!(),
+                };
+                validate_resource_contract(declaration, parameter, result, effect)?;
+                let value = resource_argument(arguments)?;
+                let value = match declaration.vm_binding {
+                    VmBinding::ProcessSpawn => {
+                        xiao_runtime::resources::spawn(value, self.capabilities)
+                    }
+                    VmBinding::ProcessWait => {
+                        xiao_runtime::resources::wait(value, self.capabilities)
+                    }
+                    VmBinding::ProcessClose => {
+                        xiao_runtime::resources::close_process(value, self.capabilities)
+                            .map(|()| RuntimeValue::None)
+                    }
+                    _ => unreachable!(),
+                }
+                .map_err(Fault::Error)?;
+                Ok(Some(value))
+            }
             _ => Err(Fault::Error(XiaoError::invalid_value(format!(
                 "intrinsic ID {id} 尚未绑定 VM 实现"
             )))),
@@ -2136,7 +2173,13 @@ fn validate_resource_contract(
     effects: xiao_intrinsics::Effects,
 ) -> Result<(), Fault> {
     if declaration.abi_binding == xiao_intrinsics::AbiBinding::None
-        || declaration.capability != xiao_intrinsics::Capability::Filesystem
+        || declaration.capability
+            != match declaration.vm_binding {
+                xiao_intrinsics::VmBinding::ProcessSpawn
+                | xiao_intrinsics::VmBinding::ProcessWait
+                | xiao_intrinsics::VmBinding::ProcessClose => xiao_intrinsics::Capability::Process,
+                _ => xiao_intrinsics::Capability::Filesystem,
+            }
         || declaration.signature.arity != xiao_intrinsics::Arity::One
         || declaration.signature.parameter != parameter
         || declaration.signature.return_type != return_type

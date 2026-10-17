@@ -311,7 +311,9 @@ pub enum ResourceKind {
     File,
     /// 目录资源。
     Directory,
-    /// 接受首批资源种类的父类型。
+    /// 子进程资源；不属于文件/目录父类型。
+    Process,
+    /// 只接受文件和目录的父类型。
     Resource,
 }
 
@@ -322,6 +324,7 @@ impl ResourceKind {
         match self {
             Self::File => "file",
             Self::Directory => "directory",
+            Self::Process => "process",
             Self::Resource => "resource",
         }
     }
@@ -332,6 +335,7 @@ impl ResourceKind {
         Some(match keyword {
             KeywordKind::File => Self::File,
             KeywordKind::Directory => Self::Directory,
+            KeywordKind::Process => Self::Process,
             KeywordKind::Resource => Self::Resource,
             _ => return None,
         })

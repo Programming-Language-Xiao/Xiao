@@ -89,15 +89,20 @@ fn set_rejects_unhashable_elements() {
 #[test]
 /// 资源允许进入数组和元组，但作为集合元素必须被可执行地拒绝。
 fn external_resource_container_boundaries_are_enforced() {
-    let resource = RuntimeValue::ExternalResource(
-        ExternalResourceHandle::new(ExternalResourceKind::File).expect("资源应分配"),
-    );
-    let array = ArrayHandle::new(vec![resource.clone()]).expect("数组应接受资源值");
-    let tuple = TupleHandle::new(vec![resource.clone()]).expect("元组应接受资源值");
-    assert_eq!(array.len(), 1);
-    assert_eq!(tuple.len(), 1);
-    let error = SetHandle::new(vec![resource]).expect_err("集合元素应拒绝资源");
-    assert_eq!(error.code(), CONTAINER_HASHABILITY_CODE);
+    for kind in [
+        ExternalResourceKind::File,
+        ExternalResourceKind::Directory,
+        ExternalResourceKind::Process,
+    ] {
+        let resource =
+            RuntimeValue::ExternalResource(ExternalResourceHandle::new(kind).expect("资源应分配"));
+        let array = ArrayHandle::new(vec![resource.clone()]).expect("数组应接受资源值");
+        let tuple = TupleHandle::new(vec![resource.clone()]).expect("元组应接受资源值");
+        assert_eq!(array.len(), 1);
+        assert_eq!(tuple.len(), 1);
+        let error = SetHandle::new(vec![resource]).expect_err("集合元素应拒绝资源");
+        assert_eq!(error.code(), CONTAINER_HASHABILITY_CODE);
+    }
 }
 
 #[test]

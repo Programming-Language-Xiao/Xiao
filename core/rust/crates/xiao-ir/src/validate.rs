@@ -577,7 +577,7 @@ fn validate_type(ty: &IrType, path: &str, result: &mut IrValidationResult) {
             }
         }
         IrType::Resource { kind } => {
-            if !matches!(kind.as_str(), "file" | "directory" | "resource") {
+            if !matches!(kind.as_str(), "file" | "directory" | "process" | "resource") {
                 result.errors.push(error(path, "资源类型种类无效", None));
             }
         }

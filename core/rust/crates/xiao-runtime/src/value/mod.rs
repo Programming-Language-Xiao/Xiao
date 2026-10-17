@@ -12,6 +12,7 @@ use std::cell::Cell;
 use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 use std::path::PathBuf;
+use std::process::Child;
 
 use xiao_syntax::ScalarType;
 
@@ -171,6 +172,8 @@ pub enum ExternalResourceKind {
     File,
     /// 目录资源。
     Directory,
+    /// 子进程资源。
+    Process,
 }
 
 impl ExternalResourceKind {
@@ -180,6 +183,7 @@ impl ExternalResourceKind {
         match self {
             Self::File => "file",
             Self::Directory => "directory",
+            Self::Process => "process",
         }
     }
 
@@ -201,6 +205,11 @@ enum ExternalResourcePayload {
     File(File),
     /// 已验证的目录路径。
     Directory(PathBuf),
+    /// 子进程句柄和已回收的退出码；丢弃 Child 只分离，不 kill 或 wait。
+    Process {
+        child: Child,
+        exit_code: Option<i64>,
+    },
 }
 
 /// 外部资源的内部载荷。
@@ -304,6 +313,19 @@ impl ExternalResourceHandle {
         Ok(Self { inner })
     }
 
+    /// 接管已创建的子进程；所有别名共享它的关闭状态和等待缓存。
+    pub fn from_process(child: Child) -> RuntimeResult<Self> {
+        let inner = allocate_payload(Box::new(ExternalResourceObject {
+            kind: ExternalResourceKind::Process,
+            closed: Cell::new(false),
+            payload: Some(ExternalResourcePayload::Process {
+                child,
+                exit_code: None,
+            }),
+        }))?;
+        Ok(Self { inner })
+    }
+
     /// 从已验证的强句柄恢复资源包装。
     pub(crate) fn from_strong_handle(inner: StrongHandle) -> RuntimeResult<Self> {
         if inner.type_tag() != EXTERNAL_RESOURCE_RUNTIME_TAG {
@@ -369,6 +391,30 @@ impl ExternalResourceHandle {
                     .map_err(|error| resource_io_error("读取文件", error))?;
                 String::from_utf8(bytes)
                     .map_err(|error| resource_io_error("解码文件", error.utf8_error()))
+            },
+        )?
+    }
+
+    /// 阻塞回收子进程并缓存退出码；重复等待不再次访问宿主，关闭后统一拒绝。
+    pub fn wait_process(&self) -> RuntimeResult<i64> {
+        self.ensure_open()?;
+        self.inner.with_payload_mut(
+            EXTERNAL_RESOURCE_RUNTIME_TAG,
+            |object: &mut ExternalResourceObject| {
+                let Some(ExternalResourcePayload::Process { child, exit_code }) =
+                    object.payload.as_mut()
+                else {
+                    return Err(RuntimeError::invalid_value("资源没有可等待的子进程载荷"));
+                };
+                if let Some(code) = *exit_code {
+                    return Ok(code);
+                }
+                let status = child
+                    .wait()
+                    .map_err(|error| resource_io_error("等待子进程", error))?;
+                let code = crate::crash::process_exit_code(status);
+                *exit_code = Some(code);
+                Ok(code)
             },
         )?
     }

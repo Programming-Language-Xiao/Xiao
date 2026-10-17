@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 14;
+pub const ABI_MINOR_VERSION: u32 = 15;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -999,9 +999,9 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_000E);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_000F);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 14);
+        assert_eq!(ABI_MINOR_VERSION, 15);
     }
 
     #[test]
@@ -1011,6 +1011,15 @@ mod tests {
         assert!(super::is_abi_compatible(1, 14, 1, 14));
         assert!(super::is_abi_compatible(1, 13, 1, 14));
         assert!(!super::is_abi_compatible(1, 14, 2, 14));
+    }
+
+    #[test]
+    /// 进程入口生成的 1.15 产物拒绝 1.14 Runtime，旧产物仍兼容新 Runtime。
+    fn process_api_requires_runtime_1_15() {
+        assert!(!super::is_abi_compatible(1, 15, 1, 14));
+        assert!(super::is_abi_compatible(1, 15, 1, 15));
+        assert!(super::is_abi_compatible(1, 14, 1, 15));
+        assert!(!super::is_abi_compatible(1, 15, 2, 15));
     }
 
     #[test]

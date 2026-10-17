@@ -1885,7 +1885,12 @@ fn is_type_keyword_token(kind: TokenKind) -> bool {
     is_scalar_type_token(kind)
         || matches!(
             kind,
-            TokenKind::Keyword(KeywordKind::File | KeywordKind::Directory | KeywordKind::Resource)
+            TokenKind::Keyword(
+                KeywordKind::File
+                    | KeywordKind::Directory
+                    | KeywordKind::Process
+                    | KeywordKind::Resource
+            )
         )
 }
 

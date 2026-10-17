@@ -25,3 +25,7 @@ Windows 原生准备方式见 `docs/DevDocs/10d-environment-gated-test-spec.md` 
 `20d_first_api.rs` 覆盖 `os` 首批资源 API 的 VM/原生差分、能力与错误身份、资源常量和
 容器边界。导入签名回归覆盖函数/模块别名、限定路径、括号与函数值复制，并检查局部遮蔽、
 赋值覆盖及 LLVM 既有拒绝边界；原生差分继续在受控工具链下显式执行。
+
+`20d_process_api.rs` 使用同一 `process_child_exit7`/`process_child_abort` 子程序验证等待缓存、
+信号/异常码、能力、资源类型及产物边界。隔离握手证明关闭和最后引用释放不等待或终止子进程，
+并验证 stdio、PATH、环境和 cwd 继承。两条 ignored 原生测试在三平台受控作业中执行。

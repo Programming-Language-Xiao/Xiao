@@ -197,6 +197,7 @@ pub fn restore_type(ty: &IrType) -> Option<Type> {
         IrType::Resource { kind } => Type::Resource(match kind.as_str() {
             "file" => xiao_syntax::ResourceKind::File,
             "directory" => xiao_syntax::ResourceKind::Directory,
+            "process" => xiao_syntax::ResourceKind::Process,
             "resource" => xiao_syntax::ResourceKind::Resource,
             _ => return None,
         }),

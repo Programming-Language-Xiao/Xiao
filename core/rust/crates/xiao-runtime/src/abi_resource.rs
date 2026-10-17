@@ -43,7 +43,22 @@ fn resource_value_call(
     capabilities: u64,
     operation: fn(&RuntimeValue, u64) -> RuntimeResult<RuntimeValue>,
 ) -> XiaoValue {
-    result_value(resources::require_filesystem(capabilities).and_then(|()| {
+    resource_value_call_with_requirement(
+        value,
+        capabilities,
+        resources::require_filesystem,
+        operation,
+    )
+}
+
+/// 按入口静态能力先校验，再解码参数；文件系统与进程使用同一 ABI 形状。
+fn resource_value_call_with_requirement(
+    value: *const XiaoValue,
+    capabilities: u64,
+    requirement: fn(u64) -> RuntimeResult<()>,
+    operation: fn(&RuntimeValue, u64) -> RuntimeResult<RuntimeValue>,
+) -> XiaoValue {
+    result_value(requirement(capabilities).and_then(|()| {
         let value = unsafe { argument(value) }?;
         operation(&value, capabilities)
     }))
@@ -90,6 +105,50 @@ pub extern "C" fn xiao_runtime_resource_read_text_with_capabilities(
     capabilities: u64,
 ) -> XiaoValue {
     resource_value_call(value, capabilities, resources::read_text)
+}
+
+/// 启动子进程并返回拥有的统一资源值，参数仍以 XiaoValue 借用传递。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_process_spawn_with_capabilities(
+    value: *const XiaoValue,
+    capabilities: u64,
+) -> XiaoValue {
+    resource_value_call_with_requirement(
+        value,
+        capabilities,
+        resources::require_process,
+        resources::spawn,
+    )
+}
+
+/// 返回缓存或阻塞取得的进程退出码；失败保留 ABI 错误快照。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_process_wait_with_capabilities(
+    value: *const XiaoValue,
+    capabilities: u64,
+) -> XiaoValue {
+    resource_value_call_with_requirement(
+        value,
+        capabilities,
+        resources::require_process,
+        resources::wait,
+    )
+}
+
+/// 只释放进程句柄；缺能力时不改变共享关闭状态。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_process_close_with_capabilities(
+    value: *const XiaoValue,
+    capabilities: u64,
+) -> i32 {
+    let result = resources::require_process(capabilities).and_then(|()| {
+        let value = unsafe { argument(value) }?;
+        resources::close_process(&value, capabilities)
+    });
+    match result {
+        Ok(()) => XiaoAbiStatus::Ok.code(),
+        Err(error) => status_from_error(&error),
+    }
 }
 
 #[cfg(test)]
@@ -262,6 +321,79 @@ mod tests {
         release(&mut file_resource);
         release(&mut file_path);
         let _ = fs::remove_file(file);
+        super::super::xiao_runtime_error_clear();
+    }
+
+    #[test]
+    /// 进程能力必须先于参数解码；filesystem 位不能替代 process 位。
+    fn process_abi_checks_capabilities_before_arguments() {
+        for operation in [
+            xiao_runtime_process_spawn_with_capabilities,
+            xiao_runtime_process_wait_with_capabilities,
+        ] {
+            let value = operation(std::ptr::null(), xiao_intrinsics::CAPABILITY_FILESYSTEM);
+            assert_eq!(value.tag, XiaoValueTag::None);
+            assert_eq!(error_code(), xiao_diagnostics::CAPABILITY_UNAVAILABLE_CODE);
+            super::super::xiao_runtime_error_clear();
+            let value = operation(std::ptr::null(), xiao_intrinsics::CAPABILITY_PROCESS);
+            assert_eq!(value.tag, XiaoValueTag::None);
+            assert_eq!(error_code(), xiao_diagnostics::INVALID_VALUE_CODE);
+            super::super::xiao_runtime_error_clear();
+        }
+        assert_eq!(
+            xiao_runtime_process_close_with_capabilities(std::ptr::null(), 0),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        assert_eq!(error_code(), xiao_diagnostics::CAPABILITY_UNAVAILABLE_CODE);
+        super::super::xiao_runtime_error_clear();
+    }
+
+    #[test]
+    /// 标签 17 可往返进程种类；错误关闭入口不能改变进程状态。
+    fn process_abi_roundtrip_and_close_preserve_capability_and_alias_state() {
+        let handle = crate::ExternalResourceHandle::new(crate::ExternalResourceKind::Process)
+            .expect("进程承载");
+        let mut value =
+            runtime_to_value(&RuntimeValue::ExternalResource(handle.clone())).expect("ABI 值");
+        assert_eq!(value.tag, XiaoValueTag::ExternalResource);
+        let roundtrip = unsafe { value_to_runtime(&value) }.expect("ABI 往返");
+        assert_eq!(roundtrip.type_name(), "resource<process>");
+        assert_eq!(
+            xiao_runtime_resource_close_with_capabilities(
+                &value,
+                xiao_intrinsics::CAPABILITY_FILESYSTEM
+            ),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        assert!(!handle.is_closed().unwrap());
+        super::super::xiao_runtime_error_clear();
+        assert_eq!(
+            xiao_runtime_process_close_with_capabilities(
+                &value,
+                xiao_intrinsics::CAPABILITY_FILESYSTEM
+            ),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        assert_eq!(error_code(), xiao_diagnostics::CAPABILITY_UNAVAILABLE_CODE);
+        assert!(!handle.is_closed().unwrap());
+        super::super::xiao_runtime_error_clear();
+        for _ in 0..2 {
+            assert_eq!(
+                xiao_runtime_process_close_with_capabilities(
+                    &value,
+                    xiao_intrinsics::CAPABILITY_PROCESS
+                ),
+                XiaoAbiStatus::Ok.code()
+            );
+        }
+        assert!(handle.is_closed().unwrap());
+        let closed = xiao_runtime_process_wait_with_capabilities(
+            &value,
+            xiao_intrinsics::CAPABILITY_PROCESS,
+        );
+        assert_eq!(closed.tag, XiaoValueTag::None);
+        assert_eq!(error_code(), xiao_diagnostics::RESOURCE_CLOSED_CODE);
+        release(&mut value);
         super::super::xiao_runtime_error_clear();
     }
 }

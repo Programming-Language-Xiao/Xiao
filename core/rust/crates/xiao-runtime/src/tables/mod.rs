@@ -730,7 +730,14 @@ pub(crate) fn runtime_value_matches(value: &RuntimeValue, expected: &Type) -> bo
                     ) | (
                         crate::value::ExternalResourceKind::Directory,
                         xiao_syntax::ResourceKind::Directory,
-                    ) | (_, xiao_syntax::ResourceKind::Resource)
+                    ) | (
+                        crate::value::ExternalResourceKind::Process,
+                        xiao_syntax::ResourceKind::Process,
+                    ) | (
+                        crate::value::ExternalResourceKind::File
+                            | crate::value::ExternalResourceKind::Directory,
+                        xiao_syntax::ResourceKind::Resource,
+                    )
                 )
             }),
             _ => false,
