@@ -221,7 +221,7 @@ docs/DevDocs/README.md                                阶段索引加本文一�
 | 项 | 证据 |
 | --- | --- |
 | 九处检查点 | 逐处读到显式臂；`display_text` 与 `type_name` 共用 `ExternalResourceKind::display_name()`（`value/mod.rs:184`），没有两处各拼一份 |
-| 既有 19 变体的判定 | 旧排除式排除的恰是 `Table`/`TableDropView`/`Array`/`Tuple`/`DictTable`/`DictColumn`/`Set`/`Error`；新正向表允许的恰是其余 11 个，**逐一相等**。用例 18 个在 `b06_runtime.rs:257`，`TableDropView` 由同文件 `:224` 覆盖，合计 19/19 |
+| 既有 19 变体的判定 | 旧排除式排除的恰是 `Table`/`TableDropView`/`Array`/`Tuple`/`DictTable`/`DictColumn`/`Set`/`Error`；新正向表允许的恰是其余 11 个，**逐一相等**。用例 18 个在 `b06_runtime.rs:259`，`TableDropView` 由同文件 `:224` 覆盖，合计 19/19 |
 | 四处静默点的用例是真的 | 变异：资源加进允许表 → 单元与容器边界**同时红**；删 `type_name` 资源臂 → 实际值 `"dynamic"`；`PartialEq` 改 `false` → 别名用例红；`value_to_runtime` 改 `Err` → ABI 回转用例红；从允许表删 `Module` → 19 变体用例红。还原后五条用例全绿 |
 | 关闭 | 两次 `close` 幂等、`ensure_open` 报 `X06-RUNTIME-025`（i18n 已登记 `runtime.resource_closed`）、别名逐个释放只触发一次 `Destroy` |
 | 容器边界 | 数组/元组接受、集合**可执行地**拒绝（`CONTAINER_HASHABILITY_CODE`）；资源作**字典键**在当前 Runtime 不可达——`DictHandle` 的键类型是 `String`，属结构性拒绝而非漏测 |
@@ -272,6 +272,7 @@ docs/DevDocs/README.md                                阶段索引加本文一�
 免得后来的人以为漏升。本节即记录。**这不是后续批次的通用豁免**：首批 API
 第一次生成或返回 `ExternalResource` 前，必须重新升 ABI 次版本（预期为 1.14）或
 增加等价的资源特性门禁，并用旧 Runtime 拒绝新标签的回归锁住边界。
+**已登记**：[20D-规划](20d-platform-resources-stage-plan.md) §4.2 的「首批 API 的 ABI 门禁」。
 
 ## 相关页面
 
