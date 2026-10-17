@@ -11,6 +11,13 @@
 20AB 新增 `xiao_runtime_print_values` 与 `xiao_runtime_input` 输出/输入入口；10T 追加表方法与确定性随机种子入口；20D-能力上下文追加带能力掩码的
 `xiao_runtime_print_values_with_capabilities` 与 `xiao_runtime_input_with_capabilities`，
 当前 ABI 主版本 1、次版本 13。改变布局或所有权契约必须升主版本。
+
+**旧的两个无掩码入口只供兼容**：`xiao_runtime_print_values` 与 `xiao_runtime_input`
+等价于按 `KNOWN_CAPABILITY_MASK`（当前七个能力位全开）调用——**它们会绕过能力检查**。
+**新调用点必须使用带能力掩码的入口**；代码生成器只发射带掩码的符号，
+`xiao-codegen-llvm/tests/n0_b_dynamic.rs` 有断言守着这一点。
+这两个兼容入口的移除或收紧需要升主版本。
+
 异常对象与异常展开仍属于 N0-C。
 
 ## 允许与禁止依赖
