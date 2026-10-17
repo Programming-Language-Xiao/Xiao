@@ -8,7 +8,7 @@
 > **它不是「加两个 intrinsic」**：process 是第一个带**子进程生命周期**的资源——
 > `wait` 会阻塞、`close` 与回收的关系、僵尸语义都必须先定死，否则三平台行为会分叉。
 
-状态：**已实施（2026-10-18）**：五道裁定及补充类型裁定已落地；VM、ABI 与 Windows 受控原生专门夹具通过。完整门禁与三平台 push 取证见 §十一（实施中持续回填）。
+状态：**已实施并验收通过（2026-10-18）**：五道裁定及补充类型裁定已落地；完整本地门禁、三平台绿色 push 与移除验证齐全。20D 六条出口逐项满足，见 §十一。
 
 ## 一、为什么是这一批
 
@@ -249,13 +249,13 @@ docs/DevDocs/README.md                                 阶段索引
 | IR 与容器/产物 | `xiao-ir/src/{tables.rs,validate.rs}`、`xiao-runtime/src/tables/mod.rs`、`xiao-bytecode/src/lower/stmt.rs` | 进程表字段保持静态种类；集合/字典键不可哈希；源级 `const`/表常量报 `X02-TYPE-008`，产物边界报 `X07-FATAL-002` |
 | intrinsic 契约 | `xiao-intrinsics/{intrinsics.json,src/lib.rs,build.rs}` | ID 26/27/28；静态 process 能力及 spawn/wait/release 效果；参数、返回、VM/ABI 绑定均验证 |
 | 共用宿主实现 | `xiao-runtime/src/{resources.rs,value/mod.rs,crash.rs}` | 无 shell 启动、继承上下文、阻塞等待与缓存、Unix `128+signal`、Windows 故障类别；关闭与最终释放只分离 |
-| VM / LLVM / ABI | `xiao-vm/src/semantics/exec.rs`、`xiao-codegen-llvm/src/dynamic/{expression.rs,runtime_abi.rs}`、`src/artifact.rs`、`xiao-runtime/src/abi_resource.rs` | 能力先于参数解码和宿主访问；三条带能力入口；新符号进入既有 value 组件映射；不新增值标签 |
+| VM / LLVM / ABI | `xiao-vm/src/semantics/exec.rs`、`xiao-codegen-llvm/src/dynamic/{expression.rs,runtime_abi.rs}`、`xiao-codegen-llvm/src/artifact.rs`、`xiao-runtime/src/abi_resource.rs` | 能力先于参数解码和宿主访问；三条带能力入口；新符号进入既有 value 组件映射；不新增值标签 |
 | ABI 版本 | `xiao-runtime-abi/src/lib.rs` | 1.15；直接比较 required 1.15 / actual 1.14 拒绝，旧产物配新 Runtime 通过 |
 | 公开面 | `stdlib/os.xiao`、`stdlib/os.md`、`docs/UseDocs/library/os.md`、`docs/module-registry.json` | 位置专用薄包装；单独 `close_process`；明确继承、退出码与 Unix 僵尸语义，条目保持 draft |
-| 确定性夹具 | `xiao-driver/src/bin/{process_child_exit7.rs,process_child_abort.rs}`、`tests/20d_process_api.rs` | 三平台相同子程序；控制文件握手验证关闭不等待、不终止及最终引用释放；继承测试在隔离进程执行 |
+| 确定性夹具 | `xiao-driver/src/bin/{process_child_exit7.rs,process_child_abort.rs}`、`xiao-driver/tests/20d_process_api.rs` | 三平台相同子程序；控制文件握手验证关闭不等待、不终止及最终引用释放；继承测试在隔离进程执行 |
 | 三平台门禁 | `.github/workflows/maintenance-regression.yml` | 三平台显式运行文件/目录与进程 VM 夹具；两条 process 原生 ignored 用例由受控 workspace 作业执行 |
 
-上表 crate 路径均以 `core/rust/crates/` 为前缀；`tests/20d_process_api.rs` 属于 `xiao-driver`。
+上表 crate 路径均以 `core/rust/crates/` 为前缀。
 不新增命令行参数、env/cwd 参数、捕获、管道或 shell 解释；没有新增 RuntimeValue 或 ABI 值标签。
 
 ### 11.2 定向验证
@@ -268,7 +268,7 @@ ABI 标签往返、错误关闭入口不改变状态、关闭幂等与关闭后 
 原生差分记录为 cached（`resource<process>\n7\n7\n`）、closed（`025`）、missing（`012`）、
 denied（`026`）、signal（Windows `139`、Unix `143`）。信号一项按冻结的平台口径分别断言，
 其余四条逐字比较；两条路径都在能力缺位时拒绝，握手用例另证明未启动子进程。
-本机单路径记录不代替三平台 CI；完整门禁及 push 证据在后续小节回填。
+本机单路径记录不代替三平台 CI；完整门禁及 push 证据见本节后续记录。
 
 本批移除验证逐次修改并恢复源文件，均实际执行用例且退出码为 101：
 
@@ -291,12 +291,45 @@ ABI 升版同时更新既有兼容断言：当前 Runtime 接受 1.15、拒绝�
 
 | # | 实际状态与证据 |
 | --- | --- |
-| 1 | 实现已补齐文件/目录/进程 API 与能力上下文；三平台验收待本批 push 完成后关闭 |
+| 1 | 满足：文件/目录 API 与能力上下文沿用既有交付，进程三入口由本批补齐；三平台完整绿色 push 见 §11.4 |
 | 2 | 满足：七项冻结见冻结批；进程五道裁定及补充类型关系见本文 §三/§七，均先于对应实现 |
-| 3 | 本地通过：进程位负例和 ABI 参数前置校验；三平台由 process 专门夹具复跑 |
-| 4 | 待本批 Windows/Linux/macOS 完整绿色 push，文件/目录既有证据仍见首批 API §13.1 |
+| 3 | 满足：进程位缺失的 VM/原生负例均报 `X06-RUNTIME-026`；握手证明不启动子进程，ABI 还验证能力先于参数解码；三平台均通过 |
+| 4 | 满足：维护回归 `39061867413` 六作业全绿；四条共同进程记录和五条文件/目录记录三平台逐字相等，信号/异常按冻结的平台规则断言，见 §11.4 |
 | 5 | 满足：资源承载及首批 API 证据沿用；本批新增进程集合拒绝、表常量拒绝及手工越过前端的 IR 常量生产/编码拒绝 |
 | 6 | 满足：本批 VM 绑定、ABI 关闭操作、模块导出三次移除均使专门用例失败，见 §11.2；既有三次验证仍见首批 API §10.3 |
+
+### 11.4 三平台绿色 push 与日志对账
+
+实现提交：`a24d47797bfee5d9fe6670b9f2dbeb42e9c238ae`；
+严格输出比较的最终验收提交：`54ba8cd66c661aecf8df49c83fc7d5b480b8e579`。
+最终测试直接比较原始 UTF-8 输出，未做换行归一化。
+
+最终提交触发的 [维护回归 `39061867413`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39061867413)
+六个作业全部 **success**。实现提交的 [工作区门禁 `39061524022`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39061524022)
+为 **success**（作业 `117480312385`）。此前的维护运行 `39061524126` 被最终测试提交取代并自动取消，
+不把它的局部通过当作本批三平台验收依据。
+
+| 平台 | 原生回归作业 | 进程日志核实 |
+| --- | --- | --- |
+| Windows | [117481474290](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39061867413/job/117481474290) | 原生差分第 1195 行、生命周期/能力握手第 1190 行通过；默认夹具第 2333 行为 9 passed / 3 ignored |
+| Linux | [117481474278](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39061867413/job/117481474278) | 原生差分第 981 行、生命周期/能力握手第 976 行通过；默认夹具第 2307 行为 9 passed / 3 ignored |
+| macOS | [117481474337](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39061867413/job/117481474337) | 原生差分第 944 行、生命周期/能力握手第 939 行通过；默认夹具第 2174 行为 9 passed / 3 ignored |
+
+下载三个作业完整日志后，逐条确认 9 个 VM 用例和 2 个原生用例真实执行；
+关闭/最终引用释放不阻塞不终止、缺能力不启动、继承和类型/产物边界均通过。
+四条共同的 `20D-PROCESS` 记录逐字相等：
+
+| 用例 | 原始标准输出 | 错误身份 |
+| --- | --- | --- |
+| 资源种类与重复 wait | `resource<process>\n7\n7\n` | 成功 |
+| 关闭后 wait | 空 | `X06-RUNTIME-025` |
+| 程序不存在 | 空 | `X06-RUNTIME-012` |
+| 缺 process 能力 | 空 | `X06-RUNTIME-026` |
+
+信号/异常是按平台契约分别验证：Linux/macOS 的 SIGTERM 均为 **143**，
+Windows 的异常状态为 **139**；没有把两个不同退出规则伪装成相同输出。
+同一运行中的五条 `20D-NATIVE` 文件/目录记录也三平台逐字相等。
+因此本批验收完成，**20D 六条阶段出口已全部满足**；参数、显式 env/cwd、捕获与管道仍需后续独立冻结。
 
 ## 相关页面
 
