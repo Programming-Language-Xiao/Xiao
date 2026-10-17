@@ -236,9 +236,11 @@ intrinsic 实现前冻结。
 
 **20D-冻结回填（2026-10-17）**：首批 `os` 契约只包含
 `os.open_file(str path) -> file`、`os.open_directory(str path) -> directory` 和
-`os.close(file|directory resource) -> none`；三者需要 `filesystem` 能力。Windows、Linux、
-macOS 均列为首批支持目标；目标不支持时报 `X20-TARGET-001`，能力缺失时报
-`X06-RUNTIME-026`，不静默改道。读写、枚举、进程、时钟和网络 API 留给后续冻结批。
+`os.close(file|directory resource) -> none`，并增补
+`os.read_text(file resource) -> str`；四条都需要 `filesystem` 能力。`read_text` 读整个
+UTF-8 文件，不接受目录句柄，不带偏移/容量/流式参数。Windows、Linux、macOS 均列为首批
+支持目标；目标不支持时报 `X20-TARGET-001`，能力缺失时报 `X06-RUNTIME-026`，不静默改道。
+写入、枚举、进程、时钟和网络 API 留给后续冻结批。
 
 ### 5.3 与包管理和 `.xar` 的边界
 
