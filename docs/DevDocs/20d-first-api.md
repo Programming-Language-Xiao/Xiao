@@ -8,8 +8,8 @@
 > 也是 **第一次生成资源值**——两份前置（[阶段计划](20d-platform-resources-stage-plan.md) §4.2 的
 > F-1 产物边界、ABI 1.14 门禁）都在本批到期。
 
-状态：**审核返工已实现，等待三平台 push 取证（2026-10-17）**：§十一 的 F-1～F-6 与 O-1/O-2
-均已落实代码、回归或验收记录；20D 出口第 4 条继续等待完整维护回归转绿，修复记录见 §十二。
+状态：**已完成审核返工与三平台验收（2026-10-17）**：§十一 的 F-1～F-6 与 O-1/O-2 均已关闭；
+维护回归 `39041556630` 六个作业全部成功，20D 出口第 4 条已取证。修复与绿色 push 证据见 §十二。
 
 ## 一、为什么是这一批
 
@@ -378,13 +378,13 @@ docs/DevDocs/README.md                                    阶段索引加本文�
 
 ## 十二、审核返工（2026-10-17）
 
-§十一 保留原审核事实。当前修复与证据如下；F-1 的代码修正不替代完整绿色 push 证据。
+§十一 保留针对旧提交的审核事实。当前修复与证据如下；F-1 已由 §12.1 的完整绿色 push 关闭。
 
 | 项 | 修复落点 | 验证与状态 |
 | --- | --- | --- |
-| F-1：平台故障 | `core/rust/crates/xiao-runtime/src/crash.rs:56`；`tests/n0_c2_error_boundary.rs` | 按故障类别映射冻结退出码，兼容 BSD 的 SIGBUS 编号；新增 SIGTRAP 处理，真实子进程覆盖 SIGSEGV/SIGBUS/SIGTRAP；Windows 本机平台故障回归通过，Unix 路径由 CI 执行 |
+| F-1：平台故障 | `core/rust/crates/xiao-runtime/src/crash.rs:56`；`tests/n0_c2_error_boundary.rs` | 按故障类别映射冻结退出码，兼容 BSD 的 SIGBUS 编号；新增 SIGTRAP 处理，真实子进程覆盖 SIGSEGV/SIGBUS/SIGTRAP；三平台 CI 均通过，macOS 的两条外部平台 Fatal 用例也通过 |
 | F-1：握手 | `core/rust/crates/xiao-runtime/src/abi_diagnostics.rs:86`；`src/abi_tests.rs:740` | accept 后显式恢复阻塞模式，再设置超时；延迟 hello 的真实 socket 回归通过 |
-| F-1：终端 | `.github/workflows/maintenance-regression.yml:247` | macOS 仅排除与 Windows 相同的两个终端依赖用例；Linux/Xvfb 保留完整终端验证，macOS 资源差分与平台 Fatal 用例继续执行；等待 push 转绿 |
+| F-1：终端 | `.github/workflows/maintenance-regression.yml:247` | macOS 仅排除与 Windows 相同的两个终端依赖用例；Linux/Xvfb 保留完整终端验证，macOS 资源差分与平台 Fatal 用例继续执行；三平台作业全绿，已关闭 |
 | F-2 | §10.3 | 本批实际完成 VM 绑定、ABI 包装、模块导出的三次变异验证，均如期失败并恢复 |
 | F-3 | `core/rust/crates/xiao-runtime-abi/src/lib.rs:35`；`core/rust/crates/xiao-runtime/src/abi_version.rs:20` | 同一参数化比较函数明确覆盖 1.14 产物 / 1.13 Runtime 拒绝；版本入口独立为小模块，ABI 核心文件继续符合 2500 行门禁；已关闭 |
 | F-4 | `core/rust/crates/xiao-syntax/src/parser.rs:508`；`core/rust/crates/xiao-types/src/set_checker.rs:140`；`src/table_checker.rs:348` | `set<file/directory/resource>` 先解析，再统一报 `X03-TYPE-016`；变量/表字段、空初始化/未初始化、混合并集均有常驻负例；已关闭 |
@@ -403,7 +403,34 @@ docs/DevDocs/README.md                                    阶段索引加本文�
 本地返工门禁：`tools/gates/run.sh` exit 0（含 fmt、Clippy、文档/覆盖率、TypeScript、基准自检、
 驱动器测试和 Bun 测试）；`cargo test --workspace --no-fail-fast -j 2` 为
 **1178 passed / 0 failed / 36 ignored**；`bun test` 为 295 pass / 5 skip / 0 fail。
-两份 DevDocs 的逐行粗体配对检查通过。三平台维护回归的完整绿色运行号在取得后补入本节。
+两份 DevDocs 的逐行粗体配对检查通过。
+
+### 12.1 绿色 push 与三平台日志对账
+
+修复提交：`b956a0e60071f1fb7af501cf9755efa949a9c3ad`。
+push 触发的 [维护回归 `39041556630`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39041556630)
+六个作业全部 **success**；同一提交的 [工作区门禁 `39041556594`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39041556594)
+也为 **success**（作业 `117421917454`）。
+
+| 平台 | 原生回归作业 | 20D 专门夹具与修复回归 |
+| --- | --- | --- |
+| Windows | [117421917734](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39041556630/job/117421917734) | 完整作业成功，原生专门夹具及默认 VM 专门夹具均通过 |
+| Linux | [117421917826](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39041556630/job/117421917826) | 完整作业成功，原生夹具日志第 963 行通过；延迟握手、信号映射、相对路径与类型负例均执行成功 |
+| macOS | [117421917698](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39041556630/job/117421917698) | 完整作业成功；延迟握手第 599 行、既有握手第 611 行、信号映射第 625 行、两条外部平台 Fatal 第 879/880 行、原生专门夹具第 973 行均通过；默认 VM 的相对路径及类型负例也通过 |
+
+下载三平台作业日志后，对 `20D-NATIVE` 五条记录逐字比较，三个列表完全相等：
+
+| 用例 | 标准输出 | 错误身份 |
+| --- | --- | --- |
+| 相对路径 `data/relative.txt` | `relative-ok\n` | 成功 |
+| 目录重复关闭 | `resource<directory>\n` | 成功 |
+| 文件不存在 | 空 | `X06-RUNTIME-012` |
+| 非 UTF-8 | 空 | `X06-RUNTIME-012` |
+| 关闭后别名读取 | 空 | `X06-RUNTIME-025` |
+
+同一原生专门用例还验证正常 VM/LLVM 输出相等，以及缺 filesystem 能力时退出码 3、
+错误码 `X06-RUNTIME-026`。因此 **F-1 阻断已关闭，20D 出口第 4 条已满足**。
+`process` 交付仍按冻结规划在后置批次登记。
 
 ## 相关页面
 
