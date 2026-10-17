@@ -29,9 +29,9 @@ use crate::value::RuntimeValue;
 
 /// 判断一个运行时值能否作为集合元素或字典键。
 ///
-/// 规则必须与类型层的 [`xiao_types::hashability`] 对齐：标量、`none` 和现有内部模块
-/// 身份可哈希，资源、容器与表一律不可哈希。正向列出允许集合，新增 Runtime 变体默认
-/// 走不可哈希分支，避免排除式匹配漏项。
+/// 规则必须与类型层的 [`xiao_types::hashability`] 对齐：语言层标量、`none` 和现有内部
+/// 模块身份可哈希，资源、容器与表一律不可哈希。正向列出允许集合，新增 Runtime 变体
+/// 默认走不可哈希分支，避免排除式匹配漏项。
 #[must_use]
 pub fn is_hashable(value: &RuntimeValue) -> bool {
     matches!(

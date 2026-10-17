@@ -8,8 +8,9 @@ use xiao_diagnostics::{
 use xiao_lifetime::{ExitKind, ReleaseAction, ReleaseActionKind, ReleasePlan, ScopeId, ValueId};
 use xiao_runtime::testing::{RuntimeBinding, RuntimeDriver};
 use xiao_runtime::{
-    RuntimeError, RuntimeResult, RuntimeValue, StringHandle, TableDefinition, TableDropHook,
-    TableHooks, TableInitHook, TableInstance, TableObject, TableState,
+    ArrayHandle, DictHandle, DictKind, RuntimeError, RuntimeResult, RuntimeValue, SetHandle,
+    StringHandle, TableDefinition, TableDropHook, TableHooks, TableInitHook, TableInstance,
+    TableObject, TableState, TupleHandle, XiaoError, is_hashable,
 };
 use xiao_source::SourceSpan;
 use xiao_syntax::{ScalarType, TableKind};
@@ -251,4 +252,40 @@ fn drop_view_is_borrowed_and_expires_after_callback() {
     );
     let wrong = StringHandle::new("不是表").unwrap();
     assert!(TableInstance::from_weak(&wrong.downgrade()).is_err());
+}
+
+#[test]
+/// 正向哈希白名单保留既有 19 个变体的结果：模块/标量/字符串/none 可哈希，其余拒绝。
+fn hashability_allowlist_preserves_all_existing_runtime_variants() {
+    let allowed = [
+        RuntimeValue::Module("ascii:module".to_owned()),
+        RuntimeValue::ModuleFunction("ascii:module".to_owned(), 1),
+        RuntimeValue::Int(1),
+        RuntimeValue::Sint(1),
+        RuntimeValue::Lint("1".to_owned()),
+        RuntimeValue::Float(1.0),
+        RuntimeValue::Sfloat(1.0),
+        RuntimeValue::Lfloat("1.0".to_owned()),
+        RuntimeValue::Bool(true),
+        RuntimeValue::new_string("text").expect("字符串应分配"),
+        RuntimeValue::None,
+    ];
+    assert!(allowed.iter().all(is_hashable));
+
+    let table =
+        TableInstance::new(TableDefinition::new(signature(TableKind::Instance))).expect("表应构造");
+    let rejected = [
+        RuntimeValue::Table(table.clone()),
+        RuntimeValue::Array(ArrayHandle::new(Vec::new()).expect("数组应分配")),
+        RuntimeValue::Tuple(TupleHandle::new(Vec::new()).expect("元组应分配")),
+        RuntimeValue::DictTable(
+            DictHandle::new(DictKind::Table, Vec::new()).expect("字典表应分配"),
+        ),
+        RuntimeValue::DictColumn(
+            DictHandle::new(DictKind::Column, Vec::new()).expect("字典列应分配"),
+        ),
+        RuntimeValue::Set(SetHandle::new(Vec::new()).expect("集合应分配")),
+        RuntimeValue::Error(Box::new(XiaoError::invalid_value("error"))),
+    ];
+    assert!(rejected.iter().all(|value| !is_hashable(value)));
 }

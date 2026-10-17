@@ -15,3 +15,7 @@
 `RuntimeValue::Error`：错误对象按 `XiaoError::error_id` 保留身份相等，明确不可哈希，
 并以 `error` 作为稳定类型名，供 VM 的 catch/raise 路由消费。`lint` / `lfloat`
 算术仍是登记在案的债项，不得在这里给出近似结果。
+
+20D 追加 `RuntimeValue::ExternalResource`：首批种类为 `file`/`directory`，句柄复制共享同一
+逻辑资源，显式关闭幂等且关闭后的资源操作使用 `X06-RUNTIME-025`；资源不参与哈希，
+`type_name` 与 `display_text` 共用 `resource<kind>` 形式。

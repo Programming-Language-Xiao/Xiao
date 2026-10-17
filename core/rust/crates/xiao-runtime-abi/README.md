@@ -7,7 +7,8 @@
 
 ## 工程期
 
-10B 已接入 tagged value、强/弱句柄、字符串、数组、元组、字典、集合和表描述符入口。
+10B 已接入 tagged value、强/弱句柄、字符串、数组、元组、字典、集合和表描述符入口；
+20D 追加 `XiaoValueTag::ExternalResource = 17`，由 Runtime 盒子承载 `file`/`directory` 资源种类。
 20AB 新增 `xiao_runtime_print_values` 与 `xiao_runtime_input` 输出/输入入口；10T 追加表方法与确定性随机种子入口；20D-能力上下文追加带能力掩码的
 `xiao_runtime_print_values_with_capabilities` 与 `xiao_runtime_input_with_capabilities`，
 当前 ABI 主版本 1、次版本 13。改变布局或所有权契约必须升主版本。
