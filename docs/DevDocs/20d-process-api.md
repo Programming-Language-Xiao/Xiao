@@ -427,3 +427,4 @@ ABI 1.16 旧 Runtime 拒绝和资源种类/关闭后类型保持回归也逐平�
 - [20D-资源承载](20d-resource-carrier.md)——统一 `ExternalResource` 与 `is_hashable` 正向表
 - [20D-规划](20d-platform-resources-stage-plan.md) §4.2——批次顺序与 20D 出口条件
 - [17. `.xar` 字节码归档与启动](17-xar-archive.md)——20E 的前置；本批不做归档接线
+- [20D 跨平台专项交接](20d-cross-platform-handoff.md)——Ubuntu AMD x64 裸机补充取证；不替代 CI
