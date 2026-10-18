@@ -31,8 +31,8 @@ use crate::run::{
 };
 use xiao_xar::{
     ARCHIVE_LANGUAGE_FALLBACK_CODE, ARCHIVE_MISSING_OBJECT_CODE, ArchiveAuditRecord,
-    XarLanguageResolution, XarRunError, XarRunOptions, audit_archive, decode_xar,
-    resolve_language_locale, run_archive_with_control,
+    XarLanguageResolution, XarRunError, XarRunOptions, audit_archive, inspect_archive_index,
+    resolve_language_locale, run_archive_with_control, validate_archive_context,
 };
 
 /// 同一核心进程里可以安全复用模块实例的项目与环境身份。
@@ -174,9 +174,9 @@ pub(super) fn run_archive_request_response(
 ) -> ProtocolResponse {
     let effective_locale = fs::read(&path)
         .ok()
-        .and_then(|bytes| decode_xar(&bytes).ok())
-        .map(|archive| {
-            resolve_language_locale(&archive.index().language_locale, locale.as_deref()).effective
+        .and_then(|bytes| inspect_archive_index(&bytes, &XarRunOptions::default()).ok())
+        .map(|(index, _audit)| {
+            resolve_language_locale(&index.language_locale, locale.as_deref()).effective
         })
         .or_else(|| locale.clone());
     if effective_locale != locale {
@@ -422,10 +422,19 @@ fn run_archive_request_response_inner(
             );
         }
     };
-    let archive = match decode_xar(&bytes) {
-        Ok(archive) => archive,
+    let mut xar_options = XarRunOptions {
+        runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
+        platform: ProtocolTarget::host().triple,
+        language_locale: locale.clone(),
+        vm_options,
+        event_capacity,
+        debug,
+        capabilities: options.capabilities,
+    };
+    let (index, index_audit) = match inspect_archive_index(&bytes, &xar_options) {
+        Ok(inspected) => inspected,
         Err(error) => {
-            return xar_run_error_response(request_id, path, classify_xar_error(error), None);
+            return xar_run_error_response(request_id, path, error, None);
         }
     };
     if cancellation.is_cancelled() {
@@ -434,31 +443,26 @@ fn run_archive_request_response_inner(
     if deadline.is_some_and(|deadline| Instant::now() >= deadline) {
         return archive_timeout_response(request_id);
     }
-    let language = resolve_language_locale(&archive.index().language_locale, locale.as_deref());
+    let language = resolve_language_locale(&index.language_locale, locale.as_deref());
     let mut cancellation_source =
         xiao_vm::CancellationSource::new().with_token(cancellation.clone());
     if let Some(deadline) = deadline {
         cancellation_source = cancellation_source.with_deadline(deadline);
     }
-    let xar_options = XarRunOptions {
-        runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
-        platform: ProtocolTarget::host().triple,
-        language_locale: Some(language.effective.clone()),
-        vm_options,
-        event_capacity,
-        debug,
-        capabilities: options.capabilities,
-    };
+    xar_options.language_locale = Some(language.effective.clone());
+    if let Err(error) = validate_archive_context(&index, &xar_options) {
+        return xar_run_error_response(request_id, path, error, Some(index_audit));
+    }
     let audit = match audit_archive(&bytes, &xar_options) {
         Ok(audit) => audit,
         Err(error) => return xar_run_error_response(request_id, path, error, None),
     };
-    let debug_active = debug || archive.index().debug_activation;
+    let debug_active = debug || index.debug_activation;
     let diagnostic_options =
         diagnostic_options(diagnostic_config, Some(language.effective.clone()));
     let mut diagnostic_session = if debug_active {
         match crate::diagnostics::DiagnosticSession::start(
-            archive.index().entry.clone(),
+            index.entry.clone(),
             Some(path.clone()),
             &diagnostic_options,
         ) {
@@ -543,10 +547,6 @@ fn run_archive_request_response_inner(
         "run_archive",
         Some(audit),
     )
-}
-
-fn classify_xar_error(error: xiao_xar::XarError) -> XarRunError {
-    error.into()
 }
 
 fn xar_run_error_response(

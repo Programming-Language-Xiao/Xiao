@@ -63,6 +63,104 @@ fn raw_index_archive(index_bytes: &[u8], object: &XarObject) -> Vec<u8> {
     write_zip(&members, false).unwrap()
 }
 
+/// 为审核负例生成外层完整、入口种类为字节码的归档索引。
+fn review_index_for_xiaoc(object: &XarObject) -> ArchiveIndex {
+    let (mut index, _) = index_for(&object.bytes);
+    index.entry = "main.xiaoc".to_owned();
+    index.entries[0].logical_path = index.entry.clone();
+    index.entries[0].object_kind = object.kind;
+    index.entries[0].digest = object.digest;
+    index.runtime_abi_min = xiao_runtime_abi::ABI_ENCODED_VERSION;
+    index.runtime_abi_max = xiao_runtime_abi::ABI_ENCODED_VERSION;
+    index
+}
+
+#[test]
+/// 声明不兼容时应先拒绝元数据，不能先读取/解码损坏的入口载荷。
+fn review_requirements_precede_payload_decoding() {
+    let object = XarObject::from_bytes(ObjectKind::Xiaoc, b"invalid xiaoc payload");
+    let base = review_index_for_xiaoc(&object);
+    for (version, capabilities, context, expected) in [
+        (
+            base.stdlib_interface_version + 1,
+            0,
+            xiao_intrinsics::KNOWN_CAPABILITY_MASK,
+            ARCHIVE_VERSION_INCOMPATIBLE_CODE,
+        ),
+        (
+            base.stdlib_interface_version,
+            xiao_intrinsics::CAPABILITY_STDOUT,
+            0,
+            xiao_diagnostics::CAPABILITY_UNAVAILABLE_CODE,
+        ),
+    ] {
+        let mut index = base.clone();
+        index.stdlib_interface_version = version;
+        index.required_capabilities = capabilities;
+        let bytes = raw_index_archive(&index.encode().unwrap(), &object);
+        let mut events = Vec::new();
+        let error = run_archive_with_event_observer(
+            &bytes,
+            XarRunOptions {
+                capabilities: context,
+                ..Default::default()
+            },
+            |event| events.push(format!("{event:?}")),
+        )
+        .unwrap_err();
+        assert_eq!(error.code(), expected, "{error:?}");
+        assert!(events.is_empty());
+    }
+    // 同样的损坏载荷在元数据兼容时仍必须被完整校验拒绝。
+    let bytes = raw_index_archive(&base.encode().unwrap(), &object);
+    assert!(decode_xar(&bytes).is_err());
+}
+
+#[test]
+/// 索引不能以当前语言版本伪装另一语言版本的字节码；写入和读取均须拒绝。
+fn review_payload_language_matches_archive_index() {
+    let mut file = xiao_bytecode::decode_xiaoc(&empty_xiaoc_with_optional_sections()).unwrap();
+    file.metadata.language_version = "0.2.0".to_owned();
+    file.program.abi.language_version = "0.2.0".to_owned();
+    let object = XarObject::from_bytes(
+        ObjectKind::Xiaoc,
+        xiao_bytecode::encode_xiaoc(&file.program, file.metadata).unwrap(),
+    );
+    let index = review_index_for_xiaoc(&object);
+    let encoded = encode_xar(&index, std::slice::from_ref(&object));
+    let decoded = decode_xar(&raw_index_archive(&index.encode().unwrap(), &object));
+    assert!(encoded.is_err(), "编码器接受了伪装的语言版本");
+    assert!(decoded.is_err(), "读取器接受了伪装的语言版本");
+    assert_eq!(
+        XarRunError::from(encoded.unwrap_err()).code(),
+        ARCHIVE_VERSION_INCOMPATIBLE_CODE
+    );
+    assert_eq!(
+        XarRunError::from(decoded.unwrap_err()).code(),
+        ARCHIVE_VERSION_INCOMPATIBLE_CODE
+    );
+}
+
+#[test]
+/// 读取器同样执行写入器既有的调试激活位和独立调试/源码对象约束。
+fn review_payload_debug_contract_is_symmetric() {
+    let file = xiao_bytecode::decode_xiaoc(&empty_xiaoc_with_optional_sections()).unwrap();
+    let debug = XarObject::from_bytes(
+        ObjectKind::Xiaoc,
+        xiao_bytecode::encode_xiaoc(&file.program, file.metadata.clone().with_debug("review"))
+            .unwrap(),
+    );
+    let inline = XarObject::from_bytes(ObjectKind::Xiaoc, empty_xiaoc_with_optional_sections());
+    for object in [debug, inline] {
+        let index = review_index_for_xiaoc(&object);
+        assert!(encode_xar(&index, std::slice::from_ref(&object)).is_err());
+        assert!(
+            decode_xar(&raw_index_archive(&index.encode().unwrap(), &object)).is_err(),
+            "读取器绕过调试约束"
+        );
+    }
+}
+
 #[test]
 /// 外层 ZIP 完整时，未知能力仍在索引阶段报 011，旧归档按 007 拒绝且不执行。
 fn archive_requirements_fail_before_entry_resolution_or_vm_events() {

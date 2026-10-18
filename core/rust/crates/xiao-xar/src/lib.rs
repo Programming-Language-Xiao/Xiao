@@ -20,7 +20,6 @@ use xiao_artifacts::{
     ArchiveEntry, ArchiveIndex, ArtifactError, Digest256, INDEX_SCHEMA_MAJOR, INDEX_SCHEMA_MINOR,
     ObjectKind,
 };
-use xiao_bytecode::validate_xiaoc;
 use xiao_diagnostics::{Diagnostic, DiagnosticParam};
 use xiao_source::SourceSpan;
 
@@ -68,8 +67,8 @@ mod runner;
 /// 17C 归档入口校验、Runtime/平台检查与统一 VM 运行入口。
 pub use runner::{
     ArchiveAuditRecord, XarLanguageResolution, XarRunError, XarRunOptions, audit_archive,
-    resolve_language_locale, run_archive, run_archive_with_control,
-    run_archive_with_event_observer,
+    inspect_archive_index, resolve_language_locale, run_archive, run_archive_with_control,
+    run_archive_with_event_observer, validate_archive_context,
 };
 const ZIP_LOCAL_SIGNATURE: u32 = 0x0403_4b50;
 const ZIP_CENTRAL_SIGNATURE: u32 = 0x0201_4b50;
@@ -913,6 +912,29 @@ pub fn encode_xar_with_options(
 
 /// 打开并完整验证一个 `.xar`。
 pub fn decode_xar(bytes: &[u8]) -> Result<XarArchive, XarError> {
+    open_indexed_archive(bytes)?.verify()
+}
+
+/// 仅完成容器结构与唯一索引验证的内部状态，不暴露任何对象读取接口。
+struct IndexedArchive {
+    archive: XarArchive,
+}
+
+impl IndexedArchive {
+    /// 在解码载荷前提供已验证的索引元数据。
+    fn index(&self) -> &ArchiveIndex {
+        &self.archive.index
+    }
+
+    /// 完整验证所有载荷后才能转换为公开可读取的归档。
+    fn verify(self) -> Result<XarArchive, XarError> {
+        validate_members_against_index(&self.archive)?;
+        Ok(self.archive)
+    }
+}
+
+/// 有界读取中央目录与索引，保留载荷直到运行上下文预检完成。
+fn open_indexed_archive(bytes: &[u8]) -> Result<IndexedArchive, XarError> {
     let parsed = parse_zip(bytes)?;
     let index_member = parsed
         .members
@@ -942,8 +964,7 @@ pub fn decode_xar(bytes: &[u8]) -> Result<XarArchive, XarError> {
         index,
         members: parsed.members,
     };
-    validate_members_against_index(&archive)?;
-    Ok(archive)
+    Ok(IndexedArchive { archive })
 }
 
 /// 只验证归档，不保留可读对象。
@@ -1145,24 +1166,7 @@ fn encode_with_options(
             return Err(XarError::SizeLimit("对象过大".to_owned()));
         }
         if object.kind == ObjectKind::Xiaoc {
-            let file = xiao_bytecode::decode_xiaoc(&object.bytes)
-                .map_err(|error| XarError::InvalidMember(format!("`.xiaoc` 校验失败：{error}")))?;
-            if file.metadata.debug_active != index.debug_activation {
-                return Err(XarError::InvalidIndex(
-                    "`.xiaoc` 调试激活位与归档索引不一致".to_owned(),
-                ));
-            }
-            if file.sections.iter().any(|section| {
-                matches!(
-                    section.kind,
-                    Some(xiao_bytecode::XiaocSectionKind::DebugSymbols)
-                        | Some(xiao_bytecode::XiaocSectionKind::Source)
-                )
-            }) {
-                return Err(XarError::InvalidMember(
-                    "完整调试符号和源码正文必须作为独立归档对象".to_owned(),
-                ));
-            }
+            validate_archive_xiaoc(index, &object.bytes)?;
         }
         let key = (object.kind, object.digest);
         if object_map.insert(key, object).is_some() {
@@ -1304,8 +1308,7 @@ fn validate_members_against_index(archive: &XarArchive) -> Result<(), XarError> 
             });
         }
         if entry.object_kind == ObjectKind::Xiaoc {
-            validate_xiaoc(&bytes)
-                .map_err(|error| XarError::InvalidMember(format!("`.xiaoc` 校验失败：{error}")))?;
+            validate_archive_xiaoc(&archive.index, &bytes)?;
         }
         referenced.insert(member.path.clone());
     }
@@ -1319,6 +1322,36 @@ fn validate_members_against_index(archive: &XarArchive) -> Result<(), XarError> 
                 member.path
             )));
         }
+    }
+    Ok(())
+}
+
+/// 编码与解码共用载荷契约，防止索引伪装语言版本或绕过调试对象边界。
+fn validate_archive_xiaoc(index: &ArchiveIndex, bytes: &[u8]) -> Result<(), XarError> {
+    let file = xiao_bytecode::decode_xiaoc(bytes)
+        .map_err(|error| XarError::InvalidMember(format!("`.xiaoc` 校验失败：{error}")))?;
+    if file.metadata.language_version != index.language_version {
+        return Err(ArtifactError::ArchiveVersionIncompatible(format!(
+            "归档语言版本：期望 {}，载荷实际 {}（模块 {}）",
+            index.language_version, file.metadata.language_version, file.metadata.module_id
+        ))
+        .into());
+    }
+    if file.metadata.debug_active != index.debug_activation {
+        return Err(XarError::InvalidIndex(
+            "`.xiaoc` 调试激活位与归档索引不一致".to_owned(),
+        ));
+    }
+    if file.sections.iter().any(|section| {
+        matches!(
+            section.kind,
+            Some(xiao_bytecode::XiaocSectionKind::DebugSymbols)
+                | Some(xiao_bytecode::XiaocSectionKind::Source)
+        )
+    }) {
+        return Err(XarError::InvalidMember(
+            "完整调试符号和源码正文必须作为独立归档对象".to_owned(),
+        ));
     }
     Ok(())
 }

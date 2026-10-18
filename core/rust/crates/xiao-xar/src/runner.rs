@@ -10,7 +10,7 @@ use xiao_intrinsics::{KNOWN_CAPABILITY_MASK, validate_capability_mask};
 use super::{
     ARCHIVE_DEPENDENCY_UNSATISFIED_CODE, ARCHIVE_INVALID_REQUIREMENTS_CODE,
     ARCHIVE_MISSING_OBJECT_CODE, ARCHIVE_VALIDATION_FAILED_CODE, ARCHIVE_VERSION_INCOMPATIBLE_CODE,
-    ObjectKind, XarError, decode_xar,
+    ObjectKind, XarError, open_indexed_archive,
 };
 
 /// 归档执行前的宿主约束；入口和对象仍只来自已验证的唯一索引。
@@ -98,22 +98,53 @@ pub fn audit_archive(
     bytes: &[u8],
     options: &XarRunOptions,
 ) -> Result<ArchiveAuditRecord, XarRunError> {
-    let archive = decode_xar(bytes).map_err(classify_run_error)?;
-    let index = archive.index();
-    validate_requirements(index, options)?;
+    let indexed = open_indexed_archive(bytes).map_err(classify_run_error)?;
+    validate_requirements(indexed.index(), options)?;
+    let archive = indexed.verify().map_err(classify_run_error)?;
+    Ok(audit_record(
+        bytes,
+        archive.index(),
+        archive.members().len(),
+        options,
+    ))
+}
+
+/// 只读取并验证索引，不解码对象；返回的审计仅计入已经校验 CRC 的一个索引成员。
+///
+/// 供协议语言选择和启动预检使用；对象仍须经完整归档校验后才能读取或执行。
+pub fn inspect_archive_index(
+    bytes: &[u8],
+    options: &XarRunOptions,
+) -> Result<(xiao_artifacts::ArchiveIndex, ArchiveAuditRecord), XarRunError> {
+    let indexed = open_indexed_archive(bytes).map_err(classify_run_error)?;
+    let record = audit_record(bytes, indexed.index(), 1, options);
+    Ok((indexed.index().clone(), record))
+}
+
+/// 成功启动和索引层拒绝复用同一审计构造；已验证数量由调用方如实提供。
+fn audit_record(
+    bytes: &[u8],
+    index: &xiao_artifacts::ArchiveIndex,
+    verified_member_count: usize,
+    options: &XarRunOptions,
+) -> ArchiveAuditRecord {
     let language =
         resolve_language_locale(&index.language_locale, options.language_locale.as_deref());
     let runtime_abi_compatible = options.runtime_abi >= index.runtime_abi_min
         && options.runtime_abi <= index.runtime_abi_max;
     let platform_compatible = options.platform.is_empty()
-        || index.platform.is_empty()
-        || index.platform == "portable"
-        || index.platform == options.platform;
-    Ok(ArchiveAuditRecord {
+        || ((index.platform.is_empty()
+            || index.platform == "portable"
+            || index.platform == options.platform)
+            && index
+                .entries
+                .iter()
+                .all(|entry| entry.target == "portable" || entry.target == options.platform));
+    ArchiveAuditRecord {
         archive_digest: Digest256::of_bytes(bytes).as_hex(),
         index_schema_major: index.schema_major,
         index_schema_minor: index.schema_minor,
-        verified_member_count: archive.members().len(),
+        verified_member_count,
         archive_platform: index.platform.clone(),
         host_platform: options.platform.clone(),
         runtime_abi_compatible,
@@ -122,7 +153,7 @@ pub fn audit_archive(
         language_requested: language.requested,
         language_effective: language.effective,
         language_fallback: language.fallback,
-    })
+    }
 }
 
 /// 按显式参数、归档默认值、`zh-CN` 缺省顺序解析语言。
@@ -229,12 +260,43 @@ pub fn run_archive_with_control(
     options: XarRunOptions,
     cancellation: Option<xiao_vm::CancellationSource>,
 ) -> Result<xiao_vm::RunOutcome, XarRunError> {
-    let archive = decode_xar(bytes).map_err(classify_run_error)?;
+    let indexed = open_indexed_archive(bytes).map_err(classify_run_error)?;
+    validate_archive_context(indexed.index(), &options)?;
+    let archive = indexed.verify().map_err(classify_run_error)?;
     let _language = resolve_language_locale(
         &archive.index().language_locale,
         options.language_locale.as_deref(),
     );
     let index = archive.index();
+    let entry = index
+        .entries
+        .iter()
+        .find(|entry| entry.logical_path == index.entry)
+        .ok_or_else(|| XarRunError::MissingObject(index.entry.clone()))?;
+    if entry.object_kind != ObjectKind::Xiaoc {
+        return Err(XarRunError::Validation(format!(
+            "入口 {} 不是 `.xiaoc` 对象",
+            entry.logical_path
+        )));
+    }
+    let entry_bytes = archive
+        .read_object(entry.object_kind, entry.digest)
+        .map_err(classify_run_error)?;
+    xiao_vm::run_xiaoc_production_with_capabilities(
+        &entry_bytes,
+        options.vm_options,
+        options.event_capacity,
+        cancellation,
+        options.capabilities,
+    )
+    .map_err(|error| XarRunError::Validation(format!("入口 `.xiaoc` 执行前校验失败：{error}")))
+}
+
+/// 校验已解析索引与本次运行上下文；在载荷读取和诊断进程启动前使用。
+pub fn validate_archive_context(
+    index: &xiao_artifacts::ArchiveIndex,
+    options: &XarRunOptions,
+) -> Result<(), XarRunError> {
     if options.event_capacity == 0 || options.event_capacity > xiao_vm::MAX_EVENT_CAPACITY {
         return Err(XarRunError::Validation(format!(
             "事件容量必须位于 1..={}（收到 {}）",
@@ -242,7 +304,7 @@ pub fn run_archive_with_control(
             options.event_capacity
         )));
     }
-    validate_requirements(index, &options)?;
+    validate_requirements(index, options)?;
     if options.runtime_abi < index.runtime_abi_min || options.runtime_abi > index.runtime_abi_max {
         return Err(XarRunError::VersionIncompatible(format!(
             "Runtime ABI {} 不在归档要求的 {}..={} 范围内",
@@ -270,28 +332,7 @@ pub fn run_archive_with_control(
             )));
         }
     }
-    let entry = index
-        .entries
-        .iter()
-        .find(|entry| entry.logical_path == index.entry)
-        .ok_or_else(|| XarRunError::MissingObject(index.entry.clone()))?;
-    if entry.object_kind != ObjectKind::Xiaoc {
-        return Err(XarRunError::Validation(format!(
-            "入口 {} 不是 `.xiaoc` 对象",
-            entry.logical_path
-        )));
-    }
-    let entry_bytes = archive
-        .read_object(entry.object_kind, entry.digest)
-        .map_err(classify_run_error)?;
-    xiao_vm::run_xiaoc_production_with_capabilities(
-        &entry_bytes,
-        options.vm_options,
-        options.event_capacity,
-        cancellation,
-        options.capabilities,
-    )
-    .map_err(|error| XarRunError::Validation(format!("入口 `.xiaoc` 执行前校验失败：{error}")))
+    Ok(())
 }
 
 /// 运行归档并把已产生的 VM 事件交给调用方观察；校验失败时回调不会被调用。
@@ -341,6 +382,9 @@ fn validate_requirements(
     index: &xiao_artifacts::ArchiveIndex,
     options: &XarRunOptions,
 ) -> Result<(), XarRunError> {
+    validate_capability_mask(index.required_capabilities)
+        .and_then(|()| validate_capability_mask(options.capabilities))
+        .map_err(|error| XarRunError::InvalidRequirements(error.to_string()))?;
     let identity = xiao_standard_library::current_standard_library_identity();
     if index.stdlib_interface_version != identity.stdlib_interface_version {
         return Err(XarRunError::VersionIncompatible(format!(
@@ -371,8 +415,6 @@ fn validate_requirements(
             }
         }
     }
-    validate_capability_mask(options.capabilities)
-        .map_err(|error| XarRunError::InvalidRequirements(error.to_string()))?;
     let missing = index.required_capabilities & !options.capabilities;
     if missing != 0 {
         let names = [

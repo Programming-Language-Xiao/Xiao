@@ -82,6 +82,21 @@ impl Fixture {
         builder.add_object(self.object.clone()).unwrap();
         builder.build().expect("归档编码")
     }
+
+    /// 模拟由另一语言版本生成的完整载荷，保持字节码内部元数据一致。
+    fn with_language(mut self, language: &str) -> Self {
+        let mut file = xiao_bytecode::decode_xiaoc(&self.object.bytes).unwrap();
+        file.metadata.language_version = language.to_owned();
+        file.program.abi.language_version = language.to_owned();
+        self.object = XarObject::from_bytes(
+            ObjectKind::Xiaoc,
+            encode_xiaoc(&file.program, file.metadata).unwrap(),
+        );
+        self.index.language_version = language.to_owned();
+        self.index.entries[0].digest = self.object.digest;
+        self.index.entries[0].length = self.object.bytes.len() as u64;
+        self
+    }
 }
 
 /// 负例必须在任何模块加载、函数进入或输出事件之前返回稳定错误。
@@ -166,10 +181,9 @@ fn incompatible_standard_library_is_rejected_before_execution() {
         message.contains("期望 2") && message.contains("实际 1"),
         "{message}"
     );
-    let mut language = fixture.index.clone();
-    language.language_version = "0.2.0".to_owned();
+    let language = Fixture::new("print(\"must not run\")\n").with_language("0.2.0");
     let message = reject_before_execution(
-        &fixture.build(language),
+        &language.build(language.index.clone()),
         XarRunOptions::default(),
         "X17-XAR-007",
     );
@@ -243,6 +257,144 @@ struct ArchiveFile(PathBuf);
 impl Drop for ArchiveFile {
     fn drop(&mut self) {
         let _ = std::fs::remove_file(&self.0);
+    }
+}
+
+#[test]
+/// 真实输出程序不能通过更改索引标签伪装其载荷语言版本。
+fn review_builder_rejects_relabelled_payload_language() {
+    let fixture = Fixture::new("print(\"foreign language\")\n").with_language("0.2.0");
+    let mut index = fixture.index.clone();
+    index.language_version = current_standard_library_identity().language_version;
+    let mut builder = XarBuilder::new(index);
+    builder.add_object(fixture.object).unwrap();
+    let error = xiao_xar::XarRunError::from(builder.build().unwrap_err());
+    assert_eq!(error.code(), "X17-XAR-007");
+    assert!(error.message().contains("0.1.0") && error.message().contains("0.2.0"));
+}
+
+#[test]
+/// 协议语言选择和初次读取也只能检查索引，不能抢先解码损坏的对象。
+fn review_protocol_checks_context_before_corrupt_payload() {
+    let fixture = Fixture::new("print(\"must not run\")\n");
+    let path = ArchiveFile(std::env::temp_dir().join(format!(
+        "xiao-20e-review-payload-{}.xar",
+        std::process::id()
+    )));
+    for (interface, capabilities, expected) in [
+        (
+            fixture.index.stdlib_interface_version + 1,
+            KNOWN_CAPABILITY_MASK,
+            "X17-XAR-007",
+        ),
+        (fixture.index.stdlib_interface_version, 0, "X06-RUNTIME-026"),
+    ] {
+        let mut index = fixture.index.clone();
+        index.stdlib_interface_version = interface;
+        let mut bytes = fixture.build(index);
+        let archive = decode_xar(&bytes).unwrap();
+        let object = archive
+            .members()
+            .iter()
+            .find(|member| member.path != xiao_xar::XAR_INDEX_PATH)
+            .unwrap();
+        let header = object.local_header_offset as usize;
+        let name_length =
+            u16::from_le_bytes(bytes[header + 26..header + 28].try_into().unwrap()) as usize;
+        let extra_length =
+            u16::from_le_bytes(bytes[header + 28..header + 30].try_into().unwrap()) as usize;
+        bytes[header + 30 + name_length + extra_length] ^= 1;
+        assert!(decode_xar(&bytes).is_err());
+        std::fs::write(&path.0, bytes).unwrap();
+        let response = dispatch(ProtocolRequest::RunArchive {
+            request_id: "20e-corrupt-payload".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            locale: Some("en-US".to_owned()),
+            path: path.0.display().to_string(),
+            options: RunOptions {
+                capabilities,
+                ..Default::default()
+            },
+            diagnostics: None,
+            debug: false,
+        });
+        let ProtocolResponse::Error { error, .. } = response else {
+            panic!("启动前拒绝");
+        };
+        assert_eq!(error.code, expected, "{error:?}");
+        assert_eq!(
+            error.details["audit"]["verified_member_count"], 1,
+            "只能声称索引已校验"
+        );
+    }
+}
+
+#[test]
+/// ABI/平台不兼容必须先于诊断启动；子进程隔离诊断环境，避免启动真实窗口。
+fn review_protocol_context_precedes_diagnostic_start() {
+    const CHILD_FLAG: &str = "XIAO_20E_REVIEW_DIAGNOSTIC_CHILD";
+    if std::env::var_os(CHILD_FLAG).is_none() {
+        let missing = std::env::temp_dir().join(format!(
+            "xiao-20e-review-missing-renderer-{}",
+            std::process::id()
+        ));
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .args([
+                "--exact",
+                "review_protocol_context_precedes_diagnostic_start",
+                "--nocapture",
+            ])
+            .env(CHILD_FLAG, "1")
+            .env("XIAO_DIAGNOSTICS_PATH", missing)
+            .output()
+            .unwrap();
+        assert!(output.status.success(), "{output:?}");
+        return;
+    }
+    let fixture = Fixture::new("print(\"must not run\")\n");
+    let path = ArchiveFile(std::env::temp_dir().join(format!(
+        "xiao-20e-review-diagnostics-{}.xar",
+        std::process::id()
+    )));
+    for case in ["abi", "platform", "entry_target"] {
+        let mut index = fixture.index.clone();
+        match case {
+            "abi" => {
+                index.runtime_abi_min += 1;
+                index.runtime_abi_max += 1;
+            }
+            "platform" => index.platform = "review-unsupported-platform".to_owned(),
+            _ => index.entries[0].target = "review-unsupported-target".to_owned(),
+        }
+        std::fs::write(&path.0, fixture.build(index)).unwrap();
+        let response = dispatch(ProtocolRequest::RunArchive {
+            request_id: "20e-no-diagnostic-start".to_owned(),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            locale: Some("en-US".to_owned()),
+            path: path.0.display().to_string(),
+            options: RunOptions::default(),
+            diagnostics: None,
+            debug: true,
+        });
+        let ProtocolResponse::Error { error, .. } = response else {
+            panic!("启动前拒绝");
+        };
+        assert_eq!(
+            error.code,
+            if case == "abi" {
+                "X17-XAR-007"
+            } else {
+                "X17-XAR-008"
+            },
+            "{case}: {error:?}"
+        );
+        let audit = &error.details["audit"];
+        assert_eq!(audit["verified_member_count"], 1);
+        if case != "abi" {
+            assert_eq!(audit["platform_compatible"], false);
+        }
     }
 }
 
