@@ -84,7 +84,9 @@ set<int | str> typed_values = {1, "x"}
   以及 [20C](20c-official-xiao-library.md) 路线稿 [20](20-builtins-and-standard-library.md) §七
   交付物里的「**集合**」那一项——它已由星崽 2026-10-17 裁定为 **20C 的带走项**。
 
-**归属**：**下一个语言批次**（与「非字面量下标」同族；**要不要同批由星崽定**）。
+**归属**：**20F 通用容器参数与官方 `set` 模块**（已立项，见
+[20F](20f-container-parameters-and-collections.md)；20F 只做显式类型参数与
+`size`/`is_empty`，非字面量下标仍单独登记）。
 
 **登记口径（防漂）**：本条的规范表述原先散在
 [20C-第二批](20c-second-batch-probe.md):251、[20C-第三批](20c-third-batch-reprobe-and-status.md):71
