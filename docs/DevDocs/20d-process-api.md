@@ -8,7 +8,7 @@
 > **它不是「加两个 intrinsic」**：process 是第一个带**子进程生命周期**的资源——
 > `wait` 会阻塞、`close` 与回收的关系、僵尸语义都必须先定死，否则三平台行为会分叉。
 
-状态：**原批次已验收，本轮自审修复验证中（2026-10-18）**：原批次证据见 §十一；本轮补齐动态资源检查并升至 ABI 1.16，修复隐式 shell 与 Windows 异常分类，见 §十二。原 1.15 的绿色记录不作为本轮验收依据。
+状态：**本轮自审修复已验收（2026-10-18）**：动态资源检查、ABI 1.16、Windows/Unix 无 shell 启动与相关绑定修复已通过完整门禁及三平台差分，见 §十二。原 1.15 的绿色记录保留在 §十一，不作为本轮验收依据。
 
 ## 一、为什么是这一批
 
@@ -380,14 +380,45 @@ required 1.16 / actual 1.15 现在必须在执行前拒绝；旧产物配 1.16 R
 包含格式、Clippy、TypeScript、文档/覆盖率、锁文件、基准自检、驱动器及 Bun 回归；
 Bun 为 **295 pass / 5 skip / 0 fail**。DevDocs 逐行粗体配对通过。
 
-本轮修复提交为 `cd6de3da9d4548469dba351f76c9398e65101410`；
+初次自审修复提交为 `cd6de3da9d4548469dba351f76c9398e65101410`；
 [工作区门禁 `39102986391`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39102986391)
 已完成且成功（作业 `117602891199`）。首次维护回归 `39102986395` 的 macOS 无 shell 用例失败，
-其余五作业成功；该次运行不作为本轮验收依据。补齐 Unix 直接执行后重新验证并等待三平台对账。
+其余五作业成功；该次运行不作为本轮验收依据。补齐 Unix 直接执行后的最终验收见 §12.4。
 Unix 补充修复已通过 Linux 目标的编译及 Runtime 全目标 Clippy（警告视为错误），
 Windows 进程默认回归再次 **13 passed / 0 failed / 5 ignored**；
-无解释器脚本负例及显式 shebang 正例由三平台受控作业继续实跑。
+无解释器脚本负例及显式 shebang 正例已由三平台受控作业实跑。
 §11.4 的 1.15 提交与 CI 仅保留为原批次历史，不能替代本轮证据。
+
+### 12.4 最终三平台证据与出口复核
+
+最终代码提交：`29945b9f95dc9fb9b56c29ced20120e8600cb004`。
+[维护回归 `39104020329`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39104020329)
+六个作业全部成功；同一提交的
+[工作区门禁 `39104020386`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39104020386)
+成功（作业 `117605943061`）。先前失败的 `39102986395` 只用于记录 macOS 缺口的发现。
+
+| 平台 | 已完成的原生回归作业 | 完整日志核实 |
+| --- | --- | --- |
+| Windows | [117605942772](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39104020329/job/117605942772) | 无 shell 第 1192 行、动态边界第 1210 行通过；默认夹具第 2354 行为 13 passed / 5 ignored |
+| Linux | [117605942603](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39104020329/job/117605942603) | 无 shell 第 977 行、动态边界第 994 行通过；默认夹具第 2326 行为 13 passed / 5 ignored |
+| macOS | [117605942763](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/39104020329/job/117605942763) | 无 shell 第 946 行、动态边界第 956 行通过；默认夹具第 2192 行为 13 passed / 5 ignored |
+
+下载三个已完成作业的完整日志，确认每个平台 **13 项 VM / 4 项原生**进程用例均实际执行；
+一条隔离子测试仍由父用例驱动。Unix 的无解释器脚本拒绝、显式 shebang 成功、
+PATH/环境/cwd/stdio 继承均通过；Windows 批处理仍在启动前拒绝。
+ABI 1.16 旧 Runtime 拒绝和资源种类/关闭后类型保持回归也逐平台通过。
+
+九条 `20D-PROCESS-REVIEW` 记录三平台逐字相等：
+
+| 用例 | 原始标准输出 | 错误身份 |
+| --- | --- | --- |
+| declaration / assignment / parameter / return / inferred_parameter / filesystem_parent（六条） | 空 | `X06-RUNTIME-002` |
+| valid | `7\n` | 成功 |
+| valid_file_parent / valid_directory_parent（两条） | `ok\n` | 成功 |
+
+另有四条共同的 `20D-PROCESS` 和五条 `20D-NATIVE` 文件/目录记录三平台逐字相等，
+合计 **18 条共同记录**。信号/异常单独按平台契约验证：Windows 139、Linux/macOS 143。
+本轮自审修复验收完成，§11.3 的六条 20D 出口复核仍满足；没有新增公开 API 或扩大既定原生支持范围。
 
 ## 相关页面
 
