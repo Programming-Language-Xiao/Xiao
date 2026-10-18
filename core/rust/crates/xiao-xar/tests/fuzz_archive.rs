@@ -61,6 +61,10 @@ fn seed_archive() -> Vec<u8> {
         platform: "portable".to_owned(),
         debug_activation: false,
         language_locale: "zh-CN".to_owned(),
+        stdlib_interface_version: 1,
+        language_version: "0.1.0".to_owned(),
+        stdlib_modules: Vec::new(),
+        required_capabilities: 0,
     };
     encode_xar(&index, std::slice::from_ref(&object)).expect("固定归档应可编码")
 }

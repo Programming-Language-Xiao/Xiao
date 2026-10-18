@@ -689,6 +689,10 @@ fn write_archive(path: &Path, xiaoc: Vec<u8>) {
         platform: "portable".to_owned(),
         debug_activation: false,
         language_locale: "zh-CN".to_owned(),
+        stdlib_interface_version: 1,
+        language_version: "0.1.0".to_owned(),
+        stdlib_modules: Vec::new(),
+        required_capabilities: 0,
     };
     fs::write(path, encode_xar(&index, &[object]).expect("编码归档")).expect("写入归档");
 }

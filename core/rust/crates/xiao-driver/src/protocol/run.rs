@@ -103,6 +103,8 @@ fn frontend_run_request(
 pub(super) fn run_options(
     options: &RunOptions,
 ) -> Result<(xiao_vm::VmOptions, usize, Option<Duration>), ProtocolError> {
+    xiao_intrinsics::validate_capability_mask(options.capabilities)
+        .map_err(|error| ProtocolError::request("options.capabilities", error.to_string()))?;
     let vm_options = xiao_vm::VmOptions {
         max_call_depth: options.max_call_depth,
         checkpoints_enabled: options.checkpoints_enabled,
@@ -290,11 +292,12 @@ pub(super) fn run_xiaoc_request_response(
         cancellation_source = cancellation_source.with_deadline(deadline);
     }
     let measurement = xiao_runtime::start_memory_measurement();
-    let result = xiao_vm::run_xiaoc_production(
+    let result = xiao_vm::run_xiaoc_production_with_capabilities(
         &bytes,
         vm_options,
         event_capacity,
         Some(cancellation_source),
+        options.capabilities,
     );
     let peak_live_bytes = measurement.peak_live_bytes();
     drop(measurement);
@@ -444,6 +447,7 @@ fn run_archive_request_response_inner(
         vm_options,
         event_capacity,
         debug,
+        capabilities: options.capabilities,
     };
     let audit = match audit_archive(&bytes, &xar_options) {
         Ok(audit) => audit,
@@ -542,25 +546,7 @@ fn run_archive_request_response_inner(
 }
 
 fn classify_xar_error(error: xiao_xar::XarError) -> XarRunError {
-    match error {
-        xiao_xar::XarError::MissingMember(path) => XarRunError::MissingObject(path),
-        xiao_xar::XarError::Artifact(xiao_artifacts::ArtifactError::UnsupportedIndexVersion {
-            major,
-            ..
-        }) => XarRunError::VersionIncompatible(format!("不支持的归档索引主版本 {major}")),
-        xiao_xar::XarError::Artifact(xiao_artifacts::ArtifactError::Index(message))
-            if message.contains("未知必需") =>
-        {
-            XarRunError::VersionIncompatible(message)
-        }
-        xiao_xar::XarError::Unsupported(message) if message.contains("版本") => {
-            XarRunError::VersionIncompatible(message)
-        }
-        xiao_xar::XarError::InvalidIndex(message) if message.contains("版本") => {
-            XarRunError::VersionIncompatible(message)
-        }
-        other => XarRunError::Validation(other.to_string()),
-    }
+    error.into()
 }
 
 fn xar_run_error_response(
@@ -705,6 +691,8 @@ pub(super) fn run_request_response_with_driver(
         *session_fingerprint = Some(fingerprint);
     }
     let mut driver_request = DriverRequest::new(frontend)
+        .with_capabilities(options.capabilities)
+        .expect("运行选项已经校验能力掩码")
         .with_options(vm_options)
         .with_optimization_level(optimization_level)
         .with_module_name(module_name.clone())

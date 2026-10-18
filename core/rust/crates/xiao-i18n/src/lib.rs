@@ -1417,6 +1417,41 @@ pub fn builtin_renderer() -> MessageRenderer {
         "invalid test response: {message}",
         &[("message", text)],
     );
+    for (key, english_message) in [
+        (
+            "x17.xar.archive_missing_object",
+            "archive object is missing: {message}",
+        ),
+        (
+            "x17.xar.archive_version_incompatible",
+            "archive version is incompatible: {message}",
+        ),
+        (
+            "x17.xar.archive_dependency_unsatisfied",
+            "archive dependency is unavailable: {message}",
+        ),
+        (
+            "x17.xar.archive_validation_failed",
+            "archive validation failed: {message}",
+        ),
+        (
+            "x17.xar.archive_invalid_requirements",
+            "archive requirements are invalid: {message}",
+        ),
+        (
+            "x17.xar.archive_capability_unavailable",
+            "archive capabilities are unavailable: {message}",
+        ),
+    ] {
+        add_entry(
+            &mut chinese,
+            &mut english,
+            key,
+            "{message}",
+            english_message,
+            &[("message", text)],
+        );
+    }
     add_entry(
         &mut chinese,
         &mut english,

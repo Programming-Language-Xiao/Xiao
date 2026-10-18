@@ -15,8 +15,8 @@ use xiao_xar::{XarObject, encode_xar};
 const SIZE_REGRESSION_SOURCE: &str = "print(\"19C size baseline\")\n";
 /// 2026-10-06 Windows 基线：固定源码的规范 `.xiaoc` 字节数。
 const XIAOC_BASELINE_BYTES: usize = 1_256;
-/// 2026-10-06 Windows 基线：同一对象的规范 `.xar` 字节数。
-const XAR_BASELINE_BYTES: usize = 1_151;
+/// 20E 在原 1_151 字节归档中追加字段 13/14/16，共 12 字节；对象正文未变化。
+const XAR_BASELINE_BYTES: usize = 1_163;
 
 fn artifacts() -> (Vec<u8>, Vec<u8>) {
     let artifact = FrontendCompiler::new()
@@ -46,6 +46,10 @@ fn artifacts() -> (Vec<u8>, Vec<u8>) {
         platform: "portable".to_owned(),
         debug_activation: false,
         language_locale: "zh-CN".to_owned(),
+        stdlib_interface_version: 1,
+        language_version: "0.1.0".to_owned(),
+        stdlib_modules: Vec::new(),
+        required_capabilities: 0,
     };
     let xar = encode_xar(&index, &[object]).expect("应编码体积基线 xar");
     (xiaoc, xar)

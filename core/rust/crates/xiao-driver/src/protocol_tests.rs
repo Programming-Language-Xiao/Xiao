@@ -348,6 +348,10 @@ fn cache_clean_protocol_reads_archive_references() {
             platform: String::new(),
             debug_activation: false,
             language_locale: "zh-CN".to_owned(),
+            stdlib_interface_version: 1,
+            language_version: "0.1.0".to_owned(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
         };
         let archive_bytes = encode_xar(
             &index,

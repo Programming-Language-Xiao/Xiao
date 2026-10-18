@@ -181,40 +181,10 @@ pub struct CompatibilityVersions {
     pub target: String,
 }
 
-/// 当前官方标准库接口身份的主版本。
-///
-/// 该版本只描述标准库公开接口，不改变既有产物兼容矩阵的版本轴。
-pub const STDLIB_INTERFACE_VERSION: u32 = 1;
-
-/// 官方标准库的并列兼容身份块。
-///
-/// 20C 先把这组可读字段提供给构建前检查和后续产物元数据接线；
-/// [`CompatibilityVersions`] 继续服务既有 `.xiaoc`、`.xar` 和 Runtime 兼容消费者。
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct StandardLibraryIdentity {
-    /// Xiao 语言语义版本。
-    pub language_version: String,
-    /// 官方标准库公开接口主版本。
-    pub stdlib_interface_version: u32,
-    /// Runtime ABI 主版本，来自 `xiao-runtime-abi`。
-    pub runtime_abi_major: u32,
-    /// Runtime ABI 次版本，来自 `xiao-runtime-abi`。
-    pub runtime_abi_minor: u32,
-    /// 目标平台标签。
-    pub target: String,
-}
-
-/// 返回由语言版本、标准库接口版本和 Runtime ABI 常量生成的身份块。
-#[must_use]
-pub fn current_standard_library_identity() -> StandardLibraryIdentity {
-    StandardLibraryIdentity {
-        language_version: "0.1.0".to_owned(),
-        stdlib_interface_version: STDLIB_INTERFACE_VERSION,
-        runtime_abi_major: xiao_runtime_abi::ABI_MAJOR_VERSION,
-        runtime_abi_minor: xiao_runtime_abi::ABI_MINOR_VERSION,
-        target: "portable".to_owned(),
-    }
-}
+/// 重导出标准库元数据层的权威身份，保留驱动器原有公开路径。
+pub use xiao_standard_library::{
+    STDLIB_INTERFACE_VERSION, StandardLibraryIdentity, current_standard_library_identity,
+};
 
 /// 返回由当前 crate 常量生成的版本清单。
 #[must_use]

@@ -28,4 +28,8 @@ Windows 原生准备方式见 `docs/DevDocs/10d-environment-gated-test-spec.md` 
 
 `20d_process_api.rs` 使用同一 `process_child_exit7`/`process_child_abort` 子程序验证等待缓存、
 信号/异常码、能力、资源类型及产物边界。隔离握手证明关闭和最后引用释放不等待或终止子进程，
-并验证 stdio、PATH、环境和 cwd 继承。两条 ignored 原生测试在三平台受控作业中执行。
+并验证 stdio、PATH、环境和 cwd 继承。四项原生 ignored 测试在三平台受控作业中执行；隔离子测试由父用例驱动。
+
+`20e_archive_wiring.rs` 通过真实前端产物和 `XarBuilder` 验证标准库版本、官方模块要求、
+能力并集和请求掩码。负例断言在模块加载、函数进入或输出之前拒绝；协议与中英消息目录
+使用同一错误身份，归档只包含应用对象。畸形索引的物理 ZIP 负例位于 `xiao-xar/src/lib.rs`。

@@ -57,6 +57,8 @@ export interface DiagnosticFocus {
 
 /** VM 运行参数。 */
 export interface RunOptions {
+  /** 本次运行允许的能力位；省略时采用核心全开默认值。 */
+  capabilities?: number;
   max_call_depth: number;
   event_capacity: number;
   timeout_ms: number | null;

@@ -547,9 +547,35 @@ pub fn run_xiaoc_production(
     event_capacity: usize,
     cancellation: Option<CancellationSource>,
 ) -> Result<RunOutcome, XiaocLoadError> {
+    run_xiaoc_production_with_capabilities(
+        bytes,
+        options,
+        event_capacity,
+        cancellation,
+        KNOWN_CAPABILITY_MASK,
+    )
+}
+
+/// 使用本次请求的能力上下文执行已物化字节码；旧入口保留默认全开行为。
+pub fn run_xiaoc_production_with_capabilities(
+    bytes: &[u8],
+    options: VmOptions,
+    event_capacity: usize,
+    cancellation: Option<CancellationSource>,
+    capabilities: u64,
+) -> Result<RunOutcome, XiaocLoadError> {
     let file = xiao_bytecode::decode_xiaoc(bytes)?;
     let sink = BoundedSink::new(event_capacity);
-    let mut vm = Vm::<StackCarrier, BoundedSink>::new(&file.program, options, sink);
+    let mut vm = Vm::<StackCarrier, BoundedSink>::new_with_capabilities(
+        &file.program,
+        options,
+        sink,
+        capabilities,
+    )
+    .map_err(|error| XiaocLoadError::InvalidField {
+        field: "capabilities".to_owned(),
+        message: error.to_string(),
+    })?;
     vm.set_cancellation_source(cancellation);
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();

@@ -22,6 +22,10 @@ pub const INDEX_SCHEMA_MAJOR: u32 = 1;
 pub const INDEX_SCHEMA_MINOR: u32 = 0;
 /// 首版索引没有额外必需能力位。
 pub const INDEX_REQUIRED_FEATURES: u64 = 0;
+/// 归档必须声明标准库身份及运行能力要求；不用于全局缓存索引。
+pub const ARCHIVE_REQUIREMENTS_FEATURE: u64 = 1;
+/// 当前归档读取器支持且要求的必需特性位。
+pub const ARCHIVE_REQUIRED_FEATURES: u64 = ARCHIVE_REQUIREMENTS_FEATURE;
 /// 首版归档索引记录类型。
 pub const ARCHIVE_INDEX_RECORD_TYPE: u32 = 1;
 /// 首版全局缓存索引记录类型。
@@ -311,6 +315,10 @@ pub enum ArtifactError {
     },
     /// 索引编码或解码失败。
     Index(String),
+    /// 归档缺少当前启动契约或包含不受支持的必需特性。
+    ArchiveVersionIncompatible(String),
+    /// 归档的能力要求或兼容元数据无效。
+    InvalidArchiveRequirements(String),
     /// 缓存维护或引用来源读取失败。
     Maintenance(String),
     /// 跨进程锁失败。
@@ -347,6 +355,12 @@ impl Display for ArtifactError {
                 path.display()
             ),
             Self::Index(message) => write!(formatter, "索引错误：{message}"),
+            Self::ArchiveVersionIncompatible(message) => {
+                write!(formatter, "归档版本不兼容：{message}")
+            }
+            Self::InvalidArchiveRequirements(message) => {
+                write!(formatter, "归档要求无效：{message}")
+            }
             Self::Maintenance(message) => write!(formatter, "缓存维护错误：{message}"),
             Self::Lock(message) => write!(formatter, "锁错误：{message}"),
             Self::UnsupportedIndexVersion { major, record_type } => write!(
@@ -1224,6 +1238,14 @@ pub struct ArchiveIndex {
     pub debug_activation: bool,
     /// 构建时有效的系统文案语言默认值。
     pub language_locale: String,
+    /// 构建时官方标准库公开接口主版本。
+    pub stdlib_interface_version: u32,
+    /// 构建时语言语义版本。
+    pub language_version: String,
+    /// 实际依赖的官方文件模块规范身份；编码时按字节序排序去重。
+    pub stdlib_modules: Vec<String>,
+    /// 运行所需能力位，仅允许冻结的 bit 0–6。
+    pub required_capabilities: u64,
 }
 
 /// 全局缓存索引中的构建引用记录。
@@ -1280,7 +1302,7 @@ impl ArchiveIndex {
             put_bytes_field(&mut output, 4, &encode_archive_entry(&entry)?);
         }
         put_varint_field(&mut output, 5, u64::from(ARCHIVE_INDEX_RECORD_TYPE));
-        put_varint_field(&mut output, 6, INDEX_REQUIRED_FEATURES);
+        put_varint_field(&mut output, 6, ARCHIVE_REQUIRED_FEATURES);
         if !self.dependency_lock_digest.is_empty() {
             put_bytes_field(&mut output, 7, self.dependency_lock_digest.as_bytes());
         }
@@ -1299,6 +1321,13 @@ impl ArchiveIndex {
         if !self.language_locale.is_empty() {
             put_bytes_field(&mut output, 12, self.language_locale.as_bytes());
         }
+        put_varint_field(&mut output, 13, u64::from(self.stdlib_interface_version));
+        put_bytes_field(&mut output, 14, self.language_version.as_bytes());
+        for module in self.stdlib_modules.iter().collect::<BTreeSet<_>>() {
+            put_bytes_field(&mut output, 15, module.as_bytes());
+        }
+        // 零能力也显式编码，以便区分未声明能力要求的旧归档。
+        put_varint_field(&mut output, 16, self.required_capabilities);
         Ok(output)
     }
 
@@ -1316,9 +1345,14 @@ impl ArchiveIndex {
             platform: String::new(),
             debug_activation: false,
             language_locale: String::new(),
+            stdlib_interface_version: 0,
+            language_version: String::new(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
         };
         let mut record_type = None;
         let mut required_features = INDEX_REQUIRED_FEATURES;
+        let mut has_capabilities = false;
         while let Some((field, wire)) = reader.next_key()? {
             match field {
                 1 => index.schema_major = reader.varint(wire)? as u32,
@@ -1333,6 +1367,20 @@ impl ArchiveIndex {
                 10 => index.platform = reader.string(wire)?,
                 11 => index.debug_activation = reader.varint(wire)? != 0,
                 12 => index.language_locale = reader.string(wire)?,
+                13 => {
+                    index.stdlib_interface_version =
+                        u32::try_from(reader.varint(wire)?).map_err(|_| {
+                            ArtifactError::InvalidArchiveRequirements(
+                                "标准库接口版本超出 u32 范围".to_owned(),
+                            )
+                        })?
+                }
+                14 => index.language_version = reader.string(wire)?,
+                15 => index.stdlib_modules.push(reader.string(wire)?),
+                16 => {
+                    index.required_capabilities = reader.varint(wire)?;
+                    has_capabilities = true;
+                }
                 5 => record_type = Some(reader.varint(wire)? as u32),
                 6 => required_features = reader.varint(wire)?,
                 _ => reader.skip(wire)?,
@@ -1347,8 +1395,15 @@ impl ArchiveIndex {
         if record_type != Some(ARCHIVE_INDEX_RECORD_TYPE) {
             return Err(ArtifactError::Index("归档索引记录类型不匹配".to_owned()));
         }
-        if required_features != INDEX_REQUIRED_FEATURES {
-            return Err(ArtifactError::Index("归档索引包含未知必需能力".to_owned()));
+        if required_features != ARCHIVE_REQUIRED_FEATURES {
+            return Err(ArtifactError::ArchiveVersionIncompatible(format!(
+                "归档必需特性为 {required_features:#x}，当前要求 {ARCHIVE_REQUIRED_FEATURES:#x}"
+            )));
+        }
+        if !has_capabilities {
+            return Err(ArtifactError::ArchiveVersionIncompatible(
+                "归档缺少能力要求字段".to_owned(),
+            ));
         }
         validate_archive_index(&index)?;
         index.entries.sort_by(|left, right| {
@@ -1356,6 +1411,8 @@ impl ArchiveIndex {
                 .cmp(&right.logical_path)
                 .then(left.digest.cmp(&right.digest))
         });
+        index.stdlib_modules.sort();
+        index.stdlib_modules.dedup();
         Ok(index)
     }
 }
@@ -1486,6 +1543,24 @@ fn encode_archive_entry(entry: &ArchiveEntry) -> Result<Vec<u8>, ArtifactError> 
 }
 
 fn validate_archive_index(index: &ArchiveIndex) -> Result<(), ArtifactError> {
+    if index.stdlib_interface_version == 0 || index.language_version.is_empty() {
+        return Err(ArtifactError::ArchiveVersionIncompatible(
+            "归档缺少标准库接口版本或语言版本".to_owned(),
+        ));
+    }
+    xiao_intrinsics::validate_capability_mask(index.required_capabilities)
+        .map_err(|error| ArtifactError::InvalidArchiveRequirements(error.to_string()))?;
+    for module in &index.stdlib_modules {
+        if !module.starts_with("stdlib.")
+            || module["stdlib.".len()..]
+                .split('.')
+                .any(|part| part.is_empty() || part.contains(['/', '\\', ':']))
+        {
+            return Err(ArtifactError::InvalidArchiveRequirements(format!(
+                "不是标准库文件模块的规范身份：{module}"
+            )));
+        }
+    }
     if index.entry.is_empty() {
         return Err(ArtifactError::Index("归档索引缺少入口".to_owned()));
     }
@@ -1964,6 +2039,10 @@ mod tests {
             platform: "portable".to_owned(),
             debug_activation: false,
             language_locale: "zh-CN".to_owned(),
+            stdlib_interface_version: 1,
+            language_version: "0.1.0".to_owned(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
         };
         let global = GlobalIndex {
             schema_major: INDEX_SCHEMA_MAJOR,
@@ -2088,6 +2167,10 @@ mod tests {
             platform: String::new(),
             debug_activation: false,
             language_locale: String::new(),
+            stdlib_interface_version: 1,
+            language_version: "0.1.0".to_owned(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
         };
         assert_eq!(
             ArchiveIndex::decode(&archive.encode().unwrap()).unwrap(),
@@ -2113,7 +2196,8 @@ mod tests {
         let missing_entry = [0x08, 0x01, 0x10, 0x00, 0x28, 0x01, 0x30, 0x00];
         let empty_entry = [0x08, 0x01, 0x10, 0x00, 0x1a, 0x00, 0x28, 0x01, 0x30, 0x00];
         let non_empty_entry = [
-            0x08, 0x01, 0x10, 0x00, 0x1a, 0x03, b'm', b'a', b'i', 0x28, 0x01, 0x30, 0x00,
+            0x08, 0x01, 0x10, 0x00, 0x1a, 0x03, b'm', b'a', b'i', 0x28, 0x01, 0x30, 0x01, 0x68,
+            0x01, 0x72, 0x05, b'0', b'.', b'1', b'.', b'0', 0x80, 0x01, 0x00,
         ];
         assert!(ArchiveIndex::decode(&missing_entry).is_err());
         assert!(ArchiveIndex::decode(&empty_entry).is_err());
@@ -2133,16 +2217,20 @@ mod tests {
             platform: String::new(),
             debug_activation: false,
             language_locale: String::new(),
+            stdlib_interface_version: 1,
+            language_version: "0.1.0".to_owned(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
         };
         let mut bytes = index.encode().unwrap();
         let feature = bytes
             .windows(2)
-            .rposition(|window| window == [0x30, 0x00])
+            .position(|window| window == [0x30, ARCHIVE_REQUIRED_FEATURES as u8])
             .expect("必需能力字段");
-        bytes[feature + 1] = 1;
+        bytes[feature + 1] |= 2;
         assert!(matches!(
             ArchiveIndex::decode(&bytes),
-            Err(ArtifactError::Index(_))
+            Err(ArtifactError::ArchiveVersionIncompatible(_))
         ));
     }
 
@@ -2160,11 +2248,161 @@ mod tests {
             platform: "x86_64-pc-windows-msvc".to_owned(),
             debug_activation: true,
             language_locale: "zh-CN".to_owned(),
+            stdlib_interface_version: 1,
+            language_version: "0.1.0".to_owned(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
         };
         assert_eq!(
             ArchiveIndex::decode(&index.encode().unwrap()).unwrap(),
             index
         );
+    }
+
+    /// 不含对象的索引夹具；版本字段显式设置，不依赖隐式当前值。
+    fn requirements_index() -> ArchiveIndex {
+        ArchiveIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            entry: "main.xiaoc".to_owned(),
+            entries: Vec::new(),
+            dependency_lock_digest: String::new(),
+            runtime_abi_min: 0,
+            runtime_abi_max: 0,
+            platform: String::new(),
+            debug_activation: false,
+            language_locale: String::new(),
+            stdlib_interface_version: 1,
+            language_version: "0.1.0".to_owned(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
+        }
+    }
+
+    /// 删除指定 protobuf 字段，其余原始字节保持不变，用于缺字段负例。
+    fn without_archive_field(bytes: &[u8], omitted: u32) -> Vec<u8> {
+        let mut reader = ProtoReader::new(bytes);
+        let mut output = Vec::new();
+        loop {
+            let start = reader.offset;
+            let Some((field, wire)) = reader.next_key().unwrap() else {
+                break;
+            };
+            reader.skip(wire).unwrap();
+            if field != omitted {
+                output.extend_from_slice(&bytes[start..reader.offset]);
+            }
+        }
+        output
+    }
+
+    #[test]
+    /// 新字段往返、模块排序去重与重复编码均稳定；零能力字段也必须存在。
+    fn archive_requirements_round_trip_is_canonical() {
+        let mut index = requirements_index();
+        index.stdlib_modules = vec![
+            "stdlib.text".to_owned(),
+            "stdlib.os".to_owned(),
+            "stdlib.text".to_owned(),
+        ];
+        let bytes = index.encode().unwrap();
+        assert_eq!(bytes, index.encode().unwrap());
+        index.stdlib_modules = vec!["stdlib.os".to_owned(), "stdlib.text".to_owned()];
+        let decoded = ArchiveIndex::decode(&bytes).unwrap();
+        assert_eq!(decoded, index);
+        assert_eq!(decoded.encode().unwrap(), bytes);
+        assert!(matches!(
+            ArchiveIndex::decode(&without_archive_field(&bytes, 16)),
+            Err(ArtifactError::ArchiveVersionIncompatible(_))
+        ));
+    }
+
+    #[test]
+    /// 旧归档和任意必填要求字段缺失均不可静默兼容。
+    fn archive_requires_new_feature_and_version_fields() {
+        let legacy = [0x08, 1, 0x10, 0, 0x1a, 1, b'x', 0x28, 1, 0x30, 0];
+        assert!(matches!(
+            ArchiveIndex::decode(&legacy),
+            Err(ArtifactError::ArchiveVersionIncompatible(_))
+        ));
+        let bytes = requirements_index().encode().unwrap();
+        for omitted in [6, 13, 14, 16] {
+            assert!(
+                matches!(
+                    ArchiveIndex::decode(&without_archive_field(&bytes, omitted)),
+                    Err(ArtifactError::ArchiveVersionIncompatible(_))
+                ),
+                "字段 {omitted}"
+            );
+        }
+        let mut unset = requirements_index();
+        unset.language_version.clear();
+        assert!(matches!(
+            unset.encode(),
+            Err(ArtifactError::ArchiveVersionIncompatible(_))
+        ));
+    }
+
+    #[test]
+    /// 冻结的 17A 读取规则只认识 feature=0；GlobalIndex 仍使用该原值。
+    fn new_archive_feature_rejects_legacy_reader_without_changing_global_index() {
+        let bytes = requirements_index().encode().unwrap();
+        let mut legacy_reader = ProtoReader::new(&bytes);
+        let mut legacy_features = 0;
+        while let Some((field, wire)) = legacy_reader.next_key().unwrap() {
+            if field == 6 {
+                legacy_features = legacy_reader.varint(wire).unwrap();
+            } else {
+                legacy_reader.skip(wire).unwrap();
+            }
+        }
+        assert_ne!(
+            legacy_features, INDEX_REQUIRED_FEATURES,
+            "旧读取器会错误地放行新归档"
+        );
+        assert_eq!(legacy_features, ARCHIVE_REQUIREMENTS_FEATURE);
+        let global = GlobalIndex {
+            schema_major: INDEX_SCHEMA_MAJOR,
+            schema_minor: INDEX_SCHEMA_MINOR,
+            records: Vec::new(),
+        };
+        let bytes = global.encode().unwrap();
+        assert_eq!(GlobalIndex::decode(&bytes).unwrap(), global);
+        let mut reader = ProtoReader::new(&bytes);
+        let mut features = None;
+        while let Some((field, wire)) = reader.next_key().unwrap() {
+            if field == 5 {
+                features = Some(reader.varint(wire).unwrap());
+            } else {
+                reader.skip(wire).unwrap();
+            }
+        }
+        assert_eq!(features, Some(0));
+    }
+
+    #[test]
+    /// 低位和最高位的未知能力均拒绝；标准库接口版本不能被截断为 u32。
+    fn archive_rejects_unknown_capabilities_and_overflowing_interface_version() {
+        for bit in [7, 63] {
+            let mut index = requirements_index();
+            index.required_capabilities = 1 << bit;
+            assert!(matches!(
+                index.encode(),
+                Err(ArtifactError::InvalidArchiveRequirements(_))
+            ));
+            let mut raw = without_archive_field(&requirements_index().encode().unwrap(), 16);
+            put_varint_field(&mut raw, 16, 1 << bit);
+            assert!(matches!(
+                ArchiveIndex::decode(&raw),
+                Err(ArtifactError::InvalidArchiveRequirements(_))
+            ));
+        }
+        let mut raw = without_archive_field(&requirements_index().encode().unwrap(), 13);
+        put_varint_field(&mut raw, 13, 1 << 32);
+        assert!(matches!(
+            ArchiveIndex::decode(&raw),
+            Err(ArtifactError::InvalidArchiveRequirements(_))
+        ));
     }
 
     #[test]
@@ -2221,6 +2459,10 @@ mod tests {
             platform: String::new(),
             debug_activation: false,
             language_locale: String::new(),
+            stdlib_interface_version: 1,
+            language_version: "0.1.0".to_owned(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
         };
         store.write_archive(&archive_path, &archive).unwrap();
 
@@ -2420,6 +2662,10 @@ mod tests {
             platform: String::new(),
             debug_activation: false,
             language_locale: String::new(),
+            stdlib_interface_version: 1,
+            language_version: "0.1.0".to_owned(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
         };
         index_store.write_archive(&archive_path, &archive).unwrap();
         let references = store

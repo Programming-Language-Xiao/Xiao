@@ -150,6 +150,12 @@ pub struct SourceIdentity {
 /// VM 请求参数。
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct RunOptions {
+    /// 本次运行允许的能力位；旧请求省略时沿用全开默认值。
+    #[serde(
+        default = "default_capabilities",
+        skip_serializing_if = "is_default_capabilities"
+    )]
+    pub capabilities: u64,
     /// 最大调用深度。
     pub max_call_depth: usize,
     /// 事件接收器容量。
@@ -169,6 +175,16 @@ fn default_checkpoints_enabled() -> bool {
     true
 }
 
+/// 返回运行请求默认的冻结能力集合。
+fn default_capabilities() -> u64 {
+    xiao_intrinsics::KNOWN_CAPABILITY_MASK
+}
+
+/// 全开默认值不增加旧请求序列化后的字段。
+fn is_default_capabilities(value: &u64) -> bool {
+    *value == default_capabilities()
+}
+
 /// 返回请求反序列化时采用的默认检查点间隔。
 fn default_checkpoint_interval() -> usize {
     xiao_vm::DEFAULT_CHECKPOINT_INTERVAL
@@ -179,6 +195,7 @@ impl Default for RunOptions {
     fn default() -> Self {
         Self {
             max_call_depth: VmOptions::default().max_call_depth,
+            capabilities: default_capabilities(),
             event_capacity: xiao_vm::DEFAULT_EVENT_CAPACITY,
             timeout_ms: None,
             checkpoints_enabled: true,

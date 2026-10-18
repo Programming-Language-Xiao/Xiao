@@ -91,6 +91,10 @@ fn verify_detail_reports_archive_members_and_object_digests() {
         platform: "portable".to_owned(),
         debug_activation: false,
         language_locale: "zh-CN".to_owned(),
+        stdlib_interface_version: 1,
+        language_version: "0.1.0".to_owned(),
+        stdlib_modules: Vec::new(),
+        required_capabilities: 0,
     };
     let bytes = encode_xar(&index, &[object]).expect("应编码 xar");
     let path = std::env::temp_dir().join(format!("xiao-19b-report-{}.xar", std::process::id()));

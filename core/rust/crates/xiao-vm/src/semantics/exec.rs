@@ -212,6 +212,24 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         )
     }
 
+    /// 为已物化字节码入口建立经过范围校验的请求能力上下文。
+    pub fn new_with_capabilities(
+        program: &'p TacProgram,
+        options: VmOptions,
+        sink: S,
+        capabilities: u64,
+    ) -> Result<Self, xiao_intrinsics::CapabilityMaskError> {
+        xiao_intrinsics::validate_capability_mask(capabilities)?;
+        Ok(Self::new_with_metadata(
+            program,
+            options,
+            sink,
+            VmMetadata::legacy(program),
+            VmSession::new(),
+            capabilities,
+        ))
+    }
+
     /// 创建一个带模块/源码身份的解释器。
     pub(crate) fn new_with_metadata(
         program: &'p TacProgram,

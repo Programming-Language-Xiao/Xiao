@@ -518,6 +518,7 @@ dependencies = [
  "sha2",
  "windows-sys",
  "xiao-bytecode",
+ "xiao-intrinsics",
  "xiao-lock",
 ]
 
@@ -731,6 +732,10 @@ version = "0.1.0"
 [[package]]
 name = "xiao-standard-library"
 version = "0.1.0"
+dependencies = [
+ "serde",
+ "xiao-runtime-abi",
+]
 
 [[package]]
 name = "xiao-syntax"
@@ -786,8 +791,11 @@ dependencies = [
  "xiao-config",
  "xiao-diagnostics",
  "xiao-i18n",
+ "xiao-intrinsics",
+ "xiao-modules",
  "xiao-runtime-abi",
  "xiao-source",
+ "xiao-standard-library",
  "xiao-vm",
 ]
 

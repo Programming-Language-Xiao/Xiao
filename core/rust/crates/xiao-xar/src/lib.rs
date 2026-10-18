@@ -60,6 +60,8 @@ pub const ARCHIVE_DEPENDENCY_UNSATISFIED_CODE: &str = "X17-XAR-008";
 pub const ARCHIVE_VALIDATION_FAILED_CODE: &str = "X17-XAR-009";
 /// 归档语言资源降级的稳定诊断编号。
 pub const ARCHIVE_LANGUAGE_FALLBACK_CODE: &str = "X17-XAR-010";
+/// 归档声明未知能力位或不合法要求元数据的稳定诊断编号。
+pub const ARCHIVE_INVALID_REQUIREMENTS_CODE: &str = "X17-XAR-011";
 
 mod runner;
 
@@ -792,6 +794,30 @@ impl XarBuilder {
         }
     }
 
+    /// 设置标准库身份及入口可达的官方模块/内置入口闭包。
+    ///
+    /// 能力位只从权威 intrinsic 契约推导；18B 负责提供实际可达闭包，
+    /// 本入口不读取用户配置、不收集或复制官方标准库对象。
+    pub fn with_requirements(
+        mut self,
+        identity: &xiao_standard_library::StandardLibraryIdentity,
+        stdlib_modules: impl IntoIterator<Item = String>,
+        intrinsics: impl IntoIterator<Item = xiao_intrinsics::IntrinsicId>,
+    ) -> Result<Self, XarError> {
+        let mut capabilities = 0;
+        for id in intrinsics {
+            let declaration = xiao_intrinsics::active_by_id(id).ok_or_else(|| {
+                XarError::InvalidIndex(format!("归档要求包含未知或已移除的 intrinsic {id}"))
+            })?;
+            capabilities |= declaration.capability.bit().unwrap_or(0);
+        }
+        self.index.stdlib_interface_version = identity.stdlib_interface_version;
+        self.index.language_version = identity.language_version.clone();
+        self.index.stdlib_modules = stdlib_modules.into_iter().collect();
+        self.index.required_capabilities = capabilities;
+        Ok(self)
+    }
+
     /// 替换写入选项。
     #[must_use]
     pub const fn with_options(mut self, options: XarBuildOptions) -> Self {
@@ -1217,6 +1243,16 @@ fn validate_archive_index(index: &ArchiveIndex) -> Result<(), XarError> {
     }
     let mut logical_paths = BTreeSet::new();
     for entry in &index.entries {
+        if entry.module == xiao_standard_library::STANDARD_LIBRARY_NAMESPACE
+            || entry
+                .module
+                .starts_with(xiao_standard_library::STANDARD_LIBRARY_PREFIX)
+        {
+            return Err(XarError::InvalidIndex(format!(
+                "归档不能携带官方标准库模块对象：{}",
+                entry.module
+            )));
+        }
         validate_logical_path(&entry.logical_path)?;
         if !logical_paths.insert(entry.logical_path.as_bytes().to_vec()) {
             return Err(XarError::InvalidIndex("索引逻辑路径重复".to_owned()));
@@ -2027,8 +2063,77 @@ mod tests {
             platform: "portable".to_owned(),
             debug_activation: false,
             language_locale: "zh-CN".to_owned(),
+            stdlib_interface_version: 1,
+            language_version: "0.1.0".to_owned(),
+            stdlib_modules: Vec::new(),
+            required_capabilities: 0,
         };
         (index, object)
+    }
+
+    /// 只供格式负例使用：重新写 ZIP 长度/CRC，避免损坏外层结构掩盖索引错误。
+    fn raw_index_archive(index_bytes: &[u8], object: &XarObject) -> Vec<u8> {
+        let mut members = vec![
+            encode_member(
+                XAR_INDEX_PATH.to_owned(),
+                index_bytes,
+                CompressionMethod::Store,
+                6,
+            )
+            .unwrap(),
+            encode_member(
+                object_member_path(object.kind, object.digest),
+                &object.bytes,
+                CompressionMethod::Store,
+                6,
+            )
+            .unwrap(),
+        ];
+        members.sort_by(|left, right| left.path.cmp(&right.path));
+        write_zip(&members, false).unwrap()
+    }
+
+    #[test]
+    /// 外层 ZIP 完整时，未知能力仍在索引阶段报 011，旧归档按 007 拒绝且不执行。
+    fn archive_requirements_fail_before_entry_resolution_or_vm_events() {
+        let (mut index, object) = index_for(b"not an executable entry");
+        index.runtime_abi_min = xiao_runtime_abi::ABI_ENCODED_VERSION;
+        index.runtime_abi_max = xiao_runtime_abi::ABI_ENCODED_VERSION;
+        let canonical = index.encode().unwrap();
+        let mut unknown = canonical.clone();
+        assert_eq!(unknown.pop(), Some(0));
+        unknown.extend_from_slice(&[0x80, 0x01]); // 字段 16 的值为 bit 7。
+        let mut legacy = canonical.clone();
+        let fields = legacy
+            .windows(2)
+            .position(|window| window == [0x68, 1])
+            .unwrap();
+        legacy.truncate(fields);
+        let feature = legacy
+            .windows(2)
+            .position(|window| window == [0x30, 1])
+            .unwrap();
+        legacy[feature + 1] = 0;
+        for (bytes, code) in [
+            (&unknown, ARCHIVE_INVALID_REQUIREMENTS_CODE),
+            (&legacy, ARCHIVE_VERSION_INCOMPATIBLE_CODE),
+        ] {
+            let archive = raw_index_archive(bytes, &object);
+            let mut events = Vec::new();
+            let error =
+                run_archive_with_event_observer(&archive, XarRunOptions::default(), |event| {
+                    events.push(format!("{event:?}"))
+                })
+                .unwrap_err();
+            assert_eq!(error.code(), code, "{error:?}");
+            assert!(events.is_empty());
+        }
+        // 此入口是 Source 对象，007 必须先于入口类型的 009。
+        index.stdlib_interface_version += 1;
+        let archive = encode_xar(&index, &[object]).unwrap();
+        let error = run_archive(&archive, XarRunOptions::default()).unwrap_err();
+        assert_eq!(error.code(), ARCHIVE_VERSION_INCOMPATIBLE_CODE);
+        assert!(error.message().contains("标准库接口版本"));
     }
 
     fn empty_xiaoc_with_optional_sections() -> Vec<u8> {

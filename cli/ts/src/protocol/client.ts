@@ -73,6 +73,8 @@ export interface SourceRunOptions {
 
 /** 归档运行请求的便捷参数。 */
 export interface ArchiveRunOptions {
+  /** 本次归档运行允许的冻结能力位；省略时全开。 */
+  capabilities?: number;
   /** VM 调用深度。 */
   maxCallDepth?: number;
   /** 18A 归一化的优化级别；归档运行暂只保留协议形状。 */
@@ -326,6 +328,7 @@ export class ProtocolClient {
       diagnostics: options.diagnostics ?? null,
       debug: options.debug ?? false,
       options: {
+        ...(options.capabilities === undefined ? {} : { capabilities: options.capabilities }),
         max_call_depth: options.maxCallDepth ?? 1024,
         event_capacity: options.eventCapacity ?? 256,
         timeout_ms: options.timeoutMs ?? null,

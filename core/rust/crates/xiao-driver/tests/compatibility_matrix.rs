@@ -91,6 +91,10 @@ fn index_major_cell_is_backed_by_the_authoritative_codec() {
         platform: "portable".to_owned(),
         debug_activation: false,
         language_locale: "zh-CN".to_owned(),
+        stdlib_interface_version: 1,
+        language_version: "0.1.0".to_owned(),
+        stdlib_modules: Vec::new(),
+        required_capabilities: 0,
     };
     let mut bytes = index.encode().expect("应编码合法归档索引");
     assert!(ArchiveIndex::decode(&bytes).is_ok());

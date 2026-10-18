@@ -62,6 +62,10 @@ fn archive_for_with_debug(source: &str, debug: bool) -> Vec<u8> {
         platform: "portable".to_owned(),
         debug_activation: debug,
         language_locale: "zh-CN".to_owned(),
+        stdlib_interface_version: 1,
+        language_version: "0.1.0".to_owned(),
+        stdlib_modules: Vec::new(),
+        required_capabilities: 0,
     };
     encode_xar(&index, &[object]).expect("应编码归档")
 }

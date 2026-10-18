@@ -5,11 +5,12 @@ use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 use xiao_artifacts::{ArtifactError, Digest256};
 use xiao_i18n::LocaleContext;
+use xiao_intrinsics::{KNOWN_CAPABILITY_MASK, validate_capability_mask};
 
 use super::{
-    ARCHIVE_DEPENDENCY_UNSATISFIED_CODE, ARCHIVE_MISSING_OBJECT_CODE,
-    ARCHIVE_VALIDATION_FAILED_CODE, ARCHIVE_VERSION_INCOMPATIBLE_CODE, ObjectKind, XarError,
-    decode_xar,
+    ARCHIVE_DEPENDENCY_UNSATISFIED_CODE, ARCHIVE_INVALID_REQUIREMENTS_CODE,
+    ARCHIVE_MISSING_OBJECT_CODE, ARCHIVE_VALIDATION_FAILED_CODE, ARCHIVE_VERSION_INCOMPATIBLE_CODE,
+    ObjectKind, XarError, decode_xar,
 };
 
 /// 归档执行前的宿主约束；入口和对象仍只来自已验证的唯一索引。
@@ -27,6 +28,8 @@ pub struct XarRunOptions {
     pub event_capacity: usize,
     /// 调用方是否显式请求独立诊断窗口。
     pub debug: bool,
+    /// 本次请求允许的不可变能力上下文。
+    pub capabilities: u64,
 }
 
 impl Default for XarRunOptions {
@@ -38,6 +41,7 @@ impl Default for XarRunOptions {
             vm_options: xiao_vm::VmOptions::default(),
             event_capacity: xiao_vm::DEFAULT_EVENT_CAPACITY,
             debug: false,
+            capabilities: KNOWN_CAPABILITY_MASK,
         }
     }
 }
@@ -96,6 +100,7 @@ pub fn audit_archive(
 ) -> Result<ArchiveAuditRecord, XarRunError> {
     let archive = decode_xar(bytes).map_err(classify_run_error)?;
     let index = archive.index();
+    validate_requirements(index, options)?;
     let language =
         resolve_language_locale(&index.language_locale, options.language_locale.as_deref());
     let runtime_abi_compatible = options.runtime_abi >= index.runtime_abi_min
@@ -156,6 +161,10 @@ pub enum XarRunError {
     DependencyUnsatisfied(String),
     /// 归档、对象或 `.xiaoc` 校验失败。
     Validation(String),
+    /// 索引要求含未知能力位或无效元数据。
+    InvalidRequirements(String),
+    /// 本次请求缺少归档运行必需能力。
+    CapabilityUnavailable(String),
 }
 
 impl XarRunError {
@@ -167,6 +176,8 @@ impl XarRunError {
             Self::VersionIncompatible(_) => ARCHIVE_VERSION_INCOMPATIBLE_CODE,
             Self::DependencyUnsatisfied(_) => ARCHIVE_DEPENDENCY_UNSATISFIED_CODE,
             Self::Validation(_) => ARCHIVE_VALIDATION_FAILED_CODE,
+            Self::InvalidRequirements(_) => ARCHIVE_INVALID_REQUIREMENTS_CODE,
+            Self::CapabilityUnavailable(_) => xiao_diagnostics::CAPABILITY_UNAVAILABLE_CODE,
         }
     }
 
@@ -178,6 +189,8 @@ impl XarRunError {
             Self::VersionIncompatible(_) => "x17.xar.archive_version_incompatible",
             Self::DependencyUnsatisfied(_) => "x17.xar.archive_dependency_unsatisfied",
             Self::Validation(_) => "x17.xar.archive_validation_failed",
+            Self::InvalidRequirements(_) => "x17.xar.archive_invalid_requirements",
+            Self::CapabilityUnavailable(_) => "x17.xar.archive_capability_unavailable",
         }
     }
 
@@ -189,6 +202,7 @@ impl XarRunError {
             | Self::VersionIncompatible(message)
             | Self::DependencyUnsatisfied(message)
             | Self::Validation(message) => message,
+            Self::InvalidRequirements(message) | Self::CapabilityUnavailable(message) => message,
         }
     }
 }
@@ -228,6 +242,7 @@ pub fn run_archive_with_control(
             options.event_capacity
         )));
     }
+    validate_requirements(index, &options)?;
     if options.runtime_abi < index.runtime_abi_min || options.runtime_abi > index.runtime_abi_max {
         return Err(XarRunError::VersionIncompatible(format!(
             "Runtime ABI {} 不在归档要求的 {}..={} 范围内",
@@ -269,11 +284,12 @@ pub fn run_archive_with_control(
     let entry_bytes = archive
         .read_object(entry.object_kind, entry.digest)
         .map_err(classify_run_error)?;
-    xiao_vm::run_xiaoc_production(
+    xiao_vm::run_xiaoc_production_with_capabilities(
         &entry_bytes,
         options.vm_options,
         options.event_capacity,
         cancellation,
+        options.capabilities,
     )
     .map_err(|error| XarRunError::Validation(format!("入口 `.xiaoc` 执行前校验失败：{error}")))
 }
@@ -291,20 +307,94 @@ pub fn run_archive_with_event_observer(
     Ok(outcome)
 }
 
-fn classify_run_error(error: XarError) -> XarRunError {
-    match error {
-        XarError::MissingMember(path) => XarRunError::MissingObject(path),
-        XarError::Artifact(ArtifactError::UnsupportedIndexVersion { major, .. }) => {
-            XarRunError::VersionIncompatible(format!("不支持的归档索引主版本 {major}"))
+impl From<XarError> for XarRunError {
+    fn from(error: XarError) -> Self {
+        match error {
+            XarError::Artifact(ArtifactError::ArchiveVersionIncompatible(message)) => {
+                Self::VersionIncompatible(message)
+            }
+            XarError::Artifact(ArtifactError::InvalidArchiveRequirements(message)) => {
+                Self::InvalidRequirements(message)
+            }
+            XarError::MissingMember(path) => XarRunError::MissingObject(path),
+            XarError::Artifact(ArtifactError::UnsupportedIndexVersion { major, .. }) => {
+                XarRunError::VersionIncompatible(format!("不支持的归档索引主版本 {major}"))
+            }
+            XarError::Unsupported(message) if message.contains("版本") => {
+                XarRunError::VersionIncompatible(message)
+            }
+            XarError::InvalidIndex(message) if message.contains("版本") => {
+                XarRunError::VersionIncompatible(message)
+            }
+            XarError::InvalidIndex(message)
+                if message.contains("对象缺失") || message.contains("入口没有") =>
+            {
+                XarRunError::MissingObject(message)
+            }
+            other => XarRunError::Validation(other.to_string()),
         }
-        XarError::Unsupported(message) if message.contains("版本") => {
-            XarRunError::VersionIncompatible(message)
-        }
-        XarError::InvalidIndex(message)
-            if message.contains("对象缺失") || message.contains("入口没有") =>
-        {
-            XarRunError::MissingObject(message)
-        }
-        other => XarRunError::Validation(other.to_string()),
     }
+}
+
+/// 在定位或读取入口对象前验证本次启动要求；标准库只解析，不初始化。
+fn validate_requirements(
+    index: &xiao_artifacts::ArchiveIndex,
+    options: &XarRunOptions,
+) -> Result<(), XarRunError> {
+    let identity = xiao_standard_library::current_standard_library_identity();
+    if index.stdlib_interface_version != identity.stdlib_interface_version {
+        return Err(XarRunError::VersionIncompatible(format!(
+            "标准库接口版本：期望 {}，实际 {}",
+            index.stdlib_interface_version, identity.stdlib_interface_version
+        )));
+    }
+    if index.language_version != identity.language_version {
+        return Err(XarRunError::VersionIncompatible(format!(
+            "语言版本：期望 {}，实际 {}",
+            index.language_version, identity.language_version
+        )));
+    }
+    if !index.stdlib_modules.is_empty() {
+        let installed = xiao_modules::analyze_project(xiao_standard_library::source_root());
+        for module in &index.stdlib_modules {
+            let exists = module
+                .strip_prefix(xiao_standard_library::STANDARD_LIBRARY_PREFIX)
+                .filter(|name| !name.is_empty())
+                .map(|name| xiao_modules::ModuleName::new(name.split('.').map(str::to_owned)))
+                .is_some_and(|name| {
+                    installed.is_success() && installed.modules.contains_key(&name)
+                });
+            if !exists {
+                return Err(XarRunError::DependencyUnsatisfied(format!(
+                    "缺少可解析的标准库模块 {module}"
+                )));
+            }
+        }
+    }
+    validate_capability_mask(options.capabilities)
+        .map_err(|error| XarRunError::InvalidRequirements(error.to_string()))?;
+    let missing = index.required_capabilities & !options.capabilities;
+    if missing != 0 {
+        let names = [
+            (0, "filesystem"),
+            (1, "clock"),
+            (2, "process"),
+            (3, "network"),
+            (4, "native_extension"),
+            (5, "stdout"),
+            (6, "stdin"),
+        ]
+        .into_iter()
+        .filter_map(|(bit, name)| (missing & (1 << bit) != 0).then_some(name))
+        .collect::<Vec<_>>()
+        .join(", ");
+        return Err(XarRunError::CapabilityUnavailable(format!(
+            "归档缺少能力：{names}"
+        )));
+    }
+    Ok(())
+}
+
+fn classify_run_error(error: XarError) -> XarRunError {
+    error.into()
 }
