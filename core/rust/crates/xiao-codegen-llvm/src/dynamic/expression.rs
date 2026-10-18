@@ -191,12 +191,26 @@ impl<'a> DynamicGenerator<'a> {
     /// 消费不依赖具体操作符的前端检查；算术、集合和选择器检查由其 Runtime
     /// 操作入口直接产生稳定错误，避免把已知错误操作数误判为成功结果。
     fn emit_registered_checks(&mut self, expression: &IrExpression, value: &str) {
+        self.emit_registered_checks_at(expression.span, value);
+    }
+
+    /// 形参入口和普通表达式消费同一份资源检查计划。
+    pub(super) fn emit_registered_checks_at(&mut self, span: IrSpan, value: &str) {
         for check in self
             .program
             .runtime_checks
             .iter()
-            .filter(|check| check.span == expression.span)
+            .filter(|check| check.span == span)
         {
+            if matches!(
+                check.kind.as_str(),
+                "resource_type" | "resource_array" | "resource_dictionary"
+            ) {
+                if let Some(IrType::Resource { kind }) = &check.expected {
+                    self.emit_dynamic_check(&format!("{}:{kind}", check.kind), value, check.span);
+                }
+                continue;
+            }
             if matches!(
                 check.kind.as_str(),
                 "string_boolean" | "set_hashability" | "dynamic_conversion"

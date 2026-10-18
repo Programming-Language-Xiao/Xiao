@@ -544,6 +544,7 @@ impl<'source> TypeChecker<'source> {
                 self.environment_error(method_signature.span, error);
             }
         }
+        self.check_resource_parameter_boundaries(parameters);
         self.register_top_level_functions(body);
         for statement in body {
             self.check_statement(statement);

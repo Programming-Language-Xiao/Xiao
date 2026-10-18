@@ -222,6 +222,91 @@ fn dynamic_operator_and_check_round_trip() {
 }
 
 #[test]
+/// 动态资源检查保留名义种类，关闭不改变类型，集合检查覆盖每个成员及空集合。
+fn resource_dynamic_checks_preserve_nominal_kinds_and_closed_values() {
+    use crate::{ArrayHandle, DictHandle, DictKind};
+
+    for kind in [
+        ExternalResourceKind::File,
+        ExternalResourceKind::Directory,
+        ExternalResourceKind::Process,
+    ] {
+        let resource = ExternalResourceHandle::new(kind).unwrap();
+        for closed in [false, true] {
+            if closed {
+                resource.close().unwrap();
+            }
+            let value = RuntimeValue::ExternalResource(resource.clone());
+            for expected in ["file", "directory", "process", "resource"] {
+                let matches = kind.as_str() == expected
+                    || expected == "resource" && kind != ExternalResourceKind::Process;
+                let mut abi_value = runtime_to_value(&value).unwrap();
+                let status = xiao_runtime_dynamic_check(
+                    bytes(&format!("resource_type:{expected}")),
+                    &abi_value,
+                );
+                assert_eq!(
+                    status,
+                    if matches {
+                        0
+                    } else {
+                        XiaoAbiStatus::RuntimeError.code()
+                    },
+                    "{kind:?}, closed={closed}, expected={expected}"
+                );
+                xiao_runtime_value_release(&mut abi_value);
+                xiao_runtime_error_clear();
+            }
+            for elements in [
+                vec![],
+                vec![value.clone(), value.clone()],
+                vec![value.clone(), RuntimeValue::Int(7)],
+            ] {
+                let valid = elements
+                    .iter()
+                    .all(|value| matches!(value, RuntimeValue::ExternalResource(_)));
+                let array = RuntimeValue::Array(ArrayHandle::new(elements.clone()).unwrap());
+                let entries = elements
+                    .into_iter()
+                    .enumerate()
+                    .map(|(index, value)| (index.to_string(), value))
+                    .collect::<Vec<_>>();
+                for (check, collection) in [
+                    ("resource_array", array),
+                    (
+                        "resource_dictionary",
+                        RuntimeValue::DictTable(
+                            DictHandle::new(DictKind::Table, entries.clone()).unwrap(),
+                        ),
+                    ),
+                    (
+                        "resource_dictionary",
+                        RuntimeValue::DictColumn(
+                            DictHandle::new(DictKind::Column, entries).unwrap(),
+                        ),
+                    ),
+                ] {
+                    let mut abi_value = runtime_to_value(&collection).unwrap();
+                    assert_eq!(
+                        xiao_runtime_dynamic_check(
+                            bytes(&format!("{check}:{}", kind.as_str())),
+                            &abi_value
+                        ),
+                        if valid {
+                            0
+                        } else {
+                            XiaoAbiStatus::RuntimeError.code()
+                        }
+                    );
+                    xiao_runtime_value_release(&mut abi_value);
+                    xiao_runtime_error_clear();
+                }
+            }
+        }
+    }
+}
+
+#[test]
 /// 动态成员拒绝字典值时，借用转换产生的临时强引用必须与输入值一起归零并销毁对象。
 fn dynamic_member_type_error_releases_input_value() {
     xiao_runtime_error_clear();
@@ -732,7 +817,8 @@ fn abi_compatibility_accepts_old_minor_and_rejects_unsupported_versions() {
     assert_eq!(xiao_runtime_abi_is_compatible(1, 13), 1);
     assert_eq!(xiao_runtime_abi_is_compatible(1, 14), 1);
     assert_eq!(xiao_runtime_abi_is_compatible(1, 15), 1);
-    assert_eq!(xiao_runtime_abi_is_compatible(1, 16), 0);
+    assert_eq!(xiao_runtime_abi_is_compatible(1, 16), 1);
+    assert_eq!(xiao_runtime_abi_is_compatible(1, 17), 0);
     assert_eq!(xiao_runtime_abi_is_compatible(2, 13), 0);
 }
 

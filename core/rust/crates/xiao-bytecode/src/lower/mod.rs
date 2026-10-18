@@ -434,6 +434,9 @@ impl<'ir> Lowerer<'ir> {
         if let Some(scope) = function_scope {
             self.enter_scope(scope, span);
         }
+        for (parameter, register) in parameters.iter().zip(&parameter_registers) {
+            self.emit_runtime_checks(parameter.name.span, *register);
+        }
         self.lower_statements(body, "normal");
         if !self.current_block_terminated() {
             if name.is_empty() {
@@ -642,22 +645,20 @@ impl<'ir> Lowerer<'ir> {
 
     /// 按名称与源码区间查找绑定的值编号。
     ///
-    /// 名称优先；同名遮蔽时用源码区间消歧，因为绑定值的区间就是其名称区间。
+    /// 绑定区间可能是名称、形参或整条声明；优先最窄的包含区间，
+    /// 普通再次赋值再按当前词法作用域查找，避免写入其它函数的同名形参。
     fn value_of_name_at(&self, name: &str, backticked: bool, span: IrSpan) -> Option<u32> {
         let key = name_key(name, backticked);
         self.program
             .ownership
             .values
             .iter()
-            .find(|value| value.name.as_deref() == Some(key.as_str()) && value.span == span)
-            .or_else(|| {
-                self.program
-                    .ownership
-                    .values
-                    .iter()
-                    .find(|value| value.name.as_deref() == Some(key.as_str()))
+            .filter(|value| {
+                value.name.as_deref() == Some(key.as_str()) && contains(value.span, span)
             })
+            .min_by_key(|value| value.span.end.saturating_sub(value.span.start))
             .map(|value| value.id)
+            .or_else(|| self.value_of_name(name, backticked))
     }
 
     /// 压入一个活动循环。

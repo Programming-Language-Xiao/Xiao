@@ -1299,7 +1299,7 @@ mod tests {
                 .iter()
                 .collect::<std::collections::BTreeSet<_>>()
                 .len(),
-            14
+            17
         );
         for name in names {
             assert!(

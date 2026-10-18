@@ -11,10 +11,18 @@
 20D 追加 `XiaoValueTag::ExternalResource = 17`，由 Runtime 盒子承载 `file`/`directory`/`process` 资源种类。
 20AB 新增 `xiao_runtime_print_values` 与 `xiao_runtime_input` 输出/输入入口；10T 追加表方法与确定性随机种子入口；20D-能力上下文追加带能力掩码的
 `xiao_runtime_print_values_with_capabilities` 与 `xiao_runtime_input_with_capabilities`，
-当前 ABI 主版本 1、次版本 15。1.14 接入文件/目录 API，1.15 新增带能力的
+当前 ABI 主版本 1、次版本 16。1.14 接入文件/目录 API，1.15 新增带能力的
 `xiao_runtime_process_spawn_with_capabilities`、`xiao_runtime_process_wait_with_capabilities`、
 `xiao_runtime_process_close_with_capabilities`；仍只借用 `XiaoValue`，返回拥有值或 i32 状态。
 process 不新增值标签，也不暴露宿主 Child/进程句柄。改变布局或所有权契约必须升主版本。
+
+1.16 扩展既有 `xiao_runtime_dynamic_check` 的检查语义：
+`resource_type:<kind>` 校验单个资源，`resource_array:<kind>` 和
+`resource_dictionary:<kind>` 分别校验资源可变参数的所有元素或值。
+`kind` 为 `file`、`directory`、`process` 或 `resource`；其中 `resource` 只接受文件/目录。
+关闭不改变资源种类；检查只读内存，不执行宿主操作或要求能力。没有新增 ABI 符号或值标签。
+旧 Runtime 会忽略未知检查，因此 required 1.16 / actual 1.15 必须在执行前拒绝；
+旧产物仍可使用 1.16 Runtime。
 
 **旧的两个无掩码入口只供兼容**：`xiao_runtime_print_values` 与 `xiao_runtime_input`
 等价于按 `KNOWN_CAPABILITY_MASK`（当前七个能力位全开）调用——**它们会绕过能力检查**。

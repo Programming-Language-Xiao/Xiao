@@ -82,6 +82,11 @@ pub struct TypeChecker<'source> {
     environment: TypeEnvironment,
     external_namespaces: ExternalNamespaces,
     module_functions: BTreeMap<String, BTreeMap<String, FunctionSignature>>,
+    resource_parameters: Vec<(
+        xiao_source::SourceSpan,
+        xiao_syntax::FunctionParameterKind,
+        Type,
+    )>,
     diagnostics: Vec<Diagnostic>,
     nodes: Vec<TypedNode>,
     runtime_checks: Vec<RuntimeCheck>,
@@ -117,6 +122,7 @@ impl<'source> TypeChecker<'source> {
             environment: TypeEnvironment::new(),
             external_namespaces: ExternalNamespaces::default(),
             module_functions: BTreeMap::new(),
+            resource_parameters: Vec::new(),
             diagnostics: Vec::new(),
             nodes: Vec::new(),
             runtime_checks: Vec::new(),
@@ -149,6 +155,7 @@ impl<'source> TypeChecker<'source> {
             self.check_statement(statement);
         }
         self.finalize_function_inference();
+        self.finalize_resource_parameter_boundaries();
         // 表达式节点是在约束收集期间记录的；函数调用或函数体返回值可能在
         // 后续语句才把类型变量绑定到具体标量。对外发布结果前统一应用最终
         // 替换，确保 IR 消费者看到的节点类型与函数签名使用同一份结论。

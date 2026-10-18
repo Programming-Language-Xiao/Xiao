@@ -548,6 +548,15 @@ impl<'a> DynamicGenerator<'a> {
                 slot.index
             ));
         }
+        for parameter in parameters {
+            let slot = generator.slots[&crate::dynamic::predicate::name_key(&parameter.name)];
+            let value = generator.next_temp();
+            generator.emit(format!(
+                "  {value} = load {VALUE_TYPE}, ptr %slot{}",
+                slot.index
+            ));
+            generator.emit_registered_checks_at(parameter.name.span, &value);
+        }
         generator.emit_statements(body)?;
         if !generator.terminated {
             generator.emit("  store ptr null, ptr %xiao.return.source".to_owned());

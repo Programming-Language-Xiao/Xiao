@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 15;
+pub const ABI_MINOR_VERSION: u32 = 16;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -999,9 +999,9 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_000F);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0010);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 15);
+        assert_eq!(ABI_MINOR_VERSION, 16);
     }
 
     #[test]
@@ -1020,6 +1020,14 @@ mod tests {
         assert!(super::is_abi_compatible(1, 15, 1, 15));
         assert!(super::is_abi_compatible(1, 14, 1, 15));
         assert!(!super::is_abi_compatible(1, 15, 2, 15));
+    }
+
+    #[test]
+    /// 资源动态种类检查要求 1.16，避免旧 Runtime 忽略新增的检查语义。
+    fn resource_type_checks_require_runtime_1_16() {
+        assert!(!super::is_abi_compatible(1, 16, 1, 15));
+        assert!(super::is_abi_compatible(1, 16, 1, 16));
+        assert!(super::is_abi_compatible(1, 15, 1, 16));
     }
 
     #[test]

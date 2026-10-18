@@ -156,6 +156,24 @@ impl IrValidator {
                 &format!("runtime_checks[{index}].span"),
                 &mut result,
             );
+            if matches!(
+                check.kind.as_str(),
+                "resource_type" | "resource_array" | "resource_dictionary"
+            ) {
+                if let Some(expected @ IrType::Resource { .. }) = check.expected.as_ref() {
+                    validate_type(
+                        expected,
+                        &format!("runtime_checks[{index}].expected"),
+                        &mut result,
+                    );
+                } else {
+                    result.errors.push(error(
+                        &format!("runtime_checks[{index}].expected"),
+                        "资源检查必须携带资源种类",
+                        Some(check.span),
+                    ));
+                }
+            }
         }
         result
     }

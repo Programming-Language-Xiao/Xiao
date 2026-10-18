@@ -106,6 +106,53 @@ impl<'source> TypeChecker<'source> {
         self.function_signatures.insert(key, signature);
     }
 
+    /// 资源形参在被调函数入口验证，覆盖动态模块和函数值调用。
+    pub(super) fn check_resource_parameter_boundaries(&mut self, parameters: &[FunctionParameter]) {
+        for parameter in parameters {
+            let ty = if parameter.kind == FunctionParameterKind::VarKeywords {
+                let Some(FunctionTypeAnnotation::Resource(resource)) = parameter.annotation else {
+                    continue;
+                };
+                Type::Resource(resource)
+            } else {
+                let Some(binding) = self
+                    .environment
+                    .lookup_current(&self.name_key(parameter.name))
+                else {
+                    continue;
+                };
+                binding.scheme().ty.clone()
+            };
+            self.resource_parameters
+                .push((parameter.name.span, parameter.kind, ty));
+        }
+    }
+
+    /// 推断结束后再生成入口检查，包含由返回注解或调用推断出的资源形参。
+    pub(super) fn finalize_resource_parameter_boundaries(&mut self) {
+        for (span, parameter_kind, ty) in std::mem::take(&mut self.resource_parameters) {
+            let ty = self.context.apply(&ty);
+            let resource = match ty {
+                Type::Resource(resource) => resource,
+                Type::Array(ArrayType::Homogeneous { element, .. })
+                    if parameter_kind == FunctionParameterKind::VarArgs =>
+                {
+                    let Type::Resource(resource) = *element else {
+                        continue;
+                    };
+                    resource
+                }
+                _ => continue,
+            };
+            let kind = match parameter_kind {
+                FunctionParameterKind::VarArgs => super::RuntimeCheckKind::ResourceArray,
+                FunctionParameterKind::VarKeywords => super::RuntimeCheckKind::ResourceDictionary,
+                _ => super::RuntimeCheckKind::ResourceType,
+            };
+            self.push_runtime_check_with_expected(span, kind, Type::Resource(resource));
+        }
+    }
+
     /// 根据参数声明建立参数绑定类型；可变参数以容器类型表示。
     fn parameter_type(&mut self, parameter: &FunctionParameter) -> Type {
         let base = parameter
@@ -173,6 +220,7 @@ impl<'source> TypeChecker<'source> {
                 self.environment_error(name.span, error);
             }
         }
+        self.check_resource_parameter_boundaries(parameters);
         self.register_top_level_functions(body);
         for statement in body {
             self.check_statement(statement);

@@ -572,7 +572,10 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             call_depth: depth,
         });
         let mut frame = Frame::new(target, function.name.clone(), carrier, return_to);
-        bind_arguments(function, program, &mut frame, arguments);
+        if let Err(fault) = bind_arguments(function, program, &mut frame, arguments) {
+            self.session.tables.depth.set(depth - 1);
+            return Err(fault);
+        }
         self.frames.push(frame);
         self.sink.record(VmEvent::FunctionEntered {
             function: function.name.clone(),
@@ -2260,7 +2263,12 @@ fn exit_name_for_flow(flow: &Flow, fallback: &str) -> String {
 /// 返回运行时检查失败对应的稳定错误码。
 fn runtime_check_code(kind: &str) -> Option<&'static str> {
     match kind {
-        "boolean_condition" | "dynamic_conversion" | "string_boolean" => Some(TYPE_MISMATCH_CODE),
+        "boolean_condition"
+        | "dynamic_conversion"
+        | "string_boolean"
+        | "resource_type"
+        | "resource_array"
+        | "resource_dictionary" => Some(TYPE_MISMATCH_CODE),
         "arithmetic" | "numeric_range" => Some(NUMERIC_OVERFLOW_CODE),
         "selector_bounds" => Some(SELECTOR_BOUNDS_CODE),
         "selector_step" => Some(SELECTOR_STEP_CODE),
@@ -2298,9 +2306,15 @@ fn attach_fault_span(fault: Fault, start: usize, end: usize) -> Fault {
     }
 }
 
-/// 判定本批次真正支持的四类 Runtime 检查。
+/// 消费前端检查计划，资源种类校验与原生 ABI 复用 Runtime 判断。
 fn check_value(kind: &str, value: &RuntimeValue, expected: Option<&xiao_ir::IrType>) -> bool {
     match kind {
+        "resource_type" | "resource_array" | "resource_dictionary" => {
+            let Some(xiao_ir::IrType::Resource { kind: expected }) = expected else {
+                return false;
+            };
+            xiao_runtime::resources::resource_type_matches(value, kind, expected)
+        }
         "boolean_condition" => value.as_bool().is_some(),
         "dynamic_conversion" => matches!(value, RuntimeValue::Error(_)),
         // RuntimeValue::convert_to 是字符串布尔规则的唯一来源；这里仅把
@@ -2412,27 +2426,72 @@ fn bind_arguments<C: Carrier>(
     program: &TacProgram,
     frame: &mut Frame<C>,
     arguments: &[BoundArgument],
-) {
+) -> Result<(), Fault> {
+    use xiao_bytecode::sig::ParamKind;
+    use xiao_runtime::{ArrayHandle, DictHandle, DictKind};
+
     let signature = function.signature.and_then(|id| program.signatures.get(id));
     let mut next_positional = 0_usize;
+    let mut var_args = Vec::new();
+    let mut keyword_args = Vec::new();
     for argument in arguments {
         let slot = match &argument.keyword {
             None => {
+                if signature
+                    .is_some_and(|signature| signature.var_args_slot == Some(next_positional))
+                {
+                    var_args.push(argument.value.clone());
+                    continue;
+                }
                 let slot = next_positional;
                 next_positional = next_positional.saturating_add(1);
                 slot
             }
-            Some(name) => signature
-                .and_then(|signature| {
+            Some(name) => {
+                let slot = signature.and_then(|signature| {
                     signature
                         .parameter_names
                         .iter()
-                        .position(|item| item == name)
-                })
-                .unwrap_or(usize::MAX),
+                        .enumerate()
+                        .position(|(index, item)| {
+                            item == name
+                                && !matches!(
+                                    signature.parameter_kinds[index],
+                                    ParamKind::VarArgs | ParamKind::VarKeywords
+                                )
+                        })
+                });
+                if slot.is_none()
+                    && signature.is_some_and(|signature| signature.kw_args_slot.is_some())
+                {
+                    keyword_args.push((name.clone(), argument.value.clone()));
+                    continue;
+                }
+                slot.unwrap_or(usize::MAX)
+            }
         };
         if let Some(register) = function.parameters.get(slot) {
             frame.carrier.write(*register, argument.value.clone());
         }
     }
+    if let Some(signature) = signature {
+        if let Some(register) = signature
+            .var_args_slot
+            .and_then(|slot| function.parameters.get(slot))
+        {
+            let array = ArrayHandle::new(var_args).map_err(Fault::Error)?;
+            frame.carrier.write(*register, RuntimeValue::Array(array));
+        }
+        if let Some(register) = signature
+            .kw_args_slot
+            .and_then(|slot| function.parameters.get(slot))
+        {
+            let dictionary =
+                DictHandle::new(DictKind::Table, keyword_args).map_err(Fault::Error)?;
+            frame
+                .carrier
+                .write(*register, RuntimeValue::DictTable(dictionary));
+        }
+    }
+    Ok(())
 }

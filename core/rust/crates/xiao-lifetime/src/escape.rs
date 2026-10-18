@@ -1860,17 +1860,30 @@ fn iterable_element_type(ty: Option<&Type>) -> Option<Type> {
         Some(Type::Scalar(ScalarType::Str)) => Some(Type::scalar(ScalarType::Str)),
         Some(Type::Array(array)) => match array {
             xiao_types::ArrayType::Homogeneous { element, .. } => Some((**element).clone()),
-            xiao_types::ArrayType::Heterogeneous { elements } => elements.first().cloned(),
+            xiao_types::ArrayType::Heterogeneous { elements } => {
+                Some(common_iterable_type(elements.iter()))
+            }
             xiao_types::ArrayType::Unknown => Some(Type::Dynamic),
         },
-        Some(Type::Tuple(items)) => items.first().cloned(),
-        Some(Type::Set(set)) => set.member_types().next().cloned(),
-        Some(Type::DictTable(dictionary)) | Some(Type::DictColumn(dictionary)) => dictionary
-            .entries
-            .first()
-            .map(|entry| (*entry.value).clone()),
+        Some(Type::Tuple(items)) => Some(common_iterable_type(items.iter())),
+        Some(Type::Set(set)) => Some(common_iterable_type(set.member_types())),
+        Some(Type::DictTable(dictionary)) | Some(Type::DictColumn(dictionary)) => Some(
+            common_iterable_type(dictionary.entries.iter().map(|entry| entry.value.as_ref())),
+        ),
         Some(Type::Dynamic | Type::Variable(_)) | None => Some(Type::Dynamic),
         _ => Some(Type::Dynamic),
+    }
+}
+
+/// 与类型检查器保持一致：异构元素不能沿用首元素的存储类别。
+fn common_iterable_type<'a>(mut types: impl Iterator<Item = &'a Type>) -> Type {
+    let Some(first) = types.next() else {
+        return Type::Dynamic;
+    };
+    if types.all(|ty| ty == first) {
+        first.clone()
+    } else {
+        Type::Dynamic
     }
 }
 

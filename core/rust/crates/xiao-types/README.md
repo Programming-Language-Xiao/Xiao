@@ -20,6 +20,11 @@
 公开路径与字段保持不变，架构边界由 `checker_architecture_tests.rs` 锁定。允许依赖和门面
 契约详见 `src/checker/README.md`；本拆分不新增类型规则、诊断码或 Runtime 能力。
 
+20D 资源动态边界使用 `resource_type`、`resource_array`、`resource_dictionary` 检查计划，
+`expected` 必须携带资源种类。声明、赋值与返回值在值进入资源槽前检查；函数和表方法的
+资源形参在函数入口检查，可变形参按成员检查。入口计划在函数推断完成后生成，覆盖由
+返回注解或调用推断出的资源类型；VM 与 LLVM 共用该计划和 Runtime 种类判断。
+
 ## 禁止事项
 
 不编码 LLVM 指令、不执行用户代码、不把平台 C 类型宽度当作 Xiao 类型定义。

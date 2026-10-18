@@ -210,7 +210,12 @@ impl<'a> DynamicGenerator<'a> {
             check.span == expression.span
                 && matches!(
                     check.kind.as_str(),
-                    "string_boolean" | "set_hashability" | "dynamic_conversion"
+                    "string_boolean"
+                        | "set_hashability"
+                        | "dynamic_conversion"
+                        | "resource_type"
+                        | "resource_array"
+                        | "resource_dictionary"
                 )
         }) {
             return None;

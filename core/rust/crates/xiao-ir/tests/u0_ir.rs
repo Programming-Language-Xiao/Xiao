@@ -146,6 +146,34 @@ fn validator_rejects_broken_control_flow() {
 }
 
 #[test]
+/// 资源检查缺失或伪造 expected 时必须在进入后端之前拒绝。
+fn resource_checks_require_valid_expected_kinds() {
+    let mut ir = lower("def take(process value) -> none\n    return\n");
+    assert_eq!(ir.runtime_checks.len(), 1);
+    assert!(IrValidator::new().validate(&ir).is_success());
+    for kind in ["resource_type", "resource_array", "resource_dictionary"] {
+        for expected in [
+            None,
+            Some(IrType::Dynamic),
+            Some(IrType::Resource {
+                kind: "unknown".to_owned(),
+            }),
+        ] {
+            ir.runtime_checks[0].kind = kind.to_owned();
+            ir.runtime_checks[0].expected = expected;
+            let result = IrValidator::new().validate(&ir);
+            assert!(!result.is_success(), "{ir:?}");
+            assert!(
+                result
+                    .errors()
+                    .iter()
+                    .any(|error| error.path == "runtime_checks[0].expected")
+            );
+        }
+    }
+}
+
+#[test]
 /// 字典键必须在类型层与 IR 层得到同一份规范化文本。
 ///
 /// 两侧曾各写一份：类型层对字符串键去引号并处理转义，IR 却直接存含引号的原始

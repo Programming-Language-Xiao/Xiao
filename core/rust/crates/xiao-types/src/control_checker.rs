@@ -197,6 +197,20 @@ impl<'source> TypeChecker<'source> {
         if let Some(frame) = self.current_function.as_mut() {
             frame.saw_return = true;
         }
+        if matches!(expected, Type::Resource(_)) {
+            if actual.is_dynamic()
+                && let Some(value) = value
+            {
+                self.push_runtime_check_with_expected(
+                    value.span(),
+                    RuntimeCheckKind::ResourceType,
+                    expected.clone(),
+                );
+            }
+            if crate::can_assign(&actual, &expected) {
+                return;
+            }
+        }
         if let Err(error) = self.context.unify(&expected, &actual) {
             self.type_error_with_params(
                 crate::diagnostics::FUNCTION_RETURN_CODE,

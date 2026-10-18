@@ -62,6 +62,22 @@ pub extern "C" fn xiao_runtime_dynamic_check(kind: XiaoAbiBytes, value: *const X
         Err(error) => return error,
     };
     let result = match kind.as_str() {
+        kind if kind.starts_with("resource_type:")
+            || kind.starts_with("resource_array:")
+            || kind.starts_with("resource_dictionary:") =>
+        {
+            let (check, expected) = kind.split_once(':').expect("资源检查已包含分隔符");
+            if crate::resources::resource_type_matches(&value, check, expected) {
+                Ok(())
+            } else {
+                let expected = match check {
+                    "resource_array" => format!("[{expected}]"),
+                    "resource_dictionary" => format!("字典值 {expected}"),
+                    _ => expected.to_owned(),
+                };
+                Err(RuntimeError::type_mismatch(expected, value.type_name()))
+            }
+        }
         "string_boolean" => match value.convert_to(ScalarType::Bool) {
             Ok(_) => Ok(()),
             Err(_) => Err(RuntimeError::type_mismatch("bool", value.type_name())),

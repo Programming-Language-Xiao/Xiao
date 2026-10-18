@@ -22,6 +22,12 @@ pub enum RuntimeCheckKind {
     StringBoolean,
     /// 动态值转换的运行时类型检查。
     DynamicConversion,
+    /// 动态值进入资源声明、赋值、参数或返回槽时的名义种类检查。
+    ResourceType,
+    /// 资源可变位置参数逐个检查数组元素。
+    ResourceArray,
+    /// 资源可变关键字参数逐个检查字典值。
+    ResourceDictionary,
     /// 动态算术的除零、溢出或操作数检查。
     Arithmetic,
     /// 动态选择器索引、范围端点或字符串位置检查。
@@ -54,6 +60,9 @@ impl RuntimeCheckKind {
             Self::NumericRange => "numeric_range",
             Self::StringBoolean => "string_boolean",
             Self::DynamicConversion => "dynamic_conversion",
+            Self::ResourceType => "resource_type",
+            Self::ResourceArray => "resource_array",
+            Self::ResourceDictionary => "resource_dictionary",
             Self::Arithmetic => "arithmetic",
             Self::SelectorBounds => "selector_bounds",
             Self::SelectorStep => "selector_step",
@@ -78,6 +87,9 @@ impl RuntimeCheckKind {
             "numeric_range" => Self::NumericRange,
             "string_boolean" => Self::StringBoolean,
             "dynamic_conversion" => Self::DynamicConversion,
+            "resource_type" => Self::ResourceType,
+            "resource_array" => Self::ResourceArray,
+            "resource_dictionary" => Self::ResourceDictionary,
             "arithmetic" => Self::Arithmetic,
             "selector_bounds" => Self::SelectorBounds,
             "selector_step" => Self::SelectorStep,
@@ -98,11 +110,14 @@ impl RuntimeCheckKind {
     /// 数组用于穷尽性测试和跨层桥接；新增枚举变体时必须同步更新这里，
     /// 从而让类型层测试在同一批次暴露接线缺口。
     #[must_use]
-    pub const fn all() -> [Self; 14] {
+    pub const fn all() -> [Self; 17] {
         [
             Self::NumericRange,
             Self::StringBoolean,
             Self::DynamicConversion,
+            Self::ResourceType,
+            Self::ResourceArray,
+            Self::ResourceDictionary,
             Self::Arithmetic,
             Self::SelectorBounds,
             Self::SelectorStep,

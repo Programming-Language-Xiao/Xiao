@@ -123,7 +123,15 @@ impl<'source> TypeChecker<'source> {
         if let Some(binding) = self.environment.lookup(&key).cloned() {
             let existing_type = self.context.instantiate(binding.scheme());
             if value_type.is_dynamic() {
-                self.push_runtime_check(value.span(), RuntimeCheckKind::DynamicConversion);
+                if matches!(existing_type, Type::Resource(_)) {
+                    self.push_runtime_check_with_expected(
+                        value.span(),
+                        RuntimeCheckKind::ResourceType,
+                        existing_type.clone(),
+                    );
+                } else {
+                    self.push_runtime_check(value.span(), RuntimeCheckKind::DynamicConversion);
+                }
             }
             if let (Type::Set(source), Type::Set(target)) = (&value_type, &existing_type)
                 && source.allows_dynamic()
@@ -470,6 +478,15 @@ impl<'source> TypeChecker<'source> {
         let value_type = value.map(|expression| self.check_expression(expression));
         if let Some(value_type) = value_type.as_ref() {
             let expected = Type::Resource(declared_type);
+            if value_type.is_dynamic()
+                && let Some(value) = value
+            {
+                self.push_runtime_check_with_expected(
+                    value.span(),
+                    RuntimeCheckKind::ResourceType,
+                    expected.clone(),
+                );
+            }
             if !crate::can_assign(value_type, &expected) {
                 self.type_error(
                     ASSIGNMENT_TYPE_MISMATCH_CODE,

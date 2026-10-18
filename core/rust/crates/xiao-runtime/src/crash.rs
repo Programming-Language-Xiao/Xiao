@@ -18,7 +18,11 @@ pub(crate) fn process_exit_code(status: std::process::ExitStatus) -> i64 {
     #[cfg(windows)]
     {
         let code = status.code().unwrap_or(0) as u32;
-        if code & 0xC000_0000 == 0xC000_0000 {
+        // SEH 还包含 warning/informational 状态，如断点、单步和调试中断；
+        // 只检查 0xC000... 会把这些异常误当成普通的大整数退出码。
+        if code & 0xC000_0000 == 0xC000_0000
+            || matches!(code, 0x8000_0001..=0x8000_0004 | 0x4001_0005 | 0x4001_0008)
+        {
             i64::from(windows_exception_exit_code(code))
         } else {
             i64::from(code)
@@ -217,7 +221,13 @@ mod tests {
         use std::os::windows::process::ExitStatusExt;
         for (raw, expected) in [
             (7, 7),
-            (0x8000_0001, 0x8000_0001),
+            (0x8000_0100, 0x8000_0100),
+            (0x8000_0001, 134),
+            (0x8000_0002, 134),
+            (0x8000_0003, 134),
+            (0x8000_0004, 134),
+            (0x4001_0005, 134),
+            (0x4001_0008, 134),
             (0xC000_0005, 139),
             (0xC000_001D, 132),
             (0xC000_0094, 136),

@@ -105,6 +105,150 @@ fn process_vm_wait_caches_exit_code_and_preserves_kind() {
     assert_eq!(vm_stdout(&outcome), "resource<process>\n7\n7\n");
 }
 
+/// 混合数组迭代产生真实 dynamic 值；两条后端都支持这些既有表达式。
+fn dynamic_resource_cases(child: &str) -> Vec<(&'static str, String, bool, &'static str)> {
+    vec![
+        ("declaration", "for item in [7, \"x\"]\n    process value = item\n    print(\"bad\")\n".to_owned(), false, ""),
+        ("assignment", format!("process value = os_spawn(\"{child}\")\nos_wait(value)\nfor item in [7, \"x\"]\n    value = item\n    print(\"bad\")\n"), false, ""),
+        ("parameter", "def take(process value) -> none\n    print(\"bad\")\nfor item in [7, \"x\"]\n    take(item)\n".to_owned(), false, ""),
+        ("return", "def make() -> process\n    for item in [7, \"x\"]\n        return item\nvalue = make()\nprint(\"bad\")\n".to_owned(), false, ""),
+        ("inferred_parameter", "def take(value) -> process\n    return value\nfor item in [7, \"x\"]\n    take(item)\nprint(\"bad\")\n".to_owned(), false, ""),
+        ("filesystem_parent", format!("handle = os_spawn(\"{child}\")\nos_wait(handle)\nfor item in [handle, 0]\n    resource value = item\n    print(\"bad\")\n    break\n"), false, ""),
+        ("valid", format!("handle = os_spawn(\"{child}\")\nos_wait(handle)\nfor item in [handle, 0]\n    process value = item\n    print(os_wait(value))\n    os_close_process(value)\n    break\n"), true, "7\n"),
+        ("valid_file_parent", format!("def parent(file value) -> resource\n    return value\nhandle = os_open_file(\"{child}\")\nos_close(handle)\nfor item in [handle, 0]\n    file value = item\n    resource general = parent(value)\n    os_close(general)\n    print(\"ok\")\n    break\n"), true, "ok\n"),
+        ("valid_directory_parent", format!("def parent(directory value) -> resource\n    return value\nhandle = os_open_directory(\"{}\")\nos_close(handle)\nfor item in [handle, 0]\n    directory value = item\n    resource general = parent(value)\n    os_close(general)\n    print(\"ok\")\n    break\n", source_path(Path::new(child).parent().expect("子程序目录"))), true, "ok\n"),
+    ]
+}
+
+#[test]
+/// 动态值在资源槽、参数和返回边界校验，错误不会执行后续语句。
+fn dynamic_resource_boundaries_validate_values_in_vm() {
+    let project = Project::new();
+    let child = source_path(env!("CARGO_BIN_EXE_process_child_exit7"));
+    for (label, source, valid, output) in dynamic_resource_cases(&child) {
+        let outcome = project.run(&source, KNOWN_CAPABILITY_MASK);
+        assert_eq!(outcome.is_success(), valid, "{label}: {outcome:?}");
+        assert_eq!(
+            outcome.code(),
+            if valid { None } else { Some("X06-RUNTIME-002") },
+            "{label}: {outcome:?}"
+        );
+        assert_eq!(vm_stdout(&outcome), output, "{label}");
+    }
+}
+
+#[test]
+/// 项目模块返回动态值时，合法 process 保持可用，整数不能伪装成 process。
+fn dynamic_resource_module_imports_keep_valid_processes() {
+    for valid in [false, true] {
+        let project = Project::new();
+        let child = source_path(env!("CARGO_BIN_EXE_process_child_exit7"));
+        let factory = if valid {
+            format!("def make() -> process\n    return os_spawn(\"{child}\")\n")
+        } else {
+            "def make() -> int\n    return 7\n".to_owned()
+        };
+        fs::write(project.0.join("factory.xiao"), factory).expect("模块夹具");
+        let source = "from factory import make\nprocess value = make()\nprint(\"after-assignment\")\nprint(os_wait(value))\nos_close_process(value)\n";
+        let outcome = project.run(source, KNOWN_CAPABILITY_MASK);
+        assert_eq!(outcome.is_success(), valid, "{outcome:?}");
+        assert_eq!(
+            vm_stdout(&outcome),
+            if valid { "after-assignment\n7\n" } else { "" }
+        );
+        if !valid {
+            assert_eq!(outcome.code(), Some("X06-RUNTIME-002"));
+        }
+    }
+}
+
+#[test]
+/// 资源可变参数的集合按成员校验，不把整个数组或字典当成单个进程。
+fn resource_variadic_parameters_validate_each_value() {
+    let project = Project::new();
+    let child = source_path(env!("CARGO_BIN_EXE_process_child_exit7"));
+    for (declaration, call, multiple) in [
+        ("*process values", "take(item)", "take(handle, item)"),
+        (
+            "**process values",
+            "take(value = item)",
+            "take(first = handle, second = item)",
+        ),
+    ] {
+        let source = format!(
+            "def take({declaration}) -> none\n    print(\"bad\")\nfor item in [7, \"x\"]\n    {call}\n"
+        );
+        let outcome = project.run(&source, KNOWN_CAPABILITY_MASK);
+        assert_eq!(
+            outcome.code(),
+            Some("X06-RUNTIME-002"),
+            "{source}: {outcome:?}"
+        );
+        assert_eq!(vm_stdout(&outcome), "");
+        let source = format!(
+            "def take({declaration}) -> none\n    print(\"bad\")\nhandle = os_spawn(\"{child}\")\nos_wait(handle)\nfor item in [7, \"x\"]\n    {multiple}\n"
+        );
+        let outcome = project.run(&source, KNOWN_CAPABILITY_MASK);
+        assert_eq!(outcome.code(), Some("X06-RUNTIME-002"), "{outcome:?}");
+        assert_eq!(vm_stdout(&outcome), "");
+        let source = format!(
+            "def take({declaration}) -> none\n    for value in values\n        print(os_wait(value))\n    print(\"ok\")\nhandle = os_spawn(\"{child}\")\nos_wait(handle)\nfor item in [handle, 0]\n    {multiple}\n    break\ntake()\nos_close_process(handle)\n"
+        );
+        let outcome = project.run(&source, KNOWN_CAPABILITY_MASK);
+        assert!(outcome.is_success(), "{source}: {outcome:?}");
+        assert_eq!(vm_stdout(&outcome), "7\n7\nok\nok\n");
+    }
+}
+
+/// 构造无显式解释器的脚本，Windows 不能隐式调用 cmd，Unix 不能回退到 shell。
+fn implicit_shell_script(project: &Project) -> PathBuf {
+    let path = project.0.join(if cfg!(windows) {
+        "implicit.CmD"
+    } else {
+        "implicit-script"
+    });
+    let marker = project.0.join("shell-ran");
+    #[cfg(windows)]
+    fs::write(
+        &path,
+        format!(
+            "@echo off\r\necho shell>\"{}\"\r\nexit /b 7\r\n",
+            marker.display()
+        ),
+    )
+    .expect("批处理夹具");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        fs::write(
+            &path,
+            format!("printf shell > '{}'\nexit 7\n", marker.display()),
+        )
+        .expect("无 shebang 脚本");
+        fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).expect("可执行权限");
+    }
+    path
+}
+
+#[test]
+/// 无 shell 契约在启动前拒绝隐式解释器路径，缺能力的优先级保持不变。
+fn process_spawn_rejects_implicit_shell_in_vm() {
+    let project = Project::new();
+    let script = source_path(implicit_shell_script(&project));
+    let source =
+        format!("{IMPORT}handle = spawn(\"{script}\")\nwait(handle)\nclose_process(handle)\n");
+    let outcome = project.run(&source, KNOWN_CAPABILITY_MASK);
+    assert_eq!(outcome.code(), Some("X06-RUNTIME-012"), "{outcome:?}");
+    assert!(format!("{outcome:?}").contains("reason"));
+    assert!(!project.0.join("shell-ran").exists());
+    assert_eq!(
+        project
+            .run(&source, KNOWN_CAPABILITY_MASK & !CAPABILITY_PROCESS)
+            .code(),
+        Some("X06-RUNTIME-026")
+    );
+}
+
 #[test]
 /// process 字段的 IR 类型复原与 Runtime 表值匹配不退回 dynamic。
 fn process_table_fields_preserve_resource_kind() {
@@ -591,4 +735,74 @@ fn native_process_lifecycle_and_capability_have_no_hidden_host_effects() {
             "{stderr}"
         );
     }
+}
+
+#[test]
+#[ignore = "需要受控 LLVM 工具链、Runtime staticlib 和目标三元组"]
+/// 同一动态边界源码在 VM/原生中都拒绝错误种类，同时接受合法进程。
+fn native_dynamic_resource_boundaries_match_vm() {
+    let (target, toolchain) = native_toolchain();
+    let project = Project::new();
+    let child = source_path(env!("CARGO_BIN_EXE_process_child_exit7"));
+    for (label, source, valid, output) in dynamic_resource_cases(&child) {
+        let vm = project.run(&source, KNOWN_CAPABILITY_MASK);
+        assert_eq!(vm.is_success(), valid, "{label}: {vm:?}");
+        assert_eq!(
+            vm.code(),
+            if valid { None } else { Some("X06-RUNTIME-002") },
+            "{label}: {vm:?}"
+        );
+        assert_eq!(vm_stdout(&vm), output, "{label}");
+        let executable = build_native(
+            &project,
+            &source,
+            label,
+            KNOWN_CAPABILITY_MASK,
+            &target,
+            &toolchain,
+        );
+        let run = Command::new(executable).output().expect("运行动态资源边界");
+        assert_eq!(
+            run.status.code(),
+            Some(if valid { 0 } else { 3 }),
+            "{label}: {run:?}"
+        );
+        assert_eq!(String::from_utf8_lossy(&run.stdout), output, "{label}");
+        if !valid {
+            assert!(
+                String::from_utf8_lossy(&run.stderr).contains("X06-RUNTIME-002"),
+                "{label}: {run:?}"
+            );
+        } else {
+            assert!(run.stderr.is_empty(), "{label}: {run:?}");
+        }
+        println!(
+            "20D-PROCESS-REVIEW {label}: stdout={output:?} code={:?}",
+            if valid { None } else { Some("X06-RUNTIME-002") }
+        );
+    }
+}
+
+#[test]
+#[ignore = "需要受控 LLVM 工具链、Runtime staticlib 和目标三元组"]
+/// 原生 ABI 和 VM 共用无 shell 边界，不能执行批处理或无解释器脚本。
+fn native_process_spawn_rejects_implicit_shell() {
+    let (target, toolchain) = native_toolchain();
+    let project = Project::new();
+    let script = source_path(implicit_shell_script(&project));
+    let source = format!("{IMPORT}handle = spawn(\"{script}\")\nwait(handle)\n");
+    let executable = build_native(
+        &project,
+        &source,
+        "no-shell",
+        KNOWN_CAPABILITY_MASK,
+        &target,
+        &toolchain,
+    );
+    let run = Command::new(executable)
+        .output()
+        .expect("运行无 shell 原生夹具");
+    assert_eq!(run.status.code(), Some(3), "{run:?}");
+    assert!(String::from_utf8_lossy(&run.stderr).contains("X06-RUNTIME-012"));
+    assert!(!project.0.join("shell-ran").exists());
 }
