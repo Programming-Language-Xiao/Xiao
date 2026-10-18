@@ -230,6 +230,18 @@ fn implicit_shell_script(project: &Project) -> PathBuf {
     path
 }
 
+#[cfg(unix)]
+/// 显式 shebang 是可执行程序自身的解释器声明，不能被无 shell 修复误拒绝。
+fn explicit_interpreter_source(project: &Project) -> String {
+    use std::os::unix::fs::PermissionsExt;
+
+    let path = project.0.join("explicit-script");
+    fs::write(&path, "#!/bin/sh\nexit 7\n").expect("显式解释器脚本");
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o700)).expect("可执行权限");
+    let path = source_path(path);
+    format!("{IMPORT}handle = spawn(\"{path}\")\nprint(wait(handle))\nclose_process(handle)\n")
+}
+
 #[test]
 /// 无 shell 契约在启动前拒绝隐式解释器路径，缺能力的优先级保持不变。
 fn process_spawn_rejects_implicit_shell_in_vm() {
@@ -247,6 +259,15 @@ fn process_spawn_rejects_implicit_shell_in_vm() {
             .code(),
         Some("X06-RUNTIME-026")
     );
+    #[cfg(unix)]
+    {
+        let outcome = project.run(
+            &explicit_interpreter_source(&project),
+            KNOWN_CAPABILITY_MASK,
+        );
+        assert!(outcome.is_success(), "{outcome:?}");
+        assert_eq!(vm_stdout(&outcome), "7\n");
+    }
 }
 
 #[test]
@@ -805,4 +826,22 @@ fn native_process_spawn_rejects_implicit_shell() {
     assert_eq!(run.status.code(), Some(3), "{run:?}");
     assert!(String::from_utf8_lossy(&run.stderr).contains("X06-RUNTIME-012"));
     assert!(!project.0.join("shell-ran").exists());
+    #[cfg(unix)]
+    {
+        let source = explicit_interpreter_source(&project);
+        let executable = build_native(
+            &project,
+            &source,
+            "explicit-interpreter",
+            KNOWN_CAPABILITY_MASK,
+            &target,
+            &toolchain,
+        );
+        let run = Command::new(executable)
+            .output()
+            .expect("运行显式解释器夹具");
+        assert_eq!(run.status.code(), Some(0), "{run:?}");
+        assert_eq!(run.stdout, b"7\n");
+        assert!(run.stderr.is_empty(), "{run:?}");
+    }
 }

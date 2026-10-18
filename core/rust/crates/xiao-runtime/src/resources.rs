@@ -104,10 +104,75 @@ pub fn spawn(value: &RuntimeValue, capabilities: u64) -> RuntimeResult<RuntimeVa
     let program = path(value)?;
     #[cfg(windows)]
     reject_implicit_shell(&program)?;
-    let child = std::process::Command::new(program)
+    let mut command = std::process::Command::new(&program);
+    #[cfg(unix)]
+    configure_unix_no_shell(&mut command, &program)
+        .map_err(|error| io_error("启动子进程", error))?;
+    let child = command
         .spawn()
         .map_err(|error| io_error("启动子进程", error))?;
     ExternalResourceHandle::from_process(child).map(RuntimeValue::ExternalResource)
+}
+
+#[cfg(unix)]
+/// execvp/部分 posix_spawnp 会在 ENOEXEC 时启动 shell；直接 execv 保留继承与 PATH，
+/// 并让 Command 的错误管道把实际执行失败返回父进程。
+fn configure_unix_no_shell(
+    command: &mut std::process::Command,
+    program: &str,
+) -> std::io::Result<()> {
+    use std::ffi::{CString, OsString};
+    use std::os::unix::{ffi::OsStringExt, process::CommandExt};
+
+    let argv0 = CString::new(program)?;
+    // 所有字符串和搜索候选在 fork 前准备；子进程钩子只调用 async-signal-safe execv。
+    let candidates = if program.contains('/') || program.is_empty() {
+        vec![argv0.clone()]
+    } else {
+        let search_path = if let Some(path) = std::env::var_os("PATH") {
+            path
+        } else {
+            // PATH 未设置时使用宿主的标准搜索路径。
+            // SAFETY: 空指针与零长度仅查询所需空间；第二次调用写入完整缓冲区。
+            let length = unsafe { libc::confstr(libc::_CS_PATH, std::ptr::null_mut(), 0) };
+            if length == 0 {
+                return Err(std::io::Error::last_os_error());
+            }
+            let mut path = vec![0_u8; length];
+            let actual = unsafe { libc::confstr(libc::_CS_PATH, path.as_mut_ptr().cast(), length) };
+            if actual == 0 || actual > length {
+                return Err(std::io::Error::last_os_error());
+            }
+            path.truncate(actual - 1);
+            OsString::from_vec(path)
+        };
+        std::env::split_paths(&search_path)
+            .map(|directory| CString::new(directory.join(program).into_os_string().into_vec()))
+            .collect::<Result<Vec<_>, _>>()?
+    };
+    // SAFETY: 钩子不分配、不获取锁、不调用用户代码；指针均来自捕获的有效 CString。
+    // execv 成功不返回，失败后仅构造无分配的 OS 错误并交给 Command 退出子进程。
+    unsafe {
+        command.pre_exec(move || {
+            let arguments = [argv0.as_ptr(), std::ptr::null()];
+            let mut permission_denied = false;
+            for candidate in &candidates {
+                libc::execv(candidate.as_ptr(), arguments.as_ptr());
+                let error = std::io::Error::last_os_error();
+                match error.raw_os_error() {
+                    Some(libc::ENOENT | libc::ENOTDIR) => {}
+                    Some(libc::EACCES) => permission_denied = true,
+                    _ => return Err(error),
+                }
+            }
+            Err(std::io::Error::from_raw_os_error(if permission_denied {
+                libc::EACCES
+            } else {
+                libc::ENOENT
+            }))
+        });
+    }
+    Ok(())
 }
 
 #[cfg(windows)]
