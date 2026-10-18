@@ -1176,9 +1176,6 @@ fn encode_with_options(
     let mut referenced = BTreeSet::new();
     for entry in &index.entries {
         validate_logical_path(&entry.logical_path)?;
-        if entry.logical_path == index.entry && entry.length == 0 {
-            return Err(XarError::InvalidIndex("入口对象长度不能为零".to_owned()));
-        }
         let key = (entry.object_kind, entry.digest);
         let object = object_map.get(&key).ok_or_else(|| {
             XarError::InvalidIndex(format!("索引对象缺失：{}", entry.logical_path))
@@ -1190,13 +1187,6 @@ fn encode_with_options(
             )));
         }
         referenced.insert(key);
-    }
-    if !index
-        .entries
-        .iter()
-        .any(|entry| entry.logical_path == index.entry)
-    {
-        return Err(XarError::InvalidIndex("入口没有对应索引条目".to_owned()));
     }
     if referenced.len() != object_map.len() {
         return Err(XarError::InvalidIndex("归档包含未被索引的对象".to_owned()));
@@ -1264,6 +1254,14 @@ fn validate_archive_index(index: &ArchiveIndex) -> Result<(), XarError> {
         if entry.length > MAX_MEMBER_SIZE {
             return Err(XarError::SizeLimit("索引对象长度超限".to_owned()));
         }
+    }
+    let entry = index
+        .entries
+        .iter()
+        .find(|entry| entry.logical_path == index.entry)
+        .ok_or_else(|| XarError::InvalidIndex("入口没有对应索引条目".to_owned()))?;
+    if entry.length == 0 {
+        return Err(XarError::InvalidIndex("入口对象长度不能为零".to_owned()));
     }
     Ok(())
 }

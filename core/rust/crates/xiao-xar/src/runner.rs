@@ -268,17 +268,7 @@ pub fn run_archive_with_control(
         options.language_locale.as_deref(),
     );
     let index = archive.index();
-    let entry = index
-        .entries
-        .iter()
-        .find(|entry| entry.logical_path == index.entry)
-        .ok_or_else(|| XarRunError::MissingObject(index.entry.clone()))?;
-    if entry.object_kind != ObjectKind::Xiaoc {
-        return Err(XarRunError::Validation(format!(
-            "入口 {} 不是 `.xiaoc` 对象",
-            entry.logical_path
-        )));
-    }
+    let entry = executable_entry(index)?;
     let entry_bytes = archive
         .read_object(entry.object_kind, entry.digest)
         .map_err(classify_run_error)?;
@@ -332,7 +322,26 @@ pub fn validate_archive_context(
             )));
         }
     }
+    executable_entry(index)?;
     Ok(())
+}
+
+/// 在诊断启动和执行前使用同一份入口映射/种类检查。
+fn executable_entry(
+    index: &xiao_artifacts::ArchiveIndex,
+) -> Result<&xiao_artifacts::ArchiveEntry, XarRunError> {
+    let entry = index
+        .entries
+        .iter()
+        .find(|entry| entry.logical_path == index.entry)
+        .ok_or_else(|| XarRunError::MissingObject(index.entry.clone()))?;
+    if entry.object_kind != ObjectKind::Xiaoc {
+        return Err(XarRunError::Validation(format!(
+            "入口 {} 不是 `.xiaoc` 对象",
+            entry.logical_path
+        )));
+    }
+    Ok(entry)
 }
 
 /// 运行归档并把已产生的 VM 事件交给调用方观察；校验失败时回调不会被调用。

@@ -162,6 +162,21 @@ fn review_payload_debug_contract_is_symmetric() {
 }
 
 #[test]
+/// 入口映射和非零长度也属于已有写入契约，读取不能绕过。
+fn review_index_entry_contract_is_symmetric() {
+    let (mut missing, object) = index_for(b"entry");
+    missing.entry = "missing.xiao".to_owned();
+    let (empty, empty_object) = index_for(b"");
+    for (index, object) in [(missing, object), (empty, empty_object)] {
+        assert!(encode_xar(&index, std::slice::from_ref(&object)).is_err());
+        assert!(
+            decode_xar(&raw_index_archive(&index.encode().unwrap(), &object)).is_err(),
+            "读取端绕过入口约束"
+        );
+    }
+}
+
+#[test]
 /// 外层 ZIP 完整时，未知能力仍在索引阶段报 011，旧归档按 007 拒绝且不执行。
 fn archive_requirements_fail_before_entry_resolution_or_vm_events() {
     let (mut index, object) = index_for(b"not an executable entry");

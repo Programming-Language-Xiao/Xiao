@@ -357,17 +357,24 @@ fn review_protocol_context_precedes_diagnostic_start() {
         "xiao-20e-review-diagnostics-{}.xar",
         std::process::id()
     )));
-    for case in ["abi", "platform", "entry_target"] {
+    for case in ["abi", "platform", "entry_target", "entry_kind"] {
         let mut index = fixture.index.clone();
+        let mut object = fixture.object.clone();
         match case {
             "abi" => {
                 index.runtime_abi_min += 1;
                 index.runtime_abi_max += 1;
             }
             "platform" => index.platform = "review-unsupported-platform".to_owned(),
-            _ => index.entries[0].target = "review-unsupported-target".to_owned(),
+            "entry_target" => index.entries[0].target = "review-unsupported-target".to_owned(),
+            _ => {
+                index.entries[0].object_kind = ObjectKind::Source;
+                object.kind = ObjectKind::Source;
+            }
         }
-        std::fs::write(&path.0, fixture.build(index)).unwrap();
+        let mut builder = XarBuilder::new(index);
+        builder.add_object(object).unwrap();
+        std::fs::write(&path.0, builder.build().unwrap()).unwrap();
         let response = dispatch(ProtocolRequest::RunArchive {
             request_id: "20e-no-diagnostic-start".to_owned(),
             protocol_version: PROTOCOL_VERSION,
@@ -383,16 +390,16 @@ fn review_protocol_context_precedes_diagnostic_start() {
         };
         assert_eq!(
             error.code,
-            if case == "abi" {
-                "X17-XAR-007"
-            } else {
-                "X17-XAR-008"
+            match case {
+                "abi" => "X17-XAR-007",
+                "entry_kind" => "X17-XAR-009",
+                _ => "X17-XAR-008",
             },
             "{case}: {error:?}"
         );
         let audit = &error.details["audit"];
         assert_eq!(audit["verified_member_count"], 1);
-        if case != "abi" {
+        if matches!(case, "platform" | "entry_target") {
             assert_eq!(audit["platform_compatible"], false);
         }
     }
