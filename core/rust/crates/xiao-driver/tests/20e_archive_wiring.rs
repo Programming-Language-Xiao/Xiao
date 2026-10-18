@@ -251,6 +251,23 @@ fn runtime_keeps_the_same_request_capabilities() {
     );
 }
 
+#[test]
+/// 库调用的未知请求位必须归为请求校验失败，不能冒充归档要求无效。
+fn unknown_request_capabilities_are_validation_errors() {
+    let fixture = Fixture::new("print(\"must not run\")\n");
+    let bytes = fixture.build(fixture.index.clone());
+    let error = run_archive(
+        &bytes,
+        XarRunOptions {
+            capabilities: KNOWN_CAPABILITY_MASK | (1 << 63),
+            ..Default::default()
+        },
+    )
+    .expect_err("未知请求位在执行前拒绝");
+    assert!(matches!(error, xiao_xar::XarRunError::Validation(_)));
+    assert_eq!(error.code(), "X17-XAR-009");
+}
+
 /// 协议测试临时归档，仅删除自己创建的单个文件。
 struct ArchiveFile(PathBuf);
 

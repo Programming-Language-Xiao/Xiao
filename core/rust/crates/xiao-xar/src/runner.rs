@@ -392,8 +392,9 @@ fn validate_requirements(
     options: &XarRunOptions,
 ) -> Result<(), XarRunError> {
     validate_capability_mask(index.required_capabilities)
-        .and_then(|()| validate_capability_mask(options.capabilities))
         .map_err(|error| XarRunError::InvalidRequirements(error.to_string()))?;
+    validate_capability_mask(options.capabilities)
+        .map_err(|error| XarRunError::Validation(format!("请求 capabilities 无效：{error}")))?;
     let identity = xiao_standard_library::current_standard_library_identity();
     if index.stdlib_interface_version != identity.stdlib_interface_version {
         return Err(XarRunError::VersionIncompatible(format!(
