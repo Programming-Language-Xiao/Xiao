@@ -32,4 +32,4 @@ Windows 原生准备方式见 `docs/DevDocs/10d-environment-gated-test-spec.md` 
 
 `20e_archive_wiring.rs` 通过真实前端产物和 `XarBuilder` 验证标准库版本、官方模块要求、
 能力并集和请求掩码。负例断言在模块加载、函数进入或输出之前拒绝；协议与中英消息目录
-使用同一错误身份，归档只包含应用对象。畸形索引的物理 ZIP 负例位于 `xiao-xar/src/lib.rs`。
+使用同一错误身份，归档只包含应用对象。畸形索引的物理 ZIP 负例位于 `xiao-xar/src/tests.rs`。

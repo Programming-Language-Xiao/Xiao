@@ -564,18 +564,20 @@ pub fn run_xiaoc_production_with_capabilities(
     cancellation: Option<CancellationSource>,
     capabilities: u64,
 ) -> Result<RunOutcome, XiaocLoadError> {
-    let file = xiao_bytecode::decode_xiaoc(bytes)?;
-    let sink = BoundedSink::new(event_capacity);
-    let mut vm = Vm::<StackCarrier, BoundedSink>::new_with_capabilities(
-        &file.program,
-        options,
-        sink,
-        capabilities,
-    )
-    .map_err(|error| XiaocLoadError::InvalidField {
+    validate_capability_mask(capabilities).map_err(|error| XiaocLoadError::InvalidField {
         field: "capabilities".to_owned(),
         message: error.to_string(),
     })?;
+    let file = xiao_bytecode::decode_xiaoc(bytes)?;
+    let sink = BoundedSink::new(event_capacity);
+    let mut vm = Vm::<StackCarrier, BoundedSink>::new_with_metadata(
+        &file.program,
+        options,
+        sink,
+        VmMetadata::legacy(&file.program),
+        VmSession::new(),
+        capabilities,
+    );
     vm.set_cancellation_source(cancellation);
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();

@@ -126,7 +126,7 @@ impl VmMetadata {
     }
 
     /// 为研究兼容入口建立不会改变既有事件含义的默认上下文。
-    fn legacy(program: &TacProgram) -> Self {
+    pub(crate) fn legacy(program: &TacProgram) -> Self {
         Self::new(program.abi.target.clone(), "<unknown>".to_owned(), None)
     }
 }
@@ -210,24 +210,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             VmSession::new(),
             KNOWN_CAPABILITY_MASK,
         )
-    }
-
-    /// 为已物化字节码入口建立经过范围校验的请求能力上下文。
-    pub fn new_with_capabilities(
-        program: &'p TacProgram,
-        options: VmOptions,
-        sink: S,
-        capabilities: u64,
-    ) -> Result<Self, xiao_intrinsics::CapabilityMaskError> {
-        xiao_intrinsics::validate_capability_mask(capabilities)?;
-        Ok(Self::new_with_metadata(
-            program,
-            options,
-            sink,
-            VmMetadata::legacy(program),
-            VmSession::new(),
-            capabilities,
-        ))
     }
 
     /// 创建一个带模块/源码身份的解释器。
