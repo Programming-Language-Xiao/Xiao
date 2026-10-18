@@ -212,22 +212,31 @@ impl<'source> TypeChecker<'source> {
             }
         }
         if let Err(error) = self.context.unify(&expected, &actual) {
-            self.type_error_with_params(
-                crate::diagnostics::FUNCTION_RETURN_CODE,
-                "x04.type.return_mismatch",
-                span,
-                error.to_string(),
-                [
-                    (
-                        "expected".to_owned(),
-                        DiagnosticParam::Text(expected.to_string()),
-                    ),
-                    (
-                        "actual".to_owned(),
-                        DiagnosticParam::Text(actual.to_string()),
-                    ),
-                ],
-            );
+            if matches!(error, crate::unify::UnifyError::RigidTypeParameter { .. }) {
+                self.type_error(
+                    crate::diagnostics::RIGID_TYPE_PARAMETER_CODE,
+                    "x04.type.rigid_type_parameter",
+                    span,
+                    error.to_string(),
+                );
+            } else {
+                self.type_error_with_params(
+                    crate::diagnostics::FUNCTION_RETURN_CODE,
+                    "x04.type.return_mismatch",
+                    span,
+                    error.to_string(),
+                    [
+                        (
+                            "expected".to_owned(),
+                            DiagnosticParam::Text(expected.to_string()),
+                        ),
+                        (
+                            "actual".to_owned(),
+                            DiagnosticParam::Text(actual.to_string()),
+                        ),
+                    ],
+                );
+            }
         }
     }
 

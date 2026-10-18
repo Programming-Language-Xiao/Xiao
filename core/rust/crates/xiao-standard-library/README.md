@@ -10,4 +10,6 @@
 - 本 crate 不进入 `PackageRegistry` 普通依赖图，不提供普通包配置，也不发布预编译对象；20E 由 `xiao-xar` 将身份的接口版本/语言版本写入归档要求。
 - 后续模块实现必须同步本 README、`stdlib/` 下模块 README、UseDocs、DevDocs 阶段索引和兼容元数据；当前第二批 `text.length` 沿用既有 `text` 模块落点。
 
-首批模块源码位于顶层 `stdlib/text.xiao` 与 `stdlib/path.xiao`；本 crate 仍只负责工程落点、兼容身份和加载边界。
+首批模块源码位于顶层 `stdlib/text.xiao`、`stdlib/path.xiao` 与 `stdlib/set.xiao`；
+本 crate 仍只负责工程落点、兼容身份和加载边界。`set` 的通用参数在生成期擦除，
+不需要新增 Runtime ABI 或 intrinsic。

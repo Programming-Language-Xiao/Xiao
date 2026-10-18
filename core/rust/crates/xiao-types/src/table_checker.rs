@@ -142,8 +142,12 @@ impl<'source> TypeChecker<'source> {
                     ..
                 } => {
                     let key = self.name_key(*name);
-                    let function =
-                        self.build_method_signature(key.clone(), parameters, *return_type, *span);
+                    let function = self.build_method_signature(
+                        key.clone(),
+                        parameters,
+                        return_type.clone(),
+                        *span,
+                    );
                     let mut member = TableMemberSignature::method(function.clone());
                     member.ty = method_type_without_self(&function);
                     (key, member)
@@ -194,6 +198,7 @@ impl<'source> TypeChecker<'source> {
         for parameter in parameters {
             let base = parameter
                 .annotation
+                .as_ref()
                 .map(annotation_type)
                 .unwrap_or_else(|| self.context.fresh_type());
             let ty = match parameter.kind {
@@ -211,7 +216,7 @@ impl<'source> TypeChecker<'source> {
             });
         }
         let return_type = return_annotation
-            .map(annotation_type)
+            .map(|annotation| annotation_type(&annotation))
             .unwrap_or_else(|| self.context.fresh_type());
         FunctionSignature::new(name, signatures, return_type, span)
     }
@@ -285,7 +290,7 @@ impl<'source> TypeChecker<'source> {
                     &mut signature,
                     *name,
                     parameters,
-                    *return_type,
+                    return_type.clone(),
                     body,
                     *span,
                 ),
@@ -1054,6 +1059,7 @@ fn declared_type_to_type(declared: &DeclaredType, _context: &mut super::TypeCont
                     TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
                     TypeTerm::None => Type::None,
                     TypeTerm::Resource(resource) => Type::Resource(*resource),
+                    TypeTerm::TypeParameter(_) => Type::Dynamic,
                 })
                 .collect::<Vec<_>>();
             Type::Set(SetType::heterogeneous(members))
@@ -1062,11 +1068,13 @@ fn declared_type_to_type(declared: &DeclaredType, _context: &mut super::TypeCont
 }
 
 /// 将函数类型注解降低为类型层类型。
-fn annotation_type(annotation: FunctionTypeAnnotation) -> Type {
+fn annotation_type(annotation: &FunctionTypeAnnotation) -> Type {
     match annotation {
-        FunctionTypeAnnotation::Scalar(scalar) => Type::scalar(scalar),
+        FunctionTypeAnnotation::Scalar(scalar) => Type::scalar(*scalar),
         FunctionTypeAnnotation::None => Type::None,
-        FunctionTypeAnnotation::Resource(resource) => Type::Resource(resource),
+        FunctionTypeAnnotation::Resource(resource) => Type::Resource(*resource),
+        FunctionTypeAnnotation::Set(_) => Type::set(Type::Dynamic),
+        FunctionTypeAnnotation::TypeParameter(_) => Type::Dynamic,
     }
 }
 

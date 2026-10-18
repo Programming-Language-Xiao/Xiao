@@ -100,6 +100,8 @@ pub struct TypeChecker<'source> {
     table_signatures: BTreeMap<String, crate::tables::TableSignature>,
     current_table: Option<TableFrame>,
     current_function: Option<FunctionFrame>,
+    /// 当前正在检查的函数名称，用于让直接递归调用复用刚性签名。
+    current_function_key: Option<String>,
     loop_depth: usize,
 }
 
@@ -136,6 +138,7 @@ impl<'source> TypeChecker<'source> {
             table_signatures: BTreeMap::new(),
             current_table: None,
             current_function: None,
+            current_function_key: None,
             loop_depth: 0,
         }
     }

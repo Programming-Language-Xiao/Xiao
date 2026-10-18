@@ -62,6 +62,10 @@ def add(int left, int right = 1) -> int
     return left + right
 ```
 
+20F 扩展了顶层函数头的显式类型参数：`def size<T>(set<T> values) -> int`。类型参数只
+出现在顶层函数定义，参数与返回注解可以使用 `T` 或 `set<T>`；表方法、局部函数、显式
+实例化和约束语法仍不开放。
+
 解析器生成 `Statement::Function`，保存名称、参数、可选返回类型、递归语句体、文档注释和源码区间。
 空体、头部尾随内容、缺少换行或缺少缩进体必须恢复并产生 `X04-PARSE-*` 诊断。
 

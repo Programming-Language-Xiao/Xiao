@@ -88,6 +88,10 @@ set<int | str> typed_values = {1, "x"}
 [20F](20f-container-parameters-and-collections.md)；20F 只做显式类型参数与
 `size`/`is_empty`，非字面量下标仍单独登记）。
 
+**20F 实施回填（2026-10-19）**：函数头现在接受 `def f<T>(set<T> values)`，类型参数名称
+随 `FunctionSignature` 保存，生成期擦除为动态集合边界；官方 `stdlib/set.xiao` 提供
+`size<T>` 与 `is_empty<T>`。集合增删、泛型表和约束语法仍不在本批。
+
 **登记口径（防漂）**：本条的规范表述原先散在
 [20C-第二批](20c-second-batch-probe.md):251、[20C-第三批](20c-third-batch-reprobe-and-status.md):71
 与 [20C-第五批](20c-fifth-batch-reprobe-and-library.md) §4.3 三处，

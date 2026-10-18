@@ -18,11 +18,11 @@ use xiao_modules::{ModuleName, ProjectModuleResult, analyze_project};
 use xiao_source::SourceFile;
 use xiao_syntax::{
     FunctionParameterKind, FunctionTypeAnnotation, ImportStatement, ParseResult, Program,
-    Statement, parse,
+    Statement, TypeTerm, parse,
 };
 use xiao_types::{
-    ExternalNamespaces, FunctionParameterSignature, FunctionSignature, Type, TypeCheckResult,
-    TypeChecker,
+    ExternalNamespaces, FunctionParameterSignature, FunctionSignature, SetType, Type,
+    TypeCheckResult, TypeChecker, TypeVarId,
 };
 use xiao_vm::STANDARD_LIBRARY_NAMESPACE;
 
@@ -200,16 +200,37 @@ struct StandardLinkPlan {
     import_spans: BTreeSet<(usize, usize)>,
 }
 
-/// 从规范标准库源码提取完整注解的函数接口；不执行模块，也不推断跨模块类型变量。
+/// 从规范标准库源码提取完整注解的函数接口；不执行模块，跨模块类型变量使用
+/// 签名内的占位身份保存，调用点再由类型检查器实例化。
 fn standard_module_function_signatures(
     standard: &ProjectModuleResult,
 ) -> BTreeMap<String, BTreeMap<String, FunctionSignature>> {
-    /// 将闭合的标量、资源或空值注解映射成无跨模块类型变量的接口类型。
-    fn annotation_type(annotation: FunctionTypeAnnotation) -> Type {
+    /// 将标准库函数注解映射成带有本地占位变量的接口类型。
+    fn annotation_type(
+        annotation: &FunctionTypeAnnotation,
+        generic_types: &BTreeMap<String, Type>,
+    ) -> Type {
         match annotation {
-            FunctionTypeAnnotation::Scalar(scalar) => Type::Scalar(scalar),
-            FunctionTypeAnnotation::Resource(resource) => Type::Resource(resource),
+            FunctionTypeAnnotation::Scalar(scalar) => Type::Scalar(*scalar),
+            FunctionTypeAnnotation::Resource(resource) => Type::Resource(*resource),
             FunctionTypeAnnotation::None => Type::None,
+            FunctionTypeAnnotation::Set(annotation) => Type::Set(SetType::heterogeneous(
+                annotation
+                    .members
+                    .iter()
+                    .map(|term| match term {
+                        TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
+                        TypeTerm::None => Type::None,
+                        TypeTerm::Resource(resource) => Type::Resource(*resource),
+                        TypeTerm::TypeParameter(name) => {
+                            generic_types.get(name).cloned().unwrap_or(Type::Dynamic)
+                        }
+                    })
+                    .collect::<Vec<_>>(),
+            )),
+            FunctionTypeAnnotation::TypeParameter(name) => {
+                generic_types.get(name).cloned().unwrap_or(Type::Dynamic)
+            }
         }
     }
     let mut modules = BTreeMap::new();
@@ -228,6 +249,7 @@ fn standard_module_function_signatures(
         for statement in &program.statements {
             let Statement::Function {
                 name,
+                type_parameters,
                 parameters,
                 return_type: Some(return_type),
                 span,
@@ -236,6 +258,16 @@ fn standard_module_function_signatures(
             else {
                 continue;
             };
+            let generic_ids = type_parameters
+                .iter()
+                .enumerate()
+                .map(|(index, _)| TypeVarId::new(index as u32))
+                .collect::<Vec<_>>();
+            let generic_types = type_parameters
+                .iter()
+                .zip(&generic_ids)
+                .map(|(name, id)| (name.unquoted_text(source).to_owned(), Type::variable(*id)))
+                .collect::<BTreeMap<_, _>>();
             let parameters = parameters
                 .iter()
                 .map(|parameter| {
@@ -248,7 +280,7 @@ fn standard_module_function_signatures(
                     Some(FunctionParameterSignature {
                         name: key(parameter.name),
                         kind: parameter.kind,
-                        ty: annotation_type(parameter.annotation?),
+                        ty: annotation_type(parameter.annotation.as_ref()?, &generic_types),
                         has_default: parameter.default.is_some(),
                     })
                 })
@@ -261,9 +293,16 @@ fn standard_module_function_signatures(
                 FunctionSignature::new(
                     key(*name),
                     parameters,
-                    annotation_type(*return_type),
+                    annotation_type(return_type, &generic_types),
                     *span,
-                ),
+                )
+                .with_type_parameters(
+                    type_parameters
+                        .iter()
+                        .map(|name| name.unquoted_text(source).to_owned())
+                        .collect::<Vec<_>>(),
+                )
+                .with_type_parameter_ids(generic_ids),
             );
         }
         modules.insert(format!("{STANDARD_LIBRARY_NAMESPACE}.{module}"), signatures);

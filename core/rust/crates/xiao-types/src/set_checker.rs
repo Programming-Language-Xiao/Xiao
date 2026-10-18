@@ -392,6 +392,7 @@ fn declared_set_type(annotation: &SetTypeAnnotation) -> SetType {
             TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
             TypeTerm::None => Type::None,
             TypeTerm::Resource(resource) => Type::Resource(*resource),
+            TypeTerm::TypeParameter(_) => Type::Dynamic,
         })
         .collect::<Vec<_>>();
     SetType::heterogeneous(members)

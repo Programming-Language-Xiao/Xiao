@@ -963,6 +963,27 @@ pub fn builtin_renderer() -> MessageRenderer {
         ("x04.parse.missing_condition", "syntax error: {message}"),
         ("x04.parse.missing_function_name", "syntax error: {message}"),
         ("x04.parse.missing_indent", "syntax error: {message}"),
+        (
+            "x04.parse.non_top_level_type_parameters",
+            "syntax error: {message}",
+        ),
+        ("x04.parse.empty_type_parameters", "syntax error: {message}"),
+        (
+            "x04.parse.invalid_type_parameter",
+            "syntax error: {message}",
+        ),
+        (
+            "x04.parse.duplicate_type_parameter",
+            "syntax error: {message}",
+        ),
+        (
+            "x04.parse.keyword_type_parameter",
+            "syntax error: {message}",
+        ),
+        (
+            "x04.parse.unknown_type_parameter",
+            "syntax error: {message}",
+        ),
         ("x04.parse.return_tail", "syntax error: {message}"),
         ("x04.parse.unexpected_indent", "syntax error: {message}"),
         ("x05.parse.empty_table_body", "syntax error: {message}"),
@@ -1118,6 +1139,7 @@ pub fn builtin_renderer() -> MessageRenderer {
             "type error: {message}",
         ),
         ("x03.type.set_unhashable_element", "type error: {message}"),
+        ("x03.type.generic_set_unhashable", "type error: {message}"),
         (
             "x03.type.set_unhashable_membership",
             "type error: {message}",
@@ -1135,6 +1157,7 @@ pub fn builtin_renderer() -> MessageRenderer {
         ("x04.type.implicit_none_return", "type error: {message}"),
         ("x04.type.return_mismatch", "type error: {message}"),
         ("x04.type.return_outside_function", "type error: {message}"),
+        ("x04.type.rigid_type_parameter", "type error: {message}"),
         ("x04.type.star_argument_type", "type error: {message}"),
         ("x04.type.unresolved_parameter", "type error: {message}"),
         ("x04.type.unresolved_return", "type error: {message}"),

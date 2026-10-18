@@ -64,6 +64,8 @@ pub const SET_INDEX_UNSUPPORTED_CODE: &str = "X03-TYPE-020";
 pub const SET_OPERATION_TYPE_CODE: &str = "X03-TYPE-021";
 /// 集合比较操作数不是两个集合。
 pub const SET_COMPARISON_TYPE_CODE: &str = "X03-TYPE-022";
+/// 通用 `set<T>` 调用点把类型参数实例化为不可哈希类型。
+pub const SET_GENERIC_UNHASHABLE_CODE: &str = "X03-TYPE-023";
 
 /// 函数名称重复或函数声明无法登记。
 pub const FUNCTION_DECLARATION_CODE: &str = "X04-TYPE-001";
@@ -79,6 +81,8 @@ pub const CONDITION_TYPE_CODE: &str = "X04-TYPE-005";
 pub const ITERABLE_TYPE_CODE: &str = "X04-TYPE-006";
 /// `break`/`continue` 出现在循环外。
 pub const LOOP_CONTROL_CODE: &str = "X04-TYPE-007";
+/// 显式类型参数与具体类型或其他参数合并。
+pub const RIGID_TYPE_PARAMETER_CODE: &str = "X04-TYPE-008";
 
 /// `raise` 操作数不是可恢复错误值时使用的稳定诊断编号。
 pub const RAISE_TYPE_CODE: &str = "X07-TYPE-001";

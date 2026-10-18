@@ -297,7 +297,7 @@ impl<'a> Lowerer<'a> {
                 let lowered_return = signature
                     .as_ref()
                     .map(|signature| lower_type(&signature.return_type))
-                    .or_else(|| return_type.map(lower_function_annotation))
+                    .or_else(|| return_type.as_ref().map(lower_function_annotation))
                     .unwrap_or(IrType::None);
                 IrStatementKind::Function {
                     name: self.name(*name),
@@ -373,6 +373,7 @@ impl<'a> Lowerer<'a> {
             kind: parameter_kind_name(parameter.kind).to_owned(),
             ty: parameter
                 .annotation
+                .as_ref()
                 .map(lower_function_annotation)
                 .unwrap_or_else(|| self.ty(parameter.span)),
             default: parameter
@@ -834,6 +835,7 @@ fn lower_declared_type(declared: &DeclaredType) -> IrType {
                     TypeTerm::Resource(resource) => IrType::Resource {
                         kind: resource.as_str().to_owned(),
                     },
+                    TypeTerm::TypeParameter(_) => IrType::Dynamic,
                 })
                 .collect(),
             allows_dynamic: false,
@@ -872,7 +874,7 @@ fn retarget_lfloat_expression(expression: &mut IrExpression) {
 }
 
 /// 转换函数类型注解。
-fn lower_function_annotation(annotation: FunctionTypeAnnotation) -> IrType {
+fn lower_function_annotation(annotation: &FunctionTypeAnnotation) -> IrType {
     match annotation {
         FunctionTypeAnnotation::Scalar(scalar) => IrType::Scalar {
             name: scalar.as_str().to_owned(),
@@ -881,6 +883,26 @@ fn lower_function_annotation(annotation: FunctionTypeAnnotation) -> IrType {
         FunctionTypeAnnotation::Resource(resource) => IrType::Resource {
             kind: resource.as_str().to_owned(),
         },
+        FunctionTypeAnnotation::Set(annotation) => IrType::Set {
+            members: annotation
+                .members
+                .iter()
+                .map(|term| match term {
+                    TypeTerm::Scalar(scalar) => IrType::Scalar {
+                        name: scalar.as_str().to_owned(),
+                    },
+                    TypeTerm::None => IrType::None,
+                    TypeTerm::Resource(resource) => IrType::Resource {
+                        kind: resource.as_str().to_owned(),
+                    },
+                    TypeTerm::TypeParameter(_) => IrType::Dynamic,
+                })
+                .collect(),
+            allows_dynamic: true,
+            empty: false,
+            unknown: annotation.members.is_empty(),
+        },
+        FunctionTypeAnnotation::TypeParameter(_) => IrType::Dynamic,
     }
 }
 

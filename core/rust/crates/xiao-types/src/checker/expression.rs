@@ -144,12 +144,12 @@ impl<'source> TypeChecker<'source> {
         if let Type::Variable(variable) = &operand_type {
             if operator == UnaryOperator::Not {
                 let boolean = Type::scalar(ScalarType::Bool);
-                if self
-                    .context
-                    .unify(&Type::Variable(*variable), &boolean)
-                    .is_ok()
-                {
-                    return boolean;
+                match self.context.unify(&Type::Variable(*variable), &boolean) {
+                    Ok(_) => return boolean,
+                    Err(error) => {
+                        self.unification_error(span, error);
+                        return Type::Dynamic;
+                    }
                 }
             } else {
                 // 一元正负只能约束“数值族”；具体宽度由返回值、赋值或
@@ -227,7 +227,9 @@ impl<'source> TypeChecker<'source> {
                 .check_set_operation_types(operator, &left_type, &right_type, span)
                 .result;
         }
-        if let Some(result) = self.infer_binary_with_variables(operator, &left_type, &right_type) {
+        if let Some(result) =
+            self.infer_binary_with_variables(operator, &left_type, &right_type, span)
+        {
             return result;
         }
         let mut operation_valid = false;
@@ -300,6 +302,7 @@ impl<'source> TypeChecker<'source> {
         operator: BinaryOperator,
         left: &Type,
         right: &Type,
+        span: SourceSpan,
     ) -> Option<Type> {
         let left = self.context.apply(left);
         let right = self.context.apply(right);
@@ -319,10 +322,16 @@ impl<'source> TypeChecker<'source> {
                 | BinaryOperator::GreaterEqual
         );
         if matches!(operator, BinaryOperator::And | BinaryOperator::Or) {
-            return self.infer_variable_boolean(&left, &right, left_variable, right_variable);
+            return self.infer_variable_boolean(&left, &right, left_variable, right_variable, span);
         }
         if left_variable && right_variable {
-            return self.infer_binary_with_two_variables(operator, &left, &right, is_comparison);
+            return self.infer_binary_with_two_variables(
+                operator,
+                &left,
+                &right,
+                is_comparison,
+                span,
+            );
         }
 
         let (variable, known, variable_on_left) = if left_variable {
@@ -340,7 +349,10 @@ impl<'source> TypeChecker<'source> {
             is_comparison,
         )?;
         let candidate_type = Type::scalar(candidate);
-        self.context.unify(variable, &candidate_type).ok()?;
+        if let Err(error) = self.context.unify(variable, &candidate_type) {
+            self.unification_error(span, error);
+            return None;
+        }
         let resolved_left = self.context.apply(&left);
         let resolved_right = self.context.apply(&right);
         if is_comparison {
@@ -363,16 +375,23 @@ impl<'source> TypeChecker<'source> {
         right: &Type,
         left_variable: bool,
         right_variable: bool,
+        span: SourceSpan,
     ) -> Option<Type> {
         let boolean = Type::scalar(ScalarType::Bool);
         let valid_left = !left_variable && left == &boolean;
         let valid_right = !right_variable && right == &boolean;
         if (valid_left || left_variable) && (valid_right || right_variable) {
             if left_variable {
-                self.context.unify(left, &boolean).ok()?;
+                if let Err(error) = self.context.unify(left, &boolean) {
+                    self.unification_error(span, error);
+                    return None;
+                }
             }
             if right_variable {
-                self.context.unify(right, &boolean).ok()?;
+                if let Err(error) = self.context.unify(right, &boolean) {
+                    self.unification_error(span, error);
+                    return None;
+                }
             }
             Some(boolean)
         } else {
@@ -387,9 +406,13 @@ impl<'source> TypeChecker<'source> {
         left: &Type,
         right: &Type,
         is_comparison: bool,
+        span: SourceSpan,
     ) -> Option<Type> {
         if is_comparison {
-            self.context.unify(left, right).ok()?;
+            if let Err(error) = self.context.unify(left, right) {
+                self.unification_error(span, error);
+                return None;
+            }
             return Some(Type::scalar(ScalarType::Bool));
         }
         if matches!(
@@ -402,7 +425,10 @@ impl<'source> TypeChecker<'source> {
                 | BinaryOperator::Remainder
                 | BinaryOperator::Power
         ) {
-            self.context.unify(left, right).ok()?;
+            if let Err(error) = self.context.unify(left, right) {
+                self.unification_error(span, error);
+                return None;
+            }
             Some(self.context.apply(left))
         } else {
             None

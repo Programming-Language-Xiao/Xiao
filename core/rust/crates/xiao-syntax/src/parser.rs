@@ -414,7 +414,7 @@ impl<'source> Parser<'source> {
             return Some(DeclaredType::Resource(resource));
         }
         self.starts_set_type()
-            .then(|| self.parse_set_type_annotation())
+            .then(|| self.parse_set_type_annotation(false))
             .flatten()
             .map(DeclaredType::Set)
     }
@@ -438,7 +438,10 @@ impl<'source> Parser<'source> {
     }
 
     /// 解析 `set<T>` 或 `set<T | U>`，保留类型项源码区间。
-    fn parse_set_type_annotation(&mut self) -> Option<SetTypeAnnotation> {
+    pub(super) fn parse_set_type_annotation(
+        &mut self,
+        allow_type_parameters: bool,
+    ) -> Option<SetTypeAnnotation> {
         let open_name = self.bump();
         let open = if self.at(TokenKind::Less) {
             self.bump()
@@ -464,7 +467,7 @@ impl<'source> Parser<'source> {
             );
         } else {
             loop {
-                let Some(term) = self.parse_set_type_term() else {
+                let Some(term) = self.parse_set_type_term(allow_type_parameters) else {
                     self.recover_set_type_annotation();
                     break;
                 };
@@ -505,7 +508,7 @@ impl<'source> Parser<'source> {
     }
 
     /// 解析集合类型项；资源项的不可哈希限制由类型层统一诊断。
-    fn parse_set_type_term(&mut self) -> Option<TypeTerm> {
+    fn parse_set_type_term(&mut self, allow_type_parameters: bool) -> Option<TypeTerm> {
         let token = self.current();
         if is_scalar_type_token(token.kind()) {
             self.bump();
@@ -526,6 +529,17 @@ impl<'source> Parser<'source> {
         {
             self.bump();
             return Some(TypeTerm::Resource(resource));
+        }
+        if allow_type_parameters
+            && matches!(
+                token.kind(),
+                TokenKind::Identifier | TokenKind::BacktickIdentifier
+            )
+        {
+            self.bump();
+            return Some(TypeTerm::TypeParameter(
+                token.text(self.source).trim_matches('`').to_owned(),
+            ));
         }
         self.push_error(
             INVALID_SET_TYPE_ANNOTATION_CODE,

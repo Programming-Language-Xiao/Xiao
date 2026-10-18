@@ -4,18 +4,19 @@
 //! 引用不会依赖源码出现顺序。这里仅生成静态类型约束；真正的调用栈、
 //! 闭包对象和参数展开由后续 Runtime/IR 阶段负责。
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use xiao_diagnostics::DiagnosticParam;
 use xiao_source::SourceSpan;
 use xiao_syntax::{
     CallArgument, CallArgumentKind, Expression, FunctionParameter, FunctionParameterKind,
-    FunctionTypeAnnotation, Name, Statement,
+    FunctionTypeAnnotation, Name, Statement, TypeTerm,
 };
 
 use crate::containers::{ArrayType, DictType};
 use crate::diagnostics::*;
 use crate::functions::{FunctionParameterSignature, FunctionSignature};
+use crate::set_types::SetType;
 use crate::types::{Type, TypeScheme};
 
 use super::{FunctionFrame, TypeChecker};
@@ -26,13 +27,20 @@ impl<'source> TypeChecker<'source> {
         for statement in statements {
             if let Statement::Function {
                 name,
+                type_parameters,
                 parameters,
                 return_type,
                 span,
                 ..
             } = statement
             {
-                self.register_function_signature(*name, parameters, *return_type, *span);
+                self.register_function_signature(
+                    *name,
+                    parameters,
+                    return_type.clone(),
+                    *span,
+                    type_parameters,
+                );
             }
         }
     }
@@ -44,6 +52,7 @@ impl<'source> TypeChecker<'source> {
         parameters: &[FunctionParameter],
         return_annotation: Option<FunctionTypeAnnotation>,
         span: SourceSpan,
+        type_parameters: &[Name],
     ) {
         let key = self.name_key(name);
         if let Some(existing) = self.function_signatures.get(&key) {
@@ -76,10 +85,20 @@ impl<'source> TypeChecker<'source> {
             );
             return;
         }
+        let mut generic_types = BTreeMap::new();
+        let mut generic_ids = Vec::with_capacity(type_parameters.len());
+        for type_parameter in type_parameters {
+            let id = self.context.fresh_variable();
+            generic_ids.push(id);
+            generic_types.insert(
+                type_parameter.unquoted_text(self.source).to_owned(),
+                Type::variable(id),
+            );
+        }
         let mut parameter_types = Vec::with_capacity(parameters.len());
         let mut signatures = Vec::with_capacity(parameters.len());
         for parameter in parameters {
-            let ty = self.parameter_type(parameter);
+            let ty = self.parameter_type(parameter, &generic_types);
             parameter_types.push(ty.clone());
             signatures.push(FunctionParameterSignature {
                 name: self.name_key(parameter.name),
@@ -89,17 +108,28 @@ impl<'source> TypeChecker<'source> {
             });
         }
         let return_type = return_annotation
-            .map(annotation_type)
+            .map(|annotation| annotation_type(&annotation, &generic_types))
             .unwrap_or_else(|| self.context.fresh_type());
         let function_type = Type::Function {
             parameters: parameter_types,
             return_type: Box::new(return_type.clone()),
         };
-        let signature = FunctionSignature::new(key.clone(), signatures, return_type, span);
-        if let Err(error) = self
-            .environment
-            .declare_constant(key.clone(), TypeScheme::monomorphic(function_type))
-        {
+        let signature = FunctionSignature::new(key.clone(), signatures, return_type, span)
+            .with_type_parameters(
+                type_parameters
+                    .iter()
+                    .map(|name| name.unquoted_text(self.source).to_owned())
+                    .collect::<Vec<_>>(),
+            )
+            .with_type_parameter_ids(generic_ids.clone());
+        if let Err(error) = self.environment.declare_constant(
+            key.clone(),
+            if generic_ids.is_empty() {
+                TypeScheme::monomorphic(function_type)
+            } else {
+                TypeScheme::quantified(generic_ids, function_type)
+            },
+        ) {
             self.environment_error(name.span, error);
             return;
         }
@@ -154,10 +184,15 @@ impl<'source> TypeChecker<'source> {
     }
 
     /// 根据参数声明建立参数绑定类型；可变参数以容器类型表示。
-    fn parameter_type(&mut self, parameter: &FunctionParameter) -> Type {
+    fn parameter_type(
+        &mut self,
+        parameter: &FunctionParameter,
+        generic_types: &BTreeMap<String, Type>,
+    ) -> Type {
         let base = parameter
             .annotation
-            .map(annotation_type)
+            .as_ref()
+            .map(|annotation| annotation_type(annotation, generic_types))
             .unwrap_or_else(|| self.context.fresh_type());
         match parameter.kind {
             FunctionParameterKind::VarArgs => Type::Array(ArrayType::homogeneous(base)),
@@ -176,10 +211,17 @@ impl<'source> TypeChecker<'source> {
         return_annotation: Option<FunctionTypeAnnotation>,
         body: &[Statement],
         span: SourceSpan,
+        type_parameters: &[Name],
     ) {
         let key = self.name_key(name);
         if !self.function_signatures.contains_key(&key) {
-            self.register_function_signature(name, parameters, return_annotation, span);
+            self.register_function_signature(
+                name,
+                parameters,
+                return_annotation,
+                span,
+                type_parameters,
+            );
         }
         let Some(signature) = self.function_signatures.get(&key).cloned() else {
             return;
@@ -189,6 +231,11 @@ impl<'source> TypeChecker<'source> {
             // 错误地检查成第一份签名的另一份实现。
             return;
         }
+
+        let rigid_type_parameters = signature.type_parameter_ids.clone();
+        self.context
+            .push_rigid(rigid_type_parameters.iter().copied());
+        let previous_function_key = self.current_function_key.replace(key.clone());
 
         // 默认值在函数定义环境中检查；参数名称的绑定在下面的函数作用域中建立。
         for (parameter, parameter_signature) in parameters.iter().zip(&signature.parameters) {
@@ -251,7 +298,9 @@ impl<'source> TypeChecker<'source> {
             resolved_parameters,
             resolved_return.clone(),
             signature.span,
-        );
+        )
+        .with_type_parameters(signature.type_parameters.clone())
+        .with_type_parameter_ids(signature.type_parameter_ids.clone());
         self.function_signatures.insert(key.clone(), updated);
         let function_type = Type::Function {
             parameters: signature
@@ -263,11 +312,16 @@ impl<'source> TypeChecker<'source> {
         };
         // 参数作用域可能遮蔽函数名；先退出局部作用域，再更新外层函数绑定。
         self.environment.pop_scope();
-        let _ = self
-            .environment
-            .replace_scheme(&key, TypeScheme::monomorphic(function_type));
+        let scheme = if signature.type_parameter_ids.is_empty() {
+            TypeScheme::monomorphic(function_type)
+        } else {
+            TypeScheme::quantified(signature.type_parameter_ids.clone(), function_type)
+        };
+        let _ = self.environment.replace_scheme(&key, scheme);
         self.loop_depth = previous_loop_depth;
         self.current_function = previous_frame;
+        self.current_function_key = previous_function_key;
+        self.context.pop_rigid(rigid_type_parameters);
     }
 
     /// 在整份程序的约束收集完成后统一报告仍未解析的函数类型变量。
@@ -282,6 +336,11 @@ impl<'source> TypeChecker<'source> {
             .cloned()
             .collect::<Vec<_>>();
         for signature in signatures {
+            let quantified = signature
+                .type_parameter_ids
+                .iter()
+                .copied()
+                .collect::<BTreeSet<_>>();
             let resolved_parameters = signature
                 .parameters
                 .iter()
@@ -294,7 +353,7 @@ impl<'source> TypeChecker<'source> {
                 .collect::<Vec<_>>();
             let resolved_return = self.context.apply(&signature.return_type);
             for parameter in &resolved_parameters {
-                if contains_unresolved_variable(&parameter.ty) {
+                if contains_unresolved_variable(&parameter.ty, &quantified) {
                     self.type_error_with_params(
                         FUNCTION_INFERENCE_CODE,
                         "x04.type.unresolved_parameter",
@@ -316,7 +375,7 @@ impl<'source> TypeChecker<'source> {
                     );
                 }
             }
-            if contains_unresolved_variable(&resolved_return) {
+            if contains_unresolved_variable(&resolved_return, &quantified) {
                 self.type_error_with_params(
                     FUNCTION_INFERENCE_CODE,
                     "x04.type.unresolved_return",
@@ -333,7 +392,9 @@ impl<'source> TypeChecker<'source> {
                 resolved_parameters,
                 resolved_return.clone(),
                 signature.span,
-            );
+            )
+            .with_type_parameters(signature.type_parameters.clone())
+            .with_type_parameter_ids(signature.type_parameter_ids.clone());
             self.function_signatures
                 .insert(signature.name.clone(), updated);
             let function_type = Type::Function {
@@ -344,9 +405,12 @@ impl<'source> TypeChecker<'source> {
                     .collect(),
                 return_type: Box::new(resolved_return),
             };
-            let _ = self
-                .environment
-                .replace_scheme(&signature.name, TypeScheme::monomorphic(function_type));
+            let scheme = if signature.type_parameter_ids.is_empty() {
+                TypeScheme::monomorphic(function_type)
+            } else {
+                TypeScheme::quantified(signature.type_parameter_ids.clone(), function_type)
+            };
+            let _ = self.environment.replace_scheme(&signature.name, scheme);
         }
     }
 
@@ -361,7 +425,54 @@ impl<'source> TypeChecker<'source> {
         // 普通 ASCII 内建函数，也不能在调用时丢失 Unicode 内容。
         let key = self.function_callee_key(callee)?;
         let signature = self.function_signatures.get(&key).cloned()?;
+        let signature = if self.current_function_key.as_deref() == Some(key.as_str()) {
+            signature
+        } else {
+            self.instantiate_function_signature(&signature)
+        };
         Some(self.check_function_arguments(&signature, arguments, span))
+    }
+
+    /// 为一次调用创建独立的泛型签名实例。
+    pub(super) fn instantiate_function_signature(
+        &mut self,
+        signature: &FunctionSignature,
+    ) -> FunctionSignature {
+        if signature.type_parameter_ids.is_empty() {
+            return signature.clone();
+        }
+        let function = Type::Function {
+            parameters: signature
+                .parameters
+                .iter()
+                .map(|parameter| parameter.ty.clone())
+                .collect(),
+            return_type: Box::new(signature.return_type.clone()),
+        };
+        let instantiated = self.context.instantiate(&TypeScheme::quantified(
+            signature.type_parameter_ids.clone(),
+            function,
+        ));
+        let Type::Function {
+            parameters,
+            return_type,
+        } = instantiated
+        else {
+            return signature.clone();
+        };
+        FunctionSignature::new(
+            signature.name.clone(),
+            signature
+                .parameters
+                .iter()
+                .cloned()
+                .zip(parameters)
+                .map(|(parameter, ty)| FunctionParameterSignature { ty, ..parameter })
+                .collect::<Vec<_>>(),
+            *return_type,
+            signature.span,
+        )
+        .with_type_parameters(signature.type_parameters.clone())
     }
 
     /// 使用同一参数匹配器检查顶层函数和去掉隐式接收者后的表方法。
@@ -421,6 +532,12 @@ impl<'source> TypeChecker<'source> {
                             } else {
                                 parameter.ty.clone()
                             };
+                            self.check_generic_set_hashability(
+                                signature,
+                                &expected,
+                                &actual,
+                                argument.span,
+                            );
                             self.unify_or_report(
                                 &expected,
                                 &actual,
@@ -455,6 +572,12 @@ impl<'source> TypeChecker<'source> {
                         } else if !used.insert(index) {
                             self.call_error(argument.span, "函数参数被重复传入");
                         } else {
+                            self.check_generic_set_hashability(
+                                signature,
+                                &parameter.ty,
+                                &actual,
+                                argument.span,
+                            );
                             self.unify_or_report(
                                 &parameter.ty,
                                 &actual,
@@ -511,6 +634,41 @@ impl<'source> TypeChecker<'source> {
         self.context.apply(&signature.return_type)
     }
 
+    /// 在泛型集合调用点检查已知的不可哈希元素类型。
+    fn check_generic_set_hashability(
+        &mut self,
+        signature: &FunctionSignature,
+        expected: &Type,
+        actual: &Type,
+        span: SourceSpan,
+    ) {
+        if signature.type_parameters.is_empty() || !matches!(expected, Type::Set(_)) {
+            return;
+        }
+        let Type::Set(expected_set) = expected else {
+            return;
+        };
+        if !expected_set
+            .member_types()
+            .any(|member| !member.free_vars().is_empty())
+        {
+            return;
+        }
+        let Type::Set(set) = actual else {
+            return;
+        };
+        for member in set.member_types() {
+            if crate::set_types::hashability(member) == crate::set_types::Hashability::Unhashable {
+                self.type_error(
+                    SET_GENERIC_UNHASHABLE_CODE,
+                    "x03.type.generic_set_unhashable",
+                    span,
+                    format!("泛型集合元素类型 {} 不可哈希", member),
+                );
+            }
+        }
+    }
+
     /// 统一两个类型并把失败映射为函数阶段诊断。
     pub(super) fn unify_or_report(
         &mut self,
@@ -528,22 +686,31 @@ impl<'source> TypeChecker<'source> {
             return;
         }
         if let Err(error) = self.context.unify(expected, actual) {
-            self.type_error_with_params(
-                FUNCTION_CALL_CODE,
-                message_id,
-                span,
-                error.to_string(),
-                [
-                    (
-                        "expected".to_owned(),
-                        DiagnosticParam::Text(expected.to_string()),
-                    ),
-                    (
-                        "actual".to_owned(),
-                        DiagnosticParam::Text(actual.to_string()),
-                    ),
-                ],
-            );
+            if matches!(error, crate::unify::UnifyError::RigidTypeParameter { .. }) {
+                self.type_error(
+                    RIGID_TYPE_PARAMETER_CODE,
+                    "x04.type.rigid_type_parameter",
+                    span,
+                    error.to_string(),
+                );
+            } else {
+                self.type_error_with_params(
+                    FUNCTION_CALL_CODE,
+                    message_id,
+                    span,
+                    error.to_string(),
+                    [
+                        (
+                            "expected".to_owned(),
+                            DiagnosticParam::Text(expected.to_string()),
+                        ),
+                        (
+                            "actual".to_owned(),
+                            DiagnosticParam::Text(actual.to_string()),
+                        ),
+                    ],
+                );
+            }
         }
     }
 
@@ -559,38 +726,66 @@ impl<'source> TypeChecker<'source> {
 }
 
 /// 将函数注解转换为类型层标量/空值类型。
-fn annotation_type(annotation: FunctionTypeAnnotation) -> Type {
+fn annotation_type(
+    annotation: &FunctionTypeAnnotation,
+    generic_types: &BTreeMap<String, Type>,
+) -> Type {
     match annotation {
-        FunctionTypeAnnotation::Scalar(scalar) => Type::scalar(scalar),
+        FunctionTypeAnnotation::Scalar(scalar) => Type::scalar(*scalar),
         FunctionTypeAnnotation::None => Type::None,
-        FunctionTypeAnnotation::Resource(resource) => Type::Resource(resource),
+        FunctionTypeAnnotation::Resource(resource) => Type::Resource(*resource),
+        FunctionTypeAnnotation::Set(annotation) => Type::Set(SetType::heterogeneous(
+            annotation
+                .members
+                .iter()
+                .map(|term| match term {
+                    TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
+                    TypeTerm::None => Type::None,
+                    TypeTerm::Resource(resource) => Type::Resource(*resource),
+                    TypeTerm::TypeParameter(name) => {
+                        generic_types.get(name).cloned().unwrap_or(Type::Dynamic)
+                    }
+                })
+                .collect::<Vec<_>>(),
+        )),
+        FunctionTypeAnnotation::TypeParameter(name) => {
+            generic_types.get(name).cloned().unwrap_or(Type::Dynamic)
+        }
     }
 }
 
 /// 判断类型中是否仍有未统一变量。
-fn contains_unresolved_variable(ty: &Type) -> bool {
+fn contains_unresolved_variable(ty: &Type, quantified: &BTreeSet<crate::types::TypeVarId>) -> bool {
     match ty {
-        Type::Variable(_) => true,
+        Type::Variable(variable) => !quantified.contains(variable),
         Type::Function {
             parameters,
             return_type,
         } => {
-            parameters.iter().any(contains_unresolved_variable)
-                || contains_unresolved_variable(return_type)
+            parameters
+                .iter()
+                .any(|parameter| contains_unresolved_variable(parameter, quantified))
+                || contains_unresolved_variable(return_type, quantified)
         }
-        Type::Tuple(items) => items.iter().any(contains_unresolved_variable),
+        Type::Tuple(items) => items
+            .iter()
+            .any(|item| contains_unresolved_variable(item, quantified)),
         Type::Array(array) => match array {
-            ArrayType::Homogeneous { element, .. } => contains_unresolved_variable(element),
-            ArrayType::Heterogeneous { elements } => {
-                elements.iter().any(contains_unresolved_variable)
+            ArrayType::Homogeneous { element, .. } => {
+                contains_unresolved_variable(element, quantified)
             }
+            ArrayType::Heterogeneous { elements } => elements
+                .iter()
+                .any(|element| contains_unresolved_variable(element, quantified)),
             ArrayType::Unknown => false,
         },
         Type::DictTable(dictionary) | Type::DictColumn(dictionary) => dictionary
             .entries
             .iter()
-            .any(|entry| contains_unresolved_variable(&entry.value)),
-        Type::Set(set) => set.member_types().any(contains_unresolved_variable),
+            .any(|entry| contains_unresolved_variable(&entry.value, quantified)),
+        Type::Set(set) => set
+            .member_types()
+            .any(|member| contains_unresolved_variable(member, quantified)),
         Type::Table(_) | Type::Resource(_) | Type::Scalar(_) | Type::None | Type::Dynamic => false,
     }
 }

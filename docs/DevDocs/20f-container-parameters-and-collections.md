@@ -8,7 +8,8 @@
 > **一句话概括本批**：**让公共函数能接受「元素类型由调用方决定」的集合，
 > 并用官方 `stdlib/set.xiao` 证明这条能力真的能写库。**
 >
-> 状态：**规划完成、待实施（2026-10-19，四道裁定均甲）**。本批未改代码。
+> 状态：**实现完成，本地门禁组成项复验通过（2026-10-19，四道裁定均甲）**。语法、量化
+> 签名与调用点实例化、刚性统一、生成期擦除、官方 `set` 模块、VM 与归档回归已落地。
 
 ## 一、Agent 交接上下文
 
@@ -231,7 +232,7 @@ def is_empty<T>(set<T> values) -> bool
 **最小验证命令**（实施时逐条落成）：
 
 ```bash
-cargo test -p xiao-syntax --test p2_declarations
+cargo test -p xiao-syntax --test p2_type_parameters
 cargo test -p xiao-types --test f04_functions
 cargo test -p xiao-driver --test 20f_container_parameters
 cargo test -p xiao-driver --test 18b_build_archive
@@ -360,6 +361,29 @@ tests/fixtures/20f/                                        多实例/负例夹�
 - 集合运算符的库包装：只有能写出新的语义决定时才立项；
 - 非字面量下标、子串/切分：保持 [03](03-collections.md) 与
   [20C-第二批](20c-second-batch-probe.md) §3.3 的登记。
+
+## 十、实施与验证记录（2026-10-19）
+
+- **语法/AST**：`Function` 增加有序类型参数，函数头支持 `def f<T, U>(...)`；
+  `FunctionTypeAnnotation` 支持裸类型参数与 `set<T | U>`，集合类型项支持类型参数。
+  空列表、重复名、标量关键字名和非顶层类型参数使用 `X04-PARSE-007`。
+- **类型与签名**：`FunctionSignature` 同时保存类型参数名称和类型变量身份；函数绑定写入
+  `TypeScheme::quantified`，每个本地或跨模块调用点通过独立实例变量统一实参。集合异构
+  实参会退化为动态边界，函数体内刚性变量与具体类型合并报 `X04-TYPE-008`，集合元素
+  的不可哈希实例报 `X03-TYPE-023`。`IrType::Variable` 在生成期继续擦除为动态值，
+  不做单态化，也不改 `.xiaoc` 与 Runtime ABI。
+- **官方模块**：新增 `stdlib/set.xiao` 与 `size<T>`、`is_empty<T>`，通过纯 Xiao
+  `for` 计数，不新增 intrinsic；导入和别名由标准库签名提取路径接入。
+- **归档**：真实 `build_archive` 用例确认 `stdlib_modules` 包含 `stdlib.set`，归档不携带
+  官方对象；宿主标准库版本与缺模块启动检查继续复用 20E。
+- **定向验证**：`p2_type_parameters` 4 项通过；`20f_container_parameters` 7 项通过，
+  覆盖解析、多实例 VM、官方模块别名、空集合、标量泛型、递归刚性诊断和归档索引。
+- **总门禁**：workspace Rust 测试、严格 Clippy、格式检查、Bun 298 项测试、文档/UseDocs
+  检查、覆盖率门禁、TypeScript 类型检查和 benchmark 自测均通过；原生相关用例按既有
+  工具链环境门控保持忽略。
+- **文档登记**：同步 `00-decisions`、`02-type-system`、`03-collections`、
+  `04-functions-and-control`、20 路线稿、UseDocs、registry；`add/remove`、泛型表、
+  约束语法和非字面量下标保持后续缺口。
 
 ## 相关页面
 

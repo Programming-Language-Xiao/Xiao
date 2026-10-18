@@ -1230,13 +1230,22 @@ impl<'source> EscapeAnalyzer<'source> {
                 .as_ref()
                 .and_then(|signatures| signatures.get(index).map(|parameter| parameter.ty.clone()))
                 .or_else(|| {
-                    parameter.annotation.map(|annotation| match annotation {
-                        xiao_syntax::FunctionTypeAnnotation::Scalar(scalar) => Type::scalar(scalar),
-                        xiao_syntax::FunctionTypeAnnotation::None => Type::None,
-                        xiao_syntax::FunctionTypeAnnotation::Resource(resource) => {
-                            Type::Resource(resource)
-                        }
-                    })
+                    parameter
+                        .annotation
+                        .as_ref()
+                        .map(|annotation| match annotation {
+                            xiao_syntax::FunctionTypeAnnotation::Scalar(scalar) => {
+                                Type::scalar(*scalar)
+                            }
+                            xiao_syntax::FunctionTypeAnnotation::None => Type::None,
+                            xiao_syntax::FunctionTypeAnnotation::Resource(resource) => {
+                                Type::Resource(*resource)
+                            }
+                            xiao_syntax::FunctionTypeAnnotation::Set(_)
+                            | xiao_syntax::FunctionTypeAnnotation::TypeParameter(_) => {
+                                xiao_types::Type::Dynamic
+                            }
+                        })
                 });
             let _ = self.declare_binding(
                 parameter.name,
@@ -1802,6 +1811,7 @@ impl<'source> EscapeAnalyzer<'source> {
                         TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
                         TypeTerm::None => Type::None,
                         TypeTerm::Resource(resource) => Type::Resource(*resource),
+                        TypeTerm::TypeParameter(_) => Type::Dynamic,
                     })
                     .collect::<Vec<_>>();
                 Some(Type::Set(SetType::heterogeneous(members)))

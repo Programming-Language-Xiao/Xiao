@@ -419,6 +419,17 @@ impl<'source> Parser<'source> {
             return None;
         }
         let name = self.parse_name();
+        let mut type_parameters = self.parse_function_type_parameters();
+        let declared_type_parameters = type_parameters.clone();
+        if !type_parameters.is_empty() && self.block_context_depth > 0 {
+            self.push_error(
+                INVALID_TYPE_PARAMETER_CODE,
+                "x04.parse.non_top_level_type_parameters",
+                name.span,
+                "显式类型参数只允许出现在顶层函数".to_owned(),
+            );
+            type_parameters.clear();
+        }
         if !self.at(TokenKind::LeftParen) {
             self.push_error(
                 INVALID_FUNCTION_CODE,
@@ -445,6 +456,12 @@ impl<'source> Parser<'source> {
                 );
             }
         }
+        self.validate_function_type_parameter_references(
+            &declared_type_parameters,
+            &parameters,
+            return_type.as_ref(),
+            name.span,
+        );
         if !is_statement_boundary(self.current().kind()) {
             self.push_error(
                 INVALID_FUNCTION_CODE,
@@ -456,6 +473,7 @@ impl<'source> Parser<'source> {
             return None;
         }
         let header_end = return_type
+            .as_ref()
             .map(|_| self.previous_span_end())
             .or_else(|| close.map(|token| token.span().end()))
             .unwrap_or(name.span.end());
@@ -464,6 +482,7 @@ impl<'source> Parser<'source> {
         let span = self.source_span(keyword.span().start(), body_end.max(header_end));
         Some(Statement::Function {
             name,
+            type_parameters,
             parameters,
             return_type,
             body,
@@ -617,9 +636,27 @@ impl<'source> Parser<'source> {
 
     /// 解析可选的参数声明式类型前缀。
     fn parse_optional_parameter_annotation(&mut self) -> Option<FunctionTypeAnnotation> {
+        if self.starts_set_type() {
+            return self
+                .parse_set_type_annotation(true)
+                .map(FunctionTypeAnnotation::Set);
+        }
         if self.current().kind() == TokenKind::None {
             self.bump();
             return Some(FunctionTypeAnnotation::None);
+        }
+        if matches!(
+            self.current().kind(),
+            TokenKind::Identifier | TokenKind::BacktickIdentifier
+        ) && self.lookahead_kind(1) != Some(TokenKind::LeftParen)
+            && self.lookahead_kind(1) != Some(TokenKind::Comma)
+            && self.lookahead_kind(1) != Some(TokenKind::RightParen)
+            && self.lookahead_kind(1) != Some(TokenKind::Equal)
+        {
+            let name = self.parse_name();
+            return Some(FunctionTypeAnnotation::TypeParameter(
+                name.unquoted_text(self.source).to_owned(),
+            ));
         }
         if !is_type_keyword_token(self.current().kind())
             || self.lookahead_kind(1) == Some(TokenKind::LeftParen)
@@ -638,6 +675,120 @@ impl<'source> Parser<'source> {
     /// 解析函数返回类型注解。
     fn parse_function_type_annotation(&mut self) -> Option<FunctionTypeAnnotation> {
         self.parse_optional_parameter_annotation()
+    }
+
+    /// 解析 `def name<T, U>(...)` 的显式类型参数列表。
+    fn parse_function_type_parameters(&mut self) -> Vec<Name> {
+        if !self.at(TokenKind::Less) {
+            return Vec::new();
+        }
+        let open = self.bump();
+        let mut parameters = Vec::new();
+        let mut seen = BTreeSet::new();
+        if self.at(TokenKind::Greater) {
+            self.push_error(
+                INVALID_TYPE_PARAMETER_CODE,
+                "x04.parse.empty_type_parameters",
+                open.span(),
+                "类型参数列表不能为空".to_owned(),
+            );
+        }
+        while !self.at(TokenKind::Greater)
+            && !self.at(TokenKind::Eof)
+            && !self.at(TokenKind::Newline)
+        {
+            if self.at(TokenKind::Comma) {
+                self.bump();
+                continue;
+            }
+            if !matches!(
+                self.current().kind(),
+                TokenKind::Identifier | TokenKind::BacktickIdentifier
+            ) {
+                self.push_error(
+                    INVALID_TYPE_PARAMETER_CODE,
+                    "x04.parse.invalid_type_parameter",
+                    self.current().span(),
+                    "类型参数必须是名称".to_owned(),
+                );
+                self.bump();
+            } else {
+                let name = self.parse_name();
+                let key = name.unquoted_text(self.source).to_owned();
+                if !seen.insert(key) {
+                    self.push_error(
+                        INVALID_TYPE_PARAMETER_CODE,
+                        "x04.parse.duplicate_type_parameter",
+                        name.span,
+                        "类型参数名称不能重复".to_owned(),
+                    );
+                } else if is_reserved_type_parameter_name(name.unquoted_text(self.source)) {
+                    self.push_error(
+                        INVALID_TYPE_PARAMETER_CODE,
+                        "x04.parse.keyword_type_parameter",
+                        name.span,
+                        "类型参数不能使用已有类型关键字".to_owned(),
+                    );
+                } else {
+                    parameters.push(name);
+                }
+            }
+            if self.at(TokenKind::Comma) {
+                self.bump();
+            }
+        }
+        let _ = self.expect_delimiter(TokenKind::Greater, open.span());
+        parameters
+    }
+
+    /// 拒绝函数头中引用但未声明的类型参数。
+    fn validate_function_type_parameter_references(
+        &mut self,
+        type_parameters: &[Name],
+        parameters: &[FunctionParameter],
+        return_type: Option<&FunctionTypeAnnotation>,
+        fallback_span: SourceSpan,
+    ) {
+        let known = type_parameters
+            .iter()
+            .map(|name| name.unquoted_text(self.source).to_owned())
+            .collect::<BTreeSet<_>>();
+        let mut unknown = BTreeSet::new();
+        let mut inspect = |annotation: &FunctionTypeAnnotation| match annotation {
+            FunctionTypeAnnotation::TypeParameter(name) => {
+                if !known.contains(name) {
+                    unknown.insert(name.clone());
+                }
+            }
+            FunctionTypeAnnotation::Set(annotation) => {
+                for term in &annotation.members {
+                    if let crate::ast::TypeTerm::TypeParameter(name) = term
+                        && !known.contains(name)
+                    {
+                        unknown.insert(name.clone());
+                    }
+                }
+            }
+            FunctionTypeAnnotation::Scalar(_)
+            | FunctionTypeAnnotation::None
+            | FunctionTypeAnnotation::Resource(_) => {}
+        };
+        for parameter in parameters {
+            if let Some(annotation) = parameter.annotation.as_ref() {
+                inspect(annotation);
+            }
+        }
+        if let Some(annotation) = return_type {
+            inspect(annotation);
+        }
+        for name in unknown {
+            self.push_error(
+                INVALID_TYPE_PARAMETER_CODE,
+                "x04.parse.unknown_type_parameter",
+                fallback_span,
+                format!("类型参数 {name} 未在函数头声明"),
+            );
+        }
     }
 
     /// 解析一个函数参数名称。
@@ -1112,4 +1263,11 @@ impl<'source> Parser<'source> {
             })
         }
     }
+}
+
+/// 判断显式类型参数是否占用了已有的类型关键字。
+fn is_reserved_type_parameter_name(name: &str) -> bool {
+    ScalarType::from_name(name).is_some()
+        || ResourceKind::from_name(name).is_some()
+        || matches!(name, "none" | "set")
 }

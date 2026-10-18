@@ -340,6 +340,18 @@ impl ResourceKind {
             _ => return None,
         })
     }
+
+    /// 按源码拼写还原资源类型；未知拼写返回 `None`。
+    #[must_use]
+    pub fn from_name(name: &str) -> Option<Self> {
+        Some(match name {
+            "file" => Self::File,
+            "directory" => Self::Directory,
+            "process" => Self::Process,
+            "resource" => Self::Resource,
+            _ => return None,
+        })
+    }
 }
 
 impl ScalarType {
@@ -398,7 +410,7 @@ impl ScalarType {
 ///
 /// 标量和 `none` 可用于集合；20D 的资源项先保留语法身份，再由类型层
 /// 报不可哈希。数组、字典、函数等递归类型仍留给后续通用类型语法。
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum TypeTerm {
     /// 一个标量类型项。
     Scalar(ScalarType),
@@ -406,17 +418,26 @@ pub enum TypeTerm {
     None,
     /// 一个资源类型项。
     Resource(ResourceKind),
+    /// 显式函数类型参数，例如 `set<T>` 中的 `T`。
+    TypeParameter(String),
 }
 
 impl TypeTerm {
     /// 返回类型项的稳定 Xiao 拼写。
     #[must_use]
-    pub const fn as_str(self) -> &'static str {
+    pub fn as_string(&self) -> String {
         match self {
-            Self::Scalar(scalar) => scalar.as_str(),
-            Self::None => "none",
-            Self::Resource(resource) => resource.as_str(),
+            Self::Scalar(scalar) => scalar.as_str().to_owned(),
+            Self::None => "none".to_owned(),
+            Self::Resource(resource) => resource.as_str().to_owned(),
+            Self::TypeParameter(name) => name.clone(),
         }
+    }
+
+    /// 返回类型项的稳定文本；兼容旧的 `as_str` 调用方。
+    #[must_use]
+    pub fn as_str(&self) -> String {
+        self.as_string()
     }
 }
 
@@ -519,7 +540,7 @@ impl FunctionParameterKind {
 /// 04 阶段先复用标量和 `none` 类型；容器/函数类型注解由后续通用类型语法
 /// 阶段扩展。该枚举独立于变量声明的 [`DeclaredType`]，避免把参数规则耦合
 /// 到容器路径约束。
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum FunctionTypeAnnotation {
     /// 一个标量类型。
     Scalar(ScalarType),
@@ -527,17 +548,37 @@ pub enum FunctionTypeAnnotation {
     None,
     /// 一个资源类型。
     Resource(ResourceKind),
+    /// `set<T>` 或 `set<T | U>` 集合类型。
+    Set(SetTypeAnnotation),
+    /// 裸类型参数，例如参数注解中的 `T`。
+    TypeParameter(String),
 }
 
 impl FunctionTypeAnnotation {
     /// 返回注解的稳定 Xiao 拼写。
     #[must_use]
-    pub const fn as_str(self) -> &'static str {
+    pub fn as_string(&self) -> String {
         match self {
-            Self::Scalar(scalar) => scalar.as_str(),
-            Self::None => "none",
-            Self::Resource(resource) => resource.as_str(),
+            Self::Scalar(scalar) => scalar.as_str().to_owned(),
+            Self::None => "none".to_owned(),
+            Self::Resource(resource) => resource.as_str().to_owned(),
+            Self::Set(annotation) => {
+                let members = annotation
+                    .members
+                    .iter()
+                    .map(TypeTerm::as_string)
+                    .collect::<Vec<_>>()
+                    .join(" | ");
+                format!("set<{members}>")
+            }
+            Self::TypeParameter(name) => name.clone(),
         }
+    }
+
+    /// 返回函数类型注解的稳定文本；兼容旧的 `as_str` 调用方。
+    #[must_use]
+    pub fn as_str(&self) -> String {
+        self.as_string()
     }
 }
 
@@ -755,6 +796,8 @@ pub enum Statement {
     Function {
         /// 函数名称。
         name: Name,
+        /// 显式类型参数，按声明顺序保存。
+        type_parameters: Vec<Name>,
         /// 参数列表。
         parameters: Vec<FunctionParameter>,
         /// 可选返回类型注解。

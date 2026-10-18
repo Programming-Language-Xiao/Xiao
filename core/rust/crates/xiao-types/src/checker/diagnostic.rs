@@ -80,12 +80,12 @@ impl<'source> TypeChecker<'source> {
 
     /// 将 HM 统一失败映射为带源码区间的诊断。
     pub(super) fn unification_error(&mut self, span: SourceSpan, error: UnifyError) {
-        self.type_error(
-            UNIFICATION_ERROR_CODE,
-            "x02.type.unification_error",
-            span,
-            error.to_string(),
-        );
+        let (code, message_id) = if matches!(&error, UnifyError::RigidTypeParameter { .. }) {
+            (RIGID_TYPE_PARAMETER_CODE, "x04.type.rigid_type_parameter")
+        } else {
+            (UNIFICATION_ERROR_CODE, "x02.type.unification_error")
+        };
+        self.type_error(code, message_id, span, error.to_string());
     }
 
     /// 追加一条错误级别的结构化类型诊断。

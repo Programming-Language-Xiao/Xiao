@@ -82,6 +82,7 @@ impl TypeChecker<'_> {
         span: SourceSpan,
     ) -> Option<Type> {
         let signature = self.imported_function_signature(callee)?;
+        let signature = self.instantiate_function_signature(&signature);
         self.check_expression(callee);
         Some(self.check_function_arguments(&signature, arguments, span))
     }

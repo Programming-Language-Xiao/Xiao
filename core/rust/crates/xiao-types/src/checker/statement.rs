@@ -69,12 +69,20 @@ impl<'source> TypeChecker<'source> {
             Statement::Import { import, .. } => self.check_import(import),
             Statement::Function {
                 name,
+                type_parameters,
                 parameters,
                 return_type,
                 body,
                 span,
                 ..
-            } => self.check_function_statement(*name, parameters, *return_type, body, *span),
+            } => self.check_function_statement(
+                *name,
+                parameters,
+                return_type.clone(),
+                body,
+                *span,
+                type_parameters,
+            ),
             Statement::Table {
                 name,
                 kind,

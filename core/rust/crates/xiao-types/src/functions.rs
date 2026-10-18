@@ -7,7 +7,7 @@
 use xiao_source::SourceSpan;
 use xiao_syntax::FunctionParameterKind;
 
-use crate::types::Type;
+use crate::types::{Type, TypeVarId};
 
 /// 一个已经登记的函数参数静态签名。
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -31,6 +31,13 @@ pub struct FunctionSignature {
     pub parameters: Vec<FunctionParameterSignature>,
     /// 推断或显式声明的返回类型。
     pub return_type: Type,
+    /// 显式类型参数名称；调用点为每次使用创建独立实例。
+    pub type_parameters: Vec<String>,
+    /// 显式类型参数在签名类型中的变量身份；与 `type_parameters` 一一对应。
+    ///
+    /// 本字段不参与源码展示，跨模块接口也只依赖名称；它让调用点可以把
+    /// `set<T>` 中的占位变量安全替换成当前调用自己的新变量。
+    pub type_parameter_ids: Vec<TypeVarId>,
     /// 函数定义源码区间。
     pub span: SourceSpan,
 }
@@ -48,8 +55,24 @@ impl FunctionSignature {
             name: name.into(),
             parameters: parameters.into(),
             return_type,
+            type_parameters: Vec::new(),
+            type_parameter_ids: Vec::new(),
             span,
         }
+    }
+
+    /// 附加函数头声明的显式类型参数名称。
+    #[must_use]
+    pub fn with_type_parameters(mut self, parameters: impl Into<Vec<String>>) -> Self {
+        self.type_parameters = parameters.into();
+        self
+    }
+
+    /// 附加签名中显式类型参数对应的变量身份。
+    #[must_use]
+    pub fn with_type_parameter_ids(mut self, ids: impl Into<Vec<TypeVarId>>) -> Self {
+        self.type_parameter_ids = ids.into();
+        self
     }
 
     /// 返回是否声明了可变位置参数。

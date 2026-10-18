@@ -1,0 +1,11 @@
+# Xiao 官方 set 模块（20F 通用容器参数）。
+#
+# 这两个入口只使用迭代器和比较，不新增 intrinsic；元素类型由调用点实例化。
+def size<T>(set<T> values) -> int
+    count = 0
+    for value in values
+        count = count + 1
+    return count
+
+def is_empty<T>(set<T> values) -> bool
+    return size(values) == 0

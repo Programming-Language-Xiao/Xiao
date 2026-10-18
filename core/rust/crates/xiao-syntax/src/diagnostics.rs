@@ -108,6 +108,9 @@ pub const INVALID_CONTROL_FLOW_CODE: &str = "X04-PARSE-004";
 /// 函数返回类型注解无法解析时使用的稳定诊断编号。
 pub const INVALID_FUNCTION_TYPE_CODE: &str = "X04-PARSE-005";
 
+/// 函数显式类型参数列表结构非法时使用的稳定诊断编号。
+pub const INVALID_TYPE_PARAMETER_CODE: &str = "X04-PARSE-007";
+
 /// `[main]` 入口头部结构非法时使用的稳定诊断编号。
 pub const INVALID_ENTRY_CODE: &str = "X04-PARSE-006";
 

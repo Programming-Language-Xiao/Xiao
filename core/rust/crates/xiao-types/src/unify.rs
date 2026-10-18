@@ -35,6 +35,13 @@ pub enum UnifyError {
         /// 右侧数量。
         right: usize,
     },
+    /// 显式类型参数在函数体内被尝试绑定到另一种类型。
+    RigidTypeParameter {
+        /// 被保持刚性的类型变量。
+        variable: TypeVarId,
+        /// 尝试统一到的类型。
+        ty: Type,
+    },
 }
 
 impl Display for UnifyError {
@@ -52,6 +59,13 @@ impl Display for UnifyError {
             Self::ArityMismatch { left, right } => {
                 write!(formatter, "type arity mismatch: {left} versus {right}")
             }
+            Self::RigidTypeParameter { variable, ty } => {
+                write!(
+                    formatter,
+                    "rigid type variable 't{} cannot unify with {ty}",
+                    variable.get()
+                )
+            }
         }
     }
 }
@@ -62,6 +76,7 @@ impl std::error::Error for UnifyError {}
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct Substitution {
     entries: BTreeMap<TypeVarId, Type>,
+    rigid: BTreeSet<TypeVarId>,
 }
 
 impl Substitution {
@@ -92,6 +107,30 @@ impl Substitution {
     /// 插入一条已经通过 occurs-check 的绑定。
     pub fn insert(&mut self, variable: TypeVarId, ty: Type) {
         self.entries.insert(variable, ty);
+    }
+
+    /// 标记一组函数体内不能被具体化的类型变量。
+    pub fn push_rigid<I>(&mut self, variables: I)
+    where
+        I: IntoIterator<Item = TypeVarId>,
+    {
+        self.rigid.extend(variables);
+    }
+
+    /// 移除一组函数体刚性类型变量。
+    pub fn pop_rigid<I>(&mut self, variables: I)
+    where
+        I: IntoIterator<Item = TypeVarId>,
+    {
+        for variable in variables {
+            self.rigid.remove(&variable);
+        }
+    }
+
+    /// 判断变量是否处于刚性上下文。
+    #[must_use]
+    pub fn is_rigid(&self, variable: TypeVarId) -> bool {
+        self.rigid.contains(&variable)
     }
 
     /// 对类型递归应用替换，并防止恶意环导致无限递归。
@@ -159,6 +198,32 @@ impl Substitution {
         }
         match (&left, &right) {
             (Type::Dynamic, other) | (other, Type::Dynamic) => Ok(other.clone()),
+            (Type::Variable(left), Type::Variable(right))
+                if self.rigid.contains(left) && self.rigid.contains(right) =>
+            {
+                Err(UnifyError::RigidTypeParameter {
+                    variable: *left,
+                    ty: Type::Variable(*right),
+                })
+            }
+            (Type::Variable(left), Type::Variable(right)) if self.rigid.contains(left) => {
+                self.bind(*right, Type::Variable(*left))
+            }
+            (Type::Variable(left), Type::Variable(right)) if self.rigid.contains(right) => {
+                self.bind(*left, Type::Variable(*right))
+            }
+            (Type::Variable(variable), candidate) if self.rigid.contains(variable) => {
+                Err(UnifyError::RigidTypeParameter {
+                    variable: *variable,
+                    ty: candidate.clone(),
+                })
+            }
+            (candidate, Type::Variable(variable)) if self.rigid.contains(variable) => {
+                Err(UnifyError::RigidTypeParameter {
+                    variable: *variable,
+                    ty: candidate.clone(),
+                })
+            }
             (Type::Variable(variable), candidate) => self.bind(*variable, candidate.clone()),
             (candidate, Type::Variable(variable)) => self.bind(*variable, candidate.clone()),
             (
@@ -290,6 +355,22 @@ impl TypeContext {
         self.substitution.unify(left, right)
     }
 
+    /// 进入函数体的刚性类型参数上下文。
+    pub fn push_rigid<I>(&mut self, variables: I)
+    where
+        I: IntoIterator<Item = TypeVarId>,
+    {
+        self.substitution.push_rigid(variables);
+    }
+
+    /// 离开函数体的刚性类型参数上下文。
+    pub fn pop_rigid<I>(&mut self, variables: I)
+    where
+        I: IntoIterator<Item = TypeVarId>,
+    {
+        self.substitution.pop_rigid(variables);
+    }
+
     /// 将一个尚未解析的类型变量明确收敛为 `dynamic`。
     ///
     /// 普通 `unify` 把 `dynamic` 当作通配符，不会反向绑定变量；控制流中
@@ -297,6 +378,9 @@ impl TypeContext {
     /// 把这个合法的动态入口误报为无法推断。
     pub(crate) fn bind_dynamic(&mut self, ty: &Type) {
         if let Type::Variable(variable) = self.apply(ty) {
+            if self.substitution.is_rigid(variable) {
+                return;
+            }
             self.substitution.insert(variable, Type::Dynamic);
         }
     }
@@ -589,6 +673,7 @@ fn unify_sets(
     if right.is_unknown() {
         return Ok(Type::Set(left.clone()));
     }
+    infer_generic_set_elements(context, left, right)?;
     let mut members = left.to_member_types();
     members.extend(right.member_types().cloned());
     let allows_dynamic = left.allows_dynamic() || right.allows_dynamic();
@@ -603,6 +688,38 @@ fn unify_sets(
         members,
         allows_dynamic,
     )))
+}
+
+/// 从调用点集合的已知成员为 `set<T>` 中的变量建立实例约束。
+///
+/// 集合本身允许异构成员；单一变量面对多个不同成员时只能退化为动态边界，
+/// 这样既保留运行时哈希检查，也不会把 `T` 错误地钉死到第一个成员。
+fn infer_generic_set_elements(
+    context: &mut Substitution,
+    left: &SetType,
+    right: &SetType,
+) -> Result<(), UnifyError> {
+    let right_members = right.to_member_types();
+    if right_members.is_empty() {
+        return Ok(());
+    }
+    let left_members = left.to_member_types();
+    for member in left_members {
+        let Type::Variable(variable) = member else {
+            continue;
+        };
+        if right_members.windows(2).all(|pair| pair[0] == pair[1]) {
+            context.unify(&Type::Variable(variable), &right_members[0])?;
+        } else if !context.rigid.contains(&variable) {
+            context.bind(variable, Type::Dynamic)?;
+        } else {
+            return Err(UnifyError::RigidTypeParameter {
+                variable,
+                ty: Type::Set(right.clone()),
+            });
+        }
+    }
+    Ok(())
 }
 
 /// 对量化方案中的集合元素类型递归替换。
@@ -663,6 +780,21 @@ mod tests {
         let first = context.instantiate(&scheme);
         let second = context.instantiate(&scheme);
         assert_ne!(first, second);
+    }
+
+    #[test]
+    /// 刚性变量拒绝具体化，但允许普通调用点变量指向当前刚性变量。
+    fn rigid_variables_reject_concrete_bindings() {
+        let mut context = TypeContext::new();
+        let rigid = context.fresh_variable();
+        let fresh = context.fresh_type();
+        context.push_rigid([rigid]);
+        assert!(matches!(
+            context.unify(&Type::variable(rigid), &Type::scalar(ScalarType::Int)),
+            Err(UnifyError::RigidTypeParameter { .. })
+        ));
+        assert!(context.unify(&fresh, &Type::variable(rigid)).is_ok());
+        context.pop_rigid([rigid]);
     }
 
     #[test]
