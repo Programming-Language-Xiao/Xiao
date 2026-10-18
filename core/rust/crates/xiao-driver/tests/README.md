@@ -33,3 +33,7 @@ Windows 原生准备方式见 `docs/DevDocs/10d-environment-gated-test-spec.md` 
 `20e_archive_wiring.rs` 通过真实前端产物和 `XarBuilder` 验证标准库版本、官方模块要求、
 能力并集和请求掩码。负例断言在模块加载、函数进入或输出之前拒绝；协议与中英消息目录
 使用同一错误身份，归档只包含应用对象。畸形索引的物理 ZIP 负例位于 `xiao-xar/src/tests.rs`。
+
+`18b_build_archive.rs` 覆盖 O0–O3 单文件、唯一 `[main]` 项目入口、本地多模块及显式资源、
+函数调用闭包的能力精度、调试对象、第三方拒绝、损坏缓存命中和锁文件只读边界。
+实际 `xiao-core` 进程在隔离 `XIAO_HOME` 中验证协议构建/运行、官方加载及 REPL 缓存隔离。

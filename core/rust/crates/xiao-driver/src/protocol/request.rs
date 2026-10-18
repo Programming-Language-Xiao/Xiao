@@ -246,6 +246,24 @@ pub struct ToolchainVersionsSpec {
 #[serde(tag = "type", rename_all = "snake_case")]
 #[allow(clippy::large_enum_variant)]
 pub enum ProtocolRequest {
+    /// 通过统一前端构建完整验证的归档；无需 LLVM 工具链。
+    BuildArchive {
+        /// 请求编号。
+        request_id: String,
+        /// 协议版本。
+        protocol_version: u16,
+        /// 核心版本。
+        core_version: u32,
+        /// 有效语言。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        locale: Option<String>,
+        /// `.xiao` 或 `config.xiao` 输入。
+        path: String,
+        /// 缺省为输入同目录 `<stem>.xar`。
+        output: Option<String>,
+        /// 已归一化优化/调试参数。
+        optimization: OptimizationConfig,
+    },
     /// 首条消息必须用于版本协商。
     Hello {
         /// 客户端请求编号。

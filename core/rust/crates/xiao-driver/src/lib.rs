@@ -4,6 +4,10 @@
 //! 类型检查和生命周期分析，成功后交给 `xiao-ir` 验证，再由生产字节码和 VM 接口执行。
 //! 用户可见的 CLI 接线仍留给 11/X0。
 
+/// 已验证归档的构建及缓存编排。
+mod archive;
+/// 入口函数与模块的精确归档闭包。
+mod archive_closure;
 /// 统一前端请求、上下文、结果和编排器。
 mod frontend;
 /// 统一前端向 VM 提供按需模块编译的接线。
@@ -44,6 +48,11 @@ pub use run::{
     ExitCode, FrontendVmDriver, RunControl, run, run_request,
 };
 
+/// 归档构建请求、结果和稳定错误。
+pub use archive::{
+    ArchiveBuildError, ArchiveBuildRequest, ArchiveBuildResult, ArchiveModuleObservation,
+    build_archive,
+};
 /// 重导出前端到 LLVM 原生程序的结构化构建接口。
 pub use native::{FrontendNativeDriver, NativeBuildRequest, NativeBuildResult, NativeDriverError};
 /// 可注入的环境包映射及其具体文件模块。

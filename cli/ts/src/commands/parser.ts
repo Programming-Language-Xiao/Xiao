@@ -301,7 +301,7 @@ function parseRun(args: readonly string[], options: GlobalCliOptions): ParsedCom
   return { kind: "run", file: positional[0], optimizationLevel, optimizationExplicit, options };
 }
 
-/** 解析已经冻结的原生构建参数。 */
+/** 解析已经冻结的原生/归档构建参数。 */
 function parseBuild(args: readonly string[], options: GlobalCliOptions): ParsedCommand {
   let output: string | undefined;
   let llvmIrOutput: string | null = null;
@@ -312,6 +312,7 @@ function parseBuild(args: readonly string[], options: GlobalCliOptions): ParsedC
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index];
     if (argument === "-xar") {
+      if (xar) throw new CliArgumentError("-xar 不可重复");
       xar = true;
       continue;
     }
@@ -352,12 +353,13 @@ function parseBuild(args: readonly string[], options: GlobalCliOptions): ParsedC
   if (positional.length !== 1) throw new CliArgumentError("build 需要且只需要一个 .xiao 文件");
   const file = positional[0];
   if (!file.toLowerCase().endsWith(".xiao")) throw new CliArgumentError("build 的输入必须是 .xiao 文件");
+  if (xar && llvmIrOutput !== null) throw new CliArgumentError("build -xar 不支持 --emit-llvm");
   const stem = file.replaceAll("\\", "/").slice(file.replaceAll("\\", "/").lastIndexOf("/") + 1).replace(/\.xiao$/iu, "") || "main";
   const defaultName = process.platform === "win32" ? `${stem}.exe` : stem;
   return {
     kind: "build",
     file,
-    output: output ?? `build/${defaultName}`,
+    output: output ?? (xar ? file.replace(/\.xiao$/iu, ".xar") : `build/${defaultName}`),
     llvmIrOutput,
     xar,
     optimizationLevel,

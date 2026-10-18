@@ -59,7 +59,7 @@ class EnvironmentFakeCore extends EventEmitter {
     if (request.type === "hello") {
       this.stdout.write(Buffer.from(encodeFrame({
         type: "hello", request_id: request.request_id, accepted: true, protocol_version: 1,
-       core_version: 1, versions: {}, capabilities: ["run", "environment", "package"], error: null,
+       core_version: 1, versions: {}, capabilities: ["run", "environment", "package", "build_archive"], error: null,
       })));
     } else if (request.type === "environment") {
       const logicalName = typeof request.logical_name === "string" ? request.logical_name : "venv";
@@ -85,6 +85,12 @@ class EnvironmentFakeCore extends EventEmitter {
           created: request.operation === "sync", changed: true,
           activate: request.operation === "sync", lock_status: request.operation === "sync" ? "created" : null,
         },
+      })));
+    } else if (request.type === "build_archive") {
+      this.stdout.write(Buffer.from(encodeFrame({
+        type: "result", request_id: request.request_id, operation: "build_archive", exit_code: 0,
+        exit_name: "success", diagnostics: [], report: null, events: [], metrics: null, artifact: null,
+        value: { kind: "archive_build", value: JSON.stringify({ output: request.output, digest: "test-digest", verified: true, modules: [] }) },
       })));
     } else if (request.type === "run") {
       this.stdout.write(Buffer.from(encodeFrame({
@@ -123,6 +129,33 @@ function environmentContext() {
 }
 
 describe("命令取消接线", () => {
+  test("build -xar 复用输入路由，只发送归档请求并绕过 LLVM 发现", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "xiao-cli-build-archive-"));
+    await mkdir(join(directory, "src"));
+    await writeFile(join(directory, "src/main.xiao"), "print(1)\n");
+    await writeFile(join(directory, "config.xiao"), "[Optimization]\nlevel = 1\n");
+    try {
+      for (const input of ["src/main.xiao", "config.xiao"]) {
+        const context = environmentContext();
+        const result = await executeCommand(parseArguments(["build", "-xar", input, "-O2", "--json"]), {
+          ...context, cwd: directory, env: { ...process.env, XIAO_HOME: join(directory, "home"), XIAO_CLANG: "missing-clang-for-archive" },
+        });
+        expect(result.exitCode).toBe(0);
+        expect(context.fake.requests.find((request) => request.type === "build_archive")).toMatchObject({
+          path: join(directory, input), output: join(directory, input.replace(/\.xiao$/u, ".xar")), optimization: { level: 2, debug: false },
+        });
+        expect(context.fake.requests.some((request) => request.type === "build")).toBe(false);
+        expect(JSON.parse(result.stdout)).toMatchObject({ operation: "build_archive", exit_code: 0 });
+      }
+      const context = environmentContext();
+      const result = await executeCommand(parseArguments(["build", "-xar", "src/main.xiao", "-o", "release/app.xar", "-debug"]), { ...context, cwd: directory, env: { ...process.env, XIAO_HOME: join(directory, "home") } });
+      expect(result.exitCode).toBe(0);
+      expect(context.fake.requests.find((request) => request.type === "build_archive")).toMatchObject({ output: join(directory, "release/app.xar"), optimization: { level: 1, debug: true } });
+      expect(result.stderr).toContain("app.xar");
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
   test("sync 激活传 Rust 路径，install 与 i 完全共用协议，不写激活文件", async () => {
     const directory = await mkdtemp(join(tmpdir(), "xiao-activation."));
     const activationFile = join(directory, "activation.12345678");

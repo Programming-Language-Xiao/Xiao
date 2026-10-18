@@ -69,6 +69,8 @@ pub struct FrontendContext {
     pub package_registry: Option<PackageRegistry>,
     /// 以模块身份编译时，需要在执行完顶层后导出的名称。
     pub module_exports: Vec<String>,
+    /// 归档编译保留官方导入，只记录宿主要求，不静态复制标准库函数。
+    pub external_standard_library: bool,
     /// 目标平台描述，默认使用 `host`。
     pub target: String,
     /// 语言版本，默认使用 `0.1.0`。
@@ -569,7 +571,9 @@ impl FrontendCompiler {
                 if diagnostics.iter().any(Diagnostic::is_error) {
                     return Err(FrontendError { diagnostics });
                 }
-                standard_link = plan_standard_link(program, &request.source, &standard);
+                if !request.context.external_standard_library {
+                    standard_link = plan_standard_link(program, &request.source, &standard);
+                }
                 project = Some(merge_standard_library(project.take(), standard));
             }
         }

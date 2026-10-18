@@ -32,7 +32,7 @@ use crate::run::{
 use xiao_xar::{
     ARCHIVE_LANGUAGE_FALLBACK_CODE, ARCHIVE_MISSING_OBJECT_CODE, ArchiveAuditRecord,
     XarLanguageResolution, XarRunError, XarRunOptions, audit_archive, inspect_archive_index,
-    resolve_language_locale, run_archive_with_control, validate_archive_context,
+    resolve_language_locale, run_archive_with_module_loader, validate_archive_context,
 };
 
 /// 同一核心进程里可以安全复用模块实例的项目与环境身份。
@@ -485,7 +485,13 @@ fn run_archive_request_response_inner(
         return archive_timeout_response(request_id);
     }
     let measurement = xiao_runtime::start_memory_measurement();
-    let result = run_archive_with_control(&bytes, xar_options, Some(cancellation_source));
+    let official = crate::module_loader::DriverModuleLoader::new(None, None);
+    let result = run_archive_with_module_loader(
+        &bytes,
+        xar_options,
+        Some(cancellation_source),
+        Some(&official),
+    );
     let peak_live_bytes = measurement.peak_live_bytes();
     drop(measurement);
     if cancellation.is_cancelled() {

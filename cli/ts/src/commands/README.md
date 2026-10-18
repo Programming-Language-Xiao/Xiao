@@ -7,3 +7,6 @@ X0-T 已接入递归发现 `tests/**/*.xiao`，按项目相对路径稳定排序
 并按协议返回逐用例结果与退出码；11A-E0 已接入 `venv`、`shell-init` 和 `deactivate`，
 环境目录与 Shell 状态边界由 `../environments` 负责；11A-E2B 已接入 `sync`、
 `install`/`i`，CLI 只解析显式项目路径；环境目标选择、锁文件和映射更新仍由 Rust 包模块唯一实现。
+
+18B 的 `build-archive.ts` 消费 18A 输入路由与优化归一化，将 `build -xar` 交给
+`build_archive` 协议；默认输出为输入同目录 `<stem>.xar`，不触发 LLVM 工具链发现。

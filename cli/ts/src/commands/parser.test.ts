@@ -88,6 +88,13 @@ describe("xiao 命令解析", () => {
     expect(parseArguments(["build", "main.xiao", "-O1"])).toMatchObject({ kind: "build", optimizationLevel: 1, optimizationExplicit: true });
   });
 
+  test("build -xar 默认同目录输出且拒绝原生输出选项与重复开关", () => {
+    expect(parseArguments(["build", "-xar", "src/main.xiao"])).toMatchObject({ kind: "build", xar: true, output: "src/main.xar" });
+    expect(parseArguments(["build", "-xar", "config.xiao", "-o", "release/app.xar", "-O3"])).toMatchObject({ output: "release/app.xar", optimizationLevel: 3 });
+    expect(() => parseArguments(["build", "-xar", "main.xiao", "--emit-llvm", "main.ll"])).toThrow("X11-CLI-ARG-001");
+    expect(() => parseArguments(["build", "-xar", "-xar", "main.xiao"])).toThrow("X11-CLI-ARG-001");
+  });
+
   test("环境命令解析默认名、显式名、Shell 和取消激活", () => {
     expect(parseArguments(["venv"])).toMatchObject({ kind: "venv" });
     expect(parseArguments(["venv", "dev", "--color=never"])).toMatchObject({ kind: "venv", name: "dev" });

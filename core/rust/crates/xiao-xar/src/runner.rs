@@ -260,6 +260,16 @@ pub fn run_archive_with_control(
     options: XarRunOptions,
     cancellation: Option<xiao_vm::CancellationSource>,
 ) -> Result<xiao_vm::RunOutcome, XarRunError> {
+    run_archive_with_module_loader(bytes, options, cancellation, None)
+}
+
+/// 从归档加载本地对象，只将官方标准库请求转给宿主加载器。
+pub fn run_archive_with_module_loader(
+    bytes: &[u8],
+    options: XarRunOptions,
+    cancellation: Option<xiao_vm::CancellationSource>,
+    official: Option<&dyn xiao_vm::ModuleLoader>,
+) -> Result<xiao_vm::RunOutcome, XarRunError> {
     let indexed = open_indexed_archive(bytes).map_err(classify_run_error)?;
     validate_archive_context(indexed.index(), &options)?;
     let archive = indexed.verify().map_err(classify_run_error)?;
@@ -272,14 +282,92 @@ pub fn run_archive_with_control(
     let entry_bytes = archive
         .read_object(entry.object_kind, entry.digest)
         .map_err(classify_run_error)?;
-    xiao_vm::run_xiaoc_production_with_capabilities(
+    let loader = ArchiveModuleLoader {
+        archive: &archive,
+        official,
+    };
+    xiao_vm::run_xiaoc_production_with_loader(
         &entry_bytes,
         options.vm_options,
         options.event_capacity,
         cancellation,
         options.capabilities,
+        Some(&loader),
     )
     .map_err(|error| XarRunError::Validation(format!("入口 `.xiaoc` 执行前校验失败：{error}")))
+}
+
+/// 归档索引是项目模块的唯一来源，不读取构建机缓存或原项目目录。
+#[derive(Debug)]
+struct ArchiveModuleLoader<'a> {
+    archive: &'a super::XarArchive,
+    official: Option<&'a dyn xiao_vm::ModuleLoader>,
+}
+
+impl xiao_vm::ModuleLoader for ArchiveModuleLoader<'_> {
+    fn contains(&self, identity: &str) -> bool {
+        if identity == "stdlib" || identity.starts_with("stdlib.") {
+            return self
+                .official
+                .is_some_and(|loader| loader.contains(identity));
+        }
+        self.archive.index().entries.iter().any(|entry| {
+            entry.object_kind == ObjectKind::Xiaoc
+                && (entry.module == identity || entry.module.starts_with(&format!("{identity}.")))
+        })
+    }
+
+    fn compile(&self, _identity: &str) -> Result<Option<xiao_vm::CompiledModule>, String> {
+        Err("归档模块通过已验证字节码加载".to_owned())
+    }
+
+    fn load(&self, identity: &str) -> Result<Option<xiao_vm::ExecutableModule>, String> {
+        if identity == "stdlib" || identity.starts_with("stdlib.") {
+            return self
+                .official
+                .ok_or("未注册官方标准库加载器")?
+                .load(identity);
+        }
+        let Some(entry) = self
+            .archive
+            .index()
+            .entries
+            .iter()
+            .find(|entry| entry.object_kind == ObjectKind::Xiaoc && entry.module == identity)
+        else {
+            return if self.contains(identity) {
+                Ok(None)
+            } else {
+                Err(format!("归档缺少模块 {identity}"))
+            };
+        };
+        let bytes = self
+            .archive
+            .read_object(entry.object_kind, entry.digest)
+            .map_err(|error| error.to_string())?;
+        let file = xiao_bytecode::decode_xiaoc(&bytes).map_err(|error| error.to_string())?;
+        let instance_tables = file
+            .program
+            .table_definitions
+            .iter()
+            .filter(|table| table.signature.kind == "instance")
+            .flat_map(|table| {
+                [
+                    format!("ascii:{}", table.signature.name),
+                    format!("backtick:{}", table.signature.name),
+                ]
+            })
+            .collect();
+        Ok(Some(xiao_vm::ExecutableModule {
+            program: file.program,
+            source_name: entry.logical_path.clone(),
+            instance_tables,
+        }))
+    }
+
+    fn environment(&self, _identity: &str) -> Option<&str> {
+        None
+    }
 }
 
 /// 校验已解析索引与本次运行上下文；在载荷读取和诊断进程启动前使用。

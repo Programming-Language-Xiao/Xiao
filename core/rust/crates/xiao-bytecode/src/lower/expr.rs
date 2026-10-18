@@ -339,6 +339,9 @@ fn lower_name(lowerer: &mut Lowerer<'_>, name: &str, backticked: bool, span: IrS
     {
         return *register;
     }
+    if let Some(register) = lowerer.global_import_reference(name, backticked, span) {
+        return register;
+    }
     if let Some(value) = lowerer.value_of_name(name, backticked) {
         if !lowerer.frame.value_regs.contains_key(&value) {
             if let Some(register) = lowerer.singleton_reference(name, span) {

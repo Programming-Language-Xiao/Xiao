@@ -15,3 +15,6 @@ REPL 的命名空间注册与长驻会话仍留给 I4b。
 11C 的 `run` 请求可以附加规范语言 `locale`，Rust 响应的诊断、报告和错误体可以附加
 本地化 `text`。两字段均可缺省以兼容旧客户端/旧核心；`code`、`message_id`、参数和
 退出码不因语言变化。TypeScript 不复制核心翻译表，只呈现核心提供的 `text`。
+
+18B 增加 `build_archive` 请求与 `buildArchive` 客户端接口；发送前检查核心能力，
+参数只含输入路径、可选输出、优化/调试及语言，不在 TypeScript 实现编译或归档校验。

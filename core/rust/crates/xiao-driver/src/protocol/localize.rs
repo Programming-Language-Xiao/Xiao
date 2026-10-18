@@ -72,6 +72,7 @@ pub(super) fn request_locale(request: &ProtocolRequest) -> Option<String> {
         | ProtocolRequest::RunXiaoc { locale, .. }
         | ProtocolRequest::Test { locale, .. }
         | ProtocolRequest::Build { locale, .. }
+        | ProtocolRequest::BuildArchive { locale, .. }
         | ProtocolRequest::Environment { locale, .. }
         | ProtocolRequest::ReplPackages { locale, .. }
         | ProtocolRequest::Package { locale, .. } => locale.clone(),

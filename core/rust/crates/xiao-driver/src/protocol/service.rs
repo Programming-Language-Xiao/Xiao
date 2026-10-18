@@ -48,6 +48,26 @@ pub fn read_request<R: Read>(reader: &mut R) -> Result<Option<ProtocolRequest>, 
 /// 直接处理一条请求；适合契约测试和不需要并发取消的调用方。
 pub fn dispatch(request: ProtocolRequest) -> ProtocolResponse {
     match request {
+        ProtocolRequest::BuildArchive {
+            request_id,
+            protocol_version,
+            core_version,
+            locale,
+            path,
+            output,
+            optimization,
+        } => with_locale(request_id.clone(), locale.clone(), || {
+            super::archive::build_archive_response(
+                request_id,
+                protocol_version,
+                core_version,
+                locale,
+                path,
+                output,
+                optimization,
+                &CancellationToken::new(),
+            )
+        }),
         ProtocolRequest::Hello {
             request_id,
             protocol_version,
@@ -323,6 +343,7 @@ fn hello_response(
                 "cache".to_owned(),
                 "test".to_owned(),
                 "build".to_owned(),
+                "build_archive".to_owned(),
                 "environment".to_owned(),
                 "package".to_owned(),
                 "repl_packages".to_owned(),
@@ -739,6 +760,26 @@ pub(super) fn worker_response(
     token: CancellationToken,
 ) -> ProtocolResponse {
     match request {
+        ProtocolRequest::BuildArchive {
+            request_id,
+            protocol_version,
+            core_version,
+            locale,
+            path,
+            output,
+            optimization,
+        } => with_locale(request_id.clone(), locale.clone(), || {
+            super::archive::build_archive_response(
+                request_id,
+                protocol_version,
+                core_version,
+                locale,
+                path,
+                output,
+                optimization,
+                &token,
+            )
+        }),
         ProtocolRequest::Run {
             request_id,
             protocol_version,
@@ -1025,6 +1066,7 @@ where
             }
             request @ (ProtocolRequest::Test { .. }
             | ProtocolRequest::Build { .. }
+            | ProtocolRequest::BuildArchive { .. }
             | ProtocolRequest::Verify { .. }
             | ProtocolRequest::Cache { .. }) => {
                 if !negotiated {
@@ -1075,6 +1117,7 @@ fn request_id_for(request: &ProtocolRequest) -> Option<String> {
         | ProtocolRequest::Cache { request_id, .. }
         | ProtocolRequest::Test { request_id, .. }
         | ProtocolRequest::Build { request_id, .. }
+        | ProtocolRequest::BuildArchive { request_id, .. }
         | ProtocolRequest::Environment { request_id, .. }
         | ProtocolRequest::Package { request_id, .. }
         | ProtocolRequest::ReplPackages { request_id, .. }

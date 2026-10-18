@@ -1058,12 +1058,36 @@ impl IndexStore {
         let _lock = xiao_lock::EntryLock::acquire(&self.root.join("global.index.lock"))
             .map_err(lock_error)?;
         let path = self.root.join("global.index.pb");
-        write_index_atomic(&path, &index.encode()?)
+        write_file_atomic(&path, &index.encode()?)
     }
 
     /// 读取并解码全局缓存索引。
     pub fn read_global(&self) -> Result<GlobalIndex, ArtifactError> {
         GlobalIndex::decode(&fs::read(self.root.join("global.index.pb"))?)
+    }
+
+    /// 在同一跨进程锁内合并构建记录并原子提交，避免并发构建丢失其他请求记录。
+    pub fn upsert_global(&self, records: Vec<GlobalRecord>) -> Result<(), ArtifactError> {
+        let _lock = xiao_lock::EntryLock::acquire(&self.root.join("global.index.lock"))
+            .map_err(lock_error)?;
+        let path = self.root.join("global.index.pb");
+        let mut index = if path.exists() {
+            GlobalIndex::decode(&fs::read(&path)?)?
+        } else {
+            GlobalIndex {
+                schema_major: INDEX_SCHEMA_MAJOR,
+                schema_minor: INDEX_SCHEMA_MINOR,
+                records: Vec::new(),
+            }
+        };
+        for record in records {
+            index
+                .records
+                .retain(|old| old.request_key != record.request_key);
+            index.records.push(record);
+        }
+        write_file_atomic(&path, &index.encode()?)?;
+        Ok(())
     }
 
     /// 扫描已验证对象、加锁并原子提交重建后的全局索引。
@@ -1090,7 +1114,7 @@ impl IndexStore {
             fs::create_dir_all(parent)?;
         }
         let _lock = xiao_lock::EntryLock::acquire(&lock).map_err(lock_error)?;
-        write_index_atomic(path.as_ref(), &index.encode()?)
+        write_file_atomic(path.as_ref(), &index.encode()?)
     }
 
     /// 读取并解码归档索引；缺失或损坏时直接失败，不扫描归档成员猜测重建。
@@ -1101,7 +1125,8 @@ impl IndexStore {
     }
 }
 
-fn write_index_atomic(path: &Path, bytes: &[u8]) -> Result<PathBuf, ArtifactError> {
+/// 在目标同目录暂存、同步并原子替换文件；调用方须先完成产物格式及完整性校验。
+pub fn write_file_atomic(path: &Path, bytes: &[u8]) -> Result<PathBuf, ArtifactError> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent)?;
     }

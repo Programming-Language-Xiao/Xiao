@@ -10,6 +10,8 @@
 
 /// 表达式到三地址指令的展开规则。
 mod expr;
+/// 函数内读取稳定的模块顶层导入，不复制被导入模块的函数体。
+mod imports;
 /// 退出点上的释放计划接线。
 mod plan;
 /// 语句降低与块结构重建。
@@ -150,6 +152,8 @@ struct Lowerer<'ir> {
     frame: Frame,
     /// 顶层函数名到调用签名的映射。
     function_signatures: BTreeMap<String, crate::tac::SigId>,
+    /// 在入口执行前已绑定、且未被赋值覆盖的顶层导入。
+    global_imports: BTreeMap<String, xiao_ir::IrImportItem>,
     /// 本批次尚未降低的构造；由验证器转成诊断，不静默跳过。
     unsupported: Vec<String>,
     /// 按表达式源码区间收集的 Runtime 检查。
@@ -246,6 +250,7 @@ impl<'ir> Lowerer<'ir> {
             named_functions: BTreeMap::new(),
             frame: Frame::default(),
             function_signatures: BTreeMap::new(),
+            global_imports: imports::stable_imports(program),
             unsupported: Vec::new(),
             runtime_checks: program.runtime_checks.iter().fold(
                 PendingRuntimeChecks::new(),

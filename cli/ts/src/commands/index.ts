@@ -11,6 +11,7 @@ import type { ToolchainSpec } from "../protocol/messages.ts";
 import { renderCliError, renderProtocolResponse, CLI_EXIT_CODES, type DiagnosticRenderOptions, type RenderedDiagnostic } from "../diagnostics/render.ts";
 import { helpText as parserHelpText, type ParsedCommand } from "./parser.ts";
 import { discoverProjectTests, testModuleName } from "./test-discovery.ts";
+import { executeArchiveBuild } from "./build-archive.ts";
 import { discoverToolchainWithMetadata, ToolchainDiscoveryError } from "../platform/toolchain.ts";
 import {
   createEnvironment,
@@ -387,6 +388,7 @@ async function executeArchive(command: Extract<ParsedCommand, { kind: "xar" }>, 
 
 /** 读取源码、发现工具链并通过协议执行 `build`。 */
 async function executeBuild(command: Extract<ParsedCommand, { kind: "build" }>, context: CommandContext): Promise<RenderedDiagnostic> {
+  if (command.xar) return executeArchiveBuild(command, context, renderOptions(command.options, context));
   const cwd = context.cwd ?? process.cwd();
   const path = resolve(cwd, command.file);
   let locale: LocaleContext;

@@ -1,10 +1,10 @@
 ---
 id: tooling.cli.build
-title: xiao build 原生构建
+title: xiao build 原生与归档构建
 status: verified
 audience: developer
 module: ts.xiao-cli
-stage: 11X0-E
+stage: 11X0-E/18B
 related:
   - README.md
   - shell.md
@@ -13,7 +13,7 @@ related:
   - ../../../DevDocs/11x0e-build-and-toolchain.md
 ---
 
-# `xiao build` 原生构建
+# `xiao build` 原生与归档构建
 
 `xiao build` 读取真实的 `.xiao` 源码，经 TypeScript CLI、Rust 核心协议和
 `FrontendNativeDriver` 生成 LLVM 原生程序。命令不等待 `xiao run`，也不接受手写 TAC；源码、
@@ -22,13 +22,15 @@ related:
 ## 命令格式
 
 ```text
-xiao build -o <output> <file.xiao> [-debug] [--emit-llvm <path>] [-O0]
+xiao build -o <output> <file.xiao> [-debug] [--emit-llvm <path>] [-O0|-O1|-O2|-O3]
+xiao build -xar <config.xiao|file.xiao> [-o <output.xar>] [-O0|-O1|-O2|-O3] [-debug]
 ```
 
 `-o`（或 `--output`）指定可执行文件路径。省略时，输出为
 `build/<源码基名>`；Windows 自动追加 `.exe`。`--emit-llvm` 可额外保存 LLVM 文本，父目录
-不存在时会由构建后端创建。当前只允许 `-O0`；`-O1`、`-O2`、`-O3` 和其他优化值会在执行前
-以参数错误拒绝。输入必须是 `.xiao` 文件。
+不存在时会由构建后端创建。支持 `-O0` 至 `-O3`；缺省按命令行、项目配置、全局配置、
+内建 `-O0` 的优先级确定。原生路径使用 clang 对应的 `-O` 参数，并明确报告
+`optimization_backend=clang`、`xiao_passes_registered=false`。输入必须是 `.xiao` 文件。
 
 例如：
 
@@ -37,6 +39,37 @@ xiao build -o build/hello.exe examples/hello.xiao
 xiao build examples/hello.xiao --emit-llvm build/hello.ll -O0
 xiao build -o build/hello-debug.exe examples/hello.xiao -debug
 ```
+
+## 构建字节码归档
+
+`-xar` 生成由已安装的 `xiao`/Runtime 运行的 `.xar`，无需 clang。单个 `.xiao` 使用自身
+脚本顶层或 `[main]` 入口；指定 `config.xiao` 时，静态查找项目中唯一带 `[main]` 的
+`.xiao`，缺失或多个都拒绝。默认输出在输入同目录：`hello.xiao` → `hello.xar`，
+`config.xiao` → `config.xar`；`-o` 可覆盖位置。`--emit-llvm` 不适用于归档构建。
+
+```text
+xiao build -xar examples/hello.xiao
+xiao build -xar config.xiao -O2 -o release/app.xar
+xiao verify release/app.xar --detail
+xiao -xar release/app.xar
+```
+
+归档携带入口可达的本地模块和 `[resources]` 显式声明的文件。资源映射仍采用
+`"归档逻辑路径" = "项目根相对来源文件"`，不收录未声明文件。官方标准库与 Runtime
+由宿主提供，归档只记录实际可达的官方模块及 intrinsic 能力要求。例如仅调用
+`stdlib.os.open_file` 不要求进程能力；调用 `spawn` 才要求进程能力。
+
+首版遇到第三方包依赖会以 `X11-PROTOCOL-006` 拒绝，包括配置声明或依赖锁中的外部包，
+不会省略依赖后继续打包。项目锁文件使用现有完整校验器读取，不会被构建改写。
+调用图无法静态解析的动态调用同样明确拒绝；现有前端及字节码未支持的程序形态保持拒绝。
+
+`.xiaoc` 写入全局内容寻址缓存，源码旁边不产生 `.xiaoc`。命中时仍重新计算完整 SHA-256
+并调用权威字节码解码器；损坏命中直接拒绝。归档完成全部校验后才原子写出，失败不会
+留下部分归档。`--json` 返回 `operation=build_archive`，`value.kind=archive_build` 的
+JSON 摘要包含输出、归档摘要、官方模块、能力位和每个模块的命中、重编译及验证字段。
+
+普通归档保留紧凑源码映射；`-debug` 写入持久激活位及独立调试符号对象，不自动携带源码
+正文。调试归档启动继续遵守独立诊断窗口要求。
 
 ## 工具链发现
 
@@ -76,7 +109,7 @@ Windows 原生构建需要在 Visual Studio Developer Command Prompt（例如 `v
 `object_format`（`coff`/`elf`/`macho`）、IR 声明的 `declared_components`、符号表或导出表中
 观察到的 `observed_components`、`runtime_symbols`、外部 `dependencies` 和调试相关
 `diagnostic_symbols`，以及无法映射到已知组件的 `unclassified_runtime_symbols`。
-`artifact.optimization_level` 当前固定为 `0`。
+`artifact.optimization_level` 报告实际使用的 `0` 至 `3`。
 
 这些字段只表示最终文件中实际可观察到的对象格式、符号和依赖，不解释组件为什么被带入，也
 不替代平台运行期测试；构建验证在链接后完成，组件证据不完整或与 IR 登记不一致时构建失败。
@@ -103,5 +136,5 @@ Windows 原生已完成真实 Xiao 源码的 build、脱离 CLI 直接运行、�
 
 ## 已知边界
 
-项目测试由[`xiao test`](test.md)负责；`xiao build` 的优化级别除 `-O0` 外尚未实现。原生
-构建不改变 Xiao 的语言、退出码或诊断协议语义。
+项目测试由[`xiao test`](test.md)负责。归档首版只支持本地模块、显式资源和宿主标准库，
+第三方包打包留待后续。构建不改变 Xiao 的语言、退出码或诊断协议语义。

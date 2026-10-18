@@ -348,31 +348,12 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             .module_loader
             .ok_or_else(|| self.module_fault(identity, "未注册模块编译器"))?;
         let compiled = loader
-            .compile(identity)
+            .load(identity)
             .map_err(|error| self.module_fault(identity, error))?;
         let Some(compiled) = compiled else {
             return Ok(());
         };
-        let instance_tables = compiled
-            .ir
-            .body
-            .iter()
-            .filter_map(|statement| {
-                if let xiao_ir::IrStatementKind::Table {
-                    name, table_kind, ..
-                } = &statement.kind
-                    && table_kind == "instance"
-                {
-                    Some(if name.backticked {
-                        format!("backtick:{}", name.text)
-                    } else {
-                        format!("ascii:{}", name.text)
-                    })
-                } else {
-                    None
-                }
-            })
-            .collect();
+        let instance_tables = compiled.instance_tables;
         let program = Rc::new(compiled.program);
         let source_name = compiled.source_name;
         let previous_exports = self.current_exports.take();

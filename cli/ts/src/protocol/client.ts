@@ -17,6 +17,7 @@ import {
   type CacheRequest,
   type TestRequest,
   type BuildRequest,
+  type BuildArchiveRequest,
   type EnvironmentRequest,
   type ReplPackagesRequest,
   type PackageRequest,
@@ -172,6 +173,15 @@ export interface SourceBuildOptions {
   /** 本次构建的规范语言。 */
   locale?: "zh-CN" | "en-US";
   /** 取消信号。 */
+  signal?: AbortSignal;
+}
+
+/** 已归一化的归档构建参数；不需要原生工具链。 */
+export interface ArchiveBuildOptions {
+  output?: string | null;
+  optimizationLevel?: OptimizationLevel;
+  debug?: boolean;
+  locale?: "zh-CN" | "en-US";
   signal?: AbortSignal;
 }
 
@@ -390,6 +400,21 @@ export class ProtocolClient {
     return this.call(request, options.signal);
   }
 
+  /** 将归档输入交给 Rust 核心，不在 CLI 编译、计算摘要或组装 ZIP。 */
+  async buildArchive(path: string, options: ArchiveBuildOptions = {}): Promise<CoreCallResult> {
+    const request: BuildArchiveRequest = {
+      type: "build_archive",
+      request_id: requestId("build_archive"),
+      protocol_version: PROTOCOL_VERSION,
+      core_version: CORE_VERSION,
+      ...(options.locale === undefined ? {} : { locale: options.locale }),
+      path,
+      output: options.output ?? null,
+      optimization: { level: options.optimizationLevel ?? 0, debug: options.debug ?? false, diagnostics: null },
+    };
+    return this.call(request, options.signal);
+  }
+
   /** 使用真实 Xiao 源码发送一次 `build` 请求。 */
   async buildSource(sourceText: string, options: SourceBuildOptions): Promise<CoreCallResult> {
     const target = options.target ?? hostTarget();
@@ -486,7 +511,7 @@ export class ProtocolClient {
   }
 
   /** 使用已经规范化的协议运行请求发送一次调用。 */
-  async call(request: RunRequest | RunArchiveRequest | RunXiaocRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  async call(request: RunRequest | RunArchiveRequest | RunXiaocRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | BuildArchiveRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (this.shutdownPromise !== null) throw new CoreClientError("X11-CLI-CORE-003", "核心会话已关闭", 4);
     const execute = () => this.callNow(request, signal);
     const result = this.operation.then(execute, execute);
@@ -505,7 +530,7 @@ export class ProtocolClient {
   }
 
   /** 串行执行一次协议调用，避免同一客户端的帧写入互相交错。 */
-  private async callNow(request: RunRequest | RunArchiveRequest | RunXiaocRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
+  private async callNow(request: RunRequest | RunArchiveRequest | RunXiaocRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | BuildArchiveRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest, signal?: AbortSignal): Promise<CoreCallResult> {
     if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);
     await this.ensureStarted(signal);
     const child = this.child;
@@ -533,6 +558,9 @@ export class ProtocolClient {
       }
       if (request.type === "cache" && !helloResponse.capabilities.includes("cache")) {
         throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 cache 能力，请升级 xiao-core", 2);
+      }
+      if (request.type === "build_archive" && !helloResponse.capabilities.includes("build_archive")) {
+        throw new CoreClientError("X11-CLI-CORE-004", "当前核心未提供 build_archive 能力，请升级 xiao-core", 2);
       }
 
       if (signal?.aborted) throw new CoreClientError("X11-PROTOCOL-005", "请求已取消", 2);

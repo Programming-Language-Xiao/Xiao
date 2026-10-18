@@ -564,6 +564,25 @@ pub fn run_xiaoc_production_with_capabilities(
     cancellation: Option<CancellationSource>,
     capabilities: u64,
 ) -> Result<RunOutcome, XiaocLoadError> {
+    run_xiaoc_production_with_loader(
+        bytes,
+        options,
+        event_capacity,
+        cancellation,
+        capabilities,
+        None,
+    )
+}
+
+/// 与源码入口共用 VM 的模块加载边界；加载器只在完整字节码校验后交给 VM。
+pub fn run_xiaoc_production_with_loader(
+    bytes: &[u8],
+    options: VmOptions,
+    event_capacity: usize,
+    cancellation: Option<CancellationSource>,
+    capabilities: u64,
+    loader: Option<&dyn crate::modules::ModuleLoader>,
+) -> Result<RunOutcome, XiaocLoadError> {
     validate_capability_mask(capabilities).map_err(|error| XiaocLoadError::InvalidField {
         field: "capabilities".to_owned(),
         message: error.to_string(),
@@ -579,6 +598,7 @@ pub fn run_xiaoc_production_with_capabilities(
         capabilities,
     );
     vm.set_cancellation_source(cancellation);
+    vm.set_module_loader(loader);
     let (result, value) = vm.run_with_value();
     let metrics = vm.metrics();
     Ok(production_outcome(result, value, metrics, vm.into_sink()))

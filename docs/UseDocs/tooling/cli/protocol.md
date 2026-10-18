@@ -49,6 +49,14 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 
 ## 归档运行
 
+`build_archive` 是由 `hello.capabilities` 协商的新增操作，携带 `path`、可空的 `output`、
+归一化 `optimization` 和可选 `locale`，不携带原生工具链。核心负责项目入口、函数闭包、
+缓存读取、显式资源和完整归档验证；成功后原子写出，返回 `operation=build_archive`、
+`value.kind=archive_build`。`value.value` 的 JSON 摘要记录输出路径、摘要、验证状态、
+优化级别、`stdlib_modules`、`required_capabilities` 和逐模块缓存证据。旧核心缺少能力时
+CLI 返回 `X11-CLI-CORE-004`，不会发送未知请求。第三方包的构建限制复用
+`X11-PROTOCOL-006`，阶段为 `archive_build`，不冒用运行期 `X17-XAR-008`。
+
 `run_archive` 请求携带 `path`、统一 `RunOptions` 和 `debug` 位。核心读取 `.xar` 后，
 先验证唯一索引和本次运行上下文，再完整校验全部对象、解析入口，成功后才调用统一 VM。
 入口只取 `ArchiveIndex.entry`，不会从成员扫描猜测。归档运行结果仍使用 `result` 的
@@ -58,11 +66,14 @@ Runtime ABI 和 LLVM 版本只在 `versions` 中用于诊断。失配返回 `X11
 归档要求与已安装工具链的标准库接口版本、语言版本精确匹配；所需官方模块必须可解析。
 缺模块报 `X17-XAR-008`，版本不匹配报 `X17-XAR-007`，均在任何模块初始化之前拒绝。
 归档只记录标准库模块要求，不携带官方 Runtime 或标准库对象。
+归档内本地模块只从已验证索引加载，运行不读取原项目或构建机缓存；官方模块由宿主加载器提供。
 
 `RunOptions.capabilities` 是可选的本次运行能力掩码，省略时默认开启冻结的 0–6 位。
 归档所需位缺失报 `X06-RUNTIME-026`，消息列出缺失能力名；归档声明未知位报 `X17-XAR-011`。
 通过启动检查后，VM 仍使用同一请求掩码。缺少新版要求字段或必需特性位的旧归档报
 `X17-XAR-007`，需要用支持这些要求的工具链重新生成。
+请求掩码自身的未知位属于请求校验错误；直接调用归档库时为 `XarRunError::Validation`
+（`X17-XAR-009`），不会误报归档要求未知位的 `011`。
 
 字节码载荷的语言版本必须与索引一致；改写索引标签不能把其他语言版本的程序变为兼容。
 上下文拒绝发生在载荷解压/解码及诊断进程启动之前。此时错误响应的审计仅计入已校验的

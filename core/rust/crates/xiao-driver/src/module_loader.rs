@@ -38,7 +38,7 @@ impl<'a> DriverModuleLoader<'a> {
     }
 
     /// 将模块身份解析为源码路径、编译根和导出名称。
-    fn descriptor(&self, identity: &str) -> Option<(PathBuf, PathBuf, Vec<String>)> {
+    pub(crate) fn descriptor(&self, identity: &str) -> Option<(PathBuf, PathBuf, Vec<String>)> {
         if let Some(name) = identity.strip_prefix("project:") {
             let project = self.project.as_ref()?;
             let record = project

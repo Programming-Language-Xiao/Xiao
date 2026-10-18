@@ -1471,6 +1471,14 @@ pub fn builtin_renderer() -> MessageRenderer {
     add_entry(
         &mut chinese,
         &mut english,
+        "x11.driver.archive_build",
+        "{message}",
+        "archive build failed: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
         "x11.driver.rejected",
         "{message}",
         "driver rejected the request: {message}",

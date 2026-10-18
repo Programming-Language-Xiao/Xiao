@@ -141,6 +141,15 @@ export function renderProtocolResponse(response: ProtocolResponse, options: Diag
       lines.push(cliMessage("xiao.cli.build.config", locale, { path: response.artifact.runtime_config.path }));
     }
   }
+  if (response.type === "result" && response.operation === "build_archive" && isRecord(response.value) && typeof response.value.value === "string" && response.exit_code === 0) {
+    const locale = options.locale ?? "zh-CN";
+    const summary = JSON.parse(response.value.value) as Record<string, unknown>;
+    lines.push(cliMessage("xiao.cli.build.artifact", locale, { path: String(summary.output) }));
+    lines.push(cliMessage("xiao.cli.build.digest", locale, { value: String(summary.digest) }));
+    for (const module of Array.isArray(summary.modules) ? summary.modules.filter(isRecord) : []) {
+      lines.push(cliMessage("xiao.cli.cache.observation", locale, { status: String(module.status), kind: "xiaoc", digest: String(module.digest), verified: module.verified === true ? "verified" : "unverified" }));
+    }
+  }
   if (response.type === "result" && (response.operation === "verify" || response.operation === "cache") && isRecord(response.value) && typeof response.value.value === "string" && response.exit_code === 0) {
     const locale = options.locale ?? "zh-CN";
     try {

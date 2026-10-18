@@ -204,6 +204,13 @@ describe("协议客户端", () => {
     expect(fake?.requests.map((value) => value.type)).toEqual(["hello"]);
   });
 
+  test("旧核心未声明 build_archive 时拒绝构建且不发送未知请求", async () => {
+    const fake = new FakeCore();
+    const client = new ProtocolClient({ overridePath: process.execPath, spawnProcess: () => fake as never });
+    await expect(client.buildArchive("main.xiao")).rejects.toMatchObject({ code: "X11-CLI-CORE-004" });
+    expect(fake.requests.map((request) => request.type)).toEqual(["hello"]);
+  });
+
   test("旧核心只声明 package 而无 repl_packages 时关闭进程并降级为空视图", async () => {
     let fake: FakeCore | undefined;
     const client = new ProtocolClient({

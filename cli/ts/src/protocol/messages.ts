@@ -260,7 +260,20 @@ export interface ShutdownRequest {
 }
 
 /** 所有请求消息的联合类型。 */
-export type ProtocolRequest = HelloRequest | RunRequest | RunArchiveRequest | RunXiaocRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest | CancelRequest | ShutdownRequest;
+/** 归档构建只传递输入、输出和已归一化参数，后端负责全部编译与验证。 */
+export interface BuildArchiveRequest {
+  type: "build_archive";
+  request_id: string;
+  protocol_version: number;
+  core_version: number;
+  locale?: "zh-CN" | "en-US";
+  path: string;
+  output: string | null;
+  optimization: OptimizationConfig;
+}
+
+/** Rust 核心可接收的全部请求消息。 */
+export type ProtocolRequest = HelloRequest | RunRequest | RunArchiveRequest | RunXiaocRequest | VerifyRequest | CacheRequest | TestRequest | BuildRequest | BuildArchiveRequest | EnvironmentRequest | ReplPackagesRequest | PackageRequest | CancelRequest | ShutdownRequest;
 
 /** 机器可读协议错误。 */
 export interface ProtocolErrorBody {
@@ -290,7 +303,7 @@ export interface HelloResponse {
 export interface ResultResponse {
   type: "result";
   request_id: string;
-  operation: "run" | "run_archive" | "run_xiaoc" | "build" | "verify" | "cache";
+  operation: "run" | "run_archive" | "run_xiaoc" | "build" | "build_archive" | "verify" | "cache";
   exit_code: number;
   exit_name: string;
   diagnostics: unknown[];

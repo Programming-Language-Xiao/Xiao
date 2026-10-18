@@ -68,7 +68,7 @@ mod runner;
 pub use runner::{
     ArchiveAuditRecord, XarLanguageResolution, XarRunError, XarRunOptions, audit_archive,
     inspect_archive_index, resolve_language_locale, run_archive, run_archive_with_control,
-    run_archive_with_event_observer, validate_archive_context,
+    run_archive_with_event_observer, run_archive_with_module_loader, validate_archive_context,
 };
 const ZIP_LOCAL_SIGNATURE: u32 = 0x0403_4b50;
 const ZIP_CENTRAL_SIGNATURE: u32 = 0x0201_4b50;

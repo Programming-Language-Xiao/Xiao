@@ -34,7 +34,8 @@ pub use machine::register::{RegisterCarrier, RegisterLocation, TypedRegisterCarr
 pub use machine::stack::StackCarrier;
 /// VM 按需请求文件模块的公开边界。
 pub use modules::{
-    CompiledModule, ModuleLoader, STANDARD_LIBRARY_NAMESPACE, STANDARD_LIBRARY_PREFIX,
+    CompiledModule, ExecutableModule, ModuleLoader, STANDARD_LIBRARY_NAMESPACE,
+    STANDARD_LIBRARY_PREFIX,
 };
 /// 重导出运行入口、结果与指标。
 pub use run::{
@@ -43,7 +44,7 @@ pub use run::{
     VM_REQUEST_CODE, VmMetrics, VmOptions, VmOptionsError, XiaocLoadError, load_xiaoc, run,
     run_checked, run_hybrid, run_production, run_register, run_request, run_request_with_session,
     run_with, run_with_machine_seed, run_with_seed, run_with_values, run_xiaoc,
-    run_xiaoc_production, run_xiaoc_production_with_capabilities,
+    run_xiaoc_production, run_xiaoc_production_with_capabilities, run_xiaoc_production_with_loader,
 };
 /// 重导出语义核与终止原因。
 pub use semantics::{Fault, Vm, VmSession};
