@@ -5,7 +5,7 @@
 > 20D 的进程/文件 API 在 Windows、Linux x64、macOS arm64 上均通过 VM 与原生差分。
 > **本文交接的是 CI 覆盖不到的那一维**：实体 Ubuntu AMD x64 裸机。
 
-状态：**交接待执行（2026-10-18）**。执行者：星崽（实体机）或下一班 Agent。
+状态：**Ubuntu x86_64 裸机执行已完成（2026-10-18）**。结果见[裸机执行记录](20d-cross-platform-results-20261018.md)，原始输出见[执行日志](20d-cross-platform-log-20261018.md)。本轮实际 CPU 为 Intel i5-12450H，架构为 x86_64/AMD64。
 
 ## 一、这次裸机验证能补什么、不能补什么
 
@@ -162,6 +162,17 @@ signal 行外应完全一致。任何差异都要原样保留日志，不要自�
 - 若通过，把它作为 **CI 之外的补充证据**（不替代 CI）；
 - 若失败，进入审核附录，按失败项定位，不在裸机上顺手修。
 
+### 本轮裸机执行记录（2026-10-18）
+
+实际检出 `acfcd4e`，与目标 `8a22c22` 的代码相同。§3.1–§3.5 均退出 `0`，
+全量默认测试 `1205 passed / 0 failed / 41 ignored`；显式原生选择 `39 passed / 0 failed`，
+完整复现脚本的 ignored 阶段 `41 passed / 0 failed`。20D 的 19 条输出/错误身份记录
+与 CI Linux 作业 `117605942603` 逐字一致，包括信号退出 `143`。
+
+Bun 实际为 `294 pass / 6 skip / 0 fail`：真实 clang 的 Bun 探测要求额外设置
+`XIAO_TOOLCHAIN_SMOKE=1`，本交接命令没有设置；按实际计数归档。
+完整环境、命令、退出码与 CI 对照见[结果](20d-cross-platform-results-20261018.md)及[日志](20d-cross-platform-log-20261018.md)。
+
 ## 七、可顺手补的旧债（可选，不与本批验收绑定）
 
 | 债务 | 对应动作 |
@@ -177,6 +188,6 @@ signal 行外应完全一致。任何差异都要原样保留日志，不要自�
 
 - [20D-进程 API](20d-process-api.md) §十二——本轮 1.16 自审、三平台证据与失败记录
 - [20D-首批 API](20d-first-api.md) §十四——上一批的三平台验收与复核格式
-- [10D 受控原生环境](20-builtins-and-standard-library.md)（§4 环境变量与工具链）
+- [10D 受控原生环境](10d-environment-gated-test-spec.md)（§4 环境变量与工具链）
 - [10Z-D 动态错误构造参数](10z-dynamic-error-constructor-followup.md)、[10Z 收口声明](10z-19-closeout-declaration.md)
 - [11X0 平台复现](11x0-platform-reproduction.md)

@@ -521,6 +521,7 @@ push 触发的 [维护回归 `39049068233`](https://github.com/Programming-Langu
 
 ## 相关页面
 
+- [Ubuntu x86_64 裸机结果](20d-cross-platform-results-20261018.md)——五条文件/目录原生记录与 CI Linux 逐字一致，完整日志随附
 - [20D-冻结](20d-freeze-resource-contract.md) §2.5——**本批的直接前置**：签名、错误身份、平台清单
 - [20D-资源承载](20d-resource-carrier.md)——**上一批**：`ExternalResource` 变体、ABI 标签 17、关闭语义
 - [20D-能力上下文](20d-capability-context.md)——**上上批**：能力位与两条路径的拦截点

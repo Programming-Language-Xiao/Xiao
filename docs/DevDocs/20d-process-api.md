@@ -420,6 +420,14 @@ ABI 1.16 旧 Runtime 拒绝和资源种类/关闭后类型保持回归也逐平�
 合计 **18 条共同记录**。信号/异常单独按平台契约验证：Windows 139、Linux/macOS 143。
 本轮自审修复验收完成，§11.3 的六条 20D 出口复核仍满足；没有新增公开 API 或扩大既定原生支持范围。
 
+### 12.5 Ubuntu x86_64 裸机补充证据（2026-10-18）
+
+实体 Ubuntu 的执行提交为 `acfcd4e`（代码与 `29945b9` 相同），§12.4 的 Linux CI
+记录已在裸机复核：五条 `20D-PROCESS`、九条 `20D-PROCESS-REVIEW` 与五条
+`20D-NATIVE`，合计 19 条逐字一致；Linux 信号用例为 `143`。
+默认进程夹具 `13 passed / 5 ignored`，四项原生进程测试与全部平台复现通过。
+环境、命令与完整原始日志见[裸机结果](20d-cross-platform-results-20261018.md)和[执行日志](20d-cross-platform-log-20261018.md)。
+
 ## 相关页面
 
 - [20D-冻结](20d-freeze-resource-contract.md) §2.1/§2.7——process 排除理由、能力位、关闭与产物边界
