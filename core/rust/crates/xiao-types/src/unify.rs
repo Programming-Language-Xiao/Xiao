@@ -197,7 +197,6 @@ impl Substitution {
             return Ok(left);
         }
         match (&left, &right) {
-            (Type::Dynamic, other) | (other, Type::Dynamic) => Ok(other.clone()),
             (Type::Variable(left), Type::Variable(right))
                 if self.rigid.contains(left) && self.rigid.contains(right) =>
             {
@@ -224,6 +223,7 @@ impl Substitution {
                     ty: candidate.clone(),
                 })
             }
+            (Type::Dynamic, other) | (other, Type::Dynamic) => Ok(other.clone()),
             (Type::Variable(variable), candidate) => self.bind(*variable, candidate.clone()),
             (candidate, Type::Variable(variable)) => self.bind(*variable, candidate.clone()),
             (
@@ -791,6 +791,10 @@ mod tests {
         context.push_rigid([rigid]);
         assert!(matches!(
             context.unify(&Type::variable(rigid), &Type::scalar(ScalarType::Int)),
+            Err(UnifyError::RigidTypeParameter { .. })
+        ));
+        assert!(matches!(
+            context.unify(&Type::variable(rigid), &Type::Dynamic),
             Err(UnifyError::RigidTypeParameter { .. })
         ));
         assert!(context.unify(&fresh, &Type::variable(rigid)).is_ok());

@@ -107,6 +107,42 @@ fn rigid_type_parameter_return_has_stable_diagnostic() {
 }
 
 #[test]
+/// 刚性类型参数用于条件时不能被隐式具体化为 bool。
+fn rigid_type_parameter_condition_has_stable_diagnostic() {
+    let request = FrontendRequest::from_text(
+        "def bad<T>(T value) -> bool\n    if value\n        return true\n    return false\n",
+    );
+    let error = FrontendCompiler::new()
+        .compile(&request)
+        .expect_err("条件不应把 T 特化为 bool");
+    assert!(
+        error
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == "X04-TYPE-008"),
+        "{error:?}"
+    );
+}
+
+#[test]
+/// 赋值槽位也不能把刚性类型参数重新锁定到具体标量。
+fn rigid_type_parameter_assignment_has_stable_diagnostic() {
+    let request = FrontendRequest::from_text(
+        "def bad<T>(T value) -> T\n    other = value\n    other = 1\n    return value\n",
+    );
+    let error = FrontendCompiler::new()
+        .compile(&request)
+        .expect_err("赋值不应把 T 特化为 int");
+    assert!(
+        error
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == "X04-TYPE-008"),
+        "{error:?}"
+    );
+}
+
+#[test]
 /// 直接递归调用复用当前刚性签名，禁止把递归函数特化成具体类型。
 fn generic_recursive_call_keeps_rigid_signature() {
     let request = FrontendRequest::from_text("def loop<T>(T value) -> int\n    return loop(1)\n");

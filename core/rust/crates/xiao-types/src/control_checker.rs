@@ -271,17 +271,26 @@ impl<'source> TypeChecker<'source> {
             self.push_runtime_check(condition.span(), RuntimeCheckKind::BooleanCondition);
         } else if matches!(ty, Type::Variable(_)) {
             let boolean = Type::scalar(xiao_syntax::ScalarType::Bool);
-            if self.context.unify(&ty, &boolean).is_err() {
-                self.type_error_with_params(
-                    CONDITION_TYPE_CODE,
-                    "x04.type.condition_requires_bool",
-                    condition.span(),
-                    format!("条件必须是 bool，实际为 {}", ty),
-                    [(
-                        "actual_type".to_owned(),
-                        DiagnosticParam::Text(ty.to_string()),
-                    )],
-                );
+            if let Err(error) = self.context.unify(&ty, &boolean) {
+                if matches!(error, crate::unify::UnifyError::RigidTypeParameter { .. }) {
+                    self.type_error(
+                        crate::diagnostics::RIGID_TYPE_PARAMETER_CODE,
+                        "x04.type.rigid_type_parameter",
+                        condition.span(),
+                        error.to_string(),
+                    );
+                } else {
+                    self.type_error_with_params(
+                        CONDITION_TYPE_CODE,
+                        "x04.type.condition_requires_bool",
+                        condition.span(),
+                        format!("条件必须是 bool，实际为 {}", ty),
+                        [(
+                            "actual_type".to_owned(),
+                            DiagnosticParam::Text(ty.to_string()),
+                        )],
+                    );
+                }
             }
         } else if !ty.is_bool() {
             self.type_error_with_params(

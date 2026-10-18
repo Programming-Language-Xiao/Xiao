@@ -480,12 +480,30 @@ impl<'source> TypeChecker<'source> {
             _ => None,
         }
     }
-    /// 检查赋值兼容性；含 HM 类型变量时先统一，再使用固定转换矩阵。
-    pub(super) fn types_compatible_for_assignment(&mut self, source: &Type, target: &Type) -> bool {
+    /// 带源码位置的赋值兼容检查；刚性类型参数统一失败时保留 20F 诊断。
+    pub(super) fn types_compatible_for_assignment_at(
+        &mut self,
+        source: &Type,
+        target: &Type,
+        span: SourceSpan,
+    ) -> bool {
         let source = self.context.apply(source);
         let target = self.context.apply(target);
         if !source.free_vars().is_empty() || !target.free_vars().is_empty() {
-            self.context.unify(&source, &target).is_ok()
+            match self.context.unify(&source, &target) {
+                Ok(_) => true,
+                Err(error) => {
+                    if matches!(error, crate::unify::UnifyError::RigidTypeParameter { .. }) {
+                        self.type_error(
+                            crate::diagnostics::RIGID_TYPE_PARAMETER_CODE,
+                            "x04.type.rigid_type_parameter",
+                            span,
+                            error.to_string(),
+                        );
+                    }
+                    false
+                }
+            }
         } else {
             can_assign(&source, &target)
         }

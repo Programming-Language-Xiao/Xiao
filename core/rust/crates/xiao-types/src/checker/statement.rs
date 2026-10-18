@@ -152,7 +152,7 @@ impl<'source> TypeChecker<'source> {
                     Type::Set(target.clone()),
                 );
             }
-            if !self.types_compatible_for_assignment(&value_type, &existing_type) {
+            if !self.types_compatible_for_assignment_at(&value_type, &existing_type, target.span) {
                 self.type_error_with_params(
                     ASSIGNMENT_TYPE_MISMATCH_CODE,
                     "x02.type.assignment_mismatch",
@@ -415,7 +415,7 @@ impl<'source> TypeChecker<'source> {
         }
         if operation_valid
             && !dynamic_operation
-            && !self.types_compatible_for_assignment(&result_type, left_type)
+            && !self.types_compatible_for_assignment_at(&result_type, left_type, target.span())
         {
             self.type_error_with_params(
                 ASSIGNMENT_TYPE_MISMATCH_CODE,

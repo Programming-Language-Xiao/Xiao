@@ -802,7 +802,7 @@ impl<'source> TypeChecker<'source> {
         };
         if !actual.is_dynamic()
             && !expected.is_dynamic()
-            && !self.types_compatible_for_assignment(&actual, &expected)
+            && !self.types_compatible_for_assignment_at(&actual, &expected, target.span())
         {
             self.type_error(
                 TABLE_MEMBER_CODE,
