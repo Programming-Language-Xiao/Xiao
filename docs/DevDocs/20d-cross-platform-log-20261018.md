@@ -534,3 +534,59 @@ core/rust/target/debug/xiao-diagnostics:    ELF 64-bit LSB pie executable, x86-6
 e91b825a034d5bd2eef8974f1dfa408cf1dcbe09f7bd94b058a3b567e352c921  core/rust/target/release/libxiao_runtime.a
 23f08a9780413934dbfe860063109ca06b2d534151dbbbd135189b61418b7998  core/rust/target/debug/xiao-diagnostics
 ```
+
+## 自审核：框架统计与测试执行边界
+
+本次自审核重新读取 ZIP 中的 stdout/stderr 统计，而非使用结果摘要作为输入。
+默认测试的 1205 条 `ok`、41 条 `ignored` 与各测试二进制汇总一致；CI 记录也从完整 CI 日志重新抽取，19 条仍与裸机逐字一致。
+ZIP 和其中全部 27 个原始文件的 SHA-256 再次校验通过，原始归档未改写。
+
+### Bun 原始跳过列表
+
+```text
+6 tests skipped:
+(skip) 主机工具链发现 > 环境门控：使用真实 clang 完成目标探测
+(skip) zsh 在安装时复用白名单并可取消激活
+(skip) fish 在安装时复用白名单并可取消激活
+(skip) fish 激活切换后恢复用户原函数，未激活取消无副作用
+(skip) PowerShell 钩子失败时保留非零进程码，成功时不混入数字输出
+(skip) 可选 MSYS Bash 在 Windows 同样按白名单激活和拒绝注入
+
+ 294 pass
+ 6 skip
+ 0 fail
+ 1229 expect() calls
+Ran 300 tests across 38 files. [2.71s]
+```
+
+源码条件复核：`toolchain.test.ts` 的 clang 探测要求 `XIAO_TOOLCHAIN_SMOKE=1`；
+`environments/activation.test.ts` 的 PowerShell 测试使用 `test.skipIf(!windows)`，MSYS 用例也仅限 Windows；
+其余三项要求可用的 zsh/fish。因此不能把 294/6 全部归因于 clang 探测开关。
+
+### 隔离子入口
+
+以下是 §3.3 的原始框架输出；这些入口缺少父测试设置时直接返回，不能记成两条额外原生检查：
+
+```text
+test vm_relative_path_child ... ok
+test process_vm_child ... ok
+```
+
+§3.5 同样包含以下直接返回的隔离入口；此处 `ok` 本身不代表触发了真实平台异常：
+
+```text
+test platform_failure_child ... ok
+```
+
+对应行为由 §3.2 的父测试在正确子进程环境下执行并断言，原始输出如下：
+
+```text
+test vm_relative_paths_use_process_cwd ... ok
+test process_spawn_inherits_path_environment_cwd_and_standard_streams ... ok
+test process_missing_capability_does_not_start_a_child ... ok
+test process_close_and_drop_detach_without_waiting_or_killing ... ok
+test platform_failure_report_is_machine_readable ... ok
+```
+
+因此 §3.3 是框架统计 39 条通过（37 条检查 + 2 个直接返回入口），§3.5 的 ignored 阶段是
+41 条通过（38 条检查 + 3 个直接返回入口）。通过数和失败数不变，结果文档已补充该统计边界。

@@ -20,14 +20,29 @@
 | §3.1 仓库门禁 | 0 | fmt、Clippy、文档/覆盖率、锁文件、TypeScript、基准检查/测试/自检、Driver 测试、Bun 均通过 |
 | §3.2 全量默认测试 | 0 | 1205 passed / 0 failed / 41 ignored |
 | §3.3 重建 release Runtime 与诊断程序 | 0 / 0 | 当前提交重新构建并记录产物 SHA-256 |
-| §3.3 显式原生用例 | 0 | 39 passed / 0 failed / 0 ignored；仅按交接命令过滤 DNS 和隔离平台异常子入口 |
+| §3.3 显式原生用例 | 0 | 测试框架报告 39 passed / 0 failed / 0 ignored，含 2 个缺少父测试环境而直接返回的隔离子入口；仅按交接命令过滤 DNS 和平台异常子入口 |
 | §3.4 `20d_first_api` | 0 | 15 passed / 0 failed / 2 ignored |
 | §3.4 `20d_process_api` | 0 | 13 passed / 0 failed / 5 ignored |
-| §3.5 完整平台复现 | 0 | ignored 阶段 41 passed / 0 failed，含 DNS/平台异常子入口；打包、原生运行、核心发现和协议拒绝回环均通过，调试原生产物退出码 0 |
+| §3.5 完整平台复现 | 0 | ignored 阶段报告 41 passed / 0 failed，含 3 个直接返回的隔离子入口；DNS 测试实际执行；打包、原生运行、核心发现和协议拒绝回环均通过，调试原生产物退出码 0 |
 
-Bun 两次均为 **294 pass / 6 skip / 0 fail**，与交接预期的 295/5 有一项环境差异：
-`cli/ts/src/platform/toolchain.test.ts` 的真实 clang 探测仅在 `XIAO_TOOLCHAIN_SMOKE=1` 时执行，交接命令没有设置它。
-其余跳过为本机缺少相应 Shell/平台的可选测试。未通过改参数重跑来改变计数。
+Bun 两次均为 **294 pass / 6 skip / 0 fail**。六个跳过项逐条核对如下，不能只用 clang 探测开关解释与交接参考 295/5 的差异：
+
+| 跳过项 | 源码中的执行条件与本机情况 |
+| --- | --- |
+| 真实 clang 目标探测 | 要求 `XIAO_TOOLCHAIN_SMOKE=1`；交接命令未设置 |
+| zsh 白名单与取消激活 | 要求非 Windows 且 zsh 可用；本机未满足 |
+| fish 白名单与取消激活 | 要求非 Windows 且 fish 可用；本机未满足 |
+| fish 提示符保存恢复 | 要求非 Windows 且 fish 可用；本机未满足 |
+| PowerShell 退出码 | `test.skipIf(!windows)`；仅 Windows 执行，Linux 必定跳过，即使安装 pwsh 也不会运行 |
+| 可选 MSYS Bash | 要求 Windows 且设置 `XIAO_TEST_MSYS_BASH`；本机为 Linux |
+
+其中 PowerShell 用例的 Windows/Linux 平台条件能解释相较 Windows 本地记录多 1 skip、少 1 pass。
+本轮不通过调整环境重跑来改变计数，保留六项原始跳过记录。
+
+§3.3 的 `39 passed` 中，`vm_relative_path_child`、`process_vm_child` 由测试框架直接选择时会因缺少父测试专用环境而返回；
+其余 37 项执行检查。§3.5 的 `41 passed` 还包括同样直接返回的 `platform_failure_child`，其余 38 项执行检查（含 DNS）。
+三个隔离子入口均由 §3.2 的对应父测试以正确环境驱动并验证：`vm_relative_paths_use_process_cwd`、
+进程生命周期/继承测试，以及 `platform_failure_report_is_machine_readable`。因此不把这些直接返回的 `ok` 当成额外的原生或信号验证。
 
 §3.3 中 `real_terminal_session_is_environment_gated`、`native_table_methods_debug_execution_o0_o3` 均实际执行并通过；§3.5 再次实际执行并通过。
 专项夹具的 ignored 数量对应默认选择；它们的原生部分已由显式原生命令覆盖。

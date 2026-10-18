@@ -169,8 +169,9 @@ signal 行外应完全一致。任何差异都要原样保留日志，不要自�
 完整复现脚本的 ignored 阶段 `41 passed / 0 failed`。20D 的 19 条输出/错误身份记录
 与 CI Linux 作业 `117605942603` 逐字一致，包括信号退出 `143`。
 
-Bun 实际为 `294 pass / 6 skip / 0 fail`：真实 clang 的 Bun 探测要求额外设置
-`XIAO_TOOLCHAIN_SMOKE=1`，本交接命令没有设置；按实际计数归档。
+Bun 实际为 `294 pass / 6 skip / 0 fail`：六项跳过包括未开启的 clang 探测、三个 zsh/fish 用例和两个 Windows 专属用例；
+其中 PowerShell 的 Windows/Linux 条件解释相较 Windows 本地记录多出的一项跳过。
+`39/41 passed` 是框架统计，分别含 2/3 个直接返回的隔离子入口；对应父测试的实际验证和逐项说明见结果文档。
 完整环境、命令、退出码与 CI 对照见[结果](20d-cross-platform-results-20261018.md)及[日志](20d-cross-platform-log-20261018.md)。
 
 ## 七、可顺手补的旧债（可选，不与本批验收绑定）

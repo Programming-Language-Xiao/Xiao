@@ -425,7 +425,7 @@ ABI 1.16 旧 Runtime 拒绝和资源种类/关闭后类型保持回归也逐平�
 实体 Ubuntu 的执行提交为 `acfcd4e`（代码与 `29945b9` 相同），§12.4 的 Linux CI
 记录已在裸机复核：五条 `20D-PROCESS`、九条 `20D-PROCESS-REVIEW` 与五条
 `20D-NATIVE`，合计 19 条逐字一致；Linux 信号用例为 `143`。
-默认进程夹具 `13 passed / 5 ignored`，四项原生进程测试与全部平台复现通过。
+默认进程夹具 `13 passed / 5 ignored`，四项原生进程测试与本机平台复现通过。
 环境、命令与完整原始日志见[裸机结果](20d-cross-platform-results-20261018.md)和[执行日志](20d-cross-platform-log-20261018.md)。
 
 ## 相关页面
