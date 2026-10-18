@@ -8,7 +8,7 @@
 >
 > **一句话概括本批**：**让 `build -xar` 真的产出可运行的归档，并把 18B 的验收清单逐条关掉。**
 
-状态：**实施中（2026-10-18）**。四道裁定全部取甲；O-1 已修复并通过库层定向回归，归档构建与闭包接线继续实施。
+状态：**已完成并验收通过（2026-10-18）**。四道裁定全部取甲；O-1、归档协议、精确闭包、缓存校验与本地模块运行均已接通，18B 的 13 条验收已逐条核销。
 
 ## 一、为什么是这一批
 
@@ -170,23 +170,23 @@ xiao build -xar <config.xiao | 含 [main] 的 .xiao | 任意 .xiao> [-O0..-O3] [
 
 **来源**：星崽直接裁定（AskUserQuestion，2026-10-18）；四条均取甲。
 
-## 八、18B 验收对账（实施时逐条填证据）
+## 八、18B 验收对账（逐条证据）
 
-| # | 18B §八 条目 | 当前判断 | 本批动作 |
+| # | 18B §八 条目 | 判定 | 证据 |
 | --- | --- | --- | --- |
-| 1 | `verify` 可用 | 已实现 | 核销 |
-| 2 | `cache` 可用（两阶段 clean） | 已实现 | 核销 |
-| 3 | TS 不重写后端 | 已实现 | 核销（保留架构证据） |
-| 4 | 缓存展示四类字段 | §十 已落地 | 核销 |
-| 5 | `.xiaoc` 默认进全局缓存、源码目录不出现 | `run.rs:818` 已写全局 | 补副作用断言 |
-| 6 | REPL 片段不进全局缓存 | 需核对 | 补/确认隔离用例 |
-| 7 | 归档不跳过校验 | `build -xar` 未实现 | **本批实现 + 损坏命中拒绝用例** |
-| 8 | 输出前验证 | 既有校验器可用 | `build -xar` 接入并测试 |
-| 9 | 四入口一致 | `d19a_differential` 已有四入口 | 确认在门禁中实际执行 |
-| 10 | 承接 18A 两处 | §十 已落地 | 核销 |
-| 11 | O1–O3 可运行；LLVM 侧明确报告 | 字节码已接；LLVM 报告 `xiao_passes_registered=false` | 核销（实现不在 18B） |
-| 12 | 不回归 | 既有门禁 | 重跑 |
-| 13 | 门禁全绿 | 既有门禁 | 重跑 |
+| 1 | `verify` 可用 | 核销 | `tests/release_report.rs::verify_detail_reports_rust_computed_integrity_and_reproducibility_fields` / `verify_detail_reports_archive_members_and_object_digests` 分别验证 `.xiaoc`、`.xar`，不执行程序 |
+| 2 | `cache` 可用（两阶段 clean） | 核销 | `protocol_tests.rs::cache_list_returns_structured_result`、`cache_clean_protocol_*`；`xiao-artifacts/src/tests.rs::cleanup_plan_protects_project_lock_references_and_apply_is_explicit` 验证 plan/apply 分离 |
+| 3 | TS 不重写后端 | 核销 | `commands/build-archive.ts` 只调用 18A 路由、归一化与 `ProtocolClient.buildArchive`；编译/优化、SHA-256、索引、ZIP、校验集中在 Rust `archive.rs`，TS 无这些实现 |
+| 4 | 缓存展示四类字段 | 核销 | 既有 `run.rs::CacheObservation` 及协议镜像保留 `status`、`recompiled/recompile_reason`、`verified`、`reason`、Pass 的 `skip_reason`；归档结果追加同形状逐模块证据；CLI 命令测试覆盖 JSON 结果 |
+| 5 | `.xiaoc` 默认进全局缓存、源码目录不出现 | 核销 | `18b_build_archive.rs::script_builds_runs_and_keeps_xiaoc_in_global_cache` 检查 O0–O3 缓存对象和源码目录；`served_protocol_builds_runs_stdlib_and_keeps_repl_out_of_global_cache` 实际进程验证源码运行副作用 |
+| 6 | REPL 片段不进全局缓存 | 核销 | 同一实际进程用例发送 `source.path=None`，断言 `status=session` 且全局 `.xiaoc` 数量不增加；独立 `XIAO_HOME` 不触及用户缓存 |
+| 7 | 归档不跳过校验 | 核销 | `indexed_corrupt_hit_is_rejected_without_replacing_output` 先形成真实索引命中，再破坏对象，断言拒绝；生产读取始终经 `read_checked` 与 `decode_xiaoc` |
+| 8 | 输出前验证 | 核销 | `archive.rs` 在原子提交前调用 `validate_xar`、`decode_xar`；缺失资源等负例不产生归档，损坏命中保留既有完整输出；运行器先完整验证后创建 VM |
+| 9 | 四入口一致 | 核销 | `d19a_differential.rs::all_vm_sides_agree_on_every_case` 为非 ignored 测试，实际比较源码 O0/O1、REPL、未优化/优化 `.xiaoc`、`.xar` 的输出、错误、退出码、释放事件；本轮 workspace 已实际执行 |
+| 10 | 承接 18A 两处 | 核销 | `commands/index.test.ts` 的 `run -O2` 探针检查配置/锁内容和 mtime；18A §实施记录说明 `build -O1` 既有测试变更；本批再加真实锁文件只读构建回归 |
+| 11 | O1–O3 可运行；LLVM 侧明确报告 | 核销 | 本批 O0–O3 归档均实际运行；`protocol_run_accepts_nonzero_optimization_level` 及既有逐 Pass 报告；原生 `protocol/build.rs` 报告 clang `-O`、`xiao_passes_registered=false`，不把 Xiao LLVM Pass 实现纳入本批 |
+| 12 | 不回归 | 核销 | 18A 参数缺省、优先级和五类路由与全工作区测试均通过；最终命令结果见 §十二 |
+| 13 | 门禁全绿 | 核销 | fmt、clippy、Bun、类型检查、完整 `check` 均退出 0，最终结果见 §十二 |
 
 ## 九、落点
 
@@ -219,6 +219,39 @@ docs/DevDocs/README.md                                  18B 状态与本文一�
 ## 十一、裁定结果（已执行）
 
 见 §七 的四行表格；四条均取甲，来源为星崽直接裁定（AskUserQuestion，2026-10-18）。
+
+## 十二、实施与验证记录（2026-10-18）
+
+- **O-1**：`d3ebb0a` 拆分归档要求与请求能力校验，库层新增
+  `unknown_request_capabilities_are_validation_errors`；请求未知位返回 `Validation/009`，
+  归档未知位仍为 `InvalidRequirements/011`。
+- **入口补充裁定**：星崽明确选择「静态查找项目中唯一带 `[main]` 的 `.xiao`，缺失或多个时拒绝」。
+  构建复用项目发现和语法解析的入口模式，不引入配置入口字段，不执行源码猜测。
+- **Rust 编排**：驱动器 `archive_closure.rs` 沿可达函数、模块初始化、函数值复制、参数、
+  返回值及本地重导出计算闭包；`archive.rs` 消费统一前端，官方导入保留外部依赖，
+  只将本地模块加入 `XarBuilder`。能力并集完全来自 `IntrinsicDecl.capability`。
+  字节码 `lower/imports.rs` 补齐函数读取稳定顶层导入的路径，保留局部遮蔽和模块级覆盖边界，
+  复用既有导入/成员指令及 VM 单次初始化缓存；实际进程测试比较源码和归档输出一致。
+  实现提交为 `5b16b1f`。
+- **缓存与输出**：请求键包含 IR、源码摘要、13A 优化指纹、锁摘要和调试/工具链身份；
+  全局索引在同一跨进程锁内合并。命中仍重新 SHA-256 并解码，所有成员验证后原子写出。
+  锁文件经 `LockFile::from_json` 完整校验，根项目条目不会被误当成第三方包。
+- **协议与 CLI**：新增协商能力 `build_archive`；TS 只路由及搬运结果，不发现 LLVM。
+  默认输出为输入同目录 `<stem>.xar`，`-o` 覆盖；拒绝重复 `-xar` 和 `--emit-llvm`。
+  第三方包限制复用 `X11-PROTOCOL-006`，构建阶段为 `archive_build`，不复用运行期 008。
+- **运行与调试**：VM 新增已验证模块执行视图；归档内本地对象只从索引加载，
+  官方库回调驱动器加载器。普通归档只含紧凑映射；`-debug` 追加独立调试符号及激活位，
+  不自动携带源码对象。无法静态解析的动态调用明确拒绝，不漏报能力或打包不完整程序。
+- **定向验证**：`18b_build_archive.rs` 当前 9 项通过，覆盖真实核心进程构建/运行、
+  官方库、本地模块搬离源码后运行、O0–O3、显式资源、缓存破坏、入口歧义、第三方限制、
+  调试对象、锁只读及 REPL 隔离；CLI 路由和默认/显式输出回归通过。
+- **完整验证**：最终全工作区测试 **1233 项通过、41 项环境门控 ignored、0 失败**，
+  四入口差分、O-1 和实际协议进程归档回归均已实际执行；最终 Bun **298 项通过、5 项环境门控跳过、0 失败**。
+  首轮 Bun 的 AST 适配器在并行 Rust 构建期间触发 60 秒超时，编译结束后单独重跑全部通过。
+  最终 `cargo fmt --all -- --check`、`cargo clippy --workspace --all-targets -- -D warnings`、
+  `bun run check`（含覆盖率、clippy、主工作区及 benchmarks 锁文件检查）、
+  `bunx tsc --noEmit` 均退出 0。未执行的 41 项 Rust 与 5 项 Bun 环境门控用例不计为通过，
+  不据此声称已完成真实原生工具链或跨平台窗口验收。
 
 ## 相关页面
 

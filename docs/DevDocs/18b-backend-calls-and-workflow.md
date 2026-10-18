@@ -299,6 +299,10 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.9 ②）
 
 ## 十、实施记录
 
+本阶段的归档接线与 13 条逐项证据见 [18B 收口文档](18b-build-xar-and-closeout.md) §八、§十二。
+本地模块、显式资源、精确标准库/能力要求、缓存命中重新校验及 O-1 已落地；
+13 条验收已逐条核销，完整门禁通过（2026-10-18）。
+
 - 新增协议请求 `verify` 和 `cache`。命令形态冻结为
   `xiao verify <file.xiaoc|file.xar> [--detail]`，以及
   `xiao cache <list|verify|rebuild|clean> [--apply] [--project <path>] [--archive <file.xar>]
