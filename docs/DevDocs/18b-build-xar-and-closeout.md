@@ -253,6 +253,22 @@ docs/DevDocs/README.md                                  18B 状态与本文一�
   `bunx tsc --noEmit` 均退出 0。未执行的 41 项 Rust 与 5 项 Bun 环境门控用例不计为通过，
   不据此声称已完成真实原生工具链或跨平台窗口验收。
 
+## 十三、自审修复（2026-10-19）
+
+### 13.1 可复现问题与修复
+
+| 优先级 | 触发条件与原行为 | 修复 |
+| --- | --- | --- |
+| P1 | 已知文件函数与数组中取出的进程函数在分支合流，未解析目标被空集合吞掉；真实构建成功但 `required_capabilities=1`，漏报 `process` | 调用目标区分未知值与确定的非函数值；未知值经复制、成员、参数、返回值及合流继续传播；动态调用只要仍含未知目标就拒绝写出，不以部分已知结果推导完整要求 |
+| P1 | `config.xiao` 输入配合 `-o app.xiao` 可用 ZIP 覆盖真正的入口；依赖源码、声明资源及缓存索引也缺少输出保护 | 新增 `archive_output.rs`，在创建缓存前和原子写出前检查归档输出；保护入口、所有已解析模块、配置、锁和资源来源文件，并禁止写入受管理缓存；路径使用标准绝对化并解析已有链接及父目录段 |
+
+### 13.2 回归证据
+
+- `review_mixed_known_and_unresolved_targets_cannot_omit_capabilities`：修复前真实复现漏报；修复后未知调用明确拒绝且无归档输出。
+- `review_output_cannot_replace_any_archive_input`：入口、依赖、未调用但已解析模块、配置和资源的内容与 mtime 均不变。
+- `review_archive_output_cannot_corrupt_its_cache`：缓存索引及包含 `..` 的等价路径均拒绝，缓存内容与 mtime 不变，也不创建缓存内额外归档。
+- 真实锁文件回归追加输出覆盖锁的负例；`18b_build_archive.rs` 当前 12 项定向回归通过，驱动器 clippy 通过。完整门禁复验中。
+
 ## 相关页面
 
 - [18B. 后端调用与可诊断工作流](18b-backend-calls-and-workflow.md)——**本批的直接前置**：§2.6/§2.7/§2.8 与 §八 验收

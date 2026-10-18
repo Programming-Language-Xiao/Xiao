@@ -46,6 +46,7 @@ xiao build -o build/hello-debug.exe examples/hello.xiao -debug
 脚本顶层或 `[main]` 入口；指定 `config.xiao` 时，静态查找项目中唯一带 `[main]` 的
 `.xiao`，缺失或多个都拒绝。默认输出在输入同目录：`hello.xiao` → `hello.xar`，
 `config.xiao` → `config.xar`；`-o` 可覆盖位置。`--emit-llvm` 不适用于归档构建。
+输出不得替换编译输入（包括入口、本地模块、配置、锁和资源文件），也不能写入受管理的全局缓存。
 
 ```text
 xiao build -xar examples/hello.xiao

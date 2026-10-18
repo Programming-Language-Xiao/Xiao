@@ -16,6 +16,7 @@ use xiao_optimizer::{OptimizationConfig, OptimizationLevel};
 use xiao_xar::{DiagnosticObjectOptions, XarBuilder, collect_config_resources, validate_xar};
 
 use crate::archive_closure::{ClosureModule, collect_archive_closure};
+use crate::archive_output::validate_archive_output;
 use crate::frontend::{FrontendContext, FrontendRequest};
 use crate::run::CancellationToken;
 
@@ -174,7 +175,7 @@ pub fn build_archive(
     reject_dependencies(&config)?;
     let lock_path = root.join("xiao.lock.json");
     let lock_digest = if lock_path.is_file() {
-        let bytes = fs::read(lock_path).map_err(failure)?;
+        let bytes = fs::read(&lock_path).map_err(failure)?;
         let lock = xiao_package::LockFile::from_json(std::str::from_utf8(&bytes).map_err(failure)?)
             .map_err(|error| ArchiveBuildError {
                 code: error.code().to_owned(),
@@ -213,12 +214,50 @@ pub fn build_archive(
         .with_context(context);
     let closure = collect_archive_closure(frontend).map_err(failure)?;
     check_cancelled(cancellation)?;
+    let resources = collect_config_resources(root, &config).map_err(|error| {
+        let code = error
+            .diagnostic()
+            .map_or(crate::protocol::BUILD_ERROR_CODE, |diagnostic| {
+                diagnostic.code()
+            })
+            .to_owned();
+        ArchiveBuildError {
+            code,
+            message: error.to_string(),
+        }
+    })?;
+    let mut inputs = vec![input.clone()];
+    inputs.extend(
+        [config_path, lock_path]
+            .into_iter()
+            .filter(|path| path.is_file()),
+    );
+    for compiled in closure.modules.values() {
+        inputs.extend(compiled.request.source_path.iter().cloned());
+        inputs.extend(
+            compiled
+                .artifact
+                .ir
+                .modules
+                .iter()
+                .filter(|module| module.kind == "file")
+                .map(|module| PathBuf::from(&module.path)),
+        );
+    }
+    inputs.extend(
+        resources
+            .iter()
+            .map(|resource| root.join(&resource.source_path)),
+    );
+    inputs.sort();
+    inputs.dedup();
     let cache_root = match &request.cache_root {
         Some(root) => root.clone(),
         None => xiao_package::CacheLayout::from_environment()
             .map_err(failure)?
             .cache_root(),
     };
+    validate_archive_output(&output, &inputs, &cache_root).map_err(failure)?;
     let store = ArtifactStore::open(&cache_root).map_err(failure)?;
     let indexes = IndexStore::open(&cache_root).map_err(failure)?;
     let cached = match indexes.read_global() {
@@ -288,18 +327,6 @@ pub fn build_archive(
         });
         records.push(record);
     }
-    let resources = collect_config_resources(root, &config).map_err(|error| {
-        let code = error
-            .diagnostic()
-            .map_or(crate::protocol::BUILD_ERROR_CODE, |diagnostic| {
-                diagnostic.code()
-            })
-            .to_owned();
-        ArchiveBuildError {
-            code,
-            message: error.to_string(),
-        }
-    })?;
     builder
         .add_resources(&resources, "entry", "portable")
         .map_err(xar_failure)?;
@@ -307,6 +334,7 @@ pub fn build_archive(
     validate_xar(&bytes).map_err(xar_failure)?;
     let archive = xiao_xar::decode_xar(&bytes).map_err(xar_failure)?;
     check_cancelled(cancellation)?;
+    validate_archive_output(&output, &inputs, &cache_root).map_err(failure)?;
     indexes.upsert_global(records).map_err(failure)?;
     xiao_artifacts::write_file_atomic(&output, &bytes).map_err(failure)?;
     Ok(ArchiveBuildResult {

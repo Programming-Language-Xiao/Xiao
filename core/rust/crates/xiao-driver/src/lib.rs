@@ -8,6 +8,8 @@
 mod archive;
 /// 入口函数与模块的精确归档闭包。
 mod archive_closure;
+/// 归档输出与源码、资源和缓存的路径隔离。
+mod archive_output;
 /// 统一前端请求、上下文、结果和编排器。
 mod frontend;
 /// 统一前端向 VM 提供按需模块编译的接线。

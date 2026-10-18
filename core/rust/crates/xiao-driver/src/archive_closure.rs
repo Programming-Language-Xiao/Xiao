@@ -28,6 +28,10 @@ enum Target {
     Function(String, FuncId),
     Module(String),
     Table(String, u32),
+    /// 尚未实现目标传播的值，合流时不得被已知函数吞掉。
+    Unknown,
+    /// 已知标量或 none，不会引入额外调用。
+    NonCallable,
 }
 
 /// 一个抽象值可能指向的调用目标。
@@ -183,9 +187,16 @@ impl Analyzer {
                         .get(member)
                     {
                         result.insert(Target::Function(identity, *callee));
+                    } else {
+                        result.insert(Target::Unknown);
                     }
                 }
-                Target::Function(..) => {}
+                Target::Unknown => {
+                    result.insert(Target::Unknown);
+                }
+                Target::Function(..) | Target::NonCallable => {
+                    result.insert(Target::NonCallable);
+                }
             }
         }
         Ok(result)
@@ -264,6 +275,7 @@ impl Analyzer {
                         .collect::<Vec<_>>()
                 };
                 let result = match &instruction.op {
+                    TacOp::LoadConst(_) | TacOp::LoadNone => Values::from([Target::NonCallable]),
                     TacOp::LoadFunc(id) => Values::from([Target::Function(identity.clone(), *id)]),
                     TacOp::Copy(value)
                     | TacOp::Move(value)
@@ -302,7 +314,7 @@ impl Analyzer {
                             self.result
                                 .intrinsics
                                 .insert(IntrinsicId::new(id).ok_or("无效 intrinsic ID")?);
-                            Values::new()
+                            Values::from([Target::Unknown])
                         } else {
                             self.call(
                                 Values::from([Target::Function(identity.clone(), *callee)]),
@@ -312,7 +324,7 @@ impl Analyzer {
                     }
                     TacOp::CallDynamic { callee, arguments } => {
                         let targets = values(callee);
-                        if targets.is_empty() {
+                        if targets.is_empty() || targets.contains(&Target::Unknown) {
                             self.unresolved.insert((
                                 identity.clone(),
                                 *function_id,
@@ -345,7 +357,12 @@ impl Analyzer {
                     TacOp::Return { value } => {
                         let returned = self.returns.entry(key.clone()).or_default();
                         let count = returned.len();
-                        returned.extend(value.as_ref().map(values).unwrap_or_default());
+                        returned.extend(
+                            value
+                                .as_ref()
+                                .map(values)
+                                .unwrap_or_else(|| Values::from([Target::NonCallable])),
+                        );
                         self.changed |= returned.len() != count;
                         Values::new()
                     }
@@ -363,6 +380,7 @@ impl Analyzer {
                         successors.insert(*on_failure);
                         Values::new()
                     }
+                    _ if instruction.dst.is_some() => Values::from([Target::Unknown]),
                     _ => Values::new(),
                 };
                 if let Some(dst) = instruction.dst {

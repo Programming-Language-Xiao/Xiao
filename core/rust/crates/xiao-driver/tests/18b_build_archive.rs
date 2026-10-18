@@ -563,9 +563,97 @@ fn lockfile_uses_authoritative_validation_and_is_never_rewritten() {
         fs::metadata(&lock_path).unwrap().modified().unwrap(),
         modified
     );
+    let mut overwrite = fixture.request("config.xiao");
+    overwrite.output = Some(lock_path.clone());
+    assert!(build_archive(&overwrite, &CancellationToken::new()).is_err());
+    assert_eq!(fs::read(&lock_path).unwrap(), original);
+    assert_eq!(
+        fs::metadata(&lock_path).unwrap().modified().unwrap(),
+        modified
+    );
     fs::write(&lock_path, "{\"packages\":{}}").unwrap();
     let error =
         build_archive(&fixture.request("config.xiao"), &CancellationToken::new()).unwrap_err();
     assert_eq!(error.code, xiao_package::LOCKFILE_INVALID_CODE);
     assert!(result.output.is_file());
+}
+
+#[test]
+/// 分支中的未知调用目标不能被另一条分支的已知目标掩盖。
+fn review_mixed_known_and_unresolved_targets_cannot_omit_capabilities() {
+    let fixture = Fixture::new();
+    fixture.write("helper.xiao", "def read() -> none\n    from stdlib.os import open_file\n    value = open_file(\"unused\")\ndef launch() -> none\n    from stdlib.os import spawn\n    value = spawn(\"unused\")\n");
+    fixture.write("main.xiao", "from helper import read, launch\nfrom stdlib.text import length\naction = read\nflag = length(\"x\") > 0\nif flag\n    callbacks = [launch]\n    action = callbacks[0]\naction()\n");
+    match build_archive(&fixture.request("main.xiao"), &CancellationToken::new()) {
+        Ok(result) => assert_ne!(
+            result.index.required_capabilities & CAPABILITY_PROCESS,
+            0,
+            "不允许成功写出漏报 process 的归档"
+        ),
+        Err(error) => {
+            assert!(
+                error.message.contains("无法静态确定"),
+                "只允许明确拒绝未解析的调用闭包：{error}"
+            );
+            assert!(!fixture.root.join("main.xar").exists());
+        }
+    }
+}
+
+#[test]
+/// 配置入口构建的输出不得覆盖真正的入口、依赖源码或配置资源。
+fn review_output_cannot_replace_any_archive_input() {
+    for output in [
+        "app.xiao",
+        "helper.xiao",
+        "unused.xiao",
+        "config.xiao",
+        "message.txt",
+    ] {
+        let fixture = Fixture::new();
+        fixture.write("config.xiao", "[project]\nname = \"review\"\nversion = \"0.1.0\"\n[resources]\n\"message\" = \"message.txt\"\n");
+        fixture.write("app.xiao", "[main]\nfrom helper import work\nwork()\n");
+        fixture.write("helper.xiao", "def work() -> none\n    print(\"review\")\n");
+        fixture.write(
+            "unused.xiao",
+            "def unused() -> none\n    print(\"unused\")\n",
+        );
+        fixture.write("message.txt", "resource");
+        let output = fixture.root.join(output);
+        let before = fs::read(&output).unwrap();
+        let modified = fs::metadata(&output).unwrap().modified().unwrap();
+        let mut request = fixture.request("config.xiao");
+        request.output = Some(output.clone());
+        assert!(
+            build_archive(&request, &CancellationToken::new()).is_err(),
+            "输出不得覆盖构建输入：{}",
+            output.display()
+        );
+        assert_eq!(fs::read(&output).unwrap(), before);
+        assert_eq!(fs::metadata(&output).unwrap().modified().unwrap(), modified);
+    }
+}
+
+#[test]
+/// 输出不能替换缓存索引或写入缓存内部，失败不改变缓存内容与修改时间。
+fn review_archive_output_cannot_corrupt_its_cache() {
+    let fixture = Fixture::new();
+    fixture.write("main.xiao", "print(\"cache\")\n");
+    let mut request = fixture.request("main.xiao");
+    build_archive(&request, &CancellationToken::new()).unwrap();
+    let index = fixture.cache.join("global.index.pb");
+    let before = fs::read(&index).unwrap();
+    let modified = fs::metadata(&index).unwrap().modified().unwrap();
+    for output in [
+        index.clone(),
+        fixture.cache.join("../cache/global.index.pb"),
+        fixture.cache.join("new.xar"),
+    ] {
+        request.output = Some(output);
+        let error = build_archive(&request, &CancellationToken::new()).unwrap_err();
+        assert!(error.message.contains("缓存"), "{error}");
+        assert_eq!(fs::read(&index).unwrap(), before);
+        assert_eq!(fs::metadata(&index).unwrap().modified().unwrap(), modified);
+        assert!(!fixture.cache.join("new.xar").exists());
+    }
 }
