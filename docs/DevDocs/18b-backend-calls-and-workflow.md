@@ -340,3 +340,4 @@ docs/DevDocs/18a-*.md          补那处测试改动的说明（§2.9 ②）
 - [14A. `.xiaoc` 格式与编解码](14a-xiaoc-format-and-codec.md) —— 物化与校验
 - [16B. 缓存维护](16b-cache-maintenance.md) —— 两阶段清理与引用集合；`cache` 命令的库层
 - [17C. 入口与运行器](17c-entry-and-runner.md) —— 统一运行契约与 `run_xiaoc_production`
+- [18B-收口：`build -xar` 与 18B 验收对账](18b-build-xar-and-closeout.md) —— §十 未完成项与 13 条验收的后续批次
