@@ -242,10 +242,10 @@ docs/DevDocs/README.md                                  18B 状态与本文一�
 - **运行与调试**：VM 新增已验证模块执行视图；归档内本地对象只从索引加载，
   官方库回调驱动器加载器。普通归档只含紧凑映射；`-debug` 追加独立调试符号及激活位，
   不自动携带源码对象。无法静态解析的动态调用明确拒绝，不漏报能力或打包不完整程序。
-- **定向验证**：`18b_build_archive.rs` 当前 9 项通过，覆盖真实核心进程构建/运行、
+- **定向验证**：`18b_build_archive.rs` 当前 12 项通过，覆盖真实核心进程构建/运行、
   官方库、本地模块搬离源码后运行、O0–O3、显式资源、缓存破坏、入口歧义、第三方限制、
   调试对象、锁只读及 REPL 隔离；CLI 路由和默认/显式输出回归通过。
-- **完整验证**：最终全工作区测试 **1233 项通过、41 项环境门控 ignored、0 失败**，
+- **完整验证**：自审后全工作区测试 **1236 项通过、41 项环境门控 ignored、0 失败**，
   四入口差分、O-1 和实际协议进程归档回归均已实际执行；最终 Bun **298 项通过、5 项环境门控跳过、0 失败**。
   首轮 Bun 的 AST 适配器在并行 Rust 构建期间触发 60 秒超时，编译结束后单独重跑全部通过。
   最终 `cargo fmt --all -- --check`、`cargo clippy --workspace --all-targets -- -D warnings`、
@@ -267,7 +267,8 @@ docs/DevDocs/README.md                                  18B 状态与本文一�
 - `review_mixed_known_and_unresolved_targets_cannot_omit_capabilities`：修复前真实复现漏报；修复后未知调用明确拒绝且无归档输出。
 - `review_output_cannot_replace_any_archive_input`：入口、依赖、未调用但已解析模块、配置和资源的内容与 mtime 均不变。
 - `review_archive_output_cannot_corrupt_its_cache`：缓存索引及包含 `..` 的等价路径均拒绝，缓存内容与 mtime 不变，也不创建缓存内额外归档。
-- 真实锁文件回归追加输出覆盖锁的负例；`18b_build_archive.rs` 当前 12 项定向回归通过，驱动器 clippy 通过。完整门禁复验中。
+- 真实锁文件回归追加输出覆盖锁的负例；`18b_build_archive.rs` 当前 12 项定向回归通过，驱动器 clippy 通过。
+- 修复提交为 `83c77cd`；全工作区 1236 项通过，Bun 298 项通过，`bun run check`、fmt、clippy、类型检查和文档门禁均通过。
 
 ## 相关页面
 
