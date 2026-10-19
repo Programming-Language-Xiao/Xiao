@@ -127,6 +127,21 @@ impl<'source> TypeChecker<'source> {
             });
             return result_type;
         }
+        let expression_item = selector
+            .items
+            .iter()
+            .find(|item| self.is_expression_index_item(&source_type, item));
+        if selector.items.len() != 1
+            && let Some(item) = expression_item
+        {
+            self.selector_error(
+                INVALID_CONTAINER_PATH_CODE,
+                "x03.type.selector_invalid_index",
+                item.span(),
+                "表达式下标只能作为单个精确选择项使用".to_owned(),
+            );
+            return Type::Dynamic;
+        }
 
         let mut expanded = Vec::with_capacity(selector.items.len());
         for item in &selector.items {
@@ -487,6 +502,25 @@ impl<'source> TypeChecker<'source> {
         Some(StepPlan::known(value))
     }
 
+    /// 判断选择项是否会把裸名称解释为表达式下标。
+    fn is_expression_index_item(&self, source_type: &Type, item: &SelectorItem) -> bool {
+        match item {
+            SelectorItem::ExactExpression { .. } => true,
+            SelectorItem::Exact { path, .. } if path.segments.len() == 1 => {
+                let PathSegment::Name(name) = &path.segments[0] else {
+                    return false;
+                };
+                is_selector_source(source_type)
+                    && !matches!(source_type, Type::DictTable(_))
+                    && self.environment.lookup(&self.name_key(*name)).is_some()
+                    && !(matches!(source_type, Type::DictColumn(dictionary) if dictionary
+                        .value_type(name.unquoted_text(self.source()))
+                        .is_some()))
+            }
+            _ => false,
+        }
+    }
+
     /// 展开一个语法选择项并执行静态边界检查。
     fn expand_selector_item(
         &mut self,
@@ -504,48 +538,11 @@ impl<'source> TypeChecker<'source> {
                     && !(matches!(source_type, Type::DictColumn(dictionary) if dictionary.value_type(name.unquoted_text(self.source())).is_some()))
                 {
                     let expression = Expression::Name(*name);
-                    let index_type = self.check_expression(&expression);
-                    if !index_type.is_integer()
-                        && !index_type.is_dynamic()
-                        && !matches!(index_type, Type::Variable(_))
-                    {
-                        self.selector_error(
-                            INVALID_CONTAINER_PATH_CODE,
-                            "x03.type.selector_invalid_index",
-                            expression.span(),
-                            format!("表达式下标必须是整数，实际为 {}", index_type),
-                        );
-                    }
-                    let needs_runtime_check = self
-                        .eval_const(&expression)
-                        .and_then(constant_integer)
-                        .is_none_or(|value| value < 0);
-                    if let Some(value) = self.eval_const(&expression).and_then(constant_integer)
-                        && value < 0
-                    {
-                        self.selector_error(
-                            CONTAINER_INDEX_OUT_OF_BOUNDS_CODE,
-                            "x03.type.index_out_of_bounds",
-                            expression.span(),
-                            "表达式下标不能为负数".to_owned(),
-                        );
-                    }
-                    if needs_runtime_check {
-                        *requires_runtime_check = true;
-                        self.push_runtime_check(
-                            expression.span(),
-                            RuntimeCheckKind::SelectorBounds,
-                        );
-                    }
-                    return ExpandedItem {
-                        plan: SelectionItemPlan::Exact { path: Vec::new() },
-                        paths: Vec::new(),
-                        dynamic: true,
-                        random: false,
-                        with_replacement: false,
-                        zero_random: false,
-                        target_types: vec![dynamic_index_result_type(source_type)],
-                    };
+                    return self.expand_expression_index_item(
+                        source_type,
+                        &expression,
+                        requires_runtime_check,
+                    );
                 }
                 let lowered = self.lower_selector_path(path);
                 let resolved = lowered.as_ref().and_then(|lowered| {
@@ -574,45 +571,7 @@ impl<'source> TypeChecker<'source> {
                 }
             }
             SelectorItem::ExactExpression { expression, .. } => {
-                let index_type = self.check_expression(expression);
-                if !index_type.is_integer()
-                    && !index_type.is_dynamic()
-                    && !matches!(index_type, Type::Variable(_))
-                {
-                    self.selector_error(
-                        INVALID_CONTAINER_PATH_CODE,
-                        "x03.type.selector_invalid_index",
-                        expression.span(),
-                        format!("表达式下标必须是整数，实际为 {}", index_type),
-                    );
-                }
-                let needs_runtime_check = self
-                    .eval_const(expression)
-                    .and_then(constant_integer)
-                    .is_none_or(|value| value < 0);
-                if let Some(value) = self.eval_const(expression).and_then(constant_integer)
-                    && value < 0
-                {
-                    self.selector_error(
-                        CONTAINER_INDEX_OUT_OF_BOUNDS_CODE,
-                        "x03.type.index_out_of_bounds",
-                        expression.span(),
-                        "表达式下标不能为负数".to_owned(),
-                    );
-                }
-                if needs_runtime_check {
-                    *requires_runtime_check = true;
-                    self.push_runtime_check(expression.span(), RuntimeCheckKind::SelectorBounds);
-                }
-                ExpandedItem {
-                    plan: SelectionItemPlan::Exact { path: Vec::new() },
-                    paths: Vec::new(),
-                    dynamic: true,
-                    random: false,
-                    with_replacement: false,
-                    zero_random: false,
-                    target_types: vec![dynamic_index_result_type(source_type)],
-                }
+                self.expand_expression_index_item(source_type, expression, requires_runtime_check)
             }
             SelectorItem::Range { start, end, .. } => self.expand_range_item(
                 source_type,
@@ -750,6 +709,59 @@ impl<'source> TypeChecker<'source> {
                     target_types: Vec::new(),
                 }
             }
+        }
+    }
+
+    /// 检查有序容器上的表达式下标，并对可求值的有限容器执行静态越界判断。
+    fn expand_expression_index_item(
+        &mut self,
+        source_type: &Type,
+        expression: &Expression,
+        requires_runtime_check: &mut bool,
+    ) -> ExpandedItem {
+        let index_type = self.check_expression(expression);
+        if !index_type.is_integer()
+            && !index_type.is_dynamic()
+            && !matches!(index_type, Type::Variable(_))
+        {
+            self.selector_error(
+                INVALID_CONTAINER_PATH_CODE,
+                "x03.type.selector_invalid_index",
+                expression.span(),
+                format!("表达式下标必须是整数，实际为 {}", index_type),
+            );
+        }
+        let constant = self.eval_const(expression).and_then(constant_integer);
+        if let Some(value) = constant {
+            if value < 0 {
+                self.selector_error(
+                    CONTAINER_INDEX_OUT_OF_BOUNDS_CODE,
+                    "x03.type.index_out_of_bounds",
+                    expression.span(),
+                    "表达式下标不能为负数".to_owned(),
+                );
+            } else if let Some(length) = static_index_length(source_type)
+                && usize::try_from(value).map_or(true, |index| index >= length)
+            {
+                self.selector_error(
+                    CONTAINER_INDEX_OUT_OF_BOUNDS_CODE,
+                    "x03.type.index_out_of_bounds",
+                    expression.span(),
+                    format!("表达式下标超出容器长度 {}", length),
+                );
+            }
+        } else {
+            *requires_runtime_check = true;
+            self.push_runtime_check(expression.span(), RuntimeCheckKind::SelectorBounds);
+        }
+        ExpandedItem {
+            plan: SelectionItemPlan::Exact { path: Vec::new() },
+            paths: Vec::new(),
+            dynamic: true,
+            random: false,
+            with_replacement: false,
+            zero_random: false,
+            target_types: vec![dynamic_index_result_type(source_type)],
         }
     }
 
@@ -1215,7 +1227,31 @@ fn resolve_array_index(array: &ArrayType, raw: i128) -> Result<Option<(usize, Ty
 fn array_element_type(array: &ArrayType) -> Type {
     match array {
         ArrayType::Homogeneous { element, .. } => element.as_ref().clone(),
-        ArrayType::Heterogeneous { .. } | ArrayType::Unknown => Type::Dynamic,
+        ArrayType::Heterogeneous { elements } => {
+            let Some(first) = elements.first() else {
+                return Type::Dynamic;
+            };
+            if elements.iter().all(|element| element == first) {
+                first.clone()
+            } else {
+                Type::Dynamic
+            }
+        }
+        ArrayType::Unknown => Type::Dynamic,
+    }
+}
+
+/// 返回编译期已知长度；未知长度的数组和字符串留给 Runtime 检查。
+fn static_index_length(source: &Type) -> Option<usize> {
+    match source {
+        Type::Array(ArrayType::Heterogeneous { elements }) => Some(elements.len()),
+        Type::Array(ArrayType::Homogeneous {
+            length: Some(length),
+            ..
+        }) => Some(*length),
+        Type::Tuple(elements) => Some(elements.len()),
+        Type::DictColumn(dictionary) => Some(dictionary.entries.len()),
+        _ => None,
     }
 }
 

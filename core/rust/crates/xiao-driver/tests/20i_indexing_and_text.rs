@@ -35,6 +35,21 @@ fn expression_indices_use_codepoints_and_array_positions() {
 }
 
 #[test]
+fn expression_indices_can_call_index_producers() {
+    let outcome =
+        run("def pick() -> int\n    return 1\nvalues = [10, 20]\nprint(values[pick()])\n");
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), "20\n");
+}
+
+#[test]
+fn set_methods_inside_index_expressions_are_linked() {
+    let outcome = run("values = [10, 20]\nprint(values[{1}.size()])\n");
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), "20\n");
+}
+
+#[test]
 fn expression_indices_cover_tuple_and_dict_column() {
     let outcome = run(
         "tuple = (10, 20)\ncolumn = <first = \"甲\", second = \"乙\">\ni = 1\nprint(tuple[i])\nprint(column[i + 0])\n",
@@ -79,9 +94,15 @@ fn indexing_boundaries_keep_static_and_runtime_diagnostics() {
     for (source, code) in [
         ("text = \"x\"\nprint(text[true])\n", "X03-TYPE-003"),
         ("values = [1]\nprint(values[2])\n", "X03-TYPE-004"),
+        ("values = [1]\nprint(values[1 + 1])\n", "X03-TYPE-004"),
+        ("values = [1]\nprint(values[(-1)])\n", "X03-TYPE-004"),
         (
             "table = {name = \"x\"}\ni = 0\nprint(table[i + 1])\n",
             "X03-TYPE-008",
+        ),
+        (
+            "values = [1, 2]\ni = 0\nprint(values[i, 1])\n",
+            "X03-TYPE-003",
         ),
     ] {
         let error = FrontendCompiler::new()

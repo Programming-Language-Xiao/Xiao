@@ -348,12 +348,20 @@ fn expression_uses_set_method(
         Expression::Selector {
             source: object,
             step,
+            selector,
             ..
         } => {
             expression_uses_set_method(object, source, types)
                 || step
                     .as_deref()
                     .is_some_and(|step| expression_uses_set_method(step, source, types))
+                || selector.items.iter().any(|item| {
+                    matches!(
+                        item,
+                        xiao_syntax::SelectorItem::ExactExpression { expression, .. }
+                            if expression_uses_set_method(expression, source, types)
+                    )
+                })
         }
         Expression::Literal { .. } | Expression::Name(_) => false,
     }

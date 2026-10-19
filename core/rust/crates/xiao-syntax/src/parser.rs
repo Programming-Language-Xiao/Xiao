@@ -1943,6 +1943,9 @@ fn selector_expression_start(kind: TokenKind) -> bool {
                 | TokenKind::None
                 | TokenKind::Minus
                 | TokenKind::LeftParen
+                | TokenKind::LeftBracket
+                | TokenKind::LeftBrace
+                | TokenKind::Keyword(KeywordKind::New | KeywordKind::Not)
         )
 }
 

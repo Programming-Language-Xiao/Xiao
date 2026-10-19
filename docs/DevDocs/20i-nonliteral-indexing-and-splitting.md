@@ -36,7 +36,7 @@
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
 | 20H 定向 | `20h_set_methods` 10、`20g_set_mutation` 7、`d17c_archive` 12、`18b_build_archive` 13 通过 | 20H 主干成立 |
-| 20I 定向 | `20i_indexing_and_text` 7 通过；`r2a_containers` 17 通过 | VM、数组追加、表达式下标、文本接口和边界诊断已接通 |
+| 20I 定向 | `20i_indexing_and_text` 10 通过；`r2a_containers` 17 通过 | VM、数组追加、表达式下标、文本接口和边界诊断已接通 |
 | 全工作区 | Rust workspace 全量测试无失败；Bun 单独跑 298 通过 / 5 跳过 / 0 失败 | 本地主体成立 |
 | 20H 推送 CI | `66856a2` 已进入当前 `origin/main`；历史运行号覆盖前一版本，新的四平台取证仍待本批维护回归 | F-1 的本地提交状态已核销，CI 证据待刷新 |
 | `s[1]` 字面量 | `"小雪"[1]` 输出 `雪` | **码点语义** |
@@ -339,10 +339,10 @@ tests/fixtures/20i/
 
 - **F-2**：前端静态链接扫描同时遍历普通函数和表方法的参数默认值；默认值中的集合方法按直接调用处理，方法值仍保持 `X03-TYPE-025`。
 - **数组注解**：函数参数/返回支持一层 `[T]`，支持标量、资源、`none` 和类型参数；嵌套数组及数组套集合在解析阶段拒绝。
-- **表达式下标**：`str`、数组、元组和字典列支持 `s[i]`、`s[i + 1]`、`a[f()]`；字典表继续使用名称键语义。静态负数/越界在类型层拒绝，动态负数由 `X06-RUNTIME-017` 拒绝，字符串按 Unicode 码点读取。
+- **表达式下标**：`str`、数组、元组和字典列支持 `s[i]`、`s[i + 1]`、`a[f()]`；字典表继续使用名称键语义。表达式下标的静态负数/可判越界在类型层拒绝，动态负数由 `X06-RUNTIME-017` 拒绝，字符串按 Unicode 码点读取。
 - **`array_push`**：新增稳定 intrinsic ID 31，VM、Runtime ABI 和 LLVM 动态路径共享数组句柄追加语义；`split` 通过该入口保留首/中/尾空段。
 - **文本接口**：`stdlib.text` 新增 `find`、`slice`、`split`；错误码固定为 `TEXT_SLICE_OUT_OF_RANGE` 与 `TEXT_SPLIT_EMPTY_SEPARATOR`。
-- **本地验证**：`20i_indexing_and_text` 7 项、`20h_set_methods` 10 项、`d17c_archive` 12 项、`20g_set_mutation` 7 项、`20f_container_parameters` 10 项通过；`xiao-types`、`xiao-runtime`、`xiao-intrinsics` 定向测试通过。受控原生四平台与 workspace/Bun 全量证据待提交后的维护回归刷新。
+- **本地验证**：`20i_indexing_and_text` 10 项、`20h_set_methods` 10 项、`d17c_archive` 12 项、`20g_set_mutation` 7 项、`20f_container_parameters` 10 项通过；`xiao-types`、`xiao-runtime`、`xiao-intrinsics` 定向测试通过。受控原生四平台与 workspace/Bun 全量证据待提交后的维护回归刷新。
 - **F-3/F-4**：Windows 复现脚本已有 `vcvars64.bat` 环境导入；workspace gates 增加两条 REPL 抖动用例的隔离复跑，单独 Bun 复跑仍作为判定依据。
 
 - [20H 集合方法式 API 与 20G 收口](20h-set-methods-and-20g-closeout.md)
