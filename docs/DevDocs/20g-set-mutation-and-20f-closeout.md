@@ -7,10 +7,11 @@
 >
 > **一句话概括本批**：**先把 20F 的验收补成真的，再让集合真正可变。**
 >
-> 状态：**实现完成，原生与推送证据已由后续 20H 收口（2026-10-19）**。四道裁定：范围取
+> 状态：**已实施并验收通过（2026-10-19）**。四道裁定：范围取
 > 「add/remove + 只读包装」、API 用 `stdlib/set.xiao` 自由函数、`remove` 缺失报可恢复错误、
 > 迭代开始时快照。20F 的函数头可哈希校验、实例化回归、诊断文案和逗号解析已修复；`.xiaoc`
-> 标准库 loader 与方法式 API 由 [20H](20h-set-methods-and-20g-closeout.md) 补齐。
+> 标准库 loader 与方法式 API 由 [20H](20h-set-methods-and-20g-closeout.md) 补齐；三平台
+> 原生与 workspace 门禁运行号已回填。
 
 ## 一、Agent 交接上下文
 
@@ -141,9 +142,9 @@ print(g(set()))
 
 1. 在 `verified` 之前补齐：无别名原生、别名原生（依赖 F-1）、`.xiaoc` 入口、
    `.xar` 构建并实际运行；上述路径已分别落在 `20c_first_modules`、`d17c_archive` 和
-   既有归档回归中，UseDocs/registry 等待本批推送证据后再翻转；
+   既有归档回归中；三平台推送证据已齐，UseDocs/registry 已翻转为 `verified`；
 2. 归档缺模块负例（`X17-XAR-008`）进自动化；
-3. 证据未齐前，registry 与 UseDocs 保持 `draft`，文档写明已验证路径与未验证路径；
+3. 证据未齐前，registry 与 UseDocs 保持 `draft`；本批证据已齐，当前状态为 `verified`；
 4. 20F §十 的「7 项」改为实际的 9 项；README 20F 行的「复验中」在证据齐后更新。
 
 **验收**：上述四类用例都有可重放命令与结果；`verified` 只在全绿后翻。
@@ -395,8 +396,8 @@ core/rust/crates/xiao-driver/tests/20f_container_parameters.rs F-1/F-3 回归
   循环体内增删不影响当前轮次。
 - **本地验证**：`20g_set_mutation` **7 项**、Runtime 集合、intrinsic 契约、20F 语法/驱动器
   回归已通过；set/text 别名 LLVM 降低回归、`.xiaoc` 标准库 loader、方法式 API 与归档重放
-  已分别由 20H 的 `20c_first_modules`、`d17c_archive`、`20h_set_methods` 覆盖。registry
-  和 UseDocs 在本批三平台推送证据回填前保持 `draft`。
+  已分别由 20H 的 `20c_first_modules`、`d17c_archive`、`20h_set_methods` 覆盖。maintenance
+  `39239884610` 与 workspace gates `39239884581` 全绿后，registry 和 UseDocs 已翻为 `verified`。
 ## 相关页面
 
 - [20F 通用容器参数与官方 `set` 模块](20f-container-parameters-and-collections.md)

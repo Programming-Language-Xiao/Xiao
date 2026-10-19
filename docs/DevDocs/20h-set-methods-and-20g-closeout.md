@@ -8,10 +8,10 @@
 > **一句话概括本批**：**先让 `.xiaoc` 真的能加载标准库，再让 `values.add(x)` 与
 > `add(values, x)` 等价。**
 >
-> 状态：**实现完成，待本次提交的三平台推送 CI 取证（2026-10-19）**。三道裁定均已落地：
+> 状态：**已实施并验收通过（2026-10-19）**。三道裁定均已落地：
 > 方法面与自由函数一致、动态接收者静态拒绝、方法值只支持直接调用。B-1 的 `.xiaoc`
-> 标准库 loader、E-1/E-2 原生夹具与方法式 API 已接线；registry/UseDocs 在 CI 证据回填前
-> 继续保持 `draft`。
+> 标准库 loader、E-1/E-2 原生夹具与方法式 API 已接线；三平台推送 CI 和 workspace 门禁
+> 已全绿，registry/UseDocs 已同步为 `verified`。
 
 ## 一、Agent 交接上下文
 
@@ -39,13 +39,13 @@
 | --- | --- | --- |
 | 20G 定向 | `20g_set_mutation` **7** 通过；`20f_container_parameters` 10 通过；`p2_type_parameters` 4 通过 | 返工项 F-2/F-3/F-6 与 E-2 已有效 |
 | 20H 定向 | `20h_set_methods` **5** 通过；`d17c_archive` **11** 通过 | 八个方法、单次求值、冲突隔离、`.xiaoc`/`.xar` 的 `set`/`text` loader 已覆盖 |
-| 全工作区 | 本地 workspace、Bun、`run.sh` 均已复验；最终计数以推送提交的门禁日志为准 | 本地门禁成立 |
+| 全工作区 | 本地 workspace、Bun、`run.sh` 均已复验；workspace gates `39239884581` 成功 | 本地与推送门禁成立 |
 | 推送 CI | `ebf34ed` 维护回归 **39202984158 六作业全绿**；`6919d81` 工作区门禁 `39201428785` 成功 | 18B/20F/20G 的推送证据已落地 |
 | 原生别名 | 本地 `set`/`text` 别名构建+运行通过；CI 三平台 `first_modules_match_native_results` 通过 | F-1 已关闭 |
-| 原生增删/快照 | `20c_first_modules::first_modules_match_native_results` 已加入 set 增删、包装、快照、非局部返回和方法式 API；`set_remove_missing_native_matches_vm` 钉住未捕获错误码 | 三平台推送 CI 待回填 |
+| 原生增删/快照 | `20c_first_modules::first_modules_match_native_results` 已加入 set 增删、包装、快照、非局部返回和方法式 API；`set_remove_missing_native_matches_vm` 钉住未捕获错误码 | maintenance `39239884610`：Windows `118017847526`、Linux `118017847726`、macOS `118017847631` 全部通过 |
 | `.xar` | 构建并实际运行通过；缺 `set.xiao` 仍报 `X17-XAR-008` | 可用 |
-| **`.xiaoc`** | `d17c_archive::direct_xiaoc_run_loads_standard_library_modules` 对 `stdlib.set`/`stdlib.text` 逐字比较输出；loader 复用项目根、包注册表和官方标准库根 | B-1 已修复，推送 CI 待回填 |
-| 方法语法 | `values.add(x)` 目前走 `check_table_member_expression`，静态集合被报“类型 set<...> 没有成员 add” | 本批新增 |
+| **`.xiaoc`** | `d17c_archive::direct_xiaoc_run_loads_standard_library_modules` 对 `stdlib.set`/`stdlib.text` 逐字比较输出；loader 复用项目根、包注册表和官方标准库根 | B-1 已关闭；workspace gates `39239884581` 与 maintenance 默认作业通过 |
+| 方法语法 | `values.add(x)` 已在表方法路径前由集合分派接管，静态集合复用 `stdlib.set` 签名 | 本批已完成 |
 | 表方法 | 表方法由 `check_table_method_call` 处理；集合没有对应分派 | 可复用形状 |
 | 方法值 | 表方法只支持直接调用；集合方法同样按直接调用设计 | 见 §三 |
 
@@ -89,12 +89,12 @@ print(size({1}))
 
 **验收**：上述两条 `.xiaoc` 实际运行并逐字比较输出；缺模块时仍走 20E 的稳定诊断。
 
-### E-1 **原生增删/快照缺自动化运行回归（已接入，CI 待回填）**
+### E-1 **原生增删/快照缺自动化运行回归（已关闭）**
 
 **历史现状**：`20g_set_mutation` 的“native”用例曾只做 LLVM 降低，真正执行
 `add`/`remove`/包装/快照/非局部返回的原生证据只有审核时的手工探针。现已由
-`20c_first_modules::first_modules_match_native_results` 接入受控原生门禁，三平台日志待本次
-推送回填。
+`20c_first_modules::first_modules_match_native_results` 已接入受控原生门禁；Windows/Linux/macOS
+分别由 `118017847526`、`118017847726`、`118017847631` 实际执行并通过。
 
 **要求**：
 
@@ -120,12 +120,12 @@ print(size({1}))
 
 - 20G §1.2 的 `20f_container_parameters` **9** → **10**；
 - 20G §九/README 20G 行/20F 状态：原生与推送 CI 已由
-  `39202984158`/`39201428785` 覆盖；本批另补 `.xiaoc` loader 和方法式 API，最终运行号在本批
-  推送后回填；
+  `39239884610`/`39239884581` 覆盖；本批另补 `.xiaoc` loader 和方法式 API，三平台运行号
+  已分别回填；
 - 18B F-1：分支已推送、维护回归全绿，回填运行号，删除“仍未核销”；
 - `stdlib/set.xiao` 顶部注释已改成八个入口、两个 intrinsic；
 - 20F `00-decisions` 的“集合增删留待后续批次”后加一句指向 20G 的已完成状态；
-- registry/UseDocs 在 B-1/E-1/E-2 的推送证据回填前保持 `draft`。
+- registry/UseDocs 已在 B-1/E-1/E-2 的三平台证据齐全后翻为 `verified`。
 
 ## 三、三道裁定
 
@@ -252,7 +252,7 @@ bash tools/gates/run.sh
 7. **路径**：源码、`.xiaoc`、`.xar`、原生四路都可用；静态链接与模块调用两条导入
    路径都覆盖；
 8. **不回归**：workspace、Bun、`run.sh` 全绿；20F/20G/20E/18B 既有用例不受影响；
-9. **文档**：D-1 全部对账；registry/UseDocs 在 B-1/E-1/E-2 全绿后才可翻 `verified`。
+9. **文档**：D-1 全部对账；registry/UseDocs 已在 B-1/E-1/E-2 全绿后翻为 `verified`。
 
 ## 七、不负责
 
@@ -299,10 +299,11 @@ core/rust/crates/xiao-driver/tests/20c_first_modules.rs 原生用例扩展
   `X03-TYPE-026`、`X03-TYPE-025`、`X03-TYPE-024`；反引号名称仍走普通成员路径。
 - **E-1/E-2**：`20c_first_modules` 的受控原生夹具覆盖 set/text 别名、增删、四种包装、
   快照、非局部返回、方法式 API 与未捕获 `SET_ELEMENT_MISSING`；`20g_set_mutation` 的
-  VM 回归为 7 项，`20h_set_methods` 为 5 项。三平台原生作业实际执行和推送运行号待回填。
+  VM 回归为 7 项，`20h_set_methods` 为 5 项。三平台原生作业已实际执行并通过，运行号见上表。
 - **本地命令**：`cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20g_set_mutation`、
   `20h_set_methods`、`d17c_archive`、`cargo test -p xiao-codegen-llvm --tests`、格式检查以及
-  `bun run check:docs`/`bun run check:usedocs` 均通过；完整门禁和三平台 CI 以本次提交日志为准。
+  `bun run check:docs`/`bun run check:usedocs` 均通过；workspace gates `39239884581`、
+  maintenance regression `39239884610` 六作业全绿。
 
 ## 相关页面
 

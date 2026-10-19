@@ -1,7 +1,7 @@
 ---
 id: library.set
 title: 官方 `set` 模块
-status: draft
+status: verified
 audience: user
 module: stdlib.xiao-standard-library-set
 stage: 20H

@@ -8,9 +8,10 @@
 > **一句话概括本批**：**让公共函数能接受「元素类型由调用方决定」的集合，
 > 并用官方 `stdlib/set.xiao` 证明这条能力真的能写库。**
 >
-> 状态：**实现完成，20G 与 20H 已补齐原生/产物路径（2026-10-19，四道裁定均甲）**。
+> 状态：**已实施并验收通过（2026-10-19，四道裁定均甲）**。
 > 20F 语法、量化签名、调用点实例化、刚性统一、生成期擦除和 VM 回归已落地；原生别名、
-> `.xiaoc` 标准库 loader、`.xar` 重放和方法式 API 的收口证据见 20H 及其推送 CI。
+> `.xiaoc` 标准库 loader、`.xar` 重放和方法式 API 的收口证据见 20H；maintenance
+> `39239884610` 与 workspace gates `39239884581` 已全绿。
 
 ## 一、Agent 交接上下文
 
@@ -312,7 +313,7 @@ def is_empty<T>(set<T> values) -> bool
 
 - 本批第 0 步：推送后核销 `maintenance-regression` 与 `workspace-gates`；
 - 该历史缺口已由维护回归 `39202984158` 与工作区门禁 `39201428785` 核销；20H 新增的
-  三平台原生运行号在本批推送后另行回填。
+  三平台原生运行号为 Windows `118017847526`、Linux `118017847726`、macOS `118017847631`。
 
 **F-2（索引计数漂移）**：README 的 18B-收口行原写「9 项 Rust 定向回归 / workspace 1233」，
 与文档 §十二 的「12 项 / 1236 项」不一致。
@@ -383,8 +384,8 @@ tests/fixtures/20f/                                        多实例/负例夹�
   `20g_set_mutation` 7 项通过，
   覆盖解析、多实例 VM、官方模块别名、空集合、标量泛型、递归刚性诊断和归档索引。
 - **总门禁**：workspace Rust 测试、严格 Clippy、格式检查、Bun 298 项测试、文档/UseDocs
-  检查、覆盖率门禁、TypeScript 类型检查和 benchmark 自测均通过；原生相关用例按既有
-  工具链环境门控保持忽略。
+  检查、覆盖率门禁、TypeScript 类型检查和 benchmark 自测均通过；三平台原生相关用例已由
+  maintenance regression `39239884610` 实际执行并通过。
 - **文档登记**：同步 `00-decisions`、`02-type-system`、`03-collections`、
   `04-functions-and-control`、20G、UseDocs、registry；泛型表、约束语法和非字面量下标
   保持后续缺口。
