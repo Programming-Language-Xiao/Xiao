@@ -298,6 +298,7 @@ intrinsic 数量持续增长，应先检查语言表达能力、优化器和 Run
 | **20F 通用容器参数** | 20E；[03](03-collections.md) 的「通用容器参数类型」登记 | 顶层函数显式类型参数、`set<T>` 参数/返回注解、调用点实例化与生成期擦除；官方 `stdlib/set.xiao` 的八个集合入口 | 不做泛型表、显式实例化或约束语法；见 [20F](20f-container-parameters-and-collections.md) |
 | **20G 集合增删** | 20F；20F 审核 F-1–F-7 | 集合 `add`/`remove`、`contains`/`union`/`intersection`/`difference` 只读包装、迭代快照、intrinsic 二参数契约 | 不做方法式 API、`frozenset`、哈希索引或非字面量下标；见 [20G](20g-set-mutation-and-20f-closeout.md) |
 | **20H 集合方法式 API** | 20G；20G 审核 B-1/E-1/E-2/D-1 | `.xiaoc` 标准库 loader、原生增删/快照运行回归、包装顺序断言；与八个自由函数一一对应的 `values.add(x)` 等方法 | 不做方法值、动态接收者分派、`frozenset` 或非字面量下标；见 [20H](20h-set-methods-and-20g-closeout.md) |
+| **20I 表达式下标与切分** | 20H；20C 子串/切分登记 | 20H 审核 F-1–F-5；有序容器表达式下标、`[T]` 数组注解、`array_push`、`text.find`/`slice`/`split` | 不做字典表动态键、负/字节索引、范围表达式端点或嵌套数组注解；见 [20I](20i-nonliteral-indexing-and-splitting.md) |
 
 20A 的契约设计可以现在开始，但只有当它改变 09R3 的机型、调用 ABI、编码或源码映射
 时，才会阻塞 09R3；否则研究路径可以继续使用已登记的实验性入口，并在进入 B0 前迁移。
