@@ -52,6 +52,8 @@ pub enum IntrinsicKind {
     ScalarConversion,
     CharConstructor,
     SetConstructor,
+    SetAdd,
+    SetRemove,
     ErrorConstructor,
     Print,
     Input,
@@ -70,6 +72,7 @@ pub enum Arity {
     Zero,
     One,
     OptionalOne,
+    Two,
     Variadic,
     Error,
     None,
@@ -88,6 +91,7 @@ pub enum ValueType {
     Str,
     Bool,
     Set,
+    SetElement,
     ErrorParameters,
     File,
     Directory,
@@ -99,6 +103,7 @@ pub enum ValueType {
 pub enum Effects {
     Pure,
     Allocates,
+    MutatesContainer,
     WritesStdout,
     ReadsStdin,
     ReadsFilesystem,
@@ -201,6 +206,8 @@ pub enum VmBinding {
     ScalarCast,
     CharConstructor,
     SetNew,
+    SetAdd,
+    SetRemove,
     MakeError,
     Print,
     Input,
@@ -217,6 +224,8 @@ pub enum VmBinding {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum AbiBinding {
     ErrorNew,
+    SetAdd,
+    SetRemove,
     Print,
     Input,
     ResourceOpenFile,
@@ -338,6 +347,23 @@ pub fn validate_table() -> Result<(), ContractError> {
                         || declaration.vm_binding != VmBinding::SetNew
                         || declaration.abi_binding != AbiBinding::None
                         || declaration.effects != Effects::Allocates
+                        || declaration.capability != Capability::None
+                    {
+                        return Err(ContractError::SignatureMismatch(declaration.id));
+                    }
+                }
+                IntrinsicKind::SetAdd | IntrinsicKind::SetRemove => {
+                    let (vm, abi, result) = if declaration.kind == IntrinsicKind::SetAdd {
+                        (VmBinding::SetAdd, AbiBinding::SetAdd, ValueType::None)
+                    } else {
+                        (VmBinding::SetRemove, AbiBinding::SetRemove, ValueType::Bool)
+                    };
+                    if declaration.signature.arity != Arity::Two
+                        || declaration.signature.parameter != ValueType::SetElement
+                        || declaration.signature.return_type != result
+                        || declaration.vm_binding != vm
+                        || declaration.abi_binding != abi
+                        || declaration.effects != Effects::MutatesContainer
                         || declaration.capability != Capability::None
                     {
                         return Err(ContractError::SignatureMismatch(declaration.id));

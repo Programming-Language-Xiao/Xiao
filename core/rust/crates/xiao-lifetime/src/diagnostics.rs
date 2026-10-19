@@ -74,18 +74,26 @@ pub fn dynamic_check(span: SourceSpan, value: Option<ValueId>, reason: EscapeRea
     let value_text = value
         .map(|id| id.get().to_string())
         .unwrap_or_else(|| "expression".to_owned());
+    let reason_text = match reason {
+        EscapeReason::Returned => "函数返回值跨越生命周期边界",
+        EscapeReason::CapturedByClosure => "值被闭包捕获",
+        EscapeReason::StoredInLongerLivedContainer => "值被存入更长生命周期的容器",
+        EscapeReason::CrossThread => "值可能跨线程传递",
+        EscapeReason::DynamicValue => "值的具体类型需要运行时检查",
+        EscapeReason::Unknown => "生命周期分析信息不完整",
+    };
     Diagnostic::new(
         DYNAMIC_CHECK_CODE,
         "x06.lifetime.dynamic_check",
         Severity::Warning,
         Some(span),
-        format!("值 {value_text} 的生命周期需要 Runtime 检查 ({reason:?})"),
+        format!("值 {value_text} 的生命周期需要运行时检查：{reason_text}"),
     )
     .with_params([
         ("value".to_owned(), DiagnosticParam::Text(value_text)),
         (
             "reason".to_owned(),
-            DiagnosticParam::Text(format!("{reason:?}")),
+            DiagnosticParam::Text(reason_text.to_owned()),
         ),
     ])
 }

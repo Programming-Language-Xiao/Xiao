@@ -338,6 +338,7 @@ fn encode_op(
             writer.index(right.get(), "VReg")
         }
         TacOp::Len { source } => writer.index(source.get(), "VReg"),
+        TacOp::IterSnapshot { source } => writer.index(source.get(), "VReg"),
         TacOp::LoadTable {
             table,
             construct,

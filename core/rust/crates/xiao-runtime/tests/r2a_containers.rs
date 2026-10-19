@@ -79,6 +79,25 @@ fn set_deduplicates_and_releases_dropped_elements() {
 }
 
 #[test]
+/// 集合增删共享同一载荷，重复插入和缺失删除保持稳定返回值与顺序。
+fn set_mutation_is_visible_through_aliases() {
+    let set = int_set(&[1]);
+    let alias = set.clone();
+    assert!(set.insert(&RuntimeValue::Int(2)).expect("插入"));
+    assert!(alias.contains(&RuntimeValue::Int(2)).expect("别名可见"));
+    assert!(!alias.insert(&RuntimeValue::Int(2)).expect("重复插入无操作"));
+    assert!(set.remove(&RuntimeValue::Int(1)).expect("删除"));
+    assert!(
+        !alias
+            .remove(&RuntimeValue::Int(9))
+            .expect("缺失删除返回 false")
+    );
+    assert_eq!(int_elements(&set), vec![2]);
+    drop(alias);
+    set.try_release().expect("集合应释放");
+}
+
+#[test]
 /// 不可哈希元素进入集合被拒绝，并使用稳定错误身份。
 fn set_rejects_unhashable_elements() {
     let nested = ArrayHandle::new(vec![RuntimeValue::Int(1)]).expect("数组应分配");

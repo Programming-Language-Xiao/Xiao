@@ -744,6 +744,13 @@ fn validate_instruction(
             &format!("{path}.dst"),
             result,
         ),
+        TacOp::IterSnapshot { .. } => expect_dst_class(
+            function,
+            instruction.dst,
+            RegisterClass::ObjHandle,
+            &format!("{path}.dst"),
+            result,
+        ),
         TacOp::LoadTable {
             table, arguments, ..
         } => {

@@ -486,6 +486,16 @@ fn first_modules_match_native_results() {
             "from stdlib.text import contains_char\nfrom stdlib.text import length\nfrom stdlib.text import is_ascii_upper\nif not contains_char(\"lib/core\", \"/\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif contains_char(\"lib/core\", \"x\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif length(\"小雪\") != 2\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nif not is_ascii_upper(\"A\")\n    raise ArithmeticError(code = \"TEXT_MODULE\")\nprint(\"ok\")\n",
             "ok\n",
         ),
+        (
+            "set-alias",
+            "from stdlib.set import size as count\nprint(count({\"a\", \"b\"}))\n",
+            "2\n",
+        ),
+        (
+            "text-alias",
+            "from stdlib.text import length as len\nprint(len(\"小雪\"))\n",
+            "2\n",
+        ),
     ];
     for (module, caller, expected_stdout) in cases {
         let source = caller;

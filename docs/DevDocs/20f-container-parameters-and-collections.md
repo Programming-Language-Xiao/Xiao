@@ -8,8 +8,9 @@
 > **一句话概括本批**：**让公共函数能接受「元素类型由调用方决定」的集合，
 > 并用官方 `stdlib/set.xiao` 证明这条能力真的能写库。**
 >
-> 状态：**实现完成，本地门禁组成项复验通过（2026-10-19，四道裁定均甲）**。语法、量化
-> 签名与调用点实例化、刚性统一、生成期擦除、官方 `set` 模块、VM 与归档回归已落地。
+> 状态：**本地实现完成，20G 返工与可变集合接线已落地；原生/产物证据仍待受控工具链复验
+> （2026-10-19，四道裁定均甲）**。20F 语法、量化签名、调用点实例化、刚性统一、生成期
+> 擦除和 VM 回归已落地；20G 继续承接原生别名、`.xiaoc`/`.xar` 运行证据。
 
 ## 一、Agent 交接上下文
 
@@ -372,18 +373,20 @@ tests/fixtures/20f/                                        多实例/负例夹�
   实参会退化为动态边界，函数体内刚性变量与具体类型合并报 `X04-TYPE-008`，集合元素
   的不可哈希实例报 `X03-TYPE-023`。`IrType::Variable` 在生成期继续擦除为动态值，
   不做单态化，也不改 `.xiaoc` 与 Runtime ABI。
-- **官方模块**：新增 `stdlib/set.xiao` 与 `size<T>`、`is_empty<T>`，通过纯 Xiao
-  `for` 计数，不新增 intrinsic；导入和别名由标准库签名提取路径接入。
+- **官方模块**：`stdlib/set.xiao` 现提供 `size`、`is_empty`、`add`、`remove`、
+  `contains`、`union`、`intersection`、`difference`；可变入口通过 20G intrinsic
+  接入，导入和别名由标准库签名提取路径接入。
 - **归档**：真实 `build_archive` 用例确认 `stdlib_modules` 包含 `stdlib.set`，归档不携带
   官方对象；宿主标准库版本与缺模块启动检查继续复用 20E。
-- **定向验证**：`p2_type_parameters` 4 项通过；`20f_container_parameters` 7 项通过，
+- **定向验证**：`p2_type_parameters` 4 项通过；`20f_container_parameters` 10 项、
+  `20g_set_mutation` 6 项通过，
   覆盖解析、多实例 VM、官方模块别名、空集合、标量泛型、递归刚性诊断和归档索引。
 - **总门禁**：workspace Rust 测试、严格 Clippy、格式检查、Bun 298 项测试、文档/UseDocs
   检查、覆盖率门禁、TypeScript 类型检查和 benchmark 自测均通过；原生相关用例按既有
   工具链环境门控保持忽略。
 - **文档登记**：同步 `00-decisions`、`02-type-system`、`03-collections`、
-  `04-functions-and-control`、20 路线稿、UseDocs、registry；`add/remove`、泛型表、
-  约束语法和非字面量下标保持后续缺口。
+  `04-functions-and-control`、20G、UseDocs、registry；泛型表、约束语法和非字面量下标
+  保持后续缺口。
 
 ## 相关页面
 

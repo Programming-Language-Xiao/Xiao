@@ -242,6 +242,91 @@ pub extern "C" fn xiao_runtime_value_iter_get(
     unsafe { write_value(out, item) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
 }
 
+/// 在集合迭代开始时复制元素到数组值，冻结本次循环的观察序列。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_iter_snapshot(
+    value: *const XiaoValue,
+    out: *mut XiaoValue,
+) -> i32 {
+    if value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let RuntimeValue::Set(handle) = value else {
+        return status::<()>(Err(RuntimeError::type_mismatch("set", value.type_name())))
+            .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+    };
+    let elements = match handle.with_elements(|elements| elements.to_vec()) {
+        Ok(elements) => elements,
+        Err(error) => return status::<()>(Err(error)).map_or_else(|error| error, |_| 0),
+    };
+    let array = match ArrayHandle::new(elements) {
+        Ok(array) => RuntimeValue::Array(array),
+        Err(error) => return status::<()>(Err(error)).map_or_else(|error| error, |_| 0),
+    };
+    let array = match runtime_to_value(&array) {
+        Ok(array) => array,
+        Err(error) => return error,
+    };
+    unsafe { write_value(out, array) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
+/// 向 ABI 集合值插入一个元素；重复元素保持无操作。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_set_add(set: *const XiaoValue, value: *const XiaoValue) -> i32 {
+    if set.is_null() || value.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let set = match unsafe { value_to_runtime(&*set) } {
+        Ok(RuntimeValue::Set(handle)) => handle,
+        Ok(other) => {
+            return status::<()>(Err(RuntimeError::type_mismatch("set", other.type_name())))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+        Err(error) => return error,
+    };
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    status(set.insert(&value)).map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
+/// 从 ABI 集合值删除一个元素；`out` 返回是否实际删除。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_set_remove(
+    set: *const XiaoValue,
+    value: *const XiaoValue,
+    out: *mut u8,
+) -> i32 {
+    if set.is_null() || value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    unsafe { *out = 0 };
+    let set = match unsafe { value_to_runtime(&*set) } {
+        Ok(RuntimeValue::Set(handle)) => handle,
+        Ok(other) => {
+            return status::<()>(Err(RuntimeError::type_mismatch("set", other.type_name())))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+        Err(error) => return error,
+    };
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    match status(set.remove(&value)) {
+        Ok(removed) => {
+            unsafe { *out = u8::from(removed) };
+            XiaoAbiStatus::Ok.code()
+        }
+        Err(error) => error,
+    }
+}
+
 /// 按冻结的种子 0 语义执行动态随机选择并返回数组值。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_select(

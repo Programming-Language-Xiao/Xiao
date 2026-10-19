@@ -815,6 +815,8 @@ unsafe extern "C" {
     pub fn xiao_runtime_dynamic_check(kind: XiaoAbiBytes, value: *const XiaoValue) -> i32;
     /// 返回动态可迭代值的元素数量。
     pub fn xiao_runtime_value_iter_len(value: *const XiaoValue, out: *mut usize) -> i32;
+    /// 在集合迭代开始时复制元素到独立数组值。
+    pub fn xiao_runtime_value_iter_snapshot(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
     /// 复制动态可迭代值的指定元素。
     pub fn xiao_runtime_value_iter_get(
         value: *const XiaoValue,
@@ -914,6 +916,14 @@ unsafe extern "C" {
     /// 判断集合是否包含给定值。
     pub fn xiao_runtime_set_contains(
         handle: XiaoHandle,
+        value: *const XiaoValue,
+        out: *mut u8,
+    ) -> i32;
+    /// 向 ABI 集合值插入一个元素；重复元素保持无操作。
+    pub fn xiao_runtime_set_add(set: *const XiaoValue, value: *const XiaoValue) -> i32;
+    /// 从 ABI 集合值删除一个元素；`out` 返回是否实际删除。
+    pub fn xiao_runtime_set_remove(
+        set: *const XiaoValue,
         value: *const XiaoValue,
         out: *mut u8,
     ) -> i32;

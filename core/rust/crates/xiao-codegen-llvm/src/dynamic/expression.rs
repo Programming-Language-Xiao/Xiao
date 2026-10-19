@@ -663,6 +663,51 @@ impl<'a> DynamicGenerator<'a> {
                 }
                 self.emit_set(&[])
             }
+            xiao_intrinsics::VmBinding::SetAdd | xiao_intrinsics::VmBinding::SetRemove => {
+                if arguments.len() != 2
+                    || arguments
+                        .iter()
+                        .any(|argument| argument.kind != "positional" || argument.name.is_some())
+                {
+                    return Err(CodegenError::Unsupported {
+                        feature: format!("{} 的参数形态", declaration.public_name),
+                        span: Some(span),
+                    });
+                }
+                let set = self.emit_expression(&arguments[0].value)?;
+                let element = self.emit_expression(&arguments[1].value)?;
+                let set_slot = self.next_temp();
+                let element_slot = self.next_temp();
+                self.emit(format!("  {set_slot} = alloca {VALUE_TYPE}"));
+                self.emit(format!("  {element_slot} = alloca {VALUE_TYPE}"));
+                self.emit(format!("  store {VALUE_TYPE} {set}, ptr {set_slot}"));
+                self.emit(format!(
+                    "  store {VALUE_TYPE} {element}, ptr {element_slot}"
+                ));
+                let result = if declaration.vm_binding == xiao_intrinsics::VmBinding::SetAdd {
+                    self.checked_status_call_at(
+                        format!("@xiao_runtime_set_add(ptr {set_slot}, ptr {element_slot})"),
+                        span,
+                    );
+                    self.none_value()
+                } else {
+                    let out = self.next_temp();
+                    self.emit(format!("  {out} = alloca i8"));
+                    self.emit(format!("  store i8 0, ptr {out}"));
+                    self.checked_status_call_at(
+                        format!(
+                            "@xiao_runtime_set_remove(ptr {set_slot}, ptr {element_slot}, ptr {out})"
+                        ),
+                        span,
+                    );
+                    let raw = self.next_temp();
+                    self.emit(format!("  {raw} = load i8, ptr {out}"));
+                    self.emit_value_call("xiao_runtime_value_bool", &format!("i8 {raw}"))
+                };
+                self.release_value(set);
+                self.release_value(element);
+                Ok(result)
+            }
             _ => Err(CodegenError::Unsupported {
                 feature: format!("动态 intrinsic {}", declaration.public_name),
                 span: Some(span),

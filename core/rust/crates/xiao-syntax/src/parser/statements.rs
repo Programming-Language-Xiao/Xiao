@@ -685,6 +685,7 @@ impl<'source> Parser<'source> {
         let open = self.bump();
         let mut parameters = Vec::new();
         let mut seen = BTreeSet::new();
+        let mut need_name = true;
         if self.at(TokenKind::Greater) {
             self.push_error(
                 INVALID_TYPE_PARAMETER_CODE,
@@ -698,6 +699,25 @@ impl<'source> Parser<'source> {
             && !self.at(TokenKind::Newline)
         {
             if self.at(TokenKind::Comma) {
+                if need_name {
+                    self.push_error(
+                        INVALID_TYPE_PARAMETER_CODE,
+                        "x04.parse.invalid_type_parameter",
+                        self.current().span(),
+                        "类型参数之间不能有空项".to_owned(),
+                    );
+                }
+                self.bump();
+                need_name = true;
+                continue;
+            }
+            if !need_name {
+                self.push_error(
+                    INVALID_TYPE_PARAMETER_CODE,
+                    "x04.parse.invalid_type_parameter",
+                    self.current().span(),
+                    "类型参数之间必须使用逗号分隔".to_owned(),
+                );
                 self.bump();
                 continue;
             }
@@ -733,9 +753,7 @@ impl<'source> Parser<'source> {
                     parameters.push(name);
                 }
             }
-            if self.at(TokenKind::Comma) {
-                self.bump();
-            }
+            need_name = false;
         }
         let _ = self.expect_delimiter(TokenKind::Greater, open.span());
         parameters

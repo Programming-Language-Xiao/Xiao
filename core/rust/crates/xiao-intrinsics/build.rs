@@ -116,6 +116,23 @@ fn main() {
                         row.name
                     );
                 }
+                "set_add" | "set_remove" => {
+                    assert_eq!(row.arity, "two", "集合变更必须是二元: {}", row.name);
+                    assert_eq!(
+                        row.parameter_type, "set_element",
+                        "集合变更参数必须是 set_element: {}",
+                        row.name
+                    );
+                    assert_eq!(row.vm_binding, row.kind, "集合变更 VM 绑定必须对应类别");
+                    assert_eq!(row.abi_binding, row.kind, "集合变更 ABI 绑定必须对应类别");
+                    assert_eq!(row.effect, "mutates_container", "集合变更必须声明可变效果");
+                    assert_eq!(row.capability, "none", "集合变更不应申请能力");
+                    if row.kind == "set_add" {
+                        assert_eq!(row.return_type, "none");
+                    } else {
+                        assert_eq!(row.return_type, "bool");
+                    }
+                }
                 "print" => {
                     assert_eq!(row.arity, "variadic", "print 必须是可变参数");
                     assert_eq!(row.parameter_type, "dynamic", "print 参数必须是 dynamic");

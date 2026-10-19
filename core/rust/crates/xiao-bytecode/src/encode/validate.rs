@@ -253,7 +253,7 @@ fn validate_op(
             check_vreg(*left)?;
             check_vreg(*right)
         }
-        TacOp::Len { source } => check_vreg(*source),
+        TacOp::Len { source } | TacOp::IterSnapshot { source } => check_vreg(*source),
         TacOp::LoadTable {
             table,
             construct,

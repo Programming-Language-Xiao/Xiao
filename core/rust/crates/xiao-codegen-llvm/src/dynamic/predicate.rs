@@ -208,6 +208,8 @@ fn expression_uses_runtime(expression: &IrExpression) -> bool {
                                 | xiao_intrinsics::IntrinsicKind::Input
                                 | xiao_intrinsics::IntrinsicKind::CharConstructor
                                 | xiao_intrinsics::IntrinsicKind::SetConstructor
+                                | xiao_intrinsics::IntrinsicKind::SetAdd
+                                | xiao_intrinsics::IntrinsicKind::SetRemove
                                 | xiao_intrinsics::IntrinsicKind::ErrorConstructor
                         )
                     });

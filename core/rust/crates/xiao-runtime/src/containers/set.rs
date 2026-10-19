@@ -156,6 +156,43 @@ impl SetHandle {
             })
     }
 
+    /// 以可变闭包访问集合元素；句柄共享同一载荷，修改对别名立即可见。
+    pub fn with_elements_mut<R>(
+        &self,
+        callback: impl FnOnce(&mut Vec<RuntimeValue>) -> R,
+    ) -> RuntimeResult<R> {
+        self.inner
+            .with_payload_mut(RuntimeTypeTag::Set, |object: &mut SetObject| {
+                callback(&mut object.elements)
+            })
+    }
+
+    /// 插入一个元素；重复元素保持无操作并保留首次出现顺序。
+    pub fn insert(&self, value: &RuntimeValue) -> RuntimeResult<bool> {
+        if !is_hashable(value) {
+            return Err(RuntimeError::unhashable_element(value.type_name()));
+        }
+        self.with_elements_mut(|elements| {
+            if elements.contains(value) {
+                false
+            } else {
+                elements.push(value.clone());
+                true
+            }
+        })
+    }
+
+    /// 删除一个元素；返回是否实际删除，剩余元素顺序保持不变。
+    pub fn remove(&self, value: &RuntimeValue) -> RuntimeResult<bool> {
+        self.with_elements_mut(|elements| {
+            let Some(index) = elements.iter().position(|item| item == value) else {
+                return false;
+            };
+            elements.remove(index);
+            true
+        })
+    }
+
     /// 取出元素快照，供两个句柄之间的运算使用。
     ///
     /// 快照而不是嵌套借用：两个句柄的载荷借用关系在编译期无从表达，

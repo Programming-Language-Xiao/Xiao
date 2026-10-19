@@ -24,6 +24,8 @@ use xiao_intrinsics::{AbiBinding, IntrinsicId, VmBinding, active_by_id};
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
 use xiao_source::SourceSpan;
 use xiao_syntax::ScalarType;
+#[path = "set_intrinsics.rs"]
+mod set_intrinsics;
 /// 表生命周期回调和执行上下文适配。
 #[path = "tables.rs"]
 mod tables;
@@ -875,6 +877,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             TacOp::Len { source } => {
                 let source = self.read(*source)?;
                 let value = ops::len(&source).map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
+            TacOp::IterSnapshot { source } => {
+                let source = self.read(*source)?;
+                let value = ops::iter_snapshot(&source).map_err(Fault::Error)?;
                 self.write_operand(instruction.dst, value);
             }
             TacOp::IndexGetDynamic { source, index } => {
@@ -1890,6 +1897,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     )));
                 }
                 Ok(Some(ops::new_set(Vec::new()).map_err(Fault::Error)?))
+            }
+            VmBinding::SetAdd | VmBinding::SetRemove => {
+                set_intrinsics::execute(declaration, arguments)
             }
             VmBinding::MakeError => {
                 if arguments.iter().any(|argument| {

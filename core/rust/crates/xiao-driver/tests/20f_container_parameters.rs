@@ -17,10 +17,10 @@ fn run(source: &str) -> DriverOutcome {
 }
 
 #[test]
-/// 同一泛型函数可以在一个程序中处理整数和字符串集合。
+/// 集合与元素参数共同观察调用点实例化，整数与字符串实例彼此独立。
 fn local_generic_set_function_has_multiple_instances() {
     let outcome = run(
-        "def size<T>(set<T> values) -> int\n    count = 0\n    for value in values\n        count = count + 1\n    return count\nprint(size({1, 2}))\nprint(size({\"a\", \"b\"}))\n",
+        "def take<T>(set<T> values, T fallback) -> T\n    return fallback\nprint(take({1, 2}, 0))\nprint(take({\"a\", \"b\"}, \"fallback\"))\n",
     );
     let output = outcome
         .as_executed()
@@ -32,7 +32,7 @@ fn local_generic_set_function_has_multiple_instances() {
         })
         .collect::<String>();
     assert!(outcome.is_success(), "{outcome:?}");
-    assert_eq!(output, "2\n2\n");
+    assert_eq!(output, "0\nfallback\n");
 }
 
 #[test]
@@ -156,6 +156,29 @@ fn generic_recursive_call_keeps_rigid_signature() {
             .any(|diagnostic| diagnostic.code() == "X04-TYPE-008"),
         "{error:?}"
     );
+}
+
+#[test]
+/// 函数参数和返回注解沿用集合声明的不可哈希成员诊断。
+fn function_set_annotations_reject_unhashable_members() {
+    for source in [
+        "def g(set<file> values) -> int\n    return 1\n",
+        "def g(set<resource> values) -> int\n    return 1\n",
+        "def g(set<file | int> values) -> int\n    return 1\n",
+        "def g() -> set<file>\n    return set()\n",
+    ] {
+        let request = FrontendRequest::from_text(source);
+        let error = FrontendCompiler::new()
+            .compile(&request)
+            .expect_err("资源集合成员应在函数声明处拒绝");
+        assert!(
+            error
+                .diagnostics()
+                .iter()
+                .any(|diagnostic| diagnostic.code() == "X03-TYPE-016"),
+            "{source:?}: {error:?}"
+        );
+    }
 }
 
 #[test]

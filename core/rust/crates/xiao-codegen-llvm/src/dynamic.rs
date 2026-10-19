@@ -257,10 +257,12 @@ impl<'a> DynamicGenerator<'a> {
             }
         }
         self.emit_entry()?;
+        let mut seen_functions = BTreeSet::new();
         let functions = self
             .function_definitions
             .values()
             .copied()
+            .filter(|statement| seen_functions.insert((statement.span.start, statement.span.end)))
             .collect::<Vec<_>>();
         for statement in functions {
             self.emit_function_definition(statement)?;
@@ -657,11 +659,19 @@ impl<'a> DynamicGenerator<'a> {
 
     /// 为顶层函数生成稳定的 LLVM 符号名。
     fn function_symbol(&self, name: &str) -> String {
+        let canonical = self
+            .function_definitions
+            .get(name)
+            .and_then(|statement| match &statement.kind {
+                xiao_ir::IrStatementKind::Function { name, .. } => Some(name.text.as_str()),
+                _ => None,
+            })
+            .unwrap_or(name);
         let index = self
             .function_definitions
             .keys()
-            .position(|candidate| candidate == name)
+            .position(|candidate| candidate == canonical)
             .unwrap_or(0);
-        format!("xiao.fn.{index}.{}", stable_hash(name.as_bytes()))
+        format!("xiao.fn.{index}.{}", stable_hash(canonical.as_bytes()))
     }
 }

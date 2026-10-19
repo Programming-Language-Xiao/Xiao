@@ -7,7 +7,8 @@ use xiao_diagnostics::{DiagnosticParam, error_kind_of};
 use xiao_intrinsics::IntrinsicKind;
 use xiao_source::SourceSpan;
 use xiao_syntax::{
-    BinaryOperator, CallArgument, Expression, LiteralKind, ScalarType, UnaryOperator,
+    BinaryOperator, CallArgument, CallArgumentKind, Expression, LiteralKind, ScalarType,
+    UnaryOperator,
 };
 
 use crate::conversion::{ConversionKind, can_assign, classify_conversion, is_numeric};
@@ -632,7 +633,62 @@ impl<'source> TypeChecker<'source> {
             self.record_intrinsic_call(callee, span);
             return self.check_resource_intrinsic_call(declaration.kind, arguments, span);
         }
+        if let Some(declaration) = self.intrinsic_decl(callee)
+            && matches!(
+                declaration.kind,
+                IntrinsicKind::SetAdd | IntrinsicKind::SetRemove
+            )
+        {
+            self.record_intrinsic_call(callee, span);
+            return self.check_set_mutation_intrinsic_call(declaration.kind, arguments, span);
+        }
         self.check_function_value_call(callee, arguments, span)
+    }
+
+    /// 检查内部集合可变 intrinsic；公开库函数负责泛型关联和错误包装。
+    fn check_set_mutation_intrinsic_call(
+        &mut self,
+        kind: IntrinsicKind,
+        arguments: &[CallArgument],
+        span: SourceSpan,
+    ) -> Type {
+        if arguments.len() != 2
+            || arguments
+                .iter()
+                .any(|argument| argument.kind != CallArgumentKind::Positional)
+        {
+            self.type_error(
+                INVALID_OPERANDS_CODE,
+                "x02.type.call_arity",
+                span,
+                "集合变更 intrinsic 必须接收两个位置参数".to_owned(),
+            );
+            return Type::Dynamic;
+        }
+        let set_type = self.check_expression(&arguments[0].value);
+        let element_type = self.check_expression(&arguments[1].value);
+        if !matches!(set_type, Type::Set(_) | Type::Dynamic | Type::Variable(_)) {
+            self.type_error(
+                INVALID_OPERANDS_CODE,
+                "x02.type.call_argument",
+                arguments[0].value.span(),
+                format!("集合变更 intrinsic 需要 set，实际为 {}", set_type),
+            );
+        }
+        if crate::set_types::hashability(&element_type) == crate::set_types::Hashability::Unhashable
+        {
+            self.type_error(
+                crate::diagnostics::SET_UNHASHABLE_ELEMENT_CODE,
+                "x03.type.set_unhashable_element",
+                arguments[1].value.span(),
+                format!("类型 {} 不能作为集合元素", element_type),
+            );
+        }
+        if kind == IntrinsicKind::SetRemove {
+            Type::scalar(ScalarType::Bool)
+        } else {
+            Type::None
+        }
     }
 
     /// 检查首批资源 intrinsic 的静态参数和返回种类。

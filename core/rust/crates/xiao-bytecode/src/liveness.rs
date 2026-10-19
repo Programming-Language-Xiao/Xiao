@@ -224,6 +224,9 @@ pub(crate) fn instruction_use_def(
         TacOp::Len { source } => {
             uses.insert(*source);
         }
+        TacOp::IterSnapshot { source } => {
+            uses.insert(*source);
+        }
         TacOp::IndexGetDynamic { source, index } => {
             uses.insert(*source);
             uses.insert(*index);

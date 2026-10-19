@@ -545,6 +545,9 @@ fn decode_op(
             member: reader.string("member")?,
             value: VReg::new(index(reader, "VReg")?),
         },
+        45 => TacOp::IterSnapshot {
+            source: VReg::new(index(reader, "VReg")?),
+        },
         16 => TacOp::Jump(BlockId::new(index(reader, "BlockId")?)),
         17 => TacOp::BranchIf {
             condition: VReg::new(index(reader, "VReg")?),

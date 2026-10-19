@@ -16,7 +16,7 @@ use xiao_syntax::{
 use crate::containers::{ArrayType, DictType};
 use crate::diagnostics::*;
 use crate::functions::{FunctionParameterSignature, FunctionSignature};
-use crate::set_types::SetType;
+use crate::set_types::{SetType, hashability};
 use crate::types::{Type, TypeScheme};
 
 use super::{FunctionFrame, TypeChecker};
@@ -84,6 +84,14 @@ impl<'source> TypeChecker<'source> {
                 )],
             );
             return;
+        }
+        for parameter in parameters {
+            if let Some(annotation) = parameter.annotation.as_ref() {
+                self.check_function_annotation_hashability(annotation);
+            }
+        }
+        if let Some(annotation) = return_annotation.as_ref() {
+            self.check_function_annotation_hashability(annotation);
         }
         let mut generic_types = BTreeMap::new();
         let mut generic_ids = Vec::with_capacity(type_parameters.len());
@@ -200,6 +208,34 @@ impl<'source> TypeChecker<'source> {
             FunctionParameterKind::PositionalOnly
             | FunctionParameterKind::PositionalOrKeyword
             | FunctionParameterKind::KeywordOnly => base,
+        }
+    }
+
+    /// 校验函数头中已经具体写出的集合成员是否满足集合可哈希契约。
+    /// 类型参数项保留到调用点实例化，不能在声明阶段武断拒绝。
+    fn check_function_annotation_hashability(&mut self, annotation: &FunctionTypeAnnotation) {
+        let FunctionTypeAnnotation::Set(set) = annotation else {
+            return;
+        };
+        for term in &set.members {
+            let ty = match term {
+                TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
+                TypeTerm::None => Type::None,
+                TypeTerm::Resource(resource) => Type::Resource(*resource),
+                TypeTerm::TypeParameter(_) => continue,
+            };
+            if hashability(&ty) == crate::set_types::Hashability::Unhashable {
+                self.type_error_with_params(
+                    SET_UNHASHABLE_ELEMENT_CODE,
+                    "x03.type.set_unhashable_element",
+                    set.span,
+                    format!("类型 {} 不能作为集合元素", ty),
+                    [(
+                        "actual_type".to_owned(),
+                        DiagnosticParam::Text(ty.to_string()),
+                    )],
+                );
+            }
         }
     }
 
@@ -642,22 +678,33 @@ impl<'source> TypeChecker<'source> {
         actual: &Type,
         span: SourceSpan,
     ) {
-        if signature.type_parameters.is_empty() || !matches!(expected, Type::Set(_)) {
+        if signature.type_parameters.is_empty() {
             return;
         }
-        let Type::Set(expected_set) = expected else {
-            return;
-        };
-        if !expected_set
+        let generic_set_variables = signature
+            .parameters
+            .iter()
+            .filter_map(|parameter| match &parameter.ty {
+                Type::Set(set) => Some(set.member_types().flat_map(Type::free_vars)),
+                _ => None,
+            })
+            .flatten()
+            .collect::<BTreeSet<_>>();
+        let expected_is_generic_set = matches!(expected, Type::Set(set) if set
             .member_types()
-            .any(|member| !member.free_vars().is_empty())
-        {
+            .any(|member| !member.free_vars().is_empty()));
+        let expected_is_generic_element = matches!(expected, Type::Variable(variable) if generic_set_variables.contains(variable));
+        if !expected_is_generic_set && !expected_is_generic_element {
             return;
         }
-        let Type::Set(set) = actual else {
-            return;
+        let members = if let Type::Set(set) = actual {
+            set.member_types().collect::<Vec<_>>()
+        } else if expected_is_generic_element {
+            vec![actual]
+        } else {
+            Vec::new()
         };
-        for member in set.member_types() {
+        for member in members {
             if crate::set_types::hashability(member) == crate::set_types::Hashability::Unhashable {
                 self.type_error(
                     SET_GENERIC_UNHASHABLE_CODE,

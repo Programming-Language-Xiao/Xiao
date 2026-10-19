@@ -11,6 +11,12 @@
 不做单态化。函数体内把类型参数与具体类型合并报 `X04-TYPE-008`。首版官方模块仅有
 `stdlib.set.size` 与 `stdlib.set.is_empty`，集合增删、泛型表和约束语法留待后续批次。
 
+### 20G 集合可变入口与迭代快照（2026-10-19）
+
+`stdlib.set.add`/`remove` 使用共享集合句柄，新增元素保持首次出现顺序；`remove` 找不到
+元素时抛出 `Error(code = "SET_ELEMENT_MISSING")`。`contains`、`union`、`intersection` 和
+`difference` 是自由函数包装，集合在 `for` 开始时复制快照，循环体内增删不影响当前轮次。
+
 ### 目标与非目标
 
 Xiao 的目标是让同一份源码同时拥有两种执行路径：

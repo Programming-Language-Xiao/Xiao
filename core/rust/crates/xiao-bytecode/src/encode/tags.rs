@@ -60,6 +60,7 @@ pub(super) fn opcode(op: &TacOp) -> u8 {
         TacOp::ImportModule { .. } => 42,
         TacOp::ExportValue { .. } => 43,
         TacOp::Negate(_) => 44,
+        TacOp::IterSnapshot { .. } => 45,
     }
 }
 

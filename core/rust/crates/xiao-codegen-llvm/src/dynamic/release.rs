@@ -53,6 +53,21 @@ impl<'a> DynamicGenerator<'a> {
         self.own_statement_temporary_at(expression, expression, value)
     }
 
+    /// 把后端合成的临时值放入帧槽；普通路径由当前语句清理，终止路径由帧清理。
+    ///
+    /// 这类值没有对应的源码表达式，不能复用 `statement_sites` 的指针键。帧槽先释放
+    /// 旧值再接收新值，既支持同一函数内多个合成循环，也保证错误出口不会读取未支配的
+    /// SSA 临时值。
+    pub(super) fn own_generated_temporary(&mut self, value: &str) -> String {
+        let slot = format!("%xiao.generated.site{}", self.frame_temporaries.len());
+        self.frame_temporaries.push(slot.clone());
+        let release = self.value_release_symbol();
+        self.emit(format!("  call void @{release}(ptr {slot})"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+        self.statement_temporaries.push(slot.clone());
+        slot
+    }
+
     /// 缺省实参的表达式会被多个调用复用，因此还以调用接收者节点区分求值站点。
     fn own_statement_temporary_at(
         &mut self,

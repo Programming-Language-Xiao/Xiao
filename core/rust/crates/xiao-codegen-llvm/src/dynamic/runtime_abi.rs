@@ -284,6 +284,12 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert("declare i32 @xiao_runtime_set_new(ptr, i64, ptr)".to_owned());
         self.declarations
+            .insert("declare i32 @xiao_runtime_set_add(ptr, ptr)".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_set_remove(ptr, ptr, ptr)".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_value_iter_snapshot(ptr, ptr)".to_owned());
+        self.declarations
             .insert(self.value_declaration("xiao_runtime_value_set", "ptr"));
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_set_owned", "ptr"));

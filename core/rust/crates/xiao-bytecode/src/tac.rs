@@ -733,6 +733,11 @@ pub enum TacOp {
         /// 待写入值。
         value: VReg,
     },
+    /// 在集合迭代开始时复制元素到独立数组快照。
+    IterSnapshot {
+        /// 要快照的集合值。
+        source: VReg,
+    },
 }
 
 /// 一条带源码位置的三地址指令。

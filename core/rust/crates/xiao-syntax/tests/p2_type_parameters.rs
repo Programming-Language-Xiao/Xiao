@@ -44,6 +44,8 @@ fn rejects_invalid_type_parameter_lists() {
         "def f<file>(int value) -> int\n    return value\n",
         "def f<`file`>(int value) -> int\n    return value\n",
         "def f<T>(U value) -> int\n    return value\n",
+        "def f<T U>(T value) -> T\n    return value\n",
+        "def f<T,,U>(T value) -> T\n    return value\n",
     ] {
         let result = Parser::new(&SourceFile::from_text(source)).parse();
         assert!(

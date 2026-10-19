@@ -162,6 +162,15 @@ pub fn len(source: &RuntimeValue) -> RuntimeResult<RuntimeValue> {
     Ok(RuntimeValue::Int(length))
 }
 
+/// 在集合迭代开始时复制元素到独立数组，避免循环体内增删影响当前轮次。
+pub fn iter_snapshot(source: &RuntimeValue) -> RuntimeResult<RuntimeValue> {
+    let RuntimeValue::Set(handle) = source else {
+        return Err(RuntimeError::type_mismatch("set", source.type_name()));
+    };
+    let elements = handle.with_elements(|elements| elements.to_vec())?;
+    Ok(RuntimeValue::Array(ArrayHandle::new(elements)?))
+}
+
 /// 按运行时整数索引读取一个可迭代值的元素。
 ///
 /// 动态索引先还原为 [`PathStep::Index`]，再复用内部 `index_step`，确保数组、元组、

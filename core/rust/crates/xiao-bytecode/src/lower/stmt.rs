@@ -625,9 +625,31 @@ fn lower_for(
     span: IrSpan,
 ) {
     let source = lowerer.lower_expression(iterable);
-    let held_source = lowerer.take_temporary(source).then_some(source);
+    let mut held_sources = Vec::new();
+    if lowerer.take_temporary(source) {
+        held_sources.push(source);
+    }
+    let iteration_source = if matches!(iterable.ty, IrType::Set { .. }) {
+        let snapshot = lowerer.new_register(RegisterClass::ObjHandle, span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::IterSnapshot { source },
+            snapshot,
+            span,
+        ));
+        lowerer.take_temporary(snapshot);
+        held_sources.push(snapshot);
+        snapshot
+    } else {
+        source
+    };
     let length = lowerer.new_register(RegisterClass::Int, span);
-    lowerer.emit(TacInstr::with_dst(TacOp::Len { source }, length, span));
+    lowerer.emit(TacInstr::with_dst(
+        TacOp::Len {
+            source: iteration_source,
+        },
+        length,
+        span,
+    ));
     let index = lowerer.emit_constant(TacConstant::Int(0), span);
     let one = lowerer.emit_constant(TacConstant::Int(1), span);
 
@@ -670,7 +692,10 @@ fn lower_for(
     let element_class = lowerer.class_for_value(target_value);
     let element = lowerer.new_register(element_class, target.span);
     lowerer.emit(TacInstr::with_dst(
-        TacOp::IndexGetDynamic { source, index },
+        TacOp::IndexGetDynamic {
+            source: iteration_source,
+            index,
+        },
         element,
         span,
     ));
@@ -705,7 +730,7 @@ fn lower_for(
     lowerer.emit(TacInstr::new(TacOp::Jump(header), span));
 
     lowerer.switch_to(exit);
-    if let Some(source) = held_source {
+    for source in held_sources {
         lowerer.emit(TacInstr::new(
             TacOp::Release {
                 value: source,

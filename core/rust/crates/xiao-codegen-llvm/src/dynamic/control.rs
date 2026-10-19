@@ -183,8 +183,18 @@ impl<'a> DynamicGenerator<'a> {
                         if selected.text != item.binding.text
                             || selected.backticked != item.binding.backticked
                         {
-                            let value = self.load_slot(selected)?;
-                            self.store_slot(&item.binding, value)?;
+                            if let Some(function) =
+                                self.function_definitions.get(&selected.text).copied()
+                            {
+                                // 静态链接的标准库函数没有运行时值槽；把别名
+                                // 直接映射到同一个函数定义，避免把函数名误当
+                                // 成模块成员槽读取。
+                                self.function_definitions
+                                    .insert(item.binding.text.clone(), function);
+                            } else {
+                                let value = self.load_slot(selected)?;
+                                self.store_slot(&item.binding, value)?;
+                            }
                         }
                         continue;
                     }
@@ -866,7 +876,13 @@ impl<'a> DynamicGenerator<'a> {
         let continuation_label = self.next_label("dynamic.for.continue");
         self.push_error_context(failure_label.clone());
         self.emit_dynamic_check("iterable", &source, iterable.span);
-        let length = self.emit_iter_len(&source, iterable.span);
+        let is_set_snapshot = matches!(iterable.ty, IrType::Set { .. });
+        let iteration_source = if is_set_snapshot {
+            self.emit_iter_snapshot(&source, iterable.span)?
+        } else {
+            source.clone()
+        };
+        let length = self.emit_iter_len(&iteration_source, iterable.span);
         let index_slot = self.next_temp();
         self.emit(format!("  {index_slot} = alloca i64"));
         self.emit(format!("  store i64 0, ptr {index_slot}"));
@@ -887,14 +903,7 @@ impl<'a> DynamicGenerator<'a> {
         self.terminated = true;
         self.emit_label(&body_label);
         // VM 的名称来源保留绑定寄存器；循环体重新赋值后，下一轮读取同一个绑定的新值。
-        let current_source = if let Some(slot) = &borrowed_source {
-            let value = self.next_temp();
-            self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {slot}"));
-            value
-        } else {
-            source.clone()
-        };
-        let element = self.emit_iter_get(&current_source, &index, target.span);
+        let element = self.emit_iter_get(&iteration_source, &index, target.span);
         self.store_slot(target, element)?;
         self.loop_stack.push(LoopLabels {
             condition: advance_label.clone(),
@@ -931,6 +940,23 @@ impl<'a> DynamicGenerator<'a> {
         self.terminated = true;
         self.emit_label(&continuation_label);
         Ok(())
+    }
+
+    /// 为集合迭代建立独立的数组快照。
+    fn emit_iter_snapshot(&mut self, source: &str, span: IrSpan) -> Result<String> {
+        let slot = self.next_temp();
+        self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} zeroinitializer, ptr {slot}"));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_value_iter_snapshot(ptr {source}, ptr {slot})"),
+            span,
+        );
+        let value = self.next_temp();
+        self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {slot}"));
+        let owner = self.own_generated_temporary(&value);
+        let held = self.next_temp();
+        self.emit(format!("  {held} = load {VALUE_TYPE}, ptr {owner}"));
+        Ok(held)
     }
 
     /// 从 ABI 动态值读取已类型检查的布尔载荷。

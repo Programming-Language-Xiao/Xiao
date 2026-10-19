@@ -9,3 +9,24 @@ def size<T>(set<T> values) -> int
 
 def is_empty<T>(set<T> values) -> bool
     return size(values) == 0
+
+def add<T>(set<T> values, T value) -> none
+    return set_add(values, value)
+
+def remove<T>(set<T> values, T value) -> none
+    removed = set_remove(values, value)
+    if not removed
+        raise Error(code = "SET_ELEMENT_MISSING")
+    return none
+
+def contains<T>(set<T> values, T value) -> bool
+    return value in values
+
+def union<T>(set<T> left, set<T> right) -> set<T>
+    return left + right
+
+def intersection<T>(set<T> left, set<T> right) -> set<T>
+    return left & right
+
+def difference<T>(set<T> left, set<T> right) -> set<T>
+    return left - right

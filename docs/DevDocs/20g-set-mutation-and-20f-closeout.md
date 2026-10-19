@@ -7,9 +7,9 @@
 >
 > **一句话概括本批**：**先把 20F 的验收补成真的，再让集合真正可变。**
 >
-> 状态：**规划完成、待实施（2026-10-19）**。四道裁定：范围取「add/remove + 只读包装」、
-> API 用 `stdlib/set.xiao` 自由函数、`remove` 缺失报可恢复错误、迭代开始时快照。
-> 本批未改代码。
+> 状态：**本地实现完成，原生/推送证据待补（2026-10-19）**。四道裁定：范围取
+> 「add/remove + 只读包装」、API 用 `stdlib/set.xiao` 自由函数、`remove` 缺失报可恢复错误、
+> 迭代开始时快照。20F 的函数头可哈希校验、实例化回归、诊断文案和逗号解析也已修复。
 
 ## 一、Agent 交接上下文
 
@@ -382,6 +382,18 @@ core/rust/crates/xiao-driver/tests/20g_set_mutation.rs 本批主回归
 core/rust/crates/xiao-driver/tests/20f_container_parameters.rs F-1/F-3 回归
 ```
 
+## 九、实施与验证记录（2026-10-19）
+
+- **F-2/F-3/F-5/F-6**：函数头具体集合成员统一走 `X03-TYPE-016`，泛型集合调用点
+  对关联类型参数执行 `X03-TYPE-023`；集合多实例测试同时绑定 `set<T>` 与 `T`；
+  生命周期警告不再暴露 `DynamicValue`/`Returned`；类型参数列表强制逗号分隔。
+- **Runtime/intrinsic**：`SetHandle` 增加共享句柄可见的 `insert`/`remove`；新增 id 29/30、
+  二参数契约、VM 和 LLVM 动态 ABI 接线；`stdlib.set` 已提供八条泛型入口。
+- **迭代快照**：字节码新增集合迭代快照指令，VM 与 LLVM 动态路径在循环开始复制集合元素，
+  循环体内增删不影响当前轮次。
+- **本地验证**：`20g_set_mutation` 6 项、Runtime 集合、intrinsic 契约、20F 语法/驱动器
+  回归已通过；另有 set/text 别名 LLVM 降低回归，受控原生工具链、`.xiaoc`/`.xar` 重放与
+  推送 CI 证据仍待补齐，因此 registry 和 UseDocs 保持 `draft`。
 ## 相关页面
 
 - [20F 通用容器参数与官方 `set` 模块](20f-container-parameters-and-collections.md)
