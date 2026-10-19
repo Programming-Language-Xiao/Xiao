@@ -325,6 +325,20 @@ impl<'a> DynamicGenerator<'a> {
         }
         let IrSelectorItem::Exact { path, .. } = &selector.items[0] else {
             match &selector.items[0] {
+                IrSelectorItem::ExactExpression {
+                    expression: index, ..
+                } => {
+                    let index_value = self.emit_expression(index)?;
+                    let index_value = self.emit_cast_runtime("int", &index_value, index.span);
+                    let payload = self.next_temp();
+                    self.emit(format!(
+                        "  {payload} = extractvalue {VALUE_TYPE} {index_value}, 1"
+                    ));
+                    let selected = self.emit_iter_get(&value, &payload, span);
+                    self.release_value(index_value);
+                    self.release_value(value);
+                    return Ok(selected);
+                }
                 IrSelectorItem::Random { count, mode, .. } => {
                     let count_value = self.emit_expression(count)?;
                     self.emit_dynamic_check("random_count", &count_value, count.span);
@@ -710,6 +724,35 @@ impl<'a> DynamicGenerator<'a> {
                 self.release_value(set);
                 self.release_value(element);
                 Ok(result)
+            }
+            xiao_intrinsics::VmBinding::ArrayPush => {
+                if arguments.len() != 2
+                    || arguments
+                        .iter()
+                        .any(|argument| argument.kind != "positional" || argument.name.is_some())
+                {
+                    return Err(CodegenError::Unsupported {
+                        feature: format!("{} 的参数形态", declaration.public_name),
+                        span: Some(span),
+                    });
+                }
+                let array = self.emit_expression(&arguments[0].value)?;
+                let element = self.emit_expression(&arguments[1].value)?;
+                let array_slot = self.next_temp();
+                let element_slot = self.next_temp();
+                self.emit(format!("  {array_slot} = alloca {VALUE_TYPE}"));
+                self.emit(format!("  {element_slot} = alloca {VALUE_TYPE}"));
+                self.emit(format!("  store {VALUE_TYPE} {array}, ptr {array_slot}"));
+                self.emit(format!(
+                    "  store {VALUE_TYPE} {element}, ptr {element_slot}"
+                ));
+                self.checked_status_call_at(
+                    format!("@xiao_runtime_array_push(ptr {array_slot}, ptr {element_slot})"),
+                    span,
+                );
+                self.release_value(array);
+                self.release_value(element);
+                Ok(self.none_value())
             }
             _ => Err(CodegenError::Unsupported {
                 feature: format!("动态 intrinsic {}", declaration.public_name),

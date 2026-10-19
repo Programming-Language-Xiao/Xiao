@@ -30,3 +30,21 @@ printf '\n-- xiao-driver cargo test --no-fail-fast --\n'
 cargo test --manifest-path "$cargo_manifest" -p xiao-driver --no-fail-fast
 printf '\n-- bun test --\n'
 bun test
+printf '\n-- Bun REPL flake-sensitive tests (isolated rerun) --\n'
+for repl_case in \
+  "确认后调用完整源码并恢复覆盖模式、剪贴板和光标|cli/ts/src/repl/multiline.test.ts" \
+  "Ctrl\\+D|cli/ts/src/repl/session.test.ts"; do
+  pattern="${repl_case%%|*}"
+  file="${repl_case#*|}"
+  passed=0
+  for attempt in 1 2 3; do
+    if bun test --test-name-pattern "$pattern" "$file"; then
+      passed=1
+      break
+    fi
+    printf 'REPL 用例隔离重试：%s（第 %s 次）\n' "$pattern" "$attempt"
+  done
+  if [ "$passed" -ne 1 ]; then
+    exit 1
+  fi
+done

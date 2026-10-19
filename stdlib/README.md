@@ -1,6 +1,7 @@
 # Xiao 官方标准库源码
 
-工程期 20C；这里是官方 Xiao 标准库的规范源码根目录。首批 `text` 与 `path` 模块已按冻结接口落地。
+工程期 20C/20I；这里是官方 Xiao 标准库的规范源码根目录。首批 `text` 与 `path` 模块已按冻结接口落地，
+`text.find`、`text.slice`、`text.split` 已由 20I 接通。
 
 ## 职责与边界
 

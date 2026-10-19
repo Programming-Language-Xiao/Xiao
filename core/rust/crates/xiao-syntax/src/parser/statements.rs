@@ -636,6 +636,34 @@ impl<'source> Parser<'source> {
 
     /// 解析可选的参数声明式类型前缀。
     fn parse_optional_parameter_annotation(&mut self) -> Option<FunctionTypeAnnotation> {
+        if self.at(TokenKind::LeftBracket) {
+            let open = self.bump();
+            let element = self.parse_optional_parameter_annotation();
+            let Some(element) = element else {
+                self.push_error(
+                    INVALID_FUNCTION_TYPE_CODE,
+                    "x04.parse.invalid_array_type",
+                    open.span(),
+                    "数组注解必须包含一个元素类型".to_owned(),
+                );
+                let _ = self.expect_delimiter(TokenKind::RightBracket, open.span());
+                return None;
+            };
+            let _ = self.expect_delimiter(TokenKind::RightBracket, open.span());
+            if matches!(
+                element,
+                FunctionTypeAnnotation::Array(_) | FunctionTypeAnnotation::Set(_)
+            ) {
+                self.push_error(
+                    INVALID_FUNCTION_TYPE_CODE,
+                    "x04.parse.invalid_array_element_type",
+                    open.span(),
+                    "本批数组注解不支持嵌套数组或集合元素类型".to_owned(),
+                );
+                return None;
+            }
+            return Some(FunctionTypeAnnotation::Array(Box::new(element)));
+        }
         if self.starts_set_type() {
             return self
                 .parse_set_type_annotation(true)
@@ -787,6 +815,26 @@ impl<'source> Parser<'source> {
                     }
                 }
             }
+            FunctionTypeAnnotation::Array(element) => match element.as_ref() {
+                FunctionTypeAnnotation::TypeParameter(name) => {
+                    if !known.contains(name) {
+                        unknown.insert(name.clone());
+                    }
+                }
+                FunctionTypeAnnotation::Set(annotation) => {
+                    for term in &annotation.members {
+                        if let crate::ast::TypeTerm::TypeParameter(name) = term
+                            && !known.contains(name)
+                        {
+                            unknown.insert(name.clone());
+                        }
+                    }
+                }
+                FunctionTypeAnnotation::Array(_)
+                | FunctionTypeAnnotation::Scalar(_)
+                | FunctionTypeAnnotation::None
+                | FunctionTypeAnnotation::Resource(_) => {}
+            },
             FunctionTypeAnnotation::Scalar(_)
             | FunctionTypeAnnotation::None
             | FunctionTypeAnnotation::Resource(_) => {}

@@ -54,6 +54,7 @@ pub enum IntrinsicKind {
     SetConstructor,
     SetAdd,
     SetRemove,
+    ArrayPush,
     ErrorConstructor,
     Print,
     Input,
@@ -92,6 +93,7 @@ pub enum ValueType {
     Bool,
     Set,
     SetElement,
+    ArrayElement,
     ErrorParameters,
     File,
     Directory,
@@ -208,6 +210,7 @@ pub enum VmBinding {
     SetNew,
     SetAdd,
     SetRemove,
+    ArrayPush,
     MakeError,
     Print,
     Input,
@@ -226,6 +229,7 @@ pub enum AbiBinding {
     ErrorNew,
     SetAdd,
     SetRemove,
+    ArrayPush,
     Print,
     Input,
     ResourceOpenFile,
@@ -363,6 +367,18 @@ pub fn validate_table() -> Result<(), ContractError> {
                         || declaration.signature.return_type != result
                         || declaration.vm_binding != vm
                         || declaration.abi_binding != abi
+                        || declaration.effects != Effects::MutatesContainer
+                        || declaration.capability != Capability::None
+                    {
+                        return Err(ContractError::SignatureMismatch(declaration.id));
+                    }
+                }
+                IntrinsicKind::ArrayPush => {
+                    if declaration.signature.arity != Arity::Two
+                        || declaration.signature.parameter != ValueType::ArrayElement
+                        || declaration.signature.return_type != ValueType::None
+                        || declaration.vm_binding != VmBinding::ArrayPush
+                        || declaration.abi_binding != AbiBinding::ArrayPush
                         || declaration.effects != Effects::MutatesContainer
                         || declaration.capability != Capability::None
                     {

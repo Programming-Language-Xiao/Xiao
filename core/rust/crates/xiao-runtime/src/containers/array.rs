@@ -140,6 +140,14 @@ impl ArrayHandle {
             })
     }
 
+    /// 原地追加一个元素，并使所有别名观察到同一变更。
+    pub fn push(&self, value: RuntimeValue) -> RuntimeResult<()> {
+        self.inner
+            .with_payload_mut(RuntimeTypeTag::Array, |object: &mut ArrayObject| {
+                object.elements.push(value);
+            })
+    }
+
     /// 创建一个不拥有数组生命周期的弱句柄。
     #[must_use]
     pub fn downgrade(&self) -> WeakHandle {

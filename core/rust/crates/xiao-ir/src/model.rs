@@ -558,6 +558,13 @@ pub enum IrSelectorItem {
         /// 项源码区间。
         span: IrSpan,
     },
+    /// 单个表达式下标。
+    ExactExpression {
+        /// 下标表达式。
+        expression: Box<IrExpression>,
+        /// 项位置。
+        span: IrSpan,
+    },
     /// 闭区间。
     Range {
         /// 起点。

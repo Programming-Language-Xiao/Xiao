@@ -955,6 +955,11 @@ pub fn builtin_renderer() -> MessageRenderer {
         ("x04.parse.function_header_tail", "syntax error: {message}"),
         ("x04.parse.function_parentheses", "syntax error: {message}"),
         ("x04.parse.invalid_parameter", "syntax error: {message}"),
+        ("x04.parse.invalid_array_type", "syntax error: {message}"),
+        (
+            "x04.parse.invalid_array_element_type",
+            "syntax error: {message}",
+        ),
         ("x04.parse.invalid_return", "syntax error: {message}"),
         ("x04.parse.invalid_return_type", "syntax error: {message}"),
         ("x04.parse.loop_control_tail", "syntax error: {message}"),

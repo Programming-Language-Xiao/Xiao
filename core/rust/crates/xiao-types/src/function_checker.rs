@@ -795,6 +795,9 @@ fn annotation_type(
                 })
                 .collect::<Vec<_>>(),
         )),
+        FunctionTypeAnnotation::Array(element) => Type::Array(ArrayType::homogeneous(
+            annotation_type(element, generic_types),
+        )),
         FunctionTypeAnnotation::TypeParameter(name) => {
             generic_types.get(name).cloned().unwrap_or(Type::Dynamic)
         }

@@ -47,7 +47,7 @@
 | 泛型诊断 | 每个泛型函数/`size` 调用打 `X06-LIFETIME-005 ... (DynamicValue)` | 噪声；见 F-5 |
 | 类型参数分隔 | `def f<T U>` 与 `<T,,U>` 被接受 | 解析器宽松；见 F-6 |
 | 运行时可变性 | `SetHandle` 已提供共享句柄 `insert`/`remove`，VM/LLVM 均接线 | 本批已完成 |
-| intrinsic 契约 | 现有最高 id 28；arity 没有二参数种类 | 本批扩展 |
+| intrinsic 契约 | 20G 新增 id 29/30；20I 后续再新增 id 31 `array_push` | 本批扩展已完成 |
 
 ## 二、20F 审核返工项（先做）
 

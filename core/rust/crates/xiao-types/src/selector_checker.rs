@@ -198,6 +198,15 @@ impl<'source> TypeChecker<'source> {
             has_nonzero_random,
             all_static,
         );
+        let result_type = if selector.items.len() == 1
+            && matches!(
+                selector.items.first(),
+                Some(SelectorItem::ExactExpression { .. })
+            ) {
+            dynamic_index_result_type(&source_type)
+        } else {
+            result_type
+        };
         let has_duplicates = has_duplicate_paths(&selected_paths)
             || (with_replacement
                 && item_plans.iter().any(|item| {
@@ -487,6 +496,57 @@ impl<'source> TypeChecker<'source> {
     ) -> ExpandedItem {
         match item {
             SelectorItem::Exact { path, .. } => {
+                if path.segments.len() == 1
+                    && let PathSegment::Name(name) = &path.segments[0]
+                    && is_selector_source(source_type)
+                    && !matches!(source_type, Type::DictTable(_))
+                    && self.environment.lookup(&self.name_key(*name)).is_some()
+                    && !(matches!(source_type, Type::DictColumn(dictionary) if dictionary.value_type(name.unquoted_text(self.source())).is_some()))
+                {
+                    let expression = Expression::Name(*name);
+                    let index_type = self.check_expression(&expression);
+                    if !index_type.is_integer()
+                        && !index_type.is_dynamic()
+                        && !matches!(index_type, Type::Variable(_))
+                    {
+                        self.selector_error(
+                            INVALID_CONTAINER_PATH_CODE,
+                            "x03.type.selector_invalid_index",
+                            expression.span(),
+                            format!("表达式下标必须是整数，实际为 {}", index_type),
+                        );
+                    }
+                    let needs_runtime_check = self
+                        .eval_const(&expression)
+                        .and_then(constant_integer)
+                        .is_none_or(|value| value < 0);
+                    if let Some(value) = self.eval_const(&expression).and_then(constant_integer)
+                        && value < 0
+                    {
+                        self.selector_error(
+                            CONTAINER_INDEX_OUT_OF_BOUNDS_CODE,
+                            "x03.type.index_out_of_bounds",
+                            expression.span(),
+                            "表达式下标不能为负数".to_owned(),
+                        );
+                    }
+                    if needs_runtime_check {
+                        *requires_runtime_check = true;
+                        self.push_runtime_check(
+                            expression.span(),
+                            RuntimeCheckKind::SelectorBounds,
+                        );
+                    }
+                    return ExpandedItem {
+                        plan: SelectionItemPlan::Exact { path: Vec::new() },
+                        paths: Vec::new(),
+                        dynamic: true,
+                        random: false,
+                        with_replacement: false,
+                        zero_random: false,
+                        target_types: vec![dynamic_index_result_type(source_type)],
+                    };
+                }
                 let lowered = self.lower_selector_path(path);
                 let resolved = lowered.as_ref().and_then(|lowered| {
                     self.resolve_selector_path(source_type, lowered, path.span())
@@ -496,7 +556,7 @@ impl<'source> TypeChecker<'source> {
                         if resolved.dynamic {
                             *requires_runtime_check = true;
                             self.push_runtime_check(path.span(), RuntimeCheckKind::SelectorBounds);
-                            (Vec::new(), true, Vec::new())
+                            (Vec::new(), true, vec![resolved.ty])
                         } else {
                             (vec![resolved.path], false, vec![resolved.ty])
                         }
@@ -511,6 +571,47 @@ impl<'source> TypeChecker<'source> {
                     with_replacement: false,
                     zero_random: false,
                     target_types,
+                }
+            }
+            SelectorItem::ExactExpression { expression, .. } => {
+                let index_type = self.check_expression(expression);
+                if !index_type.is_integer()
+                    && !index_type.is_dynamic()
+                    && !matches!(index_type, Type::Variable(_))
+                {
+                    self.selector_error(
+                        INVALID_CONTAINER_PATH_CODE,
+                        "x03.type.selector_invalid_index",
+                        expression.span(),
+                        format!("表达式下标必须是整数，实际为 {}", index_type),
+                    );
+                }
+                let needs_runtime_check = self
+                    .eval_const(expression)
+                    .and_then(constant_integer)
+                    .is_none_or(|value| value < 0);
+                if let Some(value) = self.eval_const(expression).and_then(constant_integer)
+                    && value < 0
+                {
+                    self.selector_error(
+                        CONTAINER_INDEX_OUT_OF_BOUNDS_CODE,
+                        "x03.type.index_out_of_bounds",
+                        expression.span(),
+                        "表达式下标不能为负数".to_owned(),
+                    );
+                }
+                if needs_runtime_check {
+                    *requires_runtime_check = true;
+                    self.push_runtime_check(expression.span(), RuntimeCheckKind::SelectorBounds);
+                }
+                ExpandedItem {
+                    plan: SelectionItemPlan::Exact { path: Vec::new() },
+                    paths: Vec::new(),
+                    dynamic: true,
+                    random: false,
+                    with_replacement: false,
+                    zero_random: false,
+                    target_types: vec![dynamic_index_result_type(source_type)],
                 }
             }
             SelectorItem::Range { start, end, .. } => self.expand_range_item(
@@ -995,6 +1096,12 @@ impl<'source> TypeChecker<'source> {
         {
             return target_types.first().cloned().unwrap_or(Type::Dynamic);
         }
+        if selector.items.len() == 1
+            && matches!(selector.items.first(), Some(SelectorItem::Exact { .. }))
+            && target_types.len() == 1
+        {
+            return target_types[0].clone();
+        }
         if has_random && only_zero_random {
             return crate::selection_shape::empty_selection_type(source);
         }
@@ -1109,6 +1216,40 @@ fn array_element_type(array: &ArrayType) -> Type {
     match array {
         ArrayType::Homogeneous { element, .. } => element.as_ref().clone(),
         ArrayType::Heterogeneous { .. } | ArrayType::Unknown => Type::Dynamic,
+    }
+}
+
+/// 返回单个动态表达式下标的保守结果类型。
+fn dynamic_index_result_type(source: &Type) -> Type {
+    match source {
+        Type::Array(array) => array_element_type(array),
+        Type::Scalar(xiao_syntax::ScalarType::Str) => Type::scalar(xiao_syntax::ScalarType::Str),
+        Type::Tuple(elements) => {
+            let Some(first) = elements.first() else {
+                return Type::Dynamic;
+            };
+            if elements.iter().all(|element| element == first) {
+                first.clone()
+            } else {
+                Type::Dynamic
+            }
+        }
+        Type::DictColumn(dictionary) => {
+            let Some(first) = dictionary.entries.first() else {
+                return Type::Dynamic;
+            };
+            if dictionary
+                .entries
+                .iter()
+                .all(|entry| entry.value.as_ref() == first.value.as_ref())
+            {
+                first.value.as_ref().clone()
+            } else {
+                Type::Dynamic
+            }
+        }
+        Type::Dynamic | Type::Variable(_) => Type::Dynamic,
+        _ => Type::Dynamic,
     }
 }
 

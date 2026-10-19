@@ -383,8 +383,16 @@ fn statements_use_set_method(
         Statement::Declaration { value, .. } => value
             .as_ref()
             .is_some_and(|value| expression_uses_set_method(value, source, types)),
-        Statement::Table { body, .. } | Statement::Function { body, .. } => {
-            statements_use_set_method(body, source, types)
+        Statement::Table { body, .. } => statements_use_set_method(body, source, types),
+        Statement::Function {
+            parameters, body, ..
+        } => {
+            parameters.iter().any(|parameter| {
+                parameter
+                    .default
+                    .as_ref()
+                    .is_some_and(|default| expression_uses_set_method(default, source, types))
+            }) || statements_use_set_method(body, source, types)
         }
         Statement::If {
             condition,
@@ -475,6 +483,9 @@ fn standard_module_function_signatures(
                     })
                     .collect::<Vec<_>>(),
             )),
+            FunctionTypeAnnotation::Array(element) => Type::Array(
+                xiao_types::ArrayType::homogeneous(annotation_type(element, generic_types)),
+            ),
             FunctionTypeAnnotation::TypeParameter(name) => {
                 generic_types.get(name).cloned().unwrap_or(Type::Dynamic)
             }

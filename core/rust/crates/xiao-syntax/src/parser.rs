@@ -1556,7 +1556,44 @@ impl<'source> Parser<'source> {
                 })
             }
             _ => {
-                let start = self.parse_index_path()?;
+                let checkpoint = self.cursor;
+                let diagnostics_checkpoint = self.diagnostics.len();
+                let start_token = self.current().span();
+                let Some(start) = self.parse_index_path() else {
+                    if !selector_expression_start(self.current().kind()) {
+                        return None;
+                    }
+                    self.cursor = checkpoint;
+                    self.diagnostics.truncate(diagnostics_checkpoint);
+                    let expression = self.parse_expression_bp(0)?;
+                    return Some(SelectorItem::ExactExpression {
+                        span: expression.span(),
+                        expression: Box::new(expression),
+                    });
+                };
+                if !matches!(
+                    self.current().kind(),
+                    TokenKind::RightBracket
+                        | TokenKind::Comma
+                        | TokenKind::Tilde
+                        | TokenKind::Newline
+                ) {
+                    if !selector_expression_start(self.current().kind())
+                        && !selector_expression_continuation(self.current().kind())
+                    {
+                        return Some(SelectorItem::Exact {
+                            span: self.source_span(start_token.start(), start.span().end()),
+                            path: start,
+                        });
+                    }
+                    self.cursor = checkpoint;
+                    self.diagnostics.truncate(diagnostics_checkpoint);
+                    let expression = self.parse_expression_bp(0)?;
+                    return Some(SelectorItem::ExactExpression {
+                        span: self.source_span(start_token.start(), expression.span().end()),
+                        expression: Box::new(expression),
+                    });
+                }
                 if self.at(TokenKind::Tilde) {
                     self.bump();
                     let end_diagnostics = self.diagnostics.len();
@@ -1891,6 +1928,52 @@ fn is_expression_name_token(kind: TokenKind) -> bool {
                     | KeywordKind::Str
                     | KeywordKind::Bool
             )
+    )
+}
+
+/// 判断选择器中是否应尝试把路径起点解释为表达式。
+fn selector_expression_start(kind: TokenKind) -> bool {
+    is_expression_name_token(kind)
+        || matches!(
+            kind,
+            TokenKind::Integer
+                | TokenKind::Float
+                | TokenKind::String
+                | TokenKind::Boolean
+                | TokenKind::None
+                | TokenKind::Minus
+                | TokenKind::LeftParen
+        )
+}
+
+/// 判断路径前缀后是否出现了需要回退并解析完整表达式的中缀/成员操作。
+fn selector_expression_continuation(kind: TokenKind) -> bool {
+    matches!(
+        kind,
+        TokenKind::Plus
+            | TokenKind::Minus
+            | TokenKind::Star
+            | TokenKind::Slash
+            | TokenKind::FloorDiv
+            | TokenKind::Percent
+            | TokenKind::Power
+            | TokenKind::Ampersand
+            | TokenKind::Caret
+            | TokenKind::Less
+            | TokenKind::LessEqual
+            | TokenKind::Greater
+            | TokenKind::GreaterEqual
+            | TokenKind::EqualEqual
+            | TokenKind::BangEqual
+            | TokenKind::Keyword(
+                KeywordKind::And
+                    | KeywordKind::Or
+                    | KeywordKind::In
+                    | KeywordKind::Is
+                    | KeywordKind::Not
+            )
+            | TokenKind::Dot
+            | TokenKind::LeftBracket
     )
 }
 

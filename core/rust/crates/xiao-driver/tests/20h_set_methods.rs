@@ -116,6 +116,16 @@ fn table_method_named_add_remains_executable() {
 }
 
 #[test]
+/// 函数和表方法的默认值中的集合方法也走正常静态链接分派。
+fn default_values_can_call_set_methods() {
+    let outcome = run(
+        "def f(int value = {1}.size()) -> int\n    return value\n[[Box]]\n    def get(self, int value = {2}.size()) -> int\n        return value\nprint(f())\nbox = new Box()\nprint(box.get())\n",
+    );
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), "1\n1\n");
+}
+
+#[test]
 /// LLVM 动态降低器复用自由函数实现，方法链与接收者求值均能生成可校验 IR。
 fn native_lowering_supports_set_methods_and_chains() {
     let source = "def add(set<int> values, int value) -> none\n    return none\nvalues = {1}\nprint(values.union({2}).add(3))\n";

@@ -258,6 +258,8 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert("declare i32 @xiao_runtime_array_new(ptr, i64, ptr)".to_owned());
         self.declarations
+            .insert("declare i32 @xiao_runtime_array_push(ptr, ptr)".to_owned());
+        self.declarations
             .insert(self.value_declaration("xiao_runtime_value_array", "ptr"));
         self.declarations
             .insert(self.value_declaration("xiao_runtime_value_array_owned", "ptr"));

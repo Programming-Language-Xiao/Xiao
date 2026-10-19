@@ -182,6 +182,43 @@ fn lower_selector(
         return lower_unsupported(lowerer, "selector plan reference", expression.span);
     };
     let source_register = lowerer.lower_expression(source);
+    if selector.items.len() == 1
+        && let xiao_ir::IrSelectorItem::ExactExpression {
+            expression: index, ..
+        } = &selector.items[0]
+    {
+        let index_register = lowerer.lower_expression(index);
+        let class = Lowerer::class_of_type(&expression.ty);
+        let register = lowerer.new_register(class, expression.span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::IndexGetDynamic {
+                source: source_register,
+                index: index_register,
+            },
+            register,
+            expression.span,
+        ));
+        return register;
+    }
+    if selector.items.len() == 1
+        && let xiao_ir::IrSelectorItem::Exact { path, .. } = &selector.items[0]
+    {
+        let Some(path) = lower_ir_path(path) else {
+            return lower_unsupported(lowerer, "selector path", expression.span);
+        };
+        lowerer.emit_runtime_checks_in(expression.span, source_register);
+        let class = Lowerer::class_of_type(&expression.ty);
+        let register = lowerer.new_register(class, expression.span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::IndexGet {
+                source: source_register,
+                path,
+            },
+            register,
+            expression.span,
+        ));
+        return register;
+    }
     if plan.is_single_value() {
         let Some(path) = plan.selected_paths.first() else {
             return lower_unsupported(lowerer, "empty exact selector path", expression.span);
@@ -244,6 +281,25 @@ fn lower_selection_path(path: &xiao_ir::IrSelectionPath) -> Option<Vec<PathStep>
         .map(|segment| match segment {
             xiao_ir::IrSelectionPathSegment::Index { raw, .. } => Some(PathStep::Index(*raw)),
             xiao_ir::IrSelectionPathSegment::Key(key) => Some(PathStep::Key(key.clone())),
+        })
+        .collect()
+}
+
+/// 将 IR 的精确路径镜像为字节码路径；未解析的数字索引仍保留原始值，
+/// 由 Runtime 统一完成长度和边界检查。
+fn lower_ir_path(path: &xiao_ir::IrPath) -> Option<Vec<PathStep>> {
+    path.segments
+        .iter()
+        .map(|segment| match &segment.kind {
+            xiao_ir::IrPathSegmentKind::Index { text, negative } => {
+                let magnitude = text.trim_start_matches('-').parse::<i128>().ok()?;
+                Some(PathStep::Index(if *negative {
+                    -magnitude
+                } else {
+                    magnitude
+                }))
+            }
+            xiao_ir::IrPathSegmentKind::Name { name } => Some(PathStep::Key(name.text.clone())),
         })
         .collect()
 }
@@ -784,7 +840,7 @@ fn lower_call(
         ));
         return register;
     }
-    let arguments = arguments
+    let mut arguments = arguments
         .iter()
         .map(|argument| {
             let value = lowerer.lower_expression(&argument.value);
@@ -802,6 +858,8 @@ fn lower_call(
             }
         })
         .collect::<Vec<_>>();
+    let explicit_arguments = arguments.clone();
+    lowerer.append_function_defaults(callee, &explicit_arguments, &mut arguments);
     let class = Lowerer::class_of_type(&expression.ty);
     let register = lowerer.new_register(class, expression.span);
     let op = match lowerer.function_index_of_expression(callee) {

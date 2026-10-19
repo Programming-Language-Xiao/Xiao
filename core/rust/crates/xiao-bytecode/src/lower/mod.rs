@@ -30,8 +30,8 @@ use xiao_syntax::ScalarType;
 
 use crate::sig::{CallSig, CallSigTable};
 use crate::tac::{
-    BlockId, CategoryMap, ConstPool, FuncId, RegisterClass, TAC_VERSION, TacAbi, TacBlock,
-    TacConstant, TacFunction, TacHandler, TacInstr, TacOp, TacProgram, VReg,
+    BlockId, CategoryMap, ConstPool, FuncId, RegisterClass, TAC_VERSION, TacAbi, TacArgument,
+    TacBlock, TacConstant, TacFunction, TacHandler, TacInstr, TacOp, TacProgram, VReg,
 };
 
 /// 当前三地址格式使用的 ABI 版本。
@@ -1104,6 +1104,49 @@ impl<'ir> Lowerer<'ir> {
             return None;
         };
         self.named_functions.get(&name.text).copied()
+    }
+
+    /// 为普通顶层函数调用补齐缺省参数；显式参数先求值，默认值按声明顺序求值。
+    pub(super) fn append_function_defaults(
+        &mut self,
+        callee: &IrExpression,
+        explicit: &[TacArgument],
+        lowered: &mut Vec<TacArgument>,
+    ) {
+        let IrExpressionKind::Name { name } = &callee.kind else {
+            return;
+        };
+        let Some(parameters) = self.program.body.iter().find_map(|statement| {
+            let IrStatementKind::Function {
+                name: candidate,
+                parameters,
+                ..
+            } = &statement.kind
+            else {
+                return None;
+            };
+            (candidate.text == name.text && candidate.backticked == name.backticked)
+                .then_some(parameters.clone())
+        }) else {
+            return;
+        };
+        let positional = explicit
+            .iter()
+            .filter(|argument| argument.name.is_none())
+            .count();
+        for (index, parameter) in parameters.iter().enumerate() {
+            if index < positional
+                || explicit
+                    .iter()
+                    .any(|argument| argument.name.as_deref() == Some(parameter.name.text.as_str()))
+            {
+                continue;
+            }
+            if let Some(default) = &parameter.default {
+                let value = self.lower_expression(default);
+                lowered.push(TacArgument::keyword(parameter.name.text.clone(), value));
+            }
+        }
     }
 
     /// 返回某个函数的调用签名。

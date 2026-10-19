@@ -4,7 +4,7 @@ title: 官方 text 模块
 status: verified
 audience: learner
 module: stdlib.xiao-standard-library-first-modules
-stage: 20C
+stage: 20C/20I
 version: "0.1.0"
 related:
   - README.md
@@ -14,6 +14,7 @@ related:
   - ../../DevDocs/20c-fifth-batch-reprobe-and-library.md
   - ../../DevDocs/20c-sixth-batch-case-conversion-and-api-closeout.md
   - ../../DevDocs/20c-seventh-batch-str-to-int-and-ci-coverage.md
+  - ../../DevDocs/20i-nonliteral-indexing-and-splitting.md
 ---
 
 # 官方 `text` 模块
@@ -91,9 +92,21 @@ from stdlib.text import lower_ascii
 print(lower_ascii("Az-9"))
 ```
 
-本批不提供填充/对齐/进制格式化、子串查找、切分、切片、完整 Unicode 大小写转换或集合操作。官方库不通过普通包依赖安装，
+本批不提供填充/对齐/进制格式化、完整 Unicode 大小写转换或集合操作。官方库不通过普通包依赖安装，
 `stdlib.` 是工具链保留命名空间，接口兼容身份由 `StandardLibraryIdentity` 提供。
 
 第七批的 `lower_ascii` 已由标准库独立 push 的维护回归 `38753601939` 覆盖：Linux 原生作业
 `116486098841`、Windows 原生作业 `116486098536` 均通过；VM 由同次运行的默认测试作业
 `116486098784` 覆盖。
+
+## `find`、`slice` 与 `split`
+
+```xiao
+find(str text, str needle) -> int
+slice(str text, int start, int end) -> str
+split(str text, str separator) -> [str]
+```
+
+这些接口按 Unicode 码点工作。`find` 未找到返回 `-1`，空 `needle` 返回 `0`；`slice` 使用
+`[start, end)`，越界抛出 `TEXT_SLICE_OUT_OF_RANGE`，`start > end` 返回空串；`split` 保留首、
+中、尾空段，空分隔符抛出 `TEXT_SPLIT_EMPTY_SEPARATOR`，空文本返回一个空字符串元素。

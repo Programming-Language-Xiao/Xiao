@@ -133,6 +133,15 @@ fn main() {
                         assert_eq!(row.return_type, "bool");
                     }
                 }
+                "array_push" => {
+                    assert_eq!(row.arity, "two", "数组追加必须是二元: {}", row.name);
+                    assert_eq!(row.parameter_type, "array_element");
+                    assert_eq!(row.return_type, "none");
+                    assert_eq!(row.vm_binding, "array_push");
+                    assert_eq!(row.abi_binding, "array_push");
+                    assert_eq!(row.effect, "mutates_container");
+                    assert_eq!(row.capability, "none");
+                }
                 "print" => {
                     assert_eq!(row.arity, "variadic", "print 必须是可变参数");
                     assert_eq!(row.parameter_type, "dynamic", "print 参数必须是 dynamic");

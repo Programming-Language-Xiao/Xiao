@@ -1178,6 +1178,9 @@ fn annotation_type(annotation: &FunctionTypeAnnotation) -> Type {
         FunctionTypeAnnotation::None => Type::None,
         FunctionTypeAnnotation::Resource(resource) => Type::Resource(*resource),
         FunctionTypeAnnotation::Set(_) => Type::set(Type::Dynamic),
+        FunctionTypeAnnotation::Array(element) => {
+            Type::Array(ArrayType::homogeneous(annotation_type(element)))
+        }
         FunctionTypeAnnotation::TypeParameter(_) => Type::Dynamic,
     }
 }

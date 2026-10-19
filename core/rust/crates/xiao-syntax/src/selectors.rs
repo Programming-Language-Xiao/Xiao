@@ -107,6 +107,13 @@ pub enum SelectorItem {
         /// 选择项源码区间。
         span: SourceSpan,
     },
+    /// 一个有序容器上的单个表达式下标，例如 `s[i + 1]`。
+    ExactExpression {
+        /// 下标表达式。
+        expression: Box<Expression>,
+        /// 选择项源码区间。
+        span: SourceSpan,
+    },
     /// 两端均包含的闭区间 `start~end`。
     Range {
         /// 起点路径。
@@ -151,6 +158,7 @@ impl SelectorItem {
     pub const fn span(&self) -> SourceSpan {
         match self {
             Self::Exact { span, .. }
+            | Self::ExactExpression { span, .. }
             | Self::Range { span, .. }
             | Self::OpenRange { span, .. }
             | Self::All { span }

@@ -91,6 +91,18 @@ pub extern "C" fn xiao_runtime_dynamic_check(kind: XiaoAbiBytes, value: *const X
             | RuntimeValue::DictColumn(_) => Ok(()),
             other => Err(RuntimeError::iterable_required(other.type_name())),
         },
+        "selector_bounds" => match value {
+            RuntimeValue::Array(_)
+            | RuntimeValue::Tuple(_)
+            | RuntimeValue::DictColumn(_)
+            | RuntimeValue::Str(_) => Ok(()),
+            RuntimeValue::Int(value) if value >= 0 => Ok(()),
+            RuntimeValue::Sint(value) if value >= 0 => Ok(()),
+            RuntimeValue::Lint(value) if value.parse::<i128>().is_ok_and(|value| value >= 0) => {
+                Ok(())
+            }
+            _ => Err(RuntimeError::selector_bounds("选择器下标必须是非负整数")),
+        },
         "selector_step" => match value {
             RuntimeValue::Int(0) | RuntimeValue::Sint(0) => {
                 Err(RuntimeError::selector_step("选择器步长不能为 0"))
@@ -272,6 +284,27 @@ pub extern "C" fn xiao_runtime_value_iter_snapshot(
         Err(error) => return error,
     };
     unsafe { write_value(out, array) }.map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
+/// 向 ABI 数组值原地追加一个元素。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_array_push(array: *const XiaoValue, value: *const XiaoValue) -> i32 {
+    if array.is_null() || value.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let array = match unsafe { value_to_runtime(&*array) } {
+        Ok(RuntimeValue::Array(handle)) => handle,
+        Ok(other) => {
+            return status::<()>(Err(RuntimeError::type_mismatch("array", other.type_name())))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+        Err(error) => return error,
+    };
+    let value = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    status(array.push(value)).map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
 }
 
 /// 向 ABI 集合值插入一个元素；重复元素保持无操作。

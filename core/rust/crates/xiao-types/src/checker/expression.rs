@@ -639,10 +639,13 @@ impl<'source> TypeChecker<'source> {
         if let Some(declaration) = self.intrinsic_decl(callee)
             && matches!(
                 declaration.kind,
-                IntrinsicKind::SetAdd | IntrinsicKind::SetRemove
+                IntrinsicKind::SetAdd | IntrinsicKind::SetRemove | IntrinsicKind::ArrayPush
             )
         {
             self.record_intrinsic_call(callee, span);
+            if declaration.kind == IntrinsicKind::ArrayPush {
+                return self.check_array_push_intrinsic_call(arguments, span);
+            }
             return self.check_set_mutation_intrinsic_call(declaration.kind, arguments, span);
         }
         self.check_function_value_call(callee, arguments, span)
@@ -692,6 +695,54 @@ impl<'source> TypeChecker<'source> {
         } else {
             Type::None
         }
+    }
+
+    /// 检查内部数组追加 intrinsic；公开标准库负责泛型接口，Runtime 负责共享句柄。
+    fn check_array_push_intrinsic_call(
+        &mut self,
+        arguments: &[CallArgument],
+        span: SourceSpan,
+    ) -> Type {
+        if arguments.len() != 2
+            || arguments
+                .iter()
+                .any(|argument| argument.kind != CallArgumentKind::Positional)
+        {
+            self.type_error(
+                INVALID_OPERANDS_CODE,
+                "x02.type.call_arity",
+                span,
+                "数组追加 intrinsic 必须接收两个位置参数".to_owned(),
+            );
+            return Type::Dynamic;
+        }
+        let array_type = self.check_expression(&arguments[0].value);
+        let value_type = self.check_expression(&arguments[1].value);
+        if !matches!(
+            array_type,
+            Type::Array(_) | Type::Dynamic | Type::Variable(_)
+        ) {
+            self.type_error(
+                INVALID_OPERANDS_CODE,
+                "x02.type.call_argument",
+                arguments[0].value.span(),
+                format!("数组追加 intrinsic 需要 array，实际为 {}", array_type),
+            );
+        }
+        if let Type::Array(array) = array_type {
+            if let Some(element) = array.homogeneous_element()
+                && !value_type.is_dynamic()
+                && !crate::conversion::can_assign(&value_type, element)
+            {
+                self.type_error(
+                    INVALID_OPERANDS_CODE,
+                    "x02.type.call_argument",
+                    arguments[1].value.span(),
+                    format!("数组元素 {} 不符合 {}", value_type, element),
+                );
+            }
+        }
+        Type::None
     }
 
     /// 检查首批资源 intrinsic 的静态参数和返回种类。

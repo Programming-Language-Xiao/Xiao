@@ -1242,6 +1242,7 @@ impl<'source> EscapeAnalyzer<'source> {
                                 Type::Resource(*resource)
                             }
                             xiao_syntax::FunctionTypeAnnotation::Set(_)
+                            | xiao_syntax::FunctionTypeAnnotation::Array(_)
                             | xiao_syntax::FunctionTypeAnnotation::TypeParameter(_) => {
                                 xiao_types::Type::Dynamic
                             }
@@ -1692,10 +1693,20 @@ impl<'source> EscapeAnalyzer<'source> {
                 facts.referents = facts.produced.into_iter().collect();
                 facts
             }
-            Expression::Selector { source, step, .. } => {
+            Expression::Selector {
+                source,
+                step,
+                selector,
+                ..
+            } => {
                 let mut facts = self.analyze_expression(source);
                 if let Some(step) = step {
                     facts.merge(self.analyze_expression(step));
+                }
+                for item in &selector.items {
+                    if let xiao_syntax::SelectorItem::ExactExpression { expression, .. } = item {
+                        facts.merge(self.analyze_expression(expression));
+                    }
                 }
                 facts.ty = ty.clone().or(facts.ty);
                 facts.produced = self.make_temporary(expression.span(), ty.clone());

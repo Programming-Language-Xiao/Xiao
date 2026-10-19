@@ -613,6 +613,10 @@ fn validate_selector(selector: &IrSelector, path: &str, result: &mut IrValidatio
                 validate_path(path, &format!("{item_path}.path"), result);
                 validate_span(*span, &format!("{item_path}.span"), result);
             }
+            IrSelectorItem::ExactExpression { expression, span } => {
+                validate_expression(expression, &format!("{item_path}.expression"), result);
+                validate_span(*span, &format!("{item_path}.span"), result);
+            }
             IrSelectorItem::Range { start, end, span } => {
                 validate_path(start, &format!("{item_path}.start"), result);
                 validate_path(end, &format!("{item_path}.end"), result);

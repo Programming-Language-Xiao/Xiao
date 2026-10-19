@@ -175,6 +175,11 @@ fn direct_xiaoc_run_loads_standard_library_modules() {
             "values = {1}\nvalues.add(2)\nprint(values.size())\n",
             "2\n",
         ),
+        (
+            "stdlib.text-split",
+            "from stdlib.text import split\nfor part in split(\"a,,b,\", \",\")\n    print(part)\n",
+            "a\n\nb\n\n",
+        ),
     ];
     for (module, source, expected) in cases {
         let path = std::env::temp_dir().join(format!(
@@ -234,6 +239,40 @@ fn archive_run_supports_set_methods() {
         })
         .collect::<String>();
     assert_eq!(output, "3\n");
+}
+
+#[test]
+/// 归档入口复用静态链接的 text.split 与 array_push 语义。
+fn archive_run_supports_text_split() {
+    let archive = archive_for(
+        "from stdlib.text import split\nfor part in split(\"a,,b,\", \",\")\n    print(part)\n",
+    );
+    let path =
+        std::env::temp_dir().join(format!("xiao-d17c-text-split-{}.xar", std::process::id()));
+    fs::write(&path, archive).expect("应写入 text.split 归档");
+    let response = dispatch(ProtocolRequest::RunArchive {
+        request_id: "text-split-archive".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: Some("zh-CN".to_owned()),
+        path: path.display().to_string(),
+        options: RunOptions::default(),
+        diagnostics: None,
+        debug: false,
+    });
+    let _ = fs::remove_file(&path);
+    let ProtocolResponse::Result {
+        exit_code, events, ..
+    } = response
+    else {
+        panic!("含 text.split 的归档应返回成功响应");
+    };
+    assert_eq!(exit_code, 0);
+    let output = events
+        .iter()
+        .filter_map(|event| event.data.get("text").and_then(serde_json::Value::as_str))
+        .collect::<String>();
+    assert_eq!(output, "a\n\nb\n\n");
 }
 
 #[test]

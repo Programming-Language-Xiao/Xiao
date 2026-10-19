@@ -31,6 +31,7 @@
     {"id":28,"name":"os_close_process","kind":"process_close","arity":"one","parameter_type":"process","return_type":"none","vm_binding":"process_close","abi_binding":"process_close","effect":"releases_process","capability":"process","error":"x06.runtime.invalid_value","status":"active"},
     {"id":29,"name":"set_add","kind":"set_add","arity":"two","parameter_type":"set_element","return_type":"none","vm_binding":"set_add","abi_binding":"set_add","effect":"mutates_container","capability":"none","error":"x06.runtime.unhashable_element","status":"active"},
     {"id":30,"name":"set_remove","kind":"set_remove","arity":"two","parameter_type":"set_element","return_type":"bool","vm_binding":"set_remove","abi_binding":"set_remove","effect":"mutates_container","capability":"none","error":"x06.runtime.invalid_value","status":"active"},
+    {"id":31,"name":"array_push","kind":"array_push","arity":"two","parameter_type":"array_element","return_type":"none","vm_binding":"array_push","abi_binding":"array_push","effect":"mutates_container","capability":"none","error":"x06.runtime.invalid_value","status":"active"},
     {"id":100,"name":"__reserved_100","kind":"reserved","arity":"none","parameter_type":"none","return_type":"none","vm_binding":"none","abi_binding":"none","effect":"none","capability":"none","error":"none","status":"tombstone"}
   ]
 }

@@ -228,8 +228,8 @@ fn text_module_vm_result_and_removal_boundary_are_stable() {
         "text.length 导入签名必须保留稳定的调用参数诊断"
     );
     assert!(
-        !source.contains('[') && !source.contains("dict") && !source.contains("serialize"),
-        "text 模块不得构造容器、序列化对象或字典键"
+        !source.contains("dict") && !source.contains("serialize"),
+        "text 模块不得使用字典表或序列化对象"
     );
 
     assert!(

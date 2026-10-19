@@ -7,7 +7,7 @@
 
 ## 首批模块
 
-- [`text`](text.md) —— `contains_char(str text, str needle) -> bool`，按迭代器式 `for` 扫描字符。
+- [`text`](text.md) —— 字符扫描、码点长度、ASCII 转换，以及 20I 的 `find`、`slice`、`split`。
 - [`path`](path.md) —— `join(str base, str leaf) -> str`，按冻结的 `/` 拼接形状生成路径文本。
 
 ## 20D 首批资源接口

@@ -522,12 +522,17 @@ impl<'a> Lowerer<'a> {
                 step,
                 selector,
                 ..
-            } => IrExpressionKind::Selector {
-                source: Box::new(self.expression(source)),
-                selector: self.selector(selector),
-                step: step.as_ref().map(|value| Box::new(self.expression(value))),
-                selection_plan: self.selection_plan_id(expression.span()),
-            },
+            } => {
+                let source = self.expression(source);
+                let source_type = source.ty.clone();
+                let selector = self.selector(selector, &source_type);
+                IrExpressionKind::Selector {
+                    source: Box::new(source),
+                    selector,
+                    step: step.as_ref().map(|value| Box::new(self.expression(value))),
+                    selection_plan: self.selection_plan_id(expression.span()),
+                }
+            }
         };
         IrExpression { kind, ty, span }
     }
@@ -598,16 +603,51 @@ impl<'a> Lowerer<'a> {
     }
 
     /// 降低选择器。
-    fn selector(&mut self, selector: &Selector) -> IrSelector {
+    fn selector(&mut self, selector: &Selector, source_type: &IrType) -> IrSelector {
         IrSelector {
             items: selector
                 .items
                 .iter()
                 .map(|item| match item {
-                    SelectorItem::Exact { path, span } => IrSelectorItem::Exact {
-                        path: self.path(path),
-                        span: ir_span(*span),
-                    },
+                    SelectorItem::Exact { path, span } => {
+                        if path.segments.len() == 1
+                            && let PathSegment::Name(name) = &path.segments[0]
+                        {
+                            let ordered = matches!(
+                                source_type,
+                                IrType::Array { .. } | IrType::Tuple { .. }
+                            ) || matches!(source_type, IrType::Scalar { name } if name == "str")
+                                || matches!(source_type, IrType::DictColumn { entries } if !entries.iter().any(|entry| entry.key == name.unquoted_text(self.source)));
+                            if ordered {
+                                IrSelectorItem::ExactExpression {
+                                    expression: Box::new(IrExpression {
+                                        kind: IrExpressionKind::Name {
+                                            name: self.name(*name),
+                                        },
+                                        ty: self.ty(name.span),
+                                        span: ir_span(name.span),
+                                    }),
+                                    span: ir_span(*span),
+                                }
+                            } else {
+                                IrSelectorItem::Exact {
+                                    path: self.path(path),
+                                    span: ir_span(*span),
+                                }
+                            }
+                        } else {
+                            IrSelectorItem::Exact {
+                                path: self.path(path),
+                                span: ir_span(*span),
+                            }
+                        }
+                    }
+                    SelectorItem::ExactExpression { expression, span } => {
+                        IrSelectorItem::ExactExpression {
+                            expression: Box::new(self.expression(expression)),
+                            span: ir_span(*span),
+                        }
+                    }
                     SelectorItem::Range { start, end, span } => IrSelectorItem::Range {
                         start: self.path(start),
                         end: self.path(end),
@@ -901,6 +941,12 @@ fn lower_function_annotation(annotation: &FunctionTypeAnnotation) -> IrType {
             allows_dynamic: true,
             empty: false,
             unknown: annotation.members.is_empty(),
+        },
+        FunctionTypeAnnotation::Array(element) => IrType::Array {
+            shape: IrArrayShape::Homogeneous {
+                element: Box::new(lower_function_annotation(element)),
+                length: None,
+            },
         },
         FunctionTypeAnnotation::TypeParameter(_) => IrType::Dynamic,
     }

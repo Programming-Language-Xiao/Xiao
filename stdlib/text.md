@@ -1,6 +1,6 @@
 # `text` 模块
 
-工程期：20C 首批、第二批、第五批与第七批；规范源码为 [`text.xiao`](text.xiao)。第五批的零增量 `format_int` 候选已由第六批撤回。
+工程期：20C 首批、第二批、第五批、第七批与 20I；规范源码为 [`text.xiao`](text.xiao)。第五批的零增量 `format_int` 候选已由第六批撤回。
 
 ## 接口
 
@@ -15,8 +15,14 @@
 `lower_ascii(str value) -> str` 只把 ASCII `A`–`Z` 转为对应的小写码点，其他字符原样保留；
 它明确不做 Unicode 或 locale 大小写映射。
 
+`find(str text, str needle) -> int` 返回按 Unicode 码点计数的首次匹配位置；空子串返回 `0`，
+未找到返回 `-1`。`slice(str text, int start, int end) -> str` 使用左闭右开区间，越界抛出
+`TEXT_SLICE_OUT_OF_RANGE`，`start > end` 返回空串。`split(str text, str separator) -> [str]`
+保留首、中、尾空段，空分隔符抛出 `TEXT_SPLIT_EMPTY_SEPARATOR`；结果数组通过 `array_push`
+原地构造。
+
 文本参数必须是 `str`；其它类型由现有类型层拒绝。本批不提供填充/对齐/进制格式化、数字格式化接口、
-切分、查找子串、切片、完整 Unicode 大小写转换或集合操作。
+完整 Unicode 大小写转换或集合操作。
 
 ## 兼容身份
 

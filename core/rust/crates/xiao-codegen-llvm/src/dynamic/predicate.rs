@@ -3,7 +3,8 @@
 //! 本模块只消费类型化 IR，不持有 LLVM 发射器状态。
 
 use xiao_ir::{
-    IrExpression, IrExpressionKind, IrName, IrProgram, IrStatement, IrStatementKind, IrType,
+    IrExpression, IrExpressionKind, IrName, IrProgram, IrSelectorItem, IrStatement,
+    IrStatementKind, IrType,
 };
 
 /// 把 IR 字段类型映射到 `xiao-runtime-abi` 的稳定字段标签。
@@ -210,6 +211,7 @@ fn expression_uses_runtime(expression: &IrExpression) -> bool {
                                 | xiao_intrinsics::IntrinsicKind::SetConstructor
                                 | xiao_intrinsics::IntrinsicKind::SetAdd
                                 | xiao_intrinsics::IntrinsicKind::SetRemove
+                                | xiao_intrinsics::IntrinsicKind::ArrayPush
                                 | xiao_intrinsics::IntrinsicKind::ErrorConstructor
                         )
                     });
@@ -219,9 +221,17 @@ fn expression_uses_runtime(expression: &IrExpression) -> bool {
                         .any(|argument| expression_uses_runtime(&argument.value))
             }
             IrExpressionKind::Member { object, .. } => expression_uses_runtime(object),
-            IrExpressionKind::Selector { source, step, .. } => {
+            IrExpressionKind::Selector {
+                source,
+                selector,
+                step,
+                ..
+            } => {
                 expression_uses_runtime(source)
                     || step.as_deref().is_some_and(expression_uses_runtime)
+                    || selector.items.iter().any(|item| {
+                        matches!(item, IrSelectorItem::ExactExpression { expression, .. } if expression_uses_runtime(expression))
+                    })
             }
             IrExpressionKind::Literal { .. } | IrExpressionKind::Name { .. } => false,
         }

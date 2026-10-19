@@ -24,6 +24,8 @@ use xiao_intrinsics::{AbiBinding, IntrinsicId, VmBinding, active_by_id};
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
 use xiao_source::SourceSpan;
 use xiao_syntax::ScalarType;
+#[path = "array_intrinsics.rs"]
+mod array_intrinsics;
 #[path = "set_intrinsics.rs"]
 mod set_intrinsics;
 /// 表生命周期回调和执行上下文适配。
@@ -1901,6 +1903,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             VmBinding::SetAdd | VmBinding::SetRemove => {
                 set_intrinsics::execute(declaration, arguments)
             }
+            VmBinding::ArrayPush => array_intrinsics::execute(declaration, arguments),
             VmBinding::MakeError => {
                 if arguments.iter().any(|argument| {
                     argument
@@ -2329,13 +2332,15 @@ fn check_value(kind: &str, value: &RuntimeValue, expected: Option<&xiao_ir::IrTy
                 | RuntimeValue::Sfloat(_)
                 | RuntimeValue::Bool(_)
         ),
-        "selector_bounds" => matches!(
-            value,
-            RuntimeValue::Array(_)
-                | RuntimeValue::Tuple(_)
-                | RuntimeValue::DictColumn(_)
-                | RuntimeValue::Str(_)
-        ),
+        "selector_bounds" => {
+            matches!(
+                value,
+                RuntimeValue::Array(_)
+                    | RuntimeValue::Tuple(_)
+                    | RuntimeValue::DictColumn(_)
+                    | RuntimeValue::Str(_)
+            ) || integer_value(value).is_some_and(|value| value >= 0)
+        }
         "selector_step" | "random_count" | "random_seed" => {
             integer_value(value).is_some_and(|value| value >= 0 || kind == "selector_step")
         }

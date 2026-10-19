@@ -195,9 +195,8 @@ G-1(a) 由真实运行证明；**只碰夹具的正例与负例仍未取得**，
 
 1. `strings-path-representative.xiao` 现在用 `for c in combined` 扫描路径并比较分隔符；
    VM 与 LLVM 原生均输出 `/`，原始输出已写入 `probe.log`。
-2. 新增 `strings-index-boundary.xiao`，验证非字面量 `s[i]` 在 VM 和原生前端均稳定拒绝
-   `X03-TYPE-003`。这是迭代器式语言的既定边界，和 [00. 决策基线](00-decisions.md) 第 669 行的待定项相关，
-   不归为原生后端缺口。
+2. 新增 `strings-index-boundary.xiao`，记录 20C 时非字面量 `s[i]` 在 VM 和原生前端均稳定拒绝
+   `X03-TYPE-003`；该历史边界已由 20I 改为按 Unicode 码点支持有序容器表达式下标。
 3. `arithmetic-representative.xiao` 在本轮探测时记录了 `int` 转 `str` 的 `X02-TYPE-006` 类型缺口；
    该历史缺口已由 [20C-第四批](20c-fourth-batch-int-to-str.md) 接通 `int`/`sint`/`lint` → `str`。
    首批仍不绕过类型系统、不新增转换 intrinsic，也不把数字格式化列入已验证候选。
@@ -392,7 +391,7 @@ G-1(b)、G-1(c)、G-6、G-7 到本轮为止**都已取得真实运行号**，清
 | `strings-path` | `str` 参数、字符串 `+`、`print`，拼出 `lib/core` | 成功，输出 `lib/core\n` | 成功，进程状态 `0`，输出 `lib/core\n` | 解析、类型、IR、后端、链接均通过；无失败 |
 | `arithmetic-error` | 函数参数算术 `value * value`，调用 `square(4000000000)` | 运行期错误 `X06-RUNTIME-009` | D1 后当前记录：状态 `3`，stderr 为 Runtime 错误摘要，**不再含**无会话诊断事件提示 | 解析、类型、IR、后端、链接均通过；错误身份一致 |
 | `strings-path-representative` | 路径拼接后的 `for c in s` 逐字符扫描与条件判断 | 成功，输出 `/\n` | 成功，进程状态 `0`，输出 `/\n` | 解析、类型、IR、后端、链接均通过；无失败 |
-| `strings-index-boundary` | 非字面量字符串下标 `s[i]` | 前端类型层拒绝 `X03-TYPE-003` | 前端类型层同样拒绝 `X03-TYPE-003`，未进入原生后端 | 这是迭代器式语言的既定边界，不是原生后端缺口；与 [00. 决策基线](00-decisions.md) 第 669 行待定项相连 |
+| `strings-index-boundary` | 非字面量字符串下标 `s[i]` | **20C 历史**：前端类型层拒绝 `X03-TYPE-003` | **20C 历史**：前端类型层同样拒绝，未进入原生后端 | 20I 已接通有序容器表达式下标；本夹具保留作为历史探测记录 |
 | `arithmetic-representative` | 除法、取模、数字转文本和字符串拼接 | **历史探测**：前端类型层拒绝 `X02-TYPE-006`（`int` → `str`） | **历史探测**：前端类型层同样拒绝，未进入原生后端 | 历史缺口已由 20C-第四批接通整数 → `str`；数字格式化候选仍未因转换接通而完成 |
 
 原生探测的完整机器输出见[原始日志](assets/20c-capability-20261011/probe.log)，环境与命令见

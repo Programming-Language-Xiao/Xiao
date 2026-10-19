@@ -9,7 +9,7 @@
 | `strings-path.xiao` | 字符串拼接形成相对路径 | VM 与 LLVM 原生输出 `lib/core` |
 | `arithmetic-error.xiao` | 函数算术、运行期整数溢出与错误路径 | VM 保留 `X06-RUNTIME-009`；原生结果按实际后端/链接/进程状态记录 |
 | `strings-path-representative.xiao` | 路径字符串的 `for c in s` 逐字符扫描与条件判断 | VM 与 LLVM 原生输出 `/` |
-| `strings-index-boundary.xiao` | 非字面量字符串下标边界 | VM/LLVM 在类型层拒绝 `X03-TYPE-003`（迭代器式语言的既定边界） |
+| `strings-index-boundary.xiao` | 非字面量字符串下标边界 | 20I 后 VM/LLVM 以码点语义读取 `s[i]`，输出 `c` |
 | `arithmetic-representative.xiao` | 除法、取模、数字转文本和字符串拼接 | VM/LLVM 输出 `42`；本批 `int` → `str` 双路径依据 |
 | `second-int-to-str.xiao` | `int`/`sint`/`lint` 各自的 `as str`、`str(value)` 与异构数组动态值转换 | VM/LLVM 输出 `42:42:42:42:42:42:42`；本批整数族转换的双路径依据 |
 | `fifth-number-formatting.xiao` | 整数转文本、循环与字符串拼接 | VM/LLVM 输出 `n=42`；第五批数字格式化候选双路径依据 |

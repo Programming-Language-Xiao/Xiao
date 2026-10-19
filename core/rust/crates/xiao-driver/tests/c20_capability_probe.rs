@@ -41,7 +41,7 @@ const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 22] = [
     (
         "strings-index-boundary",
         "strings-index-boundary.xiao",
-        ProbeExpectation::Frontend("X03-TYPE-003"),
+        ProbeExpectation::Success("c\n"),
     ),
     (
         "arithmetic-representative",
@@ -81,7 +81,7 @@ const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 22] = [
     (
         "fifth-substring-split",
         "fifth-substring-split.xiao",
-        ProbeExpectation::Frontend("X01-PARSE-007"),
+        ProbeExpectation::Success("true\n"),
     ),
     (
         "fifth-split-array",
@@ -121,7 +121,7 @@ const REPRESENTATIVE_PROBES: [(&str, &str, ProbeExpectation); 22] = [
     (
         "second-substring-lookahead",
         "second-substring-lookahead.xiao",
-        ProbeExpectation::Frontend("X01-PARSE-007"),
+        ProbeExpectation::Success("true\n"),
     ),
     (
         "second-split-array",

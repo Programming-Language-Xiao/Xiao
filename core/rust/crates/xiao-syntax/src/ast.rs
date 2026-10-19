@@ -550,6 +550,8 @@ pub enum FunctionTypeAnnotation {
     Resource(ResourceKind),
     /// `set<T>` 或 `set<T | U>` 集合类型。
     Set(SetTypeAnnotation),
+    /// 一层数组类型注解 `[T]`。
+    Array(Box<FunctionTypeAnnotation>),
     /// 裸类型参数，例如参数注解中的 `T`。
     TypeParameter(String),
 }
@@ -571,6 +573,7 @@ impl FunctionTypeAnnotation {
                     .join(" | ");
                 format!("set<{members}>")
             }
+            Self::Array(element) => format!("[{}]", element.as_string()),
             Self::TypeParameter(name) => name.clone(),
         }
     }

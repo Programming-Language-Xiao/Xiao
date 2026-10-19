@@ -108,6 +108,7 @@ fn selector_summary(ir: &IrProgram) -> Option<(&IrSelector, &IrSelectionPlan)> {
 fn selector_item_kind(item: &IrSelectorItem) -> &'static str {
     match item {
         IrSelectorItem::Exact { .. } => "exact",
+        IrSelectorItem::ExactExpression { .. } => "exact-expression",
         IrSelectorItem::Range { .. } => "range",
         IrSelectorItem::OpenRange { .. } => "open-range",
         IrSelectorItem::All { .. } => "all",

@@ -103,7 +103,7 @@ VM 使用 `cargo test -p xiao-driver --test c20_capability_probe -- --nocapture`
 | 字符分类 | 成功，`true` | 成功，状态 `0`、`true` | **解封**；进入 `text.is_ascii_upper(str value) -> bool` 最小接口 |
 | 大小写转换 | 前端 `X02-TYPE-006` | 前端 `X02-TYPE-006` | **仍被挡**；最近前置是 `str` → `int` 码点转换 |
 | 字符串比较（字面量） | 前端 `X02-TYPE-005` | 前端 `X02-TYPE-005` | **仍被挡**；常量折叠路径未开放 |
-| 子串查找 / 切分 | `fifth-substring-split`：`X01-PARSE-007`；`fifth-split-array`：`X02-TYPE-005` | 两条路径同码 | **仍被挡**；分别受解析/非字面量下标与容器参数边界阻塞 |
+| 子串查找 / 切分 | **20C 历史探测**：`fifth-substring-split` 曾为 `X01-PARSE-007`；`fifth-split-array` 曾为 `X02-TYPE-005` | 两条历史路径同码 | 20I 已接通表达式下标、数组注解和 `text.split`；本表保留当时的挡点证据 |
 | 集合最小操作 | 成功，`ok` | 成功，状态 `0`、`ok` | **只保留探测结论**；公共函数参数类型尚未冻结 |
 
 仍被挡的候选已按最近前置合并登记；没有通过放宽边界或新增 intrinsic 来改变结果。
