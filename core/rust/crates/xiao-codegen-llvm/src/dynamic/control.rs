@@ -903,7 +903,16 @@ impl<'a> DynamicGenerator<'a> {
         self.terminated = true;
         self.emit_label(&body_label);
         // VM 的名称来源保留绑定寄存器；循环体重新赋值后，下一轮读取同一个绑定的新值。
-        let element = self.emit_iter_get(&iteration_source, &index, target.span);
+        let current_source = if is_set_snapshot {
+            iteration_source.clone()
+        } else if let Some(slot) = &borrowed_source {
+            let value = self.next_temp();
+            self.emit(format!("  {value} = load {VALUE_TYPE}, ptr {slot}"));
+            value
+        } else {
+            source.clone()
+        };
+        let element = self.emit_iter_get(&current_source, &index, target.span);
         self.store_slot(target, element)?;
         self.loop_stack.push(LoopLabels {
             condition: advance_label.clone(),

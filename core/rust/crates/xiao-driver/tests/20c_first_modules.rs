@@ -525,7 +525,13 @@ fn first_modules_match_native_results() {
             });
         let trace_path = root.join(format!("{module}.release-trace.tsv"));
         let trace = start_release_trace();
-        let linked_artifact = static_standard_library_artifact(&artifact);
+        let linked_artifact = if module.ends_with("-alias") {
+            // 别名导入本身就是原生路径的回归对象；保留导入让 VM 与原生都走
+            // 同一份绑定，避免静态链接夹具把别名绑定一并删掉。
+            artifact.clone()
+        } else {
+            static_standard_library_artifact(&artifact)
+        };
         let vm = FrontendVmDriver::new()
             .run_artifact(&linked_artifact, &DriverRequest::new(frontend_request));
         let vm_releases = take_release_events();
