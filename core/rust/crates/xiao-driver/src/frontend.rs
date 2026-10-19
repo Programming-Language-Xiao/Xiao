@@ -17,8 +17,8 @@ use xiao_lifetime::analyze as analyze_lifetime;
 use xiao_modules::{ModuleName, ProjectModuleResult, analyze_project};
 use xiao_source::SourceFile;
 use xiao_syntax::{
-    FunctionParameterKind, FunctionTypeAnnotation, ImportStatement, ParseResult, Program,
-    Statement, TypeTerm, parse,
+    Expression, FunctionParameterKind, FunctionTypeAnnotation, ImportStatement, ParseResult,
+    Program, Statement, TypeTerm, parse,
 };
 use xiao_types::{
     ExternalNamespaces, FunctionParameterSignature, FunctionSignature, SetType, Type,
@@ -200,6 +200,226 @@ struct StandardLinkPlan {
     import_spans: BTreeSet<(usize, usize)>,
 }
 
+/// 集合方法的规范名称；方法调用会隐式引入 `stdlib.set` 的纯 Xiao 函数体。
+const SET_METHOD_NAMES: [&str; 8] = [
+    "size",
+    "is_empty",
+    "add",
+    "remove",
+    "contains",
+    "union",
+    "intersection",
+    "difference",
+];
+
+/// 方法静态链接发生顶层同名函数冲突时使用的内部标准库函数前缀。
+const SET_METHOD_FUNCTION_PREFIX: &str = "__xiao_stdlib_set_";
+
+/// 只重命名标准库源码中的标识符，不触碰字符串、注释和反引号名称。
+///
+/// 方法调用没有显式导入绑定，因此需要把 `stdlib.set` 的函数体接入入口 IR。
+/// 若用户同时声明了同名顶层函数，直接拼接会触发重复函数诊断；把受控标准库
+/// 源码的八个函数及其相互调用改成内部名称，可以保留用户函数的正常可见性。
+fn rename_set_module_functions(source: &str) -> String {
+    fn is_identifier_start(character: char) -> bool {
+        character == '_' || character.is_ascii_alphabetic()
+    }
+
+    fn is_identifier_continue(character: char) -> bool {
+        character == '_' || character.is_ascii_alphanumeric()
+    }
+
+    let mut output = String::with_capacity(source.len() + 8 * SET_METHOD_FUNCTION_PREFIX.len());
+    let mut characters = source.char_indices().peekable();
+    while let Some((_, character)) = characters.next() {
+        if character == '"' || character == '\'' {
+            let quote = character;
+            output.push(character);
+            let mut escaped = false;
+            for (_, next) in characters.by_ref() {
+                output.push(next);
+                if escaped {
+                    escaped = false;
+                } else if next == '\\' {
+                    escaped = true;
+                } else if next == quote {
+                    break;
+                }
+            }
+            continue;
+        }
+        if character == '#' {
+            output.push(character);
+            for (_, next) in characters.by_ref() {
+                output.push(next);
+                if next == '\n' {
+                    break;
+                }
+            }
+            continue;
+        }
+        if character == '`' {
+            output.push(character);
+            for (_, next) in characters.by_ref() {
+                output.push(next);
+                if next == '`' {
+                    break;
+                }
+            }
+            continue;
+        }
+        if !is_identifier_start(character) {
+            output.push(character);
+            continue;
+        }
+        let mut identifier = String::from(character);
+        while let Some((_, next)) = characters.peek().copied() {
+            if !is_identifier_continue(next) {
+                break;
+            }
+            characters.next();
+            identifier.push(next);
+        }
+        if SET_METHOD_NAMES.contains(&identifier.as_str()) {
+            output.push_str(SET_METHOD_FUNCTION_PREFIX);
+        }
+        output.push_str(&identifier);
+    }
+    output
+}
+
+/// 判断表达式树中是否出现集合方法形状；接收者的静态集合类型留给类型检查器确认。
+fn expression_uses_set_method(expression: &Expression, source: &SourceFile) -> bool {
+    match expression {
+        Expression::Call {
+            callee, arguments, ..
+        } => {
+            let direct = matches!(
+                callee.as_ref(),
+                Expression::Member { member, .. }
+                    if !member.backticked
+                        && SET_METHOD_NAMES.contains(&member.unquoted_text(source))
+            );
+            direct
+                || expression_uses_set_method(callee, source)
+                || arguments
+                    .iter()
+                    .any(|argument| expression_uses_set_method(&argument.value, source))
+        }
+        Expression::ArrayLiteral { elements, .. }
+        | Expression::TupleLiteral { elements, .. }
+        | Expression::SetLiteral { elements, .. } => elements
+            .iter()
+            .any(|element| expression_uses_set_method(element, source)),
+        Expression::DictTableLiteral { entries, .. }
+        | Expression::DictColumnLiteral { entries, .. } => entries
+            .iter()
+            .any(|entry| expression_uses_set_method(&entry.value, source)),
+        Expression::Group { expression, .. }
+        | Expression::Cast { expression, .. }
+        | Expression::Unary {
+            operand: expression,
+            ..
+        } => expression_uses_set_method(expression, source),
+        Expression::Binary { left, right, .. } => {
+            expression_uses_set_method(left, source) || expression_uses_set_method(right, source)
+        }
+        Expression::NewCall {
+            callee, arguments, ..
+        } => {
+            expression_uses_set_method(callee, source)
+                || arguments
+                    .iter()
+                    .any(|argument| expression_uses_set_method(&argument.value, source))
+        }
+        Expression::Member { object, .. } => expression_uses_set_method(object, source),
+        Expression::Selector {
+            source: object,
+            step,
+            ..
+        } => {
+            expression_uses_set_method(object, source)
+                || step
+                    .as_deref()
+                    .is_some_and(|step| expression_uses_set_method(step, source))
+        }
+        Expression::Literal { .. } | Expression::Name(_) => false,
+    }
+}
+
+/// 递归检查语句体，使函数、表和错误控制流中的集合方法都进入标准库链接计划。
+fn statements_use_set_method(statements: &[Statement], source: &SourceFile) -> bool {
+    statements.iter().any(|statement| match statement {
+        Statement::Expression { expression, .. }
+        | Statement::Assignment {
+            value: expression, ..
+        }
+        | Statement::ConstDeclaration {
+            value: expression, ..
+        }
+        | Statement::Raise {
+            value: expression, ..
+        } => expression_uses_set_method(expression, source),
+        Statement::ExtendedAssignment { target, value, .. } => {
+            expression_uses_set_method(target, source) || expression_uses_set_method(value, source)
+        }
+        Statement::Declaration { value, .. } => value
+            .as_ref()
+            .is_some_and(|value| expression_uses_set_method(value, source)),
+        Statement::Table { body, .. } | Statement::Function { body, .. } => {
+            statements_use_set_method(body, source)
+        }
+        Statement::If {
+            condition,
+            body,
+            elif_branches,
+            else_body,
+            ..
+        } => {
+            expression_uses_set_method(condition, source)
+                || statements_use_set_method(body, source)
+                || elif_branches.iter().any(|branch| {
+                    expression_uses_set_method(&branch.condition, source)
+                        || statements_use_set_method(&branch.body, source)
+                })
+                || else_body
+                    .as_deref()
+                    .is_some_and(|body| statements_use_set_method(body, source))
+        }
+        Statement::For { iterable, body, .. }
+        | Statement::While {
+            condition: iterable,
+            body,
+            ..
+        } => {
+            expression_uses_set_method(iterable, source) || statements_use_set_method(body, source)
+        }
+        Statement::Return { value, .. } => value
+            .as_ref()
+            .is_some_and(|value| expression_uses_set_method(value, source)),
+        Statement::Try {
+            body,
+            catches,
+            finally_body,
+            ..
+        } => {
+            statements_use_set_method(body, source)
+                || catches
+                    .iter()
+                    .any(|catch| statements_use_set_method(&catch.body, source))
+                || finally_body
+                    .as_deref()
+                    .is_some_and(|body| statements_use_set_method(body, source))
+        }
+        Statement::Import { .. } | Statement::Break { .. } | Statement::Continue { .. } => false,
+    })
+}
+
+/// 判断入口是否使用集合方法；该事实驱动标准库源码静态链接和类型接口注入。
+fn program_uses_set_method(program: &Program, source: &SourceFile) -> bool {
+    statements_use_set_method(&program.statements, source)
+}
+
 /// 从规范标准库源码提取完整注解的函数接口；不执行模块，跨模块类型变量使用
 /// 签名内的占位身份保存，调用点再由类型检查器实例化。
 fn standard_module_function_signatures(
@@ -325,6 +545,25 @@ fn plan_standard_link(
         })
         .collect::<BTreeSet<_>>();
     let mut result = StandardLinkPlan::default();
+    if program_uses_set_method(program, source)
+        && let Some(record) = standard
+            .modules
+            .get(&ModuleName::new(vec!["set".to_owned()]))
+        && let Some(module_source) = &record.source
+    {
+        let source = if local_functions
+            .iter()
+            .any(|name| SET_METHOD_NAMES.contains(&name.as_str()))
+        {
+            rename_set_module_functions(module_source.text())
+        } else {
+            module_source.text().to_owned()
+        };
+        result
+            .sources
+            .entry("stdlib.set".to_owned())
+            .or_insert(source);
+    }
     for statement in &program.statements {
         let Statement::Import {
             import: ImportStatement::From {
@@ -518,6 +757,10 @@ impl FrontendCompiler {
             .program
             .as_ref()
             .is_some_and(|program| imports_standard_library(program, &request.source))
+            || parsed
+                .program
+                .as_ref()
+                .is_some_and(|program| program_uses_set_method(program, &request.source))
             || project
                 .as_ref()
                 .is_some_and(project_imports_standard_library);

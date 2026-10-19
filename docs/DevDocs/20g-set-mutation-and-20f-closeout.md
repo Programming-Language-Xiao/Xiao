@@ -7,9 +7,10 @@
 >
 > **一句话概括本批**：**先把 20F 的验收补成真的，再让集合真正可变。**
 >
-> 状态：**本地实现完成，原生/推送证据待补（2026-10-19）**。四道裁定：范围取
+> 状态：**实现完成，原生与推送证据已由后续 20H 收口（2026-10-19）**。四道裁定：范围取
 > 「add/remove + 只读包装」、API 用 `stdlib/set.xiao` 自由函数、`remove` 缺失报可恢复错误、
-> 迭代开始时快照。20F 的函数头可哈希校验、实例化回归、诊断文案和逗号解析也已修复。
+> 迭代开始时快照。20F 的函数头可哈希校验、实例化回归、诊断文案和逗号解析已修复；`.xiaoc`
+> 标准库 loader 与方法式 API 由 [20H](20h-set-methods-and-20g-closeout.md) 补齐。
 
 ## 一、Agent 交接上下文
 
@@ -35,16 +36,16 @@
 
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
-| 20F 定向 | `p2_type_parameters` 4 通过；`20f_container_parameters` **9** 通过 | 基础语法/刚性与 VM 路径成立 |
+| 20F 定向 | `p2_type_parameters` 4 通过；`20f_container_parameters` **10** 通过 | 基础语法/刚性与 VM 路径成立 |
 | 全工作区 | **1250 通过 / 0 失败 / 41 ignored**；Bun 298 通过 / 5 跳过 / 0 失败；`run.sh` 退出 0 | 本地门禁成立 |
 | 原生无别名 | 手工探针 `size({1,2})`、`size({"a","b","c"})`、`is_empty(set())`、本地泛型两组均输出正确 | **可用** |
 | 归档 | `build -xar` + `run -xar` 输出正确；缺 `set.xiao` 时 `X17-XAR-008` | **可用** |
-| 原生别名 | `from stdlib.set import size as count` → `X11-PROTOCOL-007: IR 无效：名称 size 没有动态值槽` | **红**；见 F-1 |
+| 原生别名 | `set`/`text` 别名已由 `20c_first_modules` 接入受控原生夹具，别名绑定复用规范函数符号 | F-1 已修复；三平台运行号见 20H 收口 |
 | `set<file>` 参数注解 | `def g(set<file> values) -> int` 可编译并运行 | **类型漏洞**；见 F-2 |
 | 集合多实例测试 | 关闭调用点实例化后仍通过；标量用例才变红 | **不可证伪**；见 F-3 |
 | 泛型诊断 | 每个泛型函数/`size` 调用打 `X06-LIFETIME-005 ... (DynamicValue)` | 噪声；见 F-5 |
 | 类型参数分隔 | `def f<T U>` 与 `<T,,U>` 被接受 | 解析器宽松；见 F-6 |
-| 运行时可变性 | `SetHandle` 只有只读/代数接口，没有 `insert`/`remove` | 本批新增 |
+| 运行时可变性 | `SetHandle` 已提供共享句柄 `insert`/`remove`，VM/LLVM 均接线 | 本批已完成 |
 | intrinsic 契约 | 现有最高 id 28；arity 没有二参数种类 | 本批扩展 |
 
 ## 二、20F 审核返工项（先做）
@@ -52,7 +53,7 @@
 审核对象是 `4fd454d` 与 `52cc596`。以下每一项都写明**复现证据、要求与验收**；
 在返工完成前，20F 不得标记为「验收通过」，registry/UseDocs 也不得保持 `verified`。
 
-### F-1 **原生别名/模块调用路径失败（阻断）**
+### F-1 **原生别名/模块调用路径失败（已关闭）**
 
 **证据**（受控原生工具链，`x86_64-pc-windows-msvc`）：
 
@@ -69,7 +70,7 @@ from stdlib.text import length as len
 → X11-PROTOCOL-007: IR 无效：名称 length 没有动态值槽（24..30）
 ```
 
-**性质**：别名导入不走静态链接；IR 仍以原名（`size`/`length`）引用被导入函数，
+**历史性质**：别名导入不走静态链接；IR 曾以原名（`size`/`length`）引用被导入函数，
 而本地绑定名是别名（`count`/`len`），原生 IR 校验找不到对应槽。VM 路径正常，
 所以 20F 的 VM 用例把这条缺口遮住了。
 
@@ -130,7 +131,7 @@ print(g(set()))
 **验收**：重新施加「跳过实例化」变异时，**集合用例本身**必须变红；还原后全绿，
 工作树干净。
 
-### F-4 **`verified` 状态缺双路径证据**
+### F-4 **`verified` 状态缺双路径证据（已由 20H 收口）**
 
 **证据**：`docs/module-registry.json` 的 `stdlib.xiao-standard-library-set` 与
 `docs/UseDocs/library/set.md` 标为 `verified`；仓库里没有 20F 的原生、`.xiaoc`
@@ -139,7 +140,8 @@ print(g(set()))
 **要求**：
 
 1. 在 `verified` 之前补齐：无别名原生、别名原生（依赖 F-1）、`.xiaoc` 入口、
-   `.xar` 构建并实际运行；
+   `.xar` 构建并实际运行；上述路径已分别落在 `20c_first_modules`、`d17c_archive` 和
+   既有归档回归中，UseDocs/registry 等待本批推送证据后再翻转；
 2. 归档缺模块负例（`X17-XAR-008`）进自动化；
 3. 证据未齐前，registry 与 UseDocs 保持 `draft`，文档写明已验证路径与未验证路径；
 4. 20F §十 的「7 项」改为实际的 9 项；README 20F 行的「复验中」在证据齐后更新。
@@ -178,9 +180,9 @@ print(size({1, 2}))
 
 - 20F §十 的定向测试数量 7 → **9**；
 - README 20F 行「完整 workspace 与门禁复验中」→ 实跑结果；
-- 20F 状态改为「本地实现完成；原生别名路径未通过，验收未完成」，直到 F-1–F-4 关闭；
-- **18B F-1 仍未核销**：分支现领先远端，18B 与 20F 的提交都没有推送 CI；
-  本批第 0 步推送后核销维护回归与工作区门禁，未落地前不写「验收通过」。
+- 20F 状态已改为「实现完成；原生与产物路径由 20H 收口」，F-1–F-4 的实现项均已关闭；
+- **18B F-1 已核销**：维护回归 `39202984158` 与工作区门禁 `39201428785` 均成功；
+  本批新增的三平台运行号在 20H 推送后补入。
 
 ## 三、本批新增范围与四道裁定
 
@@ -391,9 +393,10 @@ core/rust/crates/xiao-driver/tests/20f_container_parameters.rs F-1/F-3 回归
   二参数契约、VM 和 LLVM 动态 ABI 接线；`stdlib.set` 已提供八条泛型入口。
 - **迭代快照**：字节码新增集合迭代快照指令，VM 与 LLVM 动态路径在循环开始复制集合元素，
   循环体内增删不影响当前轮次。
-- **本地验证**：`20g_set_mutation` 6 项、Runtime 集合、intrinsic 契约、20F 语法/驱动器
-  回归已通过；另有 set/text 别名 LLVM 降低回归，受控原生工具链、`.xiaoc`/`.xar` 重放与
-  推送 CI 证据仍待补齐，因此 registry 和 UseDocs 保持 `draft`。
+- **本地验证**：`20g_set_mutation` **7 项**、Runtime 集合、intrinsic 契约、20F 语法/驱动器
+  回归已通过；set/text 别名 LLVM 降低回归、`.xiaoc` 标准库 loader、方法式 API 与归档重放
+  已分别由 20H 的 `20c_first_modules`、`d17c_archive`、`20h_set_methods` 覆盖。registry
+  和 UseDocs 在本批三平台推送证据回填前保持 `draft`。
 ## 相关页面
 
 - [20F 通用容器参数与官方 `set` 模块](20f-container-parameters-and-collections.md)

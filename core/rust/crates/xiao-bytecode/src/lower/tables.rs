@@ -13,6 +13,9 @@ use xiao_ir::{
 /// 合成字段函数使用的接收者名称；源码不能声明此名称。
 const RECEIVER: &str = "#table_receiver";
 
+/// 前端在顶层存在同名用户函数时给静态链接的集合函数使用的内部前缀。
+const SET_METHOD_FUNCTION_PREFIX: &str = "__xiao_stdlib_set_";
+
 impl Lowerer<'_> {
     /// 保持顶层编号后，按源码顺序预登记全部表辅助函数和方法。
     pub(super) fn register_tables(&mut self, mut next: u32) -> Vec<(String, IrStatement, SigId)> {
@@ -155,6 +158,46 @@ impl Lowerer<'_> {
         arguments: &[IrCallArgument],
         expression: &IrExpression,
     ) -> Option<VReg> {
+        if matches!(object.ty, IrType::Set { .. })
+            && !member.backticked
+            && matches!(
+                member.text.as_str(),
+                "size"
+                    | "is_empty"
+                    | "add"
+                    | "remove"
+                    | "contains"
+                    | "union"
+                    | "intersection"
+                    | "difference"
+            )
+        {
+            let internal_name = format!("{SET_METHOD_FUNCTION_PREFIX}{}", member.text);
+            let callee = self
+                .function_index(&internal_name)
+                .or_else(|| self.function_index(&member.text))?;
+            let receiver = self.lower_expression(object);
+            let mut bound = vec![TacArgument::positional(receiver)];
+            bound.extend(arguments.iter().map(|argument| {
+                let value = self.lower_expression(&argument.value);
+                match &argument.name {
+                    Some(name) => TacArgument::keyword(name.text.clone(), value),
+                    None => TacArgument::positional(value),
+                }
+            }));
+            let signature = self.signature_of_function(callee)?;
+            let register = self.new_register(Self::class_of_type(&expression.ty), expression.span);
+            self.emit(TacInstr::with_dst(
+                TacOp::Call {
+                    callee,
+                    signature,
+                    arguments: bound,
+                },
+                register,
+                expression.span,
+            ));
+            return Some(register);
+        }
         let table = self.table_index(&object.ty)?;
         let key = name_key(&member.text, member.backticked);
         let callee = *self.table_definitions[table as usize].methods.get(&key)?;

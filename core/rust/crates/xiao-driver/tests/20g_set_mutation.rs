@@ -29,10 +29,10 @@ fn output(outcome: &DriverOutcome) -> String {
 /// 插入、删除、别名可见性和四个只读包装共享同一集合语义。
 fn mutation_and_readonly_wrappers_observe_shared_ordered_set() {
     let outcome = run(
-        "from stdlib.set import size, add, remove, contains, union, intersection, difference\nvalues = {1, 2}\nalias = values\nadd(values, 3)\nprint(size(alias))\nprint(contains(alias, 3))\nprint(size(union(values, {3, 4})))\nprint(size(intersection(values, {2, 4})))\nprint(size(difference(values, {1})))\nremove(alias, 2)\nprint(contains(values, 2))\n",
+        "from stdlib.set import size, add, remove, contains, union, intersection, difference\nvalues = {1, 2}\nalias = values\nadd(alias, 3)\nadd(values, 3)\nprint(size(alias))\nprint(contains(alias, 3))\nfor value in union(values, {3, 4})\n    print(value)\nfor value in intersection(values, {2, 4, 3})\n    print(value)\nfor value in difference(values, {1})\n    print(value)\nremove(alias, 2)\nprint(contains(values, 2))\n",
     );
     assert!(outcome.is_success(), "{outcome:?}");
-    assert_eq!(output(&outcome), "3\ntrue\n4\n1\n2\nfalse\n");
+    assert_eq!(output(&outcome), "3\ntrue\n1\n2\n3\n4\n2\n3\n2\n3\nfalse\n");
 }
 
 #[test]
@@ -43,6 +43,14 @@ fn remove_missing_element_is_catchable() {
     );
     assert!(outcome.is_success(), "{outcome:?}");
     assert_eq!(output(&outcome), "missing\n");
+}
+
+#[test]
+/// 未捕获的 `remove` 缺失元素保留库级错误身份与运行时退出边界。
+fn remove_missing_element_keeps_stable_uncaught_code() {
+    let outcome = run("from stdlib.set import remove\nremove({1}, 2)\n");
+    assert!(!outcome.is_success(), "{outcome:?}");
+    assert_eq!(outcome.code(), Some("SET_ELEMENT_MISSING"), "{outcome:?}");
 }
 
 #[test]

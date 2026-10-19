@@ -2,7 +2,7 @@
 
 use std::collections::BTreeMap;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
 
 use serde_json::Value;
@@ -24,6 +24,7 @@ use super::request::{
 use super::validate::{validate_source, validate_target, validate_versions};
 use crate::diagnostics::{DiagnosticOptions, DiagnosticSession, start_error_details};
 use crate::frontend::{FrontendContext, FrontendRequest};
+use crate::module_loader::DriverModuleLoader;
 use crate::packages::{PackageRegistry, PackageRegistryFingerprint};
 use crate::run::{
     CacheObservation, CancellationToken, DRIVER_TIMEOUT_CODE, DriverError, DriverExecution,
@@ -97,6 +98,27 @@ fn frontend_run_request(
     };
     request.context.package_registry = Some(registry);
     Ok((request, fingerprint))
+}
+
+/// 为已经物化的 `.xiaoc` 复用源码运行的项目根查找规则。
+///
+/// 产物本身不内嵌项目源码，模块加载仍由宿主按项目根提供；优先从产物所在
+/// 目录向上寻找 `config.xiao`，找不到时退回产物目录，再退回当前工作目录。
+fn xiaoc_project_root(path: &str) -> Option<PathBuf> {
+    let path = Path::new(path);
+    let absolute = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir().ok()?.join(path)
+    };
+    let directory = absolute.parent()?.to_path_buf();
+    Some(
+        directory
+            .ancestors()
+            .find(|parent| parent.join("config.xiao").is_file())
+            .unwrap_or(directory.as_path())
+            .to_path_buf(),
+    )
 }
 
 /// 将协议 VM 参数交给生产 VM 自身的范围校验。
@@ -291,13 +313,25 @@ pub(super) fn run_xiaoc_request_response(
     if let Some(deadline) = deadline {
         cancellation_source = cancellation_source.with_deadline(deadline);
     }
+    let project_root = xiaoc_project_root(&path).or_else(|| std::env::current_dir().ok());
+    let active_environment = std::env::var_os("XIAO_ACTIVE_ENV");
+    let package_registry = match PackageRegistry::from_environment(
+        active_environment.as_deref().map(std::path::Path::new),
+    ) {
+        Ok(registry) => registry,
+        Err(error) => {
+            return xiaoc_error_response(request_id, path, format!("加载包环境失败：{error}"));
+        }
+    };
+    let module_loader = DriverModuleLoader::new(project_root.as_deref(), Some(&package_registry));
     let measurement = xiao_runtime::start_memory_measurement();
-    let result = xiao_vm::run_xiaoc_production_with_capabilities(
+    let result = xiao_vm::run_xiaoc_production_with_loader(
         &bytes,
         vm_options,
         event_capacity,
         Some(cancellation_source),
         options.capabilities,
+        Some(&module_loader),
     );
     let peak_live_bytes = measurement.peak_live_bytes();
     drop(measurement);

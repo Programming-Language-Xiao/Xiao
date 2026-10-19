@@ -66,6 +66,12 @@ pub const SET_OPERATION_TYPE_CODE: &str = "X03-TYPE-021";
 pub const SET_COMPARISON_TYPE_CODE: &str = "X03-TYPE-022";
 /// 通用 `set<T>` 调用点把类型参数实例化为不可哈希类型。
 pub const SET_GENERIC_UNHASHABLE_CODE: &str = "X03-TYPE-023";
+/// 集合方法接收者不是静态集合。
+pub const SET_METHOD_RECEIVER_CODE: &str = "X03-TYPE-024";
+/// 集合方法只能以直接调用形式出现。
+pub const SET_METHOD_VALUE_CODE: &str = "X03-TYPE-025";
+/// 静态集合上不存在指定方法。
+pub const SET_METHOD_UNKNOWN_CODE: &str = "X03-TYPE-026";
 
 /// 函数名称重复或函数声明无法登记。
 pub const FUNCTION_DECLARATION_CODE: &str = "X04-TYPE-001";

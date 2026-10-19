@@ -16,8 +16,9 @@ use xiao_syntax::{
 
 use crate::containers::{ArrayType, DictType};
 use crate::diagnostics::{
-    NON_CONSTANT_CODE, TABLE_CONSTRUCTOR_CODE, TABLE_DECLARATION_CODE, TABLE_INITIALIZER_CODE,
-    TABLE_LIFECYCLE_CODE, TABLE_MEMBER_CODE, TABLE_VISIBILITY_CODE,
+    NON_CONSTANT_CODE, SET_METHOD_RECEIVER_CODE, SET_METHOD_UNKNOWN_CODE, SET_METHOD_VALUE_CODE,
+    TABLE_CONSTRUCTOR_CODE, TABLE_DECLARATION_CODE, TABLE_INITIALIZER_CODE, TABLE_LIFECYCLE_CODE,
+    TABLE_MEMBER_CODE, TABLE_VISIBILITY_CODE,
 };
 use crate::environment::{Binding, NamespaceOrigin};
 use crate::functions::{FunctionParameterSignature, FunctionSignature};
@@ -26,6 +27,23 @@ use crate::tables::{TableMemberKind, TableMemberSignature, TableSignature, Table
 use crate::types::{Type, TypeScheme};
 
 use super::{FunctionFrame, TypeChecker};
+
+/// `stdlib.set` 对外冻结的方法名称。
+const SET_METHOD_NAMES: [&str; 8] = [
+    "size",
+    "is_empty",
+    "add",
+    "remove",
+    "contains",
+    "union",
+    "intersection",
+    "difference",
+];
+
+/// 判断名称是否属于集合方法面；反引号名称保持普通成员语义。
+fn is_set_method_name(checker: &TypeChecker<'_>, member: Name) -> bool {
+    !member.backticked && SET_METHOD_NAMES.contains(&checker.display_name(member).as_str())
+}
 
 /// 当前正在检查的表上下文；只保存静态名称，不代表运行时对象。
 #[derive(Clone, Debug)]
@@ -588,6 +606,71 @@ impl<'source> TypeChecker<'source> {
         }
     }
 
+    /// 返回集合方法的官方函数签名。
+    fn set_method_signature(&self, member: Name) -> Option<FunctionSignature> {
+        if !is_set_method_name(self, member) {
+            return None;
+        }
+        self.module_functions
+            .get("stdlib.set")
+            .and_then(|members| members.get(&self.name_key(member)))
+            .cloned()
+    }
+
+    /// 检查集合方法直接调用，并把接收者绑定为自由函数的第一个参数。
+    pub(super) fn check_set_method_call(
+        &mut self,
+        callee: &Expression,
+        arguments: &[CallArgument],
+        span: SourceSpan,
+    ) -> Option<Type> {
+        let Expression::Member { object, member, .. } = callee else {
+            return None;
+        };
+        let signature = self.set_method_signature(*member)?;
+        let checked_object = self.check_expression(object);
+        let object_type = self.context.apply(&checked_object);
+        let object_span = object.span();
+        match object_type {
+            Type::Set(_) => {
+                let mut signature = self.instantiate_function_signature(&signature);
+                let receiver = signature
+                    .parameters
+                    .first()
+                    .map(|parameter| parameter.ty.clone());
+                if let Some(receiver) = receiver {
+                    self.unify_or_report(
+                        &receiver,
+                        &object_type,
+                        object_span,
+                        "x04.type.call_argument_type",
+                    );
+                    signature.parameters.remove(0);
+                }
+                Some(self.check_function_arguments(&signature, arguments, span))
+            }
+            Type::Dynamic | Type::Variable(_) => {
+                self.type_error(
+                    SET_METHOD_RECEIVER_CODE,
+                    "x03.type.set_method_requires_static_set",
+                    object_span,
+                    format!(
+                        "集合方法 {} 的接收者必须是静态 set，实际为 {}",
+                        self.display_name(*member),
+                        object_type
+                    ),
+                );
+                for argument in arguments {
+                    self.check_expression(&argument.value);
+                }
+                Some(Type::Dynamic)
+            }
+            // 其它静态对象交回表方法和普通成员路径；表可以合法声明同名方法，
+            // 不能因为集合方法探测而提前劫持它的既有诊断和调用语义。
+            _ => None,
+        }
+    }
+
     /// 检查成员表达式并返回字段或方法类型。
     pub(super) fn check_table_member_expression(
         &mut self,
@@ -639,6 +722,27 @@ impl<'source> TypeChecker<'source> {
             return Type::Dynamic;
         }
         let object_type = self.check_expression(object);
+        if let Type::Set(_) = self.context.apply(&object_type) {
+            if is_set_method_name(self, member) {
+                self.type_error(
+                    SET_METHOD_VALUE_CODE,
+                    "x03.type.set_method_value",
+                    member.span,
+                    format!(
+                        "集合方法 {} 只能直接调用，不能作为值使用",
+                        self.display_name(member)
+                    ),
+                );
+            } else {
+                self.type_error(
+                    SET_METHOD_UNKNOWN_CODE,
+                    "x03.type.set_method_unknown",
+                    member.span,
+                    format!("集合没有方法 {}", self.display_name(member)),
+                );
+            }
+            return Type::Dynamic;
+        }
         let Type::Table(table_type) = self.context.apply(&object_type) else {
             if object_type.is_dynamic() || matches!(object_type, Type::Variable(_)) {
                 return Type::Dynamic;

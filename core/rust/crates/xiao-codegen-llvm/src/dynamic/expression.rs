@@ -11,6 +11,9 @@ use super::text::{escape_bytes, format_float, is_identity_cast, parse_i32, parse
 use super::{BYTES_TYPE, DynamicGenerator, VALUE_TYPE};
 use crate::error::{CodegenError, Result};
 
+/// 前端在顶层存在同名用户函数时给静态链接的集合函数使用的内部前缀。
+const SET_METHOD_FUNCTION_PREFIX: &str = "__xiao_stdlib_set_";
+
 impl<'a> DynamicGenerator<'a> {
     /// 发射一个表达式并返回 ABI 值 SSA 名称。
     pub(super) fn emit_expression(&mut self, expression: &IrExpression) -> Result<String> {
@@ -742,6 +745,42 @@ impl<'a> DynamicGenerator<'a> {
             );
             self.release_value(value);
             return Ok(self.none_value());
+        }
+        if let IrExpressionKind::Member { object, member } = &callee.kind
+            && matches!(object.ty, IrType::Set { .. })
+            && !member.backticked
+            && matches!(
+                member.text.as_str(),
+                "size"
+                    | "is_empty"
+                    | "add"
+                    | "remove"
+                    | "contains"
+                    | "union"
+                    | "intersection"
+                    | "difference"
+            )
+        {
+            let internal_name = format!("{SET_METHOD_FUNCTION_PREFIX}{}", member.text);
+            let function_name = if self.function_definitions.contains_key(&internal_name) {
+                internal_name
+            } else if self.function_definitions.contains_key(&member.text) {
+                member.text.clone()
+            } else {
+                return Err(CodegenError::Unsupported {
+                    feature: format!("集合方法 {} 未静态链接", member.text),
+                    span: Some(span),
+                });
+            };
+            let mut bound = Vec::with_capacity(arguments.len() + 1);
+            bound.push(IrCallArgument {
+                kind: "positional".to_owned(),
+                name: None,
+                value: (**object).clone(),
+                span: object.span,
+            });
+            bound.extend(arguments.iter().cloned());
+            return self.emit_function_call(&function_name, &bound, span);
         }
         if let IrExpressionKind::Member { object, member } = &callee.kind
             && matches!(object.ty, IrType::Table { .. })

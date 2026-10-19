@@ -157,6 +157,86 @@ fn direct_xiaoc_run_reuses_the_production_contract_and_verifies_bytes() {
 }
 
 #[test]
+/// `.xiaoc` 运行路径必须像源码和归档一样按需加载官方标准库模块。
+fn direct_xiaoc_run_loads_standard_library_modules() {
+    let cases = [
+        (
+            "stdlib.set",
+            "from stdlib.set import size\nprint(size({1, 2}))\n",
+            "2\n",
+        ),
+        (
+            "stdlib.text",
+            "from stdlib.text import length\nprint(length(\"小雪\"))\n",
+            "2\n",
+        ),
+        (
+            "stdlib.set-methods",
+            "values = {1}\nvalues.add(2)\nprint(values.size())\n",
+            "2\n",
+        ),
+    ];
+    for (module, source, expected) in cases {
+        let path = std::env::temp_dir().join(format!(
+            "xiao-direct-xiaoc-{module}-{}-{}.xiaoc",
+            std::process::id(),
+            std::thread::current().name().unwrap_or("test")
+        ));
+        fs::write(&path, xiaoc_for(source)).expect("写入标准库 .xiaoc");
+        let response = dispatch(ProtocolRequest::RunXiaoc {
+            request_id: format!("run-{module}"),
+            protocol_version: PROTOCOL_VERSION,
+            core_version: CORE_VERSION,
+            locale: None,
+            path: path.display().to_string(),
+            options: RunOptions::default(),
+            diagnostics: None,
+            debug: false,
+        });
+        let _ = fs::remove_file(&path);
+        let ProtocolResponse::Result {
+            events, exit_code, ..
+        } = response
+        else {
+            panic!("{module} .xiaoc 应运行成功");
+        };
+        assert_eq!(exit_code, 0, "{module}");
+        let output = events
+            .iter()
+            .filter(|event| event.kind == "intrinsic_output")
+            .filter_map(|event| event.data.get("text"))
+            .filter_map(serde_json::Value::as_str)
+            .collect::<String>();
+        assert_eq!(output, expected, "{module}");
+    }
+}
+
+#[test]
+/// 方法式集合调用在 `.xar` 的静态链接载荷中保持与源码/VM 一致。
+fn archive_run_supports_set_methods() {
+    let archive =
+        archive_for("values = {1, 2}\nmerged = values.union({3})\nprint(merged.size())\n");
+    let outcome = run_archive(
+        &archive,
+        XarRunOptions {
+            runtime_abi: ABI_ENCODED_VERSION,
+            ..Default::default()
+        },
+    )
+    .expect("含集合方法的归档应成功运行");
+    assert!(outcome.result.is_success(), "{:?}", outcome.result);
+    let output = outcome
+        .events
+        .iter()
+        .filter_map(|event| match event {
+            xiao_vm::VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+            _ => None,
+        })
+        .collect::<String>();
+    assert_eq!(output, "3\n");
+}
+
+#[test]
 fn invalid_archive_produces_no_execution_events() {
     let mut archive = archive_for("print(\"must not run\")\n");
     let marker = b"objects/xiaoc/";

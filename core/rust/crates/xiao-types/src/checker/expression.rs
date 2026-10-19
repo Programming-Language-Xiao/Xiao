@@ -558,6 +558,9 @@ impl<'source> TypeChecker<'source> {
         if let Some(result) = self.check_imported_function_call(callee, arguments, span) {
             return result;
         }
+        if let Some(result) = self.check_set_method_call(callee, arguments, span) {
+            return result;
+        }
         if let Some(result) = self.check_table_method_call(callee, arguments, span) {
             return result;
         }

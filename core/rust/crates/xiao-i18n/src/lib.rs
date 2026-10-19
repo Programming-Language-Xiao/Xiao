@@ -1141,6 +1141,12 @@ pub fn builtin_renderer() -> MessageRenderer {
         ("x03.type.set_unhashable_element", "type error: {message}"),
         ("x03.type.generic_set_unhashable", "type error: {message}"),
         (
+            "x03.type.set_method_requires_static_set",
+            "type error: {message}",
+        ),
+        ("x03.type.set_method_value", "type error: {message}"),
+        ("x03.type.set_method_unknown", "type error: {message}"),
+        (
             "x03.type.set_unhashable_membership",
             "type error: {message}",
         ),

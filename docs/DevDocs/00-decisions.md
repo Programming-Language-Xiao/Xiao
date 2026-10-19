@@ -17,6 +17,15 @@
 元素时抛出 `Error(code = "SET_ELEMENT_MISSING")`。`contains`、`union`、`intersection` 和
 `difference` 是自由函数包装，集合在 `for` 开始时复制快照，循环体内增删不影响当前轮次。
 
+### 20H 集合方法式 API（2026-10-19）
+
+集合方法 `size`、`is_empty`、`add`、`remove`、`contains`、`union`、`intersection`、
+`difference` 与 `stdlib.set` 的同名自由函数保持一一对应；方法调用只接受静态 `set<T>`，
+接收者先求值一次，链式调用继续沿用自由函数的顺序、别名和错误语义。动态接收者、方法值、
+静态集合未知方法分别固定为 `X03-TYPE-024`、`X03-TYPE-025`、`X03-TYPE-026`。方法使用会
+把 `stdlib.set` 纳入静态链接计划；`.xiaoc` 仍由宿主标准库 loader 按需提供模块，不把标准库
+对象写入产物。
+
 ### 目标与非目标
 
 Xiao 的目标是让同一份源码同时拥有两种执行路径：

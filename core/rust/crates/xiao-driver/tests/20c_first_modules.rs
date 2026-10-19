@@ -496,6 +496,26 @@ fn first_modules_match_native_results() {
             "from stdlib.text import length as len\nprint(len(\"小雪\"))\n",
             "2\n",
         ),
+        (
+            "set-mutation",
+            "from stdlib.set import add, remove, contains, union, intersection, difference\nvalues = {1, 2}\nalias = values\nadd(alias, 3)\nadd(values, 3)\nfor value in union(values, {3, 4})\n    print(value)\nfor value in intersection(values, {2, 4, 3})\n    print(value)\nfor value in difference(values, {1})\n    print(value)\nremove(alias, 2)\nprint(contains(values, 2))\n",
+            "1\n2\n3\n4\n2\n3\n2\n3\nfalse\n",
+        ),
+        (
+            "set-snapshot",
+            "from stdlib.set import add, remove, size\nvalues = {1, 2, 3}\nfor value in values\n    remove(values, value)\n    add(values, value + 10)\n    print(value)\nprint(size(values))\nfor value in values\n    print(value)\n",
+            "1\n2\n3\n3\n11\n12\n13\n",
+        ),
+        (
+            "set-return",
+            "def first(set<int> values) -> int\n    for value in values\n        return value\n    return 0\nprint(first({1, 2}))\n",
+            "1\n",
+        ),
+        (
+            "set-methods",
+            "values = {1, 2}\nalias = values\nalias.add(3)\nvalues.add(3)\nfor value in values.union({3, 4})\n    print(value)\nalias.remove(2)\nprint(values.contains(2))\nprint(values.size())\n",
+            "1\n2\n3\n4\nfalse\n2\n",
+        ),
     ];
     for (module, caller, expected_stdout) in cases {
         let source = caller;
@@ -570,4 +590,40 @@ fn first_modules_match_native_results() {
         );
     }
     let _ = fs::remove_dir_all(root);
+}
+
+#[test]
+#[ignore = "需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4"]
+/// 未捕获的集合删除缺失错误在 VM 与原生边界保留相同错误码。
+fn set_remove_missing_native_matches_vm() {
+    let (target, toolchain) = configured_native_toolchain();
+    let source = "from stdlib.set import remove\nremove({1}, 2)\n";
+    let project = TestProject::new(source);
+    let request = project.request(source);
+    let artifact = FrontendCompiler::new()
+        .compile(&request)
+        .expect("集合缺失错误原生夹具前端应通过");
+    let linked = static_standard_library_artifact(&artifact);
+    let vm = FrontendVmDriver::new().run_artifact(&linked, &DriverRequest::new(request.clone()));
+    assert_eq!(vm.code(), Some("SET_ELEMENT_MISSING"), "{vm:?}");
+    let output = std::env::temp_dir().join(format!(
+        "xiao-20g-set-remove-missing-{}.exe",
+        std::process::id()
+    ));
+    let native = FrontendNativeDriver::new()
+        .build_artifact(
+            &artifact,
+            &NativeBuildRequest::new(request, target, toolchain, &output),
+        )
+        .expect("集合缺失错误原生构建应通过");
+    let run = Command::new(&native.native.executable)
+        .output()
+        .expect("运行集合缺失错误原生夹具");
+    let _ = fs::remove_file(&output);
+    assert_eq!(run.status.code(), Some(3), "原生退出码：{run:?}");
+    assert!(
+        String::from_utf8_lossy(&run.stderr).contains("SET_ELEMENT_MISSING"),
+        "原生 stderr：{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
 }

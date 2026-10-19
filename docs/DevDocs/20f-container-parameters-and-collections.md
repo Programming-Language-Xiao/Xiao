@@ -8,9 +8,9 @@
 > **一句话概括本批**：**让公共函数能接受「元素类型由调用方决定」的集合，
 > 并用官方 `stdlib/set.xiao` 证明这条能力真的能写库。**
 >
-> 状态：**本地实现完成，20G 返工与可变集合接线已落地；原生/产物证据仍待受控工具链复验
-> （2026-10-19，四道裁定均甲）**。20F 语法、量化签名、调用点实例化、刚性统一、生成期
-> 擦除和 VM 回归已落地；20G 继续承接原生别名、`.xiaoc`/`.xar` 运行证据。
+> 状态：**实现完成，20G 与 20H 已补齐原生/产物路径（2026-10-19，四道裁定均甲）**。
+> 20F 语法、量化签名、调用点实例化、刚性统一、生成期擦除和 VM 回归已落地；原生别名、
+> `.xiaoc` 标准库 loader、`.xar` 重放和方法式 API 的收口证据见 20H 及其推送 CI。
 
 ## 一、Agent 交接上下文
 
@@ -306,12 +306,13 @@ def is_empty<T>(set<T> values) -> bool
 | `bash tools/gates/run.sh` | 退出码 0；Bun 298 通过 / 5 跳过 / 0 失败 |
 | 变异验证 | 关闭 unresolved 拒绝后 `review_mixed_known_and_unresolved_targets_cannot_omit_capabilities` 如期变红；已还原，工作树干净 |
 
-**F-1（证据缺口）**：这 6 个提交尚未推送（审核时 `main...origin/main [ahead 6]`），
+**F-1（历史证据缺口，已核销）**：这 6 个提交在审核时尚未推送（当时
+`main...origin/main [ahead 6]`），
 18B 文档与索引已写「已完成并验收通过」，但没有任何 CI 运行号。
 
 - 本批第 0 步：推送后核销 `maintenance-regression` 与 `workspace-gates`；
-- 在运行号落地前，18B 的状态只能表述为「本地验收通过，CI 待推送」；
-- 本批完成时必须回填运行号，不能把本地门禁当作远端证据。
+- 该历史缺口已由维护回归 `39202984158` 与工作区门禁 `39201428785` 核销；20H 新增的
+  三平台原生运行号在本批推送后另行回填。
 
 **F-2（索引计数漂移）**：README 的 18B-收口行原写「9 项 Rust 定向回归 / workspace 1233」，
 与文档 §十二 的「12 项 / 1236 项」不一致。
@@ -379,7 +380,7 @@ tests/fixtures/20f/                                        多实例/负例夹�
 - **归档**：真实 `build_archive` 用例确认 `stdlib_modules` 包含 `stdlib.set`，归档不携带
   官方对象；宿主标准库版本与缺模块启动检查继续复用 20E。
 - **定向验证**：`p2_type_parameters` 4 项通过；`20f_container_parameters` 10 项、
-  `20g_set_mutation` 6 项通过，
+  `20g_set_mutation` 7 项通过，
   覆盖解析、多实例 VM、官方模块别名、空集合、标量泛型、递归刚性诊断和归档索引。
 - **总门禁**：workspace Rust 测试、严格 Clippy、格式检查、Bun 298 项测试、文档/UseDocs
   检查、覆盖率门禁、TypeScript 类型检查和 benchmark 自测均通过；原生相关用例按既有
