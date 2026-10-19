@@ -296,6 +296,7 @@ intrinsic 数量持续增长，应先检查语言表达能力、优化器和 Run
 | **20D 平台资源** | Windows 平台适配稳定，资源句柄契约冻结 | 文件/目录/进程首批 API、能力上下文、三平台差分 | 不承诺沙箱或跨平台完全同构的系统细节 |
 | **20E 归档接线** | 17 索引与启动验证 | `.xar` 的标准库兼容检查、资源能力目标约束和负例 | 不重复携带官方 Runtime/标准库 |
 | **20F 通用容器参数** | 20E；[03](03-collections.md) 的「通用容器参数类型」登记 | 顶层函数显式类型参数、`set<T>` 参数/返回注解、调用点实例化与生成期擦除；官方 `stdlib/set.xiao` 的 `size`/`is_empty` | 不做集合增删、泛型表/方法、显式实例化或约束语法；见 [20F](20f-container-parameters-and-collections.md) |
+| **20G 集合增删** | 20F；20F 审核 F-1–F-7 | 集合 `add`/`remove`、`contains`/`union`/`intersection`/`difference` 只读包装、迭代快照、intrinsic 二参数契约 | 不做方法式 API、`frozenset`、哈希索引或非字面量下标；见 [20G](20g-set-mutation-and-20f-closeout.md) |
 
 20A 的契约设计可以现在开始，但只有当它改变 09R3 的机型、调用 ABI、编码或源码映射
 时，才会阻塞 09R3；否则研究路径可以继续使用已登记的实验性入口，并在进入 B0 前迁移。
