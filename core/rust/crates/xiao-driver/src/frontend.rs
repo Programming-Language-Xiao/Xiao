@@ -289,66 +289,82 @@ fn rename_set_module_functions(source: &str) -> String {
 }
 
 /// 判断表达式树中是否出现集合方法形状；接收者的静态集合类型留给类型检查器确认。
-fn expression_uses_set_method(expression: &Expression, source: &SourceFile) -> bool {
+fn expression_uses_set_method(
+    expression: &Expression,
+    source: &SourceFile,
+    types: Option<&TypeCheckResult>,
+) -> bool {
     match expression {
         Expression::Call {
             callee, arguments, ..
         } => {
-            let direct = matches!(
-                callee.as_ref(),
-                Expression::Member { member, .. }
+            let direct = match callee.as_ref() {
+                Expression::Member { object, member, .. }
                     if !member.backticked
-                        && SET_METHOD_NAMES.contains(&member.unquoted_text(source))
-            );
+                        && SET_METHOD_NAMES.contains(&member.unquoted_text(source)) =>
+                {
+                    types.is_none_or(|types| {
+                        types
+                            .type_at(object.span())
+                            .is_some_and(|ty| matches!(ty, Type::Set(_)))
+                    })
+                }
+                _ => false,
+            };
             direct
-                || expression_uses_set_method(callee, source)
+                || expression_uses_set_method(callee, source, types)
                 || arguments
                     .iter()
-                    .any(|argument| expression_uses_set_method(&argument.value, source))
+                    .any(|argument| expression_uses_set_method(&argument.value, source, types))
         }
         Expression::ArrayLiteral { elements, .. }
         | Expression::TupleLiteral { elements, .. }
         | Expression::SetLiteral { elements, .. } => elements
             .iter()
-            .any(|element| expression_uses_set_method(element, source)),
+            .any(|element| expression_uses_set_method(element, source, types)),
         Expression::DictTableLiteral { entries, .. }
         | Expression::DictColumnLiteral { entries, .. } => entries
             .iter()
-            .any(|entry| expression_uses_set_method(&entry.value, source)),
+            .any(|entry| expression_uses_set_method(&entry.value, source, types)),
         Expression::Group { expression, .. }
         | Expression::Cast { expression, .. }
         | Expression::Unary {
             operand: expression,
             ..
-        } => expression_uses_set_method(expression, source),
+        } => expression_uses_set_method(expression, source, types),
         Expression::Binary { left, right, .. } => {
-            expression_uses_set_method(left, source) || expression_uses_set_method(right, source)
+            expression_uses_set_method(left, source, types)
+                || expression_uses_set_method(right, source, types)
         }
         Expression::NewCall {
             callee, arguments, ..
         } => {
-            expression_uses_set_method(callee, source)
+            expression_uses_set_method(callee, source, types)
                 || arguments
                     .iter()
-                    .any(|argument| expression_uses_set_method(&argument.value, source))
+                    .any(|argument| expression_uses_set_method(&argument.value, source, types))
         }
-        Expression::Member { object, .. } => expression_uses_set_method(object, source),
+        Expression::Member { object, .. } => expression_uses_set_method(object, source, types),
         Expression::Selector {
             source: object,
             step,
             ..
         } => {
-            expression_uses_set_method(object, source)
+            expression_uses_set_method(object, source, types)
                 || step
                     .as_deref()
-                    .is_some_and(|step| expression_uses_set_method(step, source))
+                    .is_some_and(|step| expression_uses_set_method(step, source, types))
         }
         Expression::Literal { .. } | Expression::Name(_) => false,
     }
 }
 
 /// 递归检查语句体，使函数、表和错误控制流中的集合方法都进入标准库链接计划。
-fn statements_use_set_method(statements: &[Statement], source: &SourceFile) -> bool {
+fn statements_use_set_method(
+    statements: &[Statement],
+    source: &SourceFile,
+    types: Option<&TypeCheckResult>,
+) -> bool {
     statements.iter().any(|statement| match statement {
         Statement::Expression { expression, .. }
         | Statement::Assignment {
@@ -359,15 +375,16 @@ fn statements_use_set_method(statements: &[Statement], source: &SourceFile) -> b
         }
         | Statement::Raise {
             value: expression, ..
-        } => expression_uses_set_method(expression, source),
+        } => expression_uses_set_method(expression, source, types),
         Statement::ExtendedAssignment { target, value, .. } => {
-            expression_uses_set_method(target, source) || expression_uses_set_method(value, source)
+            expression_uses_set_method(target, source, types)
+                || expression_uses_set_method(value, source, types)
         }
         Statement::Declaration { value, .. } => value
             .as_ref()
-            .is_some_and(|value| expression_uses_set_method(value, source)),
+            .is_some_and(|value| expression_uses_set_method(value, source, types)),
         Statement::Table { body, .. } | Statement::Function { body, .. } => {
-            statements_use_set_method(body, source)
+            statements_use_set_method(body, source, types)
         }
         Statement::If {
             condition,
@@ -376,15 +393,15 @@ fn statements_use_set_method(statements: &[Statement], source: &SourceFile) -> b
             else_body,
             ..
         } => {
-            expression_uses_set_method(condition, source)
-                || statements_use_set_method(body, source)
+            expression_uses_set_method(condition, source, types)
+                || statements_use_set_method(body, source, types)
                 || elif_branches.iter().any(|branch| {
-                    expression_uses_set_method(&branch.condition, source)
-                        || statements_use_set_method(&branch.body, source)
+                    expression_uses_set_method(&branch.condition, source, types)
+                        || statements_use_set_method(&branch.body, source, types)
                 })
                 || else_body
                     .as_deref()
-                    .is_some_and(|body| statements_use_set_method(body, source))
+                    .is_some_and(|body| statements_use_set_method(body, source, types))
         }
         Statement::For { iterable, body, .. }
         | Statement::While {
@@ -392,24 +409,25 @@ fn statements_use_set_method(statements: &[Statement], source: &SourceFile) -> b
             body,
             ..
         } => {
-            expression_uses_set_method(iterable, source) || statements_use_set_method(body, source)
+            expression_uses_set_method(iterable, source, types)
+                || statements_use_set_method(body, source, types)
         }
         Statement::Return { value, .. } => value
             .as_ref()
-            .is_some_and(|value| expression_uses_set_method(value, source)),
+            .is_some_and(|value| expression_uses_set_method(value, source, types)),
         Statement::Try {
             body,
             catches,
             finally_body,
             ..
         } => {
-            statements_use_set_method(body, source)
+            statements_use_set_method(body, source, types)
                 || catches
                     .iter()
-                    .any(|catch| statements_use_set_method(&catch.body, source))
+                    .any(|catch| statements_use_set_method(&catch.body, source, types))
                 || finally_body
                     .as_deref()
-                    .is_some_and(|body| statements_use_set_method(body, source))
+                    .is_some_and(|body| statements_use_set_method(body, source, types))
         }
         Statement::Import { .. } | Statement::Break { .. } | Statement::Continue { .. } => false,
     })
@@ -417,7 +435,16 @@ fn statements_use_set_method(statements: &[Statement], source: &SourceFile) -> b
 
 /// 判断入口是否使用集合方法；该事实驱动标准库源码静态链接和类型接口注入。
 fn program_uses_set_method(program: &Program, source: &SourceFile) -> bool {
-    statements_use_set_method(&program.statements, source)
+    statements_use_set_method(&program.statements, source, None)
+}
+
+/// 类型检查完成后，仅把真正作用于静态集合的调用纳入标准库静态链接。
+fn program_uses_typed_set_method(
+    program: &Program,
+    source: &SourceFile,
+    types: &TypeCheckResult,
+) -> bool {
+    statements_use_set_method(&program.statements, source, Some(types))
 }
 
 /// 从规范标准库源码提取完整注解的函数接口；不执行模块，跨模块类型变量使用
@@ -545,25 +572,6 @@ fn plan_standard_link(
         })
         .collect::<BTreeSet<_>>();
     let mut result = StandardLinkPlan::default();
-    if program_uses_set_method(program, source)
-        && let Some(record) = standard
-            .modules
-            .get(&ModuleName::new(vec!["set".to_owned()]))
-        && let Some(module_source) = &record.source
-    {
-        let source = if local_functions
-            .iter()
-            .any(|name| SET_METHOD_NAMES.contains(&name.as_str()))
-        {
-            rename_set_module_functions(module_source.text())
-        } else {
-            module_source.text().to_owned()
-        };
-        result
-            .sources
-            .entry("stdlib.set".to_owned())
-            .or_insert(source);
-    }
     for statement in &program.statements {
         let Statement::Import {
             import: ImportStatement::From {
@@ -608,13 +616,67 @@ fn plan_standard_link(
             continue;
         };
         let identity = module_name.to_string();
-        result
-            .sources
-            .entry(identity)
-            .or_insert_with(|| module_source.text().to_owned());
-        result.import_spans.insert((span.start(), span.end()));
+        let isolate_set_method_functions = module_name == ModuleName::new(vec!["set".to_owned()])
+            && local_functions
+                .iter()
+                .any(|name| SET_METHOD_NAMES.contains(&name.as_str()));
+        let module_source = if isolate_set_method_functions {
+            rename_set_module_functions(module_source.text())
+        } else {
+            module_source.text().to_owned()
+        };
+        result.sources.entry(identity).or_insert(module_source);
+        // 若入口定义了与集合方法同名的函数，静态副本已经改用内部前缀；
+        // 保留显式导入，让它继续从宿主标准库模块解析，避免二次检查时
+        // 把 `size` 等绑定误当成入口顶层函数。
+        if !isolate_set_method_functions {
+            result.import_spans.insert((span.start(), span.end()));
+        }
     }
     result
+}
+
+/// 在类型结果确认接收者为集合后，补入隐式 `stdlib.set` 静态链接。
+///
+/// 语法扫描只负责加载标准库签名，不能直接决定链接：表方法也可能叫 `add`/`size`，
+/// 把它们提前拼接会让未导入的自由函数意外进入当前程序的顶层作用域。
+fn plan_typed_set_method_link(
+    plan: &mut StandardLinkPlan,
+    program: &Program,
+    source: &SourceFile,
+    standard: &ProjectModuleResult,
+    types: &TypeCheckResult,
+) {
+    if !program_uses_typed_set_method(program, source, types) {
+        return;
+    }
+    let Some(record) = standard
+        .modules
+        .get(&ModuleName::new(vec!["set".to_owned()]))
+    else {
+        return;
+    };
+    let Some(module_source) = &record.source else {
+        return;
+    };
+    let identity = ModuleName::new(vec!["set".to_owned()]).to_string();
+    let local_functions = program
+        .statements
+        .iter()
+        .filter_map(|statement| match statement {
+            Statement::Function { name, .. } => Some(name.unquoted_text(source).to_owned()),
+            _ => None,
+        })
+        .collect::<BTreeSet<_>>();
+    let module_source = if local_functions
+        .iter()
+        .any(|name| SET_METHOD_NAMES.contains(&name.as_str()))
+    {
+        rename_set_module_functions(module_source.text())
+    } else {
+        module_source.text().to_owned()
+    };
+    plan.sources.insert(identity, module_source);
 }
 
 /// 在调用源码后追加被静态导入的标准库函数，并移除仅供静态分析的导入节点。
@@ -878,7 +940,7 @@ impl FrontendCompiler {
                     .map(|diagnostic| diagnostic.diagnostic.clone()),
             );
         }
-        let (effective_source, effective_program) = if standard_link.sources.is_empty() {
+        let (mut effective_source, mut effective_program) = if standard_link.sources.is_empty() {
             (request.source.clone(), program.clone())
         } else {
             link_standard_sources(&request.source, &standard_link)
@@ -898,7 +960,38 @@ impl FrontendCompiler {
             checker = checker
                 .with_module_function_signatures(standard_module_function_signatures(standard));
         }
-        let type_result = checker.check_program(&effective_program);
+        let mut type_result = checker.check_program(&effective_program);
+        // 语法扫描只负责让标准库签名可用；只有第一次类型检查确认接收者确实是
+        // `set<T>` 后，才把纯 Xiao 函数体静态拼入入口。这样 `table.add()` 不会
+        // 使未导入的 `stdlib.set.add` 变成当前程序的自由函数。
+        let can_link_typed_set_method = !diagnostics.iter().any(Diagnostic::is_error)
+            && !type_result.diagnostics.iter().any(Diagnostic::is_error)
+            && !request.context.external_standard_library
+            && standard_library.is_some();
+        if can_link_typed_set_method {
+            if let Some(standard) = &standard_library {
+                let source_count = standard_link.sources.len();
+                plan_typed_set_method_link(
+                    &mut standard_link,
+                    program,
+                    &request.source,
+                    standard,
+                    &type_result,
+                );
+                if standard_link.sources.len() != source_count {
+                    (effective_source, effective_program) =
+                        link_standard_sources(&request.source, &standard_link);
+                    let mut checker = TypeChecker::new(&effective_source);
+                    if let Some(namespaces) = namespaces {
+                        checker = checker.with_external_namespaces(namespaces.clone());
+                    }
+                    checker = checker.with_module_function_signatures(
+                        standard_module_function_signatures(standard),
+                    );
+                    type_result = checker.check_program(&effective_program);
+                }
+            }
+        }
         diagnostics.extend(type_result.diagnostics.clone());
 
         let lifetime = analyze_lifetime(&effective_source, &effective_program, &type_result);

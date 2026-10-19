@@ -151,6 +151,50 @@ fn imported_stdlib_functions_have_precise_capabilities() {
 }
 
 #[test]
+/// 真实 `build -xar` 不复制官方 `set` 模块，方法调用由宿主模块加载器完成。
+fn archive_build_runs_set_methods_through_host_module() {
+    let fixture = Fixture::new();
+    fixture.write(
+        "main.xiao",
+        "values = {1}\nvalues.add(2)\nprint(values.union({3}).size())\n",
+    );
+    let result = build_archive(&fixture.request("main.xiao"), &CancellationToken::new()).unwrap();
+    assert_eq!(result.index.stdlib_modules, ["stdlib.set"]);
+    let bytes = fs::read(&result.output).unwrap();
+    let archive = decode_xar(&bytes).unwrap();
+    let entry = xiao_bytecode::decode_xiaoc(&archive.read_entry().unwrap()).unwrap();
+    assert!(
+        entry
+            .program
+            .functions
+            .iter()
+            .all(|function| !function.name.starts_with("__xiao_stdlib_set_")),
+        "外部标准库函数不能复制进入口对象"
+    );
+    let response = xiao_driver::dispatch(xiao_driver::ProtocolRequest::RunArchive {
+        request_id: "set-method-archive".to_owned(),
+        protocol_version: xiao_driver::PROTOCOL_VERSION,
+        core_version: xiao_driver::CORE_VERSION,
+        locale: Some("zh-CN".to_owned()),
+        path: result.output.display().to_string(),
+        options: Default::default(),
+        diagnostics: None,
+        debug: false,
+    });
+    let xiao_driver::ProtocolResponse::Result {
+        exit_code, events, ..
+    } = response
+    else {
+        panic!("归档协议应返回方法执行结果");
+    };
+    assert_eq!(exit_code, 0);
+    assert!(events.iter().any(|event| {
+        event.kind == "intrinsic_output"
+            && event.data.get("text").and_then(serde_json::Value::as_str) == Some("3\n")
+    }));
+}
+
+#[test]
 /// 项目归档仅携带可达模块与声明资源，删除源码后仍能运行。
 fn config_uses_unique_main_and_packages_only_reachable_local_modules_and_resources() {
     let fixture = Fixture::new();

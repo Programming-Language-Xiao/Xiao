@@ -173,10 +173,55 @@ impl Lowerer<'_> {
             )
         {
             let internal_name = format!("{SET_METHOD_FUNCTION_PREFIX}{}", member.text);
-            let callee = self
+            if let Some(callee) = self
                 .function_index(&internal_name)
-                .or_else(|| self.function_index(&member.text))?;
+                .or_else(|| self.function_index(&member.text))
+            {
+                let receiver = self.lower_expression(object);
+                let mut bound = vec![TacArgument::positional(receiver)];
+                bound.extend(arguments.iter().map(|argument| {
+                    let value = self.lower_expression(&argument.value);
+                    match &argument.name {
+                        Some(name) => TacArgument::keyword(name.text.clone(), value),
+                        None => TacArgument::positional(value),
+                    }
+                }));
+                let signature = self.signature_of_function(callee)?;
+                let register =
+                    self.new_register(Self::class_of_type(&expression.ty), expression.span);
+                self.emit(TacInstr::with_dst(
+                    TacOp::Call {
+                        callee,
+                        signature,
+                        arguments: bound,
+                    },
+                    register,
+                    expression.span,
+                ));
+                return Some(register);
+            }
+
+            // 归档/外部标准库路径不把 `stdlib.set` 源码拼进入口；把方法
+            // 作为模块函数动态取出，仍复用同一份官方自由函数实现。
             let receiver = self.lower_expression(object);
+            let module = self.new_register(RegisterClass::ObjHandle, expression.span);
+            self.emit(TacInstr::with_dst(
+                TacOp::ImportModule {
+                    module: "stdlib.set".to_owned(),
+                    binding_module: "stdlib.set".to_owned(),
+                },
+                module,
+                expression.span,
+            ));
+            let callee = self.new_register(RegisterClass::Dynamic, expression.span);
+            self.emit(TacInstr::with_dst(
+                TacOp::MemberGet {
+                    object: module,
+                    member: super::name_key(&member.text, member.backticked),
+                },
+                callee,
+                expression.span,
+            ));
             let mut bound = vec![TacArgument::positional(receiver)];
             bound.extend(arguments.iter().map(|argument| {
                 let value = self.lower_expression(&argument.value);
@@ -185,12 +230,10 @@ impl Lowerer<'_> {
                     None => TacArgument::positional(value),
                 }
             }));
-            let signature = self.signature_of_function(callee)?;
             let register = self.new_register(Self::class_of_type(&expression.ty), expression.span);
             self.emit(TacInstr::with_dst(
-                TacOp::Call {
+                TacOp::CallDynamic {
                     callee,
-                    signature,
                     arguments: bound,
                 },
                 register,

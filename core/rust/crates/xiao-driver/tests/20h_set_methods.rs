@@ -2,7 +2,8 @@
 
 use xiao_codegen_llvm::{CodegenOptions, NativeBuild};
 use xiao_driver::{
-    DriverOutcome, DriverRequest, FrontendCompiler, FrontendRequest, FrontendVmDriver,
+    DriverOutcome, DriverRequest, FrontendCompiler, FrontendContext, FrontendRequest,
+    FrontendVmDriver,
 };
 
 fn run(source: &str) -> DriverOutcome {
@@ -56,6 +57,62 @@ fn method_linking_isolated_from_user_function_names() {
     );
     assert!(outcome.is_success(), "{outcome:?}");
     assert_eq!(output(&outcome), "2\n");
+}
+
+#[test]
+/// 集合模块的显式导入与同名用户函数并存时，方法静态副本仍保持隔离。
+fn explicit_set_import_and_user_method_name_remain_isolated() {
+    let outcome = run(
+        "from stdlib.set import size\ndef add(set<int> values, int value) -> none\n    return none\nvalues = {1}\nvalues.add(2)\nprint(size(values))\nprint(values.size())\n",
+    );
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), "2\n2\n");
+}
+
+#[test]
+/// 归档使用宿主标准库时，方法调用走模块函数路径并保持同一套语义。
+fn external_standard_library_methods_use_module_loader() {
+    let context = FrontendContext::host();
+    let context = FrontendContext {
+        external_standard_library: true,
+        ..context
+    };
+    let request = FrontendRequest::from_text(
+        "values = {1}\nvalues.add(2)\nprint(values.union({3}).size())\n",
+    )
+    .with_context(context);
+    let artifact = FrontendCompiler::new()
+        .compile(&request)
+        .expect("外部标准库方法路径前端应通过");
+    let outcome = FrontendVmDriver::new().run_artifact(&artifact, &DriverRequest::new(request));
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), "3\n");
+}
+
+#[test]
+/// 表方法同名不应隐式暴露未导入的 `stdlib.set` 自由函数。
+fn table_methods_do_not_expose_set_free_functions() {
+    let source = "[[Counter]]\n    def add(self, int amount) -> none\n        return none\nitem = new Counter()\nitem.add(1)\nadd({1}, 2)\n";
+    let error = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect_err("未导入的 set.add 不应因表方法语法而可见");
+    assert!(
+        error
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == "X02-TYPE-001"),
+        "{error:?}"
+    );
+}
+
+#[test]
+/// 表上的 `add` 方法保持原有表调用路径，不会被集合静态链接接管。
+fn table_method_named_add_remains_executable() {
+    let outcome = run(
+        "[[Counter]]\n    def add(self, int amount) -> none\n        print(amount)\n        return none\nitem = new Counter()\nitem.add(1)\n",
+    );
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), "1\n");
 }
 
 #[test]

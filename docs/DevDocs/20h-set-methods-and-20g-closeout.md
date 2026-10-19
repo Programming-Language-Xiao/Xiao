@@ -38,7 +38,7 @@
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
 | 20G 定向 | `20g_set_mutation` **7** 通过；`20f_container_parameters` 10 通过；`p2_type_parameters` 4 通过 | 返工项 F-2/F-3/F-6 与 E-2 已有效 |
-| 20H 定向 | `20h_set_methods` **5** 通过；`d17c_archive` **11** 通过 | 八个方法、单次求值、冲突隔离、`.xiaoc`/`.xar` 的 `set`/`text` loader 已覆盖 |
+| 20H 定向 | `20h_set_methods` **9** 通过；`d17c_archive` **11** 通过；`18b_build_archive` **13** 通过 | 八个方法、单次求值、冲突隔离、`.xiaoc`/`.xar` 的 `set`/`text` loader 已覆盖 |
 | 全工作区 | 本地 workspace、Bun、`run.sh` 均已复验；workspace gates `39239884581` 成功 | 本地与推送门禁成立 |
 | 推送 CI | `ebf34ed` 维护回归 **39202984158 六作业全绿**；`6919d81` 工作区门禁 `39201428785` 成功 | 18B/20F/20G 的推送证据已落地 |
 | 原生别名 | 本地 `set`/`text` 别名构建+运行通过；CI 三平台 `first_modules_match_native_results` 通过 | F-1 已关闭 |
@@ -299,9 +299,10 @@ core/rust/crates/xiao-driver/tests/20c_first_modules.rs 原生用例扩展
   `X03-TYPE-026`、`X03-TYPE-025`、`X03-TYPE-024`；反引号名称仍走普通成员路径。
 - **E-1/E-2**：`20c_first_modules` 的受控原生夹具覆盖 set/text 别名、增删、四种包装、
   快照、非局部返回、方法式 API 与未捕获 `SET_ELEMENT_MISSING`；`20g_set_mutation` 的
-  VM 回归为 7 项，`20h_set_methods` 为 5 项。三平台原生作业已实际执行并通过，运行号见上表。
+  VM 回归为 7 项，`20h_set_methods` 为 9 项；`18b_build_archive` 验证真实
+  `build -xar` 通过宿主标准库 loader 运行方法且不复制官方函数。三平台原生作业已实际执行并通过，运行号见上表。
 - **本地命令**：`cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20g_set_mutation`、
-  `20h_set_methods`、`d17c_archive`、`cargo test -p xiao-codegen-llvm --tests`、格式检查以及
+  `20h_set_methods`、`d17c_archive`、`18b_build_archive`、`cargo test -p xiao-codegen-llvm --tests`、格式检查以及
   `bun run check:docs`/`bun run check:usedocs` 均通过；workspace gates `39239884581`、
   maintenance regression `39239884610` 六作业全绿。
 
