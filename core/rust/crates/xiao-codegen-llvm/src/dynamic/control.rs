@@ -944,11 +944,14 @@ impl<'a> DynamicGenerator<'a> {
 
     /// 为集合迭代建立独立的数组快照。
     fn emit_iter_snapshot(&mut self, source: &str, span: IrSpan) -> Result<String> {
+        let source_slot = self.next_temp();
+        self.emit(format!("  {source_slot} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {source}, ptr {source_slot}"));
         let slot = self.next_temp();
         self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
         self.emit(format!("  store {VALUE_TYPE} zeroinitializer, ptr {slot}"));
         self.checked_status_call_at(
-            format!("@xiao_runtime_value_iter_snapshot(ptr {source}, ptr {slot})"),
+            format!("@xiao_runtime_value_iter_snapshot(ptr {source_slot}, ptr {slot})"),
             span,
         );
         let value = self.next_temp();
