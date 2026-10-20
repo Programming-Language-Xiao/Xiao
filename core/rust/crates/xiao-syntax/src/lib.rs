@@ -21,7 +21,7 @@ mod token;
 /// 重新导出 AST、声明和节点索引类型。
 pub use ast::{
     AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, CatchClause, DeclaredType,
-    DictEntry, DictKey, ElifBranch, EntryMode, Expression, FunctionParameter,
+    DictEntry, DictKey, DictTypeAnnotation, ElifBranch, EntryMode, Expression, FunctionParameter,
     FunctionParameterKind, FunctionTypeAnnotation, LiteralKind, Name, NodeId, NodeIndex, Program,
     ResourceKind, ScalarType, SetTypeAnnotation, Statement, TableKind, TypeTerm, UnaryOperator,
 };

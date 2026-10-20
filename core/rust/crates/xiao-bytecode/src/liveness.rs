@@ -231,6 +231,22 @@ pub(crate) fn instruction_use_def(
             uses.insert(*source);
             uses.insert(*index);
         }
+        TacOp::IndexSetDynamic {
+            source,
+            index,
+            value,
+        } => {
+            uses.insert(*source);
+            uses.insert(*index);
+            uses.insert(*value);
+        }
+        TacOp::DictRemoveDynamic { source, index } => {
+            uses.insert(*source);
+            uses.insert(*index);
+        }
+        TacOp::DictKeys { source } | TacOp::DictValues { source } => {
+            uses.insert(*source);
+        }
         TacOp::NewArray { elements }
         | TacOp::NewTuple { elements }
         | TacOp::NewSet { elements } => uses.extend(elements.iter().copied()),

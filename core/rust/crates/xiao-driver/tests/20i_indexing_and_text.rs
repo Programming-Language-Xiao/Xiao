@@ -97,6 +97,31 @@ fn array_push_invalidates_fixed_length_after_direct_and_helper_calls() {
 }
 
 #[test]
+fn array_push_invalidates_table_member_array_length() {
+    let outcome = run(
+        "[[Holder]]\n    values = [10, 20]\nitem = new Holder()\narray_push(item.values, 30)\nprint(item.values[2])\n",
+    );
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), "30\n");
+}
+
+#[test]
+fn readonly_array_function_keeps_static_bounds_diagnostic() {
+    let error = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(
+            "def first([int] values) -> int\n    return values[0]\nvalues = [10, 20]\nfirst(values)\nprint(values[2])\n",
+        ))
+        .expect_err("只读函数调用后仍应保留固定长度诊断");
+    assert!(
+        error
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == "X03-TYPE-004"),
+        "{error:?}"
+    );
+}
+
+#[test]
 fn generic_array_annotations_infer_element_types() {
     let outcome = run(
         "def head<T>([T] values) -> T\n    return values[0]\nprint(head([7]))\nprint(head([\"雪\"]))\n",

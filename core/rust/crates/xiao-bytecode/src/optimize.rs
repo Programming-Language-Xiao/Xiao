@@ -967,6 +967,20 @@ fn remap_registers(op: &mut TacOp, remap: &BTreeMap<VReg, VReg>) {
             map(source);
             map(index);
         }
+        TacOp::IndexSetDynamic {
+            source,
+            index,
+            value,
+        } => {
+            map(source);
+            map(index);
+            map(value);
+        }
+        TacOp::DictRemoveDynamic { source, index } => {
+            map(source);
+            map(index);
+        }
+        TacOp::DictKeys { source } | TacOp::DictValues { source } => map(source),
         TacOp::LoadTable { arguments, .. } => {
             arguments
                 .iter_mut()

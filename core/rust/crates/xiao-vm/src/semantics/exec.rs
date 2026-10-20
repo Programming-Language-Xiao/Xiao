@@ -892,6 +892,31 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 let value = ops::index_get_dynamic(&source, &index).map_err(Fault::Error)?;
                 self.write_operand(instruction.dst, value);
             }
+            TacOp::IndexSetDynamic {
+                source,
+                index,
+                value,
+            } => {
+                let source = self.read(*source)?;
+                let index = self.read(*index)?;
+                let value = self.read(*value)?;
+                ops::index_set_dynamic(&source, &index, &value).map_err(Fault::Error)?;
+            }
+            TacOp::DictRemoveDynamic { source, index } => {
+                let source = self.read(*source)?;
+                let index = self.read(*index)?;
+                ops::dict_remove_dynamic(&source, &index).map_err(Fault::Error)?;
+            }
+            TacOp::DictKeys { source } | TacOp::DictValues { source } => {
+                let source = self.read(*source)?;
+                let value = if matches!(instruction.op, TacOp::DictKeys { .. }) {
+                    ops::dict_keys(&source)
+                } else {
+                    ops::dict_values(&source)
+                }
+                .map_err(Fault::Error)?;
+                self.write_operand(instruction.dst, value);
+            }
             TacOp::SelectorApply {
                 source,
                 plan,
@@ -1226,7 +1251,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         }
         Ok(Flow::Next)
     }
-
     /// 在当前帧执行一个 `finally` 子程序，直到 `RetFromSub`。
     ///
     /// 子程序中的非局部退出会覆盖挂起类别并交回调用点；普通 `RetFromSub`
@@ -1329,7 +1353,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         }
         result
     }
-
     /// 在当前帧查找处理器、执行清理并决定继续跳转或向外传播。
     ///
     /// 块号区间只负责确认一个入口属于该处理器；真正的嵌套判定依赖当前帧
@@ -1344,7 +1367,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     ) -> Result<RouteDecision, Fault> {
         self.route_fault_scoped(function, current_block, fault_exit, fault, None)
     }
-
     /// 在指定的子程序边界内路由故障。
     ///
     /// `floor` 用来限制子程序内部只能跳入同一子程序之后建立的嵌套处理器；
@@ -1418,7 +1440,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 .unwrap_or(0)
         };
         let driver = RuntimeDriver::new();
-
         let mut catches = function
             .handlers
             .iter()
@@ -1451,7 +1472,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         let selected_depth = selected
             .as_ref()
             .map(|(_, handler)| scope_rank(handler.scope));
-
         let mut finalies = function
             .handlers
             .iter()
@@ -1478,7 +1498,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             )
         });
         finalies.dedup_by_key(|handler| handler.handler);
-
         // finally -> drop；清理错误只进入 suppressed，Fatal 则立即胜出。
         let mut override_flow: Option<Flow> = None;
         let mut pending_exit_name = fault_exit.to_owned();
@@ -1505,11 +1524,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 Err(Fault::Cancelled) => return Err(Fault::Cancelled),
             }
         }
-
         if let Some(flow) = override_flow {
             return Ok(RouteDecision::Flow(flow));
         }
-
         if let Some((_, handler)) = selected {
             // 处理器命中时，清理从当前最内层作用域一直到该 try 作用域，
             // 每层都使用冻结的 Catch 退出计划。
@@ -1539,14 +1556,12 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             });
             return Ok(RouteDecision::Jump(handler.handler));
         }
-
         if floor.is_some() {
             // 子程序内没有可匹配的嵌套处理器时，只把故障交回
             // `CallSub` 调用点。此时不能清理整帧，否则会提前抹掉外层
             // `catch` 的作用域；调用点的路由器会统一执行完整展开。
             return Err(Fault::Error(error));
         }
-
         // 没有匹配处理器时，当前帧所有仍在栈上的作用域都按
         // `UnmatchedError` 展开。检查失败保留其专用退出边，便于审计。
         let cleanup_exit = if fault_exit == "dynamic_check_failure" {
@@ -1587,7 +1602,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         }
         Err(Fault::Error(error))
     }
-
     /// 从当前作用域栈移除指定作用域及其内层作用域。
     fn truncate_scope(&mut self, scope: u32) {
         if let Some(frame) = self.frames.last_mut()
@@ -1596,7 +1610,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             frame.scopes.truncate(index);
         }
     }
-
     /// 返回当前帧从最内层到指定作用域的展开序列。
     fn scopes_until(&self, target: u32, include_target: bool) -> Vec<u32> {
         let mut scopes = Vec::new();
@@ -1613,7 +1626,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         }
         scopes
     }
-
     /// 离开 catch 体后清除动态处理器上下文。
     fn prune_handler_contexts(&mut self, function: &TacFunction, target: BlockId) {
         let Some(frame) = self.frames.last() else {
@@ -1654,7 +1666,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             });
         }
     }
-
     /// 根据跳转目标的静态作用域收缩运行时作用域栈。
     ///
     /// `break`/`continue` 和 `finally` 内覆盖性的控制退出没有机会经过普通
@@ -1676,7 +1687,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             frame.scopes.truncate(index + 1);
         }
     }
-
     /// 执行一个冻结释放计划，按 `order` 逐条释放。
     fn run_plan(&mut self, function: &TacFunction, scope: u32, exit: &str) {
         let active_program = self.active_program.clone();
@@ -1712,7 +1722,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             }
         }
     }
-
     /// 展开一个已经离开本帧路由器的故障。
     ///
     /// `run_blocks` 会先尝试当前帧的处理器；只有未匹配的错误或致命故障才会
@@ -1747,7 +1756,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             frame.pending_check_kind = None;
         }
     }
-
     /// 取消时执行当前帧仍活动的 `finally`，但不查找用户 `catch`。
     fn run_cancelled_finalies(&mut self, function: &TacFunction) {
         let Some(frame) = self.frames.last() else {
@@ -1786,7 +1794,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             )
         });
         finalies.dedup_by_key(|handler| handler.handler);
-
         for handler in finalies {
             let marker = (handler.scope, handler.handler);
             completed.push(marker);
@@ -1804,7 +1811,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             }
         }
     }
-
     /// 读取一组容器元素寄存器。
     fn collect(&mut self, registers: &[VReg]) -> Result<Vec<RuntimeValue>, Fault> {
         let mut values = Vec::with_capacity(registers.len());
@@ -1813,7 +1819,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         }
         Ok(values)
     }
-
     /// 读取一组字典条目寄存器。
     fn collect_entries(
         &mut self,

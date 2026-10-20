@@ -59,6 +59,40 @@ impl<'a> DynamicGenerator<'a> {
             IrExpressionKind::IntrinsicCall { id, arguments } => {
                 self.emit_intrinsic(*id, arguments, expression.span)
             }
+            IrExpressionKind::DictBuiltin {
+                operation,
+                arguments,
+            } => {
+                let Some(source) = arguments.first() else {
+                    return Err(CodegenError::InvalidIr {
+                        message: "字典私有入口缺少来源".to_owned(),
+                    });
+                };
+                let source_value = self.emit_expression(&source.value)?;
+                let result = match operation.as_str() {
+                    "remove" => {
+                        let Some(index) = arguments.get(1) else {
+                            return Err(CodegenError::InvalidIr {
+                                message: "字典删除入口缺少键".to_owned(),
+                            });
+                        };
+                        let index_value = self.emit_expression(&index.value)?;
+                        self.emit_dynamic_dict_remove(&source_value, &index_value, expression.span);
+                        self.release_value(index_value);
+                        self.none_value()
+                    }
+                    "keys" | "values" => {
+                        self.emit_dynamic_dict_collect(&source_value, operation, expression.span)
+                    }
+                    other => {
+                        return Err(CodegenError::InvalidIr {
+                            message: format!("未知字典私有入口 {other}"),
+                        });
+                    }
+                };
+                self.release_value(source_value);
+                Ok(result)
+            }
             IrExpressionKind::Binary {
                 operator,
                 left,

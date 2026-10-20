@@ -305,6 +305,46 @@ fn archive_run_supports_dynamic_dict_key() {
 }
 
 #[test]
+/// `.xiaoc` 与 `.xar` 复用动态字典写入的编码和 VM 语义。
+fn artifacts_run_supports_dynamic_dict_write() {
+    let source = "values = {name = 10}\nkey = \"name\"\nvalues[key] = 20\nprint(values[key])\n";
+    let xiaoc = xiaoc_for(source);
+    let path = std::env::temp_dir().join(format!(
+        "xiao-dynamic-dict-write-{}-{}.xiaoc",
+        std::process::id(),
+        std::thread::current().name().unwrap_or("test")
+    ));
+    fs::write(&path, &xiaoc).expect("写入 .xiaoc");
+    let response = dispatch(ProtocolRequest::RunXiaoc {
+        request_id: "dynamic-dict-write".to_owned(),
+        protocol_version: PROTOCOL_VERSION,
+        core_version: CORE_VERSION,
+        locale: None,
+        path: path.display().to_string(),
+        options: RunOptions::default(),
+        diagnostics: None,
+        debug: false,
+    });
+    let _ = fs::remove_file(&path);
+    let ProtocolResponse::Result { .. } = response else {
+        panic!("动态字典写入 .xiaoc 应成功");
+    };
+    let archive = archive_for(source);
+    let outcome = run_archive(
+        &archive,
+        XarRunOptions {
+            runtime_abi: ABI_ENCODED_VERSION,
+            ..Default::default()
+        },
+    )
+    .expect("动态字典写入 .xar 应成功");
+    assert!(outcome.result.is_success(), "{:?}", outcome.result);
+    assert!(outcome.events.iter().any(|event| {
+        matches!(event, xiao_vm::VmEvent::IntrinsicOutput { text } if text == "20\n")
+    }));
+}
+
+#[test]
 fn invalid_archive_produces_no_execution_events() {
     let mut archive = archive_for("print(\"must not run\")\n");
     let marker = b"objects/xiaoc/";

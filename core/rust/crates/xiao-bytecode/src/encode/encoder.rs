@@ -365,6 +365,22 @@ fn encode_op(
             writer.index(source.get(), "VReg")?;
             writer.index(index.get(), "VReg")
         }
+        TacOp::IndexSetDynamic {
+            source,
+            index,
+            value,
+        } => {
+            writer.index(source.get(), "VReg")?;
+            writer.index(index.get(), "VReg")?;
+            writer.index(value.get(), "VReg")
+        }
+        TacOp::DictRemoveDynamic { source, index } => {
+            writer.index(source.get(), "VReg")?;
+            writer.index(index.get(), "VReg")
+        }
+        TacOp::DictKeys { source } | TacOp::DictValues { source } => {
+            writer.index(source.get(), "VReg")
+        }
         TacOp::Arith { op, left, right } => {
             writer.byte(arith_tag(*op));
             writer.index(left.get(), "VReg")?;

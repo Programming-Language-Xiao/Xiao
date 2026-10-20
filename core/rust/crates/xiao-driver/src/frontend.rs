@@ -494,6 +494,9 @@ fn standard_module_function_signatures(
             FunctionTypeAnnotation::Array(element) => Type::Array(
                 xiao_types::ArrayType::homogeneous(annotation_type(element, generic_types)),
             ),
+            FunctionTypeAnnotation::Dict(annotation) => Type::DictTable(
+                xiao_types::DictType::open(annotation_type(&annotation.value, generic_types)),
+            ),
             FunctionTypeAnnotation::TypeParameter(name) => {
                 generic_types.get(name).cloned().unwrap_or(Type::Dynamic)
             }

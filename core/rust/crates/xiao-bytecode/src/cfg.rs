@@ -21,9 +21,13 @@ pub fn jump_targets(op: &TacOp) -> Vec<BlockId> {
         TacOp::SelectorApply { .. } => Vec::new(),
         TacOp::BroadcastAssign { .. } => Vec::new(),
         TacOp::RandomSeed { .. } => Vec::new(),
-        TacOp::Len { .. } | TacOp::IndexGetDynamic { .. } | TacOp::IterSnapshot { .. } => {
-            Vec::new()
-        }
+        TacOp::Len { .. }
+        | TacOp::IndexGetDynamic { .. }
+        | TacOp::IndexSetDynamic { .. }
+        | TacOp::DictRemoveDynamic { .. }
+        | TacOp::DictKeys { .. }
+        | TacOp::DictValues { .. }
+        | TacOp::IterSnapshot { .. } => Vec::new(),
         TacOp::LoadTable { .. } | TacOp::MemberGet { .. } | TacOp::MemberSet { .. } => Vec::new(),
         _ => Vec::new(),
     }

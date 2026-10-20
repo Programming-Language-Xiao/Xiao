@@ -220,6 +220,9 @@ fn expression_uses_runtime(expression: &IrExpression) -> bool {
                         .iter()
                         .any(|argument| expression_uses_runtime(&argument.value))
             }
+            IrExpressionKind::DictBuiltin { arguments, .. } => arguments
+                .iter()
+                .any(|argument| expression_uses_runtime(&argument.value)),
             IrExpressionKind::Member { object, .. } => expression_uses_runtime(object),
             IrExpressionKind::Selector {
                 source,

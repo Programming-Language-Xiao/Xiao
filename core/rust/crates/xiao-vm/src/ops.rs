@@ -193,6 +193,147 @@ pub fn index_get_dynamic(
     })
 }
 
+/// 按运行时整数位置或字符串键更新一个字典/有序容器元素。
+///
+/// 动态写入只允许更新已有槽位；字典缺失键使用 015，位置越界使用
+/// selector_bounds（017），与动态读取保持同一套运行时身份。
+pub fn index_set_dynamic(
+    source: &RuntimeValue,
+    index: &RuntimeValue,
+    value: &RuntimeValue,
+) -> RuntimeResult<()> {
+    match index {
+        RuntimeValue::Str(key) => {
+            let key = key.to_string()?;
+            match source {
+                RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle) => {
+                    let kind = handle.kind().as_str();
+                    handle.with_entries_mut(|entries| {
+                        let Some((_, slot)) = entries.iter_mut().find(|(name, _)| name == &key)
+                        else {
+                            return Err(RuntimeError::key_not_found(kind, key.clone()));
+                        };
+                        *slot = value.clone();
+                        Ok(())
+                    })?
+                }
+                other => Err(RuntimeError::type_mismatch("字典", other.type_name())),
+            }
+        }
+        other => {
+            let raw = match other {
+                RuntimeValue::Int(value) => i128::from(*value),
+                RuntimeValue::Sint(value) => i128::from(*value),
+                RuntimeValue::Lint(value) => value
+                    .parse::<i128>()
+                    .map_err(|_| RuntimeError::type_mismatch("int", "lint"))?,
+                other => {
+                    return Err(RuntimeError::type_mismatch("int 或 str", other.type_name()));
+                }
+            };
+            match source {
+                RuntimeValue::Array(handle) => {
+                    let index =
+                        xiao_types::normalize_index(raw, handle.len()).ok_or_else(|| {
+                            RuntimeError::selector_bounds(format!(
+                                "选择器索引 {raw} 超出运行时长度 {}",
+                                handle.len()
+                            ))
+                        })?;
+                    handle.with_elements_mut(|elements| {
+                        let Some(slot) = elements.get_mut(index) else {
+                            return Err(RuntimeError::selector_bounds("数组元素在写入时消失"));
+                        };
+                        *slot = value.clone();
+                        Ok(())
+                    })?
+                }
+                RuntimeValue::Tuple(handle) => {
+                    let index =
+                        xiao_types::normalize_index(raw, handle.len()).ok_or_else(|| {
+                            RuntimeError::selector_bounds(format!(
+                                "选择器索引 {raw} 超出运行时长度 {}",
+                                handle.len()
+                            ))
+                        })?;
+                    handle.with_elements_mut(|elements| {
+                        let Some(slot) = elements.get_mut(index) else {
+                            return Err(RuntimeError::selector_bounds("元组元素在写入时消失"));
+                        };
+                        *slot = value.clone();
+                        Ok(())
+                    })?
+                }
+                RuntimeValue::DictColumn(handle) => {
+                    let index =
+                        xiao_types::normalize_index(raw, handle.len()).ok_or_else(|| {
+                            RuntimeError::selector_bounds(format!(
+                                "选择器索引 {raw} 超出运行时长度 {}",
+                                handle.len()
+                            ))
+                        })?;
+                    handle.with_entries_mut(|entries| {
+                        let Some((_, slot)) = entries.get_mut(index) else {
+                            return Err(RuntimeError::selector_bounds("字典列元素在写入时消失"));
+                        };
+                        *slot = value.clone();
+                        Ok(())
+                    })?
+                }
+                RuntimeValue::DictTable(_) => Err(RuntimeError::type_mismatch("str", "int")),
+                other => Err(RuntimeError::type_mismatch("可写容器", other.type_name())),
+            }
+        }
+    }
+}
+
+/// 动态移除字典中的已有键；缺失键保持 015。
+pub fn dict_remove_dynamic(source: &RuntimeValue, index: &RuntimeValue) -> RuntimeResult<()> {
+    let RuntimeValue::Str(key) = index else {
+        return Err(RuntimeError::type_mismatch("str", index.type_name()));
+    };
+    let key = key.to_string()?;
+    let (RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle)) = source else {
+        return Err(RuntimeError::type_mismatch("字典", source.type_name()));
+    };
+    let kind = handle.kind().as_str();
+    handle.with_entries_mut(|entries| {
+        let Some(position) = entries.iter().position(|(name, _)| name == &key) else {
+            return Err(RuntimeError::key_not_found(kind, key.clone()));
+        };
+        entries.remove(position);
+        Ok(())
+    })?
+}
+
+/// 返回字典键数组，沿用字典句柄当前迭代顺序。
+pub fn dict_keys(source: &RuntimeValue) -> RuntimeResult<RuntimeValue> {
+    let (RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle)) = source else {
+        return Err(RuntimeError::type_mismatch("字典", source.type_name()));
+    };
+    let keys = handle.with_entries(|entries| {
+        entries
+            .iter()
+            .map(|(key, _)| RuntimeValue::new_string(key.clone()))
+            .collect::<RuntimeResult<Vec<_>>>()
+    })??;
+    Ok(RuntimeValue::Array(ArrayHandle::new(keys)?))
+}
+
+/// 返回字典值数组，沿用字典句柄当前迭代顺序。
+pub fn dict_values(source: &RuntimeValue) -> RuntimeResult<RuntimeValue> {
+    let (RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle)) = source else {
+        return Err(RuntimeError::type_mismatch("字典", source.type_name()));
+    };
+    let values = handle.with_entries(|entries| {
+        entries
+            .iter()
+            .map(|(_, value)| value.clone())
+            .collect::<Vec<_>>()
+    })?;
+    Ok(RuntimeValue::Array(ArrayHandle::new(values)?))
+}
+
 /// 从 Runtime 值读取动态索引整数。
 fn integer_index(value: &RuntimeValue) -> RuntimeResult<i128> {
     match value {

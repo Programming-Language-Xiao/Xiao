@@ -531,6 +531,21 @@ fn decode_op(
             source: VReg::new(index(reader, "VReg")?),
             index: VReg::new(index(reader, "VReg")?),
         },
+        46 => TacOp::IndexSetDynamic {
+            source: VReg::new(index(reader, "VReg")?),
+            index: VReg::new(index(reader, "VReg")?),
+            value: VReg::new(index(reader, "VReg")?),
+        },
+        47 => TacOp::DictRemoveDynamic {
+            source: VReg::new(index(reader, "VReg")?),
+            index: VReg::new(index(reader, "VReg")?),
+        },
+        48 => TacOp::DictKeys {
+            source: VReg::new(index(reader, "VReg")?),
+        },
+        49 => TacOp::DictValues {
+            source: VReg::new(index(reader, "VReg")?),
+        },
         38 => TacOp::LoadTable {
             table: index(reader, "TableId")?,
             construct: read_bool(reader, "table.construct")?,

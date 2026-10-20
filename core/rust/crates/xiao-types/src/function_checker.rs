@@ -532,7 +532,8 @@ impl<'source> TypeChecker<'source> {
         }
         for argument in arguments {
             let actual = self.check_expression(&argument.value);
-            if matches!(actual, Type::Array(_)) {
+            if matches!(actual, Type::Array(_)) && self.mutating_functions.contains(&signature.name)
+            {
                 self.invalidate_array_length_after_mutation(&argument.value);
             }
             match argument.kind {
@@ -801,6 +802,9 @@ fn annotation_type(
         FunctionTypeAnnotation::Array(element) => Type::Array(ArrayType::homogeneous(
             annotation_type(element, generic_types),
         )),
+        FunctionTypeAnnotation::Dict(annotation) => Type::DictTable(DictType::open(
+            annotation_type(&annotation.value, generic_types),
+        )),
         FunctionTypeAnnotation::TypeParameter(name) => {
             generic_types.get(name).cloned().unwrap_or(Type::Dynamic)
         }
@@ -856,16 +860,18 @@ fn iterable_element_type(ty: &Type) -> Option<Type> {
         Type::Array(ArrayType::Unknown) => Some(Type::Dynamic),
         Type::Tuple(elements) => Some(common_type(elements).unwrap_or(Type::Dynamic)),
         Type::Set(set) => Some(common_type(&set.to_member_types()).unwrap_or(Type::Dynamic)),
-        Type::DictTable(dictionary) | Type::DictColumn(dictionary) => Some(
-            common_type(
-                &dictionary
-                    .entries
-                    .iter()
-                    .map(|entry| (*entry.value).clone())
-                    .collect::<Vec<_>>(),
-            )
-            .unwrap_or(Type::Dynamic),
-        ),
+        Type::DictTable(dictionary) | Type::DictColumn(dictionary) => {
+            Some(dictionary.open_value().cloned().unwrap_or_else(|| {
+                common_type(
+                    &dictionary
+                        .entries
+                        .iter()
+                        .map(|entry| (*entry.value).clone())
+                        .collect::<Vec<_>>(),
+                )
+                .unwrap_or(Type::Dynamic)
+            }))
+        }
         Type::Dynamic => Some(Type::Dynamic),
         _ => None,
     }

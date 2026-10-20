@@ -475,6 +475,9 @@ fn apply_dictionary(
     context: &Substitution,
     seen: &mut BTreeSet<TypeVarId>,
 ) -> DictType {
+    if let Some(value) = dictionary.open_value() {
+        return DictType::open(context.apply_with_seen(value, seen));
+    }
     DictType::new(
         dictionary
             .entries
@@ -557,6 +560,29 @@ fn unify_dictionaries(
     right: &DictType,
     ordered: bool,
 ) -> Result<DictType, UnifyError> {
+    if let Some(left_value) = left.open_value() {
+        if let Some(right_value) = right.open_value() {
+            return Ok(DictType::open(context.unify(left_value, right_value)?));
+        }
+        for entry in &right.entries {
+            context.unify(left_value, &entry.value)?;
+        }
+        return Ok(DictType::open(context.apply(left_value)));
+    }
+    if let Some(right_value) = right.open_value() {
+        for entry in &left.entries {
+            context.unify(&entry.value, right_value)?;
+        }
+        return Ok(DictType::new(
+            left.entries
+                .iter()
+                .map(|entry| DictEntryType {
+                    key: entry.key.clone(),
+                    value: Box::new(context.apply(&entry.value)),
+                })
+                .collect::<Vec<_>>(),
+        ));
+    }
     if left.entries.len() != right.entries.len() {
         return Err(UnifyError::ArityMismatch {
             left: left.entries.len(),
@@ -618,6 +644,9 @@ fn substitute_dictionary(
     dictionary: &DictType,
     replacements: &BTreeMap<TypeVarId, Type>,
 ) -> DictType {
+    if let Some(value) = dictionary.open_value() {
+        return DictType::open(substitute_quantified(value, replacements));
+    }
     DictType::new(
         dictionary
             .entries

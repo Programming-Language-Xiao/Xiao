@@ -39,6 +39,10 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
         IrExpressionKind::IntrinsicCall { id, arguments } => {
             lower_intrinsic_call(lowerer, *id, arguments, expression)
         }
+        IrExpressionKind::DictBuiltin {
+            operation,
+            arguments,
+        } => lower_dict_builtin(lowerer, operation, arguments, expression),
         IrExpressionKind::NewCall { callee, arguments } => {
             lowerer.lower_new(callee, arguments, expression.span)
         }
@@ -99,6 +103,58 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
     };
     lowerer.emit_runtime_checks(expression.span, register);
     register
+}
+
+/// 降低标准库字典查询的编译器私有动作。
+fn lower_dict_builtin(
+    lowerer: &mut Lowerer<'_>,
+    operation: &str,
+    arguments: &[IrCallArgument],
+    expression: &IrExpression,
+) -> VReg {
+    let Some(source) = arguments
+        .first()
+        .map(|argument| lowerer.lower_expression(&argument.value))
+    else {
+        return lower_unsupported(lowerer, "dict builtin arguments", expression.span);
+    };
+    let class = Lowerer::class_of_type(&expression.ty);
+    match operation {
+        "remove" => {
+            let Some(index) = arguments
+                .get(1)
+                .map(|argument| lowerer.lower_expression(&argument.value))
+            else {
+                return lower_unsupported(lowerer, "dict remove arguments", expression.span);
+            };
+            lowerer.emit(TacInstr::new(
+                TacOp::DictRemoveDynamic { source, index },
+                expression.span,
+            ));
+            let result = lowerer.new_register(RegisterClass::None, expression.span);
+            lowerer.emit(TacInstr::with_dst(TacOp::LoadNone, result, expression.span));
+            result
+        }
+        "keys" => {
+            let result = lowerer.new_register(class, expression.span);
+            lowerer.emit(TacInstr::with_dst(
+                TacOp::DictKeys { source },
+                result,
+                expression.span,
+            ));
+            result
+        }
+        "values" => {
+            let result = lowerer.new_register(class, expression.span);
+            lowerer.emit(TacInstr::with_dst(
+                TacOp::DictValues { source },
+                result,
+                expression.span,
+            ));
+            result
+        }
+        _ => lower_unsupported(lowerer, "unknown dict builtin", expression.span),
+    }
 }
 
 /// 本批次支持的容器构造形态。

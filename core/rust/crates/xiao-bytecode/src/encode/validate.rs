@@ -286,6 +286,20 @@ fn validate_op(
             check_vreg(*source)?;
             check_vreg(*index)
         }
+        TacOp::IndexSetDynamic {
+            source,
+            index,
+            value,
+        } => {
+            check_vreg(*source)?;
+            check_vreg(*index)?;
+            check_vreg(*value)
+        }
+        TacOp::DictRemoveDynamic { source, index } => {
+            check_vreg(*source)?;
+            check_vreg(*index)
+        }
+        TacOp::DictKeys { source } | TacOp::DictValues { source } => check_vreg(*source),
         TacOp::NewArray { elements }
         | TacOp::NewTuple { elements }
         | TacOp::NewSet { elements } => {

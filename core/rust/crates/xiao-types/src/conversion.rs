@@ -199,6 +199,19 @@ fn container_can_assign(source: &Type, target: &Type) -> bool {
                     .all(|(source, target)| can_assign(source, target))
         }
         (Type::DictTable(source), Type::DictTable(target)) => {
+            if let Some(target_value) = target.open_value() {
+                return if let Some(source_value) = source.open_value() {
+                    can_assign(source_value, target_value)
+                } else {
+                    source
+                        .entries
+                        .iter()
+                        .all(|entry| can_assign(&entry.value, target_value))
+                };
+            }
+            if source.is_open() {
+                return false;
+            }
             source.entries.len() == target.entries.len()
                 && source.entries.iter().all(|source_entry| {
                     target

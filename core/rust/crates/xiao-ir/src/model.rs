@@ -433,6 +433,13 @@ pub enum IrExpressionKind {
         /// 已求值参数描述。
         arguments: Vec<IrCallArgument>,
     },
+    /// 标准库字典查询的编译器私有动作；不进入 intrinsic 契约表。
+    DictBuiltin {
+        /// `remove`、`keys` 或 `values`。
+        operation: String,
+        /// 已降低的参数。
+        arguments: Vec<IrCallArgument>,
+    },
     /// `new` 构造调用。
     NewCall {
         /// 构造目标。

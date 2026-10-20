@@ -211,16 +211,42 @@ impl<'a> DynamicGenerator<'a> {
                 operator,
                 value,
             } => {
-                let IrExpressionKind::Member { object, member } = &target.kind else {
-                    return Err(CodegenError::Unsupported {
-                        feature: "动态扩展赋值".to_owned(),
-                        span: Some(statement.span),
-                    });
-                };
-                if operator == "=" {
-                    self.emit_table_set(object, member, value, statement.span)?;
+                if operator == "="
+                    && let IrExpressionKind::Selector {
+                        source,
+                        selector,
+                        step: None,
+                        ..
+                    } = &target.kind
+                    && selector.items.len() == 1
+                    && let xiao_ir::IrSelectorItem::ExactExpression {
+                        expression: index, ..
+                    } = &selector.items[0]
+                {
+                    let source_value = self.emit_expression(source)?;
+                    let index_value = self.emit_expression(index)?;
+                    let item_value = self.emit_expression(value)?;
+                    self.emit_dynamic_index_set(
+                        &source_value,
+                        &index_value,
+                        &item_value,
+                        statement.span,
+                    );
+                    self.release_value(item_value);
+                    self.release_value(index_value);
+                    self.release_value(source_value);
                 } else {
-                    self.emit_table_compound_set(target, operator, value, statement.span)?;
+                    let IrExpressionKind::Member { object, member } = &target.kind else {
+                        return Err(CodegenError::Unsupported {
+                            feature: "动态扩展赋值".to_owned(),
+                            span: Some(statement.span),
+                        });
+                    };
+                    if operator == "=" {
+                        self.emit_table_set(object, member, value, statement.span)?;
+                    } else {
+                        self.emit_table_compound_set(target, operator, value, statement.span)?;
+                    }
                 }
             }
             IrStatementKind::Break => {

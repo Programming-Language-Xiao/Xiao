@@ -1181,6 +1181,9 @@ fn annotation_type(annotation: &FunctionTypeAnnotation) -> Type {
         FunctionTypeAnnotation::Array(element) => {
             Type::Array(ArrayType::homogeneous(annotation_type(element)))
         }
+        FunctionTypeAnnotation::Dict(annotation) => {
+            Type::DictTable(DictType::open(annotation_type(&annotation.value)))
+        }
         FunctionTypeAnnotation::TypeParameter(_) => Type::Dynamic,
     }
 }

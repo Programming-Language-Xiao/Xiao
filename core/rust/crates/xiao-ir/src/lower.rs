@@ -487,6 +487,19 @@ impl<'a> Lowerer<'a> {
                     .iter()
                     .map(|argument| self.call_argument(argument))
                     .collect();
+                if let Expression::Name(name) = callee.as_ref()
+                    && let Some(operation) =
+                        private_dict_builtin_name(name.unquoted_text(self.source))
+                {
+                    return IrExpression {
+                        kind: IrExpressionKind::DictBuiltin {
+                            operation: operation.to_owned(),
+                            arguments: lowered_arguments,
+                        },
+                        ty,
+                        span,
+                    };
+                }
                 match self.type_result.intrinsic_id_at(expression.span()) {
                     Some(id) => IrExpressionKind::IntrinsicCall {
                         id: id.get(),
@@ -680,6 +693,16 @@ impl<'a> Lowerer<'a> {
                 .collect(),
             span: ir_span(selector.span),
         }
+    }
+}
+
+/// 识别标准库源码使用的字典查询私有入口。
+fn private_dict_builtin_name(name: &str) -> Option<&'static str> {
+    match name {
+        "__dict_remove" => Some("remove"),
+        "__dict_keys" => Some("keys"),
+        "__dict_values" => Some("values"),
+        _ => None,
     }
 }
 
@@ -949,6 +972,12 @@ fn lower_function_annotation(annotation: &FunctionTypeAnnotation) -> IrType {
                 element: Box::new(lower_function_annotation(element)),
                 length: None,
             },
+        },
+        FunctionTypeAnnotation::Dict(annotation) => IrType::DictTable {
+            entries: vec![IrDictTypeEntry {
+                key: "\u{0}xiao-open-dict".to_owned(),
+                value: Box::new(lower_function_annotation(&annotation.value)),
+            }],
         },
         FunctionTypeAnnotation::TypeParameter(_) => IrType::Dynamic,
     }

@@ -708,6 +708,32 @@ pub enum TacOp {
         /// 动态整数索引。
         index: VReg,
     },
+    /// 使用运行时整数位置或字符串键更新一个容器槽位。
+    IndexSetDynamic {
+        /// 来源容器。
+        source: VReg,
+        /// 动态整数索引或字典键。
+        index: VReg,
+        /// 待写入值。
+        value: VReg,
+    },
+    /// 动态移除字典键。
+    DictRemoveDynamic {
+        /// 字典来源。
+        source: VReg,
+        /// 字符串键。
+        index: VReg,
+    },
+    /// 枚举字典键并构造新数组。
+    DictKeys {
+        /// 字典来源。
+        source: VReg,
+    },
+    /// 枚举字典值并构造新数组。
+    DictValues {
+        /// 字典来源。
+        source: VReg,
+    },
     /// 构造表对象，或读取声明语句已建立的单例。
     LoadTable {
         /// 程序级表定义索引。

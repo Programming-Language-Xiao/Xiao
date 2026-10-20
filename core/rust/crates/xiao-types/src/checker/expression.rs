@@ -565,6 +565,9 @@ impl<'source> TypeChecker<'source> {
         if let Some(result) = self.check_table_method_call(callee, arguments, span) {
             return result;
         }
+        if let Some(result) = self.check_private_dict_builtin_call(callee, arguments, span) {
+            return result;
+        }
         if self.is_set_constructor(callee) {
             self.record_intrinsic_call(callee, span);
             return self.check_set_constructor(arguments, span);
@@ -650,6 +653,80 @@ impl<'source> TypeChecker<'source> {
             return self.check_set_mutation_intrinsic_call(declaration.kind, arguments, span);
         }
         self.check_function_value_call(callee, arguments, span)
+    }
+
+    /// 检查标准库字典查询使用的编译器私有入口。
+    ///
+    /// 这些名称只在 `stdlib.dict` 源码中出现，不登记为 intrinsic，降低阶段
+    /// 将其转换为专用 IR 动作并复用 Runtime 字典句柄。
+    fn check_private_dict_builtin_call(
+        &mut self,
+        callee: &Expression,
+        arguments: &[CallArgument],
+        span: SourceSpan,
+    ) -> Option<Type> {
+        let Expression::Name(name) = callee else {
+            return None;
+        };
+        let operation = match name.unquoted_text(self.source) {
+            "__dict_remove" => "remove",
+            "__dict_keys" => "keys",
+            "__dict_values" => "values",
+            _ => return None,
+        };
+        let expected = if operation == "remove" { 2 } else { 1 };
+        if arguments.len() != expected
+            || arguments
+                .iter()
+                .any(|argument| argument.kind != CallArgumentKind::Positional)
+        {
+            self.type_error(
+                INVALID_OPERANDS_CODE,
+                "x02.type.call_arity",
+                span,
+                format!("字典私有入口 {operation} 参数数量不正确"),
+            );
+            return Some(Type::Dynamic);
+        }
+        let source_type = self.check_expression(&arguments[0].value);
+        let value_type = match &source_type {
+            Type::DictTable(dictionary) | Type::DictColumn(dictionary) => dictionary
+                .open_value()
+                .cloned()
+                .or_else(|| {
+                    let values = dictionary
+                        .entries
+                        .iter()
+                        .map(|entry| (*entry.value).clone())
+                        .collect::<Vec<_>>();
+                    values.first().cloned()
+                })
+                .unwrap_or(Type::Dynamic),
+            Type::Dynamic | Type::Variable(_) => Type::Dynamic,
+            other => {
+                self.type_error(
+                    INVALID_OPERANDS_CODE,
+                    "x02.type.call_argument",
+                    arguments[0].value.span(),
+                    format!("字典查询需要 dict，实际为 {other}"),
+                );
+                Type::Dynamic
+            }
+        };
+        if operation == "remove" {
+            let key_type = self.check_expression(&arguments[1].value);
+            self.unify_or_report(
+                &Type::scalar(ScalarType::Str),
+                &key_type,
+                arguments[1].value.span(),
+                "x04.type.call_argument_type",
+            );
+            Some(Type::None)
+        } else if operation == "keys" {
+            Some(Type::array(Type::scalar(ScalarType::Str)))
+        } else {
+            Some(Type::array(value_type))
+        }
     }
 
     /// 检查内部集合可变 intrinsic；公开库函数负责泛型关联和错误包装。
@@ -749,18 +826,95 @@ impl<'source> TypeChecker<'source> {
 
     /// 数组被原地修改后，绑定上的固定长度不再可靠；保留元素类型供后续检查使用。
     pub(super) fn invalidate_array_length_after_mutation(&mut self, expression: &Expression) {
-        let Expression::Name(name) = expression else {
+        match expression {
+            Expression::Name(name) => {
+                let key = self.name_key(*name);
+                let keys = self
+                    .array_aliases
+                    .get(&key)
+                    .cloned()
+                    .unwrap_or_else(|| std::iter::once(key.clone()).collect());
+                for key in keys {
+                    self.invalidate_array_binding(&key);
+                }
+            }
+            Expression::Member { object, member, .. } => {
+                self.invalidate_array_member(object, *member);
+            }
+            _ => {}
+        }
+    }
+
+    /// 擦除表字段数组的固定长度；嵌套成员沿已记录的表类型继续追踪。
+    fn invalidate_array_member(&mut self, object: &Expression, member: xiao_syntax::Name) {
+        let Some(Type::Table(table)) = self.known_expression_type(object) else {
             return;
         };
-        let key = self.name_key(*name);
-        let keys = self
-            .array_aliases
-            .get(&key)
-            .cloned()
-            .unwrap_or_else(|| std::iter::once(key.clone()).collect());
-        for key in keys {
-            self.invalidate_array_binding(&key);
+        let table_name = table.name.clone();
+        let member_key = self.name_key(member);
+        let Some(signature) = self.table_signatures.get_mut(&table_name) else {
+            return;
+        };
+        let Some(member_signature) = signature.members.get_mut(&member_key) else {
+            return;
+        };
+        let Some(updated) = unknown_array_length(&member_signature.ty) else {
+            return;
+        };
+        member_signature.ty = updated;
+    }
+
+    /// 字典删除后放弃固定键集，避免后续静态读取绕过运行时缺失键检查。
+    pub(super) fn invalidate_dictionary_shape_after_mutation(&mut self, expression: &Expression) {
+        match expression {
+            Expression::Name(name) => {
+                let key = self.name_key(*name);
+                let Some(binding) = self.environment.lookup_mut(&key) else {
+                    return;
+                };
+                let current = self.context.apply(&binding.scheme.ty);
+                let updated = match current {
+                    Type::DictTable(dictionary) | Type::DictColumn(dictionary) => {
+                        dictionary_common_open_type(&dictionary)
+                    }
+                    _ => None,
+                };
+                if let Some(updated) = updated {
+                    binding.scheme.ty = updated;
+                }
+            }
+            Expression::Member { object, member, .. } => {
+                let Some(Type::Table(table)) = self.known_expression_type(object) else {
+                    return;
+                };
+                let member_key = self.name_key(*member);
+                let Some(signature) = self.table_signatures.get_mut(&table.name) else {
+                    return;
+                };
+                let Some(member_signature) = signature.members.get_mut(&member_key) else {
+                    return;
+                };
+                let updated = match &member_signature.ty {
+                    Type::DictTable(dictionary) | Type::DictColumn(dictionary) => {
+                        dictionary_common_open_type(dictionary)
+                    }
+                    _ => None,
+                };
+                if let Some(updated) = updated {
+                    member_signature.ty = updated;
+                }
+            }
+            _ => {}
         }
+    }
+
+    /// 读取已经检查过的表达式类型，避免为成员接收者重复执行检查。
+    fn known_expression_type(&self, expression: &Expression) -> Option<Type> {
+        self.nodes
+            .iter()
+            .rev()
+            .find(|node| node.span == expression.span())
+            .map(|node| node.ty.clone())
     }
 
     /// 记录一次名称到名称的数组别名关系。
@@ -1143,4 +1297,17 @@ fn unknown_array_length(ty: &Type) -> Option<Type> {
         ArrayType::Unknown => ArrayType::Unknown,
     };
     Some(Type::Array(array))
+}
+
+/// 把固定字典类型转换为保持共同值类型的开放字典类型。
+fn dictionary_common_open_type(dictionary: &crate::containers::DictType) -> Option<Type> {
+    let value = dictionary.open_value().cloned().or_else(|| {
+        let first = dictionary.entries.first()?.value.as_ref().clone();
+        dictionary
+            .entries
+            .iter()
+            .all(|entry| entry.value.as_ref() == &first)
+            .then_some(first)
+    })?;
+    Some(Type::DictTable(crate::containers::DictType::open(value)))
 }

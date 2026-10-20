@@ -6,7 +6,7 @@
 use std::collections::BTreeSet;
 
 use crate::ast::{
-    AssignmentOperator, CatchClause, ElifBranch, Expression, FunctionParameter,
+    AssignmentOperator, CatchClause, DictTypeAnnotation, ElifBranch, Expression, FunctionParameter,
     FunctionParameterKind, FunctionTypeAnnotation, Name, ResourceKind, ScalarType, Statement,
     TableKind,
 };
@@ -669,6 +669,9 @@ impl<'source> Parser<'source> {
                 .parse_set_type_annotation(true)
                 .map(FunctionTypeAnnotation::Set);
         }
+        if self.starts_dict_type() {
+            return self.parse_dict_type_annotation();
+        }
         if self.current().kind() == TokenKind::None {
             self.bump();
             return Some(FunctionTypeAnnotation::None);
@@ -703,6 +706,64 @@ impl<'source> Parser<'source> {
     /// 解析函数返回类型注解。
     fn parse_function_type_annotation(&mut self) -> Option<FunctionTypeAnnotation> {
         self.parse_optional_parameter_annotation()
+    }
+
+    /// 判断当前位置是否为未反引号包裹的 `dict<` 函数注解起点。
+    fn starts_dict_type(&self) -> bool {
+        if self.current().kind() != TokenKind::Identifier
+            || self.current().text(self.source) != "dict"
+            || self.lookahead_kind(1) != Some(TokenKind::Less)
+        {
+            return false;
+        }
+        let adjacent = self
+            .tokens
+            .get(self.cursor + 1)
+            .is_some_and(|less| self.current().span().end() == less.span().start());
+        adjacent || self.lookahead_kind(2) == Some(TokenKind::Keyword(KeywordKind::Str))
+    }
+
+    /// 解析开放字典函数注解 `dict<str, T>`。
+    fn parse_dict_type_annotation(&mut self) -> Option<FunctionTypeAnnotation> {
+        let start = self.bump().span().start();
+        let open = self.expect_delimiter(TokenKind::Less, self.current().span())?;
+        self.soft_newline_depth += 1;
+        self.skip_type_layout();
+        if self.current().kind() != TokenKind::Keyword(KeywordKind::Str) {
+            self.push_error(
+                INVALID_FUNCTION_TYPE_CODE,
+                "x04.parse.invalid_dict_key_type",
+                self.current().span(),
+                "开放字典注解的键类型必须是 str".to_owned(),
+            );
+            self.recover_set_type_annotation();
+            self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+            return None;
+        }
+        self.bump();
+        self.skip_type_layout();
+        if !self.at(TokenKind::Comma) {
+            self.push_error(
+                INVALID_FUNCTION_TYPE_CODE,
+                "x04.parse.invalid_dict_annotation",
+                self.current().span(),
+                "开放字典注解必须使用 dict<str, T> 形式".to_owned(),
+            );
+            self.recover_set_type_annotation();
+            self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+            return None;
+        }
+        self.bump();
+        self.skip_type_layout();
+        let value = self.parse_optional_parameter_annotation()?;
+        self.skip_type_layout();
+        let close = self.expect_delimiter(TokenKind::Greater, open.span());
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        let end = close.map_or_else(|| self.previous_span_end(), |token| token.span().end());
+        Some(FunctionTypeAnnotation::Dict(DictTypeAnnotation {
+            value: Box::new(value),
+            span: self.source_span(start, end),
+        }))
     }
 
     /// 解析 `def name<T, U>(...)` 的显式类型参数列表。
@@ -833,7 +894,35 @@ impl<'source> Parser<'source> {
                 FunctionTypeAnnotation::Array(_)
                 | FunctionTypeAnnotation::Scalar(_)
                 | FunctionTypeAnnotation::None
-                | FunctionTypeAnnotation::Resource(_) => {}
+                | FunctionTypeAnnotation::Resource(_)
+                | FunctionTypeAnnotation::Dict(_) => {}
+            },
+            FunctionTypeAnnotation::Dict(annotation) => match annotation.value.as_ref() {
+                FunctionTypeAnnotation::TypeParameter(name) => {
+                    if !known.contains(name) {
+                        unknown.insert(name.clone());
+                    }
+                }
+                FunctionTypeAnnotation::Array(element) => {
+                    if let FunctionTypeAnnotation::TypeParameter(name) = element.as_ref()
+                        && !known.contains(name)
+                    {
+                        unknown.insert(name.clone());
+                    }
+                }
+                FunctionTypeAnnotation::Set(set) => {
+                    for term in &set.members {
+                        if let crate::ast::TypeTerm::TypeParameter(name) = term
+                            && !known.contains(name)
+                        {
+                            unknown.insert(name.clone());
+                        }
+                    }
+                }
+                FunctionTypeAnnotation::Scalar(_)
+                | FunctionTypeAnnotation::None
+                | FunctionTypeAnnotation::Resource(_)
+                | FunctionTypeAnnotation::Dict(_) => {}
             },
             FunctionTypeAnnotation::Scalar(_)
             | FunctionTypeAnnotation::None

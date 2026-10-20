@@ -61,6 +61,10 @@ pub(super) fn opcode(op: &TacOp) -> u8 {
         TacOp::ExportValue { .. } => 43,
         TacOp::Negate(_) => 44,
         TacOp::IterSnapshot { .. } => 45,
+        TacOp::IndexSetDynamic { .. } => 46,
+        TacOp::DictRemoveDynamic { .. } => 47,
+        TacOp::DictKeys { .. } => 48,
+        TacOp::DictValues { .. } => 49,
     }
 }
 

@@ -1,0 +1,27 @@
+# Xiao 官方 dict 模块（20K 动态字典写入与开放字典接口）。
+#
+# 普通读写沿用语言的动态下标；三个以下划线开头的调用是编译器私有的
+# 字典句柄动作，不属于公开 intrinsic 契约。
+def get<T>(dict<str, T> values, str key) -> T
+    return values[key]
+
+def set<T>(dict<str, T> values, str key, T value) -> none
+    values[key] = value
+    return none
+
+def remove<T>(dict<str, T> values, str key) -> none
+    __dict_remove(values, key)
+    return none
+
+def contains<T>(dict<str, T> values, str key) -> bool
+    try
+        get(values, key)
+        return true
+    catch err as Error
+        return false
+
+def keys<T>(dict<str, T> values) -> [str]
+    return __dict_keys(values)
+
+def values<T>(dict<str, T> values) -> [T]
+    return __dict_values(values)

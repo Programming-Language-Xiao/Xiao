@@ -497,6 +497,23 @@ fn validate_expression(expression: &IrExpression, path: &str, result: &mut IrVal
                 );
             }
         }
+        IrExpressionKind::DictBuiltin { arguments, .. } => {
+            for (index, argument) in arguments.iter().enumerate() {
+                if let Some(name) = &argument.name {
+                    validate_name(name, &format!("{path}.arguments[{index}].name"), result);
+                }
+                validate_expression(
+                    &argument.value,
+                    &format!("{path}.arguments[{index}].value"),
+                    result,
+                );
+                validate_span(
+                    argument.span,
+                    &format!("{path}.arguments[{index}].span"),
+                    result,
+                );
+            }
+        }
         IrExpressionKind::Member { object, member } => {
             validate_expression(object, &format!("{path}.object"), result);
             validate_name(member, &format!("{path}.member"), result);

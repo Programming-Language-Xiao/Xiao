@@ -1106,6 +1106,9 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
             IrExpressionKind::IntrinsicCall { id, arguments } => {
                 self.emit_intrinsic(*id, arguments, expected, expression.span)
             }
+            IrExpressionKind::DictBuiltin { .. } => {
+                Err(unsupported("动态字典私有动作", Some(expression.span)))
+            }
             IrExpressionKind::Cast {
                 expression: inner,
                 target,

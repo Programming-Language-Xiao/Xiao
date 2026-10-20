@@ -106,6 +106,9 @@ pub struct DictType {
     pub entries: Vec<DictEntryType>,
 }
 
+/// 开放字典类型使用的内部键标记；它不会出现在运行时字典值中。
+const OPEN_KEY: &str = "\u{0}xiao-open-dict";
+
 impl DictType {
     /// 创建一个字典类型。
     #[must_use]
@@ -115,9 +118,35 @@ impl DictType {
         }
     }
 
+    /// 创建只有共同值类型、键集开放的字典类型。
+    #[must_use]
+    pub fn open(value: Type) -> Self {
+        Self {
+            entries: vec![DictEntryType {
+                key: OPEN_KEY.to_owned(),
+                value: Box::new(value),
+            }],
+        }
+    }
+
+    /// 判断是否为开放键集字典类型。
+    #[must_use]
+    pub fn is_open(&self) -> bool {
+        self.entries.len() == 1 && self.entries[0].key == OPEN_KEY
+    }
+
+    /// 返回开放字典的共同值类型。
+    #[must_use]
+    pub fn open_value(&self) -> Option<&Type> {
+        self.is_open().then(|| self.entries[0].value.as_ref())
+    }
+
     /// 按规范化键查找条目类型。
     #[must_use]
     pub fn value_type(&self, key: &str) -> Option<&Type> {
+        if self.is_open() {
+            return None;
+        }
         self.entries
             .iter()
             .find(|entry| entry.key == key)
@@ -127,7 +156,11 @@ impl DictType {
     /// 返回字典中的键数量。
     #[must_use]
     pub fn len(&self) -> usize {
-        self.entries.len()
+        if self.is_open() {
+            0
+        } else {
+            self.entries.len()
+        }
     }
 
     /// 判断字典是否为空。

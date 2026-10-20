@@ -1243,6 +1243,7 @@ impl<'source> EscapeAnalyzer<'source> {
                             }
                             xiao_syntax::FunctionTypeAnnotation::Set(_)
                             | xiao_syntax::FunctionTypeAnnotation::Array(_)
+                            | xiao_syntax::FunctionTypeAnnotation::Dict(_)
                             | xiao_syntax::FunctionTypeAnnotation::TypeParameter(_) => {
                                 xiao_types::Type::Dynamic
                             }

@@ -37,12 +37,12 @@
 | 全工作区 | 本批 `cargo test --workspace --no-fail-fast` 全量通过；Bun 既有基线 298 通过 / 5 跳过 / 0 失败 | Rust 主体成立，Bun 未改动 |
 | 20I 推送 | `ecea72f`/`7731189` **未推送**（审核时 ahead 2） | 无 CI |
 | 原生/归档 | 手工探针的表达式下标、`find`/`slice`/`split`、`array_push` 追加与迭代通过 | 可用；缺自动化原生执行 |
-| `array_push` 后读新位置 | `values = [10,20]; array_push(values,30); values[2]` → 输出 `30`；辅助函数和别名同样通过 | F-1 已修 |
+| `array_push` 后读新位置 | 直接名称、别名、辅助函数和表字段数组追加后均可读新位置；只读函数调用仍保留静态越界诊断 | F-1 已修 |
 | 动态正越界 | `text[i]` / 数组 / 元组 / 字典列 → `X06-RUNTIME-017` | 与字面量/动态负统一；F-2 已修 |
 | 字典列裸名称 | `column[i]` 有同名键时取键，`column[k]` 无同名键按 str 键，`column[i+0]` 取位置 | F-3 已冻结 |
 | 字典表动态键 | 无同名静态键时，`str` 裸名称/表达式按动态键读取；缺失报 `X06-RUNTIME-015` | 本批已接通 |
 | 运行时字典键 | `X06-RUNTIME-015`（字典中不存在该键）已存在 | 动态缺失键可复用 |
-| 20I 门禁 | `run.sh` 现已记录全量 Bun 失败并继续执行两条隔离重试 | F-4 本地修复，待门禁取证 |
+| 20I 门禁 | `run.sh` 记录全量 Bun 失败并继续执行两条隔离重试；隔离成功时按已知抖动通过 | F-4 已修，待门禁取证 |
 | 平台复现 | Windows 脚本现已把 MSVC `link.exe` 放到 PATH 首位 | F-5 本地修复，待四平台取证 |
 
 ### 1.3 本批边界
@@ -81,6 +81,8 @@ append(values, 30)
 print(values[2])
 → X03-TYPE-004
 ```
+
+20K 已补表字段数组接收者，并只对预扫描为可变更的已知函数摘要擦除调用方长度；只读函数调用后的静态越界仍报告 `X03-TYPE-004`。
 
 **要求**：
 
@@ -299,10 +301,10 @@ core/rust/crates/xiao-driver/tests/20i_indexing_and_text.rs  F-1/F-2/F-3 回归
 
 ## 九、实施记录（2026-10-20）
 
-- **F-1**：`array_push` 及数组实参函数调用会擦除绑定上的固定长度并保留元素类型；直接追加和辅助函数追加后读取新位置通过，无追加的静态越界仍报 `X03-TYPE-004`。
+- **F-1**：`array_push` 会擦除直接名称、别名、表字段数组及可变函数调用方的固定长度并保留元素类型；只读函数调用不再过度失效，无追加的静态越界仍报 `X03-TYPE-004`。
 - **F-2**：动态整数/字符串选择统一走 `X06-RUNTIME-017`；动态字典缺失键走 `X06-RUNTIME-015`。
 - **F-3**：字典表与字典列支持动态键；静态键优先，字典列表达式按 `str` 键或整数位置分派，异构值退化为 `dynamic`。
-- **F-4/F-5**：`run.sh` 在全量 Bun 失败后继续执行隔离重试；Windows 平台复现脚本导入 MSVC 后把其 `link.exe` 放到 PATH 首位。四平台运行号仍待推送取证。
+- **F-4/F-5**：`run.sh` 在全量 Bun 失败后继续执行隔离重试，并按隔离结果判定；Windows 平台复现脚本导入 MSVC 后把其 `link.exe` 放到 PATH 首位。四平台运行号仍待推送取证。
 - **字节码/Runtime/LLVM**：复用 `IndexGetDynamic`，新增 `xiao_runtime_value_index_get_dynamic` 处理动态整数位置和字典字符串键；`.xiaoc`/`.xar` 沿用现有编解码与宿主 Runtime ABI。
 - **本地验证**：`20j_dynamic_dict_keys` 7 项、`20i_indexing_and_text` 11 项、`d17c_archive` 13 项、`r2a_containers` 17 项通过；`.xiaoc` 动态键与 `.xar` 动态键回归已加入。原生四平台、推送 CI 与 `array_push` 移除验证待外部取证。
 

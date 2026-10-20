@@ -15,6 +15,7 @@
 - [`os`](os.md) —— 文件/目录资源的 `open_file`、`open_directory`、`close` 与 `read_text`。
 - [`set`](set.md) —— 20F/20G 通用集合的八个泛型入口，以及 20H 对应的
   `values.size()` 等静态集合方法式调用。
+- [`dict`](dict.md) —— 20K 开放键集字典的 `get`、`set`、`remove`、`contains`、`keys`、`values` 自由函数。
 
 首批与后续小批接口均是标准库接口版本 1 的兼容新增；当前 `text` 提供 ASCII 大写判断，
 不提供填充/对齐/进制格式化、数字格式化接口、切分/切片、完整大小写转换或路径规范化；文件系统访问只通过 `os` 模块的冻结资源接口提供。

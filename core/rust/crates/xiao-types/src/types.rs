@@ -299,6 +299,9 @@ fn write_dictionary(
     dictionary: &DictType,
     ordered: bool,
 ) -> fmt::Result {
+    if let Some(value) = dictionary.open_value() {
+        return write!(formatter, "dict<str, {value}>");
+    }
     formatter.write_str(if ordered { "<" } else { "{" })?;
     for (index, entry) in dictionary.entries.iter().enumerate() {
         if index > 0 {

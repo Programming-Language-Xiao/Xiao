@@ -84,6 +84,12 @@ impl TypeChecker<'_> {
         let signature = self.imported_function_signature(callee)?;
         let signature = self.instantiate_function_signature(&signature);
         self.check_expression(callee);
-        Some(self.check_function_arguments(&signature, arguments, span))
+        let result = self.check_function_arguments(&signature, arguments, span);
+        if signature.name == "ascii:remove" || signature.name == "remove" {
+            if let Some(argument) = arguments.first() {
+                self.invalidate_dictionary_shape_after_mutation(&argument.value);
+            }
+        }
+        Some(result)
     }
 }

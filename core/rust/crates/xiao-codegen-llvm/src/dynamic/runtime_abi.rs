@@ -217,6 +217,14 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert("declare i32 @xiao_runtime_value_index_get_dynamic(ptr, ptr, ptr)".to_owned());
         self.declarations
+            .insert("declare i32 @xiao_runtime_value_index_set_dynamic(ptr, ptr, ptr)".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_value_dict_remove_dynamic(ptr, ptr)".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_value_dict_keys(ptr, ptr)".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_value_dict_values(ptr, ptr)".to_owned());
+        self.declarations
             .insert("declare i32 @xiao_runtime_value_select(ptr, i64, ptr, ptr)".to_owned());
         self.declarations.insert(self.value_declaration(
             "xiao_runtime_error_new",
@@ -610,6 +618,71 @@ impl<'a> DynamicGenerator<'a> {
             ),
             span,
         );
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
+        result
+    }
+
+    /// 发射动态整数位置/字典键写入。
+    pub(super) fn emit_dynamic_index_set(
+        &mut self,
+        value: &str,
+        index: &str,
+        item: &str,
+        span: IrSpan,
+    ) {
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let index_input = self.next_temp();
+        self.emit(format!("  {index_input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {index}, ptr {index_input}"));
+        let item_input = self.next_temp();
+        self.emit(format!("  {item_input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {item}, ptr {item_input}"));
+        self.checked_status_call_at(
+            format!(
+                "@xiao_runtime_value_index_set_dynamic(ptr {input}, ptr {index_input}, ptr {item_input})"
+            ),
+            span,
+        );
+    }
+
+    /// 发射动态字典键删除。
+    pub(super) fn emit_dynamic_dict_remove(&mut self, value: &str, index: &str, span: IrSpan) {
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let index_input = self.next_temp();
+        self.emit(format!("  {index_input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {index}, ptr {index_input}"));
+        self.checked_status_call_at(
+            format!("@xiao_runtime_value_dict_remove_dynamic(ptr {input}, ptr {index_input})"),
+            span,
+        );
+    }
+
+    /// 发射字典键/值枚举并返回新数组。
+    pub(super) fn emit_dynamic_dict_collect(
+        &mut self,
+        value: &str,
+        operation: &str,
+        span: IrSpan,
+    ) -> String {
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        let symbol = match operation {
+            "keys" => "xiao_runtime_value_dict_keys",
+            "values" => "xiao_runtime_value_dict_values",
+            _ => unreachable!("未知字典枚举操作"),
+        };
+        self.checked_status_call_at(format!("@{symbol}(ptr {input}, ptr {output})"), span);
         let result = self.next_temp();
         self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
         result

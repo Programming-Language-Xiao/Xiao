@@ -104,6 +104,8 @@ pub struct TypeChecker<'source> {
     current_function: Option<FunctionFrame>,
     /// 当前正在检查的函数名称，用于让直接递归调用复用刚性签名。
     current_function_key: Option<String>,
+    /// 函数体中直接执行数组变更的函数摘要。
+    mutating_functions: BTreeSet<String>,
     loop_depth: usize,
 }
 
@@ -142,6 +144,7 @@ impl<'source> TypeChecker<'source> {
             current_table: None,
             current_function: None,
             current_function_key: None,
+            mutating_functions: BTreeSet::new(),
             loop_depth: 0,
         }
     }
@@ -155,6 +158,7 @@ impl<'source> TypeChecker<'source> {
     /// 使用当前环境检查整个程序并返回结果。
     #[must_use]
     pub fn check_program(mut self, program: &Program) -> TypeCheckResult {
+        self.collect_mutating_functions(&program.statements);
         self.register_top_level_functions(&program.statements);
         self.register_top_level_tables(&program.statements);
         for statement in &program.statements {
@@ -181,6 +185,131 @@ impl<'source> TypeChecker<'source> {
             entry_mode: program.entry_mode,
             function_signatures: self.function_signatures,
             table_signatures: self.table_signatures,
+        }
+    }
+
+    /// 预扫描直接调用 `array_push` 的函数，供调用点精确擦除数组长度。
+    fn collect_mutating_functions(&mut self, statements: &[xiao_syntax::Statement]) {
+        fn expression_mutates(
+            expression: &xiao_syntax::Expression,
+            source: &xiao_source::SourceFile,
+        ) -> bool {
+            use xiao_syntax::Expression;
+            match expression {
+                Expression::Call {
+                    callee, arguments, ..
+                } => {
+                    matches!(callee.as_ref(), Expression::Name(name) if name.unquoted_text(source) == "array_push")
+                        || arguments
+                            .iter()
+                            .any(|argument| expression_mutates(&argument.value, source))
+                }
+                Expression::ArrayLiteral { elements, .. }
+                | Expression::TupleLiteral { elements, .. }
+                | Expression::SetLiteral { elements, .. } => elements
+                    .iter()
+                    .any(|element| expression_mutates(element, source)),
+                Expression::DictTableLiteral { entries, .. }
+                | Expression::DictColumnLiteral { entries, .. } => entries
+                    .iter()
+                    .any(|entry| expression_mutates(&entry.value, source)),
+                Expression::Group { expression, .. }
+                | Expression::Unary {
+                    operand: expression,
+                    ..
+                }
+                | Expression::Cast { expression, .. } => expression_mutates(expression, source),
+                Expression::Binary { left, right, .. } => {
+                    expression_mutates(left, source) || expression_mutates(right, source)
+                }
+                Expression::Member { object, .. } => expression_mutates(object, source),
+                Expression::Selector {
+                    source: source_expression,
+                    step,
+                    ..
+                } => {
+                    expression_mutates(source_expression, source)
+                        || step
+                            .as_deref()
+                            .is_some_and(|step| expression_mutates(step, source))
+                }
+                Expression::Literal { .. } | Expression::Name(_) => false,
+                Expression::NewCall { arguments, .. } => arguments
+                    .iter()
+                    .any(|argument| expression_mutates(&argument.value, source)),
+            }
+        }
+        fn statements_mutate(
+            statements: &[xiao_syntax::Statement],
+            source: &xiao_source::SourceFile,
+        ) -> bool {
+            use xiao_syntax::Statement;
+            statements.iter().any(|statement| match statement {
+                Statement::Expression { expression, .. } => expression_mutates(expression, source),
+                Statement::Assignment { value, .. } | Statement::ConstDeclaration { value, .. } => {
+                    expression_mutates(value, source)
+                }
+                Statement::Declaration { value, .. } => value
+                    .as_ref()
+                    .is_some_and(|value| expression_mutates(value, source)),
+                Statement::ExtendedAssignment { target, value, .. } => {
+                    expression_mutates(target, source) || expression_mutates(value, source)
+                }
+                Statement::If {
+                    condition,
+                    body,
+                    elif_branches,
+                    else_body,
+                    ..
+                } => {
+                    expression_mutates(condition, source)
+                        || statements_mutate(body, source)
+                        || elif_branches.iter().any(|branch| {
+                            expression_mutates(&branch.condition, source)
+                                || statements_mutate(&branch.body, source)
+                        })
+                        || else_body
+                            .as_deref()
+                            .is_some_and(|body| statements_mutate(body, source))
+                }
+                Statement::For { iterable, body, .. }
+                | Statement::While {
+                    condition: iterable,
+                    body,
+                    ..
+                } => expression_mutates(iterable, source) || statements_mutate(body, source),
+                Statement::Return {
+                    value: Some(value), ..
+                }
+                | Statement::Raise { value, .. } => expression_mutates(value, source),
+                Statement::Try {
+                    body,
+                    catches,
+                    finally_body,
+                    ..
+                } => {
+                    statements_mutate(body, source)
+                        || catches
+                            .iter()
+                            .any(|catch| statements_mutate(&catch.body, source))
+                        || finally_body
+                            .as_deref()
+                            .is_some_and(|body| statements_mutate(body, source))
+                }
+                Statement::Function { .. }
+                | Statement::Import { .. }
+                | Statement::Return { value: None, .. }
+                | Statement::Break { .. }
+                | Statement::Continue { .. }
+                | Statement::Table { .. } => false,
+            })
+        }
+        for statement in statements {
+            if let xiao_syntax::Statement::Function { name, body, .. } = statement
+                && statements_mutate(body, self.source)
+            {
+                self.mutating_functions.insert(self.name_key(*name));
+            }
         }
     }
 

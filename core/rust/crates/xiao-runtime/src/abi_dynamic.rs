@@ -324,6 +324,247 @@ pub extern "C" fn xiao_runtime_value_index_get_dynamic(
     }
 }
 
+/// 按动态整数位置或字符串键更新字典/有序容器值。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_index_set_dynamic(
+    value: *const XiaoValue,
+    index: *const XiaoValue,
+    item: *const XiaoValue,
+) -> i32 {
+    if value.is_null() || index.is_null() || item.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let source = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let index = match unsafe { value_to_runtime(&*index) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let item = match unsafe { value_to_runtime(&*item) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let result = match index {
+        RuntimeValue::Str(key) => {
+            let key = match key.to_string() {
+                Ok(key) => key,
+                Err(error) => {
+                    return status::<()>(Err(error))
+                        .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+                }
+            };
+            match source {
+                RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle) => {
+                    let kind = handle.kind().as_str();
+                    handle.with_entries_mut(|entries| {
+                        let Some((_, slot)) = entries.iter_mut().find(|(name, _)| name == &key)
+                        else {
+                            return Err(RuntimeError::key_not_found(kind, key.clone()));
+                        };
+                        *slot = item.clone();
+                        Ok(())
+                    })
+                }
+                other => Err(RuntimeError::type_mismatch("字典", other.type_name())),
+            }
+        }
+        other => {
+            let raw = match other {
+                RuntimeValue::Int(value) => i128::from(value),
+                RuntimeValue::Sint(value) => i128::from(value),
+                RuntimeValue::Lint(value) => match value.parse::<i128>() {
+                    Ok(value) => value,
+                    Err(_) => {
+                        return status::<()>(Err(RuntimeError::type_mismatch("int", "lint")))
+                            .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+                    }
+                },
+                other => {
+                    return status::<()>(Err(RuntimeError::type_mismatch(
+                        "int 或 str",
+                        other.type_name(),
+                    )))
+                    .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+                }
+            };
+            match source {
+                RuntimeValue::Array(handle) => {
+                    let index = match xiao_types::normalize_index(raw, handle.len()) {
+                        Some(index) => index,
+                        None => {
+                            return status::<()>(Err(RuntimeError::selector_bounds(format!(
+                                "选择器索引 {raw} 超出运行时长度 {}",
+                                handle.len()
+                            ))))
+                            .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+                        }
+                    };
+                    handle.with_elements_mut(|elements| {
+                        let Some(slot) = elements.get_mut(index) else {
+                            return Err(RuntimeError::selector_bounds("数组元素在写入时消失"));
+                        };
+                        *slot = item.clone();
+                        Ok(())
+                    })
+                }
+                RuntimeValue::Tuple(handle) => {
+                    let index = match xiao_types::normalize_index(raw, handle.len()) {
+                        Some(index) => index,
+                        None => {
+                            return status::<()>(Err(RuntimeError::selector_bounds(format!(
+                                "选择器索引 {raw} 超出运行时长度 {}",
+                                handle.len()
+                            ))))
+                            .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+                        }
+                    };
+                    handle.with_elements_mut(|elements| {
+                        let Some(slot) = elements.get_mut(index) else {
+                            return Err(RuntimeError::selector_bounds("元组元素在写入时消失"));
+                        };
+                        *slot = item.clone();
+                        Ok(())
+                    })
+                }
+                RuntimeValue::DictColumn(handle) => {
+                    let index = match xiao_types::normalize_index(raw, handle.len()) {
+                        Some(index) => index,
+                        None => {
+                            return status::<()>(Err(RuntimeError::selector_bounds(format!(
+                                "选择器索引 {raw} 超出运行时长度 {}",
+                                handle.len()
+                            ))))
+                            .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+                        }
+                    };
+                    handle.with_entries_mut(|entries| {
+                        let Some((_, slot)) = entries.get_mut(index) else {
+                            return Err(RuntimeError::selector_bounds("字典列元素在写入时消失"));
+                        };
+                        *slot = item.clone();
+                        Ok(())
+                    })
+                }
+                RuntimeValue::DictTable(_) => Err(RuntimeError::type_mismatch("str", "int")),
+                other => Err(RuntimeError::type_mismatch("可写容器", other.type_name())),
+            }
+        }
+    };
+    status(result).map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
+/// 删除动态字典键；只允许删除已有字符串键。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_dict_remove_dynamic(
+    value: *const XiaoValue,
+    index: *const XiaoValue,
+) -> i32 {
+    if value.is_null() || index.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let source = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let index = match unsafe { value_to_runtime(&*index) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let RuntimeValue::Str(key) = index else {
+        return status::<()>(Err(RuntimeError::type_mismatch("str", index.type_name())))
+            .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+    };
+    let key = match key.to_string() {
+        Ok(key) => key,
+        Err(error) => {
+            return status::<()>(Err(error))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+    };
+    let (RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle)) = source else {
+        return status::<()>(Err(RuntimeError::type_mismatch("字典", source.type_name())))
+            .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+    };
+    let kind = handle.kind().as_str();
+    let result = handle.with_entries_mut(|entries| {
+        let Some(position) = entries.iter().position(|(name, _)| name == &key) else {
+            return Err(RuntimeError::key_not_found(kind, key.clone()));
+        };
+        entries.remove(position);
+        Ok(())
+    });
+    status(result).map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code())
+}
+
+/// 枚举字典键并返回新数组值。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_dict_keys(
+    value: *const XiaoValue,
+    out: *mut XiaoValue,
+) -> i32 {
+    dict_collect_dynamic(value, out, true)
+}
+
+/// 枚举字典值并返回新数组值。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_value_dict_values(
+    value: *const XiaoValue,
+    out: *mut XiaoValue,
+) -> i32 {
+    dict_collect_dynamic(value, out, false)
+}
+
+fn dict_collect_dynamic(value: *const XiaoValue, out: *mut XiaoValue, keys: bool) -> i32 {
+    if value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let source = match unsafe { value_to_runtime(&*value) } {
+        Ok(value) => value,
+        Err(error) => return error,
+    };
+    let (RuntimeValue::DictTable(handle) | RuntimeValue::DictColumn(handle)) = source else {
+        return status::<()>(Err(RuntimeError::type_mismatch("字典", source.type_name())))
+            .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+    };
+    let result = handle.with_entries(|entries| {
+        entries
+            .iter()
+            .map(|(key, value)| {
+                if keys {
+                    RuntimeValue::new_string(key.clone())
+                } else {
+                    Ok(value.clone())
+                }
+            })
+            .collect::<crate::errors::RuntimeResult<Vec<_>>>()
+    });
+    let values = match result {
+        Ok(Ok(values)) => values,
+        Ok(Err(error)) => {
+            return status::<()>(Err(error))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+        Err(error) => {
+            return status::<()>(Err(error))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+    };
+    let array = match crate::containers::ArrayHandle::new(values) {
+        Ok(array) => RuntimeValue::Array(array),
+        Err(error) => {
+            return status::<()>(Err(error))
+                .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code());
+        }
+    };
+    match runtime_to_value(&array) {
+        Ok(value) => unsafe { write_value(out, value) }
+            .map_or_else(|error| error, |_| XiaoAbiStatus::Ok.code()),
+        Err(error) => error,
+    }
+}
+
 /// 在 Runtime ABI 内部执行一个有序容器整数位置读取。
 fn dynamic_index_value(
     source: &RuntimeValue,

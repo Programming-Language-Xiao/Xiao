@@ -450,6 +450,15 @@ pub struct SetTypeAnnotation {
     pub span: SourceSpan,
 }
 
+/// 开放键集字典函数注解 `dict<str, T>`。
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct DictTypeAnnotation {
+    /// 字典共同值类型；键类型在本批固定为 `str`。
+    pub value: Box<FunctionTypeAnnotation>,
+    /// 覆盖整个 `dict<str, T>` 的源码区间。
+    pub span: SourceSpan,
+}
+
 impl SetTypeAnnotation {
     /// 创建一份集合类型注解。
     #[must_use]
@@ -552,6 +561,8 @@ pub enum FunctionTypeAnnotation {
     Set(SetTypeAnnotation),
     /// 一层数组类型注解 `[T]`。
     Array(Box<FunctionTypeAnnotation>),
+    /// 开放键集字典类型注解 `dict<str, T>`。
+    Dict(DictTypeAnnotation),
     /// 裸类型参数，例如参数注解中的 `T`。
     TypeParameter(String),
 }
@@ -574,6 +585,7 @@ impl FunctionTypeAnnotation {
                 format!("set<{members}>")
             }
             Self::Array(element) => format!("[{}]", element.as_string()),
+            Self::Dict(annotation) => format!("dict<str, {}>", annotation.value.as_string()),
             Self::TypeParameter(name) => name.clone(),
         }
     }

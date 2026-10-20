@@ -74,6 +74,33 @@ print(column[i + 0])   # 位置 1
 路径和形状规则；无序字典表的高级选择仍在运行时稳定报告 `X06-RUNTIME-017`。详见[高级选择与结果形状](advanced-selection.md)
 和[随机选择与种子](random-selection.md)。
 
+## 动态写入与开放字典参数
+
+20K 支持更新已有键或字典列位置：
+
+```xiao
+values = {name = 1}
+key = "name"
+values[key] = 2
+column = <first = 3, second = 4>
+i = 1
+column[i] = 5
+```
+
+动态缺失键报告 `X06-RUNTIME-015`，动态位置越界报告 `X06-RUNTIME-017`；赋值不会新增键。
+静态可判定的缺失键和越界仍在类型检查阶段拒绝。
+
+函数参数和返回值可以使用开放键集注解 `dict<str, T>`。`T` 可以是标量、资源、`none`、数组、
+集合或类型参数，固定字典字面量只要所有值兼容即可传入：
+
+```xiao
+def get(dict<str, int> values, str key) -> int
+    return values[key]
+```
+
+官方 `stdlib.dict` 提供 `get`、`set`、`remove`、`contains`、`keys`、`values` 六个自由函数。
+`remove` 的缺失键同样报告 015；`keys` 和 `values` 返回新数组并保持对应迭代顺序。
+
 ## 键名与 Unicode
 
 需要 Unicode 的键或名称可以使用反引号：

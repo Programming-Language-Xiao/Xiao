@@ -237,7 +237,12 @@ impl<'source> TypeChecker<'source> {
             }) {
             dynamic_index_result_type(&source_type)
         } else if selector.items.len() == 1
-            && all_static
+            && (all_static
+                || matches!(
+                    &source_type,
+                    Type::DictTable(dictionary) | Type::DictColumn(dictionary)
+                        if dictionary.is_open()
+                ))
             && target_types.len() == 1
             && selector.items.iter().any(|item| {
                 matches!(
@@ -773,6 +778,15 @@ impl<'source> TypeChecker<'source> {
                     unreachable!("单段字典路径必须是名称")
                 };
                 let key = name.unquoted_text(self.source());
+                if dictionary.is_open() {
+                    let expression = Expression::Name(*name);
+                    return Some(self.expand_dynamic_dict_expression(
+                        source_type,
+                        dictionary,
+                        &expression,
+                        requires_runtime_check,
+                    ));
+                }
                 if dictionary.value_type(key).is_some() {
                     return None;
                 }
@@ -797,6 +811,14 @@ impl<'source> TypeChecker<'source> {
                 let Some(ConstantValue::String(key)) = self.eval_const(expression) else {
                     return None;
                 };
+                if dictionary.is_open() {
+                    return Some(self.expand_dynamic_dict_expression(
+                        source_type,
+                        dictionary,
+                        expression,
+                        requires_runtime_check,
+                    ));
+                }
                 let path = vec![SelectionPathSegment::key(key.clone())];
                 let resolved = self.resolve_selector_path(source_type, &path, item.span());
                 Some(self.expanded_from_resolved_dict_path(path, resolved))
@@ -1437,6 +1459,9 @@ fn static_index_length(source: &Type) -> Option<usize> {
 
 /// 返回字典直接值的共同类型；异构值保守退化为 dynamic。
 fn dictionary_common_value_type(dictionary: &DictType) -> Type {
+    if let Some(value) = dictionary.open_value() {
+        return value.clone();
+    }
     let Some(first) = dictionary.entries.first() else {
         return Type::Dynamic;
     };

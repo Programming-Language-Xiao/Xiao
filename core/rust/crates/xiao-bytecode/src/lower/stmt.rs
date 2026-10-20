@@ -460,6 +460,34 @@ fn lower_extended_assignment(
         return;
     }
     if let IrExpressionKind::Selector { source, .. } = &target.kind {
+        if let IrExpressionKind::Selector {
+            source,
+            selector,
+            step: None,
+            ..
+        } = &target.kind
+            && operator == "="
+            && selector.items.len() == 1
+            && let xiao_ir::IrSelectorItem::ExactExpression {
+                expression: index, ..
+            } = &selector.items[0]
+        {
+            let source_register = lowerer.lower_expression(source);
+            let index_register = lowerer.lower_expression(index);
+            let value_register = lowerer.lower_expression(value);
+            // 动态字典/位置写入消费选择器阶段登记的边界检查；运行时入口
+            // 自身仍会统一处理缺失键 015 与越界 017。
+            lowerer.emit_runtime_checks_in(target.span, index_register);
+            lowerer.emit(TacInstr::new(
+                TacOp::IndexSetDynamic {
+                    source: source_register,
+                    index: index_register,
+                    value: value_register,
+                },
+                span,
+            ));
+            return;
+        }
         let Some(plan) = lowerer.broadcast_assignment_plan_id(target.span) else {
             lowerer.record_unsupported(format!(
                 "选择器广播缺少类型计划（{}..{}）",
