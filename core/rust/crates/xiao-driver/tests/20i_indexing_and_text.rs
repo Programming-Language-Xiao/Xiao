@@ -72,6 +72,31 @@ fn array_annotations_and_push_preserve_shared_order() {
 }
 
 #[test]
+fn array_push_invalidates_fixed_length_after_direct_and_helper_calls() {
+    for source in [
+        "values = [10, 20]\narray_push(values, 30)\nprint(values[2])\n",
+        "values = [10, 20]\nalias = values\narray_push(alias, 30)\nprint(values[2])\n",
+        "def append([int] values, int value) -> none\n    array_push(values, value)\n    return none\nvalues = [10, 20]\nappend(values, 30)\nprint(values[2])\n",
+    ] {
+        let outcome = run(source);
+        assert!(outcome.is_success(), "{outcome:?}");
+        assert_eq!(output(&outcome), "30\n");
+    }
+    let error = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(
+            "values = [10, 20]\nprint(values[2])\n",
+        ))
+        .expect_err("无追加的固定长度越界仍应在类型层拒绝");
+    assert!(
+        error
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == "X03-TYPE-004"),
+        "{error:?}"
+    );
+}
+
+#[test]
 fn generic_array_annotations_infer_element_types() {
     let outcome = run(
         "def head<T>([T] values) -> T\n    return values[0]\nprint(head([7]))\nprint(head([\"雪\"]))\n",
@@ -98,7 +123,7 @@ fn indexing_boundaries_keep_static_and_runtime_diagnostics() {
         ("values = [1]\nprint(values[(-1)])\n", "X03-TYPE-004"),
         (
             "table = {name = \"x\"}\ni = 0\nprint(table[i + 1])\n",
-            "X03-TYPE-008",
+            "X03-TYPE-003",
         ),
         (
             "values = [1, 2]\ni = 0\nprint(values[i, 1])\n",
@@ -118,6 +143,16 @@ fn indexing_boundaries_keep_static_and_runtime_diagnostics() {
     }
     let outcome = run("text = \"x\"\ni = -1\nprint(text[i])\n");
     assert_eq!(outcome.code(), Some("X06-RUNTIME-017"), "{outcome:?}");
+    for source in [
+        "text = \"x\"\ni = 1\nprint(text[i])\n",
+        "values = [1]\ni = 1\nprint(values[i])\n",
+        "values = (1,)\ni = 1\nprint(values[i])\n",
+        "column = <value = 1>\ni = 1\nprint(column[i])\n",
+        "text = \"x\"\nprint(text[1])\n",
+    ] {
+        let outcome = run(source);
+        assert_eq!(outcome.code(), Some("X06-RUNTIME-017"), "{outcome:?}");
+    }
 }
 
 #[test]

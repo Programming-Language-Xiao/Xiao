@@ -618,6 +618,7 @@ impl<'a> Lowerer<'a> {
                                 IrType::Array { .. } | IrType::Tuple { .. }
                             ) || matches!(source_type, IrType::Scalar { name } if name == "str")
                                 || matches!(source_type, IrType::Dynamic | IrType::Variable { .. })
+                                || matches!(source_type, IrType::DictTable { entries } if !entries.iter().any(|entry| entry.key == name.unquoted_text(self.source)))
                                 || matches!(source_type, IrType::DictColumn { entries } if !entries.iter().any(|entry| entry.key == name.unquoted_text(self.source)));
                             if ordered {
                                 IrSelectorItem::ExactExpression {

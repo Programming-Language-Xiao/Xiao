@@ -6,10 +6,11 @@
 
 use xiao_source::SourceSpan;
 use xiao_syntax::{
-    AssignmentOperator, CallArgument, Expression, PathSegment, RandomMode, Selector, SelectorItem,
+    AssignmentOperator, CallArgument, Expression, LiteralKind, PathSegment, RandomMode, Selector,
+    SelectorItem,
 };
 
-use crate::containers::{ArrayType, ContainerPathSegment};
+use crate::containers::{ArrayType, ContainerPathSegment, DictType};
 use crate::diagnostics::{
     CONTAINER_INDEX_OUT_OF_BOUNDS_CODE, CONTAINER_KEY_NOT_FOUND_CODE, INVALID_CONTAINER_PATH_CODE,
     RANDOM_SEED_ARITY_CODE, RANDOM_SEED_CODE, SELECTOR_ASSIGNMENT_CODE,
@@ -104,7 +105,10 @@ impl<'source> TypeChecker<'source> {
         if matches!(source_type, Type::DictTable(_))
             && (step.is_some()
                 || selector.items.len() != 1
-                || !matches!(selector.items.first(), Some(SelectorItem::Exact { .. })))
+                || !matches!(
+                    selector.items.first(),
+                    Some(SelectorItem::Exact { .. } | SelectorItem::ExactExpression { .. })
+                ))
         {
             self.selector_error(
                 SELECTOR_UNORDERED_CONTAINER_CODE,
@@ -217,8 +221,39 @@ impl<'source> TypeChecker<'source> {
             && matches!(
                 selector.items.first(),
                 Some(SelectorItem::ExactExpression { .. })
-            ) {
+            )
+            && !selector.items.iter().any(|item| {
+                matches!(
+                    item,
+                    SelectorItem::ExactExpression { expression, .. }
+                        if matches!(
+                            expression.as_ref(),
+                            Expression::Literal {
+                                kind: LiteralKind::String,
+                                ..
+                            }
+                        )
+                )
+            }) {
             dynamic_index_result_type(&source_type)
+        } else if selector.items.len() == 1
+            && all_static
+            && target_types.len() == 1
+            && selector.items.iter().any(|item| {
+                matches!(
+                    item,
+                    SelectorItem::ExactExpression { expression, .. }
+                        if matches!(
+                            expression.as_ref(),
+                            Expression::Literal {
+                                kind: LiteralKind::String,
+                                ..
+                            }
+                        )
+                )
+            })
+        {
+            target_types[0].clone()
         } else {
             result_type
         };
@@ -528,6 +563,12 @@ impl<'source> TypeChecker<'source> {
         item: &SelectorItem,
         requires_runtime_check: &mut bool,
     ) -> ExpandedItem {
+        if matches!(source_type, Type::DictTable(_) | Type::DictColumn(_))
+            && let Some(expanded) =
+                self.expand_dict_selector_item(source_type, item, requires_runtime_check)
+        {
+            return expanded;
+        }
         match item {
             SelectorItem::Exact { path, .. } => {
                 if path.segments.len() == 1
@@ -709,6 +750,145 @@ impl<'source> TypeChecker<'source> {
                     target_types: Vec::new(),
                 }
             }
+        }
+    }
+
+    /// 分派字典表/字典列的静态键、动态键和动态位置语义。
+    fn expand_dict_selector_item(
+        &mut self,
+        source_type: &Type,
+        item: &SelectorItem,
+        requires_runtime_check: &mut bool,
+    ) -> Option<ExpandedItem> {
+        let dictionary = match source_type {
+            Type::DictTable(dictionary) | Type::DictColumn(dictionary) => dictionary,
+            _ => return None,
+        };
+        match item {
+            SelectorItem::Exact { path, .. }
+                if path.segments.len() == 1
+                    && matches!(&path.segments[0], PathSegment::Name(_)) =>
+            {
+                let PathSegment::Name(name) = &path.segments[0] else {
+                    unreachable!("单段字典路径必须是名称")
+                };
+                let key = name.unquoted_text(self.source());
+                if dictionary.value_type(key).is_some() {
+                    return None;
+                }
+                self.environment.lookup(&self.name_key(*name))?;
+                let expression = Expression::Name(*name);
+                Some(self.expand_dynamic_dict_expression(
+                    source_type,
+                    dictionary,
+                    &expression,
+                    requires_runtime_check,
+                ))
+            }
+            SelectorItem::ExactExpression { expression, .. }
+                if matches!(
+                    expression.as_ref(),
+                    Expression::Literal {
+                        kind: LiteralKind::String,
+                        ..
+                    }
+                ) =>
+            {
+                let Some(ConstantValue::String(key)) = self.eval_const(expression) else {
+                    return None;
+                };
+                let path = vec![SelectionPathSegment::key(key.clone())];
+                let resolved = self.resolve_selector_path(source_type, &path, item.span());
+                Some(self.expanded_from_resolved_dict_path(path, resolved))
+            }
+            SelectorItem::ExactExpression { expression, .. } => {
+                Some(self.expand_dynamic_dict_expression(
+                    source_type,
+                    dictionary,
+                    expression,
+                    requires_runtime_check,
+                ))
+            }
+            _ => None,
+        }
+    }
+
+    /// 检查动态字典键/位置表达式并返回运行期精确项。
+    fn expand_dynamic_dict_expression(
+        &mut self,
+        source_type: &Type,
+        dictionary: &DictType,
+        expression: &Expression,
+        requires_runtime_check: &mut bool,
+    ) -> ExpandedItem {
+        let expression_type = self.check_expression(expression);
+        let is_table = matches!(source_type, Type::DictTable(_));
+        let valid = if is_table {
+            expression_type.is_dynamic()
+                || matches!(expression_type, Type::Variable(_))
+                || expression_type.as_scalar() == Some(xiao_syntax::ScalarType::Str)
+        } else {
+            expression_type.is_dynamic()
+                || matches!(expression_type, Type::Variable(_))
+                || expression_type.is_integer()
+                || expression_type.as_scalar() == Some(xiao_syntax::ScalarType::Str)
+        };
+        if !valid {
+            self.selector_error(
+                INVALID_CONTAINER_PATH_CODE,
+                "x03.type.selector_invalid_index",
+                expression.span(),
+                if is_table {
+                    format!("字典表动态键必须是 str，实际为 {}", expression_type)
+                } else {
+                    format!(
+                        "字典列动态键或位置必须是 str/整数，实际为 {}",
+                        expression_type
+                    )
+                },
+            );
+        }
+        if expression_type.is_dynamic() || matches!(expression_type, Type::Variable(_)) {
+            *requires_runtime_check = true;
+        }
+        ExpandedItem {
+            plan: SelectionItemPlan::Exact { path: Vec::new() },
+            paths: Vec::new(),
+            dynamic: true,
+            random: false,
+            with_replacement: false,
+            zero_random: false,
+            target_types: vec![dictionary_common_value_type(dictionary)],
+        }
+    }
+
+    /// 将静态字典路径的解析结果转换为选择计划项。
+    fn expanded_from_resolved_dict_path(
+        &mut self,
+        path: SelectionPath,
+        resolved: Option<ResolvedPath>,
+    ) -> ExpandedItem {
+        let Some(resolved) = resolved else {
+            return ExpandedItem {
+                plan: SelectionItemPlan::Exact { path },
+                paths: Vec::new(),
+                dynamic: false,
+                random: false,
+                with_replacement: false,
+                zero_random: false,
+                target_types: Vec::new(),
+            };
+        };
+        ExpandedItem {
+            plan: SelectionItemPlan::Exact {
+                path: resolved.path.clone(),
+            },
+            paths: vec![resolved.path],
+            dynamic: resolved.dynamic,
+            random: false,
+            with_replacement: false,
+            zero_random: false,
+            target_types: vec![resolved.ty],
         }
     }
 
@@ -1255,6 +1435,22 @@ fn static_index_length(source: &Type) -> Option<usize> {
     }
 }
 
+/// 返回字典直接值的共同类型；异构值保守退化为 dynamic。
+fn dictionary_common_value_type(dictionary: &DictType) -> Type {
+    let Some(first) = dictionary.entries.first() else {
+        return Type::Dynamic;
+    };
+    if dictionary
+        .entries
+        .iter()
+        .all(|entry| entry.value.as_ref() == first.value.as_ref())
+    {
+        first.value.as_ref().clone()
+    } else {
+        Type::Dynamic
+    }
+}
+
 /// 返回单个动态表达式下标的保守结果类型。
 fn dynamic_index_result_type(source: &Type) -> Type {
     match source {
@@ -1270,19 +1466,8 @@ fn dynamic_index_result_type(source: &Type) -> Type {
                 Type::Dynamic
             }
         }
-        Type::DictColumn(dictionary) => {
-            let Some(first) = dictionary.entries.first() else {
-                return Type::Dynamic;
-            };
-            if dictionary
-                .entries
-                .iter()
-                .all(|entry| entry.value.as_ref() == first.value.as_ref())
-            {
-                first.value.as_ref().clone()
-            } else {
-                Type::Dynamic
-            }
+        Type::DictTable(dictionary) | Type::DictColumn(dictionary) => {
+            dictionary_common_value_type(dictionary)
         }
         Type::Dynamic | Type::Variable(_) => Type::Dynamic,
         _ => Type::Dynamic,

@@ -29,8 +29,10 @@ cargo run --quiet --manifest-path "$benchmark_manifest" --bin performance_driver
 printf '\n-- xiao-driver cargo test --no-fail-fast --\n'
 cargo test --manifest-path "$cargo_manifest" -p xiao-driver --no-fail-fast
 printf '\n-- bun test --\n'
-bun test
+bun_status=0
+bun test || bun_status=$?
 printf '\n-- Bun REPL flake-sensitive tests (isolated rerun) --\n'
+repl_status=0
 for repl_case in \
   "确认后调用完整源码并恢复覆盖模式、剪贴板和光标|cli/ts/src/repl/multiline.test.ts" \
   "Ctrl\\+D|cli/ts/src/repl/session.test.ts"; do
@@ -45,6 +47,9 @@ for repl_case in \
     printf 'REPL 用例隔离重试：%s（第 %s 次）\n' "$pattern" "$attempt"
   done
   if [ "$passed" -ne 1 ]; then
-    exit 1
+    repl_status=1
   fi
 done
+if [ "$bun_status" -ne 0 ] || [ "$repl_status" -ne 0 ]; then
+  exit 1
+fi

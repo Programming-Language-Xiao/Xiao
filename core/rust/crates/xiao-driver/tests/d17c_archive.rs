@@ -180,6 +180,11 @@ fn direct_xiaoc_run_loads_standard_library_modules() {
             "from stdlib.text import split\nfor part in split(\"a,,b,\", \",\")\n    print(part)\n",
             "a\n\nb\n\n",
         ),
+        (
+            "dynamic-dict-key",
+            "values = {name = 10}\nkey = \"name\"\nprint(values[key])\n",
+            "10\n",
+        ),
     ];
     for (module, source, expected) in cases {
         let path = std::env::temp_dir().join(format!(
@@ -273,6 +278,30 @@ fn archive_run_supports_text_split() {
         .filter_map(|event| event.data.get("text").and_then(serde_json::Value::as_str))
         .collect::<String>();
     assert_eq!(output, "a\n\nb\n\n");
+}
+
+#[test]
+/// 归档入口复用字典动态键的 VM/Runtime 读取语义。
+fn archive_run_supports_dynamic_dict_key() {
+    let archive = archive_for("values = {name = 10}\nkey = \"name\"\nprint(values[key])\n");
+    let outcome = run_archive(
+        &archive,
+        XarRunOptions {
+            runtime_abi: ABI_ENCODED_VERSION,
+            ..Default::default()
+        },
+    )
+    .expect("含字典动态键的归档应成功运行");
+    assert!(outcome.result.is_success(), "{:?}", outcome.result);
+    let output = outcome
+        .events
+        .iter()
+        .filter_map(|event| match event {
+            xiao_vm::VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+            _ => None,
+        })
+        .collect::<String>();
+    assert_eq!(output, "10\n");
 }
 
 #[test]

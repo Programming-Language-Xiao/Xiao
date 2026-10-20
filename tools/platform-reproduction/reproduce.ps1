@@ -62,6 +62,13 @@ function Initialize-MsvcEnvironment {
         throw "MSVC environment script was not found: $vcvars"
     }
     Import-EnvironmentFromBatch $vcvars
+    $linkerBin = Join-Path $env:VCToolsInstallDir 'bin\Hostx64\x64'
+    $msvcLinker = Join-Path $linkerBin 'link.exe'
+    if (-not (Test-Path -LiteralPath $msvcLinker -PathType Leaf)) {
+        throw "MSVC linker was not found: $msvcLinker"
+    }
+    # Git for Windows also ships link.exe; MSVC must win PATH resolution.
+    $env:PATH = "$linkerBin;$env:PATH"
 }
 
 function Write-Utf8NoBom {

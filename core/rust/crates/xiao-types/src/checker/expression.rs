@@ -11,6 +11,7 @@ use xiao_syntax::{
     UnaryOperator,
 };
 
+use crate::containers::ArrayType;
 use crate::conversion::{ConversionKind, can_assign, classify_conversion, is_numeric};
 use crate::diagnostics::*;
 use crate::numeric::{
@@ -742,7 +743,69 @@ impl<'source> TypeChecker<'source> {
                 );
             }
         }
+        self.invalidate_array_length_after_mutation(&arguments[0].value);
         Type::None
+    }
+
+    /// 数组被原地修改后，绑定上的固定长度不再可靠；保留元素类型供后续检查使用。
+    pub(super) fn invalidate_array_length_after_mutation(&mut self, expression: &Expression) {
+        let Expression::Name(name) = expression else {
+            return;
+        };
+        let key = self.name_key(*name);
+        let keys = self
+            .array_aliases
+            .get(&key)
+            .cloned()
+            .unwrap_or_else(|| std::iter::once(key.clone()).collect());
+        for key in keys {
+            self.invalidate_array_binding(&key);
+        }
+    }
+
+    /// 记录一次名称到名称的数组别名关系。
+    pub(super) fn register_array_alias(
+        &mut self,
+        target: xiao_syntax::Name,
+        value: &Expression,
+        value_type: &Type,
+    ) {
+        if !matches!(value_type, Type::Array(_)) {
+            return;
+        }
+        let Expression::Name(source) = value else {
+            return;
+        };
+        let target = self.name_key(target);
+        let source = self.name_key(*source);
+        let mut aliases = self
+            .array_aliases
+            .get(&target)
+            .cloned()
+            .or_else(|| self.array_aliases.get(&source).cloned())
+            .unwrap_or_default();
+        aliases.insert(target.clone());
+        aliases.insert(source.clone());
+        for alias in aliases.iter() {
+            self.array_aliases.insert(alias.clone(), aliases.clone());
+        }
+    }
+
+    /// 将一个数组绑定的固定长度改为未知。
+    fn invalidate_array_binding(&mut self, key: &str) {
+        let Some(current) = self
+            .environment
+            .lookup(key)
+            .map(|binding| self.context.apply(&binding.scheme.ty))
+        else {
+            return;
+        };
+        let Some(updated) = unknown_array_length(&current) else {
+            return;
+        };
+        if let Some(binding) = self.environment.lookup_mut(key) {
+            binding.scheme.ty = updated;
+        }
     }
 
     /// 检查首批资源 intrinsic 的静态参数和返回种类。
@@ -955,7 +1018,13 @@ impl<'source> TypeChecker<'source> {
         let callee_type = self.check_expression(callee);
         let argument_types = arguments
             .iter()
-            .map(|argument| self.check_expression(&argument.value))
+            .map(|argument| {
+                let ty = self.check_expression(&argument.value);
+                if matches!(ty, Type::Array(_)) {
+                    self.invalidate_array_length_after_mutation(&argument.value);
+                }
+                ty
+            })
             .collect::<Vec<_>>();
         if let Type::Function {
             parameters,
@@ -1054,4 +1123,24 @@ impl<'source> TypeChecker<'source> {
             }
         }
     }
+}
+
+/// 把数组的长度擦除为未知，同时尽量保留元素类型约束。
+fn unknown_array_length(ty: &Type) -> Option<Type> {
+    let Type::Array(array) = ty else {
+        return None;
+    };
+    let array = match array {
+        ArrayType::Homogeneous { element, .. } => ArrayType::homogeneous((**element).clone()),
+        ArrayType::Heterogeneous { elements } => {
+            let element = elements
+                .first()
+                .filter(|first| elements.iter().all(|item| item == *first))
+                .cloned()
+                .unwrap_or(Type::Dynamic);
+            ArrayType::homogeneous(element)
+        }
+        ArrayType::Unknown => ArrayType::Unknown,
+    };
+    Some(Type::Array(array))
 }

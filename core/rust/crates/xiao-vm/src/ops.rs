@@ -179,8 +179,18 @@ pub fn index_get_dynamic(
     source: &RuntimeValue,
     index: &RuntimeValue,
 ) -> RuntimeResult<RuntimeValue> {
+    if let RuntimeValue::Str(key) = index {
+        let key = key.to_string()?;
+        return index_step(source, &PathStep::Key(key));
+    }
     let raw = integer_index(index)?;
-    index_step(source, &PathStep::Index(raw))
+    index_step(source, &PathStep::Index(raw)).map_err(|error| {
+        if error.code() == xiao_runtime::CONTAINER_INDEX_CODE {
+            RuntimeError::selector_bounds(format!("选择器索引 {raw} 超出运行时边界"))
+        } else {
+            error
+        }
+    })
 }
 
 /// 从 Runtime 值读取动态索引整数。
@@ -223,7 +233,9 @@ fn index_step(source: &RuntimeValue, step: &PathStep) -> RuntimeResult<RuntimeVa
         }
         (RuntimeValue::Str(handle), PathStep::Index(raw)) => {
             let length = handle.len();
-            let index = resolve_index(*raw, length, "str")?;
+            let index = xiao_types::normalize_index(*raw, length).ok_or_else(|| {
+                RuntimeError::selector_bounds(format!("字符串选择器索引 {raw} 超出长度 {length}"))
+            })?;
             let text = handle.with_str(|text| text.chars().nth(index))?;
             match text {
                 Some(character) => RuntimeValue::new_string(character.to_string()),
@@ -1391,6 +1403,17 @@ mod tests {
         assert_eq!(
             index_get_dynamic(&column, &RuntimeValue::Int(0)),
             Ok(RuntimeValue::Int(8))
+        );
+        let key = RuntimeValue::new_string("first").expect("键应分配");
+        assert_eq!(
+            index_get_dynamic(&table, &key),
+            Ok(RuntimeValue::Int(6)),
+            "字典动态字符串键应按键读取"
+        );
+        assert_eq!(
+            index_get_dynamic(&column, &key),
+            Ok(RuntimeValue::Int(8)),
+            "字典列动态字符串键应按键读取"
         );
     }
 

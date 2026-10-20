@@ -532,6 +532,9 @@ impl<'source> TypeChecker<'source> {
         }
         for argument in arguments {
             let actual = self.check_expression(&argument.value);
+            if matches!(actual, Type::Array(_)) {
+                self.invalidate_array_length_after_mutation(&argument.value);
+            }
             match argument.kind {
                 CallArgumentKind::Positional => {
                     if saw_keyword {

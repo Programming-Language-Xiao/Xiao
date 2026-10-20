@@ -527,6 +527,16 @@ mod tests {
         assert_eq!(print.signature.return_type, ValueType::None);
     }
     #[test]
+    fn array_push_contract_is_active_and_bound_on_both_paths() {
+        let push = by_name("array_push").expect("array_push 声明");
+        assert_eq!(push.id, IntrinsicId::new_unchecked(31));
+        assert_eq!(push.vm_binding, VmBinding::ArrayPush);
+        assert_eq!(push.abi_binding, AbiBinding::ArrayPush);
+        assert_eq!(push.signature.arity, Arity::Two);
+        assert_eq!(push.signature.parameter, ValueType::ArrayElement);
+        assert_eq!(push.signature.return_type, ValueType::None);
+    }
+    #[test]
     fn capability_bits_cover_standard_streams_and_reject_unknown_bits() {
         assert_eq!(Capability::Stdout.bit(), Some(CAPABILITY_STDOUT));
         assert_eq!(Capability::Stdin.bit(), Some(CAPABILITY_STDIN));

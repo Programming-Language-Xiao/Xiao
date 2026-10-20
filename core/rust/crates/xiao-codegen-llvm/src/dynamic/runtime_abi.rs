@@ -215,6 +215,8 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert("declare i32 @xiao_runtime_value_iter_get(ptr, i64, ptr)".to_owned());
         self.declarations
+            .insert("declare i32 @xiao_runtime_value_index_get_dynamic(ptr, ptr, ptr)".to_owned());
+        self.declarations
             .insert("declare i32 @xiao_runtime_value_select(ptr, i64, ptr, ptr)".to_owned());
         self.declarations.insert(self.value_declaration(
             "xiao_runtime_error_new",
@@ -577,6 +579,35 @@ impl<'a> DynamicGenerator<'a> {
         ));
         self.checked_status_call_at(
             format!("@xiao_runtime_value_iter_get(ptr {input}, i64 {index}, ptr {output})"),
+            span,
+        );
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
+        result
+    }
+
+    /// 发射动态整数位置/字典键读取。
+    pub(super) fn emit_dynamic_index_get(
+        &mut self,
+        value: &str,
+        index: &str,
+        span: IrSpan,
+    ) -> String {
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let index_input = self.next_temp();
+        self.emit(format!("  {index_input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {index}, ptr {index_input}"));
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        self.checked_status_call_at(
+            format!(
+                "@xiao_runtime_value_index_get_dynamic(ptr {input}, ptr {index_input}, ptr {output})"
+            ),
             span,
         );
         let result = self.next_temp();

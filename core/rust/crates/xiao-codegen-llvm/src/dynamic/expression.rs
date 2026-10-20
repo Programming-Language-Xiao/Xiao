@@ -329,12 +329,25 @@ impl<'a> DynamicGenerator<'a> {
                     expression: index, ..
                 } => {
                     let index_value = self.emit_expression(index)?;
-                    let index_value = self.emit_cast_runtime("int", &index_value, index.span);
-                    let payload = self.next_temp();
-                    self.emit(format!(
-                        "  {payload} = extractvalue {VALUE_TYPE} {index_value}, 1"
-                    ));
-                    let selected = self.emit_iter_get(&value, &payload, span);
+                    let dynamic_source = matches!(
+                        source.ty,
+                        IrType::DictTable { .. }
+                            | IrType::DictColumn { .. }
+                            | IrType::Dynamic
+                            | IrType::Variable { .. }
+                    );
+                    let selected = if dynamic_source {
+                        self.emit_dynamic_index_get(&value, &index_value, span)
+                    } else {
+                        let index_value = self.emit_cast_runtime("int", &index_value, index.span);
+                        let payload = self.next_temp();
+                        self.emit(format!(
+                            "  {payload} = extractvalue {VALUE_TYPE} {index_value}, 1"
+                        ));
+                        let selected = self.emit_iter_get(&value, &payload, span);
+                        self.release_value(index_value);
+                        selected
+                    };
                     self.release_value(index_value);
                     self.release_value(value);
                     return Ok(selected);

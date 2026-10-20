@@ -127,6 +127,7 @@ impl<'source> TypeChecker<'source> {
         let imported_function = self.imported_function_signature(value);
         let imported_module = self.imported_namespace_path(value);
         let value_type = self.check_expression(value);
+        self.register_array_alias(target, value, &value_type);
         let key = self.name_key(target);
         if let Some(binding) = self.environment.lookup(&key).cloned() {
             let existing_type = self.context.instantiate(binding.scheme());

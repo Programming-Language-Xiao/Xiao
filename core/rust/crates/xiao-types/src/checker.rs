@@ -96,6 +96,8 @@ pub struct TypeChecker<'source> {
     broadcast_assignment_plans: Vec<crate::selection_model::BroadcastAssignmentPlan>,
     random_seed_plans: Vec<crate::selection_model::RandomSeedPlan>,
     constant_values: BTreeMap<String, ConstantValue>,
+    /// 已知数组别名组；原地追加时一起擦除固定长度。
+    array_aliases: BTreeMap<String, BTreeSet<String>>,
     function_signatures: BTreeMap<String, FunctionSignature>,
     table_signatures: BTreeMap<String, crate::tables::TableSignature>,
     current_table: Option<TableFrame>,
@@ -134,6 +136,7 @@ impl<'source> TypeChecker<'source> {
             broadcast_assignment_plans: Vec::new(),
             random_seed_plans: Vec::new(),
             constant_values: BTreeMap::new(),
+            array_aliases: BTreeMap::new(),
             function_signatures: BTreeMap::new(),
             table_signatures: BTreeMap::new(),
             current_table: None,
