@@ -51,6 +51,26 @@ fn dictionary_methods_link_without_explicit_import() {
 }
 
 #[test]
+/// 外部标准库模式下，字典方法通过模块加载器复用自由函数实现。
+fn external_standard_library_methods_use_module_loader() {
+    let base = xiao_driver::FrontendContext::host();
+    let context = xiao_driver::FrontendContext {
+        external_standard_library: true,
+        ..base
+    };
+    let request = FrontendRequest::from_text(
+        "values = {name = 1}\nvalues.set(\"name\", 2)\nprint(values.get(\"name\"))\n",
+    )
+    .with_context(context);
+    let artifact = FrontendCompiler::new()
+        .compile(&request)
+        .expect("外部标准库字典方法前端应通过");
+    let outcome = FrontendVmDriver::new().run_artifact(&artifact, &DriverRequest::new(request));
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), "2\n");
+}
+
+#[test]
 /// 方法更新和删除通过别名共享句柄并保留 015 缺失键身份。
 fn dictionary_methods_preserve_aliases_and_missing_key_015() {
     let outcome = run(
