@@ -73,6 +73,13 @@ pub const SET_METHOD_VALUE_CODE: &str = "X03-TYPE-025";
 /// 静态集合上不存在指定方法。
 pub const SET_METHOD_UNKNOWN_CODE: &str = "X03-TYPE-026";
 
+/// 字典方法接收者不是静态字典。
+pub const DICT_METHOD_RECEIVER_CODE: &str = "X03-TYPE-027";
+/// 字典方法只能以直接调用形式出现。
+pub const DICT_METHOD_VALUE_CODE: &str = "X03-TYPE-028";
+/// 静态字典上不存在指定方法。
+pub const DICT_METHOD_UNKNOWN_CODE: &str = "X03-TYPE-029";
+
 /// 函数名称重复或函数声明无法登记。
 pub const FUNCTION_DECLARATION_CODE: &str = "X04-TYPE-001";
 /// 函数调用参数与签名不匹配。

@@ -101,6 +101,20 @@ def get(dict<str, int> values, str key) -> int
 官方 `stdlib.dict` 提供 `get`、`set`、`remove`、`contains`、`keys`、`values` 六个自由函数。
 `remove` 的缺失键同样报告 015；`keys` 和 `values` 返回新数组并保持对应迭代顺序。
 
+字典表和字典列也支持直接方法调用，方法与自由函数等价：
+
+```xiao
+values = {name = 1}
+values.set("name", 2)
+print(values.get("name"))
+print(values.size())
+print(values.is_empty())
+```
+
+方法面包括 `get`、`set`、`remove`、`contains`、`keys`、`values`、`size`、`is_empty`。
+方法键参数固定为 `str`；字典列的数值位置继续使用 `column[i]`。动态接收者、方法值和
+未知方法分别报告 `X03-TYPE-027`、`X03-TYPE-028`、`X03-TYPE-029`。
+
 ## 键名与 Unicode
 
 需要 Unicode 的键或名称可以使用反引号：

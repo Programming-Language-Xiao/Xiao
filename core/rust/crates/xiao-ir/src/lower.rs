@@ -697,6 +697,7 @@ impl<'a> Lowerer<'a> {
 }
 
 /// 识别标准库源码使用的字典查询私有入口。
+/// 将标准库字典私有入口名称映射为稳定的 IR 操作名称。
 fn private_dict_builtin_name(name: &str) -> Option<&'static str> {
     match name {
         "__dict_remove" => Some("remove"),

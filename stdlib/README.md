@@ -11,7 +11,7 @@
 - 本目录不放预编译发布对象、`.xar` 字段或普通包配置；预编译对象只允许作为本地构建缓存。
 - 每个新增 `.xiao` 模块必须在本目录登记 README、UseDocs、DevDocs 阶段索引和兼容元数据，并由仓库检查器校验路径登记。
 - `dict` 模块提供 `get`、`set`、`remove`、`contains`、`keys`、`values` 六个自由函数，动态缺失键保持
-  `X06-RUNTIME-015`，不支持新增键。
+  `X06-RUNTIME-015`，不支持新增键；20L 同时提供八个等价的静态字典方法。
 
 `stdlib.xiao-standard-library` 的 registry 条目是工具链骨架登记，维持 `draft`；它不适用
 `verified` 状态。可交付模块的状态只登记在 `stdlib.xiao-standard-library-first-modules`。

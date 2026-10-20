@@ -215,6 +215,14 @@ const SET_METHOD_NAMES: [&str; 8] = [
 /// 方法静态链接发生顶层同名函数冲突时使用的内部标准库函数前缀。
 const SET_METHOD_FUNCTION_PREFIX: &str = "__xiao_stdlib_set_";
 
+/// 字典方法静态链接使用的内部标准库函数前缀。
+const DICT_METHOD_FUNCTION_PREFIX: &str = "__xiao_stdlib_dict_";
+
+/// 字典方法的规范名称。
+const DICT_METHOD_NAMES: [&str; 8] = [
+    "get", "set", "remove", "contains", "keys", "values", "size", "is_empty",
+];
+
 /// 只重命名标准库源码中的标识符，不触碰字符串、注释和反引号名称。
 ///
 /// 方法调用没有显式导入绑定，因此需要把 `stdlib.set` 的函数体接入入口 IR。
@@ -282,6 +290,74 @@ fn rename_set_module_functions(source: &str) -> String {
         }
         if SET_METHOD_NAMES.contains(&identifier.as_str()) {
             output.push_str(SET_METHOD_FUNCTION_PREFIX);
+        }
+        output.push_str(&identifier);
+    }
+    output
+}
+
+/// 为静态链接隔离 `stdlib.dict` 的自由函数名称。
+/// 为静态链接隔离 `stdlib.dict` 的公开函数名称。
+fn rename_dict_module_functions(source: &str) -> String {
+    fn is_identifier_start(character: char) -> bool {
+        character == '_' || character.is_ascii_alphabetic()
+    }
+    fn is_identifier_continue(character: char) -> bool {
+        character == '_' || character.is_ascii_alphanumeric()
+    }
+    let mut output = String::with_capacity(source.len() + 8 * DICT_METHOD_FUNCTION_PREFIX.len());
+    let mut characters = source.char_indices().peekable();
+    while let Some((_, character)) = characters.next() {
+        if character == '"' || character == '\'' {
+            let quote = character;
+            output.push(character);
+            let mut escaped = false;
+            for (_, next) in characters.by_ref() {
+                output.push(next);
+                if escaped {
+                    escaped = false;
+                } else if next == '\\' {
+                    escaped = true;
+                } else if next == quote {
+                    break;
+                }
+            }
+            continue;
+        }
+        if character == '#' {
+            output.push(character);
+            for (_, next) in characters.by_ref() {
+                output.push(next);
+                if next == '\n' {
+                    break;
+                }
+            }
+            continue;
+        }
+        if character == '`' {
+            output.push(character);
+            for (_, next) in characters.by_ref() {
+                output.push(next);
+                if next == '`' {
+                    break;
+                }
+            }
+            continue;
+        }
+        if !is_identifier_start(character) {
+            output.push(character);
+            continue;
+        }
+        let mut identifier = String::from(character);
+        while let Some((_, next)) = characters.peek().copied() {
+            if !is_identifier_continue(next) {
+                break;
+            }
+            characters.next();
+            identifier.push(next);
+        }
+        if DICT_METHOD_NAMES.contains(&identifier.as_str()) {
+            output.push_str(DICT_METHOD_FUNCTION_PREFIX);
         }
         output.push_str(&identifier);
     }
@@ -461,6 +537,164 @@ fn program_uses_typed_set_method(
     types: &TypeCheckResult,
 ) -> bool {
     statements_use_set_method(&program.statements, source, Some(types))
+}
+
+/// 判断表达式树中是否出现静态字典方法调用。
+/// 判断表达式树是否包含字典方法调用。
+fn expression_uses_dict_method(
+    expression: &Expression,
+    source: &SourceFile,
+    types: Option<&TypeCheckResult>,
+) -> bool {
+    match expression {
+        Expression::Call {
+            callee, arguments, ..
+        } => {
+            let direct = match callee.as_ref() {
+                Expression::Member { object, member, .. }
+                    if !member.backticked
+                        && DICT_METHOD_NAMES.contains(&member.unquoted_text(source)) =>
+                {
+                    types.is_none_or(|types| {
+                        types.type_at(object.span()).is_some_and(|ty| {
+                            matches!(ty, Type::DictTable(_) | Type::DictColumn(_))
+                        })
+                    })
+                }
+                _ => false,
+            };
+            direct
+                || expression_uses_dict_method(callee, source, types)
+                || arguments
+                    .iter()
+                    .any(|argument| expression_uses_dict_method(&argument.value, source, types))
+        }
+        Expression::ArrayLiteral { elements, .. }
+        | Expression::TupleLiteral { elements, .. }
+        | Expression::SetLiteral { elements, .. } => elements
+            .iter()
+            .any(|element| expression_uses_dict_method(element, source, types)),
+        Expression::DictTableLiteral { entries, .. }
+        | Expression::DictColumnLiteral { entries, .. } => entries
+            .iter()
+            .any(|entry| expression_uses_dict_method(&entry.value, source, types)),
+        Expression::Group { expression, .. }
+        | Expression::Cast { expression, .. }
+        | Expression::Unary {
+            operand: expression,
+            ..
+        } => expression_uses_dict_method(expression, source, types),
+        Expression::Binary { left, right, .. } => {
+            expression_uses_dict_method(left, source, types)
+                || expression_uses_dict_method(right, source, types)
+        }
+        Expression::Member { object, .. } => expression_uses_dict_method(object, source, types),
+        Expression::Selector {
+            source: source_expression,
+            step,
+            ..
+        } => {
+            expression_uses_dict_method(source_expression, source, types)
+                || step
+                    .as_deref()
+                    .is_some_and(|step| expression_uses_dict_method(step, source, types))
+        }
+        Expression::Literal { .. } | Expression::Name(_) => false,
+        Expression::NewCall { arguments, .. } => arguments
+            .iter()
+            .any(|argument| expression_uses_dict_method(&argument.value, source, types)),
+    }
+}
+
+/// 递归判断语句列表中是否出现静态字典方法调用。
+/// 递归判断语句列表是否包含字典方法调用。
+fn statements_use_dict_method(
+    statements: &[Statement],
+    source: &SourceFile,
+    types: Option<&TypeCheckResult>,
+) -> bool {
+    statements.iter().any(|statement| match statement {
+        Statement::Expression { expression, .. }
+        | Statement::Assignment {
+            value: expression, ..
+        }
+        | Statement::ConstDeclaration {
+            value: expression, ..
+        } => expression_uses_dict_method(expression, source, types),
+        Statement::Declaration { value, .. } => value
+            .as_ref()
+            .is_some_and(|value| expression_uses_dict_method(value, source, types)),
+        Statement::ExtendedAssignment { target, value, .. } => {
+            expression_uses_dict_method(target, source, types)
+                || expression_uses_dict_method(value, source, types)
+        }
+        Statement::Table { body, .. } => statements_use_dict_method(body, source, types),
+        Statement::Function {
+            body, parameters, ..
+        } => {
+            parameters.iter().any(|parameter| {
+                parameter
+                    .default
+                    .as_ref()
+                    .is_some_and(|default| expression_uses_dict_method(default, source, types))
+            }) || statements_use_dict_method(body, source, types)
+        }
+        Statement::If {
+            condition,
+            body,
+            elif_branches,
+            else_body,
+            ..
+        } => {
+            expression_uses_dict_method(condition, source, types)
+                || statements_use_dict_method(body, source, types)
+                || elif_branches.iter().any(|branch| {
+                    expression_uses_dict_method(&branch.condition, source, types)
+                        || statements_use_dict_method(&branch.body, source, types)
+                })
+                || else_body
+                    .as_deref()
+                    .is_some_and(|body| statements_use_dict_method(body, source, types))
+        }
+        Statement::For { iterable, body, .. }
+        | Statement::While {
+            condition: iterable,
+            body,
+            ..
+        } => {
+            expression_uses_dict_method(iterable, source, types)
+                || statements_use_dict_method(body, source, types)
+        }
+        Statement::Return { value, .. } => value
+            .as_ref()
+            .is_some_and(|value| expression_uses_dict_method(value, source, types)),
+        Statement::Raise { value, .. } => expression_uses_dict_method(value, source, types),
+        Statement::Try {
+            body,
+            catches,
+            finally_body,
+            ..
+        } => {
+            statements_use_dict_method(body, source, types)
+                || catches
+                    .iter()
+                    .any(|catch| statements_use_dict_method(&catch.body, source, types))
+                || finally_body
+                    .as_deref()
+                    .is_some_and(|body| statements_use_dict_method(body, source, types))
+        }
+        Statement::Import { .. } | Statement::Break { .. } | Statement::Continue { .. } => false,
+    })
+}
+
+/// 类型检查完成后判断是否需要静态链接 `stdlib.dict` 方法实现。
+/// 判断类型检查结果中的字典方法是否需要静态链接。
+fn program_uses_typed_dict_method(
+    program: &Program,
+    source: &SourceFile,
+    types: &TypeCheckResult,
+) -> bool {
+    statements_use_dict_method(&program.statements, source, Some(types))
 }
 
 /// 从规范标准库源码提取完整注解的函数接口；不执行模块，跨模块类型变量使用
@@ -701,6 +935,32 @@ fn plan_typed_set_method_link(
     plan.sources.insert(identity, module_source);
 }
 
+/// 在类型结果确认接收者为字典后，补入隐式 `stdlib.dict` 静态链接。
+/// 将类型确认过的字典方法实现加入标准库静态链接计划。
+fn plan_typed_dict_method_link(
+    plan: &mut StandardLinkPlan,
+    program: &Program,
+    source: &SourceFile,
+    standard: &ProjectModuleResult,
+    types: &TypeCheckResult,
+) {
+    if !program_uses_typed_dict_method(program, source, types) {
+        return;
+    }
+    let Some(record) = standard
+        .modules
+        .get(&ModuleName::new(vec!["dict".to_owned()]))
+    else {
+        return;
+    };
+    let Some(module_source) = &record.source else {
+        return;
+    };
+    let identity = ModuleName::new(vec!["dict".to_owned()]).to_string();
+    plan.sources
+        .insert(identity, rename_dict_module_functions(module_source.text()));
+}
+
 /// 在调用源码后追加被静态导入的标准库函数，并移除仅供静态分析的导入节点。
 fn link_standard_sources(source: &SourceFile, plan: &StandardLinkPlan) -> (SourceFile, Program) {
     let mut text = source.text().to_owned();
@@ -845,6 +1105,9 @@ impl FrontendCompiler {
                 .program
                 .as_ref()
                 .is_some_and(|program| program_uses_set_method(program, &request.source))
+            || parsed.program.as_ref().is_some_and(|program| {
+                statements_use_dict_method(&program.statements, &request.source, None)
+            })
             || project
                 .as_ref()
                 .is_some_and(project_imports_standard_library);
@@ -994,6 +1257,34 @@ impl FrontendCompiler {
             if let Some(standard) = &standard_library {
                 let source_count = standard_link.sources.len();
                 plan_typed_set_method_link(
+                    &mut standard_link,
+                    program,
+                    &request.source,
+                    standard,
+                    &type_result,
+                );
+                if standard_link.sources.len() != source_count {
+                    (effective_source, effective_program) =
+                        link_standard_sources(&request.source, &standard_link);
+                    let mut checker = TypeChecker::new(&effective_source);
+                    if let Some(namespaces) = namespaces {
+                        checker = checker.with_external_namespaces(namespaces.clone());
+                    }
+                    checker = checker.with_module_function_signatures(
+                        standard_module_function_signatures(standard),
+                    );
+                    type_result = checker.check_program(&effective_program);
+                }
+            }
+        }
+        let can_link_typed_dict_method = !diagnostics.iter().any(Diagnostic::is_error)
+            && !type_result.diagnostics.iter().any(Diagnostic::is_error)
+            && !request.context.external_standard_library
+            && standard_library.is_some();
+        if can_link_typed_dict_method {
+            if let Some(standard) = &standard_library {
+                let source_count = standard_link.sources.len();
+                plan_typed_dict_method_link(
                     &mut standard_link,
                     program,
                     &request.source,

@@ -24,8 +24,10 @@ use xiao_intrinsics::{AbiBinding, IntrinsicId, VmBinding, active_by_id};
 use xiao_runtime::{CatchRoute, RuntimeDriver, RuntimeValue, is_hashable};
 use xiao_source::SourceSpan;
 use xiao_syntax::ScalarType;
+/// 数组追加 intrinsic 的执行绑定。
 #[path = "array_intrinsics.rs"]
 mod array_intrinsics;
+/// 集合变更 intrinsic 的执行绑定。
 #[path = "set_intrinsics.rs"]
 mod set_intrinsics;
 /// 表生命周期回调和执行上下文适配。

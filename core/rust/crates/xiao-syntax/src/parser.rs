@@ -1994,6 +1994,7 @@ fn is_type_keyword_token(kind: TokenKind) -> bool {
         )
 }
 
+/// 判断 Token 是否为可用于声明或函数注解的标量类型关键字。
 fn is_scalar_type_token(kind: TokenKind) -> bool {
     matches!(
         kind,

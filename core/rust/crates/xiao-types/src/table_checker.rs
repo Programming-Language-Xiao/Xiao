@@ -16,7 +16,8 @@ use xiao_syntax::{
 
 use crate::containers::{ArrayType, DictType};
 use crate::diagnostics::{
-    NON_CONSTANT_CODE, SET_METHOD_RECEIVER_CODE, SET_METHOD_UNKNOWN_CODE, SET_METHOD_VALUE_CODE,
+    DICT_METHOD_RECEIVER_CODE, DICT_METHOD_UNKNOWN_CODE, DICT_METHOD_VALUE_CODE, NON_CONSTANT_CODE,
+    SET_METHOD_RECEIVER_CODE, SET_METHOD_UNKNOWN_CODE, SET_METHOD_VALUE_CODE,
     TABLE_CONSTRUCTOR_CODE, TABLE_DECLARATION_CODE, TABLE_INITIALIZER_CODE, TABLE_LIFECYCLE_CODE,
     TABLE_MEMBER_CODE, TABLE_VISIBILITY_CODE,
 };
@@ -40,9 +41,19 @@ const SET_METHOD_NAMES: [&str; 8] = [
     "difference",
 ];
 
+/// `stdlib.dict` 对外冻结的方法名称。
+const DICT_METHOD_NAMES: [&str; 8] = [
+    "get", "set", "remove", "contains", "keys", "values", "size", "is_empty",
+];
+
 /// 判断名称是否属于集合方法面；反引号名称保持普通成员语义。
 fn is_set_method_name(checker: &TypeChecker<'_>, member: Name) -> bool {
     !member.backticked && SET_METHOD_NAMES.contains(&checker.display_name(member).as_str())
+}
+
+/// 判断名称是否属于字典方法面；反引号名称保持普通成员语义。
+fn is_dict_method_name(checker: &TypeChecker<'_>, member: Name) -> bool {
+    !member.backticked && DICT_METHOD_NAMES.contains(&checker.display_name(member).as_str())
 }
 
 /// 当前正在检查的表上下文；只保存静态名称，不代表运行时对象。
@@ -617,6 +628,121 @@ impl<'source> TypeChecker<'source> {
             .cloned()
     }
 
+    /// 返回字典方法的官方函数签名。
+    /// 返回字典方法在官方标准库中的函数签名。
+    fn dict_method_signature(&self, member: Name) -> Option<FunctionSignature> {
+        if !is_dict_method_name(self, member) {
+            return None;
+        }
+        self.module_functions
+            .get("stdlib.dict")
+            .and_then(|members| members.get(&self.name_key(member)))
+            .cloned()
+    }
+
+    /// 判断类型是否为字典表或字典列。
+    /// 判断类型是否为固定形状或开放键集字典。
+    fn is_dict_type(ty: &Type) -> bool {
+        matches!(ty, Type::DictTable(_) | Type::DictColumn(_))
+    }
+
+    /// 将开放字典签名的接收者值类型与实际字典值类型统一。
+    /// 将开放字典签名的值类型与表/列接收者统一。
+    fn unify_dict_receiver(&mut self, expected: &Type, actual: &Type, span: SourceSpan) {
+        let Type::DictTable(expected_dictionary) = expected else {
+            self.unify_or_report(expected, actual, span, "x04.type.call_argument_type");
+            return;
+        };
+        let Some(expected_value) = expected_dictionary.open_value() else {
+            self.unify_or_report(expected, actual, span, "x04.type.call_argument_type");
+            return;
+        };
+        let actual_dictionary = match actual {
+            Type::DictTable(dictionary) | Type::DictColumn(dictionary) => dictionary,
+            _ => {
+                self.unify_or_report(expected, actual, span, "x04.type.call_argument_type");
+                return;
+            }
+        };
+        if let Some(actual_value) = actual_dictionary.open_value() {
+            self.unify_or_report(
+                expected_value,
+                actual_value,
+                span,
+                "x04.type.call_argument_type",
+            );
+        } else {
+            for entry in &actual_dictionary.entries {
+                self.unify_or_report(
+                    expected_value,
+                    &entry.value,
+                    span,
+                    "x04.type.call_argument_type",
+                );
+            }
+        }
+    }
+
+    /// 检查字典方法直接调用，并把接收者绑定为自由函数的第一个参数。
+    pub(super) fn check_dict_method_call(
+        &mut self,
+        callee: &Expression,
+        arguments: &[CallArgument],
+        span: SourceSpan,
+    ) -> Option<Type> {
+        let Expression::Member { object, member, .. } = callee else {
+            return None;
+        };
+        let checked_object = self.check_expression(object);
+        let object_type = self.context.apply(&checked_object);
+        if !Self::is_dict_type(&object_type)
+            && !matches!(object_type, Type::Dynamic | Type::Variable(_))
+        {
+            return None;
+        }
+        let Some(signature) = self.dict_method_signature(*member) else {
+            if Self::is_dict_type(&object_type) {
+                self.type_error(
+                    DICT_METHOD_UNKNOWN_CODE,
+                    "x03.type.dict_method_unknown",
+                    member.span,
+                    format!("字典没有方法 {}", self.display_name(*member)),
+                );
+                for argument in arguments {
+                    self.check_expression(&argument.value);
+                }
+                return Some(Type::Dynamic);
+            }
+            return None;
+        };
+        if matches!(object_type, Type::Dynamic | Type::Variable(_)) {
+            self.type_error(
+                DICT_METHOD_RECEIVER_CODE,
+                "x03.type.dict_method_requires_static_dict",
+                object.span(),
+                format!(
+                    "字典方法 {} 的接收者必须是静态字典，实际为 {}",
+                    self.display_name(*member),
+                    object_type
+                ),
+            );
+            for argument in arguments {
+                self.check_expression(&argument.value);
+            }
+            return Some(Type::Dynamic);
+        }
+        let mut signature = self.instantiate_function_signature(&signature);
+        if let Some(receiver) = signature
+            .parameters
+            .first()
+            .map(|parameter| parameter.ty.clone())
+        {
+            self.unify_dict_receiver(&receiver, &object_type, object.span());
+            signature.parameters.remove(0);
+        }
+        Some(self.check_function_arguments(&signature, arguments, span))
+    }
+
     /// 检查集合方法直接调用，并把接收者绑定为自由函数的第一个参数。
     pub(super) fn check_set_method_call(
         &mut self,
@@ -722,6 +848,44 @@ impl<'source> TypeChecker<'source> {
             return Type::Dynamic;
         }
         let object_type = self.check_expression(object);
+        if Self::is_dict_type(&self.context.apply(&object_type)) {
+            if is_dict_method_name(self, member) {
+                self.type_error(
+                    DICT_METHOD_VALUE_CODE,
+                    "x03.type.dict_method_value",
+                    member.span,
+                    format!(
+                        "字典方法 {} 只能直接调用，不能作为值使用",
+                        self.display_name(member)
+                    ),
+                );
+            } else {
+                self.type_error(
+                    DICT_METHOD_UNKNOWN_CODE,
+                    "x03.type.dict_method_unknown",
+                    member.span,
+                    format!("字典没有方法 {}", self.display_name(member)),
+                );
+            }
+            return Type::Dynamic;
+        }
+        if matches!(
+            self.context.apply(&object_type),
+            Type::Dynamic | Type::Variable(_)
+        ) && is_dict_method_name(self, member)
+        {
+            self.type_error(
+                DICT_METHOD_RECEIVER_CODE,
+                "x03.type.dict_method_requires_static_dict",
+                object.span(),
+                format!(
+                    "字典方法 {} 的接收者必须是静态字典，实际为 {}",
+                    self.display_name(member),
+                    self.context.apply(&object_type)
+                ),
+            );
+            return Type::Dynamic;
+        }
         if let Type::Set(_) = self.context.apply(&object_type) {
             if is_set_method_name(self, member) {
                 self.type_error(
@@ -813,6 +977,7 @@ impl<'source> TypeChecker<'source> {
         member_signature.ty.clone()
     }
 
+    /// 从外部包命名空间表达式恢复完整点号路径。
     fn external_namespace_path(&self, expression: &Expression) -> Option<String> {
         match expression {
             Expression::Name(name) if !name.backticked => {

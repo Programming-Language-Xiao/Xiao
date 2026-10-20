@@ -14,14 +14,22 @@ def remove<T>(dict<str, T> values, str key) -> none
     return none
 
 def contains<T>(dict<str, T> values, str key) -> bool
-    try
-        get(values, key)
-        return true
-    catch err as Error
-        return false
+    for existing in keys(values)
+        if existing == key
+            return true
+    return false
 
 def keys<T>(dict<str, T> values) -> [str]
     return __dict_keys(values)
 
 def values<T>(dict<str, T> values) -> [T]
     return __dict_values(values)
+
+def size<T>(dict<str, T> values) -> int
+    count = 0
+    for key in keys(values)
+        count = count + 1
+    return count
+
+def is_empty<T>(dict<str, T> values) -> bool
+    return size(values) == 0

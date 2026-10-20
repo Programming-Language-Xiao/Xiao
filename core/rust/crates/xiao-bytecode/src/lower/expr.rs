@@ -106,6 +106,7 @@ pub(super) fn lower(lowerer: &mut Lowerer<'_>, expression: &IrExpression) -> VRe
 }
 
 /// 降低标准库字典查询的编译器私有动作。
+/// 将标准库字典私有入口降低为字典删除或枚举 TAC 指令。
 fn lower_dict_builtin(
     lowerer: &mut Lowerer<'_>,
     operation: &str,
@@ -262,6 +263,29 @@ fn lower_selector(
         let Some(path) = lower_ir_path(path) else {
             return lower_unsupported(lowerer, "selector path", expression.span);
         };
+        if matches!(
+            source.ty,
+            IrType::Array {
+                shape: xiao_ir::IrArrayShape::Unknown
+                    | xiao_ir::IrArrayShape::Homogeneous { length: None, .. }
+            }
+        ) && let [PathStep::Index(raw)] = path.as_slice()
+            && let Ok(raw) = i64::try_from(*raw)
+        {
+            let index = lowerer.emit_constant(TacConstant::Int(raw), expression.span);
+            lowerer.emit_runtime_checks_in(expression.span, index);
+            let class = Lowerer::class_of_type(&expression.ty);
+            let register = lowerer.new_register(class, expression.span);
+            lowerer.emit(TacInstr::with_dst(
+                TacOp::IndexGetDynamic {
+                    source: source_register,
+                    index,
+                },
+                register,
+                expression.span,
+            ));
+            return register;
+        }
         lowerer.emit_runtime_checks_in(expression.span, source_register);
         let class = Lowerer::class_of_type(&expression.ty);
         let register = lowerer.new_register(class, expression.span);

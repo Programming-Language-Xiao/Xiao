@@ -721,6 +721,7 @@ impl<'source> TypeChecker<'source> {
 }
 
 impl<'source> TypeChecker<'source> {
+    /// 检查导入语句的模块、选择项与局部绑定冲突。
     fn check_import(&mut self, import: &ImportStatement) {
         match import {
             ImportStatement::Modules { imports, .. } => {

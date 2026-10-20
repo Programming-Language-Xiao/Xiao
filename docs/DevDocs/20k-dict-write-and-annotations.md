@@ -34,18 +34,18 @@
 
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
-| 20J 定向 | `20j_dynamic_dict_keys` 7、`20i_indexing_and_text` 11、`20h_set_methods` 10、`20g_set_mutation` 7、`d17c_archive` 13、`18b_build_archive` 13、`r2a_containers` 17 通过 | 读路径成立 |
-| 全工作区 | **1293 通过 / 0 失败 / 42 ignored**；Bun 298 通过 / 5 跳过 / 0 失败；`run.sh` 退出 0 | 本地主体成立 |
+| 20J/20K 定向 | `20j` 7、`20i` 13、`20k` 9、`20h` 10、`20g` 7、`d17c` 14、`18b` 13、`r2a` 17 通过 | 读写路径成立 |
+| 全工作区 | Rust workspace 全量通过；Bun 298 通过 / 5 跳过 / 0 失败；覆盖率修复后 `bun run check` 通过 | 本地主体成立 |
 | 静态键写入 | `values["name"] = 2`、字典列 `column["first"] = 2` 可运行 | 已有能力 |
-| 动态键写入 | `values[key] = 2` → `X09-BYTECODE-001: selector_bounds 未消费` | **阻断**；见 F-3 |
-| 动态位置写入 | `column[i] = 2` → 同一 `X09-BYTECODE-001` | **阻断** |
+| 动态键写入 | `values[key] = 2` 更新已有键，缺失键运行时报 015 | 已接通 |
+| 动态位置写入 | `column[i] = 2` 更新既有位置，越界运行时报 017 | 已接通 |
 | 新增键写入 | `values["new"] = 2` → `X03-TYPE-005` | 本批裁定只更新已有键 |
-| `array_push` 成员接收者 | 表字段数组 push 后读新位置仍 `X03-TYPE-004` | 20I F-1 残余 |
-| 只读调用后的数组 | `first(values); values[2]` 不再静态拒绝，运行时 `X06-RUNTIME-014` | 20I F-1/F-2 残余 |
-| 字典注解 | 函数参数/返回没有字典类型语法 | 本批新增 |
-| 字典查询接口 | 只有下标读取；无 get/set/remove/contains/keys/values | 本批新增 |
+| `array_push` 成员接收者 | 表字段数组 push 后可读新位置；只读调用仍保留静态诊断 | 已修 |
+| 只读调用后的数组 | `first(values); values[2]` 保持 `X03-TYPE-004` | 已修 |
+| 字典注解 | `dict<str,T>` 参数/返回、固定字典兼容 | 已接通 |
+| 字典查询接口 | get/set/remove/contains/keys/values/size/is_empty | 已接通 |
 | 20I/20J 推送 | 审核时 **ahead 5**，两者都未推送 | 无 CI；见 F-6 |
-| `run.sh` | 隔离重试可达并实测重试成功，但全量 Bun 失败仍直接判红 | F-4 部分修复 |
+| `run.sh` | 只识别两条已知 REPL 失败；普通 Bun 失败保持红灯，含自测入口 | 已修 |
 
 ### 1.3 本批边界
 
@@ -273,11 +273,11 @@ def values(dict<str, T> values) -> [T]
 
 ## 五点一、已实施落点
 
-- F-1/F-2：`array_push` 会擦除直接名称、名称别名、表字段数组的固定长度；已知只读函数调用保留静态长度诊断。动态失效后的字面量越界统一沿运行时 017 路径处理。
+- F-1/F-2：`array_push` 会擦除直接名称、名称别名、表字段数组和传递调用链中的固定长度；已知只读函数调用保留静态长度诊断。动态失效后的字面量越界统一沿运行时 017 路径处理。
 - F-3：新增 `IndexSetDynamic`，VM、`.xiaoc` 编解码、Runtime ABI 和 LLVM 动态降低均消费动态写入；字典缺失键为 015，字典列/数组位置越界为 017。
 - `dict<str, T>`：函数参数与返回注解已解析为开放键集字典类型，值类型支持标量、资源、`none`、数组、集合和类型参数；固定形状字典按共同值类型兼容。
-- `stdlib/dict.xiao`：已接通 `get`、`set`、`remove`、`contains`、`keys`、`values`；键和值枚举返回新数组，删除缺失键保持 015。
-- F-4：`run.sh` 保留两条 REPL 隔离重试；全量 Bun 仅在隔离重试失败时判红，已知全量抖动而隔离成功时输出明确通过说明。
+- `stdlib/dict.xiao`：已接通 `get`、`set`、`remove`、`contains`、`keys`、`values`、`size`、`is_empty`；键和值枚举返回新数组，删除缺失键保持 015。
+- F-4：`run.sh` 保留两条 REPL 隔离重试；只有全量失败项全部命中已知抖动且隔离成功时放行，普通失败保持红灯。
 
 **最小命令**：
 

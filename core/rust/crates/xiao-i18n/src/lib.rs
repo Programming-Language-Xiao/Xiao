@@ -1152,6 +1152,12 @@ pub fn builtin_renderer() -> MessageRenderer {
         ("x03.type.set_method_value", "type error: {message}"),
         ("x03.type.set_method_unknown", "type error: {message}"),
         (
+            "x03.type.dict_method_requires_static_dict",
+            "type error: {message}",
+        ),
+        ("x03.type.dict_method_value", "type error: {message}"),
+        ("x03.type.dict_method_unknown", "type error: {message}"),
+        (
             "x03.type.set_unhashable_membership",
             "type error: {message}",
         ),

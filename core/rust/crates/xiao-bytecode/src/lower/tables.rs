@@ -15,6 +15,8 @@ const RECEIVER: &str = "#table_receiver";
 
 /// 前端在顶层存在同名用户函数时给静态链接的集合函数使用的内部前缀。
 const SET_METHOD_FUNCTION_PREFIX: &str = "__xiao_stdlib_set_";
+/// 字典方法静态链接函数的内部名称前缀。
+const DICT_METHOD_FUNCTION_PREFIX: &str = "__xiao_stdlib_dict_";
 
 impl Lowerer<'_> {
     /// 保持顶层编号后，按源码顺序预登记全部表辅助函数和方法。
@@ -209,6 +211,81 @@ impl Lowerer<'_> {
                 TacOp::ImportModule {
                     module: "stdlib.set".to_owned(),
                     binding_module: "stdlib.set".to_owned(),
+                },
+                module,
+                expression.span,
+            ));
+            let callee = self.new_register(RegisterClass::Dynamic, expression.span);
+            self.emit(TacInstr::with_dst(
+                TacOp::MemberGet {
+                    object: module,
+                    member: super::name_key(&member.text, member.backticked),
+                },
+                callee,
+                expression.span,
+            ));
+            let mut bound = vec![TacArgument::positional(receiver)];
+            bound.extend(arguments.iter().map(|argument| {
+                let value = self.lower_expression(&argument.value);
+                match &argument.name {
+                    Some(name) => TacArgument::keyword(name.text.clone(), value),
+                    None => TacArgument::positional(value),
+                }
+            }));
+            let register = self.new_register(Self::class_of_type(&expression.ty), expression.span);
+            self.emit(TacInstr::with_dst(
+                TacOp::CallDynamic {
+                    callee,
+                    arguments: bound,
+                },
+                register,
+                expression.span,
+            ));
+            return Some(register);
+        }
+        if matches!(
+            object.ty,
+            IrType::DictTable { .. } | IrType::DictColumn { .. }
+        ) && !member.backticked
+            && matches!(
+                member.text.as_str(),
+                "get" | "set" | "remove" | "contains" | "keys" | "values" | "size" | "is_empty"
+            )
+        {
+            let internal_name = format!("{DICT_METHOD_FUNCTION_PREFIX}{}", member.text);
+            if let Some(callee) = self
+                .function_index(&internal_name)
+                .or_else(|| self.function_index(&member.text))
+            {
+                let receiver = self.lower_expression(object);
+                let mut bound = vec![TacArgument::positional(receiver)];
+                bound.extend(arguments.iter().map(|argument| {
+                    let value = self.lower_expression(&argument.value);
+                    match &argument.name {
+                        Some(name) => TacArgument::keyword(name.text.clone(), value),
+                        None => TacArgument::positional(value),
+                    }
+                }));
+                let signature = self.signature_of_function(callee)?;
+                let register =
+                    self.new_register(Self::class_of_type(&expression.ty), expression.span);
+                self.emit(TacInstr::with_dst(
+                    TacOp::Call {
+                        callee,
+                        signature,
+                        arguments: bound,
+                    },
+                    register,
+                    expression.span,
+                ));
+                return Some(register);
+            }
+            let receiver = self.lower_expression(object);
+            let module = self.new_register(RegisterClass::ObjHandle, expression.span);
+            self.emit(TacInstr::with_dst(
+                TacOp::ImportModule {
+                    module: "stdlib.dict".to_owned(),
+                    binding_module: "stdlib.dict".to_owned(),
                 },
                 module,
                 expression.span,

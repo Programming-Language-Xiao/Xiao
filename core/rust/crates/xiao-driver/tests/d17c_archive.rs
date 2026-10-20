@@ -345,6 +345,25 @@ fn artifacts_run_supports_dynamic_dict_write() {
 }
 
 #[test]
+/// `.xar` 运行字典方法式调用并复用标准库自由函数实现。
+fn archive_run_supports_dict_methods() {
+    let archive =
+        archive_for("values = {name = 1}\nvalues.set(\"name\", 2)\nprint(values.get(\"name\"))\n");
+    let outcome = run_archive(
+        &archive,
+        XarRunOptions {
+            runtime_abi: ABI_ENCODED_VERSION,
+            ..Default::default()
+        },
+    )
+    .expect("字典方法归档应成功运行");
+    assert!(outcome.result.is_success(), "{:?}", outcome.result);
+    assert!(outcome.events.iter().any(|event| {
+        matches!(event, xiao_vm::VmEvent::IntrinsicOutput { text } if text == "2\n")
+    }));
+}
+
+#[test]
 fn invalid_archive_produces_no_execution_events() {
     let mut archive = archive_for("print(\"must not run\")\n");
     let marker = b"objects/xiaoc/";

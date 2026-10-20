@@ -995,6 +995,7 @@ fn remap_registers(op: &mut TacOp, remap: &BTreeMap<VReg, VReg>) {
     }
 }
 
+/// 判断两个常量在浮点位级语义下是否相等。
 fn constants_equal(left: &TacConstant, right: &TacConstant) -> bool {
     match (left, right) {
         (TacConstant::Float(left), TacConstant::Float(right)) => left.to_bits() == right.to_bits(),

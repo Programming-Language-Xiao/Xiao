@@ -330,18 +330,45 @@ impl<'source> TypeChecker<'source> {
             );
             return;
         };
-        let Expression::Name(name) = source.as_ref() else {
-            self.selector_error(
-                SELECTOR_ASSIGNMENT_CODE,
-                "x03.type.selector_assignment_root",
-                source.span(),
-                "选择器写入目前只支持直接名称作为根容器".to_string(),
-            );
-            return;
-        };
-        let key = self.name_key(*name);
-        let Some(binding) = self.environment.lookup(&key).cloned() else {
-            return;
+        let (binding, root_name, binding_key) = match source.as_ref() {
+            Expression::Name(name) => {
+                let key = self.name_key(*name);
+                let Some(binding) = self.environment.lookup(&key).cloned() else {
+                    return;
+                };
+                (
+                    Some(binding),
+                    Some(name.unquoted_text(self.source()).to_owned()),
+                    Some(key),
+                )
+            }
+            Expression::Member { .. } => {
+                let source_type = self
+                    .nodes
+                    .iter()
+                    .rev()
+                    .find(|node| node.span == source.span())
+                    .map(|node| self.context.apply(&node.ty));
+                if !source_type.as_ref().is_some_and(Type::is_container) {
+                    self.selector_error(
+                        SELECTOR_ASSIGNMENT_CODE,
+                        "x03.type.selector_assignment_root",
+                        source.span(),
+                        "选择器成员根必须是可写容器".to_string(),
+                    );
+                    return;
+                }
+                (None, None, None)
+            }
+            _ => {
+                self.selector_error(
+                    SELECTOR_ASSIGNMENT_CODE,
+                    "x03.type.selector_assignment_root",
+                    source.span(),
+                    "选择器写入根必须是名称或成员".to_string(),
+                );
+                return;
+            }
         };
         let Some(plan) = self
             .selection_plans
@@ -367,18 +394,22 @@ impl<'source> TypeChecker<'source> {
             );
             return;
         }
-        let mut valid = binding.initialized && binding.mutable;
-        if !binding.initialized {
-            valid = false;
-        }
-        if !binding.mutable {
-            self.selector_error(
-                SELECTOR_ASSIGNMENT_CODE,
-                "x03.type.selector_assignment_immutable",
-                source.span(),
-                "不能写入不可变绑定".to_string(),
-            );
-            valid = false;
+        let mut valid = binding
+            .as_ref()
+            .is_none_or(|binding| binding.initialized && binding.mutable);
+        if let Some(binding) = &binding {
+            if !binding.initialized {
+                valid = false;
+            }
+            if !binding.mutable {
+                self.selector_error(
+                    SELECTOR_ASSIGNMENT_CODE,
+                    "x03.type.selector_assignment_immutable",
+                    source.span(),
+                    "不能写入不可变绑定".to_string(),
+                );
+                valid = false;
+            }
         }
         for target_element in plan.target_types() {
             if !crate::conversion::can_assign(&value_type, target_element) {
@@ -397,14 +428,16 @@ impl<'source> TypeChecker<'source> {
         if plan.requires_runtime_check {
             self.push_runtime_check(target.span(), RuntimeCheckKind::SelectorBounds);
         }
-        if let Err(error) = self.environment.assign(&key) {
-            self.environment_error(source.span(), error);
-            return;
+        if let Some(key) = binding_key {
+            if let Err(error) = self.environment.assign(&key) {
+                self.environment_error(source.span(), error);
+                return;
+            }
         }
         self.broadcast_assignment_plans
             .push(BroadcastAssignmentPlan {
                 span: target.span(),
-                root_name: Some(name.unquoted_text(self.source()).to_owned()),
+                root_name,
                 target_paths: plan.selected_paths,
                 value_type,
                 dynamic: plan.requires_runtime_check,

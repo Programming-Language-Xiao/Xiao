@@ -190,6 +190,7 @@ impl<'source> TypeChecker<'source> {
 
     /// 预扫描直接调用 `array_push` 的函数，供调用点精确擦除数组长度。
     fn collect_mutating_functions(&mut self, statements: &[xiao_syntax::Statement]) {
+        /// 判断表达式树是否直接或递归包含数组变更调用。
         fn expression_mutates(
             expression: &xiao_syntax::Expression,
             source: &xiao_source::SourceFile,
@@ -239,6 +240,7 @@ impl<'source> TypeChecker<'source> {
                     .any(|argument| expression_mutates(&argument.value, source)),
             }
         }
+        /// 判断语句列表是否包含会改变数组共享句柄的操作。
         fn statements_mutate(
             statements: &[xiao_syntax::Statement],
             source: &xiao_source::SourceFile,
@@ -304,11 +306,177 @@ impl<'source> TypeChecker<'source> {
                 | Statement::Table { .. } => false,
             })
         }
+        fn expression_calls(
+            expression: &xiao_syntax::Expression,
+            source: &xiao_source::SourceFile,
+            calls: &mut BTreeSet<String>,
+        ) {
+            use xiao_syntax::Expression;
+            match expression {
+                Expression::Call {
+                    callee, arguments, ..
+                } => {
+                    if let Expression::Name(name) = callee.as_ref() {
+                        calls.insert(if name.backticked {
+                            format!("backtick:{}", name.unquoted_text(source))
+                        } else {
+                            format!("ascii:{}", name.unquoted_text(source))
+                        });
+                    }
+                    expression_calls(callee, source, calls);
+                    for argument in arguments {
+                        expression_calls(&argument.value, source, calls);
+                    }
+                }
+                Expression::ArrayLiteral { elements, .. }
+                | Expression::TupleLiteral { elements, .. }
+                | Expression::SetLiteral { elements, .. } => {
+                    for element in elements {
+                        expression_calls(element, source, calls);
+                    }
+                }
+                Expression::DictTableLiteral { entries, .. }
+                | Expression::DictColumnLiteral { entries, .. } => {
+                    for entry in entries {
+                        expression_calls(&entry.value, source, calls);
+                    }
+                }
+                Expression::Group { expression, .. }
+                | Expression::Unary {
+                    operand: expression,
+                    ..
+                }
+                | Expression::Cast { expression, .. } => {
+                    expression_calls(expression, source, calls)
+                }
+                Expression::Binary { left, right, .. } => {
+                    expression_calls(left, source, calls);
+                    expression_calls(right, source, calls);
+                }
+                Expression::Member { object, .. } => expression_calls(object, source, calls),
+                Expression::Selector {
+                    source: source_expression,
+                    step,
+                    ..
+                } => {
+                    expression_calls(source_expression, source, calls);
+                    if let Some(step) = step {
+                        expression_calls(step, source, calls);
+                    }
+                }
+                Expression::Literal { .. } | Expression::Name(_) => {}
+                Expression::NewCall {
+                    callee, arguments, ..
+                } => {
+                    expression_calls(callee, source, calls);
+                    for argument in arguments {
+                        expression_calls(&argument.value, source, calls);
+                    }
+                }
+            }
+        }
+        fn statements_calls(
+            statements: &[xiao_syntax::Statement],
+            source: &xiao_source::SourceFile,
+            calls: &mut BTreeSet<String>,
+        ) {
+            use xiao_syntax::Statement;
+            for statement in statements {
+                match statement {
+                    Statement::Expression { expression, .. }
+                    | Statement::Assignment {
+                        value: expression, ..
+                    }
+                    | Statement::ConstDeclaration {
+                        value: expression, ..
+                    } => expression_calls(expression, source, calls),
+                    Statement::Declaration { value, .. } => {
+                        if let Some(value) = value {
+                            expression_calls(value, source, calls);
+                        }
+                    }
+                    Statement::ExtendedAssignment { target, value, .. } => {
+                        expression_calls(target, source, calls);
+                        expression_calls(value, source, calls);
+                    }
+                    Statement::If {
+                        condition,
+                        body,
+                        elif_branches,
+                        else_body,
+                        ..
+                    } => {
+                        expression_calls(condition, source, calls);
+                        statements_calls(body, source, calls);
+                        for branch in elif_branches {
+                            expression_calls(&branch.condition, source, calls);
+                            statements_calls(&branch.body, source, calls);
+                        }
+                        if let Some(body) = else_body {
+                            statements_calls(body, source, calls);
+                        }
+                    }
+                    Statement::For { iterable, body, .. }
+                    | Statement::While {
+                        condition: iterable,
+                        body,
+                        ..
+                    } => {
+                        expression_calls(iterable, source, calls);
+                        statements_calls(body, source, calls);
+                    }
+                    Statement::Return { value, .. } => {
+                        if let Some(value) = value {
+                            expression_calls(value, source, calls);
+                        }
+                    }
+                    Statement::Raise { value, .. } => expression_calls(value, source, calls),
+                    Statement::Try {
+                        body,
+                        catches,
+                        finally_body,
+                        ..
+                    } => {
+                        statements_calls(body, source, calls);
+                        for catch in catches {
+                            statements_calls(&catch.body, source, calls);
+                        }
+                        if let Some(body) = finally_body {
+                            statements_calls(body, source, calls);
+                        }
+                    }
+                    Statement::Function { .. }
+                    | Statement::Import { .. }
+                    | Statement::Break { .. }
+                    | Statement::Continue { .. }
+                    | Statement::Table { .. } => {}
+                }
+            }
+        }
+        let mut calls = BTreeMap::<String, BTreeSet<String>>::new();
         for statement in statements {
-            if let xiao_syntax::Statement::Function { name, body, .. } = statement
-                && statements_mutate(body, self.source)
-            {
-                self.mutating_functions.insert(self.name_key(*name));
+            if let xiao_syntax::Statement::Function { name, body, .. } = statement {
+                let key = self.name_key(*name);
+                if statements_mutate(body, self.source) {
+                    self.mutating_functions.insert(key.clone());
+                }
+                let mut called = BTreeSet::new();
+                statements_calls(body, self.source, &mut called);
+                calls.insert(key, called);
+            }
+        }
+        loop {
+            let before = self.mutating_functions.len();
+            for (function, called) in &calls {
+                if called
+                    .iter()
+                    .any(|callee| self.mutating_functions.contains(callee))
+                {
+                    self.mutating_functions.insert(function.clone());
+                }
+            }
+            if self.mutating_functions.len() == before {
+                break;
             }
         }
     }

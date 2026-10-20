@@ -13,6 +13,8 @@ use crate::error::{CodegenError, Result};
 
 /// 前端在顶层存在同名用户函数时给静态链接的集合函数使用的内部前缀。
 const SET_METHOD_FUNCTION_PREFIX: &str = "__xiao_stdlib_set_";
+/// 字典方法静态链接函数的内部名称前缀。
+const DICT_METHOD_FUNCTION_PREFIX: &str = "__xiao_stdlib_dict_";
 
 impl<'a> DynamicGenerator<'a> {
     /// 发射一个表达式并返回 ABI 值 SSA 名称。
@@ -859,6 +861,38 @@ impl<'a> DynamicGenerator<'a> {
             } else {
                 return Err(CodegenError::Unsupported {
                     feature: format!("集合方法 {} 未静态链接", member.text),
+                    span: Some(span),
+                });
+            };
+            let mut bound = Vec::with_capacity(arguments.len() + 1);
+            bound.push(IrCallArgument {
+                kind: "positional".to_owned(),
+                name: None,
+                value: (**object).clone(),
+                span: object.span,
+            });
+            bound.extend(arguments.iter().cloned());
+            return self.emit_function_call(&function_name, &bound, span);
+        }
+        if let IrExpressionKind::Member { object, member } = &callee.kind
+            && matches!(
+                object.ty,
+                IrType::DictTable { .. } | IrType::DictColumn { .. }
+            )
+            && !member.backticked
+            && matches!(
+                member.text.as_str(),
+                "get" | "set" | "remove" | "contains" | "keys" | "values" | "size" | "is_empty"
+            )
+        {
+            let internal_name = format!("{DICT_METHOD_FUNCTION_PREFIX}{}", member.text);
+            let function_name = if self.function_definitions.contains_key(&internal_name) {
+                internal_name
+            } else if self.function_definitions.contains_key(&member.text) {
+                member.text.clone()
+            } else {
+                return Err(CodegenError::Unsupported {
+                    feature: format!("字典方法 {} 未静态链接", member.text),
                     span: Some(span),
                 });
             };

@@ -11,5 +11,7 @@
 - `contains<T>(values, key) -> bool`：键存在返回 `true`，缺失返回 `false`。
 - `keys<T>(values) -> [str]`：返回当前键数组，顺序沿用字典句柄迭代顺序。
 - `values<T>(values) -> [T]`：返回与 `keys` 对应顺序的值数组。
+- `size<T>(values) -> int`：返回当前条目数。
+- `is_empty<T>(values) -> bool`：等价于 `size(values) == 0`。
 
 本模块不允许通过 `set` 新增键，也不改变字典表与字典列原有的顺序约定。

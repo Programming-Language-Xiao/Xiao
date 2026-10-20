@@ -559,6 +559,9 @@ impl<'source> TypeChecker<'source> {
         if let Some(result) = self.check_imported_function_call(callee, arguments, span) {
             return result;
         }
+        if let Some(result) = self.check_dict_method_call(callee, arguments, span) {
+            return result;
+        }
         if let Some(result) = self.check_set_method_call(callee, arguments, span) {
             return result;
         }
@@ -659,6 +662,7 @@ impl<'source> TypeChecker<'source> {
     ///
     /// 这些名称只在 `stdlib.dict` 源码中出现，不登记为 intrinsic，降低阶段
     /// 将其转换为专用 IR 动作并复用 Runtime 字典句柄。
+    /// 检查标准库字典枚举/删除入口的参数和返回类型。
     fn check_private_dict_builtin_call(
         &mut self,
         callee: &Expression,

@@ -516,6 +516,7 @@ pub extern "C" fn xiao_runtime_value_dict_values(
     dict_collect_dynamic(value, out, false)
 }
 
+/// 通过 Runtime ABI 枚举字典键或值，并把结果写入拥有的数组值槽。
 fn dict_collect_dynamic(value: *const XiaoValue, out: *mut XiaoValue, keys: bool) -> i32 {
     if value.is_null() || out.is_null() {
         return XiaoAbiStatus::Null.code();
