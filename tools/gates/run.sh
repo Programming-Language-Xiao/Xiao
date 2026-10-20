@@ -20,6 +20,9 @@ classify_bun_failures() {
   else
     failures="$(strip_ansi <"$log_file" | grep -E '^\(fail\)' || true)"
   fi
+  if [ -z "$failures" ]; then
+    return 1
+  fi
   while IFS= read -r failure; do
     matched=1
     case "$failure" in
@@ -43,6 +46,11 @@ if [ "${XIAO_GATE_SELF_TEST:-0}" = "1" ]; then
   printf '%s\n' '(fail) 普通用例' >"$self_test_log"
   if classify_bun_failures "$self_test_log"; then
     printf 'Bun 分类自测未拒绝普通失败。\n' >&2
+    exit 1
+  fi
+  : >"$self_test_log"
+  if classify_bun_failures "$self_test_log"; then
+    printf 'Bun 分类自测未拒绝缺失失败名的非零日志。\n' >&2
     exit 1
   fi
   printf 'Bun 分类自测通过。\n'

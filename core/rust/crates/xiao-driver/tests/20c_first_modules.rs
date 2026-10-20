@@ -492,6 +492,11 @@ fn first_modules_match_native_results() {
             "2\n",
         ),
         (
+            "set-dict-alias",
+            "from stdlib.set import size as set_size\nfrom stdlib.dict import size as dict_size\nprint(set_size({\"a\", \"b\"}))\nprint(dict_size({name = 1}))\n",
+            "2\n1\n",
+        ),
+        (
             "text-alias",
             "from stdlib.text import length as len\nprint(len(\"小雪\"))\n",
             "2\n",
