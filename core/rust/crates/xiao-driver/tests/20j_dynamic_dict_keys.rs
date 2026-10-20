@@ -28,10 +28,10 @@ fn output(outcome: &DriverOutcome) -> String {
 #[test]
 fn dict_table_uses_static_key_priority_then_dynamic_string_keys() {
     let outcome = run(
-        "values = {name = 10, other = 20}\nkey = \"other\"\nprint(values[name])\nprint(values[key])\nprint(values[key + \"\"])\nprint(values[\"name\"])\n",
+        "values = {name = 10, key = 30, other = 20}\nkey = \"other\"\nprint(values[name])\nprint(values[key])\nprint(values[key + \"\"])\nprint(values[\"name\"])\n",
     );
     assert!(outcome.is_success(), "{outcome:?}");
-    assert_eq!(output(&outcome), "10\n20\n20\n10\n");
+    assert_eq!(output(&outcome), "10\n30\n20\n10\n");
 }
 
 #[test]
