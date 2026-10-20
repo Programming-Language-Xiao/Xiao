@@ -301,6 +301,7 @@ intrinsic 数量持续增长，应先检查语言表达能力、优化器和 Run
 | **20I 表达式下标与切分** | 20H；20C 子串/切分登记 | 20H 审核 F-1–F-5；有序容器表达式下标、`[T]` 数组注解、`array_push`、`text.find`/`slice`/`split` | 不做字典表动态键、负/字节索引、范围表达式端点或嵌套数组注解；见 [20I](20i-nonliteral-indexing-and-splitting.md) |
 | **20J 字典动态键** | 20I；20I 审核 F-1–F-7 | 字典表/字典列动态键、静态键优先、缺失键运行时错误、共同值类型/dynamic | 不做字典注解、字典增删方法、集合索引或动态范围端点；见 [20J](20j-dynamic-dict-keys-and-20i-closeout.md) |
 | **20K 字典写入与注解** | 20J；20J 审核 F-1–F-7 | `d[key] = value` 既有键写入、`dict<str,T>` 注解、`stdlib/dict.xiao` 的 get/set/remove/contains/keys/values | 不做新增键/upsert、字典方法式 API、嵌套/局部字典注解；见 [20K](20k-dict-write-and-annotations.md) |
+| **20L 字典方法式 API** | 20K；20K 审核 F-1–F-7 | get/set/remove/contains/keys/values/size/is_empty 方法、字典表/列开放视图、静态链接/模块调用 | 不做新增键/upsert、方法值、动态接收者分派或位置方法；见 [20L](20l-dict-methods-and-20k-closeout.md) |
 
 20A 的契约设计可以现在开始，但只有当它改变 09R3 的机型、调用 ABI、编码或源码映射
 时，才会阻塞 09R3；否则研究路径可以继续使用已登记的实验性入口，并在进入 B0 前迁移。
