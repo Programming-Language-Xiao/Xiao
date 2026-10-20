@@ -183,8 +183,12 @@ impl<'a> DynamicGenerator<'a> {
                         if selected.text != item.binding.text
                             || selected.backticked != item.binding.backticked
                         {
-                            if let Some(function) =
-                                self.function_definitions.get(&selected.text).copied()
+                            let module_function = self
+                                .module_function_definitions
+                                .get(&(item.module.clone(), selected.text.clone()))
+                                .copied();
+                            if let Some(function) = module_function
+                                .or_else(|| self.function_definitions.get(&selected.text).copied())
                             {
                                 // 静态链接的标准库函数没有运行时值槽；把别名
                                 // 直接映射到同一个函数定义，避免把函数名误当

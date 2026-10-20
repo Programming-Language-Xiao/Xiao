@@ -146,3 +146,32 @@ fn native_lowering_links_dictionary_method_functions() {
     assert!(module.uses_runtime);
     assert!(module.text.matches("define void @xiao.fn.").count() >= 8);
 }
+
+#[test]
+/// 字典私有动作保持编译器内部边界：不进入 intrinsic 表，但 VM/LLVM 仍覆盖三条等价路径。
+fn private_dictionary_actions_are_internal_and_lowered() {
+    assert!(xiao_intrinsics::by_name("__dict_remove").is_none());
+    assert!(xiao_intrinsics::by_name("__dict_keys").is_none());
+    assert!(xiao_intrinsics::by_name("__dict_values").is_none());
+
+    let request = FrontendRequest::from_text(
+        "from stdlib.dict import remove, keys, values as dict_values\ndata = {name = 1, other = 2}\nremove(data, \"name\")\nprint(keys(data)[0])\nprint(dict_values(data)[0])\n",
+    );
+    let artifact = FrontendCompiler::new()
+        .compile(&request)
+        .expect("私有字典动作前端通过");
+    let outcome = FrontendVmDriver::new().run_artifact(&artifact, &DriverRequest::new(request));
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), "other\n2\n");
+
+    let module = NativeBuild::new()
+        .lower(artifact.ir(), &CodegenOptions::default())
+        .expect("私有字典动作原生降低通过");
+    assert!(
+        module
+            .text
+            .contains("xiao_runtime_value_dict_remove_dynamic")
+    );
+    assert!(module.text.contains("xiao_runtime_value_dict_keys"));
+    assert!(module.text.contains("xiao_runtime_value_dict_values"));
+}

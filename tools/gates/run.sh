@@ -12,15 +12,18 @@ classify_bun_failures() {
   local unexpected=0
   local matched=0
   local failures
+  strip_ansi() {
+    sed -E $'s/\033\\[[0-9;?]*[ -\\/]*[@-~]//g'
+  }
   if command -v rg >/dev/null 2>&1; then
-    failures="$(rg '^\(fail\)' "$log_file" || true)"
+    failures="$(strip_ansi <"$log_file" | rg '^\(fail\)' || true)"
   else
-    failures="$(grep -E '^\(fail\)' "$log_file" || true)"
+    failures="$(strip_ansi <"$log_file" | grep -E '^\(fail\)' || true)"
   fi
   while IFS= read -r failure; do
     matched=1
     case "$failure" in
-      "(fail) 确认后调用完整源码并恢复覆盖模式、剪贴板和光标"*|"(fail) Ctrl+D"*)
+      "(fail) 确认后调用完整源码并恢复覆盖模式、剪贴板和光标"*|"(fail) !inLF! 后空缓冲 Ctrl+D 结束整个会话，不重新进入单行"*)
         ;;
       "(fail)"*)
         unexpected=1
@@ -35,7 +38,7 @@ classify_bun_failures() {
 if [ "${XIAO_GATE_SELF_TEST:-0}" = "1" ]; then
   self_test_log="$(mktemp "${TMPDIR:-/tmp}/xiao-bun-classifier.XXXXXX")"
   trap 'rm -f "$self_test_log"' EXIT
-  printf '%s\n' '(fail) Ctrl+D' >"$self_test_log"
+  printf '\033[31m%s\033[0m\n' '(fail) !inLF! 后空缓冲 Ctrl+D 结束整个会话，不重新进入单行' >"$self_test_log"
   classify_bun_failures "$self_test_log"
   printf '%s\n' '(fail) 普通用例' >"$self_test_log"
   if classify_bun_failures "$self_test_log"; then

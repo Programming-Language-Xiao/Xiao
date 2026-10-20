@@ -142,6 +142,8 @@ struct DynamicGenerator<'a> {
     finally_stack_saves: Vec<String>,
     /// 当前程序中可调用的顶层函数定义。
     function_definitions: BTreeMap<String, &'a IrStatement>,
+    /// 按标准库模块和导出名称保存函数定义，避免不同模块的同名导出互相覆盖。
+    module_function_definitions: BTreeMap<(String, String), &'a IrStatement>,
     /// 表名与规范成员名共同定位方法，隔离不同表的同名函数。
     method_definitions: BTreeMap<(String, String), &'a IrStatement>,
     /// 当前回调上下文；字段初始化使用合成帧，其余方法消费原函数释放计划。
@@ -193,6 +195,7 @@ impl<'a> DynamicGenerator<'a> {
             cleanup_stack: Vec::new(),
             finally_stack_saves: Vec::new(),
             function_definitions: BTreeMap::new(),
+            module_function_definitions: BTreeMap::new(),
             method_definitions: BTreeMap::new(),
             callback: None,
             function_texts: Vec::new(),
@@ -254,6 +257,8 @@ impl<'a> DynamicGenerator<'a> {
                 self.function_definitions
                     .entry(name.text.clone())
                     .or_insert(statement);
+                self.module_function_definitions
+                    .insert((module.name.clone(), name.text.clone()), statement);
             }
         }
         self.emit_entry()?;
@@ -460,16 +465,13 @@ impl<'a> DynamicGenerator<'a> {
         callback: Option<methods::CallbackContext>,
     ) -> Result<()> {
         let xiao_ir::IrStatementKind::Function {
-            name,
-            parameters,
-            body,
-            ..
+            parameters, body, ..
         } = &statement.kind
         else {
             return Ok(());
         };
         let symbol = callback.as_ref().map_or_else(
-            || self.function_symbol(&name.text),
+            || self.function_symbol_for_statement(statement),
             |context| context.symbol.clone(),
         );
         let mut generator = DynamicGenerator::new(self.program, self.options);
@@ -485,6 +487,7 @@ impl<'a> DynamicGenerator<'a> {
             .find(|scope| scope.kind == "function" && scope.span == statement.span)
             .map(|scope| scope.id);
         generator.function_definitions = self.function_definitions.clone();
+        generator.module_function_definitions = self.module_function_definitions.clone();
         generator.method_definitions = self.method_definitions.clone();
         generator.table_initializers = self.table_initializers.clone();
         generator.error_terminal_label = "xiao.fn.error".to_owned();
@@ -659,19 +662,38 @@ impl<'a> DynamicGenerator<'a> {
 
     /// 为顶层函数生成稳定的 LLVM 符号名。
     fn function_symbol(&self, name: &str) -> String {
-        let canonical = self
+        let Some(statement) = self.function_definitions.get(name).copied() else {
+            return format!("xiao.fn.0.{}", stable_hash(name.as_bytes()));
+        };
+        self.function_symbol_for_statement(statement)
+    }
+
+    /// 为一份具体函数定义生成稳定且不冲突的 LLVM 符号名。
+    ///
+    /// 别名导入可能让两个不同标准库模块的函数共享 Xiao 源码名称；此时不能再
+    /// 仅按函数声明中的名称查找索引，必须按定义指针回到函数表中的唯一键。
+    fn function_symbol_for_statement(&self, statement: &IrStatement) -> String {
+        let key = self
             .function_definitions
-            .get(name)
-            .and_then(|statement| match &statement.kind {
-                xiao_ir::IrStatementKind::Function { name, .. } => Some(name.text.as_str()),
-                _ => None,
+            .iter()
+            .find(|(_, candidate)| {
+                std::ptr::eq(
+                    **candidate as *const IrStatement,
+                    statement as *const IrStatement,
+                )
             })
-            .unwrap_or(name);
+            .map_or_else(
+                || match &statement.kind {
+                    xiao_ir::IrStatementKind::Function { name, .. } => name.text.clone(),
+                    _ => String::new(),
+                },
+                |(key, _)| key.clone(),
+            );
         let index = self
             .function_definitions
             .keys()
-            .position(|candidate| candidate == canonical)
+            .position(|candidate| candidate == &key)
             .unwrap_or(0);
-        format!("xiao.fn.{index}.{}", stable_hash(canonical.as_bytes()))
+        format!("xiao.fn.{index}.{}", stable_hash(key.as_bytes()))
     }
 }
