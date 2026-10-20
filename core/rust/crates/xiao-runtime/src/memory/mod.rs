@@ -382,6 +382,29 @@ pub fn start_memory_measurement() -> MemoryMeasurement {
 }
 
 /// 强拥有的不透明 Runtime 句柄。
+///
+/// 当前句柄明确保持单线程边界。下面两个编译失败示例是边界回归：句柄不能移动到
+/// 线程，也不能作为跨线程只读共享值；未来若要改变该边界，必须先冻结新的共享句柄 ABI。
+///
+/// ```compile_fail
+/// use xiao_runtime::StrongHandle;
+///
+/// fn move_to_thread(handle: StrongHandle) {
+///     std::thread::spawn(move || drop(handle));
+/// }
+///
+/// fn main() {}
+/// ```
+///
+/// ```compile_fail
+/// use xiao_runtime::StrongHandle;
+///
+/// fn require_sync<T: Sync>() {}
+///
+/// fn main() {
+///     require_sync::<StrongHandle>();
+/// }
+/// ```
 pub struct StrongHandle {
     ptr: NonNull<ObjectHeader>,
     // 明确把首版句柄标为单线程，避免自动实现 Send/Sync。
@@ -389,6 +412,28 @@ pub struct StrongHandle {
 }
 
 /// 不拥有目标对象生命周期的弱 Runtime 句柄。
+///
+/// 弱句柄与强句柄共享同一单线程边界；它的升级也不能绕过该边界。
+///
+/// ```compile_fail
+/// use xiao_runtime::WeakHandle;
+///
+/// fn move_to_thread(handle: WeakHandle) {
+///     std::thread::spawn(move || drop(handle));
+/// }
+///
+/// fn main() {}
+/// ```
+///
+/// ```compile_fail
+/// use xiao_runtime::WeakHandle;
+///
+/// fn require_sync<T: Sync>() {}
+///
+/// fn main() {
+///     require_sync::<WeakHandle>();
+/// }
+/// ```
 pub struct WeakHandle {
     ptr: NonNull<ObjectHeader>,
     _single_thread: PhantomData<Rc<()>>,

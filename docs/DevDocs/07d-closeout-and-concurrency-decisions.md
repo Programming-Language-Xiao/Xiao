@@ -9,9 +9,9 @@
 > **本批一句话**：**先把“证据缺口”和“决策缺口”分开关掉，仍然不写并发语法、
 > 执行器、`Send`/`Sync`、原子 RC、共享句柄或 `std.concurrent`。**
 >
-> 状态：**待实施（2026-10-21）**。不修改 `xiao-syntax`、`xiao-types`、IR、
-> Runtime ABI 或标准库公开契约；不登记新阶段代号。52b897e 已修复 20L 的原生
-> 同名别名污染，本批不重做该修复。
+> 状态：**本地证据已补，待 2248e81 推送与新的四平台复现（2026-10-21）**。
+> 不修改 `xiao-syntax`、`xiao-types`、IR、Runtime ABI 或标准库公开契约；不登记新阶段代号。
+> 52b897e 已修复 20L 的原生同名别名污染，本批不重做该修复。
 
 ## 一、Agent 交接上下文
 
@@ -40,13 +40,13 @@
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
 | 52b897e 推送 CI | 维护回归 `39459004148` 六作业全绿（含 Windows/Linux/macOS 原生）；工作区门禁 `39459004003` 成功 | 20L F-1 的原生 set-alias 红已关闭 |
-| 2248e81 | 领先 origin/main 1 个提交，**未推送**；新增 `set-dict-alias` 原生夹具和空日志拒绝 | 只有本地证据；见 F-4 |
+| 2248e81 | 领先 origin/main 1 个提交，**未推送**；新增 `set-dict-alias` 原生夹具、空日志拒绝和 07D 证据补充 | 只有本地证据；见 F-4 |
 | 07-D 六项交付物 | 模型矩阵、RC/Weak/错误/取消/清理、Send/Sync 两套候选、值传递比较、竞争验收、ABI 前置清单均已记录 | 21A §3.1 六项有记录 |
-| 21A 验收 1–3 | 强环有测试；**未找到**菱形/DAG 专用测试、`Send` 负向断言或实跑运行号 | 批次验收第 3 项未关闭；见 F-1 |
+| 21A 验收 1–3 | 强环、共享菱形 DAG 和句柄 `Send`/`Sync` 负向编译边界已有本地测试；`CrossThread` 没有 AST/IR 生产者 | 本地证据已补；平台运行号和 `CrossThread` 仍按契约级事实登记，见 F-1 |
 | `CrossThread` | 事实类别存在，06A 明确“冻结前没有 AST 生产者”；代码检索只见到匹配/序列化，没有构造点 | 静态边界成立，但没有运行证据 |
 | 平台复现 `39227168623` | Windows 作业红：`bun run check` 中 `xiao-doc-coverage-rust` 调用到 `C:\Program Files\Git\usr\bin\link.exe`；其余三平台和 ordered summary 绿 | 四平台证据不完整；见 F-3 |
 | 平台脚本修复 | `e7597c4` 在 `reproduce.ps1` 把 MSVC linker 放到 PATH 首位，**晚于** `39227168623` | 修复未被平台复现运行验证 |
-| 文档状态 | `07d:252` 仍写 Linux/macOS 待取证；20L 文档仍写“待四平台 CI 与推送取证” | 与 39459004148/39459004003 不一致；见 F-2 |
+| 文档状态 | 07D/20L/README 已按 `39459004148`/`39459004003` 对账；2248e81 和平台复现仍待外部 | 旧状态已收窄；见 F-2/F-3 |
 | 补充探针 | 混合导入 `set.size` + `dict.is_empty/remove`，VM 与原生均输出 `2/true` | 未发现残余同名调用污染 |
 
 ### 1.3 本批边界
@@ -91,6 +91,18 @@
 4. 把测试名、本地运行结果和最新 CI 运行号回填 07-D §9.1/§11.3。
 
 **关闭标准**：上述 1–3 有明确的测试名或如实的不可实跑说明；本地定向通过；CI 运行号可查。
+
+### F-1 本地实施记录
+
+- `xiao-lifetime`：`graph_accepts_shared_diamond_and_releases_child_once`、
+  `graph_rejects_strong_cycle`、`strong_cycle_is_reported` 通过；菱形图的共享子节点在
+  释放序列中只出现一次，且两个拥有者都先于子节点释放。
+- `xiao-runtime`：`StrongHandle` 和 `WeakHandle` 各有 `Send` 移动与 `Sync` 约束的
+  `compile_fail` 文档测试；四个文档测试通过，未增加公开 API、对象布局或依赖。
+- `CrossThread`：当前没有 AST/IR 生产者，只有事实枚举和匹配/序列化消费点。本批没有
+  新增生产者，按契约级“无生产者”记录，不声称存在运行时传播测试。
+- 本地定向命令：`cargo test -p xiao-lifetime --test a06_lifetime` 与
+  `cargo test -p xiao-runtime --doc` 均通过。
 
 ### F-2 **07-D/20L 状态与最新 CI 不一致（P2）**
 

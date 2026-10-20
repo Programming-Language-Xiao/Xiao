@@ -868,6 +868,45 @@ fn graph_orders_and_weak_edges() {
 }
 
 #[test]
+/// 共享拥有形成菱形 DAG 时允许两个拥有者共同持有子节点，子节点只进入一次释放序列。
+fn graph_accepts_shared_diamond_and_releases_child_once() {
+    let mut graph = OwnershipGraph::new();
+    for id in 0..4 {
+        graph.add_node(ValueId::new(id), id as usize).expect("节点");
+    }
+    graph
+        .add_strong_edge(
+            ValueId::new(0),
+            ValueId::new(2),
+            OwnershipEdgeReason::Explicit,
+        )
+        .expect("左拥有边");
+    graph
+        .add_strong_edge(
+            ValueId::new(1),
+            ValueId::new(2),
+            OwnershipEdgeReason::Explicit,
+        )
+        .expect("右拥有边");
+    graph
+        .add_strong_edge(
+            ValueId::new(2),
+            ValueId::new(3),
+            OwnershipEdgeReason::Explicit,
+        )
+        .expect("叶节点拥有边");
+
+    let order = graph.release_order_all().expect("菱形 DAG 应可排序");
+    assert_eq!(order.len(), 4);
+    assert_eq!(order.iter().filter(|id| **id == ValueId::new(2)).count(), 1);
+    let position = |id| order.iter().position(|candidate| *candidate == id).unwrap();
+    assert!(position(ValueId::new(0)) < position(ValueId::new(2)));
+    assert!(position(ValueId::new(1)) < position(ValueId::new(2)));
+    assert!(position(ValueId::new(2)) < position(ValueId::new(3)));
+    assert!(graph.strong_cycle().is_none());
+}
+
+#[test]
 /// 纯强环被图算法拒绝，返回错误而不是产生部分成功顺序。
 fn graph_rejects_strong_cycle() {
     let mut graph = OwnershipGraph::new();

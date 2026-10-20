@@ -243,21 +243,26 @@ tests/research/concurrency/                      可选隔离原型，不进入�
 
 ## 九、执行记录与门禁对账
 
-### 9.1 20L 前置返工的本地结果
+### 9.1 20L 与 21A 前置返工的证据对账
 
 07-D 先核销能在工作区完成的前置项，未把外部 CI 尚未提供的证据写成通过：
 
 | 项 | 本次处理 | 证据与剩余边界 |
 | --- | --- | --- |
-| F-1 静态链接污染 | LLVM 动态生成器增加“模块名 + 导出名”的函数表，并按具体函数定义生成符号；`stdlib.set` 的 `size as count` 不再命中字典的 `size` | `20c_first_modules::first_modules_match_native_results` 在 Windows 受控 LLVM、Runtime staticlib 下通过，包含 `set-alias`、`text-alias`；Linux/macOS 三平台仍待维护回归取证 |
-| F-2 Bun 分类 | `run.sh` 先去除 ANSI 控制序列，再按真实失败名 `!inLF! 后空缓冲 Ctrl+D 结束整个会话，不重新进入单行` 分类；普通失败仍返回非零 | `bash -n tools/gates/run.sh` 与 `XIAO_GATE_SELF_TEST=1` 通过；实际 push 的全量运行号仍待外部执行 |
-| F-3 私有字典动作 | 保持 `__dict_remove`、`__dict_keys`、`__dict_values` 为编译器私有 IR/Runtime 动作，不登记公开 intrinsic；补三条 `by_name` 缺失断言、VM 输出和 LLVM 符号回归 | `20l_dict_methods::private_dictionary_actions_are_internal_and_lowered` 通过；移除动作后的外部四路验证仍归平台门禁 |
-| F-4 推送/平台 | 沿用 `1393cea`、`.xiaoc`/`.xar` 与维护回归的取证要求 | 本地不能代替推送；`1393cea`、四平台 ordered summary 和新运行号待外部执行 |
-| F-5 文档对账 | 本文、07、21A、README 和 20L 同步研究状态与边界；20K 覆盖率按现行 90.00% 记录 | 旧 CI 运行号作为历史红证据保留，不冒充当前通过 |
+| F-1 静态链接污染 | LLVM 动态生成器增加“模块名 + 导出名”的函数表，并按具体函数定义生成符号；`stdlib.set` 的 `size as count` 不再命中字典的 `size` | `20c_first_modules::first_modules_match_native_results` 已在 Windows 受控 LLVM、Runtime staticlib 下通过；维护回归 `39459004148` 的三平台原生作业全绿，新增 `set-dict-alias` 仍待 2248e81 推送后取证 |
+| F-2 Bun 分类 | `run.sh` 先去除 ANSI 控制序列，再按真实失败名分类；普通失败和没有 `(fail)` 行的非零日志均返回非零 | 52b897e 的维护回归 `39459004148`、工作区门禁 `39459004003` 已绿；2248e81 的空日志拒绝自测已本地通过，待推送取证 |
+| F-3 私有字典动作 | 保持 `__dict_remove`、`__dict_keys`、`__dict_values` 为编译器私有 IR/Runtime 动作，不登记公开 intrinsic；用 `by_name` 缺失断言、VM 输出和 LLVM 符号锁定等价语义 | `20l_dict_methods::private_dictionary_actions_are_internal_and_lowered` 通过；移除验证不适用，不再承诺不存在的外部四路移除测试 |
+| F-4/F-6 推送与平台 | 52b897e 已推送并有维护/工作区运行号；2248e81 含新增夹具和门禁修复 | 2248e81 仍待推送；平台复现 `39227168623` 的 Windows 红只作历史证据，新的四平台 ordered summary 待外部手动触发 |
+| F-5 文档对账 | 本文、07、21A、README 和 20L 同步研究状态与边界；20K 覆盖率按现行 90.00% 记录 | 历史运行号保留来源，不冒充当前平台通过 |
+| 21A 验收 1–3 | 新增共享菱形 DAG、强环和句柄边界证据；`CrossThread` 没有生产者，按契约级事实登记 | `a06_lifetime::graph_accepts_shared_diamond_and_releases_child_once` 通过；`StrongHandle`/`WeakHandle` 的四个 `compile_fail` 文档测试通过；`CrossThread` 当前无 AST/IR 生产者，不能声称运行测试产生了该事实 |
 
 本地已复核的代码改动只涉及标准库静态链接的内部解析和门禁脚本，不改变语法、类型、IR
 格式、Runtime ABI 或公开标准库接口。特别是，模块函数表只解决原生降低时的同名选择，
 没有把模块名编码成用户可见函数名，也没有引入新的语言能力。
+
+`CrossThread` 的当前证据边界必须如实解释：`xiao-lifetime` 保留并能匹配该事实类别，
+但 06A/21A 明确在并发表面冻结前没有 AST/IR 生产者；本批没有新增生产者，也没有把代码
+检索结果包装成运行通过。未来若有显式 lowering，必须另立测试和运行号。
 
 ### 9.2 六项研究交付物的逐条对照（对应 21A §3.1）
 
@@ -416,14 +421,17 @@ Runtime，跨任务默认使用候选 B 的深拷贝或版本化序列化；暂�
 
 建立实现阶段前必须同时满足：
 
-- 20L F-1–F-5 的本地修复有三平台维护回归、ordered summary 和推送运行号；
-- 21A 验收 1–3 的 DAG/菱形、强环拒绝、普通句柄边界和显式 `CrossThread` 事实有实跑证据；
+- 20L F-1 的三平台维护回归 `39459004148` 已绿；2248e81 推送后新增夹具和空日志门禁也有运行号，另有一次新的四平台平台复现且 Windows 绿；
+- 21A 验收 1–3 的 DAG/菱形、强环拒绝、普通句柄边界有测试证据；`CrossThread` 在没有生产者期间只能保留契约级“无生产者”记录，不能伪造运行事实；
 - 星崽在 `00-decisions.md` 裁定模型、值传递、取消和共享可变边界；
 - B0/N0 的 VM 与 LLVM 消费方都能执行同一组错误、竞争、取消和释放黄金场景；
 - 普通句柄/共享句柄 ABI、IR 事实、诊断字段、标准库依赖和 UseDocs 入口已登记；
 - 新阶段自行登记代号、主文档、12 的里程碑、测试族和发布/兼容矩阵。
 
 在这些条件满足前，`07-D` 继续作为研究记录，不登记阶段编号，不预留语法或标准库名称。
+
+当前成本矩阵仍是桌面定性研究和伪代码比较，不是可测量的性能/内存成本报告；若要据此
+冻结执行模型、对象头或 ABI，必须先补可执行差分原型、测量方法和结果记录。
 
 ## 十二、研究记录落点
 
@@ -447,3 +455,4 @@ tools/gates/run.sh                               Bun ANSI/真实失败名分类
 - [07 错误模型与并发安全边界](07-concurrency-and-errors.md)
 - [12 测试与开发里程碑](12-tests-and-milestones.md)
 - [20L 字典方法式 API 与 20K 收口](20l-dict-methods-and-20k-closeout.md)
+- [07-D.1 收口与并发入口决策准备](07d-closeout-and-concurrency-decisions.md)

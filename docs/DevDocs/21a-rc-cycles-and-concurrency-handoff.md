@@ -136,6 +136,13 @@
 见 [07-D 并发模型研究](07d-concurrency-model-research.md) §九–§十一；该记录只完成研究
 交付，不把候选方案提升为语言 API 或 ABI 决策。
 
+07-D.1 的当前证据补充如下：`xiao-lifetime` 的
+`graph_accepts_shared_diamond_and_releases_child_once` 覆盖共享菱形 DAG，
+`graph_rejects_strong_cycle` 与 `strong_cycle_is_reported` 继续覆盖强环拒绝；
+`xiao-runtime` 的 `StrongHandle`/`WeakHandle` 文档编译失败测试覆盖 `Send`/`Sync` 负向边界。
+`CrossThread` 目前没有 AST/IR 生产者，07-D 只登记这一契约级事实，不把它误报为运行时生产
+测试；未来显式 lowering 仍须另立测试与运行号。
+
 ### 3.2 新并发实现阶段的前置条件
 
 只有以下条件同时满足，才能建立新的并发实现阶段：
