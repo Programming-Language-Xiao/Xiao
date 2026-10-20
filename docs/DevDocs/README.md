@@ -76,6 +76,7 @@
 | 07 | [错误模型与并发安全边界](07-concurrency-and-errors.md) | 统一错误核心、堆栈/报告契约、日志诊断、数据竞争策略和并发模型边界 | 进行中（07-A、07-B 已完成，07-C/07-D 后置） |
 | 07B | [错误控制流与统一展开消费](07-concurrency-and-errors.md#07-b-已完成错误控制流与统一展开消费) | `try`/`catch`/`finally`/`raise` 的语法、静态恢复边界、生命周期展开和 Runtime 路由契约 | 已完成首版 |
 | 07-D | [并发模型研究：候选、成本与冻结前置](07d-concurrency-model-research.md) | 收 20L 的 F-1–F-5 前置；比较线程/单线程任务/任务池/Actor/多 Runtime，研究 Send/Sync、复制/冻结、原子共享句柄与竞争/取消/清理验收；不实现并发 | **研究记录已完成、待外部证据与星崽裁定（2026-10-21）**：本地修复与六项交付物见文档 §九–§十一；不改语法/类型/IR/ABI/标准库公开契约 |
+| 07-D.1 | [07-D 收口与并发入口决策准备](07d-closeout-and-concurrency-decisions.md) | 收 07-D 审核的 F-1–F-6：21A 验收 1–3 实跑证据、CI/文档对账、平台复现和 ordered summary、研究深度边界；把并发模型裁定送进 00 决策基线 | **待实施（2026-10-21）**：不写并发语法、类型、IR、ABI、Runtime 或标准库公开契约；不登记新阶段代号 |
 | 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 进行中（08A/U0 已完成首版） |
 | 08A | [U0 统一前端实现交接记录](08a-u0-frontend-implementation.md) | 单一前端流水线、递归类型化 IR、验证器和稳定 JSON 快照 | 已完成首版 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 进行中（09R1–09R3 已冻结，B0-A/B/C/D 已交付；用户可见 CLI 仍留给 11/X0；批次边界见 [09-B0](09b0-bytecode-closure.md)） |
