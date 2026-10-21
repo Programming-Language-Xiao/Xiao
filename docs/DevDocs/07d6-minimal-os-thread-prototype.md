@@ -8,8 +8,9 @@
 > **本批一句话**：**用一个隔离原型把线程入口、深拷贝、拆分后的 `CrossThread` 事实、
 > 原子句柄、取消清理和成本测出来；仍然不写语言语法、IR、ABI 或标准库公开契约。**
 >
-> 状态：**待实施（2026-10-22）**。原型代码放隔离目录，不进入 workspace 公共契约；
-> 不登记新阶段代号，不预留 `H0-C`、`07-D 实现`、`std.concurrent` 或任何语法/API。
+> 状态：**隔离原型已完成（2026-10-22）**。8 类场景、8 个测试和 `--iterations 1000`
+> 测量已记录；原型代码不进入 workspace 公共契约，不登记新阶段代号，不预留 `H0-C`、
+> `07-D 实现`、`std.concurrent` 或任何语法/API。
 
 ## 一、交接上下文
 
@@ -142,7 +143,7 @@ tests/research/concurrency/                        隔离原型（建议位置�
 ```bash
 # 确认原型不进入 workspace 契约
 grep -rn "tests/research/concurrency" core/rust/Cargo.toml core/rust/crates 2>/dev/null
-git status --short
+cmd /c git status --short
 
 # 原型运行与测量（具体命令在原型目录 README 中登记）
 # 文档门禁
@@ -150,7 +151,55 @@ bun run check:docs
 bun run check:usedocs
 ```
 
-## 七、风险
+## 七、结果与下一道裁定
+
+### 7.1 隔离与场景结果
+
+原型位于 `tests/research/concurrency/`，其 `Cargo.toml` 自带空的 `[workspace]`，不在
+`core/rust/Cargo.toml` 的 members 中，也没有被任何产品 crate 引用。`cargo test` 运行
+8 个测试全部通过；命令行程序一次运行会先执行 8 类场景，再输出边界事实和候选 A 表。
+
+| 场景 | 可观察结果 |
+| --- | --- |
+| 线程入口与深拷贝 | OS 线程修改嵌套副本后，发送方值保持不变 |
+| 深拷贝失败 | 部分 `4` 失败；已复制前缀按 `3 → 2 → 1` 逆序清理；主错误保留，部分 `2` 的清理错误进入 suppressed |
+| `CrossThread` 拆分 | 同线程挂起为 `task=true, thread=false`；显式迁移为 `task=true, thread=true` |
+| 候选 A 推导 | 标量、不可变文本、递归只读容器和显式共享句柄接受；可变容器、普通句柄、动态值和资源拒绝 |
+| 只读原子句柄 | `Arc`/`Weak` 强弱计数可观察；并发升级安全；最后强引用使载荷恰好析构一次 |
+| 共享可变句柄 | 显式 `Mutex` 写入、取消等待锁、预期异常和毒化锁恢复均通过；普通句柄没有隐式升级 |
+| 取消与清理 | 未开始、执行中、等待中、完成待回收四个位置均按 07-D §10.4 顺序记录；主错误先于 suppressed |
+| 成本测量 | 记录 spawn/join、深拷贝、原子操作、锁操作和原型对象尺寸 |
+
+### 7.2 可复现测量
+
+运行环境为 Windows x86_64，命令为：
+
+```text
+cargo run --release --manifest-path tests/research/concurrency/Cargo.toml -- --iterations 1000
+```
+
+本次输出如下；纳秒值只代表当前机器和当前 Rust 构建，不能直接作为 ABI 或调度承诺：
+
+| 指标 | 结果 |
+| --- | ---: |
+| 重复次数 | 1000 |
+| spawn/join 平均耗时 | 221917 ns |
+| 深拷贝平均耗时 | 204 ns |
+| 原子增减平均耗时 | 9 ns |
+| 锁保护增量平均耗时 | 20 ns |
+| 只读句柄尺寸 | 8 bytes |
+| 共享可变句柄尺寸 | 8 bytes |
+| 只读原型对象头尺寸 | 16 bytes |
+
+### 7.3 是否进入正式实现阶段
+
+本原型证明了隔离模型可以被测试和测量，但没有冻结 Xiao 的值表示、IR、Runtime ABI、
+诊断字段或标准库 API。当前**不建议直接建立正式并发实现阶段**；下一道裁定应先审阅
+跨平台重复测量、真实 Runtime 值的深拷贝边界、原子共享句柄的 ABI 形状，以及 B0/N0
+黄金场景是否能覆盖相同的错误和清理顺序。任务池、序列化、冻结共享和官方库结构仍保留
+在后续研究范围内。
+
+## 八、风险
 
 1. **范围蔓延**：原子共享可变 + 候选 A + 拆分事实很容易变成产品实现；原型只做
    最小可测量场景，不追求完整语言能力。
