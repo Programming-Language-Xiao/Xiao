@@ -8,7 +8,7 @@
 > **本批一句话**：**平台证据已经齐了，先把文档写成真的，再让星崽做 8 项裁定；
 > 仍然不写并发语法、执行器、`Send`/`Sync`、原子 RC、共享句柄或 `std.concurrent`。**
 >
-> 状态：**平台证据与文档门禁已通过，待星崽裁定（2026-10-21）**。本批只改文档和裁定记录；不修改
+> 状态：**平台证据与文档门禁已通过，待星崽裁定（2026-10-22）**。本批只改文档和裁定记录；不修改
 > `xiao-syntax`、`xiao-types`、IR、Runtime ABI 或标准库公开契约，不登记新阶段代号。
 > 若发现平台证据与文档不一致，以 CI 作业日志为准，不用 ordered summary 代替单平台结果。
 
@@ -38,6 +38,7 @@
 | --- | --- | --- |
 | HEAD | `d6112e4` 已推送；本地有后继纯文档提交 | 07-D.3 修复已进入远端 |
 | 工作区门禁 `39563178068` | Linux workspace gates 成功 | 文档、格式、Bun 全量测试和门禁通过 |
+| 终验工作区门禁 `39624910950` | `17a89b0` 成功 | 纯文档终验提交的 workspace 门禁通过 |
 | 平台复现 `39563381227` | linux-amd64、linux-arm64、macos-arm64、windows-amd64 **全部成功**；ordered summary 成功 | 四平台证据成立；见 §三 |
 | Windows 日志 | `Cargo linker (CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_LINKER): ...\Microsoft Visual Studio\18\Enterprise\...\link.exe` | 不再命中 Git 的 `link.exe` |
 | macOS 日志 | `(pass) SGR 鼠标点击和拖动建立选区...`；`298 pass` | REPL 时序修复成立 |
@@ -107,7 +108,8 @@
 
 `07d3-platform-reproduction-fix-and-closeout.md`、07-D、07D.1、07D.2、20L 和 README
 已回填 `39563381227`、HEAD `d6112e4`、四个平台 success、Windows Cargo linker、macOS
-SGR/298 pass 与工作区门禁 `39563178068`。
+SGR/298 pass、工作区门禁 `39563178068` 和终验工作区门禁 `39624910950`（绑定
+`17a89b0`）。
 
 ### F-4 **8 项并发入口问题仍未裁定（P1，入口阻断）**
 
