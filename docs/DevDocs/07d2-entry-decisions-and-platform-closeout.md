@@ -7,9 +7,9 @@
 > **本批一句话**：**先把证据写对、把平台跑绿、把裁定问清；仍然不写并发语法、
 > 执行器、`Send`/`Sync`、原子 RC、共享句柄或 `std.concurrent`。**
 >
-> 状态：**待实施（2026-10-21）**。不修改 `xiao-syntax`、`xiao-types`、IR、
-> Runtime ABI 或标准库公开契约；不登记新阶段代号。平台复现是外部运行，不能用
-> 旧运行号或 ordered summary 的绿替代单平台结果。
+> 状态：**本地文档对账已完成，当前 HEAD a53bc97 待平台复现与星崽裁定（2026-10-21）**。
+> 不修改 `xiao-syntax`、`xiao-types`、IR、Runtime ABI 或标准库公开契约；不登记新阶段代号。
+> 平台复现是外部运行，不能用旧运行号或 ordered summary 的绿替代单平台结果。
 
 ## 一、Agent 交接上下文
 
@@ -36,16 +36,16 @@
 
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
-| `f119ed0` | 已推送；`origin/main` 与本地一致，工作区干净 | 07-D.1 的实现提交已进入远端 |
+| `f119ed0` | 已推送；`origin/main` 指向 f119ed0，本地另有文档提交 a53bc97 | 07-D.1 的实现提交已进入远端 |
 | 维护回归 `39517248193` | 六作业全绿：解析/安全、产物大小、Linux workspace、Windows/Linux/macOS 原生 | 三平台原生证据成立 |
-| 原生夹具 | Windows/Linux/macOS 三个原生作业都运行 `first_modules_match_native_results ... ok` | `set-dict-alias` 已随 2248e81 进入 CI |
+| 原生夹具 | Windows/Linux/macOS 三个原生作业都运行 `first_modules_match_native_results ... ok` | `set-dict-alias` 已随 f119ed0 进入 CI |
 | Doctest | Linux workspace 运行四个 `StrongHandle`/`WeakHandle` `compile_fail`，4 passed | Send/Sync 负向边界有 CI 证据 |
-| 工作区门禁 `39517248607` | Linux workspace gates 成功 | 格式、Clippy、文档和测试门禁通过 |
+| 工作区门禁 `39517248607` | Linux workspace gates 成功，headSha 为 f119ed0 | 格式、Clippy、文档和测试门禁通过 |
 | 菱形 DAG | `graph_accepts_shared_diamond_and_releases_child_once` 通过 | 共享子节点只释放一次，两个拥有者先于子节点 |
 | 负向测试有效性 | 临时探针直接导入两个句柄，得到 `E0277`：`cannot be sent/shared between threads safely` | 四个 `compile_fail` 不是因导入/语法错误而空转 |
 | 平台复现 `39227168623` | Windows 红：`xiao-doc-coverage-rust` 链接到 `C:\Program Files\Git\usr\bin\link.exe`；其余三平台和 ordered summary 绿 | 四平台证据仍不完整；见 F-3 |
 | 平台脚本修复 | `e7597c4` 把 MSVC linker 置于 PATH 首位，晚于 `39227168623` | 尚无运行验证 |
-| 文档状态 | 仍多处写“待 2248e81 推送”，未回填 `f119ed0` 和 `39517248193/39517248607` | 见 F-1/F-2 |
+| 文档状态 | f119ed0 与 `39517248193/39517248607` 已回填；当前 HEAD a53bc97 的平台运行号仍缺 | 见 F-1/F-2/F-3 |
 | 并发裁定 | `00-decisions.md` 只登记“待裁定/研究深度边界”，8 项问题没有选择 | 入口阻断；见 F-4 |
 
 ### 1.3 本批边界
@@ -63,46 +63,41 @@
 
 ## 二、审核发现与前置返工
 
-### F-1 **提交归属写错、运行号未回填（P2）**
+### F-1 **提交归属写错、运行号未回填（已关闭）**
 
-`07d-closeout-and-concurrency-decisions.md:43` 仍写：
+上一批文档曾写：
 
 > `2248e81 ... 新增 set-dict-alias 原生夹具、空日志拒绝和 07D 证据补充`
 
-实际上 07D 证据、菱形 DAG、Send/Sync doctest 和文档对账都在 `f119ed0`；`2248e81`
-只有夹具、空日志修复和 `set-dict-alias`。此外以下位置仍以 `2248e81` 作为待推送提交：
+实际归属已收窄：`2248e81` 只提供夹具和空日志修复，07D 证据、菱形 DAG、Send/Sync
+doctest 和文档对账由 `f119ed0` 承载；`f119ed0` 已推送，`39517248193` 与
+`39517248607` 的 `headSha` 均为 f119ed0。当前 HEAD `a53bc97` 是本批文档提交，
+尚未有新的 CI 运行号。
 
-- `07d-closeout-and-concurrency-decisions.md:12/137/197/209/264`
-- `07d-concurrency-model-research.md:252/255/424`
-- `20l-dict-methods-and-20k-closeout.md:10/14/59/326`
-- `README.md:78/79/242`
+**处理结果**：
 
-**处理要求**：
-
-1. 把“推送 2248e81”统一改成“推送当前 HEAD `f119ed0`（包含 2248e81）”，或直接写
-   `f119ed0`；
-2. 在 07-D.1、07-D、20L、README 回填：
+1. 已把提交归属统一为 f119ed0（包含 2248e81）；
+2. 已在 07-D.1、07-D、20L、README 回填：
    - 维护回归 `39517248193`（六作业全绿，三平台原生运行首批模块夹具）；
    - 工作区门禁 `39517248607`（Linux workspace 成功）；
    - 四个 `compile_fail` 在 Linux workspace 的 4 passed；
-3. 用 `grep -rn "2248e81\|1393cea" docs/DevDocs` 对账，确认没有把中间提交写成当前 HEAD；
-   历史证据保留时要标注“历史”或“审核时”。
+3. 历史提交只在说明来源的位置保留，当前状态均写 f119ed0 或 a53bc97。
 
-### F-2 **07-D §1.2 仍是过期状态（P2）**
+### F-2 **07-D §1.2 仍是过期状态（已关闭）**
 
-`07d-concurrency-model-research.md` 的“现状盘点（2026-10-20 实跑/CI）”仍写：
+`07d-concurrency-model-research.md` 的旧“现状盘点”曾写：
 
 - `:43` 20L 回归“**阻断**”；实际 `39459004148` 三平台原生已绿；
 - `:44` “最新测试 `1393cea` 未推送；平台复现仍是旧红”；`1393cea` 已在
   `origin/main` 历史中，52b897e 也已推送。
 
-同一文档 §9.1 已按新运行号更新，两个表互相矛盾。`07d-closeout` 的 F-2 段也仍以
-“现状”语气列 `07d:252`、20L 顶部等“仍写……”，这些位置已经改过，行号也已漂移。
+同一文档 §9.1 已按 f119ed0 的新运行号更新，当前 §1.2 已明确为审核时快照；
+07D.1 的 F-2 段也已改成关闭记录，不再把历史快照当作当前缺口。
 
-**处理要求**：把 §1.2 明确标成“审核时快照”，或直接更新为当前状态；把 07-D.1 的
-F-1/F-2 段标成“审核时现状 → 已关闭/待外部门禁”，不要保留会被读成当前缺口的句子。
+**处理结果**：§1.2 已标成“审核时快照”，F-1/F-2 已标成关闭记录；当前 HEAD 的平台
+外部门禁仍单独归入 F-3。
 
-### F-3 **平台复现仍缺当前运行号（P2，外部门禁）**
+### F-3 **平台复现仍缺当前 HEAD 运行号（P2，外部门禁）**
 
 最新平台复现仍是 `39227168623`：Windows 因 `bun run check` 中 `xiao-doc-coverage-rust`
 调用 Git 的 `link.exe` 而红，其余三平台和 ordered summary 绿。`e7597c4` 的 PATH 修复
@@ -111,7 +106,7 @@ F-1/F-2 段标成“审核时现状 → 已关闭/待外部门禁”，不要保
 
 **处理要求**：
 
-1. 在 `f119ed0` 或其后继 HEAD 上手动触发 `Xiao platform reproduction`
+1. 在当前 HEAD `a53bc97` 推送后手动触发 `Xiao platform reproduction`
    （工作流 ID `365649226`）；
 2. 记录新运行号、四个平台作业结果和 ordered summary；
 3. Windows 若仍红，抓取实际链接器路径和失败步骤，另开修复并**重新运行**；不得用
@@ -175,7 +170,7 @@ F-1/F-2 段标成“审核时现状 → 已关闭/待外部门禁”，不要保
 
 | 步 | 内容 | 验证 |
 | --- | --- | --- |
-| 0 | 回填 f119ed0 与 `39517248193`/`39517248607`；修正提交归属和过期状态 | 文档 diff；grep 对账 |
+| 0 | 回填 f119ed0 与 `39517248193`/`39517248607`；修正提交归属和过期状态；标注当前 HEAD a53bc97 | 文档 diff；grep 对账 |
 | 1 | 手动触发平台复现，记录四平台作业和 ordered summary | 新运行号 |
 | 2 | 把 8 项裁定或明确后置写入 00；更新 07-D §11.3 与 21A 引用 | `00-decisions.md` |
 | 3 | 收口审核：定向测试、`XIAO_GATE_SELF_TEST=1`、文档/覆盖率门禁 | 本地/CI 证据 |
@@ -186,13 +181,13 @@ ABI/标准库公开契约。`52b897e` 的 codegen 修复保持现状，不做补
 
 ## 五、验收
 
-1. **文档归属**：现有文档不再把 07D 证据归给 2248e81；当前 HEAD 写 `f119ed0`；
+1. **文档归属**：现有文档不再把 07D 证据归给 2248e81；维护 CI 归属 f119ed0，当前 HEAD 写 a53bc97；
    `39517248193` 与 `39517248607` 已回填；`grep` 无未标注的“1393cea 未推送”；
 2. **平台复现**：最新 HEAD 有一次新的四平台运行；Windows 绿，或红因已定位并有复跑；
    ordered summary 只作为汇总，不作为单平台绿的替代；
 3. **CI**：最终提交的维护回归与 workspace 门禁全绿；三平台原生作业实际运行
    `first_modules_match_native_results`；
-4. **裁定**：00 中 8 项有明确选择或明确后置；未登记新阶段代号、语法或公开 API；
+4. **裁定**：00 中 8 项已明确为“待星崽裁定”，没有把候选或推荐写成选择；未登记新阶段代号、语法或公开 API；
 5. **不越界**：无并发语法、`Send`/`Sync`/`async`/`Actor`/`Weak`、原子 RC、共享句柄、
    IR/ABI/标准库公开契约变更；
 6. **门禁**：定向测试通过；`XIAO_GATE_SELF_TEST=1` 通过；文档覆盖率 ≥90%；完整门禁
@@ -220,7 +215,7 @@ docs/DevDocs/README.md                                      07-D.2 索引与状�
 ```
 
 ```bash
-# 文档对账（应只剩标注为历史的引用）
+# 文档对账（2248e81/1393cea 只能出现在历史来源说明中）
 grep -rn "2248e81\|1393cea" docs/DevDocs
 
 # 推送证据
@@ -245,7 +240,7 @@ XIAO_GATE_SELF_TEST=1 bash tools/gates/run.sh
 
 ## 八、风险与注意事项
 
-1. **平台复现不是 push 触发**：`39517248193` 和 `39517248607` 只证明维护/工作区；
+1. **平台复现不是 push 触发**：`39517248193` 和 `39517248607` 只证明 f119ed0 的维护/工作区；
    四平台证据必须手动触发，且定时任务每周才跑一次。
 2. **Windows `link.exe` 可能再次命中**：`e7597c4` 只改了脚本 PATH；必须以新运行验证，
    不能只凭脚本 diff 认定已修。
