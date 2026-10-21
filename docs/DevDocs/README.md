@@ -78,7 +78,7 @@
 | 07-D | [并发模型研究：候选、成本与冻结前置](07d-concurrency-model-research.md) | 收 20L 的 F-1–F-5 前置；比较线程/单线程任务/任务池/Actor/多 Runtime，研究 Send/Sync、复制/冻结、原子共享句柄与竞争/取消/清理验收；不实现并发 | **研究记录已完成；f119ed0 维护回归/工作区已绿，待当前本地后继提交的平台取证与星崽裁定（2026-10-21）**：矩阵仍是定性桌面研究，不改语法/类型/IR/ABI/标准库公开契约 |
 | 07-D.1 | [07-D 收口与并发入口决策准备](07d-closeout-and-concurrency-decisions.md) | 收 07-D 审核的 F-1–F-6：21A 验收 1–3 实跑证据、CI/文档对账、平台复现和 ordered summary、研究深度边界；把并发模型裁定送进 00 决策基线 | **f119ed0 证据已补，当前本地后继提交待新的四平台复现（2026-10-21）**：菱形 DAG、句柄边界和研究深度已登记；不写并发语法、类型、IR、ABI 或标准库公开契约 |
 | 07-D.2 | [并发入口裁定与平台收口](07d2-entry-decisions-and-platform-closeout.md) | 回填 f119ed0 与 `39517248193`/`39517248607` 的 CI 证据；修正提交归属和过期状态；手动触发四平台复现；把 8 项并发入口裁定或明确后置写入 00 | **本地对账已完成，当前本地后继提交待平台复现与星崽裁定（2026-10-21）**：不写并发语法、类型、IR、ABI、Runtime 或标准库公开契约；不登记新阶段代号 |
-| 07-D.3 | [平台复现修复与 07-D 终验](07d3-platform-reproduction-fix-and-closeout.md) | 收 `39546679818` 的平台红点：Windows 仍命中 Git `link.exe`、macOS REPL 鼠标选区测试时序失败；修链接器穿透和测试确定性，复跑四平台，清理文档残留并记录裁定 | **待实施（2026-10-21）**：允许改平台脚本和 REPL 测试夹具；不改语法、类型、IR、ABI 或标准库公开契约 |
+| 07-D.3 | [平台复现修复与 07-D 终验](07d3-platform-reproduction-fix-and-closeout.md) | 收 `39546679818` 的平台红点：Windows 仍命中 Git `link.exe`、macOS REPL 鼠标选区测试时序失败；修链接器穿透和测试确定性，复跑四平台，清理文档残留并记录裁定 | **本地修复与重复测试已通过，待新的四平台复现（2026-10-21）**：Windows Cargo linker 穿透、macOS 可观察重绘等待已修；不改语法、类型、IR、ABI 或标准库公开契约 |
 | 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 进行中（08A/U0 已完成首版） |
 | 08A | [U0 统一前端实现交接记录](08a-u0-frontend-implementation.md) | 单一前端流水线、递归类型化 IR、验证器和稳定 JSON 快照 | 已完成首版 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 进行中（09R1–09R3 已冻结，B0-A/B/C/D 已交付；用户可见 CLI 仍留给 11/X0；批次边界见 [09-B0](09b0-bytecode-closure.md)） |

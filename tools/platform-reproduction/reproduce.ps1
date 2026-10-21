@@ -69,6 +69,7 @@ function Initialize-MsvcEnvironment {
     }
     # Git for Windows also ships link.exe; MSVC must win PATH resolution.
     $env:PATH = "$linkerBin;$env:PATH"
+    return $msvcLinker
 }
 
 function Write-Utf8NoBom {
@@ -112,7 +113,7 @@ if ($Mode -eq 'docker') {
     exit 0
 }
 
-Initialize-MsvcEnvironment
+$msvcLinker = Initialize-MsvcEnvironment
 
 $cargoManifest = Join-Path $repositoryRoot 'core/rust/Cargo.toml'
 $bunPath = (Get-Command bun).Source
@@ -124,6 +125,12 @@ if (-not (Test-Path -LiteralPath $gitBashPath -PathType Leaf)) {
 }
 $hostTriple = (& rustc -vV | Select-String '^host:').ToString().Split(':', 2)[1].Trim()
 $env:XIAO_TARGET_TRIPLE = $hostTriple
+$cargoTarget = $hostTriple.ToUpperInvariant().Replace('-', '_')
+$cargoLinkerVariable = "CARGO_TARGET_${cargoTarget}_LINKER"
+# reproduce.ps1 后续通过 Git Bash 启动 run.sh；Git Bash 会把自己的 /usr/bin/link.exe
+# 放回 PATH。Cargo 的目标 linker 环境变量直接钉住 MSVC 路径，确保 Bash 子进程和
+# xiao-doc-coverage-rust 的 cargo run 都不会重新按 PATH 解析到 Git linker。
+Set-Item -Path "Env:$cargoLinkerVariable" -Value $msvcLinker
 $env:XIAO_CLANG = (Get-Command clang).Source
 $env:XIAO_LLVM_AS = (Get-Command llvm-as).Source
 $env:XIAO_LLC = (Get-Command llc).Source
@@ -133,6 +140,7 @@ Write-Output "Platform: Windows/$env:PROCESSOR_ARCHITECTURE"
 Write-Output "Rust: $(& rustc --version)"
 Write-Output "Bun: $(& bun --version)"
 Write-Output "Target: $hostTriple"
+Write-Output "Cargo linker ($cargoLinkerVariable): $msvcLinker"
 Write-Output "clang: $((& $env:XIAO_CLANG --version) | Select-Object -First 1)"
 Write-Output "llvm-as: $((& $env:XIAO_LLVM_AS --version) | Select-Object -First 1)"
 Write-Output "llc: $((& $env:XIAO_LLC --version) | Select-Object -First 1)"

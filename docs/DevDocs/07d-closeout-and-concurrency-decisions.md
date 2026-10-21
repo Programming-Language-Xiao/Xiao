@@ -65,32 +65,29 @@
 
 ## 二、前置返工项
 
-### F-1 **21A 验收 1–3 缺少实跑证据（P2）**
+### F-1 **21A 验收 1–3 的本地证据（已补，平台复跑待办）**
 
 07-D 规划 §六.3 要求“DAG/菱形、强环拒绝、跨线程句柄拒绝、`CrossThread` 只由显式
 事实产生，均有实跑证据”，但研究记录 §9.2 只逐条对照了 21A §3.1 的六项交付物，
-没有给出这批验收的测试名或运行号。现状：
+上一批审核时没有给出这批验收的测试名或运行号；当前本地证据如下：
 
 - 强环有两层测试：`xiao-lifetime/tests/a06_lifetime.rs:349`
   `strong_cycle_is_reported`、`:872` `graph_rejects_strong_cycle`；
-- 未找到 DAG 共享/菱形的专用测试；`graph_orders_and_weak_edges` 只验证弱边不成环；
-- 未找到 `StrongHandle`/`WeakHandle` 的 `Send` 负向断言；单线程边界目前由
-  `xiao-runtime/src/memory/mod.rs:387-394` 的 `PhantomData<Rc<()>>` 结构性保证；
+- `graph_accepts_shared_diamond_and_releases_child_once` 已覆盖 DAG 共享/菱形；
+- `StrongHandle`/`WeakHandle` 各有 `Send` 移动与 `Sync` 约束的 `compile_fail` 文档测试；
+  单线程边界仍由 `PhantomData<Rc<()>>` 结构性保证；
 - `CrossThread` 没有生产者：06A `:112` 已写明“冻结前没有 AST 生产者”，代码检索只见到
   `EscapeReason::CrossThread` 的匹配（`xiao-lifetime/src/diagnostics.rs:81`、
   `xiao-ir/src/lower.rs:1327`）。
 
-**处理要求**：
+**处理结果**：
 
-1. 在 `a06_lifetime.rs` 增加最小菱形/DAG 用例：两个拥有者共享同一子节点，释放顺序
-   成功且子节点只析构一次；单节点/多节点强环继续由现有测试覆盖。
-2. 在 Runtime 侧增加 `StrongHandle`/`WeakHandle` 不是 `Send`/`Sync` 的编译期或静态
-   断言；不得为此新增公开 API 或改变对象布局。
-3. `CrossThread`：若能不新增语法/IR/ABI 构造显式事实，就补传播/诊断测试；若不能，
-   在 07-D §9.1 明确写成“契约级证据：无生产者”，**不得**写成“运行测试已通过”。
-4. 把测试名、本地运行结果和最新 CI 运行号回填 07-D §9.1/§11.3。
+1. 菱形/DAG、强环和句柄负向测试已补并通过；
+2. `CrossThread` 已按契约级“无生产者”记录，没有伪造传播测试；
+3. 测试名和本地运行结果已回填 07-D/21A；f119ed0 的 CI 运行号已回填，当前本地后继提交的
+   平台运行号仍待外部。
 
-**关闭标准**：上述 1–3 有明确的测试名或如实的不可实跑说明；本地定向通过；CI 运行号可查。
+**当前结论**：上述本地证据已满足；平台复跑仍由 F-3 追踪。
 
 ### F-1 本地实施记录
 
@@ -148,14 +145,14 @@
 仍需新的平台运行号，不能用旧运行替代。
 不得用本地 10.39s 的通过代替 CI 取证。
 
-### F-5 **20L F-3 的“移除动作外部验证”措辞没有对应机制（P3）**
+### F-5 **20L F-3 的“移除动作外部验证”措辞（已关闭）**
 
 `07d-concurrency-model-research.md:254` 写“移除动作后的外部四路验证仍归平台门禁”。
 仓库中不存在“移除动作”的验证步骤，平台门禁也不会执行它。实际成立的是另一条分支：
 `__dict_remove`/`__dict_keys`/`__dict_values` 保持编译器私有，不登记 intrinsic，并用
 `by_name` 缺失、VM 输出和 LLVM 符号三类证据锁定。
 
-**处理要求**：把该句改成“保持私有动作，不登记 intrinsic；移除验证不适用”，避免留下
+**处理结果**：已改成“保持私有动作，不登记 intrinsic；移除验证不适用”，不再留下
 无法核销的承诺。
 
 ### F-6 **研究深度需要如实标注（P3）**

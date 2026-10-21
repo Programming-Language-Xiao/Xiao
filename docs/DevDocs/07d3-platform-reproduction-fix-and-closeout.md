@@ -7,7 +7,7 @@
 > **本批一句话**：**先把两个平台红点修掉并重新跑绿，再做最后的文档/裁定收口；
 > 仍然不写并发语法、执行器、`Send`/`Sync`、原子 RC、共享句柄或 `std.concurrent`。**
 >
-> 状态：**待实施（2026-10-21）**。不修改 `xiao-syntax`、`xiao-types`、IR、
+> 状态：**本地修复已完成，待新的四平台复现（2026-10-21）**。不修改 `xiao-syntax`、`xiao-types`、IR、
 > Runtime ABI 或标准库公开契约；不登记新阶段代号。平台复现只有新运行号能关闭，
 > ordered summary 的绿不能替代单平台作业结果。
 
@@ -38,10 +38,10 @@
 | 推送 | `0191330` 已推送；`origin/main` 与本地一致 | 文档对账已进入远端 |
 | 工作区门禁 `39544482322` | Linux workspace gates 成功 | 纯文档提交的文档/格式门禁通过 |
 | 维护回归 | 纯文档提交不触发；最后一次代码提交 f119ed0 的 `39517248193` 六作业全绿 | 维护证据仍以 f119ed0 为准 |
-| 平台复现 `39546679818` | Linux amd64/arm64 成功；**macOS 红**（REPL 鼠标选区测试）；**Windows 红**（Git `link.exe`）；ordered summary 成功 | 四平台证据**不完整**；见 F-1/F-2 |
-| Windows 失败点 | `xiao-doc-coverage-rust` 链接命令使用 `C:\Program Files\Git\usr\bin\link.exe`，`link.exe` 返回意外错误，`bun run check` 退出 1 | 见 F-1 |
-| macOS 失败点 | `cli/ts/src/repl/multiline.test.ts:718`：`SGR 鼠标点击和拖动建立选区...` 期望 `anchor={line:0,column:0}`，实际 `null`；303 个 Bun 测试中 297 pass / 5 skip / 1 fail | 见 F-2 |
-| 文档状态 | 07-D/07-D.1/07-D.2/20L/README 的 f119ed0 与 `39517248193`/`39517248607` 已回填 | 仍有少量旧段落，见 F-4 |
+| 平台复现 `39546679818` | Linux amd64/arm64 成功；**macOS 红**（REPL 鼠标选区测试）；**Windows 红**（Git `link.exe`）；ordered summary 成功 | 历史红点；新运行仍待外部 |
+| Windows 失败点 | 历史日志显示 `xiao-doc-coverage-rust` 使用 `C:\Program Files\Git\usr\bin\link.exe` | 本地已改为目标三元组 Cargo linker 环境变量，待 Windows 复跑验证 |
+| macOS 失败点 | 历史日志显示 SGR 鼠标选区测试固定等待后 `anchor` 为 `null` | 本地改为等待可观察重绘信号；隔离重复 5 次通过，待 macOS 复跑验证 |
+| 文档状态 | f119ed0 与 `39517248193`/`39517248607` 已回填；本批修复尚无新的平台运行号 | F-4/F-5 已在本批整理 |
 | 并发裁定 | `00-decisions.md` 记录 8 项“待星崽裁定” | 入口阻断；见 F-3 |
 
 ### 1.3 本批边界
@@ -60,7 +60,7 @@
 
 ## 二、审核发现
 
-### F-1 **Windows 平台仍使用 Git 的 `link.exe`（P1，平台阻断）**
+### F-1 **Windows 平台仍使用 Git 的 `link.exe`（本地修复完成，平台复跑待办）**
 
 `39546679818` 的 Windows 作业在 `Run Windows reproduction` 步骤失败。日志显示
 `xiao-doc-coverage-rust` 的链接器是：
@@ -89,7 +89,11 @@
 **关闭标准**：新的 Windows 平台复现日志中不再出现
 `C:\Program Files\Git\usr\bin\link.exe`；`xiao-doc-coverage-rust` 与全量门禁通过。
 
-### F-2 **macOS 的 REPL 鼠标选区测试失败（P1/P2，平台阻断）**
+**本地处理结果**：`Initialize-MsvcEnvironment` 现在返回真实 MSVC `link.exe` 路径，脚本
+按当前 Rust 目标三元组设置 `CARGO_TARGET_<TRIPLE>_LINKER`；Git Bash/cargo 子进程不再依赖
+PATH 竞争。PowerShell 语法检查通过，最终确认仍需新的 Windows 平台日志。
+
+### F-2 **macOS 的 REPL 鼠标选区测试失败（本地修复完成，平台复跑待办）**
 
 同一平台运行的 macOS 作业在 `bun test` 中失败：
 
@@ -116,6 +120,10 @@ received: null
 **关闭标准**：macOS 平台复现的 `bun test` 通过；若走隔离放行，必须有重复运行证据和
 分类器自测。
 
+**本地处理结果**：测试等待初始重绘和鼠标事件处理后的第二次重绘，不再使用固定 5 ms
+计时；同一用例连续 5 次通过，完整 Bun 测试为 298 pass / 5 skip / 0 fail。断言和
+`run.sh` 放行名单均保持不变。
+
 ### F-3 **8 项并发入口问题仍未裁定（P1，入口阻断）**
 
 `00-decisions.md` 已记录 8 项“待星崽裁定”，没有选择。执行机制、`Send`/`Sync` 候选、
@@ -125,37 +133,36 @@ received: null
 **处理要求**：按 07-D.2 §三逐项记录选择或明确后置；未裁定前不建立并发实现阶段，
 不预留 `H0-C`、`07-D 实现`、`std.concurrent` 或任何语法/API 名称。
 
-### F-4 **上一轮文档残留（P3）**
+### F-4 **上一轮文档残留（已关闭）**
 
-- `07d2-entry-decisions-and-platform-closeout.md:128` 的 F-5 仍写 00 使用“后置、未裁定”，
-  实际已改成“待星崽裁定”；
-- `07d2-entry-decisions-and-platform-closeout.md:86` 的标题“仍是过期状态（已关闭）”
-  自相矛盾；
-- `07d-closeout-and-concurrency-decisions.md:151` 的 F-5 仍说 `07d:254` 写着旧的移除
-  验证承诺，实际已改成“移除验证不适用”；
-- `07d-closeout-and-concurrency-decisions.md:68` 的 F-1 仍以“缺少实跑证据/未找到”
-  描述当前仓库，实际测试和 CI 已具备。
+- 上一轮审核曾发现 07D.2 的“后置、未裁定”、F-2 标题矛盾、F-5 移除验证承诺和 F-1
+  “未找到测试”措辞；这些内容已在对应文档改为“待星崽裁定”、关闭记录、移除验证不适用
+  和当前测试证据。
 
-**处理要求**：把这些段落标成“审核时现状 → 已关闭”，或在关闭记录中写明修正后的
-位置；不要留下会被读成当前缺口的句子。
+**处理结果**：上一轮文档中的旧行号和旧措辞已按当前文件内容收窄；07D.2/07D.1 的
+F-1/F-2/F-5 只保留历史来源或已关闭说明，不再作为当前缺口。
 
-### F-5 **维护回归的验收口径需要明确（P3）**
+### F-5 **维护回归的验收口径（已明确）**
 
 维护回归的 `paths` 不含 `docs/**`，纯文档提交不会触发；当前最后有效维护回归是
 f119ed0 的 `39517248193`。07-D.2 验收要求“最终提交的维护回归与 workspace 门禁全绿”，
 对纯文档提交无法字面满足。
 
-**处理要求**：二选一并写进文档：
+**处理结果**：采用第 2 项口径：最后一次代码提交 f119ed0 的维护回归
+`39517248193` 全绿；后续纯文档提交由 `39517248607` 的 workspace 门禁覆盖。平台复现
+仍需单独手动触发，不能由文档提交的维护回归状态推导。
+
+历史选项记录：
 
 1. 对最终 HEAD 手动 `workflow_dispatch` 一次维护回归，取得绿运行号；
 2. 明确写成“最后一次代码提交 f119ed0 的维护回归全绿；后续纯文档提交由
    `39544482322` 的 workspace 门禁覆盖”。
 
-### F-6 **“当前本地后继提交”缺少可追溯提交号（P3）**
+### F-6 **当前本地后继提交的可追溯边界（P3）**
 
-07-D.2 为避免硬编码漂移，把 `a53bc97` 改成了“当前本地后继提交”。方向正确，但取证后
-必须写成实际 HEAD/运行号，否则后续审计无法确定对应提交。平台复跑完成后，以当时的
-HEAD 为准回填具体 hash。
+07D.2 为避免在每次纯文档提交后重复改写哈希，使用“当前本地后继提交”描述尚未进入
+平台运行的文档提交。平台复跑完成后，应将实际 HEAD 与运行号一起回填；在此之前，f119ed0
+仍是最后一个有维护回归运行号的代码基线。
 
 ## 三、平台证据记录
 
@@ -173,9 +180,9 @@ HEAD 为准回填具体 hash。
 
 | 步 | 内容 | 验证 |
 | --- | --- | --- |
-| 0 | 修 Windows 链接器穿透问题，确认 bash/cargo 使用 MSVC `link.exe` | Windows 平台日志 |
-| 1 | 复现并修 macOS REPL 鼠标选区测试时序 | 重复运行 + macOS 平台 |
-| 2 | 清理 07-D.2/07-D.1 的残留段落，明确维护回归口径 | 文档 diff；grep 对账 |
+| 0 | 修 Windows 链接器穿透问题，确认 bash/cargo 使用 MSVC `link.exe` | 本地 PowerShell 检查；平台日志待补 |
+| 1 | 复现并修 macOS REPL 鼠标选区测试时序 | 隔离 5 次通过；macOS 平台日志待补 |
+| 2 | 清理 07-D.2/07-D.1 的残留段落，明确维护回归口径 | 文档 diff；文档门禁 |
 | 3 | 推送修复，手动触发平台复现，记录四平台与 ordered summary | 新运行号 |
 | 4 | 把 8 项裁定或明确后置写入 00；未裁定则保持入口阻断 | `00-decisions.md` |
 | 5 | 收口审核：定向测试、`XIAO_GATE_SELF_TEST=1`、完整门禁/CI | 本地/CI 证据 |

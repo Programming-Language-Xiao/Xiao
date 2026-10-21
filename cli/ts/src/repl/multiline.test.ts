@@ -710,9 +710,10 @@ test("SGR 鼠标点击和拖动建立选区，滚轮忽略且退出关闭鼠标�
   const session = runMultilineSession({
     input, output, error: new PassThrough(), write: writeSafely, env: {}, isTTY: true, color: "never",
   });
-  await new Promise((resolve) => setTimeout(resolve, 0));
+  await waitFor(() => printed.includes("\u001b[H\u001b[2J"));
+  const redrawsBeforeMouse = printed.split("\u001b[H\u001b[2J").length - 1;
   input.write(Buffer.from("abc\u001b[<0;7;1M\u001b[<32;10;1M\u001b[<64;10;1M\u001b[<0;10;1m"));
-  await new Promise((resolve) => setTimeout(resolve, 5));
+  await waitFor(() => printed.split("\u001b[H\u001b[2J").length - 1 > redrawsBeforeMouse);
   input.end();
   const result = await session;
   expect(result.state.anchor).toEqual({ line: 0, column: 0 });
