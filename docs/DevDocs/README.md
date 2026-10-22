@@ -84,6 +84,7 @@
 | 07-D.6 | [最小 OS 线程原型](07d6-minimal-os-thread-prototype.md) | 在隔离目录验证线程入口、深拷贝、`CrossThread` 任务/线程边界、候选 A 推导、只读/共享可变原子句柄、取消清理和成本测量 | **本地场景与仓库门禁已通过，CI 待取证（2026-10-22）**：8 个测试通过；测量和模拟边界已记录；不进入产品契约，不写并发语法、类型、IR、ABI 或标准库公开契约 |
 | 07-D.7 | [原型门禁与证据收口](07d7-prototype-gate-and-evidence-fixes.md) | 修 `tests/research/concurrency` 的 A0-LAYOUT-001/002、补 CI 覆盖或明确本地口径；修正状态尺寸/spawn-join 测量语义、模拟场景标注和 Windows-only 限制 | **本地门禁已通过，CI 待取证（2026-10-22）**：只改原型/门禁/文档；不改语言、IR、ABI、Runtime 或标准库公开契约 |
 | 07-D.8 | [原子共享句柄对象头/ABI 原型](07d8-atomic-handle-abi-prototype.md) | 用自定义对象头验证强/弱计数、升级竞态、锁、取消清理、普通/共享句柄区分和跨平台尺寸；推送 07-D.7 修复并取得 CI 证据 | **本地 ABI 原型已完成，CI/跨平台待取证（2026-10-22）**：不改语言、IR、Runtime ABI 或标准库公开契约 |
+| 07-D.9 | [ABI 布局清理与成本取证](07d9-abi-layout-cleanup-and-cost-evidence.md) | 统一 07-D.8 的布局数字；把测试探针移出对象头；用真实 `offset_of` + 高对齐测试修正偏移；补自定义句柄 clone/drop/upgrade/lock 成本；推送取得 CI 并补跨平台测量 | **待实施（2026-10-22）**：只改隔离原型/门禁/文档；不改语言、IR、ABI、Runtime 或标准库公开契约 |
 | 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 进行中（08A/U0 已完成首版） |
 | 08A | [U0 统一前端实现交接记录](08a-u0-frontend-implementation.md) | 单一前端流水线、递归类型化 IR、验证器和稳定 JSON 快照 | 已完成首版 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 进行中（09R1–09R3 已冻结，B0-A/B/C/D 已交付；用户可见 CLI 仍留给 11/X0；批次边界见 [09-B0](09b0-bytecode-closure.md)） |
