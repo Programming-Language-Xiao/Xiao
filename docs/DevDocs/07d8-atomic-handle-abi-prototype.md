@@ -33,7 +33,7 @@
 | HEAD | 07-D.7 门禁修复已提交；07-D.8 改动在本地、尚未推送 | 原型和门禁修复在本地 |
 | 本地门禁 | `bun run check`、`check:layout`、原型 test/Clippy/fmt 通过 | 本地证据成立 |
 | 原型测试 | 9 passed，包含自定义对象头/句柄测试 | 参考模型和 ABI 原型可运行 |
-| 测量 | Windows x86_64；自定义对象头 40 bytes、共享/弱句柄各 8 bytes、普通句柄 16 bytes、`u64` 对象 48 bytes | 自定义原型布局，不是产品 ABI |
+| 测量 | Windows x86_64；干净头 24 bytes、干净 `u64` 对象 32 bytes/偏移 24 bytes；含探针对象 48 bytes/偏移 40 bytes；align32 干净对象 64 bytes/偏移 32 bytes | 自定义原型布局，不是产品 ABI |
 | CI | 尚无 07-D.8 的 workspace gates 运行号 | 待推送取证 |
 | 决策第 6 项 | 要求对象头/锁/取消/清理/跨平台 ABI 同轮验证 | **当前只验证了参考模型**；见 F-1 |
 | 跨平台测量 | 仅 Windows x86_64 | Linux/macOS 待测；见 F-3 |
@@ -155,13 +155,15 @@ Windows x86_64 下运行 `cargo run --release --manifest-path tests/research/con
 | 普通句柄包装器 | 16 bytes |
 | 含探针 `u64` 载荷对象 | 48 bytes，8-byte 对齐 |
 | 32-byte 对齐载荷对象 | 96 bytes；载荷偏移 64 bytes |
+| 干净 `u64` 载荷对象 | 32 bytes；载荷偏移 24 bytes |
+| 干净 32-byte 对齐载荷对象 | 64 bytes；载荷偏移 32 bytes |
 | 原子强/弱计数 | 弱升级失败后不能复活载荷；载荷和对象头各析构一次 |
 | 内存顺序 | acquire/release 发布路径通过 |
 | 共享可变 | 显式 `Mutex`、取消等待、异常/毒化锁恢复通过 |
 
 `--iterations 1000` 的自定义操作成本为：clone/drop `19 ns`、弱升级成功 `19 ns`、弱升级
 失败 `<1 ns`（整数纳秒取整为 `0`）、锁保护增量 `20 ns`、取消标记检查 `<1 ns`（取整为
-`0`）、载荷/对象头分配析构 `262 ns`。这些成本只代表 Windows x86_64 当前构建。
+`0`）、含探针分配/析构 `264 ns`、干净分配/析构 `48 ns`。这些成本只代表 Windows x86_64 当前构建。
 
 这些数字只描述隔离原型的 `#[repr(C)]` 结构和当前机器，不能冻结 Xiao Runtime ABI。Linux
 amd64、Linux arm64、macOS arm64 仍需用同一命令补测；CI 运行号取得前，07-D.8 保持本地

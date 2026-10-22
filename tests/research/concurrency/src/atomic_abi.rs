@@ -81,6 +81,13 @@ struct AtomicObject<T> {
     payload: UnsafeCell<MaybeUninit<T>>,
 }
 
+/// 不带测试探针的干净 ABI 对象布局，仅用于 `size_of`/`offset_of` 测量。
+#[repr(C)]
+struct CleanAtomicObject<T> {
+    header: AtomicHeader,
+    payload: UnsafeCell<MaybeUninit<T>>,
+}
+
 impl<T> Drop for AtomicObject<T> {
     /// 记录对象头只回收一次；载荷由最后强句柄显式析构。
     fn drop(&mut self) {
@@ -164,6 +171,10 @@ impl<T> SharedHandle<T> {
             object_align32_bytes: size_of::<AtomicObject<Align32>>(),
             object_align32_align: align_of::<AtomicObject<Align32>>(),
             align32_payload_offset: std::mem::offset_of!(AtomicObject<Align32>, payload),
+            clean_object_u64_bytes: size_of::<CleanAtomicObject<u64>>(),
+            clean_u64_payload_offset: std::mem::offset_of!(CleanAtomicObject<u64>, payload),
+            clean_object_align32_bytes: size_of::<CleanAtomicObject<Align32>>(),
+            clean_align32_payload_offset: std::mem::offset_of!(CleanAtomicObject<Align32>, payload),
         }
     }
 
@@ -194,6 +205,8 @@ pub(crate) struct AbiCosts {
     pub cancel_check_ns: u128,
     /// 自定义载荷和对象头析构/分配平均纳秒数。
     pub drop_ns: u128,
+    /// 不带析构探针的干净对象分配/析构平均纳秒数。
+    pub clean_drop_ns: u128,
 }
 
 /// 测量自定义句柄的计数、升级、锁、取消检查和析构成本。
@@ -253,6 +266,16 @@ pub(crate) fn measure_costs(iterations: usize) -> AbiCosts {
     }
     let drop_ns = super::average_ns(start.elapsed(), iterations);
 
+    let start = std::time::Instant::now();
+    for _ in 0..iterations {
+        let object = Box::new(CleanAtomicObject {
+            header: AtomicHeader::new(HandleTag::Shared),
+            payload: UnsafeCell::new(MaybeUninit::new(1_u64)),
+        });
+        std::hint::black_box(object);
+    }
+    let clean_drop_ns = super::average_ns(start.elapsed(), iterations);
+
     AbiCosts {
         clone_drop_ns,
         upgrade_success_ns,
@@ -260,6 +283,7 @@ pub(crate) fn measure_costs(iterations: usize) -> AbiCosts {
         lock_ns,
         cancel_check_ns,
         drop_ns,
+        clean_drop_ns,
     }
 }
 
@@ -404,6 +428,14 @@ pub(crate) struct AbiLayout {
     pub object_align32_align: usize,
     /// 32-byte 对齐载荷的真实偏移。
     pub align32_payload_offset: usize,
+    /// 不带探针的 `u64` 对象尺寸。
+    pub clean_object_u64_bytes: usize,
+    /// 不带探针的 `u64` 载荷偏移。
+    pub clean_u64_payload_offset: usize,
+    /// 不带探针的 32-byte 对齐对象尺寸。
+    pub clean_object_align32_bytes: usize,
+    /// 不带探针的 32-byte 对齐载荷偏移。
+    pub clean_align32_payload_offset: usize,
 }
 
 /// 以 checked 算术增加原子计数。
@@ -438,6 +470,10 @@ pub(crate) fn run_demo() -> Result<(), String> {
         || layout.align32_payload_offset < layout.header_bytes
         || layout.object_align32_align != 32
         || !layout.align32_payload_offset.is_multiple_of(32)
+        || layout.clean_object_u64_bytes != 32
+        || layout.clean_u64_payload_offset != 24
+        || layout.clean_object_align32_bytes != 64
+        || layout.clean_align32_payload_offset != 32
         || layout.shared_handle_bytes == 0
         || layout.weak_handle_bytes == 0
         || layout.ordinary_handle_bytes == 0
