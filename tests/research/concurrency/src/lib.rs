@@ -417,6 +417,9 @@ pub fn atomic_read_demo() -> Result<(), String> {
     if successes.load(Ordering::SeqCst) + failures.load(Ordering::SeqCst) != WORKERS {
         return Err("弱升级竞态没有收集完整结果".to_owned());
     }
+    if weak.upgrade().is_some() {
+        return Err("强引用归零后弱句柄仍然可以升级".to_owned());
+    }
     drop(weak);
     if drops.load(Ordering::SeqCst) != 1 {
         return Err(format!(
