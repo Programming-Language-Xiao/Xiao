@@ -1,8 +1,11 @@
+//! 07-D.6 原型命令行入口：运行场景并输出候选表和测量记录。
+
 use std::env;
 use xiao_concurrency_prototype::{
     candidate_a_table, explicit_thread_migration, measure, run_all_scenarios, same_thread_suspend,
 };
 
+/// 读取 `--iterations` 参数，缺省使用 100 次。
 fn iterations_from_args() -> usize {
     let mut args = env::args().skip(1);
     while let Some(arg) = args.next() {
@@ -16,6 +19,7 @@ fn iterations_from_args() -> usize {
     100
 }
 
+/// 运行场景并打印可复现的边界与测量输出。
 fn main() {
     run_all_scenarios().expect("07-D.6 原型场景失败");
     println!("scenarios=8 passed");

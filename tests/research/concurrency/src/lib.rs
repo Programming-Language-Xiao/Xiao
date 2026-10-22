@@ -306,12 +306,14 @@ pub fn boundary_and_candidate_demo() -> Result<(), String> {
     Ok(())
 }
 
+/// 只读句柄的实验状态：载荷和析构计数指针。
 struct ReadState<T> {
     payload: T,
     drops: Arc<AtomicUsize>,
 }
 
 impl<T> Drop for ReadState<T> {
+    /// 记录实验状态的最终析构。
     fn drop(&mut self) {
         self.drops.fetch_add(1, Ordering::SeqCst);
     }
@@ -323,6 +325,7 @@ pub struct ReadHandle<T> {
 }
 
 impl<T> Clone for ReadHandle<T> {
+    /// 复制实验句柄包装器。
     fn clone(&self) -> Self {
         Self {
             inner: Arc::clone(&self.inner),
@@ -367,6 +370,7 @@ pub struct ReadWeak<T> {
 }
 
 impl<T> Clone for ReadWeak<T> {
+    /// 复制实验弱句柄包装器。
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
@@ -383,6 +387,7 @@ impl<T> ReadWeak<T> {
 
 /// 只读原子句柄、弱升级竞态和恰好一次析构场景。
 pub fn atomic_read_demo() -> Result<(), String> {
+    /// 并发升级线程数量。
     const WORKERS: usize = 8;
     let drops = Arc::new(AtomicUsize::new(0));
     let handle = ReadHandle::new(41_u64, Arc::clone(&drops));
@@ -430,12 +435,14 @@ pub fn atomic_read_demo() -> Result<(), String> {
     Ok(())
 }
 
+/// 共享可变句柄的实验状态：显式锁和析构计数器。
 struct MutableState<T> {
     value: Mutex<T>,
     drops: Arc<AtomicUsize>,
 }
 
 impl<T> Drop for MutableState<T> {
+    /// 记录共享可变状态的最终析构。
     fn drop(&mut self) {
         self.drops.fetch_add(1, Ordering::SeqCst);
     }
@@ -446,8 +453,10 @@ pub struct SharedMutableHandle<T> {
     inner: Arc<MutableState<T>>,
 }
 
+/// 串行化预期 panic 的临时 hook，避免污染场景输出。
 static EXPECTED_PANIC_HOOK_LOCK: Mutex<()> = Mutex::new(());
 
+/// 捕获并静默记录一个预期异常路径。
 fn catches_expected_panic<F>(operation: F) -> bool
 where
     F: FnOnce() + std::panic::UnwindSafe,
@@ -463,6 +472,7 @@ where
 }
 
 impl<T> Clone for SharedMutableHandle<T> {
+    /// 复制显式共享可变句柄包装器。
     fn clone(&self) -> Self {
         Self {
             inner: Arc::clone(&self.inner),
@@ -536,7 +546,9 @@ pub fn wait_for_lock_or_cancel<T>(
 
 /// 共享可变句柄的锁、取消、panic 解锁和析构场景。
 pub fn atomic_mutable_demo() -> Result<(), String> {
+    /// 并发写入线程数量。
     const WRITERS: usize = 4;
+    /// 每个写入线程的增量次数。
     const INCREMENTS: usize = 200;
     let drops = Arc::new(AtomicUsize::new(0));
     let handle = SharedMutableHandle::new(0_usize, Arc::clone(&drops));
@@ -712,15 +724,16 @@ pub struct Measurements {
     pub atomic_op_ns: u128,
     /// 每次锁保护增量的纳秒数。
     pub lock_op_ns: u128,
-    /// 只读句柄的原型尺寸。
-    pub read_handle_bytes: usize,
-    /// 共享可变句柄的原型尺寸。
-    pub mutable_handle_bytes: usize,
-    /// 只读原子对象头的原型尺寸。
-    pub read_state_bytes: usize,
+    /// 只读句柄包装器的原型尺寸，不是共享对象头布局。
+    pub read_handle_wrapper_bytes: usize,
+    /// 共享可变句柄包装器的原型尺寸，不是共享对象头布局。
+    pub mutable_handle_wrapper_bytes: usize,
+    /// 只读状态的原型尺寸（载荷 + 计数指针），不是原子对象头尺寸。
+    pub read_state_layout_bytes: usize,
 }
 
 impl fmt::Display for Measurements {
+    /// 输出稳定的键值测量记录。
     fn fmt(&self, output: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(output, "environment.os={}", self.os)?;
         writeln!(output, "environment.arch={}", self.arch)?;
@@ -729,12 +742,25 @@ impl fmt::Display for Measurements {
         writeln!(output, "deep_copy_ns={}", self.deep_copy_ns)?;
         writeln!(output, "atomic_op_ns={}", self.atomic_op_ns)?;
         writeln!(output, "lock_op_ns={}", self.lock_op_ns)?;
-        writeln!(output, "read_handle_bytes={}", self.read_handle_bytes)?;
-        writeln!(output, "mutable_handle_bytes={}", self.mutable_handle_bytes)?;
-        write!(output, "read_state_bytes={}", self.read_state_bytes)
+        writeln!(
+            output,
+            "read_handle_wrapper_bytes={}",
+            self.read_handle_wrapper_bytes
+        )?;
+        writeln!(
+            output,
+            "mutable_handle_wrapper_bytes={}",
+            self.mutable_handle_wrapper_bytes
+        )?;
+        write!(
+            output,
+            "read_state_layout_bytes={}",
+            self.read_state_layout_bytes
+        )
     }
 }
 
+/// 把总耗时换算成每个操作的整数纳秒均值。
 fn average_ns(elapsed: Duration, operations: usize) -> u128 {
     elapsed.as_nanos() / operations.max(1) as u128
 }
@@ -747,9 +773,11 @@ pub fn measure(iterations: usize) -> Measurements {
         NestedValue::Array(vec![NestedValue::Text("measure".to_owned())]),
     ]);
 
+    let spawn_inputs = (0..iterations)
+        .map(|_| source.deep_copy())
+        .collect::<Vec<_>>();
     let start = Instant::now();
-    for _ in 0..iterations {
-        let value = source.deep_copy();
+    for value in spawn_inputs {
         let join = thread::spawn(move || black_box(value));
         black_box(join.join().expect("measurement thread panicked"));
     }
@@ -784,9 +812,9 @@ pub fn measure(iterations: usize) -> Measurements {
         deep_copy_ns,
         atomic_op_ns,
         lock_op_ns,
-        read_handle_bytes: size_of::<ReadHandle<u64>>(),
-        mutable_handle_bytes: size_of::<SharedMutableHandle<u64>>(),
-        read_state_bytes: size_of::<ReadState<u64>>(),
+        read_handle_wrapper_bytes: size_of::<ReadHandle<u64>>(),
+        mutable_handle_wrapper_bytes: size_of::<SharedMutableHandle<u64>>(),
+        read_state_layout_bytes: size_of::<ReadState<u64>>(),
     }
 }
 
@@ -801,50 +829,59 @@ pub fn run_all_scenarios() -> Result<(), String> {
     Ok(())
 }
 
+/// 原型场景的 Rust 单元测试集合。
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
+    /// 验证线程副本不会修改发送方。
     fn thread_entry_isolated_by_deep_copy() {
         thread_entry_and_deep_copy_demo().unwrap();
     }
 
     #[test]
+    /// 验证复制失败的逆序清理和主错误保留。
     fn failed_copy_cleans_prefix_in_reverse_and_preserves_primary_error() {
         deep_copy_failure_demo().unwrap();
     }
 
     #[test]
+    /// 验证边界事实和候选 A 表。
     fn boundary_facts_and_candidate_a_table_are_observable() {
         boundary_and_candidate_demo().unwrap();
     }
 
     #[test]
+    /// 验证只读句柄的升级竞态和一次析构。
     fn atomic_read_handle_has_one_drop_and_safe_upgrade_race() {
         atomic_read_demo().unwrap();
     }
 
     #[test]
+    /// 验证显式锁、取消等待和共享可变异常路径。
     fn atomic_mutable_handle_uses_explicit_lock_and_cancellation() {
         atomic_mutable_demo().unwrap();
     }
 
     #[test]
+    /// 验证四个取消位置共享同一清理顺序。
     fn cancellation_order_and_suppressed_error_are_stable() {
         cancellation_demo().unwrap();
     }
 
     #[test]
+    /// 验证测量结果包含有效重复次数和状态尺寸。
     fn measurements_have_positive_repeat_count_and_sizes() {
         let result = measure(2);
         assert_eq!(result.iterations, 2);
-        assert!(result.read_handle_bytes > 0);
-        assert!(result.mutable_handle_bytes > 0);
-        assert!(result.read_state_bytes > 0);
+        assert!(result.read_handle_wrapper_bytes > 0);
+        assert!(result.mutable_handle_wrapper_bytes > 0);
+        assert!(result.read_state_layout_bytes > 0);
     }
 
     #[test]
+    /// 验证一次运行覆盖全部八类原型场景。
     fn all_eight_scenarios_pass_as_one_reproducible_run() {
         run_all_scenarios().unwrap();
     }

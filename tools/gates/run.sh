@@ -6,6 +6,7 @@ script_directory="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 repository_root="$(cd -- "$script_directory/../.." && pwd)"
 cargo_manifest="$repository_root/core/rust/Cargo.toml"
 benchmark_manifest="$repository_root/tests/benchmarks/Cargo.toml"
+research_concurrency_manifest="$repository_root/tests/research/concurrency/Cargo.toml"
 
 classify_bun_failures() {
   local log_file="$1"
@@ -62,6 +63,12 @@ printf '\n== Rust/TypeScript 门禁 ==\n'
 bun install --frozen-lockfile
 printf '\n-- cargo fmt --check --\n'
 cargo fmt --all --manifest-path "$cargo_manifest" -- --check
+printf '\n-- research concurrency cargo fmt --check --\n'
+cargo fmt --manifest-path "$research_concurrency_manifest" -- --check
+printf '\n-- research concurrency cargo test --\n'
+cargo test --manifest-path "$research_concurrency_manifest"
+printf '\n-- research concurrency cargo clippy --\n'
+cargo clippy --manifest-path "$research_concurrency_manifest" --all-targets -- -D warnings
 printf '\n-- bun run check --\n'
 bun run check
 printf '\n-- bun run check:coverage --\n'
