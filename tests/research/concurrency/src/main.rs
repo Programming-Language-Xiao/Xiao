@@ -2,7 +2,8 @@
 
 use std::env;
 use xiao_concurrency_prototype::{
-    candidate_a_table, explicit_thread_migration, measure, run_all_scenarios, same_thread_suspend,
+    candidate_a_table, custom_abi_layout_report, explicit_thread_migration, measure,
+    run_all_scenarios, same_thread_suspend,
 };
 
 /// 读取 `--iterations` 参数，缺省使用 100 次。
@@ -22,7 +23,7 @@ fn iterations_from_args() -> usize {
 /// 运行场景并打印可复现的边界与测量输出。
 fn main() {
     run_all_scenarios().expect("07-D.6 原型场景失败");
-    println!("scenarios=8 passed");
+    println!("scenarios=8 plus custom_atomic_abi=1 passed");
     let same_thread = same_thread_suspend();
     let migrated = explicit_thread_migration();
     println!(
@@ -36,5 +37,6 @@ fn main() {
     for row in candidate_a_table() {
         println!("candidate_a.{}={}", row.label, row.accepted);
     }
+    println!("custom_atomic_abi.layout={}", custom_abi_layout_report());
     println!("{}", measure(iterations_from_args()));
 }

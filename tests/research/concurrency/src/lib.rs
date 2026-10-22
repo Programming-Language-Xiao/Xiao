@@ -12,6 +12,9 @@ use std::sync::{Arc, Barrier, Mutex, MutexGuard, TryLockError, Weak};
 use std::thread;
 use std::time::{Duration, Instant};
 
+/// 自定义原子对象头/ABI 的隔离模型模块。
+mod atomic_abi;
+
 /// 可跨线程深拷贝的最小嵌套值模型。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum NestedValue {
@@ -571,16 +574,19 @@ pub fn atomic_mutable_demo() -> Result<(), String> {
 
     let guard = handle.lock();
     let cancelled = Arc::new(AtomicBool::new(false));
+    let waiter_ready = Arc::new(Barrier::new(2));
     let waiter_handle = handle.clone();
     let waiter_cancelled = Arc::clone(&cancelled);
+    let waiter_ready_clone = Arc::clone(&waiter_ready);
     let waiter = thread::spawn(move || {
+        waiter_ready_clone.wait();
         wait_for_lock_or_cancel(
             &waiter_handle,
             &waiter_cancelled,
             Duration::from_millis(200),
         )
     });
-    thread::sleep(Duration::from_millis(2));
+    waiter_ready.wait();
     cancelled.store(true, Ordering::Release);
     if waiter.join().map_err(|_| "取消等待线程 panic".to_owned())? != LockWaitResult::Cancelled
     {
@@ -826,7 +832,13 @@ pub fn run_all_scenarios() -> Result<(), String> {
     atomic_read_demo()?;
     atomic_mutable_demo()?;
     cancellation_demo()?;
+    atomic_abi::run_demo()?;
     Ok(())
+}
+
+/// 返回自定义原子对象头/句柄原型的布局记录。
+pub fn custom_abi_layout_report() -> String {
+    atomic_abi::layout_report()
 }
 
 /// 原型场景的 Rust 单元测试集合。

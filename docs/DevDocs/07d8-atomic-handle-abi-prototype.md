@@ -7,7 +7,7 @@
 > **本批一句话**：**用一个自定义对象头把强/弱计数、升级、锁、取消、析构和跨平台尺寸
 > 真正测出来；仍然不写产品 Runtime、语言语法、IR 或标准库公开契约。**
 >
-> 状态：**待实施（2026-10-22）**。只改 `tests/research/concurrency` 隔离原型、门禁和
+> 状态：**本地 ABI 原型已完成，CI 待取证（2026-10-22）**。只改 `tests/research/concurrency` 隔离原型、门禁和
 > 文档；不登记新阶段代号，不预留 `H0-C`、`07-D 实现`、`std.concurrent` 或任何语法/API。
 
 ## 一、交接上下文
@@ -30,11 +30,11 @@
 
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
-| HEAD | `8dde77a`；本地 5 个提交未推送 | 07-D.7 门禁修复在本地 |
+| HEAD | 07-D.7 门禁修复已提交；07-D.8 改动在本地、尚未推送 | 原型和门禁修复在本地 |
 | 本地门禁 | `bun run check`、`check:layout`、原型 test/Clippy/fmt 通过 | 本地证据成立 |
-| 原型测试 | 8 passed | 参考模型可运行 |
-| 测量 | Windows x86_64；`read_handle_wrapper_bytes=8`、`read_state_layout_bytes=16` | 是 `Arc`/状态尺寸，不是对象头/ABI |
-| CI | 尚无 8dde77a 的 workspace gates 运行号 | 待推送取证 |
+| 原型测试 | 9 passed，包含自定义对象头/句柄测试 | 参考模型和 ABI 原型可运行 |
+| 测量 | Windows x86_64；自定义对象头 40 bytes、共享/弱句柄各 8 bytes、普通句柄 16 bytes、`u64` 对象 48 bytes | 自定义原型布局，不是产品 ABI |
+| CI | 尚无 07-D.8 的 workspace gates 运行号 | 待推送取证 |
 | 决策第 6 项 | 要求对象头/锁/取消/清理/跨平台 ABI 同轮验证 | **当前只验证了参考模型**；见 F-1 |
 | 跨平台测量 | 仅 Windows x86_64 | Linux/macOS 待测；见 F-3 |
 
@@ -53,7 +53,7 @@
 
 ## 二、审核发现
 
-### F-1 **决策第 6 项还没有被完整验证（P1/P2，入口阻断）**
+### F-1 **决策第 6 项还没有被完整验证（已补本地 ABI 原型，CI/跨平台待证）**
 
 `00-decisions.md` 第 6 项要求：
 
@@ -67,9 +67,11 @@
 - 没有自定义强/弱计数、tag、内存顺序或普通/共享句柄 ABI 身份。
 
 文档已正确标注“不是 Xiao 对象头/ABI”，但这意味着决策第 6 项只完成了参考模型验证。
-进入实现阶段前，必须补一个自定义对象头/ABI 原型，或明确把 ABI 验证降级并重新裁定。
+**处理结果**：已补自定义 `#[repr(C)]` 对象头、强/弱计数、tag、弱升级、对象头回收、显式
+锁和 acquire/release 发布路径；本地 9 个测试通过。跨平台和 CI 证据仍待补齐，决策第 6 项
+暂保持“本地 ABI 原型已验证、正式 ABI 未冻结”。
 
-### F-2 **8dde77a 还没有 CI 运行号（P2，外部取证）**
+### F-2 **07-D.7 还没有 CI 运行号（P2，外部取证）**
 
 07-D.7 已把 `tests/research/**` 加入 workspace gates paths，并在 `run.sh` 中执行原型
 fmt/test/Clippy；但 5 个本地提交尚未推送，最新 workspace gates 仍只覆盖 `8680710`。
@@ -79,23 +81,24 @@ fmt/test/Clippy；但 5 个本地提交尚未推送，最新 workspace gates 仍
 - 原型测试/Clippy/fmt 在 CI 通过；
 - 没有把本地 `bun run check` 写成 CI 结果。
 
-### F-3 **跨平台测量仍缺（P2）**
+**当前结果**：workspace gates 接线已由 07-D.7 完成；当前没有推送后的运行号，仍保持 CI 待取证。
+
+### F-3 **跨平台测量仍缺（P2，待补）**
 
 当前测量只有 Windows x86_64。对象头的原子宽度、对齐、`size_of`、锁成本和弱升级竞态
 在不同平台可能不同；不能用单平台结果冻结 ABI。需要在 Linux amd64/arm64、macOS arm64
 用同一命令和重复次数补测，并记录环境。
 
-### F-4 **取消等待测试的固定 sleep 可能带来门禁抖动（P3）**
+### F-4 **取消等待测试的固定 sleep 可能带来门禁抖动（已修复）**
 
-`tests/research/concurrency/src/lib.rs:583` 的 `atomic_mutable_demo` 在启动等待线程后
-`sleep(2ms)` 再设置取消标记。该测试现在会随 `run.sh` 在 workspace gates 和平台复现中
-运行；高负载 runner 上固定 sleep 可能不够稳定。若首次 CI 出现抖动，应改成可观察信号/
-事件/超时轮询，而不是继续加 sleep。
+`atomic_mutable_demo` 原先在启动等待线程后固定 `sleep(2ms)` 再设置取消标记。该测试现在
+使用 Barrier 确认等待线程已进入轮询，再设置取消标记；仍保留超时轮询作为兜底，不依赖固定
+睡眠时长。
 
 ### F-5 **文档状态仍是“CI 待取证”（P3）**
 
 07-D.6/07-D.7 的“本地通过、CI 待取证”是准确的；本批取得 CI 运行号和新 ABI 原型结果后
-再更新最终状态。不要把 07-D.6 的参考模型写成“原子句柄 ABI 已完成”。
+再更新最终状态。不要把本地 ABI 原型写成产品 ABI 已完成。
 
 ## 三、原型范围
 
@@ -137,6 +140,27 @@ fmt/test/Clippy；但 5 个本地提交尚未推送，最新 workspace gates 仍
 - 不复制进 `xiao-runtime`，不被产品 crate 引用；
 - 不修改对象布局、IR、Runtime ABI、诊断字段或标准库公开接口；
 - 原型结果只用于回答“是否进入实现阶段 / 首版 ABI 怎么冻结”。
+
+### 3.5 本地 ABI 原型结果
+
+Windows x86_64 下运行 `cargo run --release --manifest-path tests/research/concurrency/Cargo.toml
+-- --iterations 1000`，命令行输出的自定义布局为：
+
+| 项目 | 尺寸/结果 |
+| --- | ---: |
+| `AtomicHeader` | 48 bytes，8-byte 对齐 |
+| 载荷偏移 | 48 bytes（对象头之后的 `#[repr(C)]` 内联载荷） |
+| 共享强句柄包装器 | 8 bytes |
+| 弱句柄包装器 | 8 bytes |
+| 普通句柄包装器 | 16 bytes |
+| `u64` 载荷对象 | 56 bytes，8-byte 对齐 |
+| 原子强/弱计数 | 弱升级失败后不能复活载荷；载荷和对象头各析构一次 |
+| 内存顺序 | acquire/release 发布路径通过 |
+| 共享可变 | 显式 `Mutex`、取消等待、异常/毒化锁恢复通过 |
+
+这些数字只描述隔离原型的 `#[repr(C)]` 结构和当前机器，不能冻结 Xiao Runtime ABI。Linux
+amd64、Linux arm64、macOS arm64 仍需用同一命令补测；CI 运行号取得前，07-D.8 保持本地
+原型完成、外部证据待取证。
 
 ## 四、实施步骤
 
