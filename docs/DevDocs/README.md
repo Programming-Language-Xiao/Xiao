@@ -82,6 +82,7 @@
 | 07-D.4 | [终验回填与并发入口裁定](07d4-final-evidence-backfill-and-entry-decisions.md) | 回填 `39563381227`/`39563178068` 与 d6112e4 的平台/工作区证据；修正 07-D.2/07-D.1 的已关闭正文；明确维护回归口径；把 8 项并发入口裁定或明确后置写入 00 | **平台证据与文档门禁已通过，8 项已裁定（2026-10-22）**：四平台已绿，`39624910950` 覆盖 `17a89b0` 的终验 workspace；只改文档和裁定记录，不写并发语法、类型、IR、ABI、Runtime 或标准库公开契约 |
 | 07-D.5 | [终局一致性与并发入口](07d5-final-consistency-and-concurrency-entry.md) | 修 07-D.2 的 F-5/F-2、07-D.3 的 F-4、07-D.4 的 F-1/状态行；回填 `39624910950`；把 8 项并发入口裁定或明确后置写入 00 | **证据与文档一致性已收口，8 项已裁定（2026-10-22）**：`39624910950` 已覆盖 `17a89b0`；07-D.6 隔离原型已完成并记录结果；不重跑平台、不写并发语法、类型、IR、ABI、Runtime 或标准库公开契约 |
 | 07-D.6 | [最小 OS 线程原型](07d6-minimal-os-thread-prototype.md) | 在隔离目录验证线程入口、深拷贝、`CrossThread` 任务/线程边界、候选 A 推导、只读/共享可变原子句柄、取消清理和成本测量 | **隔离原型已完成（2026-10-22）**：8 个测试通过，Windows x86_64 `--iterations 1000` 测量已记录；不进入产品契约，不写并发语法、类型、IR、ABI 或标准库公开契约 |
+| 07-D.7 | [原型门禁与证据收口](07d7-prototype-gate-and-evidence-fixes.md) | 修 `tests/research/concurrency` 的 A0-LAYOUT-001/002、补 CI 覆盖或明确本地口径；修正 `read_state_bytes`/spawn-join 测量语义、模拟场景标注和 Windows-only 限制 | **待实施（2026-10-22）**：只改原型/门禁/文档；不改语言、IR、ABI、Runtime 或标准库公开契约 |
 | 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 进行中（08A/U0 已完成首版） |
 | 08A | [U0 统一前端实现交接记录](08a-u0-frontend-implementation.md) | 单一前端流水线、递归类型化 IR、验证器和稳定 JSON 快照 | 已完成首版 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 进行中（09R1–09R3 已冻结，B0-A/B/C/D 已交付；用户可见 CLI 仍留给 11/X0；批次边界见 [09-B0](09b0-bytecode-closure.md)） |
