@@ -841,6 +841,11 @@ pub fn custom_abi_layout_report() -> String {
     atomic_abi::layout_report()
 }
 
+/// 返回自定义句柄操作成本的原型测量记录。
+pub fn custom_abi_cost_report(iterations: usize) -> String {
+    format!("{:?}", atomic_abi::measure_costs(iterations))
+}
+
 /// 原型场景的 Rust 单元测试集合。
 #[cfg(test)]
 mod tests {

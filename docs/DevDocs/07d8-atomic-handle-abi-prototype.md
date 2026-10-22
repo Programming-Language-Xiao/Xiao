@@ -148,15 +148,20 @@ Windows x86_64 下运行 `cargo run --release --manifest-path tests/research/con
 
 | 项目 | 尺寸/结果 |
 | --- | ---: |
-| `AtomicHeader` | 48 bytes，8-byte 对齐 |
-| 载荷偏移 | 48 bytes（对象头之后的 `#[repr(C)]` 内联载荷） |
+| 干净 `AtomicHeader`（不含测试探针） | 24 bytes，8-byte 对齐 |
+| 含探针对象的载荷偏移 | 40 bytes（`offset_of!`，探针旁路字段占 16 bytes） |
 | 共享强句柄包装器 | 8 bytes |
 | 弱句柄包装器 | 8 bytes |
 | 普通句柄包装器 | 16 bytes |
-| `u64` 载荷对象 | 56 bytes，8-byte 对齐 |
+| 含探针 `u64` 载荷对象 | 48 bytes，8-byte 对齐 |
+| 32-byte 对齐载荷对象 | 96 bytes；载荷偏移 64 bytes |
 | 原子强/弱计数 | 弱升级失败后不能复活载荷；载荷和对象头各析构一次 |
 | 内存顺序 | acquire/release 发布路径通过 |
 | 共享可变 | 显式 `Mutex`、取消等待、异常/毒化锁恢复通过 |
+
+`--iterations 1000` 的自定义操作成本为：clone/drop `19 ns`、弱升级成功 `19 ns`、弱升级
+失败 `<1 ns`（整数纳秒取整为 `0`）、锁保护增量 `20 ns`、取消标记检查 `<1 ns`（取整为
+`0`）、载荷/对象头分配析构 `262 ns`。这些成本只代表 Windows x86_64 当前构建。
 
 这些数字只描述隔离原型的 `#[repr(C)]` 结构和当前机器，不能冻结 Xiao Runtime ABI。Linux
 amd64、Linux arm64、macOS arm64 仍需用同一命令补测；CI 运行号取得前，07-D.8 保持本地

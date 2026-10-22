@@ -2,8 +2,8 @@
 
 use std::env;
 use xiao_concurrency_prototype::{
-    candidate_a_table, custom_abi_layout_report, explicit_thread_migration, measure,
-    run_all_scenarios, same_thread_suspend,
+    candidate_a_table, custom_abi_cost_report, custom_abi_layout_report, explicit_thread_migration,
+    measure, run_all_scenarios, same_thread_suspend,
 };
 
 /// 读取 `--iterations` 参数，缺省使用 100 次。
@@ -38,5 +38,9 @@ fn main() {
         println!("candidate_a.{}={}", row.label, row.accepted);
     }
     println!("custom_atomic_abi.layout={}", custom_abi_layout_report());
+    println!(
+        "custom_atomic_abi.costs={}",
+        custom_abi_cost_report(iterations_from_args())
+    );
     println!("{}", measure(iterations_from_args()));
 }

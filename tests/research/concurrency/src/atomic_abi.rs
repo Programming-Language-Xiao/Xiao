@@ -50,21 +50,15 @@ pub(crate) struct AtomicHeader {
     strong: AtomicUsize,
     weak: AtomicUsize,
     tag: AtomicU8,
-    payload_offset: usize,
-    payload_drops: Arc<AtomicUsize>,
-    header_drops: Arc<AtomicUsize>,
 }
 
 impl AtomicHeader {
     /// 新建带一个隐式弱引用的对象头。
-    fn new(tag: HandleTag, counters: &DropCounters) -> Self {
+    fn new(tag: HandleTag) -> Self {
         Self {
             strong: AtomicUsize::new(1),
             weak: AtomicUsize::new(1),
             tag: AtomicU8::new(tag as u8),
-            payload_offset: size_of::<AtomicHeader>(),
-            payload_drops: Arc::clone(&counters.payload),
-            header_drops: Arc::clone(&counters.header),
         }
     }
 
@@ -78,19 +72,26 @@ impl AtomicHeader {
     }
 }
 
-impl Drop for AtomicHeader {
-    /// 记录对象头只回收一次。
+/// 自定义对象头和初始化载荷的连续布局。
+#[repr(C)]
+struct AtomicObject<T> {
+    header: AtomicHeader,
+    payload_drops: Arc<AtomicUsize>,
+    header_drops: Arc<AtomicUsize>,
+    payload: UnsafeCell<MaybeUninit<T>>,
+}
+
+impl<T> Drop for AtomicObject<T> {
+    /// 记录对象头只回收一次；载荷由最后强句柄显式析构。
     fn drop(&mut self) {
         self.header_drops.fetch_add(1, Ordering::SeqCst);
     }
 }
 
-/// 自定义对象头和初始化载荷的连续布局。
-#[repr(C)]
-struct AtomicObject<T> {
-    header: AtomicHeader,
-    payload: UnsafeCell<MaybeUninit<T>>,
-}
+/// 用于验证高对齐载荷偏移的实验载荷。
+#[allow(dead_code)]
+#[repr(align(32))]
+struct Align32([u8; 32]);
 
 /// 显式共享句柄的自定义对象头包装器。
 pub(crate) struct SharedHandle<T> {
@@ -107,7 +108,9 @@ impl<T> SharedHandle<T> {
     /// 在自定义对象头中分配共享载荷。
     pub(crate) fn new(value: T, counters: &DropCounters) -> Self {
         let object = Box::new(AtomicObject {
-            header: AtomicHeader::new(HandleTag::Shared, counters),
+            header: AtomicHeader::new(HandleTag::Shared),
+            payload_drops: Arc::clone(&counters.payload),
+            header_drops: Arc::clone(&counters.header),
             payload: UnsafeCell::new(MaybeUninit::new(value)),
         });
         Self {
@@ -151,13 +154,16 @@ impl<T> SharedHandle<T> {
     pub(crate) fn layout() -> AbiLayout {
         AbiLayout {
             header_bytes: size_of::<AtomicHeader>(),
-            payload_offset: size_of::<AtomicHeader>(),
+            payload_offset: std::mem::offset_of!(AtomicObject<u64>, payload),
             header_align: align_of::<AtomicHeader>(),
             shared_handle_bytes: size_of::<SharedHandle<u64>>(),
             weak_handle_bytes: size_of::<WeakHandle<u64>>(),
             ordinary_handle_bytes: size_of::<OrdinaryHandle<u64>>(),
             object_u64_bytes: size_of::<AtomicObject<u64>>(),
             object_u64_align: align_of::<AtomicObject<u64>>(),
+            object_align32_bytes: size_of::<AtomicObject<Align32>>(),
+            object_align32_align: align_of::<AtomicObject<Align32>>(),
+            align32_payload_offset: std::mem::offset_of!(AtomicObject<Align32>, payload),
         }
     }
 
@@ -171,6 +177,90 @@ impl<T> SharedHandle<T> {
 /// 输出自定义对象头原型的稳定布局记录。
 pub(crate) fn layout_report() -> String {
     format!("{:?}", SharedHandle::<u64>::layout())
+}
+
+/// 自定义句柄操作的隔离成本记录。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct AbiCosts {
+    /// 强句柄 clone/drop 平均纳秒数。
+    pub clone_drop_ns: u128,
+    /// 弱升级成功平均纳秒数。
+    pub upgrade_success_ns: u128,
+    /// 弱升级失败平均纳秒数。
+    pub upgrade_failure_ns: u128,
+    /// 自定义共享句柄锁保护增量平均纳秒数。
+    pub lock_ns: u128,
+    /// 取消标记检查平均纳秒数。
+    pub cancel_check_ns: u128,
+    /// 自定义载荷和对象头析构/分配平均纳秒数。
+    pub drop_ns: u128,
+}
+
+/// 测量自定义句柄的计数、升级、锁、取消检查和析构成本。
+pub(crate) fn measure_costs(iterations: usize) -> AbiCosts {
+    let iterations = iterations.max(1);
+    let counters = DropCounters::new();
+    let shared = SharedHandle::new(0_u64, &counters);
+    let start = std::time::Instant::now();
+    for _ in 0..iterations {
+        let clone = shared.clone();
+        std::hint::black_box(clone.payload());
+        drop(clone);
+    }
+    let clone_drop_ns = super::average_ns(start.elapsed(), iterations);
+
+    let weak = shared.downgrade();
+    let start = std::time::Instant::now();
+    for _ in 0..iterations {
+        let upgraded = weak.upgrade().expect("强句柄存活时升级必须成功");
+        std::hint::black_box(upgraded.payload());
+        drop(upgraded);
+    }
+    let upgrade_success_ns = super::average_ns(start.elapsed(), iterations);
+    drop(shared);
+
+    let start = std::time::Instant::now();
+    for _ in 0..iterations {
+        assert!(weak.upgrade().is_none());
+    }
+    let upgrade_failure_ns = super::average_ns(start.elapsed(), iterations);
+    drop(weak);
+
+    let lock_counters = DropCounters::new();
+    let mutable = SharedHandle::new(Mutex::new(0_usize), &lock_counters);
+    let start = std::time::Instant::now();
+    for _ in 0..iterations {
+        *mutable
+            .payload()
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner()) += 1;
+    }
+    let lock_ns = super::average_ns(start.elapsed(), iterations);
+    drop(mutable);
+
+    let cancelled = AtomicU8::new(1);
+    let start = std::time::Instant::now();
+    for _ in 0..iterations {
+        std::hint::black_box(cancelled.load(Ordering::Acquire));
+    }
+    let cancel_check_ns = super::average_ns(start.elapsed(), iterations);
+
+    let start = std::time::Instant::now();
+    for _ in 0..iterations {
+        let drop_counters = DropCounters::new();
+        let value = SharedHandle::new(1_u64, &drop_counters);
+        drop(value);
+    }
+    let drop_ns = super::average_ns(start.elapsed(), iterations);
+
+    AbiCosts {
+        clone_drop_ns,
+        upgrade_success_ns,
+        upgrade_failure_ns,
+        lock_ns,
+        cancel_check_ns,
+        drop_ns,
+    }
 }
 
 impl<T> Clone for SharedHandle<T> {
@@ -193,7 +283,7 @@ impl<T> Drop for SharedHandle<T> {
         if old == 1 {
             // SAFETY: old == 1 表示没有其他强句柄仍访问载荷。
             unsafe { ptr::drop_in_place((*object.payload.get()).as_mut_ptr()) };
-            object.header.payload_drops.fetch_add(1, Ordering::SeqCst);
+            object.payload_drops.fetch_add(1, Ordering::SeqCst);
             release_weak(self.ptr);
         }
     }
@@ -308,6 +398,12 @@ pub(crate) struct AbiLayout {
     pub object_u64_bytes: usize,
     /// `u64` 载荷对象对齐。
     pub object_u64_align: usize,
+    /// 32-byte 对齐载荷对象尺寸。
+    pub object_align32_bytes: usize,
+    /// 32-byte 对齐载荷对象对齐。
+    pub object_align32_align: usize,
+    /// 32-byte 对齐载荷的真实偏移。
+    pub align32_payload_offset: usize,
 }
 
 /// 以 checked 算术增加原子计数。
@@ -338,7 +434,10 @@ pub(crate) fn run_demo() -> Result<(), String> {
     let layout = SharedHandle::<u64>::layout();
     if layout.header_bytes == 0
         || layout.header_align == 0
-        || layout.payload_offset != layout.header_bytes
+        || layout.payload_offset < layout.header_bytes
+        || layout.align32_payload_offset < layout.header_bytes
+        || layout.object_align32_align != 32
+        || !layout.align32_payload_offset.is_multiple_of(32)
         || layout.shared_handle_bytes == 0
         || layout.weak_handle_bytes == 0
         || layout.ordinary_handle_bytes == 0

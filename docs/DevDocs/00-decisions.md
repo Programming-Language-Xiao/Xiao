@@ -512,9 +512,12 @@ spawn/join `257428 ns`、深拷贝 `209 ns`、原子增减 `9 ns`、锁保护增
 ### 07-D.8 原子共享句柄 ABI 原型结果（2026-10-22）
 
 隔离 crate 已增加自定义 `#[repr(C)]` 对象头和强/弱句柄模型，不再把 `Arc`/`Weak` 包装器
-尺寸当作 ABI。Windows x86_64 本地结果为：对象头 48 bytes、载荷偏移 48 bytes、共享/弱句柄包装器各 8 bytes、
-普通句柄包装器 16 bytes、`u64` 载荷对象 56 bytes，均为原型布局；9 个测试通过，覆盖弱
-升级归零、对象头回收、显式锁、取消、异常/毒化锁、普通/共享 tag 和 acquire/release 发布。
+尺寸当作 ABI。Windows x86_64 本地结果为：干净对象头 24 bytes、含探针载荷偏移 40 bytes、
+共享/弱句柄包装器各 8 bytes、普通句柄包装器 16 bytes、含探针 `u64` 载荷对象 48 bytes，
+32-byte 对齐载荷对象 96 bytes 且偏移 64 bytes，均为原型布局；9 个测试通过，覆盖弱升级归零、
+对象头回收、显式锁、取消、异常/毒化锁、普通/共享 tag 和 acquire/release 发布。自定义
+操作成本为 clone/drop 19 ns、弱升级成功 19 ns、弱升级失败和取消检查低于 1 ns、锁 20 ns、
+分配/析构 262 ns（Windows x86_64，1000 次）。
 
 Linux amd64、Linux arm64、macOS arm64 和推送后的 workspace gates 仍待取证；这些数字不
 冻结 Xiao Runtime ABI，也不代表产品对象布局已经改变。
