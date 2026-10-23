@@ -838,11 +838,17 @@ pub fn run_all_scenarios() -> Result<(), String> {
 
 /// 返回自定义原子对象头/句柄原型的布局记录。
 pub fn custom_abi_layout_report() -> String {
+    if usize::BITS != 64 {
+        return "unsupported: custom ABI prototype requires a 64-bit target".to_owned();
+    }
     atomic_abi::layout_report()
 }
 
 /// 返回自定义句柄操作成本的原型测量记录。
 pub fn custom_abi_cost_report(iterations: usize) -> String {
+    if usize::BITS != 64 {
+        return "unsupported: custom ABI prototype requires a 64-bit target".to_owned();
+    }
     format!("{:?}", atomic_abi::measure_costs(iterations))
 }
 

@@ -29,8 +29,8 @@
 
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
-| HEAD | `0ab538b` 已推送；本批改动在本地、尚未推送 | ABI 成本语义修正待新 CI |
-| workspace gates | `39873277968` **success**；Linux 运行原型 9 tests | 新代码有 Linux CI |
+| HEAD | `0ab538b` 已推送；07-D.13 改动在本地、尚未推送 | ABI 成本语义修正待新 CI |
+| workspace gates | `39873277968` **success**；Linux 运行原型 9 tests | 历史 Linux CI；不覆盖 07-D.13 |
 | 原型测试 | 9 passed | 本地与 CI 一致 |
 | 干净布局 | `u64` 32B/偏移 24B；align32 64B/偏移 32B | 干净对象已单独测到 |
 | 含探针布局 | `u64` 48B/偏移 40B；align32 96B/偏移 64B | 与干净对象分开记录 |

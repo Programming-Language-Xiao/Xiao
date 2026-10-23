@@ -519,8 +519,21 @@ spawn/join `257428 ns`、深拷贝 `209 ns`、原子增减 `9 ns`、锁保护增
 操作成本为 clone/drop 19 ns、弱升级成功 19 ns、弱升级失败和取消检查低于 1 ns、锁 20 ns、
 含探针分配/析构 264 ns、干净 Box 分配/释放 48 ns（不含载荷析构，Windows x86_64，1000 次）。
 
-Linux amd64、Linux arm64、macOS arm64 和推送后的 workspace gates 仍待取证；这些数字不
-冻结 Xiao Runtime ABI，也不代表产品对象布局已经改变。
+Linux amd64、Linux arm64、macOS arm64 的平台测试/测量仍待取证；Linux workspace gates
+`39873277968` 已在绑定 `0ab538b` 的提交上通过 9 个原型测试，但不覆盖后续本地提交。
+这些数字不冻结 Xiao Runtime ABI，也不代表产品对象布局已经改变。
+
+### 07-D.13 并发原型最终收口状态（2026-10-23）
+
+隔离 crate `tests/research/concurrency/` 的 9 个测试、Clippy、fmt、layout 和完整本地门禁均
+通过。`custom_abi_layout_report()` 与 `custom_abi_cost_report()` 已统一 64 位 guard，非 64 位
+目标返回明确的 `unsupported` 文本。`39873277968` 只作为绑定 `0ab538b` 的 Linux workspace
+gates 历史证据；本批本地代码/文档没有新的 CI 运行号。
+
+macOS/Windows 平台复现、Linux/macOS 布局与成本测量仍待外部取证；取消等待真实“持锁等待 →
+取消 → 返回”路径留给未来正式实现阶段。当前 Windows x86_64、1000 次成本数字只作单机研究
+输入，不冻结 ABI 或性能基准。正式实现仍需 21A §3.2、07-D §11.3、新阶段登记、B0/N0 黄金
+场景、跨平台 ABI 冻结和星崽裁定。
 
 ### 错误模型与诊断
 

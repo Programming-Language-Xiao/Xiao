@@ -31,7 +31,7 @@
 
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
-| HEAD | `0ab538b` 已推送；07-D.11 改动在本地、尚未推送 | ABI 清理代码待新 CI |
+| HEAD | `0ab538b` 已推送；07-D.13 改动在本地、尚未推送 | ABI 清理代码待新 CI |
 | 原型测试 | 9 passed（本地）；Linux workspace gates 也运行并通过 9 tests | 自定义 ABI 场景可运行 |
 | Clippy / fmt | 通过 | 代码质量通过 |
 | `bun run check:layout` | 通过 | 目录/注册已修 |
@@ -135,11 +135,12 @@ Windows x86_64、1000 次结果为 clone/drop `19 ns`、升级成功 `19 ns`、�
 ### F-5 **workspace gates 已取证，平台复现仍未跑（部分关闭）**
 
 07-D.7 已把 `tests/research/**` 接入 workspace gates，并把原型 fmt/test/Clippy 放进
-`run.sh`；`f608a5b` 推送后，Linux workspace gates `39813718835` 的作业 success，日志确认
+`run.sh`；`39873277968` 在绑定 `0ab538b` 的 Linux 作业中 success，日志确认
 `research concurrency cargo fmt/test/Clippy` 都执行，原型 **9 tests** 在 Linux 通过。
+更早的 `39813718835` 只保留为历史来源，均不覆盖 07-D.13 的本地改动。
 
 仍未关闭的是平台复现：上一次 `39563381227` 在 d6112e4，早于原型测试进入 `run.sh`，因此
-macOS/Windows 还没有运行过这 9 个原型测试。要在 07-D.9 的 ABI/测量修改完成后手动触发
+macOS/Windows 还没有运行过这 9 个原型测试。要在 07-D.13 的本地改动完成后手动触发
 `365649226`，并记录四平台作业结果；不能只用 Linux workspace gates 代替 macOS/Windows。
 
 ### F-6 **跨平台测试与测量仍缺（P3）**
