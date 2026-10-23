@@ -36,7 +36,7 @@
 | Clippy / fmt | 通过 | 代码质量通过 |
 | `bun run check:layout` | 通过 | 目录/注册已修 |
 | 完整 `bun run check` | 通过 | 本地门禁成立 |
-| workspace gates | `39813718835` 的 Linux 作业 success；日志包含 research concurrency fmt/test/Clippy | F-5 的 Linux CI 部分已关闭 |
+| workspace gates | `39873277968` 绑定 `0ab538b` 的 Linux 作业 success；日志包含 research concurrency fmt/test/Clippy | 本地 ABI 清理之后的 CI 仍待新运行 |
 | 平台复现 | 未重跑；上次 `39563381227` 早于原型测试进入 `run.sh` | macOS/Windows 原型测试待新运行；见 F-6 |
 | 布局输出 | 干净头 24B；干净对象 `u64` 32B/24B、align32 64B/32B；含探针对象 48B/40B、align32 96B/64B | 仅 Windows x86_64 模型 |
 | 自定义成本 | clone/drop 19 ns、升级成功 19 ns、升级失败/取消检查 `<1 ns`、锁 20 ns、含探针析构 264 ns、干净 Box 分配/释放 48 ns（不含载荷析构） | Windows x86_64，1000 次，仍待跨平台 |
