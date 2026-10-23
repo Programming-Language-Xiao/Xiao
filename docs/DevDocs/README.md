@@ -88,6 +88,7 @@
 | 07-D.10 | [干净 ABI 布局与证据收口](07d10-clean-abi-layout-and-evidence-closeout.md) | 补不带探针的干净 ABI 对象布局（u64 32B/偏移 24、align32 64B/偏移 32）；修正 07-D.8/07-D.9 的 HEAD/CI/尺寸；区分取消等待与取消检查；补干净分配/析构或标注含探针；推送取 CI、补平台/跨平台证据 | **本地清理与成本证据已完成，CI/平台/跨平台待取证（2026-10-23）**：不改语言、IR、Runtime ABI 或标准库公开契约 |
 | 07-D.11 | [ABI 成本语义与证据终验](07d11-abi-cost-semantics-and-evidence-closeout.md) | 统一 07-D.8/07-D.9/07-D.10 的 HEAD/CI/决策行；修正“干净 Box 分配/释放”与“含探针完整析构”的语义；明确 64 位布局假设；保留取消等待待补；补平台/跨平台证据 | **本地成本语义已收口，CI/平台/跨平台待取证（2026-10-23）**：只改隔离原型/门禁/文档；不改语言、IR、ABI、Runtime 或标准库公开契约 |
 | 07-D.12 | [07-D 终验、文档同步与跨平台证据](07d12-closeout-doc-sync-and-cross-platform-evidence.md) | 修 07-D.8/07-D.9 的旧 HEAD/CI/决策行；推送 4f326eb 取新 CI；明确 64 位入口；取消等待实测或登记为实现阶段缺口；触发平台复现并补 Linux/macOS 测量 | **本地文档与成本证据已收口，CI/平台/跨平台待取证（2026-10-23）**：只改隔离原型/门禁/文档；不改语言、IR、ABI、Runtime 或标准库公开契约 |
+| 07-D.13 | [并发原型最终收口](07d13-concurrency-prototype-final-closeout.md) | 区分 Linux CI/平台测试/跨平台测量/新代码 CI；给 `custom_abi_*` 加 64 位 guard 或明确只支持 CLI；推送 4 个提交取新 CI；触发平台复现并补测量；关闭 07-D 原型或登记缺口 | **待实施（2026-10-23）**：只改隔离原型/门禁/文档；不登记新阶段代号，不改语言、IR、ABI、Runtime 或标准库公开契约 |
 | 08 | [前端与统一中间表示](08-frontend-pipeline.md) | 从词法到类型化 IR 的统一编译前端 | 进行中（08A/U0 已完成首版） |
 | 08A | [U0 统一前端实现交接记录](08a-u0-frontend-implementation.md) | 单一前端流水线、递归类型化 IR、验证器和稳定 JSON 快照 | 已完成首版 |
 | 09 | [字节码运行模式](09-bytecode-runtime.md) | Rust 字节码解释器、执行 Runtime 与 `xiao run` 接口 | 进行中（09R1–09R3 已冻结，B0-A/B/C/D 已交付；用户可见 CLI 仍留给 11/X0；批次边界见 [09-B0](09b0-bytecode-closure.md)） |
