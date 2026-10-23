@@ -205,8 +205,8 @@ pub(crate) struct AbiCosts {
     pub cancel_check_ns: u128,
     /// 自定义载荷和对象头析构/分配平均纳秒数。
     pub drop_ns: u128,
-    /// 不带析构探针的干净对象分配/析构平均纳秒数。
-    pub clean_drop_ns: u128,
+    /// 不带析构探针/载荷析构的干净 Box 分配/释放平均纳秒数。
+    pub clean_box_alloc_release_ns: u128,
 }
 
 /// 测量自定义句柄的计数、升级、锁、取消检查和析构成本。
@@ -274,7 +274,7 @@ pub(crate) fn measure_costs(iterations: usize) -> AbiCosts {
         });
         std::hint::black_box(object);
     }
-    let clean_drop_ns = super::average_ns(start.elapsed(), iterations);
+    let clean_box_alloc_release_ns = super::average_ns(start.elapsed(), iterations);
 
     AbiCosts {
         clone_drop_ns,
@@ -283,7 +283,7 @@ pub(crate) fn measure_costs(iterations: usize) -> AbiCosts {
         lock_ns,
         cancel_check_ns,
         drop_ns,
-        clean_drop_ns,
+        clean_box_alloc_release_ns,
     }
 }
 
@@ -461,6 +461,9 @@ fn release_weak<T>(ptr: NonNull<AtomicObject<T>>) {
 
 /// 自定义对象头原型的完整场景和验证。
 pub(crate) fn run_demo() -> Result<(), String> {
+    if usize::BITS != 64 {
+        return Err("当前 ABI 原型只在 64 位目标上验证".to_owned());
+    }
     let counters = DropCounters::new();
     let shared = SharedHandle::new(AtomicUsize::new(0), &counters);
     let layout = SharedHandle::<u64>::layout();

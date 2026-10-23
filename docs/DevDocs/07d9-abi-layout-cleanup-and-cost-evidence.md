@@ -31,7 +31,7 @@
 
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
-| HEAD | `0698e1d` 已推送；07-D.10 改动在本地、尚未推送 | ABI 清理代码待新 CI |
+| HEAD | `0ab538b` 已推送；07-D.11 改动在本地、尚未推送 | ABI 清理代码待新 CI |
 | 原型测试 | 9 passed（本地）；Linux workspace gates 也运行并通过 9 tests | 自定义 ABI 场景可运行 |
 | Clippy / fmt | 通过 | 代码质量通过 |
 | `bun run check:layout` | 通过 | 目录/注册已修 |
@@ -39,7 +39,7 @@
 | workspace gates | `39813718835` 的 Linux 作业 success；日志包含 research concurrency fmt/test/Clippy | F-5 的 Linux CI 部分已关闭 |
 | 平台复现 | 未重跑；上次 `39563381227` 早于原型测试进入 `run.sh` | macOS/Windows 原型测试待新运行；见 F-6 |
 | 布局输出 | 干净头 24B；干净对象 `u64` 32B/24B、align32 64B/32B；含探针对象 48B/40B、align32 96B/64B | 仅 Windows x86_64 模型 |
-| 自定义成本 | clone/drop 19 ns、升级成功 19 ns、升级失败/取消检查 `<1 ns`、锁 20 ns、含探针析构 264 ns、干净析构 48 ns | Windows x86_64，1000 次，仍待跨平台 |
+| 自定义成本 | clone/drop 19 ns、升级成功 19 ns、升级失败/取消检查 `<1 ns`、锁 20 ns、含探针析构 264 ns、干净 Box 分配/释放 48 ns（不含载荷析构） | Windows x86_64，1000 次，仍待跨平台 |
 | 文档 | 已统一干净头、探针对象和高对齐布局的数字 | F-1/F-2/F-3 已处理 |
 | 跨平台测量 | 仅 Windows x86_64；Linux 只跑测试未跑测量 | 待补；见 F-6 |
 
@@ -130,7 +130,7 @@ payload_offset: size_of::<AtomicHeader>(),
 
 **处理结果**：新增自定义 clone/drop、弱升级成功/失败、锁、取消检查和分配/析构成本；
 Windows x86_64、1000 次结果为 clone/drop `19 ns`、升级成功 `19 ns`、升级失败 `<1 ns`、
-锁 `20 ns`、取消检查 `<1 ns`、含探针分配/析构 `264 ns`、干净分配/析构 `48 ns`。跨平台测量仍待补。
+锁 `20 ns`、取消检查 `<1 ns`、含探针分配/析构 `264 ns`、干净 Box 分配/释放 `48 ns`（不含载荷析构）。跨平台测量仍待补。
 
 ### F-5 **workspace gates 已取证，平台复现仍未跑（部分关闭）**
 

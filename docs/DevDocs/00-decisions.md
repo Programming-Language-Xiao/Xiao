@@ -517,7 +517,7 @@ spawn/join `257428 ns`、深拷贝 `209 ns`、原子增减 `9 ns`、锁保护增
 32-byte 对齐载荷对象 96 bytes 且偏移 64 bytes，均为原型布局；9 个测试通过，覆盖弱升级归零、
 对象头回收、显式锁、取消、异常/毒化锁、普通/共享 tag 和 acquire/release 发布。自定义
 操作成本为 clone/drop 19 ns、弱升级成功 19 ns、弱升级失败和取消检查低于 1 ns、锁 20 ns、
-含探针分配/析构 264 ns、干净分配/析构 48 ns（Windows x86_64，1000 次）。
+含探针分配/析构 264 ns、干净 Box 分配/释放 48 ns（不含载荷析构，Windows x86_64，1000 次）。
 
 Linux amd64、Linux arm64、macOS arm64 和推送后的 workspace gates 仍待取证；这些数字不
 冻结 Xiao Runtime ABI，也不代表产品对象布局已经改变。

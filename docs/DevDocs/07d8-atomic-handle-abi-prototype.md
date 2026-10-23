@@ -163,7 +163,7 @@ Windows x86_64 下运行 `cargo run --release --manifest-path tests/research/con
 
 `--iterations 1000` 的自定义操作成本为：clone/drop `19 ns`、弱升级成功 `19 ns`、弱升级
 失败 `<1 ns`（整数纳秒取整为 `0`）、锁保护增量 `20 ns`、取消标记检查 `<1 ns`（取整为
-`0`）、含探针分配/析构 `264 ns`、干净分配/析构 `48 ns`。这些成本只代表 Windows x86_64 当前构建。
+`0`）、含探针分配/析构 `264 ns`、干净 Box 分配/释放 `48 ns`（不含载荷析构）。这些成本只代表 Windows x86_64 当前构建。
 
 这些数字只描述隔离原型的 `#[repr(C)]` 结构和当前机器，不能冻结 Xiao Runtime ABI。Linux
 amd64、Linux arm64、macOS arm64 仍需用同一命令补测；CI 运行号取得前，07-D.8 保持本地
