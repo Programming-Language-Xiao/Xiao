@@ -7,7 +7,7 @@
 > **本批一句话**：**用一个自定义对象头把强/弱计数、升级、锁、取消、析构和跨平台尺寸
 > 真正测出来；仍然不写产品 Runtime、语言语法、IR 或标准库公开契约。**
 >
-> 状态：**本地 ABI 原型已完成；Linux workspace gates `39873277968` 已绿（绑定 `0ab538b`），本批新代码与平台/跨平台待取证（2026-10-23）**。只改 `tests/research/concurrency` 隔离原型、门禁和
+> 状态：**本地 ABI 原型、Linux workspace gates `39963374595` 与四平台复现 `39965322134` 已完成；Linux/macOS 测量待补（2026-10-23）**。只改 `tests/research/concurrency` 隔离原型、门禁和
 > 文档；不登记新阶段代号，不预留 `H0-C`、`07-D 实现`、`std.concurrent` 或任何语法/API。
 
 ## 一、交接上下文
@@ -30,13 +30,13 @@
 
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
-| HEAD | `0ab538b` 已推送；07-D.13 改动在本地、尚未推送 | ABI 原型和门禁修复在远端，本批待新 CI |
+| 取证提交 | `a8aaa4b` 已推送；CI/平台证据已回填 | ABI 原型和门禁修复已取证 |
 | 本地门禁 | `bun run check`、`check:layout`、原型 test/Clippy/fmt 通过 | 本地证据成立 |
 | 原型测试 | 9 passed，包含自定义对象头/句柄测试 | 参考模型和 ABI 原型可运行 |
 | 测量 | Windows x86_64；干净头 24 bytes、干净 `u64` 对象 32 bytes/偏移 24 bytes；含探针对象 48 bytes/偏移 40 bytes；align32 干净对象 64 bytes/偏移 32 bytes | 自定义原型布局，不是产品 ABI |
-| CI | `39873277968` 绑定 `0ab538b` 的 workspace gates success | 不覆盖 07-D.13；待新 CI |
-| 决策第 6 项 | 对象头/锁/取消/清理已由自定义原型本地验证 | 跨平台/新代码 CI 待取证，不冻结产品 ABI |
-| 跨平台测量 | 仅 Windows x86_64 | Linux/macOS 待测；见 F-3 |
+| CI | `39963374595` 绑定 `a8aaa4b` 的 workspace gates success | 新代码 CI 已取证 |
+| 决策第 6 项 | 对象头/锁/取消/清理已由自定义原型和四平台复现验证 | Linux/macOS 测量待补，不冻结产品 ABI |
+| 跨平台测量 | 四平台测试已通过；测量仅 Windows x86_64 | Linux/macOS 待测；见 F-3 |
 
 ### 1.3 本批边界
 
@@ -71,19 +71,17 @@
 锁和 acquire/release 发布路径；本地 9 个测试通过。跨平台和 CI 证据仍待补齐，决策第 6 项
 暂保持“本地 ABI 原型已验证、正式 ABI 未冻结”。
 
-### F-2 **07-D.7 已有 Linux CI；本批新代码仍无 CI（P2，外部取证）**
+### F-2 **07-D.7 已有 Linux CI；本批新代码 CI 已补（P2，已关闭）**
 
 07-D.7 已把 `tests/research/**` 加入 workspace gates paths，并在 `run.sh` 中执行原型
-fmt/test/Clippy；`39873277968` 已在绑定 `0ab538b` 的提交上确认 9 个原型测试通过，但不覆盖
-07-D.13 的本地改动。
+fmt/test/Clippy；`39963374595` 已在绑定 `a8aaa4b` 的提交上确认 9 个原型测试通过。
 推送后必须确认：
 
 - workspace gates 运行了 `tests/research/concurrency`；
 - 原型测试/Clippy/fmt 在 CI 通过；
 - 没有把本地 `bun run check` 写成 CI 结果。
 
-**当前结果**：workspace gates 接线已由 07-D.7 完成；`39873277968` 只作历史 Linux 证据，
-当前没有覆盖 07-D.13 的新运行号，仍保持新代码 CI 待取证。
+**当前结果**：workspace gates 接线已由 07-D.7 完成；`39963374595` 已覆盖本批提交并通过。
 
 ### F-3 **跨平台测量仍缺（P2，待补）**
 

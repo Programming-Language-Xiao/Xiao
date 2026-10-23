@@ -3,12 +3,12 @@
 > **这是 07-D.8 自定义 ABI 原型的收口批次，不是并发实现阶段。** 原型已经能跑，9 个测试
 > 通过；但对象头尺寸混入了测试探针、通用载荷偏移计算不正确，自定义句柄的 clone/upgrade/
 > drop/lock 成本还没有测。首批提交已推送，Linux workspace gates 已确认运行 9 个原型测试；
-> 平台复现和跨平台测量仍未取证。
+> 四平台复现已经补齐，Linux/macOS 布局和成本测量仍未取证。
 >
 > **本批一句话**：**把“可比较的 ABI 布局”和“测试探针”分开，把偏移/对齐算对，把自定义
 > 句柄成本测出来，再补平台/跨平台证据；仍然不接产品 Runtime 或语言契约。**
 >
-> 状态：**ABI 清理与本地成本证据已完成，待平台复现与跨平台测量（2026-10-23）**。只改隔离
+> 状态：**ABI 清理、Linux workspace gates 与四平台复现已完成，Linux/macOS 测量待补（2026-10-23）**。只改隔离
 > 原型、门禁和文档；不登记新阶段代号，不预留 `H0-C`、`07-D 实现`、`std.concurrent` 或
 > 任何语法/API。
 
@@ -31,13 +31,13 @@
 
 | 环节 | 现状 | 结论 |
 | --- | --- | --- |
-| HEAD | `0ab538b` 已推送；07-D.13 改动在本地、尚未推送 | ABI 清理代码待新 CI |
+| 取证提交 | `a8aaa4b` 已推送；CI/平台证据已回填 | ABI 清理代码已取证 |
 | 原型测试 | 9 passed（本地）；Linux workspace gates 也运行并通过 9 tests | 自定义 ABI 场景可运行 |
 | Clippy / fmt | 通过 | 代码质量通过 |
 | `bun run check:layout` | 通过 | 目录/注册已修 |
 | 完整 `bun run check` | 通过 | 本地门禁成立 |
-| workspace gates | `39873277968` 绑定 `0ab538b` 的 Linux 作业 success；日志包含 research concurrency fmt/test/Clippy | 本地 ABI 清理之后的 CI 仍待新运行 |
-| 平台复现 | 未重跑；上次 `39563381227` 早于原型测试进入 `run.sh` | macOS/Windows 原型测试待新运行；见 F-6 |
+| workspace gates | `39963374595` 绑定 `a8aaa4b` 的 Linux 作业 success；日志包含 research concurrency fmt/test/Clippy | 新代码 CI 已取证 |
+| 平台复现 | `39965322134` 四个平台和汇总作业 success | 平台测试已取证；见 F-6 |
 | 布局输出 | 干净头 24B；干净对象 `u64` 32B/24B、align32 64B/32B；含探针对象 48B/40B、align32 96B/64B | 仅 Windows x86_64 模型 |
 | 自定义成本 | clone/drop 19 ns、升级成功 19 ns、升级失败/取消检查 `<1 ns`、锁 20 ns、含探针析构 264 ns、干净 Box 分配/释放 48 ns（不含载荷析构） | Windows x86_64，1000 次，仍待跨平台 |
 | 文档 | 已统一干净头、探针对象和高对齐布局的数字 | F-1/F-2/F-3 已处理 |
@@ -132,16 +132,15 @@ payload_offset: size_of::<AtomicHeader>(),
 Windows x86_64、1000 次结果为 clone/drop `19 ns`、升级成功 `19 ns`、升级失败 `<1 ns`、
 锁 `20 ns`、取消检查 `<1 ns`、含探针分配/析构 `264 ns`、干净 Box 分配/释放 `48 ns`（不含载荷析构）。跨平台测量仍待补。
 
-### F-5 **workspace gates 已取证，平台复现仍未跑（部分关闭）**
+### F-5 **workspace gates 与平台复现已取证，跨平台测量仍缺（部分关闭）**
 
 07-D.7 已把 `tests/research/**` 接入 workspace gates，并把原型 fmt/test/Clippy 放进
-`run.sh`；`39873277968` 在绑定 `0ab538b` 的 Linux 作业中 success，日志确认
+`run.sh`；`39963374595` 在绑定 `a8aaa4b` 的 Linux 作业中 success，日志确认
 `research concurrency cargo fmt/test/Clippy` 都执行，原型 **9 tests** 在 Linux 通过。
 更早的 `39813718835` 只保留为历史来源，均不覆盖 07-D.13 的本地改动。
 
-仍未关闭的是平台复现：上一次 `39563381227` 在 d6112e4，早于原型测试进入 `run.sh`，因此
-macOS/Windows 还没有运行过这 9 个原型测试。要在 07-D.13 的本地改动完成后手动触发
-`365649226`，并记录四平台作业结果；不能只用 Linux workspace gates 代替 macOS/Windows。
+平台复现 `39965322134` 已完成 Windows amd64、Linux amd64/arm64、macOS arm64 和汇总作业；
+仍不能用平台测试替代 Linux/macOS 布局与成本测量。
 
 ### F-6 **跨平台测试与测量仍缺（P3）**
 
