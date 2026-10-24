@@ -591,10 +591,15 @@ required-feature 门禁。精确 Runtime 创建/传输、二进制格式头/字�
 边界值或带 Runtime ID 的显式共享句柄；二进制为版本头 + 大端长度 + 类型标签；lock state
 为原子状态字 + 平台等待；ABI 次版本 +1；任务池固定容量，shutdown 拒绝新任务并等待已
 提交任务；未开始任务直接移除，运行中任务标记取消；detached 失败写结构化错误报告且进程
-继续；诊断按类别连续分配。`thread<T>`/`task<T>`/runtime/pool 类型名、read/lock 返回语义、
-二进制 magic/tag/长度上限、32B tag/ABI 次版本号和诊断具体编号仍待 22A 写死。
+继续；诊断按类别连续分配。
 
-这些选择仍不写产品代码；22A §2.2 细化未完成前不能进入 22B。
+第四轮细化：`read(h)` 返回值拷贝，`lock(h)` 返回作用域守卫；`join`/`detach`/`wait` 消费
+句柄，`cancel` 不消费；类型名为 `thread<T>`/`task<T>`/`runtime`/`pool`；32B tag 为
+`1=ordinary`、`2=shared_read`、`3=shared_mut`，Runtime ABI 1.17；二进制长度 u32、深度 64、
+节点 1,000,000；诊断按 X03-TYPE-030+ / X06-LIFETIME-006+ / X06-RUNTIME-027+ 固定最小映射。
+22A §2.6 已起草 API/诊断/二进制 tag/任务池契约，待星崽最终审阅后生效。
+
+这些选择仍不写产品代码；22A §2.6 契约审阅和 §2.2 剩余细化完成前不能进入 22B。
 
 ### 错误模型与诊断
 

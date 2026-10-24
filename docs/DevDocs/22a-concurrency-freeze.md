@@ -7,7 +7,7 @@
 > **本批一句话**：**先把并发入口的语义、ABI、诊断和测量定死，再让 22B 写类型/IR；
 > 本批不创建语法 AST、不写 Runtime、不改产品 ABI。**
 >
-> 状态：**跨平台测量已取证，三轮裁定已记录，契约细化待补（2026-10-24）**。只做测量、
+> 状态：**跨平台测量已取证，四轮裁定已记录，冻结契约草案待审（2026-10-24）**。只做测量、
 > 决定和文档；不登记未冻结 API，不写产品代码；阶段代号 22 已登记，22A 完成后才能进入
 > 22B。
 
@@ -99,15 +99,13 @@
 
 以下不是重新裁定，而是把已选方向写成可实现的契约：
 
-- `thread<T>`/`task<T>`/runtime/pool 句柄的公开类型名、所有权和消费规则；
-- `read(h)`/`lock(h)` 的返回语义（值、引用式只读句柄或守卫）和生命周期；
-- 多边界值的参数顺序、深拷贝失败清理、参数数量/大小上限；
-- 多 Runtime 创建/关闭失败、Runtime ID 生命周期、跨 Runtime 共享句柄的显式规则；
-- 二进制 magic/版本头/tag 表/长度上限/资源与动态值拒绝的错误身份；
-- 32B 布局的 tag 值、对齐、lock state 等待协议、弱升级和 ABI 次版本号；补 32B 布局
-  跨平台测量；
-- 各诊断的具体编号（按类别连续分配）；
-- 任务池固定容量的上限、shutdown 等待边界、wait/cancel 的错误身份；
+- API 的完整参数/返回签名（类型名/所有权已定，§2.6 是草案）；
+- 多边界值的参数数量/大小上限、深拷贝失败清理顺序；
+- 多 Runtime 关闭失败、Runtime ID 生命周期、跨 Runtime 共享句柄的显式规则；
+- 二进制 magic/版本头具体字节布局、资源/动态值拒绝的错误身份；
+- 32B 对齐、lock state 等待协议、弱升级和 32B 布局跨平台测量（tag/ABI 已定）；
+- 诊断固定映射的最终语义审阅（§2.6 草案）；
+- 任务池默认容量/上限、shutdown 等待边界、wait/cancel 的错误身份；
 - `.xiaoc`/`.xar`/原生产物的 required-feature 门禁、UseDocs 入口和发布矩阵。
 
 ### 2.3 第二轮细化裁定（2026-10-24）
@@ -147,6 +145,63 @@ lock state 的原子/等待实现、诊断具体编号、任务池容量/关闭�
 仍需写死：`thread<T>`/`task<T>`/runtime/pool 句柄类型名与所有权，`read`/`lock` 的返回
 语义（值/句柄/守卫），二进制 magic/版本/tag 表/长度上限，32B tag 值与 ABI 次版本号，
 各诊断的具体编号，以及 UseDocs/发布矩阵。
+
+### 2.5 第四轮细化裁定（2026-10-24）
+
+1. **共享读取**：`read(h)` 返回当前执行单元的**值拷贝**；`lock(h)` 返回作用域守卫，
+   离开作用域释放锁；
+2. **句柄所有权**：`join`/`detach`/`wait` 消费句柄；`cancel` **不消费**句柄，取消后仍可
+   `join`/`wait` 取回取消错误；
+3. **类型名**：`thread<T>`、`task<T>`、`runtime`、`pool`；
+4. **32B tag/ABI**：`1=ordinary`、`2=shared_read`、`3=shared_mut`；Runtime ABI **1.17**；
+5. **二进制上限**：长度 `u32`、嵌套深度 `64`、总节点 `1,000,000`；超限返回稳定错误；
+6. **诊断编号**：从下一空号开始，采用固定最小映射（见下表）。
+
+### 2.6 冻结契约草案（待最终审阅）
+
+**API 形状（类型名/所有权按 §2.5）**：
+
+```text
+runtime_create() -> runtime
+runtime_close(runtime) -> none
+spawn(fn, a, b, ...) -> thread<T>
+join(thread<T>) -> T
+detach(thread<T>) -> none
+cancel(thread<T> | task<T>) -> none
+shared_read(T) -> shared<T>
+shared_mut(T) -> shared_mut<T>
+read(shared<T>) -> T
+lock(shared_mut<T>) -> lock_guard<T>
+pool_create(capacity) -> pool
+submit(pool, fn, a, b, ...) -> task<T>
+wait(task<T>) -> T
+shutdown(pool) -> none
+```
+
+**诊断最小映射**：
+
+| 编号 | 语义 |
+| --- | --- |
+| `X03-TYPE-030` | 值不满足候选 A 的跨线程能力 |
+| `X03-TYPE-031` | 普通句柄不能跨线程 |
+| `X03-TYPE-032` | 共享句柄/普通句柄身份误用或隐式升级 |
+| `X06-LIFETIME-006` | 任务边界事实冲突/非法传播 |
+| `X06-LIFETIME-007` | 线程边界事实冲突/非法传播 |
+| `X06-LIFETIME-008` | 跨 Runtime 边界或 Runtime ID 冲突 |
+| `X06-RUNTIME-027` | 线程/任务取消 |
+| `X06-RUNTIME-028` | detached 线程失败 |
+| `X06-RUNTIME-029` | 二进制序列化/反序列化失败 |
+| `X06-RUNTIME-030` | 任务池已关闭/拒绝提交 |
+| `X06-RUNTIME-031` | Runtime 已关闭/跨 Runtime 非法使用 |
+
+**二进制 tag 草案**：`0=none`、`1=int`、`2=sint`、`3=lint`、`4=float`、`5=sfloat`、
+`6=lfloat`、`7=bool`、`8=str`、`9=array`、`10=tuple`、`11=set`、`12=dict`；资源/动态值
+拒绝。版本头、magic 和长度布局仍需在实现前定稿。
+
+**任务池默认**：`pool_create(capacity)` 使用固定容量；`shutdown` 停止接纳并等待已提交
+任务；运行中任务通过 `cancel` 标记退出。默认容量和上限仍需在实现前确定。
+
+> 本契约是 22A 的草案，星崽最终审阅后才生效；22A 关闭前不得据此写产品代码。
 
 ## 三、测量任务
 
@@ -226,7 +281,7 @@ cargo run --release --manifest-path tests/research/concurrency/Cargo.toml -- --i
 | --- | --- | --- |
 | 0 | 基线核对：22 阶段、07-D 证据、当前 CI/平台运行号 | 文档/运行号 |
 | 1 | 补 Linux/macOS 布局/成本测量 | `40068582635` 四平台测量表 |
-| 2 | 完成 §2.1/§2.3/§2.4 三轮裁定并写死 §2.2 细化项 | 冻结记录 |
+| 2 | 完成 §2.1/§2.3/§2.4/§2.5 四轮裁定并写死 §2.2 细化项 | 冻结记录 |
 | 3 | 冻结诊断编号、标准库/任务池清单、序列化格式、32B ABI 版本 | 00/22A |
 | 4 | 更新 12 P0、README、UseDocs 入口 | 文档 |
 | 5 | 最终审核：docs/UseDocs/layout、无产品代码 | 本地/CI |
@@ -237,8 +292,8 @@ cargo run --release --manifest-path tests/research/concurrency/Cargo.toml -- --i
 
 1. **测量**：`40068582635` 已记录 Linux/macOS 与 Windows 布局/成本；不以平台测试代替测量；
 2. **取消**：已裁定首版实现真实等待/唤醒路径；22C 必须落地并测量；
-3. **冻结表**：§2.1/§2.3/§2.4 三轮选择已记录，§2.2 的细化项写死；没有“待实现时再定”
-   的空白；
+3. **冻结表**：§2.1/§2.3/§2.4/§2.5 四轮选择已记录，§2.6 契约草案经星崽审阅，§2.2 的
+   细化项写死；没有“待实现时再定”的空白；
 4. **ABI**：统一 32B 头 + 内联锁的字段/对齐/tag/计数/弱升级/版本冻结，并补 32B 布局的
    跨平台测量；原型探针和 24B 输入不直接进入 ABI；
 5. **诊断/标准库/发布**：X03/X06 具体编号、`std.concurrent`/任务池/序列化 API、UseDocs
