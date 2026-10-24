@@ -9,6 +9,12 @@ use xiao_diagnostics::Diagnostic;
 use xiao_source::SourceSpan;
 use xiao_types::Type;
 
+/// Runtime 的稳定身份。
+///
+/// Runtime ID 由显式 lowering 或后续 Runtime 分配；生命周期层只保存和
+/// 校验这个不透明的数值，不负责创建或回收 Runtime。
+pub type RuntimeId = u64;
+
 /// 一个静态作用域的稳定身份。
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct ScopeId(u32);
@@ -42,6 +48,723 @@ impl ValueId {
     #[must_use]
     pub const fn get(self) -> u32 {
         self.0
+    }
+}
+
+/// 跨并发边界的事实种类。
+///
+/// `spawn`/`submit` 同时产生任务边界和线程边界；同线程挂起只产生任务边界。
+/// 该枚举是事实的语义标签，不能从变量名或函数名推断。
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum BoundaryKind {
+    /// 任务/协程生命周期边界。
+    TaskBoundary,
+    /// 可能迁移到其他 worker 的线程边界。
+    ThreadBoundary,
+}
+
+impl BoundaryKind {
+    /// 返回诊断和快照共用的稳定名称。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::TaskBoundary => "task_boundary",
+            Self::ThreadBoundary => "thread_boundary",
+        }
+    }
+}
+
+/// lowering 传入的值能力分类。
+///
+/// 该分类是显式 lowering 的输入，不会通过名称、类型显示文本或函数名猜测。
+/// 类型检查器可以把自己的并发类型映射到这里，生命周期层据此拒绝不能
+/// 进入边界的句柄和动态/资源值。
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum BoundaryValueKind {
+    /// 已经通过候选 A Send/Sync 判定的值。
+    Sendable,
+    /// 只读共享句柄；允许携带源 Runtime ID。
+    Shared,
+    /// 共享可变句柄；不得跨 Runtime。
+    SharedMut,
+    /// 普通运行时句柄，包含 StrongHandle/WeakHandle。
+    OrdinaryHandle,
+    /// 锁守卫；只能在创建它的词法作用域中使用。
+    LockGuard,
+    /// Runtime 句柄。
+    Runtime,
+    /// 任务池句柄。
+    Pool,
+    /// 任务句柄。
+    Task,
+    /// 线程句柄。
+    Thread,
+    /// 动态值；应由类型层拒绝或留下运行时检查。
+    Dynamic,
+    /// 外部资源值。
+    Resource,
+}
+
+impl BoundaryValueKind {
+    /// 返回稳定的类别名，用于结构化诊断参数。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Sendable => "sendable",
+            Self::Shared => "shared",
+            Self::SharedMut => "shared_mut",
+            Self::OrdinaryHandle => "ordinary_handle",
+            Self::LockGuard => "lock_guard",
+            Self::Runtime => "runtime",
+            Self::Pool => "pool",
+            Self::Task => "task",
+            Self::Thread => "thread",
+            Self::Dynamic => "dynamic",
+            Self::Resource => "resource",
+        }
+    }
+
+    /// 判断该类别是否属于不可转移的普通句柄族。
+    #[must_use]
+    pub const fn is_non_send_handle(self) -> bool {
+        matches!(
+            self,
+            Self::OrdinaryHandle | Self::Runtime | Self::Pool | Self::Task | Self::Thread
+        )
+    }
+}
+
+/// 一个由 lowering 显式提交的边界参数。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct BoundaryValue {
+    /// 生命周期分析中的稳定值身份。
+    pub value: ValueId,
+    /// 类型层已判定的并发能力类别。
+    pub kind: BoundaryValueKind,
+    /// 已知的来源 Runtime；普通值可以没有来源 Runtime。
+    pub source_runtime_id: Option<RuntimeId>,
+}
+
+impl BoundaryValue {
+    /// 创建没有来源 Runtime 的边界参数。
+    #[must_use]
+    pub const fn new(value: ValueId, kind: BoundaryValueKind) -> Self {
+        Self {
+            value,
+            kind,
+            source_runtime_id: None,
+        }
+    }
+
+    /// 附加该值当前所属的 Runtime ID。
+    #[must_use]
+    pub const fn from_runtime(mut self, runtime_id: RuntimeId) -> Self {
+        self.source_runtime_id = Some(runtime_id);
+        self
+    }
+}
+
+/// 一条跨线程/任务边界事实。
+///
+/// 一个值在一次显式 lowering 中只登记一条事实。`runtime_id` 是目标 Runtime，
+/// 与 `RuntimeIdFact` 中保存的来源 Runtime 可以不同。
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct CrossThreadFact {
+    /// 被转移的值。
+    pub value: ValueId,
+    /// 目标 Runtime 的稳定身份。
+    pub runtime_id: RuntimeId,
+    /// 是否跨越任务边界。
+    pub task_boundary: bool,
+    /// 是否跨越线程边界。
+    pub thread_boundary: bool,
+    /// 产生事实的显式 lowering 源码区间。
+    pub span: SourceSpan,
+}
+
+impl CrossThreadFact {
+    /// 创建一条事实；至少要有一种边界。
+    #[must_use]
+    pub const fn new(
+        value: ValueId,
+        runtime_id: RuntimeId,
+        task_boundary: bool,
+        thread_boundary: bool,
+        span: SourceSpan,
+    ) -> Self {
+        Self {
+            value,
+            runtime_id,
+            task_boundary,
+            thread_boundary,
+            span,
+        }
+    }
+
+    /// 创建 `spawn`/`submit` 产生的双边界事实。
+    #[must_use]
+    pub const fn spawn(value: ValueId, runtime_id: RuntimeId, span: SourceSpan) -> Self {
+        Self::new(value, runtime_id, true, true, span)
+    }
+
+    /// 创建同线程挂起产生的单任务边界事实。
+    #[must_use]
+    pub const fn task(value: ValueId, runtime_id: RuntimeId, span: SourceSpan) -> Self {
+        Self::new(value, runtime_id, true, false, span)
+    }
+
+    /// 判断事实是否包含指定边界。
+    #[must_use]
+    pub const fn contains(self, kind: BoundaryKind) -> bool {
+        match kind {
+            BoundaryKind::TaskBoundary => self.task_boundary,
+            BoundaryKind::ThreadBoundary => self.thread_boundary,
+        }
+    }
+}
+
+/// `BoundaryFact` 是后端使用的通用别名。
+pub type BoundaryFact = CrossThreadFact;
+
+/// 任务边界事实的语义别名。
+pub type TaskBoundary = CrossThreadFact;
+
+/// 线程边界事实的语义别名。
+pub type ThreadBoundary = CrossThreadFact;
+
+/// Runtime ID 的来源事实。
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct RuntimeIdFact {
+    /// 绑定 Runtime 身份的值。
+    pub value: ValueId,
+    /// 该值所属 Runtime。
+    pub runtime_id: RuntimeId,
+    /// 登记 Runtime 身份的源码区间。
+    pub span: SourceSpan,
+}
+
+/// 按值身份保存 Runtime ID 的确定性事实容器。
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct RuntimeIdFacts {
+    /// 每个值最多对应一个 Runtime ID。
+    pub facts: BTreeMap<ValueId, RuntimeIdFact>,
+}
+
+impl RuntimeIdFacts {
+    /// 创建空容器。
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// 登记 Runtime ID；相同值的不同 ID 会返回冲突。
+    pub fn insert(&mut self, fact: RuntimeIdFact) -> Result<(), RuntimeIdFact> {
+        if let Some(existing) = self.facts.get(&fact.value) {
+            if existing.runtime_id != fact.runtime_id {
+                return Err(*existing);
+            }
+            return Ok(());
+        }
+        self.facts.insert(fact.value, fact);
+        Ok(())
+    }
+
+    /// 以值身份和源码区间登记 Runtime ID。
+    pub fn record(
+        &mut self,
+        value: ValueId,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), RuntimeIdFact> {
+        self.insert(RuntimeIdFact {
+            value,
+            runtime_id,
+            span,
+        })
+    }
+
+    /// 返回某个值的 Runtime ID 事实。
+    #[must_use]
+    pub fn get(&self, value: ValueId) -> Option<&RuntimeIdFact> {
+        self.facts.get(&value)
+    }
+
+    /// 返回某个值的 Runtime ID 数值。
+    #[must_use]
+    pub fn runtime_id(&self, value: ValueId) -> Option<RuntimeId> {
+        self.get(value).map(|fact| fact.runtime_id)
+    }
+
+    /// 返回只读映射。
+    #[must_use]
+    pub const fn as_map(&self) -> &BTreeMap<ValueId, RuntimeIdFact> {
+        &self.facts
+    }
+
+    /// 判断容器是否为空。
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.facts.is_empty()
+    }
+}
+
+/// lowering 产生边界事实的操作类别。
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum BoundaryOperation {
+    /// `spawn(runtime, fn, ...)`。
+    Spawn,
+    /// `submit(pool, fn, ...)`。
+    Submit,
+    /// 同线程挂起或未来协程边界。
+    TaskSuspend,
+}
+
+impl BoundaryOperation {
+    /// 返回稳定操作名称。
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Spawn => "spawn",
+            Self::Submit => "submit",
+            Self::TaskSuspend => "task_suspend",
+        }
+    }
+}
+
+/// 登记并发边界事实时的结构化错误。
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum BoundaryFactError {
+    /// 同一个值已经有一条边界事实。
+    DuplicateValue {
+        /// 冲突的值身份。
+        value: ValueId,
+    },
+    /// 同一个值被登记了不同 Runtime ID。
+    RuntimeIdConflict {
+        /// 冲突的值身份。
+        value: ValueId,
+        /// 已有 Runtime ID。
+        existing: RuntimeId,
+        /// 新提交的 Runtime ID。
+        incoming: RuntimeId,
+    },
+    /// 值的类别不允许进入并发边界。
+    UnsupportedValue {
+        /// 冲突的值身份。
+        value: ValueId,
+        /// 类型层提交的能力类别。
+        kind: BoundaryValueKind,
+    },
+    /// `lock_guard<T>` 试图逃出其词法作用域。
+    LockGuardEscape {
+        /// 冲突的值身份。
+        value: ValueId,
+    },
+    /// `shared_mut<T>` 试图跨 Runtime 传播。
+    SharedMutCrossRuntime {
+        /// 冲突的值身份。
+        value: ValueId,
+        /// 来源 Runtime。
+        source: RuntimeId,
+        /// 目标 Runtime。
+        target: RuntimeId,
+    },
+}
+
+impl BoundaryFactError {
+    /// 返回错误对应的边界种类；普通值分类错误没有单一边界。
+    #[must_use]
+    pub const fn boundary_kind(self) -> Option<BoundaryKind> {
+        match self {
+            Self::LockGuardEscape { .. } | Self::SharedMutCrossRuntime { .. } => {
+                Some(BoundaryKind::ThreadBoundary)
+            }
+            Self::DuplicateValue { .. }
+            | Self::RuntimeIdConflict { .. }
+            | Self::UnsupportedValue { .. } => None,
+        }
+    }
+}
+
+impl std::fmt::Display for BoundaryFactError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::DuplicateValue { value } => write!(formatter, "值 {} 已有边界事实", value.get()),
+            Self::RuntimeIdConflict {
+                value,
+                existing,
+                incoming,
+            } => write!(
+                formatter,
+                "值 {} 的 Runtime ID 冲突：已有 {existing}，收到 {incoming}",
+                value.get()
+            ),
+            Self::UnsupportedValue { value, kind } => write!(
+                formatter,
+                "值 {} 的类别 {} 不能进入并发边界",
+                value.get(),
+                kind.as_str()
+            ),
+            Self::LockGuardEscape { value } => {
+                write!(
+                    formatter,
+                    "lock_guard 值 {} 不能逃出词法作用域",
+                    value.get()
+                )
+            }
+            Self::SharedMutCrossRuntime {
+                value,
+                source,
+                target,
+            } => write!(
+                formatter,
+                "shared_mut 值 {} 不能从 Runtime {source} 传到 Runtime {target}",
+                value.get()
+            ),
+        }
+    }
+}
+
+impl std::error::Error for BoundaryFactError {}
+
+/// 显式 lowering 产生的 Runtime ID、任务边界和线程边界事实。
+///
+/// 该容器不访问 AST，也不识别函数/变量名称。调用方必须从已经解析并完成
+/// 类型判定的 `spawn`/`submit` lowering 入口提交事实。
+#[derive(Clone, Debug, Eq, PartialEq, Default)]
+pub struct BoundaryFacts {
+    /// 值到来源 Runtime ID 的事实。
+    pub runtime_ids: RuntimeIdFacts,
+    /// 每个边界值对应的一条跨线程事实。
+    pub cross_thread_facts: Vec<CrossThreadFact>,
+    /// 登记阶段产生的结构化诊断；结果合并时一并交给调用方。
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+impl BoundaryFacts {
+    /// 创建空事实容器。
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// 登记一个值的来源 Runtime ID。
+    pub fn register_runtime_id(
+        &mut self,
+        value: ValueId,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError> {
+        let fact = RuntimeIdFact {
+            value,
+            runtime_id,
+            span,
+        };
+        if let Err(existing) = self.runtime_ids.insert(fact) {
+            let error = BoundaryFactError::RuntimeIdConflict {
+                value,
+                existing: existing.runtime_id,
+                incoming: runtime_id,
+            };
+            self.diagnostics
+                .push(crate::diagnostics::runtime_id_conflict(span, &error));
+            return Err(error);
+        }
+        Ok(())
+    }
+
+    /// `register_runtime_id` 的简短别名。
+    pub fn record_runtime_id(
+        &mut self,
+        value: ValueId,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError> {
+        self.register_runtime_id(value, runtime_id, span)
+    }
+
+    /// 返回值的来源 Runtime ID。
+    #[must_use]
+    pub fn runtime_id(&self, value: ValueId) -> Option<RuntimeId> {
+        self.runtime_ids.get(value).map(|fact| fact.runtime_id)
+    }
+
+    /// 返回 Runtime ID 事实容器。
+    #[must_use]
+    pub const fn runtime_id_facts(&self) -> &RuntimeIdFacts {
+        &self.runtime_ids
+    }
+
+    /// 登记 `spawn` 的一组未分类边界值。
+    ///
+    /// 该入口供已经完成类型判定的 lowering 使用；需要生命周期层再次校验
+    /// 值类别时使用 [`Self::record_spawn_values`]。
+    pub fn record_spawn<I>(
+        &mut self,
+        values: I,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError>
+    where
+        I: IntoIterator<Item = ValueId>,
+    {
+        self.record_operation(
+            BoundaryOperation::Spawn,
+            values
+                .into_iter()
+                .map(|value| BoundaryValue::new(value, BoundaryValueKind::Sendable)),
+            runtime_id,
+            span,
+        )
+    }
+
+    /// 登记 `submit` 的一组未分类边界值。
+    pub fn record_submit<I>(
+        &mut self,
+        values: I,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError>
+    where
+        I: IntoIterator<Item = ValueId>,
+    {
+        self.record_operation(
+            BoundaryOperation::Submit,
+            values
+                .into_iter()
+                .map(|value| BoundaryValue::new(value, BoundaryValueKind::Sendable)),
+            runtime_id,
+            span,
+        )
+    }
+
+    /// 登记单个 `spawn` 边界参数。
+    pub fn record_spawn_value(
+        &mut self,
+        value: ValueId,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError> {
+        self.record_spawn([value], runtime_id, span)
+    }
+
+    /// 登记单个 `submit` 边界参数。
+    pub fn record_submit_value(
+        &mut self,
+        value: ValueId,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError> {
+        self.record_submit([value], runtime_id, span)
+    }
+
+    /// 登记同线程挂起产生的任务边界。
+    pub fn record_task_boundary<I>(
+        &mut self,
+        values: I,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError>
+    where
+        I: IntoIterator<Item = ValueId>,
+    {
+        self.record_operation(
+            BoundaryOperation::TaskSuspend,
+            values
+                .into_iter()
+                .map(|value| BoundaryValue::new(value, BoundaryValueKind::Sendable)),
+            runtime_id,
+            span,
+        )
+    }
+
+    /// 登记带显式能力类别的一组 `spawn` 参数。
+    pub fn record_spawn_values<I>(
+        &mut self,
+        values: I,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError>
+    where
+        I: IntoIterator<Item = BoundaryValue>,
+    {
+        self.record_operation(BoundaryOperation::Spawn, values, runtime_id, span)
+    }
+
+    /// 登记带显式能力类别的一组 `submit` 参数。
+    pub fn record_submit_values<I>(
+        &mut self,
+        values: I,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError>
+    where
+        I: IntoIterator<Item = BoundaryValue>,
+    {
+        self.record_operation(BoundaryOperation::Submit, values, runtime_id, span)
+    }
+
+    /// 登记一个显式边界操作。
+    pub fn record_operation<I>(
+        &mut self,
+        operation: BoundaryOperation,
+        values: I,
+        runtime_id: RuntimeId,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError>
+    where
+        I: IntoIterator<Item = BoundaryValue>,
+    {
+        let values = values.into_iter().collect::<Vec<_>>();
+        let (task_boundary, thread_boundary) = match operation {
+            BoundaryOperation::Spawn | BoundaryOperation::Submit => (true, true),
+            BoundaryOperation::TaskSuspend => (true, false),
+        };
+        let mut errors = Vec::new();
+        let mut seen = BTreeSet::new();
+        for item in &values {
+            if !seen.insert(item.value)
+                || self
+                    .cross_thread_facts
+                    .iter()
+                    .any(|fact| fact.value == item.value)
+            {
+                errors.push(BoundaryFactError::DuplicateValue { value: item.value });
+                continue;
+            }
+            if let Some(error) =
+                self.validate_value(*item, runtime_id, task_boundary, thread_boundary)
+            {
+                errors.push(error);
+            }
+        }
+        if let Some(error) = errors.first().copied() {
+            for error in errors {
+                self.diagnostics
+                    .push(crate::diagnostics::boundary_fact_error(
+                        span, operation, &error,
+                    ));
+            }
+            return Err(error);
+        }
+
+        for item in values {
+            self.cross_thread_facts.push(CrossThreadFact::new(
+                item.value,
+                runtime_id,
+                task_boundary,
+                thread_boundary,
+                span,
+            ));
+        }
+        Ok(())
+    }
+
+    /// 检查一个值能否离开词法作用域。
+    ///
+    /// 该入口专门供 `return`、闭包捕获和边界 lowering 共用；锁守卫一律拒绝，
+    /// 避免它通过普通生命周期逃逸路径进入任务或线程。
+    pub fn validate_escape(
+        &mut self,
+        value: BoundaryValue,
+        span: SourceSpan,
+    ) -> Result<(), BoundaryFactError> {
+        if value.kind == BoundaryValueKind::LockGuard {
+            let error = BoundaryFactError::LockGuardEscape { value: value.value };
+            self.diagnostics
+                .push(crate::diagnostics::boundary_fact_error(
+                    span,
+                    BoundaryOperation::TaskSuspend,
+                    &error,
+                ));
+            return Err(error);
+        }
+        Ok(())
+    }
+
+    /// 将另一组显式 lowering 事实合并到当前容器。
+    pub fn merge(&mut self, other: Self) -> Result<(), BoundaryFactError> {
+        let mut merged = self.clone();
+        for fact in other.runtime_ids.facts.values().copied() {
+            merged.register_runtime_id(fact.value, fact.runtime_id, fact.span)?;
+        }
+        for fact in other.cross_thread_facts {
+            if merged
+                .cross_thread_facts
+                .iter()
+                .any(|existing| existing.value == fact.value)
+            {
+                return Err(BoundaryFactError::DuplicateValue { value: fact.value });
+            }
+            merged.cross_thread_facts.push(fact);
+        }
+        merged.diagnostics.extend(other.diagnostics);
+        *self = merged;
+        Ok(())
+    }
+
+    /// 返回跨线程事实的只读切片。
+    #[must_use]
+    pub fn cross_thread_facts(&self) -> &[CrossThreadFact] {
+        &self.cross_thread_facts
+    }
+
+    /// 返回含任务边界标志的事实。
+    pub fn task_boundaries(&self) -> impl Iterator<Item = &TaskBoundary> {
+        self.cross_thread_facts
+            .iter()
+            .filter(|fact| fact.task_boundary)
+    }
+
+    /// 返回含线程边界标志的事实。
+    pub fn thread_boundaries(&self) -> impl Iterator<Item = &ThreadBoundary> {
+        self.cross_thread_facts
+            .iter()
+            .filter(|fact| fact.thread_boundary)
+    }
+
+    /// 返回事实容器是否为空。
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.runtime_ids.is_empty() && self.cross_thread_facts.is_empty()
+    }
+
+    fn validate_value(
+        &self,
+        value: BoundaryValue,
+        target_runtime_id: RuntimeId,
+        task_boundary: bool,
+        thread_boundary: bool,
+    ) -> Option<BoundaryFactError> {
+        if value.kind == BoundaryValueKind::LockGuard {
+            return Some(BoundaryFactError::LockGuardEscape { value: value.value });
+        }
+        if value.kind == BoundaryValueKind::SharedMut
+            && value
+                .source_runtime_id
+                .is_some_and(|source| source != target_runtime_id)
+        {
+            return Some(BoundaryFactError::SharedMutCrossRuntime {
+                value: value.value,
+                source: value
+                    .source_runtime_id
+                    .expect("is_some_and 已确认来源 Runtime"),
+                target: target_runtime_id,
+            });
+        }
+        if value.kind.is_non_send_handle()
+            || matches!(
+                value.kind,
+                BoundaryValueKind::Dynamic | BoundaryValueKind::Resource
+            )
+        {
+            let _ = (task_boundary, thread_boundary);
+            return Some(BoundaryFactError::UnsupportedValue {
+                value: value.value,
+                kind: value.kind,
+            });
+        }
+        None
     }
 }
 
@@ -547,6 +1270,8 @@ pub struct LifetimeResult {
     pub control_flow: ControlFlowGraph,
     /// 需要 Runtime 检查的动态生命周期边界。
     pub dynamic_checks: Vec<DynamicLifetimeCheck>,
+    /// 由显式 lowering 产生的任务/线程边界及 Runtime ID 事实。
+    pub boundary_facts: BoundaryFacts,
     /// 生命周期诊断。
     pub diagnostics: Vec<Diagnostic>,
 }
@@ -562,6 +1287,7 @@ impl Default for LifetimeResult {
             release_plans: BTreeMap::new(),
             control_flow: ControlFlowGraph::new(),
             dynamic_checks: Vec::new(),
+            boundary_facts: BoundaryFacts::default(),
             diagnostics: Vec::new(),
         }
     }
@@ -645,9 +1371,149 @@ impl LifetimeResult {
         &self.dynamic_checks
     }
 
+    /// 返回显式 lowering 产生的边界事实容器。
+    #[must_use]
+    pub const fn boundary_facts(&self) -> &BoundaryFacts {
+        &self.boundary_facts
+    }
+
+    /// 返回跨任务/线程事实。
+    #[must_use]
+    pub fn cross_thread_facts(&self) -> &[CrossThreadFact] {
+        self.boundary_facts.cross_thread_facts()
+    }
+
+    /// 返回 Runtime ID 事实。
+    #[must_use]
+    pub const fn runtime_id_facts(&self) -> &RuntimeIdFacts {
+        self.boundary_facts.runtime_id_facts()
+    }
+
     /// 返回控制流图。
     #[must_use]
     pub const fn control_flow(&self) -> &ControlFlowGraph {
         &self.control_flow
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{
+        BoundaryFactError, BoundaryFacts, BoundaryOperation, BoundaryValue, BoundaryValueKind,
+        CrossThreadFact, RuntimeIdFact, RuntimeIdFacts, ValueId,
+    };
+    use xiao_source::SourceSpan;
+
+    fn span() -> SourceSpan {
+        SourceSpan::new(0, 1).expect("测试区间有效")
+    }
+
+    #[test]
+    fn explicit_spawn_and_submit_produce_both_boundary_facts() {
+        let mut facts = BoundaryFacts::new();
+        facts
+            .record_spawn([ValueId::new(1)], 7, span())
+            .expect("spawn 应登记");
+        facts
+            .record_submit([ValueId::new(2)], 9, span())
+            .expect("submit 应登记");
+        assert_eq!(facts.cross_thread_facts.len(), 2);
+        assert!(facts.cross_thread_facts.iter().all(|fact| {
+            fact.task_boundary
+                && fact.thread_boundary
+                && (fact.runtime_id == 7 || fact.runtime_id == 9)
+        }));
+    }
+
+    #[test]
+    fn task_suspend_only_produces_task_boundary() {
+        let mut facts = BoundaryFacts::new();
+        facts
+            .record_task_boundary([ValueId::new(3)], 11, span())
+            .expect("同线程挂起应登记");
+        assert_eq!(
+            facts.cross_thread_facts,
+            vec![CrossThreadFact::task(ValueId::new(3), 11, span())]
+        );
+    }
+
+    #[test]
+    fn ordinary_handle_and_lock_guard_are_rejected_without_name_inspection() {
+        let mut facts = BoundaryFacts::new();
+        let ordinary = facts.record_spawn_values(
+            [BoundaryValue::new(
+                ValueId::new(4),
+                BoundaryValueKind::OrdinaryHandle,
+            )],
+            1,
+            span(),
+        );
+        assert!(matches!(
+            ordinary,
+            Err(BoundaryFactError::UnsupportedValue {
+                kind: BoundaryValueKind::OrdinaryHandle,
+                ..
+            })
+        ));
+        let guard = facts.validate_escape(
+            BoundaryValue::new(ValueId::new(5), BoundaryValueKind::LockGuard),
+            span(),
+        );
+        assert!(matches!(
+            guard,
+            Err(BoundaryFactError::LockGuardEscape { .. })
+        ));
+        assert!(facts.cross_thread_facts.is_empty());
+    }
+
+    #[test]
+    fn shared_mut_cross_runtime_and_runtime_id_conflict_are_rejected() {
+        let mut facts = BoundaryFacts::new();
+        facts
+            .register_runtime_id(ValueId::new(6), 3, span())
+            .expect("首次 Runtime ID 应登记");
+        let conflict = facts.register_runtime_id(ValueId::new(6), 4, span());
+        assert!(matches!(
+            conflict,
+            Err(BoundaryFactError::RuntimeIdConflict {
+                existing: 3,
+                incoming: 4,
+                ..
+            })
+        ));
+        let shared_mut = facts.record_operation(
+            BoundaryOperation::Spawn,
+            [BoundaryValue::new(ValueId::new(7), BoundaryValueKind::SharedMut).from_runtime(3)],
+            4,
+            span(),
+        );
+        assert!(matches!(
+            shared_mut,
+            Err(BoundaryFactError::SharedMutCrossRuntime {
+                source: 3,
+                target: 4,
+                ..
+            })
+        ));
+        assert!(
+            facts
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.code() == "X06-LIFETIME-008")
+        );
+    }
+
+    #[test]
+    fn runtime_id_facts_are_deterministic_and_idempotent() {
+        let mut ids = RuntimeIdFacts::new();
+        let fact = RuntimeIdFact {
+            value: ValueId::new(8),
+            runtime_id: 12,
+            span: span(),
+        };
+        ids.insert(fact).expect("首次插入");
+        ids.insert(fact).expect("同一事实可重复插入");
+        assert_eq!(ids.as_map().len(), 1);
+        assert_eq!(ids.get(ValueId::new(8)), Some(&fact));
     }
 }

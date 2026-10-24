@@ -15,9 +15,9 @@ use xiao_types::{SetType, TableType, Type, TypeCheckResult};
 
 use crate::diagnostics;
 use crate::model::{
-    BasicBlock, BlockId, ControlFlowEdgeKind, EscapeReason, ExitKind, LifetimeResult,
-    OwnershipEdge, OwnershipEdgeReason, OwnershipKind, ScopeId, ScopeInfo, ScopeKind, StorageClass,
-    ValueId, ValueInfo,
+    BasicBlock, BlockId, BoundaryFactError, BoundaryOperation, ControlFlowEdgeKind, EscapeReason,
+    ExitKind, LifetimeResult, OwnershipEdge, OwnershipEdgeReason, OwnershipKind, ScopeId,
+    ScopeInfo, ScopeKind, StorageClass, ValueId, ValueInfo,
 };
 
 /// 一个退出边上的值转移事实。
@@ -518,6 +518,26 @@ impl<'source> EscapeAnalyzer<'source> {
 
     /// 标记值逃逸；动态值和未知类型一律提升到强拥有堆。
     fn mark_escape(&mut self, id: ValueId, reason: EscapeReason) {
+        let lock_guard_span = self.result.values.get(&id).and_then(|value| {
+            (matches!(value.ty.as_ref(), Some(Type::LockGuard(_)))
+                && !matches!(reason, EscapeReason::DynamicValue))
+            .then_some(value.span)
+        });
+        if let Some(span) = lock_guard_span {
+            let error = BoundaryFactError::LockGuardEscape { value: id };
+            if !self.result.diagnostics.iter().any(|diagnostic| {
+                diagnostic.code() == diagnostics::TASK_BOUNDARY_CODE
+                    && diagnostic.span() == Some(span)
+            }) {
+                self.result
+                    .diagnostics
+                    .push(diagnostics::boundary_fact_error(
+                        span,
+                        BoundaryOperation::TaskSuspend,
+                        &error,
+                    ));
+            }
+        }
         if let Some(value) = self.result.values.get_mut(&id) {
             value.escapes.insert(reason);
             // 标量/栈值跨作用域被读取时仍按值传递，不应因为保守的
@@ -758,11 +778,9 @@ impl<'source> EscapeAnalyzer<'source> {
                 span,
                 ..
             } => {
-                let ty = declared_type.as_ref().map(|declared| match declared {
-                    xiao_syntax::DeclaredType::Scalar(scalar) => Type::scalar(*scalar),
-                    xiao_syntax::DeclaredType::Resource(resource) => Type::Resource(*resource),
-                    xiao_syntax::DeclaredType::Set(_) => Type::Dynamic,
-                });
+                let ty = declared_type
+                    .as_ref()
+                    .and_then(|declared| self.declared_type(declared));
                 let resolved_type = ty.or_else(|| self.type_for_span(value.span()));
                 let id = self.declare_binding(
                     *target,
@@ -1246,6 +1264,23 @@ impl<'source> EscapeAnalyzer<'source> {
                             | xiao_syntax::FunctionTypeAnnotation::Dict(_)
                             | xiao_syntax::FunctionTypeAnnotation::TypeParameter(_) => {
                                 xiao_types::Type::Dynamic
+                            }
+                            xiao_syntax::FunctionTypeAnnotation::Thread(element) => {
+                                Type::thread(annotation_type(element))
+                            }
+                            xiao_syntax::FunctionTypeAnnotation::Task(element) => {
+                                Type::task(annotation_type(element))
+                            }
+                            xiao_syntax::FunctionTypeAnnotation::Runtime => Type::Runtime,
+                            xiao_syntax::FunctionTypeAnnotation::Pool => Type::Pool,
+                            xiao_syntax::FunctionTypeAnnotation::Shared(element) => {
+                                Type::shared(annotation_type(element))
+                            }
+                            xiao_syntax::FunctionTypeAnnotation::SharedMut(element) => {
+                                Type::shared_mut(annotation_type(element))
+                            }
+                            xiao_syntax::FunctionTypeAnnotation::LockGuard(element) => {
+                                Type::lock_guard(annotation_type(element))
                             }
                         })
                 });
@@ -1828,6 +1863,48 @@ impl<'source> EscapeAnalyzer<'source> {
                     .collect::<Vec<_>>();
                 Some(Type::Set(SetType::heterogeneous(members)))
             }
+            DeclaredType::Thread(element) => Some(Type::thread(annotation_type(element))),
+            DeclaredType::Task(element) => Some(Type::task(annotation_type(element))),
+            DeclaredType::Runtime => Some(Type::Runtime),
+            DeclaredType::Pool => Some(Type::Pool),
+            DeclaredType::Shared(element) => Some(Type::shared(annotation_type(element))),
+            DeclaredType::SharedMut(element) => Some(Type::shared_mut(annotation_type(element))),
+            DeclaredType::LockGuard(element) => Some(Type::lock_guard(annotation_type(element))),
+        }
+    }
+}
+
+/// 将生命周期分析需要的函数参数注解降低为类型层表示。
+///
+/// `xiao-types` 会在正常类型检查路径中执行同一降低；这里保留一个小的
+/// 防御性映射，确保类型结果缺失时生命周期分析仍能识别并发句柄身份。
+fn annotation_type(annotation: &xiao_syntax::FunctionTypeAnnotation) -> Type {
+    match annotation {
+        xiao_syntax::FunctionTypeAnnotation::Scalar(scalar) => Type::scalar(*scalar),
+        xiao_syntax::FunctionTypeAnnotation::None => Type::None,
+        xiao_syntax::FunctionTypeAnnotation::Resource(resource) => Type::Resource(*resource),
+        xiao_syntax::FunctionTypeAnnotation::Set(_) => Type::Dynamic,
+        xiao_syntax::FunctionTypeAnnotation::Array(element) => {
+            Type::array(annotation_type(element))
+        }
+        xiao_syntax::FunctionTypeAnnotation::Dict(annotation) => Type::DictTable(
+            xiao_types::DictType::open(annotation_type(&annotation.value)),
+        ),
+        xiao_syntax::FunctionTypeAnnotation::TypeParameter(_) => Type::Dynamic,
+        xiao_syntax::FunctionTypeAnnotation::Thread(element) => {
+            Type::thread(annotation_type(element))
+        }
+        xiao_syntax::FunctionTypeAnnotation::Task(element) => Type::task(annotation_type(element)),
+        xiao_syntax::FunctionTypeAnnotation::Runtime => Type::Runtime,
+        xiao_syntax::FunctionTypeAnnotation::Pool => Type::Pool,
+        xiao_syntax::FunctionTypeAnnotation::Shared(element) => {
+            Type::shared(annotation_type(element))
+        }
+        xiao_syntax::FunctionTypeAnnotation::SharedMut(element) => {
+            Type::shared_mut(annotation_type(element))
+        }
+        xiao_syntax::FunctionTypeAnnotation::LockGuard(element) => {
+            Type::lock_guard(annotation_type(element))
         }
     }
 }
@@ -1856,6 +1933,16 @@ pub(crate) fn storage_for_type(ty: Option<&Type>) -> StorageClass {
         | Some(Type::Set(_))
         | Some(Type::Table(_))
         | Some(Type::Resource(_))
+        | Some(
+            Type::Thread(_)
+            | Type::Task(_)
+            | Type::Runtime
+            | Type::Pool
+            | Type::Shared(_)
+            | Type::SharedMut(_)
+            | Type::LockGuard(_)
+            | Type::OrdinaryHandle,
+        )
         | None => StorageClass::HeapStrong,
     }
 }

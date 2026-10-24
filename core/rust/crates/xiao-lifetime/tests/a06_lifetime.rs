@@ -424,6 +424,20 @@ fn dynamic_values_are_conservative() {
 }
 
 #[test]
+/// `lock_guard<T>` 被返回时必须留下任务边界非法传播诊断。
+fn lock_guard_cannot_escape_through_return() {
+    let result = analyze("def leak(lock_guard<int> guard) -> lock_guard<int>\n    return guard\n");
+    assert!(
+        result
+            .diagnostics
+            .iter()
+            .any(|diagnostic| diagnostic.code() == xiao_lifetime::TASK_BOUNDARY_CODE),
+        "锁守卫返回应报 X06-LIFETIME-006: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 /// intrinsic 调用的被调名称不属于用户值，`print` 不能制造生命周期诊断。
 fn print_intrinsic_does_not_create_lifetime_diagnostics() {
     let result = analyze("print(\"hello world!\")\n");
