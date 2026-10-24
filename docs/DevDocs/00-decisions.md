@@ -609,7 +609,9 @@ UseDocs 和 ABI 1.17 兼容矩阵。32B 头的字段、弱升级、锁状态和 
 
 ### 22A 并发入口冻结（2026-10-24）
 
-22A 已完成冻结，主记录见 [22A. 并发入口冻结](22a-concurrency-freeze.md) §四。生效契约为：
+22A 冻结记录已写出，主记录见 [22A. 并发入口冻结](22a-concurrency-freeze.md) §四；以下
+是原冻结稿，2026-10-24 复核发现的冲突由 [22A-FIX](22a-fix-concurrency-freeze.md) 收口后
+再生效：
 
 - `std.concurrent` 是唯一首版模块；`runtime_create`/`runtime_close`、多值 `spawn`、
   `join`/`detach`、`cancel`、`shared_read`/`shared_mut`、`read`/`lock`、固定容量任务池和
@@ -624,9 +626,17 @@ UseDocs 和 ABI 1.17 兼容矩阵。32B 头的字段、弱升级、锁状态和 
   产物版本/特性不足沿用 `X17-XAR-007`；required-feature 位集、UseDocs 入口和兼容矩阵已同步。
 
 四平台 32B 布局证据见 `40093591873` 的 `*-concurrency-32b-layout.log`；24B 原型成本记录
-仍只作研究输入。22A 完成后，22B 可以开始，但不提前实现 Runtime、LLVM 或标准库。
+仍只作研究输入。22A-FIX 收口后才开始 22B，且不提前实现 Runtime、LLVM 或标准库。
 
-这些选择仍不写产品代码；22A 已完成，22B 只能按 §2.6/§2.8 实现类型、生命周期和 IR。
+这些选择仍不写产品代码；22A-FIX 关闭后，22B 才能按收口后的 §2.6/§2.8 实现类型、
+生命周期和 IR。
+
+2026-10-24 复核 `620d8a2`/`487ef1c` 后发现 22A 契约内部仍有冲突和空缺：`.xar` 的
+required-feature bit 0 与 20E 既有语义重叠、多 Runtime 没有提交入口、`lock_guard` 没有
+访问载荷的操作、Send/Sync 的“只读容器”未映射到产品类型、CrossThread 事实名/IR 字段未
+写死、产物错误身份与 `.xiaoc` 既有 `XIAOC-*` 不一致、030/032 重叠，以及 shared Runtime ID
+的位置未定义。已开 [22A-FIX](22a-fix-concurrency-freeze.md) 收口；**22A-FIX 关闭前不进入
+22B**，本节“22B 可以开始”的表述以 22A-FIX 的收口结果为准。
 
 ### 错误模型与诊断
 
