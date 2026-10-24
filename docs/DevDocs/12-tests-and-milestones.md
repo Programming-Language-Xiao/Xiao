@@ -980,21 +980,23 @@ I4a2（运行时的包模块加载）、I4b（会话级生命周期与 TS 接入
 ### P0：并发执行与共享句柄（22）
 
 前置：07-D 的 8 项裁定、隔离原型、Linux workspace gates、四平台测试和四平台测量已完成；
-22A 首轮 12 项方向已记录，精确 API/诊断编号/序列化格式/32B ABI 和任务池接口仍待细化。
-阶段主文档见 [22. 并发执行与共享句柄](22-concurrency-execution-and-shared-handles.md)。
+22A 两轮裁定已记录，精确 Runtime 创建/传输、二进制格式、lock state、诊断编号、任务池
+语义和 ABI 次版本仍待细化。阶段主文档见
+[22. 并发执行与共享句柄](22-concurrency-execution-and-shared-handles.md)。
 
 - **22A 冻结与缺口关闭**（[冻结清单](22a-concurrency-freeze.md)）：消费 `40068582635` 的
   Linux/macOS 布局/成本测量；写死 `std.concurrent`/多值 spawn/detach、`Send`/`Sync`、
-  `CrossThread` + Runtime ID、深拷贝 + 序列化、32B 原子头、诊断编号、任务池接口和发布/
-  兼容矩阵。**不写产品代码。**
+  多 Runtime + Runtime ID、`CrossThread`、深拷贝 + 长度前缀二进制序列化、32B 原子头、
+  诊断编号、任务池/cancel 接口、ABI 次版本和发布/兼容矩阵。**不写产品代码。**
 - **22B 类型、生命周期与 IR**：候选 A 推导、任务/线程边界 + Runtime ID、多边界值、深拷贝/
   序列化/取消、普通/共享句柄规则、IR 快照和 verifier。
 - **22C Runtime ABI、VM 与错误**：32B 头 + 内联锁、强弱计数、弱升级、恰好一次析构、VM
-  `spawn/join`、detach 错误通道、深拷贝 + 序列化、真实取消等待、取消/清理和错误顺序。
+  `spawn/join`、任务池、多 Runtime 创建/边界、detach 错误通道、深拷贝 + 二进制序列化、
+  真实取消等待、取消/清理和错误顺序。
 - **22D LLVM、差分与跨平台**：同一并发黄金场景在 VM/LLVM 的输出、错误、退出码和释放
   记录一致；Windows/Linux/macOS 回归；32B ABI 布局/对齐/版本矩阵。
-- **22E 标准库、UseDocs 与发布收口**：`std.concurrent` 线程/共享/任务池入口、版本化
-  序列化公开边界、文档、ABI/产物兼容和发布报告；官方容器仍后置。
+- **22E 标准库、UseDocs 与发布收口**：`std.concurrent` 线程/共享/任务池入口、长度前缀
+  二进制序列化公开边界、文档、ABI/产物兼容和发布报告；官方容器仍后置。
 
 退出条件：
 

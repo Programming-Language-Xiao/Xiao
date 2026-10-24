@@ -579,6 +579,14 @@ macOS aarch64 为 `18/17/11/66/17`。低于计时分辨率的失败/取消检查
 11. **标准库范围**：`std.concurrent` 首版含最小线程/共享入口，同时含任务池；官方容器后置；
 12. **detached 失败**：进程级错误通道记录，进程继续。
 
+同日第二轮细化：API 采用 `spawn`/`join`/`detach` + `shared_read`/`shared_mut` +
+`read`/`lock`；多值按位置逐个深拷贝；`join`/`detach` 为模块函数；首版支持**多 Runtime
+并行**；序列化采用**长度前缀二进制**；32B 头为 strong/weak/tag/lock state 各 8B；
+诊断在 X03-TYPE-030+ / X06-LIFETIME-002+ / X06-RUNTIME-027+ 开新号；任务池用
+`submit`/`wait`/`shutdown`；取消用显式 `cancel(handle)`；Runtime ABI 次版本升级并加
+required-feature 门禁。精确 Runtime 创建/传输、二进制格式头/字节序、lock state 实现、
+诊断具体编号和次版本号仍待 22A 写死。
+
 这些选择仍不写产品代码；22A §2.2 细化未完成前不能进入 22B。
 
 ### 错误模型与诊断
