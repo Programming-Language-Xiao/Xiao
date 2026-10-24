@@ -609,9 +609,9 @@ UseDocs 和 ABI 1.17 兼容矩阵。32B 头的字段、弱升级、锁状态和 
 
 ### 22A 并发入口冻结（2026-10-24）
 
-22A 冻结记录已写出，主记录见 [22A. 并发入口冻结](22a-concurrency-freeze.md) §四；以下
-是原冻结稿，2026-10-24 复核发现的冲突由 [22A-FIX](22a-fix-concurrency-freeze.md) 收口后
-再生效：
+22A 冻结记录及 [22A-FIX](22a-fix-concurrency-freeze.md) 修正已生效，主记录见
+[22A. 并发入口冻结](22a-concurrency-freeze.md) §2.9/§四；以下保留原冻结稿字段，冲突以修正
+记录为准：
 
 - `std.concurrent` 是唯一首版模块；`runtime_create`/`runtime_close`、多值 `spawn`、
   `join`/`detach`、`cancel`、`shared_read`/`shared_mut`、`read`/`lock`、固定容量任务池和
@@ -626,17 +626,47 @@ UseDocs 和 ABI 1.17 兼容矩阵。32B 头的字段、弱升级、锁状态和 
   产物版本/特性不足沿用 `X17-XAR-007`；required-feature 位集、UseDocs 入口和兼容矩阵已同步。
 
 四平台 32B 布局证据见 `40093591873` 的 `*-concurrency-32b-layout.log`；24B 原型成本记录
-仍只作研究输入。22A-FIX 收口后才开始 22B，且不提前实现 Runtime、LLVM 或标准库。
+仍只作研究输入。22A-FIX 已收口，22B 可以开始，但不提前实现 Runtime、LLVM 或标准库。
 
-这些选择仍不写产品代码；22A-FIX 关闭后，22B 才能按收口后的 §2.6/§2.8 实现类型、
+这些选择仍不写产品代码；22B 只能按收口后的 §2.6/§2.8/§2.9 实现类型、
 生命周期和 IR。
 
 2026-10-24 复核 `620d8a2`/`487ef1c` 后发现 22A 契约内部仍有冲突和空缺：`.xar` 的
 required-feature bit 0 与 20E 既有语义重叠、多 Runtime 没有提交入口、`lock_guard` 没有
 访问载荷的操作、Send/Sync 的“只读容器”未映射到产品类型、CrossThread 事实名/IR 字段未
 写死、产物错误身份与 `.xiaoc` 既有 `XIAOC-*` 不一致、030/032 重叠，以及 shared Runtime ID
-的位置未定义。已开 [22A-FIX](22a-fix-concurrency-freeze.md) 收口；**22A-FIX 关闭前不进入
-22B**，本节“22B 可以开始”的表述以 22A-FIX 的收口结果为准。
+的位置未定义。已由 [22A-FIX](22a-fix-concurrency-freeze.md) 收口；本节“22B 可以开始”的
+表述以修正契约为准。
+
+### 22A-FIX 并发入口契约修正（已完成，2026-10-24）
+
+星崽已确认 F-1..F-8 全部取甲；本节取代原冻结稿中冲突的位表、入口、能力、诊断和产物口径：
+
+- `.xar` 保留 20E bit 0=`archive_requirements`；并发位从 bit 1 起为
+  `threads=0x0002`、`shared_handles=0x0004`、`task_pool=0x0008`、`multi_runtime=0x0010`、
+  `serialization_v1=0x0020`、`cancel_wait=0x0040`；未知位拒绝，要求位按子集检查。
+  `.xiaoc` 使用独立 bit 0–5 表，未知位保留 `XIAOC-008`。
+- `current_runtime() -> runtime` 是便捷别名；规范入口为
+  `spawn(runtime, fn, a, b, ...)` 与 `pool_create(runtime, capacity)`，`submit` 通过池归属
+  Runtime；关闭 Runtime 的别名失效并返回 `X06-RUNTIME-031`。
+- `shared_read`/`shared_mut` 消费输入值；`read(shared<T>)` 返回递归值拷贝；`lock` 借用共享
+  句柄，`lock_read(lock_guard<T>)` 读取，`lock_write(lock_guard<T>, T)` 写入；守卫离开作用域
+  释放锁。
+- Send/Sync 接受 `none`、固定宽度数值、`bool`、`str` 和递归安全 tuple；当前可变
+  `array`/`set`/`dict`、普通句柄、动态值和 resource 拒绝；显式共享句柄按 tag 接受。
+- `CrossThread` 事实固定为 `TaskBoundary`/`ThreadBoundary`；IR 字段为
+  `runtime_id: u64`、`task_boundary: bool`、`thread_boundary: bool`；诊断字段为
+  `boundary_kind`、`runtime_id`、`source_span`。
+- `.xiaoc` 保留 `XIAOC-002/003/005/008`；`.xar` 使用 `X17-XAR-007`、未知位使用
+  `X17-XAR-011`；原生并发产物后置到 22E，不在首版声明 required-feature 容器。
+- `X06-RUNTIME-030` 只表示关闭任务池拒绝 `submit`；`X06-RUNTIME-032` 只表示
+  `pool_create` 容量/参数错误；满队列使用可取消背压，`shutdown` 幂等成功，`join`/`wait`
+  重抛线程体/任务体原错误。
+- 只读共享句柄包装保存 `{ runtime_id: u64, object_ptr }`；32B 对象头不增加 Runtime ID，
+  `shared_mut<T>` 跨 Runtime 编译期拒绝。
+
+F-9 的文档卫生同步为 `module: stdlib.xiao-standard-library`；22A-FIX 仍保持 planned UseDocs
+入口，不把未实现能力写成已发布 API。22B 现在可以按 [22A 修正契约](22a-concurrency-freeze.md#29-22a-fix-修正契约2026-10-24八项均取甲) 开始。
 
 ### 错误模型与诊断
 

@@ -5,8 +5,9 @@
 > 证据链和门禁通过，但冻结契约内部出现若干冲突/空缺；如果直接进入 22B，类型、IR 和
 > Runtime 会各自补一套语义。本批把这些口径写死，再开 22B。
 >
-> 状态：**规划完成，待星崽裁定后实施（2026-10-24）**。本批不改 `core/`、`cli/`、`stdlib/`
-> 或产品 ABI；不创建并发 AST、类型规则、IR、Runtime 或 LLVM 实现。
+> 状态：**已完成（2026-10-24）**。F-1～F-8 均取甲，F-9 元数据卫生已同步；本批只改文档和
+> 契约，不改 `core/`、`cli/`、`stdlib/` 或产品 ABI，不创建并发 AST、类型规则、IR、Runtime
+> 或 LLVM 实现。
 
 ## 一、为什么是这一批
 
@@ -49,7 +50,7 @@
 开始，22A 的位表就得改。无论哪种，`required_features != ARCHIVE_REQUIRED_FEATURES` 的
 精确相等检查都不支持“超集接受”。
 
-**建议取甲**：
+**最终选择：甲**：
 
 - 保留 `.xar` 的 bit 0 = `archive_requirements`；
 - 并发位从 bit 1 开始：`0x0002=threads`、`0x0004=shared_handles`、`0x0008=task_pool`、
@@ -70,7 +71,7 @@
 **后果**：用户拿到另一个 `runtime` 句柄后，无法把线程或任务提交到它上面；“多 Runtime
 并行”只存在于文档里。22B/22C 会临时发明一个入口，和冻结记录不一致。
 
-**建议取甲**：
+**最终选择：甲**：
 
 - 显式参数优先：`spawn(runtime, fn, a, b, ...)`、`pool_create(runtime, capacity)`；
   `submit(pool, fn, a, b, ...)` 继续经 `pool` 归属 Runtime；
@@ -91,7 +92,7 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 **后果**：按当前 API，守卫拿到手后无法读或写 `T`；22B 无法定义 `lock_guard<T>` 的方法集，
 22C 也无法生成访问入口。
 
-**建议取甲**：
+**最终选择：甲**：
 
 - 补模块函数 `lock_read(lock_guard<T>) -> T` 与 `lock_write(lock_guard<T>, T) -> none`，
   或等价地冻结 `lock_guard<T>` 的 `read`/`write` 方法；
@@ -113,13 +114,13 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 **后果**：22B 无法判断 `array<int>`、`set<str>`、`dict<str,int>`、嵌套元组到底接受还是拒绝；
 “只读”也没有类型层定义。
 
-**建议取甲**：冻结一张按实际类型列出的表，例如：
+**最终选择：甲**：冻结一张按实际类型列出的表：
 
 | 值 | 跨线程能力 | 说明 |
 | --- | --- | --- |
 | `none`、`int`/`sint`/`lint`、`float`/`sfloat`/`lfloat`、`bool`、`str` | 接受 | 标量/不可变文本 |
 | 由接受值组成的 `tuple` | 接受 | 递归检查 |
-| `array`/`set`/`dict` | 待裁定 | 若深拷贝后不再共享别名，可按元素递归接受；否则整类拒绝 |
+| `array`/`set`/`dict`/字典表/字典列 | 拒绝 | 当前产品类型可变且没有只读类型 |
 | 普通 `StrongHandle`/`WeakHandle` | 拒绝 | `X03-TYPE-031` |
 | 显式 `shared<T>`/`shared_mut<T>` | 按 tag 接受 | 不做隐式升级 |
 | `dynamic`、resource | 拒绝 | 编译期主规则；tag 13/14 只做防御性拒绝 |
@@ -136,7 +137,7 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 
 **后果**：22B 正是写生命周期/IR 的批次；到这里只能自己命名，和“22B 不再决定语义”冲突。
 
-**建议取甲**：冻结以下最小形状（名称可替换，但必须在 22A-FIX 定死）：
+**最终选择：甲**：冻结以下最小形状：
 
 - 事实：`TaskBoundary`、`ThreadBoundary`；
 - IR 字段：`runtime_id: u64`、`task_boundary: bool`、`thread_boundary: bool`；
@@ -160,7 +161,7 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 
 **后果**：22C 要么改现有 `.xiaoc` 错误契约和回归，要么违反 22A；原生产物没有落点。
 
-**建议取甲**：
+**最终选择：甲**：
 
 - 冻结一张逐产物表：
   - `.xiaoc` 格式/必需功能位继续用 `XIAOC-002/003/005/008`；
@@ -205,7 +206,7 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 **后果**：如果 ID 放在对象头，32B 布局要改；如果放在句柄包装，22B/22C 的 ABI 和类型
 表示要写死。当前两种都没有定义。
 
-**建议取甲**：Runtime ID 放在 `shared<T>` 句柄包装（例如 `{ runtime_id, object_ptr }`），
+**最终选择：甲**：Runtime ID 放在 `shared<T>` 句柄包装（例如 `{ runtime_id, object_ptr }`），
 32B 对象头保持 F-1 的布局不变；跨 Runtime 只读检查使用包装里的 ID。备选：乙，在对象头
 增加 8B 字段（会推翻 32B 测量，不推荐）；丙，首版禁止跨 Runtime 共享，只允许序列化值。
 
@@ -221,7 +222,7 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 
 ## 四、裁定表
 
-| 编号 | 问题 | 建议取 | 备选 | 影响 |
+| 编号 | 问题 | 最终选择 | 备选（保留历史） | 影响 |
 | --- | --- | --- | --- | --- |
 | F-1 | `.xar` feature 位冲突/精确相等 | 甲：保留 bit 0，并发位从 bit 1 起，子集检查 | 乙：新字段 + schema；丙：后置 | 22C 归档门禁 |
 | F-2 | 多 Runtime 无提交入口 | 甲：`spawn(runtime, ...)` + `current_runtime`；`pool_create(runtime, ...)` | 乙：`runtime_create(fn, ...)`；丙：首版单 Runtime | 22B/22C API |
@@ -233,43 +234,67 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 | F-8 | shared 的 Runtime ID 位置 | 甲：句柄包装，32B 头不变 | 乙：头加字段；丙：禁止跨 Runtime | 22C ABI |
 
 **来源**：2026-10-24 对 `620d8a2`/`487ef1c` 的审核；上述甲/乙/丙需星崽确认后才进入
-22A-FIX 的文档修改。未确认前，22B 不开始。
+22A-FIX 的文档修改。星崽已确认 F-1～F-8 全部取甲，以下收口记录生效；22B 可在本批提交后
+开始。
+
+### 4.1 已确认的最终落点（2026-10-24）
+
+1. **F-1**：`.xar` bit 0 保留 20E `archive_requirements`；并发位从 bit 1 起，读取器拒绝
+   未知位并按 required 子集检查；`.xiaoc` 使用独立 bit 0–5 表和 `XIAOC-008`。
+2. **F-2**：新增 `current_runtime() -> runtime` 便捷别名；规范入口为
+   `spawn(runtime, fn, a, b, ...)`、`pool_create(runtime, capacity)`，`submit` 经池归属 Runtime。
+3. **F-3**：`lock_read(lock_guard<T>) -> T` 与 `lock_write(lock_guard<T>, T) -> none` 为模块
+   函数；构造函数消费 `T`，`read` 做递归拷贝，守卫借用句柄并在作用域结束释放。
+4. **F-4**：接受 `none`、固定宽度数值、`bool`、`str` 和递归安全 tuple；当前可变
+   `array`/`set`/`dict`/字典表/字典列、普通句柄、动态值、resource 拒绝；显式共享按 tag 接受。
+5. **F-5**：事实为 `TaskBoundary`/`ThreadBoundary`；IR 字段为 `runtime_id: u64`、
+   `task_boundary: bool`、`thread_boundary: bool`；诊断字段为 `boundary_kind`、`runtime_id`、
+   `source_span`；同线程挂起只置任务事实，显式线程迁移置两个事实。
+6. **F-6**：`.xiaoc` 保留 `XIAOC-002/003/005/008`；`.xar` 使用 `X17-XAR-007`、未知位
+   使用 `X17-XAR-011`；原生并发产物后置到 22E，不在首版声明 feature 容器。
+7. **F-7**：`X06-RUNTIME-030` 只表示关闭池拒绝 `submit`；`X06-RUNTIME-032` 只表示
+   `pool_create` 容量/参数错误；满队列使用可取消背压，`shutdown` 幂等成功，`join`/`wait`
+   重抛线程体/任务体原错误，取消为 `X06-RUNTIME-027`。
+8. **F-8**：只读共享句柄包装保存 `{ runtime_id: u64, object_ptr }`；32B 对象头不增加字段，
+   `shared_mut<T>` 跨 Runtime 编译期拒绝。
+9. **F-9**：UseDocs `module` 改为已有的 `stdlib.xiao-standard-library`；双平台临时探针接线
+   作为已有测量证据保留，不在本批重测。
 
 ## 五、本批要做的事
 
-1. **先裁定**：按 §四 逐项确认甲/乙/丙；没有人替星崽拍板。
-2. **改 22A 契约**：更新 [22A](22a-concurrency-freeze.md) §2.2、§2.6、§2.8，删除
-   “没有空白”的已失效结论；保留原五轮裁定历史，只追加修正记录。
+1. **改 22A 契约**：已更新 [22A](22a-concurrency-freeze.md) §2.2、§2.6、§2.8，并追加
+   §2.9 修正记录；原五轮裁定历史保留，过时的“没有空白”结论已撤回。
+2. **同步契约记录**：已把八项甲裁定写入本文 §4.1，作为 22B 的唯一输入。
 3. **同步决策与阶段**：
    - [00 决策基线](00-decisions.md)：记录 F-1..F-8 的最终选择；
    - [12 P0](12-tests-and-milestones.md)：把 22A-FIX 放在 22A 和 22B 之间；
-   - [22 阶段主文档](22-concurrency-execution-and-shared-handles.md)：下一道门改为
-     22A-FIX，不写“22B 可以开始”；
+   - [22 阶段主文档](22-concurrency-execution-and-shared-handles.md)：下一道门改为 22B，
+     写明 22A-FIX 已完成；
    - [README](README.md)：登记 22A-FIX 行。
 4. **同步 UseDocs**：[并发执行与共享句柄](../UseDocs/language/concurrency/README.md)
    仍保持 `planned`，但错误码、feature 位、锁访问和产物矩阵必须与最终契约一致；本轮不把
    页面改成 `verified`。
-5. **门禁**：`check:docs`、`check:usedocs`、`check:layout`、`git diff --check`；如果只改
-   文档，不需要重跑产品测试，但要记录“未改产品代码”。
-6. **推送与收口**：推送最终提交；需要远端证据时补 CI 运行号。22A-FIX 关闭后才开 22B。
+5. **门禁**：`check:docs`、`check:usedocs`、`check:layout`、`git diff --check`；本批只改
+   文档，记录“未改产品代码”。
+6. **推送与收口**：最终提交已推送并取得 CI 运行号；22A-FIX 关闭后进入 22B。
 
 ## 六、不许
 
 1. **不许**写产品代码、AST、类型规则、IR、Runtime、LLVM 或标准库实现；
-2. **不许**在 22A-FIX 关闭前开始 22B；
+2. **不许**绕过 22A-FIX 修正契约开始或实现 22B；
 3. **不许**用“位集为超集”一句话绕过 `.xar` 的精确相等现状；必须同时写代码/回归落点；
 4. **不许**把 Runtime ID 塞进 32B 对象头而不重新测量布局；
 5. **不许**改 `.xiaoc` 既有 `XIAOC-*` 错误映射却不列迁移项；
-6. **不许**让 Agent 替星崽选择 §四 的甲/乙/丙；
+6. **不许**在本批之外重新选择已确认的 §四 甲/乙/丙；
 7. **不许**把 `planned` 的 UseDocs 页面写成已实现。
 
 ## 七、验收
 
-1. **裁定完整**：F-1..F-8 每项都有唯一选择和唯一落点；没有“实现时再定”的空白；
+1. **裁定完整**：F-1..F-8 每项都有唯一选择和唯一落点；F-9 的卫生项已同步；
 2. **交叉一致**：22A、00、12、22、README、UseDocs 的名称/编号/位表完全一致；
 3. **22B 输入齐**：类型表、CrossThread 事实/字段、API 所有权、锁访问、诊断映射和产物
    矩阵都能直接消费；
-4. **证据**：文档门禁全绿；如果声称最终提交已验收，必须有对应推送和运行号；
+4. **证据**：文档门禁全绿；最终提交已有对应推送和运行号；
 5. **边界**：diff 不含产品代码；工作区干净；
 6. **交接**：22B 只能按 22A-FIX 后的契约实现类型/生命周期/IR，不再补语义。
 
@@ -291,14 +316,12 @@ docs/UseDocs/language/concurrency/README.md             planned 入口同步
 ## 九、风险
 
 1. **过早改位表**：`.xar` bit 0 已有 20E 的旧归档语义；改错会让旧归档静默或误拒。
-2. **多 Runtime 入口设计过大**：如果新增一套 runtime 生命周期 API，会把 22B 的范围拉大；
-   必须在甲/乙/丙中明确首版范围。
+2. **多 Runtime 入口设计过大**：显式 Runtime 参数和 `current_runtime` 已冻结为最小首版入口，
+   22B 不得再扩展生命周期 API。
 3. **锁守卫扩语言表面**：`lock_read`/`lock_write` 是新增模块函数，必须与 `std.concurrent`
    的导入边界一起冻结，不能顺手加方法式 API。
-4. **只读容器判定过宽**：递归接受数组/集合/字典会与“可变容器拒绝”冲突；必须先定义
-   “可变”的判定，再写类型表。
-5. **文档再次漂移**：22A-FIX 修改后，22A、00、12、README、UseDocs 五处必须同笔更新；
-   只改一处会重演本轮的问题。
+4. **只读容器判定过宽**：当前数组/集合/字典仍拒绝，未来新增只读类型时必须另立裁定。
+5. **文档再次漂移**：22A、00、12、README、UseDocs 已同笔更新，后续契约变更必须继续同步。
 
 ## 相关页面
 
