@@ -604,7 +604,9 @@ magic 4B + u16 版本 + u32 长度 + u8 tag + 1B 保留（大端）；跨 Runtim
 `shared<T>`，`shared_mut<T>` 编译期拒绝；任务池 capacity 必填 1–256；诊断接受 §2.6
 映射并新增 X06-RUNTIME-032；共享类型名为 `shared<T>`/`shared_mut<T>`/`lock_guard<T>`；
 tag 0–12 正常、13=resource/14=dynamic 仅预留且动态/资源仍编译期拒绝；22E 首版同步
-UseDocs 和 ABI 1.17 兼容矩阵。
+UseDocs 和 ABI 1.17 兼容矩阵。32B 头已用仓外临时探针在 Windows x86_64 测得：头 32B/8B
+对齐，`u64` 载荷偏移 32B/对象 40B，align32 载荷偏移 32B/对象 64B；Linux/macOS 四平台
+测量仍待 CI，不能提前写成已验证。
 
 这些选择仍不写产品代码；22A §2.6 契约审阅和 §2.2 剩余细化完成前不能进入 22B。
 
