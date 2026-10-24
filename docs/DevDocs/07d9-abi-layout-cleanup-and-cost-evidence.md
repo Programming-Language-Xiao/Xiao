@@ -177,12 +177,13 @@ Linux workspace gates 只证明原型测试能在 Linux 跑；对象头布局、
 2. **通用性**：载荷偏移用真实 `offset_of!`；高对齐载荷测试通过；
 3. **成本**：自定义句柄的 clone/drop、upgrade 成功/失败、锁、取消和析构都有测量；
 4. **门禁**：原型 9+ 测试、Clippy、fmt、layout、完整 `bun run check` 通过；
-5. **CI**：Linux workspace gates `39813718835` 已运行原型测试并通过；ABI/测量修改后的最终
-   HEAD 需新的 workspace gates；平台复现要另行触发并记录 macOS/Windows 作业；
-6. **跨平台**：至少记录 Windows/Linux/macOS 的布局和成本，或明确缺失原因；原型测试通过
-   不能替代测量；
+5. **CI**：workspace gates `39963374595` 已覆盖取证提交 `a8aaa4b` 并通过原型测试、fmt、
+   Clippy 和仓库门禁；平台复现 `39965322134` 的四个平台和汇总作业均成功；
+6. **跨平台**：平台测试已取证，但布局/成本仍只有 Windows x86_64；Linux/macOS 测量缺口已
+   明确记录，原型测试通过不能替代测量；
 7. **不越界**：无语言、IR、Runtime ABI、对象布局或标准库公开契约变更；
-8. **状态**：取得上述证据后再把 07-D.8 写成完成；之前保持“本地 `u64` 模型、证据待补”。
+8. **状态**：本地 ABI 清理、workspace gates 和四平台测试已取证；Linux/macOS 测量仍待补，
+   不把单平台测量写成跨平台结论。
 
 ## 五、不负责
 
