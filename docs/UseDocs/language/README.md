@@ -13,7 +13,8 @@
 7. [表与生命周期](tables/README.md)
 8. [模块与工程](modules/README.md)
 9. [内存与静态生命周期](memory/README.md)
-10. [前端与中间表示](compiler/README.md)
+10. [并发执行与共享句柄](concurrency/README.md)（22A 冻结，当前未实现）
+11. [前端与中间表示](compiler/README.md)
 
 ## 相关主题
 
@@ -21,3 +22,4 @@
 
 函数、控制流和入口页面的 `verified` 只覆盖 04 阶段静态解析与类型检查；内存页面的
 `verified` 只覆盖 06-A 静态生命周期计划。程序执行已由 09/10 阶段与 11/X0 交付，见[命令行参考](../tooling/cli/README.md)。
+并发页面目前只提供 22A 的冻结入口和边界，状态为 `planned`；实现和回归完成前不能视为可用 API。

@@ -547,9 +547,8 @@ Linux/macOS 布局与成本测量仍待外部取证；取消等待真实“持�
 32B 头 + 内联锁）和 07-D §10.4 取消顺序（含真实等待路径）；Actor、冻结共享和官方容器
 后置。
 
-阶段当前只做规划，**不写产品代码**。22A 已取得四平台测量并记录首轮裁定；仍需写死精确
-API、诊断编号、序列化格式、32B ABI 和任务池接口，冻结完成前不创建并发语法、
-IR/Runtime 实现或公开 API。
+阶段当前只做规划，**不写产品代码**。22A 已完成精确 API、诊断编号、序列化格式、32B ABI、
+任务池接口和发布门禁冻结；22B 才开始类型/生命周期/IR 实现，不能在实现阶段重新选择语义。
 
 ### 22A 跨平台测量输入（2026-10-24）
 
@@ -559,12 +558,12 @@ aarch64 上执行隔离并发原型的 release 测量，均使用 1000 次迭代
 纳秒均值：Windows `clone/drop 5`、升级成功 `6`、锁 `5`、含探针析构 `194`、干净 Box
 分配/释放 `64`；Linux x86_64 为 `5/6/5/112/32`；Linux aarch64 为 `13/13/11/100/11`；
 macOS aarch64 为 `18/17/11/66/17`。低于计时分辨率的失败/取消检查记为 `0*`，不表示零成本。
-这些是 22A 研究输入，不冻结 ABI 或性能基准；真实取消等待仍未测，留给 22A 裁定。
+这些是 22A 研究输入，不冻结性能基准；真实取消等待已裁定由 22C 实现并测量。
 
 ### 22A 并发入口首轮裁定（2026-10-24）
 
-星崽已完成 22A 的首轮选择；方向已定，精确 API/编号/格式/ABI 仍按
-[22A §2.2](22a-concurrency-freeze.md) 细化：
+星崽已完成 22A 的首轮选择；以下历史记录的精确 API/编号/格式/ABI 已由
+[22A §2.2](22a-concurrency-freeze.md)、§2.6 和 §2.8 收口：
 
 1. **语言表面**：`std.concurrent` 统一模块；
 2. **入口签名**：多边界值 `spawn(fn, a, b, ...)`，`join` 取回结果；
@@ -575,7 +574,7 @@ macOS aarch64 为 `18/17/11/66/17`。低于计时分辨率的失败/取消检查
 7. **值传递**：深拷贝 + 版本化序列化；冻结共享后置；
 8. **共享句柄 API**：`std.concurrent` 模块函数（候选 `shared_read`/`shared_mut`）；
 9. **原子句柄 ABI**：统一 32B 头 + 内联锁；24B 原型头只作历史输入；
-10. **诊断身份**：沿用 X03-TYPE / X06-LIFETIME / X06-RUNTIME，具体编号待冻结；
+10. **诊断身份**：沿用 X03-TYPE / X06-LIFETIME / X06-RUNTIME，具体编号见最终映射；
 11. **标准库范围**：`std.concurrent` 首版含最小线程/共享入口，同时含任务池；官方容器后置；
 12. **detached 失败**：进程级错误通道记录，进程继续。
 
@@ -585,7 +584,7 @@ macOS aarch64 为 `18/17/11/66/17`。低于计时分辨率的失败/取消检查
 诊断在 X03-TYPE-030+ / X06-LIFETIME-002+ / X06-RUNTIME-027+ 开新号；任务池用
 `submit`/`wait`/`shutdown`；取消用显式 `cancel(handle)`；Runtime ABI 次版本升级并加
 required-feature 门禁。精确 Runtime 创建/传输、二进制格式头/字节序、lock state 实现、
-诊断具体编号和次版本号仍待 22A 写死。
+诊断具体编号和次版本号已在 22A §2.2/§2.6 写死。
 
 第三轮细化：多 Runtime 用显式 `runtime_create`/`runtime_close`，跨 Runtime 只传序列化
 边界值或带 Runtime ID 的显式共享句柄；二进制为版本头 + 大端长度 + 类型标签；lock state
@@ -597,18 +596,37 @@ required-feature 门禁。精确 Runtime 创建/传输、二进制格式头/字�
 句柄，`cancel` 不消费；类型名为 `thread<T>`/`task<T>`/`runtime`/`pool`；32B tag 为
 `1=ordinary`、`2=shared_read`、`3=shared_mut`，Runtime ABI 1.17；二进制长度 u32、深度 64、
 节点 1,000,000；诊断按 X03-TYPE-030+ / X06-LIFETIME-006+ / X06-RUNTIME-027+ 固定最小映射。
-22A §2.6 已起草 API/诊断/二进制 tag/任务池契约，待星崽最终审阅后生效。
+22A §2.6 已完成 API/诊断/二进制 tag/任务池契约的最终审阅并生效。
 
 第五轮细化：32B lock state 为 atomic u32 + 4B 保留（头对齐 8B）；二进制头 12B =
 magic 4B + u16 版本 + u32 长度 + u8 tag + 1B 保留（大端）；跨 Runtime 只允许只读
 `shared<T>`，`shared_mut<T>` 编译期拒绝；任务池 capacity 必填 1–256；诊断接受 §2.6
 映射并新增 X06-RUNTIME-032；共享类型名为 `shared<T>`/`shared_mut<T>`/`lock_guard<T>`；
 tag 0–12 正常、13=resource/14=dynamic 仅预留且动态/资源仍编译期拒绝；22E 首版同步
-UseDocs 和 ABI 1.17 兼容矩阵。32B 头已用仓外临时探针在 Windows x86_64 测得：头 32B/8B
-对齐，`u64` 载荷偏移 32B/对象 40B，align32 载荷偏移 32B/对象 64B；Linux/macOS 四平台
-测量仍待 CI，不能提前写成已验证。
+UseDocs 和 ABI 1.17 兼容矩阵。32B 头的字段、弱升级、锁状态和 64 位拒绝范围已写入 22A
+最终契约；`40093591873` 的 Windows x86_64、Linux amd64/arm64、macOS arm64 临时探针均
+报告头 32B/8B 对齐，`u64` 载荷偏移 32B/对象 40B，align32 载荷偏移 32B/对象 64B。
 
-这些选择仍不写产品代码；22A §2.6 契约审阅和 §2.2 剩余细化完成前不能进入 22B。
+### 22A 并发入口冻结（2026-10-24）
+
+22A 已完成冻结，主记录见 [22A. 并发入口冻结](22a-concurrency-freeze.md) §四。生效契约为：
+
+- `std.concurrent` 是唯一首版模块；`runtime_create`/`runtime_close`、多值 `spawn`、
+  `join`/`detach`、`cancel`、`shared_read`/`shared_mut`、`read`/`lock`、固定容量任务池和
+  `submit`/`wait`/`shutdown` 的签名、消费关系和失败边界固定；
+- 候选 A 只接受标量、文本、只读嵌套容器和显式共享句柄；普通句柄、可变容器、动态值、资源
+  编译期拒绝；任务/线程 `CrossThread` 事实分别携带 Runtime ID；
+- 跨线程值按位置深拷贝并编码为 `XCON` 版本 1 的大端节点帧；最多 64 个参数，单值 16 MiB、
+  整帧 64 MiB，失败逆序清理，主错误优先、清理错误进入 `suppressed`；
+- 共享对象使用统一 32B/8B 头，tag `1/2/3` 为 ordinary/shared_read/shared_mut，载荷从
+  32B 开始，Runtime ABI 为 1.17；弱升级非零 CAS，强弱引用恰好一次析构，32 位目标拒绝；
+- 诊断固定为 `X03-TYPE-030..032`、`X06-LIFETIME-006..008`、`X06-RUNTIME-027..032`，
+  产物版本/特性不足沿用 `X17-XAR-007`；required-feature 位集、UseDocs 入口和兼容矩阵已同步。
+
+四平台 32B 布局证据见 `40093591873` 的 `*-concurrency-32b-layout.log`；24B 原型成本记录
+仍只作研究输入。22A 完成后，22B 可以开始，但不提前实现 Runtime、LLVM 或标准库。
+
+这些选择仍不写产品代码；22A 已完成，22B 只能按 §2.6/§2.8 实现类型、生命周期和 IR。
 
 ### 错误模型与诊断
 

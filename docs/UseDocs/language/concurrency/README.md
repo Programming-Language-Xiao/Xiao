@@ -1,0 +1,102 @@
+---
+id: language.concurrency
+title: 并发执行与共享句柄
+status: planned
+audience: learner
+module: stdlib.xiao-concurrent
+stage: "22A"
+version: "0.1.0"
+related:
+  - ../README.md
+  - ../../../DevDocs/22a-concurrency-freeze.md
+  - ../../troubleshooting/README.md
+  - ../../troubleshooting/errors-and-reports.md
+---
+
+# 并发执行与共享句柄
+
+> 本页是 22A 的用户文档入口和冻结契约摘要，当前状态为 `planned`。22A 只冻结名称、边界、
+> 错误和产物兼容规则；22B–22E 完成实现、测试和示例前，下面的形状不能作为可运行功能使用。
+
+## 首版范围
+
+并发入口统一位于 `std.concurrent`，不提供独立的 `std.thread` 模块，也不提供裸 `spawn`。
+首版包含 OS 线程、固定容量任务池、多 Runtime、只读/共享可变句柄和版本化边界值；Actor、
+`async`/`await`、冻结共享和官方并发容器后置。
+
+```text
+runtime_create() -> runtime
+runtime_close(runtime) -> none
+spawn(fn, a, b, ...) -> thread<T>
+join(thread<T>) -> T
+detach(thread<T>) -> none
+cancel(thread<T> | task<T>) -> none
+shared_read(T) -> shared<T>
+shared_mut(T) -> shared_mut<T>
+read(shared<T>) -> T
+lock(shared_mut<T>) -> lock_guard<T>
+pool_create(capacity) -> pool
+submit(pool, fn, a, b, ...) -> task<T>
+wait(task<T>) -> T
+shutdown(pool) -> none
+```
+
+`join`、`detach` 和 `wait` 消费句柄；`cancel` 不消费句柄，取消后仍可取得取消结果。函数值
+必须显式声明参数和一个返回值，最多 64 个边界参数；无参函数合法，隐式闭包捕获不合法，
+捕获值必须显式传入。入口函数在当前 Runtime 中执行，Runtime ID 随任务和线程事实传播。
+
+## 值传递与能力边界
+
+跨线程值按位置深拷贝，不额外包 tuple。候选 A 接受标量、文本和只读嵌套容器；可变容器、
+普通句柄、动态值和资源值在编译期拒绝。深拷贝失败时按参数逆序清理已完成副本，主错误保留
+在调用点，清理错误进入 `suppressed`。
+
+`shared_read(T)` 创建显式只读句柄，`read` 返回当前执行单元的值拷贝；`shared_mut(T)` 创建
+显式共享可变句柄，只有 `lock` 返回的作用域守卫可以访问载荷，离开作用域释放锁。普通句柄
+不能隐式升级。只读 `shared<T>` 可以带 Runtime ID 跨 Runtime，`shared_mut<T>` 跨 Runtime
+编译期拒绝。
+
+## 任务池和取消
+
+`pool_create` 的容量必须在 1–256 之间。`shutdown` 消费池句柄，拒绝新任务并等待已提交任务；
+排队任务按提交顺序执行。未开始任务可以被 `cancel` 移除，运行中任务在安全点退出。首版
+要求真实的持锁等待/平台唤醒路径，锁等待和线程/任务取消统一返回 `X06-RUNTIME-027`。
+
+## 序列化与产物兼容
+
+边界值使用 magic 为 ASCII `XCON`、版本 `1` 的 12 字节大端头：4 字节 magic、`u16` 版本、
+`u32` 当前节点长度、`u8` 类型标签和 1 字节保留位。标签 `0–12` 表示正常标量/容器，`13`
+和 `14` 分别预留给 resource/dynamic；它们不能绕过编译期拒绝。单值最多 16 MiB，整帧最多
+64 MiB，嵌套深度最多 64、总节点最多 1,000,000，超限使用 `X06-RUNTIME-029`。
+
+共享对象使用 Runtime ABI `1.17` 的统一 32B/8B 头，tag `1/2/3` 分别为
+`ordinary`/`shared_read`/`shared_mut`。`.xiaoc`、`.xar` 和原生并发产物携带
+`required_features`：`threads`、`shared_handles`、`task_pool`、`multi_runtime`、
+`serialization_v1`、`cancel_wait`。版本或特性不足时，在执行前以 `X17-XAR-007` 拒绝；
+32 位目标以 `X20-TARGET-001` 拒绝。
+
+## 并发错误
+
+并发错误读取稳定 `code`，不要匹配本地化文本：
+
+| 编号 | 含义 |
+| --- | --- |
+| `X03-TYPE-030` | 值不满足跨线程能力 |
+| `X03-TYPE-031` | 普通句柄不能跨线程 |
+| `X03-TYPE-032` | 共享/普通句柄身份误用或隐式升级 |
+| `X06-LIFETIME-006..008` | 任务/线程边界事实或 Runtime ID 非法传播 |
+| `X06-RUNTIME-027` | 线程/任务/锁等待取消 |
+| `X06-RUNTIME-028` | detached 线程失败，写入进程级结构化错误通道 |
+| `X06-RUNTIME-029` | 序列化、反序列化或边界上限失败 |
+| `X06-RUNTIME-030` | 已关闭任务池拒绝提交 |
+| `X06-RUNTIME-031` | 已关闭 Runtime 或跨 Runtime 非法使用 |
+| `X06-RUNTIME-032` | 任务池容量、参数或关闭状态错误 |
+
+detached 线程的失败不会重抛到不存在的 join 点，也不会改变进程主退出码；报告保留 Runtime ID、
+线程身份、原因链和 `suppressed` 清理错误。完整错误报告字段见[运行时错误报告](../../troubleshooting/errors-and-reports.md)。
+
+## 当前状态与后续
+
+代码、测试和可执行示例完成前，本页保持 `planned`，不能从这里推断当前工具链已经支持并发。
+实现完成后，22E 必须补齐线程/共享/任务池教程、错误示例和 ABI/产物兼容回归，再将本页改为
+`verified`。设计依据和四平台 32B 布局证据见[22A 冻结记录](../../../DevDocs/22a-concurrency-freeze.md)。

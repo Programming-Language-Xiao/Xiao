@@ -7,6 +7,7 @@
 先确认[安装与平台准备](../getting-started/installation/README.md)，再按 CLI、环境、模块或运行时主题筛选。每个已发布模块都必须提供至少一个可回溯的故障排查链接。
 
 当前可用的前端诊断基础见[结构化诊断与词法错误](diagnostics-structure.md)，运行时错误模型和堆栈见[运行时错误报告](errors-and-reports.md)。
+22A 的并发错误码和产物拒绝规则见[并发执行与共享句柄](../language/concurrency/README.md)；该页仍为 `planned`，不代表并发实现已经发布。
 
 函数参数和调用问题见[函数错误](../language/functions/errors.md)，条件、循环和返回问题见
 [控制流错误](../language/control-flow/errors.md)；`try`/`catch`/`finally`/`raise` 的匹配和清理问题见
