@@ -980,7 +980,7 @@ I4a2（运行时的包模块加载）、I4b（会话级生命周期与 TS 接入
 ### P0：并发执行与共享句柄（22）
 
 前置：07-D 的 8 项裁定、隔离原型、Linux workspace gates、四平台测试和四平台测量已完成；
-22A 两轮裁定已记录，精确 Runtime 创建/传输、二进制格式、lock state、诊断编号、任务池
+22A 三轮裁定已记录，精确 Runtime 创建/传输、二进制格式、lock state、诊断编号、任务池
 语义和 ABI 次版本仍待细化。阶段主文档见
 [22. 并发执行与共享句柄](22-concurrency-execution-and-shared-handles.md)。
 

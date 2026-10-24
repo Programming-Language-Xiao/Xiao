@@ -587,6 +587,13 @@ macOS aarch64 为 `18/17/11/66/17`。低于计时分辨率的失败/取消检查
 required-feature 门禁。精确 Runtime 创建/传输、二进制格式头/字节序、lock state 实现、
 诊断具体编号和次版本号仍待 22A 写死。
 
+第三轮细化：多 Runtime 用显式 `runtime_create`/`runtime_close`，跨 Runtime 只传序列化
+边界值或带 Runtime ID 的显式共享句柄；二进制为版本头 + 大端长度 + 类型标签；lock state
+为原子状态字 + 平台等待；ABI 次版本 +1；任务池固定容量，shutdown 拒绝新任务并等待已
+提交任务；未开始任务直接移除，运行中任务标记取消；detached 失败写结构化错误报告且进程
+继续；诊断按类别连续分配。`thread<T>`/`task<T>`/runtime/pool 类型名、read/lock 返回语义、
+二进制 magic/tag/长度上限、32B tag/ABI 次版本号和诊断具体编号仍待 22A 写死。
+
 这些选择仍不写产品代码；22A §2.2 细化未完成前不能进入 22B。
 
 ### 错误模型与诊断
