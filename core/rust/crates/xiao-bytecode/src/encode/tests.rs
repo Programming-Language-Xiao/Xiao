@@ -23,7 +23,7 @@ fn instruction(index: usize, op: TacOp) -> TacInstr {
 
 /// 枚举 `IrType` 的每个变体，供类型编码覆盖测试使用。
 ///
-/// 包含三种数组形状、两种字典、`Table`、资源类型与 `Dynamic`。`Set` 刻意取
+/// 包含三种数组形状、两种字典、`Table`、资源类型、并发句柄与 `Dynamic`。`Set` 刻意取
 /// `allows_dynamic = true`、`empty = false`、`unknown = true` 这种非全零也
 /// 非全一的组合，这样三个标志写串顺序或写错一个都能被发现。
 fn all_types() -> Vec<IrType> {
@@ -79,6 +79,32 @@ fn all_types() -> Vec<IrType> {
         IrType::Resource {
             kind: "file".to_owned(),
         },
+        IrType::Thread {
+            value: Box::new(IrType::Scalar {
+                name: "int".to_owned(),
+            }),
+        },
+        IrType::Task {
+            value: Box::new(IrType::None),
+        },
+        IrType::Runtime,
+        IrType::Pool,
+        IrType::Shared {
+            value: Box::new(IrType::Scalar {
+                name: "str".to_owned(),
+            }),
+        },
+        IrType::SharedMut {
+            value: Box::new(IrType::Scalar {
+                name: "bool".to_owned(),
+            }),
+        },
+        IrType::LockGuard {
+            value: Box::new(IrType::Scalar {
+                name: "int".to_owned(),
+            }),
+        },
+        IrType::OrdinaryHandle,
         IrType::Dynamic,
     ]
 }

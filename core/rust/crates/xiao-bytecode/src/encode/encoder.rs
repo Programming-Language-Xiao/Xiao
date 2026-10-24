@@ -747,6 +747,29 @@ fn encode_type(writer: &mut Writer, ty: &IrType) -> Result<(), EncodeError> {
             writer.byte(11);
             writer.string(kind)?;
         }
+        IrType::Thread { value } => {
+            writer.byte(12);
+            encode_type(writer, value)?;
+        }
+        IrType::Task { value } => {
+            writer.byte(13);
+            encode_type(writer, value)?;
+        }
+        IrType::Runtime => writer.byte(14),
+        IrType::Pool => writer.byte(15),
+        IrType::Shared { value } => {
+            writer.byte(16);
+            encode_type(writer, value)?;
+        }
+        IrType::SharedMut { value } => {
+            writer.byte(17);
+            encode_type(writer, value)?;
+        }
+        IrType::LockGuard { value } => {
+            writer.byte(18);
+            encode_type(writer, value)?;
+        }
+        IrType::OrdinaryHandle => writer.byte(19),
     }
     Ok(())
 }

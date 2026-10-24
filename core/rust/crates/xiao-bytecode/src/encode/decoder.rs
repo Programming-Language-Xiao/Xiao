@@ -977,6 +977,24 @@ fn decode_type(reader: &mut Reader<'_>) -> Result<IrType, EncodeError> {
         11 => IrType::Resource {
             kind: reader.string("type.resource.kind")?,
         },
+        12 => IrType::Thread {
+            value: Box::new(decode_type(reader)?),
+        },
+        13 => IrType::Task {
+            value: Box::new(decode_type(reader)?),
+        },
+        14 => IrType::Runtime,
+        15 => IrType::Pool,
+        16 => IrType::Shared {
+            value: Box::new(decode_type(reader)?),
+        },
+        17 => IrType::SharedMut {
+            value: Box::new(decode_type(reader)?),
+        },
+        18 => IrType::LockGuard {
+            value: Box::new(decode_type(reader)?),
+        },
+        19 => IrType::OrdinaryHandle,
         tag => {
             return Err(EncodeError::InvalidEnum {
                 field: "type.tag".to_owned(),
