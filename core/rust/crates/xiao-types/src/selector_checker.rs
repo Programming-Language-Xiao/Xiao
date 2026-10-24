@@ -1309,7 +1309,15 @@ impl<'source> TypeChecker<'source> {
                 | Type::Resource(_)
                 | Type::Scalar(_)
                 | Type::None
-                | Type::Function { .. } => {
+                | Type::Function { .. }
+                | Type::Thread(_)
+                | Type::Task(_)
+                | Type::Runtime
+                | Type::Pool
+                | Type::Shared(_)
+                | Type::SharedMut(_)
+                | Type::LockGuard(_)
+                | Type::OrdinaryHandle => {
                     self.path_kind_error(part, segment, diagnostic_span);
                     return None;
                 }
@@ -1730,7 +1738,15 @@ fn canonical_order_key(source: &Type, path: &SelectionPath) -> Option<Vec<usize>
             | Type::None
             | Type::Function { .. }
             | Type::Table(_)
-            | Type::Resource(_) => return None,
+            | Type::Resource(_)
+            | Type::Thread(_)
+            | Type::Task(_)
+            | Type::Runtime
+            | Type::Pool
+            | Type::Shared(_)
+            | Type::SharedMut(_)
+            | Type::LockGuard(_)
+            | Type::OrdinaryHandle => return None,
         }
     }
     Some(order)

@@ -29,6 +29,8 @@ mod selection_random;
 mod selection_shape;
 /// C2-A 集合元素类型与可哈希能力。
 mod set_types;
+/// 22B 并发类型能力表与签名-only 标准库夹具。
+mod concurrency;
 /// 05-C 表类型、成员签名和生命周期静态契约。
 mod tables;
 /// 类型与 HM 类型方案表示。
@@ -86,6 +88,14 @@ pub use selection_shape::{
 };
 /// 重新导出集合类型和可哈希判定。
 pub use set_types::{Hashability, SetType, can_assign_set, hashability};
+/// 重导出 22B 并发类型能力、句柄消费状态和签名表。
+pub use concurrency::{
+    BoundaryArgumentError, ConcurrentHandleKind, ConcurrentSignature, ConcurrentSignatureTable,
+    ConcurrencyCapabilities, HandleConsumption, HandleOperation, MAX_BOUNDARY_ARGUMENTS,
+    can_cross_runtime_read, can_share_mutably, check_boundary_argument_count,
+    concurrency_capabilities, is_send, is_sendable, is_sync, is_syncable,
+    operation_consumes_handle, std_concurrent_signatures,
+};
 /// 重新导出表值类型、成员签名和可见性模型。
 pub use tables::{
     TableMemberKind, TableMemberSignature, TableSignature, TableType, TableValueKind, Visibility,

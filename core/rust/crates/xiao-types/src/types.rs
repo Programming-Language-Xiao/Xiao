@@ -63,6 +63,22 @@ pub enum Type {
     Resource(ResourceKind),
     /// 动态值边界或错误恢复类型。
     Dynamic,
+    /// 线程句柄，携带线程返回值类型。
+    Thread(Box<Type>),
+    /// 任务句柄，携带任务返回值类型。
+    Task(Box<Type>),
+    /// 可复制的 Runtime 句柄。
+    Runtime,
+    /// 任务池句柄。
+    Pool,
+    /// 只读共享句柄，携带共享值类型。
+    Shared(Box<Type>),
+    /// 可变共享句柄，携带共享值类型。
+    SharedMut(Box<Type>),
+    /// 作用域锁守卫，携带受保护值类型。
+    LockGuard(Box<Type>),
+    /// 不可跨线程传递的普通运行时句柄（内部类型）。
+    OrdinaryHandle,
 }
 
 impl Type {
@@ -115,6 +131,52 @@ impl Type {
     #[must_use]
     pub const fn unknown_set() -> Self {
         Self::Set(SetType::Unknown)
+    }
+
+    /// 创建线程句柄类型。
+    #[must_use]
+    pub fn thread(result: Type) -> Self {
+        Self::Thread(Box::new(result))
+    }
+
+    /// 创建任务句柄类型。
+    #[must_use]
+    pub fn task(result: Type) -> Self {
+        Self::Task(Box::new(result))
+    }
+
+    /// 创建只读共享句柄类型。
+    #[must_use]
+    pub fn shared(value: Type) -> Self {
+        Self::Shared(Box::new(value))
+    }
+
+    /// 创建可变共享句柄类型。
+    #[must_use]
+    pub fn shared_mut(value: Type) -> Self {
+        Self::SharedMut(Box::new(value))
+    }
+
+    /// 创建锁守卫类型。
+    #[must_use]
+    pub fn lock_guard(value: Type) -> Self {
+        Self::LockGuard(Box::new(value))
+    }
+
+    /// 判断是否为并发句柄族类型。
+    #[must_use]
+    pub const fn is_concurrency_handle(&self) -> bool {
+        matches!(
+            self,
+            Self::Thread(_)
+                | Self::Task(_)
+                | Self::Runtime
+                | Self::Pool
+                | Self::Shared(_)
+                | Self::SharedMut(_)
+                | Self::LockGuard(_)
+                | Self::OrdinaryHandle
+        )
     }
 
     /// 判断是否为数组、元组、集合或字典容器。
@@ -195,6 +257,11 @@ impl Type {
             Self::Set(set) => set
                 .member_types()
                 .any(|member| member.contains_resource_value()),
+            Self::Thread(value)
+            | Self::Task(value)
+            | Self::Shared(value)
+            | Self::SharedMut(value)
+            | Self::LockGuard(value) => value.contains_resource_value(),
             _ => false,
         }
     }
@@ -238,7 +305,16 @@ impl Type {
                     element.collect_free_vars(output);
                 }
             }
-            Self::Table(_) | Self::Resource(_) => {}
+            Self::Thread(value)
+            | Self::Task(value)
+            | Self::Shared(value)
+            | Self::SharedMut(value)
+            | Self::LockGuard(value) => value.collect_free_vars(output),
+            Self::Table(_)
+            | Self::Resource(_)
+            | Self::Runtime
+            | Self::Pool
+            | Self::OrdinaryHandle => {}
             Self::Scalar(_) | Self::None | Self::Dynamic => {}
         }
     }
@@ -289,6 +365,14 @@ impl Display for Type {
             Self::Table(table) => table.fmt(formatter),
             Self::Resource(resource) => formatter.write_str(resource.as_str()),
             Self::Dynamic => formatter.write_str("dynamic"),
+            Self::Thread(value) => write!(formatter, "thread<{value}>"),
+            Self::Task(value) => write!(formatter, "task<{value}>"),
+            Self::Runtime => formatter.write_str("runtime"),
+            Self::Pool => formatter.write_str("pool"),
+            Self::Shared(value) => write!(formatter, "shared<{value}>"),
+            Self::SharedMut(value) => write!(formatter, "shared_mut<{value}>"),
+            Self::LockGuard(value) => write!(formatter, "lock_guard<{value}>"),
+            Self::OrdinaryHandle => formatter.write_str("ordinary_handle"),
         }
     }
 }

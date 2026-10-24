@@ -322,7 +322,15 @@ pub fn hashability(ty: &Type) -> Hashability {
         | Type::Set(_)
         | Type::Function { .. }
         | Type::Table(_)
-        | Type::Resource(_) => Hashability::Unhashable,
+        | Type::Resource(_)
+        | Type::Thread(_)
+        | Type::Task(_)
+        | Type::Runtime
+        | Type::Pool
+        | Type::Shared(_)
+        | Type::SharedMut(_)
+        | Type::LockGuard(_)
+        | Type::OrdinaryHandle => Hashability::Unhashable,
     }
 }
 

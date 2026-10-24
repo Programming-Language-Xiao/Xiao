@@ -177,9 +177,23 @@ impl Substitution {
                 Type::DictColumn(apply_dictionary(dictionary, self, seen))
             }
             Type::Set(set) => Type::Set(apply_set(set, self, seen)),
+            Type::Thread(value) => {
+                Type::Thread(Box::new(self.apply_with_seen(value, seen)))
+            }
+            Type::Task(value) => Type::Task(Box::new(self.apply_with_seen(value, seen))),
+            Type::Shared(value) => {
+                Type::Shared(Box::new(self.apply_with_seen(value, seen)))
+            }
+            Type::SharedMut(value) => {
+                Type::SharedMut(Box::new(self.apply_with_seen(value, seen)))
+            }
+            Type::LockGuard(value) => {
+                Type::LockGuard(Box::new(self.apply_with_seen(value, seen)))
+            }
             Type::Table(_) | Type::Resource(_) | Type::Scalar(_) | Type::None | Type::Dynamic => {
                 ty.clone()
             }
+            Type::Runtime | Type::Pool | Type::OrdinaryHandle => ty.clone(),
         }
     }
 
@@ -275,6 +289,22 @@ impl Substitution {
                 unify_dictionaries(self, left, right, true).map(Type::DictColumn)
             }
             (Type::Set(left), Type::Set(right)) => unify_sets(self, left, right),
+            (Type::Thread(left), Type::Thread(right)) => {
+                self.unify(left, right).map(Type::thread)
+            }
+            (Type::Task(left), Type::Task(right)) => self.unify(left, right).map(Type::task),
+            (Type::Shared(left), Type::Shared(right)) => {
+                self.unify(left, right).map(Type::shared)
+            }
+            (Type::SharedMut(left), Type::SharedMut(right)) => {
+                self.unify(left, right).map(Type::shared_mut)
+            }
+            (Type::LockGuard(left), Type::LockGuard(right)) => {
+                self.unify(left, right).map(Type::lock_guard)
+            }
+            (Type::Runtime, Type::Runtime) => Ok(Type::Runtime),
+            (Type::Pool, Type::Pool) => Ok(Type::Pool),
+            (Type::OrdinaryHandle, Type::OrdinaryHandle) => Ok(Type::OrdinaryHandle),
             (Type::Table(left), Type::Table(right)) if left == right => {
                 Ok(Type::Table(left.clone()))
             }
@@ -442,9 +472,15 @@ fn substitute_quantified(ty: &Type, replacements: &BTreeMap<TypeVarId, Type>) ->
             Type::DictColumn(substitute_dictionary(dictionary, replacements))
         }
         Type::Set(set) => Type::Set(substitute_set(set, replacements)),
+        Type::Thread(value) => Type::thread(substitute_quantified(value, replacements)),
+        Type::Task(value) => Type::task(substitute_quantified(value, replacements)),
+        Type::Shared(value) => Type::shared(substitute_quantified(value, replacements)),
+        Type::SharedMut(value) => Type::shared_mut(substitute_quantified(value, replacements)),
+        Type::LockGuard(value) => Type::lock_guard(substitute_quantified(value, replacements)),
         Type::Table(_) | Type::Resource(_) | Type::Scalar(_) | Type::None | Type::Dynamic => {
             ty.clone()
         }
+        Type::Runtime | Type::Pool | Type::OrdinaryHandle => ty.clone(),
     }
 }
 

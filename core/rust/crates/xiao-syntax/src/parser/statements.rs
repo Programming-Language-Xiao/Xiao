@@ -71,6 +71,17 @@ impl<'source> Parser<'source> {
         if self.starts_declaration() {
             return self.parse_declaration_statement(leading_docs);
         }
+        if self.starts_invalid_generic_type() {
+            let span = self.current().span();
+            self.push_error(
+                INVALID_FUNCTION_TYPE_CODE,
+                "x04.parse.invalid_generic_type",
+                span,
+                "只支持已登记的并发专用类型注解；不支持通用 Name<T> 语法".to_owned(),
+            );
+            self.synchronize_to_boundary();
+            return None;
+        }
         let first = self.current();
         let expression_diagnostics = self.diagnostics.len();
         let expression = match self.parse_expression() {
@@ -672,6 +683,9 @@ impl<'source> Parser<'source> {
         if self.starts_dict_type() {
             return self.parse_dict_type_annotation();
         }
+        if self.starts_concurrency_type() {
+            return self.parse_concurrency_function_annotation();
+        }
         if self.current().kind() == TokenKind::None {
             self.bump();
             return Some(FunctionTypeAnnotation::None);
@@ -706,6 +720,42 @@ impl<'source> Parser<'source> {
     /// 解析函数返回类型注解。
     fn parse_function_type_annotation(&mut self) -> Option<FunctionTypeAnnotation> {
         self.parse_optional_parameter_annotation()
+    }
+
+    /// 解析 D-1 乙规定的并发专用函数参数/返回值注解。
+    fn parse_concurrency_function_annotation(&mut self) -> Option<FunctionTypeAnnotation> {
+        let name = self.bump();
+        let spelling = name.text(self.source);
+        match spelling {
+            "runtime" => return Some(FunctionTypeAnnotation::Runtime),
+            "pool" => return Some(FunctionTypeAnnotation::Pool),
+            _ => {}
+        }
+        let open = self.expect_delimiter(TokenKind::Less, name.span())?;
+        self.soft_newline_depth += 1;
+        self.skip_type_layout();
+        let element = self.parse_optional_parameter_annotation();
+        self.skip_type_layout();
+        let close = self.expect_delimiter(TokenKind::Greater, open.span());
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        let element = element?;
+        Some(match spelling {
+            "thread" => FunctionTypeAnnotation::Thread(Box::new(element)),
+            "task" => FunctionTypeAnnotation::Task(Box::new(element)),
+            "shared" => FunctionTypeAnnotation::Shared(Box::new(element)),
+            "shared_mut" => FunctionTypeAnnotation::SharedMut(Box::new(element)),
+            "lock_guard" => FunctionTypeAnnotation::LockGuard(Box::new(element)),
+            _ => {
+                let span = close.map_or(name.span(), |token| token.span());
+                self.push_error(
+                    INVALID_FUNCTION_TYPE_CODE,
+                    "x04.parse.invalid_concurrency_type",
+                    span,
+                    "未知并发类型注解".to_owned(),
+                );
+                return None;
+            }
+        })
     }
 
     /// 判断当前位置是否为未反引号包裹的 `dict<` 函数注解起点。
@@ -895,7 +945,14 @@ impl<'source> Parser<'source> {
                 | FunctionTypeAnnotation::Scalar(_)
                 | FunctionTypeAnnotation::None
                 | FunctionTypeAnnotation::Resource(_)
-                | FunctionTypeAnnotation::Dict(_) => {}
+                | FunctionTypeAnnotation::Dict(_)
+                | FunctionTypeAnnotation::Runtime
+                | FunctionTypeAnnotation::Pool
+                | FunctionTypeAnnotation::Thread(_)
+                | FunctionTypeAnnotation::Task(_)
+                | FunctionTypeAnnotation::Shared(_)
+                | FunctionTypeAnnotation::SharedMut(_)
+                | FunctionTypeAnnotation::LockGuard(_) => {}
             },
             FunctionTypeAnnotation::Dict(annotation) => match annotation.value.as_ref() {
                 FunctionTypeAnnotation::TypeParameter(name) => {
@@ -922,11 +979,31 @@ impl<'source> Parser<'source> {
                 FunctionTypeAnnotation::Scalar(_)
                 | FunctionTypeAnnotation::None
                 | FunctionTypeAnnotation::Resource(_)
-                | FunctionTypeAnnotation::Dict(_) => {}
+                | FunctionTypeAnnotation::Dict(_)
+                | FunctionTypeAnnotation::Runtime
+                | FunctionTypeAnnotation::Pool
+                | FunctionTypeAnnotation::Thread(_)
+                | FunctionTypeAnnotation::Task(_)
+                | FunctionTypeAnnotation::Shared(_)
+                | FunctionTypeAnnotation::SharedMut(_)
+                | FunctionTypeAnnotation::LockGuard(_) => {}
             },
             FunctionTypeAnnotation::Scalar(_)
             | FunctionTypeAnnotation::None
-            | FunctionTypeAnnotation::Resource(_) => {}
+            | FunctionTypeAnnotation::Resource(_)
+            | FunctionTypeAnnotation::Runtime
+            | FunctionTypeAnnotation::Pool => {}
+            FunctionTypeAnnotation::Thread(element)
+            | FunctionTypeAnnotation::Task(element)
+            | FunctionTypeAnnotation::Shared(element)
+            | FunctionTypeAnnotation::SharedMut(element)
+            | FunctionTypeAnnotation::LockGuard(element) => {
+                if let FunctionTypeAnnotation::TypeParameter(name) = element.as_ref()
+                    && !known.contains(name)
+                {
+                    unknown.insert(name.clone());
+                }
+            }
         };
         for parameter in parameters {
             if let Some(annotation) = parameter.annotation.as_ref() {

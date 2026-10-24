@@ -15,8 +15,8 @@ use xiao_source::{SourceFile, SourceSpan};
 
 use crate::ast::{
     AssignmentOperator, BinaryOperator, CallArgument, CallArgumentKind, DeclaredType, DictEntry,
-    DictKey, EntryMode, Expression, LiteralKind, Name, Program, ResourceKind, ScalarType,
-    SetTypeAnnotation, Statement, TypeTerm, UnaryOperator,
+    DictKey, EntryMode, Expression, FunctionTypeAnnotation, LiteralKind, Name, Program,
+    ResourceKind, ScalarType, SetTypeAnnotation, Statement, TypeTerm, UnaryOperator,
 };
 use crate::diagnostics::*;
 use crate::lexer::Lexer;
@@ -221,6 +221,7 @@ impl<'source> Parser<'source> {
         (is_type_keyword_token(self.current().kind())
             && self.lookahead_kind(1) != Some(TokenKind::LeftParen))
             || self.starts_set_type()
+            || self.starts_concurrency_type()
     }
 
     /// 解析 `type name [= expression]` 或 `const [type] name = expression`。
@@ -417,6 +418,132 @@ impl<'source> Parser<'source> {
             .then(|| self.parse_set_type_annotation(false))
             .flatten()
             .map(DeclaredType::Set)
+            .or_else(|| self.parse_concurrency_declared_type())
+    }
+
+    /// 判断当前位置是否为 D-1 乙规定的并发专用注解起点。
+    ///
+    /// 这些名称保持为普通标识符，避免扩大语言关键字集合；只有在声明或函数
+    /// 注解位置，且后面紧跟 `<`（泛型句柄）或名称边界（`runtime`/`pool`）时
+    /// 才获得类型含义。
+    pub(super) fn starts_concurrency_type(&self) -> bool {
+        if self.current().kind() != TokenKind::Identifier {
+            return false;
+        }
+        let name = self.current().text(self.source);
+        if !matches!(name, "thread" | "task" | "shared" | "shared_mut" | "lock_guard" | "runtime" | "pool") {
+            return false;
+        }
+        match name {
+            "runtime" | "pool" => self.lookahead_kind(1) != Some(TokenKind::LeftParen),
+            _ => self.lookahead_kind(1) == Some(TokenKind::Less),
+        }
+    }
+
+    /// 判断当前位置是否像一个被禁止的通用 `Name<T>` 类型声明。
+    pub(super) fn starts_invalid_generic_type(&self) -> bool {
+        if self.current().kind() != TokenKind::Identifier
+            || self.lookahead_kind(1) != Some(TokenKind::Less)
+        {
+            return false;
+        }
+        let Some(inner) = self.lookahead_kind(2) else {
+            return false;
+        };
+        let Some(close) = self.lookahead_kind(3) else {
+            return false;
+        };
+        let after = self.lookahead_kind(4);
+        (is_type_keyword_token(inner)
+            || inner == TokenKind::None
+            || inner == TokenKind::Identifier)
+            && close == TokenKind::Greater
+            && after.is_some_and(is_declaration_name_token)
+    }
+
+    /// 解析声明位置的并发专用类型注解。
+    fn parse_concurrency_declared_type(&mut self) -> Option<DeclaredType> {
+        if !self.starts_concurrency_type() {
+            return None;
+        }
+        let name = self.bump();
+        let spelling = name.text(self.source);
+        let simple = match spelling {
+            "runtime" => return Some(DeclaredType::Runtime),
+            "pool" => return Some(DeclaredType::Pool),
+            _ => spelling,
+        };
+        let Some(open) = self.expect_delimiter(TokenKind::Less, name.span()) else {
+            return None;
+        };
+        self.soft_newline_depth += 1;
+        self.skip_type_layout();
+        let inner = self.parse_concurrency_inner_annotation();
+        self.skip_type_layout();
+        let close = self.expect_delimiter(TokenKind::Greater, open.span());
+        self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
+        let Some(inner) = inner else {
+            return None;
+        };
+        let value = Box::new(inner);
+        Some(match simple {
+            "thread" => DeclaredType::Thread(value),
+            "task" => DeclaredType::Task(value),
+            "shared" => DeclaredType::Shared(value),
+            "shared_mut" => DeclaredType::SharedMut(value),
+            "lock_guard" => DeclaredType::LockGuard(value),
+            _ => {
+                let span = close.map_or(name.span(), |token| token.span());
+                self.push_error(
+                    INVALID_FUNCTION_TYPE_CODE,
+                    "x04.parse.invalid_concurrency_type",
+                    span,
+                    "未知并发类型注解".to_owned(),
+                );
+                return None;
+            }
+        })
+    }
+
+    /// 解析并发句柄的内部基础类型。保持专用语法范围，不接受任意 `Name<T>`。
+    fn parse_concurrency_inner_annotation(&mut self) -> Option<FunctionTypeAnnotation> {
+        if self.at(TokenKind::None) {
+            self.bump();
+            return Some(FunctionTypeAnnotation::None);
+        }
+        if is_scalar_type_token(self.current().kind()) {
+            let token = self.bump();
+            return ScalarType::from_keyword(token.kind().keyword()?)
+                .map(FunctionTypeAnnotation::Scalar);
+        }
+        if let Some(keyword) = self.current().kind().keyword()
+            && let Some(resource) = ResourceKind::from_keyword(keyword)
+        {
+            self.bump();
+            return Some(FunctionTypeAnnotation::Resource(resource));
+        }
+        if self.starts_concurrency_type() {
+            let declared = self.parse_concurrency_declared_type()?;
+            return Some(match declared {
+                DeclaredType::Thread(inner) => FunctionTypeAnnotation::Thread(inner),
+                DeclaredType::Task(inner) => FunctionTypeAnnotation::Task(inner),
+                DeclaredType::Runtime => FunctionTypeAnnotation::Runtime,
+                DeclaredType::Pool => FunctionTypeAnnotation::Pool,
+                DeclaredType::Shared(inner) => FunctionTypeAnnotation::Shared(inner),
+                DeclaredType::SharedMut(inner) => FunctionTypeAnnotation::SharedMut(inner),
+                DeclaredType::LockGuard(inner) => FunctionTypeAnnotation::LockGuard(inner),
+                DeclaredType::Scalar(_)
+                | DeclaredType::Set(_)
+                | DeclaredType::Resource(_) => return None,
+            });
+        }
+        self.push_error(
+            INVALID_FUNCTION_TYPE_CODE,
+            "x04.parse.invalid_concurrency_type",
+            self.current().span(),
+            "并发句柄参数必须是基础类型或并发句柄类型".to_owned(),
+        );
+        None
     }
 
     /// 判断当前位置是否为未被反引号包裹的 `set<` 类型注解起点。

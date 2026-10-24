@@ -485,6 +485,20 @@ pub enum DeclaredType {
     Set(SetTypeAnnotation),
     /// `file`、`directory` 或 `resource` 资源声明。
     Resource(ResourceKind),
+    /// 并发线程句柄 `thread<T>`。
+    Thread(Box<FunctionTypeAnnotation>),
+    /// 并发任务句柄 `task<T>`。
+    Task(Box<FunctionTypeAnnotation>),
+    /// 可复制的 Runtime 句柄 `runtime`。
+    Runtime,
+    /// 任务池句柄 `pool`。
+    Pool,
+    /// 只读共享句柄 `shared<T>`。
+    Shared(Box<FunctionTypeAnnotation>),
+    /// 可变共享句柄 `shared_mut<T>`。
+    SharedMut(Box<FunctionTypeAnnotation>),
+    /// 作用域锁守卫 `lock_guard<T>`。
+    LockGuard(Box<FunctionTypeAnnotation>),
 }
 
 impl DeclaredType {
@@ -495,6 +509,13 @@ impl DeclaredType {
             Self::Scalar(scalar) => Some(*scalar),
             Self::Set(_) => None,
             Self::Resource(_) => None,
+            Self::Thread(_)
+            | Self::Task(_)
+            | Self::Runtime
+            | Self::Pool
+            | Self::Shared(_)
+            | Self::SharedMut(_)
+            | Self::LockGuard(_) => None,
         }
     }
 
@@ -505,6 +526,13 @@ impl DeclaredType {
             Self::Scalar(_) => None,
             Self::Set(annotation) => Some(annotation),
             Self::Resource(_) => None,
+            Self::Thread(_)
+            | Self::Task(_)
+            | Self::Runtime
+            | Self::Pool
+            | Self::Shared(_)
+            | Self::SharedMut(_)
+            | Self::LockGuard(_) => None,
         }
     }
 }
@@ -565,6 +593,20 @@ pub enum FunctionTypeAnnotation {
     Dict(DictTypeAnnotation),
     /// 裸类型参数，例如参数注解中的 `T`。
     TypeParameter(String),
+    /// 并发线程句柄 `thread<T>`。
+    Thread(Box<FunctionTypeAnnotation>),
+    /// 并发任务句柄 `task<T>`。
+    Task(Box<FunctionTypeAnnotation>),
+    /// 可复制的 Runtime 句柄 `runtime`。
+    Runtime,
+    /// 任务池句柄 `pool`。
+    Pool,
+    /// 只读共享句柄 `shared<T>`。
+    Shared(Box<FunctionTypeAnnotation>),
+    /// 可变共享句柄 `shared_mut<T>`。
+    SharedMut(Box<FunctionTypeAnnotation>),
+    /// 作用域锁守卫 `lock_guard<T>`。
+    LockGuard(Box<FunctionTypeAnnotation>),
 }
 
 impl FunctionTypeAnnotation {
@@ -587,6 +629,13 @@ impl FunctionTypeAnnotation {
             Self::Array(element) => format!("[{}]", element.as_string()),
             Self::Dict(annotation) => format!("dict<str, {}>", annotation.value.as_string()),
             Self::TypeParameter(name) => name.clone(),
+            Self::Thread(element) => format!("thread<{}>", element.as_string()),
+            Self::Task(element) => format!("task<{}>", element.as_string()),
+            Self::Runtime => "runtime".to_owned(),
+            Self::Pool => "pool".to_owned(),
+            Self::Shared(element) => format!("shared<{}>", element.as_string()),
+            Self::SharedMut(element) => format!("shared_mut<{}>", element.as_string()),
+            Self::LockGuard(element) => format!("lock_guard<{}>", element.as_string()),
         }
     }
 
@@ -1068,7 +1117,18 @@ impl Statement {
             Self::Declaration { declared_type, .. } => declared_type.as_scalar(),
             Self::ConstDeclaration { declared_type, .. } => match declared_type {
                 Some(DeclaredType::Scalar(scalar)) => Some(*scalar),
-                Some(DeclaredType::Set(_) | DeclaredType::Resource(_)) | None => None,
+                Some(
+                    DeclaredType::Set(_)
+                    | DeclaredType::Resource(_)
+                    | DeclaredType::Thread(_)
+                    | DeclaredType::Task(_)
+                    | DeclaredType::Runtime
+                    | DeclaredType::Pool
+                    | DeclaredType::Shared(_)
+                    | DeclaredType::SharedMut(_)
+                    | DeclaredType::LockGuard(_),
+                )
+                | None => None,
             },
             _ => None,
         }

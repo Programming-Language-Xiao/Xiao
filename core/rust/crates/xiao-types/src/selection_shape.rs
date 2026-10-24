@@ -56,7 +56,15 @@ pub fn direct_selection_children(root: &Type) -> Option<Vec<(ContainerPathSegmen
         | Type::Function { .. }
         | Type::Table(_)
         | Type::Resource(_)
-        | Type::None => None,
+        | Type::None
+        | Type::Thread(_)
+        | Type::Task(_)
+        | Type::Runtime
+        | Type::Pool
+        | Type::Shared(_)
+        | Type::SharedMut(_)
+        | Type::LockGuard(_)
+        | Type::OrdinaryHandle => None,
     }
 }
 

@@ -1333,6 +1333,13 @@ fn declared_type_to_type(declared: &DeclaredType, _context: &mut super::TypeCont
                 .collect::<Vec<_>>();
             Type::Set(SetType::heterogeneous(members))
         }
+        DeclaredType::Thread(element) => Type::thread(annotation_type(element)),
+        DeclaredType::Task(element) => Type::task(annotation_type(element)),
+        DeclaredType::Runtime => Type::Runtime,
+        DeclaredType::Pool => Type::Pool,
+        DeclaredType::Shared(element) => Type::shared(annotation_type(element)),
+        DeclaredType::SharedMut(element) => Type::shared_mut(annotation_type(element)),
+        DeclaredType::LockGuard(element) => Type::lock_guard(annotation_type(element)),
     }
 }
 
@@ -1350,6 +1357,13 @@ fn annotation_type(annotation: &FunctionTypeAnnotation) -> Type {
             Type::DictTable(DictType::open(annotation_type(&annotation.value)))
         }
         FunctionTypeAnnotation::TypeParameter(_) => Type::Dynamic,
+        FunctionTypeAnnotation::Thread(element) => Type::thread(annotation_type(element)),
+        FunctionTypeAnnotation::Task(element) => Type::task(annotation_type(element)),
+        FunctionTypeAnnotation::Runtime => Type::Runtime,
+        FunctionTypeAnnotation::Pool => Type::Pool,
+        FunctionTypeAnnotation::Shared(element) => Type::shared(annotation_type(element)),
+        FunctionTypeAnnotation::SharedMut(element) => Type::shared_mut(annotation_type(element)),
+        FunctionTypeAnnotation::LockGuard(element) => Type::lock_guard(annotation_type(element)),
     }
 }
 

@@ -5,7 +5,7 @@
 use xiao_diagnostics::DiagnosticParam;
 use xiao_syntax::{
     AssignmentOperator, BinaryOperator, DeclaredType, Expression, ImportStatement, IndexPath,
-    ScalarType, Statement,
+    FunctionTypeAnnotation, ScalarType, Statement, TypeTerm,
 };
 
 use crate::conversion::{
@@ -461,6 +461,61 @@ impl<'source> TypeChecker<'source> {
                 self.reject_resource_constraint_path(constraint_path);
                 self.check_resource_declaration(target, *resource, value);
             }
+            DeclaredType::Thread(_)
+            | DeclaredType::Task(_)
+            | DeclaredType::Runtime
+            | DeclaredType::Pool
+            | DeclaredType::Shared(_)
+            | DeclaredType::SharedMut(_)
+            | DeclaredType::LockGuard(_) => {
+                self.check_concurrency_declaration(target, declared_type, constraint_path, value);
+            }
+        }
+    }
+
+    /// 检查并发专用注解声明；这里只登记静态句柄类型，不执行 Runtime 行为。
+    fn check_concurrency_declaration(
+        &mut self,
+        target: xiao_syntax::Name,
+        declared_type: &DeclaredType,
+        constraint_path: Option<&IndexPath>,
+        value: Option<&Expression>,
+    ) {
+        if let Some(path) = constraint_path {
+            self.type_error(
+                INVALID_DECLARATION_PATH_CODE,
+                "x03.type.invalid_path",
+                path.span(),
+                "并发句柄类型不能携带容器路径约束".to_owned(),
+            );
+        }
+        let expected = declared_type_to_type(declared_type);
+        if let Some(value) = value {
+            let actual = self.check_expression(value);
+            if !can_assign(&actual, &expected) {
+                self.type_error(
+                    ASSIGNMENT_TYPE_MISMATCH_CODE,
+                    "x02.type.assignment_mismatch",
+                    value.span(),
+                    format!("{} 不能赋给 {}", actual, expected),
+                );
+            }
+        }
+        let key = self.name_key(target);
+        if self.environment.contains_current(&key) {
+            self.type_error(
+                DUPLICATE_DECLARATION_CODE,
+                "x02.type.duplicate_declaration",
+                target.span,
+                format!("名称 {} 已经声明", self.display_name(target)),
+            );
+            return;
+        }
+        if let Err(error) = self
+            .environment
+            .declare_mutable(key, expected, value.is_some())
+        {
+            self.environment_error(target.span, error);
         }
     }
 
@@ -570,7 +625,15 @@ impl<'source> TypeChecker<'source> {
                 self.check_explicit_target(value, &value_type, *declared_type, false);
                 false
             }
-            Some(DeclaredType::Resource(_)) | Some(DeclaredType::Set(_)) => {
+            Some(DeclaredType::Resource(_))
+            | Some(DeclaredType::Set(_))
+            | Some(DeclaredType::Thread(_))
+            | Some(DeclaredType::Task(_))
+            | Some(DeclaredType::Runtime)
+            | Some(DeclaredType::Pool)
+            | Some(DeclaredType::Shared(_))
+            | Some(DeclaredType::SharedMut(_))
+            | Some(DeclaredType::LockGuard(_)) => {
                 self.type_error(
                     NON_CONSTANT_CODE,
                     "x02.type.non_constant_initializer",
@@ -625,6 +688,13 @@ impl<'source> TypeChecker<'source> {
                 DeclaredType::Scalar(scalar) => Type::scalar(*scalar),
                 DeclaredType::Resource(resource) => Type::Resource(*resource),
                 DeclaredType::Set(_) => Type::Dynamic,
+                DeclaredType::Thread(_)
+                | DeclaredType::Task(_)
+                | DeclaredType::Runtime
+                | DeclaredType::Pool
+                | DeclaredType::Shared(_)
+                | DeclaredType::SharedMut(_)
+                | DeclaredType::LockGuard(_) => declared_type_to_type(declared),
             })
             .unwrap_or_else(|| value_type.clone());
         let scheme = self.context.generalize(&self.environment, &binding_type);
@@ -717,6 +787,59 @@ impl<'source> TypeChecker<'source> {
                 ),
             ],
         );
+    }
+}
+
+/// 将声明位置的并发专用注解降低为类型层类型。
+fn declared_type_to_type(declared: &DeclaredType) -> Type {
+    match declared {
+        DeclaredType::Scalar(scalar) => Type::scalar(*scalar),
+        DeclaredType::Resource(resource) => Type::Resource(*resource),
+        DeclaredType::Set(annotation) => Type::Set(crate::SetType::heterogeneous(
+            annotation
+                .members
+                .iter()
+                .map(|term| match term {
+                    TypeTerm::Scalar(scalar) => Type::scalar(*scalar),
+                    TypeTerm::None => Type::None,
+                    TypeTerm::Resource(resource) => Type::Resource(*resource),
+                    TypeTerm::TypeParameter(_) => Type::Dynamic,
+                })
+                .collect::<Vec<_>>(),
+        )),
+        DeclaredType::Thread(element) => Type::thread(annotation_to_type(element)),
+        DeclaredType::Task(element) => Type::task(annotation_to_type(element)),
+        DeclaredType::Runtime => Type::Runtime,
+        DeclaredType::Pool => Type::Pool,
+        DeclaredType::Shared(element) => Type::shared(annotation_to_type(element)),
+        DeclaredType::SharedMut(element) => Type::shared_mut(annotation_to_type(element)),
+        DeclaredType::LockGuard(element) => Type::lock_guard(annotation_to_type(element)),
+    }
+}
+
+/// 将函数注解的并发类型递归降低为类型层类型。
+fn annotation_to_type(annotation: &FunctionTypeAnnotation) -> Type {
+    match annotation {
+        FunctionTypeAnnotation::Scalar(scalar) => Type::scalar(*scalar),
+        FunctionTypeAnnotation::None => Type::None,
+        FunctionTypeAnnotation::Resource(resource) => Type::Resource(*resource),
+        FunctionTypeAnnotation::Set(_) => Type::set(Type::Dynamic),
+        FunctionTypeAnnotation::Array(element) => Type::array(annotation_to_type(element)),
+        FunctionTypeAnnotation::Dict(annotation) => {
+            Type::DictTable(crate::DictType::open(annotation_to_type(&annotation.value)))
+        }
+        FunctionTypeAnnotation::TypeParameter(_) => Type::Dynamic,
+        FunctionTypeAnnotation::Thread(element) => Type::thread(annotation_to_type(element)),
+        FunctionTypeAnnotation::Task(element) => Type::task(annotation_to_type(element)),
+        FunctionTypeAnnotation::Runtime => Type::Runtime,
+        FunctionTypeAnnotation::Pool => Type::Pool,
+        FunctionTypeAnnotation::Shared(element) => Type::shared(annotation_to_type(element)),
+        FunctionTypeAnnotation::SharedMut(element) => {
+            Type::shared_mut(annotation_to_type(element))
+        }
+        FunctionTypeAnnotation::LockGuard(element) => {
+            Type::lock_guard(annotation_to_type(element))
+        }
     }
 }
 

@@ -808,6 +808,23 @@ fn annotation_type(
         FunctionTypeAnnotation::TypeParameter(name) => {
             generic_types.get(name).cloned().unwrap_or(Type::Dynamic)
         }
+        FunctionTypeAnnotation::Thread(element) => {
+            Type::thread(annotation_type(element, generic_types))
+        }
+        FunctionTypeAnnotation::Task(element) => {
+            Type::task(annotation_type(element, generic_types))
+        }
+        FunctionTypeAnnotation::Runtime => Type::Runtime,
+        FunctionTypeAnnotation::Pool => Type::Pool,
+        FunctionTypeAnnotation::Shared(element) => {
+            Type::shared(annotation_type(element, generic_types))
+        }
+        FunctionTypeAnnotation::SharedMut(element) => {
+            Type::shared_mut(annotation_type(element, generic_types))
+        }
+        FunctionTypeAnnotation::LockGuard(element) => {
+            Type::lock_guard(annotation_type(element, generic_types))
+        }
     }
 }
 
@@ -843,7 +860,19 @@ fn contains_unresolved_variable(ty: &Type, quantified: &BTreeSet<crate::types::T
         Type::Set(set) => set
             .member_types()
             .any(|member| contains_unresolved_variable(member, quantified)),
-        Type::Table(_) | Type::Resource(_) | Type::Scalar(_) | Type::None | Type::Dynamic => false,
+        Type::Thread(value)
+        | Type::Task(value)
+        | Type::Shared(value)
+        | Type::SharedMut(value)
+        | Type::LockGuard(value) => contains_unresolved_variable(value, quantified),
+        Type::Table(_)
+        | Type::Resource(_)
+        | Type::Scalar(_)
+        | Type::None
+        | Type::Dynamic
+        | Type::Runtime
+        | Type::Pool
+        | Type::OrdinaryHandle => false,
     }
 }
 

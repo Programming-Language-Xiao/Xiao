@@ -138,6 +138,19 @@ pub fn can_assign(source: &Type, target: &Type) -> bool {
             ))
             || source == target;
     }
+    match (source, target) {
+        (Type::Thread(source), Type::Thread(target))
+        | (Type::Task(source), Type::Task(target))
+        | (Type::Shared(source), Type::Shared(target))
+        | (Type::SharedMut(source), Type::SharedMut(target))
+        | (Type::LockGuard(source), Type::LockGuard(target)) => {
+            return can_assign(source, target);
+        }
+        (Type::Runtime, Type::Runtime)
+        | (Type::Pool, Type::Pool)
+        | (Type::OrdinaryHandle, Type::OrdinaryHandle) => return true,
+        _ => {}
+    }
     let (Type::Scalar(source), Type::Scalar(target)) = (source, target) else {
         return false;
     };

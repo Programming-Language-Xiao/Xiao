@@ -212,7 +212,15 @@ fn resolve_segment(
         | Type::Table(_)
         | Type::Resource(_)
         | Type::Scalar(_)
-        | Type::None => Err(PathResolutionError {
+        | Type::None
+        | Type::Thread(_)
+        | Type::Task(_)
+        | Type::Runtime
+        | Type::Pool
+        | Type::Shared(_)
+        | Type::SharedMut(_)
+        | Type::LockGuard(_)
+        | Type::OrdinaryHandle => Err(PathResolutionError {
             segment,
             kind: PathResolutionErrorKind::WrongSegment,
         }),

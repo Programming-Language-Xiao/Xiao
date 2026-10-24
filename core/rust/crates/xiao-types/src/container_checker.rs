@@ -633,7 +633,15 @@ fn direct_children(
         | Type::Set(_)
         | Type::Table(_)
         | Type::Resource(_)
-        | Type::None => {}
+        | Type::None
+        | Type::Thread(_)
+        | Type::Task(_)
+        | Type::Runtime
+        | Type::Pool
+        | Type::Shared(_)
+        | Type::SharedMut(_)
+        | Type::LockGuard(_)
+        | Type::OrdinaryHandle => {}
     }
     children
 }
