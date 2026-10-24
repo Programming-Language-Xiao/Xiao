@@ -487,18 +487,14 @@ impl<'source> Parser<'source> {
             "pool" => return Some(DeclaredType::Pool),
             _ => spelling,
         };
-        let Some(open) = self.expect_delimiter(TokenKind::Less, name.span()) else {
-            return None;
-        };
+        let open = self.expect_delimiter(TokenKind::Less, name.span())?;
         self.soft_newline_depth += 1;
         self.skip_type_layout();
         let inner = self.parse_concurrency_inner_annotation();
         self.skip_type_layout();
         let close = self.expect_delimiter(TokenKind::Greater, open.span());
         self.soft_newline_depth = self.soft_newline_depth.saturating_sub(1);
-        let Some(inner) = inner else {
-            return None;
-        };
+        let inner = inner?;
         let value = Box::new(inner);
         Some(match simple {
             "thread" => DeclaredType::Thread(value),
