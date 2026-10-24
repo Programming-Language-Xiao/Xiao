@@ -5,8 +5,10 @@
 > 22A-FIX 已固定 `std.concurrent` 的 API/类型名、Send/Sync 类型表、CrossThread 字段、
 > 诊断映射和产物门禁；本批只让 22C 能按这些事实实现 Runtime，不在实现阶段重新解释语义。
 >
-> 状态：**已实施（2026-10-25）**。D-1 取乙（专用注解语法），其余取甲；已完成静态类型、
-> 生命周期事实、IR 动作/verifier 和旧快照兼容，不接 Runtime、VM、LLVM 或标准库函数体。
+> 状态：**模型/API 已落地（2026-10-25），22B-FIX 待接线**。D-1 取乙（专用注解语法），
+> 其余取甲；类型、生命周期模型、IR 动作/verifier 和旧快照兼容已有实现，但签名/能力/消费、
+> 源码级 BoundaryFacts 和取消检查尚未接入真实流水线，见
+> [22B-FIX](22b-fix-concurrency-wiring.md)。
 
 ## 一、入口条件与冻结输入
 
@@ -258,7 +260,8 @@ git diff --check
 3. 正/负例覆盖普通句柄、共享句柄、多边界值、Runtime ID、动态值、资源、跨 Runtime；
 4. IR 快照和旧快照兼容/版本策略通过；
 5. 没有实现 Runtime、VM、LLVM、标准库函数体或 32B ABI；
-6. 22C 可以只按 22B 的类型/事实/动作实现，不再补语义。
+6. [22B-FIX](22b-fix-concurrency-wiring.md) 完成后，22C 才可以只按 22B 的类型/事实/
+   动作实现，不再补语义。
 
 ## 八、不许
 
@@ -300,8 +303,9 @@ core/rust/crates/xiao-ir/                               IrType/IrOwnership/verif
 core/rust/crates/xiao-i18n/                             新诊断中英消息
 ```
 
-不修改 `xiao-runtime`、`xiao-vm`、`xiao-codegen-llvm`、`stdlib/` 的并发实现；这些属于
-22C–22E。22B 结束时只交付静态类型、生命周期和 IR 契约。
+不接入 `xiao-runtime`、`xiao-vm`、`xiao-codegen-llvm`、`stdlib/` 的并发行为；这些属于
+22C–22E。为新增 `Type`/`IrType` 补穷举拒绝分支是允许的兼容改动，不等于 22C 实现。
+22B 结束时只交付静态类型、生命周期和 IR 契约。
 
 ## 十一、实施结果与证据
 
@@ -319,7 +323,12 @@ core/rust/crates/xiao-i18n/                             新诊断中英消息
 验证已通过：`cargo check --manifest-path core/rust/Cargo.toml --workspace`、
 `cargo test --manifest-path core/rust/Cargo.toml --workspace`、`cargo fmt --manifest-path
 core/rust/Cargo.toml --all -- --check`，以及 `check:docs`、`check:usedocs`、`check:layout`、
-`git diff --check`。22C 可以只消费本批的类型、事实、动作和 verifier。
+`git diff --check`。
+
+**证据边界**：上述测试覆盖模型/API、parser 注解和手工 IR 结构；`std_concurrent_signatures`、
+`HandleConsumption`、`BoundaryFacts` 和取消检查尚未接入真实源码流水线，因此不能把这轮
+测试写成“22C 可以只消费本批事实”。接线、源码级回归和状态修正见
+[22B-FIX](22b-fix-concurrency-wiring.md)。
 
 ## 相关页面
 

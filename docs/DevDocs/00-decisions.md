@@ -697,6 +697,10 @@ F-9 的文档卫生同步为 `module: stdlib.xiao-standard-library`；`35caa80`/
 
 规划与现状核对见 [22B](22b-concurrency-types-lifetime-ir.md)。
 
+2026-10-25 复核发现 22B 的类型/签名/消费、源码级 BoundaryFacts 和取消检查尚未接进真实
+流水线；状态改为“部分实现，待接线”，并开 [22B-FIX](22b-fix-concurrency-wiring.md)。
+22B-FIX 关闭前不进入 22C；本轮不改 Runtime/VM/LLVM/标准库函数体。
+
 ### 错误模型与诊断
 
 - 首版采用“结构化可恢复错误 + 致命 `panic`”的混合模型。可恢复运行时错误使用统一 `XiaoError`，由 `try`、`catch`、`finally` 和 `raise` 传播与处理；虚拟机不变量损坏、损坏字节码、无法安全建立错误对象的内存耗尽和硬件异常进入致命终止路径，普通 `catch` 不得伪装恢复。
