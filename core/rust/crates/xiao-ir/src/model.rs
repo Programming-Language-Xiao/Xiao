@@ -720,6 +720,48 @@ pub enum IrType {
     OrdinaryHandle,
 }
 
+impl IrType {
+    /// 创建 `thread<T>` IR 类型。
+    #[must_use]
+    pub fn thread(value: IrType) -> Self {
+        Self::Thread {
+            value: Box::new(value),
+        }
+    }
+
+    /// 创建 `task<T>` IR 类型。
+    #[must_use]
+    pub fn task(value: IrType) -> Self {
+        Self::Task {
+            value: Box::new(value),
+        }
+    }
+
+    /// 创建只读 `shared<T>` IR 类型。
+    #[must_use]
+    pub fn shared(value: IrType) -> Self {
+        Self::Shared {
+            value: Box::new(value),
+        }
+    }
+
+    /// 创建可变 `shared_mut<T>` IR 类型。
+    #[must_use]
+    pub fn shared_mut(value: IrType) -> Self {
+        Self::SharedMut {
+            value: Box::new(value),
+        }
+    }
+
+    /// 创建 `lock_guard<T>` IR 类型。
+    #[must_use]
+    pub fn lock_guard(value: IrType) -> Self {
+        Self::LockGuard {
+            value: Box::new(value),
+        }
+    }
+}
+
 /// 数组形状。
 #[derive(Clone, Debug, Deserialize, Eq, Hash, PartialEq, Serialize)]
 #[serde(tag = "kind", content = "data")]
