@@ -29,7 +29,7 @@ pub use model::{
     CrossThreadFact, DynamicLifetimeCheck, EscapeReason, ExitKind, LifetimeResult, OwnershipEdge,
     OwnershipEdgeReason, OwnershipKind, ReleaseAction, ReleaseActionKind, ReleasePlan, RuntimeId,
     RuntimeIdFact, RuntimeIdFacts, ScopeId, ScopeInfo, ScopeKind, StorageClass, TaskBoundary,
-    ThreadBoundary, ValueId, ValueInfo,
+    ThreadBoundary, ValueId, ValueInfo, classify_boundary_type,
 };
 
 use escape::EscapeAnalyzer;

@@ -1,8 +1,9 @@
 //! 08-U0 类型化 IR 降低、快照和验证规格。
 
 use xiao_ir::{
-    IrExpressionKind, IrStatementKind, IrType, IrValidator, SnapshotError, from_json,
-    lower_program, to_json,
+    IrBoundaryTransfer, IrCancellationCheck, IrCrossThreadFact, IrExpressionKind, IrOwnership,
+    IrProgram, IrScope, IrSpan, IrStatementKind, IrType, IrValidator, IrValue, SnapshotError,
+    from_json, lower_program, lower_type, restore_type, to_json,
 };
 use xiao_lifetime::analyze as analyze_lifetime;
 use xiao_source::SourceFile;
@@ -204,4 +205,124 @@ fn normalizes_escaped_dict_keys() {
         panic!("expected dict table literal");
     };
     assert_eq!(entries[0].key, "a\tb", "转义必须与类型层同样处理");
+}
+
+#[test]
+/// 并发类型必须能在 IR 与类型层之间递归往返。
+fn concurrency_types_lower_and_restore() {
+    let scalar = xiao_types::Type::scalar(xiao_syntax::ScalarType::Int);
+    let types = vec![
+        xiao_types::Type::Thread(Box::new(scalar.clone())),
+        xiao_types::Type::Task(Box::new(scalar.clone())),
+        xiao_types::Type::Runtime,
+        xiao_types::Type::Pool,
+        xiao_types::Type::Shared(Box::new(scalar.clone())),
+        xiao_types::Type::SharedMut(Box::new(scalar.clone())),
+        xiao_types::Type::LockGuard(Box::new(scalar.clone())),
+        xiao_types::Type::OrdinaryHandle,
+    ];
+    for ty in types {
+        let lowered = lower_type(&ty);
+        assert_eq!(restore_type(&lowered), Some(ty));
+        let encoded = serde_json::to_string(&lowered).expect("并发类型 JSON");
+        let decoded: IrType = serde_json::from_str(&encoded).expect("并发类型 JSON 解码");
+        assert_eq!(decoded, lowered);
+    }
+}
+
+fn boundary_program(ty: IrType) -> IrProgram {
+    let span = IrSpan::new(0, 1);
+    let value = IrValue {
+        id: 1,
+        name: Some("value".to_owned()),
+        scope: 0,
+        span,
+        ty: Some(ty),
+        storage: "stack".to_owned(),
+        declaration_order: 0,
+        parameter: false,
+        constant: false,
+        temporary: false,
+        escapes: vec!["cross_thread".to_owned()],
+    };
+    let mut program = IrProgram::new(xiao_ir::IrEntryMode::Script, Vec::new(), span);
+    program.ownership = IrOwnership {
+        scopes: vec![IrScope {
+            id: 0,
+            parent: None,
+            kind: "program".to_owned(),
+            span,
+            depth: 0,
+            values: vec![1],
+        }],
+        values: vec![value],
+        cross_thread_facts: vec![IrCrossThreadFact::new(1, 7, true, true, span)],
+        boundary_transfers: vec![IrBoundaryTransfer::deep_copy(vec![1], 7, span)],
+        cancellation_checks: vec![IrCancellationCheck::safe_point(span)],
+        ..IrOwnership::default()
+    };
+    program
+}
+
+#[test]
+/// D-5 的边界事实、复制清理顺序和取消检查应通过统一 verifier。
+fn verifies_boundary_facts_and_cleanup_order() {
+    let program = boundary_program(IrType::Scalar {
+        name: "int".to_owned(),
+    });
+    assert!(IrValidator::new().validate(&program).is_success());
+
+    let mut invalid = program.clone();
+    invalid.ownership.boundary_transfers[0].runtime_id = 8;
+    assert!(!IrValidator::new().validate(&invalid).is_success());
+
+    let mut invalid = program.clone();
+    invalid.ownership.boundary_transfers[0].cleanup_order = vec![];
+    assert!(!IrValidator::new().validate(&invalid).is_success());
+}
+
+#[test]
+/// 普通句柄、可变共享句柄和锁守卫不能借边界事实逃逸。
+fn rejects_non_send_concurrency_handles() {
+    for ty in [
+        IrType::OrdinaryHandle,
+        IrType::SharedMut {
+            value: Box::new(IrType::Scalar {
+                name: "int".to_owned(),
+            }),
+        },
+        IrType::LockGuard {
+            value: Box::new(IrType::Scalar {
+                name: "int".to_owned(),
+            }),
+        },
+    ] {
+        let program = boundary_program(ty);
+        assert!(
+            !IrValidator::new().validate(&program).is_success(),
+            "不应放行 {program:?}"
+        );
+    }
+}
+
+#[test]
+/// 缺失 D-5 新字段的旧快照必须按空容器读取。
+fn old_snapshot_without_concurrency_fields_is_compatible() {
+    let program = boundary_program(IrType::Scalar {
+        name: "int".to_owned(),
+    });
+    let mut value: serde_json::Value =
+        serde_json::from_str(&to_json(&program).expect("快照编码")).expect("JSON");
+    let ownership = value
+        .get_mut("ownership")
+        .and_then(serde_json::Value::as_object_mut)
+        .expect("ownership");
+    ownership.remove("cross_thread_facts");
+    ownership.remove("boundary_transfers");
+    ownership.remove("cancellation_checks");
+    let restored =
+        from_json(&serde_json::to_string(&value).expect("旧快照编码")).expect("旧快照读取");
+    assert!(restored.ownership.cross_thread_facts.is_empty());
+    assert!(restored.ownership.boundary_transfers.is_empty());
+    assert!(restored.ownership.cancellation_checks.is_empty());
 }

@@ -184,6 +184,13 @@ impl<'a> Lowerer<'a> {
                     DeclaredType::Scalar(scalar) => scalar.as_str().to_owned(),
                     DeclaredType::Resource(resource) => resource.as_str().to_owned(),
                     DeclaredType::Set(_) => "set".to_owned(),
+                    DeclaredType::Thread(_) => "thread".to_owned(),
+                    DeclaredType::Task(_) => "task".to_owned(),
+                    DeclaredType::Runtime => "runtime".to_owned(),
+                    DeclaredType::Pool => "pool".to_owned(),
+                    DeclaredType::Shared(_) => "shared".to_owned(),
+                    DeclaredType::SharedMut(_) => "shared_mut".to_owned(),
+                    DeclaredType::LockGuard(_) => "lock_guard".to_owned(),
                 }),
                 value: self.expression(value),
             },
@@ -750,6 +757,24 @@ pub fn lower_type(ty: &Type) -> IrType {
         Type::Resource(resource) => IrType::Resource {
             kind: resource.as_str().to_owned(),
         },
+        Type::Thread(value) => IrType::Thread {
+            value: Box::new(lower_type(value)),
+        },
+        Type::Task(value) => IrType::Task {
+            value: Box::new(lower_type(value)),
+        },
+        Type::Runtime => IrType::Runtime,
+        Type::Pool => IrType::Pool,
+        Type::Shared(value) => IrType::Shared {
+            value: Box::new(lower_type(value)),
+        },
+        Type::SharedMut(value) => IrType::SharedMut {
+            value: Box::new(lower_type(value)),
+        },
+        Type::LockGuard(value) => IrType::LockGuard {
+            value: Box::new(lower_type(value)),
+        },
+        Type::OrdinaryHandle => IrType::OrdinaryHandle,
     }
 }
 
@@ -908,6 +933,23 @@ fn lower_declared_type(declared: &DeclaredType) -> IrType {
             empty: false,
             unknown: annotation.members.is_empty(),
         },
+        DeclaredType::Thread(value) => IrType::Thread {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        DeclaredType::Task(value) => IrType::Task {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        DeclaredType::Runtime => IrType::Runtime,
+        DeclaredType::Pool => IrType::Pool,
+        DeclaredType::Shared(value) => IrType::Shared {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        DeclaredType::SharedMut(value) => IrType::SharedMut {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        DeclaredType::LockGuard(value) => IrType::LockGuard {
+            value: Box::new(lower_function_annotation(value)),
+        },
     }
 }
 
@@ -981,6 +1023,23 @@ fn lower_function_annotation(annotation: &FunctionTypeAnnotation) -> IrType {
             }],
         },
         FunctionTypeAnnotation::TypeParameter(_) => IrType::Dynamic,
+        FunctionTypeAnnotation::Thread(value) => IrType::Thread {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        FunctionTypeAnnotation::Task(value) => IrType::Task {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        FunctionTypeAnnotation::Runtime => IrType::Runtime,
+        FunctionTypeAnnotation::Pool => IrType::Pool,
+        FunctionTypeAnnotation::Shared(value) => IrType::Shared {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        FunctionTypeAnnotation::SharedMut(value) => IrType::SharedMut {
+            value: Box::new(lower_function_annotation(value)),
+        },
+        FunctionTypeAnnotation::LockGuard(value) => IrType::LockGuard {
+            value: Box::new(lower_function_annotation(value)),
+        },
     }
 }
 
@@ -1158,6 +1217,40 @@ fn lower_ownership(lifetime: &LifetimeResult) -> IrOwnership {
             reason: escape_reason_name(check.reason).to_owned(),
         })
         .collect();
+    // 生命周期阶段只会从显式 `spawn`/`submit`/任务挂起入口登记事实；IR
+    // lowering 负责把同一事实复制到稳定的 JSON 结构。当前公共生命周期
+    // 模型按值保存事实；同一显式 lowering 的事实按 Runtime、边界标志和
+    // 源码区间重新聚合成一个参数列表，保持调用位置顺序和逆序清理语义。
+    let cross_thread_facts = lifetime
+        .cross_thread_facts()
+        .iter()
+        .map(|fact| IrCrossThreadFact {
+            value: fact.value.get(),
+            runtime_id: fact.runtime_id,
+            task_boundary: fact.task_boundary,
+            thread_boundary: fact.thread_boundary,
+            span: ir_span(fact.span),
+        })
+        .collect::<Vec<_>>();
+    let mut transfer_groups = BTreeMap::<(u64, bool, bool, usize, usize), Vec<u32>>::new();
+    for fact in &cross_thread_facts {
+        transfer_groups
+            .entry((
+                fact.runtime_id,
+                fact.task_boundary,
+                fact.thread_boundary,
+                fact.span.start,
+                fact.span.end,
+            ))
+            .or_default()
+            .push(fact.value);
+    }
+    let boundary_transfers = transfer_groups
+        .into_iter()
+        .map(|((runtime_id, _, _, start, end), parameters)| {
+            IrBoundaryTransfer::deep_copy(parameters, runtime_id, IrSpan::new(start, end))
+        })
+        .collect();
     IrOwnership {
         scopes,
         values,
@@ -1165,6 +1258,9 @@ fn lower_ownership(lifetime: &LifetimeResult) -> IrOwnership {
         weak_edges,
         release_plans,
         dynamic_checks,
+        cross_thread_facts,
+        boundary_transfers,
+        cancellation_checks: Vec::new(),
     }
 }
 

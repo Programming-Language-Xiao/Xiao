@@ -201,5 +201,13 @@ pub fn restore_type(ty: &IrType) -> Option<Type> {
             "resource" => xiao_syntax::ResourceKind::Resource,
             _ => return None,
         }),
+        IrType::Thread { value } => Type::Thread(Box::new(restore_type(value)?)),
+        IrType::Task { value } => Type::Task(Box::new(restore_type(value)?)),
+        IrType::Runtime => Type::Runtime,
+        IrType::Pool => Type::Pool,
+        IrType::Shared { value } => Type::Shared(Box::new(restore_type(value)?)),
+        IrType::SharedMut { value } => Type::SharedMut(Box::new(restore_type(value)?)),
+        IrType::LockGuard { value } => Type::LockGuard(Box::new(restore_type(value)?)),
+        IrType::OrdinaryHandle => Type::OrdinaryHandle,
     })
 }

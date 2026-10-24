@@ -616,7 +616,19 @@ fn validate_type(ty: &IrType, path: &str, result: &mut IrValidationResult) {
                 result.errors.push(error(path, "资源类型种类无效", None));
             }
         }
-        IrType::None | IrType::Variable { .. } | IrType::Dynamic => {}
+        IrType::Thread { value }
+        | IrType::Task { value }
+        | IrType::Shared { value }
+        | IrType::SharedMut { value }
+        | IrType::LockGuard { value } => {
+            validate_type(value, &format!("{path}.value"), result);
+        }
+        IrType::None
+        | IrType::Variable { .. }
+        | IrType::Dynamic
+        | IrType::Runtime
+        | IrType::Pool
+        | IrType::OrdinaryHandle => {}
     }
 }
 
@@ -830,6 +842,351 @@ fn validate_ownership(ownership: &IrOwnership, result: &mut IrValidationResult) 
                 ));
             }
         }
+    }
+    validate_boundary_facts(ownership, &value_ids, result);
+    validate_cancellation_checks(ownership, result);
+}
+
+/// 验证并发边界事实、参数复制动作和能力约束。
+///
+/// 一个事实必须能在唯一的显式边界动作中找到对应值；这样 verifier 不会
+/// 接受由变量名或函数名推断出的孤立 `CrossThread` 记录。边界动作的清理
+/// 顺序固定为参数列表逆序，供 22C 在复制失败时直接消费。
+fn validate_boundary_facts(
+    ownership: &IrOwnership,
+    value_ids: &BTreeSet<u32>,
+    result: &mut IrValidationResult,
+) {
+    let mut fact_counts = std::collections::BTreeMap::<u32, usize>::new();
+    for (index, fact) in ownership.cross_thread_facts.iter().enumerate() {
+        let path = format!("ownership.cross_thread_facts[{index}]");
+        if !value_ids.contains(&fact.value) {
+            result.errors.push(error(
+                &format!("{path}.value"),
+                "跨线程事实引用了不存在的值",
+                Some(fact.span),
+            ));
+        }
+        if !fact.task_boundary && !fact.thread_boundary {
+            result.errors.push(error(
+                &path,
+                "跨线程事实至少必须包含任务边界或线程边界",
+                Some(fact.span),
+            ));
+        }
+        if fact.span.start > fact.span.end {
+            result.errors.push(error(
+                &format!("{path}.span"),
+                "跨线程事实源码区间起点不能大于终点",
+                Some(fact.span),
+            ));
+        }
+        *fact_counts.entry(fact.value).or_default() += 1;
+    }
+    for (value, count) in &fact_counts {
+        if *count != 1 {
+            result.errors.push(error(
+                "ownership.cross_thread_facts",
+                &format!("值 {value} 必须恰有一个跨线程事实，实际有 {count} 个"),
+                None,
+            ));
+        }
+    }
+
+    let mut transfer_counts = std::collections::BTreeMap::<u32, usize>::new();
+    for (index, transfer) in ownership.boundary_transfers.iter().enumerate() {
+        let path = format!("ownership.boundary_transfers[{index}]");
+        validate_span(transfer.span, &format!("{path}.span"), result);
+        if transfer.parameters.is_empty() {
+            result.errors.push(error(
+                &format!("{path}.parameters"),
+                "边界传递至少需要一个参数值",
+                Some(transfer.span),
+            ));
+        }
+        if !matches!(
+            transfer.copy_kind.as_str(),
+            "deep_copy" | "serialization" | "serialize"
+        ) {
+            result.errors.push(error(
+                &format!("{path}.copy_kind"),
+                "拷贝类别必须是 deep_copy 或 serialization",
+                Some(transfer.span),
+            ));
+        }
+        let mut parameters = BTreeSet::new();
+        for value in &transfer.parameters {
+            if !value_ids.contains(value) {
+                result.errors.push(error(
+                    &format!("{path}.parameters"),
+                    "边界传递参数引用了不存在的值",
+                    Some(transfer.span),
+                ));
+            }
+            if !parameters.insert(*value) {
+                result.errors.push(error(
+                    &format!("{path}.parameters"),
+                    "同一边界传递不得重复同一个参数值",
+                    Some(transfer.span),
+                ));
+            }
+            *transfer_counts.entry(*value).or_default() += 1;
+        }
+        if transfer.cleanup_order.len() != transfer.parameters.len()
+            || transfer
+                .cleanup_order
+                .iter()
+                .copied()
+                .ne(transfer.parameters.iter().rev().copied())
+        {
+            result.errors.push(error(
+                &format!("{path}.cleanup_order"),
+                "边界传递失败清理必须按参数位置逆序排列",
+                Some(transfer.span),
+            ));
+        }
+        for value in &transfer.cleanup_order {
+            if !value_ids.contains(value) {
+                result.errors.push(error(
+                    &format!("{path}.cleanup_order"),
+                    "清理顺序引用了不存在的值",
+                    Some(transfer.span),
+                ));
+            }
+        }
+        for value in &transfer.parameters {
+            let Some(fact) = ownership
+                .cross_thread_facts
+                .iter()
+                .find(|fact| fact.value == *value)
+            else {
+                result.errors.push(error(
+                    &format!("{path}.parameters"),
+                    "边界参数没有对应的跨线程事实；事实必须来自显式 lowering",
+                    Some(transfer.span),
+                ));
+                continue;
+            };
+            if fact.runtime_id != transfer.runtime_id {
+                result.errors.push(error(
+                    &format!("{path}.runtime_id"),
+                    "边界传递目标 Runtime 与跨线程事实不一致",
+                    Some(fact.span),
+                ));
+            }
+            validate_boundary_value_type(
+                ownership,
+                *value,
+                fact,
+                &format!("{path}.parameters"),
+                result,
+            );
+        }
+    }
+    for fact in &ownership.cross_thread_facts {
+        if transfer_counts
+            .get(&fact.value)
+            .copied()
+            .unwrap_or_default()
+            != 1
+        {
+            result.errors.push(error(
+                "ownership.boundary_transfers",
+                &format!(
+                    "跨线程值 {} 必须在恰有一个边界传递中出现，实际出现 {} 次",
+                    fact.value,
+                    transfer_counts
+                        .get(&fact.value)
+                        .copied()
+                        .unwrap_or_default()
+                ),
+                Some(fact.span),
+            ));
+        }
+    }
+}
+
+/// 检查跨边界值的递归类型能力。
+fn validate_boundary_value_type(
+    ownership: &IrOwnership,
+    value: u32,
+    fact: &IrCrossThreadFact,
+    path: &str,
+    result: &mut IrValidationResult,
+) {
+    let Some(ty) = ownership
+        .values
+        .iter()
+        .find(|candidate| candidate.id == value)
+        .and_then(|candidate| candidate.ty.as_ref())
+    else {
+        return;
+    };
+    if contains_lock_guard(ty) {
+        result.errors.push(error(
+            path,
+            "lock_guard 不得进入跨任务或线程边界事实",
+            Some(fact.span),
+        ));
+    }
+    if contains_non_send_handle(ty) && (fact.task_boundary || fact.thread_boundary) {
+        result.errors.push(error(
+            path,
+            "普通并发句柄不得进入跨任务或线程边界事实",
+            Some(fact.span),
+        ));
+    }
+    if fact.thread_boundary && contains_shared_mut(ty) {
+        result.errors.push(error(
+            path,
+            "shared_mut<T> 不得跨 Runtime 线程边界传递",
+            Some(fact.span),
+        ));
+    }
+    if contains_dynamic_or_resource(ty) {
+        result.errors.push(error(
+            path,
+            "dynamic 或 resource 值不能进入并发边界传递",
+            Some(fact.span),
+        ));
+    }
+}
+
+fn contains_lock_guard(ty: &IrType) -> bool {
+    match ty {
+        IrType::LockGuard { .. } => true,
+        IrType::Thread { value }
+        | IrType::Task { value }
+        | IrType::Shared { value }
+        | IrType::SharedMut { value } => contains_lock_guard(value),
+        IrType::Function {
+            parameters,
+            return_type,
+        } => parameters.iter().any(contains_lock_guard) || contains_lock_guard(return_type),
+        IrType::Array { shape } => match shape {
+            IrArrayShape::Homogeneous { element, .. } => contains_lock_guard(element),
+            IrArrayShape::Heterogeneous { elements } => elements.iter().any(contains_lock_guard),
+            IrArrayShape::Unknown => false,
+        },
+        IrType::Tuple { elements } => elements.iter().any(contains_lock_guard),
+        IrType::DictTable { entries } | IrType::DictColumn { entries } => entries
+            .iter()
+            .any(|entry| contains_lock_guard(&entry.value)),
+        IrType::Set { members, .. } => members.iter().any(contains_lock_guard),
+        _ => false,
+    }
+}
+
+fn contains_non_send_handle(ty: &IrType) -> bool {
+    match ty {
+        IrType::Thread { .. }
+        | IrType::Task { .. }
+        | IrType::Runtime
+        | IrType::Pool
+        | IrType::OrdinaryHandle => true,
+        IrType::LockGuard { .. } => true,
+        IrType::Shared { value } | IrType::SharedMut { value } => contains_non_send_handle(value),
+        IrType::Function {
+            parameters,
+            return_type,
+        } => {
+            parameters.iter().any(contains_non_send_handle) || contains_non_send_handle(return_type)
+        }
+        IrType::Array { shape } => match shape {
+            IrArrayShape::Homogeneous { element, .. } => contains_non_send_handle(element),
+            IrArrayShape::Heterogeneous { elements } => {
+                elements.iter().any(contains_non_send_handle)
+            }
+            IrArrayShape::Unknown => false,
+        },
+        IrType::Tuple { elements } => elements.iter().any(contains_non_send_handle),
+        IrType::DictTable { entries } | IrType::DictColumn { entries } => entries
+            .iter()
+            .any(|entry| contains_non_send_handle(&entry.value)),
+        IrType::Set { members, .. } => members.iter().any(contains_non_send_handle),
+        _ => false,
+    }
+}
+
+fn contains_shared_mut(ty: &IrType) -> bool {
+    match ty {
+        IrType::SharedMut { .. } => true,
+        IrType::Thread { value }
+        | IrType::Task { value }
+        | IrType::Shared { value }
+        | IrType::LockGuard { value } => contains_shared_mut(value),
+        IrType::Function {
+            parameters,
+            return_type,
+        } => parameters.iter().any(contains_shared_mut) || contains_shared_mut(return_type),
+        IrType::Array { shape } => match shape {
+            IrArrayShape::Homogeneous { element, .. } => contains_shared_mut(element),
+            IrArrayShape::Heterogeneous { elements } => elements.iter().any(contains_shared_mut),
+            IrArrayShape::Unknown => false,
+        },
+        IrType::Tuple { elements } => elements.iter().any(contains_shared_mut),
+        IrType::DictTable { entries } | IrType::DictColumn { entries } => entries
+            .iter()
+            .any(|entry| contains_shared_mut(&entry.value)),
+        IrType::Set { members, .. } => members.iter().any(contains_shared_mut),
+        _ => false,
+    }
+}
+
+fn contains_dynamic_or_resource(ty: &IrType) -> bool {
+    match ty {
+        IrType::Dynamic | IrType::Resource { .. } => true,
+        IrType::Thread { value }
+        | IrType::Task { value }
+        | IrType::Shared { value }
+        | IrType::SharedMut { value }
+        | IrType::LockGuard { value } => contains_dynamic_or_resource(value),
+        IrType::Function {
+            parameters,
+            return_type,
+        } => {
+            parameters.iter().any(contains_dynamic_or_resource)
+                || contains_dynamic_or_resource(return_type)
+        }
+        IrType::Array { shape } => match shape {
+            IrArrayShape::Homogeneous { element, .. } => contains_dynamic_or_resource(element),
+            IrArrayShape::Heterogeneous { elements } => {
+                elements.iter().any(contains_dynamic_or_resource)
+            }
+            IrArrayShape::Unknown => false,
+        },
+        IrType::Tuple { elements } => elements.iter().any(contains_dynamic_or_resource),
+        IrType::DictTable { entries } | IrType::DictColumn { entries } => entries
+            .iter()
+            .any(|entry| contains_dynamic_or_resource(&entry.value)),
+        IrType::Set { members, .. } => members.iter().any(contains_dynamic_or_resource),
+        _ => false,
+    }
+}
+
+/// 验证取消检查的稳定类别和位置。
+fn validate_cancellation_checks(ownership: &IrOwnership, result: &mut IrValidationResult) {
+    let mut previous_start = None;
+    for (index, check) in ownership.cancellation_checks.iter().enumerate() {
+        let path = format!("ownership.cancellation_checks[{index}]");
+        validate_span(check.span, &format!("{path}.span"), result);
+        if !matches!(check.kind.as_str(), "safe_point" | "wait" | "lock_wait") {
+            result.errors.push(error(
+                &format!("{path}.kind"),
+                "取消检查类别必须是 safe_point、wait 或 lock_wait",
+                Some(check.span),
+            ));
+        }
+        if let Some(previous) = previous_start
+            && check.span.start < previous
+        {
+            result.errors.push(error(
+                &path,
+                "取消检查位置必须按源码顺序排列，清理动作之后不得重新插入检查",
+                Some(check.span),
+            ));
+        }
+        previous_start = Some(check.span.start);
     }
 }
 

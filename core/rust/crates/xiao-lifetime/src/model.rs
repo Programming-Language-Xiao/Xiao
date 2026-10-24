@@ -134,6 +134,28 @@ impl BoundaryValueKind {
     }
 }
 
+/// 将已经降低的语言类型映射为显式边界能力类别。
+///
+/// 该函数只读取类型变体和能力表，不读取名称。类型层若已经完成候选 A
+/// 判定，调用方也可以直接使用 [`BoundaryValueKind::Sendable`]，无需重复映射。
+#[must_use]
+pub fn classify_boundary_type(ty: &Type) -> BoundaryValueKind {
+    match ty {
+        Type::Shared(_) => BoundaryValueKind::Shared,
+        Type::SharedMut(_) => BoundaryValueKind::SharedMut,
+        Type::LockGuard(_) => BoundaryValueKind::LockGuard,
+        Type::Thread(_) => BoundaryValueKind::Thread,
+        Type::Task(_) => BoundaryValueKind::Task,
+        Type::Runtime => BoundaryValueKind::Runtime,
+        Type::Pool => BoundaryValueKind::Pool,
+        Type::OrdinaryHandle => BoundaryValueKind::OrdinaryHandle,
+        Type::Dynamic | Type::Variable(_) => BoundaryValueKind::Dynamic,
+        Type::Resource(_) => BoundaryValueKind::Resource,
+        _ if xiao_types::is_send(ty) => BoundaryValueKind::Sendable,
+        _ => BoundaryValueKind::Dynamic,
+    }
+}
+
 /// 一个由 lowering 显式提交的边界参数。
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct BoundaryValue {
@@ -161,6 +183,18 @@ impl BoundaryValue {
     pub const fn from_runtime(mut self, runtime_id: RuntimeId) -> Self {
         self.source_runtime_id = Some(runtime_id);
         self
+    }
+
+    /// 根据类型层变体创建显式边界参数。
+    #[must_use]
+    pub fn from_type(value: ValueId, ty: &Type) -> Self {
+        Self::new(value, classify_boundary_type(ty))
+    }
+
+    /// 根据类型层变体创建带来源 Runtime 的边界参数。
+    #[must_use]
+    pub fn from_type_in_runtime(value: ValueId, ty: &Type, runtime_id: RuntimeId) -> Self {
+        Self::from_type(value, ty).from_runtime(runtime_id)
     }
 }
 
@@ -1400,9 +1434,10 @@ impl LifetimeResult {
 mod tests {
     use super::{
         BoundaryFactError, BoundaryFacts, BoundaryOperation, BoundaryValue, BoundaryValueKind,
-        CrossThreadFact, RuntimeIdFact, RuntimeIdFacts, ValueId,
+        CrossThreadFact, RuntimeIdFact, RuntimeIdFacts, ValueId, classify_boundary_type,
     };
     use xiao_source::SourceSpan;
+    use xiao_types::{ScalarType, Type};
 
     fn span() -> SourceSpan {
         SourceSpan::new(0, 1).expect("测试区间有效")
@@ -1515,5 +1550,29 @@ mod tests {
         ids.insert(fact).expect("同一事实可重复插入");
         assert_eq!(ids.as_map().len(), 1);
         assert_eq!(ids.get(ValueId::new(8)), Some(&fact));
+    }
+
+    #[test]
+    fn boundary_type_classification_uses_type_identity() {
+        assert_eq!(
+            classify_boundary_type(&Type::shared(Type::scalar(ScalarType::Int))),
+            BoundaryValueKind::Shared
+        );
+        assert_eq!(
+            classify_boundary_type(&Type::shared_mut(Type::scalar(ScalarType::Int))),
+            BoundaryValueKind::SharedMut
+        );
+        assert_eq!(
+            classify_boundary_type(&Type::lock_guard(Type::scalar(ScalarType::Int))),
+            BoundaryValueKind::LockGuard
+        );
+        assert_eq!(
+            classify_boundary_type(&Type::OrdinaryHandle),
+            BoundaryValueKind::OrdinaryHandle
+        );
+        assert_eq!(
+            classify_boundary_type(&Type::scalar(ScalarType::Int)),
+            BoundaryValueKind::Sendable
+        );
     }
 }

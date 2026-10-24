@@ -680,6 +680,44 @@ pub enum IrType {
     },
     /// 动态类型。
     Dynamic,
+    /// 可跨任务边界传递的线程句柄类型。
+    ///
+    /// `thread<T>` 的 `T` 是线程返回值；句柄本身仍是一次性消费的并发值。
+    Thread {
+        /// 线程完成后产生的值类型。
+        value: Box<IrType>,
+    },
+    /// 可跨任务边界传递的任务句柄类型。
+    ///
+    /// `task<T>` 的 `T` 是任务结果；句柄本身仍是一次性消费的并发值。
+    Task {
+        /// 任务完成后产生的值类型。
+        value: Box<IrType>,
+    },
+    /// 当前 Runtime 的不透明句柄。
+    Runtime,
+    /// 绑定 Runtime 的任务池句柄。
+    Pool,
+    /// 只读共享句柄类型。
+    Shared {
+        /// 共享对象的静态载荷类型。
+        value: Box<IrType>,
+    },
+    /// 可变共享句柄类型；不能跨线程 Runtime 边界传递。
+    SharedMut {
+        /// 共享对象的静态载荷类型。
+        value: Box<IrType>,
+    },
+    /// 锁保护的借用句柄；不能逃出当前作用域或进入边界事实。
+    LockGuard {
+        /// 被锁保护的静态载荷类型。
+        value: Box<IrType>,
+    },
+    /// 内部普通 Runtime 句柄。
+    ///
+    /// 该变体不开放用户类型注解，供类型层/生命周期层标记不能跨线程
+    /// 发送的普通句柄，以便 IR verifier 保持 `X03-TYPE-031` 的身份。
+    OrdinaryHandle,
 }
 
 /// 数组形状。
@@ -896,6 +934,155 @@ pub struct IrOwnership {
     pub release_plans: Vec<IrReleasePlan>,
     /// 动态生命周期检查。
     pub dynamic_checks: Vec<IrDynamicLifetimeCheck>,
+    /// 显式 spawn/submit lowering 产生的跨线程事实。
+    ///
+    /// 使用 `serde(default)` 使没有并发字段的旧快照仍可读取；空字段不写入
+    /// 快照以保持旧 JSON 的稳定形状。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub cross_thread_facts: Vec<IrCrossThreadFact>,
+    /// 跨边界参数复制/序列化动作及其失败清理顺序。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub boundary_transfers: Vec<IrBoundaryTransfer>,
+    /// 取消安全点和等待点的轻量检查记录。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub cancellation_checks: Vec<IrCancellationCheck>,
+}
+
+/// 一个值跨任务或线程边界时的静态事实。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct IrCrossThreadFact {
+    /// 发生边界传递的值槽。
+    pub value: u32,
+    /// 目标 Runtime 的稳定 ID。
+    pub runtime_id: u64,
+    /// 是否跨任务边界。
+    pub task_boundary: bool,
+    /// 是否跨线程边界。
+    pub thread_boundary: bool,
+    /// 事实对应的源码区间。
+    pub span: IrSpan,
+}
+
+impl IrCrossThreadFact {
+    /// 创建一个跨线程事实。
+    #[must_use]
+    pub const fn new(
+        value: u32,
+        runtime_id: u64,
+        task_boundary: bool,
+        thread_boundary: bool,
+        span: IrSpan,
+    ) -> Self {
+        Self {
+            value,
+            runtime_id,
+            task_boundary,
+            thread_boundary,
+            span,
+        }
+    }
+}
+
+/// 跨边界值传递动作的静态类别。
+///
+/// 字符串保持与既有 IR 类别字段相同的稳定 JSON 形状。verifier 接受
+/// `deep_copy`、`serialization` 两个冻结拼写，并拒绝未知类别。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct IrBoundaryTransfer {
+    /// 按调用位置排列的参数值槽。
+    pub parameters: Vec<u32>,
+    /// 目标 Runtime 的稳定 ID。
+    pub runtime_id: u64,
+    /// 拷贝类别：`deep_copy` 或 `serialization`。
+    pub copy_kind: String,
+    /// 参数复制失败时按逆序清理的值槽列表。
+    pub cleanup_order: Vec<u32>,
+    /// lowering 动作对应的源码区间。
+    pub span: IrSpan,
+}
+
+impl IrBoundaryTransfer {
+    /// 创建一条显式边界动作。
+    #[must_use]
+    pub fn new(
+        parameters: Vec<u32>,
+        runtime_id: u64,
+        copy_kind: impl Into<String>,
+        cleanup_order: Vec<u32>,
+        span: IrSpan,
+    ) -> Self {
+        Self {
+            parameters,
+            runtime_id,
+            copy_kind: copy_kind.into(),
+            cleanup_order,
+            span,
+        }
+    }
+
+    /// 创建一条深拷贝边界动作，并自动生成逆序清理列表。
+    #[must_use]
+    pub fn deep_copy(parameters: Vec<u32>, runtime_id: u64, span: IrSpan) -> Self {
+        let cleanup_order = parameters.iter().rev().copied().collect();
+        Self {
+            parameters,
+            runtime_id,
+            copy_kind: "deep_copy".to_owned(),
+            cleanup_order,
+            span,
+        }
+    }
+
+    /// 创建一条序列化边界动作，并自动生成逆序清理列表。
+    #[must_use]
+    pub fn serialization(parameters: Vec<u32>, runtime_id: u64, span: IrSpan) -> Self {
+        let cleanup_order = parameters.iter().rev().copied().collect();
+        Self {
+            parameters,
+            runtime_id,
+            copy_kind: "serialization".to_owned(),
+            cleanup_order,
+            span,
+        }
+    }
+}
+
+/// 一个取消安全点或等待点。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct IrCancellationCheck {
+    /// 检查所在的源码区间。
+    pub span: IrSpan,
+    /// 检查类别：`safe_point`、`wait` 或 `lock_wait`。
+    pub kind: String,
+}
+
+impl IrCancellationCheck {
+    /// 创建一条指定类别的取消检查。
+    #[must_use]
+    pub fn new(span: IrSpan, kind: impl Into<String>) -> Self {
+        Self {
+            span,
+            kind: kind.into(),
+        }
+    }
+
+    /// 创建取消安全点记录。
+    #[must_use]
+    pub fn safe_point(span: IrSpan) -> Self {
+        Self {
+            span,
+            kind: "safe_point".to_owned(),
+        }
+    }
+
+    /// 创建任务/锁等待点记录。
+    #[must_use]
+    pub fn wait(span: IrSpan) -> Self {
+        Self {
+            span,
+            kind: "wait".to_owned(),
+        }
+    }
 }
 
 /// 作用域摘要。
