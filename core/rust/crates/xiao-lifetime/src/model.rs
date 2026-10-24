@@ -141,8 +141,13 @@ impl BoundaryValueKind {
 #[must_use]
 pub fn classify_boundary_type(ty: &Type) -> BoundaryValueKind {
     match ty {
-        Type::Shared(_) => BoundaryValueKind::Shared,
-        Type::SharedMut(_) => BoundaryValueKind::SharedMut,
+        Type::Shared(value) if xiao_types::is_send(value) && xiao_types::is_sync(value) => {
+            BoundaryValueKind::Shared
+        }
+        Type::SharedMut(value) if xiao_types::can_share_mutably(value) => {
+            BoundaryValueKind::SharedMut
+        }
+        Type::Shared(_) | Type::SharedMut(_) => BoundaryValueKind::Dynamic,
         Type::LockGuard(_) => BoundaryValueKind::LockGuard,
         Type::Thread(_) => BoundaryValueKind::Thread,
         Type::Task(_) => BoundaryValueKind::Task,
@@ -1573,6 +1578,10 @@ mod tests {
         assert_eq!(
             classify_boundary_type(&Type::scalar(ScalarType::Int)),
             BoundaryValueKind::Sendable
+        );
+        assert_eq!(
+            classify_boundary_type(&Type::shared(Type::Dynamic)),
+            BoundaryValueKind::Dynamic
         );
     }
 }
