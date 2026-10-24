@@ -617,6 +617,40 @@ impl BoundaryFacts {
         )
     }
 
+    /// 直接登记一条已经由 lowering 验证过的事实。
+    ///
+    /// 该入口只负责稳定去重；需要按值类别执行跨 Runtime 检查时，应使用
+    /// [`Self::record_operation`] 或 `record_*_values`。
+    pub fn record_fact(&mut self, fact: CrossThreadFact) -> Result<(), BoundaryFactError> {
+        if self
+            .cross_thread_facts
+            .iter()
+            .any(|existing| existing.value == fact.value)
+        {
+            let error = BoundaryFactError::DuplicateValue { value: fact.value };
+            let operation = if fact.thread_boundary {
+                BoundaryOperation::Spawn
+            } else {
+                BoundaryOperation::TaskSuspend
+            };
+            self.diagnostics
+                .push(crate::diagnostics::boundary_fact_error(
+                    fact.span, operation, &error,
+                ));
+            return Err(error);
+        }
+        self.cross_thread_facts.push(fact);
+        Ok(())
+    }
+
+    /// `record_fact` 的语义化别名。
+    pub fn insert_cross_thread_fact(
+        &mut self,
+        fact: CrossThreadFact,
+    ) -> Result<(), BoundaryFactError> {
+        self.record_fact(fact)
+    }
+
     /// 登记带显式能力类别的一组 `spawn` 参数。
     pub fn record_spawn_values<I>(
         &mut self,
@@ -1475,6 +1509,17 @@ mod tests {
             facts.cross_thread_facts,
             vec![CrossThreadFact::task(ValueId::new(3), 11, span())]
         );
+    }
+
+    #[test]
+    fn direct_fact_registration_is_deterministically_deduplicated() {
+        let mut facts = BoundaryFacts::new();
+        let fact = CrossThreadFact::spawn(ValueId::new(31), 5, span());
+        facts.record_fact(fact).expect("首次登记");
+        assert!(matches!(
+            facts.record_fact(fact),
+            Err(BoundaryFactError::DuplicateValue { value }) if value == ValueId::new(31)
+        ));
     }
 
     #[test]
