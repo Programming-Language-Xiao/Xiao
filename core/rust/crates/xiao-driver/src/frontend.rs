@@ -731,6 +731,21 @@ fn standard_module_function_signatures(
             FunctionTypeAnnotation::Dict(annotation) => Type::DictTable(
                 xiao_types::DictType::open(annotation_type(&annotation.value, generic_types)),
             ),
+            FunctionTypeAnnotation::Thread(value) => {
+                Type::thread(annotation_type(value, generic_types))
+            }
+            FunctionTypeAnnotation::Task(value) => Type::task(annotation_type(value, generic_types)),
+            FunctionTypeAnnotation::Runtime => Type::Runtime,
+            FunctionTypeAnnotation::Pool => Type::Pool,
+            FunctionTypeAnnotation::Shared(value) => {
+                Type::shared(annotation_type(value, generic_types))
+            }
+            FunctionTypeAnnotation::SharedMut(value) => {
+                Type::shared_mut(annotation_type(value, generic_types))
+            }
+            FunctionTypeAnnotation::LockGuard(value) => {
+                Type::lock_guard(annotation_type(value, generic_types))
+            }
             FunctionTypeAnnotation::TypeParameter(name) => {
                 generic_types.get(name).cloned().unwrap_or(Type::Dynamic)
             }

@@ -828,7 +828,16 @@ pub(crate) fn runtime_value_matches(value: &RuntimeValue, expected: &Type) -> bo
             },
             _ => false,
         },
-        Type::Variable(_) | Type::Function { .. } => false,
+        Type::Variable(_)
+        | Type::Function { .. }
+        | Type::Thread(_)
+        | Type::Task(_)
+        | Type::Runtime
+        | Type::Pool
+        | Type::Shared(_)
+        | Type::SharedMut(_)
+        | Type::LockGuard(_)
+        | Type::OrdinaryHandle => false,
     }
 }
 

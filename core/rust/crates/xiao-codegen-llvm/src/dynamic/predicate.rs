@@ -98,6 +98,12 @@ fn type_uses_runtime(ty: &IrType) -> bool {
             parameters,
             return_type,
         } => parameters.iter().any(type_uses_runtime) || type_uses_runtime(return_type),
+        IrType::Thread { value }
+        | IrType::Task { value }
+        | IrType::Shared { value }
+        | IrType::SharedMut { value }
+        | IrType::LockGuard { value } => type_uses_runtime(value),
+        IrType::Runtime | IrType::Pool | IrType::OrdinaryHandle => true,
     }
 }
 

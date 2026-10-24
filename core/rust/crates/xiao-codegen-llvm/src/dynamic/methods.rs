@@ -55,6 +55,19 @@ pub(super) fn method_type(ty: &IrType) -> Result<u32> {
                 span: None,
             });
         }
+        IrType::Thread { .. }
+        | IrType::Task { .. }
+        | IrType::Runtime
+        | IrType::Pool
+        | IrType::Shared { .. }
+        | IrType::SharedMut { .. }
+        | IrType::LockGuard { .. }
+        | IrType::OrdinaryHandle => {
+            return Err(CodegenError::Unsupported {
+                feature: "并发句柄方法 ABI（22C）".to_owned(),
+                span: None,
+            });
+        }
     };
     Ok(tag.raw())
 }
