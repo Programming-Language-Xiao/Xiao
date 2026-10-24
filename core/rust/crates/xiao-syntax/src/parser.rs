@@ -221,7 +221,7 @@ impl<'source> Parser<'source> {
         (is_type_keyword_token(self.current().kind())
             && self.lookahead_kind(1) != Some(TokenKind::LeftParen))
             || self.starts_set_type()
-            || self.starts_concurrency_type()
+            || self.starts_concurrency_declaration()
     }
 
     /// 解析 `type name [= expression]` 或 `const [type] name = expression`。
@@ -437,6 +437,19 @@ impl<'source> Parser<'source> {
         match name {
             "runtime" | "pool" => self.lookahead_kind(1) != Some(TokenKind::LeftParen),
             _ => self.lookahead_kind(1) == Some(TokenKind::Less),
+        }
+    }
+
+    /// 判断当前位置是否明确进入变量声明位置的并发专用注解。
+    fn starts_concurrency_declaration(&self) -> bool {
+        if !self.starts_concurrency_type() {
+            return false;
+        }
+        match self.current().text(self.source) {
+            "runtime" | "pool" => self
+                .lookahead_kind(1)
+                .is_some_and(is_declaration_name_token),
+            _ => true,
         }
     }
 

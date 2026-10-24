@@ -361,7 +361,7 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
         vec![Type::lock_guard(dynamic.clone()), dynamic.clone()],
         Type::None,
         false,
-        Vec::new(),
+        vec![1],
     );
     add("pool_create", vec![Type::Runtime, Type::scalar(xiao_syntax::ScalarType::Int)], Type::Pool, false, Vec::new());
     add(
