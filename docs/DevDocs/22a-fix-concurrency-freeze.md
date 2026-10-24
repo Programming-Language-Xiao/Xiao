@@ -30,7 +30,7 @@
 | 产品代码 | 未改 | `origin/main..HEAD` 只有 workflow 和文档 |
 | 本地门禁 | 通过 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 均为 0 |
 | 完整测试 | 通过 | `cargo test --workspace` exit 0；`bun test` 298 pass / 5 skip / 0 fail |
-| 最终文档提交 | **未推送** | 当前 `main` 领先 `origin/main` 8 个提交；`487ef1c` 没有远端 CI 记录 |
+| 最终文档提交 | 已推送 | `35caa80` 已推送到 `main`；workspace gates `40104492341` success；本批仍未改产品代码 |
 
 `40093591873` 只覆盖 32B 测量接线，不覆盖 `487ef1c` 的最终文档提交；如果 22A-FIX 要求
 “最终提交有 CI 记录”，必须先推送，再补运行号。
@@ -276,7 +276,7 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
    页面改成 `verified`。
 5. **门禁**：`check:docs`、`check:usedocs`、`check:layout`、`git diff --check`；本批只改
    文档，记录“未改产品代码”。
-6. **推送与收口**：最终提交已推送并取得 CI 运行号；22A-FIX 关闭后进入 22B。
+6. **推送与收口**：`35caa80` 已推送，workspace gates `40104492341` 成功；22A-FIX 关闭后进入 22B。
 
 ## 六、不许
 
@@ -294,7 +294,7 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 2. **交叉一致**：22A、00、12、22、README、UseDocs 的名称/编号/位表完全一致；
 3. **22B 输入齐**：类型表、CrossThread 事实/字段、API 所有权、锁访问、诊断映射和产物
    矩阵都能直接消费；
-4. **证据**：文档门禁全绿；最终提交已有对应推送和运行号；
+4. **证据**：文档门禁全绿；`35caa80` 有对应推送和 `40104492341` 运行号；
 5. **边界**：diff 不含产品代码；工作区干净；
 6. **交接**：22B 只能按 22A-FIX 后的契约实现类型/生命周期/IR，不再补语义。
 
