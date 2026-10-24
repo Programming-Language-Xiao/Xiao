@@ -782,6 +782,12 @@ impl BoundaryFacts {
         &self.cross_thread_facts
     }
 
+    /// 返回跨线程事实的通用只读视图。
+    #[must_use]
+    pub fn facts(&self) -> &[CrossThreadFact] {
+        self.cross_thread_facts()
+    }
+
     /// 返回含任务边界标志的事实。
     pub fn task_boundaries(&self) -> impl Iterator<Item = &TaskBoundary> {
         self.cross_thread_facts
