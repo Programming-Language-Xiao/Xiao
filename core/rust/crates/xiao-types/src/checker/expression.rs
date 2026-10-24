@@ -913,7 +913,7 @@ impl<'source> TypeChecker<'source> {
     }
 
     /// 读取已经检查过的表达式类型，避免为成员接收者重复执行检查。
-    fn known_expression_type(&self, expression: &Expression) -> Option<Type> {
+    pub(super) fn known_expression_type(&self, expression: &Expression) -> Option<Type> {
         self.nodes
             .iter()
             .rev()

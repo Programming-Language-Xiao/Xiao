@@ -1,6 +1,6 @@
 # 22. 并发执行与共享句柄
 
-> **这是 07-D 之后的正式并发实现阶段，22B 静态契约模型已落地，当前先做 22B-FIX 接线。**
+> **这是 07-D 之后的正式并发实现阶段，22B 静态契约与 22B-FIX 接线已落地，下一道门是 22C。**
 > 07-D 已完成 8 项裁定、隔离原型、Linux workspace gates 和四平台测试；22A 已补齐
 > 四平台 32B 布局测量并写出语言表面、取消边界、IR 事实、ABI、诊断和发布门禁；22A-FIX
 > 已补齐这些契约与既有 `.xar`/`.xiaoc` 格式的冲突。
@@ -9,8 +9,8 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**规划中（22B 部分实现，22B-FIX 待实施，2026-10-25）**。Runtime/VM/LLVM 尚未接入；
-> 阶段代号 22 已登记，22C 只能在 [22B-FIX](22b-fix-concurrency-wiring.md) 关闭后，按
+> 状态：**规划中（22B 与 22B-FIX 已完成，22C–22E 待实施，2026-10-25）**。Runtime/VM/LLVM 尚未接入；
+> 阶段代号 22 已登记，22C 现在可以按
 > [22B](22b-concurrency-types-lifetime-ir.md)、[22A-FIX](22a-fix-concurrency-freeze.md)
 > 和 21A §3.2 / 07-D §11.3 的入口条件实现。
 
@@ -54,8 +54,8 @@
 | 07-D 平台测试 | `39965322134`（a8aaa4b）四平台 success | macOS/Windows/Linux 测试通过 |
 | 跨平台测量 | `40068582635` 记录 24B 原型，`40093591873` 记录四平台 32B 头布局 | 成本仍是研究输入，布局已作为 22A ABI 输入冻结 |
 | 取消等待 | 22A 已裁定真实持锁等待/唤醒进入首版 | 22C 实现并测量 |
-| 语言表面 | 22B 已有签名-only 夹具，尚未接入调用检查 | 22B-FIX 接线；Runtime 标准库仍待 22E |
-| IR/诊断/ABI | 22B 已有 facts/动作/verifier 数据形状，源码路径尚未产生事实 | 22B-FIX 接线；22C 按字段接入 Runtime，ABI 仍冻结 |
+| 语言表面 | 22B-FIX 已把 `std.concurrent` 签名、泛型实例化、能力和消费检查接入源码调用 | Runtime 标准库仍待 22E |
+| IR/诊断/ABI | 真实 `spawn`/`submit` 已产生 facts/transfers/cancellation，verifier 与旧快照兼容已通过 | 22C 按字段接入 Runtime，ABI/产物门禁仍冻结 |
 | 发布/兼容矩阵 | 22A 已冻结 required-feature 位集和 ABI 1.17 | 22E 编写实际产物检查与报告 |
 
 ## 三、阶段分解
@@ -97,7 +97,7 @@
   join/wait 原错误传播、`.xar` 未知位扩展 `X17-XAR-011` 和 shared 句柄包装 Runtime ID
   均已固定；详见 [22A 修正契约](22a-concurrency-freeze.md#29-22a-fix-修正契约2026-10-24八项均取甲)。
 
-### 22B：类型、生命周期与 IR（模型/API 已落地，待 22B-FIX 接线）
+### 22B：类型、生命周期与 IR（已完成静态接线）
 
 规划、现状核对和 D-1～D-8 裁定（D-1 乙、其余甲）见
 [22B. 并发类型、生命周期与 IR](22b-concurrency-types-lifetime-ir.md)。
@@ -106,11 +106,10 @@
   普通句柄拒绝、多边界值；
 - IR：新增事实、所有权/释放动作、深拷贝/序列化/取消边界、verifier；
 - 规格测试：合法/非法边界、动态值、资源、跨线程普通句柄、多值打包/解包；
-- 不接 VM/LLVM 执行；前端、生命周期和 IR 快照/verifier 已稳定。
+- 不接 VM/LLVM 执行；前端、生命周期和 IR 快照/verifier 已稳定，源码级回归已覆盖。
 
-实施记录和验证见 [22B](22b-concurrency-types-lifetime-ir.md) §十一；D-1～D-8 的模型/API
-已落地，但源码签名、BoundaryFacts 和取消检查仍需 [22B-FIX](22b-fix-concurrency-wiring.md)
-接线。
+实施记录和验证见 [22B](22b-concurrency-types-lifetime-ir.md) §十一 及
+[22B-FIX](22b-fix-concurrency-wiring.md) §七点一；22C 不需要补做静态签名或边界事实接线。
 
 ### 22C：Runtime ABI、VM 与错误
 
@@ -198,8 +197,8 @@ tests/research/concurrency/                                 07-D 原型（只作
 ## 八、状态
 
 - 阶段代号：22；
-- 当前状态：规划中，22B 的模型/API 已落地；源码签名、BoundaryFacts 和取消检查仍待
-  [22B-FIX](22b-fix-concurrency-wiring.md)，Runtime/VM/LLVM/标准库函数体未实现；
-- 下一道门：22B-FIX 静态契约接线（不接 Runtime）；
-- 22B-FIX 关闭后，22C 才可以只消费 22B 的类型、事实、动作和 verifier；Runtime、LLVM
-  和标准库仍须等待对应子批次，且不得把 07-D 原型结构写成 ABI 或绕过冻结记录。
+- 当前状态：规划中，22B 与 22B-FIX 的静态类型、生命周期事实、取消检查和 IR verifier 已完成；
+  Runtime/VM/LLVM/标准库函数体未实现；
+- 下一道门：22C Runtime ABI、VM 与错误（不回补 22B 静态语义）；
+- 22C 可以只消费 22B 的类型、事实、动作和 verifier；Runtime、LLVM 和标准库仍须等待对应
+  子批次，且不得把 07-D 原型结构写成 ABI 或绕过冻结记录。

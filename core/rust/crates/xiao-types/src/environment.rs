@@ -26,6 +26,7 @@ pub struct Binding {
     namespace_origin: Option<NamespaceOrigin>,
     imported_function: Option<FunctionSignature>,
     imported_module: Option<String>,
+    imported_function_module: Option<String>,
 }
 
 /// 区分环境包预登记与可合并的项目目录根，避免普通绑定误合并。
@@ -50,6 +51,7 @@ impl Binding {
             namespace_origin: None,
             imported_function: None,
             imported_module: None,
+            imported_function_module: None,
         }
     }
 
@@ -65,6 +67,7 @@ impl Binding {
             namespace_origin: None,
             imported_function: None,
             imported_module: None,
+            imported_function_module: None,
         }
     }
 
@@ -101,6 +104,17 @@ impl Binding {
         self
     }
 
+    /// 保留导入函数所属模块；前端据此区分 `std.concurrent` 与同名普通函数。
+    pub(crate) fn with_imported_function_module(mut self, module: impl Into<String>) -> Self {
+        self.imported_function_module = Some(module.into());
+        self
+    }
+
+    /// 返回导入函数的来源模块。
+    pub(crate) fn imported_function_module(&self) -> Option<&str> {
+        self.imported_function_module.as_deref()
+    }
+
     /// 保留命名空间导入的真实模块路径，支持别名及逐级限定访问。
     pub(crate) fn with_imported_module(mut self, module: String) -> Self {
         self.imported_module = Some(module);
@@ -125,6 +139,7 @@ impl Binding {
     ) {
         self.imported_function = function;
         self.imported_module = module;
+        self.imported_function_module = None;
     }
 
     /// 返回绑定的实例化前方案。
@@ -269,6 +284,7 @@ impl TypeEnvironment {
                 namespace_origin: None,
                 imported_function: None,
                 imported_module: None,
+                imported_function_module: None,
             },
         )
     }

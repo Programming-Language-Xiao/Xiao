@@ -13,16 +13,16 @@ use crate::packages::PackageRegistry;
 use xiao_config::NormalizedConfig;
 use xiao_diagnostics::{Diagnostic, DiagnosticParam, Severity};
 use xiao_ir::{IrProgram, IrValidationError, IrValidator, lower_program};
-use xiao_lifetime::analyze as analyze_lifetime;
+use xiao_lifetime::analyze_with_concurrency_calls as analyze_lifetime_with_calls;
 use xiao_modules::{ModuleName, ProjectModuleResult, analyze_project};
-use xiao_source::SourceFile;
+use xiao_source::{SourceFile, SourceSpan};
 use xiao_syntax::{
     Expression, FunctionParameterKind, FunctionTypeAnnotation, ImportStatement, ParseResult,
     Program, Statement, TypeTerm, parse,
 };
 use xiao_types::{
     ExternalNamespaces, FunctionParameterSignature, FunctionSignature, SetType, Type,
-    TypeCheckResult, TypeChecker, TypeVarId,
+    TypeCheckResult, TypeChecker, TypeVarId, std_concurrent_signatures,
 };
 use xiao_vm::STANDARD_LIBRARY_NAMESPACE;
 
@@ -827,6 +827,48 @@ fn standard_module_function_signatures(
         }
         modules.insert(format!("{STANDARD_LIBRARY_NAMESPACE}.{module}"), signatures);
     }
+    let concurrent_span = SourceSpan::new(0, 0).expect("空源码区间必须有效");
+    let concurrent_signatures = std_concurrent_signatures()
+        .iter()
+        .map(|(name, signature)| {
+            let mut parameters = signature
+                .parameters
+                .iter()
+                .enumerate()
+                .map(|(index, ty)| FunctionParameterSignature {
+                    name: format!("ascii:arg{index}"),
+                    kind: FunctionParameterKind::PositionalOrKeyword,
+                    ty: ty.clone(),
+                    has_default: false,
+                })
+                .collect::<Vec<_>>();
+            if signature.variadic_boundary_values {
+                parameters.push(FunctionParameterSignature {
+                    name: "ascii:values".to_owned(),
+                    kind: FunctionParameterKind::VarArgs,
+                    ty: Type::variable(TypeVarId::new(0)),
+                    has_default: false,
+                });
+            }
+            let mut free_vars = signature.return_type.free_vars();
+            for parameter in &parameters {
+                free_vars.extend(parameter.ty.free_vars());
+            }
+            let ids = free_vars.into_iter().collect::<Vec<_>>();
+            let names = ids.iter().map(|_| "T".to_owned()).collect::<Vec<_>>();
+            let function = FunctionSignature::new(
+                format!("ascii:{name}"),
+                parameters,
+                signature.return_type.clone(),
+                concurrent_span,
+            )
+            .with_type_parameters(names)
+            .with_type_parameter_ids(ids);
+            (format!("ascii:{name}"), function)
+        })
+        .collect::<BTreeMap<_, _>>();
+    modules.insert("std.concurrent".to_owned(), concurrent_signatures.clone());
+    modules.insert("stdlib.concurrent".to_owned(), concurrent_signatures);
     modules
 }
 
@@ -1324,7 +1366,12 @@ impl FrontendCompiler {
         }
         diagnostics.extend(type_result.diagnostics.clone());
 
-        let lifetime = analyze_lifetime(&effective_source, &effective_program, &type_result);
+        let lifetime = analyze_lifetime_with_calls(
+            &effective_source,
+            &effective_program,
+            &type_result,
+            type_result.concurrency_calls(),
+        );
         diagnostics.extend(lifetime.diagnostics.clone());
 
         if diagnostics.iter().any(Diagnostic::is_error) {
@@ -1408,7 +1455,9 @@ fn is_unresolved_standard_library_import(diagnostic: &Diagnostic) -> bool {
             diagnostic.params().get("target"),
             Some(DiagnosticParam::Text(target))
                 if target == STANDARD_LIBRARY_NAMESPACE
+                    || target == "std"
                     || target.starts_with("stdlib.")
+                    || target.starts_with("std.")
         )
 }
 
@@ -1431,7 +1480,10 @@ fn standard_import_target_exists(diagnostic: &Diagnostic, standard: &ProjectModu
     if target == STANDARD_LIBRARY_NAMESPACE {
         return true;
     }
-    let Some(suffix) = target.strip_prefix("stdlib.") else {
+    let suffix = target
+        .strip_prefix("stdlib.")
+        .or_else(|| target.strip_prefix("std."));
+    let Some(suffix) = suffix else {
         return false;
     };
     standard_target_exists(
@@ -1442,7 +1494,18 @@ fn standard_import_target_exists(diagnostic: &Diagnostic, standard: &ProjectModu
 
 /// 判断标准库索引中是否存在一个模块或目录命名空间。
 fn standard_target_exists(standard: &ProjectModuleResult, name: &ModuleName) -> bool {
-    name.is_root() || standard.modules.contains_key(name) || standard.namespaces.contains_key(name)
+    name.is_root()
+        || standard.modules.contains_key(name)
+        || standard.namespaces.contains_key(name)
+        || name
+            .segments()
+            .first()
+            .is_some_and(|segment| segment == "concurrent")
+            && (name.segments().len() == 1
+                || name.segments().len() == 2
+                    && std_concurrent_signatures()
+                        .get(&name.segments()[1])
+                        .is_some())
 }
 
 /// 静态验证保留标准库命名空间中的模块与导出名称。
@@ -1577,7 +1640,10 @@ fn standard_library_import_diagnostics(
 
 /// 解析并去除模块路径中的保留标准库根名称。
 fn standard_import_module(names: &[xiao_syntax::Name], source: &SourceFile) -> Option<ModuleName> {
-    if names.first()?.unquoted_text(source) != STANDARD_LIBRARY_NAMESPACE {
+    if !matches!(
+        names.first()?.unquoted_text(source),
+        STANDARD_LIBRARY_NAMESPACE | "std"
+    ) {
         return None;
     }
     Some(ModuleName::new(
@@ -1653,13 +1719,20 @@ fn imports_standard_library(program: &Program, source: &SourceFile) -> bool {
             Statement::Import { import, .. } => match import {
                 ImportStatement::Modules { imports, .. } => imports.iter().any(|item| {
                     item.path.segments.first().is_some_and(|name| {
-                        name.unquoted_text(source) == STANDARD_LIBRARY_NAMESPACE
+                        matches!(
+                            name.unquoted_text(source),
+                            STANDARD_LIBRARY_NAMESPACE | "std"
+                        )
                     })
                 }),
-                ImportStatement::From { module, .. } => module
-                    .segments
-                    .first()
-                    .is_some_and(|name| name.unquoted_text(source) == STANDARD_LIBRARY_NAMESPACE),
+                ImportStatement::From { module, .. } => {
+                    module.segments.first().is_some_and(|name| {
+                        matches!(
+                            name.unquoted_text(source),
+                            STANDARD_LIBRARY_NAMESPACE | "std"
+                        )
+                    })
+                }
             },
             Statement::Function { body, .. }
             | Statement::Table { body, .. }

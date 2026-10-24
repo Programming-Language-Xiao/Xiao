@@ -25,7 +25,7 @@ pub use graph::{GraphError, OwnershipGraph};
 /// 重导出生命周期模型。
 pub use model::{
     BasicBlock, BlockId, BoundaryFact, BoundaryFactError, BoundaryFacts, BoundaryKind,
-    BoundaryOperation, BoundaryValue, BoundaryValueInput, BoundaryValueKind, ControlFlowEdgeKind,
+    BoundaryOperation, BoundaryValue, BoundaryValueKind, CancellationCheck, ControlFlowEdgeKind,
     ControlFlowGraph, CrossThreadFact, DynamicLifetimeCheck, EscapeReason, ExitKind,
     LifetimeResult, OwnershipEdge, OwnershipEdgeReason, OwnershipKind, ReleaseAction,
     ReleaseActionKind, ReleasePlan, RuntimeId, RuntimeIdFact, RuntimeIdFacts, ScopeId, ScopeInfo,
@@ -36,7 +36,7 @@ pub use model::{
 use escape::EscapeAnalyzer;
 use xiao_source::SourceFile;
 use xiao_syntax::Program;
-use xiao_types::TypeCheckResult;
+use xiao_types::{ConcurrencyCall, TypeCheckResult};
 
 /// 绑定一个不可变源码文件的生命周期分析器。
 pub struct LifetimeAnalyzer<'source> {
@@ -92,6 +92,23 @@ impl<'source> LifetimeAnalyzer<'source> {
         let _ = result.merge_boundary_facts(boundary_facts);
         result
     }
+
+    /// 在类型检查后的显式调用 lowering 计划上执行生命周期分析。
+    ///
+    /// 调用点来自 `xiao-types` 的已解析 `std.concurrent` 签名；本层只按源码
+    /// 区间把参数事实挂接到实际 AST 值，不根据变量名或任意函数名猜测边界。
+    #[must_use]
+    pub fn analyze_with_concurrency_calls(
+        &self,
+        program: &Program,
+        type_result: &TypeCheckResult,
+        calls: &[ConcurrencyCall],
+    ) -> LifetimeResult {
+        let (result, transfers) =
+            EscapeAnalyzer::new_with_concurrency_calls(self.source, type_result, calls)
+                .run(program);
+        release::finalize(result, transfers)
+    }
 }
 
 /// 使用源码、程序和类型结果执行一次生命周期分析的便捷函数。
@@ -102,6 +119,17 @@ pub fn analyze(
     type_result: &TypeCheckResult,
 ) -> LifetimeResult {
     LifetimeAnalyzer::new(source).analyze(program, type_result)
+}
+
+/// 使用显式并发调用 lowering 计划执行一次生命周期分析。
+#[must_use]
+pub fn analyze_with_concurrency_calls(
+    source: &SourceFile,
+    program: &Program,
+    type_result: &TypeCheckResult,
+    calls: &[ConcurrencyCall],
+) -> LifetimeResult {
+    LifetimeAnalyzer::new(source).analyze_with_concurrency_calls(program, type_result, calls)
 }
 
 impl LifetimeResult {

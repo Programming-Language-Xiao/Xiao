@@ -997,6 +997,9 @@ pub struct IrCrossThreadFact {
     pub value: u32,
     /// 目标 Runtime 的稳定 ID。
     pub runtime_id: u64,
+    /// 已知的来源 Runtime ID；旧快照没有该字段时保持为空。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_runtime_id: Option<u64>,
     /// 是否跨任务边界。
     pub task_boundary: bool,
     /// 是否跨线程边界。
@@ -1018,6 +1021,7 @@ impl IrCrossThreadFact {
         Self {
             value,
             runtime_id,
+            source_runtime_id: None,
             task_boundary,
             thread_boundary,
             span,

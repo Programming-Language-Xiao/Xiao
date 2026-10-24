@@ -11,20 +11,21 @@ use xiao_syntax::{
     CatchClause, DeclaredType, ElifBranch, Expression, FunctionParameter, LiteralKind, Name,
     Program, ScalarType, Statement, TableKind, TypeTerm,
 };
-use xiao_types::{SetType, TableType, Type, TypeCheckResult};
+use xiao_types::{ConcurrencyCall, SetType, TableType, Type, TypeCheckResult};
 
 use crate::diagnostics;
 use crate::model::{
-    BasicBlock, BlockId, BoundaryFactError, BoundaryOperation, ControlFlowEdgeKind, EscapeReason,
-    ExitKind, LifetimeResult, OwnershipEdge, OwnershipEdgeReason, OwnershipKind, ScopeId,
-    ScopeInfo, ScopeKind, StorageClass, ValueId, ValueInfo,
+    BasicBlock, BlockId, BoundaryFactError, BoundaryOperation, BoundaryValue, BoundaryValueKind,
+    CancellationCheck, ControlFlowEdgeKind, EscapeReason, ExitKind, LifetimeResult, OwnershipEdge,
+    OwnershipEdgeReason, OwnershipKind, ScopeId, ScopeInfo, ScopeKind, StorageClass, ValueId,
+    ValueInfo,
 };
 
 /// 一个退出边上的值转移事实。
 pub(crate) type TransferFacts = BTreeMap<(ScopeId, ExitKind), BTreeSet<ValueId>>;
 
 /// 表达式遍历产生的中间事实。
-#[derive(Default)]
+#[derive(Clone, Default)]
 struct ExpressionFacts {
     /// 表达式中读取的已有值。
     references: Vec<ValueId>,
@@ -153,6 +154,9 @@ pub(crate) struct EscapeAnalyzer<'source> {
     next_order: BTreeMap<ScopeId, usize>,
     current_block: Option<BlockId>,
     try_contexts: Vec<TryContext>,
+    concurrency_calls: &'source [ConcurrencyCall],
+    current_runtime_values: BTreeSet<ValueId>,
+    pool_runtime_ids: BTreeMap<ValueId, u64>,
 }
 
 impl<'source> EscapeAnalyzer<'source> {
@@ -173,7 +177,21 @@ impl<'source> EscapeAnalyzer<'source> {
             next_order: BTreeMap::new(),
             current_block: None,
             try_contexts: Vec::new(),
+            concurrency_calls: &[],
+            current_runtime_values: BTreeSet::new(),
+            pool_runtime_ids: BTreeMap::new(),
         }
+    }
+
+    /// 创建带显式并发调用 lowering 计划的事实收集器。
+    pub(crate) fn new_with_concurrency_calls(
+        source: &'source SourceFile,
+        types: &'source TypeCheckResult,
+        concurrency_calls: &'source [ConcurrencyCall],
+    ) -> Self {
+        let mut analyzer = Self::new(source, types);
+        analyzer.concurrency_calls = concurrency_calls;
+        analyzer
     }
 
     /// 收集完整程序的事实，并返回结果和退出边转移表。
@@ -1694,8 +1712,11 @@ impl<'source> EscapeAnalyzer<'source> {
                 } else {
                     self.analyze_expression(callee)
                 };
+                let mut argument_facts = Vec::with_capacity(arguments.len());
                 for argument in arguments {
-                    facts.merge(self.analyze_expression(&argument.value));
+                    let child = self.analyze_expression(&argument.value);
+                    argument_facts.push(child.clone());
+                    facts.merge(child);
                 }
                 facts.ty = ty.clone().or(facts.ty);
                 if intrinsic.is_some() {
@@ -1719,6 +1740,15 @@ impl<'source> EscapeAnalyzer<'source> {
                     facts.dynamic |= ty
                         .as_ref()
                         .is_none_or(|value| matches!(value, Type::Dynamic | Type::Variable(_)));
+                }
+                if let Expression::Call { .. } = expression
+                    && let Some(call) = self
+                        .concurrency_calls
+                        .iter()
+                        .find(|call| call.span == expression.span())
+                        .cloned()
+                {
+                    self.record_concurrency_call(&call, &argument_facts, arguments, &facts);
                 }
                 facts
             }
@@ -1766,6 +1796,160 @@ impl<'source> EscapeAnalyzer<'source> {
             self.record_dynamic(expression.span(), value, EscapeReason::DynamicValue);
         }
         facts
+    }
+
+    /// 消费类型检查器已经解析出的并发调用点，生成边界事实和取消检查。
+    fn record_concurrency_call(
+        &mut self,
+        call: &ConcurrencyCall,
+        argument_facts: &[ExpressionFacts],
+        arguments: &[xiao_syntax::CallArgument],
+        result_facts: &ExpressionFacts,
+    ) {
+        if call.operation == "current_runtime" {
+            if let Some(value) = result_facts.produced {
+                self.current_runtime_values.insert(value);
+            }
+            return;
+        }
+        if call.operation == "pool_create" {
+            let Some(runtime_fact) = argument_facts.first() else {
+                return;
+            };
+            let runtime_id = self.runtime_id_for_fact(runtime_fact);
+            if let Some(pool) = result_facts.produced {
+                self.pool_runtime_ids.insert(pool, runtime_id);
+                let _ = self
+                    .result
+                    .boundary_facts
+                    .register_runtime_id(pool, runtime_id, call.span);
+            }
+            return;
+        }
+        let check_kind = match call.operation.as_str() {
+            "spawn" | "submit" => Some("safe_point"),
+            "join" | "wait" => Some("wait"),
+            "lock" => Some("lock_wait"),
+            _ => None,
+        };
+        if let Some(kind) = check_kind
+            && !self
+                .result
+                .cancellation_checks
+                .iter()
+                .any(|check| check.span == call.span && check.kind == kind)
+        {
+            self.result
+                .cancellation_checks
+                .push(CancellationCheck::new(call.span, kind));
+        }
+
+        if !matches!(call.operation.as_str(), "spawn" | "submit") {
+            return;
+        }
+        let Some(runtime_fact) = argument_facts.first() else {
+            return;
+        };
+        let runtime_value = runtime_fact
+            .references
+            .first()
+            .copied()
+            .or(runtime_fact.produced);
+        let runtime_id = if call.operation == "submit" {
+            runtime_fact
+                .referents
+                .iter()
+                .find_map(|value| self.pool_runtime_ids.get(value).copied())
+                .unwrap_or_else(|| self.runtime_id_for_fact(runtime_fact))
+        } else {
+            self.runtime_id_for_fact(runtime_fact)
+        };
+        if let Some(value) = runtime_value {
+            let _ = self
+                .result
+                .boundary_facts
+                .register_runtime_id(value, runtime_id, call.span);
+        }
+
+        let diagnostic_start = self.result.boundary_facts.diagnostics.len();
+        let mut values = Vec::new();
+        for (index, fact) in argument_facts.iter().enumerate().skip(2) {
+            let span = call
+                .argument_spans
+                .get(index)
+                .copied()
+                .or_else(|| arguments.get(index).map(|argument| argument.value.span()))
+                .unwrap_or(call.span);
+            let ty = fact
+                .ty
+                .clone()
+                .or_else(|| self.type_for_span(span))
+                .unwrap_or(Type::Dynamic);
+            let value = fact
+                .references
+                .first()
+                .copied()
+                .or(fact.produced)
+                .or_else(|| {
+                    self.create_value(
+                        None,
+                        span,
+                        Some(ty.clone()),
+                        storage_for_type(Some(&ty)),
+                        false,
+                        false,
+                        true,
+                    )
+                });
+            let Some(value) = value else { continue };
+            let mut boundary_value = BoundaryValue::from_type(value, &ty);
+            // 22A 规定 shared_mut 只属于创建它的当前 Runtime；静态前端把
+            // 当前 Runtime 固定为 0，显式 runtime_create 产生的句柄则拥有
+            // 非零稳定身份，因此跨 Runtime 传递会在事实登记处被拒绝。
+            if boundary_value.kind == BoundaryValueKind::SharedMut {
+                boundary_value = boundary_value.from_runtime(0);
+                let _ = self
+                    .result
+                    .boundary_facts
+                    .register_runtime_id(value, 0, call.span);
+            }
+            values.push(boundary_value);
+            self.mark_escape(value, EscapeReason::CrossThread);
+            self.mark_transfer(ExitKind::Normal, value);
+        }
+        let result = if call.operation == "spawn" {
+            self.result
+                .boundary_facts
+                .record_spawn_values(values, runtime_id, call.span)
+        } else {
+            self.result
+                .boundary_facts
+                .record_submit_values(values, runtime_id, call.span)
+        };
+        self.result.diagnostics.extend(
+            self.result.boundary_facts.diagnostics[diagnostic_start..]
+                .iter()
+                .cloned(),
+        );
+        let _ = result;
+    }
+
+    /// 根据已分析的 Runtime 或 pool 值读取稳定 Runtime ID。
+    fn runtime_id_for_fact(&self, fact: &ExpressionFacts) -> u64 {
+        if fact
+            .referents
+            .iter()
+            .chain(fact.produced.iter())
+            .any(|value| self.current_runtime_values.contains(value))
+        {
+            return 0;
+        }
+        fact.references
+            .first()
+            .copied()
+            .or(fact.produced)
+            .map(|value| u64::from(value.get()).saturating_add(1))
+            .unwrap_or(0)
     }
 
     /// 创建匿名表达式临时值；标量无需独立值。

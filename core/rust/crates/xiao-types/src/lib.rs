@@ -42,8 +42,8 @@ mod unify;
 pub use checker::container_checker::{decode_escape, decode_string_literal};
 /// 重新导出类型检查器及其结果结构。
 pub use checker::{
-    ExternalNamespaces, RuntimeCheck, RuntimeCheckKind, TypeCheckResult, TypeChecker, TypedNode,
-    check,
+    ConcurrencyCall, ExternalNamespaces, RuntimeCheck, RuntimeCheckKind, TypeCheckResult,
+    TypeChecker, TypedNode, check,
 };
 /// 重导出 22B 并发类型能力、句柄消费状态和签名表。
 pub use concurrency::{

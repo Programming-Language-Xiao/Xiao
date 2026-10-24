@@ -1036,7 +1036,12 @@ fn validate_boundary_value_type(
             Some(fact.span),
         ));
     }
-    if fact.thread_boundary && contains_shared_mut(ty) {
+    if fact.thread_boundary
+        && contains_shared_mut(ty)
+        && fact
+            .source_runtime_id
+            .is_none_or(|source| source != fact.runtime_id)
+    {
         result.errors.push(error(
             path,
             "shared_mut<T> 不得跨 Runtime 线程边界传递",

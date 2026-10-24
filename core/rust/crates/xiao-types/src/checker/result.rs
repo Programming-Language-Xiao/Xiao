@@ -153,6 +153,17 @@ pub struct TypedNode {
     pub ty: Type,
 }
 
+/// 已由 `std.concurrent` 签名解析出的调用点；供生命周期/IR lowering 消费。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ConcurrencyCall {
+    /// 并发入口名称，例如 `spawn`、`join` 或 `lock`。
+    pub operation: String,
+    /// 调用表达式源码区间。
+    pub span: SourceSpan,
+    /// 实参表达式区间，保持调用源码顺序。
+    pub argument_spans: Vec<SourceSpan>,
+}
+
 /// 一次完整 P2 类型检查的结果。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct TypeCheckResult {
@@ -180,6 +191,8 @@ pub struct TypeCheckResult {
     pub function_signatures: BTreeMap<String, FunctionSignature>,
     /// 已登记并完成检查的表签名。
     pub table_signatures: BTreeMap<String, crate::tables::TableSignature>,
+    /// 已解析的 `std.concurrent` 调用点；没有名称启发式的下游事实来源。
+    pub concurrency_calls: Vec<ConcurrencyCall>,
 }
 
 impl TypeCheckResult {
@@ -280,5 +293,11 @@ impl TypeCheckResult {
     #[must_use]
     pub fn table_signatures(&self) -> &BTreeMap<String, crate::tables::TableSignature> {
         &self.table_signatures
+    }
+
+    /// 返回已解析的并发调用点。
+    #[must_use]
+    pub fn concurrency_calls(&self) -> &[ConcurrencyCall] {
+        &self.concurrency_calls
     }
 }

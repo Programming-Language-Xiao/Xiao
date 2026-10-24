@@ -150,7 +150,8 @@ pub fn boundary_fact_error(
 ) -> Diagnostic {
     let (code, message_id, boundary_kind) = match error {
         BoundaryFactError::RuntimeIdConflict { .. }
-        | BoundaryFactError::SharedMutCrossRuntime { .. } => (
+        | BoundaryFactError::SharedMutCrossRuntime { .. }
+        | BoundaryFactError::SharedMutSourceUnknown { .. } => (
             RUNTIME_BOUNDARY_CODE,
             "x06.lifetime.runtime_boundary",
             "runtime",
@@ -175,6 +176,7 @@ pub fn boundary_fact_error(
         | BoundaryFactError::UnsupportedValue { value, .. }
         | BoundaryFactError::LockGuardEscape { value }
         | BoundaryFactError::SharedMutCrossRuntime { value, .. }
+        | BoundaryFactError::SharedMutSourceUnknown { value }
         | BoundaryFactError::RuntimeIdConflict { value, .. } => *value,
     };
     let runtime_id = match error {
@@ -182,6 +184,7 @@ pub fn boundary_fact_error(
         | BoundaryFactError::RuntimeIdConflict {
             incoming: target, ..
         } => *target,
+        BoundaryFactError::SharedMutSourceUnknown { .. } => 0,
         _ => 0,
     };
     Diagnostic::new(

@@ -6,7 +6,7 @@
 
 use std::collections::BTreeMap;
 
-use crate::types::Type;
+use crate::types::{Type, TypeVarId};
 
 /// 跨线程边界允许的最大值参数数目。
 pub const MAX_BOUNDARY_ARGUMENTS: usize = 64;
@@ -233,7 +233,13 @@ impl HandleConsumption {
 
     /// 尝试记录一次操作；重复消费返回 `false`。
     pub fn apply(&mut self, operation: HandleOperation) -> bool {
-        if self.consumed && operation_consumes_handle(self.kind, operation) {
+        if self.consumed
+            && !matches!(
+                (self.kind, operation),
+                (ConcurrentHandleKind::Runtime, HandleOperation::RuntimeClose)
+                    | (ConcurrentHandleKind::Pool, HandleOperation::Shutdown)
+            )
+        {
             return false;
         }
         if operation_consumes_handle(self.kind, operation) {
@@ -306,10 +312,10 @@ impl ConcurrentSignatureTable {
 #[must_use]
 pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
     let mut table = ConcurrentSignatureTable::new();
-    let dynamic = Type::Dynamic;
+    let generic = Type::variable(TypeVarId::new(0));
     let function = Type::Function {
         parameters: Vec::new(),
-        return_type: Box::new(dynamic.clone()),
+        return_type: Box::new(generic.clone()),
     };
     let mut add = |name, parameters, return_type, variadic_boundary_values, consumed_parameters| {
         table.insert(ConcurrentSignature {
@@ -344,63 +350,71 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
     add(
         "spawn",
         vec![Type::Runtime, function.clone()],
-        Type::thread(dynamic.clone()),
+        Type::thread(generic.clone()),
         true,
         Vec::new(),
     );
     add(
         "join",
-        vec![Type::thread(dynamic.clone())],
-        dynamic.clone(),
+        vec![Type::thread(generic.clone())],
+        generic.clone(),
         false,
         vec![0],
     );
     add(
         "detach",
-        vec![Type::thread(dynamic.clone())],
+        vec![Type::thread(generic.clone())],
         Type::None,
         false,
         vec![0],
     );
-    add("cancel", vec![Type::Dynamic], Type::None, false, Vec::new());
+    // `cancel` 是一个可判定的句柄接口：类型变量只承载调用点统一，
+    // 调用检查器会把输入限制为 `thread<T>` 或 `task<T>`，不使用 Dynamic。
+    add(
+        "cancel",
+        vec![generic.clone()],
+        Type::None,
+        false,
+        Vec::new(),
+    );
     add(
         "shared_read",
-        vec![dynamic.clone()],
-        Type::shared(dynamic.clone()),
+        vec![generic.clone()],
+        Type::shared(generic.clone()),
         false,
         vec![0],
     );
     add(
         "shared_mut",
-        vec![dynamic.clone()],
-        Type::shared_mut(dynamic.clone()),
+        vec![generic.clone()],
+        Type::shared_mut(generic.clone()),
         false,
         vec![0],
     );
     add(
         "read",
-        vec![Type::shared(dynamic.clone())],
-        dynamic.clone(),
+        vec![Type::shared(generic.clone())],
+        generic.clone(),
         false,
         Vec::new(),
     );
     add(
         "lock",
-        vec![Type::shared_mut(dynamic.clone())],
-        Type::lock_guard(dynamic.clone()),
+        vec![Type::shared_mut(generic.clone())],
+        Type::lock_guard(generic.clone()),
         false,
         Vec::new(),
     );
     add(
         "lock_read",
-        vec![Type::lock_guard(dynamic.clone())],
-        dynamic.clone(),
+        vec![Type::lock_guard(generic.clone())],
+        generic.clone(),
         false,
         Vec::new(),
     );
     add(
         "lock_write",
-        vec![Type::lock_guard(dynamic.clone()), dynamic.clone()],
+        vec![Type::lock_guard(generic.clone()), generic.clone()],
         Type::None,
         false,
         vec![1],
@@ -415,14 +429,14 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
     add(
         "submit",
         vec![Type::Pool, function],
-        Type::task(dynamic.clone()),
+        Type::task(generic.clone()),
         true,
         Vec::new(),
     );
     add(
         "wait",
-        vec![Type::task(dynamic.clone())],
-        dynamic,
+        vec![Type::task(generic.clone())],
+        generic,
         false,
         vec![0],
     );
@@ -463,12 +477,27 @@ mod tests {
                 .map(|signature| signature.consumed_parameters.as_slice()),
             Some([0].as_slice())
         );
+        assert!(matches!(
+            table
+                .get("cancel")
+                .and_then(|signature| signature.parameters.first()),
+            Some(Type::Variable(_))
+        ));
         assert!(check_boundary_argument_count(MAX_BOUNDARY_ARGUMENTS).is_ok());
         assert!(check_boundary_argument_count(MAX_BOUNDARY_ARGUMENTS + 1).is_err());
         let mut state = HandleConsumption::new(ConcurrentHandleKind::Thread);
         assert!(state.apply(HandleOperation::Cancel));
         assert!(state.apply(HandleOperation::Join));
         assert!(!state.apply(HandleOperation::Detach));
+        let mut joined = HandleConsumption::new(ConcurrentHandleKind::Thread);
+        assert!(joined.apply(HandleOperation::Join));
+        assert!(!joined.apply(HandleOperation::Cancel));
+        let mut detached = HandleConsumption::new(ConcurrentHandleKind::Thread);
+        assert!(detached.apply(HandleOperation::Detach));
+        assert!(!detached.apply(HandleOperation::Join));
+        let mut waited = HandleConsumption::new(ConcurrentHandleKind::Task);
+        assert!(waited.apply(HandleOperation::Wait));
+        assert!(!waited.apply(HandleOperation::Cancel));
         let mut runtime = HandleConsumption::new(ConcurrentHandleKind::Runtime);
         assert!(runtime.apply(HandleOperation::RuntimeClose));
         assert!(runtime.apply(HandleOperation::RuntimeClose));

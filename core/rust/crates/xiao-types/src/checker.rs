@@ -65,7 +65,9 @@ mod statement;
 mod table_checker;
 
 /// 检查器输出、类型化节点和后端运行时检查标记的稳定公开模型。
-pub use self::result::{RuntimeCheck, RuntimeCheckKind, TypeCheckResult, TypedNode};
+pub use self::result::{
+    ConcurrencyCall, RuntimeCheck, RuntimeCheckKind, TypeCheckResult, TypedNode,
+};
 use self::table_checker::TableFrame;
 
 /// 包路径到可读取成员的静态、无副作用接口；键是完整点号路径。
@@ -104,6 +106,10 @@ pub struct TypeChecker<'source> {
     current_function: Option<FunctionFrame>,
     /// 当前正在检查的函数名称，用于让直接递归调用复用刚性签名。
     current_function_key: Option<String>,
+    /// 命名并发句柄的静态消费状态；仅用于调用检查。
+    concurrency_handle_states: BTreeMap<String, crate::concurrency::HandleConsumption>,
+    /// 已由 `std.concurrent` 导入绑定解析出的调用点。
+    concurrency_calls: Vec<ConcurrencyCall>,
     /// 函数体中直接执行数组变更的函数摘要。
     mutating_functions: BTreeSet<String>,
     loop_depth: usize,
@@ -144,6 +150,8 @@ impl<'source> TypeChecker<'source> {
             current_table: None,
             current_function: None,
             current_function_key: None,
+            concurrency_handle_states: BTreeMap::new(),
+            concurrency_calls: Vec::new(),
             mutating_functions: BTreeSet::new(),
             loop_depth: 0,
         }
@@ -185,6 +193,7 @@ impl<'source> TypeChecker<'source> {
             entry_mode: program.entry_mode,
             function_signatures: self.function_signatures,
             table_signatures: self.table_signatures,
+            concurrency_calls: self.concurrency_calls,
         }
     }
 

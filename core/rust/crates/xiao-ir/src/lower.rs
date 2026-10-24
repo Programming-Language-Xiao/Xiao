@@ -1065,6 +1065,7 @@ fn lower_modules(project: &ProjectModuleResult, source: &SourceFile) -> Vec<IrMo
                     entry_mode: program.entry_mode,
                     function_signatures: BTreeMap::new(),
                     table_signatures: BTreeMap::new(),
+                    concurrency_calls: Vec::new(),
                 };
                 // Standard-library module bodies are lowered into the native
                 // static-link path as well as the VM loader. Recheck their
@@ -1227,6 +1228,7 @@ fn lower_ownership(lifetime: &LifetimeResult) -> IrOwnership {
         .map(|fact| IrCrossThreadFact {
             value: fact.value.get(),
             runtime_id: fact.runtime_id,
+            source_runtime_id: lifetime.runtime_id_facts().runtime_id(fact.value),
             task_boundary: fact.task_boundary,
             thread_boundary: fact.thread_boundary,
             span: ir_span(fact.span),
@@ -1251,6 +1253,12 @@ fn lower_ownership(lifetime: &LifetimeResult) -> IrOwnership {
             IrBoundaryTransfer::deep_copy(parameters, runtime_id, IrSpan::new(start, end))
         })
         .collect();
+    let mut cancellation_checks = lifetime
+        .cancellation_checks()
+        .iter()
+        .map(|check| IrCancellationCheck::new(ir_span(check.span), check.kind.clone()))
+        .collect::<Vec<_>>();
+    cancellation_checks.sort_by_key(|check| (check.span.start, check.span.end));
     IrOwnership {
         scopes,
         values,
@@ -1260,7 +1268,7 @@ fn lower_ownership(lifetime: &LifetimeResult) -> IrOwnership {
         dynamic_checks,
         cross_thread_facts,
         boundary_transfers,
-        cancellation_checks: Vec::new(),
+        cancellation_checks,
     }
 }
 

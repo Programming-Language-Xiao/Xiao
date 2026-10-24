@@ -5,10 +5,9 @@
 > 22A-FIX 已固定 `std.concurrent` 的 API/类型名、Send/Sync 类型表、CrossThread 字段、
 > 诊断映射和产物门禁；本批只让 22C 能按这些事实实现 Runtime，不在实现阶段重新解释语义。
 >
-> 状态：**模型/API 已落地（2026-10-25），22B-FIX 待接线**。D-1 取乙（专用注解语法），
-> 其余取甲；类型、生命周期模型、IR 动作/verifier 和旧快照兼容已有实现，但签名/能力/消费、
-> 源码级 BoundaryFacts 和取消检查尚未接入真实流水线，见
-> [22B-FIX](22b-fix-concurrency-wiring.md)。
+> 状态：**已实施（2026-10-25）**。D-1 取乙（专用注解语法），22B-FIX 的 D-1～D-5
+> 取甲；类型、生命周期模型、IR 动作/verifier、源码级签名检查、BoundaryFacts 和取消检查
+> 已接入真实流水线。Runtime/VM/LLVM、标准库函数体和产物门禁仍由 22C–22E 负责。
 
 ## 一、入口条件与冻结输入
 
@@ -260,8 +259,8 @@ git diff --check
 3. 正/负例覆盖普通句柄、共享句柄、多边界值、Runtime ID、动态值、资源、跨 Runtime；
 4. IR 快照和旧快照兼容/版本策略通过；
 5. 没有实现 Runtime、VM、LLVM、标准库函数体或 32B ABI；
-6. [22B-FIX](22b-fix-concurrency-wiring.md) 完成后，22C 才可以只按 22B 的类型/事实/
-   动作实现，不再补语义。
+6. [22B-FIX](22b-fix-concurrency-wiring.md) 已完成，22C 可以只按 22B 的类型/事实/动作
+   实现，不再补静态语义。
 
 ## 八、不许
 
@@ -319,16 +318,19 @@ core/rust/crates/xiao-i18n/                             新诊断中英消息
 - `ecba419`、`ccf503b`、`f5c8d7f`：`IrType` 并发变体、`IrOwnership` 的 facts/transfers/
   cancellation 字段、旧快照默认值、lower/restore、verifier 和字节码类型标签往返；
 - `4512c07`：下游静态穷举的兼容拒绝分支；未接入任何并发 Runtime 行为。
+- `22B-FIX` 接线：前端注册 `std.concurrent`/`stdlib.concurrent` 签名并记录已解析调用；
+  `xiao-lifetime` 生成带来源 Runtime 的边界事实和取消检查；`xiao-ir` 消费
+  `cross_thread_facts`、`boundary_transfers`、`cancellation_checks`；并收紧
+  `BoundaryValue`、句柄消费和 `shared_mut` API。
 
 验证已通过：`cargo check --manifest-path core/rust/Cargo.toml --workspace`、
 `cargo test --manifest-path core/rust/Cargo.toml --workspace`、`cargo fmt --manifest-path
 core/rust/Cargo.toml --all -- --check`，以及 `check:docs`、`check:usedocs`、`check:layout`、
-`git diff --check`。
+`git diff --check`；`xiao-driver/tests/22b_concurrency_wiring.rs` 覆盖真实源码正/负例。
 
-**证据边界**：上述测试覆盖模型/API、parser 注解和手工 IR 结构；`std_concurrent_signatures`、
-`HandleConsumption`、`BoundaryFacts` 和取消检查尚未接入真实源码流水线，因此不能把这轮
-测试写成“22C 可以只消费本批事实”。接线、源码级回归和状态修正见
-[22B-FIX](22b-fix-concurrency-wiring.md)。
+**证据边界**：本地测试同时覆盖模型/API、parser 注解、真实 `std.concurrent` 源码调用、
+生命周期边界、IR facts/transfers/cancellation 和旧快照兼容；没有远端 CI 运行号，因此只
+声明本地证据。22B-FIX 的接线结果与回归清单见 [22B-FIX](22b-fix-concurrency-wiring.md)。
 
 ## 相关页面
 
