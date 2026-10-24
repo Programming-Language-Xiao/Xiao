@@ -5,9 +5,8 @@ use xiao_syntax::{DeclaredType, FunctionTypeAnnotation, Parser, Statement};
 
 #[test]
 fn parses_concurrency_declarations() {
-    let source = SourceFile::from_text(
-        "thread<int> worker\nshared<str> text\nruntime rt\npool jobs\n",
-    );
+    let source =
+        SourceFile::from_text("thread<int> worker\nshared<str> text\nruntime rt\npool jobs\n");
     let result = Parser::new(&source).parse();
     assert!(result.is_success(), "diagnostics: {:?}", result.diagnostics);
     let statements = result.program.expect("program").statements;

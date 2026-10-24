@@ -177,19 +177,11 @@ impl Substitution {
                 Type::DictColumn(apply_dictionary(dictionary, self, seen))
             }
             Type::Set(set) => Type::Set(apply_set(set, self, seen)),
-            Type::Thread(value) => {
-                Type::Thread(Box::new(self.apply_with_seen(value, seen)))
-            }
+            Type::Thread(value) => Type::Thread(Box::new(self.apply_with_seen(value, seen))),
             Type::Task(value) => Type::Task(Box::new(self.apply_with_seen(value, seen))),
-            Type::Shared(value) => {
-                Type::Shared(Box::new(self.apply_with_seen(value, seen)))
-            }
-            Type::SharedMut(value) => {
-                Type::SharedMut(Box::new(self.apply_with_seen(value, seen)))
-            }
-            Type::LockGuard(value) => {
-                Type::LockGuard(Box::new(self.apply_with_seen(value, seen)))
-            }
+            Type::Shared(value) => Type::Shared(Box::new(self.apply_with_seen(value, seen))),
+            Type::SharedMut(value) => Type::SharedMut(Box::new(self.apply_with_seen(value, seen))),
+            Type::LockGuard(value) => Type::LockGuard(Box::new(self.apply_with_seen(value, seen))),
             Type::Table(_) | Type::Resource(_) | Type::Scalar(_) | Type::None | Type::Dynamic => {
                 ty.clone()
             }
@@ -289,13 +281,9 @@ impl Substitution {
                 unify_dictionaries(self, left, right, true).map(Type::DictColumn)
             }
             (Type::Set(left), Type::Set(right)) => unify_sets(self, left, right),
-            (Type::Thread(left), Type::Thread(right)) => {
-                self.unify(left, right).map(Type::thread)
-            }
+            (Type::Thread(left), Type::Thread(right)) => self.unify(left, right).map(Type::thread),
             (Type::Task(left), Type::Task(right)) => self.unify(left, right).map(Type::task),
-            (Type::Shared(left), Type::Shared(right)) => {
-                self.unify(left, right).map(Type::shared)
-            }
+            (Type::Shared(left), Type::Shared(right)) => self.unify(left, right).map(Type::shared),
             (Type::SharedMut(left), Type::SharedMut(right)) => {
                 self.unify(left, right).map(Type::shared_mut)
             }

@@ -734,7 +734,9 @@ fn standard_module_function_signatures(
             FunctionTypeAnnotation::Thread(value) => {
                 Type::thread(annotation_type(value, generic_types))
             }
-            FunctionTypeAnnotation::Task(value) => Type::task(annotation_type(value, generic_types)),
+            FunctionTypeAnnotation::Task(value) => {
+                Type::task(annotation_type(value, generic_types))
+            }
             FunctionTypeAnnotation::Runtime => Type::Runtime,
             FunctionTypeAnnotation::Pool => Type::Pool,
             FunctionTypeAnnotation::Shared(value) => {

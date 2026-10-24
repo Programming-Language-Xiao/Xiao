@@ -203,6 +203,24 @@ impl BoundaryValue {
     }
 }
 
+/// `record_spawn`/`record_submit` 可接受的边界参数输入。
+pub trait BoundaryValueInput {
+    /// 转换为带能力分类的边界参数。
+    fn into_boundary_value(self) -> BoundaryValue;
+}
+
+impl BoundaryValueInput for ValueId {
+    fn into_boundary_value(self) -> BoundaryValue {
+        BoundaryValue::new(self, BoundaryValueKind::Sendable)
+    }
+}
+
+impl BoundaryValueInput for BoundaryValue {
+    fn into_boundary_value(self) -> BoundaryValue {
+        self
+    }
+}
+
 /// 一条跨线程/任务边界事实。
 ///
 /// 一个值在一次显式 lowering 中只登记一条事实。`runtime_id` 是目标 Runtime，
@@ -536,8 +554,8 @@ impl BoundaryFacts {
 
     /// 登记 `spawn` 的一组未分类边界值。
     ///
-    /// 该入口供已经完成类型判定的 lowering 使用；需要生命周期层再次校验
-    /// 值类别时使用 [`Self::record_spawn_values`]。
+    /// 该入口供已经完成类型判定的 lowering 使用；既可以传入 `ValueId`，也可以
+    /// 传入带显式能力分类的 [`BoundaryValue`]。
     pub fn record_spawn<I>(
         &mut self,
         values: I,
@@ -545,13 +563,14 @@ impl BoundaryFacts {
         span: SourceSpan,
     ) -> Result<(), BoundaryFactError>
     where
-        I: IntoIterator<Item = ValueId>,
+        I: IntoIterator,
+        I::Item: BoundaryValueInput,
     {
         self.record_operation(
             BoundaryOperation::Spawn,
             values
                 .into_iter()
-                .map(|value| BoundaryValue::new(value, BoundaryValueKind::Sendable)),
+                .map(BoundaryValueInput::into_boundary_value),
             runtime_id,
             span,
         )
@@ -565,13 +584,14 @@ impl BoundaryFacts {
         span: SourceSpan,
     ) -> Result<(), BoundaryFactError>
     where
-        I: IntoIterator<Item = ValueId>,
+        I: IntoIterator,
+        I::Item: BoundaryValueInput,
     {
         self.record_operation(
             BoundaryOperation::Submit,
             values
                 .into_iter()
-                .map(|value| BoundaryValue::new(value, BoundaryValueKind::Sendable)),
+                .map(BoundaryValueInput::into_boundary_value),
             runtime_id,
             span,
         )
@@ -605,13 +625,14 @@ impl BoundaryFacts {
         span: SourceSpan,
     ) -> Result<(), BoundaryFactError>
     where
-        I: IntoIterator<Item = ValueId>,
+        I: IntoIterator,
+        I::Item: BoundaryValueInput,
     {
         self.record_operation(
             BoundaryOperation::TaskSuspend,
             values
                 .into_iter()
-                .map(|value| BoundaryValue::new(value, BoundaryValueKind::Sendable)),
+                .map(BoundaryValueInput::into_boundary_value),
             runtime_id,
             span,
         )
@@ -1555,6 +1576,22 @@ mod tests {
             Err(BoundaryFactError::LockGuardEscape { .. })
         ));
         assert!(facts.cross_thread_facts.is_empty());
+    }
+
+    #[test]
+    fn typed_values_are_accepted_by_spawn_shorthand() {
+        let mut facts = BoundaryFacts::new();
+        facts
+            .record_spawn(
+                [BoundaryValue::new(
+                    ValueId::new(51),
+                    BoundaryValueKind::Shared,
+                )],
+                2,
+                span(),
+            )
+            .expect("带分类参数的 spawn 应登记");
+        assert_eq!(facts.cross_thread_facts[0].value, ValueId::new(51));
     }
 
     #[test]

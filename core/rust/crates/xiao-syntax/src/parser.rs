@@ -431,7 +431,10 @@ impl<'source> Parser<'source> {
             return false;
         }
         let name = self.current().text(self.source);
-        if !matches!(name, "thread" | "task" | "shared" | "shared_mut" | "lock_guard" | "runtime" | "pool") {
+        if !matches!(
+            name,
+            "thread" | "task" | "shared" | "shared_mut" | "lock_guard" | "runtime" | "pool"
+        ) {
             return false;
         }
         match name {
@@ -467,9 +470,7 @@ impl<'source> Parser<'source> {
             return false;
         };
         let after = self.lookahead_kind(4);
-        (is_type_keyword_token(inner)
-            || inner == TokenKind::None
-            || inner == TokenKind::Identifier)
+        (is_type_keyword_token(inner) || inner == TokenKind::None || inner == TokenKind::Identifier)
             && close == TokenKind::Greater
             && after.is_some_and(is_declaration_name_token)
     }
@@ -545,9 +546,9 @@ impl<'source> Parser<'source> {
                 DeclaredType::Shared(inner) => FunctionTypeAnnotation::Shared(inner),
                 DeclaredType::SharedMut(inner) => FunctionTypeAnnotation::SharedMut(inner),
                 DeclaredType::LockGuard(inner) => FunctionTypeAnnotation::LockGuard(inner),
-                DeclaredType::Scalar(_)
-                | DeclaredType::Set(_)
-                | DeclaredType::Resource(_) => return None,
+                DeclaredType::Scalar(_) | DeclaredType::Set(_) | DeclaredType::Resource(_) => {
+                    return None;
+                }
             });
         }
         self.push_error(

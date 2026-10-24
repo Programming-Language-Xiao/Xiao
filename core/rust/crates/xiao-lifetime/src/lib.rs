@@ -25,11 +25,12 @@ pub use graph::{GraphError, OwnershipGraph};
 /// 重导出生命周期模型。
 pub use model::{
     BasicBlock, BlockId, BoundaryFact, BoundaryFactError, BoundaryFacts, BoundaryKind,
-    BoundaryOperation, BoundaryValue, BoundaryValueKind, ControlFlowEdgeKind, ControlFlowGraph,
-    CrossThreadFact, DynamicLifetimeCheck, EscapeReason, ExitKind, LifetimeResult, OwnershipEdge,
-    OwnershipEdgeReason, OwnershipKind, ReleaseAction, ReleaseActionKind, ReleasePlan, RuntimeId,
-    RuntimeIdFact, RuntimeIdFacts, ScopeId, ScopeInfo, ScopeKind, StorageClass, TaskBoundary,
-    ThreadBoundary, ValueId, ValueInfo, classify_boundary_type,
+    BoundaryOperation, BoundaryValue, BoundaryValueInput, BoundaryValueKind, ControlFlowEdgeKind,
+    ControlFlowGraph, CrossThreadFact, DynamicLifetimeCheck, EscapeReason, ExitKind,
+    LifetimeResult, OwnershipEdge, OwnershipEdgeReason, OwnershipKind, ReleaseAction,
+    ReleaseActionKind, ReleasePlan, RuntimeId, RuntimeIdFact, RuntimeIdFacts, ScopeId, ScopeInfo,
+    ScopeKind, StorageClass, TaskBoundary, ThreadBoundary, ValueId, ValueInfo,
+    classify_boundary_type,
 };
 
 use escape::EscapeAnalyzer;

@@ -4,8 +4,8 @@
 
 use xiao_diagnostics::DiagnosticParam;
 use xiao_syntax::{
-    AssignmentOperator, BinaryOperator, DeclaredType, Expression, ImportStatement, IndexPath,
-    FunctionTypeAnnotation, ScalarType, Statement, TypeTerm,
+    AssignmentOperator, BinaryOperator, DeclaredType, Expression, FunctionTypeAnnotation,
+    ImportStatement, IndexPath, ScalarType, Statement, TypeTerm,
 };
 
 use crate::conversion::{
@@ -834,12 +834,8 @@ fn annotation_to_type(annotation: &FunctionTypeAnnotation) -> Type {
         FunctionTypeAnnotation::Runtime => Type::Runtime,
         FunctionTypeAnnotation::Pool => Type::Pool,
         FunctionTypeAnnotation::Shared(element) => Type::shared(annotation_to_type(element)),
-        FunctionTypeAnnotation::SharedMut(element) => {
-            Type::shared_mut(annotation_to_type(element))
-        }
-        FunctionTypeAnnotation::LockGuard(element) => {
-            Type::lock_guard(annotation_to_type(element))
-        }
+        FunctionTypeAnnotation::SharedMut(element) => Type::shared_mut(annotation_to_type(element)),
+        FunctionTypeAnnotation::LockGuard(element) => Type::lock_guard(annotation_to_type(element)),
     }
 }
 

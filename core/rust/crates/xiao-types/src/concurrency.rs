@@ -298,7 +298,9 @@ impl ConcurrentSignatureTable {
 
     /// 按稳定名称顺序遍历签名。
     pub fn iter(&self) -> impl Iterator<Item = (&'static str, &ConcurrentSignature)> {
-        self.signatures.iter().map(|(name, signature)| (*name, signature))
+        self.signatures
+            .iter()
+            .map(|(name, signature)| (*name, signature))
     }
 }
 
@@ -320,9 +322,27 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
             consumed_parameters,
         });
     };
-    add("runtime_create", Vec::new(), Type::Runtime, false, Vec::new());
-    add("current_runtime", Vec::new(), Type::Runtime, false, Vec::new());
-    add("runtime_close", vec![Type::Runtime], Type::None, false, vec![0]);
+    add(
+        "runtime_create",
+        Vec::new(),
+        Type::Runtime,
+        false,
+        Vec::new(),
+    );
+    add(
+        "current_runtime",
+        Vec::new(),
+        Type::Runtime,
+        false,
+        Vec::new(),
+    );
+    add(
+        "runtime_close",
+        vec![Type::Runtime],
+        Type::None,
+        false,
+        vec![0],
+    );
     add(
         "spawn",
         vec![Type::Runtime, function.clone()],
@@ -330,10 +350,34 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
         true,
         Vec::new(),
     );
-    add("join", vec![Type::thread(dynamic.clone())], dynamic.clone(), false, vec![0]);
-    add("detach", vec![Type::thread(dynamic.clone())], Type::None, false, vec![0]);
-    add("cancel", vec![Type::task(dynamic.clone())], Type::None, false, Vec::new());
-    add("shared_read", vec![dynamic.clone()], Type::shared(dynamic.clone()), false, vec![0]);
+    add(
+        "join",
+        vec![Type::thread(dynamic.clone())],
+        dynamic.clone(),
+        false,
+        vec![0],
+    );
+    add(
+        "detach",
+        vec![Type::thread(dynamic.clone())],
+        Type::None,
+        false,
+        vec![0],
+    );
+    add(
+        "cancel",
+        vec![Type::task(dynamic.clone())],
+        Type::None,
+        false,
+        Vec::new(),
+    );
+    add(
+        "shared_read",
+        vec![dynamic.clone()],
+        Type::shared(dynamic.clone()),
+        false,
+        vec![0],
+    );
     add(
         "shared_mut",
         vec![dynamic.clone()],
@@ -341,7 +385,13 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
         false,
         vec![0],
     );
-    add("read", vec![Type::shared(dynamic.clone())], dynamic.clone(), false, Vec::new());
+    add(
+        "read",
+        vec![Type::shared(dynamic.clone())],
+        dynamic.clone(),
+        false,
+        Vec::new(),
+    );
     add(
         "lock",
         vec![Type::shared_mut(dynamic.clone())],
@@ -363,7 +413,13 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
         false,
         vec![1],
     );
-    add("pool_create", vec![Type::Runtime, Type::scalar(xiao_syntax::ScalarType::Int)], Type::Pool, false, Vec::new());
+    add(
+        "pool_create",
+        vec![Type::Runtime, Type::scalar(xiao_syntax::ScalarType::Int)],
+        Type::Pool,
+        false,
+        Vec::new(),
+    );
     add(
         "submit",
         vec![Type::Pool, function],
@@ -371,7 +427,13 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
         true,
         Vec::new(),
     );
-    add("wait", vec![Type::task(dynamic.clone())], dynamic, false, vec![0]);
+    add(
+        "wait",
+        vec![Type::task(dynamic.clone())],
+        dynamic,
+        false,
+        vec![0],
+    );
     add("shutdown", vec![Type::Pool], Type::None, false, vec![0]);
     table
 }
@@ -388,7 +450,9 @@ mod tests {
         assert!(is_sync(&safe));
         assert!(!is_send(&Type::array(Type::scalar(ScalarType::Int))));
         assert!(!is_send(&Type::OrdinaryHandle));
-        assert!(can_cross_runtime_read(&Type::shared(Type::scalar(ScalarType::Str))));
+        assert!(can_cross_runtime_read(&Type::shared(Type::scalar(
+            ScalarType::Str
+        ))));
         assert!(!is_send(&Type::shared_mut(Type::scalar(ScalarType::Str))));
     }
 
@@ -396,9 +460,15 @@ mod tests {
     fn signatures_and_consumption_are_frozen() {
         let table = std_concurrent_signatures();
         assert_eq!(table.len(), 17);
-        assert!(table.get("spawn").is_some_and(|signature| signature.variadic_boundary_values));
+        assert!(
+            table
+                .get("spawn")
+                .is_some_and(|signature| signature.variadic_boundary_values)
+        );
         assert_eq!(
-            table.get("join").map(|signature| signature.consumed_parameters.as_slice()),
+            table
+                .get("join")
+                .map(|signature| signature.consumed_parameters.as_slice()),
             Some([0].as_slice())
         );
         assert!(check_boundary_argument_count(MAX_BOUNDARY_ARGUMENTS).is_ok());
