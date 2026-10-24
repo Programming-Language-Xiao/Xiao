@@ -139,6 +139,88 @@ jobs:
           $status = $LASTEXITCODE
           if ($status -ne 0) { exit $status }
 
+      - name: Measure 32B header layout (Unix)
+        if: always() && matrix.shell == 'bash'
+        run: |
+          mkdir -p artifacts
+          probe="$RUNNER_TEMP/xiao-concurrency-header32.rs"
+          binary="$RUNNER_TEMP/xiao-concurrency-header32"
+          cat > "$probe" <<'RUST'
+          use std::mem::{align_of, offset_of, size_of};
+          use std::sync::atomic::AtomicU32;
+
+          #[repr(C)]
+          struct Header32 {
+              strong: u64,
+              weak: u64,
+              tag: u64,
+              lock_state: AtomicU32,
+              reserved: u32,
+          }
+
+          #[repr(align(32))]
+          struct Align32([u8; 32]);
+
+          #[repr(C)]
+          struct Clean<T> {
+              header: Header32,
+              payload: T,
+          }
+
+          fn main() {
+              println!("probe=concurrency-header32");
+              println!("environment.os={}", std::env::consts::OS);
+              println!("environment.arch={}", std::env::consts::ARCH);
+              println!("header32.size={} header32.align={}", size_of::<Header32>(), align_of::<Header32>());
+              println!("u64.payload_offset={} u64.object_size={} u64.object_align={}", offset_of!(Clean<u64>, payload), size_of::<Clean<u64>>(), align_of::<Clean<u64>>());
+              println!("align32.payload_offset={} align32.object_size={} align32.object_align={}", offset_of!(Clean<Align32>, payload), size_of::<Clean<Align32>>(), align_of::<Clean<Align32>>());
+          }
+          RUST
+          rustc --edition=2021 "$probe" -o "$binary"
+          "$binary" | tee "artifacts/${{ matrix.name }}-concurrency-32b-layout.log"
+
+      - name: Measure 32B header layout (Windows)
+        if: always() && matrix.shell == 'pwsh'
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          $probe = Join-Path $env:RUNNER_TEMP 'xiao-concurrency-header32.rs'
+          $binary = Join-Path $env:RUNNER_TEMP 'xiao-concurrency-header32.exe'
+          @'
+          use std::mem::{align_of, offset_of, size_of};
+          use std::sync::atomic::AtomicU32;
+
+          #[repr(C)]
+          struct Header32 {
+              strong: u64,
+              weak: u64,
+              tag: u64,
+              lock_state: AtomicU32,
+              reserved: u32,
+          }
+
+          #[repr(align(32))]
+          struct Align32([u8; 32]);
+
+          #[repr(C)]
+          struct Clean<T> {
+              header: Header32,
+              payload: T,
+          }
+
+          fn main() {
+              println!("probe=concurrency-header32");
+              println!("environment.os={}", std::env::consts::OS);
+              println!("environment.arch={}", std::env::consts::ARCH);
+              println!("header32.size={} header32.align={}", size_of::<Header32>(), align_of::<Header32>());
+              println!("u64.payload_offset={} u64.object_size={} u64.object_align={}", offset_of!(Clean<u64>, payload), size_of::<Clean<u64>>(), align_of::<Clean<u64>>());
+              println!("align32.payload_offset={} align32.object_size={} align32.object_align={}", offset_of!(Clean<Align32>, payload), size_of::<Clean<Align32>>(), align_of::<Clean<Align32>>());
+          }
+          '@ | Set-Content -Encoding utf8 -Path $probe
+          rustc --edition=2021 $probe -o $binary
+          & $binary | Tee-Object -FilePath "artifacts/${{ matrix.name }}-concurrency-32b-layout.log"
+          $status = $LASTEXITCODE
+          if ($status -ne 0) { exit $status }
+
       - name: Upload reproduction evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -189,6 +271,13 @@ jobs:
                 grep -E '^(environment\.(os|arch)=|iterations=|custom_atomic_abi\.layout=|custom_atomic_abi\.costs=)' "$measurement_log" || true
               else
                 echo '- 并发测量：未找到测量日志'
+              fi
+              layout32_log="evidence/xiao-platform-reproduction-${platform}/${platform}-concurrency-32b-layout.log"
+              if [[ -f "$layout32_log" ]]; then
+                echo '- 32B 头布局测量：已生成'
+                grep -E '^(environment\.(os|arch)=|header32\.|u64\.|align32\.)' "$layout32_log" || true
+              else
+                echo '- 32B 头布局测量：未找到测量日志'
               fi
               if [[ "$platform" == "macos-arm64" ]]; then
                 echo '- 窗口证据：真实终端与表方法调试执行测试显式跳过；调试构建单独验证，稳定启动失败不代表窗口已打开。'
