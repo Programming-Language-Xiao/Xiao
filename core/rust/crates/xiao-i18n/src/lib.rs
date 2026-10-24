@@ -1045,6 +1045,18 @@ pub fn builtin_renderer() -> MessageRenderer {
         ("x02.type.unification_error", "type error: {message}"),
         ("x03.type.array_element_mismatch", "type error: {message}"),
         (
+            "x03.type.concurrency_value_not_send",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.concurrency_ordinary_handle",
+            "type error: {message}",
+        ),
+        (
+            "x03.type.concurrency_handle_identity",
+            "type error: {message}",
+        ),
+        (
             "x03.type.container_binding_expected",
             "type error: {message}",
         ),
@@ -1391,6 +1403,9 @@ pub fn builtin_renderer() -> MessageRenderer {
         ("x05.type.unknown_table_member", "type error: {message}"),
         ("x06.lifetime.dynamic_check", "lifetime error: {message}"),
         ("x06.lifetime.invalid_edge", "lifetime error: {message}"),
+        ("x06.lifetime.task_boundary", "lifetime error: {message}"),
+        ("x06.lifetime.thread_boundary", "lifetime error: {message}"),
+        ("x06.lifetime.runtime_boundary", "lifetime error: {message}"),
         ("x06.lifetime.strong_cycle", "lifetime error: {message}"),
         ("x06.lifetime.unknown_value", "lifetime error: {message}"),
         ("x07.type.catch_order", "type error: {message}"),

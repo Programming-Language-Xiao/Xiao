@@ -192,9 +192,9 @@ pub enum HandleOperation {
     Wait,
     /// `cancel(thread<T>|task<T>)`，只借用句柄。
     Cancel,
-    /// `runtime_close(runtime)`。
+    /// `runtime_close(runtime)`；Runtime 是可复制别名，不在类型层消费。
     RuntimeClose,
-    /// `shutdown(pool)`。
+    /// `shutdown(pool)`；pool 是可复制别名，不在类型层消费。
     Shutdown,
 }
 
@@ -209,8 +209,6 @@ pub const fn operation_consumes_handle(
         (ConcurrentHandleKind::Thread, HandleOperation::Join)
             | (ConcurrentHandleKind::Thread, HandleOperation::Detach)
             | (ConcurrentHandleKind::Task, HandleOperation::Wait)
-            | (ConcurrentHandleKind::Runtime, HandleOperation::RuntimeClose)
-            | (ConcurrentHandleKind::Pool, HandleOperation::Shutdown)
     )
 }
 
@@ -341,7 +339,7 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
         vec![Type::Runtime],
         Type::None,
         false,
-        vec![0],
+        Vec::new(),
     );
     add(
         "spawn",
@@ -364,13 +362,7 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
         false,
         vec![0],
     );
-    add(
-        "cancel",
-        vec![Type::task(dynamic.clone())],
-        Type::None,
-        false,
-        Vec::new(),
-    );
+    add("cancel", vec![Type::Dynamic], Type::None, false, Vec::new());
     add(
         "shared_read",
         vec![dynamic.clone()],
@@ -434,7 +426,7 @@ pub fn std_concurrent_signatures() -> ConcurrentSignatureTable {
         false,
         vec![0],
     );
-    add("shutdown", vec![Type::Pool], Type::None, false, vec![0]);
+    add("shutdown", vec![Type::Pool], Type::None, false, Vec::new());
     table
 }
 
@@ -477,5 +469,11 @@ mod tests {
         assert!(state.apply(HandleOperation::Cancel));
         assert!(state.apply(HandleOperation::Join));
         assert!(!state.apply(HandleOperation::Detach));
+        let mut runtime = HandleConsumption::new(ConcurrentHandleKind::Runtime);
+        assert!(runtime.apply(HandleOperation::RuntimeClose));
+        assert!(runtime.apply(HandleOperation::RuntimeClose));
+        let mut pool = HandleConsumption::new(ConcurrentHandleKind::Pool);
+        assert!(pool.apply(HandleOperation::Shutdown));
+        assert!(pool.apply(HandleOperation::Shutdown));
     }
 }

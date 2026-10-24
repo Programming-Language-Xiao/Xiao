@@ -5,8 +5,8 @@
 > 22A-FIX 已固定 `std.concurrent` 的 API/类型名、Send/Sync 类型表、CrossThread 字段、
 > 诊断映射和产物门禁；本批只让 22C 能按这些事实实现 Runtime，不在实现阶段重新解释语义。
 >
-> 状态：**D-1～D-8 已裁定（2026-10-24），待实施**。D-1 取乙（专用注解语法），其余取甲；
-> 本文只规划，不写产品代码；实施由另起 Agent 按本文执行，且不得越过 22B 边界。
+> 状态：**已实施（2026-10-25）**。D-1 取乙（专用注解语法），其余取甲；已完成静态类型、
+> 生命周期事实、IR 动作/verifier 和旧快照兼容，不接 Runtime、VM、LLVM 或标准库函数体。
 
 ## 一、入口条件与冻结输入
 
@@ -302,6 +302,24 @@ core/rust/crates/xiao-i18n/                             新诊断中英消息
 
 不修改 `xiao-runtime`、`xiao-vm`、`xiao-codegen-llvm`、`stdlib/` 的并发实现；这些属于
 22C–22E。22B 结束时只交付静态类型、生命周期和 IR 契约。
+
+## 十一、实施结果与证据
+
+22B 已落地到以下提交链：
+
+- `d1ba1c7`、`d81280e`、`7dc64ac`：专用并发注解 AST/parser、并发 `Type` 变体、候选 A
+  能力表、签名-only `std.concurrent` 夹具、句柄消费状态和 64 参数上限；
+- `0b1c6da`、`fd9dbc4`、`2fc937b`、`60cb67a`、`40e3cc7`、`52aaf78`：显式
+  `TaskBoundary`/`ThreadBoundary` 事实、Runtime ID、跨 Runtime/句柄能力诊断、`lock_guard`
+  逃逸约束和兼容视图；
+- `ecba419`、`ccf503b`、`f5c8d7f`：`IrType` 并发变体、`IrOwnership` 的 facts/transfers/
+  cancellation 字段、旧快照默认值、lower/restore、verifier 和字节码类型标签往返；
+- `4512c07`：下游静态穷举的兼容拒绝分支；未接入任何并发 Runtime 行为。
+
+验证已通过：`cargo check --manifest-path core/rust/Cargo.toml --workspace`、
+`cargo test --manifest-path core/rust/Cargo.toml --workspace`、`cargo fmt --manifest-path
+core/rust/Cargo.toml --all -- --check`，以及 `check:docs`、`check:usedocs`、`check:layout`、
+`git diff --check`。22C 可以只消费本批的类型、事实、动作和 verifier。
 
 ## 相关页面
 
