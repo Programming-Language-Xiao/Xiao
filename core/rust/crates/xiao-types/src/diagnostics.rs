@@ -80,6 +80,13 @@ pub const DICT_METHOD_VALUE_CODE: &str = "X03-TYPE-028";
 /// 静态字典上不存在指定方法。
 pub const DICT_METHOD_UNKNOWN_CODE: &str = "X03-TYPE-029";
 
+/// 值不满足 22B 候选 A 的 Send/Sync 跨线程能力。
+pub const CONCURRENCY_NOT_SEND_CODE: &str = "X03-TYPE-030";
+/// 普通运行时句柄不能跨线程传递。
+pub const CONCURRENCY_ORDINARY_HANDLE_CODE: &str = "X03-TYPE-031";
+/// 共享句柄身份或 tag 使用不正确。
+pub const CONCURRENCY_HANDLE_MISUSE_CODE: &str = "X03-TYPE-032";
+
 /// 函数名称重复或函数声明无法登记。
 pub const FUNCTION_DECLARATION_CODE: &str = "X04-TYPE-001";
 /// 函数调用参数与签名不匹配。
