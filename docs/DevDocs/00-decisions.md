@@ -670,8 +670,9 @@ required-feature bit 0 与 20E 既有语义重叠、多 Runtime 没有提交入�
 - 只读共享句柄包装保存 `{ runtime_id: u64, object_ptr }`；32B 对象头不增加 Runtime ID，
   `shared_mut<T>` 跨 Runtime 编译期拒绝。
 
-F-9 的文档卫生同步为 `module: stdlib.xiao-standard-library`；`35caa80`/`40104492341` 与
-`d6eee72`/`40104894749` 两笔 workspace gates 已成功；22A-FIX 仍保持 planned UseDocs
+F-9 的文档卫生同步为 `module: stdlib.xiao-standard-library`；`35caa80`/`40104492341`、
+`d6eee72`/`40104894749` 与 `589dc92`/`40106553383` 三笔 workspace gates 已成功；22A-FIX
+仍保持 planned UseDocs
 入口，不把未实现能力写成已发布 API。22B 现在可以按 [22A 修正契约](22a-concurrency-freeze.md#29-22a-fix-修正契约2026-10-24八项均取甲) 开始。
 
 ### 错误模型与诊断
