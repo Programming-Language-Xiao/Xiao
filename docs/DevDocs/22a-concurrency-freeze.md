@@ -32,6 +32,7 @@
 | 8 项裁定 | 已记录 | OS 线程/任务池、候选 A、拆分事实、深拷贝、锁/取消、原子句柄、官方库后置 |
 | 原型测试 | 9 passed；workspace gates `40057462458` success | 测试可运行 |
 | 平台测试 | `39965322134` 四平台 success | macOS/Windows/Linux 测试通过 |
+| 测量接线 | `platform-reproduction.yml` 已加入隔离原型 1000 次测量并上传日志 | 下一次平台复现运行取证 |
 | 布局/成本 | 仅 Windows x86_64 | **22A 待补 Linux/macOS** |
 | 取消等待 | 仅标记检查 | **22A 决定是否进首版** |
 | 语言表面/IR/ABI/诊断 | 未冻结 | 本批冻结 |
@@ -77,6 +78,10 @@
 ```bash
 cargo run --release --manifest-path tests/research/concurrency/Cargo.toml -- --iterations 1000
 ```
+
+平台复现工作流 `365649226` 已在四个平台的原生回归后执行同一条命令，并将每个平台的
+`*-concurrency-measurement.log` 与原生日志一起上传；平台测试成功不能替代测量结果。下一次
+工作流运行必须把运行号、OS/架构、Rust 版本、迭代次数、布局和成本行回填到本文与 `00`。
 
 记录：
 

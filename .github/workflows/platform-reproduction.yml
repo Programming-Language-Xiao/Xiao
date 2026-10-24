@@ -58,6 +58,7 @@ jobs:
           workspaces: |
             core/rust -> core/rust/target
             tests/benchmarks -> tests/benchmarks/target
+            tests/research/concurrency -> tests/research/concurrency/target
 
       - name: Check Rust Clippy
         if: matrix.name == 'linux-amd64'
@@ -123,6 +124,21 @@ jobs:
           $status = $LASTEXITCODE
           if ($status -ne 0) { exit $status }
 
+      - name: Run concurrency research measurement (Unix)
+        if: always() && matrix.shell == 'bash'
+        run: |
+          mkdir -p artifacts
+          set -o pipefail
+          cargo run --release --manifest-path tests/research/concurrency/Cargo.toml -- --iterations 1000 2>&1 | tee "artifacts/${{ matrix.name }}-concurrency-measurement.log"
+
+      - name: Run concurrency research measurement (Windows)
+        if: always() && matrix.shell == 'pwsh'
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          & cargo run --release --manifest-path tests/research/concurrency/Cargo.toml -- --iterations 1000 2>&1 | Tee-Object -FilePath "artifacts/${{ matrix.name }}-concurrency-measurement.log"
+          $status = $LASTEXITCODE
+          if ($status -ne 0) { exit $status }
+
       - name: Upload reproduction evidence
         if: always()
         uses: actions/upload-artifact@v7
@@ -167,6 +183,13 @@ jobs:
                 echo '- 状态：失败或未完成；请查看该平台原始日志'
               fi
               grep -E '^(runner|os|arch|platform)=|^(Platform reproduction completed:|平台复现脚本完成：)' "$log" || true
+              measurement_log="evidence/xiao-platform-reproduction-${platform}/${platform}-concurrency-measurement.log"
+              if [[ -f "$measurement_log" ]]; then
+                echo '- 并发测量：已生成'
+                grep -E '^(environment\.(os|arch)=|iterations=|custom_atomic_abi\.layout=|custom_atomic_abi\.costs=)' "$measurement_log" || true
+              else
+                echo '- 并发测量：未找到测量日志'
+              fi
               if [[ "$platform" == "macos-arm64" ]]; then
                 echo '- 窗口证据：真实终端与表方法调试执行测试显式跳过；调试构建单独验证，稳定启动失败不代表窗口已打开。'
               fi
