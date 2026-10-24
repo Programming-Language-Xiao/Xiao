@@ -5,8 +5,9 @@
 > 证据链和门禁通过，但冻结契约内部出现若干冲突/空缺；如果直接进入 22B，类型、IR 和
 > Runtime 会各自补一套语义。本批把这些口径写死，再开 22B。
 >
-> 状态：**已完成（2026-10-24）**。F-1～F-8 均取甲，F-9 元数据卫生已同步；本批只改文档和
-> 契约，不改 `core/`、`cli/`、`stdlib/` 或产品 ABI，不创建并发 AST、类型规则、IR、Runtime
+> 状态：**已完成（2026-10-24，含补丁）**。F-1～F-8 均取甲，F-9 元数据卫生已同步；本补丁
+> 再收口 runtime/pool 句柄模型和 `.xar` 未知 feature 位的错误身份。本批只改文档和契约，
+> 不改 `core/`、`cli/`、`stdlib/` 或产品 ABI，不创建并发 AST、类型规则、IR、Runtime
 > 或 LLVM 实现。
 
 ## 一、为什么是这一批
@@ -30,10 +31,10 @@
 | 产品代码 | 未改 | `origin/main..HEAD` 只有 workflow 和文档 |
 | 本地门禁 | 通过 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 均为 0 |
 | 完整测试 | 通过 | `cargo test --workspace` exit 0；`bun test` 298 pass / 5 skip / 0 fail |
-| 最终文档提交 | 已推送 | `35caa80` 已推送到 `main`；workspace gates `40104492341` success；本批仍未改产品代码 |
+| 最终文档提交 | 已推送 | `35caa80`/`40104492341` 与 `d6eee72`/`40104894749` 均已在 `main` 成功；本批仍未改产品代码 |
 
-`40093591873` 只覆盖 32B 测量接线，不覆盖 `487ef1c` 的最终文档提交；如果 22A-FIX 要求
-“最终提交有 CI 记录”，必须先推送，再补运行号。
+`40093591873` 只覆盖 32B 测量接线，不覆盖 `35caa80`/`d6eee72` 的文档修正；后者由
+workspace gates `40104492341`/`40104894749` 覆盖。本补丁提交的 CI 记录在推送后另行回填。
 
 ## 三、需要收口的契约项
 
@@ -165,7 +166,8 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 
 - 冻结一张逐产物表：
   - `.xiaoc` 格式/必需功能位继续用 `XIAOC-002/003/005/008`；
-  - `.xar` 索引版本/ABI/feature 用 `X17-XAR-007`；
+  - `.xar` 索引版本/ABI/缺失要求用 `X17-XAR-007`；未知 required-feature/capability 位
+    使用**扩展后的** `X17-XAR-011`（不是当前 `required_features` 的既有路径）；
   - 原生并发产物如果进入首版，必须定义元数据段/符号和拒绝码；否则从首版矩阵移除；
 - 如果要把 `.xiaoc` 统一改成 `X17-XAR-007`，必须单列迁移项，改现有错误映射和回归，
   不能只在 22A 文档里改一句话。
@@ -186,13 +188,12 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 **后果**：对“关闭池 submit”“池已关闭再 shutdown”“线程体失败后 join”三种情况，22C 无法
 唯一选码；UseDocs 也重复了 030/032 的重叠。
 
-**建议取甲**：
+**最终选择：甲**：
 
-- `X06-RUNTIME-030` 只用于“已关闭任务池拒绝 `submit`”；
+- `X06-RUNTIME-030` 只用于“池自身关闭后拒绝 `submit`”；
 - `X06-RUNTIME-032` 只用于 `pool_create` 的容量/参数错误，以及明确的参数边界；
-- `shutdown` 对已关闭池的行为要写明（幂等返回或 030，二选一）；
-- `join` 的线程失败重抛线程体原错误；若必须给稳定码，再分配独立编号，不复用 detached
-  的 028；
+- `shutdown` 对已关闭池（Runtime 仍存活）幂等成功；Runtime 已关闭时优先 `031`；
+- `join`/`wait` 的线程/任务失败重抛原始错误，不复用 detached 的 028；
 - 同步更新 UseDocs 的并发错误表。
 
 备选：乙，保留 032 作为所有池状态错误的统一码，删掉 030 的“关闭”语义；那就要改表，
@@ -217,8 +218,8 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
   要么登记保留 ID，要么改成与既有 `stdlib.xiao-standard-library-*` 一致的命名。
 - 32B 探针在 Unix/Windows 两段 workflow 里各有一份源码；一次性证据可以接受，后续改动
   必须同步两份，或移到隔离研究 crate。
-- `487ef1c` 目前只在本地；22A-FIX 收口时应推送，并明确“最终文档提交的 CI 记录”是否属于
-  验收条件。
+- `487ef1c` 已随 `35caa80` 推送；`35caa80`/`40104492341` 与 `d6eee72`/`40104894749`
+  均已成功。本补丁提交的 CI 记录在推送后回填，不把“未推送”写成已验证。
 
 ## 四、裁定表
 
@@ -250,15 +251,31 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 5. **F-5**：事实为 `TaskBoundary`/`ThreadBoundary`；IR 字段为 `runtime_id: u64`、
    `task_boundary: bool`、`thread_boundary: bool`；诊断字段为 `boundary_kind`、`runtime_id`、
    `source_span`；同线程挂起只置任务事实，显式线程迁移置两个事实。
-6. **F-6**：`.xiaoc` 保留 `XIAOC-002/003/005/008`；`.xar` 使用 `X17-XAR-007`、未知位
-   使用 `X17-XAR-011`；原生并发产物后置到 22E，不在首版声明 feature 容器。
-7. **F-7**：`X06-RUNTIME-030` 只表示关闭池拒绝 `submit`；`X06-RUNTIME-032` 只表示
-   `pool_create` 容量/参数错误；满队列使用可取消背压，`shutdown` 幂等成功，`join`/`wait`
-   重抛线程体/任务体原错误，取消为 `X06-RUNTIME-027`。
+6. **F-6**：`.xiaoc` 保留 `XIAOC-002/003/005/008`；`.xar` 的版本/ABI/缺失要求使用
+   `X17-XAR-007`，未知 required-feature/capability 位使用**扩展后的** `X17-XAR-011`；
+   原生并发产物后置到 22E，不在首版声明 feature 容器。
+7. **F-7**：`X06-RUNTIME-030` 只表示池自身关闭后拒绝 `submit`；`X06-RUNTIME-032` 只表示
+   `pool_create` 容量/参数错误；满队列使用可取消背压，`shutdown` 在 Runtime 仍存活时幂等
+   成功，Runtime 已关闭时优先 `X06-RUNTIME-031`；`join`/`wait` 重抛线程体/任务体原错误，
+   取消为 `X06-RUNTIME-027`。
 8. **F-8**：只读共享句柄包装保存 `{ runtime_id: u64, object_ptr }`；32B 对象头不增加字段，
    `shared_mut<T>` 跨 Runtime 编译期拒绝。
 9. **F-9**：UseDocs `module` 改为已有的 `stdlib.xiao-standard-library`；双平台临时探针接线
    作为已有测量证据保留，不在本批重测。
+
+### 4.2 补丁收口（2026-10-24）
+
+- **句柄模型**：`runtime`/`pool` 是可按值复制的共享句柄，别名共享同一关闭状态。
+  `runtime_close`/`shutdown` 消费调用方传入的那一份并关闭底层状态；其他别名仍可观察关闭，
+  重复关闭任一别名幂等成功。关闭后除 close 外的 runtime/pool 操作：Runtime 关闭优先报
+  `X06-RUNTIME-031`，池自身 shutdown 后报 `X06-RUNTIME-030`；因此 Runtime 已关闭时
+  `submit`/`shutdown` 选 031，不选 030。
+- **错误身份**：`.xar` 的缺失要求、ABI 或版本不匹配仍为 `X17-XAR-007`；未知
+  required-feature 位与未知 capability 位统一为**扩展后的** `X17-XAR-011`；`.xiaoc`
+  未知功能位仍为 `XIAOC-008`。这要求 22C 增加“未知特征位 → 011”的映射和回归，
+  不把“既有 011”当成已实现。
+- **证据**：`35caa80`/`40104492341` 与 `d6eee72`/`40104894749` 已记录；本补丁提交在推送
+  后补对应运行号，未推送前不写成已取证。
 
 ## 五、本批要做的事
 
@@ -276,7 +293,8 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
    页面改成 `verified`。
 5. **门禁**：`check:docs`、`check:usedocs`、`check:layout`、`git diff --check`；本批只改
    文档，记录“未改产品代码”。
-6. **推送与收口**：`35caa80` 已推送，workspace gates `40104492341` 成功；22A-FIX 关闭后进入 22B。
+6. **推送与收口**：`35caa80`/`d6eee72` 已推送，workspace gates `40104492341`/`40104894749`
+   成功；本补丁提交在推送后补运行号，22A-FIX 关闭后进入 22B。
 
 ## 六、不许
 
@@ -294,7 +312,8 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 2. **交叉一致**：22A、00、12、22、README、UseDocs 的名称/编号/位表完全一致；
 3. **22B 输入齐**：类型表、CrossThread 事实/字段、API 所有权、锁访问、诊断映射和产物
    矩阵都能直接消费；
-4. **证据**：文档门禁全绿；`35caa80` 有对应推送和 `40104492341` 运行号；
+4. **证据**：文档门禁全绿；`35caa80`/`d6eee72` 分别有 `40104492341`/`40104894749`
+   运行号；本补丁提交在推送后补记录；
 5. **边界**：diff 不含产品代码；工作区干净；
 6. **交接**：22B 只能按 22A-FIX 后的契约实现类型/生命周期/IR，不再补语义。
 

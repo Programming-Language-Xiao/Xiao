@@ -991,7 +991,8 @@ I4a2（运行时的包模块加载）、I4b（会话级生命周期与 TS 接入
 - **22A-FIX 契约收口**（[收口清单](22a-fix-concurrency-freeze.md)）：只修文档/契约，已收口
   `.xar` feature 位与 20E 的冲突、多 Runtime 提交入口、`lock_guard` 访问、Send/Sync 实际
   类型表、CrossThread 名称/IR 字段、产物错误身份、030/032 重叠和 shared Runtime ID 位置；
-  关闭后才进入 22B。
+  补丁进一步固定了 runtime/pool 可复制别名、关闭幂等和 `.xar` 未知位使用扩展后的
+  `X17-XAR-011`；关闭后才进入 22B。
 - **22B 类型、生命周期与 IR**：候选 A 推导、任务/线程边界 + Runtime ID、多边界值、深拷贝/
   序列化/取消、普通/共享句柄规则、IR 快照和 verifier。
 - **22C Runtime ABI、VM 与错误**：32B 头 + 内联锁、强弱计数、弱升级、恰好一次析构、VM

@@ -7,7 +7,7 @@
 > **本批一句话**：**先写出并发入口的语义、ABI、诊断和测量记录，再由 22A-FIX 收口冲突，
 > 然后让 22B 写类型/IR；本批不创建语法 AST、不写 Runtime、不改产品 ABI。**
 >
-> 状态：**22A-FIX 已完成（2026-10-24）**。24B 原型输入由 `40068582635` 记录，32B 头的
+> 状态：**22A-FIX 已完成（2026-10-24，含补丁）**。24B 原型输入由 `40068582635` 记录，32B 头的
 > 四平台临时探针由 `40093591873` 记录；五轮裁定和 F-1..F-8 修正已写入本文及
 > `00-decisions.md`。本批只做测量、决定和文档，不写产品代码；22B 现在可以按修正后的冻结
 > 记录进入类型、生命周期与 IR 实施。
@@ -115,6 +115,10 @@
   任务/线程，执行单元的失败仍由各自 `join`/`wait` 或 detached 错误通道报告；关闭后的
   Runtime 不能再创建执行单元，`runtime` 句柄不能跨 Runtime 传递，误用返回 `X06-RUNTIME-031`；
   `pool_create(runtime, capacity)` 和 `spawn(runtime, fn, ...)` 显式绑定目标 Runtime；
+- `runtime`/`pool` 是可按值复制的共享句柄，别名共享关闭状态；`runtime_close`/`shutdown`
+  消费调用方的那一份并关闭底层状态，其他别名仍可观察关闭，重复关闭任一别名幂等成功；
+  Runtime 已关闭时 `submit`/`shutdown` 优先返回 `X06-RUNTIME-031`，池自身 shutdown 后
+  `submit` 返回 `X06-RUNTIME-030`；
 - 跨 Runtime 只允许带源 Runtime ID 的 `shared<T>` 只读句柄或版本化序列化值；
   `shared_mut<T>` 跨 Runtime 在编译期拒绝；关闭 Runtime 不使仍存活的只读句柄失效，但该
   句柄不能再派生线程、任务或共享可变句柄；
@@ -134,8 +138,9 @@
   `shutdown` 消费池句柄、拒绝新提交并等待已提交任务，重复关闭幂等成功；尚未开始的任务可
   由 `cancel` 移除，运行中任务在安全点退出，`wait` 取得 `X06-RUNTIME-027`；
 - `.xar` 保留 bit 0 的 20E 归档要求位，并发位从 bit 1 起；`.xiaoc` 使用独立 bit 0–5 表；
-  `.xiaoc` 错误保持 `XIAOC-*`，`.xar` 版本/feature 使用 `X17-XAR-007`，原生并发产物后置
-  到 22E；32 位目标因缺少 64 位原子 ABI 在编译期以 `X20-TARGET-001` 拒绝。
+  `.xiaoc` 错误保持 `XIAOC-*`；`.xar` 缺失要求/版本不匹配使用 `X17-XAR-007`，未知
+  required-feature/capability 位使用**扩展后的** `X17-XAR-011`；原生并发产物后置到 22E；
+  32 位目标因缺少 64 位原子 ABI 在编译期以 `X20-TARGET-001` 拒绝。
 
 ### 2.3 第二轮细化裁定（2026-10-24）
 
@@ -224,7 +229,7 @@ shutdown(pool) -> none
 | `X06-RUNTIME-027` | 线程/任务取消 |
 | `X06-RUNTIME-028` | detached 线程失败 |
 | `X06-RUNTIME-029` | 二进制序列化/反序列化失败 |
-| `X06-RUNTIME-030` | 已关闭任务池拒绝 `submit` |
+| `X06-RUNTIME-030` | 池自身关闭后拒绝 `submit` |
 | `X06-RUNTIME-031` | Runtime 已关闭/跨 Runtime 非法使用 |
 | `X06-RUNTIME-032` | `pool_create` 容量或参数错误 |
 
@@ -241,15 +246,17 @@ magic 固定为 ASCII `XCON`（`58 43 4f 4e`），版本为 `0x0001`，保留字
 
 **任务池**：`pool_create(runtime, capacity)` 的 capacity 必填，范围 1–256；容量或参数错误
 返回 `X06-RUNTIME-032`，Runtime 已关闭返回 `X06-RUNTIME-031`；队列满时 `submit` 施加可取消的
-背压，不产生新的“队列满”错误。`shutdown` 消费池句柄、拒绝新提交并等待已提交任务；重复
-关闭是幂等成功；运行中任务通过 `cancel` 标记退出。
+背压，不产生新的“队列满”错误。`pool` 是可复制共享句柄；`shutdown` 消费调用方那一份、
+拒绝新提交并等待已提交任务，其他别名仍可观察关闭，重复关闭幂等成功；池自身关闭后
+`submit` 返回 `X06-RUNTIME-030`，Runtime 已关闭时优先返回 `X06-RUNTIME-031`；运行中任务
+通过 `cancel` 标记退出。
 
 **产物兼容矩阵**：
 
 | 产物 | 首版要求 | 旧 Runtime（<1.17） | 新 Runtime（≥1.17） |
 | --- | --- | --- | --- |
 | `.xiaoc` | ABI `1.17` + 独立 `.xiaoc` required-feature 位集 | 版本/未知位按 `XIAOC-002/003/005/008` 拒绝 | 支持版本且位集为超集时接受 |
-| `.xar` | 索引 `runtime_abi_min=max=1.17`、bit 0 归档要求位和并发位集 | 缺要求/版本按 `X17-XAR-007` 拒绝 | 满足索引范围和位集时接受 |
+| `.xar` | 索引 `runtime_abi_min=max=1.17`、bit 0 归档要求位和并发位集 | 缺要求/版本按 `X17-XAR-007` 拒绝；未知 feature/capability 位按扩展后的 `X17-XAR-011` 拒绝 | 满足索引范围和位集时接受 |
 | 原生并发产物 | 22A-FIX 不纳入首版矩阵；元数据段/符号和错误身份留到 22E | 首版不接受并发入口 | 22E 另行冻结后接受 |
 
 未来 ABI 次版本必须显式扩大 `.xar` 范围并更新 required-feature；旧产物不会静默获得新的
@@ -279,7 +286,8 @@ magic 固定为 ASCII `XCON`（`58 43 4f 4e`），版本为 `0x0001`，保留字
    Runtime **编译期拒绝**；值只能走序列化边界；
 4. **任务池容量**：`pool_create(runtime, capacity)` 的 capacity 必填，范围 1–256；越界返回
    `X06-RUNTIME-032`，关闭 Runtime 返回 `X06-RUNTIME-031`；
-5. **诊断**：接受 §2.6 映射，并新增 `X06-RUNTIME-032` 表示任务池容量/参数/关闭状态错误；
+5. **诊断（已被 §2.9 覆盖）**：原记录把 `X06-RUNTIME-032` 写成容量/参数/关闭状态；
+   最终映射是关闭池 `submit` 用 `030`、Runtime 关闭用 `031`、仅创建参数用 `032`；
 6. **共享类型名**：`shared<T>`、`shared_mut<T>`、`lock_guard<T>`；
 7. **序列化 tag**：0–12 为正常标量/容器 tag；额外保留 13=resource、14=dynamic，但
    **动态值和资源值仍按跨线程编译期拒绝**，这两个 tag 只作格式预留/防御性运行时拒绝，
@@ -316,11 +324,13 @@ magic 固定为 ASCII `XCON`（`58 43 4f 4e`），版本为 `0x0001`，保留字
 1. **`.xar` 位表**：bit 0 固定为 20E 的 `archive_requirements`；并发位为
    `0x0002=threads`、`0x0004=shared_handles`、`0x0008=task_pool`、`0x0010=multi_runtime`、
    `0x0020=serialization_v1`、`0x0040=cancel_wait`。读取器拒绝未知位，要求位必须是当前
-   支持位的子集；缺少 bit 0 或所需并发位使用 `X17-XAR-007`。`.xiaoc` 使用独立的 bit 0–5
-   表，未知位保持 `XIAOC-008`。
+   支持位的子集；缺少 bit 0 或所需并发位使用 `X17-XAR-007`，未知 required-feature/
+   capability 位使用扩展后的 `X17-XAR-011`。`.xiaoc` 使用独立的 bit 0–5 表，未知位保持
+   `XIAOC-008`。
 2. **多 Runtime 入口**：`current_runtime() -> runtime` 提供当前 Runtime；规范提交入口为
    `spawn(runtime, fn, a, b, ...)` 和 `pool_create(runtime, capacity)`，`submit` 通过池归属
-   Runtime。`runtime_close` 消费并关闭 Runtime ID，同时使其别名失效；关闭后创建/提交返回
+   Runtime。`runtime` 是可按值复制的共享句柄；`runtime_close` 消费调用方那一份并关闭
+   Runtime ID，其他别名仍可观察关闭，重复关闭幂等成功；关闭后创建/提交/关闭池返回
    `X06-RUNTIME-031`。
 3. **锁守卫访问**：`shared_read(T)`/`shared_mut(T)` 消费 `T`；`read(shared<T>) -> T` 做
    递归值拷贝；`lock(shared_mut<T>)` 借用句柄并返回守卫；`lock_read(lock_guard<T>) -> T` 和
@@ -334,13 +344,15 @@ magic 固定为 ASCII `XCON`（`58 43 4f 4e`），版本为 `0x0001`，保留字
    `runtime_id: u64`、`task_boundary: bool`、`thread_boundary: bool`；诊断字段固定为
    `boundary_kind`、`runtime_id`、`source_span`。同线程挂起只置任务事实，显式线程迁移同时置
    两个事实，诊断继续使用 `X06-LIFETIME-006..008`。
-6. **产物错误身份**：`.xiaoc` 保留 `XIAOC-002/003/005/008`；`.xar` 版本/ABI/feature
-   使用 `X17-XAR-007`，未知位使用既有 `X17-XAR-011`；原生并发产物没有首版 feature 容器，
-   后置到 22E 再冻结元数据段/符号和拒绝码。
-7. **任务池诊断**：`X06-RUNTIME-030` 只表示关闭任务池拒绝 `submit`；`X06-RUNTIME-032`
-   只表示 `pool_create` 容量/参数错误；满队列通过可取消背压处理；`shutdown` 幂等成功；
-   线程体或任务体失败在 `join`/`wait` 重抛原错误，取消使用 `X06-RUNTIME-027`，detached
-   失败使用 `X06-RUNTIME-028`。
+6. **产物错误身份**：`.xiaoc` 保留 `XIAOC-002/003/005/008`；`.xar` 的版本/ABI/缺失要求
+   使用 `X17-XAR-007`，未知 required-feature/capability 位使用**扩展后的**
+   `X17-XAR-011`；原生并发产物没有首版 feature 容器，后置到 22E 再冻结元数据段/符号和
+   拒绝码。
+7. **任务池诊断**：`X06-RUNTIME-030` 只表示池自身关闭后拒绝 `submit`；`X06-RUNTIME-032`
+   只表示 `pool_create` 容量/参数错误；满队列通过可取消背压处理；`shutdown` 消费调用方
+   别名，其他别名可观察关闭，重复关闭幂等成功；Runtime 已关闭时 `submit`/`shutdown`
+   优先返回 `X06-RUNTIME-031`；线程体或任务体失败在 `join`/`wait` 重抛原错误，取消使用
+   `X06-RUNTIME-027`，detached 失败使用 `X06-RUNTIME-028`。
 8. **Runtime ID 位置**：只读 `shared<T>` 句柄包装固定保存 `{ runtime_id: u64, object_ptr }`；
    32B 对象头不增加字段，32B 四平台测量继续有效；`shared_mut<T>` 跨 Runtime 编译期拒绝。
 
@@ -440,8 +452,9 @@ x86_64 的最初本地取证，四平台结论只引用 §3.5 的 CI 日志。
   `shared<T>`/`shared_mut<T>`/`lock_guard<T>` 的所有权见 §2.6；
 - **线程句柄**：`join`/`detach` 消费句柄，`cancel` 不消费；失败在 join 点返回，detached 失败
   写入带 Runtime ID 的进程级结构化错误通道并继续进程；
-- **Send/Sync**：候选 A 递归接受标量、文本和只读嵌套容器；可变容器、普通句柄、动态值、
-  资源编译期拒绝；显式共享句柄按 tag 接受，禁止普通句柄隐式升级；
+- **Send/Sync**：候选 A 递归接受标量、固定宽度数值、`bool`、`str` 和递归安全 `tuple`；
+  当前可变 `array`/`set`/`dict`/字典表/字典列、普通句柄、动态值和资源编译期拒绝；显式
+  共享句柄按 tag 接受，禁止普通句柄隐式升级；
 - **CrossThread**：任务边界与线程边界两个事实，均携带 Runtime ID；同线程挂起只产生任务
   边界；非法传播使用 `X06-LIFETIME-006..008`；
 - **值传递**：逐参数深拷贝，失败逆序清理，主错误优先、清理错误进入 `suppressed`；格式为
@@ -454,19 +467,21 @@ x86_64 的最初本地取证，四平台结论只引用 §3.5 的 CI 日志。
 - **取消**：22C 必须实现真实持锁等待/平台唤醒；取消令牌唤醒等待者并统一返回
   `X06-RUNTIME-027`，清理顺序沿用 07-D §10.4；
 - **诊断**：`X03-TYPE-030..032`、`X06-LIFETIME-006..008`、`X06-RUNTIME-027..032` 固定
-  映射；二进制防御性失败为 `X06-RUNTIME-029`，产物版本/特性不足为 `X17-XAR-007`；
-- **标准库/发布**：首版接口和任务池属于 `std.concurrent`；官方并发容器后置；`.xiaoc`、`.xar`
-  和原生产物检查 ABI 1.17 与 required-feature 位集，32 位目标拒绝 `X20-TARGET-001`；
-  UseDocs 冻结入口为 [并发执行与共享句柄](../UseDocs/language/concurrency/README.md)，实现前
-  保持 `planned`；
+  映射；二进制防御性失败为 `X06-RUNTIME-029`，产物缺失要求/版本为 `X17-XAR-007`，未知
+  feature/capability 位为扩展的 `X17-XAR-011`；
+- **标准库/发布**：首版接口和任务池属于 `std.concurrent`；官方并发容器后置；`.xiaoc` 和
+  `.xar` 检查 ABI 1.17 与各自的 required-feature 位集，原生并发产物后置到 22E，32 位目标
+  拒绝 `X20-TARGET-001`；UseDocs 冻结入口为
+  [并发执行与共享句柄](../UseDocs/language/concurrency/README.md)，实现前保持 `planned`；
 - **测量**：24B 原型成本见 `40068582635`，32B 头四平台布局见 `40093591873` 的四份
   `*-concurrency-32b-layout.log`；两组数据均不单独冻结性能结论。
 
 **22A-FIX 生效修正**：以上原冻结条目由 §2.9 覆盖；生效 API 使用
 `current_runtime`、`spawn(runtime, ...)`、`pool_create(runtime, ...)`、`lock_read`、
-`lock_write`；Send/Sync 使用 §2.9 的实际类型表；CrossThread 使用
-`TaskBoundary`/`ThreadBoundary` 和三个 IR 字段；`.xar`/`.xiaoc` 位表与错误身份按逐产物矩阵
-执行；030/032 分工、join/wait 原错误传播和 shared 句柄包装 Runtime ID 均按 §2.9 执行。
+`lock_write`；原 §四 的“只读嵌套容器”以 §2.9 的实际类型表为准（数组/集合/字典拒绝），
+原生产物以 §2.6/§2.9 的 22E 后置为准；CrossThread 使用 `TaskBoundary`/`ThreadBoundary`
+和三个 IR 字段；`.xar`/`.xiaoc` 位表与错误身份按逐产物矩阵执行；030/031/032 分工、
+join/wait 原错误传播和 shared 句柄包装 Runtime ID 均按 §2.9 执行。
 
 ## 五、实施步骤
 

@@ -46,8 +46,9 @@ shutdown(pool) -> none
 
 `join`、`detach` 和 `wait` 消费句柄；`cancel` 不消费句柄，取消后仍可取得取消结果。规范入口
 显式接收 `runtime`，`current_runtime()` 只是便捷别名。函数值必须显式声明参数和一个返回值，
-最多 64 个边界参数；无参函数合法，隐式闭包捕获不合法，捕获值必须显式传入。Runtime ID 随
-任务和线程事实传播，关闭 Runtime 会使其别名失效。
+最多 64 个边界参数；无参函数合法，隐式闭包捕获不合法，捕获值必须显式传入。`runtime` 是
+可按值复制的共享句柄，别名共享关闭状态；`runtime_close` 消费调用方那一份，其他别名仍可
+观察关闭，重复关闭幂等成功。Runtime ID 随任务和线程事实传播。
 
 ## 值传递与能力边界
 
@@ -65,10 +66,12 @@ shutdown(pool) -> none
 ## 任务池和取消
 
 `pool_create(runtime, capacity)` 的容量必须在 1–256 之间；参数错误为 `X06-RUNTIME-032`，
-关闭 Runtime 为 `X06-RUNTIME-031`。队列满时 `submit` 施加可取消背压。`shutdown` 消费池句柄，
-拒绝新任务并等待已提交任务，重复关闭幂等成功；排队任务按提交顺序执行。未开始任务可以被
-`cancel` 移除，运行中任务在安全点退出。首版要求真实的持锁等待/平台唤醒路径，锁等待和线程/
-任务取消统一返回 `X06-RUNTIME-027`。
+关闭 Runtime 为 `X06-RUNTIME-031`。队列满时 `submit` 施加可取消背压。`pool` 是可复制共享
+句柄；`shutdown` 消费调用方那一份，拒绝新任务并等待已提交任务，其他别名仍可观察关闭，重复
+关闭幂等成功。池自身关闭后 `submit` 返回 `X06-RUNTIME-030`；Runtime 已关闭时优先返回
+`X06-RUNTIME-031`。排队任务按提交顺序执行。未开始任务可以被 `cancel` 移除，运行中任务在
+安全点退出。首版要求真实的持锁等待/平台唤醒路径，锁等待和线程/任务取消统一返回
+`X06-RUNTIME-027`。
 
 ## 序列化与产物兼容
 
@@ -82,8 +85,9 @@ shutdown(pool) -> none
 20E 的 bit 0=`archive_requirements`，并发位从 bit 1 起：`threads`、`shared_handles`、
 `task_pool`、`multi_runtime`、`serialization_v1`、`cancel_wait`；required 位按子集检查，
 未知位拒绝。`.xiaoc` 使用独立 bit 0–5 表，未知位保持 `XIAOC-008`。`.xiaoc` 继续使用
-`XIAOC-*` 版本/特性错误，`.xar` 使用 `X17-XAR-007`；原生并发产物后置到 22E。32 位目标
-以 `X20-TARGET-001` 拒绝。
+`XIAOC-*` 版本/特性错误；`.xar` 的版本/ABI/缺失要求使用 `X17-XAR-007`，未知
+required-feature/capability 位使用扩展后的 `X17-XAR-011`；原生并发产物后置到 22E。
+32 位目标以 `X20-TARGET-001` 拒绝。
 
 ## 并发错误
 
@@ -98,7 +102,7 @@ shutdown(pool) -> none
 | `X06-RUNTIME-027` | 线程/任务/锁等待取消 |
 | `X06-RUNTIME-028` | detached 线程失败，写入进程级结构化错误通道 |
 | `X06-RUNTIME-029` | 序列化、反序列化或边界上限失败 |
-| `X06-RUNTIME-030` | 已关闭任务池拒绝提交 |
+| `X06-RUNTIME-030` | 池自身关闭后拒绝提交 |
 | `X06-RUNTIME-031` | 已关闭 Runtime 或跨 Runtime 非法使用 |
 | `X06-RUNTIME-032` | `pool_create` 容量或参数错误 |
 

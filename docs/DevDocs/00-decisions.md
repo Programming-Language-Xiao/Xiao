@@ -601,7 +601,8 @@ required-feature 门禁。精确 Runtime 创建/传输、二进制格式头/字�
 第五轮细化：32B lock state 为 atomic u32 + 4B 保留（头对齐 8B）；二进制头 12B =
 magic 4B + u16 版本 + u32 长度 + u8 tag + 1B 保留（大端）；跨 Runtime 只允许只读
 `shared<T>`，`shared_mut<T>` 编译期拒绝；任务池 capacity 必填 1–256；诊断接受 §2.6
-映射并新增 X06-RUNTIME-032；共享类型名为 `shared<T>`/`shared_mut<T>`/`lock_guard<T>`；
+映射并新增 X06-RUNTIME-032（最终 030/031/032 分工见 22A-FIX）；共享类型名为
+`shared<T>`/`shared_mut<T>`/`lock_guard<T>`；
 tag 0–12 正常、13=resource/14=dynamic 仅预留且动态/资源仍编译期拒绝；22E 首版同步
 UseDocs 和 ABI 1.17 兼容矩阵。32B 头的字段、弱升级、锁状态和 64 位拒绝范围已写入 22A
 最终契约；`40093591873` 的 Windows x86_64、Linux amd64/arm64、macOS arm64 临时探针均
@@ -648,7 +649,10 @@ required-feature bit 0 与 20E 既有语义重叠、多 Runtime 没有提交入�
   `.xiaoc` 使用独立 bit 0–5 表，未知位保留 `XIAOC-008`。
 - `current_runtime() -> runtime` 是便捷别名；规范入口为
   `spawn(runtime, fn, a, b, ...)` 与 `pool_create(runtime, capacity)`，`submit` 通过池归属
-  Runtime；关闭 Runtime 的别名失效并返回 `X06-RUNTIME-031`。
+  Runtime。`runtime`/`pool` 是可复制共享句柄，别名共享关闭状态；`runtime_close`/`shutdown`
+  消费调用方那一份，其他别名仍可观察关闭，重复关闭幂等成功；Runtime 关闭时 `submit`/
+  `shutdown` 优先返回 `X06-RUNTIME-031`，池自身 shutdown 后 `submit` 返回
+  `X06-RUNTIME-030`。
 - `shared_read`/`shared_mut` 消费输入值；`read(shared<T>)` 返回递归值拷贝；`lock` 借用共享
   句柄，`lock_read(lock_guard<T>)` 读取，`lock_write(lock_guard<T>, T)` 写入；守卫离开作用域
   释放锁。
@@ -657,15 +661,17 @@ required-feature bit 0 与 20E 既有语义重叠、多 Runtime 没有提交入�
 - `CrossThread` 事实固定为 `TaskBoundary`/`ThreadBoundary`；IR 字段为
   `runtime_id: u64`、`task_boundary: bool`、`thread_boundary: bool`；诊断字段为
   `boundary_kind`、`runtime_id`、`source_span`。
-- `.xiaoc` 保留 `XIAOC-002/003/005/008`；`.xar` 使用 `X17-XAR-007`、未知位使用
-  `X17-XAR-011`；原生并发产物后置到 22E，不在首版声明 required-feature 容器。
-- `X06-RUNTIME-030` 只表示关闭任务池拒绝 `submit`；`X06-RUNTIME-032` 只表示
-  `pool_create` 容量/参数错误；满队列使用可取消背压，`shutdown` 幂等成功，`join`/`wait`
-  重抛线程体/任务体原错误。
+- `.xiaoc` 保留 `XIAOC-002/003/005/008`；`.xar` 的版本/ABI/缺失要求使用
+  `X17-XAR-007`，未知 required-feature/capability 位使用**扩展后的** `X17-XAR-011`；
+  原生并发产物后置到 22E，不在首版声明 required-feature 容器。
+- `X06-RUNTIME-030` 只表示池自身关闭后拒绝 `submit`；`X06-RUNTIME-032` 只表示
+  `pool_create` 容量/参数错误；满队列使用可取消背压，`shutdown` 在 Runtime 仍存活时幂等
+  成功、Runtime 已关闭时优先 `X06-RUNTIME-031`，`join`/`wait` 重抛线程体/任务体原错误。
 - 只读共享句柄包装保存 `{ runtime_id: u64, object_ptr }`；32B 对象头不增加 Runtime ID，
   `shared_mut<T>` 跨 Runtime 编译期拒绝。
 
-F-9 的文档卫生同步为 `module: stdlib.xiao-standard-library`；22A-FIX 仍保持 planned UseDocs
+F-9 的文档卫生同步为 `module: stdlib.xiao-standard-library`；`35caa80`/`40104492341` 与
+`d6eee72`/`40104894749` 两笔 workspace gates 已成功；22A-FIX 仍保持 planned UseDocs
 入口，不把未实现能力写成已发布 API。22B 现在可以按 [22A 修正契约](22a-concurrency-freeze.md#29-22a-fix-修正契约2026-10-24八项均取甲) 开始。
 
 ### 错误模型与诊断

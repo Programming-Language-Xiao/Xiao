@@ -90,9 +90,11 @@
 - `.xar` 保留 20E bit 0，线程/共享/任务池/多 Runtime/序列化/取消位从 bit 1 开始并做子集
   检查；`.xiaoc` 使用独立位表和既有 `XIAOC-*` 错误；原生并发产物后置到 22E；
 - 多 Runtime 使用 `current_runtime()` 便捷别名，以及显式 `spawn(runtime, ...)`、
-  `pool_create(runtime, capacity)`；共享可变锁守卫提供 `lock_read`/`lock_write`；
-- Send/Sync 类型表、`TaskBoundary`/`ThreadBoundary` 事实与 IR 字段、030/032 分工、join/wait
-  原错误传播和 shared 句柄包装 Runtime ID 均已固定；详见 [22A 修正契约](22a-concurrency-freeze.md#29-22a-fix-修正契约2026-10-24八项均取甲)。
+  `pool_create(runtime, capacity)`；runtime/pool 是可复制共享别名，关闭幂等，Runtime 关闭
+  优先于池关闭返回 031；共享可变锁守卫提供 `lock_read`/`lock_write`；
+- Send/Sync 类型表、`TaskBoundary`/`ThreadBoundary` 事实与 IR 字段、030/031/032 分工、
+  join/wait 原错误传播、`.xar` 未知位扩展 `X17-XAR-011` 和 shared 句柄包装 Runtime ID
+  均已固定；详见 [22A 修正契约](22a-concurrency-freeze.md#29-22a-fix-修正契约2026-10-24八项均取甲)。
 
 ### 22B：类型、生命周期与 IR
 
