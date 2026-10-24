@@ -98,7 +98,7 @@
 
 ### 22B：类型、生命周期与 IR
 
-规划、现状核对和 D-1～D-8 设计点见
+规划、现状核对和 D-1～D-8 裁定（D-1 乙、其余甲）见
 [22B. 并发类型、生命周期与 IR](22b-concurrency-types-lifetime-ir.md)。
 
 - `xiao-types`/`xiao-lifetime`：候选 A 能力推导、`TaskBoundary`/`ThreadBoundary` 事实 + Runtime ID、

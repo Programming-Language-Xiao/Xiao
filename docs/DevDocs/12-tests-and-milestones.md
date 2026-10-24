@@ -995,7 +995,7 @@ I4a2（运行时的包模块加载）、I4b（会话级生命周期与 TS 接入
   `X17-XAR-011`；关闭后才进入 22B。
 - **22B 类型、生命周期与 IR**（[22B 规划](22b-concurrency-types-lifetime-ir.md)）：候选 A
   推导、任务/线程边界 + Runtime ID、多边界值、深拷贝/序列化/取消、普通/共享句柄规则、
-  IR 快照和 verifier；实施前先裁定 D-1～D-8。
+  IR 快照和 verifier；D-1～D-8 已裁定（D-1 乙、其余甲），待实施。
 - **22C Runtime ABI、VM 与错误**：32B 头 + 内联锁、强弱计数、弱升级、恰好一次析构、VM
   `spawn/join`、任务池、多 Runtime 创建/边界、detach 错误通道、深拷贝 + 二进制序列化、
   真实取消等待、取消/清理和错误顺序。

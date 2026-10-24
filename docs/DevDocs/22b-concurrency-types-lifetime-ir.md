@@ -5,8 +5,8 @@
 > 22A-FIX 已固定 `std.concurrent` 的 API/类型名、Send/Sync 类型表、CrossThread 字段、
 > 诊断映射和产物门禁；本批只让 22C 能按这些事实实现 Runtime，不在实现阶段重新解释语义。
 >
-> 状态：**规划完成（2026-10-24），待星崽裁定 §四的 D-1～D-8 后实施**。本文只规划，
-> 不写产品代码；实施由另起 Agent 按本文执行，且不得越过 22B 边界。
+> 状态：**D-1～D-8 已裁定（2026-10-24），待实施**。D-1 取乙（专用注解语法），其余取甲；
+> 本文只规划，不写产品代码；实施由另起 Agent 按本文执行，且不得越过 22B 边界。
 
 ## 一、入口条件与冻结输入
 
@@ -43,23 +43,25 @@
 
 | 面 | 当前事实 | 对 22B 的影响 |
 | --- | --- | --- |
-| 类型模型 | `Type` 只有标量、`none`、函数、容器、表、资源、动态；**没有**并发句柄类型 | 需要新增 7 类类型及其显示/统一/降低 |
-| 类型注解 | `DeclaredType` 只有标量、`set`、资源；`FunctionTypeAnnotation` 只有标量、`none`、资源、`set`、`[T]`、`dict`、裸类型参数；没有通用泛型语法 | `thread<T>` 等是否开放显式注解必须先裁定（D-1） |
+| 类型模型 | `Type` 只有标量、`none`、函数、容器、表、资源、动态；**没有**并发句柄类型 | 需要新增 8 类类型及其显示/统一/降低 |
+| 类型注解 | `DeclaredType` 只有标量、`set`、资源；`FunctionTypeAnnotation` 只有标量、`none`、资源、`set`、`[T]`、`dict`、裸类型参数；没有通用泛型语法 | D-1 取乙：增加并发类型专用注解语法，不引入通用泛型 |
 | 能力推导 | 类型层没有 `Send`/`Sync` 或等价能力表 | 需要按 22A 的实际类型表实现递归判定 |
-| 普通句柄 | `StrongHandle`/`WeakHandle` 是 `xiao-runtime` 的 Rust 句柄，不是 Xiao `Type`；语言层没有普通句柄类型 | `X03-TYPE-031` 目前没有语言层生产者（D-2） |
+| 普通句柄 | `StrongHandle`/`WeakHandle` 是 `xiao-runtime` 的 Rust 句柄，不是 Xiao `Type`；语言层没有普通句柄类型 | D-2 取甲：内部 `OrdinaryHandle`，`X03-TYPE-031` 有内部生产者 |
 | 生命周期事实 | `EscapeReason::CrossThread` 已存在（`core/rust/crates/xiao-lifetime/src/model.rs:136-144`），但没有生产者 | 需要显式 lowering 产生事实，不能按名称启发式 |
 | 生命周期结果 | `LifetimeResult` 只有 scopes/values/edges/release plans/dynamic checks，没有 boundary facts | 需要新增事实容器和诊断 |
 | IR 类型 | `IrType` 没有并发类型；`lower_type`/`restore_type` 需要同步 | 新增类型必须可往返、可验证 |
 | IR 所有权 | `IrOwnership` 只有 scopes/values/edges/release plans/dynamic checks，没有跨线程事实、边界动作或取消检查 | 需要新增 IR 形状和 verifier |
-| 快照 | `IR_VERSION = 1`、`IR_SNAPSHOT_VERSION = 1`，已有稳定 JSON 快照和版本守卫 | 新增字段是否兼容旧快照必须裁定（D-5） |
-| 标准库签名 | `xiao-intrinsics`/`stdlib` 中没有 `std.concurrent`；UseDocs 只有 `planned` 页面 | 22B 只能做签名/类型检查输入，不能实现标准库（D-6） |
+| 快照 | `IR_VERSION = 1`、`IR_SNAPSHOT_VERSION = 1`，已有稳定 JSON 快照和版本守卫 | D-5 取甲：扩 `IrOwnership` + `serde(default)`，旧快照先保持可读 |
+| 标准库签名 | `xiao-intrinsics`/`stdlib` 中没有 `std.concurrent`；UseDocs 只有 `planned` 页面 | D-6 取甲：`xiao-types` 签名表；22B 不实现标准库 |
 | 测试入口 | `xiao-types/tests`、`xiao-lifetime/tests/a06_lifetime.rs`、`xiao-ir/tests` 已分别有类型、生命周期、快照/verifier 规格 | 22B 应按这三层加正/负例和快照 |
 
 ## 三、22B 的目标与边界
 
 ### 3.1 目标
 
-1. 在 `xiao-types` 增加并发类型和候选 A 能力判定；
+1. 在 `xiao-types` 增加并发类型和候选 A 能力判定；按 D-1 乙在 `xiao-syntax`
+   增加 `thread<T>`、`task<T>`、`shared<T>`、`shared_mut<T>`、`lock_guard<T>` 和
+   `runtime`/`pool` 的专用注解语法；
 2. 让类型检查器能识别 `std.concurrent` 的签名、多边界值、返回类型和诊断；
 3. 在 `xiao-lifetime` 产生 `TaskBoundary`/`ThreadBoundary` 事实和 Runtime ID；
 4. 在 `xiao-ir` 记录跨线程值、边界动作、所有权/释放、取消检查，并把 verifier 补全；
@@ -76,48 +78,54 @@
 
 ## 四、实施前必须裁定的设计点
 
-以下不是重新选择 22A 语义，而是 22B 的落地形状；建议值不自动生效。
+以下不是重新选择 22A 语义，而是 22B 的落地形状。星崽已于 2026-10-24 完成裁定：
+**D-1 取乙，D-2～D-8 取甲**；各小节保留备选作历史记录。
 
 ### D-1（类型注解语法）是否开放 `thread<T>` 等显式注解？
 
-- **甲（建议）**：22B 只加类型表示和推导，不扩用户类型注解语法；`thread<T>` 等由
+- **甲**：22B 只加类型表示和推导，不扩用户类型注解语法；`thread<T>` 等由
   `std.concurrent` 签名和表达式推断得到。22E 若需要显式注解再补语法。
-- **乙**：在 `DeclaredType`/`FunctionTypeAnnotation` 增加 `thread<T>`、`task<T>`、
-  `shared<T>`、`shared_mut<T>`、`lock_guard<T>` 的专用语法，同步 parser/AST/type checker。
+- **乙（最终选择）**：在 `DeclaredType`/`FunctionTypeAnnotation` 增加 `thread<T>`、`task<T>`、
+  `shared<T>`、`shared_mut<T>`、`lock_guard<T>` 的专用语法，同步 parser/AST/type checker；
+  `runtime`/`pool` 为非泛型注解。
 - **丙**：一次引入通用泛型类型语法，支持所有 `Name<...>`；范围远大于 22B。
 
-甲能避免把 22B 变成泛型语法批次；乙适合“用户必须能写类型”的场景；丙不建议。
+**最终选择：乙。** 只扩这组并发类型的专用解析，不引入通用泛型语法；需要同步
+`DeclaredType`、`FunctionTypeAnnotation`、`TypeTerm` 的使用点、`type_checker` 的注解转换、
+`xiao-ir` 的 `lower_declared_type`/`lower_function_annotation` 和语法负例测试。
 
 ### D-2（普通句柄的身份）`X03-TYPE-031` 对准哪些值？
 
 现状是 `StrongHandle`/`WeakHandle` 只存在于 `xiao-runtime`，语言 `Type` 没有普通句柄。
 可选：
 
-- **甲（建议）**：新增内部 `Type::OrdinaryHandle`（不开放用户语法），代表普通
+- **甲（最终选择）**：新增内部 `Type::OrdinaryHandle`（不开放用户语法），代表普通
   `StrongHandle`/`WeakHandle` 或不可共享的运行时句柄；`thread`/`task`/`runtime`/`pool`/
   `lock_guard` 同属不可跨线程句柄族；`X03-TYPE-031` 对它们生效。
 - **乙**：不引入普通句柄类型，所有无共享能力的值都按 `X03-TYPE-030` 拒绝；这会让 031
   没有语言层生产者，和 22A 的两类诊断不一致。
 - **丙**：向用户开放 `handle<T>` 语法和构造；超出 22B 范围。
 
-甲给出 031 的真实类型身份；必须在实现前确认 `xiao-runtime` 的句柄是否会进入类型检查器。
+**最终选择：甲。** 普通句柄只作为内部类型/IR 身份，不进入 D-1 的用户注解语法；22B 的
+测试夹具和 intrinsic/runtime 签名可以产生它，22C 再决定实际 Runtime 值如何暴露身份。
 
 ### D-3（句柄所有权）`join`/`detach`/`wait` 的“消费”怎么强制？
 
 22A 规定 `join`/`detach`/`wait` 消费句柄，`cancel` 不消费；`runtime`/`pool` 是可复制
 别名。现有类型系统没有线性/使用后移动检查。
 
-- **甲（建议）**：只对 `thread<T>`/`task<T>` 增加“已消费”状态，在类型检查或 lowering
+- **甲（最终选择）**：只对 `thread<T>`/`task<T>` 增加“已消费”状态，在类型检查或 lowering
   拒绝再次使用；`runtime`/`pool`/`shared<T>` 可复制；`lock_guard` 受作用域约束。
 - **乙**：消费只作为 Runtime 错误，类型层不强制；22C 负责。
 - **丙**：引入通用线性类型系统；范围过大。
 
-甲更符合 22A 的“消费”措辞；需要确认 use-after-move 诊断的身份（建议复用现有函数/绑定诊断，
-不新增 X03 码，除非另行裁定）。
+**最终选择：甲。** `join`/`detach`/`wait` 标记 thread/task 已消费，`cancel` 只借用；
+`runtime`/`pool` 保持可复制别名，`shared<T>` 可复制，`lock_guard` 不可逃逸。使用后移动的
+诊断优先复用现有绑定/函数参数诊断；若现有身份不足，再单独登记，不复用 030–032 的语义。
 
 ### D-4（边界事实映射）哪些操作产生哪个事实？
 
-建议：
+**最终选择：甲。**
 
 | 操作 | `task_boundary` | `thread_boundary` | Runtime ID |
 | --- | --- | --- | --- |
@@ -126,12 +134,12 @@
 | 同线程挂起/未来协程 | true | false | 当前 Runtime |
 | `join`/`wait`/`detach` | 不产生新事实 | 不产生新事实 | 沿用所属句柄 |
 
-备选：`submit` 的 `thread_boundary` 先记 false，等 22C 证明 worker 固定；但这会和
-“池任务可迁移”的模型冲突。建议按上表，且所有事实只由显式 lowering 产生。
+所有事实只由显式 `spawn`/`submit` lowering 产生，不能按变量名或函数名推断。备选是
+`submit` 的 `thread_boundary` 先记 false；这与“池任务可迁移”的模型冲突，不采用。
 
 ### D-5（IR 形状与快照兼容）
 
-建议：
+**最终选择：甲。**
 
 - 在 `IrOwnership` 增加可选字段：
   - `cross_thread_facts: Vec<IrCrossThreadFact>`，字段
@@ -150,49 +158,53 @@
   5. 没有显式 `spawn`/`submit` lowering 就不得产生事实；
   6. 取消检查不能出现在清理动作之后，取消等待点与锁/任务操作对应。
 
-备选：把三类数据放到新的顶层 `IrConcurrency`；快照结构更清晰，但会扩 `IrProgram`。
-建议先按 `IrOwnership` 扩展，减少顶层结构变化。
+不采用新的顶层 `IrConcurrency`；本批按 `IrOwnership` 扩展，减少 `IrProgram` 顶层变化。
+新增字段必须用 `#[serde(default)]`，旧快照先保持可读；只有必填结构或 `IrType` 变体破坏
+往返时才提升版本。
 
 ### D-6（`std.concurrent` 的签名从哪里来）
 
 22B 需要类型检查 `spawn`/`submit`/`shared_read` 等调用，但 22E 才实现标准库。
 
-- **甲（建议）**：22B 在 `xiao-types`（或测试夹具）提供**签名-only**的
+- **甲（最终选择）**：22B 在 `xiao-types`（或测试夹具）提供**签名-only**的
   `std.concurrent` 类型表；不生成 `stdlib/concurrent.xiao`，不接 VM/LLVM。
 - **乙**：在 `xiao-intrinsics` 增加 `status=planned` 的声明（无 VM/ABI 绑定），22C/22E 接手。
 - **丙**：22B 直接写 `stdlib/concurrent.xiao` 函数体；超出 22B 边界，不建议。
 
-甲让 22B 可独立测试类型规则；乙需要扩 intrinsic schema 和校验。无论选哪个，22E 才负责
-用户可导入的真实模块。
+**最终选择：甲。** 22B 只提供类型层签名和测试夹具；22E 才负责用户可导入的真实模块，
+22C 负责 Runtime/ABI 接线。
 
 ### D-7（多边界值的静态上限）
 
 22A 规定最多 64 个边界参数、单值 16 MiB、整帧 64 MiB；超限的运行时错误是
 `X06-RUNTIME-029`。22B 需要决定 65 个参数在类型检查阶段报什么：
 
-- 甲（建议）：复用函数调用参数诊断（不新增 X03 码），并在 lowering 生成边界动作前拒绝；
-- 乙：新增一个并发类型诊断（需扩展 030–032 之外，和 22A 固定映射冲突）；
-- 丙：只留到 Runtime 029；类型检查接受 65 个参数。
+- **甲（最终选择）**：复用函数调用参数诊断（不新增 X03 码），并在 lowering 生成边界
+  动作前拒绝；
+- **乙**：新增一个并发类型诊断（需扩展 030–032 之外，和 22A 固定映射冲突）；
+- **丙**：只留到 Runtime 029；类型检查接受 65 个参数。
 
-甲避免把运行时上限伪装成静态语义；具体诊断身份实施前确认。
+**最终选择：甲。** 超过 64 个实参在调用参数检查阶段拒绝，复用现有函数参数诊断；
+`X06-RUNTIME-029` 只保留给运行时单值/整帧上限，不把静态错误伪装成运行时错误。
 
 ### D-8（取消/边界动作的 IR 粒度）
 
-- **甲（建议）**：只记录边界动作、取消安全点和等待点，不改现有 CFG 形状；
+- **甲（最终选择）**：只记录边界动作、取消安全点和等待点，不改现有 CFG 形状；
   `IrCancellationCheck` 用位置/类别表达，22C 负责真实等待。
 - **乙**：新增取消专用控制流边；会扩 IR verifier 和快照。
 - **丙**：22B 完全不记录，交给 22C；与 22 阶段“取消边界”目标不符。
 
-甲足够让 22C 消费，且不把 Runtime 调度细节写进类型 IR。
+**最终选择：甲。** 22B 记录取消安全点/等待点，不扩取消专用 CFG；真实持锁等待、唤醒和
+超时由 22C 实现。这样 22C 有明确输入，且不把 Runtime 调度细节写进类型 IR。
 
 ## 五、实施步骤
 
 | 步 | 内容 | 验证 |
 | --- | --- | --- |
 | 0 | 基线核对：22A-FIX 契约、当前 `Type`/`IrType`/lifetime 结构、快照版本 | 文档/代码读取 |
-| 1 | 类型模型：新增 `Thread`/`Task`/`Runtime`/`Pool`/`Shared`/`SharedMut`/`LockGuard`（以及 D-2 选择的普通句柄）；补 Display/统一/lower/restore | `xiao-types` 单测；`xiao-ir` 类型往返 |
+| 1 | 类型模型与语法：新增 `Thread`/`Task`/`Runtime`/`Pool`/`Shared`/`SharedMut`/`LockGuard` 和内部 `OrdinaryHandle`；按 D-1 乙扩 `DeclaredType`/`FunctionTypeAnnotation`/parser；补 Display/统一/lower/restore | `xiao-types`/`xiao-syntax` 单测；`xiao-ir` 类型往返 |
 | 2 | 能力表：实现候选 A 递归判定和诊断；shared/shared_mut 按 tag；可变容器/动态/资源/普通句柄拒绝 | 正/负例、`X03-TYPE-030..032` |
-| 3 | 签名面：按 D-6 提供 `std.concurrent` 签名；检查多值、返回类型、消费状态 | 调用类型检查；不执行 Runtime |
+| 3 | 签名面：按 D-6 在 `xiao-types` 提供签名-only `std.concurrent`；检查多值、返回类型、消费状态 | 调用类型检查；不执行 Runtime |
 | 4 | 生命周期：新增 boundary fact 容器；在显式 spawn/submit lowering 产生事实；Runtime ID 传播；release plan | `a06_lifetime` 扩展；无名称启发式 |
 | 5 | IR：新增事实/边界动作/取消检查；补 verifier；处理快照兼容和版本 | JSON 往返、非法结构、旧快照 |
 | 6 | 诊断/i18n：新增 030–032、006–008 常量与中英消息；参数结构化 | 诊断断言 code/message_id |
@@ -207,6 +219,8 @@
 - 拒绝：`array`/`set`/`dict`/字典表/字典列、普通句柄、`dynamic`、resource；
 - `shared_mut<T>` 跨 Runtime 拒绝；`shared<T>` 只读跨 Runtime 接受；
 - `thread<T>`/`task<T>` 的 `join`/`detach`/`wait` 消费与 `cancel` 不消费；
+- D-1 乙的专用注解语法：`thread<int>`、`shared<str>`、`runtime`、`pool` 可往返；
+  非法/泛型越界（如 `foo<int>`、缺参数）产生稳定语法诊断；
 - 多值参数、返回类型、64 个上限的诊断（按 D-7）。
 
 ### 6.2 生命周期层
@@ -253,19 +267,24 @@ git diff --check
 3. **不许**按变量名/函数名推断 `CrossThread` 事实；
 4. **不许**把普通句柄或 `shared_mut` 跨 Runtime 放行；
 5. **不许**用运行时 029 代替 64 参数上限的静态诊断（按 D-7 裁定）；
-6. **不许**在未裁定 D-1～D-8 前写死类型语法或 IR 形状；
+6. **不许**重新选择已裁定的 D-1～D-8（D-1 乙、其余甲）；类型语法和 IR 形状按本文写死；
 7. **不许**把 `planned` 的 UseDocs 页面改成 `verified`；
 8. **不许**在没有旧快照/版本策略的情况下改 `IrType`/`IrOwnership` 的必填结构。
 
 ## 九、风险
 
-1. **普通句柄没有语言类型**：不解决 D-2，`X03-TYPE-031` 可能没有真实生产者。
+1. **普通句柄身份**：D-2 已选内部 `OrdinaryHandle`；若 22C 没有实际值产生该类型，
+   `X03-TYPE-031` 只能由测试夹具/内部签名触发，不能假装已有用户路径。
 2. **消费语义需要线性检查**：现有类型系统没有 affine 状态，D-3 选择甲会扩类型检查器。
-3. **`submit` 的线程边界**：池任务可能换 worker，D-4 取 false 会让 22C 与“可迁移”模型冲突。
-4. **IR 快照兼容**：新增字段和 `IrType` 变体可能破坏旧快照；D-5 必须明确版本策略。
-5. **签名面越过边界**：D-6 若选丙，会把 22E 的标准库实现提前到 22B。
+3. **`submit` 的线程边界**：D-4 取 true 是保守事实；若 22C 固定 worker，需要在事实/验证中
+   明确是否仍保留保守值，不能静默改写 22B 记录。
+4. **IR 快照兼容**：新增字段和 `IrType` 变体可能破坏旧快照；D-5 的兼容/版本策略必须通过。
+5. **签名面漂移**：D-6 的 `xiao-types` 签名表必须与 22E 的真实 `std.concurrent` 一致；
+   类型层和标准库实现不能各有一套名称/所有权。
 6. **事实来源漂移**：只有显式 lowering 能产生事实；名称启发式会让 VM/LLVM 分叉。
 7. **诊断撞号**：X03/X06 新号必须与现有注册表对账；不能用 029 冒充静态错误。
+8. **D-1 扩语法**：专用注解语法会触及 parser/AST/type checker；只扩并发类型，不能顺手
+   引入通用泛型或改变既有 `set`/`dict` 注解。
 
 ## 十、落点
 
@@ -275,7 +294,7 @@ docs/DevDocs/22-concurrency-execution-and-shared-handles.md  22B 链接与交接
 docs/DevDocs/12-tests-and-milestones.md                 P0 的 22B 入口
 docs/DevDocs/README.md                                  22B 索引
 core/rust/crates/xiao-types/                            类型与能力表
-core/rust/crates/xiao-syntax/                           仅当 D-1 选乙/丙时
+core/rust/crates/xiao-syntax/                           D-1 乙的专用注解语法/parser
 core/rust/crates/xiao-lifetime/                         boundary facts/诊断
 core/rust/crates/xiao-ir/                               IrType/IrOwnership/verifier/快照
 core/rust/crates/xiao-i18n/                             新诊断中英消息

@@ -675,6 +675,28 @@ F-9 的文档卫生同步为 `module: stdlib.xiao-standard-library`；`35caa80`/
 仍保持 planned UseDocs
 入口，不把未实现能力写成已发布 API。22B 现在可以按 [22A 修正契约](22a-concurrency-freeze.md#29-22a-fix-修正契约2026-10-24八项均取甲) 开始。
 
+### 22B 类型/生命周期/IR 裁定（2026-10-24）
+
+星崽已确认 D-1 取乙、D-2～D-8 取甲：
+
+1. **类型注解**：增加 `thread<T>`、`task<T>`、`shared<T>`、`shared_mut<T>`、`lock_guard<T>`
+   和 `runtime`/`pool` 的专用注解语法；不引入通用泛型语法；
+2. **普通句柄**：新增内部 `Type::OrdinaryHandle`，不开放用户语法；`thread`/`task`/`runtime`/
+   `pool`/`lock_guard` 属于不可跨线程句柄族，`X03-TYPE-031` 对它们生效；
+3. **句柄消费**：`thread<T>`/`task<T>` 的 `join`/`detach`/`wait` 做使用后移动检查，
+   `cancel` 只借用；`runtime`/`pool`/`shared<T>` 可复制，`lock_guard` 不可逃逸；
+4. **边界事实**：`spawn` 和 `submit` 都产生 `TaskBoundary + ThreadBoundary`（池任务可能
+   换 worker），Runtime ID 使用目标 Runtime；同线程挂起只产生任务事实；
+5. **IR 形状**：在 `IrOwnership` 增加 `cross_thread_facts`、`boundary_transfers`、
+   `cancellation_checks`，用 `serde(default)` 保持旧快照可读；必要时再提升 IR 版本；
+6. **签名来源**：22B 在 `xiao-types` 提供签名-only 的 `std.concurrent` 表，不写
+   `stdlib/concurrent.xiao`，不接 VM/LLVM；22E 再接真实模块；
+7. **参数上限**：超过 64 个边界实参在调用参数检查阶段拒绝，复用现有函数参数诊断，
+   不用 `X06-RUNTIME-029` 冒充静态错误；
+8. **取消 IR**：只记录取消安全点/等待点的轻量检查，不扩取消专用 CFG；真实等待由 22C 实现。
+
+规划与现状核对见 [22B](22b-concurrency-types-lifetime-ir.md)。
+
 ### 错误模型与诊断
 
 - 首版采用“结构化可恢复错误 + 致命 `panic`”的混合模型。可恢复运行时错误使用统一 `XiaoError`，由 `try`、`catch`、`finally` 和 `raise` 传播与处理；虚拟机不变量损坏、损坏字节码、无法安全建立错误对象的内存耗尽和硬件异常进入致命终止路径，普通 `catch` 不得伪装恢复。
