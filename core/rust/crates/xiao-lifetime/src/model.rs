@@ -144,7 +144,7 @@ pub fn classify_boundary_type(ty: &Type) -> BoundaryValueKind {
         Type::Shared(value) if xiao_types::is_send(value) && xiao_types::is_sync(value) => {
             BoundaryValueKind::Shared
         }
-        Type::SharedMut(value) if xiao_types::can_share_mutably(value) => {
+        Type::SharedMut(value) if xiao_types::is_send(value) && xiao_types::is_sync(value) => {
             BoundaryValueKind::SharedMut
         }
         Type::Shared(_) | Type::SharedMut(_) => BoundaryValueKind::Dynamic,
