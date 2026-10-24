@@ -599,6 +599,13 @@ required-feature 门禁。精确 Runtime 创建/传输、二进制格式头/字�
 节点 1,000,000；诊断按 X03-TYPE-030+ / X06-LIFETIME-006+ / X06-RUNTIME-027+ 固定最小映射。
 22A §2.6 已起草 API/诊断/二进制 tag/任务池契约，待星崽最终审阅后生效。
 
+第五轮细化：32B lock state 为 atomic u32 + 4B 保留（头对齐 8B）；二进制头 12B =
+magic 4B + u16 版本 + u32 长度 + u8 tag + 1B 保留（大端）；跨 Runtime 只允许只读
+`shared<T>`，`shared_mut<T>` 编译期拒绝；任务池 capacity 必填 1–256；诊断接受 §2.6
+映射并新增 X06-RUNTIME-032；共享类型名为 `shared<T>`/`shared_mut<T>`/`lock_guard<T>`；
+tag 0–12 正常、13=resource/14=dynamic 仅预留且动态/资源仍编译期拒绝；22E 首版同步
+UseDocs 和 ABI 1.17 兼容矩阵。
+
 这些选择仍不写产品代码；22A §2.6 契约审阅和 §2.2 剩余细化完成前不能进入 22B。
 
 ### 错误模型与诊断
