@@ -20,7 +20,7 @@
 | 简单源级接线 | 通过 | `spawn`/`join`、`submit`/`wait`、`shared_mut` 跨 Runtime、`lock_guard` 逃逸用例已有 |
 | 参数化入口函数 | **通过** | 真实函数类型按位置检查边界实参，混合 `int`/`str` 参数通过 |
 | 混合边界实参 | **通过** | 参数类型不匹配稳定报 `X04-TYPE-002` |
-| 消费状态作用域 | **通过** | 函数作用域快照、遮蔽重置和重新赋值均有回归 |
+| 消费状态作用域 | **通过** | 绑定身份覆盖别名；分支、循环和 try 路径在合流点保守合并；遮蔽与重新赋值有回归 |
 | `shared_read` 消费 | **通过** | 源值复用稳定报 `X04-TYPE-002` |
 
 > 上述历史失败已转为 `22b_concurrency_wiring.rs` 的正式源级回归；本批不保留临时夹具。
@@ -65,8 +65,11 @@ Type::Function { parameters: Vec::new(), return_type: T }
 **后果**：不同函数/分支中的同名 `thread`/`task` 共享消费状态；变量遮蔽、重新赋值或
 绑定新句柄都会被误判。
 
-**已完成**：消费状态使用作用域快照隔离；进入函数、循环、catch 和表方法时重置新绑定，
-作用域退出恢复外层状态，重新赋值清理旧状态。源码回归覆盖同名跨函数和重新赋值。
+**已完成**：线程/任务句柄及会被消费的命名值使用绑定身份；别名共享消费状态。函数和表方法
+使用作用域快照隔离，局部绑定在作用域退出时清理，重新赋值建立新身份。`if`/`elif`/`else`
+分支互相隔离后在合流点合并，循环拒绝重复消费循环入口已有值并允许每次迭代先创建新值，
+`try`/`catch`/`finally` 也按保守合流传播可能路径的消费结果。源码回归覆盖跨函数、别名、重新赋值、
+互斥分支、分支后复用、循环入口/循环出口复用、循环内新值及 try 后复用。
 
 ### F-4（高，已修复）`shared_read`/`shared_mut`/`lock_write` 没有强制消费
 
@@ -117,8 +120,9 @@ shared 能力和 `source_runtime_id` 相关 IR 路径。
 
 修复前 `escape.rs` 把 `shared_mut` 的来源 Runtime 写成 0，依赖隐含假设。
 
-**已完成**：来源 Runtime 从 `BoundaryFacts` 的 lowering 上下文读取；默认入口上下文为 0，
-不在 `escape.rs` 中硬编码来源值。
+**已完成**：来源 Runtime 从 `BoundaryFacts` 的 lowering 上下文读取。`current_runtime` 使用与
+显式 Runtime 值身份区间分离的非零静态身份标签，显式 Runtime 使用由值身份导出的非零稳定标签；
+IR verifier 拒绝目标或来源 Runtime ID 为 0，符合 22A 对 0 无效值的冻结约束。
 
 ### F-9（中，已修复）文档/证据状态仍需回写
 
@@ -183,14 +187,16 @@ shared 能力和 `source_runtime_id` 相关 IR 路径。
 1. 测试 crate 增加模块文档；`spawn`/`submit` 的第二个实参现在按真实函数类型检查，
    函数返回类型实例化 `thread<T>`/`task<T>`；边界实参数量必须与函数形参数量严格一致，
    额外实参拒绝，不表示隐式闭包捕获。
-2. 消费状态在类型检查器的词法作用域快照中隔离；函数参数、循环变量、catch 绑定和表方法
-   参数会创建新的局部状态，重新赋值会清除旧状态。
+2. 消费状态按绑定身份追踪别名，并在类型检查器的词法作用域快照中隔离；函数参数、循环变量、
+   catch 绑定和表方法参数会创建新的局部状态，重新赋值会建立新身份；分支、循环与 try 路径在
+   控制流合流处传播消费，循环会拒绝重复消费入口已有值。
 3. `FunctionSignature` 保留 `consumed_parameters`；`shared_read`、`shared_mut` 和
    `lock_write` 在调用点消费命名源值，`read`、`lock`、`lock_read` 保持借用语义。
 4. `shared_read`/`shared_mut` 对输入值执行候选 A Send/Sync 检查；数组、动态值、资源和
    其他不满足能力表的值被静态拒绝。
 5. `source_runtime_id` 作为可选、旧快照兼容的 IR 字段登记；`shared_mut` 来源 Runtime
-   从 lowering 上下文读取，不再在表达式 lowering 中写死来源值。
+   从 lowering 上下文读取，不再在表达式 lowering 中写死来源值；当前 Runtime 使用与显式值身份区间
+   分离的非零静态标签，IR verifier 拒绝无效的零 Runtime ID。
 6. `cancel` 保持借用语义；取消后仍可再次 `cancel` 或执行 `join`/`wait`，消费操作才会
    标记句柄不可复用。
 

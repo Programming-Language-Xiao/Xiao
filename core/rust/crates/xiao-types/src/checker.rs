@@ -108,8 +108,16 @@ pub struct TypeChecker<'source> {
     current_function_key: Option<String>,
     /// 命名并发句柄的静态消费状态；仅用于调用检查。
     concurrency_handle_states: BTreeMap<String, crate::concurrency::HandleConsumption>,
+    /// 名称绑定可能指向的线程/任务句柄身份；别名共享同一消费状态。
+    concurrency_binding_handles: BTreeMap<String, BTreeSet<String>>,
+    /// 下一个编译期句柄身份编号。
+    next_concurrency_handle_id: u64,
+    /// 每个活跃循环入口已经存在的句柄身份。
+    loop_concurrency_handles: Vec<BTreeSet<String>>,
     /// 已消费的命名并发值；名称键只在当前词法作用域快照内有效。
     consumed_concurrency_bindings: BTreeSet<String>,
+    /// 已消费的值身份；变量别名共享此状态。
+    consumed_concurrency_values: BTreeSet<String>,
     /// 进入作用域前保存的并发状态。
     concurrency_scope_snapshots: Vec<ConcurrencyScopeState>,
     /// 已由 `std.concurrent` 导入绑定解析出的调用点。
@@ -129,9 +137,11 @@ struct FunctionFrame {
 }
 
 #[derive(Clone, Debug, Default)]
-struct ConcurrencyScopeState {
+pub(super) struct ConcurrencyScopeState {
     handles: BTreeMap<String, crate::concurrency::HandleConsumption>,
+    binding_handles: BTreeMap<String, BTreeSet<String>>,
     consumed: BTreeSet<String>,
+    consumed_values: BTreeSet<String>,
 }
 
 impl<'source> TypeChecker<'source> {
@@ -161,7 +171,11 @@ impl<'source> TypeChecker<'source> {
             current_function: None,
             current_function_key: None,
             concurrency_handle_states: BTreeMap::new(),
+            concurrency_binding_handles: BTreeMap::new(),
+            next_concurrency_handle_id: 0,
+            loop_concurrency_handles: Vec::new(),
             consumed_concurrency_bindings: BTreeSet::new(),
+            consumed_concurrency_values: BTreeSet::new(),
             concurrency_scope_snapshots: Vec::new(),
             concurrency_calls: Vec::new(),
             mutating_functions: BTreeSet::new(),
@@ -174,7 +188,9 @@ impl<'source> TypeChecker<'source> {
         self.concurrency_scope_snapshots
             .push(ConcurrencyScopeState {
                 handles: self.concurrency_handle_states.clone(),
+                binding_handles: self.concurrency_binding_handles.clone(),
                 consumed: self.consumed_concurrency_bindings.clone(),
+                consumed_values: self.consumed_concurrency_values.clone(),
             });
         self.environment.push_scope();
     }
@@ -184,18 +200,188 @@ impl<'source> TypeChecker<'source> {
         let _ = self.environment.pop_scope();
         if let Some(snapshot) = self.concurrency_scope_snapshots.pop() {
             self.concurrency_handle_states = snapshot.handles;
+            self.concurrency_binding_handles = snapshot.binding_handles;
             self.consumed_concurrency_bindings = snapshot.consumed;
+            self.consumed_concurrency_values = snapshot.consumed_values;
         }
+    }
+
+    /// 退出分支作用域，并返回只针对外层绑定的消费状态。
+    ///
+    /// 分支内部声明会在退出时丢弃；对外层绑定的消费和重新赋值则作为该
+    /// 分支的控制流结果返回，交给调用方与其他可达路径合并。
+    pub(super) fn pop_scope_with_concurrency_flow(&mut self) -> ConcurrencyScopeState {
+        let local_bindings = self.environment.pop_scope().unwrap_or_default();
+        let mut outgoing = ConcurrencyScopeState {
+            handles: self.concurrency_handle_states.clone(),
+            binding_handles: self.concurrency_binding_handles.clone(),
+            consumed: self.consumed_concurrency_bindings.clone(),
+            consumed_values: self.consumed_concurrency_values.clone(),
+        };
+        if let Some(snapshot) = self.concurrency_scope_snapshots.pop() {
+            for key in local_bindings.keys() {
+                outgoing.binding_handles.remove(key);
+                if let Some(handles) = snapshot.binding_handles.get(key) {
+                    outgoing
+                        .binding_handles
+                        .insert(key.clone(), handles.clone());
+                }
+                outgoing.consumed.remove(key);
+                if snapshot.consumed.contains(key) {
+                    outgoing.consumed.insert(key.clone());
+                }
+            }
+            self.concurrency_handle_states = snapshot.handles;
+            self.concurrency_binding_handles = snapshot.binding_handles;
+            self.consumed_concurrency_bindings = snapshot.consumed;
+            self.consumed_concurrency_values = snapshot.consumed_values;
+        }
+        outgoing
+    }
+
+    /// 捕获当前并发绑定状态，用于分支输入与输出的隔离。
+    pub(super) fn concurrency_scope_state(&self) -> ConcurrencyScopeState {
+        ConcurrencyScopeState {
+            handles: self.concurrency_handle_states.clone(),
+            binding_handles: self.concurrency_binding_handles.clone(),
+            consumed: self.consumed_concurrency_bindings.clone(),
+            consumed_values: self.consumed_concurrency_values.clone(),
+        }
+    }
+
+    /// 恢复一条控制流路径的并发绑定状态。
+    pub(super) fn restore_concurrency_scope_state(&mut self, state: &ConcurrencyScopeState) {
+        self.concurrency_handle_states = state.handles.clone();
+        self.concurrency_binding_handles = state.binding_handles.clone();
+        self.consumed_concurrency_bindings = state.consumed.clone();
+        self.consumed_concurrency_values = state.consumed_values.clone();
+    }
+
+    /// 合并可能到达同一位置的路径；任一可达路径消费绑定，合流后都视为已消费。
+    pub(super) fn merge_concurrency_scope_states(&mut self, states: &[ConcurrencyScopeState]) {
+        let mut merged = ConcurrencyScopeState::default();
+        for state in states {
+            merged.consumed.extend(state.consumed.iter().cloned());
+            merged
+                .consumed_values
+                .extend(state.consumed_values.iter().cloned());
+            for (key, incoming) in &state.binding_handles {
+                merged
+                    .binding_handles
+                    .entry(key.clone())
+                    .or_default()
+                    .extend(incoming.iter().cloned());
+            }
+            for (key, incoming) in &state.handles {
+                merged
+                    .handles
+                    .entry(key.clone())
+                    .and_modify(|existing| existing.consumed |= incoming.consumed)
+                    .or_insert(*incoming);
+            }
+        }
+        self.restore_concurrency_scope_state(&merged);
     }
 
     /// 重置一个被重新赋值或重新声明的并发绑定。
     pub(super) fn reset_concurrency_binding(&mut self, key: &str) {
-        self.concurrency_handle_states.remove(key);
+        self.concurrency_binding_handles.remove(key);
         self.consumed_concurrency_bindings.remove(key);
+    }
+
+    /// 读取绑定表达式已经关联的句柄身份。
+    pub(super) fn concurrency_handle_identity(
+        &self,
+        expression: &xiao_syntax::Expression,
+    ) -> Option<BTreeSet<String>> {
+        match expression {
+            xiao_syntax::Expression::Name(name) => {
+                let key = self.name_key(*name);
+                self.concurrency_binding_handles
+                    .get(&key)
+                    .cloned()
+                    .or_else(|| Some(BTreeSet::from([key])))
+            }
+            xiao_syntax::Expression::Group { expression, .. } => {
+                self.concurrency_handle_identity(expression)
+            }
+            _ => None,
+        }
+    }
+
+    /// 返回名称或分组表达式对应的绑定键。
+    pub(super) fn concurrency_binding_key(
+        &self,
+        expression: &xiao_syntax::Expression,
+    ) -> Option<String> {
+        match expression {
+            xiao_syntax::Expression::Name(name) => Some(self.name_key(*name)),
+            xiao_syntax::Expression::Group { expression, .. } => {
+                self.concurrency_binding_key(expression)
+            }
+            _ => None,
+        }
+    }
+
+    /// 将新值或别名绑定到名称，并为 thread/task 建立消费状态。
+    pub(super) fn bind_concurrency_handle(
+        &mut self,
+        key: String,
+        ty: &crate::types::Type,
+        source: Option<BTreeSet<String>>,
+    ) {
+        let kind = match ty {
+            crate::types::Type::Thread(_) => Some(crate::concurrency::ConcurrentHandleKind::Thread),
+            crate::types::Type::Task(_) => Some(crate::concurrency::ConcurrentHandleKind::Task),
+            _ => None,
+        };
+        let identity = source.unwrap_or_else(|| {
+            let identity = format!("value:{}", self.next_concurrency_handle_id);
+            self.next_concurrency_handle_id = self.next_concurrency_handle_id.saturating_add(1);
+            BTreeSet::from([identity])
+        });
+        if let Some(kind) = kind {
+            for id in &identity {
+                self.concurrency_handle_states
+                    .entry(id.clone())
+                    .or_insert_with(|| crate::concurrency::HandleConsumption::new(kind));
+            }
+        }
+        self.concurrency_binding_handles.insert(key, identity);
+    }
+
+    /// 登记一个可重复执行的循环入口句柄集合。
+    pub(super) fn push_concurrency_loop(&mut self) {
+        self.loop_concurrency_handles.push(
+            self.concurrency_binding_handles
+                .values()
+                .flat_map(|handles| handles.iter().cloned())
+                .collect(),
+        );
+    }
+
+    /// 离开一个可重复执行的循环入口。
+    pub(super) fn pop_concurrency_loop(&mut self) {
+        let _ = self.loop_concurrency_handles.pop();
+    }
+
+    /// 判断句柄是否在任一活跃循环入口前就已存在。
+    pub(super) fn is_loop_carried_concurrency_handle(&self, identities: &BTreeSet<String>) -> bool {
+        !self.loop_concurrency_handles.is_empty()
+            && (self
+                .loop_concurrency_handles
+                .iter()
+                .any(|loop_handles| identities.iter().any(|id| loop_handles.contains(id))))
     }
 
     /// 标记并发调用消费的命名实参。
     pub(super) fn mark_concurrency_binding_consumed(&mut self, key: String) {
+        if let Some(identities) = self.concurrency_binding_handles.get(&key) {
+            self.consumed_concurrency_values
+                .extend(identities.iter().cloned());
+        } else {
+            self.consumed_concurrency_values.insert(key.clone());
+        }
         self.consumed_concurrency_bindings.insert(key);
     }
 
@@ -205,7 +391,25 @@ impl<'source> TypeChecker<'source> {
         key: &str,
         span: xiao_source::SourceSpan,
     ) {
-        if self.consumed_concurrency_bindings.contains(key) {
+        let handle_consumed = self
+            .concurrency_binding_handles
+            .get(key)
+            .is_some_and(|identities| {
+                identities.iter().any(|identity| {
+                    self.concurrency_handle_states
+                        .get(identity)
+                        .is_some_and(|state| state.consumed)
+                })
+            });
+        let value_consumed = self
+            .concurrency_binding_handles
+            .get(key)
+            .is_some_and(|identities| {
+                identities
+                    .iter()
+                    .any(|identity| self.consumed_concurrency_values.contains(identity))
+            });
+        if self.consumed_concurrency_bindings.contains(key) || handle_consumed || value_consumed {
             self.type_error(
                 crate::diagnostics::FUNCTION_CALL_CODE,
                 "x04.type.call_argument",

@@ -15,6 +15,12 @@ use xiao_types::Type;
 /// 校验这个不透明的数值，不负责创建或回收 Runtime。
 pub type RuntimeId = u64;
 
+/// 编译期 lowering 用来代表当前 Runtime 的非零身份标签。
+///
+/// 它只用于静态事实之间的同一性比较，并与基于 `ValueId` 的显式 Runtime 标签区间分离；
+/// 运行时分配的实际 ID 仍由 Runtime 创建流程提供。
+const CURRENT_RUNTIME_ID: RuntimeId = RuntimeId::MAX;
+
 /// 一个静态作用域的稳定身份。
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct ScopeId(u32);
@@ -387,6 +393,11 @@ pub enum BoundaryFactError {
         /// 新提交的 Runtime ID。
         incoming: RuntimeId,
     },
+    /// Runtime ID 0 是保留的无效身份。
+    InvalidRuntimeId {
+        /// 收到的无效 Runtime ID。
+        runtime_id: RuntimeId,
+    },
     /// 值的类别不允许进入并发边界。
     UnsupportedValue {
         /// 冲突的值身份。
@@ -425,6 +436,7 @@ impl BoundaryFactError {
             | Self::SharedMutSourceUnknown { .. } => Some(BoundaryKind::ThreadBoundary),
             Self::DuplicateValue { .. }
             | Self::RuntimeIdConflict { .. }
+            | Self::InvalidRuntimeId { .. }
             | Self::UnsupportedValue { .. } => None,
         }
     }
@@ -443,6 +455,9 @@ impl std::fmt::Display for BoundaryFactError {
                 "值 {} 的 Runtime ID 冲突：已有 {existing}，收到 {incoming}",
                 value.get()
             ),
+            Self::InvalidRuntimeId { runtime_id } => {
+                write!(formatter, "Runtime ID {runtime_id} 无效，0 保留为无效值")
+            }
             Self::UnsupportedValue { value, kind } => write!(
                 formatter,
                 "值 {} 的类别 {} 不能进入并发边界",
@@ -482,16 +497,27 @@ impl std::error::Error for BoundaryFactError {}
 ///
 /// 该容器不访问 AST，也不识别函数/变量名称。调用方必须从已经解析并完成
 /// 类型判定的 `spawn`/`submit` lowering 入口提交事实。
-#[derive(Clone, Debug, Eq, PartialEq, Default)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct BoundaryFacts {
-    /// 当前静态 lowering 上下文的 Runtime ID；默认入口为 0，可由前端显式设置。
-    pub current_runtime_id: RuntimeId,
+    /// 当前静态 lowering 上下文的非零 Runtime 身份标签；默认值与显式 Runtime 标签区间分离。
+    current_runtime_id: RuntimeId,
     /// 值到来源 Runtime ID 的事实。
     pub runtime_ids: RuntimeIdFacts,
     /// 每个边界值对应的一条跨线程事实。
     pub cross_thread_facts: Vec<CrossThreadFact>,
     /// 登记阶段产生的结构化诊断；结果合并时一并交给调用方。
     pub diagnostics: Vec<Diagnostic>,
+}
+
+impl Default for BoundaryFacts {
+    fn default() -> Self {
+        Self {
+            current_runtime_id: CURRENT_RUNTIME_ID,
+            runtime_ids: RuntimeIdFacts::default(),
+            cross_thread_facts: Vec::new(),
+            diagnostics: Vec::new(),
+        }
+    }
 }
 
 impl BoundaryFacts {
@@ -503,7 +529,7 @@ impl BoundaryFacts {
 
     /// 设置当前 lowering 上下文的 Runtime ID。
     #[must_use]
-    pub const fn with_current_runtime_id(mut self, runtime_id: RuntimeId) -> Self {
+    pub fn with_current_runtime_id(mut self, runtime_id: RuntimeId) -> Self {
         self.current_runtime_id = runtime_id;
         self
     }
@@ -521,6 +547,12 @@ impl BoundaryFacts {
         runtime_id: RuntimeId,
         span: SourceSpan,
     ) -> Result<(), BoundaryFactError> {
+        if runtime_id == 0 {
+            let error = BoundaryFactError::InvalidRuntimeId { runtime_id };
+            self.diagnostics
+                .push(crate::diagnostics::runtime_id_invalid(span, &error));
+            return Err(error);
+        }
         let fact = RuntimeIdFact {
             value,
             runtime_id,
@@ -704,6 +736,12 @@ impl BoundaryFacts {
     where
         I: IntoIterator<Item = BoundaryValue>,
     {
+        if runtime_id == 0 {
+            let error = BoundaryFactError::InvalidRuntimeId { runtime_id };
+            self.diagnostics
+                .push(crate::diagnostics::runtime_id_invalid(span, &error));
+            return Err(error);
+        }
         let values = values.into_iter().collect::<Vec<_>>();
         let (task_boundary, thread_boundary) = match operation {
             BoundaryOperation::Spawn | BoundaryOperation::Submit => (true, true),
@@ -838,6 +876,11 @@ impl BoundaryFacts {
             let Some(source_runtime_id) = value.source_runtime_id else {
                 return Some(BoundaryFactError::SharedMutSourceUnknown { value: value.value });
             };
+            if source_runtime_id == 0 {
+                return Some(BoundaryFactError::InvalidRuntimeId {
+                    runtime_id: source_runtime_id,
+                });
+            }
             if source_runtime_id != target_runtime_id {
                 return Some(BoundaryFactError::SharedMutCrossRuntime {
                     value: value.value,
@@ -1700,6 +1743,37 @@ mod tests {
         ids.insert(fact).expect("同一事实可重复插入");
         assert_eq!(ids.as_map().len(), 1);
         assert_eq!(ids.get(ValueId::new(8)), Some(&fact));
+    }
+
+    #[test]
+    fn boundary_facts_reject_reserved_zero_runtime_ids() {
+        let mut facts = BoundaryFacts::new();
+        assert!(matches!(
+            facts.register_runtime_id(ValueId::new(1), 0, span()),
+            Err(BoundaryFactError::InvalidRuntimeId { runtime_id: 0 })
+        ));
+        assert!(matches!(
+            facts.record_spawn_values(std::iter::empty::<BoundaryValue>(), 0, span()),
+            Err(BoundaryFactError::InvalidRuntimeId { runtime_id: 0 })
+        ));
+
+        let invalid_source = facts.record_spawn_values(
+            [BoundaryValue::new(ValueId::new(2), BoundaryValueKind::SharedMut).from_runtime(0)],
+            1,
+            span(),
+        );
+        assert!(matches!(
+            invalid_source,
+            Err(BoundaryFactError::InvalidRuntimeId { runtime_id: 0 })
+        ));
+        assert!(
+            facts
+                .diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.code() == "X06-LIFETIME-008")
+                .count()
+                >= 3
+        );
     }
 
     #[test]

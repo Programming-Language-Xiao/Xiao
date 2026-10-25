@@ -860,6 +860,20 @@ fn validate_boundary_facts(
     let mut fact_counts = std::collections::BTreeMap::<u32, usize>::new();
     for (index, fact) in ownership.cross_thread_facts.iter().enumerate() {
         let path = format!("ownership.cross_thread_facts[{index}]");
+        if fact.runtime_id == 0 {
+            result.errors.push(error(
+                &format!("{path}.runtime_id"),
+                "Runtime ID 0 固定为无效值",
+                Some(fact.span),
+            ));
+        }
+        if fact.source_runtime_id == Some(0) {
+            result.errors.push(error(
+                &format!("{path}.source_runtime_id"),
+                "来源 Runtime ID 0 固定为无效值",
+                Some(fact.span),
+            ));
+        }
         if !value_ids.contains(&fact.value) {
             result.errors.push(error(
                 &format!("{path}.value"),

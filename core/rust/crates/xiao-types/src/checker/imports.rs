@@ -317,8 +317,7 @@ impl TypeChecker<'_> {
                         format!("{} 的句柄类型不正确：{}", operation, ty),
                     );
                 }
-                if let Expression::Name(name) = &argument.value {
-                    let key = self.name_key(*name);
+                if let Some(identities) = self.concurrency_handle_identity(&argument.value) {
                     let handle_kind = match ty {
                         Type::Thread(_) => Some(ConcurrentHandleKind::Thread),
                         Type::Task(_) => Some(ConcurrentHandleKind::Task),
@@ -331,24 +330,37 @@ impl TypeChecker<'_> {
                         "cancel" => Some(HandleOperation::Cancel),
                         _ => None,
                     };
+                    let consumes = !matches!(operation, "cancel");
+                    let loop_carried =
+                        consumes && self.is_loop_carried_concurrency_handle(&identities);
+                    if loop_carried {
+                        self.type_error(
+                            FUNCTION_CALL_CODE,
+                            "x04.type.call_argument",
+                            argument.value.span(),
+                            "循环可能重复消费同一个并发句柄；请在每次迭代内创建新句柄".to_owned(),
+                        );
+                    }
                     let consumed = handle_kind
                         .zip(handle_operation)
-                        .map(|(kind, operation)| {
-                            self.concurrency_handle_states
-                                .entry(key.clone())
-                                .or_insert_with(|| crate::concurrency::HandleConsumption::new(kind))
-                                .apply(operation)
+                        .map(|(kind, handle_operation)| {
+                            identities.iter().all(|identity| {
+                                self.concurrency_handle_states
+                                    .entry(identity.clone())
+                                    .or_insert_with(|| {
+                                        crate::concurrency::HandleConsumption::new(kind)
+                                    })
+                                    .apply(handle_operation)
+                            })
                         })
                         .is_some_and(|applied| !applied);
-                    if consumed {
+                    if consumed && !loop_carried {
                         self.type_error(
                             FUNCTION_CALL_CODE,
                             "x04.type.call_argument",
                             argument.value.span(),
                             "并发句柄已经被消费，不能再次使用".to_owned(),
                         );
-                    } else if !matches!(operation, "cancel") {
-                        self.mark_concurrency_binding_consumed(key);
                     }
                 }
             }
@@ -358,20 +370,30 @@ impl TypeChecker<'_> {
                 let Some(argument) = arguments.get(index) else {
                     continue;
                 };
-                let Expression::Name(name) = &argument.value else {
+                let Some(key) = self.concurrency_binding_key(&argument.value) else {
                     continue;
                 };
-                let key = self.name_key(*name);
-                if self.consumed_concurrency_bindings.contains(&key) {
+                let identities = self
+                    .concurrency_handle_identity(&argument.value)
+                    .unwrap_or_default();
+                let already_consumed = self.consumed_concurrency_bindings.contains(&key)
+                    || identities
+                        .iter()
+                        .any(|identity| self.consumed_concurrency_values.contains(identity));
+                let loop_carried = self.is_loop_carried_concurrency_handle(&identities);
+                if already_consumed || loop_carried {
                     self.type_error(
                         FUNCTION_CALL_CODE,
                         "x04.type.call_argument",
                         argument.value.span(),
-                        "并发值已经被消费，不能再次使用".to_owned(),
+                        if loop_carried {
+                            "循环可能重复消费同一个并发值；请在每次迭代内创建新值".to_owned()
+                        } else {
+                            "并发值已经被消费，不能再次使用".to_owned()
+                        },
                     );
-                } else {
-                    self.mark_concurrency_binding_consumed(key);
                 }
+                self.mark_concurrency_binding_consumed(key);
             }
         }
         if is_std_concurrent {

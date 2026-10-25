@@ -29,7 +29,7 @@ fn submit_uses_pool_owner_runtime_and_wait_lowering() {
         .compile(&FrontendRequest::from_text(source))
         .expect("submit/wait 的静态接线应通过");
     assert_eq!(artifact.ir.ownership.cross_thread_facts.len(), 1);
-    assert_eq!(artifact.ir.ownership.cross_thread_facts[0].runtime_id, 0);
+    assert_ne!(artifact.ir.ownership.cross_thread_facts[0].runtime_id, 0);
     assert_eq!(
         artifact
             .ir
@@ -67,6 +67,49 @@ fn concurrency_consumption_is_scoped_and_reassignment_resets_it() {
     FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(reassigned))
         .expect("重新赋值新句柄应重置消费状态");
+}
+
+#[test]
+fn concurrency_consumption_flows_out_of_control_flow_scopes() {
+    let consumed_in_branch = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work)\nif true\n    join(thread)\njoin(thread)\n";
+    assert!(error_codes(consumed_in_branch).contains(&"X04-TYPE-002".to_owned()));
+
+    let mutually_exclusive_branches = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work)\nif true\n    join(thread)\nelse\n    join(thread)\n";
+    FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(mutually_exclusive_branches))
+        .expect("互斥分支可各自消费同一外层句柄");
+
+    let consumed_in_loop = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work)\nwhile false\n    join(thread)\njoin(thread)\n";
+    assert!(error_codes(consumed_in_loop).contains(&"X04-TYPE-002".to_owned()));
+
+    let consumed_repeatedly_in_loop = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work)\nwhile false\n    join(thread)\n";
+    assert!(error_codes(consumed_repeatedly_in_loop).contains(&"X04-TYPE-002".to_owned()));
+
+    let fresh_handle_per_iteration = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work)\nwhile false\n    thread = spawn(rt, work)\n    join(thread)\n";
+    FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(fresh_handle_per_iteration))
+        .expect("每次循环先创建新句柄时可以消费该迭代的句柄");
+
+    let consumed_shared_value_in_loop =
+        "from std.concurrent import shared_read\nvalue = 1\nwhile false\n    shared_read(value)\n";
+    assert!(error_codes(consumed_shared_value_in_loop).contains(&"X04-TYPE-002".to_owned()));
+
+    let refreshed_shared_value_in_loop = "from std.concurrent import shared_read\nvalue = 1\nwhile false\n    value = 1\n    shared_read(value)\n";
+    FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(refreshed_shared_value_in_loop))
+        .expect("每次循环先写入新值时可以消费该迭代的值");
+
+    let consumed_in_try = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work)\ntry\n    join(thread)\ncatch err as ArithmeticError\n    ignored = 0\njoin(thread)\n";
+    assert!(error_codes(consumed_in_try).contains(&"X04-TYPE-002".to_owned()));
+}
+
+#[test]
+fn aliases_share_thread_and_task_consumption_state() {
+    let thread_alias = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work)\nalias = thread\njoin(thread)\njoin(alias)\n";
+    assert!(error_codes(thread_alias).contains(&"X04-TYPE-002".to_owned()));
+
+    let task_alias = "from std.concurrent import current_runtime, pool_create, submit, wait\ndef work() -> int\n    return 1\nrt = current_runtime()\npool = pool_create(rt, 1)\ntask = submit(pool, work)\nalias = task\nwait(task)\nwait(alias)\n";
+    assert!(error_codes(task_alias).contains(&"X04-TYPE-002".to_owned()));
 }
 
 fn error_codes(source: &str) -> Vec<String> {
@@ -126,6 +169,11 @@ fn shared_mut_cross_runtime_is_rejected_by_lifetime_lowering() {
         .compile(&FrontendRequest::from_text(same_runtime))
         .expect("current_runtime 下的 shared_mut 应保持同一 Runtime");
     assert_eq!(artifact.ir.ownership.cross_thread_facts.len(), 1);
+    assert_ne!(artifact.ir.ownership.cross_thread_facts[0].runtime_id, 0);
+    assert_eq!(
+        artifact.ir.ownership.cross_thread_facts[0].source_runtime_id,
+        Some(artifact.ir.ownership.cross_thread_facts[0].runtime_id)
+    );
 }
 
 #[test]
@@ -152,6 +200,9 @@ fn shared_operations_consume_sources_and_check_capabilities() {
     let shared_mut =
         "from std.concurrent import shared_mut\nvalue = 1\nshared_mut(value)\nresult = value + 1\n";
     assert!(error_codes(shared_mut).contains(&"X04-TYPE-002".to_owned()));
+
+    let aliased_shared_source = "from std.concurrent import shared_read\nvalue = 1\nalias = value\nshared_read(value)\nresult = alias + 1\n";
+    assert!(error_codes(aliased_shared_source).contains(&"X04-TYPE-002".to_owned()));
 
     let lock_write = "from std.concurrent import shared_mut, lock, lock_write\nvalue = shared_mut(1)\nguard = lock(value)\nnew_value = 2\nlock_write(guard, new_value)\nresult = new_value + 1\n";
     assert!(error_codes(lock_write).contains(&"X04-TYPE-002".to_owned()));

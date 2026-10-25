@@ -1945,7 +1945,7 @@ impl<'source> EscapeAnalyzer<'source> {
             .chain(fact.produced.iter())
             .any(|value| self.current_runtime_values.contains(value))
         {
-            return 0;
+            return self.result.boundary_facts.current_runtime_id();
         }
         fact.references
             .first()

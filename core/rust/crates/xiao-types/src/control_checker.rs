@@ -15,7 +15,7 @@ use crate::diagnostics::{
 };
 use crate::types::Type;
 
-use super::{RuntimeCheckKind, TypeChecker};
+use super::{ConcurrencyScopeState, RuntimeCheckKind, TypeChecker};
 
 impl<'source> TypeChecker<'source> {
     /// 检查 `try` 的主体、按序 `catch` 和最终清理体。
@@ -26,7 +26,8 @@ impl<'source> TypeChecker<'source> {
         finally_body: Option<&[Statement]>,
         _span: SourceSpan,
     ) {
-        self.check_scoped_body(body);
+        let body_state = self.check_scoped_body_with_concurrency_flow(body);
+        let mut exit_states = vec![body_state.clone()];
         let mut saw_broad = false;
         for catch in catches {
             let type_name = self.source.slice(catch.error_type.span);
@@ -59,6 +60,7 @@ impl<'source> TypeChecker<'source> {
                 );
             }
             saw_broad |= is_broad;
+            self.restore_concurrency_scope_state(&body_state);
             self.push_scope();
             self.reset_concurrency_binding(&self.name_key(catch.binding));
             if let Err(error) =
@@ -71,10 +73,12 @@ impl<'source> TypeChecker<'source> {
             for statement in &catch.body {
                 self.check_statement(statement);
             }
-            self.pop_scope();
+            exit_states.push(self.pop_scope_with_concurrency_flow());
         }
+        self.merge_concurrency_scope_states(&exit_states);
         if let Some(body) = finally_body {
-            self.check_scoped_body(body);
+            let final_state = self.check_scoped_body_with_concurrency_flow(body);
+            self.restore_concurrency_scope_state(&final_state);
         }
     }
 
@@ -105,14 +109,21 @@ impl<'source> TypeChecker<'source> {
         else_body: Option<&[Statement]>,
     ) {
         self.check_condition(condition);
-        self.check_scoped_body(body);
+        let mut false_state = self.concurrency_scope_state();
+        let mut exit_states = vec![self.check_scoped_body_with_concurrency_flow(body)];
         for branch in elif_branches {
+            self.restore_concurrency_scope_state(&false_state);
             self.check_condition(&branch.condition);
-            self.check_scoped_body(&branch.body);
+            false_state = self.concurrency_scope_state();
+            exit_states.push(self.check_scoped_body_with_concurrency_flow(&branch.body));
         }
         if let Some(body) = else_body {
-            self.check_scoped_body(body);
+            self.restore_concurrency_scope_state(&false_state);
+            exit_states.push(self.check_scoped_body_with_concurrency_flow(body));
+        } else {
+            exit_states.push(false_state);
         }
+        self.merge_concurrency_scope_states(&exit_states);
     }
 
     /// 检查一个 `for name in iterable` 循环。
@@ -150,28 +161,38 @@ impl<'source> TypeChecker<'source> {
         if dynamic_iterable {
             self.push_runtime_check(iterable.span(), RuntimeCheckKind::Iterable);
         }
+        let before_loop = self.concurrency_scope_state();
+        self.push_concurrency_loop();
         self.loop_depth = self.loop_depth.saturating_add(1);
         self.push_scope();
         self.reset_concurrency_binding(&self.name_key(target));
         self.register_top_level_functions(body);
         if let Err(error) =
             self.environment
-                .declare_mutable(self.name_key(target), element_type, true)
+                .declare_mutable(self.name_key(target), element_type.clone(), true)
         {
             self.environment_error(target.span, error);
+        } else {
+            self.bind_concurrency_handle(self.name_key(target), &element_type, None);
         }
         for statement in body {
             self.check_statement(statement);
         }
-        self.pop_scope();
+        let body_state = self.pop_scope_with_concurrency_flow();
+        self.pop_concurrency_loop();
+        self.merge_concurrency_scope_states(&[before_loop, body_state]);
         self.loop_depth = self.loop_depth.saturating_sub(1);
     }
 
     /// 检查一个 `while condition` 循环。
     pub(super) fn check_while_statement(&mut self, condition: &Expression, body: &[Statement]) {
-        self.check_condition(condition);
+        self.push_concurrency_loop();
         self.loop_depth = self.loop_depth.saturating_add(1);
-        self.check_scoped_body(body);
+        self.check_condition(condition);
+        let condition_state = self.concurrency_scope_state();
+        let body_state = self.check_scoped_body_with_concurrency_flow(body);
+        self.pop_concurrency_loop();
+        self.merge_concurrency_scope_states(&[condition_state, body_state]);
         self.loop_depth = self.loop_depth.saturating_sub(1);
     }
 
@@ -308,14 +329,17 @@ impl<'source> TypeChecker<'source> {
         }
     }
 
-    /// 在独立类型作用域中检查一个缩进体。
-    fn check_scoped_body(&mut self, body: &[Statement]) {
+    /// 在独立作用域中检查一个缩进体，并返回外层绑定的消费状态。
+    fn check_scoped_body_with_concurrency_flow(
+        &mut self,
+        body: &[Statement],
+    ) -> ConcurrencyScopeState {
         self.push_scope();
         self.register_top_level_functions(body);
         for statement in body {
             self.check_statement(statement);
         }
-        self.pop_scope();
+        self.pop_scope_with_concurrency_flow()
     }
 }
 

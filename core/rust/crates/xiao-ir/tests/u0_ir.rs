@@ -279,6 +279,14 @@ fn verifies_boundary_facts_and_cleanup_order() {
     let mut invalid = program.clone();
     invalid.ownership.boundary_transfers[0].cleanup_order = vec![];
     assert!(!IrValidator::new().validate(&invalid).is_success());
+
+    let mut invalid = program.clone();
+    invalid.ownership.cross_thread_facts[0].runtime_id = 0;
+    assert!(!IrValidator::new().validate(&invalid).is_success());
+
+    let mut invalid = program;
+    invalid.ownership.cross_thread_facts[0].source_runtime_id = Some(0);
+    assert!(!IrValidator::new().validate(&invalid).is_success());
 }
 
 #[test]

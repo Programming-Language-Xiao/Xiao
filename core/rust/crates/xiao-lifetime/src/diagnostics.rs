@@ -141,6 +141,36 @@ pub fn runtime_id_conflict(span: SourceSpan, error: &BoundaryFactError) -> Diagn
     ])
 }
 
+/// 为保留的无效 Runtime ID 创建结构化诊断。
+#[must_use]
+pub fn runtime_id_invalid(span: SourceSpan, error: &BoundaryFactError) -> Diagnostic {
+    let runtime_id = match error {
+        BoundaryFactError::InvalidRuntimeId { runtime_id } => *runtime_id,
+        _ => 0,
+    };
+    Diagnostic::new(
+        RUNTIME_BOUNDARY_CODE,
+        "x06.lifetime.runtime_boundary",
+        Severity::Error,
+        Some(span),
+        format!("Runtime ID {runtime_id} 无效，0 保留为无效值"),
+    )
+    .with_params([
+        (
+            "boundary_kind".to_owned(),
+            DiagnosticParam::Text("runtime".to_owned()),
+        ),
+        (
+            "runtime_id".to_owned(),
+            DiagnosticParam::Integer(i128::from(runtime_id)),
+        ),
+        (
+            "source_span".to_owned(),
+            DiagnosticParam::Text(format!("{}..{}", span.start(), span.end())),
+        ),
+    ])
+}
+
 /// 为边界事实冲突或非法传播创建稳定诊断。
 #[must_use]
 pub fn boundary_fact_error(
@@ -150,6 +180,7 @@ pub fn boundary_fact_error(
 ) -> Diagnostic {
     let (code, message_id, boundary_kind) = match error {
         BoundaryFactError::RuntimeIdConflict { .. }
+        | BoundaryFactError::InvalidRuntimeId { .. }
         | BoundaryFactError::SharedMutCrossRuntime { .. }
         | BoundaryFactError::SharedMutSourceUnknown { .. } => (
             RUNTIME_BOUNDARY_CODE,
@@ -178,12 +209,14 @@ pub fn boundary_fact_error(
         | BoundaryFactError::SharedMutCrossRuntime { value, .. }
         | BoundaryFactError::SharedMutSourceUnknown { value }
         | BoundaryFactError::RuntimeIdConflict { value, .. } => *value,
+        BoundaryFactError::InvalidRuntimeId { .. } => ValueId::new(0),
     };
     let runtime_id = match error {
         BoundaryFactError::SharedMutCrossRuntime { target, .. }
         | BoundaryFactError::RuntimeIdConflict {
             incoming: target, ..
-        } => *target,
+        }
+        | BoundaryFactError::InvalidRuntimeId { runtime_id: target } => *target,
         BoundaryFactError::SharedMutSourceUnknown { .. } => 0,
         _ => 0,
     };

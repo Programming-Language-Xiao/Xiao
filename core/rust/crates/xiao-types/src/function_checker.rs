@@ -288,6 +288,7 @@ impl<'source> TypeChecker<'source> {
 
         let previous_frame = self.current_function.take();
         let previous_loop_depth = self.loop_depth;
+        let previous_loop_concurrency_handles = std::mem::take(&mut self.loop_concurrency_handles);
         self.current_function = Some(FunctionFrame {
             return_type: signature.return_type.clone(),
             saw_return: false,
@@ -302,6 +303,12 @@ impl<'source> TypeChecker<'source> {
                 true,
             ) {
                 self.environment_error(name.span, error);
+            } else {
+                self.bind_concurrency_handle(
+                    parameter_signature.name.clone(),
+                    &parameter_signature.ty,
+                    None,
+                );
             }
         }
         self.check_resource_parameter_boundaries(parameters);
@@ -357,6 +364,7 @@ impl<'source> TypeChecker<'source> {
         };
         let _ = self.environment.replace_scheme(&key, scheme);
         self.loop_depth = previous_loop_depth;
+        self.loop_concurrency_handles = previous_loop_concurrency_handles;
         self.current_function = previous_frame;
         self.current_function_key = previous_function_key;
         self.context.pop_rigid(rigid_type_parameters);

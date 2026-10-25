@@ -562,6 +562,7 @@ impl<'source> TypeChecker<'source> {
             return_type: return_type.clone(),
             saw_return: false,
         });
+        let previous_loop_concurrency_handles = std::mem::take(&mut self.loop_concurrency_handles);
         self.loop_depth = 0;
         self.push_scope();
         for (index, parameter) in local_parameters.iter().enumerate() {
@@ -577,6 +578,8 @@ impl<'source> TypeChecker<'source> {
             };
             if let Err(error) = result {
                 self.environment_error(method_signature.span, error);
+            } else {
+                self.bind_concurrency_handle(parameter.name.clone(), &parameter.ty, None);
             }
         }
         self.check_resource_parameter_boundaries(parameters);
@@ -610,6 +613,7 @@ impl<'source> TypeChecker<'source> {
             method_signature.span,
         );
         self.pop_scope();
+        self.loop_concurrency_handles = previous_loop_concurrency_handles;
         self.loop_depth = previous_loop_depth;
         self.current_function = previous_frame;
         if let Some(member) = signature.members.get_mut(&method_key) {

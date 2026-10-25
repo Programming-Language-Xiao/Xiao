@@ -54,18 +54,40 @@ impl<'source> TypeChecker<'source> {
                 constraint_path,
                 value,
                 ..
-            } => self.check_declaration(
-                *target,
-                declared_type,
-                constraint_path.as_ref(),
-                value.as_ref(),
-            ),
+            } => {
+                let key = self.name_key(*target);
+                let already_declared = self.environment.contains_current(&key);
+                let source = value
+                    .as_ref()
+                    .and_then(|value| self.concurrency_handle_identity(value));
+                self.check_declaration(
+                    *target,
+                    declared_type,
+                    constraint_path.as_ref(),
+                    value.as_ref(),
+                );
+                if !already_declared && self.environment.contains_current(&key) {
+                    self.bind_concurrency_handle(
+                        key,
+                        &declared_type_to_type(declared_type),
+                        source,
+                    );
+                }
+            }
             Statement::ConstDeclaration {
                 target,
                 declared_type,
                 value,
                 ..
-            } => self.check_const_declaration(*target, declared_type.as_ref(), value),
+            } => {
+                let key = self.name_key(*target);
+                let already_declared = self.environment.contains_current(&key);
+                let source = self.concurrency_handle_identity(value);
+                self.check_const_declaration(*target, declared_type.as_ref(), value);
+                if !already_declared && self.environment.contains_current(&key) {
+                    self.bind_concurrency_handle(key, &Type::Dynamic, source);
+                }
+            }
             Statement::Import { import, .. } => self.check_import(import),
             Statement::Function {
                 name,
@@ -129,6 +151,8 @@ impl<'source> TypeChecker<'source> {
         let value_type = self.check_expression(value);
         self.register_array_alias(target, value, &value_type);
         let key = self.name_key(target);
+        let handle_source = self.concurrency_handle_identity(value);
+        let had_binding = self.environment.lookup(&key).is_some();
         self.reset_concurrency_binding(&key);
         if let Some(binding) = self.environment.lookup(&key).cloned() {
             let existing_type = self.context.instantiate(binding.scheme());
@@ -184,16 +208,23 @@ impl<'source> TypeChecker<'source> {
                 } else if let Some(binding) = self.environment.lookup_mut(&key) {
                     binding.set_imported_interfaces(imported_function, imported_module);
                 }
+                self.bind_concurrency_handle(
+                    key.clone(),
+                    &value_type,
+                    had_binding.then(|| handle_source.clone()).flatten(),
+                );
             }
             return;
         }
         let mut binding = crate::environment::Binding::mutable(
-            crate::types::TypeScheme::monomorphic(value_type),
+            crate::types::TypeScheme::monomorphic(value_type.clone()),
             true,
         );
         binding.set_imported_interfaces(imported_function, imported_module);
         if let Err(error) = self.environment.declare(key, binding) {
             self.environment_error(target.span, error);
+        } else {
+            self.bind_concurrency_handle(self.name_key(target), &value_type, handle_source);
         }
     }
 
