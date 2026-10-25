@@ -331,8 +331,9 @@ impl TypeChecker<'_> {
                         _ => None,
                     };
                     let consumes = !matches!(operation, "cancel");
-                    let loop_carried =
-                        consumes && self.is_loop_carried_concurrency_handle(&identities);
+                    let loop_carried = !self.is_checking_unreachable()
+                        && consumes
+                        && self.is_loop_carried_concurrency_handle(&identities);
                     if loop_carried {
                         self.type_error(
                             FUNCTION_CALL_CODE,
@@ -341,19 +342,23 @@ impl TypeChecker<'_> {
                             "循环可能重复消费同一个并发句柄；请在每次迭代内创建新句柄".to_owned(),
                         );
                     }
-                    let consumed = handle_kind
-                        .zip(handle_operation)
-                        .map(|(kind, handle_operation)| {
-                            identities.iter().all(|identity| {
-                                self.concurrency_handle_states
-                                    .entry(identity.clone())
-                                    .or_insert_with(|| {
-                                        crate::concurrency::HandleConsumption::new(kind)
-                                    })
-                                    .apply(handle_operation)
+                    let consumed = if self.is_checking_unreachable() {
+                        false
+                    } else {
+                        handle_kind
+                            .zip(handle_operation)
+                            .map(|(kind, handle_operation)| {
+                                identities.iter().all(|identity| {
+                                    self.concurrency_handle_states
+                                        .entry(identity.clone())
+                                        .or_insert_with(|| {
+                                            crate::concurrency::HandleConsumption::new(kind)
+                                        })
+                                        .apply(handle_operation)
+                                })
                             })
-                        })
-                        .is_some_and(|applied| !applied);
+                            .is_some_and(|applied| !applied)
+                    };
                     if consumed && !loop_carried {
                         self.type_error(
                             FUNCTION_CALL_CODE,
@@ -376,11 +381,13 @@ impl TypeChecker<'_> {
                 let identities = self
                     .concurrency_handle_identity(&argument.value)
                     .unwrap_or_default();
-                let already_consumed = self.consumed_concurrency_bindings.contains(&key)
-                    || identities
-                        .iter()
-                        .any(|identity| self.consumed_concurrency_values.contains(identity));
-                let loop_carried = self.is_loop_carried_concurrency_handle(&identities);
+                let already_consumed = !self.is_checking_unreachable()
+                    && (self.consumed_concurrency_bindings.contains(&key)
+                        || identities
+                            .iter()
+                            .any(|identity| self.consumed_concurrency_values.contains(identity)));
+                let loop_carried = !self.is_checking_unreachable()
+                    && self.is_loop_carried_concurrency_handle(&identities);
                 if already_consumed || loop_carried {
                     self.type_error(
                         FUNCTION_CALL_CODE,
@@ -393,7 +400,9 @@ impl TypeChecker<'_> {
                         },
                     );
                 }
-                self.mark_concurrency_binding_consumed(key);
+                if !self.is_checking_unreachable() {
+                    self.mark_concurrency_binding_consumed(key);
+                }
             }
         }
         if is_std_concurrent {

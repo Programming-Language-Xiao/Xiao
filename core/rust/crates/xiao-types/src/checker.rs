@@ -120,6 +120,8 @@ pub struct TypeChecker<'source> {
     consumed_concurrency_values: BTreeSet<String>,
     /// 最近一条语句的并发控制流出口。
     last_concurrency_flow: Option<ConcurrencyFlow>,
+    /// 当前语句仅用于不可达路径的类型诊断；并发消费状态不得写回。
+    checking_unreachable: bool,
     /// 进入作用域前保存的并发状态。
     concurrency_scope_snapshots: Vec<ConcurrencyScopeState>,
     /// 已由 `std.concurrent` 导入绑定解析出的调用点。
@@ -157,6 +159,8 @@ pub(super) struct ConcurrencyFlow {
     pub(super) breaks: Vec<ConcurrencyScopeState>,
     /// `continue` 退出的状态。
     pub(super) continues: Vec<ConcurrencyScopeState>,
+    /// `raise` 产生的错误出口状态；可由外层 `catch` 消费。
+    pub(super) errors: Vec<ConcurrencyScopeState>,
 }
 
 impl<'source> TypeChecker<'source> {
@@ -192,6 +196,7 @@ impl<'source> TypeChecker<'source> {
             consumed_concurrency_bindings: BTreeSet::new(),
             consumed_concurrency_values: BTreeSet::new(),
             last_concurrency_flow: None,
+            checking_unreachable: false,
             concurrency_scope_snapshots: Vec::new(),
             concurrency_calls: Vec::new(),
             mutating_functions: BTreeSet::new(),
@@ -261,6 +266,7 @@ impl<'source> TypeChecker<'source> {
             returns: flow.returns.iter().map(project).collect(),
             breaks: flow.breaks.iter().map(project).collect(),
             continues: flow.continues.iter().map(project).collect(),
+            errors: flow.errors.iter().map(project).collect(),
         };
         self.restore_concurrency_scope_state(&snapshot);
         projected
@@ -332,6 +338,10 @@ impl<'source> TypeChecker<'source> {
             .iter()
             .flat_map(|flow| flow.continues.iter().cloned())
             .collect();
+        merged.errors = flows
+            .iter()
+            .flat_map(|flow| flow.errors.iter().cloned())
+            .collect();
         merged
     }
 
@@ -343,6 +353,16 @@ impl<'source> TypeChecker<'source> {
     /// 取出最近一条语句的控制流出口。
     pub(super) fn take_last_concurrency_flow(&mut self) -> Option<ConcurrencyFlow> {
         self.last_concurrency_flow.take()
+    }
+
+    /// 设置不可达语句检查模式。
+    pub(super) fn set_checking_unreachable(&mut self, value: bool) {
+        self.checking_unreachable = value;
+    }
+
+    /// 返回当前是否只检查不可达语句的类型。
+    pub(super) const fn is_checking_unreachable(&self) -> bool {
+        self.checking_unreachable
     }
 
     /// 重置一个被重新赋值或重新声明的并发绑定。

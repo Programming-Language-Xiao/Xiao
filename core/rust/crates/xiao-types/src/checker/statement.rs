@@ -195,7 +195,14 @@ impl<'source> TypeChecker<'source> {
             } => {
                 self.check_try_statement(body, catches, finally_body.as_deref(), *span);
             }
-            Statement::Raise { value, span, .. } => self.check_raise_statement(value, *span),
+            Statement::Raise { value, span, .. } => {
+                self.check_raise_statement(value, *span);
+                self.set_last_concurrency_flow(super::ConcurrencyFlow {
+                    normal: None,
+                    errors: vec![self.concurrency_scope_state()],
+                    ..super::ConcurrencyFlow::default()
+                });
+            }
         }
         if self.last_concurrency_flow.is_none() {
             self.set_last_concurrency_flow(super::ConcurrencyFlow {

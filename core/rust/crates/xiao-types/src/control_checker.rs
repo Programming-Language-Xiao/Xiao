@@ -15,7 +15,7 @@ use crate::diagnostics::{
 };
 use crate::types::Type;
 
-use super::{ConcurrencyFlow, RuntimeCheckKind, TypeChecker};
+use super::{ConcurrencyFlow, ConcurrencyScopeState, RuntimeCheckKind, TypeChecker};
 
 impl<'source> TypeChecker<'source> {
     /// 检查 `try` 的主体、按序 `catch` 和最终清理体。
@@ -27,7 +27,14 @@ impl<'source> TypeChecker<'source> {
         _span: SourceSpan,
     ) -> ConcurrencyFlow {
         let body_flow = self.check_scoped_body_with_concurrency_flow(body);
-        let mut flows = vec![body_flow.clone()];
+        let mut body_for_merge = body_flow.clone();
+        let mut flows = Vec::new();
+        if catches.is_empty() {
+            flows.push(body_for_merge.clone());
+        } else {
+            body_for_merge.errors.clear();
+            flows.push(body_for_merge.clone());
+        }
         let mut saw_broad = false;
         for catch in catches {
             let type_name = self.source.slice(catch.error_type.span);
@@ -60,9 +67,8 @@ impl<'source> TypeChecker<'source> {
                 );
             }
             saw_broad |= is_broad;
-            let catch_base = body_flow
-                .normal
-                .clone()
+            let catch_base = Self::merge_concurrency_scope_state_values(&body_flow.errors)
+                .or_else(|| body_flow.normal.clone())
                 .or_else(|| {
                     Self::merge_concurrency_scope_state_values(
                         &body_flow
@@ -112,6 +118,7 @@ impl<'source> TypeChecker<'source> {
                 combined.returns.extend(result.returns);
                 combined.breaks.extend(result.breaks);
                 combined.continues.extend(result.continues);
+                combined.errors.extend(result.errors);
                 result = combined;
             } else {
                 result = finally_flow;
@@ -124,6 +131,7 @@ impl<'source> TypeChecker<'source> {
                     .iter()
                     .chain(result.breaks.iter())
                     .chain(result.continues.iter())
+                    .chain(result.errors.iter())
                     .cloned()
                     .collect::<Vec<_>>(),
             )
@@ -247,6 +255,7 @@ impl<'source> TypeChecker<'source> {
         let result = ConcurrencyFlow {
             normal: Self::merge_concurrency_scope_state_values(&normal_states),
             returns: body_flow.returns,
+            errors: body_flow.errors,
             ..ConcurrencyFlow::default()
         };
         if let Some(state) = result.normal.as_ref() {
@@ -276,6 +285,7 @@ impl<'source> TypeChecker<'source> {
         let result = ConcurrencyFlow {
             normal: Self::merge_concurrency_scope_state_values(&normal_states),
             returns: body_flow.returns,
+            errors: body_flow.errors,
             ..ConcurrencyFlow::default()
         };
         if let Some(state) = result.normal.as_ref() {
@@ -423,9 +433,17 @@ impl<'source> TypeChecker<'source> {
         let initial = self.concurrency_scope_state();
         let mut normal = Some(initial.clone());
         let mut result = ConcurrencyFlow::default();
+        let mut unreachable_state: Option<ConcurrencyScopeState> = None;
         for statement in body {
             let Some(state) = normal.clone() else {
-                break;
+                let state = unreachable_state.clone().unwrap_or_else(|| initial.clone());
+                self.restore_concurrency_scope_state(&state);
+                self.set_checking_unreachable(true);
+                self.check_statement(statement);
+                self.set_checking_unreachable(false);
+                let _ = self.take_last_concurrency_flow();
+                self.restore_concurrency_scope_state(&state);
+                continue;
             };
             self.restore_concurrency_scope_state(&state);
             self.check_statement(statement);
@@ -438,7 +456,20 @@ impl<'source> TypeChecker<'source> {
             result.returns.extend(flow.returns);
             result.breaks.extend(flow.breaks);
             result.continues.extend(flow.continues);
+            result.errors.extend(flow.errors);
             normal = flow.normal;
+            if normal.is_none() && unreachable_state.is_none() {
+                unreachable_state = Self::merge_concurrency_scope_state_values(
+                    &result
+                        .returns
+                        .iter()
+                        .chain(result.breaks.iter())
+                        .chain(result.continues.iter())
+                        .chain(result.errors.iter())
+                        .cloned()
+                        .collect::<Vec<_>>(),
+                );
+            }
         }
         result.normal = normal;
         if let Some(state) = result.normal.as_ref() {
@@ -449,6 +480,7 @@ impl<'source> TypeChecker<'source> {
                 .iter()
                 .chain(result.breaks.iter())
                 .chain(result.continues.iter())
+                .chain(result.errors.iter())
                 .cloned()
                 .collect::<Vec<_>>(),
         ) {

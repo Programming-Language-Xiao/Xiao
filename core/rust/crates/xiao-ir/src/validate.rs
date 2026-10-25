@@ -918,10 +918,7 @@ fn validate_boundary_facts(
                 Some(transfer.span),
             ));
         }
-        if !matches!(
-            transfer.copy_kind.as_str(),
-            "deep_copy" | "serialization" | "serialize"
-        ) {
+        if !matches!(transfer.copy_kind.as_str(), "deep_copy" | "serialization") {
             result.errors.push(error(
                 &format!("{path}.copy_kind"),
                 "拷贝类别必须是 deep_copy 或 serialization",

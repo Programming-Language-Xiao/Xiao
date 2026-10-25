@@ -131,6 +131,21 @@ fn concurrency_consumption_merges_return_break_and_continue_exits() {
 }
 
 #[test]
+fn raise_error_exit_and_unreachable_type_checks_are_isolated() {
+    let raise_then_catch = "from std.concurrent import runtime_create, spawn, join\nrt = runtime_create()\ndef work() -> int\n    return 1\nthread = spawn(rt, work)\ntry\n    join(thread)\n    raise ArithmeticError(code = \"boom\")\ncatch err as Error\n    join(thread)\n";
+    assert!(error_codes(raise_then_catch).contains(&"X04-TYPE-002".to_owned()));
+
+    let return_type_error = "def bad() -> none\n    return\n    missing = unknown_name\nbad()\n";
+    assert!(error_codes(return_type_error).contains(&"X02-TYPE-001".to_owned()));
+
+    let break_type_error = "while true\n    break\n    missing = unknown_name\n";
+    assert!(error_codes(break_type_error).contains(&"X02-TYPE-001".to_owned()));
+
+    let continue_type_error = "while true\n    continue\n    missing = unknown_name\n";
+    assert!(error_codes(continue_type_error).contains(&"X02-TYPE-001".to_owned()));
+}
+
+#[test]
 fn aliases_share_thread_and_task_consumption_state() {
     let thread_alias = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work)\nalias = thread\njoin(thread)\njoin(alias)\n";
     assert!(error_codes(thread_alias).contains(&"X04-TYPE-002".to_owned()));
