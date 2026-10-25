@@ -82,7 +82,9 @@ pub struct XiaoSharedHandle {
     pub object_ptr: *mut u8,
 }
 
+/// 编译期锁定 C ABI 共享头尺寸。
 const _: () = assert!(std::mem::size_of::<XiaoSharedHeader>() == 32);
+/// 编译期锁定 C ABI 共享句柄包装尺寸。
 const _: () = assert!(std::mem::size_of::<XiaoSharedHandle>() == 16);
 
 /// 判断给定 Runtime 主/次版本是否满足产物要求；旧 Runtime 不接受较新的入口。

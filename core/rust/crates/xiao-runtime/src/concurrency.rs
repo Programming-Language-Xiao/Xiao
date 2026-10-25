@@ -62,10 +62,13 @@ pub struct SharedHeader {
     pub reserved: u32,
 }
 
+/// 编译期锁定共享头尺寸。
 const _: () = assert!(std::mem::size_of::<SharedHeader>() == 32);
+/// 编译期锁定共享头对齐。
 const _: () = assert!(std::mem::align_of::<SharedHeader>() == 8);
 
 impl SharedHeader {
+    /// 创建初始强/弱计数和 tag。
     fn new(tag: SharedTag) -> Self {
         Self {
             strong: AtomicU64::new(1),
@@ -78,6 +81,7 @@ impl SharedHeader {
 }
 
 #[repr(C)]
+/// 共享头与载荷的连续分配。
 struct SharedAllocation<T> {
     header: SharedHeader,
     payload: T,
@@ -95,6 +99,7 @@ pub enum SharedHandleError {
 }
 
 impl fmt::Display for SharedHandleError {
+    /// 输出开发者可读的构造错误。
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidRuntimeId => formatter.write_str("Runtime ID 0 无效"),
@@ -111,6 +116,7 @@ impl std::error::Error for SharedHandleError {}
 pub struct SharedLockCancelled;
 
 impl fmt::Display for SharedLockCancelled {
+    /// 输出取消原因。
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str("共享锁等待被取消")
     }
@@ -224,6 +230,7 @@ impl<T: Send + Sync> SharedHandle<T> {
 }
 
 impl<T> SharedHandle<T> {
+    /// 释放一个强引用，并在最后一个强引用时销毁载荷。
     fn release_strong(&mut self) {
         let allocation = unsafe { self.ptr.as_ref() };
         if allocation.header.strong.fetch_sub(1, Ordering::AcqRel) == 1 {
@@ -236,6 +243,7 @@ impl<T> SharedHandle<T> {
 }
 
 impl<T> Clone for SharedHandle<T> {
+    /// 原子增加强引用计数。
     fn clone(&self) -> Self {
         let header = unsafe { &self.ptr.as_ref().header };
         let previous = header.strong.fetch_add(1, Ordering::AcqRel);
@@ -249,12 +257,14 @@ impl<T> Clone for SharedHandle<T> {
 }
 
 impl<T> Drop for SharedHandle<T> {
+    /// 归还强引用。
     fn drop(&mut self) {
         self.release_strong();
     }
 }
 
 impl<T> fmt::Debug for SharedHandle<T> {
+    /// 输出不泄漏载荷的共享句柄摘要。
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let header = unsafe { &self.ptr.as_ref().header };
         formatter
@@ -315,6 +325,7 @@ impl<T: Send + Sync> SharedWeakHandle<T> {
 }
 
 impl<T> Clone for SharedWeakHandle<T> {
+    /// 原子增加弱引用计数。
     fn clone(&self) -> Self {
         let header = unsafe { &self.ptr.as_ref().header };
         let previous = header.weak.fetch_add(1, Ordering::AcqRel);
@@ -328,11 +339,13 @@ impl<T> Clone for SharedWeakHandle<T> {
 }
 
 impl<T> Drop for SharedWeakHandle<T> {
+    /// 归还弱引用。
     fn drop(&mut self) {
         release_weak(self.ptr);
     }
 }
 
+/// 归还弱引用并在头部最后一个弱引用释放时回收分配。
 fn release_weak<T>(ptr: NonNull<SharedAllocation<T>>) {
     let header = unsafe { &ptr.as_ref().header };
     if header.weak.fetch_sub(1, Ordering::AcqRel) == 1 {
@@ -350,18 +363,21 @@ pub struct SharedGuard<'a, T: Send + Sync> {
 impl<T: Send + Sync> std::ops::Deref for SharedGuard<'_, T> {
     type Target = T;
 
+    /// 返回共享守卫的只读载荷。
     fn deref(&self) -> &Self::Target {
         self.handle.get()
     }
 }
 
 impl<T: Send + Sync> std::ops::DerefMut for SharedGuard<'_, T> {
+    /// 返回共享守卫的可变载荷。
     fn deref_mut(&mut self) -> &mut Self::Target {
         unsafe { &mut (*self.handle.ptr.as_ptr()).payload }
     }
 }
 
 impl<T: Send + Sync> Drop for SharedGuard<'_, T> {
+    /// 释放锁状态并唤醒后续自旋者。
     fn drop(&mut self) {
         unsafe {
             self.handle
@@ -374,6 +390,7 @@ impl<T: Send + Sync> Drop for SharedGuard<'_, T> {
     }
 }
 
+/// 使用状态字 CAS 获取锁，支持取消轮询。
 fn acquire_lock(
     state: &AtomicU32,
     cancelled: Option<&AtomicBool>,
@@ -452,16 +469,19 @@ impl RuntimeRegistry {
 /// 进程内共享的默认 Runtime 注册表。
 #[must_use]
 pub fn global_runtime_registry() -> &'static RuntimeRegistry {
+    /// 进程级 Runtime 注册表单例。
     static REGISTRY: OnceLock<RuntimeRegistry> = OnceLock::new();
     REGISTRY.get_or_init(RuntimeRegistry::new)
 }
 
 #[cfg(test)]
+/// 共享头、锁和 Runtime ID 映射回归。
 mod tests {
     use super::*;
     use std::mem::{align_of, offset_of, size_of};
 
     #[test]
+    /// 共享头布局保持 32B/8B 契约。
     fn shared_header_layout_is_frozen() {
         assert_eq!(size_of::<SharedHeader>(), 32);
         assert_eq!(align_of::<SharedHeader>(), 8);
@@ -472,6 +492,7 @@ mod tests {
     }
 
     #[test]
+    /// 强弱引用与弱升级保持一次性回收。
     fn shared_counts_weak_upgrade_and_exact_drop() {
         let shared = SharedHandle::new(String::from("x"), 7, SharedTag::Mut);
         assert_eq!(shared.strong_count(), 1);
@@ -484,6 +505,7 @@ mod tests {
     }
 
     #[test]
+    /// 共享可变锁和取消状态可观察。
     fn shared_lock_supports_mutation_and_cancellation() {
         let shared = SharedHandle::new(1_u64, 9, SharedTag::Mut);
         {
@@ -499,6 +521,7 @@ mod tests {
     }
 
     #[test]
+    /// 静态标签映射到实际 Runtime ID，关闭后失效。
     fn runtime_registry_maps_and_closes_static_labels() {
         let registry = RuntimeRegistry::new();
         let id = registry.register(99).expect("静态标签应注册");

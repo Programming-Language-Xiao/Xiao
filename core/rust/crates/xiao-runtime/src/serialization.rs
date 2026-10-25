@@ -50,6 +50,7 @@ pub enum XconValue {
 }
 
 impl PartialEq for XconValue {
+    /// 按标签、位模式和递归成员比较 XCON 值。
     fn eq(&self, other: &Self) -> bool {
         use XconValue::*;
         match (self, other) {
@@ -97,6 +98,7 @@ impl XconError {
 }
 
 impl fmt::Display for XconError {
+    /// 输出稳定的 XCON 错误文本。
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidHeader => formatter.write_str("XCON 头无效"),
@@ -141,6 +143,7 @@ pub fn decode_xcon(bytes: &[u8]) -> Result<XconValue, XconError> {
     Ok(value)
 }
 
+/// 编码单个递归节点。
 fn encode_node(
     value: &XconValue,
     depth: usize,
@@ -246,6 +249,7 @@ fn encode_node(
     Ok(())
 }
 
+/// 编码节点并返回独立字节，用于集合/字典确定性排序。
 fn encode_node_bytes(
     value: &XconValue,
     depth: usize,
@@ -256,6 +260,7 @@ fn encode_node_bytes(
     Ok(bytes)
 }
 
+/// 编码容器子节点序列。
 fn encode_children(
     values: &[XconValue],
     depth: usize,
@@ -269,6 +274,7 @@ fn encode_children(
     Ok(())
 }
 
+/// 写入大端 u32 容器计数。
 fn put_u32(output: &mut Vec<u8>, value: usize) -> Result<(), XconError> {
     if value > u32::MAX as usize {
         return Err(XconError::LimitExceeded("容器元素数"));
@@ -277,6 +283,7 @@ fn put_u32(output: &mut Vec<u8>, value: usize) -> Result<(), XconError> {
     Ok(())
 }
 
+/// XCON 递归解码器状态。
 struct Decoder<'a> {
     bytes: &'a [u8],
     cursor: usize,
@@ -284,6 +291,7 @@ struct Decoder<'a> {
 }
 
 impl<'a> Decoder<'a> {
+    /// 解码一个节点并推进游标。
     fn decode_node(&mut self, depth: usize) -> Result<XconValue, XconError> {
         if depth > XCON_MAX_DEPTH {
             return Err(XconError::LimitExceeded("嵌套深度"));
@@ -312,6 +320,7 @@ impl<'a> Decoder<'a> {
         decode_payload(tag, &payload, depth, self)
     }
 
+    /// 读取固定长度输入。
     fn take(&mut self, length: usize) -> Result<&'a [u8], XconError> {
         let end = self
             .cursor
@@ -326,6 +335,7 @@ impl<'a> Decoder<'a> {
     }
 }
 
+/// 根据 tag 解码节点载荷。
 fn decode_payload(
     tag: u8,
     payload: &[u8],
@@ -425,6 +435,7 @@ fn decode_payload(
     }
 }
 
+/// 读取容器载荷中的大端元素计数。
 fn read_count(payload: &[u8]) -> Result<(usize, usize), XconError> {
     let count = payload
         .get(..4)
@@ -434,10 +445,12 @@ fn read_count(payload: &[u8]) -> Result<(usize, usize), XconError> {
 }
 
 #[cfg(test)]
+/// XCON 编解码、确定性和拒绝路径回归。
 mod tests {
     use super::*;
 
     #[test]
+    /// 标量、容器和嵌套字典可往返。
     fn xcon_round_trips_scalars_and_nested_values() {
         let value = XconValue::Dict(vec![
             (
@@ -453,6 +466,7 @@ mod tests {
     }
 
     #[test]
+    /// 集合和字典编码按节点字节稳定排序。
     fn xcon_set_and_dict_encoding_is_deterministic() {
         let left = XconValue::Set(vec![XconValue::Int(2), XconValue::Int(1)]);
         let right = XconValue::Set(vec![XconValue::Int(1), XconValue::Int(2)]);
@@ -460,6 +474,7 @@ mod tests {
     }
 
     #[test]
+    /// 魔数和保留 tag 错误稳定。
     fn xcon_rejects_reserved_tags_and_bad_headers() {
         let value = XconValue::None;
         let mut encoded = encode_xcon(&value).expect("编码");

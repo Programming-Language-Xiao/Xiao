@@ -26,6 +26,7 @@ impl RuntimeHandle {
     /// 创建一个新的进程内 Runtime。
     #[must_use]
     pub fn create() -> Self {
+        /// 进程内静态 Runtime 标签序列。
         static LABEL: AtomicU64 = AtomicU64::new(1);
         let label = LABEL.fetch_add(1, Ordering::Relaxed).max(1);
         let id = global_runtime_registry()
@@ -56,6 +57,7 @@ impl RuntimeHandle {
         }
     }
 
+    /// 检查 Runtime 是否仍接收新执行单元。
     fn ensure_open(&self) -> Result<(), RuntimeExecError> {
         (!self.is_closed())
             .then_some(())
@@ -112,6 +114,7 @@ impl RuntimeExecError {
 }
 
 impl fmt::Display for RuntimeExecError {
+    /// 输出稳定错误码。
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str(self.code())
     }
@@ -169,10 +172,12 @@ where
     })
 }
 
+/// 任务池 worker 消息。
 struct PoolMessage {
     run: Box<dyn FnOnce() + Send + 'static>,
 }
 
+/// 任务池共享内部状态。
 struct PoolInner {
     sender: Mutex<Option<SyncSender<PoolMessage>>>,
     workers: Mutex<Vec<JoinHandle<()>>>,
@@ -295,6 +300,7 @@ impl TaskPool {
 }
 
 impl Drop for TaskPool {
+    /// 最后一个池别名释放时执行关闭。
     fn drop(&mut self) {
         if Arc::strong_count(&self.inner) == 1 {
             self.shutdown();
@@ -303,10 +309,12 @@ impl Drop for TaskPool {
 }
 
 #[cfg(test)]
+/// Runtime/线程/任务池基础回归。
 mod tests {
     use super::*;
 
     #[test]
+    /// Runtime 关闭、取消和 join 边界。
     fn runtime_spawn_cancel_and_join_are_wired() {
         let runtime = RuntimeHandle::create();
         let handle = spawn(&runtime, |token| token.is_cancelled()).expect("spawn");
@@ -320,6 +328,7 @@ mod tests {
     }
 
     #[test]
+    /// 任务池容量、提交、等待和关闭边界。
     fn task_pool_validates_capacity_and_waits_tasks() {
         let runtime = RuntimeHandle::create();
         assert!(matches!(
