@@ -5,8 +5,8 @@
 > `std.concurrent` 的源码调用现在会经过类型检查、生命周期 lowering 和 IR verifier，22C
 > 可以按稳定字段消费这些事实。
 >
-> 状态：**静态接线已完成，待 FIX.1 远端 CI 取证（2026-10-25）**。参数化入口、消费作用域、
-> shared 构造能力、`source_runtime_id` 契约和 A0 模块文档已补齐；本批只接 22B 静态流水线，不接 22C Runtime，
+> 状态：**已完成（含 FIX.1，2026-10-25）**。参数化入口、消费作用域、shared 构造能力、
+> `source_runtime_id` 契约和 A0 模块文档已补齐；workspace gates `40177447825` 已通过；本批只接 22B 静态流水线，不接 22C Runtime，
 > `.xiaoc`/`.xar` 产物门禁仍登记为 22C 前置。
 
 ## 一、已确认的证据
@@ -14,7 +14,7 @@
 | 项 | 结果 | 说明 |
 | --- | --- | --- |
 | 本地测试 | 通过 | `cargo test --workspace`、`cargo fmt --check`、`check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 均通过 |
-| 远端 CI | 历史失败已修复 | `40161893418` 的测试模块文档缺口已补；FIX.1 后的新运行号待推送产生 |
+| 远端 CI | **通过** | workspace gates `40177447825`；旧失败 `40161893418` 的测试模块文档缺口已修复 |
 | 32B/产物 | 未改 | 没有 32B ABI、`.xiaoc`/`.xar` feature 位或标准库函数体改动 |
 | 下游兼容 | 仅穷举分支 | `4512c07` 只给 `xiao-runtime`/LLVM 的 `Type`/`IrType` 匹配加拒绝分支，未接并发行为 |
 | 22B 状态 | 已完成静态接线 | 简单与参数化入口、作用域消费、shared 构造、取消和 IR 均有源码级回归 |
@@ -122,7 +122,7 @@ ABI 门禁，22C 必须补；本批只能先把它标为 22C 前置，不能宣�
 同时本批没有远端 CI 运行号。
 
 **已完成**：22B-FIX.1 已补齐 workspace coverage 缺口、参数化入口、作用域消费、shared
-构造能力和 `source_runtime_id` 契约；远端新运行号以推送后的实际 CI 为准。
+构造能力和 `source_runtime_id` 契约；workspace gates `40177447825` 已通过。
 
 ### F-10（低，已修复）下游兼容边界措辞
 

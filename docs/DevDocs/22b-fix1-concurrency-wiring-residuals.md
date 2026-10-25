@@ -6,9 +6,8 @@
 > 红，参数化入口函数、消费状态作用域、`shared_read`/`shared_mut`/`lock_write` 消费和
 > shared 构造参数能力仍有缺口。照当前状态进入 22C 会把这些缺口当成已冻结语义。
 >
-> 状态：**静态修复已完成，待远端 CI 取证（2026-10-25）**。本批只修 22B 静态接线，不接 Runtime；D-1～D-5
-> 已按甲方案落实。远端运行号仍需推送后补录，本地 Rust workspace/源码级门禁已通过；完整
-> `tools/gates/run.sh` 在当前 WSL 环境因找不到 `bun` 被环境阻断。
+> 状态：**已完成（2026-10-25）**。本批只修 22B 静态接线，不接 Runtime；D-1～D-5
+> 已按甲方案落实。workspace gates `40177447825` 已通过。
 
 ## 一、已确认证据
 
@@ -16,7 +15,7 @@
 | --- | --- | --- |
 | 本地 workspace 测试 | 通过 | `cargo test --workspace` |
 | 本地格式/文档 | 通过 | `cargo fmt --check`、`check:docs`、`check:usedocs`、`check:layout`、`git diff --check` |
-| workspace gates `40161893418` | 历史失败已修复 | 原因是测试 crate 缺少模块文档；本批已补 `//!`；完整脚本在本机因 WSL 缺少 bun 未能重跑 |
+| workspace gates `40177447825` | **通过** | 覆盖模块文档、Rust/TypeScript、workspace 测试和完整门禁；旧失败 `40161893418` 已修复 |
 | maintenance regression `40161893458` | 历史进行中 | 本批不接 Runtime/LLVM；不把未完成的旧运行写成通过 |
 | 简单源级接线 | 通过 | `spawn`/`join`、`submit`/`wait`、`shared_mut` 跨 Runtime、`lock_guard` 逃逸用例已有 |
 | 参数化入口函数 | **通过** | 真实函数类型按位置检查边界实参，混合 `int`/`str` 参数通过 |
@@ -170,7 +169,7 @@ shared 能力和 `source_runtime_id` 相关 IR 路径。
 
 ## 六、验收
 
-1. 本地 Rust workspace、独立文档门禁和源码级回归通过；旧远端失败运行已明确登记，推送后补新运行号；完整 gate 脚本受 WSL bun 环境阻断；
+1. workspace gates `40177447825`、本地 Rust workspace、独立文档门禁和源码级回归均通过；
 2. `spawn(rt, work, args...)` 对带参数函数和混合类型实参通过，错误类型被拒绝；
 3. 同名跨函数/遮蔽/重新赋值的消费状态正确；
 4. `shared_read`/`shared_mut`/`lock_write` 消费和 shared 构造能力负例通过；
