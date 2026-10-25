@@ -5,8 +5,8 @@
 > `std.concurrent` 的源码调用现在会经过类型检查、生命周期 lowering 和 IR verifier，22C
 > 可以按稳定字段消费这些事实。
 >
-> 状态：**已完成（含 22B-FIX.1，2026-10-25）**。参数化入口、消费作用域、shared 构造能力、
-> `source_runtime_id` 契约和 A0 模块文档已补齐；本批只接 22B 静态流水线，不接 22C Runtime，
+> 状态：**静态接线已完成，待 FIX.1 远端 CI 取证（2026-10-25）**。参数化入口、消费作用域、
+> shared 构造能力、`source_runtime_id` 契约和 A0 模块文档已补齐；本批只接 22B 静态流水线，不接 22C Runtime，
 > `.xiaoc`/`.xar` 产物门禁仍登记为 22C 前置。
 
 ## 一、已确认的证据

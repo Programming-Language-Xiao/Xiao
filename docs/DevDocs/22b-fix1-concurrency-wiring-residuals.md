@@ -6,7 +6,7 @@
 > 红，参数化入口函数、消费状态作用域、`shared_read`/`shared_mut`/`lock_write` 消费和
 > shared 构造参数能力仍有缺口。照当前状态进入 22C 会把这些缺口当成已冻结语义。
 >
-> 状态：**已完成（2026-10-25）**。本批只修 22B 静态接线，不接 Runtime；D-1～D-5
+> 状态：**静态修复已完成，待远端 CI 取证（2026-10-25）**。本批只修 22B 静态接线，不接 Runtime；D-1～D-5
 > 已按甲方案落实。远端运行号仍需推送后补录，本地 Rust workspace/源码级门禁已通过；完整
 > `tools/gates/run.sh` 在当前 WSL 环境因找不到 `bun` 被环境阻断。
 
@@ -149,7 +149,7 @@ shared 能力和 `source_runtime_id` 相关 IR 路径。
 
 | 编号 | 问题 | 建议 | 备选 |
 | --- | --- | --- | --- |
-| D-1 | `spawn`/`submit` 如何支持带参函数 | **甲：在调用检查中特殊处理第二个实参的真实函数类型，按位置检查边界实参，返回 `thread<返回类型>`/`task<返回类型>`** | 乙：扩展 `FunctionSignature` 支持函数型可变参数；丙：继续限定零参函数（与 22A 冲突） |
+| D-1 | `spawn`/`submit` 如何支持带参函数及额外实参 | **甲：在调用检查中特殊处理第二个实参的真实函数类型，边界实参必须与函数形参数量严格相等并按位置检查；额外实参拒绝，不引入隐式闭包捕获** | 乙：扩展 `FunctionSignature` 支持函数型可变参数；丙：继续限定零参函数（与 22A 冲突） |
 | D-2 | 消费状态的身份 | **甲：作用域/绑定身份，退出作用域清理，重新声明重置** | 乙：按名称但在函数/分支边界清理；丙：全局名称（当前，已知错误） |
 | D-3 | shared 构造与锁写入消费 | **甲：`shared_read`/`shared_mut` 消费 T，`lock_write` 消费新值，`read`/`lock_read` 借用** | 乙：只做运行时检查，22C 再补 |
 | D-4 | `source_runtime_id` | **甲：保留为可选、serde default 的 IR 字段并写入 22A/22B-FIX 契约** | 乙：移出 fact，使用独立 Runtime ID 表 |
@@ -182,7 +182,8 @@ shared 能力和 `source_runtime_id` 相关 IR 路径。
 ## 七点一、实施结果
 
 1. 测试 crate 增加模块文档；`spawn`/`submit` 的第二个实参现在按真实函数类型检查，
-   函数返回类型实例化 `thread<T>`/`task<T>`，额外边界值继续接受候选 A 检查。
+   函数返回类型实例化 `thread<T>`/`task<T>`；边界实参数量必须与函数形参数量严格一致，
+   额外实参拒绝，不表示隐式闭包捕获。
 2. 消费状态在类型检查器的词法作用域快照中隔离；函数参数、循环变量、catch 绑定和表方法
    参数会创建新的局部状态，重新赋值会清除旧状态。
 3. `FunctionSignature` 保留 `consumed_parameters`；`shared_read`、`shared_mut` 和
@@ -191,6 +192,8 @@ shared 能力和 `source_runtime_id` 相关 IR 路径。
    其他不满足能力表的值被静态拒绝。
 5. `source_runtime_id` 作为可选、旧快照兼容的 IR 字段登记；`shared_mut` 来源 Runtime
    从 lowering 上下文读取，不再在表达式 lowering 中写死来源值。
+6. `cancel` 保持借用语义；取消后仍可再次 `cancel` 或执行 `join`/`wait`，消费操作才会
+   标记句柄不可复用。
 
 本地验证命令：
 

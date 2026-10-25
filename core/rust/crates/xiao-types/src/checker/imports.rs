@@ -173,8 +173,11 @@ impl TypeChecker<'_> {
                 );
             }
             let boundary = actuals.iter().skip(2).collect::<Vec<_>>();
-            if boundary.len() < parameters.len() {
-                self.call_error(span, "并发入口传入的边界参数少于函数参数");
+            if boundary.len() != parameters.len() {
+                self.call_error(
+                    span,
+                    "并发入口的边界实参数量必须与函数形参数量完全一致；额外边界值不表示隐式闭包捕获",
+                );
             }
             for (index, expected) in parameters.iter().enumerate() {
                 if let Some(actual) = boundary.get(index) {
@@ -344,7 +347,7 @@ impl TypeChecker<'_> {
                             argument.value.span(),
                             "并发句柄已经被消费，不能再次使用".to_owned(),
                         );
-                    } else {
+                    } else if !matches!(operation, "cancel") {
                         self.mark_concurrency_binding_consumed(key);
                     }
                 }
