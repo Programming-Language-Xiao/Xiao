@@ -16,6 +16,7 @@
 | 本地 workspace 测试 | 通过 | `cargo test --workspace` |
 | 本地格式/文档 | 通过 | `cargo fmt --check`、`check:docs`、`check:usedocs`、`check:layout`、`git diff --check` |
 | workspace gates `40201575737` | **通过** | 提交 `b3ded8b` 的 Linux workspace gates 全部通过；旧失败 `40161893418` 已修复 |
+| 最终文档提交 gates `40203307117` | **通过** | 提交 `318bff2` 的 Linux workspace gates 全部通过 |
 | maintenance regression `40201575725` | **通过** | 同一提交 `b3ded8b` 的维护回归通过；本批不接 Runtime/LLVM |
 | 简单源级接线 | 通过 | `spawn`/`join`、`submit`/`wait`、`shared_mut` 跨 Runtime、`lock_guard` 逃逸用例已有 |
 | 参数化入口函数 | **通过** | 真实函数类型按位置检查边界实参，混合 `int`/`str` 参数通过 |
