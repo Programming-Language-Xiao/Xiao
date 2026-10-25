@@ -15,7 +15,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 16;
+pub const ABI_MINOR_VERSION: u32 = 17;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -29,6 +29,61 @@ pub const fn encoded_abi_version(major: u32, minor: u32) -> u64 {
 
 /// 当前 ABI 的可比较版本编码。
 pub const ABI_ENCODED_VERSION: u64 = encoded_abi_version(ABI_MAJOR_VERSION, ABI_MINOR_VERSION);
+
+/// `.xar`/`.xiaoc` 并发必需能力位：线程入口。
+pub const REQUIRED_FEATURE_THREADS: u64 = 0x0002;
+/// `.xar`/`.xiaoc` 并发必需能力位：共享句柄。
+pub const REQUIRED_FEATURE_SHARED_HANDLES: u64 = 0x0004;
+/// `.xar`/`.xiaoc` 并发必需能力位：任务池。
+pub const REQUIRED_FEATURE_TASK_POOL: u64 = 0x0008;
+/// `.xar`/`.xiaoc` 并发必需能力位：多 Runtime。
+pub const REQUIRED_FEATURE_MULTI_RUNTIME: u64 = 0x0010;
+/// `.xar`/`.xiaoc` 并发必需能力位：XCON v1 序列化。
+pub const REQUIRED_FEATURE_SERIALIZATION_V1: u64 = 0x0020;
+/// `.xar`/`.xiaoc` 并发必需能力位：取消/等待。
+pub const REQUIRED_FEATURE_CANCEL_WAIT: u64 = 0x0040;
+/// 22C 当前支持的并发能力位集合。
+pub const SUPPORTED_CONCURRENCY_FEATURES: u64 = REQUIRED_FEATURE_THREADS
+    | REQUIRED_FEATURE_SHARED_HANDLES
+    | REQUIRED_FEATURE_TASK_POOL
+    | REQUIRED_FEATURE_MULTI_RUNTIME
+    | REQUIRED_FEATURE_SERIALIZATION_V1
+    | REQUIRED_FEATURE_CANCEL_WAIT;
+
+/// 判断必需能力是否为当前 Runtime 支持的子集。
+#[must_use]
+pub const fn are_required_features_supported(required: u64) -> bool {
+    required & !SUPPORTED_CONCURRENCY_FEATURES == 0
+}
+
+/// 22A/22C 共享对象头的 C ABI 视图；Runtime 内部使用原子存储实现同一布局。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoSharedHeader {
+    /// 强引用计数。
+    pub strong: u64,
+    /// 弱引用计数。
+    pub weak: u64,
+    /// `1=ordinary`、`2=shared_read`、`3=shared_mut`。
+    pub tag: u64,
+    /// 低 4B 锁状态，高 4B 保留。
+    pub lock_state: u32,
+    /// ABI 对齐保留字段。
+    pub reserved: u32,
+}
+
+/// shared 句柄包装；Runtime ID 不进入共享对象头。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct XiaoSharedHandle {
+    /// 来源 Runtime 的实际 ID。
+    pub runtime_id: u64,
+    /// 指向共享对象头的私有指针。
+    pub object_ptr: *mut u8,
+}
+
+const _: () = assert!(std::mem::size_of::<XiaoSharedHeader>() == 32);
+const _: () = assert!(std::mem::size_of::<XiaoSharedHandle>() == 16);
 
 /// 判断给定 Runtime 主/次版本是否满足产物要求；旧 Runtime 不接受较新的入口。
 #[must_use]
@@ -1009,9 +1064,9 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0010);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0011);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 16);
+        assert_eq!(ABI_MINOR_VERSION, 17);
     }
 
     #[test]
@@ -1038,6 +1093,24 @@ mod tests {
         assert!(!super::is_abi_compatible(1, 16, 1, 15));
         assert!(super::is_abi_compatible(1, 16, 1, 16));
         assert!(super::is_abi_compatible(1, 15, 1, 16));
+    }
+
+    #[test]
+    /// 并发 Runtime ABI 需要 1.17，旧 Runtime 必须在执行前拒绝。
+    fn concurrency_runtime_requires_runtime_1_17() {
+        assert!(!super::is_abi_compatible(1, 17, 1, 16));
+        assert!(super::is_abi_compatible(1, 17, 1, 17));
+        assert!(super::is_abi_compatible(1, 16, 1, 17));
+    }
+
+    #[test]
+    /// 并发 required-feature 位必须是已支持位的子集，且不能借用 bit 0。
+    fn concurrency_required_features_are_exact_subset() {
+        assert!(super::are_required_features_supported(
+            super::REQUIRED_FEATURE_THREADS | super::REQUIRED_FEATURE_SERIALIZATION_V1
+        ));
+        assert!(!super::are_required_features_supported(0x0001));
+        assert!(!super::are_required_features_supported(0x0080));
     }
 
     #[test]

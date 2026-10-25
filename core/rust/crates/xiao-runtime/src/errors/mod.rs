@@ -17,3 +17,16 @@ pub use xiao_diagnostics::{
     TABLE_STATE_CODE, TYPE_MISMATCH_CODE, USE_AFTER_RELEASE_CODE, WEAK_UPGRADE_CODE, XiaoError,
     XiaoErrorKind, XiaoResult,
 };
+
+/// 线程/任务取消错误。
+pub const CONCURRENCY_CANCELLED_CODE: &str = "X06-RUNTIME-027";
+/// detached 执行单元失败的错误通道身份。
+pub const CONCURRENCY_DETACHED_FAILURE_CODE: &str = "X06-RUNTIME-028";
+/// XCON 编解码或边界限制错误。
+pub const CONCURRENCY_SERIALIZATION_CODE: &str = "X06-RUNTIME-029";
+/// 任务池关闭后拒绝提交。
+pub const CONCURRENCY_POOL_CLOSED_CODE: &str = "X06-RUNTIME-030";
+/// Runtime 已关闭或跨 Runtime 非法使用。
+pub const CONCURRENCY_RUNTIME_CLOSED_CODE: &str = "X06-RUNTIME-031";
+/// 任务池创建参数错误。
+pub const CONCURRENCY_POOL_ARGUMENT_CODE: &str = "X06-RUNTIME-032";

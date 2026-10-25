@@ -5,8 +5,9 @@
 > 22B/22B-FIX.1 已交付类型、生命周期事实、IR 边界动作、取消检查、`source_runtime_id`
 > 和 verifier；本批只消费这些字段，不重新决定 Send/Sync、CrossThread、API 名称或序列化格式。
 >
-> 状态：**规划完成，待实施（2026-10-26）**。实施由另起 Agent 按本文执行；22D 才负责
-> LLVM/差分，22E 才负责 `std.concurrent` 标准库和发布收口。
+> 状态：**基础 Runtime/ABI 已实施，VM/产物门禁仍待后续子批（2026-10-26）**。本轮已完成
+> ABI 1.17、32B 共享头、Runtime ID 注册表、XCON v1 编解码和 Runtime/线程/任务池骨架；
+> VM 调用接线、`.xiaoc`/`.xar` feature 门禁和完整端到端并发执行仍按本文后续步骤推进。
 
 ## 一、入口条件与冻结输入
 
@@ -37,16 +38,16 @@
 
 | 面 | 当前事实 | 对 22C 的影响 |
 | --- | --- | --- |
-| Runtime ABI | `ABI_MINOR_VERSION = 16`（`core/rust/crates/xiao-runtime-abi/src/lib.rs:18`） | 需要升到 1.17 并补兼容/feature 门禁 |
+| Runtime ABI | `ABI_MINOR_VERSION = 17`（`core/rust/crates/xiao-runtime-abi/src/lib.rs:18`） | 已升到 1.17；产物 feature 门禁仍待接线 |
 | 普通句柄 | `StrongHandle`/`WeakHandle` 使用 `PhantomData<Rc<()>>`，单线程非原子（`xiao-runtime/src/memory/mod.rs:408/437`） | 不能复用为共享句柄；保持布局不变 |
 | 现有对象头 | `ObjectHeader` 含类型、计数、布局、策略、销毁状态和载荷（`:314`），不是 32B 草案 | 需要独立的共享对象头，不能把探针字段混进普通头 |
-| 32B ABI | 只有 22A 文档和测量；没有产品共享头 | 需要实现并验证 weak upgrade、锁和恰好一次析构 |
-| Runtime ID | 22B 静态事实使用非零静态标签；当前 Runtime 是 `u64::MAX` 哨兵（`xiao-lifetime/src/model.rs:22`） | Runtime 实际 ID 与静态标签之间必须定义映射 |
+| 32B ABI | `xiao-runtime::concurrency::SharedHeader` 已实现并锁定 32B/8B 布局 | 已验证 weak upgrade、锁和恰好一次析构基础 |
+| Runtime ID | 22B 静态事实使用非零静态标签；当前 Runtime 是 `u64::MAX` 哨兵（`xiao-lifetime/src/model.rs:22`） | `RuntimeRegistry` 已提供静态标签到实际 ID 的映射和关闭失效 |
 | IR 事实 | `IrOwnership` 已有 facts/transfers/cancellation；`source_runtime_id` 可选 | 22C 直接消费，不能重新解释 |
-| 序列化 | 22A 冻结 `XCON` 版本 1/大端/限制；没有编码器 | 需要实现编解码、确定性、错误 029 |
-| VM | 普通单线程执行闭环已存在；没有并发 opcode/调用 | 需要接 spawn/join/submit/shared/lock/cancel |
+| 序列化 | `xiao-runtime::serialization` 已实现 XCON v1 大端节点编码、限制、确定性排序和 029 | VM 边界接线及失败清理仍待完成 |
+| VM | 普通单线程执行闭环已存在；并发 Runtime 骨架已提供 | 仍需要接 spawn/join/submit/shared/lock/cancel 调用 |
 | 标准库 | `std.concurrent` 只有类型签名表 | 本批不写 `stdlib/concurrent.xiao`；22E 接用户模块 |
-| 字节码 | 已有并发 IrType 标签 12–19 | 需要 ABI 1.17/feature 门禁，旧 Runtime 必须拒绝 |
+| 字节码 | 已有并发 IrType 标签 12–19，ABI 版本已升到 1.17 | 仍需要 required-feature 门禁，旧 Runtime 必须拒绝 |
 
 ## 三、目标与边界
 
@@ -126,11 +127,11 @@
 
 | 步 | 内容 | 验证 |
 | --- | --- | --- |
-| 0 | 基线：22A/22B 契约、IR 字段、ABI 1.16、VM 调用路径 | 文档/代码 |
-| 1 | Runtime ABI 1.17：共享头/句柄/状态码/符号；普通句柄不变 | ABI 单测/兼容矩阵 |
-| 2 | 共享头：原子计数、tag、弱升级、锁状态、恰好一次析构 | 并发/弱升级/泄漏/双析构 |
-| 3 | Runtime/线程/任务池/多 Runtime、Runtime ID 映射 | 多 Runtime/池关闭/detach |
-| 4 | 深拷贝/序列化：XCON、限制、失败清理、suppressed | 编解码/边界/失败顺序 |
+| 0 | 基线：22A/22B 契约、IR 字段、ABI 1.17、VM 调用路径 | 已完成 |
+| 1 | Runtime ABI 1.17：共享头/句柄/状态码/符号；普通句柄不变 | 已完成 ABI 单测/兼容矩阵基础 |
+| 2 | 共享头：原子计数、tag、弱升级、锁状态、恰好一次析构 | 已完成共享头基础测试 |
+| 3 | Runtime/线程/任务池/多 Runtime、Runtime ID 映射 | 已完成 Runtime/线程/池骨架和映射测试 |
+| 4 | 深拷贝/序列化：XCON、限制、失败清理、suppressed | 已完成 XCON 编解码/限制基础；边界清理待 VM 接线 |
 | 5 | VM：spawn/join/detach/cancel、shared/read/lock、pool submit/wait/shutdown | 源码级端到端 |
 | 6 | 取消：锁等待/join/wait、四位置、唤醒/清理 | 取消/清理回归 |
 | 7 | 产物：`.xiaoc`/`.xar` ABI 1.17 + feature；旧 Runtime 拒绝 | 归档/旧运行时负例 |
@@ -174,7 +175,7 @@ git diff --check
 
 ## 七、22C 退出条件
 
-1. ABI 1.17 与 32B 共享头实现，普通句柄布局未变；
+1. ABI 1.17 与 32B 共享头实现，普通句柄布局未变；基础实现已完成，需继续补 VM/产物证据；
 2. VM 端到端覆盖线程/任务池/多 Runtime/共享/取消/序列化；
 3. Runtime ID 静态标签到实际 ID 的映射唯一且有测试；
 4. 错误 027–032 和 detached 通道按 22A 语义；
