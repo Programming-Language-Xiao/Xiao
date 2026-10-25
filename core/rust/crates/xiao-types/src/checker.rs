@@ -118,6 +118,8 @@ pub struct TypeChecker<'source> {
     consumed_concurrency_bindings: BTreeSet<String>,
     /// 已消费的值身份；变量别名共享此状态。
     consumed_concurrency_values: BTreeSet<String>,
+    /// 最近一条语句的并发控制流出口。
+    last_concurrency_flow: Option<ConcurrencyFlow>,
     /// 进入作用域前保存的并发状态。
     concurrency_scope_snapshots: Vec<ConcurrencyScopeState>,
     /// 已由 `std.concurrent` 导入绑定解析出的调用点。
@@ -142,6 +144,19 @@ pub(super) struct ConcurrencyScopeState {
     binding_handles: BTreeMap<String, BTreeSet<String>>,
     consumed: BTreeSet<String>,
     consumed_values: BTreeSet<String>,
+}
+
+/// 一段语句可能到达的并发控制流出口。
+#[derive(Clone, Debug, Default)]
+pub(super) struct ConcurrencyFlow {
+    /// 仍可继续执行后续语句的状态。
+    pub(super) normal: Option<ConcurrencyScopeState>,
+    /// `return` 退出的状态。
+    pub(super) returns: Vec<ConcurrencyScopeState>,
+    /// `break` 退出的状态。
+    pub(super) breaks: Vec<ConcurrencyScopeState>,
+    /// `continue` 退出的状态。
+    pub(super) continues: Vec<ConcurrencyScopeState>,
 }
 
 impl<'source> TypeChecker<'source> {
@@ -176,6 +191,7 @@ impl<'source> TypeChecker<'source> {
             loop_concurrency_handles: Vec::new(),
             consumed_concurrency_bindings: BTreeSet::new(),
             consumed_concurrency_values: BTreeSet::new(),
+            last_concurrency_flow: None,
             concurrency_scope_snapshots: Vec::new(),
             concurrency_calls: Vec::new(),
             mutating_functions: BTreeSet::new(),
@@ -206,37 +222,48 @@ impl<'source> TypeChecker<'source> {
         }
     }
 
-    /// 退出分支作用域，并返回只针对外层绑定的消费状态。
+    /// 退出分支作用域，并把每个控制流出口投影到外层绑定。
     ///
     /// 分支内部声明会在退出时丢弃；对外层绑定的消费和重新赋值则作为该
     /// 分支的控制流结果返回，交给调用方与其他可达路径合并。
-    pub(super) fn pop_scope_with_concurrency_flow(&mut self) -> ConcurrencyScopeState {
+    pub(super) fn pop_scope_with_concurrency_flow(
+        &mut self,
+        flow: ConcurrencyFlow,
+    ) -> ConcurrencyFlow {
         let local_bindings = self.environment.pop_scope().unwrap_or_default();
-        let mut outgoing = ConcurrencyScopeState {
-            handles: self.concurrency_handle_states.clone(),
-            binding_handles: self.concurrency_binding_handles.clone(),
-            consumed: self.consumed_concurrency_bindings.clone(),
-            consumed_values: self.consumed_concurrency_values.clone(),
-        };
-        if let Some(snapshot) = self.concurrency_scope_snapshots.pop() {
+        let snapshot = self.concurrency_scope_snapshots.pop().unwrap_or_default();
+        let project = |state: &ConcurrencyScopeState| {
+            let mut outgoing = state.clone();
             for key in local_bindings.keys() {
-                outgoing.binding_handles.remove(key);
-                if let Some(handles) = snapshot.binding_handles.get(key) {
+                let local_ids = outgoing.binding_handles.remove(key).unwrap_or_default();
+                if let Some(outer_ids) = snapshot.binding_handles.get(key) {
                     outgoing
                         .binding_handles
-                        .insert(key.clone(), handles.clone());
+                        .insert(key.clone(), outer_ids.clone());
+                    let outer_ids = outer_ids.iter().collect::<BTreeSet<_>>();
+                    for id in local_ids.iter().filter(|id| !outer_ids.contains(id)) {
+                        outgoing.consumed_values.remove(id);
+                    }
+                } else {
+                    for id in local_ids {
+                        outgoing.consumed_values.remove(&id);
+                    }
                 }
                 outgoing.consumed.remove(key);
                 if snapshot.consumed.contains(key) {
                     outgoing.consumed.insert(key.clone());
                 }
             }
-            self.concurrency_handle_states = snapshot.handles;
-            self.concurrency_binding_handles = snapshot.binding_handles;
-            self.consumed_concurrency_bindings = snapshot.consumed;
-            self.consumed_concurrency_values = snapshot.consumed_values;
-        }
-        outgoing
+            outgoing
+        };
+        let projected = ConcurrencyFlow {
+            normal: flow.normal.as_ref().map(project),
+            returns: flow.returns.iter().map(project).collect(),
+            breaks: flow.breaks.iter().map(project).collect(),
+            continues: flow.continues.iter().map(project).collect(),
+        };
+        self.restore_concurrency_scope_state(&snapshot);
+        projected
     }
 
     /// 捕获当前并发绑定状态，用于分支输入与输出的隔离。
@@ -257,8 +284,10 @@ impl<'source> TypeChecker<'source> {
         self.consumed_concurrency_values = state.consumed_values.clone();
     }
 
-    /// 合并可能到达同一位置的路径；任一可达路径消费绑定，合流后都视为已消费。
-    pub(super) fn merge_concurrency_scope_states(&mut self, states: &[ConcurrencyScopeState]) {
+    /// 合并一组可能到达同一程序点的并发状态。
+    pub(super) fn merge_concurrency_scope_state_values(
+        states: &[ConcurrencyScopeState],
+    ) -> Option<ConcurrencyScopeState> {
         let mut merged = ConcurrencyScopeState::default();
         for state in states {
             merged.consumed.extend(state.consumed.iter().cloned());
@@ -280,7 +309,40 @@ impl<'source> TypeChecker<'source> {
                     .or_insert(*incoming);
             }
         }
-        self.restore_concurrency_scope_state(&merged);
+        (!states.is_empty()).then_some(merged)
+    }
+
+    /// 合并多段语句的控制流出口。
+    pub(super) fn merge_concurrency_flows(flows: &[ConcurrencyFlow]) -> ConcurrencyFlow {
+        let mut merged = ConcurrencyFlow::default();
+        let normal = flows
+            .iter()
+            .filter_map(|flow| flow.normal.clone())
+            .collect::<Vec<_>>();
+        merged.normal = Self::merge_concurrency_scope_state_values(&normal);
+        merged.returns = flows
+            .iter()
+            .flat_map(|flow| flow.returns.iter().cloned())
+            .collect();
+        merged.breaks = flows
+            .iter()
+            .flat_map(|flow| flow.breaks.iter().cloned())
+            .collect();
+        merged.continues = flows
+            .iter()
+            .flat_map(|flow| flow.continues.iter().cloned())
+            .collect();
+        merged
+    }
+
+    /// 保存最近一条语句的控制流出口。
+    pub(super) fn set_last_concurrency_flow(&mut self, flow: ConcurrencyFlow) {
+        self.last_concurrency_flow = Some(flow);
+    }
+
+    /// 取出最近一条语句的控制流出口。
+    pub(super) fn take_last_concurrency_flow(&mut self) -> Option<ConcurrencyFlow> {
+        self.last_concurrency_flow.take()
     }
 
     /// 重置一个被重新赋值或重新声明的并发绑定。
@@ -431,9 +493,7 @@ impl<'source> TypeChecker<'source> {
         self.collect_mutating_functions(&program.statements);
         self.register_top_level_functions(&program.statements);
         self.register_top_level_tables(&program.statements);
-        for statement in &program.statements {
-            self.check_statement(statement);
-        }
+        let _ = self.check_statement_sequence(&program.statements);
         self.finalize_function_inference();
         self.finalize_resource_parameter_boundaries();
         // 表达式节点是在约束收集期间记录的；函数调用或函数体返回值可能在

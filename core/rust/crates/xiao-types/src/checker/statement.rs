@@ -35,6 +35,7 @@ struct ExtendedAssignment<'source> {
 impl<'source> TypeChecker<'source> {
     /// 检查一条顶层语句并更新名称环境。
     pub(super) fn check_statement(&mut self, statement: &Statement) {
+        self.last_concurrency_flow = None;
         match statement {
             Statement::Expression { expression, .. } => {
                 self.check_expression(expression);
@@ -118,29 +119,89 @@ impl<'source> TypeChecker<'source> {
                 elif_branches,
                 else_body,
                 ..
-            } => self.check_if_statement(condition, body, elif_branches, else_body.as_deref()),
+            } => {
+                self.check_if_statement(condition, body, elif_branches, else_body.as_deref());
+            }
             Statement::For {
                 target,
                 iterable,
                 body,
                 ..
-            } => self.check_for_statement(*target, iterable, body),
+            } => {
+                self.check_for_statement(*target, iterable, body);
+            }
             Statement::While {
                 condition, body, ..
-            } => self.check_while_statement(condition, body),
-            Statement::Return { value, span, .. } => {
-                self.check_return_statement(value.as_ref(), *span)
+            } => {
+                self.check_while_statement(condition, body);
             }
-            Statement::Break { span, .. } => self.check_break_statement(*span),
-            Statement::Continue { span, .. } => self.check_continue_statement(*span),
+            Statement::Return { value, span, .. } => {
+                let valid = self.current_function.is_some();
+                self.check_return_statement(value.as_ref(), *span);
+                let state = self.concurrency_scope_state();
+                self.set_last_concurrency_flow(if valid {
+                    super::ConcurrencyFlow {
+                        normal: None,
+                        returns: vec![state],
+                        ..super::ConcurrencyFlow::default()
+                    }
+                } else {
+                    super::ConcurrencyFlow {
+                        normal: Some(state),
+                        ..super::ConcurrencyFlow::default()
+                    }
+                });
+            }
+            Statement::Break { span, .. } => {
+                let valid = self.loop_depth > 0;
+                self.check_break_statement(*span);
+                let state = self.concurrency_scope_state();
+                self.set_last_concurrency_flow(if valid {
+                    super::ConcurrencyFlow {
+                        normal: None,
+                        breaks: vec![state],
+                        ..super::ConcurrencyFlow::default()
+                    }
+                } else {
+                    super::ConcurrencyFlow {
+                        normal: Some(state),
+                        ..super::ConcurrencyFlow::default()
+                    }
+                });
+            }
+            Statement::Continue { span, .. } => {
+                let valid = self.loop_depth > 0;
+                self.check_continue_statement(*span);
+                let state = self.concurrency_scope_state();
+                self.set_last_concurrency_flow(if valid {
+                    super::ConcurrencyFlow {
+                        normal: None,
+                        continues: vec![state],
+                        ..super::ConcurrencyFlow::default()
+                    }
+                } else {
+                    super::ConcurrencyFlow {
+                        normal: Some(state),
+                        ..super::ConcurrencyFlow::default()
+                    }
+                });
+            }
             Statement::Try {
                 body,
                 catches,
                 finally_body,
                 span,
                 ..
-            } => self.check_try_statement(body, catches, finally_body.as_deref(), *span),
+            } => {
+                self.check_try_statement(body, catches, finally_body.as_deref(), *span);
+            }
             Statement::Raise { value, span, .. } => self.check_raise_statement(value, *span),
+        }
+        if self.last_concurrency_flow.is_none() {
+            self.set_last_concurrency_flow(super::ConcurrencyFlow {
+                normal: Some(self.concurrency_scope_state()),
+                ..super::ConcurrencyFlow::default()
+            });
         }
     }
 

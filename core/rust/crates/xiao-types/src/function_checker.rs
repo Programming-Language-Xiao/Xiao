@@ -313,9 +313,8 @@ impl<'source> TypeChecker<'source> {
         }
         self.check_resource_parameter_boundaries(parameters);
         self.register_top_level_functions(body);
-        for statement in body {
-            self.check_statement(statement);
-        }
+        let body_flow = self.check_statement_sequence(body);
+        let _ = self.pop_scope_with_concurrency_flow(body_flow);
 
         let frame = self.current_function.take().expect("函数检查上下文应存在");
         if !frame.saw_return {
@@ -356,7 +355,6 @@ impl<'source> TypeChecker<'source> {
             return_type: Box::new(resolved_return),
         };
         // 参数作用域可能遮蔽函数名；先退出局部作用域，再更新外层函数绑定。
-        self.pop_scope();
         let scheme = if signature.type_parameter_ids.is_empty() {
             TypeScheme::monomorphic(function_type)
         } else {

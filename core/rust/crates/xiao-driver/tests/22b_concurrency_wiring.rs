@@ -104,6 +104,33 @@ fn concurrency_consumption_flows_out_of_control_flow_scopes() {
 }
 
 #[test]
+fn concurrency_consumption_merges_return_break_and_continue_exits() {
+    let valid_return = "from std.concurrent import runtime_create, spawn, join\nrt = runtime_create()\ndef work() -> int\n    return 1\ndef return_case() -> none\n    thread = spawn(rt, work)\n    if true\n        join(thread)\n        return\n    join(thread)\nreturn_case()\n";
+    FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(valid_return))
+        .expect("return 分支退出后，未退出路径的消费状态应独立合流");
+
+    let valid_break = "from std.concurrent import runtime_create, spawn, join\nrt = runtime_create()\ndef work() -> int\n    return 1\nthread = spawn(rt, work)\nwhile false\n    break\n    join(thread)\njoin(thread)\n";
+    FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(valid_break))
+        .expect("break 后的不可达消费不能污染循环出口");
+
+    let valid_continue = "from std.concurrent import runtime_create, spawn, join\nrt = runtime_create()\ndef work() -> int\n    return 1\nthread = spawn(rt, work)\nwhile false\n    continue\n    join(thread)\njoin(thread)\n";
+    FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(valid_continue))
+        .expect("continue 后的不可达消费不能污染循环出口");
+
+    let invalid_return = "from std.concurrent import runtime_create, spawn, join\nrt = runtime_create()\ndef work() -> int\n    return 1\ndef return_case() -> none\n    thread = spawn(rt, work)\n    if true\n        join(thread)\n        return\n    join(thread)\n    join(thread)\nreturn_case()\n";
+    assert!(error_codes(invalid_return).contains(&"X04-TYPE-002".to_owned()));
+
+    let invalid_break = "from std.concurrent import runtime_create, spawn, join\nrt = runtime_create()\ndef work() -> int\n    return 1\nthread = spawn(rt, work)\nwhile false\n    join(thread)\n    break\njoin(thread)\n";
+    assert!(error_codes(invalid_break).contains(&"X04-TYPE-002".to_owned()));
+
+    let invalid_continue = "from std.concurrent import runtime_create, spawn, join\nrt = runtime_create()\ndef work() -> int\n    return 1\nthread = spawn(rt, work)\nwhile false\n    join(thread)\n    continue\njoin(thread)\n";
+    assert!(error_codes(invalid_continue).contains(&"X04-TYPE-002".to_owned()));
+}
+
+#[test]
 fn aliases_share_thread_and_task_consumption_state() {
     let thread_alias = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work)\nalias = thread\njoin(thread)\njoin(alias)\n";
     assert!(error_codes(thread_alias).contains(&"X04-TYPE-002".to_owned()));

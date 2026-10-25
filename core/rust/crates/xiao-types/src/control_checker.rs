@@ -15,7 +15,7 @@ use crate::diagnostics::{
 };
 use crate::types::Type;
 
-use super::{ConcurrencyScopeState, RuntimeCheckKind, TypeChecker};
+use super::{ConcurrencyFlow, RuntimeCheckKind, TypeChecker};
 
 impl<'source> TypeChecker<'source> {
     /// 检查 `try` 的主体、按序 `catch` 和最终清理体。
@@ -25,9 +25,9 @@ impl<'source> TypeChecker<'source> {
         catches: &[CatchClause],
         finally_body: Option<&[Statement]>,
         _span: SourceSpan,
-    ) {
-        let body_state = self.check_scoped_body_with_concurrency_flow(body);
-        let mut exit_states = vec![body_state.clone()];
+    ) -> ConcurrencyFlow {
+        let body_flow = self.check_scoped_body_with_concurrency_flow(body);
+        let mut flows = vec![body_flow.clone()];
         let mut saw_broad = false;
         for catch in catches {
             let type_name = self.source.slice(catch.error_type.span);
@@ -60,7 +60,22 @@ impl<'source> TypeChecker<'source> {
                 );
             }
             saw_broad |= is_broad;
-            self.restore_concurrency_scope_state(&body_state);
+            let catch_base = body_flow
+                .normal
+                .clone()
+                .or_else(|| {
+                    Self::merge_concurrency_scope_state_values(
+                        &body_flow
+                            .returns
+                            .iter()
+                            .chain(body_flow.breaks.iter())
+                            .chain(body_flow.continues.iter())
+                            .cloned()
+                            .collect::<Vec<_>>(),
+                    )
+                })
+                .unwrap_or_else(|| self.concurrency_scope_state());
+            self.restore_concurrency_scope_state(&catch_base);
             self.push_scope();
             self.reset_concurrency_binding(&self.name_key(catch.binding));
             if let Err(error) =
@@ -70,16 +85,54 @@ impl<'source> TypeChecker<'source> {
                 self.environment_error(catch.binding.span, error);
             }
             self.register_top_level_functions(&catch.body);
-            for statement in &catch.body {
-                self.check_statement(statement);
-            }
-            exit_states.push(self.pop_scope_with_concurrency_flow());
+            let catch_flow = self.check_statement_sequence(&catch.body);
+            flows.push(self.pop_scope_with_concurrency_flow(catch_flow));
         }
-        self.merge_concurrency_scope_states(&exit_states);
+        let mut result = Self::merge_concurrency_flows(&flows);
         if let Some(body) = finally_body {
-            let final_state = self.check_scoped_body_with_concurrency_flow(body);
-            self.restore_concurrency_scope_state(&final_state);
+            let finally_base = result
+                .normal
+                .clone()
+                .or_else(|| {
+                    Self::merge_concurrency_scope_state_values(
+                        &result
+                            .returns
+                            .iter()
+                            .chain(result.breaks.iter())
+                            .chain(result.continues.iter())
+                            .cloned()
+                            .collect::<Vec<_>>(),
+                    )
+                })
+                .unwrap_or_else(|| self.concurrency_scope_state());
+            self.restore_concurrency_scope_state(&finally_base);
+            let finally_flow = self.check_scoped_body_with_concurrency_flow(body);
+            if finally_flow.normal.is_some() {
+                let mut combined = finally_flow;
+                combined.returns.extend(result.returns);
+                combined.breaks.extend(result.breaks);
+                combined.continues.extend(result.continues);
+                result = combined;
+            } else {
+                result = finally_flow;
+            }
         }
+        let restore_state = result.normal.clone().or_else(|| {
+            Self::merge_concurrency_scope_state_values(
+                &result
+                    .returns
+                    .iter()
+                    .chain(result.breaks.iter())
+                    .chain(result.continues.iter())
+                    .cloned()
+                    .collect::<Vec<_>>(),
+            )
+        });
+        if let Some(state) = restore_state.as_ref() {
+            self.restore_concurrency_scope_state(state);
+        }
+        self.set_last_concurrency_flow(result.clone());
+        result
     }
 
     /// 检查 `raise` 只能抛出可恢复错误对象或动态错误边界。
@@ -107,23 +160,31 @@ impl<'source> TypeChecker<'source> {
         body: &[Statement],
         elif_branches: &[ElifBranch],
         else_body: Option<&[Statement]>,
-    ) {
+    ) -> ConcurrencyFlow {
         self.check_condition(condition);
         let mut false_state = self.concurrency_scope_state();
-        let mut exit_states = vec![self.check_scoped_body_with_concurrency_flow(body)];
+        let mut flows = vec![self.check_scoped_body_with_concurrency_flow(body)];
         for branch in elif_branches {
             self.restore_concurrency_scope_state(&false_state);
             self.check_condition(&branch.condition);
             false_state = self.concurrency_scope_state();
-            exit_states.push(self.check_scoped_body_with_concurrency_flow(&branch.body));
+            flows.push(self.check_scoped_body_with_concurrency_flow(&branch.body));
         }
         if let Some(body) = else_body {
             self.restore_concurrency_scope_state(&false_state);
-            exit_states.push(self.check_scoped_body_with_concurrency_flow(body));
+            flows.push(self.check_scoped_body_with_concurrency_flow(body));
         } else {
-            exit_states.push(false_state);
+            flows.push(ConcurrencyFlow {
+                normal: Some(false_state),
+                ..ConcurrencyFlow::default()
+            });
         }
-        self.merge_concurrency_scope_states(&exit_states);
+        let result = Self::merge_concurrency_flows(&flows);
+        if let Some(state) = result.normal.as_ref() {
+            self.restore_concurrency_scope_state(state);
+        }
+        self.set_last_concurrency_flow(result.clone());
+        result
     }
 
     /// 检查一个 `for name in iterable` 循环。
@@ -132,7 +193,7 @@ impl<'source> TypeChecker<'source> {
         target: xiao_syntax::Name,
         iterable: &Expression,
         body: &[Statement],
-    ) {
+    ) -> ConcurrencyFlow {
         let iterable_type = self.check_expression(iterable);
         let element_type = match iterable_element_type(&iterable_type) {
             Some(ty) => ty,
@@ -175,25 +236,53 @@ impl<'source> TypeChecker<'source> {
         } else {
             self.bind_concurrency_handle(self.name_key(target), &element_type, None);
         }
-        for statement in body {
-            self.check_statement(statement);
-        }
-        let body_state = self.pop_scope_with_concurrency_flow();
+        let body_flow = self.check_statement_sequence(body);
+        let body_flow = self.pop_scope_with_concurrency_flow(body_flow);
         self.pop_concurrency_loop();
-        self.merge_concurrency_scope_states(&[before_loop, body_state]);
         self.loop_depth = self.loop_depth.saturating_sub(1);
+        let mut normal_states = vec![before_loop];
+        normal_states.extend(body_flow.normal.iter().cloned());
+        normal_states.extend(body_flow.breaks.iter().cloned());
+        normal_states.extend(body_flow.continues.iter().cloned());
+        let result = ConcurrencyFlow {
+            normal: Self::merge_concurrency_scope_state_values(&normal_states),
+            returns: body_flow.returns,
+            ..ConcurrencyFlow::default()
+        };
+        if let Some(state) = result.normal.as_ref() {
+            self.restore_concurrency_scope_state(state);
+        }
+        self.set_last_concurrency_flow(result.clone());
+        result
     }
 
     /// 检查一个 `while condition` 循环。
-    pub(super) fn check_while_statement(&mut self, condition: &Expression, body: &[Statement]) {
+    pub(super) fn check_while_statement(
+        &mut self,
+        condition: &Expression,
+        body: &[Statement],
+    ) -> ConcurrencyFlow {
         self.push_concurrency_loop();
         self.loop_depth = self.loop_depth.saturating_add(1);
         self.check_condition(condition);
         let condition_state = self.concurrency_scope_state();
-        let body_state = self.check_scoped_body_with_concurrency_flow(body);
+        let body_flow = self.check_scoped_body_with_concurrency_flow(body);
         self.pop_concurrency_loop();
-        self.merge_concurrency_scope_states(&[condition_state, body_state]);
         self.loop_depth = self.loop_depth.saturating_sub(1);
+        let mut normal_states = vec![condition_state];
+        normal_states.extend(body_flow.normal.iter().cloned());
+        normal_states.extend(body_flow.breaks.iter().cloned());
+        normal_states.extend(body_flow.continues.iter().cloned());
+        let result = ConcurrencyFlow {
+            normal: Self::merge_concurrency_scope_state_values(&normal_states),
+            returns: body_flow.returns,
+            ..ConcurrencyFlow::default()
+        };
+        if let Some(state) = result.normal.as_ref() {
+            self.restore_concurrency_scope_state(state);
+        }
+        self.set_last_concurrency_flow(result.clone());
+        result
     }
 
     /// 检查 `return` 并统一到当前函数返回类型。
@@ -329,17 +418,53 @@ impl<'source> TypeChecker<'source> {
         }
     }
 
-    /// 在独立作用域中检查一个缩进体，并返回外层绑定的消费状态。
-    fn check_scoped_body_with_concurrency_flow(
-        &mut self,
-        body: &[Statement],
-    ) -> ConcurrencyScopeState {
+    /// 顺序检查语句，并把提前退出分流到对应出口。
+    pub(super) fn check_statement_sequence(&mut self, body: &[Statement]) -> ConcurrencyFlow {
+        let initial = self.concurrency_scope_state();
+        let mut normal = Some(initial.clone());
+        let mut result = ConcurrencyFlow::default();
+        for statement in body {
+            let Some(state) = normal.clone() else {
+                break;
+            };
+            self.restore_concurrency_scope_state(&state);
+            self.check_statement(statement);
+            let flow = self
+                .take_last_concurrency_flow()
+                .unwrap_or_else(|| ConcurrencyFlow {
+                    normal: Some(self.concurrency_scope_state()),
+                    ..ConcurrencyFlow::default()
+                });
+            result.returns.extend(flow.returns);
+            result.breaks.extend(flow.breaks);
+            result.continues.extend(flow.continues);
+            normal = flow.normal;
+        }
+        result.normal = normal;
+        if let Some(state) = result.normal.as_ref() {
+            self.restore_concurrency_scope_state(state);
+        } else if let Some(state) = Self::merge_concurrency_scope_state_values(
+            &result
+                .returns
+                .iter()
+                .chain(result.breaks.iter())
+                .chain(result.continues.iter())
+                .cloned()
+                .collect::<Vec<_>>(),
+        ) {
+            self.restore_concurrency_scope_state(&state);
+        } else {
+            self.restore_concurrency_scope_state(&initial);
+        }
+        result
+    }
+
+    /// 在独立作用域中检查一个缩进体，并返回外层绑定的各类出口。
+    fn check_scoped_body_with_concurrency_flow(&mut self, body: &[Statement]) -> ConcurrencyFlow {
         self.push_scope();
         self.register_top_level_functions(body);
-        for statement in body {
-            self.check_statement(statement);
-        }
-        self.pop_scope_with_concurrency_flow()
+        let flow = self.check_statement_sequence(body);
+        self.pop_scope_with_concurrency_flow(flow)
     }
 }
 

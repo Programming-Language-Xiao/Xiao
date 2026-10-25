@@ -584,9 +584,8 @@ impl<'source> TypeChecker<'source> {
         }
         self.check_resource_parameter_boundaries(parameters);
         self.register_top_level_functions(body);
-        for statement in body {
-            self.check_statement(statement);
-        }
+        let body_flow = self.check_statement_sequence(body);
+        let _ = self.pop_scope_with_concurrency_flow(body_flow);
         let frame = self.current_function.take().expect("方法检查上下文应存在");
         if !frame.saw_return {
             self.unify_or_report(
@@ -612,7 +611,6 @@ impl<'source> TypeChecker<'source> {
             resolved_return.clone(),
             method_signature.span,
         );
-        self.pop_scope();
         self.loop_concurrency_handles = previous_loop_concurrency_handles;
         self.loop_depth = previous_loop_depth;
         self.current_function = previous_frame;
