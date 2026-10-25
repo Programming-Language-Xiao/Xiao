@@ -5,8 +5,8 @@
 > `std.concurrent` 的源码调用现在会经过类型检查、生命周期 lowering 和 IR verifier，22C
 > 可以按稳定字段消费这些事实。
 >
-> 状态：**已完成（含 FIX.1，2026-10-25）**。参数化入口、消费作用域、shared 构造能力、
-> `source_runtime_id` 契约和 A0 模块文档已补齐；workspace gates `40201575737` 已通过（提交 `b3ded8b`）；本批只接 22B 静态流水线，不接 22C Runtime，
+> 状态：**已关闭（含 FIX.1，2026-10-26）**。参数化入口、消费作用域、控制流出口、shared 构造能力、
+> `source_runtime_id` 契约和 A0 模块文档已补齐；代码提交 `9910d13` 的 workspace gates `40212263928` 与 maintenance regression `40212188604` 均已通过；本批只接 22B 静态流水线，22C 入口已开启，
 > `.xiaoc`/`.xar` 产物门禁仍登记为 22C 前置。
 
 ## 一、已确认的证据
@@ -14,7 +14,7 @@
 | 项 | 结果 | 说明 |
 | --- | --- | --- |
 | 本地测试 | 通过 | `cargo test --workspace`、`cargo fmt --check`、`check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 均通过 |
-| 远端 CI | **通过** | workspace gates `40201575737`（提交 `b3ded8b`）；旧失败 `40161893418` 的测试模块文档缺口已修复 |
+| 远端 CI | **通过** | workspace gates `40212263928`、maintenance regression `40212188604`（提交 `9910d13`）；旧失败 `40161893418` 的测试模块文档缺口已修复 |
 | 32B/产物 | 未改 | 没有 32B ABI、`.xiaoc`/`.xar` feature 位或标准库函数体改动 |
 | 下游兼容 | 仅穷举分支 | `4512c07` 只给 `xiao-runtime`/LLVM 的 `Type`/`IrType` 匹配加拒绝分支，未接并发行为 |
 | 22B 状态 | 已完成静态接线 | 简单与参数化入口、作用域消费、shared 构造、取消和 IR 均有源码级回归 |
@@ -119,10 +119,10 @@ ABI 门禁，22C 必须补；本批只能先把它标为 22C 前置，不能宣�
 22B 文档写成“已实施（2026-10-25）”“22C 可以只消费本批事实”
 （`22b-concurrency-types-lifetime-ir.md:8-9`、§十一），22 阶段写成“22B 静态契约已完成”
 （`22-concurrency-execution-and-shared-handles.md:3`、`:198`），但 F-1～F-3 未接线。
-同时本批的远端 workspace gates 运行号为 `40201575737`。
+同时本批的远端 workspace gates 运行号为 `40212263928`，maintenance regression 为 `40212188604`。
 
-**已完成**：22B-FIX.1 已补齐 workspace coverage 缺口、参数化入口、作用域消费、控制流提前退出、shared
-构造能力和 `source_runtime_id` 契约；workspace gates `40201575737` 已通过。
+**已完成**：22B-FIX.1 已补齐 workspace coverage 缺口、参数化入口、作用域消费、控制流提前退出、错误出口、shared
+构造能力和 `source_runtime_id` 契约；workspace gates `40212263928` 与 maintenance regression `40212188604` 已通过。
 
 ### F-10（低，已修复）下游兼容边界措辞
 
@@ -214,7 +214,7 @@ lowering 计划；二者择一，不能继续固定 `Vec::new()`。
 | 4 | 生成取消检查并进入 IR；补 verifier 覆盖 | 已完成，IR 验证通过 |
 | 5 | 修复 F-5/F-6 API 绕过；补状态测试 | 已完成 |
 | 6 | 补 F-7 源码级回归和旧快照兼容 | 已完成 |
-| 7 | 更新 22B/22/12/README 状态；记录本地/远端证据 | 已完成；远端 workspace gates `40201575737` |
+| 7 | 更新 22B/22/12/README 状态；关闭 FIX.1 并开启 22C | 已完成；远端 `40212263928`/`40212188604` |
 
 ## 七、验收
 
@@ -222,9 +222,9 @@ lowering 计划；二者择一，不能继续固定 `Vec::new()`。
 2. 普通句柄、`shared_mut` 跨 Runtime、`dynamic`/resource、65 参数、消费后使用均被拒绝；
 3. 取消检查在实际 IR 中非空，位置/类别通过 verifier；
 4. `std.concurrent` 签名可推导 `thread<T>`/`task<T>` 和 `join`/`wait` 的 T；
-5. 22B-FIX 与 22B-FIX.1 已完成，22C 可以继续实现 Runtime；
+5. 22B-FIX 与 22B-FIX.1 已关闭，22C 已开启 Runtime 实施入口；
 6. 没有实现 Runtime/VM/LLVM/标准库函数体；F-8 的产物门禁明确归 22C；
-7. 本地 tests/fmt/docs 通过；旧远端运行 `40161893418` 的失败原因已修复，workspace gates `40201575737` 已通过。
+7. 本地 tests/fmt/docs 通过；旧远端运行 `40161893418` 的失败原因已修复，`40212263928`/`40212188604` 已通过。
 
 ## 七点一、实施结果
 
@@ -242,7 +242,7 @@ lowering 计划；二者择一，不能继续固定 `Vec::new()`。
    ID，旧 IR 快照仍可读取。
 5. 新增 `xiao-driver` 源码级回归，覆盖合法 `spawn`、030/031/032、65 个参数、消费后使用、
    跨 Runtime `shared_mut`、同 Runtime `shared_mut`、`lock_guard` 逃逸、锁等待、取消检查以及
-   `return`/`break`/`continue` 提前退出的消费状态合流。
+   `return`/`break`/`continue`/`raise` 提前退出的消费状态合流和不可达类型错误隔离。
 
 本地验证命令：
 
@@ -267,7 +267,7 @@ F-8 的 `.xiaoc`/`.xar` 产物门禁仍属于 22C 前置，本批没有修改产
 4. **不许**用 `Dynamic` 冒充 `spawn<T>`/`join<T>` 的泛型；
 5. **不许**保留 `ValueId -> Sendable` 的生产捷径或无来源 `shared_mut` 放行；
 6. **不许**把取消检查固定成空 `Vec`；
-7. **不许**在 22B-FIX 关闭前进入 22C；
+7. **FIX.1 已关闭**；22C 只能消费本批已验证的类型、事实、出口和 verifier 契约；
 8. **不许**把字节码新类型标签写成已兼容旧运行时；门禁归 22C。
 
 ## 九、落点

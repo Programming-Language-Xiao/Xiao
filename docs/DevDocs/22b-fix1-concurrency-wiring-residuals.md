@@ -6,8 +6,9 @@
 > 红，参数化入口函数、消费状态作用域、`shared_read`/`shared_mut`/`lock_write` 消费和
 > shared 构造参数能力仍有缺口。照当前状态进入 22C 会把这些缺口当成已冻结语义。
 >
-> 状态：**已完成（2026-10-25）**。本批只修 22B 静态接线，不接 Runtime；D-1～D-5
-> 已按甲方案落实。workspace gates `40201575737` 已通过（提交 `b3ded8b`）。
+> 状态：**已关闭（2026-10-26）**。本批只修 22B 静态接线，不接 Runtime；D-1～D-5
+> 已按甲方案落实。代码提交 `9910d13` 的 workspace gates `40212263928` 和 maintenance
+> regression `40212188604` 均已通过；22C 入口现已开启。
 
 ## 一、已确认证据
 
@@ -15,14 +16,17 @@
 | --- | --- | --- |
 | 本地 workspace 测试 | 通过 | `cargo test --workspace` |
 | 本地格式/文档 | 通过 | `cargo fmt --check`、`check:docs`、`check:usedocs`、`check:layout`、`git diff --check` |
-| workspace gates `40201575737` | **通过** | 提交 `b3ded8b` 的 Linux workspace gates 全部通过；旧失败 `40161893418` 已修复 |
+| workspace gates `40212263928` | **通过** | 提交 `9910d13` 的 Linux workspace gates 全部通过；旧失败 `40161893418` 已修复 |
 | 最终文档提交 gates `40203307117` | **通过** | 提交 `318bff2` 的 Linux workspace gates 全部通过 |
-| maintenance regression `40201575725` | **通过** | 同一提交 `b3ded8b` 的维护回归通过；本批不接 Runtime/LLVM |
+| maintenance regression `40212188604` | **通过** | 同一提交 `9910d13` 的维护回归通过；本批不接 Runtime/LLVM |
 | 简单源级接线 | 通过 | `spawn`/`join`、`submit`/`wait`、`shared_mut` 跨 Runtime、`lock_guard` 逃逸用例已有 |
 | 参数化入口函数 | **通过** | 真实函数类型按位置检查边界实参，混合 `int`/`str` 参数通过 |
 | 混合边界实参 | **通过** | 参数类型不匹配稳定报 `X04-TYPE-002` |
 | 消费状态作用域 | **通过** | 绑定身份覆盖别名；分支、循环和 try 路径在合流点保守合并；遮蔽与重新赋值有回归 |
 | 控制流出口合流 | **通过** | `return`、`break`、`continue` 的消费状态按可达出口合流；不可达语句不污染后续状态 |
+| `raise`/错误出口 | **通过** | `raise` 作为错误出口进入 `catch` 合流；错误路径消费状态不会误并入普通出口 |
+| 不可达类型检查 | **通过** | 不可达语句仍报告名称/返回/条件等类型错误，但隔离并发消费与循环状态 |
+| IR `copy_kind` | **通过** | verifier 只接受冻结的 `deep_copy`/`serialization`，拒绝 `serialize` 别名 |
 | `shared_read` 消费 | **通过** | 源值复用稳定报 `X04-TYPE-002` |
 
 > 上述历史失败已转为 `22b_concurrency_wiring.rs` 的正式源级回归；本批不保留临时夹具。
@@ -128,10 +132,26 @@ Type::Function { parameters: Vec::new(), return_type: T }
 显式 Runtime 值身份区间分离的非零静态身份标签，显式 Runtime 使用由值身份导出的非零稳定标签；
 IR verifier 拒绝目标或来源 Runtime ID 为 0，符合 22A 对 0 无效值的冻结约束。
 
-### F-9（中，已修复）文档/证据状态仍需回写
+### F-9（中，已关闭）文档/证据状态已回写
 
-22B-FIX、22B、22 和 README 已回写为 FIX.1 已完成；本批远端 workspace gates 使用运行号
-`40201575737`，不把旧远端失败运行当作本批通过证据。
+22B-FIX、22B、22 和 README 已回写为 FIX.1 已关闭；代码提交 `9910d13` 的 workspace gates
+`40212263928` 与 maintenance regression `40212188604` 均通过，不把旧远端失败运行当作本批证据。
+
+### F-10（高，已修复）控制流错误出口与不可达类型检查没有接线
+
+原有 `ConcurrencyFlow` 只记录普通、`return`、`break`、`continue` 出口；`raise` 后进入
+`catch` 的错误路径没有独立状态。顺序检查遇到提前退出后也直接停止，导致不可达语句的
+普通类型错误不会报告；如果强行检查，又会把消费状态写回可达路径。
+
+**已完成**：新增 `errors` 出口；`raise` 状态只进入可匹配的 `catch` 合流。不可达语句继续
+执行类型检查，但使用隔离快照，不写回并发消费、句柄循环和普通出口状态。源级回归覆盖
+`raise`/`catch` 消费、`return`/`break`/`continue` 后的名称类型错误。
+
+### F-11（中，已修复）IR `copy_kind` 仍接受旧别名
+
+verifier 曾同时放行 `deep_copy`、`serialization` 和 `serialize`，与冻结字段契约不一致。
+
+**已完成**：只接受 `deep_copy` 与 `serialization`，并补 verifier 负例。
 
 ## 三、目标与边界
 
@@ -173,17 +193,17 @@ IR verifier 拒绝目标或来源 Runtime ID 为 0，符合 22A 对 0 无效值�
 | 4 | 补 shared 构造参数能力检查 | 已完成；容器负例报 030 |
 | 5 | 按 D-4 记录 `source_runtime_id` 或迁移 | 已完成；可选字段与 lowering 上下文已登记 |
 | 6 | 补源级回归并更新 22B-FIX/22/12/README | 已完成 |
-| 7 | 推送并记录 CI；22C 门禁改为 FIX.1 完成 | 已完成；workspace gates `40201575737` 通过 |
+| 7 | 推送并记录 CI；关闭 FIX.1 并开启 22C 入口 | 已完成；`40212263928`/`40212188604` 均通过 |
 
 ## 六、验收
 
-1. workspace gates `40201575737`、本地 Rust workspace、独立文档门禁和源码级回归均通过；
+1. workspace gates `40212263928`、maintenance regression `40212188604`、本地 Rust workspace、独立文档门禁和源码级回归均通过；
 2. `spawn(rt, work, args...)` 对带参数函数和混合类型实参通过，错误类型被拒绝；
 3. 同名跨函数/遮蔽/重新赋值的消费状态正确；
 4. `shared_read`/`shared_mut`/`lock_write` 消费和 shared 构造能力负例通过；
 5. `source_runtime_id` 契约有唯一落点；
-6. 源码级测试覆盖 F-2～F-6，不只测模型 API；
-7. 22B-FIX/22/12/README 状态一致，22C 入口明确为 FIX.1 完成；
+6. 源码级测试覆盖 F-2～F-6、F-10，不只测模型 API；
+7. 22B-FIX/22/12/README 状态一致，FIX.1 已关闭，22C 入口已开启；
 8. 没有实现 Runtime/VM/LLVM/标准库函数体。
 
 ## 七点一、实施结果
@@ -194,7 +214,8 @@ IR verifier 拒绝目标或来源 Runtime ID 为 0，符合 22A 对 0 无效值�
 2. 消费状态按绑定身份追踪别名，并在类型检查器的词法作用域快照中隔离；函数参数、循环变量、
    catch 绑定和表方法参数会创建新的局部状态，重新赋值会建立新身份；分支、循环与 try 路径在
    控制流合流处传播消费，`return`、`break`、`continue` 按各自可达出口保留状态，循环会拒绝重复
-   消费入口已有值，不可达语句不会污染后续路径。
+   消费入口已有值，不可达语句不会污染后续路径；`raise` 错误出口只在 `catch` 合流，错误路径
+   与普通出口保持隔离。
 3. `FunctionSignature` 保留 `consumed_parameters`；`shared_read`、`shared_mut` 和
    `lock_write` 在调用点消费命名源值，`read`、`lock`、`lock_read` 保持借用语义。
 4. `shared_read`/`shared_mut` 对输入值执行候选 A Send/Sync 检查；数组、动态值、资源和
@@ -204,6 +225,7 @@ IR verifier 拒绝目标或来源 Runtime ID 为 0，符合 22A 对 0 无效值�
    分离的非零静态标签，IR verifier 拒绝无效的零 Runtime ID。
 6. `cancel` 保持借用语义；取消后仍可再次 `cancel` 或执行 `join`/`wait`，消费操作才会
    标记句柄不可复用。
+7. IR `copy_kind` 只接受 `deep_copy`/`serialization`；`serialize` 作为未知值被 verifier 拒绝。
 
 本地验证命令：
 
@@ -226,7 +248,7 @@ git diff --check
 4. **不许**让 `shared_read`/`shared_mut`/`lock_write` 的消费只存在于签名表；
 5. **不许**把 `spawn`/`submit` 的事实改成名称启发式；
 6. **不许**把 workspace gates 红写成通过；
-7. **不许**在 FIX.1 关闭前进入 22C。
+7. **FIX.1 已关闭**；22C 只能消费本批已验证的类型、事实、出口和 verifier 契约。
 
 ## 八、落点
 
@@ -255,7 +277,7 @@ core/rust/crates/xiao-ir/src/model.rs                   source_runtime_id 契约
 3. **shared 构造语义**：`shared_read(T)` 消费 T 但 `read` 借用；两者不能混成同一状态。
 4. **IR 字段扩展**：`source_runtime_id` 若保留，必须写进 22A/22B-FIX 的可选字段说明和旧快照
    兼容测试。
-5. **文档状态**：FIX.1 未完成前不能把 22B/22B-FIX 写成已完成。
+5. **文档状态**：FIX.1 已关闭；后续并发 Runtime/VM/LLVM 改动必须进入 22C 对应文档和门禁。
 
 ## 相关页面
 

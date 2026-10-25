@@ -5,10 +5,11 @@
 > 22A-FIX 已固定 `std.concurrent` 的 API/类型名、Send/Sync 类型表、CrossThread 字段、
 > 诊断映射和产物门禁；本批只让 22C 能按这些事实实现 Runtime，不在实现阶段重新解释语义。
 >
-> 状态：**已实施（2026-10-25）**。D-1 取乙（专用注解语法），22B-FIX/FIX.1 的 D-1～D-5
+> 状态：**静态批已关闭（2026-10-26）**。D-1 取乙（专用注解语法），22B-FIX/FIX.1 的 D-1～D-5
 > 取甲；类型、生命周期模型、IR 动作/verifier、参数化入口、作用域消费、BoundaryFacts、
-> shared 能力和取消检查均已接入。Runtime/VM/LLVM、标准库函数体和产物门禁仍由 22C–22E
-> 负责。
+> shared 能力、错误出口和不可达检查隔离均已接入。代码提交 `9910d13` 的 workspace gates
+> `40212263928` 与 maintenance regression `40212188604` 均通过。Runtime/VM/LLVM、标准库
+> 函数体和产物门禁仍由 22C–22E 负责，22C 入口已开启。
 
 ## 一、入口条件与冻结输入
 
@@ -260,7 +261,7 @@ git diff --check
 3. 正/负例覆盖普通句柄、共享句柄、多边界值、Runtime ID、动态值、资源、跨 Runtime；
 4. IR 快照和旧快照兼容/版本策略通过；
 5. 没有实现 Runtime、VM、LLVM、标准库函数体或 32B ABI；
-6. [22B-FIX](22b-fix-concurrency-wiring.md) 已完成，22C 可以只按 22B 的类型/事实/动作
+6. [22B-FIX](22b-fix-concurrency-wiring.md) 与 FIX.1 已关闭，22C 可以只按 22B 的类型/事实/动作
    实现，不再补静态语义。
 
 ## 八、不许
@@ -330,8 +331,9 @@ core/rust/Cargo.toml --all -- --check`，以及 `check:docs`、`check:usedocs`�
 `git diff --check`；`xiao-driver/tests/22b_concurrency_wiring.rs` 覆盖真实源码正/负例。
 
 **证据边界**：本地测试同时覆盖模型/API、parser 注解、真实 `std.concurrent` 源码调用、
-生命周期边界、IR facts/transfers/cancellation 和旧快照兼容；远端 workspace gates 运行号为
-`40201575737`（提交 `b3ded8b`）。22B-FIX 的接线结果与回归清单见
+生命周期边界、IR facts/transfers/cancellation、错误出口和旧快照兼容；远端 workspace gates
+运行号为 `40212263928`，maintenance regression 为 `40212188604`（均针对提交 `9910d13`）。
+22B-FIX 的接线结果与回归清单见
 [22B-FIX](22b-fix-concurrency-wiring.md)。
 
 ## 相关页面
