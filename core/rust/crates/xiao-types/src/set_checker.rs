@@ -128,6 +128,7 @@ impl<'source> TypeChecker<'source> {
             );
             return;
         }
+        self.reset_concurrency_binding(&key);
         if let Err(error) = self
             .environment
             .declare_mutable(key, expected, value.is_some())

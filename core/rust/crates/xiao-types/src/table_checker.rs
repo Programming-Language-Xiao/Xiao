@@ -266,7 +266,7 @@ impl<'source> TypeChecker<'source> {
             name: table_name.clone(),
             kind,
         });
-        self.environment.push_scope();
+        self.push_scope();
         self.declare_table_fields(&signature);
 
         for statement in body {
@@ -332,7 +332,7 @@ impl<'source> TypeChecker<'source> {
             }
         }
 
-        self.environment.pop_scope();
+        self.pop_scope();
         self.current_table = previous_table;
         self.table_signatures.insert(table_name, signature);
     }
@@ -563,8 +563,9 @@ impl<'source> TypeChecker<'source> {
             saw_return: false,
         });
         self.loop_depth = 0;
-        self.environment.push_scope();
+        self.push_scope();
         for (index, parameter) in local_parameters.iter().enumerate() {
+            self.reset_concurrency_binding(&parameter.name);
             let result = if index == 0 && valid_self {
                 self.environment.declare_constant(
                     parameter.name.clone(),
@@ -608,7 +609,7 @@ impl<'source> TypeChecker<'source> {
             resolved_return.clone(),
             method_signature.span,
         );
-        self.environment.pop_scope();
+        self.pop_scope();
         self.loop_depth = previous_loop_depth;
         self.current_function = previous_frame;
         if let Some(member) = signature.members.get_mut(&method_key) {

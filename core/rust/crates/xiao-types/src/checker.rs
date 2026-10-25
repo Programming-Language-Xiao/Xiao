@@ -108,6 +108,10 @@ pub struct TypeChecker<'source> {
     current_function_key: Option<String>,
     /// 命名并发句柄的静态消费状态；仅用于调用检查。
     concurrency_handle_states: BTreeMap<String, crate::concurrency::HandleConsumption>,
+    /// 已消费的命名并发值；名称键只在当前词法作用域快照内有效。
+    consumed_concurrency_bindings: BTreeSet<String>,
+    /// 进入作用域前保存的并发状态。
+    concurrency_scope_snapshots: Vec<ConcurrencyScopeState>,
     /// 已由 `std.concurrent` 导入绑定解析出的调用点。
     concurrency_calls: Vec<ConcurrencyCall>,
     /// 函数体中直接执行数组变更的函数摘要。
@@ -122,6 +126,12 @@ struct FunctionFrame {
     return_type: Type,
     /// 是否已经遇到返回语句。
     saw_return: bool,
+}
+
+#[derive(Clone, Debug, Default)]
+struct ConcurrencyScopeState {
+    handles: BTreeMap<String, crate::concurrency::HandleConsumption>,
+    consumed: BTreeSet<String>,
 }
 
 impl<'source> TypeChecker<'source> {
@@ -151,9 +161,57 @@ impl<'source> TypeChecker<'source> {
             current_function: None,
             current_function_key: None,
             concurrency_handle_states: BTreeMap::new(),
+            consumed_concurrency_bindings: BTreeSet::new(),
+            concurrency_scope_snapshots: Vec::new(),
             concurrency_calls: Vec::new(),
             mutating_functions: BTreeSet::new(),
             loop_depth: 0,
+        }
+    }
+
+    /// 进入一个与类型环境同步的词法作用域，并保存并发消费状态。
+    pub(super) fn push_scope(&mut self) {
+        self.concurrency_scope_snapshots
+            .push(ConcurrencyScopeState {
+                handles: self.concurrency_handle_states.clone(),
+                consumed: self.consumed_concurrency_bindings.clone(),
+            });
+        self.environment.push_scope();
+    }
+
+    /// 退出词法作用域并恢复外层并发绑定状态。
+    pub(super) fn pop_scope(&mut self) {
+        let _ = self.environment.pop_scope();
+        if let Some(snapshot) = self.concurrency_scope_snapshots.pop() {
+            self.concurrency_handle_states = snapshot.handles;
+            self.consumed_concurrency_bindings = snapshot.consumed;
+        }
+    }
+
+    /// 重置一个被重新赋值或重新声明的并发绑定。
+    pub(super) fn reset_concurrency_binding(&mut self, key: &str) {
+        self.concurrency_handle_states.remove(key);
+        self.consumed_concurrency_bindings.remove(key);
+    }
+
+    /// 标记并发调用消费的命名实参。
+    pub(super) fn mark_concurrency_binding_consumed(&mut self, key: String) {
+        self.consumed_concurrency_bindings.insert(key);
+    }
+
+    /// 报告消费后的命名值再次读取。
+    pub(super) fn check_consumed_concurrency_binding(
+        &mut self,
+        key: &str,
+        span: xiao_source::SourceSpan,
+    ) {
+        if self.consumed_concurrency_bindings.contains(key) {
+            self.type_error(
+                crate::diagnostics::FUNCTION_CALL_CODE,
+                "x04.type.call_argument",
+                span,
+                "并发值已经被消费，不能再次使用".to_owned(),
+            );
         }
     }
 

@@ -293,8 +293,9 @@ impl<'source> TypeChecker<'source> {
             saw_return: false,
         });
         self.loop_depth = 0;
-        self.environment.push_scope();
+        self.push_scope();
         for parameter_signature in &signature.parameters {
+            self.reset_concurrency_binding(&parameter_signature.name);
             if let Err(error) = self.environment.declare_mutable(
                 parameter_signature.name.clone(),
                 parameter_signature.ty.clone(),
@@ -336,6 +337,7 @@ impl<'source> TypeChecker<'source> {
             signature.span,
         )
         .with_type_parameters(signature.type_parameters.clone())
+        .with_consumed_parameters(signature.consumed_parameters.clone())
         .with_type_parameter_ids(signature.type_parameter_ids.clone());
         self.function_signatures.insert(key.clone(), updated);
         let function_type = Type::Function {
@@ -347,7 +349,7 @@ impl<'source> TypeChecker<'source> {
             return_type: Box::new(resolved_return),
         };
         // 参数作用域可能遮蔽函数名；先退出局部作用域，再更新外层函数绑定。
-        self.environment.pop_scope();
+        self.pop_scope();
         let scheme = if signature.type_parameter_ids.is_empty() {
             TypeScheme::monomorphic(function_type)
         } else {
@@ -509,6 +511,7 @@ impl<'source> TypeChecker<'source> {
             signature.span,
         )
         .with_type_parameters(signature.type_parameters.clone())
+        .with_consumed_parameters(signature.consumed_parameters.clone())
     }
 
     /// 使用同一参数匹配器检查顶层函数和去掉隐式接收者后的表方法。
@@ -766,7 +769,7 @@ impl<'source> TypeChecker<'source> {
     }
 
     /// 追加一个调用参数诊断。
-    fn call_error(&mut self, span: SourceSpan, message: &str) {
+    pub(super) fn call_error(&mut self, span: SourceSpan, message: &str) {
         self.type_error(
             FUNCTION_CALL_CODE,
             "x04.type.call_argument",

@@ -143,6 +143,8 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 
 - 事实：`TaskBoundary`、`ThreadBoundary`；
 - IR 字段：`runtime_id: u64`、`task_boundary: bool`、`thread_boundary: bool`；
+- `source_runtime_id: Option<u64>` 是 22B-FIX.1 为 `shared_mut` 同 Runtime verifier 登记的
+  可选扩展，使用 `serde(default)`，缺失时按未知来源处理；它不改变 32B 句柄头布局；
 - 诊断字段：`boundary_kind`、`runtime_id`、`source_span`；
 - 同线程挂起只产生 `TaskBoundary`；显式线程迁移同时产生两个事实；
 - 诊断映射继续用 `X06-LIFETIME-006..008`。

@@ -93,7 +93,19 @@ impl TypeChecker<'_> {
         let concurrent_module = self.imported_function_module(callee);
         let signature = self.instantiate_function_signature(&signature);
         self.check_expression(callee);
-        let result = self.check_function_arguments(&signature, arguments, span);
+        let operation = signature
+            .name
+            .strip_prefix("ascii:")
+            .unwrap_or(signature.name.as_str());
+        let is_std_concurrent = matches!(
+            concurrent_module.as_deref(),
+            Some("std.concurrent" | "stdlib.concurrent")
+        );
+        let result = if is_std_concurrent && matches!(operation, "spawn" | "submit") {
+            self.check_spawn_like_arguments(&signature, arguments, span)
+        } else {
+            self.check_function_arguments(&signature, arguments, span)
+        };
         let result = self.check_concurrency_contract(
             &signature,
             arguments,
@@ -107,6 +119,85 @@ impl TypeChecker<'_> {
             }
         }
         Some(result)
+    }
+
+    /// 检查 `spawn`/`submit` 的真实函数值与边界参数。
+    ///
+    /// 签名表保留一个泛型返回占位，入口函数的参数列表必须从第二个实参
+    /// 的实际 `Type::Function` 读取；尾部额外值仍按闭包边界值执行 Send 检查。
+    fn check_spawn_like_arguments(
+        &mut self,
+        signature: &FunctionSignature,
+        arguments: &[CallArgument],
+        span: SourceSpan,
+    ) -> Type {
+        let mut actuals = Vec::with_capacity(arguments.len());
+        for argument in arguments {
+            actuals.push(self.check_expression(&argument.value));
+            if argument.kind != xiao_syntax::CallArgumentKind::Positional {
+                self.call_error(argument.span, "并发入口暂只接受位置参数");
+            }
+        }
+        for (index, expected) in signature.parameters.iter().take(1).enumerate() {
+            if let Some(actual) = actuals.get(index) {
+                self.unify_or_report(
+                    &expected.ty,
+                    actual,
+                    arguments[index].span,
+                    "x04.type.call_argument_type",
+                );
+            } else {
+                self.call_error(span, "并发入口缺少 Runtime/pool 或函数参数");
+            }
+        }
+        let function_type = actuals.get(1).cloned().unwrap_or(Type::Dynamic);
+        if let Type::Function {
+            parameters,
+            return_type,
+        } = function_type
+        {
+            if let Some(expected_return) =
+                signature
+                    .parameters
+                    .get(1)
+                    .and_then(|parameter| match &parameter.ty {
+                        Type::Function { return_type, .. } => Some(return_type.as_ref()),
+                        _ => None,
+                    })
+            {
+                self.unify_or_report(
+                    expected_return,
+                    &return_type,
+                    arguments.get(1).map_or(span, |argument| argument.span),
+                    "x04.type.call_argument_type",
+                );
+            }
+            let boundary = actuals.iter().skip(2).collect::<Vec<_>>();
+            if boundary.len() < parameters.len() {
+                self.call_error(span, "并发入口传入的边界参数少于函数参数");
+            }
+            for (index, expected) in parameters.iter().enumerate() {
+                if let Some(actual) = boundary.get(index) {
+                    let argument_span = arguments
+                        .get(index + 2)
+                        .map_or(span, |argument| argument.span);
+                    self.unify_or_report(
+                        expected,
+                        actual,
+                        argument_span,
+                        "x04.type.call_argument_type",
+                    );
+                }
+            }
+        } else {
+            self.type_error(
+                FUNCTION_CALL_CODE,
+                "x04.type.call_argument_type",
+                arguments.get(1).map_or(span, |argument| argument.span),
+                "spawn/submit 的第二个参数必须是函数值".to_owned(),
+            );
+        }
+        self.context.apply(&signature.return_type)
     }
 
     fn imported_function_module(&self, expression: &Expression) -> Option<String> {
@@ -188,6 +279,22 @@ impl TypeChecker<'_> {
             }
         }
 
+        if matches!(operation, "shared_read" | "shared_mut")
+            && let Some(argument) = arguments.first()
+        {
+            let ty = self
+                .known_expression_type(&argument.value)
+                .unwrap_or(Type::Dynamic);
+            if !(crate::is_send(&ty) && crate::is_sync(&ty)) {
+                self.type_error(
+                    CONCURRENCY_NOT_SEND_CODE,
+                    "x03.type.concurrency_value_not_send",
+                    argument.value.span(),
+                    format!("共享句柄的值类型 {} 不满足候选 A 的 Send/Sync 能力", ty),
+                );
+            }
+        }
+
         if matches!(operation, "join" | "detach" | "wait" | "cancel") {
             if let Some(argument) = arguments.first() {
                 let ty = self
@@ -237,7 +344,30 @@ impl TypeChecker<'_> {
                             argument.value.span(),
                             "并发句柄已经被消费，不能再次使用".to_owned(),
                         );
+                    } else {
+                        self.mark_concurrency_binding_consumed(key);
                     }
+                }
+            }
+        }
+        if !matches!(operation, "join" | "detach" | "wait" | "cancel") {
+            for &index in &signature.consumed_parameters {
+                let Some(argument) = arguments.get(index) else {
+                    continue;
+                };
+                let Expression::Name(name) = &argument.value else {
+                    continue;
+                };
+                let key = self.name_key(*name);
+                if self.consumed_concurrency_bindings.contains(&key) {
+                    self.type_error(
+                        FUNCTION_CALL_CODE,
+                        "x04.type.call_argument",
+                        argument.value.span(),
+                        "并发值已经被消费，不能再次使用".to_owned(),
+                    );
+                } else {
+                    self.mark_concurrency_binding_consumed(key);
                 }
             }
         }

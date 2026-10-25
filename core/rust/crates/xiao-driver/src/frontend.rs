@@ -863,7 +863,8 @@ fn standard_module_function_signatures(
                 concurrent_span,
             )
             .with_type_parameters(names)
-            .with_type_parameter_ids(ids);
+            .with_type_parameter_ids(ids)
+            .with_consumed_parameters(signature.consumed_parameters.clone());
             (format!("ascii:{name}"), function)
         })
         .collect::<BTreeMap<_, _>>();

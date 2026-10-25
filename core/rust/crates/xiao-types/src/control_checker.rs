@@ -59,7 +59,8 @@ impl<'source> TypeChecker<'source> {
                 );
             }
             saw_broad |= is_broad;
-            self.environment.push_scope();
+            self.push_scope();
+            self.reset_concurrency_binding(&self.name_key(catch.binding));
             if let Err(error) =
                 self.environment
                     .declare_mutable(self.name_key(catch.binding), Type::Dynamic, true)
@@ -70,7 +71,7 @@ impl<'source> TypeChecker<'source> {
             for statement in &catch.body {
                 self.check_statement(statement);
             }
-            self.environment.pop_scope();
+            self.pop_scope();
         }
         if let Some(body) = finally_body {
             self.check_scoped_body(body);
@@ -150,7 +151,8 @@ impl<'source> TypeChecker<'source> {
             self.push_runtime_check(iterable.span(), RuntimeCheckKind::Iterable);
         }
         self.loop_depth = self.loop_depth.saturating_add(1);
-        self.environment.push_scope();
+        self.push_scope();
+        self.reset_concurrency_binding(&self.name_key(target));
         self.register_top_level_functions(body);
         if let Err(error) =
             self.environment
@@ -161,7 +163,7 @@ impl<'source> TypeChecker<'source> {
         for statement in body {
             self.check_statement(statement);
         }
-        self.environment.pop_scope();
+        self.pop_scope();
         self.loop_depth = self.loop_depth.saturating_sub(1);
     }
 
@@ -308,12 +310,12 @@ impl<'source> TypeChecker<'source> {
 
     /// 在独立类型作用域中检查一个缩进体。
     fn check_scoped_body(&mut self, body: &[Statement]) {
-        self.environment.push_scope();
+        self.push_scope();
         self.register_top_level_functions(body);
         for statement in body {
             self.check_statement(statement);
         }
-        self.environment.pop_scope();
+        self.pop_scope();
     }
 }
 

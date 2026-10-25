@@ -111,6 +111,7 @@ impl<'source> TypeChecker<'source> {
     /// 查找名称、检查初始化状态并实例化其类型方案。
     fn check_name(&mut self, name: xiao_syntax::Name) -> Type {
         let key = self.name_key(name);
+        self.check_consumed_concurrency_binding(&key, name.span);
         let Some(binding) = self.environment.lookup(&key).cloned() else {
             self.undefined_name(name);
             return Type::Dynamic;

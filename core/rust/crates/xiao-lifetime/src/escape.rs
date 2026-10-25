@@ -1904,14 +1904,17 @@ impl<'source> EscapeAnalyzer<'source> {
             let Some(value) = value else { continue };
             let mut boundary_value = BoundaryValue::from_type(value, &ty);
             // 22A 规定 shared_mut 只属于创建它的当前 Runtime；静态前端把
-            // 当前 Runtime 固定为 0，显式 runtime_create 产生的句柄则拥有
-            // 非零稳定身份，因此跨 Runtime 传递会在事实登记处被拒绝。
+            // 当前 Runtime 身份从 lowering 上下文读取，显式 runtime_create
+            // 产生的句柄则拥有非零稳定身份，因此跨 Runtime 传递会在事实
+            // 登记处被拒绝。
             if boundary_value.kind == BoundaryValueKind::SharedMut {
-                boundary_value = boundary_value.from_runtime(0);
-                let _ = self
-                    .result
-                    .boundary_facts
-                    .register_runtime_id(value, 0, call.span);
+                let source_runtime_id = self.result.boundary_facts.current_runtime_id();
+                boundary_value = boundary_value.from_runtime(source_runtime_id);
+                let _ = self.result.boundary_facts.register_runtime_id(
+                    value,
+                    source_runtime_id,
+                    call.span,
+                );
             }
             values.push(boundary_value);
             self.mark_escape(value, EscapeReason::CrossThread);

@@ -484,6 +484,8 @@ impl std::error::Error for BoundaryFactError {}
 /// 类型判定的 `spawn`/`submit` lowering 入口提交事实。
 #[derive(Clone, Debug, Eq, PartialEq, Default)]
 pub struct BoundaryFacts {
+    /// 当前静态 lowering 上下文的 Runtime ID；默认入口为 0，可由前端显式设置。
+    pub current_runtime_id: RuntimeId,
     /// 值到来源 Runtime ID 的事实。
     pub runtime_ids: RuntimeIdFacts,
     /// 每个边界值对应的一条跨线程事实。
@@ -497,6 +499,19 @@ impl BoundaryFacts {
     #[must_use]
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// 设置当前 lowering 上下文的 Runtime ID。
+    #[must_use]
+    pub const fn with_current_runtime_id(mut self, runtime_id: RuntimeId) -> Self {
+        self.current_runtime_id = runtime_id;
+        self
+    }
+
+    /// 返回当前 lowering 上下文的 Runtime ID。
+    #[must_use]
+    pub const fn current_runtime_id(&self) -> RuntimeId {
+        self.current_runtime_id
     }
 
     /// 登记一个值的来源 Runtime ID。

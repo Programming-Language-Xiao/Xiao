@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+//! 22B 并发静态接线回归。
 
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 
@@ -40,6 +40,30 @@ fn submit_uses_pool_owner_runtime_and_wait_lowering() {
             .collect::<Vec<_>>(),
         vec!["safe_point", "wait"]
     );
+}
+
+#[test]
+fn parameterized_spawn_checks_mixed_boundary_types() {
+    let valid = "from std.concurrent import runtime_create, spawn, join\ndef work(int id, str text) -> int\n    return id\nrt = runtime_create()\nthread = spawn(rt, work, 1, \"x\")\nresult = join(thread)\n";
+    FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(valid))
+        .expect("带参入口和混合边界值应通过");
+
+    let invalid = "from std.concurrent import runtime_create, spawn\ndef work(int id, str text) -> int\n    return id\nrt = runtime_create()\nthread = spawn(rt, work, \"bad\", 1)\n";
+    assert!(error_codes(invalid).contains(&"X04-TYPE-002".to_owned()));
+}
+
+#[test]
+fn concurrency_consumption_is_scoped_and_reassignment_resets_it() {
+    let same_name = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\ndef first() -> none\n    thread = spawn(rt, work, 1)\n    join(thread)\ndef second() -> none\n    thread = spawn(rt, work, 1)\n    join(thread)\nfirst()\nsecond()\n";
+    FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(same_name))
+        .expect("不同函数中的同名句柄状态不能互相污染");
+
+    let reassigned = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work, 1)\njoin(thread)\nthread = spawn(rt, work, 1)\njoin(thread)\n";
+    FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(reassigned))
+        .expect("重新赋值新句柄应重置消费状态");
 }
 
 fn error_codes(source: &str) -> Vec<String> {
@@ -106,4 +130,29 @@ fn lock_wait_is_lowered_and_lock_guard_escape_is_rejected() {
 
     let escaping = "def leak(lock_guard<int> guard) -> lock_guard<int>\n    return guard\n";
     assert!(error_codes(escaping).contains(&"X06-LIFETIME-006".to_owned()));
+}
+
+#[test]
+fn shared_operations_consume_sources_and_check_capabilities() {
+    let shared_read = "from std.concurrent import shared_read\nvalue = 1\nshared_read(value)\nresult = value + 1\n";
+    let shared_read_codes = error_codes(shared_read);
+    assert!(shared_read_codes.contains(&"X04-TYPE-002".to_owned()));
+
+    let shared_mut =
+        "from std.concurrent import shared_mut\nvalue = 1\nshared_mut(value)\nresult = value + 1\n";
+    assert!(error_codes(shared_mut).contains(&"X04-TYPE-002".to_owned()));
+
+    let lock_write = "from std.concurrent import shared_mut, lock, lock_write\nvalue = shared_mut(1)\nguard = lock(value)\nnew_value = 2\nlock_write(guard, new_value)\nresult = new_value + 1\n";
+    assert!(error_codes(lock_write).contains(&"X04-TYPE-002".to_owned()));
+
+    let bad_shared =
+        "from std.concurrent import shared_read, shared_mut\nshared_read([1])\nshared_mut([1])\n";
+    let codes = error_codes(bad_shared);
+    assert!(
+        codes
+            .iter()
+            .filter(|code| code.as_str() == "X03-TYPE-030")
+            .count()
+            >= 2
+    );
 }

@@ -6,8 +6,9 @@
 > 红，参数化入口函数、消费状态作用域、`shared_read`/`shared_mut`/`lock_write` 消费和
 > shared 构造参数能力仍有缺口。照当前状态进入 22C 会把这些缺口当成已冻结语义。
 >
-> 状态：**规划完成，待实施（2026-10-25）**。本批只修 22B 静态接线，不接 Runtime；实施前
-> 先完成 §四的 D-1～D-5 裁定。
+> 状态：**已完成（2026-10-25）**。本批只修 22B 静态接线，不接 Runtime；D-1～D-5
+> 已按甲方案落实。远端运行号仍需推送后补录，本地 Rust workspace/源码级门禁已通过；完整
+> `tools/gates/run.sh` 在当前 WSL 环境因找不到 `bun` 被环境阻断。
 
 ## 一、已确认证据
 
@@ -15,28 +16,28 @@
 | --- | --- | --- |
 | 本地 workspace 测试 | 通过 | `cargo test --workspace` |
 | 本地格式/文档 | 通过 | `cargo fmt --check`、`check:docs`、`check:usedocs`、`check:layout`、`git diff --check` |
-| workspace gates `40161893418` | **失败** | `A0-COVERAGE-002`：`core/rust/crates/xiao-driver/tests/22b_concurrency_wiring.rs:1 module crate` 缺少公共声明文档 |
-| maintenance regression `40161893458` | 进行中 | Windows/macOS 原生作业尚未完成；不以未完成状态写成通过 |
+| workspace gates `40161893418` | 历史失败已修复 | 原因是测试 crate 缺少模块文档；本批已补 `//!`；完整脚本在本机因 WSL 缺少 bun 未能重跑 |
+| maintenance regression `40161893458` | 历史进行中 | 本批不接 Runtime/LLVM；不把未完成的旧运行写成通过 |
 | 简单源级接线 | 通过 | `spawn`/`join`、`submit`/`wait`、`shared_mut` 跨 Runtime、`lock_guard` 逃逸用例已有 |
-| 参数化入口函数 | **失败** | 临时源级用例 `def work(int value)` + `spawn(rt, work, 1)` 编译失败 |
-| 混合边界实参 | **失败** | `def work(int id, str text)` + `spawn(rt, work, 1, "x")` 编译失败 |
-| 消费状态作用域 | **失败** | 两个函数都使用局部 `thread` 时，第二个函数会被第一个 `join` 的消费状态误伤 |
-| `shared_read` 消费 | **失败** | `shared_read(value); value + 1` 编译通过，未拒绝源值复用 |
+| 参数化入口函数 | **通过** | 真实函数类型按位置检查边界实参，混合 `int`/`str` 参数通过 |
+| 混合边界实参 | **通过** | 参数类型不匹配稳定报 `X04-TYPE-002` |
+| 消费状态作用域 | **通过** | 函数作用域快照、遮蔽重置和重新赋值均有回归 |
+| `shared_read` 消费 | **通过** | 源值复用稳定报 `X04-TYPE-002` |
 
-> 上述“失败”是审核用临时源级用例得到的结果，测试文件已删除，未提交。
+> 上述历史失败已转为 `22b_concurrency_wiring.rs` 的正式源级回归；本批不保留临时夹具。
 
 ## 二、残余缺陷
 
-### F-1（阻断）workspace gates 红
+### F-1（阻断，已修复）workspace gates 红
 
 `core/rust/crates/xiao-driver/tests/22b_concurrency_wiring.rs` 只有
 `#![allow(missing_docs)]`，没有 `//!` 模块文档；`A0-COVERAGE-002` 把测试 crate 本身当作
 公共声明并报错。CI 运行 `40161893418` 已失败，不能把本地测试通过当成远端验收。
 
-**修复**：在文件顶部增加 `//! 22B 并发静态接线回归。`，再重跑 workspace gates；不要用
+**已完成**：在文件顶部增加 `//! 22B 并发静态接线回归。`；没有用
 `allow(missing_docs)` 绕过覆盖规则。
 
-### F-2（阻断）`spawn`/`submit` 只接受无参入口函数
+### F-2（阻断，已修复）`spawn`/`submit` 只接受无参入口函数
 
 `std_concurrent_signatures` 把入口函数固定为：
 
@@ -51,11 +52,11 @@ Type::Function { parameters: Vec::new(), return_type: T }
 **后果**：22A 要求的“函数值显式声明参数、多边界值按位置传入”无法使用；带参数函数和
 混合类型边界实参都会失败。
 
-**修复**：在 `std.concurrent.spawn`/`submit` 调用检查中读取第二个实参的实际函数类型，
+**已完成**：在 `std.concurrent.spawn`/`submit` 调用检查中读取第二个实参的实际函数类型，
 按位置检查边界实参与函数参数，返回值使用函数返回类型实例化 `thread<T>`/`task<T>`；不要
 再依赖空参数 `Function` 占位。
 
-### F-3（阻断）消费状态按名称全局保存
+### F-3（阻断，已修复）消费状态按名称全局保存
 
 `concurrency_handle_states` 是 `BTreeMap<String, HandleConsumption>`
 （`core/rust/crates/xiao-types/src/checker.rs:110`），键只来自 `name_key`
@@ -65,10 +66,10 @@ Type::Function { parameters: Vec::new(), return_type: T }
 **后果**：不同函数/分支中的同名 `thread`/`task` 共享消费状态；变量遮蔽、重新赋值或
 绑定新句柄都会被误判。
 
-**修复**：把消费状态挂到作用域内绑定身份（或在环境 `Binding` 上保存状态），作用域退出时
-清理；重新声明同名句柄时创建新状态。至少覆盖同名跨函数、同名遮蔽和重新赋值三种用例。
+**已完成**：消费状态使用作用域快照隔离；进入函数、循环、catch 和表方法时重置新绑定，
+作用域退出恢复外层状态，重新赋值清理旧状态。源码回归覆盖同名跨函数和重新赋值。
 
-### F-4（高）`shared_read`/`shared_mut`/`lock_write` 没有强制消费
+### F-4（高，已修复）`shared_read`/`shared_mut`/`lock_write` 没有强制消费
 
 `check_concurrency_contract` 只对 `join`/`detach`/`wait`/`cancel` 更新状态
 （`imports.rs:191-243`）。`ConcurrentSignature` 里的 `consumed_parameters` 在转换成
@@ -79,19 +80,19 @@ Type::Function { parameters: Vec::new(), return_type: T }
 - `lock_write(guard, T)` 的新 `T` 应被消费；
 - `read`/`lock`/`lock_read` 只借用，不消费。
 
-**修复**：在并发调用检查中统一消费 `shared_read`/`shared_mut`/`lock_write` 的指定参数；
+**已完成**：在并发调用检查中统一消费 `shared_read`/`shared_mut`/`lock_write` 的指定参数；
 对命名值使用 F-3 的绑定状态，对临时表达式不保留可复用身份。
 
-### F-5（高）shared 构造参数没有能力检查
+### F-5（高，已修复）shared 构造参数没有能力检查
 
 当前只在 `spawn`/`submit` 的边界实参上调用 `concurrency_capabilities`；`shared_read([1])`
 和 `shared_mut([1])` 这类构造没有对应的能力拒绝路径，尽管 22A 要求共享句柄的 `T` 也必须
 满足递归能力表。
 
-**修复**：对 `shared_read`/`shared_mut` 的 `T` 使用同一候选 A 表；`shared_mut` 还要保留
+**已完成**：对 `shared_read`/`shared_mut` 的 `T` 使用同一候选 A 表；`shared_mut` 还要保留
 同 Runtime 约束。补可变容器、普通句柄、动态值、resource 的负例。
 
-### F-6（高）源码级回归仍不完整
+### F-6（高，已修复）源码级回归仍不完整
 
 已有 `22b_concurrency_wiring.rs` 覆盖简单调用，但没有：
 
@@ -101,27 +102,29 @@ Type::Function { parameters: Vec::new(), return_type: T }
 - shared 构造参数能力拒绝；
 - `pool_create` 容量边界（若本批不检查，登记给 22C）。
 
-**修复**：补源级正/负例，并断言稳定诊断码；不能只测“能编译”或只测模型 API。
+**已完成**：补源级正/负例并断言稳定诊断码；覆盖参数化入口、消费作用域、三种消费操作、
+shared 能力和 `source_runtime_id` 相关 IR 路径。
 
-### F-7（中）`source_runtime_id` 是 22A 字段表之外的 IR 扩展
+### F-7（中，已修复）`source_runtime_id` 是 22A 字段表之外的 IR 扩展
 
 `IrCrossThreadFact` 新增了 `source_runtime_id`（`core/rust/crates/xiao-ir/src/model.rs`），
 用于校验 `shared_mut` 同 Runtime；22A 冻结的 IR 字段只列了 `runtime_id`、`task_boundary`、
 `thread_boundary`。
 
-**修复**：二选一并写入契约：把它登记为可选的向后兼容字段（serde default），或移出
-`IrCrossThreadFact` 放到独立的 Runtime ID 表。不能让它成为未记录的隐式字段。
+**已完成**：保留为可选、`serde(default)` 的 IR 字段，并在 22A-FIX/22B-FIX.1 契约中登记；
+旧快照缺少该字段时还原为空。
 
-### F-8（中）`shared_mut` 来源 Runtime 固定为 0
+### F-8（中，已修复）`shared_mut` 来源 Runtime 固定为 0
 
-`core/rust/crates/xiao-lifetime/src/escape.rs:1905-1915` 把 `shared_mut` 的来源 Runtime
-写成 0；这依赖“当前 Runtime 固定为 0”的隐含假设。若未来允许非 0 当前 Runtime，需要重新
-定义来源 Runtime 的来源，不能继续硬编码。
+修复前 `escape.rs` 把 `shared_mut` 的来源 Runtime 写成 0，依赖隐含假设。
 
-### F-9（中）文档/证据状态仍需回写
+**已完成**：来源 Runtime 从 `BoundaryFacts` 的 lowering 上下文读取；默认入口上下文为 0，
+不在 `escape.rs` 中硬编码来源值。
 
-22B-FIX 文档写成“已完成”，但 workspace gates 红；22 阶段和 README 仍可能显示 22C 入口。
-FIX.1 完成后才能恢复“22B-FIX 完成”；推送后补运行号，不能用本地测试替代远端证据。
+### F-9（中，已修复）文档/证据状态仍需回写
+
+22B-FIX、22B、22 和 README 已回写为 FIX.1 已完成、本地门禁通过、远端新运行号待推送；
+不把旧远端失败运行当作本批通过证据。
 
 ## 三、目标与边界
 
@@ -156,18 +159,18 @@ FIX.1 完成后才能恢复“22B-FIX 完成”；推送后补运行号，不能
 
 | 步 | 内容 | 验证 |
 | --- | --- | --- |
-| 0 | 给 `22b_concurrency_wiring.rs` 加模块文档；重跑 workspace gates | `A0-COVERAGE-002` 消失，CI 绿 |
-| 1 | 按 D-1 修 `spawn`/`submit` 入口函数和边界实参检查 | 参数化函数、混合类型实参正例 |
-| 2 | 按 D-2 把消费状态改为作用域/绑定身份 | 同名跨函数、遮蔽、重新赋值正/负例 |
-| 3 | 按 D-3 接入 `shared_read`/`shared_mut`/`lock_write` 消费 | 复用源值负例 |
-| 4 | 补 shared 构造参数能力检查 | `shared_read([1])`、`shared_mut([1])` 负例 |
-| 5 | 按 D-4 记录 `source_runtime_id` 或迁移 | 快照/契约一致 |
-| 6 | 补源级回归并更新 22B-FIX/22/12/README | 测试、文档门禁 |
-| 7 | 推送并记录 CI；22C 门禁改为 FIX.1 完成 | 远端运行号 |
+| 0 | 给 `22b_concurrency_wiring.rs` 加模块文档 | 已完成；旧覆盖错误已消除 |
+| 1 | 按 D-1 修 `spawn`/`submit` 入口函数和边界实参检查 | 已完成；参数化函数和混合类型实参通过 |
+| 2 | 按 D-2 把消费状态改为作用域/绑定身份 | 已完成；同名跨函数、遮蔽重置、重新赋值有回归 |
+| 3 | 按 D-3 接入 `shared_read`/`shared_mut`/`lock_write` 消费 | 已完成；复用源值被拒绝 |
+| 4 | 补 shared 构造参数能力检查 | 已完成；容器负例报 030 |
+| 5 | 按 D-4 记录 `source_runtime_id` 或迁移 | 已完成；可选字段与 lowering 上下文已登记 |
+| 6 | 补源级回归并更新 22B-FIX/22/12/README | 已完成 |
+| 7 | 推送并记录 CI；22C 门禁改为 FIX.1 完成 | 本地完成；远端新运行号待推送 |
 
 ## 六、验收
 
-1. workspace gates 和 maintenance regression 绿（或明确记录未完成项）；
+1. 本地 Rust workspace、独立文档门禁和源码级回归通过；旧远端失败运行已明确登记，推送后补新运行号；完整 gate 脚本受 WSL bun 环境阻断；
 2. `spawn(rt, work, args...)` 对带参数函数和混合类型实参通过，错误类型被拒绝；
 3. 同名跨函数/遮蔽/重新赋值的消费状态正确；
 4. `shared_read`/`shared_mut`/`lock_write` 消费和 shared 构造能力负例通过；
@@ -175,6 +178,32 @@ FIX.1 完成后才能恢复“22B-FIX 完成”；推送后补运行号，不能
 6. 源码级测试覆盖 F-2～F-6，不只测模型 API；
 7. 22B-FIX/22/12/README 状态一致，22C 入口明确为 FIX.1 完成；
 8. 没有实现 Runtime/VM/LLVM/标准库函数体。
+
+## 七点一、实施结果
+
+1. 测试 crate 增加模块文档；`spawn`/`submit` 的第二个实参现在按真实函数类型检查，
+   函数返回类型实例化 `thread<T>`/`task<T>`，额外边界值继续接受候选 A 检查。
+2. 消费状态在类型检查器的词法作用域快照中隔离；函数参数、循环变量、catch 绑定和表方法
+   参数会创建新的局部状态，重新赋值会清除旧状态。
+3. `FunctionSignature` 保留 `consumed_parameters`；`shared_read`、`shared_mut` 和
+   `lock_write` 在调用点消费命名源值，`read`、`lock`、`lock_read` 保持借用语义。
+4. `shared_read`/`shared_mut` 对输入值执行候选 A Send/Sync 检查；数组、动态值、资源和
+   其他不满足能力表的值被静态拒绝。
+5. `source_runtime_id` 作为可选、旧快照兼容的 IR 字段登记；`shared_mut` 来源 Runtime
+   从 lowering 上下文读取，不再在表达式 lowering 中写死来源值。
+
+本地验证命令：
+
+```text
+cargo check --manifest-path core/rust/Cargo.toml --workspace
+cargo test --manifest-path core/rust/Cargo.toml --workspace
+cargo clippy --manifest-path core/rust/Cargo.toml --workspace --all-targets -- -D warnings
+cargo fmt --manifest-path core/rust/Cargo.toml --all -- --check
+bun run check:docs
+bun run check:usedocs
+bun run check:layout
+git diff --check
+```
 
 ## 七、不许
 

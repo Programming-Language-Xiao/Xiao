@@ -129,6 +129,7 @@ impl<'source> TypeChecker<'source> {
         let value_type = self.check_expression(value);
         self.register_array_alias(target, value, &value_type);
         let key = self.name_key(target);
+        self.reset_concurrency_binding(&key);
         if let Some(binding) = self.environment.lookup(&key).cloned() {
             let existing_type = self.context.instantiate(binding.scheme());
             if value_type.is_dynamic() {
@@ -511,6 +512,7 @@ impl<'source> TypeChecker<'source> {
             );
             return;
         }
+        self.reset_concurrency_binding(&key);
         if let Err(error) = self
             .environment
             .declare_mutable(key, expected, value.is_some())
@@ -569,6 +571,7 @@ impl<'source> TypeChecker<'source> {
             );
             return;
         }
+        self.reset_concurrency_binding(&key);
         if let Err(error) =
             self.environment
                 .declare_mutable(key, Type::Resource(declared_type), value.is_some())
@@ -600,6 +603,7 @@ impl<'source> TypeChecker<'source> {
             );
             return;
         }
+        self.reset_concurrency_binding(&key);
         if let Err(error) =
             self.environment
                 .declare_mutable(key, Type::scalar(declared_type), value.is_some())
@@ -681,6 +685,7 @@ impl<'source> TypeChecker<'source> {
             );
             return;
         }
+        self.reset_concurrency_binding(&key);
         // 显式类型必须成为常量绑定的锁定类型，不能因为初始化表达式
         // 的推断类型更宽而丢失声明者的约束（例如 `const sint n = 1`）。
         let binding_type = declared_type

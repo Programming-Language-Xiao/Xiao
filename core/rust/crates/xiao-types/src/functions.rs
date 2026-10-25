@@ -38,6 +38,8 @@ pub struct FunctionSignature {
     /// 本字段不参与源码展示，跨模块接口也只依赖名称；它让调用点可以把
     /// `set<T>` 中的占位变量安全替换成当前调用自己的新变量。
     pub type_parameter_ids: Vec<TypeVarId>,
+    /// 并发签名中需要消费的参数位置；普通函数保持为空。
+    pub consumed_parameters: Vec<usize>,
     /// 函数定义源码区间。
     pub span: SourceSpan,
 }
@@ -57,6 +59,7 @@ impl FunctionSignature {
             return_type,
             type_parameters: Vec::new(),
             type_parameter_ids: Vec::new(),
+            consumed_parameters: Vec::new(),
             span,
         }
     }
@@ -72,6 +75,13 @@ impl FunctionSignature {
     #[must_use]
     pub fn with_type_parameter_ids(mut self, ids: impl Into<Vec<TypeVarId>>) -> Self {
         self.type_parameter_ids = ids.into();
+        self
+    }
+
+    /// 附加并发调用需要消费的参数位置。
+    #[must_use]
+    pub fn with_consumed_parameters(mut self, parameters: impl Into<Vec<usize>>) -> Self {
+        self.consumed_parameters = parameters.into();
         self
     }
 

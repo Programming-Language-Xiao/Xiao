@@ -5,26 +5,24 @@
 > `std.concurrent` 的源码调用现在会经过类型检查、生命周期 lowering 和 IR verifier，22C
 > 可以按稳定字段消费这些事实。
 >
-> 状态：**部分通过，22B-FIX.1 待修（2026-10-25）**。简单源码调用已能进入签名、生命周期
-> lowering 和 IR；但 workspace gates `40161893418` 红，参数化入口、消费作用域和 shared
-> 构造仍有缺口，详见 [22B-FIX.1](22b-fix1-concurrency-wiring-residuals.md)。本批只接 22B
-> 静态流水线，不接 22C Runtime；`.xiaoc`/`.xar` 产物门禁仍登记为 22C 前置。
+> 状态：**已完成（含 22B-FIX.1，2026-10-25）**。参数化入口、消费作用域、shared 构造能力、
+> `source_runtime_id` 契约和 A0 模块文档已补齐；本批只接 22B 静态流水线，不接 22C Runtime，
+> `.xiaoc`/`.xar` 产物门禁仍登记为 22C 前置。
 
 ## 一、已确认的证据
 
 | 项 | 结果 | 说明 |
 | --- | --- | --- |
 | 本地测试 | 通过 | `cargo test --workspace`、`cargo fmt --check`、`check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 均通过 |
-| 远端 CI | **失败** | workspace gates `40161893418`：`22b_concurrency_wiring.rs:1` 缺模块文档；maintenance `40161893458` 进行中 |
+| 远端 CI | 历史失败已修复 | `40161893418` 的测试模块文档缺口已补；FIX.1 后的新运行号待推送产生 |
 | 32B/产物 | 未改 | 没有 32B ABI、`.xiaoc`/`.xar` feature 位或标准库函数体改动 |
 | 下游兼容 | 仅穷举分支 | `4512c07` 只给 `xiao-runtime`/LLVM 的 `Type`/`IrType` 匹配加拒绝分支，未接并发行为 |
-| 22B 状态 | 部分通过 | 简单源码级签名/事实/取消/IR 已有实现；参数化入口、消费作用域和 shared 构造待 22B-FIX.1 |
+| 22B 状态 | 已完成静态接线 | 简单与参数化入口、作用域消费、shared 构造、取消和 IR 均有源码级回归 |
 
 ## 二、必须收口的缺陷
 
-以下各节保留修复前缺陷作为审计证据；标题中的“已修复”是 07e64f0 的实现记录。2026-10-25
-复核发现参数化入口、消费作用域和 shared 构造仍有残余，验收状态以
-[22B-FIX.1](22b-fix1-concurrency-wiring-residuals.md) 为准。
+以下各节保留修复前缺陷作为审计证据；标题中的“已修复”是 07e64f0 与 FIX.1 的实现记录。
+22B-FIX.1 已补齐残余项，22C 入口以本批静态字段为准。
 
 ### F-1（阻断，已修复）签名、能力和消费状态没有接进类型检查器
 
@@ -123,9 +121,8 @@ ABI 门禁，22C 必须补；本批只能先把它标为 22C 前置，不能宣�
 （`22-concurrency-execution-and-shared-handles.md:3`、`:198`），但 F-1～F-3 未接线。
 同时本批没有远端 CI 运行号。
 
-**部分完成**：22B 状态已改为“部分实现/待接线”；但 07e64f0 推送后 workspace gates
-`40161893418` 红，参数化入口、消费作用域和 shared 构造仍有残余。22C 门禁改为
-[22B-FIX.1](22b-fix1-concurrency-wiring-residuals.md) 完成；远端运行号以实际 CI 为准。
+**已完成**：22B-FIX.1 已补齐 workspace coverage 缺口、参数化入口、作用域消费、shared
+构造能力和 `source_runtime_id` 契约；远端新运行号以推送后的实际 CI 为准。
 
 ### F-10（低，已修复）下游兼容边界措辞
 
@@ -225,9 +222,9 @@ lowering 计划；二者择一，不能继续固定 `Vec::new()`。
 2. 普通句柄、`shared_mut` 跨 Runtime、`dynamic`/resource、65 参数、消费后使用均被拒绝；
 3. 取消检查在实际 IR 中非空，位置/类别通过 verifier；
 4. `std.concurrent` 签名可推导 `thread<T>`/`task<T>` 和 `join`/`wait` 的 T；
-5. 22B-FIX 部分通过，22B-FIX.1 关闭后 22C 才能继续；不能写成“已完成”；
+5. 22B-FIX 与 22B-FIX.1 已完成，22C 可以继续实现 Runtime；
 6. 没有实现 Runtime/VM/LLVM/标准库函数体；F-8 的产物门禁明确归 22C；
-7. 本地 tests/fmt/docs 通过；远端 workspace gates `40161893418` 红，需在 FIX.1 修复。
+7. 本地 tests/fmt/docs 通过；旧远端运行 `40161893418` 的失败原因已修复，新运行号待推送产生。
 
 ## 七点一、实施结果
 
