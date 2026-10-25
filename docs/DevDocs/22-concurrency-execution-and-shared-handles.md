@@ -112,7 +112,8 @@
 实施记录和验证见 [22B](22b-concurrency-types-lifetime-ir.md) §十一 及
 [22B-FIX](22b-fix-concurrency-wiring.md) 与
 [22B-FIX.1](22b-fix1-concurrency-wiring-residuals.md)；FIX.1 的 workspace gates `40212263928`
-和 maintenance regression `40212188604` 已通过，22C 可以只消费本批静态字段。
+和 maintenance regression `40212188604` 已通过，不可达 IR facts 修复 `d02c1e6` 又由
+`40219553312`/`40219553285` 验证，22C 可以只消费本批静态字段。
 
 ### 22C：Runtime ABI、VM 与错误
 

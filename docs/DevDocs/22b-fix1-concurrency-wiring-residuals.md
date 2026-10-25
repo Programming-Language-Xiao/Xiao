@@ -8,7 +8,9 @@
 >
 > 状态：**已关闭（2026-10-26）**。本批只修 22B 静态接线，不接 Runtime；D-1～D-5
 > 已按甲方案落实。代码提交 `9910d13` 的 workspace gates `40212263928` 和 maintenance
-> regression `40212188604` 均已通过；22C 入口现已开启。
+> regression `40212188604` 均已通过；F-12 修复提交 `d02c1e6` 包含在 `f12e650` 中，
+> 该提交的 workspace gates `40219553312` 和 maintenance regression `40219553285` 均通过；
+> 22C 入口现已开启。
 
 ## 一、已确认证据
 
@@ -19,6 +21,7 @@
 | workspace gates `40212263928` | **通过** | 提交 `9910d13` 的 Linux workspace gates 全部通过；旧失败 `40161893418` 已修复 |
 | 最终文档提交 gates `40203307117` | **通过** | 提交 `318bff2` 的 Linux workspace gates 全部通过 |
 | maintenance regression `40212188604` | **通过** | 同一提交 `9910d13` 的维护回归通过；本批不接 Runtime/LLVM |
+| F-12 修复验证 `40219553312`/`40219553285` | **通过** | 修复提交 `d02c1e6` 包含在 `f12e650` 中；workspace gates 与 maintenance regression 均通过 |
 | 简单源级接线 | 通过 | `spawn`/`join`、`submit`/`wait`、`shared_mut` 跨 Runtime、`lock_guard` 逃逸用例已有 |
 | 参数化入口函数 | **通过** | 真实函数类型按位置检查边界实参，混合 `int`/`str` 参数通过 |
 | 混合边界实参 | **通过** | 参数类型不匹配稳定报 `X04-TYPE-002` |
@@ -162,7 +165,8 @@ lowering 消费，生成 `cross_thread_facts`、`boundary_transfers` 或 `cancel
 22C 没有可达性字段，无法自行过滤这些死事实。
 
 **已完成**：不可达语句继续做类型检查，但不再登记 `ConcurrencyCall`；补源级回归断言
-不可达 `spawn` 的 facts/transfers/cancellation 均为空。
+不可达 `spawn` 的 facts/transfers/cancellation 均为空。修复提交 `d02c1e6`，包含它的
+`f12e650` 已通过 workspace gates `40219553312` 与 maintenance regression `40219553285`。
 
 ## 三、目标与边界
 
@@ -204,11 +208,11 @@ lowering 消费，生成 `cross_thread_facts`、`boundary_transfers` 或 `cancel
 | 4 | 补 shared 构造参数能力检查 | 已完成；容器负例报 030 |
 | 5 | 按 D-4 记录 `source_runtime_id` 或迁移 | 已完成；可选字段与 lowering 上下文已登记 |
 | 6 | 补源级回归并更新 22B-FIX/22/12/README | 已完成 |
-| 7 | 推送并记录 CI；关闭 FIX.1 并开启 22C 入口 | 已完成；`40212263928`/`40212188604` 均通过 |
+| 7 | 推送并记录 CI；关闭 FIX.1 并开启 22C 入口 | 已完成；`40212263928`/`40212188604` 与 `40219553312`/`40219553285` 均通过 |
 
 ## 六、验收
 
-1. workspace gates `40212263928`、maintenance regression `40212188604`、本地 Rust workspace、独立文档门禁和源码级回归均通过；
+1. workspace gates `40212263928`/`40219553312`、maintenance regression `40212188604`/`40219553285`、本地 Rust workspace、独立文档门禁和源码级回归均通过；
 2. `spawn(rt, work, args...)` 对带参数函数和混合类型实参通过，错误类型被拒绝；
 3. 同名跨函数/遮蔽/重新赋值的消费状态正确；
 4. `shared_read`/`shared_mut`/`lock_write` 消费和 shared 构造能力负例通过；
