@@ -26,6 +26,7 @@
 | 控制流出口合流 | **通过** | `return`、`break`、`continue` 的消费状态按可达出口合流；不可达语句不污染后续状态 |
 | `raise`/错误出口 | **通过** | `raise` 作为错误出口进入 `catch` 合流；错误路径消费状态不会误并入普通出口 |
 | 不可达类型检查 | **通过** | 不可达语句仍报告名称/返回/条件等类型错误，但隔离并发消费与循环状态 |
+| 不可达 IR facts | **通过** | 不可达 `spawn` 不产生 facts/transfers/cancellation；仅做类型检查 |
 | IR `copy_kind` | **通过** | verifier 只接受冻结的 `deep_copy`/`serialization`，拒绝 `serialize` 别名 |
 | `shared_read` 消费 | **通过** | 源值复用稳定报 `X04-TYPE-002` |
 
@@ -153,6 +154,16 @@ verifier 曾同时放行 `deep_copy`、`serialization` 和 `serialize`，与冻�
 
 **已完成**：只接受 `deep_copy` 与 `serialization`，并补 verifier 负例。
 
+### F-12（高，已修复）不可达并发调用仍生成 IR 事实
+
+`checking_unreachable` 只隔离了消费状态，`check_concurrency_contract` 仍把所有
+`std.concurrent` 调用写入 `ConcurrencyCall`。不可达 `spawn`/`join` 因此仍会被生命周期
+lowering 消费，生成 `cross_thread_facts`、`boundary_transfers` 或 `cancellation_checks`。
+22C 没有可达性字段，无法自行过滤这些死事实。
+
+**已完成**：不可达语句继续做类型检查，但不再登记 `ConcurrencyCall`；补源级回归断言
+不可达 `spawn` 的 facts/transfers/cancellation 均为空。
+
 ## 三、目标与边界
 
 ### 3.1 目标
@@ -202,7 +213,7 @@ verifier 曾同时放行 `deep_copy`、`serialization` 和 `serialize`，与冻�
 3. 同名跨函数/遮蔽/重新赋值的消费状态正确；
 4. `shared_read`/`shared_mut`/`lock_write` 消费和 shared 构造能力负例通过；
 5. `source_runtime_id` 契约有唯一落点；
-6. 源码级测试覆盖 F-2～F-6、F-10，不只测模型 API；
+6. 源码级测试覆盖 F-2～F-6、F-10、F-12，不只测模型 API；
 7. 22B-FIX/22/12/README 状态一致，FIX.1 已关闭，22C 入口已开启；
 8. 没有实现 Runtime/VM/LLVM/标准库函数体。
 
@@ -226,6 +237,8 @@ verifier 曾同时放行 `deep_copy`、`serialization` 和 `serialize`，与冻�
 6. `cancel` 保持借用语义；取消后仍可再次 `cancel` 或执行 `join`/`wait`，消费操作才会
    标记句柄不可复用。
 7. IR `copy_kind` 只接受 `deep_copy`/`serialization`；`serialize` 作为未知值被 verifier 拒绝。
+8. 不可达语句只做类型检查，不登记 `ConcurrencyCall`；不可达 `spawn` 不产生 IR facts、
+   transfers 或 cancellation checks。
 
 本地验证命令：
 

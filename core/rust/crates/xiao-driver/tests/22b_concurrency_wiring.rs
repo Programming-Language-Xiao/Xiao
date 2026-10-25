@@ -146,6 +146,17 @@ fn raise_error_exit_and_unreachable_type_checks_are_isolated() {
 }
 
 #[test]
+fn unreachable_concurrency_calls_do_not_emit_ir_facts() {
+    let source = "from std.concurrent import runtime_create, spawn\ndef work(int value) -> int\n    return value\nrt = runtime_create()\ndef run() -> none\n    return\n    thread = spawn(rt, work, 1)\nrun()\n";
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect("不可达 spawn 应通过类型检查");
+    assert!(artifact.ir.ownership.cross_thread_facts.is_empty());
+    assert!(artifact.ir.ownership.boundary_transfers.is_empty());
+    assert!(artifact.ir.ownership.cancellation_checks.is_empty());
+}
+
+#[test]
 fn aliases_share_thread_and_task_consumption_state() {
     let thread_alias = "from std.concurrent import runtime_create, spawn, join\ndef work() -> int\n    return 1\nrt = runtime_create()\nthread = spawn(rt, work)\nalias = thread\njoin(thread)\njoin(alias)\n";
     assert!(error_codes(thread_alias).contains(&"X04-TYPE-002".to_owned()));

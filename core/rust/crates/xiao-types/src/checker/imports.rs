@@ -405,7 +405,7 @@ impl TypeChecker<'_> {
                 }
             }
         }
-        if is_std_concurrent {
+        if is_std_concurrent && !self.is_checking_unreachable() {
             self.concurrency_calls.push(crate::ConcurrencyCall {
                 operation: operation.to_owned(),
                 span,
