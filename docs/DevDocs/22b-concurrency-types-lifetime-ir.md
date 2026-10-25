@@ -5,9 +5,11 @@
 > 22A-FIX 已固定 `std.concurrent` 的 API/类型名、Send/Sync 类型表、CrossThread 字段、
 > 诊断映射和产物门禁；本批只让 22C 能按这些事实实现 Runtime，不在实现阶段重新解释语义。
 >
-> 状态：**已实施（2026-10-25）**。D-1 取乙（专用注解语法），22B-FIX 的 D-1～D-5
-> 取甲；类型、生命周期模型、IR 动作/verifier、源码级签名检查、BoundaryFacts 和取消检查
-> 已接入真实流水线。Runtime/VM/LLVM、标准库函数体和产物门禁仍由 22C–22E 负责。
+> 状态：**部分通过，22B-FIX.1 待修（2026-10-25）**。D-1 取乙（专用注解语法），22B-FIX 的
+> D-1～D-5 取甲；类型、生命周期模型、IR 动作/verifier、源码级签名检查、BoundaryFacts 和
+> 取消检查已接入，但 workspace gates 红，参数化入口、消费作用域和 shared 构造仍有残余，
+> 见 [22B-FIX.1](22b-fix1-concurrency-wiring-residuals.md)。Runtime/VM/LLVM、标准库函数体
+> 和产物门禁仍由 22C–22E 负责。
 
 ## 一、入口条件与冻结输入
 

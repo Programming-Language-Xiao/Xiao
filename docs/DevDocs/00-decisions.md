@@ -699,7 +699,9 @@ F-9 的文档卫生同步为 `module: stdlib.xiao-standard-library`；`35caa80`/
 
 2026-10-25 复核发现 22B 的类型/签名/消费、源码级 BoundaryFacts 和取消检查尚未接进真实
 流水线；状态改为“部分实现，待接线”，并开 [22B-FIX](22b-fix-concurrency-wiring.md)。
-22B-FIX 关闭前不进入 22C；本轮不改 Runtime/VM/LLVM/标准库函数体。
+22B-FIX 已推送但 workspace gates `40161893418` 红，参数化入口、消费作用域和 shared 构造
+仍有残余；开 [22B-FIX.1](22b-fix1-concurrency-wiring-residuals.md)。22B-FIX.1 关闭前不进入
+22C；本轮不改 Runtime/VM/LLVM/标准库函数体。
 
 ### 错误模型与诊断
 
