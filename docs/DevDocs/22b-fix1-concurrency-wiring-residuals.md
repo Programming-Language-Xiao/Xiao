@@ -7,7 +7,7 @@
 > shared 构造参数能力仍有缺口。照当前状态进入 22C 会把这些缺口当成已冻结语义。
 >
 > 状态：**已完成（2026-10-25）**。本批只修 22B 静态接线，不接 Runtime；D-1～D-5
-> 已按甲方案落实。workspace gates `40177447825` 已通过。
+> 已按甲方案落实。workspace gates `40201575737` 已通过（提交 `b3ded8b`）。
 
 ## 一、已确认证据
 
@@ -15,8 +15,8 @@
 | --- | --- | --- |
 | 本地 workspace 测试 | 通过 | `cargo test --workspace` |
 | 本地格式/文档 | 通过 | `cargo fmt --check`、`check:docs`、`check:usedocs`、`check:layout`、`git diff --check` |
-| workspace gates `40177447825` | **通过** | 覆盖模块文档、Rust/TypeScript、workspace 测试和完整门禁；旧失败 `40161893418` 已修复 |
-| maintenance regression `40161893458` | 历史进行中 | 本批不接 Runtime/LLVM；不把未完成的旧运行写成通过 |
+| workspace gates `40201575737` | **通过** | 提交 `b3ded8b` 的 Linux workspace gates 全部通过；旧失败 `40161893418` 已修复 |
+| maintenance regression `40201575725` | **通过** | 同一提交 `b3ded8b` 的维护回归通过；本批不接 Runtime/LLVM |
 | 简单源级接线 | 通过 | `spawn`/`join`、`submit`/`wait`、`shared_mut` 跨 Runtime、`lock_guard` 逃逸用例已有 |
 | 参数化入口函数 | **通过** | 真实函数类型按位置检查边界实参，混合 `int`/`str` 参数通过 |
 | 混合边界实参 | **通过** | 参数类型不匹配稳定报 `X04-TYPE-002` |
@@ -129,8 +129,8 @@ IR verifier 拒绝目标或来源 Runtime ID 为 0，符合 22A 对 0 无效值�
 
 ### F-9（中，已修复）文档/证据状态仍需回写
 
-22B-FIX、22B、22 和 README 已回写为 FIX.1 已完成、本地门禁通过、远端新运行号待推送；
-不把旧远端失败运行当作本批通过证据。
+22B-FIX、22B、22 和 README 已回写为 FIX.1 已完成；本批远端 workspace gates 使用运行号
+`40201575737`，不把旧远端失败运行当作本批通过证据。
 
 ## 三、目标与边界
 
@@ -172,11 +172,11 @@ IR verifier 拒绝目标或来源 Runtime ID 为 0，符合 22A 对 0 无效值�
 | 4 | 补 shared 构造参数能力检查 | 已完成；容器负例报 030 |
 | 5 | 按 D-4 记录 `source_runtime_id` 或迁移 | 已完成；可选字段与 lowering 上下文已登记 |
 | 6 | 补源级回归并更新 22B-FIX/22/12/README | 已完成 |
-| 7 | 推送并记录 CI；22C 门禁改为 FIX.1 完成 | 本地完成；远端新运行号待推送 |
+| 7 | 推送并记录 CI；22C 门禁改为 FIX.1 完成 | 已完成；workspace gates `40201575737` 通过 |
 
 ## 六、验收
 
-1. workspace gates `40177447825`、本地 Rust workspace、独立文档门禁和源码级回归均通过；
+1. workspace gates `40201575737`、本地 Rust workspace、独立文档门禁和源码级回归均通过；
 2. `spawn(rt, work, args...)` 对带参数函数和混合类型实参通过，错误类型被拒绝；
 3. 同名跨函数/遮蔽/重新赋值的消费状态正确；
 4. `shared_read`/`shared_mut`/`lock_write` 消费和 shared 构造能力负例通过；

@@ -330,8 +330,9 @@ core/rust/Cargo.toml --all -- --check`，以及 `check:docs`、`check:usedocs`�
 `git diff --check`；`xiao-driver/tests/22b_concurrency_wiring.rs` 覆盖真实源码正/负例。
 
 **证据边界**：本地测试同时覆盖模型/API、parser 注解、真实 `std.concurrent` 源码调用、
-生命周期边界、IR facts/transfers/cancellation 和旧快照兼容；没有远端 CI 运行号，因此只
-声明本地证据。22B-FIX 的接线结果与回归清单见 [22B-FIX](22b-fix-concurrency-wiring.md)。
+生命周期边界、IR facts/transfers/cancellation 和旧快照兼容；远端 workspace gates 运行号为
+`40201575737`（提交 `b3ded8b`）。22B-FIX 的接线结果与回归清单见
+[22B-FIX](22b-fix-concurrency-wiring.md)。
 
 ## 相关页面
 
