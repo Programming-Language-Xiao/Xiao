@@ -116,10 +116,15 @@
 
 ### 22C：Runtime ABI、VM 与错误
 
+规划、现状核对和 D-1～D-6 设计点见
+[22C. 并发 Runtime ABI、VM 与错误](22c-concurrency-runtime-abi-vm.md)。
+
 - 统一 32B 原子共享句柄头、内联锁、tag、强/弱计数、弱升级、恰好一次析构；
 - VM 线程 `spawn/join`、多边界值、detach 错误通道、深拷贝 + 序列化、真实取消等待、
   清理和 suppressed 错误；
 - Runtime ABI 版本升级；普通句柄布局不变；
+- Runtime ID 静态标签到实际 ID 映射；
+- `.xiaoc`/`.xar` ABI 1.17/feature 门禁；
 - 回归：泄漏、双重析构、弱升级竞态、错误顺序、取消四位置。
 
 ### 22D：LLVM、差分与跨平台

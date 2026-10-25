@@ -1000,9 +1000,10 @@ I4a2（运行时的包模块加载）、I4b（会话级生命周期与 TS 接入
   消费、64 参数上限、参数化入口、作用域/提前退出消费、错误出口、不可达类型检查隔离、shared
   构造和源码级边界/取消事实已接进类型检查、生命周期与 IR；`40212263928`/`40212188604` 已通过，
   FIX.1 关闭，当前进入 22C。
-- **22C Runtime ABI、VM 与错误**：32B 头 + 内联锁、强弱计数、弱升级、恰好一次析构、VM
-  `spawn/join`、任务池、多 Runtime 创建/边界、detach 错误通道、深拷贝 + 二进制序列化、
-  真实取消等待、取消/清理和错误顺序。
+- **22C Runtime ABI、VM 与错误**（[22C 规划](22c-concurrency-runtime-abi-vm.md)）：32B 头 +
+  内联锁、强弱计数、弱升级、恰好一次析构、VM `spawn/join`、任务池、多 Runtime 创建/边界、
+  Runtime ID 映射、detach 错误通道、深拷贝 + 二进制序列化、真实取消等待、取消/清理、
+  错误顺序和 `.xiaoc`/`.xar` ABI/feature 门禁。
 - **22D LLVM、差分与跨平台**：同一并发黄金场景在 VM/LLVM 的输出、错误、退出码和释放
   记录一致；Windows/Linux/macOS 回归；32B ABI 布局/对齐/版本矩阵。
 - **22E 标准库、UseDocs 与发布收口**：`std.concurrent` 线程/共享/任务池入口、长度前缀
