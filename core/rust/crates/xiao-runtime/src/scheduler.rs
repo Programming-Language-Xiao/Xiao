@@ -519,6 +519,7 @@ struct PoolMessage {
 
 /// 任务池共享内部状态。
 struct PoolInner {
+    runtime: Weak<RuntimeInner>,
     sender: Mutex<Option<SyncSender<PoolMessage>>>,
     receiver: Arc<Mutex<mpsc::Receiver<PoolMessage>>>,
     workers: Mutex<Vec<JoinHandle<()>>>,
@@ -611,6 +612,7 @@ impl TaskPool {
             workers.push(worker);
         }
         let inner = Arc::new(PoolInner {
+            runtime: Arc::downgrade(&runtime.inner),
             sender: Mutex::new(Some(sender)),
             receiver: Arc::clone(&receiver),
             workers: Mutex::new(workers),
@@ -772,9 +774,13 @@ impl TaskPool {
         if should_join {
             if let Ok(mut workers) = inner.workers.lock() {
                 for worker in workers.drain(..) {
-                    if worker.thread().id() == thread::current().id() {
+                    let worker_id = worker.thread().id();
+                    if worker_id == thread::current().id()
+                        || Self::worker_is_closing(inner, worker_id)
+                    {
                         // 当前 worker 不能 join 自己；丢弃 JoinHandle 让它在
-                        // 返回任务后自然结束，其他关闭者仍可观察 active drain。
+                        // 返回任务后自然结束；已经进入另一条 shutdown 路径的
+                        // worker 也不能被交叉池 join，避免形成关闭环。
                         continue;
                     }
                     let _ = worker.join();
@@ -786,6 +792,20 @@ impl TaskPool {
                 let _ = drain.join();
             }
         }
+    }
+
+    fn worker_is_closing(inner: &Arc<PoolInner>, worker_id: thread::ThreadId) -> bool {
+        inner
+            .runtime
+            .upgrade()
+            .and_then(|runtime| {
+                runtime
+                    .closing_threads
+                    .lock()
+                    .ok()
+                    .map(|threads| threads.contains_key(&worker_id))
+            })
+            .unwrap_or(false)
     }
 
     fn start_drain_helpers(inner: &Arc<PoolInner>) -> Option<Vec<JoinHandle<()>>> {
@@ -1013,6 +1033,126 @@ mod tests {
         ));
         assert_eq!(second.wait(), Ok(()));
         assert!(runtime.is_closed());
+    }
+
+    #[test]
+    /// 两个 Rust pool worker 互相 shutdown 时，closing worker 不得被对方 join。
+    fn cross_pool_shutdowns_do_not_deadlock() {
+        let runtime = RuntimeHandle::create();
+        let pool_a = TaskPool::create(runtime.clone(), 1).expect("pool A");
+        let pool_b = TaskPool::create(runtime.clone(), 1).expect("pool B");
+        let barrier = Arc::new(std::sync::Barrier::new(2));
+        let (done_tx, done_rx) = mpsc::channel();
+
+        let pool_b_for_a = pool_b.clone();
+        let barrier_a = Arc::clone(&barrier);
+        let done_a = done_tx.clone();
+        let task_a = pool_a
+            .submit(move |_| {
+                barrier_a.wait();
+                let result = pool_b_for_a.shutdown();
+                done_a.send(()).unwrap();
+                result
+            })
+            .expect("pool A worker");
+
+        let pool_a_for_b = pool_a.clone();
+        let barrier_b = Arc::clone(&barrier);
+        let done_b = done_tx;
+        let task_b = pool_b
+            .submit(move |_| {
+                barrier_b.wait();
+                let result = pool_a_for_b.shutdown();
+                done_b.send(()).unwrap();
+                result
+            })
+            .expect("pool B worker");
+
+        done_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("第一个跨池 shutdown 必须返回");
+        done_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("第二个跨池 shutdown 必须返回");
+        assert_eq!(task_a.wait(), Ok(Ok(())));
+        assert_eq!(task_b.wait(), Ok(Ok(())));
+        runtime.close();
+    }
+
+    #[test]
+    /// 容量大于四时，唯一 close owner 仍能并行 drain 多个后续排队任务。
+    fn large_pool_close_drains_many_queued_tasks() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 8).expect("pool");
+        let mut release_txs = Vec::new();
+        let mut blocked_handles = Vec::new();
+        for index in 0..3 {
+            let (started_tx, started_rx) = mpsc::channel();
+            let (release_tx, release_rx) = mpsc::channel();
+            release_txs.push(release_tx);
+            blocked_handles.push(
+                pool.submit(move |_| {
+                    started_tx.send(index).unwrap();
+                    release_rx.recv().unwrap();
+                    index
+                })
+                .expect("阻塞 worker"),
+            );
+            assert_eq!(started_rx.recv_timeout(Duration::from_secs(2)), Ok(index));
+        }
+
+        let (closer_started_tx, closer_started_rx) = mpsc::channel();
+        let (close_go_tx, close_go_rx) = mpsc::channel();
+        let (close_returned_tx, close_returned_rx) = mpsc::channel();
+        let closer_runtime = runtime.clone();
+        let closer = pool
+            .submit(move |_| {
+                closer_started_tx.send(()).unwrap();
+                close_go_rx.recv().unwrap();
+                closer_runtime.close();
+                close_returned_tx.send(()).unwrap();
+                99_u32
+            })
+            .expect("close owner");
+        closer_started_rx.recv().expect("close owner 已开始");
+
+        let (queued_started_tx, queued_started_rx) = mpsc::channel();
+        let mut queued = Vec::new();
+        for index in 0..5_u32 {
+            let queued_started_tx = queued_started_tx.clone();
+            queued.push(
+                pool.submit(move |_| {
+                    queued_started_tx.send(index).unwrap();
+                    index
+                })
+                .expect("排队任务"),
+            );
+        }
+        drop(queued_started_tx);
+        close_go_tx.send(()).unwrap();
+        for release_tx in release_txs {
+            release_tx.send(()).unwrap();
+        }
+        let mut started = Vec::new();
+        for _ in 0..5 {
+            started.push(
+                queued_started_rx
+                    .recv_timeout(Duration::from_secs(2))
+                    .expect("排队任务必须被 drain 槽执行"),
+            );
+        }
+        started.sort_unstable();
+        assert_eq!(started, vec![0, 1, 2, 3, 4]);
+        close_returned_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("大容量 pool close 必须返回");
+        for (index, task) in queued.into_iter().enumerate() {
+            assert_eq!(task.wait(), Ok(index as u32));
+        }
+        for (index, task) in blocked_handles.into_iter().enumerate() {
+            assert_eq!(task.wait(), Ok(index));
+        }
+        assert_eq!(closer.wait(), Ok(99));
     }
 
     #[test]

@@ -111,6 +111,8 @@
   普通 `submit` 的等待仍可由 Runtime/pool 关闭终止并返回关闭错误；
 - 线程/Runtime 关闭顺序：停止接纳 → drain/等待 → 释放边界值 → 汇总主/suppressed；
 - pool worker 迁移符合 22B `submit` 的双边界事实；
+- Rust API 层跨池 `shutdown` 由 Runtime closing 集合协调，已进入另一条 shutdown 路径的 worker
+  会被对方跳过，避免互相 join；Xiao 语言层的 `pool` 仍按 22B Send/Sync 表保持不可跨任务传递；
 - 不为每个 Runtime 启动不必要的线程；多 Runtime 并行必须可观测 ID。
 
 ### D-4（深拷贝/序列化）
@@ -158,7 +160,8 @@
 - 锁等待/取消/唤醒，无死锁；
 - 普通 `StrongHandle`/`WeakHandle` 仍为单线程边界。
 - Runtime 双活动 closer、pool `shutdown` 与 Runtime `close` 交叉、外部 shutdown 与 worker close、
-  活动 follower 的 owner drain、活动 closer 的排队任务、受控 drain 槽中的首个 close 等待后继任务、
+  跨池 shutdown、容量大于四的多排队任务压力、活动 follower 的 owner drain、活动 closer 的排队任务、
+  受控 drain 槽中的首个 close 等待后继任务、
   排队任务递归 close，以及单 worker drain helper 均有超时回归；无上下文普通 `submit` 的关闭终止路径和
   detached 回收队列持续积压、不阻塞且可观测路径也有回归。
 
