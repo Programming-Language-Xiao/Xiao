@@ -103,10 +103,10 @@
 - OS 线程使用 `std::thread`；固定容量任务池；Runtime 注册表；重入安全的关闭 drain；detach 错误通道；
 - Runtime 关闭选出唯一 drain owner；活动 closer 只登记 closing activity 后完成自己的 close 调用，
   随后仍作为普通 activity 被 owner 等待，owner 只等待仍未进入关闭路径的 activity，因而两个活动 closer、
-  pool `shutdown` 与 Runtime `close` 交叉时不会互相 join；池在任一当前 worker 关闭时用一次性 drain helper
-  接管排队消息，仍等待已经接纳的 activity；
+  pool `shutdown` 与 Runtime `close` 交叉时不会互相 join；池在任一当前 worker 关闭时用受控的
+  `worker_count + 1` 个 drain 槽接管排队消息，允许关闭任务等待后继排队任务，同时仍等待已经接纳的 activity；
 - 满队列提交提供可取消背压，池关闭和 Runtime 关闭分别保持 030/031；detached reaper 使用固定四个 worker 和无界发送队列，
-  `detach` 不因回收 worker 暂时繁忙而阻塞；
+  `detach` 不因回收 worker 暂时繁忙而阻塞，并通过 `detached_reaper_queue_depth()` 暴露未开始回收闭包数量；
 - 普通 `submit` 在 Runtime worker 内继承当前取消上下文；入口线程或其他无上下文调用方使用 `submit_with_cancel` 获得提交前取消入口，
   普通 `submit` 的等待仍可由 Runtime/pool 关闭终止并返回关闭错误；
 - 线程/Runtime 关闭顺序：停止接纳 → drain/等待 → 释放边界值 → 汇总主/suppressed；
@@ -158,8 +158,9 @@
 - 锁等待/取消/唤醒，无死锁；
 - 普通 `StrongHandle`/`WeakHandle` 仍为单线程边界。
 - Runtime 双活动 closer、pool `shutdown` 与 Runtime `close` 交叉、外部 shutdown 与 worker close、
-  活动 follower 的 owner drain、活动 closer 的排队任务、排队任务递归 close，以及单 worker drain helper
-  均有超时回归；无上下文普通 `submit` 的关闭终止路径和 detached 回收队列持续积压不阻塞路径也有回归。
+  活动 follower 的 owner drain、活动 closer 的排队任务、受控 drain 槽中的首个 close 等待后继任务、
+  排队任务递归 close，以及单 worker drain helper 均有超时回归；无上下文普通 `submit` 的关闭终止路径和
+  detached 回收队列持续积压、不阻塞且可观测路径也有回归。
 
 ### 6.2 VM 端到端
 

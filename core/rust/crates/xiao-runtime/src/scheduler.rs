@@ -7,7 +7,7 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::panic::{AssertUnwindSafe, catch_unwind};
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::mpsc::SyncSender;
 use std::sync::{Arc, Condvar, Mutex, OnceLock, Weak, mpsc};
 use std::thread::{self, JoinHandle};
@@ -384,24 +384,24 @@ impl<T: 'static> ThreadHandle<T> {
 
     /// 消费线程句柄并将失败送入进程级 detached 错误通道。
     ///
-    /// 回收由固定 worker 池消费无界队列，发送不会因回收 worker 暂时繁忙而阻塞。
+    /// 回收由固定 worker 池消费无界队列，发送不会因回收 worker 暂时繁忙而阻塞；
+    /// 未开始执行的回收闭包数量可通过 [`detached_reaper_queue_depth`] 观测。
     pub fn detach(mut self) {
         if let Some(join) = self.join.take() {
-            detached_reaper()
-                .send(Box::new(move || {
-                    let error = match join.join() {
-                        Ok(Ok(_)) => None,
-                        Ok(Err(error)) => Some(error),
-                        Err(_) => Some(RuntimeExecError::JoinFailed),
-                    };
-                    if let Some(error) = error {
-                        detached_errors()
-                            .lock()
-                            .expect("detached 错误通道锁未中毒")
-                            .push(error);
-                    }
-                }))
-                .expect("detached 错误收集线程不可用");
+            enqueue_detached_reap(Box::new(move || {
+                let error = match join.join() {
+                    Ok(Ok(_)) => None,
+                    Ok(Err(error)) => Some(error),
+                    Err(_) => Some(RuntimeExecError::JoinFailed),
+                };
+                if let Some(error) = error {
+                    detached_errors()
+                        .lock()
+                        .expect("detached 错误通道锁未中毒")
+                        .push(error);
+                }
+            }))
+            .expect("detached 错误收集线程不可用");
         }
     }
 }
@@ -409,6 +409,34 @@ impl<T: 'static> ThreadHandle<T> {
 fn detached_errors() -> &'static Mutex<Vec<RuntimeExecError>> {
     static ERRORS: OnceLock<Mutex<Vec<RuntimeExecError>>> = OnceLock::new();
     ERRORS.get_or_init(|| Mutex::new(Vec::new()))
+}
+
+fn detached_queue_depth_counter() -> &'static AtomicUsize {
+    static DEPTH: AtomicUsize = AtomicUsize::new(0);
+    &DEPTH
+}
+
+/// 返回 detached 回收队列中尚未开始执行的闭包数量。
+#[must_use]
+pub fn detached_reaper_queue_depth() -> usize {
+    detached_queue_depth_counter().load(Ordering::Acquire)
+}
+
+fn enqueue_detached_reap(
+    reap: Box<dyn FnOnce() + Send>,
+) -> Result<(), mpsc::SendError<Box<dyn FnOnce() + Send>>> {
+    detached_queue_depth_counter().fetch_add(1, Ordering::AcqRel);
+    let depth = detached_queue_depth_counter();
+    match detached_reaper().send(Box::new(move || {
+        depth.fetch_sub(1, Ordering::AcqRel);
+        reap();
+    })) {
+        Ok(()) => Ok(()),
+        Err(error) => {
+            detached_queue_depth_counter().fetch_sub(1, Ordering::AcqRel);
+            Err(error)
+        }
+    }
 }
 
 fn detached_reaper() -> &'static mpsc::Sender<Box<dyn FnOnce() + Send>> {
@@ -500,6 +528,7 @@ struct PoolInner {
     pending_submissions: Mutex<usize>,
     submissions_drained: Condvar,
     drain_started: AtomicBool,
+    drain_worker_count: usize,
 }
 
 struct SubmissionLease {
@@ -591,6 +620,7 @@ impl TaskPool {
             pending_submissions: Mutex::new(0),
             submissions_drained: Condvar::new(),
             drain_started: AtomicBool::new(false),
+            drain_worker_count: capacity.min(4).saturating_add(1),
         });
         if let Err(error) = runtime.register_pool(&inner) {
             Self::shutdown_inner(&inner);
@@ -737,7 +767,7 @@ impl TaskPool {
             .lock()
             .map(|worker_ids| worker_ids.contains(&thread::current().id()))
             .unwrap_or(false);
-        let drain = current_worker.then(|| Self::start_drain_helper(inner));
+        let drain = current_worker.then(|| Self::start_drain_helpers(inner));
 
         if should_join {
             if let Ok(mut workers) = inner.workers.lock() {
@@ -751,12 +781,14 @@ impl TaskPool {
                 }
             }
         }
-        if let Some(Some(drain)) = drain {
-            let _ = drain.join();
+        if let Some(drains) = drain.flatten() {
+            for drain in drains {
+                let _ = drain.join();
+            }
         }
     }
 
-    fn start_drain_helper(inner: &Arc<PoolInner>) -> Option<JoinHandle<()>> {
+    fn start_drain_helpers(inner: &Arc<PoolInner>) -> Option<Vec<JoinHandle<()>>> {
         if inner
             .drain_started
             .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
@@ -764,20 +796,23 @@ impl TaskPool {
         {
             return None;
         }
-        let receiver = Arc::clone(&inner.receiver);
-        let worker_receiver = Arc::clone(&receiver);
-        match thread::Builder::new()
-            .name("xiao-pool-shutdown-drain".to_owned())
-            .spawn(move || Self::drain_pending_messages(&worker_receiver))
-        {
-            Ok(drain) => Some(drain),
-            Err(_) => {
-                // 极端情况下线程创建失败，当前 worker 直接接管剩余消息，
-                // 避免把已接纳 activity 永久留在队列中。
-                Self::drain_pending_messages(&receiver);
-                None
+        let mut drains = Vec::with_capacity(inner.drain_worker_count);
+        for index in 0..inner.drain_worker_count {
+            let receiver = Arc::clone(&inner.receiver);
+            match thread::Builder::new()
+                .name(format!("xiao-pool-shutdown-drain-{index}"))
+                .spawn(move || Self::drain_pending_messages(&receiver))
+            {
+                Ok(drain) => drains.push(drain),
+                Err(_) => {
+                    // 极端情况下线程创建失败，当前 worker 直接接管剩余消息，
+                    // 避免把已接纳 activity 永久留在队列中。
+                    Self::drain_pending_messages(&inner.receiver);
+                    break;
+                }
             }
         }
+        Some(drains)
     }
 
     fn drain_pending_messages(receiver: &Arc<Mutex<mpsc::Receiver<PoolMessage>>>) {
@@ -1472,7 +1507,18 @@ mod tests {
     /// 当前 worker 的 drain helper 执行排队 close 时也不能重新形成关闭环。
     fn shutdown_drain_helper_handles_queued_runtime_close() {
         let runtime = RuntimeHandle::create();
-        let pool = TaskPool::create(runtime.clone(), 1).expect("pool");
+        let pool = TaskPool::create(runtime.clone(), 2).expect("pool");
+        let (blocked_started_tx, blocked_started_rx) = mpsc::channel();
+        let (blocked_release_tx, blocked_release_rx) = mpsc::channel();
+        let blocked = pool
+            .submit(move |_| {
+                blocked_started_tx.send(()).unwrap();
+                blocked_release_rx.recv().unwrap();
+                0_u32
+            })
+            .expect("阻塞 worker");
+        blocked_started_rx.recv().expect("阻塞 worker 已开始");
+
         let (closer_started_tx, closer_started_rx) = mpsc::channel();
         let (close_go_tx, close_go_rx) = mpsc::channel();
         let (close_returned_tx, close_returned_rx) = mpsc::channel();
@@ -1489,25 +1535,35 @@ mod tests {
         closer_started_rx.recv().expect("Runtime closer 已开始");
 
         let (queued_started_tx, queued_started_rx) = mpsc::channel();
-        let (queued_release_tx, queued_release_rx) = mpsc::channel();
+        let (followup_result_tx, followup_result_rx) = mpsc::channel();
         let queued_runtime = runtime.clone();
         let queued = pool
             .submit(move |_| {
                 queued_runtime.close();
                 queued_started_tx.send(()).unwrap();
-                queued_release_rx.recv().unwrap();
+                followup_result_rx
+                    .recv_timeout(Duration::from_secs(2))
+                    .expect("排队 close 任务必须取得后续任务结果");
                 2_u32
             })
             .expect("排队 close 任务");
+        let followup = pool
+            .submit(move |_| {
+                followup_result_tx.send(9_u32).unwrap();
+                3_u32
+            })
+            .expect("排队后续任务");
         close_go_tx.send(()).unwrap();
         queued_started_rx
             .recv_timeout(Duration::from_secs(2))
             .expect("drain helper 必须执行排队 close 任务");
-        queued_release_tx.send(()).unwrap();
+        assert_eq!(followup.wait(), Ok(3));
+        assert_eq!(queued.wait(), Ok(2));
+        blocked_release_tx.send(()).unwrap();
         close_returned_rx
             .recv_timeout(Duration::from_secs(2))
             .expect("主 worker close 必须返回");
-        assert_eq!(queued.wait(), Ok(2));
+        assert_eq!(blocked.wait(), Ok(0));
         assert_eq!(closer.wait(), Ok(1));
         assert!(runtime.is_closed());
     }
@@ -1525,12 +1581,11 @@ mod tests {
             let started_tx = started_tx.clone();
             let (release_tx, release_rx) = mpsc::channel();
             release_txs.push(release_tx);
-            detached_reaper()
-                .send(Box::new(move || {
-                    started_tx.send(()).unwrap();
-                    release_rx.recv().unwrap();
-                }))
-                .expect("发送 detached 回收任务");
+            enqueue_detached_reap(Box::new(move || {
+                started_tx.send(()).unwrap();
+                release_rx.recv().unwrap();
+            }))
+            .expect("发送 detached 回收任务");
         }
         drop(started_tx);
         for _ in 0..4 {
@@ -1539,20 +1594,31 @@ mod tests {
                 .expect("四个 detached worker 必须占用回收槽");
         }
 
+        let baseline_depth = detached_reaper_queue_depth();
         let start = std::time::Instant::now();
         for _ in 0..8 {
             for _ in 0..512 {
-                detached_reaper()
-                    .send(Box::new(|| {}))
-                    .expect("无界回收队列必须可继续接收");
+                enqueue_detached_reap(Box::new(|| {})).expect("无界回收队列必须可继续接收");
             }
         }
+        assert!(
+            detached_reaper_queue_depth() >= baseline_depth + 4096,
+            "持续积压必须可观测"
+        );
         assert!(
             start.elapsed() < Duration::from_secs(2),
             "回收队列满时发送不应阻塞调用方"
         );
         for release_tx in release_txs {
             release_tx.send(()).unwrap();
+        }
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        while detached_reaper_queue_depth() > baseline_depth {
+            assert!(
+                std::time::Instant::now() < deadline,
+                "detached 回收队列积压未能清空"
+            );
+            thread::yield_now();
         }
     }
 

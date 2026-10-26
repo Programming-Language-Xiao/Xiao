@@ -64,7 +64,8 @@ pub use memory::{
 };
 /// 重导出 22C Runtime/线程/任务池 API。
 pub use scheduler::{
-    RuntimeCancellation, RuntimeExecError, RuntimeHandle, TaskHandle, TaskPool, ThreadHandle, spawn,
+    RuntimeCancellation, RuntimeExecError, RuntimeHandle, TaskHandle, TaskPool, ThreadHandle,
+    detached_reaper_queue_depth, spawn, take_detached_errors,
 };
 /// 重导出 XCON v1 编解码和边界常量。
 pub use serialization::{
