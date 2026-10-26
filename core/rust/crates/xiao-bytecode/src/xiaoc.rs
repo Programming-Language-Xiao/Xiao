@@ -10,6 +10,7 @@ use std::fmt::{Display, Formatter};
 use crate::TAC_RUNTIME_ABI_VERSION;
 use crate::encode::{EncodeOptions, EncodedProgram, OperandWidth, decode_encoded, encode};
 use crate::tac::{TacConstant, TacProgram};
+use xiao_runtime_abi::{SUPPORTED_CONCURRENCY_FEATURES, are_required_features_supported};
 
 /// `.xiaoc` 文件魔数：`XIAOC`、回车、换行和 DOS 文件结束标记。
 pub const XIAOC_MAGIC: [u8; 8] = *b"XIAOC\r\n\x1a";
@@ -36,8 +37,10 @@ pub const FILE_FLAG_EMBEDDED_LOCALE: u32 = 1 << 2;
 /// 当前实现支持的文件标志集合。
 pub const SUPPORTED_FILE_FLAGS: u32 =
     FILE_FLAG_DEBUG_ACTIVE | FILE_FLAG_PLATFORM_CONSTRAINED | FILE_FLAG_EMBEDDED_LOCALE;
-/// 当前实现支持的必需功能位集合。首版不需要额外能力位。
-pub const SUPPORTED_REQUIRED_FEATURES: u64 = 0;
+/// 当前实现支持的必需功能位集合。
+pub const SUPPORTED_REQUIRED_FEATURES: u64 = SUPPORTED_CONCURRENCY_FEATURES;
+/// 默认编码不声明并发能力；只在包含并发 Runtime 动作的产物中声明具体位。
+pub const DEFAULT_REQUIRED_FEATURES: u64 = 0;
 /// 目录和正文允许的最大分区数量。
 pub const MAX_SECTION_COUNT: u32 = 4096;
 /// 单个分区允许的最大正文长度。
@@ -600,7 +603,7 @@ pub fn encode_xiaoc_with_options(
     put_u64(&mut header, directory_offset);
     put_u64(&mut header, directory_size);
     put_u64(&mut header, file_size);
-    put_u64(&mut header, SUPPORTED_REQUIRED_FEATURES);
+    put_u64(&mut header, DEFAULT_REQUIRED_FEATURES);
     put_u32(&mut header, TAC_RUNTIME_ABI_VERSION);
     put_u32(&mut header, TAC_RUNTIME_ABI_VERSION);
     put_u32(&mut header, 0);
@@ -773,7 +776,7 @@ fn parse_container(bytes: &[u8]) -> Result<(XiaocHeader, Vec<XiaocSection>), Xia
             message: "含未定义位".to_owned(),
         });
     }
-    if required_features != SUPPORTED_REQUIRED_FEATURES {
+    if !are_required_features_supported(required_features) {
         let bit = required_features.trailing_zeros() as u8;
         return Err(XiaocError::UnknownRequiredFeature(bit));
     }
@@ -977,6 +980,30 @@ fn parse_container(bytes: &[u8]) -> Result<(XiaocHeader, Vec<XiaocSection>), Xia
         required_entry(&sections, required)?;
     }
     Ok((header, sections))
+}
+
+/// 检查一个已解析 `.xiaoc` 头部是否满足当前 Runtime ABI 和 required-feature。
+pub fn validate_runtime_requirements(
+    header: &XiaocHeader,
+    actual_abi: u64,
+    actual_features: u64,
+) -> Result<(), XiaocError> {
+    if (header.runtime_abi_min as u64) > actual_abi || (header.runtime_abi_max as u64) < actual_abi
+    {
+        return Err(XiaocError::InvalidField {
+            field: "runtime_abi".to_owned(),
+            message: format!(
+                "Runtime ABI {actual_abi} 不在 {}..={} 区间",
+                header.runtime_abi_min, header.runtime_abi_max
+            ),
+        });
+    }
+    if header.required_features & !actual_features != 0 {
+        return Err(XiaocError::UnknownRequiredFeature(
+            (header.required_features & !actual_features).trailing_zeros() as u8,
+        ));
+    }
+    Ok(())
 }
 
 fn required_entry(
@@ -1679,5 +1706,43 @@ mod tests {
             candidate[index] ^= (seed as u8).wrapping_mul(31).wrapping_add(1);
             let _ = decode_xiaoc(&candidate);
         }
+    }
+
+    #[test]
+    fn runtime_requirements_reject_unknown_features_and_old_abi() {
+        let header = XiaocHeader {
+            format_major: XIAOC_FORMAT_MAJOR,
+            format_minor: XIAOC_FORMAT_MINOR,
+            header_size: XIAOC_HEADER_MIN_SIZE as u32,
+            flags: 0,
+            section_count: 0,
+            directory_offset: 0,
+            directory_size: 0,
+            file_size: 0,
+            required_features: xiao_runtime_abi::REQUIRED_FEATURE_THREADS,
+            runtime_abi_min: xiao_runtime_abi::ABI_ENCODED_VERSION as u32,
+            runtime_abi_max: xiao_runtime_abi::ABI_ENCODED_VERSION as u32,
+            extension: Vec::new(),
+        };
+        assert!(
+            validate_runtime_requirements(
+                &header,
+                xiao_runtime_abi::ABI_ENCODED_VERSION,
+                xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES,
+            )
+            .is_ok()
+        );
+        assert!(
+            validate_runtime_requirements(
+                &header,
+                xiao_runtime_abi::encoded_abi_version(1, 16),
+                xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES,
+            )
+            .is_err()
+        );
+        assert!(
+            validate_runtime_requirements(&header, xiao_runtime_abi::ABI_ENCODED_VERSION, 0)
+                .is_err()
+        );
     }
 }

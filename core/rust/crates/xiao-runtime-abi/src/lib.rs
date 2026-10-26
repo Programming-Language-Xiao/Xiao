@@ -84,6 +84,8 @@ pub struct XiaoSharedHandle {
 
 /// 编译期锁定 C ABI 共享头尺寸。
 const _: () = assert!(std::mem::size_of::<XiaoSharedHeader>() == 32);
+/// 编译期锁定 C ABI 共享头对齐。
+const _: () = assert!(std::mem::align_of::<XiaoSharedHeader>() == 8);
 /// 编译期锁定 C ABI 共享句柄包装尺寸。
 const _: () = assert!(std::mem::size_of::<XiaoSharedHandle>() == 16);
 

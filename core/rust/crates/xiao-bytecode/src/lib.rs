@@ -59,13 +59,14 @@ pub use verify::{
 };
 /// 重导出正式 `.xiaoc` 编解码接口。
 pub use xiaoc::{
-    FILE_FLAG_DEBUG_ACTIVE, FILE_FLAG_EMBEDDED_LOCALE, FILE_FLAG_PLATFORM_CONSTRAINED,
-    MAX_SECTION_COUNT, SECTION_FLAG_REQUIRED, SUPPORTED_FILE_FLAGS, SUPPORTED_REQUIRED_FEATURES,
-    XIAOC_DIRECTORY_ENTRY_MIN_SIZE, XIAOC_DIRECTORY_HEADER_SIZE, XIAOC_DIRECTORY_VERSION,
-    XIAOC_FORMAT_MAJOR, XIAOC_FORMAT_MINOR, XIAOC_HEADER_MIN_SIZE, XIAOC_MAGIC, XiaocError,
-    XiaocFile, XiaocHeader, XiaocInspection, XiaocMetadata, XiaocOptions, XiaocPlatform,
-    XiaocSection, XiaocSectionKind, decode_file, decode_xiaoc, encode_file, encode_xiaoc,
-    encode_xiaoc_with_options, inspect_xiaoc, validate_xiaoc,
+    DEFAULT_REQUIRED_FEATURES, FILE_FLAG_DEBUG_ACTIVE, FILE_FLAG_EMBEDDED_LOCALE,
+    FILE_FLAG_PLATFORM_CONSTRAINED, MAX_SECTION_COUNT, SECTION_FLAG_REQUIRED, SUPPORTED_FILE_FLAGS,
+    SUPPORTED_REQUIRED_FEATURES, XIAOC_DIRECTORY_ENTRY_MIN_SIZE, XIAOC_DIRECTORY_HEADER_SIZE,
+    XIAOC_DIRECTORY_VERSION, XIAOC_FORMAT_MAJOR, XIAOC_FORMAT_MINOR, XIAOC_HEADER_MIN_SIZE,
+    XIAOC_MAGIC, XiaocError, XiaocFile, XiaocHeader, XiaocInspection, XiaocMetadata, XiaocOptions,
+    XiaocPlatform, XiaocSection, XiaocSectionKind, decode_file, decode_xiaoc, encode_file,
+    encode_xiaoc, encode_xiaoc_with_options, inspect_xiaoc, validate_runtime_requirements,
+    validate_xiaoc,
 };
 
 /// 09R 冻结产物的兼容重导出层；沿革见 09R2D，冻结依据见 09R3。
