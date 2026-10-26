@@ -3,6 +3,7 @@
 //! 该模块只提供 Runtime 层的生命周期和取消边界；Xiao 标准库函数体及 VM opcode
 //! lowering 仍由后续 22C 子批接入。句柄不复用普通单线程 `StrongHandle`。
 
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
 use std::panic::{AssertUnwindSafe, catch_unwind};
@@ -18,6 +19,31 @@ use crate::{
     CONCURRENCY_CANCELLED_CODE, CONCURRENCY_POOL_ARGUMENT_CODE, CONCURRENCY_POOL_CLOSED_CODE,
     CONCURRENCY_RUNTIME_CLOSED_CODE,
 };
+
+thread_local! {
+    static CURRENT_CANCELLATION: RefCell<Option<RuntimeCancellation>> = const { RefCell::new(None) };
+}
+
+struct CancellationContextGuard {
+    previous: Option<RuntimeCancellation>,
+}
+
+impl Drop for CancellationContextGuard {
+    fn drop(&mut self) {
+        CURRENT_CANCELLATION.with(|current| {
+            *current.borrow_mut() = self.previous.take();
+        });
+    }
+}
+
+fn enter_cancellation_context(token: RuntimeCancellation) -> CancellationContextGuard {
+    let previous = CURRENT_CANCELLATION.with(|current| current.borrow_mut().replace(token));
+    CancellationContextGuard { previous }
+}
+
+fn current_cancellation_context() -> Option<RuntimeCancellation> {
+    CURRENT_CANCELLATION.with(|current| current.borrow().clone())
+}
 
 /// 可复制的 Runtime 句柄。
 #[derive(Clone, Debug)]
@@ -47,6 +73,7 @@ impl ActivityLease {
         if let Ok(mut threads) = self.runtime.active_threads.lock() {
             *threads.entry(thread_id).or_insert(0) += 1;
             self.running_thread = Some(thread_id);
+            self.runtime.drained.notify_all();
         }
     }
 }
@@ -65,9 +92,7 @@ impl Drop for ActivityLease {
         }
         if let Ok(mut active) = self.runtime.active.lock() {
             *active = active.saturating_sub(1);
-            if *active == 0 {
-                self.runtime.drained.notify_all();
-            }
+            self.runtime.drained.notify_all();
         }
     }
 }
@@ -133,7 +158,9 @@ impl RuntimeHandle {
         }
         // 当前执行单元不能等待自己的 ActivityLease；让它返回并由外层
         // close 调用或 lease Drop 完成最终 drain。
-        if self.is_current_thread_active() {
+        let current_active = self.current_thread_active_count();
+        if current_active != 0 {
+            self.wait_for_other_active(current_active);
             return;
         }
         let Ok(mut active) = self.inner.active.lock() else {
@@ -147,13 +174,36 @@ impl RuntimeHandle {
         }
     }
 
-    fn is_current_thread_active(&self) -> bool {
+    fn current_thread_active_count(&self) -> usize {
         self.inner
             .active_threads
             .lock()
             .ok()
             .and_then(|threads| threads.get(&thread::current().id()).copied())
-            .is_some_and(|count| count != 0)
+            .unwrap_or(0)
+    }
+
+    fn wait_for_other_active(&self, current_active: usize) {
+        let Ok(mut running) = self.inner.active_threads.lock() else {
+            return;
+        };
+        while running.values().copied().sum::<usize>() > current_active {
+            drop(running);
+            let Ok(active) = self.inner.active.lock() else {
+                return;
+            };
+            let Ok(_) = self
+                .inner
+                .drained
+                .wait_timeout(active, Duration::from_millis(10))
+            else {
+                return;
+            };
+            running = match self.inner.active_threads.lock() {
+                Ok(running) => running,
+                Err(_) => return,
+            };
+        }
     }
 
     /// 检查 Runtime 是否仍接收新执行单元。
@@ -279,27 +329,30 @@ fn detached_errors() -> &'static Mutex<Vec<RuntimeExecError>> {
     ERRORS.get_or_init(|| Mutex::new(Vec::new()))
 }
 
-fn detached_reaper() -> &'static mpsc::Sender<Box<dyn FnOnce() + Send>> {
-    static REAPER: OnceLock<mpsc::Sender<Box<dyn FnOnce() + Send>>> = OnceLock::new();
+fn detached_reaper() -> &'static mpsc::SyncSender<Box<dyn FnOnce() + Send>> {
+    const DETACHED_JOIN_WORKERS: usize = 4;
+    const DETACHED_QUEUE_CAPACITY: usize = 256;
+    static REAPER: OnceLock<mpsc::SyncSender<Box<dyn FnOnce() + Send>>> = OnceLock::new();
     REAPER.get_or_init(|| {
-        let (sender, receiver) = mpsc::channel::<Box<dyn FnOnce() + Send>>();
-        thread::Builder::new()
-            .name("xiao-detached-reaper".to_owned())
-            .spawn(move || {
-                while let Ok(reap) = receiver.recv() {
-                    if thread::Builder::new()
-                        .name("xiao-detached-join".to_owned())
-                        .spawn(reap)
-                        .is_err()
-                    {
-                        detached_errors()
+        let (sender, receiver) =
+            mpsc::sync_channel::<Box<dyn FnOnce() + Send>>(DETACHED_QUEUE_CAPACITY);
+        let receiver = Arc::new(Mutex::new(receiver));
+        for index in 0..DETACHED_JOIN_WORKERS {
+            let receiver = Arc::clone(&receiver);
+            thread::Builder::new()
+                .name(format!("xiao-detached-join-{index}"))
+                .spawn(move || {
+                    loop {
+                        let reap = receiver
                             .lock()
-                            .expect("detached 错误通道锁未中毒")
-                            .push(RuntimeExecError::JoinFailed);
+                            .ok()
+                            .and_then(|receiver| receiver.recv().ok());
+                        let Some(reap) = reap else { break };
+                        reap();
                     }
-                }
-            })
-            .expect("启动 detached 错误收集线程失败");
+                })
+                .expect("启动 detached join worker 失败");
+        }
         sender
     })
 }
@@ -331,6 +384,7 @@ where
             let mut activity = activity;
             activity.mark_running();
             let _activity = activity;
+            let _cancellation_context = enter_cancellation_context(child_token.clone());
             if child_token.is_cancelled() {
                 return Err(RuntimeExecError::Cancelled);
             }
@@ -434,7 +488,7 @@ impl TaskPool {
         T: Send + 'static,
         F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
     {
-        self.submit_with_cancel(RuntimeCancellation::default(), function)
+        self.submit_with_cancel(current_cancellation_context().unwrap_or_default(), function)
     }
 
     /// 提交一个带提交期取消令牌的任务。
@@ -458,6 +512,7 @@ impl TaskPool {
                 let mut activity = activity;
                 activity.mark_running();
                 let _activity = activity;
+                let _cancellation_context = enter_cancellation_context(child_token.clone());
                 let result = if child_token.is_cancelled() {
                     Err(RuntimeExecError::Cancelled)
                 } else {
@@ -532,14 +587,21 @@ impl TaskPool {
     }
 
     fn shutdown_inner(inner: &Arc<PoolInner>) {
-        let Ok(_shutdown_gate) = inner.shutdown_gate.lock() else {
-            return;
+        let should_join = {
+            let Ok(_shutdown_gate) = inner.shutdown_gate.lock() else {
+                return;
+            };
+            if inner.closed.swap(true, Ordering::AcqRel) {
+                false
+            } else {
+                if let Ok(mut sender) = inner.sender.lock() {
+                    sender.take();
+                }
+                true
+            }
         };
-        if inner.closed.swap(true, Ordering::AcqRel) {
+        if !should_join {
             return;
-        }
-        if let Ok(mut sender) = inner.sender.lock() {
-            sender.take();
         }
         if let Ok(mut workers) = inner.workers.lock() {
             for worker in workers.drain(..) {
@@ -632,6 +694,32 @@ mod tests {
     }
 
     #[test]
+    /// 两个 worker 同时关闭同一池时只有一个 closer join，不能互相等待。
+    fn two_pool_workers_can_close_same_pool_concurrently() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime, 2).expect("pool");
+        let barrier = Arc::new(std::sync::Barrier::new(2));
+        let first_pool = pool.clone();
+        let first_barrier = Arc::clone(&barrier);
+        let first = pool
+            .submit(move |_| {
+                first_barrier.wait();
+                first_pool.shutdown()
+            })
+            .expect("first close task");
+        let second_pool = pool.clone();
+        let second_barrier = Arc::clone(&barrier);
+        let second = pool
+            .submit(move |_| {
+                second_barrier.wait();
+                second_pool.shutdown()
+            })
+            .expect("second close task");
+        assert_eq!(first.wait(), Ok(Ok(())));
+        assert_eq!(second.wait(), Ok(Ok(())));
+    }
+
+    #[test]
     /// 满队列提交可以由外部令牌取消，并返回 027。
     fn full_queue_submission_has_cancellable_backpressure() {
         let runtime = RuntimeHandle::create();
@@ -662,6 +750,47 @@ mod tests {
         release_tx.send(()).unwrap();
         assert_eq!(running.wait(), Ok(1));
         assert_eq!(queued.wait(), Ok(2));
+    }
+
+    #[test]
+    /// 普通 submit 从当前 worker 继承取消上下文，满队列不会永久阻塞。
+    fn default_submit_inherits_worker_cancellation_context() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime, 2).expect("pool");
+        let (block_started_tx, block_started_rx) = mpsc::channel();
+        let (block_release_tx, block_release_rx) = mpsc::channel();
+        let blocker = pool
+            .submit(move |_| {
+                block_started_tx.send(()).unwrap();
+                block_release_rx.recv().unwrap();
+                1_u32
+            })
+            .expect("阻塞任务");
+        block_started_rx.recv().expect("阻塞任务已开始");
+
+        let (parent_started_tx, parent_started_rx) = mpsc::channel();
+        let (parent_proceed_tx, parent_proceed_rx) = mpsc::channel();
+        let parent_pool = pool.clone();
+        let parent = pool
+            .submit(move |_| {
+                parent_started_tx.send(()).unwrap();
+                parent_proceed_rx.recv().unwrap();
+                let nested = parent_pool.submit(|_| 3_u32);
+                assert!(matches!(nested, Err(RuntimeExecError::Cancelled)));
+                2_u32
+            })
+            .expect("父任务");
+        parent_started_rx.recv().expect("父任务已开始");
+
+        let queued_a = pool.submit(|_| 4_u32).expect("填充队列 A");
+        let queued_b = pool.submit(|_| 5_u32).expect("填充队列 B");
+        parent.cancel();
+        parent_proceed_tx.send(()).unwrap();
+        assert_eq!(parent.wait(), Err(RuntimeExecError::Cancelled));
+        block_release_tx.send(()).unwrap();
+        assert_eq!(blocker.wait(), Ok(1));
+        assert_eq!(queued_a.wait(), Ok(4));
+        assert_eq!(queued_b.wait(), Ok(5));
     }
 
     #[test]
@@ -798,6 +927,36 @@ mod tests {
             .recv_timeout(std::time::Duration::from_secs(2))
             .unwrap();
         closer.join().unwrap();
+    }
+
+    #[test]
+    /// 活动 Runtime 线程调用 close 时仍等待其他 activity，只豁免自身 lease。
+    fn active_thread_close_drains_other_threads_before_returning() {
+        let runtime = RuntimeHandle::create();
+        let (blocked_started_tx, blocked_started_rx) = mpsc::channel();
+        let (blocked_release_tx, blocked_release_rx) = mpsc::channel();
+        let blocked = spawn(&runtime, move |_| {
+            blocked_started_tx.send(()).unwrap();
+            blocked_release_rx.recv().unwrap();
+        })
+        .expect("blocked worker");
+        blocked_started_rx.recv().expect("blocked worker started");
+
+        let (close_started_tx, close_started_rx) = mpsc::channel();
+        let (close_returned_tx, close_returned_rx) = mpsc::channel();
+        let close_runtime = runtime.clone();
+        let closer = spawn(&runtime, move |_| {
+            close_started_tx.send(()).unwrap();
+            close_runtime.close();
+            close_returned_tx.send(()).unwrap();
+        })
+        .expect("active closer");
+        close_started_rx.recv().expect("active closer started");
+        assert!(close_returned_rx.try_recv().is_err(), "不能提前返回");
+        blocked_release_tx.send(()).unwrap();
+        assert_eq!(blocked.join(), Ok(()));
+        assert_eq!(closer.join(), Ok(()));
+        assert!(runtime.is_closed());
     }
 
     #[test]
