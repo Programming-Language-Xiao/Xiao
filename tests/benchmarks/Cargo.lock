@@ -521,6 +521,7 @@ dependencies = [
  "xiao-ir",
  "xiao-lifetime",
  "xiao-optimizer",
+ "xiao-runtime-abi",
  "xiao-syntax",
  "xiao-types",
 ]
