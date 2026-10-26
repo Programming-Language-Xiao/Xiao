@@ -201,6 +201,8 @@ impl RuntimeHandle {
     ///
     /// 活动 Runtime 上下文只能关闭自身 Runtime，或关闭由该上下文创建的
     /// 子 Runtime；跨 Runtime 调用被拒绝且保持原有无返回值兼容。
+    /// 这个兼容入口在拒绝时是 no-op；需要观察 `X06-RUNTIME-031` 的 Rust/VM
+    /// 调用方必须使用 [`Self::try_close`]。
     pub fn close(&self) {
         if self.context_allows_current() {
             self.close_inner();

@@ -50,6 +50,11 @@ shutdown(pool) -> none
 可按值复制的共享句柄，别名共享关闭状态；`runtime_close` 消费调用方那一份，其他别名仍可
 观察关闭，重复关闭幂等成功。Runtime ID 随任务和线程事实传播。
 
+Runtime 的 owner 只按直接创建关系记录。若 Runtime A 的执行单元创建 Runtime B，B 再创建
+Runtime C，A 可以操作 B，B 可以操作 C，A 不会自动获得 C 的关闭权限；关闭 B 也不会递归
+关闭 C，C 必须由 B 的上下文、C 自身上下文或无 Runtime 上下文的外部调用方处理。实现层
+跨 Runtime 拒绝使用 `X06-RUNTIME-031`，需要观察该拒绝时使用显式结果入口。
+
 ## 值传递与能力边界
 
 跨线程值按位置深拷贝，不额外包 tuple。候选 A 接受 `none`、固定宽度数值、`bool`、`str` 和

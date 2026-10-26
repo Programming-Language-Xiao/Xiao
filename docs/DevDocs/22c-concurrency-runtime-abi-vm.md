@@ -117,7 +117,8 @@
   线程只能把各 pool 当作独立关闭操作使用。Xiao 语言层的 `pool` 仍按 22B Send/Sync 表保持不可跨任务传递；
 - `RuntimeHandle::close` 与 `spawn` 采用同一上下文边界：当前 Runtime 可操作自身句柄；任务内新建的
   子 Runtime 记录 owner Runtime，owner 上下文可继续创建/使用/关闭该子 Runtime；其他 Runtime
-  上下文返回 `X06-RUNTIME-031`，`try_close` 提供 Rust API 的显式拒绝结果；
+  上下文返回 `X06-RUNTIME-031`，`try_close` 提供 Rust API 的显式拒绝结果；兼容旧 API 的
+  `close()` 在拒绝时是 no-op，VM 和需要观察错误的 Rust 调用方统一使用 `try_close()`；
 - 不为每个 Runtime 启动不必要的线程；多 Runtime 并行必须可观测 ID。
 
 ### D-4（深拷贝/序列化）
