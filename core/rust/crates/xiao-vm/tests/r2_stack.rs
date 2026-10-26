@@ -1342,7 +1342,7 @@ fn manual_check_program(error_value: bool) -> TacProgram {
         version: 1,
         abi: TacAbi {
             bytecode_abi_version: 1,
-            runtime_abi_version: 1,
+            runtime_abi_version: xiao_bytecode::TAC_RUNTIME_ABI_VERSION,
             ir_version: 1,
             language_version: "0.1.0".to_owned(),
             target: "test".to_owned(),
@@ -1380,5 +1380,6 @@ fn manual_check_program(error_value: bool) -> TacProgram {
         random_seed_plans: Vec::new(),
         table_definitions: Vec::new(),
         unsupported: Vec::new(),
+        required_features: 0,
     }
 }

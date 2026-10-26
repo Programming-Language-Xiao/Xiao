@@ -102,6 +102,7 @@ pub(super) fn decode_inner(bytes: &[u8]) -> Result<(TacProgram, OperandWidth), E
             random_seed_plans,
             table_definitions,
             unsupported,
+            required_features: 0,
         },
         width,
     ))

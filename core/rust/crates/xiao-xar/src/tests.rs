@@ -239,6 +239,7 @@ fn empty_xiaoc_with_optional_sections() -> Vec<u8> {
         random_seed_plans: Vec::new(),
         table_definitions: Vec::new(),
         unsupported: Vec::new(),
+        required_features: 0,
     };
     xiao_bytecode::encode_xiaoc_with_options(
         &program,

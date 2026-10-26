@@ -9,8 +9,9 @@
 > VM 并发调用与 IR 事实执行仍待后续子批（2026-10-26）**。
 > 代码提交 `df6abc3` 已完成 ABI 1.17、32B 共享头、Runtime ID 注册表、XCON v1 编解码、
 > Runtime/线程/任务池骨架和 `.xiaoc` required-feature/ABI 校验 helper；本轮补齐了真实锁等待/取消
-> 唤醒、Runtime 关闭 drain、detached/panic 错误通道、XCON 集合规范序，以及 `.xar` 并发 feature
-> 映射。VM 调用接线和完整端到端并发执行仍按本文后续步骤推进。
+> 唤醒、Runtime 重入关闭、可取消背压、shutdown 的 031 语义、detached/panic 错误分类、XCON 集合
+> 规范序，以及真实源码到 `.xar` 的并发 feature 映射。VM 调用接线和完整端到端并发执行仍按本文
+> 后续步骤推进。
 
 ## 一、入口条件与冻结输入
 
@@ -45,12 +46,12 @@
 | 普通句柄 | `StrongHandle`/`WeakHandle` 使用 `PhantomData<Rc<()>>`，单线程非原子（`xiao-runtime/src/memory/mod.rs:408/437`） | 不能复用为共享句柄；保持布局不变 |
 | 现有对象头 | `ObjectHeader` 含类型、计数、布局、策略、销毁状态和载荷（`:314`），不是 32B 草案 | 需要独立的共享对象头，不能把探针字段混进普通头 |
 | 32B ABI | `xiao-runtime::concurrency::SharedHeader` 已实现并锁定 32B/8B 布局 | 已验证 weak upgrade、锁和恰好一次析构基础 |
-| Runtime ID | 22B 静态事实使用非零静态标签；当前 Runtime 是 `u64::MAX` 哨兵（`xiao-lifetime/src/model.rs:22`） | `RuntimeRegistry` 已提供静态标签到实际 ID 的映射和关闭失效 |
+| Runtime ID | 22B 静态事实使用非零静态标签；当前 Runtime 是 `u64::MAX` 哨兵（`xiao-lifetime/src/model.rs:22`） | `RuntimeRegistry` 已提供静态标签到实际 ID 的映射和关闭失效；重入关闭不会等待自身 |
 | IR 事实 | `IrOwnership` 已有 facts/transfers/cancellation；`source_runtime_id` 可选 | 22C 直接消费，不能重新解释 |
 | 序列化 | `xiao-runtime::serialization` 已实现 XCON v1 大端节点编码、限制、确定性排序、重复/非规范序拒绝和 029 | VM 边界接线及失败清理仍待完成 |
 | VM | 普通单线程执行闭环已存在；并发 Runtime 骨架已提供 | 仍需要接 spawn/join/submit/shared/lock/cancel 调用 |
 | 标准库 | `std.concurrent` 只有类型签名表 | 本批不写 `stdlib/concurrent.xiao`；22E 接用户模块 |
-| 字节码 | 已有并发 IrType 标签 12–19，ABI 版本已升到 1.17 | `.xiaoc` 解码已执行 required-feature/ABI 要求校验；VM 并发调用仍待接线 |
+| 字节码 | 已有并发 IrType 标签 12–19，TAC 与 `.xiaoc` header 统一使用 ABI 1.17 | 真实 IR 并发事实传播到 TAC 元数据，再由 `.xiaoc`/`.xar` 门禁消费；VM 并发调用仍待接线 |
 
 ## 三、目标与边界
 
@@ -99,7 +100,8 @@
 
 ### D-3（线程/任务池/多 Runtime 后端）
 
-- OS 线程使用 `std::thread`；固定容量任务池；Runtime 注册表；detach 错误通道；
+- OS 线程使用 `std::thread`；固定容量任务池；Runtime 注册表；重入安全的关闭 drain；detach 错误通道；
+- 满队列提交提供可取消背压，池关闭和 Runtime 关闭分别保持 030/031；detached reaper 不串行阻塞；
 - 线程/Runtime 关闭顺序：停止接纳 → drain/等待 → 释放边界值 → 汇总主/suppressed；
 - pool worker 迁移符合 22B `submit` 的双边界事实；
 - 不为每个 Runtime 启动不必要的线程；多 Runtime 并行必须可观测 ID。

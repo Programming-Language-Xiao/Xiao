@@ -3,12 +3,14 @@
 //! 该模块只提供 Runtime 层的生命周期和取消边界；Xiao 标准库函数体及 VM opcode
 //! lowering 仍由后续 22C 子批接入。句柄不复用普通单线程 `StrongHandle`。
 
+use std::collections::HashMap;
 use std::fmt;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::mpsc::SyncSender;
 use std::sync::{Arc, Condvar, Mutex, OnceLock, Weak, mpsc};
 use std::thread::{self, JoinHandle};
+use std::time::Duration;
 
 pub use crate::concurrency::LockCancellation as RuntimeCancellation;
 use crate::concurrency::global_runtime_registry;
@@ -31,14 +33,36 @@ struct RuntimeInner {
     drained: Condvar,
     close_gate: Mutex<()>,
     pools: Mutex<Vec<Weak<PoolInner>>>,
+    active_threads: Mutex<HashMap<thread::ThreadId, usize>>,
 }
 
 struct ActivityLease {
     runtime: Arc<RuntimeInner>,
+    running_thread: Option<thread::ThreadId>,
+}
+
+impl ActivityLease {
+    fn mark_running(&mut self) {
+        let thread_id = thread::current().id();
+        if let Ok(mut threads) = self.runtime.active_threads.lock() {
+            *threads.entry(thread_id).or_insert(0) += 1;
+            self.running_thread = Some(thread_id);
+        }
+    }
 }
 
 impl Drop for ActivityLease {
     fn drop(&mut self) {
+        if let Some(thread_id) = self.running_thread.take()
+            && let Ok(mut threads) = self.runtime.active_threads.lock()
+        {
+            if let Some(count) = threads.get_mut(&thread_id) {
+                *count = count.saturating_sub(1);
+                if *count == 0 {
+                    threads.remove(&thread_id);
+                }
+            }
+        }
         if let Ok(mut active) = self.runtime.active.lock() {
             *active = active.saturating_sub(1);
             if *active == 0 {
@@ -68,6 +92,7 @@ impl RuntimeHandle {
             drained: Condvar::new(),
             close_gate: Mutex::new(()),
             pools: Mutex::new(Vec::new()),
+            active_threads: Mutex::new(HashMap::new()),
         });
         Self { id, inner }
     }
@@ -86,24 +111,30 @@ impl RuntimeHandle {
 
     /// 幂等关闭 Runtime；旧别名可观察相同关闭状态。
     pub fn close(&self) {
-        let Ok(_close_gate) = self.inner.close_gate.lock() else {
-            return;
+        let pools = {
+            let Ok(_close_gate) = self.inner.close_gate.lock() else {
+                return;
+            };
+            if !self.inner.closed.swap(true, Ordering::AcqRel) {
+                global_runtime_registry().close(self.id);
+            }
+            self.inner
+                .pools
+                .lock()
+                .map(|mut pools| {
+                    let live = pools.iter().filter_map(Weak::upgrade).collect::<Vec<_>>();
+                    pools.clear();
+                    live
+                })
+                .unwrap_or_default()
         };
-        if !self.inner.closed.swap(true, Ordering::AcqRel) {
-            global_runtime_registry().close(self.id);
-        }
-        let pools = self
-            .inner
-            .pools
-            .lock()
-            .map(|mut pools| {
-                let live = pools.iter().filter_map(Weak::upgrade).collect::<Vec<_>>();
-                pools.clear();
-                live
-            })
-            .unwrap_or_default();
         for pool in pools {
             TaskPool::shutdown_inner(&pool);
+        }
+        // 当前执行单元不能等待自己的 ActivityLease；让它返回并由外层
+        // close 调用或 lease Drop 完成最终 drain。
+        if self.is_current_thread_active() {
+            return;
         }
         let Ok(mut active) = self.inner.active.lock() else {
             return;
@@ -114,6 +145,15 @@ impl RuntimeHandle {
             };
             active = remaining;
         }
+    }
+
+    fn is_current_thread_active(&self) -> bool {
+        self.inner
+            .active_threads
+            .lock()
+            .ok()
+            .and_then(|threads| threads.get(&thread::current().id()).copied())
+            .is_some_and(|count| count != 0)
     }
 
     /// 检查 Runtime 是否仍接收新执行单元。
@@ -129,6 +169,7 @@ impl RuntimeHandle {
         *active = active.checked_add(1).ok_or(RuntimeExecError::JoinFailed)?;
         Ok(ActivityLease {
             runtime: Arc::clone(&self.inner),
+            running_thread: None,
         })
     }
 
@@ -246,7 +287,16 @@ fn detached_reaper() -> &'static mpsc::Sender<Box<dyn FnOnce() + Send>> {
             .name("xiao-detached-reaper".to_owned())
             .spawn(move || {
                 while let Ok(reap) = receiver.recv() {
-                    reap();
+                    if thread::Builder::new()
+                        .name("xiao-detached-join".to_owned())
+                        .spawn(reap)
+                        .is_err()
+                    {
+                        detached_errors()
+                            .lock()
+                            .expect("detached 错误通道锁未中毒")
+                            .push(RuntimeExecError::JoinFailed);
+                    }
                 }
             })
             .expect("启动 detached 错误收集线程失败");
@@ -278,6 +328,8 @@ where
     let join = thread::Builder::new()
         .name(format!("xiao-runtime-{}", runtime.id))
         .spawn(move || {
+            let mut activity = activity;
+            activity.mark_running();
             let _activity = activity;
             if child_token.is_cancelled() {
                 return Err(RuntimeExecError::Cancelled);
@@ -382,12 +434,29 @@ impl TaskPool {
         T: Send + 'static,
         F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
     {
+        self.submit_with_cancel(RuntimeCancellation::default(), function)
+    }
+
+    /// 提交一个带提交期取消令牌的任务。
+    ///
+    /// 队列已满时，提交方以可取消背压等待；取消令牌在任务入队前触发
+    /// 会返回 027，任务不会进入池中。
+    pub fn submit_with_cancel<T, F>(
+        &self,
+        cancellation: RuntimeCancellation,
+        function: F,
+    ) -> Result<TaskHandle<T>, RuntimeExecError>
+    where
+        T: Send + 'static,
+        F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
+    {
         let activity = self.runtime.begin_activity()?;
-        let cancellation = RuntimeCancellation::default();
         let child_token = cancellation.clone();
         let (sender, receiver) = mpsc::sync_channel(1);
         let message = PoolMessage {
             run: Box::new(move || {
+                let mut activity = activity;
+                activity.mark_running();
                 let _activity = activity;
                 let result = if child_token.is_cancelled() {
                     Err(RuntimeExecError::Cancelled)
@@ -417,9 +486,32 @@ impl TaskPool {
                 .cloned()
                 .ok_or(RuntimeExecError::PoolClosed)?
         };
-        sender
-            .send(message)
-            .map_err(|_| RuntimeExecError::PoolClosed)?;
+        let mut message = Some(message);
+        loop {
+            if cancellation.is_cancelled() {
+                return Err(RuntimeExecError::Cancelled);
+            }
+            if self.runtime.is_closed() {
+                return Err(RuntimeExecError::RuntimeClosed);
+            }
+            if self.inner.closed.load(Ordering::Acquire) {
+                return Err(RuntimeExecError::PoolClosed);
+            }
+            match sender.try_send(message.take().expect("提交消息只消费一次")) {
+                Ok(()) => break,
+                Err(mpsc::TrySendError::Full(message_back)) => {
+                    message = Some(message_back);
+                    thread::park_timeout(Duration::from_millis(1));
+                }
+                Err(mpsc::TrySendError::Disconnected(_)) => {
+                    return Err(if self.runtime.is_closed() {
+                        RuntimeExecError::RuntimeClosed
+                    } else {
+                        RuntimeExecError::PoolClosed
+                    });
+                }
+            }
+        }
         Ok(TaskHandle {
             receiver,
             cancellation,
@@ -427,8 +519,16 @@ impl TaskPool {
     }
 
     /// 关闭任务池并等待 worker 退出。
-    pub fn shutdown(&self) {
+    pub fn shutdown(&self) -> Result<(), RuntimeExecError> {
+        if self.runtime.is_closed() {
+            return Err(RuntimeExecError::RuntimeClosed);
+        }
         Self::shutdown_inner(&self.inner);
+        if self.runtime.is_closed() {
+            Err(RuntimeExecError::RuntimeClosed)
+        } else {
+            Ok(())
+        }
     }
 
     fn shutdown_inner(inner: &Arc<PoolInner>) {
@@ -443,6 +543,11 @@ impl TaskPool {
         }
         if let Ok(mut workers) = inner.workers.lock() {
             for worker in workers.drain(..) {
+                if worker.thread().id() == thread::current().id() {
+                    // 当前 worker 不能 join 自己；丢弃 JoinHandle 让它在
+                    // 返回任务后自然结束，其他关闭者仍可观察 active drain。
+                    continue;
+                }
                 let _ = worker.join();
             }
         }
@@ -453,7 +558,7 @@ impl Drop for TaskPool {
     /// 最后一个池别名释放时执行关闭。
     fn drop(&mut self) {
         if Arc::strong_count(&self.inner) == 1 {
-            self.shutdown();
+            let _ = self.shutdown();
         }
     }
 }
@@ -462,6 +567,8 @@ impl Drop for TaskPool {
 /// Runtime/线程/任务池基础回归。
 mod tests {
     use super::*;
+
+    static DETACHED_TEST_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
     #[test]
     /// Runtime 关闭、取消和 join 边界。
@@ -488,11 +595,73 @@ mod tests {
         let pool = TaskPool::create(runtime, 1).expect("pool");
         let task = pool.submit(|_| 42_u32).expect("submit");
         assert_eq!(task.wait().expect("wait"), 42);
-        pool.shutdown();
+        pool.shutdown().expect("池应成功关闭");
         assert!(matches!(
             pool.submit(|_| 1_u32),
             Err(error) if error.code() == CONCURRENCY_POOL_CLOSED_CODE
         ));
+    }
+
+    #[test]
+    /// Runtime 关闭后，公开 shutdown 按冻结语义返回 031。
+    fn pool_shutdown_after_runtime_close_returns_runtime_closed() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("pool");
+        runtime.close();
+        assert_eq!(pool.shutdown(), Err(RuntimeExecError::RuntimeClosed));
+    }
+
+    #[test]
+    /// 池 worker 内重入 Runtime close 不等待自身，也不 join 自身。
+    fn runtime_close_is_reentrant_from_pool_worker() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("pool");
+        let task_runtime = runtime.clone();
+        let task = pool
+            .submit(move |_| {
+                task_runtime.close();
+                9_u32
+            })
+            .expect("submit");
+        assert_eq!(task.wait(), Ok(9));
+        assert!(runtime.is_closed());
+        assert!(matches!(
+            pool.submit(|_| 1_u32),
+            Err(RuntimeExecError::RuntimeClosed)
+        ));
+    }
+
+    #[test]
+    /// 满队列提交可以由外部令牌取消，并返回 027。
+    fn full_queue_submission_has_cancellable_backpressure() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime, 1).expect("pool");
+        let (started_tx, started_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let running = pool
+            .submit(move |_| {
+                started_tx.send(()).unwrap();
+                release_rx.recv().unwrap();
+                1_u32
+            })
+            .expect("running task");
+        started_rx.recv().expect("worker 已开始");
+        let queued = pool.submit(|_| 2_u32).expect("队列任务");
+
+        let cancellation = RuntimeCancellation::default();
+        let submit_cancellation = cancellation.clone();
+        let submit_pool = pool.clone();
+        let submitter =
+            thread::spawn(move || submit_pool.submit_with_cancel(submit_cancellation, |_| 2_u32));
+        thread::sleep(Duration::from_millis(10));
+        cancellation.cancel();
+        assert!(matches!(
+            submitter.join().expect("提交线程完成"),
+            Err(RuntimeExecError::Cancelled)
+        ));
+        release_tx.send(()).unwrap();
+        assert_eq!(running.wait(), Ok(1));
+        assert_eq!(queued.wait(), Ok(2));
     }
 
     #[test]
@@ -505,12 +674,16 @@ mod tests {
             .expect("submit");
         assert_eq!(failed.wait().unwrap_err().code(), "X06-RUNTIME-028");
         assert_eq!(pool.submit(|_| 42_u32).unwrap().wait(), Ok(42));
-        pool.shutdown();
+        pool.shutdown().expect("池应成功关闭");
     }
 
     #[test]
     /// detached 线程 panic 进入进程级 028 通道。
     fn detached_thread_panic_is_reported_to_process_channel() {
+        let _test_lock = DETACHED_TEST_LOCK
+            .get_or_init(|| Mutex::new(()))
+            .lock()
+            .expect("detached 测试锁未中毒");
         let _ = take_detached_errors();
         let runtime = RuntimeHandle::create();
         spawn(&runtime, |_| panic!("detached panic regression"))
@@ -528,7 +701,62 @@ mod tests {
             );
             thread::yield_now();
         };
-        assert_eq!(errors[0].code(), "X06-RUNTIME-028");
+        assert!(errors.iter().any(|error| error.code() == "X06-RUNTIME-028"));
+        runtime.close();
+    }
+
+    #[test]
+    /// detached 取消进入 027，panic 进入 028；长任务不会阻塞后续错误收集。
+    fn detached_errors_are_classified_and_reaped_concurrently() {
+        let _test_lock = DETACHED_TEST_LOCK
+            .get_or_init(|| Mutex::new(()))
+            .lock()
+            .expect("detached 测试锁未中毒");
+        let _ = take_detached_errors();
+        let runtime = RuntimeHandle::create();
+        let (release_tx, release_rx) = mpsc::channel();
+        spawn(&runtime, move |_| {
+            release_rx.recv().unwrap();
+        })
+        .expect("长 detached 任务")
+        .detach();
+        let cancelled = spawn(&runtime, |token| {
+            while !token.is_cancelled() {
+                thread::yield_now();
+            }
+            1_u32
+        })
+        .expect("可取消任务");
+        cancelled.cancel();
+        cancelled.detach();
+        spawn(&runtime, |_| panic!("detached classification panic"))
+            .expect("panic 任务")
+            .detach();
+
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        let mut errors = Vec::new();
+        let errors = loop {
+            errors.extend(take_detached_errors());
+            if errors
+                .iter()
+                .any(|error| error.code() == CONCURRENCY_CANCELLED_CODE)
+                && errors.iter().any(|error| error.code() == "X06-RUNTIME-028")
+            {
+                break errors;
+            }
+            assert!(
+                std::time::Instant::now() < deadline,
+                "detached 错误未及时收集"
+            );
+            thread::yield_now();
+        };
+        assert!(
+            errors
+                .iter()
+                .any(|error| error.code() == CONCURRENCY_CANCELLED_CODE)
+        );
+        assert!(errors.iter().any(|error| error.code() == "X06-RUNTIME-028"));
+        release_tx.send(()).unwrap();
         runtime.close();
     }
 

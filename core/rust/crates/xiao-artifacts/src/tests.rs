@@ -38,6 +38,7 @@ fn valid_xiaoc() -> Vec<u8> {
         random_seed_plans: Vec::new(),
         table_definitions: Vec::new(),
         unsupported: Vec::new(),
+        required_features: 0,
     };
     encode_xiaoc(&program, XiaocMetadata::default()).unwrap()
 }

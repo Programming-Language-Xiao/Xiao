@@ -7,10 +7,13 @@
 
 use std::fmt::{Display, Formatter};
 
+use crate::TAC_RUNTIME_ABI_VERSION;
 use crate::encode::{EncodeOptions, EncodedProgram, OperandWidth, decode_encoded, encode};
 use crate::tac::{TacConstant, TacProgram};
 use xiao_ir::IrType;
 use xiao_runtime_abi::{ABI_ENCODED_VERSION, XIAOC_SUPPORTED_CONCURRENCY_FEATURES};
+
+const _: () = assert!(TAC_RUNTIME_ABI_VERSION as u64 == ABI_ENCODED_VERSION);
 
 /// `.xiaoc` 文件魔数：`XIAOC`、回车、换行和 DOS 文件结束标记。
 pub const XIAOC_MAGIC: [u8; 8] = *b"XIAOC\r\n\x1a";
@@ -613,8 +616,8 @@ pub fn encode_xiaoc_with_options(
     put_u64(&mut header, directory_size);
     put_u64(&mut header, file_size);
     put_u64(&mut header, required_features);
-    put_u32(&mut header, ABI_ENCODED_VERSION as u32);
-    put_u32(&mut header, ABI_ENCODED_VERSION as u32);
+    put_u32(&mut header, TAC_RUNTIME_ABI_VERSION);
+    put_u32(&mut header, TAC_RUNTIME_ABI_VERSION);
     put_u32(&mut header, 0);
     put_u32(&mut header, options.header_extension.len() as u32);
     header.extend_from_slice(&options.header_extension);
@@ -667,9 +670,10 @@ pub fn decode_xiaoc(bytes: &[u8]) -> Result<XiaocFile, XiaocError> {
             "指令流没有使用规范编码".to_owned(),
         ));
     }
-    let program = encoded
+    let mut program = encoded
         .decode()
         .map_err(|error| XiaocError::InvalidInstructionStream(error.to_string()))?;
+    program.required_features = header.required_features;
     let inferred_features = required_features_for_program(&program);
     let missing_features = inferred_features & !header.required_features;
     if missing_features != 0 {
@@ -1435,17 +1439,18 @@ fn required_features_for_program(program: &TacProgram) -> u64 {
         }
     }
 
-    program
-        .signatures
-        .iter()
-        .flat_map(|signature| {
-            signature
-                .parameter_types
-                .iter()
-                .chain(std::iter::once(&signature.return_type))
-        })
-        .map(visit)
-        .fold(0, |all, item| all | item)
+    program.required_features
+        | program
+            .signatures
+            .iter()
+            .flat_map(|signature| {
+                signature
+                    .parameter_types
+                    .iter()
+                    .chain(std::iter::once(&signature.return_type))
+            })
+            .map(visit)
+            .fold(0, |all, item| all | item)
 }
 
 fn constants_bytes(program: &TacProgram) -> Result<Vec<u8>, XiaocError> {
@@ -1736,6 +1741,7 @@ mod tests {
             random_seed_plans: Vec::new(),
             table_definitions: Vec::new(),
             unsupported: Vec::new(),
+            required_features: 0,
         }
     }
 

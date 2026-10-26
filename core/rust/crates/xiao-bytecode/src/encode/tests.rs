@@ -458,6 +458,7 @@ fn all_ops_program() -> TacProgram {
             methods: BTreeMap::new(),
         }],
         unsupported: Vec::new(),
+        required_features: 0,
     }
 }
 

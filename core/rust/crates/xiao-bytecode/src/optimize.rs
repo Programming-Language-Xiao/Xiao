@@ -1065,6 +1065,7 @@ mod tests {
             random_seed_plans: Vec::new(),
             table_definitions: Vec::new(),
             unsupported: Vec::new(),
+            required_features: 0,
         }
     }
 

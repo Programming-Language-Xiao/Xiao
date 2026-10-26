@@ -37,7 +37,7 @@ use crate::tac::{
 /// 当前三地址格式使用的 ABI 版本。
 pub const TAC_BYTECODE_ABI_VERSION: u32 = 1;
 /// 当前消费的 Runtime ABI 版本。
-pub const TAC_RUNTIME_ABI_VERSION: u32 = 1;
+pub const TAC_RUNTIME_ABI_VERSION: u32 = xiao_runtime_abi::ABI_ENCODED_VERSION as u32;
 
 /// 按源码区间分组的待降低 Runtime 检查。
 type PendingRuntimeChecks = BTreeMap<(usize, usize), Vec<(String, Option<IrType>)>>;
@@ -364,6 +364,7 @@ impl<'ir> Lowerer<'ir> {
             random_seed_plans: self.program.random_seed_plans.clone(),
             table_definitions: self.table_definitions,
             unsupported: self.unsupported,
+            required_features: required_features_for_ir(self.program),
         }
     }
 
@@ -1272,6 +1273,93 @@ fn convert_plan(plan: &IrReleasePlan) -> TacReleasePlan {
             .collect(),
         transferred: plan.transferred.clone(),
     }
+}
+
+/// 从已验证 IR 的并发事实和所有权类型传播 `.xiaoc` 独立 feature 位。
+fn required_features_for_ir(program: &IrProgram) -> u64 {
+    fn visit_type(ty: &IrType) -> u64 {
+        match ty {
+            IrType::Thread { value } => {
+                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_THREADS
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
+                    | visit_type(value)
+            }
+            IrType::Task { value } => {
+                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_TASK_POOL
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
+                    | visit_type(value)
+            }
+            IrType::Runtime => xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME,
+            IrType::Pool => {
+                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_TASK_POOL
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
+            }
+            IrType::Shared { value }
+            | IrType::SharedMut { value }
+            | IrType::LockGuard { value } => {
+                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SHARED_HANDLES | visit_type(value)
+            }
+            IrType::Function {
+                parameters,
+                return_type,
+            } => parameters
+                .iter()
+                .map(visit_type)
+                .fold(visit_type(return_type), |all, item| all | item),
+            IrType::Tuple { elements } => elements
+                .iter()
+                .map(visit_type)
+                .fold(0, |all, item| all | item),
+            IrType::Array { shape } => match shape {
+                xiao_ir::IrArrayShape::Homogeneous { element, .. } => visit_type(element),
+                xiao_ir::IrArrayShape::Heterogeneous { elements } => elements
+                    .iter()
+                    .map(visit_type)
+                    .fold(0, |all, item| all | item),
+                xiao_ir::IrArrayShape::Unknown => 0,
+            },
+            IrType::DictTable { entries } | IrType::DictColumn { entries } => entries
+                .iter()
+                .map(|entry| visit_type(&entry.value))
+                .fold(0, |all, item| all | item),
+            IrType::Set { members, .. } => members
+                .iter()
+                .map(visit_type)
+                .fold(0, |all, item| all | item),
+            _ => 0,
+        }
+    }
+
+    let mut required = 0;
+    if !program.ownership.cross_thread_facts.is_empty()
+        || !program.ownership.boundary_transfers.is_empty()
+    {
+        required |= xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_THREADS
+            | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT;
+    }
+    if program
+        .ownership
+        .boundary_transfers
+        .iter()
+        .any(|transfer| transfer.copy_kind == "serialization")
+    {
+        required |= xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1;
+    }
+    if !program.ownership.cancellation_checks.is_empty() {
+        required |= xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT;
+    }
+    required
+        | program
+            .ownership
+            .values
+            .iter()
+            .filter_map(|value| value.ty.as_ref())
+            .map(visit_type)
+            .fold(0, |all, item| all | item)
 }
 
 /// 判断外层区间是否包含内层区间。

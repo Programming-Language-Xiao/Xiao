@@ -15,8 +15,8 @@ use xiao_xar::{XarObject, encode_xar};
 const SIZE_REGRESSION_SOURCE: &str = "print(\"19C size baseline\")\n";
 /// 2026-10-06 Windows 基线：固定源码的规范 `.xiaoc` 字节数。
 const XIAOC_BASELINE_BYTES: usize = 1_256;
-/// 22C 在 20E 索引上接入 Runtime 并发要求位，归档索引增长 2 字节；对象正文未变化。
-const XAR_BASELINE_BYTES: usize = 1_165;
+/// 22C 接入 Runtime 并发要求位并统一 TAC ABI 1.17 编码，归档增长 6 字节。
+const XAR_BASELINE_BYTES: usize = 1_169;
 
 fn artifacts() -> (Vec<u8>, Vec<u8>) {
     let artifact = FrontendCompiler::new()
