@@ -631,6 +631,10 @@ owner 等待所有未进入 `close`/`shutdown` 路径的已提交 activity；当
 owner 时，它登记 closing activity、完成自己的 close 调用并返回，随后仍可作为普通 activity
 被 owner 等待。该例外只打破 closer/join 环，普通调用者仍等待已提交任务和线程。
 
+Rust `TaskPool` 的活动 worker 交叉 `shutdown` 只支持同一 Runtime 上下文；目标 pool 属于
+其他 Runtime 时返回 `X06-RUNTIME-031`，不建立跨 Runtime closing 集合。无 Runtime 上下文的
+外部线程只执行独立 pool 关闭，不享受跨池 worker join 协调。
+
 普通 `submit` 只有在当前执行上下文存在取消令牌时才继承提交期取消；入口线程在句柄返回前
 没有主动取消入口，首版由 Runtime/pool 关闭终止满队列背压。22E 若保持语言层只有普通
 `submit`，必须接入执行上下文令牌或重新冻结显式提交期取消入口。detached 回收使用固定

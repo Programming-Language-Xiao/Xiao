@@ -111,8 +111,10 @@
   普通 `submit` 的等待仍可由 Runtime/pool 关闭终止并返回关闭错误；
 - 线程/Runtime 关闭顺序：停止接纳 → drain/等待 → 释放边界值 → 汇总主/suppressed；
 - pool worker 迁移符合 22B `submit` 的双边界事实；
-- Rust API 层跨池 `shutdown` 由 Runtime closing 集合协调，已进入另一条 shutdown 路径的 worker
-  会被对方跳过，避免互相 join；Xiao 语言层的 `pool` 仍按 22B Send/Sync 表保持不可跨任务传递；
+- Rust API 层活动执行单元的跨池 `shutdown` 限定在同一 Runtime 上下文；目标 pool 属于其他
+  Runtime 时返回 `X06-RUNTIME-031`，不进入交叉 join。满足同 Runtime 条件时由 Runtime closing
+  集合协调，已进入另一条 shutdown 路径的 worker 会被对方跳过；没有 Runtime 上下文的外部
+  线程只能把各 pool 当作独立关闭操作使用。Xiao 语言层的 `pool` 仍按 22B Send/Sync 表保持不可跨任务传递；
 - 不为每个 Runtime 启动不必要的线程；多 Runtime 并行必须可观测 ID。
 
 ### D-4（深拷贝/序列化）

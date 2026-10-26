@@ -22,6 +22,7 @@ use crate::{
 
 thread_local! {
     static CURRENT_CANCELLATION: RefCell<Option<RuntimeCancellation>> = const { RefCell::new(None) };
+    static CURRENT_RUNTIME_ID: RefCell<Option<u64>> = const { RefCell::new(None) };
 }
 
 struct CancellationContextGuard {
@@ -43,6 +44,27 @@ fn enter_cancellation_context(token: RuntimeCancellation) -> CancellationContext
 
 fn current_cancellation_context() -> Option<RuntimeCancellation> {
     CURRENT_CANCELLATION.with(|current| current.borrow().clone())
+}
+
+struct RuntimeContextGuard {
+    previous: Option<u64>,
+}
+
+impl Drop for RuntimeContextGuard {
+    fn drop(&mut self) {
+        CURRENT_RUNTIME_ID.with(|current| {
+            *current.borrow_mut() = self.previous.take();
+        });
+    }
+}
+
+fn enter_runtime_context(runtime_id: u64) -> RuntimeContextGuard {
+    let previous = CURRENT_RUNTIME_ID.with(|current| current.borrow_mut().replace(runtime_id));
+    RuntimeContextGuard { previous }
+}
+
+fn current_runtime_context() -> Option<u64> {
+    CURRENT_RUNTIME_ID.with(|current| *current.borrow())
 }
 
 /// 可复制的 Runtime 句柄。
@@ -488,12 +510,14 @@ where
     let activity = runtime.begin_activity()?;
     let cancellation = RuntimeCancellation::default();
     let child_token = cancellation.clone();
+    let runtime_id = runtime.id;
     let join = thread::Builder::new()
         .name(format!("xiao-runtime-{}", runtime.id))
         .spawn(move || {
             let mut activity = activity;
             activity.mark_running();
             let _activity = activity;
+            let _runtime_context = enter_runtime_context(runtime_id);
             let _cancellation_context = enter_cancellation_context(child_token.clone());
             if child_token.is_cancelled() {
                 return Err(RuntimeExecError::Cancelled);
@@ -589,6 +613,9 @@ impl TaskPool {
         if !(1..=256).contains(&capacity) {
             return Err(RuntimeExecError::PoolArgument);
         }
+        if current_runtime_context().is_some_and(|runtime_id| runtime_id != runtime.id) {
+            return Err(RuntimeExecError::RuntimeClosed);
+        }
         let (sender, receiver) = mpsc::sync_channel::<PoolMessage>(capacity);
         let receiver = Arc::new(Mutex::new(receiver));
         let mut workers = Vec::with_capacity(capacity.min(4));
@@ -658,15 +685,20 @@ impl TaskPool {
         T: Send + 'static,
         F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
     {
+        if current_runtime_context().is_some_and(|runtime_id| runtime_id != self.runtime.id) {
+            return Err(RuntimeExecError::RuntimeClosed);
+        }
         let activity = self.runtime.begin_activity()?;
         let _submission = PoolInner::begin_submission(&self.inner);
         let child_token = cancellation.clone();
+        let runtime_id = self.runtime.id;
         let (sender, receiver) = mpsc::sync_channel(1);
         let message = PoolMessage {
             run: Box::new(move || {
                 let mut activity = activity;
                 activity.mark_running();
                 let _activity = activity;
+                let _runtime_context = enter_runtime_context(runtime_id);
                 let _cancellation_context = enter_cancellation_context(child_token.clone());
                 let result = if child_token.is_cancelled() {
                     Err(RuntimeExecError::Cancelled)
@@ -731,6 +763,9 @@ impl TaskPool {
     /// 关闭任务池并等待 worker 退出。
     pub fn shutdown(&self) -> Result<(), RuntimeExecError> {
         if self.runtime.is_closed() {
+            return Err(RuntimeExecError::RuntimeClosed);
+        }
+        if current_runtime_context().is_some_and(|runtime_id| runtime_id != self.runtime.id) {
             return Err(RuntimeExecError::RuntimeClosed);
         }
         let _closing_guard = self.runtime.enter_current_thread_closing();
@@ -1080,6 +1115,30 @@ mod tests {
     }
 
     #[test]
+    /// Rust API 不允许 Runtime worker 关闭另一个 Runtime 的 pool。
+    fn cross_runtime_pool_shutdown_is_rejected() {
+        let runtime_a = RuntimeHandle::create();
+        let runtime_b = RuntimeHandle::create();
+        let pool_a = TaskPool::create(runtime_a.clone(), 1).expect("pool A");
+        let pool_b = TaskPool::create(runtime_b.clone(), 1).expect("pool B");
+        let target_pool = pool_b.clone();
+        let task = pool_a
+            .submit(move |_| target_pool.shutdown())
+            .expect("跨 Runtime 负例任务");
+
+        assert_eq!(
+            task.wait(),
+            Ok(Err(RuntimeExecError::RuntimeClosed)),
+            "跨 Runtime pool shutdown 必须返回 031"
+        );
+        assert!(!pool_b.inner.closed.load(Ordering::Acquire));
+        pool_a.shutdown().expect("pool A shutdown");
+        pool_b.shutdown().expect("pool B shutdown");
+        runtime_a.close();
+        runtime_b.close();
+    }
+
+    #[test]
     /// 容量大于四时，唯一 close owner 仍能并行 drain 多个后续排队任务。
     fn large_pool_close_drains_many_queued_tasks() {
         let runtime = RuntimeHandle::create();
@@ -1153,6 +1212,60 @@ mod tests {
             assert_eq!(task.wait(), Ok(index));
         }
         assert_eq!(closer.wait(), Ok(99));
+    }
+
+    #[test]
+    /// 同一 Runtime 的独立 pool shutdown 与 Runtime close 并发时保持可收敛。
+    fn runtime_close_and_independent_pool_shutdown_converge() {
+        let runtime = RuntimeHandle::create();
+        let pool_a = TaskPool::create(runtime.clone(), 1).expect("pool A");
+        let pool_b = TaskPool::create(runtime.clone(), 1).expect("pool B");
+        let (blocked_started_tx, blocked_started_rx) = mpsc::channel();
+        let (blocked_release_tx, blocked_release_rx) = mpsc::channel();
+        let blocked = pool_a
+            .submit(move |_| {
+                blocked_started_tx.send(()).unwrap();
+                blocked_release_rx.recv().unwrap();
+                1_u32
+            })
+            .expect("pool A task");
+        blocked_started_rx.recv().expect("pool A task 已开始");
+
+        let (shutdown_go_tx, shutdown_go_rx) = mpsc::channel();
+        let (shutdown_done_tx, shutdown_done_rx) = mpsc::channel();
+        let pool_b_for_task = pool_b.clone();
+        let independent = pool_b
+            .submit(move |_| {
+                shutdown_go_rx.recv().unwrap();
+                let result = pool_b_for_task.shutdown();
+                shutdown_done_tx.send(result.clone()).unwrap();
+                result
+            })
+            .expect("pool B task");
+
+        let close_runtime = runtime.clone();
+        let closer = thread::spawn(move || close_runtime.close());
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        while !runtime.is_closed() {
+            assert!(std::time::Instant::now() < deadline, "Runtime close 未开始");
+            thread::yield_now();
+        }
+        shutdown_go_tx.send(()).unwrap();
+        blocked_release_tx.send(()).unwrap();
+
+        let shutdown_result = shutdown_done_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("独立 pool shutdown 必须返回");
+        assert!(matches!(
+            shutdown_result,
+            Ok(()) | Err(RuntimeExecError::RuntimeClosed)
+        ));
+        assert_eq!(blocked.wait(), Ok(1));
+        assert!(matches!(
+            independent.wait(),
+            Ok(Ok(())) | Ok(Err(RuntimeExecError::RuntimeClosed))
+        ));
+        closer.join().expect("Runtime close 完成");
     }
 
     #[test]
