@@ -8,8 +8,7 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::ptr::NonNull;
 use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
-use std::sync::{Mutex, OnceLock};
-use std::thread;
+use std::sync::{Arc, Condvar, Mutex, OnceLock, Weak};
 
 /// 22A 冻结的共享句柄 tag。
 #[repr(u64)]
@@ -96,6 +95,8 @@ pub enum SharedHandleError {
     InvalidTag,
     /// 共享对象已经被销毁。
     ObjectDestroyed,
+    /// 进程内 Runtime ID 已耗尽。
+    RuntimeIdExhausted,
 }
 
 impl fmt::Display for SharedHandleError {
@@ -105,24 +106,33 @@ impl fmt::Display for SharedHandleError {
             Self::InvalidRuntimeId => formatter.write_str("Runtime ID 0 无效"),
             Self::InvalidTag => formatter.write_str("共享句柄 tag 无效"),
             Self::ObjectDestroyed => formatter.write_str("共享对象已经销毁"),
+            Self::RuntimeIdExhausted => formatter.write_str("Runtime ID 已耗尽"),
         }
     }
 }
 
 impl std::error::Error for SharedHandleError {}
 
-/// 共享锁被取消。
+/// 共享锁获取失败。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub struct SharedLockCancelled;
+pub enum SharedLockError {
+    /// 等待锁时收到取消请求。
+    Cancelled,
+    /// 共享句柄不是可变共享句柄。
+    InvalidTag,
+}
 
-impl fmt::Display for SharedLockCancelled {
-    /// 输出取消原因。
+impl fmt::Display for SharedLockError {
+    /// 输出锁获取失败原因。
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str("共享锁等待被取消")
+        match self {
+            Self::Cancelled => formatter.write_str("共享锁等待被取消"),
+            Self::InvalidTag => formatter.write_str("共享句柄 tag 不允许可变锁"),
+        }
     }
 }
 
-impl std::error::Error for SharedLockCancelled {}
+impl std::error::Error for SharedLockError {}
 
 /// 带 Runtime ID 的强共享句柄包装。
 pub struct SharedHandle<T> {
@@ -187,18 +197,19 @@ impl<T: Send + Sync> SharedHandle<T> {
         unsafe { self.ptr.as_ref().header.weak.load(Ordering::Acquire) }
     }
 
-    /// 返回只读载荷。
-    #[must_use]
-    pub fn get(&self) -> &T {
-        unsafe { &self.ptr.as_ref().payload }
+    /// 读取只读共享载荷；共享可变句柄必须先持锁。
+    pub fn get(&self) -> Result<&T, SharedHandleError> {
+        if self.tag() != SharedTag::Read {
+            return Err(SharedHandleError::InvalidTag);
+        }
+        Ok(unsafe { &self.ptr.as_ref().payload })
     }
 
     /// 创建弱共享句柄。
     #[must_use]
     pub fn downgrade(&self) -> SharedWeakHandle<T> {
         let header = unsafe { &self.ptr.as_ref().header };
-        let previous = header.weak.fetch_add(1, Ordering::AcqRel);
-        assert_ne!(previous, u64::MAX, "共享弱引用计数溢出");
+        increment_checked(&header.weak, "共享弱引用计数溢出");
         SharedWeakHandle {
             ptr: self.ptr,
             runtime_id: self.runtime_id,
@@ -211,21 +222,30 @@ impl<T: Send + Sync> SharedHandle<T> {
         if self.tag() != SharedTag::Mut {
             return Err(SharedHandleError::InvalidTag);
         }
-        acquire_lock(unsafe { &self.ptr.as_ref().header.lock_state }, None)
+        let waiters = acquire_lock(unsafe { &self.ptr.as_ref().header.lock_state }, None)
             .map_err(|_| SharedHandleError::ObjectDestroyed)?;
-        Ok(SharedGuard { handle: self })
+        Ok(SharedGuard {
+            handle: self,
+            waiters,
+        })
     }
 
     /// 以共享可变 tag 获取可取消的独占锁。
     pub fn lock_with_cancel(
         &self,
-        cancelled: &AtomicBool,
-    ) -> Result<SharedGuard<'_, T>, SharedLockCancelled> {
-        acquire_lock(
+        cancelled: &LockCancellation,
+    ) -> Result<SharedGuard<'_, T>, SharedLockError> {
+        if self.tag() != SharedTag::Mut {
+            return Err(SharedLockError::InvalidTag);
+        }
+        let waiters = acquire_lock(
             unsafe { &self.ptr.as_ref().header.lock_state },
             Some(cancelled),
         )?;
-        Ok(SharedGuard { handle: self })
+        Ok(SharedGuard {
+            handle: self,
+            waiters,
+        })
     }
 }
 
@@ -234,6 +254,7 @@ impl<T> SharedHandle<T> {
     fn release_strong(&mut self) {
         let allocation = unsafe { self.ptr.as_ref() };
         if allocation.header.strong.fetch_sub(1, Ordering::AcqRel) == 1 {
+            std::sync::atomic::fence(Ordering::Acquire);
             unsafe {
                 std::ptr::drop_in_place(std::ptr::addr_of_mut!((*self.ptr.as_ptr()).payload));
             }
@@ -246,8 +267,7 @@ impl<T> Clone for SharedHandle<T> {
     /// 原子增加强引用计数。
     fn clone(&self) -> Self {
         let header = unsafe { &self.ptr.as_ref().header };
-        let previous = header.strong.fetch_add(1, Ordering::AcqRel);
-        assert_ne!(previous, 0, "不能克隆已经销毁的共享句柄");
+        increment_strong(&header.strong);
         Self {
             ptr: self.ptr,
             runtime_id: self.runtime_id,
@@ -302,7 +322,7 @@ impl<T: Send + Sync> SharedWeakHandle<T> {
         let header = unsafe { &self.ptr.as_ref().header };
         let mut current = header.strong.load(Ordering::Acquire);
         loop {
-            if current == 0 {
+            if current == 0 || current == u64::MAX {
                 return None;
             }
             match header.strong.compare_exchange_weak(
@@ -328,8 +348,7 @@ impl<T> Clone for SharedWeakHandle<T> {
     /// 原子增加弱引用计数。
     fn clone(&self) -> Self {
         let header = unsafe { &self.ptr.as_ref().header };
-        let previous = header.weak.fetch_add(1, Ordering::AcqRel);
-        assert_ne!(previous, u64::MAX, "共享弱引用计数溢出");
+        increment_checked(&header.weak, "共享弱引用计数溢出");
         Self {
             ptr: self.ptr,
             runtime_id: self.runtime_id,
@@ -349,6 +368,7 @@ impl<T> Drop for SharedWeakHandle<T> {
 fn release_weak<T>(ptr: NonNull<SharedAllocation<T>>) {
     let header = unsafe { &ptr.as_ref().header };
     if header.weak.fetch_sub(1, Ordering::AcqRel) == 1 {
+        std::sync::atomic::fence(Ordering::Acquire);
         let layout = std::alloc::Layout::new::<SharedAllocation<T>>();
         unsafe { std::alloc::dealloc(ptr.as_ptr().cast::<u8>(), layout) };
     }
@@ -358,6 +378,7 @@ fn release_weak<T>(ptr: NonNull<SharedAllocation<T>>) {
 #[derive(Debug)]
 pub struct SharedGuard<'a, T: Send + Sync> {
     handle: &'a SharedHandle<T>,
+    waiters: Arc<LockWaiters>,
 }
 
 impl<T: Send + Sync> std::ops::Deref for SharedGuard<'_, T> {
@@ -365,7 +386,7 @@ impl<T: Send + Sync> std::ops::Deref for SharedGuard<'_, T> {
 
     /// 返回共享守卫的只读载荷。
     fn deref(&self) -> &Self::Target {
-        self.handle.get()
+        unsafe { &self.handle.ptr.as_ref().payload }
     }
 }
 
@@ -377,45 +398,149 @@ impl<T: Send + Sync> std::ops::DerefMut for SharedGuard<'_, T> {
 }
 
 impl<T: Send + Sync> Drop for SharedGuard<'_, T> {
-    /// 释放锁状态并唤醒后续自旋者。
+    /// 释放锁状态并唤醒阻塞的等待者。
     fn drop(&mut self) {
-        unsafe {
-            self.handle
-                .ptr
-                .as_ref()
-                .header
-                .lock_state
-                .store(0, Ordering::Release)
-        };
+        let header = unsafe { &self.handle.ptr.as_ref().header };
+        let _gate = self.waiters.gate.lock().expect("共享锁等待器锁未中毒");
+        header.lock_state.store(0, Ordering::Release);
+        self.waiters.ready.notify_all();
     }
 }
 
-/// 使用状态字 CAS 获取锁，支持取消轮询。
+/// 可唤醒共享锁等待者的取消令牌。
+#[derive(Clone, Debug, Default)]
+pub struct LockCancellation {
+    inner: Arc<LockCancellationInner>,
+}
+
+#[derive(Debug, Default)]
+struct LockCancellationInner {
+    cancelled: AtomicBool,
+    waiters: Mutex<Vec<Weak<LockWaiters>>>,
+}
+
+impl LockCancellation {
+    /// 设置取消标志并唤醒所有已登记的锁等待者。
+    pub fn cancel(&self) {
+        self.inner.cancelled.store(true, Ordering::Release);
+        let waiters = self
+            .inner
+            .waiters
+            .lock()
+            .map(|mut waiters| {
+                let live = waiters.iter().filter_map(Weak::upgrade).collect::<Vec<_>>();
+                waiters.retain(|waiter| waiter.strong_count() > 0);
+                live
+            })
+            .unwrap_or_default();
+        for waiter in waiters {
+            let _gate = waiter.gate.lock().expect("共享锁等待器锁未中毒");
+            waiter.ready.notify_all();
+        }
+    }
+
+    /// 查询取消状态。
+    #[must_use]
+    pub fn is_cancelled(&self) -> bool {
+        self.inner.cancelled.load(Ordering::Acquire)
+    }
+}
+
+#[derive(Debug, Default)]
+struct LockWaiters {
+    gate: Mutex<()>,
+    ready: Condvar,
+}
+
+fn lock_waiters(address: usize) -> Arc<LockWaiters> {
+    static WAITERS: OnceLock<Mutex<std::collections::BTreeMap<usize, Weak<LockWaiters>>>> =
+        OnceLock::new();
+    let waiters = WAITERS.get_or_init(Default::default);
+    let mut waiters = waiters.lock().expect("共享锁等待器注册表锁未中毒");
+    waiters.retain(|_, waiter| waiter.strong_count() > 0);
+    if let Some(waiter) = waiters.get(&address).and_then(Weak::upgrade) {
+        return waiter;
+    }
+    let waiter = Arc::new(LockWaiters::default());
+    waiters.insert(address, Arc::downgrade(&waiter));
+    waiter
+}
+
+/// 使用状态字 CAS 获取锁，通过条件变量等待并支持取消唤醒。
 fn acquire_lock(
     state: &AtomicU32,
-    cancelled: Option<&AtomicBool>,
-) -> Result<(), SharedLockCancelled> {
+    cancelled: Option<&LockCancellation>,
+) -> Result<Arc<LockWaiters>, SharedLockError> {
+    let waiters = lock_waiters(state as *const AtomicU32 as usize);
     loop {
-        if cancelled.is_some_and(|token| token.load(Ordering::Acquire)) {
-            return Err(SharedLockCancelled);
+        if cancelled.is_some_and(LockCancellation::is_cancelled) {
+            return Err(SharedLockError::Cancelled);
+        }
+        if let Some(cancelled) = cancelled {
+            let mut registered = cancelled
+                .inner
+                .waiters
+                .lock()
+                .expect("共享锁取消等待器锁未中毒");
+            if !registered
+                .iter()
+                .any(|waiter| waiter.as_ptr() == Arc::as_ptr(&waiters))
+            {
+                registered.push(Arc::downgrade(&waiters));
+            }
+            if cancelled.is_cancelled() {
+                return Err(SharedLockError::Cancelled);
+            }
+        }
+        let gate = waiters.gate.lock().expect("共享锁等待器锁未中毒");
+        if cancelled.is_some_and(LockCancellation::is_cancelled) {
+            return Err(SharedLockError::Cancelled);
         }
         if state
             .compare_exchange(0, SHARED_LOCKED, Ordering::Acquire, Ordering::Relaxed)
             .is_ok()
         {
-            return Ok(());
+            return Ok(Arc::clone(&waiters));
         }
         state.fetch_or(SHARED_WAITERS, Ordering::Release);
-        thread::yield_now();
+        drop(waiters.ready.wait(gate).expect("共享锁等待器锁未中毒"));
+    }
+}
+
+fn increment_checked(counter: &AtomicU64, overflow_message: &str) {
+    let mut current = counter.load(Ordering::Acquire);
+    loop {
+        let next = current.checked_add(1).expect(overflow_message);
+        match counter.compare_exchange_weak(current, next, Ordering::AcqRel, Ordering::Acquire) {
+            Ok(_) => return,
+            Err(observed) => current = observed,
+        }
+    }
+}
+
+fn increment_strong(counter: &AtomicU64) {
+    let mut current = counter.load(Ordering::Acquire);
+    loop {
+        assert_ne!(current, 0, "不能克隆已经销毁的共享句柄");
+        let next = current.checked_add(1).expect("共享强引用计数溢出");
+        match counter.compare_exchange_weak(current, next, Ordering::AcqRel, Ordering::Acquire) {
+            Ok(_) => return,
+            Err(observed) => current = observed,
+        }
     }
 }
 
 /// 静态 Runtime 标签到实际 Runtime ID 的注册表。
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct RuntimeRegistry {
     next_id: AtomicU64,
-    mappings: Mutex<std::collections::BTreeMap<u64, u64>>,
-    closed: Mutex<std::collections::BTreeSet<u64>>,
+    state: Mutex<RuntimeRegistryState>,
+}
+
+#[derive(Debug, Default)]
+struct RuntimeRegistryState {
+    mappings: std::collections::BTreeMap<u64, u64>,
+    closed: std::collections::BTreeSet<u64>,
 }
 
 impl RuntimeRegistry {
@@ -424,8 +549,7 @@ impl RuntimeRegistry {
     pub fn new() -> Self {
         Self {
             next_id: AtomicU64::new(1),
-            mappings: Mutex::new(std::collections::BTreeMap::new()),
-            closed: Mutex::new(std::collections::BTreeSet::new()),
+            state: Mutex::new(RuntimeRegistryState::default()),
         }
     }
 
@@ -434,35 +558,40 @@ impl RuntimeRegistry {
         if static_label == 0 {
             return Err(SharedHandleError::InvalidRuntimeId);
         }
-        let mut mappings = self.mappings.lock().expect("Runtime 注册表锁未中毒");
-        if let Some(id) = mappings.get(&static_label).copied() {
+        let mut state = self.state.lock().expect("Runtime 注册表锁未中毒");
+        if let Some(id) = state.mappings.get(&static_label).copied() {
             return Ok(id);
         }
-        let id = self.next_id.fetch_add(1, Ordering::Relaxed);
-        mappings.insert(static_label, id);
+        let id = self
+            .next_id
+            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
+            .map_err(|_| SharedHandleError::RuntimeIdExhausted)?;
+        state.mappings.insert(static_label, id);
         Ok(id)
     }
 
     /// 查询静态标签对应的实际 ID，且拒绝已关闭 Runtime。
     #[must_use]
     pub fn resolve(&self, static_label: u64) -> Option<u64> {
-        let id = self
-            .mappings
-            .lock()
-            .ok()
-            .and_then(|mappings| mappings.get(&static_label).copied())?;
-        self.closed
-            .lock()
-            .ok()
-            .filter(|closed| !closed.contains(&id))
-            .map(|_| id)
+        let state = self.state.lock().ok()?;
+        let id = state.mappings.get(&static_label).copied()?;
+        (!state.closed.contains(&id)).then_some(id)
     }
 
     /// 关闭实际 Runtime；重复关闭保持幂等。
     pub fn close(&self, actual_id: u64) {
-        if let Ok(mut closed) = self.closed.lock() {
-            closed.insert(actual_id);
+        if let Ok(mut state) = self.state.lock() {
+            state.closed.insert(actual_id);
+            state
+                .mappings
+                .retain(|_, mapped_id| *mapped_id != actual_id);
         }
+    }
+}
+
+impl Default for RuntimeRegistry {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -512,12 +641,66 @@ mod tests {
             let mut guard = shared.lock().expect("共享可变句柄应可加锁");
             *guard += 1;
         }
-        assert_eq!(*shared.get(), 2);
-        let cancelled = AtomicBool::new(true);
+        assert_eq!(shared.get(), Err(SharedHandleError::InvalidTag));
+        assert_eq!(*shared.lock().expect("可重新获取锁"), 2);
+        let cancelled = LockCancellation::default();
+        cancelled.cancel();
         assert_eq!(
             shared.lock_with_cancel(&cancelled).unwrap_err(),
-            SharedLockCancelled
+            SharedLockError::Cancelled
         );
+    }
+
+    #[test]
+    /// 共享只读句柄可以读取，且普通 tag 不被接受为可变共享头。
+    fn shared_read_access_is_tag_restricted() {
+        let shared = SharedHandle::new(String::from("read"), 9, SharedTag::Read);
+        assert_eq!(shared.get().map(String::as_str), Ok("read"));
+        assert!(matches!(shared.lock(), Err(SharedHandleError::InvalidTag)));
+    }
+
+    fn wait_for_waiter(shared: &SharedHandle<u64>) {
+        let state = unsafe { &shared.ptr.as_ref().header.lock_state };
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+        while state.load(Ordering::Acquire) & SHARED_WAITERS == 0 {
+            assert!(std::time::Instant::now() < deadline, "等待者未进入锁等待");
+            std::thread::yield_now();
+        }
+    }
+
+    #[test]
+    /// 锁竞争进入条件变量等待，解锁唤醒后只有一个守卫修改载荷。
+    fn shared_lock_blocks_and_wakes_waiting_thread() {
+        let shared = SharedHandle::new(0_u64, 9, SharedTag::Mut);
+        let guard = shared.lock().expect("主线程持锁");
+        let other = shared.clone();
+        let waiter = std::thread::spawn(move || {
+            let mut guard = other.lock().expect("等待后获取锁");
+            *guard += 1;
+        });
+        wait_for_waiter(&shared);
+        drop(guard);
+        waiter.join().expect("等待线程完成");
+        assert_eq!(*shared.lock().expect("检查结果"), 1);
+    }
+
+    #[test]
+    /// 取消会唤醒已阻塞的持锁等待者。
+    fn lock_cancellation_wakes_waiting_thread() {
+        let shared = SharedHandle::new(0_u64, 9, SharedTag::Mut);
+        let guard = shared.lock().expect("主线程持锁");
+        let other = shared.clone();
+        let cancellation = LockCancellation::default();
+        let child_cancellation = cancellation.clone();
+        let waiter =
+            std::thread::spawn(move || other.lock_with_cancel(&child_cancellation).map(drop));
+        wait_for_waiter(&shared);
+        cancellation.cancel();
+        assert!(matches!(
+            waiter.join().expect("等待线程完成"),
+            Err(SharedLockError::Cancelled)
+        ));
+        drop(guard);
     }
 
     #[test]
@@ -529,5 +712,8 @@ mod tests {
         assert_eq!(registry.resolve(99), Some(id));
         registry.close(id);
         assert_eq!(registry.resolve(99), None);
+        let replacement = registry.register(99).expect("同一静态标签可进入新 Runtime");
+        assert_ne!(replacement, id);
+        assert_eq!(registry.resolve(99), Some(replacement));
     }
 }

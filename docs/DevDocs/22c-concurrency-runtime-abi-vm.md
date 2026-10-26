@@ -5,11 +5,12 @@
 > 22B/22B-FIX.1 已交付类型、生命周期事实、IR 边界动作、取消检查、`source_runtime_id`
 > 和 verifier；本批只消费这些字段，不重新决定 Send/Sync、CrossThread、API 名称或序列化格式。
 >
-> 状态：**基础 Runtime/ABI 与产物要求校验已实施，VM 调用接线仍待后续子批（2026-10-26）**。
+> 状态：**Runtime/ABI、共享锁、Runtime drain、XCON 规范校验和 `.xiaoc`/`.xar` 要求门禁已实施；
+> VM 并发调用与 IR 事实执行仍待后续子批（2026-10-26）**。
 > 代码提交 `df6abc3` 已完成 ABI 1.17、32B 共享头、Runtime ID 注册表、XCON v1 编解码、
-> Runtime/线程/任务池骨架和 `.xiaoc` required-feature/ABI 校验 helper；workspace gates
-> `40257127901`、maintenance regression `40257090391` 均通过。VM 调用接线和完整端到端并发
-> 执行仍按本文后续步骤推进。
+> Runtime/线程/任务池骨架和 `.xiaoc` required-feature/ABI 校验 helper；本轮补齐了真实锁等待/取消
+> 唤醒、Runtime 关闭 drain、detached/panic 错误通道、XCON 集合规范序，以及 `.xar` 并发 feature
+> 映射。VM 调用接线和完整端到端并发执行仍按本文后续步骤推进。
 
 ## 一、入口条件与冻结输入
 
@@ -40,16 +41,16 @@
 
 | 面 | 当前事实 | 对 22C 的影响 |
 | --- | --- | --- |
-| Runtime ABI | `ABI_MINOR_VERSION = 17`（`core/rust/crates/xiao-runtime-abi/src/lib.rs:18`） | 已升到 1.17；产物 feature 门禁仍待接线 |
+| Runtime ABI | `ABI_MINOR_VERSION = 17`（`core/rust/crates/xiao-runtime-abi/src/lib.rs:18`） | 已升到 1.17；`.xiaoc`/`.xar` feature 门禁已接线 |
 | 普通句柄 | `StrongHandle`/`WeakHandle` 使用 `PhantomData<Rc<()>>`，单线程非原子（`xiao-runtime/src/memory/mod.rs:408/437`） | 不能复用为共享句柄；保持布局不变 |
 | 现有对象头 | `ObjectHeader` 含类型、计数、布局、策略、销毁状态和载荷（`:314`），不是 32B 草案 | 需要独立的共享对象头，不能把探针字段混进普通头 |
 | 32B ABI | `xiao-runtime::concurrency::SharedHeader` 已实现并锁定 32B/8B 布局 | 已验证 weak upgrade、锁和恰好一次析构基础 |
 | Runtime ID | 22B 静态事实使用非零静态标签；当前 Runtime 是 `u64::MAX` 哨兵（`xiao-lifetime/src/model.rs:22`） | `RuntimeRegistry` 已提供静态标签到实际 ID 的映射和关闭失效 |
 | IR 事实 | `IrOwnership` 已有 facts/transfers/cancellation；`source_runtime_id` 可选 | 22C 直接消费，不能重新解释 |
-| 序列化 | `xiao-runtime::serialization` 已实现 XCON v1 大端节点编码、限制、确定性排序和 029 | VM 边界接线及失败清理仍待完成 |
+| 序列化 | `xiao-runtime::serialization` 已实现 XCON v1 大端节点编码、限制、确定性排序、重复/非规范序拒绝和 029 | VM 边界接线及失败清理仍待完成 |
 | VM | 普通单线程执行闭环已存在；并发 Runtime 骨架已提供 | 仍需要接 spawn/join/submit/shared/lock/cancel 调用 |
 | 标准库 | `std.concurrent` 只有类型签名表 | 本批不写 `stdlib/concurrent.xiao`；22E 接用户模块 |
-| 字节码 | 已有并发 IrType 标签 12–19，ABI 版本已升到 1.17 | `.xiaoc` 已提供 required-feature/ABI 要求校验 helper；VM 加载入口仍待接线 |
+| 字节码 | 已有并发 IrType 标签 12–19，ABI 版本已升到 1.17 | `.xiaoc` 解码已执行 required-feature/ABI 要求校验；VM 并发调用仍待接线 |
 
 ## 三、目标与边界
 
@@ -136,7 +137,7 @@
 | 4 | 深拷贝/序列化：XCON、限制、失败清理、suppressed | 已完成 XCON 编解码/限制基础；边界清理待 VM 接线 |
 | 5 | VM：spawn/join/detach/cancel、shared/read/lock、pool submit/wait/shutdown | 源码级端到端 |
 | 6 | 取消：锁等待/join/wait、四位置、唤醒/清理 | 取消/清理回归 |
-| 7 | 产物：`.xiaoc`/`.xar` ABI 1.17 + feature；旧 Runtime 拒绝 | `.xiaoc` helper 已完成；`.xar`/VM 执行入口负例待接线 |
+| 7 | 产物：`.xiaoc`/`.xar` ABI 1.17 + feature；旧 Runtime 拒绝 | `.xiaoc` 与 `.xar` 解码/执行前门禁已接线；并发类型 feature 负例已覆盖 |
 | 8 | 文档/门禁：22C 状态、UseDocs 入口保持 planned、CI | docs/usedocs/layout |
 
 ## 六、测试与验收

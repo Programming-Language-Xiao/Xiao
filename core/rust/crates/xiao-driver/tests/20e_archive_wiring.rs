@@ -68,6 +68,7 @@ impl Fixture {
             language_version: identity.language_version,
             stdlib_modules: Vec::new(),
             required_capabilities,
+            required_features: 0,
         };
         Self {
             index,

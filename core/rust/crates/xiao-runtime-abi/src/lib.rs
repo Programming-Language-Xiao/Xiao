@@ -50,6 +50,26 @@ pub const SUPPORTED_CONCURRENCY_FEATURES: u64 = REQUIRED_FEATURE_THREADS
     | REQUIRED_FEATURE_SERIALIZATION_V1
     | REQUIRED_FEATURE_CANCEL_WAIT;
 
+/// `.xiaoc` 独立 feature 表：线程入口。
+pub const XIAOC_REQUIRED_FEATURE_THREADS: u64 = 0x0001;
+/// `.xiaoc` 独立 feature 表：共享句柄。
+pub const XIAOC_REQUIRED_FEATURE_SHARED_HANDLES: u64 = 0x0002;
+/// `.xiaoc` 独立 feature 表：任务池。
+pub const XIAOC_REQUIRED_FEATURE_TASK_POOL: u64 = 0x0004;
+/// `.xiaoc` 独立 feature 表：多 Runtime。
+pub const XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME: u64 = 0x0008;
+/// `.xiaoc` 独立 feature 表：XCON v1 序列化。
+pub const XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1: u64 = 0x0010;
+/// `.xiaoc` 独立 feature 表：取消/等待。
+pub const XIAOC_REQUIRED_FEATURE_CANCEL_WAIT: u64 = 0x0020;
+/// 当前 `.xiaoc` 解码器支持的并发 feature。
+pub const XIAOC_SUPPORTED_CONCURRENCY_FEATURES: u64 = XIAOC_REQUIRED_FEATURE_THREADS
+    | XIAOC_REQUIRED_FEATURE_SHARED_HANDLES
+    | XIAOC_REQUIRED_FEATURE_TASK_POOL
+    | XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME
+    | XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
+    | XIAOC_REQUIRED_FEATURE_CANCEL_WAIT;
+
 /// 判断必需能力是否为当前 Runtime 支持的子集。
 #[must_use]
 pub const fn are_required_features_supported(required: u64) -> bool {

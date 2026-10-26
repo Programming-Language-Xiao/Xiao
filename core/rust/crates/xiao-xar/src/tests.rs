@@ -28,8 +28,8 @@ fn index_for(bytes: &[u8]) -> (ArchiveIndex, XarObject) {
         }],
         dependency_lock_digest: "0000000000000000000000000000000000000000000000000000000000000000"
             .to_owned(),
-        runtime_abi_min: 1,
-        runtime_abi_max: 1,
+        runtime_abi_min: xiao_runtime_abi::ABI_ENCODED_VERSION,
+        runtime_abi_max: xiao_runtime_abi::ABI_ENCODED_VERSION,
         platform: "portable".to_owned(),
         debug_activation: false,
         language_locale: "zh-CN".to_owned(),
@@ -37,6 +37,7 @@ fn index_for(bytes: &[u8]) -> (ArchiveIndex, XarObject) {
         language_version: "0.1.0".to_owned(),
         stdlib_modules: Vec::new(),
         required_capabilities: 0,
+        required_features: 0,
     };
     (index, object)
 }
@@ -497,7 +498,7 @@ fn archive_runner_checks_runtime_before_entry_execution() {
     let entry_error = run_archive(
         &archive,
         XarRunOptions {
-            runtime_abi: 1,
+            runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
             ..Default::default()
         },
     )

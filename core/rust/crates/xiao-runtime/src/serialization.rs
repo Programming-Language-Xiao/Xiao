@@ -87,6 +87,8 @@ pub enum XconError {
     InvalidBoolean,
     /// 集合或字典存在重复键/成员。
     DuplicateMember,
+    /// 集合或字典成员没有按规范编码顺序排列。
+    NonCanonicalOrder,
 }
 
 impl XconError {
@@ -109,6 +111,7 @@ impl fmt::Display for XconError {
             Self::InvalidUtf8 => formatter.write_str("XCON 字符串不是 UTF-8"),
             Self::InvalidBoolean => formatter.write_str("XCON bool 载荷不是 0/1"),
             Self::DuplicateMember => formatter.write_str("XCON 集合或字典存在重复成员"),
+            Self::NonCanonicalOrder => formatter.write_str("XCON 集合或字典成员顺序不规范"),
         }
     }
 }
@@ -373,7 +376,11 @@ fn decode_payload(
         9..=11 => {
             let (count, mut cursor) = read_count(payload)?;
             let mut values = Vec::with_capacity(count.min(1024));
+            let mut previous_encoding: Option<Vec<u8>> = None;
             for _ in 0..count {
+                if cursor > payload.len() {
+                    return Err(XconError::Truncated);
+                }
                 let start = cursor;
                 let mut child = Decoder {
                     bytes: &payload[cursor..],
@@ -387,6 +394,19 @@ fn decode_payload(
                 decoder.nodes = child.nodes;
                 if cursor <= start {
                     return Err(XconError::Truncated);
+                }
+                if tag == 11 {
+                    let encoding = payload[start..cursor].to_vec();
+                    if let Some(previous) = &previous_encoding {
+                        match previous.cmp(&encoding) {
+                            std::cmp::Ordering::Equal => return Err(XconError::DuplicateMember),
+                            std::cmp::Ordering::Greater => {
+                                return Err(XconError::NonCanonicalOrder);
+                            }
+                            std::cmp::Ordering::Less => {}
+                        }
+                    }
+                    previous_encoding = Some(encoding);
                 }
                 values.push(value);
             }
@@ -402,7 +422,12 @@ fn decode_payload(
         12 => {
             let (count, mut cursor) = read_count(payload)?;
             let mut entries = Vec::with_capacity(count.min(1024));
+            let mut previous_key_encoding: Option<Vec<u8>> = None;
             for _ in 0..count {
+                if cursor > payload.len() {
+                    return Err(XconError::Truncated);
+                }
+                let key_start = cursor;
                 let mut key_decoder = Decoder {
                     bytes: &payload[cursor..],
                     cursor: 0,
@@ -413,6 +438,18 @@ fn decode_payload(
                     .checked_add(key_decoder.cursor)
                     .ok_or(XconError::Truncated)?;
                 decoder.nodes = key_decoder.nodes;
+                let key_encoding = payload[key_start..cursor].to_vec();
+                if let Some(previous) = &previous_key_encoding {
+                    match previous.cmp(&key_encoding) {
+                        std::cmp::Ordering::Equal => return Err(XconError::DuplicateMember),
+                        std::cmp::Ordering::Greater => return Err(XconError::NonCanonicalOrder),
+                        std::cmp::Ordering::Less => {}
+                    }
+                }
+                previous_key_encoding = Some(key_encoding);
+                if cursor > payload.len() {
+                    return Err(XconError::Truncated);
+                }
                 let mut value_decoder = Decoder {
                     bytes: &payload[cursor..],
                     cursor: 0,
@@ -483,5 +520,51 @@ mod tests {
         let mut reserved = encode_xcon(&value).expect("编码");
         reserved[10] = 13;
         assert_eq!(decode_xcon(&reserved), Err(XconError::UnsupportedTag(13)));
+    }
+
+    fn container_frame(tag: u8, children: &[Vec<u8>]) -> Vec<u8> {
+        let mut payload = Vec::new();
+        payload.extend_from_slice(&(children.len() as u32).to_be_bytes());
+        for child in children {
+            payload.extend_from_slice(child);
+        }
+        let mut frame = Vec::new();
+        frame.extend_from_slice(&XCON_MAGIC);
+        frame.extend_from_slice(&XCON_VERSION.to_be_bytes());
+        frame.extend_from_slice(&(payload.len() as u32).to_be_bytes());
+        frame.push(tag);
+        frame.push(0);
+        frame.extend_from_slice(&payload);
+        frame
+    }
+
+    #[test]
+    /// 解码器拒绝未排序、重复的 set 成员和 dict 键。
+    fn xcon_decoder_rejects_noncanonical_set_and_dict_order() {
+        let low = encode_xcon(&XconValue::Int(1)).unwrap();
+        let high = encode_xcon(&XconValue::Int(2)).unwrap();
+        assert_eq!(
+            decode_xcon(&container_frame(11, &[high.clone(), low.clone()])),
+            Err(XconError::NonCanonicalOrder)
+        );
+        assert_eq!(
+            decode_xcon(&container_frame(11, &[low.clone(), low.clone()])),
+            Err(XconError::DuplicateMember)
+        );
+
+        let mut dict_payload = Vec::new();
+        dict_payload.extend_from_slice(&2_u32.to_be_bytes());
+        dict_payload.extend_from_slice(&high);
+        dict_payload.extend_from_slice(&encode_xcon(&XconValue::None).unwrap());
+        dict_payload.extend_from_slice(&low);
+        dict_payload.extend_from_slice(&encode_xcon(&XconValue::None).unwrap());
+        let mut dict = Vec::new();
+        dict.extend_from_slice(&XCON_MAGIC);
+        dict.extend_from_slice(&XCON_VERSION.to_be_bytes());
+        dict.extend_from_slice(&(dict_payload.len() as u32).to_be_bytes());
+        dict.push(12);
+        dict.push(0);
+        dict.extend_from_slice(&dict_payload);
+        assert_eq!(decode_xcon(&dict), Err(XconError::NonCanonicalOrder));
     }
 }

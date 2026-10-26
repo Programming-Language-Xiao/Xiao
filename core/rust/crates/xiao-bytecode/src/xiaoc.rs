@@ -7,10 +7,10 @@
 
 use std::fmt::{Display, Formatter};
 
-use crate::TAC_RUNTIME_ABI_VERSION;
 use crate::encode::{EncodeOptions, EncodedProgram, OperandWidth, decode_encoded, encode};
 use crate::tac::{TacConstant, TacProgram};
-use xiao_runtime_abi::{SUPPORTED_CONCURRENCY_FEATURES, are_required_features_supported};
+use xiao_ir::IrType;
+use xiao_runtime_abi::{ABI_ENCODED_VERSION, XIAOC_SUPPORTED_CONCURRENCY_FEATURES};
 
 /// `.xiaoc` 文件魔数：`XIAOC`、回车、换行和 DOS 文件结束标记。
 pub const XIAOC_MAGIC: [u8; 8] = *b"XIAOC\r\n\x1a";
@@ -38,7 +38,7 @@ pub const FILE_FLAG_EMBEDDED_LOCALE: u32 = 1 << 2;
 pub const SUPPORTED_FILE_FLAGS: u32 =
     FILE_FLAG_DEBUG_ACTIVE | FILE_FLAG_PLATFORM_CONSTRAINED | FILE_FLAG_EMBEDDED_LOCALE;
 /// 当前实现支持的必需功能位集合。
-pub const SUPPORTED_REQUIRED_FEATURES: u64 = SUPPORTED_CONCURRENCY_FEATURES;
+pub const SUPPORTED_REQUIRED_FEATURES: u64 = XIAOC_SUPPORTED_CONCURRENCY_FEATURES;
 /// 默认编码不声明并发能力；只在包含并发 Runtime 动作的产物中声明具体位。
 pub const DEFAULT_REQUIRED_FEATURES: u64 = 0;
 /// 目录和正文允许的最大分区数量。
@@ -297,6 +297,8 @@ pub struct XiaocOptions {
     pub debug_symbols: Option<Vec<u8>>,
     /// 可选的源码正文分区正文。
     pub source: Option<Vec<u8>>,
+    /// 除 TAC 类型推导要求外，调用方显式增加的 `.xiaoc` feature 位。
+    pub required_features: u64,
 }
 
 impl Default for XiaocOptions {
@@ -306,6 +308,7 @@ impl Default for XiaocOptions {
             header_extension: Vec::new(),
             debug_symbols: None,
             source: None,
+            required_features: 0,
         }
     }
 }
@@ -497,6 +500,12 @@ pub fn encode_xiaoc_with_options(
         },
     )
     .map_err(|error| XiaocError::InvalidInstructionStream(error.to_string()))?;
+    let required_features = options.required_features | required_features_for_program(program);
+    if required_features & !SUPPORTED_REQUIRED_FEATURES != 0 {
+        return Err(XiaocError::UnknownRequiredFeature(
+            (required_features & !SUPPORTED_REQUIRED_FEATURES).trailing_zeros() as u8,
+        ));
+    }
 
     let mut sections = vec![
         (
@@ -603,9 +612,9 @@ pub fn encode_xiaoc_with_options(
     put_u64(&mut header, directory_offset);
     put_u64(&mut header, directory_size);
     put_u64(&mut header, file_size);
-    put_u64(&mut header, DEFAULT_REQUIRED_FEATURES);
-    put_u32(&mut header, TAC_RUNTIME_ABI_VERSION);
-    put_u32(&mut header, TAC_RUNTIME_ABI_VERSION);
+    put_u64(&mut header, required_features);
+    put_u32(&mut header, ABI_ENCODED_VERSION as u32);
+    put_u32(&mut header, ABI_ENCODED_VERSION as u32);
     put_u32(&mut header, 0);
     put_u32(&mut header, options.header_extension.len() as u32);
     header.extend_from_slice(&options.header_extension);
@@ -642,6 +651,7 @@ pub fn encode_xiaoc_with_options(
 /// 解码并验证 `.xiaoc`；成功返回的文件可以安全交给 VM。
 pub fn decode_xiaoc(bytes: &[u8]) -> Result<XiaocFile, XiaocError> {
     let (header, entries) = parse_container(bytes)?;
+    validate_runtime_requirements(&header, ABI_ENCODED_VERSION, SUPPORTED_REQUIRED_FEATURES)?;
     let metadata_entry = required_entry(&entries, XiaocSectionKind::Metadata)?;
     let metadata = parse_metadata(&metadata_entry.data)?;
     if metadata_bytes(&metadata)? != metadata_entry.data {
@@ -660,19 +670,15 @@ pub fn decode_xiaoc(bytes: &[u8]) -> Result<XiaocFile, XiaocError> {
     let program = encoded
         .decode()
         .map_err(|error| XiaocError::InvalidInstructionStream(error.to_string()))?;
+    let inferred_features = required_features_for_program(&program);
+    let missing_features = inferred_features & !header.required_features;
+    if missing_features != 0 {
+        return Err(XiaocError::UnknownRequiredFeature(
+            missing_features.trailing_zeros() as u8,
+        ));
+    }
     validate_metadata_against_program(&metadata, &program)?;
     validate_table_sections(&entries, &metadata, &program, &encoded)?;
-    if program.abi.runtime_abi_version < header.runtime_abi_min
-        || program.abi.runtime_abi_version > header.runtime_abi_max
-    {
-        return Err(XiaocError::InvalidField {
-            field: "runtime_abi".to_owned(),
-            message: format!(
-                "程序 ABI {} 不在 {}..={} 区间",
-                program.abi.runtime_abi_version, header.runtime_abi_min, header.runtime_abi_max
-            ),
-        });
-    }
     if metadata.debug_active != (header.flags & FILE_FLAG_DEBUG_ACTIVE != 0) {
         return Err(XiaocError::InvalidMetadata(
             "调试激活位与文件标志不一致".to_owned(),
@@ -776,8 +782,8 @@ fn parse_container(bytes: &[u8]) -> Result<(XiaocHeader, Vec<XiaocSection>), Xia
             message: "含未定义位".to_owned(),
         });
     }
-    if !are_required_features_supported(required_features) {
-        let bit = required_features.trailing_zeros() as u8;
+    if required_features & !SUPPORTED_REQUIRED_FEATURES != 0 {
+        let bit = (required_features & !SUPPORTED_REQUIRED_FEATURES).trailing_zeros() as u8;
         return Err(XiaocError::UnknownRequiredFeature(bit));
     }
     if section_count > MAX_SECTION_COUNT {
@@ -1373,6 +1379,75 @@ fn types_bytes(program: &TacProgram) -> Result<Vec<u8>, XiaocError> {
     Ok(out)
 }
 
+/// 从已验证的签名类型推导 `.xiaoc` 并发 feature，避免并发类型标签绕过产物门禁。
+fn required_features_for_program(program: &TacProgram) -> u64 {
+    fn visit(ty: &IrType) -> u64 {
+        match ty {
+            IrType::Thread { value } => {
+                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_THREADS
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
+                    | visit(value)
+            }
+            IrType::Task { value } => {
+                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_TASK_POOL
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
+                    | visit(value)
+            }
+            IrType::Runtime => xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME,
+            IrType::Pool => {
+                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_TASK_POOL
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
+                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
+            }
+            IrType::Shared { value }
+            | IrType::SharedMut { value }
+            | IrType::LockGuard { value } => {
+                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SHARED_HANDLES | visit(value)
+            }
+            IrType::Function {
+                parameters,
+                return_type,
+            } => parameters
+                .iter()
+                .map(visit)
+                .fold(visit(return_type), |all, item| all | item),
+            IrType::Tuple { elements } => {
+                elements.iter().map(visit).fold(0, |all, item| all | item)
+            }
+            IrType::Array { shape } => match shape {
+                xiao_ir::IrArrayShape::Homogeneous { element, .. } => visit(element),
+                xiao_ir::IrArrayShape::Heterogeneous { elements } => {
+                    elements.iter().map(visit).fold(0, |all, item| all | item)
+                }
+                xiao_ir::IrArrayShape::Unknown => 0,
+            },
+            IrType::DictTable { entries } | IrType::DictColumn { entries } => entries
+                .iter()
+                .map(|entry| visit(&entry.value))
+                .fold(0, |all, item| all | item),
+            IrType::Set { members, .. } => {
+                members.iter().map(visit).fold(0, |all, item| all | item)
+            }
+            _ => 0,
+        }
+    }
+
+    program
+        .signatures
+        .iter()
+        .flat_map(|signature| {
+            signature
+                .parameter_types
+                .iter()
+                .chain(std::iter::once(&signature.return_type))
+        })
+        .map(visit)
+        .fold(0, |all, item| all | item)
+}
+
 fn constants_bytes(program: &TacProgram) -> Result<Vec<u8>, XiaocError> {
     let mut out = Vec::new();
     put_u32(&mut out, program.constants.len() as u32);
@@ -1646,7 +1721,7 @@ mod tests {
             version: crate::TAC_VERSION,
             abi: TacAbi {
                 bytecode_abi_version: TAC_BYTECODE_ABI_VERSION,
-                runtime_abi_version: TAC_RUNTIME_ABI_VERSION,
+                runtime_abi_version: crate::TAC_RUNTIME_ABI_VERSION,
                 ir_version: 1,
                 language_version: "0.1.0".to_owned(),
                 target: "portable".to_owned(),
@@ -1719,7 +1794,7 @@ mod tests {
             directory_offset: 0,
             directory_size: 0,
             file_size: 0,
-            required_features: xiao_runtime_abi::REQUIRED_FEATURE_THREADS,
+            required_features: xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_THREADS,
             runtime_abi_min: xiao_runtime_abi::ABI_ENCODED_VERSION as u32,
             runtime_abi_max: xiao_runtime_abi::ABI_ENCODED_VERSION as u32,
             extension: Vec::new(),
@@ -1728,7 +1803,7 @@ mod tests {
             validate_runtime_requirements(
                 &header,
                 xiao_runtime_abi::ABI_ENCODED_VERSION,
-                xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES,
+                xiao_runtime_abi::XIAOC_SUPPORTED_CONCURRENCY_FEATURES,
             )
             .is_ok()
         );
@@ -1736,7 +1811,7 @@ mod tests {
             validate_runtime_requirements(
                 &header,
                 xiao_runtime_abi::encoded_abi_version(1, 16),
-                xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES,
+                xiao_runtime_abi::XIAOC_SUPPORTED_CONCURRENCY_FEATURES,
             )
             .is_err()
         );
@@ -1744,5 +1819,31 @@ mod tests {
             validate_runtime_requirements(&header, xiao_runtime_abi::ABI_ENCODED_VERSION, 0)
                 .is_err()
         );
+    }
+
+    #[test]
+    fn inferred_concurrency_types_require_abi_features_before_vm_load() {
+        let mut program = empty_program();
+        program.signatures.intern(crate::CallSig::plain(
+            Vec::new(),
+            IrType::thread(IrType::None),
+        ));
+        let bytes = encode_xiaoc(&program, XiaocMetadata::default()).unwrap();
+        let file = decode_xiaoc(&bytes).unwrap();
+        let expected = xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_THREADS
+            | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
+            | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT;
+        assert_eq!(file.header.required_features, expected);
+        assert_eq!(
+            file.header.runtime_abi_min as u64,
+            xiao_runtime_abi::ABI_ENCODED_VERSION
+        );
+
+        let mut missing_feature = bytes;
+        missing_feature[48..56].copy_from_slice(&0_u64.to_le_bytes());
+        assert!(matches!(
+            decode_xiaoc(&missing_feature),
+            Err(XiaocError::UnknownRequiredFeature(0))
+        ));
     }
 }

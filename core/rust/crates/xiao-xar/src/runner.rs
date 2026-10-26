@@ -18,6 +18,8 @@ use super::{
 pub struct XarRunOptions {
     /// 当前宿主支持的 Runtime ABI 编码。
     pub runtime_abi: u64,
+    /// 当前宿主支持的归档必需功能位；bit 0 保留给索引要求身份。
+    pub runtime_features: u64,
     /// 当前宿主目标三元组；空字符串表示调用方暂不施加平台筛选。
     pub platform: String,
     /// 调用方显式指定的语言；为空时采用归档索引默认值。
@@ -36,6 +38,8 @@ impl Default for XarRunOptions {
     fn default() -> Self {
         Self {
             runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
+            runtime_features: xiao_artifacts::ARCHIVE_REQUIRED_FEATURES
+                | xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES,
             platform: String::new(),
             language_locale: None,
             vm_options: xiao_vm::VmOptions::default(),
@@ -479,6 +483,26 @@ fn validate_requirements(
     index: &xiao_artifacts::ArchiveIndex,
     options: &XarRunOptions,
 ) -> Result<(), XarRunError> {
+    if index.required_features & !xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES != 0 {
+        return Err(XarRunError::InvalidRequirements(format!(
+            "归档含未知 required-feature 位 {:#x}",
+            index.required_features & !xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES
+        )));
+    }
+    let supported_features = xiao_artifacts::ARCHIVE_REQUIRED_FEATURES
+        | xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES;
+    if options.runtime_features & !supported_features != 0 {
+        return Err(XarRunError::InvalidRequirements(format!(
+            "Runtime 声明未知 feature 位 {:#x}",
+            options.runtime_features & !supported_features
+        )));
+    }
+    let missing_features = index.required_features & !options.runtime_features;
+    if missing_features != 0 {
+        return Err(XarRunError::VersionIncompatible(format!(
+            "Runtime 缺少归档要求的 feature 位 {missing_features:#x}"
+        )));
+    }
     validate_capability_mask(index.required_capabilities)
         .map_err(|error| XarRunError::InvalidRequirements(error.to_string()))?;
     validate_capability_mask(options.capabilities)

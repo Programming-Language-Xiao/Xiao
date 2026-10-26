@@ -1271,6 +1271,8 @@ pub struct ArchiveIndex {
     pub stdlib_modules: Vec<String>,
     /// 运行所需能力位，仅允许冻结的 bit 0–6。
     pub required_capabilities: u64,
+    /// 归档必需功能位；bit 0 是 archive_requirements，并发位从 bit 1 起。
+    pub required_features: u64,
 }
 
 /// 全局缓存索引中的构建引用记录。
@@ -1327,7 +1329,11 @@ impl ArchiveIndex {
             put_bytes_field(&mut output, 4, &encode_archive_entry(&entry)?);
         }
         put_varint_field(&mut output, 5, u64::from(ARCHIVE_INDEX_RECORD_TYPE));
-        put_varint_field(&mut output, 6, ARCHIVE_REQUIRED_FEATURES);
+        put_varint_field(
+            &mut output,
+            6,
+            ARCHIVE_REQUIREMENTS_FEATURE | self.required_features,
+        );
         if !self.dependency_lock_digest.is_empty() {
             put_bytes_field(&mut output, 7, self.dependency_lock_digest.as_bytes());
         }
@@ -1374,6 +1380,7 @@ impl ArchiveIndex {
             language_version: String::new(),
             stdlib_modules: Vec::new(),
             required_capabilities: 0,
+            required_features: 0,
         };
         let mut record_type = None;
         let mut required_features = INDEX_REQUIRED_FEATURES;
@@ -1420,11 +1427,19 @@ impl ArchiveIndex {
         if record_type != Some(ARCHIVE_INDEX_RECORD_TYPE) {
             return Err(ArtifactError::Index("归档索引记录类型不匹配".to_owned()));
         }
-        if required_features != ARCHIVE_REQUIRED_FEATURES {
+        if required_features & ARCHIVE_REQUIREMENTS_FEATURE == 0 {
             return Err(ArtifactError::ArchiveVersionIncompatible(format!(
-                "归档必需特性为 {required_features:#x}，当前要求 {ARCHIVE_REQUIRED_FEATURES:#x}"
+                "归档必需特性 {required_features:#x} 缺少 archive_requirements 位"
             )));
         }
+        let concurrency_features = required_features & !ARCHIVE_REQUIREMENTS_FEATURE;
+        if concurrency_features & !xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES != 0 {
+            return Err(ArtifactError::InvalidArchiveRequirements(format!(
+                "归档含未知 required-feature 位 {:#x}",
+                concurrency_features & !xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES
+            )));
+        }
+        index.required_features = concurrency_features;
         if !has_capabilities {
             return Err(ArtifactError::ArchiveVersionIncompatible(
                 "归档缺少能力要求字段".to_owned(),
@@ -1575,6 +1590,16 @@ fn validate_archive_index(index: &ArchiveIndex) -> Result<(), ArtifactError> {
     }
     xiao_intrinsics::validate_capability_mask(index.required_capabilities)
         .map_err(|error| ArtifactError::InvalidArchiveRequirements(error.to_string()))?;
+    if index.required_features & ARCHIVE_REQUIREMENTS_FEATURE != 0
+        || index.required_features & !xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES != 0
+    {
+        return Err(ArtifactError::InvalidArchiveRequirements(format!(
+            "归档含保留或未知 required-feature 位 {:#x}",
+            index.required_features
+                & (ARCHIVE_REQUIREMENTS_FEATURE
+                    | !xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES)
+        )));
+    }
     for module in &index.stdlib_modules {
         if !module.starts_with("stdlib.")
             || module["stdlib.".len()..]

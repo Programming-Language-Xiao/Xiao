@@ -56,8 +56,8 @@ fn seed_archive() -> Vec<u8> {
         }],
         dependency_lock_digest: "0000000000000000000000000000000000000000000000000000000000000000"
             .to_owned(),
-        runtime_abi_min: 1,
-        runtime_abi_max: 1,
+        runtime_abi_min: xiao_runtime_abi::ABI_ENCODED_VERSION,
+        runtime_abi_max: xiao_runtime_abi::ABI_ENCODED_VERSION,
         platform: "portable".to_owned(),
         debug_activation: false,
         language_locale: "zh-CN".to_owned(),
@@ -65,6 +65,7 @@ fn seed_archive() -> Vec<u8> {
         language_version: "0.1.0".to_owned(),
         stdlib_modules: Vec::new(),
         required_capabilities: 0,
+        required_features: 0,
     };
     encode_xar(&index, std::slice::from_ref(&object)).expect("固定归档应可编码")
 }

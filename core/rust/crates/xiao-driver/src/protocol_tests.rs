@@ -343,8 +343,8 @@ fn cache_clean_protocol_reads_archive_references() {
                 length: protected.length,
             }],
             dependency_lock_digest: "0".repeat(64),
-            runtime_abi_min: 1,
-            runtime_abi_max: 1,
+            runtime_abi_min: xiao_runtime_abi::ABI_ENCODED_VERSION,
+            runtime_abi_max: xiao_runtime_abi::ABI_ENCODED_VERSION,
             platform: String::new(),
             debug_activation: false,
             language_locale: "zh-CN".to_owned(),
@@ -352,6 +352,7 @@ fn cache_clean_protocol_reads_archive_references() {
             language_version: "0.1.0".to_owned(),
             stdlib_modules: Vec::new(),
             required_capabilities: 0,
+            required_features: 0,
         };
         let archive_bytes = encode_xar(
             &index,

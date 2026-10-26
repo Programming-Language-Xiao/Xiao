@@ -32,8 +32,9 @@ pub mod value;
 
 /// 重导出 22C 共享句柄和 Runtime 身份基础。
 pub use concurrency::{
-    RuntimeRegistry, SHARED_LOCKED, SHARED_WAITERS, SharedGuard, SharedHandle, SharedHandleError,
-    SharedHeader, SharedLockCancelled, SharedTag, SharedWeakHandle, global_runtime_registry,
+    LockCancellation, RuntimeRegistry, SHARED_LOCKED, SHARED_WAITERS, SharedGuard, SharedHandle,
+    SharedHandleError, SharedHeader, SharedLockError, SharedTag, SharedWeakHandle,
+    global_runtime_registry,
 };
 /// 重导出容器句柄、字典形态和可哈希判定。
 pub use containers::{ArrayHandle, DictHandle, DictKind, SetHandle, TupleHandle, is_hashable};

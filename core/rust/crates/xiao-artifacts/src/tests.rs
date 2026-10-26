@@ -211,6 +211,7 @@ fn seeded_index_mutations_never_panic_and_are_rejected_without_io_errors() {
         language_version: "0.1.0".to_owned(),
         stdlib_modules: Vec::new(),
         required_capabilities: 0,
+        required_features: 0,
     };
     let global = GlobalIndex {
         schema_major: INDEX_SCHEMA_MAJOR,
@@ -338,6 +339,7 @@ fn indexes_round_trip_deterministically_and_reject_unknown_major() {
         language_version: "0.1.0".to_owned(),
         stdlib_modules: Vec::new(),
         required_capabilities: 0,
+        required_features: 0,
     };
     assert_eq!(
         ArchiveIndex::decode(&archive.encode().unwrap()).unwrap(),
@@ -388,16 +390,13 @@ fn archive_index_rejects_unknown_required_features() {
         language_version: "0.1.0".to_owned(),
         stdlib_modules: Vec::new(),
         required_capabilities: 0,
+        required_features: 0,
     };
-    let mut bytes = index.encode().unwrap();
-    let feature = bytes
-        .windows(2)
-        .position(|window| window == [0x30, ARCHIVE_REQUIRED_FEATURES as u8])
-        .expect("必需能力字段");
-    bytes[feature + 1] |= 2;
+    let mut bytes = without_archive_field(&index.encode().unwrap(), 6);
+    put_varint_field(&mut bytes, 6, ARCHIVE_REQUIREMENTS_FEATURE | (1 << 7));
     assert!(matches!(
         ArchiveIndex::decode(&bytes),
-        Err(ArtifactError::ArchiveVersionIncompatible(_))
+        Err(ArtifactError::InvalidArchiveRequirements(_))
     ));
 }
 
@@ -419,6 +418,7 @@ fn archive_index_extended_metadata_round_trips_without_changing_old_fields() {
         language_version: "0.1.0".to_owned(),
         stdlib_modules: Vec::new(),
         required_capabilities: 0,
+        required_features: 0,
     };
     assert_eq!(
         ArchiveIndex::decode(&index.encode().unwrap()).unwrap(),
@@ -443,6 +443,7 @@ fn requirements_index() -> ArchiveIndex {
         language_version: "0.1.0".to_owned(),
         stdlib_modules: Vec::new(),
         required_capabilities: 0,
+        required_features: 0,
     }
 }
 
@@ -467,6 +468,7 @@ fn without_archive_field(bytes: &[u8], omitted: u32) -> Vec<u8> {
 /// 新字段往返、模块排序去重与重复编码均稳定；零能力字段也必须存在。
 fn archive_requirements_round_trip_is_canonical() {
     let mut index = requirements_index();
+    index.required_features = xiao_runtime_abi::REQUIRED_FEATURE_THREADS;
     index.stdlib_modules = vec![
         "stdlib.text".to_owned(),
         "stdlib.os".to_owned(),
@@ -480,6 +482,10 @@ fn archive_requirements_round_trip_is_canonical() {
     assert_eq!(decoded.encode().unwrap(), bytes);
     assert!(matches!(
         ArchiveIndex::decode(&without_archive_field(&bytes, 16)),
+        Err(ArtifactError::ArchiveVersionIncompatible(_))
+    ));
+    assert!(matches!(
+        ArchiveIndex::decode(&without_archive_field(&bytes, 6)),
         Err(ArtifactError::ArchiveVersionIncompatible(_))
     ));
 }
@@ -570,6 +576,13 @@ fn archive_rejects_unknown_capabilities_and_overflowing_interface_version() {
         ArchiveIndex::decode(&raw),
         Err(ArtifactError::InvalidArchiveRequirements(_))
     ));
+
+    let mut features = requirements_index();
+    features.required_features = 1 << 7;
+    assert!(matches!(
+        features.encode(),
+        Err(ArtifactError::InvalidArchiveRequirements(_))
+    ));
 }
 
 #[test]
@@ -630,6 +643,7 @@ fn indexes_remain_readable_while_their_write_locks_are_held() {
         language_version: "0.1.0".to_owned(),
         stdlib_modules: Vec::new(),
         required_capabilities: 0,
+        required_features: 0,
     };
     store.write_archive(&archive_path, &archive).unwrap();
 
@@ -833,6 +847,7 @@ fn cleanup_archive_reference_protects_its_object() {
         language_version: "0.1.0".to_owned(),
         stdlib_modules: Vec::new(),
         required_capabilities: 0,
+        required_features: 0,
     };
     index_store.write_archive(&archive_path, &archive).unwrap();
     let references = store

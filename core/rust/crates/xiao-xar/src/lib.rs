@@ -501,6 +501,7 @@ pub fn prepare_xiaoc_for_archive(
             // 可选正文改由归档中的独立对象承载；`.xiaoc` 始终只保留紧凑映射。
             debug_symbols: None,
             source: None,
+            required_features: file.header.required_features,
         },
     )
     .map_err(|error| XarError::InvalidMember(format!("`.xiaoc` 重建失败：{error}")))?;
@@ -520,6 +521,9 @@ pub fn append_xiaoc_entries(
     options: DiagnosticObjectOptions,
 ) -> Result<Vec<XarObject>, XarError> {
     validate_logical_path(logical_path)?;
+    let file = xiao_bytecode::decode_xiaoc(xiaoc_bytes)
+        .map_err(|error| XarError::InvalidMember(format!("`.xiaoc` 校验失败：{error}")))?;
+    index.required_features |= file.header.required_features << 1;
     let prepared = prepare_xiaoc_for_archive(xiaoc_bytes, options)?;
     let diagnostic = collect_diagnostic_objects(xiaoc_bytes, options)?;
     let xiaoc = XarObject::from_bytes(ObjectKind::Xiaoc, prepared);
@@ -1166,7 +1170,7 @@ fn encode_with_options(
             return Err(XarError::SizeLimit("对象过大".to_owned()));
         }
         if object.kind == ObjectKind::Xiaoc {
-            validate_archive_xiaoc(index, &object.bytes)?;
+            validate_archive_xiaoc(index, &object.bytes, false)?;
         }
         let key = (object.kind, object.digest);
         if object_map.insert(key, object).is_some() {
@@ -1306,7 +1310,7 @@ fn validate_members_against_index(archive: &XarArchive) -> Result<(), XarError> 
             });
         }
         if entry.object_kind == ObjectKind::Xiaoc {
-            validate_archive_xiaoc(&archive.index, &bytes)?;
+            validate_archive_xiaoc(&archive.index, &bytes, true)?;
         }
         referenced.insert(member.path.clone());
     }
@@ -1325,9 +1329,35 @@ fn validate_members_against_index(archive: &XarArchive) -> Result<(), XarError> 
 }
 
 /// 编码与解码共用载荷契约，防止索引伪装语言版本或绕过调试对象边界。
-fn validate_archive_xiaoc(index: &ArchiveIndex, bytes: &[u8]) -> Result<(), XarError> {
+fn validate_archive_xiaoc(
+    index: &ArchiveIndex,
+    bytes: &[u8],
+    check_runtime_abi: bool,
+) -> Result<(), XarError> {
     let file = xiao_bytecode::decode_xiaoc(bytes)
         .map_err(|error| XarError::InvalidMember(format!("`.xiaoc` 校验失败：{error}")))?;
+    if check_runtime_abi {
+        let payload_features = file.header.required_features << 1;
+        let missing_features = payload_features & !index.required_features;
+        if missing_features != 0 {
+            return Err(ArtifactError::ArchiveVersionIncompatible(format!(
+                "归档索引缺少 `.xiaoc` 并发 feature 位 {missing_features:#x}"
+            ))
+            .into());
+        }
+        if (file.header.runtime_abi_min as u64) > index.runtime_abi_max
+            || (file.header.runtime_abi_max as u64) < index.runtime_abi_min
+        {
+            return Err(ArtifactError::ArchiveVersionIncompatible(format!(
+                "归档 Runtime ABI {}..={} 与载荷要求 {}..={} 不兼容",
+                index.runtime_abi_min,
+                index.runtime_abi_max,
+                file.header.runtime_abi_min,
+                file.header.runtime_abi_max
+            ))
+            .into());
+        }
+    }
     if file.metadata.language_version != index.language_version {
         return Err(ArtifactError::ArchiveVersionIncompatible(format!(
             "归档语言版本：期望 {}，载荷实际 {}（模块 {}）",

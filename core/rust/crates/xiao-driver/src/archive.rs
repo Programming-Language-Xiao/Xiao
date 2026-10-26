@@ -285,6 +285,7 @@ pub fn build_archive(
         language_version: identity.language_version.clone(),
         stdlib_modules: Vec::new(),
         required_capabilities: 0,
+        required_features: 0,
     })
     .with_requirements(&identity, closure.stdlib_modules, closure.intrinsics)
     .map_err(xar_failure)?;

@@ -458,6 +458,8 @@ fn run_archive_request_response_inner(
     };
     let mut xar_options = XarRunOptions {
         runtime_abi: xiao_runtime_abi::ABI_ENCODED_VERSION,
+        runtime_features: xiao_artifacts::ARCHIVE_REQUIRED_FEATURES
+            | xiao_runtime_abi::SUPPORTED_CONCURRENCY_FEATURES,
         platform: ProtocolTarget::host().triple,
         language_locale: locale.clone(),
         vm_options,
