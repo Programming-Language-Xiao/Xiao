@@ -289,6 +289,12 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
 固定 worker 加无界非阻塞队列，持续积压的内存风险留给后续维护批增加可观测上限、背压或
 丢弃策略。
 
+**22C Runtime owner 补充**：Runtime owner 只按直接创建关系记录。A 创建 B、B 创建 C
+时，A 可操作 B，A 不因传递关系获得 C 的权限；关闭 B 不递归关闭 C。活动上下文对其他
+Runtime 的 `close`/`spawn` 使用返回 `X06-RUNTIME-031`；语言层 `runtime_close` 报告该
+错误，Rust/VM 内部使用 `try_close()`，兼容旧 `close()` 入口在拒绝时保持 no-op。详见
+[22C Runtime/ABI/VM](22c-concurrency-runtime-abi-vm.md)。
+
 ## 五、本批要做的事
 
 1. **改 22A 契约**：已更新 [22A](22a-concurrency-freeze.md) §2.2、§2.6、§2.8，并追加

@@ -374,6 +374,13 @@ magic 固定为 ASCII `XCON`（`58 43 4f 4e`），版本为 `0x0001`，保留字
 使用无界发送队列。长时间持续积压会增加排队闭包的内存占用；后续维护批必须加入可观测
 队列长度以及上限、背压或丢弃策略，不能把增长风险隐藏成静默行为。
 
+**22C Runtime owner 补充**（实现层，不改 22A API 形状）：Runtime A 的执行单元创建
+Runtime B 时，B 的直接 owner 是 A；B 再创建 Runtime C 时，C 的直接 owner 是 B。A 可以
+操作 B，但不能因为传递关系直接操作 C；关闭 B 也不会递归关闭 C。活动上下文对其他
+Runtime 的 `close`/`spawn` 使用报告 `X06-RUNTIME-031`；语言层 `runtime_close` 仍返回
+`none` 并报告该运行时错误，Rust/VM 内部使用 `try_close()` 观察拒绝，兼容旧 `close()`
+入口在拒绝时保持 no-op。实现细节见 [22C](22c-concurrency-runtime-abi-vm.md)。
+
 ## 三、测量任务
 
 ### 3.1 跨平台布局/成本
