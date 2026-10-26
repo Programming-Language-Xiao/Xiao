@@ -72,6 +72,7 @@ fn current_runtime_context() -> Option<u64> {
 pub struct RuntimeHandle {
     id: u64,
     inner: Arc<RuntimeInner>,
+    owner_runtime_id: Option<u64>,
 }
 
 #[derive(Debug)]
@@ -167,6 +168,7 @@ impl RuntimeHandle {
         let id = global_runtime_registry()
             .register(label)
             .expect("Runtime 静态标签应有效");
+        let owner_runtime_id = current_runtime_context();
         let inner = Arc::new(RuntimeInner {
             closed: AtomicBool::new(false),
             active: Mutex::new(0),
@@ -176,7 +178,11 @@ impl RuntimeHandle {
             active_threads: Mutex::new(HashMap::new()),
             closing_threads: Mutex::new(HashMap::new()),
         });
-        Self { id, inner }
+        Self {
+            id,
+            inner,
+            owner_runtime_id,
+        }
     }
 
     /// 返回实际 Runtime ID。
@@ -192,7 +198,31 @@ impl RuntimeHandle {
     }
 
     /// 幂等关闭 Runtime；旧别名可观察相同关闭状态。
+    ///
+    /// 活动 Runtime 上下文只能关闭自身 Runtime，或关闭由该上下文创建的
+    /// 子 Runtime；跨 Runtime 调用被拒绝且保持原有无返回值兼容。
     pub fn close(&self) {
+        if self.context_allows_current() {
+            self.close_inner();
+        }
+    }
+
+    /// 关闭 Runtime 并显式返回跨 Runtime 上下文拒绝。
+    pub fn try_close(&self) -> Result<(), RuntimeExecError> {
+        if !self.context_allows_current() {
+            return Err(RuntimeExecError::RuntimeClosed);
+        }
+        self.close_inner();
+        Ok(())
+    }
+
+    fn context_allows_current(&self) -> bool {
+        current_runtime_context().is_none_or(|current_runtime_id| {
+            current_runtime_id == self.id || self.owner_runtime_id == Some(current_runtime_id)
+        })
+    }
+
+    fn close_inner(&self) {
         let closing_guard = self.enter_current_thread_closing();
         let current_active = closing_guard.as_ref().map_or(0, |guard| guard.count);
         let role = {
@@ -507,6 +537,9 @@ where
     T: Send + 'static,
     F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
 {
+    if !runtime.context_allows_current() {
+        return Err(RuntimeExecError::RuntimeClosed);
+    }
     let activity = runtime.begin_activity()?;
     let cancellation = RuntimeCancellation::default();
     let child_token = cancellation.clone();
@@ -613,7 +646,7 @@ impl TaskPool {
         if !(1..=256).contains(&capacity) {
             return Err(RuntimeExecError::PoolArgument);
         }
-        if current_runtime_context().is_some_and(|runtime_id| runtime_id != runtime.id) {
+        if !runtime.context_allows_current() {
             return Err(RuntimeExecError::RuntimeClosed);
         }
         let (sender, receiver) = mpsc::sync_channel::<PoolMessage>(capacity);
@@ -685,7 +718,7 @@ impl TaskPool {
         T: Send + 'static,
         F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
     {
-        if current_runtime_context().is_some_and(|runtime_id| runtime_id != self.runtime.id) {
+        if !self.runtime.context_allows_current() {
             return Err(RuntimeExecError::RuntimeClosed);
         }
         let activity = self.runtime.begin_activity()?;
@@ -765,7 +798,7 @@ impl TaskPool {
         if self.runtime.is_closed() {
             return Err(RuntimeExecError::RuntimeClosed);
         }
-        if current_runtime_context().is_some_and(|runtime_id| runtime_id != self.runtime.id) {
+        if !self.runtime.context_allows_current() {
             return Err(RuntimeExecError::RuntimeClosed);
         }
         let _closing_guard = self.runtime.enter_current_thread_closing();
@@ -1136,6 +1169,50 @@ mod tests {
         pool_b.shutdown().expect("pool B shutdown");
         runtime_a.close();
         runtime_b.close();
+    }
+
+    #[test]
+    /// Runtime worker 不能跨 Runtime close 或 spawn；两者都返回 031。
+    fn cross_runtime_runtime_close_and_spawn_are_rejected() {
+        let runtime_a = RuntimeHandle::create();
+        let runtime_b = RuntimeHandle::create();
+        let pool_a = TaskPool::create(runtime_a.clone(), 1).expect("pool A");
+        let target_runtime = runtime_b.clone();
+        let task = pool_a
+            .submit(move |_| {
+                let close_rejected = target_runtime.try_close().is_err();
+                let spawn_rejected = spawn(&target_runtime, |_| 1_u32).is_err();
+                (close_rejected, spawn_rejected)
+            })
+            .expect("跨 Runtime Runtime 负例任务");
+
+        assert_eq!(task.wait(), Ok((true, true)));
+        assert!(!runtime_b.is_closed());
+        pool_a.shutdown().expect("pool A shutdown");
+        runtime_a.close();
+        runtime_b.close();
+    }
+
+    #[test]
+    /// Runtime 任务创建的子 Runtime 可在 owner 上下文中创建 pool 并执行任务。
+    fn task_owned_runtime_can_create_pool_and_spawn() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("parent pool");
+        let task = pool
+            .submit(move |_| {
+                let child = RuntimeHandle::create();
+                let child_pool = TaskPool::create(child.clone(), 1).expect("child pool");
+                let child_task = child_pool.submit(|_| 42_u32).expect("child task");
+                let child_thread = spawn(&child, |_| 7_u32).expect("child thread");
+                let values = (child_task.wait().expect("child wait"), child_thread.join());
+                child.try_close().expect("child close");
+                (values, child.is_closed())
+            })
+            .expect("owner task");
+
+        assert_eq!(task.wait(), Ok(((42, Ok(7)), true)));
+        pool.shutdown().expect("parent pool shutdown");
+        runtime.close();
     }
 
     #[test]
