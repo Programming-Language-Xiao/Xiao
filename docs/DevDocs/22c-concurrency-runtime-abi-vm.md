@@ -101,7 +101,13 @@
 ### D-3（线程/任务池/多 Runtime 后端）
 
 - OS 线程使用 `std::thread`；固定容量任务池；Runtime 注册表；重入安全的关闭 drain；detach 错误通道；
-- 满队列提交提供可取消背压，池关闭和 Runtime 关闭分别保持 030/031；detached reaper 不串行阻塞；
+- Runtime 关闭选出唯一 drain owner；活动 closer 只登记 closing activity 后返回，owner 只等待仍未进入关闭路径的 activity，
+  因而两个活动 closer、pool `shutdown` 与 Runtime `close` 交叉时不会互相 join；池在当前 worker 关闭时用 drain helper
+  接管排队消息，仍等待已经接纳的 activity；
+- 满队列提交提供可取消背压，池关闭和 Runtime 关闭分别保持 030/031；detached reaper 使用固定四个 worker 和无界发送队列，
+  `detach` 不因回收 worker 暂时繁忙而阻塞；
+- 普通 `submit` 在 Runtime worker 内继承当前取消上下文；入口线程或其他无上下文调用方使用 `submit_with_cancel` 获得提交前取消入口，
+  普通 `submit` 的等待仍可由 Runtime/pool 关闭终止并返回关闭错误；
 - 线程/Runtime 关闭顺序：停止接纳 → drain/等待 → 释放边界值 → 汇总主/suppressed；
 - pool worker 迁移符合 22B `submit` 的双边界事实；
 - 不为每个 Runtime 启动不必要的线程；多 Runtime 并行必须可观测 ID。
@@ -150,6 +156,8 @@
 - 强弱计数并发、弱升级失败/成功、最后释放恰好一次；
 - 锁等待/取消/唤醒，无死锁；
 - 普通 `StrongHandle`/`WeakHandle` 仍为单线程边界。
+- Runtime 双活动 closer、pool `shutdown` 与 Runtime `close` 交叉、活动 closer 的排队任务，
+  以及单 worker drain helper 均有超时回归；无上下文普通 `submit` 的关闭终止路径和 detached 回收队列不阻塞路径也有回归。
 
 ### 6.2 VM 端到端
 
@@ -164,6 +172,7 @@
 
 - ABI 1.17 + feature 位在 `.xiaoc`/`.xar` 执行前检查；
 - 旧 Runtime/旧归档拒绝稳定；
+- `.xar` 执行前使用实际 `runtime_features` 拒绝缺失 required-feature，入口载荷不会先被执行或解码；
 - 字节码类型标签 12–19 不会绕过门禁。
 
 ### 6.4 门禁

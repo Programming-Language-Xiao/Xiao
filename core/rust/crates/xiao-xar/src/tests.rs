@@ -508,6 +508,25 @@ fn archive_runner_checks_runtime_before_entry_execution() {
 }
 
 #[test]
+/// `.xar` 入口执行前必须用实际 Runtime feature 集拒绝缺失并发能力。
+fn archive_runner_rejects_missing_runtime_features_before_entry_execution() {
+    let object = XarObject::from_bytes(ObjectKind::Xiaoc, b"invalid xiaoc payload");
+    let mut index = review_index_for_xiaoc(&object);
+    index.required_features = xiao_runtime_abi::REQUIRED_FEATURE_THREADS;
+    let archive = raw_index_archive(&index.encode().unwrap(), &object);
+    let mut options = XarRunOptions::default();
+    options.runtime_features &= !xiao_runtime_abi::REQUIRED_FEATURE_THREADS;
+
+    let error = run_archive(&archive, options).unwrap_err();
+    assert_eq!(error.code(), ARCHIVE_VERSION_INCOMPATIBLE_CODE);
+    assert!(
+        error
+            .message()
+            .contains("Runtime 缺少归档要求的 feature 位")
+    );
+}
+
+#[test]
 fn archive_language_resolution_obeys_default_override_and_fallback() {
     let archive_default = resolve_language_locale("en-US", None);
     assert_eq!(archive_default.effective, "en-US");

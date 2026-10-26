@@ -57,14 +57,48 @@ struct RuntimeInner {
     closed: AtomicBool,
     active: Mutex<usize>,
     drained: Condvar,
-    close_gate: Mutex<()>,
+    close_gate: Mutex<RuntimeCloseState>,
     pools: Mutex<Vec<Weak<PoolInner>>>,
     active_threads: Mutex<HashMap<thread::ThreadId, usize>>,
+    closing_threads: Mutex<HashMap<thread::ThreadId, usize>>,
+}
+
+#[derive(Debug, Default)]
+struct RuntimeCloseState {
+    draining: bool,
+    finished: bool,
+}
+
+enum CloseRole {
+    Owner(Vec<Arc<PoolInner>>),
+    ActiveFollower,
+    PassiveFollower,
+    Finished,
 }
 
 struct ActivityLease {
     runtime: Arc<RuntimeInner>,
     running_thread: Option<thread::ThreadId>,
+}
+
+struct ClosingActivityGuard {
+    runtime: Arc<RuntimeInner>,
+    thread_id: thread::ThreadId,
+    count: usize,
+}
+
+impl Drop for ClosingActivityGuard {
+    fn drop(&mut self) {
+        if let Ok(mut closing) = self.runtime.closing_threads.lock()
+            && let Some(count) = closing.get_mut(&self.thread_id)
+        {
+            *count = count.saturating_sub(self.count);
+            if *count == 0 {
+                closing.remove(&self.thread_id);
+            }
+            self.runtime.drained.notify_all();
+        }
+    }
 }
 
 impl ActivityLease {
@@ -115,9 +149,10 @@ impl RuntimeHandle {
             closed: AtomicBool::new(false),
             active: Mutex::new(0),
             drained: Condvar::new(),
-            close_gate: Mutex::new(()),
+            close_gate: Mutex::new(RuntimeCloseState::default()),
             pools: Mutex::new(Vec::new()),
             active_threads: Mutex::new(HashMap::new()),
+            closing_threads: Mutex::new(HashMap::new()),
         });
         Self { id, inner }
     }
@@ -136,73 +171,118 @@ impl RuntimeHandle {
 
     /// 幂等关闭 Runtime；旧别名可观察相同关闭状态。
     pub fn close(&self) {
-        let pools = {
-            let Ok(_close_gate) = self.inner.close_gate.lock() else {
+        let closing_guard = self.enter_current_thread_closing();
+        let current_active = closing_guard.as_ref().map_or(0, |guard| guard.count);
+        let role = {
+            let Ok(mut close_state) = self.inner.close_gate.lock() else {
                 return;
             };
             if !self.inner.closed.swap(true, Ordering::AcqRel) {
+                close_state.draining = true;
+                close_state.finished = false;
                 global_runtime_registry().close(self.id);
+                let pools = self
+                    .inner
+                    .pools
+                    .lock()
+                    .map(|mut pools| {
+                        let live = pools.iter().filter_map(Weak::upgrade).collect::<Vec<_>>();
+                        pools.clear();
+                        live
+                    })
+                    .unwrap_or_default();
+                CloseRole::Owner(pools)
+            } else if close_state.draining {
+                // 活动执行单元不能等待另一个 close；它先返回并让自己的
+                // closing guard 释放后续 activity 等待。
+                if current_active != 0 {
+                    CloseRole::ActiveFollower
+                } else {
+                    CloseRole::PassiveFollower
+                }
+            } else {
+                CloseRole::Finished
             }
-            self.inner
-                .pools
-                .lock()
-                .map(|mut pools| {
-                    let live = pools.iter().filter_map(Weak::upgrade).collect::<Vec<_>>();
-                    pools.clear();
-                    live
-                })
-                .unwrap_or_default()
         };
-        for pool in pools {
-            TaskPool::shutdown_inner(&pool);
-        }
-        // 当前执行单元不能等待自己的 ActivityLease；让它返回并由外层
-        // close 调用或 lease Drop 完成最终 drain。
-        let current_active = self.current_thread_active_count();
-        if current_active != 0 {
-            self.wait_for_other_active(current_active);
-            return;
-        }
-        let Ok(mut active) = self.inner.active.lock() else {
-            return;
-        };
-        while *active != 0 {
-            let Ok(remaining) = self.inner.drained.wait(active) else {
-                return;
-            };
-            active = remaining;
+
+        match role {
+            CloseRole::Owner(pools) => {
+                for pool in pools {
+                    TaskPool::shutdown_inner(&pool);
+                }
+                self.wait_for_non_closing_active();
+                if let Ok(mut close_state) = self.inner.close_gate.lock() {
+                    close_state.draining = false;
+                    close_state.finished = true;
+                    self.inner.drained.notify_all();
+                }
+            }
+            CloseRole::ActiveFollower | CloseRole::Finished => {}
+            CloseRole::PassiveFollower => {
+                let Ok(mut close_state) = self.inner.close_gate.lock() else {
+                    return;
+                };
+                while close_state.draining && !close_state.finished {
+                    let Ok(remaining) = self
+                        .inner
+                        .drained
+                        .wait_timeout(close_state, Duration::from_millis(10))
+                    else {
+                        return;
+                    };
+                    close_state = remaining.0;
+                }
+            }
         }
     }
 
-    fn current_thread_active_count(&self) -> usize {
+    fn enter_current_thread_closing(&self) -> Option<ClosingActivityGuard> {
+        let thread_id = thread::current().id();
+        let Ok(threads) = self.inner.active_threads.lock() else {
+            return None;
+        };
+        let current_active = threads.get(&thread_id).copied().unwrap_or(0);
+        if current_active == 0 {
+            return None;
+        }
+        let Ok(mut closing) = self.inner.closing_threads.lock() else {
+            return None;
+        };
+        closing
+            .entry(thread_id)
+            .and_modify(|count| *count = count.saturating_add(current_active))
+            .or_insert(current_active);
+        Some(ClosingActivityGuard {
+            runtime: Arc::clone(&self.inner),
+            thread_id,
+            count: current_active,
+        })
+    }
+
+    fn closing_active_count(&self) -> usize {
         self.inner
-            .active_threads
+            .closing_threads
             .lock()
-            .ok()
-            .and_then(|threads| threads.get(&thread::current().id()).copied())
+            .map(|threads| threads.values().copied().sum())
             .unwrap_or(0)
     }
 
-    fn wait_for_other_active(&self, current_active: usize) {
-        let Ok(mut running) = self.inner.active_threads.lock() else {
+    fn wait_for_non_closing_active(&self) {
+        let Ok(mut active) = self.inner.active.lock() else {
             return;
         };
-        while running.values().copied().sum::<usize>() > current_active {
-            drop(running);
-            let Ok(active) = self.inner.active.lock() else {
+        loop {
+            if *active <= self.closing_active_count() {
                 return;
-            };
-            let Ok(_) = self
+            }
+            let Ok(remaining) = self
                 .inner
                 .drained
                 .wait_timeout(active, Duration::from_millis(10))
             else {
                 return;
             };
-            running = match self.inner.active_threads.lock() {
-                Ok(running) => running,
-                Err(_) => return,
-            };
+            active = remaining.0;
         }
     }
 
@@ -303,6 +383,8 @@ impl<T: 'static> ThreadHandle<T> {
     }
 
     /// 消费线程句柄并将失败送入进程级 detached 错误通道。
+    ///
+    /// 回收由固定 worker 池消费无界队列，发送不会因回收 worker 暂时繁忙而阻塞。
     pub fn detach(mut self) {
         if let Some(join) = self.join.take() {
             detached_reaper()
@@ -329,13 +411,13 @@ fn detached_errors() -> &'static Mutex<Vec<RuntimeExecError>> {
     ERRORS.get_or_init(|| Mutex::new(Vec::new()))
 }
 
-fn detached_reaper() -> &'static mpsc::SyncSender<Box<dyn FnOnce() + Send>> {
+fn detached_reaper() -> &'static mpsc::Sender<Box<dyn FnOnce() + Send>> {
     const DETACHED_JOIN_WORKERS: usize = 4;
-    const DETACHED_QUEUE_CAPACITY: usize = 256;
-    static REAPER: OnceLock<mpsc::SyncSender<Box<dyn FnOnce() + Send>>> = OnceLock::new();
+    static REAPER: OnceLock<mpsc::Sender<Box<dyn FnOnce() + Send>>> = OnceLock::new();
     REAPER.get_or_init(|| {
-        let (sender, receiver) =
-            mpsc::sync_channel::<Box<dyn FnOnce() + Send>>(DETACHED_QUEUE_CAPACITY);
+        // 固定 worker 消费无界消息队列，detach 本身不因回收队列暂时繁忙而阻塞。
+        // 每个 detached 任务仍只占一个排队闭包，不再为每个任务创建 OS 线程。
+        let (sender, receiver) = mpsc::channel::<Box<dyn FnOnce() + Send>>();
         let receiver = Arc::new(Mutex::new(receiver));
         for index in 0..DETACHED_JOIN_WORKERS {
             let receiver = Arc::clone(&receiver);
@@ -410,9 +492,36 @@ struct PoolMessage {
 /// 任务池共享内部状态。
 struct PoolInner {
     sender: Mutex<Option<SyncSender<PoolMessage>>>,
+    receiver: Arc<Mutex<mpsc::Receiver<PoolMessage>>>,
     workers: Mutex<Vec<JoinHandle<()>>>,
     closed: AtomicBool,
     shutdown_gate: Mutex<()>,
+    pending_submissions: Mutex<usize>,
+    submissions_drained: Condvar,
+}
+
+struct SubmissionLease {
+    inner: Arc<PoolInner>,
+}
+
+impl Drop for SubmissionLease {
+    fn drop(&mut self) {
+        if let Ok(mut pending) = self.inner.pending_submissions.lock() {
+            *pending = pending.saturating_sub(1);
+            self.inner.submissions_drained.notify_all();
+        }
+    }
+}
+
+impl PoolInner {
+    fn begin_submission(inner: &Arc<Self>) -> SubmissionLease {
+        if let Ok(mut pending) = inner.pending_submissions.lock() {
+            *pending = pending.saturating_add(1);
+        }
+        SubmissionLease {
+            inner: Arc::clone(inner),
+        }
+    }
 }
 
 /// 固定容量 Runtime 任务池。
@@ -471,9 +580,12 @@ impl TaskPool {
         }
         let inner = Arc::new(PoolInner {
             sender: Mutex::new(Some(sender)),
+            receiver: Arc::clone(&receiver),
             workers: Mutex::new(workers),
             closed: AtomicBool::new(false),
             shutdown_gate: Mutex::new(()),
+            pending_submissions: Mutex::new(0),
+            submissions_drained: Condvar::new(),
         });
         if let Err(error) = runtime.register_pool(&inner) {
             Self::shutdown_inner(&inner);
@@ -483,6 +595,11 @@ impl TaskPool {
     }
 
     /// 提交一个显式接收取消令牌的任务。
+    ///
+    /// 当前 Runtime worker 会自动继承其执行上下文的取消令牌。入口线程或
+    /// 其他没有上下文的调用方应使用 [`Self::submit_with_cancel`] 取得提交前
+    /// 的取消入口；普通 `submit` 在这种上下文下仍会在队列满时背压，但
+    /// Runtime/pool 关闭会让等待停止并返回对应关闭错误。
     pub fn submit<T, F>(&self, function: F) -> Result<TaskHandle<T>, RuntimeExecError>
     where
         T: Send + 'static,
@@ -505,6 +622,7 @@ impl TaskPool {
         F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
     {
         let activity = self.runtime.begin_activity()?;
+        let _submission = PoolInner::begin_submission(&self.inner);
         let child_token = cancellation.clone();
         let (sender, receiver) = mpsc::sync_channel(1);
         let message = PoolMessage {
@@ -578,6 +696,7 @@ impl TaskPool {
         if self.runtime.is_closed() {
             return Err(RuntimeExecError::RuntimeClosed);
         }
+        let _closing_guard = self.runtime.enter_current_thread_closing();
         Self::shutdown_inner(&self.inner);
         if self.runtime.is_closed() {
             Err(RuntimeExecError::RuntimeClosed)
@@ -603,14 +722,46 @@ impl TaskPool {
         if !should_join {
             return;
         }
+        if let Ok(mut pending) = inner.pending_submissions.lock() {
+            while *pending != 0 {
+                let Ok(remaining) = inner.submissions_drained.wait(pending) else {
+                    return;
+                };
+                pending = remaining;
+            }
+        }
+        let mut current_worker = false;
         if let Ok(mut workers) = inner.workers.lock() {
             for worker in workers.drain(..) {
                 if worker.thread().id() == thread::current().id() {
                     // 当前 worker 不能 join 自己；丢弃 JoinHandle 让它在
                     // 返回任务后自然结束，其他关闭者仍可观察 active drain。
+                    current_worker = true;
                     continue;
                 }
                 let _ = worker.join();
+            }
+        }
+        if current_worker {
+            let receiver = Arc::clone(&inner.receiver);
+            let drain = thread::Builder::new()
+                .name("xiao-pool-shutdown-drain".to_owned())
+                .spawn(move || {
+                    loop {
+                        let message = match receiver.lock() {
+                            Ok(receiver) => receiver.try_recv(),
+                            Err(_) => return,
+                        };
+                        match message {
+                            Ok(message) => (message.run)(),
+                            Err(mpsc::TryRecvError::Empty | mpsc::TryRecvError::Disconnected) => {
+                                break;
+                            }
+                        }
+                    }
+                });
+            if let Ok(drain) = drain {
+                let _ = drain.join();
             }
         }
     }
@@ -720,6 +871,89 @@ mod tests {
     }
 
     #[test]
+    /// 两个活动执行单元同时 close 时只有一个 Runtime drain owner，不能互相等待。
+    fn two_active_runtime_closers_do_not_deadlock() {
+        let runtime = RuntimeHandle::create();
+        let barrier = Arc::new(std::sync::Barrier::new(2));
+        let (done_tx, done_rx) = mpsc::channel();
+
+        let first_runtime = runtime.clone();
+        let first_barrier = Arc::clone(&barrier);
+        let first_done = done_tx.clone();
+        let first = spawn(&runtime, move |_| {
+            first_barrier.wait();
+            first_runtime.close();
+            first_done.send(()).unwrap();
+        })
+        .expect("first closer");
+
+        let second_runtime = runtime.clone();
+        let second_barrier = Arc::clone(&barrier);
+        let second_done = done_tx;
+        let second = spawn(&runtime, move |_| {
+            second_barrier.wait();
+            second_runtime.close();
+            second_done.send(()).unwrap();
+        })
+        .expect("second closer");
+
+        done_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("第一个活动 closer 必须返回");
+        done_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("第二个活动 closer 必须返回");
+        assert_eq!(first.join(), Ok(()));
+        assert_eq!(second.join(), Ok(()));
+        assert!(runtime.is_closed());
+    }
+
+    #[test]
+    /// pool.shutdown 与 Runtime close 并发时，pool join 不得与 Runtime drain 互等。
+    fn pool_shutdown_and_runtime_close_do_not_deadlock() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 2).expect("pool");
+        let barrier = Arc::new(std::sync::Barrier::new(2));
+        let (done_tx, done_rx) = mpsc::channel();
+
+        let first_pool = pool.clone();
+        let first_barrier = Arc::clone(&barrier);
+        let first_done = done_tx.clone();
+        let first = pool
+            .submit(move |_| {
+                first_barrier.wait();
+                let result = first_pool.shutdown();
+                first_done.send(()).unwrap();
+                result
+            })
+            .expect("pool closer");
+
+        let second_runtime = runtime.clone();
+        let second_barrier = Arc::clone(&barrier);
+        let second_done = done_tx;
+        let second = pool
+            .submit(move |_| {
+                second_barrier.wait();
+                second_runtime.close();
+                second_done.send(()).unwrap();
+            })
+            .expect("runtime closer");
+
+        done_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("pool/runtime closer 必须返回");
+        done_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("pool/runtime closer 必须都返回");
+        assert!(matches!(
+            first.wait(),
+            Ok(Ok(())) | Ok(Err(RuntimeExecError::RuntimeClosed))
+        ));
+        assert_eq!(second.wait(), Ok(()));
+        assert!(runtime.is_closed());
+    }
+
+    #[test]
     /// 满队列提交可以由外部令牌取消，并返回 027。
     fn full_queue_submission_has_cancellable_backpressure() {
         let runtime = RuntimeHandle::create();
@@ -791,6 +1025,39 @@ mod tests {
         assert_eq!(blocker.wait(), Ok(1));
         assert_eq!(queued_a.wait(), Ok(4));
         assert_eq!(queued_b.wait(), Ok(5));
+    }
+
+    #[test]
+    /// 无上下文入口线程的普通 submit 可由 Runtime 关闭终止满队列背压。
+    fn default_submit_from_external_thread_stops_on_runtime_close() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("pool");
+        let (running_started_tx, running_started_rx) = mpsc::channel();
+        let (running_release_tx, running_release_rx) = mpsc::channel();
+        let running = pool
+            .submit(move |_| {
+                running_started_tx.send(()).unwrap();
+                running_release_rx.recv().unwrap();
+                1_u32
+            })
+            .expect("运行任务");
+        running_started_rx.recv().expect("运行任务已开始");
+        let queued = pool.submit(|_| 2_u32).expect("队列任务");
+
+        let submit_pool = pool.clone();
+        let submitter = thread::spawn(move || submit_pool.submit(|_| 3_u32));
+        thread::sleep(Duration::from_millis(20));
+        let close_runtime = runtime.clone();
+        let closer = thread::spawn(move || close_runtime.close());
+        running_release_tx.send(()).unwrap();
+
+        assert!(matches!(
+            submitter.join().expect("外部提交线程完成"),
+            Err(RuntimeExecError::RuntimeClosed)
+        ));
+        closer.join().expect("Runtime close 完成");
+        assert_eq!(running.wait(), Ok(1));
+        assert_eq!(queued.wait(), Ok(2));
     }
 
     #[test]
@@ -957,6 +1224,159 @@ mod tests {
         assert_eq!(blocked.join(), Ok(()));
         assert_eq!(closer.join(), Ok(()));
         assert!(runtime.is_closed());
+    }
+
+    #[test]
+    /// 活动 pool worker close 时也要等待尚未开始但已接纳的排队 activity。
+    fn active_close_waits_for_queued_pool_activity() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 2).expect("pool");
+        let (blocked_started_tx, blocked_started_rx) = mpsc::channel();
+        let (blocked_release_tx, blocked_release_rx) = mpsc::channel();
+        let blocked = pool
+            .submit(move |_| {
+                blocked_started_tx.send(()).unwrap();
+                blocked_release_rx.recv().unwrap();
+                1_u32
+            })
+            .expect("阻塞任务");
+        blocked_started_rx.recv().expect("阻塞任务已开始");
+
+        let (closer_started_tx, closer_started_rx) = mpsc::channel();
+        let (close_go_tx, close_go_rx) = mpsc::channel();
+        let (close_returned_tx, close_returned_rx) = mpsc::channel();
+        let closer_runtime = runtime.clone();
+        let closer = pool
+            .submit(move |_| {
+                closer_started_tx.send(()).unwrap();
+                close_go_rx.recv().unwrap();
+                closer_runtime.close();
+                close_returned_tx.send(()).unwrap();
+                2_u32
+            })
+            .expect("Runtime closer");
+        closer_started_rx.recv().expect("Runtime closer 已开始");
+
+        let (queued_started_tx, queued_started_rx) = mpsc::channel();
+        let (queued_release_tx, queued_release_rx) = mpsc::channel();
+        let queued = pool
+            .submit(move |_| {
+                queued_started_tx.send(()).unwrap();
+                queued_release_rx.recv().unwrap();
+                3_u32
+            })
+            .expect("排队任务");
+        close_go_tx.send(()).unwrap();
+        assert!(
+            close_returned_rx
+                .recv_timeout(Duration::from_millis(50))
+                .is_err(),
+            "close 不得绕过排队 activity"
+        );
+
+        blocked_release_tx.send(()).unwrap();
+        queued_started_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("释放 worker 后排队任务必须运行");
+        assert!(
+            close_returned_rx
+                .recv_timeout(Duration::from_millis(50))
+                .is_err(),
+            "排队任务仍在运行时 close 不得返回"
+        );
+        queued_release_tx.send(()).unwrap();
+
+        close_returned_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("排队 activity 完成后 close 必须返回");
+        assert_eq!(blocked.wait(), Ok(1));
+        assert_eq!(queued.wait(), Ok(3));
+        assert_eq!(closer.wait(), Ok(2));
+        assert!(runtime.is_closed());
+    }
+
+    #[test]
+    /// 单 worker 也必须在 close 期间移交排队任务，避免 active 总数等待自锁。
+    fn active_close_drains_queued_activity_with_single_worker() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("pool");
+        let (closer_started_tx, closer_started_rx) = mpsc::channel();
+        let (close_go_tx, close_go_rx) = mpsc::channel();
+        let (close_returned_tx, close_returned_rx) = mpsc::channel();
+        let closer_runtime = runtime.clone();
+        let closer = pool
+            .submit(move |_| {
+                closer_started_tx.send(()).unwrap();
+                close_go_rx.recv().unwrap();
+                closer_runtime.close();
+                close_returned_tx.send(()).unwrap();
+                1_u32
+            })
+            .expect("Runtime closer");
+        closer_started_rx.recv().expect("Runtime closer 已开始");
+
+        let (queued_started_tx, queued_started_rx) = mpsc::channel();
+        let (queued_release_tx, queued_release_rx) = mpsc::channel();
+        let queued = pool
+            .submit(move |_| {
+                queued_started_tx.send(()).unwrap();
+                queued_release_rx.recv().unwrap();
+                2_u32
+            })
+            .expect("排队任务");
+        close_go_tx.send(()).unwrap();
+        queued_started_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("single worker close 必须移交排队任务");
+        assert!(close_returned_rx.try_recv().is_err());
+        queued_release_tx.send(()).unwrap();
+        close_returned_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("排队任务完成后 close 必须返回");
+        assert_eq!(queued.wait(), Ok(2));
+        assert_eq!(closer.wait(), Ok(1));
+    }
+
+    #[test]
+    /// detached 回收池忙碌时，扩展队列策略仍让 detach 发送立即返回。
+    fn detached_reaper_queue_does_not_block_when_workers_are_busy() {
+        let _test_lock = DETACHED_TEST_LOCK
+            .get_or_init(|| Mutex::new(()))
+            .lock()
+            .expect("detached 测试锁未中毒");
+        let (started_tx, started_rx) = mpsc::channel();
+        let mut release_txs = Vec::new();
+        for _ in 0..4 {
+            let started_tx = started_tx.clone();
+            let (release_tx, release_rx) = mpsc::channel();
+            release_txs.push(release_tx);
+            detached_reaper()
+                .send(Box::new(move || {
+                    started_tx.send(()).unwrap();
+                    release_rx.recv().unwrap();
+                }))
+                .expect("发送 detached 回收任务");
+        }
+        drop(started_tx);
+        for _ in 0..4 {
+            started_rx
+                .recv_timeout(Duration::from_secs(2))
+                .expect("四个 detached worker 必须占用回收槽");
+        }
+
+        let start = std::time::Instant::now();
+        for _ in 0..512 {
+            detached_reaper()
+                .send(Box::new(|| {}))
+                .expect("无界回收队列必须可继续接收");
+        }
+        assert!(
+            start.elapsed() < Duration::from_secs(1),
+            "回收队列满时发送不应阻塞调用方"
+        );
+        for release_tx in release_txs {
+            release_tx.send(()).unwrap();
+        }
     }
 
     #[test]
