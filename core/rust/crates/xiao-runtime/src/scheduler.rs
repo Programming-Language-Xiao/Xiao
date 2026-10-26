@@ -4,7 +4,7 @@
 //! lowering 仍由后续 22C 子批接入。句柄不复用普通单线程 `StrongHandle`。
 
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
@@ -494,10 +494,12 @@ struct PoolInner {
     sender: Mutex<Option<SyncSender<PoolMessage>>>,
     receiver: Arc<Mutex<mpsc::Receiver<PoolMessage>>>,
     workers: Mutex<Vec<JoinHandle<()>>>,
+    worker_ids: Mutex<HashSet<thread::ThreadId>>,
     closed: AtomicBool,
     shutdown_gate: Mutex<()>,
     pending_submissions: Mutex<usize>,
     submissions_drained: Condvar,
+    drain_started: AtomicBool,
 }
 
 struct SubmissionLease {
@@ -560,32 +562,35 @@ impl TaskPool {
         let (sender, receiver) = mpsc::sync_channel::<PoolMessage>(capacity);
         let receiver = Arc::new(Mutex::new(receiver));
         let mut workers = Vec::with_capacity(capacity.min(4));
+        let mut worker_ids = HashSet::with_capacity(capacity.min(4));
         for index in 0..capacity.min(4) {
             let receiver = Arc::clone(&receiver);
-            workers.push(
-                thread::Builder::new()
-                    .name(format!("xiao-pool-{}-{}", runtime.id, index))
-                    .spawn(move || {
-                        loop {
-                            let message = receiver
-                                .lock()
-                                .ok()
-                                .and_then(|receiver| receiver.recv().ok());
-                            let Some(message) = message else { break };
-                            (message.run)();
-                        }
-                    })
-                    .map_err(|_| RuntimeExecError::JoinFailed)?,
-            );
+            let worker = thread::Builder::new()
+                .name(format!("xiao-pool-{}-{}", runtime.id, index))
+                .spawn(move || {
+                    loop {
+                        let message = receiver
+                            .lock()
+                            .ok()
+                            .and_then(|receiver| receiver.recv().ok());
+                        let Some(message) = message else { break };
+                        (message.run)();
+                    }
+                })
+                .map_err(|_| RuntimeExecError::JoinFailed)?;
+            worker_ids.insert(worker.thread().id());
+            workers.push(worker);
         }
         let inner = Arc::new(PoolInner {
             sender: Mutex::new(Some(sender)),
             receiver: Arc::clone(&receiver),
             workers: Mutex::new(workers),
+            worker_ids: Mutex::new(worker_ids),
             closed: AtomicBool::new(false),
             shutdown_gate: Mutex::new(()),
             pending_submissions: Mutex::new(0),
             submissions_drained: Condvar::new(),
+            drain_started: AtomicBool::new(false),
         });
         if let Err(error) = runtime.register_pool(&inner) {
             Self::shutdown_inner(&inner);
@@ -719,9 +724,6 @@ impl TaskPool {
                 true
             }
         };
-        if !should_join {
-            return;
-        }
         if let Ok(mut pending) = inner.pending_submissions.lock() {
             while *pending != 0 {
                 let Ok(remaining) = inner.submissions_drained.wait(pending) else {
@@ -730,38 +732,63 @@ impl TaskPool {
                 pending = remaining;
             }
         }
-        let mut current_worker = false;
-        if let Ok(mut workers) = inner.workers.lock() {
-            for worker in workers.drain(..) {
-                if worker.thread().id() == thread::current().id() {
-                    // 当前 worker 不能 join 自己；丢弃 JoinHandle 让它在
-                    // 返回任务后自然结束，其他关闭者仍可观察 active drain。
-                    current_worker = true;
-                    continue;
+        let current_worker = inner
+            .worker_ids
+            .lock()
+            .map(|worker_ids| worker_ids.contains(&thread::current().id()))
+            .unwrap_or(false);
+        let drain = current_worker.then(|| Self::start_drain_helper(inner));
+
+        if should_join {
+            if let Ok(mut workers) = inner.workers.lock() {
+                for worker in workers.drain(..) {
+                    if worker.thread().id() == thread::current().id() {
+                        // 当前 worker 不能 join 自己；丢弃 JoinHandle 让它在
+                        // 返回任务后自然结束，其他关闭者仍可观察 active drain。
+                        continue;
+                    }
+                    let _ = worker.join();
                 }
-                let _ = worker.join();
             }
         }
-        if current_worker {
-            let receiver = Arc::clone(&inner.receiver);
-            let drain = thread::Builder::new()
-                .name("xiao-pool-shutdown-drain".to_owned())
-                .spawn(move || {
-                    loop {
-                        let message = match receiver.lock() {
-                            Ok(receiver) => receiver.try_recv(),
-                            Err(_) => return,
-                        };
-                        match message {
-                            Ok(message) => (message.run)(),
-                            Err(mpsc::TryRecvError::Empty | mpsc::TryRecvError::Disconnected) => {
-                                break;
-                            }
-                        }
-                    }
-                });
-            if let Ok(drain) = drain {
-                let _ = drain.join();
+        if let Some(Some(drain)) = drain {
+            let _ = drain.join();
+        }
+    }
+
+    fn start_drain_helper(inner: &Arc<PoolInner>) -> Option<JoinHandle<()>> {
+        if inner
+            .drain_started
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .is_err()
+        {
+            return None;
+        }
+        let receiver = Arc::clone(&inner.receiver);
+        let worker_receiver = Arc::clone(&receiver);
+        match thread::Builder::new()
+            .name("xiao-pool-shutdown-drain".to_owned())
+            .spawn(move || Self::drain_pending_messages(&worker_receiver))
+        {
+            Ok(drain) => Some(drain),
+            Err(_) => {
+                // 极端情况下线程创建失败，当前 worker 直接接管剩余消息，
+                // 避免把已接纳 activity 永久留在队列中。
+                Self::drain_pending_messages(&receiver);
+                None
+            }
+        }
+    }
+
+    fn drain_pending_messages(receiver: &Arc<Mutex<mpsc::Receiver<PoolMessage>>>) {
+        loop {
+            let message = match receiver.lock() {
+                Ok(receiver) => receiver.try_recv(),
+                Err(_) => return,
+            };
+            match message {
+                Ok(message) => (message.run)(),
+                Err(mpsc::TryRecvError::Empty | mpsc::TryRecvError::Disconnected) => break,
             }
         }
     }
@@ -951,6 +978,59 @@ mod tests {
         ));
         assert_eq!(second.wait(), Ok(()));
         assert!(runtime.is_closed());
+    }
+
+    #[test]
+    /// 外部 pool shutdown 已先接管 worker 后，运行中的 worker close 仍会 drain 排队任务。
+    fn external_pool_shutdown_and_worker_runtime_close_drain_queue() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("pool");
+        let (running_started_tx, running_started_rx) = mpsc::channel();
+        let (close_go_tx, close_go_rx) = mpsc::channel();
+        let (close_returned_tx, close_returned_rx) = mpsc::channel();
+        let worker_runtime = runtime.clone();
+        let running = pool
+            .submit(move |_| {
+                running_started_tx.send(()).unwrap();
+                close_go_rx.recv().unwrap();
+                worker_runtime.close();
+                close_returned_tx.send(()).unwrap();
+                1_u32
+            })
+            .expect("运行任务");
+        running_started_rx.recv().expect("运行任务已开始");
+
+        let (queued_started_tx, queued_started_rx) = mpsc::channel();
+        let queued = pool
+            .submit(move |_| {
+                queued_started_tx.send(()).unwrap();
+                2_u32
+            })
+            .expect("排队任务");
+
+        let shutdown_pool = pool.clone();
+        let shutdown_done = thread::spawn(move || shutdown_pool.shutdown());
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        while !pool.inner.closed.load(Ordering::Acquire) {
+            assert!(
+                std::time::Instant::now() < deadline,
+                "外部 shutdown 未停止池接纳"
+            );
+            thread::yield_now();
+        }
+        close_go_tx.send(()).unwrap();
+        queued_started_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("worker close 必须移交排队任务");
+        close_returned_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("worker close 必须返回");
+        assert_eq!(running.wait(), Ok(1));
+        assert_eq!(queued.wait(), Ok(2));
+        assert_eq!(
+            shutdown_done.join().expect("外部 shutdown 完成"),
+            Err(RuntimeExecError::RuntimeClosed)
+        );
     }
 
     #[test]
@@ -1227,6 +1307,57 @@ mod tests {
     }
 
     #[test]
+    /// 活动 follower 可快速返回，但唯一 owner 仍等待未进入关闭路径的 activity。
+    fn active_close_follower_leaves_owner_to_drain_other_activity() {
+        let runtime = RuntimeHandle::create();
+        let (blocked_started_tx, blocked_started_rx) = mpsc::channel();
+        let (blocked_release_tx, blocked_release_rx) = mpsc::channel();
+        let blocked = spawn(&runtime, move |_| {
+            blocked_started_tx.send(()).unwrap();
+            blocked_release_rx.recv().unwrap();
+        })
+        .expect("blocked worker");
+        blocked_started_rx.recv().expect("blocked worker started");
+
+        let (follower_started_tx, follower_started_rx) = mpsc::channel();
+        let (follower_go_tx, follower_go_rx) = mpsc::channel();
+        let (follower_returned_tx, follower_returned_rx) = mpsc::channel();
+        let (follower_release_tx, follower_release_rx) = mpsc::channel();
+        let follower_runtime = runtime.clone();
+        let follower = spawn(&runtime, move |_| {
+            follower_started_tx.send(()).unwrap();
+            follower_go_rx.recv().unwrap();
+            follower_runtime.close();
+            follower_returned_tx.send(()).unwrap();
+            follower_release_rx.recv().unwrap();
+        })
+        .expect("active follower");
+        follower_started_rx.recv().expect("active follower started");
+
+        let owner_runtime = runtime.clone();
+        let owner_done = thread::spawn(move || owner_runtime.close());
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        while !runtime.is_closed() {
+            assert!(
+                std::time::Instant::now() < deadline,
+                "Runtime owner 未开始 drain"
+            );
+            thread::yield_now();
+        }
+        follower_go_tx.send(()).unwrap();
+        follower_returned_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("活动 follower 应在 owner drain 期间返回");
+        assert!(!owner_done.is_finished(), "owner 不得绕过普通 activity");
+
+        follower_release_tx.send(()).unwrap();
+        blocked_release_tx.send(()).unwrap();
+        owner_done.join().expect("Runtime owner 完成");
+        assert_eq!(blocked.join(), Ok(()));
+        assert_eq!(follower.join(), Ok(()));
+    }
+
+    #[test]
     /// 活动 pool worker close 时也要等待尚未开始但已接纳的排队 activity。
     fn active_close_waits_for_queued_pool_activity() {
         let runtime = RuntimeHandle::create();
@@ -1338,6 +1469,50 @@ mod tests {
     }
 
     #[test]
+    /// 当前 worker 的 drain helper 执行排队 close 时也不能重新形成关闭环。
+    fn shutdown_drain_helper_handles_queued_runtime_close() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("pool");
+        let (closer_started_tx, closer_started_rx) = mpsc::channel();
+        let (close_go_tx, close_go_rx) = mpsc::channel();
+        let (close_returned_tx, close_returned_rx) = mpsc::channel();
+        let closer_runtime = runtime.clone();
+        let closer = pool
+            .submit(move |_| {
+                closer_started_tx.send(()).unwrap();
+                close_go_rx.recv().unwrap();
+                closer_runtime.close();
+                close_returned_tx.send(()).unwrap();
+                1_u32
+            })
+            .expect("Runtime closer");
+        closer_started_rx.recv().expect("Runtime closer 已开始");
+
+        let (queued_started_tx, queued_started_rx) = mpsc::channel();
+        let (queued_release_tx, queued_release_rx) = mpsc::channel();
+        let queued_runtime = runtime.clone();
+        let queued = pool
+            .submit(move |_| {
+                queued_runtime.close();
+                queued_started_tx.send(()).unwrap();
+                queued_release_rx.recv().unwrap();
+                2_u32
+            })
+            .expect("排队 close 任务");
+        close_go_tx.send(()).unwrap();
+        queued_started_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("drain helper 必须执行排队 close 任务");
+        queued_release_tx.send(()).unwrap();
+        close_returned_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("主 worker close 必须返回");
+        assert_eq!(queued.wait(), Ok(2));
+        assert_eq!(closer.wait(), Ok(1));
+        assert!(runtime.is_closed());
+    }
+
+    #[test]
     /// detached 回收池忙碌时，扩展队列策略仍让 detach 发送立即返回。
     fn detached_reaper_queue_does_not_block_when_workers_are_busy() {
         let _test_lock = DETACHED_TEST_LOCK
@@ -1365,13 +1540,15 @@ mod tests {
         }
 
         let start = std::time::Instant::now();
-        for _ in 0..512 {
-            detached_reaper()
-                .send(Box::new(|| {}))
-                .expect("无界回收队列必须可继续接收");
+        for _ in 0..8 {
+            for _ in 0..512 {
+                detached_reaper()
+                    .send(Box::new(|| {}))
+                    .expect("无界回收队列必须可继续接收");
+            }
         }
         assert!(
-            start.elapsed() < Duration::from_secs(1),
+            start.elapsed() < Duration::from_secs(2),
             "回收队列满时发送不应阻塞调用方"
         );
         for release_tx in release_txs {

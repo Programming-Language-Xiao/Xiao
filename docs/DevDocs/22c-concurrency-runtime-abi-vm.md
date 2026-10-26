@@ -101,8 +101,9 @@
 ### D-3（线程/任务池/多 Runtime 后端）
 
 - OS 线程使用 `std::thread`；固定容量任务池；Runtime 注册表；重入安全的关闭 drain；detach 错误通道；
-- Runtime 关闭选出唯一 drain owner；活动 closer 只登记 closing activity 后返回，owner 只等待仍未进入关闭路径的 activity，
-  因而两个活动 closer、pool `shutdown` 与 Runtime `close` 交叉时不会互相 join；池在当前 worker 关闭时用 drain helper
+- Runtime 关闭选出唯一 drain owner；活动 closer 只登记 closing activity 后完成自己的 close 调用，
+  随后仍作为普通 activity 被 owner 等待，owner 只等待仍未进入关闭路径的 activity，因而两个活动 closer、
+  pool `shutdown` 与 Runtime `close` 交叉时不会互相 join；池在任一当前 worker 关闭时用一次性 drain helper
   接管排队消息，仍等待已经接纳的 activity；
 - 满队列提交提供可取消背压，池关闭和 Runtime 关闭分别保持 030/031；detached reaper 使用固定四个 worker 和无界发送队列，
   `detach` 不因回收 worker 暂时繁忙而阻塞；
@@ -156,8 +157,9 @@
 - 强弱计数并发、弱升级失败/成功、最后释放恰好一次；
 - 锁等待/取消/唤醒，无死锁；
 - 普通 `StrongHandle`/`WeakHandle` 仍为单线程边界。
-- Runtime 双活动 closer、pool `shutdown` 与 Runtime `close` 交叉、活动 closer 的排队任务，
-  以及单 worker drain helper 均有超时回归；无上下文普通 `submit` 的关闭终止路径和 detached 回收队列不阻塞路径也有回归。
+- Runtime 双活动 closer、pool `shutdown` 与 Runtime `close` 交叉、外部 shutdown 与 worker close、
+  活动 follower 的 owner drain、活动 closer 的排队任务、排队任务递归 close，以及单 worker drain helper
+  均有超时回归；无上下文普通 `submit` 的关闭终止路径和 detached 回收队列持续积压不阻塞路径也有回归。
 
 ### 6.2 VM 端到端
 
@@ -232,7 +234,9 @@ core/rust/crates/xiao-ir/                               仅消费字段，不改
 3. **取消唤醒**：只标记不等待会违反 22A 的首版承诺；锁/任务/线程等待必须统一。
 4. **序列化确定性**：容器排序、长度上限和失败清理顺序必须按 IR/22A 契约。
 5. **门禁遗漏**：`.xiaoc` 类型标签 12–19 若没有 ABI/feature 门禁，旧 Runtime 会静默或误拒。
-6. **范围蔓延**：VM 实现容易顺手接 LLVM 或标准库；LLVM 22D、stdlib 22E。
+6. **detached 回收积压**：首版使用无界队列以保持 `detach` 非阻塞，长时间持续积压会增加
+   排队闭包内存；后续维护必须加入队列可观测性和上限、背压或丢弃策略。
+7. **范围蔓延**：VM 实现容易顺手接 LLVM 或标准库；LLVM 22D、stdlib 22E。
 
 ## 相关页面
 

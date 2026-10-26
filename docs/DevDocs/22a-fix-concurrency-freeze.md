@@ -79,7 +79,9 @@
   `submit(pool, fn, a, b, ...)` 继续经 `pool` 归属 Runtime；
 - 如果保留“当前 Runtime”写法，补 `current_runtime() -> runtime`，并规定它与
   `runtime_create()` 的关系；
-- `runtime_close` 的等待范围、跨 Runtime 共享只读句柄的规则不变。
+- `runtime_close` 的基本等待范围、跨 Runtime 共享只读句柄的规则不变；22C 只为避免
+  重入 join 环增加“已有唯一 drain owner 时，活动 follower 完成 close 调用后由 owner
+  继续等待”的协调例外，普通调用者仍等待已提交任务/线程。
 
 备选：乙，`runtime_create(fn, a, b, ...)` 直接带入口函数；丙，首版只做一个 Runtime，把多
 Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Runtime”表述。
@@ -279,6 +281,13 @@ Runtime 后移。取甲或丙都必须同步 `22` 阶段和 UseDocs 的“多 Ru
   不把“既有 011”当成已实现。
 - **证据**：`35caa80`/`40104492341`、`d6eee72`/`40104894749` 与 `589dc92`/`40106553383`
   已记录；本次证据提交只记录运行号，不再改变契约。
+
+**22C 实现收口（不改变 F-1～F-9 选择）**：`runtime_close` 的唯一 drain owner 等待未进入
+`close`/`shutdown` 路径的 activity；活动 follower 在已有 owner drain 时完成自己的 close
+调用即可返回，随后仍由 owner 作为普通 activity 等待。普通 `submit` 在入口线程没有句柄
+返回前的主动取消入口，22E 若只暴露该语言入口必须接入执行上下文令牌。detached 回收为
+固定 worker 加无界非阻塞队列，持续积压的内存风险留给后续维护批增加可观测上限、背压或
+丢弃策略。
 
 ## 五、本批要做的事
 

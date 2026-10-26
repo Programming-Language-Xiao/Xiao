@@ -112,8 +112,10 @@
   启动且源值不改变；
 - `runtime_create` 分配进程内单调递增的 `u64` Runtime ID，`0` 保留为无效值且 ID 在进程
   生命周期内不复用；`runtime_close` 消费句柄、停止该 Runtime 接收新任务并等待其已提交
-  任务/线程，执行单元的失败仍由各自 `join`/`wait` 或 detached 错误通道报告；关闭后的
-  Runtime 不能再创建执行单元，`runtime` 句柄不能跨 Runtime 传递，误用返回 `X06-RUNTIME-031`；
+  任务/线程，执行单元的失败仍由各自 `join`/`wait` 或 detached 错误通道报告；若调用者
+  本身是已提交执行单元且另一个 close 已成为唯一 drain owner，该调用者登记为 closing
+  activity 后可返回，由 owner 统一等待其余未进入关闭路径的 activity；关闭后的 Runtime
+  不能再创建执行单元，`runtime` 句柄不能跨 Runtime 传递，误用返回 `X06-RUNTIME-031`；
   `pool_create(runtime, capacity)` 和 `spawn(runtime, fn, ...)` 显式绑定目标 Runtime；
 - `runtime`/`pool` 是可按值复制的共享句柄，别名共享关闭状态；`runtime_close`/`shutdown`
   消费调用方的那一份并关闭底层状态，其他别名仍可观察关闭，重复关闭任一别名幂等成功；
@@ -251,6 +253,11 @@ magic 固定为 ASCII `XCON`（`58 43 4f 4e`），版本为 `0x0001`，保留字
 `submit` 返回 `X06-RUNTIME-030`，Runtime 已关闭时优先返回 `X06-RUNTIME-031`；运行中任务
 通过 `cancel` 标记退出。
 
+语言层普通 `submit` 在已有执行上下文时继承该上下文的取消令牌；入口线程或其他无上下文
+调用在句柄返回前没有主动取消入口，首版由 Runtime/pool 关闭终止满队列背压。22E 若只暴露
+普通 `submit`，必须接入执行上下文令牌或另行冻结显式提交期取消入口；22C 的 Rust
+`submit_with_cancel` 只作为该能力的内部验证入口。
+
 **产物兼容矩阵**：
 
 | 产物 | 首版要求 | 旧 Runtime（<1.17） | 新 Runtime（≥1.17） |
@@ -357,6 +364,15 @@ magic 固定为 ASCII `XCON`（`58 43 4f 4e`），版本为 `0x0001`，保留字
    32B 对象头不增加字段，32B 四平台测量继续有效；`shared_mut<T>` 跨 Runtime 编译期拒绝。
 
 上述八项关闭 22A-FIX 的契约空白；22B 只消费本节定义的名称、字段、能力表和错误边界。
+
+**22C 关闭协调补充**：`runtime_close` 的唯一 drain owner 只等待尚未进入
+`close`/`shutdown` 路径的 activity。活动 follower 在另一个 owner 已经 drain 时可以完成
+自己的 close 调用并返回，随后仍作为普通 activity 被 owner 等待；这条重入例外用于避免
+两个 closer 或 pool join 互相等待，不改变普通调用者对已提交任务/线程的等待语义。
+
+**22C detached 资源取舍**：为保证 `detach` 在固定四个回收 worker 忙碌时也不阻塞，首版
+使用无界发送队列。长时间持续积压会增加排队闭包的内存占用；后续维护批必须加入可观测
+队列长度以及上限、背压或丢弃策略，不能把增长风险隐藏成静默行为。
 
 ## 三、测量任务
 

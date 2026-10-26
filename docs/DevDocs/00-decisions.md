@@ -626,6 +626,17 @@ UseDocs 和 ABI 1.17 兼容矩阵。32B 头的字段、弱升级、锁状态和 
 - 诊断固定为 `X03-TYPE-030..032`、`X06-LIFETIME-006..008`、`X06-RUNTIME-027..032`，
   产物版本/特性不足沿用 `X17-XAR-007`；required-feature 位集、UseDocs 入口和兼容矩阵已同步。
 
+22C 对关闭路径的实现收口仍属于上述冻结语义：`runtime_close` 选出唯一 drain owner，
+owner 等待所有未进入 `close`/`shutdown` 路径的已提交 activity；当活动执行单元发现已有
+owner 时，它登记 closing activity、完成自己的 close 调用并返回，随后仍可作为普通 activity
+被 owner 等待。该例外只打破 closer/join 环，普通调用者仍等待已提交任务和线程。
+
+普通 `submit` 只有在当前执行上下文存在取消令牌时才继承提交期取消；入口线程在句柄返回前
+没有主动取消入口，首版由 Runtime/pool 关闭终止满队列背压。22E 若保持语言层只有普通
+`submit`，必须接入执行上下文令牌或重新冻结显式提交期取消入口。detached 回收使用固定
+四 worker 和无界发送队列以保持 `detach` 非阻塞；持续积压的内存风险登记为后续维护项，
+需要增加队列可观测性及上限、背压或丢弃策略。
+
 四平台 32B 布局证据见 `40093591873` 的 `*-concurrency-32b-layout.log`；24B 原型成本记录
 仍只作研究输入。22A-FIX 已收口，22B 可以开始，但不提前实现 Runtime、LLVM 或标准库。
 
