@@ -745,9 +745,10 @@ impl PoolQueue {
         });
         if let Some(message) = removed {
             let PoolMessage { cancel, run, .. } = message;
-            cancel();
             // 丢弃任务闭包可能运行用户捕获值的析构逻辑，因此放在队列锁外。
             drop(run);
+            // 任务副本、activity lease 和边界清理事件必须先完成，等待者再收到 027。
+            cancel();
         }
     }
 
