@@ -1,6 +1,6 @@
 # 22. 并发执行与共享句柄
 
-> **这是 07-D 之后的正式并发实现阶段，22B-FIX.1 静态残余已关闭，当前进入 22C。**
+> **这是 07-D 之后的正式并发实现阶段，22B-FIX.1 静态残余已关闭；22C Runtime/ABI/门禁已实施，当前进入 22C-FIX.1。**
 > 07-D 已完成 8 项裁定、隔离原型、Linux workspace gates 和四平台测试；22A 已补齐
 > 四平台 32B 布局测量并写出语言表面、取消边界、IR 事实、ABI、诊断和发布门禁；22A-FIX
 > 已补齐这些契约与既有 `.xar`/`.xiaoc` 格式的冲突。
@@ -9,11 +9,10 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**22C 实施入口已开启（22B/22B-FIX/FIX.1 静态部分已关闭，22C–22E 待实施，2026-10-26）**。
-> Runtime/VM/LLVM 尚未接入；阶段代号 22 已登记，22C 可以在
-> [22B-FIX.1](22b-fix1-concurrency-wiring-residuals.md) 的静态字段上继续，按
-> [22B](22b-concurrency-types-lifetime-ir.md)、[22A-FIX](22a-fix-concurrency-freeze.md)
-> 和 21A §3.2 / 07-D §11.3 的入口条件实现。
+> 状态：**22C Runtime/ABI/门禁已实施，VM 调用拆入 22C-FIX.1（2026-10-27）**。
+> 22B-FIX.1 静态部分已关闭；22C 的 Runtime、ABI、共享头、XCON 基础和产物门禁已完成，
+> 但 VM 并发值、调用计划、源码级端到端仍未接线。22C-FIX.1 关闭后才进入 22D；
+> 22E 仍后置。
 
 ## 一、阶段目标与边界
 
@@ -54,9 +53,9 @@
 | 07-D 原型 CI | `40057462458`（99c3047）success；9 原型测试 | 最新 Linux workspace gates；`39963374595` 作为前一轮代码证据 |
 | 07-D 平台测试 | `39965322134`（a8aaa4b）四平台 success | macOS/Windows/Linux 测试通过 |
 | 跨平台测量 | `40068582635` 记录 24B 原型，`40093591873` 记录四平台 32B 头布局 | 成本仍是研究输入，布局已作为 22A ABI 输入冻结 |
-| 取消等待 | 22A 已裁定真实持锁等待/唤醒进入首版 | 22C 实现并测量 |
+| 取消等待 | 22A 已裁定真实持锁等待/唤醒进入首版 | 22C/22C-FIX.1 实现并测量 |
 | 语言表面 | 22B-FIX.1 已接入参数化入口、作用域/提前退出消费、错误出口和 shared 构造能力 | Runtime 标准库仍待 22E |
-| IR/诊断/ABI | `spawn`/`submit` 已产生 facts/transfers/cancellation；`source_runtime_id` 已登记为可选字段 | 22C 按字段接入 Runtime，ABI/产物门禁仍冻结 |
+| IR/诊断/ABI | `spawn`/`submit` 已产生 facts/transfers/cancellation；`source_runtime_id` 已登记为可选字段 | 22C-FIX.1 按字段接入 VM，ABI/产物门禁仍冻结 |
 | 发布/兼容矩阵 | 22A 已冻结 required-feature 位集和 ABI 1.17 | 22E 编写实际产物检查与报告 |
 
 ## 三、阶段分解
@@ -84,8 +83,8 @@
 9. **标准库/发布**：`std.concurrent` 线程/共享/任务池 API、版本化序列化、ABI/产物兼容
    矩阵和 UseDocs 入口。
 
-**22A 退出条件**：上述九项均有冻结记录，24B/32B 测量证据已归档，取消等待已明确由 22C
-实现；22A 不写产品代码，22B 不再重新决定语义。
+**22A 退出条件**：上述九项均有冻结记录，24B/32B 测量证据已归档，取消等待已明确由
+22C/22C-FIX.1 实现；22A 不写产品代码，22B 不再重新决定语义。
 
 ### 22A-FIX：契约冲突收口（已完成，不写产品代码）
 
@@ -121,12 +120,26 @@
 [22C. 并发 Runtime ABI、VM 与错误](22c-concurrency-runtime-abi-vm.md)。
 
 - 统一 32B 原子共享句柄头、内联锁、tag、强/弱计数、弱升级、恰好一次析构；
-- VM 线程 `spawn/join`、多边界值、detach 错误通道、深拷贝 + 序列化、真实取消等待、
-  清理和 suppressed 错误；
 - Runtime ABI 版本升级；普通句柄布局不变；
 - Runtime ID 静态标签到实际 ID 映射；
 - `.xiaoc`/`.xar` ABI 1.17/feature 门禁；
-- 回归：泄漏、双重析构、弱升级竞态、错误顺序、取消四位置。
+- 回归：泄漏、双重析构、弱升级竞态、错误顺序、取消四位置；
+- **VM `spawn/join`、多边界值、detach 错误通道、深拷贝 + 序列化、真实取消等待、
+  清理和 suppressed 错误转入 [22C-FIX.1](22c-fix1-concurrency-vm-wiring.md)。**
+
+### 22C-FIX.1：VM 并发调用与端到端
+
+规划见 [22C-FIX.1. 并发 VM 调用接线与端到端执行](22c-fix1-concurrency-vm-wiring.md)。
+
+- 把 22B facts/transfers/cancellation 转成 VM 可消费的 TAC 并发计划，不按源码名称重解析；
+- `RuntimeValue` 增加 Runtime/Thread/Task/Pool/Shared/LockGuard 句柄；
+- 每个线程/任务使用独立 VM 实例，边界值深拷贝/XCON 往返；
+- 接通 `spawn/join/detach/cancel`、`submit/wait/shutdown`、shared/lock 和 Runtime 关闭；
+- 取消安全点、027/028/029/030/031/032、主/suppressed 和 finally/drop 回归；
+- 仍不接 LLVM、不写标准库函数体、不改 22A/22B 冻结契约。
+
+**22C-FIX.1 关闭条件**：真实源码经 `xiao run` 覆盖线程、任务池、多 Runtime、shared、
+detach 和取消；VM/驱动证据齐全后，22D 才能开始。
 
 ### 22D：LLVM、差分与跨平台
 
@@ -167,12 +180,14 @@
 7. `std.concurrent` 线程/共享/任务池、序列化版本、UseDocs 和兼容矩阵登记；
 8. 维护回归、workspace gates、平台复现和发布检查全绿。
 
+其中第 3、5 条的 VM 部分由 22C-FIX.1 先关闭；22D 只消费其稳定行为，不能反向补 VM 生命周期。
+
 ## 五、风险与约束
 
 1. **ABI 测量边界**：22A 已用四平台 32B 临时探针确认布局；操作成本和产品 Runtime 行为
-   仍不能由该探针推断，必须由 22C/22D 的实现与回归证明。
-2. **取消等待未实测**：07-D 只测了标记检查；22A 已决定首版实现真实等待/唤醒路径，22C
-   必须补延迟、吞吐和清理顺序。
+   仍不能由该探针推断，必须由 22C-FIX.1/22D 的实现与回归证明。
+2. **取消等待未实测**：07-D 只测了标记检查；22A 已决定首版实现真实等待/唤醒路径，
+   22C-FIX.1 必须补延迟、吞吐和清理顺序。
 3. **共享可变成本高**：锁、毒化、取消、对象头/ABI 必须一起设计，不能只加一个
    `Mutex` 包装。
 4. **普通句柄边界**：候选 A 拒绝普通句柄跨线程；不得用名称启发式或运行时猜测绕过。
@@ -195,6 +210,7 @@
 
 ```text
 docs/DevDocs/22-concurrency-execution-and-shared-handles.md  本阶段
+docs/DevDocs/22c-fix1-concurrency-vm-wiring.md              当前 VM 收口
 docs/DevDocs/12-tests-and-milestones.md                     P0 里程碑
 docs/DevDocs/00-decisions.md                                22 阶段登记与冻结决定
 docs/DevDocs/README.md                                      22 索引
@@ -206,7 +222,7 @@ tests/research/concurrency/                                 07-D 原型（只作
 ## 八、状态
 
 - 阶段代号：22；
-- 当前状态：22C 实施入口已开启，22B/22B-FIX/FIX.1 静态部分已关闭；Runtime/VM/LLVM/标准库函数体未实现；
-- 当前工作批：22C Runtime ABI、VM 与错误（不回补 22B 静态语义）；
-- 22C 可以只消费 22B 的类型、事实、动作和 verifier；Runtime、LLVM 和标准库仍须等待对应
-  子批次，且不得把 07-D 原型结构写成 ABI 或绕过冻结记录。
+- 当前状态：22C Runtime/ABI/产物门禁已实施；22C-FIX.1 VM 调用待实施；22B/22B-FIX/FIX.1 静态部分已关闭；LLVM/标准库函数体未实现；
+- 当前工作批：22C-FIX.1 VM 并发调用与端到端（不回补 22B 静态语义，不接 LLVM/stdlib）；
+- 22C-FIX.1 可以只消费 22B 的类型、事实、动作、verifier 和 22C 已落地的 Runtime API；
+  22D/22E 仍须等待 22C-FIX.1 关闭，且不得把 07-D 原型结构写成 ABI 或绕过冻结记录。

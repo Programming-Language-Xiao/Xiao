@@ -6,12 +6,12 @@
 > 和 verifier；本批只消费这些字段，不重新决定 Send/Sync、CrossThread、API 名称或序列化格式。
 >
 > 状态：**Runtime/ABI、共享锁、Runtime drain、XCON 规范校验和 `.xiaoc`/`.xar` 要求门禁已实施；
-> VM 并发调用与 IR 事实执行仍待后续子批（2026-10-26）**。
+> VM 并发调用、IR facts 执行和源码级端到端仍未接线（2026-10-27）**。
 > 代码提交 `df6abc3` 已完成 ABI 1.17、32B 共享头、Runtime ID 注册表、XCON v1 编解码、
-> Runtime/线程/任务池骨架和 `.xiaoc` required-feature/ABI 校验 helper；本轮补齐了真实锁等待/取消
+> Runtime/线程/任务池骨架和 `.xiaoc` required-feature/ABI 校验 helper；后续补丁补齐了真实锁等待/取消
 > 唤醒、Runtime 重入关闭、可取消背压、shutdown 的 031 语义、detached/panic 错误分类、XCON 集合
-> 规范序，以及真实源码到 `.xar` 的并发 feature 映射。VM 调用接线和完整端到端并发执行仍按本文
-> 后续步骤推进。
+> 规范序，以及真实源码到 `.xar` 的并发 feature 映射。VM 调用接线和完整端到端并发执行转入
+> [22C-FIX.1](22c-fix1-concurrency-vm-wiring.md)，22D 仍不得启动。
 
 ## 一、入口条件与冻结输入
 
@@ -143,6 +143,11 @@
 - `std.concurrent` 的签名-only 表在 22B 已存在；22C 只实现 Runtime/VM 调用，不写 stdlib；
 - 若需要 opcode，只添加最小调用/边界动作，不把调度器塞进字节码。
 
+> **实施拆分**：22C 已完成 Runtime/ABI/门禁和关闭协调；VM 值、调用计划、每线程 VM、
+> 边界序列化、shared/lock 与取消错误执行拆入
+> [22C-FIX.1](22c-fix1-concurrency-vm-wiring.md)。22C-FIX.1 关闭后才满足本文的 VM
+> 退出条件，22D 才能开始。
+
 ## 五、实施步骤
 
 | 步 | 内容 | 验证 |
@@ -150,10 +155,10 @@
 | 0 | 基线：22A/22B 契约、IR 字段、ABI 1.17、VM 调用路径 | 已完成 |
 | 1 | Runtime ABI 1.17：共享头/句柄/状态码/符号；普通句柄不变 | 已完成 ABI 单测/兼容矩阵基础 |
 | 2 | 共享头：原子计数、tag、弱升级、锁状态、恰好一次析构 | 已完成共享头基础测试 |
-| 3 | Runtime/线程/任务池/多 Runtime、Runtime ID 映射 | 已完成 Runtime/线程/池骨架和映射测试 |
+| 3 | Runtime/线程/任务池/多 Runtime、Runtime ID 映射 | Runtime 层已实现骨架和注册表测试；VM 静态标签到实际 ID 映射待 22C-FIX.1 |
 | 4 | 深拷贝/序列化：XCON、限制、失败清理、suppressed | 已完成 XCON 编解码/限制基础；边界清理待 VM 接线 |
-| 5 | VM：spawn/join/detach/cancel、shared/read/lock、pool submit/wait/shutdown | 源码级端到端 |
-| 6 | 取消：锁等待/join/wait、四位置、唤醒/清理 | 取消/清理回归 |
+| 5 | VM：spawn/join/detach/cancel、shared/read/lock、pool submit/wait/shutdown | 22C-FIX.1 源码级端到端 |
+| 6 | 取消：锁等待/join/wait、四位置、唤醒/清理 | 22C-FIX.1 取消/清理回归 |
 | 7 | 产物：`.xiaoc`/`.xar` ABI 1.17 + feature；旧 Runtime 拒绝 | `.xiaoc` 与 `.xar` 解码/执行前门禁已接线；并发类型 feature 负例已覆盖 |
 | 8 | 文档/门禁：22C 状态、UseDocs 入口保持 planned、CI | docs/usedocs/layout |
 
@@ -172,6 +177,8 @@
   detached 回收队列持续积压、不阻塞且可观测路径也有回归。
 
 ### 6.2 VM 端到端
+
+> 本节由 [22C-FIX.1](22c-fix1-concurrency-vm-wiring.md) 实施；22C 本批不把 Runtime 骨架测试当作 VM 证据。
 
 - `spawn`/`join`、`submit`/`wait`、`detach` 失败通道；
 - 多 Runtime 并行、Runtime 关闭、池关闭；
@@ -201,7 +208,7 @@ git diff --check
 
 ## 七、22C 退出条件
 
-1. ABI 1.17 与 32B 共享头实现，普通句柄布局未变；基础实现和 workspace/maintenance 证据已完成，需继续补 VM 证据；
+1. ABI 1.17 与 32B 共享头实现，普通句柄布局未变；基础实现和 workspace/maintenance 证据已完成，VM 端到端证据待 [22C-FIX.1](22c-fix1-concurrency-vm-wiring.md)；
 2. VM 端到端覆盖线程/任务池/多 Runtime/共享/取消/序列化；
 3. Runtime ID 静态标签到实际 ID 的映射唯一且有测试；
 4. 错误 027–032 和 detached 通道按 22A 语义；
@@ -223,6 +230,7 @@ git diff --check
 
 ```text
 docs/DevDocs/22c-concurrency-runtime-abi-vm.md          本文
+docs/DevDocs/22c-fix1-concurrency-vm-wiring.md          VM 端到端收口
 docs/DevDocs/22-concurrency-execution-and-shared-handles.md  22C 状态
 docs/DevDocs/12-tests-and-milestones.md                 P0 的 22C 入口
 docs/DevDocs/README.md                                  22C 索引
@@ -250,6 +258,7 @@ core/rust/crates/xiao-ir/                               仅消费字段，不改
 
 ## 相关页面
 
+- [22C-FIX.1. 并发 VM 调用接线与端到端执行](22c-fix1-concurrency-vm-wiring.md)
 - [22B. 并发类型、生命周期与 IR](22b-concurrency-types-lifetime-ir.md)
 - [22A. 并发入口冻结](22a-concurrency-freeze.md)
 - [22A-FIX. 契约冲突与收口](22a-fix-concurrency-freeze.md)
