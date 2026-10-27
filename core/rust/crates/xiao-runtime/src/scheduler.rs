@@ -4,11 +4,10 @@
 //! lowering 仍由后续 22C 子批接入。句柄不复用普通单线程 `StrongHandle`。
 
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
-use std::sync::mpsc::SyncSender;
 use std::sync::{Arc, Condvar, Mutex, OnceLock, Weak, mpsc};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
@@ -416,8 +415,6 @@ pub enum RuntimeExecError {
     Cancelled,
     /// 执行单元 panic 或失去结果。
     JoinFailed,
-    /// 跨执行单元值无法按 XCON 规则复制/序列化。
-    Serialization,
 }
 
 impl RuntimeExecError {
@@ -429,7 +426,6 @@ impl RuntimeExecError {
             Self::PoolClosed => CONCURRENCY_POOL_CLOSED_CODE,
             Self::PoolArgument => CONCURRENCY_POOL_ARGUMENT_CODE,
             Self::Cancelled => CONCURRENCY_CANCELLED_CODE,
-            Self::Serialization => "X06-RUNTIME-029",
             Self::JoinFailed => "X06-RUNTIME-028",
         }
     }
@@ -693,16 +689,86 @@ where
     })
 }
 
-/// 任务池 worker 消息。
+/// 一个尚未开始的任务池消息。
 struct PoolMessage {
+    id: u64,
+    cancel: Box<dyn FnOnce() + Send + 'static>,
     run: Box<dyn FnOnce() + Send + 'static>,
+}
+
+/// 任务池有界等待队列；取消可在 worker 领取前真实移除任务。
+struct PoolQueue {
+    state: Mutex<PoolQueueState>,
+    changed: Condvar,
+    capacity: usize,
+}
+
+struct PoolQueueState {
+    messages: VecDeque<PoolMessage>,
+    closed: bool,
+}
+
+impl PoolQueue {
+    fn new(capacity: usize) -> Self {
+        Self {
+            state: Mutex::new(PoolQueueState {
+                messages: VecDeque::new(),
+                closed: false,
+            }),
+            changed: Condvar::new(),
+            capacity,
+        }
+    }
+
+    /// 领取队首任务；关闭后仍先排空已经接纳的消息。
+    fn take(&self, wait: bool) -> Option<PoolMessage> {
+        let mut state = self.state.lock().ok()?;
+        loop {
+            if let Some(message) = state.messages.pop_front() {
+                self.changed.notify_all();
+                return Some(message);
+            }
+            if state.closed || !wait {
+                return None;
+            }
+            state = self.changed.wait(state).ok()?;
+        }
+    }
+
+    /// 取消尚未开始的任务并释放其队列容量。
+    fn remove(&self, id: u64) {
+        let removed = self.state.lock().ok().and_then(|mut state| {
+            let index = state.messages.iter().position(|message| message.id == id)?;
+            let message = state.messages.remove(index);
+            self.changed.notify_all();
+            message
+        });
+        if let Some(message) = removed {
+            let PoolMessage { cancel, run, .. } = message;
+            cancel();
+            // 丢弃任务闭包可能运行用户捕获值的析构逻辑，因此放在队列锁外。
+            drop(run);
+        }
+    }
+
+    /// 停止接纳新消息并唤醒所有等待者。
+    fn close(&self, closed: &AtomicBool) -> bool {
+        let Ok(mut state) = self.state.lock() else {
+            return false;
+        };
+        if closed.swap(true, Ordering::AcqRel) {
+            return false;
+        }
+        state.closed = true;
+        self.changed.notify_all();
+        true
+    }
 }
 
 /// 任务池共享内部状态。
 struct PoolInner {
     runtime: Weak<RuntimeInner>,
-    sender: Mutex<Option<SyncSender<PoolMessage>>>,
-    receiver: Arc<Mutex<mpsc::Receiver<PoolMessage>>>,
+    queue: Arc<PoolQueue>,
     workers: Mutex<Vec<JoinHandle<()>>>,
     worker_ids: Mutex<HashSet<thread::ThreadId>>,
     closed: AtomicBool,
@@ -711,6 +777,7 @@ struct PoolInner {
     submissions_drained: Condvar,
     drain_started: AtomicBool,
     drain_worker_count: usize,
+    next_message_id: AtomicU64,
 }
 
 /// 在提交等待期间计入池关闭需要排空的提交者。
@@ -751,6 +818,7 @@ pub struct TaskPool {
 pub struct TaskHandle<T> {
     receiver: mpsc::Receiver<Result<T, RuntimeExecError>>,
     cancellation: RuntimeCancellation,
+    cancel_hook: Option<Arc<dyn Fn() + Send + Sync>>,
 }
 
 impl<T> TaskHandle<T> {
@@ -763,13 +831,17 @@ impl<T> TaskHandle<T> {
     /// 可中断等待；中断取消未完成任务，返回 027。
     pub fn wait_interruptible(self, interrupted: impl Fn() -> bool) -> Result<T, RuntimeExecError> {
         loop {
-            if interrupted() {
+            if interrupted() || self.cancellation.is_cancelled() {
                 self.cancel();
                 return Err(RuntimeExecError::Cancelled);
             }
             match self.receiver.recv_timeout(Duration::from_millis(2)) {
                 Ok(value) => return value,
-                Err(mpsc::RecvTimeoutError::Timeout) => {}
+                Err(mpsc::RecvTimeoutError::Timeout) => {
+                    if self.cancellation.is_cancelled() {
+                        return Err(RuntimeExecError::Cancelled);
+                    }
+                }
                 Err(mpsc::RecvTimeoutError::Disconnected) => {
                     return Err(RuntimeExecError::JoinFailed);
                 }
@@ -785,7 +857,9 @@ impl<T> TaskHandle<T> {
         T: Send + 'static,
     {
         let receiver = self.receiver;
+        let cancel_hook = self.cancel_hook;
         enqueue_detached_reap(Box::new(move || {
+            let _cancel_hook = cancel_hook;
             report(receiver.recv().unwrap_or(Err(RuntimeExecError::JoinFailed)));
         }))
         .expect("detached 错误收集线程不可用");
@@ -798,9 +872,18 @@ impl<T> TaskHandle<T> {
 
     /// 消费任务句柄并等待结果。
     pub fn wait(self) -> Result<T, RuntimeExecError> {
-        self.receiver
-            .recv()
-            .unwrap_or(Err(RuntimeExecError::JoinFailed))
+        loop {
+            if self.cancellation.is_cancelled() {
+                return Err(RuntimeExecError::Cancelled);
+            }
+            match self.receiver.recv_timeout(Duration::from_millis(2)) {
+                Ok(value) => return value,
+                Err(mpsc::RecvTimeoutError::Timeout) => {}
+                Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    return Err(RuntimeExecError::JoinFailed);
+                }
+            }
+        }
     }
 }
 
@@ -824,32 +907,35 @@ impl TaskPool {
         if !runtime.context_allows_current() {
             return Err(RuntimeExecError::RuntimeClosed);
         }
-        let (sender, receiver) = mpsc::sync_channel::<PoolMessage>(capacity);
-        let receiver = Arc::new(Mutex::new(receiver));
-        let mut workers = Vec::with_capacity(capacity.min(4));
+        let queue = Arc::new(PoolQueue::new(capacity));
+        let mut workers: Vec<JoinHandle<()>> = Vec::with_capacity(capacity.min(4));
         let mut worker_ids = HashSet::with_capacity(capacity.min(4));
+        let startup_closed = AtomicBool::new(false);
         for index in 0..capacity.min(4) {
-            let receiver = Arc::clone(&receiver);
+            let worker_queue = Arc::clone(&queue);
             let worker = thread::Builder::new()
                 .name(format!("xiao-pool-{}-{}", runtime.id, index))
                 .spawn(move || {
-                    loop {
-                        let message = receiver
-                            .lock()
-                            .ok()
-                            .and_then(|receiver| receiver.recv().ok());
-                        let Some(message) = message else { break };
+                    while let Some(message) = worker_queue.take(true) {
                         (message.run)();
                     }
-                })
-                .map_err(|_| RuntimeExecError::JoinFailed)?;
+                });
+            let worker = match worker {
+                Ok(worker) => worker,
+                Err(_) => {
+                    queue.close(&startup_closed);
+                    for worker in workers {
+                        let _ = worker.join();
+                    }
+                    return Err(RuntimeExecError::JoinFailed);
+                }
+            };
             worker_ids.insert(worker.thread().id());
             workers.push(worker);
         }
         let inner = Arc::new(PoolInner {
             runtime: Arc::downgrade(&runtime.inner),
-            sender: Mutex::new(Some(sender)),
-            receiver: Arc::clone(&receiver),
+            queue,
             workers: Mutex::new(workers),
             worker_ids: Mutex::new(worker_ids),
             closed: AtomicBool::new(false),
@@ -858,6 +944,7 @@ impl TaskPool {
             submissions_drained: Condvar::new(),
             drain_started: AtomicBool::new(false),
             drain_worker_count: capacity.min(4).saturating_add(1),
+            next_message_id: AtomicU64::new(1),
         });
         if let Err(error) = runtime.register_pool(&inner) {
             Self::shutdown_inner(&inner);
@@ -943,8 +1030,21 @@ impl TaskPool {
         let _submission = PoolInner::begin_submission(&self.inner);
         let child_token = cancellation.clone();
         let runtime_id = self.runtime.id;
-        let (sender, receiver) = mpsc::sync_channel(1);
+        let (result_sender, receiver) = mpsc::sync_channel(1);
+        let cancel_sender = result_sender.clone();
+        let message_id = self.inner.next_message_id.fetch_add(1, Ordering::Relaxed);
+        let hook_inner = Arc::downgrade(&self.inner);
+        let cancel_hook: Arc<dyn Fn() + Send + Sync> = Arc::new(move || {
+            if let Some(inner) = hook_inner.upgrade() {
+                inner.queue.remove(message_id);
+            }
+        });
+        cancellation.register_cancel_hook(&cancel_hook);
         let message = PoolMessage {
+            id: message_id,
+            cancel: Box::new(move || {
+                let _ = cancel_sender.send(Err(RuntimeExecError::Cancelled));
+            }),
             run: Box::new(move || {
                 let mut activity = activity;
                 activity.mark_running();
@@ -962,24 +1062,29 @@ impl TaskPool {
                         Err(_) => Err(RuntimeExecError::JoinFailed),
                     }
                 };
-                let _ = sender.send(result);
+                let _ = result_sender.send(result);
             }),
         };
-        let sender = {
-            let sender = self
-                .inner
-                .sender
-                .lock()
-                .map_err(|_| RuntimeExecError::PoolClosed)?;
-            if self.inner.closed.load(Ordering::Acquire) {
-                return Err(RuntimeExecError::PoolClosed);
-            }
-            sender
-                .as_ref()
-                .cloned()
-                .ok_or(RuntimeExecError::PoolClosed)?
-        };
-        let mut message = Some(message);
+        self.enqueue_message(message, &cancellation, &interrupted)?;
+        Ok(TaskHandle {
+            receiver,
+            cancellation,
+            cancel_hook: Some(cancel_hook),
+        })
+    }
+
+    fn enqueue_message(
+        &self,
+        message: PoolMessage,
+        cancellation: &RuntimeCancellation,
+        interrupted: &impl Fn() -> bool,
+    ) -> Result<(), RuntimeExecError> {
+        let mut state = self
+            .inner
+            .queue
+            .state
+            .lock()
+            .map_err(|_| RuntimeExecError::PoolClosed)?;
         loop {
             if interrupted() || cancellation.is_cancelled() {
                 return Err(RuntimeExecError::Cancelled);
@@ -990,25 +1095,28 @@ impl TaskPool {
             if self.inner.closed.load(Ordering::Acquire) {
                 return Err(RuntimeExecError::PoolClosed);
             }
-            match sender.try_send(message.take().expect("提交消息只消费一次")) {
-                Ok(()) => break,
-                Err(mpsc::TrySendError::Full(message_back)) => {
-                    message = Some(message_back);
-                    thread::park_timeout(Duration::from_millis(1));
+            if state.messages.len() < self.inner.queue.capacity {
+                let message_id = message.id;
+                state.messages.push_back(message);
+                self.inner.queue.changed.notify_one();
+                // cancellation can race the queue insertion after its callback
+                // already scanned the queue. Recheck after insertion so that
+                // this ordering cannot strand a cancelled message.
+                if interrupted() || cancellation.is_cancelled() {
+                    drop(state);
+                    self.inner.queue.remove(message_id);
+                    return Err(RuntimeExecError::Cancelled);
                 }
-                Err(mpsc::TrySendError::Disconnected(_)) => {
-                    return Err(if self.runtime.is_closed() {
-                        RuntimeExecError::RuntimeClosed
-                    } else {
-                        RuntimeExecError::PoolClosed
-                    });
-                }
+                return Ok(());
             }
+            let (next, _) = self
+                .inner
+                .queue
+                .changed
+                .wait_timeout(state, Duration::from_millis(2))
+                .map_err(|_| RuntimeExecError::PoolClosed)?;
+            state = next;
         }
-        Ok(TaskHandle {
-            receiver,
-            cancellation,
-        })
     }
 
     /// 关闭任务池并等待 worker 退出。
@@ -1034,14 +1142,7 @@ impl TaskPool {
             let Ok(_shutdown_gate) = inner.shutdown_gate.lock() else {
                 return;
             };
-            if inner.closed.swap(true, Ordering::AcqRel) {
-                false
-            } else {
-                if let Ok(mut sender) = inner.sender.lock() {
-                    sender.take();
-                }
-                true
-            }
+            inner.queue.close(&inner.closed)
         };
         if let Ok(mut pending) = inner.pending_submissions.lock() {
             while *pending != 0 {
@@ -1107,16 +1208,16 @@ impl TaskPool {
         }
         let mut drains = Vec::with_capacity(inner.drain_worker_count);
         for index in 0..inner.drain_worker_count {
-            let receiver = Arc::clone(&inner.receiver);
+            let queue = Arc::clone(&inner.queue);
             match thread::Builder::new()
                 .name(format!("xiao-pool-shutdown-drain-{index}"))
-                .spawn(move || Self::drain_pending_messages(&receiver))
+                .spawn(move || Self::drain_pending_messages(&queue))
             {
                 Ok(drain) => drains.push(drain),
                 Err(_) => {
                     // 极端情况下线程创建失败，当前 worker 直接接管剩余消息，
                     // 避免把已接纳 activity 永久留在队列中。
-                    Self::drain_pending_messages(&inner.receiver);
+                    Self::drain_pending_messages(&inner.queue);
                     break;
                 }
             }
@@ -1125,16 +1226,9 @@ impl TaskPool {
     }
 
     /// 运行队列中已经接纳、但尚未被 worker 领取的任务。
-    fn drain_pending_messages(receiver: &Arc<Mutex<mpsc::Receiver<PoolMessage>>>) {
-        loop {
-            let message = match receiver.lock() {
-                Ok(receiver) => receiver.try_recv(),
-                Err(_) => return,
-            };
-            match message {
-                Ok(message) => (message.run)(),
-                Err(mpsc::TryRecvError::Empty | mpsc::TryRecvError::Disconnected) => break,
-            }
+    fn drain_pending_messages(queue: &Arc<PoolQueue>) {
+        while let Some(message) = queue.take(false) {
+            (message.run)();
         }
     }
 }
@@ -1717,6 +1811,13 @@ mod tests {
         thread::sleep(Duration::from_millis(20));
         let close_runtime = runtime.clone();
         let closer = thread::spawn(move || close_runtime.close());
+        for _ in 0..100 {
+            if runtime.is_closed() {
+                break;
+            }
+            thread::sleep(Duration::from_millis(1));
+        }
+        assert!(runtime.is_closed(), "关闭线程应先停止 Runtime 接纳");
         running_release_tx.send(()).unwrap();
 
         assert!(matches!(
@@ -1726,6 +1827,56 @@ mod tests {
         closer.join().expect("Runtime close 完成");
         assert_eq!(running.wait(), Ok(1));
         assert_eq!(queued.wait(), Ok(2));
+    }
+
+    #[test]
+    /// 排队任务取消后立即返回，并释放逻辑队列槽供后续提交使用。
+    fn queued_task_cancel_releases_slot_before_worker_is_free() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("pool");
+        let (started_tx, started_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let blocker = pool
+            .submit(move |_| {
+                started_tx.send(()).unwrap();
+                release_rx.recv().unwrap();
+                1_u32
+            })
+            .expect("阻塞任务");
+        started_rx.recv().expect("阻塞任务已开始");
+        let queued = pool.submit(|_| 2_u32).expect("排队任务");
+        queued.cancel();
+        let started = std::time::Instant::now();
+        assert_eq!(
+            queued.wait_interruptible(|| false),
+            Err(RuntimeExecError::Cancelled)
+        );
+        assert!(started.elapsed() < Duration::from_millis(100));
+        assert_eq!(
+            *runtime
+                .inner
+                .active
+                .lock()
+                .expect("Runtime 活动计数锁未中毒"),
+            1,
+            "取消排队任务应释放其 Runtime activity lease"
+        );
+        let replacement = pool.submit(|_| 3_u32).expect("取消后应能重新提交");
+        assert_eq!(
+            pool.inner
+                .queue
+                .state
+                .lock()
+                .expect("任务池队列锁未中毒")
+                .messages
+                .len(),
+            1,
+            "已取消任务必须从队列移除，只留下替代任务"
+        );
+        release_tx.send(()).unwrap();
+        assert_eq!(blocker.wait(), Ok(1));
+        assert_eq!(replacement.wait(), Ok(3));
+        pool.shutdown().expect("pool shutdown");
     }
 
     #[test]

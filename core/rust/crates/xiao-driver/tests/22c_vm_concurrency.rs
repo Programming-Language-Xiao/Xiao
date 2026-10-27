@@ -61,6 +61,42 @@ fn outputs(events: &[VmEvent]) -> String {
         .collect()
 }
 
+/// 读取本次 VM 事件或有界 Runtime 错误通道中的 detached 报告。
+fn detached_report(result: &Observation, operation: &str) -> (u64, xiao_diagnostics::ReportRecord) {
+    if let Some((runtime_id, report)) = result.events.iter().find_map(|event| match event {
+        VmEvent::DetachedFailure { runtime_id, report } => Some((*runtime_id, report.clone())),
+        _ => None,
+    }) {
+        return (runtime_id, report);
+    }
+    let runtime_id = result
+        .events
+        .iter()
+        .find_map(|event| match event {
+            VmEvent::ConcurrencyObserved {
+                operation: observed,
+                runtime_id,
+                ..
+            } if observed == operation => Some(*runtime_id),
+            _ => None,
+        })
+        .expect("detached 操作應保留 Runtime 身份");
+    let deadline = std::time::Instant::now() + Duration::from_secs(2);
+    loop {
+        if let Some(report) = xiao_runtime::take_vm_detached_errors_for(&[runtime_id])
+            .into_iter()
+            .next()
+        {
+            return (
+                report.runtime_id,
+                xiao_diagnostics::ReportRecord::from_error(&report.error),
+            );
+        }
+        assert!(std::time::Instant::now() < deadline, "detached 报告未到达");
+        std::thread::sleep(Duration::from_millis(1));
+    }
+}
+
 /// 验证 Runtime、spawn/join、任务池和跨边界值均可从源码执行。
 #[test]
 fn source_threads_pool_aliases_and_values_are_observable() {
@@ -188,6 +224,44 @@ join(task)
     assert_eq!(result.output, "finally-once\n");
 }
 
+/// 验证并发 027 不会进入用户 catch，也不会让取消后的 child 继续运行。
+#[test]
+fn concurrency_cancel_cannot_be_swallowed_by_catch() {
+    let result = observe(
+        r#"from std.concurrent import current_runtime, shared_mut, spawn, join, cancel, lock, lock_read, lock_write
+def ready(shared_mut<int> flag) -> int
+    guard = lock(flag)
+    return lock_read(guard)
+def signal(shared_mut<int> flag) -> none
+    guard = lock(flag)
+    lock_write(guard, 1)
+def work(shared_mut<int> flag) -> int
+    signal(flag)
+    try
+        while true
+            value = 1
+    catch err as Error
+        print("caught")
+        while true
+            value = 2
+    return 0
+rt = current_runtime()
+flag = shared_mut(0)
+task = spawn(rt, work, flag)
+while ready(flag) == 0
+    value = 1
+cancel(task)
+join(task)
+"#,
+    );
+    assert_eq!(
+        result.code.as_deref(),
+        Some("X06-RUNTIME-027"),
+        "{result:?}"
+    );
+    assert!(!result.output.contains("caught"));
+}
+
 /// 验证外部超时能够中断 join 和子 VM 热循环。
 #[test]
 fn external_timeout_interrupts_join_and_child_vm() {
@@ -288,41 +362,72 @@ fn real_source_builds_and_runs_xar_with_preflight_features() {
     );
 }
 
-/// 验证排队任务取消后不运行函数体，wait 返回 027。
+/// 验证排队任务取消后 wait 不等 worker 空闲，并立即释放队列容量。
 #[test]
 fn queued_task_cancel_never_runs_body_and_wait_is_027() {
-    let result = observe(
-        r#"from std.concurrent import current_runtime, shared_mut, pool_create, submit, wait, cancel, lock, lock_read, lock_write
+    let source =
+        r#"from std.concurrent import current_runtime, shared_mut, spawn, pool_create, submit, wait, cancel, lock, lock_read, lock_write
 def read_flag(shared_mut<int> flag) -> int
     guard = lock(flag)
     return lock_read(guard)
-def set_flag(shared_mut<int> flag) -> none
+def write_flag(shared_mut<int> flag, int value) -> none
     guard = lock(flag)
-    lock_write(guard, 1)
+    lock_write(guard, value)
+def release_after_wait(shared_mut<int> ready, shared_mut<int> gate) -> int
+    while read_flag(ready) == 0
+        value = 1
+    write_flag(gate, 1)
+    return 0
 def blocker(shared_mut<int> flag) -> int
     while read_flag(flag) == 0
         value = 1
     return 1
-def queued() -> int
+def queued(int value, str text) -> int
     print("must-not-run")
-    return 2
+    return value
 rt = current_runtime()
+ready = shared_mut(0)
+gate = shared_mut(0)
+release_gate = gate
 pool = pool_create(rt, 1)
-flag = shared_mut(0)
-first = submit(pool, blocker, flag)
+release = spawn(rt, release_after_wait, ready, release_gate)
+first = submit(pool, blocker, gate)
 second = submit(pool, queued)
 cancel(second)
-set_flag(flag)
-wait(first)
-wait(second)
-"#,
-    );
+try
+    wait(second)
+finally
+    write_flag(ready, 1)
+"#
+        .replace("second = submit(pool, queued)", "second = submit(pool, queued, 2, \"payload\")");
+    let request = DriverRequest::new(FrontendRequest::from_text(source.clone()));
+    let artifact = FrontendCompiler::new().compile(&request.frontend).unwrap();
+    let transfer = artifact
+        .ir
+        .ownership
+        .boundary_transfers
+        .iter()
+        .rfind(|transfer| transfer.parameters.len() == 2)
+        .expect("排队任务应包含两个边界参数");
+    let expected_cleanup = transfer.cleanup_order.clone();
+    let result = observe(&source);
     assert_eq!(
         result.code.as_deref(),
         Some("X06-RUNTIME-027"),
         "{result:?}"
     );
     assert!(!result.output.contains("must-not-run"));
+    let released = result
+        .events
+        .iter()
+        .filter_map(|event| match event {
+            VmEvent::BoundaryCopyReleased { value } if expected_cleanup.contains(value) => {
+                Some(*value)
+            }
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(released, expected_cleanup);
 }
 
 /// 验证锁等待和已完成句柄取消仍遵循 027 语义。
@@ -486,6 +591,32 @@ fn boundary_failure_cleans_copies_in_ir_order_before_starting_child() {
     assert_eq!(released, cleanup[1..]);
 }
 
+/// 验证边界复制成功但任务启动被拒绝时仍按 IR 顺序释放副本。
+#[test]
+fn startup_failure_cleans_successful_boundary_copies() {
+    let source = "from std.concurrent import current_runtime, pool_create, submit, shutdown\ndef work(int value, str text) -> int\n    return value\nrt = current_runtime()\npool = pool_create(rt, 1)\nshutdown(pool)\nsubmit(pool, work, 1, \"x\")\n";
+    let request = DriverRequest::new(FrontendRequest::from_text(source));
+    let artifact = FrontendCompiler::new().compile(&request.frontend).unwrap();
+    let cleanup = artifact.ir.ownership.boundary_transfers[0]
+        .cleanup_order
+        .clone();
+    let result = observe(source);
+    assert_eq!(
+        result.code.as_deref(),
+        Some("X06-RUNTIME-030"),
+        "{result:?}"
+    );
+    let released = result
+        .events
+        .iter()
+        .filter_map(|event| match event {
+            VmEvent::BoundaryCopyReleased { value } => Some(*value),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(released, cleanup);
+}
+
 /// 验证损坏的并发计划在进入 VM 前被 verifier 拒绝。
 #[test]
 fn corrupt_plans_are_rejected_before_vm_execution() {
@@ -536,18 +667,54 @@ print("continued")
     assert!(result.success, "{result:?}");
     assert_eq!(result.output, "continued\n");
     assert!(result.events.iter().any(|event| matches!(event, VmEvent::ConcurrencyObserved {operation, ..} if operation == "detach")));
-    let deadline = std::time::Instant::now() + Duration::from_secs(2);
-    let report = loop {
-        if let Some(report) = xiao_runtime::take_vm_detached_errors().into_iter().next() {
-            break report;
-        }
-        assert!(std::time::Instant::now() < deadline);
-        std::thread::yield_now();
-    };
-    assert_eq!(report.error.code(), "X06-RUNTIME-028");
-    assert_ne!(report.runtime_id, 0);
-    let report = xiao_diagnostics::ReportRecord::from_error(&report.error);
-    assert_eq!(report.cause.unwrap().code, "detached-original");
+    let (runtime_id, report) = detached_report(&result, "detach");
+    assert_ne!(runtime_id, 0);
+    assert_eq!(report.code, "X06-RUNTIME-028");
+    assert_eq!(report.cause.as_ref().unwrap().code, "detached-original");
+}
+
+/// 验证未等待任务在 VM 退出回收后也进入本次运行的结构化事件。
+#[test]
+fn dropped_unwaited_task_failure_is_reported_before_vm_returns() {
+    let result = observe(
+        r#"from std.concurrent import current_runtime, pool_create, submit
+def fail() -> int
+    raise TypeError(code = "unwaited-original")
+    return 0
+rt = current_runtime()
+pool = pool_create(rt, 1)
+job = submit(pool, fail)
+print("done")
+"#,
+    );
+    assert!(result.success, "{result:?}");
+    assert_eq!(result.output, "done\n");
+    let (runtime_id, report) = detached_report(&result, "submit");
+    assert_ne!(runtime_id, 0);
+    assert_eq!(report.code, "X06-RUNTIME-028");
+    assert_eq!(report.cause.as_ref().unwrap().code, "unwaited-original");
+}
+
+/// 22A 关闭语义要求 VM 退出前 drain detached 活动；外部截止时间仍能收束无限 child。
+#[test]
+fn detached_activity_is_drained_before_timeout_returns() {
+    let result = observe(
+        r#"from std.concurrent import current_runtime, spawn, detach
+def work() -> int
+    while true
+        value = 1
+    return 0
+rt = current_runtime()
+task = spawn(rt, work)
+detach(task)
+print("done")
+"#,
+    );
+    assert_eq!(
+        result.code.as_deref(),
+        Some(xiao_driver::DRIVER_TIMEOUT_CODE),
+        "{result:?}"
+    );
 }
 
 /// 验证隔离 child 可以载入只读项目模块和标准模块快照。

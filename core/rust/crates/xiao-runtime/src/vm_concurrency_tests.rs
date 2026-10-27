@@ -2,6 +2,8 @@
 
 use super::*;
 
+static DETACHED_REPORT_TEST_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+
 #[test]
 /// 验证普通跨边界值经历 XCON 编码后成为独立副本。
 fn transfer_bytes_are_validated_and_copy_values() {
@@ -81,4 +83,24 @@ fn thread_consumption_is_shared_but_handles_are_not_hashable() {
         Err(RuntimeExecError::JoinFailed)
     ));
     runtime.try_close().unwrap();
+}
+
+#[test]
+/// 验证 VM detached 报告通道有界，并公开报告溢出数量。
+fn vm_detached_report_channel_is_bounded_and_counts_drops() {
+    let _guard = DETACHED_REPORT_TEST_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .expect("VM detached 测试锁未中毒");
+    let _ = take_vm_detached_errors();
+    let _ = take_vm_detached_error_drops();
+    let result = Ok(Err(VmExecutionError::Error(execution_error(
+        RuntimeExecError::JoinFailed,
+    ))));
+    for runtime_id in 0..=VM_DETACHED_ERROR_CAPACITY as u64 {
+        report_detached(runtime_id, result.clone());
+    }
+    let reports = take_vm_detached_errors();
+    assert_eq!(reports.len(), VM_DETACHED_ERROR_CAPACITY);
+    assert_eq!(take_vm_detached_error_drops(), 1);
 }

@@ -484,6 +484,7 @@ pub struct LockCancellation {
 struct LockCancellationInner {
     cancelled: AtomicBool,
     waiters: Mutex<Vec<Weak<LockWaiters>>>,
+    hooks: Mutex<Vec<Weak<dyn Fn() + Send + Sync>>>,
 }
 
 impl LockCancellation {
@@ -504,12 +505,39 @@ impl LockCancellation {
             let _gate = waiter.gate.lock().expect("共享锁等待器锁未中毒");
             waiter.ready.notify_all();
         }
+        let hooks = self
+            .inner
+            .hooks
+            .lock()
+            .map(|mut hooks| {
+                let live = hooks.iter().filter_map(Weak::upgrade).collect::<Vec<_>>();
+                hooks.retain(|hook| hook.strong_count() > 0);
+                live
+            })
+            .unwrap_or_default();
+        for hook in hooks {
+            hook();
+        }
     }
 
     /// 查询取消状态。
     #[must_use]
     pub fn is_cancelled(&self) -> bool {
         self.inner.cancelled.load(Ordering::Acquire)
+    }
+
+    /// 登记一个取消回调；已取消令牌会立即调用回调。
+    pub(crate) fn register_cancel_hook(&self, hook: &Arc<dyn Fn() + Send + Sync>) {
+        if self.is_cancelled() {
+            hook();
+            return;
+        }
+        if let Ok(mut hooks) = self.inner.hooks.lock() {
+            hooks.push(Arc::downgrade(hook));
+        }
+        if self.is_cancelled() {
+            hook();
+        }
     }
 }
 

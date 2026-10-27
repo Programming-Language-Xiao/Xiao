@@ -85,8 +85,10 @@ pub use testing::{CatchRoute, ReleaseExecution, RuntimeBinding, RuntimeDriver, U
 pub use value::{ExternalResourceHandle, ExternalResourceKind, RuntimeValue, StringHandle};
 /// 重导出 VM 并发句柄适配。
 pub use vm_concurrency::{
-    VmConcurrencyValue, VmDetachedError, VmExecutionError, VmExecutionResult, VmTransferValue,
-    execution_error, take_vm_detached_errors, transfer_error,
+    VM_DETACHED_ERROR_CAPACITY, VmConcurrencyValue, VmDetachedCompletionTracker, VmDetachedError,
+    VmExecutionError, VmExecutionResult, VmTransferValue, execution_error,
+    take_vm_detached_error_drops, take_vm_detached_errors, take_vm_detached_errors_for,
+    transfer_error,
 };
 
 /// 安装当前平台的最小未处理异常报告器。

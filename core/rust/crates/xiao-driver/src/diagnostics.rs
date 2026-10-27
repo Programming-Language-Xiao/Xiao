@@ -785,6 +785,18 @@ fn vm_event_to_diagnostic_with_locale(
     locale: &str,
 ) -> DiagnosticEvent {
     let (event_type, function, payload) = match event {
+        VmEvent::DetachedFailure { runtime_id, report } => (
+            "detached_failure",
+            None,
+            serde_json::json!({
+                "runtime_id": runtime_id,
+                "code": report.code,
+                "message_id": report.message_id,
+                "message": report.message,
+                "cause_code": report.cause.as_deref().map(|cause| cause.code.as_str()),
+                "suppressed_codes": report.suppressed.iter().map(|error| error.code.as_str()).collect::<Vec<_>>(),
+            }),
+        ),
         VmEvent::ConcurrencyObserved {
             operation,
             runtime_id,

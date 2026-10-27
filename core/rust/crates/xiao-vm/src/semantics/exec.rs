@@ -66,16 +66,6 @@ pub enum Fault {
     Cancelled,
 }
 
-impl Fault {
-    /// 返回携带的可恢复错误对象。
-    pub fn into_error(self) -> Option<XiaoError> {
-        match self {
-            Self::Error(error) | Self::ConcurrencyCancelled(error) => Some(error),
-            _ => None,
-        }
-    }
-}
-
 /// 一条已经求值的实参。
 #[derive(Clone, Debug)]
 pub struct BoundArgument {
@@ -1342,7 +1332,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             frame.pending_check_kind = None;
         }
         let _ = current_block;
-        Err(Fault::Error(primary))
+        Err(Fault::ConcurrencyCancelled(primary))
     }
     /// 在指定的子程序边界内路由故障。
     ///
@@ -1718,10 +1708,13 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             .get(frame.function.get() as usize)
             .cloned();
         if let Some(function) = function.as_ref() {
-            if matches!(fault, Fault::Cancelled) {
+            if matches!(fault, Fault::Cancelled | Fault::ConcurrencyCancelled(_)) {
                 self.run_cancelled_finalies(function);
             }
-            if matches!(fault, Fault::Error(_) | Fault::Cancelled) {
+            if matches!(
+                fault,
+                Fault::Error(_) | Fault::Cancelled | Fault::ConcurrencyCancelled(_)
+            ) {
                 for scope in scopes.iter().rev().copied() {
                     self.run_plan(function, scope, "unmatched_error");
                 }

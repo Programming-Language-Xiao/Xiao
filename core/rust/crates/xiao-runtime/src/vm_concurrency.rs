@@ -6,7 +6,9 @@
 use std::cell::RefCell;
 use std::fmt;
 use std::rc::Rc;
-use std::sync::{Mutex, OnceLock};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex, OnceLock, mpsc};
+use std::time::{Duration, Instant};
 
 use crate::concurrency::{SharedHandle, SharedOwnedGuard};
 use crate::scheduler::{
@@ -40,6 +42,8 @@ pub enum VmTransferValue {
 pub enum VmExecutionError {
     /// 可恢复的语言错误。
     Error(XiaoError),
+    /// 并发取消 027；父 VM 不得把它路由到用户 catch。
+    ConcurrencyCancelled(XiaoError),
     /// 子 VM 致命错误。
     Fatal(FatalError),
     /// 外部 VM 取消，独立于并发 027。
@@ -58,6 +62,74 @@ pub struct VmDetachedError {
     pub error: XiaoError,
 }
 
+/// 追踪本次 VM 已交给 detached 回收器的完成回调。
+type VmDetachedCompletion = (u64, mpsc::Receiver<()>);
+
+/// 各执行单元共享的 detached 回收完成队列。
+type VmDetachedCompletionQueue = Arc<Mutex<Vec<VmDetachedCompletion>>>;
+
+/// VM 执行单元共享的 detached 回收完成追踪器。
+#[derive(Clone, Default)]
+pub struct VmDetachedCompletionTracker {
+    pending: VmDetachedCompletionQueue,
+}
+
+impl VmDetachedCompletionTracker {
+    fn track(&self, runtime_id: u64, completion: mpsc::Receiver<()>) {
+        self.pending
+            .lock()
+            .expect("VM detached 完成队列锁未中毒")
+            .push((runtime_id, completion));
+    }
+
+    /// 短暂收取给定 Runtime 已完成的 detached 回收回调，不等待长时间积压。
+    #[must_use]
+    pub fn wait_runtime_ids(&self, runtime_ids: &[u64]) -> Vec<u64> {
+        let selected = {
+            let Ok(mut pending) = self.pending.lock() else {
+                return Vec::new();
+            };
+            let mut selected = Vec::new();
+            let mut remaining = Vec::new();
+            for item in std::mem::take(&mut *pending) {
+                if runtime_ids.contains(&item.0) {
+                    selected.push(item);
+                } else {
+                    remaining.push(item);
+                }
+            }
+            *pending = remaining;
+            selected
+        };
+        let deadline = Instant::now() + Duration::from_millis(25);
+        let mut completed = Vec::new();
+        let mut still_pending = Vec::new();
+        for (runtime_id, completion) in selected {
+            let remaining = deadline.saturating_duration_since(Instant::now());
+            if remaining.is_zero() {
+                still_pending.push((runtime_id, completion));
+                continue;
+            }
+            match completion.recv_timeout(remaining) {
+                Ok(()) | Err(mpsc::RecvTimeoutError::Disconnected) => completed.push(runtime_id),
+                Err(mpsc::RecvTimeoutError::Timeout) => {
+                    still_pending.push((runtime_id, completion));
+                }
+            }
+        }
+        if let Ok(mut pending) = self.pending.lock() {
+            pending.extend(still_pending);
+        }
+        completed
+    }
+}
+
+/// 进程级 VM detached 错误通道最多保留的报告数。
+pub const VM_DETACHED_ERROR_CAPACITY: usize = 4096;
+
+/// 因 detached 错误通道达到容量而未保存的报告数量。
+static VM_DETACHED_ERROR_DROPS: AtomicUsize = AtomicUsize::new(0);
+
 /// 进程级保存尚未由宿主读取的 detached 执行失败。
 fn detached_reports() -> &'static Mutex<Vec<VmDetachedError>> {
     /// 子 VM detached 错误记录。
@@ -71,11 +143,40 @@ pub fn take_vm_detached_errors() -> Vec<VmDetachedError> {
     std::mem::take(&mut *detached_reports().lock().expect("VM detached 通道锁未中毒"))
 }
 
+/// 取出指定 Runtime 所属的 detached 失败，供 VM 关闭时并入本次运行结果。
+#[must_use]
+pub fn take_vm_detached_errors_for(runtime_ids: &[u64]) -> Vec<VmDetachedError> {
+    if runtime_ids.is_empty() {
+        return Vec::new();
+    }
+    let Ok(mut reports) = detached_reports().lock() else {
+        return Vec::new();
+    };
+    let mut selected = Vec::new();
+    let mut remaining = Vec::with_capacity(reports.len());
+    for report in std::mem::take(&mut *reports) {
+        if runtime_ids.contains(&report.runtime_id) {
+            selected.push(report);
+        } else {
+            remaining.push(report);
+        }
+    }
+    *reports = remaining;
+    selected
+}
+
+/// 取出 detached 错误通道的报告丢弃计数并清零。
+#[must_use]
+pub fn take_vm_detached_error_drops() -> usize {
+    VM_DETACHED_ERROR_DROPS.swap(0, Ordering::AcqRel)
+}
+
 /// 把 detached 子执行失败规范化为 027/028 并保留 Runtime 身份。
 fn report_detached(runtime_id: u64, result: Result<VmExecutionResult, RuntimeExecError>) {
     let error = match result {
         Ok(Ok(_)) => return,
         Ok(Err(VmExecutionError::Error(error))) if error.code() == "X06-RUNTIME-027" => error,
+        Ok(Err(VmExecutionError::ConcurrencyCancelled(error))) => error,
         Ok(Err(VmExecutionError::Error(error))) => {
             execution_error(RuntimeExecError::JoinFailed).with_cause(error)
         }
@@ -87,10 +188,12 @@ fn report_detached(runtime_id: u64, result: Result<VmExecutionResult, RuntimeExe
         Ok(Err(VmExecutionError::Cancelled)) => execution_error(RuntimeExecError::Cancelled),
         Err(error) => execution_error(error),
     };
-    detached_reports()
-        .lock()
-        .expect("VM detached 通道锁未中毒")
-        .push(VmDetachedError { runtime_id, error });
+    let mut reports = detached_reports().lock().expect("VM detached 通道锁未中毒");
+    if reports.len() < VM_DETACHED_ERROR_CAPACITY {
+        reports.push(VmDetachedError { runtime_id, error });
+    } else {
+        VM_DETACHED_ERROR_DROPS.fetch_add(1, Ordering::AcqRel);
+    }
 }
 
 /// 将 Runtime 错误转换为冻结的结构化错误身份。
@@ -259,6 +362,7 @@ pub struct VmThreadValue {
     handle: RefCell<Option<ThreadHandle<VmExecutionResult>>>,
     cancellation: RuntimeCancellation,
     runtime: RuntimeHandle,
+    detached: Option<VmDetachedCompletionTracker>,
 }
 
 impl Drop for VmThreadValue {
@@ -266,7 +370,14 @@ impl Drop for VmThreadValue {
     fn drop(&mut self) {
         if let Some(handle) = self.handle.get_mut().take() {
             let id = self.runtime.id();
-            handle.detach_with(move |result| report_detached(id, result));
+            let (completion_tx, completion_rx) = mpsc::channel();
+            handle.detach_with(move |result| {
+                report_detached(id, result);
+                let _ = completion_tx.send(());
+            });
+            if let Some(tracker) = &self.detached {
+                tracker.track(id, completion_rx);
+            }
         }
     }
 }
@@ -276,6 +387,7 @@ pub struct VmTaskValue {
     handle: RefCell<Option<TaskHandle<VmExecutionResult>>>,
     cancellation: RuntimeCancellation,
     runtime: RuntimeHandle,
+    detached: Option<VmDetachedCompletionTracker>,
 }
 
 impl Drop for VmTaskValue {
@@ -283,7 +395,14 @@ impl Drop for VmTaskValue {
     fn drop(&mut self) {
         if let Some(handle) = self.handle.get_mut().take() {
             let runtime_id = self.runtime.id();
-            handle.detach_with(move |result| report_detached(runtime_id, result));
+            let (completion_tx, completion_rx) = mpsc::channel();
+            handle.detach_with(move |result| {
+                report_detached(runtime_id, result);
+                let _ = completion_tx.send(());
+            });
+            if let Some(tracker) = &self.detached {
+                tracker.track(runtime_id, completion_rx);
+            }
         }
     }
 }
@@ -349,21 +468,41 @@ impl VmConcurrencyValue {
 
     /// 包装可消费线程，别名共享消费状态。
     pub fn thread(handle: ThreadHandle<VmExecutionResult>, runtime: RuntimeHandle) -> Self {
+        Self::thread_tracked(handle, runtime, None)
+    }
+
+    /// 包装线程并追踪 detached 回收完成。
+    pub fn thread_tracked(
+        handle: ThreadHandle<VmExecutionResult>,
+        runtime: RuntimeHandle,
+        detached: Option<VmDetachedCompletionTracker>,
+    ) -> Self {
         let cancellation = handle.cancellation();
         Self::Thread(Rc::new(VmThreadValue {
             handle: RefCell::new(Some(handle)),
             cancellation,
             runtime,
+            detached,
         }))
     }
 
     /// 包装可消费任务，别名共享消费状态。
     pub fn task(handle: TaskHandle<VmExecutionResult>, runtime: RuntimeHandle) -> Self {
+        Self::task_tracked(handle, runtime, None)
+    }
+
+    /// 包装任务并追踪 detached 回收完成。
+    pub fn task_tracked(
+        handle: TaskHandle<VmExecutionResult>,
+        runtime: RuntimeHandle,
+        detached: Option<VmDetachedCompletionTracker>,
+    ) -> Self {
         let cancellation = handle.cancellation();
         Self::Task(Rc::new(VmTaskValue {
             handle: RefCell::new(Some(handle)),
             cancellation,
             runtime,
+            detached,
         }))
     }
 
@@ -432,7 +571,14 @@ impl VmConcurrencyValue {
             .take()
             .ok_or(RuntimeExecError::JoinFailed)?;
         let runtime_id = value.runtime.id();
-        handle.detach_with(move |result| report_detached(runtime_id, result));
+        let (completion_tx, completion_rx) = mpsc::channel();
+        handle.detach_with(move |result| {
+            report_detached(runtime_id, result);
+            let _ = completion_tx.send(());
+        });
+        if let Some(tracker) = &value.detached {
+            tracker.track(runtime_id, completion_rx);
+        }
         Ok(())
     }
 }
@@ -449,11 +595,17 @@ fn cancel_result(
         Err(VmExecutionError::Error(error)) if error.code() == "X06-RUNTIME-027" => {
             Err(VmExecutionError::Error(error))
         }
+        Err(VmExecutionError::ConcurrencyCancelled(error)) => {
+            Err(VmExecutionError::ConcurrencyCancelled(error))
+        }
         Err(VmExecutionError::Fatal(fatal)) => Err(VmExecutionError::Fatal(fatal)),
         Err(VmExecutionError::Cancelled) => Err(VmExecutionError::Cancelled),
         other => {
             let mut error = execution_error(RuntimeExecError::Cancelled);
-            if let Err(VmExecutionError::Error(cause)) = other {
+            if let Err(
+                VmExecutionError::Error(cause) | VmExecutionError::ConcurrencyCancelled(cause),
+            ) = other
+            {
                 error.push_suppressed(cause);
             }
             Err(VmExecutionError::Error(error))

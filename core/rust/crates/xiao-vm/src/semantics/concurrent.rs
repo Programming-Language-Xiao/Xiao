@@ -25,12 +25,55 @@ struct ChildSink(Arc<Mutex<ChildEvents>>);
 impl VmEventSink for ChildSink {
     /// 缓冲事件；容量耗尽时只增加丢弃计数。
     fn record(&mut self, event: VmEvent) {
-        let mut events = self.0.lock().expect("子 VM 事件锁未中毒");
-        if events.pending.len() < CHILD_EVENT_CAPACITY {
-            events.pending.push(event);
-        } else {
-            events.dropped += 1;
-        }
+        record_child_event(&self.0, event);
+    }
+}
+
+fn record_child_event(events: &Arc<Mutex<ChildEvents>>, event: VmEvent) {
+    let mut events = events.lock().expect("子 VM 事件锁未中毒");
+    if events.pending.len() < CHILD_EVENT_CAPACITY {
+        events.pending.push(event);
+    } else {
+        events.dropped = events.dropped.saturating_add(1);
+    }
+}
+
+/// 尚未交给子 VM 的边界副本；排队任务被取消删除时仍按 IR 计划释放并记录事件。
+struct DeferredBoundaryCopies {
+    boundary: Arc<Mutex<Option<Vec<VmTransferValue>>>>,
+    plan: TacConcurrencyPlan,
+    events: Arc<Mutex<ChildEvents>>,
+}
+
+impl DeferredBoundaryCopies {
+    fn take(&self) -> Option<Vec<VmTransferValue>> {
+        self.boundary
+            .lock()
+            .ok()
+            .and_then(|mut boundary| boundary.take())
+    }
+}
+
+impl Drop for DeferredBoundaryCopies {
+    fn drop(&mut self) {
+        // 函数体运行前即发生提交失败或排队取消时，闭包负责回滚；正常启动时
+        // `take()` 已把副本交给子 VM，这里不会重复消费。
+        let copies = self
+            .boundary
+            .lock()
+            .ok()
+            .and_then(|mut boundary| boundary.take());
+        let Some(copies) = copies else {
+            return;
+        };
+        release_arguments(&self.plan, copies, |value| {
+            let mut events = self.events.lock().expect("子 VM 事件锁未中毒");
+            if events.pending.len() < CHILD_EVENT_CAPACITY {
+                events.pending.push(VmEvent::BoundaryCopyReleased { value });
+            } else {
+                events.dropped += 1;
+            }
+        });
     }
 }
 
@@ -38,14 +81,14 @@ impl VmEventSink for ChildSink {
 #[derive(Default)]
 pub(super) struct ConcurrentContext {
     runtime: RefCell<Option<RuntimeHandle>>,
-    owned: RefCell<Vec<RuntimeHandle>>,
+    owned: RefCell<Vec<(RuntimeHandle, RuntimeHandle)>>,
     cancellation: RuntimeCancellation,
     cancellation_handled: Cell<bool>,
     children: RefCell<Vec<RuntimeCancellation>>,
     events: Arc<Mutex<ChildEvents>>,
+    detached: xiao_runtime::VmDetachedCompletionTracker,
     /// 本次调用观测的实际目标 Runtime，不使用静态标签代替。
     observed_runtime: Cell<u64>,
-    labels: RefCell<BTreeMap<(String, u32, usize, u64), u64>>,
 }
 
 impl ConcurrentContext {
@@ -60,7 +103,12 @@ impl ConcurrentContext {
 
 /// 将 Runtime 调度错误转换为 VM 可恢复错误。
 pub(super) fn runtime_fault(error: RuntimeExecError) -> Fault {
-    Fault::Error(execution_error(error))
+    let fault = execution_error(error.clone());
+    if matches!(error, RuntimeExecError::Cancelled) {
+        Fault::ConcurrencyCancelled(fault)
+    } else {
+        Fault::Error(fault)
+    }
 }
 
 /// 将无效并发计划或句柄形状标记为损坏产物。
@@ -107,14 +155,14 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
 
     /// 将子 VM 暂存事件排入当前 VM 的事件接收器。
     fn flush_child_events(&mut self) {
-        let pending = std::mem::take(
-            &mut self
-                .concurrency
-                .events
-                .lock()
-                .expect("子 VM 事件锁未中毒")
-                .pending,
-        );
+        let (pending, dropped) = {
+            let mut events = self.concurrency.events.lock().expect("子 VM 事件锁未中毒");
+            (
+                std::mem::take(&mut events.pending),
+                std::mem::take(&mut events.dropped),
+            )
+        };
+        self.sink.record_dropped_events(dropped);
         for event in pending {
             self.sink.record(event);
         }
@@ -129,11 +177,23 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
         }
         // 只收束本 VM 创建/提交的 Runtime；这不建立递归 owner 权限。
         let runtimes = self.concurrency.owned.borrow().clone();
-        for runtime in runtimes.iter().rev() {
-            let _ = runtime.try_close();
+        for (runtime, owner) in runtimes.iter().rev() {
+            let _ = owner.in_context(|| runtime.try_close());
         }
+        let mut runtime_ids = runtimes
+            .iter()
+            .map(|(runtime, _)| runtime.id())
+            .collect::<Vec<_>>();
         if let Some(runtime) = self.concurrency.runtime.borrow().clone() {
             let _ = runtime.try_close();
+            runtime_ids.push(runtime.id());
+        }
+        runtime_ids.extend(self.concurrency.detached.wait_runtime_ids(&runtime_ids));
+        for detached in xiao_runtime::take_vm_detached_errors_for(&runtime_ids) {
+            self.sink.record(VmEvent::DetachedFailure {
+                runtime_id: detached.runtime_id,
+                report: xiao_diagnostics::ReportRecord::from_error(&detached.error),
+            });
         }
         self.flush_child_events();
     }
@@ -172,17 +232,6 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             if actual_binding != actual.id() {
                 return Err(runtime_fault(RuntimeExecError::RuntimeClosed));
             }
-            let key = (
-                self.current_module.clone(),
-                function,
-                self.frames.len(),
-                label,
-            );
-            // 标签属于当前调用帧；实际句柄是动态创建或重赋值的唯一身份来源。
-            self.concurrency
-                .labels
-                .borrow_mut()
-                .insert(key, actual.id());
         }
         for fact in &plan.facts {
             if let Some(source) = fact.source_runtime_id {
@@ -224,7 +273,10 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             "runtime_create" => {
                 let runtime = RuntimeHandle::create();
                 self.concurrency.observed_runtime.set(runtime.id());
-                self.concurrency.owned.borrow_mut().push(runtime.clone());
+                self.concurrency
+                    .owned
+                    .borrow_mut()
+                    .push((runtime.clone(), current.clone()));
                 RuntimeValue::Concurrency(VmConcurrencyValue::Runtime(runtime))
             }
             "current_runtime" => RuntimeValue::Concurrency(VmConcurrencyValue::Runtime(current)),
@@ -232,10 +284,6 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 let runtime = runtime_arg(args, 0)?;
                 self.concurrency.observed_runtime.set(runtime.id());
                 runtime.try_close().map_err(runtime_fault)?;
-                self.concurrency
-                    .labels
-                    .borrow_mut()
-                    .retain(|_, actual| *actual != runtime.id());
                 RuntimeValue::None
             }
             "pool_create" => {
@@ -273,6 +321,9 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 match result.map_err(|error| self.interruption_fault(error))? {
                     Ok(value) => value.decode(current.id()).map_err(Fault::Error)?,
                     Err(VmExecutionError::Error(error)) => return Err(Fault::Error(error)),
+                    Err(VmExecutionError::ConcurrencyCancelled(error)) => {
+                        return Err(Fault::ConcurrencyCancelled(error));
+                    }
                     Err(VmExecutionError::Fatal(fatal)) => return Err(Fault::Fatal(fatal)),
                     Err(VmExecutionError::Cancelled) => return Err(Fault::Cancelled),
                 }
@@ -292,16 +343,49 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 let boundary = encode_arguments(plan, &args[2..], runtime.id(), |value| {
                     self.sink.record(VmEvent::BoundaryCopyReleased { value })
                 })?;
+                let boundary = Arc::new(Mutex::new(Some(boundary)));
                 let (program, function, module, source_name) =
-                    self.entry_function(&args[1].value)?;
-                let loader = self.snapshot_loader(&program, &module)?;
+                    match self.entry_function(&args[1].value) {
+                        Ok(entry) => entry,
+                        Err(error) => {
+                            if let Some(copies) = boundary.lock().expect("边界副本锁未中毒").take()
+                            {
+                                release_arguments(plan, copies, |value| {
+                                    self.sink.record(VmEvent::BoundaryCopyReleased { value })
+                                });
+                            }
+                            return Err(error);
+                        }
+                    };
+                let loader = match self.snapshot_loader(&program, &module) {
+                    Ok(loader) => loader,
+                    Err(error) => {
+                        if let Some(copies) = boundary.lock().expect("边界副本锁未中毒").take()
+                        {
+                            release_arguments(plan, copies, |value| {
+                                self.sink.record(VmEvent::BoundaryCopyReleased { value })
+                            });
+                        }
+                        return Err(error);
+                    }
+                };
                 let options = self.options;
                 let capabilities = self.capabilities;
                 let external = self.cancellation.clone();
                 let events = Arc::clone(&self.concurrency.events);
+                let events_for_child = Arc::clone(&events);
                 let return_runtime_id = current.id();
                 let task_runtime = runtime.clone();
+                let detached_tracker = self.concurrency.detached.clone();
+                let boundary_cleanup = DeferredBoundaryCopies {
+                    boundary: Arc::clone(&boundary),
+                    plan: plan.clone(),
+                    events,
+                };
                 let function_body = move |token: RuntimeCancellation| {
+                    let boundary = boundary_cleanup.take().ok_or_else(|| {
+                        VmExecutionError::Error(transfer_error("边界副本重复消费"))
+                    })?;
                     execute_child(
                         program,
                         function,
@@ -312,34 +396,63 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                         options,
                         capabilities,
                         external,
-                        events,
+                        events_for_child,
                         task_runtime,
                         return_runtime_id,
                         token,
+                        detached_tracker,
                     )
                 };
                 if let Some(pool) = pool {
-                    let task = pool
-                        .submit_cooperative(
-                            RuntimeCancellation::default(),
-                            || self.concurrent_interrupted(),
-                            function_body,
-                        )
-                        .map_err(|error| self.interruption_fault(error))?;
+                    let task = match pool.submit_cooperative(
+                        RuntimeCancellation::default(),
+                        || self.concurrent_interrupted(),
+                        function_body,
+                    ) {
+                        Ok(task) => task,
+                        Err(error) => {
+                            if let Some(copies) = boundary.lock().expect("边界副本锁未中毒").take()
+                            {
+                                release_arguments(plan, copies, |value| {
+                                    self.sink.record(VmEvent::BoundaryCopyReleased { value })
+                                });
+                            }
+                            return Err(self.interruption_fault(error));
+                        }
+                    };
                     self.concurrency
                         .children
                         .borrow_mut()
                         .push(task.cancellation());
-                    RuntimeValue::Concurrency(VmConcurrencyValue::task(task, runtime))
+                    RuntimeValue::Concurrency(VmConcurrencyValue::task_tracked(
+                        task,
+                        runtime,
+                        Some(self.concurrency.detached.clone()),
+                    ))
                 } else {
                     let thread =
-                        xiao_runtime::scheduler::spawn_cooperative(&runtime, function_body)
-                            .map_err(runtime_fault)?;
+                        match xiao_runtime::scheduler::spawn_cooperative(&runtime, function_body) {
+                            Ok(thread) => thread,
+                            Err(error) => {
+                                if let Some(copies) =
+                                    boundary.lock().expect("边界副本锁未中毒").take()
+                                {
+                                    release_arguments(plan, copies, |value| {
+                                        self.sink.record(VmEvent::BoundaryCopyReleased { value })
+                                    });
+                                }
+                                return Err(runtime_fault(error));
+                            }
+                        };
                     self.concurrency
                         .children
                         .borrow_mut()
                         .push(thread.cancellation());
-                    RuntimeValue::Concurrency(VmConcurrencyValue::thread(thread, runtime))
+                    RuntimeValue::Concurrency(VmConcurrencyValue::thread_tracked(
+                        thread,
+                        runtime,
+                        Some(self.concurrency.detached.clone()),
+                    ))
                 }
             }
             "shared_read" | "shared_mut" => {
@@ -531,26 +644,36 @@ fn encode_arguments(
                 if !args.is_empty() && plan.transfer.is_none() {
                     return Err(artifact("边界清理计划缺失"));
                 }
-                if let Some(transfer) = &plan.transfer {
-                    let completed = copies.len();
-                    let mut copies = copies.into_iter().map(Some).collect::<Vec<_>>();
-                    for value in &transfer.cleanup_order {
-                        if let Some(index) = transfer
-                            .parameters
-                            .iter()
-                            .position(|candidate| candidate == value)
-                            .filter(|index| *index < completed)
-                        {
-                            drop(copies[index].take());
-                            released(*value);
-                        }
-                    }
-                }
+                release_arguments(plan, copies, &mut released);
                 return Err(Fault::Error(error));
             }
         }
     }
     Ok(copies)
+}
+
+/// 按 IR cleanup_order 逆序释放已经成功复制的边界参数。
+fn release_arguments(
+    plan: &TacConcurrencyPlan,
+    copies: Vec<VmTransferValue>,
+    mut released: impl FnMut(u32),
+) {
+    let Some(transfer) = &plan.transfer else {
+        return;
+    };
+    let completed = copies.len();
+    let mut copies = copies.into_iter().map(Some).collect::<Vec<_>>();
+    for value in &transfer.cleanup_order {
+        if let Some(index) = transfer
+            .parameters
+            .iter()
+            .position(|candidate| candidate == value)
+            .filter(|index| *index < completed)
+        {
+            drop(copies[index].take());
+            released(*value);
+        }
+    }
 }
 
 /// 读取并发句柄实参，非句柄形状视为产物不一致。
@@ -660,6 +783,7 @@ fn execute_child(
     runtime: RuntimeHandle,
     return_runtime_id: u64,
     cancellation: RuntimeCancellation,
+    detached_tracker: xiao_runtime::VmDetachedCompletionTracker,
 ) -> VmExecutionResult {
     let mut vm = Vm::<crate::StackCarrier, ChildSink>::new_with_metadata(
         &program,
@@ -673,6 +797,7 @@ fn execute_child(
         runtime: RefCell::new(Some(runtime.clone())),
         cancellation,
         events,
+        detached: detached_tracker.clone(),
         ..Default::default()
     });
     vm.current_module = module;
@@ -695,8 +820,26 @@ fn execute_child(
             token.cancel();
         }
     }
-    for owned in vm.concurrency.owned.borrow().iter().rev() {
-        let _ = owned.try_close();
+    for (owned, owner) in vm.concurrency.owned.borrow().iter().rev() {
+        let _ = owner.in_context(|| owned.try_close());
+    }
+    let owned_runtime_ids = vm
+        .concurrency
+        .owned
+        .borrow()
+        .iter()
+        .map(|(runtime, _)| runtime.id())
+        .collect::<Vec<_>>();
+    let mut report_runtime_ids = owned_runtime_ids.clone();
+    report_runtime_ids.extend(detached_tracker.wait_runtime_ids(&owned_runtime_ids));
+    for detached in xiao_runtime::take_vm_detached_errors_for(&report_runtime_ids) {
+        record_child_event(
+            &vm.concurrency.events,
+            VmEvent::DetachedFailure {
+                runtime_id: detached.runtime_id,
+                report: xiao_diagnostics::ReportRecord::from_error(&detached.error),
+            },
+        );
     }
     match outcome {
         Ok(value) => {
@@ -704,7 +847,9 @@ fn execute_child(
                 .map_err(VmExecutionError::Error)
         }
         Err(Fault::Error(error)) => Err(VmExecutionError::Error(error)),
-        Err(Fault::ConcurrencyCancelled(error)) => Err(VmExecutionError::Error(error)),
+        Err(Fault::ConcurrencyCancelled(error)) => {
+            Err(VmExecutionError::ConcurrencyCancelled(error))
+        }
         Err(Fault::Fatal(fatal)) => Err(VmExecutionError::Fatal(fatal)),
         Err(Fault::Cancelled) => Err(VmExecutionError::Cancelled),
     }
@@ -714,6 +859,7 @@ fn execute_child(
 /// 验证 VM 的 Runtime owner 规则和跨 Runtime 拒绝。
 mod tests {
     use super::*;
+    use crate::BoundedSink;
 
     #[test]
     /// 验证 owner 只能操作直接子 Runtime，祖 Runtime 权限不传递。
@@ -764,5 +910,101 @@ mod tests {
         assert!(!c.is_closed(), "父 Runtime 关闭不递归关闭孙 Runtime");
         c.try_close().unwrap();
         a.try_close().unwrap();
+    }
+
+    #[test]
+    /// VM 执行结束后仍以创建它的 owner 上下文关闭嵌套 Runtime。
+    fn vm_exit_closes_owned_runtime_after_restoring_owner_context() {
+        let owner = RuntimeHandle::create();
+        let child = owner.in_context(RuntimeHandle::create).unwrap();
+        let ir = xiao_ir::IrProgram::new(
+            xiao_ir::IrEntryMode::Script,
+            Vec::new(),
+            xiao_ir::IrSpan::new(0, 0),
+        );
+        let program = xiao_bytecode::lower_program(&ir);
+        let mut vm = Vm::<crate::StackCarrier, crate::RecordingSink>::new(
+            &program,
+            VmOptions::default(),
+            crate::RecordingSink::new(),
+        );
+        vm.concurrency
+            .owned
+            .borrow_mut()
+            .push((child.clone(), owner.clone()));
+
+        let outcome: Result<Option<RuntimeValue>, Fault> = Ok(None);
+        vm.finish_concurrency(&outcome);
+
+        assert!(
+            child.is_closed(),
+            "VM 退出应在 recorded owner 上下文中关闭子 Runtime"
+        );
+        owner.try_close().unwrap();
+    }
+
+    #[test]
+    /// 排队任务被取消移除时仍按 TAC cleanup_order 记录边界副本释放。
+    fn dropped_queued_boundary_copies_follow_cleanup_order() {
+        let events = Arc::new(Mutex::new(ChildEvents::default()));
+        let boundary = Arc::new(Mutex::new(Some(vec![
+            VmTransferValue::Xcon(vec![1]),
+            VmTransferValue::Xcon(vec![2]),
+        ])));
+        let deferred = DeferredBoundaryCopies {
+            boundary: Arc::clone(&boundary),
+            plan: TacConcurrencyPlan {
+                operation: "submit".to_owned(),
+                span: xiao_ir::IrSpan::new(0, 1),
+                argument_spans: Vec::new(),
+                argument_types: Vec::new(),
+                result_type: xiao_ir::IrType::None,
+                runtime_id: None,
+                facts: Vec::new(),
+                transfer: Some(xiao_bytecode::TacBoundaryTransfer {
+                    copy_kind: "deep_copy".to_owned(),
+                    parameters: vec![10, 20],
+                    cleanup_order: vec![20, 10],
+                }),
+                cancellation_checks: Vec::new(),
+            },
+            events: Arc::clone(&events),
+        };
+
+        drop(boundary);
+        drop(deferred);
+
+        let released = events
+            .lock()
+            .expect("子 VM 事件锁未中毒")
+            .pending
+            .iter()
+            .filter_map(|event| match event {
+                VmEvent::BoundaryCopyReleased { value } => Some(*value),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(released, vec![20, 10]);
+    }
+
+    #[test]
+    /// 子 VM 有界事件缓冲区的丢弃计数合入生产运行指标。
+    fn child_event_drops_are_reported_by_parent_sink() {
+        let ir = xiao_ir::IrProgram::new(
+            xiao_ir::IrEntryMode::Script,
+            Vec::new(),
+            xiao_ir::IrSpan::new(0, 0),
+        );
+        let program = xiao_bytecode::lower_program(&ir);
+        let mut vm = Vm::<crate::StackCarrier, BoundedSink>::new(
+            &program,
+            VmOptions::default(),
+            BoundedSink::new(8),
+        );
+        vm.concurrency.events.lock().unwrap().dropped = 3;
+
+        vm.flush_child_events();
+
+        assert_eq!(vm.sink.dropped_events(), 3);
     }
 }

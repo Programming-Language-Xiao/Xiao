@@ -117,6 +117,8 @@ LockGuard(lock_guard_handle)
 - 任务入口携带函数 ID（或可执行函数计划）和已深拷贝/序列化的边界值；
 - 子 VM 的返回值按边界序列化回父 VM；`join/wait` 只接收合法结果；
 - 最后一个 VM `task` 别名未 `wait` 时，将结果接收器交给 detached 回收通道；失败保留 027/028 身份，普通子 VM 错误作为 028 的 cause；
+- `detach` 不表示 fire-and-forget：VM 结束和 Runtime drain 仍等待 detached 活动；外部截止时间/取消先收束子 VM，再完成 drain；
+- VM 退出清理自身创建的 Runtime 时按直接 owner 记录逐个回到 owner 上下文执行 `try_close()`，避免恢复外层上下文后把合法关闭误判为 031；此关闭不递归收束更深层的 Runtime；
 - 模块初始化状态不在线程间隐式共享；需要共享只读模块状态时通过深拷贝/序列化，不把
   `VmSession` 的 `Rc` 状态跨线程；
 - pool worker 迁移使用 22B 的 task/thread 双边界事实；Runtime ID 在每个子 VM 中保持；
@@ -148,6 +150,7 @@ LockGuard(lock_guard_handle)
 
 - VM 外部取消（`Fault::Cancelled`）与并发取消 027 分开：外部取消走 VM 取消通道，
   并发 join/wait/lock/cancel 走 `X06-RUNTIME-027`；
+- 027 是不可被用户 `catch` 吞掉的并发取消出口；未开始任务取消会从池队列移除消息、释放队列容量并让 `wait` 立即返回 027；
 - 22B cancellation checks（`safe_point`/`wait`/`lock_wait`）必须由 VM 消费，不能只依赖
   Runtime 层标记；
 - `join`/`wait`/`lock` 等待必须可取消；取消后按 22C 顺序清理，finally/drop 恰好一次；
@@ -157,7 +160,7 @@ LockGuard(lock_guard_handle)
 ### D-7（Runtime ID 与实际映射）
 
 - 22B 静态 `runtime_id` 继续用于 facts/transfers 的同一性；
-- `runtime_create` 分配实际 ID；VM 建立 `static_label -> actual_id` 映射；
+- `runtime_create` 分配实际 ID；VM 在每次调用处通过 TAC 值寄存器读取实际 Runtime 句柄，并核对静态标签，不维护可能过期的独立映射表；
 - `current_runtime` 的静态哨兵映射到当前实际 Runtime，不把 `u64::MAX` 当实际 ID；
 - 关闭 Runtime 时映射失效；旧句柄、任务、共享可变句柄按 031 拒绝；
 - Runtime ID 不进入 32B 头；只读 shared 包装保留源 Runtime ID。
@@ -178,7 +181,7 @@ LockGuard(lock_guard_handle)
 | detached 队列只有深度（`detached_reaper_queue_depth`），没有上限/背压/丢弃策略 | 本批先保证 VM 不把无限增长隐藏成静默行为；Runtime 侧登记阈值和策略，最迟在 22E 前落地；黄金场景加入持续 detach 观测 |
 | 入口线程或无执行上下文的普通 `submit` 没有提交前主动取消入口 | VM 任务入口必须继承执行上下文取消令牌；入口线程使用显式提交期取消入口或由 Runtime/pool 关闭终止等待 |
 | `RuntimeHandle::close` 跨上下文是 no-op；`try_close()` 才返回 031 | VM 内部统一使用 `try_close()`；回归同时检查旧 `close()` 不会把跨上下文拒绝伪装成成功 |
-| Runtime owner 只按直接创建关系记录，父 Runtime 关闭不递归关闭子 Runtime | VM 的 Runtime ID 映射和生命周期测试必须覆盖 owner 间接关系；不得把父/祖 Runtime 的权限自动扩展 |
+| Runtime owner 只按直接创建关系记录，父 Runtime 关闭不递归关闭子 Runtime；VM 退出时必须用记录的 owner 上下文关闭本 VM 创建的 Runtime | VM 的 Runtime ID 映射和生命周期测试必须覆盖 owner 间接关系与退出清理；不得把父/祖 Runtime 的权限自动扩展 |
 | 22C 的部分 Runtime 关闭测试是 Rust API 级，尚未经过 TAC/VM | 本批必须把这些行为重放到真实源码和 VM 执行路径，不能把 Rust 单测当作 VM 证据 |
 | 22C `close`/`spawn` 的跨 Runtime 语义已写入 22A/22A-FIX，但 VM 未接线 | VM 入口测试必须覆盖 031；语言 `runtime_close` 与 Rust `try_close` 的边界不能混淆 |
 

@@ -124,6 +124,10 @@ pub(super) fn protocol_metrics(
 /// 将 VM 事件转换为稳定类型名和机器字段。
 pub(super) fn protocol_event(event: &VmEvent) -> ProtocolEvent {
     let (kind, data) = match event {
+        VmEvent::DetachedFailure { runtime_id, report } => (
+            "detached_failure",
+            json!({ "runtime_id": runtime_id, "report": protocol_report(report) }),
+        ),
         VmEvent::ConcurrencyObserved {
             operation,
             runtime_id,

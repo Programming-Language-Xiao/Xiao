@@ -16,6 +16,13 @@ pub const MAX_EVENT_CAPACITY: usize = 1_000_000;
 /// 一条结构化调试事件。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VmEvent {
+    /// VM 关闭前收束的 detached 执行失败，保留完整结构化错误报告。
+    DetachedFailure {
+        /// 失败执行单元所属 Runtime。
+        runtime_id: u64,
+        /// 原始错误及 cause/suppressed 链。
+        report: xiao_diagnostics::ReportRecord,
+    },
     /// 并发调用的实际 Runtime 身份与进程级 detached 积压观测。
     ConcurrencyObserved {
         /// 稳定操作名。
@@ -158,6 +165,9 @@ pub enum VmEvent {
 pub trait VmEventSink {
     /// 记录一条事件。
     fn record(&mut self, event: VmEvent);
+
+    /// 记录子执行单元在自己的有界缓冲区中丢弃的事件数。
+    fn record_dropped_events(&mut self, _count: usize) {}
 }
 
 /// 丢弃全部事件的接收器，用于不关心观测的运行。
@@ -314,12 +324,20 @@ impl VmEventSink for BoundedSink {
             self.dropped_events = self.dropped_events.saturating_add(1);
         }
     }
+
+    /// 将子 VM 缓冲区丢弃量并入最终运行指标。
+    fn record_dropped_events(&mut self, count: usize) {
+        self.dropped_events = self.dropped_events.saturating_add(count);
+    }
 }
 
 /// 判断一条事件是否应在容量压力下优先保留。
 fn is_priority_event(event: &VmEvent) -> bool {
     matches!(
         event,
-        VmEvent::IntrinsicOutput { .. } | VmEvent::ErrorRaised { .. } | VmEvent::FatalRaised { .. }
+        VmEvent::DetachedFailure { .. }
+            | VmEvent::IntrinsicOutput { .. }
+            | VmEvent::ErrorRaised { .. }
+            | VmEvent::FatalRaised { .. }
     )
 }
