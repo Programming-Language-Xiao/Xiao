@@ -977,6 +977,73 @@ mod tests {
         assert!(matches!(outcome, DriverOutcome::Executed(_)));
     }
 
+    fn concurrency_output(outcome: &DriverOutcome) -> String {
+        outcome
+            .as_executed()
+            .expect("进入 VM")
+            .events()
+            .iter()
+            .filter_map(|event| match event {
+                VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+                _ => None,
+            })
+            .collect()
+    }
+
+    #[test]
+    /// 并发签名表入口必须经过真实源码、TAC 和生产 VM 执行。
+    fn concurrency_runtime_create_spawn_join_reaches_vm() {
+        let source = r#"from std.concurrent import runtime_create, spawn, join, runtime_close
+def work(int value) -> int
+    return value
+rt = runtime_create()
+thread = spawn(rt, work, 7)
+result = join(thread)
+print(result)
+runtime_close(rt)
+"#;
+        let request = request(source);
+        let outcome = run(&request);
+        assert!(outcome.is_success(), "并发源码执行失败：{outcome:?}");
+        assert_eq!(concurrency_output(&outcome), "7\n");
+    }
+
+    #[test]
+    /// 任务池的 submit/wait/shutdown 也必须走真实 VM 调用绑定。
+    fn concurrency_pool_submit_wait_shutdown_reaches_vm() {
+        let source = r#"from std.concurrent import current_runtime, pool_create, submit, wait, shutdown
+def work(int value) -> int
+    return value
+rt = current_runtime()
+pool = pool_create(rt, 1)
+task = submit(pool, work, 9)
+result = wait(task)
+print(result)
+shutdown(pool)
+"#;
+        let outcome = run(&request(source));
+        assert!(outcome.is_success(), "任务池源码执行失败：{outcome:?}");
+        assert_eq!(concurrency_output(&outcome), "9\n");
+    }
+
+    #[test]
+    /// shared/read/lock/guard 入口必须经过 VM 的 XCON/共享句柄适配。
+    fn concurrency_shared_and_lock_reaches_vm() {
+        let source = r#"from std.concurrent import shared_read, shared_mut, read, lock, lock_read, lock_write
+readonly = shared_read(7)
+value = read(readonly)
+mutable = shared_mut(8)
+guard = lock(mutable)
+value = lock_read(guard)
+lock_write(guard, 9)
+print(value)
+print(lock_read(guard))
+"#;
+        let outcome = run(&request(source));
+        assert!(outcome.is_success(), "共享句柄源码执行失败：{outcome:?}");
+        assert_eq!(concurrency_output(&outcome), "8\n9\n");
+    }
+
     #[test]
     /// `print` 必须沿前端、IR、TAC 和 VM 契约入口产生结构化输出且返回成功。
     fn print_intrinsic_reaches_vm_output_event() {

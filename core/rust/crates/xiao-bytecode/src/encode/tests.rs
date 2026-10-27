@@ -459,6 +459,7 @@ fn all_ops_program() -> TacProgram {
         }],
         unsupported: Vec::new(),
         required_features: 0,
+        concurrency_plans: Vec::new(),
     }
 }
 
@@ -490,10 +491,23 @@ fn assert_program_eq(left: &TacProgram, right: &TacProgram) {
     assert_eq!(left.categories, right.categories);
     assert_eq!(left.plans, right.plans);
     assert_eq!(left.table_definitions, right.table_definitions);
+    assert_eq!(left.concurrency_plans, right.concurrency_plans);
     assert_eq!(left.unsupported, right.unsupported);
     assert_eq!(left.constants.len(), right.constants.len());
     for (left, right) in left.constants.iter().zip(right.constants.iter()) {
         assert_constant_eq(left, right);
+    }
+}
+
+#[test]
+/// 并发计划在两种操作数宽度下完整往返，包括逆序清理与取消类别。
+fn concurrency_plans_round_trip_in_both_widths() {
+    let artifact = xiao_driver::FrontendCompiler::new().compile(&xiao_driver::FrontendRequest::from_text("from std.concurrent import current_runtime, spawn, join\ndef work(int value) -> int\n    return value\nrt = current_runtime()\nt = spawn(rt, work, 7)\njoin(t)\n")).unwrap();
+    let program = crate::lower_program(&artifact.ir);
+    for width in [OperandWidth::Leb128, OperandWidth::FixedU16] {
+        let encoded = encode(&program, width).expect("并发计划可编码");
+        let decoded = decode(&encoded.bytes).expect("并发计划可解码");
+        assert_eq!(program.concurrency_plans, decoded.concurrency_plans);
     }
 }
 
@@ -607,13 +621,13 @@ fn damaged_inputs_are_rejected_structurally() {
     let encoded = encode(&all_ops_program(), OperandWidth::Leb128).expect("基线编码应成功");
 
     let mut old_format = encoded.bytes.clone();
-    old_format[4] = FORMAT_VERSION - 1;
+    old_format[4] = 2;
     assert!(matches!(
         decode(&old_format),
         Err(EncodeError::UnsupportedFormatVersion {
             expected: FORMAT_VERSION,
             actual
-        }) if actual == FORMAT_VERSION - 1
+        }) if actual == 2
     ));
 
     let mut bad_version = encoded.bytes.clone();

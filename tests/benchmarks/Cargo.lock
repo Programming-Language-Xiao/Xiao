@@ -509,6 +509,7 @@ dependencies = [
  "xiao-bytecode",
  "xiao-intrinsics",
  "xiao-lock",
+ "xiao-runtime-abi",
 ]
 
 [[package]]

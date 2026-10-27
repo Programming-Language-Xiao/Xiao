@@ -118,6 +118,8 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
             let metadata = self.metadata.clone();
             let cancellation = self.cancellation.clone();
             let checkpoint_counter = Rc::clone(&self.checkpoint_counter);
+            let concurrency = Rc::clone(&self.concurrency);
+            let capabilities = self.capabilities;
             runtime = runtime.with_drop_executor(move |object| {
                 if context.fatal.get() {
                     return Ok(());
@@ -130,6 +132,8 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 vm.pending_base = context.pending.borrow().len();
                 vm.cancellation = cancellation.clone();
                 vm.checkpoint_counter = Rc::clone(&checkpoint_counter);
+                vm.concurrency = Rc::clone(&concurrency);
+                vm.capabilities = capabilities;
                 let result = vm.execute(
                     method,
                     &[BoundArgument {
@@ -156,6 +160,13 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                     }
                     Err(Fault::Cancelled) => {
                         context.pending.borrow_mut().push(Fault::Cancelled);
+                        Ok(())
+                    }
+                    Err(Fault::ConcurrencyCancelled(error)) => {
+                        context
+                            .pending
+                            .borrow_mut()
+                            .push(Fault::ConcurrencyCancelled(error));
                         Ok(())
                     }
                 }
@@ -205,6 +216,7 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                         .push(Fault::Cancelled);
                     Err(XiaoError::invalid_value("构造被取消中断"))
                 }
+                Err(Fault::ConcurrencyCancelled(error)) => Err(error),
             }
         });
         if let Some(frame) = self.frames.last_mut() {
@@ -250,6 +262,15 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
                 (Err(Fault::Fatal(primary)), _) => Err(Fault::Fatal(primary)),
                 (_, Fault::Fatal(fatal)) => Err(Fault::Fatal(fatal)),
                 (Err(Fault::Cancelled), _) | (_, Fault::Cancelled) => Err(Fault::Cancelled),
+                (Err(Fault::ConcurrencyCancelled(mut primary)), Fault::Error(secondary))
+                | (Err(Fault::Error(mut primary)), Fault::ConcurrencyCancelled(secondary))
+                | (
+                    Err(Fault::ConcurrencyCancelled(mut primary)),
+                    Fault::ConcurrencyCancelled(secondary),
+                ) => {
+                    primary.push_suppressed(secondary);
+                    Err(Fault::ConcurrencyCancelled(primary))
+                }
                 (Err(Fault::Error(mut primary)), Fault::Error(secondary)) => {
                     if !contains_error(&primary, &secondary) {
                         primary.push_suppressed(secondary);

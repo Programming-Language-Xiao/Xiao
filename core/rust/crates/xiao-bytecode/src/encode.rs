@@ -21,8 +21,9 @@ mod validate;
 use codec::Writer;
 use decoder::{decode_inner, validate_decoded};
 use encoder::{
-    encode_broadcast_plans, encode_categories, encode_constants, encode_function, encode_plans,
-    encode_random_seed_plans, encode_selection_plans, encode_signatures,
+    encode_broadcast_plans, encode_categories, encode_concurrency_plans, encode_constants,
+    encode_function, encode_plans, encode_random_seed_plans, encode_selection_plans,
+    encode_signatures,
 };
 use validate::validate_input;
 
@@ -46,13 +47,13 @@ const MAGIC: [u8; 4] = *b"X9RD";
 ///
 /// ABI 版本描述语义契约（R1 冻结），这个字段描述**字节怎么排**。只要布局
 /// 变动就必须递增它，解码端据此直接拒绝旧字节，而不是照着新规则错读旧数据。
-pub const FORMAT_VERSION: u8 = 3;
+pub const FORMAT_VERSION: u8 = 4;
 
 /// 当前冻结的最小 opcode。
 pub const OPCODE_MIN: u8 = 0;
 
 /// 当前冻结的最大 opcode。
-pub const OPCODE_MAX: u8 = 49;
+pub const OPCODE_MAX: u8 = 50;
 /// 集合元素数与块字节长度的上限。
 ///
 /// 解码端读到长度前缀后第一件事就是拿它做上界判断：没有这个上限，一段几字节
@@ -381,7 +382,11 @@ pub fn encode(
     validate_input(program, options.operand_width)?;
     let mut writer = Writer::new(options.operand_width);
     writer.bytes.extend_from_slice(&MAGIC);
-    writer.bytes.push(FORMAT_VERSION);
+    writer.bytes.push(if program.concurrency_plans.is_empty() {
+        3
+    } else {
+        FORMAT_VERSION
+    });
     writer.bytes.push(options.operand_width.tag());
     writer.uleb(program.version as u64);
     writer.uleb(program.abi.bytecode_abi_version as u64);
@@ -409,6 +414,9 @@ pub fn encode(
     encode_broadcast_plans(&mut writer, program)?;
     encode_random_seed_plans(&mut writer, program)?;
     encoder::encode_table_definitions(&mut writer, program)?;
+    if !program.concurrency_plans.is_empty() {
+        encode_concurrency_plans(&mut writer, &program.concurrency_plans)?;
+    }
     writer.count(program.unsupported.len(), "unsupported")?;
     for note in &program.unsupported {
         writer.string(note)?;

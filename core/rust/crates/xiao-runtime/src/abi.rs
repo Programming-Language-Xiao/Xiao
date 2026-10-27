@@ -680,7 +680,8 @@ fn runtime_to_value(value: &RuntimeValue) -> Result<XiaoValue, i32> {
         RuntimeValue::Error(error) => Ok(value_from_owned_error((**error).clone())),
         RuntimeValue::TableDropView(_)
         | RuntimeValue::Module(_)
-        | RuntimeValue::ModuleFunction(_, _) => Err(XiaoAbiStatus::InvalidArgument.code()),
+        | RuntimeValue::ModuleFunction(_, _)
+        | RuntimeValue::Concurrency(_) => Err(XiaoAbiStatus::InvalidArgument.code()),
     }
 }
 

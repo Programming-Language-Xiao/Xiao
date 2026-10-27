@@ -55,6 +55,9 @@ pub struct IrProgram {
     pub control_flow: IrControlFlow,
     /// 生命周期、所有权和释放计划。
     pub ownership: IrOwnership,
+    /// 类型阶段已解析的并发调用点；下游按此生成计划，不扫描源码名称。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub concurrency_calls: Vec<IrConcurrencyCall>,
     /// 前端登记的运行时检查。
     pub runtime_checks: Vec<IrRuntimeCheck>,
     /// 类型阶段生成的规范化选择计划。
@@ -90,6 +93,7 @@ impl IrProgram {
             modules: Vec::new(),
             control_flow: IrControlFlow::default(),
             ownership: IrOwnership::default(),
+            concurrency_calls: Vec::new(),
             runtime_checks: Vec::new(),
             selection_plans: Vec::new(),
             broadcast_assignment_plans: Vec::new(),
@@ -115,6 +119,21 @@ impl IrProgram {
     pub fn to_json(&self) -> Result<String, crate::SnapshotError> {
         crate::to_json(self)
     }
+}
+
+/// 类型阶段解析的并发调用描述。
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct IrConcurrencyCall {
+    /// 冻结的 API 操作名，作为稳定计划标签。
+    pub operation: String,
+    /// 调用表达式区间。
+    pub span: IrSpan,
+    /// 实参源码区间，按调用顺序保存。
+    pub argument_spans: Vec<IrSpan>,
+    /// 已检查的实参类型。
+    pub argument_types: Vec<IrType>,
+    /// 已检查的结果类型。
+    pub result_type: IrType,
 }
 
 /// 程序入口模式。

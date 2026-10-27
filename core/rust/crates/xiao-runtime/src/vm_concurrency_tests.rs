@@ -1,0 +1,84 @@
+//! VM 传递信封、锁守卫寿命和消费身份的 Runtime 回归。
+
+use super::*;
+
+#[test]
+/// 验证普通跨边界值经历 XCON 编码后成为独立副本。
+fn transfer_bytes_are_validated_and_copy_values() {
+    let input = RuntimeValue::Tuple(
+        TupleHandle::new(vec![
+            RuntimeValue::new_string("copy").unwrap(),
+            RuntimeValue::Int(7),
+        ])
+        .unwrap(),
+    );
+    let encoded = VmTransferValue::encode(&input, 1).unwrap();
+    let output = encoded.decode(2).unwrap();
+    let (RuntimeValue::Tuple(source), RuntimeValue::Tuple(copy)) = (&input, &output) else {
+        panic!("元组")
+    };
+    assert!(!source.same_object(copy));
+    assert_eq!(copy.element(1).unwrap(), Some(RuntimeValue::Int(7)));
+    let VmTransferValue::Xcon(mut bytes) = encoded else {
+        panic!("普通值必须编码为 XCON")
+    };
+    bytes[10] = 13;
+    assert_eq!(
+        VmTransferValue::Xcon(bytes).decode(2).unwrap_err().code(),
+        "X06-RUNTIME-029"
+    );
+}
+
+#[test]
+/// 验证 owned guard 持有共享分配并在最后一个别名释放后解锁。
+fn owned_guard_keeps_allocation_alive_and_unlocks_after_alias_drop() {
+    let value = VmTransferValue::encode(&RuntimeValue::Int(1), 1).unwrap();
+    let shared = SharedHandle::new(value, 1, crate::SharedTag::Mut);
+    let weak = shared.downgrade();
+    let guard = shared
+        .lock_owned(&RuntimeCancellation::default(), || false)
+        .unwrap();
+    let guard = VmConcurrencyValue::LockGuard(Rc::new(RefCell::new(guard)));
+    let alias = guard.clone();
+    drop(shared);
+    drop(guard);
+    assert!(weak.upgrade().is_some());
+    drop(alias);
+    assert!(weak.upgrade().is_none());
+}
+
+#[test]
+/// 验证超过嵌套上限的递归值在无界复制前被拒绝。
+fn excessive_recursive_values_fail_before_unbounded_copy() {
+    let mut value = RuntimeValue::Int(1);
+    for _ in 0..66 {
+        value = RuntimeValue::Tuple(TupleHandle::new(vec![value]).unwrap());
+    }
+    assert_eq!(
+        VmTransferValue::encode(&value, 1).unwrap_err().code(),
+        "X06-RUNTIME-029"
+    );
+}
+
+#[test]
+/// 验证线程句柄别名共享消费状态，且不能用作容器键。
+fn thread_consumption_is_shared_but_handles_are_not_hashable() {
+    let runtime = RuntimeHandle::create();
+    let thread = crate::scheduler::spawn_cooperative(&runtime, |_| {
+        Ok(VmTransferValue::Xcon(
+            encode_xcon(&XconValue::Int(7)).unwrap(),
+        ))
+    })
+    .unwrap();
+    let handle = VmConcurrencyValue::thread(thread, runtime.clone());
+    let alias = handle.clone();
+    assert!(!crate::is_hashable(&RuntimeValue::Concurrency(
+        alias.clone()
+    )));
+    assert!(handle.join_thread(|| false).unwrap().is_ok());
+    assert!(matches!(
+        alias.join_thread(|| false),
+        Err(RuntimeExecError::JoinFailed)
+    ));
+    runtime.try_close().unwrap();
+}

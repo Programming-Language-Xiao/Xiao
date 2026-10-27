@@ -486,6 +486,15 @@ fn lower_name(lowerer: &mut Lowerer<'_>, name: &str, backticked: bool, span: IrS
             if let Some(register) = lowerer.global_constant(name, backticked) {
                 return register;
             }
+            if let Some(function) = lowerer.function_index(name) {
+                let register = lowerer.register_of(value);
+                lowerer.emit(TacInstr::with_dst(
+                    TacOp::LoadFunc(function),
+                    register,
+                    span,
+                ));
+                return register;
+            }
         }
         return lowerer.register_of(value);
     }
@@ -895,6 +904,28 @@ fn lower_call(
     arguments: &[IrCallArgument],
     expression: &IrExpression,
 ) -> VReg {
+    if let Some(index) = lowerer
+        .program
+        .concurrency_calls
+        .iter()
+        .position(|call| call.span == expression.span)
+    {
+        let arguments = arguments
+            .iter()
+            .map(|argument| TacArgument::positional(lowerer.lower_expression(&argument.value)))
+            .collect();
+        let register =
+            lowerer.new_register(Lowerer::class_of_type(&expression.ty), expression.span);
+        lowerer.emit(TacInstr::with_dst(
+            TacOp::CallConcurrency {
+                plan: index as u32 + 1,
+                arguments,
+            },
+            register,
+            expression.span,
+        ));
+        return register;
+    }
     if let IrExpressionKind::Member { object, member } = &callee.kind {
         if let Some(register) = lowerer.lower_method_call(object, member, arguments, expression) {
             return register;

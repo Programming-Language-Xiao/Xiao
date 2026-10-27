@@ -785,6 +785,21 @@ fn vm_event_to_diagnostic_with_locale(
     locale: &str,
 ) -> DiagnosticEvent {
     let (event_type, function, payload) = match event {
+        VmEvent::ConcurrencyObserved {
+            operation,
+            runtime_id,
+            detached_queue_depth,
+            detached_threshold_reached,
+        } => (
+            "concurrency_observed",
+            None,
+            serde_json::json!({"operation": operation, "runtime_id": runtime_id, "detached_queue_depth": detached_queue_depth, "detached_threshold_reached": detached_threshold_reached}),
+        ),
+        VmEvent::BoundaryCopyReleased { value } => (
+            "boundary_copy_released",
+            None,
+            serde_json::json!({"value": value}),
+        ),
         VmEvent::IntrinsicOutput { text } => ("intrinsic_output", None, json!({ "text": text })),
         VmEvent::ModuleLoaded { module } => ("module_loaded", None, json!({ "module": module })),
         VmEvent::FunctionEntered { function, depth } => (

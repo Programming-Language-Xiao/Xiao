@@ -124,6 +124,18 @@ pub(super) fn protocol_metrics(
 /// 将 VM 事件转换为稳定类型名和机器字段。
 pub(super) fn protocol_event(event: &VmEvent) -> ProtocolEvent {
     let (kind, data) = match event {
+        VmEvent::ConcurrencyObserved {
+            operation,
+            runtime_id,
+            detached_queue_depth,
+            detached_threshold_reached,
+        } => (
+            "concurrency_observed",
+            json!({"operation": operation, "runtime_id": runtime_id, "detached_queue_depth": detached_queue_depth, "detached_threshold_reached": detached_threshold_reached}),
+        ),
+        VmEvent::BoundaryCopyReleased { value } => {
+            ("boundary_copy_released", json!({"value": value}))
+        }
         VmEvent::IntrinsicOutput { text } => ("intrinsic_output", json!({ "text": text })),
         VmEvent::ModuleLoaded { module } => ("module_loaded", json!({ "module": module })),
         VmEvent::FunctionEntered { function, depth } => (
@@ -249,7 +261,8 @@ pub(super) fn protocol_value(value: &RuntimeValue) -> ProtocolValue {
         | RuntimeValue::DictTable(_)
         | RuntimeValue::DictColumn(_)
         | RuntimeValue::Set(_)
-        | RuntimeValue::Error(_) => format!("<{kind}>"),
+        | RuntimeValue::Error(_)
+        | RuntimeValue::Concurrency(_) => format!("<{kind}>"),
     };
     ProtocolValue { kind, value: text }
 }

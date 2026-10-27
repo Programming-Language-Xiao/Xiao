@@ -48,6 +48,7 @@ pub(super) fn validate_input(program: &TacProgram, width: OperandWidth) -> Resul
     for signature in program.signatures.iter() {
         validate_signature(signature)?;
     }
+    crate::concurrency::validate(program).map_err(EncodeError::InvalidFormat)?;
     validate_references(program, width)
 }
 
@@ -400,6 +401,15 @@ fn validate_op(
         }
         TacOp::CallDynamic { callee, arguments } => {
             check_vreg(*callee)?;
+            for argument in arguments {
+                check_vreg(argument.value)?;
+            }
+            Ok(())
+        }
+        TacOp::CallConcurrency { plan, arguments } => {
+            if *plan == 0 || *plan as usize > program.concurrency_plans.len() {
+                return Err(EncodeError::InvalidFormat("并发计划编号越界".to_owned()));
+            }
             for argument in arguments {
                 check_vreg(argument.value)?;
             }

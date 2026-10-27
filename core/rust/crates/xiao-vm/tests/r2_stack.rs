@@ -1381,5 +1381,6 @@ fn manual_check_program(error_value: bool) -> TacProgram {
         table_definitions: Vec::new(),
         unsupported: Vec::new(),
         required_features: 0,
+        concurrency_plans: Vec::new(),
     }
 }

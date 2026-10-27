@@ -65,6 +65,7 @@ pub(super) fn opcode(op: &TacOp) -> u8 {
         TacOp::DictRemoveDynamic { .. } => 47,
         TacOp::DictKeys { .. } => 48,
         TacOp::DictValues { .. } => 49,
+        TacOp::CallConcurrency { .. } => 50,
     }
 }
 

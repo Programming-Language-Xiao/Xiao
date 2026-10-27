@@ -31,7 +31,8 @@ use xiao_syntax::ScalarType;
 use crate::sig::{CallSig, CallSigTable};
 use crate::tac::{
     BlockId, CategoryMap, ConstPool, FuncId, RegisterClass, TAC_VERSION, TacAbi, TacArgument,
-    TacBlock, TacConstant, TacFunction, TacHandler, TacInstr, TacOp, TacProgram, VReg,
+    TacBlock, TacBoundaryTransfer, TacConcurrencyPlan, TacConstant, TacFunction, TacHandler,
+    TacInstr, TacOp, TacProgram, VReg,
 };
 
 /// 当前三地址格式使用的 ABI 版本。
@@ -345,6 +346,57 @@ impl<'ir> Lowerer<'ir> {
             .first()
             .map(|function| function.categories.clone())
             .unwrap_or_default();
+        let concurrency_plans = self
+            .program
+            .concurrency_calls
+            .iter()
+            .map(|call| {
+                let transfer = self
+                    .program
+                    .ownership
+                    .boundary_transfers
+                    .iter()
+                    .find(|transfer| transfer.span == call.span)
+                    .map(|transfer| TacBoundaryTransfer {
+                        copy_kind: transfer.copy_kind.clone(),
+                        parameters: transfer.parameters.clone(),
+                        cleanup_order: transfer.cleanup_order.clone(),
+                    });
+                let runtime_id = self
+                    .program
+                    .ownership
+                    .cross_thread_facts
+                    .iter()
+                    .find(|fact| fact.span == call.span)
+                    .map(|fact| fact.runtime_id);
+                let cancellation_checks = self
+                    .program
+                    .ownership
+                    .cancellation_checks
+                    .iter()
+                    .filter(|check| check.span == call.span)
+                    .map(|check| check.kind.clone())
+                    .collect();
+                TacConcurrencyPlan {
+                    operation: call.operation.clone(),
+                    span: call.span,
+                    argument_spans: call.argument_spans.clone(),
+                    argument_types: call.argument_types.clone(),
+                    result_type: call.result_type.clone(),
+                    facts: self
+                        .program
+                        .ownership
+                        .cross_thread_facts
+                        .iter()
+                        .filter(|fact| fact.span == call.span)
+                        .cloned()
+                        .collect(),
+                    runtime_id,
+                    transfer,
+                    cancellation_checks,
+                }
+            })
+            .collect();
         TacProgram {
             version: TAC_VERSION,
             abi: TacAbi {
@@ -365,6 +417,7 @@ impl<'ir> Lowerer<'ir> {
             table_definitions: self.table_definitions,
             unsupported: self.unsupported,
             required_features: required_features_for_ir(self.program),
+            concurrency_plans,
         }
     }
 

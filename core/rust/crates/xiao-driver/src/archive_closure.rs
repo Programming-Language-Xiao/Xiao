@@ -100,6 +100,9 @@ pub(crate) fn collect_archive_closure(request: FrontendRequest) -> Result<Archiv
 impl Analyzer {
     /// 与 VM 的模块身份规则一致，官方库内的相对模块仍属于官方命名空间。
     fn identity(current: &str, module: &str) -> String {
+        if matches!(module, "std.concurrent" | "stdlib.concurrent") {
+            return module.to_owned();
+        }
         if module == "stdlib" || module.starts_with("stdlib.") || module.starts_with("project:") {
             module.to_owned()
         } else if current.starts_with("stdlib.") {
@@ -111,6 +114,9 @@ impl Analyzer {
 
     /// 编译首次可达的文件模块；目录命名空间不生成对象。
     fn load(&mut self, identity: &str) -> Result<bool, String> {
+        if matches!(identity, "std.concurrent" | "stdlib.concurrent") {
+            return Ok(false);
+        }
         if self.result.modules.contains_key(identity) {
             return Ok(true);
         }
@@ -161,6 +167,10 @@ impl Analyzer {
         for target in targets {
             match target {
                 Target::Module(identity) => {
+                    if matches!(identity.as_str(), "std.concurrent" | "stdlib.concurrent") {
+                        result.insert(Target::NonCallable);
+                        continue;
+                    }
                     let child = format!(
                         "{identity}.{}",
                         member.strip_prefix("ascii:").unwrap_or(member)
@@ -333,6 +343,22 @@ impl Analyzer {
                             ));
                         }
                         self.call(targets, &args(arguments))
+                    }
+                    TacOp::CallConcurrency { plan, arguments } => {
+                        let entry = &program.concurrency_plans[*plan as usize - 1];
+                        if matches!(entry.operation.as_str(), "spawn" | "submit") {
+                            let targets = values(&arguments[1].value);
+                            if targets.is_empty() || targets.contains(&Target::Unknown) {
+                                self.unresolved.insert((
+                                    identity.clone(),
+                                    *function_id,
+                                    instruction.span.start,
+                                    instruction.span.end,
+                                ));
+                            }
+                            self.call(targets, &args(&arguments[2..]));
+                        }
+                        Values::from([Target::NonCallable])
                     }
                     TacOp::LoadTable {
                         table,

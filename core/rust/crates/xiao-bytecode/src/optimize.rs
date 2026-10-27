@@ -945,7 +945,9 @@ fn remap_registers(op: &mut TacOp, remap: &BTreeMap<VReg, VReg>) {
         }
         TacOp::RandomSeed { value, .. } => map(value),
         TacOp::BranchIf { condition, .. } => map(condition),
-        TacOp::Call { arguments, .. } | TacOp::CallDynamic { arguments, .. } => {
+        TacOp::Call { arguments, .. }
+        | TacOp::CallDynamic { arguments, .. }
+        | TacOp::CallConcurrency { arguments, .. } => {
             arguments
                 .iter_mut()
                 .for_each(|argument| map(&mut argument.value));
@@ -1066,6 +1068,7 @@ mod tests {
             table_definitions: Vec::new(),
             unsupported: Vec::new(),
             required_features: 0,
+            concurrency_plans: Vec::new(),
         }
     }
 

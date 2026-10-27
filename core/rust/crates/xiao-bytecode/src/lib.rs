@@ -5,6 +5,8 @@
 
 /// TAC 的显式控制流后继。
 pub mod cfg;
+/// 并发计划的统一校验与产物功能需求。
+pub mod concurrency;
 /// 字节码编码、解码与物理指令目录。
 pub mod encode;
 /// 机型无关的活跃区间分析。
@@ -49,8 +51,9 @@ pub use sig::{CallSig, CallSigTable, ParamKind};
 /// 重导出三地址数据模型的全部公开类型。
 pub use tac::{
     ArithOp, BlockId, CategoryMap, CompareOp, ConstId, ConstPool, FuncId, PathStep, RegisterClass,
-    SetCompareOp, SetOpKind, SigId, TAC_VERSION, TacAbi, TacArgument, TacBlock, TacConstant,
-    TacFunction, TacHandler, TacInstr, TacOp, TacProgram, TacTableDefinition, VReg,
+    SetCompareOp, SetOpKind, SigId, TAC_VERSION, TacAbi, TacArgument, TacBlock,
+    TacBoundaryTransfer, TacConcurrencyPlan, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
+    TacProgram, TacTableDefinition, VReg,
 };
 /// 重导出三地址验证入口与结果类型。
 pub use verify::{

@@ -10,6 +10,7 @@ use super::{
     CallSigTable, CategoryMap, ConstPool, EncodeError, EncodedBlock, EncodedFunction, IrSpan,
     PathStep, TacArgument, TacConstant, TacFunction, TacInstr, TacOp, TacProgram, VReg,
 };
+use crate::tac::TacConcurrencyPlan;
 use xiao_ir::{IrArrayShape, IrDictTypeEntry, IrType};
 
 /// 按常量池索引顺序写常量：1 字节类别标签加载荷。
@@ -58,6 +59,64 @@ pub(super) fn encode_constants(writer: &mut Writer, pool: &ConstPool) -> Result<
                 writer.byte(7);
                 writer.string(value)?;
             }
+        }
+    }
+    Ok(())
+}
+
+/// 编码 VM 并发计划；计划只保存已验证的类型/IR 事实镜像。
+pub(super) fn encode_concurrency_plans(
+    writer: &mut Writer,
+    plans: &[TacConcurrencyPlan],
+) -> Result<(), EncodeError> {
+    writer.count(plans.len(), "concurrency_plans")?;
+    for plan in plans {
+        writer.string(&plan.operation)?;
+        encode_span(writer, plan.span)?;
+        writer.count(plan.argument_spans.len(), "concurrency_plan.argument_spans")?;
+        for span in &plan.argument_spans {
+            encode_span(writer, *span)?;
+        }
+        writer.count(plan.argument_types.len(), "concurrency_plan.argument_types")?;
+        for ty in &plan.argument_types {
+            encode_type(writer, ty)?;
+        }
+        encode_type(writer, &plan.result_type)?;
+        writer.string(
+            &serde_json::to_string(&plan.facts)
+                .map_err(|error| EncodeError::InvalidFormat(error.to_string()))?,
+        )?;
+        match plan.runtime_id {
+            Some(runtime_id) => {
+                writer.byte(1);
+                writer.uleb(runtime_id);
+            }
+            None => writer.byte(0),
+        }
+        match &plan.transfer {
+            Some(transfer) => {
+                writer.byte(1);
+                writer.string(&transfer.copy_kind)?;
+                writer.count(transfer.parameters.len(), "concurrency_plan.parameters")?;
+                for value in &transfer.parameters {
+                    writer.uleb(u64::from(*value));
+                }
+                writer.count(
+                    transfer.cleanup_order.len(),
+                    "concurrency_plan.cleanup_order",
+                )?;
+                for value in &transfer.cleanup_order {
+                    writer.uleb(u64::from(*value));
+                }
+            }
+            None => writer.byte(0),
+        }
+        writer.count(
+            plan.cancellation_checks.len(),
+            "concurrency_plan.cancellation_checks",
+        )?;
+        for check in &plan.cancellation_checks {
+            writer.string(check)?;
         }
     }
     Ok(())
@@ -466,6 +525,10 @@ fn encode_op(
         }
         TacOp::CallDynamic { callee, arguments } => {
             writer.index(callee.get(), "VReg")?;
+            encode_arguments(writer, arguments)
+        }
+        TacOp::CallConcurrency { plan, arguments } => {
+            writer.index(*plan, "concurrency_plan")?;
             encode_arguments(writer, arguments)
         }
         TacOp::Return { value } => write_optional_index(writer, value.map(|item| item.get())),

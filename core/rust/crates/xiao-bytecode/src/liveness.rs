@@ -276,7 +276,9 @@ pub(crate) fn instruction_use_def(
         TacOp::BranchIf { condition, .. } => {
             uses.insert(*condition);
         }
-        TacOp::Call { arguments, .. } | TacOp::LoadTable { arguments, .. } => {
+        TacOp::Call { arguments, .. }
+        | TacOp::LoadTable { arguments, .. }
+        | TacOp::CallConcurrency { arguments, .. } => {
             uses.extend(arguments.iter().map(|argument| argument.value));
         }
         TacOp::MemberGet { object, .. } => {

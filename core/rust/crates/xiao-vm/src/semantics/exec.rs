@@ -27,6 +27,12 @@ use xiao_syntax::ScalarType;
 /// 数组追加 intrinsic 的执行绑定。
 #[path = "array_intrinsics.rs"]
 mod array_intrinsics;
+/// 并发计划、隔离子 VM 和边界错误。
+#[path = "concurrent.rs"]
+mod concurrent;
+/// 模块初始化与上下文切换。
+#[path = "module_exec.rs"]
+mod module_exec;
 /// 集合变更 intrinsic 的执行绑定。
 #[path = "set_intrinsics.rs"]
 mod set_intrinsics;
@@ -52,10 +58,22 @@ use crate::sink::{VmEvent, VmEventSink};
 pub enum Fault {
     /// 可恢复的运行时错误。
     Error(XiaoError),
+    /// 并发 027 错误；不进入用户 catch，但携带清理 suppressed。
+    ConcurrencyCancelled(XiaoError),
     /// 不可恢复的故障。
     Fatal(FatalError),
     /// VM 外部取消或截止时间触发。
     Cancelled,
+}
+
+impl Fault {
+    /// 返回携带的可恢复错误对象。
+    pub fn into_error(self) -> Option<XiaoError> {
+        match self {
+            Self::Error(error) | Self::ConcurrencyCancelled(error) => Some(error),
+            _ => None,
+        }
+    }
 }
 
 /// 一条已经求值的实参。
@@ -196,6 +214,8 @@ pub struct Vm<'p, C: Carrier, S: VmEventSink> {
     checkpoint_counter: Rc<Cell<u64>>,
     /// 当前请求的不可变能力位。
     capabilities: u64,
+    /// 当前执行单元的 Runtime、取消与子执行单元事件。
+    concurrency: Rc<concurrent::ConcurrentContext>,
 }
 
 struct ModuleInstance {
@@ -245,6 +265,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             cancellation: None,
             checkpoint_counter: Rc::new(Cell::new(0)),
             capabilities,
+            concurrency: Rc::new(concurrent::ConcurrentContext::default()),
         }
     }
 
@@ -274,172 +295,6 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     #[must_use]
     pub(crate) fn session_is_healthy(&self) -> bool {
         self.frames.is_empty() && self.initializing_modules.is_empty() && self.session.is_healthy()
-    }
-
-    fn module_fault(&self, identity: &str, cause: impl std::fmt::Display) -> Fault {
-        let mut package_context = None;
-        let label = if let Some(name) = identity.strip_prefix("package:") {
-            let root = name.split('.').next().unwrap_or(name);
-            let environment = self
-                .module_loader
-                .and_then(|loader| loader.environment(identity))
-                .unwrap_or("未知环境");
-            package_context = Some((root.to_owned(), environment.to_owned()));
-            format!("包 {root}（来源环境 {environment}）模块 {name}")
-        } else {
-            if identity == crate::STANDARD_LIBRARY_NAMESPACE
-                || identity.starts_with(crate::STANDARD_LIBRARY_PREFIX)
-            {
-                format!(
-                    "官方标准库模块 {}",
-                    identity
-                        .strip_prefix(crate::STANDARD_LIBRARY_PREFIX)
-                        .unwrap_or(identity)
-                )
-            } else {
-                format!(
-                    "项目模块 {}",
-                    identity.strip_prefix("project:").unwrap_or(identity)
-                )
-            }
-        };
-        let mut error = XiaoError::invalid_value(format!("{label} 加载失败: {cause}"));
-        if let Some((root, environment)) = package_context {
-            error = error
-                .with_param("package", DiagnosticParam::Text(root))
-                .with_param("environment", DiagnosticParam::Text(environment));
-        }
-        Fault::Error(error)
-    }
-
-    fn with_module_program<T>(
-        &mut self,
-        identity: &str,
-        source_name: &str,
-        program: Rc<TacProgram>,
-        execute: impl FnOnce(&mut Self) -> Result<T, Fault>,
-    ) -> Result<T, Fault> {
-        let previous_program = self.active_program.replace(program.clone());
-        let previous_module = std::mem::replace(&mut self.current_module, identity.to_owned());
-        let previous_metadata = std::mem::replace(
-            &mut self.metadata,
-            VmMetadata::new(identity.to_owned(), source_name.to_owned(), None),
-        );
-        let previous_map = std::mem::replace(
-            &mut self.pc_map,
-            build_pc_map(&program, xiao_bytecode::OperandWidth::Leb128).ok(),
-        );
-        let result = execute(self);
-        self.pc_map = previous_map;
-        self.metadata = previous_metadata;
-        self.current_module = previous_module;
-        self.active_program = previous_program;
-        result
-    }
-
-    fn initialize_module(&mut self, identity: &str) -> Result<(), Fault> {
-        if self.session.initialized_modules.contains_key(identity) {
-            return Ok(());
-        }
-        if !self.initializing_modules.insert(identity.to_owned()) {
-            return Err(self.module_fault(identity, "循环初始化"));
-        }
-        let result = self.initialize_uncached(identity);
-        self.initializing_modules.remove(identity);
-        result
-    }
-
-    fn initialize_uncached(&mut self, identity: &str) -> Result<(), Fault> {
-        let loader = self
-            .module_loader
-            .ok_or_else(|| self.module_fault(identity, "未注册模块编译器"))?;
-        let compiled = loader
-            .load(identity)
-            .map_err(|error| self.module_fault(identity, error))?;
-        let Some(compiled) = compiled else {
-            return Ok(());
-        };
-        let instance_tables = compiled.instance_tables;
-        let program = Rc::new(compiled.program);
-        let source_name = compiled.source_name;
-        let previous_exports = self.current_exports.take();
-        self.current_exports = Some(BTreeMap::new());
-        let result = self.with_module_program(identity, &source_name, program.clone(), |vm| {
-            vm.execute(FuncId::new(0), &[], None)
-        });
-        let exports = self.current_exports.take().unwrap_or_default();
-        self.current_exports = previous_exports;
-        if let Err(Fault::Error(error)) = result {
-            let wrapped =
-                self.module_fault(identity, format!("{}: {}", error.code(), error.message()));
-            if let Fault::Error(wrapper) = wrapped {
-                return Err(Fault::Error(wrapper.with_cause(error)));
-            }
-        } else {
-            result?;
-        }
-        self.session.initialized_modules.insert(
-            identity.to_owned(),
-            ModuleInstance {
-                program,
-                source_name,
-                exports,
-                instance_tables,
-            },
-        );
-        self.sink.record(VmEvent::ModuleLoaded {
-            module: identity.to_owned(),
-        });
-        Ok(())
-    }
-
-    fn module_member(&mut self, identity: &str, member: &str) -> Result<RuntimeValue, Fault> {
-        if let Some(name) = member.strip_prefix("ascii:") {
-            let child = format!("{identity}.{name}");
-            if self
-                .module_loader
-                .is_some_and(|loader| loader.contains(&child))
-            {
-                self.initialize_module(&child)?;
-                return Ok(RuntimeValue::Module(child));
-            }
-        }
-        self.initialize_module(identity)?;
-        let instance = self.session.initialized_modules.get(identity);
-        if let Some(value) = instance.and_then(|module| module.exports.get(member)) {
-            return Ok(value.clone());
-        }
-        if instance.is_some_and(|module| module.instance_tables.contains(member)) {
-            return Err(
-                self.module_fault(identity, format!("表构造器 {member} 暂不支持跨模块引用"))
-            );
-        }
-        Err(self.module_fault(identity, format!("导出 {member} 不存在")))
-    }
-
-    fn import_identity(&self, module: &str) -> String {
-        if module == crate::STANDARD_LIBRARY_NAMESPACE
-            || module.starts_with(crate::STANDARD_LIBRARY_PREFIX)
-        {
-            return module.to_owned();
-        }
-        if self.current_module == crate::STANDARD_LIBRARY_NAMESPACE
-            || self
-                .current_module
-                .starts_with(crate::STANDARD_LIBRARY_PREFIX)
-        {
-            return if module.is_empty() {
-                crate::STANDARD_LIBRARY_NAMESPACE.to_owned()
-            } else {
-                format!("{}.{module}", crate::STANDARD_LIBRARY_NAMESPACE)
-            };
-        }
-        if let Some(path) = self.current_module.strip_prefix("package:") {
-            let root = path.split('.').next().unwrap_or(path);
-            format!("package:{root}.{module}")
-        } else {
-            format!("project:{module}")
-        }
     }
 
     /// 在一次指令完成后轮询取消检查点。
@@ -506,9 +361,26 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
         self.sink.record(VmEvent::ModuleLoaded {
             module: self.metadata.module_name.clone(),
         });
-        match self.execute(FuncId::new(0), arguments, None) {
+        let outcome = if self.program.concurrency_plans.is_empty() {
+            self.execute(FuncId::new(0), arguments, None)
+        } else {
+            let runtime = self.concurrency.runtime();
+            runtime
+                .in_context(|| self.execute(FuncId::new(0), arguments, None))
+                .map_err(concurrent::runtime_fault)
+                .and_then(|value| value)
+        };
+        self.finish_concurrency(&outcome);
+        match outcome {
             Ok(value) => (RunResult::Success, value),
             Err(Fault::Error(error)) => {
+                self.sink.record(VmEvent::ErrorRaised {
+                    code: error.code().to_owned(),
+                    message_id: error.message_id().to_owned(),
+                });
+                (RunResult::Error(error), None)
+            }
+            Err(Fault::ConcurrencyCancelled(error)) => {
                 self.sink.record(VmEvent::ErrorRaised {
                     code: error.code().to_owned(),
                     message_id: error.message_id().to_owned(),
@@ -675,6 +547,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             .with_backend(backend);
         match fault {
             Fault::Error(error) => Fault::Error(error.with_stack_frame(stack_frame)),
+            Fault::ConcurrencyCancelled(error) => {
+                Fault::ConcurrencyCancelled(error.with_stack_frame(stack_frame))
+            }
             Fault::Fatal(fatal) => Fault::Fatal(fatal.with_stack_frame(stack_frame)),
             Fault::Cancelled => Fault::Cancelled,
         }
@@ -692,7 +567,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             for (instruction_index, instruction) in current.instructions.iter().enumerate() {
                 self.metrics.instructions = self.metrics.instructions.saturating_add(1);
                 self.count_instruction();
-                let step = self.step(function, instruction);
+                let step = self
+                    .concurrent_checkpoint()
+                    .and_then(|()| self.step(function, instruction));
                 flow = match self.finish_table_effects(step) {
                     Ok(flow) => flow,
                     Err(fault) => {
@@ -703,7 +580,12 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                             .map(|item| item.exit.as_str())
                             .unwrap_or_else(|| exit_for_instruction(&instruction.op));
                         let origin = pending.as_ref().map_or(block, |item| item.origin);
-                        match self.route_fault(function, origin, exit, fault) {
+                        let route = if matches!(&fault, Fault::ConcurrencyCancelled(_)) {
+                            self.route_concurrency_cancellation(function, origin, fault)
+                        } else {
+                            self.route_fault(function, origin, exit, fault)
+                        };
+                        match route {
                             Ok(RouteDecision::Jump(handler)) => Flow::Jump(handler),
                             Ok(RouteDecision::Flow(flow)) => flow,
                             Err(fault) => return Err(fault),
@@ -779,7 +661,9 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 binding_module,
             } => {
                 let identity = self.import_identity(module);
-                self.initialize_module(&identity)?;
+                if identity != "std.concurrent" && identity != "stdlib.concurrent" {
+                    self.initialize_module(&identity)?;
+                }
                 self.write_operand(
                     instruction.dst,
                     RuntimeValue::Module(self.import_identity(binding_module)),
@@ -1036,6 +920,23 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 if let Some(register) = instruction.dst {
                     self.write(register, value.unwrap_or(RuntimeValue::None));
                 }
+            }
+            TacOp::CallConcurrency { plan, arguments } => {
+                let plan = self
+                    .active_program
+                    .as_deref()
+                    .unwrap_or(self.program)
+                    .concurrency_plans
+                    .get(plan.saturating_sub(1) as usize)
+                    .cloned()
+                    .ok_or_else(|| Fault::Fatal(FatalError::corrupt_artifact("并发计划不存在")))?;
+                let bound = self.bind(arguments)?;
+                self.note_map_point(MapPoint::CallSite);
+                let runtime = self.concurrency.runtime();
+                let value = runtime
+                    .in_context(|| self.execute_concurrency(&plan, &bound))
+                    .map_err(concurrent::runtime_fault)??;
+                self.write_operand(instruction.dst, value);
             }
             TacOp::CallDynamic { callee, arguments } => {
                 let RuntimeValue::ModuleFunction(module, index) = self.read(*callee)? else {
@@ -1369,6 +1270,80 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
     ) -> Result<RouteDecision, Fault> {
         self.route_fault_scoped(function, current_block, fault_exit, fault, None)
     }
+
+    /// 并发取消不进入用户 catch，但仍执行 finally/释放并保留清理错误。
+    fn route_concurrency_cancellation(
+        &mut self,
+        function: &TacFunction,
+        current_block: BlockId,
+        fault: Fault,
+    ) -> Result<RouteDecision, Fault> {
+        let Fault::ConcurrencyCancelled(mut primary) = fault else {
+            return Err(fault);
+        };
+        let scopes = self
+            .frames
+            .last()
+            .map(|frame| frame.scopes.clone())
+            .unwrap_or_default();
+        let active_catches = self
+            .frames
+            .last()
+            .map(|frame| frame.active_catches.clone())
+            .unwrap_or_default();
+        let mut finalies = function
+            .handlers
+            .iter()
+            .filter(|handler| {
+                handler.exit == "finally"
+                    && scopes.contains(&handler.scope)
+                    && !active_catches
+                        .iter()
+                        .any(|(scope, _)| *scope == handler.scope)
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        finalies.sort_by_key(|handler| {
+            (
+                std::cmp::Reverse(
+                    scopes
+                        .iter()
+                        .position(|scope| *scope == handler.scope)
+                        .unwrap_or(0),
+                ),
+                handler.handler,
+            )
+        });
+        finalies.dedup_by_key(|handler| handler.handler);
+        for handler in finalies {
+            if let Some(frame) = self.frames.last_mut() {
+                let marker = (handler.scope, handler.handler);
+                if frame.completed_finally.contains(&marker) {
+                    continue;
+                }
+                frame.completed_finally.push(marker);
+            }
+            match self.run_subroutine(function, handler.handler, "cancelled") {
+                Ok(_) => {}
+                Err(Fault::Error(error)) | Err(Fault::ConcurrencyCancelled(error)) => {
+                    primary.push_suppressed(error)
+                }
+                Err(Fault::Fatal(fatal)) => return Err(Fault::Fatal(fatal)),
+                Err(Fault::Cancelled) => {}
+            }
+        }
+        for scope in scopes.iter().rev().copied() {
+            self.run_plan(function, scope, "unmatched_error");
+        }
+        if let Some(frame) = self.frames.last_mut() {
+            frame.scopes.clear();
+            frame.active_catches.clear();
+            frame.completed_finally.clear();
+            frame.pending_check_kind = None;
+        }
+        let _ = current_block;
+        Err(Fault::Error(primary))
+    }
     /// 在指定的子程序边界内路由故障。
     ///
     /// `floor` 用来限制子程序内部只能跳入同一子程序之后建立的嵌套处理器；
@@ -1522,6 +1497,7 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                     }
                 }
                 Err(Fault::Error(cleanup)) => error.push_suppressed(cleanup),
+                Err(Fault::ConcurrencyCancelled(cleanup)) => error.push_suppressed(cleanup),
                 Err(Fault::Fatal(fatal)) => return Err(Fault::Fatal(fatal)),
                 Err(Fault::Cancelled) => return Err(Fault::Cancelled),
             }
@@ -1809,7 +1785,11 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 handler: handler.handler.get(),
             });
             match self.run_subroutine(function, handler.handler, "cancelled") {
-                Ok(_) | Err(Fault::Error(_)) | Err(Fault::Fatal(_)) | Err(Fault::Cancelled) => {}
+                Ok(_)
+                | Err(Fault::Error(_))
+                | Err(Fault::ConcurrencyCancelled(_))
+                | Err(Fault::Fatal(_))
+                | Err(Fault::Cancelled) => {}
             }
         }
     }

@@ -16,6 +16,22 @@ pub const MAX_EVENT_CAPACITY: usize = 1_000_000;
 /// 一条结构化调试事件。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum VmEvent {
+    /// 并发调用的实际 Runtime 身份与进程级 detached 积压观测。
+    ConcurrencyObserved {
+        /// 稳定操作名。
+        operation: String,
+        /// 目标或当前实际 Runtime ID。
+        runtime_id: u64,
+        /// 尚未开始回收的闭包数。
+        detached_queue_depth: usize,
+        /// 是否达到 Runtime 登记的积压阈值。
+        detached_threshold_reached: bool,
+    },
+    /// 边界复制失败按 IR 计划释放已成功的参数副本。
+    BoundaryCopyReleased {
+        /// IR 边界参数值编号。
+        value: u32,
+    },
     /// intrinsic 写入标准输出的文本片段。
     IntrinsicOutput {
         /// 原样文本；文本中包含该调用应产生的换行。

@@ -532,7 +532,21 @@ pub fn run(program: &xiao_bytecode::TacProgram, options: VmOptions) -> RunOutcom
 /// 解码、边界、完整性、09R 指令流和 Runtime ABI 检查全部通过前不会建立 VM，
 /// 因而损坏产物不会执行任何指令。
 pub fn run_xiaoc(bytes: &[u8], options: VmOptions) -> Result<RunOutcome, XiaocLoadError> {
+    run_xiaoc_with_runtime_features(bytes, options, xiao_bytecode::SUPPORTED_REQUIRED_FEATURES)
+}
+
+/// 使用宿主实际支持的功能位加载产物；缺失功能时不建立 VM。
+pub fn run_xiaoc_with_runtime_features(
+    bytes: &[u8],
+    options: VmOptions,
+    runtime_features: u64,
+) -> Result<RunOutcome, XiaocLoadError> {
     let file = xiao_bytecode::decode_xiaoc(bytes)?;
+    xiao_bytecode::validate_runtime_requirements(
+        &file.header,
+        u64::from(xiao_bytecode::TAC_RUNTIME_ABI_VERSION),
+        runtime_features,
+    )?;
     Ok(run(&file.program, options))
 }
 
@@ -583,11 +597,37 @@ pub fn run_xiaoc_production_with_loader(
     capabilities: u64,
     loader: Option<&dyn crate::modules::ModuleLoader>,
 ) -> Result<RunOutcome, XiaocLoadError> {
+    run_xiaoc_production_with_features(
+        bytes,
+        options,
+        event_capacity,
+        cancellation,
+        capabilities,
+        loader,
+        xiao_bytecode::SUPPORTED_REQUIRED_FEATURES,
+    )
+}
+
+/// 归档宿主把实际 Runtime 功能位传到统一字节码门禁。
+pub fn run_xiaoc_production_with_features(
+    bytes: &[u8],
+    options: VmOptions,
+    event_capacity: usize,
+    cancellation: Option<CancellationSource>,
+    capabilities: u64,
+    loader: Option<&dyn crate::modules::ModuleLoader>,
+    runtime_features: u64,
+) -> Result<RunOutcome, XiaocLoadError> {
     validate_capability_mask(capabilities).map_err(|error| XiaocLoadError::InvalidField {
         field: "capabilities".to_owned(),
         message: error.to_string(),
     })?;
     let file = xiao_bytecode::decode_xiaoc(bytes)?;
+    xiao_bytecode::validate_runtime_requirements(
+        &file.header,
+        u64::from(xiao_bytecode::TAC_RUNTIME_ABI_VERSION),
+        runtime_features,
+    )?;
     let sink = BoundedSink::new(event_capacity);
     let mut vm = Vm::<StackCarrier, BoundedSink>::new_with_metadata(
         &file.program,

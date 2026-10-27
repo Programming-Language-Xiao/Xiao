@@ -39,6 +39,7 @@ fn valid_xiaoc() -> Vec<u8> {
         table_definitions: Vec::new(),
         unsupported: Vec::new(),
         required_features: 0,
+        concurrency_plans: Vec::new(),
     };
     encode_xiaoc(&program, XiaocMetadata::default()).unwrap()
 }

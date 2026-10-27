@@ -247,6 +247,73 @@ impl<T: Send + Sync> SharedHandle<T> {
             waiters,
         })
     }
+
+    /// 获取拥有强引用的锁守卫，供 VM 寄存器保存；中断检查不进入对象头。
+    pub fn lock_owned(
+        &self,
+        cancelled: &LockCancellation,
+        interrupted: impl Fn() -> bool,
+    ) -> Result<SharedOwnedGuard<T>, SharedLockError> {
+        if self.tag() != SharedTag::Mut {
+            return Err(SharedLockError::InvalidTag);
+        }
+        let waiters = acquire_lock_interruptible(
+            unsafe { &self.ptr.as_ref().header.lock_state },
+            Some(cancelled),
+            interrupted,
+        )?;
+        Ok(SharedOwnedGuard {
+            handle: self.clone(),
+            waiters,
+            _thread_bound: PhantomData,
+        })
+    }
+
+    /// 比较共享对象身份，不读取载荷。
+    #[must_use]
+    pub fn same_object(&self, other: &Self) -> bool {
+        self.ptr == other.ptr && self.runtime_id == other.runtime_id
+    }
+}
+
+/// 拥有共享强引用的单线程锁守卫，无自引用或生命周期强转。
+pub struct SharedOwnedGuard<T: Send + Sync> {
+    handle: SharedHandle<T>,
+    waiters: Arc<LockWaiters>,
+    _thread_bound: PhantomData<std::rc::Rc<()>>,
+}
+
+impl<T: Send + Sync> SharedOwnedGuard<T> {
+    /// 返回锁守卫所属 Runtime ID。
+    #[must_use]
+    pub fn runtime_id(&self) -> u64 {
+        self.handle.runtime_id()
+    }
+}
+
+impl<T: Send + Sync> std::ops::Deref for SharedOwnedGuard<T> {
+    type Target = T;
+    fn deref(&self) -> &T {
+        // SAFETY: 守卫持有独占锁及强引用，载荷存活到解锁之后。
+        unsafe { &self.handle.ptr.as_ref().payload }
+    }
+}
+
+impl<T: Send + Sync> std::ops::DerefMut for SharedOwnedGuard<T> {
+    fn deref_mut(&mut self) -> &mut T {
+        // SAFETY: 独占锁阻止其他守卫同时访问可变载荷。
+        unsafe { &mut (*self.handle.ptr.as_ptr()).payload }
+    }
+}
+
+impl<T: Send + Sync> Drop for SharedOwnedGuard<T> {
+    fn drop(&mut self) {
+        let header = unsafe { &self.handle.ptr.as_ref().header };
+        let _gate = self.waiters.gate.lock().expect("共享锁等待器锁未中毒");
+        header.lock_state.store(0, Ordering::Release);
+        self.waiters.ready.notify_all();
+        // Drop 返回后再释放 handle，确保解锁发生在最后一次强引用释放前。
+    }
 }
 
 impl<T> SharedHandle<T> {
@@ -471,9 +538,17 @@ fn acquire_lock(
     state: &AtomicU32,
     cancelled: Option<&LockCancellation>,
 ) -> Result<Arc<LockWaiters>, SharedLockError> {
+    acquire_lock_interruptible(state, cancelled, || false)
+}
+
+fn acquire_lock_interruptible(
+    state: &AtomicU32,
+    cancelled: Option<&LockCancellation>,
+    interrupted: impl Fn() -> bool,
+) -> Result<Arc<LockWaiters>, SharedLockError> {
     let waiters = lock_waiters(state as *const AtomicU32 as usize);
     loop {
-        if cancelled.is_some_and(LockCancellation::is_cancelled) {
+        if interrupted() || cancelled.is_some_and(LockCancellation::is_cancelled) {
             return Err(SharedLockError::Cancelled);
         }
         if let Some(cancelled) = cancelled {
@@ -503,7 +578,12 @@ fn acquire_lock(
             return Ok(Arc::clone(&waiters));
         }
         state.fetch_or(SHARED_WAITERS, Ordering::Release);
-        drop(waiters.ready.wait(gate).expect("共享锁等待器锁未中毒"));
+        drop(
+            waiters
+                .ready
+                .wait_timeout(gate, std::time::Duration::from_millis(5))
+                .expect("共享锁等待器锁未中毒"),
+        );
     }
 }
 

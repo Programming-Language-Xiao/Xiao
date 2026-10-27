@@ -54,6 +54,29 @@ pub fn lower_program(
         .unwrap_or_default();
     result.control_flow = lower_control_flow(lifetime);
     result.ownership = lower_ownership(lifetime);
+    result.concurrency_calls = type_result
+        .concurrency_calls()
+        .iter()
+        .map(|call| IrConcurrencyCall {
+            operation: call.operation.clone(),
+            span: ir_span(call.span),
+            argument_spans: call.argument_spans.iter().copied().map(ir_span).collect(),
+            argument_types: call
+                .argument_spans
+                .iter()
+                .map(|span| {
+                    type_result
+                        .type_at(*span)
+                        .map(lower_type)
+                        .unwrap_or(IrType::Dynamic)
+                })
+                .collect(),
+            result_type: type_result
+                .type_at(call.span)
+                .map(lower_type)
+                .unwrap_or(IrType::Dynamic),
+        })
+        .collect();
     result.runtime_checks = type_result
         .runtime_checks()
         .iter()

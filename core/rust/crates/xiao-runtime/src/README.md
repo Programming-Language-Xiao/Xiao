@@ -17,6 +17,8 @@
   `abi_dynamic.rs`，原生诊断握手与事件入口在 `abi_diagnostics.rs`；异常对象与展开仍留给 N0-C。
 - `errors/`：结构化 Runtime 错误和展开累加器。
 - `testing/`：只用于规格测试的释放计划驱动器。
+- `vm_concurrency.rs`：22C-FIX.1 的单线程 VM 句柄、可发送 XCON 信封和结构化子执行结果；
+  `vm_concurrency_tests.rs` 验证复制字节、锁守卫寿命、消费身份和限制。
 
 - `abi_tables.rs`：10T 注册式表方法、元数据复制、弱只读析构视图与错误边界；
   `abi_table_tests.rs` 覆盖初始化回滚、别名、视图失效和非法元数据。

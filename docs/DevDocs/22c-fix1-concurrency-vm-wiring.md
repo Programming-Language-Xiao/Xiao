@@ -2,11 +2,12 @@
 
 > **这是 22C 的收口补丁批，不是 22D。**
 > 22C 已交付 ABI 1.17、32B 共享头、Runtime/线程/任务池骨架、XCON 基础、
-> Runtime 关闭协调和 `.xiaoc`/`.xar` feature 门禁；但 22C 的 VM 调用、深拷贝/序列化
-> 边界执行和源码级并发端到端仍未接线。22C 的退出条件 2、4 和 7 尚未满足，22D 不能
-> 在 VM 行为未稳定前开始。
+> Runtime 关闭协调和 `.xiaoc`/`.xar` feature 门禁。本批已把 22B facts/transfers/
+> cancellation 接入 TAC 并发计划、隔离 VM 和 Runtime 绑定，并完成源码到 `.xar` 的端到端回归。
 >
-> 状态：**规划完成，待实施（2026-10-27）**。本批只接 VM、驱动和已有 Runtime API；
+> 状态：**实现与本地 gates 已完成（2026-10-27）**，20 条源码/产物端到端回归、workspace、
+> benchmark、research concurrency、Bun、coverage 及安全/产物回归均通过；远端多平台 maintenance
+> 与 CI 证据仍待收口。本批只接 VM、驱动和已有 Runtime API；
 > 不接 LLVM，不写 `stdlib/concurrent.xiao` 函数体，不改 22A/22B 的 API、Send/Sync 表、
 > 32B 布局、诊断码或产物 feature 位。
 
@@ -42,14 +43,14 @@
 
 | 面 | 当前事实 | 影响 |
 | --- | --- | --- |
-| VM 值 | `RuntimeValue` 只有模块、标量、容器、资源、错误和 none；没有 Runtime/Thread/Task/Pool/Shared/LockGuard 值（`core/rust/crates/xiao-runtime/src/value/mod.rs`） | 无法把并发句柄放进寄存器或跨调用传递 |
-| VM 调用 | `CallDynamic` 只接受 `RuntimeValue::ModuleFunction`，按模块/函数索引执行 TAC（`xiao-vm/src/semantics/exec.rs`） | 不能直接执行只存在于签名表的 `std.concurrent` 函数 |
-| 标准库 | `std.concurrent` 只有 `std_concurrent_signatures()`，没有标准库对象或函数体 | 导入后在 VM 模块初始化路径没有可执行实现 |
-| TAC | 22B facts/transfers/cancellation 没有进入 TAC；只有 `.xiaoc` required-feature 元数据 | VM 无法只靠现有字节码知道边界/复制/取消计划 |
-| Runtime | `RuntimeHandle`、`TaskPool`、`ThreadHandle`、`TaskHandle`、`SharedHandle` 和 XCON 编解码已存在 | 可作为 VM 调用的下层，但缺少句柄值、边界适配和生命周期桥接 |
-| VM 线程模型 | `Vm`/载体使用单线程状态；`Rc`、`Cell` 不跨线程 | 任务/线程需要每执行单元独立 VM，或明确的隔离执行路径 |
-| 驱动 | `xiao-driver` 的编译/运行路径没有并发调用接线；`std.concurrent` 只在类型检查/前端出现 | 源码级并发源码还不能经过 `xiao run` 执行 |
-| 测试 | 22C 已有 Runtime/ABI/门禁单测；没有真实源码经 TAC 到 VM 的并发黄金场景 | 22C 退出条件 2/7 无证据 |
+| VM 值 | `RuntimeValue::Concurrency` 包装 Runtime/Thread/Task/Pool/Shared/SharedMut/LockGuard；消费槽共享别名状态 | 句柄可在寄存器和调用帧中传递，普通容器键仍拒绝 |
+| VM 调用 | TAC `CallConcurrency` 按计划 ID 执行 Runtime 绑定；不从源码成员名重新推断操作 | `std.concurrent` 入口走原生绑定，普通动态调用仍走既有路径 |
+| 标准库 | `std.concurrent` 保持签名表；VM 对保留模块提供内建成员入口 | 不写 `stdlib/concurrent.xiao` 函数体，导入初始化不执行虚假模块 |
+| TAC | `TacConcurrencyPlan` 保存 operation、类型、Runtime 标签、facts、transfer、取消检查；格式 4 追加计划分区，旧格式 3 继续解码 | verifier 同时检查调用引用、类型、逆序清理和 IR facts/cancellation |
+| Runtime | 子 VM 用 XCON `VmTransferValue` 传递候选 A 值；共享句柄保留来源 Runtime ID；已有 Runtime 绑定提供 027–032 | 不跨线程搬运 VM 的 `Rc`/`Cell` 状态 |
+| VM 线程模型 | 每个 spawn/pool 执行单元创建独立 VM、模块快照和事件汇聚槽 | 任务结果、panic、取消和 suppressed 错误可回到父 VM |
+| 驱动 | `xiao-driver` 真实源码、`.xiaoc`、`.xar` 入口均复用并发计划和 feature preflight | `xiao run`/归档入口可执行并发黄金场景 |
+| 测试 | 新增 `22c_vm_concurrency.rs` 覆盖 20 条源码/产物/错误回归 | 22C 退出条件 2、3、4、5、6、7 有直接证据 |
 
 ## 三、目标与边界
 
@@ -115,6 +116,7 @@ LockGuard(lock_guard_handle)
   `TacProgram`（`Arc`/只读克隆）但不共享 `Rc`/`Cell` 状态；
 - 任务入口携带函数 ID（或可执行函数计划）和已深拷贝/序列化的边界值；
 - 子 VM 的返回值按边界序列化回父 VM；`join/wait` 只接收合法结果；
+- 最后一个 VM `task` 别名未 `wait` 时，将结果接收器交给 detached 回收通道；失败保留 027/028 身份，普通子 VM 错误作为 028 的 cause；
 - 模块初始化状态不在线程间隐式共享；需要共享只读模块状态时通过深拷贝/序列化，不把
   `VmSession` 的 `Rc` 状态跨线程；
 - pool worker 迁移使用 22B 的 task/thread 双边界事实；Runtime ID 在每个子 VM 中保持；

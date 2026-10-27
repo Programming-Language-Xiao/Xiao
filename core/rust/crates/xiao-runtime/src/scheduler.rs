@@ -13,6 +13,7 @@ use std::sync::{Arc, Condvar, Mutex, OnceLock, Weak, mpsc};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
+/// Runtime、线程和任务池共用的取消令牌。
 pub use crate::concurrency::LockCancellation as RuntimeCancellation;
 use crate::concurrency::global_runtime_registry;
 use crate::{
@@ -25,11 +26,13 @@ thread_local! {
     static CURRENT_RUNTIME_ID: RefCell<Option<u64>> = const { RefCell::new(None) };
 }
 
+/// 离开执行单元时恢复线程之前的取消上下文。
 struct CancellationContextGuard {
     previous: Option<RuntimeCancellation>,
 }
 
 impl Drop for CancellationContextGuard {
+    /// 恢复上一个线程局部取消令牌。
     fn drop(&mut self) {
         CURRENT_CANCELLATION.with(|current| {
             *current.borrow_mut() = self.previous.take();
@@ -37,20 +40,24 @@ impl Drop for CancellationContextGuard {
     }
 }
 
+/// 安装当前执行单元的取消令牌并返回恢复守卫。
 fn enter_cancellation_context(token: RuntimeCancellation) -> CancellationContextGuard {
     let previous = CURRENT_CANCELLATION.with(|current| current.borrow_mut().replace(token));
     CancellationContextGuard { previous }
 }
 
+/// 克隆当前线程继承的取消令牌。
 fn current_cancellation_context() -> Option<RuntimeCancellation> {
     CURRENT_CANCELLATION.with(|current| current.borrow().clone())
 }
 
+/// 离开执行单元时恢复线程之前的 Runtime 身份。
 struct RuntimeContextGuard {
     previous: Option<u64>,
 }
 
 impl Drop for RuntimeContextGuard {
+    /// 恢复上一个线程局部 Runtime ID。
     fn drop(&mut self) {
         CURRENT_RUNTIME_ID.with(|current| {
             *current.borrow_mut() = self.previous.take();
@@ -58,11 +65,13 @@ impl Drop for RuntimeContextGuard {
     }
 }
 
+/// 安装当前执行单元的 Runtime ID 并返回恢复守卫。
 fn enter_runtime_context(runtime_id: u64) -> RuntimeContextGuard {
     let previous = CURRENT_RUNTIME_ID.with(|current| current.borrow_mut().replace(runtime_id));
     RuntimeContextGuard { previous }
 }
 
+/// 读取当前线程绑定的 Runtime ID。
 fn current_runtime_context() -> Option<u64> {
     CURRENT_RUNTIME_ID.with(|current| *current.borrow())
 }
@@ -76,6 +85,7 @@ pub struct RuntimeHandle {
 }
 
 #[derive(Debug)]
+/// Runtime 的关闭、活动计数、池登记和 worker 状态。
 struct RuntimeInner {
     closed: AtomicBool,
     active: Mutex<usize>,
@@ -87,11 +97,13 @@ struct RuntimeInner {
 }
 
 #[derive(Debug, Default)]
+/// 串行协调一个 Runtime 的唯一关闭 owner 和后续观察者。
 struct RuntimeCloseState {
     draining: bool,
     finished: bool,
 }
 
+/// 当前调用在线程关闭协议中的职责。
 enum CloseRole {
     Owner(Vec<Arc<PoolInner>>),
     ActiveFollower,
@@ -99,11 +111,13 @@ enum CloseRole {
     Finished,
 }
 
+/// 跟踪从提交到完成的一项 Runtime 活动。
 struct ActivityLease {
     runtime: Arc<RuntimeInner>,
     running_thread: Option<thread::ThreadId>,
 }
 
+/// 标记正在执行 close 的活动，防止 closer 互相等待。
 struct ClosingActivityGuard {
     runtime: Arc<RuntimeInner>,
     thread_id: thread::ThreadId,
@@ -111,6 +125,7 @@ struct ClosingActivityGuard {
 }
 
 impl Drop for ClosingActivityGuard {
+    /// 关闭调用退出时移除线程的 closing 计数并唤醒 drain owner。
     fn drop(&mut self) {
         if let Ok(mut closing) = self.runtime.closing_threads.lock()
             && let Some(count) = closing.get_mut(&self.thread_id)
@@ -125,6 +140,7 @@ impl Drop for ClosingActivityGuard {
 }
 
 impl ActivityLease {
+    /// 将已提交活动登记到当前运行线程。
     fn mark_running(&mut self) {
         let thread_id = thread::current().id();
         if let Ok(mut threads) = self.runtime.active_threads.lock() {
@@ -136,6 +152,7 @@ impl ActivityLease {
 }
 
 impl Drop for ActivityLease {
+    /// 活动结束时同步减少线程计数和 Runtime 总活动数。
     fn drop(&mut self) {
         if let Some(thread_id) = self.running_thread.take()
             && let Ok(mut threads) = self.runtime.active_threads.lock()
@@ -197,6 +214,15 @@ impl RuntimeHandle {
         self.inner.closed.load(Ordering::Acquire)
     }
 
+    /// 在受检的 Runtime 上下文内执行宿主代码；离开时恢复原线程上下文。
+    pub fn in_context<T>(&self, body: impl FnOnce() -> T) -> Result<T, RuntimeExecError> {
+        if !self.context_allows_current() {
+            return Err(RuntimeExecError::RuntimeClosed);
+        }
+        let _context = enter_runtime_context(self.id);
+        Ok(body())
+    }
+
     /// 幂等关闭 Runtime；旧别名可观察相同关闭状态。
     ///
     /// 活动 Runtime 上下文只能关闭自身 Runtime，或关闭由该上下文创建的
@@ -218,12 +244,14 @@ impl RuntimeHandle {
         Ok(())
     }
 
+    /// 判断当前 Runtime 上下文是否是自身或直接 owner。
     fn context_allows_current(&self) -> bool {
         current_runtime_context().is_none_or(|current_runtime_id| {
             current_runtime_id == self.id || self.owner_runtime_id == Some(current_runtime_id)
         })
     }
 
+    /// 选择唯一 drain owner，并等待尚未进入关闭的 Runtime 活动。
     fn close_inner(&self) {
         let closing_guard = self.enter_current_thread_closing();
         let current_active = closing_guard.as_ref().map_or(0, |guard| guard.count);
@@ -290,6 +318,7 @@ impl RuntimeHandle {
         }
     }
 
+    /// 将当前线程在此 Runtime 的全部活动标记为正在关闭。
     fn enter_current_thread_closing(&self) -> Option<ClosingActivityGuard> {
         let thread_id = thread::current().id();
         let Ok(threads) = self.inner.active_threads.lock() else {
@@ -313,6 +342,7 @@ impl RuntimeHandle {
         })
     }
 
+    /// 汇总当前已声明关闭的活动数。
     fn closing_active_count(&self) -> usize {
         self.inner
             .closing_threads
@@ -321,6 +351,7 @@ impl RuntimeHandle {
             .unwrap_or(0)
     }
 
+    /// 等待 Runtime 活动全部退出或进入可由 owner 统一收束的关闭路径。
     fn wait_for_non_closing_active(&self) {
         let Ok(mut active) = self.inner.active.lock() else {
             return;
@@ -357,6 +388,7 @@ impl RuntimeHandle {
         })
     }
 
+    /// 登记池的弱引用，供 Runtime 关闭时收束仍存活的池。
     fn register_pool(&self, pool: &Arc<PoolInner>) -> Result<(), RuntimeExecError> {
         let mut pools = self
             .inner
@@ -384,6 +416,8 @@ pub enum RuntimeExecError {
     Cancelled,
     /// 执行单元 panic 或失去结果。
     JoinFailed,
+    /// 跨执行单元值无法按 XCON 规则复制/序列化。
+    Serialization,
 }
 
 impl RuntimeExecError {
@@ -395,6 +429,7 @@ impl RuntimeExecError {
             Self::PoolClosed => CONCURRENCY_POOL_CLOSED_CODE,
             Self::PoolArgument => CONCURRENCY_POOL_ARGUMENT_CODE,
             Self::Cancelled => CONCURRENCY_CANCELLED_CODE,
+            Self::Serialization => "X06-RUNTIME-029",
             Self::JoinFailed => "X06-RUNTIME-028",
         }
     }
@@ -416,6 +451,49 @@ pub struct ThreadHandle<T> {
 }
 
 impl<T: 'static> ThreadHandle<T> {
+    /// 返回共享取消令牌，等待消耗句柄后仍可取消执行单元。
+    #[must_use]
+    pub fn cancellation(&self) -> RuntimeCancellation {
+        self.cancellation.clone()
+    }
+
+    /// 等待期间轮询调用者中断；中断取消子线程并将回收交给 detached 通道。
+    pub fn join_interruptible(
+        mut self,
+        interrupted: impl Fn() -> bool,
+    ) -> Result<T, RuntimeExecError> {
+        while !self.join.as_ref().is_none_or(JoinHandle::is_finished) {
+            if interrupted() {
+                self.cancel();
+                self.detach();
+                return Err(RuntimeExecError::Cancelled);
+            }
+            thread::park_timeout(Duration::from_millis(2));
+        }
+        if interrupted() {
+            self.cancel();
+            self.detach();
+            return Err(RuntimeExecError::Cancelled);
+        }
+        self.join
+            .take()
+            .ok_or(RuntimeExecError::JoinFailed)?
+            .join()
+            .map_err(|_| RuntimeExecError::JoinFailed)?
+    }
+
+    /// 消费线程，并由调用方将结构化执行结果汇入自己的 detached 通道。
+    pub fn detach_with(
+        mut self,
+        report: impl FnOnce(Result<T, RuntimeExecError>) + Send + 'static,
+    ) {
+        if let Some(join) = self.join.take() {
+            enqueue_detached_reap(Box::new(move || {
+                report(join.join().unwrap_or(Err(RuntimeExecError::JoinFailed)));
+            }))
+            .expect("detached 错误收集线程不可用");
+        }
+    }
     /// 借用取消句柄；取消不消费线程句柄。
     pub fn cancel(&self) {
         self.cancellation.cancel();
@@ -461,13 +539,27 @@ impl<T: 'static> ThreadHandle<T> {
 }
 
 fn detached_errors() -> &'static Mutex<Vec<RuntimeExecError>> {
+    /// Rust Runtime API detached 执行失败记录。
     static ERRORS: OnceLock<Mutex<Vec<RuntimeExecError>>> = OnceLock::new();
     ERRORS.get_or_init(|| Mutex::new(Vec::new()))
 }
 
+/// 返回未开始回收的 detached 闭包计数器。
 fn detached_queue_depth_counter() -> &'static AtomicUsize {
+    /// 当前 detached 回收队列深度。
     static DEPTH: AtomicUsize = AtomicUsize::new(0);
     &DEPTH
+}
+
+/// detached 队列积压的观测阈值；22E 前必须据此选择资源限制策略。
+pub const DETACHED_REAPER_WARNING_DEPTH: usize = 256;
+/// 进程启动以来的 detached 回收队列峰值。
+static DETACHED_REAPER_PEAK: AtomicUsize = AtomicUsize::new(0);
+
+/// 返回进程启动以来 detached 队列深度峰值。
+#[must_use]
+pub fn detached_reaper_peak_depth() -> usize {
+    DETACHED_REAPER_PEAK.load(Ordering::Acquire)
 }
 
 /// 返回 detached 回收队列中尚未开始执行的闭包数量。
@@ -476,10 +568,12 @@ pub fn detached_reaper_queue_depth() -> usize {
     detached_queue_depth_counter().load(Ordering::Acquire)
 }
 
+/// 非阻塞地把一次 join 回收工作放入固定 worker 队列。
 fn enqueue_detached_reap(
     reap: Box<dyn FnOnce() + Send>,
 ) -> Result<(), mpsc::SendError<Box<dyn FnOnce() + Send>>> {
-    detached_queue_depth_counter().fetch_add(1, Ordering::AcqRel);
+    let queued = detached_queue_depth_counter().fetch_add(1, Ordering::AcqRel) + 1;
+    DETACHED_REAPER_PEAK.fetch_max(queued, Ordering::AcqRel);
     let depth = detached_queue_depth_counter();
     match detached_reaper().send(Box::new(move || {
         depth.fetch_sub(1, Ordering::AcqRel);
@@ -493,8 +587,11 @@ fn enqueue_detached_reap(
     }
 }
 
+/// 初始化并返回共享的 detached 回收 worker 池。
 fn detached_reaper() -> &'static mpsc::Sender<Box<dyn FnOnce() + Send>> {
+    /// 固定的 OS join worker 数量。
     const DETACHED_JOIN_WORKERS: usize = 4;
+    /// 向 detached 回收池发送一次性 join 闭包。
     static REAPER: OnceLock<mpsc::Sender<Box<dyn FnOnce() + Send>>> = OnceLock::new();
     REAPER.get_or_init(|| {
         // 固定 worker 消费无界消息队列，detach 本身不因回收队列暂时繁忙而阻塞。
@@ -539,6 +636,31 @@ where
     T: Send + 'static,
     F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
 {
+    spawn_policy(runtime, function, true)
+}
+
+/// 启动由解释器处理取消/清理结果的执行单元，保留其结构化错误。
+pub fn spawn_cooperative<T, F>(
+    runtime: &RuntimeHandle,
+    function: F,
+) -> Result<ThreadHandle<T>, RuntimeExecError>
+where
+    T: Send + 'static,
+    F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
+{
+    spawn_policy(runtime, function, false)
+}
+
+/// 在普通 Runtime API 与 VM 协作式取消间共用线程启动逻辑。
+fn spawn_policy<T, F>(
+    runtime: &RuntimeHandle,
+    function: F,
+    check_result: bool,
+) -> Result<ThreadHandle<T>, RuntimeExecError>
+where
+    T: Send + 'static,
+    F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
+{
     if !runtime.context_allows_current() {
         return Err(RuntimeExecError::RuntimeClosed);
     }
@@ -558,7 +680,7 @@ where
                 return Err(RuntimeExecError::Cancelled);
             }
             let result = function(child_token.clone());
-            if child_token.is_cancelled() {
+            if check_result && child_token.is_cancelled() {
                 Err(RuntimeExecError::Cancelled)
             } else {
                 Ok(result)
@@ -591,11 +713,13 @@ struct PoolInner {
     drain_worker_count: usize,
 }
 
+/// 在提交等待期间计入池关闭需要排空的提交者。
 struct SubmissionLease {
     inner: Arc<PoolInner>,
 }
 
 impl Drop for SubmissionLease {
+    /// 提交成功或失败后减少挂起提交计数。
     fn drop(&mut self) {
         if let Ok(mut pending) = self.inner.pending_submissions.lock() {
             *pending = pending.saturating_sub(1);
@@ -605,6 +729,7 @@ impl Drop for SubmissionLease {
 }
 
 impl PoolInner {
+    /// 登记一次提交尝试并在返回时自动释放登记。
     fn begin_submission(inner: &Arc<Self>) -> SubmissionLease {
         if let Ok(mut pending) = inner.pending_submissions.lock() {
             *pending = pending.saturating_add(1);
@@ -629,6 +754,43 @@ pub struct TaskHandle<T> {
 }
 
 impl<T> TaskHandle<T> {
+    /// 读取任务取消令牌。
+    #[must_use]
+    pub fn cancellation(&self) -> RuntimeCancellation {
+        self.cancellation.clone()
+    }
+
+    /// 可中断等待；中断取消未完成任务，返回 027。
+    pub fn wait_interruptible(self, interrupted: impl Fn() -> bool) -> Result<T, RuntimeExecError> {
+        loop {
+            if interrupted() {
+                self.cancel();
+                return Err(RuntimeExecError::Cancelled);
+            }
+            match self.receiver.recv_timeout(Duration::from_millis(2)) {
+                Ok(value) => return value,
+                Err(mpsc::RecvTimeoutError::Timeout) => {}
+                Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    return Err(RuntimeExecError::JoinFailed);
+                }
+            }
+        }
+    }
+
+    /// 将未等待的任务结果交给 detached 回收通道，不阻塞当前线程。
+    pub(crate) fn detach_with(
+        self,
+        report: impl FnOnce(Result<T, RuntimeExecError>) + Send + 'static,
+    ) where
+        T: Send + 'static,
+    {
+        let receiver = self.receiver;
+        enqueue_detached_reap(Box::new(move || {
+            report(receiver.recv().unwrap_or(Err(RuntimeExecError::JoinFailed)));
+        }))
+        .expect("detached 错误收集线程不可用");
+    }
+
     /// 借用取消任务；取消不消费任务句柄。
     pub fn cancel(&self) {
         self.cancellation.cancel();
@@ -643,6 +805,17 @@ impl<T> TaskHandle<T> {
 }
 
 impl TaskPool {
+    /// 返回池绑定的 Runtime 别名，供隔离 VM 建立正确的当前上下文。
+    #[must_use]
+    pub fn runtime(&self) -> RuntimeHandle {
+        self.runtime.clone()
+    }
+    /// 判断两个池句柄是否引用同一底层池。
+    #[must_use]
+    pub(crate) fn same_identity(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.inner, &other.inner)
+    }
+
     /// 创建固定容量任务池；容量范围为 1–256。
     pub fn create(runtime: RuntimeHandle, capacity: usize) -> Result<Self, RuntimeExecError> {
         if !(1..=256).contains(&capacity) {
@@ -720,6 +893,49 @@ impl TaskPool {
         T: Send + 'static,
         F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
     {
+        self.submit_interruptible(cancellation, || false, function)
+    }
+
+    /// 在提交期同时检查宿主中断来源；已接纳任务仍用自身取消令牌。
+    pub fn submit_interruptible<T, F>(
+        &self,
+        cancellation: RuntimeCancellation,
+        interrupted: impl Fn() -> bool,
+        function: F,
+    ) -> Result<TaskHandle<T>, RuntimeExecError>
+    where
+        T: Send + 'static,
+        F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
+    {
+        self.submit_policy(cancellation, interrupted, function, true)
+    }
+
+    /// 解释器提交入口，保留取消清理产生的主错误及 suppressed。
+    pub fn submit_cooperative<T, F>(
+        &self,
+        cancellation: RuntimeCancellation,
+        interrupted: impl Fn() -> bool,
+        function: F,
+    ) -> Result<TaskHandle<T>, RuntimeExecError>
+    where
+        T: Send + 'static,
+        F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
+    {
+        self.submit_policy(cancellation, interrupted, function, false)
+    }
+
+    /// 共享实现可取消背压、普通执行和 VM 保错执行的提交路径。
+    fn submit_policy<T, F>(
+        &self,
+        cancellation: RuntimeCancellation,
+        interrupted: impl Fn() -> bool,
+        function: F,
+        check_result: bool,
+    ) -> Result<TaskHandle<T>, RuntimeExecError>
+    where
+        T: Send + 'static,
+        F: FnOnce(RuntimeCancellation) -> T + Send + 'static,
+    {
         if !self.runtime.context_allows_current() {
             return Err(RuntimeExecError::RuntimeClosed);
         }
@@ -739,7 +955,7 @@ impl TaskPool {
                     Err(RuntimeExecError::Cancelled)
                 } else {
                     match catch_unwind(AssertUnwindSafe(|| function(child_token.clone()))) {
-                        Ok(_result) if child_token.is_cancelled() => {
+                        Ok(_result) if check_result && child_token.is_cancelled() => {
                             Err(RuntimeExecError::Cancelled)
                         }
                         Ok(result) => Ok(result),
@@ -765,7 +981,7 @@ impl TaskPool {
         };
         let mut message = Some(message);
         loop {
-            if cancellation.is_cancelled() {
+            if interrupted() || cancellation.is_cancelled() {
                 return Err(RuntimeExecError::Cancelled);
             }
             if self.runtime.is_closed() {
@@ -812,6 +1028,7 @@ impl TaskPool {
         }
     }
 
+    /// 停止接纳任务、排空已接纳工作并回收可等待的 worker。
     fn shutdown_inner(inner: &Arc<PoolInner>) {
         let should_join = {
             let Ok(_shutdown_gate) = inner.shutdown_gate.lock() else {
@@ -864,6 +1081,7 @@ impl TaskPool {
         }
     }
 
+    /// 判断 worker 是否已由 Runtime 的另一条关闭路径接管。
     fn worker_is_closing(inner: &Arc<PoolInner>, worker_id: thread::ThreadId) -> bool {
         inner
             .runtime
@@ -878,6 +1096,7 @@ impl TaskPool {
             .unwrap_or(false)
     }
 
+    /// 为关闭路径启动一次受控排队任务接管。
     fn start_drain_helpers(inner: &Arc<PoolInner>) -> Option<Vec<JoinHandle<()>>> {
         if inner
             .drain_started
@@ -905,6 +1124,7 @@ impl TaskPool {
         Some(drains)
     }
 
+    /// 运行队列中已经接纳、但尚未被 worker 领取的任务。
     fn drain_pending_messages(receiver: &Arc<Mutex<mpsc::Receiver<PoolMessage>>>) {
         loop {
             let message = match receiver.lock() {
@@ -933,6 +1153,7 @@ impl Drop for TaskPool {
 mod tests {
     use super::*;
 
+    /// 串行化使用进程级 detached 错误通道的单元测试。
     static DETACHED_TEST_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
     #[test]

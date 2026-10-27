@@ -290,13 +290,14 @@ pub fn run_archive_with_module_loader(
         archive: &archive,
         official,
     };
-    xiao_vm::run_xiaoc_production_with_loader(
+    xiao_vm::run_xiaoc_production_with_features(
         &entry_bytes,
         options.vm_options,
         options.event_capacity,
         cancellation,
         options.capabilities,
         Some(&loader),
+        options.runtime_features >> 1,
     )
     .map_err(|error| XarRunError::Validation(format!("入口 `.xiaoc` 执行前校验失败：{error}")))
 }

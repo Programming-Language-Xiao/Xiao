@@ -374,6 +374,11 @@ magic 固定为 ASCII `XCON`（`58 43 4f 4e`），版本为 `0x0001`，保留字
 使用无界发送队列。长时间持续积压会增加排队闭包的内存占用；后续维护批必须加入可观测
 队列长度以及上限、背压或丢弃策略，不能把增长风险隐藏成静默行为。
 
+**22C-FIX.1 未等待任务结果**：`submit` 返回的 `task<T>` 若没有调用 `wait`，且最后一个 VM 别名
+释放，VM 将把结果接收器交给同一 detached 回收通道；失败以结构化记录保留 Runtime ID，普通子 VM
+错误按 `X06-RUNTIME-028` 包装并保留原错误 cause。显式 `wait` 仍在调用点返回原始错误；此补充
+不增加语言 API，也不改变 `cancel` 不消费句柄的规则。
+
 **22C Runtime owner 补充**（实现层，不改 22A API 形状）：Runtime A 的执行单元创建
 Runtime B 时，B 的直接 owner 是 A；B 再创建 Runtime C 时，C 的直接 owner 是 B。A 可以
 操作 B，但不能因为传递关系直接操作 C；关闭 B 也不会递归关闭 C。活动上下文对非 owner

@@ -14,6 +14,7 @@ use super::{
     TacHandler, TacInstr, TacOp, TacProgram, VReg,
 };
 use crate::lower::{TacReleaseAction, TacReleasePlan};
+use crate::tac::{TacBoundaryTransfer, TacConcurrencyPlan};
 use std::collections::BTreeMap;
 use xiao_ir::{IR_VERSION, IrArrayShape, IrDictTypeEntry, IrType};
 
@@ -36,7 +37,7 @@ pub(super) fn decode_inner(bytes: &[u8]) -> Result<(TacProgram, OperandWidth), E
         return Err(EncodeError::InvalidMagic);
     }
     let format = reader.byte("format_version")?;
-    if format != FORMAT_VERSION {
+    if format != FORMAT_VERSION && format != 3 {
         return Err(EncodeError::UnsupportedFormatVersion {
             expected: FORMAT_VERSION,
             actual: format,
@@ -74,6 +75,11 @@ pub(super) fn decode_inner(bytes: &[u8]) -> Result<(TacProgram, OperandWidth), E
     let broadcast_assignment_plans = decode_broadcast_plans(&mut reader)?;
     let random_seed_plans = decode_random_seed_plans(&mut reader)?;
     let table_definitions = decode_table_definitions(&mut reader, width)?;
+    let concurrency_plans = if format >= 4 {
+        decode_concurrency_plans(&mut reader)?
+    } else {
+        Vec::new()
+    };
     let unsupported_count = reader.count("unsupported")?;
     let mut unsupported = Vec::with_capacity(unsupported_count);
     for _ in 0..unsupported_count {
@@ -103,9 +109,87 @@ pub(super) fn decode_inner(bytes: &[u8]) -> Result<(TacProgram, OperandWidth), E
             table_definitions,
             unsupported,
             required_features: 0,
+            concurrency_plans,
         },
         width,
     ))
+}
+
+fn decode_concurrency_plans(
+    reader: &mut Reader<'_>,
+) -> Result<Vec<TacConcurrencyPlan>, EncodeError> {
+    let count = reader.count("concurrency_plans")?;
+    let mut plans = Vec::with_capacity(count);
+    for _ in 0..count {
+        let operation = reader.string("concurrency_plan.operation")?;
+        let span = decode_span(reader)?;
+        let argument_count = reader.count("concurrency_plan.argument_spans")?;
+        let mut argument_spans = Vec::with_capacity(argument_count);
+        for _ in 0..argument_count {
+            argument_spans.push(decode_span(reader)?);
+        }
+        let type_count = reader.count("concurrency_plan.argument_types")?;
+        let argument_types = (0..type_count)
+            .map(|_| decode_type(reader))
+            .collect::<Result<Vec<_>, _>>()?;
+        let result_type = decode_type(reader)?;
+        let facts = serde_json::from_str(&reader.string("concurrency_plan.facts")?)
+            .map_err(|error| EncodeError::InvalidFormat(error.to_string()))?;
+        let runtime_id = match reader.byte("concurrency_plan.runtime_id.present")? {
+            0 => None,
+            1 => Some(reader.uleb("concurrency_plan.runtime_id")?),
+            value => {
+                return Err(EncodeError::InvalidEnum {
+                    field: "concurrency_plan.runtime_id.present".to_owned(),
+                    value: u64::from(value),
+                });
+            }
+        };
+        let transfer = match reader.byte("concurrency_plan.transfer.present")? {
+            0 => None,
+            1 => {
+                let copy_kind = reader.string("concurrency_plan.copy_kind")?;
+                let parameter_count = reader.count("concurrency_plan.parameters")?;
+                let mut parameters = Vec::with_capacity(parameter_count);
+                for _ in 0..parameter_count {
+                    parameters.push(reader.u32_uleb("concurrency_plan.parameter")?);
+                }
+                let cleanup_count = reader.count("concurrency_plan.cleanup_order")?;
+                let mut cleanup_order = Vec::with_capacity(cleanup_count);
+                for _ in 0..cleanup_count {
+                    cleanup_order.push(reader.u32_uleb("concurrency_plan.cleanup_value")?);
+                }
+                Some(TacBoundaryTransfer {
+                    copy_kind,
+                    parameters,
+                    cleanup_order,
+                })
+            }
+            value => {
+                return Err(EncodeError::InvalidEnum {
+                    field: "concurrency_plan.transfer.present".to_owned(),
+                    value: u64::from(value),
+                });
+            }
+        };
+        let cancellation_count = reader.count("concurrency_plan.cancellation_checks")?;
+        let mut cancellation_checks = Vec::with_capacity(cancellation_count);
+        for _ in 0..cancellation_count {
+            cancellation_checks.push(reader.string("concurrency_plan.cancellation_check")?);
+        }
+        plans.push(TacConcurrencyPlan {
+            operation,
+            span,
+            argument_spans,
+            argument_types,
+            result_type,
+            facts,
+            runtime_id,
+            transfer,
+            cancellation_checks,
+        });
+    }
+    Ok(plans)
 }
 
 /// 按标签还原常量池。
@@ -577,6 +661,10 @@ fn decode_op(
         },
         19 => TacOp::CallDynamic {
             callee: VReg::new(index(reader, "VReg")?),
+            arguments: decode_arguments(reader, width)?,
+        },
+        50 => TacOp::CallConcurrency {
+            plan: index(reader, "concurrency_plan")?,
             arguments: decode_arguments(reader, width)?,
         },
         20 => TacOp::Return {

@@ -626,6 +626,13 @@ pub enum TacOp {
         /// 实参。
         arguments: Vec<TacArgument>,
     },
+    /// 执行已降低的并发计划；编号从 1 开始，普通调用语义保持不变。
+    CallConcurrency {
+        /// `concurrency_plans` 中的从 1 开始编号。
+        plan: u32,
+        /// 已求值的实参寄存器。
+        arguments: Vec<TacArgument>,
+    },
     /// 函数返回；无返回值时 `dst` 为空。
     Return {
         /// 返回值寄存器。
@@ -920,6 +927,8 @@ pub struct TacProgram {
     /// 这是产物元数据，不改变 TAC 指令编码；`.xiaoc` 解码后会以头部声明
     /// 回填该字段，确保真实源码路径不会丢失并发要求。
     pub required_features: u64,
+    /// 类型阶段并发调用与 IR facts/transfers/cancellation 的只读 VM 计划表。
+    pub concurrency_plans: Vec<TacConcurrencyPlan>,
 }
 
 /// 表接口与已降低方法之间的程序级关联。
@@ -931,6 +940,40 @@ pub struct TacTableDefinition {
     pub fields: FuncId,
     /// 成员键到方法函数编号的映射。
     pub methods: std::collections::BTreeMap<String, FuncId>,
+}
+
+/// 由类型阶段并发调用与 22B 所有权事实合成的 VM 执行计划。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TacConcurrencyPlan {
+    /// 稳定并发操作名；调用时不从源码或模块成员名推断操作。
+    pub operation: String,
+    /// 与 `CallDynamic` 精确匹配的调用区间。
+    pub span: IrSpan,
+    /// 调用实参数量，供 verifier 与 VM 绑定检查。
+    pub argument_spans: Vec<IrSpan>,
+    /// 类型阶段冻结的实参类型。
+    pub argument_types: Vec<xiao_ir::IrType>,
+    /// 类型阶段冻结的结果类型。
+    pub result_type: xiao_ir::IrType,
+    /// 直接消费 22B 的边界事实（含来源 Runtime）。
+    pub facts: Vec<xiao_ir::IrCrossThreadFact>,
+    /// 边界动作的目标静态 Runtime ID。
+    pub runtime_id: Option<u64>,
+    /// 边界值参数槽和失败清理次序。
+    pub transfer: Option<TacBoundaryTransfer>,
+    /// 此调用关联的取消检查类别。
+    pub cancellation_checks: Vec<String>,
+}
+
+/// 一次并发调用的边界值传递子计划。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct TacBoundaryTransfer {
+    /// `deep_copy` 或 `serialization`。
+    pub copy_kind: String,
+    /// IR 值槽，顺序与边界参数一致。
+    pub parameters: Vec<u32>,
+    /// 复制失败的逆序清理列表。
+    pub cleanup_order: Vec<u32>,
 }
 
 /// 调用签名表；定义与降低器分开，因为它是数据而不是降低规则。

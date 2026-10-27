@@ -279,7 +279,7 @@ fn stable_function_ids_and_table_encoding_guards() {
         assert!(matches!(
             decode(&bytes),
             Err(EncodeError::UnsupportedFormatVersion {
-                expected: 3,
+                expected: xiao_bytecode::FORMAT_VERSION,
                 actual: 2
             })
         ));

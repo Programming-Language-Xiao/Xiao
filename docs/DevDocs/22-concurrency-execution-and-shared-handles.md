@@ -1,6 +1,6 @@
 # 22. 并发执行与共享句柄
 
-> **这是 07-D 之后的正式并发实现阶段，22B-FIX.1 静态残余已关闭；22C Runtime/ABI/门禁已实施，当前进入 22C-FIX.1。**
+> **这是 07-D 之后的正式并发实现阶段，22B-FIX.1 静态残余已关闭；22C Runtime/ABI 与 VM 实现已完成，22C-FIX.1 正在收集 maintenance/CI 收口证据。**
 > 07-D 已完成 8 项裁定、隔离原型、Linux workspace gates 和四平台测试；22A 已补齐
 > 四平台 32B 布局测量并写出语言表面、取消边界、IR 事实、ABI、诊断和发布门禁；22A-FIX
 > 已补齐这些契约与既有 `.xar`/`.xiaoc` 格式的冲突。
@@ -9,10 +9,9 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**22C Runtime/ABI/门禁已实施，VM 调用拆入 22C-FIX.1（2026-10-27）**。
-> 22B-FIX.1 静态部分已关闭；22C 的 Runtime、ABI、共享头、XCON 基础和产物门禁已完成，
-> 但 VM 并发值、调用计划、源码级端到端仍未接线。22C-FIX.1 关闭后才进入 22D；
-> 22E 仍后置。
+> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已实施（2026-10-27）**。
+> workspace、20 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs
+> 和本地安全/产物回归已通过；远端多平台 maintenance/CI 证据仍待收齐。22C-FIX.1 关闭后才进入 22D；22E 仍后置。
 
 ## 一、阶段目标与边界
 
@@ -55,7 +54,7 @@
 | 跨平台测量 | `40068582635` 记录 24B 原型，`40093591873` 记录四平台 32B 头布局 | 成本仍是研究输入，布局已作为 22A ABI 输入冻结 |
 | 取消等待 | 22A 已裁定真实持锁等待/唤醒进入首版 | 22C/22C-FIX.1 实现并测量 |
 | 语言表面 | 22B-FIX.1 已接入参数化入口、作用域/提前退出消费、错误出口和 shared 构造能力 | Runtime 标准库仍待 22E |
-| IR/诊断/ABI | `spawn`/`submit` 已产生 facts/transfers/cancellation；`source_runtime_id` 已登记为可选字段 | 22C-FIX.1 按字段接入 VM，ABI/产物门禁仍冻结 |
+| IR/诊断/ABI | `spawn`/`submit` 已产生 facts/transfers/cancellation；`source_runtime_id` 已登记为可选字段 | 22C-FIX.1 已按字段接入 TAC/VM 计划；ABI/产物门禁保持冻结 |
 | 发布/兼容矩阵 | 22A 已冻结 required-feature 位集和 ABI 1.17 | 22E 编写实际产物检查与报告 |
 
 ## 三、阶段分解
@@ -129,17 +128,18 @@
 
 ### 22C-FIX.1：VM 并发调用与端到端
 
-规划见 [22C-FIX.1. 并发 VM 调用接线与端到端执行](22c-fix1-concurrency-vm-wiring.md)。
+实施与验收见 [22C-FIX.1. 并发 VM 调用接线与端到端执行](22c-fix1-concurrency-vm-wiring.md)。
 
 - 把 22B facts/transfers/cancellation 转成 VM 可消费的 TAC 并发计划，不按源码名称重解析；
-- `RuntimeValue` 增加 Runtime/Thread/Task/Pool/Shared/LockGuard 句柄；
+- `RuntimeValue` 增加 Runtime/Thread/Task/Pool/Shared/SharedMut/LockGuard 句柄；
 - 每个线程/任务使用独立 VM 实例，边界值深拷贝/XCON 往返；
 - 接通 `spawn/join/detach/cancel`、`submit/wait/shutdown`、shared/lock 和 Runtime 关闭；
 - 取消安全点、027/028/029/030/031/032、主/suppressed 和 finally/drop 回归；
 - 仍不接 LLVM、不写标准库函数体、不改 22A/22B 冻结契约。
 
 **22C-FIX.1 关闭条件**：真实源码经 `xiao run` 覆盖线程、任务池、多 Runtime、shared、
-detach 和取消；VM/驱动证据齐全后，22D 才能开始。
+detach 和取消；VM/驱动证据、本地 workspace gates、benchmark/research/Bun/coverage 及安全回归已齐，
+并在远端多平台 maintenance 与 CI 结果齐全后，才关闭 FIX.1 并进入 22D。
 
 ### 22D：LLVM、差分与跨平台
 
@@ -222,7 +222,7 @@ tests/research/concurrency/                                 07-D 原型（只作
 ## 八、状态
 
 - 阶段代号：22；
-- 当前状态：22C Runtime/ABI/产物门禁已实施；22C-FIX.1 VM 调用待实施；22B/22B-FIX/FIX.1 静态部分已关闭；LLVM/标准库函数体未实现；
-- 当前工作批：22C-FIX.1 VM 并发调用与端到端（不回补 22B 静态语义，不接 LLVM/stdlib）；
+- 当前状态：22C Runtime/ABI/产物门禁及 22C-FIX.1 VM 实现已完成，本地 workspace、benchmark、research、Bun、coverage 和安全/产物 gates 通过；远端 maintenance/CI 收口证据待完成；22B/22B-FIX/FIX.1 静态部分已关闭；LLVM/标准库函数体未实现；
+- 当前工作批：22C-FIX.1 收口验证（不回补 22B 静态语义，不接 LLVM/stdlib）；
 - 22C-FIX.1 可以只消费 22B 的类型、事实、动作、verifier 和 22C 已落地的 Runtime API；
   22D/22E 仍须等待 22C-FIX.1 关闭，且不得把 07-D 原型结构写成 ABI 或绕过冻结记录。

@@ -158,6 +158,7 @@ pub fn verify_program(program: &IrProgram, tac: &TacProgram) -> TacVerification 
             ));
         }
     }
+    validate_concurrency_plans(program, tac, &mut result);
     if tac.functions.is_empty() {
         push_error(&mut result, "program.functions", "函数表不能为空");
     }
@@ -190,6 +191,74 @@ pub fn verify_program(program: &IrProgram, tac: &TacProgram) -> TacVerification 
         );
     }
     result
+}
+
+fn validate_concurrency_plans(program: &IrProgram, tac: &TacProgram, result: &mut TacVerification) {
+    if let Err(error) = crate::concurrency::validate(tac) {
+        push_error(result, "concurrency_plans", error);
+    }
+    for call in &program.concurrency_calls {
+        if !tac.concurrency_plans.iter().any(|plan| {
+            plan.span == call.span
+                && plan.operation == call.operation
+                && plan.argument_types == call.argument_types
+                && plan.result_type == call.result_type
+        }) {
+            push_error(
+                result,
+                "concurrency_plans",
+                "并发计划未保留类型阶段调用事实",
+            );
+        }
+    }
+    for plan in &tac.concurrency_plans {
+        let facts = program
+            .ownership
+            .cross_thread_facts
+            .iter()
+            .filter(|fact| fact.span == plan.span)
+            .cloned()
+            .collect::<Vec<_>>();
+        if facts != plan.facts {
+            push_error(
+                result,
+                "concurrency_plans.facts",
+                "TAC 未逐项保留 IR 边界事实",
+            );
+        }
+        let checks = program
+            .ownership
+            .cancellation_checks
+            .iter()
+            .filter(|check| check.span == plan.span)
+            .map(|check| check.kind.clone())
+            .collect::<Vec<_>>();
+        if checks != plan.cancellation_checks {
+            push_error(
+                result,
+                "concurrency_plans.cancellation",
+                "TAC 未保留 IR 取消检查",
+            );
+        }
+        let transfer = program
+            .ownership
+            .boundary_transfers
+            .iter()
+            .find(|transfer| transfer.span == plan.span);
+        match (transfer, plan.transfer.as_ref()) {
+            (Some(a), Some(b))
+                if a.parameters == b.parameters
+                    && a.cleanup_order == b.cleanup_order
+                    && a.copy_kind == b.copy_kind
+                    && Some(a.runtime_id) == plan.runtime_id => {}
+            (None, None) => {}
+            _ => push_error(
+                result,
+                "concurrency_plans.transfer",
+                "TAC 未保留 IR 复制/清理动作",
+            ),
+        }
+    }
 }
 
 /// 生产执行器应调用的验证入口。
@@ -772,6 +841,9 @@ fn validate_instruction(
         }
         TacOp::Call { .. } => validate_call(tac, function, instruction, &path, result),
         TacOp::CallDynamic { arguments, .. } => reject_expanded_arguments(arguments, &path, result),
+        TacOp::CallConcurrency { arguments, .. } => {
+            reject_expanded_arguments(arguments, &path, result)
+        }
         TacOp::CallSub { sub } => {
             if !function
                 .handlers
@@ -1271,7 +1343,7 @@ fn category_of(categories: &CategoryMap, register: VReg) -> Option<RegisterClass
 }
 
 /// 把 IR 类型映射成冻结的寄存器类别。
-fn class_of_type(ty: &IrType) -> RegisterClass {
+pub(crate) fn class_of_type(ty: &IrType) -> RegisterClass {
     match ty {
         IrType::Scalar { name } => match ScalarType::from_name(name) {
             Some(ScalarType::Int | ScalarType::Sint) => RegisterClass::Int,
@@ -1418,6 +1490,7 @@ mod tests {
             table_definitions: Vec::new(),
             unsupported: Vec::new(),
             required_features: 0,
+            concurrency_plans: Vec::new(),
         };
         (ir, tac)
     }

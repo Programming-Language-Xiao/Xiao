@@ -1,0 +1,768 @@
+//! 按 TAC 计划调用并发 Runtime；每个执行单元独立构造 VM 和普通值。
+
+use super::*;
+use std::cell::RefCell;
+use std::sync::{Arc, Mutex};
+use xiao_bytecode::TacConcurrencyPlan;
+use xiao_runtime::{
+    RuntimeCancellation, RuntimeExecError, RuntimeHandle, SharedHandle, SharedTag, TaskPool,
+    VmConcurrencyValue, VmExecutionError, VmExecutionResult, VmTransferValue, execution_error,
+    transfer_error,
+};
+
+/// 子 VM 事件缓冲区的固定容量。
+const CHILD_EVENT_CAPACITY: usize = 4096;
+
+/// 暂存子执行单元产生的事件，并统计被容量限制丢弃的数量。
+#[derive(Default)]
+struct ChildEvents {
+    pending: Vec<VmEvent>,
+    dropped: usize,
+}
+
+/// 将子 VM 事件汇入父 VM 共享的有界缓冲区。
+struct ChildSink(Arc<Mutex<ChildEvents>>);
+impl VmEventSink for ChildSink {
+    /// 缓冲事件；容量耗尽时只增加丢弃计数。
+    fn record(&mut self, event: VmEvent) {
+        let mut events = self.0.lock().expect("子 VM 事件锁未中毒");
+        if events.pending.len() < CHILD_EVENT_CAPACITY {
+            events.pending.push(event);
+        } else {
+            events.dropped += 1;
+        }
+    }
+}
+
+/// 只在线程内部共享的执行上下文；可发送部分仅为事件队列和取消令牌。
+#[derive(Default)]
+pub(super) struct ConcurrentContext {
+    runtime: RefCell<Option<RuntimeHandle>>,
+    owned: RefCell<Vec<RuntimeHandle>>,
+    cancellation: RuntimeCancellation,
+    cancellation_handled: Cell<bool>,
+    children: RefCell<Vec<RuntimeCancellation>>,
+    events: Arc<Mutex<ChildEvents>>,
+    /// 本次调用观测的实际目标 Runtime，不使用静态标签代替。
+    observed_runtime: Cell<u64>,
+    labels: RefCell<BTreeMap<(String, u32, usize, u64), u64>>,
+}
+
+impl ConcurrentContext {
+    /// 返回当前 VM 绑定的 Runtime，缺省时延迟创建。
+    pub(super) fn runtime(&self) -> RuntimeHandle {
+        self.runtime
+            .borrow_mut()
+            .get_or_insert_with(RuntimeHandle::create)
+            .clone()
+    }
+}
+
+/// 将 Runtime 调度错误转换为 VM 可恢复错误。
+pub(super) fn runtime_fault(error: RuntimeExecError) -> Fault {
+    Fault::Error(execution_error(error))
+}
+
+/// 将无效并发计划或句柄形状标记为损坏产物。
+fn artifact(message: &str) -> Fault {
+    Fault::Fatal(FatalError::corrupt_artifact(message))
+}
+
+impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
+    /// 在 IR 标记的并发安全点检查执行单元取消。
+    pub(super) fn concurrent_checkpoint(&mut self) -> Result<(), Fault> {
+        if !self.concurrency.cancellation_handled.get()
+            && self.concurrency.cancellation.is_cancelled()
+        {
+            self.concurrency.cancellation_handled.set(true);
+            return Err(runtime_fault(RuntimeExecError::Cancelled));
+        }
+        Ok(())
+    }
+
+    /// 合并宿主取消、截止时间和 Runtime 取消令牌状态。
+    fn concurrent_interrupted(&self) -> bool {
+        self.cancellation
+            .as_ref()
+            .is_some_and(CancellationSource::is_cancelled)
+            || !self.concurrency.cancellation_handled.get()
+                && self.concurrency.cancellation.is_cancelled()
+    }
+
+    /// 保持外部 VM 取消与并发 027 的错误通道不同。
+    fn interruption_fault(&self, error: RuntimeExecError) -> Fault {
+        if self
+            .cancellation
+            .as_ref()
+            .is_some_and(CancellationSource::is_cancelled)
+        {
+            Fault::Cancelled
+        } else {
+            if error == RuntimeExecError::Cancelled {
+                self.concurrency.cancellation_handled.set(true);
+            }
+            runtime_fault(error)
+        }
+    }
+
+    /// 将子 VM 暂存事件排入当前 VM 的事件接收器。
+    fn flush_child_events(&mut self) {
+        let pending = std::mem::take(
+            &mut self
+                .concurrency
+                .events
+                .lock()
+                .expect("子 VM 事件锁未中毒")
+                .pending,
+        );
+        for event in pending {
+            self.sink.record(event);
+        }
+    }
+
+    /// 执行入口结束清理、关闭本 VM 所属 Runtime 并刷新子事件。
+    pub(super) fn finish_concurrency(&mut self, outcome: &Result<Option<RuntimeValue>, Fault>) {
+        if outcome.is_err() {
+            for token in self.concurrency.children.borrow().iter() {
+                token.cancel();
+            }
+        }
+        // 只收束本 VM 创建/提交的 Runtime；这不建立递归 owner 权限。
+        let runtimes = self.concurrency.owned.borrow().clone();
+        for runtime in runtimes.iter().rev() {
+            let _ = runtime.try_close();
+        }
+        if let Some(runtime) = self.concurrency.runtime.borrow().clone() {
+            let _ = runtime.try_close();
+        }
+        self.flush_child_events();
+    }
+
+    /// 将计划中的静态 Runtime 标签核对到实参携带的实际 Runtime。
+    fn check_runtime_label(
+        &self,
+        plan: &TacConcurrencyPlan,
+        actual: &RuntimeHandle,
+    ) -> Result<(), Fault> {
+        let Some(label) = plan.runtime_id else {
+            return Ok(());
+        };
+        if actual.is_closed() {
+            return Err(runtime_fault(RuntimeExecError::RuntimeClosed));
+        }
+        if label == u64::MAX {
+            if self.concurrency.runtime().id() != actual.id() {
+                return Err(runtime_fault(RuntimeExecError::RuntimeClosed));
+            }
+        } else {
+            let function = self.frames.last().map_or(0, |frame| frame.function.get());
+            let program = self.active_program.as_deref().unwrap_or(self.program);
+            let value_id = u32::try_from(label - 1)
+                .map_err(|_| artifact("静态 Runtime 标签不是有效值身份"))?;
+            let register = program
+                .functions
+                .get(function as usize)
+                .and_then(|function| function.value_registers.get(&value_id))
+                .ok_or_else(|| artifact("静态 Runtime 标签未映射到当前帧值"))?;
+            let actual_binding = match self.read(*register)? {
+                RuntimeValue::Concurrency(VmConcurrencyValue::Runtime(runtime)) => runtime.id(),
+                RuntimeValue::Concurrency(VmConcurrencyValue::Pool(pool)) => pool.runtime().id(),
+                _ => return Err(artifact("静态 Runtime 标签引用了非 Runtime 值")),
+            };
+            if actual_binding != actual.id() {
+                return Err(runtime_fault(RuntimeExecError::RuntimeClosed));
+            }
+            let key = (
+                self.current_module.clone(),
+                function,
+                self.frames.len(),
+                label,
+            );
+            // 标签属于当前调用帧；实际句柄是动态创建或重赋值的唯一身份来源。
+            self.concurrency
+                .labels
+                .borrow_mut()
+                .insert(key, actual.id());
+        }
+        for fact in &plan.facts {
+            if let Some(source) = fact.source_runtime_id {
+                if source == u64::MAX
+                    && self.concurrency.runtime().id() != actual.id()
+                    && plan
+                        .argument_types
+                        .iter()
+                        .any(|ty| matches!(ty, xiao_ir::IrType::SharedMut { .. }))
+                {
+                    return Err(runtime_fault(RuntimeExecError::RuntimeClosed));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// 原生绑定只消费计划中的 operation、边界动作和取消类别。
+    pub(super) fn execute_concurrency(
+        &mut self,
+        plan: &TacConcurrencyPlan,
+        args: &[BoundArgument],
+    ) -> Result<RuntimeValue, Fault> {
+        if args.len() != plan.argument_types.len() {
+            return Err(artifact("并发实参数量与计划不符"));
+        }
+        for (argument, expected) in args.iter().zip(&plan.argument_types) {
+            if !matches_type(&argument.value, expected) {
+                return Err(artifact("并发实参类型与计划不符"));
+            }
+        }
+        self.flush_child_events();
+        if !plan.cancellation_checks.is_empty() && self.concurrent_interrupted() {
+            return Err(self.interruption_fault(RuntimeExecError::Cancelled));
+        }
+        let current = self.concurrency.runtime();
+        self.concurrency.observed_runtime.set(current.id());
+        let result = match plan.operation.as_str() {
+            "runtime_create" => {
+                let runtime = RuntimeHandle::create();
+                self.concurrency.observed_runtime.set(runtime.id());
+                self.concurrency.owned.borrow_mut().push(runtime.clone());
+                RuntimeValue::Concurrency(VmConcurrencyValue::Runtime(runtime))
+            }
+            "current_runtime" => RuntimeValue::Concurrency(VmConcurrencyValue::Runtime(current)),
+            "runtime_close" => {
+                let runtime = runtime_arg(args, 0)?;
+                self.concurrency.observed_runtime.set(runtime.id());
+                runtime.try_close().map_err(runtime_fault)?;
+                self.concurrency
+                    .labels
+                    .borrow_mut()
+                    .retain(|_, actual| *actual != runtime.id());
+                RuntimeValue::None
+            }
+            "pool_create" => {
+                let RuntimeValue::Int(capacity) = args[1].value else {
+                    return Err(artifact("pool 容量类型错误"));
+                };
+                let capacity = usize::try_from(capacity)
+                    .map_err(|_| runtime_fault(RuntimeExecError::PoolArgument))?;
+                let pool =
+                    TaskPool::create(runtime_arg(args, 0)?, capacity).map_err(runtime_fault)?;
+                RuntimeValue::Concurrency(VmConcurrencyValue::Pool(pool))
+            }
+            "shutdown" => {
+                pool_arg(args, 0)?.shutdown().map_err(runtime_fault)?;
+                RuntimeValue::None
+            }
+            "cancel" => {
+                handle_arg(args, 0)?.cancel().map_err(runtime_fault)?;
+                RuntimeValue::None
+            }
+            "detach" => {
+                handle_arg(args, 0)?
+                    .detach_thread()
+                    .map_err(runtime_fault)?;
+                RuntimeValue::None
+            }
+            "join" | "wait" => {
+                let handle = handle_arg(args, 0)?;
+                let result = if plan.operation == "join" {
+                    handle.join_thread(|| self.concurrent_interrupted())
+                } else {
+                    handle.wait_task(|| self.concurrent_interrupted())
+                };
+                self.flush_child_events();
+                match result.map_err(|error| self.interruption_fault(error))? {
+                    Ok(value) => value.decode(current.id()).map_err(Fault::Error)?,
+                    Err(VmExecutionError::Error(error)) => return Err(Fault::Error(error)),
+                    Err(VmExecutionError::Fatal(fatal)) => return Err(Fault::Fatal(fatal)),
+                    Err(VmExecutionError::Cancelled) => return Err(Fault::Cancelled),
+                }
+            }
+            "spawn" | "submit" => {
+                let pool = if plan.operation == "submit" {
+                    Some(pool_arg(args, 0)?)
+                } else {
+                    None
+                };
+                let runtime = match &pool {
+                    Some(pool) => pool.runtime(),
+                    None => runtime_arg(args, 0)?,
+                };
+                self.concurrency.observed_runtime.set(runtime.id());
+                self.check_runtime_label(plan, &runtime)?;
+                let boundary = encode_arguments(plan, &args[2..], runtime.id(), |value| {
+                    self.sink.record(VmEvent::BoundaryCopyReleased { value })
+                })?;
+                let (program, function, module, source_name) =
+                    self.entry_function(&args[1].value)?;
+                let loader = self.snapshot_loader(&program, &module)?;
+                let options = self.options;
+                let capabilities = self.capabilities;
+                let external = self.cancellation.clone();
+                let events = Arc::clone(&self.concurrency.events);
+                let return_runtime_id = current.id();
+                let task_runtime = runtime.clone();
+                let function_body = move |token: RuntimeCancellation| {
+                    execute_child(
+                        program,
+                        function,
+                        module,
+                        source_name,
+                        loader,
+                        boundary,
+                        options,
+                        capabilities,
+                        external,
+                        events,
+                        task_runtime,
+                        return_runtime_id,
+                        token,
+                    )
+                };
+                if let Some(pool) = pool {
+                    let task = pool
+                        .submit_cooperative(
+                            RuntimeCancellation::default(),
+                            || self.concurrent_interrupted(),
+                            function_body,
+                        )
+                        .map_err(|error| self.interruption_fault(error))?;
+                    self.concurrency
+                        .children
+                        .borrow_mut()
+                        .push(task.cancellation());
+                    RuntimeValue::Concurrency(VmConcurrencyValue::task(task, runtime))
+                } else {
+                    let thread =
+                        xiao_runtime::scheduler::spawn_cooperative(&runtime, function_body)
+                            .map_err(runtime_fault)?;
+                    self.concurrency
+                        .children
+                        .borrow_mut()
+                        .push(thread.cancellation());
+                    RuntimeValue::Concurrency(VmConcurrencyValue::thread(thread, runtime))
+                }
+            }
+            "shared_read" | "shared_mut" => {
+                if current.is_closed() {
+                    return Err(runtime_fault(RuntimeExecError::RuntimeClosed));
+                }
+                let payload =
+                    VmTransferValue::encode(&args[0].value, current.id()).map_err(Fault::Error)?;
+                let tag = if plan.operation == "shared_read" {
+                    SharedTag::Read
+                } else {
+                    SharedTag::Mut
+                };
+                let handle = SharedHandle::try_new(payload, current.id(), tag)
+                    .map_err(|_| runtime_fault(RuntimeExecError::RuntimeClosed))?;
+                RuntimeValue::Concurrency(if tag == SharedTag::Read {
+                    VmConcurrencyValue::Shared(handle)
+                } else {
+                    VmConcurrencyValue::SharedMut(handle)
+                })
+            }
+            "read" => {
+                let VmConcurrencyValue::Shared(handle) = handle_arg(args, 0)? else {
+                    return Err(artifact("read 需要 shared"));
+                };
+                handle
+                    .get()
+                    .map_err(|_| runtime_fault(RuntimeExecError::RuntimeClosed))?
+                    .decode(current.id())
+                    .map_err(Fault::Error)?
+            }
+            "lock" | "lock_read" | "lock_write" => {
+                let handle = handle_arg(args, 0)?;
+                if current.is_closed() || handle.mutable_runtime_id() != Some(current.id()) {
+                    return Err(runtime_fault(RuntimeExecError::RuntimeClosed));
+                }
+                match plan.operation.as_str() {
+                    "lock" => {
+                        let VmConcurrencyValue::SharedMut(shared) = handle else {
+                            return Err(artifact("lock 需要 shared_mut"));
+                        };
+                        let guard = shared
+                            .lock_owned(&self.concurrency.cancellation, || {
+                                self.cancellation
+                                    .as_ref()
+                                    .is_some_and(CancellationSource::is_cancelled)
+                            })
+                            .map_err(|_| self.interruption_fault(RuntimeExecError::Cancelled))?;
+                        RuntimeValue::Concurrency(VmConcurrencyValue::LockGuard(Rc::new(
+                            RefCell::new(guard),
+                        )))
+                    }
+                    "lock_read" => {
+                        let VmConcurrencyValue::LockGuard(guard) = handle else {
+                            return Err(artifact("lock_read 需要守卫"));
+                        };
+                        guard.borrow().decode(current.id()).map_err(Fault::Error)?
+                    }
+                    _ => {
+                        let VmConcurrencyValue::LockGuard(guard) = handle else {
+                            return Err(artifact("lock_write 需要守卫"));
+                        };
+                        **guard.borrow_mut() =
+                            VmTransferValue::encode(&args[1].value, current.id())
+                                .map_err(Fault::Error)?;
+                        RuntimeValue::None
+                    }
+                }
+            }
+            _ => return Err(artifact("未知并发计划操作")),
+        };
+        if !matches_type(&result, &plan.result_type) {
+            return Err(artifact("并发结果类型与计划不符"));
+        }
+        let detached_queue_depth = xiao_runtime::detached_reaper_queue_depth();
+        self.sink.record(VmEvent::ConcurrencyObserved {
+            operation: plan.operation.clone(),
+            runtime_id: self.concurrency.observed_runtime.get(),
+            detached_queue_depth,
+            detached_threshold_reached: detached_queue_depth
+                >= xiao_runtime::scheduler::DETACHED_REAPER_WARNING_DEPTH,
+        });
+        Ok(result)
+    }
+
+    /// 从 VM 函数句柄解析子执行单元的 TAC 入口和来源信息。
+    fn entry_function(
+        &self,
+        value: &RuntimeValue,
+    ) -> Result<(Arc<TacProgram>, u32, String, String), Fault> {
+        let RuntimeValue::ModuleFunction(module, index) = value else {
+            return Err(artifact("并发入口不是函数"));
+        };
+        let (program, source_name) = if module.is_empty() || *module == self.current_module {
+            (
+                self.active_program.as_deref().unwrap_or(self.program),
+                self.metadata.source_name.clone(),
+            )
+        } else {
+            let instance = self
+                .session
+                .initialized_modules
+                .get(module)
+                .ok_or_else(|| artifact("函数所属模块尚未初始化"))?;
+            (instance.program.as_ref(), instance.source_name.clone())
+        };
+        if *index as usize >= program.functions.len() || *index == 0 {
+            return Err(artifact("并发入口函数编号无效"));
+        }
+        Ok((
+            Arc::new(program.clone()),
+            *index,
+            module.clone(),
+            source_name,
+        ))
+    }
+
+    /// 为隔离子 VM 预加载只读模块快照，不共享父 VM 会话状态。
+    fn snapshot_loader(&self, program: &TacProgram, module: &str) -> Result<FrozenLoader, Fault> {
+        let mut loader = FrozenLoader::default();
+        let mut pending = vec![(module.to_owned(), program.clone())];
+        while let Some((owner, program)) = pending.pop() {
+            for op in program
+                .functions
+                .iter()
+                .flat_map(|f| &f.blocks)
+                .flat_map(|b| &b.instructions)
+                .map(|i| &i.op)
+            {
+                let TacOp::ImportModule { module, .. } = op else {
+                    continue;
+                };
+                if native_module(module) {
+                    continue;
+                }
+                let identity = if module == crate::STANDARD_LIBRARY_NAMESPACE
+                    || module.starts_with(crate::STANDARD_LIBRARY_PREFIX)
+                {
+                    module.clone()
+                } else if owner.starts_with("stdlib.") {
+                    format!("stdlib.{module}")
+                } else if let Some(package) = owner.strip_prefix("package:") {
+                    format!(
+                        "package:{}.{}",
+                        package.split('.').next().unwrap_or(package),
+                        module
+                    )
+                } else {
+                    format!("project:{module}")
+                };
+                if loader.modules.contains_key(&identity) {
+                    continue;
+                }
+                let compiled = self
+                    .module_loader
+                    .ok_or_else(|| "缺少模块加载器".to_owned())
+                    .and_then(|loader| loader.load(&identity));
+                if let Ok(Some(module)) = &compiled {
+                    pending.push((identity.clone(), module.program.clone()));
+                }
+                loader.modules.insert(identity, compiled);
+            }
+        }
+        Ok(loader)
+    }
+}
+
+/// 编码参数严格遵守调用位置；失败时按计划逆序释放已构造副本。
+fn encode_arguments(
+    plan: &TacConcurrencyPlan,
+    args: &[BoundArgument],
+    target: u64,
+    mut released: impl FnMut(u32),
+) -> Result<Vec<VmTransferValue>, Fault> {
+    let mut copies = Vec::with_capacity(args.len());
+    let mut bytes = 0_usize;
+    for argument in args {
+        let copy = VmTransferValue::encode(&argument.value, target).and_then(|copy| {
+            bytes = bytes.saturating_add(copy.byte_len());
+            if bytes > xiao_runtime::XCON_MAX_FRAME_BYTES {
+                Err(transfer_error("全部边界参数超过 64 MiB"))
+            } else {
+                Ok(copy)
+            }
+        });
+        match copy {
+            Ok(copy) => copies.push(copy),
+            Err(error) => {
+                if !args.is_empty() && plan.transfer.is_none() {
+                    return Err(artifact("边界清理计划缺失"));
+                }
+                if let Some(transfer) = &plan.transfer {
+                    let completed = copies.len();
+                    let mut copies = copies.into_iter().map(Some).collect::<Vec<_>>();
+                    for value in &transfer.cleanup_order {
+                        if let Some(index) = transfer
+                            .parameters
+                            .iter()
+                            .position(|candidate| candidate == value)
+                            .filter(|index| *index < completed)
+                        {
+                            drop(copies[index].take());
+                            released(*value);
+                        }
+                    }
+                }
+                return Err(Fault::Error(error));
+            }
+        }
+    }
+    Ok(copies)
+}
+
+/// 读取并发句柄实参，非句柄形状视为产物不一致。
+fn handle_arg(args: &[BoundArgument], index: usize) -> Result<&VmConcurrencyValue, Fault> {
+    match args.get(index).map(|arg| &arg.value) {
+        Some(RuntimeValue::Concurrency(handle)) => Ok(handle),
+        _ => Err(artifact("并发句柄实参无效")),
+    }
+}
+/// 读取 Runtime 句柄实参并克隆共享别名。
+fn runtime_arg(args: &[BoundArgument], index: usize) -> Result<RuntimeHandle, Fault> {
+    match handle_arg(args, index)? {
+        VmConcurrencyValue::Runtime(runtime) => Ok(runtime.clone()),
+        _ => Err(artifact("Runtime 实参无效")),
+    }
+}
+/// 读取任务池句柄实参并克隆共享别名。
+fn pool_arg(args: &[BoundArgument], index: usize) -> Result<TaskPool, Fault> {
+    match handle_arg(args, index)? {
+        VmConcurrencyValue::Pool(pool) => Ok(pool.clone()),
+        _ => Err(artifact("Pool 实参无效")),
+    }
+}
+
+/// 检查运行时并发值是否符合 verifier 固定的 IR 类型。
+fn matches_type(value: &RuntimeValue, expected: &xiao_ir::IrType) -> bool {
+    use xiao_ir::IrType;
+    match expected {
+        IrType::Scalar { name } => value.type_name() == *name,
+        IrType::None => matches!(value, RuntimeValue::None),
+        IrType::Function { .. } => matches!(value, RuntimeValue::ModuleFunction(_, _)),
+        IrType::Runtime => value.type_name() == "runtime",
+        IrType::Pool => value.type_name() == "pool",
+        IrType::Thread { .. } => value.type_name() == "thread",
+        IrType::Task { .. } => value.type_name() == "task",
+        IrType::Shared { .. } => value.type_name() == "shared",
+        IrType::SharedMut { .. } => value.type_name() == "shared_mut",
+        IrType::LockGuard { .. } => value.type_name() == "lock_guard",
+        IrType::Tuple { elements } => match value {
+            RuntimeValue::Tuple(tuple) => tuple
+                .with_elements(|values| {
+                    values.len() == elements.len()
+                        && values.iter().zip(elements).all(|(v, t)| matches_type(v, t))
+                })
+                .unwrap_or(false),
+            _ => false,
+        },
+        _ => false,
+    }
+}
+
+/// 判断模块是否由 VM 直接绑定而无需模块载入器。
+fn native_module(module: &str) -> bool {
+    matches!(module, "std.concurrent" | "stdlib.concurrent")
+}
+
+/// 只提供编译阶段已验证模块的子 VM 载入器。
+#[derive(Debug, Default)]
+struct FrozenLoader {
+    modules: BTreeMap<String, Result<Option<crate::ExecutableModule>, String>>,
+}
+
+impl ModuleLoader for FrozenLoader {
+    /// 查询模块是否已进入冻结快照。
+    fn contains(&self, identity: &str) -> bool {
+        self.modules.contains_key(identity)
+    }
+    /// 禁止子 VM 在执行阶段重新编译模块。
+    fn compile(&self, _: &str) -> Result<Option<crate::CompiledModule>, String> {
+        Err("隔离 VM 只加载已验证 TAC".to_owned())
+    }
+    /// 从快照克隆可执行模块，不跨 VM 共享可变状态。
+    fn load(&self, identity: &str) -> Result<Option<crate::ExecutableModule>, String> {
+        match self
+            .modules
+            .get(identity)
+            .ok_or("子 VM 模块不在只读快照中")?
+        {
+            Ok(Some(module)) => Ok(Some(crate::ExecutableModule {
+                program: module.program.clone(),
+                source_name: module.source_name.clone(),
+                instance_tables: module.instance_tables.clone(),
+            })),
+            Ok(None) => Ok(None),
+            Err(error) => Err(error.clone()),
+        }
+    }
+    /// 冻结载入器不向子 VM 暴露宿主环境信息。
+    fn environment(&self, _: &str) -> Option<&str> {
+        None
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+/// 在独立 VM、模块快照和 Runtime 上执行一个任务入口。
+fn execute_child(
+    program: Arc<TacProgram>,
+    function: u32,
+    module: String,
+    source_name: String,
+    loader: FrozenLoader,
+    arguments: Vec<VmTransferValue>,
+    options: VmOptions,
+    capabilities: u64,
+    external: Option<CancellationSource>,
+    events: Arc<Mutex<ChildEvents>>,
+    runtime: RuntimeHandle,
+    return_runtime_id: u64,
+    cancellation: RuntimeCancellation,
+) -> VmExecutionResult {
+    let mut vm = Vm::<crate::StackCarrier, ChildSink>::new_with_metadata(
+        &program,
+        options,
+        ChildSink(Arc::clone(&events)),
+        VmMetadata::new(module.clone(), source_name, None),
+        VmSession::new(),
+        capabilities,
+    );
+    vm.concurrency = Rc::new(ConcurrentContext {
+        runtime: RefCell::new(Some(runtime.clone())),
+        cancellation,
+        events,
+        ..Default::default()
+    });
+    vm.current_module = module;
+    vm.cancellation = external;
+    vm.module_loader = Some(&loader);
+    let bound = arguments
+        .iter()
+        .map(|value| {
+            value.decode(runtime.id()).map(|value| BoundArgument {
+                keyword: None,
+                value,
+            })
+        })
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(VmExecutionError::Error)?;
+    let outcome = vm.execute(FuncId::new(function), &bound, None);
+    // 子执行单元自身的 Runtime 由父方管理；这里只关闭子 VM 显式创建的 Runtime。
+    if outcome.is_err() {
+        for token in vm.concurrency.children.borrow().iter() {
+            token.cancel();
+        }
+    }
+    for owned in vm.concurrency.owned.borrow().iter().rev() {
+        let _ = owned.try_close();
+    }
+    match outcome {
+        Ok(value) => {
+            VmTransferValue::encode(&value.unwrap_or(RuntimeValue::None), return_runtime_id)
+                .map_err(VmExecutionError::Error)
+        }
+        Err(Fault::Error(error)) => Err(VmExecutionError::Error(error)),
+        Err(Fault::ConcurrencyCancelled(error)) => Err(VmExecutionError::Error(error)),
+        Err(Fault::Fatal(fatal)) => Err(VmExecutionError::Fatal(fatal)),
+        Err(Fault::Cancelled) => Err(VmExecutionError::Cancelled),
+    }
+}
+
+#[cfg(test)]
+/// 验证 VM 的 Runtime owner 规则和跨 Runtime 拒绝。
+mod tests {
+    use super::*;
+
+    #[test]
+    /// 验证 owner 只能操作直接子 Runtime，祖 Runtime 权限不传递。
+    fn vm_close_reports_non_owner_and_direct_ownership_is_not_transitive() {
+        let a = RuntimeHandle::create();
+        let b = a.in_context(RuntimeHandle::create).unwrap();
+        let c = b.in_context(RuntimeHandle::create).unwrap();
+        let ir = xiao_ir::IrProgram::new(
+            xiao_ir::IrEntryMode::Script,
+            Vec::new(),
+            xiao_ir::IrSpan::new(0, 0),
+        );
+        let program = xiao_bytecode::lower_program(&ir);
+        let mut vm = Vm::<crate::StackCarrier, crate::RecordingSink>::new(
+            &program,
+            VmOptions::default(),
+            crate::RecordingSink::new(),
+        );
+        vm.concurrency.runtime.replace(Some(a.clone()));
+        let plan = TacConcurrencyPlan {
+            operation: "runtime_close".to_owned(),
+            span: xiao_ir::IrSpan::new(0, 1),
+            argument_spans: vec![xiao_ir::IrSpan::new(0, 1)],
+            argument_types: vec![xiao_ir::IrType::Runtime],
+            result_type: xiao_ir::IrType::None,
+            runtime_id: None,
+            facts: Vec::new(),
+            transfer: None,
+            cancellation_checks: Vec::new(),
+        };
+        let arg = |runtime| {
+            vec![BoundArgument {
+                keyword: None,
+                value: RuntimeValue::Concurrency(VmConcurrencyValue::Runtime(runtime)),
+            }]
+        };
+        let error = a
+            .in_context(|| vm.execute_concurrency(&plan, &arg(c.clone())))
+            .unwrap()
+            .unwrap_err();
+        assert!(matches!(error, Fault::Error(error) if error.code() == "X06-RUNTIME-031"));
+        a.in_context(|| c.close()).unwrap();
+        assert!(!c.is_closed(), "旧 close 的 no-op 不得被 VM 当成关闭成功");
+        a.in_context(|| vm.execute_concurrency(&plan, &arg(b.clone())))
+            .unwrap()
+            .unwrap();
+        assert!(b.is_closed());
+        assert!(!c.is_closed(), "父 Runtime 关闭不递归关闭孙 Runtime");
+        c.try_close().unwrap();
+        a.try_close().unwrap();
+    }
+}

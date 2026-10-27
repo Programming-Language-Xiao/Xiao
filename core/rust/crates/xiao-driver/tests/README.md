@@ -1,6 +1,9 @@
 # `xiao-driver` 测试
 
 本目录覆盖 08-U0 统一前端入口，以及 09-B0-C/D 前端到生产 VM 驱动器、退出码和 X0-A 协议的公共契约。
+
+`22c_vm_concurrency.rs` 覆盖真实源码的线程、任务池、共享锁、Runtime 身份、取消与
+清理、detached 错误、XCON 限制和 `.xiaoc`/`.xar` 执行前门禁。
 `u0_frontend.rs` 验证阶段顺序、诊断累积和成功/失败产物边界；`b0_c_driver.rs` 验证脚本与
 `[main]` 端到端运行、三段结构化失败、执行前拒绝和取消/超时边界。测试不接入 CLI 或 LLVM。
 

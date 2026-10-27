@@ -483,6 +483,8 @@ pub enum RuntimeValue {
     ExternalResource(ExternalResourceHandle),
     /// 可恢复错误对象；错误身份由 `XiaoError::error_id` 保持。
     Error(Box<XiaoError>),
+    /// VM 使用的不透明并发句柄；句柄内容不参与普通值运算。
+    Concurrency(crate::VmConcurrencyValue),
     /// 空值。
     None,
 }
@@ -521,6 +523,7 @@ impl PartialEq for RuntimeValue {
                 left.kind() == right.kind() && left.same_resource(right)
             }
             (Self::Error(left), Self::Error(right)) => left == right,
+            (Self::Concurrency(left), Self::Concurrency(right)) => left == right,
             (Self::None, Self::None) => true,
             _ => false,
         }
@@ -563,6 +566,7 @@ impl std::hash::Hash for RuntimeValue {
             | Self::Set(_)
             | Self::ExternalResource(_)
             | Self::Error(_)
+            | Self::Concurrency(_)
             | Self::None => {}
         }
     }
@@ -586,6 +590,7 @@ impl RuntimeValue {
                 kind.display_name()
             }
             Self::Error(_) => "error".to_owned(),
+            Self::Concurrency(handle) => handle.type_name().to_owned(),
             Self::Table(_)
             | Self::TableDropView(_)
             | Self::Array(_)
@@ -619,6 +624,7 @@ impl RuntimeValue {
             | Self::Set(_)
             | Self::ExternalResource(_)
             | Self::Error(_)
+            | Self::Concurrency(_)
             | Self::None => return None,
         })
     }
@@ -632,6 +638,7 @@ impl RuntimeValue {
         match self {
             Self::Module(_) => "module".to_owned(),
             Self::ModuleFunction(_, _) => "function".to_owned(),
+            Self::Concurrency(handle) => handle.type_name().to_owned(),
             Self::Table(instance) => format!("table {}", instance.name()),
             Self::TableDropView(view) => format!("table {}", view.signature().name),
             Self::Array(_) => RuntimeTypeTag::Array.as_str().to_owned(),

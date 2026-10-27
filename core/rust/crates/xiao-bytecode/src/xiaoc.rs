@@ -1441,6 +1441,11 @@ fn required_features_for_program(program: &TacProgram) -> u64 {
 
     program.required_features
         | program
+            .concurrency_plans
+            .iter()
+            .map(|plan| crate::concurrency::required_features(&plan.operation))
+            .fold(0, |a, b| a | b)
+        | program
             .signatures
             .iter()
             .flat_map(|signature| {
@@ -1742,6 +1747,7 @@ mod tests {
             table_definitions: Vec::new(),
             unsupported: Vec::new(),
             required_features: 0,
+            concurrency_plans: Vec::new(),
         }
     }
 

@@ -240,6 +240,7 @@ fn empty_xiaoc_with_optional_sections() -> Vec<u8> {
         table_definitions: Vec::new(),
         unsupported: Vec::new(),
         required_features: 0,
+        concurrency_plans: Vec::new(),
     };
     xiao_bytecode::encode_xiaoc_with_options(
         &program,

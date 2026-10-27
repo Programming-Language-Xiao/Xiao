@@ -497,6 +497,7 @@ fn parameter_program(
         table_definitions: Vec::new(),
         unsupported: Vec::new(),
         required_features: 0,
+        concurrency_plans: Vec::new(),
     }
 }
 

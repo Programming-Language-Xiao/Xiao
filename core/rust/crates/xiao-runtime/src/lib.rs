@@ -14,6 +14,8 @@ mod crash;
 pub mod scheduler;
 /// 22A 冻结的 XCON v1 长度前缀序列化。
 pub mod serialization;
+/// VM 使用的不透明 Runtime/Thread/Task/Pool 句柄适配。
+mod vm_concurrency;
 
 /// 数组、元组、字典表、字典列和集合的运行对象。
 pub mod containers;
@@ -81,6 +83,11 @@ pub use tables::{
 pub use testing::{CatchRoute, ReleaseExecution, RuntimeBinding, RuntimeDriver, UnwindExecution};
 /// 重导出 Runtime 标量和字符串值。
 pub use value::{ExternalResourceHandle, ExternalResourceKind, RuntimeValue, StringHandle};
+/// 重导出 VM 并发句柄适配。
+pub use vm_concurrency::{
+    VmConcurrencyValue, VmDetachedError, VmExecutionError, VmExecutionResult, VmTransferValue,
+    execution_error, take_vm_detached_errors, transfer_error,
+};
 
 /// 安装当前平台的最小未处理异常报告器。
 ///
