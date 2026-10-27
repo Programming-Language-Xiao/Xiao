@@ -1,6 +1,6 @@
 # 22. 并发执行与共享句柄
 
-> **这是 07-D 之后的正式并发实现阶段，22B-FIX.1 静态残余已关闭；22C Runtime/ABI 与 VM 实现已完成，22C-FIX.1 正在收集 maintenance/CI 收口证据。**
+> **这是 07-D 之后的正式并发实现阶段，22B-FIX.1 静态残余已关闭；22C Runtime/ABI 与 VM 实现已完成，22C-FIX.1 已收口。**
 > 07-D 已完成 8 项裁定、隔离原型、Linux workspace gates 和四平台测试；22A 已补齐
 > 四平台 32B 布局测量并写出语言表面、取消边界、IR 事实、ABI、诊断和发布门禁；22A-FIX
 > 已补齐这些契约与既有 `.xar`/`.xiaoc` 格式的冲突。
@@ -9,9 +9,9 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已实施（2026-10-27）**。
-> workspace、20 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs
-> 和本地安全/产物回归已通过；远端多平台 maintenance/CI 证据仍待收齐。22C-FIX.1 关闭后才进入 22D；22E 仍后置。
+> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）**。
+> workspace、24 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs、
+> 本地安全/产物回归，以及远端多平台 maintenance/CI 均通过。22D 可以开始；22E 仍后置。
 
 ## 一、阶段目标与边界
 
@@ -137,9 +137,9 @@
 - 取消安全点、027/028/029/030/031/032、主/suppressed 和 finally/drop 回归；
 - 仍不接 LLVM、不写标准库函数体、不改 22A/22B 冻结契约。
 
-**22C-FIX.1 关闭条件**：真实源码经 `xiao run` 覆盖线程、任务池、多 Runtime、shared、
-detach 和取消；VM/驱动证据、本地 workspace gates、benchmark/research/Bun/coverage 及安全回归已齐，
-并在远端多平台 maintenance 与 CI 结果齐全后，才关闭 FIX.1 并进入 22D。
+**22C-FIX.1 关闭条件已满足**：真实源码经 `xiao run` 覆盖线程、任务池、多 Runtime、shared、
+detach 和取消；24 条 VM/驱动回归、本地 workspace gates、benchmark/research/Bun/coverage、安全回归，
+以及远端多平台 maintenance 与 CI 结果均齐全，现进入 22D。
 
 ### 22D：LLVM、差分与跨平台
 
@@ -222,7 +222,7 @@ tests/research/concurrency/                                 07-D 原型（只作
 ## 八、状态
 
 - 阶段代号：22；
-- 当前状态：22C Runtime/ABI/产物门禁及 22C-FIX.1 VM 实现已完成，本地 workspace、benchmark、research、Bun、coverage 和安全/产物 gates 通过；远端 maintenance/CI 收口证据待完成；22B/22B-FIX/FIX.1 静态部分已关闭；LLVM/标准库函数体未实现；
-- 当前工作批：22C-FIX.1 收口验证（不回补 22B 静态语义，不接 LLVM/stdlib）；
+- 当前状态：22C Runtime/ABI/产物门禁及 22C-FIX.1 VM 实现已完成，本地 workspace、benchmark、research、Bun、coverage、安全/产物 gates 和远端 maintenance/CI 均通过；22B/22B-FIX/FIX.1 静态部分已关闭；LLVM/标准库函数体未实现；
+- 当前工作批：22D LLVM、差分与跨平台（不回补 22B 静态语义，不在本阶段实现 stdlib 函数体）；
 - 22C-FIX.1 可以只消费 22B 的类型、事实、动作、verifier 和 22C 已落地的 Runtime API；
-  22D/22E 仍须等待 22C-FIX.1 关闭，且不得把 07-D 原型结构写成 ABI 或绕过冻结记录。
+  22D/22E 仍不得把 07-D 原型结构写成 ABI 或绕过冻结记录。

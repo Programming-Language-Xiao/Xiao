@@ -999,23 +999,23 @@ I4a2（运行时的包模块加载）、I4b（会话级生命周期与 TS 接入
 - **22B-FIX/FIX.1 静态契约接线**（[收口清单](22b-fix-concurrency-wiring.md)）：签名、能力、
   消费、64 参数上限、参数化入口、作用域/提前退出消费、错误出口、不可达类型检查隔离、shared
   构造和源码级边界/取消事实已接进类型检查、生命周期与 IR；`40212263928`/`40212188604` 已通过，
-  FIX.1 关闭；22C Runtime/ABI/VM 与 22C-FIX.1 实现已完成，本地 workspace、benchmark、research、Bun、coverage 和安全/产物 gates 通过，远端 maintenance/CI 收口证据待完成。
+  FIX.1 关闭；22C Runtime/ABI/VM 与 22C-FIX.1 实现已完成，workspace、benchmark、research、Bun、coverage、安全/产物 gates 和远端 maintenance/CI 均通过。
 - **22C Runtime ABI、VM 与错误**（[22C 规划](22c-concurrency-runtime-abi-vm.md)）：32B 头 +
   内联锁、强弱计数、弱升级、恰好一次析构、Runtime ID 映射、detach 错误通道、深拷贝 +
   二进制序列化、真实取消等待、取消/清理、错误顺序和 `.xiaoc`/`.xar` ABI/feature 门禁；
   Runtime/ABI/门禁与 VM 实现已完成；workspace、benchmark、research concurrency、Bun、coverage、
-  20 条 22C-FIX.1 端到端回归、docs/usedocs 及本地安全/产物回归已通过，远端多平台 maintenance/CI
-  证据仍待收口。
+  24 条 22C-FIX.1 端到端回归、docs/usedocs、本地安全/产物回归及远端多平台 maintenance/CI
+  均通过（workspace run `40554260877`，maintenance run `40553718836`）。
 - **22C-FIX.1 VM 并发调用与端到端**（[FIX.1 规划](22c-fix1-concurrency-vm-wiring.md)）：
   把 facts/transfers/cancellation 接成 VM 计划，增加并发值/每线程 VM、边界深拷贝/XCON、
-  shared/lock、取消/错误和真实源码端到端；实现及本地 gates 已完成，远端多平台 maintenance/CI
-  收口证据待完成；不接 LLVM、不写标准库函数体。
+  shared/lock、取消/错误和真实源码端到端；24 条回归、workspace、maintenance 和多平台 CI 已通过；
+  不接 LLVM、不写标准库函数体。
 - **22D LLVM、差分与跨平台**：同一并发黄金场景在 VM/LLVM 的输出、错误、退出码和释放
   记录一致；Windows/Linux/macOS 回归；32B ABI 布局/对齐/版本矩阵。
 - **22E 标准库、UseDocs 与发布收口**：`std.concurrent` 线程/共享/任务池入口、长度前缀
   二进制序列化公开边界、文档、ABI/产物兼容和发布报告；官方容器仍后置。
 
-退出条件（22B-FIX.1 已关闭；22C Runtime/ABI/VM 与 22C-FIX.1 实现完成；FIX.1 的 maintenance/CI 收口及 22D–22E 仍待完成）：
+退出条件（22B-FIX.1、22C Runtime/ABI/VM 与 22C-FIX.1 已完成；22D–22E 仍待完成）：
 
 1. 22A 首轮裁定、§2.2 细化和 F-1..F-8 修正契约齐全；32B 头布局已补跨平台测量；
 2. 类型/生命周期/IR 对普通句柄、共享句柄、多边界值和 Runtime ID 有正/负例，

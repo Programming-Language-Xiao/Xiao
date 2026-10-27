@@ -5,10 +5,12 @@
 > 22B/22B-FIX.1 已交付类型、生命周期事实、IR 边界动作、取消检查、`source_runtime_id`
 > 和 verifier；本批只消费这些字段，不重新决定 Send/Sync、CrossThread、API 名称或序列化格式。
 >
-> 状态：**Runtime/ABI、共享锁、Runtime drain、VM 并发调用、IR facts 执行、XCON 边界和
-> `.xiaoc`/`.xar` 门禁已实施（2026-10-27）**。22C-FIX.1 的源码/产物回归、workspace、benchmark、
-> research concurrency、Bun、coverage 及安全/产物回归已通过；远端多平台 maintenance 与 CI 证据补齐前
-> 不关闭 FIX.1，也不启动 22D。
+> 状态：**22C 与 22C-FIX.1 已完成（2026-10-28）**。Runtime/ABI、共享锁、Runtime drain、
+> VM 并发调用、IR facts 执行、XCON 边界和 `.xiaoc`/`.xar` 门禁已实施；24 条源码/产物回归、
+> workspace、benchmark、research concurrency、Bun、coverage、安全/产物回归，以及远端
+> [workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40554260877) 和
+> [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40553718836)
+> 均通过。22D 可以开始，LLVM/标准库函数体仍按阶段后置。
 > 代码提交 `df6abc3` 已完成 ABI 1.17、32B 共享头、Runtime ID 注册表、XCON v1 编解码、
 > Runtime/线程/任务池骨架和 `.xiaoc` required-feature/ABI 校验 helper；后续补丁补齐了真实锁等待/取消
 > 唤醒、Runtime 重入关闭、可取消背压、shutdown 的 031 语义、detached/panic 错误分类、XCON 集合
@@ -149,7 +151,7 @@
 > **实施拆分**：22C 完成 Runtime/ABI/门禁和关闭协调；VM 值、调用计划、每线程 VM、
 > 边界序列化、shared/lock 与取消错误执行由
 > [22C-FIX.1](22c-fix1-concurrency-vm-wiring.md) 完成。FIX.1 的本地 workspace 测试已通过；
-> maintenance 与 CI 证据补齐后才能关闭，随后进入 22D。
+> maintenance 与 CI 证据已经补齐，22C-FIX.1 已关闭，现进入 22D。
 
 ## 五、实施步骤
 
@@ -163,7 +165,7 @@
 | 5 | VM：spawn/join/detach/cancel、shared/read/lock、pool submit/wait/shutdown | 22C-FIX.1 真实源码与产物端到端回归通过 |
 | 6 | 取消：锁等待/join/wait、四位置、唤醒/清理 | 22C-FIX.1 取消/清理回归通过 |
 | 7 | 产物：`.xiaoc`/`.xar` ABI 1.17 + feature；旧 Runtime 拒绝 | `.xiaoc` 与 `.xar` 解码/执行前门禁已接线；并发类型 feature 负例已覆盖 |
-| 8 | 文档/门禁：22C 状态、UseDocs 入口保持 planned、CI | docs/usedocs、workspace、benchmark、research、Bun、coverage 和本地安全回归已通过；远端多平台 maintenance/CI 待收口 |
+| 8 | 文档/门禁：22C 状态、UseDocs 入口保持 planned、CI | docs/usedocs、workspace、benchmark、research、Bun、coverage、本地安全回归和远端多平台 maintenance/CI 均通过 |
 
 ## 六、测试与验收
 
@@ -211,7 +213,7 @@ git diff --check
 
 ## 七、22C 退出条件
 
-1. ABI 1.17 与 32B 共享头实现，普通句柄布局未变；基础实现、VM 端到端和 workspace 测试已通过，maintenance/CI 证据待补；
+1. ABI 1.17 与 32B 共享头实现，普通句柄布局未变；基础实现、VM 端到端、workspace、maintenance/CI 均通过；
 2. VM 端到端覆盖线程/任务池/多 Runtime/共享/取消/序列化，见 [22C-FIX.1](22c-fix1-concurrency-vm-wiring.md)；
 3. Runtime ID 静态标签到实际 ID 的映射唯一且有测试；
 4. 错误 027–032 和 detached 通道按 22A 语义；
