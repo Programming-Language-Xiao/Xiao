@@ -56,7 +56,8 @@ Runtime 的 owner 只按直接创建关系记录。若 Runtime A 的执行单元
 Runtime C，A 可以操作 B，B 可以操作 C，A 不会自动获得 C 的关闭权限；关闭 B 也不会递归
 关闭 C，C 必须由 B 的上下文、C 自身上下文或无 Runtime 上下文的外部调用方处理。
 
-语言层的 `runtime_close(runtime) -> none` 在跨 Runtime 使用时报告 `X06-RUNTIME-031`；Rust
+语言层的 `runtime_close(runtime) -> none` 在非 owner 的其他 Runtime 上下文中使用时报告
+`X06-RUNTIME-031`；Rust
 和 VM 内部使用 `try_close()` 观察同一拒绝，兼容旧 `close()` 入口在拒绝时保持 no-op。
 
 ## 值传递与能力边界
