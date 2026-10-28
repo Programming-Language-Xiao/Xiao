@@ -6,8 +6,8 @@
 > cancellation 接入 TAC 并发计划、隔离 VM 和 Runtime 绑定，并完成源码到 `.xar` 的端到端回归。
 >
 > 状态：**FIX.1 已完成（2026-10-28）**，26 条源码/产物端到端回归、workspace、benchmark、
-> research concurrency、Bun、coverage 及安全/产物回归均通过；[workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40638719046)
-> 通过。 [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40638723404)
+> research concurrency、Bun、coverage 及安全/产物回归均通过；[workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40665880754)
+> 通过。 [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40665886585)
 > 中，Linux、Windows、macOS 各自运行 `22c_vm_concurrency`，每个平台 26/26 通过，全部 jobs 通过。
 > 本批只接 VM、驱动和已有 Runtime API；
 > 不接 LLVM，不写 `stdlib/concurrent.xiao` 函数体，不改 22A/22B 的 API、Send/Sync 表、
@@ -185,7 +185,6 @@ LockGuard(lock_guard_handle)
 | detached 队列只有深度（`detached_reaper_queue_depth`），没有上限/背压/丢弃策略 | 本批先保证 VM 不把无限增长隐藏成静默行为；Runtime 侧登记阈值和策略，最迟在 22E 前落地；黄金场景加入持续 detach 观测 |
 | 入口线程或无执行上下文的普通 `submit` 没有提交前主动取消入口 | VM 任务入口必须继承执行上下文取消令牌；入口线程使用显式提交期取消入口或由 Runtime/pool 关闭终止等待 |
 | `RuntimeHandle::close` 跨上下文是 no-op；`try_close()` 才返回 031 | VM 内部统一使用 `try_close()`；回归同时检查旧 `close()` 不会把跨上下文拒绝伪装成成功 |
-| Rust `TaskHandle` 取消结果必须与 VM 清理顺序一致 | 公开 wait 在结果消费前令牌已取消时返回 027，但仍等待任务完成；VM 内部使用保留原始结果的适配以汇总 suppressed；已完成任务取消和运行中任务 finally/drop 均有 Runtime/源码回归 |
 | Runtime owner 只按直接创建关系记录，父 Runtime 关闭不递归关闭子 Runtime；VM 退出时必须用记录的 owner 上下文关闭本 VM 创建的 Runtime | VM 的 Runtime ID 映射和生命周期测试必须覆盖 owner 间接关系与退出清理；不得把父/祖 Runtime 的权限自动扩展 |
 | 22C 的部分 Runtime 关闭测试是 Rust API 级，尚未经过 TAC/VM | 本批必须把这些行为重放到真实源码和 VM 执行路径，不能把 Rust 单测当作 VM 证据 |
 | 22C `close`/`spawn` 的跨 Runtime 语义已写入 22A/22A-FIX，但 VM 未接线 | VM 入口测试必须覆盖 031；语言 `runtime_close` 与 Rust `try_close` 的边界不能混淆 |

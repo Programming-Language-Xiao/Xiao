@@ -71,7 +71,9 @@ fn record_child_event(events: &Arc<Mutex<ChildEvents>>, event: VmEvent) -> bool 
 fn is_priority_child_event(event: &VmEvent) -> bool {
     matches!(
         event,
-        VmEvent::DetachedFailure { .. } | VmEvent::BoundaryCopyReleased { .. }
+        VmEvent::DetachedFailure { .. }
+            | VmEvent::BoundaryCopyReleased { .. }
+            | VmEvent::HandlerEntered { .. }
     )
 }
 
@@ -1145,14 +1147,20 @@ mod tests {
         }
         assert!(!record_child_event(
             &events,
-            VmEvent::BoundaryCopyReleased { value: u32::MAX }
+            VmEvent::HandlerEntered {
+                scope: 1,
+                handler: 2,
+            }
         ));
         let events = events.lock().unwrap();
         assert_eq!(events.pending.len(), CHILD_EVENT_CAPACITY);
         assert_eq!(events.dropped, 1);
         assert!(!events.pending.iter().any(|event| matches!(
             event,
-            VmEvent::BoundaryCopyReleased { value } if *value == u32::MAX
+            VmEvent::HandlerEntered {
+                scope: 1,
+                handler: 2,
+            }
         )));
     }
 }

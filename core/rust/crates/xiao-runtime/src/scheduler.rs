@@ -871,13 +871,19 @@ impl<T> TaskHandle<T> {
                 }
                 Err(mpsc::RecvTimeoutError::Timeout) => {}
                 Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    let externally_interrupted = interrupted();
+                    if externally_interrupted && !self.cancellation.is_cancelled() {
+                        self.cancel();
+                    }
                     let cancelled = self.cancellation.is_cancelled();
                     self.clear_cancel_hook();
-                    return Err(if cancelled && cancellation_wins {
-                        RuntimeExecError::Cancelled
-                    } else {
-                        RuntimeExecError::JoinFailed
-                    });
+                    return Err(
+                        if cancellation_wins && (cancelled || externally_interrupted) {
+                            RuntimeExecError::Cancelled
+                        } else {
+                            RuntimeExecError::JoinFailed
+                        },
+                    );
                 }
             }
         }
@@ -1990,6 +1996,25 @@ mod tests {
         );
         pool.shutdown().expect("shutdown");
         runtime.close();
+    }
+
+    #[test]
+    /// 接收器断开时仍检查最后一次宿主中断，不能把 027 漏成 028。
+    fn wait_interruptible_checks_host_interrupt_on_disconnect() {
+        let (sender, receiver) = mpsc::sync_channel::<Result<u32, RuntimeExecError>>(1);
+        drop(sender);
+        let cancellation = RuntimeCancellation::default();
+        let task = TaskHandle {
+            receiver,
+            cancellation,
+            cancel_hook: None,
+            cancel_registration: None,
+        };
+        let polls = AtomicUsize::new(0);
+        assert_eq!(
+            task.wait_interruptible(|| polls.fetch_add(1, Ordering::AcqRel) != 0),
+            Err(RuntimeExecError::Cancelled)
+        );
     }
 
     #[test]
