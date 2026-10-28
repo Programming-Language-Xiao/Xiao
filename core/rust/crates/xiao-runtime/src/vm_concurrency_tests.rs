@@ -104,3 +104,26 @@ fn vm_detached_report_channel_is_bounded_and_counts_drops() {
     assert_eq!(reports.len(), VM_DETACHED_ERROR_CAPACITY);
     assert_eq!(take_vm_detached_error_drops(), 1);
 }
+
+#[test]
+/// 已完成执行单元在 join 前取消时，合成 027 仍使用不可捕获出口。
+fn completed_child_cancellation_keeps_noncatchable_variant() {
+    let cancellation = RuntimeCancellation::default();
+    cancellation.cancel();
+    let result = cancel_result(Ok(VmTransferValue::Xcon(vec![0])), &cancellation);
+    assert!(
+        matches!(result, Err(VmExecutionError::ConcurrencyCancelled(error))
+        if error.code() == RuntimeExecError::Cancelled.code())
+    );
+
+    let result = cancel_result(
+        Err(VmExecutionError::Error(execution_error(
+            RuntimeExecError::Cancelled,
+        ))),
+        &cancellation,
+    );
+    assert!(
+        matches!(result, Err(VmExecutionError::ConcurrencyCancelled(error))
+        if error.code() == RuntimeExecError::Cancelled.code())
+    );
+}
