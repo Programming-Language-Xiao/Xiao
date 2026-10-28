@@ -1012,12 +1012,16 @@ I4a2（运行时的包模块加载）、I4b（会话级生命周期与 TS 接入
   把 facts/transfers/cancellation 接成 VM 计划，增加并发值/每线程 VM、边界深拷贝/XCON、
   shared/lock、取消/错误和真实源码端到端；26 条回归、workspace、maintenance 和多平台 CI 已通过；
   不接 LLVM、不写标准库函数体。
-- **22D LLVM、差分与跨平台**：同一并发黄金场景在 VM/LLVM 的输出、错误、退出码和释放
-  记录一致；Windows/Linux/macOS 回归；32B ABI 布局/对齐/版本矩阵。
+- **22D LLVM、差分与跨平台**（[22D 规划](22d-llvm-concurrency-differential.md)）：
+  LLVM 消费同一份并发 IR facts/transfers/cancellation，接 Runtime C ABI（线程 trampoline、
+  shared/lock、XCON、取消和 detached），建立 VM/LLVM 同一黄金场景的输出、错误、退出码和
+  释放记录差分；Windows/Linux/macOS 回归和 32B ABI 布局/对齐验证。**不写 stdlib、不冻结
+  原生并发产物元数据（22E）**；当前为规划中，尚未实现 LLVM 并发 lowering。
 - **22E 标准库、UseDocs 与发布收口**：`std.concurrent` 线程/共享/任务池入口、长度前缀
   二进制序列化公开边界、文档、ABI/产物兼容和发布报告；官方容器仍后置。
 
-退出条件（22B-FIX.1、22C Runtime/ABI/VM 与 22C-FIX.1 已完成；22D–22E 仍待完成）：
+退出条件（22B-FIX.1、22C Runtime/ABI/VM 与 22C-FIX.1 已完成；22D–22E 仍待完成；
+22D 计划见 [LLVM 并发执行、差分与跨平台](22d-llvm-concurrency-differential.md)）：
 
 1. 22A 首轮裁定、§2.2 细化和 F-1..F-8 修正契约齐全；32B 头布局已补跨平台测量；
 2. 类型/生命周期/IR 对普通句柄、共享句柄、多边界值和 Runtime ID 有正/负例，
