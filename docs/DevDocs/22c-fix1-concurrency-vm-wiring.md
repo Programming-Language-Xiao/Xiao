@@ -153,6 +153,8 @@ LockGuard(lock_guard_handle)
 - VM 外部取消（`Fault::Cancelled`）与并发取消 027 分开：外部取消走 VM 取消通道，
   并发 join/wait/lock/cancel 走 `X06-RUNTIME-027`；
 - 027 是不可被用户 `catch` 吞掉的并发取消出口；未开始任务取消会从池队列移除消息、释放队列容量并让 `wait` 立即返回 027；
+- 运行中任务取消时，公开 Rust `TaskHandle::wait`/`wait_interruptible` 等完整任务闭包后再返回 027；VM 内部等待入口保留 worker 结果以合并 finally/drop 与 suppressed；
+- 运行中任务取消的 `wait` 会等待 worker 完整结果，先执行 finally/table drop，再保留主 027 与 suppressed；公开 Rust `TaskHandle::wait`/`wait_interruptible` 在结果消费前任务 token 已取消时返回 027；
 - 22B cancellation checks（`safe_point`/`wait`/`lock_wait`）必须由 VM 消费，不能只依赖
   Runtime 层标记；
 - `join`/`wait`/`lock` 等待必须可取消；取消后按 22C 顺序清理，finally/drop 恰好一次；
@@ -183,6 +185,8 @@ LockGuard(lock_guard_handle)
 | detached 队列只有深度（`detached_reaper_queue_depth`），没有上限/背压/丢弃策略 | 本批先保证 VM 不把无限增长隐藏成静默行为；Runtime 侧登记阈值和策略，最迟在 22E 前落地；黄金场景加入持续 detach 观测 |
 | 入口线程或无执行上下文的普通 `submit` 没有提交前主动取消入口 | VM 任务入口必须继承执行上下文取消令牌；入口线程使用显式提交期取消入口或由 Runtime/pool 关闭终止等待 |
 | `RuntimeHandle::close` 跨上下文是 no-op；`try_close()` 才返回 031 | VM 内部统一使用 `try_close()`；回归同时检查旧 `close()` 不会把跨上下文拒绝伪装成成功 |
+| Rust `TaskHandle` 取消结果必须与 VM 清理顺序一致 | 公开 wait 在结果消费前令牌已取消时返回 027，但仍等待任务完成；VM 内部使用保留原始结果的适配以汇总 suppressed；已完成任务取消和运行中任务 finally/drop 均有 Runtime/源码回归 |
+| Rust `TaskHandle` 取消结果必须与 VM 清理顺序一致 | 公开 wait 在结果消费前令牌已取消时返回 027，但仍等待任务完成；VM 内部使用保留原始结果的适配以汇总 suppressed；已完成任务取消和运行中任务 finally/drop 均有 Runtime/源码回归 |
 | Runtime owner 只按直接创建关系记录，父 Runtime 关闭不递归关闭子 Runtime；VM 退出时必须用记录的 owner 上下文关闭本 VM 创建的 Runtime | VM 的 Runtime ID 映射和生命周期测试必须覆盖 owner 间接关系与退出清理；不得把父/祖 Runtime 的权限自动扩展 |
 | 22C 的部分 Runtime 关闭测试是 Rust API 级，尚未经过 TAC/VM | 本批必须把这些行为重放到真实源码和 VM 执行路径，不能把 Rust 单测当作 VM 证据 |
 | 22C `close`/`spawn` 的跨 Runtime 语义已写入 22A/22A-FIX，但 VM 未接线 | VM 入口测试必须覆盖 031；语言 `runtime_close` 与 Rust `try_close` 的边界不能混淆 |

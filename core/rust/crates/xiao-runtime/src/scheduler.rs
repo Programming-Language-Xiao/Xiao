@@ -830,10 +830,26 @@ impl<T> TaskHandle<T> {
         self.cancellation.clone()
     }
 
-    /// 可中断等待；中断取消未完成任务，返回 027。
-    pub fn wait_interruptible(
+    /// 可中断等待；中断或任务令牌在返回前已取消时返回 027。
+    ///
+    /// 无论取消来源如何，等待都先等任务闭包完成，以保留运行中 VM 的 finally/drop 结果。
+    pub fn wait_interruptible(self, interrupted: impl Fn() -> bool) -> Result<T, RuntimeExecError> {
+        self.wait_interruptible_inner(interrupted, true)
+    }
+
+    /// VM 内部等待完整任务结果，以便在并发取消时保留 finally/drop 的 suppressed 错误。
+    #[doc(hidden)]
+    pub fn wait_interruptible_preserving_result(
+        self,
+        interrupted: impl Fn() -> bool,
+    ) -> Result<T, RuntimeExecError> {
+        self.wait_interruptible_inner(interrupted, false)
+    }
+
+    fn wait_interruptible_inner(
         mut self,
         interrupted: impl Fn() -> bool,
+        cancellation_wins: bool,
     ) -> Result<T, RuntimeExecError> {
         loop {
             if interrupted() && !self.cancellation.is_cancelled() {
@@ -841,13 +857,23 @@ impl<T> TaskHandle<T> {
             }
             match self.receiver.recv_timeout(Duration::from_millis(2)) {
                 Ok(value) => {
+                    let cancelled = self.cancellation.is_cancelled();
                     self.clear_cancel_hook();
-                    return value;
+                    return if cancellation_wins && cancelled {
+                        Err(RuntimeExecError::Cancelled)
+                    } else {
+                        value
+                    };
                 }
                 Err(mpsc::RecvTimeoutError::Timeout) => {}
                 Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    let cancelled = self.cancellation.is_cancelled();
                     self.clear_cancel_hook();
-                    return Err(RuntimeExecError::JoinFailed);
+                    return Err(if cancelled && cancellation_wins {
+                        RuntimeExecError::Cancelled
+                    } else {
+                        RuntimeExecError::JoinFailed
+                    });
                 }
             }
         }
@@ -884,18 +910,28 @@ impl<T> TaskHandle<T> {
         self.cancellation.cancel();
     }
 
-    /// 消费任务句柄并等待结果。
+    /// 消费任务句柄并等待结果；任务取消先于结果消费时返回 027，即使任务体已完成。
     pub fn wait(mut self) -> Result<T, RuntimeExecError> {
         loop {
             match self.receiver.recv_timeout(Duration::from_millis(2)) {
                 Ok(value) => {
+                    let cancelled = self.cancellation.is_cancelled();
                     self.clear_cancel_hook();
-                    return value;
+                    return if cancelled {
+                        Err(RuntimeExecError::Cancelled)
+                    } else {
+                        value
+                    };
                 }
                 Err(mpsc::RecvTimeoutError::Timeout) => {}
                 Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    let cancelled = self.cancellation.is_cancelled();
                     self.clear_cancel_hook();
-                    return Err(RuntimeExecError::JoinFailed);
+                    return Err(if cancelled {
+                        RuntimeExecError::Cancelled
+                    } else {
+                        RuntimeExecError::JoinFailed
+                    });
                 }
             }
         }
@@ -1893,6 +1929,28 @@ mod tests {
         assert_eq!(blocker.wait(), Ok(1));
         assert_eq!(replacement.wait(), Ok(3));
         pool.shutdown().expect("pool shutdown");
+    }
+
+    #[test]
+    /// 公开 wait API 在令牌取消后即使任务体已返回仍返回 027。
+    fn completed_task_cancellation_is_observed_by_public_wait_apis() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("pool");
+
+        let waited = pool.submit(|_| 7_u32).expect("submit");
+        thread::sleep(Duration::from_millis(10));
+        waited.cancel();
+        assert_eq!(waited.wait(), Err(RuntimeExecError::Cancelled));
+
+        let interrupted = pool.submit(|_| 8_u32).expect("submit");
+        thread::sleep(Duration::from_millis(10));
+        interrupted.cancel();
+        assert_eq!(
+            interrupted.wait_interruptible(|| false),
+            Err(RuntimeExecError::Cancelled)
+        );
+        pool.shutdown().expect("shutdown");
+        runtime.close();
     }
 
     #[test]

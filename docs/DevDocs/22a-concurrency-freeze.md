@@ -381,6 +381,11 @@ VM 退出或 `runtime_close` 仍等待已提交的 detached 线程/任务完成�
 回收队列中尚未处理的报告保留在进程级通道，最多 4096 条；宿主可以调用取出 API，超出的数量由
 `take_vm_detached_error_drops()` 查询。
 
+**22C Runtime `TaskHandle` 等待补充**：公开 Rust `wait()` 与 `wait_interruptible()` 在任务结果被消费前
+已取消时返回 `X06-RUNTIME-027`，即使任务函数已完成；若任务仍在运行，两个入口仍等待 worker 的完整结果，
+确保 VM finally/drop、主错误与 suppressed 错误先完成。VM 内部使用保留 worker 原始结果的适配入口，再把任务
+令牌取消映射为不可被 Xiao `catch` 吞掉的 027；宿主中断与任务 token 同时发生时优先报告宿主中断。
+
 **22C-FIX.1 未等待任务结果**：`submit` 返回的 `task<T>` 若没有调用 `wait`，且最后一个 VM 别名
 释放，VM 将把结果接收器交给同一 detached 回收通道；失败以结构化记录保留 Runtime ID，普通子 VM
 错误按 `X06-RUNTIME-028` 包装并保留原错误 cause。显式 `wait` 仍在调用点返回原始错误；此补充

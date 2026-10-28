@@ -166,6 +166,18 @@ pub trait VmEventSink {
     /// 记录一条事件。
     fn record(&mut self, event: VmEvent);
 
+    /// 记录 detached 失败；有界 sink 无法保留时返回 false，调用者可将错误留在进程通道。
+    fn record_detached_failure(
+        &mut self,
+        detached: xiao_runtime::VmDetachedError,
+    ) -> Result<(), xiao_runtime::VmDetachedError> {
+        self.record(VmEvent::DetachedFailure {
+            runtime_id: detached.runtime_id,
+            report: xiao_diagnostics::ReportRecord::from_error(&detached.error),
+        });
+        Ok(())
+    }
+
     /// 记录子执行单元在自己的有界缓冲区中丢弃的事件数。
     fn record_dropped_events(&mut self, _count: usize) {}
 }
@@ -177,6 +189,13 @@ pub struct NullSink;
 impl VmEventSink for NullSink {
     /// 丢弃事件。
     fn record(&mut self, _event: VmEvent) {}
+
+    fn record_detached_failure(
+        &mut self,
+        detached: xiao_runtime::VmDetachedError,
+    ) -> Result<(), xiao_runtime::VmDetachedError> {
+        Err(detached)
+    }
 }
 
 /// 把事件收进向量的接收器，供规格测试与后续诊断窗口消费。
@@ -323,6 +342,30 @@ impl VmEventSink for BoundedSink {
         } else {
             self.dropped_events = self.dropped_events.saturating_add(1);
         }
+    }
+
+    fn record_detached_failure(
+        &mut self,
+        detached: xiao_runtime::VmDetachedError,
+    ) -> Result<(), xiao_runtime::VmDetachedError> {
+        if self.events.len() >= self.capacity {
+            if let Some(index) = self
+                .events
+                .iter()
+                .position(|existing| !is_priority_event(existing))
+            {
+                self.events.remove(index);
+                self.dropped_events = self.dropped_events.saturating_add(1);
+            } else {
+                self.dropped_events = self.dropped_events.saturating_add(1);
+                return Err(detached);
+            }
+        }
+        self.events.push(VmEvent::DetachedFailure {
+            runtime_id: detached.runtime_id,
+            report: xiao_diagnostics::ReportRecord::from_error(&detached.error),
+        });
+        Ok(())
     }
 
     /// 将子 VM 缓冲区丢弃量并入最终运行指标。

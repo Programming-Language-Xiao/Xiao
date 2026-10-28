@@ -17,6 +17,7 @@ const CHILD_EVENT_CAPACITY: usize = 4096;
 #[derive(Default)]
 struct ChildEvents {
     pending: Vec<VmEvent>,
+    detached: Vec<xiao_runtime::VmDetachedError>,
     dropped: usize,
 }
 
@@ -25,34 +26,46 @@ struct ChildSink(Arc<Mutex<ChildEvents>>);
 impl VmEventSink for ChildSink {
     /// 缓冲事件；容量耗尽时只增加丢弃计数。
     fn record(&mut self, event: VmEvent) {
-        record_child_event(&self.0, event);
+        let _ = record_child_event(&self.0, event);
+    }
+
+    fn record_detached_failure(
+        &mut self,
+        report: xiao_runtime::VmDetachedError,
+    ) -> Result<(), xiao_runtime::VmDetachedError> {
+        record_detached_child_error(&self.0, report)
     }
 }
 
-fn record_child_event(events: &Arc<Mutex<ChildEvents>>, event: VmEvent) {
+fn record_detached_child_error(
+    events: &Arc<Mutex<ChildEvents>>,
+    report: xiao_runtime::VmDetachedError,
+) -> Result<(), xiao_runtime::VmDetachedError> {
+    let mut events = events.lock().expect("子 VM 事件锁未中毒");
+    if events.detached.len() >= CHILD_EVENT_CAPACITY {
+        return Err(report);
+    }
+    events.detached.push(report);
+    Ok(())
+}
+
+fn record_child_event(events: &Arc<Mutex<ChildEvents>>, event: VmEvent) -> bool {
     let mut events = events.lock().expect("子 VM 事件锁未中毒");
     if events.pending.len() >= CHILD_EVENT_CAPACITY {
         let replaceable = events
             .pending
             .iter()
             .position(|existing| !is_priority_child_event(existing));
-        let replaceable = replaceable.or_else(|| {
-            matches!(&event, VmEvent::DetachedFailure { .. }).then(|| {
-                events
-                    .pending
-                    .iter()
-                    .position(|existing| matches!(existing, VmEvent::BoundaryCopyReleased { .. }))
-            })?
-        });
         if let Some(index) = replaceable {
             events.pending.remove(index);
             events.dropped = events.dropped.saturating_add(1);
         } else {
             events.dropped = events.dropped.saturating_add(1);
-            return;
+            return false;
         }
     }
     events.pending.push(event);
+    true
 }
 
 fn is_priority_child_event(event: &VmEvent) -> bool {
@@ -91,7 +104,7 @@ impl Drop for DeferredBoundaryCopies {
             return;
         };
         release_arguments(&self.plan, copies, |value| {
-            record_child_event(&self.events, VmEvent::BoundaryCopyReleased { value });
+            let _ = record_child_event(&self.events, VmEvent::BoundaryCopyReleased { value });
         });
     }
 }
@@ -175,16 +188,22 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
 
     /// 将子 VM 暂存事件排入当前 VM 的事件接收器。
     fn flush_child_events(&mut self) {
-        let (pending, dropped) = {
+        let (pending, detached, dropped) = {
             let mut events = self.concurrency.events.lock().expect("子 VM 事件锁未中毒");
             (
                 std::mem::take(&mut events.pending),
+                std::mem::take(&mut events.detached),
                 std::mem::take(&mut events.dropped),
             )
         };
         self.sink.record_dropped_events(dropped);
         for event in pending {
             self.sink.record(event);
+        }
+        for detached in detached {
+            if let Err(detached) = self.sink.record_detached_failure(detached) {
+                let _ = xiao_runtime::restore_vm_detached_error(detached);
+            }
         }
     }
 
@@ -210,10 +229,9 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
         }
         runtime_ids.extend(self.concurrency.detached.wait_runtime_ids(&runtime_ids));
         for detached in xiao_runtime::take_vm_detached_errors_for(&runtime_ids) {
-            self.sink.record(VmEvent::DetachedFailure {
-                runtime_id: detached.runtime_id,
-                report: xiao_diagnostics::ReportRecord::from_error(&detached.error),
-            });
+            if let Err(detached) = self.sink.record_detached_failure(detached) {
+                let _ = xiao_runtime::restore_vm_detached_error(detached);
+            }
         }
         self.flush_child_events();
     }
@@ -853,13 +871,9 @@ fn execute_child(
     let mut report_runtime_ids = owned_runtime_ids.clone();
     report_runtime_ids.extend(detached_tracker.wait_runtime_ids(&owned_runtime_ids));
     for detached in xiao_runtime::take_vm_detached_errors_for(&report_runtime_ids) {
-        record_child_event(
-            &vm.concurrency.events,
-            VmEvent::DetachedFailure {
-                runtime_id: detached.runtime_id,
-                report: xiao_diagnostics::ReportRecord::from_error(&detached.error),
-            },
-        );
+        if let Err(detached) = record_detached_child_error(&vm.concurrency.events, detached) {
+            let _ = xiao_runtime::restore_vm_detached_error(detached);
+        }
     }
     match outcome {
         Ok(value) => {
@@ -1029,33 +1043,91 @@ mod tests {
     }
 
     #[test]
-    /// detached 失败在子 VM 事件满载时挤出普通事件并保留结构化报告。
+    /// 普通事件缓冲区满载时仍独立保留 detached 报告和边界清理事件。
     fn detached_child_event_is_preserved_when_buffer_is_full() {
         let events = Arc::new(Mutex::new(ChildEvents::default()));
         for index in 0..CHILD_EVENT_CAPACITY {
-            record_child_event(
+            let _ = record_child_event(
                 &events,
-                VmEvent::ModuleLoaded {
-                    module: index.to_string(),
+                VmEvent::BoundaryCopyReleased {
+                    value: index as u32,
                 },
             );
         }
         let error = xiao_runtime::execution_error(RuntimeExecError::JoinFailed);
-        record_child_event(
+        record_detached_child_error(
             &events,
-            VmEvent::DetachedFailure {
+            xiao_runtime::VmDetachedError {
                 runtime_id: 7,
-                report: xiao_diagnostics::ReportRecord::from_error(&error),
+                error,
             },
-        );
+        )
+        .expect("分离的 detached 队列必须保留报告");
         let events = events.lock().unwrap();
         assert_eq!(events.pending.len(), CHILD_EVENT_CAPACITY);
-        assert_eq!(events.dropped, 1);
+        assert_eq!(events.dropped, 0);
         assert!(
             events
                 .pending
                 .iter()
-                .any(|event| matches!(event, VmEvent::DetachedFailure { runtime_id: 7, .. }))
+                .all(|event| matches!(event, VmEvent::BoundaryCopyReleased { .. }))
         );
+        assert_eq!(events.detached.len(), 1);
+        assert_eq!(events.detached[0].runtime_id, 7);
+    }
+
+    #[test]
+    /// 最终有界接收器满载优先保留边界清理，并将 detached 报告退回通道。
+    fn bounded_sink_does_not_replace_boundary_cleanup_with_detached_failure() {
+        let mut sink = BoundedSink::new(1);
+        sink.record(VmEvent::BoundaryCopyReleased { value: 99 });
+        let error = xiao_runtime::execution_error(RuntimeExecError::JoinFailed);
+        let detached = xiao_runtime::VmDetachedError {
+            runtime_id: 7,
+            error,
+        };
+        let Err(returned) = sink.record_detached_failure(detached) else {
+            panic!("满载的有界 sink 应退回 detached 报告");
+        };
+        assert_eq!(returned.runtime_id, 7);
+        assert_eq!(returned.error.code(), "X06-RUNTIME-028");
+        assert_eq!(
+            sink.events(),
+            &[VmEvent::BoundaryCopyReleased { value: 99 }]
+        );
+    }
+
+    #[test]
+    /// 子事件优先队列满时 detached 报告退回 Runtime 通道，宿主仍可读取。
+    fn detached_child_event_overflow_returns_report_to_runtime_channel() {
+        let events = Arc::new(Mutex::new(ChildEvents::default()));
+        let runtime = RuntimeHandle::create();
+        let runtime_id = runtime.id();
+        for _ in 0..CHILD_EVENT_CAPACITY {
+            record_detached_child_error(
+                &events,
+                xiao_runtime::VmDetachedError {
+                    runtime_id,
+                    error: xiao_runtime::execution_error(RuntimeExecError::JoinFailed),
+                },
+            )
+            .expect("容量内报告应保留");
+        }
+        let overflow = xiao_runtime::VmDetachedError {
+            runtime_id,
+            error: xiao_runtime::execution_error(RuntimeExecError::Cancelled),
+        };
+        let Err(overflow) = record_detached_child_error(&events, overflow) else {
+            panic!("超出子事件容量的报告应交还 Runtime 通道");
+        };
+        assert_eq!(events.lock().unwrap().dropped, 0);
+        assert!(xiao_runtime::restore_vm_detached_error(overflow));
+        let restored = xiao_runtime::take_vm_detached_errors_for(&[runtime_id]);
+        assert!(
+            restored
+                .iter()
+                .any(|report| { report.error.code() == RuntimeExecError::Cancelled.code() })
+        );
+        runtime.close();
     }
 }

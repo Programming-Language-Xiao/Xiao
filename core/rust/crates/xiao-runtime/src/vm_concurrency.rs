@@ -165,6 +165,22 @@ pub fn take_vm_detached_errors_for(runtime_ids: &[u64]) -> Vec<VmDetachedError> 
     selected
 }
 
+/// 将未能放入 VM 子事件缓冲区的 detached 报告退回进程级有界错误通道。
+///
+/// 返回 `false` 表示进程级通道也已满；该报告计入丢弃指标。
+pub fn restore_vm_detached_error(report: VmDetachedError) -> bool {
+    let Ok(mut reports) = detached_reports().lock() else {
+        VM_DETACHED_ERROR_DROPS.fetch_add(1, Ordering::AcqRel);
+        return false;
+    };
+    if reports.len() >= VM_DETACHED_ERROR_CAPACITY {
+        VM_DETACHED_ERROR_DROPS.fetch_add(1, Ordering::AcqRel);
+        return false;
+    }
+    reports.push(report);
+    true
+}
+
 /// 取出 detached 错误通道的报告丢弃计数并清零。
 #[must_use]
 pub fn take_vm_detached_error_drops() -> usize {
@@ -557,11 +573,12 @@ impl VmConcurrencyValue {
             .ok_or(RuntimeExecError::JoinFailed)?;
         let _runtime = &value.runtime;
         let was_interrupted = interrupted();
-        let result = handle.wait_interruptible(&interrupted)?;
-        if was_interrupted || interrupted() {
+        let result = handle.wait_interruptible_preserving_result(&interrupted);
+        let interrupted_after_wait = interrupted();
+        if was_interrupted || interrupted_after_wait {
             return Err(RuntimeExecError::Cancelled);
         }
-        Ok(cancel_result(result, &value.cancellation))
+        Ok(cancel_result(result?, &value.cancellation))
     }
 
     /// 分离线程并保留原错误作为 028 的 cause。

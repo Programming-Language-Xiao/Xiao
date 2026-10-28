@@ -87,8 +87,8 @@ pub use value::{ExternalResourceHandle, ExternalResourceKind, RuntimeValue, Stri
 pub use vm_concurrency::{
     VM_DETACHED_ERROR_CAPACITY, VmConcurrencyValue, VmDetachedCompletionTracker, VmDetachedError,
     VmExecutionError, VmExecutionResult, VmTransferValue, execution_error,
-    take_vm_detached_error_drops, take_vm_detached_errors, take_vm_detached_errors_for,
-    transfer_error,
+    restore_vm_detached_error, take_vm_detached_error_drops, take_vm_detached_errors,
+    take_vm_detached_errors_for, transfer_error,
 };
 
 /// 安装当前平台的最小未处理异常报告器。
