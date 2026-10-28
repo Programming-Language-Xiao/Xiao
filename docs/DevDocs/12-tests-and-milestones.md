@@ -1005,7 +1005,7 @@ I4a2（运行时的包模块加载）、I4b（会话级生命周期与 TS 接入
   二进制序列化、真实取消等待、取消/清理、错误顺序和 `.xiaoc`/`.xar` ABI/feature 门禁；
   Runtime/ABI/门禁与 VM 实现已完成；workspace、benchmark、research concurrency、Bun、coverage、
   26 条 22C-FIX.1 端到端回归、docs/usedocs、本地安全/产物回归及远端多平台 maintenance/CI
-  均通过（workspace run `40611577854`；maintenance run `40611283309` 中 Linux、Windows、macOS 各运行 26/26）。
+  均通过（workspace run `40613747372`；maintenance run `40613821972` 中 Linux、Windows、macOS 各运行 26/26）。
 - **22C-FIX.1 VM 并发调用与端到端**（[FIX.1 规划](22c-fix1-concurrency-vm-wiring.md)）：
   把 facts/transfers/cancellation 接成 VM 计划，增加并发值/每线程 VM、边界深拷贝/XCON、
   shared/lock、取消/错误和真实源码端到端；26 条回归、workspace、maintenance 和多平台 CI 已通过；
