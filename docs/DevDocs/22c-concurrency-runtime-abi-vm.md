@@ -8,7 +8,7 @@
 > 状态：**22C 与 22C-FIX.1 已完成（2026-10-28）**。Runtime/ABI、共享锁、Runtime drain、
 > VM 并发调用、IR facts 执行、XCON 边界和 `.xiaoc`/`.xar` 门禁已实施；26 条源码/产物回归、
 > workspace、benchmark、research concurrency、Bun、coverage、安全/产物回归，以及远端
-> [workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40613747372) 通过；
+> [workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40616002642) 通过；
 > [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40613821972) 的 Linux、Windows、macOS
 > 均实际运行 `22c_vm_concurrency` 并以 26/26 通过，全部 jobs 通过。22D 可以开始，LLVM/标准库函数体仍按阶段后置。
 > 代码提交 `df6abc3` 已完成 ABI 1.17、32B 共享头、Runtime ID 注册表、XCON v1 编解码、

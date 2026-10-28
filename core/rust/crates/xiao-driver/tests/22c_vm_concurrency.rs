@@ -13,6 +13,7 @@ struct Observation {
     output: String,
     report: Option<xiao_diagnostics::ReportRecord>,
     events: Vec<VmEvent>,
+    releases: Option<usize>,
 }
 
 /// 在线程保护下运行源码，以便超时回归能收回失控执行。
@@ -34,12 +35,16 @@ fn observe(source: &str) -> Observation {
             .as_executed()
             .map(|execution| execution.events().to_vec())
             .unwrap_or_default();
+        let releases = outcome
+            .as_executed()
+            .map(|execution| execution.outcome.metrics.releases);
         tx.send(Observation {
             success: outcome.is_success(),
             code: outcome.code().map(str::to_owned),
             output,
             report: outcome.report().cloned(),
             events,
+            releases,
         })
         .unwrap();
     });
@@ -351,6 +356,7 @@ wait(task)
         "{result:?}"
     );
     assert_eq!(result.output, "task-finally\nitem-drop\n");
+    assert!(result.releases.unwrap_or_default() > 0);
     assert!(
         result
             .events

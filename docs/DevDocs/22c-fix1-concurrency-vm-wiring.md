@@ -6,7 +6,7 @@
 > cancellation 接入 TAC 并发计划、隔离 VM 和 Runtime 绑定，并完成源码到 `.xar` 的端到端回归。
 >
 > 状态：**FIX.1 已完成（2026-10-28）**，26 条源码/产物端到端回归、workspace、benchmark、
-> research concurrency、Bun、coverage 及安全/产物回归均通过；[workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40613747372)
+> research concurrency、Bun、coverage 及安全/产物回归均通过；[workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40616002642)
 > 通过。 [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40613821972)
 > 中，Linux、Windows、macOS 各自运行 `22c_vm_concurrency`，每个平台 26/26 通过，全部 jobs 通过。
 > 本批只接 VM、驱动和已有 Runtime API；
