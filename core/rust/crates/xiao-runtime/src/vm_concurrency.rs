@@ -578,7 +578,7 @@ impl VmConcurrencyValue {
         if was_interrupted || interrupted_after_wait {
             return Err(RuntimeExecError::Cancelled);
         }
-        Ok(cancel_result(result?, &value.cancellation))
+        normalize_task_wait_result(result, &value.cancellation)
     }
 
     /// 分离线程并保留原错误作为 028 的 cause。
@@ -631,5 +631,21 @@ fn cancel_result(
             }
             Err(VmExecutionError::ConcurrencyCancelled(error))
         }
+    }
+}
+
+/// 任务结果通道异常断开时，若任务 token 已取消，仍将主错误分类为 027。
+fn normalize_task_wait_result(
+    result: Result<VmExecutionResult, RuntimeExecError>,
+    cancellation: &RuntimeCancellation,
+) -> Result<VmExecutionResult, RuntimeExecError> {
+    match result {
+        Err(RuntimeExecError::JoinFailed) if cancellation.is_cancelled() => {
+            let mut cancelled = execution_error(RuntimeExecError::Cancelled);
+            cancelled.push_suppressed(execution_error(RuntimeExecError::JoinFailed));
+            Ok(Err(VmExecutionError::ConcurrencyCancelled(cancelled)))
+        }
+        Err(error) => Err(error),
+        Ok(result) => Ok(cancel_result(result, cancellation)),
     }
 }

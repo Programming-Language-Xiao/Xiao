@@ -1130,4 +1130,29 @@ mod tests {
         );
         runtime.close();
     }
+
+    #[test]
+    /// 有界子事件槽全部被关键事件占满时，继续到达的事件按可观测丢弃计数处理。
+    fn child_event_buffer_counts_drop_when_all_slots_are_priority() {
+        let events = Arc::new(Mutex::new(ChildEvents::default()));
+        for value in 0..CHILD_EVENT_CAPACITY {
+            assert!(record_child_event(
+                &events,
+                VmEvent::BoundaryCopyReleased {
+                    value: value as u32,
+                }
+            ));
+        }
+        assert!(!record_child_event(
+            &events,
+            VmEvent::BoundaryCopyReleased { value: u32::MAX }
+        ));
+        let events = events.lock().unwrap();
+        assert_eq!(events.pending.len(), CHILD_EVENT_CAPACITY);
+        assert_eq!(events.dropped, 1);
+        assert!(!events.pending.iter().any(|event| matches!(
+            event,
+            VmEvent::BoundaryCopyReleased { value } if *value == u32::MAX
+        )));
+    }
 }

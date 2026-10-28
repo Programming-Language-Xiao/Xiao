@@ -857,9 +857,13 @@ impl<T> TaskHandle<T> {
             }
             match self.receiver.recv_timeout(Duration::from_millis(2)) {
                 Ok(value) => {
+                    let externally_interrupted = interrupted();
+                    if externally_interrupted && !self.cancellation.is_cancelled() {
+                        self.cancel();
+                    }
                     let cancelled = self.cancellation.is_cancelled();
                     self.clear_cancel_hook();
-                    return if cancellation_wins && cancelled {
+                    return if cancellation_wins && (cancelled || externally_interrupted) {
                         Err(RuntimeExecError::Cancelled)
                     } else {
                         value
@@ -1947,6 +1951,41 @@ mod tests {
         interrupted.cancel();
         assert_eq!(
             interrupted.wait_interruptible(|| false),
+            Err(RuntimeExecError::Cancelled)
+        );
+        pool.shutdown().expect("shutdown");
+        runtime.close();
+    }
+
+    #[test]
+    /// 结果到达时才变为 true 的宿主中断仍覆盖已完成任务结果。
+    fn wait_interruptible_checks_host_interrupt_after_receiving_result() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("pool");
+        let (release_tx, release_rx) = mpsc::channel();
+        let task = pool
+            .submit(move |_| {
+                release_rx.recv().expect("host poll releases task");
+                7_u32
+            })
+            .expect("task");
+        let release_tx = Mutex::new(Some(release_tx));
+        let polls = AtomicUsize::new(0);
+        assert_eq!(
+            task.wait_interruptible(|| {
+                if polls.fetch_add(1, Ordering::AcqRel) == 0 {
+                    release_tx
+                        .lock()
+                        .expect("release sender lock")
+                        .take()
+                        .expect("release exactly once")
+                        .send(())
+                        .expect("release task");
+                    false
+                } else {
+                    true
+                }
+            }),
             Err(RuntimeExecError::Cancelled)
         );
         pool.shutdown().expect("shutdown");

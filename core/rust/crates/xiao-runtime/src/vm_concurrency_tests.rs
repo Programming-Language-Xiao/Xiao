@@ -127,3 +127,29 @@ fn completed_child_cancellation_keeps_noncatchable_variant() {
         if error.code() == RuntimeExecError::Cancelled.code())
     );
 }
+
+#[test]
+/// VM 任务令牌取消与结果通道断连同时发生时，取消 027 优先并保留 028 cause。
+fn cancelled_task_disconnect_is_classified_as_027() {
+    let cancellation = RuntimeCancellation::default();
+    cancellation.cancel();
+    let result = normalize_task_wait_result(Err(RuntimeExecError::JoinFailed), &cancellation)
+        .expect("内部等待应返回 VM 错误值");
+    assert!(matches!(
+        result,
+        Err(VmExecutionError::ConcurrencyCancelled(error))
+            if error.code() == RuntimeExecError::Cancelled.code()
+                && error.suppressed().iter().any(|suppressed|
+                    suppressed.code() == RuntimeExecError::JoinFailed.code())
+    ));
+}
+
+#[test]
+/// 未取消任务的 channel disconnect 仍保持普通 028。
+fn task_disconnect_without_cancellation_remains_028() {
+    let cancellation = RuntimeCancellation::default();
+    assert!(matches!(
+        normalize_task_wait_result(Err(RuntimeExecError::JoinFailed), &cancellation),
+        Err(RuntimeExecError::JoinFailed)
+    ));
+}
