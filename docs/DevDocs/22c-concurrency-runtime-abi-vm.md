@@ -6,11 +6,11 @@
 > 和 verifier；本批只消费这些字段，不重新决定 Send/Sync、CrossThread、API 名称或序列化格式。
 >
 > 状态：**22C 与 22C-FIX.1 已完成（2026-10-28）**。Runtime/ABI、共享锁、Runtime drain、
-> VM 并发调用、IR facts 执行、XCON 边界和 `.xiaoc`/`.xar` 门禁已实施；24 条源码/产物回归、
+> VM 并发调用、IR facts 执行、XCON 边界和 `.xiaoc`/`.xar` 门禁已实施；26 条源码/产物回归、
 > workspace、benchmark、research concurrency、Bun、coverage、安全/产物回归，以及远端
-> [workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40554260877) 和
-> [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40553718836)
-> 均通过。22D 可以开始，LLVM/标准库函数体仍按阶段后置。
+> [workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40611577854) 通过；
+> [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40611283309) 的 Linux、Windows、macOS
+> 均实际运行 `22c_vm_concurrency` 并以 26/26 通过，全部 jobs 通过。22D 可以开始，LLVM/标准库函数体仍按阶段后置。
 > 代码提交 `df6abc3` 已完成 ABI 1.17、32B 共享头、Runtime ID 注册表、XCON v1 编解码、
 > Runtime/线程/任务池骨架和 `.xiaoc` required-feature/ABI 校验 helper；后续补丁补齐了真实锁等待/取消
 > 唤醒、Runtime 重入关闭、可取消背压、shutdown 的 031 语义、detached/panic 错误分类、XCON 集合

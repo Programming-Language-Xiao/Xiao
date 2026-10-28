@@ -5,10 +5,11 @@
 > Runtime 关闭协调和 `.xiaoc`/`.xar` feature 门禁。本批已把 22B facts/transfers/
 > cancellation 接入 TAC 并发计划、隔离 VM 和 Runtime 绑定，并完成源码到 `.xar` 的端到端回归。
 >
-> 状态：**FIX.1 已完成（2026-10-28）**，24 条源码/产物端到端回归、workspace、benchmark、
-> research concurrency、Bun、coverage 及安全/产物回归均通过；远端 [workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40554260877)
-> 和 [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40553718836)
-> 均通过 Linux、Windows、macOS 检查。本批只接 VM、驱动和已有 Runtime API；
+> 状态：**FIX.1 已完成（2026-10-28）**，26 条源码/产物端到端回归、workspace、benchmark、
+> research concurrency、Bun、coverage 及安全/产物回归均通过；[workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40611577854)
+> 通过。 [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40611283309)
+> 中，Linux、Windows、macOS 各自运行 `22c_vm_concurrency`，每个平台 26/26 通过，全部 jobs 通过。
+> 本批只接 VM、驱动和已有 Runtime API；
 > 不接 LLVM，不写 `stdlib/concurrent.xiao` 函数体，不改 22A/22B 的 API、Send/Sync 表、
 > 32B 布局、诊断码或产物 feature 位。
 
@@ -51,7 +52,7 @@
 | Runtime | 子 VM 用 XCON `VmTransferValue` 传递候选 A 值；共享句柄保留来源 Runtime ID；已有 Runtime 绑定提供 027–032 | 不跨线程搬运 VM 的 `Rc`/`Cell` 状态 |
 | VM 线程模型 | 每个 spawn/pool 执行单元创建独立 VM、模块快照和事件汇聚槽 | 任务结果、panic、取消和 suppressed 错误可回到父 VM |
 | 驱动 | `xiao-driver` 真实源码、`.xiaoc`、`.xar` 入口均复用并发计划和 feature preflight | `xiao run`/归档入口可执行并发黄金场景 |
-| 测试 | 新增 `22c_vm_concurrency.rs` 覆盖 24 条源码/产物/错误回归 | 22C 退出条件 2、3、4、5、6、7 有直接证据 |
+| 测试 | 新增 `22c_vm_concurrency.rs` 覆盖 26 条源码/产物/错误回归 | 22C 退出条件 2、3、4、5、6、7 有直接证据 |
 
 ## 三、目标与边界
 

@@ -10,8 +10,9 @@
 > 结构直接当产品 ABI。**
 >
 > 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）**。
-> workspace、24 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs、
-> 本地安全/产物回归，以及远端多平台 maintenance/CI 均通过。22D 可以开始；22E 仍后置。
+> workspace、26 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs、
+> 本地安全/产物回归，以及远端多平台 maintenance/CI 均通过；三平台 maintenance 各自执行了 26/26 VM 并发回归。
+> 22D 可以开始；22E 仍后置。
 
 ## 一、阶段目标与边界
 
@@ -138,8 +139,8 @@
 - 仍不接 LLVM、不写标准库函数体、不改 22A/22B 冻结契约。
 
 **22C-FIX.1 关闭条件已满足**：真实源码经 `xiao run` 覆盖线程、任务池、多 Runtime、shared、
-detach 和取消；24 条 VM/驱动回归、本地 workspace gates、benchmark/research/Bun/coverage、安全回归，
-以及远端多平台 maintenance 与 CI 结果均齐全，现进入 22D。
+ detach 和取消；26 条 VM/驱动回归、本地 workspace gates、benchmark/research/Bun/coverage、安全回归，
+以及远端多平台 maintenance 与 CI 结果均齐全；三平台各运行 26/26 VM 并发回归，现进入 22D。
 
 ### 22D：LLVM、差分与跨平台
 
