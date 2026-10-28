@@ -14,6 +14,7 @@ use xiao_runtime_abi::ABI_ENCODED_VERSION;
 use crate::CODEGEN_VERSION;
 use crate::error::{CodegenError, Result};
 use crate::ir::{CodegenOptions, LlvmModule, source_map_for_program, validate_program};
+use crate::native_concurrency::NativeConcurrencyPlan;
 use crate::text::{escape_llvm, stable_hash};
 
 #[cfg(test)]
@@ -87,8 +88,12 @@ struct CleanupContext<'a> {
     failure_target: String,
 }
 
-/// 将一份含动态值的 IR 降低为调用 Runtime ABI 的 LLVM 文本。
-pub(crate) fn lower_program(program: &IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
+/// 使用同源 IR 并发计划降低动态程序；计划由外层入口先建立并保持只读。
+pub(crate) fn lower_program_with_concurrency(
+    program: &IrProgram,
+    options: &CodegenOptions,
+    concurrency_plan: &NativeConcurrencyPlan,
+) -> Result<LlvmModule> {
     validate_program(program)?;
     if !program_uses_runtime(program) {
         return Err(CodegenError::InvalidIr {
@@ -101,7 +106,7 @@ pub(crate) fn lower_program(program: &IrProgram, options: &CodegenOptions) -> Re
             span: Some(program.span),
         });
     }
-    DynamicGenerator::new(program, options).generate()
+    DynamicGenerator::new(program, options, concurrency_plan).generate()
 }
 
 /// 动态值局部槽。
@@ -122,6 +127,8 @@ struct LoopLabels {
 struct DynamicGenerator<'a> {
     program: &'a IrProgram,
     options: &'a CodegenOptions,
+    /// 同一份 IR 建立的只读并发计划。
+    concurrency_plan: &'a NativeConcurrencyPlan,
     /// 当前生成上下文的语句体；入口使用 `program.body`，函数使用自身 body。
     body: &'a [IrStatement],
     slots: BTreeMap<String, Slot>,
@@ -150,6 +157,8 @@ struct DynamicGenerator<'a> {
     callback: Option<methods::CallbackContext>,
     /// 生成后追加到模块文本的函数定义。
     function_texts: Vec<String>,
+    /// 已生成的并发 trampoline 符号，避免同一函数被重复定义。
+    concurrency_trampolines: BTreeSet<String>,
     /// 是否正在生成一个动态函数体。
     function_mode: bool,
     /// 动态函数的返回槽和成功/错误出口。
@@ -173,10 +182,15 @@ struct DynamicGenerator<'a> {
 
 impl<'a> DynamicGenerator<'a> {
     /// 为一份已验证动态 IR 创建生成器。
-    fn new(program: &'a IrProgram, options: &'a CodegenOptions) -> Self {
+    fn new(
+        program: &'a IrProgram,
+        options: &'a CodegenOptions,
+        concurrency_plan: &'a NativeConcurrencyPlan,
+    ) -> Self {
         Self {
             program,
             options,
+            concurrency_plan,
             body: &program.body,
             slots: BTreeMap::new(),
             value_slots: BTreeMap::new(),
@@ -199,6 +213,7 @@ impl<'a> DynamicGenerator<'a> {
             method_definitions: BTreeMap::new(),
             callback: None,
             function_texts: Vec::new(),
+            concurrency_trampolines: BTreeSet::new(),
             function_mode: false,
             function_return_slot: None,
             function_return_label: None,
@@ -261,6 +276,7 @@ impl<'a> DynamicGenerator<'a> {
                     .insert((module.name.clone(), name.text.clone()), statement);
             }
         }
+        self.prepare_concurrency_trampolines()?;
         self.emit_entry()?;
         let mut seen_functions = BTreeSet::new();
         let functions = self
@@ -474,7 +490,8 @@ impl<'a> DynamicGenerator<'a> {
             || self.function_symbol_for_statement(statement),
             |context| context.symbol.clone(),
         );
-        let mut generator = DynamicGenerator::new(self.program, self.options);
+        let mut generator =
+            DynamicGenerator::new(self.program, self.options, self.concurrency_plan);
         generator.callback = callback;
         generator.body = body;
         generator.next_global = self.next_global;
@@ -490,6 +507,7 @@ impl<'a> DynamicGenerator<'a> {
         generator.module_function_definitions = self.module_function_definitions.clone();
         generator.method_definitions = self.method_definitions.clone();
         generator.table_initializers = self.table_initializers.clone();
+        generator.concurrency_trampolines = self.concurrency_trampolines.clone();
         generator.error_terminal_label = "xiao.fn.error".to_owned();
         generator.collect_slots(body)?;
         for parameter in parameters {
@@ -695,5 +713,63 @@ impl<'a> DynamicGenerator<'a> {
             .position(|candidate| candidate == &key)
             .unwrap_or(0);
         format!("xiao.fn.{index}.{}", stable_hash(key.as_bytes()))
+    }
+
+    /// 为动态函数预生成统一的并发 trampoline。
+    ///
+    /// 入口只接收不透明上下文、值数组和结果槽，再转调既有 Xiao 函数调用约定；
+    /// Runtime 因此拥有线程创建/取消/等待的完整协调权，LLVM 不复制调度器。
+    fn prepare_concurrency_trampolines(&mut self) -> Result<()> {
+        if self.concurrency_plan.is_empty() {
+            return Ok(());
+        }
+        let definitions = self
+            .function_definitions
+            .iter()
+            .map(|(name, statement)| (name.clone(), *statement))
+            .collect::<Vec<_>>();
+        for (name, statement) in definitions {
+            let xiao_ir::IrStatementKind::Function { parameters, .. } = &statement.kind else {
+                continue;
+            };
+            let symbol = self.function_symbol(&name);
+            let trampoline = format!(
+                "xiao.concurrent.trampoline.{}",
+                stable_hash(name.as_bytes())
+            );
+            if !self.concurrency_trampolines.insert(trampoline.clone()) {
+                continue;
+            }
+            let mut lines = Vec::new();
+            lines.push(format!(
+                "define i32 @{trampoline}(ptr %xiao.context, ptr %xiao.arguments, i64 %xiao.argument.count, ptr %xiao.result) {{"
+            ));
+            lines.push("entry:".to_owned());
+            lines.push(format!(
+                "  %xiao.count.ok = icmp eq i64 %xiao.argument.count, {}",
+                parameters.len()
+            ));
+            lines
+                .push("  br i1 %xiao.count.ok, label %xiao.invoke, label %xiao.invalid".to_owned());
+            lines.push("xiao.invalid:".to_owned());
+            lines.push("  ret i32 2".to_owned());
+            lines.push("xiao.invoke:".to_owned());
+            let mut call = format!("  call void @{symbol}(ptr %xiao.result");
+            for index in 0..parameters.len() {
+                let slot = format!("%xiao.arg.{index}");
+                lines.push(format!(
+                    "  {slot} = getelementptr inbounds %xiao.value, ptr %xiao.arguments, i64 {index}"
+                ));
+                call.push_str(&format!(", ptr {slot}"));
+            }
+            call.push(')');
+            lines.push(call);
+            lines.push("  %xiao.error.class = call i32 @xiao_runtime_error_class()".to_owned());
+            lines.push("  ret i32 %xiao.error.class".to_owned());
+            lines.push("}".to_owned());
+            lines.push(String::new());
+            self.function_texts.push(lines.join("\n"));
+        }
+        Ok(())
     }
 }

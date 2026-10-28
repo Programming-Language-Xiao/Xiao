@@ -2,7 +2,9 @@
 
 工程期 10A。
 
-这里验证 N0-A 的类型映射、控制流和拒绝边界。端到端 LLVM 工具链测试使用
+这里验证 N0-A 的类型映射、控制流和拒绝边界；`xiao-driver/tests/22d_llvm_concurrency.rs`
+验证同源并发 IR、trampoline 文本和未知并发操作 fail-closed，另外提供一条使用受控工具链
+运行 `spawn/join` 并与 VM stdout 比较的 ignored 原生差分。端到端 LLVM 工具链测试使用
 `#[ignore]` 明确标出环境门控：默认 `cargo test` 会在汇总中显示 11 条 ignored，显式
 执行 `cargo test -p xiao-codegen-llvm -- --ignored` 才会运行它们。显式运行时必须提供
 `XIAO_CLANG`、需要汇编验证的测试还要提供 `XIAO_LLVM_AS`，并设置

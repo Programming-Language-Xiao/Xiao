@@ -1,7 +1,8 @@
 //! 22C 最小 Runtime/线程/任务池执行骨架。
 //!
-//! 该模块只提供 Runtime 层的生命周期和取消边界；Xiao 标准库函数体及 VM opcode
-//! lowering 仍由后续 22C 子批接入。句柄不复用普通单线程 `StrongHandle`。
+//! 该模块提供 Runtime 层的生命周期、调度和取消边界；VM 通过显式并发绑定消费，
+//! LLVM 则经旁置 `abi_concurrency` trampoline 适配。Xiao 标准库函数体仍属于 22E。
+//! 并发句柄不复用普通单线程 `StrongHandle`。
 
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -11,6 +12,13 @@ use std::sync::atomic::{AtomicBool, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Condvar, Mutex, OnceLock, Weak, mpsc};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
+
+pub(crate) mod runtime_helpers;
+pub use runtime_helpers::{
+    cancellation_safe_point, current_cancellation_token, detached_reaper_peak_depth,
+    detached_reaper_queue_depth, record_detached_error, take_detached_errors,
+};
+use runtime_helpers::{current_runtime_handle, register_runtime};
 
 /// Runtime、线程和任务池共用的取消令牌。
 pub use crate::concurrency::LockCancellation as RuntimeCancellation;
@@ -86,6 +94,7 @@ pub struct RuntimeHandle {
 #[derive(Debug)]
 /// Runtime 的关闭、活动计数、池登记和 worker 状态。
 struct RuntimeInner {
+    owner_runtime_id: Option<u64>,
     closed: AtomicBool,
     active: Mutex<usize>,
     drained: Condvar,
@@ -186,6 +195,7 @@ impl RuntimeHandle {
             .expect("Runtime 静态标签应有效");
         let owner_runtime_id = current_runtime_context();
         let inner = Arc::new(RuntimeInner {
+            owner_runtime_id,
             closed: AtomicBool::new(false),
             active: Mutex::new(0),
             drained: Condvar::new(),
@@ -194,11 +204,18 @@ impl RuntimeHandle {
             active_threads: Mutex::new(HashMap::new()),
             closing_threads: Mutex::new(HashMap::new()),
         });
+        register_runtime(id, &inner);
         Self {
             id,
             inner,
             owner_runtime_id,
         }
+    }
+
+    /// 返回当前线程上下文 Runtime；没有显式上下文时 lazily 创建根 Runtime。
+    #[must_use]
+    pub fn current() -> Self {
+        current_runtime_handle()
     }
 
     /// 返回实际 Runtime ID。
@@ -552,18 +569,6 @@ pub const DETACHED_REAPER_WARNING_DEPTH: usize = 256;
 /// 进程启动以来的 detached 回收队列峰值。
 static DETACHED_REAPER_PEAK: AtomicUsize = AtomicUsize::new(0);
 
-/// 返回进程启动以来 detached 队列深度峰值。
-#[must_use]
-pub fn detached_reaper_peak_depth() -> usize {
-    DETACHED_REAPER_PEAK.load(Ordering::Acquire)
-}
-
-/// 返回 detached 回收队列中尚未开始执行的闭包数量。
-#[must_use]
-pub fn detached_reaper_queue_depth() -> usize {
-    detached_queue_depth_counter().load(Ordering::Acquire)
-}
-
 /// 非阻塞地把一次 join 回收工作放入固定 worker 队列。
 fn enqueue_detached_reap(
     reap: Box<dyn FnOnce() + Send>,
@@ -612,15 +617,6 @@ fn detached_reaper() -> &'static mpsc::Sender<Box<dyn FnOnce() + Send>> {
         }
         sender
     })
-}
-
-/// 取走进程级 detached 失败记录；记录采用 X06-RUNTIME-028。
-#[must_use]
-pub fn take_detached_errors() -> Vec<RuntimeExecError> {
-    detached_errors()
-        .lock()
-        .map(|mut errors| std::mem::take(&mut *errors))
-        .unwrap_or_default()
 }
 
 /// 在 Runtime 中启动可取消线程；闭包显式接收取消令牌。

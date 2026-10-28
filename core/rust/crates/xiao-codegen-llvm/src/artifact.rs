@@ -1314,6 +1314,9 @@ fn add_components_for_symbol(symbol: &str, components: &mut BTreeSet<String>) {
     {
         components.insert("value".to_owned());
     }
+    if symbol.starts_with("xiao_runtime_concurrency_") {
+        components.insert("concurrency".to_owned());
+    }
     if symbol == "xiao_runtime_release"
         || symbol == "xiao_runtime_retain"
         || symbol.starts_with("xiao_runtime_release_trace_")

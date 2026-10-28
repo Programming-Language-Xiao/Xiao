@@ -90,6 +90,18 @@ impl<'a> DynamicGenerator<'a> {
     pub(super) fn declare_runtime(&mut self) {
         self.declarations
             .insert("declare i32 @xiao_runtime_random_seed(ptr)".to_owned());
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_concurrency_call({}, ptr, i64, ptr)",
+            self.bytes_parameter_type()
+        ));
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_concurrency_call_with_entry({}, ptr, ptr, ptr, i64, ptr)",
+            self.bytes_parameter_type()
+        ));
+        self.declarations.insert(format!(
+            "declare i32 @xiao_runtime_concurrency_cancellation_check({})",
+            self.bytes_parameter_type()
+        ));
         self.declarations
             .insert("declare i32 @xiao_runtime_table_new_v2(ptr, ptr)".to_owned());
         self.declarations.insert(

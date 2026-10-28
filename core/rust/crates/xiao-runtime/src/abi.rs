@@ -4,8 +4,9 @@
 //! 私有，也让 C 调用方无法依赖 Rust 的分配布局；盒子内部只保存一个已经由 06B
 //! 实现验证过的 `StrongHandle` 或 `WeakHandle`。
 //!
-//! 这些句柄继承 06B 的单线程、非原子引用计数约束；调用方不得跨线程传递或并发调用
-//! 同一个 ABI 句柄。并发/原子实现需要单独的 ABI 版本与生命周期契约。
+//! 普通 `XiaoHandle`/`XiaoWeakHandle` 继承 06B 的单线程、非原子引用计数约束；调用方不得
+//! 跨线程传递或并发调用同一个普通句柄。22D 并发盒子使用独立句柄种类和入口，所有权仍由
+//! Runtime 管理，不放宽普通句柄边界。
 
 use std::cell::RefCell;
 use std::io::Write;
@@ -42,6 +43,8 @@ use crate::value::{
     EXTERNAL_RESOURCE_RUNTIME_TAG, ExternalResourceHandle, RuntimeValue, StringHandle,
 };
 
+#[path = "abi_concurrency.rs"]
+mod abi_concurrency;
 #[path = "abi_diagnostics.rs"]
 mod abi_diagnostics;
 #[path = "abi_dynamic.rs"]
@@ -616,6 +619,7 @@ unsafe fn value_to_runtime(value: &XiaoValue) -> Result<RuntimeValue, i32> {
                 ExternalResourceHandle::from_strong_handle(handle),
             )?))
         }
+        XiaoValueTag::Concurrency => abi_concurrency::runtime_value_from_value(value),
         XiaoValueTag::Error => Ok(RuntimeValue::error(unsafe { clone_error(payload.handle) }?)),
         XiaoValueTag::TableDropView => Err(XiaoAbiStatus::InvalidArgument.code()),
         _ => Err(XiaoAbiStatus::InvalidArgument.code()),
@@ -678,10 +682,10 @@ fn runtime_to_value(value: &RuntimeValue) -> Result<XiaoValue, i32> {
             value.clone().into_strong_handle(),
         )),
         RuntimeValue::Error(error) => Ok(value_from_owned_error((**error).clone())),
+        RuntimeValue::Concurrency(_) => abi_concurrency::value_from_runtime(value),
         RuntimeValue::TableDropView(_)
         | RuntimeValue::Module(_)
-        | RuntimeValue::ModuleFunction(_, _)
-        | RuntimeValue::Concurrency(_) => Err(XiaoAbiStatus::InvalidArgument.code()),
+        | RuntimeValue::ModuleFunction(_, _) => Err(XiaoAbiStatus::InvalidArgument.code()),
     }
 }
 
@@ -769,6 +773,9 @@ fn release_value_slot(value: &mut XiaoValue) {
         | XiaoValueTag::DictColumn
         | XiaoValueTag::Set
         | XiaoValueTag::ExternalResource => xiao_runtime_release(unsafe { value.payload.handle }),
+        XiaoValueTag::Concurrency => {
+            abi_concurrency::release_handle(unsafe { value.payload.handle }.cast())
+        }
         XiaoValueTag::Error => unsafe { release_error(value.payload.handle) },
         XiaoValueTag::TableDropView => {
             xiao_runtime_weak_release(unsafe { value.payload.weak_handle });
@@ -1110,13 +1117,7 @@ pub extern "C" fn xiao_runtime_error_matches(error_type: XiaoAbiBytes) -> i32 {
     let Ok(error_type) = (unsafe { utf8(error_type) }) else {
         return 0;
     };
-    PENDING_ERROR.with(|pending| match pending.borrow().as_ref() {
-        Some(PendingError::Recoverable(error)) => i32::from(
-            xiao_diagnostics::error_kind_of(&error_type)
-                .is_some_and(|kind| kind.matches(error.kind())),
-        ),
-        Some(PendingError::Fatal(_)) | None => 0,
-    })
+    abi_concurrency::error_matches(&error_type)
 }
 
 /// 把挂起的可恢复错误取成拥有的错误值。
@@ -1548,6 +1549,17 @@ pub extern "C" fn xiao_runtime_value_copy(value: *const XiaoValue, out: *mut Xia
                 Ok(())
             }
         }
+        XiaoValueTag::Concurrency => {
+            let handle = abi_concurrency::retain_handle(unsafe { value.payload.handle }.cast());
+            if handle.is_null() {
+                Err(XiaoAbiStatus::InvalidHandle.code())
+            } else {
+                copied.payload = XiaoValuePayload {
+                    handle: handle.cast::<XiaoOpaqueHandle>(),
+                };
+                Ok(())
+            }
+        }
         XiaoValueTag::Error => match unsafe { retain_error(value.payload.handle) } {
             Ok(handle) => {
                 copied.payload = XiaoValuePayload { handle };
@@ -1622,6 +1634,10 @@ pub extern "C" fn xiao_runtime_value_release_strong(value: *mut XiaoValue) {
         | XiaoValueTag::Set
         | XiaoValueTag::ExternalResource => {
             xiao_runtime_release(unsafe { value.payload.handle });
+            true
+        }
+        XiaoValueTag::Concurrency => {
+            abi_concurrency::release_handle(unsafe { value.payload.handle }.cast());
             true
         }
         XiaoValueTag::Error => {

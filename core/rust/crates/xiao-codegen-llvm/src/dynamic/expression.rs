@@ -10,6 +10,7 @@ use super::predicate::name_key;
 use super::text::{escape_bytes, format_float, is_identity_cast, parse_i32, parse_i64, unquote};
 use super::{BYTES_TYPE, DynamicGenerator, VALUE_TYPE};
 use crate::error::{CodegenError, Result};
+use crate::native_concurrency::NativeConcurrencyCall;
 
 /// 前端在顶层存在同名用户函数时给静态链接的集合函数使用的内部前缀。
 const SET_METHOD_FUNCTION_PREFIX: &str = "__xiao_stdlib_set_";
@@ -817,6 +818,11 @@ impl<'a> DynamicGenerator<'a> {
         arguments: &[IrCallArgument],
         span: IrSpan,
     ) -> Result<String> {
+        // 并发调用只按同源 IR 的 span 计划路由；callee 的展示名称不能改变 lowering
+        // 结果。没有计划的普通调用继续走原有函数/方法路径。
+        if let Some(call) = self.concurrency_plan.lookup(span).cloned() {
+            return self.emit_native_concurrency_call(&call, arguments, span);
+        }
         if let IrExpressionKind::Member { object, member } = &callee.kind
             && matches!(&object.kind, IrExpressionKind::Name { name } if name.text == "random")
             && member.text == "seed"
@@ -927,6 +933,133 @@ impl<'a> DynamicGenerator<'a> {
             feature: "动态函数调用".to_owned(),
             span: Some(span),
         })
+    }
+
+    /// 将一条同源 IR 并发计划降低为 Runtime 的统一不透明入口。
+    ///
+    /// Runtime 负责线程/任务池、边界编码、取消和关闭协调；LLVM 只负责按 IR
+    /// 规定的求值顺序准备 `%xiao.value` 数组并回收临时值。这样不会在后端复制
+    /// 一套调度器或 Rust 句柄布局。
+    fn emit_native_concurrency_call(
+        &mut self,
+        call: &NativeConcurrencyCall,
+        arguments: &[IrCallArgument],
+        span: IrSpan,
+    ) -> Result<String> {
+        self.concurrency_plan.require_known_operation(call)?;
+        if arguments.len() != call.argument_types.len()
+            || call.argument_spans.len() != arguments.len()
+            || arguments
+                .iter()
+                .any(|argument| argument.kind != "positional" || argument.name.is_some())
+        {
+            return Err(CodegenError::Unsupported {
+                feature: format!("并发入口 {} 的参数形态", call.operation),
+                span: Some(span),
+            });
+        }
+
+        for check in &call.cancellation_checks {
+            let operation = self.emit_operation_argument(&check.kind);
+            self.checked_status_call_at(
+                format!("@xiao_runtime_concurrency_cancellation_check({operation})"),
+                check.span,
+            );
+        }
+
+        let mut entry_symbol = None;
+        let skipped_function = if matches!(call.operation.as_str(), "spawn" | "submit") {
+            let Some(function_argument) = arguments.get(1) else {
+                return Err(CodegenError::Unsupported {
+                    feature: format!("并发入口 {} 缺少函数参数", call.operation),
+                    span: Some(span),
+                });
+            };
+            let IrExpressionKind::Name { name } = &function_argument.value.kind else {
+                return Err(CodegenError::Unsupported {
+                    feature: format!("并发入口 {} 的函数参数必须是静态函数", call.operation),
+                    span: Some(function_argument.span),
+                });
+            };
+            if !self.function_definitions.contains_key(&name.text) {
+                return Err(CodegenError::InvalidIr {
+                    message: format!("并发 trampoline 函数 {} 未登记", name.text),
+                });
+            }
+            entry_symbol = Some(format!(
+                "xiao.concurrent.trampoline.{}",
+                crate::stable_hash(name.text.as_bytes())
+            ));
+            Some(1_usize)
+        } else {
+            None
+        };
+
+        let skipped_count = if skipped_function.is_some() { 1 } else { 0 };
+        let mut values = Vec::with_capacity(arguments.len().saturating_sub(skipped_count));
+        for (index, argument) in arguments.iter().enumerate() {
+            if skipped_function == Some(index) {
+                continue;
+            }
+            values.push(self.emit_expression(&argument.value)?);
+        }
+        let array = self.next_temp();
+        self.emit(format!(
+            "  {array} = alloca {VALUE_TYPE}, i64 {}",
+            values.len()
+        ));
+        for (index, value) in values.iter().enumerate() {
+            let slot = self.next_temp();
+            self.emit(format!(
+                "  {slot} = getelementptr inbounds {VALUE_TYPE}, ptr {array}, i64 {index}"
+            ));
+            self.emit(format!("  store {VALUE_TYPE} {value}, ptr {slot}"));
+        }
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
+        self.emit(format!(
+            "  store {VALUE_TYPE} zeroinitializer, ptr {output}"
+        ));
+        let operation = self.emit_operation_argument(&call.operation);
+        let status = self.next_temp();
+        if let Some(entry) = entry_symbol {
+            self.emit(format!(
+                "  {status} = call i32 @xiao_runtime_concurrency_call_with_entry({operation}, ptr @{entry}, ptr null, ptr {array}, i64 {}, ptr {output})",
+                values.len()
+            ));
+        } else {
+            self.emit(format!(
+                "  {status} = call i32 @xiao_runtime_concurrency_call({operation}, ptr {array}, i64 {}, ptr {output})",
+                values.len()
+            ));
+        }
+        let ok = self.next_temp();
+        let ok_label = self.next_label("dynamic.concurrency.ok");
+        let fail_label = self.next_label("dynamic.concurrency.fail");
+        self.emit(format!("  {ok} = icmp eq i32 {status}, 0"));
+        self.emit(format!(
+            "  br i1 {ok}, label %{ok_label}, label %{fail_label}"
+        ));
+        self.terminated = true;
+        self.emit_label(&fail_label);
+        // IR verifier 已校验 transfer.cleanup_order 是参数顺序的逆序；本地临时槽
+        // 与源码参数逐一对应，因此边界失败也按同一逆序归还，不启动子执行单元。
+        for value in values.iter().rev() {
+            self.release_value(value.clone());
+        }
+        self.emit(format!(
+            "  call i32 @xiao_runtime_error_attach_span(i64 {}, i64 {})",
+            span.start, span.end
+        ));
+        self.emit(format!("  br label %{}", self.error_target()));
+        self.terminated = true;
+        self.emit_label(&ok_label);
+        for value in values {
+            self.release_value(value);
+        }
+        let result = self.next_temp();
+        self.emit(format!("  {result} = load {VALUE_TYPE}, ptr {output}"));
+        Ok(result)
     }
 
     /// 调用一个顶层动态函数；参数和返回值统一经 `%xiao.value` 指针槽传递。

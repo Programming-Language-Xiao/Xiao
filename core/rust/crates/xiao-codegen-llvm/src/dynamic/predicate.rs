@@ -109,7 +109,8 @@ fn type_uses_runtime(ty: &IrType) -> bool {
 
 /// 递归检查程序是否含有动态值、容器或表。
 pub(crate) fn program_uses_runtime(program: &IrProgram) -> bool {
-    if !program.table_signatures.is_empty()
+    if !program.concurrency_calls.is_empty()
+        || !program.table_signatures.is_empty()
         || !program.runtime_checks.is_empty()
         || !program.modules.is_empty()
     {

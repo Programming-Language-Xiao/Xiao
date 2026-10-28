@@ -1,6 +1,6 @@
 # 22. 并发执行与共享句柄
 
-> **这是 07-D 之后的正式并发实现阶段，22B-FIX.1 静态残余已关闭；22C Runtime/ABI 与 VM 实现已完成，22C-FIX.1 已收口；22D LLVM/差分正在规划。**
+> **这是 07-D 之后的正式并发实现阶段，22B-FIX.1 静态残余已关闭；22C Runtime/ABI 与 VM 实现已完成，22C-FIX.1 已收口；22D LLVM/差分正在实施。**
 > 07-D 已完成 8 项裁定、隔离原型、Linux workspace gates 和四平台测试；22A 已补齐
 > 四平台 32B 布局测量并写出语言表面、取消边界、IR 事实、ABI、诊断和发布门禁；22A-FIX
 > 已补齐这些契约与既有 `.xar`/`.xiaoc` 格式的冲突。
@@ -9,7 +9,7 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分规划中（2026-10-29）**。
+> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分已开始实施（2026-10-29），Windows 本机 `spawn/join`、任务池和 shared/lock VM/native stdout 差分已通过**。
 > workspace、26 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs、
 > 本地安全/产物回归，以及远端多平台 maintenance/CI 均通过；三平台 maintenance 各自执行了 26/26 VM 并发回归。
 > 22D 可以开始，但 LLVM 并发 lowering 和原生差分仍需实施；22E 仍后置。
@@ -227,7 +227,7 @@ tests/research/concurrency/                                 07-D 原型（只作
 ## 八、状态
 
 - 阶段代号：22；
-- 当前状态：22C Runtime/ABI/产物门禁及 22C-FIX.1 VM 实现已完成，本地 workspace、benchmark、research、Bun、coverage、安全/产物 gates 和远端 maintenance/CI 均通过；22B/22B-FIX/FIX.1 静态部分已关闭；22D LLVM/差分已规划，尚未实现；LLVM/标准库函数体未实现；
+- 当前状态：22C Runtime/ABI/产物门禁及 22C-FIX.1 VM 实现已完成，本地 workspace、benchmark、research、Bun、coverage、安全/产物 gates 和远端 maintenance/CI 均通过；22B/22B-FIX/FIX.1 静态部分已关闭；22D LLVM/差分正在实施，已接入同源计划、并发 ABI 和 trampoline，差分/三平台门禁仍待完成；标准库函数体未实现；
 - 当前工作批：22D LLVM、差分与跨平台（不回补 22B 静态语义，不在本阶段实现 stdlib 函数体，不冻结原生产物元数据）；
 - 22C-FIX.1 可以只消费 22B 的类型、事实、动作、verifier 和 22C 已落地的 Runtime API；
   22D/22E 仍不得把 07-D 原型结构写成 ABI 或绕过冻结记录。

@@ -160,6 +160,11 @@ impl<'a> DynamicGenerator<'a> {
             IrStatementKind::Function { .. } => {}
             IrStatementKind::Import { items, .. } => {
                 for item in items {
+                    // `std.concurrent` 的函数身份已经冻结在 `IrConcurrencyCall`；
+                    // 原生后端只消费计划，不物化尚未实现函数体的标准库模块。
+                    if matches!(item.module.as_str(), "std.concurrent" | "stdlib.concurrent") {
+                        continue;
+                    }
                     if self.initialized_modules.insert(item.module.clone()) {
                         let Some(module) = self
                             .program

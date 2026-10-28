@@ -4,7 +4,9 @@
 
 把已验证的类型化 IR 降低为 LLVM IR，并通过调用方注入的 `clang`/`llvm-as` 生成原生产物。
 静态标量继续走不链接 Runtime 的 N0-A 路径；N0-B 为字符串、动态值、容器和表生成固定
-`xiao-runtime-abi` 调用，并在正常退出边消费所有权释放计划。统一可恢复错误展开仍留给 N0-C。
+`xiao-runtime-abi` 调用，并在正常退出边消费所有权释放计划。22D 进一步消费同一份
+`IrConcurrencyCall`/`IrOwnership` 计划生成不透明并发 Runtime 调用与 trampoline；差分和
+跨平台原生回归仍在实施中。统一可恢复错误展开仍留给 N0-C。
 
 ## 工程期
 

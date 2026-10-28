@@ -16,6 +16,8 @@ mod dynamic;
 mod error;
 /// 类型化 IR 到 LLVM 文本的降低实现。
 mod ir;
+/// 同源 IR 的原生并发调用计划与 fail-closed 校验。
+mod native_concurrency;
 /// 15A LLVM Pass 映射、开关和 Runtime 裁剪报告。
 mod optimization;
 /// 15B 可复现构建比较与差异白名单。
@@ -48,6 +50,11 @@ pub use ir::{
     BASELINE_OPTIMIZATION_LEVEL, CodegenOptions, EntryObservation, LlvmModule, NativeInlineFrame,
     NativeSourceMapEntry, NativeStartup, validate_program,
 };
+/// LLVM 并发 lowering 消费的同源 IR 计划。
+pub use native_concurrency::{
+    NATIVE_CONCURRENCY_OPERATIONS, NativeConcurrencyCall, NativeConcurrencyPlan,
+    native_concurrency_plan,
+};
 /// LLVM Pass 计划和可证明 Runtime 裁剪报告。
 pub use optimization::{
     LlvmOptimizationPlan, LlvmOptimizationReport, LlvmPassKind, LlvmPassSwitches,
@@ -79,6 +86,9 @@ pub const CODEGEN_VERSION: u32 = 4;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
+    // 并发入口必须先从同一份类型化 IR 建立唯一计划。这样即使后端尚未支持某个
+    // 新入口，也会在 lowering 前以结构化错误停止，而不会退化成普通函数调用。
+    let _concurrency_plan = NativeConcurrencyPlan::from_program(program)?;
     xiao_intrinsics::validate_capability_mask(options.capabilities).map_err(|error| {
         CodegenError::InvalidIr {
             message: format!("能力上下文无效：{error}"),
@@ -107,7 +117,11 @@ pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> 
             message: error.to_string(),
         })?;
     let mut module = if dynamic::program_uses_runtime(&optimized.program) {
-        dynamic::lower_program(&optimized.program, options)?
+        dynamic::lower_program_with_concurrency(
+            &optimized.program,
+            options,
+            &NativeConcurrencyPlan::from_program(&optimized.program)?,
+        )?
     } else {
         ir::lower_static_program(&optimized.program, options)?
     };

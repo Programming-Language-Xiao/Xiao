@@ -9,8 +9,9 @@
 //! 种类标记只用于拦截仍可读的明显类型错配，不能把任意外部地址或释放后的悬空指针
 //! 变成安全输入。
 //!
-//! N0-B 句柄继承 06B 的单线程、非原子引用计数约束，不得跨线程传递或并发调用；并发
-//! 版本必须另行冻结原子存储和对应的 ABI 生命周期规则。
+//! 普通 N0-B `XiaoHandle` 继承 06B 的单线程、非原子引用计数约束，不得跨线程传递或并发调用。
+//! 22D 的 Runtime/线程/任务/共享值另用 `XiaoConcurrencyHandle` 和并发入口；这不改变普通
+//! 句柄规则，也不暴露 Rust `Arc`/`Mutex` 或共享头字段。
 
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
@@ -175,6 +176,29 @@ pub struct XiaoOpaqueWeakHandle {
 pub type XiaoHandle = *mut XiaoOpaqueHandle;
 /// C ABI 中使用的不透明弱句柄指针类型。
 pub type XiaoWeakHandle = *mut XiaoOpaqueWeakHandle;
+
+/// 并发值专用的不透明句柄；它与单线程 `XiaoHandle` 使用不同的 ABI 入口。
+///
+/// 该类型只表示一个由 Runtime 管理的并发对象盒子。LLVM 和宿主不得读取其内容，
+/// 也不得把它传给普通强/弱句柄入口。
+#[repr(C)]
+pub struct XiaoConcurrencyOpaqueHandle {
+    _private: [u8; 0],
+}
+
+/// C ABI 中使用的不透明并发句柄指针类型。
+pub type XiaoConcurrencyHandle = *mut XiaoConcurrencyOpaqueHandle;
+
+/// Runtime trampoline 的稳定函数指针约定。
+///
+/// `context` 由调用方拥有，Runtime 只在一次执行期间借用；参数和结果槽遵循
+/// `XiaoValue` 的既有借用/拥有规则。
+pub type XiaoConcurrencyEntry = unsafe extern "C" fn(
+    context: *mut core::ffi::c_void,
+    arguments: *const XiaoValue,
+    argument_count: usize,
+    out: *mut XiaoValue,
+) -> i32;
 
 /// 用于 ABI 边界的固定宽度源码区间。
 #[repr(C)]
@@ -414,6 +438,8 @@ impl XiaoValueTag {
     pub const Error: Self = Self(16);
     /// 外部资源强句柄；首批种类由 Runtime 盒子内部标签区分。
     pub const ExternalResource: Self = Self(17);
+    /// Runtime 管理的不透明并发句柄；种类由 `XiaoConcurrencyKind` 区分。
+    pub const Concurrency: Self = Self(18);
 
     /// 从 ABI 原始标签构造值；未知标签由 Runtime 入口拒绝。
     #[must_use]
@@ -430,7 +456,53 @@ impl XiaoValueTag {
     /// 判断标签是否属于当前 ABI 版本。
     #[must_use]
     pub const fn is_known(self) -> bool {
-        self.0 <= Self::ExternalResource.0
+        self.0 <= Self::Concurrency.0
+    }
+}
+
+/// 并发不透明句柄的稳定种类标签。
+///
+/// 数值只追加不重排；句柄内部状态仍由 `xiao-runtime` 管理，不能把这些标签当作
+/// Rust 枚举布局或共享头字段暴露给 LLVM。
+#[repr(u32)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum XiaoConcurrencyKind {
+    /// 进程内 Runtime 别名。
+    Runtime = 1,
+    /// OS 线程句柄。
+    Thread = 2,
+    /// 任务池任务句柄。
+    Task = 3,
+    /// 固定容量任务池。
+    Pool = 4,
+    /// 只读共享句柄。
+    Shared = 5,
+    /// 共享可变句柄。
+    SharedMut = 6,
+    /// 作用域锁守卫。
+    LockGuard = 7,
+}
+
+impl XiaoConcurrencyKind {
+    /// 从 C ABI 原始标签解析种类。
+    #[must_use]
+    pub const fn from_raw(raw: u32) -> Option<Self> {
+        match raw {
+            1 => Some(Self::Runtime),
+            2 => Some(Self::Thread),
+            3 => Some(Self::Task),
+            4 => Some(Self::Pool),
+            5 => Some(Self::Shared),
+            6 => Some(Self::SharedMut),
+            7 => Some(Self::LockGuard),
+            _ => None,
+        }
+    }
+
+    /// 返回稳定 C ABI 原始值。
+    #[must_use]
+    pub const fn raw(self) -> u32 {
+        self as u32
     }
 }
 
@@ -451,6 +523,12 @@ impl XiaoValueTag {
                 | Self::Lfloat
                 | Self::ExternalResource
         )
+    }
+
+    /// 返回该标签是否携带专用并发盒子；并发值使用 concurrency release 入口。
+    #[must_use]
+    pub const fn owns_concurrency_handle(self) -> bool {
+        matches!(self, Self::Concurrency)
     }
 
     /// 返回该标签是否携带一个弱句柄。
@@ -708,6 +786,105 @@ pub fn table_method_signature_id(parameters: &[u32], result: u32) -> u64 {
 // 这些声明由 `xiao-runtime` 提供实现；ABI crate 本身不定义同名符号，避免出现两份
 // Runtime。调用方必须保证 `required_major`/`required_minor` 是编译产物记录的版本。
 unsafe extern "C" {
+    /// 统一原生并发入口；操作名来自已验证 IR 计划，不按源码名称推断。
+    pub fn xiao_runtime_concurrency_call(
+        operation: XiaoAbiBytes,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 带 trampoline 函数指针的不透明并发调用入口。
+    pub fn xiao_runtime_concurrency_call_with_entry(
+        operation: XiaoAbiBytes,
+        entry: Option<XiaoConcurrencyEntry>,
+        context: *mut core::ffi::c_void,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 保留并发不透明句柄；每次成功调用须配对 `xiao_runtime_concurrency_release`。
+    pub fn xiao_runtime_concurrency_retain(handle: XiaoConcurrencyHandle) -> XiaoConcurrencyHandle;
+    /// 释放并发不透明句柄；空指针安全。
+    pub fn xiao_runtime_concurrency_release(handle: XiaoConcurrencyHandle);
+    /// 返回并发句柄的稳定种类，未知/失效句柄返回零。
+    pub fn xiao_runtime_concurrency_kind(handle: XiaoConcurrencyHandle) -> u32;
+    /// 在当前执行单元消费一个 `safe_point`/`wait`/`lock_wait` 取消检查。
+    pub fn xiao_runtime_concurrency_cancellation_check(operation: XiaoAbiBytes) -> i32;
+    /// 读取 detached 错误通道中属于指定 Runtime 集合的下一条结构化错误。
+    pub fn xiao_runtime_concurrency_detached_error_take(
+        runtime_ids: *const u64,
+        runtime_id_count: usize,
+        runtime_id_out: *mut u64,
+        error_out: *mut XiaoValue,
+    ) -> i32;
+    /// 取出有界 detached 错误通道的丢弃计数并清零。
+    pub fn xiao_runtime_concurrency_detached_error_drops_take(out: *mut usize) -> i32;
+    /// 创建一个 Runtime 并返回 `XiaoValueTag::Concurrency` 值。
+    pub fn xiao_runtime_concurrency_runtime_create(out: *mut XiaoValue) -> i32;
+    /// 取得当前执行上下文的 Runtime 别名。
+    pub fn xiao_runtime_concurrency_current_runtime(out: *mut XiaoValue) -> i32;
+    /// 关闭 Runtime；输入和输出槽遵循统一并发调用的借用规则。
+    pub fn xiao_runtime_concurrency_runtime_close(
+        runtime: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 创建固定容量任务池。
+    pub fn xiao_runtime_concurrency_pool_create(
+        runtime: *const XiaoValue,
+        capacity: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 关闭任务池并等待其 worker drain。
+    pub fn xiao_runtime_concurrency_shutdown(pool: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// Runtime trampoline 的线程创建入口；函数指针和上下文均为不透明借用。
+    pub fn xiao_runtime_concurrency_spawn(
+        runtime: XiaoConcurrencyHandle,
+        entry: Option<XiaoConcurrencyEntry>,
+        context: *mut core::ffi::c_void,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 任务池 trampoline 提交入口。
+    pub fn xiao_runtime_concurrency_submit(
+        pool: XiaoConcurrencyHandle,
+        entry: Option<XiaoConcurrencyEntry>,
+        context: *mut core::ffi::c_void,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 等待线程句柄。
+    pub fn xiao_runtime_concurrency_join(thread: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 分离线程句柄。
+    pub fn xiao_runtime_concurrency_detach(thread: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 取消线程或任务句柄。
+    pub fn xiao_runtime_concurrency_cancel(handle: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 创建只读共享句柄。
+    pub fn xiao_runtime_concurrency_shared_read(
+        value: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 读取只读共享句柄的值拷贝。
+    pub fn xiao_runtime_concurrency_read(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 创建共享可变句柄。
+    pub fn xiao_runtime_concurrency_shared_mut_create(
+        value: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 获取共享可变锁守卫。
+    pub fn xiao_runtime_concurrency_lock(value: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 读取锁守卫载荷。
+    pub fn xiao_runtime_concurrency_lock_read(guard: *const XiaoValue, out: *mut XiaoValue) -> i32;
+    /// 写入锁守卫载荷。
+    pub fn xiao_runtime_concurrency_lock_write(
+        guard: *const XiaoValue,
+        value: *const XiaoValue,
+        out: *mut XiaoValue,
+    ) -> i32;
+    /// 等待任务句柄。
+    pub fn xiao_runtime_concurrency_wait(task: *const XiaoValue, out: *mut XiaoValue) -> i32;
+
     /// 设置当前线程原生会话的确定性随机种子；接受非负 int/sint/lint，失败不改变状态。
     pub fn xiao_runtime_random_seed(value: *const XiaoValue) -> i32;
     /// 复制 V2 元数据并经既有状态机执行字段初始化、零参数 init 与失败回滚。
@@ -1076,7 +1253,10 @@ unsafe extern "C" {
 #[cfg(test)]
 /// ABI 布局和版本策略的单元测试。
 mod tests {
-    use super::{ABI_ENCODED_VERSION, ABI_MAJOR_VERSION, ABI_MINOR_VERSION, XiaoValue};
+    use super::{
+        ABI_ENCODED_VERSION, ABI_MAJOR_VERSION, ABI_MINOR_VERSION, XiaoConcurrencyKind, XiaoValue,
+        XiaoValueTag,
+    };
 
     #[test]
     /// 标签/载荷结构保持两个机器字大小，便于 LLVM 以固定布局传递。
@@ -1091,6 +1271,21 @@ mod tests {
         assert_eq!(ABI_ENCODED_VERSION, 0x0001_0011);
         assert_eq!(ABI_MAJOR_VERSION, 1);
         assert_eq!(ABI_MINOR_VERSION, 17);
+    }
+
+    #[test]
+    /// 并发值追加在既有标签之后，句柄种类保持固定数值。
+    fn concurrency_tag_and_kinds_are_append_only() {
+        assert_eq!(XiaoValueTag::ExternalResource.raw(), 17);
+        assert_eq!(XiaoValueTag::Concurrency.raw(), 18);
+        assert!(XiaoValueTag::Concurrency.is_known());
+        assert_eq!(XiaoConcurrencyKind::Runtime.raw(), 1);
+        assert_eq!(XiaoConcurrencyKind::LockGuard.raw(), 7);
+        assert_eq!(
+            XiaoConcurrencyKind::from_raw(7),
+            Some(XiaoConcurrencyKind::LockGuard)
+        );
+        assert_eq!(XiaoConcurrencyKind::from_raw(99), None);
     }
 
     #[test]

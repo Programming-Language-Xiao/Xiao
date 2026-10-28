@@ -9,9 +9,10 @@
 
 10B 已接入 tagged value、强/弱句柄、字符串、数组、元组、字典、集合和表描述符入口；
 20D 追加 `XiaoValueTag::ExternalResource = 17`，由 Runtime 盒子承载 `file`/`directory`/`process` 资源种类。
+22D 内部原生路径追加 `XiaoValueTag::Concurrency = 18`、`XiaoConcurrencyKind`、不透明并发句柄和线程 trampoline C ABI；并发盒子仍由 Runtime 管理，不暴露 Rust 类型布局。此入口供 LLVM 内部差分使用，22E 再冻结原生产物 required-feature/元数据语义。
 20AB 新增 `xiao_runtime_print_values` 与 `xiao_runtime_input` 输出/输入入口；10T 追加表方法与确定性随机种子入口；20D-能力上下文追加带能力掩码的
 `xiao_runtime_print_values_with_capabilities` 与 `xiao_runtime_input_with_capabilities`，
-当前 ABI 主版本 1、次版本 16。1.14 接入文件/目录 API，1.15 新增带能力的
+当前 ABI 主版本 1、次版本 17。1.14 接入文件/目录 API，1.15 新增带能力的
 `xiao_runtime_process_spawn_with_capabilities`、`xiao_runtime_process_wait_with_capabilities`、
 `xiao_runtime_process_close_with_capabilities`；仍只借用 `XiaoValue`，返回拥有值或 i32 状态。
 process 不新增值标签，也不暴露宿主 Child/进程句柄。改变布局或所有权契约必须升主版本。
