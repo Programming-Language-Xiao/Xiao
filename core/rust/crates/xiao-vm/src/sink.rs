@@ -336,6 +336,8 @@ fn is_priority_event(event: &VmEvent) -> bool {
     matches!(
         event,
         VmEvent::DetachedFailure { .. }
+            | VmEvent::BoundaryCopyReleased { .. }
+            | VmEvent::HandlerEntered { .. }
             | VmEvent::IntrinsicOutput { .. }
             | VmEvent::ErrorRaised { .. }
             | VmEvent::FatalRaised { .. }

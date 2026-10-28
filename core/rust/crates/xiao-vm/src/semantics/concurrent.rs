@@ -31,11 +31,35 @@ impl VmEventSink for ChildSink {
 
 fn record_child_event(events: &Arc<Mutex<ChildEvents>>, event: VmEvent) {
     let mut events = events.lock().expect("子 VM 事件锁未中毒");
-    if events.pending.len() < CHILD_EVENT_CAPACITY {
-        events.pending.push(event);
-    } else {
-        events.dropped = events.dropped.saturating_add(1);
+    if events.pending.len() >= CHILD_EVENT_CAPACITY {
+        let replaceable = events
+            .pending
+            .iter()
+            .position(|existing| !is_priority_child_event(existing));
+        let replaceable = replaceable.or_else(|| {
+            matches!(&event, VmEvent::DetachedFailure { .. }).then(|| {
+                events
+                    .pending
+                    .iter()
+                    .position(|existing| matches!(existing, VmEvent::BoundaryCopyReleased { .. }))
+            })?
+        });
+        if let Some(index) = replaceable {
+            events.pending.remove(index);
+            events.dropped = events.dropped.saturating_add(1);
+        } else {
+            events.dropped = events.dropped.saturating_add(1);
+            return;
+        }
     }
+    events.pending.push(event);
+}
+
+fn is_priority_child_event(event: &VmEvent) -> bool {
+    matches!(
+        event,
+        VmEvent::DetachedFailure { .. } | VmEvent::BoundaryCopyReleased { .. }
+    )
 }
 
 /// 尚未交给子 VM 的边界副本；排队任务被取消删除时仍按 IR 计划释放并记录事件。
@@ -67,12 +91,7 @@ impl Drop for DeferredBoundaryCopies {
             return;
         };
         release_arguments(&self.plan, copies, |value| {
-            let mut events = self.events.lock().expect("子 VM 事件锁未中毒");
-            if events.pending.len() < CHILD_EVENT_CAPACITY {
-                events.pending.push(VmEvent::BoundaryCopyReleased { value });
-            } else {
-                events.dropped += 1;
-            }
+            record_child_event(&self.events, VmEvent::BoundaryCopyReleased { value });
         });
     }
 }
@@ -146,7 +165,8 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
         {
             Fault::Cancelled
         } else {
-            if error == RuntimeExecError::Cancelled {
+            if error == RuntimeExecError::Cancelled && self.concurrency.cancellation.is_cancelled()
+            {
                 self.concurrency.cancellation_handled.set(true);
             }
             runtime_fault(error)
@@ -1006,5 +1026,36 @@ mod tests {
         vm.flush_child_events();
 
         assert_eq!(vm.sink.dropped_events(), 3);
+    }
+
+    #[test]
+    /// detached 失败在子 VM 事件满载时挤出普通事件并保留结构化报告。
+    fn detached_child_event_is_preserved_when_buffer_is_full() {
+        let events = Arc::new(Mutex::new(ChildEvents::default()));
+        for index in 0..CHILD_EVENT_CAPACITY {
+            record_child_event(
+                &events,
+                VmEvent::ModuleLoaded {
+                    module: index.to_string(),
+                },
+            );
+        }
+        let error = xiao_runtime::execution_error(RuntimeExecError::JoinFailed);
+        record_child_event(
+            &events,
+            VmEvent::DetachedFailure {
+                runtime_id: 7,
+                report: xiao_diagnostics::ReportRecord::from_error(&error),
+            },
+        );
+        let events = events.lock().unwrap();
+        assert_eq!(events.pending.len(), CHILD_EVENT_CAPACITY);
+        assert_eq!(events.dropped, 1);
+        assert!(
+            events
+                .pending
+                .iter()
+                .any(|event| matches!(event, VmEvent::DetachedFailure { runtime_id: 7, .. }))
+        );
     }
 }

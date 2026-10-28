@@ -480,11 +480,32 @@ pub struct LockCancellation {
     inner: Arc<LockCancellationInner>,
 }
 
+type CancelHook = Weak<dyn Fn() + Send + Sync>;
+
+type CancelHooks = Vec<(u64, CancelHook)>;
+
 #[derive(Debug, Default)]
 struct LockCancellationInner {
     cancelled: AtomicBool,
     waiters: Mutex<Vec<Weak<LockWaiters>>>,
-    hooks: Mutex<Vec<Weak<dyn Fn() + Send + Sync>>>,
+    hooks: Mutex<CancelHooks>,
+    next_hook_id: AtomicU64,
+}
+
+/// 自动注销取消令牌上的一次性通知。
+pub(crate) struct CancelHookRegistration {
+    inner: Weak<LockCancellationInner>,
+    id: u64,
+}
+
+impl Drop for CancelHookRegistration {
+    fn drop(&mut self) {
+        if let Some(inner) = self.inner.upgrade()
+            && let Ok(mut hooks) = inner.hooks.lock()
+        {
+            hooks.retain(|(id, _)| *id != self.id);
+        }
+    }
 }
 
 impl LockCancellation {
@@ -510,8 +531,11 @@ impl LockCancellation {
             .hooks
             .lock()
             .map(|mut hooks| {
-                let live = hooks.iter().filter_map(Weak::upgrade).collect::<Vec<_>>();
-                hooks.retain(|hook| hook.strong_count() > 0);
+                let live = hooks
+                    .iter()
+                    .filter_map(|(_, hook)| Weak::upgrade(hook))
+                    .collect::<Vec<_>>();
+                hooks.retain(|(_, hook)| hook.strong_count() > 0);
                 live
             })
             .unwrap_or_default();
@@ -527,17 +551,27 @@ impl LockCancellation {
     }
 
     /// 登记一个取消回调；已取消令牌会立即调用回调。
-    pub(crate) fn register_cancel_hook(&self, hook: &Arc<dyn Fn() + Send + Sync>) {
+    pub(crate) fn register_cancel_hook(
+        &self,
+        hook: &Arc<dyn Fn() + Send + Sync>,
+    ) -> Option<CancelHookRegistration> {
         if self.is_cancelled() {
             hook();
-            return;
+            return None;
         }
+        let id = self.inner.next_hook_id.fetch_add(1, Ordering::Relaxed);
         if let Ok(mut hooks) = self.inner.hooks.lock() {
-            hooks.push(Arc::downgrade(hook));
+            hooks.push((id, Arc::downgrade(hook)));
+        } else {
+            return None;
         }
         if self.is_cancelled() {
             hook();
         }
+        Some(CancelHookRegistration {
+            inner: Arc::downgrade(&self.inner),
+            id,
+        })
     }
 }
 
@@ -809,6 +843,20 @@ mod tests {
             Err(SharedLockError::Cancelled)
         ));
         drop(guard);
+    }
+
+    #[test]
+    /// 取消 hook 随任务句柄注销，不在长寿命共享令牌上累积弱引用。
+    fn cancellation_hook_registration_is_removed_when_task_finishes() {
+        let cancellation = LockCancellation::default();
+        for _ in 0..512 {
+            let hook: Arc<dyn Fn() + Send + Sync> = Arc::new(|| {});
+            let registration = cancellation
+                .register_cancel_hook(&hook)
+                .expect("未取消令牌应登记 hook");
+            drop(registration);
+        }
+        assert!(cancellation.inner.hooks.lock().unwrap().is_empty());
     }
 
     #[test]

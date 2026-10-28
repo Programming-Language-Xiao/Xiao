@@ -556,7 +556,11 @@ impl VmConcurrencyValue {
             .take()
             .ok_or(RuntimeExecError::JoinFailed)?;
         let _runtime = &value.runtime;
-        let result = handle.wait_interruptible(interrupted)?;
+        let was_interrupted = interrupted();
+        let result = handle.wait_interruptible(&interrupted)?;
+        if was_interrupted || interrupted() {
+            return Err(RuntimeExecError::Cancelled);
+        }
         Ok(cancel_result(result, &value.cancellation))
     }
 
@@ -593,7 +597,7 @@ fn cancel_result(
     }
     match result {
         Err(VmExecutionError::Error(error)) if error.code() == "X06-RUNTIME-027" => {
-            Err(VmExecutionError::Error(error))
+            Err(VmExecutionError::ConcurrencyCancelled(error))
         }
         Err(VmExecutionError::ConcurrencyCancelled(error)) => {
             Err(VmExecutionError::ConcurrencyCancelled(error))
@@ -608,7 +612,7 @@ fn cancel_result(
             {
                 error.push_suppressed(cause);
             }
-            Err(VmExecutionError::Error(error))
+            Err(VmExecutionError::ConcurrencyCancelled(error))
         }
     }
 }

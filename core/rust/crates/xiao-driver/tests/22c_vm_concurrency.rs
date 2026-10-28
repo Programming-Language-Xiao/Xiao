@@ -213,7 +213,11 @@ task = spawn(rt, work, flag)
 while ready(flag) == 0
     value = 1
 cancel(task)
-join(task)
+try
+    join(task)
+catch err as Error
+    print("caught")
+print("after")
 "#,
     );
     assert_eq!(
@@ -222,6 +226,14 @@ join(task)
         "{result:?}"
     );
     assert_eq!(result.output, "finally-once\n");
+    assert!(
+        result
+            .events
+            .iter()
+            .any(|event| matches!(event, VmEvent::HandlerEntered { .. })),
+        "events: {:?}",
+        result.events
+    );
 }
 
 /// 验证并发 027 不会进入用户 catch，也不会让取消后的 child 继续运行。
@@ -262,6 +274,94 @@ join(task)
     assert!(!result.output.contains("caught"));
 }
 
+/// 快速返回的线程在返回值已经就绪后取消，join 合成的 027 仍不能被父层 catch。
+#[test]
+fn cancellation_of_completed_thread_is_not_catchable() {
+    let result = observe(
+        r#"from std.concurrent import current_runtime, shared_mut, spawn, join, cancel, lock, lock_read, lock_write
+def read_flag(shared_mut<int> flag) -> int
+    guard = lock(flag)
+    return lock_read(guard)
+def signal(shared_mut<int> flag) -> none
+    guard = lock(flag)
+    lock_write(guard, 1)
+def fast(shared_mut<int> flag) -> int
+    signal(flag)
+    return 3
+rt = current_runtime()
+flag = shared_mut(0)
+task = spawn(rt, fast, flag)
+while read_flag(flag) == 0
+    value = 1
+cancel(task)
+try
+    join(task)
+catch err as Error
+    print("caught")
+print("after")
+"#,
+    );
+    assert_eq!(
+        result.code.as_deref(),
+        Some("X06-RUNTIME-027"),
+        "{result:?}"
+    );
+    assert!(!result.output.contains("caught"));
+    assert!(!result.output.contains("after"));
+}
+
+/// 运行中的 pool task 取消后先执行 finally，再由 wait 返回带 suppressed 的 027。
+#[test]
+fn running_pool_task_cancel_waits_for_finally_and_suppressed() {
+    let result = observe(
+        r#"[[Item]]
+    value = 1
+    def drop(self) -> none
+        print("item-drop")
+from std.concurrent import current_runtime, shared_mut, pool_create, submit, wait, cancel, lock, lock_read, lock_write
+def read_flag(shared_mut<int> flag) -> int
+    guard = lock(flag)
+    return lock_read(guard)
+def signal(shared_mut<int> flag) -> none
+    guard = lock(flag)
+    lock_write(guard, 1)
+def work(shared_mut<int> flag) -> int
+    item = new Item()
+    try
+        signal(flag)
+        while true
+            value = 1
+    finally
+        print("task-finally")
+        raise TypeError(code = "task-cleanup")
+    return 3
+rt = current_runtime()
+flag = shared_mut(0)
+pool = pool_create(rt, 1)
+task = submit(pool, work, flag)
+while read_flag(flag) == 0
+    value = 1
+cancel(task)
+wait(task)
+"#,
+    );
+    assert_eq!(
+        result.code.as_deref(),
+        Some("X06-RUNTIME-027"),
+        "{result:?}"
+    );
+    assert_eq!(result.output, "task-finally\nitem-drop\n");
+    assert!(
+        result
+            .events
+            .iter()
+            .any(|event| matches!(event, VmEvent::HandlerEntered { .. })),
+        "events: {:?}",
+        result.events
+    );
+    assert_eq!(result.report.unwrap().suppressed[0].code, "task-cleanup");
+}
+
 /// 验证外部超时能够中断 join 和子 VM 热循环。
 #[test]
 fn external_timeout_interrupts_join_and_child_vm() {
@@ -283,6 +383,24 @@ join(task)
         result.code.as_deref(),
         Some(xiao_driver::DRIVER_TIMEOUT_CODE),
         "{result:?}"
+    );
+
+    let pool_result = observe(
+        r#"from std.concurrent import current_runtime, pool_create, submit, wait
+def work() -> int
+    while true
+        value = 1
+    return 0
+rt = current_runtime()
+pool = pool_create(rt, 1)
+task = submit(pool, work)
+wait(task)
+"#,
+    );
+    assert_eq!(
+        pool_result.code.as_deref(),
+        Some(xiao_driver::DRIVER_TIMEOUT_CODE),
+        "{pool_result:?}"
     );
 }
 

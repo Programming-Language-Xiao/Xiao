@@ -1313,6 +1313,10 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 }
                 frame.completed_finally.push(marker);
             }
+            self.sink.record(VmEvent::HandlerEntered {
+                scope: handler.scope,
+                handler: handler.handler.get(),
+            });
             match self.run_subroutine(function, handler.handler, "cancelled") {
                 Ok(_) => {}
                 Err(Fault::Error(error)) | Err(Fault::ConcurrencyCancelled(error)) => {

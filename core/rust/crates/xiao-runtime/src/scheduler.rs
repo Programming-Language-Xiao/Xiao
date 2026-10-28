@@ -14,7 +14,7 @@ use std::time::Duration;
 
 /// Runtime、线程和任务池共用的取消令牌。
 pub use crate::concurrency::LockCancellation as RuntimeCancellation;
-use crate::concurrency::global_runtime_registry;
+use crate::concurrency::{CancelHookRegistration, global_runtime_registry};
 use crate::{
     CONCURRENCY_CANCELLED_CODE, CONCURRENCY_POOL_ARGUMENT_CODE, CONCURRENCY_POOL_CLOSED_CODE,
     CONCURRENCY_RUNTIME_CLOSED_CODE,
@@ -820,6 +820,7 @@ pub struct TaskHandle<T> {
     receiver: mpsc::Receiver<Result<T, RuntimeExecError>>,
     cancellation: RuntimeCancellation,
     cancel_hook: Option<Arc<dyn Fn() + Send + Sync>>,
+    cancel_registration: Option<CancelHookRegistration>,
 }
 
 impl<T> TaskHandle<T> {
@@ -830,24 +831,31 @@ impl<T> TaskHandle<T> {
     }
 
     /// 可中断等待；中断取消未完成任务，返回 027。
-    pub fn wait_interruptible(self, interrupted: impl Fn() -> bool) -> Result<T, RuntimeExecError> {
+    pub fn wait_interruptible(
+        mut self,
+        interrupted: impl Fn() -> bool,
+    ) -> Result<T, RuntimeExecError> {
         loop {
-            if interrupted() || self.cancellation.is_cancelled() {
+            if interrupted() && !self.cancellation.is_cancelled() {
                 self.cancel();
-                return Err(RuntimeExecError::Cancelled);
             }
             match self.receiver.recv_timeout(Duration::from_millis(2)) {
-                Ok(value) => return value,
-                Err(mpsc::RecvTimeoutError::Timeout) => {
-                    if self.cancellation.is_cancelled() {
-                        return Err(RuntimeExecError::Cancelled);
-                    }
+                Ok(value) => {
+                    self.clear_cancel_hook();
+                    return value;
                 }
+                Err(mpsc::RecvTimeoutError::Timeout) => {}
                 Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    self.clear_cancel_hook();
                     return Err(RuntimeExecError::JoinFailed);
                 }
             }
         }
+    }
+
+    fn clear_cancel_hook(&mut self) {
+        self.cancel_registration.take();
+        self.cancel_hook.take();
     }
 
     /// 将未等待的任务结果交给 detached 回收通道，不阻塞当前线程。
@@ -857,10 +865,15 @@ impl<T> TaskHandle<T> {
     ) where
         T: Send + 'static,
     {
-        let receiver = self.receiver;
-        let cancel_hook = self.cancel_hook;
+        let TaskHandle {
+            receiver,
+            cancel_hook,
+            cancel_registration,
+            ..
+        } = self;
         enqueue_detached_reap(Box::new(move || {
             let _cancel_hook = cancel_hook;
+            let _cancel_registration = cancel_registration;
             report(receiver.recv().unwrap_or(Err(RuntimeExecError::JoinFailed)));
         }))
         .expect("detached 错误收集线程不可用");
@@ -872,15 +885,16 @@ impl<T> TaskHandle<T> {
     }
 
     /// 消费任务句柄并等待结果。
-    pub fn wait(self) -> Result<T, RuntimeExecError> {
+    pub fn wait(mut self) -> Result<T, RuntimeExecError> {
         loop {
-            if self.cancellation.is_cancelled() {
-                return Err(RuntimeExecError::Cancelled);
-            }
             match self.receiver.recv_timeout(Duration::from_millis(2)) {
-                Ok(value) => return value,
+                Ok(value) => {
+                    self.clear_cancel_hook();
+                    return value;
+                }
                 Err(mpsc::RecvTimeoutError::Timeout) => {}
                 Err(mpsc::RecvTimeoutError::Disconnected) => {
+                    self.clear_cancel_hook();
                     return Err(RuntimeExecError::JoinFailed);
                 }
             }
@@ -1040,7 +1054,7 @@ impl TaskPool {
                 inner.queue.remove(message_id);
             }
         });
-        cancellation.register_cancel_hook(&cancel_hook);
+        let cancel_registration = cancellation.register_cancel_hook(&cancel_hook);
         let message = PoolMessage {
             id: message_id,
             cancel: Box::new(move || {
@@ -1071,6 +1085,7 @@ impl TaskPool {
             receiver,
             cancellation,
             cancel_hook: Some(cancel_hook),
+            cancel_registration,
         })
     }
 
