@@ -6,9 +6,11 @@
 > cancellation 接入 TAC 并发计划、隔离 VM 和 Runtime 绑定，并完成源码到 `.xar` 的端到端回归。
 >
 > 状态：**FIX.1 已完成（2026-10-28）**，26 条源码/产物端到端回归、workspace、benchmark、
-> research concurrency、Bun、coverage 及安全/产物回归均通过；[workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40665880754)
-> 通过。 [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40665886585)
-> 中，Linux、Windows、macOS 各自运行 `22c_vm_concurrency`，每个平台 26/26 通过，全部 jobs 通过。
+> research concurrency、Bun、coverage 及安全/产物回归均通过；对应代码提交 `0caebc9` 的
+> [workspace gates](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40709431538) 通过。
+> [maintenance regression](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/40709431618)
+> 第 2 次尝试通过；首次尝试的既有 Windows 20D 进程 fixture 时序失败已在重跑中通过，Linux、
+> Windows、macOS 各自运行 `22c_vm_concurrency`，每个平台 26/26 通过，全部 jobs 通过。
 > 本批只接 VM、驱动和已有 Runtime API；
 > 不接 LLVM，不写 `stdlib/concurrent.xiao` 函数体，不改 22A/22B 的 API、Send/Sync 表、
 > 32B 布局、诊断码或产物 feature 位。
@@ -188,6 +190,7 @@ LockGuard(lock_guard_handle)
 | Runtime owner 只按直接创建关系记录，父 Runtime 关闭不递归关闭子 Runtime；VM 退出时必须用记录的 owner 上下文关闭本 VM 创建的 Runtime | VM 的 Runtime ID 映射和生命周期测试必须覆盖 owner 间接关系与退出清理；不得把父/祖 Runtime 的权限自动扩展 |
 | 22C 的部分 Runtime 关闭测试是 Rust API 级，尚未经过 TAC/VM | 本批必须把这些行为重放到真实源码和 VM 执行路径，不能把 Rust 单测当作 VM 证据 |
 | 22C `close`/`spawn` 的跨 Runtime 语义已写入 22A/22A-FIX，但 VM 未接线 | VM 入口测试必须覆盖 031；语言 `runtime_close` 与 Rust `try_close` 的边界不能混淆 |
+| `TaskHandle::wait`/`wait_interruptible` 的取消、断连与最后一次宿主中断检查 | 已完成；公开 Rust API 与 VM 等待入口分别保留 027、028 suppressed 和 finally/drop 顺序，断连/宿主中断回归已覆盖 |
 
 ## 五、实施步骤
 
@@ -247,6 +250,10 @@ bun run check:usedocs
 bun run check:layout
 git diff --check
 ```
+
+本地 Windows Clippy 内存观测仅作资源记录，不作为跨机器性能门槛：冷编译约 45.7 秒，单进程峰值
+工作集约 280.9 MB（`clippy-driver`）；本次热缓存全 workspace 检查约 17.1 秒，单进程峰值约
+308.7 MB（`clippy-driver`），采样到的 `cargo`/`rustc`/`clippy-driver` 合计峰值约 666.8 MB。
 
 ## 七、退出条件
 
