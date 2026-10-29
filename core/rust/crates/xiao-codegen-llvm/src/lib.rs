@@ -79,16 +79,26 @@ pub use xiao_optimizer::OptimizationReport;
 
 /// 后端接口版本；参与原生产物指纹。
 ///
+/// 版本 5 追加 22D 内部并发计划和 trampoline，阻止旧产物缓存命中。
 /// 版本 4 接通 ABI 1.8 表生命周期与返回帧；版本 3 只生成回调并保留构造拒绝。
 /// 保留版本 2 的 COFF `sret`/间接参数约定。
 /// 该版本进入工具链/产物指纹，避免旧方法拒绝或旧清理文本命中缓存。
-pub const CODEGEN_VERSION: u32 = 4;
+pub const CODEGEN_VERSION: u32 = 5;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
     // 并发入口必须先从同一份类型化 IR 建立唯一计划。这样即使后端尚未支持某个
     // 新入口，也会在 lowering 前以结构化错误停止，而不会退化成普通函数调用。
-    let _concurrency_plan = NativeConcurrencyPlan::from_program(program)?;
+    let concurrency_plan = NativeConcurrencyPlan::from_program(program)?;
+    for call in concurrency_plan.calls() {
+        concurrency_plan.require_known_operation(call)?;
+    }
+    if !concurrency_plan.is_empty() && !options.internal_concurrency {
+        return Err(CodegenError::Unsupported {
+            feature: "22D 并发原生产物仅用于内部差分，公开产物由 22E 验收".to_owned(),
+            span: Some(program.span),
+        });
+    }
     xiao_intrinsics::validate_capability_mask(options.capabilities).map_err(|error| {
         CodegenError::InvalidIr {
             message: format!("能力上下文无效：{error}"),

@@ -47,6 +47,8 @@ pub struct CodegenOptions {
     pub optimization_level: u8,
     /// 原生 Runtime 请求携带的能力位；默认开启当前已知能力。
     pub capabilities: u64,
+    /// 22D 内部差分专用；原生并发产物的公开发布门禁留给 22E。
+    pub internal_concurrency: bool,
 }
 
 /// 原生产物启动 shim 的静态配置。
@@ -91,6 +93,7 @@ impl CodegenOptions {
             locale: "zh-CN".to_owned(),
             optimization_level: BASELINE_OPTIMIZATION_LEVEL,
             capabilities: KNOWN_CAPABILITY_MASK,
+            internal_concurrency: false,
         }
     }
 
@@ -118,6 +121,13 @@ impl CodegenOptions {
         if let Some(startup) = &mut self.debug_startup {
             startup.locale = self.locale.clone();
         }
+        self
+    }
+
+    /// 显式允许 22D 内部测试构建并发原生产物，不改变用户构建默认门禁。
+    #[must_use]
+    pub const fn with_internal_concurrency(mut self) -> Self {
+        self.internal_concurrency = true;
         self
     }
 

@@ -189,8 +189,23 @@ pub fn take_vm_detached_error_drops() -> usize {
 
 /// 把 detached 子执行失败规范化为 027/028 并保留 Runtime 身份。
 fn report_detached(runtime_id: u64, result: Result<VmExecutionResult, RuntimeExecError>) {
+    let Some(error) = detached_execution_error(result) else {
+        return;
+    };
+    let mut reports = detached_reports().lock().expect("VM detached 通道锁未中毒");
+    if reports.len() < VM_DETACHED_ERROR_CAPACITY {
+        reports.push(VmDetachedError { runtime_id, error });
+    } else {
+        VM_DETACHED_ERROR_DROPS.fetch_add(1, Ordering::AcqRel);
+    }
+}
+
+/// VM 与原生 trampoline 共用的 detached 错误归一化，保留 027 或 028 cause。
+pub(crate) fn detached_execution_error(
+    result: Result<VmExecutionResult, RuntimeExecError>,
+) -> Option<XiaoError> {
     let error = match result {
-        Ok(Ok(_)) => return,
+        Ok(Ok(_)) => return None,
         Ok(Err(VmExecutionError::Error(error))) if error.code() == "X06-RUNTIME-027" => error,
         Ok(Err(VmExecutionError::ConcurrencyCancelled(error))) => error,
         Ok(Err(VmExecutionError::Error(error))) => {
@@ -204,12 +219,7 @@ fn report_detached(runtime_id: u64, result: Result<VmExecutionResult, RuntimeExe
         Ok(Err(VmExecutionError::Cancelled)) => execution_error(RuntimeExecError::Cancelled),
         Err(error) => execution_error(error),
     };
-    let mut reports = detached_reports().lock().expect("VM detached 通道锁未中毒");
-    if reports.len() < VM_DETACHED_ERROR_CAPACITY {
-        reports.push(VmDetachedError { runtime_id, error });
-    } else {
-        VM_DETACHED_ERROR_DROPS.fetch_add(1, Ordering::AcqRel);
-    }
+    Some(error)
 }
 
 /// 将 Runtime 错误转换为冻结的结构化错误身份。
@@ -605,7 +615,7 @@ impl VmConcurrencyValue {
 }
 
 /// 把执行令牌取消映射成 027，同时保留子 VM 的既有失败。
-fn cancel_result(
+pub(crate) fn cancel_result(
     result: VmExecutionResult,
     cancellation: &RuntimeCancellation,
 ) -> VmExecutionResult {
@@ -635,7 +645,7 @@ fn cancel_result(
 }
 
 /// 任务结果通道异常断开时，若任务 token 已取消，仍将主错误分类为 027。
-fn normalize_task_wait_result(
+pub(crate) fn normalize_task_wait_result(
     result: Result<VmExecutionResult, RuntimeExecError>,
     cancellation: &RuntimeCancellation,
 ) -> Result<VmExecutionResult, RuntimeExecError> {

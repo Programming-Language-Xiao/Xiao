@@ -189,11 +189,11 @@ jobs:
             --skip platform_failure_child `
             --skip real_terminal_session_is_environment_gated `
             --skip native_table_methods_debug_execution_o0_o3 `
-            --skip native_spawn_join_matches_vm_stdout_from_same_ir
+            --skip native_concurrency_vm_native_stdout_matches_from_same_ir
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored native_spawn_join_matches_vm_stdout_from_same_ir
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored native_concurrency_vm_native_stdout_matches_from_same_ir
           exit $LASTEXITCODE
 
       - name: Build runtime and run Linux native gates
@@ -224,9 +224,9 @@ jobs:
           xvfb-run -a cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture \
             --skip dns_resolution_failure_is_unavailable \
             --skip platform_failure_child \
-            --skip native_spawn_join_matches_vm_stdout_from_same_ir
+            --skip native_concurrency_vm_native_stdout_matches_from_same_ir
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored native_spawn_join_matches_vm_stdout_from_same_ir
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored native_concurrency_vm_native_stdout_matches_from_same_ir
 
       - name: Build runtime and run macOS native gates
         if: runner.os == 'macOS'
@@ -258,9 +258,9 @@ jobs:
             --skip platform_failure_child \
             --skip real_terminal_session_is_environment_gated \
             --skip native_table_methods_debug_execution_o0_o3 \
-            --skip native_spawn_join_matches_vm_stdout_from_same_ir
+            --skip native_concurrency_vm_native_stdout_matches_from_same_ir
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored native_spawn_join_matches_vm_stdout_from_same_ir
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored native_concurrency_vm_native_stdout_matches_from_same_ir
 
       - name: Run 20D and 20E resource, process and archive fixtures (Windows)
         if: runner.os == 'Windows'

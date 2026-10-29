@@ -9,6 +9,7 @@ use xiao_driver::{
 };
 
 #[test]
+/// 比较同一 IR 降出的 Native/TAC 计划并检查 trampoline lowering。
 fn native_lowering_consumes_concurrency_spans_and_emits_trampoline() {
     let source = "from std.concurrent import runtime_create, spawn, join\ndef work(int value) -> int\n    return value\nrt = runtime_create()\nthread = spawn(rt, work, 1)\nresult = join(thread)\n";
     let artifact = FrontendCompiler::new()
@@ -48,8 +49,11 @@ fn native_lowering_consumes_concurrency_spans_and_emits_trampoline() {
                 .collect::<Vec<_>>()
         );
     }
-    let module = lower_program(&artifact.ir, &CodegenOptions::default())
-        .expect("同源并发 IR 应能生成 LLVM 文本");
+    let module = lower_program(
+        &artifact.ir,
+        &CodegenOptions::default().with_internal_concurrency(),
+    )
+    .expect("同源并发 IR 应能生成 LLVM 文本");
     assert!(
         module
             .text
@@ -70,25 +74,50 @@ fn native_lowering_consumes_concurrency_spans_and_emits_trampoline() {
 }
 
 #[test]
+/// 确认未知并发操作在普通 lowering 前被拒绝。
 fn unknown_native_concurrency_operation_is_rejected_before_lowering() {
     let source = "from std.concurrent import runtime_create\nrt = runtime_create()\n";
     let mut artifact = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(source))
         .expect("源码应先通过统一前端");
     artifact.ir.concurrency_calls[0].operation = "future_api".to_owned();
-    let error = lower_program(&artifact.ir, &CodegenOptions::default())
-        .expect_err("未知并发入口必须 fail-closed");
+    let error = lower_program(
+        &artifact.ir,
+        &CodegenOptions::default().with_internal_concurrency(),
+    )
+    .expect_err("未知并发入口必须 fail-closed");
     assert!(error.to_string().contains("原生并发入口 future_api"));
 }
 
 #[test]
+/// 守住 22E 前公开构建不得开启并发产物。
+fn public_native_build_keeps_concurrency_artifacts_closed_until_22e() {
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(
+            "from std.concurrent import current_runtime\nrt = current_runtime()\n",
+        ))
+        .expect("并发源码的前端语义有效");
+    let error = lower_program(&artifact.ir, &CodegenOptions::default())
+        .expect_err("公开原生构建不得提前发布并发产物");
+    assert!(matches!(
+        error,
+        xiao_codegen_llvm::CodegenError::Unsupported { .. }
+    ));
+    assert!(error.to_string().contains("22E"));
+}
+
+#[test]
+/// 检查 shared/lock lowering 保留取消检查与 Runtime ABI 路径。
 fn native_shared_lock_plan_keeps_cancel_and_runtime_abi_paths() {
     let source = "from std.concurrent import shared_mut, lock, lock_read\nvalue = shared_mut(1)\nguard = lock(value)\nresult = lock_read(guard)\n";
     let artifact = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(source))
         .expect("shared/lock 源码应通过统一前端");
-    let module = lower_program(&artifact.ir, &CodegenOptions::default())
-        .expect("shared/lock 同源 IR 应能生成 LLVM 文本");
+    let module = lower_program(
+        &artifact.ir,
+        &CodegenOptions::default().with_internal_concurrency(),
+    )
+    .expect("shared/lock 同源 IR 应能生成 LLVM 文本");
     assert!(module.text.contains("xiao_runtime_concurrency_call"));
     assert!(
         module
@@ -100,7 +129,8 @@ fn native_shared_lock_plan_keeps_cancel_and_runtime_abi_paths() {
 
 #[test]
 #[ignore = "需要 XIAO_CLANG、XIAO_LLVM_AS、XIAO_LLC、XIAO_RUNTIME_LIBRARY 和 XIAO_TARGET_TRIPLE"]
-fn native_spawn_join_matches_vm_stdout_from_same_ir() {
+/// 在目标原生工具链下比较线程、任务池和共享场景的 VM/native stdout。
+fn native_concurrency_vm_native_stdout_matches_from_same_ir() {
     let target = TargetDescription::host();
     let configured_target = std::env::var("XIAO_TARGET_TRIPLE").expect("XIAO_TARGET_TRIPLE");
     assert_eq!(configured_target, target.triple);
@@ -157,7 +187,10 @@ fn native_spawn_join_matches_vm_stdout_from_same_ir() {
             .replace("\r\n", "\n");
         let output = root.join(format!("{label}.{suffix}"));
         let request =
-            NativeBuildRequest::new(frontend_request, target.clone(), toolchain.clone(), &output);
+            NativeBuildRequest::new(frontend_request, target.clone(), toolchain.clone(), &output)
+                .with_codegen_options(
+                    CodegenOptions::for_target(target.clone()).with_internal_concurrency(),
+                );
         let native = FrontendNativeDriver::new()
             .build_artifact(&artifact, &request)
             .unwrap_or_else(|error| panic!("{label}: 原生构建失败：{error}"));

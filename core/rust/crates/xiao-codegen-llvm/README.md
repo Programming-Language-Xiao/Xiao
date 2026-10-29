@@ -36,7 +36,7 @@ LTO、PGO 和目标特化开关默认关闭，并拒绝快速数学/未定义回
 `src/dynamic/README.md`。动态路径可以依赖 `xiao-ir`、`xiao-runtime-abi` 和 crate 级
 `text.rs`，静态 `ir.rs` 不得反向依赖 `dynamic/`。源码级依赖回归由
 `src/dynamic_architecture_tests.rs` 锁定，拆分不新增 Runtime 能力、不改变所有权释放顺序，
-也不升 `CODEGEN_VERSION`。
+结构拆分本身不升 `CODEGEN_VERSION`；会改变生成文本或 trampoline ABI 的 lowering 语义必须递增版本。
 
 ## 允许与禁止依赖
 

@@ -1593,25 +1593,7 @@ pub extern "C" fn xiao_runtime_value_release(value: *mut XiaoValue) {
     if value.is_null() {
         return;
     }
-    let value = unsafe { &mut *value };
-    match value.tag {
-        XiaoValueTag::Str
-        | XiaoValueTag::Lint
-        | XiaoValueTag::Lfloat
-        | XiaoValueTag::Table
-        | XiaoValueTag::Array
-        | XiaoValueTag::Tuple
-        | XiaoValueTag::DictTable
-        | XiaoValueTag::DictColumn
-        | XiaoValueTag::Set
-        | XiaoValueTag::ExternalResource => xiao_runtime_release(unsafe { value.payload.handle }),
-        XiaoValueTag::Error => unsafe { release_error(value.payload.handle) },
-        XiaoValueTag::TableDropView => {
-            xiao_runtime_weak_release(unsafe { value.payload.weak_handle });
-        }
-        _ => {}
-    }
-    *value = XiaoValue::none();
+    release_value_slot(unsafe { &mut *value });
 }
 
 /// 只释放 ABI 值中的强句柄；弱值保持原样，标量则重置为空值。LLVM 普通释放路径使用

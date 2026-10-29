@@ -14,6 +14,7 @@ use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
 pub(crate) mod runtime_helpers;
+/// 并发 Runtime 的内部辅助入口，供 VM/原生 ABI 复用。
 pub use runtime_helpers::{
     cancellation_safe_point, current_cancellation_token, detached_reaper_peak_depth,
     detached_reaper_queue_depth, record_detached_error, take_detached_errors,

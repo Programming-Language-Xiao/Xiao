@@ -9,7 +9,7 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分已开始实施（2026-10-29），Windows 本机 `spawn/join`、任务池和 shared/lock VM/native stdout 差分已通过**。
+> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分已开始实施（2026-10-29），D-2/D-5 已确认，Windows 本机四场景 stdout 对照已通过；完整差分仍待收口**。
 > workspace、26 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs、
 > 本地安全/产物回归，以及远端多平台 maintenance/CI 均通过；三平台 maintenance 各自执行了 26/26 VM 并发回归。
 > 22D 可以开始，但 LLVM 并发 lowering 和原生差分仍需实施；22E 仍后置。

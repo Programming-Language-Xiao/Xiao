@@ -37,9 +37,10 @@ methods.rs          表方法与字段回调、参数绑定、弱只读 receiver
 
 `dynamic_architecture_tests.rs` 在测试构建时锁定门面模块登记、静态/动态依赖方向和
 禁止的兄弟模块导入；`tests/n0_a.rs` 与 `tests/n0_b_dynamic.rs` 继续作为 LLVM 文本、
-Runtime ABI 和静态/动态边界的行为证据。拆分只移动实现，不升 `CODEGEN_VERSION`，生成的
-LLVM 文本和 Runtime 组件清单必须保持不变。
+Runtime ABI 和静态/动态边界的行为证据。结构拆分只移动实现，不升 `CODEGEN_VERSION`，生成的
+LLVM 文本和 Runtime 组件清单必须保持不变。会改变调用文本、trampoline 或 Runtime 组件的 lowering
+实现需要递增代码生成版本。
 
 10T 将字段初始化映射为独立帧，方法与普通函数共用返回和异常清理；固定回调为四个指针/长度参数返回 i32。
-构造处已接通独立 V2 描述符并移除方法拒绝；版本 4 指纹区分实际生命周期与帧清理。
+构造处已接通独立 V2 描述符并移除方法拒绝；版本 4 指纹区分实际生命周期与帧清理，版本 5 为 22D 并发 trampoline lowering 保留独立缓存身份。
 返回和语句临时值均有入口分配的拥有槽，终止/错误边统一归还；Runtime 组件从入口可达调用及注册回调地址计算。

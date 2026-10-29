@@ -45,7 +45,7 @@ fn take_native_error_packet() -> Option<NativeErrorPacket> {
 fn restore_native_error_packet(packet: NativeErrorPacket) -> u32 {
     match packet {
         NativeErrorPacket::Recoverable(error) => {
-            super::set_pending_error(super::PendingError::Recoverable(error));
+            super::set_pending_runtime_error(error);
             xiao_runtime_abi::XiaoErrorClass::Recoverable.raw()
         }
         NativeErrorPacket::Fatal(error) => {
@@ -83,6 +83,7 @@ enum ConcurrencyObject {
 }
 
 impl ConcurrencyObject {
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn kind(&self) -> XiaoConcurrencyKind {
         match self {
             Self::Runtime(_) => XiaoConcurrencyKind::Runtime,
@@ -96,79 +97,101 @@ impl ConcurrencyObject {
     }
 }
 
-/// 原生 trampoline 只允许把固定宽度值带回 Runtime；句柄/堆对象必须经过 XCON 或
-/// 显式 shared 通道，不能把原始指针跨 OS 线程复制。
+/// 原生边界只传 XCON 数据和显式 shared 句柄；普通 ABI 盒子不会跨线程移动。
 #[derive(Clone, Debug)]
 struct NativeRawValue {
-    value: NativeRawValueKind,
+    transfer: VmTransferValue,
 }
 
-#[derive(Clone, Debug)]
-enum NativeRawValueKind {
-    /// XCON/显式 shared 边界值。
-    Transfer(VmTransferValue),
-    /// Runtime 管理的不透明句柄。
-    Concurrency(XiaoConcurrencyHandle),
-}
-
-unsafe impl Send for NativeRawValueKind {}
-unsafe impl Send for NativeRawValue {}
-
-impl Drop for NativeRawValue {
-    fn drop(&mut self) {
-        if let NativeRawValueKind::Concurrency(handle) = self.value {
-            release_handle(handle);
-        }
-    }
-}
-
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 struct NativeThreadState {
     handle: Mutex<Option<ThreadHandle<NativeEntryOutcome>>>,
     cancellation: RuntimeCancellation,
     runtime: RuntimeHandle,
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 struct NativeTaskState {
     handle: Mutex<Option<TaskHandle<NativeEntryOutcome>>>,
     cancellation: RuntimeCancellation,
     runtime: RuntimeHandle,
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 enum NativeEntryOutcome {
     Value(NativeRawValue),
     Error(NativeErrorPacket),
     RuntimeFailure(RuntimeExecError),
 }
 
+impl NativeEntryOutcome {
+    /// 只转换 Runtime 内部结果类型，不执行另一个 VM 或携带 VM 栈。
+    fn into_execution_result(self) -> crate::VmExecutionResult {
+        match self {
+            Self::Value(value) => Ok(value.transfer),
+            Self::Error(NativeErrorPacket::Recoverable(error))
+                if error.code() == crate::CONCURRENCY_CANCELLED_CODE =>
+            {
+                Err(crate::VmExecutionError::ConcurrencyCancelled(error))
+            }
+            Self::Error(NativeErrorPacket::Recoverable(error)) => {
+                Err(crate::VmExecutionError::Error(error))
+            }
+            Self::Error(NativeErrorPacket::Fatal(error)) => {
+                Err(crate::VmExecutionError::Fatal(error))
+            }
+            Self::RuntimeFailure(error) => Err(crate::VmExecutionError::Error(
+                crate::execution_error(error),
+            )),
+        }
+    }
+
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
+    fn from_execution_result(result: crate::VmExecutionResult) -> Self {
+        match result {
+            Ok(transfer) => Self::Value(NativeRawValue { transfer }),
+            Err(
+                crate::VmExecutionError::Error(error)
+                | crate::VmExecutionError::ConcurrencyCancelled(error),
+            ) => Self::Error(NativeErrorPacket::Recoverable(error)),
+            Err(crate::VmExecutionError::Fatal(error)) => {
+                Self::Error(NativeErrorPacket::Fatal(error))
+            }
+            Err(crate::VmExecutionError::Cancelled) => {
+                Self::RuntimeFailure(RuntimeExecError::Cancelled)
+            }
+        }
+    }
+}
+
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 struct NativeDetachedError {
     runtime_id: u64,
     packet: NativeErrorPacket,
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 const NATIVE_DETACHED_ERROR_CAPACITY: usize = 4096;
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 static NATIVE_DETACHED_ERROR_DROPS: AtomicUsize = AtomicUsize::new(0);
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn native_detached_errors() -> &'static Mutex<Vec<NativeDetachedError>> {
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     static ERRORS: OnceLock<Mutex<Vec<NativeDetachedError>>> = OnceLock::new();
     ERRORS.get_or_init(|| Mutex::new(Vec::new()))
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn record_native_detached(runtime_id: u64, result: Result<NativeEntryOutcome, RuntimeExecError>) {
-    match result {
-        Ok(NativeEntryOutcome::Value(_)) => {}
-        Ok(NativeEntryOutcome::Error(packet)) => push_native_detached_error(runtime_id, packet),
-        Ok(NativeEntryOutcome::RuntimeFailure(error)) | Err(error) => push_native_detached_error(
-            runtime_id,
-            NativeErrorPacket::Recoverable(crate::RuntimeError::new(
-                crate::XiaoErrorKind::Concurrency,
-                error.code(),
-                "runtime.concurrency_native",
-                error.to_string(),
-            )),
-        ),
+    if let Some(error) = crate::vm_concurrency::detached_execution_error(
+        result.map(NativeEntryOutcome::into_execution_result),
+    ) {
+        push_native_detached_error(runtime_id, NativeErrorPacket::Recoverable(error));
     }
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn push_native_detached_error(runtime_id: u64, packet: NativeErrorPacket) {
     let Ok(mut errors) = native_detached_errors().lock() else {
         NATIVE_DETACHED_ERROR_DROPS.fetch_add(1, Ordering::AcqRel);
@@ -181,6 +204,7 @@ fn push_native_detached_error(runtime_id: u64, packet: NativeErrorPacket) {
     errors.push(NativeDetachedError { runtime_id, packet });
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn take_native_detached_error_for(runtime_ids: &[u64]) -> Option<(u64, NativeErrorPacket)> {
     let Ok(mut errors) = native_detached_errors().lock() else {
         return None;
@@ -193,6 +217,7 @@ fn take_native_detached_error_for(runtime_ids: &[u64]) -> Option<(u64, NativeErr
 }
 
 impl Drop for NativeThreadState {
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn drop(&mut self) {
         let Ok(mut handle) = self.handle.lock() else {
             return;
@@ -205,6 +230,7 @@ impl Drop for NativeThreadState {
 }
 
 impl Drop for NativeTaskState {
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn drop(&mut self) {
         let Ok(mut handle) = self.handle.lock() else {
             return;
@@ -225,6 +251,7 @@ struct AbiConcurrency {
     inners: Mutex<Vec<ConcurrencyObject>>,
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn box_object(object: ConcurrencyObject) -> XiaoConcurrencyHandle {
     let kind = object.kind().raw();
     Box::into_raw(Box::new(AbiConcurrency {
@@ -236,6 +263,7 @@ fn box_object(object: ConcurrencyObject) -> XiaoConcurrencyHandle {
     .cast()
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 unsafe fn object_ref<'a>(handle: XiaoConcurrencyHandle) -> Result<&'a AbiConcurrency, i32> {
     if handle.is_null() {
         return Err(XiaoAbiStatus::Null.code());
@@ -247,6 +275,7 @@ unsafe fn object_ref<'a>(handle: XiaoConcurrencyHandle) -> Result<&'a AbiConcurr
     Ok(object)
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn object_kind(handle: XiaoConcurrencyHandle) -> Result<XiaoConcurrencyKind, i32> {
     // SAFETY: `object_ref` 校验了不透明盒子的魔数和种类。
     unsafe { object_ref(handle) }.and_then(|object| {
@@ -254,6 +283,7 @@ fn object_kind(handle: XiaoConcurrencyHandle) -> Result<XiaoConcurrencyKind, i32
     })
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn clone_object(handle: XiaoConcurrencyHandle) -> Result<ConcurrencyObject, i32> {
     // SAFETY: `object_ref` 只读取 Runtime 返回的 live 盒子。
     let object = unsafe { object_ref(handle) }?;
@@ -266,6 +296,7 @@ fn clone_object(handle: XiaoConcurrencyHandle) -> Result<ConcurrencyObject, i32>
         .ok_or(XiaoAbiStatus::InvalidHandle.code())
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 pub(super) fn retain_handle(handle: XiaoConcurrencyHandle) -> XiaoConcurrencyHandle {
     let Ok(object) = (unsafe { object_ref(handle) }) else {
         return std::ptr::null_mut();
@@ -280,6 +311,7 @@ pub(super) fn retain_handle(handle: XiaoConcurrencyHandle) -> XiaoConcurrencyHan
     handle
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 pub(super) fn release_handle(handle: XiaoConcurrencyHandle) {
     if handle.is_null() {
         return;
@@ -302,60 +334,47 @@ pub(super) fn release_handle(handle: XiaoConcurrencyHandle) {
     }
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 pub(super) fn handle_kind(handle: XiaoConcurrencyHandle) -> u32 {
     object_kind(handle).map_or(0, XiaoConcurrencyKind::raw)
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn raw_from_value(value: &XiaoValue, runtime_id: u64) -> Result<NativeRawValue, i32> {
     if value.tag == XiaoValueTag::Concurrency {
-        let handle = handle_from_value(value)?;
-        let retained = retain_handle(handle);
-        if retained.is_null() {
-            return Err(XiaoAbiStatus::InvalidHandle.code());
+        let kind = object_kind(handle_from_value(value)?)?;
+        if !matches!(
+            kind,
+            XiaoConcurrencyKind::Shared | XiaoConcurrencyKind::SharedMut
+        ) {
+            return Err(set_transfer_error(crate::transfer_error(
+                "只有显式 shared/shared_mut 句柄可通过并发边界",
+            )));
         }
-        return Ok(NativeRawValue {
-            value: NativeRawValueKind::Concurrency(retained),
-        });
     }
     // SAFETY: 调用方提供的 ABI 值在当前调用期间保持有效。
     let runtime_value = unsafe { super::value_to_runtime(value) }?;
     let transfer =
         crate::VmTransferValue::encode(&runtime_value, runtime_id).map_err(set_transfer_error)?;
-    Ok(NativeRawValue {
-        value: NativeRawValueKind::Transfer(transfer),
-    })
+    Ok(NativeRawValue { transfer })
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn set_transfer_error(error: crate::XiaoError) -> i32 {
-    super::set_pending_runtime_error(crate::RuntimeError::new(
-        crate::XiaoErrorKind::Concurrency,
-        error.code(),
-        "runtime.concurrency_serialization",
-        error.to_string(),
-    ));
+    super::set_pending_runtime_error(error);
     XiaoAbiStatus::RuntimeError.code()
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn value_from_raw(value: NativeRawValue, runtime_id: u64) -> Result<XiaoValue, i32> {
-    match &value.value {
-        NativeRawValueKind::Concurrency(handle) => {
-            let handle = retain_handle(*handle);
-            if handle.is_null() {
-                Err(XiaoAbiStatus::InvalidHandle.code())
-            } else {
-                Ok(value_from_handle(handle))
-            }
-        }
-        NativeRawValueKind::Transfer(transfer) => {
-            let decoded = transfer
-                .clone()
-                .decode(runtime_id)
-                .map_err(set_transfer_error)?;
-            super::runtime_to_value(&decoded)
-        }
-    }
+    let decoded = value
+        .transfer
+        .decode(runtime_id)
+        .map_err(set_transfer_error)?;
+    super::runtime_to_value(&decoded)
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn native_arguments(arguments: &[XiaoValue], runtime_id: u64) -> Result<Vec<NativeRawValue>, i32> {
     let mut values = Vec::with_capacity(arguments.len());
     let mut total_bytes = 0_usize;
@@ -367,10 +386,7 @@ fn native_arguments(arguments: &[XiaoValue], runtime_id: u64) -> Result<Vec<Nati
                 return Err(status);
             }
         };
-        let byte_len = match &value.value {
-            NativeRawValueKind::Concurrency(_) => 16,
-            NativeRawValueKind::Transfer(transfer) => transfer.byte_len(),
-        };
+        let byte_len = value.transfer.byte_len();
         let Some(next_total) = total_bytes.checked_add(byte_len) else {
             while values.pop().is_some() {}
             return Err(set_concurrency_error(
@@ -391,22 +407,28 @@ fn native_arguments(arguments: &[XiaoValue], runtime_id: u64) -> Result<Vec<Nati
     Ok(values)
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn invoke_entry(
     entry: xiao_runtime_abi::XiaoConcurrencyEntry,
     context: usize,
     arguments: Vec<NativeRawValue>,
     runtime_id: u64,
 ) -> NativeEntryOutcome {
-    let values = arguments
-        .into_iter()
-        .map(|value| value_from_raw(value, runtime_id))
-        .collect::<Result<Vec<_>, _>>();
-    let Ok(mut values) = values else {
-        return take_native_error_packet().map_or(
-            NativeEntryOutcome::RuntimeFailure(RuntimeExecError::JoinFailed),
-            NativeEntryOutcome::Error,
-        );
-    };
+    let mut values = Vec::with_capacity(arguments.len());
+    for argument in arguments {
+        match value_from_raw(argument, runtime_id) {
+            Ok(value) => values.push(value),
+            Err(_) => {
+                for value in values.iter_mut().rev() {
+                    crate::abi::xiao_runtime_value_release(value);
+                }
+                return take_native_error_packet().map_or(
+                    NativeEntryOutcome::RuntimeFailure(RuntimeExecError::JoinFailed),
+                    NativeEntryOutcome::Error,
+                );
+            }
+        }
+    }
     let mut output = XiaoValue::none();
     // SAFETY: `entry` 来自 LLVM 产物登记的 trampoline；参数和输出槽在本次调用期间有效。
     let status = unsafe {
@@ -417,7 +439,7 @@ fn invoke_entry(
             &mut output,
         )
     };
-    for value in &mut values {
+    for value in values.iter_mut().rev() {
         crate::abi::xiao_runtime_value_release(value);
     }
     if status != XiaoAbiStatus::Ok.code() {
@@ -438,6 +460,7 @@ fn invoke_entry(
     }
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn native_outcome_to_value(outcome: NativeEntryOutcome, runtime_id: u64) -> Result<XiaoValue, i32> {
     match outcome {
         NativeEntryOutcome::Value(value) => value_from_raw(value, runtime_id),
@@ -453,6 +476,7 @@ fn native_outcome_to_value(outcome: NativeEntryOutcome, runtime_id: u64) -> Resu
     }
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 pub(super) fn value_from_handle(handle: XiaoConcurrencyHandle) -> XiaoValue {
     if handle.is_null() {
         return XiaoValue::none();
@@ -465,6 +489,7 @@ pub(super) fn value_from_handle(handle: XiaoConcurrencyHandle) -> XiaoValue {
     }
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 pub(super) fn handle_from_value(value: &XiaoValue) -> Result<XiaoConcurrencyHandle, i32> {
     if value.tag != XiaoValueTag::Concurrency {
         return Err(XiaoAbiStatus::InvalidArgument.code());
@@ -474,6 +499,7 @@ pub(super) fn handle_from_value(value: &XiaoValue) -> Result<XiaoConcurrencyHand
     object_kind(handle).map(|_| handle)
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 pub(super) fn runtime_value_from_value(value: &XiaoValue) -> Result<RuntimeValue, i32> {
     let handle = handle_from_value(value)?;
     let object = clone_object(handle)?;
@@ -494,6 +520,7 @@ pub(super) fn runtime_value_from_value(value: &XiaoValue) -> Result<RuntimeValue
     })
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 pub(super) fn value_from_runtime(value: &RuntimeValue) -> Result<XiaoValue, i32> {
     let object = match value {
         RuntimeValue::Concurrency(VmConcurrencyValue::Runtime(runtime)) => {
@@ -513,6 +540,7 @@ pub(super) fn value_from_runtime(value: &RuntimeValue) -> Result<XiaoValue, i32>
     Ok(value_from_handle(box_object(object)))
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn runtime_argument(value: &XiaoValue) -> Result<RuntimeHandle, i32> {
     match clone_object(handle_from_value(value)?)? {
         ConcurrencyObject::Runtime(runtime) => Ok(runtime),
@@ -520,6 +548,7 @@ fn runtime_argument(value: &XiaoValue) -> Result<RuntimeHandle, i32> {
     }
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn pool_argument(value: &XiaoValue) -> Result<TaskPool, i32> {
     match clone_object(handle_from_value(value)?)? {
         ConcurrencyObject::Pool(pool) => Ok(pool),
@@ -527,35 +556,35 @@ fn pool_argument(value: &XiaoValue) -> Result<TaskPool, i32> {
     }
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn set_runtime_error(message: impl Into<String>) -> i32 {
     set_concurrency_error(crate::CONCURRENCY_RUNTIME_CLOSED_CODE, message)
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn set_concurrency_error(code: &str, message: impl Into<String>) -> i32 {
     super::set_pending_runtime_error(crate::RuntimeError::new(
-        crate::XiaoErrorKind::Concurrency,
+        crate::XiaoErrorKind::Other,
         code,
-        "runtime.concurrency_native",
+        "runtime.concurrency",
         message,
     ));
     XiaoAbiStatus::RuntimeError.code()
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn map_exec_error(error: RuntimeExecError) -> i32 {
-    super::set_pending_runtime_error(crate::RuntimeError::new(
-        crate::XiaoErrorKind::Concurrency,
-        error.code(),
-        "runtime.concurrency_native",
-        error.to_string(),
-    ));
+    super::set_pending_runtime_error(crate::execution_error(error));
     XiaoAbiStatus::RuntimeError.code()
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn bytes_to_operation(operation: XiaoAbiBytes) -> Result<String, i32> {
     // SAFETY: Runtime ABI 只在调用期间借用操作名，长度和指针由统一视图校验。
     unsafe { super::utf8(operation) }
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn expect_count(count: usize, expected: usize) -> Result<(), i32> {
     if count == expected {
         Ok(())
@@ -564,6 +593,7 @@ fn expect_count(count: usize, expected: usize) -> Result<(), i32> {
     }
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn call_named(
     operation: &str,
     arguments: *const XiaoValue,
@@ -583,6 +613,7 @@ fn call_named(
     )
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn call_named_with_entry(
     operation: &str,
     entry: Option<xiao_runtime_abi::XiaoConcurrencyEntry>,
@@ -678,10 +709,10 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                 let capacity = match arguments[1].tag {
                     XiaoValueTag::Int => unsafe { arguments[1].payload.i64_value },
                     XiaoValueTag::Sint => i64::from(unsafe { arguments[1].payload.i32_value }),
-                    _ => return Err(XiaoAbiStatus::InvalidArgument.code()),
+                    _ => return Err(map_exec_error(RuntimeExecError::PoolArgument)),
                 };
-                let capacity =
-                    usize::try_from(capacity).map_err(|_| XiaoAbiStatus::InvalidArgument.code())?;
+                let capacity = usize::try_from(capacity)
+                    .map_err(|_| map_exec_error(RuntimeExecError::PoolArgument))?;
                 RuntimeHandle::current()
                     .in_context(|| TaskPool::create(runtime, capacity))
                     .map_err(map_exec_error)?
@@ -734,7 +765,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                 let value = shared
                     .get()
                     .map_err(|_| XiaoAbiStatus::InvalidHandle.code())?
-                    .decode(shared.runtime_id())
+                    .decode(RuntimeHandle::current().id())
                     .map_err(set_transfer_error)?;
                 super::runtime_to_value(&value)
             }
@@ -746,6 +777,11 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             else {
                 return Err(XiaoAbiStatus::InvalidHandle.code());
             };
+            if shared.runtime_id() != RuntimeHandle::current().id()
+                || RuntimeHandle::current().is_closed()
+            {
+                return Err(map_exec_error(RuntimeExecError::RuntimeClosed));
+            }
             let cancellation = crate::current_cancellation_token();
             let guard = shared
                 .lock_owned(&cancellation, || crate::cancellation_safe_point().is_err())
@@ -769,6 +805,11 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             let guard_ref = guard
                 .try_borrow()
                 .map_err(|_| XiaoAbiStatus::RuntimeError.code())?;
+            if guard_ref.runtime_id() != RuntimeHandle::current().id()
+                || RuntimeHandle::current().is_closed()
+            {
+                return Err(map_exec_error(RuntimeExecError::RuntimeClosed));
+            }
             let value = guard_ref
                 .decode(guard_ref.runtime_id())
                 .map_err(set_transfer_error)?;
@@ -783,6 +824,9 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             };
             let value = unsafe { super::value_to_runtime(&arguments[1]) }?;
             let runtime_id = transfer_runtime_id_from_guard(&guard)?;
+            if runtime_id != RuntimeHandle::current().id() || RuntimeHandle::current().is_closed() {
+                return Err(map_exec_error(RuntimeExecError::RuntimeClosed));
+            }
             let transfer =
                 VmTransferValue::encode(&value, runtime_id).map_err(set_transfer_error)?;
             **guard
@@ -837,7 +881,14 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                     move |result| record_native_detached(runtime_id, result),
                 )
                 .map_err(map_exec_error)?;
-            native_outcome_to_value(value, runtime_id)
+            let result = crate::vm_concurrency::cancel_result(
+                value.into_execution_result(),
+                &state.cancellation,
+            );
+            native_outcome_to_value(
+                NativeEntryOutcome::from_execution_result(result),
+                runtime_id,
+            )
         }
         "detach" => {
             expect_count(argument_count, 1)?;
@@ -895,13 +946,25 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             let runtime_id = runtime.id();
             let values = native_arguments(&arguments[1..], runtime_id)?;
             let context = context as usize;
-            let cancellation = crate::current_cancellation_token();
+            let submitting_cancellation = crate::current_cancellation_token();
+            let task_cancellation = RuntimeCancellation::default();
+            let task_cancellation_hook: Arc<dyn Fn() + Send + Sync> = {
+                let task_cancellation = task_cancellation.clone();
+                Arc::new(move || task_cancellation.cancel())
+            };
+            let parent_registration =
+                submitting_cancellation.register_cancel_hook(&task_cancellation_hook);
+            let queue_interrupted = submitting_cancellation.clone();
             let handle = RuntimeHandle::current()
                 .in_context(|| {
                     pool.submit_cooperative(
-                        cancellation,
-                        || false,
-                        move |_| invoke_entry(entry, context, values, runtime_id),
+                        task_cancellation,
+                        move || queue_interrupted.is_cancelled(),
+                        move |_| {
+                            let _parent_registration = parent_registration;
+                            let _parent_hook = task_cancellation_hook;
+                            invoke_entry(entry, context, values, runtime_id)
+                        },
                     )
                 })
                 .map_err(map_exec_error)?
@@ -928,9 +991,15 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                 .take()
                 .ok_or(XiaoAbiStatus::InvalidHandle.code())?;
             let outcome = handle
-                .wait_interruptible(|| crate::cancellation_safe_point().is_err())
-                .map_err(map_exec_error)?;
-            native_outcome_to_value(outcome, state.runtime.id())
+                .wait_interruptible_preserving_result(|| crate::cancellation_safe_point().is_err())
+                .map(NativeEntryOutcome::into_execution_result);
+            let result =
+                crate::vm_concurrency::normalize_task_wait_result(outcome, &state.cancellation)
+                    .map_err(map_exec_error)?;
+            native_outcome_to_value(
+                NativeEntryOutcome::from_execution_result(result),
+                state.runtime.id(),
+            )
         }
         _ => Err(set_runtime_error(format!("未知原生并发入口 {operation}"))),
     })();
@@ -944,6 +1013,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
     }
 }
 
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn transfer_runtime_id_from_guard(
     guard: &Rc<RefCell<SharedOwnedGuard<VmTransferValue>>>,
 ) -> Result<u64, i32> {
@@ -1237,9 +1307,11 @@ fn _assert_entry_abi(
 }
 
 #[cfg(test)]
+/// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 mod tests {
     use super::*;
 
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn operation(name: &str) -> XiaoAbiBytes {
         XiaoAbiBytes {
             ptr: name.as_ptr(),
@@ -1248,6 +1320,7 @@ mod tests {
     }
 
     #[test]
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn runtime_and_pool_values_use_opaque_concurrency_tag() {
         let mut output = XiaoValue::none();
         assert_eq!(
@@ -1271,6 +1344,60 @@ mod tests {
     }
 
     #[test]
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
+    fn public_release_reclaims_shared_box_and_boundaries_reject_thread_local_handles() {
+        crate::abi::xiao_runtime_error_clear();
+        let runtime = RuntimeHandle::current();
+        let shared = SharedHandle::new(
+            VmTransferValue::encode(&RuntimeValue::Int(1), runtime.id()).unwrap(),
+            runtime.id(),
+            SharedTag::Read,
+        );
+        let weak = shared.downgrade();
+        let handle = box_object(ConcurrencyObject::Shared(shared));
+        let mut value = value_from_handle(handle);
+        let transfer = raw_from_value(&value, runtime.id()).expect("显式 shared 通过值通道");
+        let mut copy = value_from_raw(transfer, runtime.id()).expect("接收线程重建自己的 ABI 盒子");
+        assert_ne!(unsafe { value.payload.handle }, unsafe {
+            copy.payload.handle
+        });
+        crate::abi::xiao_runtime_value_release(&mut value);
+        assert!(weak.upgrade().is_some());
+        crate::abi::xiao_runtime_value_release(&mut copy);
+        assert!(weak.upgrade().is_none(), "普通值释放入口也必须回收并发盒子");
+
+        let mut runtime_value = value_from_handle(box_object(ConcurrencyObject::Runtime(runtime)));
+        assert!(raw_from_value(&runtime_value, RuntimeHandle::current().id()).is_err());
+        assert!(
+            matches!(take_native_error_packet(), Some(NativeErrorPacket::Recoverable(error))
+            if error.code() == crate::CONCURRENCY_SERIALIZATION_CODE)
+        );
+        crate::abi::xiao_runtime_value_release(&mut runtime_value);
+    }
+
+    #[test]
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
+    fn completed_child_cancellation_uses_vm_error_normalization_and_keeps_cleanup_error() {
+        let cancellation = RuntimeCancellation::default();
+        cancellation.cancel();
+        let child_error = crate::RuntimeError::from_type_name(
+            "ArithmeticError",
+            Some("CHILD"),
+            Some("child cleanup"),
+        )
+        .unwrap();
+        let outcome = NativeEntryOutcome::Error(NativeErrorPacket::Recoverable(child_error));
+        let result =
+            crate::vm_concurrency::cancel_result(outcome.into_execution_result(), &cancellation);
+        assert!(
+            matches!(result, Err(crate::VmExecutionError::ConcurrencyCancelled(error))
+            if error.code() == crate::CONCURRENCY_CANCELLED_CODE
+                && error.suppressed().iter().any(|error| error.code() == "CHILD"))
+        );
+    }
+
+    #[test]
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn unsupported_operation_is_explicitly_rejected() {
         let mut output = XiaoValue::none();
         let status =
@@ -1279,7 +1406,9 @@ mod tests {
     }
 
     #[test]
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn native_trampoline_spawn_join_round_trips_scalar_result() {
+        /// 22D 内部并发适配实现。
         unsafe extern "C" fn entry(
             _context: *mut c_void,
             _arguments: *const XiaoValue,
@@ -1328,6 +1457,7 @@ mod tests {
     }
 
     #[test]
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn native_shared_mut_lock_round_trips_and_writes_value() {
         let mut input = XiaoValue::int(1);
         let mut shared = XiaoValue::none();
@@ -1369,6 +1499,7 @@ mod tests {
     }
 
     #[test]
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn current_runtime_is_stable_and_child_uses_bound_runtime_context() {
         let mut first = XiaoValue::none();
         let mut second = XiaoValue::none();
@@ -1394,6 +1525,7 @@ mod tests {
         let second_id = runtime_argument(&second).unwrap().id();
         assert_eq!(first_id, second_id);
 
+        /// 22D 内部并发适配实现。
         unsafe extern "C" fn current_id(
             context: *mut c_void,
             _arguments: *const XiaoValue,
@@ -1442,7 +1574,9 @@ mod tests {
     }
 
     #[test]
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn trampoline_error_identity_returns_to_joining_thread() {
+        /// 22D 内部并发适配实现。
         unsafe extern "C" fn entry(
             _context: *mut c_void,
             _arguments: *const XiaoValue,
@@ -1514,7 +1648,9 @@ mod tests {
     }
 
     #[test]
+    /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn detached_trampoline_failure_keeps_error_identity_and_runtime_id() {
+        /// 22D 内部并发适配实现。
         unsafe extern "C" fn entry(
             _context: *mut c_void,
             _arguments: *const XiaoValue,

@@ -57,7 +57,11 @@ impl<'a> DynamicGenerator<'a> {
                 self.emit_table_get(object, member, expression.span)
             }
             IrExpressionKind::Call { callee, arguments } => {
-                self.emit_call(callee, arguments, expression.span)
+                if let Some(call) = self.concurrency_plan.lookup_expression(expression).cloned() {
+                    self.emit_native_concurrency_call(&call, arguments, expression.span)
+                } else {
+                    self.emit_call(callee, arguments, expression.span)
+                }
             }
             IrExpressionKind::IntrinsicCall { id, arguments } => {
                 self.emit_intrinsic(*id, arguments, expression.span)
@@ -818,11 +822,6 @@ impl<'a> DynamicGenerator<'a> {
         arguments: &[IrCallArgument],
         span: IrSpan,
     ) -> Result<String> {
-        // 并发调用只按同源 IR 的 span 计划路由；callee 的展示名称不能改变 lowering
-        // 结果。没有计划的普通调用继续走原有函数/方法路径。
-        if let Some(call) = self.concurrency_plan.lookup(span).cloned() {
-            return self.emit_native_concurrency_call(&call, arguments, span);
-        }
         if let IrExpressionKind::Member { object, member } = &callee.kind
             && matches!(&object.kind, IrExpressionKind::Name { name } if name.text == "random")
             && member.text == "seed"

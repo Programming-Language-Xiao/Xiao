@@ -46,6 +46,16 @@ struct CleanupFailure {
 impl<'a> DynamicGenerator<'a> {
     /// 发射一条顶层语句；异常展开留给 N0-C。
     fn emit_statement(&mut self, statement: &'a IrStatement) -> Result<()> {
+        // 子执行单元在动态函数的语句边界消费 22B safe_point。Root 入口没有
+        // Runtime 取消 token 时该检查是空操作；线程/任务执行时由 Runtime TLS
+        // 提供同一取消身份，027 仍走不可捕获的错误出口并经过 finally 清理。
+        if self.function_mode && !self.concurrency_plan.is_empty() {
+            let operation = self.emit_operation_argument("safe_point");
+            self.checked_status_call_at(
+                format!("@xiao_runtime_concurrency_cancellation_check({operation})"),
+                statement.span,
+            );
+        }
         let outer_temporaries = std::mem::take(&mut self.statement_temporaries);
         match &statement.kind {
             IrStatementKind::Assignment { target, value }

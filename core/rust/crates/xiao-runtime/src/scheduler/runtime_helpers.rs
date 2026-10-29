@@ -18,6 +18,7 @@ thread_local! {
 
 /// 所有 live Runtime 的句柄索引；值只保留弱引用，不延长 Runtime 生命周期。
 fn runtime_handles() -> &'static Mutex<HashMap<u64, Weak<RuntimeInner>>> {
+    /// 弱引用索引不延长任何 Runtime 的生命周期。
     static HANDLES: OnceLock<Mutex<HashMap<u64, Weak<RuntimeInner>>>> = OnceLock::new();
     HANDLES.get_or_init(Default::default)
 }
@@ -106,6 +107,7 @@ pub(crate) trait ThreadHandleReportExt<T> {
 }
 
 impl<T: 'static> ThreadHandleReportExt<T> for ThreadHandle<T> {
+    /// 中断等待时取消任务并把最终执行结果送至 detached 回调。
     fn join_interruptible_with_report(
         mut self,
         interrupted: impl Fn() -> bool,
@@ -136,10 +138,12 @@ impl<T: 'static> ThreadHandleReportExt<T> for ThreadHandle<T> {
 }
 
 #[cfg(test)]
+/// 22D 内部并发适配实现。
 mod tests {
     use super::*;
 
     #[test]
+    /// 验证 root Runtime 复用和显式子 Runtime 上下文恢复。
     fn current_runtime_reuses_root_and_registered_context() {
         let root = RuntimeHandle::current();
         assert_eq!(RuntimeHandle::current().id(), root.id());

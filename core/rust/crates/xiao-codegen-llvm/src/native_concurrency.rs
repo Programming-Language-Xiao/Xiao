@@ -68,6 +68,7 @@ impl NativeConcurrencyCall {
 pub struct NativeConcurrencyPlan {
     calls: Vec<NativeConcurrencyCall>,
     by_span: BTreeMap<IrSpan, usize>,
+    by_expression: BTreeMap<usize, usize>,
 }
 
 impl NativeConcurrencyPlan {
@@ -76,17 +77,34 @@ impl NativeConcurrencyPlan {
     /// 这里只检查计划内部的一致性。未知操作会在真正降低时以结构化
     /// [`CodegenError::Unsupported`] 拒绝，从而保留 D-9 的 fail-closed 行为。
     pub fn from_program(program: &IrProgram) -> Result<Self> {
-        let mut expression_calls = std::collections::BTreeSet::new();
+        let mut expression_calls = BTreeMap::new();
         collect_statement_calls(&program.body, &mut expression_calls);
-        for module in &program.modules {
-            collect_statement_calls(&module.body, &mut expression_calls);
-        }
         let mut plan = Self::default();
         for call in &program.concurrency_calls {
-            if !expression_calls.contains(&call.span) {
+            let matching = expression_calls
+                .get(&call.span)
+                .into_iter()
+                .flatten()
+                .filter(|expression| {
+                    let IrExpressionKind::Call { arguments, .. } = &expression.kind else {
+                        return false;
+                    };
+                    expression.ty == call.result_type
+                        && arguments
+                            .iter()
+                            .map(|argument| argument.value.span)
+                            .eq(call.argument_spans.iter().copied())
+                        && arguments
+                            .iter()
+                            .map(|argument| &argument.value.ty)
+                            .eq(call.argument_types.iter())
+                })
+                .copied()
+                .collect::<Vec<_>>();
+            if matching.len() != 1 {
                 return Err(CodegenError::InvalidIr {
                     message: format!(
-                        "并发调用计划 {}..{} 没有对应的 IR Call",
+                        "并发调用计划 {}..{} 必须唯一对应参数和结果类型一致的 IR Call",
                         call.span.start, call.span.end
                     ),
                 });
@@ -123,6 +141,8 @@ impl NativeConcurrencyPlan {
                 .collect();
             let index = plan.calls.len();
             plan.by_span.insert(call.span, index);
+            plan.by_expression
+                .insert(matching[0] as *const IrExpression as usize, index);
             plan.calls.push(NativeConcurrencyCall {
                 operation: call.operation.clone(),
                 span: call.span,
@@ -133,6 +153,35 @@ impl NativeConcurrencyPlan {
                 boundary_transfer,
                 cancellation_checks,
             });
+        }
+        for span in program
+            .ownership
+            .cross_thread_facts
+            .iter()
+            .map(|fact| fact.span)
+            .chain(
+                program
+                    .ownership
+                    .boundary_transfers
+                    .iter()
+                    .map(|transfer| transfer.span),
+            )
+            .chain(
+                program
+                    .ownership
+                    .cancellation_checks
+                    .iter()
+                    .map(|check| check.span),
+            )
+        {
+            if !plan.by_span.contains_key(&span) {
+                return Err(CodegenError::InvalidIr {
+                    message: format!(
+                        "并发 facts/transfers/cancellation {}..{} 没有并发调用计划",
+                        span.start, span.end
+                    ),
+                });
+            }
         }
         Ok(plan)
     }
@@ -148,6 +197,17 @@ impl NativeConcurrencyPlan {
     pub fn lookup(&self, span: IrSpan) -> Option<&NativeConcurrencyCall> {
         self.by_span
             .get(&span)
+            .and_then(|index| self.calls.get(*index))
+    }
+
+    /// 以已经验证过的入口 IR 节点身份查询，避免模块局部源码区间误命中。
+    #[must_use]
+    pub(crate) fn lookup_expression(
+        &self,
+        expression: &IrExpression,
+    ) -> Option<&NativeConcurrencyCall> {
+        self.by_expression
+            .get(&(expression as *const IrExpression as usize))
             .and_then(|index| self.calls.get(*index))
     }
 
@@ -171,9 +231,9 @@ impl NativeConcurrencyPlan {
 }
 
 /// 收集同一 IR 中所有普通 Call 表达式区间；该索引只做结构对账，不解析调用名称。
-fn collect_statement_calls(
-    statements: &[IrStatement],
-    calls: &mut std::collections::BTreeSet<IrSpan>,
+fn collect_statement_calls<'a>(
+    statements: &'a [IrStatement],
+    calls: &mut BTreeMap<IrSpan, Vec<&'a IrExpression>>,
 ) {
     for statement in statements {
         match &statement.kind {
@@ -251,16 +311,17 @@ fn collect_statement_calls(
     }
 }
 
-fn collect_expression_calls(
-    expression: &IrExpression,
-    calls: &mut std::collections::BTreeSet<IrSpan>,
+/// 递归收集 IR 普通调用节点；只记录结构与源码区间，不检查名称。
+fn collect_expression_calls<'a>(
+    expression: &'a IrExpression,
+    calls: &mut BTreeMap<IrSpan, Vec<&'a IrExpression>>,
 ) {
     match &expression.kind {
         IrExpressionKind::Call {
             callee,
             arguments: args,
         } => {
-            calls.insert(expression.span);
+            calls.entry(expression.span).or_default().push(expression);
             collect_expression_calls(callee, calls);
             collect_argument_calls(args, calls);
         }
@@ -323,9 +384,10 @@ fn collect_expression_calls(
     }
 }
 
-fn collect_argument_calls(
-    arguments: &[xiao_ir::IrCallArgument],
-    calls: &mut std::collections::BTreeSet<IrSpan>,
+/// 按调用参数顺序递归收集实参中的调用节点。
+fn collect_argument_calls<'a>(
+    arguments: &'a [xiao_ir::IrCallArgument],
+    calls: &mut BTreeMap<IrSpan, Vec<&'a IrExpression>>,
 ) {
     for argument in arguments {
         collect_expression_calls(&argument.value, calls);
@@ -338,13 +400,15 @@ pub fn native_concurrency_plan(program: &IrProgram) -> Result<NativeConcurrencyP
 }
 
 #[cfg(test)]
+/// 22D 内部并发适配实现。
 mod tests {
     use super::*;
     use xiao_ir::{
-        IrConcurrencyCall, IrEntryMode, IrExpression, IrExpressionKind, IrName, IrProgram, IrSpan,
-        IrStatement, IrStatementKind, IrType,
+        IrConcurrencyCall, IrEntryMode, IrExpression, IrExpressionKind, IrModule, IrName,
+        IrProgram, IrSpan, IrStatement, IrStatementKind, IrType,
     };
 
+    /// 构造用于计划单元测试的冻结并发调用记录。
     fn call(operation: &str, span: IrSpan) -> IrConcurrencyCall {
         IrConcurrencyCall {
             operation: operation.to_owned(),
@@ -355,6 +419,7 @@ mod tests {
         }
     }
 
+    /// 构造一个带运行时实参的普通 Call 节点。
     fn expression_call(span: IrSpan) -> IrStatement {
         IrStatement {
             kind: IrStatementKind::Expression {
@@ -371,7 +436,22 @@ mod tests {
                             ty: IrType::Dynamic,
                             span,
                         }),
-                        arguments: Vec::new(),
+                        arguments: vec![xiao_ir::IrCallArgument {
+                            kind: "positional".to_owned(),
+                            name: None,
+                            span,
+                            value: IrExpression {
+                                kind: IrExpressionKind::Name {
+                                    name: IrName {
+                                        text: "runtime".to_owned(),
+                                        backticked: false,
+                                        span,
+                                    },
+                                },
+                                ty: IrType::Runtime,
+                                span,
+                            },
+                        }],
                     },
                     ty: IrType::Runtime,
                     span,
@@ -383,6 +463,7 @@ mod tests {
     }
 
     #[test]
+    /// 验证计划按已解析 IR 节点索引且不依赖 callee 名称。
     fn plan_indexes_ir_calls_without_name_resolution() {
         let span = IrSpan::new(2, 8);
         let mut program = IrProgram::new(IrEntryMode::Script, vec![expression_call(span)], span);
@@ -396,6 +477,7 @@ mod tests {
     }
 
     #[test]
+    /// 验证重复计划区间在 lowering 前被拒绝。
     fn duplicate_spans_are_rejected() {
         let span = IrSpan::new(2, 8);
         let mut program = IrProgram::new(IrEntryMode::Script, vec![expression_call(span)], span);
@@ -405,6 +487,7 @@ mod tests {
     }
 
     #[test]
+    /// 验证未知并发操作不能落到普通动态调用。
     fn unknown_operation_is_fail_closed() {
         let span = IrSpan::new(2, 8);
         let mut program = IrProgram::new(IrEntryMode::Script, vec![expression_call(span)], span);
@@ -414,5 +497,51 @@ mod tests {
             .require_known_operation(plan.lookup(span).expect("调用存在"))
             .expect_err("未知入口必须拒绝");
         assert!(error.to_string().contains("原生并发入口 future_api"));
+    }
+
+    #[test]
+    /// 验证计划按入口节点匹配，不会被模块内相同局部区间干扰。
+    fn metadata_must_match_one_typed_call_and_cannot_intercept_another_module() {
+        let span = IrSpan::new(2, 8);
+        let original = expression_call(span);
+        let module_call = expression_call(span);
+        let mut program = IrProgram::new(IrEntryMode::Script, vec![original], span);
+        program.modules.push(IrModule {
+            name: "helper".to_owned(),
+            kind: "file".to_owned(),
+            path: "helper.xiao".to_owned(),
+            body: vec![module_call],
+            symbols: Vec::new(),
+        });
+        program.concurrency_calls.push(call("runtime_close", span));
+        let plan = NativeConcurrencyPlan::from_program(&program).unwrap();
+        let IrStatementKind::Expression { value: first } = &program.body[0].kind else {
+            unreachable!()
+        };
+        let IrStatementKind::Expression { value: second } = &program.modules[0].body[0].kind else {
+            unreachable!()
+        };
+        assert!(plan.lookup_expression(first).is_some());
+        assert!(plan.lookup_expression(second).is_none());
+        program.concurrency_calls[0].argument_types[0] = IrType::None;
+        assert!(NativeConcurrencyPlan::from_program(&program).is_err());
+        program.concurrency_calls[0].argument_types[0] = IrType::Runtime;
+        program.body.push(expression_call(span));
+        assert!(
+            NativeConcurrencyPlan::from_program(&program).is_err(),
+            "入口内同形同区间的歧义输入必须拒绝"
+        );
+    }
+
+    /// 没有并发调用计划时不允许丢弃所有权边界事实。
+    #[test]
+    fn orphan_concurrency_facts_are_rejected() {
+        let span = IrSpan::new(2, 8);
+        let mut program = IrProgram::new(IrEntryMode::Script, Vec::new(), span);
+        program
+            .ownership
+            .cross_thread_facts
+            .push(xiao_ir::IrCrossThreadFact::new(1, 1, true, true, span));
+        assert!(NativeConcurrencyPlan::from_program(&program).is_err());
     }
 }
