@@ -928,10 +928,14 @@ pub extern "C" fn xiao_runtime_error_attach_span(start: u64, end: u64) -> i32 {
         }
         match pending.as_mut() {
             Some(PendingError::Recoverable(error)) => {
-                *error = error.clone().with_location(span);
+                if error.location().is_none() {
+                    *error = error.clone().with_location(span);
+                }
             }
             Some(PendingError::Fatal(error)) => {
-                *error = error.clone().with_location(span);
+                if error.location().is_none() {
+                    *error = error.clone().with_location(span);
+                }
             }
             None => unreachable!(),
         }

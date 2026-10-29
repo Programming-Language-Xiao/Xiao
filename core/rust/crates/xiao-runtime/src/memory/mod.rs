@@ -12,8 +12,8 @@ use std::mem::ManuallyDrop;
 use std::path::PathBuf;
 use std::ptr::NonNull;
 use std::rc::Rc;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use crate::errors::{RuntimeError, RuntimeResult};
 
@@ -60,8 +60,24 @@ struct ReleaseTraceState {
     events: Vec<ReleaseEvent>,
 }
 
+/// 原生入口使用的跨线程释放追踪会话。
+///
+/// VM 的 `start_release_trace` 继续保持线程局部语义；只有 C ABI 通过环境变量开启
+/// 的会话使用这里的共享状态，确保 trampoline 子线程的释放事件也能回到同一份差分文件。
+struct NativeReleaseTraceState {
+    path: PathBuf,
+    next_object_id: u64,
+    next_sequence: u64,
+    events: Vec<ReleaseEvent>,
+}
+
 thread_local! {
     static RELEASE_TRACE: RefCell<ReleaseTraceState> = RefCell::new(ReleaseTraceState::default());
+}
+
+fn native_release_trace() -> &'static Mutex<Option<NativeReleaseTraceState>> {
+    static TRACE: OnceLock<Mutex<Option<NativeReleaseTraceState>>> = OnceLock::new();
+    TRACE.get_or_init(|| Mutex::new(None))
 }
 
 /// 一次运行期释放追踪会话的作用域。
@@ -103,11 +119,19 @@ pub fn start_release_trace_from_env() {
     let path = std::env::var_os("XIAO_RUNTIME_RELEASE_TRACE_PATH").map(PathBuf::from);
     RELEASE_TRACE.with(|trace| {
         let mut trace = trace.borrow_mut();
-        trace.enabled = path.is_some();
+        // 环境变量入口改用跨线程会话；保留局部槽关闭，避免同一事件被记录两次。
+        trace.enabled = false;
         trace.next_object_id = 1;
         trace.next_sequence = 0;
-        trace.path = path;
+        trace.path = None;
         trace.events.clear();
+    });
+    let mut native = native_release_trace().lock().expect("原生释放追踪锁未中毒");
+    *native = path.map(|path| NativeReleaseTraceState {
+        path,
+        next_object_id: 1,
+        next_sequence: 0,
+        events: Vec::new(),
     });
 }
 
@@ -119,6 +143,14 @@ pub fn take_release_events() -> Vec<ReleaseEvent> {
 
 /// 将当前线程释放事件写入原生产物指定的差分文件。
 pub fn flush_release_trace() {
+    if let Some(native) = native_release_trace()
+        .lock()
+        .expect("原生释放追踪锁未中毒")
+        .take()
+    {
+        write_release_events(native.path, native.events);
+        return;
+    }
     let (path, events) = RELEASE_TRACE.with(|trace| {
         let mut trace = trace.borrow_mut();
         (trace.path.clone(), std::mem::take(&mut trace.events))
@@ -126,6 +158,10 @@ pub fn flush_release_trace() {
     let Some(path) = path else {
         return;
     };
+    write_release_events(path, events);
+}
+
+fn write_release_events(path: PathBuf, events: Vec<ReleaseEvent>) {
     let mut output = String::new();
     for event in events {
         output.push_str(&format!(
@@ -139,31 +175,67 @@ pub fn flush_release_trace() {
 }
 
 fn trace_object_allocation() -> u64 {
-    RELEASE_TRACE.with(|trace| {
+    if let Some(object_id) = RELEASE_TRACE.with(|trace| {
         let mut trace = trace.borrow_mut();
         if !trace.enabled {
-            return 0;
+            return None;
         }
         let object_id = trace.next_object_id;
         trace.next_object_id = trace.next_object_id.saturating_add(1);
-        object_id
-    })
+        Some(object_id)
+    }) {
+        return object_id;
+    }
+    if let Some(object_id) = native_release_trace()
+        .lock()
+        .expect("原生释放追踪锁未中毒")
+        .as_mut()
+        .map(|trace| {
+            let object_id = trace.next_object_id;
+            trace.next_object_id = trace.next_object_id.saturating_add(1);
+            object_id
+        })
+    {
+        return object_id;
+    }
+    0
 }
 
 fn trace_release(object_id: u64, action: ReleaseAction) {
-    RELEASE_TRACE.with(|trace| {
+    let local_enabled = RELEASE_TRACE.with(|trace| {
         let mut trace = trace.borrow_mut();
-        if !trace.enabled || object_id == 0 {
-            return;
+        if !trace.enabled {
+            return false;
         }
-        let sequence = trace.next_sequence;
-        trace.next_sequence = trace.next_sequence.saturating_add(1);
-        trace.events.push(ReleaseEvent {
-            sequence,
-            object_id,
-            action,
-        });
+        if object_id != 0 {
+            let sequence = trace.next_sequence;
+            trace.next_sequence = trace.next_sequence.saturating_add(1);
+            trace.events.push(ReleaseEvent {
+                sequence,
+                object_id,
+                action,
+            });
+        }
+        true
     });
+    if local_enabled {
+        return;
+    }
+    if let Some(trace) = native_release_trace()
+        .lock()
+        .expect("原生释放追踪锁未中毒")
+        .as_mut()
+    {
+        if object_id != 0 {
+            let sequence = trace.next_sequence;
+            trace.next_sequence = trace.next_sequence.saturating_add(1);
+            trace.events.push(ReleaseEvent {
+                sequence,
+                object_id,
+                action,
+            });
+        }
+    }
 }
 
 /// Runtime 堆对象的类型标签。
@@ -829,8 +901,9 @@ unsafe fn free_header(ptr: NonNull<ObjectHeader>) {
 /// 对象头计数、弱引用存活和载荷释放的回归测试。
 mod tests {
     use super::{
-        ObjectLayout, ObjectPayload, ReleaseAction, RuntimeTypeTag, allocate_payload,
-        start_memory_measurement, start_release_trace, take_release_events,
+        NativeReleaseTraceState, ObjectLayout, ObjectPayload, ReleaseAction, RuntimeTypeTag,
+        allocate_payload, native_release_trace, start_memory_measurement, start_release_trace,
+        take_release_events,
     };
     use crate::containers::ArrayHandle;
     use crate::errors::RuntimeResult;
@@ -952,6 +1025,41 @@ mod tests {
             vec![0, 1, 2]
         );
         assert_eq!(dropped.get(), 1);
+    }
+
+    #[test]
+    /// 原生追踪会话汇总 trampoline 子线程中的释放事件，而不是只记录 root TLS。
+    fn native_release_trace_collects_child_thread_events() {
+        let mut native = native_release_trace().lock().expect("原生释放追踪锁未中毒");
+        assert!(native.is_none(), "测试前不得残留原生追踪会话");
+        *native = Some(NativeReleaseTraceState {
+            path: "unused".into(),
+            next_object_id: 1,
+            next_sequence: 0,
+            events: Vec::new(),
+        });
+        drop(native);
+
+        std::thread::spawn(|| {
+            let handle = allocate_payload(Box::new(AllocatingDrop { bytes: vec![1; 32] }))
+                .expect("子线程应能分配追踪对象");
+            handle.try_release().expect("子线程应能释放追踪对象");
+        })
+        .join()
+        .expect("子线程释放测试不应 panic");
+
+        let state = native_release_trace()
+            .lock()
+            .expect("原生释放追踪锁未中毒")
+            .take()
+            .expect("应保留原生追踪事件");
+        assert!(
+            state
+                .events
+                .iter()
+                .any(|event| event.action == ReleaseAction::Destroy),
+            "子线程销毁事件必须进入共享追踪"
+        );
     }
 
     #[test]

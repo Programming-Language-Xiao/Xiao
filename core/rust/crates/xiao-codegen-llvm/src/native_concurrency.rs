@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 
 use xiao_ir::{
     IrBoundaryTransfer, IrCancellationCheck, IrCrossThreadFact, IrExpression, IrExpressionKind,
-    IrProgram, IrSelectorItem, IrSpan, IrStatement, IrStatementKind,
+    IrProgram, IrSelectorItem, IrSpan, IrStatement, IrStatementKind, IrType,
 };
 
 use crate::error::{CodegenError, Result};
@@ -79,6 +79,20 @@ impl NativeConcurrencyPlan {
     pub fn from_program(program: &IrProgram) -> Result<Self> {
         let mut expression_calls = BTreeMap::new();
         collect_statement_calls(&program.body, &mut expression_calls);
+        for module in &program.modules {
+            let mut module_calls = BTreeMap::new();
+            collect_statement_calls(&module.body, &mut module_calls);
+            if let Some(expression) = module_calls
+                .values()
+                .flatten()
+                .find(|expression| expression_uses_concurrency_boundary(expression))
+            {
+                return Err(CodegenError::Unsupported {
+                    feature: "模块体并发暂不支持".to_owned(),
+                    span: Some(expression.span),
+                });
+            }
+        }
         let mut plan = Self::default();
         for call in &program.concurrency_calls {
             let matching = expression_calls
@@ -394,6 +408,123 @@ fn collect_argument_calls<'a>(
     }
 }
 
+/// 判断一个类型是否携带 22B/22C 并发边界值。
+fn type_uses_concurrency_boundary(ty: &IrType) -> bool {
+    match ty {
+        IrType::Runtime
+        | IrType::Pool
+        | IrType::Thread { .. }
+        | IrType::Task { .. }
+        | IrType::Shared { .. }
+        | IrType::SharedMut { .. }
+        | IrType::LockGuard { .. } => true,
+        IrType::Function {
+            parameters,
+            return_type,
+        } => {
+            parameters.iter().any(type_uses_concurrency_boundary)
+                || type_uses_concurrency_boundary(return_type)
+        }
+        IrType::Array { shape } => match shape {
+            xiao_ir::IrArrayShape::Homogeneous { element, .. } => {
+                type_uses_concurrency_boundary(element)
+            }
+            xiao_ir::IrArrayShape::Heterogeneous { elements } => {
+                elements.iter().any(type_uses_concurrency_boundary)
+            }
+            xiao_ir::IrArrayShape::Unknown => false,
+        },
+        IrType::Tuple { elements } => elements.iter().any(type_uses_concurrency_boundary),
+        IrType::DictTable { entries } | IrType::DictColumn { entries } => entries
+            .iter()
+            .any(|entry| type_uses_concurrency_boundary(&entry.value)),
+        IrType::Set { members, .. } => members.iter().any(type_uses_concurrency_boundary),
+        _ => false,
+    }
+}
+
+/// 模块体尚未建立独立的并发计划；在 lowering 前识别其边界调用并结构化拒绝，
+/// 防止它们退回普通动态调用而产生误导诊断或 fail-open 行为。
+fn expression_uses_concurrency_boundary(expression: &IrExpression) -> bool {
+    let has_boundary_type = type_uses_concurrency_boundary(&expression.ty);
+    match &expression.kind {
+        IrExpressionKind::Call { callee, arguments } => {
+            has_boundary_type
+                || type_uses_concurrency_boundary(&callee.ty)
+                || arguments.iter().any(|argument| {
+                    type_uses_concurrency_boundary(&argument.value.ty)
+                        || expression_uses_concurrency_boundary(&argument.value)
+                })
+                || expression_uses_concurrency_boundary(callee)
+        }
+        IrExpressionKind::NewCall { callee, arguments } => {
+            has_boundary_type
+                || arguments
+                    .iter()
+                    .any(|argument| expression_uses_concurrency_boundary(&argument.value))
+                || expression_uses_concurrency_boundary(callee)
+        }
+        IrExpressionKind::IntrinsicCall { arguments, .. }
+        | IrExpressionKind::DictBuiltin { arguments, .. } => {
+            has_boundary_type
+                || arguments
+                    .iter()
+                    .any(|argument| expression_uses_concurrency_boundary(&argument.value))
+        }
+        _ => expression_children(expression)
+            .into_iter()
+            .any(expression_uses_concurrency_boundary),
+    }
+}
+
+/// 取得非调用表达式的递归子节点；只用于模块体并发边界预检。
+fn expression_children(expression: &IrExpression) -> Vec<&IrExpression> {
+    match &expression.kind {
+        IrExpressionKind::Array { elements }
+        | IrExpressionKind::Tuple { elements }
+        | IrExpressionKind::Set { elements } => elements.iter().collect(),
+        IrExpressionKind::DictTable { entries } | IrExpressionKind::DictColumn { entries } => {
+            entries.iter().map(|entry| &entry.value).collect()
+        }
+        IrExpressionKind::Group { expression }
+        | IrExpressionKind::Cast { expression, .. }
+        | IrExpressionKind::Unary {
+            operand: expression,
+            ..
+        } => vec![expression],
+        IrExpressionKind::Binary { left, right, .. } => vec![left, right],
+        IrExpressionKind::Member { object, .. } => vec![object],
+        IrExpressionKind::Selector {
+            source,
+            step,
+            selector,
+            ..
+        } => {
+            let mut children = vec![source.as_ref()];
+            if let Some(step) = step {
+                children.push(step);
+            }
+            for item in &selector.items {
+                match item {
+                    xiao_ir::IrSelectorItem::ExactExpression { expression, .. }
+                    | xiao_ir::IrSelectorItem::Random {
+                        count: expression, ..
+                    } => {
+                        children.push(expression);
+                    }
+                    _ => {}
+                }
+            }
+            children
+        }
+        IrExpressionKind::Literal { .. } | IrExpressionKind::Name { .. } => Vec::new(),
+        IrExpressionKind::Call { .. }
+        | IrExpressionKind::NewCall { .. }
+        | IrExpressionKind::IntrinsicCall { .. }
+        | IrExpressionKind::DictBuiltin { .. } => Vec::new(),
+    }
+}
+
 /// 从同一份 IR 建立 LLVM 并发计划的公开入口。
 pub fn native_concurrency_plan(program: &IrProgram) -> Result<NativeConcurrencyPlan> {
     NativeConcurrencyPlan::from_program(program)
@@ -504,7 +635,15 @@ mod tests {
     fn metadata_must_match_one_typed_call_and_cannot_intercept_another_module() {
         let span = IrSpan::new(2, 8);
         let original = expression_call(span);
-        let module_call = expression_call(span);
+        let mut module_call = expression_call(span);
+        let IrStatementKind::Expression { value } = &mut module_call.kind else {
+            unreachable!()
+        };
+        value.ty = IrType::None;
+        let IrExpressionKind::Call { arguments, .. } = &mut value.kind else {
+            unreachable!()
+        };
+        arguments[0].value.ty = IrType::None;
         let mut program = IrProgram::new(IrEntryMode::Script, vec![original], span);
         program.modules.push(IrModule {
             name: "helper".to_owned(),
@@ -543,5 +682,26 @@ mod tests {
             .cross_thread_facts
             .push(xiao_ir::IrCrossThreadFact::new(1, 1, true, true, span));
         assert!(NativeConcurrencyPlan::from_program(&program).is_err());
+    }
+
+    #[test]
+    /// 模块体并发必须在 lowering 前以明确的阶段边界拒绝。
+    fn module_concurrency_is_rejected_structurally() {
+        let span = IrSpan::new(2, 8);
+        let mut program = IrProgram::new(IrEntryMode::Script, Vec::new(), span);
+        program.modules.push(IrModule {
+            name: "helper".to_owned(),
+            kind: "file".to_owned(),
+            path: "helper.xiao".to_owned(),
+            body: vec![expression_call(span)],
+            symbols: Vec::new(),
+        });
+        let error = NativeConcurrencyPlan::from_program(&program)
+            .expect_err("模块体并发不能退回普通动态调用");
+        assert!(matches!(
+            error,
+            CodegenError::Unsupported { feature, .. }
+                if feature == "模块体并发暂不支持"
+        ));
     }
 }

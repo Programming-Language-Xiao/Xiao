@@ -958,14 +958,6 @@ impl<'a> DynamicGenerator<'a> {
             });
         }
 
-        for check in &call.cancellation_checks {
-            let operation = self.emit_operation_argument(&check.kind);
-            self.checked_status_call_at(
-                format!("@xiao_runtime_concurrency_cancellation_check({operation})"),
-                check.span,
-            );
-        }
-
         let mut entry_symbol = None;
         let skipped_function = if matches!(call.operation.as_str(), "spawn" | "submit") {
             let Some(function_argument) = arguments.get(1) else {
@@ -974,7 +966,11 @@ impl<'a> DynamicGenerator<'a> {
                     span: Some(span),
                 });
             };
-            let IrExpressionKind::Name { name } = &function_argument.value.kind else {
+            let mut target = &function_argument.value;
+            while let IrExpressionKind::Group { expression } = &target.kind {
+                target = expression;
+            }
+            let IrExpressionKind::Name { name } = &target.kind else {
                 return Err(CodegenError::Unsupported {
                     feature: format!("并发入口 {} 的函数参数必须是静态函数", call.operation),
                     span: Some(function_argument.span),
@@ -1001,6 +997,15 @@ impl<'a> DynamicGenerator<'a> {
                 continue;
             }
             values.push(self.emit_expression(&argument.value)?);
+        }
+        // VM 在绑定并求值并发调用实参后才消费取消检查；原生保持相同顺序，
+        // 避免取消与实参求值错误同时发生时改变可观察的错误优先级。
+        for check in &call.cancellation_checks {
+            let operation = self.emit_operation_argument(&check.kind);
+            self.checked_status_call_at(
+                format!("@xiao_runtime_concurrency_cancellation_check({operation})"),
+                check.span,
+            );
         }
         let array = self.next_temp();
         self.emit(format!(

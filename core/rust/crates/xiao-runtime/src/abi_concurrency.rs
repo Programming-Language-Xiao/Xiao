@@ -187,6 +187,11 @@ fn record_native_detached(runtime_id: u64, result: Result<NativeEntryOutcome, Ru
     if let Some(error) = crate::vm_concurrency::detached_execution_error(
         result.map(NativeEntryOutcome::into_execution_result),
     ) {
+        // 独立 native 产物没有 VM sink；回调到达时立即写出结构化机器诊断，
+        // 同时保留有界 Runtime 通道供显式宿主读取。这样 detached 失败不会
+        // 静默滞留到进程结束，也不改变主入口退出码。
+        let report = error.report();
+        super::write_runtime_report("recoverable", &report, super::current_locale(), 0);
         push_native_detached_error(runtime_id, NativeErrorPacket::Recoverable(error));
     }
 }

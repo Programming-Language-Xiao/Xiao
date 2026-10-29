@@ -8,6 +8,32 @@ use xiao_driver::{
     NativeBuildRequest,
 };
 
+/// 把生成文本交给真实 LLVM 解析器；22D 的这组回归必须具备 `llvm-as`，不能用文本
+/// 包含关系替代汇编器验证。
+fn validate_with_llvm_as(text: &str, label: &str) {
+    let llvm_as = std::env::var_os("XIAO_LLVM_AS")
+        .or_else(|| {
+            let command = if cfg!(windows) { "where.exe" } else { "which" };
+            let output = Command::new(command).arg("llvm-as").output().ok()?;
+            if !output.status.success() {
+                return None;
+            }
+            let path = String::from_utf8_lossy(&output.stdout)
+                .lines()
+                .next()?
+                .trim()
+                .to_owned();
+            (!path.is_empty()).then_some(path.into())
+        })
+        .unwrap_or_else(|| {
+            panic!("{label}: 22D LLVM 回归必须提供 XIAO_LLVM_AS 或 PATH 中的 llvm-as")
+        });
+    Toolchain::new("unused")
+        .with_llvm_as(llvm_as)
+        .validate_llvm_ir(text, &TargetDescription::host())
+        .unwrap_or_else(|error| panic!("{label}: llvm-as 应接受生成文本：{error}"));
+}
+
 #[test]
 /// 比较同一 IR 降出的 Native/TAC 计划并检查 trampoline lowering。
 fn native_lowering_consumes_concurrency_spans_and_emits_trampoline() {
@@ -125,6 +151,51 @@ fn native_shared_lock_plan_keeps_cancel_and_runtime_abi_paths() {
             .contains("xiao_runtime_concurrency_cancellation_check")
     );
     assert!(module.text.contains("xiao_runtime_release_trace_begin"));
+}
+
+#[test]
+/// 导入别名先进入最终函数表后，trampoline 目标与函数定义必须保持一致。
+fn native_concurrency_alias_import_keeps_trampoline_symbols_assembling() {
+    let source = "from stdlib.text import length as mylen\nfrom std.concurrent import runtime_create, spawn, join\ndef work(int value) -> int\n    return value\nrt = runtime_create()\nt = spawn(rt, work, 1)\nprint(join(t))\n";
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect("别名并发源码应通过统一前端");
+    let module = lower_program(
+        &artifact.ir,
+        &CodegenOptions::default().with_internal_concurrency(),
+    )
+    .expect("别名不应让 lowering 成功后留下悬空符号");
+    validate_with_llvm_as(&module.text, "别名导入 + spawn/join");
+}
+
+#[test]
+/// 并发目标使用导入别名时，必须生成并定义别名对应的 trampoline。
+fn native_concurrency_alias_function_target_has_a_defined_trampoline() {
+    let source = "from stdlib.text import length as mylen\nfrom std.concurrent import runtime_create, spawn, join\nrt = runtime_create()\nt = spawn(rt, mylen, \"abc\")\nprint(join(t))\n";
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect("别名函数并发源码应通过统一前端");
+    let module = lower_program(
+        &artifact.ir,
+        &CodegenOptions::default().with_internal_concurrency(),
+    )
+    .expect("别名函数目标应生成 trampoline");
+    validate_with_llvm_as(&module.text, "别名函数目标");
+}
+
+#[test]
+/// 函数目标外层只有括号分组时，native 仍应解析到同一个静态函数。
+fn native_concurrency_grouped_function_target_is_supported() {
+    let source = "from std.concurrent import runtime_create, spawn, join\ndef work(int value) -> int\n    return value\nrt = runtime_create()\nt = spawn(rt, (work), 1)\nprint(join(t))\n";
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(source))
+        .expect("分组函数目标应通过统一前端");
+    let module = lower_program(
+        &artifact.ir,
+        &CodegenOptions::default().with_internal_concurrency(),
+    )
+    .expect("分组函数目标应能 lowering");
+    validate_with_llvm_as(&module.text, "分组函数目标");
 }
 
 #[test]

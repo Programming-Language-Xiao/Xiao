@@ -276,14 +276,21 @@ impl<'a> DynamicGenerator<'a> {
                     .insert((module.name.clone(), name.text.clone()), statement);
             }
         }
-        self.prepare_concurrency_trampolines()?;
         self.emit_entry()?;
+        // 导入语句在入口发射期间才会把别名函数登记到
+        // `function_definitions`。trampoline 必须在这之后准备，否则函数表的
+        // BTreeMap 位置会因别名插入而改变，生成的目标符号会与实际定义脱节。
+        self.prepare_concurrency_trampolines()?;
         let mut seen_functions = BTreeSet::new();
         let functions = self
             .function_definitions
             .values()
             .copied()
-            .filter(|statement| seen_functions.insert((statement.span.start, statement.span.end)))
+            .filter(|statement| {
+                // 不用源码区间去重：不同模块可以合法拥有相同的局部 span，
+                // 而并发 trampoline 需要为每个真实函数节点保留定义。
+                seen_functions.insert(*statement as *const IrStatement as usize)
+            })
             .collect::<Vec<_>>();
         for statement in functions {
             self.emit_function_definition(statement)?;
@@ -335,7 +342,17 @@ impl<'a> DynamicGenerator<'a> {
             text.push_str(function);
             text.push('\n');
         }
-        let components = runtime_abi::reachable_runtime_components(&text);
+        let mut components = runtime_abi::reachable_runtime_components(&text);
+        if !self.concurrency_plan.is_empty()
+            && !components
+                .iter()
+                .any(|component| component == "concurrency")
+        {
+            // 并发调用可能只出现在尚未从 main 调用的函数中；组件报告仍须
+            // 反映该模块包含的并发 ABI 依赖，不能由入口可达性静默丢弃。
+            components.push("concurrency".to_owned());
+            components.sort();
+        }
         let fingerprint = format!(
             "xiao-codegen-{CODEGEN_VERSION}-{}",
             stable_hash(
