@@ -7,7 +7,7 @@
 >
 > 状态：**实施中（2026-10-29，P1 修复后）**。22C-FIX.1 的代码提交 `0caebc9` 已通过 26 条 VM 并发回归和
 > workspace/三平台 maintenance；本批已接入同源 LLVM 并发计划、原生不透明值与 trampoline。
-> 前一轮审核发现的两个会生成不可汇编 LLVM 的导入别名缺陷已修复，并加入实际 `llvm-as` 门禁；并发 ABI 内部差分仍按已确认的 D-2/D-5 采用标签 18、ABI 1.17 和不透明锁守卫方案；完整黄金场景差分与三平台原生门禁尚未验收，不写
+> 前一轮审核发现的根入口导入别名缺陷已修复；新发现的函数体局部导入别名缺陷已以稳定函数定义身份修复，并加入受控 `llvm-as` 门禁；并发 ABI 内部差分仍按已确认的 D-2/D-5 采用标签 18、ABI 1.17 和不透明锁守卫方案；完整黄金场景差分与三平台原生门禁尚未验收，不写
 > `stdlib/concurrent.xiao` 函数体，不冻结原生并发产物元数据，不修改 32B 共享头、ABI 1.17、
 > API 名称、Send/Sync 表或诊断编号。
 
@@ -46,7 +46,7 @@ maintenance `40709431618` 第 2 次尝试通过，Linux/Windows/macOS 各自运�
 | 线程入口 | 已生成统一函数指针 + 不透明上下文 trampoline，Runtime 负责创建/等待/取消线程和任务 | 继续覆盖 panic、detached、pool 背压和关闭 drain |
 | 错误/取消 | LLVM 已消费 `safe_point`/`wait`/`lock_wait`，Runtime 复用统一错误槽和取消状态 | 仍需把 027–032、主/suppressed、detached 失败完整投影到差分夹具 |
 | 构建/产物 | `NativeBuild`/`FrontendNativeDriver` 已存在；原生并发产物元数据明确后置到 22E | 22D 只生成内部原生测试产物；不新增 `.xar` 原生 feature 容器或发布验收 |
-| 测试 | 计划/ABI/trampoline/共享锁已有 Rust 回归；别名函数、别名目标、分组目标会实际调用 `llvm-as`；Windows 本机线程、pool、shared/lock、跨线程只读 shared 四场景 stdout 对照通过 | 完整错误、释放、取消和远端三平台证据尚未齐全 |
+| 测试 | 计划/ABI/trampoline/共享锁已有 Rust 回归；根/局部导入别名和分组目标的真实 `llvm-as` 回归由三平台 native job 精确运行；Windows 本机线程、pool、shared/lock、跨线程只读 shared 四场景 stdout 对照通过 | 完整失败差分、release trace 和远端三平台证据尚未齐全 |
 
 ## 二、目标与不负责
 
@@ -316,19 +316,20 @@ core/rust/crates/xiao-codegen-llvm/tests/                 原生夹具
 - 动态 LLVM 对 `runtime_create/current_runtime/runtime_close`、线程/任务池/shared/lock 等计划调用统一发射 Runtime C ABI；`spawn/submit` 生成函数指针 trampoline，参数按 IR 顺序求值并在成功、失败路径释放临时值。
 - `xiao-runtime-abi` 按已确认的 D-2/D-5 追加 `XiaoValueTag::Concurrency = 18`、`XiaoConcurrencyKind`、并发句柄、trampoline 和 detached 错误通道声明；32B shared header、16B shared handle 和 ABI 1.17 保持不变。该路径仍是 22D 内部差分接口，22E 再处理发布元数据。
 - `xiao-runtime` 增加并发 ABI 盒子、Runtime/pool、XCON 边界值与显式 shared 通道、read/lock/lock_read/lock_write、取消检查，以及线程/任务 `spawn/join/detach/cancel/submit/wait/shutdown` 的 trampoline 适配；子执行错误包保留错误身份和 suppressed，027 回到父线程后仍不可被 `catch` 捕获，detached 失败由有界进程通道按 Runtime ID 读取。
-- `22d_llvm_concurrency` 比较 native 计划与同一 IR 降出的 TAC 操作/span/参数类型/facts/transfers/cancellation；包含未知操作 fail-closed、公开构建门禁、shared/lock 文本回归、导入别名/分组函数目标的真实 `llvm-as` 解析，以及受控工具链下线程、pool、shared/lock、只读 shared 跨线程四场景 stdout 对照。三平台 CI 配置已接入，尚无本批远端通过证据。
+- `22d_llvm_concurrency` 比较 native 计划与同一 IR 降出的 TAC 操作/span/参数类型/facts/transfers/cancellation；包含未知操作 fail-closed、公开构建门禁、shared/lock 文本回归、根/局部导入别名和分组函数目标的真实 `llvm-as` 解析，以及受控工具链下四个成功输出黄金场景和两个 Runtime 031 负例。三平台 CI 显式精确运行 LLVM 汇编与 VM/native 差分用例，尚无本批远端通过证据。
 - 修正了首批盒子直接跨线程传递和通用值释放漏掉并发盒子的缺陷；子执行单元只携带 XCON/显式 shared 信封，在接收线程重新创建 ABI 盒子。取消结果和 detached 错误归一化复用 22C 的 Runtime 内部函数，保持既有 VM 行为。
-- 修正了导入别名插入导致 trampoline 目标函数符号过期、别名函数目标引用未定义 trampoline 的两个 P1；trampoline 改在入口导入发射完成后准备，函数目标支持括号分组，模块体并发在计划建立阶段结构化拒绝。
+- 修正了根/局部导入别名插入导致 trampoline 目标函数符号过期、别名函数目标引用未定义 trampoline 的 P1；LLVM 函数与 trampoline 符号现在绑定实际 IR 函数定义节点，函数目标支持括号分组，模块体并发在计划建立阶段结构化拒绝。
+- `shared_read`/`shared_mut` 在关闭的当前 Runtime 上返回 031；`spawn`/`submit` 的边界输入 Runtime ID 与返回信封 Runtime ID 分开，`join`/`wait` 按调用方 Runtime 校验 `SharedMut` 结果，与 VM 行为一致。
 - 原生释放追踪从线程局部会话扩展为环境变量开启的跨线程会话，trampoline 子线程的参数、结果和临时值释放会汇入同一差分文件；VM 的显式追踪仍保持线程局部语义。
 - native 取消检查调整到实参求值之后，Runtime 错误 span 只在子错误没有既有位置时补充，避免覆盖子执行错误的原始位置。
-- 公开 `CodegenOptions` 默认拒绝并发原生产物；内部测试使用 `with_internal_concurrency()`。`CODEGEN_VERSION = 6` 隔离本轮 trampoline/函数节点绑定修正，Runtime ABI 版本仍为 1.17。
+- 公开 `CodegenOptions` 默认拒绝并发原生产物；内部测试使用 `with_internal_concurrency()`。`CODEGEN_VERSION = 7` 隔离本轮局部别名 trampoline 绑定修正，Runtime ABI 版本仍为 1.17。
 - 库测试、workspace/clippy/fmt/docs/usedocs/layout 与本机受控原生执行记录只证明当前实现范围，不代替 §五 的完整差分及 §六 的阶段退出条件。
 
-仍待完成的 22D 工作是完整 VM/LLVM 黄金场景差分矩阵、XCON 深度/大小/恶意 tag 的原生负例、取消四位置/关闭 drain/主-suppressed/release trace 投影对账，以及 Windows/Linux/macOS 远端原生构建证据。native detached 回调现已立即写出结构化诊断，同时保留显式 C 通道；通道消费顺序和关闭 drain 仍需纳入黄金场景。上述未完成项不改变 22A 冻结的 API、诊断编号、32B/16B 布局或 22E 产物边界。
+仍待完成的 22D 工作是完整 VM/LLVM 错误与 stderr/退出码投影、主/suppressed 与 detached 事件对账、XCON 深度/大小/恶意 tag 原生负例、取消四位置/关闭 drain，以及并发句柄/guard 的 release trace 投影和三平台 CI 证据。`llvm-as` 符号门禁已移至三平台 native job 显式精确运行；默认 workspace 测试不依赖 PATH 中碰巧存在 LLVM。native detached 回调仍直接写 stderr、locale 需显式继承且没有 VM 等价事件投影；显式 C 通道尚未接入生产消费者。上述未完成项不改变 22A 冻结的 API、诊断编号、32B/16B 布局或 22E 产物边界。
 
 ## 十、状态
 
 - 阶段代号：22D；
-- 当前状态：**实施中**；入口证据来自 22C-FIX.1 的 `0caebc9`，D-2/D-5 已确认，第一批 LLVM 并发 lowering、Runtime C ABI 和 trampoline 已落地；P1 导入别名符号缺陷已修复并由真实 `llvm-as` 覆盖，模块体并发、detached native 消费和完整释放差分仍未收口；
+- 当前状态：**实施中**；入口证据来自 22C-FIX.1 的 `0caebc9`，D-2/D-5 已确认，第一批 LLVM 并发 lowering、Runtime C ABI 和 trampoline 已落地；根/局部导入别名 P1 和两项 Runtime 031 边界 P1 已有修复及回归；模块体并发、detached native/VM 投影和完整释放差分仍未收口；
 - 当前工作批：22D；不接 22E 标准库/原生产物元数据；
 - 22D 完成后，22E 只消费本批稳定的并发行为和已有 ABI，不反向修改 22D 的跨平台结论。

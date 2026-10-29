@@ -569,6 +569,7 @@ fn runtime_export_symbols(components: &[String]) -> Vec<&'static str> {
             "weak" => "xiao_runtime_value_release_weak",
             "containers" => "xiao_runtime_array_new",
             "tables" => "xiao_runtime_table_new",
+            "concurrency" => "xiao_runtime_concurrency_call",
             _ => continue,
         };
         if !symbols.contains(&symbol) {

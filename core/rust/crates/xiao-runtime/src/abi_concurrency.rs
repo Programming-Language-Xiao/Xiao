@@ -196,6 +196,17 @@ fn record_native_detached(runtime_id: u64, result: Result<NativeEntryOutcome, Ru
     }
 }
 
+/// 释放一个并发盒子时记录与普通 Runtime 对象相同的强引用事件。
+fn trace_concurrency_release(handle: XiaoConcurrencyHandle) {
+    if handle_kind(handle) == 0 {
+        return;
+    }
+    crate::memory::record_external_release(
+        handle as usize,
+        crate::memory::ReleaseAction::ConcurrencyRelease,
+    );
+}
+
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn push_native_detached_error(runtime_id: u64, packet: NativeErrorPacket) {
     let Ok(mut errors) = native_detached_errors().lock() else {
@@ -334,8 +345,12 @@ pub(super) fn release_handle(handle: XiaoConcurrencyHandle) {
         inners.is_empty()
     };
     if should_drop {
+        trace_concurrency_release(handle);
+        crate::memory::forget_external_release_object(handle as usize);
         // SAFETY: 最后一份别名已经移出，盒子不再被使用。
         unsafe { drop(Box::from_raw(ptr)) };
+    } else {
+        trace_concurrency_release(handle);
     }
 }
 
@@ -417,11 +432,12 @@ fn invoke_entry(
     entry: xiao_runtime_abi::XiaoConcurrencyEntry,
     context: usize,
     arguments: Vec<NativeRawValue>,
-    runtime_id: u64,
+    input_runtime_id: u64,
+    output_runtime_id: u64,
 ) -> NativeEntryOutcome {
     let mut values = Vec::with_capacity(arguments.len());
     for argument in arguments {
-        match value_from_raw(argument, runtime_id) {
+        match value_from_raw(argument, input_runtime_id) {
             Ok(value) => values.push(value),
             Err(_) => {
                 for value in values.iter_mut().rev() {
@@ -454,12 +470,14 @@ fn invoke_entry(
             NativeEntryOutcome::Error,
         );
     }
-    let raw = raw_from_value(&output, runtime_id);
+    let raw = raw_from_value(&output, output_runtime_id);
     crate::abi::xiao_runtime_value_release(&mut output);
     match raw {
         Ok(value) => NativeEntryOutcome::Value(value),
-        Err(_) => take_native_error_packet().map_or(
-            NativeEntryOutcome::RuntimeFailure(RuntimeExecError::JoinFailed),
+        // VM 的 spawn 通过 `entry_result.encode(return_runtime_id)` 验证子函数
+        // 返回值的边界资格；此处即使编码失败也必须把结构化错误回传给 join/wait。
+        Err(_) => take_native_error_packet().map_or_else(
+            || NativeEntryOutcome::RuntimeFailure(RuntimeExecError::JoinFailed),
             NativeEntryOutcome::Error,
         ),
     }
@@ -737,6 +755,8 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
         "shared_read" | "shared_mut" => {
             if argument_count != 1 {
                 Err(XiaoAbiStatus::InvalidArgument.code())
+            } else if RuntimeHandle::current().is_closed() {
+                Err(map_exec_error(RuntimeExecError::RuntimeClosed))
             } else {
                 // SAFETY: `arguments` 已由入口检查为有效的只读值数组。
                 let value = unsafe { super::value_to_runtime(&arguments[0]) }?;
@@ -847,13 +867,14 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                 return Err(XiaoAbiStatus::InvalidArgument.code());
             }
             let runtime = runtime_argument(&arguments[0])?;
-            let runtime_id = runtime.id();
-            let values = native_arguments(&arguments[1..], runtime_id)?;
+            let input_runtime_id = runtime.id();
+            let output_runtime_id = RuntimeHandle::current().id();
+            let values = native_arguments(&arguments[1..], input_runtime_id)?;
             let context = context as usize;
             let handle = RuntimeHandle::current()
                 .in_context(|| {
                     crate::scheduler::spawn_cooperative(&runtime, move |_| {
-                        invoke_entry(entry, context, values, runtime_id)
+                        invoke_entry(entry, context, values, input_runtime_id, output_runtime_id)
                     })
                 })
                 .map_err(map_exec_error)?
@@ -892,7 +913,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             );
             native_outcome_to_value(
                 NativeEntryOutcome::from_execution_result(result),
-                runtime_id,
+                RuntimeHandle::current().id(),
             )
         }
         "detach" => {
@@ -948,8 +969,9 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             }
             let pool = pool_argument(&arguments[0])?;
             let runtime = pool.runtime();
-            let runtime_id = runtime.id();
-            let values = native_arguments(&arguments[1..], runtime_id)?;
+            let input_runtime_id = runtime.id();
+            let output_runtime_id = RuntimeHandle::current().id();
+            let values = native_arguments(&arguments[1..], input_runtime_id)?;
             let context = context as usize;
             let submitting_cancellation = crate::current_cancellation_token();
             let task_cancellation = RuntimeCancellation::default();
@@ -968,7 +990,13 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                         move |_| {
                             let _parent_registration = parent_registration;
                             let _parent_hook = task_cancellation_hook;
-                            invoke_entry(entry, context, values, runtime_id)
+                            invoke_entry(
+                                entry,
+                                context,
+                                values,
+                                input_runtime_id,
+                                output_runtime_id,
+                            )
                         },
                     )
                 })
@@ -1003,7 +1031,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                     .map_err(map_exec_error)?;
             native_outcome_to_value(
                 NativeEntryOutcome::from_execution_result(result),
-                state.runtime.id(),
+                RuntimeHandle::current().id(),
             )
         }
         _ => Err(set_runtime_error(format!("未知原生并发入口 {operation}"))),
@@ -1501,6 +1529,155 @@ mod tests {
         crate::abi::xiao_runtime_value_release(&mut guard);
         crate::abi::xiao_runtime_value_release(&mut read);
         crate::abi::xiao_runtime_value_release(&mut none);
+    }
+
+    #[test]
+    /// 关闭当前 Runtime 后，两个 shared 构造入口都返回 031。
+    fn shared_creation_rejects_a_closed_current_runtime() {
+        let runtime = RuntimeHandle::current()
+            .in_context(RuntimeHandle::create)
+            .expect("应能创建隔离测试 Runtime");
+        runtime
+            .in_context(|| {
+                runtime.try_close().expect("当前 Runtime 可关闭");
+                for operation_name in ["shared_read", "shared_mut"] {
+                    crate::abi::xiao_runtime_error_clear();
+                    let mut input = XiaoValue::int(7);
+                    let mut output = XiaoValue::none();
+                    let status = xiao_runtime_concurrency_call(
+                        operation(operation_name),
+                        &input,
+                        1,
+                        &mut output,
+                    );
+                    assert_eq!(status, XiaoAbiStatus::RuntimeError.code());
+                    assert!(matches!(
+                        take_native_error_packet(),
+                        Some(NativeErrorPacket::Recoverable(error))
+                            if error.code() == crate::CONCURRENCY_RUNTIME_CLOSED_CODE
+                    ));
+                    crate::abi::xiao_runtime_value_release(&mut input);
+                    crate::abi::xiao_runtime_value_release(&mut output);
+                }
+            })
+            .expect("关闭前可进入 Runtime 上下文");
+    }
+
+    #[test]
+    /// child Runtime 返回 SharedMut 时按调用方 Runtime ID 验证并回传 031。
+    fn join_rejects_shared_mut_result_owned_by_child_runtime() {
+        /// 在 child Runtime 中创建并返回一个 SharedMut 句柄。
+        unsafe extern "C" fn return_shared_mut(
+            _context: *mut c_void,
+            _arguments: *const XiaoValue,
+            _argument_count: usize,
+            out: *mut XiaoValue,
+        ) -> i32 {
+            if out.is_null() {
+                return XiaoAbiStatus::Null.code();
+            }
+            let input = XiaoValue::int(1);
+            xiao_runtime_concurrency_call(operation("shared_mut"), &input, 1, out)
+        }
+
+        crate::abi::xiao_runtime_error_clear();
+        let mut runtime = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call(
+                operation("runtime_create"),
+                std::ptr::null(),
+                0,
+                &mut runtime
+            ),
+            XiaoAbiStatus::Ok.code()
+        );
+        let mut thread = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call_with_entry(
+                operation("spawn"),
+                Some(return_shared_mut),
+                std::ptr::null_mut(),
+                &runtime,
+                1,
+                &mut thread,
+            ),
+            XiaoAbiStatus::Ok.code()
+        );
+        let mut result = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call(operation("join"), &thread, 1, &mut result),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        assert!(matches!(
+            take_native_error_packet(),
+            Some(NativeErrorPacket::Recoverable(error))
+                if error.code() == crate::CONCURRENCY_RUNTIME_CLOSED_CODE
+        ));
+        crate::abi::xiao_runtime_value_release(&mut result);
+        crate::abi::xiao_runtime_value_release(&mut thread);
+        crate::abi::xiao_runtime_value_release(&mut runtime);
+    }
+
+    #[test]
+    /// wait 与 join 一样，按调用方 Runtime ID 校验子任务返回值。
+    fn wait_rejects_shared_mut_result_owned_by_pool_runtime() {
+        /// 在任务池 Runtime 中创建并返回一个 SharedMut 句柄。
+        unsafe extern "C" fn return_shared_mut(
+            _context: *mut c_void,
+            _arguments: *const XiaoValue,
+            _argument_count: usize,
+            out: *mut XiaoValue,
+        ) -> i32 {
+            if out.is_null() {
+                return XiaoAbiStatus::Null.code();
+            }
+            let input = XiaoValue::int(1);
+            xiao_runtime_concurrency_call(operation("shared_mut"), &input, 1, out)
+        }
+
+        crate::abi::xiao_runtime_error_clear();
+        let mut runtime = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call(
+                operation("runtime_create"),
+                std::ptr::null(),
+                0,
+                &mut runtime,
+            ),
+            XiaoAbiStatus::Ok.code()
+        );
+        let capacity = XiaoValue::int(1);
+        let mut pool = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_pool_create(&runtime, &capacity, &mut pool),
+            XiaoAbiStatus::Ok.code()
+        );
+        let mut task = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call_with_entry(
+                operation("submit"),
+                Some(return_shared_mut),
+                std::ptr::null_mut(),
+                &pool,
+                1,
+                &mut task,
+            ),
+            XiaoAbiStatus::Ok.code()
+        );
+        let mut result = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call(operation("wait"), &task, 1, &mut result),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        assert!(matches!(
+            take_native_error_packet(),
+            Some(NativeErrorPacket::Recoverable(error))
+                if error.code() == crate::CONCURRENCY_RUNTIME_CLOSED_CODE
+        ));
+        crate::abi::xiao_runtime_value_release(&mut result);
+        crate::abi::xiao_runtime_value_release(&mut task);
+        crate::abi::xiao_runtime_value_release(&mut pool);
+        crate::abi::xiao_runtime_value_release(&mut runtime);
     }
 
     #[test]

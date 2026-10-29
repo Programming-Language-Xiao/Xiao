@@ -705,31 +705,52 @@ impl<'a> DynamicGenerator<'a> {
 
     /// 为一份具体函数定义生成稳定且不冲突的 LLVM 符号名。
     ///
-    /// 别名导入可能让两个不同标准库模块的函数共享 Xiao 源码名称；此时不能再
-    /// 仅按函数声明中的名称查找索引，必须按定义指针回到函数表中的唯一键。
+    /// 导入别名可能在根入口或函数体内晚于 trampoline 准备阶段登记；符号必须
+    /// 绑定实际函数定义节点，而不能绑定当前 `function_definitions` 中的别名键。
     fn function_symbol_for_statement(&self, statement: &IrStatement) -> String {
-        let key = self
-            .function_definitions
-            .iter()
-            .find(|(_, candidate)| {
-                std::ptr::eq(
-                    **candidate as *const IrStatement,
-                    statement as *const IrStatement,
-                )
-            })
-            .map_or_else(
-                || match &statement.kind {
-                    xiao_ir::IrStatementKind::Function { name, .. } => name.text.clone(),
-                    _ => String::new(),
-                },
-                |(key, _)| key.clone(),
-            );
-        let index = self
-            .function_definitions
-            .keys()
-            .position(|candidate| candidate == &key)
-            .unwrap_or(0);
-        format!("xiao.fn.{index}.{}", stable_hash(key.as_bytes()))
+        let (origin, name) = self.function_origin(statement).unwrap_or_else(|| {
+            let name = match &statement.kind {
+                xiao_ir::IrStatementKind::Function { name, .. } => name.text.clone(),
+                _ => String::new(),
+            };
+            ("unregistered".to_owned(), name)
+        });
+        let key = format!(
+            "{origin}::{name}@{}..{}",
+            statement.span.start, statement.span.end
+        );
+        format!("xiao.fn.{}", stable_hash(key.as_bytes()))
+    }
+
+    /// 按 IR 节点身份查找函数定义的稳定来源；导入别名不会改变此来源。
+    fn function_origin(&self, statement: &IrStatement) -> Option<(String, String)> {
+        let matches = |candidate: &IrStatement| {
+            std::ptr::eq(
+                candidate as *const IrStatement,
+                statement as *const IrStatement,
+            )
+        };
+        if self.program.body.iter().any(matches) {
+            if let xiao_ir::IrStatementKind::Function { name, .. } = &statement.kind {
+                return Some(("entry".to_owned(), name.text.clone()));
+            }
+        }
+        for module in &self.program.modules {
+            if module.body.iter().any(matches)
+                && let xiao_ir::IrStatementKind::Function { name, .. } = &statement.kind
+            {
+                return Some((module.name.clone(), name.text.clone()));
+            }
+        }
+        None
+    }
+
+    /// 为实际函数定义节点生成唯一的并发 trampoline 符号。
+    fn concurrency_trampoline_for_statement(&self, statement: &IrStatement) -> String {
+        format!(
+            "xiao.concurrent.trampoline.{}",
+            stable_hash(self.function_symbol_for_statement(statement).as_bytes())
+        )
     }
 
     /// 为动态函数预生成统一的并发 trampoline。
@@ -740,20 +761,19 @@ impl<'a> DynamicGenerator<'a> {
         if self.concurrency_plan.is_empty() {
             return Ok(());
         }
+        let mut seen_definitions = BTreeSet::new();
         let definitions = self
             .function_definitions
-            .iter()
-            .map(|(name, statement)| (name.clone(), *statement))
+            .values()
+            .copied()
+            .filter(|statement| seen_definitions.insert(*statement as *const IrStatement as usize))
             .collect::<Vec<_>>();
-        for (name, statement) in definitions {
+        for statement in definitions {
             let xiao_ir::IrStatementKind::Function { parameters, .. } = &statement.kind else {
                 continue;
             };
-            let symbol = self.function_symbol(&name);
-            let trampoline = format!(
-                "xiao.concurrent.trampoline.{}",
-                stable_hash(name.as_bytes())
-            );
+            let symbol = self.function_symbol_for_statement(statement);
+            let trampoline = self.concurrency_trampoline_for_statement(statement);
             if !self.concurrency_trampolines.insert(trampoline.clone()) {
                 continue;
             }

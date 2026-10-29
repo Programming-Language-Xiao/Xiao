@@ -5,6 +5,7 @@
 
 use std::any::Any;
 use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 use std::fmt::{self, Debug, Formatter};
 use std::fs;
 use std::marker::PhantomData;
@@ -26,6 +27,12 @@ pub enum ReleaseAction {
     Destroy,
     /// 归还一个弱引用。
     WeakRelease,
+    /// 释放不透明并发句柄盒子。
+    ConcurrencyRelease,
+    /// 释放共享强句柄别名。
+    SharedRelease,
+    /// 释放拥有型锁守卫。
+    LockGuardRelease,
 }
 
 impl ReleaseAction {
@@ -36,6 +43,9 @@ impl ReleaseAction {
             Self::StrongRelease => "strong_release",
             Self::Destroy => "destroy",
             Self::WeakRelease => "weak_release",
+            Self::ConcurrencyRelease => "concurrency_release",
+            Self::SharedRelease => "shared_release",
+            Self::LockGuardRelease => "lock_guard_release",
         }
     }
 }
@@ -65,10 +75,11 @@ struct ReleaseTraceState {
 /// VM 的 `start_release_trace` 继续保持线程局部语义；只有 C ABI 通过环境变量开启
 /// 的会话使用这里的共享状态，确保 trampoline 子线程的释放事件也能回到同一份差分文件。
 struct NativeReleaseTraceState {
-    path: PathBuf,
+    path: Option<PathBuf>,
     next_object_id: u64,
     next_sequence: u64,
     events: Vec<ReleaseEvent>,
+    external_objects: HashMap<usize, u64>,
 }
 
 thread_local! {
@@ -78,6 +89,27 @@ thread_local! {
 fn native_release_trace() -> &'static Mutex<Option<NativeReleaseTraceState>> {
     static TRACE: OnceLock<Mutex<Option<NativeReleaseTraceState>>> = OnceLock::new();
     TRACE.get_or_init(|| Mutex::new(None))
+}
+
+#[cfg(test)]
+pub(crate) fn start_native_release_trace_for_test() {
+    let mut native = native_release_trace().lock().expect("原生释放追踪锁未中毒");
+    *native = Some(NativeReleaseTraceState {
+        path: None,
+        next_object_id: 1,
+        next_sequence: 0,
+        events: Vec::new(),
+        external_objects: HashMap::new(),
+    });
+}
+
+#[cfg(test)]
+pub(crate) fn take_native_release_events_for_test() -> Vec<ReleaseEvent> {
+    native_release_trace()
+        .lock()
+        .expect("原生释放追踪锁未中毒")
+        .take()
+        .map_or_else(Vec::new, |trace| trace.events)
 }
 
 /// 一次运行期释放追踪会话的作用域。
@@ -126,12 +158,16 @@ pub fn start_release_trace_from_env() {
         trace.path = None;
         trace.events.clear();
     });
+    if let Some(path) = &path {
+        let _ = fs::write(path, []);
+    }
     let mut native = native_release_trace().lock().expect("原生释放追踪锁未中毒");
     *native = path.map(|path| NativeReleaseTraceState {
-        path,
+        path: Some(path),
         next_object_id: 1,
         next_sequence: 0,
         events: Vec::new(),
+        external_objects: HashMap::new(),
     });
 }
 
@@ -143,12 +179,16 @@ pub fn take_release_events() -> Vec<ReleaseEvent> {
 
 /// 将当前线程释放事件写入原生产物指定的差分文件。
 pub fn flush_release_trace() {
-    if let Some(native) = native_release_trace()
+    if let Some(path) = native_release_trace()
         .lock()
         .expect("原生释放追踪锁未中毒")
-        .take()
+        .as_ref()
+        .and_then(|trace| trace.path.clone())
     {
-        write_release_events(native.path, native.events);
+        if let Ok(file) = fs::OpenOptions::new().append(true).open(path) {
+            let _ = file.sync_data();
+        }
+        // 保持会话有效；根线程 flush 后完成的 detached/worker 释放继续追加事件。
         return;
     }
     let (path, events) = RELEASE_TRACE.with(|trace| {
@@ -172,6 +212,21 @@ fn write_release_events(path: PathBuf, events: Vec<ReleaseEvent>) {
         ));
     }
     let _ = fs::write(path, output);
+}
+
+fn append_native_event(trace: &NativeReleaseTraceState, event: &ReleaseEvent) {
+    use std::io::Write;
+    if let Some(path) = &trace.path
+        && let Ok(mut file) = fs::OpenOptions::new().create(true).append(true).open(path)
+    {
+        let _ = writeln!(
+            file,
+            "{}\t{}\t{}",
+            event.sequence,
+            event.object_id,
+            event.action.as_str()
+        );
+    }
 }
 
 fn trace_object_allocation() -> u64 {
@@ -229,12 +284,53 @@ fn trace_release(object_id: u64, action: ReleaseAction) {
         if object_id != 0 {
             let sequence = trace.next_sequence;
             trace.next_sequence = trace.next_sequence.saturating_add(1);
-            trace.events.push(ReleaseEvent {
+            let event = ReleaseEvent {
                 sequence,
                 object_id,
                 action,
-            });
+            };
+            append_native_event(trace, &event);
+            trace.events.push(event);
         }
+    }
+}
+
+/// 将 Runtime 堆对象之外的释放事件汇入当前原生跨线程追踪会话。
+pub(crate) fn record_external_release(object_key: usize, action: ReleaseAction) {
+    if object_key == 0 {
+        return;
+    }
+    let Ok(mut native) = native_release_trace().lock() else {
+        return;
+    };
+    let Some(trace) = native.as_mut() else {
+        return;
+    };
+    let object_id = if let Some(object_id) = trace.external_objects.get(&object_key) {
+        *object_id
+    } else {
+        let object_id = trace.next_object_id;
+        trace.next_object_id = trace.next_object_id.saturating_add(1);
+        trace.external_objects.insert(object_key, object_id);
+        object_id
+    };
+    let sequence = trace.next_sequence;
+    trace.next_sequence = trace.next_sequence.saturating_add(1);
+    let event = ReleaseEvent {
+        sequence,
+        object_id,
+        action,
+    };
+    append_native_event(trace, &event);
+    trace.events.push(event);
+}
+
+/// Forget an external allocation after its final weak handle is released.
+pub(crate) fn forget_external_release_object(object_key: usize) {
+    if let Ok(mut native) = native_release_trace().lock()
+        && let Some(trace) = native.as_mut()
+    {
+        trace.external_objects.remove(&object_key);
     }
 }
 
@@ -901,9 +997,9 @@ unsafe fn free_header(ptr: NonNull<ObjectHeader>) {
 /// 对象头计数、弱引用存活和载荷释放的回归测试。
 mod tests {
     use super::{
-        NativeReleaseTraceState, ObjectLayout, ObjectPayload, ReleaseAction, RuntimeTypeTag,
-        allocate_payload, native_release_trace, start_memory_measurement, start_release_trace,
-        take_release_events,
+        ObjectLayout, ObjectPayload, ReleaseAction, RuntimeTypeTag, allocate_payload,
+        native_release_trace, start_memory_measurement, start_native_release_trace_for_test,
+        start_release_trace, take_native_release_events_for_test, take_release_events,
     };
     use crate::containers::ArrayHandle;
     use crate::errors::RuntimeResult;
@@ -1030,15 +1126,13 @@ mod tests {
     #[test]
     /// 原生追踪会话汇总 trampoline 子线程中的释放事件，而不是只记录 root TLS。
     fn native_release_trace_collects_child_thread_events() {
-        let mut native = native_release_trace().lock().expect("原生释放追踪锁未中毒");
-        assert!(native.is_none(), "测试前不得残留原生追踪会话");
-        *native = Some(NativeReleaseTraceState {
-            path: "unused".into(),
-            next_object_id: 1,
-            next_sequence: 0,
-            events: Vec::new(),
-        });
-        drop(native);
+        assert!(
+            native_release_trace()
+                .lock()
+                .expect("原生释放追踪锁未中毒")
+                .is_none()
+        );
+        start_native_release_trace_for_test();
 
         std::thread::spawn(|| {
             let handle = allocate_payload(Box::new(AllocatingDrop { bytes: vec![1; 32] }))
@@ -1048,14 +1142,9 @@ mod tests {
         .join()
         .expect("子线程释放测试不应 panic");
 
-        let state = native_release_trace()
-            .lock()
-            .expect("原生释放追踪锁未中毒")
-            .take()
-            .expect("应保留原生追踪事件");
+        let events = take_native_release_events_for_test();
         assert!(
-            state
-                .events
+            events
                 .iter()
                 .any(|event| event.action == ReleaseAction::Destroy),
             "子线程销毁事件必须进入共享追踪"

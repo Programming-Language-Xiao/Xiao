@@ -1,6 +1,8 @@
 //! 22D 原生并发 lowering 的同源 IR 与 fail-closed 回归。
 
-use std::process::Command;
+use std::process::{Child, Command, Output, Stdio};
+use std::thread;
+use std::time::{Duration, Instant};
 use xiao_codegen_llvm::{CodegenOptions, lower_program, native_concurrency_plan};
 use xiao_codegen_llvm::{TargetDescription, Toolchain};
 use xiao_driver::{
@@ -32,6 +34,42 @@ fn validate_with_llvm_as(text: &str, label: &str) {
         .with_llvm_as(llvm_as)
         .validate_llvm_ir(text, &TargetDescription::host())
         .unwrap_or_else(|error| panic!("{label}: llvm-as 应接受生成文本：{error}"));
+}
+
+/// 对 VM/native 场景统一施加超时，防止并发回归挂死 CI worker。
+fn run_native_with_timeout(executable: &std::path::Path, label: &str) -> Output {
+    let child = Command::new(executable)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap_or_else(|error| panic!("{label}: 启动 native 程序失败：{error}"));
+    wait_child_with_timeout(child, label, Duration::from_secs(10))
+}
+
+fn wait_child_with_timeout(mut child: Child, label: &str, timeout: Duration) -> Output {
+    let deadline = Instant::now() + timeout;
+    loop {
+        if child
+            .try_wait()
+            .unwrap_or_else(|error| panic!("{label}: 轮询子进程失败：{error}"))
+            .is_some()
+        {
+            return child
+                .wait_with_output()
+                .unwrap_or_else(|error| panic!("{label}: 收集子进程输出失败：{error}"));
+        }
+        if Instant::now() >= deadline {
+            let _ = child.kill();
+            let output = child
+                .wait_with_output()
+                .unwrap_or_else(|error| panic!("{label}: 超时后回收子进程失败：{error}"));
+            panic!(
+                "{label}: native 程序超过 {timeout:?}，stdout={:?} stderr={:?}",
+                output.stdout, output.stderr
+            );
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
 }
 
 #[test]
@@ -154,54 +192,44 @@ fn native_shared_lock_plan_keeps_cancel_and_runtime_abi_paths() {
 }
 
 #[test]
-/// 导入别名先进入最终函数表后，trampoline 目标与函数定义必须保持一致。
-fn native_concurrency_alias_import_keeps_trampoline_symbols_assembling() {
-    let source = "from stdlib.text import length as mylen\nfrom std.concurrent import runtime_create, spawn, join\ndef work(int value) -> int\n    return value\nrt = runtime_create()\nt = spawn(rt, work, 1)\nprint(join(t))\n";
-    let artifact = FrontendCompiler::new()
-        .compile(&FrontendRequest::from_text(source))
-        .expect("别名并发源码应通过统一前端");
-    let module = lower_program(
-        &artifact.ir,
-        &CodegenOptions::default().with_internal_concurrency(),
-    )
-    .expect("别名不应让 lowering 成功后留下悬空符号");
-    validate_with_llvm_as(&module.text, "别名导入 + spawn/join");
-}
-
-#[test]
-/// 并发目标使用导入别名时，必须生成并定义别名对应的 trampoline。
-fn native_concurrency_alias_function_target_has_a_defined_trampoline() {
-    let source = "from stdlib.text import length as mylen\nfrom std.concurrent import runtime_create, spawn, join\nrt = runtime_create()\nt = spawn(rt, mylen, \"abc\")\nprint(join(t))\n";
-    let artifact = FrontendCompiler::new()
-        .compile(&FrontendRequest::from_text(source))
-        .expect("别名函数并发源码应通过统一前端");
-    let module = lower_program(
-        &artifact.ir,
-        &CodegenOptions::default().with_internal_concurrency(),
-    )
-    .expect("别名函数目标应生成 trampoline");
-    validate_with_llvm_as(&module.text, "别名函数目标");
-}
-
-#[test]
-/// 函数目标外层只有括号分组时，native 仍应解析到同一个静态函数。
-fn native_concurrency_grouped_function_target_is_supported() {
-    let source = "from std.concurrent import runtime_create, spawn, join\ndef work(int value) -> int\n    return value\nrt = runtime_create()\nt = spawn(rt, (work), 1)\nprint(join(t))\n";
-    let artifact = FrontendCompiler::new()
-        .compile(&FrontendRequest::from_text(source))
-        .expect("分组函数目标应通过统一前端");
-    let module = lower_program(
-        &artifact.ir,
-        &CodegenOptions::default().with_internal_concurrency(),
-    )
-    .expect("分组函数目标应能 lowering");
-    validate_with_llvm_as(&module.text, "分组函数目标");
+#[ignore = "需要受控 llvm-as；由三平台 native job 显式执行"]
+/// 使用真实 llvm-as 校验根导入、函数别名、分组目标和局部别名四个边界。
+fn native_concurrency_llvm_assembly_fixtures() {
+    let fixtures = [
+        (
+            "根导入别名 + spawn/join",
+            "from stdlib.text import length as mylen\nfrom std.concurrent import runtime_create, spawn, join\ndef work(int value) -> int\n    return value\nrt = runtime_create()\nt = spawn(rt, work, 1)\nprint(join(t))\n",
+        ),
+        (
+            "别名函数目标",
+            "from stdlib.text import length as mylen\nfrom std.concurrent import runtime_create, spawn, join\nrt = runtime_create()\nt = spawn(rt, mylen, \"abc\")\nprint(join(t))\n",
+        ),
+        (
+            "括号分组函数目标",
+            "from std.concurrent import runtime_create, spawn, join\ndef work(int value) -> int\n    return value\nrt = runtime_create()\nt = spawn(rt, (work), 1)\nprint(join(t))\n",
+        ),
+        (
+            "函数体局部别名目标",
+            "from std.concurrent import runtime_create, spawn, join\ndef outer() -> int\n    from stdlib.text import length as mylen\n    rt = runtime_create()\n    t = spawn(rt, mylen, \"abc\")\n    return join(t)\nprint(outer())\n",
+        ),
+    ];
+    for (label, source) in fixtures {
+        let artifact = FrontendCompiler::new()
+            .compile(&FrontendRequest::from_text(source))
+            .unwrap_or_else(|error| panic!("{label}: 前端应接受合法并发源码：{error:?}"));
+        let module = lower_program(
+            &artifact.ir,
+            &CodegenOptions::default().with_internal_concurrency(),
+        )
+        .unwrap_or_else(|error| panic!("{label}: lowering 应成功：{error}"));
+        validate_with_llvm_as(&module.text, label);
+    }
 }
 
 #[test]
 #[ignore = "需要 XIAO_CLANG、XIAO_LLVM_AS、XIAO_LLC、XIAO_RUNTIME_LIBRARY 和 XIAO_TARGET_TRIPLE"]
-/// 在目标原生工具链下比较线程、任务池和共享场景的 VM/native stdout。
-fn native_concurrency_vm_native_stdout_matches_from_same_ir() {
+/// 在目标原生工具链下比较线程/共享黄金输出和 Runtime 031 负例。
+fn native_concurrency_vm_native_differential_matches_from_same_ir() {
     let target = TargetDescription::host();
     let configured_target = std::env::var("XIAO_TARGET_TRIPLE").expect("XIAO_TARGET_TRIPLE");
     assert_eq!(configured_target, target.triple);
@@ -223,27 +251,33 @@ fn native_concurrency_vm_native_stdout_matches_from_same_ir() {
         (
             "spawn-join",
             "from std.concurrent import runtime_create, spawn, join\ndef work(int value) -> int\n    return value + 6\nrt = runtime_create()\nthread = spawn(rt, work, 1)\nresult = join(thread)\nprint(result)\n",
+            "7\n",
         ),
         (
             "pool-submit-wait",
             "from std.concurrent import current_runtime, pool_create, submit, wait, shutdown\ndef work(int value) -> int\n    return value + 5\nrt = current_runtime()\npool = pool_create(rt, 1)\ntask = submit(pool, work, 7)\nresult = wait(task)\nprint(result)\nshutdown(pool)\n",
+            "12\n",
         ),
         (
             "shared-lock",
             "from std.concurrent import shared_mut, lock, lock_read, lock_write\nvalue = shared_mut(1)\nguard = lock(value)\nlock_write(guard, 9)\nresult = lock_read(guard)\nprint(result)\n",
+            "9\n",
         ),
         (
             "shared-read-boundary",
             "from std.concurrent import runtime_create, shared_read, read, spawn, join\ndef work(shared<int> value) -> int\n    return read(value)\nrt = runtime_create()\nvalue = shared_read(4)\nthread = spawn(rt, work, value)\nresult = join(thread)\nprint(result)\n",
+            "4\n",
         ),
     ];
-    for (label, source) in cases {
+    for (label, source, expected_output) in cases {
         let frontend_request = FrontendRequest::from_text(source);
         let artifact = FrontendCompiler::new()
             .compile(&frontend_request)
             .unwrap_or_else(|error| panic!("{label}: 差分源码应通过统一前端：{error:?}"));
-        let vm = FrontendVmDriver::new()
-            .run_artifact(&artifact, &DriverRequest::new(frontend_request.clone()));
+        let vm = FrontendVmDriver::new().run_artifact(
+            &artifact,
+            &DriverRequest::new(frontend_request.clone()).with_timeout(Duration::from_secs(10)),
+        );
         assert!(vm.is_success(), "{label}: VM 场景必须成功：{vm:?}");
         let vm_output = vm
             .as_executed()
@@ -256,6 +290,7 @@ fn native_concurrency_vm_native_stdout_matches_from_same_ir() {
             })
             .collect::<String>()
             .replace("\r\n", "\n");
+        assert_eq!(vm_output, expected_output, "{label}: VM 应匹配黄金输出");
         let output = root.join(format!("{label}.{suffix}"));
         let request =
             NativeBuildRequest::new(frontend_request, target.clone(), toolchain.clone(), &output)
@@ -265,14 +300,68 @@ fn native_concurrency_vm_native_stdout_matches_from_same_ir() {
         let native = FrontendNativeDriver::new()
             .build_artifact(&artifact, &request)
             .unwrap_or_else(|error| panic!("{label}: 原生构建失败：{error}"));
-        let execution = Command::new(&native.native.executable)
-            .output()
-            .unwrap_or_else(|error| panic!("{label}: 原生并发产物启动失败：{error}"));
+        let execution = run_native_with_timeout(&native.native.executable, label);
         assert_eq!(execution.status.code(), Some(0), "{label}");
         let native_output = String::from_utf8(execution.stdout)
             .expect("原生 stdout 为 UTF-8")
             .replace("\r\n", "\n");
         assert_eq!(native_output, vm_output, "{label}");
+        assert_eq!(
+            native_output, expected_output,
+            "{label}: native 应匹配黄金输出"
+        );
+    }
+
+    let error_cases = [
+        (
+            "closed-runtime-shared-read",
+            "from std.concurrent import current_runtime, runtime_close, shared_read, read\nrt = current_runtime()\nruntime_close(rt)\nvalue = shared_read(7)\nprint(read(value))\n",
+            "X06-RUNTIME-031",
+        ),
+        (
+            "child-shared-mut-result",
+            "from std.concurrent import runtime_create, spawn, join, shared_mut\ndef work() -> shared_mut<int>\n    return shared_mut(1)\nrt = runtime_create()\nthread = spawn(rt, work)\nvalue = join(thread)\nprint(\"joined\")\n",
+            "X06-RUNTIME-031",
+        ),
+        (
+            "pool-shared-mut-result",
+            "from std.concurrent import runtime_create, pool_create, submit, wait, shutdown, shared_mut\ndef work() -> shared_mut<int>\n    return shared_mut(1)\nrt = runtime_create()\npool = pool_create(rt, 1)\ntask = submit(pool, work)\nvalue = wait(task)\nprint(\"waited\")\nshutdown(pool)\n",
+            "X06-RUNTIME-031",
+        ),
+    ];
+    for (label, source, expected_code) in error_cases {
+        let frontend_request = FrontendRequest::from_text(source);
+        let artifact = FrontendCompiler::new()
+            .compile(&frontend_request)
+            .unwrap_or_else(|error| panic!("{label}: 负例源码应通过前端：{error:?}"));
+        let vm = FrontendVmDriver::new().run_artifact(
+            &artifact,
+            &DriverRequest::new(frontend_request.clone()).with_timeout(Duration::from_secs(10)),
+        );
+        assert_eq!(vm.code(), Some(expected_code), "{label}: VM 错误身份");
+        assert_eq!(
+            vm.exit_code().as_process_code(),
+            3,
+            "{label}: VM 运行时错误退出码"
+        );
+
+        let output = root.join(format!("{label}.{suffix}"));
+        let request =
+            NativeBuildRequest::new(frontend_request, target.clone(), toolchain.clone(), &output)
+                .with_codegen_options(
+                    CodegenOptions::for_target(target.clone()).with_internal_concurrency(),
+                );
+        let native = FrontendNativeDriver::new()
+            .build_artifact(&artifact, &request)
+            .unwrap_or_else(|error| panic!("{label}: 原生构建失败：{error}"));
+        let execution = run_native_with_timeout(&native.native.executable, label);
+        assert_eq!(execution.status.code(), Some(3), "{label}: native 退出码");
+        assert!(execution.stdout.is_empty(), "{label}: 出错前不得写 stdout");
+        let stderr = String::from_utf8(execution.stderr).expect("native stderr 为 UTF-8");
+        assert!(
+            stderr.contains(expected_code),
+            "{label}: native stderr={stderr}"
+        );
     }
     let _ = std::fs::remove_dir_all(root);
 }

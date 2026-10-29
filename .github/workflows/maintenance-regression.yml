@@ -189,11 +189,20 @@ jobs:
             --skip platform_failure_child `
             --skip real_terminal_session_is_environment_gated `
             --skip native_table_methods_debug_execution_o0_o3 `
-            --skip native_concurrency_vm_native_stdout_matches_from_same_ir
+            --skip native_concurrency_llvm_assembly_fixtures `
+            --skip native_concurrency_vm_native_differential_matches_from_same_ir
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored native_concurrency_vm_native_stdout_matches_from_same_ir
+          foreach ($testName in @('native_concurrency_llvm_assembly_fixtures', 'native_concurrency_vm_native_differential_matches_from_same_ir')) {
+            $testOutput = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored $testName --exact 2>&1
+            $testExit = $LASTEXITCODE
+            $testOutput | ForEach-Object { Write-Output $_ }
+            if ($testExit -ne 0) { exit $testExit }
+            if (($testOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {
+              throw "22D native test did not execute exactly one case: $testName"
+            }
+          }
           exit $LASTEXITCODE
 
       - name: Build runtime and run Linux native gates
@@ -224,9 +233,24 @@ jobs:
           xvfb-run -a cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture \
             --skip dns_resolution_failure_is_unavailable \
             --skip platform_failure_child \
-            --skip native_concurrency_vm_native_stdout_matches_from_same_ir
+            --skip native_concurrency_llvm_assembly_fixtures \
+            --skip native_concurrency_vm_native_differential_matches_from_same_ir
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored native_concurrency_vm_native_stdout_matches_from_same_ir
+          run_22d_native_test() {
+            local test_name="$1"
+            local output
+            if ! output="$(cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored "$test_name" --exact 2>&1)"; then
+              printf '%s\n' "$output"
+              return 1
+            fi
+            printf '%s\n' "$output"
+            grep -Fq 'test result: ok. 1 passed; 0 failed;' <<< "$output" || {
+              printf '22D native test did not execute exactly one case: %s\n' "$test_name" >&2
+              return 1
+            }
+          }
+          run_22d_native_test native_concurrency_llvm_assembly_fixtures
+          run_22d_native_test native_concurrency_vm_native_differential_matches_from_same_ir
 
       - name: Build runtime and run macOS native gates
         if: runner.os == 'macOS'
@@ -258,9 +282,24 @@ jobs:
             --skip platform_failure_child \
             --skip real_terminal_session_is_environment_gated \
             --skip native_table_methods_debug_execution_o0_o3 \
-            --skip native_concurrency_vm_native_stdout_matches_from_same_ir
+            --skip native_concurrency_llvm_assembly_fixtures \
+            --skip native_concurrency_vm_native_differential_matches_from_same_ir
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
-          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored native_concurrency_vm_native_stdout_matches_from_same_ir
+          run_22d_native_test() {
+            local test_name="$1"
+            local output
+            if ! output="$(cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored "$test_name" --exact 2>&1)"; then
+              printf '%s\n' "$output"
+              return 1
+            fi
+            printf '%s\n' "$output"
+            grep -Fq 'test result: ok. 1 passed; 0 failed;' <<< "$output" || {
+              printf '22D native test did not execute exactly one case: %s\n' "$test_name" >&2
+              return 1
+            }
+          }
+          run_22d_native_test native_concurrency_llvm_assembly_fixtures
+          run_22d_native_test native_concurrency_vm_native_differential_matches_from_same_ir
 
       - name: Run 20D and 20E resource, process and archive fixtures (Windows)
         if: runner.os == 'Windows'

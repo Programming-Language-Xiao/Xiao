@@ -976,15 +976,12 @@ impl<'a> DynamicGenerator<'a> {
                     span: Some(function_argument.span),
                 });
             };
-            if !self.function_definitions.contains_key(&name.text) {
+            let Some(statement) = self.function_definitions.get(&name.text).copied() else {
                 return Err(CodegenError::InvalidIr {
                     message: format!("并发 trampoline 函数 {} 未登记", name.text),
                 });
-            }
-            entry_symbol = Some(format!(
-                "xiao.concurrent.trampoline.{}",
-                crate::stable_hash(name.text.as_bytes())
-            ));
+            };
+            entry_symbol = Some(self.concurrency_trampoline_for_statement(statement));
             Some(1_usize)
         } else {
             None

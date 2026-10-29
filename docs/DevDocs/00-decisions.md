@@ -552,8 +552,9 @@ Linux/macOS 布局与成本测量仍待外部取证；取消等待真实“持�
 
 **状态更新（2026-10-29）**：22C-FIX.1 已关闭（代码提交 `0caebc9`，26 条 VM 并发回归；
 workspace `40709431538`、maintenance `40709431618` 第 2 次尝试三平台各 26/26）。
-22D LLVM/差分已登记规划，见 [22D](22d-llvm-concurrency-differential.md)；本计划仍不写
-产品代码，不实现 stdlib 函数体或原生产物元数据。
+22D LLVM/差分已进入实施，状态与阶段边界以
+[22D 计划](22d-llvm-concurrency-differential.md) 为准；当前已包含 Runtime ABI 和 LLVM
+后端代码，但仍不实现 stdlib 函数体或原生产物元数据。完整差分与三平台证据尚未收口。
 
 ### 22A 跨平台测量输入（2026-10-24）
 

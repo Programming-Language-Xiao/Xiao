@@ -312,6 +312,11 @@ impl<T: Send + Sync> Drop for SharedOwnedGuard<T> {
         let _gate = self.waiters.gate.lock().expect("共享锁等待器锁未中毒");
         header.lock_state.store(0, Ordering::Release);
         self.waiters.ready.notify_all();
+        crate::memory::record_external_release(
+            self as *const Self as usize,
+            crate::memory::ReleaseAction::LockGuardRelease,
+        );
+        crate::memory::forget_external_release_object(self as *const Self as usize);
         // Drop 返回后再释放 handle，确保解锁发生在最后一次强引用释放前。
     }
 }
@@ -320,11 +325,19 @@ impl<T> SharedHandle<T> {
     /// 释放一个强引用，并在最后一个强引用时销毁载荷。
     fn release_strong(&mut self) {
         let allocation = unsafe { self.ptr.as_ref() };
+        crate::memory::record_external_release(
+            self.ptr.as_ptr() as usize,
+            crate::memory::ReleaseAction::SharedRelease,
+        );
         if allocation.header.strong.fetch_sub(1, Ordering::AcqRel) == 1 {
             std::sync::atomic::fence(Ordering::Acquire);
             unsafe {
                 std::ptr::drop_in_place(std::ptr::addr_of_mut!((*self.ptr.as_ptr()).payload));
             }
+            crate::memory::record_external_release(
+                self.ptr.as_ptr() as usize,
+                crate::memory::ReleaseAction::Destroy,
+            );
             release_weak(self.ptr);
         }
     }
@@ -434,8 +447,13 @@ impl<T> Drop for SharedWeakHandle<T> {
 /// 归还弱引用并在头部最后一个弱引用释放时回收分配。
 fn release_weak<T>(ptr: NonNull<SharedAllocation<T>>) {
     let header = unsafe { &ptr.as_ref().header };
+    crate::memory::record_external_release(
+        ptr.as_ptr() as usize,
+        crate::memory::ReleaseAction::WeakRelease,
+    );
     if header.weak.fetch_sub(1, Ordering::AcqRel) == 1 {
         std::sync::atomic::fence(Ordering::Acquire);
+        crate::memory::forget_external_release_object(ptr.as_ptr() as usize);
         let layout = std::alloc::Layout::new::<SharedAllocation<T>>();
         unsafe { std::alloc::dealloc(ptr.as_ptr().cast::<u8>(), layout) };
     }
