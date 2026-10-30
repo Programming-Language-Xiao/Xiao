@@ -328,12 +328,13 @@ core/rust/crates/xiao-codegen-llvm/tests/                 原生夹具
 - native finally 路径通过 Runtime 错误 checkpoint 暂存主错误，清理失败恢复为 suppressed；差分用例覆盖该主/次生错误身份。native detached 报告与 VM 的错误身份、cause 和 locale 文案投影一致，原生栈帧仍保留为后续差异项。
 - 2026-10-30 修正 finally 中普通函数显式返回清空调用方 checkpoint 的 P1：`xiao_runtime_error_clear` 只清当前错误，独立入口另调 `xiao_runtime_error_checkpoint_reset`；finally 自身的非局部退出仍由 `checkpoint_discard` 处理。Runtime 回归覆盖 clear 后主/次错误恢复和入口遗留栈重置，VM/native 差分覆盖普通 helper 返回及 helper 自身 finally 返回后外层主/次错误保留，并核对错误退出码和清理输出。
 - 2026-10-30 在每次 native trampoline 调用前后重置 worker 线程的错误槽与 checkpoint，并把父执行单元的 locale 安装到实际 worker；`native_trampoline_resets_worker_checkpoint_and_inherits_locale` 验证复用线程清理，22D VM/native detached 差分改为覆盖子线程再次 spawn/detach 孙线程。
-- 普通项目模块的并发预检现在沿静态导入图向导入方传播并发标记，覆盖经中间模块导出函数的间接路径；`native_project_module_concurrency_is_rejected_structurally` 使用 `main -> helper -> bridge -> std.concurrent` 的真实项目模块验证结构化拒绝。
-- `xiao_runtime_concurrency_finish` 将 close drain 失败送入统一错误槽，已有主错误保持为主并把 close 失败加入 suppressed；`native_finish_close_error_is_suppressed_under_primary` 验证错误身份与返回状态。
+- 普通项目模块的并发预检现在沿静态导入图向导入方传播并发标记，覆盖经中间模块导出函数的间接路径；`native_project_module_concurrency_is_rejected_structurally` 使用 `main -> helper -> bridge -> std.concurrent` 的真实项目模块验证结构化拒绝。（2026-10-31 审核备注：native lowering 对任一被标记模块即整程序拒绝，桥接模块自身的标记已能触发该拒绝；本条让导入方的标记也完整，属防御性加固，不新增独立的拒绝覆盖面。）
+- `xiao_runtime_concurrency_finish` 将 close drain 失败送入统一错误槽，已有主错误保持为主并把 close 失败加入 suppressed；`native_finish_close_error_is_suppressed_under_primary` 验证错误身份与返回状态。（2026-10-31 审核备注：该回归直接调用 `native_finish_status`，未经过完整 close drain；真实入口级的 close 失败差分仍属 §五 差分矩阵的待补项。）
 - 旧 ABI 文档统一说明已初始化输出槽、成功替换/失败保留、固定结构输出和借用字节生命周期；`legacy_output_slots_replace_owned_values_and_preserve_on_failure` 与 `legacy_value_wrapper_rejects_wrong_handle_kind_with_none_sentinel` 验证旧句柄/值槽和按值包装边界。
 - 将数组、元组、字典、集合和旧表入口迁移到 `xiao-runtime/src/abi_collections.rs`，保留既有 C 符号和 parent module re-export；按物理行门禁统计，`abi.rs` 从 2535 行降至 2055 行，旧尺寸豁免说明已随超限关闭移除。
 - opaque 并发 token 使用单调整数 token + Runtime 内部 live registry，retain/release 在 registry 锁内串行，失效 token 不再解引用可复用裸地址；LockGuard 额外校验创建线程，C ABI 并发入口声明补齐参数/输出槽安全契约。
 - 公开 `CodegenOptions` 默认拒绝并发原生产物；内部测试使用 `with_internal_concurrency()`。`CODEGEN_VERSION = 11` 隔离入口 checkpoint 重置与普通错误清理的生成文本，Runtime ABI 版本仍为 1.17。
+- 2026-10-31 审核 `601963f`：四个新增 Runtime 用例和两个受控原生用例实跑通过，77 个 C 符号在 `abi.rs`/`abi_collections.rs` 拆分前后一一对应且无重复，`abi.rs` 计 2055 个物理行；第 3、4 项按防御性加固和 helper 级证据修正口径，见 §9.1。
 - 库测试、workspace/clippy/fmt/docs/usedocs/layout 与本机受控原生执行记录只证明当前实现范围，不代替 §五 的完整差分及 §六 的阶段退出条件。
 
 仍待完成的 22D 工作是 XCON 深度/大小/恶意 tag 原生负例、取消四位置、native/VM 原生栈帧和完整 detached 事件投影，以及三平台 CI 证据。native 入口已增加当前 Runtime close drain、Runtime-ID detached callback 完成屏障、创建时 locale 继承和 native finish 通道消费；并发句柄/guard 的 release trace 已有双端对象集合投影，但完整动作顺序仍需扩展。`llvm-as` 符号门禁已移至三平台 native job 显式精确运行；默认 workspace 测试不依赖 PATH 中碰巧存在 LLVM。上一轮审查列出的其他 C ABI 风险尚未全部消除：本轮已将并发句柄改为不复用整数 token 的 registry lookup、明确并发稳定入口的参数/输出槽契约，并拒绝跨线程 LockGuard；其他旧 C ABI 输出槽与包装边界仍需独立审阅。上述未完成项不改变 22A 冻结的 API、诊断编号、32B/16B 布局或 22E 产物边界。
@@ -344,10 +345,12 @@ core/rust/crates/xiao-codegen-llvm/tests/                 原生夹具
 
 1. [x] pool worker 在每个 trampoline 前后重置错误槽/checkpoint；`native_trampoline_resets_worker_checkpoint_and_inherits_locale`。
 2. [x] 子线程执行时继承创建任务时的 locale；22D VM/native 嵌套 spawn/detach 差分。
-3. [x] 并发标记沿项目模块导入图传递；`native_project_module_concurrency_is_rejected_structurally`。
-4. [x] finish close 错误不覆盖既有主错误；`native_finish_close_error_is_suppressed_under_primary`。
+3. [x] 并发标记沿项目模块导入图传递（防御性加固：结构化拒绝此前已由桥接模块自身的标记保证）；`native_project_module_concurrency_is_rejected_structurally`。
+4. [x] finish close 错误不覆盖既有主错误（helper 级单测；真实入口 close drain 的端到端差分待补）；`native_finish_close_error_is_suppressed_under_primary`。
 5. [x] 旧 C ABI 输出槽及按值包装规则已明确并回归；`legacy_output_slots_replace_owned_values_and_preserve_on_failure`、`legacy_value_wrapper_rejects_wrong_handle_kind_with_none_sentinel`。
 6. [x] `abi.rs` 已拆分容器/表入口，2055 个物理行低于 2500 行门槛；旧硬耦合豁免文件已移除。
+
+2026-10-31 审核 `601963f` 时复核六项实现均成立，并对第 3、4 项修正口径：第 3 项是标记传播的防御性加固，不是新增的拒绝路径；第 4 项目前是 helper 级回归，真实入口 close drain 的端到端差分仍归 §五 的差分矩阵。两项修正不改变清单的关闭状态。
 
 清单关闭不替代 §六中 XCON 恶意输入、取消四位置、原生栈帧、完整释放顺序和三平台远端证据等 22D 阶段退出条件。
 
