@@ -516,6 +516,20 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             Some("cleanup-error"),
         ),
         (
+            "native-running-cancellation-finally",
+            "from std.concurrent import current_runtime, shared_mut, spawn, join, cancel, lock, lock_read, lock_write\ndef read_flag(shared_mut<int> flag) -> int\n    guard = lock(flag)\n    return lock_read(guard)\ndef write_flag(shared_mut<int> flag, int value) -> none\n    guard = lock(flag)\n    lock_write(guard, value)\ndef worker(shared_mut<int> ready) -> int\n    try\n        write_flag(ready, 1)\n        while read_flag(ready) == 1\n            value = 1\n    finally\n        print(\"cancel-finally\")\n    return 0\nrt = current_runtime()\nready = shared_mut(0)\nthread = spawn(rt, worker, ready)\nwhile read_flag(ready) == 0\n    value = 1\ncancel(thread)\njoin(thread)\n",
+            "X06-RUNTIME-027",
+            "cancel-finally\n",
+            None,
+        ),
+        (
+            "native-completed-cancellation",
+            "from std.concurrent import current_runtime, spawn, join, cancel, runtime_close\ndef worker() -> int\n    return 3\nrt = current_runtime()\nthread = spawn(rt, worker)\nruntime_close(rt)\ncancel(thread)\njoin(thread)\n",
+            "X06-RUNTIME-027",
+            "",
+            None,
+        ),
+        (
             "native-stack-frames",
             "def inner() -> none\n    raise TypeError(code = \"stack-primary\")\ndef outer() -> none\n    inner()\nouter()\n",
             "stack-primary",
@@ -627,11 +641,23 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
                 "{label}: suppressed 未投影：{stderr}"
             );
         }
-        assert_eq!(
-            release_trace_sequence(&native_trace),
-            release_trace_sequence(&vm_trace),
-            "{label}: VM/native 完整释放对象顺序"
-        );
+        if label == "native-running-cancellation-finally" {
+            // 锁轮询握手次数取决于调度时机，临时守卫的释放序列不适合作为差分基准。
+            assert!(
+                !release_trace_sequence(&native_trace).is_empty(),
+                "{label}: native 应记录握手对象释放"
+            );
+            assert!(
+                !release_trace_sequence(&vm_trace).is_empty(),
+                "{label}: VM 应记录握手对象释放"
+            );
+        } else {
+            assert_eq!(
+                release_trace_sequence(&native_trace),
+                release_trace_sequence(&vm_trace),
+                "{label}: VM/native 完整释放对象顺序"
+            );
+        }
     }
 
     let detached_source = "from std.concurrent import current_runtime, spawn, join, detach\ndef grandchild() -> int\n    raise ArithmeticError(code = \"detached-child\")\n    return 0\ndef child() -> int\n    rt = current_runtime()\n    nested = spawn(rt, grandchild)\n    detach(nested)\n    return 1\nrt = current_runtime()\nthread = spawn(rt, child)\njoin(thread)\nprint(\"main\")\n";

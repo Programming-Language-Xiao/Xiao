@@ -506,9 +506,9 @@ def blocker(shared_mut<int> flag) -> int
     while read_flag(flag) == 0
         value = 1
     return 1
-def queued(int value, str text) -> int
+def queued(shared_mut<int> left, shared_mut<int> right) -> int
     print("must-not-run")
-    return value
+    return 0
 rt = current_runtime()
 ready = shared_mut(0)
 gate = shared_mut(0)
@@ -516,23 +516,36 @@ release_gate = gate
 pool = pool_create(rt, 1)
 release = spawn(rt, release_after_wait, ready, release_gate)
 first = submit(pool, blocker, gate)
-second = submit(pool, queued)
+queued_left = shared_mut(2)
+queued_right = shared_mut(3)
+second = submit(pool, queued, queued_left, queued_right)
 cancel(second)
 try
     wait(second)
 finally
     write_flag(ready, 1)
 "#
-        .replace("second = submit(pool, queued)", "second = submit(pool, queued, 2, \"payload\")");
+        .to_owned();
     let request = DriverRequest::new(FrontendRequest::from_text(source.clone()));
     let artifact = FrontendCompiler::new().compile(&request.frontend).unwrap();
+    let queued_values = ["queued_left", "queued_right"].map(|name| {
+        let key = format!("ascii:{name}");
+        artifact
+            .ir
+            .ownership
+            .values
+            .iter()
+            .find(|value| value.name.as_deref() == Some(key.as_str()))
+            .unwrap_or_else(|| panic!("缺少队列参数 {name}"))
+            .id
+    });
     let transfer = artifact
         .ir
         .ownership
         .boundary_transfers
         .iter()
-        .rfind(|transfer| transfer.parameters.len() == 2)
-        .expect("排队任务应包含两个边界参数");
+        .find(|transfer| transfer.parameters == queued_values)
+        .expect("排队任务应包含两个专属边界参数");
     let expected_cleanup = transfer.cleanup_order.clone();
     let result = observe(&source);
     assert_eq!(
@@ -551,7 +564,7 @@ finally
             _ => None,
         })
         .collect::<Vec<_>>();
-    assert_eq!(released, expected_cleanup);
+    assert_eq!(released, expected_cleanup, "transfer={transfer:?}");
 }
 
 /// 验证锁等待和已完成句柄取消仍遵循 027 语义。
