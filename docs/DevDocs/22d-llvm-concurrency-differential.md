@@ -322,10 +322,10 @@ core/rust/crates/xiao-codegen-llvm/tests/                 原生夹具
 - 修正了根/局部导入别名插入导致 trampoline 目标函数符号过期、别名函数目标引用未定义 trampoline 的 P1；LLVM 函数与 trampoline 符号现在绑定实际 IR 函数定义节点，函数目标支持括号分组，模块体并发在计划建立阶段结构化拒绝。
 - `shared_read`/`shared_mut` 在关闭的当前 Runtime 上返回 031；`spawn`/`submit` 的边界输入 Runtime ID 与返回信封 Runtime ID 分开，`join`/`wait` 按调用方 Runtime 校验 `SharedMut` 结果，与 VM 行为一致。
 - 原生释放追踪从线程局部会话扩展为环境变量开启的跨线程会话，trampoline 子线程的参数、结果和临时值释放会汇入同一差分文件；VM 的显式追踪仍保持线程局部语义。
-- 外部释放事件现在同时进入 VM 显式会话和 native 会话；共享对象按对象 ID 比较释放动作集合，差分用例已加入 shared/LockGuard 投影检查。并发盒子释放也有事件记录；完整所有权动作顺序仍需扩展覆盖。
+- 外部释放事件同时进入 VM 显式会话和 native 会话；差分将对象 ID 归一化，忽略 native ABI 包装盒子的引用归还和同对象连续临时别名，仅压缩后端复制造成的相邻重复，保留对象间及动作间顺序。VM/native 成功、错误和 detached 夹具现在逐事件比较完整释放顺序；修复了 LLVM 释放计划把 spawn/submit 的复制源误当返回移动而跳过、造成 shared 对象不销毁的问题。
 - native 取消检查调整到实参求值之后，Runtime 错误 span 只在子错误没有既有位置时补充，避免覆盖子执行错误的原始位置；native 入口结束时执行当前 Runtime close drain，并按创建时 locale 投影 detached 诊断。
 - native Runtime 所有权追踪只在显式入口窗口内生效；入口退出逆序关闭登记的子 Runtime，等待 Runtime-ID detached callback 清零，再投影/消费通道、结束入口窗口并刷新 release trace。
-- native finally 路径通过 Runtime 错误 checkpoint 暂存主错误，清理失败恢复为 suppressed；差分用例覆盖该主/次生错误身份。native detached 报告与 VM 的错误身份、cause 和 locale 文案投影一致，原生栈帧仍保留为后续差异项。
+- native finally 路径通过 Runtime 错误 checkpoint 暂存主错误，清理失败恢复为 suppressed；差分用例覆盖该主/次生错误身份。native 函数未处理错误出口按展开顺序追加统一用户栈帧和源码区间；VM/native 嵌套函数错误差分验证帧身份与内到外顺序。native detached 报告与 VM 的错误身份、cause 和 locale 文案投影一致。
 - 2026-10-30 修正 finally 中普通函数显式返回清空调用方 checkpoint 的 P1：`xiao_runtime_error_clear` 只清当前错误，独立入口另调 `xiao_runtime_error_checkpoint_reset`；finally 自身的非局部退出仍由 `checkpoint_discard` 处理。Runtime 回归覆盖 clear 后主/次错误恢复和入口遗留栈重置，VM/native 差分覆盖普通 helper 返回及 helper 自身 finally 返回后外层主/次错误保留，并核对错误退出码和清理输出。
 - 2026-10-30 在每次 native trampoline 调用前后重置 worker 线程的错误槽与 checkpoint，并把父执行单元的 locale 安装到实际 worker；`native_trampoline_resets_worker_checkpoint_and_inherits_locale` 验证复用线程清理，22D VM/native detached 差分改为覆盖子线程再次 spawn/detach 孙线程。
 - 普通项目模块的并发预检现在沿静态导入图向导入方传播并发标记，覆盖经中间模块导出函数的间接路径；`native_project_module_concurrency_is_rejected_structurally` 使用 `main -> helper -> bridge -> std.concurrent` 的真实项目模块验证结构化拒绝。（2026-10-31 审核备注：native lowering 对任一被标记模块即整程序拒绝，桥接模块自身的标记已能触发该拒绝；本条让导入方的标记也完整，属防御性加固，不新增独立的拒绝覆盖面。）
@@ -333,11 +333,13 @@ core/rust/crates/xiao-codegen-llvm/tests/                 原生夹具
 - 旧 ABI 文档统一说明已初始化输出槽、成功替换/失败保留、固定结构输出和借用字节生命周期；`legacy_output_slots_replace_owned_values_and_preserve_on_failure` 与 `legacy_value_wrapper_rejects_wrong_handle_kind_with_none_sentinel` 验证旧句柄/值槽和按值包装边界。
 - 将数组、元组、字典、集合和旧表入口迁移到 `xiao-runtime/src/abi_collections.rs`，保留既有 C 符号和 parent module re-export；按物理行门禁统计，`abi.rs` 从 2535 行降至 2055 行，旧尺寸豁免说明已随超限关闭移除。
 - opaque 并发 token 使用单调整数 token + Runtime 内部 live registry，retain/release 在 registry 锁内串行，失效 token 不再解引用可复用裸地址；LockGuard 额外校验创建线程，C ABI 并发入口声明补齐参数/输出槽安全契约。
-- 公开 `CodegenOptions` 默认拒绝并发原生产物；内部测试使用 `with_internal_concurrency()`。`CODEGEN_VERSION = 11` 隔离入口 checkpoint 重置与普通错误清理的生成文本，Runtime ABI 版本仍为 1.17。
+- XCON native trampoline 输入回归注入保留 tag 13/14、超深节点和超大单值；每类都要求结构化 029，且计数证明目标入口未启动。Runtime scheduler 增加屏障控制的 queued/running/waiting/completed-unreclaimed 四位置取消测试，均要求 027 并验证运行/等待边界。
+- 公开 `CodegenOptions` 默认拒绝并发原生产物；内部测试使用 `with_internal_concurrency()`。`CODEGEN_VERSION = 12` 隔离 native 栈帧和边界复制源释放的生成文本，Runtime ABI 版本仍为 1.17；native 栈帧函数是运行时内部新增符号，不加入 `xiao-runtime-abi` 公共符号表。
+- Windows 本机受控验证：170 项 Runtime 单测、22D 普通门禁 5 项、真实 `llvm-as` 汇编门禁 1 项，以及五个成功、七个运行时错误、一个 detached 的同 IR VM/native 差分通过。差分比较 stdout、错误主/suppressed、栈帧和归一化的完整释放动作序列。
 - 2026-10-31 审核 `601963f`：四个新增 Runtime 用例和两个受控原生用例实跑通过，77 个 C 符号在 `abi.rs`/`abi_collections.rs` 拆分前后一一对应且无重复，`abi.rs` 计 2055 个物理行；第 3、4 项按防御性加固和 helper 级证据修正口径，见 §9.1。
 - 库测试、workspace/clippy/fmt/docs/usedocs/layout 与本机受控原生执行记录只证明当前实现范围，不代替 §五 的完整差分及 §六 的阶段退出条件。
 
-仍待完成的 22D 工作是 XCON 深度/大小/恶意 tag 原生负例、取消四位置、native/VM 原生栈帧和完整 detached 事件投影，以及三平台 CI 证据。native 入口已增加当前 Runtime close drain、Runtime-ID detached callback 完成屏障、创建时 locale 继承和 native finish 通道消费；并发句柄/guard 的 release trace 已有双端对象集合投影，但完整动作顺序仍需扩展。`llvm-as` 符号门禁已移至三平台 native job 显式精确运行；默认 workspace 测试不依赖 PATH 中碰巧存在 LLVM。上一轮审查列出的其他 C ABI 风险尚未全部消除：本轮已将并发句柄改为不复用整数 token 的 registry lookup、明确并发稳定入口的参数/输出槽契约，并拒绝跨线程 LockGuard；其他旧 C ABI 输出槽与包装边界仍需独立审阅。上述未完成项不改变 22A 冻结的 API、诊断编号、32B/16B 布局或 22E 产物边界。
+XCON 恶意输入、Runtime scheduler 的取消四位置、native 栈帧和完整释放顺序现已有实现与本机证据。取消四位置目前由 Runtime 屏障测试确定性验证，且 22C VM 夹具覆盖运行中 finally/drop；本批 native VM 差分未纳入取消夹具，Windows 原生取消 fixture 曾以 `X07-FATAL-005`/进程码 134 结束，仍需单独定位，不能把 Runtime 层测试表述为 native 取消差分通过。Windows 本机证据已齐；Linux/macOS 远端运行仍待本次推送后的 workflow 实际完成。native 入口已增加当前 Runtime close drain、Runtime-ID detached callback 完成屏障、创建时 locale 继承和 native finish 通道消费；release trace 归一化规则忽略 ABI 句柄盒子自身引用，不忽略共享对象析构或弱引用释放。上一轮审查列出的其他 C ABI 风险尚未全部消除：本轮已将并发句柄改为不复用整数 token 的 registry lookup、明确并发稳定入口的参数/输出槽契约，并拒绝跨线程 LockGuard；其他旧 C ABI 输出槽与包装边界仍需独立审阅。上述未完成项不改变 22A 冻结的 API、诊断编号、32B/16B 布局或 22E 产物边界。
 
 ### 9.1 P3 待收口清单（并入 22D 收尾）
 
@@ -352,11 +354,11 @@ core/rust/crates/xiao-codegen-llvm/tests/                 原生夹具
 
 2026-10-31 审核 `601963f` 时复核六项实现均成立，并对第 3、4 项修正口径：第 3 项是标记传播的防御性加固，不是新增的拒绝路径；第 4 项目前是 helper 级回归，真实入口 close drain 的端到端差分仍归 §五 的差分矩阵。两项修正不改变清单的关闭状态。
 
-清单关闭不替代 §六中 XCON 恶意输入、取消四位置、原生栈帧、完整释放顺序和三平台远端证据等 22D 阶段退出条件。
+清单关闭不替代 §六退出条件。XCON、Runtime 取消四位置、原生栈帧和完整释放顺序已有本机证据；native 取消端到端失败与 Linux/macOS 远端证据仍待关闭。
 
 ## 十、状态
 
 - 阶段代号：22D；
-- 当前状态：**实施中**；入口证据来自 22C-FIX.1 的 `0caebc9`，D-2/D-5 已确认，第一批 LLVM 并发 lowering、Runtime C ABI 和 trampoline 已落地；根/局部导入别名 P1、Runtime 031 边界和真实项目模块结构化拒绝已修复并覆盖；finally 主/次错误、detached locale/收尾、并发释放 projection 已加入差分回归，XCON 负例、取消四位置、原生栈帧与三平台远端证据仍未收口；P3 待收口清单见 §9.1，并作为 §六 第 9 条退出条件复核；
+- 当前状态：**实施中**；入口证据来自 22C-FIX.1 的 `0caebc9`，D-2/D-5 已确认，第一批 LLVM 并发 lowering、Runtime C ABI 和 trampoline 已落地；根/局部导入别名 P1、Runtime 031 边界和真实项目模块结构化拒绝已修复并覆盖；XCON 恶意输入、Runtime 取消四位置、native/VM 栈帧、成功/错误/detached 完整释放顺序已有本机证据；Windows 原生取消端到端夹具仍有 134 失败待查，Linux/macOS 远端证据待本次 push workflow 完成；P3 待收口清单见 §9.1，并作为 §六 第 9 条退出条件复核；
 - 当前工作批：22D；不接 22E 标准库/原生产物元数据；
 - 22D 完成后，22E 只消费本批稳定的并发行为和已有 ABI，不反向修改 22D 的跨平台结论。

@@ -1342,6 +1342,109 @@ mod tests {
     }
 
     #[test]
+    /// 取消尚在队列中的任务会移除工作项，且任务闭包不运行。
+    fn cancellation_at_queued_position_skips_task_body() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime, 1).expect("单 worker 测试池");
+        let (started_tx, started_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let blocker = pool
+            .submit(move |_| {
+                started_tx.send(()).expect("通知 worker 已占用");
+                let _ = release_rx.recv();
+            })
+            .expect("占用 worker");
+        started_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("worker 应开始执行阻塞任务");
+
+        let ran = Arc::new(AtomicBool::new(false));
+        let task_ran = Arc::clone(&ran);
+        let queued = pool
+            .submit(move |_| task_ran.store(true, Ordering::Release))
+            .expect("排入第二个任务");
+        queued.cancel();
+        release_tx.send(()).expect("释放 worker");
+        assert_eq!(blocker.wait(), Ok(()));
+        assert_eq!(queued.wait(), Err(RuntimeExecError::Cancelled));
+        assert!(!ran.load(Ordering::Acquire));
+        pool.shutdown().expect("关闭测试池");
+    }
+
+    #[test]
+    /// 取消正在运行的任务后，任务完成才向等待方返回 027。
+    fn cancellation_at_running_position_waits_for_task_exit() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime, 1).expect("单 worker 测试池");
+        let (started_tx, started_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let task = pool
+            .submit(move |_| {
+                started_tx.send(()).expect("通知任务已运行");
+                let _ = release_rx.recv();
+                9_u32
+            })
+            .expect("提交任务");
+        let cancellation = task.cancellation();
+        started_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("任务应开始运行");
+        cancellation.cancel();
+        release_tx.send(()).expect("允许任务退出");
+        assert_eq!(task.wait(), Err(RuntimeExecError::Cancelled));
+        pool.shutdown().expect("关闭测试池");
+    }
+
+    #[test]
+    /// 等待任务结果期间取消令牌，等待方仍等清理结束后返回 027。
+    fn cancellation_at_waiting_position_waits_for_task_exit() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime, 1).expect("单 worker 测试池");
+        let (started_tx, started_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let task = pool
+            .submit(move |_| {
+                started_tx.send(()).expect("通知任务已运行");
+                let _ = release_rx.recv();
+                11_u32
+            })
+            .expect("提交任务");
+        let cancellation = task.cancellation();
+        started_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("任务应开始运行");
+        let (waiting_tx, waiting_rx) = mpsc::channel();
+        let waiter = std::thread::spawn(move || {
+            waiting_tx.send(()).expect("通知等待方已启动");
+            task.wait()
+        });
+        waiting_rx
+            .recv_timeout(Duration::from_secs(2))
+            .expect("等待方应进入 wait");
+        cancellation.cancel();
+        release_tx.send(()).expect("允许任务退出");
+        assert_eq!(
+            waiter.join().expect("等待线程不应 panic"),
+            Err(RuntimeExecError::Cancelled)
+        );
+        pool.shutdown().expect("关闭测试池");
+    }
+
+    #[test]
+    /// 任务完成但结果尚未消费时取消，消费句柄仍返回 027。
+    fn cancellation_at_completed_unreclaimed_position_returns_027() {
+        let runtime = RuntimeHandle::create();
+        let pool = TaskPool::create(runtime, 1).expect("单 worker 测试池");
+        let completed = pool.submit(|_| 13_u32).expect("提交目标任务");
+        let cancellation = completed.cancellation();
+        let marker = pool.submit(|_| ()).expect("提交完成屏障");
+        marker.wait().expect("屏障完成代表前一个任务已结束");
+        cancellation.cancel();
+        assert_eq!(completed.wait(), Err(RuntimeExecError::Cancelled));
+        pool.shutdown().expect("关闭测试池");
+    }
+
+    #[test]
     /// Runtime 关闭后，公开 shutdown 按冻结语义返回 031。
     fn pool_shutdown_after_runtime_close_returns_runtime_closed() {
         let runtime = RuntimeHandle::create();

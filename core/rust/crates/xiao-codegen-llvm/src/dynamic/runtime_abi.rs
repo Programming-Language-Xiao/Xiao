@@ -155,6 +155,11 @@ impl<'a> DynamicGenerator<'a> {
             .insert("declare i32 @xiao_runtime_error_class()".to_owned());
         self.declarations
             .insert("declare i32 @xiao_runtime_error_attach_span(i64, i64)".to_owned());
+        self.declarations.insert(format!(
+            "declare void @xiao_runtime_error_push_native_frame({}, {}, i64, i64)",
+            self.bytes_parameter_type(),
+            self.bytes_parameter_type()
+        ));
         self.declarations
             .insert("declare i32 @xiao_runtime_error_exit_code()".to_owned());
         self.declarations

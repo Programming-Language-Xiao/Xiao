@@ -34,8 +34,8 @@ use xiao_types::{TableMemberSignature, TableSignature, Type, Visibility};
 use crate::containers::{ArrayHandle, DictHandle, DictKind, SetHandle, TupleHandle, is_hashable};
 use crate::errors::{
     CONTAINER_INDEX_CODE, CONTAINER_KEY_CODE, DiagnosticParam, FatalError, FatalKind, FrameKind,
-    INVALID_HANDLE_CODE, RuntimeError, RuntimeResult, USE_AFTER_RELEASE_CODE, WEAK_UPGRADE_CODE,
-    XiaoErrorKind,
+    INVALID_HANDLE_CODE, RuntimeError, RuntimeResult, StackFrame, USE_AFTER_RELEASE_CODE,
+    WEAK_UPGRADE_CODE, XiaoErrorKind,
 };
 use crate::memory::{RuntimeTypeTag, StrongHandle, WeakHandle};
 use crate::tables::{TableDefinition, TableInstance};
@@ -922,6 +922,39 @@ pub extern "C" fn xiao_runtime_error_checkpoint_finish() -> u32 {
 pub extern "C" fn xiao_runtime_error_checkpoint_discard() {
     PENDING_ERROR_CHECKPOINTS.with(|stack| {
         stack.borrow_mut().pop();
+    });
+}
+
+/// 为 native 函数的错误展开追加用户调用帧。此入口只由 22D 生成代码调用，
+/// 不属于 xiao-runtime-abi 公共声明或产物 ABI 版本。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_push_native_frame(
+    module: XiaoAbiBytes,
+    function: XiaoAbiBytes,
+    start: u64,
+    end: u64,
+) {
+    let (Ok(module), Ok(function), Ok(start), Ok(end)) = (
+        unsafe { utf8(module) },
+        unsafe { utf8(function) },
+        usize::try_from(start),
+        usize::try_from(end),
+    ) else {
+        return;
+    };
+    let mut frame = StackFrame::user(module, function);
+    frame.span = SourceSpan::new(start, end);
+    PENDING_ERROR.with(|pending| {
+        if let Some(error) = pending.borrow_mut().as_mut() {
+            match error {
+                PendingError::Recoverable(error) => {
+                    *error = error.clone().with_stack_frame(frame);
+                }
+                PendingError::Fatal(error) => {
+                    *error = error.clone().with_stack_frame(frame);
+                }
+            }
+        }
     });
 }
 

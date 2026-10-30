@@ -107,27 +107,41 @@ impl Drop for ReleaseTraceEnvironment {
     }
 }
 
-fn shared_release_projection(path: &std::path::Path) -> BTreeMap<String, usize> {
-    let text = std::fs::read_to_string(path).unwrap_or_default();
-    text.lines()
-        .filter_map(|line| {
-            let mut fields = line.split('\t');
-            let _sequence = fields.next()?;
-            let object_id = fields.next()?.parse::<u64>().ok()?;
-            let action = fields.next()?;
-            matches!(action, "shared_release" | "lock_guard_release")
-                .then_some((action.to_owned(), object_id))
-        })
-        .fold(
-            BTreeMap::<String, std::collections::BTreeSet<u64>>::new(),
-            |mut objects, (action, object_id)| {
-                objects.entry(action).or_default().insert(object_id);
-                objects
-            },
-        )
-        .into_iter()
-        .map(|(action, objects)| (action, objects.len()))
-        .collect()
+fn release_trace_sequence(path: &std::path::Path) -> Vec<(usize, String)> {
+    let text = std::fs::read_to_string(path)
+        .unwrap_or_else(|error| panic!("读取释放追踪 {} 失败：{error}", path.display()));
+    let mut identities = BTreeMap::<u64, usize>::new();
+    let mut events = Vec::new();
+    for (expected_sequence, line) in text.lines().enumerate() {
+        let mut fields = line.split('\t');
+        let line_sequence = fields
+            .next()
+            .and_then(|value| value.parse::<usize>().ok())
+            .unwrap_or_else(|| panic!("无效释放追踪序号：{line:?}"));
+        assert_eq!(line_sequence, expected_sequence, "释放追踪序号必须连续");
+        let object_id = fields
+            .next()
+            .and_then(|value| value.parse::<u64>().ok())
+            .unwrap_or_else(|| panic!("无效释放追踪对象身份：{line:?}"));
+        let action = fields
+            .next()
+            .unwrap_or_else(|| panic!("释放追踪缺少动作：{line:?}"));
+        assert!(fields.next().is_none(), "释放追踪多出字段：{line:?}");
+        // VM 值不经过 C ABI 的不透明盒子；ConcurrencyRelease 是 native 包装层
+        // 自身的引用归还，不对应语言值/共享对象的语义释放动作。
+        if action == "concurrency_release" {
+            continue;
+        }
+        let next_identity = identities.len();
+        let normalized_identity = *identities.entry(object_id).or_insert(next_identity);
+        let event = (normalized_identity, action.to_owned());
+        // ABI value copies may add adjacent temporary aliases on one backend. Keep
+        // transitions between actions and objects, while avoiding alias-count skew.
+        if events.last() != Some(&event) {
+            events.push(event);
+        }
+    }
+    events
 }
 
 fn detached_message_projection(text: &str) -> String {
@@ -451,13 +465,11 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             native_output, expected_output,
             "{label}: native 应匹配黄金输出"
         );
-        if label == "shared-lock" {
-            assert_eq!(
-                shared_release_projection(&native_trace),
-                shared_release_projection(&vm_trace),
-                "{label}: VM/native shared 与 LockGuard release trace 投影"
-            );
-        }
+        assert_eq!(
+            release_trace_sequence(&native_trace),
+            release_trace_sequence(&vm_trace),
+            "{label}: VM/native 完整释放对象顺序"
+        );
     }
 
     let error_cases = [
@@ -503,16 +515,28 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             "cleanup\n",
             Some("cleanup-error"),
         ),
+        (
+            "native-stack-frames",
+            "def inner() -> none\n    raise TypeError(code = \"stack-primary\")\ndef outer() -> none\n    inner()\nouter()\n",
+            "stack-primary",
+            "",
+            None,
+        ),
     ];
     for (label, source, expected_code, expected_output, expected_suppressed) in error_cases {
         let frontend_request = FrontendRequest::from_text(source);
         let artifact = FrontendCompiler::new()
             .compile(&frontend_request)
             .unwrap_or_else(|error| panic!("{label}: 负例源码应通过前端：{error:?}"));
+        let vm_trace = root.join(format!("{label}.vm-release-trace.tsv"));
+        release_trace_environment.set_path(&vm_trace);
+        xiao_runtime::start_release_trace_from_env();
         let vm = FrontendVmDriver::new().run_artifact(
             &artifact,
             &DriverRequest::new(frontend_request.clone()).with_timeout(Duration::from_secs(10)),
         );
+        xiao_runtime::flush_release_trace();
+        release_trace_environment.reset_runtime_trace();
         assert_eq!(vm.code(), Some(expected_code), "{label}: VM 错误身份");
         assert_eq!(
             vm.exit_code().as_process_code(),
@@ -541,6 +565,22 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             expected_suppressed.into_iter().collect::<Vec<_>>(),
             "{label}: VM suppressed 错误身份"
         );
+        if label == "native-stack-frames" {
+            let frames = report
+                .stack
+                .iter()
+                .map(|frame| frame.function.as_str())
+                .collect::<Vec<_>>();
+            let inner = frames
+                .iter()
+                .position(|function| *function == "inner")
+                .expect("VM 栈应包含 inner");
+            let outer = frames
+                .iter()
+                .position(|function| *function == "outer")
+                .expect("VM 栈应包含 outer");
+            assert!(inner < outer, "VM 帧应按内到外排列：{frames:?}");
+        }
         let output = root.join(format!("{label}.{suffix}"));
         let request =
             NativeBuildRequest::new(frontend_request, target.clone(), toolchain.clone(), &output)
@@ -550,8 +590,16 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
         let native = FrontendNativeDriver::new()
             .build_artifact(&artifact, &request)
             .unwrap_or_else(|error| panic!("{label}: 原生构建失败：{error}"));
+        let native_trace = root.join(format!("{label}.native-release-trace.tsv"));
+        release_trace_environment.set_path(&native_trace);
         let execution = run_native_with_timeout(&native.native.executable, label);
-        assert_eq!(execution.status.code(), Some(3), "{label}: native 退出码");
+        assert_eq!(
+            execution.status.code(),
+            Some(3),
+            "{label}: native 退出码，stdout={:?} stderr={:?}",
+            execution.stdout,
+            execution.stderr
+        );
         let native_output = String::from_utf8(execution.stdout)
             .expect("native stdout 为 UTF-8")
             .replace("\r\n", "\n");
@@ -564,12 +612,26 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
                 .any(|line| line.starts_with(&expected_identity)),
             "{label}: native 主错误身份未匹配：{stderr}"
         );
+        if label == "native-stack-frames" {
+            let inner = stderr
+                .find("at entry::inner (User)")
+                .expect("native 报告应包含 inner 帧");
+            let outer = stderr
+                .find("at entry::outer (User)")
+                .expect("native 报告应包含 outer 帧");
+            assert!(inner < outer, "native 帧应按内到外排列：{stderr}");
+        }
         if let Some(expected_suppressed) = expected_suppressed {
             assert!(
                 stderr.contains(expected_suppressed),
                 "{label}: suppressed 未投影：{stderr}"
             );
         }
+        assert_eq!(
+            release_trace_sequence(&native_trace),
+            release_trace_sequence(&vm_trace),
+            "{label}: VM/native 完整释放对象顺序"
+        );
     }
 
     let detached_source = "from std.concurrent import current_runtime, spawn, join, detach\ndef grandchild() -> int\n    raise ArithmeticError(code = \"detached-child\")\n    return 0\ndef child() -> int\n    rt = current_runtime()\n    nested = spawn(rt, grandchild)\n    detach(nested)\n    return 1\nrt = current_runtime()\nthread = spawn(rt, child)\njoin(thread)\nprint(\"main\")\n";
@@ -578,10 +640,15 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
     let detached_artifact = FrontendCompiler::new()
         .compile(&detached_request)
         .expect("detached 负例应通过前端");
+    let detached_vm_trace = root.join("detached-failure.vm-release-trace.tsv");
+    release_trace_environment.set_path(&detached_vm_trace);
+    xiao_runtime::start_release_trace_from_env();
     let vm_detached = FrontendVmDriver::new().run_artifact(
         &detached_artifact,
         &DriverRequest::new(detached_request.clone()).with_timeout(Duration::from_secs(10)),
     );
+    xiao_runtime::flush_release_trace();
+    release_trace_environment.reset_runtime_trace();
     assert!(vm_detached.is_success(), "detached 失败不得改变主退出码");
     let detached_report = vm_detached
         .as_executed()
@@ -617,6 +684,8 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             ),
         )
         .expect("detached native 负例应构建");
+    let detached_native_trace = root.join("detached-failure.native-release-trace.tsv");
+    release_trace_environment.set_path(&detached_native_trace);
     let detached_output =
         run_native_with_timeout(&detached_native.native.executable, "detached-failure");
     assert_eq!(detached_output.status.code(), Some(0));
@@ -628,6 +697,11 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
         detached_message_projection(&detached_stderr)
             .contains(&detached_message_projection(&vm_detached_projection)),
         "native detached 报告应匹配 VM 的错误身份、cause 与 locale 投影：expected={vm_detached_projection:?}, stderr={detached_stderr:?}"
+    );
+    assert_eq!(
+        release_trace_sequence(&detached_native_trace),
+        release_trace_sequence(&detached_vm_trace),
+        "detached-failure: VM/native 完整释放对象顺序"
     );
     let _ = std::fs::remove_dir_all(root);
 }

@@ -1718,6 +1718,111 @@ mod tests {
     }
 
     #[test]
+    /// XCON 恶意 tag、超深和超大输入必须在启动 trampoline 前以 029 拒绝。
+    fn malformed_xcon_never_enters_native_trampoline() {
+        static ENTRY_CALLS: AtomicUsize = AtomicUsize::new(0);
+
+        unsafe extern "C" fn entry(
+            _context: *mut c_void,
+            _arguments: *const XiaoValue,
+            _argument_count: usize,
+            _out: *mut XiaoValue,
+        ) -> i32 {
+            ENTRY_CALLS.fetch_add(1, Ordering::SeqCst);
+            XiaoAbiStatus::Ok.code()
+        }
+
+        fn node(tag: u8, payload: &[u8]) -> Vec<u8> {
+            let mut bytes = Vec::with_capacity(12 + payload.len());
+            bytes.extend_from_slice(b"XCON");
+            bytes.extend_from_slice(&crate::XCON_VERSION.to_be_bytes());
+            bytes.extend_from_slice(&(payload.len() as u32).to_be_bytes());
+            bytes.push(tag);
+            bytes.push(0);
+            bytes.extend_from_slice(payload);
+            bytes
+        }
+
+        let mut cases = Vec::new();
+        for tag in [13, 14] {
+            cases.push((format!("reserved tag {tag}"), node(tag, &[])));
+        }
+
+        let mut deep = node(0, &[]);
+        for _ in 0..=crate::XCON_MAX_DEPTH {
+            let mut payload = 1_u32.to_be_bytes().to_vec();
+            payload.extend_from_slice(&deep);
+            deep = node(10, &payload);
+        }
+        cases.push(("depth limit".to_owned(), deep));
+
+        let mut oversized = Vec::new();
+        oversized.extend_from_slice(b"XCON");
+        oversized.extend_from_slice(&crate::XCON_VERSION.to_be_bytes());
+        oversized.extend_from_slice(
+            &u32::try_from(crate::XCON_MAX_VALUE_BYTES + 1)
+                .expect("XCON 大小限制可由 u32 表示")
+                .to_be_bytes(),
+        );
+        oversized.extend_from_slice(&[8, 0]);
+        cases.push(("value size limit".to_owned(), oversized));
+
+        ENTRY_CALLS.store(0, Ordering::SeqCst);
+        for (label, bytes) in cases {
+            crate::abi::xiao_runtime_error_clear();
+            let outcome = invoke_entry(
+                entry,
+                0,
+                vec![NativeRawValue {
+                    transfer: VmTransferValue::Xcon(bytes),
+                }],
+                RuntimeHandle::current().id(),
+                RuntimeHandle::current().id(),
+                "en-US".to_owned(),
+            );
+            assert!(
+                matches!(outcome, NativeEntryOutcome::Error(NativeErrorPacket::Recoverable(error))
+                    if error.code() == crate::CONCURRENCY_SERIALIZATION_CODE),
+                "{label}: 必须返回结构化 029"
+            );
+            assert_eq!(ENTRY_CALLS.load(Ordering::SeqCst), 0, "{label}");
+        }
+    }
+
+    #[test]
+    /// native 函数错误展开按内到外次序保留统一用户栈帧和源码区间。
+    fn native_error_frames_are_appended_during_unwind() {
+        crate::abi::xiao_runtime_error_clear();
+        crate::abi::set_pending_runtime_error(crate::RuntimeError::new(
+            crate::XiaoErrorKind::Other,
+            "frame-test",
+            "runtime.user_error",
+            "frame test",
+        ));
+        for (function, start, end) in [("inner", 8, 15), ("outer", 0, 20)] {
+            crate::abi::xiao_runtime_error_push_native_frame(
+                XiaoAbiBytes {
+                    ptr: b"app".as_ptr(),
+                    len: 3,
+                },
+                XiaoAbiBytes {
+                    ptr: function.as_ptr(),
+                    len: function.len(),
+                },
+                start,
+                end,
+            );
+        }
+        assert!(matches!(
+            take_native_error_packet(),
+            Some(NativeErrorPacket::Recoverable(error))
+                if error.stack().iter().map(|frame| frame.function.as_str()).collect::<Vec<_>>()
+                    == ["inner", "outer"]
+                    && error.stack()[0].span.is_some_and(|span| span.start() == 8 && span.end() == 15)
+        ));
+    }
+
+    #[test]
     /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn completed_child_cancellation_uses_vm_error_normalization_and_keeps_cleanup_error() {
         let cancellation = RuntimeCancellation::default();
@@ -1926,6 +2031,100 @@ mod tests {
         crate::abi::xiao_runtime_value_release(&mut result);
         crate::abi::xiao_runtime_value_release(&mut thread);
         crate::abi::xiao_runtime_value_release(&mut runtime);
+    }
+
+    #[test]
+    /// native shared 边界的参数副本在 join 后全部释放并销毁共享对象。
+    fn native_shared_boundary_releases_every_transfer_alias() {
+        let _serial = crate::memory::native_release_trace_test_lock()
+            .lock()
+            .expect("原生追踪测试串行锁未中毒");
+
+        unsafe extern "C" fn entry(
+            _context: *mut c_void,
+            arguments: *const XiaoValue,
+            argument_count: usize,
+            out: *mut XiaoValue,
+        ) -> i32 {
+            if arguments.is_null() || argument_count != 1 || out.is_null() {
+                return XiaoAbiStatus::InvalidArgument.code();
+            }
+            let value = match unsafe { super::super::value_to_runtime(&*arguments) } {
+                Ok(RuntimeValue::Concurrency(VmConcurrencyValue::Shared(shared))) => shared,
+                _ => return XiaoAbiStatus::InvalidHandle.code(),
+            };
+            let decoded = match value.get() {
+                Ok(transfer) => match transfer.decode(RuntimeHandle::current().id()) {
+                    Ok(value) => value,
+                    Err(_) => return XiaoAbiStatus::RuntimeError.code(),
+                },
+                Err(_) => return XiaoAbiStatus::RuntimeError.code(),
+            };
+            match super::super::runtime_to_value(&decoded) {
+                Ok(output) => {
+                    unsafe { *out = output };
+                    XiaoAbiStatus::Ok.code()
+                }
+                Err(status) => status,
+            }
+        }
+
+        crate::memory::start_native_release_trace_for_test();
+        let runtime_id = RuntimeHandle::current().id();
+        let transfer = VmTransferValue::encode(&RuntimeValue::Int(23), runtime_id).unwrap();
+        let shared = SharedHandle::new(transfer, runtime_id, SharedTag::Read);
+        let weak = shared.downgrade();
+        let mut shared_value = value_from_handle(box_object(ConcurrencyObject::Shared(shared)));
+        let mut runtime_value = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call(
+                operation("current_runtime"),
+                std::ptr::null(),
+                0,
+                &mut runtime_value,
+            ),
+            XiaoAbiStatus::Ok.code()
+        );
+        let mut arguments = [XiaoValue::none(), XiaoValue::none()];
+        assert_eq!(
+            crate::abi::xiao_runtime_value_copy(&runtime_value, &mut arguments[0]),
+            XiaoAbiStatus::Ok.code()
+        );
+        assert_eq!(
+            crate::abi::xiao_runtime_value_copy(&shared_value, &mut arguments[1]),
+            XiaoAbiStatus::Ok.code()
+        );
+        let mut thread_value = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call_with_entry(
+                operation("spawn"),
+                Some(entry),
+                std::ptr::null_mut(),
+                arguments.as_ptr(),
+                arguments.len(),
+                &mut thread_value,
+            ),
+            XiaoAbiStatus::Ok.code()
+        );
+        for argument in arguments.iter_mut().rev() {
+            crate::abi::xiao_runtime_value_release(argument);
+        }
+        let mut output = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call(operation("join"), &thread_value, 1, &mut output),
+            XiaoAbiStatus::Ok.code()
+        );
+        crate::abi::xiao_runtime_value_release(&mut output);
+        crate::abi::xiao_runtime_value_release(&mut thread_value);
+        crate::abi::xiao_runtime_value_release(&mut shared_value);
+        crate::abi::xiao_runtime_value_release(&mut runtime_value);
+
+        assert!(weak.upgrade().is_none(), "所有 transfer 别名都应归还");
+        assert!(
+            crate::memory::take_native_release_events_for_test()
+                .iter()
+                .any(|event| event.action == crate::memory::ReleaseAction::SharedDestroy)
+        );
     }
 
     #[test]

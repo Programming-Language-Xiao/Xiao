@@ -275,6 +275,32 @@ impl<'a> DynamicGenerator<'a> {
         let mut emitted_values = BTreeSet::new();
         let mut emitted_slots = BTreeSet::new();
         for plan in plans {
+            if exit == "normal" {
+                for value in &plan.transferred {
+                    let is_boundary_copy = self
+                        .program
+                        .ownership
+                        .values
+                        .iter()
+                        .find(|candidate| candidate.id == *value && candidate.scope == scope)
+                        .is_some_and(|candidate| {
+                            candidate
+                                .escapes
+                                .iter()
+                                .any(|reason| reason == "cross_thread")
+                        });
+                    let Some(slot) = is_boundary_copy
+                        .then(|| self.value_slots.get(value).copied())
+                        .flatten()
+                    else {
+                        continue;
+                    };
+                    if emitted_slots.insert(slot.index) {
+                        let release = self.value_release_symbol();
+                        self.emit(format!("  call void @{release}(ptr %slot{})", slot.index));
+                    }
+                }
+            }
             let mut actions = plan.actions.iter().collect::<Vec<_>>();
             actions.sort_by_key(|action| action.order);
             for action in actions {

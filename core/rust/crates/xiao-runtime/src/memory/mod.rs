@@ -96,6 +96,12 @@ fn native_release_trace() -> &'static Mutex<Option<NativeReleaseTraceState>> {
 }
 
 #[cfg(test)]
+pub(crate) fn native_release_trace_test_lock() -> &'static Mutex<()> {
+    static LOCK: Mutex<()> = Mutex::new(());
+    &LOCK
+}
+
+#[cfg(test)]
 pub(crate) fn start_native_release_trace_for_test() {
     start_native_release_trace_to_path_for_test(None);
 }
@@ -1050,8 +1056,6 @@ mod tests {
     use std::any::Any;
     use std::fs;
 
-    static NATIVE_TRACE_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
     /// 用于观察载荷释放次数的测试对象。
     struct Probe {
         dropped: std::rc::Rc<std::cell::Cell<u32>>,
@@ -1172,7 +1176,7 @@ mod tests {
     #[test]
     /// 原生追踪会话汇总 trampoline 子线程中的释放事件，而不是只记录 root TLS。
     fn native_release_trace_collects_child_thread_events() {
-        let _serial = NATIVE_TRACE_TEST_LOCK
+        let _serial = super::native_release_trace_test_lock()
             .lock()
             .expect("原生追踪测试串行锁未中毒");
         assert!(
@@ -1205,7 +1209,7 @@ mod tests {
     fn native_release_trace_keeps_recording_after_root_flush() {
         use std::sync::mpsc;
 
-        let _serial = NATIVE_TRACE_TEST_LOCK
+        let _serial = super::native_release_trace_test_lock()
             .lock()
             .expect("原生追踪测试串行锁未中毒");
 

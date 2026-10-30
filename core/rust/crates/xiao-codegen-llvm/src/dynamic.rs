@@ -501,11 +501,17 @@ impl<'a> DynamicGenerator<'a> {
         callback: Option<methods::CallbackContext>,
     ) -> Result<()> {
         let xiao_ir::IrStatementKind::Function {
-            parameters, body, ..
+            name,
+            parameters,
+            body,
+            ..
         } = &statement.kind
         else {
             return Ok(());
         };
+        let (frame_module, _) = self
+            .function_origin(statement)
+            .unwrap_or_else(|| ("entry".to_owned(), name.text.clone()));
         let symbol = callback.as_ref().map_or_else(
             || self.function_symbol_for_statement(statement),
             |context| context.symbol.clone(),
@@ -682,6 +688,14 @@ impl<'a> DynamicGenerator<'a> {
         generator.emit(format!("  call void @{release}(ptr %xiao.function.result)"));
         generator.emit("  br label %xiao.fn.error.return".to_owned());
         generator.emit_label("xiao.fn.error.return");
+        let module_value = generator.emit_bytes_value(frame_module.as_bytes());
+        let module_argument = generator.emit_bytes_argument(&module_value);
+        let function_value = generator.emit_bytes_value(name.text.as_bytes());
+        let function_argument = generator.emit_bytes_argument(&function_value);
+        generator.emit(format!(
+            "  call void @xiao_runtime_error_push_native_frame({module_argument}, {function_argument}, i64 {}, i64 {})",
+            statement.span.start, statement.span.end
+        ));
         generator.emit("  store %xiao.value zeroinitializer, ptr %xiao.function.result".to_owned());
         if generator.callback.is_some() {
             let status = generator.next_temp();
