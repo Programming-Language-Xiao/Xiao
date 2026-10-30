@@ -80,6 +80,12 @@ impl NativeConcurrencyPlan {
         let mut expression_calls = BTreeMap::new();
         collect_statement_calls(&program.body, &mut expression_calls);
         for module in &program.modules {
+            if module.has_concurrency {
+                return Err(CodegenError::Unsupported {
+                    feature: "模块体并发暂不支持".to_owned(),
+                    span: Some(program.span),
+                });
+            }
             let mut module_calls = BTreeMap::new();
             collect_statement_calls(&module.body, &mut module_calls);
             if let Some(expression) = module_calls
@@ -650,6 +656,7 @@ mod tests {
             kind: "file".to_owned(),
             path: "helper.xiao".to_owned(),
             body: vec![module_call],
+            has_concurrency: false,
             symbols: Vec::new(),
         });
         program.concurrency_calls.push(call("runtime_close", span));
@@ -694,6 +701,7 @@ mod tests {
             kind: "file".to_owned(),
             path: "helper.xiao".to_owned(),
             body: vec![expression_call(span)],
+            has_concurrency: true,
             symbols: Vec::new(),
         });
         let error = NativeConcurrencyPlan::from_program(&program)

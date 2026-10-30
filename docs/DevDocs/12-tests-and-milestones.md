@@ -1017,7 +1017,7 @@ I4a2（运行时的包模块加载）、I4b（会话级生命周期与 TS 接入
   shared/lock、XCON、取消和 detached），建立 VM/LLVM 同一黄金场景的输出、错误、退出码和
   释放记录差分；Windows/Linux/macOS 回归和 32B ABI 布局/对齐验证。**不写 stdlib、不冻结
   原生并发产物元数据（22E）**；当前为实施中，已完成同源 IR 计划、并发值 ABI、Runtime
-  trampoline 与首批 shared/lock/cancel 接线；根/局部导入别名 trampoline 和关闭 Runtime/跨 Runtime SharedMut 的两个 P1 边界已修复；真实 `llvm-as` 门禁由三平台原生作业显式运行；Windows 本机线程、pool、shared/lock、只读 shared 边界四场景 stdout 对照通过。公开原生构建仍关闭；完整错误/释放差分和三平台证据待收口。
+  trampoline 与首批 shared/lock/cancel 接线；根/局部导入别名 trampoline、关闭 Runtime/跨 Runtime SharedMut 和真实项目模块并发拒绝已修复；finally 主/次生错误、detached 收尾、shared/LockGuard release projection 已加入回归；真实 `llvm-as` 门禁由三平台原生作业显式运行；Windows 本机线程、pool、shared/lock、只读 shared 边界四场景 stdout 对照通过。公开原生构建仍关闭；XCON 负例、取消四位置、原生栈帧和三平台证据待收口。
 - **22E 标准库、UseDocs 与发布收口**：`std.concurrent` 线程/共享/任务池入口、长度前缀
   二进制序列化公开边界、文档、ABI/产物兼容和发布报告；官方容器仍后置。
 

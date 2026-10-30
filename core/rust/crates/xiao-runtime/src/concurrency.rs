@@ -336,7 +336,7 @@ impl<T> SharedHandle<T> {
             }
             crate::memory::record_external_release(
                 self.ptr.as_ptr() as usize,
-                crate::memory::ReleaseAction::Destroy,
+                crate::memory::ReleaseAction::SharedDestroy,
             );
             release_weak(self.ptr);
         }

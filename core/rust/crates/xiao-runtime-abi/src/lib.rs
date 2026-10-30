@@ -787,6 +787,11 @@ pub fn table_method_signature_id(parameters: &[u32], result: u32) -> u64 {
 // Runtime。调用方必须保证 `required_major`/`required_minor` 是编译产物记录的版本。
 unsafe extern "C" {
     /// 统一原生并发入口；操作名来自已验证 IR 计划，不按源码名称推断。
+    ///
+    /// # Safety
+    /// `arguments` 在 `argument_count > 0` 时必须指向对应数量的 live `XiaoValue`；
+    /// 参数只在调用期间借用，不被消费。`out` 必须指向已初始化的 `XiaoValue::none()`
+    /// 或当前调用方拥有的有效值槽；Runtime 会先释放该槽，再写入新结果。
     pub fn xiao_runtime_concurrency_call(
         operation: XiaoAbiBytes,
         arguments: *const XiaoValue,
@@ -794,6 +799,11 @@ unsafe extern "C" {
         out: *mut XiaoValue,
     ) -> i32;
     /// 带 trampoline 函数指针的不透明并发调用入口。
+    ///
+    /// # Safety
+    /// 除 `xiao_runtime_concurrency_call` 的参数/输出槽约束外，`entry` 必须是有效的
+    /// `XiaoConcurrencyEntry`，且 `context` 必须在该执行单元 join/wait 或 detached
+    /// 收尾完成前保持有效；Runtime 会异步调用入口。
     pub fn xiao_runtime_concurrency_call_with_entry(
         operation: XiaoAbiBytes,
         entry: Option<XiaoConcurrencyEntry>,
@@ -810,6 +820,10 @@ unsafe extern "C" {
     pub fn xiao_runtime_concurrency_kind(handle: XiaoConcurrencyHandle) -> u32;
     /// 在当前执行单元消费一个 `safe_point`/`wait`/`lock_wait` 取消检查。
     pub fn xiao_runtime_concurrency_cancellation_check(operation: XiaoAbiBytes) -> i32;
+    /// 开启当前 native 入口的 Runtime 所有权追踪窗口。
+    pub fn xiao_runtime_concurrency_entry_begin();
+    /// 结束 native 入口的当前 Runtime，执行关闭 drain 并消费已到达的 detached 通道。
+    pub fn xiao_runtime_concurrency_finish() -> i32;
     /// 读取 detached 错误通道中属于指定 Runtime 集合的下一条结构化错误。
     pub fn xiao_runtime_concurrency_detached_error_take(
         runtime_ids: *const u64,
@@ -933,6 +947,12 @@ unsafe extern "C" {
 
     /// 清除当前线程的挂起错误；普通成功路径必须在进入新一轮执行前调用。
     pub fn xiao_runtime_error_clear();
+    /// 暂存 pending error，供原生 finally 主错误/次生清理错误合并。
+    pub fn xiao_runtime_error_checkpoint_begin();
+    /// 恢复 checkpoint 的主错误并把清理错误加入 suppressed，返回当前错误类别。
+    pub fn xiao_runtime_error_checkpoint_finish() -> u32;
+    /// 丢弃被 finally 中的非局部控制转移覆盖的 checkpoint。
+    pub fn xiao_runtime_error_checkpoint_discard();
     /// 返回当前线程挂起错误的机器类别：`0` 无错误、`1` 可恢复、`2` 致命。
     pub fn xiao_runtime_error_class() -> u32;
     /// 为挂起的 Runtime 错误补上触发它的源码位置。

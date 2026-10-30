@@ -1,13 +1,16 @@
 //! 22D 原生并发 lowering 的同源 IR 与 fail-closed 回归。
 
+use std::collections::BTreeMap;
+use std::fs;
 use std::process::{Child, Command, Output, Stdio};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 use xiao_codegen_llvm::{CodegenOptions, lower_program, native_concurrency_plan};
 use xiao_codegen_llvm::{TargetDescription, Toolchain};
 use xiao_driver::{
-    DriverRequest, FrontendCompiler, FrontendNativeDriver, FrontendRequest, FrontendVmDriver,
-    NativeBuildRequest,
+    DriverRequest, FrontendCompiler, FrontendContext, FrontendNativeDriver, FrontendRequest,
+    FrontendVmDriver, NativeBuildRequest,
 };
 
 /// 把生成文本交给真实 LLVM 解析器；22D 的这组回归必须具备 `llvm-as`，不能用文本
@@ -70,6 +73,71 @@ fn wait_child_with_timeout(mut child: Child, label: &str, timeout: Duration) -> 
         }
         thread::sleep(Duration::from_millis(10));
     }
+}
+
+struct ReleaseTraceEnvironment {
+    previous: Option<std::ffi::OsString>,
+}
+
+impl ReleaseTraceEnvironment {
+    fn new() -> Self {
+        Self {
+            previous: std::env::var_os("XIAO_RUNTIME_RELEASE_TRACE_PATH"),
+        }
+    }
+
+    fn set_path(&self, path: &std::path::Path) {
+        unsafe { std::env::set_var("XIAO_RUNTIME_RELEASE_TRACE_PATH", path) };
+    }
+
+    fn reset_runtime_trace(&self) {
+        unsafe { std::env::remove_var("XIAO_RUNTIME_RELEASE_TRACE_PATH") };
+        xiao_runtime::start_release_trace_from_env();
+    }
+}
+
+impl Drop for ReleaseTraceEnvironment {
+    fn drop(&mut self) {
+        if let Some(previous) = self.previous.take() {
+            unsafe { std::env::set_var("XIAO_RUNTIME_RELEASE_TRACE_PATH", previous) };
+        } else {
+            unsafe { std::env::remove_var("XIAO_RUNTIME_RELEASE_TRACE_PATH") };
+        }
+        xiao_runtime::start_release_trace_from_env();
+    }
+}
+
+fn shared_release_projection(path: &std::path::Path) -> BTreeMap<String, usize> {
+    let text = std::fs::read_to_string(path).unwrap_or_default();
+    text.lines()
+        .filter_map(|line| {
+            let mut fields = line.split('\t');
+            let _sequence = fields.next()?;
+            let object_id = fields.next()?.parse::<u64>().ok()?;
+            let action = fields.next()?;
+            matches!(action, "shared_release" | "lock_guard_release")
+                .then_some((action.to_owned(), object_id))
+        })
+        .fold(
+            BTreeMap::<String, std::collections::BTreeSet<u64>>::new(),
+            |mut objects, (action, object_id)| {
+                objects.entry(action).or_default().insert(object_id);
+                objects
+            },
+        )
+        .into_iter()
+        .map(|(action, objects)| (action, objects.len()))
+        .collect()
+}
+
+fn detached_message_projection(text: &str) -> String {
+    text.lines()
+        .filter(|line| {
+            let line = line.trim_start();
+            !line.starts_with("at bytes ") && !line.starts_with("at ::")
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 #[test]
@@ -192,6 +260,48 @@ fn native_shared_lock_plan_keeps_cancel_and_runtime_abi_paths() {
 }
 
 #[test]
+/// 真实普通项目模块的顶层并发调用也必须在 native lowering 前结构化拒绝。
+fn native_project_module_concurrency_is_rejected_structurally() {
+    static PROJECT_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+    let root = std::env::temp_dir().join(format!(
+        "xiao-22d-module-concurrency-{}-{}",
+        std::process::id(),
+        PROJECT_SEQUENCE.fetch_add(1, Ordering::Relaxed)
+    ));
+    fs::create_dir_all(&root).expect("创建项目模块测试目录");
+    let main_path = root.join("main.xiao");
+    fs::write(
+        root.join("helper.xiao"),
+        "from std.concurrent import runtime_create\nrt = runtime_create()\n",
+    )
+    .expect("写入普通项目辅助模块");
+    let source = "from helper import rt\nprint(1)\n";
+    fs::write(&main_path, source).expect("写入项目入口");
+    let mut context = xiao_driver::FrontendContext::host();
+    context.project_root = Some(root.clone());
+    let request = FrontendRequest::from_text_at(source, &main_path).with_context(context);
+    let artifact = FrontendCompiler::new()
+        .compile(&request)
+        .expect("普通项目模块并发源码应通过前端");
+    let vm = FrontendVmDriver::new().run_artifact(
+        &artifact,
+        &DriverRequest::new(request.clone()).with_timeout(Duration::from_secs(10)),
+    );
+    assert!(vm.is_success(), "VM 可执行普通模块并发：{vm:?}");
+    let error = lower_program(
+        &artifact.ir,
+        &CodegenOptions::default().with_internal_concurrency(),
+    )
+    .expect_err("普通项目模块并发必须在 native lowering 前拒绝");
+    assert!(matches!(
+        error,
+        xiao_codegen_llvm::CodegenError::Unsupported { feature, .. }
+            if feature == "模块体并发暂不支持"
+    ));
+    let _ = fs::remove_dir_all(root);
+}
+
+#[test]
 #[ignore = "需要受控 llvm-as；由三平台 native job 显式执行"]
 /// 使用真实 llvm-as 校验根导入、函数别名、分组目标和局部别名四个边界。
 fn native_concurrency_llvm_assembly_fixtures() {
@@ -247,6 +357,7 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
     let suffix = if cfg!(windows) { "exe" } else { "bin" };
     let root = std::env::temp_dir().join(format!("xiao-22d-native-{}", std::process::id()));
     std::fs::create_dir_all(&root).expect("创建原生并发临时目录");
+    let release_trace_environment = ReleaseTraceEnvironment::new();
     let cases = [
         (
             "spawn-join",
@@ -268,12 +379,20 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             "from std.concurrent import runtime_create, shared_read, read, spawn, join\ndef work(shared<int> value) -> int\n    return read(value)\nrt = runtime_create()\nvalue = shared_read(4)\nthread = spawn(rt, work, value)\nresult = join(thread)\nprint(result)\n",
             "4\n",
         ),
+        (
+            "finally-return-overrides-child-error",
+            "from std.concurrent import current_runtime, spawn, join\ndef work() -> none\n    try\n        raise ArithmeticError(code = \"overridden-child-error\")\n    finally\n        return none\nrt = current_runtime()\nthread = spawn(rt, work)\njoin(thread)\nprint(\"return-wins\")\n",
+            "return-wins\n",
+        ),
     ];
     for (label, source, expected_output) in cases {
         let frontend_request = FrontendRequest::from_text(source);
         let artifact = FrontendCompiler::new()
             .compile(&frontend_request)
             .unwrap_or_else(|error| panic!("{label}: 差分源码应通过统一前端：{error:?}"));
+        let vm_trace = root.join(format!("{label}.vm-release-trace.tsv"));
+        release_trace_environment.set_path(&vm_trace);
+        xiao_runtime::start_release_trace_from_env();
         let vm = FrontendVmDriver::new().run_artifact(
             &artifact,
             &DriverRequest::new(frontend_request.clone()).with_timeout(Duration::from_secs(10)),
@@ -290,6 +409,8 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             })
             .collect::<String>()
             .replace("\r\n", "\n");
+        xiao_runtime::flush_release_trace();
+        release_trace_environment.reset_runtime_trace();
         assert_eq!(vm_output, expected_output, "{label}: VM 应匹配黄金输出");
         let output = root.join(format!("{label}.{suffix}"));
         let request =
@@ -300,8 +421,15 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
         let native = FrontendNativeDriver::new()
             .build_artifact(&artifact, &request)
             .unwrap_or_else(|error| panic!("{label}: 原生构建失败：{error}"));
+        let native_trace = root.join(format!("{label}.native-release-trace.tsv"));
+        release_trace_environment.set_path(&native_trace);
         let execution = run_native_with_timeout(&native.native.executable, label);
         assert_eq!(execution.status.code(), Some(0), "{label}");
+        assert!(
+            execution.stderr.is_empty(),
+            "{label}: 成功场景不得写入 stderr：{}",
+            String::from_utf8_lossy(&execution.stderr)
+        );
         let native_output = String::from_utf8(execution.stdout)
             .expect("原生 stdout 为 UTF-8")
             .replace("\r\n", "\n");
@@ -310,6 +438,13 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             native_output, expected_output,
             "{label}: native 应匹配黄金输出"
         );
+        if label == "shared-lock" {
+            assert_eq!(
+                shared_release_projection(&native_trace),
+                shared_release_projection(&vm_trace),
+                "{label}: VM/native shared 与 LockGuard release trace 投影"
+            );
+        }
     }
 
     let error_cases = [
@@ -317,19 +452,28 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             "closed-runtime-shared-read",
             "from std.concurrent import current_runtime, runtime_close, shared_read, read\nrt = current_runtime()\nruntime_close(rt)\nvalue = shared_read(7)\nprint(read(value))\n",
             "X06-RUNTIME-031",
+            "",
         ),
         (
             "child-shared-mut-result",
             "from std.concurrent import runtime_create, spawn, join, shared_mut\ndef work() -> shared_mut<int>\n    return shared_mut(1)\nrt = runtime_create()\nthread = spawn(rt, work)\nvalue = join(thread)\nprint(\"joined\")\n",
             "X06-RUNTIME-031",
+            "",
         ),
         (
             "pool-shared-mut-result",
             "from std.concurrent import runtime_create, pool_create, submit, wait, shutdown, shared_mut\ndef work() -> shared_mut<int>\n    return shared_mut(1)\nrt = runtime_create()\npool = pool_create(rt, 1)\ntask = submit(pool, work)\nvalue = wait(task)\nprint(\"waited\")\nshutdown(pool)\n",
             "X06-RUNTIME-031",
+            "",
+        ),
+        (
+            "child-primary-and-finally-suppressed",
+            "from std.concurrent import current_runtime, spawn, join\ndef work() -> none\n    try\n        raise TypeError(code = \"child-primary\")\n    finally\n        print(\"cleanup\")\n        raise TypeError(code = \"child-cleanup\")\n    return none\nrt = current_runtime()\nthread = spawn(rt, work)\njoin(thread)\n",
+            "child-primary",
+            "cleanup\n",
         ),
     ];
-    for (label, source, expected_code) in error_cases {
+    for (label, source, expected_code, expected_output) in error_cases {
         let frontend_request = FrontendRequest::from_text(source);
         let artifact = FrontendCompiler::new()
             .compile(&frontend_request)
@@ -344,7 +488,14 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             3,
             "{label}: VM 运行时错误退出码"
         );
-
+        if expected_code == "child-primary" {
+            assert!(vm.report().is_some_and(|report| {
+                report
+                    .suppressed
+                    .iter()
+                    .any(|error| error.code == "child-cleanup")
+            }));
+        }
         let output = root.join(format!("{label}.{suffix}"));
         let request =
             NativeBuildRequest::new(frontend_request, target.clone(), toolchain.clone(), &output)
@@ -356,12 +507,79 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             .unwrap_or_else(|error| panic!("{label}: 原生构建失败：{error}"));
         let execution = run_native_with_timeout(&native.native.executable, label);
         assert_eq!(execution.status.code(), Some(3), "{label}: native 退出码");
-        assert!(execution.stdout.is_empty(), "{label}: 出错前不得写 stdout");
+        let native_output = String::from_utf8(execution.stdout)
+            .expect("native stdout 为 UTF-8")
+            .replace("\r\n", "\n");
+        assert_eq!(native_output, expected_output, "{label}: native stdout");
         let stderr = String::from_utf8(execution.stderr).expect("native stderr 为 UTF-8");
         assert!(
             stderr.contains(expected_code),
             "{label}: native stderr={stderr}"
         );
+        if expected_code == "child-primary" {
+            assert!(
+                stderr.contains("child-cleanup"),
+                "{label}: suppressed 未投影：{stderr}"
+            );
+        }
     }
+
+    let detached_source = "from std.concurrent import current_runtime, spawn, detach\ndef work() -> int\n    raise ArithmeticError(code = \"detached-child\")\n    return 0\nrt = current_runtime()\nthread = spawn(rt, work)\ndetach(thread)\nprint(\"main\")\n";
+    let detached_request = FrontendRequest::from_text(detached_source)
+        .with_context(FrontendContext::host().with_locale("en-US"));
+    let detached_artifact = FrontendCompiler::new()
+        .compile(&detached_request)
+        .expect("detached 负例应通过前端");
+    let vm_detached = FrontendVmDriver::new().run_artifact(
+        &detached_artifact,
+        &DriverRequest::new(detached_request.clone()).with_timeout(Duration::from_secs(10)),
+    );
+    assert!(vm_detached.is_success(), "detached 失败不得改变主退出码");
+    let detached_report = vm_detached
+        .as_executed()
+        .unwrap()
+        .events()
+        .iter()
+        .find_map(|event| match event {
+            xiao_vm::VmEvent::DetachedFailure { report, .. } => Some(report),
+            _ => None,
+        })
+        .expect("VM 记录 DetachedFailure 事件");
+    assert_eq!(detached_report.code, "X06-RUNTIME-028");
+    assert!(
+        detached_report
+            .cause
+            .as_deref()
+            .is_some_and(|cause| cause.code == "detached-child")
+    );
+    let vm_detached_projection =
+        xiao_diagnostics::render_builtin_localized_text(detached_report, "en-US");
+    let detached_path = root.join(format!("detached-failure.{suffix}"));
+    let detached_native = FrontendNativeDriver::new()
+        .build_artifact(
+            &detached_artifact,
+            &NativeBuildRequest::new(
+                detached_request,
+                target.clone(),
+                toolchain.clone(),
+                &detached_path,
+            )
+            .with_codegen_options(
+                CodegenOptions::for_target(target.clone()).with_internal_concurrency(),
+            ),
+        )
+        .expect("detached native 负例应构建");
+    let detached_output =
+        run_native_with_timeout(&detached_native.native.executable, "detached-failure");
+    assert_eq!(detached_output.status.code(), Some(0));
+    assert_eq!(String::from_utf8(detached_output.stdout).unwrap(), "main\n");
+    let detached_stderr = String::from_utf8(detached_output.stderr).unwrap();
+    assert!(detached_stderr.contains("X06-RUNTIME-028"));
+    assert!(detached_stderr.contains("detached-child"));
+    assert!(
+        detached_message_projection(&detached_stderr)
+            .contains(&detached_message_projection(&vm_detached_projection)),
+        "native detached 报告应匹配 VM 的错误身份、cause 与 locale 投影：expected={vm_detached_projection:?}, stderr={detached_stderr:?}"
+    );
     let _ = std::fs::remove_dir_all(root);
 }

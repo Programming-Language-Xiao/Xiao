@@ -6,6 +6,10 @@
 
 use serde::{Deserialize, Serialize};
 
+fn is_false(value: &bool) -> bool {
+    !*value
+}
+
 /// 当前类型化 IR 的格式版本。
 pub const IR_VERSION: u32 = 1;
 
@@ -160,6 +164,9 @@ pub struct IrModule {
     pub path: String,
     /// 文件模块的语句；命名空间为空。
     pub body: Vec<IrStatement>,
+    /// 模块体在独立类型预检中登记了并发调用；LLVM 当前没有模块体并发计划。
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub has_concurrency: bool,
     /// 可供导入的符号摘要。
     pub symbols: Vec<IrSymbol>,
 }

@@ -541,6 +541,7 @@ impl<'a> DynamicGenerator<'a> {
         if let Some(finally_body) = region.finally_body {
             let failure = self.next_label(&format!("{label_prefix}.fail"));
             let success = self.next_label(&format!("{label_prefix}.success"));
+            self.emit("  call void @xiao_runtime_error_checkpoint_begin()".to_owned());
             let stack_save = self.begin_finally_stack_frame();
             let cleanup_snapshot = self.cleanup_stack.clone();
             self.cleanup_stack.push(CleanupContext {
@@ -550,11 +551,14 @@ impl<'a> DynamicGenerator<'a> {
                 failure_target: region.failure_target.clone(),
             });
             self.push_error_context(failure.clone());
+            self.error_checkpoint_depth = self.error_checkpoint_depth.saturating_add(1);
             self.emit_statements(finally_body)?;
+            self.error_checkpoint_depth = self.error_checkpoint_depth.saturating_sub(1);
             self.pop_error_context();
             self.cleanup_stack = cleanup_snapshot;
             let continues = !self.terminated;
             if continues {
+                self.emit("  call i32 @xiao_runtime_error_checkpoint_finish()".to_owned());
                 self.restore_finally_stack_frame();
                 self.release_for_scope_with_target(
                     region.finally_scope,
@@ -570,6 +574,7 @@ impl<'a> DynamicGenerator<'a> {
                 self.terminated = true;
             }
             self.emit_label(&failure);
+            self.emit("  call i32 @xiao_runtime_error_checkpoint_finish()".to_owned());
             self.restore_finally_stack_frame();
             self.emit_error_cleanup_failure(CleanupFailure {
                 first_scope: region.finally_scope,
@@ -629,6 +634,22 @@ impl<'a> DynamicGenerator<'a> {
             }
         }
 
+        // return/break/continue from a finally overrides the pending primary error.
+        // The corresponding lexical finally checkpoint must therefore be discarded.
+        for _ in 0..self.error_checkpoint_depth {
+            self.emit("  call void @xiao_runtime_error_checkpoint_discard()".to_owned());
+        }
+        let finally_saves = self
+            .finally_stack_saves
+            .iter()
+            .rev()
+            .take(self.error_checkpoint_depth)
+            .cloned()
+            .collect::<Vec<_>>();
+        for save in finally_saves {
+            self.emit(format!("  call void @llvm.stackrestore(ptr {save})"));
+        }
+
         match target {
             ControlExitTarget::Return => {
                 if self.function_mode {
@@ -666,6 +687,7 @@ impl<'a> DynamicGenerator<'a> {
         if let Some(finally_body) = region.finally_body {
             let failure = self.next_label("dynamic.nonlocal.finally.fail");
             let success = self.next_label("dynamic.nonlocal.finally.success");
+            self.emit("  call void @xiao_runtime_error_checkpoint_begin()".to_owned());
             let stack_save = self.begin_finally_stack_frame();
             let cleanup_snapshot = self.cleanup_stack.clone();
             self.cleanup_stack.push(CleanupContext {
@@ -675,11 +697,14 @@ impl<'a> DynamicGenerator<'a> {
                 failure_target: region.failure_target.clone(),
             });
             self.push_error_context(failure.clone());
+            self.error_checkpoint_depth = self.error_checkpoint_depth.saturating_add(1);
             self.emit_statements(finally_body)?;
+            self.error_checkpoint_depth = self.error_checkpoint_depth.saturating_sub(1);
             self.pop_error_context();
             self.cleanup_stack = cleanup_snapshot;
             let continues = !self.terminated;
             if continues {
+                self.emit("  call i32 @xiao_runtime_error_checkpoint_finish()".to_owned());
                 self.restore_finally_stack_frame();
                 self.release_for_scope_with_target(
                     region.finally_scope,
@@ -700,6 +725,7 @@ impl<'a> DynamicGenerator<'a> {
                 self.terminated = true;
             }
             self.emit_label(&failure);
+            self.emit("  call i32 @xiao_runtime_error_checkpoint_finish()".to_owned());
             self.restore_finally_stack_frame();
             self.emit_error_cleanup_failure(CleanupFailure {
                 first_scope: region.finally_scope,

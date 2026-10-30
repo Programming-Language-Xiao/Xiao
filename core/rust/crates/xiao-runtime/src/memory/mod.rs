@@ -31,6 +31,8 @@ pub enum ReleaseAction {
     ConcurrencyRelease,
     /// 释放共享强句柄别名。
     SharedRelease,
+    /// 销毁共享对象载荷。
+    SharedDestroy,
     /// 释放拥有型锁守卫。
     LockGuardRelease,
 }
@@ -45,6 +47,7 @@ impl ReleaseAction {
             Self::WeakRelease => "weak_release",
             Self::ConcurrencyRelease => "concurrency_release",
             Self::SharedRelease => "shared_release",
+            Self::SharedDestroy => "shared_destroy",
             Self::LockGuardRelease => "lock_guard_release",
         }
     }
@@ -68,6 +71,7 @@ struct ReleaseTraceState {
     next_sequence: u64,
     path: Option<PathBuf>,
     events: Vec<ReleaseEvent>,
+    external_objects: HashMap<usize, u64>,
 }
 
 /// 原生入口使用的跨线程释放追踪会话。
@@ -93,9 +97,17 @@ fn native_release_trace() -> &'static Mutex<Option<NativeReleaseTraceState>> {
 
 #[cfg(test)]
 pub(crate) fn start_native_release_trace_for_test() {
+    start_native_release_trace_to_path_for_test(None);
+}
+
+#[cfg(test)]
+pub(crate) fn start_native_release_trace_to_path_for_test(path: Option<PathBuf>) {
+    if let Some(path) = &path {
+        let _ = fs::write(path, []);
+    }
     let mut native = native_release_trace().lock().expect("原生释放追踪锁未中毒");
     *native = Some(NativeReleaseTraceState {
-        path: None,
+        path,
         next_object_id: 1,
         next_sequence: 0,
         events: Vec::new(),
@@ -142,6 +154,7 @@ pub fn start_release_trace() -> ReleaseTraceGuard {
         trace.next_sequence = 0;
         trace.path = None;
         trace.events.clear();
+        trace.external_objects.clear();
         guard
     })
 }
@@ -157,6 +170,7 @@ pub fn start_release_trace_from_env() {
         trace.next_sequence = 0;
         trace.path = None;
         trace.events.clear();
+        trace.external_objects.clear();
     });
     if let Some(path) = &path {
         let _ = fs::write(path, []);
@@ -300,6 +314,31 @@ pub(crate) fn record_external_release(object_key: usize, action: ReleaseAction) 
     if object_key == 0 {
         return;
     }
+    let local_recorded = RELEASE_TRACE.with(|trace| {
+        let mut trace = trace.borrow_mut();
+        if !trace.enabled {
+            return false;
+        }
+        let object_id = if let Some(object_id) = trace.external_objects.get(&object_key) {
+            *object_id
+        } else {
+            let object_id = trace.next_object_id;
+            trace.next_object_id = trace.next_object_id.saturating_add(1);
+            trace.external_objects.insert(object_key, object_id);
+            object_id
+        };
+        let sequence = trace.next_sequence;
+        trace.next_sequence = trace.next_sequence.saturating_add(1);
+        trace.events.push(ReleaseEvent {
+            sequence,
+            object_id,
+            action,
+        });
+        true
+    });
+    if local_recorded {
+        return;
+    }
     let Ok(mut native) = native_release_trace().lock() else {
         return;
     };
@@ -332,6 +371,9 @@ pub(crate) fn forget_external_release_object(object_key: usize) {
     {
         trace.external_objects.remove(&object_key);
     }
+    RELEASE_TRACE.with(|trace| {
+        trace.borrow_mut().external_objects.remove(&object_key);
+    });
 }
 
 /// Runtime 堆对象的类型标签。
@@ -998,13 +1040,17 @@ unsafe fn free_header(ptr: NonNull<ObjectHeader>) {
 mod tests {
     use super::{
         ObjectLayout, ObjectPayload, ReleaseAction, RuntimeTypeTag, allocate_payload,
-        native_release_trace, start_memory_measurement, start_native_release_trace_for_test,
+        flush_release_trace, native_release_trace, start_memory_measurement,
+        start_native_release_trace_for_test, start_native_release_trace_to_path_for_test,
         start_release_trace, take_native_release_events_for_test, take_release_events,
     };
     use crate::containers::ArrayHandle;
     use crate::errors::RuntimeResult;
     use crate::value::RuntimeValue;
     use std::any::Any;
+    use std::fs;
+
+    static NATIVE_TRACE_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
     /// 用于观察载荷释放次数的测试对象。
     struct Probe {
@@ -1126,6 +1172,9 @@ mod tests {
     #[test]
     /// 原生追踪会话汇总 trampoline 子线程中的释放事件，而不是只记录 root TLS。
     fn native_release_trace_collects_child_thread_events() {
+        let _serial = NATIVE_TRACE_TEST_LOCK
+            .lock()
+            .expect("原生追踪测试串行锁未中毒");
         assert!(
             native_release_trace()
                 .lock()
@@ -1149,6 +1198,46 @@ mod tests {
                 .any(|event| event.action == ReleaseAction::Destroy),
             "子线程销毁事件必须进入共享追踪"
         );
+    }
+
+    #[test]
+    /// 根线程 flush 后才发生的子线程释放仍会追加到同一 trace 文件。
+    fn native_release_trace_keeps_recording_after_root_flush() {
+        use std::sync::mpsc;
+
+        let _serial = NATIVE_TRACE_TEST_LOCK
+            .lock()
+            .expect("原生追踪测试串行锁未中毒");
+
+        let path = std::env::temp_dir().join(format!(
+            "xiao-native-release-trace-{}.tsv",
+            std::process::id()
+        ));
+        let _ = fs::remove_file(&path);
+        assert!(
+            native_release_trace()
+                .lock()
+                .expect("原生释放追踪锁未中毒")
+                .is_none()
+        );
+        start_native_release_trace_to_path_for_test(Some(path.clone()));
+        let (ready_tx, ready_rx) = mpsc::channel();
+        let (release_tx, release_rx) = mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            ready_tx.send(()).unwrap();
+            release_rx.recv().unwrap();
+            let handle = allocate_payload(Box::new(AllocatingDrop { bytes: vec![2; 16] }))
+                .expect("flush 后子线程应能分配追踪对象");
+            handle.try_release().expect("flush 后子线程应能归还对象");
+        });
+        ready_rx.recv().unwrap();
+        flush_release_trace();
+        release_tx.send(()).unwrap();
+        worker.join().expect("release trace 子线程不应 panic");
+        let contents = fs::read_to_string(&path).expect("native trace 文件保留 flush 后事件");
+        assert!(contents.contains("destroy"), "trace 内容={contents:?}");
+        let _ = take_native_release_events_for_test();
+        let _ = fs::remove_file(path);
     }
 
     #[test]

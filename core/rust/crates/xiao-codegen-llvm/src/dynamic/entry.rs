@@ -28,6 +28,9 @@ impl<'a> DynamicGenerator<'a> {
             "  {locale_status} = call i32 @xiao_runtime_language_context_set({locale})"
         ));
         self.check_status_at(&locale_status, self.program.span);
+        if !self.concurrency_plan.is_empty() {
+            self.emit("  call void @xiao_runtime_concurrency_entry_begin()".to_owned());
+        }
         let compatibility = self.next_temp();
         self.emit(format!(
             "  {compatibility} = call i32 @xiao_runtime_abi_is_compatible(i32 {ABI_MAJOR_VERSION}, i32 {ABI_MINOR_VERSION})"
@@ -53,6 +56,9 @@ impl<'a> DynamicGenerator<'a> {
         if !self.terminated {
             self.release_for_exit("normal")?;
             self.release_frame_temporaries();
+            if !self.concurrency_plan.is_empty() {
+                self.emit("  call i32 @xiao_runtime_concurrency_finish()".to_owned());
+            }
             let status = self.next_temp();
             self.emit(format!("  {status} = call i32 @xiao_runtime_error_class()"));
             self.check_status(&status);
@@ -77,6 +83,9 @@ impl<'a> DynamicGenerator<'a> {
         self.emit(format!("  br label %{report}"));
         self.terminated = true;
         self.emit_label(&report);
+        if !self.concurrency_plan.is_empty() {
+            self.emit("  call i32 @xiao_runtime_concurrency_finish()".to_owned());
+        }
         self.emit("  call void @xiao_runtime_error_report()".to_owned());
         self.emit("  call void @xiao_runtime_release_trace_flush()".to_owned());
         let error_code = self.next_temp();

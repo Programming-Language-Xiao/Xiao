@@ -103,6 +103,10 @@ impl<'a> DynamicGenerator<'a> {
             self.bytes_parameter_type()
         ));
         self.declarations
+            .insert("declare i32 @xiao_runtime_concurrency_finish()".to_owned());
+        self.declarations
+            .insert("declare void @xiao_runtime_concurrency_entry_begin()".to_owned());
+        self.declarations
             .insert("declare i32 @xiao_runtime_table_new_v2(ptr, ptr)".to_owned());
         self.declarations.insert(
             "declare i32 @xiao_runtime_table_new_v2_with_args(ptr, ptr, i64, ptr)".to_owned(),
@@ -131,6 +135,12 @@ impl<'a> DynamicGenerator<'a> {
             .insert("declare i32 @xiao_runtime_abi_is_compatible(i32, i32)".to_owned());
         self.declarations
             .insert("declare void @xiao_runtime_error_clear()".to_owned());
+        self.declarations
+            .insert("declare void @xiao_runtime_error_checkpoint_begin()".to_owned());
+        self.declarations
+            .insert("declare i32 @xiao_runtime_error_checkpoint_finish()".to_owned());
+        self.declarations
+            .insert("declare void @xiao_runtime_error_checkpoint_discard()".to_owned());
         self.declarations.insert(format!(
             "declare i32 @xiao_runtime_language_context_set({})",
             self.bytes_parameter_type()

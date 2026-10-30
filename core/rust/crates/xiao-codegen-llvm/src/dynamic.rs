@@ -161,6 +161,8 @@ struct DynamicGenerator<'a> {
     concurrency_trampolines: BTreeSet<String>,
     /// 是否正在生成一个动态函数体。
     function_mode: bool,
+    /// 当前词法位置处于多少层尚未结束的 finally checkpoint。
+    error_checkpoint_depth: usize,
     /// 动态函数的返回槽和成功/错误出口。
     function_return_slot: Option<String>,
     function_return_label: Option<String>,
@@ -215,6 +217,7 @@ impl<'a> DynamicGenerator<'a> {
             function_texts: Vec::new(),
             concurrency_trampolines: BTreeSet::new(),
             function_mode: false,
+            error_checkpoint_depth: 0,
             function_return_slot: None,
             function_return_label: None,
             return_sites: Vec::new(),
@@ -525,6 +528,7 @@ impl<'a> DynamicGenerator<'a> {
         generator.method_definitions = self.method_definitions.clone();
         generator.table_initializers = self.table_initializers.clone();
         generator.concurrency_trampolines = self.concurrency_trampolines.clone();
+        generator.error_checkpoint_depth = self.error_checkpoint_depth;
         generator.error_terminal_label = "xiao.fn.error".to_owned();
         generator.collect_slots(body)?;
         for parameter in parameters {

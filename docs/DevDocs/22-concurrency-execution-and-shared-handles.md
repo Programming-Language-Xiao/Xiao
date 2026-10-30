@@ -9,10 +9,10 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分已开始实施（2026-10-29），D-2/D-5 已确认，根/局部导入别名 trampoline 和 Runtime 031 边界 P1 已修复，`llvm-as` 门禁由三平台 native job 显式运行，Windows 本机四场景 stdout 对照已通过；完整差分仍待收口**。
+> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分正在实施（2026-10-30），D-2/D-5 已确认，根/局部导入别名 trampoline 和 Runtime 031 边界 P1 已修复，真实项目模块并发有结构化拒绝回归，`llvm-as` 门禁由三平台 native job 显式运行；失败/释放/detached 差分仍待收口**。
 > workspace、26 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs、
 > 本地安全/产物回归，以及远端多平台 maintenance/CI 均通过；三平台 maintenance 各自执行了 26/26 VM 并发回归。
-> 22D 可以开始，但 LLVM 并发 lowering 和原生差分仍需实施；22E 仍后置。
+> 22D 正在实施；LLVM 并发 lowering、失败差分和原生门禁仍需继续收口，22E 仍后置。
 
 ## 一、阶段目标与边界
 

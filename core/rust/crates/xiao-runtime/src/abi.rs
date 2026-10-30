@@ -201,6 +201,8 @@ fn send_diagnostic_message(
 thread_local! {
     /// N0-C 原生错误的单线程传播槽；它不跨线程，也不替代 Runtime 的错误对象。
     static PENDING_ERROR: RefCell<Option<PendingError>> = const { RefCell::new(None) };
+    /// 嵌套 finally 清理期间暂存的主错误。
+    static PENDING_ERROR_CHECKPOINTS: RefCell<Vec<Option<PendingError>>> = const { RefCell::new(Vec::new()) };
     /// 当前原生入口的不可变语言上下文。
     static CURRENT_LOCALE: RefCell<Option<String>> = const { RefCell::new(None) };
 }
@@ -871,6 +873,50 @@ unsafe fn value_slice(values: *const XiaoValue, length: usize) -> Result<Vec<Run
 pub extern "C" fn xiao_runtime_error_clear() {
     PENDING_ERROR.with(|pending| {
         *pending.borrow_mut() = None;
+    });
+    PENDING_ERROR_CHECKPOINTS.with(|checkpoints| checkpoints.borrow_mut().clear());
+}
+
+/// 暂存当前错误，使 finally 主体可以独立执行并产生清理错误。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_checkpoint_begin() {
+    let pending = PENDING_ERROR.with(|slot| slot.borrow_mut().take());
+    PENDING_ERROR_CHECKPOINTS.with(|stack| stack.borrow_mut().push(pending));
+}
+
+/// 恢复 finally 前的主错误，并把 finally 失败附加为 suppressed。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_checkpoint_finish() -> u32 {
+    let cleanup = PENDING_ERROR.with(|slot| slot.borrow_mut().take());
+    let primary = PENDING_ERROR_CHECKPOINTS.with(|stack| stack.borrow_mut().pop());
+    let merged = match (primary.unwrap_or(None), cleanup) {
+        (None, cleanup) => cleanup,
+        (primary, None) => primary,
+        (
+            Some(PendingError::Recoverable(mut primary)),
+            Some(PendingError::Recoverable(cleanup)),
+        ) => {
+            primary.push_suppressed(cleanup);
+            Some(PendingError::Recoverable(primary))
+        }
+        (Some(PendingError::Recoverable(_)), Some(fatal @ PendingError::Fatal(_))) => Some(fatal),
+        (Some(PendingError::Fatal(primary)), Some(PendingError::Recoverable(_))) => {
+            Some(PendingError::Fatal(primary))
+        }
+        (Some(PendingError::Fatal(mut primary)), Some(PendingError::Fatal(cleanup))) => {
+            primary.push_suppressed(cleanup);
+            Some(PendingError::Fatal(primary))
+        }
+    };
+    PENDING_ERROR.with(|slot| *slot.borrow_mut() = merged);
+    pending_class().raw()
+}
+
+/// 丢弃被 finally 中 `return`/`break`/`continue` 覆盖的主错误 checkpoint。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_checkpoint_discard() {
+    PENDING_ERROR_CHECKPOINTS.with(|stack| {
+        stack.borrow_mut().pop();
     });
 }
 

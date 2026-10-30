@@ -8,7 +8,7 @@ use std::cell::RefCell;
 use std::ffi::c_void;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::{Arc, Condvar, Mutex, MutexGuard, OnceLock};
 
 use xiao_runtime_abi::{
     XiaoAbiBytes, XiaoAbiStatus, XiaoConcurrencyHandle, XiaoConcurrencyKind, XiaoValue,
@@ -108,6 +108,7 @@ struct NativeThreadState {
     handle: Mutex<Option<ThreadHandle<NativeEntryOutcome>>>,
     cancellation: RuntimeCancellation,
     runtime: RuntimeHandle,
+    locale: String,
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
@@ -115,6 +116,7 @@ struct NativeTaskState {
     handle: Mutex<Option<TaskHandle<NativeEntryOutcome>>>,
     cancellation: RuntimeCancellation,
     runtime: RuntimeHandle,
+    locale: String,
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
@@ -167,13 +169,68 @@ impl NativeEntryOutcome {
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 struct NativeDetachedError {
     runtime_id: u64,
+    locale: String,
     packet: NativeErrorPacket,
+}
+
+fn native_detached_callbacks() -> &'static (Mutex<std::collections::HashMap<u64, usize>>, Condvar) {
+    static CALLBACKS: OnceLock<(Mutex<std::collections::HashMap<u64, usize>>, Condvar)> =
+        OnceLock::new();
+    CALLBACKS.get_or_init(|| (Mutex::new(std::collections::HashMap::new()), Condvar::new()))
+}
+
+struct NativeDetachedCallbackGuard {
+    runtime_id: u64,
+}
+
+impl NativeDetachedCallbackGuard {
+    fn register(runtime_id: u64) -> Self {
+        let mut callbacks = native_detached_callbacks()
+            .0
+            .lock()
+            .expect("native detached callback 锁未中毒");
+        *callbacks.entry(runtime_id).or_default() += 1;
+        Self { runtime_id }
+    }
+}
+
+impl Drop for NativeDetachedCallbackGuard {
+    fn drop(&mut self) {
+        let (callbacks, drained) = native_detached_callbacks();
+        if let Ok(mut callbacks) = callbacks.lock() {
+            if let Some(count) = callbacks.get_mut(&self.runtime_id) {
+                *count = count.saturating_sub(1);
+                if *count == 0 {
+                    callbacks.remove(&self.runtime_id);
+                }
+            }
+            drained.notify_all();
+        }
+    }
+}
+
+fn wait_native_detached_callbacks(runtime_ids: &[u64]) {
+    let (callbacks, drained) = native_detached_callbacks();
+    let Ok(mut callbacks) = callbacks.lock() else {
+        return;
+    };
+    while runtime_ids
+        .iter()
+        .any(|runtime_id| callbacks.get(runtime_id).is_some_and(|count| *count != 0))
+    {
+        let Ok(guard) = drained.wait(callbacks) else {
+            return;
+        };
+        callbacks = guard;
+    }
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 const NATIVE_DETACHED_ERROR_CAPACITY: usize = 4096;
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 static NATIVE_DETACHED_ERROR_DROPS: AtomicUsize = AtomicUsize::new(0);
+static NATIVE_ENTRY_ACTIVE: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn native_detached_errors() -> &'static Mutex<Vec<NativeDetachedError>> {
@@ -182,25 +239,45 @@ fn native_detached_errors() -> &'static Mutex<Vec<NativeDetachedError>> {
     ERRORS.get_or_init(|| Mutex::new(Vec::new()))
 }
 
+/// 当前 native 入口创建的直接子 Runtime；入口收尾按逆序 drain。
+fn native_owned_runtimes() -> &'static Mutex<Vec<(RuntimeHandle, RuntimeHandle)>> {
+    static RUNTIMES: OnceLock<Mutex<Vec<(RuntimeHandle, RuntimeHandle)>>> = OnceLock::new();
+    RUNTIMES.get_or_init(Default::default)
+}
+
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
-fn record_native_detached(runtime_id: u64, result: Result<NativeEntryOutcome, RuntimeExecError>) {
+fn record_native_detached(
+    runtime_id: u64,
+    locale: &str,
+    result: Result<NativeEntryOutcome, RuntimeExecError>,
+) {
     if let Some(error) = crate::vm_concurrency::detached_execution_error(
         result.map(NativeEntryOutcome::into_execution_result),
     ) {
-        // 独立 native 产物没有 VM sink；回调到达时立即写出结构化机器诊断，
-        // 同时保留有界 Runtime 通道供显式宿主读取。这样 detached 失败不会
-        // 静默滞留到进程结束，也不改变主入口退出码。
-        let report = error.report();
-        super::write_runtime_report("recoverable", &report, super::current_locale(), 0);
-        push_native_detached_error(runtime_id, NativeErrorPacket::Recoverable(error));
+        // 先缓存在 Runtime 专属有界通道；入口 finish drain 后以创建时 locale
+        // 输出，避免 detached worker 的线程局部 locale 回退为默认值。
+        push_native_detached_error(
+            runtime_id,
+            locale.to_owned(),
+            NativeErrorPacket::Recoverable(error),
+        );
+    }
+}
+
+fn native_detached_callback(
+    runtime_id: u64,
+    locale: String,
+) -> impl FnOnce(Result<NativeEntryOutcome, RuntimeExecError>) + Send + 'static {
+    let activity = NativeDetachedCallbackGuard::register(runtime_id);
+    move |result| {
+        let _activity = activity;
+        record_native_detached(runtime_id, &locale, result);
     }
 }
 
 /// 释放一个并发盒子时记录与普通 Runtime 对象相同的强引用事件。
-fn trace_concurrency_release(handle: XiaoConcurrencyHandle) {
-    if handle_kind(handle) == 0 {
-        return;
-    }
+fn trace_concurrency_release(handle: XiaoConcurrencyHandle, kind: XiaoConcurrencyKind) {
+    debug_assert_ne!(kind.raw(), 0);
     crate::memory::record_external_release(
         handle as usize,
         crate::memory::ReleaseAction::ConcurrencyRelease,
@@ -208,7 +285,7 @@ fn trace_concurrency_release(handle: XiaoConcurrencyHandle) {
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
-fn push_native_detached_error(runtime_id: u64, packet: NativeErrorPacket) {
+fn push_native_detached_error(runtime_id: u64, locale: String, packet: NativeErrorPacket) {
     let Ok(mut errors) = native_detached_errors().lock() else {
         NATIVE_DETACHED_ERROR_DROPS.fetch_add(1, Ordering::AcqRel);
         return;
@@ -217,19 +294,22 @@ fn push_native_detached_error(runtime_id: u64, packet: NativeErrorPacket) {
         NATIVE_DETACHED_ERROR_DROPS.fetch_add(1, Ordering::AcqRel);
         return;
     }
-    errors.push(NativeDetachedError { runtime_id, packet });
+    errors.push(NativeDetachedError {
+        runtime_id,
+        locale,
+        packet,
+    });
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
-fn take_native_detached_error_for(runtime_ids: &[u64]) -> Option<(u64, NativeErrorPacket)> {
+fn take_native_detached_error_for(runtime_ids: &[u64]) -> Option<NativeDetachedError> {
     let Ok(mut errors) = native_detached_errors().lock() else {
         return None;
     };
     let index = errors
         .iter()
         .position(|error| runtime_ids.contains(&error.runtime_id))?;
-    let error = errors.remove(index);
-    Some((error.runtime_id, error.packet))
+    Some(errors.remove(index))
 }
 
 impl Drop for NativeThreadState {
@@ -240,7 +320,7 @@ impl Drop for NativeThreadState {
         };
         if let Some(handle) = handle.take() {
             let runtime_id = self.runtime.id();
-            handle.detach_with(move |result| record_native_detached(runtime_id, result));
+            handle.detach_with(native_detached_callback(runtime_id, self.locale.clone()));
         }
     }
 }
@@ -253,7 +333,7 @@ impl Drop for NativeTaskState {
         };
         if let Some(handle) = handle.take() {
             let runtime_id = self.runtime.id();
-            handle.detach_with(move |result| record_native_detached(runtime_id, result));
+            handle.detach_with(native_detached_callback(runtime_id, self.locale.clone()));
         }
     }
 }
@@ -264,45 +344,103 @@ struct AbiConcurrency {
     magic: u64,
     kind: u32,
     _reserved: u32,
+    owner_thread: std::thread::ThreadId,
     inners: Mutex<Vec<ConcurrencyObject>>,
+}
+
+// SAFETY: registry access serializes all operations. The only !Send payload is LockGuard;
+// lookup rejects non-owner threads before the box contents can be cloned or released.
+unsafe impl Send for AbiConcurrency {}
+unsafe impl Sync for AbiConcurrency {}
+
+struct ConcurrencyHandleRegistry {
+    next_token: usize,
+    objects: std::collections::HashMap<usize, Arc<AbiConcurrency>>,
+}
+
+/// 将 opaque token 查找与最后释放串行化；token 不直接编码可解引用地址。
+fn concurrency_handle_registry() -> &'static Mutex<ConcurrencyHandleRegistry> {
+    static REGISTRY: OnceLock<Mutex<ConcurrencyHandleRegistry>> = OnceLock::new();
+    REGISTRY.get_or_init(|| {
+        Mutex::new(ConcurrencyHandleRegistry {
+            next_token: 16,
+            objects: std::collections::HashMap::new(),
+        })
+    })
+}
+
+/// 在 process-wide registry 锁有效期间访问一个 live opaque handle。
+struct ConcurrencyHandleAccess {
+    registry: MutexGuard<'static, ConcurrencyHandleRegistry>,
+    token: usize,
+}
+
+impl std::ops::Deref for ConcurrencyHandleAccess {
+    type Target = AbiConcurrency;
+
+    fn deref(&self) -> &Self::Target {
+        self.registry
+            .objects
+            .get(&self.token)
+            .expect("live concurrency token 必须仍在 registry 中")
+            .as_ref()
+    }
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn box_object(object: ConcurrencyObject) -> XiaoConcurrencyHandle {
     let kind = object.kind().raw();
-    Box::into_raw(Box::new(AbiConcurrency {
+    let object = Arc::new(AbiConcurrency {
         magic: CONCURRENCY_MAGIC,
         kind,
         _reserved: 0,
+        owner_thread: std::thread::current().id(),
         inners: Mutex::new(vec![object]),
-    }))
-    .cast()
+    });
+    let mut registry = concurrency_handle_registry()
+        .lock()
+        .expect("并发 opaque registry 锁未中毒");
+    let token = registry.next_token;
+    registry.next_token = registry
+        .next_token
+        .checked_add(16)
+        .expect("并发 opaque token 序列耗尽");
+    registry.objects.insert(token, object);
+    token as XiaoConcurrencyHandle
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
-unsafe fn object_ref<'a>(handle: XiaoConcurrencyHandle) -> Result<&'a AbiConcurrency, i32> {
+fn object_ref(handle: XiaoConcurrencyHandle) -> Result<ConcurrencyHandleAccess, i32> {
     if handle.is_null() {
         return Err(XiaoAbiStatus::Null.code());
     }
-    let object = unsafe { &*handle.cast::<AbiConcurrency>() };
+    let token = handle as usize;
+    let registry = concurrency_handle_registry()
+        .lock()
+        .map_err(|_| XiaoAbiStatus::RuntimeError.code())?;
+    let Some(object) = registry.objects.get(&token) else {
+        return Err(XiaoAbiStatus::InvalidHandle.code());
+    };
     if object.magic != CONCURRENCY_MAGIC || XiaoConcurrencyKind::from_raw(object.kind).is_none() {
         return Err(XiaoAbiStatus::InvalidHandle.code());
     }
-    Ok(object)
+    if object.kind == XiaoConcurrencyKind::LockGuard.raw()
+        && object.owner_thread != std::thread::current().id()
+    {
+        return Err(map_exec_error(RuntimeExecError::RuntimeClosed));
+    }
+    Ok(ConcurrencyHandleAccess { registry, token })
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn object_kind(handle: XiaoConcurrencyHandle) -> Result<XiaoConcurrencyKind, i32> {
-    // SAFETY: `object_ref` 校验了不透明盒子的魔数和种类。
-    unsafe { object_ref(handle) }.and_then(|object| {
-        XiaoConcurrencyKind::from_raw(object.kind).ok_or(XiaoAbiStatus::InvalidHandle.code())
-    })
+    let object = object_ref(handle)?;
+    Ok(XiaoConcurrencyKind::from_raw(object.kind).expect("object_ref 已验证 concurrency kind"))
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn clone_object(handle: XiaoConcurrencyHandle) -> Result<ConcurrencyObject, i32> {
-    // SAFETY: `object_ref` 只读取 Runtime 返回的 live 盒子。
-    let object = unsafe { object_ref(handle) }?;
+    let object = object_ref(handle)?;
     object
         .inners
         .lock()
@@ -314,7 +452,7 @@ fn clone_object(handle: XiaoConcurrencyHandle) -> Result<ConcurrencyObject, i32>
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 pub(super) fn retain_handle(handle: XiaoConcurrencyHandle) -> XiaoConcurrencyHandle {
-    let Ok(object) = (unsafe { object_ref(handle) }) else {
+    let Ok(object) = object_ref(handle) else {
         return std::ptr::null_mut();
     };
     let Ok(mut inners) = object.inners.lock() else {
@@ -332,25 +470,22 @@ pub(super) fn release_handle(handle: XiaoConcurrencyHandle) {
     if handle.is_null() {
         return;
     }
-    let ptr = handle.cast::<AbiConcurrency>();
-    let should_drop = {
-        // SAFETY: 句柄必须来自本模块的构造/retain；错误地址会被魔数检查拒绝。
-        let Ok(object) = (unsafe { object_ref(handle) }) else {
-            return;
-        };
-        let Ok(mut inners) = object.inners.lock() else {
-            return;
-        };
-        inners.pop();
-        inners.is_empty()
+    let Ok(mut object) = object_ref(handle) else {
+        return;
     };
+    let Ok(mut inners) = object.inners.lock() else {
+        return;
+    };
+    let Some(released) = inners.pop() else {
+        return;
+    };
+    let should_drop = inners.is_empty();
+    let released_kind = released.kind();
+    drop(inners);
+    trace_concurrency_release(handle, released_kind);
     if should_drop {
-        trace_concurrency_release(handle);
         crate::memory::forget_external_release_object(handle as usize);
-        // SAFETY: 最后一份别名已经移出，盒子不再被使用。
-        unsafe { drop(Box::from_raw(ptr)) };
-    } else {
-        trace_concurrency_release(handle);
+        object.registry.objects.remove(&(handle as usize));
     }
 }
 
@@ -711,6 +846,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             let runtime = parent
                 .in_context(RuntimeHandle::create)
                 .map_err(map_exec_error)?;
+            track_native_runtime(runtime.clone(), parent);
             Ok(value_from_handle(box_object(ConcurrencyObject::Runtime(
                 runtime,
             ))))
@@ -885,6 +1021,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                     handle: Mutex::new(Some(handle)),
                     cancellation,
                     runtime,
+                    locale: super::current_locale(),
                 }),
             ))))
         }
@@ -904,7 +1041,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             let value = handle
                 .join_interruptible_with_report(
                     || crate::cancellation_safe_point().is_err(),
-                    move |result| record_native_detached(runtime_id, result),
+                    native_detached_callback(runtime_id, state.locale.clone()),
                 )
                 .map_err(map_exec_error)?;
             let result = crate::vm_concurrency::cancel_result(
@@ -928,7 +1065,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                         .take()
                         .ok_or(XiaoAbiStatus::InvalidHandle.code())?;
                     let runtime_id = state.runtime.id();
-                    handle.detach_with(move |result| record_native_detached(runtime_id, result));
+                    handle.detach_with(native_detached_callback(runtime_id, state.locale.clone()));
                     Ok(XiaoValue::none())
                 }
                 ConcurrencyObject::Task(state) => {
@@ -939,7 +1076,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                         .take()
                         .ok_or(XiaoAbiStatus::InvalidHandle.code())?;
                     let runtime_id = state.runtime.id();
-                    handle.detach_with(move |result| record_native_detached(runtime_id, result));
+                    handle.detach_with(native_detached_callback(runtime_id, state.locale.clone()));
                     Ok(XiaoValue::none())
                 }
                 _ => Err(XiaoAbiStatus::InvalidHandle.code()),
@@ -1008,6 +1145,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                     handle: Mutex::new(Some(handle)),
                     cancellation,
                     runtime,
+                    locale: super::current_locale(),
                 }),
             ))))
         }
@@ -1034,7 +1172,10 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                 RuntimeHandle::current().id(),
             )
         }
-        _ => Err(set_runtime_error(format!("未知原生并发入口 {operation}"))),
+        _ => Err(set_concurrency_error(
+            crate::INVALID_VALUE_CODE,
+            format!("未知原生并发入口 {operation}"),
+        )),
     })();
     match result {
         Ok(value) => {
@@ -1090,6 +1231,80 @@ pub extern "C" fn xiao_runtime_concurrency_cancellation_check(operation: XiaoAbi
         .map_or_else(map_exec_error, |_| XiaoAbiStatus::Ok.code())
 }
 
+/// 注册一个由当前 Runtime 直接拥有的 native 子 Runtime。
+fn register_native_runtime(runtime: RuntimeHandle, owner: RuntimeHandle) {
+    if !NATIVE_ENTRY_ACTIVE.load(Ordering::Acquire) {
+        return;
+    }
+    native_owned_runtimes()
+        .lock()
+        .expect("native Runtime 所有权锁未中毒")
+        .push((runtime, owner));
+}
+
+/// native 入口结束时关闭当前 Runtime，并消费已经抵达的 detached 记录。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_concurrency_finish() -> i32 {
+    let runtime = RuntimeHandle::current();
+    let owned = std::mem::take(
+        &mut *native_owned_runtimes()
+            .lock()
+            .expect("native Runtime 所有权锁未中毒"),
+    );
+    let mut runtime_ids = owned
+        .iter()
+        .map(|(runtime, _)| runtime.id())
+        .collect::<Vec<_>>();
+    let mut first_error = None;
+    for (child, owner) in owned.into_iter().rev() {
+        if child.is_closed() {
+            continue;
+        }
+        match owner.in_context(|| child.try_close()) {
+            Ok(Ok(())) => {}
+            Ok(Err(error)) | Err(error) => {
+                first_error.get_or_insert(error);
+            }
+        }
+    }
+    if !runtime.is_closed() {
+        if let Err(error) = runtime.try_close() {
+            first_error.get_or_insert(error);
+        }
+    }
+    runtime_ids.push(runtime.id());
+    wait_native_detached_callbacks(&runtime_ids);
+    while let Some(detached) = take_native_detached_error_for(&runtime_ids) {
+        match detached.packet {
+            NativeErrorPacket::Recoverable(error) => {
+                let report = error.report();
+                super::write_runtime_report("recoverable", &report, detached.locale, 0);
+            }
+            NativeErrorPacket::Fatal(error) => {
+                let report = error.report();
+                super::write_runtime_report("fatal", &report, detached.locale, 0);
+            }
+        }
+    }
+    NATIVE_ENTRY_ACTIVE.store(false, Ordering::Release);
+    first_error.map_or_else(|| XiaoAbiStatus::Ok.code(), map_exec_error)
+}
+
+/// 开启一个真实 native 入口的 Runtime 所有权收集窗口。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_concurrency_entry_begin() {
+    native_owned_runtimes()
+        .lock()
+        .expect("native Runtime 所有权锁未中毒")
+        .clear();
+    NATIVE_ENTRY_ACTIVE.store(true, Ordering::Release);
+}
+
+/// 将 runtime_create 产生的直接子 Runtime 纳入 native 入口自动收尾。
+fn track_native_runtime(runtime: RuntimeHandle, owner: RuntimeHandle) {
+    register_native_runtime(runtime, owner);
+}
+
 /// 从有界进程通道中取得一个指定 Runtime 的 detached 错误。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_concurrency_detached_error_take(
@@ -1110,7 +1325,10 @@ pub extern "C" fn xiao_runtime_concurrency_detached_error_take(
         // SAFETY: pointer and length are validated and borrowed for this call.
         unsafe { std::slice::from_raw_parts(runtime_ids, runtime_id_count) }
     };
-    let Some((runtime_id, packet)) = take_native_detached_error_for(ids) else {
+    let Some(NativeDetachedError {
+        runtime_id, packet, ..
+    }) = take_native_detached_error_for(ids)
+    else {
         return XiaoAbiStatus::OutOfBounds.code();
     };
     unsafe { *runtime_id_out = runtime_id };
@@ -1409,6 +1627,70 @@ mod tests {
     }
 
     #[test]
+    /// 并发 retain/release 同一 opaque alias 时，最后释放不能与句柄读取竞态。
+    fn retain_release_race_is_serialized_until_box_reclamation() {
+        use std::sync::Barrier;
+
+        for _ in 0..128 {
+            let first = box_object(ConcurrencyObject::Runtime(RuntimeHandle::current()));
+            let racing_alias = retain_handle(first);
+            assert!(!racing_alias.is_null());
+            let barrier = Arc::new(Barrier::new(3));
+
+            let retain_barrier = Arc::clone(&barrier);
+            let alias = racing_alias as usize;
+            let retain_thread = std::thread::spawn(move || {
+                retain_barrier.wait();
+                retain_handle(alias as XiaoConcurrencyHandle) as usize
+            });
+            let release_barrier = Arc::clone(&barrier);
+            let alias = racing_alias as usize;
+            let release_thread = std::thread::spawn(move || {
+                release_barrier.wait();
+                release_handle(alias as XiaoConcurrencyHandle);
+            });
+            barrier.wait();
+            let retained =
+                retain_thread.join().expect("retain 线程不应 panic") as XiaoConcurrencyHandle;
+            release_thread.join().expect("release 线程不应 panic");
+            if !retained.is_null() {
+                release_handle(retained);
+            }
+            release_handle(first);
+        }
+    }
+
+    #[test]
+    /// VM 的显式释放追踪也必须看到共享句柄和并发盒子的释放动作。
+    fn vm_release_trace_includes_concurrency_external_objects() {
+        let _trace = crate::start_release_trace();
+        let mut shared = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call(
+                operation("shared_read"),
+                &XiaoValue::int(7),
+                1,
+                &mut shared
+            ),
+            XiaoAbiStatus::Ok.code()
+        );
+        crate::abi::xiao_runtime_value_release(&mut shared);
+        let events = crate::take_release_events();
+        assert!(
+            events
+                .iter()
+                .any(|event| event.action == crate::memory::ReleaseAction::ConcurrencyRelease),
+            "VM 释放追踪必须包含并发盒子释放"
+        );
+        assert!(
+            events
+                .iter()
+                .any(|event| event.action == crate::memory::ReleaseAction::SharedRelease),
+            "VM 释放追踪必须包含共享强句柄释放"
+        );
+    }
+
+    #[test]
     /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn completed_child_cancellation_uses_vm_error_normalization_and_keeps_cleanup_error() {
         let cancellation = RuntimeCancellation::default();
@@ -1430,12 +1712,55 @@ mod tests {
     }
 
     #[test]
+    /// 原生 finally checkpoint 恢复主错误并保留清理错误为 suppressed。
+    fn native_error_checkpoint_preserves_primary_and_suppressed() {
+        crate::abi::xiao_runtime_error_clear();
+        crate::abi::set_pending_runtime_error(crate::RuntimeError::new(
+            crate::XiaoErrorKind::Other,
+            "child-primary",
+            "runtime.user_error",
+            "primary",
+        ));
+        crate::abi::xiao_runtime_error_checkpoint_begin();
+        crate::abi::set_pending_runtime_error(crate::RuntimeError::new(
+            crate::XiaoErrorKind::Other,
+            "child-cleanup",
+            "runtime.user_error",
+            "cleanup",
+        ));
+        assert_eq!(
+            crate::abi::xiao_runtime_error_checkpoint_finish(),
+            xiao_runtime_abi::XiaoErrorClass::Recoverable.raw()
+        );
+        assert!(matches!(
+            take_native_error_packet(),
+            Some(NativeErrorPacket::Recoverable(error))
+                if error.code() == "child-primary"
+                    && error.suppressed().iter().any(|cleanup| cleanup.code() == "child-cleanup")
+        ));
+    }
+
+    #[test]
     /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn unsupported_operation_is_explicitly_rejected() {
         let mut output = XiaoValue::none();
         let status =
             xiao_runtime_concurrency_call(operation("spawn"), std::ptr::null(), 0, &mut output);
         assert_ne!(status, XiaoAbiStatus::Ok.code());
+
+        crate::abi::xiao_runtime_error_clear();
+        let status = xiao_runtime_concurrency_call(
+            operation("future_api"),
+            std::ptr::null(),
+            0,
+            &mut output,
+        );
+        assert_eq!(status, XiaoAbiStatus::RuntimeError.code());
+        assert!(matches!(
+            take_native_error_packet(),
+            Some(NativeErrorPacket::Recoverable(error))
+                if error.code() == crate::INVALID_VALUE_CODE
+        ));
     }
 
     #[test]
@@ -1678,6 +2003,51 @@ mod tests {
         crate::abi::xiao_runtime_value_release(&mut task);
         crate::abi::xiao_runtime_value_release(&mut pool);
         crate::abi::xiao_runtime_value_release(&mut runtime);
+    }
+
+    #[test]
+    /// LockGuard 跨 OS 线程操作时必须在 Runtime 侧返回 031。
+    fn lock_guard_rejects_cross_thread_use() {
+        let mut shared = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call(
+                operation("shared_mut"),
+                &XiaoValue::int(1),
+                1,
+                &mut shared,
+            ),
+            XiaoAbiStatus::Ok.code()
+        );
+        let mut guard = XiaoValue::none();
+        assert_eq!(
+            xiao_runtime_concurrency_call(operation("lock"), &shared, 1, &mut guard),
+            XiaoAbiStatus::Ok.code()
+        );
+        let handle = unsafe { guard.payload.handle } as usize;
+        let status = std::thread::spawn(move || {
+            crate::abi::xiao_runtime_error_clear();
+            let foreign = XiaoValue {
+                tag: XiaoValueTag::Concurrency,
+                payload: xiao_runtime_abi::XiaoValuePayload {
+                    handle: handle as *mut xiao_runtime_abi::XiaoOpaqueHandle,
+                },
+            };
+            let mut output = XiaoValue::none();
+            let status =
+                xiao_runtime_concurrency_call(operation("lock_read"), &foreign, 1, &mut output);
+            let is_031 = matches!(
+                take_native_error_packet(),
+                Some(NativeErrorPacket::Recoverable(error))
+                    if error.code() == crate::CONCURRENCY_RUNTIME_CLOSED_CODE
+            );
+            (status, is_031)
+        })
+        .join()
+        .expect("跨线程 LockGuard 负例不应 panic");
+        assert_eq!(status.0, XiaoAbiStatus::RuntimeError.code());
+        assert!(status.1);
+        crate::abi::xiao_runtime_value_release(&mut guard);
+        crate::abi::xiao_runtime_value_release(&mut shared);
     }
 
     #[test]

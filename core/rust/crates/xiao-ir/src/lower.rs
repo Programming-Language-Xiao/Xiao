@@ -1070,6 +1070,26 @@ fn lower_function_annotation(annotation: &FunctionTypeAnnotation) -> IrType {
 fn lower_modules(project: &ProjectModuleResult, source: &SourceFile) -> Vec<IrModule> {
     let mut modules = Vec::new();
     for (name, record) in &project.modules {
+        // 普通项目模块此前只走空 TypeCheckResult，以保持摘要边界；22D 需要
+        // 至少做一次并发调用预检，否则模块体的 runtime_create/spawn 会在 LLVM
+        // 侧退回普通动态调用。预检结果只登记模块级标记，普通模块 lowering
+        // 仍保持既有摘要语义。
+        let module_syntax_concurrency = record
+            .program
+            .as_ref()
+            .zip(record.source.as_ref())
+            .is_some_and(|(program, module_source)| {
+                syntax_uses_concurrency_import(module_source, &program.statements)
+            });
+        let module_checked_types = record
+            .program
+            .as_ref()
+            .zip(record.source.as_ref())
+            .map(|(program, module_source)| xiao_types::check(module_source, program));
+        let has_concurrency = module_syntax_concurrency
+            || module_checked_types
+                .as_ref()
+                .is_some_and(|types| !types.concurrency_calls().is_empty());
         let body = record
             .program
             .as_ref()
@@ -1122,6 +1142,7 @@ fn lower_modules(project: &ProjectModuleResult, source: &SourceFile) -> Vec<IrMo
             kind: module_kind_name(record.kind).to_owned(),
             path: record.path.display().to_string(),
             body,
+            has_concurrency,
             symbols,
         });
     }
@@ -1129,6 +1150,66 @@ fn lower_modules(project: &ProjectModuleResult, source: &SourceFile) -> Vec<IrMo
     // explicit; module records already carry their own source and path.
     let _ = source;
     modules
+}
+
+/// 项目模块的完整类型环境由前端入口管理；这里保留一个语法级并发导入预检，
+/// 避免普通模块使用空 `TypeCheckResult` 时丢掉 22D 的 fail-closed 边界。
+fn syntax_uses_concurrency_import(source: &SourceFile, statements: &[Statement]) -> bool {
+    fn path_is_concurrency(path: &xiao_syntax::ImportPath, source: &SourceFile) -> bool {
+        path.segments.len() == 2
+            && path.segments[0].unquoted_text(source) == "std"
+            && path.segments[1].unquoted_text(source) == "concurrent"
+    }
+    for statement in statements {
+        let nested = match statement {
+            Statement::Import { import, .. } => match import {
+                xiao_syntax::ImportStatement::Modules { imports, .. } => imports
+                    .iter()
+                    .any(|item| path_is_concurrency(&item.path, source)),
+                xiao_syntax::ImportStatement::From { module, .. } => {
+                    path_is_concurrency(module, source)
+                }
+            },
+            Statement::If {
+                body,
+                elif_branches,
+                else_body,
+                ..
+            } => {
+                body.iter().any(|statement| {
+                    syntax_uses_concurrency_import(source, std::slice::from_ref(statement))
+                }) || elif_branches
+                    .iter()
+                    .any(|branch| syntax_uses_concurrency_import(source, &branch.body))
+                    || else_body
+                        .as_ref()
+                        .is_some_and(|body| syntax_uses_concurrency_import(source, body))
+            }
+            Statement::While { body, .. }
+            | Statement::For { body, .. }
+            | Statement::Function { body, .. }
+            | Statement::Table { body, .. } => syntax_uses_concurrency_import(source, body),
+            Statement::Try {
+                body,
+                catches,
+                finally_body,
+                ..
+            } => {
+                syntax_uses_concurrency_import(source, body)
+                    || catches
+                        .iter()
+                        .any(|catch| syntax_uses_concurrency_import(source, &catch.body))
+                    || finally_body
+                        .as_ref()
+                        .is_some_and(|body| syntax_uses_concurrency_import(source, body))
+            }
+            _ => false,
+        };
+        if nested {
+            return true;
+        }
+    }
+    false
 }
 
 /// 转换生命周期控制流。
