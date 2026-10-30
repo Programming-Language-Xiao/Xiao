@@ -36,3 +36,12 @@ publish = false
 
 [workspace.lints.rust]
 missing_docs = "warn"
+
+# 默认 debug = 2 会给每个测试二进制生成约 230MB 的 PDB，旧版本还不会被自动回收，
+# 单个 target/debug/deps 曾累积到 200GB 以上。保留行号信息、去掉变量/类型细节，
+# 既能让 panic 位置仍可读，也显著降低链接内存和 PDB 体积。
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
