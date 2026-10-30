@@ -11,6 +11,7 @@ impl<'a> DynamicGenerator<'a> {
         let entry_return = if observed { "i64" } else { "void" };
         self.emit(format!("define {entry_return} @xiao_entry() {{"));
         self.emit("entry:".to_owned());
+        self.emit("  call void @xiao_runtime_error_checkpoint_reset()".to_owned());
         self.emit("  call void @xiao_runtime_error_clear()".to_owned());
         self.emit("  call void @xiao_runtime_release_trace_begin()".to_owned());
         let slots = self.slots.values().copied().collect::<Vec<_>>();

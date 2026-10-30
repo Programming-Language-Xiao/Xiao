@@ -4,8 +4,8 @@
 
 这里验证 N0-A 的类型映射、控制流和拒绝边界；`xiao-driver/tests/22d_llvm_concurrency.rs`
 验证同源并发 IR、trampoline 文本和未知并发操作 fail-closed，另外提供一组由三平台 native
-job 精确执行的 ignored `llvm-as` 符号验证，以及一条覆盖五个成功场景、三个 Runtime 031
-负例、主/清理错误和 detached 失败投影的 ignored VM/native 差分。端到端 LLVM 工具链测试使用
+job 精确执行的 ignored `llvm-as` 符号验证，以及一条覆盖五个成功场景、六个运行时错误
+（含三个 Runtime 031 负例、主/清理错误、finally 内普通及嵌套 helper 返回）和 detached 失败投影的 ignored VM/native 差分。端到端 LLVM 工具链测试使用
 `#[ignore]` 明确标出环境门控：默认 `cargo test` 会在汇总中显示 11 条 ignored，显式
 执行 `cargo test -p xiao-codegen-llvm -- --ignored` 才会运行它们。显式运行时必须提供
 `XIAO_CLANG`、需要汇编验证的测试还要提供 `XIAO_LLVM_AS`，并设置

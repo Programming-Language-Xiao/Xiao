@@ -945,8 +945,11 @@ unsafe extern "C" {
     /// 判断一个生成产物所需版本是否可由当前 Runtime 满足。
     pub fn xiao_runtime_abi_is_compatible(required_major: u32, required_minor: u32) -> i32;
 
-    /// 清除当前线程的挂起错误；普通成功路径必须在进入新一轮执行前调用。
+    /// 仅清除当前线程的挂起错误，保留调用方 finally checkpoint。
     pub fn xiao_runtime_error_clear();
+    /// 重置当前线程遗留的 finally checkpoint，不改变当前挂起错误。
+    /// 仅独立程序入口在执行用户代码前调用；普通函数及 finally 清理不得调用。
+    pub fn xiao_runtime_error_checkpoint_reset();
     /// 暂存 pending error，供原生 finally 主错误/次生清理错误合并。
     pub fn xiao_runtime_error_checkpoint_begin();
     /// 恢复 checkpoint 的主错误并把清理错误加入 suppressed，返回当前错误类别。

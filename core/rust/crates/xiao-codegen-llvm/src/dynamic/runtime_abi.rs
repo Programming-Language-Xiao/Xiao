@@ -136,6 +136,8 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert("declare void @xiao_runtime_error_clear()".to_owned());
         self.declarations
+            .insert("declare void @xiao_runtime_error_checkpoint_reset()".to_owned());
+        self.declarations
             .insert("declare void @xiao_runtime_error_checkpoint_begin()".to_owned());
         self.declarations
             .insert("declare i32 @xiao_runtime_error_checkpoint_finish()".to_owned());

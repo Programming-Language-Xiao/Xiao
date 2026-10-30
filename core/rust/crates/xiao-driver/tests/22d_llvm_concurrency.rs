@@ -453,27 +453,45 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             "from std.concurrent import current_runtime, runtime_close, shared_read, read\nrt = current_runtime()\nruntime_close(rt)\nvalue = shared_read(7)\nprint(read(value))\n",
             "X06-RUNTIME-031",
             "",
+            None,
         ),
         (
             "child-shared-mut-result",
             "from std.concurrent import runtime_create, spawn, join, shared_mut\ndef work() -> shared_mut<int>\n    return shared_mut(1)\nrt = runtime_create()\nthread = spawn(rt, work)\nvalue = join(thread)\nprint(\"joined\")\n",
             "X06-RUNTIME-031",
             "",
+            None,
         ),
         (
             "pool-shared-mut-result",
             "from std.concurrent import runtime_create, pool_create, submit, wait, shutdown, shared_mut\ndef work() -> shared_mut<int>\n    return shared_mut(1)\nrt = runtime_create()\npool = pool_create(rt, 1)\ntask = submit(pool, work)\nvalue = wait(task)\nprint(\"waited\")\nshutdown(pool)\n",
             "X06-RUNTIME-031",
             "",
+            None,
         ),
         (
             "child-primary-and-finally-suppressed",
             "from std.concurrent import current_runtime, spawn, join\ndef work() -> none\n    try\n        raise TypeError(code = \"child-primary\")\n    finally\n        print(\"cleanup\")\n        raise TypeError(code = \"child-cleanup\")\n    return none\nrt = current_runtime()\nthread = spawn(rt, work)\njoin(thread)\n",
             "child-primary",
             "cleanup\n",
+            Some("child-cleanup"),
+        ),
+        (
+            "finally-helper-return-preserves-primary",
+            "def helper() -> none\n    return none\ndef work() -> none\n    try\n        raise TypeError(code = \"primary\")\n    finally\n        helper()\n        print(\"cleanup\")\n    return none\nwork()\n",
+            "primary",
+            "cleanup\n",
+            None,
+        ),
+        (
+            "nested-finally-helper-return-preserves-primary-and-suppressed",
+            "def helper() -> none\n    try\n        raise TypeError(code = \"helper-overridden\")\n    finally\n        return none\ndef work() -> none\n    try\n        raise TypeError(code = \"primary\")\n    finally\n        helper()\n        print(\"cleanup\")\n        raise TypeError(code = \"cleanup-error\")\n    return none\nwork()\n",
+            "primary",
+            "cleanup\n",
+            Some("cleanup-error"),
         ),
     ];
-    for (label, source, expected_code, expected_output) in error_cases {
+    for (label, source, expected_code, expected_output, expected_suppressed) in error_cases {
         let frontend_request = FrontendRequest::from_text(source);
         let artifact = FrontendCompiler::new()
             .compile(&frontend_request)
@@ -488,14 +506,28 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             3,
             "{label}: VM 运行时错误退出码"
         );
-        if expected_code == "child-primary" {
-            assert!(vm.report().is_some_and(|report| {
-                report
-                    .suppressed
-                    .iter()
-                    .any(|error| error.code == "child-cleanup")
-            }));
-        }
+        let vm_output = vm
+            .as_executed()
+            .expect("VM 返回执行结果")
+            .events()
+            .iter()
+            .filter_map(|event| match event {
+                xiao_vm::VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
+                _ => None,
+            })
+            .collect::<String>()
+            .replace("\r\n", "\n");
+        assert_eq!(vm_output, expected_output, "{label}: VM stdout");
+        let report = vm.report().expect("VM 错误应有结构化报告");
+        assert_eq!(
+            report
+                .suppressed
+                .iter()
+                .map(|error| error.code.as_str())
+                .collect::<Vec<_>>(),
+            expected_suppressed.into_iter().collect::<Vec<_>>(),
+            "{label}: VM suppressed 错误身份"
+        );
         let output = root.join(format!("{label}.{suffix}"));
         let request =
             NativeBuildRequest::new(frontend_request, target.clone(), toolchain.clone(), &output)
@@ -512,13 +544,16 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
             .replace("\r\n", "\n");
         assert_eq!(native_output, expected_output, "{label}: native stdout");
         let stderr = String::from_utf8(execution.stderr).expect("native stderr 为 UTF-8");
+        let expected_identity = format!("xiao-error class=recoverable code={expected_code} ");
         assert!(
-            stderr.contains(expected_code),
-            "{label}: native stderr={stderr}"
+            stderr
+                .lines()
+                .any(|line| line.starts_with(&expected_identity)),
+            "{label}: native 主错误身份未匹配：{stderr}"
         );
-        if expected_code == "child-primary" {
+        if let Some(expected_suppressed) = expected_suppressed {
             assert!(
-                stderr.contains("child-cleanup"),
+                stderr.contains(expected_suppressed),
                 "{label}: suppressed 未投影：{stderr}"
             );
         }

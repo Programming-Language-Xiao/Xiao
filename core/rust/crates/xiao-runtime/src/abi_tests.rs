@@ -89,6 +89,59 @@ fn diagnostic_test_lock() -> std::sync::MutexGuard<'static, ()> {
 }
 
 #[test]
+/// finally 中普通 helper 的成功返回只清理当前错误，不能清除调用方的主错误。
+fn native_error_checkpoint_survives_successful_helper_return() {
+    xiao_runtime_error_clear();
+    let primary = RuntimeError::from_type_name("TypeError", Some("primary"), None).unwrap();
+    set_pending_runtime_error(primary.clone());
+    xiao_runtime_error_checkpoint_begin();
+
+    // 原生 helper 的显式 return 会调用此入口。
+    xiao_runtime_error_clear();
+    assert_eq!(xiao_runtime_error_class(), XiaoErrorClass::None.raw());
+    assert_eq!(
+        xiao_runtime_error_checkpoint_finish(),
+        XiaoErrorClass::Recoverable.raw()
+    );
+    PENDING_ERROR.with(|pending| {
+        let Some(PendingError::Recoverable(error)) = pending.borrow_mut().take() else {
+            panic!("helper 返回后应恢复调用方的主错误");
+        };
+        assert_eq!(error, primary);
+        assert!(error.suppressed().is_empty());
+    });
+}
+
+#[test]
+/// 新一轮入口丢弃全部遗留 checkpoint，当前错误仍由普通 clear 独立处理。
+fn native_error_checkpoint_reset_discards_stale_entry_state() {
+    xiao_runtime_error_clear();
+    for code in ["stale-outer", "stale-inner"] {
+        set_pending_runtime_error(
+            RuntimeError::from_type_name("TypeError", Some(code), None).unwrap(),
+        );
+        xiao_runtime_error_checkpoint_begin();
+    }
+    let current = RuntimeError::from_type_name("TypeError", Some("current"), None).unwrap();
+    set_pending_runtime_error(current.clone());
+    xiao_runtime_error_checkpoint_reset();
+    assert_eq!(
+        xiao_runtime_error_checkpoint_finish(),
+        XiaoErrorClass::Recoverable.raw()
+    );
+    PENDING_ERROR.with(|pending| {
+        let Some(PendingError::Recoverable(error)) = pending.borrow_mut().take() else {
+            panic!("checkpoint 重置不得清除当前错误");
+        };
+        assert_eq!(error, current);
+    });
+    assert_eq!(
+        xiao_runtime_error_checkpoint_finish(),
+        XiaoErrorClass::None.raw()
+    );
+}
+
+#[test]
 fn pending_runtime_error_preserves_primary_and_suppresses_secondary() {
     PENDING_ERROR.with(|pending| *pending.borrow_mut() = None);
     let primary = RuntimeError::invalid_value("primary");

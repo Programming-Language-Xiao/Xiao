@@ -1722,6 +1722,8 @@ mod tests {
             "primary",
         ));
         crate::abi::xiao_runtime_error_checkpoint_begin();
+        // finally 内调用的 helper 显式返回，再继续产生清理错误。
+        crate::abi::xiao_runtime_error_clear();
         crate::abi::set_pending_runtime_error(crate::RuntimeError::new(
             crate::XiaoErrorKind::Other,
             "child-cleanup",

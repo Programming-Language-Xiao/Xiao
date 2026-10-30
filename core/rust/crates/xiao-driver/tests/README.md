@@ -4,7 +4,7 @@
 
 `22c_vm_concurrency.rs` 覆盖真实源码的线程、任务池、共享锁、Runtime 身份、取消与
 清理、detached 错误、XCON 限制和 `.xiaoc`/`.xar` 执行前门禁。
-`22d_llvm_concurrency.rs` 覆盖同一 IR 的 LLVM 并发计划、trampoline、shared/lock 取消入口与 fail-closed；根/局部导入别名和分组目标由三平台 native job 显式运行真实 `llvm-as` 验证；另有覆盖五个成功黄金输出、三个 Runtime 031 负例、主/清理错误和 detached 失败投影的 VM/native 差分门控项。
+`22d_llvm_concurrency.rs` 覆盖同一 IR 的 LLVM 并发计划、trampoline、shared/lock 取消入口与 fail-closed；根/局部导入别名和分组目标由三平台 native job 显式运行真实 `llvm-as` 验证；另有覆盖五个成功黄金输出、六个运行时错误（含三个 Runtime 031 负例、主/清理错误、finally 内普通及嵌套 helper 返回）和 detached 失败投影的 VM/native 差分门控项。
 `u0_frontend.rs` 验证阶段顺序、诊断累积和成功/失败产物边界；`b0_c_driver.rs` 验证脚本与
 `[main]` 端到端运行、三段结构化失败、执行前拒绝和取消/超时边界。除 22D 明确标记的
 ignored 原生差分外，测试不接入 CLI 或 LLVM。

@@ -868,12 +868,17 @@ unsafe fn value_slice(values: *const XiaoValue, length: usize) -> Result<Vec<Run
         .collect()
 }
 
-/// 清除当前线程挂起的原生错误。
+/// 仅清除当前线程挂起的原生错误，保留调用方 finally 暂存的主错误。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_error_clear() {
     PENDING_ERROR.with(|pending| {
         *pending.borrow_mut() = None;
     });
+}
+
+/// 在独立程序入口重置 checkpoint 栈；普通函数调用不得丢弃调用方的 finally 状态。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_checkpoint_reset() {
     PENDING_ERROR_CHECKPOINTS.with(|checkpoints| checkpoints.borrow_mut().clear());
 }
 
