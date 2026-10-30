@@ -12,6 +12,13 @@
 //! 普通 N0-B `XiaoHandle` 继承 06B 的单线程、非原子引用计数约束，不得跨线程传递或并发调用。
 //! 22D 的 Runtime/线程/任务/共享值另用 `XiaoConcurrencyHandle` 和并发入口；这不改变普通
 //! 句柄规则，也不暴露 Rust `Arc`/`Mutex` 或共享头字段。
+//!
+//! 稳定 C ABI 的输出契约：`*mut XiaoValue` 输出必须指向已初始化且仍拥有其载荷的值槽；
+//! `*mut XiaoHandle` 输出必须指向已初始化的空槽或有效强句柄槽。成功写入会释放旧载荷并
+//! 替换槽位，失败通常保持旧槽不变，具体例外由入口文档说明。普通数值/固定布局结构输出
+//! 只要求指向可写内存，成功时覆盖；按值返回的 `xiao_runtime_value_*` 类型包装器无法返回
+//! 状态码，句柄或类型错误以 `XiaoValueTag::None` 哨兵表示。快照中的 `XiaoAbiBytes` 借用
+//! 错误对象内部存储，只能用到错误槽清除或变更为止，调用方需要长期保存时必须自行复制。
 
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
@@ -1117,14 +1124,17 @@ unsafe extern "C" {
         written: *mut usize,
     ) -> i32;
     /// 从字符串强句柄构造 `XiaoValueTag::Str`。
+    /// 错误句柄或类型不符时返回 `XiaoValueTag::None`；需要状态码时使用 `string_new`。
     pub fn xiao_runtime_value_str(handle: XiaoHandle) -> XiaoValue;
     /// 消费字符串强句柄并构造 `XiaoValueTag::Str`；调用成功后不得再次释放句柄。
     pub fn xiao_runtime_value_str_owned(handle: XiaoHandle) -> XiaoValue;
     /// 从字符串强句柄构造任意精度整数文本值。
+    /// 错误句柄或类型不符时返回 `XiaoValueTag::None`。
     pub fn xiao_runtime_value_lint(handle: XiaoHandle) -> XiaoValue;
     /// 消费字符串强句柄并构造任意精度整数文本值；调用成功后不得再次释放句柄。
     pub fn xiao_runtime_value_lint_owned(handle: XiaoHandle) -> XiaoValue;
     /// 从字符串强句柄构造任意精度浮点文本值。
+    /// 错误句柄或类型不符时返回 `XiaoValueTag::None`。
     pub fn xiao_runtime_value_lfloat(handle: XiaoHandle) -> XiaoValue;
     /// 消费字符串强句柄并构造任意精度浮点文本值；调用成功后不得再次释放句柄。
     pub fn xiao_runtime_value_lfloat_owned(handle: XiaoHandle) -> XiaoValue;

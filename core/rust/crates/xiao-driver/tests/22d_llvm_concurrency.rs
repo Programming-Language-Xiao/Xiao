@@ -271,10 +271,15 @@ fn native_project_module_concurrency_is_rejected_structurally() {
     fs::create_dir_all(&root).expect("创建项目模块测试目录");
     let main_path = root.join("main.xiao");
     fs::write(
-        root.join("helper.xiao"),
-        "from std.concurrent import runtime_create\nrt = runtime_create()\n",
+        root.join("bridge.xiao"),
+        "from std.concurrent import runtime_create\ndef create_runtime() -> runtime\n    return runtime_create()\n",
     )
-    .expect("写入普通项目辅助模块");
+    .expect("写入并发函数 re-export 模块");
+    fs::write(
+        root.join("helper.xiao"),
+        "from bridge import create_runtime\nrt = create_runtime()\n",
+    )
+    .expect("写入间接传递并发函数的项目模块");
     let source = "from helper import rt\nprint(1)\n";
     fs::write(&main_path, source).expect("写入项目入口");
     let mut context = xiao_driver::FrontendContext::host();
@@ -283,6 +288,14 @@ fn native_project_module_concurrency_is_rejected_structurally() {
     let artifact = FrontendCompiler::new()
         .compile(&request)
         .expect("普通项目模块并发源码应通过前端");
+    assert!(
+        artifact
+            .ir
+            .modules
+            .iter()
+            .any(|module| { module.name == "helper" && module.has_concurrency }),
+        "间接导入并发函数的模块必须传播并发标记"
+    );
     let vm = FrontendVmDriver::new().run_artifact(
         &artifact,
         &DriverRequest::new(request.clone()).with_timeout(Duration::from_secs(10)),
@@ -559,7 +572,7 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
         }
     }
 
-    let detached_source = "from std.concurrent import current_runtime, spawn, detach\ndef work() -> int\n    raise ArithmeticError(code = \"detached-child\")\n    return 0\nrt = current_runtime()\nthread = spawn(rt, work)\ndetach(thread)\nprint(\"main\")\n";
+    let detached_source = "from std.concurrent import current_runtime, spawn, join, detach\ndef grandchild() -> int\n    raise ArithmeticError(code = \"detached-child\")\n    return 0\ndef child() -> int\n    rt = current_runtime()\n    nested = spawn(rt, grandchild)\n    detach(nested)\n    return 1\nrt = current_runtime()\nthread = spawn(rt, child)\njoin(thread)\nprint(\"main\")\n";
     let detached_request = FrontendRequest::from_text(detached_source)
         .with_context(FrontendContext::host().with_locale("en-US"));
     let detached_artifact = FrontendCompiler::new()

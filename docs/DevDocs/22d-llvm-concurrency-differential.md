@@ -327,6 +327,11 @@ core/rust/crates/xiao-codegen-llvm/tests/                 原生夹具
 - native Runtime 所有权追踪只在显式入口窗口内生效；入口退出逆序关闭登记的子 Runtime，等待 Runtime-ID detached callback 清零，再投影/消费通道、结束入口窗口并刷新 release trace。
 - native finally 路径通过 Runtime 错误 checkpoint 暂存主错误，清理失败恢复为 suppressed；差分用例覆盖该主/次生错误身份。native detached 报告与 VM 的错误身份、cause 和 locale 文案投影一致，原生栈帧仍保留为后续差异项。
 - 2026-10-30 修正 finally 中普通函数显式返回清空调用方 checkpoint 的 P1：`xiao_runtime_error_clear` 只清当前错误，独立入口另调 `xiao_runtime_error_checkpoint_reset`；finally 自身的非局部退出仍由 `checkpoint_discard` 处理。Runtime 回归覆盖 clear 后主/次错误恢复和入口遗留栈重置，VM/native 差分覆盖普通 helper 返回及 helper 自身 finally 返回后外层主/次错误保留，并核对错误退出码和清理输出。
+- 2026-10-30 在每次 native trampoline 调用前后重置 worker 线程的错误槽与 checkpoint，并把父执行单元的 locale 安装到实际 worker；`native_trampoline_resets_worker_checkpoint_and_inherits_locale` 验证复用线程清理，22D VM/native detached 差分改为覆盖子线程再次 spawn/detach 孙线程。
+- 普通项目模块的并发预检现在沿静态导入图向导入方传播并发标记，覆盖经中间模块导出函数的间接路径；`native_project_module_concurrency_is_rejected_structurally` 使用 `main -> helper -> bridge -> std.concurrent` 的真实项目模块验证结构化拒绝。
+- `xiao_runtime_concurrency_finish` 将 close drain 失败送入统一错误槽，已有主错误保持为主并把 close 失败加入 suppressed；`native_finish_close_error_is_suppressed_under_primary` 验证错误身份与返回状态。
+- 旧 ABI 文档统一说明已初始化输出槽、成功替换/失败保留、固定结构输出和借用字节生命周期；`legacy_output_slots_replace_owned_values_and_preserve_on_failure` 与 `legacy_value_wrapper_rejects_wrong_handle_kind_with_none_sentinel` 验证旧句柄/值槽和按值包装边界。
+- 将数组、元组、字典、集合和旧表入口迁移到 `xiao-runtime/src/abi_collections.rs`，保留既有 C 符号和 parent module re-export；按物理行门禁统计，`abi.rs` 从 2535 行降至 2055 行，旧尺寸豁免说明已随超限关闭移除。
 - opaque 并发 token 使用单调整数 token + Runtime 内部 live registry，retain/release 在 registry 锁内串行，失效 token 不再解引用可复用裸地址；LockGuard 额外校验创建线程，C ABI 并发入口声明补齐参数/输出槽安全契约。
 - 公开 `CodegenOptions` 默认拒绝并发原生产物；内部测试使用 `with_internal_concurrency()`。`CODEGEN_VERSION = 11` 隔离入口 checkpoint 重置与普通错误清理的生成文本，Runtime ABI 版本仍为 1.17。
 - 库测试、workspace/clippy/fmt/docs/usedocs/layout 与本机受控原生执行记录只证明当前实现范围，不代替 §五 的完整差分及 §六 的阶段退出条件。
@@ -335,25 +340,16 @@ core/rust/crates/xiao-codegen-llvm/tests/                 原生夹具
 
 ### 9.1 P3 待收口清单（并入 22D 收尾）
 
-2026-10-30 对 `cb9f832` 的审核确认 finally checkpoint P1 已关闭、没有新的 P1/P2。以下 P3
-不阻塞该提交，但必须在 22D 标记完成前逐项关闭，或在 §九写明显式降级理由和 22E 承接方式：
+2026-10-30 审核 `cb9f832` 后登记的六项 P3 均已关闭；对应实现和回归证据已写入本节实施记录：
 
-1. **pool worker 的 checkpoint 隔离**：入口 `checkpoint_reset` 只覆盖 native 入口；pool worker
-   线程复用，宿主侧异常中止的任务可能在 TLS 留下 stale checkpoint，影响同一 worker 的后续
-   任务。需要按任务 begin/reset，并补“脏 checkpoint 后下一任务仍正确”的回归。
-2. **嵌套 detached locale**：detached 的语言上下文只按创建线程捕获；子线程再次 `spawn`/
-   `detach` 时可能退回默认 locale，需补嵌套创建的语言上下文差分。
-3. **间接模块的并发预检**：普通项目模块的预检只保证直接 `std.concurrent` 导入及可直接获得
-   的类型事实；经函数值或中间模块间接传递的并发用法尚未保证专用的模块体并发拒绝。
-4. **finish 错误路径的主错误优先级**：`xiao_runtime_concurrency_finish` 失败时，close 错误
-   是否会覆盖已存在的主错误尚无专门用例，需补主/次错误身份与退出码差分。
-5. **旧 C ABI 输出槽与包装边界**：并发句柄已改为不复用整数 token 的 registry lookup，但旧的
-   非并发输出槽/包装边界仍需一次独立审阅。
-6. **`abi.rs` 体量**：当前 2535 行、超过 2500 行上限，属已审核的硬耦合豁免；按既有移除计划
-   拆分，不在功能批次里顺手改动。
+1. [x] pool worker 在每个 trampoline 前后重置错误槽/checkpoint；`native_trampoline_resets_worker_checkpoint_and_inherits_locale`。
+2. [x] 子线程执行时继承创建任务时的 locale；22D VM/native 嵌套 spawn/detach 差分。
+3. [x] 并发标记沿项目模块导入图传递；`native_project_module_concurrency_is_rejected_structurally`。
+4. [x] finish close 错误不覆盖既有主错误；`native_finish_close_error_is_suppressed_under_primary`。
+5. [x] 旧 C ABI 输出槽及按值包装规则已明确并回归；`legacy_output_slots_replace_owned_values_and_preserve_on_failure`、`legacy_value_wrapper_rejects_wrong_handle_kind_with_none_sentinel`。
+6. [x] `abi.rs` 已拆分容器/表入口，2055 个物理行低于 2500 行门槛；旧硬耦合豁免文件已移除。
 
-每项关闭时在 §九实施记录追加一行证据（测试名或 CI 运行号）；未关闭项在 §六退出条件复核时
-逐条说明。
+清单关闭不替代 §六中 XCON 恶意输入、取消四位置、原生栈帧、完整释放顺序和三平台远端证据等 22D 阶段退出条件。
 
 ## 十、状态
 

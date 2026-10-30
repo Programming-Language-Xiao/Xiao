@@ -4,7 +4,7 @@
 //! 模块解析或生命周期算法。无法在类型结果中找到的表达式保留为 `dynamic`，
 //! 以便诊断输入仍可被快照，但正式前端会在有错误时拒绝输出该 IR。
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use xiao_lifetime::{
     ControlFlowEdgeKind, EscapeReason, ExitKind, LifetimeResult, OwnershipEdgeReason,
     OwnershipKind, ReleaseActionKind, ScopeKind, StorageClass,
@@ -1068,28 +1068,54 @@ fn lower_function_annotation(annotation: &FunctionTypeAnnotation) -> IrType {
 
 /// 转换模块摘要。
 fn lower_modules(project: &ProjectModuleResult, source: &SourceFile) -> Vec<IrModule> {
+    let mut concurrency_modules = project
+        .modules
+        .iter()
+        .filter_map(|(name, record)| {
+            let syntax_uses_concurrency = record
+                .program
+                .as_ref()
+                .zip(record.source.as_ref())
+                .is_some_and(|(program, module_source)| {
+                    syntax_uses_concurrency_import(module_source, &program.statements)
+                });
+            let typecheck_uses_concurrency = record
+                .program
+                .as_ref()
+                .zip(record.source.as_ref())
+                .is_some_and(|(program, module_source)| {
+                    !xiao_types::check(module_source, program)
+                        .concurrency_calls()
+                        .is_empty()
+                });
+            (syntax_uses_concurrency || typecheck_uses_concurrency).then(|| name.clone())
+        })
+        .collect::<BTreeSet<_>>();
+
+    // 普通模块没有完整的跨模块函数签名环境。把并发风险沿导入图向导入方传播，
+    // 让函数重导出和中间模块传递也进入同一条结构化拒绝路径。
+    loop {
+        let newly_concurrent = project
+            .graph
+            .edges
+            .iter()
+            .filter(|(source, edges)| {
+                !concurrency_modules.contains(*source)
+                    && edges
+                        .iter()
+                        .any(|edge| concurrency_modules.contains(&edge.target))
+            })
+            .map(|(source, _)| source.clone())
+            .collect::<Vec<_>>();
+        if newly_concurrent.is_empty() {
+            break;
+        }
+        concurrency_modules.extend(newly_concurrent);
+    }
+
     let mut modules = Vec::new();
     for (name, record) in &project.modules {
-        // 普通项目模块此前只走空 TypeCheckResult，以保持摘要边界；22D 需要
-        // 至少做一次并发调用预检，否则模块体的 runtime_create/spawn 会在 LLVM
-        // 侧退回普通动态调用。预检结果只登记模块级标记，普通模块 lowering
-        // 仍保持既有摘要语义。
-        let module_syntax_concurrency = record
-            .program
-            .as_ref()
-            .zip(record.source.as_ref())
-            .is_some_and(|(program, module_source)| {
-                syntax_uses_concurrency_import(module_source, &program.statements)
-            });
-        let module_checked_types = record
-            .program
-            .as_ref()
-            .zip(record.source.as_ref())
-            .map(|(program, module_source)| xiao_types::check(module_source, program));
-        let has_concurrency = module_syntax_concurrency
-            || module_checked_types
-                .as_ref()
-                .is_some_and(|types| !types.concurrency_calls().is_empty());
+        let has_concurrency = concurrency_modules.contains(name);
         let body = record
             .program
             .as_ref()

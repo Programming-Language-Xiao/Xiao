@@ -732,6 +732,83 @@ fn length_outputs_are_zeroed_on_invalid_handle() {
 }
 
 #[test]
+/// 旧 C ABI 输出槽只接受已初始化值；成功替换释放旧值，失败保留原值。
+fn legacy_output_slots_replace_owned_values_and_preserve_on_failure() {
+    let values = [XiaoValue::int(17)];
+    let mut array = std::ptr::null_mut();
+    assert_eq!(
+        xiao_runtime_array_new(values.as_ptr(), values.len(), &mut array),
+        XiaoAbiStatus::Ok.code()
+    );
+
+    let mut old_handle = std::ptr::null_mut();
+    assert_eq!(
+        xiao_runtime_string_new(bytes("old-handle"), &mut old_handle),
+        0
+    );
+    let old_handle_weak = xiao_runtime_weak(old_handle);
+    assert_eq!(
+        xiao_runtime_string_new(bytes("new-handle"), &mut old_handle),
+        0
+    );
+    assert!(xiao_runtime_weak_upgrade(old_handle_weak).is_null());
+    xiao_runtime_weak_release(old_handle_weak);
+    xiao_runtime_release(old_handle);
+
+    let mut old_value_handle = std::ptr::null_mut();
+    assert_eq!(
+        xiao_runtime_string_new(bytes("old-value"), &mut old_value_handle),
+        0
+    );
+    let old_value_weak = xiao_runtime_weak(old_value_handle);
+    let mut output = xiao_runtime_value_str(old_value_handle);
+    xiao_runtime_release(old_value_handle);
+    assert_eq!(
+        xiao_runtime_array_get(array, 0, &mut output),
+        XiaoAbiStatus::Ok.code()
+    );
+    assert_eq!(output.tag, XiaoValueTag::Int);
+    assert!(xiao_runtime_weak_upgrade(old_value_weak).is_null());
+    xiao_runtime_weak_release(old_value_weak);
+    xiao_runtime_value_release(&mut output);
+
+    let mut preserved_handle = std::ptr::null_mut();
+    assert_eq!(
+        xiao_runtime_string_new(bytes("preserve-on-error"), &mut preserved_handle),
+        0
+    );
+    let preserved_weak = xiao_runtime_weak(preserved_handle);
+    let mut preserved = xiao_runtime_value_str(preserved_handle);
+    xiao_runtime_release(preserved_handle);
+    assert_eq!(
+        xiao_runtime_array_get(array, usize::MAX, &mut preserved),
+        XiaoAbiStatus::OutOfBounds.code()
+    );
+    assert_eq!(preserved.tag, XiaoValueTag::Str);
+    let upgraded = xiao_runtime_weak_upgrade(preserved_weak);
+    assert!(!upgraded.is_null());
+    xiao_runtime_release(upgraded);
+    xiao_runtime_value_release(&mut preserved);
+    assert!(xiao_runtime_weak_upgrade(preserved_weak).is_null());
+    xiao_runtime_weak_release(preserved_weak);
+    let mut array_value = xiao_runtime_value_array_owned(array);
+    xiao_runtime_value_release(&mut array_value);
+}
+
+#[test]
+/// 旧按值类型包装器对错误种类返回 None 哨兵，且不消费借入句柄。
+fn legacy_value_wrapper_rejects_wrong_handle_kind_with_none_sentinel() {
+    let mut string = std::ptr::null_mut();
+    assert_eq!(xiao_runtime_string_new(bytes("still-live"), &mut string), 0);
+    let wrong_kind = xiao_runtime_value_array(string);
+    assert_eq!(wrong_kind.tag, XiaoValueTag::None);
+    let mut valid_kind = xiao_runtime_value_str(string);
+    assert_eq!(valid_kind.tag, XiaoValueTag::Str);
+    xiao_runtime_value_release(&mut valid_kind);
+    xiao_runtime_release(string);
+}
+
+#[test]
 /// 错误构造入口必须保留机器字段和源码位置，并返回拥有的错误值。
 fn error_value_constructor_preserves_identity() {
     xiao_runtime_error_clear();

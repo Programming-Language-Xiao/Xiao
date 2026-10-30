@@ -569,53 +569,63 @@ fn invoke_entry(
     arguments: Vec<NativeRawValue>,
     input_runtime_id: u64,
     output_runtime_id: u64,
+    locale: String,
 ) -> NativeEntryOutcome {
-    let mut values = Vec::with_capacity(arguments.len());
-    for argument in arguments {
-        match value_from_raw(argument, input_runtime_id) {
-            Ok(value) => values.push(value),
-            Err(_) => {
-                for value in values.iter_mut().rev() {
-                    crate::abi::xiao_runtime_value_release(value);
+    // Pool worker 会复用线程；每个 trampoline 都拥有独立的错误/checkpoint 生命周期。
+    crate::abi::xiao_runtime_error_checkpoint_reset();
+    crate::abi::xiao_runtime_error_clear();
+    crate::abi::set_current_locale(locale);
+    let outcome = (|| {
+        let mut values = Vec::with_capacity(arguments.len());
+        for argument in arguments {
+            match value_from_raw(argument, input_runtime_id) {
+                Ok(value) => values.push(value),
+                Err(_) => {
+                    for value in values.iter_mut().rev() {
+                        crate::abi::xiao_runtime_value_release(value);
+                    }
+                    return take_native_error_packet().map_or(
+                        NativeEntryOutcome::RuntimeFailure(RuntimeExecError::JoinFailed),
+                        NativeEntryOutcome::Error,
+                    );
                 }
-                return take_native_error_packet().map_or(
-                    NativeEntryOutcome::RuntimeFailure(RuntimeExecError::JoinFailed),
-                    NativeEntryOutcome::Error,
-                );
             }
         }
-    }
-    let mut output = XiaoValue::none();
-    // SAFETY: `entry` 来自 LLVM 产物登记的 trampoline；参数和输出槽在本次调用期间有效。
-    let status = unsafe {
-        entry(
-            context as *mut c_void,
-            values.as_ptr(),
-            values.len(),
-            &mut output,
-        )
-    };
-    for value in values.iter_mut().rev() {
-        crate::abi::xiao_runtime_value_release(value);
-    }
-    if status != XiaoAbiStatus::Ok.code() {
+        let mut output = XiaoValue::none();
+        // SAFETY: `entry` 来自 LLVM 产物登记的 trampoline；参数和输出槽在本次调用期间有效。
+        let status = unsafe {
+            entry(
+                context as *mut c_void,
+                values.as_ptr(),
+                values.len(),
+                &mut output,
+            )
+        };
+        for value in values.iter_mut().rev() {
+            crate::abi::xiao_runtime_value_release(value);
+        }
+        if status != XiaoAbiStatus::Ok.code() {
+            crate::abi::xiao_runtime_value_release(&mut output);
+            return take_native_error_packet().map_or(
+                NativeEntryOutcome::RuntimeFailure(RuntimeExecError::JoinFailed),
+                NativeEntryOutcome::Error,
+            );
+        }
+        let raw = raw_from_value(&output, output_runtime_id);
         crate::abi::xiao_runtime_value_release(&mut output);
-        return take_native_error_packet().map_or(
-            NativeEntryOutcome::RuntimeFailure(RuntimeExecError::JoinFailed),
-            NativeEntryOutcome::Error,
-        );
-    }
-    let raw = raw_from_value(&output, output_runtime_id);
-    crate::abi::xiao_runtime_value_release(&mut output);
-    match raw {
-        Ok(value) => NativeEntryOutcome::Value(value),
-        // VM 的 spawn 通过 `entry_result.encode(return_runtime_id)` 验证子函数
-        // 返回值的边界资格；此处即使编码失败也必须把结构化错误回传给 join/wait。
-        Err(_) => take_native_error_packet().map_or_else(
-            || NativeEntryOutcome::RuntimeFailure(RuntimeExecError::JoinFailed),
-            NativeEntryOutcome::Error,
-        ),
-    }
+        match raw {
+            Ok(value) => NativeEntryOutcome::Value(value),
+            // VM 的 spawn 通过 `entry_result.encode(return_runtime_id)` 验证子函数
+            // 返回值的边界资格；此处即使编码失败也必须把结构化错误回传给 join/wait。
+            Err(_) => take_native_error_packet().map_or_else(
+                || NativeEntryOutcome::RuntimeFailure(RuntimeExecError::JoinFailed),
+                NativeEntryOutcome::Error,
+            ),
+        }
+    })();
+    crate::abi::xiao_runtime_error_clear();
+    crate::abi::xiao_runtime_error_checkpoint_reset();
+    outcome
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
@@ -734,6 +744,11 @@ fn set_concurrency_error(code: &str, message: impl Into<String>) -> i32 {
 fn map_exec_error(error: RuntimeExecError) -> i32 {
     super::set_pending_runtime_error(crate::execution_error(error));
     XiaoAbiStatus::RuntimeError.code()
+}
+
+/// 将入口 close drain 的首个失败合并到当前错误槽并返回稳定 ABI 状态。
+fn native_finish_status(first_error: Option<RuntimeExecError>) -> i32 {
+    first_error.map_or_else(|| XiaoAbiStatus::Ok.code(), map_exec_error)
 }
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
@@ -1007,10 +1022,19 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             let output_runtime_id = RuntimeHandle::current().id();
             let values = native_arguments(&arguments[1..], input_runtime_id)?;
             let context = context as usize;
+            let locale = super::current_locale();
+            let entry_locale = locale.clone();
             let handle = RuntimeHandle::current()
                 .in_context(|| {
                     crate::scheduler::spawn_cooperative(&runtime, move |_| {
-                        invoke_entry(entry, context, values, input_runtime_id, output_runtime_id)
+                        invoke_entry(
+                            entry,
+                            context,
+                            values,
+                            input_runtime_id,
+                            output_runtime_id,
+                            entry_locale,
+                        )
                     })
                 })
                 .map_err(map_exec_error)?
@@ -1021,7 +1045,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                     handle: Mutex::new(Some(handle)),
                     cancellation,
                     runtime,
-                    locale: super::current_locale(),
+                    locale,
                 }),
             ))))
         }
@@ -1110,6 +1134,8 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
             let output_runtime_id = RuntimeHandle::current().id();
             let values = native_arguments(&arguments[1..], input_runtime_id)?;
             let context = context as usize;
+            let locale = super::current_locale();
+            let entry_locale = locale.clone();
             let submitting_cancellation = crate::current_cancellation_token();
             let task_cancellation = RuntimeCancellation::default();
             let task_cancellation_hook: Arc<dyn Fn() + Send + Sync> = {
@@ -1133,6 +1159,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                                 values,
                                 input_runtime_id,
                                 output_runtime_id,
+                                entry_locale,
                             )
                         },
                     )
@@ -1145,7 +1172,7 @@ pub extern "C" fn xiao_runtime_concurrency_call_with_entry(
                     handle: Mutex::new(Some(handle)),
                     cancellation,
                     runtime,
-                    locale: super::current_locale(),
+                    locale,
                 }),
             ))))
         }
@@ -1287,7 +1314,7 @@ pub extern "C" fn xiao_runtime_concurrency_finish() -> i32 {
         }
     }
     NATIVE_ENTRY_ACTIVE.store(false, Ordering::Release);
-    first_error.map_or_else(|| XiaoAbiStatus::Ok.code(), map_exec_error)
+    native_finish_status(first_error)
 }
 
 /// 开启一个真实 native 入口的 Runtime 所有权收集窗口。
@@ -1743,6 +1770,66 @@ mod tests {
     }
 
     #[test]
+    /// 复用的 pool worker 在每个 trampoline 间隔离错误和 finally checkpoint。
+    fn native_trampoline_resets_worker_checkpoint_and_inherits_locale() {
+        unsafe extern "C" fn entry(
+            _context: *mut c_void,
+            _arguments: *const XiaoValue,
+            _argument_count: usize,
+            out: *mut XiaoValue,
+        ) -> i32 {
+            if out.is_null() {
+                return XiaoAbiStatus::Null.code();
+            }
+            unsafe { *out = XiaoValue::int(9) };
+            XiaoAbiStatus::Ok.code()
+        }
+
+        let runtime = RuntimeHandle::current();
+        let pool = TaskPool::create(runtime.clone(), 1).expect("单 worker 测试池");
+        pool.submit(|_| {
+            crate::abi::set_pending_runtime_error(crate::RuntimeError::new(
+                crate::XiaoErrorKind::Other,
+                "stale-worker-error",
+                "runtime.user_error",
+                "stale",
+            ));
+            crate::abi::xiao_runtime_error_checkpoint_begin();
+        })
+        .expect("写入 worker 遗留状态")
+        .wait()
+        .expect("脏状态任务完成");
+
+        let runtime_id = runtime.id();
+        let (is_value, locale, error_is_clear, checkpoints_are_clear) = pool
+            .submit(move |_| {
+                let outcome = invoke_entry(
+                    entry,
+                    0,
+                    Vec::new(),
+                    runtime_id,
+                    runtime_id,
+                    "en-US".to_owned(),
+                );
+                (
+                    matches!(outcome, NativeEntryOutcome::Value(_)),
+                    super::super::current_locale(),
+                    super::super::PENDING_ERROR.with(|pending| pending.borrow().is_none()),
+                    super::super::PENDING_ERROR_CHECKPOINTS
+                        .with(|checkpoints| checkpoints.borrow().is_empty()),
+                )
+            })
+            .expect("提交清理 worker 状态的 trampoline")
+            .wait()
+            .expect("trampoline 任务完成");
+        assert!(is_value);
+        assert_eq!(locale, "en-US");
+        assert!(error_is_clear);
+        assert!(checkpoints_are_clear);
+        pool.shutdown().expect("关闭单 worker 测试池");
+    }
+
+    #[test]
     /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
     fn unsupported_operation_is_explicitly_rejected() {
         let mut output = XiaoValue::none();
@@ -1762,6 +1849,31 @@ mod tests {
             take_native_error_packet(),
             Some(NativeErrorPacket::Recoverable(error))
                 if error.code() == crate::INVALID_VALUE_CODE
+        ));
+    }
+
+    #[test]
+    /// native close drain 失败不能替换入口已经存在的主错误。
+    fn native_finish_close_error_is_suppressed_under_primary() {
+        crate::abi::xiao_runtime_error_clear();
+        crate::abi::set_pending_runtime_error(crate::RuntimeError::new(
+            crate::XiaoErrorKind::Other,
+            "entry-primary",
+            "runtime.user_error",
+            "entry failed",
+        ));
+        assert_eq!(
+            native_finish_status(Some(RuntimeExecError::RuntimeClosed)),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        assert_eq!(crate::abi::xiao_runtime_error_exit_code(), 3);
+        assert!(matches!(
+            take_native_error_packet(),
+            Some(NativeErrorPacket::Recoverable(error))
+                if error.code() == "entry-primary"
+                    && error.suppressed().iter().any(|cleanup| {
+                        cleanup.code() == crate::CONCURRENCY_RUNTIME_CLOSED_CODE
+                    })
         ));
     }
 
