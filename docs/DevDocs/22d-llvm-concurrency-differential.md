@@ -271,7 +271,8 @@ VM（未优化/优化字节码）和 NativeBuild，比较：
 6. 22C 的 26 条 VM 回归、workspace gates 和既有平台门禁无退化；
 7. 不写 stdlib 函数体、不新增原生 artifact metadata、不修改冻结 API/ABI/诊断；22E 可以
    只消费稳定行为；
-8. 本地 workspace/clippy/fmt/docs/usedocs/layout 与远端 CI 证据齐全。
+8. 本地 workspace/clippy/fmt/docs/usedocs/layout 与远端 CI 证据齐全；
+9. §9.1 的 P3 待收口清单逐项关闭，或在 §九记录显式降级理由与 22E 承接方式。
 
 ## 七、风险与禁止
 
@@ -332,11 +333,31 @@ core/rust/crates/xiao-codegen-llvm/tests/                 原生夹具
 
 仍待完成的 22D 工作是 XCON 深度/大小/恶意 tag 原生负例、取消四位置、native/VM 原生栈帧和完整 detached 事件投影，以及三平台 CI 证据。native 入口已增加当前 Runtime close drain、Runtime-ID detached callback 完成屏障、创建时 locale 继承和 native finish 通道消费；并发句柄/guard 的 release trace 已有双端对象集合投影，但完整动作顺序仍需扩展。`llvm-as` 符号门禁已移至三平台 native job 显式精确运行；默认 workspace 测试不依赖 PATH 中碰巧存在 LLVM。上一轮审查列出的其他 C ABI 风险尚未全部消除：本轮已将并发句柄改为不复用整数 token 的 registry lookup、明确并发稳定入口的参数/输出槽契约，并拒绝跨线程 LockGuard；其他旧 C ABI 输出槽与包装边界仍需独立审阅。上述未完成项不改变 22A 冻结的 API、诊断编号、32B/16B 布局或 22E 产物边界。
 
-本轮 P3 审查继续登记两项边界：普通项目模块的预检只保证直接 `std.concurrent` 导入及可获得的类型事实，函数值或间接模块传递尚未保证专用的模块体并发拒绝；detached locale 差分仅覆盖根线程创建，子线程再次 spawn/detach 的语言上下文继承仍需补齐回归。`abi.rs` 的尺寸豁免及拆分移除计划继续保留。
+### 9.1 P3 待收口清单（并入 22D 收尾）
+
+2026-10-30 对 `cb9f832` 的审核确认 finally checkpoint P1 已关闭、没有新的 P1/P2。以下 P3
+不阻塞该提交，但必须在 22D 标记完成前逐项关闭，或在 §九写明显式降级理由和 22E 承接方式：
+
+1. **pool worker 的 checkpoint 隔离**：入口 `checkpoint_reset` 只覆盖 native 入口；pool worker
+   线程复用，宿主侧异常中止的任务可能在 TLS 留下 stale checkpoint，影响同一 worker 的后续
+   任务。需要按任务 begin/reset，并补“脏 checkpoint 后下一任务仍正确”的回归。
+2. **嵌套 detached locale**：detached 的语言上下文只按创建线程捕获；子线程再次 `spawn`/
+   `detach` 时可能退回默认 locale，需补嵌套创建的语言上下文差分。
+3. **间接模块的并发预检**：普通项目模块的预检只保证直接 `std.concurrent` 导入及可直接获得
+   的类型事实；经函数值或中间模块间接传递的并发用法尚未保证专用的模块体并发拒绝。
+4. **finish 错误路径的主错误优先级**：`xiao_runtime_concurrency_finish` 失败时，close 错误
+   是否会覆盖已存在的主错误尚无专门用例，需补主/次错误身份与退出码差分。
+5. **旧 C ABI 输出槽与包装边界**：并发句柄已改为不复用整数 token 的 registry lookup，但旧的
+   非并发输出槽/包装边界仍需一次独立审阅。
+6. **`abi.rs` 体量**：当前 2535 行、超过 2500 行上限，属已审核的硬耦合豁免；按既有移除计划
+   拆分，不在功能批次里顺手改动。
+
+每项关闭时在 §九实施记录追加一行证据（测试名或 CI 运行号）；未关闭项在 §六退出条件复核时
+逐条说明。
 
 ## 十、状态
 
 - 阶段代号：22D；
-- 当前状态：**实施中**；入口证据来自 22C-FIX.1 的 `0caebc9`，D-2/D-5 已确认，第一批 LLVM 并发 lowering、Runtime C ABI 和 trampoline 已落地；根/局部导入别名 P1、Runtime 031 边界和真实项目模块结构化拒绝已修复并覆盖；finally 主/次错误、detached locale/收尾、并发释放 projection 已加入差分回归，XCON 负例、取消四位置、原生栈帧与三平台远端证据仍未收口；
+- 当前状态：**实施中**；入口证据来自 22C-FIX.1 的 `0caebc9`，D-2/D-5 已确认，第一批 LLVM 并发 lowering、Runtime C ABI 和 trampoline 已落地；根/局部导入别名 P1、Runtime 031 边界和真实项目模块结构化拒绝已修复并覆盖；finally 主/次错误、detached locale/收尾、并发释放 projection 已加入差分回归，XCON 负例、取消四位置、原生栈帧与三平台远端证据仍未收口；P3 待收口清单见 §9.1，并作为 §六 第 9 条退出条件复核；
 - 当前工作批：22D；不接 22E 标准库/原生产物元数据；
 - 22D 完成后，22E 只消费本批稳定的并发行为和已有 ABI，不反向修改 22D 的跨平台结论。
