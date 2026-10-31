@@ -4,8 +4,9 @@
 
 `20o_b1_probe.rs` 只做官方库 B0 探测：读取 `tests/fixtures/docs/` 的七份完整源码，
 VM/native 各自逐字核对黄金输出，检查 planned 教程与执行文件一致；另存 CSV 嵌套签名和
-错误字段读取的真实边界。原生测试由现有 workspace ignored 作业发现，本批不改 CI。
-探测不注册官方模块、不改 ABI；范围、计数与逐平台证据见
+错误字段读取的真实边界。D-26 后默认与三平台原生各有独立 --exact 执行点，校验恰好
+一项通过，批量命令排除对应名字。探测不注册官方模块、不改 ABI；范围、计数与逐平台证据见
+[20O-B1](../../../../../docs/DevDocs/20o-b1-freeze-draft.md)，历史结果见
 [20O-B0](../../../../../docs/DevDocs/20o-b0-baseline-and-b1-draft.md)。
 
 `22e_release.rs` 直接读取权威并发 UseDocs 的五个示例，覆盖 17 个入口；验证三类产物

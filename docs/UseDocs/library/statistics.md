@@ -96,15 +96,20 @@ sum([])=0；min/max 的空数组报错。按数组顺序累加，中间值溢出
 
 ## 候选 API 参考
 
-**以下是供 B1 评审的签名草案，不是可调用接口。** 所有候选均不消费输入句柄，
-不改写输入数组；返回字符串或数组为新结果。最终签名、错误身份、上限须经确认。
+七项一起冻结已确认；下表是 [B1 逐项契约](../../DevDocs/20o-b1-freeze-draft.md#37-statistics三项) 的概览，
+细项已提交星崽询问，是否确认以该页 F 编号状态为准。所有参数必填，候选规则允许既有位置/命名调用；
+输入只读、不消费，失败不改调用方数组。**这些入口尚未实现，不能替换上面的 probe 示例调用。**
 
-| 候选签名 | 参数与返回 | 语义或待定边界 |
-| --- | --- | --- |
-| `sum([int] values) -> int` | 整数和 | 空数组为 0；溢出沿用已有错误 |
-| `min([int] values) -> int；max([int] values) -> int` | 最小/最大值 | 空数组报错，公开错误身份待冻结 |
+| 精确候选签名 | 边界提案 |
+| --- | --- |
+| `sum([int] values) -> int` | 空数组为 0；提案为从左到右累加，中途溢出立即失败 |
+| `min([int] values) -> int` | 空数组报错；比较不得用减法替代 |
+| `max([int] values) -> int` | 空数组报错；原数组不排序、不修改 |
 
 ## 错误与恢复
+
+B1 候选稳定 code、类别、触发条件与检查顺序统一见 [错误表](../../DevDocs/20o-b1-freeze-draft.md#六统一错误表f11逐码待审)，
+不在教程另立错误身份。下面保留的是**当前 B0 探测**的错误与边界，不能当作已交付产品契约。
 
 | 身份 | 触发条件 | 恢复方式 |
 | --- | --- | --- |
@@ -112,39 +117,51 @@ sum([])=0；min/max 的空数组报错。按数组顺序累加，中间值溢出
 | `B0_EMPTY_STATISTICS` | 本例的空数组探测错误，不是产品错误码 | 先确认输入非空 |
 
 `B0_*` 仅是夹具局部错误，不注册为标准库错误身份。示例中的 `caught-*` 是恢复分支标签，
-不能作为稳定错误码证据。当前 `catch` 绑定的 `error.code` 成员读取尚不可用；
-专用探测从驱动器机器结果读取真实 code，不匹配本地化消息。
+不能作为稳定错误码证据。已确认采用自由函数 `error_code`，不开放错误成员访问；
+其[精确位置/签名/错误表](../../DevDocs/20o-b1-freeze-draft.md#二error_code-的名称位置与签名)仍是待审前置。
+当前示例从驱动器机器结果核对 code，未调用尚未实现的 error_code。
 
 ## 资源、性能与安全边界
 
-归约可一次遍历，额外状态为常量大小。产品数组元素上限、输入别名与大数组性能仍需 B1 验证。
+**以下为 B1-F9/F10 的限额与验收提案，当前短探测没有实现或证明这些限制。**
 
-探测每次执行限制为十秒；这是测试保护，不是产品 API 超时承诺。
-本批没有新增能力需求，示例打印沿用 `stdout`；生产限额须在 B1 冻结表中逐项补齐。
+每次最多 65,536 项，返回一个 int。算法线性，归约状态为常量；Runtime 的迭代快照若复制数组，仍须计入实际 O(n) 存储和内存预算。
+
+精确计量、编码膨胀和超限顺序见 [资源限额](../../DevDocs/20o-b1-freeze-draft.md#四资源限额f9数字提案未实测)。
+文本/编码目标为顺序扫描加至多 O(n log n) 的均衡拼接，禁止隐藏的二次复制/扫描；
+翻倍比≤3、最大输入 VM≤10s/原生≤2s、增量内存≤64 MiB 均是待实测目标，
+计时排除启动/编译/打印，具体方法见 [性能预算](../../DevDocs/20o-b1-freeze-draft.md#五性能预算与测量协议f10)。
+
+本例的十秒看门狗只保护测试；不代表库 API 承诺运行时超时。纯计算不新增宿主能力，打印沿用 stdout。
 
 ## 示例如何进入 CI
 
-`20o_b1_probe` 默认测试运行全部七份示例，并校验本页的完整代码与源码一致。
-同名测试目标中的受控原生测试由已有三平台维护回归的 workspace ignored 命令发现；
-未取得该提交的远端运行号前，不声明三平台验证完成。
+完整示例仍在 `tests/fixtures/docs/statistics/probe.xiao`，本页完整代码与文件逐字核对。
+维护回归默认作业独立精确执行 VM 探测，Windows/Linux/macOS 原生作业独立精确执行原生探测；
+对应批量命令排除这两个名字，计数须恰好 1 passed、0 failed、0 ignored，命令失败不得吞掉。
+文档一致性与错误/语言边界仍由默认 workspace 的其余测试执行。
 
 ```powershell
-cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe
+cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- b1_capabilities_have_vm_golden_outputs --exact --nocapture
+# 配置受控工具链后执行：
+cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- --ignored b1_capabilities_match_native_golden_outputs --exact --nocapture
 ```
 
-VM 与原生各自逐字对比独立黄金 stdout；成功退出码为 0，原生 stderr 必须为空。
-受控原生的环境配置、精确执行和计数命令见 [B0 记录](../../DevDocs/20o-b0-baseline-and-b1-draft.md)。
+仅修改本目录教程也会触发维护回归。源码/输出逐字比较和退出码要求不变；
+接线与实际取得的证据见 [B1 CI 记录](../../DevDocs/20o-b1-freeze-draft.md#八本轮-ci-接线与验证)。
+没有对应提交的三平台证据时仍为 planned。
 
 ## 兼容与废弃
 
-B1 草案计划保持 ABI 1.17 与接口版本 1。探测函数不属于公开 API，不进入官方加载器、
+七个库拟作接口版本 1 的兼容扩展，当前 ABI 仍为 1.17；error_code 的后端通路尚未冻结，
+不能由纯 Xiao 库的计划推断该前置无需 ABI 变化。探测函数不属于公开 API，不进入官方加载器、
 普通依赖求解或归档身份。只有产品实现、完整教程、示例、测试与证据均通过，才可升级
 为 `verified`；不能仅因本页探测成功就宣称模块完成。
 
 ## 故障排查与下一步
 
-D-5 是范围裁定，正式签名、所有权证据和空数组错误身份仍须 B1 冻结。
+D-5 的范围/空数组已确认；F8 的顺序累加细项按实际答复登记。浮点与均值/中位数/方差/标准差仍留 B5。
 
 若无法找到完整示例，先确认位于仓库根；原生测试缺少 LLVM/Runtime 配置时应明确失败，
 不能把环境跳过当成功。继续阅读 [整数计算](math.md)、
-[官方库索引](README.md) 或 [B1 冻结草案](../../DevDocs/20o-b0-baseline-and-b1-draft.md)。
+[官方库索引](README.md) 或 [B1 冻结草案](../../DevDocs/20o-b1-freeze-draft.md)。

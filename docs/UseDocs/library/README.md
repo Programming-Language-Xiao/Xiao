@@ -18,7 +18,9 @@
 - [fmt：文本宽度与整数格式](fmt.md)
 - [statistics：整数统计](statistics.md)
 
-实施边界、逐平台结果及尚待确认的具体契约见 [B0 探测与冻结草案](../../DevDocs/20o-b0-baseline-and-b1-draft.md)。
+基线与历史探测见 [B0](../../DevDocs/20o-b0-baseline-and-b1-draft.md)；
+精确签名、错误表、资源/性能预算和两个 CI 精确执行点见 [B1 冻结草案](../../DevDocs/20o-b1-freeze-draft.md)。
+其中 CSV 记录子集、七项一起冻结、自由函数 error_code 方向已确认；细项按 B1-F 的答复状态评审。
 
 ## 首批模块
 

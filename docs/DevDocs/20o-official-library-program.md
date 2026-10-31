@@ -11,6 +11,8 @@
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见
 > [20O-B0](20o-b0-baseline-and-b1-draft.md)。
+> B1 的精确候选契约集中于 [20O-B1 冻结草案](20o-b1-freeze-draft.md)：20 个库入口、error_code
+> 前置、错误表、资源/性能预算及维护回归精确执行点。细项待星崽审阅，产品实现仍未开始。
 
 ## 一、工程目标与边界
 
@@ -200,7 +202,7 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | 批次 | 内容 | 前置 | 交付证据 |
 | --- | --- | --- | --- |
 | B0 | 总纲/目录复核、D-1～D-22 逐条裁定、基线门禁、B1 探测/教程与冻结草案 | 无 | [B0 记录](20o-b0-baseline-and-b1-draft.md)；方向已确认，API 草案待审 |
-| B1 | 纯 Xiao 快速批：`math` 整数、`base64`/`hex`、`url`、`csv`、`fmt`、`statistics`（整数子集）；**首批范围已确认（2026-11-01）** | 无 | VM/native 黄金、移除、docs/registry |
+| B1 | 七项一起冻结：math、hex、base64、url、csv 记录子集、fmt、statistics 整数子集 | error_code 共同前置、精确契约确认与三平台探测 | [精确草案](20o-b1-freeze-draft.md)；实现后补移除/归档、教程与 registry |
 | B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | intrinsic/ABI 四处 + 版本拒绝 + 三平台 |
 | B3 | 简单宿主批：`time`（UTC + sleep）、`args`/`cli`、`fs` 扩展、`env`、`log` 时间戳 | B0；ABI | 能力/错误/取消/三平台 |
 | B4 | JSON/TOML 值模型 + `json`/`toml` 解析器 | B0；语言冻结 | 类型/IR/两后端/生命周期 |
@@ -234,13 +236,14 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | D-10 argv | 数组不含程序名，程序名另取；保留空参数，Windows 不二次拆引号；非法 Unicode 报错，不有损替换 | 精确入口/错误与平台测试 |
 | D-11 regex/compression | 成熟线性时间引擎；gzip/zlib 整块；输入/编译/输出/解压上限必备，流式后置 | B6 的依赖与具体限额 |
 | D-12 安全/HTTP/数据库 | 成熟依赖、TLS 默认校验、参数绑定、强制限额/超时、未经安全审阅不发布 | **明确延期**：算法、能力位、HTTP/1.1 子集、原生扩展契约分别在 B7/B8/B9 再逐项确认 |
-| D-23 CSV 形状 | 先交付 `parse_record`/`format_record` 记录子集；全文 CSV 和 `[[str]]` 后置 | 记录子集的错误/限额/CRLF/BOM 边界 |
-| D-24 错误访问 | 先加自由函数 `error_code`（`error_cause` 按需），不开放 `error.code` 成员访问 | 精确名称、位置、签名、错误表 |
-| D-25 B1 冻结 | 七项一起冻结，CSV 用记录子集，错误访问作为共同前置 | 各模块签名、限额、性能预算 |
-| D-26 CI 证据 | 默认和原生探测都加维护回归精确执行点，断言恰好 1 passed | 三平台运行号与日志 |
+| D-23 CSV 形状 | 先交付 `parse_record`/`format_record` 记录子集；全文 CSV 和 `[[str]]` 后置 | [B1 §3.5](20o-b1-freeze-draft.md#35-csv两项已确认记录子集) 的严格行尾/BOM/空值提案待审 |
+| D-24 错误访问 | 先加自由函数 `error_code`（`error_cause` 按需），不开放 `error.code` 成员访问 | [B1 §二](20o-b1-freeze-draft.md#二error_code-的名称位置与签名) 写出位置/签名/错误表及现有 ABI 缺口，尚未实现 |
+| D-25 B1 冻结 | 七项一起冻结，CSV 用记录子集，错误访问作为共同前置 | [B1 草案](20o-b1-freeze-draft.md) 的 20 项签名、逐码错误、数值限额与性能预算待审 |
+| D-26 CI 证据 | 默认和原生探测都加维护回归精确执行点，断言恰好 1 passed | 已接默认与三平台原生精确入口；实际运行号按 [B1 §八](20o-b1-freeze-draft.md#八本轮-ci-接线与验证) 登记 |
 
 D-13～D-22 的本次答复见 [20P §六](20p-day1-library-architecture.md#六架构决策)。
-本轮只做 B0；API 冻结草案与真实探测边界见 [20O-B0](20o-b0-baseline-and-b1-draft.md)。
+B0 的探测边界见 [20O-B0](20o-b0-baseline-and-b1-draft.md)；当前只推进
+[B1 精确草案与 CI](20o-b1-freeze-draft.md)，仍不写产品函数或新增 intrinsic/ABI。
 
 ## 六、新 Agent 交接（无上下文必读）
 
@@ -256,6 +259,9 @@ D-13～D-22 的本次答复见 [20P §六](20p-day1-library-architecture.md#六�
 8. [02. 类型系统](02-type-system.md) 数值章节、[03. 容器](03-collections.md)、
    [22. 并发](22-concurrency-execution-and-shared-handles.md)；
 9. `docs/DevDocs/README.md`、`docs/module-registry.json`、`docs/UseDocs/library/`。
+
+接 B1 时先复核 [B0 已确认决定](20o-b0-baseline-and-b1-draft.md#42-b1-开工前的裁定2026-11-01)，
+再读 [B1 精确草案](20o-b1-freeze-draft.md)。未取得细项确认与三平台证据前，教程保持 planned。
 
 ### 6.2 仓库与门禁（开工时复核）
 
@@ -305,7 +311,7 @@ D-13～D-22 的本次答复见 [20P §六](20p-day1-library-architecture.md#六�
 ### 6.5 遇到模糊点先问星崽
 
 以下事项的未确认细项或拟变更的已确认结论必须先问，不得自行决定；已确认方向不重复询问：
-D-1～D-22；新增 intrinsic/ABI/能力位；引入新的第三方
+D-1～D-26 及 B1-F 细项；新增 intrinsic/ABI/能力位；引入新的第三方
 运行库或安全算法；扩大公开 API；改变已有接口签名/错误身份；修改 release/CI 矩阵；
 数据库驱动选择、连接池/事务/结果集语义；教程示例执行方式和文档状态升级。
 

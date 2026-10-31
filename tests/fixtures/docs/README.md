@@ -4,7 +4,9 @@
 
 当前七个模块目录中的 probe.xiao 是 B0 探测，不是官方库实现。每库 README 指向其 planned
 UseDocs；20o_b1_probe 测试同时检查教程代码与源码一致，并运行 VM/受控原生黄金比较。
-目录已接入现有 workspace 测试发现，不新增 CI 作业。逐平台结果及 B1 前置见
-[B0 交接](../../../docs/DevDocs/20o-b0-baseline-and-b1-draft.md)。
+维护回归默认与三平台原生均有独立 --exact 执行点，并拒绝零匹配/多匹配/忽略；
+对应批量命令跳过这些名字，其他文档/边界测试继续运行，不新增 CI 作业。
+逐平台结果及 B1 精确前置见 [B1 草案](../../../docs/DevDocs/20o-b1-freeze-draft.md)，
+历史探测见 [B0](../../../docs/DevDocs/20o-b0-baseline-and-b1-draft.md)。
 
 产品批次必须另提供真实导入已冻结接口的完整示例；本批探测不能替代产品移除或归档测试。

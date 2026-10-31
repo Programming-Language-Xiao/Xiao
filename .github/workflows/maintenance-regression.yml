@@ -8,6 +8,7 @@ on:
       - "tests/fuzz/**"
       - "tests/benchmarks/**"
       - "tests/fixtures/**"
+      - "docs/UseDocs/library/**"
       - "stdlib/**"
       - ".gitattributes"
   pull_request:
@@ -17,6 +18,7 @@ on:
       - "tests/fuzz/**"
       - "tests/benchmarks/**"
       - "tests/fixtures/**"
+      - "docs/UseDocs/library/**"
       - "stdlib/**"
       - ".gitattributes"
   workflow_dispatch:
@@ -46,7 +48,19 @@ jobs:
           workspaces: core/rust -> core/rust/target
 
       - name: Run default workspace tests
-        run: cargo test --manifest-path core/rust/Cargo.toml --workspace
+        run: cargo test --manifest-path core/rust/Cargo.toml --workspace -- --skip b1_capabilities_have_vm_golden_outputs
+
+      - name: Run B1 VM probe exactly once
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! output="$(cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- b1_capabilities_have_vm_golden_outputs --exact --nocapture 2>&1)"; then
+            printf '%s\n' "$output"
+            exit 1
+          fi
+          printf '%s\n' "$output"
+          test "$(printf '%s\n' "$output" | grep -c '^test result:')" -eq 1
+          printf '%s\n' "$output" | grep -Eq '^test result: ok\. 1 passed; 0 failed; 0 ignored;'
 
       - name: Run benchmark workspace tests and driver self-test
         run: |
@@ -194,6 +208,7 @@ jobs:
             --skip public_native_concurrency_metadata_and_release_matrix `
             --skip text_path_candidates_match_native_golden_outputs `
             --skip text_path_interfaces_match_native_golden_outputs `
+            --skip b1_capabilities_match_native_golden_outputs `
             --skip native_concurrency_vm_native_differential_matches_from_same_ir
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
@@ -222,6 +237,14 @@ jobs:
             if (($textPathOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {
               throw "20M native test must execute exactly once: $testName"
             }
+          }
+          $b1Output = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- --ignored b1_capabilities_match_native_golden_outputs --exact --nocapture 2>&1
+          $b1Exit = $LASTEXITCODE
+          $b1Output | ForEach-Object { Write-Output $_ }
+          if ($b1Exit -ne 0) { exit $b1Exit }
+          $b1Summaries = @($b1Output | Where-Object { $_ -match '^test result:' })
+          if ($b1Summaries.Count -ne 1 -or $b1Summaries[0] -notmatch '^test result: ok\. 1 passed; 0 failed; 0 ignored;') {
+            throw 'B1 native probe must pass exactly one case without ignoring it'
           }
           exit $LASTEXITCODE
 
@@ -258,6 +281,7 @@ jobs:
             --skip public_native_concurrency_metadata_and_release_matrix \
             --skip text_path_candidates_match_native_golden_outputs \
             --skip text_path_interfaces_match_native_golden_outputs \
+            --skip b1_capabilities_match_native_golden_outputs \
             --skip native_concurrency_vm_native_differential_matches_from_same_ir
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
           run_exact_native_test() {
@@ -269,10 +293,11 @@ jobs:
               return 1
             fi
             printf '%s\n' "$output"
-            grep -Fq 'test result: ok. 1 passed; 0 failed;' <<< "$output" || {
+            if ! test "$(printf '%s\n' "$output" | grep -c '^test result:')" -eq 1 ||
+               ! printf '%s\n' "$output" | grep -Eq '^test result: ok\. 1 passed; 0 failed; 0 ignored;'; then
               printf 'Native test did not execute exactly one case: %s\n' "$test_name" >&2
               return 1
-            }
+            fi
           }
           run_exact_native_test native_concurrency_llvm_assembly_fixtures
           run_exact_native_test native_concurrency_shared_c_layout_probe
@@ -280,6 +305,7 @@ jobs:
           run_exact_native_test public_native_concurrency_metadata_and_release_matrix 22e_release
           run_exact_native_test text_path_candidates_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test text_path_interfaces_match_native_golden_outputs 20m_text_and_path
+          run_exact_native_test b1_capabilities_match_native_golden_outputs 20o_b1_probe
 
       - name: Build runtime and run macOS native gates
         if: runner.os == 'macOS'
@@ -316,6 +342,7 @@ jobs:
             --skip public_native_concurrency_metadata_and_release_matrix \
             --skip text_path_candidates_match_native_golden_outputs \
             --skip text_path_interfaces_match_native_golden_outputs \
+            --skip b1_capabilities_match_native_golden_outputs \
             --skip native_concurrency_vm_native_differential_matches_from_same_ir
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
           run_exact_native_test() {
@@ -327,10 +354,11 @@ jobs:
               return 1
             fi
             printf '%s\n' "$output"
-            grep -Fq 'test result: ok. 1 passed; 0 failed;' <<< "$output" || {
+            if ! test "$(printf '%s\n' "$output" | grep -c '^test result:')" -eq 1 ||
+               ! printf '%s\n' "$output" | grep -Eq '^test result: ok\. 1 passed; 0 failed; 0 ignored;'; then
               printf 'Native test did not execute exactly one case: %s\n' "$test_name" >&2
               return 1
-            }
+            fi
           }
           run_exact_native_test native_concurrency_llvm_assembly_fixtures
           run_exact_native_test native_concurrency_shared_c_layout_probe
@@ -338,6 +366,7 @@ jobs:
           run_exact_native_test public_native_concurrency_metadata_and_release_matrix 22e_release
           run_exact_native_test text_path_candidates_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test text_path_interfaces_match_native_golden_outputs 20m_text_and_path
+          run_exact_native_test b1_capabilities_match_native_golden_outputs 20o_b1_probe
 
       - name: Run 20D and 20E resource, process and archive fixtures (Windows)
         if: runner.os == 'Windows'

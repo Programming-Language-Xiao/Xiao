@@ -241,7 +241,7 @@ fn native_output(executable: &Path) -> Output {
 }
 
 #[test]
-#[ignore = "需要显式 LLVM/MSVC 或平台链接器、Runtime staticlib；现有维护回归 ignored 作业执行"]
+#[ignore = "需要显式 LLVM/MSVC 或平台链接器、Runtime staticlib；维护回归三平台精确执行并校验一项通过"]
 /// 七项同源 IR 在 VM/native 分别匹配独立黄金值，原生退出零且 stderr 为空。
 fn b1_capabilities_match_native_golden_outputs() {
     let (target, toolchain) = native_toolchain();
