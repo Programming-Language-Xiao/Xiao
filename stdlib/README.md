@@ -25,9 +25,10 @@
 `stdlib.xiao-standard-library` 的 registry 条目是工具链骨架登记，维持 `draft`；它不适用
 `verified` 状态。可交付模块的状态只登记在 `stdlib.xiao-standard-library-first-modules`。
 
-20M 冻结探测的真实推送为 `d8a3d32`：维护回归
-[41226898352](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41226898352)
-三平台原生作业均通过，完整工作区门禁
-[41226898301](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41226898301)
-通过。本批产品接口正在验证，最终证据由 [20M](../docs/DevDocs/20m-text-and-path-expansion.md)
-独立核销；19 发布收口及 11/22 的登记差异仍归各自文档。
+20M 产品的真实推送为 `04cd163`：维护回归
+[41229582341](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41229582341)
+三平台原生作业均通过（各 9/9 候选、8/8 产品场景），完整工作区门禁
+[41229582491](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41229582491)
+通过。冻结前的独立探测证据、逐作业链接和退出对账见
+[20M](../docs/DevDocs/20m-text-and-path-expansion.md)。本批已关闭；19 发布收口及
+11/22 的登记差异仍归各自文档。

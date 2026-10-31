@@ -6,9 +6,9 @@
 > 不新增 intrinsic、不改 Runtime ABI、不引入泛型约束或新容器参数，也不碰
 > `std.concurrent` 的虚拟模块边界。
 >
-> 状态：**七项实现及本地验证完成，产品三平台验收待核销（2026-11-01）**。
-> 七项保留、两项组合剔除、路径逐格语义按 §9.3；冻结前的三平台原生探测及完整工作区
-> 门禁已全绿（§9.5）。基线为 22 阶段完成后的 `cff1499`；产品函数体在三平台探测通过后实施。
+> 状态：**已完成（2026-11-01）**。七项保留、两项组合剔除、路径逐格语义按 §9.3；
+> 冻结前的三平台探测（§9.5）与产品提交 `04cd163` 的三平台维护回归/完整工作区门禁
+> （§9.7）均全绿。基线为 22 阶段完成后的 `cff1499`；产品函数体在三平台探测通过后实施。
 > 19 发布收口、11C L4、11B I5 和 22E 的登记差异
 > 仍保持各自文档的未闭合状态，不被本批顺带宣称完成。
 
@@ -24,8 +24,8 @@
    已证明字符迭代和切片可用；
 4. [20J/20K/20L](20l-dict-methods-and-20k-closeout.md)：模块式 API、静态链接和标准库
    loader 的既有边界；
-5. `stdlib/` 当前已交付：`text`（7 个函数）、`path`（1 个函数）、`set`、`dict`、`os`，
-   以及虚拟模块 `std.concurrent`。
+5. 本批实施前 `stdlib/` 已交付：`text`（7 个函数）、`path`（1 个函数）、`set`、`dict`、
+   `os`，以及虚拟模块 `std.concurrent`；20M 后 `text` 为 11 项、`path` 为 4 项。
 
 ### 1.2 本批不改变
 
@@ -37,7 +37,7 @@
 | 平台 | `path` 只定义文本语义，不访问文件系统，不承诺 Windows 反斜杠/盘符语义 |
 | 范围 | 不改 `std.concurrent`、产品 ABI、19 发布矩阵或原生产物元数据 |
 
-### 1.3 当前缺口
+### 1.3 实施前缺口
 
 | 模块 | 当前接口 | 明显缺口 |
 | --- | --- | --- |
@@ -60,7 +60,7 @@
 
 - 不做 Unicode 大小写、全量 Unicode 空白、正规化或字节级索引；
 - 不做平台路径规范化、绝对路径判断、盘符或反斜杠兼容；
-- 不新增 `math`、`random`、`time`、`array` 或 `collections` 模块；理由见 §3.4；
+- 不新增 `math`、`random`、`time`、`array` 或 `collections` 模块；
 - 不做方法式 API 扩展、动态接收者或方法值；
 - 不修复 19/11/22 的发布欠账，也不宣称发布验收完成。
 
@@ -265,13 +265,14 @@ length(needle) <= length(text) and slice(text, length(text) - length(needle), le
 | `C:\tmp\file.txt` | `C:\tmp\file.txt` | `""` | `.txt` |
 | `目录/小😀.x` | `小😀.x` | `目录` | `.x` |
 
-### 9.4 后续验收状态
+### 9.4 实施步骤对账
 
 - 步骤 0/1 已完成：§9.2/§9.3 已确认，三平台原生探测及精确计数门禁通过（§9.5）。
 - 探测阶段的 fmt、定向 Clippy、docs、UseDocs 与 layout 检查通过。
 - 步骤 2–5 已有本地证据（§9.6）；源码、模块文档、UseDocs、README 和 registry 同步。
-- 产品三平台维护回归与完整 workspace gates 待最终实现提交取证；UseDocs 与对应 registry
-  暂标 draft，证据通过后恢复 verified。
+- 步骤 6 已完成：产品三平台维护回归与完整 workspace gates 全绿（§9.7）。
+- 步骤 7 已完成：本页、20C/20 路线索引、stdlib 状态与公开文档同步；UseDocs 与对应
+  registry 在产品证据通过后恢复 verified。
 - 19 发布收口、11C L4、11B I5 和 22E 登记差异保持原状态。
 
 ### 9.5 冻结生效的三平台证据
@@ -313,5 +314,36 @@ length(needle) <= length(text) and slice(text, length(text) - length(needle), le
   （`import stdlib.text as text`）和块作用域同名槽位遮蔽仍是既有 LLVM 边界；本批按原范围
   保留，不新增动态接收者或函数值能力。夹具的循环变量使用独立名称。
 
-三平台维护回归已为产品原生测试同样设置独立 `--exact` 运行及恰好一条通过校验；
-产品提交、运行号和逐作业证据在远端完成后写入 §9.7。
+三平台维护回归为产品原生测试同样设置独立 `--exact` 运行及恰好一条通过校验；
+产品提交、运行号和逐作业证据见 §9.7。
+
+### 9.7 产品提交与远端验收
+
+产品提交：`04cd16358988df3d943b01b0c2230f81e0b39912`。维护回归
+[41229582341](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41229582341)
+的 Windows/Linux/macOS 原生作业、默认 workspace、基准与自检、安全回归及产物大小回归
+全部通过。完整工作区门禁
+[41229582491](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41229582491)
+已通过。
+
+| 平台 | 原生作业 | 日志核对 |
+| --- | --- | --- |
+| Windows | [124620793499](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41229582341/job/124620793499) | 9/9 候选、8/8 产品场景、两个精确测试各 1 passed；黄金 stdout、退出码 0、空 stderr |
+| Linux | [124620793674](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41229582341/job/124620793674) | 同上 |
+| macOS | [124620793516](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41229582341/job/124620793516) | 同上 |
+
+原有 20C/20I/20L/20E/18B 回归、22D/22E 原生门禁均在同次维护回归通过。三平台原生
+作业日志已分别下载核对：各有九条候选与八条产品场景成功记录，两个精确测试分别恰好
+一条通过；不使用旧提交或仅文本包含关系代替证据。UseDocs 与对应 registry 恢复 verified。
+
+### 9.8 退出条件对账
+
+| §六条目 | 结论 | 依据 |
+| --- | --- | --- |
+| 1. 冻结与裁剪 | 满足 | §9.2/§9.3 已确认；§9.5 三平台探测使冻结生效；七项保留、两项组合剔除均有依据 |
+| 2. 实现、文档、验证与 CI | 满足 | 七项纯 Xiao 实现；§9.6 本地黄金输出、边界、逐接口移除和归档重放；§9.7 三平台与完整门禁全绿 |
+| 3. 模块、registry、UseDocs 状态一致 | 满足 | text 11 项、path 4 项；公开文档 18 行路径表与冻结表逐格一致；对应条目恢复 verified |
+| 4. 兼容扩展 | 满足 | 标准库接口版本 1，既有错误身份与 ABI 不变；无新 intrinsic、类型能力、模块或归档字段 |
+| 5. 发布与遗留归属 | 满足 | 19 发布收口、11C L4、11B I5 和 22E 登记差异继续按各自文档跟踪，本批不核销 |
+
+**20M 关闭**；本文 §9.6 登记的既有 LLVM 模块函数值/块级同名槽位边界继续保留。
