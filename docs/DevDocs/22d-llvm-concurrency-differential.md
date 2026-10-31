@@ -9,9 +9,8 @@
 > Windows/Linux/macOS 原生门禁、Linux workspace 默认测试及完整 workspace gates 全部通过。
 > 当前同 IR 差分为 12 个成功、16 个运行时错误和一个嵌套 detached 场景；C-1～C-11
 > 按规定验证层次关闭，九条退出条件与最终证据见 §9.3；§9.2 保留前一轮基线。
-> 并发 ABI 内部差分沿用 D-2/D-5 的标签 18、ABI 1.17 和不透明锁守卫方案；不写
-> `stdlib/concurrent.xiao` 函数体，不冻结原生并发产物元数据，不修改 32B 共享头、API、
-> Send/Sync 表或诊断编号。
+> D-2/D-5 沿用标签 18、ABI 1.17 和不透明锁守卫；`stdlib/concurrent.xiao`、原生元数据
+> 与发布兼容已由 22E 接续验收，不修改 32B 共享头、冻结 API、Send/Sync 表或诊断编号。
 
 ## 一、入口条件与当前证据
 

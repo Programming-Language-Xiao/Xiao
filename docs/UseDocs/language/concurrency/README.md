@@ -1,7 +1,7 @@
 ---
 id: language.concurrency
 title: 并发执行与共享句柄
-status: planned
+status: verified
 audience: learner
 module: stdlib.xiao-standard-library-concurrent
 stage: "22E"
@@ -15,8 +15,9 @@ related:
 
 # 并发执行与共享句柄
 
-> 本页登记首版 `std.concurrent` 公共接口。22E 的示例和产物校验正在三平台验收，
-> 完成前保持 `planned`；最新实现和验证范围见 [22E](../../../DevDocs/22e-standard-library-and-release.md)。
+> 本页的 17 个公开入口、五个示例及原生产物校验已通过三平台验收。代码 `57b5d24` 的
+> maintenance `41209554809` 与完整门禁 `41209554821` 成功，验证范围和实际链接见
+> [22E §9.4](../../../DevDocs/22e-standard-library-and-release.md#94-最终证据发布矩阵与退出条件)。
 
 ## 首版范围
 
@@ -221,6 +222,11 @@ join(thread)
 没有标准输出，报告 `X06-RUNTIME-027`，退出码为 3。关闭 Runtime 已等待线程完成，
 之后取消仍在回收时生效；027 不会进入 Xiao 的普通 `catch`。首次取消在 finally 内到达
 仍会投递；已经投递的取消不会再次打断同一执行单元的清理。
+
+首次取消从 finally 内 helper 传播时，当前 VM 报告会比 native 多保留一层 suppressed
+027；两者主错误均为 027、退出码均为 3。该差异已有独立精确回归并登记在
+[22E §9.1](../../../DevDocs/22e-standard-library-and-release.md#91-已确认的交付形态与-e-0)，
+读取主错误身份时不要把这条已知次生链差异当作额外业务错误。
 
 ## 验证范围与兼容
 

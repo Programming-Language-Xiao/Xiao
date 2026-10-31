@@ -5,9 +5,10 @@
 > required-feature 位表；22B/22C/22D 已完成类型、VM、LLVM 和差分。本批只开放公共文档、
 > 补齐产物元数据与发布矩阵，**不重新决定语言语义，不新增并发 API**。
 >
-> 状态：**实施中（2026-10-31）**。基线代码 `ab92df1`（22D-FIX.1）与证据补录 `ee48204`；
-> 22D 的 12/16/1 差分、三平台原生/C 布局和完整 gates 已通过。星崽已分别确认 D-1、D-3
-> 均采用甲方案：保留虚拟模块，原生产物内嵌只读自描述元数据，优先复用既有错误身份。
+> 状态：**已完成（2026-10-31）**。代码 `57b5d24` 的 maintenance `41209554809` 六个
+> 作业与完整 workspace gates `41209554821` 全部成功；三平台真实元数据/strip/verify、
+> 五个教程和 22D 12/16/1 差分通过，实际 job 与退出条件对账见 §9.4。D-1/D-3 均按
+> 星崽确认的甲方案交付：保留虚拟模块，内嵌只读自描述元数据，复用既有错误身份。
 
 ## 一、入口条件与冻结输入
 
@@ -23,7 +24,7 @@
 5. [22D-FIX.1. 并发差分矩阵收尾](22d-fix1-concurrency-differential-closure.md)：
    C-1～C-11 的验证层次与证据格式。
 
-### 1.2 当前事实（实施前核对）
+### 1.2 实施前基线（当前结果见 §9）
 
 | 面 | 当前事实 | 对 22E 的影响 |
 | --- | --- | --- |
@@ -306,7 +307,61 @@ TAC/`.xiaoc` 将位集右移一位，`.xar` 与 native 使用同一并发编码�
 缺元数据旧产物、目标不匹配及 `verify` 发布报告。兼容矩阵新增三种载体 × 1.16/1.17
 六个格子，真实编码器/校验器证明 Direct 或 Reject，公开构建没有内部绕行。
 
-### 9.4 验证状态
+### 9.4 最终证据、发布矩阵与退出条件
 
-本批源码、示例、默认和受控原生门禁仍在验证；最终提交与三平台实际 job 完成后补录。
-公共页面暂保留 planned；三平台证据齐全后再升级 verified，不以 Windows 本机替代远端。
+代码提交：`57b5d24411196afdea6ca09ab6f47984854cff15`。maintenance
+[`41209554809`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41209554809)
+与完整 workspace gates
+[`41209554821`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41209554821)
+均为 `success`，head SHA 一致。后续公共文档状态/证据补录不计作重新执行代码。
+
+| 平台/原生产物 | 节 | ABI / 元数据 / 生成器 | 代表产物位集 | 实际 job |
+| --- | --- | --- | --- | --- |
+| Windows `x86_64-pc-windows-msvc` / PE | `.xiaomta` | 1.17 / 1 / 14 | `0x62` | [124561486341](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41209554809/job/124561486341)，success |
+| Linux `x86_64-unknown-linux-gnu` / ELF | `.note.xiao` | 1.17 / 1 / 14 | `0x62` | [124561486215](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41209554809/job/124561486215)，success |
+| macOS `aarch64-apple-darwin` / Mach-O | `__XIAO,__meta` | 1.17 / 1 / 14 | `0x62` | [124561486216](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41209554809/job/124561486216)，success |
+
+`0x62` 是代表性的 current Runtime + spawn/join 产物：threads、serialization_v1 和
+cancel_wait 的最小并集。每个平台均精确执行 `public_native_concurrency_metadata_and_release_matrix`，
+核对元数据读回与 strip 保留、旧 ABI/坏 magic/版本/未知位/目标/无元数据拒绝、
+不执行入口的 verify 报告，以及全部五个教程的 VM/native 黄金输出。
+日志包含五条 `22E-EXAMPLE`、一条登记差异的 `22E-E0` 和一条实际目标的 `22E-RELEASE`。
+
+| 载体 × Runtime 校验输入 | 行为 | 真实证据 |
+| --- | --- | --- |
+| `.xiaoc` × 1.16 | Reject，`XIAOC-005` | 实际编码产物头部的 Runtime 要求预检 |
+| `.xiaoc` × 1.17 + 所需位 | Direct | 正式编码/解码与要求预检 |
+| `.xar` × 1.16 | Reject，`X17-XAR-007` | 实际归档 `run_archive` 的入口前预检 |
+| `.xar` × 1.17 + 所需位 | Direct | 实际归档读取与 VM 执行 |
+| native × 1.16 | Reject，`X17-XAR-007` | 三平台真实元数据要求校验 |
+| native × 1.17 + 所需位 | Direct | 三平台公开构建、strip/verify 和程序运行 |
+
+旧 Runtime 格子使用正式校验器注入 1.16 ABI/能力，不宣称下载或执行了旧 Runtime 二进制。
+32 位构建拒绝有独立非 ignored 回归；未知位与缺位分别经过对应载体 codec/要求检查。
+没有新增迁移行为，既有普通产物不被静默当成并发产物。
+
+| 其他门禁 | 实际 job | 结果 |
+| --- | --- | --- |
+| Linux workspace 默认测试 | [124561486270](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41209554809/job/124561486270) | success |
+| 解析器与产物安全 | [124561485966](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41209554809/job/124561485966) | success |
+| Windows 产物尺寸基线 | [124561486283](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41209554809/job/124561486283) | success |
+| 完整 workspace gates | [124561486060](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41209554821/job/124561486060) | success |
+
+本地 workspace 168 个测试组退出 0，含 Runtime 176 项与 22C 26/26；Clippy、fmt、
+docs/usedocs/layout、覆盖率、TypeScript、CLI 解析测试和两份锁文件检查通过。
+原 22D 的 29 场景差分、汇编和 C 布局探针继续通过。覆盖率本机记录为 90.17%，
+公共 API 100%，完整远端门禁再次确认仓库规则通过。
+
+| §六退出条件 | 完成证据 |
+| --- | --- |
+| 1. 公共面与 UseDocs | 五个权威源码例并集覆盖 17 入口，三平台运行后页面升级 verified；错误/所有权/兼容说明齐全 |
+| 2. 唯一虚拟模块 | stdlib README、registry 和不存在 `concurrent.xiao` 的定向回归；只沿用签名表/Runtime |
+| 3. 最小位集 | 同源 IR 推导，`.xiaoc`/`.xar`/native 正反例与六格兼容矩阵 |
+| 4. 原生元数据 | 三平台内嵌节发射、真实读取、strip 后读取、无执行验收与冻结错误身份 |
+| 5. 发布报告 | 上列真实目标/位集/版本/job；verify 生成元数据与兼容矩阵报告；32 位和未知位拒绝 |
+| 6. 基线无退化 | 22C 26/26、22D 12/16/1、workspace、三平台原生及完整 gates 全通过 |
+| 7. 冻结输入不变 | 未改 API、ABI 1.17、32B/16B、Send/Sync 或诊断编号；生成器升级只隔离新 lowering 文本 |
+| 8. E-0 | 首次/已投递取消与帧分配回归通过；VM 额外 suppressed 027 按 §9.1 精确登记，标记和夹具口径已更正 |
+
+22E 及 22 阶段按上述范围完成。E-0 错误链差异、源码递归类型的既有 JSON 限制和
+单架构 Mach-O 的读取范围保留在文档中，不扩大验证结论。
