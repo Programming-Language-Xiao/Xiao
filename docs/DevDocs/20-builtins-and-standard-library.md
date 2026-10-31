@@ -302,6 +302,7 @@ intrinsic 数量持续增长，应先检查语言表达能力、优化器和 Run
 | **20J 字典动态键** | 20I；20I 审核 F-1–F-7 | 字典表/字典列动态键、静态键优先、缺失键运行时错误、共同值类型/dynamic | 不做字典注解、字典增删方法、集合索引或动态范围端点；见 [20J](20j-dynamic-dict-keys-and-20i-closeout.md) |
 | **20K 字典写入与注解** | 20J；20J 审核 F-1–F-7 | `d[key] = value` 既有键写入、`dict<str,T>` 注解、`stdlib/dict.xiao` 的 get/set/remove/contains/keys/values | 不做新增键/upsert、字典方法式 API、嵌套/局部字典注解；见 [20K](20k-dict-write-and-annotations.md) |
 | **20L 字典方法式 API** | 20K；20K 审核 F-1–F-7 | get/set/remove/contains/keys/values/size/is_empty 方法、字典表/列开放视图、静态链接/模块调用 | 不做新增键/upsert、方法值、动态接收者分派或位置方法；见 [20L](20l-dict-methods-and-20k-closeout.md) |
+| **20M 文本与路径扩展** | 20C/20I；本批探测 | `text` 的 trim/前后缀/替换/重复/ASCII 大写与 `path` 的 basename/dirname/extension；全部纯 Xiao，先探测后冻结 | 不做 Unicode、平台路径、math/random/time/array 或新 intrinsic；见 [20M](20m-text-and-path-expansion.md) |
 
 20A 的契约设计可以现在开始，但只有当它改变 09R3 的机型、调用 ABI、编码或源码映射
 时，才会阻塞 09R3；否则研究路径可以继续使用已登记的实验性入口，并在进入 B0 前迁移。
