@@ -37,10 +37,41 @@ impl<'a> DynamicGenerator<'a> {
 
     /// 函数作用域计划执行后，按帧槽顺序归还返回临时值，包括被 finally 覆盖的值。
     pub(super) fn release_frame_temporaries(&mut self) {
+        self.release_abi_frame_values();
         let slots = self.frame_temporaries.clone();
         let release = self.value_release_symbol();
         for slot in slots {
             self.emit(format!("  call void @{release}(ptr {slot})"));
+        }
+    }
+
+    /// 对齐 VM 在词法计划之后的帧寄存器清理：归还复制源，以及 ABI 物化的 stack tuple。
+    fn release_abi_frame_values(&mut self) {
+        let mut values = self
+            .program
+            .ownership
+            .values
+            .iter()
+            .filter(|value| {
+                super::predicate::scope_function_owner(&self.program.ownership.scopes, value.scope)
+                    == self.function_scope
+                    && ((value.storage == "stack"
+                        && matches!(value.ty, Some(IrType::Tuple { .. })))
+                        || value.escapes.iter().any(|reason| reason == "cross_thread"))
+            })
+            .filter_map(|value| {
+                self.value_slots
+                    .get(&value.id)
+                    .map(|slot| (value.id, slot.index))
+            })
+            .collect::<Vec<_>>();
+        values.sort_unstable();
+        let mut released = BTreeSet::new();
+        for (_, slot) in values {
+            if released.insert(slot) {
+                let release = self.value_release_symbol();
+                self.emit(format!("  call void @{release}(ptr %slot{slot})"));
+            }
         }
     }
 
@@ -132,8 +163,9 @@ impl<'a> DynamicGenerator<'a> {
         self.check_pending_error_at(span);
     }
 
-    /// 全部临时槽放在入口，避免 finally 的 stackrestore 使尚需清理的地址失效。
-    pub(super) fn initialize_frame_temporaries(&mut self) {
+    /// 拥有值临时槽与固定大小 ABI scratch 统一放在入口；循环重用同一块栈空间，
+    /// finally 的 stackrestore 也不会使尚需清理的值槽失效。初始化仍留在原执行位置。
+    pub(super) fn finalize_frame_storage(&mut self) {
         let entry = self
             .lines
             .iter()
@@ -151,6 +183,39 @@ impl<'a> DynamicGenerator<'a> {
             })
             .collect::<Vec<_>>();
         self.lines.splice(entry..entry, allocations);
+        let mut fixed_allocations = Vec::new();
+        self.lines.retain(|line| {
+            if line.contains('\n') || !line.trim_start().starts_with('%') {
+                return true;
+            }
+            let Some((_, allocation)) = line.split_once(" = alloca ") else {
+                return true;
+            };
+            let fixed = allocation.split_once(", ").is_none_or(|(_, suffix)| {
+                let mut fields = suffix.split_whitespace();
+                match fields.next() {
+                    Some(ty)
+                        if ty.starts_with('i') && ty[1..].chars().all(|c| c.is_ascii_digit()) =>
+                    {
+                        fields
+                            .next()
+                            .is_some_and(|count| count.trim_end_matches(',').parse::<u64>().is_ok())
+                    }
+                    _ => true,
+                }
+            });
+            if fixed {
+                fixed_allocations.push(line.clone());
+            }
+            !fixed
+        });
+        let entry = self
+            .lines
+            .iter()
+            .position(|line| line == "entry:")
+            .expect("函数入口")
+            + 1;
+        self.lines.splice(entry..entry, fixed_allocations);
     }
 
     /// 表回调可把只读视图借给普通函数；这类程序的临时/强槽需按实际值标签归还。
@@ -275,32 +340,6 @@ impl<'a> DynamicGenerator<'a> {
         let mut emitted_values = BTreeSet::new();
         let mut emitted_slots = BTreeSet::new();
         for plan in plans {
-            if exit == "normal" {
-                for value in &plan.transferred {
-                    let is_boundary_copy = self
-                        .program
-                        .ownership
-                        .values
-                        .iter()
-                        .find(|candidate| candidate.id == *value && candidate.scope == scope)
-                        .is_some_and(|candidate| {
-                            candidate
-                                .escapes
-                                .iter()
-                                .any(|reason| reason == "cross_thread")
-                        });
-                    let Some(slot) = is_boundary_copy
-                        .then(|| self.value_slots.get(value).copied())
-                        .flatten()
-                    else {
-                        continue;
-                    };
-                    if emitted_slots.insert(slot.index) {
-                        let release = self.value_release_symbol();
-                        self.emit(format!("  call void @{release}(ptr %slot{})", slot.index));
-                    }
-                }
-            }
             let mut actions = plan.actions.iter().collect::<Vec<_>>();
             actions.sort_by_key(|action| action.order);
             for action in actions {

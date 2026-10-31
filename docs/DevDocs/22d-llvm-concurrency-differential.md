@@ -403,6 +403,43 @@ locale 继承和 native finish 通道消费。并发句柄采用不复用整数 
 [22D-FIX.1. 并发差分矩阵收尾](22d-fix1-concurrency-differential-closure.md)；
 C-1～C-11 关闭前不宣布 22D 完成。
 
+### 9.3 22D-FIX.1 收尾矩阵与证据
+
+在原有 5/9/1 场景上新增七个成功、七个运行时错误场景，当前总计 **12/16/1**。
+源码与 C 探针位于 `xiao-driver/tests/concurrency_closure/`，由同一份前端 IR 分别运行
+VM 和 NativeBuild。执行日志逐条输出 `22D-CASE`，工作流对汇编、布局及差分三个
+ignored 测试逐一 `--exact` 运行，并验证每次恰好通过一条。
+
+| 条目 | 稳定用例/验证 | 层次及判据 |
+| --- | --- | --- |
+| C-1 | `spawn-join-str-multiargument`、`spawn-join-tuple` | 真实源码；int/str 多参数和纯标量 tuple 往返、stdout、退出码和完整释放投影 |
+| C-2 | `detach-success` | 正常自动 drain；两条打印输出按多重集合比较；独立打印临时对象先按对象分离交错，再压缩相邻别名，保留各自动作顺序和对象数量 |
+| C-3 | `pool-capacity-zero-032` | 源码 032 身份、recoverable 类别、退出码 3；后续输出不得执行 |
+| C-4 | `pool-submit-after-shutdown-030` | 源码 030 身份、退出码 3；目标不得进入，失败路径释放投影一致 |
+| C-5 | `multi-runtime-parallel` | 两 Runtime 的 spawn 事件身份不同、两个任务输出和释放投影；结合既有三个 031 负例验证 native 归属检查 |
+| C-6 | `lock-guard-scope-release` | 两个函数作用域各释放一个不同 guard，恰好一次；弱升级复用 Runtime `owned_guard_keeps_allocation_alive_and_unlocks_after_alias_drop` |
+| C-7 | `native-queued-cancellation`、`native-waiting-cancellation` | 源码 027、不可 catch、finally 一次；稳定共享对象销毁/弱释放序列；Runtime `native_blocked_lock_wait_is_cancelled_by_host_token` 观察实际等待位后取消 |
+| C-8 | `native-wait-027`、`native-lock-wait-027` | wait/lock 的 027、finally、自定义 drop 各一次、suppressed 顺序；宿主取消由 `native_external_cancellation_checks_safe_point_wait_and_lock_wait` 验证三个 C ABI 检查点 |
+| C-9 | `xcon-oversized-029`、`xcon-bounded-string-success` | 16 MiB + 1 在入口前拒绝、64 KiB 字符串逐字往返；64 层 tuple 的输入/结果字节相等与深度/节点/恶意 tag 拒绝归 native Runtime 单测 |
+| C-10 | `entry_close_drain_failure_preserves_primary_and_suppressed` | 仅在测试中登记不匹配 owner，直接调用真实 finish，核对原主错误、既有 suppressed、close 031 的顺序及退出码 3；正常语言表面不能确定构造该错误关系，非源码入口差分 |
+| C-11 | `native_concurrency_shared_c_layout_probe` | C11 静态断言生成真实 host 对象，对照 Rust ABI：header 32B/align 8/offset 0,8,16,24,28；handle 16B/align 8/offset 0,8 |
+
+`worker-loop-bounded-stack` 额外核对十万次计数的 stdout `100000\n`、退出码及释放投影。
+生成器版本 13 修复边界复制源归还顺序、stack tuple 在动态 ABI 下漏释放，以及循环内
+固定 scratch `alloca` 增长导致的 134；API/ABI、Send/Sync 和诊断不变。
+
+`native-wait-027` 另复现了取消展开时 native 漏执行 drop 主体。Runtime drop 回调现在
+使用既有错误 checkpoint，清理中的 helper 不重复消费取消；恢复后保留原 027 和清理
+错误顺序。源码差分逐字验证 `wait-finally\nwait-drop\n`；对应 Runtime 回归为
+`native_cleanup_checkpoint_defers_repeated_cancellation`，没有新增 C 符号或语言入口。
+
+取消握手不比较轮询临时 guard 的全局序列，比较稳定共享对象的最终销毁/弱释放顺序，
+并要求守卫释放存在；语言锁等待不能直接观测阻塞时刻，真实阻塞验证由测试专用等待位
+观察完成。源码递归 tuple 的优化快照存在 JSON 深度限制，C-9 的 LLVM 夹具按计划选择
+字符串；64 层 tuple 归 Runtime 证据，未表述为 LLVM 源码通过。
+
+本地与本批最终代码提交的远端证据待完成后补录；22D 暂不标记完成。
+
 ## 十、状态
 
 - 阶段代号：22D；

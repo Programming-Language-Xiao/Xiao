@@ -164,6 +164,14 @@ fn malformed_xcon_never_enters_native_trampoline() {
     }
     cases.push(("depth limit".to_owned(), deep));
 
+    // 完整且小于单值字节上限的帧，只有总节点数超过冻结上限。
+    let leaf = node(0, &[]);
+    let mut many_nodes = (crate::XCON_MAX_NODES as u32).to_be_bytes().to_vec();
+    for _ in 0..crate::XCON_MAX_NODES {
+        many_nodes.extend_from_slice(&leaf);
+    }
+    cases.push(("node limit".to_owned(), node(10, &many_nodes)));
+
     let mut oversized = Vec::new();
     oversized.extend_from_slice(b"XCON");
     oversized.extend_from_slice(&crate::XCON_VERSION.to_be_bytes());
@@ -195,6 +203,47 @@ fn malformed_xcon_never_enters_native_trampoline() {
         );
         assert_eq!(ENTRY_CALLS.load(Ordering::SeqCst), 0, "{label}");
     }
+}
+
+#[test]
+/// C-9 在 native trampoline 中往返冻结上限的 64 层 tuple，输出信封字节保持一致。
+fn native_xcon_maximum_depth_round_trips_through_trampoline() {
+    /// 返回一份拥有的 ABI 参数副本，让输入与返回都经过真实信封编码。
+    unsafe extern "C" fn identity(
+        _context: *mut c_void,
+        arguments: *const XiaoValue,
+        argument_count: usize,
+        out: *mut XiaoValue,
+    ) -> i32 {
+        if argument_count != 1 || arguments.is_null() || out.is_null() {
+            return XiaoAbiStatus::InvalidArgument.code();
+        }
+        crate::abi::xiao_runtime_value_copy(arguments, out)
+    }
+    let runtime_id = RuntimeHandle::current().id();
+    let mut value = RuntimeValue::Int(7);
+    for _ in 0..crate::XCON_MAX_DEPTH {
+        value = RuntimeValue::Tuple(crate::TupleHandle::new(vec![value]).unwrap());
+    }
+    let transfer = VmTransferValue::encode(&value, runtime_id).unwrap();
+    let VmTransferValue::Xcon(expected) = transfer.clone() else {
+        panic!("普通 tuple 必须使用 XCON");
+    };
+    let outcome = invoke_entry(
+        identity,
+        0,
+        vec![NativeRawValue { transfer }],
+        runtime_id,
+        runtime_id,
+        "en-US".to_owned(),
+    );
+    let NativeEntryOutcome::Value(NativeRawValue {
+        transfer: VmTransferValue::Xcon(actual),
+    }) = outcome
+    else {
+        panic!("边界内最大深度应往返成功");
+    };
+    assert_eq!(actual, expected, "native 输入和结果信封逐字节一致");
 }
 
 #[test]
@@ -384,6 +433,185 @@ fn native_finish_close_error_is_suppressed_under_primary() {
                     cleanup.code() == crate::CONCURRENCY_RUNTIME_CLOSED_CODE
                 })
     ));
+}
+
+#[test]
+/// C-10 直接驱动真实 finish：错误的 owner 登记产生 031，保留主错误与 suppressed 顺序。
+fn entry_close_drain_failure_preserves_primary_and_suppressed() {
+    std::thread::spawn(|| {
+        let root = RuntimeHandle::current();
+        let owner = RuntimeHandle::create();
+        let child = RuntimeHandle::create();
+        // 正常语言入口不会构造错误 owner；仅在测试中注入登记，走真实上下文检查和 finish。
+        native_owned_runtimes()
+            .lock()
+            .unwrap()
+            .push((child.clone(), owner.clone()));
+        crate::abi::xiao_runtime_error_clear();
+        for code in ["entry-primary", "before-close"] {
+            crate::abi::set_pending_runtime_error(crate::RuntimeError::new(
+                crate::XiaoErrorKind::Other,
+                code,
+                "runtime.user_error",
+                code,
+            ));
+        }
+        assert_eq!(
+            xiao_runtime_concurrency_finish(),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        assert_eq!(crate::abi::xiao_runtime_error_exit_code(), 3);
+        let Some(NativeErrorPacket::Recoverable(error)) = take_native_error_packet() else {
+            panic!("真实 finish 必须保留结构化主错误");
+        };
+        assert_eq!(error.code(), "entry-primary");
+        assert_eq!(
+            error
+                .suppressed()
+                .iter()
+                .map(|error| error.code())
+                .collect::<Vec<_>>(),
+            ["before-close", crate::CONCURRENCY_RUNTIME_CLOSED_CODE]
+        );
+        assert!(root.is_closed(), "finish 仍应关闭当前 Runtime");
+        assert!(!child.is_closed(), "错误 owner 不得关闭无关 Runtime");
+        assert!(native_owned_runtimes().lock().unwrap().is_empty());
+        child.try_close().unwrap();
+        owner.try_close().unwrap();
+    })
+    .join()
+    .expect("隔离入口测试线程正常返回");
+}
+
+#[test]
+/// C-8 宿主取消真实线程令牌后，三个原生 C ABI 检查入口都返回不可捕获的 027。
+fn native_external_cancellation_checks_safe_point_wait_and_lock_wait() {
+    let runtime = RuntimeHandle::create();
+    for point in ["safe_point", "wait", "lock_wait"] {
+        let (started_tx, started_rx) = std::sync::mpsc::channel();
+        let (release_tx, release_rx) = std::sync::mpsc::channel();
+        let thread = crate::scheduler::spawn_cooperative(&runtime, move |_| {
+            started_tx.send(()).unwrap();
+            release_rx
+                .recv_timeout(std::time::Duration::from_secs(2))
+                .unwrap();
+            assert_eq!(
+                xiao_runtime_concurrency_cancellation_check(operation(point)),
+                XiaoAbiStatus::RuntimeError.code()
+            );
+            assert_eq!(error_matches("Error"), 0, "027 不进入普通 catch");
+            assert!(
+                matches!(take_native_error_packet(), Some(NativeErrorPacket::Recoverable(error))
+                if error.code() == crate::CONCURRENCY_CANCELLED_CODE)
+            );
+        })
+        .unwrap();
+        started_rx
+            .recv_timeout(std::time::Duration::from_secs(2))
+            .unwrap();
+        thread.cancel();
+        release_tx.send(()).unwrap();
+        assert!(thread.is_cancelled(), "宿主已取消执行单元令牌");
+        thread.join().expect("C ABI 检查在 worker 内完成");
+    }
+    runtime.try_close().unwrap();
+}
+
+#[test]
+/// C-7/C-8 观察真实等待位后取消宿主令牌，验证原生 lock C ABI 从阻塞中返回 027。
+fn native_blocked_lock_wait_is_cancelled_by_host_token() {
+    let runtime = RuntimeHandle::create();
+    let shared = SharedHandle::new(
+        VmTransferValue::encode(&RuntimeValue::Int(7), runtime.id()).unwrap(),
+        runtime.id(),
+        SharedTag::Mut,
+    );
+    let held = shared
+        .lock_owned(&RuntimeCancellation::default(), || false)
+        .unwrap();
+    let child_shared = shared.clone();
+    let child = crate::scheduler::spawn_cooperative(&runtime, move |_| {
+        let mut value = value_from_handle(box_object(ConcurrencyObject::SharedMut(child_shared)));
+        let mut guard = XiaoValue::none();
+        let status = xiao_runtime_concurrency_call(operation("lock"), &value, 1, &mut guard);
+        assert_eq!(status, XiaoAbiStatus::RuntimeError.code());
+        assert_eq!(guard.tag, XiaoValueTag::None, "阻塞取消不得产生守卫");
+        assert_eq!(error_matches("Error"), 0);
+        assert!(
+            matches!(take_native_error_packet(), Some(NativeErrorPacket::Recoverable(error))
+            if error.code() == crate::CONCURRENCY_CANCELLED_CODE)
+        );
+        crate::abi::xiao_runtime_value_release(&mut value);
+    })
+    .unwrap();
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(2);
+    while !shared.has_waiters_for_test() {
+        assert!(
+            std::time::Instant::now() < deadline,
+            "C ABI 必须先进入真实锁等待"
+        );
+        std::thread::yield_now();
+    }
+    child.cancel();
+    child.join().unwrap();
+    drop(held);
+    runtime.try_close().unwrap();
+}
+
+#[test]
+/// finally/drop 中的普通 helper 共享清理 checkpoint，不重复触发取消或丢失主/次错误。
+fn native_cleanup_checkpoint_defers_repeated_cancellation() {
+    let runtime = RuntimeHandle::create();
+    let (started_tx, started_rx) = std::sync::mpsc::channel();
+    let (release_tx, release_rx) = std::sync::mpsc::channel();
+    let child = crate::scheduler::spawn_cooperative(&runtime, move |_| {
+        started_tx.send(()).unwrap();
+        release_rx.recv().unwrap();
+        assert_eq!(
+            xiao_runtime_concurrency_cancellation_check(operation("safe_point")),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        crate::abi::xiao_runtime_error_checkpoint_begin();
+        for point in ["safe_point", "wait", "lock_wait"] {
+            assert_eq!(
+                xiao_runtime_concurrency_cancellation_check(operation(point)),
+                XiaoAbiStatus::Ok.code()
+            );
+        }
+        crate::abi::set_pending_runtime_error(crate::RuntimeError::new(
+            crate::XiaoErrorKind::Other,
+            "cleanup",
+            "runtime.user_error",
+            "cleanup",
+        ));
+        crate::abi::xiao_runtime_error_checkpoint_finish();
+        let Some(NativeErrorPacket::Recoverable(error)) = take_native_error_packet() else {
+            panic!("清理后必须恢复 027");
+        };
+        assert_eq!(error.code(), crate::CONCURRENCY_CANCELLED_CODE);
+        assert_eq!(
+            error
+                .suppressed()
+                .iter()
+                .map(|error| error.code())
+                .collect::<Vec<_>>(),
+            ["cleanup"]
+        );
+        assert!(!crate::abi::error_cleanup_is_active());
+        assert_eq!(
+            xiao_runtime_concurrency_cancellation_check(operation("safe_point")),
+            XiaoAbiStatus::RuntimeError.code()
+        );
+        let _ = take_native_error_packet();
+    })
+    .unwrap();
+    started_rx
+        .recv_timeout(std::time::Duration::from_secs(2))
+        .unwrap();
+    child.cancel();
+    release_tx.send(()).unwrap();
+    child.join().unwrap();
+    runtime.try_close().unwrap();
 }
 
 #[test]

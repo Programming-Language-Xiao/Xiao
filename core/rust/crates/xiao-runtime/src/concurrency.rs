@@ -274,6 +274,13 @@ impl<T: Send + Sync> SharedHandle<T> {
     pub fn same_object(&self, other: &Self) -> bool {
         self.ptr == other.ptr && self.runtime_id == other.runtime_id
     }
+
+    #[cfg(test)]
+    /// 仅供跨模块回归观察真实阻塞等待位；不进入生产 ABI 或语言 API。
+    pub(crate) fn has_waiters_for_test(&self) -> bool {
+        // SAFETY: self 持有分配的强引用，此处仅读取原子锁状态。
+        unsafe { self.ptr.as_ref().header.lock_state.load(Ordering::Acquire) & SHARED_WAITERS != 0 }
+    }
 }
 
 /// 拥有共享强引用的单线程锁守卫，无自引用或生命周期强转。

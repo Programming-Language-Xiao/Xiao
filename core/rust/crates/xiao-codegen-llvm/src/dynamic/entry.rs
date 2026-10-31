@@ -106,7 +106,7 @@ impl<'a> DynamicGenerator<'a> {
         self.emit("}".to_owned());
         self.emit(String::new());
         self.emit(self.main_adapter(observed));
-        self.initialize_frame_temporaries();
+        self.finalize_frame_storage();
         Ok(())
     }
 

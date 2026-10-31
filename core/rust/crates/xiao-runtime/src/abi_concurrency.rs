@@ -1265,6 +1265,9 @@ pub extern "C" fn xiao_runtime_concurrency_cancellation_check(operation: XiaoAbi
     if !matches!(operation.as_str(), "safe_point" | "wait" | "lock_wait") {
         return set_runtime_error(format!("未知并发取消检查 {operation}"));
     }
+    if super::error_cleanup_is_active() {
+        return XiaoAbiStatus::Ok.code();
+    }
     crate::scheduler::cancellation_safe_point()
         .map_or_else(map_exec_error, |_| XiaoAbiStatus::Ok.code())
 }

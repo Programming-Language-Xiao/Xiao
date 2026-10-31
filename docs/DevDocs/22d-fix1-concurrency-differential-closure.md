@@ -6,7 +6,7 @@
 > 阶段退出条件从“大部分有证据”推进到“逐条可复核”。本批不改 API、ABI、Send/Sync 表、
 > 32B/16B 布局、诊断编号或原生产物边界，不写 `stdlib/concurrent.xiao` 函数体。
 >
-> 状态：**规划中（2026-10-31）**。基线代码提交 `f4d31b0`；maintenance
+> 状态：**实施中（2026-10-31，本地矩阵验证与门禁收尾）**。基线代码提交 `f4d31b0`；maintenance
 > [`41176081348`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081348)
 > 与 workspace gates
 > [`41176081391`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081391)
@@ -52,7 +52,8 @@
   `child-primary-and-finally-suppressed`、`native-stack-frames`；
 - detached 场景 1 个：嵌套 detach 失败，退出码不变。
 
-以上场景三平台远端通过；本批只新增用例和证据，不重写既有场景。
+以上场景三平台远端通过；本批保留既有场景并扩展矩阵。新增夹具暴露的 LLVM 释放及循环
+栈空间缺陷随本批修复，生成器版本升至 13；实现与证据登记到 22D §9.3，冻结输入不变。
 
 ## 二、缺口矩阵与夹具
 
@@ -66,7 +67,7 @@
 | C-6 | shared 弱升级、guard 作用域释放 | lock/read/write 成功场景 | `lock-guard-scope-release`（语言级）；弱升级归 Runtime 层 | guard 恰好一次释放；弱升级不伪造语言夹具 |
 | C-7 | LLVM 端排队/等待两位置取消 | 运行中、完成态两个 027 | `native-queued-cancellation`、`native-waiting-cancellation` | 027、finally 恰好一次、释放存在性 |
 | C-8 | `wait`/`lock_wait` 的 027、外部取消通道 | join 027、完成态 027 | `native-wait-027`、`native-lock-wait-027`；外部取消归 Runtime 层 | 027 身份、主/suppressed |
-| C-9 | XCON 深度/大小负例的同 IR 差分 | Runtime 层 `malformed_xcon_*`、序列化单测 | `xcon-oversized-029`、`xcon-deep-success` | 029 在启动前拒绝；成功场景边界值往返 |
+| C-9 | XCON 深度/大小负例的同 IR 差分 | Runtime 层 `malformed_xcon_*`、序列化单测 | `xcon-oversized-029`、`xcon-bounded-string-success`；64 层 tuple 归 Runtime trampoline 回归 | 029 在启动前拒绝；成功场景逐字往返；递归深度按层次登记 |
 | C-10 | 真实入口 close drain 失败差分 | 仅 helper 级 `native_finish_close_error_is_suppressed_under_primary` | `entry-close-drain-failure` | 主错误保留、close 错误 suppressed、退出码 |
 | C-11 | 32B/16B 布局的 22D 产物级检查 | 22A 四平台测量、`abi` crate 的 `size_of/align_of` 断言 | 三平台 C 探针或书面顶账说明 | 尺寸/对齐/偏移一致，或明确引用 22A 证据 |
 
@@ -192,8 +193,42 @@ docs/DevDocs/22d-fix1-concurrency-differential-closure.md  本计划
 docs/DevDocs/22d-llvm-concurrency-differential.md         22D 计划与 §9 证据
 docs/DevDocs/22-concurrency-execution-and-shared-handles.md 22D 阶段说明
 core/rust/crates/xiao-driver/tests/22d_llvm_concurrency.rs 差分夹具
+core/rust/crates/xiao-driver/tests/concurrency_closure/   收尾源码与 C 布局探针
 core/rust/crates/xiao-runtime/src/abi_concurrency_tests.rs 并发 ABI 单测
 core/rust/crates/xiao-runtime/src/abi_tests.rs             Runtime ABI 单测
 core/rust/crates/xiao-runtime/src/scheduler_tests.rs      Runtime 四位置回归
 .github/workflows/maintenance-regression.yml              三平台精确执行
 ```
+
+## 九、实施记录
+
+2026-10-31 已加入七个成功场景和七个错误场景，原有 5/9/1 场景保留：
+
+- 成功：str/多参数、纯标量 tuple、detached 成功、多 Runtime、函数 guard 释放、
+  十万次 worker 循环及 64 KiB XCON 字符串逐字往返。
+- 错误：032、030、排队取消、锁等待取消、wait 027、lock_wait 027、
+  `16 MiB + 1` 在启动目标前的 029。
+- Runtime 层：真实 `xiao_runtime_concurrency_finish` 失败分支的主/suppressed 顺序；
+  宿主令牌对三个 C ABI 安全点的取消；等待位屏障证明真实阻塞的 lock C ABI 可取消；
+  64 层 tuple 的 native trampoline 输入/结果信封逐字节相同；恶意 tag、超深、
+  超节点数和超大单值拒绝，入口调用数保持 0。
+- C-11 使用三平台同源 C 编译探针，对照 Rust ABI 类型的尺寸、对齐和偏移，并生成
+  host 目标对象；工作流精确执行汇编、C 布局和 VM/native 差分三个用例。
+
+新增矩阵复现并修正既有降低缺陷：纯标量 tuple 虽被静态计划归为 stack，动态 ABI
+仍分配盒子，原生退出曾漏释放；边界复制源归还早于普通绑定，造成释放次序差异。
+另以十万次有限循环稳定复现了 134：循环内固定 ABI scratch `alloca` 不断累积，现统一
+移至函数入口。stdout/stderr 改为同时读取，64 KiB 输出用于验证不会因管道填满挂起。
+
+`native-wait-027` 同时验证 `finally` 和自定义表 `drop` 各打印一次。该场景复现了 native
+析构回调重复消费取消、漏执行 drop 主体的问题；现以同一错误 checkpoint 包住 drop，
+清理中的普通 helper 不重复投递取消，恢复后仍保留 027 主错误和清理错误的 suppressed
+身份/顺序。`native_cleanup_checkpoint_defers_repeated_cancellation` 覆盖该 Runtime 规则。
+
+源码中的 32 层 tuple 会遇到现有优化快照 JSON 递归限制；C-9 按 §2.4 选择字符串作为
+LLVM 源码往返夹具，64 层深度在 Runtime trampoline 层验证，未计作 LLVM 源码深度证据。
+语言锁等待场景验证锁不可用、已进入 try 和 finally 恰好一次；具体已阻塞位置另由
+Runtime C ABI 单测用 `#[cfg(test)]` 等待位观察证明，不为产物增加观察入口。
+
+本批最终源码提交、本地门禁和远端三平台运行完成后，统一补录到 22D §9.3；
+补录完成前保持实施中。

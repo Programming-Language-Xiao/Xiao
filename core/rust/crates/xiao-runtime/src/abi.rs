@@ -889,6 +889,11 @@ pub extern "C" fn xiao_runtime_error_checkpoint_begin() {
     PENDING_ERROR_CHECKPOINTS.with(|stack| stack.borrow_mut().push(pending));
 }
 
+/// finally/drop 的 checkpoint 期间已进入清理阶段，不重复投递同一取消令牌。
+pub(super) fn error_cleanup_is_active() -> bool {
+    PENDING_ERROR_CHECKPOINTS.with(|stack| !stack.borrow().is_empty())
+}
+
 /// 恢复 finally 前的主错误，并把 finally 失败附加为 suppressed。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_error_checkpoint_finish() -> u32 {

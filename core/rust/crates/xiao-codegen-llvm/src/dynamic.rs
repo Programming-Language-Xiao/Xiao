@@ -706,7 +706,7 @@ impl<'a> DynamicGenerator<'a> {
         }
         generator.emit("}".to_owned());
         generator.emit(String::new());
-        generator.initialize_frame_temporaries();
+        generator.finalize_frame_storage();
         self.next_global = generator.next_global;
         self.globals.extend(generator.globals);
         self.function_texts.push(generator.lines.join("\n"));

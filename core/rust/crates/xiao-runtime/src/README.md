@@ -21,6 +21,8 @@
   `vm_concurrency_tests.rs` 验证复制字节、锁守卫寿命、消费身份和限制。
 - `scheduler.rs` / `scheduler_tests.rs`：Runtime、线程和任务池调度及四位置取消回归；
   `abi_concurrency.rs` / `abi_concurrency_tests.rs`：原生并发 C ABI 及边界、错误、释放回归。
+  22D-FIX.1 验证真实 finish 失败、宿主阻塞取消及 64 层 XCON；finally/drop 共用错误
+  checkpoint，清理中的 helper 不重复投递取消，保持原主错误和 suppressed 顺序。
 
 - `abi_tables.rs`：10T 注册式表方法、元数据复制、弱只读析构视图与错误边界；
   `abi_table_tests.rs` 覆盖初始化回滚、别名、视图失效和非法元数据。

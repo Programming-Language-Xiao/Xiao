@@ -211,7 +211,11 @@ unsafe fn copy_definition(
                     weak_handle: handle,
                 },
             };
+            // 与 VM 清理阶段相同，drop 及其 helper 不重新消费已投递的取消；
+            // 回调完成后恢复原主错误，显式析构失败仍由下方原规则附加。
+            xiao_runtime_error_checkpoint_begin();
             let result = invoke_callback(callback, &receiver, &[], XiaoValueTag::None.raw());
+            xiao_runtime_error_checkpoint_finish();
             release_value_slot(&mut receiver);
             match result {
                 Ok(mut value) => {
