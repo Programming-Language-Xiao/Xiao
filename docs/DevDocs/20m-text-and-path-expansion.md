@@ -6,8 +6,9 @@
 > 不新增 intrinsic、不改 Runtime ABI、不引入泛型约束或新容器参数，也不碰
 > `std.concurrent` 的虚拟模块边界。
 >
-> 状态：**规划中（2026-11-01）**。基线为 22 阶段完成后的 `cff1499`；本批的候选接口
-> 先探测后冻结，冻结前不写产品函数体。19 发布收口、11C L4、11B I5 和 22E 的登记差异
+> 状态：**九项候选的本地 VM/native 探测通过，冻结草案待确认（2026-11-01）**。
+> 基线为 22 阶段完成后的 `cff1499`；探测与冻结草案见 §九，冻结前不写产品函数体。
+> 19 发布收口、11C L4、11B I5 和 22E 的登记差异
 > 仍保持各自文档的未闭合状态，不被本批顺带宣称完成。
 
 ## 一、入口条件与边界
@@ -189,3 +190,82 @@ docs/UseDocs/library/path.md                         路径公共文档
 core/rust/crates/xiao-driver/tests/c20_capability_probe.rs  候选探测
 core/rust/crates/xiao-driver/tests/20c_first_modules.rs     移除与双路径
 ```
+
+## 九、探测记录与冻结草案（2026-11-01）
+
+### 9.1 真实源码探测
+
+九项夹具位于 `tests/fixtures/20m/probe-*.xiao`，统一入口为
+`core/rust/crates/xiao-driver/tests/20m_text_and_path.rs`。每项从同一份前端 IR 分别运行
+VM 和受控原生构建；两路逐字匹配独立黄金输出，原生退出码为 0、stderr 为空。
+VM 与原生执行均限制为十秒；原生构建使用真实 `llvm-as` 校验，不以 LLVM 文本包含关系代替。
+
+本机 Windows `x86_64-pc-windows-msvc` 实跑：2 个测试通过、9/9 候选双路径通过。
+覆盖六种 ASCII 空白、非 ASCII 空白保留、空串、Unicode 码点、非正重复次数、非重叠替换、
+替换结果不重扫，以及 §9.3 的 18 行路径边界。尚未产生本批三平台远端证据。
+
+```powershell
+cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20m_text_and_path -- --include-ignored --nocapture
+```
+
+### 9.2 接口裁剪草案
+
+以下是**待星崽确认的草案**，不是已交付接口。按本文 D-3 的一行组合门槛裁剪；
+该门槛比 20C §3.4.1 仅要求冻结语义决定更严格。
+
+| 编号 | 候选 | VM/native | 建议 | 冻结的决定或裁剪依据 |
+| --- | --- | --- | --- | --- |
+| T-1 | `trim(str text) -> str` | 通过 | 保留 | 只剥除首尾六种 ASCII 空白，内部和其他 Unicode 空白保留 |
+| T-2 | `starts_with(str text, str needle) -> bool` | 通过 | 组合即可，剔除 | `find(text, needle) == 0`；空 needle 为 true |
+| T-3 | `ends_with(str text, str needle) -> bool` | 通过 | 组合即可，剔除 | 下列长度守卫＋字符切片表达式；长 needle 短路，不触发负切片 |
+| T-4 | `replace_all(str text, str needle, str replacement) -> str` | 通过 | 保留 | 从左到右非重叠匹配，空 needle 返回原串，替换结果不重新扫描 |
+| T-5 | `repeat(str text, int count) -> str` | 通过 | 保留 | count ≤ 0 返回空串；不增加专用错误身份 |
+| T-6 | `upper_ascii(str text) -> str` | 通过 | 保留 | 仅转换 ASCII a–z，不依赖 Unicode 表或 locale |
+| P-1 | `basename(str path) -> str` | 通过 | 保留 | 最后一个 `/` 后的文本，保留空末段，不规范化 |
+| P-2 | `dirname(str path) -> str` | 通过 | 保留 | 最后一个 `/` 前的文本；无 `/` 返回空串，不补 `.` 或根分隔符 |
+| P-3 | `extension(str path) -> str` | 通过 | 保留 | 只取末段最后一个点及其后文本，含点；开头点和结尾点均参与，不特殊解析点文件 |
+
+前后缀的既有组合（函数参数为 `str`）：
+
+```xiao
+find(text, needle) == 0
+length(needle) <= length(text) and slice(text, length(text) - length(needle), length(text)) == needle
+```
+
+建议新增 text 4 项、path 3 项；没有不可表达项。保留项都需要扫描、循环或累积构造，
+不能由现有接口的一行调用组合直接得到。标准库接口版本保持 1，不增加 intrinsic、Runtime ABI、
+类型能力或归档字段。
+
+### 9.3 路径逐格语义草案
+
+表中 `""` 表示空字符串；反斜杠按普通字符保留。这里只截取原始文本：尾随 `/` 产生空末段，
+dirname 不把空父段改成 `/` 或 `.`；`.`、`..` 和点文件也按普通文本处理。
+
+| 输入 | basename | dirname | extension |
+| --- | --- | --- | --- |
+| `""` | `""` | `""` | `""` |
+| `name` | `name` | `""` | `""` |
+| `/` | `""` | `""` | `""` |
+| `/name` | `name` | `""` | `""` |
+| `a/` | `""` | `a` | `""` |
+| `a/b` | `b` | `a` | `""` |
+| `a//b` | `b` | `a/` | `""` |
+| `//` | `""` | `/` | `""` |
+| `a//` | `""` | `a/` | `""` |
+| `.env` | `.env` | `""` | `.env` |
+| `dir.x/.env` | `.env` | `dir.x` | `.env` |
+| `a.tar.gz` | `a.tar.gz` | `""` | `.gz` |
+| `file.` | `file.` | `""` | `.` |
+| `.` | `.` | `""` | `.` |
+| `..` | `..` | `""` | `.` |
+| `a/../b` | `b` | `a/..` | `""` |
+| `C:\tmp\file.txt` | `C:\tmp\file.txt` | `""` | `.txt` |
+| `目录/小😀.x` | `小😀.x` | `目录` | `.x` |
+
+### 9.4 后续验收状态
+
+- 步骤 0 已有本地双路径证据；步骤 1 等待星崽确认 §9.2/§9.3。
+- 探测阶段的 fmt、定向 Clippy、docs、UseDocs 与 layout 检查通过。
+- 产品函数体、逐接口移除验证、模块隔离、归档重放和公开文档尚未实施。
+- 三平台维护回归、完整 workspace gates、覆盖率及运行号尚待本批实现后核销。
+- 19 发布收口、11C L4、11B I5 和 22E 登记差异保持原状态。

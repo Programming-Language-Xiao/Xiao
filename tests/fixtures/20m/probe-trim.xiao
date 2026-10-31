@@ -1,0 +1,21 @@
+from stdlib.text import contains_char, length, slice
+
+# 只探测六种 ASCII 空白，不提供产品接口。
+def probe_trim(str text) -> str
+    whitespace = " \t\r\n" + chr(11) + chr(12)
+    start = 0
+    end = length(text)
+    while start < end and contains_char(whitespace, text[start])
+        start = start + 1
+    while end > start and contains_char(whitespace, text[end - 1])
+        end = end - 1
+    return slice(text, start, end)
+
+print("[" + probe_trim("") + "]")
+print("[" + probe_trim(" \t\r\n" + chr(11) + chr(12)) + "]")
+for whitespace in " \t\r\n" + chr(11) + chr(12)
+    print("[" + probe_trim(whitespace + "小😀" + whitespace) + "]")
+print("[" + probe_trim("  左") + "]")
+print("[" + probe_trim("右\t") + "]")
+print("[" + probe_trim(" 内 部\t空白 ") + "]")
+print("[" + probe_trim(" 　雪　 ") + "]")
