@@ -9,7 +9,7 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分正在实施（2026-10-31），D-2/D-5 已确认，导入别名和 Runtime 031 边界 P1 已修复；XCON 恶意输入、Runtime 四位置取消、原生栈帧和稳定场景释放顺序已有回归，提交 `e5c83c0` 的三平台原生门禁全部通过；完整黄金矩阵继续验收**。
+> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分正在实施（2026-10-31），D-2/D-5 已确认，导入别名和 Runtime 031 边界 P1 已修复；XCON 恶意输入、Runtime 四位置取消、原生栈帧和稳定场景释放顺序已有回归，提交 `f4d31b0` 的三平台原生门禁及完整 workspace gates 全部通过；完整黄金矩阵继续验收**。
 > workspace、26 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs、
 > 本地安全/产物回归，以及远端多平台 maintenance/CI 均通过；三平台 maintenance 各自执行了 26/26 VM 并发回归。
 > 22D 正在实施；本轮修补和三平台证据见 [22D §9.2](22d-llvm-concurrency-differential.md#92-本轮修补与三平台证据)，22E 仍后置。

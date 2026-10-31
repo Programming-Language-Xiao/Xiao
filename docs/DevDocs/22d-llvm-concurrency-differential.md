@@ -7,8 +7,9 @@
 >
 > 状态：**实施中（2026-10-31）**。已接入同源 LLVM 并发计划、原生不透明值与 trampoline，
 > 根/局部导入别名及 Runtime 031 边界 P1 已修复。XCON 恶意输入、Runtime 四位置取消、
-> 原生栈帧及稳定场景释放顺序已有回归；提交 `e5c83c0` 的 Windows/Linux/macOS 原生门禁和
-> Linux workspace 默认测试全部通过，证据与覆盖范围见 §9.2。§五完整黄金矩阵仍需补齐。
+> 原生栈帧及稳定场景释放顺序已有回归；提交 `f4d31b0` 的 Windows/Linux/macOS 原生门禁、
+> Linux workspace 默认测试和完整 workspace gates 全部通过，证据与覆盖范围见 §9.2。
+> §五完整黄金矩阵仍需补齐。
 > 并发 ABI 内部差分沿用 D-2/D-5 的标签 18、ABI 1.17 和不透明锁守卫方案；不写
 > `stdlib/concurrent.xiao` 函数体，不冻结原生并发产物元数据，不修改 32B 共享头、API、
 > Send/Sync 表或诊断编号。
@@ -328,7 +329,7 @@ core/rust/crates/xiao-codegen-llvm/tests/                 原生夹具
 - 动态 LLVM 对 `runtime_create/current_runtime/runtime_close`、线程/任务池/shared/lock 等计划调用统一发射 Runtime C ABI；`spawn/submit` 生成函数指针 trampoline，参数按 IR 顺序求值并在成功、失败路径释放临时值。
 - `xiao-runtime-abi` 按已确认的 D-2/D-5 追加 `XiaoValueTag::Concurrency = 18`、`XiaoConcurrencyKind`、并发句柄、trampoline 和 detached 错误通道声明；32B shared header、16B shared handle 和 ABI 1.17 保持不变。该路径仍是 22D 内部差分接口，22E 再处理发布元数据。
 - `xiao-runtime` 增加并发 ABI 盒子、Runtime/pool、XCON 边界值与显式 shared 通道、read/lock/lock_read/lock_write、取消检查，以及线程/任务 `spawn/join/detach/cancel/submit/wait/shutdown` 的 trampoline 适配；子执行错误包保留错误身份和 suppressed，027 回到父线程后仍不可被 `catch` 捕获，detached 失败由有界进程通道按 Runtime ID 读取。
-- `22d_llvm_concurrency` 比较 native 计划与同一 IR 降出的 TAC 操作/span/参数类型/facts/transfers/cancellation；包含未知操作 fail-closed、公开构建门禁、shared/lock 文本回归、根/局部导入别名和分组函数目标的真实 `llvm-as` 解析，以及受控工具链下五个成功输出黄金场景、九个运行时错误场景和一个 detached 失败场景。三平台 CI 显式精确运行 LLVM 汇编与 VM/native 差分用例；本次 `e5c83c0` 远端证据见下文。
+- `22d_llvm_concurrency` 比较 native 计划与同一 IR 降出的 TAC 操作/span/参数类型/facts/transfers/cancellation；包含未知操作 fail-closed、公开构建门禁、shared/lock 文本回归、根/局部导入别名和分组函数目标的真实 `llvm-as` 解析，以及受控工具链下五个成功输出黄金场景、九个运行时错误场景和一个 detached 失败场景。三平台 CI 显式精确运行 LLVM 汇编与 VM/native 差分用例；最终代码提交 `f4d31b0` 的远端证据见 §9.2。
 - 修正了首批盒子直接跨线程传递和通用值释放漏掉并发盒子的缺陷；子执行单元只携带 XCON/显式 shared 信封，在接收线程重新创建 ABI 盒子。取消结果和 detached 错误归一化复用 22C 的 Runtime 内部函数，保持既有 VM 行为。
 - 修正了根/局部导入别名插入导致 trampoline 目标函数符号过期、别名函数目标引用未定义 trampoline 的 P1；LLVM 函数与 trampoline 符号现在绑定实际 IR 函数定义节点，函数目标支持括号分组，模块体并发在计划建立阶段结构化拒绝。
 - `shared_read`/`shared_mut` 在关闭的当前 Runtime 上返回 031；`spawn`/`submit` 的边界输入 Runtime ID 与返回信封 Runtime ID 分开，`join`/`wait` 按调用方 Runtime 校验 `SharedMut` 结果，与 VM 行为一致。
@@ -376,7 +377,7 @@ locale 继承和 native finish 通道消费。并发句柄采用不复用整数 
 
 ### 9.2 本轮修补与三平台证据
 
-代码提交：`e5c83c0d6c1faf3c9a449b8d94ef23a23ae15d3e`。以下证据对应此提交，
+代码提交：`f4d31b0a71d5775d97e2df13acb985bded30c03c`。以下证据对应此提交，
 后续文档提交不计作重新执行代码的证据。
 
 | 修补项 | 回归及结果 | 覆盖范围 |
@@ -385,16 +386,17 @@ locale 继承和 native finish 通道消费。并发句柄采用不复用整数 
 | 取消四位置 | `scheduler::tests::cancellation_at_*` 四项通过；22C 26/26；22D 两个 027 场景通过 | Runtime 的排队、运行、等待、完成待回收屏障回归；LLVM 端到端覆盖运行中 finally 一次和完成态取消；未将 Runtime 四项计为四个 LLVM 差分场景 |
 | 原生栈帧 | `native_error_frames_are_appended_during_unwind` 与 `native-stack-frames` 通过 | Runtime 栈帧身份/源码区间；真实 LLVM 产物的 inner → outer 用户帧及同 IR VM 对照 |
 | 完整释放顺序 | 五个成功、八个错误和一个 detached 场景逐事件相等 | 比较 §5.2 定义的投影；运行中取消另核对错误/清理和释放记录存在性，轮询临时 guard 不作序列相等断言 |
-| 三平台远端 | maintenance [`41112524414`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41112524414) 总结果 `success` | 真实 Runtime 链接、LLVM 汇编和同 IR VM/native 差分；显式 `--exact` 执行并断言恰好 1 条通过，拒绝零匹配 |
+| 三平台远端 | maintenance [`41176081348`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081348) 总结果 `success` | 真实 Runtime 链接、LLVM 汇编和同 IR VM/native 差分；显式 `--exact` 执行并断言恰好 1 条通过，拒绝零匹配 |
 
 | 平台/门禁 | job 证据 | 结果 |
 | --- | --- | --- |
-| Windows 原生差分 | [124258223542](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41112524414/job/124258223542) | `success` |
-| Linux 原生差分 | [124258223584](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41112524414/job/124258223584) | `success` |
-| macOS 原生差分 | [124258223612](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41112524414/job/124258223612) | `success` |
-| Linux workspace 默认测试 | [124258223561](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41112524414/job/124258223561) | `success` |
-| 解析器与产物安全 | [124258223296](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41112524414/job/124258223296) | `success` |
-| Windows 产物尺寸基线 | [124258223496](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41112524414/job/124258223496) | `success` |
+| Windows 原生差分 | [124463818334](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081348/job/124463818334) | `success` |
+| Linux 原生差分 | [124463818388](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081348/job/124463818388) | `success` |
+| macOS 原生差分 | [124463818308](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081348/job/124463818308) | `success` |
+| Linux workspace 默认测试 | [124463818217](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081348/job/124463818217) | `success` |
+| 解析器与产物安全 | [124463818333](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081348/job/124463818333) | `success` |
+| Windows 产物尺寸基线 | [124463818403](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081348/job/124463818403) | `success` |
+| 完整 workspace gates | [124463818157](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081391/job/124463818157) | `success` |
 
 以上门禁关闭本轮五项修补的证据缺口，阶段状态仍为实施中：完整的 §五黄金矩阵、
 真实入口 close drain 失败差分等尚需逐项验收。
@@ -402,6 +404,6 @@ locale 继承和 native finish 通道消费。并发句柄采用不复用整数 
 ## 十、状态
 
 - 阶段代号：22D；
-- 当前状态：**实施中**；入口证据来自 22C-FIX.1 的 `0caebc9`，D-2/D-5 已确认，第一批 LLVM 并发 lowering、Runtime C ABI 和 trampoline 已落地；根/局部导入别名 P1、Runtime 031 边界和真实项目模块结构化拒绝已修复并覆盖；XCON 恶意输入、Runtime 取消四位置、native 运行中/完成态取消、native/VM 栈帧和稳定场景完整释放顺序已有本机证据；提交 `e5c83c0` 的 Windows/Linux/macOS 原生差分及 Linux workspace 默认门禁均已通过远端工作流；P3 待收口清单见 §9.1，并作为 §六 第 9 条退出条件复核；
+- 当前状态：**实施中**；入口证据来自 22C-FIX.1 的 `0caebc9`，D-2/D-5 已确认，第一批 LLVM 并发 lowering、Runtime C ABI 和 trampoline 已落地；根/局部导入别名 P1、Runtime 031 边界和真实项目模块结构化拒绝已修复并覆盖；XCON 恶意输入、Runtime 取消四位置、native 运行中/完成态取消、native/VM 栈帧和稳定场景完整释放顺序已有本机证据；提交 `f4d31b0` 的 Windows/Linux/macOS 原生差分、Linux workspace 默认测试及完整 workspace gates 均已通过远端工作流；P3 待收口清单见 §9.1，并作为 §六 第 9 条退出条件复核；
 - 当前工作批：22D；不接 22E 标准库/原生产物元数据；
 - 22D 完成后，22E 只消费本批稳定的并发行为和已有 ABI，不反向修改 22D 的跨平台结论。
