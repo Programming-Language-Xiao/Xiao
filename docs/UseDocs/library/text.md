@@ -1,10 +1,10 @@
 ---
 id: library.text
 title: 官方 text 模块
-status: verified
+status: draft
 audience: learner
 module: stdlib.xiao-standard-library-first-modules
-stage: 20C/20I
+stage: 20C/20I/20M
 version: "0.1.0"
 related:
   - README.md
@@ -15,12 +15,14 @@ related:
   - ../../DevDocs/20c-sixth-batch-case-conversion-and-api-closeout.md
   - ../../DevDocs/20c-seventh-batch-str-to-int-and-ci-coverage.md
   - ../../DevDocs/20i-nonliteral-indexing-and-splitting.md
+  - ../../DevDocs/20m-text-and-path-expansion.md
 ---
 
 # 官方 `text` 模块
 
 `text` 是 20C 首批官方 Xiao 模块，规范实现位于 [`stdlib/text.xiao`](../../../stdlib/text.xiao)。
-适用版本：Xiao `0.1.0`、Runtime ABI `1.13`。首批/第二批受控双路径证据：维护回归
+适用版本：Xiao `0.1.0`、Runtime ABI `1.17`、标准库接口版本 `1`。20M 验证待本批 CI 核销；
+首批/第二批的历史受控双路径证据：维护回归
 `38550284761`（Windows 作业 `115806283501`、Linux 作业 `115806283515`）。
 
 第五批新增的 `is_ascii_upper` 由维护回归 `38682801761` 覆盖：**VM 路径**为 Linux 作业
@@ -110,3 +112,90 @@ split(str text, str separator) -> [str]
 这些接口按 Unicode 码点工作。`find` 未找到返回 `-1`，空 `needle` 返回 `0`；`slice` 使用
 `[start, end)`，越界抛出 `TEXT_SLICE_OUT_OF_RANGE`，`start > end` 返回空串；`split` 保留首、
 中、尾空段，空分隔符抛出 `TEXT_SPLIT_EMPTY_SEPARATOR`，空文本返回一个空字符串元素。
+
+## `trim`
+
+```xiao
+trim(str text) -> str
+```
+
+剥除首尾的六种 ASCII 空白：空格 U+0020、tab U+0009、CR U+000D、LF U+000A、
+VT U+000B、FF U+000C。空串或全由这些空白构成的文本返回空串；内部空白保持原样。
+其他 Unicode 空白保留，例如不换行空格 U+00A0 和全角空格 U+3000。
+
+```xiao
+from stdlib.text import trim
+
+print(trim(" \t小雪 内部 空格\r\n"))
+# 输出：小雪 内部 空格
+```
+
+## `replace_all`
+
+```xiao
+replace_all(str text, str needle, str replacement) -> str
+```
+
+按字符从左到右替换非重叠匹配；空 needle 返回原串。替换结果不重新扫描，替换串可为空。
+
+```xiao
+from stdlib.text import replace_all
+
+print(replace_all("aaaaa", "aa", "b"))
+# 输出：bba
+print(replace_all("a", "a", "aa"))
+# 输出：aa
+```
+
+## `repeat`
+
+```xiao
+repeat(str text, int count) -> str
+```
+
+重复 count 次。count 为零或负数时返回空串，空文本的结果也为空串。
+
+```xiao
+from stdlib.text import repeat
+
+print(repeat("小😀", 2))
+# 输出：小😀小😀
+```
+
+## `upper_ascii`
+
+```xiao
+upper_ascii(str text) -> str
+```
+
+仅把 ASCII `a`–`z` 转为 `A`–`Z`，与 `lower_ascii` 对称。其他字符原样保留，
+包括 `é`、`ß` 和中文；不采用 Unicode 或 locale 大小写规则。
+
+```xiao
+from stdlib.text import upper_ascii
+
+print(upper_ascii("Az-9小雪éß"))
+# 输出：AZ-9小雪éß
+```
+
+以上四项是纯 Xiao 兼容新增，不增加错误编号，标准库接口版本保持 1。
+
+## 前后缀判断的组合
+
+20M 按一行组合门槛剔除了 `starts_with`、`ends_with`，使用既有接口即可：
+
+```xiao
+from stdlib.text import find, length, slice
+
+def has_prefix(str text, str needle) -> bool
+    return find(text, needle) == 0
+
+def has_suffix(str text, str needle) -> bool
+    return length(needle) <= length(text) and slice(text, length(text) - length(needle), length(text)) == needle
+
+print(has_prefix("小雪.txt", "小雪"))
+print(has_suffix("小雪.txt", ".txt"))
+# 两行均输出 true
+```
+
+两者按字符工作，空 needle 为 true；后缀表达式先检查长度，长 needle 会短路返回 false。

@@ -187,6 +187,34 @@ fn first_error_code(source_path: &Path, source: &str) -> Option<String> {
         })
 }
 
+/// 新接口同时验证真实加载、未导入拒绝及导入签名的参数错误身份。
+fn assert_added_function_boundary(
+    module: &str,
+    function: &str,
+    arguments: &str,
+    expected: &str,
+    invalid_arguments: &str,
+) {
+    let caller =
+        format!("from stdlib.{module} import {function}\nprint({function}({arguments}))\n");
+    let outcome = run_vm(module, &caller);
+    assert!(outcome.is_success(), "{function}: {outcome:?}");
+    assert_eq!(output(&outcome), expected, "{function}");
+    assert!(loaded(&outcome, &format!("stdlib.{module}")));
+    let path = repository_root().join(format!("tests/20m-{function}.xiao"));
+    assert!(
+        first_error_code(&path, &format!("print({function}({arguments}))\n")).is_some(),
+        "{function} 未导入时必须失败"
+    );
+    let invalid =
+        format!("from stdlib.{module} import {function}\n{function}({invalid_arguments})\n");
+    assert_eq!(
+        first_error_code(&path, &invalid).as_deref(),
+        Some("X04-TYPE-002"),
+        "{function} 参数类型"
+    );
+}
+
 #[test]
 /// 验证 text 模块的 VM 结果、类型拒绝和移除边界。
 fn text_module_vm_result_and_removal_boundary_are_stable() {
@@ -195,6 +223,20 @@ fn text_module_vm_result_and_removal_boundary_are_stable() {
     assert!(outcome.is_success(), "text VM 调用失败：{outcome:?}");
     assert_eq!(output(&outcome), "ok\n");
     assert!(loaded(&outcome, "stdlib.text"));
+
+    for (function, arguments, expected, invalid) in [
+        ("trim", "\" x \"", "x\n", "1"),
+        (
+            "replace_all",
+            "\"aba\", \"a\", \"x\"",
+            "xbx\n",
+            "\"aba\", 1, \"x\"",
+        ),
+        ("repeat", "\"雪\", 2", "雪雪\n", "\"雪\", true"),
+        ("upper_ascii", "\"a雪\"", "A雪\n", "1"),
+    ] {
+        assert_added_function_boundary("text", function, arguments, expected, invalid);
+    }
 
     let path = repository_root().join("stdlib/text.xiao");
     let (_, source) = module_source("text");
@@ -416,6 +458,14 @@ fn path_module_vm_result_and_removal_boundary_are_stable() {
     assert!(outcome.is_success(), "path VM 调用失败：{outcome:?}");
     assert_eq!(output(&outcome), "lib/core\n");
     assert!(loaded(&outcome, "stdlib.path"));
+
+    for (function, expected) in [
+        ("basename", "b.x\n"),
+        ("dirname", "a\n"),
+        ("extension", ".x\n"),
+    ] {
+        assert_added_function_boundary("path", function, "\"a/b.x\"", expected, "1");
+    }
 
     let (path, source) = module_source("path");
     let caller_without_module = "print(join(\"lib\", \"core\"))\n";

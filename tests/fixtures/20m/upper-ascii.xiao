@@ -1,0 +1,6 @@
+from stdlib.text import upper_ascii
+
+print("[" + upper_ascii("") + "]")
+print(upper_ascii("abcdefghijklmnopqrstuvwxyz"))
+print(upper_ascii("Az-9小雪😀éßı"))
+print(upper_ascii("`a{z~"))

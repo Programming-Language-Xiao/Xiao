@@ -1,4 +1,4 @@
-//! 20M 纯 Xiao 文本/路径候选探测；冻结前不修改标准库函数体。
+//! 20M 候选探测及冻结接口的同源 VM/LLVM、加载移除与归档重放回归。
 
 use std::fs;
 use std::io::Read;
@@ -7,11 +7,13 @@ use std::process::{Command, Output, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use xiao_codegen_llvm::{TargetDescription, Toolchain};
+use xiao_codegen_llvm::{CodegenError, CodegenOptions, NativeBuild, TargetDescription, Toolchain};
 use xiao_driver::{
-    DriverRequest, FrontendCompiler, FrontendNativeDriver, FrontendRequest, FrontendVmDriver,
-    NativeBuildRequest,
+    ArchiveBuildRequest, CancellationToken, DriverRequest, FrontendCompiler, FrontendNativeDriver,
+    FrontendRequest, FrontendVmDriver, NativeBuildRequest, ProtocolRequest, ProtocolResponse,
+    RunOptions, build_archive, dispatch,
 };
+use xiao_ir::IrStatementKind;
 use xiao_vm::VmEvent;
 
 /// 九项独立源码及黄金输出；即使接口被裁掉，也保留其组合能力探测。
@@ -45,6 +47,46 @@ const PROBES: [(&str, &str); 9] = [
     ),
 ];
 
+/// 冻结的七个入口；组合剔除项不成为产品 API。
+const PRODUCTS: [(&str, &str, &str); 7] = [
+    ("trim", "text", "trim"),
+    ("replace-all", "text", "replace_all"),
+    ("repeat", "text", "repeat"),
+    ("upper-ascii", "text", "upper_ascii"),
+    ("basename", "path", "basename"),
+    ("dirname", "path", "dirname"),
+    ("extension", "path", "extension"),
+];
+
+/// 函数别名、跨模块组合及补充路径边界的独立黄金值。
+const INTEGRATION_OUTPUT: &str = "dir/小雪-A.TXT\n小雪-A.TXT\ntrue\ntrue\n[|a/b|]\n[b|/a|]\n[name|dir.x|]\n[.config.json||.json]\n[a..b||.b]\n[|dir.x|]\n1\n";
+
+/// 将本测试创建的临时目录与工程源码隔离，失败时也回收产物。
+struct TestDirectory(PathBuf);
+
+impl TestDirectory {
+    /// 按测试用途创建固定前缀、当前进程独占的目录。
+    fn new(label: &str) -> Self {
+        let root = std::env::temp_dir().join(format!("xiao-20m-{label}-{}", std::process::id()));
+        fs::create_dir_all(&root).expect("创建隔离目录");
+        Self(root)
+    }
+}
+
+impl Drop for TestDirectory {
+    /// 解析绝对路径后，只回收临时根目录下本测试拥有的直接子目录。
+    fn drop(&mut self) {
+        if let (Ok(root), Ok(temp)) = (self.0.canonicalize(), std::env::temp_dir().canonicalize())
+            && root.parent() == Some(temp.as_path())
+            && root
+                .file_name()
+                .is_some_and(|name| name.to_string_lossy().starts_with("xiao-20m-"))
+        {
+            let _ = fs::remove_dir_all(root);
+        }
+    }
+}
+
 /// 定位与正式工具链使用同一份标准库的仓库根目录。
 fn repository_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -54,10 +96,30 @@ fn repository_root() -> PathBuf {
         .to_path_buf()
 }
 
-/// 为候选读取真实文件，保留源码路径和导入环境。
-fn probe_request(id: &str) -> FrontendRequest {
-    let path = repository_root().join(format!("tests/fixtures/20m/probe-{id}.xiao"));
-    FrontendRequest::from_text_at(fs::read_to_string(&path).expect("读取候选夹具"), path)
+/// 读取真实文件，保留源码路径和导入环境。
+fn fixture_request(id: &str) -> FrontendRequest {
+    let path = repository_root().join(format!("tests/fixtures/20m/{id}.xiao"));
+    FrontendRequest::from_text_at(fs::read_to_string(&path).expect("读取夹具"), path)
+}
+
+/// 产品调用与探测共享独立黄金值，另加函数别名、组合调用与目录点边界。
+fn product_cases() -> Vec<(&'static str, FrontendRequest, &'static str)> {
+    PRODUCTS
+        .iter()
+        .map(|&(id, _, _)| {
+            let expected = PROBES
+                .iter()
+                .find(|&&(probe, _)| probe == id)
+                .expect("候选黄金值")
+                .1;
+            (id, fixture_request(id), expected)
+        })
+        .chain(std::iter::once((
+            "integration",
+            fixture_request("integration"),
+            INTEGRATION_OUTPUT,
+        )))
+        .collect()
 }
 
 /// 从 VM 生产入口收集标准输出，并和独立黄金值对账。
@@ -87,12 +149,129 @@ fn assert_vm_output(
 /// 每项候选均须使用现有语言能力通过 VM，不允许因裁剪而撤掉探测。
 fn text_path_candidates_have_vm_golden_outputs() {
     for (id, expected) in PROBES {
-        let request = probe_request(id);
+        let request = fixture_request(&format!("probe-{id}"));
         let artifact = FrontendCompiler::new()
             .compile(&request)
             .unwrap_or_else(|error| panic!("{id} 前端探测失败：{error:?}"));
         assert_vm_output(&request, &artifact, expected);
         println!("20M-PROBE candidate={id} path=vm result=success");
+    }
+}
+
+#[test]
+/// 七项公开接口及组合调用逐字满足已冻结的边界。
+fn text_path_interfaces_have_vm_golden_outputs() {
+    for (id, request, expected) in product_cases() {
+        let artifact = FrontendCompiler::new()
+            .compile(&request)
+            .unwrap_or_else(|error| panic!("{id} 前端失败：{error:?}"));
+        assert_vm_output(&request, &artifact, expected);
+    }
+}
+
+#[test]
+/// 分别移除 VM 官方加载器和 LLVM 函数体绑定，每个新接口都必须结构化失败。
+fn text_path_interfaces_require_loader_and_native_function_binding() {
+    for (id, _, function) in PRODUCTS {
+        let request = fixture_request(id);
+        let artifact = FrontendCompiler::new()
+            .compile(&request)
+            .expect("移除夹具前端通过");
+        let program = xiao_bytecode::lower_program(&artifact.ir);
+        let without_loader =
+            xiao_vm::run_request(&xiao_vm::RunRequest::new(&artifact.ir, &program));
+        let xiao_vm::RunResult::Error(error) = without_loader.result else {
+            panic!("{id} 移除加载器后必须拒绝：{without_loader:?}");
+        };
+        assert_eq!(error.code(), "X06-RUNTIME-012", "{id}");
+        assert!(
+            error.message().contains("未注册模块编译器"),
+            "{id}: {error:?}"
+        );
+        let mut broken = artifact.ir.clone();
+        let keep = |statement: &xiao_ir::IrStatement| !matches!(&statement.kind, IrStatementKind::Function { name, .. } if name.text == function);
+        broken.body.retain(keep);
+        for module in &mut broken.modules {
+            module.body.retain(keep);
+        }
+        let result = NativeBuild::new().lower(&broken, &CodegenOptions::default());
+        assert!(
+            matches!(result, Err(CodegenError::Unsupported { .. })),
+            "{id} 移除函数体后须在 LLVM lowering 拒绝：{result:?}"
+        );
+    }
+}
+
+#[test]
+/// 真实归档仅记录实际官方导入、保持接口版本 1，删除应用源码后仍通过宿主加载器重放。
+fn text_path_archives_replay_with_exact_host_module_requirements() {
+    let root = TestDirectory::new("archives");
+    for (id, request, expected) in product_cases() {
+        let source = root.0.join(format!("{}.xiao", id.replace('-', "_")));
+        fs::write(&source, request.source.text()).expect("写入应用源码");
+        let mut build = ArchiveBuildRequest::new(&source);
+        build.cache_root = Some(root.0.join("cache"));
+        let archive = build_archive(&build, &CancellationToken::new()).expect("真实归档构建");
+        let modules: Vec<_> = if id == "integration" {
+            vec!["stdlib.path", "stdlib.text"]
+        } else {
+            let module = PRODUCTS.iter().find(|&&(name, _, _)| name == id).unwrap().1;
+            vec![if module == "text" {
+                "stdlib.text"
+            } else {
+                "stdlib.path"
+            }]
+        };
+        assert_eq!(archive.index.stdlib_modules, modules, "{id}");
+        assert_eq!(archive.index.stdlib_interface_version, 1);
+        assert_eq!(
+            archive.index.required_capabilities,
+            xiao_intrinsics::CAPABILITY_STDOUT
+        );
+        assert!(
+            archive
+                .index
+                .entries
+                .iter()
+                .all(|entry| !entry.module.starts_with("stdlib."))
+        );
+        let decoded = xiao_xar::decode_xar(&fs::read(&archive.output).unwrap()).unwrap();
+        let entry = xiao_bytecode::decode_xiaoc(&decoded.read_entry().unwrap()).unwrap();
+        assert!(
+            entry
+                .program
+                .functions
+                .iter()
+                .all(|function| !PRODUCTS.iter().any(|&(_, _, name)| function.name == name)),
+            "官方函数不能复制进入口对象"
+        );
+        fs::remove_file(source).expect("删除应用源码，验证独立重放");
+        let response = dispatch(ProtocolRequest::RunArchive {
+            request_id: format!("20m-{id}"),
+            protocol_version: xiao_driver::PROTOCOL_VERSION,
+            core_version: xiao_driver::CORE_VERSION,
+            locale: None,
+            path: archive.output.display().to_string(),
+            options: RunOptions {
+                timeout_ms: Some(10_000),
+                ..Default::default()
+            },
+            diagnostics: None,
+            debug: false,
+        });
+        let ProtocolResponse::Result {
+            exit_code, events, ..
+        } = response
+        else {
+            panic!("{id} 归档重放失败：{response:?}");
+        };
+        assert_eq!(exit_code, 0, "{id}: {events:?}");
+        let output: String = events
+            .iter()
+            .filter(|event| event.kind == "intrinsic_output")
+            .filter_map(|event| event.data.get("text").and_then(serde_json::Value::as_str))
+            .collect();
+        assert_eq!(output, expected, "{id} 归档黄金输出");
     }
 }
 
@@ -152,34 +331,63 @@ fn native_output(executable: &Path) -> Output {
     output
 }
 
+/// 实际链接并运行，同步核对退出码、stdout 和 stderr。
+fn assert_native_case(
+    id: &str,
+    artifact: &xiao_driver::FrontendArtifact,
+    request: NativeBuildRequest,
+    expected: &str,
+) {
+    let native = FrontendNativeDriver::new()
+        .build_artifact(artifact, &request)
+        .unwrap_or_else(|error| panic!("{id} 原生构建失败：{error}"));
+    let output = native_output(&native.native.executable);
+    assert_eq!(output.status.code(), Some(0), "{id}: {output:?}");
+    assert_eq!(output.stdout, expected.as_bytes(), "{id}: 原生黄金输出");
+    assert!(output.stderr.is_empty(), "{id}: {output:?}");
+}
+
 #[test]
 #[ignore = "需要受控 LLVM、Runtime staticlib 和目标三元组；维护回归三平台执行"]
 /// 九项候选复用同一份前端 IR，VM/原生均须逐字匹配黄金值且 stderr 为空。
 fn text_path_candidates_match_native_golden_outputs() {
     let (target, toolchain) = configured_native_toolchain();
-    let root = std::env::temp_dir().join(format!("xiao-20m-probe-{}", std::process::id()));
-    fs::create_dir_all(&root).expect("创建原生探测目录");
+    let root = TestDirectory::new("probes");
     for (id, expected) in PROBES {
-        let request = probe_request(id);
+        let request = fixture_request(&format!("probe-{id}"));
         let artifact = FrontendCompiler::new()
             .compile(&request)
             .unwrap_or_else(|error| panic!("{id} 前端探测失败：{error:?}"));
         assert_vm_output(&request, &artifact, expected);
-        let executable = root.join(format!("{id}{}", std::env::consts::EXE_SUFFIX));
-        let native = FrontendNativeDriver::new()
-            .build_artifact(
-                &artifact,
-                &NativeBuildRequest::new(request, target.clone(), toolchain.clone(), executable),
-            )
-            .unwrap_or_else(|error| panic!("{id} 原生探测构建失败：{error}"));
-        let output = native_output(&native.native.executable);
-        assert_eq!(output.status.code(), Some(0), "{id}: {output:?}");
-        assert_eq!(output.stdout, expected.as_bytes(), "{id}: 原生黄金输出");
-        assert!(output.stderr.is_empty(), "{id}: {output:?}");
+        let executable = root.0.join(format!("{id}{}", std::env::consts::EXE_SUFFIX));
+        assert_native_case(
+            id,
+            &artifact,
+            NativeBuildRequest::new(request, target.clone(), toolchain.clone(), executable),
+            expected,
+        );
         println!("20M-PROBE candidate={id} path=vm/native result=success");
     }
-    let resolved = root.canonicalize().expect("解析原生探测目录");
-    let temp = std::env::temp_dir().canonicalize().expect("解析临时根目录");
-    assert!(resolved.starts_with(temp) && resolved != repository_root());
-    fs::remove_dir_all(resolved).expect("清理原生探测目录");
+}
+
+#[test]
+#[ignore = "需要受控 LLVM、Runtime staticlib 和目标三元组；维护回归三平台执行"]
+/// 产品公开入口复用同源 IR，逐字通过七项边界及函数别名/跨模块组合场景。
+fn text_path_interfaces_match_native_golden_outputs() {
+    let (target, toolchain) = configured_native_toolchain();
+    let root = TestDirectory::new("interfaces");
+    for (id, request, expected) in product_cases() {
+        let artifact = FrontendCompiler::new()
+            .compile(&request)
+            .unwrap_or_else(|error| panic!("{id} 前端失败：{error:?}"));
+        assert_vm_output(&request, &artifact, expected);
+        let executable = root.0.join(format!("{id}{}", std::env::consts::EXE_SUFFIX));
+        assert_native_case(
+            id,
+            &artifact,
+            NativeBuildRequest::new(request, target.clone(), toolchain.clone(), executable),
+            expected,
+        );
+        println!("20M-INTERFACE case={id} path=vm/native result=success");
+    }
 }

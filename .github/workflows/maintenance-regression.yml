@@ -193,6 +193,7 @@ jobs:
             --skip native_concurrency_shared_c_layout_probe `
             --skip public_native_concurrency_metadata_and_release_matrix `
             --skip text_path_candidates_match_native_golden_outputs `
+            --skip text_path_interfaces_match_native_golden_outputs `
             --skip native_concurrency_vm_native_differential_matches_from_same_ir
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
@@ -213,12 +214,14 @@ jobs:
           if (($releaseOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {
             throw '22E native release case must execute exactly once'
           }
-          $probeOutput = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20m_text_and_path -- --ignored text_path_candidates_match_native_golden_outputs --exact --nocapture 2>&1
-          $probeExit = $LASTEXITCODE
-          $probeOutput | ForEach-Object { Write-Output $_ }
-          if ($probeExit -ne 0) { exit $probeExit }
-          if (($probeOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {
-            throw '20M native candidate probe must execute exactly once'
+          foreach ($testName in @('text_path_candidates_match_native_golden_outputs', 'text_path_interfaces_match_native_golden_outputs')) {
+            $textPathOutput = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20m_text_and_path -- --ignored $testName --exact --nocapture 2>&1
+            $textPathExit = $LASTEXITCODE
+            $textPathOutput | ForEach-Object { Write-Output $_ }
+            if ($textPathExit -ne 0) { exit $textPathExit }
+            if (($textPathOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {
+              throw "20M native test must execute exactly once: $testName"
+            }
           }
           exit $LASTEXITCODE
 
@@ -254,6 +257,7 @@ jobs:
             --skip native_concurrency_shared_c_layout_probe \
             --skip public_native_concurrency_metadata_and_release_matrix \
             --skip text_path_candidates_match_native_golden_outputs \
+            --skip text_path_interfaces_match_native_golden_outputs \
             --skip native_concurrency_vm_native_differential_matches_from_same_ir
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
           run_exact_native_test() {
@@ -275,6 +279,7 @@ jobs:
           run_exact_native_test native_concurrency_vm_native_differential_matches_from_same_ir
           run_exact_native_test public_native_concurrency_metadata_and_release_matrix 22e_release
           run_exact_native_test text_path_candidates_match_native_golden_outputs 20m_text_and_path
+          run_exact_native_test text_path_interfaces_match_native_golden_outputs 20m_text_and_path
 
       - name: Build runtime and run macOS native gates
         if: runner.os == 'macOS'
@@ -310,6 +315,7 @@ jobs:
             --skip native_concurrency_shared_c_layout_probe \
             --skip public_native_concurrency_metadata_and_release_matrix \
             --skip text_path_candidates_match_native_golden_outputs \
+            --skip text_path_interfaces_match_native_golden_outputs \
             --skip native_concurrency_vm_native_differential_matches_from_same_ir
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
           run_exact_native_test() {
@@ -331,6 +337,7 @@ jobs:
           run_exact_native_test native_concurrency_vm_native_differential_matches_from_same_ir
           run_exact_native_test public_native_concurrency_metadata_and_release_matrix 22e_release
           run_exact_native_test text_path_candidates_match_native_golden_outputs 20m_text_and_path
+          run_exact_native_test text_path_interfaces_match_native_golden_outputs 20m_text_and_path
 
       - name: Run 20D and 20E resource, process and archive fixtures (Windows)
         if: runner.os == 'Windows'

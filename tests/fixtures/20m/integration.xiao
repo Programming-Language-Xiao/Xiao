@@ -1,0 +1,14 @@
+from stdlib.text import upper_ascii, find, length, slice
+from stdlib.path import join, dirname, extension
+from stdlib.text import trim as clean
+from stdlib.path import basename as leaf
+
+value = upper_ascii(clean(" \t小雪-a.txt\r\n"))
+print(join("dir", value))
+print(leaf("dir/" + value))
+print(find(value, "小雪") == 0)
+needle = ".TXT"
+print(length(needle) <= length(value) and slice(value, length(value) - length(needle), length(value)) == needle)
+for candidate in ["a/b/", "/a/b", "dir.x/name", ".config.json", "a..b", "dir.x/"]
+    print("[" + leaf(candidate) + "|" + dirname(candidate) + "|" + extension(candidate) + "]")
+print(length(clean(chr(0) + " ")))

@@ -1,6 +1,6 @@
 # `text` 模块
 
-工程期：20C 首批、第二批、第五批、第七批与 20I；规范源码为 [`text.xiao`](text.xiao)。第五批的零增量 `format_int` 候选已由第六批撤回。
+工程期：20C、20I 与 20M；规范源码为 [`text.xiao`](text.xiao)。第五批的零增量 `format_int` 候选已由第六批撤回。
 
 ## 接口
 
@@ -21,10 +21,25 @@
 保留首、中、尾空段，空分隔符抛出 `TEXT_SPLIT_EMPTY_SEPARATOR`；结果数组通过 `array_push`
 原地构造。
 
+20M 兼容新增四项，全部由纯 Xiao 实现：
+
+| 接口 | 冻结语义 |
+| --- | --- |
+| `trim(str text) -> str` | 只剥除首尾 ASCII 空格、tab、CR、LF、VT、FF；内部空白和其他 Unicode 空白保留 |
+| `replace_all(str text, str needle, str replacement) -> str` | 从左到右、非重叠；空 needle 返回原串；替换结果不重扫 |
+| `repeat(str text, int count) -> str` | 重复 count 次；count ≤ 0 返回空串 |
+| `upper_ascii(str text) -> str` | 仅把 ASCII a–z 转为 A–Z，其余字符原样保留 |
+
+四项不增加错误编号。前后缀判断按 20M 的一行组合门槛剔除，分别使用
+`find(text, needle) == 0` 和带长度守卫的 `slice` 比较；示例见
+[公共文档](../docs/UseDocs/library/text.md)。本批验证与证据见
+[20M](../docs/DevDocs/20m-text-and-path-expansion.md)。
+
 文本参数必须是 `str`；其它类型由现有类型层拒绝。本批不提供填充/对齐/进制格式化、数字格式化接口、
 完整 Unicode 大小写转换或集合操作。
 
 ## 兼容身份
 
 这是标准库接口版本 1 的新增接口，属于兼容扩展，不提升 `STDLIB_INTERFACE_VERSION`。模块由工具链专用
-标准库命名空间提供，不进入普通包依赖，也不写入 `.xar` 兼容字段。
+标准库命名空间提供，不进入普通包依赖。归档通过既有 `stdlib_modules` 记录 `stdlib.text`，
+运行时由宿主加载规范源码，不复制库函数体，也不新增归档字段。

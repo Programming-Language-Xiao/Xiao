@@ -6,9 +6,9 @@
 > 不新增 intrinsic、不改 Runtime ABI、不引入泛型约束或新容器参数，也不碰
 > `std.concurrent` 的虚拟模块边界。
 >
-> 状态：**冻结决定已确认（2026-11-01）：七项保留、两项组合剔除、路径逐格语义按 §9.3；
-> 原生探测接入三平台维护回归并全绿后才正式冻结**。基线为 22 阶段完成后的 `cff1499`；
-> 探测记录见 §九，冻结前不写产品函数体。
+> 状态：**七项实现及本地验证完成，产品三平台验收待核销（2026-11-01）**。
+> 七项保留、两项组合剔除、路径逐格语义按 §9.3；冻结前的三平台原生探测及完整工作区
+> 门禁已全绿（§9.5）。基线为 22 阶段完成后的 `cff1499`；产品函数体在三平台探测通过后实施。
 > 19 发布收口、11C L4、11B I5 和 22E 的登记差异
 > 仍保持各自文档的未闭合状态，不被本批顺带宣称完成。
 
@@ -80,8 +80,8 @@
 | P-2 | `dirname(str) -> str` | 最后一个 `/` 之前 | 无分隔符、根 `/`、连续 `/` |
 | P-3 | `extension(str) -> str` | 末段最后一个 `.` 起（含点） | 无点、以点开头、多个点、目录中的点 |
 
-以上九项是**待探测候选**，不是已冻结 API。每项必须先有 VM/native 双路径探测和一条
-真实文本夹具，冻结后才写入 `stdlib/text.xiao` / `stdlib/path.xiao`。
+以上是最初的九项候选，最终按 §9.2 保留七项、组合剔除两项。每项均先有 VM/native
+双路径探测和真实文本夹具，再经确认与三平台门禁生效后写入标准库。
 
 ### D-2（语义冻结）：边界先写死
 
@@ -192,7 +192,7 @@ core/rust/crates/xiao-driver/tests/c20_capability_probe.rs  候选探测
 core/rust/crates/xiao-driver/tests/20c_first_modules.rs     移除与双路径
 ```
 
-## 九、探测记录与冻结草案（2026-11-01）
+## 九、探测记录与冻结结论（2026-11-01）
 
 ### 9.1 真实源码探测
 
@@ -203,19 +203,19 @@ VM 与原生执行均限制为十秒；原生构建使用真实 `llvm-as` 校验
 
 本机 Windows `x86_64-pc-windows-msvc` 实跑：2 个测试通过、9/9 候选双路径通过。
 覆盖六种 ASCII 空白、非 ASCII 空白保留、空串、Unicode 码点、非正重复次数、非重叠替换、
-替换结果不重扫，以及 §9.3 的 18 行路径边界。尚未产生本批三平台远端证据。
+替换结果不重扫，以及 §9.3 的 18 行路径边界。随后三平台远端探测全绿，见 §9.5。
 
 ```powershell
 cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20m_text_and_path -- --include-ignored --nocapture
 ```
 
-### 9.2 接口裁剪草案
+### 9.2 接口裁剪结论
 
 星崽已确认（2026-11-01）：七项保留、`starts_with`/`ends_with` 两项按“一行组合”剔除，
-路径逐格语义按 §9.3。**冻结在三平台原生探测证据到位后生效**；在此之前不写产品函数体。
+路径逐格语义按 §9.3。三平台原生探测证据已到位（§9.5），**冻结已生效**；产品函数体随后实施。
 该 D-3 门槛比 20C §3.4.1 仅要求冻结语义决定更严格。
 
-| 编号 | 候选 | VM/native | 建议 | 冻结的决定或裁剪依据 |
+| 编号 | 候选 | VM/native | 裁定 | 冻结的决定或裁剪依据 |
 | --- | --- | --- | --- | --- |
 | T-1 | `trim(str text) -> str` | 通过 | 保留 | 只剥除首尾六种 ASCII 空白，内部和其他 Unicode 空白保留 |
 | T-2 | `starts_with(str text, str needle) -> bool` | 通过 | 组合即可，剔除 | `find(text, needle) == 0`；空 needle 为 true |
@@ -234,13 +234,13 @@ find(text, needle) == 0
 length(needle) <= length(text) and slice(text, length(text) - length(needle), length(text)) == needle
 ```
 
-建议新增 text 4 项、path 3 项；没有不可表达项。保留项都需要扫描、循环或累积构造，
+新增 text 4 项、path 3 项；没有不可表达项。保留项都需要扫描、循环或累积构造，
 不能由现有接口的一行调用组合直接得到。标准库接口版本保持 1，不增加 intrinsic、Runtime ABI、
 类型能力或归档字段。
 
 ### 9.3 路径逐格语义
 
-下面这 18 行已由星崽确认（2026-11-01），冻结生效条件同 §9.2。表中 `""` 表示空字符串；
+下面这 18 行已由星崽确认（2026-11-01），冻结已按 §9.5 生效。表中 `""` 表示空字符串；
 反斜杠按普通字符保留。这里只截取原始文本：尾随 `/` 产生空末段，dirname 不把空父段改成
 `/` 或 `.`；`.`、`..` 和点文件也按普通文本处理。
 
@@ -267,13 +267,51 @@ length(needle) <= length(text) and slice(text, length(text) - length(needle), le
 
 ### 9.4 后续验收状态
 
-- 步骤 0 已有本地双路径证据；步骤 1 的 §9.2/§9.3 已由星崽确认（2026-11-01）。
-- 冻结生效的剩余条件：把 `text_path_candidates_match_native_golden_outputs` 加入维护回归
-  三平台原生作业的精确执行列表，按既有规则 `--exact` 运行并断言恰好 1 条通过；三平台
-  运行号回填后，本批才从“冻结决定已确认”转为“已冻结并进入实现”。
-- 门禁接线已完成：三平台从 workspace ignored 批量命令中排除此探测，再独立精确运行并
-  校验 `1 passed; 0 failed`；运行号及最终结果待推送后回填。
+- 步骤 0/1 已完成：§9.2/§9.3 已确认，三平台原生探测及精确计数门禁通过（§9.5）。
 - 探测阶段的 fmt、定向 Clippy、docs、UseDocs 与 layout 检查通过。
-- 产品函数体、逐接口移除验证、模块隔离、归档重放和公开文档尚未实施。
-- 三平台维护回归、完整 workspace gates、覆盖率及运行号尚待本批实现后核销。
+- 步骤 2–5 已有本地证据（§9.6）；源码、模块文档、UseDocs、README 和 registry 同步。
+- 产品三平台维护回归与完整 workspace gates 待最终实现提交取证；UseDocs 与对应 registry
+  暂标 draft，证据通过后恢复 verified。
 - 19 发布收口、11C L4、11B I5 和 22E 登记差异保持原状态。
+
+### 9.5 冻结生效的三平台证据
+
+门禁提交 `d8a3d32cbd6da5ac266d979a1edcc48f6d6cc76b`：维护回归
+[41226898352](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41226898352)
+全部成功，完整工作区门禁
+[41226898301](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41226898301)
+成功。三平台先从 workspace ignored 批量命令中排除候选探测，再独立执行
+`--ignored text_path_candidates_match_native_golden_outputs --exact --nocapture`，
+校验 `1 passed; 0 failed`，防止零匹配。
+
+| 平台 | 原生作业 | 日志核对 |
+| --- | --- | --- |
+| Windows | [124612821774](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41226898352/job/124612821774) | 9/9 候选、同源 VM/native 黄金输出、空 stderr、1 条精确测试通过 |
+| Linux | [124612821694](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41226898352/job/124612821694) | 同上 |
+| macOS | [124612821734](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41226898352/job/124612821734) | 同上 |
+
+这组证据满足冻结前置条件；产品实现及最终验收使用后续提交的独立证据，不以探测通过代替。
+
+### 9.6 产品实现与本地验证
+
+- `text` 新增 `trim`、`replace_all`、`repeat`、`upper_ascii`，共 11 项；`path` 新增
+  `basename`、`dirname`、`extension`，共 4 项。仅增加纯 Xiao 函数；接口版本仍为 1，
+  没有新增 intrinsic、Runtime/C ABI、类型能力或归档字段。`repeat` 按计数的二进制位
+  拼接，空文本直接返回，避免逐次追加完整输入的反复复制。
+- `20m_text_and_path` 默认 4 项覆盖九项候选、七项公开接口和组合场景、逐接口 VM 加载器/
+  LLVM 函数体移除，以及真实归档重放。八个产品场景（七项接口＋一项组合）的同源 VM/native
+  黄金 stdout、退出码 0、空 stderr 和十秒限制已在本机受控工具链通过。
+- 原有 `20c_first_modules` 的两个指定移除测试扩展至七项新接口，逐项验证成功输出、
+  未导入拒绝和参数类型 `X04-TYPE-002`；8 项含原生测试全过，普通包/项目的保留命名空间
+  隔离与 VM 加载边界保持通过。
+- 真实 `.xar` 逐场景检查实际 `stdlib_modules`、接口版本 1、stdout 能力及不复制官方对象/
+  函数体；删除应用源码后仍通过生产协议与宿主标准库加载器逐字重放黄金输出。
+- 本地完整 Rust workspace：169 组、1517 项通过、48 项环境门控 ignored；fmt、workspace
+  Clippy（`-D warnings`）、仓库 all 检查（含 docs/UseDocs/layout）通过。文档覆盖率
+  90.19%，公共 API 100%。本批的两个原生 ignored 测试另经受控工具链执行通过。
+- 原生组合场景使用 `from stdlib... import ...` 及函数别名。模块对象中的函数值物化
+  （`import stdlib.text as text`）和块作用域同名槽位遮蔽仍是既有 LLVM 边界；本批按原范围
+  保留，不新增动态接收者或函数值能力。夹具的循环变量使用独立名称。
+
+三平台维护回归已为产品原生测试同样设置独立 `--exact` 运行及恰好一条通过校验；
+产品提交、运行号和逐作业证据在远端完成后写入 §9.7。

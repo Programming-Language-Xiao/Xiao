@@ -1,0 +1,11 @@
+from stdlib.text import replace_all
+
+print("[" + replace_all("", "x", "y") + "]")
+print("[" + replace_all("小😀", "", "x") + "]")
+print("[" + replace_all("aaaaa", "aa", "b") + "]")
+print("[" + replace_all("aaa", "a", "aa") + "]")
+print("[" + replace_all("abab", "ab", "") + "]")
+print("[" + replace_all("小😀小😀", "小😀", "雪") + "]")
+print("[" + replace_all("abc", "long", "x") + "]")
+print("[" + replace_all("abc", "z", "x") + "]")
+print("[" + replace_all("ababa", "aba", "x") + "]")
