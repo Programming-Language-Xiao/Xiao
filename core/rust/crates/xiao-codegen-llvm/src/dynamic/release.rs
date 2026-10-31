@@ -191,19 +191,7 @@ impl<'a> DynamicGenerator<'a> {
             let Some((_, allocation)) = line.split_once(" = alloca ") else {
                 return true;
             };
-            let fixed = allocation.split_once(", ").is_none_or(|(_, suffix)| {
-                let mut fields = suffix.split_whitespace();
-                match fields.next() {
-                    Some(ty)
-                        if ty.starts_with('i') && ty[1..].chars().all(|c| c.is_ascii_digit()) =>
-                    {
-                        fields
-                            .next()
-                            .is_some_and(|count| count.trim_end_matches(',').parse::<u64>().is_ok())
-                    }
-                    _ => true,
-                }
-            });
+            let fixed = fixed_alloca(allocation);
             if fixed {
                 fixed_allocations.push(line.clone());
             }
@@ -425,6 +413,64 @@ impl<'a> DynamicGenerator<'a> {
         for slot in slots {
             let release = self.value_release_symbol();
             self.emit(format!("  call void @{release}(ptr %slot{})", slot.index));
+        }
+    }
+}
+
+/// 仅移动隐式单元素或显式字面量数量的 alloca；动态数量必须留在原支配块。
+fn fixed_alloca(allocation: &str) -> bool {
+    let mut depth = 0_u32;
+    let separator = allocation.char_indices().find_map(|(index, character)| {
+        match character {
+            '[' | '{' | '<' | '(' => depth += 1,
+            ']' | '}' | '>' | ')' => depth = depth.saturating_sub(1),
+            ',' if depth == 0 => return Some(index),
+            _ => {}
+        }
+        None
+    });
+    let Some(index) = separator else {
+        return true;
+    };
+    let mut fields = allocation[index + 1..].split_whitespace();
+    match fields.next() {
+        Some("align") => true,
+        Some(ty) if ty.starts_with("addrspace(") => true,
+        Some(ty)
+            if ty.starts_with('i')
+                && ty.len() > 1
+                && ty[1..].chars().all(|c| c.is_ascii_digit()) =>
+        {
+            fields
+                .next()
+                .is_some_and(|count| count.trim_end_matches(',').parse::<u64>().is_ok())
+        }
+        _ => false,
+    }
+}
+
+#[cfg(test)]
+mod storage_tests {
+    use super::fixed_alloca;
+
+    #[test]
+    /// 聚合元素或非 i64 数量类型都不得让动态 SSA 数量被当作入口固定分配。
+    fn only_literal_alloca_counts_can_move_to_entry() {
+        for fixed in [
+            "%xiao.value",
+            "%xiao.value, i64 3",
+            "{ i32, i64 }, i32 2, align 8",
+            "[2 x i64], align 8",
+        ] {
+            assert!(fixed_alloca(fixed), "{fixed}");
+        }
+        for dynamic in [
+            "%xiao.value, i64 %count",
+            "{ i32, i64 }, i32 %count",
+            "[2 x i64], i128 %count",
+            "%xiao.value, ptr %count",
+        ] {
+            assert!(!fixed_alloca(dynamic), "{dynamic}");
         }
     }
 }

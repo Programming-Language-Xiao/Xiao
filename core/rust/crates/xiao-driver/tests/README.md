@@ -2,6 +2,11 @@
 
 本目录覆盖 08-U0 统一前端入口，以及 09-B0-C/D 前端到生产 VM 驱动器、退出码和 X0-A 协议的公共契约。
 
+`22e_release.rs` 直接读取权威并发 UseDocs 的五个示例，覆盖 17 个入口；验证三类产物
+的最小位集、旧/新 Runtime 兼容和 32 位拒绝。三平台精确执行公开 NativeBuild、实际
+节读回、strip、损坏/旧元数据拒绝与 verify 发布报告。E-0 的首次 finally/helper
+取消差异有独立精确断言，不改 22D 原有 12/16/1 差分判据。
+
 `22c_vm_concurrency.rs` 覆盖真实源码的线程、任务池、共享锁、Runtime 身份、取消与
 清理、detached 错误、XCON 限制和 `.xiaoc`/`.xar` 执行前门禁。
 `22d_llvm_concurrency.rs` 覆盖同一 IR 的 LLVM 并发计划、trampoline、shared/lock 取消入口与 fail-closed。三个 ignored 门禁由三平台原生 job 逐一精确运行：根/局部别名及分组目标的真实 `llvm-as`、32B/16B C 布局对象探针、12 个成功/16 个运行时错误/1 个嵌套 detached 场景的 VM/native 差分。收尾源码位于 `concurrency_closure/`，覆盖 str/tuple/多参数、detach 成功、pool 030/032、多 Runtime、guard 作用域、四位置取消、finally/drop 一次、64 KiB 字节往返及 16 MiB + 1 启动前拒绝。稳定场景逐事件比较完整释放投影；detached 的独立打印对象可交换，取消握手比较稳定共享对象并确认守卫释放。覆盖层次和本批证据见 [22D §9.3](../../../../../docs/DevDocs/22d-llvm-concurrency-differential.md#93-22d-fix1-收尾矩阵与证据)。

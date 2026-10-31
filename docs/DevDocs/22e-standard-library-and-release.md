@@ -5,9 +5,9 @@
 > required-feature 位表；22B/22C/22D 已完成类型、VM、LLVM 和差分。本批只开放公共文档、
 > 补齐产物元数据与发布矩阵，**不重新决定语言语义，不新增并发 API**。
 >
-> 状态：**规划中（2026-10-31）**。基线代码 `ab92df1`（22D-FIX.1）与证据补录 `ee48204`；
-> 22D 的 12/16/1 差分、三平台原生/C 布局和完整 gates 已通过。本批的 D-1、D-3 需要
-> 星崽确认后再写产品代码；确认前只落文档和只读核对。
+> 状态：**实施中（2026-10-31）**。基线代码 `ab92df1`（22D-FIX.1）与证据补录 `ee48204`；
+> 22D 的 12/16/1 差分、三平台原生/C 布局和完整 gates 已通过。星崽已分别确认 D-1、D-3
+> 均采用甲方案：保留虚拟模块，原生产物内嵌只读自描述元数据，优先复用既有错误身份。
 
 ## 一、入口条件与冻结输入
 
@@ -78,8 +78,8 @@
 **乙**：新增 `stdlib/concurrent.xiao` 声明或薄包装；需要改加载器和类型检查的模块身份，
 存在双绑定和遮蔽风险，不采用。
 
-**待确认**：22 阶段文档里“写 stdlib 函数体”的旧措辞按甲解释为“公开签名 + Runtime 实现 +
-文档”；确认后同步 22 阶段文档和 stdlib README。
+**已确认取甲**：22 阶段文档里“写 stdlib 函数体”的旧措辞解释为“公开签名 + Runtime 实现 +
+文档”，同步 22 阶段文档和 stdlib README。
 
 ### D-2（公共文档）：一份权威页面，状态最后升级
 
@@ -110,6 +110,8 @@
 ABI 和位集拒绝，未知位拒绝，不静默降级。
 
 **乙**：旁边放 `.xiao.json` sidecar；容易与可执行文件分离或漂移，不采用。
+
+**已确认取甲**：元数据内嵌，工具链读取校验且不执行用户代码；不使用 sidecar。
 
 **错误身份**：优先复用语义相同的 `X17-XAR-007`（缺 requirements/版本不满足）、
 `X17-XAR-011`（未知位）和 `X20-TARGET-001`（32 位）。若实施发现 native 需要独立错误族，
@@ -231,3 +233,80 @@ core/rust/crates/xiao-runtime/src/abi.rs                  E-0 清理期取消语
 core/rust/crates/xiao-bytecode/src/concurrency.rs         `.xiaoc` 位集
 core/rust/crates/xiao-artifacts/src/lib.rs                `.xar` 位集
 ```
+
+## 九、实施记录与验收规格
+
+### 9.1 已确认的交付形态与 E-0
+
+星崽已分别确认 D-1/D-3 采用甲方案。`std.concurrent` 保持虚拟模块，冻结签名表与
+Runtime 只有一份事实，不创建 `stdlib/concurrent.xiao`。公共原生构建使用与内部差分
+相同的元数据发射/验收路径，`with_internal_concurrency` 保留为调用方兼容接口，
+不再成为绕过验收的开关。生成器版本升至 14，Runtime ABI 保持 1.17。
+
+E-0 帧分配分类现在只移动隐式单元素或字面量数量的 alloca，聚合类型内部逗号不作为
+数量分隔符，未知/SSA 数量留在原支配块；`only_literal_alloca_counts_can_move_to_entry`
+覆盖聚合元素、非 i64 数量类型及动态数量。
+
+清理期取消改为按执行单元记忆“自身取消已投递”，只抑制已投递令牌；trampoline 前后
+与独立入口 reset 都重置该状态。`native_first_cancellation_inside_finally_is_delivered`
+和既有清理 checkpoint 回归证明首次到达不会被无条件屏蔽。
+
+实际 VM 核对另发现：`run_blocks` 按指令检查，finally 的 `run_subroutine` 不按指令
+检查并发令牌，但其中调用普通 helper 会检查。新增真实 VM/native 的 E-0 握手例证明
+finally 内 helper 首次收到取消后两侧均以 recoverable 027、退出码 3 结束；VM 的
+路由多保留一层 suppressed 027，native 无此层。本批按 D-6 允许明确登记这一差异，
+测试分别精确断言链形状，不把错误链写成相等；原有 22D 12/16/1 判据保持。
+
+`22D-CASE` 现在包含 `detached-failure`，总共 29 条；FIX.1 C-10 的实际用例为
+`entry_close_drain_failure_preserves_primary_and_suppressed`，旧 5/9/1 标注为本批前基线。
+
+### 9.2 元数据格式 v1 与不执行校验
+
+记录统一小端编码，固定头 60 字节，之后为三个 u32 字节长度前缀的 UTF-8 字符串。
+总记录不超过 64 KiB，每个字符串 1～4096B；截断、尾部额外记录、重复节和非零保留位
+均拒绝。对象节仅按目录名称定位，不在可执行文件全文搜索 magic。
+
+| 偏移 | 字段 | 固定内容/校验 |
+| --- | --- | --- |
+| 0 | magic，8B | `XIAOMETA` |
+| 8 | metadata version，u16 | 1 |
+| 10 | flags，u16 | 0 |
+| 12 | total length，u32 | 完整记录长度 |
+| 16/24 | Runtime ABI min/max，u64 | 首版均为 1.17，未来次版本不隐式扩大 |
+| 32 | required features，u64 | `.xar` 并发位，不含归档 bit 0 |
+| 40 | generator，u32 | 当前 `CODEGEN_VERSION`，未知未来版本拒绝 |
+| 44/46 | pointer width/reserved，u16 | 64 / 0 |
+| 48 | stdlib interface，u32 | 权威接口版本 1 |
+| 52 | stdlib ABI，u64 | 权威身份 ABI 1.17 |
+| 60 起 | 三个字符串 | 规范 target triple、language version、stdlib portable target |
+
+平台载体：ELF `.note.xiao` 包装为 owner `XIAO`、type 1 的对齐 note；PE `.xiaomta`
+满足 8B 节名限制；Mach-O `__XIAO,__meta` 由链接器固定只读权限。`llvm.used` 加目标
+链接器保留符号，strip 后仍须能读取。首版读取当前单架构 Mach-O，不将 fat 文件任意
+切片冒充当前目标；需通用二进制时先显式选择目标切片。
+
+`read_native_metadata` 只解析；`validate_native_metadata_file` 校验实际 Runtime ABI/位集、
+目标/宽度、生成器和标准库身份。NativeBuild 链接后调用同一验收，失败删除刚产生的
+无效文件；`xiao verify` 也使用此读取/校验路径，不运行产物。无元数据的旧普通原生文件
+不因此失去运行能力，但不能通过并发元数据验收。
+
+错误身份复用已确认方案：格式/缺失/版本/目标/标准库/缺位为 `X17-XAR-007`，未知位
+或归档 bit 0 为 `X17-XAR-011`，32 位构建为 `X20-TARGET-001`，不新增编号。
+
+### 9.3 最小位集与公共示例
+
+`xiao-ir::required_concurrency_features` 使用 `xiao-runtime-abi` 的权威操作依赖表；
+TAC/`.xiaoc` 将位集右移一位，`.xar` 与 native 使用同一并发编码。当前 Runtime 不要求
+显式多 Runtime 位；空池只要求 task_pool；spawn/join/detach 要求 threads、XCON 和
+可取消等待；共享值的实际存储编解码要求 shared_handles 与 serialization_v1；lock 再
+加入 cancel_wait。位集取计划/类型的最小并集，未知操作拒绝，不发布全置位产物。
+
+权威 UseDocs 的五个 `xiao` 代码块直接作为 VM/公开原生的测试输入，操作并集覆盖
+全部 17 个冻结入口。公开测试还核对真实节、损坏 magic/版本/位、旧 Runtime、strip、
+缺元数据旧产物、目标不匹配及 `verify` 发布报告。兼容矩阵新增三种载体 × 1.16/1.17
+六个格子，真实编码器/校验器证明 Direct 或 Reject，公开构建没有内部绕行。
+
+### 9.4 验证状态
+
+本批源码、示例、默认和受控原生门禁仍在验证；最终提交与三平台实际 job 完成后补录。
+公共页面暂保留 planned；三平台证据齐全后再升级 verified，不以 Windows 本机替代远端。

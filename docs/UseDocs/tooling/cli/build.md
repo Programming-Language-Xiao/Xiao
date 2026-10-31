@@ -55,6 +55,11 @@ xiao verify release/app.xar --detail
 xiao -xar release/app.xar
 ```
 
+22E 起 `xiao verify release/app --detail`（Windows 为 `app.exe`）也可读取并校验原生
+并发产物的内嵌元数据，报告 ABI、特性位、目标、生成器和标准库身份。它不运行可执行文件；
+没有并发元数据的旧原生产物不能通过这一并发验收。详见
+[并发执行与共享句柄](../../language/concurrency/README.md#原生产物校验)。
+
 归档携带入口可达的本地模块和 `[resources]` 显式声明的文件。资源映射仍采用
 `"归档逻辑路径" = "项目根相对来源文件"`，不收录未声明文件。官方标准库与 Runtime
 由宿主提供，归档只记录实际可达的官方模块及 intrinsic 能力要求。例如仅调用

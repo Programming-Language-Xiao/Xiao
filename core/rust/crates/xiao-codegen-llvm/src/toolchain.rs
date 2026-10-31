@@ -462,6 +462,16 @@ impl Toolchain {
             ]),
             ObjectFormat::Coff => {}
         }
+        if text.contains("@xiao_native_metadata =") {
+            match target.object_format {
+                ObjectFormat::Coff => args.push("-Wl,/include:xiao_native_metadata".to_owned()),
+                ObjectFormat::Elf => args.push("-Wl,--undefined=xiao_native_metadata".to_owned()),
+                ObjectFormat::MachO => args.extend([
+                    "-Wl,-u,_xiao_native_metadata".to_owned(),
+                    "-Wl,-segprot,__XIAO,r,r".to_owned(),
+                ]),
+            }
+        }
         let mut startup_object = None;
         if let Some(startup) = startup {
             let source = TempFile::new("xiao-startup", "c")?;

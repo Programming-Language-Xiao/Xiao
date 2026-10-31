@@ -11,6 +11,13 @@ pub type Result<T> = std::result::Result<T, CodegenError>;
 /// LLVM 后端拒绝或工具链失败的结构化原因。
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum CodegenError {
+    /// 原生并发产物元数据未通过 requirements/feature/目标校验。
+    NativeMetadata {
+        /// 复用已冻结的稳定诊断码。
+        code: String,
+        /// 拒绝原因。
+        message: String,
+    },
     /// 输入 IR 版本不是后端支持的版本。
     IrVersion {
         /// 后端要求的版本。
@@ -76,6 +83,7 @@ impl Display for CodegenError {
     /// 将结构化后端错误渲染为稳定的诊断文本。
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {
+            Self::NativeMetadata { code, message } => write!(formatter, "{code}: {message}"),
             Self::IrVersion { expected, actual } => {
                 write!(formatter, "IR 版本不兼容：需要 {expected}，收到 {actual}")
             }

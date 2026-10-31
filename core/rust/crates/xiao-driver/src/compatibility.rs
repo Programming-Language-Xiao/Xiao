@@ -22,6 +22,12 @@ pub enum CompatibilityAxis {
     OptimizationFingerprint,
     /// 目标平台约束。
     TargetPlatform,
+    /// `.xiaoc` 并发产物对 Runtime ABI/feature 的预检。
+    ConcurrentXiaoc,
+    /// `.xar` 并发产物对 Runtime ABI/feature 的预检。
+    ConcurrentArchive,
+    /// 原生只读元数据的 Runtime ABI/feature 验收。
+    ConcurrentNative,
 }
 
 impl CompatibilityAxis {
@@ -37,6 +43,9 @@ impl CompatibilityAxis {
             Self::LanguageVersion => "language_version",
             Self::OptimizationFingerprint => "optimization_fingerprint",
             Self::TargetPlatform => "target_platform",
+            Self::ConcurrentXiaoc => "concurrent_xiaoc",
+            Self::ConcurrentArchive => "concurrent_xar",
+            Self::ConcurrentNative => "concurrent_native",
         }
     }
 }
@@ -215,7 +224,7 @@ pub fn current_compatibility_versions() -> CompatibilityVersions {
 #[must_use]
 pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
     let current = current_compatibility_versions();
-    vec![
+    let mut cells = vec![
         cell(
             CompatibilityAxis::XiaocFormat,
             format!("{}.{}", current.xiaoc.0, current.xiaoc.1),
@@ -356,7 +365,39 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
             },
             CompatibilityEvidence::Unverified,
         ),
-    ]
+    ];
+    cells.extend(concurrency_compatibility_matrix());
+    cells
+}
+
+/// 三种并发产物 × ABI 1.16/1.17，拒绝路径由实际编解码器/元数据读取器回归证明。
+#[must_use]
+pub fn concurrency_compatibility_matrix() -> Vec<CompatibilityCell> {
+    let mut cells = Vec::new();
+    for (axis, artifact, code) in [
+        (CompatibilityAxis::ConcurrentXiaoc, ".xiaoc", "XIAOC-005"),
+        (CompatibilityAxis::ConcurrentArchive, ".xar", "X17-XAR-007"),
+        (CompatibilityAxis::ConcurrentNative, "native", "X17-XAR-007"),
+    ] {
+        for (abi, action) in [
+            (
+                "1.16",
+                CompatibilityAction::Reject {
+                    code: code.to_owned(),
+                },
+            ),
+            ("1.17", CompatibilityAction::Direct),
+        ] {
+            cells.push(cell(
+                axis,
+                format!("{artifact}/concurrency/abi=1.17"),
+                abi.to_owned(),
+                action,
+                CompatibilityEvidence::Verified,
+            ));
+        }
+    }
+    cells
 }
 
 /// 创建一格兼容矩阵数据。

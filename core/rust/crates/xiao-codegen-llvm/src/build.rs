@@ -65,6 +65,8 @@ impl BuildRequest {
 /// 已完成的原生构建产物。
 #[derive(Clone, Debug)]
 pub struct NativeArtifact {
+    /// 链接后从专用节读取并校验的原生并发要求；旧的非并发产物为 None。
+    pub native_metadata: Option<crate::NativeMetadata>,
     /// 生成的 LLVM 模块。
     pub module: LlvmModule,
     /// 可执行文件路径。
@@ -155,6 +157,38 @@ impl NativeBuild {
                 return Err(error);
             }
         };
+        let native_metadata =
+            match crate::read_native_metadata(&executable, &request.options.target).and_then(
+                |metadata| {
+                    let required = xiao_ir::required_concurrency_features(&request.program)
+                        .map_err(|message| crate::NativeMetadataError {
+                            code: "X17-XAR-007",
+                            message,
+                        })?;
+                    if let Some(metadata) = &metadata {
+                        metadata.validate(
+                            &request.options.target,
+                            &crate::NativeRuntimeSupport::default(),
+                            required,
+                        )?;
+                    } else if required != 0 || !request.program.concurrency_calls.is_empty() {
+                        return Err(crate::NativeMetadataError {
+                            code: "X17-XAR-007",
+                            message: "并发原生产物缺少元数据节".to_owned(),
+                        });
+                    }
+                    Ok(metadata)
+                },
+            ) {
+                Ok(metadata) => metadata,
+                Err(error) => {
+                    let _ = fs::remove_file(&executable);
+                    return Err(CodegenError::NativeMetadata {
+                        code: error.code.to_owned(),
+                        message: error.message,
+                    });
+                }
+            };
         if let Some(path) = &request.llvm_ir_output
             && let Err(error) = write_llvm_artifact(path, &module.text)
         {
@@ -177,6 +211,7 @@ impl NativeBuild {
             &native_optimization_report.plan.fingerprint,
         );
         Ok(NativeArtifact {
+            native_metadata,
             module,
             executable,
             toolchain_fingerprint: fingerprint,

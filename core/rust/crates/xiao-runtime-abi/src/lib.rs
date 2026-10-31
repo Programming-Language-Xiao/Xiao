@@ -58,6 +58,32 @@ pub const SUPPORTED_CONCURRENCY_FEATURES: u64 = REQUIRED_FEATURE_THREADS
     | REQUIRED_FEATURE_SERIALIZATION_V1
     | REQUIRED_FEATURE_CANCEL_WAIT;
 
+/// 按冻结的 `.xar`/native 位表给出操作实际依赖；未知操作不得静默获得空位集。
+#[must_use]
+pub fn concurrency_operation_features(operation: &str) -> Option<u64> {
+    Some(match operation {
+        "runtime_create" => REQUIRED_FEATURE_MULTI_RUNTIME,
+        "current_runtime" | "runtime_close" => 0,
+        "spawn" | "join" | "detach" => {
+            REQUIRED_FEATURE_THREADS
+                | REQUIRED_FEATURE_SERIALIZATION_V1
+                | REQUIRED_FEATURE_CANCEL_WAIT
+        }
+        "pool_create" | "shutdown" => REQUIRED_FEATURE_TASK_POOL,
+        "submit" | "wait" => {
+            REQUIRED_FEATURE_TASK_POOL
+                | REQUIRED_FEATURE_SERIALIZATION_V1
+                | REQUIRED_FEATURE_CANCEL_WAIT
+        }
+        "shared_read" | "shared_mut" | "read" | "lock_read" | "lock_write" => {
+            REQUIRED_FEATURE_SHARED_HANDLES | REQUIRED_FEATURE_SERIALIZATION_V1
+        }
+        "lock" => REQUIRED_FEATURE_SHARED_HANDLES | REQUIRED_FEATURE_CANCEL_WAIT,
+        "cancel" => REQUIRED_FEATURE_CANCEL_WAIT,
+        _ => return None,
+    })
+}
+
 /// `.xiaoc` 独立 feature 表：线程入口。
 pub const XIAOC_REQUIRED_FEATURE_THREADS: u64 = 0x0001;
 /// `.xiaoc` 独立 feature 表：共享句柄。

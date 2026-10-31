@@ -2,6 +2,10 @@
 
 工程期 10A。
 
+22E 的公开并发元数据与五个教程例由 `xiao-driver/tests/22e_release.rs` 的独立 ignored
+用例在三平台精确运行，覆盖实际节、strip 和旧 Runtime 拒绝；格式/容器拒绝另由
+`src/native_metadata_tests.rs` 验证。公开构建现在使用同一元数据门禁。
+
 这里验证 N0-A 的类型映射、控制流和拒绝边界；`xiao-driver/tests/22d_llvm_concurrency.rs`
 验证同源并发 IR、trampoline 文本和未知并发操作 fail-closed，另外提供一组由三平台 native
 job 精确执行的 ignored `llvm-as` 符号验证、32B/16B C 布局对象探针，以及一条覆盖

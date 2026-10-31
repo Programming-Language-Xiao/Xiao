@@ -13,7 +13,7 @@ use xiao_runtime_abi::ABI_ENCODED_VERSION;
 /// 每格都必须携带版本标签和四选一行为。
 fn every_generated_cell_has_an_explicit_action_and_stable_axis() {
     let cells = compatibility_matrix();
-    assert_eq!(cells.len(), 18);
+    assert_eq!(cells.len(), 24);
     for cell in &cells {
         assert!(!cell.artifact.is_empty());
         assert!(!cell.runtime.is_empty());

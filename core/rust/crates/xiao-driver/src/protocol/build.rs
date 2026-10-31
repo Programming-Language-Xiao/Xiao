@@ -284,7 +284,10 @@ fn native_build_error_response(request_id: String, error: NativeDriverError) -> 
         NativeDriverError::Backend(error) => ProtocolResponse::Error {
             request_id: Some(request_id),
             error: protocol_error_body(
-                BUILD_ERROR_CODE,
+                match &error {
+                    xiao_codegen_llvm::CodegenError::NativeMetadata { code, .. } => code.as_str(),
+                    _ => BUILD_ERROR_CODE,
+                },
                 "x11.driver.native_build",
                 error.to_string(),
                 Some("build".to_owned()),

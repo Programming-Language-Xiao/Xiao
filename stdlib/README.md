@@ -10,6 +10,10 @@
 - 随工具链分发的源码根可通过 `XIAO_STDLIB_ROOT` 指向；未设置时使用源码树顶层 `stdlib/`。
 - 本目录不放预编译发布对象、`.xar` 字段或普通包配置；预编译对象只允许作为本地构建缓存。
 - 每个新增 `.xiao` 模块必须在本目录登记 README、UseDocs、DevDocs 阶段索引和兼容元数据，并由仓库检查器校验路径登记。
+- `std.concurrent` 是虚拟原生模块：冻结的 17 项签名位于 `xiao-types/src/concurrency.rs`，
+  行为由 VM/TAC 计划和 Runtime 实现提供；不新增 `concurrent.xiao`，不作为普通源码对象
+  放入归档。公共接口唯一权威页为 [并发执行与共享句柄](../docs/UseDocs/language/concurrency/README.md)，
+  兼容身份沿用工具链标准库接口版本 1 与 Runtime ABI 1.17。
 - `dict` 模块提供 `get`、`set`、`remove`、`contains`、`keys`、`values` 六个自由函数，动态缺失键保持
   `X06-RUNTIME-015`，不支持新增键；20L 同时提供八个等价的静态字典方法。
 

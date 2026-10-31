@@ -43,7 +43,7 @@
 实现约束：不得为夹具在生产路径加入测试专用分支；需要注入失败时只能使用
 `#[cfg(test)]` 代码、已有内部选项或 Runtime 层单测，并在文档写明层次。
 
-### 1.3 当前差分矩阵
+### 1.3 本批前基线差分矩阵
 
 现有 `22d_llvm_concurrency` 差分覆盖：
 
@@ -69,7 +69,7 @@
 | C-7 | LLVM 端排队/等待两位置取消 | 运行中、完成态两个 027 | `native-queued-cancellation`、`native-waiting-cancellation` | 027、finally 恰好一次、释放存在性 |
 | C-8 | `wait`/`lock_wait` 的 027、外部取消通道 | join 027、完成态 027 | `native-wait-027`、`native-lock-wait-027`；外部取消归 Runtime 层 | 027 身份、主/suppressed |
 | C-9 | XCON 深度/大小负例的同 IR 差分 | Runtime 层 `malformed_xcon_*`、序列化单测 | `xcon-oversized-029`、`xcon-bounded-string-success`；64 层 tuple 归 Runtime trampoline 回归 | 029 在启动前拒绝；成功场景逐字往返；递归深度按层次登记 |
-| C-10 | 真实入口 close drain 失败差分 | 仅 helper 级 `native_finish_close_error_is_suppressed_under_primary` | `entry-close-drain-failure` | 主错误保留、close 错误 suppressed、退出码 |
+| C-10 | 真实入口 close drain 失败差分 | 仅 helper 级 `native_finish_close_error_is_suppressed_under_primary` | `entry_close_drain_failure_preserves_primary_and_suppressed` | 主错误保留、close 错误 suppressed、退出码 |
 | C-11 | 32B/16B 布局的 22D 产物级检查 | 22A 四平台测量、`abi` crate 的 `size_of/align_of` 断言 | 三平台 C 探针或书面顶账说明 | 尺寸/对齐/偏移一致，或明确引用 22A 证据 |
 
 ### 2.1 成功矩阵（C-1、C-2、C-5、C-6）

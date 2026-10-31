@@ -191,6 +191,7 @@ jobs:
             --skip native_table_methods_debug_execution_o0_o3 `
             --skip native_concurrency_llvm_assembly_fixtures `
             --skip native_concurrency_shared_c_layout_probe `
+            --skip public_native_concurrency_metadata_and_release_matrix `
             --skip native_concurrency_vm_native_differential_matches_from_same_ir
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
@@ -203,6 +204,13 @@ jobs:
             if (($testOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {
               throw "22D native test did not execute exactly one case: $testName"
             }
+          }
+          $releaseOutput = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22e_release -- --ignored public_native_concurrency_metadata_and_release_matrix --exact --nocapture 2>&1
+          $releaseExit = $LASTEXITCODE
+          $releaseOutput | ForEach-Object { Write-Output $_ }
+          if ($releaseExit -ne 0) { exit $releaseExit }
+          if (($releaseOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {
+            throw '22E native release case must execute exactly once'
           }
           exit $LASTEXITCODE
 
@@ -236,12 +244,14 @@ jobs:
             --skip platform_failure_child \
             --skip native_concurrency_llvm_assembly_fixtures \
             --skip native_concurrency_shared_c_layout_probe \
+            --skip public_native_concurrency_metadata_and_release_matrix \
             --skip native_concurrency_vm_native_differential_matches_from_same_ir
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
           run_22d_native_test() {
             local test_name="$1"
+            local test_file="${2:-22d_llvm_concurrency}"
             local output
-            if ! output="$(cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored "$test_name" --exact --nocapture 2>&1)"; then
+            if ! output="$(cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test "$test_file" -- --ignored "$test_name" --exact --nocapture 2>&1)"; then
               printf '%s\n' "$output"
               return 1
             fi
@@ -254,6 +264,7 @@ jobs:
           run_22d_native_test native_concurrency_llvm_assembly_fixtures
           run_22d_native_test native_concurrency_shared_c_layout_probe
           run_22d_native_test native_concurrency_vm_native_differential_matches_from_same_ir
+          run_22d_native_test public_native_concurrency_metadata_and_release_matrix 22e_release
 
       - name: Build runtime and run macOS native gates
         if: runner.os == 'macOS'
@@ -287,12 +298,14 @@ jobs:
             --skip native_table_methods_debug_execution_o0_o3 \
             --skip native_concurrency_llvm_assembly_fixtures \
             --skip native_concurrency_shared_c_layout_probe \
+            --skip public_native_concurrency_metadata_and_release_matrix \
             --skip native_concurrency_vm_native_differential_matches_from_same_ir
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22c_vm_concurrency
           run_22d_native_test() {
             local test_name="$1"
+            local test_file="${2:-22d_llvm_concurrency}"
             local output
-            if ! output="$(cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 22d_llvm_concurrency -- --ignored "$test_name" --exact --nocapture 2>&1)"; then
+            if ! output="$(cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test "$test_file" -- --ignored "$test_name" --exact --nocapture 2>&1)"; then
               printf '%s\n' "$output"
               return 1
             fi
@@ -305,6 +318,7 @@ jobs:
           run_22d_native_test native_concurrency_llvm_assembly_fixtures
           run_22d_native_test native_concurrency_shared_c_layout_probe
           run_22d_native_test native_concurrency_vm_native_differential_matches_from_same_ir
+          run_22d_native_test public_native_concurrency_metadata_and_release_matrix 22e_release
 
       - name: Run 20D and 20E resource, process and archive fixtures (Windows)
         if: runner.os == 'Windows'

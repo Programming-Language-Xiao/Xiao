@@ -4,7 +4,7 @@
 //! `XiaoValueTag::Concurrency` 加不透明指针，不能依赖 `RuntimeHandle`、任务池或
 //! 共享对象的 Rust 布局。
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::ffi::c_void;
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -24,6 +24,16 @@ use crate::{RuntimeValue, VmConcurrencyValue, VmTransferValue};
 
 /// 并发 ABI 盒子魔数。
 const CONCURRENCY_MAGIC: u64 = 0x5849_414F_434F_4E31;
+
+thread_local! {
+    /// 与 VM cancellation_handled 一致：每个原生执行单元只投递自身取消一次。
+    static CANCELLATION_DELIVERED: Cell<bool> = const { Cell::new(false) };
+}
+
+/// pool worker 复用前后和独立入口开始时重置本次执行单元的投递状态。
+pub(super) fn reset_cancellation_delivery() {
+    CANCELLATION_DELIVERED.set(false);
+}
 
 /// 跨原生执行单元传递的 Runtime 错误包；错误对象本身保留 cause/suppressed。
 pub(super) enum NativeErrorPacket {
@@ -742,6 +752,9 @@ fn set_runtime_error(message: impl Into<String>) -> i32 {
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn set_concurrency_error(code: &str, message: impl Into<String>) -> i32 {
+    if code == crate::CONCURRENCY_CANCELLED_CODE && crate::cancellation_safe_point().is_err() {
+        CANCELLATION_DELIVERED.set(true);
+    }
     super::set_pending_runtime_error(crate::RuntimeError::new(
         crate::XiaoErrorKind::Other,
         code,
@@ -753,6 +766,9 @@ fn set_concurrency_error(code: &str, message: impl Into<String>) -> i32 {
 
 /// 并发 C ABI 的内部生命周期、边界或测试辅助实现。
 fn map_exec_error(error: RuntimeExecError) -> i32 {
+    if error == RuntimeExecError::Cancelled && crate::cancellation_safe_point().is_err() {
+        CANCELLATION_DELIVERED.set(true);
+    }
     super::set_pending_runtime_error(crate::execution_error(error));
     XiaoAbiStatus::RuntimeError.code()
 }
@@ -1265,11 +1281,18 @@ pub extern "C" fn xiao_runtime_concurrency_cancellation_check(operation: XiaoAbi
     if !matches!(operation.as_str(), "safe_point" | "wait" | "lock_wait") {
         return set_runtime_error(format!("未知并发取消检查 {operation}"));
     }
-    if super::error_cleanup_is_active() {
+    if CANCELLATION_DELIVERED.get() {
         return XiaoAbiStatus::Ok.code();
     }
-    crate::scheduler::cancellation_safe_point()
-        .map_or_else(map_exec_error, |_| XiaoAbiStatus::Ok.code())
+    crate::scheduler::cancellation_safe_point().map_or_else(
+        |error| {
+            if error == RuntimeExecError::Cancelled {
+                CANCELLATION_DELIVERED.set(true);
+            }
+            map_exec_error(error)
+        },
+        |_| XiaoAbiStatus::Ok.code(),
+    )
 }
 
 /// 注册一个由当前 Runtime 直接拥有的 native 子 Runtime。

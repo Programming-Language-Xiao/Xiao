@@ -543,11 +543,13 @@ dependencies = [
 name = "xiao-codegen-llvm"
 version = "0.1.0"
 dependencies = [
+ "serde",
  "xiao-diagnostics",
  "xiao-intrinsics",
  "xiao-ir",
  "xiao-optimizer",
  "xiao-runtime-abi",
+ "xiao-standard-library",
  "xiao-types",
 ]
 
@@ -639,6 +641,7 @@ dependencies = [
  "xiao-intrinsics",
  "xiao-lifetime",
  "xiao-modules",
+ "xiao-runtime-abi",
  "xiao-source",
  "xiao-syntax",
  "xiao-types",

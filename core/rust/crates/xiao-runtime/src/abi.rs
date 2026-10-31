@@ -880,6 +880,7 @@ pub extern "C" fn xiao_runtime_error_clear() {
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_error_checkpoint_reset() {
     PENDING_ERROR_CHECKPOINTS.with(|checkpoints| checkpoints.borrow_mut().clear());
+    abi_concurrency::reset_cancellation_delivery();
 }
 
 /// 暂存当前错误，使 finally 主体可以独立执行并产生清理错误。
@@ -889,7 +890,8 @@ pub extern "C" fn xiao_runtime_error_checkpoint_begin() {
     PENDING_ERROR_CHECKPOINTS.with(|stack| stack.borrow_mut().push(pending));
 }
 
-/// finally/drop 的 checkpoint 期间已进入清理阶段，不重复投递同一取消令牌。
+/// 测试确认 finally/drop 的 checkpoint 生命周期；取消投递另按执行单元状态判断。
+#[cfg(test)]
 pub(super) fn error_cleanup_is_active() -> bool {
     PENDING_ERROR_CHECKPOINTS.with(|stack| !stack.borrow().is_empty())
 }

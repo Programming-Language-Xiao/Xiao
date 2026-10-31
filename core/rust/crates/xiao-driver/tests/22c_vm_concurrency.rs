@@ -891,7 +891,7 @@ fn source_values_and_plans_survive_all_optimization_levels() {
 /// 验证宿主缺少并发 feature 时 `.xiaoc` 在执行前被拒绝。
 #[test]
 fn xiaoc_host_missing_features_is_rejected_before_execution() {
-    let source = "from std.concurrent import current_runtime\nrt = current_runtime()\nprint(\"must-not-run\")\n";
+    let source = "from std.concurrent import runtime_create\nrt = runtime_create()\nprint(\"must-not-run\")\n";
     let artifact = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(source))
         .unwrap();

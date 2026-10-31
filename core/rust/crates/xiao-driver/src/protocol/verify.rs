@@ -19,7 +19,7 @@ use xiao_package::CacheLayout;
 /// 未实现签名时必须随报告显示的完整性边界。
 const UNSIGNED_INTEGRITY_WARNING: &str = "SHA-256 只保证完整性，不代表发布者可信";
 
-/// 只验证 `.xiaoc` 或 `.xar`，不创建 VM、不执行用户代码。
+/// 验证 `.xiaoc`/`.xar` 或带并发元数据的宿主原生产物，不创建 VM 或执行用户代码。
 pub(super) fn verify_response(
     request_id: String,
     protocol_version: u16,
@@ -158,12 +158,41 @@ pub(super) fn verify_response(
                 );
             }
         },
+        _ if bytes.starts_with(b"MZ")
+            || bytes.starts_with(b"\x7fELF")
+            || bytes.starts_with(&[0xcf, 0xfa, 0xed, 0xfe]) =>
+        {
+            let target = xiao_codegen_llvm::TargetDescription::host();
+            let metadata = match xiao_codegen_llvm::read_native_metadata_bytes(&bytes, &target)
+                .and_then(|metadata| {
+                    let metadata =
+                        metadata.ok_or_else(|| xiao_codegen_llvm::NativeMetadataError {
+                            code: "X17-XAR-007",
+                            message: "旧原生产物无可验收的并发元数据".to_owned(),
+                        })?;
+                    metadata.validate(&target, &Default::default(), 0)?;
+                    Ok(metadata)
+                }) {
+                Ok(value) => value,
+                Err(error) => {
+                    return verification_error(request_id, &path, error.code, error.message);
+                }
+            };
+            json!({ "kind": "native", "valid": true, "bytes": bytes.len(), "native_metadata": metadata,
+                "release_report": { "schema_version": 1, "artifact_sha256": Digest256::of_bytes(&bytes).as_hex(),
+                    "target_platform": target.triple, "metadata_validation": "verified",
+                    "runtime_abi": { "min": metadata.runtime_abi_min, "max": metadata.runtime_abi_max },
+                    "required_features": metadata.required_features, "generator_version": metadata.generator_version,
+                    "standard_library": metadata.stdlib,
+                    "concurrency_matrix": crate::concurrency_compatibility_matrix(),
+                    "signature": { "status": "unsigned" }, "reproducibility": { "status": "not-measured" } } })
+        }
         _ => {
             return verification_error(
                 request_id,
                 &path,
                 "X11-VERIFY-004",
-                "verify 只接受 `.xiaoc` 或 `.xar` 输入".to_owned(),
+                "verify 只接受 `.xiaoc`、`.xar` 或可验收元数据的原生产物".to_owned(),
             );
         }
     };
@@ -189,6 +218,8 @@ pub(super) fn verify_response(
 /// 为单模块 `.xiaoc` 生成发布报告。
 fn xiaoc_release_report(file: &xiao_bytecode::XiaocFile, bytes: &[u8]) -> Value {
     json!({
+        "required_features": file.header.required_features,
+        "concurrency_matrix": crate::concurrency_compatibility_matrix(),
         "schema_version": 1,
         "artifact_sha256": Digest256::of_bytes(bytes).as_hex(),
         "source_digest": file.metadata.source_digest,
@@ -255,6 +286,8 @@ fn xar_release_report(archive: &xiao_xar::XarArchive, bytes: &[u8]) -> Value {
         })
         .collect::<Vec<_>>();
     json!({
+        "required_features": index.required_features,
+        "concurrency_matrix": crate::concurrency_compatibility_matrix(),
         "schema_version": 1,
         "artifact_sha256": Digest256::of_bytes(bytes).as_hex(),
         "source_digest": xiaoc_metadata

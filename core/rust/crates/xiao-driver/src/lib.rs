@@ -33,8 +33,8 @@ mod run;
 pub use compatibility::{
     CompatibilityAction, CompatibilityAxis, CompatibilityCell, CompatibilityEvidence,
     CompatibilityStatus, CompatibilityVersions, STDLIB_INTERFACE_VERSION, StandardLibraryIdentity,
-    TargetSupportCell, TargetSupportStatus, compatibility_matrix, current_compatibility_versions,
-    current_standard_library_identity, target_support_matrix,
+    TargetSupportCell, TargetSupportStatus, compatibility_matrix, concurrency_compatibility_matrix,
+    current_compatibility_versions, current_standard_library_identity, target_support_matrix,
 };
 
 /// 重导出统一前端公共接口。

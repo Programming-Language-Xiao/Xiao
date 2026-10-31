@@ -122,6 +122,8 @@ describe("xiao 命令解析", () => {
 
   test("18B 只新增 verify/cache 顶层命令", () => {
     expect(parseArguments(["verify", "main.xiaoc", "--detail"])).toMatchObject({ kind: "verify", file: "main.xiaoc", detail: true });
+    expect(parseArguments(["verify", "release/app.exe", "--detail"])).toMatchObject({ kind: "verify", file: "release/app.exe", detail: true });
+    expect(parseArguments(["verify", "release/app"])).toMatchObject({ kind: "verify", file: "release/app" });
     expect(parseArguments(["cache", "clean"])).toMatchObject({ kind: "cache", action: "clean", apply: false });
     expect(parseArguments(["cache", "clean", "--apply"])).toMatchObject({ kind: "cache", action: "clean", apply: true });
     expect(parseArguments(["cache", "clean", "--project", "./demo", "--archive", "demo.xar", "--archive", "extra.xar", "--reference", "a".repeat(64)])).toMatchObject({

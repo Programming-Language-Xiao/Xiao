@@ -461,20 +461,17 @@ fn unknown_native_concurrency_operation_is_rejected_before_lowering() {
 }
 
 #[test]
-/// 守住 22E 前公开构建不得开启并发产物。
-fn public_native_build_keeps_concurrency_artifacts_closed_until_22e() {
+/// 22E 的公开构建与内部构建使用同一套嵌入元数据，不依赖内部开关绕过验收。
+fn public_native_build_emits_required_concurrency_metadata() {
     let artifact = FrontendCompiler::new()
         .compile(&FrontendRequest::from_text(
             "from std.concurrent import current_runtime\nrt = current_runtime()\n",
         ))
         .expect("并发源码的前端语义有效");
-    let error = lower_program(&artifact.ir, &CodegenOptions::default())
-        .expect_err("公开原生构建不得提前发布并发产物");
-    assert!(matches!(
-        error,
-        xiao_codegen_llvm::CodegenError::Unsupported { .. }
-    ));
-    assert!(error.to_string().contains("22E"));
+    let module =
+        lower_program(&artifact.ir, &CodegenOptions::default()).expect("公开构建已接入元数据验收");
+    assert!(module.text.contains("@xiao_native_metadata ="));
+    assert!(module.text.contains("@llvm.used"));
 }
 
 #[test]
@@ -996,5 +993,6 @@ fn native_concurrency_vm_native_differential_matches_from_same_ir() {
         release_trace_sequence(&detached_vm_trace),
         "detached-failure: VM/native 完整释放对象顺序"
     );
+    println!("22D-CASE detached-failure: ok");
     let _ = std::fs::remove_dir_all(root);
 }

@@ -394,9 +394,8 @@ function parseVerify(args: readonly string[], options: GlobalCliOptions): Parsed
     }
     return true;
   });
-  if (values.length !== 1) throw new CliArgumentError("verify 需要且只需要一个 .xiaoc 或 .xar 路径");
-  const lower = values[0].toLocaleLowerCase("en-US");
-  if (!lower.endsWith(".xiaoc") && !lower.endsWith(".xar")) throw new CliArgumentError("verify 只接受 .xiaoc 或 .xar");
+  if (values.length !== 1) throw new CliArgumentError("verify 需要且只需要一个 .xiaoc、.xar 或原生产物路径");
+  if (values[0].toLocaleLowerCase("en-US").endsWith(".xiao")) throw new CliArgumentError("verify 不执行或验证源码，请提供产物路径");
   return { kind: "verify", file: values[0], detail, options };
 }
 

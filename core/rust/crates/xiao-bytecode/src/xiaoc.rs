@@ -10,7 +10,6 @@ use std::fmt::{Display, Formatter};
 use crate::TAC_RUNTIME_ABI_VERSION;
 use crate::encode::{EncodeOptions, EncodedProgram, OperandWidth, decode_encoded, encode};
 use crate::tac::{TacConstant, TacProgram};
-use xiao_ir::IrType;
 use xiao_runtime_abi::{ABI_ENCODED_VERSION, XIAOC_SUPPORTED_CONCURRENCY_FEATURES};
 
 const _: () = assert!(TAC_RUNTIME_ABI_VERSION as u64 == ABI_ENCODED_VERSION);
@@ -1385,66 +1384,12 @@ fn types_bytes(program: &TacProgram) -> Result<Vec<u8>, XiaocError> {
 
 /// 从已验证的签名类型推导 `.xiaoc` 并发 feature，避免并发类型标签绕过产物门禁。
 fn required_features_for_program(program: &TacProgram) -> u64 {
-    fn visit(ty: &IrType) -> u64 {
-        match ty {
-            IrType::Thread { value } => {
-                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_THREADS
-                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
-                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
-                    | visit(value)
-            }
-            IrType::Task { value } => {
-                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_TASK_POOL
-                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
-                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
-                    | visit(value)
-            }
-            IrType::Runtime => xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME,
-            IrType::Pool => {
-                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_TASK_POOL
-                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME
-                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
-                    | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
-            }
-            IrType::Shared { value }
-            | IrType::SharedMut { value }
-            | IrType::LockGuard { value } => {
-                xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SHARED_HANDLES | visit(value)
-            }
-            IrType::Function {
-                parameters,
-                return_type,
-            } => parameters
-                .iter()
-                .map(visit)
-                .fold(visit(return_type), |all, item| all | item),
-            IrType::Tuple { elements } => {
-                elements.iter().map(visit).fold(0, |all, item| all | item)
-            }
-            IrType::Array { shape } => match shape {
-                xiao_ir::IrArrayShape::Homogeneous { element, .. } => visit(element),
-                xiao_ir::IrArrayShape::Heterogeneous { elements } => {
-                    elements.iter().map(visit).fold(0, |all, item| all | item)
-                }
-                xiao_ir::IrArrayShape::Unknown => 0,
-            },
-            IrType::DictTable { entries } | IrType::DictColumn { entries } => entries
-                .iter()
-                .map(|entry| visit(&entry.value))
-                .fold(0, |all, item| all | item),
-            IrType::Set { members, .. } => {
-                members.iter().map(visit).fold(0, |all, item| all | item)
-            }
-            _ => 0,
-        }
-    }
-
     program.required_features
         | program
             .concurrency_plans
             .iter()
             .map(|plan| crate::concurrency::required_features(&plan.operation))
-            .fold(0, |a, b| a | b)
+            .fold(0, |all, item| all | item)
         | program
             .signatures
             .iter()
@@ -1454,7 +1399,7 @@ fn required_features_for_program(program: &TacProgram) -> u64 {
                     .iter()
                     .chain(std::iter::once(&signature.return_type))
             })
-            .map(visit)
+            .map(|ty| xiao_ir::concurrency_type_features(ty) >> 1)
             .fold(0, |all, item| all | item)
 }
 
@@ -1725,6 +1670,7 @@ mod tests {
     use super::*;
     use crate::TAC_BYTECODE_ABI_VERSION;
     use crate::tac::{TacAbi, TacProgram};
+    use xiao_ir::IrType;
 
     fn empty_program() -> TacProgram {
         TacProgram {
@@ -1842,9 +1788,7 @@ mod tests {
         ));
         let bytes = encode_xiaoc(&program, XiaocMetadata::default()).unwrap();
         let file = decode_xiaoc(&bytes).unwrap();
-        let expected = xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_THREADS
-            | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
-            | xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_CANCEL_WAIT;
+        let expected = xiao_runtime_abi::XIAOC_REQUIRED_FEATURE_THREADS;
         assert_eq!(file.header.required_features, expected);
         assert_eq!(
             file.header.runtime_abi_min as u64,

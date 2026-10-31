@@ -47,7 +47,7 @@ pub struct CodegenOptions {
     pub optimization_level: u8,
     /// 原生 Runtime 请求携带的能力位；默认开启当前已知能力。
     pub capabilities: u64,
-    /// 22D 内部差分专用；原生并发产物的公开发布门禁留给 22E。
+    /// 保留 22D 内部调用方兼容字段；22E 起所有并发构建均发射并校验同一元数据。
     pub internal_concurrency: bool,
 }
 
@@ -124,7 +124,7 @@ impl CodegenOptions {
         self
     }
 
-    /// 显式允许 22D 内部测试构建并发原生产物，不改变用户构建默认门禁。
+    /// 兼容 22D 测试调用方；22E 公开和内部构建现在共用产物元数据门禁。
     #[must_use]
     pub const fn with_internal_concurrency(mut self) -> Self {
         self.internal_concurrency = true;

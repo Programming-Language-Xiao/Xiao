@@ -3,8 +3,8 @@ id: language.concurrency
 title: 并发执行与共享句柄
 status: planned
 audience: learner
-module: stdlib.xiao-standard-library
-stage: "22A/22C"
+module: stdlib.xiao-standard-library-concurrent
+stage: "22E"
 version: "0.1.0"
 related:
   - ../README.md
@@ -15,8 +15,8 @@ related:
 
 # 并发执行与共享句柄
 
-> 本页是 22A 的用户文档入口和冻结契约摘要，当前状态为 `planned`。22A 只冻结名称、边界、
-> 错误和产物兼容规则；22B–22E 完成实现、测试和示例前，下面的形状不能作为可运行功能使用。
+> 本页登记首版 `std.concurrent` 公共接口。22E 的示例和产物校验正在三平台验收，
+> 完成前保持 `planned`；最新实现和验证范围见 [22E](../../../DevDocs/22e-standard-library-and-release.md)。
 
 ## 首版范围
 
@@ -54,7 +54,7 @@ shutdown(pool) -> none
 可按值复制的共享句柄，别名共享关闭状态；`runtime_close` 消费调用方那一份，其他别名仍可
 观察关闭，重复关闭幂等成功。Runtime ID 随任务和线程事实传播。
 
-> **22C 实现补充（本页仍为 `planned`）**
+### Runtime 的直接归属
 
 Runtime 的 owner 只按直接创建关系记录。若 Runtime A 的执行单元创建 Runtime B，B 再创建
 Runtime C，A 可以操作 B，B 可以操作 C，A 不会自动获得 C 的关闭权限；关闭 B 也不会递归
@@ -103,7 +103,7 @@ worker 空闲。取消运行中任务时，`wait` 会等任务到安全点并完
 `task_pool`、`multi_runtime`、`serialization_v1`、`cancel_wait`；required 位按子集检查，
 未知位拒绝。`.xiaoc` 使用独立 bit 0–5 表，未知位保持 `XIAOC-008`。`.xiaoc` 继续使用
 `XIAOC-*` 版本/特性错误；`.xar` 的版本/ABI/缺失要求使用 `X17-XAR-007`，未知
-required-feature/capability 位使用扩展后的 `X17-XAR-011`；原生并发产物后置到 22E。
+required-feature/capability 位使用扩展后的 `X17-XAR-011`；原生可执行文件在只读节内保存同一位表、ABI 区间、目标、生成器和标准库身份，工具链校验不执行用户代码。
 32 位目标以 `X20-TARGET-001` 拒绝。
 
 ## 并发错误
@@ -127,8 +127,108 @@ detached 线程的失败不会重抛到不存在的 join 点，也不会改变�
 线程身份、原因链和 `suppressed` 清理错误。`join`/`wait` 会重抛线程体或任务体的原始错误，
 不会把它改写成 detached 错误。完整错误报告字段见[运行时错误报告](../../troubleshooting/errors-and-reports.md)。
 
-## 当前状态与后续
+## 原生产物校验
 
-代码、测试和可执行示例完成前，本页保持 `planned`，不能从这里推断当前工具链已经支持并发。
-实现完成后，22E 必须补齐线程/共享/任务池教程、错误示例和 ABI/产物兼容回归，再将本页改为
-`verified`。设计依据和四平台 32B 布局证据见[22A 冻结记录](../../../DevDocs/22a-concurrency-freeze.md)。
+`xiao build` 的并发原生产物携带内嵌元数据：Linux 使用 `.note.xiao`、Windows 使用
+`.xiaomta`、macOS 使用 `__XIAO,__meta`。元数据版本为 1，Runtime ABI 精确为 1.17，
+包含规范目标/64 位宽度、生成器版本和标准库接口身份。构建后会重新读取实际产物校验，
+`xiao verify <可执行文件> --detail` 也只读取节，不启动程序。
+
+`.xiaoc`、`.xar` 和原生的 ABI 1.16 Runtime 均在执行前拒绝；1.17 仍须满足位集。
+原生元数据缺失、损坏、版本/目标/标准库身份不符使用 `X17-XAR-007`，未知并发位或
+错误包含归档 bit 0 使用 `X17-XAR-011`。旧的无元数据普通程序仍可运行，但不能被
+校验器当作已经满足并发产物要求。元数据检查不会替代程序启动时已有的 ABI 检查。
+
+## 可执行示例
+
+下面每个代码块均作为独立程序进入真实前端、VM 和公开 NativeBuild 的测试。
+
+### 线程：多值传参与直接 Runtime 关闭
+
+```xiao
+from std.concurrent import runtime_create, spawn, join, runtime_close
+def work(int value, int extra) -> int
+    return value + extra
+rt = runtime_create()
+thread = spawn(rt, work, 1, 6)
+print(join(thread))
+runtime_close(rt)
+```
+
+输出 `7`。值按参数位置复制，`join` 消费线程句柄并取得结果。
+
+### 任务池：提交、等待与关闭
+
+```xiao
+from std.concurrent import current_runtime, pool_create, submit, wait, shutdown
+def work(int value) -> int
+    return value + 5
+rt = current_runtime()
+pool = pool_create(rt, 1)
+task = submit(pool, work, 7)
+print(wait(task))
+shutdown(pool)
+```
+
+输出 `12`。关闭池会停止接收新任务并等待已提交活动。
+
+### 共享值：守卫离开函数时释放
+
+```xiao
+from std.concurrent import shared_read, shared_mut, read, lock, lock_read, lock_write
+def update(shared_mut<int> value) -> none
+    guard = lock(value)
+    lock_write(guard, 9)
+def inspect(shared_mut<int> value) -> int
+    guard = lock(value)
+    return lock_read(guard)
+constant = shared_read(4)
+value = shared_mut(read(constant))
+update(value)
+print(inspect(value))
+```
+
+输出 `9`。不要在持有守卫的同一作用域再次锁定同一共享值。
+
+### detached：入口正常收尾
+
+```xiao
+from std.concurrent import current_runtime, spawn, detach
+def work() -> int
+    return 1
+rt = current_runtime()
+thread = spawn(rt, work)
+detach(thread)
+print("main")
+```
+
+输出 `main`，主退出码为 0。detached 失败仍保留 cause/suppressed，原生入口在 drain 后
+输出结构化诊断，VM 记录 `DetachedFailure`，两者都不改变主退出码。
+
+### 取消已完成但尚未回收的线程
+
+```xiao
+from std.concurrent import current_runtime, spawn, runtime_close, cancel, join
+def work() -> int
+    return 3
+rt = current_runtime()
+thread = spawn(rt, work)
+runtime_close(rt)
+cancel(thread)
+join(thread)
+```
+
+没有标准输出，报告 `X06-RUNTIME-027`，退出码为 3。关闭 Runtime 已等待线程完成，
+之后取消仍在回收时生效；027 不会进入 Xiao 的普通 `catch`。首次取消在 finally 内到达
+仍会投递；已经投递的取消不会再次打断同一执行单元的清理。
+
+## 验证范围与兼容
+
+三种产物的最小位集、缺位/未知位、旧 Runtime 和原生节校验由 `22e_release` 回归覆盖。
+语言深度与 Runtime 限制须区分：XCON Runtime 接受 64 层；当前源码到原生的优化快照
+对深递归类型还有 JSON 深度限制。该限制及宿主精确阻塞取消的证据层次见
+[22D §9.3](../../../DevDocs/22d-llvm-concurrency-differential.md#93-22d-fix1-收尾矩阵与证据)。
+
+标准库形态保持虚拟原生模块，签名由冻结表提供，行为由 Runtime 实现，没有同名 `.xiao`
+包装或可替换的第二套签名。发布验收和三平台实际运行号见
+[22E 实施记录](../../../DevDocs/22e-standard-library-and-release.md)。

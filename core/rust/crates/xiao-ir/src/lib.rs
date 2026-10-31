@@ -4,8 +4,12 @@
 //! 类型和生命周期结果到 IR 的单向降低。它不执行 Xiao 代码，也不依赖 CLI、
 //! VM、LLVM 或平台实现。
 
+/// 三类产物共用的并发 feature 最小并集。
+mod concurrency_features;
 /// AST/类型/生命周期结果到 IR 的单向降低器。
 mod lower;
+/// 并发产物特性推导入口，使用冻结 ABI 位表。
+pub use concurrency_features::{concurrency_type_features, required_concurrency_features};
 /// 类型化 IR 的公开递归数据模型。
 mod model;
 /// 稳定 JSON 快照编码与解码辅助。

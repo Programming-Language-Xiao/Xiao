@@ -600,6 +600,11 @@ fn native_cleanup_checkpoint_defers_repeated_cancellation() {
         assert!(!crate::abi::error_cleanup_is_active());
         assert_eq!(
             xiao_runtime_concurrency_cancellation_check(operation("safe_point")),
+            XiaoAbiStatus::Ok.code()
+        );
+        crate::abi::xiao_runtime_error_checkpoint_reset();
+        assert_eq!(
+            xiao_runtime_concurrency_cancellation_check(operation("safe_point")),
             XiaoAbiStatus::RuntimeError.code()
         );
         let _ = take_native_error_packet();
@@ -610,6 +615,31 @@ fn native_cleanup_checkpoint_defers_repeated_cancellation() {
         .unwrap();
     child.cancel();
     release_tx.send(()).unwrap();
+    child.join().unwrap();
+    runtime.try_close().unwrap();
+}
+
+#[test]
+/// E-0 首次取消在 finally checkpoint 内到达时必须投递，只有已投递取消才抑制。
+fn native_first_cancellation_inside_finally_is_delivered() {
+    let runtime = RuntimeHandle::create();
+    let (entered_tx, entered_rx) = std::sync::mpsc::sync_channel(0);
+    let (cancelled_tx, cancelled_rx) = std::sync::mpsc::sync_channel(0);
+    let child = crate::scheduler::spawn_cooperative(&runtime, move |_| {
+        crate::abi::xiao_runtime_error_checkpoint_reset();
+        crate::abi::xiao_runtime_error_checkpoint_begin();
+        entered_tx.send(()).unwrap();
+        cancelled_rx.recv().unwrap();
+        assert_eq!(xiao_runtime_concurrency_cancellation_check(operation("safe_point")), XiaoAbiStatus::RuntimeError.code());
+        crate::abi::xiao_runtime_error_checkpoint_finish();
+        assert!(matches!(take_native_error_packet(), Some(NativeErrorPacket::Recoverable(error)) if error.code() == crate::CONCURRENCY_CANCELLED_CODE));
+        assert_eq!(xiao_runtime_concurrency_cancellation_check(operation("safe_point")), XiaoAbiStatus::Ok.code());
+    }).unwrap();
+    entered_rx
+        .recv_timeout(std::time::Duration::from_secs(2))
+        .unwrap();
+    child.cancel();
+    cancelled_tx.send(()).unwrap();
     child.join().unwrap();
     runtime.try_close().unwrap();
 }

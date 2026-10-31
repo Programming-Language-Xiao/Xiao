@@ -18,6 +18,13 @@ mod error;
 mod ir;
 /// 同源 IR 的原生并发调用计划与 fail-closed 校验。
 mod native_concurrency;
+/// 22E 自描述原生元数据与不执行入口的校验器。
+mod native_metadata;
+/// 原生并发产物的正式元数据 codec、读取和验收接口。
+pub use native_metadata::{
+    NATIVE_METADATA_VERSION, NativeMetadata, NativeMetadataError, NativeRuntimeSupport,
+    read_native_metadata, read_native_metadata_bytes, validate_native_metadata_file,
+};
 /// 15A LLVM Pass 映射、开关和 Runtime 裁剪报告。
 mod optimization;
 /// 15B 可复现构建比较与差异白名单。
@@ -83,8 +90,9 @@ pub use xiao_optimizer::OptimizationReport;
 /// 保留版本 2 的 COFF `sret`/间接参数约定。
 /// 版本 11 分离入口 checkpoint 重置；版本 12 增加 native 栈帧和边界复制源槽释放。
 /// 版本 13 对齐边界复制源/stack tuple 清理，并把固定 ABI scratch 分配移到函数入口。
+/// 版本 14 接入公开并发元数据与最小位集，收紧动态数量分配的移动规则。
 /// 当前版本进入工具链/产物指纹。
-pub const CODEGEN_VERSION: u32 = 13;
+pub const CODEGEN_VERSION: u32 = 14;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
@@ -94,10 +102,13 @@ pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> 
     for call in concurrency_plan.calls() {
         concurrency_plan.require_known_operation(call)?;
     }
-    if !concurrency_plan.is_empty() && !options.internal_concurrency {
-        return Err(CodegenError::Unsupported {
-            feature: "22D 并发原生产物仅用于内部差分，公开产物由 22E 验收".to_owned(),
-            span: Some(program.span),
+    let required_features = xiao_ir::required_concurrency_features(program)
+        .map_err(|message| CodegenError::InvalidIr { message })?;
+    let requires_metadata = !concurrency_plan.is_empty() || required_features != 0;
+    if requires_metadata && options.target.pointer_width != 64 {
+        return Err(CodegenError::NativeMetadata {
+            code: "X20-TARGET-001".to_owned(),
+            message: "并发原生目标必须为 64 位".to_owned(),
         });
     }
     xiao_intrinsics::validate_capability_mask(options.capabilities).map_err(|error| {
@@ -141,5 +152,21 @@ pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> 
         .map_err(|message| CodegenError::InvalidIr { message })?;
     module.native_optimization_report =
         LlvmOptimizationReport::from_plan(plan, &module.runtime_components);
+    if requires_metadata {
+        let metadata = NativeMetadata::for_program(program, &options.target).map_err(|error| {
+            CodegenError::NativeMetadata {
+                code: error.code.to_owned(),
+                message: error.message,
+            }
+        })?;
+        module.text.push_str(
+            &native_metadata::emit(&metadata, options.target.object_format).map_err(|error| {
+                CodegenError::NativeMetadata {
+                    code: error.code.to_owned(),
+                    message: error.message,
+                }
+            })?,
+        );
+    }
     Ok(module)
 }

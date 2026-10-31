@@ -49,6 +49,8 @@ impl<'a> DynamicGenerator<'a> {
         // 子执行单元在动态函数的语句边界消费 22B safe_point。Root 入口没有
         // Runtime 取消 token 时该检查是空操作；线程/任务执行时由 Runtime TLS
         // 提供同一取消身份，027 仍走不可捕获的错误出口并经过 finally 清理。
+        // VM 的 finally 子程序不逐指令投递取消；其中普通 helper 进入独立函数时
+        // 仍有安全点。原生保留同一边界，由 Runtime 区分首次和已投递的取消。
         if self.function_mode
             && !self.concurrency_plan.is_empty()
             && self.error_checkpoint_depth == 0

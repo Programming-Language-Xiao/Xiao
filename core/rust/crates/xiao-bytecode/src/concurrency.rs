@@ -5,28 +5,7 @@ use xiao_ir::IrType;
 
 /// 一项并发操作要求的 `.xiaoc` 功能位。
 pub fn required_features(operation: &str) -> u64 {
-    use xiao_runtime_abi::*;
-    match operation {
-        "spawn" | "join" | "detach" => {
-            XIAOC_REQUIRED_FEATURE_THREADS
-                | XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
-                | XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
-        }
-        "pool_create" | "submit" | "wait" | "shutdown" => {
-            XIAOC_REQUIRED_FEATURE_TASK_POOL
-                | XIAOC_REQUIRED_FEATURE_SERIALIZATION_V1
-                | XIAOC_REQUIRED_FEATURE_CANCEL_WAIT
-        }
-        "shared_read" | "shared_mut" | "read" | "lock_read" | "lock_write" => {
-            XIAOC_REQUIRED_FEATURE_SHARED_HANDLES
-        }
-        "lock" => XIAOC_REQUIRED_FEATURE_SHARED_HANDLES | XIAOC_REQUIRED_FEATURE_CANCEL_WAIT,
-        "cancel" => XIAOC_REQUIRED_FEATURE_CANCEL_WAIT,
-        "runtime_create" | "runtime_close" | "current_runtime" => {
-            XIAOC_REQUIRED_FEATURE_MULTI_RUNTIME
-        }
-        _ => 0,
-    }
+    xiao_runtime_abi::concurrency_operation_features(operation).map_or(0, |features| features >> 1)
 }
 
 /// 校验计划、调用引用、参数形状以及 22B 复制/取消事实。
