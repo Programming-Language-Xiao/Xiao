@@ -304,6 +304,7 @@ intrinsic 数量持续增长，应先检查语言表达能力、优化器和 Run
 | **20L 字典方法式 API** | 20K；20K 审核 F-1–F-7 | get/set/remove/contains/keys/values/size/is_empty 方法、字典表/列开放视图、静态链接/模块调用 | 不做新增键/upsert、方法值、动态接收者分派或位置方法；见 [20L](20l-dict-methods-and-20k-closeout.md) |
 | **20M 文本与路径扩展** | 20C/20I；三平台探测后冻结 | `text` 的 trim/replace_all/repeat/upper_ascii 与 `path` 的 basename/dirname/extension；全部纯 Xiao，前后缀采用现有组合 | 已完成（2026-11-01）；`04cd163` 三平台产品验收与完整门禁全绿，接口版本 1；不做 Unicode、平台路径或新 intrinsic；见 [20M](20m-text-and-path-expansion.md) |
 | **20N 标准库扩展路线图** | 20C–20M；本批规划 | math/log/CLI 解析纯 Xiao；time/argv/filesystem 走 intrinsic + ABI 次版本；JSON/TOML 先冻结值模型；regex/压缩/crypto 走原生库封装；HTTP/数据库依赖网络与 native extension 契约 | 不写产品函数体、不新增 intrinsic/ABI，不把数据库或密码学塞进纯 Xiao 库；见 [20N](20n-standard-library-expansion-roadmap.md) |
+| **20O 官方库工程总纲** | 20C–20N；独立研究批 | 完整候选目录、数值计算专项（lint/lfloat、cmath、decimal、fractions、statistics、random）、B0–B9 批次、D-1～D-12 与无上下文 Agent 交接 | 只做研究与拆分，不写产品代码；新 Agent 从 20O §六 开始读；见 [20O](20o-official-library-program.md) |
 
 20A 的契约设计可以现在开始，但只有当它改变 09R3 的机型、调用 ABI、编码或源码映射
 时，才会阻塞 09R3；否则研究路径可以继续使用已登记的实验性入口，并在进入 B0 前迁移。
