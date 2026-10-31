@@ -271,6 +271,8 @@ length(needle) <= length(text) and slice(text, length(text) - length(needle), le
 - 冻结生效的剩余条件：把 `text_path_candidates_match_native_golden_outputs` 加入维护回归
   三平台原生作业的精确执行列表，按既有规则 `--exact` 运行并断言恰好 1 条通过；三平台
   运行号回填后，本批才从“冻结决定已确认”转为“已冻结并进入实现”。
+- 门禁接线已完成：三平台从 workspace ignored 批量命令中排除此探测，再独立精确运行并
+  校验 `1 passed; 0 failed`；运行号及最终结果待推送后回填。
 - 探测阶段的 fmt、定向 Clippy、docs、UseDocs 与 layout 检查通过。
 - 产品函数体、逐接口移除验证、模块隔离、归档重放和公开文档尚未实施。
 - 三平台维护回归、完整 workspace gates、覆盖率及运行号尚待本批实现后核销。
