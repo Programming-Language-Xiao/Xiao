@@ -1016,12 +1016,15 @@ I4a2（运行时的包模块加载）、I4b（会话级生命周期与 TS 接入
   LLVM 消费同一份并发 IR facts/transfers/cancellation，接 Runtime C ABI（线程 trampoline、
   shared/lock、XCON、取消和 detached），建立 VM/LLVM 同一黄金场景的输出、错误、退出码和
   释放记录差分；Windows/Linux/macOS 回归和 32B ABI 布局/对齐验证。**不写 stdlib、不冻结
-  原生并发产物元数据（22E）**；当前为实施中，已完成同源 IR 计划、并发值 ABI、Runtime
-  trampoline 与首批 shared/lock/cancel 接线；根/局部导入别名 trampoline、关闭 Runtime/跨 Runtime SharedMut 和真实项目模块并发拒绝已修复；finally 主/次生错误、detached 收尾、shared/LockGuard release projection 已加入回归；真实 `llvm-as` 门禁由三平台原生作业显式运行；Windows 本机线程、pool、shared/lock、只读 shared 边界四场景 stdout 对照通过。公开原生构建仍关闭；XCON 负例、取消四位置、原生栈帧和三平台证据待收口。
+  原生并发产物元数据（22E）**；**已完成（2026-10-31，经 22D-FIX.1 收尾）**。
+  代码 `ab92df1` 的同 IR 12/16/1 差分、三平台 C 布局对象、Runtime 175 项与 22C 26/26
+  通过；maintenance `41192009040` 和完整 workspace gates `41192009047` 均成功。
+  XCON、宿主取消、真实 finish 等验证层次及九条退出条件对账见 22D §9.3；公开原生
+  并发产物仍关闭，stdlib 与发布元数据留给 22E。
 - **22E 标准库、UseDocs 与发布收口**：`std.concurrent` 线程/共享/任务池入口、长度前缀
   二进制序列化公开边界、文档、ABI/产物兼容和发布报告；官方容器仍后置。
 
-退出条件（22B-FIX.1、22C Runtime/ABI/VM 与 22C-FIX.1 已完成；22D–22E 仍待完成；
+退出条件（22B-FIX.1、22C/22C-FIX.1 与 22D/22D-FIX.1 已完成；22E 仍待完成；
 22D 计划见 [LLVM 并发执行、差分与跨平台](22d-llvm-concurrency-differential.md)）：
 
 1. 22A 首轮裁定、§2.2 细化和 F-1..F-8 修正契约齐全；32B 头布局已补跨平台测量；

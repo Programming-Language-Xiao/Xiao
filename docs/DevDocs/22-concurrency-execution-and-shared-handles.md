@@ -1,6 +1,6 @@
 # 22. 并发执行与共享句柄
 
-> **这是 07-D 之后的正式并发实现阶段，22B-FIX.1 静态残余已关闭；22C Runtime/ABI 与 VM 实现已完成，22C-FIX.1 已收口；22D LLVM/差分正在实施。**
+> **这是 07-D 之后的正式并发实现阶段，22B-FIX.1、22C/22C-FIX.1 及 22D/22D-FIX.1 已完成；22E 尚未实施。**
 > 07-D 已完成 8 项裁定、隔离原型、Linux workspace gates 和四平台测试；22A 已补齐
 > 四平台 32B 布局测量并写出语言表面、取消边界、IR 事实、ABI、诊断和发布门禁；22A-FIX
 > 已补齐这些契约与既有 `.xar`/`.xiaoc` 格式的冲突。
@@ -9,10 +9,10 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分正在实施（2026-10-31），D-2/D-5 已确认，导入别名和 Runtime 031 边界 P1 已修复；XCON 恶意输入、Runtime 四位置取消、原生栈帧和稳定场景释放顺序已有回归，提交 `f4d31b0` 的三平台原生门禁及完整 workspace gates 全部通过；完整黄金矩阵继续验收**。
+> 状态：**22D/22D-FIX.1 已完成（2026-10-31）**。代码 `ab92df1` 的 12/16/1 同 IR 差分、三平台 C 布局对象、Runtime 175 项及完整 workspace gates 通过；C-1～C-11 的验证层次和九条退出条件对账见 22D §9.3。
 > workspace、26 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs、
 > 本地安全/产物回归，以及远端多平台 maintenance/CI 均通过；三平台 maintenance 各自执行了 26/26 VM 并发回归。
-> 22D 正在实施；本轮修补和三平台证据见 [22D §9.2](22d-llvm-concurrency-differential.md#92-本轮修补与三平台证据)，22E 仍后置。
+> 最终修补和三平台证据见 [22D §9.3](22d-llvm-concurrency-differential.md#93-22d-fix1-收尾矩阵与证据)；原生并发产物发布和 stdlib 入口仍由 22E 单独实施。
 
 ## 一、阶段目标与边界
 
@@ -156,7 +156,8 @@
   §9.1，并作为该批第 9 条退出条件复核。
 - 完整黄金矩阵的收尾差分、夹具层次和证据格式见
   [22D-FIX.1. 并发差分矩阵收尾](22d-fix1-concurrency-differential-closure.md)；
-  C-1～C-11 关闭前 22D 保持实施中，22E 不开工。
+  C-1～C-11 已按该计划的层次登记关闭；代码 `ab92df1` 的三平台原生及完整 gates 通过，
+  22D 与 FIX.1 已完成，22E 尚未开工。
 
 ### 22E：标准库、UseDocs 与发布收口
 
@@ -233,8 +234,8 @@ tests/research/concurrency/                                 07-D 原型（只作
 ## 八、状态
 
 - 阶段代号：22；
-- 当前状态：22C Runtime/ABI/产物门禁及 22C-FIX.1 VM 实现已完成，本地 workspace、benchmark、research、Bun、coverage、安全/产物 gates 和远端 maintenance/CI 均通过；22B/22B-FIX/FIX.1 静态部分已关闭；22D LLVM/差分正在实施，同源计划、并发 ABI、trampoline 和首批成功/错误/释放差分已通过三平台原生门禁，完整黄金矩阵继续验收；标准库函数体未实现；
-- 当前工作批：22D LLVM、差分与跨平台（不回补 22B 静态语义，不在本阶段实现 stdlib 函数体，不冻结原生产物元数据）；
+- 当前状态：22B/22B-FIX/FIX.1、22C/22C-FIX.1 和 22D/22D-FIX.1 已完成；代码 `ab92df1` 的 12/16/1 差分、三平台原生/C 布局及完整门禁通过，证据与层次见 22D §9.3；22E 的标准库函数体和原生产物发布尚未实施；
+- 当前工作批：22D-FIX.1 收尾已关闭，后续 22E 另批实施；
 - 22C-FIX.1 可以只消费 22B 的类型、事实、动作、verifier 和 22C 已落地的 Runtime API；
   22D/22E 仍不得把 07-D 原型结构写成 ABI 或绕过冻结记录。
 - 22D 的详细入口、D-1～D-9、测试矩阵、退出条件和落点见

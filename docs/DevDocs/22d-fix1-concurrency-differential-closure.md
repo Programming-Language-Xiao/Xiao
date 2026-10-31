@@ -6,12 +6,13 @@
 > 阶段退出条件从“大部分有证据”推进到“逐条可复核”。本批不改 API、ABI、Send/Sync 表、
 > 32B/16B 布局、诊断编号或原生产物边界，不写 `stdlib/concurrent.xiao` 函数体。
 >
-> 状态：**实施中（2026-10-31，本地矩阵验证与门禁收尾）**。基线代码提交 `f4d31b0`；maintenance
-> [`41176081348`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081348)
+> 状态：**已完成（2026-10-31）**。最终代码 `ab92df1` 的 maintenance
+> [`41192009040`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41192009040)
 > 与 workspace gates
-> [`41176081391`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081391)
-> 均通过；证据补录提交 `0ec3ef4`。本地 2026-10-31 的 `cargo test --workspace --no-fail-fast`
-> 为 `EXIT=0`（167 个测试组）。本批完成前 22D 保持**实施中**，22E 不开工。
+> [`41192009047`](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41192009047)
+> 全部通过；本地 workspace 为 `EXIT=0`（167 个测试组），Runtime 175 项、22C 26/26。
+> 当前差分为 12/16/1，C-1～C-11 及九条退出条件按规定验证层次关闭；完整证据见
+> [22D §9.3](22d-llvm-concurrency-differential.md#93-22d-fix1-收尾矩阵与证据)。22E 尚未开始。
 
 ## 一、入口条件与冻结输入
 
@@ -230,5 +231,7 @@ LLVM 源码往返夹具，64 层深度在 Runtime trampoline 层验证，未计�
 语言锁等待场景验证锁不可用、已进入 try 和 finally 恰好一次；具体已阻塞位置另由
 Runtime C ABI 单测用 `#[cfg(test)]` 等待位观察证明，不为产物增加观察入口。
 
-本批最终源码提交、本地门禁和远端三平台运行完成后，统一补录到 22D §9.3；
-补录完成前保持实施中。
+本批最终源码为 `ab92df1cec63dcefcfefaf928eae739434bd16a9`，三平台原生、默认测试、
+安全、尺寸及完整工作流门禁全部通过；对应实际 job 与 §六九条退出条件对账见
+[22D §9.3](22d-llvm-concurrency-differential.md#93-22d-fix1-收尾矩阵与证据)。
+后续证据文档提交不计作重新执行代码；本批与 22D 同时关闭。
