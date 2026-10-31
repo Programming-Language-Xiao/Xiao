@@ -1,0 +1,7 @@
+# 核对纯 Xiao 库式错误通过函数边界后仍保留机器身份。
+def probe_failure(int value) -> int
+    if value < 0
+        raise Error(code = "B0_PROBE")
+    return value
+
+print(probe_failure(-1))

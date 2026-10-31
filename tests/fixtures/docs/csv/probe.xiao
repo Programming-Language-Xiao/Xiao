@@ -1,0 +1,39 @@
+# B0 探测引号状态机与同质字段数组；不是完整 CSV 解析器。
+from stdlib.text import length
+
+def probe_fields(str record) -> [str]
+    fields = []
+    field = ""
+    quoted = false
+    cursor = 0
+    count = length(record)
+    while cursor < count
+        character = record[cursor]
+        if character == "\""
+            if quoted and cursor + 1 < count and record[cursor + 1] == "\""
+                field = field + "\""
+                cursor = cursor + 1
+            else
+                quoted = not quoted
+        else
+            if character == "," and not quoted
+                array_push(fields, field)
+                field = ""
+            else
+                field = field + character
+        cursor = cursor + 1
+    if quoted
+        raise Error(code = "B0_UNCLOSED_QUOTE")
+    array_push(fields, field)
+    return fields
+
+for value in probe_fields("a,\"b,c\",\"d\"\"e\",")
+    print("[" + value + "]")
+for empty in probe_fields("")
+    print("[" + empty + "]")
+for multiline in probe_fields("\"雪\n😀\",x")
+    print("[" + multiline + "]")
+try
+    print(probe_fields("\"unfinished"))
+catch unclosed as Error
+    print("caught-unclosed-quote")

@@ -21,7 +21,7 @@
    纯 Xiao 优先；没有宿主必要性不新增 intrinsic；
 2. [20C. 官方 Xiao 库](20c-official-xiao-library.md) §3.2.1：模块清单、兼容策略、
    源码/预编译发布形式和身份字段；
-3. [20D-冻结. 资源与能力契约](20d-freeze-resource-contract.md) §5.1：能力上下文的
+3. [20D-冻结. 资源与能力契约](20d-freeze-resource-contract.md) §2.7：能力上下文的
    `u64` 位集，bit 1 为 `clock`，bit 3 为 `network`，bit 4 为 `native_extension`；
 4. [20E. 归档接线](20e-archive-wiring.md)：`.xar` 的标准库模块清单和启动前校验；
 5. [20M. 文本与路径扩展](20m-text-and-path-expansion.md)：纯 Xiao 模块的探测、冻结、

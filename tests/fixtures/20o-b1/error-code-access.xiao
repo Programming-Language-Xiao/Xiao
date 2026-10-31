@@ -1,0 +1,5 @@
+# B0 发现：机器错误对象的字段不能直接当表成员读取。
+try
+    raise Error(code = "B0_PROBE")
+catch failure as Error
+    print(failure.code)

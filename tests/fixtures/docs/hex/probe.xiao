@@ -1,0 +1,22 @@
+# B0 字节整数、字符查表与错误传播探测，不是公开编码器。
+from stdlib.text import find, lower_ascii
+
+def probe_hex_byte(int value) -> str
+    if value < 0 or value > 255
+        raise Error(code = "B0_BYTE_RANGE")
+    digits = "0123456789abcdef"
+    high = value // 16
+    low = value % 16
+    return digits[high] + digits[low]
+
+encoded = ""
+for byte in [0, 1, 15, 16, 127, 128, 255]
+    encoded = encoded + probe_hex_byte(byte)
+print(encoded)
+digits = "0123456789abcdef"
+print(find(digits, "f") * 16 + find(digits, lower_ascii("F")))
+print(find(digits, "g"))
+try
+    print(probe_hex_byte(256))
+catch invalid_byte as Error
+    print("caught-byte-range")

@@ -1,0 +1,5 @@
+# 把错误留给驱动器，独立核对机器身份，而不是从教程打印标签推断。
+def probe_overflow(int value) -> int
+    return value + 1
+
+print(probe_overflow(9223372036854775807))

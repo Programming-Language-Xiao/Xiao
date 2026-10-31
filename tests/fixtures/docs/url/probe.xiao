@@ -1,0 +1,18 @@
+# B0 探测 UTF-8 字节编码所需的码点运算，不是完整 URL 解析器。
+from stdlib.text import find
+
+def probe_percent_byte(int byte) -> str
+    digits = "0123456789ABCDEF"
+    high = byte // 16
+    low = byte % 16
+    return "%" + digits[high] + digits[low]
+
+snow = int("雪")
+print(probe_percent_byte(224 + snow // 4096) + probe_percent_byte(128 + snow // 64 % 64) + probe_percent_byte(128 + snow % 64))
+face = int("😀")
+print(probe_percent_byte(240 + face // 262144) + probe_percent_byte(128 + face // 4096 % 64) + probe_percent_byte(128 + face // 64 % 64) + probe_percent_byte(128 + face % 64))
+print(probe_percent_byte(32) + probe_percent_byte(43) + probe_percent_byte(47))
+print(chr((233 - 224) * 4096 + (155 - 128) * 64 + (170 - 128)))
+print(chr((240 - 240) * 262144 + (159 - 128) * 4096 + (152 - 128) * 64 + (128 - 128)))
+print(find("0123456789ABCDEF", "G"))
+print(int("雪"))

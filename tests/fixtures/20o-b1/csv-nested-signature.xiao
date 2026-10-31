@@ -1,0 +1,5 @@
+# 单独保留 CSV 全文返回类型的语言边界探测，不绕过公开签名约束。
+def probe_rows([[str]] rows) -> [[str]]
+    return rows
+
+print(probe_rows([["a", "b"]]))

@@ -1,0 +1,25 @@
+# B0 探测码点宽度、填充与整数进制所需操作；不是通用格式化器。
+from stdlib.text import length, repeat
+
+def probe_padding(str value, int width, str fill) -> str
+    if length(fill) != 1
+        raise Error(code = "B0_FILL_WIDTH")
+    missing = width - length(value)
+    if missing <= 0
+        return value
+    return repeat(fill, missing) + value
+
+print(probe_padding("雪😀", 4, "."))
+print(probe_padding("long", 2, "."))
+print(probe_padding("", 3, "0"))
+digits = "0123456789abcdef"
+number = 255
+high = number // 16
+low = number % 16
+print(digits[high] + digits[low])
+negative = -9223372036854775807 - 1
+print(str(negative))
+try
+    print(probe_padding("雪", 3, "ab"))
+catch invalid_fill as Error
+    print("caught-fill-width")

@@ -2,6 +2,12 @@
 
 本目录覆盖 08-U0 统一前端入口，以及 09-B0-C/D 前端到生产 VM 驱动器、退出码和 X0-A 协议的公共契约。
 
+`20o_b1_probe.rs` 只做官方库 B0 探测：读取 `tests/fixtures/docs/` 的七份完整源码，
+VM/native 各自逐字核对黄金输出，检查 planned 教程与执行文件一致；另存 CSV 嵌套签名和
+错误字段读取的真实边界。原生测试由现有 workspace ignored 作业发现，本批不改 CI。
+探测不注册官方模块、不改 ABI；范围、计数与逐平台证据见
+[20O-B0](../../../../../docs/DevDocs/20o-b0-baseline-and-b1-draft.md)。
+
 `22e_release.rs` 直接读取权威并发 UseDocs 的五个示例，覆盖 17 个入口；验证三类产物
 的最小位集、旧/新 Runtime 兼容和 32 位拒绝。三平台精确执行公开 NativeBuild、实际
 节读回、strip、损坏/旧元数据拒绝与 verify 发布报告。E-0 的首次 finally/helper

@@ -5,6 +5,21 @@
 
 模块实现必须同时更新本页索引、模块 README、阶段 DevDocs 和标准库兼容身份。官方库不通过普通包依赖安装。
 
+## B1 教程草案
+
+以下模块均为 `planned`，只有 B0 的完整能力探测，尚不可作为官方库导入。每页含候选 API、
+错误/资源边界和被测试的完整示例；通过探测不等于模块已完成。
+
+- [math：整数计算](math.md)
+- [hex：十六进制编码](hex.md)
+- [base64：Base64 编码](base64.md)
+- [url：URL 组件转义](url.md)
+- [csv：字段与记录](csv.md)
+- [fmt：文本宽度与整数格式](fmt.md)
+- [statistics：整数统计](statistics.md)
+
+实施边界、逐平台结果及尚待确认的具体契约见 [B0 探测与冻结草案](../../DevDocs/20o-b0-baseline-and-b1-draft.md)。
+
 ## 首批模块
 
 - [`text`](text.md) —— 字符扫描、码点长度、查找/切片/切分；20M 增加 ASCII 首尾空白剥除、替换、重复与 ASCII 大写转换。

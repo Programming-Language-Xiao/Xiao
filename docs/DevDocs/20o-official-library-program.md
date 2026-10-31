@@ -8,7 +8,9 @@
 > 状态：**规划中（2026-11-01）**。基线为 `6dc0773` 之后的仓库状态（开工时以
 > `git log`/`git status` 为准）。本文件只做研究和拆分，不写产品函数体、不新增 intrinsic、
 > 不改变 ABI 1.17。**已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
-> D-7 取专用 `json_value` 类型、B7→B8→B9 后置**；其余决策仍待星崽确认。
+> D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
+> 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见
+> [20O-B0](20o-b0-baseline-and-b1-draft.md)。
 
 ## 一、工程目标与边界
 
@@ -38,7 +40,7 @@
 | 标准库接口版本 | 1 |
 | Runtime ABI | 1.17 |
 | 语言数值 | `int`/`sint`/`float`/`sfloat` 已实现；`lint`/`lfloat` 是不限位宽文本表示，但算术/转换仍不完整 |
-| 容器 | `[T]`、`dict<str,T>`、`set<T>`；元素类型同质 |
+| 容器 | 公开同质注解 `[T]`、`dict<str,T>`、`set<T>` 已有；内部异构容器不等于公开动态/嵌套签名已冻结 |
 | 动态值 | 类型层内部有 `dynamic` 退化，但公开注解/边界未冻结 |
 | 宿主能力 | 能力位 `filesystem/clock/process/network/native_extension/stdout/stdin` 已存在；没有 time/argv/网络/文件写入 intrinsic |
 | 并发 | 22 已完成；没有 async/await、Actor 或官方并发容器 |
@@ -77,7 +79,7 @@
 
 | 模块 | 优先级 | 层 | 前提 |
 | --- | --- | --- | --- |
-| `time`（clock） | P0 | intrinsic + ABI | `clock` 能力；UTC 首批 |
+| `time`（clock + sleep） | P0 | intrinsic + ABI | `clock` 能力；UTC 首批，D-8 已确认加入 sleep，取消语义待冻 |
 | `datetime`（本地时区/解析） | P2 | 数据表 + 时区策略 | 时区数据库/打包 |
 | `json` | P0 | 纯 Xiao | JSON 值模型 |
 | `toml` | P1 | 纯 Xiao | 同一值模型 |
@@ -156,22 +158,24 @@
 - **已确认取甲（2026-11-01）**：用成熟 Rust 数值库承载底层，Xiao 只做便利 API；
   不采用乙/丙的“部分任意精度”口径。
 
-**D-2 decimal 语义**：定点小数（scale + 舍入模式）还是任意精度十进制；是否与 `lfloat`
-共用表示；除零/溢出/舍入的错误身份；字符串往返是否保精确。
+**D-2 decimal 语义（方向已确认，2026-11-01）**：任意精度十进制，与 `lfloat` 共用成熟
+Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精确表示和错误身份在 B2/B5 冻结。
 
-**D-3 fractions 表示**：分子/分母用 `lint` 大整数；约分与 gcd；负分母归一；溢出与
-除零；与 decimal/float 的转换边界。
+**D-3 fractions 表示（方向已确认，2026-11-01）**：`lint` 大整数分子/分母、自动约分、
+分母归一为正、零分母报错；转 decimal 需精度与舍入，转 float 显式允许精度损失。
+精确签名、资源限制与错误身份仍需对应批次冻结。
 
 ### 3.4 各数值库的最小范围
 
 - **math**：`abs`/`min`/`max`/`clamp`/`gcd`/整数 `pow`；整数域，纯 Xiao；
-- **cmath**：`sqrt`/`floor`/`ceil`/`round`/`trunc`/`abs`/`min`/`max`/`pow`，再评估
-  `sin`/`cos`/`tan`/`exp`/`ln`/`log10`；必须冻结 NaN/Inf、域错误、舍入和平台一致性；
+- **cmath**：`sqrt`/`floor`/`ceil`/`round`/`trunc`/`abs`/`min`/`max`/`pow`；D-4 已确认
+  **首批包含超越函数**，`sin`/`cos`/`tan`/`exp`/`ln`/`log10` 为待冻结具体清单；
+  必须冻结 NaN/Inf、域错误、舍入和平台一致性；
   先做宿主原语，纯 Xiao 只做包装；
-- **statistics**：`sum`/`mean`/`min`/`max`/`median`/`variance`/`stddev`；纯 Xiao；
-  明确整数/浮点输入、NaN 和空数组行为；
-- **random**：确定性 PRNG 的 `seed`、`next_int`、范围/采样；种子和序列可复现；
-  CSPRNG 单独成批，不混入普通 PRNG；
+- **statistics**：D-5 已确认 B1 只做 int 数组 `sum`/`min`/`max`，空 sum=0、空 min/max
+  报错、溢出沿用现有错误；`mean`/`median`/`variance`/`stddev` 与浮点/NaN/精度留 B5；
+- **random**：D-6 已确认显式生成器、显式种子与固定算法版本，不依赖隐式全局/线程局部
+  状态；序列可复现，CSPRNG 归 B7，不混入普通 PRNG；
 - **decimal**：构造（字符串/整数/scale）、加减乘除、比较、舍入、格式化；不先做
   任意精度超越函数；
 - **fractions**：构造、约分、加减乘除、比较、转 decimal/float；不先做连分数等扩展。
@@ -195,38 +199,44 @@
 
 | 批次 | 内容 | 前置 | 交付证据 |
 | --- | --- | --- | --- |
-| B0 | 本总纲、目录冻结、D-1～D-12 决策、首批范围确认 | 无 | 文档 + 星崽确认 |
+| B0 | 总纲/目录复核、D-1～D-22 逐条裁定、基线门禁、B1 探测/教程与冻结草案 | 无 | [B0 记录](20o-b0-baseline-and-b1-draft.md)；方向已确认，API 草案待审 |
 | B1 | 纯 Xiao 快速批：`math` 整数、`base64`/`hex`、`url`、`csv`、`fmt`、`statistics`（整数子集）；**首批范围已确认（2026-11-01）** | 无 | VM/native 黄金、移除、docs/registry |
-| B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath` 基础 | B0；ABI 次版本 | intrinsic/ABI 四处 + 版本拒绝 + 三平台 |
-| B3 | 简单宿主批：`time`（UTC）、`args`/`cli`、`fs` 扩展、`env`、`log` 时间戳 | B0；ABI | 能力/错误/三平台 |
+| B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | intrinsic/ABI 四处 + 版本拒绝 + 三平台 |
+| B3 | 简单宿主批：`time`（UTC + sleep）、`args`/`cli`、`fs` 扩展、`env`、`log` 时间戳 | B0；ABI | 能力/错误/取消/三平台 |
 | B4 | JSON/TOML 值模型 + `json`/`toml` 解析器 | B0；语言冻结 | 类型/IR/两后端/生命周期 |
 | B5 | 数值库批：`decimal`、`fractions`、`statistics` 浮点、确定性 `random` | B2 | 精度/舍入/边界/三平台 |
 | B6 | 原生工具批：`regex`、`compression`、`fmt` 扩展 | B0；原生库策略 | 上限/模糊/依赖锁定 |
 | B7 | 安全批：`hash`/`hmac`/CSPRNG/AEAD/TLS 基础 | B2；安全审阅 | 测试向量/侧信道/能力位 |
 | B8 | 网络批：HTTP client/server | B3+B7 | 超时/限制/取消/关闭 drain |
-| B9 | 原生扩展/数据库批：SQLite → PostgreSQL → Redis → MySQL；每驱动必须有教程和示例 | 原生扩展契约；B7 的 TLS/crypto | 隔离/凭据/审计/服务测试 |
+| B9 | 原生扩展/数据库批：SQLite → PostgreSQL → Redis → MySQL；首批有界连接池；每驱动必须有教程和示例 | 原生扩展契约；B7 的 TLS/crypto | 独立数据库能力/隔离/凭据/审计/池关闭/服务测试 |
 
 **已确认（2026-11-01）**：B7→B8→B9 的先后顺序保持不变；安全、HTTP 和数据库后置，
 先把数值、数据、工具和简单宿主库交付。B1 与 B2 可以并行探测，但 B2 的 ABI 升级必须
 先冻结；B4 的值模型必须与 B5 的数值类型分开评审，不能把 JSON 的值类型和 decimal 混成
 一个类型。
 
-## 五、决策清单（待星崽确认）
+## 五、决策清单
 
-- **D-1 任意精度实现**：甲 Rust 数值库 / 乙 纯 Xiao / 丙 受限精度；推荐甲。
-- **D-2 decimal 语义**：定点 scale+舍入 / 任意精度；与 `lfloat` 的关系。
-- **D-3 fractions 表示**：大整数分子分母、约分、溢出和转换边界。
-- **D-4 cmath 范围**：首批是否包含超越函数；NaN/Inf/域错误/舍入策略。
-- **D-5 statistics 数值策略**：整数/浮点、NaN、空数组和精度。
-- **D-6 random 边界**：确定性 PRNG 与 CSPRNG 分开；种子和线程局部状态。
-- **D-7 JSON/TOML 值模型**：公开 `dynamic` / 专用值类型 / 仅 schema。
-  **已确认取专用 `json_value` 类型（2026-11-01）**；不扩大公开 `dynamic` 面。
-- **D-8 time 范围**：UTC 首批；本地时区/`sleep`/日历是否后置。
-- **D-9 fs 策略**：路径、`..`、符号链接、覆盖和原子写入。
-- **D-10 CLI argv**：程序名、编码、Windows 引号、空参数。
-- **D-11 regex/compression**：线性时间引擎、格式、上限和流式。
-- **D-12 crypto/HTTP/数据库**：算法清单、能力位、TLS、HTTP/1.1 子集和 native extension
-  契约；没有安全审阅不发布。
+来源：星崽 2026-11-01 直接裁定；D-1/D-7/B1/批次顺序沿用此前确认，其余各项在 B0 会话
+逐条询问。下表区分已确认方向与尚未冻结的细项；“建议”不能替代星崽的实际选择。
+
+| 决策 | 星崽已确认 | 尚需对应批次冻结 |
+| --- | --- | --- |
+| D-1 任意精度 | 甲：成熟 Rust 数值库，统一 lint/lfloat | 库选择/版本、值表示、ABI、限制 |
+| D-2 decimal | 任意精度十进制，共用 lfloat 底座；文本往返精确，除法显式精度/舍入 | B2/B5 的表示、错误身份与舍入参数 |
+| D-3 fractions | lint 分子分母、自动约分、正分母、零分母报错；转 decimal 指定精度/舍入，转 float 显式允许精度损失 | 精确 API、错误与资源边界 |
+| D-4 cmath | **首批包含超越函数** | 具体函数集合、NaN/Inf/域错误/舍入/平台一致性 |
+| D-5 statistics | B1 仅 int 数组 sum/min/max；sum([])=0，空 min/max 报错，溢出沿用现有错误 | 均值/中位数/方差/标准差、浮点/NaN/精度在 B5 冻结；B1 错误身份待审 |
+| D-6 random | 显式生成器/种子、固定算法版本以复现序列；不依赖隐式全局/线程局部状态；CSPRNG 归 B7 | 算法、种子范围、状态表示与并发边界 |
+| D-7 值模型 | 专用 json_value，不扩大公开 dynamic | B4 的类型/生命周期/两后端契约 |
+| D-8 time | UTC 墙钟/单调钟/格式化，**首批增加 sleep**；本地时区/日历/解析后置 | sleep 的单位/负值/零值/取消/能力与错误 |
+| D-9 fs | 宿主权限，普通操作按平台路径解析 .. 和符号链接，覆盖显式；原子写限同目录替换，无法保证则报错；受限模式另冻 | 三平台路径表、原子保证与错误身份 |
+| D-10 argv | 数组不含程序名，程序名另取；保留空参数，Windows 不二次拆引号；非法 Unicode 报错，不有损替换 | 精确入口/错误与平台测试 |
+| D-11 regex/compression | 成熟线性时间引擎；gzip/zlib 整块；输入/编译/输出/解压上限必备，流式后置 | B6 的依赖与具体限额 |
+| D-12 安全/HTTP/数据库 | 成熟依赖、TLS 默认校验、参数绑定、强制限额/超时、未经安全审阅不发布 | **明确延期**：算法、能力位、HTTP/1.1 子集、原生扩展契约分别在 B7/B8/B9 再逐项确认 |
+
+D-13～D-22 的本次答复见 [20P §六](20p-day1-library-architecture.md#六架构决策)。
+本轮只做 B0；API 冻结草案与真实探测边界见 [20O-B0](20o-b0-baseline-and-b1-draft.md)。
 
 ## 六、新 Agent 交接（无上下文必读）
 
@@ -236,7 +246,7 @@
 2. [20P. Day-1 官方库架构](20p-day1-library-architecture.md)：模块/错误/教程/数据库驱动；
 3. [20. 标准库路线](20-builtins-and-standard-library.md) §2/§六/§七；
 4. [20C. 官方库冻结](20c-official-xiao-library.md) §3.2.1/§3.4.1；
-5. [20D-冻结. 能力与资源](20d-freeze-resource-contract.md) §5.1；
+5. [20D-冻结. 能力与资源](20d-freeze-resource-contract.md) §2.7；
 6. [20M. 最近的完整批次](20m-text-and-path-expansion.md)：探测→冻结→实现→三平台证据的模板；
 7. [20N. 扩展路线草案](20n-standard-library-expansion-roadmap.md)；
 8. [02. 类型系统](02-type-system.md) 数值章节、[03. 容器](03-collections.md)、
@@ -290,19 +300,20 @@
 
 ### 6.5 遇到模糊点先问星崽
 
-以下情况必须先问，不得自行决定：D-1～D-22；新增 intrinsic/ABI/能力位；引入新的第三方
+以下事项的未确认细项或拟变更的已确认结论必须先问，不得自行决定；已确认方向不重复询问：
+D-1～D-22；新增 intrinsic/ABI/能力位；引入新的第三方
 运行库或安全算法；扩大公开 API；改变已有接口签名/错误身份；修改 release/CI 矩阵；
 数据库驱动选择、连接池/事务/结果集语义；教程示例执行方式和文档状态升级。
 
 ### 6.6 第一小时清单
 
-1. `git log -5`、`git status --short --branch`，确认基线和是否有并发改动；
+1. `cmd /c git log -5`、`cmd /c git status --short --branch`，确认基线和是否有并发改动；
 2. 读 §6.1 的文档，确认当前 ABI/接口版本；
 3. 跑一次文档门禁和一次全量测试，记录基线数字；
-4. 按 B0 的决策清单向星崽汇报，确认首批范围（建议 B1 pure-Xiao：math 整数、
-   base64/hex、url、csv、fmt、statistics 整数子集）；
-5. 读 [20P](20p-day1-library-architecture.md) 的教程模板和数据库驱动架构，确认
-   D-13～D-22；
+4. 按 B0 决策表复核已确认范围：math 整数、base64/hex、url、csv、fmt、statistics
+   整数子集；不重问已确认方向，只逐项提交尚未冻结的具体契约；
+5. 读 [20P](20p-day1-library-architecture.md) 的教程模板、数据库驱动架构与 D-13～D-22
+   已确认方向，精确细项留对应批次逐条询问；
 6. 为 B1 写探测夹具和冻结草案，同时先写教程/示例草稿；不要直接写产品函数体。
 
 ## 七、本规划批的退出条件

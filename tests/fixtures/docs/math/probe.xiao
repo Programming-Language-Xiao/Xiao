@@ -1,0 +1,35 @@
+# B0 能力探测；这些局部函数不是 std.math 的产品实现。
+def probe_gcd(int left, int right) -> int
+    if left < 0
+        left = -left
+    if right < 0
+        right = -right
+    while right != 0
+        remainder = left % right
+        left = right
+        right = remainder
+    return left
+
+def probe_power(int base, int exponent) -> int
+    if exponent < 0
+        raise Error(code = "B0_NEGATIVE_EXPONENT")
+    result = 1
+    remaining = exponent
+    while remaining > 0
+        result = result * base
+        remaining = remaining - 1
+    return result
+
+print(probe_gcd(54, 24))
+print(probe_gcd(-54, 24))
+print(probe_gcd(0, 0))
+print(probe_power(2, 10))
+print(probe_power(0, 0))
+try
+    print(probe_power(2, -1))
+catch negative as Error
+    print("caught-negative-exponent")
+try
+    print(probe_power(2, 63))
+catch overflow as Error
+    print("caught-overflow")
