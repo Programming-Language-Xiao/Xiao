@@ -19,7 +19,9 @@
    网络能力、native extension；
 3. 按“开发者第一天就会用”和“依赖深度/安全风险”确定批次顺序；
 4. 为数值计算（math/cmath/decimal/fractions/statistics/random）做专项研究和冻结建议；
-5. 把新 Agent 需要的上下文、命令、门禁、陷阱和交接步骤写全。
+5. 每个库都必须有 UseDocs 教程和可执行示例；模板、示例测试和数据库驱动架构见
+   [20P. Day-1 官方库架构](20p-day1-library-architecture.md)；
+6. 把新 Agent 需要的上下文、命令、门禁、陷阱和交接步骤写全。
 
 ### 1.2 不负责
 
@@ -104,8 +106,10 @@
 | `http` client | P2 | 原生库/网络 | TLS、超时、大小上限 |
 | `http` server | P2 | 原生库/网络 + 并发 | 请求限制、慢速攻击、关闭 drain |
 | `websocket` | P3 | 网络扩展 | 协议与安全 |
-| SQLite 驱动 | P2 | native extension | 原生扩展契约 |
-| PostgreSQL/MySQL 驱动 | P3 | native extension + TLS | 网络/凭据/连接池 |
+| SQLite 驱动 | P2 | native extension | 原生扩展契约；本地文件 |
+| PostgreSQL 驱动 | P2 | native extension + TLS | 网络/凭据/连接池/加密 |
+| Redis 驱动 | P2 | native extension + TLS | RESP/网络/认证/加密 |
+| MySQL 驱动 | P3 | native extension + TLS | 复用 PostgreSQL 骨架 |
 
 ## 三、专项研究：数值计算
 
@@ -200,7 +204,7 @@
 | B6 | 原生工具批：`regex`、`compression`、`fmt` 扩展 | B0；原生库策略 | 上限/模糊/依赖锁定 |
 | B7 | 安全批：`hash`/`hmac`/CSPRNG/AEAD/TLS 基础 | B2；安全审阅 | 测试向量/侧信道/能力位 |
 | B8 | 网络批：HTTP client/server | B3+B7 | 超时/限制/取消/关闭 drain |
-| B9 | 原生扩展/数据库批：SQLite 起 | 原生扩展契约 | 隔离/凭据/审计 |
+| B9 | 原生扩展/数据库批：SQLite → PostgreSQL → Redis → MySQL；每驱动必须有教程和示例 | 原生扩展契约；B7 的 TLS/crypto | 隔离/凭据/审计/服务测试 |
 
 **已确认（2026-11-01）**：B7→B8→B9 的先后顺序保持不变；安全、HTTP 和数据库后置，
 先把数值、数据、工具和简单宿主库交付。B1 与 B2 可以并行探测，但 B2 的 ABI 升级必须
@@ -229,14 +233,15 @@
 ### 6.1 先读什么
 
 1. 本文件；
-2. [20. 标准库路线](20-builtins-and-standard-library.md) §2/§六/§七；
-3. [20C. 官方库冻结](20c-official-xiao-library.md) §3.2.1/§3.4.1；
-4. [20D-冻结. 能力与资源](20d-freeze-resource-contract.md) §5.1；
-5. [20M. 最近的完整批次](20m-text-and-path-expansion.md)：探测→冻结→实现→三平台证据的模板；
-6. [20N. 扩展路线草案](20n-standard-library-expansion-roadmap.md)；
-7. [02. 类型系统](02-type-system.md) 数值章节、[03. 容器](03-collections.md)、
+2. [20P. Day-1 官方库架构](20p-day1-library-architecture.md)：模块/错误/教程/数据库驱动；
+3. [20. 标准库路线](20-builtins-and-standard-library.md) §2/§六/§七；
+4. [20C. 官方库冻结](20c-official-xiao-library.md) §3.2.1/§3.4.1；
+5. [20D-冻结. 能力与资源](20d-freeze-resource-contract.md) §5.1；
+6. [20M. 最近的完整批次](20m-text-and-path-expansion.md)：探测→冻结→实现→三平台证据的模板；
+7. [20N. 扩展路线草案](20n-standard-library-expansion-roadmap.md)；
+8. [02. 类型系统](02-type-system.md) 数值章节、[03. 容器](03-collections.md)、
    [22. 并发](22-concurrency-execution-and-shared-handles.md)；
-8. `docs/DevDocs/README.md`、`docs/module-registry.json`、`docs/UseDocs/library/`。
+9. `docs/DevDocs/README.md`、`docs/module-registry.json`、`docs/UseDocs/library/`。
 
 ### 6.2 仓库与门禁（开工时复核）
 
@@ -263,7 +268,8 @@
 2. **冻结**：写清签名、所有权、错误、边界、能力和 ABI 影响，提交给星崽确认；
 3. **实现**：只做已冻结范围；纯 Xiao 优先；新 intrinsic 同时改 intrinsic 契约、
    VM/LLVM/Runtime/ABI 四处；新值类型先写 `00-decisions`；
-4. **文档**：stdlib README、模块 `.md`、UseDocs、registry、路线/阶段索引同步；
+4. **文档**：stdlib README、模块 `.md`、UseDocs 教程（十项内容）、可执行示例、
+   registry、路线/阶段索引同步；教程示例必须进 CI；
 5. **本地门禁**：全量测试、clippy、fmt、docs/usedocs/layout、覆盖率；
 6. **远端证据**：push 后记录 maintenance 运行号和逐平台 job，必要时手动
    `platform-reproduction`；
@@ -284,8 +290,9 @@
 
 ### 6.5 遇到模糊点先问星崽
 
-以下情况必须先问，不得自行决定：D-1～D-12；新增 intrinsic/ABI/能力位；引入新的第三方
-运行库或安全算法；扩大公开 API；改变已有接口签名/错误身份；修改 release/CI 矩阵。
+以下情况必须先问，不得自行决定：D-1～D-22；新增 intrinsic/ABI/能力位；引入新的第三方
+运行库或安全算法；扩大公开 API；改变已有接口签名/错误身份；修改 release/CI 矩阵；
+数据库驱动选择、连接池/事务/结果集语义；教程示例执行方式和文档状态升级。
 
 ### 6.6 第一小时清单
 
@@ -294,7 +301,9 @@
 3. 跑一次文档门禁和一次全量测试，记录基线数字；
 4. 按 B0 的决策清单向星崽汇报，确认首批范围（建议 B1 pure-Xiao：math 整数、
    base64/hex、url、csv、fmt、statistics 整数子集）；
-5. 为 B1 写探测夹具和冻结草案，不要直接写产品函数体。
+5. 读 [20P](20p-day1-library-architecture.md) 的教程模板和数据库驱动架构，确认
+   D-13～D-22；
+6. 为 B1 写探测夹具和冻结草案，同时先写教程/示例草稿；不要直接写产品函数体。
 
 ## 七、本规划批的退出条件
 
