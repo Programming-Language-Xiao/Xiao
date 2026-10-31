@@ -30,6 +30,9 @@
 | `repeat(str text, int count) -> str` | 重复 count 次；count ≤ 0 返回空串 |
 | `upper_ascii(str text) -> str` | 仅把 ASCII a–z 转为 A–Z，其余字符原样保留 |
 
+`repeat` 不额外限制正计数或结果大小；极端输入可能耗尽可用内存，调用方应按资源预算限制输入。
+本接口不新增专用资源错误编号。
+
 四项不增加错误编号。前后缀判断按 20M 的一行组合门槛剔除，分别使用
 `find(text, needle) == 0` 和带长度守卫的 `slice` 比较；示例见
 [公共文档](../docs/UseDocs/library/text.md)。本批验证与证据见

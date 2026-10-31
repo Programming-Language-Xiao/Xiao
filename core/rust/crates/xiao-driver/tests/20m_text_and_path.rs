@@ -170,9 +170,9 @@ fn text_path_interfaces_have_vm_golden_outputs() {
 }
 
 #[test]
-/// 分别移除 VM 官方加载器和 LLVM 函数体绑定，每个新接口都必须结构化失败。
+/// 每项调用验证 VM 的模块级加载失败；LLVM 侧精确核对缺失函数名并要求携带诊断区间。
 fn text_path_interfaces_require_loader_and_native_function_binding() {
-    for (id, _, function) in PRODUCTS {
+    for (id, module, function) in PRODUCTS {
         let request = fixture_request(id);
         let artifact = FrontendCompiler::new()
             .compile(&request)
@@ -188,6 +188,12 @@ fn text_path_interfaces_require_loader_and_native_function_binding() {
             error.message().contains("未注册模块编译器"),
             "{id}: {error:?}"
         );
+        assert!(
+            error
+                .message()
+                .contains(&format!("官方标准库模块 {module}")),
+            "{id} 应在对应模块加载时失败：{error:?}"
+        );
         let mut broken = artifact.ir.clone();
         let keep = |statement: &xiao_ir::IrStatement| !matches!(&statement.kind, IrStatementKind::Function { name, .. } if name.text == function);
         broken.body.retain(keep);
@@ -195,9 +201,17 @@ fn text_path_interfaces_require_loader_and_native_function_binding() {
             module.body.retain(keep);
         }
         let result = NativeBuild::new().lower(&broken, &CodegenOptions::default());
-        assert!(
-            matches!(result, Err(CodegenError::Unsupported { .. })),
-            "{id} 移除函数体后须在 LLVM lowering 拒绝：{result:?}"
+        let Err(CodegenError::Unsupported { feature, span }) = result else {
+            panic!("{id} 移除函数体后须在 LLVM lowering 拒绝：{result:?}");
+        };
+        assert_eq!(
+            feature,
+            format!("动态函数调用 {function}（未找到静态函数绑定）"),
+            "{id} 的拒绝必须指向被删除的函数"
+        );
+        assert!(span.is_some(), "{id} 的缺失绑定诊断必须带源码区间");
+        println!(
+            "20M-REMOVAL function={function} vm_module=stdlib.{module} native_feature={feature} span={span:?}"
         );
     }
 }

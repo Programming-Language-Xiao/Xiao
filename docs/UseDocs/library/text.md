@@ -156,6 +156,9 @@ repeat(str text, int count) -> str
 
 重复 count 次。count 为零或负数时返回空串，空文本的结果也为空串。
 
+接口不额外限制正计数或结果大小；极端输入可能耗尽可用内存，调用方应按资源预算限制输入。
+本接口不新增专用资源错误编号。
+
 ```xiao
 from stdlib.text import repeat
 

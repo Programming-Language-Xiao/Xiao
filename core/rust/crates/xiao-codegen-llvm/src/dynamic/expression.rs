@@ -929,7 +929,7 @@ impl<'a> DynamicGenerator<'a> {
             return self.emit_error_new(&name.text, arguments, span);
         }
         Err(CodegenError::Unsupported {
-            feature: "动态函数调用".to_owned(),
+            feature: format!("动态函数调用 {}（未找到静态函数绑定）", name.text),
             span: Some(span),
         })
     }
