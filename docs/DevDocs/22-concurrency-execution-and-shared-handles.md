@@ -154,6 +154,9 @@
 - 22D 审核登记的 P3 待收口清单（pool worker checkpoint 隔离、嵌套 detached locale、
   间接模块并发预检、finish 清理错误优先级、旧 C ABI 输出槽、`abi.rs` 拆分）见 22D 文档
   §9.1，并作为该批第 9 条退出条件复核。
+- 完整黄金矩阵的收尾差分、夹具层次和证据格式见
+  [22D-FIX.1. 并发差分矩阵收尾](22d-fix1-concurrency-differential-closure.md)；
+  C-1～C-11 关闭前 22D 保持实施中，22E 不开工。
 
 ### 22E：标准库、UseDocs 与发布收口
 

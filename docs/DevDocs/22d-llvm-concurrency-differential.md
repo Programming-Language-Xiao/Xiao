@@ -399,11 +399,14 @@ locale 继承和 native finish 通道消费。并发句柄采用不复用整数 
 | 完整 workspace gates | [124463818157](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41176081391/job/124463818157) | `success` |
 
 以上门禁关闭本轮五项修补的证据缺口，阶段状态仍为实施中：完整的 §五黄金矩阵、
-真实入口 close drain 失败差分等尚需逐项验收。
+真实入口 close drain 失败差分等尚需逐项验收。收尾差分的缺口清单、夹具层次和证据格式见
+[22D-FIX.1. 并发差分矩阵收尾](22d-fix1-concurrency-differential-closure.md)；
+C-1～C-11 关闭前不宣布 22D 完成。
 
 ## 十、状态
 
 - 阶段代号：22D；
 - 当前状态：**实施中**；入口证据来自 22C-FIX.1 的 `0caebc9`，D-2/D-5 已确认，第一批 LLVM 并发 lowering、Runtime C ABI 和 trampoline 已落地；根/局部导入别名 P1、Runtime 031 边界和真实项目模块结构化拒绝已修复并覆盖；XCON 恶意输入、Runtime 取消四位置、native 运行中/完成态取消、native/VM 栈帧和稳定场景完整释放顺序已有本机证据；提交 `f4d31b0` 的 Windows/Linux/macOS 原生差分、Linux workspace 默认测试及完整 workspace gates 均已通过远端工作流；P3 待收口清单见 §9.1，并作为 §六 第 9 条退出条件复核；
-- 当前工作批：22D；不接 22E 标准库/原生产物元数据；
+- 当前工作批：22D；不接 22E 标准库/原生产物元数据；完整黄金矩阵的收尾差分见
+  [22D-FIX.1](22d-fix1-concurrency-differential-closure.md)；
 - 22D 完成后，22E 只消费本批稳定的并发行为和已有 ABI，不反向修改 22D 的跨平台结论。
