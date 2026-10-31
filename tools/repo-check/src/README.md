@@ -14,3 +14,5 @@ A0.2 实现目录与 workspace 规则；A0.4 接入 CI、链接图和退出码�
 同时提供稳定排序的源文件列表，`size` 执行 2500 物理行门禁、四段旁置豁免校验与按需大纲，
 `commit` 锁定提交标题前缀与非空正文，`report` 将大纲详情分别映射到文本、JSON 和 SARIF。
 每个模块新增代码时必须同步更新本 README、单元测试和对应 UseDocs 页面。
+
+Rust workspace 的 glob 检查仅匹配成员数组；合法的 Cargo profile 通配符不属于成员声明。

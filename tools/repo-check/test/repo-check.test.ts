@@ -12,7 +12,7 @@ import { checkDevDocs, checkMarkdownLinks, checkUseDocs, scanMarkdownDirectory }
 import { findRepositoryRoot } from "../src/manifest.ts";
 import { renderJson, renderSarif, renderText } from "../src/report.ts";
 import { checkFileSizes, countPhysicalLines, exemptionMissingSections, MAX_SOURCE_LINES, renderOutlineDetails } from "../src/size.ts";
-import { inspectBunWorkspace } from "../src/workspace.ts";
+import { inspectBunWorkspace, inspectRustWorkspace } from "../src/workspace.ts";
 import { readmeMissingSections } from "../src/paths.ts";
 import type { MarkdownPage } from "../src/docs.ts";
 import type { CheckResult, ModuleRegistry } from "../src/types.ts";
@@ -86,6 +86,45 @@ describe("当前仓库布局", () => {
 });
 
 describe("workspace 漂移诊断", () => {
+  test("Rust 显式成员不受后续 profile 通配符影响", () => {
+    const directory = createLayoutFixture(true);
+    try {
+      writeFileSync(join(directory, "core/rust/Cargo.toml"), [
+        "[workspace]",
+        "resolver = \"3\"",
+        "members = [\"crates/fixture\"]",
+        "[profile.dev.package.\"*\"]",
+        "debug = false",
+        "",
+      ].join("\n"), "utf8");
+      const result = inspectRustWorkspace(directory, {
+        manifest: "core/rust/Cargo.toml", members: ["core/rust/crates/fixture"],
+      });
+      expect(result.diagnostics).toEqual([]);
+      expect(result.snapshot?.members).toEqual(["core/rust/crates/fixture"]);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }, 60_000);
+
+  test.each(["crates/*", "crates/fixtur?"])("Rust 拒绝真实成员通配符 %s", (member) => {
+    const directory = createLayoutFixture(true);
+    try {
+      writeFileSync(join(directory, "core/rust/Cargo.toml"), [
+        "[workspace]",
+        "resolver = \"3\"",
+        `members = ["${member}"]`,
+        "",
+      ].join("\n"), "utf8");
+      const result = inspectRustWorkspace(directory, {
+        manifest: "core/rust/Cargo.toml", members: ["core/rust/crates/fixture"],
+      });
+      expect(result.diagnostics.some((item) => item.message_id === "a0.workspace.glob_forbidden")).toBe(true);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  }, 60_000);
+
   test("Bun 实际成员多于政策清单时失败", () => {
     const directory = mkdtempSync(join(tmpdir(), "xiao-repo-check-workspace-"));
     try {

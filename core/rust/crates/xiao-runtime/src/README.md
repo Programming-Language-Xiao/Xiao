@@ -19,6 +19,8 @@
 - `testing/`：只用于规格测试的释放计划驱动器。
 - `vm_concurrency.rs`：22C-FIX.1 的单线程 VM 句柄、可发送 XCON 信封和结构化子执行结果；
   `vm_concurrency_tests.rs` 验证复制字节、锁守卫寿命、消费身份和限制。
+- `scheduler.rs` / `scheduler_tests.rs`：Runtime、线程和任务池调度及四位置取消回归；
+  `abi_concurrency.rs` / `abi_concurrency_tests.rs`：原生并发 C ABI 及边界、错误、释放回归。
 
 - `abi_tables.rs`：10T 注册式表方法、元数据复制、弱只读析构视图与错误边界；
   `abi_table_tests.rs` 覆盖初始化回滚、别名、视图失效和非法元数据。

@@ -46,7 +46,7 @@ export function inspectRustWorkspace(
     diagnostics.push(workspaceDiagnostic("A0-WORKSPACE-002", policy.manifest, "Rust workspace manifest 不存在。", "a0.workspace.missing_manifest"));
     return { diagnostics };
   }
-  if (/\bmembers\s*=\s*\[[\s\S]*["']?[^\]]*[\*\?][^\]]*\]/m.test(readText(manifestPath))) {
+  if (/\bmembers\s*=\s*\[[^\]]*[\*\?][^\]]*\]/m.test(readText(manifestPath))) {
     diagnostics.push(workspaceDiagnostic("A0-WORKSPACE-001", policy.manifest, "Rust workspace 不得使用宽泛 glob 成员。", "a0.workspace.glob_forbidden"));
   }
   const result = spawnSync("cargo", ["metadata", "--no-deps", "--format-version", "1", "--manifest-path", manifestPath], {

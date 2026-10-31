@@ -9,10 +9,10 @@
 > 显式共享句柄”落成 VM 与 LLVM 一致的产品能力；不引入 Actor/async/await，也不把原型
 > 结构直接当产品 ABI。**
 >
-> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分正在实施（2026-10-30），D-2/D-5 已确认，根/局部导入别名 trampoline 和 Runtime 031 边界 P1 已修复，真实项目模块并发有结构化拒绝回归，`llvm-as` 门禁由三平台 native job 显式运行；失败/释放/detached 差分仍待收口**。
+> 状态：**22C Runtime/ABI/门禁和 22C-FIX.1 VM 接线已完成（2026-10-28）；22D LLVM/差分正在实施（2026-10-31），D-2/D-5 已确认，导入别名和 Runtime 031 边界 P1 已修复；XCON 恶意输入、Runtime 四位置取消、原生栈帧和稳定场景释放顺序已有回归，提交 `e5c83c0` 的三平台原生门禁全部通过；完整黄金矩阵继续验收**。
 > workspace、26 条 VM/源码/产物并发回归、benchmark、research concurrency、Bun、coverage、docs/usedocs、
 > 本地安全/产物回归，以及远端多平台 maintenance/CI 均通过；三平台 maintenance 各自执行了 26/26 VM 并发回归。
-> 22D 正在实施；LLVM 并发 lowering、失败差分和原生门禁仍需继续收口，22E 仍后置。
+> 22D 正在实施；本轮修补和三平台证据见 [22D §9.2](22d-llvm-concurrency-differential.md#92-本轮修补与三平台证据)，22E 仍后置。
 
 ## 一、阶段目标与边界
 
@@ -230,7 +230,7 @@ tests/research/concurrency/                                 07-D 原型（只作
 ## 八、状态
 
 - 阶段代号：22；
-- 当前状态：22C Runtime/ABI/产物门禁及 22C-FIX.1 VM 实现已完成，本地 workspace、benchmark、research、Bun、coverage、安全/产物 gates 和远端 maintenance/CI 均通过；22B/22B-FIX/FIX.1 静态部分已关闭；22D LLVM/差分正在实施，已接入同源计划、并发 ABI 和 trampoline，差分/三平台门禁仍待完成；标准库函数体未实现；
+- 当前状态：22C Runtime/ABI/产物门禁及 22C-FIX.1 VM 实现已完成，本地 workspace、benchmark、research、Bun、coverage、安全/产物 gates 和远端 maintenance/CI 均通过；22B/22B-FIX/FIX.1 静态部分已关闭；22D LLVM/差分正在实施，同源计划、并发 ABI、trampoline 和首批成功/错误/释放差分已通过三平台原生门禁，完整黄金矩阵继续验收；标准库函数体未实现；
 - 当前工作批：22D LLVM、差分与跨平台（不回补 22B 静态语义，不在本阶段实现 stdlib 函数体，不冻结原生产物元数据）；
 - 22C-FIX.1 可以只消费 22B 的类型、事实、动作、verifier 和 22C 已落地的 Runtime API；
   22D/22E 仍不得把 07-D 原型结构写成 ABI 或绕过冻结记录。

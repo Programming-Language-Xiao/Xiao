@@ -14,6 +14,9 @@ related:
 
 本工具检查 Xiao 仓库的 Bun/Cargo workspace、代码目录 README、单文件行数、模块登记和文档链接。它也会校验 `stdlib/**` 的模块登记是否同时引用 UseDocs、DevDocs 和兼容身份落点。它只读取仓库，不自动修改 manifest、源码或文档。
 
+Cargo workspace 的成员必须显式列出；成员数组中的 `*`、`?` 通配符会报
+`A0-WORKSPACE-001`。成员数组之外的合法配置（如 `[profile.dev.package."*"]`）不受此限制。
+
 ## 运行方式
 
 在仓库根目录执行：
