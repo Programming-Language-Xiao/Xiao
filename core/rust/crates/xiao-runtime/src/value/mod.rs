@@ -98,6 +98,8 @@ impl StringHandle {
 
     /// 分配一个 UTF-8 字符串对象。
     pub fn new(value: impl Into<String>) -> RuntimeResult<Self> {
+        #[cfg(any(test, feature = "test-failpoints"))]
+        crate::allocation_testing::check_string_allocation()?;
         let inner = allocate_payload(Box::new(StringObject {
             value: value.into(),
         }))?;

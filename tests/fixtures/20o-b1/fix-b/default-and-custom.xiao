@@ -1,0 +1,17 @@
+# FIX-B 完整源码：默认/自定义 code 与同类不同对象。
+def divide(int divisor) -> int
+    return 10 // divisor
+
+try
+    print(divide(0))
+catch arithmetic as ArithmeticError
+    print(error_code(arithmetic))
+default_error = Error()
+print(error_code(default_error))
+first = Error(code = "MiXeD_雪😀")
+second = Error(code = "same-class-other-code")
+alias = first
+print(error_code(first))
+print(error_code(alias))
+print(error_code(second))
+print(error_code(Error(code = "temporary")))

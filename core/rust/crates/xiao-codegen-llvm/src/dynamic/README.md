@@ -51,3 +51,7 @@ LLVM 文本和 Runtime 组件清单必须保持不变。会改变调用文本、
 
 22E 的版本 14 收紧固定分配分类：只有字面量元素数量能移动到入口，动态 SSA 数量
 保持原支配关系；聚合类型中的逗号不作为数量分隔符。
+
+20O-B1-FIX-B 的版本 15 在 `expression.rs` 新增 error_code 借读后复制与失败清理，
+`predicate.rs` 选择动态路径，`runtime_abi.rs` 声明 ABI 1.18 getter；借用视图不作为
+Xiao 字符串返回。读取不使用 take/snapshot/clear，普通异常路由仍使用既有挂起槽机制。

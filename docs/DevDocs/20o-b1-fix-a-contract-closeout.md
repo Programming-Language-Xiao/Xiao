@@ -3,7 +3,9 @@
 > **本批只写文档/探测。** 开工基线 819ec06，日期 2026-11-01，工作区开工时干净。
 > F1～F13/E-2 已在本次会话逐条询问并收到星崽答复；没有默认选择或代为延期。
 > 精确 API、错误/限额/性能与 error_code 契约的唯一正文仍是
-> [B1 契约](20o-b1-freeze-draft.md)。当前代码 ABI 仍为 1.17，七库产品尚未实现。
+> [B1 契约](20o-b1-freeze-draft.md)。FIX-A 取证时 ABI 为 1.17，七库产品尚未实现。
+> 后续独立 FIX-B 已实现 ABI 1.18；当前状态见 [FIX-B 收口](20o-b1-fix-b-closeout.md)，
+> 本页只保留 FIX-A 历史证据。
 > **远端证据已补齐**：提交 4d347670cdfa05fac2f01888f9d5ff6e3a5db37e 的 maintenance
 > [41285853958](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958)
 > 与工作区门禁 [41285853953](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853953)

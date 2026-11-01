@@ -1874,6 +1874,24 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
                 }
                 Ok(Some(arguments[0].value.to_char().map_err(Fault::Error)?))
             }
+            VmBinding::ErrorCode => {
+                if declaration.signature.arity != xiao_intrinsics::Arity::One
+                    || declaration.signature.parameter != xiao_intrinsics::ValueType::Error
+                    || declaration.signature.return_type != xiao_intrinsics::ValueType::Str
+                    || arguments.len() != 1
+                    || arguments[0].keyword.is_some()
+                {
+                    return Err(Fault::Error(XiaoError::invalid_value(
+                        "error_code intrinsic 必须接收一个位置错误参数",
+                    )));
+                }
+                let value = match &arguments[0].value {
+                    RuntimeValue::Error(error) => RuntimeValue::new_string(error.code()),
+                    other => Err(XiaoError::type_mismatch("error", other.type_name())),
+                }
+                .map_err(|error| attach_fault_span(Fault::Error(error), span.start, span.end))?;
+                Ok(Some(value))
+            }
             VmBinding::SetNew => {
                 if declaration.signature.arity != xiao_intrinsics::Arity::Zero
                     || !arguments.is_empty()

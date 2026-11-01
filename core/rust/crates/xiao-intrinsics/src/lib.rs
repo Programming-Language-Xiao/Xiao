@@ -56,6 +56,7 @@ pub enum IntrinsicKind {
     SetRemove,
     ArrayPush,
     ErrorConstructor,
+    ErrorCode,
     Print,
     Input,
     ResourceOpenFile,
@@ -95,6 +96,7 @@ pub enum ValueType {
     SetElement,
     ArrayElement,
     ErrorParameters,
+    Error,
     File,
     Directory,
     Resource,
@@ -212,6 +214,7 @@ pub enum VmBinding {
     SetRemove,
     ArrayPush,
     MakeError,
+    ErrorCode,
     Print,
     Input,
     ResourceOpenFile,
@@ -227,6 +230,7 @@ pub enum VmBinding {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum AbiBinding {
     ErrorNew,
+    ErrorCode,
     SetAdd,
     SetRemove,
     ArrayPush,
@@ -340,6 +344,21 @@ pub fn validate_table() -> Result<(), ContractError> {
                         || declaration.vm_binding != VmBinding::CharConstructor
                         || declaration.abi_binding != AbiBinding::None
                         || declaration.effects != Effects::Pure
+                        || declaration.capability != Capability::None
+                    {
+                        return Err(ContractError::SignatureMismatch(declaration.id));
+                    }
+                }
+                IntrinsicKind::ErrorCode => {
+                    if declaration.signature
+                        != (Signature {
+                            arity: Arity::One,
+                            parameter: ValueType::Error,
+                            return_type: ValueType::Str,
+                        })
+                        || declaration.vm_binding != VmBinding::ErrorCode
+                        || declaration.abi_binding != AbiBinding::ErrorCode
+                        || declaration.effects != Effects::Allocates
                         || declaration.capability != Capability::None
                     {
                         return Err(ContractError::SignatureMismatch(declaration.id));
@@ -535,6 +554,28 @@ mod tests {
         assert_eq!(push.signature.arity, Arity::Two);
         assert_eq!(push.signature.parameter, ValueType::ArrayElement);
         assert_eq!(push.signature.return_type, ValueType::None);
+    }
+    #[test]
+    fn error_code_has_a_unique_owned_string_contract() {
+        let declaration = by_name("error_code").expect("error_code 声明");
+        assert_eq!(declaration.id.get(), 32);
+        assert_eq!(declaration.kind, IntrinsicKind::ErrorCode);
+        assert_eq!(declaration.signature.parameter, ValueType::Error);
+        assert_eq!(declaration.signature.return_type, ValueType::Str);
+        assert_eq!(declaration.vm_binding, VmBinding::ErrorCode);
+        assert_eq!(declaration.abi_binding, AbiBinding::ErrorCode);
+        assert_eq!(declaration.effects, Effects::Allocates);
+        assert_eq!(declaration.capability, Capability::None);
+        assert_eq!(declarations().len(), 33);
+        assert_eq!(
+            declarations()
+                .iter()
+                .filter(|entry| entry.public_name == "error_code")
+                .count(),
+            1
+        );
+        assert!(active_by_id(IntrinsicId::new_unchecked(100)).is_none());
+        validate_table().expect("完整契约校验");
     }
     #[test]
     fn capability_bits_cover_standard_streams_and_reject_unknown_bits() {

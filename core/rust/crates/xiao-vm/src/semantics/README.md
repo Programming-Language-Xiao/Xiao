@@ -6,6 +6,10 @@
 职责：执行冻结指令、调用与返回、异常/`finally`/释放计划、容器和表生命周期，并通过
 `VmEventSink` 报告结构化事件。值运算统一经 `src/ops` 和 `xiao-runtime`。
 
+20O-B1-FIX-B 的 intrinsic 32 在 `exec.rs` 直接借读指定 RuntimeValue::Error 的 code，
+经既有字符串入口复制为拥有值；不读取或改写挂起错误，不消费源错误。类型失败带调用 span，
+结果分配失败保留 ResourceError / 011；三种 Carrier 的结构化身份回归由 driver 执行。
+
 22C-FIX.1 的 `concurrent.rs` 按 TAC 计划执行原生并发绑定，子线程独立构造 VM，
 只传递只读程序、XCON 信封、显式共享句柄和取消/事件通道。`module_exec.rs` 管理模块
 初始化及程序上下文切换，不把 `VmSession` 的 `Rc` 状态发送给子线程。

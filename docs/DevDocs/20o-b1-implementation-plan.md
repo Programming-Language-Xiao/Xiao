@@ -6,8 +6,8 @@
 > 新增边界已由 4d34767 的 maintenance 41285853958 / workspace gates 41285853953 取证，
 > 默认 VM 与三平台原生均实际执行 14 场景；逐作业链接与未覆盖项见 [FIX-A 记录](20o-b1-fix-a-contract-closeout.md#31-同一提交的远端逐作业证据)。
 >
-> 状态：**FIX-A 契约与新增三平台探测取证完成；FIX-B 实施规划已写，等待实现（2026-11-01）**。
-> 本轮只写文档/探测，当前代码仍是 ABI 1.17；intrinsic 32 与 ABI 1.18 只在文档冻结，
+> 状态：**FIX-A 已收口；FIX-B 已实现，本地门禁/三平台取证中（2026-11-01）**。
+> FIX-A 保留 ABI 1.17 历史证据；独立 FIX-B 当前已实现 intrinsic 32 与 ABI 1.18，
 > 不因本轮确认自动执行产品实现，不认领 19/11/22 债务。
 > FIX-B 的可执行步骤、测试矩阵和交接见 [FIX-B 实现规划](20o-b1-fix-b-implementation-plan.md)。
 
@@ -28,7 +28,7 @@
 
 | 编号 | 阻塞 | 现状 | 退出方式 |
 | --- | --- | --- | --- |
-| E-1 | error_code 真实前置 | 全局签名、id 32、ABI 1.18 的只读借用后复制通路已确认，产品未实现 | 独立 FIX-B 实现/版本拒绝/三平台证据 |
+| E-1 | error_code 真实前置 | id 32、ABI 1.18 已实现；本地门禁/三平台取证中 | 独立 FIX-B 全部门禁/版本拒绝/三平台证据 |
 | E-2 | helper 导出面 | 已确认 B1 内联，只新增冻结 20 项；不加内部模块/私有语法 | IMP 核对真实模块导出集合与导入 |
 | E-3 | 签名/错误/限额/性能验收 | F2～F12 已确认；Base64 两入口含必填 url_safe；限额/预算是契约而非成绩 | IMP 按契约实现并验证资源/性能 |
 | E-4 | 教程执行与状态 | 七页 planned，示例已执行；还没有产品导出/移除/归档证据 | 实现批完成后再升级 verified |
@@ -51,7 +51,7 @@
 **退出对账**：F1～F13/E-2 均直接确认，无代为选择或延期；契约唯一落点为 B1 文档，未写产品。
 新增边界的本地与三平台远端取证已完成；完整产品资源/性能仍未证明，不把 14 场景通过当作产品实现或性能成绩。
 
-### B1-FIX-B：error_code 前置（已选择，独立下一批）
+### B1-FIX-B：error_code 前置（已实现，取证中）
 
 **执行细则**：[FIX-B 实现规划](20o-b1-fix-b-implementation-plan.md)（intrinsic/类型/VM/LLVM/
 Runtime/ABI 1.18/测试/证据的逐层步骤）。本页只保留批次边界，不重复实现设计。
@@ -68,8 +68,8 @@ Runtime/ABI 1.18/测试/证据的逐层步骤）。本页只保留批次边界�
 - 单独更新 intrinsic/ABI 契约、四处消费者和产物指纹/版本拒绝，不新增 std.errors 模块；
 - 禁止 take/raise pending error → snapshot → clear 的模拟读取，也不能把“复制代码文本”混成成员访问。
 
-**硬前置状态**：本轮源码复核仍没有 intrinsic 32/error_code 声明、C getter 定义，ABI 次版本仍为 17。
-FIX-A 三平台绿色不解除这个阻塞；FIX-B 未实现并验收之前，七库 IMP 不开工。
+**硬前置状态**：intrinsic 32、全局 error_code、C getter、VM/LLVM 和 ABI 1.18 已落地。
+实际实现与待收集证据见 [FIX-B 收口](20o-b1-fix-b-closeout.md)；三平台验收齐备前七库 IMP 不开工。
 
 **证据**：自定义/默认 code、嵌套 catch、返回值脱离绑定后仍有效、重复读取、cause/suppressed
 不变、Fatal 边界、类型负例、VM/native 同输出/错误/清理；必须补 ABI 1.18 的 `.xiaoc`/`.xar`/

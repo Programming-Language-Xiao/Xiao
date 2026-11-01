@@ -10,6 +10,8 @@
 - `resources.rs`：VM 与原生 ABI 共用的文件/目录和进程操作，以及 filesystem/process 能力检查。
 - `abi_resource.rs`：资源的带能力 ABI 包装，负责参数解码、结果拥有权与错误槽。
 - `abi_version.rs`：ABI 版本查询及启动兼容比较，委托 ABI crate 的参数化规则。
+- `abi_error_code_tests.rs`：FIX-B 指定错误读取的 C 状态、零分配、挂起槽、别名借用期与结果复制失败测试。
+- `allocation_testing.rs`：仅测试配置下的线程局部一次性字符串分配失败，RAII 恢复先前状态，不进入默认生产静态库。
 - `memory/`：不透明对象头、强/弱句柄和计数策略。
 - `tables/`：静态表签名与构造状态机。
 - `containers/`：数组、元组、字典表、字典列和集合（工程期 09R2）。

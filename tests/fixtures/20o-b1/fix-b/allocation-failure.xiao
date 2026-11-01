@@ -1,0 +1,7 @@
+# 故意没有字符串字面量，使测试专用的下一次字符串分配发生在 error_code 结果复制。
+original = Error()
+try
+    copied = error_code(original)
+catch allocation as ResourceError
+    print(error_code(allocation))
+print(error_code(original))

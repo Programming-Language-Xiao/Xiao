@@ -1,0 +1,19 @@
+values = {number = 42, text = "not-an-error"}
+key = "number"
+try
+    print(error_code(values[key]))
+catch mismatch as TypeError
+    print(error_code(mismatch))
+key = "text"
+try
+    print(error_code(values[key]))
+catch another as TypeError
+    print(error_code(another))
+try
+    raise Error(code = "still-no-members")
+catch original as Error
+    try
+        print(original.code)
+    catch member as TypeError
+        print(error_code(member))
+    print(error_code(original))

@@ -623,6 +623,13 @@ impl<'source> TypeChecker<'source> {
         }
         if self
             .intrinsic_decl(callee)
+            .is_some_and(|decl| decl.kind == IntrinsicKind::ErrorCode)
+        {
+            self.record_intrinsic_call(callee, span);
+            return self.check_error_code_call(arguments, span);
+        }
+        if self
+            .intrinsic_decl(callee)
             .is_some_and(|decl| decl.kind == IntrinsicKind::Print)
         {
             self.record_intrinsic_call(callee, span);
@@ -659,6 +666,39 @@ impl<'source> TypeChecker<'source> {
             return self.check_set_mutation_intrinsic_call(declaration.kind, arguments, span);
         }
         self.check_function_value_call(callee, arguments, span)
+    }
+
+    /// 内建错误读取只接受一个位置错误对象，动态边界在执行时检查。
+    fn check_error_code_call(&mut self, arguments: &[CallArgument], span: SourceSpan) -> Type {
+        let valid_shape = arguments.len() == 1
+            && arguments[0].kind == CallArgumentKind::Positional
+            && arguments[0].name.is_none();
+        if !valid_shape {
+            self.call_error(span, "error_code 必须接收一个位置参数");
+        }
+        for argument in arguments {
+            let actual = self.check_expression(&argument.value);
+            let actual = self.context.apply(&actual);
+            if valid_shape && !matches!(actual, Type::Dynamic | Type::Variable(_)) {
+                self.type_error_with_params(
+                    FUNCTION_CALL_CODE,
+                    "x04.type.call_argument_type",
+                    argument.value.span(),
+                    format!("error_code 需要 Error，实际为 {actual}"),
+                    [
+                        (
+                            "expected".to_owned(),
+                            DiagnosticParam::Text("Error".to_owned()),
+                        ),
+                        (
+                            "actual".to_owned(),
+                            DiagnosticParam::Text(actual.to_string()),
+                        ),
+                    ],
+                );
+            }
+        }
+        Type::scalar(ScalarType::Str)
     }
 
     /// 检查标准库字典查询使用的编译器私有入口。

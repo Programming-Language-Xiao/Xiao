@@ -52,7 +52,8 @@ fn native_metadata_requirements_reject_incompatible_inputs() {
         .unwrap();
     for abi in [
         xiao_runtime_abi::encoded_abi_version(1, 16),
-        xiao_runtime_abi::encoded_abi_version(1, 18),
+        xiao_runtime_abi::encoded_abi_version(1, 17),
+        xiao_runtime_abi::encoded_abi_version(1, xiao_runtime_abi::ABI_MINOR_VERSION + 1),
     ] {
         assert_eq!(
             metadata

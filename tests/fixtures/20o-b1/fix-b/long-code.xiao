@@ -1,0 +1,8 @@
+from stdlib.text import repeat, length
+
+original = repeat("U_雪😀", 256)
+value = Error(code = original)
+copied = error_code(value)
+print(copied == original)
+print(length(copied))
+print(error_code(value) == copied)

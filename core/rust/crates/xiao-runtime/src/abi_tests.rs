@@ -949,7 +949,11 @@ fn abi_compatibility_accepts_old_minor_and_rejects_unsupported_versions() {
     assert_eq!(xiao_runtime_abi_is_compatible(1, 15), 1);
     assert_eq!(xiao_runtime_abi_is_compatible(1, 16), 1);
     assert_eq!(xiao_runtime_abi_is_compatible(1, 17), 1);
-    assert_eq!(xiao_runtime_abi_is_compatible(1, 18), 0);
+    assert_eq!(xiao_runtime_abi_is_compatible(1, 18), 1);
+    assert_eq!(
+        xiao_runtime_abi_is_compatible(1, xiao_runtime_abi::ABI_MINOR_VERSION + 1),
+        0
+    );
     assert_eq!(xiao_runtime_abi_is_compatible(2, 13), 0);
 }
 

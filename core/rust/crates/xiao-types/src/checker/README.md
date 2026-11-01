@@ -32,6 +32,11 @@
 接口按真实模块路径和规范化成员名称登记；作用域绑定保存导入身份，普通覆盖清除旧身份。
 这些接口仅用于静态检查，不登记为本模块定义，也不改变后端支持范围。
 
+20O-B1-FIX-B 在 `expression.rs` 专门检查全局 `error_code` 的一元、仅位置调用。
+具体非错误类型立即产生带 expected/actual 的 X04-TYPE-002；内部 Dynamic/Variable
+留给 VM/LLVM 检查。Error 只作为 intrinsic 参数类别，不开放普通 Error/dynamic 注解，
+也不新增 RuntimeCheckKind 或 IR 编码。
+
 ## 稳定边界
 
 - `RuntimeCheckKind` 仍从 `xiao_types::RuntimeCheckKind` 可达，`as_name`、`from_name` 和

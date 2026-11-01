@@ -1206,6 +1206,43 @@ pub extern "C" fn xiao_runtime_error_raise_value(
     XiaoAbiStatus::Ok.code()
 }
 
+/// 借读指定错误对象的原始 code；视图仅在输入错误仍存活期间有效。
+///
+/// 不分配、不复制或保留输入、不访问挂起错误槽；调用方复制视图后才能释放输入。
+/// value/out 为空返回 Null，标签不符返回 InvalidArgument，错误句柄无效返回 InvalidHandle。
+/// 失败不写 out；调用方须提供合法、存活且不重叠的内存。
+#[unsafe(no_mangle)]
+pub extern "C" fn xiao_runtime_error_code(value: *const XiaoValue, out: *mut XiaoAbiBytes) -> i32 {
+    if value.is_null() || out.is_null() {
+        return XiaoAbiStatus::Null.code();
+    }
+    let value = unsafe { &*value };
+    if value.tag != XiaoValueTag::Error {
+        return XiaoAbiStatus::InvalidArgument.code();
+    }
+    let Ok(error) = (unsafe { error_ref(value.payload.handle) }) else {
+        return XiaoAbiStatus::InvalidHandle.code();
+    };
+    let inners = error.inners.borrow();
+    // retain 会向尾部压入深拷贝，release 弹出尾部；首项直到最后一个拥有引用归还才销毁。
+    // 从首项借出 code，才能保证释放其他别名不会提前使视图悬空。
+    let Some(error) = inners.first() else {
+        return XiaoAbiStatus::InvalidHandle.code();
+    };
+    let code = error.code();
+    unsafe {
+        *out = XiaoAbiBytes {
+            ptr: if code.is_empty() {
+                std::ptr::null()
+            } else {
+                code.as_ptr()
+            },
+            len: code.len(),
+        };
+    }
+    XiaoAbiStatus::Ok.code()
+}
+
 /// 判断当前挂起的可恢复错误是否匹配语言层错误类型名。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_error_matches(error_type: XiaoAbiBytes) -> i32 {
@@ -2093,3 +2130,8 @@ pub extern "C" fn xiao_runtime_write_i64(value: i64) -> i32 {
 #[cfg(test)]
 #[path = "abi_tests.rs"]
 mod tests;
+
+/// B1-FIX-B 的只读错误 getter、借用期和失败清理直接测试。
+#[cfg(test)]
+#[path = "abi_error_code_tests.rs"]
+mod error_code_tests;

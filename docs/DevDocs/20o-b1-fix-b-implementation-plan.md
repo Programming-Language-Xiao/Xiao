@@ -5,10 +5,12 @@
 > 本页只把已确认的签名、C 状态和验收表拆成可执行步骤。不得在本批重新选择
 > `std.errors`、成员访问、文本匹配或 snapshot/clear 模拟读取。
 >
-> 状态：**规划完成，等待实现 Agent（2026-11-01）**。FIX-A 契约与三平台探测已收口，
+> 状态：**实现已落地，本地门禁/三平台取证中（2026-11-01）**。实际实现、生命周期修正和
+> 验收记录见 [FIX-B 收口](20o-b1-fix-b-closeout.md)。FIX-A 契约与三平台探测已收口，
 > 证据提交 `3b78363` 已推送，工作区门禁 [41296123514](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41296123514)
 > 成功；该提交只改文档，未触发维护回归，不能代替 FIX-B 证据。
-> 当前代码仍为 ABI 1.17，intrinsic 32 与 C getter 均不存在；七库 IMP 继续阻塞。
+> 当前代码为 ABI 1.18，intrinsic 32 与 C getter 已实现；下表保留开工前 1.17 基线，
+> 不作为当前实现状态。三平台验收齐备前七库 IMP 继续阻塞。
 
 ## 一、目标与边界
 
@@ -34,7 +36,7 @@ error_code(Error value, /) -> str
 - 不实现七库任何函数体，不把 FIX-B 混入 B1-IMP；
 - 不改变 32B `XiaoSharedHeader`、16B `XiaoSharedHandle`、`XiaoValue` 布局或并发规则。
 
-## 二、当前源码基线（已复核）
+## 二、开工前源码基线（历史记录）
 
 | 检查项 | 现状 | 落点 |
 | --- | --- | --- |
@@ -133,13 +135,18 @@ pub extern "C" fn xiao_runtime_error_code(
 2. `(*value).tag != XiaoValueTag::Error` → `InvalidArgument`，不写 `out`；
 3. 取出 `payload.handle`；空句柄、魔数/种类不符、`inners` 为空 →
    `InvalidHandle`，不写 `out`；
-4. 取 `inners.last()` 的 `code()`，把 `ptr/len` 写入 `out`；空 code 写
+4. 取 `inners.first()` 的 `code()`，把 `ptr/len` 写入 `out`；空 code 写
    `ptr=null, len=0`；
 5. 全程不 retain/release、不 clone、不分配、不调用 `PENDING_ERROR`。
 
 注意第 3 步：Error 标签下的空载荷必须返回 `InvalidHandle`，不能误报成 `Null`；
 `Null` 只表示调用方传入的 `value`/`out` 指针为空。`error_ref` 的 `Null` 也要在这里
 转成 `InvalidHandle`，因为 C 状态 1 的语义已冻结为“入口指针为空”。
+
+实现复核修正：原规划取 last 与已冻结借用期冲突。AbiError retain 向尾部加入深拷贝，
+release 弹出尾部；释放另一个别名会销毁 last 的 code，尽管输入强引用仍活着。
+必须从直到最后引用才销毁的 first 借出；此为遵守既有生命周期契约的实现修正，不改公开签名/状态。
+回归先比较视图地址，失败时不解引用可能悬空的旧指针，再验证复制后结果独立拥有。
 
 在 `xiao-runtime-abi/src/lib.rs` 的 `extern "C"` 块加入声明与文档，说明：
 借用视图只在输入 Error 值仍存活且未释放期间有效；getter 不改变挂起槽；失败时

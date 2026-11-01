@@ -181,6 +181,8 @@ impl<'a> DynamicGenerator<'a> {
         self.declarations
             .insert("declare i32 @xiao_runtime_error_take(ptr)".to_owned());
         self.declarations
+            .insert("declare i32 @xiao_runtime_error_code(ptr, ptr)".to_owned());
+        self.declarations
             .insert("declare i32 @xiao_runtime_error_raise_value(ptr, ptr)".to_owned());
         self.declarations
             .insert("declare void @xiao_runtime_release(ptr)".to_owned());

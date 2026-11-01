@@ -18,6 +18,11 @@ Rust 执行 Runtime 的分层 crate。06-B 首版交付不透明对象头、单�
 
 ## 约束
 
+20O-B1-FIX-B 在 `abi.rs` 实现 ABI 1.18 的指定错误 code 借读，在
+`abi_error_code_tests.rs` 直接验证零分配、状态、挂起槽、别名借用期与复制失败。
+`allocation_testing.rs` 的一次性字符串失败注入只在单测或显式 `test-failpoints` feature
+下编译，供 driver 的开发依赖使用；生产静态库默认不启用，无环境变量或 C 注入入口。
+
 不使用追踪式全堆 GC；平台差异通过 `xiao-platform` 注入；Runtime 组件按调用图裁剪但
 不能删除可观察错误、释放、随机或 I/O。普通 06-B `StrongHandle`/`WeakHandle` 保持单线程；
 22C/22D 并发共享对象使用独立 32B 原子头和不透明 C ABI，不把其内部布局替换成普通句柄。

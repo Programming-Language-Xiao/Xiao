@@ -1,0 +1,4 @@
+# 测试 shim 记录首次读取的临时引用，并在第二次读取前断言仅归还一次。
+original = Error()
+print(error_code(original))
+print(error_code(original))

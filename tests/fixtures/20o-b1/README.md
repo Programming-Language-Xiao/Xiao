@@ -13,4 +13,7 @@
 [B0 冻结草案](../../../docs/DevDocs/20o-b0-baseline-and-b1-draft.md)。
 
 FIX-A 新增 [七项边界](fix-a/README.md) 与独立黄金，覆盖极值、字节/尾位、UTF-8、CSV E 预算、
-MIN 全进制及统计中间溢出；进入原有两条精确目标。当前没有实现 error_code 或七库产品。
+MIN 全进制及统计中间溢出；进入原有两条精确目标。
+
+FIX-B 新增 [error_code 真实前置](fix-b/README.md)，与七库探测分开记录，仍复用原有两个
+精确目标；当前 ABI 为 1.18，七库产品函数仍未实现。

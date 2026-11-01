@@ -269,7 +269,7 @@ fn concurrent_portable_runtime_matrix_is_verified_before_entry() {
         "X17-XAR-007"
     );
     let cells = xiao_driver::concurrency_compatibility_matrix();
-    assert_eq!(cells.len(), 6);
+    assert_eq!(cells.len(), 9);
     assert!(
         cells
             .iter()

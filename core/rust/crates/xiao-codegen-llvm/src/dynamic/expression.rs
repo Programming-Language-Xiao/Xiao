@@ -547,6 +547,7 @@ impl<'a> DynamicGenerator<'a> {
                 self.release_value(value);
                 Ok(result)
             }
+            xiao_intrinsics::VmBinding::ErrorCode => self.emit_error_code(arguments, span),
             xiao_intrinsics::VmBinding::Print => {
                 let mut values = Vec::with_capacity(arguments.len());
                 let mut deferred = Vec::with_capacity(arguments.len());
@@ -813,6 +814,123 @@ impl<'a> DynamicGenerator<'a> {
                 span: Some(span),
             }),
         }
+    }
+
+    /// 从指定错误借读 code 并复制；临时输入覆盖视图的完整借用期。
+    fn emit_error_code(&mut self, arguments: &[IrCallArgument], span: IrSpan) -> Result<String> {
+        if arguments.len() != 1 || arguments[0].kind != "positional" || arguments[0].name.is_some()
+        {
+            return Err(CodegenError::InvalidIr {
+                message: "error_code 必须恰好接收一个位置参数".to_owned(),
+            });
+        }
+        let value = self.emit_expression(&arguments[0].value)?;
+        let input = self.next_temp();
+        self.emit(format!("  {input} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {value}, ptr {input}"));
+        let kind = self.emit_operation_argument("error_value");
+        let checked = self.next_temp();
+        self.emit(format!(
+            "  {checked} = call i32 @xiao_runtime_dynamic_check({kind}, ptr {input})"
+        ));
+        self.error_code_check_with_cleanup(&checked, &value, span);
+
+        let output = self.next_temp();
+        self.emit(format!("  {output} = alloca {BYTES_TYPE}"));
+        self.emit(format!(
+            "  store {BYTES_TYPE} zeroinitializer, ptr {output}"
+        ));
+        let status = self.next_temp();
+        self.emit(format!(
+            "  {status} = call i32 @xiao_runtime_error_code(ptr {input}, ptr {output})"
+        ));
+        let ok = self.next_temp();
+        let success = self.next_label("error.code.view.ok");
+        let failed = self.next_label("error.code.view.fail");
+        self.emit(format!("  {ok} = icmp eq i32 {status}, 0"));
+        self.emit(format!("  br i1 {ok}, label %{success}, label %{failed}"));
+        self.terminated = true;
+        self.emit_label(&failed);
+        self.release_value(value.clone());
+        let invalid_handle = self.next_temp();
+        let memory_failure = self.next_label("error.code.invalid.handle");
+        let fatal = self.next_label("error.code.invalid.abi");
+        self.emit(format!("  {invalid_handle} = icmp eq i32 {status}, 3"));
+        self.emit(format!(
+            "  br i1 {invalid_handle}, label %{memory_failure}, label %{fatal}"
+        ));
+        self.terminated = true;
+        self.emit_label(&fatal);
+        self.emit("  call void @xiao_runtime_fatal_abi()".to_owned());
+        self.emit("  unreachable".to_owned());
+        self.terminated = true;
+        self.emit_label(&memory_failure);
+        let error = self.emit_error_new(
+            "MemoryError",
+            &[IrCallArgument {
+                kind: "positional".to_owned(),
+                name: None,
+                value: IrExpression {
+                    kind: IrExpressionKind::Literal {
+                        literal: "str".to_owned(),
+                        text: "\"X06-RUNTIME-004\"".to_owned(),
+                    },
+                    ty: IrType::Scalar {
+                        name: "str".to_owned(),
+                    },
+                    span,
+                },
+                span,
+            }],
+            span,
+        )?;
+        let error_slot = self.next_temp();
+        self.emit(format!("  {error_slot} = alloca {VALUE_TYPE}"));
+        self.emit(format!("  store {VALUE_TYPE} {error}, ptr {error_slot}"));
+        let location = self.emit_error_location(span);
+        self.emit(format!(
+            "  call i32 @xiao_runtime_error_raise_value(ptr {error_slot}, ptr {location})"
+        ));
+        self.release_value(error);
+        self.emit(format!("  br label %{}", self.error_target()));
+        self.terminated = true;
+
+        self.emit_label(&success);
+        let bytes = self.next_temp();
+        self.emit(format!("  {bytes} = load {BYTES_TYPE}, ptr {output}"));
+        let bytes_argument = self.emit_bytes_argument(&bytes);
+        let handle_slot = self.next_temp();
+        self.emit(format!("  {handle_slot} = alloca ptr"));
+        self.emit(format!("  store ptr null, ptr {handle_slot}"));
+        let copied = self.next_temp();
+        self.emit(format!(
+            "  {copied} = call i32 @xiao_runtime_string_new({bytes_argument}, ptr {handle_slot})"
+        ));
+        self.error_code_check_with_cleanup(&copied, &value, span);
+        let handle = self.next_temp();
+        self.emit(format!("  {handle} = load ptr, ptr {handle_slot}"));
+        let result = self.emit_value_call("xiao_runtime_value_str_owned", &format!("ptr {handle}"));
+        self.release_value(value);
+        Ok(result)
+    }
+
+    /// 只在失败边归还 error_code 的临时输入，再沿已有挂起错误进行正常传播。
+    fn error_code_check_with_cleanup(&mut self, status: &str, value: &str, span: IrSpan) {
+        let ok = self.next_temp();
+        let success = self.next_label("error.code.operation.ok");
+        let failed = self.next_label("error.code.operation.fail");
+        self.emit(format!("  {ok} = icmp eq i32 {status}, 0"));
+        self.emit(format!("  br i1 {ok}, label %{success}, label %{failed}"));
+        self.terminated = true;
+        self.emit_label(&failed);
+        self.release_value(value.to_owned());
+        self.emit(format!(
+            "  call i32 @xiao_runtime_error_attach_span(i64 {}, i64 {})",
+            span.start, span.end
+        ));
+        self.emit(format!("  br label %{}", self.error_target()));
+        self.terminated = true;
+        self.emit_label(&success);
     }
 
     /// 发射已静态解析的顶层函数、表方法与错误构造调用。

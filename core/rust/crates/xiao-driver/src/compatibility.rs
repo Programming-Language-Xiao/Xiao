@@ -370,7 +370,7 @@ pub fn compatibility_matrix() -> Vec<CompatibilityCell> {
     cells
 }
 
-/// 三种并发产物 × ABI 1.16/1.17，拒绝路径由实际编解码器/元数据读取器回归证明。
+/// 三种当前产物 × ABI 1.16/1.17/1.18；旧 Runtime 在用户入口前拒绝当前 ABI 要求。
 #[must_use]
 pub fn concurrency_compatibility_matrix() -> Vec<CompatibilityCell> {
     let mut cells = Vec::new();
@@ -386,11 +386,17 @@ pub fn concurrency_compatibility_matrix() -> Vec<CompatibilityCell> {
                     code: code.to_owned(),
                 },
             ),
-            ("1.17", CompatibilityAction::Direct),
+            (
+                "1.17",
+                CompatibilityAction::Reject {
+                    code: code.to_owned(),
+                },
+            ),
+            ("1.18", CompatibilityAction::Direct),
         ] {
             cells.push(cell(
                 axis,
-                format!("{artifact}/concurrency/abi=1.17"),
+                format!("{artifact}/concurrency/abi=1.18"),
                 abi.to_owned(),
                 action,
                 CompatibilityEvidence::Verified,

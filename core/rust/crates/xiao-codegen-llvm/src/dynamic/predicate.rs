@@ -220,6 +220,7 @@ fn expression_uses_runtime(expression: &IrExpression) -> bool {
                                 | xiao_intrinsics::IntrinsicKind::SetRemove
                                 | xiao_intrinsics::IntrinsicKind::ArrayPush
                                 | xiao_intrinsics::IntrinsicKind::ErrorConstructor
+                                | xiao_intrinsics::IntrinsicKind::ErrorCode
                         )
                     });
                 intrinsic_requires_runtime

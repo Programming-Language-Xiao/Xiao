@@ -308,8 +308,8 @@ intrinsic 数量持续增长，应先检查语言表达能力、优化器和 Run
 | **20O-B0 基线与 B1 草案** | 20O/20P；681e70b 基线 | 基线门禁、七模块真实探测、planned 教程、固定完整示例 | 已交付；CSV 记录子集/error_code/七项一起冻结/精确 CI 方向已确认；历史证据见 [20O-B0](20o-b0-baseline-and-b1-draft.md) |
 | **20O-B1 冻结契约** | 本轮 F1～F13/E-2 逐条确认 | 20 项入口/错误/限额/性能目标；Base64 必填模式；规划 intrinsic 32 / ABI 1.18 的全局 error_code | 契约已确认，独立前置和纯库产品未实现；见 [20O-B1](20o-b1-freeze-draft.md) |
 | **20O-B1-FIX-A 收口** | 4d34767；只做文档/探测 | 全部裁定、helper 内联、七项新增边界与独立黄金；共 14 场景 | 维护回归 41285853958 的默认 VM/三平台原生各精确通过，gates 41285853953 全绿；FIX-B/产品/完整性能仍未验收；见 [FIX-A](20o-b1-fix-a-contract-closeout.md) |
-| **20O-B1-FIX-B 实现规划** | FIX-A 契约已收口；3b78363 已推送 | intrinsic 32、ABI 1.18、C getter、VM/LLVM 通路、版本拒绝与三平台证据 | 实施规划已写，产品未实现；见 [FIX-B 规划](20o-b1-fix-b-implementation-plan.md) |
-| **20O-B1-IMP 实现规划** | FIX-A 契约已收口 | 下一批独立实现 error_code 与 ABI 1.18，再做纯库和证据收口 | 未写产品；见 [20O-B1-IMP](20o-b1-implementation-plan.md) |
+| **20O-B1-FIX-B** | a91c15d 开工基线；独立前置 | intrinsic 32、ABI 1.18、C getter、VM/LLVM、版本拒绝与三路径清理 | 已实现，取证中；见 [规划](20o-b1-fix-b-implementation-plan.md) / [实现与证据](20o-b1-fix-b-closeout.md) |
+| **20O-B1-IMP 实现规划** | FIX-A 契约已收口，FIX-B 取证中 | 纯库真实导出、资源/性能、归档及教程证据 | 七库未实现；见 [20O-B1-IMP](20o-b1-implementation-plan.md) |
 | **20P Day-1 库架构** | 20O；架构研究批 | 模块/错误/并发/能力/发布约定、教程/示例、数据库驱动架构；D-13～D-22 方向逐条确认 | 独立数据库能力位、首批有界连接池、教程硬门槛；具体契约仍待对应批次冻结；见 [20P](20p-day1-library-architecture.md) |
 
 20A 的契约设计可以现在开始，但只有当它改变 09R3 的机型、调用 ABI、编码或源码映射

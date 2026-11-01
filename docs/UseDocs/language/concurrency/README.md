@@ -98,7 +98,7 @@ worker 空闲。取消运行中任务时，`wait` 会等任务到安全点并完
 和 `14` 分别预留给 resource/dynamic；它们不能绕过编译期拒绝。单值最多 16 MiB，整帧最多
 64 MiB，嵌套深度最多 64、总节点最多 1,000,000，超限使用 `X06-RUNTIME-029`。
 
-共享对象使用 Runtime ABI `1.17` 的统一 32B/8B 头，tag `1/2/3` 分别为
+共享对象沿用 ABI `1.17` 建立的统一 32B/8B 头，当前 Runtime ABI 为 `1.18`；tag `1/2/3` 分别为
 `ordinary`/`shared_read`/`shared_mut`；Runtime ID 位于共享句柄包装，不进入对象头。`.xar` 保留
 20E 的 bit 0=`archive_requirements`，并发位从 bit 1 起：`threads`、`shared_handles`、
 `task_pool`、`multi_runtime`、`serialization_v1`、`cancel_wait`；required 位按子集检查，
@@ -131,11 +131,11 @@ detached 线程的失败不会重抛到不存在的 join 点，也不会改变�
 ## 原生产物校验
 
 `xiao build` 的并发原生产物携带内嵌元数据：Linux 使用 `.note.xiao`、Windows 使用
-`.xiaomta`、macOS 使用 `__XIAO,__meta`。元数据版本为 1，Runtime ABI 精确为 1.17，
+`.xiaomta`、macOS 使用 `__XIAO,__meta`。元数据版本为 1，当前 Runtime ABI 精确为 1.18，
 包含规范目标/64 位宽度、生成器版本和标准库接口身份。构建后会重新读取实际产物校验，
 `xiao verify <可执行文件> --detail` 也只读取节，不启动程序。
 
-`.xiaoc`、`.xar` 和原生的 ABI 1.16 Runtime 均在执行前拒绝；1.17 仍须满足位集。
+当前 `.xiaoc`、`.xar` 和原生要求在 ABI 1.16/1.17 Runtime 上均在执行前拒绝；1.18 仍须满足位集。
 原生元数据缺失、损坏、版本/目标/标准库身份不符使用 `X17-XAR-007`，未知并发位或
 错误包含归档 bit 0 使用 `X17-XAR-011`。旧的无元数据普通程序仍可运行，但不能被
 校验器当作已经满足并发产物要求。元数据检查不会替代程序启动时已有的 ABI 检查。

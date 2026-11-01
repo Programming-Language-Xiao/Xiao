@@ -15,6 +15,9 @@ VM/Runtime ABI 绑定键。声明数据位于 `intrinsics.json`，`build.rs` 在
 
 20AB：建立 intrinsic 契约、稳定 ID 和声明生成；后续批次扩展标准库和平台资源入口。
 
+20O-B1-FIX-B 登记 `error_code`（id 32）：一个仅位置的 Error 参数，返回拥有的 str，
+效果为 Allocates、无需宿主能力；生成期与运行期均校验全部绑定。100 继续为墓碑。
+
 ## 稳定性
 
 `IntrinsicId` 固定为 `u32`，0 永远无效；已发布 ID 不复用，删除项保留 tombstone。新增声明

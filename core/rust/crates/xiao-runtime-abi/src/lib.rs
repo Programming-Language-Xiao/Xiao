@@ -23,7 +23,7 @@
 /// 当前 ABI 的主版本。
 pub const ABI_MAJOR_VERSION: u32 = 1;
 /// 当前 ABI 的次版本；新增兼容入口只递增此字段。
-pub const ABI_MINOR_VERSION: u32 = 17;
+pub const ABI_MINOR_VERSION: u32 = 18;
 /// 兼容旧调用方的主版本常量。
 pub const ABI_VERSION: u32 = ABI_MAJOR_VERSION;
 /// ABI 版本编码的高位宽度。
@@ -1037,6 +1037,10 @@ unsafe extern "C" {
     /// 把挂起的可恢复错误取成拥有的 `XiaoValueTag::Error` 值；`out` 必须是已初始化且
     /// 不含弱表观察值的槽，弱表观察值只能由 `xiao_runtime_value_copy` 覆盖；失败时保留挂起错误。
     pub fn xiao_runtime_error_take(out: *mut XiaoValue) -> i32;
+    /// 借读指定 Error 值的 code。输入须保持存活直到复制视图完成，out 不得与 value 重叠。
+    /// getter 不分配、不 retain/release、不触碰挂起槽；失败保持 out 原值。
+    /// 状态 1 仅表示 value/out 指针为空，2 为非 Error 标签，3 为无有效错误句柄。
+    pub fn xiao_runtime_error_code(value: *const XiaoValue, out: *mut XiaoAbiBytes) -> i32;
     /// 读取当前线程挂起错误的机器字段。
     pub fn xiao_runtime_error_snapshot(out: *mut XiaoAbiErrorSnapshot) -> i32;
     /// 读取当前线程挂起错误的第 `index` 个结构化参数。
@@ -1327,9 +1331,9 @@ mod tests {
     #[test]
     /// 版本编码能区分主版本并保留次版本比较空间。
     fn version_encoding_is_stable() {
-        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0011);
+        assert_eq!(ABI_ENCODED_VERSION, 0x0001_0012);
         assert_eq!(ABI_MAJOR_VERSION, 1);
-        assert_eq!(ABI_MINOR_VERSION, 17);
+        assert_eq!(ABI_MINOR_VERSION, 18);
     }
 
     #[test]
@@ -1379,6 +1383,14 @@ mod tests {
         assert!(!super::is_abi_compatible(1, 17, 1, 16));
         assert!(super::is_abi_compatible(1, 17, 1, 17));
         assert!(super::is_abi_compatible(1, 16, 1, 17));
+    }
+
+    #[test]
+    /// error_code 与新增 error_value 检查要求 1.18；低层 ABI 的旧版本比较规则不重写。
+    fn error_code_requires_runtime_1_18() {
+        assert!(!super::is_abi_compatible(1, 18, 1, 17));
+        assert!(super::is_abi_compatible(1, 18, 1, 18));
+        assert!(super::is_abi_compatible(1, 17, 1, 18));
     }
 
     #[test]

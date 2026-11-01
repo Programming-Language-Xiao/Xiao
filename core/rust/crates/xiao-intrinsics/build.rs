@@ -97,6 +97,15 @@ fn main() {
                     assert_eq!(row.effect, "pure", "字符构造必须是 pure: {}", row.name);
                     assert_eq!(row.capability, "none", "字符构造不应需要能力: {}", row.name);
                 }
+                "error_code" => {
+                    assert_eq!(row.arity, "one");
+                    assert_eq!(row.parameter_type, "error");
+                    assert_eq!(row.return_type, "str");
+                    assert_eq!(row.vm_binding, "error_code");
+                    assert_eq!(row.abi_binding, "error_code");
+                    assert_eq!(row.effect, "allocates");
+                    assert_eq!(row.capability, "none");
+                }
                 "set_constructor" => {
                     assert_eq!(row.arity, "zero", "set 构造必须是零元: {}", row.name);
                     assert_eq!(row.return_type, "set", "set 构造必须返回 set: {}", row.name);

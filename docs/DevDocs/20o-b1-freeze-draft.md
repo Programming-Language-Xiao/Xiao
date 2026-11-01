@@ -1,11 +1,11 @@
 # 20O-B1. 七库冻结契约与 error_code 前置
 
-> **状态：B1-FIX-A 契约与新增三平台探测取证完成；未开始产品实现。** 日期：2026-11-01。
+> **状态：FIX-A 已收口；独立 FIX-B 已实现、取证中；七库未实现。** 日期：2026-11-01。
 > 原草案基线为 74f1c60，本轮开工基线为 819ec06。文件名保留 draft，确认状态以 §一为准。
-> 本批只写文档和探测，不注册新 intrinsic、不改 ABI 常量或产品函数，不认领 19/11/22 债务。
+> FIX-A 只写文档和探测；独立 FIX-B 交付读取前置，不认领 19/11/22 债务。
 >
 > F1～F13 与 E-2 已由星崽逐条答复：error_code 采用全局自由函数、intrinsic 规划号 32、
-> ABI 1.18 的只读借用视图后复制通路；七库的辅助逻辑内联。当前代码仍是 ABI 1.17。
+> ABI 1.18 的只读借用视图后复制通路；七库的辅助逻辑内联。当前独立 FIX-B 已为 ABI 1.18。
 > 必须先在独立 B1-FIX-B 实现并验收前置，再进入纯 Xiao 七库。
 >
 > ad176c3 的 maintenance 41275847931 与 workspace gates 41275847899 是旧七项探测的三平台
@@ -14,7 +14,7 @@
 > **FIX-A 新边界远端已取证**：4d34767 的 maintenance
 > [41285853958](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958)
 > 和 workspace gates [41285853953](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853953)
-> 全绿，默认 VM 与三平台原生各实际执行 14 场景。此结果不覆盖未实现的 FIX-B/ABI 1.18/七库产品。
+> 全绿，默认 VM 与三平台原生各实际执行 14 场景。此历史结果不覆盖后续 FIX-B/ABI 1.18/七库产品。
 
 ## 一、已确认范围与逐条裁定
 
@@ -23,7 +23,7 @@
 
 | 编号 | 已确认裁定 | 当前状态 |
 | --- | --- | --- |
-| F1 | error_code(Error value, /) -> str，全局、借读、不消费；Error 仅为入口参数类别，error_cause 后置 | 契约已确认，未实现 |
+| F1 | error_code(Error value, /) -> str，全局、借读、不消费；Error 仅为入口参数类别，error_cause 后置 | 独立 FIX-B 已实现，取证中 |
 | F2 | math 六项的 MIN/MAX、gcd、0^0=1、负指数拒绝与无多余平方溢出 | 已确认 |
 | F3 | hex 的 [int] 字节接口、严格大小写解码、空输入及非法长度/字符 | 已确认 |
 | F4 | **首批同时支持标准与 URL-safe**；两个入口都增加必填 bool url_safe；严格补位/尾位/拒绝空白，不混模式字母表 | 已确认，入口总数仍为 20 |
@@ -35,7 +35,7 @@
 | F10 | §五复杂度、翻倍比、VM/原生时间、增量内存与测量协议 | 已确认验收目标；未宣称性能达标 |
 | F11 | §六完整错误表与优先级；Base64 模式不符归 BASE64_INVALID_ENCODING | 已确认 |
 | F12 | 20 入口参数必填、现有位置/命名调用，无新增方法别名；只读输入/新数组；CSV 引号和 URL NUL/BOM/组合字符规则 | 已确认 |
-| F13 | 独立 FIX-B：intrinsic 32、ABI 1.18、只读字节视图后复制；C 状态 0/1/2/3 与 §2.2 源级错误表 | 编号、符号、读取及失败边界均已确认，尚待实现 |
+| F13 | 独立 FIX-B：intrinsic 32、ABI 1.18、只读字节视图后复制；C 状态 0/1/2/3 与 §2.2 源级错误表 | 独立 FIX-B 已实现，取证中 |
 | E-2 | B1 辅助逻辑内联，只导出冻结的 20 项，不新增内部模块或私有语法 | 已确认；通用私有可见性另立语言批 |
 
 上述确认是契约冻结，不等于能力已交付。FIX-B 的真实读取通路/产物兼容仍是七库实现前置；
@@ -78,8 +78,8 @@ Error 是内建入口的规格参数类别；当前 catch 绑定仍为 Type::Dyn
 | 无法安全建立错误对象的内存耗尽 | Fatal，X07-FATAL-003 | 沿用不可恢复边界 |
 | 既有内存层报告无效/已释放句柄 | MemoryError，X06-RUNTIME-001 / X06-RUNTIME-004 | 内部防御路径保留具体身份，不新增源级裸句柄访问 |
 
-这些均引用现有诊断身份，本轮不加诊断常量。当前代码仍未实现 error_code，不能把本表当作
-运行结果；源码访问能力在 FIX-B 交付。
+这些均引用现有诊断身份，不加诊断常量。源码访问已由独立 FIX-B 实现，实际运行结果与
+未完成验收见 [FIX-B 收口](20o-b1-fix-b-closeout.md)；契约表自身不替代运行证据。
 
 ### 2.3 现状与必要前置
 
@@ -87,15 +87,15 @@ Error 是内建入口的规格参数类别；当前 catch 绑定仍为 Type::Dyn
 - xiao_runtime_error_take 把线程挂起错误取为拥有的 Error 值；
 - xiao_runtime_error_snapshot 只接受线程挂起槽，不接受指定对象；
 - 当前 xiao_runtime_dynamic_member_get 仍只处理表成员，error.code 边界探测继续返回 X06-RUNTIME-002；
-- Rust 错误对象已有 code()，但当前 Xiao/LLVM 没有直接对象读取通路。
+- FIX-A 时 Rust 错误对象已有 code()，Xiao/LLVM 直接读取通路已在后续独立 FIX-B 实现。
 
 F13 已选择新增独立 intrinsic 和 C ABI，故 FIX-B 是必要批次，不再写成“是否需要待定”。
-本批只冻结以下声明，不修改 intrinsics.json、Runtime ABI 常量、Runtime 或编译器实现。
+FIX-A 只冻结以下声明；后续独立 FIX-B 已修改对应 intrinsic、ABI、Runtime 和编译器实现。
 七库批在 FIX-B 之后，不能把前置混入纯 Xiao 库提交。
 
 ### 2.4 intrinsic / ABI 精确读取通路
 
-现表活动声明到 31，100 是墓碑。规划号 **32** 专用于 error_code；它与并发诊断
+FIX-A 时活动声明到 31，100 是墓碑；FIX-B 已将 **32** 登记为 error_code。它与并发诊断
 X06-RUNTIME-032 属于不同编号空间，任何既有并发错误与布局均不改。
 
 | 项目 | FIX-B 冻结值 |
@@ -135,7 +135,7 @@ FIX-B 验收包括：默认/自定义 code、同类不同码、内外层嵌套�
 
 ### 2.5 FIX-B 借用视图的实现验收
 
-以下将已冻结的生命周期和失败约束落实为实现门禁，不表示现在已有这些通路或测试结果。
+以下将已冻结的生命周期和失败约束落实为实现门禁；实际实现和证据以 FIX-B 收口记录为准。
 
 | 检查 | 必须观察到的结果 |
 | --- | --- |
@@ -152,8 +152,9 @@ FIX-B 验收包括：默认/自定义 code、同类不同码、内外层嵌套�
 借用期用持有计数/释放轨迹和复制后独立拥有的结果验证；不能通过访问已经悬空的视图“证明”存活。
 仅有 LLVM 文本中的符号顺序不够，必须有同源 VM/native 的实际运行和失败清理证据。
 
-当前代码复核仍为 ABI 1.17、未登记 intrinsic 32、没有 C getter 定义。FIX-A 的三平台通过
-只证明探测，不能解除 FIX-B；上述门禁、ABI 1.18 版本拒绝和三平台前置证据齐备后才进入 IMP。
+当前代码为 ABI 1.18，intrinsic 32 与 C getter 已实现；FIX-A 的三平台通过只证明历史探测。
+上述门禁、ABI 1.18 版本拒绝和 FIX-B 独立三平台证据齐备后才进入 IMP，见
+[FIX-B 收口](20o-b1-fix-b-closeout.md)。
 
 ## 三、七库已确认签名与调用边界（F2～F8/F12）
 
@@ -514,6 +515,6 @@ P3 的教程状态/文档门禁和守卫脚本结果在本轮提交前复核；�
 先读 [20O](20o-official-library-program.md)、[20P](20p-day1-library-architecture.md)、
 [B0](20o-b0-baseline-and-b1-draft.md)，再读本页与 [FIX-A 记录](20o-b1-fix-a-contract-closeout.md)。
 D-23～D-26、P3-1、F1～F13/E-2 均已有实际答复，不重问同一裁定；新增需求或契约变更再问。
-本轮不自动开始 FIX-B：其编号/符号/版本已在文档冻结，真实产品代码仍是 ABI 1.17。
-FIX-B 的真实前置完成后，再按 [实现规划](20o-b1-implementation-plan.md) 进入纯库与证据收口；
+FIX-A 历史交接基线为 ABI 1.17；独立 FIX-B 现已实现 1.18，验收进度见
+[FIX-B 收口](20o-b1-fix-b-closeout.md)。前置验收齐备后，再按 [实现规划](20o-b1-implementation-plan.md) 进入纯库与证据收口；
 不认领 19/11/22 发布债务。

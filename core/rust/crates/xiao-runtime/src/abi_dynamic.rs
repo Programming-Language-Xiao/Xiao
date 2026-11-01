@@ -53,6 +53,12 @@ pub extern "C" fn xiao_runtime_dynamic_check(kind: XiaoAbiBytes, value: *const X
     if value.is_null() {
         return XiaoAbiStatus::Null.code();
     }
+    // 指定错误检查的成功路径只借读操作名和标签，不能为操作名分配 String。
+    if unsafe { super::bytes(kind) }.is_ok_and(|name| name == b"error_value")
+        && unsafe { (*value).tag } == XiaoValueTag::Error
+    {
+        return XiaoAbiStatus::Ok.code();
+    }
     let kind = match unsafe { operation_name(kind) } {
         Ok(kind) => kind,
         Err(error) => return error,
@@ -62,6 +68,7 @@ pub extern "C" fn xiao_runtime_dynamic_check(kind: XiaoAbiBytes, value: *const X
         Err(error) => return error,
     };
     let result = match kind.as_str() {
+        "error_value" => Err(RuntimeError::type_mismatch("error", value.type_name())),
         kind if kind.starts_with("resource_type:")
             || kind.starts_with("resource_array:")
             || kind.starts_with("resource_dictionary:") =>

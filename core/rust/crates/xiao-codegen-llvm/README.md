@@ -43,3 +43,8 @@ LTO、PGO 和目标特化开关默认关闭，并拒绝快速数学/未定义回
 后端只依赖 `xiao-ir` 和零运行时实现依赖的 `xiao-runtime-abi` 声明，不依赖 VM、完整
 Runtime 或 CLI，也不引入 `inkwell`/`llvm-sys`。
 不在后端改变类型、溢出或错误语义，不打包 `.xar`，不解析终端命令行，不自动发现工具链。
+
+20O-B1-FIX-B 把 intrinsic 32 降低为 error_value 检查、只读 getter、string_new 复制和
+str_owned 接管；输入强引用保留到复制结束，所有失败边先归还临时输入再传播。
+CODEGEN_VERSION=15 隔离新符号与调用顺序，产物要求 ABI 1.18；完整源码与故障清理回归
+在 driver 的 `20o_b1_probe`，生产 Runtime 不包含测试 shim。

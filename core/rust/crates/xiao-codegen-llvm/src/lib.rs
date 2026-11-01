@@ -91,8 +91,9 @@ pub use xiao_optimizer::OptimizationReport;
 /// 版本 11 分离入口 checkpoint 重置；版本 12 增加 native 栈帧和边界复制源槽释放。
 /// 版本 13 对齐边界复制源/stack tuple 清理，并把固定 ABI scratch 分配移到函数入口。
 /// 版本 14 接入公开并发元数据与最小位集，收紧动态数量分配的移动规则。
+/// 版本 15 接入 intrinsic 32 的只读错误字节视图与 ABI 1.18。
 /// 当前版本进入工具链/产物指纹。
-pub const CODEGEN_VERSION: u32 = 14;
+pub const CODEGEN_VERSION: u32 = 15;
 
 /// 将同一份类型化 IR 降低为静态标量或 Runtime ABI LLVM 模块。
 pub fn lower_program(program: &xiao_ir::IrProgram, options: &CodegenOptions) -> Result<LlvmModule> {
