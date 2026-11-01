@@ -40,7 +40,7 @@
 
 上述确认冻结了七库契约；独立 FIX-B 的真实读取通路、ABI 1.18 与产物版本拒绝已由
 41310926623 落实并验收，见 [FIX-B 收口](20o-b1-fix-b-closeout.md)。七库产品仍未实现，
-其资源/性能、导出/移除/归档和三平台证据仍须在 IMP/CLOSE 补齐；七库教程与 registry 保持 planned。
+其资源/性能、导出/移除/归档和三平台证据仍须在 IMP/CLOSE 补齐；七库教程与七库 registry 条目保持 planned。
 
 ## 二、error_code 的名称、位置与签名
 
@@ -486,7 +486,7 @@ pwsh -NoProfile -File tools/gates/b1-probe-guards.ps1 -BashPath D:/msys64/usr/bi
 | --- | --- |
 | 9df91bb 的“28/28”历史声明 | 当时只有本机临时脚本/日志，没有入库的复跑入口；仅算本机记录，不作为远端或可交接证据 |
 | P3 后的可复跑计数守卫 | 仓库脚本已在本机复跑，四条路径各七项、28/28；[逐例本机报告](assets/20o-b1-p3/guards-windows.json) 绑定工作流/脚本摘要；只验证提取脚本语法和计数，不是 YAML 全量语义或真实三平台证据 |
-| P3 教程状态回归 | 20o_b1_probe 默认 5 passed、0 failed、1 ignored；含 planned→verified、正文/重复字段防伪与 registry 一致性；当前页面/registry 仍为 planned |
+| P3 教程状态回归 | 20o_b1_probe 默认 5 passed、0 failed、1 ignored；含 planned→verified、正文/重复字段防伪与 registry 一致性；当时七库教程与七库 registry 条目均为 planned |
 | 默认 workspace（批量排除 VM 探测） | 本机 Windows 按 CI 同一命令运行：170 组，1520 passed、0 failed、49 ignored；日志 xiao-b1-default-workspace.log；不是 Linux runner 证据，原生 ignored 不计作执行 |
 | VM 精确探测 | 本机 Windows/MSYS 运行从工作流提取的 Bash 入口，七模块黄金通过；1 passed/0 failed/0 ignored，日志 xiao-b1-vm-exact.log |
 | Windows 原生精确探测 | 当前 Runtime release + vcvars64/显式 LLVM，执行从工作流提取的 PowerShell 入口；七项同源 VM/native 通过，1 passed/0 failed/0 ignored；日志 xiao-b1-native-exact.log |

@@ -117,7 +117,7 @@ X09-DRIVER-002；这是**本机开发观察**，不是已冻结产品 API 的性
 [证据清单与摘录](assets/20o-b1-fix-a/maintenance-41285853958/README.md) 已入库：保留每个目标从
 Rust 测试启动到对应汇总的原始时间戳、源日志行号和摘要，避免仅靠工作流结论推断测试执行。
 CSV 的通过项仍是预算算术/短记录计数，不关闭 §2.2 的全量扫描性能限制；也未执行尚不存在的
-error_code、ABI 1.18 或七库产品。UseDocs/registry 保持 planned。
+error_code、ABI 1.18 或七库产品。七库教程与七库 registry 条目保持 planned。
 
 ## 四、FIX-A 与下一批的交接
 
@@ -133,4 +133,4 @@ error_code、ABI 1.18 或七库产品。UseDocs/registry 保持 planned。
 当前已完成契约收口和新增边界的本地/三平台探测取证。下一批仍是**独立 FIX-B**，不是
 将 error_code 偷放进七库：类型/IR/VM/LLVM/Runtime 与 ABI 1.18、版本拒绝、挂起槽不变、
 借用视图生命周期和释放证据必须一起交付。然后才按 math→hex→base64→url→fmt→statistics→csv
-做 IMP，再做 CLOSE 的产品三平台、归档/移除和教程升级。七页教程与 registry 此时继续 planned。
+做 IMP，再做 CLOSE 的产品三平台、归档/移除和教程升级。七库教程与七库 registry 条目在 FIX-A 时点继续 planned。

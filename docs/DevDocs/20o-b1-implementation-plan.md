@@ -102,7 +102,7 @@ Runtime/ABI 1.18/测试/证据的逐层步骤）。本页只保留批次边界�
 1. 三平台维护回归：默认 workspace、VM 精确、原生精确、移除/归档/教程示例；
 2. 完整 workspace gates、clippy、fmt、docs/usedocs/layout、覆盖率；
 3. 用实际运行号和 job 链接更新 B1 文档；
-4. 教程和 registry 状态从 planned 升 verified；
+4. 七库教程和七库 registry 条目状态从 planned 升 verified；
 5. 记录未覆盖边界；不把本地结果写成三平台结论。
 
 ## 三、已确认的错误读取通路

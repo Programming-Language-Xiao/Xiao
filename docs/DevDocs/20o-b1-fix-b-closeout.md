@@ -99,7 +99,7 @@ ABI 负例区分真实当前产物与“修改版本声明”的测试数据，�
 完整来源摘要、逐场景记录和摘录见 [机器证据](assets/20o-b1-fix-b/41310926623/evidence.json)
 与 [证据说明](assets/20o-b1-fix-b/41310926623/README.md)。摘要针对实际下载的完整源日志；
 摘录去除 ANSI CSI 与行尾空白、统一 LF，并保留时间戳。先前失败另存，不计入成功场景。
-`error-handling` 与新增 `rust.xiao-error-code` 登记升级为 verified；七库页面与 registry 继续 planned。
+`error-handling` 与新增 `rust.xiao-error-code` 登记升级为 verified；七库教程与七库 registry 条目继续 planned。
 
 版本基线审查：固定体积源码不变，`.xiaoc` 保持 1,256 字节，索引保持 237 字节；
 ABI 头/指令版本及指令校验值改变，使 DEFLATE 载荷从 526 变为 525 字节，

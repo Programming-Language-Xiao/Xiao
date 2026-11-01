@@ -20,8 +20,9 @@
 
 基线与历史探测见 [B0](../../DevDocs/20o-b0-baseline-and-b1-draft.md)；
 精确签名、错误表、资源/性能预算和两个 CI 精确执行点见 [B1 冻结草案](../../DevDocs/20o-b1-freeze-draft.md)。
-F1～F13 与内联导出策略已逐条确认；Base64 标准/URL-safe 模式参数必填。error_code 独立前置
-规划为 intrinsic 32 / ABI 1.18，当前仍未实现；边界与证据见 [FIX-A](../../DevDocs/20o-b1-fix-a-contract-closeout.md)。
+F1～F13 与内联导出策略已逐条确认；Base64 标准/URL-safe 模式参数必填。
+error_code 已由独立 FIX-B 实现并验收（intrinsic 32 / ABI 1.18），证据见 [FIX-B 收口](../../DevDocs/20o-b1-fix-b-closeout.md)。
+七库产品仍未实现，七库教程与七库 registry 条目继续保持 planned。
 
 ## 首批模块
 
