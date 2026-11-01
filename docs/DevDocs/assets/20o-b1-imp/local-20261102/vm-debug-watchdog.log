@@ -1,0 +1,19 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.90s
+     Running tests\20o_b1_imp_vm_performance.rs (core\rust\target\debug\deps\20o_b1_imp_vm_performance-12d635baa558e10b.exe)
+
+running 1 test
+
+thread 'fmt_maximum_input_has_bounded_vm_call_time' (1896) panicked at crates\xiao-driver\tests\20o_b1_imp_vm_performance.rs:29:13:
+B1-IMP 产品调用超过 60 秒测量看门狗
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test fmt_maximum_input_has_bounded_vm_call_time ... FAILED
+
+failures:
+
+failures:
+    fmt_maximum_input_has_bounded_vm_call_time
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 61.39s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b1_imp_vm_performance`

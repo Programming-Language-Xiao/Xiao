@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "scope": "B1-IMP 未交付工作树的本机诊断；不是三平台产品验收或 CLOSE。",
+  "base_commit": "4011060f6b4a0a42cc3c55a0e1e485b93cfbac49",
+  "platform": "x86_64-pc-windows-msvc",
+  "cpu": "AMD Ryzen 9 9955HX, 16 cores / 32 logical processors",
+  "rustc": "1.96.0 (ac68faa20 2026-05-25)",
+  "logs": [
+    {
+      "file": "native-named-failure.log",
+      "source_local_filename": "xiao-b1-imp-math-native-final.log",
+      "source_sha256": "b8e27e9a5ebcb2d9e29efeb2435154c063567b7bac8fc4c5c067fe2ee944ddec",
+      "source_bytes": 3251,
+      "stored_sha256": "55791fc67e74e0ac187b4b87c86fffcffe7d3e600a5172234c32bd8f34ffdbca",
+      "stored_bytes": 3199,
+      "stored_normalization": "CRLF to LF; remove trailing blank lines; one LF at EOF"
+    },
+    {
+      "file": "vm-debug-watchdog.log",
+      "source_local_filename": "xiao-b1-imp-fmt-vm-debug-final.log",
+      "source_sha256": "0c1ab6b09de5028b2376760f7a6879cd22c18ab98a437fa72d5e288cdfd61227",
+      "source_bytes": 889,
+      "stored_sha256": "80cee3c5aebdffbbe2c33dbd5a6f9c27e20dd7ea7a4fc4ee2ffe25153c4e5194",
+      "stored_bytes": 870,
+      "stored_normalization": "CRLF to LF; remove trailing blank lines; one LF at EOF"
+    },
+    {
+      "file": "vm-release-serial.log",
+      "source_local_filename": "xiao-b1-imp-fmt-vm-release-serial.log",
+      "source_sha256": "ca07115a0194d100926273704c9c6c38df5d2044a59f62634a518685133d085f",
+      "source_bytes": 1436,
+      "stored_sha256": "249353bf57d6e28f015caa188aa25251c21812a6697ac7f82cbfc24d7d2c3392",
+      "stored_bytes": 1420,
+      "stored_normalization": "CRLF to LF; remove trailing blank lines; one LF at EOF"
+    },
+    {
+      "file": "three-module-vm.log",
+      "source_local_filename": "xiao-b1-imp-fmt.log",
+      "source_sha256": "564a0ff8d23b442f7ff649ebd87385ac2c0fa79ae7680c5a3bfdce2c3f4a1a20",
+      "source_bytes": 454,
+      "stored_sha256": "283a1b292989db66aca9608bd9dbefd284da0d49e057aaf1ab825ba5ad38ad17",
+      "stored_bytes": 444,
+      "stored_normalization": "CRLF to LF; remove trailing blank lines; one LF at EOF"
+    },
+    {
+      "file": "three-module-contract.log",
+      "source_sha256": "5e72155e017a4b8060f306f8908b8f78684bac28e542d192afba232100ce63a8",
+      "source_bytes": 737,
+      "stored_sha256": "70cdf2280172b6b978362b361305dba49fcafd975c26f16569bffc2412cc1fa4",
+      "stored_bytes": 723,
+      "stored_normalization": "CRLF to LF; remove trailing blank lines; one LF at EOF",
+      "source_local_filename": "xiao-b1-imp-draft-contract-final.log"
+    }
+  ],
+  "snapshot_note": "当前性能 wrapper 每批重复次数由校准固定；早期 named 日志只有 math 产品案例。源码摘要仅标识本次检查点，不宣称所有早期日志的测试入口源码完全相同。",
+  "native": {
+    "optimization": 0,
+    "result": "blocked",
+    "case": "abs(value = ...)",
+    "reason": "Unsupported: 动态函数 abs 的参数形态",
+    "f12_contract_changed": false
+  },
+  "vm_debug": {
+    "case": "fmt.pad_left.max-input",
+    "bytes": 65536,
+    "result": "warmup_watchdog",
+    "call_time_lower_bound_seconds": 60,
+    "test_total_seconds": 61.39,
+    "median": null
+  },
+  "vm_release": {
+    "carrier": "production StackCarrier",
+    "warmups": 1,
+    "measured_samples": 5,
+    "test_threads": 1,
+    "case": "fmt.pad_left.max-input",
+    "bytes": 65536,
+    "samples_seconds": [
+      1.4702379,
+      1.5354664,
+      1.3904653,
+      1.4586268,
+      1.4593852
+    ],
+    "median_seconds": 1.4593852,
+    "limit_seconds": 10,
+    "time_check": "passed",
+    "scaling": [
+      {
+        "bytes": 4096,
+        "repeats": 2,
+        "median_seconds": 0.0529656
+      },
+      {
+        "bytes": 8192,
+        "repeats": 1,
+        "median_seconds": 0.1093961,
+        "doubling_ratio": 2.0654179316386485
+      },
+      {
+        "bytes": 16384,
+        "repeats": 1,
+        "median_seconds": 0.2875529,
+        "doubling_ratio": 2.628548001254158
+      }
+    ],
+    "scope": "仅此例 VM 时间与翻倍比；未验证七库整体复杂度、原生时间或峰值内存。"
+  },
+  "pending": [
+    "固定参数命名调用的后端前置授权",
+    "既有字符串反复扫描的成本前置授权",
+    "其余四库",
+    "全部 F9/F10 与三平台产品证据",
+    "B1-CLOSE"
+  ],
+  "measurement_source_snapshot": [
+    {
+      "path": "stdlib/math.xiao",
+      "sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482"
+    },
+    {
+      "path": "stdlib/statistics.xiao",
+      "sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8"
+    },
+    {
+      "path": "stdlib/fmt.xiao",
+      "sha256": "c62cb6c1f2e2b34311d96c6860445442d331cab30a5a6c1edb4fd97b64fc9985"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/math/product.xiao",
+      "sha256": "2db825d8045b9a4b206f27f6ca36327a8711e335d008038ddfcc2862cb035c79"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/statistics/product.xiao",
+      "sha256": "4e01b935aea79f807c928f9a4a5fc71ecd278f134537585076a0b85cdb923c7a"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/fmt/product.xiao",
+      "sha256": "79c938868729fad1fa0e0253844ce7ddd5a067d15fa6f3438aa527784c71630f"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/tests/20o_b1_imp_vm_performance.rs",
+      "sha256": "9e8d555e7b27218c3479f9f588e8c8ca5744ef1d4fa49a7b122ed86fd1039439"
+    }
+  ],
+  "measured_fmt_source": {
+    "file": "fmt-measured.xiao",
+    "sha256": "c62cb6c1f2e2b34311d96c6860445442d331cab30a5a6c1edb4fd97b64fc9985",
+    "note": "测量后仅将 fill 的局部变量改名以避免现有原生平面槽位的作用域遮蔽；算法未变。"
+  },
+  "checkpoint_source_snapshot": [
+    {
+      "path": "stdlib/math.xiao",
+      "sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482"
+    },
+    {
+      "path": "stdlib/statistics.xiao",
+      "sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8"
+    },
+    {
+      "path": "stdlib/fmt.xiao",
+      "sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/math/product.xiao",
+      "sha256": "2db825d8045b9a4b206f27f6ca36327a8711e335d008038ddfcc2862cb035c79"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/statistics/product.xiao",
+      "sha256": "4e01b935aea79f807c928f9a4a5fc71ecd278f134537585076a0b85cdb923c7a"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/fmt/product.xiao",
+      "sha256": "79c938868729fad1fa0e0253844ce7ddd5a067d15fa6f3438aa527784c71630f"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/tests/20o_b1_imp_vm_performance.rs",
+      "sha256": "9e8d555e7b27218c3479f9f588e8c8ca5744ef1d4fa49a7b122ed86fd1039439"
+    }
+  ],
+  "contract_regression": {
+    "modules": [
+      "math",
+      "statistics",
+      "fmt"
+    ],
+    "public_entries": 12,
+    "passed": 6,
+    "failed": 0,
+    "seconds": 19.79,
+    "scope": "VM、真实导出、移除、归档、包隔离、教程一致性；不含原生命名成功或完整F10"
+  }
+}

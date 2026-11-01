@@ -1,0 +1,14 @@
+    Finished `release` profile [optimized] target(s) in 0.32s
+     Running tests\20o_b1_imp_vm_performance.rs (core\rust\target\release\deps\20o_b1_imp_vm_performance-78405c440726a034.exe)
+
+running 2 tests
+test fmt_input_scaling_respects_the_frozen_vm_budget ... B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=false case=fmt.pad_left.scaling bytes=4096 repeats=2 batch_samples=[105.5071ms, 105.3939ms, 107.0061ms, 106.0799ms, 105.9312ms] median_seconds=0.0529656
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=false case=fmt.pad_left.scaling bytes=8192 repeats=1 batch_samples=[109.1538ms, 110.114ms, 109.6584ms, 109.1173ms, 109.3961ms] median_seconds=0.1093961
+B1-IMP-PERF bytes=8192 doubling_ratio=2.0654179316386485
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=false case=fmt.pad_left.scaling bytes=16384 repeats=1 batch_samples=[280.3047ms, 289.2251ms, 287.5529ms, 271.8572ms, 287.713ms] median_seconds=0.2875529
+B1-IMP-PERF bytes=16384 doubling_ratio=2.628548001254158
+ok
+test fmt_maximum_input_has_bounded_vm_call_time ... B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=false case=fmt.pad_left.max-input bytes=65536 warmup=1.5601084s samples=[1.4702379s, 1.5354664s, 1.3904653s, 1.4586268s, 1.4593852s] median=1.4593852s
+ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 14.48s

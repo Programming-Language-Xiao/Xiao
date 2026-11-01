@@ -7,8 +7,8 @@
 
 ## B1 教程草案
 
-以下模块均为 `planned`，有 B0 与 FIX-A 的能力/边界探测，尚不可作为官方库导入。每页含已确认 API 契约、
-错误/资源边界和被测试的完整示例；通过探测不等于模块已完成。
+以下模块均为 `planned`，保留 B0 与 FIX-A 的能力/边界探测，产品实现按 B1-IMP 逐模块推进。
+各页分别登记可导入的产品源码与待完成项；完整验收和状态升级留到 B1-CLOSE。
 
 - [math：整数计算](math.md)
 - [hex：十六进制编码](hex.md)
@@ -22,7 +22,8 @@
 精确签名、错误表、资源/性能预算和两个 CI 精确执行点见 [B1 冻结草案](../../DevDocs/20o-b1-freeze-draft.md)。
 F1～F13 与内联导出策略已逐条确认；Base64 标准/URL-safe 模式参数必填。
 error_code 已由独立 FIX-B 实现并验收（intrinsic 32 / ABI 1.18），证据见 [FIX-B 收口](../../DevDocs/20o-b1-fix-b-closeout.md)。
-七库产品仍未实现，七库教程与七库 registry 条目继续保持 planned。
+math、statistics、fmt 已有产品草稿与完整示例，其余四库因前置缺口暂停，见
+[实测记录](../../DevDocs/20o-b1-imp-blockers.md)。七库教程与七库 registry 条目保持 planned。
 
 ## 首批模块
 

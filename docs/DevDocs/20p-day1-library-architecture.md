@@ -72,7 +72,8 @@ std.db.mysql      MySQL 驱动（后置）
 B1-FIX-A 已确认全局 error_code(Error value, /) -> str、intrinsic 32 与独立 ABI 1.18 读取前置，
 不开放错误成员访问。精确借用后复制、C 失败状态和源级错误表见
 [B1 §二](20o-b1-freeze-draft.md#二error_code-的名称位置与签名)。真实入口已由独立 FIX-B 实现，
-当前 ABI 为 1.18；三平台验收见 [FIX-B 收口](20o-b1-fix-b-closeout.md)，七库产品仍未实现。
+当前 ABI 为 1.18；三平台验收见 [FIX-B 收口](20o-b1-fix-b-closeout.md)，七库产品按
+[B1-IMP](20o-b1-imp-seven-libraries.md) 逐模块实施，尚未完整交付。
 
 ### 2.5 生命周期与并发
 

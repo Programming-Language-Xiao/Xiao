@@ -1,0 +1,52 @@
+   Compiling ring v0.17.14
+   Compiling rustls v0.23.45
+   Compiling rustls-webpki v0.103.15
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.13s
+     Running tests\20o_b1_probe.rs (core\rust\target\debug\deps\20o_b1_probe-522c4d179609f03e.exe)
+
+running 1 test
+20O-B0-PROBE module=math backend=vm/native result=success
+20O-B0-PROBE module=hex backend=vm/native result=success
+20O-B0-PROBE module=base64 backend=vm/native result=success
+20O-B0-PROBE module=url backend=vm/native result=success
+20O-B0-PROBE module=csv backend=vm/native result=success
+20O-B0-PROBE module=fmt backend=vm/native result=success
+20O-B0-PROBE module=statistics backend=vm/native result=success
+20O-B1-FIX-A-PROBE case=math-extremes backend=vm/native result=success
+20O-B1-FIX-A-PROBE case=hex-all-bytes backend=vm/native result=success
+20O-B1-FIX-A-PROBE case=base64-tail-bits backend=vm/native result=success
+20O-B1-FIX-A-PROBE case=utf8-boundaries backend=vm/native result=success
+20O-B1-FIX-A-PROBE case=csv-budget backend=vm/native result=success
+20O-B1-FIX-A-PROBE case=fmt-int-min backend=vm/native result=success
+20O-B1-FIX-A-PROBE case=statistics-overflow backend=vm/native result=success
+20O-B1-FIX-B-PROBE case=default-and-custom backend=vm/native optimization=0 result=success
+20O-B1-FIX-B-PROBE case=default-and-custom backend=vm/native optimization=3 result=success
+20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm/native optimization=0 result=success
+20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm/native optimization=3 result=success
+20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm/native optimization=0 result=success
+20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm/native optimization=3 result=success
+20O-B1-FIX-B-PROBE case=pending-finally backend=vm/native optimization=0 result=success
+20O-B1-FIX-B-PROBE case=pending-finally backend=vm/native optimization=3 result=success
+20O-B1-FIX-B-PROBE case=dynamic-types backend=vm/native optimization=0 result=success
+20O-B1-FIX-B-PROBE case=dynamic-types backend=vm/native optimization=3 result=success
+20O-B1-FIX-B-PROBE case=long-code backend=vm/native optimization=0 result=success
+20O-B1-FIX-B-PROBE case=long-code backend=vm/native optimization=3 result=success
+20O-B1-FIX-B-PROBE case=abi-requirements backend=vm/native optimization=0 result=success
+20O-B1-FIX-B-PROBE case=abi-requirements backend=vm/native optimization=3 result=success
+
+thread 'b1_capabilities_match_native_golden_outputs' (68428) panicked at crates\xiao-driver\tests\20o_b1_probe.rs:1013:41:
+IMP math O0: 原生后端不支持 动态函数 abs 的参数形态（536..557）
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test b1_capabilities_match_native_golden_outputs ... FAILED
+
+failures:
+
+failures:
+    b1_capabilities_match_native_golden_outputs
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 43.58s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b1_probe`

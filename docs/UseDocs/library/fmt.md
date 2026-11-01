@@ -4,7 +4,7 @@ title: 文本宽度与整数格式（B1 教程草案）
 status: planned
 audience: learner
 module: stdlib.fmt
-stage: 20O-B0/B1-FIX-A/20P
+stage: 20O-B0/B1-FIX-A/B1-IMP/20P
 version: "0.1.0"
 related:
   - README.md
@@ -17,14 +17,14 @@ related:
 
 为填充、对齐和整数进制提供有语义增量的便利 API，不再建立等价于 str(value) 的占位函数。
 
-本页为 `planned`：官方 `std.fmt` 尚未交付。完整示例只使用现有语言和已交付模块，
-演示 B0 探测，不提供可导入的产品函数。适用基线：Xiao 0.1.0、Runtime ABI 1.18、
+本页为 `planned`：B1-IMP 产品源码已在 `stdlib/fmt.xiao` 落地，完整性能与三平台验收仍待收口。
+本页保留 B0 历史探测，另附直接导入产品函数的完整示例。适用基线：Xiao 0.1.0、Runtime ABI 1.18、
 标准库接口版本 1。逐平台结果见 [B0 探测记录](../../DevDocs/20o-b0-baseline-and-b1-draft.md)。
 
 ## 导入与准备
 
-官方库随工具链提供，无需普通包安装；`std.fmt` 是拟定用户路径，
-`stdlib.fmt` 是拟定内部身份。本轮不能导入该模块。已安装 Xiao 且检出仓库时，
+官方库随工具链提供，无需普通包安装；用户路径为 `std.fmt`，
+固定身份为 `stdlib.fmt`。检出本批源码后可以导入产品函数；已安装 Xiao 且检出仓库时，
 可以直接运行下面的探测文件；源码中的 `probe_` 名称仅在这个示例中有效。
 
 ## 五分钟运行与完整示例
@@ -72,11 +72,80 @@ catch invalid_fill as Error
 
 宽度按 Unicode 码点数计算，不能等同终端显示列宽或字素簇。填充字符必须恰好一个码点；不提供 locale 规则。输入只读，返回新字符串。
 
-## 已确认 API 契约（尚未实现）
+## B1-IMP 产品完整示例（planned）
+
+以下源码与 [CI 产品夹具](../../../tests/fixtures/20o-b1/imp/fmt/product.xiao) 逐字一致，已接入原有 VM/原生精确目标；当前原生命名调用与 F10 初测的阻塞见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。B0 探测文件独立保留。
+
+<!-- b1-imp-executable-example -->
+```xiao
+from std.fmt import pad_left, pad_right, format_int
+
+print(pad_left("雪😀", 4, "."))
+print(pad_right("雪😀", 4, "."))
+print(pad_left("long", 2, "."))
+print(pad_right("", 3, "0"))
+print(pad_left("é", 3, "."))
+print(pad_right("x", 0, "😀"))
+print(pad_left(text = "x", width = 3, fill = "雪"))
+print(pad_right(text = "x", width = 3, fill = "."))
+minimum = -9223372036854775807 - 1
+print(format_int(minimum, 10))
+print(format_int(minimum, 2))
+print(format_int(minimum, 36))
+print(format_int(0, 2))
+print(format_int(35, 36))
+print(format_int(value = -255, radix = 16))
+try
+    print(pad_left("x", -1, ""))
+catch width as Error
+    print(error_code(width))
+try
+    print(pad_right("long", 0, ""))
+catch empty_fill as Error
+    print(error_code(empty_fill))
+try
+    print(pad_left("x", 0, "é"))
+catch two_points as Error
+    print(error_code(two_points))
+try
+    print(pad_left("x", 65537, "."))
+catch limit as ResourceError
+    print(error_code(limit))
+try
+    print(format_int(minimum, 1))
+catch radix as Error
+    print(error_code(radix))
+```
+
+独立黄金输出：
+
+```text
+..雪😀
+雪😀..
+long
+000
+.é
+x
+雪雪x
+x..
+-9223372036854775808
+-1000000000000000000000000000000000000000000000000000000000000000
+-1y2p0ij32e8e8
+0
+z
+-ff
+FMT_INVALID_WIDTH
+FMT_INVALID_FILL
+FMT_INVALID_FILL
+FMT_LIMIT_EXCEEDED
+FMT_INVALID_RADIX
+```
+
+## 已实现 API（B1-IMP，验收未收口）
 
 七项一起冻结已确认；下表是 [B1 逐项契约](../../DevDocs/20o-b1-freeze-draft.md#36-fmt三项) 的概览，
 F1～F13 已由星崽在 FIX-A 逐条确认；所有库函数参数必填，按现有位置/命名规则调用；
-输入只读、不消费，失败不改调用方数组。**这些入口尚未实现，不能替换上面的 probe 示例调用。**
+输入只读、不消费，失败不改调用方数据。产品示例调用下列冻结入口；B0 probe 继续作独立历史对照。
 
 | 已确认签名 | 已确认边界 |
 | --- | --- |
@@ -98,8 +167,8 @@ B1 已确认的稳定 code、类别、触发条件与检查顺序统一见 [错�
 不能作为稳定错误码证据。全局自由函数 `error_code` 已由独立 FIX-B 实现并验收，
 其[精确位置/签名/错误表](../../DevDocs/20o-b1-freeze-draft.md#二error_code-的名称位置与签名)与
 [三平台验收记录](../../DevDocs/20o-b1-fix-b-closeout.md)已交付；错误成员访问仍未开放。
-`stdlib.fmt` 产品仍未实现。当前示例保留 B0 探测写法，通过驱动器机器结果核对 code，
-不调用 `error_code` 或该库产品函数。
+B0 示例保留原探测写法，通过驱动器机器结果核对 code，不调用产品函数；
+新增产品示例直接调用公开入口，用 `error_code` 核对真实错误身份。
 
 ## 资源、性能与安全边界
 
@@ -134,15 +203,16 @@ cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_pro
 ## 兼容与废弃
 
 七个库按接口版本 1 兼容新增；历史 B0/FIX-A 证据基于 ABI 1.17，当前仓库探测使用 1.18。
-error_code 已随独立 FIX-B 在 ABI 1.18 实现并验收；七库产品仍待独立 IMP 交付。
+error_code 已随独立 FIX-B 在 ABI 1.18 实现并验收；本模块源码与样例已进入 IMP，完整验收和状态升级留待 CLOSE。
 探测函数不属于公开 API，不进入官方加载器、
 普通依赖求解或归档身份。只有产品实现、完整教程、示例、测试与证据均通过，才可升级
 为 `verified`；不能仅因本页探测成功就宣称模块完成。
 
 ## 故障排查与下一步
 
-宽度、fill、进制和限额已确认；FIX-A 新增最小 int 的全部 2～36 进制独立黄金，产品 padding/资源边界仍须实现后验证。
-补充夹具和证据见 [FIX-A 记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)。
+三项产品草稿已有基础 VM 与真实导出黄金，MIN 的实现避免对 MIN 求正绝对值或直接对其正除模。
+原生命名调用与完整 F10 成本仍受前置缺口阻塞，具体 debug/release 初测见
+[实测记录](../../DevDocs/20o-b1-imp-blockers.md)；历史边界见 [FIX-A 记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)。
 
 若无法找到完整示例，先确认位于仓库根；原生测试缺少 LLVM/Runtime 配置时应明确失败，
 不能把环境跳过当成功。继续阅读 [整数计算](math.md)、

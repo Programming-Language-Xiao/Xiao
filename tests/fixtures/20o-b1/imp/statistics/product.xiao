@@ -1,0 +1,57 @@
+from std.statistics import sum, min, max
+
+values = [5, -2, 9, -2]
+alias = values
+print(sum(values))
+print(min(values))
+print(max(values))
+print(alias[0])
+print(sum([]))
+minimum = -9223372036854775807 - 1
+maximum = 9223372036854775807
+print(sum([maximum, minimum]))
+print(min([maximum, minimum]))
+print(max([minimum, maximum]))
+print(sum(values = [1, 2]))
+print(min(values = [2, 1]))
+print(max(values = [2, 1]))
+try
+    print(min([]))
+catch empty_min as Error
+    print(error_code(empty_min))
+try
+    print(max([]))
+catch empty_max as Error
+    print(error_code(empty_max))
+overflow_values = [maximum, 1, -1]
+try
+    print(sum(overflow_values))
+catch overflow as ArithmeticError
+    print(error_code(overflow))
+print(overflow_values[0])
+large = []
+count = 0
+while count < 65536
+    array_push(large, 1)
+    count = count + 1
+print(sum(large))
+print(min(large))
+print(max(large))
+over = [maximum, 1]
+count = 0
+while count < 65535
+    array_push(over, 0)
+    count = count + 1
+try
+    print(sum(over))
+catch limited_sum as ResourceError
+    print(error_code(limited_sum))
+try
+    print(min(over))
+catch limited_min as ResourceError
+    print(error_code(limited_min))
+try
+    print(max(over))
+catch limited_max as ResourceError
+    print(error_code(limited_max))
+print(over[0])

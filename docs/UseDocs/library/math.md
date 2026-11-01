@@ -4,7 +4,7 @@ title: 整数计算（B1 教程草案）
 status: planned
 audience: learner
 module: stdlib.math
-stage: 20O-B0/B1-FIX-A/20P
+stage: 20O-B0/B1-FIX-A/B1-IMP/20P
 version: "0.1.0"
 related:
   - README.md
@@ -17,14 +17,14 @@ related:
 
 整数边界、最大公约数和非负整数幂。首批不涉及浮点、高精度或数值重载。
 
-本页为 `planned`：官方 `std.math` 尚未交付。完整示例只使用现有语言和已交付模块，
-演示 B0 探测，不提供可导入的产品函数。适用基线：Xiao 0.1.0、Runtime ABI 1.18、
+本页为 `planned`：B1-IMP 产品源码已在 `stdlib/math.xiao` 落地，完整性能与三平台验收仍待收口。
+本页保留 B0 历史探测，另附直接导入产品函数的完整示例。适用基线：Xiao 0.1.0、Runtime ABI 1.18、
 标准库接口版本 1。逐平台结果见 [B0 探测记录](../../DevDocs/20o-b0-baseline-and-b1-draft.md)。
 
 ## 导入与准备
 
-官方库随工具链提供，无需普通包安装；`std.math` 是拟定用户路径，
-`stdlib.math` 是拟定内部身份。本轮不能导入该模块。已安装 Xiao 且检出仓库时，
+官方库随工具链提供，无需普通包安装；用户路径为 `std.math`，
+固定身份为 `stdlib.math`。检出本批源码后可以导入产品函数；已安装 Xiao 且检出仓库时，
 可以直接运行下面的探测文件；源码中的 `probe_` 名称仅在这个示例中有效。
 
 ## 五分钟运行与完整示例
@@ -82,11 +82,106 @@ catch overflow as Error
 
 int 是固定 64 位有符号整数。值按值传入，没有可关闭资源；结果溢出应报错而非回绕。
 
-## 已确认 API 契约（尚未实现）
+## B1-IMP 产品完整示例（planned）
+
+以下源码与 [CI 产品夹具](../../../tests/fixtures/20o-b1/imp/math/product.xiao) 逐字一致，已接入原有 VM/原生精确目标；当前原生命名调用与 F10 初测的阻塞见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。B0 探测文件独立保留。
+
+<!-- b1-imp-executable-example -->
+```xiao
+from std.math import abs, min, max, clamp, gcd, pow
+
+minimum = -9223372036854775807 - 1
+maximum = 9223372036854775807
+print(abs(-7))
+print(abs(0))
+print(min(minimum, maximum))
+print(max(minimum, maximum))
+print(clamp(5, 0, 3))
+print(clamp(minimum, minimum, maximum))
+print(clamp(0, 2, 2))
+print(gcd(54, -24))
+print(gcd(0, 0))
+print(gcd(minimum, 2))
+print(gcd(minimum, -1))
+print(gcd(minimum, maximum))
+print(pow(minimum, 1))
+print(pow(0, 0))
+print(pow(0, maximum))
+print(pow(1, maximum))
+print(pow(-1, maximum))
+print(pow(2, 62))
+print(abs(value = -maximum))
+print(min(left = maximum, right = maximum))
+print(max(left = minimum, right = minimum))
+print(clamp(value = 5, lower = 3, upper = 4))
+print(gcd(left = minimum, right = 6))
+print(pow(base = -2, exponent = 63))
+try
+    print(clamp(0, 1, -1))
+catch bounds as Error
+    print(error_code(bounds))
+try
+    print(pow(2, -1))
+catch exponent as Error
+    print(error_code(exponent))
+try
+    print(abs(minimum))
+catch absolute as ArithmeticError
+    print(error_code(absolute))
+try
+    print(gcd(minimum, 0))
+catch gcd_zero as ArithmeticError
+    print(error_code(gcd_zero))
+try
+    print(gcd(minimum, minimum))
+catch gcd_both as ArithmeticError
+    print(error_code(gcd_both))
+try
+    print(pow(2, 63))
+catch power as ArithmeticError
+    print(error_code(power))
+```
+
+独立黄金输出：
+
+```text
+7
+0
+-9223372036854775808
+9223372036854775807
+3
+-9223372036854775808
+2
+6
+0
+2
+1
+1
+-9223372036854775808
+1
+0
+1
+-1
+4611686018427387904
+9223372036854775807
+9223372036854775807
+-9223372036854775808
+4
+2
+-9223372036854775808
+MATH_INVALID_BOUNDS
+MATH_NEGATIVE_EXPONENT
+X06-RUNTIME-009
+X06-RUNTIME-009
+X06-RUNTIME-009
+X06-RUNTIME-009
+```
+
+## 已实现 API（B1-IMP，验收未收口）
 
 七项一起冻结已确认；下表是 [B1 逐项契约](../../DevDocs/20o-b1-freeze-draft.md#31-math六项) 的概览，
 F1～F13 已由星崽在 FIX-A 逐条确认；所有库函数参数必填，按现有位置/命名规则调用；
-输入只读、不消费，失败不改调用方数组。**这些入口尚未实现，不能替换上面的 probe 示例调用。**
+输入只读、不消费，失败不改调用方数据。产品示例调用下列冻结入口；B0 probe 继续作独立历史对照。
 
 | 已确认签名 | 已确认边界 |
 | --- | --- |
@@ -111,8 +206,8 @@ B1 已确认的稳定 code、类别、触发条件与检查顺序统一见 [错�
 不能作为稳定错误码证据。全局自由函数 `error_code` 已由独立 FIX-B 实现并验收，
 其[精确位置/签名/错误表](../../DevDocs/20o-b1-freeze-draft.md#二error_code-的名称位置与签名)与
 [三平台验收记录](../../DevDocs/20o-b1-fix-b-closeout.md)已交付；错误成员访问仍未开放。
-`stdlib.math` 产品仍未实现。当前示例保留 B0 探测写法，通过驱动器机器结果核对 code，
-不调用 `error_code` 或该库产品函数。
+B0 示例保留原探测写法，通过驱动器机器结果核对 code，不调用产品函数；
+新增产品示例直接调用公开入口，用 `error_code` 核对真实错误身份。
 
 ## 资源、性能与安全边界
 
@@ -147,15 +242,16 @@ cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_pro
 ## 兼容与废弃
 
 七个库按接口版本 1 兼容新增；历史 B0/FIX-A 证据基于 ABI 1.17，当前仓库探测使用 1.18。
-error_code 已随独立 FIX-B 在 ABI 1.18 实现并验收；七库产品仍待独立 IMP 交付。
+error_code 已随独立 FIX-B 在 ABI 1.18 实现并验收；本模块源码与样例已进入 IMP，完整验收和状态升级留待 CLOSE。
 探测函数不属于公开 API，不进入官方加载器、
 普通依赖求解或归档身份。只有产品实现、完整教程、示例、测试与证据均通过，才可升级
 为 `verified`；不能仅因本页探测成功就宣称模块完成。
 
 ## 故障排查与下一步
 
-六项边界已确认，FIX-A 新增 MIN/MAX、gcd 和平方求幂探测已接入两路精确入口；产品导入/移除/归档与完整资源验收仍待实现批。
-补充夹具和证据见 [FIX-A 记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)。
+六个产品入口已有本机公开导入、真实导出、逐函数移除、归档重放与普通包隔离回归；
+性能测量与三平台产品证据仍待 B1-IMP 收口。历史探测见 [FIX-A 记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)，
+当前实施状态见 [B1-IMP](../../DevDocs/20o-b1-imp-seven-libraries.md)。
 
 若无法找到完整示例，先确认位于仓库根；原生测试缺少 LLVM/Runtime 配置时应明确失败，
 不能把环境跳过当成功。继续阅读 [整数统计](statistics.md)、

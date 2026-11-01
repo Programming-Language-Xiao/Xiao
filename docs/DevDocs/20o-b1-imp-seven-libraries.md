@@ -5,7 +5,9 @@
 > 本页只把七个模块、20 个入口、资源/错误/性能目标和落地顺序拆成可执行步骤。
 > 不重问 F1～F13/E-2，不新增 intrinsic、ABI、私有语法或公开 `dynamic`。
 >
-> 状态：**FIX-B 已验收，B1-IMP 开工中（2026-11-02）**。规划基线为 `48a47440`，
+> 状态：**FIX-B 已验收，12 入口草稿已落地，B1-IMP 因前置缺口暂停（2026-11-02）**。
+> math/statistics/fmt 已有 VM 草稿验证；原生命名调用与字符串遍历成本尚待处理，见
+> [实测与暂停记录](20o-b1-imp-blockers.md)。规划基线为 `48a47440`，
 > 实施开工提交为 `6a23eabc`；已发现并单独处理既有 `std.` 别名接线前置，见 §2.2。
 > 当前 Runtime ABI 为 1.18，七库 registry 条目仍为 `planned`，七库教程仍为 `planned`。
 > B1-IMP 完成后才进入 [B1-CLOSE](20o-b1-implementation-plan.md#b1-close证据收口)；
@@ -121,7 +123,8 @@ LLVM 的 CODEGEN_VERSION 升至 16 以隔离修正后的初始化/绑定指纹�
 - `clamp`：先检查 `lower > upper`，报 `Error / MATH_INVALID_BOUNDS`；再比较钳位。
 - `gcd`：结果非负；`gcd(0,0)=0`；`gcd(MIN,2)=2`、`gcd(MIN,-1)=1`；
   `gcd(MIN,0)`、`gcd(MIN,MIN)` 的数学结果 2^63 不可表示，报 `X06-RUNTIME-009`。
-  禁止先做 `abs(MIN)`；对含 `MIN` 的输入先走专门的二因子/边界分支，其余走余数迭代。
+  禁止先做 `abs(MIN)`；实际实现将两数归一到包含 MIN 的非正域做余数迭代，遇 -1 直接返回 1，
+  只在最终取正结果时产生应有溢出，无需对 MIN 求正绝对值。
 - `pow`：`exponent < 0` 报 `Error / MATH_NEGATIVE_EXPONENT`；`0^0=1`；
   `0^正数=0`；`MIN^1=MIN`；使用平方求幂，按二进制位决定是否乘，最后一步之后不再计算
   无必要的平方；`pow(2,63)` 必须溢出；指数可到 `MAX`，不得人为限为 63。
@@ -212,6 +215,11 @@ LLVM 的 CODEGEN_VERSION 升至 16 以隔离修正后的初始化/绑定指纹�
   停下来报告，不缩小公开限额、不放宽预算、不新增 intrinsic。
 
 ## 四、错误与限额总表
+
+当前逐模块进度：math 六项、statistics 三项、fmt 三项有纯 Xiao 草稿、完整产品样例与
+独立黄金，三组真实导出与 VM 黄金已通过；math 另有移除、归档、普通包和教程回归。
+三组已接入原有精确目标，原生命名调用尚被前置缺口阻塞，不能宣称完整原生验收通过。
+其余四库暂停，F10 只有 fmt 的部分 VM 数据；七库最终三平台证据和 CLOSE 均未完成，状态 planned。
 
 错误 code、类别和检查顺序以 [B1 §六](20o-b1-freeze-draft.md#六统一错误表f11已确认) 为唯一正文。
 实现时至少核对：

@@ -1,4 +1,4 @@
-//! 20O-B0/FIX-A 探测与 FIX-B error_code 前置回归；不实现七库接口。
+//! 20O-B0/FIX-A 探测、FIX-B 前置及 B1-IMP 产品回归；库函数体来自 stdlib。
 
 use std::fs;
 use std::io::Read;
@@ -65,6 +65,9 @@ const FIX_B_CASES: [&str; 7] = [
     "abi-requirements",
 ];
 
+/// B1-IMP 已落地的公开产品模块；保留旧三组独立黄金，按实施顺序扩展。
+const B1_IMP_CASES: [&str; 3] = ["math", "statistics", "fmt"];
+
 /// 依据 crate 固定位置找到仓库，保留真实源码路径及官方导入环境。
 fn repository_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -87,6 +90,29 @@ fn fix_a_cases() -> Vec<(&'static str, FrontendRequest, String)> {
 /// 从同一固定目录加载 FIX-B 的源码与黄金，不混入 FIX-A 数值库输出。
 fn fix_b_cases() -> Vec<(&'static str, FrontendRequest, String)> {
     phase_cases("fix-b", &FIX_B_CASES)
+}
+
+/// 读取公开产品样例和独立黄金，每个模块使用自己的固定目录。
+fn imp_cases() -> Vec<(&'static str, FrontendRequest, String)> {
+    B1_IMP_CASES
+        .iter()
+        .map(|&module| {
+            let directory = repository_root().join(format!("tests/fixtures/20o-b1/imp/{module}"));
+            let path = directory.join("product.xiao");
+            let golden: serde_json::Value = serde_json::from_str(
+                &fs::read_to_string(directory.join("golden.json")).expect("读取 B1-IMP 黄金"),
+            )
+            .expect("B1-IMP 黄金 JSON");
+            (
+                module,
+                FrontendRequest::from_text_at(
+                    fs::read_to_string(&path).expect("读取 B1-IMP 产品样例"),
+                    path,
+                ),
+                golden["stdout"].as_str().expect("B1-IMP stdout").to_owned(),
+            )
+        })
+        .collect()
 }
 
 /// 读取指定阶段的完整黄金并严格核对场景集合数量。
@@ -140,7 +166,7 @@ fn assert_vm(
 }
 
 #[test]
-/// 原七项与 FIX-A 七项真实源码均经完整前端/生产 VM，不把编译成功当执行成功。
+/// 旧探测、FIX-B 与已落地 IMP 产品均经完整前端/生产 VM，不以编译成功代替执行。
 fn b1_capabilities_have_vm_golden_outputs() {
     for (module, expected) in CASES {
         let request = fixture_request(module);
@@ -163,6 +189,13 @@ fn b1_capabilities_have_vm_golden_outputs() {
             .unwrap_or_else(|error| panic!("FIX-B {id}: {error:?}"));
         assert_vm(&request, &artifact, &expected, Duration::from_secs(10));
         println!("20O-B1-FIX-B-PROBE case={id} backend=vm result=success");
+    }
+    for (module, request, expected) in imp_cases() {
+        let artifact = FrontendCompiler::new()
+            .compile(&request)
+            .unwrap_or_else(|error| panic!("IMP {module}: {error:?}"));
+        assert_vm(&request, &artifact, &expected, Duration::from_secs(60));
+        println!("20O-B1-IMP-PROBE case={module} backend=vm result=success");
     }
 }
 
@@ -835,7 +868,7 @@ fn assert_native_error_code_failure_cleanup(
 
 #[test]
 #[ignore = "需要显式 LLVM/MSVC 或平台链接器、Runtime staticlib；维护回归三平台精确执行并校验一项通过"]
-/// 原七项与 FIX-A 七项同源 IR 分别匹配 VM/native 黄金，原生退出零且 stderr 为空。
+/// 旧探测/FIX-B 保留黄金，IMP 产品另跑 O0/O3；原生退出零且 stderr 为空。
 fn b1_capabilities_match_native_golden_outputs() {
     let (target, toolchain) = native_toolchain();
     let root = ProbeDirectory::new();
@@ -952,6 +985,45 @@ fn b1_capabilities_match_native_golden_outputs() {
             assert!(output.stderr.is_empty(), "FIX-B {id} O{level}: {output:?}");
             println!(
                 "20O-B1-FIX-B-PROBE case={id} backend=vm/native optimization={level} result=success"
+            );
+        }
+    }
+    for (module, request, expected) in imp_cases() {
+        let artifact = FrontendCompiler::new()
+            .compile(&request)
+            .unwrap_or_else(|error| panic!("IMP {module}: {error:?}"));
+        assert_vm(&request, &artifact, &expected, Duration::from_secs(60));
+        for level in [0, 3] {
+            let options = xiao_codegen_llvm::CodegenOptions::for_target(target.clone())
+                .with_optimization_level(level)
+                .unwrap();
+            let executable = root.0.join(format!(
+                "imp-{module}-o{level}{}",
+                std::env::consts::EXE_SUFFIX
+            ));
+            let build = NativeBuildRequest::new(
+                request.clone(),
+                target.clone(),
+                toolchain.clone(),
+                executable,
+            )
+            .with_codegen_options(options);
+            let native = FrontendNativeDriver::new()
+                .build_artifact(&artifact, &build)
+                .unwrap_or_else(|error| panic!("IMP {module} O{level}: {error}"));
+            let output = native_output(&native.native.executable, Duration::from_secs(60));
+            assert_eq!(
+                output.status.code(),
+                Some(0),
+                "IMP {module} O{level}: {output:?}"
+            );
+            assert_eq!(output.stdout, expected.as_bytes(), "IMP {module} O{level}");
+            assert!(
+                output.stderr.is_empty(),
+                "IMP {module} O{level}: {output:?}"
+            );
+            println!(
+                "20O-B1-IMP-PROBE case={module} backend=vm/native optimization={level} result=success"
             );
         }
     }

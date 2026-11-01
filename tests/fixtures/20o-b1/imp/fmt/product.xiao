@@ -1,0 +1,37 @@
+from std.fmt import pad_left, pad_right, format_int
+
+print(pad_left("雪😀", 4, "."))
+print(pad_right("雪😀", 4, "."))
+print(pad_left("long", 2, "."))
+print(pad_right("", 3, "0"))
+print(pad_left("é", 3, "."))
+print(pad_right("x", 0, "😀"))
+print(pad_left(text = "x", width = 3, fill = "雪"))
+print(pad_right(text = "x", width = 3, fill = "."))
+minimum = -9223372036854775807 - 1
+print(format_int(minimum, 10))
+print(format_int(minimum, 2))
+print(format_int(minimum, 36))
+print(format_int(0, 2))
+print(format_int(35, 36))
+print(format_int(value = -255, radix = 16))
+try
+    print(pad_left("x", -1, ""))
+catch width as Error
+    print(error_code(width))
+try
+    print(pad_right("long", 0, ""))
+catch empty_fill as Error
+    print(error_code(empty_fill))
+try
+    print(pad_left("x", 0, "é"))
+catch two_points as Error
+    print(error_code(two_points))
+try
+    print(pad_left("x", 65537, "."))
+catch limit as ResourceError
+    print(error_code(limit))
+try
+    print(format_int(minimum, 1))
+catch radix as Error
+    print(error_code(radix))

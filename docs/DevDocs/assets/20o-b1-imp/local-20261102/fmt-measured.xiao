@@ -1,0 +1,125 @@
+# B1 文本填充与整数进制格式化；所有辅助逻辑内联。
+
+def pad_left(str text, int width, str fill) -> str
+    if width < 0
+        raise Error(code = "FMT_INVALID_WIDTH")
+    fill_count = 0
+    for character in fill
+        fill_count = fill_count + 1
+        if fill_count > 1
+            raise Error(code = "FMT_INVALID_FILL")
+    if fill_count != 1
+        raise Error(code = "FMT_INVALID_FILL")
+    if width > 65536
+        raise ResourceError(code = "FMT_LIMIT_EXCEEDED")
+    count = 0
+    size = 0
+    for character in text
+        point = int(character)
+        count = count + 1
+        if point < 128
+            size = size + 1
+        elif point < 2048
+            size = size + 2
+        elif point < 65536
+            size = size + 3
+        else
+            size = size + 4
+        if size > 65536
+            raise ResourceError(code = "FMT_LIMIT_EXCEEDED")
+    if width <= count
+        return text
+    fill_size = 1
+    point = int(fill)
+    if point >= 65536
+        fill_size = 4
+    elif point >= 2048
+        fill_size = 3
+    elif point >= 128
+        fill_size = 2
+    remaining = width - count
+    if remaining > (262144 - size) // fill_size
+        raise ResourceError(code = "FMT_LIMIT_EXCEEDED")
+    padding = ""
+    chunk = fill
+    while remaining > 0
+        if remaining % 2 == 1
+            padding = padding + chunk
+        remaining = remaining // 2
+        if remaining > 0
+            chunk = chunk + chunk
+    return padding + text
+
+def pad_right(str text, int width, str fill) -> str
+    if width < 0
+        raise Error(code = "FMT_INVALID_WIDTH")
+    fill_count = 0
+    for character in fill
+        fill_count = fill_count + 1
+        if fill_count > 1
+            raise Error(code = "FMT_INVALID_FILL")
+    if fill_count != 1
+        raise Error(code = "FMT_INVALID_FILL")
+    if width > 65536
+        raise ResourceError(code = "FMT_LIMIT_EXCEEDED")
+    count = 0
+    size = 0
+    for character in text
+        point = int(character)
+        count = count + 1
+        if point < 128
+            size = size + 1
+        elif point < 2048
+            size = size + 2
+        elif point < 65536
+            size = size + 3
+        else
+            size = size + 4
+        if size > 65536
+            raise ResourceError(code = "FMT_LIMIT_EXCEEDED")
+    if width <= count
+        return text
+    fill_size = 1
+    point = int(fill)
+    if point >= 65536
+        fill_size = 4
+    elif point >= 2048
+        fill_size = 3
+    elif point >= 128
+        fill_size = 2
+    remaining = width - count
+    if remaining > (262144 - size) // fill_size
+        raise ResourceError(code = "FMT_LIMIT_EXCEEDED")
+    padding = ""
+    chunk = fill
+    while remaining > 0
+        if remaining % 2 == 1
+            padding = padding + chunk
+        remaining = remaining // 2
+        if remaining > 0
+            chunk = chunk + chunk
+    return text + padding
+
+def format_int(int value, int radix) -> str
+    if radix < 2 or radix > 36
+        raise Error(code = "FMT_INVALID_RADIX")
+    if value == 0
+        return "0"
+    negative = value < 0
+    if value > 0
+        value = -value
+    digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+    result = ""
+    while value < 0
+        # -(MIN + 1) 可表示；全程只对非负数除模，避免 MIN 的中间运算溢出。
+        magnitude_minus_one = -(value + 1)
+        quotient = magnitude_minus_one // radix
+        digit = magnitude_minus_one % radix + 1
+        if digit == radix
+            digit = 0
+            quotient = quotient + 1
+        result = digits[digit] + result
+        value = -quotient
+    if negative
+        return "-" + result
+    return result
