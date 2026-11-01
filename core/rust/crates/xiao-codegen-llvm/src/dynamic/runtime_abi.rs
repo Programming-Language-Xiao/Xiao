@@ -67,12 +67,13 @@ pub(super) fn reachable_runtime_components(text: &str) -> Vec<String> {
     }
     let mut components =
         crate::artifact::components_for_symbols(&symbols.iter().cloned().collect::<Vec<_>>());
-    // 这些 ABI 实现处理 TableDropView 或调用其回调，传递可达弱句柄归还分支。
+    // 这些 ABI 实现处理 TableDropView 或调用泛型值复制/回调，传递可达弱句柄归还分支。
     if symbols.iter().any(|symbol| {
         matches!(
             symbol.as_str(),
             "xiao_runtime_value_copy"
                 | "xiao_runtime_value_release_any"
+                | "xiao_runtime_concurrency_call"
                 | "xiao_runtime_table_new_v2"
                 | "xiao_runtime_table_new_v2_with_args"
                 | "xiao_runtime_table_call"

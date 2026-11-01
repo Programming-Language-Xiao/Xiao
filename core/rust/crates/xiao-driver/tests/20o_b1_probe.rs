@@ -232,6 +232,25 @@ fn error_code_llvm_copies_the_view_before_releasing_the_input() {
         TargetDescription::linux_x86_64(),
         TargetDescription::macos_aarch64(),
     ] {
+        // 最小 ABI 文件仅取 current_runtime，不直接调用值复制；泛型 Runtime 仍可达弱引用分支。
+        let (_, request, _) = fix_b_cases()
+            .into_iter()
+            .find(|(id, _, _)| *id == "abi-requirements")
+            .unwrap();
+        let abi_artifact = FrontendCompiler::new().compile(&request).unwrap();
+        let abi_module = xiao_codegen_llvm::NativeBuild::new()
+            .lower(
+                &abi_artifact.ir,
+                &xiao_codegen_llvm::CodegenOptions::for_target(target.clone()),
+            )
+            .unwrap();
+        assert!(
+            abi_module
+                .runtime_components
+                .iter()
+                .any(|component| component == "weak"),
+            "ABI 夹具的 Runtime 传递依赖不能漏记弱引用组件"
+        );
         let module = xiao_codegen_llvm::NativeBuild::new()
             .lower(
                 &artifact.ir,
