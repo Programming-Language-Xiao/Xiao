@@ -33,7 +33,7 @@ fn source_concurrency_types_reach_xiaoc_required_features() {
     );
     assert_eq!(
         file.header.runtime_abi_min as u64, ABI_ENCODED_VERSION,
-        "`.xiaoc` header 必须与 TAC Runtime ABI 使用同一 1.17 编码"
+        "`.xiaoc` header 必须与 TAC Runtime ABI 使用当前统一编码（{ABI_ENCODED_VERSION:#010x}）"
     );
     assert_eq!(
         file.program.abi.runtime_abi_version, file.header.runtime_abi_min,

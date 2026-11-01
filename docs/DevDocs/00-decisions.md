@@ -1018,7 +1018,9 @@ Xiao 全仓库禁止高度耦合。模块必须沿既定依赖方向通信，不
 
 ## 已冻结补充：20O-B1-FIX-A 错误读取与七库契约
 
-星崽在本轮逐条确认 F1～F13/E-2：全局 error_code(Error value, /) -> str，借读错误对象，
+本节记录 FIX-A 契约冻结时点，后续 FIX-B 实现状态见本节末尾。
+
+星崽在 FIX-A 逐条确认 F1～F13/E-2：全局 error_code(Error value, /) -> str，借读错误对象，
 不开放成员访问或普通函数 Error 注解；在独立 FIX-B 新增 intrinsic 规划号 32、ABI 1.18
 只读借用视图后复制通路。C 入口为 xiao_runtime_error_code(const XiaoValue*, XiaoAbiBytes*)，
 getter 不分配、不触碰挂起槽，0/1/2/3 状态与失败 out 不变。完整契约见
@@ -1026,8 +1028,12 @@ getter 不分配、不触碰挂起槽，0/1/2/3 状态与失败 out 不变。完
 
 七库仍为 20 项：Base64 首批含标准/URL-safe，encode/decode 都有必填 bool url_safe；
 B1 辅助逻辑内联，不新增内部模块或可见性语法。签名、错误/限额/性能目标见 B1 正文，
-本轮记录见 [FIX-A](20o-b1-fix-a-contract-closeout.md)。本批只有文档/探测，实际 ABI
-仍为 1.17；FIX-B 产品与三平台证据、七库 IMP/CLOSE 尚未交付，不核销 19/11/22 债务。
+当时记录见 [FIX-A](20o-b1-fix-a-contract-closeout.md)。FIX-A 只交付文档/探测，取证时 ABI
+为 1.17，当时 FIX-B 实现与三平台证据尚未交付。
+
+后续独立 FIX-B 已实现 intrinsic 32 与 ABI 1.18，并由维护回归 41310926623 完成三平台验收，
+见 [FIX-B 收口](20o-b1-fix-b-closeout.md)。当前 ABI 为 1.18；七库 IMP/CLOSE 仍未交付，
+不核销 19/11/22 债务。
 
 ## 待定决策
 
