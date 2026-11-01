@@ -5,7 +5,10 @@
 `20o_b1_probe.rs` 只做官方库 B0 探测：读取 `tests/fixtures/docs/` 的七份完整源码，
 VM/native 各自逐字核对黄金输出，检查 planned 教程与执行文件一致；另存 CSV 嵌套签名和
 错误字段读取的真实边界。D-26 后默认与三平台原生各有独立 --exact 执行点，校验恰好
-一项通过，批量命令排除对应名字。探测不注册官方模块、不改 ABI；范围、计数与逐平台证据见
+一项通过，批量命令排除对应名字。探测不注册官方模块、不改 ABI。
+教程状态与对应 registry 一致，不固定 planned；planned→verified、正文伪造及重复字段有独立回归。
+计数判断的 28 个正反例由仓库脚本 `tools/gates/b1-probe-guards.ps1` 提取工作流直接复跑。
+范围、计数与逐平台证据见
 [20O-B1](../../../../../docs/DevDocs/20o-b1-freeze-draft.md)，历史结果见
 [20O-B0](../../../../../docs/DevDocs/20o-b0-baseline-and-b1-draft.md)。
 

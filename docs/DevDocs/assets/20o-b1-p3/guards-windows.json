@@ -1,0 +1,181 @@
+{
+  "schemaVersion": 1,
+  "workflow": ".github/workflows/maintenance-regression.yml",
+  "workflowSha256": "6ea6e37e8c876aecbea1eb49a2ca37a040781366da36e087ce2cf118d9b6fe47",
+  "scriptSha256": "0e321cbe4cccd0a2e9af16e37ccd2374808d557e4429176c841d6d32284bdc4c",
+  "scope": "simulated-cargo-output",
+  "hostOS": "Microsoft Windows 10.0.26200",
+  "powershell": "7.6.6",
+  "passed": 28,
+  "total": 28,
+  "cases": [
+    {
+      "Path": "default",
+      "Case": "one",
+      "Passed": true,
+      "ExitCode": 0
+    },
+    {
+      "Path": "default",
+      "Case": "zero",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "default",
+      "Case": "two",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "default",
+      "Case": "ignored",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "default",
+      "Case": "failed",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "default",
+      "Case": "failed-exit",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "default",
+      "Case": "duplicate",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "Linux",
+      "Case": "one",
+      "Passed": true,
+      "ExitCode": 0
+    },
+    {
+      "Path": "Linux",
+      "Case": "zero",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "Linux",
+      "Case": "two",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "Linux",
+      "Case": "ignored",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "Linux",
+      "Case": "failed",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "Linux",
+      "Case": "failed-exit",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "Linux",
+      "Case": "duplicate",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "macOS",
+      "Case": "one",
+      "Passed": true,
+      "ExitCode": 0
+    },
+    {
+      "Path": "macOS",
+      "Case": "zero",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "macOS",
+      "Case": "two",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "macOS",
+      "Case": "ignored",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "macOS",
+      "Case": "failed",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "macOS",
+      "Case": "failed-exit",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "macOS",
+      "Case": "duplicate",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "Windows",
+      "Case": "one",
+      "Passed": true,
+      "ExitCode": 0
+    },
+    {
+      "Path": "Windows",
+      "Case": "zero",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "Windows",
+      "Case": "two",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "Windows",
+      "Case": "ignored",
+      "Passed": true,
+      "ExitCode": 1
+    },
+    {
+      "Path": "Windows",
+      "Case": "failed",
+      "Passed": true,
+      "ExitCode": 101
+    },
+    {
+      "Path": "Windows",
+      "Case": "failed-exit",
+      "Passed": true,
+      "ExitCode": 101
+    },
+    {
+      "Path": "Windows",
+      "Case": "duplicate",
+      "Passed": true,
+      "ExitCode": 1
+    }
+  ]
+}

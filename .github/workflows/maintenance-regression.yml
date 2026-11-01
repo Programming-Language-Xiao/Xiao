@@ -9,6 +9,7 @@ on:
       - "tests/benchmarks/**"
       - "tests/fixtures/**"
       - "docs/UseDocs/library/**"
+      - "tools/gates/b1-probe-guards.ps1"
       - "stdlib/**"
       - ".gitattributes"
   pull_request:
@@ -19,6 +20,7 @@ on:
       - "tests/benchmarks/**"
       - "tests/fixtures/**"
       - "docs/UseDocs/library/**"
+      - "tools/gates/b1-probe-guards.ps1"
       - "stdlib/**"
       - ".gitattributes"
   workflow_dispatch:
@@ -46,6 +48,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: core/rust -> core/rust/target
+
+      - name: Verify B1 exact-count guards
+        shell: pwsh
+        run: ./tools/gates/b1-probe-guards.ps1
 
       - name: Run default workspace tests
         run: cargo test --manifest-path core/rust/Cargo.toml --workspace -- --skip b1_capabilities_have_vm_golden_outputs

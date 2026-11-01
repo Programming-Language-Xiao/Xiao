@@ -134,12 +134,28 @@ fn b1_error_identities_and_member_access_boundary_are_recorded() {
 #[test]
 /// 教程的完整示例与执行源码逐字一致，避免修改页面后 CI 仍测试旧副本。
 fn b1_tutorials_embed_the_executed_sources() {
+    let registry: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(repository_root().join("docs/module-registry.json"))
+            .expect("读取模块登记"),
+    )
+    .expect("模块登记 JSON");
+    let modules = registry["modules"].as_array().expect("模块登记数组");
     for (module, _) in CASES {
         let page =
             fs::read_to_string(repository_root().join(format!("docs/UseDocs/library/{module}.md")))
                 .expect("每库必须有教程");
         let page = page.replace("\r\n", "\n");
-        assert!(page.lines().any(|line| line == "status: planned"));
+        let id = format!("stdlib.{module}");
+        let status = modules
+            .iter()
+            .find(|entry| entry["id"].as_str() == Some(id.as_str()))
+            .and_then(|entry| entry["status"].as_str())
+            .expect("教程对应的模块状态");
+        assert!(matches!(
+            status,
+            "planned" | "draft" | "verified" | "deprecated"
+        ));
+        assert_eq!(tutorial_status(&page), Some(status), "{module} 状态漂移");
         let complete = page
             .split_once("<!-- b0-executable-example -->\n```xiao\n")
             .expect("完整示例标记")
@@ -153,6 +169,41 @@ fn b1_tutorials_embed_the_executed_sources() {
         .expect("完整示例源码");
         assert_eq!(complete, source, "{module} 教程与执行文件漂移");
     }
+}
+
+/// 只读取 front matter 的唯一状态，不让正文中的状态文字掩盖元数据不一致。
+fn tutorial_status(page: &str) -> Option<&str> {
+    let front_matter = page.strip_prefix("---\n")?.split_once("\n---\n")?.0;
+    let mut statuses = front_matter
+        .lines()
+        .filter_map(|line| line.strip_prefix("status: "));
+    let status = statuses.next()?.trim();
+    if statuses.next().is_some() {
+        return None;
+    }
+    Some(status)
+}
+
+#[test]
+/// 状态随登记从 planned 升为 verified 时不必改测试；正文和重复字段不能伪造状态。
+fn b1_tutorial_status_allows_verified_and_rejects_metadata_spoofing() {
+    assert_eq!(
+        tutorial_status("---\nstatus: planned\n---\n正文\n"),
+        Some("planned")
+    );
+    assert_eq!(
+        tutorial_status("---\nstatus: verified\n---\n正文\n"),
+        Some("verified")
+    );
+    assert_eq!(
+        tutorial_status("---\nstatus: planned\n---\nstatus: verified\n"),
+        Some("planned")
+    );
+    assert_eq!(
+        tutorial_status("---\nstatus: planned\nstatus: verified\n---\n"),
+        None
+    );
+    assert_eq!(tutorial_status("正文\nstatus: verified\n"), None);
 }
 
 /// 临时原生产物不落在源码树中；结束后只回收当前进程拥有的直接子目录。

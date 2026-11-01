@@ -4,6 +4,8 @@
 > 本轮只细化契约、同步 planned 教程、接入维护回归的精确探测；不写产品函数，不新增
 > intrinsic/ABI，不认领 19/11/22 发布债务。此前实测保留在 [B0](20o-b0-baseline-and-b1-draft.md)。
 > 本页是 B1 精确签名、错误表、资源限额与性能预算的唯一草案；教程引用本页，避免各写一套。
+> **联合冻结仍被 F1/F13 阻塞**：error_code 的全局位置/签名只是候选，读取通路不是纯 Xiao，
+> 可能需要另行冻结 intrinsic/ABI。七个库可用纯 Xiao 实现不代表共同前置已经具备；本页不生效。
 
 ## 一、已确认范围与待答细项
 
@@ -15,12 +17,16 @@
 - 默认与原生探测都接入维护回归独立精确执行，`--exact` 且断言恰好 `1 passed`；
 - 教程保持 planned，完整示例必须进 CI；没有对应提交的三平台证据不得 verified。
 
+P3 复核追加确认：**保留 64 KiB CSV 编码后预算，原始总量只是预检，按精确 E 校验；
+超限统一 CSV_LIMIT_EXCEEDED，无部分结果**。这是 §4.1 的 P3-1 裁定，不代表 F9 的其余
+字段数/单字段数值或其他库限额已经全部确认。
+
 下列 B1-F 编号是本页的**细项询问编号**，不重用 20O 的 D 编号。已向星崽逐项提交；未收到
 答复时只保留提案。选项确认只覆盖问题写明的边界，完整逐码表与实现可行性仍须审阅。
 
 | 编号 | 提交星崽的具体提案 | 状态 |
 | --- | --- | --- |
-| F1 | 全局 error_code(Error value, /) -> str，只读、不消费；error_cause 后置 | 已询问，待答 |
+| F1 | 候选为全局 error_code(Error value, /) -> str，只读、不消费；error_cause 后置 | 未答；联合冻结硬阻塞 |
 | F2 | math 的极值、非法区间、非负 gcd、0^0=1 与负指数拒绝 | 已询问，待答 |
 | F3 | hex 的 [int] 字节载体、大小写、严格解码与空输入 | 已询问，待答 |
 | F4 | 标准 Base64、强制补位、尾位规范、拒绝空白/URL-safe | 已询问，待答 |
@@ -28,17 +34,20 @@
 | F6 | CSV 无结束符、严格引号、BOM 原样、空记录/空字段数组区别 | 已询问，待答 |
 | F7 | fmt 码点宽度、负宽度拒绝、单码点填充、2～36 进制及最小 int | 已询问，待答 |
 | F8 | statistics 顺序累加、中间溢出即失败、输入只读 | 已询问，待答 |
-| F9 | 65,536 数组项、64 KiB 文本基准、CSV/FMT 专项限额 | 已询问，待答 |
+| F9 | 65,536 数组项、64 KiB 文本基准、CSV/FMT 专项限额 | P3-1 已确认 CSV 的 64 KiB/E 接纳条件；其余限额待答 |
 | F10 | 复杂度、翻倍比、VM/原生时间及增量内存目标 | 已询问，待答 |
-| F11 | 模块大写错误码、已有错误类别和检查顺序；逐码表待审 | 已询问，待答 |
+| F11 | 模块大写错误码、已有错误类别和检查顺序；逐码表待审 | P3-1 已确认 CSV_LIMIT_EXCEEDED 及预算顺序；其余待审 |
 | F12 | 必填/命名参数/只读规则，以及 URL 原文、CSV 空白与引号规则 | 已询问，待答 |
-| F13 | Error 作为规格参数类别；类型/VM/LLVM/Runtime 通路独立前置，若需 intrinsic/ABI 再审 | 已询问，待答 |
+| F13 | Error 作为规格参数类别；类型/VM/LLVM/Runtime 通路独立前置，若需 intrinsic/ABI 再审 | 未答且通路未冻结；联合冻结硬阻塞 |
 
-**§二～§七都是上述问题的具体候选文本，不因落盘或 CI 通过自动生效。**
+**除明记为已确认的 P3-1 外，§二～§七仍是具体候选文本，不因落盘或 CI 通过自动生效。**
 
 ## 二、error_code 的名称、位置与签名
 
 ### 2.1 公开契约提案（F1/F13）
+
+以下为**未获确认的候选 A**，并未把全局内建位置定为已冻结结果；是否采用以及实现通路，
+须等 F1/F13 的实际答复和前置契约。当前不能交给实现 Agent 按本节写产品。
 
 ```text
 error_code(Error value, /) -> str
@@ -46,7 +55,7 @@ error_code(Error value, /) -> str
 
 | 字段 | 精确提案 |
 | --- | --- |
-| 名称/位置 | 全局内建自由函数 `error_code`，无需 import；不新增 std.errors 模块或错误成员语法 |
+| 名称/位置候选 A | 全局内建自由函数 `error_code`，无需 import；该位置尚未确认，也没有注册为产品入口 |
 | 参数 | 恰好一个，仅位置参数；`Error` 表示现有可恢复错误对象类别及其可恢复子类，不是公开 dynamic 注解 |
 | 返回 | 有拥有权的不可变 str，逐字等于**传入对象**存储的 code；不返回 message/message_id/类别名称 |
 | 所有权 | 借读 value，不消费、不重新抛出；读取后原错误仍可比较身份、保存或重新抛出；结果不依赖 catch 绑定存活 |
@@ -227,7 +236,7 @@ KiB=1,024 字节。字符串大小均按 **UTF-8 字节数**，width 单独按�
 | url.encode_component | 最多 65,536 UTF-8 字节 | 最多 196,608 ASCII 字节 |
 | url.decode_component | 最多 196,608 UTF-8 字节 | 最多 65,536 UTF-8 字节 |
 | csv.parse_record | 整条记录最多 65,536 UTF-8 字节 | 最多 1,024 字段；每字段解码后最多 16,384 UTF-8 字节 |
-| csv.format_record | 1～1,024 字段，每字段最多 16,384 字节，字段字节总量最多 65,536 | 转义后的整条记录最多 65,536 字节，保证成功结果可重新解析 |
+| csv.format_record | 字段数/单字段候选上限为 1～1,024 / 16,384 字节；原始总量 S≤65,536 只是预检，按 §4.1 还须精确 E≤65,536 才满足编码预算 | **P3-1 已确认**编码后最多 65,536 字节；任何预算超限统一 CSV_LIMIT_EXCEEDED，无部分结果 |
 | fmt.pad_left/right | text 最多 65,536 UTF-8 字节；0<=width<=65,536；fill 一个码点 | 最多 262,144 UTF-8 字节 |
 | fmt.format_int | int 与 2～36 进制 | 最多 65 ASCII 字节 |
 | statistics 三项 | 最多 65,536 项 | 一个 int |
@@ -237,6 +246,49 @@ KiB=1,024 字节。字符串大小均按 **UTF-8 字节数**，width 单独按�
 不能调用已知会反复扫描的码点下标来“测量一次长度”。结果长度先用安全整数计算；乘加前做除法式
 上限判定，不能让预算运算先溢出。CSV 计数/转义后长度以及 Base64 的解码长度需独立检查。
 结果对外可见之前完成校验；私有暂存若失败须按原有清理机制释放。
+
+### 4.1 CSV 编码预算
+
+原表把原始字段总量≤65,536 与编码结果≤65,536 并列，却未写完整接纳条件，容易把预检
+通过误读为保证可格式化成功。双引号会双写，外引号和逗号也占字节；CR/LF 自身不双写，
+但会使该字段需要外引号。
+
+**P3-1 已由星崽直接确认：保留 64 KiB 编码后预算，显式校验精确 E。** 原始总量限制只是
+预检；它与 E 预算共同决定资源接纳条件，不承诺每个结构/类型合法且 S≤65,536 的输入都会成功。
+F9 的其余限额仍待审，F1/F13 等联合冻结阻塞继续保留。
+
+设 k 为字段数、S 为所有字段的 UTF-8 字节总量、Q 为双引号字符总数、W 为需要外引号的
+字段数（含逗号/双引号/CR/LF 的字段）。非空 fields 的精确编码长度：
+
+```text
+E = S + Q + 2*W + (k-1)
+```
+
+没有记录结束符或 BOM 的额外添加。按既有单字段与字段数提案，S=65,536、k=1,024 时，
+最坏 E=134,143；例如四个各含 16,384 个双引号的字段已经满足原始总量限制，但 E=131,083。
+因此 **S 上限不是完整的合法输入判据**。
+
+已确认的预算检查顺序：
+
+1. 共同类型检查优先；fields=[] 报 `CSV_EMPTY_FIELDS`；
+2. 字段数、单字段字节数、原始总量的预检超限报 `CSV_LIMIT_EXCEEDED`；
+3. 扫描统计 Q/W，在分配结果前用有界加法核对精确 E；E>65,536 也报 `CSV_LIMIT_EXCEEDED`；
+4. 全部通过才构造结果；输入不变，错误无部分输出。多个资源维度同时超限仍是同一 code，
+   不得按本地化文本区分超限身份。
+
+若类型、空字段数组与预算问题同时存在，按上述阶段确定身份。format_record 接受的字段
+本身就是文本数据，没有 CSV 引号语法错误；引号语法错误只属于 parse_record。保留 64 KiB
+预算的结果能进入当前同上限的 parse_record；在记录子集格式/其他限额都确认并满足时，才承诺
+往返。实施前补 E 恰好上限、上限+1、全引号、多换行和多字段向量，不把此次文档裁定冒充实现证据。
+
+按当前单字段候选阈值构造的预算验收例（只规定数学预期，产品尚未实现）：
+
+| 字段内容/长度 | S / Q / W / k | E | 编码预算预期 |
+| --- | --- | --- | --- |
+| 四个不需引号的字段，长度 16,384/16,384/16,384/16,381 | 65,533 / 0 / 0 / 4 | 65,536 | 预算通过 |
+| 上例末字段增加一个普通 ASCII 字符 | 65,534 / 0 / 0 / 4 | 65,537 | CSV_LIMIT_EXCEEDED |
+| 四个字段各含 16,384 个双引号 | 65,536 / 65,536 / 4 / 4 | 131,083 | CSV_LIMIT_EXCEEDED |
+| 四个字段各含 16,384 个 LF | 65,536 / 0 / 4 / 4 | 65,547 | CSV_LIMIT_EXCEEDED |
 
 ## 五、性能预算与测量协议（F10）
 
@@ -291,7 +343,7 @@ KiB=1,024 字节。字符串大小均按 **UTF-8 字节数**，width 单独按�
 | `URL_LIMIT_EXCEEDED` | ResourceError | 输入或输出 UTF-8/编码字节数超限 |
 | `CSV_INVALID_RECORD` | Error | 非法引号位置、未闭合引号、闭引号后多余文本、引号外 CR/LF |
 | `CSV_EMPTY_FIELDS` | Error | format_record 的 fields 为 [] |
-| `CSV_LIMIT_EXCEEDED` | ResourceError | 记录字节、字段数、字段字节或转义后结果超限 |
+| `CSV_LIMIT_EXCEEDED` | ResourceError | P3-1 已确认预算超限身份；记录字节、字段数、字段字节或精确编码结果超限；其余具体阈值按 F9 的确认状态 |
 | `FMT_INVALID_WIDTH` | Error | padding 的 width<0 |
 | `FMT_INVALID_FILL` | Error | padding 的 fill 不是一个 Unicode 码点 |
 | `FMT_INVALID_RADIX` | Error | format_int 的 radix 不在 2～36 |
@@ -330,7 +382,8 @@ KiB=1,024 字节。字符串大小均按 **UTF-8 字节数**，width 单独按�
 成功退出码/stdout/stderr、未捕获错误 code/类别/位置及清理证据分开登记。不能以同一算法的往返
 代替独立标准向量；不能因为源码含候选名就认定已测试。
 
-冻结生效需：本页细项得到确认、error_code 前置路径可审、完整候选探测/资源与性能证据齐备。
+冻结生效需：F1/F13 等细项得到确认、error_code 的类型/VM/LLVM/Runtime 读取通路与必要的
+intrinsic/ABI 契约完成单独评审、完整候选探测/资源与性能证据齐备。仅有纯 Xiao 七库探测或 CI 接线不足以解除阻塞。
 随后才写产品函数；实现后再验收公开导入、逐函数移除、真实归档重放与产品教程，不能要求先删掉
 一个尚不存在的产品函数来伪造“冻结前移除证据”。全部通过才能按 D-21 升级 verified。
 
@@ -345,15 +398,38 @@ KiB=1,024 字节。字符串大小均按 **UTF-8 字节数**，width 单独按�
 | 默认 workspace 作业 | `b1_capabilities_have_vm_golden_outputs`，目标 20o_b1_probe | 默认全量跳过该名字，再独立执行 --exact；恰好一条结果汇总、1 passed/0 failed/0 ignored |
 | Windows/Linux/macOS 原生作业 | `b1_capabilities_match_native_golden_outputs`，目标 20o_b1_probe | 三平台 ignored 批量均跳过该名字，再 --ignored --exact；同样校验恰好一条成功且未忽略 |
 
-教程一致性与四份既有边界夹具仍由默认 workspace 的其余三个测试执行。只修改
+教程一致性、状态迁移回归与四份既有边界夹具仍由默认 workspace 的其余测试执行。只修改
 `docs/UseDocs/library/**` 现在也触发 push/pull_request 维护回归；保留原有源码/夹具触发路径。
 未新增作业、未改变 runner、release 矩阵或既有并发/发布测试清单。
 
-### 8.2 结果登记
+计数守卫现已落在 [b1-probe-guards.ps1](../../tools/gates/b1-probe-guards.ps1)，由同一默认作业
+执行；该脚本改动也触发维护回归。它直接提取工作流的实际判断代码，不保留一份测试专用判断。
+运行方法见 [门禁 README](../../tools/gates/README.md)，脚本不依赖本机私有路径或 Python 包。
+
+```powershell
+# Linux/macOS：PowerShell 7 + PATH 中的 Bash
+pwsh -NoProfile -File tools/gates/b1-probe-guards.ps1
+# Windows：显式选择已安装的 MSYS Bash
+pwsh -NoProfile -File tools/gates/b1-probe-guards.ps1 -BashPath D:/msys64/usr/bin/bash.exe
+```
+
+可用 `-ReportPath <已有目录中的文件>` 输出含工作流 SHA-256、宿主版本和 28 个逐例结果的 JSON。
+计数脚本通过不等于其模拟的平台实际运行了产品；三平台运行号仍单独登记。
+
+### 8.2 教程状态测试的生命周期规则
+
+测试读取对应 `stdlib.<module>` 的 registry 状态，并要求教程 front matter 与之相同，
+不再固定要求 planned。planned→verified 只需按既有验收流程同步 registry/页面，测试代码
+无需为状态升级修改。另有 planned/verified、正文伪造状态及重复字段的回归。
+这只消除测试与合法升级的冲突，**不授权本批把教程升级为 verified**；三平台及产品证据仍是硬门槛。
+
+### 8.3 结果登记
 
 | 验证 | 本轮证据 |
 | --- | --- |
-| YAML、Shell 语法与精确计数负例 | 解析工作流并直接抽取 Bash/PowerShell 脚本验证；四条执行路径各七项，共 28/28 通过；零/多匹配、ignored、失败退出、伪绿色汇总、重复汇总均拒绝；Bash/PowerShell 语法通过 |
+| 9df91bb 的“28/28”历史声明 | 当时只有本机临时脚本/日志，没有入库的复跑入口；仅算本机记录，不作为远端或可交接证据 |
+| P3 后的可复跑计数守卫 | 仓库脚本已在本机复跑，四条路径各七项、28/28；[逐例本机报告](assets/20o-b1-p3/guards-windows.json) 绑定工作流/脚本摘要；只验证提取脚本语法和计数，不是 YAML 全量语义或真实三平台证据 |
+| P3 教程状态回归 | 20o_b1_probe 默认 5 passed、0 failed、1 ignored；含 planned→verified、正文/重复字段防伪与 registry 一致性；当前页面/registry 仍为 planned |
 | 默认 workspace（批量排除 VM 探测） | 本机 Windows 按 CI 同一命令运行：170 组，1520 passed、0 failed、49 ignored；日志 xiao-b1-default-workspace.log；不是 Linux runner 证据，原生 ignored 不计作执行 |
 | VM 精确探测 | 本机 Windows/MSYS 运行从工作流提取的 Bash 入口，七模块黄金通过；1 passed/0 failed/0 ignored，日志 xiao-b1-vm-exact.log |
 | Windows 原生精确探测 | 当前 Runtime release + vcvars64/显式 LLVM，执行从工作流提取的 PowerShell 入口；七项同源 VM/native 通过，1 passed/0 failed/0 ignored；日志 xiao-b1-native-exact.log |
@@ -361,6 +437,22 @@ KiB=1,024 字节。字符串大小均按 **UTF-8 字节数**，width 单独按�
 | docs/usedocs/layout、格式/Clippy/覆盖率/锁文件 | 全部通过；覆盖率 90.20%、公共 API 100%；workspace/benchmarks cargo check 通过，两个锁文件无差异；按 Git 必须经 cmd 的规则分项完成聚合门禁 |
 | 提交范围 | 仅维护回归、探测测试说明、文档与登记；没有修改产品函数、intrinsic、ABI 或 19/11/22 文档/发布债务 |
 | Linux/macOS 原生、远端三平台运行号 | **未取得**，不外推本地结果，不升级教程 |
+
+P3 的教程状态/文档门禁和守卫脚本结果在本轮提交前复核；此前 workspace 与原生日志保持
+其历史适用提交，不用新增状态回归之后的测试数回写历史。
+
+### 8.4 P3 复核对账
+
+| 反馈 | 本次处置 | 仍保留的限制 |
+| --- | --- | --- |
+| CSV 原始/编码上限矛盾 | P3-1 已确认原始预检加精确 E≤64 KiB；给出优先级和四组预算向量，统一超限 code | 文档裁定，尚无产品实现；其他 F9 数值继续待审 |
+| error_code 非纯 Xiao | 页首和 F1/F13 明记硬阻塞，全局内建位置仅为候选 A，前置须单独冻结 | F1/F13 未答，B1 联合冻结不生效，不写实现 |
+| 28/28 无复跑入口 | 仓库脚本、README、逐例本机报告均入库；维护回归配置执行并监视脚本路径 | 28/28 只证明模拟计数守卫；真实三平台与远端运行号未取得 |
+| 测试固定 planned | 改为与 registry 状态相同；添加 verified 与元数据防伪回归 | 当前教程仍为 planned；升级所需产品/三平台证据门槛未变 |
+| 20N 旧建议冲突 | 页首标历史背景并列出新旧裁定对照；20O 阅读清单和阶段索引同步 | 旧正文只保留研究语境，不再作为实施或重新询问已确认方向的依据 |
+
+本次本地验证：默认探测目标 5 passed/0 failed/1 ignored、计数守卫 28/28、工作流 YAML 与
+执行/触发路径、报告摘要匹配、fmt、全目标 Clippy、docs/usedocs/layout 均通过。
 
 ## 九、交接
 

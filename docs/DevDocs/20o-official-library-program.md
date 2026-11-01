@@ -236,7 +236,7 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | D-10 argv | 数组不含程序名，程序名另取；保留空参数，Windows 不二次拆引号；非法 Unicode 报错，不有损替换 | 精确入口/错误与平台测试 |
 | D-11 regex/compression | 成熟线性时间引擎；gzip/zlib 整块；输入/编译/输出/解压上限必备，流式后置 | B6 的依赖与具体限额 |
 | D-12 安全/HTTP/数据库 | 成熟依赖、TLS 默认校验、参数绑定、强制限额/超时、未经安全审阅不发布 | **明确延期**：算法、能力位、HTTP/1.1 子集、原生扩展契约分别在 B7/B8/B9 再逐项确认 |
-| D-23 CSV 形状 | 先交付 `parse_record`/`format_record` 记录子集；全文 CSV 和 `[[str]]` 后置 | [B1 §3.5](20o-b1-freeze-draft.md#35-csv两项已确认记录子集) 的严格行尾/BOM/空值提案待审 |
+| D-23 CSV 形状 | 记录子集，全文/嵌套签名后置；P3-1 确认保留 64 KiB 编码预算，原始总量仅预检，超限统一 CSV_LIMIT_EXCEEDED | [编码预算](20o-b1-freeze-draft.md#41-csv-编码预算) 已明确，严格行尾/BOM/空值及其余阈值待审 |
 | D-24 错误访问 | 先加自由函数 `error_code`（`error_cause` 按需），不开放 `error.code` 成员访问 | [B1 §二](20o-b1-freeze-draft.md#二error_code-的名称位置与签名) 写出位置/签名/错误表及现有 ABI 缺口，尚未实现 |
 | D-25 B1 冻结 | 七项一起冻结，CSV 用记录子集，错误访问作为共同前置 | [B1 草案](20o-b1-freeze-draft.md) 的 20 项签名、逐码错误、数值限额与性能预算待审 |
 | D-26 CI 证据 | 默认和原生探测都加维护回归精确执行点，断言恰好 1 passed | 已接默认与三平台原生精确入口；实际运行号按 [B1 §八](20o-b1-freeze-draft.md#八本轮-ci-接线与验证) 登记 |
@@ -255,7 +255,7 @@ B0 的探测边界见 [20O-B0](20o-b0-baseline-and-b1-draft.md)；当前只推�
 4. [20C. 官方库冻结](20c-official-xiao-library.md) §3.2.1/§3.4.1；
 5. [20D-冻结. 能力与资源](20d-freeze-resource-contract.md) §2.7；
 6. [20M. 最近的完整批次](20m-text-and-path-expansion.md)：探测→冻结→实现→三平台证据的模板；
-7. [20N. 扩展路线草案](20n-standard-library-expansion-roadmap.md)；
+7. [20N. 历史路线背景](20n-standard-library-expansion-roadmap.md)：仅背景，先读页首裁定对照，不能据正文旧建议实施或重问已确认方向；
 8. [02. 类型系统](02-type-system.md) 数值章节、[03. 容器](03-collections.md)、
    [22. 并发](22-concurrency-execution-and-shared-handles.md)；
 9. `docs/DevDocs/README.md`、`docs/module-registry.json`、`docs/UseDocs/library/`。
