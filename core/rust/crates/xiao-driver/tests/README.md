@@ -2,7 +2,7 @@
 
 本目录覆盖 08-U0 统一前端入口，以及 09-B0-C/D 前端到生产 VM 驱动器、退出码和 X0-A 协议的公共契约。
 
-`20o_b1_probe.rs` 只做官方库 B0 探测：读取 `tests/fixtures/docs/` 的七份完整源码，
+`20o_b1_probe.rs` 执行 B0 七份完整示例与 `tests/fixtures/20o-b1/fix-a` 七项新边界，
 VM/native 各自逐字核对黄金输出，检查 planned 教程与执行文件一致；另存 CSV 嵌套签名和
 错误字段读取的真实边界。D-26 后默认与三平台原生各有独立 --exact 执行点，校验恰好
 一项通过，批量命令排除对应名字。探测不注册官方模块、不改 ABI。
@@ -11,6 +11,11 @@ VM/native 各自逐字核对黄金输出，检查 planned 教程与执行文件�
 范围、计数与逐平台证据见
 [20O-B1](../../../../../docs/DevDocs/20o-b1-freeze-draft.md)，历史结果见
 [20O-B0](../../../../../docs/DevDocs/20o-b0-baseline-and-b1-draft.md)。
+
+FIX-A 极值/字节/模式尾位/UTF-8/CSV 预算/MIN 全进制/统计溢出使用独立固定黄金，
+同名精确目标各包含 14 场景，仍各一条 Rust 测试。新增组 60 秒看门狗不是产品性能预算；
+CSV 大规模向量只证明 E 算术，初版全量扫描超时与未覆盖性能见
+[FIX-A 收口](../../../../../docs/DevDocs/20o-b1-fix-a-contract-closeout.md)。
 
 `22e_release.rs` 直接读取权威并发 UseDocs 的五个示例，覆盖 17 个入口；验证三类产物
 的最小位集、旧/新 Runtime 兼容和 32 位拒绝。三平台精确执行公开 NativeBuild、实际

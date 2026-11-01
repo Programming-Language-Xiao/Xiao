@@ -7,7 +7,7 @@
 
 ## B1 教程草案
 
-以下模块均为 `planned`，只有 B0 的完整能力探测，尚不可作为官方库导入。每页含候选 API、
+以下模块均为 `planned`，有 B0 与 FIX-A 的能力/边界探测，尚不可作为官方库导入。每页含已确认 API 契约、
 错误/资源边界和被测试的完整示例；通过探测不等于模块已完成。
 
 - [math：整数计算](math.md)
@@ -20,7 +20,8 @@
 
 基线与历史探测见 [B0](../../DevDocs/20o-b0-baseline-and-b1-draft.md)；
 精确签名、错误表、资源/性能预算和两个 CI 精确执行点见 [B1 冻结草案](../../DevDocs/20o-b1-freeze-draft.md)。
-其中 CSV 记录子集、七项一起冻结、自由函数 error_code 方向已确认；细项按 B1-F 的答复状态评审。
+F1～F13 与内联导出策略已逐条确认；Base64 标准/URL-safe 模式参数必填。error_code 独立前置
+规划为 intrinsic 32 / ABI 1.18，当前仍未实现；边界与证据见 [FIX-A](../../DevDocs/20o-b1-fix-a-contract-closeout.md)。
 
 ## 首批模块
 

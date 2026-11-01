@@ -1,0 +1,81 @@
+# FIX-A 极值探测；局部 probe 函数不注册为标准库接口。
+def probe_gcd(int left, int right) -> int
+    if left > 0
+        left = -left
+    if right > 0
+        right = -right
+    while right != 0
+        if right == -1
+            return 1
+        remainder = left % right
+        left = right
+        right = remainder
+    return -left
+
+def probe_pow(int base, int exponent) -> int
+    if exponent < 0
+        raise Error(code = "MATH_NEGATIVE_EXPONENT")
+    result = 1
+    factor = base
+    remaining = exponent
+    while remaining > 0
+        if remaining % 2 == 1
+            result = result * factor
+        remaining = remaining // 2
+        if remaining > 0
+            factor = factor * factor
+    return result
+
+def probe_abs(int value) -> int
+    if value < 0
+        return -value
+    return value
+
+def probe_clamp(int value, int lower, int upper) -> int
+    if lower > upper
+        raise Error(code = "MATH_INVALID_BOUNDS")
+    if value < lower
+        return lower
+    if value > upper
+        return upper
+    return value
+
+minimum = -9223372036854775807 - 1
+maximum = 9223372036854775807
+print(probe_gcd(minimum, 2))
+print(probe_gcd(minimum, -1))
+print(probe_gcd(0, 0))
+print(probe_gcd(54, -24))
+try
+    print(probe_gcd(minimum, 0))
+catch gcd_zero as Error
+    print("caught-gcd-unrepresentable")
+try
+    print(probe_gcd(minimum, minimum))
+catch gcd_both as Error
+    print("caught-gcd-both-min")
+print(probe_pow(minimum, 1))
+print(probe_pow(0, 0))
+print(probe_pow(0, maximum))
+print(probe_pow(1, maximum))
+print(probe_pow(-1, maximum))
+print(probe_pow(2, 62))
+try
+    print(probe_pow(2, 63))
+catch power_overflow as Error
+    print("caught-power-overflow")
+try
+    print(probe_pow(2, -1))
+catch negative_exponent as Error
+    print("caught-negative-exponent")
+try
+    print(probe_abs(minimum))
+catch absolute_overflow as Error
+    print("caught-absolute-overflow")
+print(probe_abs(maximum))
+print(probe_clamp(minimum, minimum, maximum))
+print(probe_clamp(0, maximum, maximum))
+try
+    print(probe_clamp(0, 1, -1))
+catch invalid_bounds as Error
+    print("caught-invalid-bounds")

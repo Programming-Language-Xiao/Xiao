@@ -11,8 +11,9 @@
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见
 > [20O-B0](20o-b0-baseline-and-b1-draft.md)。
-> B1 的精确候选契约集中于 [20O-B1 冻结草案](20o-b1-freeze-draft.md)：20 个库入口、error_code
-> 前置、错误表、资源/性能预算及维护回归精确执行点。细项待星崽审阅，产品实现仍未开始。
+> B1 的 [精确契约](20o-b1-freeze-draft.md) 已在本轮 FIX-A 逐条确认：20 个库入口、error_code
+> 前置、错误/资源/性能目标与内联策略。Base64 首批含必填 url_safe，error_code 独立前置规划为
+> intrinsic 32 / ABI 1.18；当前代码仍为 1.17。新增探测与下一批交接见 [FIX-A](20o-b1-fix-a-contract-closeout.md)。
 
 ## 一、工程目标与边界
 
@@ -236,14 +237,14 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | D-10 argv | 数组不含程序名，程序名另取；保留空参数，Windows 不二次拆引号；非法 Unicode 报错，不有损替换 | 精确入口/错误与平台测试 |
 | D-11 regex/compression | 成熟线性时间引擎；gzip/zlib 整块；输入/编译/输出/解压上限必备，流式后置 | B6 的依赖与具体限额 |
 | D-12 安全/HTTP/数据库 | 成熟依赖、TLS 默认校验、参数绑定、强制限额/超时、未经安全审阅不发布 | **明确延期**：算法、能力位、HTTP/1.1 子集、原生扩展契约分别在 B7/B8/B9 再逐项确认 |
-| D-23 CSV 形状 | 记录子集，全文/嵌套签名后置；P3-1 确认保留 64 KiB 编码预算，原始总量仅预检，超限统一 CSV_LIMIT_EXCEEDED | [编码预算](20o-b1-freeze-draft.md#41-csv-编码预算) 已明确，严格行尾/BOM/空值及其余阈值待审 |
-| D-24 错误访问 | 先加自由函数 `error_code`（`error_cause` 按需），不开放 `error.code` 成员访问 | [B1 §二](20o-b1-freeze-draft.md#二error_code-的名称位置与签名) 写出位置/签名/错误表及现有 ABI 缺口，尚未实现 |
-| D-25 B1 冻结 | 七项一起冻结，CSV 用记录子集，错误访问作为共同前置 | [B1 草案](20o-b1-freeze-draft.md) 的 20 项签名、逐码错误、数值限额与性能预算待审 |
+| D-23 CSV 形状 | 记录子集，全文/嵌套签名后置；64 KiB/E 预算及严格行尾/BOM/空值/阈值已在 P3-1/F6/F9 确认 | [编码预算](20o-b1-freeze-draft.md#41-csv-编码预算)；实现/性能仍须验证 |
+| D-24 错误访问 | F1/F13 选择全局 error_code；intrinsic 32 / ABI 1.18 的只读视图后复制，不开放成员语法 | [B1 §二](20o-b1-freeze-draft.md#二error_code-的名称位置与签名) 已冻结；独立 FIX-B 仍未实现 |
+| D-25 B1 冻结 | 20 项签名、错误表、限额、性能验收目标与内联导出策略已逐条确认 | [FIX-A](20o-b1-fix-a-contract-closeout.md) 本地边界取证；真实前置/产品/新增三平台另行验收 |
 | D-26 CI 证据 | 默认和原生探测都加维护回归精确执行点，断言恰好 1 passed | 已接默认与三平台原生精确入口；实际运行号按 [B1 §八](20o-b1-freeze-draft.md#八本轮-ci-接线与验证) 登记 |
 
 D-13～D-22 的本次答复见 [20P §六](20p-day1-library-architecture.md#六架构决策)。
 B0 的探测边界见 [20O-B0](20o-b0-baseline-and-b1-draft.md)；当前只推进
-[B1 精确草案与 CI](20o-b1-freeze-draft.md)，仍不写产品函数或新增 intrinsic/ABI。
+[B1-FIX-A 契约收口](20o-b1-fix-a-contract-closeout.md)，本批不写产品函数或新增运行时 intrinsic/ABI。
 
 ## 六、新 Agent 交接（无上下文必读）
 

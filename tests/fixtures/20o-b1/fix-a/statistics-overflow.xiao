@@ -1,0 +1,21 @@
+# 验证按顺序累加的中间溢出，以及失败后输入别名不变。
+def probe_sum([int] values) -> int
+    total = 0
+    for value in values
+        total = total + value
+    return total
+
+maximum = 9223372036854775807
+minimum = -9223372036854775807 - 1
+values = [maximum, 1, -1]
+alias = values
+try
+    print(probe_sum(values))
+catch intermediate as Error
+    print("caught-intermediate-overflow")
+print(alias[0])
+print(alias[1])
+print(alias[2])
+print(probe_sum([maximum, -1, 1]))
+print(probe_sum([minimum, 1, -1]))
+print(probe_sum([]))

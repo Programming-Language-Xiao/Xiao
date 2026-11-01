@@ -1,0 +1,35 @@
+# 探测所有进制的 MIN 格式化，避免先对 MIN 取正绝对值。
+def probe_radix(int value, int radix) -> str
+    if radix < 2 or radix > 36
+        raise Error(code = "FMT_INVALID_RADIX")
+    if value == 0
+        return "0"
+    remaining = value
+    if remaining > 0
+        remaining = -remaining
+    digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+    result = ""
+    while remaining < 0
+        magnitude_minus_one = -(remaining + 1)
+        quotient = magnitude_minus_one // radix
+        digit = magnitude_minus_one % radix + 1
+        if digit == radix
+            digit = 0
+            quotient = quotient + 1
+        result = digits[digit] + result
+        remaining = -quotient
+    if value < 0
+        return "-" + result
+    return result
+
+minimum = -9223372036854775807 - 1
+base = 2
+while base <= 36
+    print(probe_radix(minimum, base))
+    base = base + 1
+print(probe_radix(0, 2))
+print(probe_radix(35, 36))
+try
+    print(probe_radix(0, 1))
+catch invalid_radix as Error
+    print("caught-invalid-radix")

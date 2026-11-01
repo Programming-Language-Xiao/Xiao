@@ -1,0 +1,73 @@
+# 短记录扫描与精确 E 算术边界分开；不把大数值预算探测称为全量扫描性能证据。
+from stdlib.text import repeat, length
+
+def probe_encoded_size([str] fields) -> int
+    count = 0
+    source = 0
+    quotes = 0
+    wrapped = 0
+    non_ascii = chr(128)
+    for field in fields
+        count = count + 1
+        needs_quotes = false
+        for character in field
+            width = 1
+            if character >= non_ascii
+                scalar = int(character)
+                if scalar < 2048
+                    width = 2
+                else
+                    if scalar < 65536
+                        width = 3
+                    else
+                        width = 4
+            source = source + width
+            if character == "\""
+                quotes = quotes + 1
+            if character == "," or character == "\"" or character == "\r" or character == "\n"
+                needs_quotes = true
+        if needs_quotes
+            wrapped = wrapped + 1
+    if count == 0
+        raise Error(code = "CSV_EMPTY_FIELDS")
+    return source + quotes + 2 * wrapped + count - 1
+
+def probe_accepted(int encoded) -> bool
+    if encoded > 65536
+        raise ResourceError(code = "CSV_LIMIT_EXCEEDED")
+    return true
+
+def probe_budget(int source, int quotes, int wrapped, int fields) -> int
+    return source + quotes + 2 * wrapped + fields - 1
+
+plain = repeat("a", 16384)
+chunk_size = length(plain)
+print(chunk_size)
+at_limit = probe_budget(3 * chunk_size + 16381, 0, 0, 4)
+print(at_limit)
+print(probe_accepted(at_limit))
+too_large = probe_budget(3 * chunk_size + 16382, 0, 0, 4)
+print(too_large)
+try
+    print(probe_accepted(too_large))
+catch expanded as ResourceError
+    print("caught-csv-limit")
+all_quotes = probe_budget(4 * chunk_size, 4 * chunk_size, 4, 4)
+print(all_quotes)
+try
+    print(probe_accepted(all_quotes))
+catch quoted_limit as ResourceError
+    print("caught-quote-expansion")
+newlines = probe_budget(4 * chunk_size, 0, 4, 4)
+print(newlines)
+try
+    print(probe_accepted(newlines))
+catch newline_limit as ResourceError
+    print("caught-newline-expansion")
+print(probe_encoded_size(["雪😀", "a,b"]))
+print(probe_encoded_size(["\"", "\r\n"]))
+print(probe_encoded_size([""]))
+try
+    print(probe_encoded_size([]))
+catch no_fields as Error
+    print("caught-empty-fields")

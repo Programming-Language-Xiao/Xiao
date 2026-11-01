@@ -1,4 +1,4 @@
-//! 20O-B0 的 B1 能力探测；只执行夹具，不注册或实现任何官方库接口。
+//! 20O-B0 与 B1-FIX-A 能力/边界探测；不注册或实现官方库接口。
 
 use std::fs;
 use std::io::Read;
@@ -43,6 +43,17 @@ const CASES: [(&str, &str); 7] = [
     ),
 ];
 
+/// FIX-A 单独保存独立黄金，不能用旧七项探测替代这些边界。
+const FIX_A_CASES: [&str; 7] = [
+    "math-extremes",
+    "hex-all-bytes",
+    "base64-tail-bits",
+    "utf8-boundaries",
+    "csv-budget",
+    "fmt-int-min",
+    "statistics-overflow",
+];
+
 /// 依据 crate 固定位置找到仓库，保留真实源码路径及官方导入环境。
 fn repository_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -57,11 +68,42 @@ fn fixture_request(module: &str) -> FrontendRequest {
     FrontendRequest::from_text_at(fs::read_to_string(&path).expect("读取完整示例"), path)
 }
 
+/// 加载真实边界源码和独立固定输出；黄金项缺失或多出都会失败。
+fn fix_a_cases() -> Vec<(&'static str, FrontendRequest, String)> {
+    let root = repository_root().join("tests/fixtures/20o-b1/fix-a");
+    let golden: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(root.join("golden.json")).expect("读取 FIX-A 黄金"),
+    )
+    .expect("FIX-A 黄金 JSON");
+    let entries = golden["cases"].as_object().expect("FIX-A 黄金条目");
+    assert_eq!(entries.len(), FIX_A_CASES.len(), "FIX-A 源码与黄金数量");
+    FIX_A_CASES
+        .iter()
+        .map(|&id| {
+            let path = root.join(format!("{id}.xiao"));
+            let request = FrontendRequest::from_text_at(
+                fs::read_to_string(&path).expect("读取 FIX-A 真实源码"),
+                path,
+            );
+            let expected = entries[id]["stdout"]
+                .as_str()
+                .expect("FIX-A 完整黄金 stdout")
+                .to_owned();
+            (id, request, expected)
+        })
+        .collect()
+}
+
 /// VM 必须成功退出，并逐字满足独立黄金值；超时属于失败。
-fn assert_vm(request: &FrontendRequest, artifact: &FrontendArtifact, expected: &str) {
+fn assert_vm(
+    request: &FrontendRequest,
+    artifact: &FrontendArtifact,
+    expected: &str,
+    timeout: Duration,
+) {
     let outcome = FrontendVmDriver::new().run_artifact(
         artifact,
-        &DriverRequest::new(request.clone()).with_timeout(Duration::from_secs(10)),
+        &DriverRequest::new(request.clone()).with_timeout(timeout),
     );
     assert_eq!(outcome.exit_code().as_process_code(), 0, "{outcome:?}");
     let stdout: String = outcome
@@ -78,15 +120,22 @@ fn assert_vm(request: &FrontendRequest, artifact: &FrontendArtifact, expected: &
 }
 
 #[test]
-/// 七项真实源码均通过完整前端和生产 VM，不能将编译成功当作执行成功。
+/// 原七项与 FIX-A 七项真实源码均经完整前端/生产 VM，不把编译成功当执行成功。
 fn b1_capabilities_have_vm_golden_outputs() {
     for (module, expected) in CASES {
         let request = fixture_request(module);
         let artifact = FrontendCompiler::new()
             .compile(&request)
             .unwrap_or_else(|error| panic!("{module}: {error:?}"));
-        assert_vm(&request, &artifact, expected);
+        assert_vm(&request, &artifact, expected, Duration::from_secs(10));
         println!("20O-B0-PROBE module={module} backend=vm result=success");
+    }
+    for (id, request, expected) in fix_a_cases() {
+        let artifact = FrontendCompiler::new()
+            .compile(&request)
+            .unwrap_or_else(|error| panic!("FIX-A {id}: {error:?}"));
+        assert_vm(&request, &artifact, &expected, Duration::from_secs(60));
+        println!("20O-B1-FIX-A-PROBE case={id} backend=vm result=success");
     }
 }
 
@@ -256,8 +305,8 @@ fn native_toolchain() -> (TargetDescription, Toolchain) {
     (target, toolchain)
 }
 
-/// 同时读取输出管道，原生进程超过十秒即终止并回收，不静默挂起 CI。
-fn native_output(executable: &Path) -> Output {
+/// 同时读取输出管道，按调用方显式时限终止并回收，避免静默挂起 CI。
+fn native_output(executable: &Path, timeout: Duration) -> Output {
     let mut child = Command::new(executable)
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -272,7 +321,7 @@ fn native_output(executable: &Path) -> Output {
     };
     let stdout = read(Box::new(child.stdout.take().expect("stdout")));
     let stderr = read(Box::new(child.stderr.take().expect("stderr")));
-    let deadline = Instant::now() + Duration::from_secs(10);
+    let deadline = Instant::now() + timeout;
     let mut timed_out = false;
     while child.try_wait().expect("轮询原生进程").is_none() {
         if Instant::now() >= deadline {
@@ -293,7 +342,7 @@ fn native_output(executable: &Path) -> Output {
 
 #[test]
 #[ignore = "需要显式 LLVM/MSVC 或平台链接器、Runtime staticlib；维护回归三平台精确执行并校验一项通过"]
-/// 七项同源 IR 在 VM/native 分别匹配独立黄金值，原生退出零且 stderr 为空。
+/// 原七项与 FIX-A 七项同源 IR 分别匹配 VM/native 黄金，原生退出零且 stderr 为空。
 fn b1_capabilities_match_native_golden_outputs() {
     let (target, toolchain) = native_toolchain();
     let root = ProbeDirectory::new();
@@ -302,7 +351,7 @@ fn b1_capabilities_match_native_golden_outputs() {
         let artifact = FrontendCompiler::new()
             .compile(&request)
             .unwrap_or_else(|error| panic!("{module}: {error:?}"));
-        assert_vm(&request, &artifact, expected);
+        assert_vm(&request, &artifact, expected, Duration::from_secs(10));
         let executable = root
             .0
             .join(format!("{module}{}", std::env::consts::EXE_SUFFIX));
@@ -310,10 +359,32 @@ fn b1_capabilities_match_native_golden_outputs() {
         let native = FrontendNativeDriver::new()
             .build_artifact(&artifact, &build)
             .unwrap_or_else(|error| panic!("{module} 原生构建：{error}"));
-        let output = native_output(&native.native.executable);
+        let output = native_output(&native.native.executable, Duration::from_secs(10));
         assert_eq!(output.status.code(), Some(0), "{module}: {output:?}");
         assert_eq!(output.stdout, expected.as_bytes(), "{module} 原生黄金输出");
         assert!(output.stderr.is_empty(), "{module}: {output:?}");
         println!("20O-B0-PROBE module={module} backend=vm/native result=success");
+    }
+    for (id, request, expected) in fix_a_cases() {
+        let artifact = FrontendCompiler::new()
+            .compile(&request)
+            .unwrap_or_else(|error| panic!("FIX-A {id}: {error:?}"));
+        assert_vm(&request, &artifact, &expected, Duration::from_secs(60));
+        let executable = root
+            .0
+            .join(format!("fix-a-{id}{}", std::env::consts::EXE_SUFFIX));
+        let build = NativeBuildRequest::new(request, target.clone(), toolchain.clone(), executable);
+        let native = FrontendNativeDriver::new()
+            .build_artifact(&artifact, &build)
+            .unwrap_or_else(|error| panic!("FIX-A {id} 原生构建：{error}"));
+        let output = native_output(&native.native.executable, Duration::from_secs(60));
+        assert_eq!(output.status.code(), Some(0), "FIX-A {id}: {output:?}");
+        assert_eq!(
+            output.stdout,
+            expected.as_bytes(),
+            "FIX-A {id} 原生黄金输出"
+        );
+        assert!(output.stderr.is_empty(), "FIX-A {id}: {output:?}");
+        println!("20O-B1-FIX-A-PROBE case={id} backend=vm/native result=success");
     }
 }

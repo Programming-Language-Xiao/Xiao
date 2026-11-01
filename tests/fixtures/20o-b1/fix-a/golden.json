@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "reference": "独立固定黄金：整数/进制采用宿主精确整数格式；UTF-8 为 Unicode 临界码点与手工非法字节；Base64 包含标准/URL-safe 固定向量；CSV 为已确认 E 预算。生成后固定保存，不由 Xiao 探测结果更新。 CSV 大规模边界为计数驱动的 E 算术判定，另测短记录 UTF-8/转义扫描；不代表全量 CSV 性能。",
+  "cases": {
+    "math-extremes": {
+      "stdout": "2\n1\n0\n6\ncaught-gcd-unrepresentable\ncaught-gcd-both-min\n-9223372036854775808\n1\n0\n1\n-1\n4611686018427387904\ncaught-power-overflow\ncaught-negative-exponent\ncaught-absolute-overflow\n9223372036854775807\n-9223372036854775808\n9223372036854775807\ncaught-invalid-bounds\n"
+    },
+    "hex-all-bytes": {
+      "stdout": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff\n32640\n255\ncaught-odd-length\ncaught-invalid-character\ncaught-invalid-byte\n"
+    },
+    "base64-tail-bits": {
+      "stdout": "true\nfalse\ntrue\nfalse\ntrue\nfalse\nfalse\nfalse\ntrue\ntrue\ntrue\nfalse\nfalse\nfalse\nfalse\nfalse\nfalse\n++//\n--__\n"
+    },
+    "utf8-boundaries": {
+      "stdout": "0\n65\n127\n128\n2047\n2048\n55295\n57344\n65535\n65536\n1114111\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\ntrue\n233\n170\ncaught-invalid-escape\ncaught-short-escape\n"
+    },
+    "csv-budget": {
+      "stdout": "16384\n65536\ntrue\n65537\ncaught-csv-limit\n131083\ncaught-quote-expansion\n65547\ncaught-newline-expansion\n13\n9\n0\ncaught-empty-fields\n"
+    },
+    "fmt-int-min": {
+      "stdout": "-1000000000000000000000000000000000000000000000000000000000000000\n-2021110011022210012102010021220101220222\n-20000000000000000000000000000000\n-1104332401304422434310311213\n-1540241003031030222122212\n-22341010611245052052301\n-1000000000000000000000\n-67404283172107811828\n-9223372036854775808\n-1728002635214590698\n-41a792678515120368\n-10b269549075433c38\n-4340724c6c71dc7a8\n-160e2ad3246366808\n-8000000000000000\n-33d3d8307b214009\n-16agh595df825fa8\n-ba643dci0ffeehi\n-5cbfjia3fh26ja8\n-2heiciiie82dh98\n-1adaibb21dckfa8\n-i6k448cf4192c3\n-acd772jnc9l0l8\n-64ie1focnn5g78\n-3igoecjbmca688\n-27c48l5b37oaoq\n-1bk39f3ah3dmq8\n-q1se8f0m04isc\n-hajppbc1fc208\n-bm03i95hia438\n-8000000000000\n-5hg4ck9jd4u38\n-3tdtk1v8j6tpq\n-2pijmikexrxp8\n-1y2p0ij32e8e8\n0\nz\ncaught-invalid-radix\n"
+    },
+    "statistics-overflow": {
+      "stdout": "caught-intermediate-overflow\n9223372036854775807\n1\n-1\n9223372036854775807\n-9223372036854775808\n0\n"
+    }
+  }
+}
