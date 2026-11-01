@@ -309,7 +309,7 @@ intrinsic 数量持续增长，应先检查语言表达能力、优化器和 Run
 | **20O-B1 冻结契约** | 本轮 F1～F13/E-2 逐条确认 | 20 项入口/错误/限额/性能目标；Base64 必填模式；intrinsic 32 / ABI 1.18 的全局 error_code | 契约已确认且独立前置已验收，纯库产品未实现；见 [20O-B1](20o-b1-freeze-draft.md) |
 | **20O-B1-FIX-A 收口** | 4d34767；只做文档/探测 | 全部裁定、helper 内联、七项新增边界与独立黄金；共 14 场景 | 维护回归 41285853958 / gates 41285853953 全绿；FIX-B 另批交付，七库/完整性能待验收；见 [FIX-A](20o-b1-fix-a-contract-closeout.md) |
 | **20O-B1-FIX-B** | a91c15d 开工基线；d762ceec 取证 | intrinsic 32、ABI 1.18、C getter、VM/LLVM、版本拒绝与三路径清理 | 41310926623 / 41310926525 全绿；见 [规划](20o-b1-fix-b-implementation-plan.md) / [实现与证据](20o-b1-fix-b-closeout.md) |
-| **20O-B1-IMP 实现规划** | FIX-A 与 FIX-B 已收口 | 纯库真实导出、资源/性能、归档及教程证据 | 七库未实现；见 [20O-B1-IMP](20o-b1-implementation-plan.md) |
+| **20O-B1-IMP 实现规划** | FIX-A 与 FIX-B 已收口 | 纯库真实导出、资源/性能、归档及教程证据 | 七库未实现；见 [20O-B1-IMP](20o-b1-implementation-plan.md) / [产品实现细则](20o-b1-imp-seven-libraries.md) |
 | **20P Day-1 库架构** | 20O；架构研究批 | 模块/错误/并发/能力/发布约定、教程/示例、数据库驱动架构；D-13～D-22 方向逐条确认 | 独立数据库能力位、首批有界连接池、教程硬门槛；具体契约仍待对应批次冻结；见 [20P](20p-day1-library-architecture.md) |
 
 20A 的契约设计可以现在开始，但只有当它改变 09R3 的机型、调用 ABI、编码或源码映射
