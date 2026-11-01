@@ -202,6 +202,15 @@ jobs:
           }
           cargo test --manifest-path core/rust/Cargo.toml -p xiao-runtime -p xiao-runtime-abi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # B1 在同一作业内先取精确证据；后续既有门禁继续按原断言执行。
+          $b1Output = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- --ignored b1_capabilities_match_native_golden_outputs --exact --nocapture 2>&1
+          $b1Exit = $LASTEXITCODE
+          $b1Output | ForEach-Object { Write-Output $_ }
+          if ($b1Exit -ne 0) { exit $b1Exit }
+          $b1Summaries = @($b1Output | Where-Object { $_ -match '^test result:' })
+          if ($b1Summaries.Count -ne 1 -or $b1Summaries[0] -notmatch '^test result: ok\. 1 passed; 0 failed; 0 ignored;') {
+            throw 'B1 native probe must pass exactly one case without ignoring it'
+          }
           # Windows runner 没有交互式终端，窗口握手和调试执行仅在 Linux/Xvfb 作业运行。
           # DNS 依赖和平台异常子进程由父用例驱动，两个平台都排除子测试本身。
           cargo test --manifest-path core/rust/Cargo.toml --workspace --no-fail-fast -- --ignored --nocapture `
@@ -243,14 +252,6 @@ jobs:
             if (($textPathOutput | Out-String) -notmatch 'test result: ok\. 1 passed; 0 failed;') {
               throw "20M native test must execute exactly once: $testName"
             }
-          }
-          $b1Output = cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- --ignored b1_capabilities_match_native_golden_outputs --exact --nocapture 2>&1
-          $b1Exit = $LASTEXITCODE
-          $b1Output | ForEach-Object { Write-Output $_ }
-          if ($b1Exit -ne 0) { exit $b1Exit }
-          $b1Summaries = @($b1Output | Where-Object { $_ -match '^test result:' })
-          if ($b1Summaries.Count -ne 1 -or $b1Summaries[0] -notmatch '^test result: ok\. 1 passed; 0 failed; 0 ignored;') {
-            throw 'B1 native probe must pass exactly one case without ignoring it'
           }
           exit $LASTEXITCODE
 

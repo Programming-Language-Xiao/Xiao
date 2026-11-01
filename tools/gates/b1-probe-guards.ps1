@@ -83,7 +83,8 @@ if ($default -notmatch '-- b1_capabilities_have_vm_golden_outputs --exact --noca
     throw '默认入口缺少目标或 --exact。'
 }
 $windows = Get-WorkflowScript 'Build runtime and run native gates'
-$windowsMatch = [regex]::Match($windows, '(?ms)^\$b1Output = cargo test.*?(?=^exit \$LASTEXITCODE\s*$)')
+# 只提取 B1 自身的校验块，位置提前后也不能把后续其它门禁当成计数守卫运行。
+$windowsMatch = [regex]::Match($windows, '(?ms)^\$b1Output = cargo test.*?^\}')
 if (-not $windowsMatch.Success -or $windowsMatch.Value -notmatch '--ignored b1_capabilities_match_native_golden_outputs --exact --nocapture') {
     throw 'Windows 精确入口缺失或边界改变。'
 }
