@@ -19,7 +19,10 @@ $workflowLines = $workflow.Split([char]10)
 
 if (-not $BashPath) {
     if ($IsWindows) { throw 'Windows 请用 -BashPath 显式指定 MSYS Bash，避免误选 WSL。' }
-    $BashPath = (Get-Command bash -CommandType Application -ErrorAction Stop).Source
+    $BashPath = (
+        Get-Command bash -CommandType Application -ErrorAction Stop |
+        Select-Object -First 1
+    ).Source
 }
 $BashPath = (Get-Item -LiteralPath $BashPath -ErrorAction Stop).FullName
 $pwshPath = Join-Path $PSHOME ('pwsh' + $(if ($IsWindows) { '.exe' } else { '' }))

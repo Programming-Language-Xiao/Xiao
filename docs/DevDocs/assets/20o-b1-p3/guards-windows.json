@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "workflow": ".github/workflows/maintenance-regression.yml",
   "workflowSha256": "6ea6e37e8c876aecbea1eb49a2ca37a040781366da36e087ce2cf118d9b6fe47",
-  "scriptSha256": "0e321cbe4cccd0a2e9af16e37ccd2374808d557e4429176c841d6d32284bdc4c",
+  "scriptSha256": "a71a30b0e807bc1ea2e658e543f4b771eedb98717895c67b215a5b3cfdbef785",
   "scope": "simulated-cargo-output",
   "hostOS": "Microsoft Windows 10.0.26200",
   "powershell": "7.6.6",
