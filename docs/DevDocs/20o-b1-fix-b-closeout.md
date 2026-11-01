@@ -1,6 +1,7 @@
 # 20O-B1-FIX-B. `error_code` 实现与证据
 
-> 状态：实现与完整本地门禁已完成，远端三平台取证进行中。
+> 状态：实现、本地门禁与三平台取证完成。提交 d762ceec 的维护回归 41310926623、
+> 工作区门禁 41310926525 均为 success；22D 历史阻塞按星崽裁定单列，不在本批修复。
 > 开工基线为 a91c15d；本批单独实现 FIX-B，七库仍未写产品函数，教程继续 planned。
 > 契约唯一正文为 [B1 §二](20o-b1-freeze-draft.md#二error_code-的名称位置与签名)，
 > 实施步骤见 [FIX-B 规划](20o-b1-fix-b-implementation-plan.md)。
@@ -83,8 +84,22 @@ ABI 负例区分真实当前产物与“修改版本声明”的测试数据，�
 | research concurrency fmt/test/Clippy | 通过，不改变研究代码或发布债务 |
 | TypeScript 类型检查 / Bun | 通过；301 passed / 0 failed / 5 个宿主依赖 skip |
 
-远端 run/job 尚在收集；完成后在本节回填实际运行号与日志摘要。
-`error-handling` 页面增量暂为 draft；七库页面与 registry 仍为 planned。
+同提交的最终远端证据：head 为 `d762ceecb31ef28bc7df4606cc7873f340a5213d`，attempt 1。
+维护回归 [41310926623](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623)
+六个作业均成功；工作区门禁 [41310926525](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926525)
+与 [Linux 作业](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926525/job/124860930313) 成功。
+
+| 精确执行点 | 作业 | 实际结果 |
+| --- | --- | --- |
+| 默认 VM | [124860930687](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930687) | 21 个普通场景，恰好 1 passed / 0 failed / 0 ignored |
+| Windows 原生 | [124860930712](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930712) | 28 次普通 + 6 次清理，恰好 1 passed / 0 failed / 0 ignored |
+| Linux 原生 | [124860930671](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930671) | 28 次普通 + 6 次清理，恰好 1 passed / 0 failed / 0 ignored |
+| macOS 原生 | [124860930751](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930751) | 28 次普通 + 6 次清理，恰好 1 passed / 0 failed / 0 ignored |
+
+完整来源摘要、逐场景记录和摘录见 [机器证据](assets/20o-b1-fix-b/41310926623/evidence.json)
+与 [证据说明](assets/20o-b1-fix-b/41310926623/README.md)。摘要针对实际下载的完整源日志；
+摘录去除 ANSI CSI 与行尾空白、统一 LF，并保留时间戳。先前失败另存，不计入成功场景。
+`error-handling` 与新增 `rust.xiao-error-code` 登记升级为 verified；七库页面与 registry 继续 planned。
 
 版本基线审查：固定体积源码不变，`.xiaoc` 保持 1,256 字节，索引保持 237 字节；
 ABI 头/指令版本及指令校验值改变，使 DEFLATE 载荷从 526 变为 525 字节，
@@ -95,20 +110,25 @@ ABI 头/指令版本及指令校验值改变，使 DEFLATE 载荷从 526 变为 
 生成文本没有直接值复制调用，但 Runtime 泛型并发入口可达值复制/弱引用分支。
 组件推导现按已有传递依赖规则登记该入口，三目标最小源码回归锁定 weak，产物校验器的
 缺失/额外组件拒绝规则不变。此为 FIX-B 真实 ABI 文件的接线修正，不修改并发语义或发布债务。
-同轮 Windows 既有 22D 大字符串释放轨迹比较失败，本机原断言精确复跑已通过；
-未修改其比较器、事件或夹具，后续以最终维护回归结论为准。
 组件修正后，本地完整 workspace、严格 Clippy、三目标组件回归与原生精确目标再次通过。
+
+### 4.1 22D 历史阻塞（独立保留）
+
+41306343104 的 Windows 既有 22D 大字符串释放轨迹比较失败，本机原断言精确复跑已通过；
+未修改其比较器、事件或夹具，后续以最终维护回归结论为准。
 
 修正后的 41308052854 两次尝试均在 Windows 的 22D 原释放顺序断言处失败，
 分别为多参数字符串与 detached 场景，B1 尚未进入；同提交的 VM/Linux/macOS 和
 工作区门禁已通过。为取得 Windows B1 本身的真实证据，既有精确块移到同一原生作业的
 Runtime 单测之后；不新增步骤、不删除门禁，后续失败仍使整个作业失败。
 计数守卫按 B1 自身闭合块提取，仍执行四路径 28 个正反例。
-22D 处理范围已提交星崽裁定，在答复前不修改其实现、夹具或比较器。
+星崽已明确选择“保持 FIX-B，单列 22D 阻塞”。因此本批没有修改 22D 的实现、夹具或比较器。
+最终 41310926623 的全部原断言在本次执行通过；这不表示先前三次释放顺序不稳定已被修复，
+22D 的稳定性与既有发布债务继续独立登记，不借本批绿色关闭。
 
 ## 五、进入 IMP 的交接
 
-只有本批完整门禁与三平台实际执行证据齐备，FIX-B 才能验收完成。后续 IMP 按
+本批完整门禁与三平台实际执行证据已齐备，FIX-B 前置验收完成。后续 IMP 按
 math→hex→base64→url→fmt→statistics→csv 顺序独立实现，helper 内联，核对真实导出集合，
 保留逐函数移除、真实 `.xar`、普通包隔离、资源/性能和教程执行门槛。
 CSV 全量扫描性能仍未证实；FIX-B 通过不改变既有 60 秒看门狗观察或预算验收要求。

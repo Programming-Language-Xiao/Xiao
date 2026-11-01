@@ -1,7 +1,7 @@
 ---
 id: language.control-flow.error-handling
 title: 错误控制流
-status: draft
+status: verified
 audience: learner
 module: rust.xiao-syntax-error-control
 stage: "07B/20O-B1-FIX-B"
@@ -52,7 +52,8 @@ finally
 `error.code` 成员访问仍未开放，普通函数的 `Error` 类型注解也未因此开放。
 
 以下完整示例对应 [CI 源码](../../../../tests/fixtures/20o-b1/fix-b/default-and-custom.xiao)，
-固定黄金同时经过 VM 与受控原生 O0/O3 执行；本次增量正在收集三平台证据，页面暂为 draft。
+固定黄金已经过 VM 与三平台受控原生 O0/O3 执行，实际运行号与日志见
+[FIX-B 验收记录](../../../DevDocs/20o-b1-fix-b-closeout.md)。
 适用版本：Xiao 0.1.0、Runtime ABI 1.18。
 
 <!-- b1-error-code-executable-example -->

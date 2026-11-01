@@ -1,0 +1,19 @@
+2026-11-01T12:28:57.1773383Z 20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm/native optimization=3 result=success
+2026-11-01T12:28:57.1773836Z 20O-B1-FIX-B-PROBE case=pending-finally backend=vm/native optimization=0 result=success
+2026-11-01T12:28:57.1774496Z 20O-B1-FIX-B-PROBE case=pending-finally backend=vm/native optimization=3 result=success
+2026-11-01T12:28:57.1774960Z 20O-B1-FIX-B-PROBE case=dynamic-types backend=vm/native optimization=0 result=success
+2026-11-01T12:28:57.1775401Z 20O-B1-FIX-B-PROBE case=dynamic-types backend=vm/native optimization=3 result=success
+2026-11-01T12:28:57.1775829Z 20O-B1-FIX-B-PROBE case=long-code backend=vm/native optimization=0 result=success
+2026-11-01T12:28:57.1776251Z 20O-B1-FIX-B-PROBE case=long-code backend=vm/native optimization=3 result=success
+2026-11-01T12:28:57.1776485Z
+2026-11-01T12:28:57.1776775Z thread 'b1_capabilities_match_native_golden_outputs' (12588) panicked at crates/xiao-driver/tests/20o_b1_probe.rs:886:41:
+2026-11-01T12:28:57.1777606Z FIX-B abi-requirements O0: 原生产物验证失败（/tmp/xiao-20o-b0-12587/fix-b-abi-requirements-o0）：产物观察到未由 IR 登记的 Runtime 组件：weak
+2026-11-01T12:28:57.1778422Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-11-01T12:28:57.1778807Z test b1_capabilities_match_native_golden_outputs ... FAILED
+2026-11-01T12:28:57.1779003Z
+2026-11-01T12:28:57.1779082Z failures:
+2026-11-01T12:28:57.1779181Z
+2026-11-01T12:28:57.1779248Z failures:
+2026-11-01T12:28:57.1779446Z     b1_capabilities_match_native_golden_outputs
+2026-11-01T12:28:57.1779611Z
+2026-11-01T12:28:57.1779832Z test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 10 filtered out; finished in 18.70s

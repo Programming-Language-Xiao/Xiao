@@ -1,0 +1,631 @@
+{
+  "schema_version": 1,
+  "run_id": 41310926623,
+  "run_attempt": 1,
+  "head_sha": "d762ceecb31ef28bc7df4606cc7873f340a5213d",
+  "status": "completed",
+  "conclusion": "success",
+  "run_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623",
+  "excerpt_normalization": "strip ANSI CSI escapes; trim trailing line whitespace; LF line endings; timestamps preserved",
+  "scope": "B1-FIX-B error_code、ABI 1.18 与三路径清理；不覆盖七库产品或 CSV 全量扫描性能。",
+  "fix_b_exact_targets": "success",
+  "acceptance": "complete",
+  "workspace_gates": {
+    "run_id": 41310926525,
+    "conclusion": "success",
+    "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926525",
+    "head_sha": "d762ceecb31ef28bc7df4606cc7873f340a5213d"
+  },
+  "all_maintenance_jobs": [
+    {
+      "id": 124860930671,
+      "name": "Native differential regression (Linux)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930671"
+    },
+    {
+      "id": 124860930687,
+      "name": "Rust workspace default tests (Linux)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930687"
+    },
+    {
+      "id": 124860930712,
+      "name": "Native differential regression (Windows)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930712"
+    },
+    {
+      "id": 124860930751,
+      "name": "Native differential regression (macOS)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930751"
+    },
+    {
+      "id": 124860930762,
+      "name": "Deterministic parser and artifact security regression",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930762"
+    },
+    {
+      "id": 124860930776,
+      "name": "Deterministic artifact size regression (Windows baseline)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930776"
+    }
+  ],
+  "jobs": [
+    {
+      "id": 124860930671,
+      "name": "Native differential regression (Linux)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930671",
+      "run_attempt": 1,
+      "test": "b1_capabilities_match_native_golden_outputs",
+      "backend": "vm/native",
+      "exact_target_conclusion": "success",
+      "source_first_line": 2621,
+      "source_last_line": 2660,
+      "source_log_sha256": "2cce4f6cc30d4cdddd15826705a8ab4ecf5319e8fc6069119ab2a336d80c349f",
+      "source_log_bytes": 339449,
+      "b0_modules": [
+        "math",
+        "hex",
+        "base64",
+        "url",
+        "csv",
+        "fmt",
+        "statistics"
+      ],
+      "fix_a_cases": [
+        "math-extremes",
+        "hex-all-bytes",
+        "base64-tail-bits",
+        "utf8-boundaries",
+        "csv-budget",
+        "fmt-int-min",
+        "statistics-overflow"
+      ],
+      "fix_b_runs": [
+        {
+          "case": "default-and-custom",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "default-and-custom",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "nested-rethrow",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "nested-rethrow",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "escape-lifetime",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "escape-lifetime",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "pending-finally",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "pending-finally",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "dynamic-types",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "dynamic-types",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "long-code",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "long-code",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "abi-requirements",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "abi-requirements",
+          "backend": "vm/native",
+          "optimization": 3
+        }
+      ],
+      "cleanup_runs": [
+        {
+          "case": "success-cleanup",
+          "optimization": 0,
+          "cleanup": "once"
+        },
+        {
+          "case": "success-cleanup",
+          "optimization": 3,
+          "cleanup": "once"
+        },
+        {
+          "case": "allocation-failure",
+          "optimization": 0,
+          "cleanup": "once"
+        },
+        {
+          "case": "allocation-failure",
+          "optimization": 3,
+          "cleanup": "once"
+        },
+        {
+          "case": "getter-failure",
+          "optimization": 0,
+          "cleanup": "once"
+        },
+        {
+          "case": "getter-failure",
+          "optimization": 3,
+          "cleanup": "once"
+        }
+      ],
+      "summary": "2026-11-01T13:27:33.8716723Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 25.89s",
+      "excerpt": "linux.log"
+    },
+    {
+      "id": 124860930687,
+      "name": "Rust workspace default tests (Linux)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930687",
+      "run_attempt": 1,
+      "test": "b1_capabilities_have_vm_golden_outputs",
+      "backend": "vm",
+      "exact_target_conclusion": "success",
+      "source_first_line": 3106,
+      "source_last_line": 3132,
+      "source_log_sha256": "d1889a2a1392d033e02af0a0b82f648923d4cafa55dd6826cdf1ca1cb73c3bb0",
+      "source_log_bytes": 272698,
+      "b0_modules": [
+        "math",
+        "hex",
+        "base64",
+        "url",
+        "csv",
+        "fmt",
+        "statistics"
+      ],
+      "fix_a_cases": [
+        "math-extremes",
+        "hex-all-bytes",
+        "base64-tail-bits",
+        "utf8-boundaries",
+        "csv-budget",
+        "fmt-int-min",
+        "statistics-overflow"
+      ],
+      "fix_b_runs": [
+        {
+          "case": "default-and-custom",
+          "backend": "vm"
+        },
+        {
+          "case": "nested-rethrow",
+          "backend": "vm"
+        },
+        {
+          "case": "escape-lifetime",
+          "backend": "vm"
+        },
+        {
+          "case": "pending-finally",
+          "backend": "vm"
+        },
+        {
+          "case": "dynamic-types",
+          "backend": "vm"
+        },
+        {
+          "case": "long-code",
+          "backend": "vm"
+        },
+        {
+          "case": "abi-requirements",
+          "backend": "vm"
+        }
+      ],
+      "cleanup_runs": [],
+      "summary": "2026-11-01T13:24:36.1068020Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 7.58s",
+      "excerpt": "default-linux.log"
+    },
+    {
+      "id": 124860930712,
+      "name": "Native differential regression (Windows)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930712",
+      "run_attempt": 1,
+      "test": "b1_capabilities_match_native_golden_outputs",
+      "backend": "vm/native",
+      "exact_target_conclusion": "success",
+      "source_first_line": 1156,
+      "source_last_line": 1195,
+      "source_log_sha256": "0727e51be89c5d2bd1df3a1559bb830918b702ef42857c15d7eaa32526292aaf",
+      "source_log_bytes": 300011,
+      "b0_modules": [
+        "math",
+        "hex",
+        "base64",
+        "url",
+        "csv",
+        "fmt",
+        "statistics"
+      ],
+      "fix_a_cases": [
+        "math-extremes",
+        "hex-all-bytes",
+        "base64-tail-bits",
+        "utf8-boundaries",
+        "csv-budget",
+        "fmt-int-min",
+        "statistics-overflow"
+      ],
+      "fix_b_runs": [
+        {
+          "case": "default-and-custom",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "default-and-custom",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "nested-rethrow",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "nested-rethrow",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "escape-lifetime",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "escape-lifetime",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "pending-finally",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "pending-finally",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "dynamic-types",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "dynamic-types",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "long-code",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "long-code",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "abi-requirements",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "abi-requirements",
+          "backend": "vm/native",
+          "optimization": 3
+        }
+      ],
+      "cleanup_runs": [
+        {
+          "case": "success-cleanup",
+          "optimization": 0,
+          "cleanup": "once"
+        },
+        {
+          "case": "success-cleanup",
+          "optimization": 3,
+          "cleanup": "once"
+        },
+        {
+          "case": "allocation-failure",
+          "optimization": 0,
+          "cleanup": "once"
+        },
+        {
+          "case": "allocation-failure",
+          "optimization": 3,
+          "cleanup": "once"
+        },
+        {
+          "case": "getter-failure",
+          "optimization": 0,
+          "cleanup": "once"
+        },
+        {
+          "case": "getter-failure",
+          "optimization": 3,
+          "cleanup": "once"
+        }
+      ],
+      "summary": "2026-11-01T13:25:22.2695385Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 23.44s",
+      "excerpt": "windows.log"
+    },
+    {
+      "id": 124860930751,
+      "name": "Native differential regression (macOS)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41310926623/job/124860930751",
+      "run_attempt": 1,
+      "test": "b1_capabilities_match_native_golden_outputs",
+      "backend": "vm/native",
+      "exact_target_conclusion": "success",
+      "source_first_line": 2488,
+      "source_last_line": 2527,
+      "source_log_sha256": "ce9796a6673a41a5f837e2b8170757bb60fff88ef303531f8b46d01963b2a42f",
+      "source_log_bytes": 281657,
+      "b0_modules": [
+        "math",
+        "hex",
+        "base64",
+        "url",
+        "csv",
+        "fmt",
+        "statistics"
+      ],
+      "fix_a_cases": [
+        "math-extremes",
+        "hex-all-bytes",
+        "base64-tail-bits",
+        "utf8-boundaries",
+        "csv-budget",
+        "fmt-int-min",
+        "statistics-overflow"
+      ],
+      "fix_b_runs": [
+        {
+          "case": "default-and-custom",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "default-and-custom",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "nested-rethrow",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "nested-rethrow",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "escape-lifetime",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "escape-lifetime",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "pending-finally",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "pending-finally",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "dynamic-types",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "dynamic-types",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "long-code",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "long-code",
+          "backend": "vm/native",
+          "optimization": 3
+        },
+        {
+          "case": "abi-requirements",
+          "backend": "vm/native",
+          "optimization": 0
+        },
+        {
+          "case": "abi-requirements",
+          "backend": "vm/native",
+          "optimization": 3
+        }
+      ],
+      "cleanup_runs": [
+        {
+          "case": "success-cleanup",
+          "optimization": 0,
+          "cleanup": "once"
+        },
+        {
+          "case": "success-cleanup",
+          "optimization": 3,
+          "cleanup": "once"
+        },
+        {
+          "case": "allocation-failure",
+          "optimization": 0,
+          "cleanup": "once"
+        },
+        {
+          "case": "allocation-failure",
+          "optimization": 3,
+          "cleanup": "once"
+        },
+        {
+          "case": "getter-failure",
+          "optimization": 0,
+          "cleanup": "once"
+        },
+        {
+          "case": "getter-failure",
+          "optimization": 3,
+          "cleanup": "once"
+        }
+      ],
+      "summary": "2026-11-01T13:36:04.0708390Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 18.87s",
+      "excerpt": "macos.log"
+    }
+  ],
+  "prior_failed_run": {
+    "run_id": 41306343104,
+    "head_sha": "87ceeeb1f5e4a1e40094b648d45bd09229be2ff5",
+    "conclusion": "failure",
+    "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41306343104",
+    "jobs": [
+      {
+        "id": 124847399176,
+        "name": "Native differential regression (macOS)",
+        "conclusion": "failure",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41306343104/job/124847399176",
+        "source_first_line": 2510,
+        "source_last_line": 2528,
+        "source_log_sha256": "720bccdedb3168ed78dcb2631eac472850ce873e427a5243ead40fe557738ebb",
+        "source_log_bytes": 274844,
+        "cause": "最小 ABI 夹具的传递 weak 组件漏记，已补依赖声明与三目标回归",
+        "excerpt": "first-macos-failure.log"
+      },
+      {
+        "id": 124847399197,
+        "name": "Native differential regression (Windows)",
+        "conclusion": "failure",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41306343104/job/124847399197",
+        "source_first_line": 2591,
+        "source_last_line": 2611,
+        "source_log_sha256": "044e7b0ae00140cb39beef93a2baa6e8c2b0fbbd8d9efe95f26c375d92690696",
+        "source_log_bytes": 277922,
+        "cause": "22D 释放轨迹先后比较；原断言未改，本机精确复跑通过",
+        "excerpt": "first-windows-failure.log"
+      },
+      {
+        "id": 124847399224,
+        "name": "Native differential regression (Linux)",
+        "conclusion": "failure",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41306343104/job/124847399224",
+        "source_first_line": 2641,
+        "source_last_line": 2659,
+        "source_log_sha256": "e8b684a2f7b8b2f62871753d634d3b4d75f9eee4d94c397c0f25d0dd2b93ce8f",
+        "source_log_bytes": 332346,
+        "cause": "最小 ABI 夹具的传递 weak 组件漏记，已补依赖声明与三目标回归",
+        "excerpt": "first-linux-failure.log"
+      }
+    ]
+  },
+  "second_failed_run": {
+    "run_id": 41308052854,
+    "head_sha": "a885d1d68e6be9e407ff4fa2700db265b289626e",
+    "jobs": [
+      {
+        "id": 124852437628,
+        "name": "Native differential regression (Windows)",
+        "run_attempt": 1,
+        "conclusion": "failure",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41308052854/job/124852437628",
+        "source_first_line": 2590,
+        "source_last_line": 2610,
+        "source_log_sha256": "68a8304566fea2d8bcc6e2f35eadca62c02d6fd428128e128549ddb0cba64ea5",
+        "source_log_bytes": 277960,
+        "cause": "22D 原释放顺序断言失败，未改断言",
+        "excerpt": "history-124852437628-failure.log"
+      },
+      {
+        "id": 124856538894,
+        "name": "Native differential regression (Windows)",
+        "run_attempt": 2,
+        "conclusion": "failure",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41308052854/job/124856538894",
+        "source_first_line": 2598,
+        "source_last_line": 2618,
+        "source_log_sha256": "4c9eaa1f58f8aaec1ac905fbb967f807ffc8614bcbb9c9ad0c85db3291659376",
+        "source_log_bytes": 278335,
+        "cause": "22D 原释放顺序断言失败，未改断言",
+        "excerpt": "history-124856538894-failure.log"
+      }
+    ]
+  },
+  "earlier_attempt_failures": [],
+  "guards": {
+    "passed": 28,
+    "total": 28,
+    "scope": "simulated-cargo-output",
+    "job_id": 124860930687,
+    "source_first_line": 394,
+    "source_last_line": 398,
+    "source_log_sha256": "d1889a2a1392d033e02af0a0b82f648923d4cafa55dd6826cdf1ca1cb73c3bb0",
+    "excerpt": "guards.log",
+    "workflow_sha256": "e4a06c6c1d3e34b013ae353d1499e755fe758d79aad012daa058dd1710e2c76a",
+    "script_sha256": "3671bdffdf035f0d356ad82a8adcb8422c01aaeb2ed626caecdcf459e60a3f9d",
+    "source_code_normalization": "CRLF to LF before workflow/script hash; matches Git blob bytes"
+  },
+  "excluded_scope": {
+    "22d": "星崽确认保持 FIX-B，单列 22D 历史阻塞；本批未修改其实现、夹具或比较器。"
+  }
+}

@@ -1,0 +1,21 @@
+2026-11-01T13:11:02.8203539Z 22D-CASE pool-capacity-zero-032: ok
+2026-11-01T13:11:02.8205193Z 22D-CASE pool-submit-after-shutdown-030: ok
+2026-11-01T13:11:02.8206146Z 22D-CASE native-queued-cancellation: ok
+2026-11-01T13:11:02.8207225Z 22D-CASE native-waiting-cancellation: ok
+2026-11-01T13:11:02.8208652Z 22D-CASE native-wait-027: ok
+2026-11-01T13:11:02.8209794Z 22D-CASE native-lock-wait-027: ok
+2026-11-01T13:11:02.8210891Z 22D-CASE xcon-oversized-029: ok
+2026-11-01T13:11:02.8228229Z
+2026-11-01T13:11:02.8233720Z thread 'native_concurrency_vm_native_differential_matches_from_same_ir' (4156) panicked at crates\xiao-driver\tests\22d_llvm_concurrency.rs:991:5:
+2026-11-01T13:11:02.8237508Z assertion `left == right` failed: detached-failure: VM/native 完整释放对象顺序
+2026-11-01T13:11:02.8240856Z   left: [(0, "strong_release"), (0, "destroy"), (1, "strong_release"), (1, "destroy")]
+2026-11-01T13:11:02.8244337Z  right: [(0, "strong_release"), (1, "strong_release"), (0, "destroy"), (1, "strong_release"), (1, "destroy")]
+2026-11-01T13:11:02.8247488Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-11-01T13:11:02.8248892Z test native_concurrency_vm_native_differential_matches_from_same_ir ... FAILED
+2026-11-01T13:11:02.8250266Z
+2026-11-01T13:11:02.8251830Z failures:
+2026-11-01T13:11:02.8253077Z
+2026-11-01T13:11:02.8254551Z failures:
+2026-11-01T13:11:02.8255887Z     native_concurrency_vm_native_differential_matches_from_same_ir
+2026-11-01T13:11:02.8256953Z
+2026-11-01T13:11:02.8258556Z test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 33.31s

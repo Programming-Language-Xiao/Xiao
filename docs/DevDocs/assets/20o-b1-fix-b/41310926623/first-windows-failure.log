@@ -1,0 +1,21 @@
+2026-11-01T12:31:46.8244000Z 22D-CASE finally-return-overrides-child-error: ok
+2026-11-01T12:31:46.8246063Z 22D-CASE spawn-join-str-multiargument: ok
+2026-11-01T12:31:46.8248021Z 22D-CASE spawn-join-tuple: ok
+2026-11-01T12:31:46.8250214Z 22D-CASE detach-success: ok
+2026-11-01T12:31:46.8252357Z 22D-CASE multi-runtime-parallel: ok
+2026-11-01T12:31:46.8254369Z 22D-CASE lock-guard-scope-release: ok
+2026-11-01T12:31:46.8256440Z 22D-CASE worker-loop-bounded-stack: ok
+2026-11-01T12:31:46.8275320Z
+2026-11-01T12:31:46.8281149Z thread 'native_concurrency_vm_native_differential_matches_from_same_ir' (7696) panicked at crates\xiao-driver\tests\22d_llvm_concurrency.rs:286:9:
+2026-11-01T12:31:46.8284823Z assertion `left == right` failed: xcon-bounded-string-success: VM/native 完整释放对象顺序
+2026-11-01T12:31:46.8288971Z   left: [(0, "strong_release"), (1, "strong_release"), (0, "strong_release"), (0, "destroy"), (1, "strong_release"), (1, "destroy"), (2, "strong_release"), (2, "destroy")]
+2026-11-01T12:31:46.8292632Z  right: [(0, "strong_release"), (0, "destroy"), (1, "strong_release"), (1, "destroy"), (2, "strong_release"), (2, "destroy")]
+2026-11-01T12:31:46.8296153Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-11-01T12:31:46.8298164Z test native_concurrency_vm_native_differential_matches_from_same_ir ... FAILED
+2026-11-01T12:31:46.8299470Z
+2026-11-01T12:31:46.8301304Z failures:
+2026-11-01T12:31:46.8302942Z
+2026-11-01T12:31:46.8304930Z failures:
+2026-11-01T12:31:46.8306835Z     native_concurrency_vm_native_differential_matches_from_same_ir
+2026-11-01T12:31:46.8308664Z
+2026-11-01T12:31:46.8310778Z test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 12.98s

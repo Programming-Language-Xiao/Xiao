@@ -1,0 +1,40 @@
+2026-11-01T13:36:04.0685250Z      Running tests/20o_b1_probe.rs (core/rust/target/debug/deps/20o_b1_probe-bf6351eec0c082fc)
+2026-11-01T13:36:04.0685660Z
+2026-11-01T13:36:04.0685720Z running 1 test
+2026-11-01T13:36:04.0686280Z 20O-B0-PROBE module=math backend=vm/native result=success
+2026-11-01T13:36:04.0686710Z 20O-B0-PROBE module=hex backend=vm/native result=success
+2026-11-01T13:36:04.0687080Z 20O-B0-PROBE module=base64 backend=vm/native result=success
+2026-11-01T13:36:04.0688840Z 20O-B0-PROBE module=url backend=vm/native result=success
+2026-11-01T13:36:04.0689220Z 20O-B0-PROBE module=csv backend=vm/native result=success
+2026-11-01T13:36:04.0689630Z 20O-B0-PROBE module=fmt backend=vm/native result=success
+2026-11-01T13:36:04.0690060Z 20O-B0-PROBE module=statistics backend=vm/native result=success
+2026-11-01T13:36:04.0690490Z 20O-B1-FIX-A-PROBE case=math-extremes backend=vm/native result=success
+2026-11-01T13:36:04.0690990Z 20O-B1-FIX-A-PROBE case=hex-all-bytes backend=vm/native result=success
+2026-11-01T13:36:04.0691500Z 20O-B1-FIX-A-PROBE case=base64-tail-bits backend=vm/native result=success
+2026-11-01T13:36:04.0691970Z 20O-B1-FIX-A-PROBE case=utf8-boundaries backend=vm/native result=success
+2026-11-01T13:36:04.0692460Z 20O-B1-FIX-A-PROBE case=csv-budget backend=vm/native result=success
+2026-11-01T13:36:04.0693030Z 20O-B1-FIX-A-PROBE case=fmt-int-min backend=vm/native result=success
+2026-11-01T13:36:04.0693470Z 20O-B1-FIX-A-PROBE case=statistics-overflow backend=vm/native result=success
+2026-11-01T13:36:04.0694040Z 20O-B1-FIX-B-PROBE case=default-and-custom backend=vm/native optimization=0 result=success
+2026-11-01T13:36:04.0694580Z 20O-B1-FIX-B-PROBE case=default-and-custom backend=vm/native optimization=3 result=success
+2026-11-01T13:36:04.0695210Z 20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm/native optimization=0 result=success
+2026-11-01T13:36:04.0695810Z 20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm/native optimization=3 result=success
+2026-11-01T13:36:04.0696400Z 20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm/native optimization=0 result=success
+2026-11-01T13:36:04.0697140Z 20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm/native optimization=3 result=success
+2026-11-01T13:36:04.0697730Z 20O-B1-FIX-B-PROBE case=pending-finally backend=vm/native optimization=0 result=success
+2026-11-01T13:36:04.0698280Z 20O-B1-FIX-B-PROBE case=pending-finally backend=vm/native optimization=3 result=success
+2026-11-01T13:36:04.0698960Z 20O-B1-FIX-B-PROBE case=dynamic-types backend=vm/native optimization=0 result=success
+2026-11-01T13:36:04.0699610Z 20O-B1-FIX-B-PROBE case=dynamic-types backend=vm/native optimization=3 result=success
+2026-11-01T13:36:04.0700120Z 20O-B1-FIX-B-PROBE case=long-code backend=vm/native optimization=0 result=success
+2026-11-01T13:36:04.0701680Z 20O-B1-FIX-B-PROBE case=long-code backend=vm/native optimization=3 result=success
+2026-11-01T13:36:04.0702300Z 20O-B1-FIX-B-PROBE case=abi-requirements backend=vm/native optimization=0 result=success
+2026-11-01T13:36:04.0703890Z 20O-B1-FIX-B-PROBE case=abi-requirements backend=vm/native optimization=3 result=success
+2026-11-01T13:36:04.0704590Z 20O-B1-FIX-B-CLEANUP case=success-cleanup optimization=0 cleanup=once result=success
+2026-11-01T13:36:04.0705140Z 20O-B1-FIX-B-CLEANUP case=success-cleanup optimization=3 cleanup=once result=success
+2026-11-01T13:36:04.0705710Z 20O-B1-FIX-B-CLEANUP case=allocation-failure optimization=0 cleanup=once result=success
+2026-11-01T13:36:04.0706290Z 20O-B1-FIX-B-CLEANUP case=allocation-failure optimization=3 cleanup=once result=success
+2026-11-01T13:36:04.0706850Z 20O-B1-FIX-B-CLEANUP case=getter-failure optimization=0 cleanup=once result=success
+2026-11-01T13:36:04.0707420Z 20O-B1-FIX-B-CLEANUP case=getter-failure optimization=3 cleanup=once result=success
+2026-11-01T13:36:04.0707870Z test b1_capabilities_match_native_golden_outputs ... ok
+2026-11-01T13:36:04.0708100Z
+2026-11-01T13:36:04.0708390Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 18.87s

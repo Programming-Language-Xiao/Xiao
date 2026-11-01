@@ -256,10 +256,10 @@
 | 20N | [标准库扩展路线图](20n-standard-library-expansion-roadmap.md) | 保留最初的依赖分层研究；页首列出与后续裁定的对照 | **历史背景草案**：不作为实施冻结依据，不重问本页历史 D 编号；time 含 sleep、首批有界池、独立数据库能力位以 20O/20P 为准 |
 | 20O | [官方库工程总纲与 Agent 交接](20o-official-library-program.md) | 官方库候选目录、数值层级、B0–B9 与交接；D-1～D-12 裁定 | **规划中（2026-11-01）**：B0 逐条回填方向裁定；cmath 首批含超越函数、time 含 sleep；D-12 细项明确延期，具体 API 未冻结 |
 | 20O-B0 | [基线、B1 探测与冻结草案](20o-b0-baseline-and-b1-draft.md) | 核对 681e70b 基线、门禁、目录/决策；七份同源 VM/native 探测、planned 教程 | **B0 已交付**：保留历史证据；CSV 记录子集/error_code/七项一起冻结/精确 CI 方向已确认，后续细化见 B1 |
-| 20O-B1 | [七库冻结契约与 error_code](20o-b1-freeze-draft.md) | 20 项签名、错误/限额/性能目标、必填 Base64 模式、全局 error_code 与精确 ABI 通路 | **F1～F13/E-2 已逐条确认**：规划 intrinsic 32 / ABI 1.18、helper 内联；产品未实现，教程 planned |
-| 20O-B1-FIX-A | [契约收口与新增边界](20o-b1-fix-a-contract-closeout.md) | 全部实际裁定、精确 getter 失败表、七项新增独立黄金探测，与 B0 共 14 场景 | **契约与三平台探测取证完成**：4d34767 的维护回归 41285853958 / 工作区门禁 41285853953 全绿；仍未实现 FIX-B/产品，CSV 全量性能未证 |
-| 20O-B1-FIX-B | [`error_code` 前置实现规划](20o-b1-fix-b-implementation-plan.md) / [实现与证据](20o-b1-fix-b-closeout.md) | intrinsic 32、ABI 1.18、C getter、VM/LLVM 通路、版本拒绝和三路径清理 | **已实现，取证中（2026-11-01）**：借用首项至复制结束；七库仍 planned |
-| 20O-B1-IMP | [七库实现规划](20o-b1-implementation-plan.md) | FIX-A→独立 FIX-B→纯库 IMP→CLOSE；导出/归档/性能/三平台验收 | **等待 FIX-B 取证完成**：真实导出、资源/性能、归档和教程门槛保持 |
+| 20O-B1 | [七库冻结契约与 error_code](20o-b1-freeze-draft.md) | 20 项签名、错误/限额/性能目标、必填 Base64 模式、全局 error_code 与精确 ABI 通路 | **F1～F13/E-2 已逐条确认**：intrinsic 32 / ABI 1.18 前置已验收；七库未实现、教程 planned |
+| 20O-B1-FIX-A | [契约收口与新增边界](20o-b1-fix-a-contract-closeout.md) | 全部实际裁定、精确 getter 失败表、七项新增独立黄金探测，与 B0 共 14 场景 | **契约与三平台探测取证完成**：4d34767 的维护回归 41285853958 / 工作区门禁 41285853953 全绿；FIX-B 另批交付，CSV 全量性能未证 |
+| 20O-B1-FIX-B | [`error_code` 前置实现规划](20o-b1-fix-b-implementation-plan.md) / [实现与证据](20o-b1-fix-b-closeout.md) | intrinsic 32、ABI 1.18、C getter、VM/LLVM、版本拒绝和三路径清理 | **已验收（2026-11-01）**：维护回归 41310926623 / 工作区门禁 41310926525 全绿；22D 历史阻塞另列 |
+| 20O-B1-IMP | [七库实现规划](20o-b1-implementation-plan.md) | FIX-A→独立 FIX-B→纯库 IMP→CLOSE；导出/归档/性能/三平台验收 | **前置已就绪，七库未开工**：真实导出、资源/性能、归档和教程门槛保持 |
 | 20P | [Day-1 官方库架构](20p-day1-library-architecture.md) | 模块/错误/生命周期/能力/发布、每库教程与数据库架构；D-13～D-22 裁定 | **规划中（2026-11-01）**：方向已逐条确认；独立数据库能力位、首批有界连接池、固定教程示例与状态门槛、分平台证据；精确契约待后续批次 |
 | 20C-首批 | [官方库首批模块：`text` 与 `path`](20c-first-modules.md) | 接口已冻结为 `text.contains_char(str text, str needle) -> bool` 与 `path.join(str base, str leaf) -> str`；两模块均为纯 Xiao、无新增 intrinsic。固定 `stdlib.` VM 加载器、LLVM 静态函数接线、移除验证和边界同步已落地；P-5 与覆盖口径订正已登记 | **受控双路径已由维护回归 `38550284761` 复核**（Windows `115806283501` / Linux `115806283515`）；10R 其它遗留证据按各自文档登记 |
 | 20C | [官方 Xiao 库：能力探测、模块清单与兼容身份](20c-official-xiao-library.md) | 10 系列已按七项条件正式关闭，O6/B1/T4/F-3 的剩余证据保留原归属；20C 双路径能力探测、六条冻结、入口骨架、固定标准库加载边界和首批 `text`/`path` 接口已完成；官方模块仍不进入普通依赖图 | **首批实现与受控双路径实跑已完成（2026-10-14）**；维护回归 `38550284761` 已回填，10R 其它遗留证据仍按各自清单登记 |
