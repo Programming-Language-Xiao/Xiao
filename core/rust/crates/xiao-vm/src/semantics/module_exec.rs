@@ -163,10 +163,8 @@ impl<C: Carrier, S: VmEventSink> Vm<'_, C, S> {
         if module == "std.concurrent" || module == "stdlib.concurrent" {
             return module.to_owned();
         }
-        if module == crate::STANDARD_LIBRARY_NAMESPACE
-            || module.starts_with(crate::STANDARD_LIBRARY_PREFIX)
-        {
-            return module.to_owned();
+        if let Some(identity) = xiao_standard_library::canonical_module_identity(module) {
+            return identity;
         }
         if self.current_module == crate::STANDARD_LIBRARY_NAMESPACE
             || self

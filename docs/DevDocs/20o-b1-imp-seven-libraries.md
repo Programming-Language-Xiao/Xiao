@@ -5,7 +5,8 @@
 > 本页只把七个模块、20 个入口、资源/错误/性能目标和落地顺序拆成可执行步骤。
 > 不重问 F1～F13/E-2，不新增 intrinsic、ABI、私有语法或公开 `dynamic`。
 >
-> 状态：**FIX-B 已验收，B1-IMP 尚未开工（2026-11-02）**。开工基线为 `48a47440`；
+> 状态：**FIX-B 已验收，B1-IMP 开工中（2026-11-02）**。规划基线为 `48a47440`，
+> 实施开工提交为 `6a23eabc`；已发现并单独处理既有 `std.` 别名接线前置，见 §2.2。
 > 当前 Runtime ABI 为 1.18，七库 registry 条目仍为 `planned`，七库教程仍为 `planned`。
 > B1-IMP 完成后才进入 [B1-CLOSE](20o-b1-implementation-plan.md#b1-close证据收口)；
 > 本批不把教程升级为 `verified`。
@@ -84,6 +85,25 @@ max([int] values) -> int
    数组、循环和 `array_push`，但不能新增顶层 `def`，也不能用 `_` 前缀绕过导出。
 
 `error_code` 已可用；产品代码本身不需要调用它，测试可以用它核对错误身份。
+
+### 2.2 经星崽确认的既有 std 别名接线前置
+
+首次执行公开 `std.math` 产品样例时发现：前端已识别别名并链接标准库，但 VM 将它作为
+`project:std.math` 加载，以 `X06-RUNTIME-012` 失败。既有 `from std.text import length`
+也可独立复现，说明这是七库之前的加载接线缺口。星崽已确认先独立修复再继续七库验收。
+
+修复只统一身份：标准库元数据 crate 提供 `canonical_module_identity`，VM、LLVM 与归档调用图
+共同将 `std.` 送入 `stdlib.` 固定命名空间；虚拟并发特例先按原有路径处理。
+LLVM 的 CODEGEN_VERSION 升至 16 以隔离修正后的初始化/绑定指纹，Runtime ABI 仍为 1.18。
+不新增语法、intrinsic、ABI 或官方导出。四种导入形态分别验证 VM、规范身份只初始化一次、
+真实 `.xar` 的宿主要求与删除应用源码后重放；原生复用既有 20C 差分入口执行选择导入与
+函数内导入。原生模块值/限定调用在规范 `stdlib.` 路径也会拒绝，新增配对回归确认别名的
+失败边界与规范路径相同；本前置不扩大这一既有后端能力边界。
+七库实现另行提交，教程与七库 registry 条目保持 planned。
+
+本机 Windows 初步验证：20C 默认目标 8 passed / 3 ignored，含 VM、真实归档和原生配对
+降低边界；既有原生差分目标显式 `--exact` 执行 1 passed / 0 failed / 0 ignored。
+这仍是本机证据，最终七库交付时另记录真实三平台运行号。
 
 ## 三、实施顺序与每模块要点
 

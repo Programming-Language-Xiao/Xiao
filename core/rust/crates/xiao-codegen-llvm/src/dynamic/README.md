@@ -33,6 +33,9 @@ methods.rs          表方法与字段回调、参数绑定、弱只读 receiver
 `dynamic.rs` 或本目录。crate 级 `text.rs` 是 `escape_llvm` 和 `stable_hash` 的唯一来源，
 动态文本解析只保留在本目录的 `text.rs`。
 
+模块导入可以消费 `xiao-standard-library` 的纯身份元数据以统一 std 别名；不依赖
+驱动器或 VM，也不执行 Runtime 来解析模块身份。
+
 ## 验收
 
 `dynamic_architecture_tests.rs` 在测试构建时锁定门面模块登记、静态/动态依赖方向和
@@ -55,3 +58,6 @@ LLVM 文本和 Runtime 组件清单必须保持不变。会改变调用文本、
 20O-B1-FIX-B 的版本 15 在 `expression.rs` 新增 error_code 借读后复制与失败清理，
 `predicate.rs` 选择动态路径，`runtime_abi.rs` 声明 ABI 1.18 getter；借用视图不作为
 Xiao 字符串返回。读取不使用 take/snapshot/clear，普通异常路由仍使用既有挂起槽机制。
+
+B1-IMP 的既有 std 别名前置修复将 `control.rs` 的模块初始化及选取函数查找统一到
+`stdlib.` 规范身份；版本 16 隔离更新后的原生降低指纹，Runtime ABI 仍为 1.18。

@@ -10,6 +10,10 @@
 经既有字符串入口复制为拥有值；不读取或改写挂起错误，不消费源错误。类型失败带调用 span，
 结果分配失败保留 ResourceError / 011；三种 Carrier 的结构化身份回归由 driver 执行。
 
+B1-IMP 开工前修复 `std.` 既有别名接线：`module_exec.rs` 与归档调用图共用标准库元数据
+crate 的规范身份函数，将 `std.text` 等路径统一为 `stdlib.text`，只初始化一次。
+并发虚拟模块先按原有特例分派，不新增指令、ABI 或普通包身份。
+
 22C-FIX.1 的 `concurrent.rs` 按 TAC 计划执行原生并发绑定，子线程独立构造 VM，
 只传递只读程序、XCON 信封、显式共享句柄和取消/事件通道。`module_exec.rs` 管理模块
 初始化及程序上下文切换，不把 `VmSession` 的 `Rc` 状态发送给子线程。

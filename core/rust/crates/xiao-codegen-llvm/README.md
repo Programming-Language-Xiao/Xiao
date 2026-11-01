@@ -40,11 +40,15 @@ LTO、PGO 和目标特化开关默认关闭，并拒绝快速数学/未定义回
 
 ## 允许与禁止依赖
 
-后端只依赖 `xiao-ir` 和零运行时实现依赖的 `xiao-runtime-abi` 声明，不依赖 VM、完整
-Runtime 或 CLI，也不引入 `inkwell`/`llvm-sys`。
+后端消费 `xiao-ir`、零运行时实现依赖的 `xiao-runtime-abi` 声明及 `xiao-standard-library`
+的身份元数据，不依赖 VM、完整 Runtime 或 CLI，也不引入 `inkwell`/`llvm-sys`。
 不在后端改变类型、溢出或错误语义，不打包 `.xar`，不解析终端命令行，不自动发现工具链。
 
 20O-B1-FIX-B 把 intrinsic 32 降低为 error_value 检查、只读 getter、string_new 复制和
 str_owned 接管；输入强引用保留到复制结束，所有失败边先归还临时输入再传播。
-CODEGEN_VERSION=15 隔离新符号与调用顺序，产物要求 ABI 1.18；完整源码与故障清理回归
+FIX-B 的生成器版本 15 隔离新符号与调用顺序，产物要求 ABI 1.18；完整源码与故障清理回归
 在 driver 的 `20o_b1_probe`，生产 Runtime 不包含测试 shim。
+
+B1-IMP 开工前单独修复 `std.` 既有别名的原生模块身份查找，当前生成器版本为 16，
+Runtime ABI 仍为 1.18。模块值/限定函数调用仍保留规范路径已有的原生拒绝边界，
+不通过别名修复引入新语言能力。

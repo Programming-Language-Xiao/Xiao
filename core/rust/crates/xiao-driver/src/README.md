@@ -24,6 +24,10 @@ X0-E 在同一协议中接入真实源码原生构建、运行时配置固化和
 
 `bin/` 的两个进程测试子程序只用于 20D 差分与生命周期夹具；不接入 `xiao-core` 协议或 CLI 路由。
 
+B1-IMP 的既有 `std.` 别名前置修复使 VM 与 `archive_closure.rs` 共用
+`xiao-standard-library::canonical_module_identity`；归档要求仍只记录 `stdlib.` 固定身份，
+不把别名当项目模块或复制官方函数体。原生回归复用 20C 入口，不增加 intrinsic 或 ABI。
+
 18B 的 `archive_closure.rs` 从入口 0 沿模块初始化、函数调用及函数值传播计算闭包；
 `archive.rs` 只将本地模块写入全局缓存并组装归档，官方模块只转为版本/能力要求。
 `config.xiao` 采用唯一 `[main]` 入口；缓存命中仍执行完整摘要和格式校验，归档验证后原子写出。

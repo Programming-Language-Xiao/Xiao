@@ -180,12 +180,15 @@ impl<'a> DynamicGenerator<'a> {
                     if matches!(item.module.as_str(), "std.concurrent" | "stdlib.concurrent") {
                         continue;
                     }
-                    if self.initialized_modules.insert(item.module.clone()) {
+                    let module_identity =
+                        xiao_standard_library::canonical_module_identity(&item.module)
+                            .unwrap_or_else(|| item.module.clone());
+                    if self.initialized_modules.insert(module_identity.clone()) {
                         let Some(module) = self
                             .program
                             .modules
                             .iter()
-                            .find(|module| module.name == item.module)
+                            .find(|module| module.name == module_identity)
                         else {
                             return Err(CodegenError::Unsupported {
                                 feature: format!("原生模块 {} 不在前端模块图中", item.module),
@@ -205,7 +208,7 @@ impl<'a> DynamicGenerator<'a> {
                         {
                             let module_function = self
                                 .module_function_definitions
-                                .get(&(item.module.clone(), selected.text.clone()))
+                                .get(&(module_identity.clone(), selected.text.clone()))
                                 .copied();
                             if let Some(function) = module_function
                                 .or_else(|| self.function_definitions.get(&selected.text).copied())

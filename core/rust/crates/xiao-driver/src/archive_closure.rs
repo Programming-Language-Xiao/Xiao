@@ -103,7 +103,10 @@ impl Analyzer {
         if matches!(module, "std.concurrent" | "stdlib.concurrent") {
             return module.to_owned();
         }
-        if module == "stdlib" || module.starts_with("stdlib.") || module.starts_with("project:") {
+        if let Some(identity) = xiao_standard_library::canonical_module_identity(module) {
+            return identity;
+        }
+        if module.starts_with("project:") {
             module.to_owned()
         } else if current.starts_with("stdlib.") {
             format!("stdlib.{module}")

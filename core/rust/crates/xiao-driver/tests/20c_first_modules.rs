@@ -11,8 +11,9 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use xiao_codegen_llvm::{CodegenError, TargetDescription, Toolchain};
 use xiao_driver::{
-    DriverOutcome, DriverRequest, FrontendArtifact, FrontendCompiler, FrontendNativeDriver,
-    FrontendRequest, FrontendVmDriver, NativeBuildRequest, NativeDriverError,
+    ArchiveBuildRequest, CancellationToken, DriverOutcome, DriverRequest, FrontendArtifact,
+    FrontendCompiler, FrontendNativeDriver, FrontendRequest, FrontendVmDriver, NativeBuildRequest,
+    NativeDriverError, ProtocolRequest, ProtocolResponse, RunOptions, build_archive, dispatch,
 };
 use xiao_ir::IrStatementKind;
 use xiao_runtime::{ReleaseEvent, start_release_trace, take_release_events};
@@ -21,6 +22,30 @@ use xiao_vm::VmEvent;
 
 /// 避免并行模块回归复用相同临时项目路径。
 static PROJECT_SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
+/// std 别名与规范路径使用相同的真实标准库、初始化身份和函数体。
+const STD_ALIAS_CASES: &[(&str, &str, &str)] = &[
+    (
+        "std-selected-alias",
+        "from std.text import length as measure\nfrom stdlib.text import length as canonical\nprint(measure(\"雪😀\"))\nprint(canonical(\"ok\"))\n",
+        "2\n2\n",
+    ),
+    (
+        "std-module-alias",
+        "import std.text as text\nprint(text.length(\"雪😀\"))\n",
+        "2\n",
+    ),
+    (
+        "std-qualified-alias",
+        "import std.text\nprint(std.text.length(\"雪😀\"))\n",
+        "2\n",
+    ),
+    (
+        "std-local-alias",
+        "def measure(str value) -> int\n    from std.text import length\n    return length(value)\nprint(measure(\"雪😀\"))\n",
+        "2\n",
+    ),
+];
 
 /// 为单个模块调用用例建立隔离项目，并在用例结束后安全清理。
 struct TestProject(PathBuf);
@@ -185,6 +210,140 @@ fn first_error_code(source_path: &Path, source: &str) -> Option<String> {
                 .or_else(|| error.diagnostics().first())
                 .map(|diagnostic| diagnostic.code().to_owned())
         })
+}
+
+#[test]
+/// 选择、模块、限定和函数内导入经同一规范模块初始化；未知别名仍在前端拒绝。
+fn std_aliases_use_the_canonical_official_module() {
+    for &(label, source, expected) in STD_ALIAS_CASES {
+        let outcome = run_vm(label, source);
+        assert!(outcome.is_success(), "{label}: {outcome:?}");
+        assert_eq!(output(&outcome), expected, "{label}");
+        let modules: Vec<_> = outcome
+            .as_executed()
+            .unwrap()
+            .events()
+            .iter()
+            .filter_map(|event| match event {
+                VmEvent::ModuleLoaded { module }
+                    if module == "stdlib.text"
+                        || module == "std.text"
+                        || module == "project:std.text" =>
+                {
+                    Some(module.as_str())
+                }
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            modules,
+            ["stdlib.text"],
+            "{label}: 别名不得产生第二份模块实例"
+        );
+    }
+    let error = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(
+            "from std.removed import value\nprint(value)\n",
+        ))
+        .unwrap_err();
+    assert!(
+        error
+            .diagnostics()
+            .iter()
+            .any(|diagnostic| diagnostic.code() == "X05-MODULE-004")
+    );
+    let source = "from stdish.text import length\nprint(length(\"x\"))\n";
+    let project = TestProject::new(source);
+    project.write(
+        "stdish/text.xiao",
+        "def length(str value) -> int\n    return 9\n",
+    );
+    let outcome = FrontendVmDriver::new().run(&DriverRequest::new(project.request(source)));
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), "9\n");
+    assert!(
+        !loaded(&outcome, "stdlib.text"),
+        "相似项目名称不能被误判为 std 别名"
+    );
+}
+
+#[test]
+/// std 别名归档只声明规范宿主模块，删除应用源码后仍可独立重放。
+fn std_alias_archives_record_canonical_host_requirements() {
+    for &(label, source, expected) in STD_ALIAS_CASES {
+        let project = TestProject::new(source);
+        let mut request = ArchiveBuildRequest::new(project.main_path());
+        request.cache_root = Some(project.0.join("cache"));
+        let archive = build_archive(&request, &CancellationToken::new())
+            .unwrap_or_else(|error| panic!("{label}: {error:?}"));
+        assert_eq!(archive.index.stdlib_modules, ["stdlib.text"]);
+        assert!(
+            archive
+                .index
+                .entries
+                .iter()
+                .all(|entry| !entry.module.starts_with("stdlib.")
+                    && !entry.module.starts_with("std."))
+        );
+        fs::remove_file(project.main_path()).unwrap();
+        let response = dispatch(ProtocolRequest::RunArchive {
+            request_id: format!("std-alias-{label}"),
+            protocol_version: xiao_driver::PROTOCOL_VERSION,
+            core_version: xiao_driver::CORE_VERSION,
+            locale: None,
+            path: archive.output.display().to_string(),
+            options: RunOptions {
+                timeout_ms: Some(10_000),
+                ..Default::default()
+            },
+            diagnostics: None,
+            debug: false,
+        });
+        let ProtocolResponse::Result {
+            exit_code, events, ..
+        } = response
+        else {
+            panic!("{label}: {response:?}");
+        };
+        assert_eq!(exit_code, 0, "{label}: {events:?}");
+        let output: String = events
+            .iter()
+            .filter(|event| event.kind == "intrinsic_output")
+            .filter_map(|event| event.data.get("text").and_then(serde_json::Value::as_str))
+            .collect();
+        assert_eq!(output, expected, "{label}");
+    }
+}
+
+#[test]
+/// 原生别名与规范路径同样绑定静态函数，也保留既有模块值/限定调用拒绝边界。
+fn std_alias_native_lowering_matches_the_canonical_capability_boundary() {
+    for &(label, source, _) in STD_ALIAS_CASES {
+        let canonical = source.replace("std.text", "stdlib.text");
+        let alias = FrontendCompiler::new()
+            .compile(&FrontendRequest::from_text(source))
+            .unwrap();
+        let original = FrontendCompiler::new()
+            .compile(&FrontendRequest::from_text(canonical))
+            .unwrap();
+        let options = xiao_codegen_llvm::CodegenOptions::default();
+        let alias = xiao_codegen_llvm::NativeBuild::new().lower(&alias.ir, &options);
+        let original = xiao_codegen_llvm::NativeBuild::new().lower(&original.ir, &options);
+        if matches!(label, "std-selected-alias" | "std-local-alias") {
+            assert!(alias.is_ok(), "{label}: {alias:?}");
+            assert!(original.is_ok(), "{label}: {original:?}");
+        } else {
+            let (
+                Err(CodegenError::InvalidIr { message: alias }),
+                Err(CodegenError::InvalidIr { message: original }),
+            ) = (alias, original)
+            else {
+                panic!("{label}: 规范路径与别名都应保留原生模块值的既有拒绝边界");
+            };
+            assert_eq!(alias, original, "{label}");
+            assert!(alias.contains("没有动态值槽"), "{label}: {alias}");
+        }
+    }
 }
 
 /// 新接口同时验证真实加载、未导入拒绝及导入签名的参数错误身份。
@@ -572,7 +731,12 @@ fn first_modules_match_native_results() {
             "1\n2\n3\n4\nfalse\n2\n",
         ),
     ];
-    for (module, caller, expected_stdout) in cases {
+    for (module, caller, expected_stdout) in cases.into_iter().chain(
+        STD_ALIAS_CASES
+            .iter()
+            .copied()
+            .filter(|(label, _, _)| matches!(*label, "std-selected-alias" | "std-local-alias")),
+    ) {
         let source = caller;
         let project = TestProject::new(source);
         let frontend_request = project.request(source);

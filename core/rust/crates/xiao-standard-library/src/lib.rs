@@ -17,6 +17,21 @@ pub const STANDARD_LIBRARY_PREFIX: &str = "stdlib.";
 /// 允许工具链覆盖标准库源码根目录的环境变量。
 pub const STANDARD_LIBRARY_ROOT_ENV: &str = "XIAO_STDLIB_ROOT";
 
+/// 将前端已识别的官方库路径归一到工具链固定身份；其它项目/包名称保持不匹配。
+///
+/// `std.text` 与 `stdlib.text` 共同使用 `stdlib.text`，防止 VM 与归档各自注册别名副本。
+/// 虚拟并发模块的既有特例由调用方先处理，不在此改变其执行计划。
+#[must_use]
+pub fn canonical_module_identity(module: &str) -> Option<String> {
+    if matches!(module, "std" | STANDARD_LIBRARY_NAMESPACE) {
+        return Some(STANDARD_LIBRARY_NAMESPACE.to_owned());
+    }
+    module
+        .strip_prefix(STANDARD_LIBRARY_PREFIX)
+        .or_else(|| module.strip_prefix("std."))
+        .map(|suffix| format!("{STANDARD_LIBRARY_PREFIX}{suffix}"))
+}
+
 /// 返回官方标准库规范源码根目录。
 ///
 /// 发布工程可以通过 [`STANDARD_LIBRARY_ROOT_ENV`] 指向随工具链分发的源码；
