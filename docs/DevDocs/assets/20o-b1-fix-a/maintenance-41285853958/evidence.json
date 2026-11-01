@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "run_id": 41285853958,
+  "run_attempt": 1,
+  "excerpt_normalization": "trim trailing line whitespace; LF line endings; timestamps preserved",
+  "head_sha": "4d347670cdfa05fac2f01888f9d5ff6e3a5db37e",
+  "status": "completed",
+  "conclusion": "success",
+  "run_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958",
+  "workspace_gates": {
+    "run_id": 41285853953,
+    "conclusion": "success",
+    "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853953"
+  },
+  "scope": "B1-FIX-A 探测/CI：未覆盖尚未实现的 error_code、ABI 1.18 或七库产品；CSV 只含预算算术。",
+  "jobs": [
+    {
+      "id": 124786889391,
+      "name": "Rust workspace default tests (Linux)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889391",
+      "test": "b1_capabilities_have_vm_golden_outputs",
+      "backend": "vm",
+      "source_first_line": 3095,
+      "source_last_line": 3114,
+      "source_log_sha256": "d1b435e33f7f58e0eaf6231e451d4748223c5f971e465831d9d476d94f278d8e",
+      "b0_modules": [
+        "math",
+        "hex",
+        "base64",
+        "url",
+        "csv",
+        "fmt",
+        "statistics"
+      ],
+      "fix_a_cases": [
+        "math-extremes",
+        "hex-all-bytes",
+        "base64-tail-bits",
+        "utf8-boundaries",
+        "csv-budget",
+        "fmt-int-min",
+        "statistics-overflow"
+      ],
+      "summary": "2026-11-01T07:44:49.3381199Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 7.10s",
+      "excerpt": "default-linux.log"
+    },
+    {
+      "id": 124786889338,
+      "name": "Native differential regression (Windows)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889338",
+      "test": "b1_capabilities_match_native_golden_outputs",
+      "backend": "vm/native",
+      "source_first_line": 2664,
+      "source_last_line": 2683,
+      "source_log_sha256": "16107e8226be1858ce0143a89dddf1aea3201487fdf136c5507e4db3cb2976fc",
+      "b0_modules": [
+        "math",
+        "hex",
+        "base64",
+        "url",
+        "csv",
+        "fmt",
+        "statistics"
+      ],
+      "fix_a_cases": [
+        "math-extremes",
+        "hex-all-bytes",
+        "base64-tail-bits",
+        "utf8-boundaries",
+        "csv-budget",
+        "fmt-int-min",
+        "statistics-overflow"
+      ],
+      "summary": "2026-11-01T07:51:08.2936943Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 16.57s",
+      "excerpt": "windows.log"
+    },
+    {
+      "id": 124786889309,
+      "name": "Native differential regression (Linux)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889309",
+      "test": "b1_capabilities_match_native_golden_outputs",
+      "backend": "vm/native",
+      "source_first_line": 2614,
+      "source_last_line": 2633,
+      "source_log_sha256": "cbb275fcc29f82f1f7424b374dd16f41c42bb0ed46c71c2cd07a79909f97ca64",
+      "b0_modules": [
+        "math",
+        "hex",
+        "base64",
+        "url",
+        "csv",
+        "fmt",
+        "statistics"
+      ],
+      "fix_a_cases": [
+        "math-extremes",
+        "hex-all-bytes",
+        "base64-tail-bits",
+        "utf8-boundaries",
+        "csv-budget",
+        "fmt-int-min",
+        "statistics-overflow"
+      ],
+      "summary": "2026-11-01T07:47:33.8354595Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 15.52s",
+      "excerpt": "linux.log"
+    },
+    {
+      "id": 124786889367,
+      "name": "Native differential regression (macOS)",
+      "conclusion": "success",
+      "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889367",
+      "test": "b1_capabilities_match_native_golden_outputs",
+      "backend": "vm/native",
+      "source_first_line": 2484,
+      "source_last_line": 2503,
+      "source_log_sha256": "0ecdd74acf94712c74e243c4f936ef8711f7e4ca80818b45595934301165ad44",
+      "b0_modules": [
+        "math",
+        "hex",
+        "base64",
+        "url",
+        "csv",
+        "fmt",
+        "statistics"
+      ],
+      "fix_a_cases": [
+        "math-extremes",
+        "hex-all-bytes",
+        "base64-tail-bits",
+        "utf8-boundaries",
+        "csv-budget",
+        "fmt-int-min",
+        "statistics-overflow"
+      ],
+      "summary": "2026-11-01T07:56:44.5202530Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 11.66s",
+      "excerpt": "macos.log"
+    }
+  ]
+}

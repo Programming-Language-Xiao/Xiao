@@ -4,6 +4,10 @@
 > F1～F13/E-2 已在本次会话逐条询问并收到星崽答复；没有默认选择或代为延期。
 > 精确 API、错误/限额/性能与 error_code 契约的唯一正文仍是
 > [B1 契约](20o-b1-freeze-draft.md)。当前代码 ABI 仍为 1.17，七库产品尚未实现。
+> **远端证据已补齐**：提交 4d347670cdfa05fac2f01888f9d5ff6e3a5db37e 的 maintenance
+> [41285853958](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958)
+> 与工作区门禁 [41285853953](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853953)
+> 全绿；默认 VM 与三平台原生的新增七项均实际执行，逐作业核对见 §3.1。此结果仅关闭探测取证。
 
 ## 一、裁定与范围
 
@@ -91,10 +95,27 @@ X09-DRIVER-002；这是**本机开发观察**，不是已冻结产品 API 的性
 | 覆盖率/锁文件 | 文档覆盖率 90.20%、公共 API 100%；workspace/benchmarks cargo check 与两个锁文件无差异检查通过 |
 | 计数守卫 | 仓库脚本四条路径合计 28/28，本机复跑；不冒充真实三平台执行 |
 | ad176c3 的三平台运行 | maintenance 41275847931 与 gates 41275847899，适用旧七项，不含本轮新增夹具 |
-| 本轮新边界的三平台远端 | 尚未取得，不用旧运行号替代 |
+| 本轮新边界的三平台远端 | 已取得：4d34767 的 maintenance 41285853958，默认 VM 和 Windows/Linux/macOS 原生均含七旧+七新场景，各恰好 1 passed |
 
 本轮同名精确目标保留 --exact 及一项通过断言；14 场景是这一个 Rust 测试内部的场景数，
 不能把 1 passed 写成仅跑一份夹具，也不能把 14 个场景写成 14 条 Rust 测试。
+
+### 3.1 同一提交的远端逐作业证据
+
+已从 GitHub Actions 的 run/jobs/logs 接口核对 head SHA、attempt 1、作业 conclusion 及实际
+测试输出；maintenance 六个作业均为 success，workspace gates 同提交 success。
+
+| 路径 | 实际作业 | 日志核对 |
+| --- | --- | --- |
+| 默认 VM（Linux） | [124786889391](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889391) | b1_capabilities_have_vm_golden_outputs；七旧+七新；1 passed/0 failed/0 ignored |
+| Windows 原生 | [124786889338](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889338) | b1_capabilities_match_native_golden_outputs；14 个同源 VM/native 场景；1 passed/0 failed/0 ignored |
+| Linux 原生 | [124786889309](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889309) | 同上，实际新增七项逐条 success |
+| macOS 原生 | [124786889367](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889367) | 同上，实际新增七项逐条 success |
+
+[证据清单与摘录](assets/20o-b1-fix-a/maintenance-41285853958/README.md) 已入库：保留每个目标从
+Rust 测试启动到对应汇总的原始时间戳、源日志行号和摘要，避免仅靠工作流结论推断测试执行。
+CSV 的通过项仍是预算算术/短记录计数，不关闭 §2.2 的全量扫描性能限制；也未执行尚不存在的
+error_code、ABI 1.18 或七库产品。UseDocs/registry 保持 planned。
 
 ## 四、FIX-A 与下一批的交接
 
@@ -104,10 +125,10 @@ X09-DRIVER-002；这是**本机开发观察**，不是已冻结产品 API 的性
 | error_code 名称/位置/所有权/错误/通路 | 冻结于 B1 §二；id 32、ABI 1.18、借用后复制和失败边界明确 |
 | 20 入口、限额、错误、性能目标 | 冻结于 B1 §三～§六；Base64 模式扩展已同步，数量仍为 20 |
 | helper 导出策略 | 星崽确认内联；精确导出集合见 §1.1，私有可见性独立后置 |
-| 补 B0 漏测边界 | 七个新增场景本地双路径通过；完整资源/性能与产品证据按上文保留未完成 |
+| 补 B0 漏测边界 | 新增七项本地和 41285853958 的三平台探测通过；完整资源/性能与产品证据仍未完成 |
 | 没有产品函数 | 本批只有文档/测试/夹具；不激活 intrinsic 32，不改实际 ABI 1.17 |
 
-当前只完成契约收口与本地探测；本轮新增远端证据仍待收集。下一批是**独立 FIX-B**，不是
+当前已完成契约收口和新增边界的本地/三平台探测取证。下一批仍是**独立 FIX-B**，不是
 将 error_code 偷放进七库：类型/IR/VM/LLVM/Runtime 与 ABI 1.18、版本拒绝、挂起槽不变、
 借用视图生命周期和释放证据必须一起交付。然后才按 math→hex→base64→url→fmt→statistics→csv
 做 IMP，再做 CLOSE 的产品三平台、归档/移除和教程升级。七页教程与 registry 此时继续 planned。

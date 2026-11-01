@@ -257,7 +257,7 @@
 | 20O | [官方库工程总纲与 Agent 交接](20o-official-library-program.md) | 官方库候选目录、数值层级、B0–B9 与交接；D-1～D-12 裁定 | **规划中（2026-11-01）**：B0 逐条回填方向裁定；cmath 首批含超越函数、time 含 sleep；D-12 细项明确延期，具体 API 未冻结 |
 | 20O-B0 | [基线、B1 探测与冻结草案](20o-b0-baseline-and-b1-draft.md) | 核对 681e70b 基线、门禁、目录/决策；七份同源 VM/native 探测、planned 教程 | **B0 已交付**：保留历史证据；CSV 记录子集/error_code/七项一起冻结/精确 CI 方向已确认，后续细化见 B1 |
 | 20O-B1 | [七库冻结契约与 error_code](20o-b1-freeze-draft.md) | 20 项签名、错误/限额/性能目标、必填 Base64 模式、全局 error_code 与精确 ABI 通路 | **F1～F13/E-2 已逐条确认**：规划 intrinsic 32 / ABI 1.18、helper 内联；产品未实现，教程 planned |
-| 20O-B1-FIX-A | [契约收口与新增边界](20o-b1-fix-a-contract-closeout.md) | 全部实际裁定、精确 getter 失败表、七项新增独立黄金探测，与 B0 共 14 场景 | **契约与本地探测完成**：VM/Windows 原生各恰好 1 passed；CSV 大输入性能未证、新增远端未取得；不写产品 |
+| 20O-B1-FIX-A | [契约收口与新增边界](20o-b1-fix-a-contract-closeout.md) | 全部实际裁定、精确 getter 失败表、七项新增独立黄金探测，与 B0 共 14 场景 | **契约与三平台探测取证完成**：4d34767 的维护回归 41285853958 / 工作区门禁 41285853953 全绿；仍未实现 FIX-B/产品，CSV 全量性能未证 |
 | 20O-B1-IMP | [七库实现规划](20o-b1-implementation-plan.md) | FIX-A→独立 FIX-B→纯库 IMP→CLOSE；导出/归档/性能/三平台验收 | **下一批为独立 FIX-B**：按已确认契约实现 error_code 与 ABI 1.18 后，才进入七库 |
 | 20P | [Day-1 官方库架构](20p-day1-library-architecture.md) | 模块/错误/生命周期/能力/发布、每库教程与数据库架构；D-13～D-22 裁定 | **规划中（2026-11-01）**：方向已逐条确认；独立数据库能力位、首批有界连接池、固定教程示例与状态门槛、分平台证据；精确契约待后续批次 |
 | 20C-首批 | [官方库首批模块：`text` 与 `path`](20c-first-modules.md) | 接口已冻结为 `text.contains_char(str text, str needle) -> bool` 与 `path.join(str base, str leaf) -> str`；两模块均为纯 Xiao、无新增 intrinsic。固定 `stdlib.` VM 加载器、LLVM 静态函数接线、移除验证和边界同步已落地；P-5 与覆盖口径订正已登记 | **受控双路径已由维护回归 `38550284761` 复核**（Windows `115806283501` / Linux `115806283515`）；10R 其它遗留证据按各自文档登记 |

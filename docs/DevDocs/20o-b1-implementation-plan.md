@@ -3,9 +3,10 @@
 > **这是 B1 的实现前规划，不是 B1 产品代码。**
 > B1 旧七项探测已由 ad176c3 的 maintenance 41275847931 三平台与默认 VM 精确执行验证。
 > 本轮 FIX-A 已逐条收口 F1～F13 和 E-2，精确契约见 [B1 契约](20o-b1-freeze-draft.md)，
-> 本地新增边界与未覆盖项见 [FIX-A 记录](20o-b1-fix-a-contract-closeout.md)。
+> 新增边界已由 4d34767 的 maintenance 41285853958 / workspace gates 41285853953 取证，
+> 默认 VM 与三平台原生均实际执行 14 场景；逐作业链接与未覆盖项见 [FIX-A 记录](20o-b1-fix-a-contract-closeout.md#31-同一提交的远端逐作业证据)。
 >
-> 状态：**FIX-A 契约已确认、本地边界取证；下一批为独立 FIX-B（2026-11-01）**。
+> 状态：**FIX-A 契约与新增三平台探测取证完成；下一批为独立 FIX-B（2026-11-01）**。
 > 本轮只写文档/探测，当前代码仍是 ABI 1.17；intrinsic 32 与 ABI 1.18 只在文档冻结，
 > 不因本轮确认自动执行产品实现，不认领 19/11/22 债务。
 
@@ -15,8 +16,9 @@
 
 | 项 | 证据 |
 | --- | --- |
-| B1 默认 VM 探测 | maintenance `41275847931` 的 Linux 默认作业：`b1_capabilities_have_vm_golden_outputs` 恰好 1 passed |
-| B1 三平台原生探测 | 同一次 maintenance 的 Windows/Linux/macOS 原生作业：七项 `20O-B0-PROBE ... vm/native success`，各 1 passed |
+| B1 默认 VM 探测 | maintenance [41285853958](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958) / [默认作业](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889391)：14 场景，精确目标恰好 1 passed |
+| B1 三平台原生探测 | 同次维护回归 [Windows](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889338) / [Linux](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889309) / [macOS](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889367)：各七旧+七新、各 1 passed |
+| 同提交工作区门禁 | [41285853953](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853953)，head=4d347670cdfa05fac2f01888f9d5ff6e3a5db37e，success |
 | 计数守卫 | `tools/gates/b1-probe-guards.ps1` 28/28；已修复 Ubuntu 上 `Get-Command bash` 多入口的路径 bug |
 | 教程代码一致性 | `b1_tutorials_embed_the_executed_sources` 通过；七页教程仍为 `planned` |
 | 文档门禁 | docs/usedocs/layout 通过 |
@@ -35,7 +37,7 @@
 
 ### B1-FIX-A：契约收口（本轮，只改文档/探测）
 
-**当前进展**：F1～F13/E-2 已逐条确认；新增七项边界本机 VM/native 通过。契约与局部探测不替代真实前置或产品，完整对账见 FIX-A 记录。以下保留该批职责：
+**当前进展**：F1～F13/E-2 已逐条确认；新增七项已随旧七项通过 41285853958 的默认 VM 与三平台原生精确目标。契约和探测不替代真实前置或产品，完整对账见 FIX-A 记录。以下保留该批职责：
 
 1. 逐条答复 F1～F13；未答项明确延期，不能默认取建议值；
 2. 冻结 `error_code` 的名称、位置、参数类型、所有权、错误表和读取通路；给出是否需要
@@ -46,7 +48,7 @@
 6. 更新 B1 冻结草案和教程的 planned 内容，不升级 `verified`。
 
 **退出对账**：F1～F13/E-2 均直接确认，无代为选择或延期；契约唯一落点为 B1 文档，未写产品。
-新增边界本地取证完成；新增场景的远端日志与完整产品资源/性能仍未取得，不复用旧七项绿色。
+新增边界的本地与三平台远端取证已完成；完整产品资源/性能仍未证明，不把 14 场景通过当作产品实现或性能成绩。
 
 ### B1-FIX-B：error_code 前置（已选择，独立下一批）
 
@@ -62,9 +64,12 @@
 - 单独更新 intrinsic/ABI 契约、四处消费者和产物指纹/版本拒绝，不新增 std.errors 模块；
 - 禁止 take/raise pending error → snapshot → clear 的模拟读取，也不能把“复制代码文本”混成成员访问。
 
+**硬前置状态**：本轮源码复核仍没有 intrinsic 32/error_code 声明、C getter 定义，ABI 次版本仍为 17。
+FIX-A 三平台绿色不解除这个阻塞；FIX-B 未实现并验收之前，七库 IMP 不开工。
+
 **证据**：自定义/默认 code、嵌套 catch、返回值脱离绑定后仍有效、重复读取、cause/suppressed
-不变、Fatal 边界、类型负例、VM/native 同输出/错误/清理；若改 ABI，补 `.xiaoc`/`.xar`
-版本拒绝和三平台原生证据。
+不变、Fatal 边界、类型负例、VM/native 同输出/错误/清理；必须补 ABI 1.18 的 `.xiaoc`/`.xar`/
+原生版本拒绝与三平台证据，并逐条通过 [借用视图验收表](20o-b1-freeze-draft.md#25-fix-b-借用视图的实现验收)。
 
 ### B1-IMP：七库实现（纯 Xiao）
 
@@ -109,6 +114,22 @@ helper、不靠下划线或缺失注解制造“私有”，不新增内部模�
 
 精确 20 项导出集合见 [FIX-A §1.1](20o-b1-fix-a-contract-closeout.md#11-helper-与导出面)。
 探测夹具中的局部 probe 函数不作为产品模块，不借此误报官方导出。IMP 必须检查真实签名表与用户导入。
+
+### 4.1 IMP 的真实导出与代码规模验收
+
+- 从本模块顶层 AST 定义与前端/加载器的实际接口表分别提取名称和完整签名，与冻结 20 项逐项比对；
+  不能仅看 README、数量或源码正则。来自既有模块的导入与本模块新增定义分开检查，最终用户可见面不得额外泄漏。
+- 对 std/stdlib 两种公开路径做真实导入；冻结入口成功，未登记 helper/下划线名/漏注解辅助函数不能绕过接口。
+- 验证跨模块重名入口的别名导入和结果，例如 hex/base64 的 encode/decode、math/statistics 的 min/max；
+  不能让静态链接因同名函数覆盖而悄悄调用另一个模块。
+- 内联可能造成重复和大函数：执行现有文件规模门禁，评审函数体规模与重复段，不临时放宽门禁或增加未冻结 helper。
+  若维护性/性能确需共享抽象，先提出 E-2 契约变更或独立语言批次；不能将 README 计数当作验收替代。
+
+### 4.2 CSV 完整性能仍未证明
+
+FIX-A 的 csv-budget 通过只证明短记录计数与 E 的算术边界；开发期全量大字段局部探测曾在
+60 秒看门狗返回 X09-DRIVER-002。IMP 必须用真实 parse_record/format_record 和已确认最大
+合法输入复测时间、内存、最坏转义与失败清理，不能把简单预算公式或旧通过日志替代这些结果。
 
 ## 五、已确认契约与实施验证表
 

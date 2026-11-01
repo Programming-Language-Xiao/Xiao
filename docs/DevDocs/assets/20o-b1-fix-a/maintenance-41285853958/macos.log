@@ -1,0 +1,20 @@
+2026-11-01T07:56:44.5182810Z [1m[92m     Running[0m tests/20o_b1_probe.rs (core/rust/target/debug/deps/20o_b1_probe-965c71155e6becf7)
+2026-11-01T07:56:44.5184040Z
+2026-11-01T07:56:44.5184480Z running 1 test
+2026-11-01T07:56:44.5185420Z 20O-B0-PROBE module=math backend=vm/native result=success
+2026-11-01T07:56:44.5186330Z 20O-B0-PROBE module=hex backend=vm/native result=success
+2026-11-01T07:56:44.5187250Z 20O-B0-PROBE module=base64 backend=vm/native result=success
+2026-11-01T07:56:44.5188190Z 20O-B0-PROBE module=url backend=vm/native result=success
+2026-11-01T07:56:44.5189070Z 20O-B0-PROBE module=csv backend=vm/native result=success
+2026-11-01T07:56:44.5189970Z 20O-B0-PROBE module=fmt backend=vm/native result=success
+2026-11-01T07:56:44.5190930Z 20O-B0-PROBE module=statistics backend=vm/native result=success
+2026-11-01T07:56:44.5192160Z 20O-B1-FIX-A-PROBE case=math-extremes backend=vm/native result=success
+2026-11-01T07:56:44.5193290Z 20O-B1-FIX-A-PROBE case=hex-all-bytes backend=vm/native result=success
+2026-11-01T07:56:44.5195910Z 20O-B1-FIX-A-PROBE case=base64-tail-bits backend=vm/native result=success
+2026-11-01T07:56:44.5197070Z 20O-B1-FIX-A-PROBE case=utf8-boundaries backend=vm/native result=success
+2026-11-01T07:56:44.5198180Z 20O-B1-FIX-A-PROBE case=csv-budget backend=vm/native result=success
+2026-11-01T07:56:44.5199200Z 20O-B1-FIX-A-PROBE case=fmt-int-min backend=vm/native result=success
+2026-11-01T07:56:44.5200330Z 20O-B1-FIX-A-PROBE case=statistics-overflow backend=vm/native result=success
+2026-11-01T07:56:44.5201380Z test b1_capabilities_match_native_golden_outputs ... ok
+2026-11-01T07:56:44.5201930Z
+2026-11-01T07:56:44.5202530Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 11.66s
