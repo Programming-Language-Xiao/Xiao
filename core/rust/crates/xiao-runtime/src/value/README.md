@@ -19,6 +19,12 @@
 20O-B1-FIX-B 的 `error_code` 借读错误 code，经 `StringHandle::new` 复制为拥有的 str。
 字符串构造仅在测试配置下检查一次性分配 failpoint，失败沿用 ResourceError / 011。
 
+20O-B1-IMP 的独立字符串成本前置在构造非 ASCII 字符串时建立不可变码点起点索引；
+ASCII 无额外数组。`len`、`character_at` 为常量时间，VM 下标与原生迭代/下标共用该读取，
+不再逐项扫描前缀；Unicode 索引缓冲按实际容量计入 Runtime 对象内存，分配失败仍为
+ResourceError / 011。不增加 C ABI、intrinsic 或语言语义。`string_index_tests.rs` 核对
+Unicode 边界、越界、共享生命周期和拥有字节计数。
+
 20D 追加 `RuntimeValue::ExternalResource`：首批种类为 `file`/`directory`，句柄复制共享同一
 逻辑资源，显式关闭幂等且关闭后的资源操作使用 `X06-RUNTIME-025`；资源不参与哈希，
 `type_name` 与 `display_text` 共用 `resource<kind>` 形式。

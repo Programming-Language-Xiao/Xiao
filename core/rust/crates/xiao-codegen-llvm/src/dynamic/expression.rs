@@ -436,10 +436,17 @@ impl<'a> DynamicGenerator<'a> {
                     self.emit_dict_key_get(&value, &name.text, segment.span)
                 }
                 IrPathSegmentKind::Index { text, negative } => {
-                    let raw = text.parse::<i64>().map_err(|_| CodegenError::InvalidIr {
-                        message: format!("选择器索引无法解析：{text}"),
+                    // IR 文本可能已带负号；与字节码路径一样仅应用一次 negative 标志。
+                    let magnitude = text.trim_start_matches('-').parse::<i128>().map_err(|_| {
+                        CodegenError::InvalidIr {
+                            message: format!("选择器索引无法解析：{text}"),
+                        }
                     })?;
-                    let index = if *negative { -raw } else { raw };
+                    let raw = if *negative { -magnitude } else { magnitude };
+                    let index = i64::try_from(raw).map_err(|_| CodegenError::Unsupported {
+                        feature: format!("选择器索引超出原生 int 范围：{text}"),
+                        span: Some(span),
+                    })?;
                     self.emit_iter_get(&value, &index.to_string(), span)
                 }
             };

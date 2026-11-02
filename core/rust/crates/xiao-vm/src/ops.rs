@@ -377,7 +377,7 @@ fn index_step(source: &RuntimeValue, step: &PathStep) -> RuntimeResult<RuntimeVa
             let index = xiao_types::normalize_index(*raw, length).ok_or_else(|| {
                 RuntimeError::selector_bounds(format!("字符串选择器索引 {raw} 超出长度 {length}"))
             })?;
-            let text = handle.with_str(|text| text.chars().nth(index))?;
+            let text = handle.character_at(index)?;
             match text {
                 Some(character) => RuntimeValue::new_string(character.to_string()),
                 None => Err(missing_element()),

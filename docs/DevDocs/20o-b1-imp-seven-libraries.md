@@ -111,7 +111,7 @@ LLVM 的 CODEGEN_VERSION 升至 16 以隔离修正后的初始化/绑定指纹�
 
 固定参数命名调用的独立接线、求值顺序与参数失败清理见
 [原生命名调用前置](20o-b1-native-named-prerequisite.md)。F12 契约和产品命名用例保留，
-该前置与字符串读取成本修复、七库草稿分别提交。
+该前置与[字符串读取成本修复](20o-b1-string-index-prerequisite.md)、七库草稿分别提交。
 
 本批采用的落地顺序为 **math → statistics → fmt → hex → base64 → url → csv**。
 这是对高层规划中“math→hex→base64→url→fmt→statistics→csv”建议的顺序调整：先把最简单的

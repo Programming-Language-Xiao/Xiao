@@ -232,10 +232,9 @@ pub extern "C" fn xiao_runtime_value_iter_get(
             handle.with_entries(|entries| entries.get(index).map(|(_, value)| value.clone()))
         }
         RuntimeValue::Str(handle) => handle
-            .with_str(|text| {
-                text.chars()
-                    .nth(index)
-                    .map(|character| RuntimeValue::new_string(character.to_string()))
+            .character_at(index)
+            .map(|character| {
+                character.map(|character| RuntimeValue::new_string(character.to_string()))
             })
             .and_then(|value| value.transpose()),
         other => Err(RuntimeError::iterable_required(other.type_name())),
@@ -599,8 +598,7 @@ fn dynamic_index_value(
             .element(index)?
             .ok_or_else(|| RuntimeError::selector_bounds("元组元素在读取时消失")),
         RuntimeValue::Str(handle) => {
-            let character =
-                handle.with_str(|text| text.chars().nth(index).map(|value| value.to_string()))?;
+            let character = handle.character_at(index)?.map(|value| value.to_string());
             let Some(character) = character else {
                 return Err(RuntimeError::selector_bounds("字符串元素在读取时消失"));
             };

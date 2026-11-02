@@ -7,6 +7,9 @@
 /// Runtime 唯一的算子表：算术、比较、相等和显式转换。
 mod ops;
 
+#[cfg(test)]
+mod string_index_tests;
+
 use std::any::Any;
 use std::cell::Cell;
 use std::fs::File;
@@ -27,6 +30,8 @@ use crate::resources::io_error as resource_io_error;
 pub(crate) struct StringObject {
     /// UTF-8 字符串内容。
     pub value: String,
+    /// Unicode 字符的 UTF-8 起点；ASCII 不分配索引，直接以字节位置读取。
+    scalar_offsets: Option<Vec<usize>>,
 }
 
 impl ObjectPayload for StringObject {
@@ -42,7 +47,13 @@ impl ObjectPayload for StringObject {
 
     /// 计入字符串拥有的 UTF-8 字节缓冲区。
     fn owned_bytes(&self) -> usize {
-        self.value.capacity()
+        self.value
+            .capacity()
+            .saturating_add(self.scalar_offsets.as_ref().map_or(0, |offsets| {
+                offsets
+                    .capacity()
+                    .saturating_mul(std::mem::size_of::<usize>())
+            }))
     }
 
     /// 字符串没有用户 `drop` 钩子。
@@ -100,8 +111,27 @@ impl StringHandle {
     pub fn new(value: impl Into<String>) -> RuntimeResult<Self> {
         #[cfg(any(test, feature = "test-failpoints"))]
         crate::allocation_testing::check_string_allocation()?;
+        let value = value.into();
+        let scalar_offsets = if value.is_ascii() {
+            None
+        } else {
+            let mut offsets = Vec::new();
+            offsets
+                .try_reserve_exact(value.chars().count())
+                .map_err(|_| {
+                    RuntimeError::new(
+                        crate::RuntimeErrorKind::Resource,
+                        crate::ALLOCATION_CODE,
+                        "runtime.allocation",
+                        "无法分配字符串字符索引",
+                    )
+                })?;
+            offsets.extend(value.char_indices().map(|(index, _)| index));
+            Some(offsets)
+        };
         let inner = allocate_payload(Box::new(StringObject {
-            value: value.into(),
+            value,
+            scalar_offsets,
         }))?;
         Ok(Self { inner })
     }
@@ -114,12 +144,15 @@ impl StringHandle {
             })
     }
 
-    /// 返回 Unicode 标量数量。
+    /// 常量时间返回 Unicode 标量数量；索引在不可变字符串构造时建立。
     #[must_use]
     pub fn len(&self) -> usize {
         self.inner
             .with_payload(RuntimeTypeTag::String, |object: &StringObject| {
-                object.value.chars().count()
+                object
+                    .scalar_offsets
+                    .as_ref()
+                    .map_or(object.value.len(), Vec::len)
             })
             .unwrap_or(0)
     }
@@ -128,6 +161,22 @@ impl StringHandle {
     #[must_use]
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+
+    /// 常量时间读取指定码点；越界返回 None，错误句柄沿用既有内存错误。
+    ///
+    /// 只借读最多四个 UTF-8 字节，不分配字符索引或复制整个字符串。
+    pub fn character_at(&self, index: usize) -> RuntimeResult<Option<char>> {
+        self.inner
+            .with_payload(RuntimeTypeTag::String, |object: &StringObject| {
+                if let Some(offsets) = &object.scalar_offsets {
+                    offsets
+                        .get(index)
+                        .and_then(|&offset| object.value[offset..].chars().next())
+                } else {
+                    object.value.as_bytes().get(index).copied().map(char::from)
+                }
+            })
     }
 
     /// 以只读闭包访问字符串，避免把对象头引用泄漏到 Runtime 外部。

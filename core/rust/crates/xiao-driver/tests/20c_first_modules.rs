@@ -73,6 +73,20 @@ catch failure as ArithmeticError
 /// 预期值独立固定，顺序标签 2/7 证明没有为了按形参排序而重排求值。
 const NAMED_FIXED_STDOUT: &str = "5\n2\n7\n5\n5\n雪3\nX06-RUNTIME-013\n";
 
+/// 不可变字符串索引缓存必须保留码点下标、负下标和逐字符迭代语义。
+const STRING_INDEX_SOURCE: &str = r#"text = "A\0雪😀é﻿"
+print(int(text[0]))
+print(int(text[1]))
+print(int(text[2]))
+print(int(text[-4]))
+print(int(text[-1]))
+for character in text
+    print(int(character))
+"#;
+
+/// 独立码点表含 NUL、组合字符、BOM；越界样例另在 B1 精确语义目标中执行。
+const STRING_INDEX_STDOUT: &str = "65\n0\n38634\n128512\n65279\n65\n0\n38634\n128512\n101\n769\n65279\n";
+
 /// 为单个模块调用用例建立隔离项目，并在用例结束后安全清理。
 struct TestProject(PathBuf);
 
@@ -412,6 +426,14 @@ fn fixed_named_calls_preserve_argument_evaluation_and_binding() {
             "{call}: {error:?}"
         );
     }
+}
+
+#[test]
+/// Unicode 索引由生产 VM 执行；完整原生语义样例复用 B1 精确入口。
+fn string_indices_preserve_unicode_iteration_and_negative_bounds() {
+    let outcome = run_vm("string-index", STRING_INDEX_SOURCE);
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), STRING_INDEX_STDOUT);
 }
 
 /// 新接口同时验证真实加载、未导入拒绝及导入签名的参数错误身份。
