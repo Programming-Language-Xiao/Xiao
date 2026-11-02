@@ -79,6 +79,11 @@ def decode(str text, bool url_safe) -> [int]
     previous_digit = 0
     result_count = 0
     finished = false
+    symbol_62 = 43
+    symbol_63 = 47
+    if url_safe
+        symbol_62 = 45
+        symbol_63 = 95
     for character in text
         if finished
             raise Error(code = "BASE64_INVALID_ENCODING")
@@ -102,9 +107,9 @@ def decode(str text, bool url_safe) -> [int]
                 digit = codepoint - 71
             elif codepoint >= 48 and codepoint <= 57
                 digit = codepoint + 4
-            elif (url_safe and codepoint == 45) or (not url_safe and codepoint == 43)
+            elif codepoint == symbol_62
                 digit = 62
-            elif (url_safe and codepoint == 95) or (not url_safe and codepoint == 47)
+            elif codepoint == symbol_63
                 digit = 63
             else
                 raise Error(code = "BASE64_INVALID_ENCODING")

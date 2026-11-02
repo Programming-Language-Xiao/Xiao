@@ -15,6 +15,8 @@
 超限为 ResourceError / BASE64_LIMIT_EXCEEDED；输入只读，错误无部分输出。
 
 编码用 24 位有界累积，每 64 组生成短块并成对合并；解码两次有界扫描，以常量状态验证四元组。
+解码进入循环前把模式解析为两个专用码点，避免逐字符反复读取模式和组合布尔条件；
+签名、字母表隔离、错误顺序与全部限额保持冻结契约。
 固定身份 stdlib.base64、公共路径 std.base64、接口版本 1。教程继续 planned，
 F9/F10、生命周期及三平台验收另行取证。契约见 [B1](../docs/DevDocs/20o-b1-freeze-draft.md#33-base64两项)，
 教程见 [Base64 编码](../docs/UseDocs/library/base64.md)。
