@@ -1,0 +1,179 @@
+{
+  "schema_version": 1,
+  "scope": "Local self-review verification for implemented three-library draft, 12/20 entries; not B1-CLOSE",
+  "base_commit": "e7e88267cc0a7a7d4633be3fb238a555429f9a1b",
+  "code_snapshot_commit": "a9c8ca979118d5b8a443ccb0c24ecd622863512c",
+  "runtime_abi": "1.18",
+  "codegen_version": 19,
+  "platform": "x86_64-pc-windows-msvc",
+  "logs": [
+    {
+      "file": "contract.log",
+      "source_local_filename": "xiao-b1-selfreview-contract-committed.log",
+      "source_sha256": "a5ae8030f5a9e3b8c019369e00a3d1db2b6ba0edbdefc1f832dfffd8af0377d4",
+      "source_bytes": 1042,
+      "stored_sha256": "7de547d1b8513dd2b6c8a0aedf4e3d718e833c624b5508dd01e4565725df2606",
+      "stored_bytes": 1024,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing ASCII whitespace removed; one LF at EOF"
+    },
+    {
+      "file": "catalog.log",
+      "source_local_filename": "xiao-b1-selfreview-catalog.log",
+      "source_sha256": "1a03bdeabdaa21746f217b4606c7be584f05638580abb79aa23192fbaed7df00",
+      "source_bytes": 461,
+      "stored_sha256": "eb05092c6709b6a268126edb05883b3ca265a84f978b7bf299222603d5cae864",
+      "stored_bytes": 451,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing ASCII whitespace removed; one LF at EOF"
+    },
+    {
+      "file": "vm.log",
+      "source_local_filename": "xiao-b1-selfreview-vm.log",
+      "source_sha256": "9c36504983d0b92353af404f6e4136f5285a2d6f83e9db2f6f0ef02f431f3daf",
+      "source_bytes": 2378,
+      "stored_sha256": "c7478b17c4f48d743253dc925f9dbe7544f69d48837cc9e42ec97d51b510c16e",
+      "stored_bytes": 2334,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing ASCII whitespace removed; one LF at EOF"
+    },
+    {
+      "file": "native-windows.log",
+      "source_local_filename": "xiao-b1-selfreview-native.log",
+      "source_sha256": "8b376e1bb4572df7d7bb6f6151aa4c0cc7b8a8f2b26ceb7c00a49510eb69de37",
+      "source_bytes": 4263,
+      "stored_sha256": "8b34552fa3f00d65a4586dc8ae1763cb4d1e90d9cb2119851f00fdae3ddf8076",
+      "stored_bytes": 4202,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing ASCII whitespace removed; one LF at EOF"
+    },
+    {
+      "file": "string-index.log",
+      "source_local_filename": "xiao-b1-selfreview-index.log",
+      "source_sha256": "cf9eecc4cf3f7a32844446cb1af8d319b7b3f01e8ddfc27eb7e63ec783139987",
+      "source_bytes": 1490,
+      "stored_sha256": "3c0da00e74df3ed23f6004f0cec0aef49dcf0bacde65ae689c264f569bb696fa",
+      "stored_bytes": 1457,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing ASCII whitespace removed; one LF at EOF"
+    },
+    {
+      "file": "clippy.log",
+      "source_local_filename": "xiao-b1-selfreview-clippy-final.log",
+      "source_sha256": "1c465993308867bf93d8ddfeb5e20fc922f233bc48a5d69c8d752828425fd562",
+      "source_bytes": 158,
+      "stored_sha256": "9741e6510e92640a468b6086845464b9714d0090e56551c1c0f4fe3b1a63cf6c",
+      "stored_bytes": 156,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing ASCII whitespace removed; one LF at EOF"
+    },
+    {
+      "file": "guards.log",
+      "source_local_filename": "xiao-b1-selfreview-guards.log",
+      "source_sha256": "f1989d9ff46131346568a5bd9d0e18fb3ac5efc7d3d6cf4ae0012862e3c5d579",
+      "source_bytes": 257,
+      "stored_sha256": "3ebd31222fd4bf61ffae5b108cb66ca2ad78cd67c167bb7fadf33cdc5c3fe6ab",
+      "stored_bytes": 252,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing ASCII whitespace removed; one LF at EOF"
+    },
+    {
+      "file": "guard-report.json",
+      "source_local_filename": "xiao-b1-selfreview-guards.json",
+      "source_sha256": "95d2275103368ca81c016e5f5e662af7210907571af0eb54a1d419a316f9f082",
+      "source_bytes": 3487,
+      "stored_sha256": "cb9d5a4cb49e6d51f5f272925d4ce8104aa19403ca8b60bc351fd09ac3cdc54f",
+      "stored_bytes": 3307,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing ASCII whitespace removed; one LF at EOF"
+    }
+  ],
+  "checks": {
+    "contract_passed": 9,
+    "catalog_guard_passed": 1,
+    "vm_exact_passed": 1,
+    "native_exact_passed": 1,
+    "native_optimizations": [
+      0,
+      3
+    ],
+    "string_index_tests_passed": 3,
+    "clippy": "workspace all-targets -D warnings passed",
+    "guard_cases": "28/28",
+    "fmt_minimum_radices": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36
+    ],
+    "additional_minimum_radix_vectors": 35
+  },
+  "source_snapshot": [
+    {
+      "path": "core/rust/crates/xiao-runtime/src/value/mod.rs",
+      "sha256_lf": "cf7e24499b5e2d4646ebd15bae061153d5fd5b9ee4e9db7f1424f430c1afd4c5"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/tests/support/b1_imp.rs",
+      "sha256_lf": "690136bec26b9e6b19b39a136097ef22e40c525aea8745cd4ec0a873847c862a"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/tests/20o_b1_imp_contract.rs",
+      "sha256_lf": "f5db6c807568efdd308576feec56dc1fb685222a237ffc82008cc6c1e2be0f77"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/tests/20o_b1_probe.rs",
+      "sha256_lf": "ec230e95612e291172e9908f51751ea02e684d4383383c84b385fcebee1668ed"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/fmt/product.xiao",
+      "sha256_lf": "1c69cf78b7a55738a9f97c76fce18c771842848da1bd49b73b58fa864ff88460"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/fmt/golden.json",
+      "sha256_lf": "58944f818e15b40341e669184a50894f1b41a979a47c8ee4c9a4f48269f712da"
+    },
+    {
+      "path": "stdlib/fmt.xiao",
+      "sha256_lf": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40"
+    },
+    {
+      "path": "stdlib/math.xiao",
+      "sha256_lf": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482"
+    },
+    {
+      "path": "stdlib/statistics.xiao",
+      "sha256_lf": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8"
+    }
+  ],
+  "remote_runs": [],
+  "remaining": [
+    "four libraries/eight entries and codec name collisions",
+    "complete F9/F10 and full incremental memory",
+    "known string release discrepancy",
+    "B1-CLOSE; tutorial and registry stay planned"
+  ]
+}

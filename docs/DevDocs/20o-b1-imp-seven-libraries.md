@@ -15,6 +15,7 @@
 
 三模块及辅助回归的真实三平台维护回归 **41372968883** 与工作区门禁 **41372968916**
 均已通过，见 [CI 证据](assets/20o-b1-imp/maintenance-41372968883/README.md)。这只覆盖 12/20 草稿。
+后续核对与修复见 [本轮自审](20o-b1-self-review.md)，新增全进制样例另随精确入口取证。
 
 ## 一、批次目标与不可变边界
 
@@ -71,7 +72,7 @@ max([int] values) -> int
 
 ## 二、开工前基线与关键陷阱
 
-| 项 | 当前状态 | 依据 |
+| 项 | 开工时状态 | 依据 |
 | --- | --- | --- |
 | FIX-B | id 32、ABI 1.18、getter 与三平台验收完成 | [FIX-B 收口](20o-b1-fix-b-closeout.md) |
 | 七库源码 | 不存在；registry 七项 `code=[]`、status `planned` | `docs/module-registry.json` |
@@ -272,7 +273,7 @@ CLOSE 仍未收口，状态 planned。不能把三模块三平台通过记为七
 
 优先**复用现有两条精确目标**，不新增 workflow 路径或计数守卫：
 
-- 在 `core/rust/crates/xiao-driver/tests/20o_b1_probe.rs` 增加 `B1_IMP_CASES`，加入
+- 共用 `core/rust/crates/xiao-driver/tests/support/b1_imp.rs` 的 PRODUCTS 与 case_names，加入
   `b1_capabilities_have_vm_golden_outputs` 与
   `b1_capabilities_match_native_golden_outputs`；
 - 每个模块打印独立 `20O-B1-IMP-PROBE case=<module> backend=vm/native optimization=<0|3>`

@@ -17,7 +17,7 @@ related:
 
 整数边界、最大公约数和非负整数幂。首批不涉及浮点、高精度或数值重载。
 
-本页为 `planned`：B1-IMP 产品源码已在 `stdlib/math.xiao` 落地，完整性能与三平台验收仍待收口。
+本页为 `planned`：B1-IMP 产品源码已在 `stdlib/math.xiao` 落地，三模块已有三平台功能回归，完整性能、内存与生命周期验收仍待收口。
 本页保留 B0 历史探测，另附直接导入产品函数的完整示例。适用基线：Xiao 0.1.0、Runtime ABI 1.18、
 标准库接口版本 1。逐平台结果见 [B0 探测记录](../../DevDocs/20o-b0-baseline-and-b1-draft.md)。
 
@@ -84,7 +84,7 @@ int 是固定 64 位有符号整数。值按值传入，没有可关闭资源；
 
 ## B1-IMP 产品完整示例（planned）
 
-以下源码与 [CI 产品夹具](../../../tests/fixtures/20o-b1/imp/math/product.xiao) 逐字一致，已接入原有 VM/原生精确目标；当前原生命名调用与 F10 初测的阻塞见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。B0 探测文件独立保留。
+以下源码与 [CI 产品夹具](../../../tests/fixtures/20o-b1/imp/math/product.xiao) 逐字一致，已接入原有 VM/原生精确目标；命名调用前置已修复，三模块三平台功能回归已通过；剩余性能与释放验证见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。B0 探测文件独立保留。
 
 <!-- b1-imp-executable-example -->
 ```xiao
@@ -250,7 +250,7 @@ error_code 已随独立 FIX-B 在 ABI 1.18 实现并验收；本模块源码与�
 ## 故障排查与下一步
 
 六个产品入口已有本机公开导入、真实导出、逐函数移除、归档重放与普通包隔离回归；
-性能测量与三平台产品证据仍待 B1-IMP 收口。历史探测见 [FIX-A 记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)，
+本模块已有三平台功能回归；完整性能、内存与生命周期仍待 B1-IMP/CLOSE 收口。历史探测见 [FIX-A 记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)，
 当前实施状态见 [B1-IMP](../../DevDocs/20o-b1-imp-seven-libraries.md)。
 
 若无法找到完整示例，先确认位于仓库根；原生测试缺少 LLVM/Runtime 配置时应明确失败，

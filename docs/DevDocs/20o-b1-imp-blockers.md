@@ -66,8 +66,9 @@ incremental=false 和 RUST_TEST_THREADS=4 不变。预热一次，五次中位�
 填充字符。左右结果由独立预期串逐字比较。Unicode 填充翻倍比为 1.8252 / 1.8650，
 ASCII 扫描为 2.6792 / 1.9977；完整样本保存在日志，release 另记。
 
-合法域内结果字节数≤text_bytes+4*(width-text_points)≤4*width≤262,144，
-所以无法只改变合法 text/fill/width 而单独越过结果上限。保留产品的结果预算检查，
+当 width≤text_points 时返回原文，结果≤65,536 字节；当 width>text_points 时，
+结果字节数=text_bytes+fill_bytes*(width-text_points)≤4*width≤262,144。
+因此合法 text/fill/width 无法单独越过结果上限。保留产品的结果预算检查，
 测恰好上限与 text/width 上限+1、fill 校验先于资源拒绝；不伪造“合法输入进入结果超限”。
 Runtime 对象峰值含 Unicode 索引及输出，最大观测约 1.90 MB；它不包含全部 VM 分配或
 进程 RSS，不能替代完整 F10 的 64 MiB 峰值增量内存证据。

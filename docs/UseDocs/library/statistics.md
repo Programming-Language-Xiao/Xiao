@@ -17,7 +17,7 @@ related:
 
 D-5 已确认 B1 只做 int 数组的 sum/min/max。均值、中位数、方差、标准差以及浮点/NaN/精度策略留到 B5。
 
-本页为 `planned`：B1-IMP 产品源码已在 `stdlib/statistics.xiao` 落地，完整性能与三平台验收仍待收口。
+本页为 `planned`：B1-IMP 产品源码已在 `stdlib/statistics.xiao` 落地，三模块已有三平台功能回归，完整性能、内存与生命周期验收仍待收口。
 本页保留 B0 历史探测，另附直接导入产品函数的完整示例。适用基线：Xiao 0.1.0、Runtime ABI 1.18、
 标准库接口版本 1。逐平台结果见 [B0 探测记录](../../DevDocs/20o-b0-baseline-and-b1-draft.md)。
 
@@ -96,7 +96,7 @@ sum([])=0；min/max 的空数组报错。按数组顺序累加，中间值溢出
 
 ## B1-IMP 产品完整示例（planned）
 
-以下源码与 [CI 产品夹具](../../../tests/fixtures/20o-b1/imp/statistics/product.xiao) 逐字一致，已接入原有 VM/原生精确目标；当前原生命名调用与 F10 初测的阻塞见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。B0 探测文件独立保留。
+以下源码与 [CI 产品夹具](../../../tests/fixtures/20o-b1/imp/statistics/product.xiao) 逐字一致，已接入原有 VM/原生精确目标；命名调用前置已修复，三模块三平台功能回归已通过；剩余性能与释放验证见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。B0 探测文件独立保留。
 
 <!-- b1-imp-executable-example -->
 ```xiao
@@ -256,7 +256,7 @@ error_code 已随独立 FIX-B 在 ABI 1.18 实现并验收；本模块源码与�
 ## 故障排查与下一步
 
 三个入口已有本机真实导出与 VM 黄金，包含 65,536/65,537 项、输入不变和中间溢出；
-原生命名调用与完整 F10/三平台验收仍受前置缺口阻塞，见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。
+命名调用已修复且三平台功能回归已通过；完整 F10 和释放差异仍待收口，见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。
 浮点与其余统计项仍留 B5，历史探测见 [FIX-A 记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)。
 
 若无法找到完整示例，先确认位于仓库根；原生测试缺少 LLVM/Runtime 配置时应明确失败，

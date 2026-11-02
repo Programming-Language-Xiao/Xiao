@@ -17,8 +17,8 @@
   保留空末段与重复分隔符，不访问文件系统。
 - B1-IMP 的 [`math`](math.md) 六项、[`statistics`](statistics.md) 三项及 [`fmt`](fmt.md)
   三项已有纯 Xiao 草稿与 VM 黄金；公共路径 `std.<module>`，固定身份 `stdlib.<module>`。
-  命名/模块绑定与字符串读取前置已修复，三模块有本机原生 O0/O3 和逐形参负例；其余四库、
-  完整性能/内存、释放差异和三平台仍待收口。状态 planned，最终验收由 B1-CLOSE 完成。
+  命名/模块绑定与字符串读取前置已修复，三模块已有三平台原生 O0/O3 和逐形参负例；
+  其余四库、完整性能/内存及释放差异仍待收口。状态 planned，最终验收由 B1-CLOSE 完成。
 - `std.concurrent` 是虚拟原生模块：冻结的 17 项签名位于 `xiao-types/src/concurrency.rs`，
   行为由 VM/TAC 计划和 Runtime 实现提供；不新增 `concurrent.xiao`，不作为普通源码对象
   放入归档。公共接口唯一权威页为 [并发执行与共享句柄](../docs/UseDocs/language/concurrency/README.md)，
