@@ -1,0 +1,13 @@
+2026-11-02T11:38:16.8033952Z 20O-REM-RELEASE case=success optimization=0 destroy=13 order=matched
+2026-11-02T11:38:17.2631991Z 20O-REM-RELEASE case=success optimization=3 destroy=13 order=matched
+2026-11-02T11:38:17.7531160Z 20O-REM-RELEASE case=with-bounds optimization=0 destroy=16 order=matched
+2026-11-02T11:38:18.2702679Z 20O-REM-RELEASE case=with-bounds optimization=3 destroy=16 order=matched
+2026-11-02T11:38:18.7125286Z 20O-REM-RELEASE case=nested-jumps optimization=0 destroy=7 order=matched
+2026-11-02T11:38:19.1584404Z 20O-REM-RELEASE case=nested-jumps optimization=3 destroy=7 order=matched
+2026-11-02T11:38:19.6013156Z 20O-REM-RELEASE case=temporary-return optimization=0 destroy=3 order=matched
+2026-11-02T11:38:20.0450676Z 20O-REM-RELEASE case=temporary-return optimization=3 destroy=3 order=matched
+2026-11-02T11:38:20.5147855Z 20O-REM-RELEASE case=selector-errors optimization=0 destroy=6 order=matched
+2026-11-02T11:38:20.9800583Z 20O-REM-RELEASE case=selector-errors optimization=3 destroy=6 order=matched
+2026-11-02T11:38:21.4074398Z 20O-REM-RELEASE case=loop-body-error optimization=0 destroy=3 order=matched
+2026-11-02T11:38:21.8494033Z 20O-REM-RELEASE case=loop-body-error optimization=3 destroy=3 order=matched
+2026-11-02T11:38:21.8929557Z test first_modules_match_native_results ... ok

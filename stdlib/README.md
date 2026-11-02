@@ -18,12 +18,13 @@
 - B1-IMP 的 [`math`](math.md) 六项、[`statistics`](statistics.md) 三项及 [`fmt`](fmt.md)
   三项已有纯 Xiao 草稿与 VM 黄金；公共路径 `std.<module>`，固定身份 `stdlib.<module>`。
   命名/模块绑定与字符串读取前置已修复，三模块已有三平台原生 O0/O3 和逐形参负例；
-  整批性能/内存及释放差异仍待收口。状态 planned，最终验收由 B1-CLOSE 完成。
+  整批性能/内存和已知释放修复已由REM取证。状态planned，最终状态升级由B1-CLOSE完成。
 - REM-A 的 [`hex`](hex.md) 与 [`base64`](base64.md) 各两项已加入共享清单、产品教程、
   独立黄金和编码同名碰撞。两库已过本机 O0/O3、最大合法输入和解码真实长度边界。
   REM-B 的 [`url`](url.md) 两项已有本机 VM/原生 O0/O3 与最大 ASCII/Unicode 资源边界。
   [`csv`](csv.md) 记录子集两项已有本机 VM/原生 O0/O3 和最大引号/多换行/Unicode/E 预算。
-  当前 20/20 产品草稿齐备，完整 F10、生命周期与本轮三平台继续按剩余规划推进。
+  当前20/20产品、生成器20释放前置与完整F10已由三平台取证，41433194454第二次尝试 / 41433190291成功，
+  见 [REM证据](../docs/DevDocs/20o-b1-rem-evidence.md)；七库状态仍planned，CLOSE独立后续。
 - `std.concurrent` 是虚拟原生模块：冻结的 17 项签名位于 `xiao-types/src/concurrency.rs`，
   行为由 VM/TAC 计划和 Runtime 实现提供；不新增 `concurrent.xiao`，不作为普通源码对象
   放入归档。公共接口唯一权威页为 [并发执行与共享句柄](../docs/UseDocs/language/concurrency/README.md)，

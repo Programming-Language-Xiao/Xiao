@@ -17,7 +17,7 @@ related:
 
 为填充、对齐和整数进制提供有语义增量的便利 API，不再建立等价于 str(value) 的占位函数。
 
-本页为 `planned`：B1-IMP 产品源码已在 `stdlib/fmt.xiao` 落地，三模块已有三平台功能回归，完整性能、内存与生命周期验收仍待收口。
+本页保持 planned：stdlib.fmt 的产品草稿与完整示例已落地，七库功能和生成器20的已知释放修复已有三平台证据。资源、性能与门禁的当前对账见 [REM证据](../../DevDocs/20o-b1-rem-evidence.md)；本页状态升级归独立B1-CLOSE。
 本页保留 B0 历史探测，另附直接导入产品函数的完整示例。适用基线：Xiao 0.1.0、Runtime ABI 1.18、
 标准库接口版本 1。逐平台结果见 [B0 探测记录](../../DevDocs/20o-b0-baseline-and-b1-draft.md)。
 
@@ -74,7 +74,7 @@ catch invalid_fill as Error
 
 ## B1-IMP 产品完整示例（planned）
 
-以下源码与 [CI 产品夹具](../../../tests/fixtures/20o-b1/imp/fmt/product.xiao) 逐字一致，已接入原有 VM/原生精确目标；命名调用前置已修复，三模块三平台功能回归已通过；剩余性能与释放验证见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。B0 探测文件独立保留。
+以下源码与 [CI 产品夹具](../../../tests/fixtures/20o-b1/imp/fmt/product.xiao) 逐字一致，已接入原有 VM/原生精确目标；命名调用前置已修复；当前七库的功能、性能与释放记录见 [REM证据](../../DevDocs/20o-b1-rem-evidence.md)。B0 探测文件独立保留。
 
 <!-- b1-imp-executable-example -->
 ```xiao
@@ -204,10 +204,10 @@ padding 原文最多 65,536 UTF-8 字节，width 最多 65,536 码点，结果�
 
 精确计量、编码膨胀和超限顺序见 [资源限额](../../DevDocs/20o-b1-freeze-draft.md#四资源限额f9已确认产品未验证)。
 文本/编码目标为顺序扫描加至多 O(n log n) 的均衡拼接，禁止隐藏的二次复制/扫描；
-翻倍比≤3、最大输入 VM≤10s/原生≤2s、增量内存≤64 MiB 是已确认、仍待实测的目标，
+翻倍比≤3、最大输入 VM≤10s/原生≤2s、增量内存≤64 MiB 是已确认的验收目标；当前分平台实测见 [REM证据](../../DevDocs/20o-b1-rem-evidence.md)，
 计时排除启动/编译/打印，具体方法见 [性能预算](../../DevDocs/20o-b1-freeze-draft.md#五性能预算与测量协议f10)。
 
-本例的十秒看门狗只保护测试；不代表库 API 承诺运行时超时。纯计算不新增宿主能力，打印沿用 stdout。
+入口看门狗只保护测试；F10另按已编译调用计时，不代表库API承诺运行时超时。纯计算不新增宿主能力，打印沿用 stdout。
 
 ## 示例如何进入 CI
 
@@ -237,8 +237,8 @@ error_code 已随独立 FIX-B 在 ABI 1.18 实现并验收；本模块源码与�
 ## 故障排查与下一步
 
 三项产品草稿已有基础 VM 与真实导出黄金，MIN 的实现避免对 MIN 求正绝对值或直接对其正除模。
-命名调用已修复，三平台功能回归及最大左右填充的默认 VM 测试已通过；完整 F10 与释放差异见
-[实测记录](../../DevDocs/20o-b1-imp-blockers.md)；历史边界见 [FIX-A 记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)。
+命名调用已修复，三平台功能回归及最大左右填充的默认VM测试已通过；完整F10与生成器20释放修复的当前记录见
+[REM证据](../../DevDocs/20o-b1-rem-evidence.md)；历史边界见 [FIX-A记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)。
 
 若无法找到完整示例，先确认位于仓库根；原生测试缺少 LLVM/Runtime 配置时应明确失败，
 不能把环境跳过当成功。继续阅读 [整数计算](math.md)、

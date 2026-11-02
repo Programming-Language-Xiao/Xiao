@@ -1,0 +1,6000 @@
+{
+  "backend": "vm",
+  "codegen_version": 20,
+  "complete": true,
+  "failed": false,
+  "memory_method": "OS resident high-water mark minus current resident baseline, conservative upper bound that may include previous high-water mark; not allocator-exact",
+  "phase": "all",
+  "protocol": "bounded geometric calibration to 100ms, then one warmup and five measured samples; each batch must reach 50ms; compile/input/validation/terminal I/O excluded; marker formatting/cleanup included as a conservative time upper bound",
+  "records": [
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 69632,
+            "seconds": 9.407e-6
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 294912,
+            "seconds": 0.000037731
+          }
+        },
+        {
+          "repeats": 256,
+          "sample": {
+            "resident_increment_upper_bytes": 303104,
+            "seconds": 0.000498367
+          }
+        },
+        {
+          "repeats": 4096,
+          "sample": {
+            "resident_increment_upper_bytes": 339968,
+            "seconds": 0.008230442
+          }
+        },
+        {
+          "repeats": 61440,
+          "sample": {
+            "resident_increment_upper_bytes": 323584,
+            "seconds": 0.119020554
+          }
+        }
+      ],
+      "case": "math.abs",
+      "doubling_ratio": null,
+      "function": "abs",
+      "input_bytes_or_items": 3,
+      "median_seconds": 1.9439181640625e-6,
+      "module": "math",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482",
+      "repeats": 61440,
+      "resident_increment_upper_bytes": 335872,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.119434332
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.119643225
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.119586668
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.119318865
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.119259995
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 335872,
+        "seconds": 0.118810789
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 299008,
+            "seconds": 7.554e-6
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 335872,
+            "seconds": 0.000031279
+          }
+        },
+        {
+          "repeats": 256,
+          "sample": {
+            "resident_increment_upper_bytes": 303104,
+            "seconds": 0.000408758
+          }
+        },
+        {
+          "repeats": 4096,
+          "sample": {
+            "resident_increment_upper_bytes": 323584,
+            "seconds": 0.006658748
+          }
+        },
+        {
+          "repeats": 65536,
+          "sample": {
+            "resident_increment_upper_bytes": 335872,
+            "seconds": 0.106529673
+          }
+        }
+      ],
+      "case": "math.min",
+      "doubling_ratio": null,
+      "function": "min",
+      "input_bytes_or_items": 3,
+      "median_seconds": 1.6338028564453124e-6,
+      "module": "math",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482",
+      "repeats": 65536,
+      "resident_increment_upper_bytes": 335872,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.107048689
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.107073024
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.107072904
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.10716658
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.106628979
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 335872,
+        "seconds": 0.106513993
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 339968,
+            "seconds": 5.951e-6
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 339968,
+            "seconds": 0.000028644
+          }
+        },
+        {
+          "repeats": 256,
+          "sample": {
+            "resident_increment_upper_bytes": 339968,
+            "seconds": 0.000385565
+          }
+        },
+        {
+          "repeats": 4096,
+          "sample": {
+            "resident_increment_upper_bytes": 323584,
+            "seconds": 0.006108433
+          }
+        },
+        {
+          "repeats": 65536,
+          "sample": {
+            "resident_increment_upper_bytes": 339968,
+            "seconds": 0.096858151
+          }
+        },
+        {
+          "repeats": 131072,
+          "sample": {
+            "resident_increment_upper_bytes": 339968,
+            "seconds": 0.193997341
+          }
+        }
+      ],
+      "case": "math.max",
+      "doubling_ratio": null,
+      "function": "max",
+      "input_bytes_or_items": 3,
+      "median_seconds": 1.4934651107788085e-6,
+      "module": "math",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482",
+      "repeats": 131072,
+      "resident_increment_upper_bytes": 335872,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.195751459
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.195041715
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.197091808
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.195538438
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.197038939
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 335872,
+        "seconds": 0.194696345
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 335872,
+            "seconds": 6.452e-6
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 319488,
+            "seconds": 0.000036067
+          }
+        },
+        {
+          "repeats": 256,
+          "sample": {
+            "resident_increment_upper_bytes": 335872,
+            "seconds": 0.000511602
+          }
+        },
+        {
+          "repeats": 4096,
+          "sample": {
+            "resident_increment_upper_bytes": 335872,
+            "seconds": 0.008272942
+          }
+        },
+        {
+          "repeats": 61440,
+          "sample": {
+            "resident_increment_upper_bytes": 335872,
+            "seconds": 0.121192668
+          }
+        }
+      ],
+      "case": "math.clamp",
+      "doubling_ratio": null,
+      "function": "clamp",
+      "input_bytes_or_items": 3,
+      "median_seconds": 1.9766364095052082e-6,
+      "module": "math",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482",
+      "repeats": 61440,
+      "resident_increment_upper_bytes": 335872,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.121510705
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.121502319
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.121444541
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.12109841
+        },
+        {
+          "resident_increment_upper_bytes": 335872,
+          "seconds": 0.121363248
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 335872,
+        "seconds": 0.121019682
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 335872,
+            "seconds": 0.000147006
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 335872,
+            "seconds": 0.001825953
+          }
+        },
+        {
+          "repeats": 256,
+          "sample": {
+            "resident_increment_upper_bytes": 327680,
+            "seconds": 0.029024673
+          }
+        },
+        {
+          "repeats": 1280,
+          "sample": {
+            "resident_increment_upper_bytes": 327680,
+            "seconds": 0.144866752
+          }
+        }
+      ],
+      "case": "math.gcd",
+      "doubling_ratio": null,
+      "function": "gcd",
+      "input_bytes_or_items": 3,
+      "median_seconds": 0.00011394436562500001,
+      "module": "math",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482",
+      "repeats": 1280,
+      "resident_increment_upper_bytes": 327680,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 327680,
+          "seconds": 0.146006595
+        },
+        {
+          "resident_increment_upper_bytes": 327680,
+          "seconds": 0.145697654
+        },
+        {
+          "resident_increment_upper_bytes": 327680,
+          "seconds": 0.145848788
+        },
+        {
+          "resident_increment_upper_bytes": 327680,
+          "seconds": 0.145933878
+        },
+        {
+          "resident_increment_upper_bytes": 327680,
+          "seconds": 0.145634856
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 327680,
+        "seconds": 0.146118305
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 344064,
+            "seconds": 0.00015954
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 344064,
+            "seconds": 0.002485433
+          }
+        },
+        {
+          "repeats": 256,
+          "sample": {
+            "resident_increment_upper_bytes": 344064,
+            "seconds": 0.039421798
+          }
+        },
+        {
+          "repeats": 1024,
+          "sample": {
+            "resident_increment_upper_bytes": 327680,
+            "seconds": 0.160841152
+          }
+        }
+      ],
+      "case": "math.pow",
+      "doubling_ratio": null,
+      "function": "pow",
+      "input_bytes_or_items": 3,
+      "median_seconds": 0.000157014298828125,
+      "module": "math",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482",
+      "repeats": 1024,
+      "resident_increment_upper_bytes": 339968,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 339968,
+          "seconds": 0.160782642
+        },
+        {
+          "resident_increment_upper_bytes": 339968,
+          "seconds": 0.161463893
+        },
+        {
+          "resident_increment_upper_bytes": 339968,
+          "seconds": 0.161393209
+        },
+        {
+          "resident_increment_upper_bytes": 339968,
+          "seconds": 0.159410793
+        },
+        {
+          "resident_increment_upper_bytes": 339968,
+          "seconds": 0.159288794
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 339968,
+        "seconds": 0.158304613
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.139847737
+          }
+        }
+      ],
+      "case": "statistics.sum",
+      "doubling_ratio": null,
+      "function": "sum",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.139934109,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140246897
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.139811659
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140159573
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.139797121
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.139934109
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.141884926
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.00871868
+          }
+        },
+        {
+          "repeats": 14,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.122409124
+          }
+        }
+      ],
+      "case": "statistics.sum",
+      "doubling_ratio": null,
+      "function": "sum",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.008749477642857143,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 14,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.122607158
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.122149081
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.122428447
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.122502716
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.122492687
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.122510034
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.017498217
+          }
+        },
+        {
+          "repeats": 7,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.12208427
+          }
+        }
+      ],
+      "case": "statistics.sum",
+      "doubling_ratio": 2.0004918824256013,
+      "function": "sum",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.017503259,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 7,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.122615407
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.122757845
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.122522813
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.122498848
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.12250516
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.122511874
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.03505301
+          }
+        },
+        {
+          "repeats": 4,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.140010821
+          }
+        }
+      ],
+      "case": "statistics.sum",
+      "doubling_ratio": 2.007109304615786,
+      "function": "sum",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.035130954,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 4,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140686411
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140523816
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140275419
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140371499
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140569682
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.13995691
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.142170741
+          }
+        }
+      ],
+      "case": "statistics.min",
+      "doubling_ratio": null,
+      "function": "min",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.142701338,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.14280356
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.142585651
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.142701338
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.142615106
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.145537689
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.141362572
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.008792505
+          }
+        },
+        {
+          "repeats": 14,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.124180078
+          }
+        }
+      ],
+      "case": "statistics.min",
+      "doubling_ratio": null,
+      "function": "min",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.008892462071428572,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 14,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.124899982
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.124337073
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.124494469
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.124559261
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.124370617
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.12319101
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.017508126
+          }
+        },
+        {
+          "repeats": 7,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.122399412
+          }
+        }
+      ],
+      "case": "statistics.min",
+      "doubling_ratio": 2.0012486819795985,
+      "function": "min",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.017796028,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 7,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.126405912
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.124590469
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.124147507
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.124332685
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.124572196
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.125361769
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.037678114
+          }
+        },
+        {
+          "repeats": 4,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.145538962
+          }
+        }
+      ],
+      "case": "statistics.min",
+      "doubling_ratio": 2.019050276275133,
+      "function": "min",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.03593107525,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 4,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.143414458
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.143724301
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144387587
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.142958751
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.143890172
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.142469622
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.162109705
+          }
+        }
+      ],
+      "case": "statistics.max",
+      "doubling_ratio": null,
+      "function": "max",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.144816564,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144592292
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.145073346
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.14453294
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144871928
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144816564
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.144374382
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.009002259
+          }
+        },
+        {
+          "repeats": 14,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.12655375
+          }
+        }
+      ],
+      "case": "statistics.max",
+      "doubling_ratio": null,
+      "function": "max",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.009089377142857142,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 14,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.127334336
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.127188593
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.12725128
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.127257552
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.126913285
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.127430842
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.018253589
+          }
+        },
+        {
+          "repeats": 7,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.126932391
+          }
+        }
+      ],
+      "case": "statistics.max",
+      "doubling_ratio": 1.9881245988252534,
+      "function": "max",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.018070814285714283,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 7,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.12650089
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1264957
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.126273092
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.126684405
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.126438724
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.126609534
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.036191195
+          }
+        },
+        {
+          "repeats": 4,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.145438505
+          }
+        }
+      ],
+      "case": "statistics.max",
+      "doubling_ratio": 2.0072472621598996,
+      "function": "max",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.0362725925,
+      "module": "statistics",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8",
+      "repeats": 4,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144906404
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.147802879
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.145992255
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.145085001
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.14509037
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.144783294
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.000335511
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.004840939
+          }
+        },
+        {
+          "repeats": 256,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.077541957
+          }
+        },
+        {
+          "repeats": 512,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.156900079
+          }
+        }
+      ],
+      "case": "fmt.format_int",
+      "doubling_ratio": null,
+      "function": "format_int",
+      "input_bytes_or_items": 1,
+      "median_seconds": 0.000300153521484375,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 65,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 512,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.153600466
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.153678603
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.154026598
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.153655219
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.15383126
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.15367709
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 163840,
+            "seconds": 0.058846137
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 770048,
+            "seconds": 0.178080248
+          }
+        }
+      ],
+      "case": "fmt.pad_left",
+      "doubling_ratio": null,
+      "function": "pad_left",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.059296673333333334,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 262144,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.17789002
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.177961865
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.178078074
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.177801854
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.177670848
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 65536,
+        "seconds": 0.178370484
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.003739689
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.062821328
+          }
+        },
+        {
+          "repeats": 32,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.119557479
+          }
+        }
+      ],
+      "case": "fmt.pad_left",
+      "doubling_ratio": null,
+      "function": "pad_left",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.0037133736875,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 16384,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 32,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.118690509
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.119151937
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.118827958
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.118762184
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.118987227
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.120285277
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.00748011
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.12245271
+          }
+        }
+      ],
+      "case": "fmt.pad_left",
+      "doubling_ratio": 2.0379983639877075,
+      "function": "pad_left",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.0075678495,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 32768,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 16,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.121087004
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.12077122
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.121090922
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.120699476
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.121085592
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.121019016
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.014984685
+          }
+        },
+        {
+          "repeats": 9,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.133313504
+          }
+        }
+      ],
+      "case": "fmt.pad_left",
+      "doubling_ratio": 1.9573656808171052,
+      "function": "pad_left",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.01481304888888889,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 9,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.133049558
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.133449169
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132824956
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.133356485
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.13331744
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.133141311
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.064649891
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 40960,
+            "seconds": 0.127639161
+          }
+        }
+      ],
+      "case": "fmt.pad_right",
+      "doubling_ratio": null,
+      "function": "pad_right",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.065191429,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 262144,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130397545
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.129995159
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130142286
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132844073
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130382858
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.130459482
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.004164438
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.06470775
+          }
+        },
+        {
+          "repeats": 32,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.132966865
+          }
+        }
+      ],
+      "case": "fmt.pad_right",
+      "doubling_ratio": null,
+      "function": "pad_right",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.00406282678125,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 16384,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 32,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130353182
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.129586059
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130141033
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130010457
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.129982124
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.130087031
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.008183422
+          }
+        },
+        {
+          "repeats": 15,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.121900945
+          }
+        }
+      ],
+      "case": "fmt.pad_right",
+      "doubling_ratio": 2.0191744586616855,
+      "function": "pad_right",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.008203556066666666,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 32768,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 15,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.123020329
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.123053341
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.122674798
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.123257344
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.123215956
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.123457019
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.016276485
+          }
+        },
+        {
+          "repeats": 8,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.130318676
+          }
+        }
+      ],
+      "case": "fmt.pad_right",
+      "doubling_ratio": 1.9914836160360734,
+      "function": "pad_right",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.0163372475,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 8,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130835098
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130880734
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130361196
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.13062321
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.13069798
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.130949453
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.187589778
+          }
+        }
+      ],
+      "case": "fmt.scan",
+      "doubling_ratio": null,
+      "function": "pad_left",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.187853544,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.187853544
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.188912755
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.189031478
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.187549753
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.187456508
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.186587184
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.011767328
+          }
+        },
+        {
+          "repeats": 11,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.129801725
+          }
+        }
+      ],
+      "case": "fmt.scan",
+      "doubling_ratio": null,
+      "function": "pad_left",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.011805262818181818,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 4096,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 11,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.129603101
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.129857891
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1305915
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130068327
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.129759826
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.129707418
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.023923519
+          }
+        },
+        {
+          "repeats": 6,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.141363838
+          }
+        }
+      ],
+      "case": "fmt.scan",
+      "doubling_ratio": 1.9843526592722294,
+      "function": "pad_left",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.023425804666666664,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 8192,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 6,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.139893795
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140443197
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.14304602
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140789636
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140554828
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.140054076
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.046998813
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.140894927
+          }
+        }
+      ],
+      "case": "fmt.scan",
+      "doubling_ratio": 2.0119522041605005,
+      "function": "pad_left",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.04713159933333333,
+      "module": "fmt",
+      "optimization": null,
+      "output_bytes_or_items": 16384,
+      "passed": true,
+      "product_sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140676376
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.141489945
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.140601942
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.141746909
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.141394798
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.140870211
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.381224202
+          }
+        }
+      ],
+      "case": "hex.encode",
+      "doubling_ratio": null,
+      "function": "encode",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.379627401,
+      "module": "hex",
+      "optimization": null,
+      "output_bytes_or_items": 131072,
+      "passed": true,
+      "product_sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.380124975
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.381993393
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.37909451
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.379009641
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.379627401
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.378952013
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.023562752
+          }
+        },
+        {
+          "repeats": 6,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.143325292
+          }
+        }
+      ],
+      "case": "hex.encode",
+      "doubling_ratio": null,
+      "function": "encode",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.0235602925,
+      "module": "hex",
+      "optimization": null,
+      "output_bytes_or_items": 8192,
+      "passed": true,
+      "product_sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25",
+      "repeats": 6,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.141361755
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.141461893
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.141744985
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.141243033
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.141281174
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.141542545
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.047238677
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.142586034
+          }
+        }
+      ],
+      "case": "hex.encode",
+      "doubling_ratio": 2.0261176299063353,
+      "function": "encode",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.047735924000000006,
+      "module": "hex",
+      "optimization": null,
+      "output_bytes_or_items": 16384,
+      "passed": true,
+      "product_sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.14316459
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.14331843
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.143710185
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.143207772
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.143082807
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.143000592
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.094096682
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.189823669
+          }
+        }
+      ],
+      "case": "hex.encode",
+      "doubling_ratio": 1.9906630381764472,
+      "function": "encode",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.0950261395,
+      "module": "hex",
+      "optimization": null,
+      "output_bytes_or_items": 32768,
+      "passed": true,
+      "product_sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.190199195
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.190117922
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.190052279
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.190048622
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.189911364
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.189874333
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 1.172493198
+          }
+        }
+      ],
+      "case": "hex.decode",
+      "doubling_ratio": null,
+      "function": "decode",
+      "input_bytes_or_items": 131072,
+      "median_seconds": 1.157051651,
+      "module": "hex",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.159379036
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.152996068
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.156318704
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.157051651
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.157432547
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 1.158258179
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.036124602
+          }
+        },
+        {
+          "repeats": 4,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.146374305
+          }
+        }
+      ],
+      "case": "hex.decode",
+      "doubling_ratio": null,
+      "function": "decode",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.036168326,
+      "module": "hex",
+      "optimization": null,
+      "output_bytes_or_items": 2048,
+      "passed": true,
+      "product_sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25",
+      "repeats": 4,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144657567
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144930638
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144723268
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144506069
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144673304
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.145078158
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.07248224
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.145257001
+          }
+        }
+      ],
+      "case": "hex.decode",
+      "doubling_ratio": 2.033627530895403,
+      "function": "decode",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.0735529035,
+      "module": "hex",
+      "optimization": null,
+      "output_bytes_or_items": 4096,
+      "passed": true,
+      "product_sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.147105807
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.146880042
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.14687372
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.148025826
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.17094201
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.147150431
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.145165059
+          }
+        }
+      ],
+      "case": "hex.decode",
+      "doubling_ratio": 1.9684496071592879,
+      "function": "decode",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.144785184,
+      "module": "hex",
+      "optimization": null,
+      "output_bytes_or_items": 8192,
+      "passed": true,
+      "product_sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144585319
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144785184
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144794032
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.144646935
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.145716364
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.144994408
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.448891917
+          }
+        }
+      ],
+      "case": "base64.encode",
+      "doubling_ratio": null,
+      "function": "encode",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.434684421,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 87384,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.434251828
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.433187297
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.438565095
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.434955811
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.434684421
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.433792535
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.026549514
+          }
+        },
+        {
+          "repeats": 5,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.132830754
+          }
+        }
+      ],
+      "case": "base64.encode",
+      "doubling_ratio": null,
+      "function": "encode",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.0265419434,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 5464,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 5,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132709717
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132628614
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132695039
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132738541
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.136516723
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.13244011
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.053259369
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.160207062
+          }
+        }
+      ],
+      "case": "base64.encode",
+      "doubling_ratio": 2.001867617576187,
+      "function": "encode",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.053133457,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 10924,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.160197865
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.159416496
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.159184358
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.158981194
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.159400371
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.158814644
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.106142981
+          }
+        }
+      ],
+      "case": "base64.encode",
+      "doubling_ratio": 2.000115407510563,
+      "function": "encode",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.106273046,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 21848,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.106244051
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.106531101
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.105953235
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.10642952
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.106273046
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.105466159
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.432223208
+          }
+        }
+      ],
+      "case": "base64.encode_url",
+      "doubling_ratio": null,
+      "function": "encode",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.42458979,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 87384,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.424234211
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.425034425
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.425753917
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.42458979
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.424387609
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.424228741
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.026517666
+          }
+        },
+        {
+          "repeats": 5,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.132427539
+          }
+        }
+      ],
+      "case": "base64.encode_url",
+      "doubling_ratio": null,
+      "function": "encode",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.027250275600000002,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 5464,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 5,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.135570778
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.135757369
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.136688009
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.136251378
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.153382109
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.135197376
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.052934903
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.163808528
+          }
+        }
+      ],
+      "case": "base64.encode_url",
+      "doubling_ratio": 1.9925167411273204,
+      "function": "encode",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.05429663033333334,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 10924,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.163339597
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.163433874
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.162889891
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.162586421
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.162805553
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.162844475
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.108320264
+          }
+        }
+      ],
+      "case": "base64.encode_url",
+      "doubling_ratio": 1.9516511862605395,
+      "function": "encode",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.105968083,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 21848,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.106022575
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.105968083
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.105638733
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.106001004
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.105566017
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.10548754
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 1.408707142
+          }
+        }
+      ],
+      "case": "base64.decode",
+      "doubling_ratio": null,
+      "function": "decode",
+      "input_bytes_or_items": 87384,
+      "median_seconds": 1.4024071089999999,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.4024071089999999
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.403679795
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.401319448
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.401988541
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.402608959
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 1.411626593
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.065978803
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.132302915
+          }
+        }
+      ],
+      "case": "base64.decode",
+      "doubling_ratio": null,
+      "function": "decode",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.06599868,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 3072,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.13199736
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.131748162
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.13201331
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.131786554
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132260856
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.132025674
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.132403954
+          }
+        }
+      ],
+      "case": "base64.decode",
+      "doubling_ratio": 2.0054306237639903,
+      "function": "decode",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.132355774,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 6144,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.13834358
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132355774
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132379199
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132269903
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132253002
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.132518691
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.270144902
+          }
+        }
+      ],
+      "case": "base64.decode",
+      "doubling_ratio": 1.9918435821318985,
+      "function": "decode",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.263631999,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 12288,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.264417877
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.263383964
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.263631999
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.263487899
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.26366414
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.263674829
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 1.416629634
+          }
+        }
+      ],
+      "case": "base64.decode_url",
+      "doubling_ratio": null,
+      "function": "decode",
+      "input_bytes_or_items": 87384,
+      "median_seconds": 1.393449977,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.393449977
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.392249159
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.394359757
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.390948985
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.414854069
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 1.388660615
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.065456177
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.130408687
+          }
+        }
+      ],
+      "case": "base64.decode_url",
+      "doubling_ratio": null,
+      "function": "decode",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.065278728,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 3072,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130371868
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130850467
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130677051
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130557456
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130482375
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.130710734
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.130316784
+          }
+        }
+      ],
+      "case": "base64.decode_url",
+      "doubling_ratio": 2.0341046014254447,
+      "function": "decode",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.132783761,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 6144,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132821923
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.133105717
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132699262
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132631846
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.132783761
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.132784873
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.265903564
+          }
+        }
+      ],
+      "case": "base64.decode_url",
+      "doubling_ratio": 2.0007441873859864,
+      "function": "decode",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.265666338,
+      "module": "base64",
+      "optimization": null,
+      "output_bytes_or_items": 12288,
+      "passed": true,
+      "product_sha256": "15eb3fe68db7624ab4de1ee2a18c30988c1d1c04a2f4768435ee54b9c81c7190",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.271175403
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.266034991
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.265560509
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.265666338
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.265553246
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.271110422
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 1.469579522
+          }
+        }
+      ],
+      "case": "url.encode_ascii",
+      "doubling_ratio": null,
+      "function": "encode_component",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 1.443309759,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 196608,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.4429413260000001
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.445582801
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.442038499
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.443309759
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.446408443
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 1.44132351
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.090756303
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.180643692
+          }
+        }
+      ],
+      "case": "url.encode_ascii",
+      "doubling_ratio": null,
+      "function": "encode_component",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.092378973,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 12288,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.184880015
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.184775599
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.184757946
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.18445743
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.184572147
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.184800465
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.184028675
+          }
+        }
+      ],
+      "case": "url.encode_ascii",
+      "doubling_ratio": 1.948655447814948,
+      "function": "encode_component",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.180014789,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 24576,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.179990287
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.180014789
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.180168148
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.179946612
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.180082567
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.180636579
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.362126591
+          }
+        }
+      ],
+      "case": "url.encode_ascii",
+      "doubling_ratio": 2.004374429480902,
+      "function": "encode_component",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.36081704,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 49152,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.384422942
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.36082258
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.36081704
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.360693498
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.360421817
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.360347116
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.795986348
+          }
+        }
+      ],
+      "case": "url.encode_unicode",
+      "doubling_ratio": null,
+      "function": "encode_component",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.773710577,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 196608,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.773710577
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.778387909
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.776575213
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.773349609
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.772476839
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.774064812
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.048745827
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.145376574
+          }
+        }
+      ],
+      "case": "url.encode_unicode",
+      "doubling_ratio": null,
+      "function": "encode_component",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.048439698333333336,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 12288,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.145264914
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.145319095
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.145586518
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.145180796
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.145361835
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.145330387
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.097245101
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.20348189
+          }
+        }
+      ],
+      "case": "url.encode_unicode",
+      "doubling_ratio": 2.037090524820568,
+      "function": "encode_component",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.0986760505,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 24576,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.196421211
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.198466837
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.197352101
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.210840486
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.195587956
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.19552657
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.195093206
+          }
+        }
+      ],
+      "case": "url.encode_unicode",
+      "doubling_ratio": 1.9722553245075412,
+      "function": "encode_component",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.194614366,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 49152,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.194614366
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.19440434
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.19463265
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.194387268
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.195543111
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.194583688
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 1.9555039870000002
+          }
+        }
+      ],
+      "case": "url.decode_ascii",
+      "doubling_ratio": null,
+      "function": "decode_component",
+      "input_bytes_or_items": 196608,
+      "median_seconds": 1.945394179,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.952060823
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.944101255
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.945394179
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.9434410500000001
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.947255879
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 1.948850668
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.040031847
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.120263737
+          }
+        }
+      ],
+      "case": "url.decode_ascii",
+      "doubling_ratio": null,
+      "function": "decode_component",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.040112625666666665,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 1366,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.120576946
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.121940289
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.120006243
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.120104188
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.120337877
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.12132405
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.080897982
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.159917244
+          }
+        }
+      ],
+      "case": "url.decode_ascii",
+      "doubling_ratio": 1.9967966486561834,
+      "function": "decode_component",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.0800967565,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 2732,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.160284504
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.160500309
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.160095698
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.160193513
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.159658918
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.160284544
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.159799422
+          }
+        }
+      ],
+      "case": "url.decode_ascii",
+      "doubling_ratio": 2.007832389567485,
+      "function": "decode_component",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.160820862,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 5462,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.161318968
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.162707779
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.160810553
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.160820862
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.160495
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.161173244
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 2.113331487
+          }
+        }
+      ],
+      "case": "url.decode_unicode",
+      "doubling_ratio": null,
+      "function": "decode_component",
+      "input_bytes_or_items": 196608,
+      "median_seconds": 2.063614382,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 2.063614382
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 2.066171138
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 2.066178801
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 2.062808387
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 2.063209461
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 2.053767893
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.043873046
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.131115903
+          }
+        }
+      ],
+      "case": "url.decode_unicode",
+      "doubling_ratio": null,
+      "function": "decode_component",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.043364186666666665,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 1368,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130339935
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.13009256
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.130088122
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.129867216
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.13027889
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.129940343
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.087729742
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.177384462
+          }
+        }
+      ],
+      "case": "url.decode_unicode",
+      "doubling_ratio": 2.0027899558591207,
+      "function": "decode_component",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.0868493575,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 2736,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.18966218
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.173993769
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.173698715
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.173567277
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.173672064
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.173929137
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.173182955
+          }
+        }
+      ],
+      "case": "url.decode_unicode",
+      "doubling_ratio": 1.9877449640315417,
+      "function": "decode_component",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.172634373,
+      "module": "url",
+      "optimization": null,
+      "output_bytes_or_items": 5464,
+      "passed": true,
+      "product_sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.172634373
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.172808759
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.172632828
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.17250675
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.172801334
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.173702866
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 1.03249034
+          }
+        }
+      ],
+      "case": "csv.parse_ascii",
+      "doubling_ratio": null,
+      "function": "parse_record",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 1.015540042,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 4,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.015881363
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.014950444
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.015540042
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.010940979
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.042771594
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 1.01597578
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.063489013
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.132105703
+          }
+        }
+      ],
+      "case": "csv.parse_ascii",
+      "doubling_ratio": null,
+      "function": "parse_record",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.064558558,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.129139127
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.129117116
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.129328443
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.128917731
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.128596978
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.129129589
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.126970622
+          }
+        }
+      ],
+      "case": "csv.parse_ascii",
+      "doubling_ratio": 1.955828164563403,
+      "function": "parse_record",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.126265446,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.126265446
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.12592746
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.126523491
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.126045392
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.127872456
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.127149337
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.254537493
+          }
+        }
+      ],
+      "case": "csv.parse_ascii",
+      "doubling_ratio": 2.012648844561956,
+      "function": "parse_record",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.254128004,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.254389626
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.254128004
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.259490704
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.253823802
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.253214006
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.254482189
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.718729139
+          }
+        }
+      ],
+      "case": "csv.parse_quotes",
+      "doubling_ratio": null,
+      "function": "parse_record",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.719431654,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 3,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.719483747
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.718987424
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.720167813
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.719431654
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.718800406
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.721659276
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.045064174
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.137085489
+          }
+        }
+      ],
+      "case": "csv.parse_quotes",
+      "doubling_ratio": null,
+      "function": "parse_record",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.04537088366666667,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.135987746
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.13618683
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.135688784
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1361499
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.136112651
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.135652506
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.090514823
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.180234974
+          }
+        }
+      ],
+      "case": "csv.parse_quotes",
+      "doubling_ratio": 1.9782225129095459,
+      "function": "parse_record",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.0897537035,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.179472361
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.179507407
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.179238121
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.179552021
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.179927316
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.179843048
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.181324772
+          }
+        }
+      ],
+      "case": "csv.parse_quotes",
+      "doubling_ratio": 2.005899533716734,
+      "function": "parse_record",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.180036912,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.180036912
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.184603763
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.17953562
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.180031131
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.180215408
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.179364669
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.847465672
+          }
+        }
+      ],
+      "case": "csv.parse_multiline",
+      "doubling_ratio": null,
+      "function": "parse_record",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 0.845769234,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 4,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.845769234
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.861910997
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.844815083
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.864183141
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.840796614
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.843699004
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.052612322
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.157973202
+          }
+        }
+      ],
+      "case": "csv.parse_multiline",
+      "doubling_ratio": null,
+      "function": "parse_record",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.05259382433333334,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.15736008
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.157781473
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.157856353
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.160370317
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.157668149
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.15720014
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.104440921
+          }
+        }
+      ],
+      "case": "csv.parse_multiline",
+      "doubling_ratio": 1.9935909268637642,
+      "function": "parse_record",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.104850571,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.104578399
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.104806278
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.105039777
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.104850571
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.109042269
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.10463684
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.213348809
+          }
+        }
+      ],
+      "case": "csv.parse_multiline",
+      "doubling_ratio": 2.0103865624155732,
+      "function": "parse_record",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.210790179,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.213191783
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.21057254
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.210790179
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.210784839
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.211635097
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.210307672
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 1.032593637
+          }
+        }
+      ],
+      "case": "csv.parse_fields",
+      "doubling_ratio": null,
+      "function": "parse_record",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 1.021359802,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1024,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.02165331
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.0212045299999999
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.022418674
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.02006582
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 1.021359802
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 1.01814526
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.063752181
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.127563865
+          }
+        }
+      ],
+      "case": "csv.parse_fields",
+      "doubling_ratio": null,
+      "function": "parse_record",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.063505327,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 64,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.127292945
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.127117646
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.12688037
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.126567422
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.127010654
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.127044698
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.126321139
+          }
+        }
+      ],
+      "case": "csv.parse_fields",
+      "doubling_ratio": 1.9983217313407426,
+      "function": "parse_record",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.126904075,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 128,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 7585792,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 7585792,
+          "seconds": 0.126882254
+        },
+        {
+          "resident_increment_upper_bytes": 7585792,
+          "seconds": 0.127115231
+        },
+        {
+          "resident_increment_upper_bytes": 7585792,
+          "seconds": 0.126904075
+        },
+        {
+          "resident_increment_upper_bytes": 7585792,
+          "seconds": 0.126632033
+        },
+        {
+          "resident_increment_upper_bytes": 7585792,
+          "seconds": 0.126991389
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 7585792,
+        "seconds": 0.127120532
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 6737920,
+            "seconds": 0.25253144
+          }
+        }
+      ],
+      "case": "csv.parse_fields",
+      "doubling_ratio": 1.9963420559978076,
+      "function": "parse_record",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.253343942,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 256,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 6737920,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 6737920,
+          "seconds": 0.25404242
+        },
+        {
+          "resident_increment_upper_bytes": 6737920,
+          "seconds": 0.2528959
+        },
+        {
+          "resident_increment_upper_bytes": 6737920,
+          "seconds": 0.253343942
+        },
+        {
+          "resident_increment_upper_bytes": 6737920,
+          "seconds": 0.252663575
+        },
+        {
+          "resident_increment_upper_bytes": 6737920,
+          "seconds": 0.254209849
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 6737920,
+        "seconds": 0.25372348
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 6709248,
+            "seconds": 0.959849343
+          }
+        }
+      ],
+      "case": "csv.format_ascii",
+      "doubling_ratio": null,
+      "function": "format_record",
+      "input_bytes_or_items": 65533,
+      "median_seconds": 0.951463519,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 6709248,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.951463519
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.964179868
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.946547073
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.946808594
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.95267771
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 6709248,
+        "seconds": 0.949056066
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 6709248,
+            "seconds": 0.05923441
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 6709248,
+            "seconds": 0.179696425
+          }
+        }
+      ],
+      "case": "csv.format_ascii",
+      "doubling_ratio": null,
+      "function": "format_record",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.05886525533333333,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 4096,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 6709248,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.177183169
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.176595766
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.176381403
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.177049118
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.176579386
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 6709248,
+        "seconds": 0.176963869
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 6709248,
+            "seconds": 0.118003818
+          }
+        }
+      ],
+      "case": "csv.format_ascii",
+      "doubling_ratio": 2.002777705327318,
+      "function": "format_record",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.117894021,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 8192,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 6709248,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.117735824
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.117924208
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.117677845
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.117894021
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.119586
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 6709248,
+        "seconds": 0.118129864
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 6709248,
+            "seconds": 0.237683132
+          }
+        }
+      ],
+      "case": "csv.format_ascii",
+      "doubling_ratio": 2.005212011557397,
+      "function": "format_record",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.236402507,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 16384,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 6709248,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.235634153
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.238405258
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.244739616
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.236402507
+        },
+        {
+          "resident_increment_upper_bytes": 6709248,
+          "seconds": 0.23562187
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 6709248,
+        "seconds": 0.236559431
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4435968,
+            "seconds": 0.475585526
+          }
+        }
+      ],
+      "case": "csv.format_quotes",
+      "doubling_ratio": null,
+      "function": "format_record",
+      "input_bytes_or_items": 32765,
+      "median_seconds": 0.477080904,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 4435968,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.478053821
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.477080904
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.476560296
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.47736594
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.476849039
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 4435968,
+        "seconds": 0.477842154
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4435968,
+            "seconds": 0.059459558
+          }
+        },
+        {
+          "repeats": 3,
+          "sample": {
+            "resident_increment_upper_bytes": 4435968,
+            "seconds": 0.177762648
+          }
+        }
+      ],
+      "case": "csv.format_quotes",
+      "doubling_ratio": null,
+      "function": "format_record",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.05937177333333333,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 8194,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 3,
+      "resident_increment_upper_bytes": 4435968,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.177671847
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.178117404
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.177932477
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.17811532
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.178167747
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 4435968,
+        "seconds": 0.177993671
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4435968,
+            "seconds": 0.120234821
+          }
+        }
+      ],
+      "case": "csv.format_quotes",
+      "doubling_ratio": 2.0287513786012346,
+      "function": "format_record",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.120450567,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 16386,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 4435968,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.120464773
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.120752042
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.120364324
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.120299353
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.120450567
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 4435968,
+        "seconds": 0.125604089
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4435968,
+            "seconds": 0.240278664
+          }
+        }
+      ],
+      "case": "csv.format_quotes",
+      "doubling_ratio": 1.9913556488281206,
+      "function": "format_record",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.239859917,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 32770,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 4435968,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.239642989
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.239859917
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.239979542
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.240126027
+        },
+        {
+          "resident_increment_upper_bytes": 4435968,
+          "seconds": 0.239704194
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 4435968,
+        "seconds": 0.240070693
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4173824,
+            "seconds": 1.00078884
+          }
+        }
+      ],
+      "case": "csv.format_multiline",
+      "doubling_ratio": null,
+      "function": "format_record",
+      "input_bytes_or_items": 65525,
+      "median_seconds": 1.002671801,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 4173824,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 1.000836891
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 1.002443909
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 1.002792684
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 1.00311259
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 1.002671801
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 4173824,
+        "seconds": 1.000360405
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4173824,
+            "seconds": 0.062476986
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 4173824,
+            "seconds": 0.125234239
+          }
+        }
+      ],
+      "case": "csv.format_multiline",
+      "doubling_ratio": null,
+      "function": "format_record",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.0623285275,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 4098,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 4173824,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.124775086
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.124426731
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.124466977
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.124657055
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.124755859
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 4173824,
+        "seconds": 0.124813098
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4173824,
+            "seconds": 0.12490461
+          }
+        }
+      ],
+      "case": "csv.format_multiline",
+      "doubling_ratio": 2.00809962982039,
+      "function": "format_record",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.125161893,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 8194,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 4173824,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.125196539
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.125047448
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.124845498
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.125227185
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.125161893
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 4173824,
+        "seconds": 0.125556495
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4173824,
+            "seconds": 0.249710263
+          }
+        }
+      ],
+      "case": "csv.format_multiline",
+      "doubling_ratio": 1.994292575936032,
+      "function": "format_record",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.249609434,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 16386,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 4173824,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.249609434
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.249592211
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.251152053
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.25005405
+        },
+        {
+          "resident_increment_upper_bytes": 4173824,
+          "seconds": 0.249294672
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 4173824,
+        "seconds": 0.249988235
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 241664,
+            "seconds": 0.951350763
+          }
+        }
+      ],
+      "case": "csv.format_fields",
+      "doubling_ratio": null,
+      "function": "format_record",
+      "input_bytes_or_items": 64513,
+      "median_seconds": 0.952266039,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 65536,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.971112002
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.951311706
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.952266039
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.955707585
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.950671454
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.95426981
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.061497146
+          }
+        },
+        {
+          "repeats": 2,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.119741622
+          }
+        }
+      ],
+      "case": "csv.format_fields",
+      "doubling_ratio": null,
+      "function": "format_record",
+      "input_bytes_or_items": 4033,
+      "median_seconds": 0.059620686,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 4096,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 2,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.121084374
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.119874221
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.119044021
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.119241372
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.119176991
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.119941758
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.121190274
+          }
+        }
+      ],
+      "case": "csv.format_fields",
+      "doubling_ratio": 2.000158803942645,
+      "function": "format_record",
+      "input_bytes_or_items": 8065,
+      "median_seconds": 0.11925084,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 8192,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.119752162
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.11925084
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.119356799
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.119185838
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.119198863
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.119065572
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.241435492
+          }
+        }
+      ],
+      "case": "csv.format_fields",
+      "doubling_ratio": 1.998539733556594,
+      "function": "format_record",
+      "input_bytes_or_items": 16129,
+      "median_seconds": 0.238327542,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 16384,
+      "passed": true,
+      "product_sha256": "636ebe0f75f57beef2f46a3b9019fa651970799a2c6d7fd717e69495869384d4",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.238330248
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.238100376
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.238327542
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.238069608
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.238918543
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 0,
+        "seconds": 0.240113488
+      }
+    }
+  ],
+  "runtime_abi_encoded": 65554,
+  "rust_debug_assertions": false,
+  "scope": "controlled B1 measurement, not acceptance of lifecycle",
+  "selected": "all",
+  "target": "x86_64-unknown-linux-gnu"
+}

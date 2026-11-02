@@ -22,8 +22,8 @@
 精确签名、错误表、资源/性能预算和两个 CI 精确执行点见 [B1 冻结草案](../../DevDocs/20o-b1-freeze-draft.md)。
 F1～F13 与内联导出策略已逐条确认；Base64 标准/URL-safe 模式参数必填。
 error_code 已由独立 FIX-B 实现并验收（intrinsic 32 / ABI 1.18），证据见 [FIX-B 收口](../../DevDocs/20o-b1-fix-b-closeout.md)。
-七库 20/20 入口已有产品草稿、完整示例与本机 VM/原生 O0/O3 回归；完整 F9/F10、本轮三平台
-与释放验证继续按 [REM 进度](../../DevDocs/20o-b1-imp-remainder.md) 推进。七库教程与七库 registry 条目保持 planned。
+七库20/20入口已有产品草稿、完整示例与三平台VM/原生功能回归；生成器20的六组释放向量也已匹配。
+完整F10的四份报告721条记录已通过，当前执行边界与原始证据见 [REM证据](../../DevDocs/20o-b1-rem-evidence.md)。七库教程与七库registry条目保持planned，状态升级归B1-CLOSE。
 
 ## 首批模块
 

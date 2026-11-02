@@ -1,0 +1,23 @@
+{
+  "run_id": 41433194454,
+  "attempt": 1,
+  "source_head": "14908c64f115a8d676d512f2bb0a4608faf41eea",
+  "job_id": 125237347099,
+  "test": "queued_task_cancel_never_runs_body_and_wait_is_027",
+  "source_file": "core/rust/crates/xiao-driver/tests/22c_vm_concurrency.rs",
+  "source_line": 567,
+  "expected_cleanup_order": [
+    36,
+    34
+  ],
+  "actual_order": [
+    34,
+    36
+  ],
+  "source_log_sha256": "77cc8f58ac5fe9f69bcf53d169bf8430c5205c0e6bb645d43d483fc7fc9483ee",
+  "source_start_line": 2708,
+  "source_end_line": 2723,
+  "excerpt_sha256": "184a3728b839b3c06d905afabb8834fcdefb7be8fccc627272bb4222f754984c",
+  "b1_native_exact_completed": true,
+  "f10_executed": false
+}

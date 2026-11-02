@@ -1,0 +1,16 @@
+2026-11-02T11:03:45.1675022Z      Running tests/20o_b1_imp_contract.rs (core/rust/target/debug/deps/20o_b1_imp_contract-f4ed24af58e90e74)
+2026-11-02T11:03:45.1696703Z
+2026-11-02T11:03:45.1696841Z running 9 tests
+2026-11-02T11:03:45.1733703Z test every_implemented_module_is_in_the_active_contract_matrix ... ok
+2026-11-02T11:03:45.1746557Z test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+2026-11-02T11:03:45.1763153Z test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+2026-11-02T11:03:48.0042771Z test colliding_public_names_keep_their_own_module_implementations ... ok
+2026-11-02T11:04:06.6535047Z test every_public_function_requires_its_real_implementation ... ok
+2026-11-02T11:04:24.8693842Z test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+2026-11-02T11:04:45.1735734Z test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+2026-11-02T11:04:45.1763773Z test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+2026-11-02T11:04:58.2694015Z test public_std_aliases_execute_through_the_official_loader ... ok
+2026-11-02T11:05:01.1491961Z test products_execute_and_export_only_the_frozen_names ... ok
+2026-11-02T11:05:01.7992614Z test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+2026-11-02T11:05:01.7993078Z
+2026-11-02T11:05:01.7995083Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 76.63s

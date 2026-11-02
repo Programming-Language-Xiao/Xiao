@@ -1,0 +1,7 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.24s
+     Running tests\20o_b1_imp_contract.rs (core\rust\target\debug\deps\20o_b1_imp_contract-b2c3036637e54ff1.exe)
+
+running 1 test
+test colliding_public_names_keep_their_own_module_implementations ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 1.67s

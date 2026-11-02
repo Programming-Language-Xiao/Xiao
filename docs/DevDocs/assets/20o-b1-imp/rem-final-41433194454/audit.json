@@ -1,0 +1,46 @@
+[
+  {
+    "file": "b1-f10-native-Linux.json",
+    "target": "x86_64-unknown-linux-gnu",
+    "backend": "native",
+    "records": 206,
+    "functions": 20,
+    "maximum_seconds": 0.270996769,
+    "maximum_doubling_ratio": 2.2658844275641936,
+    "maximum_resident_increment_upper_bytes": 5304320.0,
+    "passed": true
+  },
+  {
+    "file": "b1-f10-native-macOS.json",
+    "target": "aarch64-apple-darwin",
+    "backend": "native",
+    "records": 206,
+    "functions": 20,
+    "maximum_seconds": 0.334972,
+    "maximum_doubling_ratio": 2.563996619400883,
+    "maximum_resident_increment_upper_bytes": 5423104.0,
+    "passed": true
+  },
+  {
+    "file": "b1-f10-native-Windows.json",
+    "target": "x86_64-pc-windows-msvc",
+    "backend": "native",
+    "records": 206,
+    "functions": 20,
+    "maximum_seconds": 0.6486204,
+    "maximum_doubling_ratio": 2.106825115606752,
+    "maximum_resident_increment_upper_bytes": 5943296.0,
+    "passed": true
+  },
+  {
+    "file": "b1-f10-vm-Linux.json",
+    "target": "x86_64-unknown-linux-gnu",
+    "backend": "vm",
+    "records": 103,
+    "functions": 20,
+    "maximum_seconds": 2.188166598,
+    "maximum_doubling_ratio": 2.5960669454362675,
+    "maximum_resident_increment_upper_bytes": 397312.0,
+    "passed": true
+  }
+]

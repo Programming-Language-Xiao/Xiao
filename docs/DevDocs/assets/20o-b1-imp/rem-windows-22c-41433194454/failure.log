@@ -1,0 +1,16 @@
+2026-11-02T11:11:45.6811861Z ---- queued_task_cancel_never_runs_body_and_wait_is_027 stdout ----
+2026-11-02T11:11:45.6812258Z
+2026-11-02T11:11:45.6812757Z thread 'queued_task_cancel_never_runs_body_and_wait_is_027' (7544) panicked at crates\xiao-driver\tests\22c_vm_concurrency.rs:567:5:
+2026-11-02T11:11:45.6814832Z assertion `left == right` failed: transfer=IrBoundaryTransfer { parameters: [34, 36], runtime_id: 18446744073709551615, copy_kind: "deep_copy", cleanup_order: [36, 34], span: IrSpan { start: 970, end: 1017 } }
+2026-11-02T11:11:45.6815986Z   left: [34, 36]
+2026-11-02T11:11:45.6816428Z  right: [36, 34]
+2026-11-02T11:11:45.6817265Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-11-02T11:11:45.6817785Z
+2026-11-02T11:11:45.6817791Z
+2026-11-02T11:11:45.6817971Z failures:
+2026-11-02T11:11:45.6818408Z     queued_task_cancel_never_runs_body_and_wait_is_027
+2026-11-02T11:11:45.6818759Z
+2026-11-02T11:11:45.6819168Z test result: FAILED. 25 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.69s
+2026-11-02T11:11:45.6819727Z
+2026-11-02T11:11:45.6849603Z error: test failed, to rerun pass `-p xiao-driver --test 22c_vm_concurrency`
+2026-11-02T11:11:45.8136069Z ##[error]Process completed with exit code 1.

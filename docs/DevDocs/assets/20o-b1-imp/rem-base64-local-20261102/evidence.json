@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "source_head": "14908c64f115a8d676d512f2bb0a4608faf41eea",
+  "target": "x86_64-pc-windows-msvc",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "scope": "Base64模式常量外提的本机定向测量，不替代完整三平台F10",
+  "files": [
+    {
+      "file": "vm.json",
+      "source_sha256": "e192b359ff402bbdaa9614077dd0ccc5f660e6d631f34e380f1b5a00a33dee68",
+      "normalized_sha256": "e192b359ff402bbdaa9614077dd0ccc5f660e6d631f34e380f1b5a00a33dee68"
+    },
+    {
+      "file": "vm.log",
+      "source_sha256": "b98388dd24863b55fcfea4f2ef11c1dd482ce0c355893398032de7dc14da40fe",
+      "normalized_sha256": "19f0093a984a6b10bf2501cb18f51982435685abcb65ecac9a8f57cb901c7b81"
+    },
+    {
+      "file": "native.json",
+      "source_sha256": "6385cee6d9e2742e8b5dbcd3694cce272e542c758c59c1c4d79dc7d942f7a53f",
+      "normalized_sha256": "6385cee6d9e2742e8b5dbcd3694cce272e542c758c59c1c4d79dc7d942f7a53f"
+    },
+    {
+      "file": "native.log",
+      "source_sha256": "86fa60f6e70d251ef4a5b6f571d50004316c104531cf52dc0e877743644d9015",
+      "normalized_sha256": "aa7e17e6c8f3444038a032366a298ea813fa7e20f01d5ba7ee961ca0356144ed"
+    },
+    {
+      "file": "resources.log",
+      "source_sha256": "e6d1504548156a339fe6f2ea2ff886ff3928a73300bd44987c8f9edca74c0529",
+      "normalized_sha256": "7f1cbfc0959dfcb15298ac93f1ec83b1060fa59fe183773a293209884f7ca645"
+    },
+    {
+      "file": "contract.log",
+      "source_sha256": "980c6c0248283f341731834519b93e4e2f36c5a2cd7f913943d9404e2200a9c1",
+      "normalized_sha256": "578a5df7580eae61c8c7a599d5c8c74f7d9b99cd172f272cafceb3a402f32419"
+    }
+  ]
+}

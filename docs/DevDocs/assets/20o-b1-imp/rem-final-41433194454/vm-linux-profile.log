@@ -1,0 +1,125 @@
+2026-11-02T11:10:15.9263627Z rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-02T11:10:15.9264119Z binary: rustc
+2026-11-02T11:10:15.9264542Z commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+2026-11-02T11:10:15.9265076Z commit-date: 2026-05-25
+2026-11-02T11:10:15.9265527Z host: x86_64-unknown-linux-gnu
+2026-11-02T11:10:15.9265893Z release: 1.96.0
+2026-11-02T11:10:15.9266207Z LLVM version: 22.1.2
+2026-11-02T11:10:15.9317129Z Architecture:                            x86_64
+2026-11-02T11:10:15.9317719Z CPU op-mode(s):                          32-bit, 64-bit
+2026-11-02T11:10:15.9318303Z Address sizes:                           48 bits physical, 48 bits virtual
+2026-11-02T11:10:15.9318939Z Byte Order:                              Little Endian
+2026-11-02T11:10:15.9319422Z CPU(s):                                  4
+2026-11-02T11:10:15.9319863Z On-line CPU(s) list:                     0-3
+2026-11-02T11:10:15.9320343Z Vendor ID:                               AuthenticAMD
+2026-11-02T11:10:15.9320898Z Model name:                              AMD EPYC 9V74 80-Core Processor
+2026-11-02T11:10:15.9321451Z CPU family:                              25
+2026-11-02T11:10:15.9322357Z Model:                                   17
+2026-11-02T11:10:15.9322804Z Thread(s) per core:                      2
+2026-11-02T11:10:15.9323229Z Core(s) per socket:                      2
+2026-11-02T11:10:15.9323671Z Socket(s):                               1
+2026-11-02T11:10:15.9324025Z Stepping:                                1
+2026-11-02T11:10:15.9324329Z BogoMIPS:                                5192.28
+2026-11-02T11:10:15.9327438Z Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_reliable nonstop_tsc cpuid extd_apicid aperfmperf tsc_known_freq pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy svm cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw topoext vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves user_shstk clzero xsaveerptr rdpru arat npt nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold v_vmsave_vmload umip vaes vpclmulqdq rdpid fsrm
+2026-11-02T11:10:15.9329919Z Virtualization:                          AMD-V
+2026-11-02T11:10:15.9330275Z Hypervisor vendor:                       Microsoft
+2026-11-02T11:10:15.9330605Z Virtualization type:                     full
+2026-11-02T11:10:15.9330944Z L1d cache:                               64 KiB (2 instances)
+2026-11-02T11:10:15.9331290Z L1i cache:                               64 KiB (2 instances)
+2026-11-02T11:10:15.9331637Z L2 cache:                                2 MiB (2 instances)
+2026-11-02T11:10:15.9331968Z L3 cache:                                32 MiB (1 instance)
+2026-11-02T11:10:15.9332494Z NUMA node(s):                            1
+2026-11-02T11:10:15.9332786Z NUMA node0 CPU(s):                       0-3
+2026-11-02T11:10:15.9333126Z Vulnerability Gather data sampling:      Not affected
+2026-11-02T11:10:15.9333486Z Vulnerability Ghostwrite:                Not affected
+2026-11-02T11:10:15.9334049Z Vulnerability Indirect target selection: Not affected
+2026-11-02T11:10:15.9334396Z Vulnerability Itlb multihit:             Not affected
+2026-11-02T11:10:15.9334743Z Vulnerability L1tf:                      Not affected
+2026-11-02T11:10:15.9335062Z Vulnerability Mds:                       Not affected
+2026-11-02T11:10:15.9335380Z Vulnerability Meltdown:                  Not affected
+2026-11-02T11:10:15.9335700Z Vulnerability Mmio stale data:           Not affected
+2026-11-02T11:10:15.9336030Z Vulnerability Old microcode:             Not affected
+2026-11-02T11:10:15.9336370Z Vulnerability Reg file data sampling:    Not affected
+2026-11-02T11:10:15.9336710Z Vulnerability Retbleed:                  Not affected
+2026-11-02T11:10:15.9337127Z Vulnerability Spec rstack overflow:      Vulnerable: Safe RET, no microcode
+2026-11-02T11:10:15.9337565Z Vulnerability Spec store bypass:         Vulnerable
+2026-11-02T11:10:15.9338086Z Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+2026-11-02T11:10:15.9338838Z Vulnerability Spectre v2:                Mitigation; Retpolines; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected
+2026-11-02T11:10:15.9339412Z Vulnerability Srbds:                     Not affected
+2026-11-02T11:10:15.9339793Z Vulnerability Tsa:                       Vulnerable: No microcode
+2026-11-02T11:10:15.9340172Z Vulnerability Tsx async abort:           Not affected
+2026-11-02T11:10:15.9340501Z Vulnerability Vmscape:                   Not affected
+2026-11-02T11:10:15.9948334Z    Compiling serde_core v1.0.229
+2026-11-02T11:10:15.9950653Z    Compiling proc-macro2 v1.0.107
+2026-11-02T11:10:15.9951217Z    Compiling unicode-ident v1.0.24
+2026-11-02T11:10:15.9951734Z    Compiling quote v1.0.47
+2026-11-02T11:10:16.0633983Z    Compiling zmij v1.0.23
+2026-11-02T11:10:16.1368236Z    Compiling cfg-if v1.0.5
+2026-11-02T11:10:16.1578119Z    Compiling serde v1.0.229
+2026-11-02T11:10:16.1733910Z    Compiling version_check v0.9.5
+2026-11-02T11:10:16.2159669Z    Compiling typenum v1.20.1
+2026-11-02T11:10:16.3279160Z    Compiling itoa v1.0.18
+2026-11-02T11:10:16.4204611Z    Compiling generic-array v0.14.7
+2026-11-02T11:10:16.5553945Z    Compiling serde_json v1.0.151
+2026-11-02T11:10:16.8523867Z    Compiling syn v3.0.5
+2026-11-02T11:10:17.2253970Z    Compiling memchr v2.8.3
+2026-11-02T11:10:17.7006408Z    Compiling block-buffer v0.10.4
+2026-11-02T11:10:17.7893854Z    Compiling crypto-common v0.1.7
+2026-11-02T11:10:17.8637840Z    Compiling digest v0.10.7
+2026-11-02T11:10:18.0474335Z    Compiling xiao-runtime-abi v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime-abi)
+2026-11-02T11:10:18.2147087Z    Compiling cpufeatures v0.2.17
+2026-11-02T11:10:18.2493784Z    Compiling sha2 v0.10.9
+2026-11-02T11:10:19.2063874Z    Compiling serde_derive v1.0.229
+2026-11-02T11:10:20.8484233Z    Compiling xiao-source v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-source)
+2026-11-02T11:10:21.0483721Z    Compiling libc v0.2.189
+2026-11-02T11:10:22.1623782Z    Compiling find-msvc-tools v0.1.14
+2026-11-02T11:10:22.3494474Z    Compiling shlex v2.0.1
+2026-11-02T11:10:22.4775331Z    Compiling cc v1.5.1
+2026-11-02T11:10:22.9184336Z    Compiling xiao-i18n v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-i18n)
+2026-11-02T11:10:22.9570997Z    Compiling xiao-intrinsics v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-intrinsics)
+2026-11-02T11:10:23.1983733Z    Compiling zeroize v1.9.0
+2026-11-02T11:10:23.3293849Z    Compiling rustls-pki-types v1.15.1
+2026-11-02T11:10:23.8464340Z    Compiling xiao-diagnostics v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-diagnostics)
+2026-11-02T11:10:24.0403817Z    Compiling ring v0.17.14
+2026-11-02T11:10:24.2753887Z    Compiling getrandom v0.2.17
+2026-11-02T11:10:24.4553485Z    Compiling untrusted v0.9.0
+2026-11-02T11:10:24.5195128Z    Compiling xiao-syntax v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-syntax)
+2026-11-02T11:10:26.5294552Z    Compiling xiao-types v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-types)
+2026-11-02T11:10:29.7754384Z    Compiling xiao-lifetime v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lifetime)
+2026-11-02T11:10:29.7895598Z    Compiling xiao-modules v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-modules)
+2026-11-02T11:10:33.0999453Z    Compiling xiao-ir v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-ir)
+2026-11-02T11:10:37.7274293Z    Compiling xiao-optimizer v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-optimizer)
+2026-11-02T11:10:40.0069002Z    Compiling httparse v1.10.1
+2026-11-02T11:10:41.9324173Z    Compiling xiao-standard-library v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-standard-library)
+2026-11-02T11:10:42.0867065Z    Compiling rustls v0.23.45
+2026-11-02T11:10:42.1673809Z    Compiling log v0.4.34
+2026-11-02T11:10:42.3289603Z    Compiling bytes v1.12.1
+2026-11-02T11:10:43.2453829Z    Compiling crc32fast v1.5.2
+2026-11-02T11:10:43.3903781Z    Compiling http v1.5.0
+2026-11-02T11:10:45.2283884Z    Compiling rustls-webpki v0.103.15
+2026-11-02T11:10:45.9357829Z    Compiling xiao-bytecode v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-bytecode)
+2026-11-02T11:10:47.6634253Z    Compiling xiao-lock v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-lock)
+2026-11-02T11:10:48.2259602Z    Compiling once_cell v1.21.4
+2026-11-02T11:10:48.4123747Z    Compiling subtle v2.6.1
+2026-11-02T11:10:48.5103776Z    Compiling base64 v0.23.1
+2026-11-02T11:10:49.0094326Z    Compiling simd-adler32 v0.3.10
+2026-11-02T11:10:49.0623175Z    Compiling adler2 v2.0.1
+2026-11-02T11:10:49.1603845Z    Compiling miniz_oxide v0.9.1
+2026-11-02T11:10:49.9653956Z    Compiling ureq-proto v0.6.4
+2026-11-02T11:10:52.6824507Z    Compiling xiao-runtime v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime)
+2026-11-02T11:11:14.6164589Z    Compiling xiao-config v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-config)
+2026-11-02T11:11:14.6537431Z    Compiling webpki-roots v1.0.9
+2026-11-02T11:11:14.7264426Z    Compiling filetime v0.2.29
+2026-11-02T11:11:14.8939601Z    Compiling percent-encoding v2.3.2
+2026-11-02T11:11:15.1070333Z    Compiling utf8-zero v0.8.1
+2026-11-02T11:11:15.2473323Z    Compiling ureq v3.4.2
+2026-11-02T11:11:15.2782900Z    Compiling xiao-vm v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-vm)
+2026-11-02T11:11:17.7854421Z    Compiling tar v0.4.46
+2026-11-02T11:11:19.5223654Z    Compiling flate2 v1.1.10
+2026-11-02T11:11:20.0791623Z    Compiling xiao-artifacts v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-artifacts)
+2026-11-02T11:11:20.8007009Z    Compiling xiao-codegen-llvm v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-codegen-llvm)
+2026-11-02T11:11:24.5434143Z    Compiling xiao-package v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-package)
+2026-11-02T11:11:25.1914136Z    Compiling xiao-xar v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-xar)
+2026-11-02T11:11:31.8617238Z    Compiling xiao-driver v0.1.0 (/home/runner/work/Xiao/Xiao/core/rust/crates/xiao-driver)
+2026-11-02T11:12:10.1346980Z     Finished `release` profile [optimized] target(s) in 1m 54s
+2026-11-02T11:12:10.1394939Z      Running `core/rust/target/release/examples/b1_library_performance --backend vm --case all --phase all --output b1-f10-vm.json`

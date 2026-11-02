@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.25s
+     Running tests\20o_b1_imp_resources.rs (core\rust\target\debug\deps\20o_b1_imp_resources-b097e7003ff0b92a.exe)
+
+running 3 tests
+test base64_standard_accepts_the_frozen_maximum ... ok
+test base64_url_safe_accepts_the_frozen_maximum ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 14 filtered out; finished in 40.39s
