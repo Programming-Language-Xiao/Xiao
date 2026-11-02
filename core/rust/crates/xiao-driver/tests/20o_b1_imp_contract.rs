@@ -180,22 +180,21 @@ fn product(module: &str) -> (FrontendRequest, String) {
 fn assert_output(request: FrontendRequest, expected: &str) {
     let result = FrontendVmDriver::new()
         .run(&DriverRequest::new(request).with_timeout(Duration::from_secs(30)));
-    assert!(
-        result.is_success(),
-        "code={:?}; report={:?}",
-        result.code(),
-        result.report()
-    );
     let output: String = result
         .as_executed()
-        .unwrap()
-        .events()
-        .iter()
+        .into_iter()
+        .flat_map(|execution| execution.events())
         .filter_map(|event| match event {
             VmEvent::IntrinsicOutput { text } => Some(text.as_str()),
             _ => None,
         })
         .collect();
+    assert!(
+        result.is_success(),
+        "code={:?}; report={:?}; stdout={output:?}",
+        result.code(),
+        result.report()
+    );
     assert_eq!(output.as_bytes(), expected.as_bytes());
 }
 

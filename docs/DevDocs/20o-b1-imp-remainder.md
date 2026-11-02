@@ -5,20 +5,24 @@
 > 本页只规划 math/statistics/fmt 之后的四库、F9/F10 和收口前置。
 > 不新增 intrinsic、ABI、私有 helper、公开 `dynamic` 或语言语法。
 >
-> 状态：**B1-IMP 当前为 12/20 草稿，下一阶段未开工（2026-11-02）**。
+> 状态：**REM-A 已开工，hex 落地后为 14/20 草稿（2026-11-02）**。
 > 基线为已推送的 `90ea5a5a`；三模块/12 入口的 VM/三平台证据见
 > [41385483703](assets/20o-b1-imp/self-review-41385483703/README.md)。
-> 当前仍缺 hex/base64/url/csv 八个入口、完整 F9/F10、释放差异和 B1-CLOSE。
+> 当前仍缺 base64/url/csv 六个入口、完整 F9/F10、释放差异和 B1-CLOSE。
 > 七库教程与 registry 条目继续保持 `planned`，直到 B1-CLOSE。
+
+hex 已通过本机公开双路径、真实导出、逐形参负例、移除、归档、教程九项回归和原生 O0/O3
+精确目标；独立资源用例命中 65,536 字节整数与 131,072 字节文本的等号边界。
+结果仅是本机功能/资源证据，完整 F10 与本轮三平台尚待后续执行。
 
 ## 一、当前事实与入口
 
 | 项 | 当前状态 | 依据 |
 | --- | --- | --- |
-| 已落地产品 | math/statistics/fmt，3 模块、12/20 入口 | [B1-IMP 状态](20o-b1-imp-seven-libraries.md) |
+| 已落地产品 | math/statistics/fmt/hex，4 模块、14/20 入口；hex 目前仅本机证据 | [B1-IMP 状态](20o-b1-imp-seven-libraries.md) |
 | 已修复前置 | std 别名、固定命名调用、模块绑定、字符串码点索引 | [返工记录](20o-b1-imp-blockers.md) |
 | 三平台证据 | `41385483703` 六作业 / `41385483801` 工作区门禁通过 | 本机及远端证据 |
-| 未实现入口 | hex、base64、url、csv 共 8 项 | [B1 契约 §三](20o-b1-freeze-draft.md#三七库已确认签名与调用边界f2f8f12) |
+| 未实现入口 | base64、url、csv 共 6 项 | [B1 契约 §三](20o-b1-freeze-draft.md#三七库已确认签名与调用边界f2f8f12) |
 | 性能/生命周期 | F10 只覆盖 fmt 部分；原生/VM 字符串释放差异未收口 | [返工记录 §三/§四](20o-b1-imp-blockers.md#三字符串成本与-fmt-最大输出) |
 | 教程/registry | 七库仍 `planned` | `docs/module-registry.json` |
 
@@ -70,9 +74,9 @@ format_record([str] fields) -> str
 
 完成四个模块后，本阶段做**整批收口准备**，不是直接升级 verified：
 
-1. 用 `tests/support/b1_imp.rs` 的活跃产品清单扩展四处：
-   - `core/rust/crates/xiao-driver/tests/20o_b1_probe.rs` 的 `B1_IMP_CASES`；
-   - `20o_b1_imp_contract.rs` 的 `PRODUCTS`/`CALL_CONTRACTS` 自动矩阵；
+1. 用 `core/rust/crates/xiao-driver/tests/support/b1_imp.rs` 的活跃产品清单扩展四处：
+   - `20o_b1_probe.rs` 经 `case_names()` 自动执行全部产品，不恢复独立 `B1_IMP_CASES`；
+   - `20o_b1_imp_contract.rs` 共用 `PRODUCTS`，与独立 `CALL_CONTRACTS` 自动矩阵对账；
    - `docs/module-registry.json` 四模块的 code/tests；
    - 产品夹具与教程示例。
 2. 20 个入口逐项完成：真实导出、公开 `std.`/`stdlib.` 双路径、逐形参类型/缺参/重复/未知/过多、
@@ -147,7 +151,7 @@ stdlib/hex.xiao, base64.xiao, url.xiao, csv.xiao
 stdlib/<module>.md                         四模块 README
 stdlib/README.md                           模块清单与状态
 tests/fixtures/20o-b1/imp/<module>/        产品源码与独立黄金
-tests/support/b1_imp.rs                    活跃产品清单（四模块加入）
+core/rust/crates/xiao-driver/tests/support/b1_imp.rs 活跃产品清单（四模块加入）
 core/rust/crates/xiao-driver/tests/20o_b1_probe.rs    精确目标扩展
 core/rust/crates/xiao-driver/tests/20o_b1_imp_contract.rs 契约矩阵自动扩展
 docs/UseDocs/library/<module>.md            保留 planned，增加产品示例
@@ -156,7 +160,7 @@ docs/DevDocs/20o-b1-imp-remainder.md        本规划
 docs/DevDocs/README.md / 20-builtins...     索引与阶段表
 ```
 
-现有 `B1_IMP_CASES`/`PRODUCTS` 必须与 `CALL_CONTRACTS` 的 20 项对账；新增模块后
+共用的 `case_names()`/`PRODUCTS` 必须与 `CALL_CONTRACTS` 的 20 项对账；新增模块后
 不能让精确目标仍只跑旧案例而静默通过。`tools/gates/b1-probe-guards.ps1` 保持
 四路径 28/28；若确实新增精确入口，必须同步守卫和场景总数。
 
@@ -175,5 +179,5 @@ docs/DevDocs/README.md / 20-builtins...     索引与阶段表
 1. 读 [B1 §三～§七](20o-b1-freeze-draft.md#三七库已确认签名与调用边界f2f8f12)；
 2. 读 [B1-IMP 规划](20o-b1-imp-seven-libraries.md) 的四库算法/限额细节；
 3. 读本页与 [剩余阻塞](20o-b1-imp-blockers.md)；
-4. 读 `tests/support/b1_imp.rs`、`20o_b1_imp_contract.rs`、`20o_b1_probe.rs` 的共享清单模式；
+4. 读 `core/rust/crates/xiao-driver/tests/support/b1_imp.rs`、`20o_b1_imp_contract.rs`、`20o_b1_probe.rs` 的共享清单模式；
 5. 按 REM-A → REM-B → REM-C 提交，每模块先 VM/契约再 native；遇到契约未写明的语义先停下来问星崽。

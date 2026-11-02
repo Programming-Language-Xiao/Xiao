@@ -1,0 +1,83 @@
+from std.hex import encode, decode
+
+values = [0, 1, 15, 16, 127, 128, 255]
+alias = values
+print(encode(values))
+print(encode(bytes = [0, 255]))
+print(alias[0])
+print(encode([]) == "")
+for byte in decode(text = "00aAFF")
+    print(byte)
+empty_count = 0
+for empty_byte in decode("")
+    empty_count = empty_count + 1
+print(empty_count)
+all_bytes = []
+next_byte = 0
+while next_byte < 256
+    array_push(all_bytes, next_byte)
+    next_byte = next_byte + 1
+print(encode(all_bytes))
+array_push(all_bytes, 0)
+print(encode(all_bytes) == "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff00")
+expected_byte = 0
+for decoded_byte in decode("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff")
+    if decoded_byte != expected_byte
+        raise Error(code = "HEX_GOLDEN_MISMATCH")
+    expected_byte = expected_byte + 1
+print(expected_byte)
+first = decode("00")
+second = decode("00")
+array_push(first, 1)
+second_count = 0
+for second_byte in second
+    second_count = second_count + 1
+print(second_count)
+bad = [7, 256]
+try
+    print(encode(bad))
+catch invalid_byte as Error
+    print(error_code(invalid_byte))
+print(bad[1])
+try
+    print(encode([-1]))
+catch negative_byte as Error
+    print(error_code(negative_byte))
+try
+    print(decode("g"))
+catch invalid_length as Error
+    print(error_code(invalid_length))
+try
+    print(decode("é"))
+catch odd_codepoints as Error
+    print(error_code(odd_codepoints))
+try
+    print(decode("é0"))
+catch invalid_unicode as Error
+    print(error_code(invalid_unicode))
+for invalid_text in ["0x", "00 ", "00\n0", "gg"]
+    try
+        print(decode(invalid_text))
+    catch invalid_character as Error
+        print(error_code(invalid_character))
+over = [256]
+over_count = 0
+while over_count < 65536
+    array_push(over, 0)
+    over_count = over_count + 1
+try
+    print(encode(over))
+catch encode_limit as ResourceError
+    print(error_code(encode_limit))
+print(over[0])
+large = "0"
+doublings = 0
+while doublings < 17
+    large = large + large
+    doublings = doublings + 1
+try
+    print(decode("g" + large))
+catch decode_limit as ResourceError
+    print(error_code(decode_limit))
+for recovered_byte in decode("01")
+    print(recovered_byte)

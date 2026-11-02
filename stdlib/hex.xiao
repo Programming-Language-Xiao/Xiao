@@ -1,0 +1,80 @@
+# B1 严格十六进制字节编码；辅助逻辑内联，短块构造后成对合并。
+
+def encode([int] bytes) -> str
+    count = 0
+    for precheck_byte in bytes
+        count = count + 1
+        if count > 65536
+            raise ResourceError(code = "HEX_LIMIT_EXCEEDED")
+    if count == 0
+        return ""
+    digits = "0123456789abcdef"
+    chunks = []
+    block = ""
+    block_count = 0
+    chunk_count = 0
+    for byte in bytes
+        if byte < 0 or byte > 255
+            raise Error(code = "HEX_INVALID_BYTE")
+        block = block + digits[byte // 16] + digits[byte % 16]
+        block_count = block_count + 1
+        if block_count == 128
+            array_push(chunks, block)
+            chunk_count = chunk_count + 1
+            block = ""
+            block_count = 0
+    if block_count > 0
+        array_push(chunks, block)
+        chunk_count = chunk_count + 1
+    while chunk_count > 1
+        next_chunks = []
+        next_count = 0
+        index = 0
+        while index < chunk_count
+            if index + 1 < chunk_count
+                array_push(next_chunks, str(chunks[index]) + str(chunks[index + 1]))
+            else
+                array_push(next_chunks, str(chunks[index]))
+            next_count = next_count + 1
+            index = index + 2
+        chunks = next_chunks
+        chunk_count = next_count
+    return str(chunks[0])
+
+def decode(str text) -> [int]
+    size = 0
+    count = 0
+    for precheck_character in text
+        point = int(precheck_character)
+        count = count + 1
+        if point < 128
+            size = size + 1
+        elif point < 2048
+            size = size + 2
+        elif point < 65536
+            size = size + 3
+        else
+            size = size + 4
+        if size > 131072
+            raise ResourceError(code = "HEX_LIMIT_EXCEEDED")
+    if count % 2 != 0
+        raise Error(code = "HEX_INVALID_LENGTH")
+    result = []
+    high = -1
+    for character in text
+        codepoint = int(character)
+        digit = 0
+        if codepoint >= 48 and codepoint <= 57
+            digit = codepoint - 48
+        elif codepoint >= 65 and codepoint <= 70
+            digit = codepoint - 55
+        elif codepoint >= 97 and codepoint <= 102
+            digit = codepoint - 87
+        else
+            raise Error(code = "HEX_INVALID_CHARACTER")
+        if high < 0
+            high = digit
+        else
+            array_push(result, high * 16 + digit)
+            high = -1
+    return result

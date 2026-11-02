@@ -5,6 +5,7 @@ pub const PRODUCTS: &[(&str, &[&str])] = &[
     ("math", &["abs", "min", "max", "clamp", "gcd", "pow"]),
     ("statistics", &["sum", "min", "max"]),
     ("fmt", &["pad_left", "pad_right", "format_int"]),
+    ("hex", &["encode", "decode"]),
 ];
 
 /// 辅助回归不计入产品模块或公开入口数。
