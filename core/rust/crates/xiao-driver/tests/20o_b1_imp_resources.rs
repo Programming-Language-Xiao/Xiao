@@ -162,3 +162,152 @@ fn url_limits_and_mixed_error_order_are_streamed() {
         "URL_LIMIT_EXCEEDED\n",
     );
 }
+
+/// 独立记录文本分别验证格式化与解析，不用产品往返产生黄金。
+fn csv_vector(fields: &[String], record: &str) {
+    let encoded_fields = serde_json::to_string(fields).unwrap();
+    let encoded_record = serde_json::to_string(record).unwrap();
+    let source = format!(
+        "from std.csv import parse_record, format_record\nfields = {encoded_fields}\nexpected = {encoded_record}\nprint(format_record(fields) == expected)\nrestored = parse_record(expected)\nindex = 0\nfor field in restored\n    if field != fields[index]\n        raise Error(code = \"CSV_RESOURCE_GOLDEN_MISMATCH\")\n    index = index + 1\nprint(index)\n"
+    );
+    assert_output(source, &format!("true\n{}\n", fields.len()));
+}
+
+#[test]
+/// 四字段的 E 恰好 65,536，单字段恰好 16,384 字节。
+fn csv_accepts_the_maximum_ascii_record() {
+    let fields = vec![
+        "x".repeat(16_384),
+        "x".repeat(16_384),
+        "x".repeat(16_384),
+        "x".repeat(16_381),
+    ];
+    let record = fields.join(",");
+    assert_eq!(record.len(), 65_536);
+    csv_vector(&fields, &record);
+}
+
+#[test]
+/// 全部数据引号被双写，尾空字段保留，真实状态机扫描完整 64 KiB。
+fn csv_accepts_the_maximum_quoted_record() {
+    let fields = vec!["\"".repeat(16_384), "\"".repeat(16_381), String::new()];
+    let record = format!(
+        "\"{}\",\"{}\",",
+        "\"\"".repeat(16_384),
+        "\"\"".repeat(16_381)
+    );
+    assert_eq!(record.len(), 65_536);
+    csv_vector(&fields, &record);
+}
+
+#[test]
+/// 换行本身不双写，但四个字段都必须有外引号，E 达到等号。
+fn csv_accepts_the_maximum_multiline_record() {
+    let fields = vec![
+        "\n".repeat(16_384),
+        "\n".repeat(16_384),
+        "\n".repeat(16_384),
+        "\n".repeat(16_373),
+    ];
+    let record = fields
+        .iter()
+        .map(|field| format!("\"{field}\""))
+        .collect::<Vec<_>>()
+        .join(",");
+    assert_eq!(record.len(), 65_536);
+    csv_vector(&fields, &record);
+}
+
+#[test]
+/// 字节限额与码点数量不同，四字节字段不能被按字符数放宽。
+fn csv_accepts_the_maximum_unicode_record() {
+    let fields = vec![
+        "🚀".repeat(4_096),
+        "🚀".repeat(4_096),
+        "🚀".repeat(4_096),
+        "🚀".repeat(4_095) + "a",
+    ];
+    let record = fields.join(",");
+    assert_eq!(record.len(), 65_536);
+    csv_vector(&fields, &record);
+}
+
+#[test]
+/// 字段数等于 1,024 合法；空字段既不能丢弃也不能额外加引号。
+fn csv_accepts_the_maximum_field_count() {
+    csv_vector(&vec![String::new(); 1_024], &",".repeat(1_023));
+}
+
+#[test]
+/// S 只是预检；E 等号+1、全引号膨胀、字段/总量/数量超限都稳定拒绝。
+fn csv_rejects_every_format_budget_dimension() {
+    let cases = [
+        vec![
+            "x".repeat(16_384),
+            "x".repeat(16_384),
+            "x".repeat(16_384),
+            "x".repeat(16_382),
+        ],
+        vec!["\"".repeat(16_384), "\"".repeat(16_381), "x".to_owned()],
+        vec!["\"".repeat(16_384); 4],
+        vec!["\n".repeat(16_384); 4],
+        vec![
+            "x".repeat(16_384),
+            "x".repeat(16_384),
+            "x".repeat(16_384),
+            "x".repeat(16_384),
+            "x".to_owned(),
+        ],
+        vec!["🚀".repeat(4_096) + "x"],
+        vec![String::new(); 1_025],
+    ];
+    for fields in cases {
+        let input = serde_json::to_string(&fields).unwrap();
+        assert_output(
+            format!(
+                "from std.csv import format_record\ntry\n    print(format_record({input}))\ncatch failure as ResourceError\n    print(error_code(failure))\n"
+            ),
+            "CSV_LIMIT_EXCEEDED\n",
+        );
+    }
+}
+
+#[test]
+/// 解析按状态机位置决定语法/预算首错，不因未来的错误回头改写身份。
+fn csv_parse_budget_and_syntax_priority_is_positional() {
+    for (record, class, code) in [
+        (
+            ",".repeat(1_024) + "\"",
+            "ResourceError",
+            "CSV_LIMIT_EXCEEDED",
+        ),
+        (
+            "a\"".to_owned() + &",".repeat(1_024),
+            "Error",
+            "CSV_INVALID_RECORD",
+        ),
+        (
+            "\"".to_owned() + &"\"\"".repeat(16_385),
+            "ResourceError",
+            "CSV_LIMIT_EXCEEDED",
+        ),
+        (
+            "\"".to_owned() + &"x".repeat(65_536),
+            "ResourceError",
+            "CSV_LIMIT_EXCEEDED",
+        ),
+        (
+            "🚀".repeat(4_096) + "x",
+            "ResourceError",
+            "CSV_LIMIT_EXCEEDED",
+        ),
+    ] {
+        let input = serde_json::to_string(&record).unwrap();
+        assert_output(
+            format!(
+                "from std.csv import parse_record\ntry\n    print(parse_record({input}))\ncatch failure as {class}\n    print(error_code(failure))\n"
+            ),
+            &format!("{code}\n"),
+        );
+    }
+}

@@ -22,7 +22,8 @@
 - REM-A 的 [`hex`](hex.md) 与 [`base64`](base64.md) 各两项已加入共享清单、产品教程、
   独立黄金和编码同名碰撞。两库已过本机 O0/O3、最大合法输入和解码真实长度边界。
   REM-B 的 [`url`](url.md) 两项已有本机 VM/原生 O0/O3 与最大 ASCII/Unicode 资源边界。
-  CSV、完整 F10 与本轮三平台继续按剩余规划推进。
+  [`csv`](csv.md) 记录子集两项已有本机 VM/原生 O0/O3 和最大引号/多换行/Unicode/E 预算。
+  当前 20/20 产品草稿齐备，完整 F10、生命周期与本轮三平台继续按剩余规划推进。
 - `std.concurrent` 是虚拟原生模块：冻结的 17 项签名位于 `xiao-types/src/concurrency.rs`，
   行为由 VM/TAC 计划和 Runtime 实现提供；不新增 `concurrent.xiao`，不作为普通源码对象
   放入归档。公共接口唯一权威页为 [并发执行与共享句柄](../docs/UseDocs/language/concurrency/README.md)，

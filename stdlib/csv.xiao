@@ -1,0 +1,219 @@
+# B1 严格单记录 CSV；不追加记录结束符，所有辅助逻辑内联。
+
+def parse_record(str record) -> [str]
+    size = 0
+    count = 0
+    for precheck_character in record
+        point = int(precheck_character)
+        count = count + 1
+        if point < 128
+            size = size + 1
+        elif point < 2048
+            size = size + 2
+        elif point < 65536
+            size = size + 3
+        else
+            size = size + 4
+        if size > 65536
+            raise ResourceError(code = "CSV_LIMIT_EXCEEDED")
+    result = []
+    state = 0
+    field_number = 1
+    field_bytes = 0
+    chunks = []
+    chunk_count = 0
+    block = ""
+    block_bytes = 0
+    character = ""
+    data = ""
+    field = ""
+    next_chunks = []
+    cursor = 0
+    while cursor <= count
+        at_end = cursor == count
+        flush_field = false
+        data = ""
+        if at_end
+            if state == 2
+                raise Error(code = "CSV_INVALID_RECORD")
+            flush_field = true
+        else
+            character = record[cursor]
+            if state == 2
+                if character == "\""
+                    state = 3
+                else
+                    data = character
+            elif state == 3
+                if character == "\""
+                    data = "\""
+                    state = 2
+                elif character == ","
+                    flush_field = true
+                else
+                    raise Error(code = "CSV_INVALID_RECORD")
+            else
+                if character == ","
+                    flush_field = true
+                elif character == "\""
+                    if state != 0
+                        raise Error(code = "CSV_INVALID_RECORD")
+                    state = 2
+                elif character == "\r" or character == "\n"
+                    raise Error(code = "CSV_INVALID_RECORD")
+                else
+                    data = character
+                    state = 1
+        if data != ""
+            data_point = int(data)
+            width = 1
+            if data_point >= 65536
+                width = 4
+            elif data_point >= 2048
+                width = 3
+            elif data_point >= 128
+                width = 2
+            field_bytes = field_bytes + width
+            if field_bytes > 16384
+                raise ResourceError(code = "CSV_LIMIT_EXCEEDED")
+            block = block + data
+            block_bytes = block_bytes + width
+            if block_bytes >= 256
+                array_push(chunks, block)
+                chunk_count = chunk_count + 1
+                block = ""
+                block_bytes = 0
+        if flush_field
+            # 一个分隔逗号已经引入下个字段，不等待后续内容再发现字段数超限。
+            if not at_end and field_number >= 1024
+                raise ResourceError(code = "CSV_LIMIT_EXCEEDED")
+            if block_bytes > 0
+                array_push(chunks, block)
+                chunk_count = chunk_count + 1
+            field = ""
+            if chunk_count > 0
+                while chunk_count > 1
+                    next_chunks = []
+                    next_count = 0
+                    index = 0
+                    while index < chunk_count
+                        if index + 1 < chunk_count
+                            array_push(next_chunks, str(chunks[index]) + str(chunks[index + 1]))
+                        else
+                            array_push(next_chunks, str(chunks[index]))
+                        next_count = next_count + 1
+                        index = index + 2
+                    chunks = next_chunks
+                    chunk_count = next_count
+                field = str(chunks[0])
+            array_push(result, field)
+            if not at_end
+                field_number = field_number + 1
+                state = 0
+                field_bytes = 0
+                chunks = []
+                chunk_count = 0
+                block = ""
+                block_bytes = 0
+        cursor = cursor + 1
+    return result
+
+def format_record([str] fields) -> str
+    count = 0
+    for precheck_field in fields
+        count = count + 1
+        if count > 1024
+            raise ResourceError(code = "CSV_LIMIT_EXCEEDED")
+    if count == 0
+        raise Error(code = "CSV_EMPTY_FIELDS")
+    raw_bytes = 0
+    for budget_field in fields
+        field_bytes = 0
+        for budget_character in budget_field
+            point = int(budget_character)
+            width = 1
+            if point >= 65536
+                width = 4
+            elif point >= 2048
+                width = 3
+            elif point >= 128
+                width = 2
+            field_bytes = field_bytes + width
+            raw_bytes = raw_bytes + width
+            if field_bytes > 16384 or raw_bytes > 65536
+                raise ResourceError(code = "CSV_LIMIT_EXCEEDED")
+    quoted_fields = []
+    encoded_bytes = raw_bytes + count - 1
+    for detect_field in fields
+        needs_quote = false
+        for detect_character in detect_field
+            if detect_character == "\""
+                encoded_bytes = encoded_bytes + 1
+            if detect_character == "," or detect_character == "\"" or detect_character == "\r" or detect_character == "\n"
+                needs_quote = true
+        if needs_quote
+            encoded_bytes = encoded_bytes + 2
+        if encoded_bytes > 65536
+            raise ResourceError(code = "CSV_LIMIT_EXCEEDED")
+        array_push(quoted_fields, needs_quote)
+    chunks = []
+    chunk_count = 0
+    block = ""
+    block_bytes = 0
+    field_index = 0
+    for field in fields
+        if field_index > 0
+            block = block + ","
+            block_bytes = block_bytes + 1
+        quoted = bool(quoted_fields[field_index])
+        if quoted
+            block = block + "\""
+            block_bytes = block_bytes + 1
+        for character in field
+            if character == "\""
+                block = block + "\"\""
+                block_bytes = block_bytes + 2
+            else
+                block = block + character
+                data_point = int(character)
+                data_width = 1
+                if data_point >= 65536
+                    data_width = 4
+                elif data_point >= 2048
+                    data_width = 3
+                elif data_point >= 128
+                    data_width = 2
+                block_bytes = block_bytes + data_width
+            if block_bytes >= 256
+                array_push(chunks, block)
+                chunk_count = chunk_count + 1
+                block = ""
+                block_bytes = 0
+        if quoted
+            block = block + "\""
+            block_bytes = block_bytes + 1
+        if block_bytes >= 256
+            array_push(chunks, block)
+            chunk_count = chunk_count + 1
+            block = ""
+            block_bytes = 0
+        field_index = field_index + 1
+    if block_bytes > 0
+        array_push(chunks, block)
+        chunk_count = chunk_count + 1
+    if chunk_count == 0
+        return ""
+    while chunk_count > 1
+        next_chunks = []
+        next_count = 0
+        index = 0
+        while index < chunk_count
+            if index + 1 < chunk_count
+                array_push(next_chunks, str(chunks[index]) + str(chunks[index + 1]))
+            else
+                array_push(next_chunks, str(chunks[index]))
+            next_count = next_count + 1
+            index = index + 2
+        chunks = next_chunks
+        chunk_count = next_count
+    return str(chunks[0])

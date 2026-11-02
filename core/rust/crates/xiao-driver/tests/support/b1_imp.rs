@@ -8,6 +8,7 @@ pub const PRODUCTS: &[(&str, &[&str])] = &[
     ("hex", &["encode", "decode"]),
     ("base64", &["encode", "decode"]),
     ("url", &["encode_component", "decode_component"]),
+    ("csv", &["parse_record", "format_record"]),
 ];
 
 /// 辅助回归不计入产品模块或公开入口数。

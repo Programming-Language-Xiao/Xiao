@@ -1,0 +1,79 @@
+from std.csv import parse_record, format_record
+
+fields = ["a", "b,c", "d\"e", "", "\r\n", "雪😀", " é ", "﻿bom", "\0"]
+alias = fields
+print(format_record(fields = fields))
+print(alias[1] == "b,c")
+for parsed_field in parse_record(record = "a,\"b,c\",\"d\"\"e\",,\"\r\n\",雪😀, é ,﻿bom,\0")
+    print("[" + parsed_field + "]")
+for known_record in ["", ",", ",a,", "\"\"", "\"a,b\",c", "\"a\"\"b\",\"x\r\ny\"", "﻿ a , b ", "\0,\"é😀\""]
+    for known_field in parse_record(known_record)
+        print("[" + known_field + "]")
+print(format_record([""]) == "")
+print(format_record([" ", chr(65279)]))
+first = parse_record("a,b")
+second = parse_record("a,b")
+array_push(first, "z")
+second_count = 0
+for second_field in second
+    second_count = second_count + 1
+print(second_count)
+try
+    print(format_record([]))
+catch empty_fields as Error
+    print(error_code(empty_fields))
+for invalid_record in ["\"", "\"\"\"", "\"a", "a\"b", "\"a\"x", "\"a\" ", "a\nb", "a\rb", "\"a\",b\n", "﻿\"a\"", ",x\"y"]
+    try
+        print(parse_record(invalid_record))
+    catch invalid_syntax as Error
+        print(error_code(invalid_syntax))
+long_field = "x"
+doublings = 0
+while doublings < 14
+    long_field = long_field + long_field
+    doublings = doublings + 1
+try
+    print(parse_record(long_field + "x"))
+catch parse_field_limit as ResourceError
+    print(error_code(parse_field_limit))
+try
+    print(format_record([long_field + "x"]))
+catch format_field_limit as ResourceError
+    print(error_code(format_field_limit))
+quote_field = "\""
+quote_doublings = 0
+while quote_doublings < 14
+    quote_field = quote_field + quote_field
+    quote_doublings = quote_doublings + 1
+try
+    print(format_record([quote_field, quote_field, quote_field, quote_field]))
+catch encoded_limit as ResourceError
+    print(error_code(encoded_limit))
+many_fields = []
+field_count = 0
+while field_count < 1025
+    array_push(many_fields, "")
+    field_count = field_count + 1
+try
+    print(format_record(many_fields))
+catch format_count_limit as ResourceError
+    print(error_code(format_count_limit))
+commas = ","
+comma_doublings = 0
+while comma_doublings < 10
+    commas = commas + commas
+    comma_doublings = comma_doublings + 1
+try
+    print(parse_record(commas + "\""))
+catch parse_count_before_syntax as ResourceError
+    print(error_code(parse_count_before_syntax))
+large = "x"
+record_doublings = 0
+while record_doublings < 16
+    large = large + large
+    record_doublings = record_doublings + 1
+try
+    print(parse_record("\"" + large))
+catch input_before_syntax as ResourceError
+    print(error_code(input_before_syntax))
+print(format_record(parse_record("a,\"b,c\"")))
