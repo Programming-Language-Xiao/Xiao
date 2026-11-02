@@ -1,0 +1,35 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s
+     Running tests\20o_b1_imp_contract.rs (core\rust\target\debug\deps\20o_b1_imp_contract-b2c3036637e54ff1.exe)
+
+running 9 tests
+test every_implemented_module_is_in_the_active_contract_matrix ... ok
+test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+test colliding_public_names_keep_their_own_module_implementations ... ok
+
+thread 'every_public_function_requires_its_real_implementation' (67172) panicked at crates\xiao-driver\tests\20o_b1_imp_contract.rs:477:13:
+assertion `left == right` failed
+  left: "动态嵌套作用域释放计划（branch 作用域，待块级释放降低）"
+ right: "官方函数 stdlib.csv.parse_record 未静态链接"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test every_public_function_requires_its_real_implementation ... FAILED
+
+thread 'public_calls_enforce_every_frozen_parameter_and_require_imports' (25720) panicked at crates\xiao-driver\tests\20o_b1_imp_contract.rs:243:22:
+called `Result::unwrap()` on an `Err` value: Unsupported { feature: "动态嵌套作用域释放计划（branch 作用域，待块级释放降低）", span: Some(IrSpan { start: 1021, end: 1962 }) }
+test public_calls_enforce_every_frozen_parameter_and_require_imports ... FAILED
+test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+test public_std_aliases_execute_through_the_official_loader has been running for over 60 seconds
+test products_execute_and_export_only_the_frozen_names ... ok
+test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+test public_std_aliases_execute_through_the_official_loader ... ok
+
+failures:
+
+failures:
+    every_public_function_requires_its_real_implementation
+    public_calls_enforce_every_frozen_parameter_and_require_imports
+
+test result: FAILED. 7 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 111.75s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b1_imp_contract`

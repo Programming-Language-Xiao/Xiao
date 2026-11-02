@@ -1,0 +1,97 @@
+{
+  "backend": "vm",
+  "codegen_version": 20,
+  "complete": true,
+  "failed": false,
+  "memory_method": "OS resident high-water mark minus current resident baseline, conservative upper bound that may include previous high-water mark; not allocator-exact",
+  "phase": "all",
+  "protocol": "bounded geometric calibration to 100ms, then one warmup and five measured samples; each batch must reach 50ms; compile/input/validation/terminal I/O excluded; marker formatting/cleanup included as a conservative time upper bound",
+  "records": [
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 40960,
+            "seconds": 0.0000591
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 548864,
+            "seconds": 0.0001756
+          }
+        },
+        {
+          "repeats": 256,
+          "sample": {
+            "resident_increment_upper_bytes": 557056,
+            "seconds": 0.0027771
+          }
+        },
+        {
+          "repeats": 4096,
+          "sample": {
+            "resident_increment_upper_bytes": 421888,
+            "seconds": 0.0399907
+          }
+        },
+        {
+          "repeats": 16384,
+          "sample": {
+            "resident_increment_upper_bytes": 524288,
+            "seconds": 0.1631732
+          }
+        }
+      ],
+      "case": "math.abs",
+      "doubling_ratio": null,
+      "function": "abs",
+      "input_bytes_or_items": 3,
+      "median_seconds": 9.917291259765624e-6,
+      "module": "math",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482",
+      "repeats": 16384,
+      "resident_increment_upper_bytes": 405504,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 405504,
+          "seconds": 0.1624849
+        },
+        {
+          "resident_increment_upper_bytes": 405504,
+          "seconds": 0.1641964
+        },
+        {
+          "resident_increment_upper_bytes": 405504,
+          "seconds": 0.1623733
+        },
+        {
+          "resident_increment_upper_bytes": 405504,
+          "seconds": 0.1606319
+        },
+        {
+          "resident_increment_upper_bytes": 405504,
+          "seconds": 0.1656167
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 405504,
+        "seconds": 0.161238
+      }
+    }
+  ],
+  "runtime_abi_encoded": 65554,
+  "rust_debug_assertions": false,
+  "scope": "controlled B1 measurement, not acceptance of lifecycle",
+  "selected": "math.abs",
+  "target": "x86_64-pc-windows-msvc"
+}

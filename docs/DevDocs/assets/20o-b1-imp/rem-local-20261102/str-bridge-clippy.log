@@ -1,0 +1,7 @@
+    Checking xiao-i18n v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-i18n)
+    Checking xiao-diagnostics v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-diagnostics)
+    Checking xiao-syntax v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-syntax)
+    Checking xiao-types v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-types)
+    Checking xiao-lifetime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-lifetime)
+    Checking xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.29s

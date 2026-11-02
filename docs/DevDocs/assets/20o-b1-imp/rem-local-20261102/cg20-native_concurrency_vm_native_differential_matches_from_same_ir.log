@@ -1,0 +1,37 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+     Running tests\22d_llvm_concurrency.rs (core\rust\target\debug\deps\22d_llvm_concurrency-58521bc4506abeb4.exe)
+
+running 1 test
+22D-CASE spawn-join: ok
+22D-CASE pool-submit-wait: ok
+22D-CASE shared-lock: ok
+22D-CASE shared-read-boundary: ok
+22D-CASE finally-return-overrides-child-error: ok
+22D-CASE spawn-join-str-multiargument: ok
+22D-CASE spawn-join-tuple: ok
+22D-CASE detach-success: ok
+22D-CASE multi-runtime-parallel: ok
+22D-CASE lock-guard-scope-release: ok
+22D-CASE worker-loop-bounded-stack: ok
+22D-CASE xcon-bounded-string-success: ok
+22D-CASE closed-runtime-shared-read: ok
+22D-CASE child-shared-mut-result: ok
+22D-CASE pool-shared-mut-result: ok
+22D-CASE child-primary-and-finally-suppressed: ok
+22D-CASE finally-helper-return-preserves-primary: ok
+22D-CASE nested-finally-helper-return-preserves-primary-and-suppressed: ok
+22D-CASE native-running-cancellation-finally: ok
+test native_concurrency_vm_native_differential_matches_from_same_ir has been running for over 60 seconds
+22D-CASE native-completed-cancellation: ok
+22D-CASE native-stack-frames: ok
+22D-CASE pool-capacity-zero-032: ok
+22D-CASE pool-submit-after-shutdown-030: ok
+22D-CASE native-queued-cancellation: ok
+22D-CASE native-waiting-cancellation: ok
+22D-CASE native-wait-027: ok
+22D-CASE native-lock-wait-027: ok
+22D-CASE xcon-oversized-029: ok
+22D-CASE detached-failure: ok
+test native_concurrency_vm_native_differential_matches_from_same_ir ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 99.41s

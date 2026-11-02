@@ -1,0 +1,81 @@
+{
+  "backend": "native",
+  "complete": false,
+  "failed": false,
+  "memory_method": "OS resident high-water mark minus current resident baseline, conservative upper bound that may include previous high-water mark; not allocator-exact",
+  "phase": "all",
+  "protocol": "adaptive calibration to 100ms, then one warmup and five measured samples; each batch must reach 50ms; compile/input/validation/terminal I/O excluded; marker formatting/cleanup included as a conservative time upper bound",
+  "records": [
+    {
+      "backend": "native",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 1e-6
+          }
+        },
+        {
+          "repeats": 120000,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.028428
+          }
+        },
+        {
+          "repeats": 600000,
+          "sample": {
+            "resident_increment_upper_bytes": 0,
+            "seconds": 0.177474
+          }
+        }
+      ],
+      "case": "math.abs",
+      "doubling_ratio": null,
+      "function": "abs",
+      "input_bytes_or_items": 3,
+      "median_seconds": 2.665366666666667e-7,
+      "module": "math",
+      "optimization": 0,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482",
+      "repeats": 600000,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.159922
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.171286
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.166635
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.159884
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.156908
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 32768,
+        "seconds": 0.180493
+      }
+    }
+  ],
+  "rust_debug_assertions": false,
+  "scope": "controlled B1 measurement, not acceptance of lifecycle",
+  "selected": "all",
+  "target": "aarch64-apple-darwin"
+}

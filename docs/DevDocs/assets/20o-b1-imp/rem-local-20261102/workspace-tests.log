@@ -1,0 +1,2683 @@
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 00s
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_artifacts-88e53382a7fb35a1.exe)
+
+running 25 tests
+test tests::archive_index_entry_validation_is_symmetric ... ok
+test tests::archive_index_rejects_unknown_required_features ... ok
+test tests::archive_index_extended_metadata_round_trips_without_changing_old_fields ... ok
+test tests::archive_rejects_unknown_capabilities_and_overflowing_interface_version ... ok
+test tests::archive_requires_new_feature_and_version_fields ... ok
+test tests::archive_requirements_round_trip_is_canonical ... ok
+test tests::cleanup_plan_defers_invalid_object_isolation_until_apply ... ok
+test tests::cleanup_rechecks_references_added_after_plan_creation ... ok
+test tests::cleanup_archive_reference_protects_its_object ... ok
+test tests::cleanup_reference_source_failure_is_conservative ... ok
+test tests::cleanup_plan_protects_project_lock_references_and_apply_is_explicit ... ok
+test tests::cleanup_revalidates_and_quarantines_object_changed_after_plan ... ok
+test tests::conservative_reference_set_protects_objects_when_sources_are_unavailable ... ok
+test tests::digest_and_sharded_xiaoc_object_are_deterministic ... ok
+test tests::corrupt_object_is_quarantined ... ok
+test tests::indexes_round_trip_deterministically_and_reject_unknown_major ... ok
+test tests::index_store_commits_global_snapshot_atomically ... ok
+test tests::new_archive_feature_rejects_legacy_reader_without_changing_global_index ... ok
+test tests::interrupted_object_write_cleans_temporary_input ... ok
+test tests::global_index_can_rebuild_from_verified_objects_and_query_both_directions ... ok
+test tests::seeded_index_mutations_never_panic_and_are_rejected_without_io_errors ... ok
+test tests::scan_quarantines_objects_with_invalid_names_or_shards ... ok
+test tests::indexes_remain_readable_while_their_write_locks_are_held ... ok
+test tests::xiaoc_validation_comes_from_authoritative_codec ... ok
+test tests::objects_are_read_only_and_hash_collisions_quarantine_both_inputs ... ok
+
+test result: ok. 25 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_bytecode-54e51d03923f07c8.exe)
+
+running 32 tests
+test encode::tests::bad_references_and_fixed_width_overflow_are_rejected ... ok
+test encode::tests::damaged_inputs_are_rejected_structurally ... ok
+test encode::tests::check_expected_type_round_trips_in_both_widths ... ok
+test encode::tests::fixed_width_reports_the_overflowing_handler_binding ... ok
+test encode::tests::all_opcodes_and_abi_fields_round_trip_in_both_widths ... ok
+test encode::tests::resource_constant_is_rejected_with_fatal_identity_at_encode_boundary ... ok
+test encode::tests::scalar_and_release_tags_have_one_bidirectional_mapping ... ok
+test encode::tests::set_tags_have_explicit_bidirectional_mapping ... ok
+test encode::tests::unsigned_and_signed_leb128_cover_integer_boundaries ... ok
+test liveness::tests::does_not_invent_fallthrough_and_tracks_explicit_branch ... ok
+test liveness::tests::protected_blocks_keep_handler_inputs_live ... ok
+test liveness::tests::release_plan_is_an_indirect_register_use ... ok
+test lower::expr::tests::unresolved_type_variables_keep_set_only_operators_and_membership_lowerable ... ok
+test optimize::tests::o0_skips_semantic_passes_without_claiming_optimization ... ok
+test optimize::tests::optimization_pipeline_preserves_observable_operation_families ... ok
+test optimize::tests::standard_passes_report_snapshots_and_skip_reasons ... ok
+test optimize::tests::unreachable_block_pass_remaps_targets_and_keeps_execution_blocks ... ok
+test sig::tests::intrinsic_id_round_trips_full_u32_through_two_u16_slots ... ok
+test optimize::tests::unreachable_protected_region_is_kept_for_handler_remapping ... ok
+test sig::tests::zero_intrinsic_id_is_preserved_for_validator_rejection ... ok
+test verify::tests::finally_subroutine_cannot_fall_through_into_continuation ... ok
+test verify::tests::production_entry_distinguishes_known_unsupported ... ok
+test verify::tests::production_entry_rejects_resource_constant_boundary ... ok
+test verify::tests::production_entry_rejects_unsupported_as_internal_error ... ok
+test verify::tests::program_level_categories_are_not_used_for_function_validation ... ok
+test xiaoc::tests::inferred_concurrency_types_require_abi_features_before_vm_load ... ok
+test xiaoc::tests::malformed_random_bytes_never_panic ... ok
+test xiaoc::tests::rejects_truncation_overlap_unknown_required_and_compression ... ok
+test xiaoc::tests::runtime_requirements_reject_unknown_features_and_old_abi ... ok
+test xiaoc::tests::round_trip_is_deterministic_and_variable_length_header_is_supported ... ok
+test encode::tests::module_dependency_direction_is_acyclic ... ok
+test encode::tests::concurrency_plans_round_trip_in_both_widths ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.46s
+
+     Running unittests src\bin\xiaoc-check.rs (core\rust\target\debug\deps\xiaoc_check-f36456a647055c50.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\b0_a_api.rs (core\rust\target\debug\deps\b0_a_api-40fb23bd9a26ae6e.exe)
+
+running 1 test
+test root_and_research_paths_share_the_production_verifier ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\fuzz_xiaoc.rs (core\rust\target\debug\deps\fuzz_xiaoc-191c2cc06b49317f.exe)
+
+running 2 tests
+test base_xiaoc_decodes ... ok
+test seeded_xiaoc_mutations_never_panic_and_are_rejected_with_stable_codes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\r2_tac.rs (core\rust\target\debug\deps\r2_tac-8bb4c12ef2f139e4.exe)
+
+running 27 tests
+test decodes_string_literals_like_the_type_layer ... ok
+test assigns_register_classes ... ok
+test encodes_program_using_set_operation ... ok
+test keeps_quote_characters_inside_string_literals ... ok
+test encodes_try_finally_handler ... ok
+test consumes_runtime_checks_for_set_compound_assignment ... ok
+test keeps_register_classes_local_to_each_function ... ok
+test lowers_advanced_selector_plan ... ok
+test lowers_container_literals ... ok
+test lowers_exact_index_with_signed_step ... ok
+test lowers_scalar_arithmetic ... ok
+test lowers_exception_handlers_and_finally_subroutine ... ok
+test lowers_functions_separately ... ok
+test lowers_for_iteration_cfg ... ok
+test lowers_string_boolean_runtime_check ... ok
+test lowers_set_checks_for_both_operands ... ok
+test promotes_cross_width_operands ... ok
+test nested_set_operation_does_not_bind_check_to_selector_source ... ok
+test references_existing_release_plans ... ok
+test set_instructions_have_no_jump_targets ... ok
+test releases_temporary_heap_values ... ok
+test rebuilds_control_flow_blocks ... ok
+test separates_backticked_from_plain_bindings ... ok
+test shares_the_escape_table_with_the_type_layer ... ok
+test unary_minus_keeps_float_width ... ok
+test unary_not_compares_against_false ... ok
+test synthesizes_call_signatures ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_codegen_llvm-a6bcce794c6aa5ee.exe)
+
+running 55 tests
+test artifact::tests::composition_keeps_declared_and_observed_components_separate ... ok
+test artifact::tests::keeps_unclassified_runtime_symbols_visible ... ok
+test artifact::tests::maps_runtime_symbols_to_declared_component_names ... ok
+test artifact::tests::normalizes_macho_leading_underscore_without_touching_other_symbols ... ok
+test artifact::tests::parses_arm64_slice_from_fat_macho ... ok
+test artifact::tests::parses_controlled_elf_symbols ... ok
+test artifact::tests::parses_controlled_macho_symbols_and_normalizes_prefix ... ok
+test artifact::tests::parses_controlled_pe_coff_symbols ... ok
+test artifact::tests::parses_fat_macho_slice_with_independent_endianness ... ok
+test artifact::tests::dynamic_artifact_reports_runtime_dependency_fact ... ok
+test artifact::tests::rejects_byte_offset_that_cannot_fit_usize ... ok
+test artifact::tests::declared_runtime_component_is_observable_for_each_format ... ok
+test artifact::tests::static_artifact_with_runtime_dependency_is_rejected ... ok
+test artifact::tests::stripped_symbol_tables_are_not_accepted_as_trimming_evidence ... ok
+test artifact::tests::symbol_table_comparison_never_equates_unavailable_reports ... ok
+test artifact::tests::pe_symbol_table_status_reflects_actual_coff_table ... ok
+test baseline::tests::median_and_noise_are_stable ... ok
+test baseline::tests::rejects_non_finite_samples_and_exposes_noise_gate ... ok
+test baseline::tests::rejects_uncontrolled_sample_shapes ... ok
+test artifact::tests::static_artifact_with_runtime_symbol_is_rejected ... ok
+test dynamic::release::storage_tests::only_literal_alloca_counts_can_move_to_entry ... ok
+test native_concurrency::tests::duplicate_spans_are_rejected ... ok
+test native_concurrency::tests::metadata_must_match_one_typed_call_and_cannot_intercept_another_module ... ok
+test native_concurrency::tests::module_concurrency_is_rejected_structurally ... ok
+test native_concurrency::tests::orphan_concurrency_facts_are_rejected ... ok
+test native_concurrency::tests::plan_indexes_ir_calls_without_name_resolution ... ok
+test native_concurrency::tests::unknown_operation_is_fail_closed ... ok
+test native_metadata::tests::native_metadata_codec_is_bounded_and_exact ... ok
+test native_metadata::tests::native_metadata_does_not_scan_for_magic ... ok
+test native_metadata::tests::native_metadata_emission_uses_the_declared_target ... ok
+test native_metadata::tests::native_metadata_requirements_reject_incompatible_inputs ... ok
+test optimization::tests::extension_switches_are_explicitly_rejected_until_frozen ... ok
+test optimization::tests::plan_keeps_extensions_off_and_fingerprint_stable ... ok
+test optimization::tests::runtime_report_explains_retained_and_removed_components ... ok
+test reproducible::tests::binary_layout_whitelist_is_explicit ... ok
+test reproducible::tests::normalizes_debug_paths_in_place_and_records_offsets ... ok
+test reproducible::tests::normalizes_elf_gnu_build_id ... ok
+test reproducible::tests::normalizes_paths_times_and_symbol_order ... ok
+test reproducible::tests::normalizes_pe_debug_directory_timestamp ... ok
+test reproducible::tests::normalizes_pe_timestamp_and_records_the_field ... ok
+test reproducible::tests::records_unix_and_windows_path_fields_separately ... ok
+test target::tests::controlled_targets_validate_equally ... ok
+test target::tests::host_target_architecture_matches_compile_time_target ... ok
+test target::tests::invalid_fixed_width_and_format_are_rejected ... ok
+test toolchain::tests::native_library_list_is_fingerprinted ... ok
+test toolchain::tests::normalizes_case_insensitive_windows_tokens ... ok
+test toolchain::tests::parses_windows_native_static_libraries ... ok
+test toolchain::tests::posix_startup_shim_waits_for_readiness ... ok
+test toolchain::tests::preserves_unix_native_static_libraries ... ok
+test toolchain::tests::rejects_missing_native_static_library_marker ... ok
+test toolchain::tests::startup_shim_embeds_only_diagnostics_basename ... ok
+test toolchain::tests::windows_startup_shim_opens_console_and_waits_for_readiness ... ok
+test dynamic::architecture_tests::module_dependency_direction_is_acyclic ... ok
+test artifact::tests::debug_symbol_is_required_only_for_debug_artifacts ... ok
+test artifact::tests::verifies_release_debug_and_stripped_modes_independently ... ok
+
+test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.35s
+
+     Running tests\15e_ci_gated.rs (core\rust\target\debug\deps\15e_ci_gated-d671e60d5896a785.exe)
+
+running 5 tests
+test ci_performance_baseline_is_platform_scoped ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+test real_artifact_reproducibility_is_byte_comparable ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+test real_artifact_strip_modes_all_optimization_levels ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH / XIAO_STRIP；准备方式见 10D §4
+test real_debug_activation_survives_all_optimization_levels ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+test real_symbol_table_and_debug_path_evidence ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_LLC / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE / XIAO_DIAGNOSTICS_PATH；准备方式见 10D §4
+
+test result: ok. 0 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\n0_a.rs (core\rust\target\debug\deps\n0_a-07b9c501c5be802a.exe)
+
+running 23 tests
+test emits_terminated_elif_false_path ... ok
+test debug_startup_shim_precedes_user_entry ... ok
+test emits_checked_integer_arithmetic ... ok
+test entry_observation_is_explicit ... ok
+test lowers_boolean_equality ... ok
+test lowers_constant_integer_power_with_checked_multiplication ... ok
+test accepts_fixed_named_and_rejects_expanded_arguments ... ok
+test lowers_float_and_bool_scalars ... ok
+test lowers_float_power_with_valid_intrinsic_signature ... ok
+test lowers_integer_division_to_float ... ok
+test missing_toolchain_is_structured ... ok
+test optional_corrupt_llvm_is_rejected ... ignored, 需要 XIAO_CLANG；准备方式见 10D §4
+test optional_entry_observation_tracks_runtime_branch ... ignored, 需要 XIAO_CLANG 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test lowers_runtime_values_with_abi ... ok
+test optional_external_access_violation_remains_fatal ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_external_illegal_instruction_remains_fatal ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_real_llvm_round_trip ... ignored, 需要 XIAO_CLANG（可选 XIAO_LLVM_AS）与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_static_numeric_failure_boundaries_match_runtime_contract ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test lowers_logical_and_rejects_identity_in_raw_ir ... ok
+test optional_static_overflow_uses_recoverable_runtime_report ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test lowers_scalar_calls_and_control_flow ... ok
+test ordinary_static_artifact_does_not_activate_diagnostics ... ok
+test respects_declared_scalar_width ... ok
+
+test result: ok. 16 passed; 0 failed; 7 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\n0_b_dynamic.rs (core\rust\target\debug\deps\n0_b_dynamic-d7c5e8992ef7c5f2.exe)
+
+running 28 tests
+test accepts_identity_dynamic_cast ... ok
+test debug_dynamic_artifact_activates_diagnostic_session ... ok
+test decodes_string_escapes_before_llvm_emission ... ok
+test dynamic_dictionary_member_reports_table_type_mismatch ... ok
+test dynamic_entry_observation_is_explicit ... ok
+test emits_sysv_runtime_value_layout ... ok
+test emits_complete_table_descriptor ... ok
+test dynamic_table_member_uses_value_pointer_and_valid_payload_index ... ok
+test fatal_error_intrinsic_is_still_rejected ... ok
+test emits_windows_indirect_runtime_abi_calls ... ok
+test function_body_dynamic_condition_has_closed_labels ... ok
+test lowers_array_and_preserves_runtime_components ... ok
+test function_error_constructor_borrows_parameter_slots ... ok
+test lowers_dictionary_with_runtime_component ... ok
+test lowers_dynamic_boolean_if ... ok
+test lowers_empty_singleton_declaration ... ok
+test lowers_dynamic_error_constructor_arguments_to_runtime_abi ... ok
+test lowers_input_intrinsic_to_runtime_abi ... ok
+test lowers_non_identity_dynamic_cast ... ok
+test lowers_non_text_error_constructor_argument_to_runtime_check ... ok
+test lowers_error_constructor_intrinsics_to_runtime_abi ... ok
+test optional_llvm_accepts_dynamic_table_module ... ignored, 需要 XIAO_LLVM_AS 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test lowers_print_intrinsic_to_runtime_abi ... ok
+test lowers_runtime_check_to_abi ... ok
+test lowers_str_intrinsic_to_runtime_cast ... ok
+test ordinary_dynamic_artifact_does_not_activate_diagnostics ... ok
+test rejects_table_declaration_without_signature ... ok
+test rejects_table_constructor_arguments_until_init_abi_exists ... ok
+
+test result: ok. 27 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\n0_c_errors.rs (core\rust\target\debug\deps\n0_c_errors-26d3f232229278d9.exe)
+
+running 6 tests
+test optional_llvm_accepts_error_path_module ... ignored, 需要 XIAO_LLVM_AS；准备方式见 10D §4
+test optional_stackrestore_runtime_probe ... ignored, 需要真实 clang；准备方式见 10D §4
+test rejects_fatal_catch_type ... ok
+test lowers_recoverable_error_path ... ok
+test emits_language_context_and_release_trace_hooks ... ok
+test lowers_nonlocal_control_exits_through_cleanup_chain ... ok
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\stdlib_bindings.rs (core\rust\target\debug\deps\stdlib_bindings-4f6aef6a063ac6e9.exe)
+
+running 2 tests
+test missing_selected_body_cannot_fall_back_to_another_module ... ok
+test imports_and_internal_calls_keep_all_real_module_definitions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_config-70a9c597e18e88da.exe)
+
+running 8 tests
+test parser::tests::rejects_executable_values ... ok
+test parser::tests::rejects_colon_dictionary_separator ... ok
+test validation::tests::accepts_optimization_configuration_fields ... ok
+test parser::tests::parses_static_project_config ... ok
+test validation::tests::rejects_invalid_optimization_level ... ok
+test validation::tests::rejects_unknown_project_field ... ok
+test validation::tests::rejects_unsafe_export_path ... ok
+test validation::tests::requires_project_identity_for_project_entry ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\d05_config.rs (core\rust\target\debug\deps\d05_config-5bf5471672257286.exe)
+
+running 13 tests
+test canonical_fingerprint_input_distinguishes_order_and_value_types ... ok
+test accepts_multiline_arrays ... ok
+test accepts_optimization_table ... ok
+test accepts_explicit_resource_mapping ... ok
+test canonical_fingerprint_input_is_stable_and_span_free ... ok
+test malformed_inputs_do_not_panic ... ok
+test normalizes_relative_export_path ... ok
+test preserves_recursive_static_values ... ok
+test rejects_duplicate_keys_and_tables ... ok
+test rejects_executable_constructs ... ok
+test rejects_unknown_schema_nodes ... ok
+test rejects_unsafe_resource_paths ... ok
+test validates_project_identity_and_exports ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\spec_snapshots.rs (core\rust\target\debug\deps\spec_snapshots-6465a0d3add8bc95.exe)
+
+running 1 test
+test config_spec_snapshots_are_executed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_diagnostics-40b4235178321df9.exe)
+
+running 17 tests
+test tests::builds_error_with_span ... ok
+test tests::accumulator_uses_first_error_as_primary ... ok
+test tests::container_errors_keep_stable_identity ... ok
+test tests::distinguishes_fatal_report ... ok
+test tests::division_by_zero_keeps_operator_identity ... ok
+test tests::error_type_registry_is_finite_and_shared ... ok
+test tests::keeps_error_context_and_stack ... ok
+test tests::preserves_backend_location ... ok
+test tests::preserves_language_independent_params ... ok
+test tests::reports_suppressed_without_replacing_primary ... ok
+test tests::builtin_localized_facade_preserves_report_identity ... ok
+test window::tests::diagnostic_frame_round_trips ... ok
+test window::tests::fatal_events_use_fatal_level ... ok
+test window::tests::oversized_frame_is_rejected_before_allocation ... ok
+test tests::localized_report_uses_catalog_and_preserves_default_text ... ok
+test tests::localized_report_keeps_runtime_reason_parameter ... ok
+test window::tests::activation_is_persistent_and_absent_for_release_shape ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+     Running unittests src\bin\xiao-diagnostics.rs (core\rust\target\debug\deps\xiao_diagnostics-f27a35a085806a31.exe)
+
+running 8 tests
+test tests::connected_mode_requires_endpoint_and_token ... ok
+test tests::locale_argument_is_normalized ... ok
+test tests::invalid_parent_pid_is_rejected ... ok
+test tests::hold_duration_defaults_and_rejects_invalid_values ... ok
+test tests::standalone_arguments_accept_parent_pid ... ok
+test tests::standalone_arguments_accept_ready_file ... ok
+test tests::standalone_arguments_allow_missing_parent_for_manual_preview ... ok
+test tests::zero_parent_pid_is_rejected ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_doc_coverage_rust-06fab04f4c9392a0.exe)
+
+running 7 tests
+test tests::outline_defaults_to_false ... ok
+test tests::declaration_head_covers_common_shapes ... ok
+test tests::rejects_unsupported_protocol_version ... ok
+test tests::reports_parse_errors ... ok
+test tests::outline_lines_match_line_and_end_line ... ok
+test tests::declaration_end_line_uses_full_item_span ... ok
+test tests::parses_public_and_private_items ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\main.rs (core\rust\target\debug\deps\xiao_doc_coverage_rust-120b485c6f29afbe.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_driver-7f65d66514749949.exe)
+
+running 65 tests
+test compatibility::tests::standard_library_identity_is_parallel_to_existing_compatibility_versions ... ok
+test compatibility::tests::matrix_contains_no_unfrozen_migration_claim ... ok
+test compatibility::tests::matrix_is_generated_from_current_versions_and_has_every_axis ... ok
+test diagnostics::tests::disconnected_window_does_not_change_event_handling ... ok
+test diagnostics::tests::missing_terminal_renderer_is_an_explicit_startup_failure ... ok
+test diagnostics::tests::real_terminal_session_is_environment_gated ... ignored, 需要真实终端模拟器；准备方式见 10D §4.2
+test diagnostics::tests::persistent_diagnostic_logs_redact_sensitive_payloads ... ok
+test diagnostics::tests::runtime_events_keep_required_structured_identity ... ok
+test diagnostics::tests::terminal_candidates_forward_locale ... ok
+test diagnostics::tests::terminal_candidates_have_stable_platform_order ... ok
+test diagnostics::tests::focus_rules_match_module_and_source ... ok
+test module_loader::tests::removed_standard_library_module_is_not_loadable ... ok
+test diagnostics::tests::unwritable_log_target_is_reported_without_startup_failure ... ok
+test diagnostics::tests::runtime_error_events_keep_localized_message_fields ... ok
+test protocol::package_view::tests::duplicate_roots_are_rejected ... ok
+test protocol::tests::artifact_runtime_facts_round_trip ... ok
+test protocol::tests::build_rejects_unknown_target_before_toolchain ... ok
+test protocol::tests::build_request_round_trips_toolchain_and_config_fields ... ok
+test protocol::architecture_tests::module_dependency_direction_is_acyclic ... ok
+test protocol::package_view::tests::active_and_global_views_do_not_leak ... ok
+test protocol::package_view::tests::interface_query_does_not_execute_module ... ok
+test protocol::tests::cache_clean_protocol_deletes_unreferenced_objects ... ok
+test protocol::tests::cache_list_returns_structured_result ... ok
+test protocol::tests::debug_build_requires_diagnostics_path ... ok
+test protocol::tests::diagnostics_component_is_staged_next_to_executable ... ok
+test protocol::tests::cache_clean_protocol_reads_archive_references ... ok
+test protocol::tests::environment_request_generates_stable_metadata ... ok
+test protocol::tests::frame_and_request_errors_keep_distinct_codes ... ok
+test protocol::tests::frame_uses_eight_byte_big_endian_payload_length ... ok
+test protocol::tests::hello_advertises_test_capability ... ok
+test protocol::tests::package_request_missing_lock_does_not_create_environment ... ok
+test protocol::tests::protocol_run_accepts_nonzero_optimization_level ... ok
+test protocol::tests::read_frame_accepts_clean_eof_and_rejects_truncation ... ok
+test protocol::tests::read_frame_rejects_oversized_payload_before_allocating ... ok
+test protocol::tests::real_source_run_maps_cancel_to_artifact_rejected ... ok
+test protocol::tests::real_source_run_returns_structured_result_without_text_parsing ... ok
+test protocol::tests::repl_packages_request_validates_environment_without_renaming_package_operation ... ok
+test protocol::tests::run_archive_honors_zero_timeout_before_reading_archive ... ok
+test protocol::tests::run_archive_missing_file_has_stable_error ... ok
+test protocol::tests::run_locale_is_optional_and_does_not_change_machine_error_fields ... ok
+test protocol::tests::diagnostics_component_staging_distinguishes_existing_source ... ok
+test protocol::tests::cache_clean_protocol_reads_project_lock_from_directory ... ok
+test protocol::tests::runtime_config_freeze_is_deterministic_and_validated ... ok
+test protocol::tests::service_requires_hello_as_first_frame ... ok
+test protocol::tests::runtime_config_can_be_replaced ... ok
+test protocol::tests::run_locale_renders_known_message_and_preserves_missing_id_with_params ... ok
+test protocol::tests::service_round_trips_hello_run_and_shutdown_frames ... ok
+test protocol::tests::test_request_rejects_empty_case_list ... ok
+test protocol::tests::verify_missing_artifact_has_stable_error ... ok
+test protocol::tests::version_mismatch_is_machine_readable ... ok
+test run::tests::cancellation_and_zero_timeout_are_structured_control_errors ... ok
+test protocol::tests::test_locale_renders_diagnostics_inside_each_case ... ok
+test protocol::tests::test_request_preserves_case_order_and_aggregates_results ... ok
+test protocol::tests::cache_clean_protocol_rejects_broken_archive_before_deleting ... ok
+test run::tests::corrupted_tac_is_rejected_before_execution ... ok
+test run::tests::frontend_failure_keeps_structured_diagnostics ... ok
+test run::tests::migrated_intrinsics_keep_existing_vm_semantics ... ok
+test run::tests::nonzero_optimization_levels_run_through_bytecode_pipeline ... ok
+test run::tests::print_intrinsic_reaches_vm_output_event ... ok
+test run::tests::removal_verification_print_contract_and_vm_binding ... ok
+test run::tests::runs_frontend_to_vm_without_an_entry_override ... ok
+test run::tests::structurally_invalid_tac_uses_internal_diagnostic ... ok
+test run::tests::concurrency_runtime_create_spawn_join_reaches_vm ... ok
+test run::tests::concurrency_pool_submit_wait_shutdown_reaches_vm ... ok
+test run::tests::concurrency_shared_and_lock_reaches_vm ... ok
+
+test result: ok. 64 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.70s
+
+     Running unittests src\protocol_main.rs (core\rust\target\debug\deps\xiao_core-7f8d33c87eafcefc.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\18b_build_archive.rs (core\rust\target\debug\deps\18b_build_archive-01beecf2854ccaf4.exe)
+
+running 13 tests
+test debug_has_separate_symbols_and_explicit_output ... ok
+test config_uses_unique_main_and_packages_only_reachable_local_modules_and_resources ... ok
+test indexed_corrupt_hit_is_rejected_without_replacing_output ... ok
+test lockfile_uses_authoritative_validation_and_is_never_rewritten ... ok
+test missing_or_multiple_main_third_party_and_bad_resources_leave_no_archive ... ok
+test review_archive_output_cannot_corrupt_its_cache ... ok
+test archive_build_runs_set_methods_through_host_module ... ok
+test review_output_cannot_replace_any_archive_input ... ok
+test script_builds_runs_and_keeps_xiaoc_in_global_cache ... ok
+test review_mixed_known_and_unresolved_targets_cannot_omit_capabilities ... ok
+test served_protocol_builds_runs_stdlib_and_keeps_repl_out_of_global_cache ... ok
+test imported_stdlib_functions_have_precise_capabilities ... ok
+test closure_tracks_calls_keywords_reexports_and_empty_requirements ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.14s
+
+     Running tests\20c_first_modules.rs (core\rust\target\debug\deps\20c_first_modules-c2a4e4433bdb63d7.exe)
+
+running 14 tests
+test first_modules_match_native_results ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test project_cannot_shadow_the_reserved_standard_library_namespace ... ok
+test removing_llvm_standard_library_function_binding_rejects_native_build ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test set_remove_missing_native_matches_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test fixed_named_calls_preserve_argument_evaluation_and_binding ... ok
+test standard_library_import_requires_vm_loader_binding ... ok
+test helper_module_can_import_standard_library ... ok
+test std_aliases_preserve_imported_function_contracts ... ok
+test path_module_vm_result_and_removal_boundary_are_stable ... ok
+test string_indices_preserve_unicode_iteration_and_negative_bounds ... ok
+test std_alias_native_lowering_matches_the_canonical_capability_boundary ... ok
+test std_alias_archives_record_canonical_host_requirements ... ok
+test std_aliases_use_the_canonical_official_module ... ok
+test text_module_vm_result_and_removal_boundary_are_stable ... ok
+
+test result: ok. 11 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 12.85s
+
+     Running tests\20d_first_api.rs (core\rust\target\debug\deps\20d_first_api-996dbf07d559d996.exe)
+
+running 17 tests
+test filesystem_capability_bit_is_the_frozen_bit_zero ... ok
+test directory_cannot_be_passed_to_read_text_at_type_check ... ok
+test imported_resource_interfaces_respect_scope_and_reassignment ... ok
+test native_os_module_matches_vm_output ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test imported_resource_signatures_reject_invalid_argument_shapes ... ok
+test imported_resource_signatures_preserve_type_boundaries ... ok
+test os_module_opens_reads_and_closes_file_in_vm ... ok
+test os_module_requires_filesystem_capability_before_open ... ok
+test resource_const_is_rejected_with_non_constant_diagnostic ... ok
+test resource_declarations_reject_ignored_path_constraints ... ok
+test resource_set_annotations_are_rejected_by_type_check ... ok
+test table_resource_constants_use_the_non_constant_diagnostic ... ok
+test vm_relative_path_child ... ignored, 由 vm_relative_paths_use_process_cwd 在隔离 cwd 中调用
+test resource_api_rejects_keyword_and_expanded_arguments_before_execution ... ok
+test vm_relative_paths_use_process_cwd ... ok
+test os_module_runtime_error_identities_are_stable_in_vm ... ok
+test imported_resource_calls_execute_in_vm_and_keep_native_boundary ... ok
+
+test result: ok. 15 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 8.27s
+
+     Running tests\20d_process_api.rs (core\rust\target\debug\deps\20d_process_api-6e308703f89f30ed.exe)
+
+running 18 tests
+test native_dynamic_resource_boundaries_match_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+test native_process_api_matches_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+test native_process_lifecycle_and_capability_have_no_hidden_host_effects ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+test native_process_spawn_rejects_implicit_shell ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+test process_container_and_constant_boundaries_are_executable ... ok
+test dynamic_resource_module_imports_keep_valid_processes ... ok
+test dynamic_resource_boundaries_validate_values_in_vm ... ok
+test process_missing_capability_does_not_start_a_child ... ok
+test process_close_and_drop_detach_without_waiting_or_killing ... ok
+test process_spawn_inherits_path_environment_cwd_and_standard_streams ... ok
+test process_vm_child ... ignored, 仅由父测试在隔离进程与 cwd 下调用
+test process_table_fields_preserve_resource_kind ... ok
+test process_types_and_call_shapes_are_rejected_before_execution ... ok
+test process_spawn_rejects_implicit_shell_in_vm ... ok
+test resource_variadic_parameters_validate_each_value ... ok
+test process_vm_wait_caches_exit_code_and_preserves_kind ... ok
+test process_vm_maps_child_signal_or_exception_exit ... ok
+test process_vm_error_identities_and_closed_alias_are_stable ... ok
+
+test result: ok. 13 passed; 0 failed; 5 ignored; 0 measured; 0 filtered out; finished in 3.60s
+
+     Running tests\20e_archive_wiring.rs (core\rust\target\debug\deps\20e_archive_wiring-9a80a7c967481ff0.exe)
+
+running 11 tests
+test archive_error_messages_render_in_both_catalogs ... ok
+test builder_requires_metadata_and_rejects_official_module_objects ... ok
+test every_missing_capability_is_rejected_before_execution ... ok
+test review_builder_rejects_relabelled_payload_language ... ok
+test archive_protocol_passes_capabilities_to_preflight ... ok
+test builder_derives_requirements_and_keeps_official_objects_external ... ok
+test incompatible_standard_library_is_rejected_before_execution ... ok
+test runtime_keeps_the_same_request_capabilities ... ok
+test unknown_request_capabilities_are_validation_errors ... ok
+test review_protocol_checks_context_before_corrupt_payload ... ok
+test review_protocol_context_precedes_diagnostic_start ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests\20f_container_parameters.rs (core\rust\target\debug\deps\20f_container_parameters-001b17c983472c10.exe)
+
+running 10 tests
+test generic_recursive_call_keeps_rigid_signature ... ok
+test function_set_annotations_reject_unhashable_members ... ok
+test local_generic_scalar_function_has_multiple_instances ... ok
+test local_generic_set_function_has_multiple_instances ... ok
+test rigid_type_parameter_assignment_has_stable_diagnostic ... ok
+test rigid_type_parameter_condition_has_stable_diagnostic ... ok
+test rigid_type_parameter_return_has_stable_diagnostic ... ok
+test rigid_type_parameter_use_has_stable_diagnostic ... ok
+test official_set_module_supports_alias_and_empty_set ... ok
+test archive_closure_records_official_set_module ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.05s
+
+     Running tests\20g_set_mutation.rs (core\rust\target\debug\deps\20g_set_mutation-dd459ab91f1071c4.exe)
+
+running 7 tests
+test native_set_snapshot_nonlocal_exit_is_lowerable ... ok
+test add_rejects_unhashable_element ... ok
+test remove_missing_element_is_catchable ... ok
+test remove_missing_element_keeps_stable_uncaught_code ... ok
+test mutation_and_readonly_wrappers_observe_shared_ordered_set ... ok
+test native_alias_calls_lower_to_canonical_functions ... ok
+test set_iteration_uses_snapshot ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.95s
+
+     Running tests\20h_set_methods.rs (core\rust\target\debug\deps\20h_set_methods-4293b87445a67615.exe)
+
+running 10 tests
+test method_diagnostics_are_stable ... ok
+test default_values_can_call_set_methods ... ok
+test method_linking_isolated_from_user_function_names ... ok
+test external_standard_library_methods_use_module_loader ... ok
+test explicit_set_import_and_user_method_name_remain_isolated ... ok
+test method_receiver_is_evaluated_once ... ok
+test table_methods_do_not_expose_set_free_functions ... ok
+test methods_match_set_module_semantics ... ok
+test table_method_named_add_remains_executable ... ok
+test native_lowering_supports_set_methods_and_chains ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.37s
+
+     Running tests\20i_indexing_and_text.rs (core\rust\target\debug\deps\20i_indexing_and_text-ce90c9f14fb16e98.exe)
+
+running 13 tests
+test expression_indices_can_call_index_producers ... ok
+test array_push_invalidates_table_member_array_length ... ok
+test array_annotations_and_push_preserve_shared_order ... ok
+test expression_indices_cover_tuple_and_dict_column ... ok
+test expression_indices_use_codepoints_and_array_positions ... ok
+test array_push_invalidates_fixed_length_after_direct_and_helper_calls ... ok
+test readonly_array_function_keeps_static_bounds_diagnostic ... ok
+test generic_array_annotations_infer_element_types ... ok
+test indexing_boundaries_keep_static_and_runtime_diagnostics ... ok
+test set_methods_inside_index_expressions_are_linked ... ok
+test native_lowering_accepts_expression_indices_and_array_push ... ok
+test text_find_slice_and_split_keep_frozen_boundaries ... ok
+test text_error_codes_are_stable ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.26s
+
+     Running tests\20j_dynamic_dict_keys.rs (core\rust\target\debug\deps\20j_dynamic_dict_keys-fb0dba4d185b0fe4.exe)
+
+running 7 tests
+test dict_dynamic_key_type_errors_are_static ... ok
+test dict_column_without_key_name_uses_integer_position ... ok
+test dict_column_distinguishes_static_keys_dynamic_keys_and_positions ... ok
+test missing_dynamic_key_is_runtime_015 ... ok
+test dict_table_uses_static_key_priority_then_dynamic_string_keys ... ok
+test missing_static_string_key_remains_a_type_error ... ok
+test native_lowering_accepts_dynamic_dictionary_keys ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\20k_dict_write.rs (core\rust\target\debug\deps\20k_dict_write-b47aa6fbb30b1ad9.exe)
+
+running 9 tests
+test generic_open_dict_annotation_infers_value_type ... ok
+test dynamic_dict_table_and_column_writes_update_aliases ... ok
+test dynamic_dict_write_errors_keep_runtime_codes ... ok
+test static_missing_dict_write_remains_type_error ... ok
+test open_dict_annotation_accepts_fixed_shape_values ... ok
+test native_lowering_emits_dynamic_dict_write_and_queries ... ok
+test stdlib_dict_queries_share_mutable_handles_and_order ... ok
+test dict_remove_invalidates_fixed_key_shape ... ok
+test stdlib_dict_remove_missing_key_is_015 ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.97s
+
+     Running tests\20l_dict_methods.rs (core\rust\target\debug\deps\20l_dict_methods-516417c2fc499eb2.exe)
+
+running 10 tests
+test dictionary_method_boundary_diagnostics_are_stable ... ok
+test dictionary_methods_link_without_explicit_import ... ok
+test dictionary_methods_preserve_aliases_and_missing_key_015 ... ok
+test modified_array_literal_bounds_use_runtime_017 ... ok
+test member_array_root_write_is_supported ... ok
+test external_standard_library_methods_use_module_loader ... ok
+test transitive_array_mutation_invalidates_fixed_length ... ok
+test dictionary_methods_match_free_functions_on_table_and_column ... ok
+test native_lowering_links_dictionary_method_functions ... ok
+test private_dictionary_actions_are_internal_and_lowered ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.61s
+
+     Running tests\20m_text_and_path.rs (core\rust\target\debug\deps\20m_text_and_path-a339582b17b8e9e6.exe)
+
+running 6 tests
+test text_path_candidates_match_native_golden_outputs ... ignored, 需要受控 LLVM、Runtime staticlib 和目标三元组；维护回归三平台执行
+test text_path_interfaces_match_native_golden_outputs ... ignored, 需要受控 LLVM、Runtime staticlib 和目标三元组；维护回归三平台执行
+test text_path_interfaces_require_loader_and_native_function_binding ... ok
+test text_path_interfaces_have_vm_golden_outputs ... ok
+test text_path_candidates_have_vm_golden_outputs ... ok
+test text_path_archives_replay_with_exact_host_module_requirements ... ok
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 15.81s
+
+     Running tests\20o_b1_imp_contract.rs (core\rust\target\debug\deps\20o_b1_imp_contract-b2c3036637e54ff1.exe)
+
+running 9 tests
+test every_implemented_module_is_in_the_active_contract_matrix ... ok
+test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+test colliding_public_names_keep_their_own_module_implementations ... ok
+test every_public_function_requires_its_real_implementation ... ok
+test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+test public_std_aliases_execute_through_the_official_loader has been running for over 60 seconds
+test products_execute_and_export_only_the_frozen_names ... ok
+test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+test public_std_aliases_execute_through_the_official_loader ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 114.30s
+
+     Running tests\20o_b1_imp_resources.rs (core\rust\target\debug\deps\20o_b1_imp_resources-b097e7003ff0b92a.exe)
+
+running 16 tests
+test csv_accepts_the_maximum_ascii_record ... ok
+test base64_url_safe_accepts_the_frozen_maximum ... ok
+test csv_accepts_the_maximum_field_count ... ok
+test base64_standard_accepts_the_frozen_maximum ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet has been running for over 60 seconds
+test csv_accepts_the_maximum_unicode_record ... ok
+test csv_accepts_the_maximum_quoted_record ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet ... ok
+test csv_parse_budget_and_syntax_priority_is_positional ... ok
+test csv_accepts_the_maximum_multiline_record ... ok
+test hex_accepts_the_frozen_maximum_input_and_output ... ok
+test csv_rejects_every_format_budget_dimension ... ok
+test url_decoding_reaches_the_ascii_result_budget ... ok
+test url_encoding_reaches_the_unicode_output_budget ... ok
+test url_decoding_reaches_the_unicode_result_budget ... ok
+test url_encoding_reaches_the_ascii_output_budget ... ok
+test url_limits_and_mixed_error_order_are_streamed has been running for over 60 seconds
+test url_limits_and_mixed_error_order_are_streamed ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 217.13s
+
+     Running tests\20o_b1_imp_vm_performance.rs (core\rust\target\debug\deps\20o_b1_imp_vm_performance-12d635baa558e10b.exe)
+
+running 2 tests
+test fmt_input_scaling_respects_the_frozen_vm_budget ... ok
+test fmt_maximum_input_has_bounded_vm_call_time ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 53.45s
+
+     Running tests\20o_b1_probe.rs (core\rust\target\debug\deps\20o_b1_probe-522c4d179609f03e.exe)
+
+running 10 tests
+test b1_capabilities_match_native_golden_outputs ... ignored, 需要显式 LLVM/MSVC 或平台链接器、Runtime staticlib；维护回归三平台精确执行并校验一项通过
+test b1_tutorial_status_allows_verified_and_rejects_metadata_spoofing ... ok
+test b1_csv_nested_signature_records_frontend_boundary ... ok
+test b1_tutorials_embed_the_executed_sources ... ok
+test error_code_rejects_static_arguments_and_preserves_fatal_boundaries ... ok
+test error_code_portable_artifacts_require_runtime_1_18 ... ok
+test error_code_vm_read_then_raise_preserves_structured_identity ... ok
+test error_code_vm_allocation_failure_preserves_source_and_recovers ... ok
+test b1_error_identities_and_member_access_boundary_are_recorded ... ok
+test error_code_llvm_copies_the_view_before_releasing_the_input ... ok
+
+test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 1 filtered out; finished in 1.72s
+
+     Running tests\22b_concurrency_wiring.rs (core\rust\target\debug\deps\22b_concurrency_wiring-677ebe0140869164.exe)
+
+running 15 tests
+test aliases_share_thread_and_task_consumption_state ... ok
+test cancel_does_not_consume_a_handle ... ok
+test concurrency_type_contract_emits_handle_and_send_diagnostics ... ok
+test concurrency_consumption_is_scoped_and_reassignment_resets_it ... ok
+test consumed_handle_and_boundary_limit_are_rejected ... ok
+test concurrent_source_reaches_ir_facts_and_cancellation_checks ... ok
+test lock_wait_is_lowered_and_lock_guard_escape_is_rejected ... ok
+test raise_error_exit_and_unreachable_type_checks_are_isolated ... ok
+test concurrency_consumption_flows_out_of_control_flow_scopes ... ok
+test concurrency_consumption_merges_return_break_and_continue_exits ... ok
+test parameterized_spawn_checks_mixed_boundary_types ... ok
+test shared_operations_consume_sources_and_check_capabilities ... ok
+test shared_mut_cross_runtime_is_rejected_by_lifetime_lowering ... ok
+test submit_uses_pool_owner_runtime_and_wait_lowering ... ok
+test unreachable_concurrency_calls_do_not_emit_ir_facts ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.92s
+
+     Running tests\22c_runtime_gates.rs (core\rust\target\debug\deps\22c_runtime_gates-2bf1b026c0eae9ae.exe)
+
+running 2 tests
+test source_concurrency_types_reach_xiaoc_required_features ... ok
+test source_features_are_shifted_into_xar_concurrency_bits ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+     Running tests\22c_vm_concurrency.rs (core\rust\target\debug\deps\22c_vm_concurrency-4b7b2411d217847c.exe)
+
+running 26 tests
+test cancellation_of_completed_thread_is_not_catchable ... ok
+test cancellation_cleanup_error_stays_suppressed ... ok
+test cancellation_of_running_child_executes_finally_once ... ok
+test child_current_runtime_preserves_shared_mut_and_guard_release ... ok
+test concurrency_cancel_cannot_be_swallowed_by_catch ... ok
+test corrupt_plans_are_rejected_before_vm_execution ... ok
+test child_error_and_suppressed_survive_join_and_wait ... ok
+test detached_failure_is_structured_and_does_not_change_exit_code ... ok
+test dropped_unwaited_task_failure_is_reported_before_vm_returns ... ok
+test frozen_runtime_error_codes_remain_structured ... ok
+test detached_activity_is_drained_before_timeout_returns ... ok
+test isolated_child_loads_project_and_standard_modules ... ok
+test boundary_failure_cleans_copies_in_ir_order_before_starting_child ... ok
+test nested_runtime_context_is_distinct_and_child_pool_works ... ok
+test lock_wait_and_completed_handle_cancellation_are_027 ... ok
+test plans_round_trip_and_execute_without_module_function_names ... ok
+test result_serialization_rejects_mutable_container_instead_of_none ... ok
+test queued_task_cancel_never_runs_body_and_wait_is_027 ... ok
+test real_source_builds_and_runs_xar_with_preflight_features ... ok
+test running_pool_task_cancel_waits_for_finally_and_suppressed ... ok
+test shared_read_can_cross_runtime_and_survive_source_close ... ok
+test source_threads_pool_aliases_and_values_are_observable ... ok
+test xiaoc_host_missing_features_is_rejected_before_execution ... ok
+test startup_failure_cleans_successful_boundary_copies ... ok
+test source_values_and_plans_survive_all_optimization_levels ... ok
+test external_timeout_interrupts_join_and_child_vm ... ok
+
+test result: ok. 26 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.72s
+
+     Running tests\22d_llvm_concurrency.rs (core\rust\target\debug\deps\22d_llvm_concurrency-58521bc4506abeb4.exe)
+
+running 9 tests
+test native_concurrency_llvm_assembly_fixtures ... ignored, 需要受控 llvm-as；由三平台 native job 显式执行
+test native_concurrency_shared_c_layout_probe ... ignored, 需要受控 XIAO_CLANG 和 XIAO_TARGET_TRIPLE；三平台原生作业精确执行
+test native_concurrency_vm_native_differential_matches_from_same_ir ... ignored, 需要 XIAO_CLANG、XIAO_LLVM_AS、XIAO_LLC、XIAO_RUNTIME_LIBRARY 和 XIAO_TARGET_TRIPLE
+test native_shared_lock_plan_keeps_cancel_and_runtime_abi_paths ... ok
+test native_lowering_consumes_concurrency_spans_and_emits_trampoline ... ok
+test unknown_native_concurrency_operation_is_rejected_before_lowering ... ok
+test public_native_build_emits_required_concurrency_metadata ... ok
+test native_project_module_concurrency_is_rejected_structurally ... ok
+test closure_golden_sources_compile_and_lower ... ok
+
+test result: ok. 6 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 12.38s
+
+     Running tests\22e_release.rs (core\rust\target\debug\deps\22e_release-4a2ea4c1fbc1e671.exe)
+
+running 6 tests
+test public_concurrency_rejects_32_bit_target_before_toolchain ... ok
+test public_concurrent_signatures_remain_virtual_and_frozen ... ok
+test public_native_concurrency_metadata_and_release_matrix ... ignored, 需要受控 LLVM/Runtime；三平台原生作业精确执行
+test concurrent_portable_runtime_matrix_is_verified_before_entry ... ok
+test concurrency_artifacts_use_minimal_shared_feature_sets ... ok
+test concurrent_documentation_examples_are_executable_and_cover_all_entries ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.10s
+
+     Running tests\artifact_size_regression.rs (core\rust\target\debug\deps\artifact_size_regression-91ae1e11afa6edbf.exe)
+
+running 2 tests
+test performance_report_hash_matches_baseline_file_bytes ... ok
+test deterministic_artifacts_do_not_grow_past_committed_baseline ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\b0_c_driver.rs (core\rust\target\debug\deps\b0_c_driver-887088c91bd4d65e.exe)
+
+running 7 tests
+test cancellation_and_timeout_are_stable_driver_boundary_results ... ok
+test frontend_failure_remains_a_structured_first_stage_result ... ok
+test invalid_ir_is_rejected_before_the_vm_starts ... ok
+test invalid_vm_request_is_exposed_as_a_request_rejection ... ok
+test runs_script_and_project_entries_through_the_public_driver ... ok
+test runtime_failure_is_executed_and_keeps_the_vm_report ... ok
+test capability_context_guards_vm_stdout_and_stdin ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\b0_d_exit_codes.rs (core\rust\target\debug\deps\b0_d_exit_codes-a3488abf2ab21705.exe)
+
+running 11 tests
+test cancellation_is_artifact_rejected_two ... ok
+test corrupted_ir_is_artifact_rejected_two ... ok
+test frontend_failure_is_source_rejected_one ... ok
+test frozen_process_codes_are_contiguous_and_stable ... ok
+test normal_script_is_success_zero ... ok
+test fatal_is_four ... ok
+test caught_error_is_success_zero ... ok
+test timeout_is_artifact_rejected_two ... ok
+test project_main_is_success_zero ... ok
+test exit_code_is_independent_of_diagnostic_display_context ... ok
+test uncaught_runtime_error_is_runtime_error_three ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\c20_capability_probe.rs (core\rust\target\debug\deps\c20_capability_probe-57a914f35df9eb3a.exe)
+
+running 6 tests
+test native_capability_probe_records_each_module ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test native_operator_coverage_guard ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test integer_power_result_matches_vm ... ok
+test logical_short_circuit_keeps_shared_release_plans ... ok
+test operator_coverage_guard_vm ... ok
+test vm_capability_probe_records_each_module ... ok
+
+test result: ok. 4 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 1.37s
+
+     Running tests\compatibility_matrix.rs (core\rust\target\debug\deps\compatibility_matrix-1cfca547c3560f37.exe)
+
+running 5 tests
+test every_generated_cell_has_an_explicit_action_and_stable_axis ... ok
+test target_support_matrix_distinguishes_unsupported_and_unverified ... ok
+test current_version_cells_are_direct_and_mismatches_are_explicit ... ok
+test index_major_cell_is_backed_by_the_authoritative_codec ... ok
+test xiaoc_version_cells_are_backed_by_the_authoritative_codec ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\cross_platform_release.rs (core\rust\target\debug\deps\cross_platform_release-e911f987d39d3f9d.exe)
+
+running 4 tests
+test lf_and_crlf_sources_have_the_same_runtime_observation ... ok
+test absolute_relative_space_and_unicode_paths_are_accepted_by_runtime_boundary ... ok
+test read_only_content_addressed_objects_remain_verifiable_on_each_host ... ok
+test process_termination_has_an_explicit_signal_or_exit_alternative ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests\d17c_archive.rs (core\rust\target\debug\deps\d17c_archive-cf491eb952f82a99.exe)
+
+running 15 tests
+test archive_run_honors_production_event_capacity ... ok
+test archive_protocol_result_carries_machine_readable_audit ... ok
+test archive_run_supports_dynamic_dict_key ... ok
+test archive_debug_start_failure_rejects_before_returning_execution_events ... ok
+test archive_runner_does_not_create_temporary_files ... ok
+test archive_success_preserves_intrinsic_output_and_success_result ... ok
+test archive_validation_error_keeps_audit_in_error_details ... ok
+test archive_run_supports_dict_methods ... ok
+test archive_run_supports_set_methods ... ok
+test archive_run_supports_text_split ... ok
+test invalid_archive_produces_no_execution_events ... ok
+test verify_protocol_validates_xar_without_running_user_code ... ok
+test direct_xiaoc_run_reuses_the_production_contract_and_verifies_bytes ... ok
+test artifacts_run_supports_dynamic_dict_write ... ok
+test direct_xiaoc_run_loads_standard_library_modules ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.42s
+
+     Running tests\d19a_differential.rs (core\rust\target\debug\deps\d19a_differential-8dd6f3bce594a636.exe)
+
+running 11 tests
+test baseline_check_rejects_a_vacuous_agreement ... ok
+test disagreement_report_names_the_two_sides_and_the_field ... ok
+test native_side_matches_the_vm_sides_on_every_case ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test native_side_reports_coverage_instead_of_silently_skipping ... ok
+test native_table_methods_debug_execution_o0_o3 ... ignored, 需要受控工具链、XIAO_DIAGNOSTICS_PATH 和终端；准备方式见 10D §4
+test native_table_methods_o1_o3_match_vm ... ignored, 需要受控原生工具链；准备方式见 10D §4
+test a2_remaining_shape_vm_observations ... ok
+test xiaoc_summaries_are_reproducible_and_level_debug_distinct ... ok
+test table_drop_registers_a_real_callback ... ok
+test a3_vm_boundary_observations ... ok
+test all_vm_sides_agree_on_every_case ... ok
+
+test result: ok. 8 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 6.97s
+
+     Running tests\d19a_regression.rs (core\rust\target\debug\deps\d19a_regression-655749e310e97375.exe)
+
+running 9 tests
+test cross_thread_diagnostic_identity_is_stable ... ok
+test dynamic_error_constructor_preserves_identity_and_rejects_non_text_values ... ok
+test container_path_errors_keep_distinct_codes ... ok
+test drop_sequences_are_identical_and_non_empty ... ok
+test finally_with_unconditional_exit_runs_in_production ... ok
+test dynamic_string_to_bool_boundary_is_stable ... ok
+test numeric_overflow_is_reported_identically_at_every_level ... ok
+test failing_module_initialization_is_not_cached_at_any_level ... ok
+test module_initialization_runs_once_per_session_at_every_level ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+
+     Running tests\eighth_batch.rs (core\rust\target\debug\deps\eighth_batch-58331fe33857621a.exe)
+
+running 4 tests
+test native_matches_eighth_batch_boundaries ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+test vm_supports_high_precision_unary_negation ... ok
+test vm_dynamic_scalar_conversions_align_with_runtime ... ok
+test vm_accepts_high_precision_parameters_and_integer_conversions ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests\i4a2_module_loading.rs (core\rust\target\debug\deps\i4a2_module_loading-bbefb6e35b678bfb.exe)
+
+running 19 tests
+test import_executes_once_and_exposes_value_and_function ... ok
+test explicit_project_import_overrides_same_named_package_root ... ok
+test imported_binding_can_be_reassigned_and_read_back ... ok
+test imported_function_errors_keep_the_module_source_path ... ok
+test importing_a_module_with_a_table_export_keeps_it_executable ... ok
+test backticked_module_export_keeps_its_binding_key ... ok
+test imports_sharing_a_directory_root_are_merged ... ok
+test instance_table_export_has_an_explicit_unsupported_diagnostic ... ok
+test module_table_instances_use_their_own_program ... ok
+test import_inside_module_function_waits_until_the_function_runs ... ok
+test imports_in_separate_scopes_keep_their_own_bindings ... ok
+test package_internal_import_initializes_its_own_project_module ... ok
+test nested_local_shadows_import_without_changing_outer_binding ... ok
+test package_loads_only_on_first_member_use_and_reuses_module ... ok
+test protocol_run_loads_a_project_import_from_the_source_path ... ok
+test module_loading_spec_vectors ... ok
+test reexported_import_and_aliased_nested_module_are_executable ... ok
+test skipped_import_does_not_initialize_module ... ok
+test singleton_table_ids_do_not_collide_across_modules ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.49s
+
+     Running tests\i4a2_retry.rs (core\rust\target\debug\deps\i4a2_retry-12dfa8d756b7dac9.exe)
+
+running 4 tests
+test package_failure_reports_package_environment_and_cause ... ok
+test successful_module_is_compiled_and_initialized_only_once_per_run ... ok
+test failed_compilation_is_not_cached_and_later_reference_succeeds ... ok
+test failed_initialization_is_not_cached ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\i4b_session.rs (core\rust\target\debug\deps\i4b_session-f715a362841ba68b.exe)
+
+running 7 tests
+test main_singletons_restart_each_run_while_module_singletons_remain_loaded ... ok
+test driver_reuses_module_initialization_but_not_request_bindings ... ok
+test failed_module_run_discards_session_and_allows_retry ... ok
+test early_cancellation_discards_existing_session_before_retry ... ok
+test protocol_session_does_not_reuse_project_modules_across_project_roots ... ok
+test protocol_session_serializes_runs_and_reuses_loaded_modules ... ok
+test package_source_change_invalidates_the_live_core_session ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.36s
+
+     Running tests\n0_a_native_driver.rs (core\rust\target\debug\deps\n0_a_native_driver-0523d07e1cf1b7c0.exe)
+
+running 6 tests
+test optional_frontend_artifact_differential_round_trip ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_native_catch_does_not_terminate ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_real_frontend_to_native_round_trip ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test preserves_frontend_rejection ... ok
+test carries_inferred_function_signature_into_ir ... ok
+test compiles_frontend_before_toolchain ... ok
+
+test result: ok. 3 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\n0_b_dynamic_native.rs (core\rust\target\debug\deps\n0_b_dynamic_native-96e5b7e771e28118.exe)
+
+running 15 tests
+test frontend_dynamic_branch_with_owned_local_is_rejected ... ok
+test frontend_dynamic_shadowed_slot_is_rejected ... ok
+test frontend_dynamic_branch_lowers_without_reparsing ... ok
+test frontend_dynamic_string_lowers_with_release_plan ... ok
+test frontend_dynamic_logical_short_circuit_lowers_without_eager_binary ... ok
+test frontend_static_shadowed_slot_is_rejected ... ok
+test frontend_dynamic_table_initializer_and_member_lower ... ok
+test optional_dynamic_string_native_round_trip ... ignored, 需要 XIAO_CLANG / XIAO_LLVM_AS / XIAO_RUNTIME_LIBRARY / XIAO_TARGET_TRIPLE；准备方式见 10D §4
+test optional_table_callback_ir_validates_three_targets ... ignored, 需要 XIAO_CLANG；准备方式见 10D §4
+test function_local_shadowing_cannot_alias_release_slots ... ok
+test frontend_dynamic_statements_lower_without_rejection ... ok
+test runtime_components_follow_registered_callbacks ... ok
+test table_callbacks_use_pointer_arguments_on_windows_and_sysv ... ok
+test generic_value_copy_registers_weak_dependency_only_when_called ... ok
+test table_methods_preserve_static_checks_and_followup_boundaries ... ok
+
+test result: ok. 13 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests\native_benchmark_probe.rs (core\rust\target\debug\deps\native_benchmark_probe-f019e344bbf23382.exe)
+
+running 1 test
+test native_benchmark_probe_reports_every_manifest_program ... ignored, 需要 XIAO_CLANG、XIAO_RUNTIME_LIBRARY 与 XIAO_TARGET_TRIPLE；准备方式见 10D §4
+
+test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\ninth_batch.rs (core\rust\target\debug\deps\ninth_batch-fc36d11476eb3abf.exe)
+
+running 2 tests
+test high_precision_negation_preserves_text_semantics ... ok
+test known_unsupported_boundaries_use_the_new_bytecode_code ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests\release_report.rs (core\rust\target\debug\deps\release_report-1bf86deafc8f83d7.exe)
+
+running 2 tests
+test verify_detail_reports_rust_computed_integrity_and_reproducibility_fields ... ok
+test verify_detail_reports_archive_members_and_object_digests ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\seventh_batch.rs (core\rust\target\debug\deps\seventh_batch-b980826e1abb25ac.exe)
+
+running 4 tests
+test native_matches_codepoint_round_trip_and_errors ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组
+test chr_keeps_scalar_type_boundary ... ok
+test vm_rejects_invalid_codepoint_inputs_with_one_runtime_code ... ok
+test vm_supports_codepoint_round_trip_and_ascii_lowering ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.35s
+
+     Running tests\u0_frontend.rs (core\rust\target\debug\deps\u0_frontend-dd671d720e28d096.exe)
+
+running 4 tests
+test accumulates_diagnostics_and_stops_lowering ... ok
+test compiles_source_to_verified_ir ... ok
+test carries_context_metadata ... ok
+test accepts_external_package_namespace_without_initializing_modules ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\x0_a_protocol.rs (core\rust\target\debug\deps\x0_a_protocol-51c381fcc8429988.exe)
+
+running 9 tests
+test fixtures_use_frozen_versions ... ok
+test package_fixture_round_trips ... ok
+test debug_fixture_round_trips_without_text_parsing ... ok
+test shared_hello_fixture_round_trips ... ok
+test localized_run_fixtures_keep_optional_fields_separate_from_machine_identity ... ok
+test repl_package_fixtures_round_trip_without_changing_package_operations ... ok
+test shared_response_fixture_round_trips ... ok
+test test_fixtures_round_trip_without_text_parsing ... ok
+test runtime_peak_metric_is_backward_compatible_and_tracks_containers ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\y3_selector_plan.rs (core\rust\target\debug\deps\y3_selector_plan-7dc7527c2757e66d.exe)
+
+running 1 test
+test legal_selector_forms_always_carry_a_plan_reference ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_i18n-643d3913290f88f1.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\catalog.rs (core\rust\target\debug\deps\catalog-458896f94b54ea2d.exe)
+
+running 5 tests
+test exact_base_english_and_identity_fallbacks_are_deterministic ... ok
+test invalid_types_and_templates_never_hide_original_identity ... ok
+test interpolation_does_not_reprocess_inserted_user_text ... ok
+test builtin_catalog_preserves_default_text_and_normalizes_aliases ... ok
+test missing_message_parameter_retries_with_original_text ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\language_pack.rs (core\rust\target\debug\deps\language_pack-122396659a40c239.exe)
+
+running 7 tests
+test cache_key_rejects_non_semver_versions_that_could_escape_the_cache_root ... ok
+test digest_and_compatibility_errors_are_rejected ... ok
+test only_declared_json_resources_are_allowed_and_manifest_is_strict ... ok
+test registering_the_same_plugin_replaces_its_previous_resources_atomically ... ok
+test duplicate_core_and_mismatched_signature_are_rejected_atomically ... ok
+test valid_pack_registers_new_locale_and_keeps_fallback_chain ... ok
+test runtime_retains_verified_directory_but_new_runtime_starts_unavailable ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_intrinsics-960031eeb1796bb1.exe)
+
+running 6 tests
+test tests::array_push_contract_is_active_and_bound_on_both_paths ... ok
+test tests::capability_bits_cover_standard_streams_and_reject_unknown_bits ... ok
+test tests::error_code_has_a_unique_owned_string_contract ... ok
+test tests::generated_table_is_valid_and_zero_is_rejected ... ok
+test tests::print_is_variadic_and_returns_none ... ok
+test tests::removed_ids_remain_tombstones ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_ir-9434b944ed94e884.exe)
+
+running 1 test
+test lower::tests::runtime_check_kind_bridge_is_exhaustive ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\fuzz_snapshots.rs (core\rust\target\debug\deps\fuzz_snapshots-a11be769036506e9.exe)
+
+running 3 tests
+test unsupported_version_is_reported_as_version_error ... ok
+test base_snapshot_parses_and_round_trips ... ok
+test seeded_ir_mutations_never_panic_and_are_rejected_with_typed_errors ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\r2_release_reconciliation.rs (core\rust\target\debug\deps\r2_release_reconciliation-ef0b54b2f63567dd.exe)
+
+running 8 tests
+test accepts_empty_plan_for_unused_exit ... ok
+test accepts_replayed_plan ... ok
+test rejects_changed_action_kind ... ok
+test compares_by_order_not_by_index ... ok
+test rejects_missing_release ... ok
+test rejects_reordered_release ... ok
+test rejects_unknown_scope ... ok
+test rejects_unknown_exit_name ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\structure_snapshots.rs (core\rust\target\debug\deps\structure_snapshots-78d4e3d3dcc57650.exe)
+
+running 1 test
+test ir_structure_snapshots_are_executed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\u0_ir.rs (core\rust\target\debug\deps\u0_ir-ec4b66e6f5198656.exe)
+
+running 12 tests
+test concurrency_types_lower_and_restore ... ok
+test carries_type_result_without_reinference ... ok
+test normalizes_dict_keys_consistently ... ok
+test lowers_complete_static_surface ... ok
+test normalizes_escaped_dict_keys ... ok
+test rejects_non_send_concurrency_handles ... ok
+test old_snapshot_without_concurrency_fields_is_compatible ... ok
+test validator_rejects_broken_control_flow ... ok
+test resource_checks_require_valid_expected_kinds ... ok
+test mirrors_table_interface_and_typed_receiver ... ok
+test verifies_boundary_facts_and_cleanup_order ... ok
+test snapshot_round_trip_and_version_guard ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_lifetime-3f117843922300de.exe)
+
+running 9 tests
+test model::tests::explicit_spawn_and_submit_produce_both_boundary_facts ... ok
+test model::tests::boundary_facts_reject_reserved_zero_runtime_ids ... ok
+test model::tests::direct_fact_registration_is_deterministically_deduplicated ... ok
+test model::tests::boundary_type_classification_uses_type_identity ... ok
+test model::tests::ordinary_handle_and_lock_guard_are_rejected_without_name_inspection ... ok
+test model::tests::runtime_id_facts_are_deterministic_and_idempotent ... ok
+test model::tests::shared_mut_cross_runtime_and_runtime_id_conflict_are_rejected ... ok
+test model::tests::task_suspend_only_produces_task_boundary ... ok
+test model::tests::typed_values_are_accepted_by_spawn_shorthand ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\a06_lifetime.rs (core\rust\target\debug\deps\a06_lifetime-570263f0b41793be.exe)
+
+running 38 tests
+test cast_to_string_produces_heap_result ... ok
+test constructed_return_keeps_input_binding_local ... ok
+test constructor_failure_has_cleanup_plan ... ok
+test captured_scalar_remains_stack_storage ... ok
+test container_records_owned_values ... ok
+test dynamic_values_are_conservative ... ok
+test exit_kind_names_are_frozen ... ok
+test elif_and_else_have_independent_scopes ... ok
+test exit_kind_names_round_trip ... ok
+test error_control_flow_has_unwind_scopes_and_plans ... ok
+test graph_accepts_shared_diamond_and_releases_child_once ... ok
+test failure_plans_are_idempotent ... ok
+test graph_orders_and_weak_edges ... ok
+test graph_rejects_strong_cycle ... ok
+test function_body_isolated_from_enclosing_try ... ok
+test input_intrinsic_keeps_string_lifetime_without_dynamic_check ... ok
+test malformed_graph_is_recoverable ... ok
+test lock_guard_cannot_escape_through_return ... ok
+test loop_exits_are_distinct ... ok
+test nested_blocks_do_not_create_closure_capture ... ok
+test nested_function_captures_outer_value ... ok
+test nested_control_flow_is_scoped ... ok
+test nested_function_exit_stays_inside_function ... ok
+test parameter_storage_uses_function_signature ... ok
+test nested_try_finally_preserves_unwind_order ... ok
+test nested_try_in_loop_preserves_break_target ... ok
+test plain_aliases_do_not_form_object_cycles ... ok
+test plain_scalar_declaration_keeps_diagnostics_empty ... ok
+test release_action_kind_names_round_trip ... ok
+test print_intrinsic_does_not_create_lifetime_diagnostics ... ok
+test return_transfers_local_value ... ok
+test scalar_expression_does_not_retain_heap_operand ... ok
+test return_inside_try_cannot_bypass_finally ... ok
+test self_referential_container_is_rejected ... ok
+test single_scope_has_normal_release_plan ... ok
+test strong_cycle_is_reported ... ok
+test try_finally_propagates_after_cleanup ... ok
+test tuple_storage_follows_recursive_type ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_lock-210c4ccde5ddac42.exe)
+
+running 4 tests
+test tests::child_process_holds_lock_until_parent_kills_it ... ok
+test tests::owner_payload_contains_only_lock_identity_fields ... ok
+test tests::owner_lock_is_removed_on_drop ... ok
+test tests::lock_is_recovered_after_holding_process_is_terminated ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_modules-46246fcc05830dd8.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c05_tables.rs (core\rust\target\debug\deps\c05_tables-9a997e24a90f5e81.exe)
+
+running 1 test
+test discovers_table_symbol_and_method_scope ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\d0_modules.rs (core\rust\target\debug\deps\d0_modules-bd7388822e2e8087.exe)
+
+running 12 tests
+test diagnoses_invalid_qualifier_use_and_binding_conflict ... ok
+test diagnoses_file_namespace_conflict ... ok
+test diagnoses_missing_qualified_namespace_target ... ok
+test diagnoses_case_fold_conflicts_and_preserves_case_sensitivity ... ok
+test keeps_block_imports_local ... ok
+test diagnoses_missing_targets_and_symbols_once ... ok
+test propagates_top_level_reexports ... ok
+test records_qualified_namespace_use ... ok
+test rejects_cycles_and_clears_initialization_order ... ok
+test discovers_files_and_namespaces_with_project_boundaries ... ok
+test resolves_imports_bindings_and_initialization_order ... ok
+test module_spec_snapshots_are_executed ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_optimizer-6dac92741b69e924.exe)
+
+running 15 tests
+test differential::tests::input_suite_executes_each_input_for_both_o0_sides ... ok
+test differential::tests::four_way_suite_keeps_six_language_fields_and_ignores_cost_fields ... ok
+test differential::tests::compares_output_error_exit_code_and_drop_order ... ok
+test differential::tests::equal_observations_have_no_difference ... ok
+test differential::tests::named_comparison_reuses_the_same_field_order_and_names_sides ... ok
+test differential::tests::process_termination_keeps_exit_and_signal_distinct ... ok
+test differential::tests::suite_sorts_cases_and_reports_o0_honestly ... ok
+test differential::tests::three_way_suite_compares_random_sequence_and_all_sides ... ok
+test pipeline::tests::normalizes_config_and_fingerprint_independently_of_input_order ... ok
+test pipeline::tests::pass_output_is_validated_and_failure_keeps_last_valid_snapshot ... ok
+test pipeline::tests::o0_runs_normalization_and_validation_without_semantic_pass ... ok
+test pipeline::tests::explicit_pass_failure_is_blocked_with_last_valid_snapshot ... ok
+test pipeline::tests::pass_can_read_facts_without_mutating_them ... ok
+test pipeline::tests::placeholder_level_reports_skip_instead_of_claiming_optimization ... ok
+test pipeline::tests::skipped_pass_keeps_its_input_snapshot ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\boundary_inputs.rs (core\rust\target\debug\deps\boundary_inputs-28ccf05a777a7e02.exe)
+
+running 4 tests
+test dynamic_checks_and_container_order_are_boundary_cases ... ok
+test overflow_boundaries_are_real_error_inputs ... ok
+test input_driven_boundary_suite_executes_both_o0_sides ... ok
+test fixed_random_source_covers_both_sampling_modes ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_package-3b7ed6eb9c456076.exe)
+
+running 7 tests
+test credentials::tests::aliases_without_environment_names_remain_valid ... ok
+test credentials::tests::debug_never_contains_token ... ok
+test fetch::tests::unsafe_names_are_rejected_before_any_write ... ok
+test fetch::tests::links_and_duplicate_paths_are_rejected ... ok
+test lockfile::tests::interrupted_temporary_write_preserves_existing_target ... ok
+test federation_cache::tests::failed_commit_retains_previous_index ... ok
+test remote::tests::locked_tag_is_checked_even_when_source_object_is_cached ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests\d1_package.rs (core\rust\target\debug\deps\d1_package-2b5b23b551c8eeae.exe)
+
+running 4 tests
+test exposes_stable_package_diagnostic_codes ... ok
+test preserves_dependency_constraints_and_source_shape ... ok
+test official_standard_library_cannot_enter_local_path_dependency_graph ... ok
+test package_spec_snapshots_are_executed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests\e0_environment.rs (core\rust\target\debug\deps\e0_environment-af4747cccddec76f.exe)
+
+running 3 tests
+test reads_v1_metadata_and_rejects_future_version ... ok
+test environment_layout_uses_default_and_explicit_directory_names ... ok
+test environment_metadata_is_stable_and_duplicate_creation_is_rejected ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\e1_cache.rs (core\rust\target\debug\deps\e1_cache-6691c36dba77e12a.exe)
+
+running 7 tests
+test cache_spec_snapshot_is_executed ... ok
+test cache_layout_obeys_xiao_home_boundary ... ok
+test corrupted_object_is_rejected_and_quarantined ... ok
+test cache_error_spec_snapshot_is_executed ... ok
+test cache_import_deduplicates_and_preserves_immutable_snapshots ... ok
+test source_digest_is_deterministic_and_path_independent ... ok
+test project_and_global_environments_share_objects_without_links ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests\e2a_lockfile.rs (core\rust\target\debug\deps\e2a_lockfile-d0071c25f884fa9b.exe)
+
+running 5 tests
+test invalid_existing_lockfile_is_not_overwritten ... ok
+test invalid_graph_or_unreachable_lock_entry_is_rejected ... ok
+test environment_mapping_update_replaces_existing_file_without_partial_json ... ok
+test valid_lockfile_spec_is_executed ... ok
+test error_lockfile_spec_is_executed ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.61s
+
+     Running tests\e2b_sync.rs (core\rust\target\debug\deps\e2b_sync-f496c5e528eb5533.exe)
+
+running 7 tests
+test rejects_future_lock_cycle_and_does_not_execute_package_code_on_view ... ok
+test install_uses_active_or_global_without_touching_lock_or_project ... ok
+test keep_extra_and_lock_rejection_are_atomic ... ok
+test sync_refreshes_environment_fingerprint_after_config_change ... ok
+test sync_creates_reuses_and_respects_active_target ... ok
+test valid_spec_is_executed ... ok
+test error_spec_is_executed_without_new_environment_or_lock_writes ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.17s
+
+     Running tests\e3a_source.rs (core\rust\target\debug\deps\e3a_source-fd2341563553db60.exe)
+
+running 8 tests
+test source_ids_normalize_without_merging_distinct_protocols ... ok
+test jcs_shared_vectors ... ok
+test config_fingerprint_tracks_source_priority_without_aliases ... ok
+test source_selection_rejects_records_from_a_different_snapshot ... ok
+test source_selection_preserves_origin_and_rejects_ambiguity ... ok
+test unqueried_source_cannot_be_treated_as_missing_package ... ok
+test source_specs_read_config_tree_and_preserve_order ... ok
+test local_adapter_separates_metadata_from_body_and_checks_digests ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\e3b_cache.rs (core\rust\target\debug\deps\e3b_cache-93d70886d72d1f82.exe)
+
+running 14 tests
+test cache_infrastructure_failure_does_not_become_source_unavailable ... ok
+test first_unavailable_source_does_not_block_explicit_later_binding ... ok
+test another_project_cannot_discard_an_offline_federation_view ... ok
+test changed_config_and_snapshot_refresh_instead_of_reusing_old_lock ... ok
+test cache_policy_fixture_offline_fast_path ... ok
+
+running 1 test
+
+running 1 test
+test process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.05s
+
+test missing_priority_source_is_not_an_empty_source ... ok
+test process_child ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 13 filtered out; finished in 0.05s
+
+test parallel_process_lock_and_stale_owner_recovery ... ok
+test lock_from_later_source_cannot_skip_priority_validation ... ok
+test process_child ... ok
+test new_snapshot_of_same_version_must_not_match_old_lock ... ok
+test partial_read_failure_leaves_no_snapshot_or_metadata ... ok
+test snapshot_history_and_metadata_integrity ... ok
+test unavailable_later_source_does_not_block_prior_candidate ... ok
+test parallel_reads_are_bounded_and_ordered ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.41s
+
+     Running tests\e3c_remote.rs (core\rust\target\debug\deps\e3c_remote-9f5d9ec43f8442e2.exe)
+
+running 13 tests
+test dns_resolution_failure_is_unavailable ... ignored, 需要本机 DNS 解析 .invalid 保留域，CI 不依赖外部解析服务
+test config_requires_unique_git_ref_and_no_local_path_mix ... ok
+test pkt_line_accepts_optional_lf_in_service_version_and_refs ... ok
+test pkt_line_rejects_spec_errors_and_non_utf8 ... ok
+test interrupted_range_response_can_resume_again ... ok
+test range_header_cannot_overstate_cleanly_returned_body ... ok
+test range_header_cannot_understate_returned_body ... ok
+test online_lock_cannot_hide_rewritten_tag_but_offline_can_reuse_pinned_snapshot ... ok
+test tag_rewrite_and_same_commit_changed_manifest_are_rejected ... ok
+test static_local_and_git_return_identical_package_metadata_without_executing_content ... ok
+test range_resume_and_unavailable_failures_do_not_create_half_snapshot ... ok
+test transport_timeout_tls_failure_and_refuse_connection_are_unavailable ... ok
+test authenticated_http_source_installs_without_leaking_token_or_running_code ... ok
+
+test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.98s
+
+     Running tests\e3d1_remote.rs (core\rust\target\debug\deps\e3d1_remote-88649a3a0058781b.exe)
+
+running 5 tests
+test locked_digest_overrides_index_and_never_becomes_package_missing ... ok
+test remote_closure_resolves_transitive_packages_and_reuses_pinned_cache ... ok
+test explicit_update_changes_version_but_regular_sync_does_not ... ok
+test remote_archive_identity_must_match_the_index ... ok
+test remote_closure_spec_vectors_are_executed ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.51s
+
+     Running tests\e3d_config_edit.rs (core\rust\target\debug\deps\e3d_config_edit-cbf3f63b27cbabce.exe)
+
+running 6 tests
+test mismatched_unicode_span_returns_error_instead_of_panicking ... ok
+test new_table_respects_crlf_even_without_final_newline ... ok
+test invalid_constraint_and_path_are_not_committed ... ok
+test new_table_and_conflicting_edits ... ok
+test preserves_order_comments_quotes_and_crlf ... ok
+test stale_original_preserves_file ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\e3d_operations.rs (core\rust\target\debug\deps\e3d_operations-7b78861d19c86b03.exe)
+
+running 7 tests
+test invalid_project_does_not_create_root_directory ... ok
+test explicit_wrong_source_is_never_silently_treated_as_local ... ok
+test lock_does_not_depend_on_unrelated_active_environment ... ok
+test invalid_requirement_does_not_change_config_or_existing_lock ... ok
+test lock_rejects_stale_document_without_changing_existing_lock ... ok
+test lock_never_replaces_stale_contents_but_update_does ... ok
+test lock_update_add_remove_are_distinct_and_never_touch_environment ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+
+     Running tests\e3d_solver.rs (core\rust\target\debug\deps\e3d_solver-d0264f1364a70685.exe)
+
+running 9 tests
+test conflicting_transitive_sources_can_backtrack ... ok
+test cyclic_highest_candidate_backtracks_to_acyclic_release ... ok
+test conditional_releases_are_not_selected_without_compatibility_context ... ok
+test backtracks_when_new_transitive_constraint_conflicts_with_prior_choice ... ok
+test first_source_wins_before_any_cross_source_version_comparison ... ok
+test missing_solution_and_equal_precedence_are_distinct_errors ... ok
+test official_standard_library_is_rejected_by_normal_dependency_solver ... ok
+test record_key_must_match_package_identity ... ok
+test separate_constraints_share_prerelease_admission ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\e3d_version.rs (core\rust\target\debug\deps\e3d_version-229487b0e1b545ee.exe)
+
+running 3 tests
+test precedence_ignores_build_and_compares_prerelease_identifiers ... ok
+test malformed_versions_and_constraints_are_rejected ... ok
+test all_frozen_requirement_forms_and_boundaries ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\e4_language_pack.rs (core\rust\target\debug\deps\e4_language_pack-59b56f82424a684e.exe)
+
+running 3 tests
+test public_invalid_language_key_cannot_escape_cache_root ... ok
+test language_objects_are_isolated_read_only_and_reusable ... ok
+test corrupt_language_object_is_rejected_and_quarantined_without_touching_source_cache ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_platform-96edf1cb91921a01.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_runtime-59eb08f55acb6697.exe)
+
+running 183 tests
+test abi::abi_concurrency::tests::completed_child_cancellation_uses_vm_error_normalization_and_keeps_cleanup_error ... ok
+test abi::abi_concurrency::tests::entry_close_drain_failure_preserves_primary_and_suppressed ... ok
+test abi::abi_concurrency::tests::detached_trampoline_failure_keeps_error_identity_and_runtime_id ... ok
+test abi::abi_concurrency::tests::lock_guard_rejects_cross_thread_use ... ok
+test abi::abi_concurrency::tests::native_blocked_lock_wait_is_cancelled_by_host_token ... ok
+test abi::abi_concurrency::tests::native_cleanup_checkpoint_defers_repeated_cancellation ... ok
+test abi::abi_concurrency::tests::native_error_checkpoint_preserves_primary_and_suppressed ... ok
+test abi::abi_concurrency::tests::native_error_frames_are_appended_during_unwind ... ok
+test abi::abi_concurrency::tests::native_external_cancellation_checks_safe_point_wait_and_lock_wait ... ok
+test abi::abi_concurrency::tests::native_finish_close_error_is_suppressed_under_primary ... ok
+test abi::abi_concurrency::tests::native_first_cancellation_inside_finally_is_delivered ... ok
+test abi::abi_concurrency::tests::join_rejects_shared_mut_result_owned_by_child_runtime ... ok
+test abi::abi_concurrency::tests::current_runtime_is_stable_and_child_uses_bound_runtime_context ... ok
+test abi::abi_concurrency::tests::native_shared_boundary_releases_every_transfer_alias ... ok
+test abi::abi_concurrency::tests::native_shared_mut_lock_round_trips_and_writes_value ... ok
+test abi::abi_concurrency::tests::native_trampoline_resets_worker_checkpoint_and_inherits_locale ... ok
+test abi::abi_concurrency::tests::public_release_reclaims_shared_box_and_boundaries_reject_thread_local_handles ... ok
+test abi::abi_concurrency::tests::native_xcon_maximum_depth_round_trips_through_trampoline ... ok
+test abi::abi_concurrency::tests::runtime_and_pool_values_use_opaque_concurrency_tag ... ok
+test abi::abi_concurrency::tests::shared_creation_rejects_a_closed_current_runtime ... ok
+test abi::abi_concurrency::tests::native_trampoline_spawn_join_round_trips_scalar_result ... ok
+test abi::abi_concurrency::tests::trampoline_error_identity_returns_to_joining_thread ... ok
+test abi::abi_concurrency::tests::unsupported_operation_is_explicitly_rejected ... ok
+test abi::abi_concurrency::tests::vm_release_trace_includes_concurrency_external_objects ... ok
+test abi::abi_io::tests::capability_context_rejects_stdin_before_input ... ok
+test abi::abi_concurrency::tests::wait_rejects_shared_mut_result_owned_by_pool_runtime ... ok
+test abi::abi_io::tests::capability_context_rejects_stdout_before_output ... ok
+test abi::abi_io::tests::removal_verification_input_wrapper_rejects_invalid_prompt_flag ... ok
+test abi::abi_io::tests::removal_verification_print_wrapper_rejects_null_nonempty_input ... ok
+none
+test abi::abi_io::tests::removal_verification_print_wrapper_writes_stdout_behavior ... ok
+test abi::abi_resource::tests::capability_is_checked_before_open_and_io_errors_keep_reason ... ok
+test abi::abi_resource::tests::every_entry_checks_capabilities_before_decoding_arguments ... ok
+test abi::abi_resource::tests::open_read_close_and_closed_alias_are_stable ... ok
+test abi::abi_resource::tests::directory_open_validates_directory_and_non_utf8_is_rejected ... ok
+test abi::abi_resource::tests::process_abi_checks_capabilities_before_arguments ... ok
+test abi::abi_resource::tests::process_abi_roundtrip_and_close_preserve_capability_and_alias_state ... ok
+test abi::abi_tables::tests::native_descriptor_rejects_invalid_metadata_before_allocation ... ok
+test abi::abi_tables::tests::native_constructor_rejects_an_occupied_output_slot ... ok
+test abi::abi_tables::tests::native_drop_failure_is_suppressed_by_existing_primary ... ok
+test abi::abi_tables::tests::native_drop_view_is_readonly_and_expires ... ok
+test abi::abi_tables::tests::native_fatal_skips_drop_and_ordinary_drop_error_is_reported ... ok
+test abi::abi_tables::tests::native_init_failure_preserves_cause_and_cleanup_error ... ok
+test abi::abi_tables::tests::native_method_rejects_wrong_signature_arguments_and_result ... ok
+test abi::abi_tables::tests::native_methods_copy_metadata_and_balance_borrowed_receiver ... ok
+test abi::error_code_tests::borrowed_view_survives_releasing_a_different_alias ... ok
+test abi::error_code_tests::copied_result_survives_source_release_and_copy_failure_keeps_alias ... ok
+test abi::error_code_tests::failure_statuses_preserve_both_output_fields_and_pending ... ok
+test abi::tests::abi_compatibility_accepts_old_minor_and_rejects_unsupported_versions ... ok
+test abi::tests::array_round_trip_copies_values ... ok
+test abi::error_code_tests::success_borrows_exact_bytes_without_allocating_or_touching_pending ... ok
+test abi::tests::diagnostic_ready_failure_cleans_session_and_environment ... ok
+test abi::abi_concurrency::tests::retain_release_race_is_serialized_until_box_reclamation ... ok
+test abi::tests::dictionary_rejects_duplicate_keys ... ok
+test abi::tests::dynamic_member_type_error_releases_input_value ... ok
+test abi::tests::dynamic_operator_and_check_round_trip ... ok
+test abi::tests::error_take_rejects_weak_output_slot ... ok
+test abi::tests::error_value_constructor_preserves_identity ... ok
+test abi::tests::external_resource_round_trips_through_abi_tag ... ok
+test abi::tests::fatal_error_constructor_never_returns_recoverable_value ... ok
+test abi::tests::handle_outputs_replace_previous_owner ... ok
+test abi::tests::legacy_output_slots_replace_owned_values_and_preserve_on_failure ... ok
+test abi::tests::legacy_value_wrapper_rejects_wrong_handle_kind_with_none_sentinel ... ok
+test abi::tests::length_outputs_are_zeroed_on_invalid_handle ... ok
+test abi::tests::native_error_checkpoint_reset_discards_stale_entry_state ... ok
+test abi::tests::native_error_checkpoint_survives_successful_helper_return ... ok
+test abi::tests::native_random_seed_controls_a_persistent_sequence ... ok
+test abi::tests::numeric_error_abi_preserves_identity_and_span ... ok
+test abi::tests::diagnostic_ready_waits_for_delayed_hello ... ok
+test abi::tests::pending_fatal_error_is_not_replaced_by_runtime_error ... ok
+test abi::tests::pending_runtime_error_preserves_primary_and_suppresses_secondary ... ok
+test abi::tests::rejects_invalid_boolean_payload_on_copy ... ok
+test abi::tests::rejects_unknown_value_tag ... ok
+test abi::tests::diagnostic_session_forwards_events_and_closes ... ok
+test abi::tests::resource_dynamic_checks_preserve_nominal_kinds_and_closed_values ... ok
+test abi::tests::retain_keeps_same_box_and_balances_count ... ok
+test abi::tests::scalar_value_copy_preserves_payload ... ok
+test abi::tests::strong_release_leaves_weak_value_for_weak_entry ... ok
+test abi::tests::strong_value_copy_uses_runtime_counts ... ok
+test abi::tests::table_descriptor_rejects_empty_names ... ok
+test abi::tests::table_descriptor_rejects_unknown_metadata ... ok
+test abi::tests::table_descriptor_round_trip ... ok
+test abi::tests::value_copy_replaces_existing_owned_output ... ok
+test abi::tests::weak_release_rejects_strong_value ... ok
+test abi::tests::weak_upgrade_fails_after_last_strong_release ... ok
+test abi::tests::weak_value_rejects_non_table_target ... ok
+test concurrency::tests::cancellation_hook_registration_is_removed_when_task_finishes ... ok
+test concurrency::tests::runtime_registry_maps_and_closes_static_labels ... ok
+test concurrency::tests::lock_cancellation_wakes_waiting_thread ... ok
+test concurrency::tests::shared_counts_weak_upgrade_and_exact_drop ... ok
+test concurrency::tests::shared_header_layout_is_frozen ... ok
+test concurrency::tests::shared_lock_supports_mutation_and_cancellation ... ok
+test concurrency::tests::shared_lock_blocks_and_wakes_waiting_thread ... ok
+test concurrency::tests::shared_read_access_is_tag_restricted ... ok
+test containers::tests::hashability_allowlist_rejects_external_resources ... ok
+test crash::tests::process_exit_codes_preserve_normal_values_and_map_exceptions ... ok
+test crash::tests::windows_exception_classes_share_unix_exit_codes ... ok
+xiao-error class=recoverable code=X06-RUNTIME-009 message_id=runtime.user_error params={"message": Text("overflow")} span=4..9 exit_code=3
+error [X06-RUNTIME-009]: overflow
+at bytes 4..9
+test abi::tests::ordinary_error_report_does_not_activate_diagnostic_sink ... ok
+test memory::tests::native_release_trace_collects_child_thread_events ... ok
+test memory::tests::native_release_trace_keeps_recording_after_root_flush ... ok
+test memory::tests::release_trace_records_shared_runtime_events ... ok
+test memory::tests::peak_live_bytes_includes_objects_allocated_during_drop ... ok
+test memory::tests::releases_payload_on_last_strong_and_keeps_weak_header ... ok
+test scheduler::runtime_helpers::tests::current_runtime_reuses_root_and_registered_context ... ok
+test scheduler::tests::active_close_drains_queued_activity_with_single_worker ... ok
+test scheduler::tests::active_close_follower_leaves_owner_to_drain_other_activity ... ok
+test scheduler::tests::active_thread_close_drains_other_threads_before_returning ... ok
+test scheduler::tests::cancellation_at_completed_unreclaimed_position_returns_027 ... ok
+test scheduler::tests::cancellation_at_queued_position_skips_task_body ... ok
+test scheduler::tests::cancellation_at_running_position_waits_for_task_exit ... ok
+test scheduler::tests::cancellation_at_waiting_position_waits_for_task_exit ... ok
+test scheduler::tests::completed_task_cancellation_is_observed_by_public_wait_apis ... ok
+test scheduler::tests::cross_pool_shutdowns_do_not_deadlock ... ok
+test scheduler::tests::cross_runtime_pool_shutdown_is_rejected ... ok
+test scheduler::tests::cross_runtime_runtime_close_and_spawn_are_rejected ... ok
+test scheduler::tests::default_submit_from_external_thread_stops_on_runtime_close ... ok
+test scheduler::tests::default_submit_inherits_worker_cancellation_context ... ok
+test scheduler::tests::detached_errors_are_classified_and_reaped_concurrently ... ok
+test memory::tests::peak_live_bytes_counts_container_contents_per_run ... ok
+test scheduler::tests::detached_reaper_queue_does_not_block_when_workers_are_busy ... ok
+test scheduler::tests::detached_thread_panic_is_reported_to_process_channel ... ok
+test scheduler::tests::external_pool_shutdown_and_worker_runtime_close_drain_queue ... ok
+test scheduler::tests::large_pool_close_drains_many_queued_tasks ... ok
+test scheduler::tests::pool_shutdown_after_runtime_close_returns_runtime_closed ... ok
+test scheduler::tests::pool_shutdown_and_runtime_close_do_not_deadlock ... ok
+test scheduler::tests::queued_task_cancel_releases_slot_before_worker_is_free ... ok
+test scheduler::tests::runtime_close_and_independent_pool_shutdown_converge ... ok
+test scheduler::tests::runtime_close_is_reentrant_from_pool_worker ... ok
+test scheduler::tests::runtime_close_shuts_down_and_drains_owned_pools ... ok
+test scheduler::tests::runtime_close_stops_admission_and_drains_threads ... ok
+test scheduler::tests::runtime_spawn_cancel_and_join_are_wired ... ok
+test scheduler::tests::shutdown_drain_helper_handles_queued_runtime_close ... ok
+test scheduler::tests::task_owned_runtime_can_create_pool_and_spawn ... ok
+test scheduler::tests::task_panic_is_reported_without_killing_pool_worker ... ok
+test scheduler::tests::task_pool_validates_capacity_and_waits_tasks ... ok
+test scheduler::tests::full_queue_submission_has_cancellable_backpressure ... ok
+test scheduler::tests::two_active_runtime_closers_do_not_deadlock ... ok
+test scheduler::tests::two_pool_workers_can_close_same_pool_concurrently ... ok
+test scheduler::tests::wait_interruptible_checks_host_interrupt_after_receiving_result ... ok
+test scheduler::tests::wait_interruptible_checks_host_interrupt_on_disconnect ... ok
+test serialization::tests::xcon_decoder_rejects_noncanonical_set_and_dict_order ... ok
+test serialization::tests::xcon_rejects_reserved_tags_and_bad_headers ... ok
+test serialization::tests::xcon_round_trips_scalars_and_nested_values ... ok
+test serialization::tests::xcon_set_and_dict_encoding_is_deterministic ... ok
+test tables::tests::init_failure_is_reported_and_object_is_released ... ok
+test tables::tests::follows_construct_state_machine_and_checks_fields ... ok
+test tables::tests::scalar_fields_accept_widening_assignments ... ok
+test testing::tests::dispatches_recoverable_catch_by_type ... ok
+test testing::tests::executes_static_plan_in_order ... ok
+test testing::tests::keeps_fatal_outside_recoverable_catch ... ok
+test testing::tests::unwind_keeps_primary_and_suppresses_cleanup_errors ... ok
+test value::ops::tests::compares_numbers_and_strings ... ok
+test value::ops::tests::constructs_and_rejects_unicode_scalar_values ... ok
+test value::ops::tests::converts_numeric_widths_with_range_check ... ok
+test value::ops::tests::converts_between_bool_and_str ... ok
+test value::ops::tests::converts_single_codepoint_to_integer ... ok
+test value::ops::tests::division_by_zero_has_stable_identity ... ok
+test value::ops::tests::division_requires_float_operands ... ok
+test value::ops::tests::floor_division_pairs_with_remainder ... ok
+test value::ops::tests::high_precision_numerics_are_explicitly_unsupported ... ok
+test value::ops::tests::integer_power_rejects_negative_exponent ... ok
+test value::ops::tests::negates_high_precision_text_without_narrowing ... ok
+test value::ops::tests::overflow_uses_stable_identity ... ok
+test value::ops::tests::rejects_cross_width_operands ... ok
+test value::ops::tests::string_equality_compares_content ... ok
+test value::ops::tests::supports_arithmetic_operators ... ok
+test value::string_index_tests::ascii_and_empty_strings_use_direct_byte_positions ... ok
+test value::string_index_tests::cached_indices_preserve_every_scalar_and_out_of_bounds ... ok
+test value::tests::error_type_name_is_explicit ... ok
+test value::string_index_tests::shared_unicode_indices_stay_alive_and_are_accounted ... ok
+test value::tests::error_values_keep_identity_semantics ... ok
+test value::tests::external_resource_aliases_share_identity_and_close_idempotently ... ok
+test value::tests::stores_and_reads_utf8_string ... ok
+test value::tests::supports_bool_parity_adjustment ... ok
+test vm_concurrency::tests::cancelled_task_disconnect_is_classified_as_027 ... ok
+test vm_concurrency::tests::completed_child_cancellation_keeps_noncatchable_variant ... ok
+test vm_concurrency::tests::owned_guard_keeps_allocation_alive_and_unlocks_after_alias_drop ... ok
+test vm_concurrency::tests::excessive_recursive_values_fail_before_unbounded_copy ... ok
+test vm_concurrency::tests::task_disconnect_without_cancellation_remains_028 ... ok
+test vm_concurrency::tests::transfer_bytes_are_validated_and_copy_values ... ok
+test vm_concurrency::tests::thread_consumption_is_shared_but_handles_are_not_hashable ... ok
+test vm_concurrency::tests::vm_detached_report_channel_is_bounded_and_counts_drops ... ok
+test scheduler::tests::active_close_waits_for_queued_pool_activity ... ok
+test abi::abi_concurrency::tests::malformed_xcon_never_enters_native_trampoline ... ok
+
+test result: ok. 183 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+     Running tests\b06_runtime.rs (core\rust\target\debug\deps\b06_runtime-f5783d08ec0349f3.exe)
+
+running 9 tests
+test bool_arithmetic_is_strict_and_overflow_is_reported ... ok
+test driver_consumes_lifetime_release_plan ... ok
+test drop_failure_keeps_structured_identity ... ok
+test compiled_initializer_preserves_field_contracts ... ok
+test drop_view_is_borrowed_and_expires_after_callback ... ok
+test hashability_allowlist_preserves_all_existing_runtime_variants ... ok
+test runs_init_and_drop_with_static_signature ... ok
+test singleton_and_instance_kinds_are_not_interchangeable ... ok
+test weak_handle_survives_strong_release_but_cannot_upgrade ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\b1_string_bridge.rs (core\rust\target\debug\deps\b1_string_bridge-60ea8c0f4d9c4036.exe)
+
+running 1 test
+test abi_string_reads_do_not_copy_the_entire_source ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\n0_c2_error_boundary.rs (core\rust\target\debug\deps\n0_c2_error_boundary-7da533e5d1b82203.exe)
+
+running 2 tests
+test platform_failure_child ... ignored, 由 platform_failure_report_is_machine_readable 在子进程中调用
+test platform_failure_report_is_machine_readable ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\r2a_containers.rs (core\rust\target\debug\deps\r2a_containers-ca84720bbf12b206.exe)
+
+running 17 tests
+test containers_compare_by_identity ... ok
+test container_type_names_are_stable ... ok
+test array_releases_every_element ... ok
+test dict_holds_and_releases_values ... ok
+test external_resource_alias_release_destroys_once ... ok
+test external_resource_container_boundaries_are_enforced ... ok
+test heterogeneous_set_members_are_discriminated_by_variant ... ok
+test scalar_hash_matches_equality ... ok
+test set_algebra_follows_operand_order ... ok
+test set_algebra_results_stay_deduplicated ... ok
+test set_deduplicates_and_releases_dropped_elements ... ok
+test set_empty_is_subset_of_everything_but_not_proper_of_itself ... ok
+test set_equality_is_unordered_mutual_inclusion ... ok
+test set_mutation_is_visible_through_aliases ... ok
+test set_rejects_unhashable_elements ... ok
+test set_subset_distinguishes_proper_from_equal ... ok
+test tuple_releases_every_element ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_runtime_abi-fa9745591bd1c9ff.exe)
+
+running 12 tests
+test tests::concurrency_required_features_are_exact_subset ... ok
+test tests::concurrency_runtime_requires_runtime_1_17 ... ok
+test tests::error_code_requires_runtime_1_18 ... ok
+test tests::concurrency_tag_and_kinds_are_append_only ... ok
+test tests::process_api_requires_runtime_1_15 ... ok
+test tests::resource_api_requires_runtime_1_14 ... ok
+test tests::table_callback_c_layout_matches_three_targets ... ignored, 需要 XIAO_CLANG；准备方式见 10D §4，交叉验证 MSVC/Linux/macOS C ABI 布局
+test tests::resource_type_checks_require_runtime_1_16 ... ok
+test tests::table_callback_layout_is_independent ... ok
+test tests::table_signature_distinguishes_argument_and_result_types ... ok
+test tests::value_layout_is_two_machine_words ... ok
+test tests::version_encoding_is_stable ... ok
+
+test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_source-6b3981710dd11d2a.exe)
+
+running 5 tests
+test tests::preserves_trailing_empty_line_after_newline ... ok
+test tests::rejects_invalid_utf8_and_bad_boundaries ... ok
+test tests::tracks_utf8_bytes_and_scalar_columns ... ok
+test tests::treats_crlf_as_one_logical_line_break ... ok
+test tests::validates_spans_and_cursor_progress ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_standard_library-a607a9079cea2429.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_syntax-d90be9672e2c3468.exe)
+
+running 27 tests
+test ast::tests::scalar_names_round_trip ... ok
+test lexer::tests::accepts_ascii_identifier_and_leading_zero_integer ... ok
+test lexer::tests::applies_longest_operator_matching ... ok
+test lexer::tests::classifies_keywords_without_rewriting_names ... ok
+test lexer::tests::diagnoses_backtick_errors ... ok
+test lexer::tests::diagnoses_delimiter_errors ... ok
+test lexer::tests::diagnoses_incomplete_number_exponent ... ok
+test lexer::tests::diagnoses_invalid_string_escape ... ok
+test lexer::tests::diagnoses_unterminated_doc_comment ... ok
+test lexer::tests::diagnoses_unterminated_string ... ok
+test lexer::tests::does_not_create_implicit_indent_for_invalid_width ... ok
+test lexer::tests::does_not_indent_inside_delimiters ... ok
+test lexer::tests::does_not_synthesize_newline_at_eof ... ok
+test lexer::tests::emits_indent_and_dedent_tokens ... ok
+test lexer::tests::expands_horizontal_tabs_as_ignored_whitespace ... ok
+test lexer::tests::emits_one_newline_for_lf_and_crlf ... ok
+test lexer::tests::handles_line_and_doc_comments ... ok
+test lexer::tests::ignores_non_code_lines_for_indentation ... ok
+test lexer::tests::lone_carriage_return_is_invalid ... ok
+test lexer::tests::recovers_from_inconsistent_indentation ... ok
+test lexer::tests::recovers_from_unicode_escape_target ... ok
+test lexer::tests::reports_invalid_character_and_keeps_scanning ... ok
+test lexer::tests::tokenizes_backtick_identifiers ... ok
+test lexer::tests::tokenizes_delimiters_and_path_punctuation ... ok
+test lexer::tests::tokenizes_l1_literals ... ok
+test lexer::tests::tokenizes_minimal_assignment ... ok
+test lexer::tests::tokenizes_multiline_doc_comment ... ok
+
+test result: ok. 27 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c05_tables.rs (core\rust\target\debug\deps\c05_tables-8edae15764fe948f.exe)
+
+running 3 tests
+test diagnoses_missing_table_body ... ok
+test diagnoses_invalid_table_shapes ... ok
+test parses_singleton_and_instance_tables ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c0_containers.rs (core\rust\target\debug\deps\c0_containers-78e0cb60bfda98bf.exe)
+
+running 6 tests
+test diagnoses_invalid_dictionary_entry ... ok
+test parses_array_and_python_tuples ... ok
+test parses_dictionary_shapes_and_keys ... ok
+test parses_nested_dictionary_column ... ok
+test preserves_declaration_constraint_path ... ok
+test rejects_const_path_constraints ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c0_snapshots.rs (core\rust\target\debug\deps\c0_snapshots-a085a6d5877c213d.exe)
+
+running 2 tests
+test container_parse_diagnostic_namespace_is_stable ... ok
+test nested_container_node_index_is_preorder ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2a_sets.rs (core\rust\target\debug\deps\c2a_sets-472f6a94c51a9fcb.exe)
+
+running 6 tests
+test diagnoses_mixed_set_and_dictionary_entries ... ok
+test parses_multiline_and_nested_set_values ... ok
+test distinguishes_empty_dict_from_set_constructor ... ok
+test indexes_set_elements_in_preorder ... ok
+test parses_non_empty_set_literal ... ok
+test preserves_step_selector_after_expression ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2b_sets.rs (core\rust\target\debug\deps\c2b_sets-a5ad0bbebb4dc012.exe)
+
+running 6 tests
+test accepts_multiline_annotation_and_keeps_constructor_call ... ok
+test does_not_misclassify_set_comparison ... ok
+test accepts_none_and_duplicate_terms ... ok
+test diagnoses_unsupported_set_annotation_forms ... ok
+test parses_heterogeneous_set_annotation ... ok
+test recovers_incomplete_set_annotation ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2c_set_operations.rs (core\rust\target\debug\deps\c2c_set_operations-d577aec6eb95e749.exe)
+
+running 3 tests
+test tokenizes_set_operation_operators ... ok
+test preserves_set_operator_precedence ... ok
+test parses_all_set_compound_assignments ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\concurrency_annotations.rs (core\rust\target\debug\deps\concurrency_annotations-9c9f6074ae698b20.exe)
+
+running 3 tests
+test parses_concurrency_declarations ... ok
+test rejects_unknown_generic_concurrency_spelling ... ok
+test parses_concurrency_function_annotations_and_stable_text ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\d0_imports.rs (core\rust\target\debug\deps\d0_imports-743ba3aa9e7a8a9b.exe)
+
+running 6 tests
+test parses_selected_imports_and_backticked_names ... ok
+test parses_multiple_module_imports_and_aliases ... ok
+test attaches_docs_and_indexes_import_statement ... ok
+test diagnoses_unsupported_import_forms ... ok
+test rejects_non_ascii_module_path_segments ... ok
+test preserves_imports_inside_nested_blocks ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\f04_functions.rs (core\rust\target\debug\deps\f04_functions-a48c2ea8a7f6b41a.exe)
+
+running 14 tests
+test attaches_docs_to_error_control_flow ... ok
+test diagnoses_invalid_error_control_flow ... ok
+test diagnoses_missing_block_and_control_tail ... ok
+test diagnoses_duplicate_parameters ... ok
+test parses_backticked_function_name_and_keyword_only_marker ... ok
+test parses_control_flow_blocks ... ok
+test parses_complete_function_signature ... ok
+test parses_error_control_flow ... ok
+test parses_named_and_expanded_call_arguments ... ok
+test parses_nested_try_and_loop_dedents ... ok
+test preserves_function_dedent_before_following_statement ... ok
+test preserves_nested_if_dedents ... ok
+test records_entry_mode ... ok
+test rejects_unseparated_positional_marker ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\lexical_snapshots.rs (core\rust\target\debug\deps\lexical_snapshots-81fca956a03ef284.exe)
+
+running 17 tests
+test eof_kind_is_stable ... ok
+test crlf_snapshot ... ok
+test invalid_character_snapshot ... ok
+test l1_invalid_number_snapshot ... ok
+test l1_invalid_string_snapshot ... ok
+test l1_literals_snapshot ... ok
+test l1_operators_and_delimiters_snapshot ... ok
+test l2_backtick_snapshot ... ok
+test l2_comments_snapshot ... ok
+test l2_delimiters_snapshot ... ok
+test l2_indentation_snapshot ... ok
+test l2_invalid_backtick_snapshot ... ok
+test l2_invalid_doc_snapshot ... ok
+test l2_invalid_indent_snapshot ... ok
+test l2_multiline_doc_snapshot ... ok
+test l2_unclosed_delimiter_snapshot ... ok
+test minimal_assignment_snapshot ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\p1_expression.rs (core\rust\target\debug\deps\p1_expression-f1443814ccc60556.exe)
+
+running 16 tests
+test avoids_duplicate_prefix_diagnostics ... ok
+test matches_error_spec_snapshot ... ok
+test matches_valid_spec_snapshot ... ok
+test parses_all_assignment_operators ... ok
+test parses_calls_members_and_casts ... ok
+test parses_all_scalar_cast_targets ... ok
+test parses_expression_operands_inside_selector ... ok
+test parses_expression_precedence ... ok
+test parses_extended_assignments ... ok
+test parses_new_and_keyword_comparisons ... ok
+test parses_selector_items_and_paths ... ok
+test preserves_expression_and_selector_spans ... ok
+test recovers_from_malformed_delimiter_corpus ... ok
+test recovers_selector_at_statement_boundary ... ok
+test reports_selector_and_cast_errors ... ok
+test fuzzes_parser_progress_on_small_inputs ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\p2_declarations.rs (core\rust\target\debug\deps\p2_declarations-14c5f4bc998e2b81.exe)
+
+running 4 tests
+test parses_typed_declarations ... ok
+test keeps_scalar_constructor_calls_as_expressions ... ok
+test diagnoses_incomplete_declarations ... ok
+test parses_const_declarations ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\p2_snapshots.rs (core\rust\target\debug\deps\p2_snapshots-2e6b15a01755e728.exe)
+
+running 1 test
+test declaration_snapshot_is_stable ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\p2_type_parameters.rs (core\rust\target\debug\deps\p2_type_parameters-9df619395f63a0a4.exe)
+
+running 4 tests
+test rejects_non_top_level_type_parameters ... ok
+test parses_generic_set_parameter_and_return ... ok
+test rejects_type_parameter_in_variable_declaration ... ok
+test rejects_invalid_type_parameter_lists ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\parser_snapshots.rs (core\rust\target\debug\deps\parser_snapshots-b32e00f7fbb59d07.exe)
+
+running 14 tests
+test accepts_empty_and_repeated_newlines ... ok
+test accepts_statement_terminated_by_eof ... ok
+test attaches_docs_to_expression_statement ... ok
+test accepts_calls_and_indexes ... ok
+test p0_doc_comments_snapshot ... ok
+test p0_assignments_snapshot ... ok
+test p0_literals_snapshot ... ok
+test p0_errors_snapshot ... ok
+test p0_names_snapshot ... ok
+test preserves_crlf_statement_boundaries ... ok
+test preserves_lexical_diagnostic_and_recovers ... ok
+test rejects_indented_block_and_keeps_following_statement ... ok
+test reports_each_p0_boundary_error ... ok
+test parser_statement_split_keeps_dependency_boundary ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_types-bb988a8e60e995e1.exe)
+
+running 32 tests
+test containers::tests::models_shapes_and_materialization ... ok
+test concurrency::tests::candidate_a_accepts_scalars_and_safe_tuples ... ok
+test concurrency::tests::signatures_and_consumption_are_frozen ... ok
+test containers::tests::resolves_most_specific_constraint ... ok
+test conversion::tests::classifies_scalar_conversions ... ok
+test environment::tests::manages_scopes_and_mutability ... ok
+test materialization::tests::merges_constraints_by_path ... ok
+test numeric::tests::checks_boolean_arithmetic_and_ranges ... ok
+test numeric::tests::normalizes_decimal_zero_by_mantissa ... ok
+test path_constraints::tests::rejects_set_member_paths ... ok
+test path_constraints::tests::reports_static_bounds ... ok
+test path_constraints::tests::resolves_nested_paths ... ok
+test selection_random::tests::reports_sampling_boundaries ... ok
+test selection_random::tests::samples_follow_modes ... ok
+test selection_random::tests::seeded_source_is_reproducible ... ok
+test selection_shape::tests::projects_heterogeneous_array ... ok
+test selection_shape::tests::repeats_dictionary_key_as_tuple ... ok
+test set_types::tests::classifies_hashability ... ok
+test set_types::tests::computes_static_set_operation_results ... ok
+test set_types::tests::distinguishes_empty_from_unknown_for_assignment ... ok
+test set_types::tests::formats_set_types ... ok
+test set_types::tests::keeps_set_member_types_invariant ... ok
+test set_types::tests::normalizes_heterogeneous_members ... ok
+test tables::tests::models_table_value_kinds_and_visibility ... ok
+test types::tests::displays_and_collects_type_variables ... ok
+test unify::tests::generalizes_and_instantiates ... ok
+test unify::tests::preserves_array_length_during_unification ... ok
+test unify::tests::preserves_empty_set_during_unification ... ok
+test unify::tests::rigid_variables_reject_concrete_bindings ... ok
+test unify::tests::unifies_set_member_unions ... ok
+test unify::tests::unifies_variables_and_rejects_recursive_types ... ok
+test checker::architecture_tests::module_dependency_direction_is_acyclic ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\c05_tables.rs (core\rust\target\debug\deps\c05_tables-e345968a781bbe01.exe)
+
+running 8 tests
+test diagnoses_dynamic_field_initializer ... ok
+test diagnoses_constructor_contracts ... ok
+test constructs_instance_table ... ok
+test diagnoses_private_member_access ... ok
+test diagnoses_invalid_member_writes ... ok
+test diagnoses_lifecycle_contracts ... ok
+test registers_table_signature ... ok
+test checks_method_defaults_keywords_and_forward_calls ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c0_containers.rs (core\rust\target\debug\deps\c0_containers-1b248de184054c0d.exe)
+
+running 15 tests
+test builds_path_constraint_materialization_plan ... ok
+test enforces_homogeneous_array_prefix ... ok
+test checks_exact_selectors ... ok
+test checks_dictionary_selectors ... ok
+test enforces_typed_dictionary_column_values ... ok
+test infers_structured_container_types ... ok
+test merges_later_path_constraints ... ok
+test preserves_dictionary_column_order_for_assignment ... ok
+test parent_path_constrains_nested_array_elements ... ok
+test public_path_api_is_stable ... ok
+test rejects_duplicate_dictionary_keys ... ok
+test rejects_incompatible_initialized_container_redeclaration ... ok
+test specific_path_overrides_parent_for_initialized_value ... ok
+test validates_constraints_on_container_assignment ... ok
+test validates_late_constraints_against_initialized_container ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c0c1_snapshots.rs (core\rust\target\debug\deps\c0c1_snapshots-928f9da0aa87cd3f.exe)
+
+running 4 tests
+test c0_error_snapshot_is_stable ... ok
+test c0_valid_snapshot_is_stable ... ok
+test c1_error_snapshot_is_stable ... ok
+test c1_valid_snapshot_is_stable ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c1_selectors.rs (core\rust\target\debug\deps\c1_selectors-442091b9ce38907a.exe)
+
+running 18 tests
+test defers_dynamic_selector_operands ... ok
+test checks_ordered_ranges_and_multiple_selection ... ok
+test checks_scalar_broadcast_assignment ... ok
+test checks_open_ranges_and_steps ... ok
+test dictionary_column_nonrandom_repetition_becomes_tuple ... ok
+test dictionary_column_repetition_becomes_tuple ... ok
+test excludes_descendants_of_exclusive_lower_boundary ... ok
+test expands_nested_ranges_and_projects_shape ... ok
+test exposes_normalized_selection_paths ... ok
+test invalid_broadcast_target_is_transactional ... ok
+test random_without_replacement_keeps_source_shape ... ok
+test records_random_modes_and_seed ... ok
+test rejects_advanced_dictionary_table_selection ... ok
+test rejects_invalid_random_seed ... ok
+test rejects_invalid_step_and_random_counts ... ok
+test rejects_range_through_dictionary_table ... ok
+test saturates_extremely_large_step ... ok
+test supports_negative_and_string_indices ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\c2a_sets.rs (core\rust\target\debug\deps\c2a_sets-4d329c16358b92b5.exe)
+
+running 9 tests
+test checks_set_constructor_arity ... ok
+test constrains_nested_set_members_without_indexing ... ok
+test checks_explicit_set_type ... ok
+test checks_membership ... ok
+test infers_scalar_set_types ... ok
+test records_dynamic_set_checks ... ok
+test rejects_invalid_set_elements ... ok
+test rejects_nested_set_indexing_without_plan ... ok
+test rejects_set_indexing ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2a_snapshots.rs (core\rust\target\debug\deps\c2a_snapshots-8adefcf6e905b57d.exe)
+
+running 2 tests
+test valid_snapshot_is_stable ... ok
+test error_snapshot_is_stable ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2b_heterogeneous_sets.rs (core\rust\target\debug\deps\c2b_heterogeneous_sets-d3d47c81894cf110.exe)
+
+running 7 tests
+test infers_heterogeneous_member_union ... ok
+test isolates_static_equality_by_type ... ok
+test keeps_dynamic_tail_and_runtime_marks ... ok
+test checks_set_assignment_compatibility ... ok
+test keeps_legacy_homogeneous_prefix_strict ... ok
+test preserves_explicit_union_on_binding ... ok
+test rejects_static_member_outside_union ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2b_snapshots.rs (core\rust\target\debug\deps\c2b_snapshots-c861ebbd37566a2c.exe)
+
+running 2 tests
+test error_snapshot_is_stable ... ok
+test valid_snapshot_is_stable ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2c_set_operations.rs (core\rust\target\debug\deps\c2c_set_operations-dad721eab5951b7d.exe)
+
+running 7 tests
+test propagates_dynamic_set_boundary ... ok
+test checks_set_comparisons ... ok
+test infers_set_operation_result_types ... ok
+test checks_set_compound_assignments ... ok
+test rejects_dynamic_set_operation_with_known_scalar ... ok
+test rejects_mixed_set_operations ... ok
+test represents_static_empty_intersection ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c2c_snapshots.rs (core\rust\target\debug\deps\c2c_snapshots-a2ca8bbe2602f401.exe)
+
+running 2 tests
+test error_snapshot_is_stable ... ok
+test valid_snapshot_is_stable ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\control_flow_snapshots.rs (core\rust\target\debug\deps\control_flow_snapshots-015c8f60ec7c031a.exe)
+
+running 1 test
+test error_control_flow_snapshots_are_executed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\d19a_fixed_random.rs (core\rust\target\debug\deps\d19a_fixed_random-b45f2b4f7b07068e.exe)
+
+running 12 tests
+test error_boundaries_are_distinguished_and_consume_no_randomness ... ok
+test error_display_text_is_stable ... ok
+test high_seed_bits_participate_in_the_fold ... ok
+test reseed_restarts_the_sequence ... ok
+test same_seed_reproduces_and_different_seeds_diverge ... ok
+test seed_sequence_matches_independent_xorshift64_star ... ok
+test the_two_modes_consume_the_same_stream_differently ... ok
+test with_replacement_allows_counts_above_the_source_length ... ok
+test with_replacement_follows_the_expected_draw_order_and_may_repeat ... ok
+test without_replacement_follows_the_expected_draw_order ... ok
+test zero_and_folded_zero_seeds_use_the_fallback_state ... ok
+test zero_count_is_empty_even_for_an_empty_source ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\f04_functions.rs (core\rust\target\debug\deps\f04_functions-ab5d47f25345ab19.exe)
+
+running 18 tests
+test accepts_heterogeneous_iterables ... ok
+test checks_boolean_conditions ... ok
+test checks_backticked_function_call ... ok
+test checks_annotated_function_call ... ok
+test checks_direct_varargs_arguments ... ok
+test diagnoses_function_call_and_return_errors ... ok
+test enforces_catch_recovery_boundaries ... ok
+test checks_loops_and_control_statements ... ok
+test infers_function_types_from_later_calls ... ok
+test keeps_dynamic_raise_at_error_boundary ... ok
+test infers_recursive_and_forward_function_types ... ok
+test ordinary_dynamic_scalar_casts_skip_error_boundary_check ... ok
+test preserves_function_binding_when_parameter_has_same_name ... ok
+test rejects_control_statements_outside_owner ... ok
+test rejects_fatal_error_constructor ... ok
+test rejects_non_error_raise_value ... ok
+test rejects_unknown_error_type_name ... ok
+test rejects_unresolved_function_inference ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\i4a2_external_namespaces.rs (core\rust\target\debug\deps\i4a2_external_namespaces-34832248174db78d.exe)
+
+running 2 tests
+test resolves_nested_package_members_without_running_code ... ok
+test rejects_unknown_package_member_using_existing_diagnostic ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\s0_types.rs (core\rust\target\debug\deps\s0_types-fa7d0fd49937cf05.exe)
+
+running 15 tests
+test accepts_unbounded_integer_literal ... ok
+test checks_literal_widths ... ok
+test checks_boolean_and_numeric_operations ... ok
+test checks_compile_time_constants ... ok
+test distinguishes_backtick_name_from_boolean_constructor ... ok
+test folds_constants_and_reports_result_width_overflow ... ok
+test infers_and_locks_scalar_bindings ... ok
+test preserves_explicit_const_type ... ok
+test rejects_implicit_narrowing_without_runtime_marker ... ok
+test rejects_invalid_boolean_and_arithmetic ... ok
+test rejects_invalid_conversion_and_narrowing ... ok
+test rejects_invalid_static_boolean_conversion ... ok
+test reports_binding_errors ... ok
+test shares_conversion_matrix ... ok
+test supports_explicit_float_to_integer_truncation ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_vm-ee34ae58948e3622.exe)
+
+running 33 tests
+test machine::hybrid::tests::spills_named_values_after_window_is_full ... ok
+test machine::hybrid::tests::separates_named_window_and_anonymous_eval_stack ... ok
+test machine::register::tests::gives_poly_and_none_dedicated_paths ... ok
+test machine::register::tests::pins_release_plan_values_in_frame_slots ... ok
+test machine::register::tests::reuses_non_overlapping_registers_deterministically ... ok
+test ops::tests::array_index_supports_negative_positions ... ok
+test ops::tests::array_index_out_of_bounds_is_stable ... ok
+test ops::tests::dict_column_supports_key_and_position ... ok
+test ops::tests::broadcast_is_transactional_and_supports_nested_paths ... ok
+test ops::tests::dict_key_lookup_is_stable ... ok
+test ops::tests::dynamic_nested_range_preserves_boundary_shape ... ok
+test ops::tests::dynamic_random_boundaries_are_stable ... ok
+test ops::tests::dynamic_step_boundaries_are_stable ... ok
+test ops::tests::dynamic_range_applies_static_step ... ok
+test ops::tests::len_and_dynamic_index_cover_iterables ... ok
+test ops::tests::nested_path_rejects_non_container_leaf ... ok
+test ops::tests::selector_keeps_dictionary_duplicate_order ... ok
+test ops::tests::selector_projects_dictionary_key_path ... ok
+test ops::tests::selector_projects_nested_arrays ... ok
+test ops::tests::set_hashability_error_identity ... ok
+test ops::tests::set_membership_uses_left_member_and_right_set_direction ... ok
+test ops::tests::set_operation_and_comparison_error_identities_are_stable ... ok
+test ops::tests::string_index_returns_single_character ... ok
+test ops::tests::static_random_is_reproducible ... ok
+test ops::tests::tuple_and_set_index_and_unsupported_source ... ok
+test semantics::exec::concurrent::tests::bounded_sink_does_not_replace_boundary_cleanup_with_detached_failure ... ok
+test semantics::exec::concurrent::tests::child_event_buffer_counts_drop_when_all_slots_are_priority ... ok
+test semantics::exec::concurrent::tests::detached_child_event_is_preserved_when_buffer_is_full ... ok
+test semantics::exec::concurrent::tests::dropped_queued_boundary_copies_follow_cleanup_order ... ok
+test semantics::exec::concurrent::tests::child_event_drops_are_reported_by_parent_sink ... ok
+test semantics::exec::concurrent::tests::vm_close_reports_non_owner_and_direct_ownership_is_not_transitive ... ok
+test semantics::exec::concurrent::tests::vm_exit_closes_owned_runtime_after_restoring_owner_context ... ok
+test semantics::exec::concurrent::tests::detached_child_event_overflow_returns_report_to_runtime_channel ... ok
+
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\b0_b_production.rs (core\rust\target\debug\deps\b0_b_production-ad63b743ff4c2d4a.exe)
+
+running 9 tests
+test cancellation_interrupts_finally_subroutine ... ok
+test bounded_events_do_not_change_result_or_release_sequence ... ok
+test production_checkpoint_can_cancel_and_can_be_disabled ... ok
+test cancellation_bypasses_catch_and_runs_cleanup_once ... ok
+test production_rejects_invalid_ir_before_vm ... ok
+test production_rejects_invalid_options_with_structured_fatal ... ok
+test production_rejects_unverified_tac_before_entering_vm ... ok
+test production_fault_report_contains_source_span_and_identity ... ok
+test script_and_project_share_entry_zero ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\b0_e_checkpoint_performance.rs (core\rust\target\debug\deps\b0_e_checkpoint_performance-812499137593cada.exe)
+
+running 1 test
+test checkpoint_toggle_release_comparison ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 18.28s
+
+     Running tests\r2_iteration_values.rs (core\rust\target\debug\deps\r2_iteration_values-ec2df2a803cde64b.exe)
+
+running 2 tests
+test dynamic_index_executes_on_all_carriers ... ok
+test len_executes_on_all_carriers ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\r2_selector_values.rs (core\rust\target\debug\deps\r2_selector_values-10826c2ac03bdb3b.exe)
+
+running 7 tests
+test random_selection_returns_observable_values ... ok
+test dictionary_repetition_returns_ordered_tuple ... ok
+test empty_selection_preserves_root_shape ... ok
+test selector_preserves_source_and_nested_shapes ... ok
+test selector_returns_exact_and_ordered_multi_values ... ok
+test selector_ranges_and_all_return_expected_values ... ok
+test selector_step_is_applied_per_item ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\r2_set_values.rs (core\rust\target\debug\deps\r2_set_values-ed3fc39bb6b95aea.exe)
+
+running 6 tests
+test dynamic_set_values_pass_checks_and_execute ... ok
+test executes_set_comparisons_and_membership_direction ... ok
+test executes_all_set_algebras_on_all_carriers ... ok
+test repeated_runtime_set_elements_are_deduplicated ... ok
+test dynamic_set_checks_reject_non_set_and_unhashable_values ... ok
+test set_operation_reports_stable_error_for_non_set_operand ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\r2_stack.rs (core\rust\target\debug\deps\r2_stack-8e611eb3a036e30a.exe)
+
+running 55 tests
+test catch_binding_rethrow_preserves_error_identity ... ok
+test catch_rethrow_does_not_repeat_own_finally ... ok
+test catch_exit_runs_outer_finally_after_inner_finally ... ok
+test copying_between_bindings_keeps_the_source ... ok
+test catches_constructed_error_and_runs_finally ... ok
+test dictionary_column_key_selector_is_executed ... ok
+test dynamic_conversion_check_has_stable_failure_code ... ok
+test dynamic_boolean_condition_is_verified_and_recoverable ... ok
+test catch_control_exit_runs_own_finally ... ok
+test dynamic_zero_step_is_recoverable ... ok
+test dynamic_selector_inputs_are_executed ... ok
+test dynamic_random_count_is_recoverable ... ok
+test dynamic_random_seed_is_recoverable ... ok
+test errors_retain_vm_stack_and_bytecode_offset ... ok
+test errors_use_encoded_pc_mapping ... ok
+test executes_advanced_selector ... ok
+test executes_calls_and_loops ... ok
+test executes_scalar_arithmetic ... ok
+test executes_containers_and_exact_index ... ok
+test executes_random_seed_plan ... ok
+test executes_selector_broadcast_assignment ... ok
+test fatal_event_is_emitted_once_at_run_boundary ... ok
+test fatal_bypasses_handlers_and_cleanup ... ok
+test finally_break_cleanup_with_heap_values ... ok
+test fatal_with_heap_values_has_no_releases ... ok
+test executes_selector_ranges_steps_and_random ... ok
+test finally_failure_is_suppressed_on_primary_error ... ok
+test finally_failure_reaches_outer_catch ... ok
+test finally_failure_on_normal_and_catch_paths_is_routed_once ... ok
+test finally_raise_releases_active_scopes ... ok
+test finally_control_exit_is_dispatched_after_subroutine ... ok
+test finally_return_overrides_error_without_leaking_try_values ... ok
+test finally_return_releases_try_scope_value ... ok
+test loop_exit_does_not_reenter_finally_on_later_error ... ok
+test finally_runs_once_on_normal_and_return ... ok
+test moving_temporaries_into_bindings_still_works ... ok
+test machine_metrics_keep_independent_cost_axes ... ok
+test loop_exits_run_finally_before_jump ... ok
+test nested_finally_failure_does_not_repeat_outer_finally ... ok
+test nested_finally_return_releases_each_scope_once ... ok
+test nested_try_finally_runs_once_per_loop_iteration ... ok
+test nested_return_runs_finally_from_inner_to_outer ... ok
+test nested_try_inside_finally_is_routed_locally ... ok
+test overflow_is_recoverable ... ok
+test nested_unmatched_reaches_outer_catch_once ... ok
+test releases_heap_values_on_scope_exit ... ok
+test propagates_error_to_caller_handler ... ok
+test records_all_event_categories ... ok
+test returning_heap_string_survives_finally_cleanup ... ok
+test replacement_random_and_empty_selection_are_executed ... ok
+test research_module_stays_a_leaf ... ok
+test selects_first_matching_catch ... ok
+test stack_overflow_is_fatal ... ok
+test stack_map_points_follow_the_frozen_machine_division ... ok
+test string_boolean_check_has_stable_failure_code ... ok
+
+test result: ok. 55 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests\r2_table_values.rs (core\rust\target\debug\deps\r2_table_values-65d9348926dfc6c9.exe)
+
+running 13 tests
+test drop_cannot_write_receiver ... ok
+test fatal_does_not_execute_drop ... ok
+test defaults_are_fresh_and_constants_are_visible ... ok
+test initialization_failure_rolls_back_and_preserves_errors ... ok
+test normal_drop_error_is_catchable ... ok
+test recursive_drop_obeys_call_depth ... ok
+test returned_instance_and_overwrite_release_exactly_once ... ok
+test singleton_and_drop_read_only_receiver ... ok
+test singleton_defaults_and_declaration_order ... ok
+test uninitialized_field_read_is_rejected ... ok
+test stable_function_ids_and_table_encoding_guards ... ok
+test unwind_keeps_primary_and_nested_drop_errors ... ok
+test constructs_instances_and_calls_methods ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+     Running tests\r2_vectors.rs (core\rust\target\debug\deps\r2_vectors-26b3f38600a42cf0.exe)
+
+running 8 tests
+test control_vectors_are_stable ... ok
+test container_vectors_are_stable ... ok
+test scalar_vectors_are_stable ... ok
+test selector_vectors_are_stable ... ok
+test error_vectors_are_stable ... ok
+test iteration_vectors_are_stable ... ok
+test sets_vectors_are_stable ... ok
+test table_vectors_are_stable ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.70s
+
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_xar-a5f4be591469af66.exe)
+
+running 23 tests
+test tests::archive_language_resolution_obeys_default_override_and_fallback ... ok
+test tests::archive_runner_rejects_missing_runtime_features_before_entry_execution ... ok
+test tests::archive_runner_checks_runtime_before_entry_execution ... ok
+test tests::archive_requirements_fail_before_entry_resolution_or_vm_events ... ok
+test tests::debug_and_source_objects_are_independent_and_standard_xiaoc_is_trimmed ... ok
+test tests::deterministic_round_trip_and_index_store ... ok
+test tests::identical_resources_share_one_physical_object_and_keep_two_mappings ... ok
+test tests::rejects_all_index_logical_path_boundary_forms ... ok
+test tests::rejects_encryption_and_multi_volume_flags ... ok
+test tests::rejects_missing_and_duplicate_index_headers ... ok
+test tests::config_resource_bridge_preserves_source_span ... ok
+test tests::rejects_out_of_bounds_member_lengths_and_unknown_required_versions ... ok
+test tests::explicit_resources_are_content_addressed_and_never_scanned ... ok
+test tests::resource_diagnostics_cover_duplicate_digest_and_undeclared_access ... ok
+test tests::review_index_entry_contract_is_symmetric ... ok
+test tests::rejects_path_traversal_and_truncation ... ok
+test tests::review_payload_language_matches_archive_index ... ok
+test tests::review_payload_debug_contract_is_symmetric ... ok
+test tests::review_requirements_precede_payload_decoding ... ok
+test tests::standard_and_debug_packages_have_identical_runtime_observations ... ok
+test tests::resource_collection_side_effect_probe_excludes_credentials_and_environment_marker ... ok
+test tests::zip64_round_trip_and_equal_compression_uses_store ... ok
+test tests::rejects_duplicate_objects_absolute_paths_and_zip_bombs ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+
+     Running tests\fuzz_archive.rs (core\rust\target\debug\deps\fuzz_archive-24d64e0e15520e0b.exe)
+
+running 2 tests
+test base_archive_decodes ... ok
+test seeded_archive_mutations_never_panic_and_are_rejected_without_io_errors ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+   Doc-tests xiao_artifacts
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_bytecode
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_codegen_llvm
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_config
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_diagnostics
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_doc_coverage_rust
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_driver
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_i18n
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_intrinsics
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_ir
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_lifetime
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_lock
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_modules
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_optimizer
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_package
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_platform
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_runtime
+
+running 4 tests
+test crates\xiao-runtime\src\memory\mod.rs - memory::StrongHandle (line 605) - compile fail ... ok
+test crates\xiao-runtime\src\memory\mod.rs - memory::StrongHandle (line 615) - compile fail ... ok
+test crates\xiao-runtime\src\memory\mod.rs - memory::WeakHandle (line 634) - compile fail ... ok
+test crates\xiao-runtime\src\memory\mod.rs - memory::WeakHandle (line 644) - compile fail ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+   Doc-tests xiao_runtime_abi
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_source
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_standard_library
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_syntax
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_types
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_vm
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_xar
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

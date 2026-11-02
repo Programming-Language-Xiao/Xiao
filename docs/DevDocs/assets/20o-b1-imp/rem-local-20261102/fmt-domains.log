@@ -1,0 +1,13 @@
+   Compiling ring v0.17.14
+   Compiling rustls v0.23.45
+   Compiling rustls-webpki v0.103.15
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 24.86s
+     Running tests\20o_b1_imp_resources.rs (core\rust\target\debug\deps\20o_b1_imp_resources-b097e7003ff0b92a.exe)
+
+running 1 test
+test fmt_checks_both_radix_bounds_and_padding_argument_domains ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 16 filtered out; finished in 0.82s

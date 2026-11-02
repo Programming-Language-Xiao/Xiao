@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "head_sha": "c5826020377a644a91cead07ee399d72522bcbf4",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "maintenance": {
+    "run_id": 41415412610,
+    "conclusion": "failure",
+    "jobs": [
+      {
+        "databaseId": 125178103404,
+        "name": "Deterministic artifact size regression (Windows baseline)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41415412610/job/125178103404"
+      },
+      {
+        "databaseId": 125178103651,
+        "name": "Native differential regression (Windows)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41415412610/job/125178103651"
+      },
+      {
+        "databaseId": 125178103724,
+        "name": "Deterministic parser and artifact security regression",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41415412610/job/125178103724"
+      },
+      {
+        "databaseId": 125178103729,
+        "name": "Rust workspace default tests (Linux)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41415412610/job/125178103729"
+      },
+      {
+        "databaseId": 125178103821,
+        "name": "Native differential regression (Linux)",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41415412610/job/125178103821"
+      },
+      {
+        "databaseId": 125178103866,
+        "name": "Native differential regression (macOS)",
+        "status": "completed",
+        "conclusion": "failure",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41415412610/job/125178103866"
+      }
+    ]
+  },
+  "workspace_gates": {
+    "run_id": 41415405901,
+    "head_sha": "c5826020377a644a91cead07ee399d72522bcbf4",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "databaseId": 125177912135,
+        "name": "Linux workspace gates",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41415405901/job/125177912135"
+      }
+    ]
+  },
+  "logs": [
+    {
+      "label": "vm-linux",
+      "job_id": 125178103729,
+      "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125178103729/logs",
+      "source_bytes": 397364,
+      "source_sha256": "75813e9e897a7224e1dbb85384d67c9eb236001cb9c097db36bb0b814746dbd0",
+      "source_start_line": 3204,
+      "source_end_line": 3237,
+      "excerpt_sha256": "5189727fcac96700c1bff5b937f839d3d8f65fa08420ccf7ac79ec4f407b7610",
+      "contains_exact_guard": true,
+      "summary": "2026-11-02T08:54:55.7542150Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 54.30s"
+    },
+    {
+      "label": "native-linux",
+      "job_id": 125178103821,
+      "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125178103821/logs",
+      "source_bytes": 573526,
+      "source_sha256": "1085bdfe4f97daee91bd73f0f99cd397b70d1a37e28bb1df319ac3f56d6e0641",
+      "source_start_line": 2699,
+      "source_end_line": 2755,
+      "excerpt_sha256": "0a1daa4c0cf3f4938fb117a3d67d36f79a6a94f8c070e08447b9ab70401a192c",
+      "contains_exact_guard": true,
+      "summary": "2026-11-02T08:55:05.1353133Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 130.59s"
+    },
+    {
+      "label": "native-windows",
+      "job_id": 125178103651,
+      "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125178103651/logs",
+      "source_bytes": 522339,
+      "source_sha256": "58ade9346a032d5795810ede3cd13a34152f81d0b60c4961249845003dc63125",
+      "source_start_line": 1191,
+      "source_end_line": 1247,
+      "excerpt_sha256": "2943e157138e709153f104af2225633b6f8617fa1cf26472e476ea94c45471d9",
+      "contains_exact_guard": true,
+      "summary": "2026-11-02T08:51:36.8122861Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 122.56s"
+    },
+    {
+      "label": "native-macos",
+      "job_id": 125178103866,
+      "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125178103866/logs",
+      "source_bytes": 291433,
+      "source_sha256": "133110c0e08c1200def79b78299526eb025c317aa817d15f82961834bda6a456",
+      "source_start_line": 2567,
+      "source_end_line": 2623,
+      "excerpt_sha256": "1fb0c5f17e4a72a99e156d32cb0cea79d26cc2cd7623334b456fbd63e46df241",
+      "contains_exact_guard": true,
+      "summary": "2026-11-02T09:01:49.3130570Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 84.89s"
+    }
+  ],
+  "release_checks": [
+    {
+      "file": "native-linux-release.log",
+      "source_lines": [
+        1132,
+        1133,
+        1134,
+        1135,
+        1136,
+        1137,
+        1138,
+        1139,
+        1140,
+        1141,
+        1142,
+        1143,
+        1144
+      ],
+      "normalized_lf_sha256": "41b79eccf4c3e5ab1e7bdd6c20376d8350ffb720e358aaec2385af6a8b9e483b",
+      "native_records": 12,
+      "matched": true
+    },
+    {
+      "file": "native-windows-release.log",
+      "source_lines": [
+        1431,
+        1432,
+        1433,
+        1434,
+        1435,
+        1436,
+        1437,
+        1438,
+        1439,
+        1440,
+        1441,
+        1442,
+        1443
+      ],
+      "normalized_lf_sha256": "828f56878cb0b07aaa69e6c1434c81e26d7813752cec873be0702efeab81d89b",
+      "native_records": 12,
+      "matched": true
+    },
+    {
+      "file": "native-macos-release.log",
+      "source_lines": [
+        1097,
+        1098,
+        1099,
+        1100,
+        1101,
+        1102,
+        1103,
+        1104,
+        1105,
+        1106,
+        1107,
+        1108,
+        1109
+      ],
+      "normalized_lf_sha256": "0597ef4df48ac2cf5968339216eaab541de10a7a4206cdd6fa25d527e9f9bc55",
+      "native_records": 12,
+      "matched": true
+    }
+  ],
+  "normalization": "UTF-8 LF; strip ANSI for CI excerpts; trim line-end whitespace and excess final blank lines in logs; original source hashes retained"
+}

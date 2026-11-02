@@ -1,0 +1,19 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.70s
+     Running tests\20o_b1_imp_contract.rs (core\rust\target\debug\deps\20o_b1_imp_contract-b2c3036637e54ff1.exe)
+
+running 1 test
+
+thread 'products_execute_and_export_only_the_frozen_names' (49220) panicked at crates\xiao-driver\tests\20o_b1_imp_contract.rs:183:5:
+code=Some("X06-RUNTIME-009"); report=Some(ReportRecord { class: Recoverable, code: "X06-RUNTIME-009", error_id: 22, message_id: "runtime.user_error", params: {"message": Text("ArithmeticError")}, message: "ArithmeticError", location: Some(SourceSpan { start: 3611, end: 3644 }), context: {}, stack: [StackFrame { module: "product", function: "encode", source: Some("D:\\project\\Xiao\\Xiao\\tests/fixtures/20o-b1/imp/hex/product.xiao"), span: Some(SourceSpan { start: 3611, end: 3644 }), backend: BackendLocation { bytecode_offset: Some(1594), native_address: None, inline_depth: None }, kind: User }, StackFrame { module: "product", function: "", source: Some("D:\\project\\Xiao\\Xiao\\tests/fixtures/20o-b1/imp/hex/product.xiao"), span: Some(SourceSpan { start: 461, end: 478 }), backend: BackendLocation { bytecode_offset: Some(686), native_address: None, inline_depth: None }, kind: User }], cause: None, suppressed: [] })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test products_execute_and_export_only_the_frozen_names ... FAILED
+
+failures:
+
+failures:
+    products_execute_and_export_only_the_frozen_names
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 27.77s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b1_imp_contract`

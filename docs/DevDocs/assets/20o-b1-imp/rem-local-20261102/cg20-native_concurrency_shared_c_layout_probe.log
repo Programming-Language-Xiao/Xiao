@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s
+     Running tests\22d_llvm_concurrency.rs (core\rust\target\debug\deps\22d_llvm_concurrency-58521bc4506abeb4.exe)
+
+running 1 test
+22D-LAYOUT target=x86_64-pc-windows-msvc header=[32, 8, 0, 8, 16, 24, 28] handle=[16, 8, 0, 8]
+test native_concurrency_shared_c_layout_probe ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.26s

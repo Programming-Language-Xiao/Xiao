@@ -1,0 +1,257 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.29s
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_runtime-c1c4f304a64bbd19.exe)
+
+running 183 tests
+test abi::abi_concurrency::tests::completed_child_cancellation_uses_vm_error_normalization_and_keeps_cleanup_error ... ok
+test abi::abi_concurrency::tests::entry_close_drain_failure_preserves_primary_and_suppressed ... ok
+test abi::abi_concurrency::tests::detached_trampoline_failure_keeps_error_identity_and_runtime_id ... ok
+test abi::abi_concurrency::tests::lock_guard_rejects_cross_thread_use ... ok
+test abi::abi_concurrency::tests::native_blocked_lock_wait_is_cancelled_by_host_token ... ok
+test abi::abi_concurrency::tests::native_cleanup_checkpoint_defers_repeated_cancellation ... ok
+test abi::abi_concurrency::tests::native_error_checkpoint_preserves_primary_and_suppressed ... ok
+test abi::abi_concurrency::tests::native_error_frames_are_appended_during_unwind ... ok
+test abi::abi_concurrency::tests::native_external_cancellation_checks_safe_point_wait_and_lock_wait ... ok
+test abi::abi_concurrency::tests::native_finish_close_error_is_suppressed_under_primary ... ok
+test abi::abi_concurrency::tests::native_first_cancellation_inside_finally_is_delivered ... ok
+test abi::abi_concurrency::tests::join_rejects_shared_mut_result_owned_by_child_runtime ... ok
+test abi::abi_concurrency::tests::current_runtime_is_stable_and_child_uses_bound_runtime_context ... ok
+test abi::abi_concurrency::tests::native_shared_boundary_releases_every_transfer_alias ... ok
+test abi::abi_concurrency::tests::native_shared_mut_lock_round_trips_and_writes_value ... ok
+test abi::abi_concurrency::tests::native_trampoline_resets_worker_checkpoint_and_inherits_locale ... ok
+test abi::abi_concurrency::tests::public_release_reclaims_shared_box_and_boundaries_reject_thread_local_handles ... ok
+test abi::abi_concurrency::tests::native_xcon_maximum_depth_round_trips_through_trampoline ... ok
+test abi::abi_concurrency::tests::runtime_and_pool_values_use_opaque_concurrency_tag ... ok
+test abi::abi_concurrency::tests::shared_creation_rejects_a_closed_current_runtime ... ok
+test abi::abi_concurrency::tests::trampoline_error_identity_returns_to_joining_thread ... ok
+test abi::abi_concurrency::tests::native_trampoline_spawn_join_round_trips_scalar_result ... ok
+test abi::abi_concurrency::tests::unsupported_operation_is_explicitly_rejected ... ok
+test abi::abi_concurrency::tests::vm_release_trace_includes_concurrency_external_objects ... ok
+test abi::abi_io::tests::capability_context_rejects_stdin_before_input ... ok
+test abi::abi_concurrency::tests::wait_rejects_shared_mut_result_owned_by_pool_runtime ... ok
+test abi::abi_io::tests::capability_context_rejects_stdout_before_output ... ok
+test abi::abi_io::tests::removal_verification_input_wrapper_rejects_invalid_prompt_flag ... ok
+test abi::abi_io::tests::removal_verification_print_wrapper_rejects_null_nonempty_input ... ok
+none
+test abi::abi_io::tests::removal_verification_print_wrapper_writes_stdout_behavior ... ok
+test abi::abi_resource::tests::capability_is_checked_before_open_and_io_errors_keep_reason ... ok
+test abi::abi_resource::tests::every_entry_checks_capabilities_before_decoding_arguments ... ok
+test abi::abi_resource::tests::open_read_close_and_closed_alias_are_stable ... ok
+test abi::abi_resource::tests::directory_open_validates_directory_and_non_utf8_is_rejected ... ok
+test abi::abi_resource::tests::process_abi_checks_capabilities_before_arguments ... ok
+test abi::abi_resource::tests::process_abi_roundtrip_and_close_preserve_capability_and_alias_state ... ok
+test abi::abi_tables::tests::native_descriptor_rejects_invalid_metadata_before_allocation ... ok
+test abi::abi_tables::tests::native_constructor_rejects_an_occupied_output_slot ... ok
+test abi::abi_tables::tests::native_drop_failure_is_suppressed_by_existing_primary ... ok
+test abi::abi_tables::tests::native_drop_view_is_readonly_and_expires ... ok
+test abi::abi_tables::tests::native_fatal_skips_drop_and_ordinary_drop_error_is_reported ... ok
+test abi::abi_tables::tests::native_init_failure_preserves_cause_and_cleanup_error ... ok
+test abi::abi_tables::tests::native_method_rejects_wrong_signature_arguments_and_result ... ok
+test abi::abi_tables::tests::native_methods_copy_metadata_and_balance_borrowed_receiver ... ok
+test abi::error_code_tests::borrowed_view_survives_releasing_a_different_alias ... ok
+test abi::error_code_tests::copied_result_survives_source_release_and_copy_failure_keeps_alias ... ok
+test abi::error_code_tests::failure_statuses_preserve_both_output_fields_and_pending ... ok
+test abi::tests::abi_compatibility_accepts_old_minor_and_rejects_unsupported_versions ... ok
+test abi::tests::array_round_trip_copies_values ... ok
+test abi::error_code_tests::success_borrows_exact_bytes_without_allocating_or_touching_pending ... ok
+test abi::tests::diagnostic_ready_failure_cleans_session_and_environment ... ok
+test abi::abi_concurrency::tests::retain_release_race_is_serialized_until_box_reclamation ... ok
+test abi::tests::dictionary_rejects_duplicate_keys ... ok
+test abi::tests::dynamic_member_type_error_releases_input_value ... ok
+test abi::tests::dynamic_operator_and_check_round_trip ... ok
+test abi::tests::error_take_rejects_weak_output_slot ... ok
+test abi::tests::error_value_constructor_preserves_identity ... ok
+test abi::tests::external_resource_round_trips_through_abi_tag ... ok
+test abi::tests::fatal_error_constructor_never_returns_recoverable_value ... ok
+test abi::tests::handle_outputs_replace_previous_owner ... ok
+test abi::tests::legacy_output_slots_replace_owned_values_and_preserve_on_failure ... ok
+test abi::tests::legacy_value_wrapper_rejects_wrong_handle_kind_with_none_sentinel ... ok
+test abi::tests::length_outputs_are_zeroed_on_invalid_handle ... ok
+test abi::tests::native_error_checkpoint_reset_discards_stale_entry_state ... ok
+test abi::tests::native_error_checkpoint_survives_successful_helper_return ... ok
+test abi::tests::native_random_seed_controls_a_persistent_sequence ... ok
+test abi::tests::numeric_error_abi_preserves_identity_and_span ... ok
+test abi::tests::diagnostic_ready_waits_for_delayed_hello ... ok
+test abi::tests::pending_fatal_error_is_not_replaced_by_runtime_error ... ok
+test abi::tests::pending_runtime_error_preserves_primary_and_suppresses_secondary ... ok
+test abi::tests::rejects_invalid_boolean_payload_on_copy ... ok
+test abi::tests::rejects_unknown_value_tag ... ok
+test abi::tests::diagnostic_session_forwards_events_and_closes ... ok
+test abi::tests::resource_dynamic_checks_preserve_nominal_kinds_and_closed_values ... ok
+test abi::tests::retain_keeps_same_box_and_balances_count ... ok
+test abi::tests::scalar_value_copy_preserves_payload ... ok
+test abi::tests::strong_release_leaves_weak_value_for_weak_entry ... ok
+test abi::tests::strong_value_copy_uses_runtime_counts ... ok
+test abi::tests::table_descriptor_rejects_empty_names ... ok
+test abi::tests::table_descriptor_rejects_unknown_metadata ... ok
+test abi::tests::table_descriptor_round_trip ... ok
+test abi::tests::value_copy_replaces_existing_owned_output ... ok
+test abi::tests::weak_release_rejects_strong_value ... ok
+test abi::tests::weak_upgrade_fails_after_last_strong_release ... ok
+test abi::tests::weak_value_rejects_non_table_target ... ok
+test concurrency::tests::cancellation_hook_registration_is_removed_when_task_finishes ... ok
+test concurrency::tests::runtime_registry_maps_and_closes_static_labels ... ok
+test concurrency::tests::lock_cancellation_wakes_waiting_thread ... ok
+test concurrency::tests::shared_counts_weak_upgrade_and_exact_drop ... ok
+test concurrency::tests::shared_header_layout_is_frozen ... ok
+test concurrency::tests::shared_lock_supports_mutation_and_cancellation ... ok
+test concurrency::tests::shared_lock_blocks_and_wakes_waiting_thread ... ok
+test concurrency::tests::shared_read_access_is_tag_restricted ... ok
+test containers::tests::hashability_allowlist_rejects_external_resources ... ok
+test crash::tests::process_exit_codes_preserve_normal_values_and_map_exceptions ... ok
+test crash::tests::windows_exception_classes_share_unix_exit_codes ... ok
+xiao-error class=recoverable code=X06-RUNTIME-009 message_id=runtime.user_error params={"message": Text("overflow")} span=4..9 exit_code=3
+error [X06-RUNTIME-009]: overflow
+at bytes 4..9
+test abi::tests::ordinary_error_report_does_not_activate_diagnostic_sink ... ok
+test memory::tests::native_release_trace_collects_child_thread_events ... ok
+test memory::tests::native_release_trace_keeps_recording_after_root_flush ... ok
+test memory::tests::peak_live_bytes_includes_objects_allocated_during_drop ... ok
+test memory::tests::release_trace_records_shared_runtime_events ... ok
+test memory::tests::releases_payload_on_last_strong_and_keeps_weak_header ... ok
+test scheduler::runtime_helpers::tests::current_runtime_reuses_root_and_registered_context ... ok
+test scheduler::tests::active_close_drains_queued_activity_with_single_worker ... ok
+test scheduler::tests::active_close_follower_leaves_owner_to_drain_other_activity ... ok
+test scheduler::tests::active_thread_close_drains_other_threads_before_returning ... ok
+test scheduler::tests::cancellation_at_completed_unreclaimed_position_returns_027 ... ok
+test scheduler::tests::cancellation_at_queued_position_skips_task_body ... ok
+test scheduler::tests::cancellation_at_running_position_waits_for_task_exit ... ok
+test scheduler::tests::cancellation_at_waiting_position_waits_for_task_exit ... ok
+test scheduler::tests::completed_task_cancellation_is_observed_by_public_wait_apis ... ok
+test scheduler::tests::cross_pool_shutdowns_do_not_deadlock ... ok
+test scheduler::tests::cross_runtime_pool_shutdown_is_rejected ... ok
+test scheduler::tests::cross_runtime_runtime_close_and_spawn_are_rejected ... ok
+test memory::tests::peak_live_bytes_counts_container_contents_per_run ... ok
+test scheduler::tests::default_submit_inherits_worker_cancellation_context ... ok
+test scheduler::tests::detached_errors_are_classified_and_reaped_concurrently ... ok
+test scheduler::tests::detached_reaper_queue_does_not_block_when_workers_are_busy ... ok
+test scheduler::tests::detached_thread_panic_is_reported_to_process_channel ... ok
+test scheduler::tests::external_pool_shutdown_and_worker_runtime_close_drain_queue ... ok
+test scheduler::tests::default_submit_from_external_thread_stops_on_runtime_close ... ok
+test scheduler::tests::large_pool_close_drains_many_queued_tasks ... ok
+test scheduler::tests::pool_shutdown_after_runtime_close_returns_runtime_closed ... ok
+test scheduler::tests::pool_shutdown_and_runtime_close_do_not_deadlock ... ok
+test scheduler::tests::queued_task_cancel_releases_slot_before_worker_is_free ... ok
+test scheduler::tests::runtime_close_and_independent_pool_shutdown_converge ... ok
+test scheduler::tests::runtime_close_is_reentrant_from_pool_worker ... ok
+test scheduler::tests::runtime_close_shuts_down_and_drains_owned_pools ... ok
+test scheduler::tests::full_queue_submission_has_cancellable_backpressure ... ok
+test scheduler::tests::runtime_close_stops_admission_and_drains_threads ... ok
+test scheduler::tests::runtime_spawn_cancel_and_join_are_wired ... ok
+test scheduler::tests::shutdown_drain_helper_handles_queued_runtime_close ... ok
+test scheduler::tests::task_owned_runtime_can_create_pool_and_spawn ... ok
+test scheduler::tests::task_panic_is_reported_without_killing_pool_worker ... ok
+test scheduler::tests::task_pool_validates_capacity_and_waits_tasks ... ok
+test scheduler::tests::two_active_runtime_closers_do_not_deadlock ... ok
+test scheduler::tests::wait_interruptible_checks_host_interrupt_after_receiving_result ... ok
+test scheduler::tests::two_pool_workers_can_close_same_pool_concurrently ... ok
+test scheduler::tests::wait_interruptible_checks_host_interrupt_on_disconnect ... ok
+test serialization::tests::xcon_decoder_rejects_noncanonical_set_and_dict_order ... ok
+test serialization::tests::xcon_rejects_reserved_tags_and_bad_headers ... ok
+test serialization::tests::xcon_round_trips_scalars_and_nested_values ... ok
+test serialization::tests::xcon_set_and_dict_encoding_is_deterministic ... ok
+test tables::tests::follows_construct_state_machine_and_checks_fields ... ok
+test tables::tests::init_failure_is_reported_and_object_is_released ... ok
+test tables::tests::scalar_fields_accept_widening_assignments ... ok
+test testing::tests::dispatches_recoverable_catch_by_type ... ok
+test testing::tests::executes_static_plan_in_order ... ok
+test testing::tests::keeps_fatal_outside_recoverable_catch ... ok
+test testing::tests::unwind_keeps_primary_and_suppresses_cleanup_errors ... ok
+test value::ops::tests::compares_numbers_and_strings ... ok
+test value::ops::tests::constructs_and_rejects_unicode_scalar_values ... ok
+test value::ops::tests::converts_between_bool_and_str ... ok
+test value::ops::tests::converts_numeric_widths_with_range_check ... ok
+test value::ops::tests::converts_single_codepoint_to_integer ... ok
+test value::ops::tests::division_by_zero_has_stable_identity ... ok
+test value::ops::tests::division_requires_float_operands ... ok
+test value::ops::tests::floor_division_pairs_with_remainder ... ok
+test value::ops::tests::high_precision_numerics_are_explicitly_unsupported ... ok
+test value::ops::tests::integer_power_rejects_negative_exponent ... ok
+test value::ops::tests::negates_high_precision_text_without_narrowing ... ok
+test value::ops::tests::overflow_uses_stable_identity ... ok
+test value::ops::tests::rejects_cross_width_operands ... ok
+test value::ops::tests::string_equality_compares_content ... ok
+test value::ops::tests::supports_arithmetic_operators ... ok
+test value::string_index_tests::cached_indices_preserve_every_scalar_and_out_of_bounds ... ok
+test value::string_index_tests::ascii_and_empty_strings_use_direct_byte_positions ... ok
+test value::string_index_tests::shared_unicode_indices_stay_alive_and_are_accounted ... ok
+test value::tests::error_type_name_is_explicit ... ok
+test value::tests::error_values_keep_identity_semantics ... ok
+test value::tests::external_resource_aliases_share_identity_and_close_idempotently ... ok
+test value::tests::stores_and_reads_utf8_string ... ok
+test value::tests::supports_bool_parity_adjustment ... ok
+test vm_concurrency::tests::cancelled_task_disconnect_is_classified_as_027 ... ok
+test vm_concurrency::tests::completed_child_cancellation_keeps_noncatchable_variant ... ok
+test vm_concurrency::tests::owned_guard_keeps_allocation_alive_and_unlocks_after_alias_drop ... ok
+test vm_concurrency::tests::task_disconnect_without_cancellation_remains_028 ... ok
+test vm_concurrency::tests::excessive_recursive_values_fail_before_unbounded_copy ... ok
+test vm_concurrency::tests::transfer_bytes_are_validated_and_copy_values ... ok
+test vm_concurrency::tests::vm_detached_report_channel_is_bounded_and_counts_drops ... ok
+test vm_concurrency::tests::thread_consumption_is_shared_but_handles_are_not_hashable ... ok
+test scheduler::tests::active_close_waits_for_queued_pool_activity ... ok
+test abi::abi_concurrency::tests::malformed_xcon_never_enters_native_trampoline ... ok
+
+test result: ok. 183 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+     Running tests\b06_runtime.rs (core\rust\target\debug\deps\b06_runtime-f3585a5131923eee.exe)
+
+running 9 tests
+test bool_arithmetic_is_strict_and_overflow_is_reported ... ok
+test drop_failure_keeps_structured_identity ... ok
+test driver_consumes_lifetime_release_plan ... ok
+test compiled_initializer_preserves_field_contracts ... ok
+test drop_view_is_borrowed_and_expires_after_callback ... ok
+test hashability_allowlist_preserves_all_existing_runtime_variants ... ok
+test runs_init_and_drop_with_static_signature ... ok
+test singleton_and_instance_kinds_are_not_interchangeable ... ok
+test weak_handle_survives_strong_release_but_cannot_upgrade ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\b1_string_bridge.rs (core\rust\target\debug\deps\b1_string_bridge-acffdc1f32befe75.exe)
+
+running 1 test
+test abi_string_reads_do_not_copy_the_entire_source ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\n0_c2_error_boundary.rs (core\rust\target\debug\deps\n0_c2_error_boundary-350be192d0a93f44.exe)
+
+running 2 tests
+test platform_failure_child ... ignored, 由 platform_failure_report_is_machine_readable 在子进程中调用
+test platform_failure_report_is_machine_readable ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\r2a_containers.rs (core\rust\target\debug\deps\r2a_containers-8ef9934478a2e195.exe)
+
+running 17 tests
+test containers_compare_by_identity ... ok
+test container_type_names_are_stable ... ok
+test array_releases_every_element ... ok
+test dict_holds_and_releases_values ... ok
+test external_resource_alias_release_destroys_once ... ok
+test external_resource_container_boundaries_are_enforced ... ok
+test heterogeneous_set_members_are_discriminated_by_variant ... ok
+test scalar_hash_matches_equality ... ok
+test set_algebra_follows_operand_order ... ok
+test set_algebra_results_stay_deduplicated ... ok
+test set_deduplicates_and_releases_dropped_elements ... ok
+test set_empty_is_subset_of_everything_but_not_proper_of_itself ... ok
+test set_equality_is_unordered_mutual_inclusion ... ok
+test set_mutation_is_visible_through_aliases ... ok
+test set_rejects_unhashable_elements ... ok
+test set_subset_distinguishes_proper_from_equal ... ok
+test tuple_releases_every_element ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests xiao_runtime
+
+running 4 tests
+test crates\xiao-runtime\src\memory\mod.rs - memory::WeakHandle (line 644) - compile fail ... ok
+test crates\xiao-runtime\src\memory\mod.rs - memory::WeakHandle (line 634) - compile fail ... ok
+test crates\xiao-runtime\src\memory\mod.rs - memory::StrongHandle (line 605) - compile fail ... ok
+test crates\xiao-runtime\src\memory\mod.rs - memory::StrongHandle (line 615) - compile fail ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s

@@ -1,0 +1,10 @@
+   Compiling ring v0.17.14
+    Checking xiao-codegen-llvm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-codegen-llvm)
+   Compiling rustls v0.23.45
+    Checking rustls-webpki v0.103.15
+    Checking ureq v3.4.2
+    Checking xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+    Checking xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Checking xiao-bytecode v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-bytecode)
+    Checking xiao-vm v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-vm)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 26.87s

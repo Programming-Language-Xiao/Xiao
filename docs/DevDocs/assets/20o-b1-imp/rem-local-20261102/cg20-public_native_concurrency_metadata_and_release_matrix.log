@@ -1,0 +1,20 @@
+   Compiling ring v0.17.14
+   Compiling rustls v0.23.45
+   Compiling rustls-webpki v0.103.15
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.90s
+     Running tests\22e_release.rs (core\rust\target\debug\deps\22e_release-4a2ea4c1fbc1e671.exe)
+
+running 1 test
+22E-EXAMPLE thread: ok
+22E-EXAMPLE pool: ok
+22E-EXAMPLE shared: ok
+22E-EXAMPLE detached: ok
+22E-EXAMPLE cancel: ok
+22E-E0 first-finally-cancellation: primary=027; vm-suppressed=[027]; native-suppressed=[]
+22E-RELEASE target=x86_64-pc-windows-msvc abi=65554 features=0x62 generator=20 metadata=verified
+test public_native_concurrency_metadata_and_release_matrix ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 20.59s

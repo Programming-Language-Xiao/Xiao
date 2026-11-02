@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "run_id": 41415412610,
+  "head_sha": "c5826020377a644a91cead07ee399d72522bcbf4",
+  "conclusion": "failure",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "scope": "首轮完整F10：VM/Linux/Windows完整通过，macOS校准中断；不构成全批通过",
+  "macos_log": {
+    "job_id": 125178103866,
+    "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125178103866/logs",
+    "source_sha256": "133110c0e08c1200def79b78299526eb025c317aa817d15f82961834bda6a456",
+    "source_start_line": 2682,
+    "source_end_line": 2688,
+    "exit_code": 101,
+    "normalized_excerpt_sha256": "629682768df7a595e84d9c9b45b7bf9c8a015f48af8c67a244df1cc98e14cfdf"
+  },
+  "reports": [
+    {
+      "file": "b1-f10-native-Linux.json",
+      "source_sha256": "b046b6613cc305eeefa73e546432416da44668871335a6c5a620030e8d1e0158",
+      "normalized_lf_sha256": "b046b6613cc305eeefa73e546432416da44668871335a6c5a620030e8d1e0158",
+      "complete": true,
+      "failed": false,
+      "records": 206,
+      "maximum_seconds": 0.455799342,
+      "maximum_doubling_ratio": 2.199043635062787,
+      "maximum_resident_increment_upper_bytes": 5308416.0
+    },
+    {
+      "file": "b1-f10-native-macOS.json",
+      "source_sha256": "cedafabed8137be379de9eeb2c959857dfed8de70a67a9ca0cc1c2b5fd332b4e",
+      "normalized_lf_sha256": "cedafabed8137be379de9eeb2c959857dfed8de70a67a9ca0cc1c2b5fd332b4e",
+      "complete": false,
+      "failed": false,
+      "records": 1,
+      "maximum_seconds": 2.665366666666667E-07,
+      "maximum_doubling_ratio": null,
+      "maximum_resident_increment_upper_bytes": 0.0
+    },
+    {
+      "file": "b1-f10-native-Windows.json",
+      "source_sha256": "b2167915a1b32a4fe32f883138157d829ed76bf1b180e6424bbcabb36105c31e",
+      "normalized_lf_sha256": "b2167915a1b32a4fe32f883138157d829ed76bf1b180e6424bbcabb36105c31e",
+      "complete": true,
+      "failed": false,
+      "records": 206,
+      "maximum_seconds": 0.6162496,
+      "maximum_doubling_ratio": 2.2021432019571425,
+      "maximum_resident_increment_upper_bytes": 5955584.0
+    },
+    {
+      "file": "b1-f10-vm-Linux.json",
+      "source_sha256": "7ba1e3e4bc74a2d503233795eb2961608dfb2033ec115708f4719693f8f3c102",
+      "normalized_lf_sha256": "7ba1e3e4bc74a2d503233795eb2961608dfb2033ec115708f4719693f8f3c102",
+      "complete": true,
+      "failed": false,
+      "records": 103,
+      "maximum_seconds": 1.97649162,
+      "maximum_doubling_ratio": 2.076760609109006,
+      "maximum_resident_increment_upper_bytes": 262144.0
+    }
+  ],
+  "normalization": "UTF-8 LF; strip ANSI for CI excerpts; trim line-end whitespace and excess final blank lines in logs; original source hashes retained"
+}

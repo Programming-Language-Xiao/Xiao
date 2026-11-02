@@ -1,0 +1,14 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.26s
+     Running tests\20o_b1_imp_resources.rs (core\rust\target\debug\deps\20o_b1_imp_resources-b097e7003ff0b92a.exe)
+
+running 6 tests
+test url_encoding_reaches_the_ascii_output_budget ... ok
+test url_decoding_reaches_the_ascii_result_budget ... ok
+test base64_url_safe_accepts_the_frozen_maximum ... ok
+test url_decoding_reaches_the_unicode_result_budget ... ok
+test url_encoding_reaches_the_unicode_output_budget ... ok
+test url_limits_and_mixed_error_order_are_streamed has been running for over 60 seconds
+test url_limits_and_mixed_error_order_are_streamed ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 125.17s
