@@ -1,0 +1,8 @@
+# source lines 1174-1180
+2026-11-02T01:34:17.5866323Z      Running tests/20o_b1_imp_vm_performance.rs (core/rust/target/debug/deps/20o_b1_imp_vm_performance-f79286cf10540898)
+2026-11-02T01:34:17.5880490Z
+2026-11-02T01:34:17.5880612Z running 2 tests
+2026-11-02T01:34:26.0617196Z test fmt_input_scaling_respects_the_frozen_vm_budget ... ok
+2026-11-02T01:34:43.3821817Z test fmt_maximum_input_has_bounded_vm_call_time ... ok
+2026-11-02T01:34:43.3822447Z
+2026-11-02T01:34:43.3823568Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.79s

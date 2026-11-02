@@ -1,11 +1,16 @@
 # B1-IMP 返工结果与剩余阻塞
 
 > 当前仍是 math/statistics/fmt 三模块、12/20 入口草稿。七库教程和七库 registry 条目保持
-> planned；其余四库、整批 F9/F10、释放差异与三平台验收尚未完成，不进入 B1-CLOSE。
+> planned；其余四库、整批 F9/F10 和释放差异尚未完成，不进入 B1-CLOSE。
 
 本轮按六项反馈返工，没有撤掉 F12 命名调用、缩小输入限额或放宽性能预算。
 完整本机日志、机器信息与源摘要见 [返工证据](assets/20o-b1-imp/review-local-20261102/README.md)。
 [旧诊断目录](assets/20o-b1-imp/local-20261102/README.md) 保留原始失败，属于历史状态。
+
+同代码的 [维护回归 41372968883](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41372968883)
+六个作业全绿，[工作区门禁 41372968916](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41372968916)
+通过。三模块与辅助回归已有真实 VM/三平台精确证据，逐作业与源日志摘要见
+[CI 证据目录](assets/20o-b1-imp/maintenance-41372968883/README.md)；这不代表七库验收完成。
 
 ## 一、独立前置
 
@@ -79,8 +84,8 @@ native 14 / VM 16；去掉越界部分仍为 native 12 / VM 13。原生轨迹中
 未把新增释放失败算作通过，也没有扩大修改 19/11/22 发布债务。相关 trace 和本机记录入库，
 B1-CLOSE 必须另补释放验收。
 
-剩余门槛：其余四库和八个入口、编码别名碰撞、全部 F9/F10（含 CSV 全量扫描、原生时间与
-完整增量内存）、释放差异、三平台真实运行与 workspace gates。七库教程保持 planned，
+剩余门槛：其余四库和八个入口的实现及三平台产品证据、编码别名碰撞、完整 F9/F10（含
+CSV 全量扫描、原生时间与完整增量内存）、释放差异和 B1-CLOSE。七库教程保持 planned，
 error_code 的独立 verified 状态不变。
 
 ## 五、复跑
