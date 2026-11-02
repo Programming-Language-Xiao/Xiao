@@ -17,6 +17,7 @@
 - `containers/`：数组、元组、字典表、字典列和集合（工程期 09R2）。
 - `abi.rs`：10B 固定 C ABI 的核心符号与句柄实现（含 `XiaoValueTag::ExternalResource = 17`）；数组、元组、字典、集合和旧表入口在 `abi_collections.rs`；动态检查、迭代/字符串入口在旁置的
   `abi_dynamic.rs`，原生诊断握手与事件入口在 `abi_diagnostics.rs`；异常对象与展开仍留给 N0-C。
+  20O-REM 的值桥接对 str 只保留强句柄并验证载荷，不复制整串；lint/lfloat 继续按原文本表示复制。
 - `errors/`：结构化 Runtime 错误和展开累加器。
 - `testing/`：只用于规格测试的释放计划驱动器。
 - `vm_concurrency.rs`：22C-FIX.1 的单线程 VM 句柄、可发送 XCON 信封和结构化子执行结果；

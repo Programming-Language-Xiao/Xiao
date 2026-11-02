@@ -564,11 +564,13 @@ unsafe fn value_to_runtime(value: &XiaoValue) -> Result<RuntimeValue, i32> {
         XiaoValueTag::Lint | XiaoValueTag::Lfloat | XiaoValueTag::Str => {
             let handle = unsafe { expect_strong(payload.handle, RuntimeTypeTag::String) }?;
             let string = status(StringHandle::from_strong_handle(handle))?;
-            let text = status(string.to_string())?;
             match value.tag {
-                XiaoValueTag::Lint => Ok(RuntimeValue::Lint(text)),
-                XiaoValueTag::Lfloat => Ok(RuntimeValue::Lfloat(text)),
-                XiaoValueTag::Str => Ok(RuntimeValue::Str(string)),
+                XiaoValueTag::Lint => Ok(RuntimeValue::Lint(status(string.to_string())?)),
+                XiaoValueTag::Lfloat => Ok(RuntimeValue::Lfloat(status(string.to_string())?)),
+                XiaoValueTag::Str => {
+                    status(string.with_str(|_| ()))?;
+                    Ok(RuntimeValue::Str(string))
+                }
                 _ => unreachable!(),
             }
         }
