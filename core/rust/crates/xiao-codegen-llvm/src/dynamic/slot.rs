@@ -171,9 +171,8 @@ impl<'a> DynamicGenerator<'a> {
 
     /// 检查本批动态 CFG 能消费的释放计划边界。
     ///
-    /// 生成器目前只在程序入口和 `return` 边发射根作用域计划。分支/循环作用域的
-    /// 局部拥有值若被静默忽略会泄漏，因此在生成任何 LLVM 文本前结构化拒绝这类 IR；
-    /// 没有局部释放动作的分支和循环仍可正常降低。异常退出计划同样留给 N0-C。
+    /// 程序、函数、try/catch/finally 与普通for消费各自的冻结计划；仍不支持的块级
+    /// 作用域不能静默忽略局部拥有值，须在生成LLVM前结构化拒绝。
     pub(super) fn validate_release_scope_boundary(&self) -> Result<()> {
         let has_ownership_metadata = !self.program.ownership.scopes.is_empty()
             || !self.program.ownership.values.is_empty()

@@ -1,0 +1,7 @@
+text = "ab"
+try
+    for character in text
+        print(character[9])
+catch bounds as Error
+    print(error_code(bounds))
+print(text)

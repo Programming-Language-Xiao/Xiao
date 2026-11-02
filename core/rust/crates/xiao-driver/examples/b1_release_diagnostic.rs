@@ -1,7 +1,7 @@
 //! B1 字符串释放差异的显式复现；记录实际失败，不进入默认测试或生产入口。
 
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::process::Command;
 use std::time::Duration;
 
@@ -12,6 +12,10 @@ use xiao_driver::{
 };
 use xiao_runtime::{start_release_trace, take_release_events};
 use xiao_vm::VmEvent;
+
+#[path = "../tests/support/b1_release.rs"]
+/// 与既有20C差分目标共用的完整清理向量。
+mod b1_release;
 
 /// 与现有原生门禁使用同一显式环境；未配置就失败，不登记为执行。
 fn toolchain() -> (TargetDescription, Toolchain) {
@@ -39,30 +43,18 @@ fn toolchain() -> (TargetDescription, Toolchain) {
 
 /// 产物留在独立临时目录，完整日志/IR/LLVM/trace 可以继续归因。
 fn main() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .ancestors()
-        .nth(4)
-        .unwrap();
     let directory =
         std::env::temp_dir().join(format!("xiao-b1-release-diagnostic-{}", std::process::id()));
     fs::create_dir_all(&directory).unwrap();
-    let full = fs::read_to_string(root.join("tests/fixtures/20o-b1/imp/string-index/product.xiao"))
-        .unwrap();
-    let golden: serde_json::Value = serde_json::from_str(
-        &fs::read_to_string(root.join("tests/fixtures/20o-b1/imp/string-index/golden.json"))
-            .unwrap(),
-    )
-    .unwrap();
-    let expected_full = golden["stdout"].as_str().unwrap();
-    let success = full.split_once("try\n").expect("已知错误段").0;
-    let expected_success = expected_full.split_once("X06-RUNTIME-017\n").unwrap().0;
     let (target, toolchain) = toolchain();
     let mut records = Vec::new();
     let mut mismatch = false;
-    for (case, source, expected) in [
-        ("success", success, expected_success),
-        ("with-bounds", full.as_str(), expected_full),
-    ] {
+    for fixture in b1_release::cases() {
+        let (case, source, expected) = (
+            fixture.id.as_str(),
+            fixture.source.as_str(),
+            fixture.stdout.as_str(),
+        );
         let source_path = directory.join(format!("{case}.xiao"));
         fs::write(&source_path, source).unwrap();
         let request = FrontendRequest::from_text_at(source, &source_path);
@@ -91,10 +83,12 @@ fn main() {
             })
             .collect();
         assert_eq!(stdout, expected);
-        let vm_destroy = events
+        let vm_order: Vec<_> = events
             .iter()
             .filter(|event| event.action.as_str() == "destroy")
-            .count();
+            .map(|event| event.object_id)
+            .collect();
+        let vm_destroy = vm_order.len();
         let vm_trace: String = events
             .iter()
             .map(|event| {
@@ -139,12 +133,19 @@ fn main() {
             assert_eq!(output.stdout, expected.as_bytes());
             assert!(output.stderr.is_empty());
             let native_trace = fs::read_to_string(&trace_path).unwrap();
-            let native_destroy = native_trace
+            let native_order: Vec<_> = native_trace
                 .lines()
-                .filter(|line| line.ends_with("\tdestroy"))
-                .count();
-            mismatch |= vm_destroy != native_destroy;
-            let record = serde_json::json!({"case":case,"optimization":level,"vm_destroy":vm_destroy,"native_destroy":native_destroy,"matched":vm_destroy == native_destroy});
+                .filter_map(|line| {
+                    let mut fields = line.split('\t');
+                    let _sequence = fields.next()?;
+                    let object = fields.next()?;
+                    (fields.next()? == "destroy").then(|| object.parse::<u64>().unwrap())
+                })
+                .collect();
+            let native_destroy = native_order.len();
+            let matched = vm_order == native_order;
+            mismatch |= !matched;
+            let record = serde_json::json!({"case":case,"optimization":level,"codegen_version":xiao_codegen_llvm::CODEGEN_VERSION,"vm_destroy":vm_destroy,"native_destroy":native_destroy,"vm_destroy_order":vm_order,"native_destroy_order":native_order,"matched":matched});
             println!("{record}");
             records.push(record);
         }

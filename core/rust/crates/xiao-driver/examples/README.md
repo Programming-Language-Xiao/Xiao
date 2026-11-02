@@ -19,6 +19,7 @@ cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --exampl
 任一预算/黄金/看门狗失败不能登记为通过。维护回归手动输入 b1_f10=true 才执行完整测量，
 不会把显式 F10 混入默认测试；既有 fmt 默认性能测试继续保留。
 
-`b1_release_diagnostic.rs` 用同一字符串完整/成功源分别记录 VM 和原生 O0/O3 的 stdout、
-退出码、对象销毁数与原始 trace。差异存在时进程返回 1，保留全部产物；不放宽既有断言。
+`b1_release_diagnostic.rs` 用共用的六份完整源记录VM和原生O0/O3的stdout、退出码、逐对象销毁
+顺序及原始trace。覆盖原成功/越界复现、嵌套跳转、临时循环源return、索引实参与循环体错误。
+差异存在时进程返回1，保留全部产物；不放宽既有断言。
 运行需要与原有原生精确测试相同的 XIAO_CLANG/LLVM_AS/LLC/TARGET_TRIPLE/RUNTIME_LIBRARY。

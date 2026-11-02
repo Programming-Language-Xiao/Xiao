@@ -1,0 +1,10 @@
+text = "ab"
+for outer in text
+    for inner in text
+        print(inner)
+        if int(inner) == 97
+            continue
+        break
+    if int(outer) == 97
+        continue
+    break

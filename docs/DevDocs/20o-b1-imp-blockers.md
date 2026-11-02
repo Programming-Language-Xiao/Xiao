@@ -80,7 +80,7 @@ native 14 / VM 16；去掉越界部分仍为 native 12 / VM 13。原生轨迹中
 输入文本和末次循环字符有 strong_release、没有 destroy；纯成功样例剩下末次循环字符。
 这属于实际未收口的释放差异，不能因为语义精确目标通过而声称生命周期验收通过。
 REM 已用显式工具复现并定位普通 for 正常出口与 selector 失败边的引用遗漏，
-独立前置仍待裁定，详见 [释放诊断](20o-b1-rem-release-prerequisite.md)。
+星崽已授权独立生成器20前置，本机六组同源销毁顺序已匹配，三平台待取证；详见 [释放诊断](20o-b1-rem-release-prerequisite.md)。
 
 完整样例保存在 tests/fixtures/20o-b1/imp/string-index/，VM/native 精确目标仍执行所有
 正负下标、越界、最小 int 和 Unicode 码点。原 20C 释放断言及原有场景保持原样；

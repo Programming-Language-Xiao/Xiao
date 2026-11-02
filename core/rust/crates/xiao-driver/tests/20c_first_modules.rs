@@ -9,7 +9,11 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use xiao_codegen_llvm::{CodegenError, TargetDescription, Toolchain};
+#[path = "support/b1_release.rs"]
+/// 普通for/selector前置的同源完整清理向量。
+mod b1_release;
+
+use xiao_codegen_llvm::{CodegenError, CodegenOptions, TargetDescription, Toolchain};
 use xiao_driver::{
     ArchiveBuildRequest, CancellationToken, DriverOutcome, DriverRequest, FrontendArtifact,
     FrontendCompiler, FrontendNativeDriver, FrontendRequest, FrontendVmDriver, NativeBuildRequest,
@@ -87,6 +91,16 @@ for character in text
 /// 独立码点表含 NUL、组合字符、BOM；越界样例另在 B1 精确语义目标中执行。
 const STRING_INDEX_STDOUT: &str =
     "65\n0\n38634\n128512\n65279\n65\n0\n38634\n128512\n101\n769\n65279\n";
+
+#[test]
+/// 普通 for/selector 清理向量默认执行，避免原生工具链缺失时连语义黄金也未验。
+fn b1_release_edges_have_vm_golden_outputs() {
+    for case in b1_release::cases() {
+        let outcome = run_vm(&case.id, &case.source);
+        assert!(outcome.is_success(), "{}: {outcome:?}", case.id);
+        assert_eq!(output(&outcome), case.stdout, "{}", case.id);
+    }
+}
 
 /// 为单个模块调用用例建立隔离项目，并在用例结束后安全清理。
 struct TestProject(PathBuf);
@@ -937,7 +951,88 @@ fn first_modules_match_native_results() {
             "{module} VM/原生 Runtime 最终对象销毁数不一致"
         );
     }
+    assert_b1_release_edges(&root, &target, &toolchain);
     let _ = fs::remove_dir_all(root);
+}
+
+/// 既有原生差分入口附带执行 O0/O3 同源清理向量，逐对象比较销毁顺序。
+fn assert_b1_release_edges(root: &Path, target: &TargetDescription, toolchain: &Toolchain) {
+    for case in b1_release::cases() {
+        let request = FrontendRequest::from_text(&case.source);
+        let artifact = FrontendCompiler::new().compile(&request).unwrap();
+        let trace = start_release_trace();
+        let vm =
+            FrontendVmDriver::new().run_artifact(&artifact, &DriverRequest::new(request.clone()));
+        let events = take_release_events();
+        drop(trace);
+        assert!(vm.is_success(), "{}: {vm:?}", case.id);
+        assert_eq!(output(&vm), case.stdout, "{}", case.id);
+        let vm_order: Vec<_> = events
+            .iter()
+            .filter(|event| event.action.as_str() == "destroy")
+            .map(|event| event.object_id)
+            .collect();
+        for level in [0, 3] {
+            let executable = root.join(format!(
+                "b1-{}-o{level}{}",
+                case.id,
+                std::env::consts::EXE_SUFFIX
+            ));
+            let options = CodegenOptions::for_target(target.clone())
+                .with_optimization_level(level)
+                .unwrap();
+            let native = FrontendNativeDriver::new()
+                .build_artifact(
+                    &artifact,
+                    &NativeBuildRequest::new(
+                        request.clone(),
+                        target.clone(),
+                        toolchain.clone(),
+                        &executable,
+                    )
+                    .with_codegen_options(options),
+                )
+                .unwrap();
+            assert_eq!(
+                native.frontend.ir.ownership.release_plans,
+                artifact.ir.ownership.release_plans
+            );
+            let trace_path = root.join(format!("b1-{}-o{level}.trace.tsv", case.id));
+            let run = Command::new(&executable)
+                .env("XIAO_RUNTIME_RELEASE_TRACE_PATH", &trace_path)
+                .output()
+                .unwrap();
+            assert_eq!(
+                run.status.code(),
+                Some(0),
+                "{} O{level}: {}",
+                case.id,
+                String::from_utf8_lossy(&run.stderr)
+            );
+            assert_eq!(run.stdout, case.stdout.as_bytes(), "{} O{level}", case.id);
+            assert!(run.stderr.is_empty(), "{} O{level}", case.id);
+            let trace = fs::read_to_string(&trace_path).unwrap();
+            let native_order: Vec<_> = trace
+                .lines()
+                .filter_map(|line| {
+                    let mut fields = line.split('\t');
+                    let _sequence = fields.next()?;
+                    let object = fields.next()?;
+                    (fields.next()? == "destroy").then(|| object.parse::<u64>().unwrap())
+                })
+                .collect();
+            assert_eq!(
+                native_order, vm_order,
+                "{} O{level} 逐对象销毁顺序不一致",
+                case.id
+            );
+            println!(
+                "20O-REM-RELEASE case={} optimization={level} destroy={} order=matched",
+                case.id,
+                native_order.len()
+            );
+        }
+    }
 }
 
 #[test]

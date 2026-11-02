@@ -6,3 +6,6 @@
 `b1_imp.rs` 的 PRODUCTS 列出已落地模块及其冻结公开名称，case_names 将这些产品与
 辅助样例一起送入 VM/native。20 个入口的独立签名/负例表仍在契约测试中，源码和 registry
 必须与活跃产品一致；补模块时不能仅更新默认契约测试而遗漏原生精确入口。
+
+`b1_release.rs` 读取 release-edges 完整向量和独立黄金，供默认VM、20C既有原生差分目标及
+显式诊断共用。它属于普通for/selector的清理前置，不计入七库20入口，不增加ignored目标。

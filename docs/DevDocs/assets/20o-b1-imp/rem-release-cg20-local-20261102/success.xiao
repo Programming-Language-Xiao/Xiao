@@ -1,0 +1,8 @@
+text = "A\0雪😀é﻿"
+print(int(text[0]))
+print(int(text[1]))
+print(int(text[2]))
+print(int(text[-4]))
+print(int(text[-1]))
+for character in text
+    print(int(character))

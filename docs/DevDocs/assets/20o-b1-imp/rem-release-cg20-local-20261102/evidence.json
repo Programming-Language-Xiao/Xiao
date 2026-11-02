@@ -1,0 +1,523 @@
+{
+  "schema_version": 1,
+  "scope": "本机生成器20前置证据，不替代三平台或B1-CLOSE",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "exit_code": 0,
+  "target": "x86_64-pc-windows-msvc",
+  "recorded_utc": "2026-11-02T08:37:14.4225739Z",
+  "results": [
+    {
+      "case": "success",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 13,
+      "native_destroy_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        1
+      ],
+      "optimization": 0,
+      "vm_destroy": 13,
+      "vm_destroy_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        1
+      ]
+    },
+    {
+      "case": "success",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 13,
+      "native_destroy_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        1
+      ],
+      "optimization": 3,
+      "vm_destroy": 13,
+      "vm_destroy_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        1
+      ]
+    },
+    {
+      "case": "with-bounds",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 16,
+      "native_destroy_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        1
+      ],
+      "optimization": 0,
+      "vm_destroy": 16,
+      "vm_destroy_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        1
+      ]
+    },
+    {
+      "case": "with-bounds",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 16,
+      "native_destroy_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        1
+      ],
+      "optimization": 3,
+      "vm_destroy": 16,
+      "vm_destroy_order": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        1
+      ]
+    },
+    {
+      "case": "nested-jumps",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 7,
+      "native_destroy_order": [
+        3,
+        4,
+        2,
+        6,
+        7,
+        5,
+        1
+      ],
+      "optimization": 0,
+      "vm_destroy": 7,
+      "vm_destroy_order": [
+        3,
+        4,
+        2,
+        6,
+        7,
+        5,
+        1
+      ]
+    },
+    {
+      "case": "nested-jumps",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 7,
+      "native_destroy_order": [
+        3,
+        4,
+        2,
+        6,
+        7,
+        5,
+        1
+      ],
+      "optimization": 3,
+      "vm_destroy": 7,
+      "vm_destroy_order": [
+        3,
+        4,
+        2,
+        6,
+        7,
+        5,
+        1
+      ]
+    },
+    {
+      "case": "temporary-return",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 3,
+      "native_destroy_order": [
+        1,
+        2,
+        3
+      ],
+      "optimization": 0,
+      "vm_destroy": 3,
+      "vm_destroy_order": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "case": "temporary-return",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 3,
+      "native_destroy_order": [
+        1,
+        2,
+        3
+      ],
+      "optimization": 3,
+      "vm_destroy": 3,
+      "vm_destroy_order": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "case": "selector-errors",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 6,
+      "native_destroy_order": [
+        4,
+        5,
+        6,
+        3,
+        1,
+        2
+      ],
+      "optimization": 0,
+      "vm_destroy": 6,
+      "vm_destroy_order": [
+        4,
+        5,
+        6,
+        3,
+        1,
+        2
+      ]
+    },
+    {
+      "case": "selector-errors",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 6,
+      "native_destroy_order": [
+        4,
+        5,
+        6,
+        3,
+        1,
+        2
+      ],
+      "optimization": 3,
+      "vm_destroy": 6,
+      "vm_destroy_order": [
+        4,
+        5,
+        6,
+        3,
+        1,
+        2
+      ]
+    },
+    {
+      "case": "loop-body-error",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 3,
+      "native_destroy_order": [
+        2,
+        3,
+        1
+      ],
+      "optimization": 0,
+      "vm_destroy": 3,
+      "vm_destroy_order": [
+        2,
+        3,
+        1
+      ]
+    },
+    {
+      "case": "loop-body-error",
+      "codegen_version": 20,
+      "matched": true,
+      "native_destroy": 3,
+      "native_destroy_order": [
+        2,
+        3,
+        1
+      ],
+      "optimization": 3,
+      "vm_destroy": 3,
+      "vm_destroy_order": [
+        2,
+        3,
+        1
+      ]
+    }
+  ],
+  "code": [
+    {
+      "file": "core/rust/crates/xiao-codegen-llvm/src/lib.rs",
+      "normalized_lf_sha256": "67d9c47e966439198c136b2aae2aaf04e029a9b100d48380c1076deb9b4ae249"
+    },
+    {
+      "file": "core/rust/crates/xiao-codegen-llvm/src/dynamic/control.rs",
+      "normalized_lf_sha256": "b77d252d012233bd68c957e6bf8283928f84587479e00f778daf2183781ef781"
+    },
+    {
+      "file": "core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs",
+      "normalized_lf_sha256": "0aec2f4d5f5910990f73237e8db0cba053bf6f0ed7947714323022087bc97f5d"
+    },
+    {
+      "file": "core/rust/crates/xiao-codegen-llvm/src/dynamic/slot.rs",
+      "normalized_lf_sha256": "08ff526abe73343ca5e7e64e57a038af5076f095bae9d2802bd5e81f6a058ec9"
+    }
+  ],
+  "files": [
+    {
+      "file": "loop-body-error-o0.trace.tsv",
+      "original_sha256": "639ab106f08c2a6e50d7171d1c99d854479d348e83d7e2aeeb3a1e522b75c6ca",
+      "normalized_lf_sha256": "639ab106f08c2a6e50d7171d1c99d854479d348e83d7e2aeeb3a1e522b75c6ca",
+      "bytes": 269
+    },
+    {
+      "file": "loop-body-error-o3.trace.tsv",
+      "original_sha256": "639ab106f08c2a6e50d7171d1c99d854479d348e83d7e2aeeb3a1e522b75c6ca",
+      "normalized_lf_sha256": "639ab106f08c2a6e50d7171d1c99d854479d348e83d7e2aeeb3a1e522b75c6ca",
+      "bytes": 269
+    },
+    {
+      "file": "loop-body-error-vm.trace.tsv",
+      "original_sha256": "1c9ab13fb0820cf55adbcc7a388d337767c4fa80a5ebd6b5f57ebd149da99d5f",
+      "normalized_lf_sha256": "1c9ab13fb0820cf55adbcc7a388d337767c4fa80a5ebd6b5f57ebd149da99d5f",
+      "bytes": 229
+    },
+    {
+      "file": "loop-body-error.xiao",
+      "original_sha256": "0b5edb8ace996f81ba1e7e182cf41389508ae1f8c2fd2011d63507831e24845a",
+      "normalized_lf_sha256": "0b5edb8ace996f81ba1e7e182cf41389508ae1f8c2fd2011d63507831e24845a",
+      "bytes": 134
+    },
+    {
+      "file": "nested-jumps-o0.trace.tsv",
+      "original_sha256": "33bfa745b85949d3af9d4a3b0ee49a99420474ce20b35a93fa73624fa4a20bb9",
+      "normalized_lf_sha256": "33bfa745b85949d3af9d4a3b0ee49a99420474ce20b35a93fa73624fa4a20bb9",
+      "bytes": 981
+    },
+    {
+      "file": "nested-jumps-o3.trace.tsv",
+      "original_sha256": "33bfa745b85949d3af9d4a3b0ee49a99420474ce20b35a93fa73624fa4a20bb9",
+      "normalized_lf_sha256": "33bfa745b85949d3af9d4a3b0ee49a99420474ce20b35a93fa73624fa4a20bb9",
+      "bytes": 981
+    },
+    {
+      "file": "nested-jumps-vm.trace.tsv",
+      "original_sha256": "586c24725a5bcc88b7e5fdc55d35447ca6ba3ef7a206ad43a17cd378194a5d16",
+      "normalized_lf_sha256": "586c24725a5bcc88b7e5fdc55d35447ca6ba3ef7a206ad43a17cd378194a5d16",
+      "bytes": 601
+    },
+    {
+      "file": "nested-jumps.xiao",
+      "original_sha256": "baf7e8e9f21b4d5e21b6e83fc65a456deb8ba1d20b31ac4aa4b8c8053fb039dc",
+      "normalized_lf_sha256": "baf7e8e9f21b4d5e21b6e83fc65a456deb8ba1d20b31ac4aa4b8c8053fb039dc",
+      "bytes": 187
+    },
+    {
+      "file": "results.json",
+      "original_sha256": "87551492d5fc1fbdbf25b5ad92551b9995bb009a51ea730a6066140ce39b149d",
+      "normalized_lf_sha256": "87551492d5fc1fbdbf25b5ad92551b9995bb009a51ea730a6066140ce39b149d",
+      "bytes": 4442
+    },
+    {
+      "file": "selector-errors-o0.trace.tsv",
+      "original_sha256": "8b70f0f59e4f6d19520d06aa20c49be6f7c3129faf163f2933b67b814f5ea2b7",
+      "normalized_lf_sha256": "8b70f0f59e4f6d19520d06aa20c49be6f7c3129faf163f2933b67b814f5ea2b7",
+      "bytes": 628
+    },
+    {
+      "file": "selector-errors-o3.trace.tsv",
+      "original_sha256": "8b70f0f59e4f6d19520d06aa20c49be6f7c3129faf163f2933b67b814f5ea2b7",
+      "normalized_lf_sha256": "8b70f0f59e4f6d19520d06aa20c49be6f7c3129faf163f2933b67b814f5ea2b7",
+      "bytes": 628
+    },
+    {
+      "file": "selector-errors-vm.trace.tsv",
+      "original_sha256": "a5a5c6437f7e48453ab6665e4e9b46896f23c0e768b57caa78c45fc48545898d",
+      "normalized_lf_sha256": "a5a5c6437f7e48453ab6665e4e9b46896f23c0e768b57caa78c45fc48545898d",
+      "bytes": 568
+    },
+    {
+      "file": "selector-errors.xiao",
+      "original_sha256": "43f8ebebf6ec0519cea6ee9da085d82b370bfa178c8fee64a5874f5ec8a708c3",
+      "normalized_lf_sha256": "43f8ebebf6ec0519cea6ee9da085d82b370bfa178c8fee64a5874f5ec8a708c3",
+      "bytes": 317
+    },
+    {
+      "file": "success-o0.trace.tsv",
+      "original_sha256": "76f74c834b7d64c346f79df80fe9ae7903910864df3436387fabbbb660a0c610",
+      "normalized_lf_sha256": "76f74c834b7d64c346f79df80fe9ae7903910864df3436387fabbbb660a0c610",
+      "bytes": 1439
+    },
+    {
+      "file": "success-o3.trace.tsv",
+      "original_sha256": "76f74c834b7d64c346f79df80fe9ae7903910864df3436387fabbbb660a0c610",
+      "normalized_lf_sha256": "76f74c834b7d64c346f79df80fe9ae7903910864df3436387fabbbb660a0c610",
+      "bytes": 1439
+    },
+    {
+      "file": "success-vm.trace.tsv",
+      "original_sha256": "dda41e6954a9999963046809db8f06eb3fb12bc93a3ed04c3ca56efe23a53230",
+      "normalized_lf_sha256": "dda41e6954a9999963046809db8f06eb3fb12bc93a3ed04c3ca56efe23a53230",
+      "bytes": 1131
+    },
+    {
+      "file": "success.xiao",
+      "original_sha256": "ad62822347be8d36f834192ced4456d23c04ccbbd1ea394ce7286b31a0bd3dbd",
+      "normalized_lf_sha256": "ad62822347be8d36f834192ced4456d23c04ccbbd1ea394ce7286b31a0bd3dbd",
+      "bytes": 176
+    },
+    {
+      "file": "temporary-return-o0.trace.tsv",
+      "original_sha256": "542fcee15e8a9e5023ef322ef2680be53770bc198a5835a3462f84f937e781a6",
+      "normalized_lf_sha256": "542fcee15e8a9e5023ef322ef2680be53770bc198a5835a3462f84f937e781a6",
+      "bytes": 249
+    },
+    {
+      "file": "temporary-return-o3.trace.tsv",
+      "original_sha256": "542fcee15e8a9e5023ef322ef2680be53770bc198a5835a3462f84f937e781a6",
+      "normalized_lf_sha256": "542fcee15e8a9e5023ef322ef2680be53770bc198a5835a3462f84f937e781a6",
+      "bytes": 249
+    },
+    {
+      "file": "temporary-return-vm.trace.tsv",
+      "original_sha256": "55f889960cc8b62edbc146d19ecdab74bfdaf08557cc76e376d43775ba61d043",
+      "normalized_lf_sha256": "55f889960cc8b62edbc146d19ecdab74bfdaf08557cc76e376d43775ba61d043",
+      "bytes": 189
+    },
+    {
+      "file": "temporary-return.xiao",
+      "original_sha256": "0e3cec1aff7c2801a8d08e16e51fa49ada093a49a5996e0878ca8aa352d2cc6c",
+      "normalized_lf_sha256": "0e3cec1aff7c2801a8d08e16e51fa49ada093a49a5996e0878ca8aa352d2cc6c",
+      "bytes": 135
+    },
+    {
+      "file": "with-bounds-o0.trace.tsv",
+      "original_sha256": "70e068d44cdda4b840c996e8495da23dda1adfd4fea61e3fdd13415d7534d05c",
+      "normalized_lf_sha256": "70e068d44cdda4b840c996e8495da23dda1adfd4fea61e3fdd13415d7534d05c",
+      "bytes": 1727
+    },
+    {
+      "file": "with-bounds-o3.trace.tsv",
+      "original_sha256": "70e068d44cdda4b840c996e8495da23dda1adfd4fea61e3fdd13415d7534d05c",
+      "normalized_lf_sha256": "70e068d44cdda4b840c996e8495da23dda1adfd4fea61e3fdd13415d7534d05c",
+      "bytes": 1727
+    },
+    {
+      "file": "with-bounds-vm.trace.tsv",
+      "original_sha256": "6a6731e08d3034f54b89ac52822f67cc28e6c2119d94641ca0dc34d3529e7a2e",
+      "normalized_lf_sha256": "6a6731e08d3034f54b89ac52822f67cc28e6c2119d94641ca0dc34d3529e7a2e",
+      "bytes": 1479
+    },
+    {
+      "file": "with-bounds.xiao",
+      "original_sha256": "2239f1a9844c240472e0ce2cc6619d000f3b9abe8e33d54c2dca48404ac84d04",
+      "normalized_lf_sha256": "2239f1a9844c240472e0ce2cc6619d000f3b9abe8e33d54c2dca48404ac84d04",
+      "bytes": 473
+    },
+    {
+      "file": "diagnostic.log",
+      "original_sha256": "d21b6c951c2c65f6a89d3a756ceb02509138122f27aee85eb72b0998c81f6c5d",
+      "normalized_lf_sha256": "3704d39c4e8aa8d0a623c0acc314f01aebffb3469b0f78bc1d56ab52b7f77c54",
+      "bytes": 2893
+    }
+  ]
+}

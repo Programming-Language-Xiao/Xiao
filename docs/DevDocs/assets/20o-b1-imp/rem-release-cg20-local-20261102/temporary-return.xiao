@@ -1,0 +1,8 @@
+def first() -> str
+    for letter in "ab"
+        return letter
+    return ""
+print(first())
+for empty in ""
+    print(empty)
+print(1)

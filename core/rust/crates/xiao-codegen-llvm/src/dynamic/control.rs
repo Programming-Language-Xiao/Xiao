@@ -171,7 +171,7 @@ impl<'a> DynamicGenerator<'a> {
                 target,
                 iterable,
                 body,
-            } => self.emit_for(target, iterable, body)?,
+            } => self.emit_for(target, iterable, body, statement.span)?,
             IrStatementKind::Function { .. } => {}
             IrStatementKind::Import { items, .. } => {
                 for item in items {
@@ -963,8 +963,10 @@ impl<'a> DynamicGenerator<'a> {
         target: &xiao_ir::IrName,
         iterable: &IrExpression,
         body: &'a [IrStatement],
+        span: IrSpan,
     ) -> Result<()> {
         let outer_target = self.error_target();
+        let loop_scope = self.region_scope(span, "loop");
         let borrowed_source = self.borrow_named_slot(iterable);
         let source = if let Some(slot) = &borrowed_source {
             let value = self.next_temp();
@@ -973,6 +975,10 @@ impl<'a> DynamicGenerator<'a> {
         } else {
             self.emit_expression(iterable)?
         };
+        // 非名称来源移入帧槽：return 等非局部出口也能归还，不能只依赖循环尾的 SSA 清理。
+        let source_owner = borrowed_source
+            .is_none()
+            .then(|| self.own_generated_temporary(&source));
         let failure_label = self.next_label("dynamic.for.fail");
         let continuation_label = self.next_label("dynamic.for.continue");
         self.push_error_context(failure_label.clone());
@@ -1021,11 +1027,18 @@ impl<'a> DynamicGenerator<'a> {
             cleanup_depth: self.cleanup_stack.len(),
         });
         let cleanup_snapshot = self.cleanup_stack.clone();
+        self.cleanup_stack.push(CleanupContext {
+            finally_body: None,
+            finally_scope: None,
+            protected_scope: loop_scope,
+            failure_target: failure_label.clone(),
+        });
         let body_result = self.emit_statements(body);
         self.cleanup_stack = cleanup_snapshot;
         self.loop_stack.pop();
         body_result?;
         if !self.terminated {
+            self.release_for_scope(loop_scope, "normal")?;
             self.emit(format!("  br label %{advance_label}"));
             self.terminated = true;
         }
@@ -1036,15 +1049,25 @@ impl<'a> DynamicGenerator<'a> {
         self.emit(format!("  br label %{condition_label}"));
         self.terminated = true;
         self.emit_label(&end_label);
-        if borrowed_source.is_none() {
-            self.release_value(source.clone());
+        if let Some(owner) = &source_owner {
+            let release = self.value_release_symbol();
+            self.emit(format!("  call void @{release}(ptr {owner})"));
         }
         self.emit(format!("  br label %{continuation_label}"));
         self.terminated = true;
         self.pop_error_context();
         self.emit_label(&failure_label);
-        if borrowed_source.is_none() {
-            self.release_value(source);
+        let source_cleanup = self.next_label("dynamic.for.source-cleanup");
+        self.emit_error_cleanup_failure(CleanupFailure {
+            first_scope: loop_scope,
+            second_scope: None,
+            recoverable_exit: "unmatched_error",
+            failure_target: source_cleanup.clone(),
+        })?;
+        self.emit_label(&source_cleanup);
+        if let Some(owner) = source_owner {
+            let release = self.value_release_symbol();
+            self.emit(format!("  call void @{release}(ptr {owner})"));
         }
         self.emit(format!("  br label %{outer_target}"));
         self.terminated = true;

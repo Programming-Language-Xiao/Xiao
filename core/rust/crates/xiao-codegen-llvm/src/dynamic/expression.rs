@@ -329,6 +329,46 @@ impl<'a> DynamicGenerator<'a> {
         selection_plan: Option<u32>,
         span: IrSpan,
     ) -> Result<String> {
+        let outer = self.error_target();
+        let failure = self.next_label("dynamic.selector.fail");
+        let continuation = self.next_label("dynamic.selector.continue");
+        let mut owners = Vec::new();
+        self.push_error_context(failure.clone());
+        let selected =
+            self.emit_selector_value(source, selector, _step, selection_plan, span, &mut owners)?;
+        self.pop_error_context();
+        // 每个槽在入口置空；较晚的索引/step 求值失败也能安全经过同一清理边。
+        let release = self.value_release_symbol();
+        for owner in owners.iter().rev() {
+            self.emit(format!("  call void @{release}(ptr {owner})"));
+        }
+        self.emit(format!("  br label %{continuation}"));
+        self.terminated = true;
+        self.emit_label(&failure);
+        for owner in owners.iter().rev() {
+            self.emit(format!("  call void @{release}(ptr {owner})"));
+        }
+        self.emit(format!("  br label %{outer}"));
+        self.terminated = true;
+        self.emit_label(&continuation);
+        Ok(selected)
+    }
+
+    /// 将选择器读取的拥有输入移入已置空的帧槽，不增加引用；成功和错误边各消费一次。
+    fn hold_selector_operand(&mut self, value: &str, owners: &mut Vec<String>) {
+        owners.push(self.own_generated_temporary(value));
+    }
+
+    /// 发射选择器主体；来源、中间路径及实参的拥有引用由外层统一归还。
+    fn emit_selector_value(
+        &mut self,
+        source: &IrExpression,
+        selector: &xiao_ir::IrSelector,
+        _step: Option<&IrExpression>,
+        selection_plan: Option<u32>,
+        span: IrSpan,
+        owners: &mut Vec<String>,
+    ) -> Result<String> {
         if selector.items.len() != 1 {
             if _step.is_some()
                 || selector
@@ -354,15 +394,16 @@ impl<'a> DynamicGenerator<'a> {
                 })?;
             let paths = plan.selected_paths.clone();
             let value = self.emit_expression(source)?;
+            self.hold_selector_operand(&value, owners);
             let selected = self.emit_selection_paths(&value, &paths, span)?;
-            self.release_value(value);
             return Ok(selected);
         }
         let mut value = self.emit_expression(source)?;
+        self.hold_selector_operand(&value, owners);
         if let Some(step) = _step {
             let step_value = self.emit_expression(step)?;
+            self.hold_selector_operand(&step_value, owners);
             self.emit_dynamic_check("selector_step", &step_value, step.span);
-            self.release_value(step_value);
         }
         let IrSelectorItem::Exact { path, .. } = &selector.items[0] else {
             match &selector.items[0] {
@@ -370,6 +411,7 @@ impl<'a> DynamicGenerator<'a> {
                     expression: index, ..
                 } => {
                     let index_value = self.emit_expression(index)?;
+                    self.hold_selector_operand(&index_value, owners);
                     let dynamic_source = matches!(
                         source.ty,
                         IrType::DictTable { .. }
@@ -381,28 +423,24 @@ impl<'a> DynamicGenerator<'a> {
                         self.emit_dynamic_index_get(&value, &index_value, span)
                     } else {
                         let index_value = self.emit_cast_runtime("int", &index_value, index.span);
+                        self.hold_selector_operand(&index_value, owners);
                         let payload = self.next_temp();
                         self.emit(format!(
                             "  {payload} = extractvalue {VALUE_TYPE} {index_value}, 1"
                         ));
-                        let selected = self.emit_iter_get(&value, &payload, span);
-                        self.release_value(index_value);
-                        selected
+                        self.emit_iter_get(&value, &payload, span)
                     };
-                    self.release_value(index_value);
-                    self.release_value(value);
                     return Ok(selected);
                 }
                 IrSelectorItem::Random { count, mode, .. } => {
                     let count_value = self.emit_expression(count)?;
+                    self.hold_selector_operand(&count_value, owners);
                     self.emit_dynamic_check("random_count", &count_value, count.span);
                     let count_payload = self.next_temp();
                     self.emit(format!(
                         "  {count_payload} = extractvalue {VALUE_TYPE} {count_value}, 1"
                     ));
                     let selected = self.emit_random_select(&value, &count_payload, mode, span);
-                    self.release_value(count_value);
-                    self.release_value(value);
                     return Ok(selected);
                 }
                 IrSelectorItem::Range { .. } | IrSelectorItem::OpenRange { .. } => {
@@ -420,17 +458,15 @@ impl<'a> DynamicGenerator<'a> {
                         .find(|plan| plan.span == span)
                 });
             let Some(plan) = plan else {
-                self.release_value(value);
                 return Err(CodegenError::Unsupported {
                     feature: "动态选择器缺少规范选择计划".to_owned(),
                     span: Some(span),
                 });
             };
             let selected = self.emit_selection_paths(&value, &plan.selected_paths, span)?;
-            self.release_value(value);
             return Ok(selected);
         };
-        for segment in &path.segments {
+        for (position, segment) in path.segments.iter().enumerate() {
             let next = match &segment.kind {
                 IrPathSegmentKind::Name { name } => {
                     self.emit_dict_key_get(&value, &name.text, segment.span)
@@ -450,8 +486,10 @@ impl<'a> DynamicGenerator<'a> {
                     self.emit_iter_get(&value, &index.to_string(), span)
                 }
             };
-            self.release_value(value);
             value = next;
+            if position + 1 < path.segments.len() {
+                self.hold_selector_operand(&value, owners);
+            }
         }
         Ok(value)
     }
