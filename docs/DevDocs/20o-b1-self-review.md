@@ -24,8 +24,10 @@
 原生 O0/O3 精确目标，均通过；两个精确目标各恰好 1 passed / 0 failed / 0 ignored。
 严格 workspace all-targets Clippy 和 docs/usedocs/layout 通过。
 本机完整日志、代码提交及源摘要见 [本机自审证据](assets/20o-b1-imp/self-review-local-20261102/README.md)。
-自审新增案例的三平台维护回归另行取证后在本页回填，原始前轮证据仍保留在
-[41372968883](assets/20o-b1-imp/maintenance-41372968883/README.md)。
+自审新增案例已由维护回归 **41385483703** 六作业和工作区门禁 **41385483801** 验证，
+默认 VM 与三平台原生精确目标各恰好一项通过，原生 O0/O3 均包含全部 35 个新增进制向量。
+完整作业链接与源日志摘要见 [本轮 CI 证据](assets/20o-b1-imp/self-review-41385483703/README.md)。
+原始前轮证据仍保留在 [41372968883](assets/20o-b1-imp/maintenance-41372968883/README.md)。
 
 ## 未收口范围
 

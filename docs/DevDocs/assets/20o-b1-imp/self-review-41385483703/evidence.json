@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "scope": "B1 self-review fixes, implemented three-library 12/20 draft; not B1-CLOSE",
+  "tested_commit": "e811e4147a500cb6069db4507fce885c81f20dca",
+  "code_snapshot_commit": "a9c8ca979118d5b8a443ccb0c24ecd622863512c",
+  "runtime_abi": "1.18",
+  "codegen_version": 19,
+  "maintenance": {
+    "run_id": 41385483703,
+    "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 125085266081,
+        "name": "Rust workspace default tests (Linux)",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266081",
+        "conclusion": "success"
+      },
+      {
+        "id": 125085266274,
+        "name": "Deterministic parser and artifact security regression",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266274",
+        "conclusion": "success"
+      },
+      {
+        "id": 125085266281,
+        "name": "Native differential regression (Windows)",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266281",
+        "conclusion": "success"
+      },
+      {
+        "id": 125085266293,
+        "name": "Deterministic artifact size regression (Windows baseline)",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266293",
+        "conclusion": "success"
+      },
+      {
+        "id": 125085266361,
+        "name": "Native differential regression (macOS)",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266361",
+        "conclusion": "success"
+      },
+      {
+        "id": 125085266506,
+        "name": "Native differential regression (Linux)",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266506",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "workspace_gates": {
+    "run_id": 41385483801,
+    "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483801",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 125085266503,
+        "name": "Linux workspace gates",
+        "url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483801/job/125085266503",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "checks": {
+    "vm_exact_passed": 1,
+    "native_exact_passed_per_platform": 1,
+    "native_optimizations": [
+      0,
+      3
+    ],
+    "product_entries": 12,
+    "product_modules": [
+      "math",
+      "statistics",
+      "fmt"
+    ],
+    "auxiliary_cases": [
+      "aliases",
+      "string-index"
+    ],
+    "additional_fmt_minimum_radix_vectors": 35,
+    "fmt_minimum_radices": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36
+    ],
+    "contract_tests_passed": 9,
+    "default_performance_tests_passed": 2,
+    "guard_cases": "28/28"
+  },
+  "excerpts": [
+    {
+      "file": "vm-linux.log",
+      "job_id": 125085266081,
+      "job_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266081",
+      "source_local_filename": "xiao-b1-audit-ci-default.log",
+      "source_sha256": "5d329ab28fcb0b2a7c6aeeb294f79b53c8567073422ec94d1f0ff810d4ae3a92",
+      "source_bytes": 276846,
+      "source_lines": 3319,
+      "source_line_ranges": [
+        {
+          "start": 3131,
+          "end": 3131
+        },
+        {
+          "start": 3146,
+          "end": 3177
+        }
+      ],
+      "stored_sha256": "6d9c8e9ad673e13e9a96f80d63557362829f0cfcabc7dcda0d411bc78ef5eaca",
+      "stored_bytes": 2991,
+      "stored_normalization": "selected source ranges; ANSI and trailing ASCII whitespace removed; LF with source range headers; one LF at EOF",
+      "test_summary": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 18.25s"
+    },
+    {
+      "file": "native-linux.log",
+      "job_id": 125085266506,
+      "job_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266506",
+      "source_local_filename": "xiao-b1-audit-ci-linux.log",
+      "source_sha256": "5c2290d80e6b9334db051b89c40722b0e2d3b4b1d5db3b2a736b91628b22f772",
+      "source_bytes": 342259,
+      "source_lines": 2799,
+      "source_line_ranges": [
+        {
+          "start": 423,
+          "end": 423
+        },
+        {
+          "start": 440,
+          "end": 440
+        },
+        {
+          "start": 2641,
+          "end": 2690
+        }
+      ],
+      "stored_sha256": "95792b0949669a26f2dbd49bf86e20f69ff55a005e9bb930a9bfd6092fa88d6e",
+      "stored_bytes": 5512,
+      "stored_normalization": "selected source ranges; ANSI and trailing ASCII whitespace removed; LF with source range headers; one LF at EOF",
+      "test_summary": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 51.05s"
+    },
+    {
+      "file": "native-windows.log",
+      "job_id": 125085266281,
+      "job_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266281",
+      "source_local_filename": "xiao-b1-audit-ci-windows.log",
+      "source_sha256": "4a7a5e4a63eb29f63a106dc2f27ae5a83da7b4a134520e094f8e9937e3729ec6",
+      "source_bytes": 299550,
+      "source_lines": 2876,
+      "source_line_ranges": [
+        {
+          "start": 724,
+          "end": 724
+        },
+        {
+          "start": 1175,
+          "end": 1224
+        }
+      ],
+      "stored_sha256": "b1bb8c1c229cd1ed286dbaa70a258da1a125d1ed0b0e4838179b91956b0a35ec",
+      "stored_bytes": 5402,
+      "stored_normalization": "selected source ranges; ANSI and trailing ASCII whitespace removed; LF with source range headers; one LF at EOF",
+      "test_summary": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 54.59s"
+    },
+    {
+      "file": "native-macos.log",
+      "job_id": 125085266361,
+      "job_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266361",
+      "source_local_filename": "xiao-b1-audit-ci-macos.log",
+      "source_sha256": "33274e9292e565ae5b52ede1406c10a892766bd0c75cb09e3d2685ffbbdd715b",
+      "source_bytes": 284557,
+      "source_lines": 2670,
+      "source_line_ranges": [
+        {
+          "start": 428,
+          "end": 428
+        },
+        {
+          "start": 445,
+          "end": 445
+        },
+        {
+          "start": 2509,
+          "end": 2558
+        }
+      ],
+      "stored_sha256": "894b927aaa1e1affe4965656729e73383dca659afa4954e2ab81bb0ae41c80e5",
+      "stored_bytes": 5512,
+      "stored_normalization": "selected source ranges; ANSI and trailing ASCII whitespace removed; LF with source range headers; one LF at EOF",
+      "test_summary": "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 36.77s"
+    },
+    {
+      "file": "contracts-linux.log",
+      "job_id": 125085266081,
+      "job_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266081",
+      "source_local_filename": "xiao-b1-audit-ci-default.log",
+      "source_sha256": "5d329ab28fcb0b2a7c6aeeb294f79b53c8567073422ec94d1f0ff810d4ae3a92",
+      "source_bytes": 276846,
+      "source_lines": 3319,
+      "source_line_ranges": [
+        {
+          "start": 1159,
+          "end": 1172
+        }
+      ],
+      "stored_sha256": "5db0be00c5ce924ad779b0a029ccc78f6a7fde7e354ef8cbf0c1de5876b11051",
+      "stored_bytes": 1294,
+      "stored_normalization": "selected source ranges; ANSI and trailing ASCII whitespace removed; LF with source range headers; one LF at EOF",
+      "test_summary": "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 23.58s"
+    },
+    {
+      "file": "performance-linux.log",
+      "job_id": 125085266081,
+      "job_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266081",
+      "source_local_filename": "xiao-b1-audit-ci-default.log",
+      "source_sha256": "5d329ab28fcb0b2a7c6aeeb294f79b53c8567073422ec94d1f0ff810d4ae3a92",
+      "source_bytes": 276846,
+      "source_lines": 3319,
+      "source_line_ranges": [
+        {
+          "start": 1174,
+          "end": 1180
+        }
+      ],
+      "stored_sha256": "0fb8297ed7e2f992947ca4de72d97209e100d5ff6d5c6b015eaec11f6fec3339",
+      "stored_bytes": 575,
+      "stored_normalization": "selected source ranges; ANSI and trailing ASCII whitespace removed; LF with source range headers; one LF at EOF",
+      "test_summary": "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 29.82s"
+    },
+    {
+      "file": "guards-linux.log",
+      "job_id": 125085266081,
+      "job_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41385483703/job/125085266081",
+      "source_local_filename": "xiao-b1-audit-ci-default.log",
+      "source_sha256": "5d329ab28fcb0b2a7c6aeeb294f79b53c8567073422ec94d1f0ff810d4ae3a92",
+      "source_bytes": 276846,
+      "source_lines": 3319,
+      "source_line_ranges": [
+        {
+          "start": 394,
+          "end": 398
+        }
+      ],
+      "stored_sha256": "203b5cdc889b1fa76aafa2ee3fbdf6993ec7632f661c25a80beef4184a6abe6d",
+      "stored_bytes": 420,
+      "stored_normalization": "selected source ranges; ANSI and trailing ASCII whitespace removed; LF with source range headers; one LF at EOF",
+      "test_summary": null
+    }
+  ],
+  "remaining": [
+    "four libraries/eight entries and codec name collisions",
+    "complete F9/F10 and full incremental memory",
+    "known string release discrepancy",
+    "B1-CLOSE; tutorials and registry remain planned"
+  ]
+}

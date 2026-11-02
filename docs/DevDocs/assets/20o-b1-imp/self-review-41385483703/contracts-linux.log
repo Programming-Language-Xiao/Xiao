@@ -1,0 +1,15 @@
+# source lines 1159-1172
+2026-11-02T03:55:31.5393936Z      Running tests/20o_b1_imp_contract.rs (core/rust/target/debug/deps/20o_b1_imp_contract-f4ed24af58e90e74)
+2026-11-02T03:55:31.5414849Z
+2026-11-02T03:55:31.5415246Z running 9 tests
+2026-11-02T03:55:31.5447536Z test every_implemented_module_is_in_the_active_contract_matrix ... ok
+2026-11-02T03:55:31.5470116Z test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+2026-11-02T03:55:31.5492314Z test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+2026-11-02T03:55:32.2983984Z test colliding_public_names_keep_their_own_module_implementations ... ok
+2026-11-02T03:55:36.5152606Z test every_public_function_requires_its_real_implementation ... ok
+2026-11-02T03:55:41.4053190Z test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+2026-11-02T03:55:53.1766470Z test public_std_aliases_execute_through_the_official_loader ... ok
+2026-11-02T03:55:54.7620782Z test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+2026-11-02T03:55:55.1220226Z test products_execute_and_export_only_the_frozen_names ... ok
+2026-11-02T03:55:55.1220725Z
+2026-11-02T03:55:55.1221142Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 23.58s

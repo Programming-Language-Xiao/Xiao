@@ -1,0 +1,36 @@
+# source lines 3131-3131
+2026-11-02T03:57:00.8709517Z if ! output="$(cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- b1_capabilities_have_vm_golden_outputs --exact --nocapture 2>&1)"; then
+
+# source lines 3146-3177
+2026-11-02T03:57:19.1894775Z      Running tests/20o_b1_probe.rs (core/rust/target/debug/deps/20o_b1_probe-b71a5f1ac38ef579)
+2026-11-02T03:57:19.1895418Z
+2026-11-02T03:57:19.1895553Z running 1 test
+2026-11-02T03:57:19.1896035Z 20O-B0-PROBE module=math backend=vm result=success
+2026-11-02T03:57:19.1896930Z 20O-B0-PROBE module=hex backend=vm result=success
+2026-11-02T03:57:19.1897869Z 20O-B0-PROBE module=base64 backend=vm result=success
+2026-11-02T03:57:19.1898788Z 20O-B0-PROBE module=url backend=vm result=success
+2026-11-02T03:57:19.1899680Z 20O-B0-PROBE module=csv backend=vm result=success
+2026-11-02T03:57:19.1900595Z 20O-B0-PROBE module=fmt backend=vm result=success
+2026-11-02T03:57:19.1901967Z 20O-B0-PROBE module=statistics backend=vm result=success
+2026-11-02T03:57:19.1903085Z 20O-B1-FIX-A-PROBE case=math-extremes backend=vm result=success
+2026-11-02T03:57:19.1903778Z 20O-B1-FIX-A-PROBE case=hex-all-bytes backend=vm result=success
+2026-11-02T03:57:19.1904469Z 20O-B1-FIX-A-PROBE case=base64-tail-bits backend=vm result=success
+2026-11-02T03:57:19.1904962Z 20O-B1-FIX-A-PROBE case=utf8-boundaries backend=vm result=success
+2026-11-02T03:57:19.1905433Z 20O-B1-FIX-A-PROBE case=csv-budget backend=vm result=success
+2026-11-02T03:57:19.1905894Z 20O-B1-FIX-A-PROBE case=fmt-int-min backend=vm result=success
+2026-11-02T03:57:19.1906386Z 20O-B1-FIX-A-PROBE case=statistics-overflow backend=vm result=success
+2026-11-02T03:57:19.1906906Z 20O-B1-FIX-B-PROBE case=default-and-custom backend=vm result=success
+2026-11-02T03:57:19.1907402Z 20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm result=success
+2026-11-02T03:57:19.1907895Z 20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm result=success
+2026-11-02T03:57:19.1908384Z 20O-B1-FIX-B-PROBE case=pending-finally backend=vm result=success
+2026-11-02T03:57:19.1908861Z 20O-B1-FIX-B-PROBE case=dynamic-types backend=vm result=success
+2026-11-02T03:57:19.1909706Z 20O-B1-FIX-B-PROBE case=long-code backend=vm result=success
+2026-11-02T03:57:19.1910184Z 20O-B1-FIX-B-PROBE case=abi-requirements backend=vm result=success
+2026-11-02T03:57:19.1910634Z 20O-B1-IMP-PROBE case=math backend=vm result=success
+2026-11-02T03:57:19.1911050Z 20O-B1-IMP-PROBE case=statistics backend=vm result=success
+2026-11-02T03:57:19.1912060Z 20O-B1-IMP-PROBE case=fmt backend=vm result=success
+2026-11-02T03:57:19.1912591Z 20O-B1-IMP-PROBE case=aliases backend=vm result=success
+2026-11-02T03:57:19.1913086Z 20O-B1-IMP-PROBE case=string-index backend=vm result=success
+2026-11-02T03:57:19.1913530Z test b1_capabilities_have_vm_golden_outputs ... ok
+2026-11-02T03:57:19.1913773Z
+2026-11-02T03:57:19.1914074Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 18.25s

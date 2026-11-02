@@ -169,7 +169,19 @@
       "sha256_lf": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8"
     }
   ],
-  "remote_runs": [],
+  "remote_runs": [
+    {
+      "run_id": 41385483703,
+      "conclusion": "success",
+      "scope": "three-library self-review fixes, six maintenance jobs passed",
+      "evidence": "../self-review-41385483703/evidence.json"
+    },
+    {
+      "run_id": 41385483801,
+      "conclusion": "success",
+      "scope": "workspace gates"
+    }
+  ],
   "remaining": [
     "four libraries/eight entries and codec name collisions",
     "complete F9/F10 and full incremental memory",
