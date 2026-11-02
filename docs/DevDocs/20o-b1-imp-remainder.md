@@ -91,7 +91,8 @@ format_record([str] fields) -> str
 
 ### B1-CLOSE（独立后续）
 
-只有在 20/20、F9/F10、释放差异和本阶段证据全部满足后才进入：
+执行细则见 [七库收口规划](20o-b1-closeout-plan.md)。只有在 20/20、F9/F10、释放差异和
+本阶段证据全部满足后才进入：
 
 - 三平台维护回归、完整 workspace/clippy/fmt/docs/usedocs/layout/覆盖率；
 - 用实际 run/job 更新 B1 文档；

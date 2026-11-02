@@ -103,6 +103,9 @@ Runtime/ABI 1.18/测试/证据的逐层步骤）。本页只保留批次边界�
 
 ### B1-CLOSE：证据收口
 
+**执行细则**：[七库收口规划](20o-b1-closeout-plan.md)（最终证据、教程/registry 升级、
+完整门禁与收口边界）。本页只保留收口条件。
+
 1. 三平台维护回归：默认 workspace、VM 精确、原生精确、移除/归档/教程示例；
 2. 完整 workspace gates、clippy、fmt、docs/usedocs/layout、覆盖率；
 3. 用实际运行号和 job 链接更新 B1 文档；
