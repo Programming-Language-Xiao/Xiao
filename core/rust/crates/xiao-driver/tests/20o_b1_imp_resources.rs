@@ -30,6 +30,15 @@ fn assert_output(source: String, expected: &str) {
 }
 
 #[test]
+/// 两端进制边界与左右填充均按参数域先报错，无需填充也不能跳过 fill 校验。
+fn fmt_checks_both_radix_bounds_and_padding_argument_domains() {
+    assert_output(
+        "from std.fmt import format_int, pad_left, pad_right\nfor radix in [1, 37]\n    try\n        print(format_int(0, radix))\n    catch invalid_radix as Error\n        print(error_code(invalid_radix))\ntry\n    print(pad_left(\"x\", -1, \"\"))\ncatch left_width as Error\n    print(error_code(left_width))\ntry\n    print(pad_right(\"x\", -1, \"\"))\ncatch right_width as Error\n    print(error_code(right_width))\ntry\n    print(pad_left(\"x\", 0, \"\"))\ncatch left_fill as Error\n    print(error_code(left_fill))\ntry\n    print(pad_right(\"x\", 0, \"ab\"))\ncatch right_fill as Error\n    print(error_code(right_fill))\n".to_owned(),
+        "FMT_INVALID_RADIX\nFMT_INVALID_RADIX\nFMT_INVALID_WIDTH\nFMT_INVALID_WIDTH\nFMT_INVALID_FILL\nFMT_INVALID_FILL\n",
+    );
+}
+
+#[test]
 /// 编码与解码同时命中 65,536 项/131,072 字节的等号边界，解码逐项核对独立全字节模式。
 fn hex_accepts_the_frozen_maximum_input_and_output() {
     let all_hex = "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff";
