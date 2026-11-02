@@ -1,0 +1,60 @@
+2026-11-02T15:33:11.1662160Z rustc 1.96.0 (ac68faa20 2026-05-25)
+2026-11-02T15:33:11.1662880Z binary: rustc
+2026-11-02T15:33:11.1663600Z commit-hash: ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96
+2026-11-02T15:33:11.1664490Z commit-date: 2026-05-25
+2026-11-02T15:33:11.1665080Z host: aarch64-apple-darwin
+2026-11-02T15:33:11.1665710Z release: 1.96.0
+2026-11-02T15:33:11.1679960Z LLVM version: 22.1.2
+2026-11-02T15:33:11.1723540Z Apple M1 (Virtual)
+2026-11-02T15:33:11.2818470Z    Compiling serde_json v1.0.151
+2026-11-02T15:33:11.2841800Z    Compiling shlex v2.0.1
+2026-11-02T15:33:11.2854310Z    Compiling find-msvc-tools v0.1.14
+2026-11-02T15:33:11.2957290Z    Compiling zeroize v1.9.0
+2026-11-02T15:33:11.5647050Z    Compiling cc v1.5.1
+2026-11-02T15:33:11.7224980Z    Compiling rustls-pki-types v1.15.1
+2026-11-02T15:33:11.7326890Z    Compiling getrandom v0.2.17
+2026-11-02T15:33:11.9723630Z    Compiling httparse v1.10.1
+2026-11-02T15:33:12.2454950Z    Compiling untrusted v0.9.0
+2026-11-02T15:33:12.3576100Z    Compiling xiao-standard-library v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-standard-library)
+2026-11-02T15:33:12.5004510Z    Compiling rustls v0.23.45
+2026-11-02T15:33:12.5451620Z    Compiling crc32fast v1.5.2
+2026-11-02T15:33:12.6574860Z    Compiling log v0.4.34
+2026-11-02T15:33:12.7661030Z    Compiling bytes v1.12.1
+2026-11-02T15:33:13.1198550Z    Compiling xiao-i18n v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-i18n)
+2026-11-02T15:33:13.1541460Z    Compiling ring v0.17.14
+2026-11-02T15:33:13.6260480Z    Compiling http v1.5.0
+2026-11-02T15:33:15.1952010Z    Compiling xiao-diagnostics v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-diagnostics)
+2026-11-02T15:33:15.4386760Z    Compiling xiao-lock v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-lock)
+2026-11-02T15:33:16.8422240Z    Compiling xiao-syntax v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-syntax)
+2026-11-02T15:33:17.7552940Z    Compiling xiao-types v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-types)
+2026-11-02T15:33:18.1184490Z    Compiling xiao-modules v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-modules)
+2026-11-02T15:33:23.3125240Z    Compiling xiao-lifetime v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-lifetime)
+2026-11-02T15:33:25.6826930Z    Compiling xiao-ir v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-ir)
+2026-11-02T15:33:28.4793700Z    Compiling rustls-webpki v0.103.15
+2026-11-02T15:33:31.9520790Z    Compiling once_cell v1.21.4
+2026-11-02T15:33:32.2099780Z    Compiling base64 v0.23.1
+2026-11-02T15:33:32.8738890Z    Compiling xiao-optimizer v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-optimizer)
+2026-11-02T15:33:36.5003150Z    Compiling xiao-bytecode v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-bytecode)
+2026-11-02T15:33:38.5137690Z    Compiling adler2 v2.0.1
+2026-11-02T15:33:38.7518180Z    Compiling subtle v2.6.1
+2026-11-02T15:33:38.9497930Z    Compiling simd-adler32 v0.3.10
+2026-11-02T15:33:40.4562040Z    Compiling miniz_oxide v0.9.1
+2026-11-02T15:33:49.2771700Z    Compiling xiao-runtime v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-runtime)
+2026-11-02T15:34:11.5591400Z    Compiling ureq-proto v0.6.4
+2026-11-02T15:34:14.1634330Z    Compiling xiao-config v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-config)
+2026-11-02T15:34:15.6450600Z    Compiling webpki-roots v1.0.9
+2026-11-02T15:34:15.7684690Z    Compiling filetime v0.2.29
+2026-11-02T15:34:15.9780060Z    Compiling percent-encoding v2.3.2
+2026-11-02T15:34:16.1789250Z    Compiling utf8-zero v0.8.1
+2026-11-02T15:34:16.3440090Z    Compiling ureq v3.4.2
+2026-11-02T15:34:17.4305800Z    Compiling tar v0.4.46
+2026-11-02T15:34:18.3763610Z    Compiling flate2 v1.1.10
+2026-11-02T15:34:18.9002630Z    Compiling xiao-vm v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-vm)
+2026-11-02T15:34:19.8916760Z    Compiling xiao-artifacts v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-artifacts)
+2026-11-02T15:34:23.5767450Z    Compiling xiao-codegen-llvm v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-codegen-llvm)
+2026-11-02T15:34:23.9476310Z    Compiling xiao-xar v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-xar)
+2026-11-02T15:34:30.8413200Z    Compiling xiao-package v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-package)
+2026-11-02T15:34:53.3626810Z    Compiling xiao-driver v0.1.0 (/Users/runner/work/Xiao/Xiao/core/rust/crates/xiao-driver)
+2026-11-02T15:35:25.8185130Z     Finished `release` profile [optimized] target(s) in 2m 14s
+2026-11-02T15:35:25.8272420Z      Running `core/rust/target/release/examples/b1_library_performance --backend native --case all --phase all --output b1-f10-native.json`
+2026-11-02T15:35:25.8365790Z B1-PERF-ARTIFACTS /var/folders/y3/p6x0rn5562l5qyxy7x6jqrsc0000gn/T/xiao-b1-performance-26737-1793633725836042000

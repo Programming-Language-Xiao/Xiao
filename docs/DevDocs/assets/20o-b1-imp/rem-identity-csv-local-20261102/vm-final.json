@@ -1,0 +1,228 @@
+{
+  "backend": "vm",
+  "codegen_version": 20,
+  "complete": true,
+  "failed": false,
+  "memory_method": "OS resident high-water mark minus current resident baseline, conservative upper bound that may include previous high-water mark; not allocator-exact",
+  "phase": "all",
+  "protocol": "bounded geometric calibration to 100ms, then one warmup and five measured samples; each batch must reach 50ms; compile/input/validation/terminal I/O excluded; marker formatting/cleanup included as a conservative time upper bound",
+  "records": [
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 3502080,
+            "seconds": 2.943241
+          }
+        }
+      ],
+      "case": "csv.parse_multiline",
+      "doubling_ratio": null,
+      "function": "parse_record",
+      "input_bytes_or_items": 65536,
+      "median_seconds": 3.4134892,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 4,
+      "passed": true,
+      "product_sha256": "58001e847de6bc1664f849227e89ae711fa4d1495185067d54352bb27b528159",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 4091904,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4067328,
+          "seconds": 3.4399967
+        },
+        {
+          "resident_increment_upper_bytes": 4001792,
+          "seconds": 3.4000027
+        },
+        {
+          "resident_increment_upper_bytes": 3977216,
+          "seconds": 3.4512537
+        },
+        {
+          "resident_increment_upper_bytes": 4091904,
+          "seconds": 3.3557642
+        },
+        {
+          "resident_increment_upper_bytes": 4030464,
+          "seconds": 3.4134892
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 4173824,
+        "seconds": 3.3418409000000002
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4661248,
+            "seconds": 0.2244566
+          }
+        }
+      ],
+      "case": "csv.parse_multiline",
+      "doubling_ratio": null,
+      "function": "parse_record",
+      "input_bytes_or_items": 4096,
+      "median_seconds": 0.2100756,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "58001e847de6bc1664f849227e89ae711fa4d1495185067d54352bb27b528159",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 4583424,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4583424,
+          "seconds": 0.2100756
+        },
+        {
+          "resident_increment_upper_bytes": 4583424,
+          "seconds": 0.2115896
+        },
+        {
+          "resident_increment_upper_bytes": 4583424,
+          "seconds": 0.2109112
+        },
+        {
+          "resident_increment_upper_bytes": 4583424,
+          "seconds": 0.2077033
+        },
+        {
+          "resident_increment_upper_bytes": 4579328,
+          "seconds": 0.2069176
+        }
+      ],
+      "scale": 4096,
+      "warmup": {
+        "resident_increment_upper_bytes": 4620288,
+        "seconds": 0.2297542
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4739072,
+            "seconds": 0.4437196
+          }
+        }
+      ],
+      "case": "csv.parse_multiline",
+      "doubling_ratio": 2.05470030788916,
+      "function": "parse_record",
+      "input_bytes_or_items": 8192,
+      "median_seconds": 0.4316424,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "58001e847de6bc1664f849227e89ae711fa4d1495185067d54352bb27b528159",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 4620288,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4620288,
+          "seconds": 0.4409462
+        },
+        {
+          "resident_increment_upper_bytes": 4612096,
+          "seconds": 0.4410525
+        },
+        {
+          "resident_increment_upper_bytes": 4612096,
+          "seconds": 0.4153712
+        },
+        {
+          "resident_increment_upper_bytes": 4603904,
+          "seconds": 0.4316424
+        },
+        {
+          "resident_increment_upper_bytes": 4599808,
+          "seconds": 0.4186813
+        }
+      ],
+      "scale": 8192,
+      "warmup": {
+        "resident_increment_upper_bytes": 4698112,
+        "seconds": 0.431475
+      }
+    },
+    {
+      "backend": "vm",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 4153344,
+            "seconds": 0.8996468
+          }
+        }
+      ],
+      "case": "csv.parse_multiline",
+      "doubling_ratio": 1.9386892946568735,
+      "function": "parse_record",
+      "input_bytes_or_items": 16384,
+      "median_seconds": 0.8368205,
+      "module": "csv",
+      "optimization": null,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "58001e847de6bc1664f849227e89ae711fa4d1495185067d54352bb27b528159",
+      "repeats": 1,
+      "resident_increment_upper_bytes": 4276224,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 4276224,
+          "seconds": 0.8600133
+        },
+        {
+          "resident_increment_upper_bytes": 4214784,
+          "seconds": 0.8529004
+        },
+        {
+          "resident_increment_upper_bytes": 4210688,
+          "seconds": 0.8357641
+        },
+        {
+          "resident_increment_upper_bytes": 4206592,
+          "seconds": 0.8266412
+        },
+        {
+          "resident_increment_upper_bytes": 4202496,
+          "seconds": 0.8368205
+        }
+      ],
+      "scale": 16384,
+      "warmup": {
+        "resident_increment_upper_bytes": 3964928,
+        "seconds": 0.9055467
+      }
+    }
+  ],
+  "runtime_abi_encoded": 65554,
+  "rust_debug_assertions": false,
+  "scope": "controlled B1 measurement, not acceptance of lifecycle",
+  "selected": "csv.parse_multiline",
+  "target": "x86_64-pc-windows-msvc"
+}

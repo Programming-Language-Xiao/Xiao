@@ -1,5 +1,9 @@
 # REM最终功能、释放与F10矩阵
 
+> 历史快照：本目录来自14908c64，早于df27ca75的目录/源码身份守卫。文件名保留原记录，
+> 旧721条不作为修复后最终F10证据；摘要字段一致不能单独证明旧运行没有复用程序或覆盖加载根。
+> 已采用df27ca75身份工具完整重跑；首轮41457598606失败，优化后另跑41464439400，见 [当前对账](../../../20o-b1-rem-evidence.md)。原始样本与摘要不改写。
+
 工程期：20O-B1-IMP-REM-C。职责：保存14908c64的四份完整报告、三平台精确点与独立重算。
 状态：维护回归41433194454第二次尝试成功，同提交工作区门禁41433190291成功。
 边界：这是REM退出证据；七库教程/registry保持planned，B1-CLOSE独立后续，19/11/22债务不核销。
@@ -37,10 +41,11 @@ Homebrew clang23.1.4。四份profile.log保存CPU/工具链/构建段，清单�
 
 [audit.ps1](audit.ps1)要求四份完整报告与准确平台矩阵，检查103/206条唯一规模/优化键、
 20个公开入口、版本、五批采样、100ms有界校准和产品摘要，独立重算中位数/翻倍比与内存上界。
-当前源码可直接复跑，结果为 [audit.json](audit.json)：
+原提交的核对结果为 [audit.json](audit.json)。复跑历史报告时，须将 `RepositoryRoot` 指向已检出
+14908c64的源码目录；当前CSV已优化，不能用当前产品摘要替代历史源码：
 
 ```powershell
-pwsh -NoProfile -File docs/DevDocs/assets/20o-b1-imp/rem-final-41433194454/audit.ps1
+pwsh -NoProfile -File docs/DevDocs/assets/20o-b1-imp/rem-final-41433194454/audit.ps1 -RepositoryRoot D:/path/to/14908c64-checkout
 ```
 
 历史重放须对照生产源码14908c64，避免用未来产品修改覆盖原报告的摘要。源码与zip/report原始摘要、

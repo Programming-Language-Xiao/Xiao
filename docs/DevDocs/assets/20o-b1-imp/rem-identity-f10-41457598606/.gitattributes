@@ -1,0 +1,3 @@
+# 保持原始报告和规范化摘录的摘要跨平台可核对。
+*.json text eol=lf
+*.log text eol=lf

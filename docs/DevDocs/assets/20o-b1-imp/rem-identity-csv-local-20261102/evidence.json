@@ -1,0 +1,40 @@
+{
+  "source_head": "44dc9d6efa5e636ee6d83aa9db3722237aae7c43",
+  "tool_code_commit": "df27ca75670cf30bee696bec8c4d96fea31bcf40",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "scope": "本机定向验证，不替代完整721条",
+  "vm_records": 4,
+  "native_records": 8,
+  "vm_max_seconds": 3.4134892,
+  "vm_max_ratio": 2.05470030788916,
+  "native_max_seconds": 0.4290738,
+  "native_max_ratio": 2.022887016459867,
+  "files": [
+    {
+      "file": "vm-final.json",
+      "source_sha256": "52c1c82da667fc07ae758324cc45d272b11b74311a267f70d3f0a901c00d6309",
+      "normalized_sha256": "52c1c82da667fc07ae758324cc45d272b11b74311a267f70d3f0a901c00d6309"
+    },
+    {
+      "file": "vm-final.log",
+      "source_sha256": "14051dd0d895d5b1e9516c3e0bcc056c2ce02be60ca273f392001c16dbfabc3b",
+      "normalized_sha256": "5c2c54bfd974b65c7875029a157af372e358f5f8a93fc69f5a783d3e68e17357"
+    },
+    {
+      "file": "native.json",
+      "source_sha256": "c1ba72ae92c180c953e4a0a3ac21500a2c7c797dac964b4bf4f43353abceb355",
+      "normalized_sha256": "c1ba72ae92c180c953e4a0a3ac21500a2c7c797dac964b4bf4f43353abceb355"
+    },
+    {
+      "file": "native.log",
+      "source_sha256": "cadfeff8186dd5c5936429f7f771deb8b368d9324ddf50281c86e1401769e62e",
+      "normalized_sha256": "9ef04c3e434545392176967d1ff3084daab06453256bdd38d32784cfb7a7fbd7"
+    },
+    {
+      "file": "resources.log",
+      "source_sha256": "f4bb91c5da999634e07b174f02586ca778eb4ef3a98c2d7bbe21e1f965a5b857",
+      "normalized_sha256": "21679c102f01049e5937fc9a8e19f78209f0beb0aef23d8a5d9d22eea85ac844"
+    }
+  ]
+}

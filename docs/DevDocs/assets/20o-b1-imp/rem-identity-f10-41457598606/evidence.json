@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "run_id": 41457598606,
+  "producer_commit": "df27ca75670cf30bee696bec8c4d96fea31bcf40",
+  "identity_guarded": true,
+  "conclusion": "failure",
+  "final_f10_eligible": false,
+  "scope": "df27固定身份工具首轮完整重跑；VM/Windows/Linux完成，macOS166条后因CSV翻倍比3.091295停止；不计通过",
+  "reports": [
+    {
+      "file": "b1-f10-native-Linux.json",
+      "artifact_name": "b1-f10-native-Linux",
+      "source_sha256": "e4585cd2f6481b5ae9fa1501899d32e3afc6debac0ab067a6bb54f9c7631b137",
+      "normalized_sha256": "e4585cd2f6481b5ae9fa1501899d32e3afc6debac0ab067a6bb54f9c7631b137",
+      "complete": true,
+      "failed": false,
+      "records": 206,
+      "max_seconds": 0.450045253,
+      "max_ratio": 2.20365069976217
+    },
+    {
+      "file": "b1-f10-native-macOS.json",
+      "artifact_name": "b1-f10-native-macOS",
+      "source_sha256": "cb11f01f33588c6c85ee83d545cf0397d728a959e94e5c51bf1c0cd07123c855",
+      "normalized_sha256": "cb11f01f33588c6c85ee83d545cf0397d728a959e94e5c51bf1c0cd07123c855",
+      "complete": false,
+      "failed": true,
+      "records": 166,
+      "max_seconds": 0.402503,
+      "max_ratio": 3.091295000853097
+    },
+    {
+      "file": "b1-f10-native-Windows.json",
+      "artifact_name": "b1-f10-native-Windows",
+      "source_sha256": "5eb51be4c3e04eb80c335657c50331914552d99988abd475ac81f6eccef8ce8e",
+      "normalized_sha256": "5eb51be4c3e04eb80c335657c50331914552d99988abd475ac81f6eccef8ce8e",
+      "complete": true,
+      "failed": false,
+      "records": 206,
+      "max_seconds": 0.5474108,
+      "max_ratio": 2.330949551971826
+    },
+    {
+      "file": "b1-f10-vm-Linux.json",
+      "artifact_name": "b1-f10-vm-Linux",
+      "source_sha256": "8351e184679dd8cdc0f55ccab37a616bbedf90d095345866d4b638fd838f8577",
+      "normalized_sha256": "8351e184679dd8cdc0f55ccab37a616bbedf90d095345866d4b638fd838f8577",
+      "complete": true,
+      "failed": false,
+      "records": 103,
+      "max_seconds": 1.791841815,
+      "max_ratio": 2.0478206070337097
+    }
+  ],
+  "failure": {
+    "job_id": 125318170485,
+    "exit_code": 1,
+    "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125318170485/logs",
+    "source_sha256": "4631cd81febb02f04bc2d4617cd94c7e8e2e965bc732aae2b8678cb665b63f1c",
+    "source_lines": [
+      2683,
+      3226,
+      3229,
+      3232,
+      3235,
+      3236,
+      3237,
+      3238,
+      3239,
+      3240,
+      3241,
+      3242,
+      3243,
+      3244,
+      3245,
+      3246,
+      3247
+    ],
+    "excerpt_sha256": "847cec006f6c3e660331c17d0540c34696e6d5b9bc170ddb03ffb1ced705c4b5"
+  }
+}

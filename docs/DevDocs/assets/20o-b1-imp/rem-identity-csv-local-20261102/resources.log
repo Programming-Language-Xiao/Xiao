@@ -1,0 +1,14 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.66s
+     Running tests\20o_b1_imp_resources.rs (core\rust\target\debug\deps\20o_b1_imp_resources-b097e7003ff0b92a.exe)
+
+running 7 tests
+test csv_accepts_the_maximum_field_count ... ok
+test csv_accepts_the_maximum_unicode_record ... ok
+test csv_accepts_the_maximum_quoted_record ... ok
+test csv_parse_budget_and_syntax_priority_is_positional ... ok
+test csv_accepts_the_maximum_multiline_record ... ok
+test csv_accepts_the_maximum_ascii_record ... ok
+test csv_rejects_every_format_budget_dimension ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 68.52s

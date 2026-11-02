@@ -1,0 +1,5 @@
+# 保持证据摘要跨平台可核对；完整原始日志保存在二进制 ZIP 内。
+*.json text eol=lf
+*.log text eol=lf
+*.ps1 text eol=lf
+*.zip binary

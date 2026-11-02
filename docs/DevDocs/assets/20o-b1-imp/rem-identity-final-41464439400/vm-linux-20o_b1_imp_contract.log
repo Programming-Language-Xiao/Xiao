@@ -1,0 +1,17 @@
+2026-11-02T14:46:16.7050824Z      Running tests/20o_b1_imp_contract.rs (core/rust/target/debug/deps/20o_b1_imp_contract-f4ed24af58e90e74)
+2026-11-02T14:46:16.7070467Z
+2026-11-02T14:46:16.7070675Z running 9 tests
+2026-11-02T14:46:16.7099056Z test every_implemented_module_is_in_the_active_contract_matrix ... ok
+2026-11-02T14:46:16.7152737Z test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+2026-11-02T14:46:16.7153894Z test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+2026-11-02T14:46:19.7493242Z test colliding_public_names_keep_their_own_module_implementations ... ok
+2026-11-02T14:46:40.2142969Z test every_public_function_requires_its_real_implementation ... ok
+2026-11-02T14:46:59.6543452Z test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+2026-11-02T14:47:16.7100816Z test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+2026-11-02T14:47:16.7134738Z test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+2026-11-02T14:47:27.1293498Z test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+2026-11-02T14:47:33.0486331Z test products_execute_and_export_only_the_frozen_names ... ok
+2026-11-02T14:47:40.2125965Z test public_std_aliases_execute_through_the_official_loader has been running for over 60 seconds
+2026-11-02T14:47:43.4659126Z test public_std_aliases_execute_through_the_official_loader ... ok
+2026-11-02T14:47:43.4659453Z
+2026-11-02T14:47:43.4659724Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 86.76s

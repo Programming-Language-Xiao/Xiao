@@ -1,0 +1,5 @@
+2026-11-02T14:44:14.1566883Z B1-GUARDS path=default passed=7 total=7
+2026-11-02T14:44:14.1959751Z B1-GUARDS path=Linux passed=7 total=7
+2026-11-02T14:44:14.2365853Z B1-GUARDS path=macOS passed=7 total=7
+2026-11-02T14:44:20.1502841Z B1-GUARDS path=Windows passed=7 total=7
+2026-11-02T14:44:20.1528459Z B1-GUARDS passed=28 total=28; 仅验证计数脚本，不是 VM/native 三平台执行证据。
