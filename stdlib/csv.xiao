@@ -16,23 +16,28 @@ def parse_record(str record) -> [str]
             size = size + 4
         if size > 65536
             raise ResourceError(code = "CSV_LIMIT_EXCEEDED")
+    empty = ""
+    quote = "\""
+    comma = ","
+    carriage_return = "\r"
+    line_feed = "\n"
     result = []
     state = 0
     field_number = 1
     field_bytes = 0
     chunks = []
     chunk_count = 0
-    block = ""
+    block = empty
     block_bytes = 0
-    character = ""
-    data = ""
-    field = ""
+    character = empty
+    data = empty
+    field = empty
     next_chunks = []
     cursor = 0
     while cursor <= count
         at_end = cursor == count
         flush_field = false
-        data = ""
+        data = empty
         if at_end
             if state == 2
                 raise Error(code = "CSV_INVALID_RECORD")
@@ -40,31 +45,31 @@ def parse_record(str record) -> [str]
         else
             character = record[cursor]
             if state == 2
-                if character == "\""
+                if character == quote
                     state = 3
                 else
                     data = character
             elif state == 3
-                if character == "\""
-                    data = "\""
+                if character == quote
+                    data = quote
                     state = 2
-                elif character == ","
+                elif character == comma
                     flush_field = true
                 else
                     raise Error(code = "CSV_INVALID_RECORD")
             else
-                if character == ","
+                if character == comma
                     flush_field = true
-                elif character == "\""
+                elif character == quote
                     if state != 0
                         raise Error(code = "CSV_INVALID_RECORD")
                     state = 2
-                elif character == "\r" or character == "\n"
+                elif character == carriage_return or character == line_feed
                     raise Error(code = "CSV_INVALID_RECORD")
                 else
                     data = character
                     state = 1
-        if data != ""
+        if data != empty
             data_point = int(data)
             width = 1
             if data_point >= 65536
@@ -81,7 +86,7 @@ def parse_record(str record) -> [str]
             if block_bytes >= 256
                 array_push(chunks, block)
                 chunk_count = chunk_count + 1
-                block = ""
+                block = empty
                 block_bytes = 0
         if flush_field
             # 一个分隔逗号已经引入下个字段，不等待后续内容再发现字段数超限。
@@ -90,7 +95,7 @@ def parse_record(str record) -> [str]
             if block_bytes > 0
                 array_push(chunks, block)
                 chunk_count = chunk_count + 1
-            field = ""
+            field = empty
             if chunk_count > 0
                 while chunk_count > 1
                     next_chunks = []
@@ -113,7 +118,7 @@ def parse_record(str record) -> [str]
                 field_bytes = 0
                 chunks = []
                 chunk_count = 0
-                block = ""
+                block = empty
                 block_bytes = 0
         cursor = cursor + 1
     return result
