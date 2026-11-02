@@ -79,3 +79,86 @@ fn base64_checks_actual_decoded_size_after_the_last_quartet() {
         assert_output(source, expected);
     }
 }
+
+/// 一个最大输入调用与独立文字黄金；参数和打印不用于 F10 计时。
+fn url_vector(function: &str, input: &str, expected: &str) {
+    let input = serde_json::to_string(input).unwrap();
+    let expected = serde_json::to_string(expected).unwrap();
+    assert_output(
+        format!("from std.url import {function}\nprint({function}({input}) == {expected})\n"),
+        "true\n",
+    );
+}
+
+#[test]
+/// 保留字符外的全部 ASCII 触发三倍膨胀，实际结果恰好 196,608 字节。
+fn url_encoding_reaches_the_ascii_output_budget() {
+    url_vector(
+        "encode_component",
+        &" ".repeat(65_536),
+        &"%20".repeat(65_536),
+    );
+}
+
+#[test]
+/// 四字节码点的最大输入同样达到编码输出上限。
+fn url_encoding_reaches_the_unicode_output_budget() {
+    url_vector(
+        "encode_component",
+        &"🚀".repeat(16_384),
+        &"%F0%9F%9A%80".repeat(16_384),
+    );
+}
+
+#[test]
+/// 解码最大转义文本，返回恰好 65,536 字节 ASCII。
+fn url_decoding_reaches_the_ascii_result_budget() {
+    url_vector(
+        "decode_component",
+        &"%20".repeat(65_536),
+        &" ".repeat(65_536),
+    );
+}
+
+#[test]
+/// 多码点状态必须在每个四字节序列之间复位，不能丢失边界。
+fn url_decoding_reaches_the_unicode_result_budget() {
+    url_vector(
+        "decode_component",
+        &"%F0%9F%9A%80".repeat(16_384),
+        &"🚀".repeat(16_384),
+    );
+}
+
+#[test]
+/// 有效码点达到结果上限+1 即失败；之后的坏转义不覆盖首错，无效当前码点则先报 UTF-8。
+fn url_limits_and_mixed_error_order_are_streamed() {
+    for (text, class, code) in [
+        (
+            "x".repeat(65_537) + "%G0",
+            "ResourceError",
+            "URL_LIMIT_EXCEEDED",
+        ),
+        (
+            "x".repeat(65_536) + "%41",
+            "ResourceError",
+            "URL_LIMIT_EXCEEDED",
+        ),
+        ("x".repeat(65_536) + "%FF", "Error", "URL_INVALID_UTF8"),
+    ] {
+        let input = serde_json::to_string(&text).unwrap();
+        assert_output(
+            format!(
+                "from std.url import decode_component\ntry\n    print(decode_component({input}))\ncatch failure as {class}\n    print(error_code(failure))\n"
+            ),
+            &format!("{code}\n"),
+        );
+    }
+    let input = serde_json::to_string(&("🚀".repeat(16_384) + "x")).unwrap();
+    assert_output(
+        format!(
+            "from std.url import encode_component\ntry\n    print(encode_component({input}))\ncatch failure as ResourceError\n    print(error_code(failure))\n"
+        ),
+        "URL_LIMIT_EXCEEDED\n",
+    );
+}

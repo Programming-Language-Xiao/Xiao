@@ -5,24 +5,26 @@
 > 本页只规划 math/statistics/fmt 之后的四库、F9/F10 和收口前置。
 > 不新增 intrinsic、ABI、私有 helper、公开 `dynamic` 或语言语法。
 >
-> 状态：**REM-A 编码对已落地，当前为 16/20 草稿（2026-11-02）**。
+> 状态：**REM-A 已落地，REM-B 的 URL 已落地，当前为 18/20 草稿（2026-11-02）**。
 > 基线为已推送的 `90ea5a5a`；三模块/12 入口的 VM/三平台证据见
 > [41385483703](assets/20o-b1-imp/self-review-41385483703/README.md)。
-> 当前仍缺 url/csv 四个入口、完整 F9/F10、释放差异和 B1-CLOSE。
+> 当前仍缺 csv 两个入口、完整 F9/F10、释放差异和 B1-CLOSE。
 > 七库教程与 registry 条目继续保持 `planned`，直到 B1-CLOSE。
 
 hex 已通过本机九项契约与原生 O0/O3；Base64 已通过本机九项契约、两模式最大合法输入、
 实际解码长度超限及尾位优先级；原生 O0/O3 精确目标已通过。两库同名入口的别名和函数内导入已加入共享案例。
 这些仍是本机功能/资源证据，完整 F10 与本轮三平台尚待后续执行。
+URL 已通过六模块九项契约、全部 UTF-8 临界/非法向量和 ASCII/四字节字符最大资源边界，
+原生 O0/O3 精确目标已通过。
 
 ## 一、当前事实与入口
 
 | 项 | 当前状态 | 依据 |
 | --- | --- | --- |
-| 已落地产品 | math/statistics/fmt/hex/base64，5 模块、16/20 入口；编码对目前仅本机证据 | [B1-IMP 状态](20o-b1-imp-seven-libraries.md) |
+| 已落地产品 | math/statistics/fmt/hex/base64/url，6 模块、18/20 入口；本轮三模块仅本机证据 | [B1-IMP 状态](20o-b1-imp-seven-libraries.md) |
 | 已修复前置 | std 别名、固定命名调用、模块绑定、字符串码点索引 | [返工记录](20o-b1-imp-blockers.md) |
 | 三平台证据 | `41385483703` 六作业 / `41385483801` 工作区门禁通过 | 本机及远端证据 |
-| 未实现入口 | url、csv 共 4 项 | [B1 契约 §三](20o-b1-freeze-draft.md#三七库已确认签名与调用边界f2f8f12) |
+| 未实现入口 | csv 共 2 项 | [B1 契约 §三](20o-b1-freeze-draft.md#三七库已确认签名与调用边界f2f8f12) |
 | 性能/生命周期 | F10 只覆盖 fmt 部分；原生/VM 字符串释放差异未收口 | [返工记录 §三/§四](20o-b1-imp-blockers.md#三字符串成本与-fmt-最大输出) |
 | 教程/registry | 七库仍 `planned` | `docs/module-registry.json` |
 

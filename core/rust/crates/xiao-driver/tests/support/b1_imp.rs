@@ -7,6 +7,7 @@ pub const PRODUCTS: &[(&str, &[&str])] = &[
     ("fmt", &["pad_left", "pad_right", "format_int"]),
     ("hex", &["encode", "decode"]),
     ("base64", &["encode", "decode"]),
+    ("url", &["encode_component", "decode_component"]),
 ];
 
 /// 辅助回归不计入产品模块或公开入口数。

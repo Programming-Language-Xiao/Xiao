@@ -1,0 +1,223 @@
+# B1 UTF-8 组件转义；逐转义语法、UTF-8 状态及结果预算从左到右检查。
+
+def encode_component(str text) -> str
+    size = 0
+    for precheck_character in text
+        point = int(precheck_character)
+        if point < 128
+            size = size + 1
+        elif point < 2048
+            size = size + 2
+        elif point < 65536
+            size = size + 3
+        else
+            size = size + 4
+        if size > 65536
+            raise ResourceError(code = "URL_LIMIT_EXCEEDED")
+    digits = "0123456789ABCDEF"
+    chunks = []
+    chunk_count = 0
+    block = ""
+    block_bytes = 0
+    result_bytes = 0
+    for character in text
+        codepoint = int(character)
+        fragment = ""
+        fragment_bytes = 0
+        if (codepoint >= 65 and codepoint <= 90) or (codepoint >= 97 and codepoint <= 122) or (codepoint >= 48 and codepoint <= 57) or codepoint == 45 or codepoint == 46 or codepoint == 95 or codepoint == 126
+            fragment = character
+            fragment_bytes = 1
+        else
+            packed = codepoint
+            divisor = 1
+            width = 1
+            if codepoint >= 65536
+                packed = (240 + codepoint // 262144) * 16777216 + (128 + codepoint // 4096 % 64) * 65536 + (128 + codepoint // 64 % 64) * 256 + 128 + codepoint % 64
+                divisor = 16777216
+                width = 4
+            elif codepoint >= 2048
+                packed = (224 + codepoint // 4096) * 65536 + (128 + codepoint // 64 % 64) * 256 + 128 + codepoint % 64
+                divisor = 65536
+                width = 3
+            elif codepoint >= 128
+                packed = (192 + codepoint // 64) * 256 + 128 + codepoint % 64
+                divisor = 256
+                width = 2
+            while divisor > 0
+                byte = packed // divisor % 256
+                fragment = fragment + "%" + digits[byte // 16] + digits[byte % 16]
+                divisor = divisor // 256
+            fragment_bytes = width * 3
+        result_bytes = result_bytes + fragment_bytes
+        if result_bytes > 196608
+            raise ResourceError(code = "URL_LIMIT_EXCEEDED")
+        block = block + fragment
+        block_bytes = block_bytes + fragment_bytes
+        if block_bytes >= 256
+            array_push(chunks, block)
+            chunk_count = chunk_count + 1
+            block = ""
+            block_bytes = 0
+    if block_bytes > 0
+        array_push(chunks, block)
+        chunk_count = chunk_count + 1
+    if chunk_count == 0
+        return ""
+    while chunk_count > 1
+        next_chunks = []
+        next_count = 0
+        index = 0
+        while index < chunk_count
+            if index + 1 < chunk_count
+                array_push(next_chunks, str(chunks[index]) + str(chunks[index + 1]))
+            else
+                array_push(next_chunks, str(chunks[index]))
+            next_count = next_count + 1
+            index = index + 2
+        chunks = next_chunks
+        chunk_count = next_count
+    return str(chunks[0])
+
+def decode_component(str text) -> str
+    size = 0
+    count = 0
+    for precheck_character in text
+        point = int(precheck_character)
+        count = count + 1
+        if point < 128
+            size = size + 1
+        elif point < 2048
+            size = size + 2
+        elif point < 65536
+            size = size + 3
+        else
+            size = size + 4
+        if size > 196608
+            raise ResourceError(code = "URL_LIMIT_EXCEEDED")
+    chunks = []
+    chunk_count = 0
+    block = ""
+    block_bytes = 0
+    result_bytes = 0
+    cursor = 0
+    needed = 0
+    accumulator = 0
+    minimum = 0
+    sequence_width = 0
+    lower = 128
+    upper = 191
+    while cursor < count
+        character = text[cursor]
+        fragment = ""
+        fragment_bytes = 0
+        if character == "%"
+            if cursor + 2 >= count
+                raise Error(code = "URL_INVALID_ESCAPE")
+            high_point = int(text[cursor + 1])
+            high = 0
+            if high_point >= 48 and high_point <= 57
+                high = high_point - 48
+            elif high_point >= 65 and high_point <= 70
+                high = high_point - 55
+            elif high_point >= 97 and high_point <= 102
+                high = high_point - 87
+            else
+                raise Error(code = "URL_INVALID_ESCAPE")
+            low_point = int(text[cursor + 2])
+            low = 0
+            if low_point >= 48 and low_point <= 57
+                low = low_point - 48
+            elif low_point >= 65 and low_point <= 70
+                low = low_point - 55
+            elif low_point >= 97 and low_point <= 102
+                low = low_point - 87
+            else
+                raise Error(code = "URL_INVALID_ESCAPE")
+            byte = high * 16 + low
+            cursor = cursor + 3
+            if needed == 0
+                if byte < 128
+                    fragment = chr(byte)
+                    fragment_bytes = 1
+                elif byte >= 194 and byte <= 223
+                    accumulator = byte - 192
+                    needed = 1
+                    minimum = 128
+                    sequence_width = 2
+                elif byte >= 224 and byte <= 239
+                    accumulator = byte - 224
+                    needed = 2
+                    minimum = 2048
+                    sequence_width = 3
+                    if byte == 224
+                        lower = 160
+                    elif byte == 237
+                        upper = 159
+                elif byte >= 240 and byte <= 244
+                    accumulator = byte - 240
+                    needed = 3
+                    minimum = 65536
+                    sequence_width = 4
+                    if byte == 240
+                        lower = 144
+                    elif byte == 244
+                        upper = 143
+                else
+                    raise Error(code = "URL_INVALID_UTF8")
+            else
+                if byte < lower or byte > upper
+                    raise Error(code = "URL_INVALID_UTF8")
+                accumulator = accumulator * 64 + byte - 128
+                needed = needed - 1
+                lower = 128
+                upper = 191
+                if needed == 0
+                    if accumulator < minimum or accumulator > 1114111 or (accumulator >= 55296 and accumulator <= 57343)
+                        raise Error(code = "URL_INVALID_UTF8")
+                    fragment = chr(accumulator)
+                    fragment_bytes = sequence_width
+        else
+            if needed > 0
+                raise Error(code = "URL_INVALID_UTF8")
+            fragment = character
+            raw_point = int(character)
+            fragment_bytes = 1
+            if raw_point >= 65536
+                fragment_bytes = 4
+            elif raw_point >= 2048
+                fragment_bytes = 3
+            elif raw_point >= 128
+                fragment_bytes = 2
+            cursor = cursor + 1
+        if fragment_bytes > 0
+            result_bytes = result_bytes + fragment_bytes
+            if result_bytes > 65536
+                raise ResourceError(code = "URL_LIMIT_EXCEEDED")
+            block = block + fragment
+            block_bytes = block_bytes + fragment_bytes
+            if block_bytes >= 256
+                array_push(chunks, block)
+                chunk_count = chunk_count + 1
+                block = ""
+                block_bytes = 0
+    if needed > 0
+        raise Error(code = "URL_INVALID_UTF8")
+    if block_bytes > 0
+        array_push(chunks, block)
+        chunk_count = chunk_count + 1
+    if chunk_count == 0
+        return ""
+    while chunk_count > 1
+        next_chunks = []
+        next_count = 0
+        index = 0
+        while index < chunk_count
+            if index + 1 < chunk_count
+                array_push(next_chunks, str(chunks[index]) + str(chunks[index + 1]))
+            else
+                array_push(next_chunks, str(chunks[index]))
+            next_count = next_count + 1
+            index = index + 2
+        chunks = next_chunks
+        chunk_count = next_count
+    return str(chunks[0])
