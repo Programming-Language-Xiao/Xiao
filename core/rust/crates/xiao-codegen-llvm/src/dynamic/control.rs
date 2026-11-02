@@ -203,15 +203,37 @@ impl<'a> DynamicGenerator<'a> {
                         }
                     }
                     if let Some(selected) = &item.selected {
+                        let module_function = self
+                            .module_function_definitions
+                            .get(&(module_identity.clone(), selected.text.clone()))
+                            .copied();
+                        if let Some(function) = module_function {
+                            // 无别名的选择导入也必须按模块身份绑定，不能沿用其它模块的同名函数。
+                            self.function_definitions
+                                .insert(item.binding.text.clone(), function);
+                            continue;
+                        }
+                        if module_identity.starts_with("stdlib.")
+                            && self.program.modules.iter().any(|module| {
+                                module.name == module_identity
+                                    && module.symbols.iter().any(|symbol| {
+                                        symbol.name == selected.text && symbol.kind == "function"
+                                    })
+                            })
+                        {
+                            return Err(CodegenError::Unsupported {
+                                feature: format!(
+                                    "官方函数 {module_identity}.{} 未静态链接",
+                                    selected.text
+                                ),
+                                span: Some(statement.span),
+                            });
+                        }
                         if selected.text != item.binding.text
                             || selected.backticked != item.binding.backticked
                         {
-                            let module_function = self
-                                .module_function_definitions
-                                .get(&(module_identity.clone(), selected.text.clone()))
-                                .copied();
-                            if let Some(function) = module_function
-                                .or_else(|| self.function_definitions.get(&selected.text).copied())
+                            if let Some(function) =
+                                self.function_definitions.get(&selected.text).copied()
                             {
                                 // 静态链接的标准库函数没有运行时值槽；把别名
                                 // 直接映射到同一个函数定义，避免把函数名误当

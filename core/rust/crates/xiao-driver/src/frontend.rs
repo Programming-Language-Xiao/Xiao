@@ -825,6 +825,8 @@ fn standard_module_function_signatures(
                 .with_type_parameter_ids(generic_ids),
             );
         }
+        // 公共别名与规范身份消费同一份源码接口，不能在 std 路径退化成 Dynamic。
+        modules.insert(format!("std.{module}"), signatures.clone());
         modules.insert(format!("{STANDARD_LIBRARY_NAMESPACE}.{module}"), signatures);
     }
     let concurrent_span = SourceSpan::new(0, 0).expect("空源码区间必须有效");

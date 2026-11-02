@@ -2,6 +2,9 @@
 
 工程期 10A。
 
+`stdlib_bindings.rs` 用独立原始 IR 核对同名官方函数的无别名导入、模块内调用、
+加载顺序与真实函数体移除；覆盖三个目标，不依赖七库产品实现。
+
 22E 的公开并发元数据与五个教程例由 `xiao-driver/tests/22e_release.rs` 的独立 ignored
 用例在三平台精确运行，覆盖实际节、strip 和旧 Runtime 拒绝；格式/容器拒绝另由
 `src/native_metadata_tests.rs` 验证。公开构建现在使用同一元数据门禁。

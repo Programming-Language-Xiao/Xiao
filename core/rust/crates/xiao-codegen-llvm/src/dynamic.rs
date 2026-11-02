@@ -288,6 +288,7 @@ impl<'a> DynamicGenerator<'a> {
         let functions = self
             .function_definitions
             .values()
+            .chain(self.module_function_definitions.values())
             .copied()
             .filter(|statement| {
                 // 不用源码区间去重：不同模块可以合法拥有相同的局部 span，
@@ -530,6 +531,14 @@ impl<'a> DynamicGenerator<'a> {
             .find(|scope| scope.kind == "function" && scope.span == statement.span)
             .map(|scope| scope.id);
         generator.function_definitions = self.function_definitions.clone();
+        // 模块函数的未限定内部调用属于自身模块，不能继承入口最后导入的同名绑定。
+        for ((module, name), function) in &self.module_function_definitions {
+            if module == &frame_module {
+                generator
+                    .function_definitions
+                    .insert(name.clone(), function);
+            }
+        }
         generator.module_function_definitions = self.module_function_definitions.clone();
         generator.method_definitions = self.method_definitions.clone();
         generator.table_initializers = self.table_initializers.clone();

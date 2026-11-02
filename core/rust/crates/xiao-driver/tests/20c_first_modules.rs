@@ -85,7 +85,8 @@ for character in text
 "#;
 
 /// 独立码点表含 NUL、组合字符、BOM；越界样例另在 B1 精确语义目标中执行。
-const STRING_INDEX_STDOUT: &str = "65\n0\n38634\n128512\n65279\n65\n0\n38634\n128512\n101\n769\n65279\n";
+const STRING_INDEX_STDOUT: &str =
+    "65\n0\n38634\n128512\n65279\n65\n0\n38634\n128512\n101\n769\n65279\n";
 
 /// 为单个模块调用用例建立隔离项目，并在用例结束后安全清理。
 struct TestProject(PathBuf);
@@ -425,6 +426,39 @@ fn fixed_named_calls_preserve_argument_evaluation_and_binding() {
                 .any(|diagnostic| diagnostic.code() == "X04-TYPE-002"),
             "{call}: {error:?}"
         );
+    }
+}
+
+#[test]
+/// 公共 std 别名与规范路径必须具有相同的完整签名，不能以动态调用接受非法参数。
+fn std_aliases_preserve_imported_function_contracts() {
+    for namespace in ["std", "stdlib"] {
+        for source in [
+            format!("from {namespace}.text import length\nlength(1)\n"),
+            format!("from {namespace}.text import length as measure\nmeasure()\n"),
+            format!("from {namespace}.text import length as measure\nmeasure(missing = \"x\")\n"),
+            format!("import {namespace}.text as text\ntext.length(1)\n"),
+            format!(
+                "def measure() -> int\n    from {namespace}.text import length\n    return length(1)\nmeasure()\n"
+            ),
+        ] {
+            let error = FrontendCompiler::new().compile(&FrontendRequest::from_text(&source));
+            let Err(error) = error else {
+                panic!("非法调用未拒绝：{source}");
+            };
+            assert!(
+                error
+                    .diagnostics()
+                    .iter()
+                    .any(|item| item.code() == "X04-TYPE-002"),
+                "{source}: {error:?}"
+            );
+        }
+        let source =
+            format!("from {namespace}.text import length\nprint(length(text = \"雪😀\"))\n");
+        let outcome = run_vm("typed-std-alias", &source);
+        assert!(outcome.is_success(), "{outcome:?}");
+        assert_eq!(output(&outcome), "2\n");
     }
 }
 
