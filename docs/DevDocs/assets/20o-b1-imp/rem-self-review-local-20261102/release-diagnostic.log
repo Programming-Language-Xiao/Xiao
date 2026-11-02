@@ -1,0 +1,21 @@
+   Compiling ring v0.17.14
+   Compiling rustls v0.23.45
+   Compiling rustls-webpki v0.103.15
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 35.53s
+     Running `core\rust\target\debug\examples\b1_release_diagnostic.exe`
+{"case":"success","codegen_version":20,"matched":true,"native_destroy":13,"native_destroy_order":[2,3,4,5,6,7,8,9,10,11,12,13,1],"optimization":0,"vm_destroy":13,"vm_destroy_order":[2,3,4,5,6,7,8,9,10,11,12,13,1]}
+{"case":"success","codegen_version":20,"matched":true,"native_destroy":13,"native_destroy_order":[2,3,4,5,6,7,8,9,10,11,12,13,1],"optimization":3,"vm_destroy":13,"vm_destroy_order":[2,3,4,5,6,7,8,9,10,11,12,13,1]}
+{"case":"with-bounds","codegen_version":20,"matched":true,"native_destroy":16,"native_destroy_order":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,1],"optimization":0,"vm_destroy":16,"vm_destroy_order":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,1]}
+{"case":"with-bounds","codegen_version":20,"matched":true,"native_destroy":16,"native_destroy_order":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,1],"optimization":3,"vm_destroy":16,"vm_destroy_order":[2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,1]}
+{"case":"nested-jumps","codegen_version":20,"matched":true,"native_destroy":7,"native_destroy_order":[3,4,2,6,7,5,1],"optimization":0,"vm_destroy":7,"vm_destroy_order":[3,4,2,6,7,5,1]}
+{"case":"nested-jumps","codegen_version":20,"matched":true,"native_destroy":7,"native_destroy_order":[3,4,2,6,7,5,1],"optimization":3,"vm_destroy":7,"vm_destroy_order":[3,4,2,6,7,5,1]}
+{"case":"temporary-return","codegen_version":20,"matched":true,"native_destroy":3,"native_destroy_order":[1,2,3],"optimization":0,"vm_destroy":3,"vm_destroy_order":[1,2,3]}
+{"case":"temporary-return","codegen_version":20,"matched":true,"native_destroy":3,"native_destroy_order":[1,2,3],"optimization":3,"vm_destroy":3,"vm_destroy_order":[1,2,3]}
+{"case":"selector-errors","codegen_version":20,"matched":true,"native_destroy":6,"native_destroy_order":[4,5,6,3,1,2],"optimization":0,"vm_destroy":6,"vm_destroy_order":[4,5,6,3,1,2]}
+{"case":"selector-errors","codegen_version":20,"matched":true,"native_destroy":6,"native_destroy_order":[4,5,6,3,1,2],"optimization":3,"vm_destroy":6,"vm_destroy_order":[4,5,6,3,1,2]}
+{"case":"loop-body-error","codegen_version":20,"matched":true,"native_destroy":3,"native_destroy_order":[2,3,1],"optimization":0,"vm_destroy":3,"vm_destroy_order":[2,3,1]}
+{"case":"loop-body-error","codegen_version":20,"matched":true,"native_destroy":3,"native_destroy_order":[2,3,1],"optimization":3,"vm_destroy":3,"vm_destroy_order":[2,3,1]}
+artifacts=C:\Users\xiaoc\AppData\Local\Temp\xiao-b1-release-diagnostic-3412-1793624639240084300

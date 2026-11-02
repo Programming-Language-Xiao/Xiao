@@ -16,6 +16,9 @@ use xiao_vm::VmEvent;
 #[path = "../tests/support/b1_release.rs"]
 /// 与既有20C差分目标共用的完整清理向量。
 mod b1_release;
+#[path = "perf/run_directory.rs"]
+/// 原子创建独占目录，保留其他诊断现场。
+mod run_directory;
 
 /// 与现有原生门禁使用同一显式环境；未配置就失败，不登记为执行。
 fn toolchain() -> (TargetDescription, Toolchain) {
@@ -44,8 +47,7 @@ fn toolchain() -> (TargetDescription, Toolchain) {
 /// 产物留在独立临时目录，完整日志/IR/LLVM/trace 可以继续归因。
 fn main() {
     let directory =
-        std::env::temp_dir().join(format!("xiao-b1-release-diagnostic-{}", std::process::id()));
-    fs::create_dir_all(&directory).unwrap();
+        run_directory::create("xiao-b1-release-diagnostic").expect("创建独占诊断目录失败");
     let (target, toolchain) = toolchain();
     let mut records = Vec::new();
     let mut mismatch = false;

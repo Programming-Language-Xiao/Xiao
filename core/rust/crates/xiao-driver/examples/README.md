@@ -15,6 +15,9 @@ cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --exampl
 ```
 
 `--list` 列出负载，`--case` 可选单项，`--phase` 可选 maximum/scaling/all。标量无规模翻倍。
+每次运行原子创建独占目录并保留现场；历史PID目录中的程序不会作为本次缓存。
+测量固定使用仓库stdlib，其他XIAO_STDLIB_ROOT会在采样前拒绝；七模块摘要在开始时固定，
+每项采样前后复核源码，报告不认领运行中修改的文件版本。
 报告包含产品摘要、实际规模、校准批次、预热和五次原始样本；`complete=false` 是未完成队列，
 任一预算/黄金/看门狗失败不能登记为通过。维护回归手动输入 b1_f10=true 才执行完整测量，
 不会把显式 F10 混入默认测试；既有 fmt 默认性能测试继续保留。

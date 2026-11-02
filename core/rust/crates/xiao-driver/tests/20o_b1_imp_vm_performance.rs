@@ -3,6 +3,12 @@
 #[path = "../examples/perf/calibration.rs"]
 /// 显式F10工具的量化时钟校准回归也随默认性能目标执行。
 mod calibration;
+#[path = "../examples/perf/run_directory.rs"]
+/// 测量/诊断目录不得复用历史程序的回归。
+mod run_directory;
+#[path = "../examples/perf/source_snapshot.rs"]
+/// 测量加载根与源码摘要绑定回归。
+mod source_snapshot;
 
 use std::cell::RefCell;
 use std::fs;

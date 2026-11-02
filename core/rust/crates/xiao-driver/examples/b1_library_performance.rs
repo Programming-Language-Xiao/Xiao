@@ -12,6 +12,12 @@ mod memory;
 #[path = "perf/native.rs"]
 /// 原生受控编译、时钟窗口和结果校验。
 mod native;
+#[path = "perf/run_directory.rs"]
+/// 原子创建本次运行独占的产物目录。
+mod run_directory;
+#[path = "perf/source_snapshot.rs"]
+/// 固定实际标准库加载根与报告使用的源码摘要。
+mod source_snapshot;
 
 use std::cell::RefCell;
 use std::path::Path;
@@ -146,9 +152,9 @@ fn main() {
         .ancestors()
         .nth(4)
         .unwrap();
-    let directory =
-        std::env::temp_dir().join(format!("xiao-b1-performance-{}", std::process::id()));
-    std::fs::create_dir_all(&directory).unwrap();
+    let sources = source_snapshot::Sources::capture(root).expect("固定F10源码失败");
+    let directory = run_directory::create("xiao-b1-performance").expect("创建独占产物目录失败");
+    println!("B1-PERF-ARTIFACTS {}", directory.display());
     let mut records = Vec::new();
     let mut failed = false;
     save_report(
@@ -179,6 +185,7 @@ fn main() {
         } {
             let mut previous = None;
             for &size in &sizes {
+                sources.check_current().expect("F10源码与加载根发生变化");
                 let case = cases::workload(id, size);
                 let measure = |repeats, count| {
                     if backend == "native" {
@@ -203,6 +210,7 @@ fn main() {
                     repeats = calibration::next_batch(repeats, elapsed);
                 }
                 let samples = measure(repeats, 6);
+                sources.check_current().expect("F10源码与加载根发生变化");
                 let mut measured: Vec<_> = samples[1..]
                     .iter()
                     .map(|sample| sample.seconds / repeats as f64)
@@ -228,9 +236,7 @@ fn main() {
                     && median <= if backend == "native" { 2.0 } else { 10.0 }
                     && memory <= 64 * 1024 * 1024
                     && ratio.is_none_or(|value| value <= 3.0);
-                let product_bytes =
-                    std::fs::read(root.join(format!("stdlib/{}.xiao", case.module))).unwrap();
-                let record = serde_json::json!({"case":case.id,"module":case.module,"function":case.function,"product_sha256":xiao_artifacts::Digest256::of_bytes(&product_bytes).to_string(),"backend":backend,"optimization":if backend=="native"{Some(level)}else{None},"rust_debug_assertions":cfg!(debug_assertions),"scale":size,"input_bytes_or_items":case.input_bytes_or_items,"output_bytes_or_items":case.output_bytes_or_items,"repeats":repeats,"calibration":calibration,"warmup":samples[0],"samples":&samples[1..],"median_seconds":median,"doubling_ratio":ratio,"resident_increment_upper_bytes":memory,"batch_duration_passed":batch_duration_passed,"passed":passed});
+                let record = serde_json::json!({"case":case.id,"module":case.module,"function":case.function,"product_sha256":sources.product_digest(case.module),"backend":backend,"optimization":if backend=="native"{Some(level)}else{None},"rust_debug_assertions":cfg!(debug_assertions),"scale":size,"input_bytes_or_items":case.input_bytes_or_items,"output_bytes_or_items":case.output_bytes_or_items,"repeats":repeats,"calibration":calibration,"warmup":samples[0],"samples":&samples[1..],"median_seconds":median,"doubling_ratio":ratio,"resident_increment_upper_bytes":memory,"batch_duration_passed":batch_duration_passed,"passed":passed});
                 println!("{record}");
                 records.push(record);
                 save_report(

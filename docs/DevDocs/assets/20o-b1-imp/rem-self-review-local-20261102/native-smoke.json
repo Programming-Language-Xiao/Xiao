@@ -1,0 +1,192 @@
+{
+  "backend": "native",
+  "codegen_version": 20,
+  "complete": true,
+  "failed": false,
+  "memory_method": "OS resident high-water mark minus current resident baseline, conservative upper bound that may include previous high-water mark; not allocator-exact",
+  "phase": "all",
+  "protocol": "bounded geometric calibration to 100ms, then one warmup and five measured samples; each batch must reach 50ms; compile/input/validation/terminal I/O excluded; marker formatting/cleanup included as a conservative time upper bound",
+  "records": [
+    {
+      "backend": "native",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 7.4e-6
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 0.0000153
+          }
+        },
+        {
+          "repeats": 256,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 0.0001645
+          }
+        },
+        {
+          "repeats": 4096,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 0.0024527
+          }
+        },
+        {
+          "repeats": 65536,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 0.0388225
+          }
+        },
+        {
+          "repeats": 262144,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 0.1711358
+          }
+        }
+      ],
+      "case": "math.abs",
+      "doubling_ratio": null,
+      "function": "abs",
+      "input_bytes_or_items": 3,
+      "median_seconds": 6.117359161376953e-7,
+      "module": "math",
+      "optimization": 0,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482",
+      "repeats": 262144,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1626933
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1603629
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1647303
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1541953
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1530248
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 8192,
+        "seconds": 0.1671203
+      }
+    },
+    {
+      "backend": "native",
+      "batch_duration_passed": true,
+      "calibration": [
+        {
+          "repeats": 1,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 6.8e-6
+          }
+        },
+        {
+          "repeats": 16,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 0.0000151
+          }
+        },
+        {
+          "repeats": 256,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 0.0001603
+          }
+        },
+        {
+          "repeats": 4096,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 0.0024564
+          }
+        },
+        {
+          "repeats": 65536,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 0.0442278
+          }
+        },
+        {
+          "repeats": 196608,
+          "sample": {
+            "resident_increment_upper_bytes": 8192,
+            "seconds": 0.1295193
+          }
+        }
+      ],
+      "case": "math.abs",
+      "doubling_ratio": null,
+      "function": "abs",
+      "input_bytes_or_items": 3,
+      "median_seconds": 7.285715738932292e-7,
+      "module": "math",
+      "optimization": 3,
+      "output_bytes_or_items": 1,
+      "passed": true,
+      "product_sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482",
+      "repeats": 196608,
+      "resident_increment_upper_bytes": 0,
+      "rust_debug_assertions": false,
+      "samples": [
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1501327
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1410925
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1307905
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.1448288
+        },
+        {
+          "resident_increment_upper_bytes": 0,
+          "seconds": 0.143243
+        }
+      ],
+      "scale": null,
+      "warmup": {
+        "resident_increment_upper_bytes": 8192,
+        "seconds": 0.1838594
+      }
+    }
+  ],
+  "runtime_abi_encoded": 65554,
+  "rust_debug_assertions": false,
+  "scope": "controlled B1 measurement, not acceptance of lifecycle",
+  "selected": "math.abs",
+  "target": "x86_64-pc-windows-msvc"
+}

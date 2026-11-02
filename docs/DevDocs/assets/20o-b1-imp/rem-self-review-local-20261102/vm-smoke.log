@@ -1,0 +1,15 @@
+   Compiling ring v0.17.14
+   Compiling rustls v0.23.45
+   Compiling rustls-webpki v0.103.15
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `release` profile [optimized] target(s) in 1m 47s
+     Running `core\rust\target\release\examples\b1_library_performance.exe --backend vm --case math.abs --phase all --output C:\Users\xiaoc\AppData\Local\Temp\xiao-b1-review-vm-smoke.json`
+B1-PERF-ARTIFACTS C:\Users\xiaoc\AppData\Local\Temp\xiao-b1-performance-48548-1793624081343874300
+B1-PERF-CALIBRATION case=math.abs optimization=0 scale=None repeats=1 seconds=0.0000525
+B1-PERF-CALIBRATION case=math.abs optimization=0 scale=None repeats=16 seconds=0.0001649
+B1-PERF-CALIBRATION case=math.abs optimization=0 scale=None repeats=256 seconds=0.0027781
+B1-PERF-CALIBRATION case=math.abs optimization=0 scale=None repeats=4096 seconds=0.0427012
+B1-PERF-CALIBRATION case=math.abs optimization=0 scale=None repeats=12288 seconds=0.1289695
+{"backend":"vm","batch_duration_passed":true,"calibration":[{"repeats":1,"sample":{"resident_increment_upper_bytes":57344,"seconds":0.0000525}},{"repeats":16,"sample":{"resident_increment_upper_bytes":479232,"seconds":0.0001649}},{"repeats":256,"sample":{"resident_increment_upper_bytes":532480,"seconds":0.0027781}},{"repeats":4096,"sample":{"resident_increment_upper_bytes":581632,"seconds":0.0427012}},{"repeats":12288,"sample":{"resident_increment_upper_bytes":757760,"seconds":0.1289695}}],"case":"math.abs","doubling_ratio":null,"function":"abs","input_bytes_or_items":3,"median_seconds":0.000010455924479166667,"module":"math","optimization":null,"output_bytes_or_items":1,"passed":true,"product_sha256":"8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482","repeats":12288,"resident_increment_upper_bytes":569344,"rust_debug_assertions":false,"samples":[{"resident_increment_upper_bytes":569344,"seconds":0.1284824},{"resident_increment_upper_bytes":569344,"seconds":0.1316085},{"resident_increment_upper_bytes":569344,"seconds":0.1244853},{"resident_increment_upper_bytes":569344,"seconds":0.1265891},{"resident_increment_upper_bytes":569344,"seconds":0.1287036}],"scale":null,"warmup":{"resident_increment_upper_bytes":569344,"seconds":0.1286808}}

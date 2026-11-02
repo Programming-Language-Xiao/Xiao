@@ -1,0 +1,4 @@
+
+thread 'main' (56060) panicked at crates\xiao-driver\examples\b1_library_performance.rs:155:59:
+固定F10源码失败: Custom { kind: InvalidInput, error: "F10必须使用仓库stdlib；实际加载根=\\\\?\\C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b1-review-stdlib-2e34ec3b73e54e588746114f31cac774，要求=\\\\?\\D:\\project\\Xiao\\Xiao\\stdlib" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

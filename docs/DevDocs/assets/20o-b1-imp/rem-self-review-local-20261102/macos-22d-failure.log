@@ -1,0 +1,16 @@
+2026-11-02T12:36:36.1630120Z thread 'native_concurrency_vm_native_differential_matches_from_same_ir' (72784) panicked at crates/xiao-driver/tests/22d_llvm_concurrency.rs:286:9:
+2026-11-02T12:36:36.1635010Z assertion `left == right` failed: spawn-join-str-multiargument: VM/native 完整释放对象顺序
+2026-11-02T12:36:36.1640660Z   left: [(0, "strong_release"), (1, "strong_release"), (0, "strong_release"), (0, "destroy"), (1, "strong_release"), (1, "destroy"), (2, "strong_release"), (2, "destroy")]
+2026-11-02T12:36:36.1643140Z  right: [(0, "strong_release"), (0, "destroy"), (1, "strong_release"), (1, "destroy"), (2, "strong_release"), (2, "destroy")]
+2026-11-02T12:36:36.1645130Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-11-02T12:36:36.1645740Z test native_concurrency_vm_native_differential_matches_from_same_ir ... FAILED
+2026-11-02T12:36:36.1647650Z
+2026-11-02T12:36:36.1648450Z failures:
+2026-11-02T12:36:36.1649370Z
+2026-11-02T12:36:36.1650090Z failures:
+2026-11-02T12:36:36.1651490Z     native_concurrency_vm_native_differential_matches_from_same_ir
+2026-11-02T12:36:36.1652440Z
+2026-11-02T12:36:36.1652890Z test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 8 filtered out; finished in 7.62s
+2026-11-02T12:36:36.1653370Z
+2026-11-02T12:36:36.1655190Z error: test failed, to rerun pass `-p xiao-driver --test 22d_llvm_concurrency`
+2026-11-02T12:36:36.1828890Z ##[error]Process completed with exit code 1.

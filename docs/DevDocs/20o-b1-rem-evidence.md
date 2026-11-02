@@ -98,3 +98,9 @@ CPU、Rust/clang版本及构建段、原始JSON、zip摘要和完整源日志命
 | 教程/registry状态 | 七库均planned；error_code独立verified保持，B1-CLOSE另批升级 |
 
 REM本批未新增intrinsic、生产ABI、公开dynamic或语言语法；只按星崽授权把普通for/selector独立前置的生成器19→20，Runtime ABI仍1.18。
+
+## 后续自审核
+
+8791d7b4之后的自审核修复了PID目录复用和stdlib加载根/报告摘要不一致两项取证工具风险，
+默认回归由3项增为5项，产品与预算未变。细节、单项复测和该文档提交的新22D阻塞见
+[自审核记录](20o-b1-rem-self-review.md)。14908c64的历史721条报告保持原始记录，不以单项重测替换。

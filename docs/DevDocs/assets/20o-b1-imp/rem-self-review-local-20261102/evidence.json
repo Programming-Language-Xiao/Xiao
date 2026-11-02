@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "review_baseline": "8791d7b493614c0cbc6a4b148f84ab22901b7b77",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "scope": "取证工具目录/源码绑定修复的本机回归；不是重新测量完整721条",
+  "local_results": {
+    "default_tests": 5,
+    "failed": 0,
+    "vm_smoke_records": 1,
+    "native_smoke_records": 2,
+    "loader_override_rejected_before_sampling": true,
+    "release_cases": 6,
+    "native_release_records": 12
+  },
+  "logs": [
+    {
+      "file": "directory.log",
+      "source_sha256": "cdf816fdeac6defcb2fc318d74a7536c804910e07777051262173737bdbd03b2",
+      "normalized_sha256": "823b8ebf2e602a8c68c976ebdb98f43ba9a5ef1783c7bdb900d43c7fcbec8649"
+    },
+    {
+      "file": "performance-tests.log",
+      "source_sha256": "3ae9a8832cc14cf38c6be03fe2793ac6f04f49c2541c5dc7529d3b304daa92de",
+      "normalized_sha256": "abe8d65771ded213df5fee88f2b82099c7b438e22591f1cb56184ef04f7f1713"
+    },
+    {
+      "file": "clippy.log",
+      "source_sha256": "9078d24b35e96120c95f397ed5e8562b049f55a57e61401e8199499bd5e6743b",
+      "normalized_sha256": "1752416a17b6fdffc1305667b37f2ef0eff29e0e038b226e86031abf5907247a"
+    },
+    {
+      "file": "vm-smoke.log",
+      "source_sha256": "116a2efad39b51bbfe2e170885bb25b7e95cc73c666215abdae279cc4ec96921",
+      "normalized_sha256": "d11d57519161c7fad52936c3fddedcf60fb4666c777f39ab7fa28f64212318a4"
+    },
+    {
+      "file": "vm-smoke.json",
+      "source_sha256": "53a4799a91b5aec01895f0e33a48981391e7eed5bb430484bcd134d23f40c3bf",
+      "normalized_sha256": "53a4799a91b5aec01895f0e33a48981391e7eed5bb430484bcd134d23f40c3bf"
+    },
+    {
+      "file": "native-smoke.log",
+      "source_sha256": "9e23299262d1de6f6dcd25ca793d5b330fc8fa818fb3243d95db2869d8c5b64e",
+      "normalized_sha256": "c2a2d2b9129e0ab238434d50b5470b6f8f82dc5116790dd47a1aef2765d4a7fd"
+    },
+    {
+      "file": "native-smoke.json",
+      "source_sha256": "5dea958a82fe6df802eb34a6485eed6fe871ec8b42ebd537f1eafd09195f2a7d",
+      "normalized_sha256": "5dea958a82fe6df802eb34a6485eed6fe871ec8b42ebd537f1eafd09195f2a7d"
+    },
+    {
+      "file": "root-rejection.log",
+      "source_sha256": "04aa3aed55d00f3a4dcb052c5a82be2277128865ff11492e7017b5d6c7b9f36b",
+      "normalized_sha256": "04aa3aed55d00f3a4dcb052c5a82be2277128865ff11492e7017b5d6c7b9f36b"
+    },
+    {
+      "file": "release-diagnostic.log",
+      "source_sha256": "f8ac2f4c35c4918a7f3d9e482f895a2cce1e2b49182efb7d506592f50aedf9f2",
+      "normalized_sha256": "18ec007be456467be922da6924211cd89c801d21f962b12c9259ba599071fd43"
+    },
+    {
+      "file": "coverage.log",
+      "source_sha256": "3d5d478d58c7dba189b949c57a8381b6dd81b74a8b79cf72f2962e90bb0b15a9",
+      "normalized_sha256": "729fa94263401f5c48800aa7cbecef35085ac8efc33f3ea03ad9c15254e3103c"
+    }
+  ],
+  "original_diagnostic_directory": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b1-release-diagnostic-3412-1793624639240084300",
+  "macos_blocker": {
+    "run_id": 41444159791,
+    "job_id": 125273020028,
+    "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125273020028/logs",
+    "source_sha256": "0ae614de1bec87793c466d16031c1502b81c0f3c05f32753c86daef578564a0a",
+    "source_start_line": 2495,
+    "source_end_line": 2510,
+    "excerpt_sha256": "73e744a02cfdf27cb8b8324b66b1905f4fe16a4b0085de612b38668fab31526c",
+    "test_source_modified": false
+  }
+}
