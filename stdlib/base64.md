@@ -1,6 +1,6 @@
 # base64 模块
 
-工程期：20O-B1-IMP-REM-A。职责：标准/URL-safe 两种字母表的严格字节编码，规范源码为
+工程期：20O-B1-IMP-REM-A/20O-B1-CLOSE。职责：标准/URL-safe 两种字母表的严格字节编码，规范源码为
 [base64.xiao](base64.xiao)。边界：两个冻结入口，无新增 intrinsic、ABI、helper 或默认模式。
 
 | 签名 | 行为 |
@@ -17,6 +17,8 @@
 编码用 24 位有界累积，每 64 组生成短块并成对合并；解码两次有界扫描，以常量状态验证四元组。
 解码进入循环前把模式解析为两个专用码点，避免逐字符反复读取模式和组合布尔条件；
 签名、字母表隔离、错误顺序与全部限额保持冻结契约。
-固定身份 stdlib.base64、公共路径 std.base64、接口版本 1。教程继续 planned，
-F9/F10、已知释放修复及三平台证据见 [REM最终记录](../docs/DevDocs/20o-b1-rem-evidence.md)，状态升级归B1-CLOSE。契约见 [B1](../docs/DevDocs/20o-b1-freeze-draft.md#33-base64两项)，
+固定身份stdlib.base64、公共路径std.base64、接口版本1。教程与registry为verified；
+F9/F10、已知释放修复及三平台证据见[REM记录](../docs/DevDocs/20o-b1-rem-evidence.md)。契约见 [B1](../docs/DevDocs/20o-b1-freeze-draft.md#33-base64两项)，
 教程见 [Base64 编码](../docs/UseDocs/library/base64.md)。
+
+状态升级与实际门禁见[B1-CLOSE收口](../docs/DevDocs/20o-b1-closeout.md)；Runtime ABI1.18、生成器20，产品函数与预算未因状态升级改变。

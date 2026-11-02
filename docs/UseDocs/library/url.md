@@ -1,35 +1,32 @@
 ---
 id: library.url
-title: URL 组件转义（B1 教程草案）
-status: planned
+title: URL 组件转义
+status: verified
 audience: learner
 module: stdlib.url
-stage: 20O-B1-IMP-REM-B/20P
+stage: 20O-B1-IMP-REM-B/20P/20O-B1-CLOSE
 version: "0.1.0"
 related:
   - README.md
   - ../../DevDocs/20o-b0-baseline-and-b1-draft.md
+  - ../../DevDocs/20o-b1-closeout.md
 ---
 
-# URL 组件转义（教程草案）
+# URL 组件转义
 
 ## 适用范围与状态
 
-首批契约只处理组件的百分号编码/解码。完整 URL 分解、路径规范化、网络请求与表单编码不在此已确认 API 范围中。
+UTF-8组件的百分号编码与严格解码；适合单个URL组件，不解析完整URL。
 
-本页保持 planned：stdlib.url 的产品草稿与完整示例已落地，七库功能和生成器20的已知释放修复已有三平台证据。资源、性能与门禁的当前对账见 [REM证据](../../DevDocs/20o-b1-rem-evidence.md)；本页状态升级归独立B1-CLOSE。
-适用 Xiao 0.1.0、Runtime ABI 1.18、标准库接口版本 1。
+本页与stdlib.url登记为verified。适用Xiao 0.1.0、Runtime ABI 1.18、标准库接口版本1。
+已验证范围覆盖VM及Windows/Linux/macOS原生O0/O3、资源边界与稳定错误；
+[收口记录](../../DevDocs/20o-b1-closeout.md)列出运行号、源码身份与限制。
 
 ## 导入与准备
 
-官方库随工具链提供，无需普通包安装。公共路径 std.url，固定身份 stdlib.url：
-
-```xiao
-from std.url import encode_component, decode_component
-print(encode_component("雪"))
-```
-
-输出 %E9%9B%AA。历史 B0 探测保留，产品完整示例另列。
+官方库随工具链提供，无需普通包安装。公共路径为std.url，固定身份为stdlib.url；
+下面的完整示例使用选择导入，所有参数必填，支持既有位置与命名调用规则。
+使用包含本批源码的工具链；从仓库根运行示例时，标准库加载根应指向本仓库的stdlib目录。
 
 ## 五分钟运行与完整示例
 
@@ -37,43 +34,10 @@ print(encode_component("雪"))
 
 ```powershell
 xiao run tests/fixtures/20o-b1/imp/url/product.xiao
-# 历史探测另行保留：
-xiao run tests/fixtures/docs/url/probe.xiao
 ```
 
-[完整源码](../../../tests/fixtures/docs/url/probe.xiao) 与下列代码由测试逐字核对。
-
-<!-- b0-executable-example -->
-```xiao
-# B0 探测 UTF-8 字节编码所需的码点运算，不是完整 URL 解析器。
-from stdlib.text import find
-
-def probe_percent_byte(int byte) -> str
-    digits = "0123456789ABCDEF"
-    high = byte // 16
-    low = byte % 16
-    return "%" + digits[high] + digits[low]
-
-snow = int("雪")
-print(probe_percent_byte(224 + snow // 4096) + probe_percent_byte(128 + snow // 64 % 64) + probe_percent_byte(128 + snow % 64))
-face = int("😀")
-print(probe_percent_byte(240 + face // 262144) + probe_percent_byte(128 + face // 4096 % 64) + probe_percent_byte(128 + face // 64 % 64) + probe_percent_byte(128 + face % 64))
-print(probe_percent_byte(32) + probe_percent_byte(43) + probe_percent_byte(47))
-print(chr((233 - 224) * 4096 + (155 - 128) * 64 + (170 - 128)))
-print(chr((240 - 240) * 262144 + (159 - 128) * 4096 + (152 - 128) * 64 + (128 - 128)))
-print(find("0123456789ABCDEF", "G"))
-print(int("雪"))
-```
-
-示例输出 %E9%9B%AA、%F0%9F%98%80、%20%2B%2F，并恢复 雪、😀；最后输出 -1 与码点 38634。
-
-## 核心概念与所有权
-
-百分号后是 UTF-8 字节的两位十六进制。一个雪字需要三个字节，一个 😀 需要四个；str 的索引单位仍是码点。函数返回新字符串，不修改输入。
-
-## 完整产品示例（planned）
-
-以下源与 [产品夹具](../../../tests/fixtures/20o-b1/imp/url/product.xiao) 逐字一致，使用实际模块。UTF-8 临界字节和异常向量独立于产品算法，错误通过 error_code 核对。
+以下代码与[实际产品夹具](../../../tests/fixtures/20o-b1/imp/url/product.xiao)逐字一致；
+输出由[独立黄金](../../../tests/fixtures/20o-b1/imp/url/golden.json)核对。
 
 <!-- b1-imp-executable-example -->
 ```xiao
@@ -142,78 +106,174 @@ catch decode_limit as ResourceError
 print(decode_component("%2B"))
 ```
 
-## 已确认 API 契约（产品草稿）
+独立黄金输出：
 
-七项一起冻结已确认；下表是 [B1 逐项契约](../../DevDocs/20o-b1-freeze-draft.md#34-url两项) 的概览，
-F1～F13 已由星崽在 FIX-A 逐条确认；所有库函数参数必填，按现有位置/命名规则调用；
-输入只读、不消费，失败不改调用方数组。产品草稿已提供下列入口，整体验收仍按 B1 收口。
+```text
+AZaz09-._~
+%20%2F%2B%25%3F%23%3D%26%3A
+%E9%9B%AA%F0%9F%98%80e%CC%81
+one two+three
+雪
+雪+é
+../
+true
+true
+%00
+%7F
+%C2%80
+%DF%BF
+%E0%A0%80
+%ED%9F%BF
+%EE%80%80
+%EF%BF%BF
+%F0%90%80%80
+%F4%8F%BF%BF
+0
+127
+128
+2047
+2048
+55295
+57344
+65535
+65536
+1114111
+%EF%BB%BFa
+65279
+a
+true
+URL_INVALID_ESCAPE
+URL_INVALID_ESCAPE
+URL_INVALID_ESCAPE
+URL_INVALID_ESCAPE
+URL_INVALID_ESCAPE
+URL_INVALID_ESCAPE
+URL_INVALID_ESCAPE
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_UTF8
+URL_INVALID_ESCAPE
+URL_INVALID_ESCAPE
+URL_LIMIT_EXCEEDED
+URL_LIMIT_EXCEEDED
++
+```
+
+## 核心概念与所有权
+
+编码只保留ASCII字母、数字和-._~，其余按UTF-8字节输出大写%HH。解码接受十六进制大小写，保留+和普通Unicode，拒绝非法转义及非最短、代理、越界、截断等非法UTF-8。NUL、BOM和组合字符保留，不做路径或Unicode规范化。
+
+输入字符串不可变、不消费调用方引用；返回字符串保持独立有效的生命周期，允许共享底层不可变存储。失败不返回部分结果；没有需手工关闭的资源。
+打印示例沿用stdout能力。
+
+## API
 
 | 已确认签名 | 已确认边界 |
 | --- | --- |
 | `encode_component(str text) -> str` | UTF-8；仅保留 ASCII 字母数字及 -._~；大写 %HH |
 | `decode_component(str text) -> str` | %HH 接受十六进制大小写；+ 与普通 Unicode 原样保留；拒绝坏转义/非法 UTF-8 |
 
+参数名属于契约。完整签名、边界与检查顺序以[B1冻结契约](../../DevDocs/20o-b1-freeze-draft.md#三七库已确认签名与调用边界f2f8f12)为准。
+
 ## 错误与恢复
 
-B1 已确认的稳定 code、类别、触发条件与检查顺序统一见 [错误表](../../DevDocs/20o-b1-freeze-draft.md#六统一错误表f11已确认)，
-不在教程另立错误身份。以下为实际产品错误，历史 B0 标签另行保留。
+示例在catch中使用全局自由函数error_code读取原错误码，读取不消费错误对象。
 
 | 身份 | 触发条件 | 恢复方式 |
 | --- | --- | --- |
-| Error / URL_INVALID_ESCAPE | 不完整或非十六进制 %HH | 修正转义语法 |
-| Error / URL_INVALID_UTF8 | 非最短、代理、越界、截断或孤立续字节 | 使用规范 UTF-8，不替换坏数据 |
-| ResourceError / URL_LIMIT_EXCEEDED | 输入或实际结果超过冻结字节预算 | 按预算拆分，整次失败无部分结果 |
+| Error / URL_INVALID_ESCAPE | %HH不完整或包含非十六进制字符 | 修正百分号转义 |
+| Error / URL_INVALID_UTF8 | 还原字节不构成规范UTF-8 | 提供有效UTF-8，不用替换字符掩盖错误 |
+| ResourceError / URL_LIMIT_EXCEEDED | 输入或实际结果超限 | 按字节预算拆分输入 |
 
-`B0_*` 仅是夹具局部错误，不注册为标准库错误身份。示例中的 `caught-*` 是恢复分支标签，
-不能作为稳定错误码证据。全局自由函数 `error_code` 已由独立 FIX-B 实现并验收，
-其[精确位置/签名/错误表](../../DevDocs/20o-b1-freeze-draft.md#二error_code-的名称位置与签名)与
-[三平台验收记录](../../DevDocs/20o-b1-fix-b-closeout.md)已交付；错误成员访问仍未开放。
-FIX-B 已实现并验收；stdlib.url 已提供组件产品草稿，完整产品示例调用 error_code。
+调用或静态类型错误沿用X04-TYPE-002，内部动态类型边界沿用X06-RUNTIME-002。
+先处理调用/类型和参数域，再按[统一错误顺序](../../DevDocs/20o-b1-freeze-draft.md#61-已确认检查优先级)检查输入、内容与结果预算。
+可本地化的message不参与错误身份。error_code的[独立验收](../../DevDocs/20o-b1-fix-b-closeout.md)不开放error.code成员访问。
 
 ## 资源、性能与安全边界
 
-**F9 的限额与 F10 的验收目标已确认；当前探测没有实现或证明全部产品资源/性能要求。**
+encode输入最多65,536 UTF-8字节，输出最多196,608 ASCII字节；decode输入最多196,608 UTF-8字节，结果最多65,536字节。大小按字节计算。每个转义先查%HH语法，再查UTF-8，保持从左到右的首错。
 
-encode 输入最多 65,536 UTF-8 字节、输出最多 196,608 ASCII 字节；decode 输入最多 196,608 UTF-8 字节、结果最多 65,536 字节。大小不是码点数。
+等于上限合法，超过上限整次失败，不静默截断。具体数值见[资源限额](../../DevDocs/20o-b1-freeze-draft.md#四资源限额f9已验收)。
 
-精确计量、编码膨胀和超限顺序见 [资源限额](../../DevDocs/20o-b1-freeze-draft.md#四资源限额f9已确认产品未验证)。
-文本/编码目标为顺序扫描加至多 O(n log n) 的均衡拼接，禁止隐藏的二次复制/扫描；
-翻倍比≤3、最大输入 VM≤10s/原生≤2s、增量内存≤64 MiB 是已确认的验收目标；当前分平台实测见 [REM证据](../../DevDocs/20o-b1-rem-evidence.md)，
-计时排除启动/编译/打印，具体方法见 [性能预算](../../DevDocs/20o-b1-freeze-draft.md#五性能预算与测量协议f10)。
-
-入口看门狗只保护测试；F10另按已编译调用计时，不代表库API承诺运行时超时。纯计算不新增宿主能力，打印沿用 stdout。
+固定源码身份工具的[完整F10](../../DevDocs/assets/20o-b1-imp/rem-identity-final-41464439400/README.md)
+共721条，覆盖20入口/31负载：标量记最大规模，其余还测4,096→8,192→16,384；原生O0/O3分记。
+受控平台测得翻倍比≤3、最大合法输入VM≤10秒/原生≤2秒、驻留增量上界≤64MiB。
+一次预热、五批采样取中位数，编译、输入准备和终端I/O在窗口外；内存按OS历史驻留峰值减当前基线估计，
+是包含暂存与输出的保守上界。这些是已测硬件上的验收结果，不是任意机器的时延保证或API超时语义。
+详见[测量协议](../../DevDocs/20o-b1-freeze-draft.md#五性能预算与测量协议f10)。
 
 ## 示例如何进入 CI
 
-历史探测位于 tests/fixtures/docs/url/probe.xiao，产品位于 tests/fixtures/20o-b1/imp/url/product.xiao，均与本页完整代码逐字核对。
-维护回归默认作业独立精确执行 VM 探测，Windows/Linux/macOS 原生作业独立精确执行原生探测；
-对应批量命令排除这两个名字，计数须恰好 1 passed、0 failed、0 ignored，命令失败不得吞掉。
-文档一致性与错误/语言边界仍由默认 workspace 的其余测试执行。
+产品示例与历史探测均由既有两个精确目标执行。VM与原生逐字核对stdout、退出码与stderr；
+默认契约测试另检查真实导出、逐函数移除、真实.xar重放、普通包隔离、双路径、参数负例和教程源码一致性。
 
 ```powershell
 cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- b1_capabilities_have_vm_golden_outputs --exact --nocapture
-# 配置受控工具链后执行：
+# 配置受控LLVM/Runtime工具链后执行：
 cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_probe -- --ignored b1_capabilities_match_native_golden_outputs --exact --nocapture
 ```
 
-仅修改本目录教程也会触发维护回归。源码/输出逐字比较和退出码要求不变；
-接线与实际取得的证据见 [B1 CI 记录](../../DevDocs/20o-b1-freeze-draft.md#八本轮-ci-接线与验证)。
-没有对应提交的三平台证据时仍为 planned。
+维护回归的四个执行点各要求恰好1 passed、0 failed、0 ignored；批量路径排除这两个名字，计数守卫28/28。
+仅修改教程也会触发维护回归，三平台记录与源码身份见[收口证据](../../DevDocs/20o-b1-closeout.md)。
 
 ## 兼容与废弃
 
-七个库按接口版本 1 兼容新增；历史 B0/FIX-A 证据基于 ABI 1.17，当前仓库探测使用 1.18。
-error_code 已随独立 FIX-B 在 ABI 1.18 实现并验收；URL 产品草稿已进入 IMP，整批验收留待 CLOSE。
-探测函数不属于公开 API，不进入官方加载器、
-普通依赖求解或归档身份。只有产品实现、完整教程、示例、测试与证据均通过，才可升级
-为 `verified`；不能仅因本页探测成功就宣称模块完成。
+本模块按标准库接口版本1兼容新增，固定身份不进入普通依赖求解，也不把官方函数体复制进应用归档。
+当前Runtime ABI为1.18，生成器20；error_code前置已独立验收。
+历史B0/FIX-A探测最初使用ABI1.17，仅用于解释当时能力，不作为本页产品或性能成绩。
+后续新增入口、资源限额或错误规则应另立批次；本次状态升级没有修改产品函数、ABI、生成器或预算。
 
 ## 故障排查与下一步
 
-组件产品草稿已实现，临界/非法 UTF-8、坏百分号、混合首错及最大 ASCII/Unicode 资源边界
-均进入真实产品回归；完整 F10 和生命周期验收另行收口。
-补充夹具和证据见 [FIX-A 记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)。
+导入失败时先检查工具链是否包含本批源码及标准库加载根；不要把官方库安装成普通包。
+原生测试缺少LLVM、Runtime或目标平台配置时应明确失败，不能把环境跳过当成功。
+遇到数据错误按上表修正参数，遇到资源超限按完整输入与输出预算拆分。
+继续阅读[官方库索引](README.md)、[冻结契约](../../DevDocs/20o-b1-freeze-draft.md)和[收口记录](../../DevDocs/20o-b1-closeout.md)。
 
-若无法找到完整示例，先确认位于仓库根；原生测试缺少 LLVM/Runtime 配置时应明确失败，
-不能把环境跳过当成功。继续阅读 [CSV 字段与记录](csv.md)、
-[官方库索引](README.md) 或 [B1 冻结草案](../../DevDocs/20o-b1-freeze-draft.md)。
+## 附：B0历史探测
+
+下面保留[B0探测文件](../../../tests/fixtures/docs/url/probe.xiao)的原文，仍进CI；
+它的局部probe函数、B0_*错误与caught-*标签只描述历史，不属于当前公开接口。
+正常使用本库应运行本页前面的产品示例。
+
+<!-- b0-executable-example -->
+```xiao
+# B0 探测 UTF-8 字节编码所需的码点运算，不是完整 URL 解析器。
+from stdlib.text import find
+
+def probe_percent_byte(int byte) -> str
+    digits = "0123456789ABCDEF"
+    high = byte // 16
+    low = byte % 16
+    return "%" + digits[high] + digits[low]
+
+snow = int("雪")
+print(probe_percent_byte(224 + snow // 4096) + probe_percent_byte(128 + snow // 64 % 64) + probe_percent_byte(128 + snow % 64))
+face = int("😀")
+print(probe_percent_byte(240 + face // 262144) + probe_percent_byte(128 + face // 4096 % 64) + probe_percent_byte(128 + face // 64 % 64) + probe_percent_byte(128 + face % 64))
+print(probe_percent_byte(32) + probe_percent_byte(43) + probe_percent_byte(47))
+print(chr((233 - 224) * 4096 + (155 - 128) * 64 + (170 - 128)))
+print(chr((240 - 240) * 262144 + (159 - 128) * 4096 + (152 - 128) * 64 + (128 - 128)))
+print(find("0123456789ABCDEF", "G"))
+print(int("雪"))
+```

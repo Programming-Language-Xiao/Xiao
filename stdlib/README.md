@@ -1,6 +1,6 @@
 # Xiao 官方标准库源码
 
-工程期 20C–20M、20O-B1-IMP；这里是官方 Xiao 标准库的规范源码根目录。20M 在既有 `text` 与 `path`
+工程期 20C–20M、20O-B1-CLOSE；这里是官方 Xiao 标准库的规范源码根目录。20M 在既有 `text` 与 `path`
 模块上增加七项纯 Xiao 接口；接口版本保持 1。`dict` 的动态读写、开放字典查询和方法调用由
 20K/20L 接通。
 
@@ -15,16 +15,11 @@
   `trim`、`replace_all`、`repeat`、`upper_ascii`。前后缀判断使用既有接口组合。
 - `path` 提供 `join`、`basename`、`dirname`、`extension` 四项纯文本操作，只识别 `/`，
   保留空末段与重复分隔符，不访问文件系统。
-- B1-IMP 的 [`math`](math.md) 六项、[`statistics`](statistics.md) 三项及 [`fmt`](fmt.md)
-  三项已有纯 Xiao 草稿与 VM 黄金；公共路径 `std.<module>`，固定身份 `stdlib.<module>`。
-  命名/模块绑定与字符串读取前置已修复，三模块已有三平台原生 O0/O3 和逐形参负例；
-  整批性能/内存和已知释放修复已由REM取证。状态planned，最终状态升级由B1-CLOSE完成。
-- REM-A 的 [`hex`](hex.md) 与 [`base64`](base64.md) 各两项已加入共享清单、产品教程、
-  独立黄金和编码同名碰撞。两库已过本机 O0/O3、最大合法输入和解码真实长度边界。
-  REM-B 的 [`url`](url.md) 两项已有本机 VM/原生 O0/O3 与最大 ASCII/Unicode 资源边界。
-  [`csv`](csv.md) 记录子集两项已有本机 VM/原生 O0/O3 和最大引号/多换行/Unicode/E 预算。
-  当前20/20产品、生成器20释放前置与完整F10已由三平台取证，41433194454第二次尝试 / 41433190291成功，
-  见 [REM证据](../docs/DevDocs/20o-b1-rem-evidence.md)；七库状态仍planned，CLOSE独立后续。
+- B1七库共20项已登记verified：[`math`](math.md)六项、[`hex`](hex.md)两项、
+  [`base64`](base64.md)两项、[`url`](url.md)两项、[`csv`](csv.md)两项、[`fmt`](fmt.md)三项、
+  [`statistics`](statistics.md)三项。公共路径`std.<module>`，固定身份`stdlib.<module>`，接口版本1。
+  产品、完整教程与独立黄金由VM及三平台原生O0/O3执行，包含真实导出、移除、归档和普通包隔离。
+  固定源码身份的721条F10、生成器20释放与状态提交门禁见[B1-CLOSE](../docs/DevDocs/20o-b1-closeout.md)。
 - `std.concurrent` 是虚拟原生模块：冻结的 17 项签名位于 `xiao-types/src/concurrency.rs`，
   行为由 VM/TAC 计划和 Runtime 实现提供；不新增 `concurrent.xiao`，不作为普通源码对象
   放入归档。公共接口唯一权威页为 [并发执行与共享句柄](../docs/UseDocs/language/concurrency/README.md)，
@@ -34,7 +29,7 @@
 
 `stdlib.xiao-standard-library` 的 registry 条目是工具链骨架登记，维持 `draft`；它不适用
 `verified` 状态。20C/20M 可交付模块登记在 `stdlib.xiao-standard-library-first-modules`；
-B1 七库分别使用 `stdlib.<module>` 条目，IMP 期间保持 planned，code/tests 指向真实产品文件。
+B1七库分别使用`stdlib.<module>`条目，CLOSE阶段为verified；code/tests/usedocs指向实际产品、执行夹具和教程。
 
 20M 产品的真实推送为 `04cd163`：维护回归
 [41229582341](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41229582341)

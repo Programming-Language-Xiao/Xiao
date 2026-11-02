@@ -1,29 +1,28 @@
 # 官方标准库
 
-20C 登记官方 Xiao 标准库的源码根目录、工具链加载边界和兼容身份。首批模块已经完成源码与 VM 回归；
-原生双路径门控需要受控工具链运行，未取得运行号前仍不能把原生侧写成已验证。
+20C 登记官方 Xiao 标准库的源码根目录、工具链加载边界和兼容身份。已交付模块随工具链提供；每个模块的已验证平台和范围以对应教程及运行记录为准。
 
 模块实现必须同时更新本页索引、模块 README、阶段 DevDocs 和标准库兼容身份。官方库不通过普通包依赖安装。
 
-## B1 教程草案
+## B1 七库
 
-以下模块均为 `planned`，保留 B0 与 FIX-A 的能力/边界探测，产品实现按 B1-IMP 逐模块推进。
-各页分别登记可导入的产品源码与待完成项；完整验收和状态升级留到 B1-CLOSE。
+以下七个模块及教程已登记为verified，共20个公开入口。完整示例直接导入真实产品，
+同时覆盖稳定错误、边界与资源上限；B0探测保留为历史附录。
 
 - [math：整数计算](math.md)
 - [hex：十六进制编码](hex.md)
-- [base64：Base64 编码](base64.md)
-- [url：URL 组件转义](url.md)
-- [csv：字段与记录](csv.md)
-- [fmt：文本宽度与整数格式](fmt.md)
+- [base64：标准与URL-safe编码](base64.md)
+- [url：UTF-8组件转义](url.md)
+- [csv：严格单记录与字段](csv.md)
+- [fmt：码点填充与整数格式](fmt.md)
 - [statistics：整数统计](statistics.md)
 
-基线与历史探测见 [B0](../../DevDocs/20o-b0-baseline-and-b1-draft.md)；
-精确签名、错误表、资源/性能预算和两个 CI 精确执行点见 [B1 冻结草案](../../DevDocs/20o-b1-freeze-draft.md)。
-F1～F13 与内联导出策略已逐条确认；Base64 标准/URL-safe 模式参数必填。
-error_code 已由独立 FIX-B 实现并验收（intrinsic 32 / ABI 1.18），证据见 [FIX-B 收口](../../DevDocs/20o-b1-fix-b-closeout.md)。
-七库20/20入口已有产品草稿、完整示例与三平台VM/原生功能回归；生成器20的六组释放向量也已匹配。
-完整F10的四份报告721条记录已通过，当前执行边界与原始证据见 [REM证据](../../DevDocs/20o-b1-rem-evidence.md)。七库教程与七库registry条目保持planned，状态升级归B1-CLOSE。
+适用Xiao0.1.0、Runtime ABI1.18、标准库接口版本1；公共路径`std.<module>`，固定身份`stdlib.<module>`。
+error_code已由[独立FIX-B](../../DevDocs/20o-b1-fix-b-closeout.md)实现并验收。
+精确签名、错误和资源预算见[冻结契约](../../DevDocs/20o-b1-freeze-draft.md)，
+三平台产品、归档/包隔离和生成器20释放证据见[收口记录](../../DevDocs/20o-b1-closeout.md)。
+固定源码身份的[完整F10](../../DevDocs/assets/20o-b1-imp/rem-identity-final-41464439400/README.md)共721条；
+它记录已测硬件条件，旧报告仅作历史快照。当前状态与新门禁运行号统一在收口记录登记。
 
 ## 首批模块
 
@@ -39,5 +38,5 @@ error_code 已由独立 FIX-B 实现并验收（intrinsic 32 / ABI 1.18），证
 
 首批与后续小批接口均是标准库接口版本 1 的兼容新增。`text` 的空白集合和大小写转换限定于
 文档明确列出的 ASCII 范围，字符操作按 Unicode 码点计数；不提供完整 Unicode 大小写转换、
-填充/对齐/进制格式化或数字格式化接口。`path` 只定义 `/` 的文本操作；文件系统访问通过
+完整Unicode字素或locale接口。码点填充与整数进制格式由B1的fmt提供。`path` 只定义 `/` 的文本操作；文件系统访问通过
 `os` 模块的冻结资源接口提供。20M 的本批证据见 [实施记录](../../DevDocs/20m-text-and-path-expansion.md)。

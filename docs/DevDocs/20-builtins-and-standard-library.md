@@ -306,12 +306,12 @@ intrinsic 数量持续增长，应先检查语言表达能力、优化器和 Run
 | **20N 标准库扩展路线图** | 20C–20M；历史研究输入 | 纯 Xiao/宿主/值模型/原生库/网络的依赖分层背景 | 已降为历史背景，不作为实施冻结依据；先看页首后续裁定对照，执行以 20O/20P 为准；见 [20N](20n-standard-library-expansion-roadmap.md) |
 | **20O 官方库工程总纲** | 20C–20N；独立研究批 | 候选目录、数值层级、B0–B9、D-1～D-12 与交接；B0 已逐条回填方向裁定 | 不写产品代码；cmath 首批含超越函数、time 含 sleep；见 [20O](20o-official-library-program.md) |
 | **20O-B0 基线与 B1 草案** | 20O/20P；681e70b 基线 | 基线门禁、七模块真实探测、planned 教程、固定完整示例 | 已交付；CSV 记录子集/error_code/七项一起冻结/精确 CI 方向已确认；历史证据见 [20O-B0](20o-b0-baseline-and-b1-draft.md) |
-| **20O-B1 冻结契约** | 本轮 F1～F13/E-2 逐条确认 | 20 项入口/错误/限额/性能目标；Base64 必填模式；intrinsic 32 / ABI 1.18 的全局 error_code | 契约已确认且独立前置已验收，纯库产品逐模块实施；见 [20O-B1](20o-b1-freeze-draft.md) |
+| **20O-B1 冻结契约** | 本轮 F1～F13/E-2 逐条确认 | 20 项入口/错误/限额/性能目标；Base64 必填模式；intrinsic 32 / ABI 1.18 的全局 error_code | 契约与独立前置已验收，七库20/20及REM已交付，CLOSE状态已同步verified；见 [20O-B1](20o-b1-freeze-draft.md) |
 | **20O-B1-FIX-A 收口** | 4d34767；只做文档/探测 | 全部裁定、helper 内联、七项新增边界与独立黄金；共 14 场景 | 维护回归 41285853958 / gates 41285853953 全绿；FIX-B 另批交付，七库/完整性能待验收；见 [FIX-A](20o-b1-fix-a-contract-closeout.md) |
 | **20O-B1-FIX-B** | a91c15d 开工基线；d762ceec 取证 | intrinsic 32、ABI 1.18、C getter、VM/LLVM、版本拒绝与三路径清理 | 41310926623 / 41310926525 全绿；见 [规划](20o-b1-fix-b-implementation-plan.md) / [实现与证据](20o-b1-fix-b-closeout.md) |
-| **20O-B1-IMP实现规划** | FIX-A与FIX-B已收口 | 纯库真实导出、资源/性能、归档及教程证据 | 20/20产品及REM证据已交付，41464439400第二次尝试 / 41464421187成功；守卫后完整重跑，七库仍planned，CLOSE独立后续；见 [实施证据](20o-b1-rem-evidence.md) |
+| **20O-B1-IMP实现规划** | FIX-A与FIX-B已收口 | 纯库真实导出、资源/性能、归档及教程证据 | 20/20产品及REM证据已交付，41464439400第二次尝试 / 41464421187成功；守卫后完整重跑，七库当前由CLOSE同步verified，新状态门禁另记；见 [实施证据](20o-b1-rem-evidence.md) |
 | **20O-B1-IMP-REM收口规划** | 首批12/20为开工基线；当前20/20 | hex/base64/url/csv、完整契约、F9/F10、释放差异与CLOSE门槛 | REM-A/B/C退出对账完成：固定源码身份工具新721条F10、生成器20六组释放与三平台精确点取证；历史22D失败与债务保留；见 [剩余四库与收口](20o-b1-imp-remainder.md) |
-| **20O-B1-CLOSE 收口规划** | 20/20产品与最终F10证据已交付 | 最终证据复核、七册教程/registry `verified`、完整门禁与收口 | 规划已写，未开工；只收口不改产品；见 [B1-CLOSE 规划](20o-b1-closeout-plan.md) |
+| **20O-B1-CLOSE 收口规划** | 20/20产品与最终F10证据已交付 | 最终证据复核、七册教程/registry `verified`、完整门禁与收口 | 已开工，七库教程/registry同步verified，状态提交门禁待取得；见[规划](20o-b1-closeout-plan.md) / [收口进度](20o-b1-closeout.md) |
 | **20P Day-1 库架构** | 20O；架构研究批 | 模块/错误/并发/能力/发布约定、教程/示例、数据库驱动架构；D-13～D-22 方向逐条确认 | 独立数据库能力位、首批有界连接池、教程硬门槛；具体契约仍待对应批次冻结；见 [20P](20p-day1-library-architecture.md) |
 
 20A 的契约设计可以现在开始，但只有当它改变 09R3 的机型、调用 ABI、编码或源码映射

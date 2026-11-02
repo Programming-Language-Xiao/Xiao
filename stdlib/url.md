@@ -1,6 +1,6 @@
 # url 模块
 
-工程期：20O-B1-IMP-REM-B。职责：UTF-8 组件百分号编码，规范源码为 [url.xiao](url.xiao)。
+工程期：20O-B1-IMP-REM-B/20O-B1-CLOSE。职责：UTF-8 组件百分号编码，规范源码为 [url.xiao](url.xiao)。
 边界：encode_component(str text) -> str 与 decode_component(str text) -> str；
 无新增 intrinsic、ABI、helper、路径解析或 Unicode 规范化。
 
@@ -14,5 +14,7 @@ encode 只保留 ASCII 字母数字及 -._~，其余 UTF-8 字节输出大写 %H
 错误为 Error / URL_INVALID_ESCAPE、URL_INVALID_UTF8，资源为 ResourceError / URL_LIMIT_EXCEEDED。
 
 算法用有界顺序扫描、短块和成对归并；不调用宿主 URL/UTF-8 库。接口版本 1，身份 stdlib.url，
-公共路径 std.url，状态 planned。契约见 [B1](../docs/DevDocs/20o-b1-freeze-draft.md#34-url两项)，
+公共路径std.url，状态verified。契约见 [B1](../docs/DevDocs/20o-b1-freeze-draft.md#34-url两项)，
 教程见 [组件转义](../docs/UseDocs/library/url.md)。
+
+状态升级与实际门禁见[B1-CLOSE收口](../docs/DevDocs/20o-b1-closeout.md)；Runtime ABI1.18、生成器20，产品函数与预算未因状态升级改变。

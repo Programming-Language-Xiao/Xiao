@@ -5,11 +5,12 @@
 > 本页只规划 math/statistics/fmt 之后的四库、F9/F10 和收口前置。
 > 不新增 intrinsic、ABI、私有 helper、公开 `dynamic` 或语言语法。
 >
-> 状态：**REM-A/B/C退出对账完成，20/20产品草稿与完整取证已交付（2026-11-02）**。
+> 状态：**REM-A/B/C退出对账完成，CLOSE已同步七库教程/registry为verified，状态提交门禁待取得（2026-11-03）**。
+> 本页保留REM实施规划；下文planned是REM当时的出口要求，当前进度见[CLOSE收口](20o-b1-closeout.md)。
 > 基线为已推送的 `90ea5a5a`；三模块/12 入口的 VM/三平台证据见
 > [41385483703](assets/20o-b1-imp/self-review-41385483703/README.md)。
-> 七库、生成器20释放前置及固定源码身份后的完整F10已由41464439400第二次尝试 / 41464421187取证；旧721条为历史快照，见 [最终对账](20o-b1-rem-evidence.md)。B1-CLOSE仍是独立后续。
-> 七库教程与 registry 条目继续保持 `planned`，直到 B1-CLOSE。
+> 七库、生成器20释放前置及固定源码身份后的完整F10已由41464439400第二次尝试 / 41464421187取证；旧721条为历史快照，见 [最终对账](20o-b1-rem-evidence.md)。B1-CLOSE已独立开工。
+> REM交付时七库为planned；CLOSE当前已同步教程与registry为verified，最终退出仍须完成状态提交门禁。
 
 hex 已通过本机九项契约与原生 O0/O3；Base64 已通过本机九项契约、两模式最大合法输入、
 实际解码长度超限及尾位优先级；原生 O0/O3 精确目标已通过。两库同名入口的别名和函数内导入已加入共享案例。
@@ -26,9 +27,9 @@ CSV 已通过七模块 20/20 的九项契约、最大 ASCII/Unicode/全引号/�
 | 已落地产品 | 七模块、20/20产品草稿；生成器19完整功能三平台已取证 | [当前证据](20o-b1-rem-evidence.md) |
 | 已修复前置 | std 别名、固定命名调用、模块绑定、字符串码点索引 | [返工记录](20o-b1-imp-blockers.md) |
 | 三平台证据 | 41464439400第二次尝试全绿，同提交门禁41464421187成功；历史22D失败与债务保留 | [最终证据](20o-b1-rem-evidence.md) |
-| 产品函数体 | 20 项已落地，资源/性能/生命周期与整体验收继续进行 | [B1 契约 §三](20o-b1-freeze-draft.md#三七库已确认签名与调用边界f2f8f12) |
+| 产品函数体 | 20项已落地，IMP/REM资源/性能/生命周期已取证，CLOSE只复核和升级状态 | [B1 契约 §三](20o-b1-freeze-draft.md#三七库已确认签名与调用边界f2f8f12) |
 | 性能/生命周期 | 固定源码身份工具重跑31负载，四报告721条完整通过；生成器20六组释放向量三平台均匹配 | [完整报告](assets/20o-b1-imp/rem-identity-final-41464439400/README.md) / [释放诊断](20o-b1-rem-release-prerequisite.md) |
-| 教程/registry | 七库仍 `planned` | `docs/module-registry.json` |
+| 教程/registry | CLOSE已同步七库为verified | `docs/module-registry.json` |
 
 本阶段只处理这些未完成项，不重问 F1～F13/E-2，不重做 FIX-B，也不认领 19/11/22 发布债务。
 
@@ -89,7 +90,7 @@ format_record([str] fields) -> str
 4. 保持现有两条精确目标，不新增 workflow 路径或守卫路径；现有四路径 28/28 不变。
 5. 三平台功能证据另跑一次；B1-CLOSE 再升级教程/registry 为 verified。
 
-### B1-CLOSE（独立后续）
+### B1-CLOSE（独立开工）
 
 执行细则见 [七库收口规划](20o-b1-closeout-plan.md)。只有在 20/20、F9/F10、释放差异和
 本阶段证据全部满足后才进入：

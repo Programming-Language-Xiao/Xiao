@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "entry_commit": "70440da2dbc8ab360bb27d4dbcc352f8ddae3789",
+  "f10_producer_commit": "44dc9d6efa5e636ee6d83aa9db3722237aae7c43",
+  "f10_tool_commit": "df27ca75670cf30bee696bec8c4d96fea31bcf40",
+  "f10_run": 41464439400,
+  "f10_attempt": 2,
+  "workspace_gates_run": 41464421187,
+  "live_run_conclusions_checked": "both success",
+  "products": [
+    {
+      "path": "stdlib/math.xiao",
+      "git_blob": "55a8d4cf7660b121d504e98d91e4c2747425ee8c",
+      "sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482"
+    },
+    {
+      "path": "stdlib/hex.xiao",
+      "git_blob": "5719302963ba1f413084f7698e0029a8be913d3e",
+      "sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25"
+    },
+    {
+      "path": "stdlib/base64.xiao",
+      "git_blob": "bb6c60bfcb1fd03ce7bb2b8516893bbea1dcbd14",
+      "sha256": "de0fe3ef8079258a39c8b3e29e1014902d684254c7cf0ca4a41c29d67372e946"
+    },
+    {
+      "path": "stdlib/url.xiao",
+      "git_blob": "aa643e0a09b42d97e5ab944d0a2068cd3199cc19",
+      "sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c"
+    },
+    {
+      "path": "stdlib/csv.xiao",
+      "git_blob": "9c56100371f46f840cde014e6d453082b65dd3fd",
+      "sha256": "58001e847de6bc1664f849227e89ae711fa4d1495185067d54352bb27b528159"
+    },
+    {
+      "path": "stdlib/fmt.xiao",
+      "git_blob": "2e195cda4263fbb06b2a555092c49f901c3ace5c",
+      "sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40"
+    },
+    {
+      "path": "stdlib/statistics.xiao",
+      "git_blob": "00b2dda4ec7c4aaaf1721bae478189a411541c40",
+      "sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8"
+    }
+  ],
+  "unchanged_objects": [
+    {
+      "path": "core/rust",
+      "git_object": "2cec8d33c6756000844de52a649ba8194737f60d",
+      "unchanged_from": "44dc9d6e"
+    },
+    {
+      "path": "tests/fixtures/20o-b1",
+      "git_object": "98683e603ee165c6a769f836a9289451a1dfa754",
+      "unchanged_from": "44dc9d6e"
+    },
+    {
+      "path": ".github/workflows/maintenance-regression.yml",
+      "git_object": "b032cb728e2fc87f4dde355e714515fd9c101600",
+      "unchanged_from": "44dc9d6e"
+    },
+    {
+      "path": ".github/workflows/workspace-gates.yml",
+      "git_object": "07672bc9e3cb529540f77eb91bb343eb0bd5cb27",
+      "unchanged_from": "44dc9d6e"
+    },
+    {
+      "path": "tools/gates",
+      "git_object": "52782cc0817f983ad84cc27f3d7a1c830be033bc",
+      "unchanged_from": "44dc9d6e"
+    }
+  ],
+  "tool_identity_sha256": "a1c9c70c0380527b7f8132aa1cd101bfde74163a3f02cb7293a99e7ddf63676f",
+  "f10_raw_log_archive_sha256": "4abee12d847410827dc76b293eb5a21c0bef3b6d707f53fc5c01d31874a7ba5a",
+  "f10_records": 721,
+  "codegen_version": 20,
+  "runtime_abi": "1.18",
+  "scope": "CLOSE入口复核，不是新的性能测量；状态升级提交的最终门禁另行取证",
+  "frozen_contract_sections": {
+    "tables": "67d236667e6bd602b946f0d9ce1a56c7ca2760450ad93852e9bab9a03a3ab238",
+    "signatures_and_csv_formula": "6135e961fffc3caccac889836d0771ef7df16debf29c510378dfeb537e0286f0",
+    "measurement_protocol": "a4270e05f2ab0e71cf0dc012dde390a409a7cd4eef975dc2d18fb67a830eae05",
+    "csv_budget_order": "8205c0b717bd8737fed14c6f6aa1c244779e4832866bd2fbfbde15befae4422b",
+    "error_priority": "560538c982b6b600fcadc5412552a5ff3134014683abe3a11ad3ef4605c15d8e"
+  },
+  "frozen_contract_compare_commit": "44dc9d6e"
+}

@@ -5,13 +5,14 @@
 > 本页只把七个模块、20 个入口、资源/错误/性能目标和落地顺序拆成可执行步骤。
 > 不重问 F1～F13/E-2，不新增 intrinsic、ABI、私有语法或公开 `dynamic`。
 >
-> 状态：**FIX-B已验收，20/20入口产品及REM退出证据已交付，B1-CLOSE未开启（2026-11-02）**。
+> 状态：**FIX-B及IMP/REM已交付，CLOSE已同步七库教程/registry为verified，最终状态提交门禁待取得（2026-11-03）**。
+> 本页保留IMP实施规划；planned描述IMP当时的出口，当前状态见[CLOSE收口](20o-b1-closeout.md)。
 > math/statistics/fmt 已有 VM 与原生 O0/O3 样例；命名参数、模块绑定及字符串成本前置已独立修复，见
 > [返工与剩余阻塞](20o-b1-imp-blockers.md)。规划基线为 `48a47440`，
 > 实施开工提交为 `6a23eabc`；已发现并单独处理既有 `std.` 别名接线前置，见 §2.2。
-> 当前 Runtime ABI 为 1.18，七库 registry 条目仍为 `planned`，七库教程仍为 `planned`。
+> 当前Runtime ABI为1.18，七库registry与七库教程已由CLOSE同步verified。
 > B1-IMP 完成后才进入 [B1-CLOSE](20o-b1-implementation-plan.md#b1-close证据收口)；
-> 本批不把教程升级为 `verified`。
+> IMP批次不作状态升级；CLOSE的状态提交须单独完成真实门禁。
 
 三模块及辅助回归的真实三平台维护回归 **41372968883** 与工作区门禁 **41372968916**
 均已通过，见 [CI 证据](assets/20o-b1-imp/maintenance-41372968883/README.md)。这只覆盖 12/20 草稿。
@@ -235,7 +236,7 @@ LLVM 的 CODEGEN_VERSION 升至 16 以隔离修正后的初始化/绑定指纹�
 同名别名已接入原有精确目标，本机原生 O0/O3 通过。
 逐形参负例同时覆盖 std/stdlib，20 项契约表全部实际执行。
 F9/F10、已知释放修复与本轮三平台证据已由 [REM](20o-b1-imp-remainder.md) 收齐；
-七库状态仍为 planned。不能把首批三模块三平台通过记为七库验收完成。
+七库状态现由CLOSE同步verified。首批三模块运行仍只作历史，不能代替整批七库证据。
 
 错误 code、类别和检查顺序以 [B1 §六](20o-b1-freeze-draft.md#六统一错误表f11已确认) 为唯一正文。
 实现时至少核对：

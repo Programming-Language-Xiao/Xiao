@@ -1,6 +1,6 @@
 # csv 模块
 
-工程期：20O-B1-IMP-REM-B。职责：严格逻辑单记录与字符串字段互转，规范源码为 [csv.xiao](csv.xiao)。
+工程期：20O-B1-IMP-REM-B/20O-B1-CLOSE。职责：严格逻辑单记录与字符串字段互转，规范源码为 [csv.xiao](csv.xiao)。
 边界：parse_record(str record) -> [str]、format_record([str] fields) -> str；
 不做全文 CSV、表头、方言、流式、类型推断或任何新增 intrinsic/ABI/helper。
 
@@ -16,6 +16,8 @@ format 先校验字段数/单字段/原始总量 S≤65,536，再计双引号 Q 
 
 输出用有界短块和成对归并，不反复追加完整结果；辅助逻辑全部内联。接口版本 1，
 解析时在函数内复用不可变空串、引号和分隔符，减少逐字符构造重复常量；预算检查与四状态首错规则不变。
-固定身份 stdlib.csv，公共路径 std.csv，教程保持 planned。资源/性能和生命周期另行验收，
+固定身份stdlib.csv，公共路径std.csv，教程与registry为verified。资源/性能和生命周期已取得REM证据，
 契约见 [B1](../docs/DevDocs/20o-b1-freeze-draft.md#35-csv两项已确认记录子集)，
 教程见 [字段与记录](../docs/UseDocs/library/csv.md)。
+
+状态升级与实际门禁见[B1-CLOSE收口](../docs/DevDocs/20o-b1-closeout.md)；Runtime ABI1.18、生成器20，产品函数与预算未因状态升级改变。

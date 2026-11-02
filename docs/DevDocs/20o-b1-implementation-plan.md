@@ -6,7 +6,8 @@
 > 新增边界已由 4d34767 的 maintenance 41285853958 / workspace gates 41285853953 取证，
 > 默认 VM 与三平台原生均实际执行 14 场景；逐作业链接与未覆盖项见 [FIX-A 记录](20o-b1-fix-a-contract-closeout.md#31-同一提交的远端逐作业证据)。
 >
-> 状态：**FIX-A/FIX-B与REM退出对账已完成；七库20/20产品与完整证据已交付，B1-CLOSE未开启（2026-11-02）**。
+> 状态：**FIX-A/FIX-B与IMP/REM已交付；CLOSE已同步七库教程/registry为verified，状态提交门禁待取得（2026-11-03）**。
+> 当前进度见[收口记录](20o-b1-closeout.md)。下文保留各批实施规划，planned是IMP/REM当时的出口状态。
 > FIX-B 的维护回归 41310926623 / 工作区门禁 41310926525 全绿，详见 [实际证据](20o-b1-fix-b-closeout.md)。
 > FIX-A 保留 ABI 1.17 历史证据；独立 FIX-B 当前已实现 intrinsic 32 与 ABI 1.18，
 > 不因本轮确认自动执行产品实现，不认领 19/11/22 债务。
@@ -22,7 +23,7 @@
 | B1 三平台原生探测 | 同次维护回归 [Windows](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889338) / [Linux](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889309) / [macOS](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853958/job/124786889367)：各七旧+七新、各 1 passed |
 | 同提交工作区门禁 | [41285853953](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41285853953)，head=4d347670cdfa05fac2f01888f9d5ff6e3a5db37e，success |
 | 计数守卫 | `tools/gates/b1-probe-guards.ps1` 28/28；已修复 Ubuntu 上 `Get-Command bash` 多入口的路径 bug |
-| 教程代码一致性 | `b1_tutorials_embed_the_executed_sources` 通过；七页教程仍为 `planned` |
+| 教程代码一致性 | B0与产品完整源码均逐字绑定CI；CLOSE当前七页与registry同步verified |
 | 文档门禁 | docs/usedocs/layout 通过 |
 
 ### 1.2 前置状态与七库剩余门槛
@@ -32,8 +33,8 @@
 | E-1 | error_code 真实前置 | id 32、ABI 1.18 已实现并经本地/三平台验收，阻塞解除 | 独立证据见 FIX-B 收口记录 |
 | E-2 | helper 导出面 | 已确认 B1 内联，只新增冻结 20 项；不加内部模块/私有语法 | IMP 核对真实模块导出集合与导入 |
 | E-3 | 签名/错误/限额/性能验收 | F2～F12 已确认；Base64 两入口含必填 url_safe；限额/预算是契约而非成绩 | IMP 按契约实现并验证资源/性能 |
-| E-4 | 教程执行与状态 | 七页 planned；七模块已有本机导出/移除/归档与教程回归，20/20 参数矩阵、两组同名别名与原生 O0/O3 已补 | B1-CLOSE 完成后再升级 verified |
-| E-5 | 三平台产品证据 | 44dc9d6e的41464439400第二次尝试 / 41464421187成功；固定源码身份工具新721条F10、六组释放与三平台精确点取证，旧报告为历史快照，22D债务保留 | [最终证据](20o-b1-rem-evidence.md)，七库仍planned，CLOSE独立后续 |
+| E-4 | 教程执行与状态 | 七页与七项registry已同步verified；20/20参数、移除/归档、别名、包隔离和三平台已有证据 | CLOSE状态提交的最终门禁另记 |
+| E-5 | 三平台产品证据 | 44dc9d6e的41464439400第二次尝试 / 41464421187成功；固定源码身份工具新721条F10、六组释放与三平台精确点取证，旧报告为历史快照，22D债务保留 | [最终证据](20o-b1-rem-evidence.md)；CLOSE状态已同步verified，新提交门禁见[收口记录](20o-b1-closeout.md) |
 
 ## 二、下一批的拆分
 

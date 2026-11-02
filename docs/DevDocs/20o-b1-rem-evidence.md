@@ -1,8 +1,9 @@
 # 20O-B1-IMP-REM 实施证据与剩余门槛
 
 状态：REM-A/B/C退出对账完成（2026-11-02）。44dc9d6e使用df27ca75固定源码身份工具，完整重跑VM/三平台原生721条F10并通过。
-维护回归41464439400第二次尝试与同提交门禁41464421187成功；旧721条仅为历史快照，七库仍planned，B1-CLOSE未开启。
-本页登记实际执行，不替代 [冻结契约](20o-b1-freeze-draft.md) 或独立B1-CLOSE；七库教程与registry仍planned。
+维护回归41464439400第二次尝试与同提交门禁41464421187成功；旧721条仅为历史快照。
+CLOSE当前已同步七库教程/registry为verified，状态提交的新门禁与最终退出见[收口记录](20o-b1-closeout.md)。
+本页保留REM实际执行，不替代[冻结契约](20o-b1-freeze-draft.md)或独立B1-CLOSE；REM交付时的planned是历史状态。
 
 ## 产品与契约
 
@@ -124,7 +125,7 @@ CPU、Rust/clang版本及构建段、原始JSON、zip摘要和完整源日志命
 | 双路径、逐形参负例、碰撞、移除、归档、普通包、教程 | 活跃清单与独立20入口表对账通过，完整教程源码逐字一致 |
 | 已知释放差异 | 六组同源向量，三平台各12条原生记录逐对象销毁顺序匹配VM；原22断言保留 |
 | 默认workspace、三平台维护回归和完整门禁 | 44dc9d6e的41464439400第二次尝试 / 41464421187成功；计数守卫28/28，22D历史失败保留且债务未关闭 |
-| 教程/registry状态 | 七库均planned；error_code独立verified保持，B1-CLOSE另批升级 |
+| 教程/registry状态 | REM交付时七库planned；CLOSE已同步七库verified，error_code独立状态不变 |
 
 REM本批未新增intrinsic、生产ABI、公开dynamic或语言语法；只按星崽授权把普通for/selector独立前置的生成器19→20，Runtime ABI仍1.18。
 

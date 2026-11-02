@@ -1,6 +1,6 @@
 # hex 模块
 
-工程期：20O-B1-IMP-REM-A。职责：严格的字节十六进制互转，规范源码为 [hex.xiao](hex.xiao)。
+工程期：20O-B1-IMP-REM-A/20O-B1-CLOSE。职责：严格的字节十六进制互转，规范源码为 [hex.xiao](hex.xiao)。
 边界：只导出 encode/decode，不新增 intrinsic、ABI、helper、默认参数或方法别名。
 
 | 签名 | 行为 |
@@ -14,7 +14,9 @@
 
 encode 在有界预检后每 128 字节构造一个短块，再成对合并，避免反复复制完整输出；
 decode 两次有界顺序扫描，不用宿主编解码或整串替换。接口身份 stdlib.hex，公共别名 std.hex，
-接口版本 1。函数体、F9/F10 和三平台证据分开验收，状态保持 planned。
+接口版本1。函数体、F9/F10与三平台证据已分别取证，状态verified。
 
 契约见 [B1](../docs/DevDocs/20o-b1-freeze-draft.md#32-hex两项)，教程与完整产品样例见
 [字节十六进制](../docs/UseDocs/library/hex.md)。
+
+状态升级与实际门禁见[B1-CLOSE收口](../docs/DevDocs/20o-b1-closeout.md)；Runtime ABI1.18、生成器20，产品函数与预算未因状态升级改变。
