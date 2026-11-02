@@ -20,7 +20,8 @@
 字符串构造仅在测试配置下检查一次性分配 failpoint，失败沿用 ResourceError / 011。
 
 20O-B1-IMP 的独立字符串成本前置在构造非 ASCII 字符串时建立不可变码点起点索引；
-ASCII 无额外数组。`len`、`character_at` 为常量时间，VM 下标与原生迭代/下标共用该读取，
+ASCII 无额外数组。文本字段私有，与索引共同构造，避免独立修改文本使索引失效。
+`len`、`character_at` 为常量时间，VM 下标与原生迭代/下标共用该读取，
 不再逐项扫描前缀；Unicode 索引缓冲按实际容量计入 Runtime 对象内存，分配失败仍为
 ResourceError / 011。不增加 C ABI、intrinsic 或语言语义。`string_index_tests.rs` 核对
 Unicode 边界、越界、共享生命周期和拥有字节计数。

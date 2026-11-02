@@ -28,8 +28,8 @@ use crate::resources::io_error as resource_io_error;
 /// Xiao `str` 的堆载荷。
 #[derive(Debug)]
 pub(crate) struct StringObject {
-    /// UTF-8 字符串内容。
-    pub value: String,
+    /// 与码点索引共同构造的不可变 UTF-8 内容，不提供独立修改入口。
+    value: String,
     /// Unicode 字符的 UTF-8 起点；ASCII 不分配索引，直接以字节位置读取。
     scalar_offsets: Option<Vec<usize>>,
 }
