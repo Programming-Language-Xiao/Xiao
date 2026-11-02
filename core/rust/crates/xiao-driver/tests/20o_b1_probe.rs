@@ -66,7 +66,7 @@ const FIX_B_CASES: [&str; 7] = [
 ];
 
 /// B1-IMP 已落地的公开产品模块；保留旧三组独立黄金，按实施顺序扩展。
-const B1_IMP_CASES: [&str; 3] = ["math", "statistics", "fmt"];
+const B1_IMP_CASES: [&str; 5] = ["math", "statistics", "fmt", "aliases", "string-index"];
 
 /// 依据 crate 固定位置找到仓库，保留真实源码路径及官方导入环境。
 fn repository_root() -> &'static Path {

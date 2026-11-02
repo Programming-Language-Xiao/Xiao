@@ -115,6 +115,28 @@ try
     print(format_int(minimum, 1))
 catch radix as Error
     print(error_code(radix))
+try
+    print(pad_right("x", 65537, "."))
+catch right_limit as ResourceError
+    print(error_code(right_limit))
+try
+    print(pad_left("x", 65537, ""))
+catch fill_before_limit as Error
+    print(error_code(fill_before_limit))
+large = "x"
+doublings = 0
+while doublings < 16
+    large = large + large
+    doublings = doublings + 1
+oversized = large + "x"
+try
+    print(pad_left(oversized, 0, "."))
+catch text_limit_left as ResourceError
+    print(error_code(text_limit_left))
+try
+    print(pad_right(oversized, 0, "."))
+catch text_limit_right as ResourceError
+    print(error_code(text_limit_right))
 ```
 
 独立黄金输出：

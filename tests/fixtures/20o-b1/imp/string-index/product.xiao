@@ -1,0 +1,20 @@
+text = "A\0雪😀é﻿"
+print(int(text[0]))
+print(int(text[1]))
+print(int(text[2]))
+print(int(text[-4]))
+print(int(text[-1]))
+for character in text
+    print(int(character))
+try
+    print(text[7])
+catch positive_bounds as Error
+    print(error_code(positive_bounds))
+try
+    print(text[-8])
+catch negative_bounds as Error
+    print(error_code(negative_bounds))
+try
+    print(text[-9223372036854775808])
+catch minimum_bounds as Error
+    print(error_code(minimum_bounds))

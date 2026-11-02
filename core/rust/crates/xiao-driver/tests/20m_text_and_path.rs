@@ -206,7 +206,7 @@ fn text_path_interfaces_require_loader_and_native_function_binding() {
         };
         assert_eq!(
             feature,
-            format!("动态函数调用 {function}（未找到静态函数绑定）"),
+            format!("官方函数 stdlib.{module}.{function} 未静态链接"),
             "{id} 的拒绝必须指向被删除的函数"
         );
         assert!(span.is_some(), "{id} 的缺失绑定诊断必须带源码区间");

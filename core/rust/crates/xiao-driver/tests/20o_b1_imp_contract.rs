@@ -19,6 +19,91 @@ const PRODUCTS: &[(&str, &[&str])] = &[
     ("fmt", &["pad_left", "pad_right", "format_int"]),
 ];
 
+/// 独立登记冻结形参名、合法值和错误类型；产品逐模块落地后自动执行对应的全部负例。
+type Parameter = (&'static str, &'static str, &'static str);
+type CallContract = (&'static str, &'static str, &'static [Parameter]);
+const CALL_CONTRACTS: &[CallContract] = &[
+    ("math", "abs", &[("value", "-7", "\"bad\"")]),
+    (
+        "math",
+        "min",
+        &[("left", "7", "\"bad\""), ("right", "2", "\"bad\"")],
+    ),
+    (
+        "math",
+        "max",
+        &[("left", "7", "\"bad\""), ("right", "2", "\"bad\"")],
+    ),
+    (
+        "math",
+        "clamp",
+        &[
+            ("value", "1", "\"bad\""),
+            ("lower", "0", "\"bad\""),
+            ("upper", "2", "\"bad\""),
+        ],
+    ),
+    (
+        "math",
+        "gcd",
+        &[("left", "7", "\"bad\""), ("right", "2", "\"bad\"")],
+    ),
+    (
+        "math",
+        "pow",
+        &[("base", "2", "\"bad\""), ("exponent", "3", "\"bad\"")],
+    ),
+    ("hex", "encode", &[("bytes", "[0, 255]", "[\"bad\"]")]),
+    ("hex", "decode", &[("text", "\"00ff\"", "1")]),
+    (
+        "base64",
+        "encode",
+        &[
+            ("bytes", "[0, 255]", "[\"bad\"]"),
+            ("url_safe", "false", "1"),
+        ],
+    ),
+    (
+        "base64",
+        "decode",
+        &[("text", "\"AP8=\"", "1"), ("url_safe", "false", "1")],
+    ),
+    ("url", "encode_component", &[("text", "\"hello\"", "1")]),
+    ("url", "decode_component", &[("text", "\"hello\"", "1")]),
+    ("csv", "parse_record", &[("record", "\"a,b\"", "1")]),
+    (
+        "csv",
+        "format_record",
+        &[("fields", "[\"a\", \"b\"]", "[1]")],
+    ),
+    (
+        "fmt",
+        "pad_left",
+        &[
+            ("text", "\"x\"", "1"),
+            ("width", "3", "\"bad\""),
+            ("fill", "\".\"", "1"),
+        ],
+    ),
+    (
+        "fmt",
+        "pad_right",
+        &[
+            ("text", "\"x\"", "1"),
+            ("width", "3", "\"bad\""),
+            ("fill", "\".\"", "1"),
+        ],
+    ),
+    (
+        "fmt",
+        "format_int",
+        &[("value", "10", "\"bad\""), ("radix", "16", "\"bad\"")],
+    ),
+    ("statistics", "sum", &[("values", "[1, 2]", "[\"bad\"]")]),
+    ("statistics", "min", &[("values", "[1, 2]", "[\"bad\"]")]),
+    ("statistics", "max", &[("values", "[1, 2]", "[\"bad\"]")]),
+];
+
 /// 并行契约测试使用独立缓存和应用路径。
 static DIRECTORY_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
@@ -116,6 +201,157 @@ fn assert_output(request: FrontendRequest, expected: &str) {
     assert_eq!(output.as_bytes(), expected.as_bytes());
 }
 
+/// 调用错误必须由前端明确拒绝，不把后端拒绝或运行时成功当成静态契约证据。
+fn assert_frontend_code(source: String, code: &str) {
+    let Err(error) = FrontendCompiler::new().compile(&FrontendRequest::from_text(&source)) else {
+        panic!("错误调用未按 {code} 拒绝：{source}");
+    };
+    assert!(
+        error.diagnostics().iter().any(|item| item.code() == code),
+        "{source}: {error:?}"
+    );
+}
+
+#[test]
+/// 每个真实入口的每个形参分别测错误类型、缺参、重名、未知名、过多参数与未导入拒绝。
+fn public_calls_enforce_every_frozen_parameter_and_require_imports() {
+    assert_eq!(CALL_CONTRACTS.len(), 20);
+    let mut checked = 0;
+    for &(module, names) in PRODUCTS {
+        for &function in names {
+            let matches: Vec<_> = CALL_CONTRACTS
+                .iter()
+                .filter(|item| item.0 == module && item.1 == function)
+                .collect();
+            assert_eq!(
+                matches.len(),
+                1,
+                "{module}.{function} 必须恰好有一份独立调用契约"
+            );
+            let parameters = matches[0].2;
+            let values: Vec<_> = parameters.iter().map(|item| item.1).collect();
+            for namespace in ["std", "stdlib"] {
+                let prefix = format!("from {namespace}.{module} import {function}\n");
+                let named: Vec<_> = parameters
+                    .iter()
+                    .rev()
+                    .map(|item| format!("{} = {}", item.0, item.1))
+                    .collect();
+                let valid = format!("{prefix}{function}({})\n", named.join(", "));
+                let artifact = FrontendCompiler::new()
+                    .compile(&FrontendRequest::from_text(valid))
+                    .unwrap();
+                xiao_codegen_llvm::NativeBuild::new()
+                    .lower(&artifact.ir, &Default::default())
+                    .unwrap();
+                assert_frontend_code(
+                    format!("{function}({})\n", values.join(", ")),
+                    "X02-TYPE-001",
+                );
+                for index in 0..parameters.len() {
+                    let mut invalid = values.clone();
+                    invalid[index] = parameters[index].2;
+                    assert_frontend_code(
+                        format!("{prefix}{function}({})\n", invalid.join(", ")),
+                        "X04-TYPE-002",
+                    );
+                    let missing: Vec<_> = parameters
+                        .iter()
+                        .enumerate()
+                        .filter(|(item, _)| *item != index)
+                        .map(|(_, item)| format!("{} = {}", item.0, item.1))
+                        .collect();
+                    assert_frontend_code(
+                        format!("{prefix}{function}({})\n", missing.join(", ")),
+                        "X04-TYPE-002",
+                    );
+                    assert_frontend_code(
+                        format!(
+                            "{prefix}{function}({}, {} = {})\n",
+                            named.join(", "),
+                            parameters[index].0,
+                            parameters[index].1
+                        ),
+                        "X04-TYPE-002",
+                    );
+                }
+                assert_frontend_code(
+                    format!("{prefix}{function}({}, 1)\n", values.join(", ")),
+                    "X04-TYPE-002",
+                );
+                assert_frontend_code(
+                    format!("{prefix}{function}({}, missing = 1)\n", named.join(", ")),
+                    "X04-TYPE-002",
+                );
+            }
+            checked += 1;
+        }
+    }
+    assert_eq!(
+        checked,
+        PRODUCTS.iter().map(|item| item.1.len()).sum::<usize>()
+    );
+    println!(
+        "B1-IMP-CONTRACT modules={} entries={checked}/20 parameter-matrix=complete-for-implemented",
+        PRODUCTS.len()
+    );
+}
+
+#[test]
+/// 真实源码、登记项与活跃产品清单一致；新增模块后不能继续只测旧的三模块而静默通过。
+fn every_implemented_module_is_in_the_active_contract_matrix() {
+    let registry: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(root().join("docs/module-registry.json")).unwrap(),
+    )
+    .unwrap();
+    let modules: std::collections::BTreeSet<_> = CALL_CONTRACTS.iter().map(|item| item.0).collect();
+    assert_eq!(modules.len(), 7);
+    for module in modules {
+        let path = format!("stdlib/{module}.xiao");
+        let implemented = root().join(&path).is_file();
+        let id = format!("stdlib.{module}");
+        let entry = registry["modules"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|item| item["id"] == id)
+            .unwrap();
+        let registered = entry["code"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|item| item == &path);
+        assert_eq!(implemented, registered, "{module} 源码与登记项不一致");
+        let active = PRODUCTS.iter().find(|item| item.0 == module);
+        assert_eq!(
+            implemented,
+            active.is_some(),
+            "{module} 必须进入真实产品契约和执行清单"
+        );
+        if let Some((_, names)) = active {
+            let expected: std::collections::BTreeSet<_> = CALL_CONTRACTS
+                .iter()
+                .filter(|item| item.0 == module)
+                .map(|item| item.1)
+                .collect();
+            assert_eq!(
+                names
+                    .iter()
+                    .copied()
+                    .collect::<std::collections::BTreeSet<_>>(),
+                expected
+            );
+            assert!(
+                root()
+                    .join(format!("tests/fixtures/20o-b1/imp/{module}/product.xiao"))
+                    .is_file()
+            );
+        } else {
+            assert_ne!(entry["status"], "verified", "{module} 未实现，不能验收");
+        }
+    }
+}
+
 #[test]
 /// 每个模块逐字执行黄金，并经真实模块接口核对完整公开名称和来源。
 fn products_execute_and_export_only_the_frozen_names() {
@@ -172,6 +408,17 @@ fn public_std_aliases_execute_through_the_official_loader() {
         let (request, expected) = product(module);
         assert_output(request, &expected);
     }
+}
+
+#[test]
+/// 同名库函数必须按模块身份绑定；别名和函数内导入不能受其它模块加载顺序影响。
+fn colliding_public_names_keep_their_own_module_implementations() {
+    let (request, expected) = product("aliases");
+    let artifact = FrontendCompiler::new().compile(&request).unwrap();
+    xiao_codegen_llvm::NativeBuild::new()
+        .lower(&artifact.ir, &Default::default())
+        .unwrap();
+    assert_output(request, &expected);
 }
 
 #[test]
