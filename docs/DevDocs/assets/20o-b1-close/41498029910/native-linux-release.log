@@ -1,0 +1,12 @@
+2026-11-02T18:13:24.6873572Z 20O-REM-RELEASE case=success optimization=0 destroy=13 order=matched
+2026-11-02T18:13:25.1774361Z 20O-REM-RELEASE case=success optimization=3 destroy=13 order=matched
+2026-11-02T18:13:25.6747746Z 20O-REM-RELEASE case=with-bounds optimization=0 destroy=16 order=matched
+2026-11-02T18:13:26.1918455Z 20O-REM-RELEASE case=with-bounds optimization=3 destroy=16 order=matched
+2026-11-02T18:13:26.6631785Z 20O-REM-RELEASE case=nested-jumps optimization=0 destroy=7 order=matched
+2026-11-02T18:13:27.1471753Z 20O-REM-RELEASE case=nested-jumps optimization=3 destroy=7 order=matched
+2026-11-02T18:13:27.6133432Z 20O-REM-RELEASE case=temporary-return optimization=0 destroy=3 order=matched
+2026-11-02T18:13:28.0900322Z 20O-REM-RELEASE case=temporary-return optimization=3 destroy=3 order=matched
+2026-11-02T18:13:28.5804522Z 20O-REM-RELEASE case=selector-errors optimization=0 destroy=6 order=matched
+2026-11-02T18:13:29.0827399Z 20O-REM-RELEASE case=selector-errors optimization=3 destroy=6 order=matched
+2026-11-02T18:13:29.5476889Z 20O-REM-RELEASE case=loop-body-error optimization=0 destroy=3 order=matched
+2026-11-02T18:13:30.0224544Z 20O-REM-RELEASE case=loop-body-error optimization=3 destroy=3 order=matched

@@ -1,0 +1,34 @@
+2026-11-02T18:18:50.4218378Z running 1 test
+2026-11-02T18:18:50.4218813Z 20O-B0-PROBE module=math backend=vm result=success
+2026-11-02T18:18:50.4219350Z 20O-B0-PROBE module=hex backend=vm result=success
+2026-11-02T18:18:50.4219909Z 20O-B0-PROBE module=base64 backend=vm result=success
+2026-11-02T18:18:50.4220656Z 20O-B0-PROBE module=url backend=vm result=success
+2026-11-02T18:18:50.4221186Z 20O-B0-PROBE module=csv backend=vm result=success
+2026-11-02T18:18:50.4221723Z 20O-B0-PROBE module=fmt backend=vm result=success
+2026-11-02T18:18:50.4222321Z 20O-B0-PROBE module=statistics backend=vm result=success
+2026-11-02T18:18:50.4222980Z 20O-B1-FIX-A-PROBE case=math-extremes backend=vm result=success
+2026-11-02T18:18:50.4223677Z 20O-B1-FIX-A-PROBE case=hex-all-bytes backend=vm result=success
+2026-11-02T18:18:50.4224356Z 20O-B1-FIX-A-PROBE case=base64-tail-bits backend=vm result=success
+2026-11-02T18:18:50.4225062Z 20O-B1-FIX-A-PROBE case=utf8-boundaries backend=vm result=success
+2026-11-02T18:18:50.4225729Z 20O-B1-FIX-A-PROBE case=csv-budget backend=vm result=success
+2026-11-02T18:18:50.4226318Z 20O-B1-FIX-A-PROBE case=fmt-int-min backend=vm result=success
+2026-11-02T18:18:50.4226787Z 20O-B1-FIX-A-PROBE case=statistics-overflow backend=vm result=success
+2026-11-02T18:18:50.4227266Z 20O-B1-FIX-B-PROBE case=default-and-custom backend=vm result=success
+2026-11-02T18:18:50.4227723Z 20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm result=success
+2026-11-02T18:18:50.4228178Z 20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm result=success
+2026-11-02T18:18:50.4228629Z 20O-B1-FIX-B-PROBE case=pending-finally backend=vm result=success
+2026-11-02T18:18:50.4229451Z 20O-B1-FIX-B-PROBE case=dynamic-types backend=vm result=success
+2026-11-02T18:18:50.4229878Z 20O-B1-FIX-B-PROBE case=long-code backend=vm result=success
+2026-11-02T18:18:50.4230560Z 20O-B1-FIX-B-PROBE case=abi-requirements backend=vm result=success
+2026-11-02T18:18:50.4230993Z 20O-B1-IMP-PROBE case=math backend=vm result=success
+2026-11-02T18:18:50.4231390Z 20O-B1-IMP-PROBE case=statistics backend=vm result=success
+2026-11-02T18:18:50.4231779Z 20O-B1-IMP-PROBE case=fmt backend=vm result=success
+2026-11-02T18:18:50.4232147Z 20O-B1-IMP-PROBE case=hex backend=vm result=success
+2026-11-02T18:18:50.4232517Z 20O-B1-IMP-PROBE case=base64 backend=vm result=success
+2026-11-02T18:18:50.4232893Z 20O-B1-IMP-PROBE case=url backend=vm result=success
+2026-11-02T18:18:50.4233255Z 20O-B1-IMP-PROBE case=csv backend=vm result=success
+2026-11-02T18:18:50.4233631Z 20O-B1-IMP-PROBE case=aliases backend=vm result=success
+2026-11-02T18:18:50.4234313Z 20O-B1-IMP-PROBE case=string-index backend=vm result=success
+2026-11-02T18:18:50.4234736Z test b1_capabilities_have_vm_golden_outputs ... ok
+2026-11-02T18:18:50.4234975Z
+2026-11-02T18:18:50.4235262Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 52.64s

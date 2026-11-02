@@ -1,0 +1,57 @@
+2026-11-02T18:17:07.6674566Z running 1 test
+2026-11-02T18:17:07.6677655Z 20O-B0-PROBE module=math backend=vm/native result=success
+2026-11-02T18:17:07.6687050Z 20O-B0-PROBE module=hex backend=vm/native result=success
+2026-11-02T18:17:07.6696140Z 20O-B0-PROBE module=base64 backend=vm/native result=success
+2026-11-02T18:17:07.6699778Z 20O-B0-PROBE module=url backend=vm/native result=success
+2026-11-02T18:17:07.6701627Z 20O-B0-PROBE module=csv backend=vm/native result=success
+2026-11-02T18:17:07.6706275Z 20O-B0-PROBE module=fmt backend=vm/native result=success
+2026-11-02T18:17:07.6709586Z 20O-B0-PROBE module=statistics backend=vm/native result=success
+2026-11-02T18:17:07.6713095Z 20O-B1-FIX-A-PROBE case=math-extremes backend=vm/native result=success
+2026-11-02T18:17:07.6715778Z 20O-B1-FIX-A-PROBE case=hex-all-bytes backend=vm/native result=success
+2026-11-02T18:17:07.6717675Z 20O-B1-FIX-A-PROBE case=base64-tail-bits backend=vm/native result=success
+2026-11-02T18:17:07.6721525Z 20O-B1-FIX-A-PROBE case=utf8-boundaries backend=vm/native result=success
+2026-11-02T18:17:07.6723565Z 20O-B1-FIX-A-PROBE case=csv-budget backend=vm/native result=success
+2026-11-02T18:17:07.6726307Z 20O-B1-FIX-A-PROBE case=fmt-int-min backend=vm/native result=success
+2026-11-02T18:17:07.6727989Z 20O-B1-FIX-A-PROBE case=statistics-overflow backend=vm/native result=success
+2026-11-02T18:17:07.6732478Z 20O-B1-FIX-B-PROBE case=default-and-custom backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6735144Z 20O-B1-FIX-B-PROBE case=default-and-custom backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6738359Z 20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6740986Z 20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6743592Z 20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6745754Z 20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6748699Z 20O-B1-FIX-B-PROBE case=pending-finally backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6752578Z 20O-B1-FIX-B-PROBE case=pending-finally backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6754398Z 20O-B1-FIX-B-PROBE case=dynamic-types backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6757739Z 20O-B1-FIX-B-PROBE case=dynamic-types backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6760350Z 20O-B1-FIX-B-PROBE case=long-code backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6764590Z 20O-B1-FIX-B-PROBE case=long-code backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6766830Z 20O-B1-FIX-B-PROBE case=abi-requirements backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6770703Z 20O-B1-FIX-B-PROBE case=abi-requirements backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6773586Z 20O-B1-IMP-PROBE case=math backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6778153Z 20O-B1-IMP-PROBE case=math backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6780782Z test b1_capabilities_match_native_golden_outputs has been running for over 60 seconds
+2026-11-02T18:17:07.6785364Z 20O-B1-IMP-PROBE case=statistics backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6787239Z 20O-B1-IMP-PROBE case=statistics backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6788356Z 20O-B1-IMP-PROBE case=fmt backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6792608Z 20O-B1-IMP-PROBE case=fmt backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6795724Z 20O-B1-IMP-PROBE case=hex backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6798187Z 20O-B1-IMP-PROBE case=hex backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6799492Z 20O-B1-IMP-PROBE case=base64 backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6803282Z 20O-B1-IMP-PROBE case=base64 backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6808154Z 20O-B1-IMP-PROBE case=url backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6809942Z 20O-B1-IMP-PROBE case=url backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6813223Z 20O-B1-IMP-PROBE case=csv backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6816910Z 20O-B1-IMP-PROBE case=csv backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6819457Z 20O-B1-IMP-PROBE case=aliases backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6822514Z 20O-B1-IMP-PROBE case=aliases backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6824875Z 20O-B1-IMP-PROBE case=string-index backend=vm/native optimization=0 result=success
+2026-11-02T18:17:07.6828545Z 20O-B1-IMP-PROBE case=string-index backend=vm/native optimization=3 result=success
+2026-11-02T18:17:07.6831048Z 20O-B1-FIX-B-CLEANUP case=success-cleanup optimization=0 cleanup=once result=success
+2026-11-02T18:17:07.6833299Z 20O-B1-FIX-B-CLEANUP case=success-cleanup optimization=3 cleanup=once result=success
+2026-11-02T18:17:07.6837754Z 20O-B1-FIX-B-CLEANUP case=allocation-failure optimization=0 cleanup=once result=success
+2026-11-02T18:17:07.6839377Z 20O-B1-FIX-B-CLEANUP case=allocation-failure optimization=3 cleanup=once result=success
+2026-11-02T18:17:07.6842713Z 20O-B1-FIX-B-CLEANUP case=getter-failure optimization=0 cleanup=once result=success
+2026-11-02T18:17:07.6846490Z 20O-B1-FIX-B-CLEANUP case=getter-failure optimization=3 cleanup=once result=success
+2026-11-02T18:17:07.6849915Z test b1_capabilities_match_native_golden_outputs ... ok
+2026-11-02T18:17:07.6852186Z
+2026-11-02T18:17:07.6855516Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 150.57s

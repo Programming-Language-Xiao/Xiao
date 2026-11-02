@@ -1,8 +1,8 @@
 # 20O-B1-CLOSE. 七库验收与证据收口
 
-状态：教程与registry七项已同步升为verified，最终状态提交的维护回归和工作区门禁待取得（2026-11-03）。
+状态：B1-CLOSE已完成；七库教程与registry七项均verified，状态提交106b99c7的完整门禁与证据已收齐（2026-11-03）。
 本批按[收口规划](20o-b1-closeout-plan.md)执行；开工提交70440da2，产品与工具仍与44dc9d6e/df27ca75相同。
-状态升级依据已有完整产品、教程、三平台与F10证据；本页在新提交门禁完成后登记实际run/job/attempt并做最终退出对账。
+本页登记状态提交的实际run/job/attempt及退出对账。后续证据回填只更新阶段总结与清单，七册教程、registry和产品仍与已执行快照相同。
 
 ## 一、交付与边界
 
@@ -37,25 +37,58 @@ F10结果适用于报告中的硬件与工具链。时间不包含编译、初�
 
 ## 三、状态提交的最终门禁
 
-状态升级提交仍须通过：默认workspace、四个B1精确点、9项契约、17项资源、5项默认性能回归、
+状态升级提交已按原门禁通过：默认workspace、四个B1精确点、9项契约、17项资源、5项默认性能回归、
 四路径28/28守卫及完整工作区门禁。四个B1目标分别要求恰好1 passed/0 failed/0 ignored，原生含O0/O3。
 移除、真实.xar重放、普通包隔离、双路径、参数/别名碰撞和教程逐字一致性由现有契约目标执行。
 生成器20六组释放向量由三平台现有目标逐对象对账，原22D断言保留。
 
-当前尚未取得本次状态提交的最终运行号；完成前不把本页写成B1-CLOSE已退出。
-最终run/job/attempt、源日志摘要与摘录归档到[CLOSE证据目录](assets/20o-b1-close/README.md)。
+状态升级快照为106b99c70e88a88afd0dd9a33f6a9c792e13324c。
+维护回归[41498029910](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910)第3次尝试成功，
+同提交工作区门禁[41498029872](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029872)成功。
+首轮仅macOS未分配到runner而自动取消、没有执行步骤，其余五作业成功；第二次在既有22C释放顺序断言失败，
+B1原生精确目标尚未执行，[原始22C失败](assets/20o-b1-close/41498029910/macos-22c-attempt2-failure.json)和完整日志保留。
+只重试同一提交的macOS，不修改测试、断言、顺序或预算，
+[原始取消与注释](assets/20o-b1-close/41498029910/macos-capacity.json)保留。下表使用实际产生日志的作业，
+不把最终尝试中复用结果的聚合ID当作重新执行。
+
+| 路径 | 实际日志作业 / 尝试 | 证据 |
+| --- | --- | --- |
+| VM/Linux | [125457995455](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125457995455) / 1 | [实际输出](assets/20o-b1-close/41498029910/vm-linux-exact.log) |
+| 原生Linux O0/O3 | [125457995362](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125457995362) / 1 | [实际输出](assets/20o-b1-close/41498029910/native-linux-exact.log) |
+| 原生Windows O0/O3 | [125457995302](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125457995302) / 1 | [实际输出](assets/20o-b1-close/41498029910/native-windows-exact.log) |
+| 原生macOS O0/O3 | [125478253499](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125478253499) / 3 | [实际输出](assets/20o-b1-close/41498029910/native-macos-exact.log) |
+| 完整工作区门禁 | [125457995746](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029872/job/125457995746) / 1 | [实际输出](assets/20o-b1-close/41498029910/workspace-gates-summary.log) |
+
+四个B1点各恰好1 passed/0 failed/0 ignored；七产品完整示例均实际执行原生O0/O3，历史B0示例按原测试配置各执行一次。
+默认9项契约、17项资源、5项性能回归和四路径28/28守卫通过；三平台六组释放向量各12条逐对象匹配。
+完整workspace、fmt、clippy、docs/usedocs/layout、覆盖率、benchmark/Bun等均按既有门禁通过。
+文档覆盖率90.27%，公共API文档覆盖率100%；未放宽断言、阈值或既有REPL隔离规则。
+
+[最终证据目录](assets/20o-b1-close/41498029910/README.md)保存机器清单、实际作业归属、完整日志ZIP与源行/摘要。
+清单同时绑定七册教程与registry的Git对象，避免把证据回填后的文档提交伪称为新的产品运行。
+
 
 ## 四、独立债务与限制
 
 41450826013及41464439400全绿不关闭41444159791的macOS22D历史失败；
 原始释放顺序失败、所属提交及源日志见[历史22D记录](20o-b1-rem-self-review.md#历史22d失败与最新维护回归)。
+本次macOS的22C释放顺序失败也按原测试归属独立保留；后续重试绿色不核销这次失败或22体系债务。
 19发布、11C/11B与22D/22债务继续按各自文档处理，本批不核销。
 
 CSV仍为单记录子集，URL仍为组件编码，statistics仍只覆盖int求和/最小/最大；
 全文CSV、完整URL解析、浮点/高精度/均值方差、通用私有helper和其它后续库均不因本次verified而开放。
-若最终回归暴露产品缺陷，按规划停止CLOSE并回到相应IMP/前置批次。
+后续若发现产品缺陷，应回到相应IMP/前置批次，不在CLOSE内修改函数体或预算。
 
 ## 五、退出对账
 
-七库教程与registry已同步升级、产品/F10身份已复核；最终同提交门禁和证据收集尚待完成。
-全部完成后在本页登记实际运行号并同步阶段索引，不把历史planned快照改写成当时已验收。
+| 出口 | 结果 |
+| --- | --- |
+| 七册教程与七项registry同步verified | 已完成，stage包含20O-B1-CLOSE，产品示例与夹具逐字一致 |
+| 状态提交的默认workspace、四精确点、完整工作区门禁 | 106b99c7实际执行通过，实际run/job/attempt与完整源日志已入库 |
+| F10的721条同源证据 | 原报告、产品/工具、冻结表与测量协议身份复核通过；明确为携带已有测量 |
+| 导出/移除、归档、普通包、错误/资源及教程执行 | 九项契约与17项资源及精确目标均通过 |
+| 生命周期 | 生成器20六组向量三平台匹配，原22D断言保持 |
+| 独立债务 | 历史22D失败及19/11/22债务继续独立登记，不在本批核销 |
+
+B1七库在本批收口。历史planned记录、旧721条与所有已归档失败保持其原提交/阶段语境，
+不改写成当时已经verified；后续库按20O/20P各自的探测与冻结流程另行启动。

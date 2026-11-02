@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "scope": "既有22C释放顺序断言，未修改源码/断言/工作流；不计CLOSE通过，macOS B1精确点尚未执行",
+  "run_id": 41498029910,
+  "actual_job_id": 125469029010,
+  "actual_attempt": 2,
+  "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+  "conclusion": "failure",
+  "exit_code": 101,
+  "test": "queued_task_cancel_never_runs_body_and_wait_is_027",
+  "source": "core/rust/crates/xiao-driver/tests/22c_vm_concurrency.rs",
+  "assertion_line": 567,
+  "unchanged_test_git_blob": "3a708a5a09d72362ccc8604708c137006df1516d",
+  "actual": [
+    34,
+    36
+  ],
+  "expected": [
+    36,
+    34
+  ],
+  "b1_native_exact_executed": false,
+  "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125469029010/logs",
+  "source_sha256": "07b1ebe8cb669a708fe90723f79901037dad04f5c54847022b3e9b6ffa691faa",
+  "source_bytes": 270016,
+  "excerpt": {
+    "file": "macos-22c-attempt2-failure.log",
+    "source_start_line": 2438,
+    "source_end_line": 2483,
+    "sha256": "74975e54e0cb6025e55e29beaffa9f1dd207b4d4412122bd464920c6c6071348"
+  },
+  "raw_archive": {
+    "file": "macos-22c-attempt2-full.zip",
+    "entry": "macos-attempt2-full.log",
+    "sha256": "57c59ae8add791239f15a75306d53232bd3cded0b9557a6db06ff133e0c6e492"
+  },
+  "job": {
+    "id": 125469029010,
+    "run_id": 41498029910,
+    "workflow_name": "Xiao maintenance regression",
+    "head_branch": "codex/b1-imp-seven-libraries",
+    "run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41498029910",
+    "run_attempt": 2,
+    "node_id": "CR_kwDOURc-Qs8AAAAdNolykg",
+    "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+    "url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/jobs/125469029010",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125469029010",
+    "status": "completed",
+    "conclusion": "failure",
+    "created_at": "2026-11-02T18:30:42Z",
+    "started_at": "2026-11-02T18:30:54Z",
+    "completed_at": "2026-11-02T18:44:36Z",
+    "name": "Native differential regression (macOS)",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-11-02T18:30:54Z",
+        "completed_at": "2026-11-02T18:30:56Z"
+      },
+      {
+        "name": "Checkout",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-11-02T18:30:56Z",
+        "completed_at": "2026-11-02T18:30:59Z"
+      },
+      {
+        "name": "Setup Rust",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-11-02T18:30:59Z",
+        "completed_at": "2026-11-02T18:31:09Z"
+      },
+      {
+        "name": "Cache Rust dependencies",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-11-02T18:31:09Z",
+        "completed_at": "2026-11-02T18:31:11Z"
+      },
+      {
+        "name": "Install Windows LLVM",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 5,
+        "started_at": "2026-11-02T18:31:11Z",
+        "completed_at": "2026-11-02T18:31:11Z"
+      },
+      {
+        "name": "Build runtime and run native gates",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 6,
+        "started_at": "2026-11-02T18:31:11Z",
+        "completed_at": "2026-11-02T18:31:11Z"
+      },
+      {
+        "name": "Build runtime and run Linux native gates",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 7,
+        "started_at": "2026-11-02T18:31:11Z",
+        "completed_at": "2026-11-02T18:31:11Z"
+      },
+      {
+        "name": "Build runtime and run macOS native gates",
+        "status": "completed",
+        "conclusion": "failure",
+        "number": 8,
+        "started_at": "2026-11-02T18:31:11Z",
+        "completed_at": "2026-11-02T18:44:30Z"
+      },
+      {
+        "name": "Upload B1 native measurement report",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 9,
+        "started_at": "2026-11-02T18:44:30Z",
+        "completed_at": "2026-11-02T18:44:30Z"
+      },
+      {
+        "name": "Run 20D and 20E resource, process and archive fixtures (Windows)",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 10,
+        "started_at": "2026-11-02T18:44:30Z",
+        "completed_at": "2026-11-02T18:44:30Z"
+      },
+      {
+        "name": "Run 20D and 20E resource, process and archive fixtures (Linux and macOS)",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 11,
+        "started_at": "2026-11-02T18:44:30Z",
+        "completed_at": "2026-11-02T18:44:30Z"
+      },
+      {
+        "name": "Post Cache Rust dependencies",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 21,
+        "started_at": "2026-11-02T18:44:30Z",
+        "completed_at": "2026-11-02T18:44:30Z"
+      },
+      {
+        "name": "Post Checkout",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 22,
+        "started_at": "2026-11-02T18:44:30Z",
+        "completed_at": "2026-11-02T18:44:32Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 23,
+        "started_at": "2026-11-02T18:44:32Z",
+        "completed_at": "2026-11-02T18:44:34Z"
+      }
+    ],
+    "check_run_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/check-runs/125469029010",
+    "labels": [
+      "macos-15"
+    ],
+    "runner_id": 1000001138,
+    "runner_name": "GitHub Actions 1000001138",
+    "runner_group_id": 0,
+    "runner_group_name": "GitHub Actions"
+  }
+}

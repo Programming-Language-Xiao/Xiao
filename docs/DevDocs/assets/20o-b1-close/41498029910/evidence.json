@@ -1,0 +1,528 @@
+{
+  "schema_version": 1,
+  "status_snapshot_commit": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "maintenance": {
+    "id": 41498029910,
+    "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+    "event": "push",
+    "run_attempt": 3,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910"
+  },
+  "workspace_gates": {
+    "id": 41498029872,
+    "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+    "event": "push",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029872"
+  },
+  "jobs": [
+    {
+      "id": 125478253499,
+      "run_id": 41498029910,
+      "run_attempt": 3,
+      "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+      "name": "Native differential regression (macOS)",
+      "status": "completed",
+      "conclusion": "success",
+      "labels": [
+        "macos-15"
+      ],
+      "runner_name": "GitHub Actions 1000001139",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125478253499"
+    },
+    {
+      "id": 125478255149,
+      "run_id": 41498029910,
+      "run_attempt": 3,
+      "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+      "name": "Rust workspace default tests (Linux)",
+      "status": "completed",
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_name": "GitHub Actions 1000001132",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125478255149"
+    },
+    {
+      "id": 125478255917,
+      "run_id": 41498029910,
+      "run_attempt": 3,
+      "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+      "name": "Native differential regression (Linux)",
+      "status": "completed",
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_name": "GitHub Actions 1000001131",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125478255917"
+    },
+    {
+      "id": 125478308849,
+      "run_id": 41498029910,
+      "run_attempt": 3,
+      "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+      "name": "Native differential regression (Windows)",
+      "status": "completed",
+      "conclusion": "success",
+      "labels": [
+        "windows-2025"
+      ],
+      "runner_name": "GitHub Actions 1000001130",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125478308849"
+    },
+    {
+      "id": 125478324227,
+      "run_id": 41498029910,
+      "run_attempt": 3,
+      "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+      "name": "Deterministic parser and artifact security regression",
+      "status": "completed",
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_name": "GitHub Actions 1000001134",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125478324227"
+    },
+    {
+      "id": 125478335958,
+      "run_id": 41498029910,
+      "run_attempt": 3,
+      "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+      "name": "Deterministic artifact size regression (Windows baseline)",
+      "status": "completed",
+      "conclusion": "success",
+      "labels": [
+        "windows-2025"
+      ],
+      "runner_name": "GitHub Actions 1000001129",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910/job/125478335958"
+    },
+    {
+      "id": 125457995746,
+      "run_id": 41498029872,
+      "run_attempt": 1,
+      "head_sha": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+      "name": "Linux workspace gates",
+      "status": "completed",
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_name": "GitHub Actions 1000001135",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029872/job/125457995746"
+    }
+  ],
+  "logs": [
+    {
+      "label": "vm-linux",
+      "actual_job_id": 125457995455,
+      "actual_attempt": 1,
+      "run_id": 41498029910,
+      "name": "Rust workspace default tests (Linux)",
+      "runner_name": "GitHub Actions 1000001132",
+      "runner_labels": [
+        "ubuntu-24.04"
+      ],
+      "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125457995455/logs",
+      "archive_entry": "vm-linux-full.log",
+      "source_bytes": 281431,
+      "source_sha256": "ef279945adff2daecfb87860a2384426acdccf80c8689aa5893ea5bfa6549ea3"
+    },
+    {
+      "label": "native-linux",
+      "actual_job_id": 125457995362,
+      "actual_attempt": 1,
+      "run_id": 41498029910,
+      "name": "Native differential regression (Linux)",
+      "runner_name": "GitHub Actions 1000001131",
+      "runner_labels": [
+        "ubuntu-24.04"
+      ],
+      "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125457995362/logs",
+      "archive_entry": "native-linux-full.log",
+      "source_bytes": 347577,
+      "source_sha256": "540028eee3a3a03f939bdd223c51598db9439fef4e86bd5fc987dcacc75e8245",
+      "native_compiler": "Ubuntu clang version 18.1.3 (1ubuntu1)"
+    },
+    {
+      "label": "native-windows",
+      "actual_job_id": 125457995302,
+      "actual_attempt": 1,
+      "run_id": 41498029910,
+      "name": "Native differential regression (Windows)",
+      "runner_name": "GitHub Actions 1000001130",
+      "runner_labels": [
+        "windows-2025"
+      ],
+      "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125457995302/logs",
+      "archive_entry": "native-windows-full.log",
+      "source_bytes": 305745,
+      "source_sha256": "0fa336777499babc4b5aab64b0fd53fdba16bc2b711b027788488306d2863029",
+      "native_compiler": "clang version 23.1.4 (https://github.com/msys2/MINGW-packages 39c2da431174df09576b662535bdaa688a9bf8e0)"
+    },
+    {
+      "label": "native-macos",
+      "actual_job_id": 125478253499,
+      "actual_attempt": 3,
+      "run_id": 41498029910,
+      "name": "Native differential regression (macOS)",
+      "runner_name": "GitHub Actions 1000001139",
+      "runner_labels": [
+        "macos-15"
+      ],
+      "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125478253499/logs",
+      "archive_entry": "native-macos-full.log",
+      "source_bytes": 289518,
+      "source_sha256": "2f03080881a71d9a566b8b3211e088322f84110cd3f84249376d260f9e29ec52",
+      "native_compiler": "Homebrew clang version 23.1.4"
+    },
+    {
+      "label": "workspace-gates",
+      "actual_job_id": 125457995746,
+      "actual_attempt": 1,
+      "run_id": 41498029872,
+      "name": "Linux workspace gates",
+      "runner_name": "GitHub Actions 1000001135",
+      "runner_labels": [
+        "ubuntu-24.04"
+      ],
+      "source_command": "gh api repos/Programming-Language-Xiao/Xiao/actions/jobs/125457995746/logs",
+      "archive_entry": "workspace-gates-full.log",
+      "source_bytes": 751363,
+      "source_sha256": "f0c4740d8bb244332eb15bcc215c1d9dc75fc7d3bdcb1aadff7192654fc04262"
+    }
+  ],
+  "excerpts": [
+    {
+      "file": "vm-linux-exact.log",
+      "source_label": "vm-linux",
+      "source_start_line": 3206,
+      "source_end_line": 3239,
+      "sha256": "e0dbf2cdfdc74995bd8e6e874f66868187c5fd8050b8a1436b13f0faff3c4fb6"
+    },
+    {
+      "file": "vm-linux-20o_b1_imp_contract.log",
+      "source_label": "vm-linux",
+      "source_start_line": 1180,
+      "source_end_line": 1195,
+      "sha256": "9b4d33e6a1f5da45647969ec04577618a6f2dbb6a7c4a1990e4781d8390456de"
+    },
+    {
+      "file": "vm-linux-20o_b1_imp_resources.log",
+      "source_label": "vm-linux",
+      "source_start_line": 1197,
+      "source_end_line": 1219,
+      "sha256": "a793c67f80bd785abfcdf1a993bd730280ee0aabc155494609ef8d71b666f018"
+    },
+    {
+      "file": "vm-linux-20o_b1_imp_vm_performance.log",
+      "source_label": "vm-linux",
+      "source_start_line": 1221,
+      "source_end_line": 1230,
+      "sha256": "a79ad83c9a85447c5f3b858bf348fd071f2608480e25829916a510e5a8684a60"
+    },
+    {
+      "file": "vm-linux-guards.log",
+      "source_label": "vm-linux",
+      "source_start_line": 413,
+      "source_end_line": 417,
+      "sha256": "1e391385e67e37e05cca00a1f6c85718beef8c6c6b36eeea724971fd02d066d1"
+    },
+    {
+      "file": "native-linux-exact.log",
+      "source_label": "native-linux",
+      "source_start_line": 2702,
+      "source_end_line": 2758,
+      "sha256": "90677d51b2c2c9b77af20c9a2e25208c965c6eeafd5fab19cedbfbfad784cceb"
+    },
+    {
+      "file": "native-linux-release.log",
+      "source_label": "native-linux",
+      "source_start_line": 1135,
+      "source_end_line": 1146,
+      "sha256": "69e93900381948a7280455652c8eb0ef1e502833c49d1bf0d9c81427cbb4084f"
+    },
+    {
+      "file": "native-linux-compiler.log",
+      "source_label": "native-linux",
+      "source_start_line": 1024,
+      "source_end_line": 1024,
+      "sha256": "e9b7fcce5ace7b0451b4b0b4f55857b32f2d933193324527630f44ae006e1d98"
+    },
+    {
+      "file": "native-windows-exact.log",
+      "source_label": "native-windows",
+      "source_start_line": 1220,
+      "source_end_line": 1276,
+      "sha256": "69c4e6b0b27a6ba8ad893caa72ce5fb06122e0e5b2524763137adf2eb07060a4"
+    },
+    {
+      "file": "native-windows-release.log",
+      "source_label": "native-windows",
+      "source_start_line": 1460,
+      "source_end_line": 1471,
+      "sha256": "de20399fcd2444e98a40eb5a3a0cae8f839ca79b284037da26be24dc4d58440c"
+    },
+    {
+      "file": "native-windows-compiler.log",
+      "source_label": "native-windows",
+      "source_start_line": 1352,
+      "source_end_line": 1352,
+      "sha256": "71db4950c9fb711c2ff80d6406dd5af24561c1737f3925d1a217445bb0c29970"
+    },
+    {
+      "file": "native-macos-exact.log",
+      "source_label": "native-macos",
+      "source_start_line": 2567,
+      "source_end_line": 2623,
+      "sha256": "6239b6dd6e0eb32803f8f7801586d9c2dc63284142390a212cd1bdb117e7f9c0"
+    },
+    {
+      "file": "native-macos-release.log",
+      "source_label": "native-macos",
+      "source_start_line": 1097,
+      "source_end_line": 1108,
+      "sha256": "3c6bee107d326739d54ea1d2c5def5ddcd4004800df85c2ecf83473c5d0e8cc4"
+    },
+    {
+      "file": "native-macos-compiler.log",
+      "source_label": "native-macos",
+      "source_start_line": 988,
+      "source_end_line": 988,
+      "sha256": "a7f581a8476f1b13a762851310ba11ab6f1676e7e20e8770b635fbfcc913b7f8"
+    },
+    {
+      "file": "workspace-gates-summary.log",
+      "source_label": "workspace-gates",
+      "source_lines": [
+        337,
+        339,
+        341,
+        357,
+        363,
+        369,
+        372,
+        376,
+        4152,
+        4154,
+        4155,
+        4156,
+        5370,
+        5372,
+        5375,
+        5452,
+        5458,
+        5461,
+        5462,
+        5464,
+        5594,
+        5599,
+        5618,
+        5639,
+        5662,
+        5686,
+        5703,
+        5719,
+        5732,
+        5748,
+        5767,
+        5780,
+        5795,
+        5811,
+        5823,
+        5838,
+        5861,
+        5872,
+        5889,
+        5910,
+        5918,
+        5950,
+        5965,
+        5977,
+        5985,
+        5998,
+        6015,
+        6027,
+        6038,
+        6048,
+        6069,
+        6086,
+        6101,
+        6111,
+        6136,
+        6146,
+        6159,
+        6171,
+        6192,
+        6199,
+        6207,
+        6215,
+        6225,
+        6235,
+        6250,
+        6257,
+        6263,
+        6266,
+        6735,
+        6737,
+        6741,
+        6749,
+        6751,
+        6761,
+        6763
+      ],
+      "sha256": "38cb2216a0892942e3ade17a0fd3c41122cd5e3da3f32ff04869de6fea698303"
+    }
+  ],
+  "status_documents": [
+    {
+      "path": "docs/UseDocs/library/math.md",
+      "git_blob": "6bf02d20ebbd1a466a9ad2fd72d241f4191c13e6",
+      "sha256": "d1a47e8756b438b54de55d98784c56e9a1bd33b77da59c6ba6c0bf3ccb963e3d"
+    },
+    {
+      "path": "docs/UseDocs/library/hex.md",
+      "git_blob": "d4973a2b7f9d5529f529f9cc315b510eae9491da",
+      "sha256": "9aacdef04e4d6a0c1aab478d917aae133572918b032eb9c4e579d9e532510873"
+    },
+    {
+      "path": "docs/UseDocs/library/base64.md",
+      "git_blob": "f1dfdab17e42e9cda2a8051e635953b952b58599",
+      "sha256": "d2d8124860811b57396857bf6e7bdd5c016d0fdb1fec265825f4d9fc4790dc2e"
+    },
+    {
+      "path": "docs/UseDocs/library/url.md",
+      "git_blob": "85c84a7f3c89d7a7ebdb6491245f7c45787c01bc",
+      "sha256": "336a11cc38c9784549a62e94eadddb749bce86f383e5448b42deb797c12461f4"
+    },
+    {
+      "path": "docs/UseDocs/library/csv.md",
+      "git_blob": "1ccdd5ef8f5a7e16edaa6c6706a2521575f4e668",
+      "sha256": "787660609592be4579077518358d1a8eb981d5e60209a7a1c28a3a478a0b6089"
+    },
+    {
+      "path": "docs/UseDocs/library/fmt.md",
+      "git_blob": "62d474d0c046e82f37fa7a6efd4d4bc51a53cbc6",
+      "sha256": "65000289fcfd0d3fd8eb9616f458f6eb1eb1244b0a8380c2c6086cb7145d9f34"
+    },
+    {
+      "path": "docs/UseDocs/library/statistics.md",
+      "git_blob": "d7edd9a61db8c08b0e1c3391b9d0a40e1df46d3f",
+      "sha256": "dc33546316b4daca658c4f5f7a8312f648ffce599a4d6eb4aaaaf55446edbc62"
+    },
+    {
+      "path": "docs/module-registry.json",
+      "git_blob": "f75b9ddb52f669158ee6d744b4a084219f98fb0e",
+      "sha256": "905cc12cbf418f1ffb48bd1ce05b3efe0e5dbd8e447836b7a89a33ecdebd4298"
+    }
+  ],
+  "job_index_scope": "jobs为最终尝试的聚合状态；logs.actual_job_id/actual_attempt为实际执行并产生日志的作业，前三路径来自首次尝试，macOS来自最终成功的实际尝试。",
+  "scope": "CLOSE状态升级同提交的真实门禁；F10沿用未变产品/工具的41464439400，不是本次新测量",
+  "normalization": "ci-logs.zip内完整日志逐字节保留；摘录去ANSI/行尾空白并统一LF，源行号按完整日志计数",
+  "first_attempt_capacity_cancellation": {
+    "file": "macos-capacity.json",
+    "sha256": "a61215ae2a4fa980a9eacdb10e26e0dfac304a0726a54d661669b12f47e274c0",
+    "macos_job_id": 125457995585,
+    "run_attempt": 1,
+    "run_conclusion": "failure",
+    "reason": "hosted runner未分配；没有执行步骤；其余五作业成功"
+  },
+  "separate_22c_failure": {
+    "file": "macos-22c-attempt2-failure.json",
+    "sha256": "640e9ad00379fbfafcdad3e8843d5b8896400ed2d6efadf9f44b1174313b1ec6",
+    "actual_job_id": 125469029010,
+    "actual_attempt": 2,
+    "reason": "既有22C释放顺序断言；B1精确目标未执行，原始失败独立保留，后续绿色不关闭22债务"
+  },
+  "raw_log_archive_sha256": "ef5c718a3fb0111f9583a633c806735445c3e7ffd48d9267d01a03c4009bd13b",
+  "f10": {
+    "mode": "carried",
+    "measurement_run_id": 41464439400,
+    "measurement_attempt": 2,
+    "producer_commit": "44dc9d6efa5e636ee6d83aa9db3722237aae7c43",
+    "tool_commit": "df27ca75670cf30bee696bec8c4d96fea31bcf40",
+    "records": 721,
+    "original_log_archive_sha256": "4abee12d847410827dc76b293eb5a21c0bef3b6d707f53fc5c01d31874a7ba5a",
+    "original_evidence": "../../20o-b1-imp/rem-identity-final-41464439400/evidence.json",
+    "products": [
+      {
+        "path": "stdlib/math.xiao",
+        "git_blob": "55a8d4cf7660b121d504e98d91e4c2747425ee8c",
+        "sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482"
+      },
+      {
+        "path": "stdlib/hex.xiao",
+        "git_blob": "5719302963ba1f413084f7698e0029a8be913d3e",
+        "sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25"
+      },
+      {
+        "path": "stdlib/base64.xiao",
+        "git_blob": "bb6c60bfcb1fd03ce7bb2b8516893bbea1dcbd14",
+        "sha256": "de0fe3ef8079258a39c8b3e29e1014902d684254c7cf0ca4a41c29d67372e946"
+      },
+      {
+        "path": "stdlib/url.xiao",
+        "git_blob": "aa643e0a09b42d97e5ab944d0a2068cd3199cc19",
+        "sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c"
+      },
+      {
+        "path": "stdlib/csv.xiao",
+        "git_blob": "9c56100371f46f840cde014e6d453082b65dd3fd",
+        "sha256": "58001e847de6bc1664f849227e89ae711fa4d1495185067d54352bb27b528159"
+      },
+      {
+        "path": "stdlib/fmt.xiao",
+        "git_blob": "2e195cda4263fbb06b2a555092c49f901c3ace5c",
+        "sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40"
+      },
+      {
+        "path": "stdlib/statistics.xiao",
+        "git_blob": "00b2dda4ec7c4aaaf1721bae478189a411541c40",
+        "sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8"
+      }
+    ],
+    "unchanged_objects": [
+      {
+        "path": "core/rust",
+        "git_object": "2cec8d33c6756000844de52a649ba8194737f60d",
+        "unchanged_from": "44dc9d6e"
+      },
+      {
+        "path": "tests/fixtures/20o-b1",
+        "git_object": "98683e603ee165c6a769f836a9289451a1dfa754",
+        "unchanged_from": "44dc9d6e"
+      },
+      {
+        "path": ".github/workflows/maintenance-regression.yml",
+        "git_object": "b032cb728e2fc87f4dde355e714515fd9c101600",
+        "unchanged_from": "44dc9d6e"
+      },
+      {
+        "path": ".github/workflows/workspace-gates.yml",
+        "git_object": "07672bc9e3cb529540f77eb91bb343eb0bd5cb27",
+        "unchanged_from": "44dc9d6e"
+      },
+      {
+        "path": "tools/gates",
+        "git_object": "52782cc0817f983ad84cc27f3d7a1c830be033bc",
+        "unchanged_from": "44dc9d6e"
+      }
+    ],
+    "frozen_contract_sections": {
+      "tables": "67d236667e6bd602b946f0d9ce1a56c7ca2760450ad93852e9bab9a03a3ab238",
+      "signatures_and_csv_formula": "6135e961fffc3caccac889836d0771ef7df16debf29c510378dfeb537e0286f0",
+      "measurement_protocol": "a4270e05f2ab0e71cf0dc012dde390a409a7cd4eef975dc2d18fb67a830eae05",
+      "csv_budget_order": "8205c0b717bd8737fed14c6f6aa1c244779e4832866bd2fbfbde15befae4422b",
+      "error_priority": "560538c982b6b600fcadc5412552a5ff3134014683abe3a11ad3ef4605c15d8e"
+    }
+  }
+}

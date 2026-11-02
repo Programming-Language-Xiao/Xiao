@@ -1,0 +1,46 @@
+2026-11-02T18:44:22.9726560Z running 26 tests
+2026-11-02T18:44:23.5345070Z test cancellation_of_completed_thread_is_not_catchable ... ok
+2026-11-02T18:44:23.5401710Z test cancellation_of_running_child_executes_finally_once ... ok
+2026-11-02T18:44:23.5523560Z test cancellation_cleanup_error_stays_suppressed ... ok
+2026-11-02T18:44:23.9575420Z test concurrency_cancel_cannot_be_swallowed_by_catch ... ok
+2026-11-02T18:44:23.9676790Z test child_current_runtime_preserves_shared_mut_and_guard_release ... ok
+2026-11-02T18:44:24.3117230Z test child_error_and_suppressed_survive_join_and_wait ... ok
+2026-11-02T18:44:24.3219960Z test corrupt_plans_are_rejected_before_vm_execution ... ok
+2026-11-02T18:44:24.6704240Z test dropped_unwaited_task_failure_is_reported_before_vm_returns ... ok
+2026-11-02T18:44:24.7094210Z test detached_failure_is_structured_and_does_not_change_exit_code ... ok
+2026-11-02T18:44:26.3349870Z test frozen_runtime_error_codes_remain_structured ... ok
+2026-11-02T18:44:26.9596800Z test detached_activity_is_drained_before_timeout_returns ... ok
+2026-11-02T18:44:27.6884270Z test lock_wait_and_completed_handle_cancellation_are_027 ... ok
+2026-11-02T18:44:28.0301080Z test isolated_child_loads_project_and_standard_modules ... ok
+2026-11-02T18:44:28.1304520Z test nested_runtime_context_is_distinct_and_child_pool_works ... ok
+2026-11-02T18:44:28.4067370Z test plans_round_trip_and_execute_without_module_function_names ... ok
+2026-11-02T18:44:28.6028720Z test queued_task_cancel_never_runs_body_and_wait_is_027 ... FAILED
+2026-11-02T18:44:28.9447960Z test real_source_builds_and_runs_xar_with_preflight_features ... ok
+2026-11-02T18:44:28.9577640Z test result_serialization_rejects_mutable_container_instead_of_none ... ok
+2026-11-02T18:44:29.2666060Z test running_pool_task_cancel_waits_for_finally_and_suppressed ... ok
+2026-11-02T18:44:29.2866460Z test shared_read_can_cross_runtime_and_survive_source_close ... ok
+2026-11-02T18:44:29.5340490Z test source_threads_pool_aliases_and_values_are_observable ... ok
+2026-11-02T18:44:29.9785260Z test startup_failure_cleans_successful_boundary_copies ... ok
+2026-11-02T18:44:30.1223900Z test boundary_failure_cleans_copies_in_ir_order_before_starting_child ... ok
+2026-11-02T18:44:30.2551750Z test xiaoc_host_missing_features_is_rejected_before_execution ... ok
+2026-11-02T18:44:30.4930330Z test source_values_and_plans_survive_all_optimization_levels ... ok
+2026-11-02T18:44:30.6683910Z test external_timeout_interrupts_join_and_child_vm ... ok
+2026-11-02T18:44:30.6684390Z
+2026-11-02T18:44:30.6684760Z failures:
+2026-11-02T18:44:30.6685010Z
+2026-11-02T18:44:30.6685270Z ---- queued_task_cancel_never_runs_body_and_wait_is_027 stdout ----
+2026-11-02T18:44:30.6685830Z
+2026-11-02T18:44:30.6686690Z thread 'queued_task_cancel_never_runs_body_and_wait_is_027' (70197) panicked at crates/xiao-driver/tests/22c_vm_concurrency.rs:567:5:
+2026-11-02T18:44:30.6687840Z assertion `left == right` failed: transfer=IrBoundaryTransfer { parameters: [34, 36], runtime_id: 18446744073709551615, copy_kind: "deep_copy", cleanup_order: [36, 34], span: IrSpan { start: 970, end: 1017 } }
+2026-11-02T18:44:30.6688700Z   left: [34, 36]
+2026-11-02T18:44:30.6689150Z  right: [36, 34]
+2026-11-02T18:44:30.6689710Z note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-11-02T18:44:30.6690140Z
+2026-11-02T18:44:30.6690230Z
+2026-11-02T18:44:30.6690370Z failures:
+2026-11-02T18:44:30.6690780Z     queued_task_cancel_never_runs_body_and_wait_is_027
+2026-11-02T18:44:30.6691090Z
+2026-11-02T18:44:30.6691460Z test result: FAILED. 25 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.70s
+2026-11-02T18:44:30.6691760Z
+2026-11-02T18:44:30.6714830Z error: test failed, to rerun pass `-p xiao-driver --test 22c_vm_concurrency`
+2026-11-02T18:44:30.6797010Z ##[error]Process completed with exit code 101.

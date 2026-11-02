@@ -72,8 +72,9 @@ std.db.mysql      MySQL 驱动（后置）
 B1-FIX-A 已确认全局 error_code(Error value, /) -> str、intrinsic 32 与独立 ABI 1.18 读取前置，
 不开放错误成员访问。精确借用后复制、C 失败状态和源级错误表见
 [B1 §二](20o-b1-freeze-draft.md#二error_code-的名称位置与签名)。真实入口已由独立 FIX-B 实现，
-当前 ABI 为 1.18；三平台验收见 [FIX-B 收口](20o-b1-fix-b-closeout.md)，七库产品按
-[B1-IMP](20o-b1-imp-seven-libraries.md) 逐模块实施，尚未完整交付。
+当前ABI为1.18；前置三平台验收见[FIX-B收口](20o-b1-fix-b-closeout.md)。七库已由
+[B1-IMP](20o-b1-imp-seven-libraries.md)和REM交付20/20及同源721条F10，
+教程/registry在[B1-CLOSE](20o-b1-closeout.md)同步verified，状态提交门禁与实际运行号在该页登记。
 
 ### 2.5 生命周期与并发
 
@@ -239,7 +240,8 @@ D-15 已确认首版**静态内置**经审计的 Rust 驱动库，按目标平�
 | D-22 平台证据 | PostgreSQL/Redis 首批用 Linux CI 服务容器；Windows/macOS 按实登记协议/单元/连接失败测试，服务缺证据明确不可验证 | 不用 Linux 成功外推其他平台 |
 
 此前“先单连接再评估内置池”只是建议，已被 D-18 的实际选择替代。
-当前 B1 的教程与错误访问/CSV 签名前置见 [B0 草案](20o-b0-baseline-and-b1-draft.md)。
+B1教程、错误访问与CSV记录契约已冻结并实现，当前状态与证据见[B1-CLOSE](20o-b1-closeout.md)；
+[B0草案](20o-b0-baseline-and-b1-draft.md)只保留最初的方向与探测边界。
 
 ## 七、每批的统一交付清单
 

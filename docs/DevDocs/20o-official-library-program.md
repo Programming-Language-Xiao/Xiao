@@ -5,16 +5,17 @@
 > 本文件把“官方库要做什么、按什么顺序做、每批的边界和证据是什么”写成可交接的总纲，
 > 并对数值计算做专项研究。新接手的 Agent 必须从本文件开始读。
 >
-> 状态：**规划中（2026-11-01）**。基线为 `6dc0773` 之后的仓库状态（开工时以
-> `git log`/`git status` 为准）。本文件只做研究和拆分，不写产品函数体、不新增 intrinsic、
-> 不改变 ABI 1.17。**已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
+> 状态：**总纲与B1契约已确认；七库IMP/REM已交付，CLOSE已收口、七库教程/registry为verified，106b99c7的41498029910/41498029872通过（2026-11-03）**。
+> 当前进度见[B1-CLOSE收口](20o-b1-closeout.md)。原规划基线为6dc0773，原规划/B0/FIX-A只做研究、探测与拆分，
+> 当时未改变ABI1.17；后续独立FIX-B已实现ABI1.18，生成器当前为20。本总纲不写产品函数体。
+> **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
 > D-7 取专用 `json_value` 类型、B7→B8→B9 后置**。B0 已逐条询问并记录其余方向裁定，
 > 见 §五及 20P §六；具体 API 不因此自动冻结。基线、探测、教程与待审草案见
 > [20O-B0](20o-b0-baseline-and-b1-draft.md)。
-> B1 的 [精确契约](20o-b1-freeze-draft.md) 已在本轮 FIX-A 逐条确认：20 个库入口、error_code
-> 前置、错误/资源/性能目标与内联策略。Base64 首批含必填 url_safe，error_code 独立前置规划为
+> B1 的 [精确契约](20o-b1-freeze-draft.md) 已在独立FIX-A阶段逐条确认：20 个库入口、error_code
+> 前置、错误/资源/性能目标与内联策略。Base64 首批含必填 url_safe，error_code独立前置已实现为
 > intrinsic 32 / ABI 1.18；当前独立 FIX-B 已经门禁与三平台验收，见
-> [FIX-B 收口](20o-b1-fix-b-closeout.md)。FIX-A 的历史 ABI 为 1.17；七库仍为 planned。
+> [FIX-B收口](20o-b1-fix-b-closeout.md)。FIX-A的历史ABI为1.17；七库20/20、资源/性能、移除/归档和三平台证据已由IMP/REM交付，当前状态升级归独立CLOSE。
 
 ## 一、工程目标与边界
 
@@ -40,7 +41,7 @@
 
 | 项 | 事实 |
 | --- | --- |
-| 已交付 stdlib | `text` 11 项、`path` 4 项、`set`、`dict`、`os`（读/目录/进程）、虚拟 `std.concurrent` |
+| 已交付 stdlib | `text` 11项、`path` 4项、`set`、`dict`、`os`（读/目录/进程）、虚拟`std.concurrent`；B1七库20项已有同源证据，教程/registry在CLOSE同步verified |
 | 标准库接口版本 | 1 |
 | Runtime ABI | 当前 1.18（独立 FIX-B）；原规划/B0/FIX-A 取证时为 1.17 |
 | 语言数值 | `int`/`sint`/`float`/`sfloat` 已实现；`lint`/`lfloat` 是不限位宽文本表示，但算术/转换仍不完整 |
@@ -203,8 +204,8 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 
 | 批次 | 内容 | 前置 | 交付证据 |
 | --- | --- | --- | --- |
-| B0 | 总纲/目录复核、D-1～D-22 逐条裁定、基线门禁、B1 探测/教程与冻结草案 | 无 | [B0 记录](20o-b0-baseline-and-b1-draft.md)；方向已确认，API 草案待审 |
-| B1 | 七项一起冻结：math、hex、base64、url、csv 记录子集、fmt、statistics 整数子集 | error_code 共同前置、精确契约确认与三平台探测 | [精确草案](20o-b1-freeze-draft.md)；实现后补移除/归档、教程与 registry |
+| B0 | 总纲/目录复核、D-1～D-22 逐条裁定、基线门禁、B1 探测/教程与冻结草案 | 无 | [B0记录](20o-b0-baseline-and-b1-draft.md)；方向确认完成，B1细项随后在FIX-A逐条冻结 |
+| B1 | 七项一起冻结：math、hex、base64、url、csv 记录子集、fmt、statistics 整数子集 | error_code共同前置、精确契约确认与三平台探测已完成 | [冻结契约](20o-b1-freeze-draft.md)；IMP/REM已交付20/20及721条F10，教程/registry在[CLOSE](20o-b1-closeout.md)同步verified，新状态门禁另记 |
 | B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | intrinsic/ABI 四处 + 版本拒绝 + 三平台 |
 | B3 | 简单宿主批：`time`（UTC + sleep）、`args`/`cli`、`fs` 扩展、`env`、`log` 时间戳 | B0；ABI | 能力/错误/取消/三平台 |
 | B4 | JSON/TOML 值模型 + `json`/`toml` 解析器 | B0；语言冻结 | 类型/IR/两后端/生命周期 |
@@ -230,7 +231,7 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | D-2 decimal | 任意精度十进制，共用 lfloat 底座；文本往返精确，除法显式精度/舍入 | B2/B5 的表示、错误身份与舍入参数 |
 | D-3 fractions | lint 分子分母、自动约分、正分母、零分母报错；转 decimal 指定精度/舍入，转 float 显式允许精度损失 | 精确 API、错误与资源边界 |
 | D-4 cmath | **首批包含超越函数** | 具体函数集合、NaN/Inf/域错误/舍入/平台一致性 |
-| D-5 statistics | B1 仅 int 数组 sum/min/max；sum([])=0，空 min/max 报错，溢出沿用现有错误 | 均值/中位数/方差/标准差、浮点/NaN/精度在 B5 冻结；B1 错误身份待审 |
+| D-5 statistics | B1 仅 int 数组 sum/min/max；sum([])=0，空 min/max 报错，溢出沿用现有错误 | 均值/中位数/方差/标准差、浮点/NaN/精度在B5冻结；B1错误身份已在F11确认 |
 | D-6 random | 显式生成器/种子、固定算法版本以复现序列；不依赖隐式全局/线程局部状态；CSPRNG 归 B7 | 算法、种子范围、状态表示与并发边界 |
 | D-7 值模型 | 专用 json_value，不扩大公开 dynamic | B4 的类型/生命周期/两后端契约 |
 | D-8 time | UTC 墙钟/单调钟/格式化，**首批增加 sleep**；本地时区/日历/解析后置 | sleep 的单位/负值/零值/取消/能力与错误 |
@@ -238,14 +239,14 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | D-10 argv | 数组不含程序名，程序名另取；保留空参数，Windows 不二次拆引号；非法 Unicode 报错，不有损替换 | 精确入口/错误与平台测试 |
 | D-11 regex/compression | 成熟线性时间引擎；gzip/zlib 整块；输入/编译/输出/解压上限必备，流式后置 | B6 的依赖与具体限额 |
 | D-12 安全/HTTP/数据库 | 成熟依赖、TLS 默认校验、参数绑定、强制限额/超时、未经安全审阅不发布 | **明确延期**：算法、能力位、HTTP/1.1 子集、原生扩展契约分别在 B7/B8/B9 再逐项确认 |
-| D-23 CSV 形状 | 记录子集，全文/嵌套签名后置；64 KiB/E 预算及严格行尾/BOM/空值/阈值已在 P3-1/F6/F9 确认 | [编码预算](20o-b1-freeze-draft.md#41-csv-编码预算)；实现/性能仍须验证 |
+| D-23 CSV 形状 | 记录子集，全文/嵌套签名后置；64 KiB/E 预算及严格行尾/BOM/空值/阈值已在 P3-1/F6/F9 确认 | [编码预算](20o-b1-freeze-draft.md#41-csv-编码预算)；实现、资源与全量性能已由REM取证，状态见CLOSE |
 | D-24 错误访问 | F1/F13 选择全局 error_code；intrinsic 32 / ABI 1.18 的只读视图后复制，不开放成员语法 | [B1 §二](20o-b1-freeze-draft.md#二error_code-的名称位置与签名) 已冻结；独立 FIX-B 由 41310926623 三平台验收 |
-| D-25 B1 冻结 | 20 项签名、错误表、限额、性能验收目标与内联导出策略已逐条确认 | FIX-A 与独立 FIX-B 已验收；七库产品及完整性能仍待 IMP/CLOSE |
-| D-26 CI 证据 | 默认和原生探测都加维护回归精确执行点，断言恰好 1 passed | 已接默认与三平台原生精确入口；实际运行号按 [B1 §八](20o-b1-freeze-draft.md#八本轮-ci-接线与验证) 登记 |
+| D-25 B1 冻结 | 20 项签名、错误表、限额、性能验收目标与内联导出策略已逐条确认 | FIX-A/FIX-B与IMP/REM已交付；七库20/20及完整F10同源，CLOSE同步教程/registry并取状态提交门禁 |
+| D-26 CI 证据 | 默认和原生探测都加维护回归精确执行点，断言恰好 1 passed | 默认与三平台原生精确入口、28/28守卫保持；历史接线见[B1 §八](20o-b1-freeze-draft.md#八本轮-ci-接线与验证)，状态提交运行号见[CLOSE](20o-b1-closeout.md) |
 
 D-13～D-22 的本次答复见 [20P §六](20p-day1-library-architecture.md#六架构决策)。
-B0 的探测边界见 [20O-B0](20o-b0-baseline-and-b1-draft.md)；当前只推进
-[B1-FIX-A 契约收口](20o-b1-fix-a-contract-closeout.md)，本批不写产品函数或新增运行时 intrinsic/ABI。
+B0探测边界与FIX-A裁定保留原历史记录；当前按[B1-CLOSE规划](20o-b1-closeout-plan.md)只做状态与证据收口，
+不修改产品、ABI、生成器或预算，不自动进入后续库批次。
 
 ## 六、新 Agent 交接（无上下文必读）
 
@@ -263,7 +264,8 @@ B0 的探测边界见 [20O-B0](20o-b0-baseline-and-b1-draft.md)；当前只推�
 9. `docs/DevDocs/README.md`、`docs/module-registry.json`、`docs/UseDocs/library/`。
 
 接 B1 时先复核 [B0 已确认决定](20o-b0-baseline-and-b1-draft.md#42-b1-开工前的裁定2026-11-01)，
-再读 [B1 精确草案](20o-b1-freeze-draft.md)。未取得细项确认与三平台证据前，教程保持 planned。
+再读[B1冻结契约](20o-b1-freeze-draft.md)、[REM证据](20o-b1-rem-evidence.md)和[CLOSE实际记录](20o-b1-closeout.md)。
+未取得细项确认与三平台证据的后续模块仍保持planned，不能把B1的verified外推给其它库。
 
 ### 6.2 仓库与门禁（开工时复核）
 
@@ -326,7 +328,8 @@ D-1～D-26 及 B1-F 细项；新增 intrinsic/ABI/能力位；引入新的第三
    整数子集；不重问已确认方向，只逐项提交尚未冻结的具体契约；
 5. 读 [20P](20p-day1-library-architecture.md) 的教程模板、数据库驱动架构与 D-13～D-22
    已确认方向，精确细项留对应批次逐条询问；
-6. 为 B1 写探测夹具和冻结草案，同时先写教程/示例草稿；不要直接写产品函数体。
+6. B1探测、冻结和产品已由FIX-A/FIX-B/IMP/REM完成；按当前任务进入CLOSE证据复核，
+   不重做已验收批次，也不自动开始未冻结的后续产品。新库仍须先探测、冻结与教程，再写产品。
 
 ## 七、本规划批的退出条件
 

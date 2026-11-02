@@ -1,0 +1,23 @@
+2026-11-02T18:14:05.7118163Z      Running tests/20o_b1_imp_resources.rs (core/rust/target/debug/deps/20o_b1_imp_resources-d1f4f68073ca86f9)
+2026-11-02T18:14:05.7135080Z
+2026-11-02T18:14:05.7136196Z running 17 tests
+2026-11-02T18:14:40.6711488Z test base64_standard_accepts_the_frozen_maximum ... ok
+2026-11-02T18:14:40.8812854Z test base64_url_safe_accepts_the_frozen_maximum ... ok
+2026-11-02T18:14:42.6044684Z test csv_accepts_the_maximum_ascii_record ... ok
+2026-11-02T18:14:42.9231888Z test csv_accepts_the_maximum_field_count ... ok
+2026-11-02T18:14:53.1711303Z test csv_accepts_the_maximum_unicode_record ... ok
+2026-11-02T18:15:04.9861421Z test csv_accepts_the_maximum_quoted_record ... ok
+2026-11-02T18:15:05.7151518Z test base64_checks_actual_decoded_size_after_the_last_quartet has been running for over 60 seconds
+2026-11-02T18:15:09.0851754Z test csv_parse_budget_and_syntax_priority_is_positional ... ok
+2026-11-02T18:15:09.5241460Z test base64_checks_actual_decoded_size_after_the_last_quartet ... ok
+2026-11-02T18:15:10.0611546Z test fmt_checks_both_radix_bounds_and_padding_argument_domains ... ok
+2026-11-02T18:15:15.7751479Z test csv_accepts_the_maximum_multiline_record ... ok
+2026-11-02T18:15:37.3271433Z test hex_accepts_the_frozen_maximum_input_and_output ... ok
+2026-11-02T18:15:39.0831446Z test csv_rejects_every_format_budget_dimension ... ok
+2026-11-02T18:15:52.2311551Z test url_decoding_reaches_the_ascii_result_budget ... ok
+2026-11-02T18:15:58.4051774Z test url_encoding_reaches_the_unicode_output_budget ... ok
+2026-11-02T18:16:01.4246363Z test url_decoding_reaches_the_unicode_result_budget ... ok
+2026-11-02T18:16:08.1863551Z test url_encoding_reaches_the_ascii_output_budget ... ok
+2026-11-02T18:16:34.8463272Z test url_limits_and_mixed_error_order_are_streamed ... ok
+2026-11-02T18:16:34.8463719Z
+2026-11-02T18:16:34.8464002Z test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 149.13s
