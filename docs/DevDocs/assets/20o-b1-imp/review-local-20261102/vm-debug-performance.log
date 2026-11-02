@@ -1,0 +1,41 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.73s
+     Running tests\20c_first_modules.rs (core\rust\target\debug\deps\20c_first_modules-c2a4e4433bdb63d7.exe)
+
+running 13 tests
+test first_modules_match_native_results ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test project_cannot_shadow_the_reserved_standard_library_namespace ... ok
+test removing_llvm_standard_library_function_binding_rejects_native_build ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test set_remove_missing_native_matches_vm ... ignored, 需要受控 LLVM 工具链、Runtime staticlib 和目标三元组；准备方式见 10D §4
+test fixed_named_calls_preserve_argument_evaluation_and_binding ... ok
+test standard_library_import_requires_vm_loader_binding ... ok
+test helper_module_can_import_standard_library ... ok
+test path_module_vm_result_and_removal_boundary_are_stable ... ok
+test string_indices_preserve_unicode_iteration_and_negative_bounds ... ok
+test std_alias_native_lowering_matches_the_canonical_capability_boundary ... ok
+test std_aliases_use_the_canonical_official_module ... ok
+test std_alias_archives_record_canonical_host_requirements ... ok
+test text_module_vm_result_and_removal_boundary_are_stable ... ok
+
+test result: ok. 10 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 5.00s
+
+     Running tests\20o_b1_imp_vm_performance.rs (core\rust\target\debug\deps\20o_b1_imp_vm_performance-12d635baa558e10b.exe)
+
+running 2 tests
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=true case=fmt.pad_left.scaling padding=false input_bytes=4096 output_bytes=4096 repeats=1 batch_samples=[Sample { elapsed: 181.0893ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 180.6327ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 181.5372ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 179.7481ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 181.623ms, runtime_object_peak_bytes: 338 }] median_seconds=0.1810893
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=true case=fmt.pad_left.scaling padding=false input_bytes=8192 output_bytes=8192 repeats=1 batch_samples=[Sample { elapsed: 360.1694ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 384.474ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 485.1702ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 523.2565ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 499.8316ms, runtime_object_peak_bytes: 338 }] median_seconds=0.4851702
+B1-IMP-PERF padding=false input_bytes=8192 doubling_ratio=2.6791765167792905
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=true case=fmt.pad_left.scaling padding=false input_bytes=16384 output_bytes=16384 repeats=1 batch_samples=[Sample { elapsed: 993.1369ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 896.4077ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 913.4082ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 969.2086ms, runtime_object_peak_bytes: 338 }, Sample { elapsed: 1.0321933s, runtime_object_peak_bytes: 338 }] median_seconds=0.9692086
+B1-IMP-PERF padding=false input_bytes=16384 doubling_ratio=1.9976672103933835
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=true case=fmt.pad_left.scaling padding=true input_bytes=4096 output_bytes=16384 repeats=2 batch_samples=[Sample { elapsed: 167.9944ms, runtime_object_peak_bytes: 176980 }, Sample { elapsed: 170.4823ms, runtime_object_peak_bytes: 176980 }, Sample { elapsed: 159.615ms, runtime_object_peak_bytes: 176980 }, Sample { elapsed: 161.619ms, runtime_object_peak_bytes: 176980 }, Sample { elapsed: 171.7432ms, runtime_object_peak_bytes: 176980 }] median_seconds=0.0839972
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=true case=fmt.pad_left.scaling padding=true input_bytes=8192 output_bytes=32768 repeats=1 batch_samples=[Sample { elapsed: 144.3444ms, runtime_object_peak_bytes: 238252 }, Sample { elapsed: 155.1954ms, runtime_object_peak_bytes: 238252 }, Sample { elapsed: 157.6113ms, runtime_object_peak_bytes: 238252 }, Sample { elapsed: 153.3155ms, runtime_object_peak_bytes: 238252 }, Sample { elapsed: 134.5276ms, runtime_object_peak_bytes: 238252 }] median_seconds=0.1533155
+B1-IMP-PERF padding=true input_bytes=8192 doubling_ratio=1.8252453653217013
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=true case=fmt.pad_left.scaling padding=true input_bytes=16384 output_bytes=65536 repeats=1 batch_samples=[Sample { elapsed: 309.2747ms, runtime_object_peak_bytes: 475820 }, Sample { elapsed: 254.1149ms, runtime_object_peak_bytes: 475820 }, Sample { elapsed: 261.8735ms, runtime_object_peak_bytes: 475820 }, Sample { elapsed: 285.9346ms, runtime_object_peak_bytes: 475820 }, Sample { elapsed: 314.0324ms, runtime_object_peak_bytes: 475820 }] median_seconds=0.2859346
+B1-IMP-PERF padding=true input_bytes=16384 doubling_ratio=1.8650077780785375
+test fmt_input_scaling_respects_the_frozen_vm_budget ... ok
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=true case=fmt.scan input_bytes=65536 output_bytes=65536 warmup=3.6403348s samples=[Sample { elapsed: 3.7661213s, runtime_object_peak_bytes: 338 }, Sample { elapsed: 3.8304936s, runtime_object_peak_bytes: 338 }, Sample { elapsed: 3.8876365s, runtime_object_peak_bytes: 338 }, Sample { elapsed: 3.8900648s, runtime_object_peak_bytes: 338 }, Sample { elapsed: 3.7622974s, runtime_object_peak_bytes: 338 }] median=3.8304936s runtime_object_peak_bytes=338
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=true case=fmt.max-output-left input_bytes=65536 output_bytes=262144 warmup=1.2158166s samples=[Sample { elapsed: 1.290648s, runtime_object_peak_bytes: 1901228 }, Sample { elapsed: 1.2784088s, runtime_object_peak_bytes: 1901228 }, Sample { elapsed: 1.268827s, runtime_object_peak_bytes: 1901228 }, Sample { elapsed: 1.2587935s, runtime_object_peak_bytes: 1901228 }, Sample { elapsed: 1.25763s, runtime_object_peak_bytes: 1901228 }] median=1.268827s runtime_object_peak_bytes=1901228
+B1-IMP-PERF backend=vm carrier=production-stack rust_debug_assertions=true case=fmt.max-output-right input_bytes=65536 output_bytes=262144 warmup=1.2365194s samples=[Sample { elapsed: 1.304613s, runtime_object_peak_bytes: 1770156 }, Sample { elapsed: 1.1898623s, runtime_object_peak_bytes: 1770156 }, Sample { elapsed: 1.2492703s, runtime_object_peak_bytes: 1770156 }, Sample { elapsed: 1.2963655s, runtime_object_peak_bytes: 1770156 }, Sample { elapsed: 1.2552479s, runtime_object_peak_bytes: 1770156 }] median=1.2552479s runtime_object_peak_bytes=1770156
+test fmt_maximum_input_has_bounded_vm_call_time ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 54.88s

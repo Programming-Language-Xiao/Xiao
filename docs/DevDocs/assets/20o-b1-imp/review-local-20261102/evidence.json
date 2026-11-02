@@ -1,0 +1,318 @@
+{
+  "schema_version": 1,
+  "scope": "B1-IMP review rework, local Windows only; 12/20 draft entries; not B1-CLOSE or seven-library verification",
+  "code_base_commit": "35becfb1",
+  "snapshot_note": "Test and fixture changes are identified by source_snapshot; debug profiling was collected after the string index fix and before the final typed-import additions, with unchanged fmt and performance source. Final workspace/native/release logs use the current source snapshot.",
+  "platform": "x86_64-pc-windows-msvc",
+  "cpu": "AMD Ryzen 9 9955HX, 16 cores / 32 logical processors",
+  "rustc": "1.96.0 (ac68faa20 2026-05-25)",
+  "runtime_abi": "1.18",
+  "codegen_version": 19,
+  "logs": [
+    {
+      "file": "native-windows.log",
+      "source_local_filename": "xiao-b1-review-native-final.log",
+      "source_sha256": "ce6bfca973ff8201c1f60826c182bfc1d0381aeb470ed37a3a55184bdecfb9a3",
+      "source_bytes": 4207,
+      "stored_sha256": "b6a10a64aebb430ac94fdd1e4a6eead89d3dc6d189ee4d69b5c07e0354e1e37f",
+      "stored_bytes": 4147,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    },
+    {
+      "file": "vm-exact.log",
+      "source_local_filename": "xiao-b1-review-vm-exact.log",
+      "source_sha256": "38c73f3adaf19d2dac3ed79f532963d85380de19d354fc10d5aa32f568de74c9",
+      "source_bytes": 2168,
+      "stored_sha256": "a49ec78ebedc8ff2b0591fb9d31b136c3b63bd9848fdff11d765be8f387ac8a2",
+      "stored_bytes": 2129,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    },
+    {
+      "file": "vm-debug-performance.log",
+      "source_local_filename": "xiao-b1-string-index-default.log",
+      "source_sha256": "877c3dc1603837f4d752ffda3d6a8e8c8f196d124b2362acd60e8dea53b5fb66",
+      "source_bytes": 7025,
+      "stored_sha256": "346bbd5df462643c6cf796f52fbb337334b799f5252e79827b349e5594b0f9bd",
+      "stored_bytes": 6982,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    },
+    {
+      "file": "vm-release-performance.log",
+      "source_local_filename": "xiao-b1-review-perf-release.log",
+      "source_sha256": "bc002c302d2e1657ea5363a382ea2041f2d68348257a6167ca585c812437ca50",
+      "source_bytes": 6230,
+      "stored_sha256": "09722262634ec5c5d8c9af0b48556860622efe0d8dbb88dc70f06e5baee37518",
+      "stored_bytes": 6198,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    },
+    {
+      "file": "workspace-default.log",
+      "source_local_filename": "xiao-b1-review-workspace-final.log",
+      "source_sha256": "fcd324dad6366f5012694f7b2aaa8f9cff67326dd34d9ce0da73a1530ba40f4a",
+      "source_bytes": 144644,
+      "stored_sha256": "6ced231b2091913defd6212573a53e4ae7f3adb3d780207c5cb8e9279674fc15",
+      "stored_bytes": 141990,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    },
+    {
+      "file": "guards.log",
+      "source_local_filename": "xiao-b1-review-guards.log",
+      "source_sha256": "f1989d9ff46131346568a5bd9d0e18fb3ac5efc7d3d6cf4ae0012862e3c5d579",
+      "source_bytes": 257,
+      "stored_sha256": "3ebd31222fd4bf61ffae5b108cb66ca2ad78cd67c167bb7fadf33cdc5c3fe6ab",
+      "stored_bytes": 252,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    },
+    {
+      "file": "guard-report.json",
+      "source_local_filename": "xiao-b1-review-guards.json",
+      "source_sha256": "95d2275103368ca81c016e5f5e662af7210907571af0eb54a1d419a316f9f082",
+      "source_bytes": 3487,
+      "stored_sha256": "cb9d5a4cb49e6d51f5f272925d4ce8104aa19403ca8b60bc351fd09ac3cdc54f",
+      "stored_bytes": 3307,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    },
+    {
+      "file": "bun-tests.log",
+      "source_local_filename": "xiao-b1-review-bun.log",
+      "source_sha256": "ffc38fe8be29dc8ac7b4d24c5c1d12e7898720c1e470e21d7d81216784e0f24a",
+      "source_bytes": 29025,
+      "stored_sha256": "2a4e8aaf7f2d5636553828a05fba3dc7fdaf3a1191d5b58e495635bc74acd540",
+      "stored_bytes": 28629,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    },
+    {
+      "file": "20m-removal.log",
+      "source_local_filename": "xiao-b1-module-removal-20m.log",
+      "source_sha256": "f62757a055610128b22cd5d89793c29a761ee072663b84b00c67f8257327c208",
+      "source_bytes": 1779,
+      "stored_sha256": "bda2bbf496b929562fdcdf2b8d19fcc2b370b137746ad56007d7d8d1faf92c39",
+      "stored_bytes": 1757,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    },
+    {
+      "file": "clippy.log",
+      "source_local_filename": "xiao-b1-review-clippy.log",
+      "source_sha256": "010bdbe0fa28805846d7d595da3356157b15f268412b28f72f2f8d004e50f5dc",
+      "source_bytes": 631,
+      "stored_sha256": "8911fd723f69019a1873fdbf2024dc7eead5f28c7cfbd7029e10e3e073f7426c",
+      "stored_bytes": 621,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    },
+    {
+      "file": "benchmark-check.log",
+      "source_local_filename": "xiao-b1-review-benchmark-check.log",
+      "source_sha256": "68abebd58c445bd85de33c08d86b9be139b61518bd9784e11ec3f77f62d64687",
+      "source_bytes": 770,
+      "stored_sha256": "98374564dad16f42bb4f722d3eccd5867207b7a7996959abd2a8234e78945090",
+      "stored_bytes": 761,
+      "stored_normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing blank lines removed; one LF at EOF"
+    }
+  ],
+  "workspace": {
+    "test_summaries": 173,
+    "passed": 1555,
+    "failed": 0,
+    "ignored": 49
+  },
+  "native": {
+    "exact_passed": 1,
+    "legacy_ordinary_executions": 28,
+    "imp_product_executions": 6,
+    "imp_auxiliary_executions": 4,
+    "fix_b_cleanup_executions": 6,
+    "optimizations": [
+      0,
+      3
+    ],
+    "seconds": 97.19
+  },
+  "contract": {
+    "implemented_modules": [
+      "math",
+      "statistics",
+      "fmt"
+    ],
+    "executed_entries": 12,
+    "frozen_entries": 20,
+    "paths": [
+      "std",
+      "stdlib"
+    ],
+    "tests_passed": 9,
+    "pending_collision": "hex/base64 encode/decode, after products exist"
+  },
+  "performance": {
+    "warmup": 1,
+    "samples": 5,
+    "debug_medians_seconds": {
+      "scan": 3.8304936,
+      "max_output_left": 1.268827,
+      "max_output_right": 1.2552479
+    },
+    "release_medians_seconds": {
+      "scan": 0.9500146,
+      "max_output_left": 0.2810241,
+      "max_output_right": 0.300354
+    },
+    "maximum_input_bytes": 65536,
+    "maximum_output_bytes": 262144,
+    "maximum_runtime_object_peak_bytes": 1901228,
+    "memory_scope": "Runtime objects and owned buffers only; excludes complete VM and process RSS"
+  },
+  "release_diagnostics": [
+    {
+      "file": "unicode-with-bounds.trace.tsv",
+      "native_destroyed": 14,
+      "vm_destroyed_reported_by_local_assertion": 16,
+      "source_local_path": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-20c-first-modules-20808\\string-index-alias.release-trace.tsv",
+      "source_sha256": "0baac0cd712c1e643cf3ef7f0af6bee005f2e7d667f135fea9ab39f1675ce46a",
+      "source_bytes": 1619,
+      "stored_sha256": "0baac0cd712c1e643cf3ef7f0af6bee005f2e7d667f135fea9ab39f1675ce46a",
+      "stored_bytes": 1619,
+      "scope": "earlier diagnostic before codegen 19; failure trace, not a passing cleanup test"
+    },
+    {
+      "file": "unicode-success.trace.tsv",
+      "native_destroyed": 12,
+      "vm_destroyed_reported_by_local_assertion": 13,
+      "source_local_path": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-20c-first-modules-12192\\string-index-alias.release-trace.tsv",
+      "source_sha256": "eeb6a83c8fe5f65fbfed45d98160201fa167a954c70b3d63a1244be65385ac76",
+      "source_bytes": 1404,
+      "stored_sha256": "eeb6a83c8fe5f65fbfed45d98160201fa167a954c70b3d63a1244be65385ac76",
+      "stored_bytes": 1404,
+      "scope": "earlier diagnostic before codegen 19; failure trace, not a passing cleanup test"
+    }
+  ],
+  "source_snapshot": [
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/arguments.rs",
+      "sha256_lf": "68d8fbbd28237ad2483730ad6672e1aaad296b6dffd33ab78dd3dab08476c23e"
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic.rs",
+      "sha256_lf": "11b6a07b7a54933f609fec2d98cfffab1b8ed34edda33825df2bc179e77e47bf"
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/control.rs",
+      "sha256_lf": "1f45e0fac50283ea9ad4b8fd5a62fb9f0bc8089e9d8ce203ce7538a6d551ec76"
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/dynamic/expression.rs",
+      "sha256_lf": "e546c26b96e3f8ad7871404887bd9e28eab18685b13fbc0d40b98118e0391512"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/src/frontend.rs",
+      "sha256_lf": "04a7c3bb89bb0419e033f86eba8084c4caaa2bd29a00f3cb24b53d3d130e210a"
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/src/value/mod.rs",
+      "sha256_lf": "c3447ea19149d4b1c619a0c3956b752a65923464207860032fac14b9d3fb5078"
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/src/abi_dynamic.rs",
+      "sha256_lf": "dd854beb4cee723aa2d872ea0cba6f6d3e7ed688e42fa23607ffd7a88cb66fe3"
+    },
+    {
+      "path": "core/rust/crates/xiao-vm/src/ops.rs",
+      "sha256_lf": "9d069cf5c4ffa1729b7485f5c1fb3a648ced5ff5e5357d5fa0d316920c713f2f"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/tests/20o_b1_imp_contract.rs",
+      "sha256_lf": "0b2feee01ecb466cf488ce9a5dbfd9af4faab773b19805d40b66bb97f05574cd"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/tests/20o_b1_imp_vm_performance.rs",
+      "sha256_lf": "df24c571e6db985276ab7bb4b36ae14078e63c3d02019c8673fa9de504f606f2"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/tests/20o_b1_probe.rs",
+      "sha256_lf": "d45df921f7812e93d2836138cc7c07b37ea81b2dd0c080b7127983558da5cf14"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/tests/20c_first_modules.rs",
+      "sha256_lf": "245cac40ed66c4ccbffcc92682e2334e92099db4b68ba9ec9e183b5d20be26bb"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/tests/20m_text_and_path.rs",
+      "sha256_lf": "b5d559b80984f8d83bc92477d22092a60dcc01bbd27571ec647ec85dcba84b89"
+    },
+    {
+      "path": "stdlib/math.xiao",
+      "sha256_lf": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482"
+    },
+    {
+      "path": "stdlib/statistics.xiao",
+      "sha256_lf": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8"
+    },
+    {
+      "path": "stdlib/fmt.xiao",
+      "sha256_lf": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/math/product.xiao",
+      "sha256_lf": "2db825d8045b9a4b206f27f6ca36327a8711e335d008038ddfcc2862cb035c79"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/math/golden.json",
+      "sha256_lf": "5bd755d261848573e61f2eb46d5d41cf4e7d11c3124977b512fffc346e6ffebc"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/statistics/product.xiao",
+      "sha256_lf": "4e01b935aea79f807c928f9a4a5fc71ecd278f134537585076a0b85cdb923c7a"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/statistics/golden.json",
+      "sha256_lf": "a94ee498645439196fbef0a50e6a2df7717ed55ebab7130f5d0fe8f0f0922219"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/fmt/product.xiao",
+      "sha256_lf": "54beb6dd95e8e989f95d0d435bf84a5159390d490e3f4bf716a4d9072ae24be8"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/fmt/golden.json",
+      "sha256_lf": "cce9ab3f8747098157e7bcdda0fd27612961864ccb85f23b627b7102e67a6940"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/aliases/product.xiao",
+      "sha256_lf": "686a5e3b71b7521aeb2be3757d135c88a32a722a71ce65c89d7b0ac60ed997c9"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/aliases/golden.json",
+      "sha256_lf": "fd3081ed48d1eaf58d00c2b00b5ca7dc8a1527fcbace6567e0a606ae29d02984"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/string-index/product.xiao",
+      "sha256_lf": "2239f1a9844c240472e0ce2cc6619d000f3b9abe8e33d54c2dca48404ac84d04"
+    },
+    {
+      "path": "tests/fixtures/20o-b1/imp/string-index/golden.json",
+      "sha256_lf": "80bbe71c1d820e44161550a4c0e5e5fd92ab790fe5c3403e3764d28a9620cfa8"
+    }
+  ],
+  "remote_runs": [],
+  "pending": [
+    "hex/base64/url/csv products and remaining eight entries",
+    "hex/base64 alias collision",
+    "complete F9/F10 including CSV full scan, native timing, complete incremental memory",
+    "native release discrepancy",
+    "three-platform evidence and B1-CLOSE"
+  ],
+  "code_snapshot_commit": "e7d60c174972cca5fa0d423c101229600123df11",
+  "local_gates": {
+    "rustfmt": "passed",
+    "clippy_workspace_all_targets_deny_warnings": "passed",
+    "benchmark_check": "passed",
+    "lockfiles_unchanged": true,
+    "docs": "passed",
+    "usedocs": "passed",
+    "layout": "passed",
+    "coverage": {
+      "result": "passed",
+      "documented": 10904,
+      "total": 12081,
+      "public_documented": 5782,
+      "public_total": 5782
+    }
+  }
+}

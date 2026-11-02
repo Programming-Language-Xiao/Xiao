@@ -1,0 +1,20 @@
+   Compiling ring v0.17.14
+   Compiling rustls v0.23.45
+   Compiling rustls-webpki v0.103.15
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.87s
+     Running tests\20m_text_and_path.rs (core\rust\target\debug\deps\20m_text_and_path-a339582b17b8e9e6.exe)
+
+running 1 test
+20M-REMOVAL function=trim vm_module=stdlib.text native_feature=官方函数 stdlib.text.trim 未静态链接 span=Some(IrSpan { start: 0, end: 28 })
+20M-REMOVAL function=replace_all vm_module=stdlib.text native_feature=官方函数 stdlib.text.replace_all 未静态链接 span=Some(IrSpan { start: 0, end: 35 })
+20M-REMOVAL function=repeat vm_module=stdlib.text native_feature=官方函数 stdlib.text.repeat 未静态链接 span=Some(IrSpan { start: 0, end: 38 })
+20M-REMOVAL function=upper_ascii vm_module=stdlib.text native_feature=官方函数 stdlib.text.upper_ascii 未静态链接 span=Some(IrSpan { start: 0, end: 35 })
+20M-REMOVAL function=basename vm_module=stdlib.path native_feature=官方函数 stdlib.path.basename 未静态链接 span=Some(IrSpan { start: 0, end: 32 })
+20M-REMOVAL function=dirname vm_module=stdlib.path native_feature=官方函数 stdlib.path.dirname 未静态链接 span=Some(IrSpan { start: 0, end: 31 })
+20M-REMOVAL function=extension vm_module=stdlib.path native_feature=官方函数 stdlib.path.extension 未静态链接 span=Some(IrSpan { start: 0, end: 33 })
+test text_path_interfaces_require_loader_and_native_function_binding ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 2.56s

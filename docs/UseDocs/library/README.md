@@ -22,7 +22,7 @@
 精确签名、错误表、资源/性能预算和两个 CI 精确执行点见 [B1 冻结草案](../../DevDocs/20o-b1-freeze-draft.md)。
 F1～F13 与内联导出策略已逐条确认；Base64 标准/URL-safe 模式参数必填。
 error_code 已由独立 FIX-B 实现并验收（intrinsic 32 / ABI 1.18），证据见 [FIX-B 收口](../../DevDocs/20o-b1-fix-b-closeout.md)。
-math、statistics、fmt 已有产品草稿与完整示例，其余四库因前置缺口暂停，见
+math、statistics、fmt 已有产品草稿、完整示例与本机原生回归；其余四库和整批验收待完成，见
 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。七库教程与七库 registry 条目保持 planned。
 
 ## 首批模块
