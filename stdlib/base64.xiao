@@ -1,0 +1,128 @@
+# B1 Base64 标准及 URL-safe 字母表，补位必填，辅助逻辑全部内联。
+
+def encode([int] bytes, bool url_safe) -> str
+    count = 0
+    for precheck_byte in bytes
+        count = count + 1
+        if count > 65536
+            raise ResourceError(code = "BASE64_LIMIT_EXCEEDED")
+    if count == 0
+        return ""
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    if url_safe
+        alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+    chunks = []
+    chunk_count = 0
+    block = ""
+    block_groups = 0
+    packed = 0
+    pending_bytes = 0
+    for byte in bytes
+        if byte < 0 or byte > 255
+            raise Error(code = "BASE64_INVALID_BYTE")
+        packed = packed * 256 + byte
+        pending_bytes = pending_bytes + 1
+        if pending_bytes == 3
+            block = block + alphabet[packed // 262144] + alphabet[packed // 4096 % 64] + alphabet[packed // 64 % 64] + alphabet[packed % 64]
+            packed = 0
+            pending_bytes = 0
+            block_groups = block_groups + 1
+            if block_groups == 64
+                array_push(chunks, block)
+                chunk_count = chunk_count + 1
+                block = ""
+                block_groups = 0
+    if pending_bytes == 1
+        block = block + alphabet[packed // 4] + alphabet[packed % 4 * 16] + "=="
+    elif pending_bytes == 2
+        block = block + alphabet[packed // 1024] + alphabet[packed // 16 % 64] + alphabet[packed % 16 * 4] + "="
+    if block != ""
+        array_push(chunks, block)
+        chunk_count = chunk_count + 1
+    while chunk_count > 1
+        next_chunks = []
+        next_count = 0
+        index = 0
+        while index < chunk_count
+            if index + 1 < chunk_count
+                array_push(next_chunks, str(chunks[index]) + str(chunks[index + 1]))
+            else
+                array_push(next_chunks, str(chunks[index]))
+            next_count = next_count + 1
+            index = index + 2
+        chunks = next_chunks
+        chunk_count = next_count
+    return str(chunks[0])
+
+def decode(str text, bool url_safe) -> [int]
+    count = 0
+    size = 0
+    for precheck_character in text
+        point = int(precheck_character)
+        count = count + 1
+        if point < 128
+            size = size + 1
+        elif point < 2048
+            size = size + 2
+        elif point < 65536
+            size = size + 3
+        else
+            size = size + 4
+        if size > 87384
+            raise ResourceError(code = "BASE64_LIMIT_EXCEEDED")
+    if count % 4 != 0
+        raise Error(code = "BASE64_INVALID_ENCODING")
+    result = []
+    packed = 0
+    position = 0
+    padding = 0
+    previous_digit = 0
+    result_count = 0
+    finished = false
+    for character in text
+        if finished
+            raise Error(code = "BASE64_INVALID_ENCODING")
+        codepoint = int(character)
+        digit = 0
+        if codepoint == 61
+            if position < 2
+                raise Error(code = "BASE64_INVALID_ENCODING")
+            if position == 2
+                if previous_digit % 16 != 0
+                    raise Error(code = "BASE64_INVALID_ENCODING")
+            elif padding == 0 and previous_digit % 4 != 0
+                raise Error(code = "BASE64_INVALID_ENCODING")
+            padding = padding + 1
+        else
+            if padding > 0
+                raise Error(code = "BASE64_INVALID_ENCODING")
+            if codepoint >= 65 and codepoint <= 90
+                digit = codepoint - 65
+            elif codepoint >= 97 and codepoint <= 122
+                digit = codepoint - 71
+            elif codepoint >= 48 and codepoint <= 57
+                digit = codepoint + 4
+            elif (url_safe and codepoint == 45) or (not url_safe and codepoint == 43)
+                digit = 62
+            elif (url_safe and codepoint == 95) or (not url_safe and codepoint == 47)
+                digit = 63
+            else
+                raise Error(code = "BASE64_INVALID_ENCODING")
+        packed = packed * 64 + digit
+        previous_digit = digit
+        position = position + 1
+        if position == 4
+            result_count = result_count + 3 - padding
+            if result_count > 65536
+                raise ResourceError(code = "BASE64_LIMIT_EXCEEDED")
+            array_push(result, packed // 65536)
+            if padding < 2
+                array_push(result, packed // 256 % 256)
+            if padding == 0
+                array_push(result, packed % 256)
+            else
+                finished = true
+            packed = 0
+            position = 0
+            padding = 0
+    return result

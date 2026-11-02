@@ -39,3 +39,43 @@ fn hex_accepts_the_frozen_maximum_input_and_output() {
     );
     assert_output(source, "true\n65536\n255\n");
 }
+
+/// 两种模式各自验证最大数组、独立编码文本、逐字节解码与输入不变。
+fn base64_maximum(url_safe: bool) {
+    let mut expected = if url_safe { "____" } else { "////" }.repeat(21_845);
+    expected.push_str(if url_safe { "_w==" } else { "/w==" });
+    assert_eq!(expected.len(), 87_384);
+    let expected = serde_json::to_string(&expected).unwrap();
+    let source = format!(
+        "from std.base64 import encode, decode\nvalues = []\nindex = 0\nwhile index < 65536\n    array_push(values, 255)\n    index = index + 1\nexpected = {expected}\nprint(encode(values, {url_safe}) == expected)\nrestored = decode(expected, {url_safe})\nrestored_count = 0\nfor byte in restored\n    if byte != 255\n        raise Error(code = \"BASE64_MAX_GOLDEN_MISMATCH\")\n    restored_count = restored_count + 1\nprint(restored_count)\nprint(values[65535])\n"
+    );
+    assert_output(source, "true\n65536\n255\n");
+}
+
+#[test]
+/// 标准模式的最大合法结果必须保留双补位，不能只检查输入长度。
+fn base64_standard_accepts_the_frozen_maximum() {
+    base64_maximum(false);
+}
+
+#[test]
+/// URL-safe 在同样的最大输入仍强制补位，不接受省略或标准字符。
+fn base64_url_safe_accepts_the_frozen_maximum() {
+    base64_maximum(true);
+}
+
+#[test]
+/// 相同的合法文本长度分别解码为上限+1/+2；无效尾位先于结果预算报编码错误。
+fn base64_checks_actual_decoded_size_after_the_last_quartet() {
+    for (suffix, class, expected) in [
+        ("AAA=", "ResourceError", "BASE64_LIMIT_EXCEEDED\n"),
+        ("AAAA", "ResourceError", "BASE64_LIMIT_EXCEEDED\n"),
+        ("AAB=", "Error", "BASE64_INVALID_ENCODING\n"),
+    ] {
+        let text = serde_json::to_string(&("A".repeat(87_380) + suffix)).unwrap();
+        let source = format!(
+            "from std.base64 import decode\ntry\n    print(decode({text}, false))\ncatch failure as {class}\n    print(error_code(failure))\n"
+        );
+        assert_output(source, expected);
+    }
+}
