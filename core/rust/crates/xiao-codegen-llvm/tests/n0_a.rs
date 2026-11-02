@@ -594,8 +594,8 @@ fn lowers_runtime_values_with_abi() {
 }
 
 #[test]
-/// 关键字和展开实参不能绕过 N0-A 的静态调用签名。
-fn rejects_expanded_arguments() {
+/// 固定参数接受合法命名绑定，展开实参和未知关键字仍明确拒绝。
+fn accepts_fixed_named_and_rejects_expanded_arguments() {
     let function = IrStatement {
         kind: IrStatementKind::Function {
             name: name("identity"),
@@ -641,8 +641,26 @@ fn rejects_expanded_arguments() {
         span: span(),
     };
     let program = simple_program(vec![function, assignment("result", call)]);
-    let error = lower_program(&program, &CodegenOptions::default()).expect_err("应拒绝");
-    assert!(matches!(error, CodegenError::Unsupported { .. }));
+    let module = lower_program(&program, &CodegenOptions::default()).expect("固定命名绑定应降低");
+    assert!(module.text.contains("call i64 @xiao_fn_0_identity(i64 1)"));
+    for kind in ["star", "keyword_star", "unknown"] {
+        let mut bad = program.clone();
+        let IrStatementKind::Assignment { value, .. } = &mut bad.body[1].kind else {
+            panic!("调用赋值");
+        };
+        let IrExpressionKind::Call { arguments, .. } = &mut value.kind else {
+            panic!("调用表达式");
+        };
+        if kind == "unknown" {
+            arguments[0].name = Some(name("missing"));
+        } else {
+            arguments[0].kind = kind.to_owned();
+            arguments[0].name = None;
+        }
+        let error =
+            lower_program(&bad, &CodegenOptions::default()).expect_err("展开或未知名称应拒绝");
+        assert!(matches!(error, CodegenError::Unsupported { .. }));
+    }
 }
 
 #[test]

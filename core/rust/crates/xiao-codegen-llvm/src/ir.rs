@@ -385,6 +385,7 @@ impl Scalar {
 struct FunctionSignature {
     llvm_name: String,
     parameters: Vec<Scalar>,
+    parameter_metadata: Vec<xiao_ir::IrParameter>,
     return_type: Scalar,
 }
 
@@ -542,6 +543,7 @@ impl<'a> ModuleGenerator<'a> {
                     span: Some(name.span),
                 });
             }
+            let parameter_metadata = parameters.clone();
             let parameters = parameters
                 .iter()
                 .map(|parameter| Scalar::from_type(&parameter.ty, parameter.span))
@@ -553,6 +555,7 @@ impl<'a> ModuleGenerator<'a> {
                 FunctionSignature {
                     llvm_name,
                     parameters,
+                    parameter_metadata,
                     return_type,
                 },
             );
@@ -1242,14 +1245,16 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
             .get(&name.text)
             .cloned()
             .ok_or_else(|| unsupported(format!("未知函数 {}", name.text), Some(name.span)))?;
-        if arguments.len() != signature.parameters.len() {
-            return Err(unsupported("函数实参数量不匹配", Some(span)));
+        let order =
+            crate::arguments::fixed_argument_order(&signature.parameter_metadata, arguments)
+                .ok_or_else(|| unsupported("函数实参绑定形态", Some(span)))?;
+        let mut destinations = vec![0; arguments.len()];
+        for (parameter, &source) in order.iter().enumerate() {
+            destinations[source] = parameter;
         }
         let mut values = Vec::with_capacity(arguments.len());
-        for (argument, parameter_ty) in arguments.iter().zip(signature.parameters.iter().copied()) {
-            if argument.kind != "positional" {
-                return Err(unsupported("关键字或展开实参", Some(argument.span)));
-            }
+        for (source, argument) in arguments.iter().enumerate() {
+            let parameter_ty = signature.parameters[destinations[source]];
             let (value, ty) = self.emit_expression(&argument.value)?;
             values.push(format!(
                 "{} {}",
@@ -1257,6 +1262,7 @@ impl<'a, 'b> FunctionGenerator<'a, 'b> {
                 self.cast_value(value, ty, parameter_ty, argument.span)?
             ));
         }
+        let values: Vec<_> = order.iter().map(|&source| values[source].clone()).collect();
         if signature.return_type == Scalar::None {
             self.emit_line(format!(
                 "  call void @{}({})",

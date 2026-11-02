@@ -1198,25 +1198,38 @@ impl<'a> DynamicGenerator<'a> {
                 message: format!("符号 {name} 不是函数"),
             });
         };
-        if arguments.len() != parameters.len()
-            || arguments
-                .iter()
-                .any(|argument| argument.kind != "positional" || argument.name.is_some())
-        {
-            return Err(CodegenError::Unsupported {
-                feature: format!("动态函数 {name} 的参数形态"),
-                span: Some(span),
-            });
-        }
+        let order =
+            crate::arguments::fixed_argument_order(parameters, arguments).ok_or_else(|| {
+                CodegenError::Unsupported {
+                    feature: format!("动态函数 {name} 的参数形态"),
+                    span: Some(span),
+                }
+            })?;
         let mut argument_slots = Vec::with_capacity(arguments.len());
-        for argument in arguments {
-            let value = self.emit_expression(&argument.value)?;
+        for _ in arguments {
             let slot = self.next_temp();
             self.emit(format!("  {slot} = alloca {VALUE_TYPE}"));
             self.emit(format!("  store {VALUE_TYPE} zeroinitializer, ptr {slot}"));
-            self.store_call_argument(&argument.value, &argument.value, &value, &slot);
             argument_slots.push(slot);
         }
+        let arguments_failed = self.next_label("dynamic.call.arguments.fail");
+        let arguments_ready = self.next_label("dynamic.call.arguments.ready");
+        self.push_error_context(arguments_failed.clone());
+        for (argument, slot) in arguments.iter().zip(&argument_slots) {
+            let value = self.emit_expression(&argument.value)?;
+            self.store_call_argument(&argument.value, &argument.value, &value, slot);
+        }
+        self.pop_error_context();
+        self.emit(format!("  br label %{arguments_ready}"));
+        self.terminated = true;
+        self.emit_label(&arguments_failed);
+        let release = self.value_release_symbol();
+        for slot in &argument_slots {
+            self.emit(format!("  call void @{release}(ptr {slot})"));
+        }
+        self.emit(format!("  br label %{}", self.error_target()));
+        self.terminated = true;
+        self.emit_label(&arguments_ready);
         let output = self.next_temp();
         self.emit(format!("  {output} = alloca {VALUE_TYPE}"));
         self.emit(format!(
@@ -1224,7 +1237,8 @@ impl<'a> DynamicGenerator<'a> {
         ));
         let symbol = self.function_symbol(name);
         let mut call = format!("  call void @{symbol}(ptr {output}");
-        for slot in &argument_slots {
+        for index in order {
+            let slot = &argument_slots[index];
             call.push_str(&format!(", ptr {slot}"));
         }
         call.push(')');

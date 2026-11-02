@@ -47,6 +47,32 @@ const STD_ALIAS_CASES: &[(&str, &str, &str)] = &[
     ),
 ];
 
+/// 固定参数命名调用：实参按源码顺序求值，随后按形参名绑定，失败也保留已有清理。
+const NAMED_FIXED_SOURCE: &str = r#"def mark([int] events, int value) -> int
+    array_push(events, value)
+    return value
+def subtract(int left, int right) -> int
+    return left - right
+def echo(str text, int count) -> str
+    return text + str(count)
+def divide(int divisor) -> int
+    return 1 // divisor
+events = []
+print(subtract(right = mark(events, 2), left = mark(events, 7)))
+for value in events
+    print(value)
+print(subtract(9, right = 4))
+print(subtract(left = 9, right = 4))
+print(echo(count = 3, text = "雪"))
+try
+    print(echo(text = "pre" + "pared", count = divide(0)))
+catch failure as ArithmeticError
+    print(error_code(failure))
+"#;
+
+/// 预期值独立固定，顺序标签 2/7 证明没有为了按形参排序而重排求值。
+const NAMED_FIXED_STDOUT: &str = "5\n2\n7\n5\n5\n雪3\nX06-RUNTIME-013\n";
+
 /// 为单个模块调用用例建立隔离项目，并在用例结束后安全清理。
 struct TestProject(PathBuf);
 
@@ -343,6 +369,48 @@ fn std_alias_native_lowering_matches_the_canonical_capability_boundary() {
             assert_eq!(alias, original, "{label}");
             assert!(alias.contains("没有动态值槽"), "{label}: {alias}");
         }
+    }
+}
+
+#[test]
+/// 固定命名调用经生产 VM 和三目标 LLVM 降低；非法调用仍由前端按既有身份拒绝。
+fn fixed_named_calls_preserve_argument_evaluation_and_binding() {
+    let outcome = run_vm("named-fixed", NAMED_FIXED_SOURCE);
+    assert!(outcome.is_success(), "{outcome:?}");
+    assert_eq!(output(&outcome), NAMED_FIXED_STDOUT);
+    let artifact = FrontendCompiler::new()
+        .compile(&FrontendRequest::from_text(NAMED_FIXED_SOURCE))
+        .unwrap();
+    for target in [
+        TargetDescription::windows_x86_64(),
+        TargetDescription::linux_x86_64(),
+        TargetDescription::macos_aarch64(),
+    ] {
+        xiao_codegen_llvm::NativeBuild::new()
+            .lower(
+                &artifact.ir,
+                &xiao_codegen_llvm::CodegenOptions::for_target(target),
+            )
+            .unwrap();
+    }
+    for call in [
+        "subtract(left = 1, left = 2)",
+        "subtract(missing = 1, right = 2)",
+        "subtract(left = \"x\", right = 2)",
+        "subtract(left = 1)",
+    ] {
+        let error = FrontendCompiler::new()
+            .compile(&FrontendRequest::from_text(format!(
+                "def subtract(int left, int right) -> int\n    return left - right\n{call}\n"
+            )))
+            .unwrap_err();
+        assert!(
+            error
+                .diagnostics()
+                .iter()
+                .any(|diagnostic| diagnostic.code() == "X04-TYPE-002"),
+            "{call}: {error:?}"
+        );
     }
 }
 
@@ -685,6 +753,11 @@ fn first_modules_match_native_results() {
     let root = std::env::temp_dir().join(format!("xiao-20c-first-modules-{}", std::process::id()));
     fs::create_dir_all(&root).expect("创建首批模块原生测试目录");
     let cases = [
+        (
+            "named-fixed-functions-alias",
+            NAMED_FIXED_SOURCE,
+            NAMED_FIXED_STDOUT,
+        ),
         (
             "path",
             "from stdlib.path import join\nprint(join(\"lib\", \"core\"))\n",

@@ -61,3 +61,6 @@ Xiao 字符串返回。读取不使用 take/snapshot/clear，普通异常路由�
 
 B1-IMP 的既有 std 别名前置修复将 `control.rs` 的模块初始化及选取函数查找统一到
 `stdlib.` 规范身份；版本 16 隔离更新后的原生降低指纹，Runtime ABI 仍为 1.18。
+
+版本 17 的固定参数命名调用经共享 `arguments.rs` 生成绑定排列；`expression.rs`
+仍按源码顺序求值、保存和释放实参槽，只在实际 call 中按形参顺序传递这些槽。

@@ -1,5 +1,8 @@
 # `xiao-codegen-llvm/src`
 
+`arguments.rs` 为静态与动态降低提供固定参数绑定计划；表达式求值仍由各降低器按源码顺序
+执行，只在调用前排列已求值实参。版本 17 为命名调用的缓存指纹，与 ABI 次版本分开维护。
+
 22E 的 `native_metadata.rs` / `native_metadata_sections.rs` / `native_metadata_tests.rs`
 保存公开并发产物的有界编解码、ELF/PE/Mach-O 专用节读取与拒绝回归。构建后从真实文件
 重新读取并校验 ABI、最小位集、目标和标准库身份；不执行入口，也不使用外部解析命令。
