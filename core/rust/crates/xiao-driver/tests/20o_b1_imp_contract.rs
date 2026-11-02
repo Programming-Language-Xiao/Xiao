@@ -1,5 +1,8 @@
 //! 20O-B1-IMP：公开导入、真实导出、边界、移除、归档与教程的产品回归。
 
+#[path = "support/b1_imp.rs"]
+mod b1_imp;
+
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
@@ -12,12 +15,7 @@ use xiao_driver::{
 };
 use xiao_vm::VmEvent;
 
-/// 已落地模块的唯一公开导出清单；其余模块按实施顺序加入。
-const PRODUCTS: &[(&str, &[&str])] = &[
-    ("math", &["abs", "min", "max", "clamp", "gcd", "pow"]),
-    ("statistics", &["sum", "min", "max"]),
-    ("fmt", &["pad_left", "pad_right", "format_int"]),
-];
+use b1_imp::{PRODUCTS, case_names};
 
 /// 独立登记冻结形参名、合法值和错误类型；产品逐模块落地后自动执行对应的全部负例。
 type Parameter = (&'static str, &'static str, &'static str);
@@ -300,6 +298,19 @@ fn public_calls_enforce_every_frozen_parameter_and_require_imports() {
 #[test]
 /// 真实源码、登记项与活跃产品清单一致；新增模块后不能继续只测旧的三模块而静默通过。
 fn every_implemented_module_is_in_the_active_contract_matrix() {
+    let mut exact_cases = std::collections::BTreeSet::new();
+    for case in case_names() {
+        assert!(exact_cases.insert(case), "精确入口重复登记 {case}");
+        let directory = root().join(format!("tests/fixtures/20o-b1/imp/{case}"));
+        assert!(
+            directory.join("product.xiao").is_file(),
+            "{case} 缺少完整样例"
+        );
+        let golden: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(directory.join("golden.json")).unwrap())
+                .unwrap();
+        assert!(golden["stdout"].is_string(), "{case} 缺少独立黄金");
+    }
     let registry: serde_json::Value = serde_json::from_str(
         &fs::read_to_string(root().join("docs/module-registry.json")).unwrap(),
     )
@@ -329,6 +340,10 @@ fn every_implemented_module_is_in_the_active_contract_matrix() {
             "{module} 必须进入真实产品契约和执行清单"
         );
         if let Some((_, names)) = active {
+            assert!(
+                exact_cases.contains(module),
+                "{module} 缺少 VM/native 精确执行点"
+            );
             let expected: std::collections::BTreeSet<_> = CALL_CONTRACTS
                 .iter()
                 .filter(|item| item.0 == module)
@@ -443,15 +458,27 @@ fn every_public_function_requires_its_real_implementation() {
             assert_eq!(error.code(), "X06-RUNTIME-012");
             let mut broken = artifact.ir.clone();
             let keep = |statement: &xiao_ir::IrStatement| !matches!(&statement.kind, IrStatementKind::Function { name, .. } if name.text == function);
-            broken.body.retain(keep);
-            for imported in &mut broken.modules {
-                imported.body.retain(keep);
-            }
+            let identity = format!("stdlib.{module}");
+            let imported = broken
+                .modules
+                .iter_mut()
+                .find(|item| item.name == identity)
+                .unwrap();
+            let before = imported.body.len();
+            imported.body.retain(keep);
+            assert_eq!(
+                before - imported.body.len(),
+                1,
+                "{module}.{function} 必须仅移除目标函数"
+            );
             let result = NativeBuild::new().lower(&broken, &CodegenOptions::default());
             let Err(CodegenError::Unsupported { feature, span }) = result else {
                 panic!("{module}.{function}: 移除函数未明确拒绝：{result:?}");
             };
-            assert!(feature.contains(function), "{module}.{function}: {feature}");
+            assert_eq!(
+                feature,
+                format!("官方函数 {identity}.{function} 未静态链接")
+            );
             assert!(span.is_some(), "{module}.{function}: 缺源码区间");
         }
     }

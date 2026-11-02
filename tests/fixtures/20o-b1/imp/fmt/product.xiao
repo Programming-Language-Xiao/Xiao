@@ -57,3 +57,7 @@ try
     print(pad_right(oversized, 0, "."))
 catch text_limit_right as ResourceError
     print(error_code(text_limit_right))
+minimum_base = 2
+while minimum_base <= 36
+    print(format_int(value = minimum, radix = minimum_base))
+    minimum_base = minimum_base + 1

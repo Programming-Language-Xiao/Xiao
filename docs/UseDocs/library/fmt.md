@@ -17,7 +17,7 @@ related:
 
 为填充、对齐和整数进制提供有语义增量的便利 API，不再建立等价于 str(value) 的占位函数。
 
-本页为 `planned`：B1-IMP 产品源码已在 `stdlib/fmt.xiao` 落地，完整性能与三平台验收仍待收口。
+本页为 `planned`：B1-IMP 产品源码已在 `stdlib/fmt.xiao` 落地，三模块已有三平台功能回归，完整性能、内存与生命周期验收仍待收口。
 本页保留 B0 历史探测，另附直接导入产品函数的完整示例。适用基线：Xiao 0.1.0、Runtime ABI 1.18、
 标准库接口版本 1。逐平台结果见 [B0 探测记录](../../DevDocs/20o-b0-baseline-and-b1-draft.md)。
 
@@ -74,7 +74,7 @@ catch invalid_fill as Error
 
 ## B1-IMP 产品完整示例（planned）
 
-以下源码与 [CI 产品夹具](../../../tests/fixtures/20o-b1/imp/fmt/product.xiao) 逐字一致，已接入原有 VM/原生精确目标；当前原生命名调用与 F10 初测的阻塞见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。B0 探测文件独立保留。
+以下源码与 [CI 产品夹具](../../../tests/fixtures/20o-b1/imp/fmt/product.xiao) 逐字一致，已接入原有 VM/原生精确目标；命名调用前置已修复，三模块三平台功能回归已通过；剩余性能与释放验证见 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)。B0 探测文件独立保留。
 
 <!-- b1-imp-executable-example -->
 ```xiao
@@ -137,6 +137,10 @@ try
     print(pad_right(oversized, 0, "."))
 catch text_limit_right as ResourceError
     print(error_code(text_limit_right))
+minimum_base = 2
+while minimum_base <= 36
+    print(format_int(value = minimum, radix = minimum_base))
+    minimum_base = minimum_base + 1
 ```
 
 独立黄金输出：
@@ -233,7 +237,7 @@ error_code 已随独立 FIX-B 在 ABI 1.18 实现并验收；本模块源码与�
 ## 故障排查与下一步
 
 三项产品草稿已有基础 VM 与真实导出黄金，MIN 的实现避免对 MIN 求正绝对值或直接对其正除模。
-原生命名调用与完整 F10 成本仍受前置缺口阻塞，具体 debug/release 初测见
+命名调用已修复，三平台功能回归及最大左右填充的默认 VM 测试已通过；完整 F10 与释放差异见
 [实测记录](../../DevDocs/20o-b1-imp-blockers.md)；历史边界见 [FIX-A 记录](../../DevDocs/20o-b1-fix-a-contract-closeout.md)。
 
 若无法找到完整示例，先确认位于仓库根；原生测试缺少 LLVM/Runtime 配置时应明确失败，

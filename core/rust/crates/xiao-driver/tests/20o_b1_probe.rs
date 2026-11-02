@@ -1,5 +1,8 @@
 //! 20O-B0/FIX-A 探测、FIX-B 前置及 B1-IMP 产品回归；库函数体来自 stdlib。
 
+#[path = "support/b1_imp.rs"]
+mod b1_imp;
+
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -65,9 +68,6 @@ const FIX_B_CASES: [&str; 7] = [
     "abi-requirements",
 ];
 
-/// B1-IMP 已落地的公开产品模块；保留旧三组独立黄金，按实施顺序扩展。
-const B1_IMP_CASES: [&str; 5] = ["math", "statistics", "fmt", "aliases", "string-index"];
-
 /// 依据 crate 固定位置找到仓库，保留真实源码路径及官方导入环境。
 fn repository_root() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -94,9 +94,8 @@ fn fix_b_cases() -> Vec<(&'static str, FrontendRequest, String)> {
 
 /// 读取公开产品样例和独立黄金，每个模块使用自己的固定目录。
 fn imp_cases() -> Vec<(&'static str, FrontendRequest, String)> {
-    B1_IMP_CASES
-        .iter()
-        .map(|&module| {
+    b1_imp::case_names()
+        .map(|module| {
             let directory = repository_root().join(format!("tests/fixtures/20o-b1/imp/{module}"));
             let path = directory.join("product.xiao");
             let golden: serde_json::Value = serde_json::from_str(
