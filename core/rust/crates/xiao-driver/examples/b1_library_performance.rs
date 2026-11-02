@@ -1,5 +1,8 @@
 //! B1 F10 显式测量工具：真实完整产品源码、独立黄金、一次预热和五次中位数。
 
+#[path = "perf/calibration.rs"]
+/// 对零读数和量化时钟保持有界增长的批次校准。
+mod calibration;
 #[path = "perf/cases.rs"]
 /// 固定产品负载与独立黄金。
 mod cases;
@@ -108,7 +111,7 @@ fn save_report(
     complete: bool,
     failed: bool,
 ) {
-    let report = serde_json::json!({"scope":"controlled B1 measurement, not acceptance of lifecycle","target":xiao_codegen_llvm::TargetDescription::host().triple,"backend":backend,"selected":selected,"phase":phase,"rust_debug_assertions":cfg!(debug_assertions),"protocol":"adaptive calibration to 100ms, then one warmup and five measured samples; each batch must reach 50ms; compile/input/validation/terminal I/O excluded; marker formatting/cleanup included as a conservative time upper bound","memory_method":"OS resident high-water mark minus current resident baseline, conservative upper bound that may include previous high-water mark; not allocator-exact","records":records,"complete":complete,"failed":failed});
+    let report = serde_json::json!({"scope":"controlled B1 measurement, not acceptance of lifecycle","target":xiao_codegen_llvm::TargetDescription::host().triple,"codegen_version":xiao_codegen_llvm::CODEGEN_VERSION,"runtime_abi_encoded":xiao_runtime_abi::ABI_ENCODED_VERSION,"backend":backend,"selected":selected,"phase":phase,"rust_debug_assertions":cfg!(debug_assertions),"protocol":"bounded geometric calibration to 100ms, then one warmup and five measured samples; each batch must reach 50ms; compile/input/validation/terminal I/O excluded; marker formatting/cleanup included as a conservative time upper bound","memory_method":"OS resident high-water mark minus current resident baseline, conservative upper bound that may include previous high-water mark; not allocator-exact","records":records,"complete":complete,"failed":failed});
     if let Some(path) = output {
         std::fs::write(path, serde_json::to_vec_pretty(&report).unwrap()).unwrap();
     }
@@ -190,12 +193,14 @@ fn main() {
                 loop {
                     let sample = measure(repeats, 1).pop().unwrap();
                     let elapsed = sample.seconds;
+                    println!(
+                        "B1-PERF-CALIBRATION case={id} optimization={level} scale={size:?} repeats={repeats} seconds={elapsed}"
+                    );
                     calibration.push(serde_json::json!({"repeats":repeats,"sample":sample}));
                     if elapsed >= 0.1 {
                         break;
                     }
-                    let factor = (0.12 / elapsed.max(1e-9)).ceil().max(2.0) as usize;
-                    repeats = repeats.checked_mul(factor).expect("校准批次溢出");
+                    repeats = calibration::next_batch(repeats, elapsed);
                 }
                 let samples = measure(repeats, 6);
                 let mut measured: Vec<_> = samples[1..]

@@ -1,5 +1,9 @@
 //! B1-IMP 最大输入 VM 初测：计时仅覆盖已编译产品调用，输入准备和输出在区间之外。
 
+#[path = "../examples/perf/calibration.rs"]
+/// 显式F10工具的量化时钟校准回归也随默认性能目标执行。
+mod calibration;
+
 use std::cell::RefCell;
 use std::fs;
 use std::path::Path;
