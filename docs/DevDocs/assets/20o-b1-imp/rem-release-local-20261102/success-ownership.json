@@ -1,0 +1,178 @@
+{
+  "scopes": [
+    {
+      "id": 0,
+      "parent": null,
+      "kind": "program",
+      "span": {
+        "start": 0,
+        "end": 176
+      },
+      "depth": 0,
+      "values": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": 1,
+      "parent": 0,
+      "kind": "loop",
+      "span": {
+        "start": 128,
+        "end": 176
+      },
+      "depth": 1,
+      "values": [
+        7
+      ]
+    }
+  ],
+  "values": [
+    {
+      "id": 1,
+      "name": "ascii:text",
+      "scope": 0,
+      "span": {
+        "start": 0,
+        "end": 4
+      },
+      "ty": {
+        "kind": "Scalar",
+        "data": {
+          "name": "str"
+        }
+      },
+      "storage": "heap_strong",
+      "declaration_order": 1,
+      "parameter": false,
+      "constant": false,
+      "temporary": false,
+      "escapes": []
+    },
+    {
+      "id": 7,
+      "name": "ascii:character",
+      "scope": 1,
+      "span": {
+        "start": 132,
+        "end": 141
+      },
+      "ty": {
+        "kind": "Scalar",
+        "data": {
+          "name": "str"
+        }
+      },
+      "storage": "heap_strong",
+      "declaration_order": 0,
+      "parameter": false,
+      "constant": false,
+      "temporary": false,
+      "escapes": []
+    }
+  ],
+  "release_plans": [
+    {
+      "scope": 0,
+      "exit": "break",
+      "actions": [
+        {
+          "value": 1,
+          "order": 0,
+          "kind": "strong"
+        }
+      ],
+      "transferred": []
+    },
+    {
+      "scope": 0,
+      "exit": "continue",
+      "actions": [
+        {
+          "value": 1,
+          "order": 0,
+          "kind": "strong"
+        }
+      ],
+      "transferred": []
+    },
+    {
+      "scope": 0,
+      "exit": "error",
+      "actions": [
+        {
+          "value": 1,
+          "order": 0,
+          "kind": "strong"
+        }
+      ],
+      "transferred": []
+    },
+    {
+      "scope": 0,
+      "exit": "normal",
+      "actions": [
+        {
+          "value": 1,
+          "order": 0,
+          "kind": "strong"
+        }
+      ],
+      "transferred": []
+    },
+    {
+      "scope": 1,
+      "exit": "break",
+      "actions": [
+        {
+          "value": 7,
+          "order": 0,
+          "kind": "strong"
+        }
+      ],
+      "transferred": []
+    },
+    {
+      "scope": 1,
+      "exit": "continue",
+      "actions": [
+        {
+          "value": 7,
+          "order": 0,
+          "kind": "strong"
+        }
+      ],
+      "transferred": []
+    },
+    {
+      "scope": 1,
+      "exit": "error",
+      "actions": [
+        {
+          "value": 7,
+          "order": 0,
+          "kind": "strong"
+        }
+      ],
+      "transferred": []
+    },
+    {
+      "scope": 1,
+      "exit": "normal",
+      "actions": [
+        {
+          "value": 7,
+          "order": 0,
+          "kind": "strong"
+        }
+      ],
+      "transferred": []
+    }
+  ]
+}

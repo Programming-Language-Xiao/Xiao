@@ -1,0 +1,30 @@
+[
+  {
+    "case": "success",
+    "matched": false,
+    "native_destroy": 12,
+    "optimization": 0,
+    "vm_destroy": 13
+  },
+  {
+    "case": "success",
+    "matched": false,
+    "native_destroy": 12,
+    "optimization": 3,
+    "vm_destroy": 13
+  },
+  {
+    "case": "with-bounds",
+    "matched": false,
+    "native_destroy": 14,
+    "optimization": 0,
+    "vm_destroy": 16
+  },
+  {
+    "case": "with-bounds",
+    "matched": false,
+    "native_destroy": 14,
+    "optimization": 3,
+    "vm_destroy": 16
+  }
+]

@@ -24,6 +24,14 @@ on:
       - "stdlib/**"
       - ".gitattributes"
   workflow_dispatch:
+    inputs:
+      b1_f10:
+        description: "Run controlled B1 F10 measurements on VM and three native platforms"
+        type: boolean
+        default: false
+
+env:
+  XIAO_B1_F10: ${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && '1' || '0' }}
 
 permissions:
   contents: read
@@ -36,7 +44,7 @@ jobs:
   workspace-default-tests:
     name: Rust workspace default tests (Linux)
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && 60 || 20 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -72,6 +80,21 @@ jobs:
         run: |
           cargo test --manifest-path tests/benchmarks/Cargo.toml
           cargo run --quiet --manifest-path tests/benchmarks/Cargo.toml --bin performance_driver -- --self-test
+
+      - name: Measure controlled B1 VM F10
+        if: github.event_name == 'workflow_dispatch' && inputs.b1_f10
+        run: |
+          rustc -Vv
+          lscpu
+          cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b1_library_performance -- --backend vm --case all --phase all --output b1-f10-vm.json
+
+      - name: Upload B1 VM measurement report
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.b1_f10
+        uses: actions/upload-artifact@v7
+        with:
+          name: b1-f10-vm-Linux
+          path: b1-f10-vm.json
+          if-no-files-found: warn
 
   deterministic-size:
     name: Deterministic artifact size regression (Windows baseline)
@@ -134,7 +157,7 @@ jobs:
           - name: macOS
             os: macos-15
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
+    timeout-minutes: ${{ github.event_name == 'workflow_dispatch' && inputs.b1_f10 && 60 || 20 }}
     defaults:
       run:
         shell: pwsh
@@ -253,6 +276,12 @@ jobs:
               throw "20M native test must execute exactly once: $testName"
             }
           }
+          if ($env:XIAO_B1_F10 -eq '1') {
+            rustc -Vv
+            Get-CimInstance Win32_Processor | Select-Object -ExpandProperty Name
+            cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b1_library_performance -- --backend native --case all --phase all --output b1-f10-native.json
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
           exit $LASTEXITCODE
 
       - name: Build runtime and run Linux native gates
@@ -314,6 +343,12 @@ jobs:
           run_exact_native_test text_path_interfaces_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test b1_capabilities_match_native_golden_outputs 20o_b1_probe
 
+          if [ "$XIAO_B1_F10" = '1' ]; then
+            rustc -Vv
+            lscpu
+            cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b1_library_performance -- --backend native --case all --phase all --output b1-f10-native.json
+          fi
+
       - name: Build runtime and run macOS native gates
         if: runner.os == 'macOS'
         shell: bash
@@ -374,6 +409,20 @@ jobs:
           run_exact_native_test text_path_candidates_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test text_path_interfaces_match_native_golden_outputs 20m_text_and_path
           run_exact_native_test b1_capabilities_match_native_golden_outputs 20o_b1_probe
+
+          if [ "$XIAO_B1_F10" = '1' ]; then
+            rustc -Vv
+            sysctl -n machdep.cpu.brand_string
+            cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b1_library_performance -- --backend native --case all --phase all --output b1-f10-native.json
+          fi
+
+      - name: Upload B1 native measurement report
+        if: always() && github.event_name == 'workflow_dispatch' && inputs.b1_f10
+        uses: actions/upload-artifact@v7
+        with:
+          name: b1-f10-native-${{ matrix.name }}
+          path: b1-f10-native.json
+          if-no-files-found: warn
 
       - name: Run 20D and 20E resource, process and archive fixtures (Windows)
         if: runner.os == 'Windows'

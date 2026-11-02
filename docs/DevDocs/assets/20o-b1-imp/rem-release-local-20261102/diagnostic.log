@@ -1,0 +1,14 @@
+   Compiling ring v0.17.14
+   Compiling rustls v0.23.45
+   Compiling rustls-webpki v0.103.15
+   Compiling ureq v3.4.2
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-package)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\Xiao\core\rust\crates\xiao-driver)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 26.67s
+     Running `core\rust\target\debug\examples\b1_release_diagnostic.exe`
+{"case":"success","matched":false,"native_destroy":12,"optimization":0,"vm_destroy":13}
+{"case":"success","matched":false,"native_destroy":12,"optimization":3,"vm_destroy":13}
+{"case":"with-bounds","matched":false,"native_destroy":14,"optimization":0,"vm_destroy":16}
+{"case":"with-bounds","matched":false,"native_destroy":14,"optimization":3,"vm_destroy":16}
+artifacts=C:\Users\xiaoc\AppData\Local\Temp\xiao-b1-release-diagnostic-4792
+error: process didn't exit successfully: `core\rust\target\debug\examples\b1_release_diagnostic.exe` (exit code: 1)

@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "scope": "Failing lifecycle diagnostic, not acceptance evidence",
+  "exit_code": 1,
+  "runtime_abi": "1.18",
+  "codegen_version": 19,
+  "platform": "x86_64-pc-windows-msvc",
+  "results": [
+    {
+      "case": "success",
+      "matched": false,
+      "native_destroy": 12,
+      "optimization": 0,
+      "vm_destroy": 13
+    },
+    {
+      "case": "success",
+      "matched": false,
+      "native_destroy": 12,
+      "optimization": 3,
+      "vm_destroy": 13
+    },
+    {
+      "case": "with-bounds",
+      "matched": false,
+      "native_destroy": 14,
+      "optimization": 0,
+      "vm_destroy": 16
+    },
+    {
+      "case": "with-bounds",
+      "matched": false,
+      "native_destroy": 14,
+      "optimization": 3,
+      "vm_destroy": 16
+    }
+  ],
+  "files": [
+    {
+      "file": "results.json",
+      "source_sha256": "aa219185819713f3748222265f0c4dd936298b2f740721c5c2b611cc0d3a9f12",
+      "source_bytes": 506,
+      "stored_sha256": "b571872926ed2ff77fd314ad2b43b09ed2d9c991f4b38492f1b26be8998904e1",
+      "stored_bytes": 507
+    },
+    {
+      "file": "success.xiao",
+      "source_sha256": "ad62822347be8d36f834192ced4456d23c04ccbbd1ea394ce7286b31a0bd3dbd",
+      "source_bytes": 176,
+      "stored_sha256": "ad62822347be8d36f834192ced4456d23c04ccbbd1ea394ce7286b31a0bd3dbd",
+      "stored_bytes": 176
+    },
+    {
+      "file": "with-bounds.xiao",
+      "source_sha256": "2239f1a9844c240472e0ce2cc6619d000f3b9abe8e33d54c2dca48404ac84d04",
+      "source_bytes": 473,
+      "stored_sha256": "2239f1a9844c240472e0ce2cc6619d000f3b9abe8e33d54c2dca48404ac84d04",
+      "stored_bytes": 473
+    },
+    {
+      "file": "success-vm.trace.tsv",
+      "source_sha256": "dda41e6954a9999963046809db8f06eb3fb12bc93a3ed04c3ca56efe23a53230",
+      "source_bytes": 1131,
+      "stored_sha256": "dda41e6954a9999963046809db8f06eb3fb12bc93a3ed04c3ca56efe23a53230",
+      "stored_bytes": 1131
+    },
+    {
+      "file": "with-bounds-vm.trace.tsv",
+      "source_sha256": "6a6731e08d3034f54b89ac52822f67cc28e6c2119d94641ca0dc34d3529e7a2e",
+      "source_bytes": 1479,
+      "stored_sha256": "6a6731e08d3034f54b89ac52822f67cc28e6c2119d94641ca0dc34d3529e7a2e",
+      "stored_bytes": 1479
+    },
+    {
+      "file": "success-o0.trace.tsv",
+      "source_sha256": "eeb6a83c8fe5f65fbfed45d98160201fa167a954c70b3d63a1244be65385ac76",
+      "source_bytes": 1404,
+      "stored_sha256": "eeb6a83c8fe5f65fbfed45d98160201fa167a954c70b3d63a1244be65385ac76",
+      "stored_bytes": 1404
+    },
+    {
+      "file": "success-o3.trace.tsv",
+      "source_sha256": "eeb6a83c8fe5f65fbfed45d98160201fa167a954c70b3d63a1244be65385ac76",
+      "source_bytes": 1404,
+      "stored_sha256": "eeb6a83c8fe5f65fbfed45d98160201fa167a954c70b3d63a1244be65385ac76",
+      "stored_bytes": 1404
+    },
+    {
+      "file": "with-bounds-o0.trace.tsv",
+      "source_sha256": "0baac0cd712c1e643cf3ef7f0af6bee005f2e7d667f135fea9ab39f1675ce46a",
+      "source_bytes": 1619,
+      "stored_sha256": "0baac0cd712c1e643cf3ef7f0af6bee005f2e7d667f135fea9ab39f1675ce46a",
+      "stored_bytes": 1619
+    },
+    {
+      "file": "with-bounds-o3.trace.tsv",
+      "source_sha256": "0baac0cd712c1e643cf3ef7f0af6bee005f2e7d667f135fea9ab39f1675ce46a",
+      "source_bytes": 1619,
+      "stored_sha256": "0baac0cd712c1e643cf3ef7f0af6bee005f2e7d667f135fea9ab39f1675ce46a",
+      "stored_bytes": 1619
+    },
+    {
+      "file": "diagnostic.log",
+      "source_sha256": "8961340bc7a6e81cd06d5f139b97a6c07692696de1e56c98c8d8789deea1f5f5",
+      "source_bytes": 1000,
+      "stored_sha256": "e2fcda3c1536de827d4c5390f4f19d32521b82696b42ad1055695b62ebdad571",
+      "stored_bytes": 986
+    }
+  ],
+  "normalization": "UTF-8 BOM removed if present; CRLF to LF; trailing ASCII whitespace removed; one LF at EOF",
+  "full_ir_sha256": "bb9e1433d033ed9cbab196cb1d8221951e39a01c12c334d84c4ca0baf2228f24",
+  "full_llvm_sha256": "c79fa6dd46811377425a9c9f804df547134b8b584211f192887d6a60ea9c0887",
+  "llvm_excerpt_source_lines": {
+    "start": 609,
+    "end": 622
+  }
+}

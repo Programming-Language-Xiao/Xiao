@@ -1,0 +1,14 @@
+dynamic.for.end53:
+  br label %dynamic.for.continue45
+dynamic.for.fail44:
+  br label %xiao.error.terminal
+dynamic.for.continue45:
+  call void @xiao_runtime_value_release_strong(ptr %slot0)
+  %t203 = call i32 @xiao_runtime_error_class()
+  %t204 = icmp eq i32 %t203, 0
+  br i1 %t204, label %abi.ok62, label %abi.status.fail63
+abi.status.fail63:
+  call i32 @xiao_runtime_error_attach_span(i64 0, i64 176)
+  br label %xiao.error.terminal
+abi.ok62:
+  call void @xiao_runtime_release_trace_flush()
