@@ -42,6 +42,10 @@
 这些CI状态不验证已撤回的旧反例判断；该判断由本次结构化复跑纠正。CLOSE的原始三平台验收仍引用
 106b99c7的41498029910/41498029872，本轮不把审计勘误伪称为新的产品或F10测量。
 
+后续B2新增cmath planned登记后，当前registry整文件已变化，以上是原时点的历史验证。
+当前两个默认命令会拒绝新registry；验证器已增加SourceRoot透传，须按[历史源码命令](assets/20o-b1-close/README.md#只读复跑)复跑，
+新的正向、反例、来源命令与输出见[本轮实证](assets/20o-b1-close/source-root-replay-20261103/README.md)。
+
 ## 保留的独立记录
 
 macOS首轮容量取消、第二次22C释放顺序失败及第三次成功均按原run/job/attempt保留。

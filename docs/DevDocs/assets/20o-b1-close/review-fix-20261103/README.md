@@ -29,4 +29,6 @@
 `source-line-false-hit-formatted.log`与`source-line-false-hit.error.json`含每次新建的随机临时路径，
 已在清单`diagnostic_files`中标记为仅诊断，从`files`摘要校验项移出，原始内容不改。
 通过判定使用稳定的真实异常字段与`validation.json`，不要求格式化诊断逐字节复现。
-同环境两次复跑的10份稳定产物与2份诊断差异见[入口比较](../../20o-b2-freeze-prep/entry-20261103/replay-comparison.json)。
+同环境两次历史复跑发生在cmath planned登记前，10份稳定产物与2份诊断差异见[入口比较](../../20o-b2-freeze-prep/entry-20261103/replay-comparison.json)。
+本目录保留87bac439时点的验证器摘要与输出；当前验证器已新增SourceRoot透传。
+当前分支须使用106b99c7历史SourceRoot，命令见[复跑入口](../README.md#只读复跑)，新执行结果见[SourceRoot实证](../source-root-replay-20261103/README.md)。

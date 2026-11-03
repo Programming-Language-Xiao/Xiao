@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "exception_message": "实际日志作业被聚合作业ID替代或缺失",
+  "exception_type": "System.Management.Automation.RuntimeException",
+  "fully_qualified_error_id": "实际日志作业被聚合作业ID替代或缺失",
+  "category": "OperationStopped",
+  "formatted_error": "Exception: D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\audit.ps1:19\r\nLine |\r\n  19 |      if (-not $condition) { throw $message }\r\n     |                             ~~~~~~~~~~~~~~\r\n     | 实际日志作业被聚合作业ID替代或缺失\r\n\r\n"
+}

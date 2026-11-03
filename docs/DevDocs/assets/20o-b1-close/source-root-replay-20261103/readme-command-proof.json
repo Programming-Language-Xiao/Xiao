@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "scope": "逐字提取README的准备/正向与反例命令，在同一PowerShell会话实际执行",
+  "readme_git_text_sha256": "de48f2b5ce2b82eaf9f28136f6accb28c3ef725ce4aa215886d3d2f167fcf887",
+  "powershell_blocks_executed": [
+    "$b1RepositoryRoot = (Get-Location).Path\n$b1SourceCommit = '106b99c70e88a88afd0dd9a33f6a9c792e13324c'\n$b1ReplayRoot = Join-Path ([IO.Path]::GetTempPath()) ('xiao-b1-close-replay-' + [Guid]::NewGuid().ToString('N'))\n$b1SourceArchive = Join-Path $b1ReplayRoot 'source-106b99c7.zip'\n$b1SourceRoot = Join-Path $b1ReplayRoot 'source-106b99c7'\n[void][IO.Directory]::CreateDirectory($b1ReplayRoot)\ncmd /c git archive --format=zip \"--output=$b1SourceArchive\" $b1SourceCommit\nif ($LASTEXITCODE -ne 0) { throw '导出B1历史源码失败' }\nExpand-Archive -LiteralPath $b1SourceArchive -DestinationPath $b1SourceRoot\npwsh -NoProfile -File docs/DevDocs/assets/20o-b1-close/audit.ps1 -RepositoryRoot $b1RepositoryRoot -SourceRoot $b1SourceRoot\nif ($LASTEXITCODE -ne 0) { throw 'B1历史源码审计未通过' }\n",
+    "# 接续上节已创建的$b1RepositoryRoot、$b1SourceRoot与$b1ReplayRoot。\npwsh -NoProfile -File docs/DevDocs/assets/20o-b1-close/validate-audit.ps1 -RepositoryRoot $b1RepositoryRoot -SourceRoot $b1SourceRoot -OutputDirectory (Join-Path $b1ReplayRoot 'validation')\nif ($LASTEXITCODE -ne 0) { throw 'B1历史源码反例验证未通过' }\n"
+  ],
+  "argv": [
+    "pwsh",
+    "-NoProfile",
+    "-File",
+    "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b1-readme-proof-yvsl5q4l\\readme-commands.ps1"
+  ],
+  "exit_code": 0,
+  "stdout": "readme-command.stdout.log",
+  "stderr": "readme-command.stderr.log",
+  "actual_source": {
+    "source_commit": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+    "source_root": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b1-close-replay-582caf4cbb1b4bf39216cdec8108048e\\source-106b99c7",
+    "archive": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b1-close-replay-582caf4cbb1b4bf39216cdec8108048e\\source-106b99c7.zip",
+    "repository_root": "D:\\project\\Xiao\\Xiao"
+  },
+  "audit_result": {
+    "status_snapshot": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+    "passed": true,
+    "raw_success_logs": 5,
+    "exact_targets": 4,
+    "excerpts": 15,
+    "release_records": 36,
+    "historical_attempts_preserved": 2,
+    "status_files": 8,
+    "tool_files": 9,
+    "frozen_sections": 5,
+    "f10_mode": "carried",
+    "f10_records": 721,
+    "performed_measurement": false
+  },
+  "validator_result": {
+    "passed": true,
+    "output_directory": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b1-close-replay-582caf4cbb1b4bf39216cdec8108048e\\validation",
+    "synthetic_negative_cases": 2,
+    "false_source_hit_rejected": true
+  }
+}

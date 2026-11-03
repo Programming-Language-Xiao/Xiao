@@ -1,0 +1,234 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-03T13:18:02.228207+00:00",
+  "scope": "当前4be03c8f工作树加SourceRoot透传修复的本机Windows复跑；历史B1只读校验，不是新的721条性能测量",
+  "repository_head": "4be03c8f378ea058c2334033bc53fd48d8e99686",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "working_tree_change": "validate-audit.ps1新增SourceRoot并透传，audit.ps1及B1被测产物未改",
+  "source_commit": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+  "source_root": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source 106b99c7",
+  "source_archive": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source-106b99c7.zip",
+  "source_archive_sha256": "6f55399f0669ba105ff2f0d8e38e2e9f2eb969f90ff868b381d3e11b4b9cd2a1",
+  "source_archive_git_comment": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+  "temporary_root": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra",
+  "temporary_directory_strategy": "tempfile.mkdtemp新建含空格的独占目录；导出固定提交，不复用当前工作树，也不覆盖或删除旧目录",
+  "archive_command": [
+    "cmd",
+    "/c",
+    "git",
+    "archive",
+    "--format=zip",
+    "--output=C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source-106b99c7.zip",
+    "106b99c70e88a88afd0dd9a33f6a9c792e13324c"
+  ],
+  "audit_script_sha256": "a083d72487277fe439adae4897848b2f370f2f1676065fd5539cf9892a2b6bb9",
+  "validator_script_sha256": "6f33aedd10c4e1a8bf48911df5794ff062322c53684217043da2757f09256be0",
+  "powershell": "7.6.6",
+  "processes": [
+    {
+      "label": "source-export",
+      "argv": [
+        "cmd",
+        "/c",
+        "git",
+        "archive",
+        "--format=zip",
+        "--output=C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source-106b99c7.zip",
+        "106b99c70e88a88afd0dd9a33f6a9c792e13324c"
+      ],
+      "windows_command_line": "cmd /c git archive --format=zip \"--output=C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source-106b99c7.zip\" 106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "source-export.stdout.log",
+      "stderr": "source-export.stderr.log",
+      "elapsed_seconds": 2.062
+    },
+    {
+      "label": "source-expand",
+      "argv": [
+        "pwsh",
+        "-NoProfile",
+        "-Command",
+        "Expand-Archive -LiteralPath 'C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source-106b99c7.zip' -DestinationPath 'C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source 106b99c7'"
+      ],
+      "windows_command_line": "pwsh -NoProfile -Command \"Expand-Archive -LiteralPath 'C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source-106b99c7.zip' -DestinationPath 'C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source 106b99c7'\"",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "source-expand.stdout.log",
+      "stderr": "source-expand.stderr.log",
+      "elapsed_seconds": 16.765
+    },
+    {
+      "label": "audit-historical",
+      "argv": [
+        "pwsh",
+        "-NoProfile",
+        "-File",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\audit.ps1",
+        "-RepositoryRoot",
+        "D:\\project\\Xiao\\Xiao",
+        "-SourceRoot",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source 106b99c7"
+      ],
+      "windows_command_line": "pwsh -NoProfile -File D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\audit.ps1 -RepositoryRoot D:\\project\\Xiao\\Xiao -SourceRoot \"C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source 106b99c7\"",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "audit-historical.stdout.log",
+      "stderr": "audit-historical.stderr.log",
+      "elapsed_seconds": 3.61
+    },
+    {
+      "label": "default-audit",
+      "argv": [
+        "pwsh",
+        "-NoProfile",
+        "-Command",
+        "$ErrorActionPreference='Stop'; try { & 'D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\audit.ps1' -RepositoryRoot 'D:\\project\\Xiao\\Xiao'; throw '预期当前源码拒绝但实际成功' } catch { [ordered]@{success=$false;exception_message=$_.Exception.Message;exception_type=$_.Exception.GetType().FullName} | ConvertTo-Json; exit 1 }"
+      ],
+      "windows_command_line": "pwsh -NoProfile -Command \"$ErrorActionPreference='Stop'; try { & 'D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\audit.ps1' -RepositoryRoot 'D:\\project\\Xiao\\Xiao'; throw '预期当前源码拒绝但实际成功' } catch { [ordered]@{success=$false;exception_message=$_.Exception.Message;exception_type=$_.Exception.GetType().FullName} | ConvertTo-Json; exit 1 }\"",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "default-audit.stdout.log",
+      "stderr": "default-audit.stderr.log",
+      "elapsed_seconds": 1.828
+    },
+    {
+      "label": "default-validator",
+      "argv": [
+        "pwsh",
+        "-NoProfile",
+        "-Command",
+        "$ErrorActionPreference='Stop'; try { & 'D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\validate-audit.ps1' -RepositoryRoot 'D:\\project\\Xiao\\Xiao' -OutputDirectory 'C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\default validation'; throw '预期当前源码拒绝但实际成功' } catch { [ordered]@{success=$false;exception_message=$_.Exception.Message;exception_type=$_.Exception.GetType().FullName} | ConvertTo-Json; exit 1 }"
+      ],
+      "windows_command_line": "pwsh -NoProfile -Command \"$ErrorActionPreference='Stop'; try { & 'D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\validate-audit.ps1' -RepositoryRoot 'D:\\project\\Xiao\\Xiao' -OutputDirectory 'C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\default validation'; throw '预期当前源码拒绝但实际成功' } catch { [ordered]@{success=$false;exception_message=$_.Exception.Message;exception_type=$_.Exception.GetType().FullName} | ConvertTo-Json; exit 1 }\"",
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "default-validator.stdout.log",
+      "stderr": "default-validator.stderr.log",
+      "elapsed_seconds": 3.406
+    },
+    {
+      "label": "validation-1",
+      "argv": [
+        "pwsh",
+        "-NoProfile",
+        "-File",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\validate-audit.ps1",
+        "-RepositoryRoot",
+        "D:\\project\\Xiao\\Xiao",
+        "-SourceRoot",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source 106b99c7",
+        "-OutputDirectory",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\validation 1"
+      ],
+      "windows_command_line": "pwsh -NoProfile -File D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\validate-audit.ps1 -RepositoryRoot D:\\project\\Xiao\\Xiao -SourceRoot \"C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source 106b99c7\" -OutputDirectory \"C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\validation 1\"",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "validation-1.stdout.log",
+      "stderr": "validation-1.stderr.log",
+      "elapsed_seconds": 10.766
+    },
+    {
+      "label": "validation-2",
+      "argv": [
+        "pwsh",
+        "-NoProfile",
+        "-File",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\validate-audit.ps1",
+        "-RepositoryRoot",
+        "D:\\project\\Xiao\\Xiao",
+        "-SourceRoot",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source 106b99c7",
+        "-OutputDirectory",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\validation 2"
+      ],
+      "windows_command_line": "pwsh -NoProfile -File D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\validate-audit.ps1 -RepositoryRoot D:\\project\\Xiao\\Xiao -SourceRoot \"C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\source 106b99c7\" -OutputDirectory \"C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\validation 2\"",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "validation-2.stdout.log",
+      "stderr": "validation-2.stderr.log",
+      "elapsed_seconds": 11.219
+    }
+  ],
+  "audit_result": {
+    "status_snapshot": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+    "passed": true,
+    "raw_success_logs": 5,
+    "exact_targets": 4,
+    "excerpts": 15,
+    "release_records": 36,
+    "historical_attempts_preserved": 2,
+    "status_files": 8,
+    "tool_files": 9,
+    "frozen_sections": 5,
+    "f10_mode": "carried",
+    "f10_records": 721,
+    "performed_measurement": false
+  },
+  "default_current_source_rejected": true,
+  "default_validator_child_error": "状态文件已偏离被测快照：docs/module-registry.json",
+  "validation_runs": [
+    {
+      "temporary_output": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\validation 1",
+      "archived_output": "run-1",
+      "summary": {
+        "schema_version": 1,
+        "passed": true,
+        "scope": "受控验证，不是CI或产品运行；原始归档不修改",
+        "audit_script_sha256": "a083d72487277fe439adae4897848b2f370f2f1676065fd5539cf9892a2b6bb9",
+        "validator_script_sha256": "6f33aedd10c4e1a8bf48911df5794ff062322c53684217043da2757f09256be0",
+        "powershell": "7.6.6",
+        "positive_audit_passed": true,
+        "synthetic_negative_cases": 2,
+        "rejection_check": "exit=1 + Exception.GetType().FullName + Exception.Message精确相等；不搜索格式化源码",
+        "source_line_false_hit": {
+          "synthetic": true,
+          "exit_code": 1,
+          "formatted_contains_expected": true,
+          "actual_exception_message": "在此对象上找不到属性“Count”。请验证该属性是否存在。",
+          "actual_exception_type": "System.Management.Automation.PropertyNotFoundException",
+          "accepted_by_validator": false,
+          "passed": true
+        }
+      }
+    },
+    {
+      "temporary_output": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao b1 historical replay s2xtbfra\\validation 2",
+      "archived_output": "run-2",
+      "summary": {
+        "schema_version": 1,
+        "passed": true,
+        "scope": "受控验证，不是CI或产品运行；原始归档不修改",
+        "audit_script_sha256": "a083d72487277fe439adae4897848b2f370f2f1676065fd5539cf9892a2b6bb9",
+        "validator_script_sha256": "6f33aedd10c4e1a8bf48911df5794ff062322c53684217043da2757f09256be0",
+        "powershell": "7.6.6",
+        "positive_audit_passed": true,
+        "synthetic_negative_cases": 2,
+        "rejection_check": "exit=1 + Exception.GetType().FullName + Exception.Message精确相等；不搜索格式化源码",
+        "source_line_false_hit": {
+          "synthetic": true,
+          "exit_code": 1,
+          "formatted_contains_expected": true,
+          "actual_exception_message": "在此对象上找不到属性“Count”。请验证该属性是否存在。",
+          "actual_exception_type": "System.Management.Automation.PropertyNotFoundException",
+          "accepted_by_validator": false,
+          "passed": true
+        }
+      }
+    }
+  ],
+  "original_report_file_count": 23,
+  "original_report_unchanged": true,
+  "registry_planned_entry_preserved": true,
+  "log_normalization": "原始进程输出按UTF-8解码、CRLF转LF并剥除ANSI控制序列；未删减正文",
+  "diagnostic_files": [
+    "run-1/source-line-false-hit-formatted.log",
+    "run-1/source-line-false-hit.error.json",
+    "run-2/source-line-false-hit-formatted.log",
+    "run-2/source-line-false-hit.error.json",
+    "default-current-source/positive.error.json"
+  ],
+  "stable_replay_summary_files": 10,
+  "diagnostic_replay_files": 2,
+  "default_validator_child_record": "default-current-source/positive.error.json"
+}

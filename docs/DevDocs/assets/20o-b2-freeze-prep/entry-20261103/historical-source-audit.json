@@ -11,5 +11,12 @@
   "frozen_sections": 5,
   "f10_mode": "carried",
   "f10_records": 721,
-  "performed_measurement": false
+  "performed_measurement": false,
+  "record_role": "历史审计摘要；当时未完整归档来源命令，不用作当前HEAD复跑证明",
+  "source_commit": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+  "source_root_at_collection_archived": false,
+  "archive_argv_at_collection_archived": false,
+  "complete_process_output_archived": false,
+  "current_replay_evidence": "../../20o-b1-close/source-root-replay-20261103/provenance.json",
+  "current_replay_output": "../../20o-b1-close/source-root-replay-20261103/audit-historical.stdout.log"
 }

@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "exception_message": "在此对象上找不到属性“Count”。请验证该属性是否存在。",
+  "exception_type": "System.Management.Automation.PropertyNotFoundException",
+  "fully_qualified_error_id": "PropertyNotFoundStrict",
+  "category": "NotSpecified",
+  "formatted_error": "PropertyNotFoundException: C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b1-close-cases-9f4cd13912f746e894095a6da67cf0cb\\source-line-false-hit.ps1:5\r\nLine |\r\n   5 |  Require ($origin.Count -eq 1) '实际日志作业被聚合作业ID替代或缺失'\r\n     |  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n     | 在此对象上找不到属性“Count”。请验证该属性是否存在。\r\n\r\n"
+}

@@ -23,9 +23,15 @@
 87bac439的工作区门禁41585868754、实际作业125751076106成功，已[补登原证据链](../../20o-b1-close/review-fix-20261103/ci-87bac439.json)。
 它是文档/审计修复节点，B1被测产品快照不变；没有据此宣称B2或新增三平台实现已通过。
 
-同环境连续两次运行现有validate-audit.ps1：10份产物逐字节一致，两份含随机路径的诊断不同，
-见[比较清单](replay-comparison.json)。两份输出保留原文，已改标仅诊断并从复跑摘要项移出；
-语义判定继续依赖真实Exception.Message、异常类型、两个反例与validation.json。
+此前两次validate-audit.ps1比较是在cmath planned登记前、Git HEAD为465e213d的未提交工作树中采集的；
+当时B1被审文件仍等于106b99c7快照。10份产物逐字节一致，两份含随机路径的诊断不同，
+见[历史比较清单](replay-comparison.json)。旧结果不证明当前HEAD的默认命令可运行；
+两份诊断原文保留，语义判定仍依赖真实Exception.Message、异常类型、两个反例与validation.json。
+
+新增planned登记后，无SourceRoot的两个默认命令均预期拒绝当前registry。
+当前复跑必须显式导出106b99c7并传入SourceRoot；完整命令见[B1复跑入口](../../20o-b1-close/README.md#只读复跑)，
+新增透传后的两次执行、实际SourceRoot、导出命令、进程输出及原始归档未改证明见[本轮复跑实证](../../20o-b1-close/source-root-replay-20261103/README.md)。
+旧[历史审计摘要](historical-source-audit.json)缺少当时完整来源记录，仅保留历史身份；不补造旧命令或把它冒充本轮输出。
 
 [候选依赖资料](candidate-dependencies.json)包含上游发布提交、Cargo清单的内容摘要、注册索引公布的归档校验值和依赖要求。
 num-bigint=0.4.8与bigdecimal=0.4.11、仅std和双许可留档已确认；其余候选版本/闭包与构建策略仍待审。

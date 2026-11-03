@@ -1,0 +1,5 @@
+{
+  "success": false,
+  "exception_message": "状态文件已偏离被测快照：docs/module-registry.json",
+  "exception_type": "System.Management.Automation.RuntimeException"
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "scope": "受控验证，不是CI或产品运行；原始归档不修改",
+  "audit_script_sha256": "a083d72487277fe439adae4897848b2f370f2f1676065fd5539cf9892a2b6bb9",
+  "validator_script_sha256": "6f33aedd10c4e1a8bf48911df5794ff062322c53684217043da2757f09256be0",
+  "powershell": "7.6.6",
+  "positive_audit_passed": true,
+  "synthetic_negative_cases": 2,
+  "rejection_check": "exit=1 + Exception.GetType().FullName + Exception.Message精确相等；不搜索格式化源码",
+  "source_line_false_hit": {
+    "synthetic": true,
+    "exit_code": 1,
+    "formatted_contains_expected": true,
+    "actual_exception_message": "在此对象上找不到属性“Count”。请验证该属性是否存在。",
+    "actual_exception_type": "System.Management.Automation.PropertyNotFoundException",
+    "accepted_by_validator": false,
+    "passed": true
+  }
+}

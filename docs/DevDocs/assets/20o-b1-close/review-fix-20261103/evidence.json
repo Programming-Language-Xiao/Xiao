@@ -83,7 +83,7 @@
     }
   ],
   "replay_contract": {
-    "conditions": "相同源码、PowerShell版本、区域设置和仓库根；不要求随机临时路径相同",
+    "conditions": "planned登记前的相同源码、PowerShell版本、区域设置与仓库根；旧验证器没有SourceRoot参数；不要求随机反例路径相同",
     "diagnostic_files_excluded": [
       "source-line-false-hit-formatted.log",
       "source-line-false-hit.error.json"
@@ -93,5 +93,7 @@
       "negative-cases.json"
     ],
     "comparison_evidence": "../../20o-b2-freeze-prep/entry-20261103/replay-comparison.json"
-  }
+  },
+  "validator_script_scope": "上述摘要及结果属于87bac439时点；当前脚本已新增SourceRoot透传，当前执行另见新实证，不覆盖旧结果。",
+  "current_replay_evidence": "../source-root-replay-20261103/provenance.json"
 }

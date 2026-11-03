@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "scope": "本轮SourceRoot修复的现有检查；非B2产品验收",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0
+    }
+  ],
+  "protected_scope_command": "cmd /c git diff --exit-code 4be03c8f -- core/rust stdlib tests/fixtures tests/benchmarks .github/workflows tools/gates .cargo/config.toml docs/module-registry.json docs/DevDocs/assets/20o-b1-close/audit.ps1 docs/DevDocs/assets/20o-b1-close/41498029910",
+  "protected_scope_exit_code": 0,
+  "source_root_validation": "provenance.json",
+  "readme_execution": "readme-command-proof.json"
+}

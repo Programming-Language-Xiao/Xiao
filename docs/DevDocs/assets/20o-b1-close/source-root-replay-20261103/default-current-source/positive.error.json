@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "exception_message": "状态文件已偏离被测快照：docs/module-registry.json",
+  "exception_type": "System.Management.Automation.RuntimeException",
+  "fully_qualified_error_id": "状态文件已偏离被测快照：docs/module-registry.json",
+  "category": "OperationStopped",
+  "formatted_error": "Exception: D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\audit.ps1:19\r\nLine |\r\n  19 |      if (-not $condition) { throw $message }\r\n     |                             ~~~~~~~~~~~~~~\r\n     | 状态文件已偏离被测快照：docs/module-registry.json\r\n\r\n"
+}

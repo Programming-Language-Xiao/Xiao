@@ -5,11 +5,14 @@
 .DESCRIPTION
 仅在新建临时目录复制和变造归档，原始证据不动。子进程catch真实ErrorRecord，
 按Exception.Message与异常类型核对原因；格式化错误中的源码行不参与通过判定。
+SourceRoot透传到每次审计；未指定时仍使用RepositoryRoot，历史归档须显式传入对应快照。
 #>
-param([string]$RepositoryRoot, [string]$OutputDirectory)
+param([string]$RepositoryRoot, [string]$OutputDirectory, [string]$SourceRoot)
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
 if (-not $RepositoryRoot) { $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../../..')).Path }
+if (-not $SourceRoot) { $SourceRoot = $RepositoryRoot }
+$SourceRoot = [IO.Path]::GetFullPath($SourceRoot)
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path ([IO.Path]::GetTempPath()) ('xiao-b1-close-validation-' + [Guid]::NewGuid().ToString('N')) }
 $outputRoot = [IO.Path]::GetFullPath($OutputDirectory)
 if ((Test-Path -LiteralPath $outputRoot) -and @(Get-ChildItem -LiteralPath $outputRoot -Force).Count -gt 0) { throw '验证输出目录必须为空，防止覆盖既有证据' }
@@ -35,11 +38,11 @@ function Expected-Rejection($result, [string]$message) {
 # 子进程只将实际异常消息写入stderr；完整格式化诊断另存，避免源码回显混入判定。
 $runner = Join-Path $workRoot 'capture-error.ps1'
 $runnerSource = @'
-param([string]$Audit, [string]$RepositoryRoot, [string]$ReportDirectory, [string]$Outcome)
+param([string]$Audit, [string]$RepositoryRoot, [string]$SourceRoot, [string]$ReportDirectory, [string]$Outcome)
 $ErrorActionPreference = 'Stop'
 $encoding = [Text.UTF8Encoding]::new($false)
 try {
-    $text = (& $Audit -RepositoryRoot $RepositoryRoot -ReportDirectory $ReportDirectory) -join "`n"
+    $text = (& $Audit -RepositoryRoot $RepositoryRoot -SourceRoot $SourceRoot -ReportDirectory $ReportDirectory) -join "`n"
     $result = [ordered]@{success=$true;output=($text | ConvertFrom-Json)}
     [IO.File]::WriteAllText($Outcome,(($result | ConvertTo-Json -Depth 20).Replace("`r`n","`n")+"`n"),$encoding)
     exit 0
@@ -64,7 +67,7 @@ function Invoke-Audit([string]$script, [string]$directory, [string]$name) {
     $priorPreference = $ErrorActionPreference
     try {
         $ErrorActionPreference = 'Continue'
-        $nativeOutput = & pwsh -NoProfile -File $runner -Audit $script -RepositoryRoot $RepositoryRoot -ReportDirectory $directory -Outcome $outcome 2>&1
+        $nativeOutput = & pwsh -NoProfile -File $runner -Audit $script -RepositoryRoot $RepositoryRoot -SourceRoot $SourceRoot -ReportDirectory $directory -Outcome $outcome 2>&1
         $nativeExit = $LASTEXITCODE
     } finally { $ErrorActionPreference = $priorPreference }
     if (-not (Test-Path -LiteralPath $outcome)) { throw "子进程未返回结构化结果：$name" }
@@ -128,7 +131,7 @@ foreach ($case in @('aggregate-job-id', 'missing-csv-o3')) {
 # 独立复现旧误判：格式化诊断含预期源码文字，真实异常却是.Count缺失。
 $faultScript = Join-Path $workRoot 'source-line-false-hit.ps1'
 $faultSource = @'
-param([string]$RepositoryRoot, [string]$ReportDirectory)
+param([string]$RepositoryRoot, [string]$SourceRoot, [string]$ReportDirectory)
 Set-StrictMode -Version Latest
 function Require([bool]$condition, [string]$message) { if (-not $condition) { throw $message } }
 $origin = $null

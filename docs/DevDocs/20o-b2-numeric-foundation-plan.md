@@ -36,8 +36,9 @@ B1自审后的两项P3已在本次冻结准备中处理，原始诊断与B1结�
    工作区门禁41585868754、实际作业125751076106成功；明确该节点没有改变B1被测产品快照。
 2. `validate-audit.ps1` 生成的 `source-line-false-hit-formatted.log`/`.error.json`
    含随机临时路径，重新运行会得到不同哈希；`validation.json`、两个反例和实际异常消息稳定。
-   本次选择标为仅诊断，从复跑摘要项移出，原文保留。两次复跑确认10份稳定产物一致、2份诊断不同，
-   见[入口实证](assets/20o-b2-freeze-prep/entry-20261103/README.md)。
+   本次选择标为仅诊断，从复跑摘要项移出，原文保留。planned登记前的两次历史比较为10份稳定产物一致、2份诊断不同，
+   见[入口实证](assets/20o-b2-freeze-prep/entry-20261103/README.md)。当前registry已扩展，默认命令会拒绝；
+   验证器现已增加SourceRoot透传，当前须按[B1入口](assets/20o-b1-close/README.md#只读复跑)导出106b99c7，见[本轮复跑](assets/20o-b1-close/source-root-replay-20261103/README.md)。
 
 这两项是证据可读性问题，不改产品、ABI 或 B1 结论。
 

@@ -13,9 +13,12 @@
 
 - 87bac439的工作区门禁41585868754、实际作业125751076106成功，并[补入B1证据链](assets/20o-b1-close/review-fix-20261103/ci-87bac439.json)；该节点不改B1被测产品快照。
 - 本机Windows现有数值/转换检查18项、B1契约9项（覆盖20入口）、VM精确目标恰好1 passed；它们验证现状，不是B2新运算已实现的证据。
-- 同环境连续两次运行现有审计验证器，10份复跑结果逐字节一致；两份含随机路径的原始输出改标仅诊断，从复跑摘要项移出。
+- planned登记前，同环境两次运行旧审计验证器，10份结果逐字节一致；两份含随机路径的输出标为仅诊断。这是历史比较，不能代替当前HEAD复跑。
 
-新增planned登记后，当前registry整文件不再等于旧106快照；只读导出历史源码并用已有SourceRoot参数完成[旧CLOSE复放](assets/20o-b2-freeze-prep/entry-20261103/historical-source-audit.json)，不改旧指纹。
+新增planned登记后，当前registry整文件不再等于106快照，两个默认命令均会拒绝。
+验证器现已增加SourceRoot并透传全部审计分支；按[明确入口](assets/20o-b1-close/README.md#只读复跑)只读导出106b99c7，
+本轮正向与反例实证、实际来源命令及输出见[复跑记录](assets/20o-b1-close/source-root-replay-20261103/README.md)。
+旧[历史摘要](assets/20o-b2-freeze-prep/entry-20261103/historical-source-audit.json)保留来源不完整的历史身份，不改旧指纹或重写成新执行。
 
 保留B1的七库verified状态和原始失败。B2将改变Runtime/ABI，届时旧721条只能作为B1历史；星崽已要求B2-C在新快照完整重跑721条。
 

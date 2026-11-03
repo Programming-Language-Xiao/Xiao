@@ -76,13 +76,15 @@
     ".cargo/config.toml"
   ],
   "user_decisions": "十二项方向与多项补充已由会话确认；精细字段仍以冻结草案台账为准，此入口记录不是产品合同生效声明。",
-  "collection_context": "入口源码与本机日志在planned登记前采集；后续新增cmath文档条目，B1七库代码与条目内容不变，旧CLOSE审计用历史SourceRoot。",
+  "collection_context": "入口源码、本机日志和两次旧验证器比较在planned登记前采集；新增cmath后默认审计会拒绝整份registry；当前必须导出106b99c7并向新验证器显式传入SourceRoot。",
   "historical_replay": {
     "source_commit": "106b99c7",
     "source_method": "只读git archive到临时目录，未篡改旧registry指纹",
     "passed": true,
     "result": "historical-source-audit.json",
-    "reason": "planned cmath条目自然改变registry整文件，不能把当前登记伪装为旧完整快照。"
+    "reason": "planned cmath条目自然改变registry整文件，不能把当前登记伪装为旧完整快照。",
+    "provenance_complete": false,
+    "scope": "旧历史摘要，不能据此证明当前HEAD默认复跑；新SourceRoot命令及输出另存"
   },
   "documentation_checks": "documentation-checks.json",
   "confirmed_receipt_count": 18,
@@ -114,7 +116,7 @@
     },
     {
       "file": "historical-source-audit.json",
-      "sha256": "ab63abcd392e28c87e2ac1aacae1cb5672bbf6929ce29a609f790b44d2eae0c7"
+      "sha256": "b6da1887ccc6923b1f8047052b6a8753fa48bf2b249759d0c570cc6c0286c1e3"
     },
     {
       "file": "planned-registry-active-matrix.log",
@@ -126,11 +128,11 @@
     },
     {
       "file": "README.md",
-      "sha256": "d9875c7aa0879c4866540c3d11084d8574b404def52fdd05a038e2406aa700c9"
+      "sha256": "11a7c92829482346312124cc33138877d1dde728db847b058ad2ea5a0f037b63"
     },
     {
       "file": "replay-comparison.json",
-      "sha256": "78302c2d28d0cf6e49f0f62311bec3e976fe7f96b35c20471a238aff85d9231b"
+      "sha256": "e90eb75e38eef6cf5b237dc5e1b07dc7a2c0fd58162908d23fb94c48689f5738"
     },
     {
       "file": "runtime-ops.log",
@@ -144,5 +146,6 @@
       "file": "types-numeric.log",
       "sha256": "a9652c38a57635d9408b7eb32cf9b0fc14604c844983f42e302dafb31741df48"
     }
-  ]
+  ],
+  "current_historical_replay": "../../20o-b1-close/source-root-replay-20261103/provenance.json"
 }
