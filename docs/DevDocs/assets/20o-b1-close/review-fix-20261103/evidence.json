@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "reviewed_head": "cbd7fdafcf6bc053a336fc0f73f09c095252b49b",
+  "status_snapshot": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+  "scope": "P2空来源集合与反例误判勘误；P3受保护路径补齐及自审CI节点登记；非新产品或F10测量",
+  "audit_script": "docs/DevDocs/assets/20o-b1-close/audit.ps1",
+  "audit_script_sha256": "a083d72487277fe439adae4897848b2f370f2f1676065fd5539cf9892a2b6bb9",
+  "validator_script": "docs/DevDocs/assets/20o-b1-close/validate-audit.ps1",
+  "validator_script_sha256": "98b701969f010c5cf89a9a99c96c3b7c1bc0868221015dce3d585530530a4cca",
+  "positive_audit_passed": true,
+  "synthetic_negative_cases": 2,
+  "false_source_hit_control_passed": true,
+  "rejection_check": "exit=1 + Exception.GetType().FullName + Exception.Message精确相等；不搜索格式化源码",
+  "legacy_aggregate_result_invalidated": true,
+  "self_review_commit_ci": "ci-observation.json",
+  "files": [
+    {
+      "file": "aggregate-job-id.error.json",
+      "sha256": "cf2c5a97e2ec151e87ae4933a388e8b390b8800a46732d05bac94223500d74a3"
+    },
+    {
+      "file": "aggregate-job-id.log",
+      "sha256": "3cf2de12e80eb78ca787b72254c50651d1a79b04c39decc1896255d0004d196b"
+    },
+    {
+      "file": "audit-positive.json",
+      "sha256": "ab63abcd392e28c87e2ac1aacae1cb5672bbf6929ce29a609f790b44d2eae0c7"
+    },
+    {
+      "file": "ci-observation.json",
+      "sha256": "87171fae7dd88d650c4c615149fad160cca8c457e2b615165b592d1bb3b6c2ed"
+    },
+    {
+      "file": "missing-csv-o3.error.json",
+      "sha256": "0ae4973ccf7ce795673468edcff2595c844f40175151dd64782e8953ce89c42d"
+    },
+    {
+      "file": "missing-csv-o3.log",
+      "sha256": "51ef65f0730f744c3331a222f60baf5a5dfabacba8c08dfd4931abff1b591437"
+    },
+    {
+      "file": "negative-cases.json",
+      "sha256": "c368496bd8b7baf9342d6bcc2d8426424dd58903c750fa2f6069a9a01fba5b95"
+    },
+    {
+      "file": "positive.error.json",
+      "sha256": "836b3430bac3d52e224f5176aa6d3a55eb8ae7150e7b591d8057bee68f35ecc3"
+    },
+    {
+      "file": "positive.log",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "source-line-false-hit-formatted.log",
+      "sha256": "4121e351037b89a1b6f8f1d6364886c1ec5a532fefaf2ad9987d64671c850663"
+    },
+    {
+      "file": "source-line-false-hit.error.json",
+      "sha256": "b6e53907a12ea8403d895a04a559bdeb5cad67da890c9fda7977edfd5491953f"
+    },
+    {
+      "file": "source-line-false-hit.log",
+      "sha256": "f12f24d536b05e9be0b134177f2181c20cd7f4874793649418fd77fad67b6a30"
+    },
+    {
+      "file": "validation.json",
+      "sha256": "f240d905c520f59930bb9c19179d035c0e309399fe8947a7b2cf652223da9f50"
+    }
+  ]
+}

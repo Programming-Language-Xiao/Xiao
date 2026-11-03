@@ -9,11 +9,6 @@
   "platform": "Microsoft Windows NT 10.0.26200.0",
   "positive_audit_passed": true,
   "synthetic_negative_cases": 2,
-  "observed_latest_workspace_gates": {
-    "run_id": 41507699591,
-    "head_sha": "890cdb81794de003327d96c6079333df44c6c1a0",
-    "conclusion": "success"
-  },
   "unchanged_code_command": "cmd /c git diff --exit-code 44dc9d6e -- core/rust tests/fixtures .github/workflows tools/gates .cargo/config.toml tests/benchmarks \"stdlib/*.xiao\"",
   "unchanged_code_exit": 0,
   "files": [
@@ -31,7 +26,49 @@
     },
     {
       "file": "negative-cases.json",
-      "sha256": "7044b9a880c3f80546fb0a300991f4cc8cdcf042acf9a30e2f392be37bf6f86e"
+      "sha256": "c6e7ff25574a320af47d607bf7f125d5ba9c146ed6c20b4a323d527666d4da8e"
     }
-  ]
+  ],
+  "initial_workspace_gates_observation": {
+    "run_id": 41507699591,
+    "head_sha": "890cdb81794de003327d96c6079333df44c6c1a0",
+    "conclusion": "success"
+  },
+  "audit_script_commit": "cbd7fdafcf6bc053a336fc0f73f09c095252b49b",
+  "validation_status": "partially_invalidated",
+  "correction": {
+    "invalidated_case": "aggregate-job-id",
+    "reason": "旧反例实际触发.Count属性异常；原按预期原因拒绝的判定因搜索源码回显而误报，已撤回。",
+    "raw_logs_preserved": true,
+    "replacement_evidence": "../review-fix-20261103/README.md"
+  },
+  "self_review_commit_ci": {
+    "schema_version": 1,
+    "head_sha": "cbd7fdafcf6bc053a336fc0f73f09c095252b49b",
+    "observed_at_utc": "2026-11-03T05:34:39.986905+00:00",
+    "source_query": "gh api \"repos/Programming-Language-Xiao/Xiao/actions/runs?head_sha=cbd7fdafcf6bc053a336fc0f73f09c095252b49b&per_page=10\"",
+    "scope": "自审提交自己的线上CI状态节点；不验证旧反例的原因判定，不替代106b99c7的原始CLOSE日志或旧F10测量",
+    "runs": [
+      {
+        "id": 41580498113,
+        "name": "Xiao maintenance regression",
+        "head_sha": "cbd7fdafcf6bc053a336fc0f73f09c095252b49b",
+        "run_attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41580498113"
+      },
+      {
+        "id": 41580498128,
+        "name": "Xiao workspace gates",
+        "head_sha": "cbd7fdafcf6bc053a336fc0f73f09c095252b49b",
+        "run_attempt": 1,
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41580498128"
+      }
+    ]
+  }
 }

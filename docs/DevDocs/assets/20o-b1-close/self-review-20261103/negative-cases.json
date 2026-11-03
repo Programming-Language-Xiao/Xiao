@@ -4,13 +4,20 @@
     "synthetic": true,
     "exit_code": 1,
     "expected_rejection": "实际日志作业被聚合作业ID替代或缺失",
-    "passed": true
+    "passed": false,
+    "validation_status": "invalidated_unexpected_error",
+    "observed_formatted_error_type": "ParentContainsErrorRecordException",
+    "observed_error_text": "在此对象上找不到属性“Count”。请验证该属性是否存在。",
+    "reason": "旧校验搜索了格式化输出，误命中源码中的预期文字；该记录只证明异常退出，按预期原因拒绝的结论撤回。",
+    "replacement_evidence": "../review-fix-20261103/negative-cases.json"
   },
   {
     "case": "missing-csv-o3",
     "synthetic": true,
     "exit_code": 1,
     "expected_rejection": "产品模块或优化级别缺失/重复",
-    "passed": true
+    "passed": true,
+    "validation_status": "legacy_method_superseded_by_structured_rerun",
+    "replacement_evidence": "../review-fix-20261103/negative-cases.json"
   }
 ]

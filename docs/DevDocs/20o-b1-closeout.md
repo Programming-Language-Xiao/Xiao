@@ -97,3 +97,5 @@ B1七库在本批收口。历史planned记录、旧721条与所有已归档失�
 
 890cdb81之后的[自审核](20o-b1-close-self-review.md)收紧示例/资源测试的覆盖口径，
 补入可复跑的CLOSE只读审计入口及两个受控拒绝证据；产品、七册教程、registry、测量工具与冻结预算未变。
+初次aggregate反例实际触发.Count属性异常，按预期原因拒绝的旧结论已撤回；
+修复后按真实异常消息和类型重做验证，见[结构化勘误](assets/20o-b1-close/review-fix-20261103/README.md)。

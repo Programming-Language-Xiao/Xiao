@@ -102,9 +102,9 @@ try {
     foreach ($log in $manifest.logs) {
         Require ($log.label -cin $labels -and $seen.Add($log.label)) '完整日志标签重复或未知'
         Require ($log.archive_entry -ceq ($log.label + '-full.log')) '完整日志的ZIP身份不符'
-        $origin = if ($log.label -in @('vm-linux', 'native-linux', 'native-windows')) {
-            @($capacity.jobs | Where-Object id -EQ $log.actual_job_id)
-        } else { @($manifest.jobs | Where-Object id -EQ $log.actual_job_id) }
+        $origin = @(if ($log.label -in @('vm-linux', 'native-linux', 'native-windows')) {
+            $capacity.jobs | Where-Object id -EQ $log.actual_job_id
+        } else { $manifest.jobs | Where-Object id -EQ $log.actual_job_id })
         Require ($origin.Count -eq 1) '实际日志作业被聚合作业ID替代或缺失'
         Require ($origin[0].run_attempt -eq $log.actual_attempt -and $origin[0].run_id -eq $log.run_id -and $origin[0].head_sha -ceq $snapshot) '实际作业的尝试/运行/源码不一致'
         $raw = Zip-Bytes $zip $log.archive_entry

@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "exception_message": "产品模块或优化级别缺失/重复",
+  "exception_type": "System.Management.Automation.RuntimeException",
+  "fully_qualified_error_id": "产品模块或优化级别缺失/重复",
+  "category": "OperationStopped",
+  "formatted_error": "Exception: D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b1-close\\audit.ps1:19\r\nLine |\r\n  19 |      if (-not $condition) { throw $message }\r\n     |                             ~~~~~~~~~~~~~~\r\n     | 产品模块或优化级别缺失/重复\r\n\r\n"
+}
