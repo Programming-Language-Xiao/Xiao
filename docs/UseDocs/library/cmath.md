@@ -18,7 +18,8 @@ related:
 
 本页为planned教程提纲，当前没有stdlib/cmath.xiao或对应数学intrinsic，不能按已交付产品调用。
 星崽已确认首批15个float入口，floor/ceil/round/trunc也返回float，sfloat与高精度超越函数后置。
-精确参数、定义域、舍入、误差与ABI接线仍在[B2冻结草案](../../DevDocs/20o-b2-freeze-draft.md)逐项确认；没有产品或三平台证据，不升级verified。
+F-A已确认定义域、舍入、特殊值和误差；参数名、原语/ABI与完整错误表仍待后续裁定，见[B2冻结草案](../../DevDocs/20o-b2-freeze-draft.md)。
+这些是已确认契约，产品与三平台证据尚未交付，本页保持planned。
 
 ## 导入与准备
 
@@ -36,28 +37,28 @@ related:
 ## 核心概念与所有权
 
 cmath是固定64位二进制浮点库，不是复数库，也不是lfloat高精度十进制库。
-三角函数角度单位、最近值舍入、负零与定义域的精细规则仍在冻结。
+已确认三角函数使用弧度，round采用最近偶数；负零与逐函数定义域按冻结精表执行，产品尚未实现。
 输入/结果为标量，纯计算且无新增宿主能力；实现须保证失败不产生部分结果。
 
 ## 首批范围
 
-| 已确认入口组 | 输入/结果 | 仍待精确确认 |
+| 已确认入口组 | 输入/结果 | 规则与待办 |
 | --- | --- | --- |
-| sqrt、floor、ceil、round、trunc、abs | float到float | value参数名、舍入、零与定义域 |
-| min、max、pow | 两个float到float | left/right或base/exponent参数、特殊值 |
-| sin、cos、tan、exp、ln、log10 | float到float | 极值、下溢、域与逐函数误差 |
+| sqrt、floor、ceil、round、trunc、abs | float到float | 舍入/零/域已确认；参数名待F-5 |
+| min、max、pow | 两个float到float | 特殊值已确认；参数名待F-5 |
+| sin、cos、tan、exp、ln、log10 | float到float | 弧度/下溢/域/误差已确认；原语接线待F-5 |
 
 底层拟使用Rust libm，不继承宿主默认精度；具体版本、原语编号和ABI符号仍以冻结表为准。
 
 ## 错误与恢复
 
-已确认NaN/Inf不作为正常输入或输出。稳定错误方向优先复用既有算术错误，域精表尚未全部冻结。
+已确认NaN/Inf不作为正常输入或输出；sqrt负输入、ln/log10非正输入等域规则已确认，完整错误编号与优先级仍待F-B。
 完整示例将通过catch与error_code读取实际code；不使用只打印恢复标签的方式代替错误身份验证。
 
 ## 资源、性能与安全边界
 
 资源和性能是待实测验收目标，不是当前产品成绩，也不是任意硬件时延保证。
-普通超越函数按逐函数ULP/绝对误差，零、符号、定义域和错误身份精确核对；容差数值仍待确认。
+已确认sqrt正确舍入0 ULP，取整/abs/min/max逐位，普通超越与pow非零结果≤4 ULP；零、符号、定义域和错误精确核对。
 B1的721条F10不能作为B2当前性能。B2-C必须在新Runtime/ABI快照完整重跑该批数据，并另测B2新增数值路径。
 
 ## 示例如何进入 CI

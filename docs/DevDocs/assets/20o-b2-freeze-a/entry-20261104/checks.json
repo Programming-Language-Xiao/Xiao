@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "scope": "本轮F-A文档与来源检查，不是Xiao数值产品或三平台测试",
+  "status": "document_checks_passed_typing_answer_pending",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "check-layout.log"
+    }
+  ],
+  "log_normalization": "Bun子进程stderr后接stdout，UTF-8/LF并剥除ANSI控制序列；保留所有输出正文",
+  "source_guard": {
+    "argv": [
+      "cmd",
+      "/c",
+      "git",
+      "diff",
+      "--exit-code",
+      "67944184",
+      "--",
+      "core/rust",
+      "stdlib",
+      "tests/fixtures",
+      "tests/benchmarks",
+      ".github/workflows",
+      "tools/gates",
+      ".cargo/config.toml",
+      "docs/module-registry.json",
+      "docs/DevDocs/assets/20o-b1-close",
+      "docs/DevDocs/assets/20o-b1-imp",
+      "docs/UseDocs/library/math.md",
+      "docs/UseDocs/library/hex.md",
+      "docs/UseDocs/library/base64.md",
+      "docs/UseDocs/library/url.md",
+      "docs/UseDocs/library/csv.md",
+      "docs/UseDocs/library/fmt.md",
+      "docs/UseDocs/library/statistics.md"
+    ],
+    "exit_code": 0
+  },
+  "planned_tutorial_updated": "docs/UseDocs/library/cmath.md只同步已确认契约，status仍planned",
+  "actual_answer_records": 11,
+  "fully_confirmed_f_a_groups": 6,
+  "f4_core_rules_confirmed": true,
+  "f4_mixed_type_answer_pending": true,
+  "ledger_confirmed": 24,
+  "ledger_pending": 6,
+  "new_xiao_tests_or_product_implementations": 0,
+  "new_f10_measurements": 0
+}

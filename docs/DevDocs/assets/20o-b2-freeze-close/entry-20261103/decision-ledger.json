@@ -4,9 +4,9 @@
   "authority": "既有十八条直接答复照录；十二组精确项仍须逐项裁定",
   "base_receipts": "../../20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
   "base_receipts_sha256": "433db40949a3c1dd547275de61b264b9da2391143c7883b7ab475444f09df626",
-  "confirmed": 18,
-  "pending": 12,
-  "activation": "未联合冻结；不进入B2-A/B实现",
+  "confirmed": 24,
+  "pending": 6,
+  "activation": "F-A六项完整确认；F-4主体规则已确认但混合类型补问待答；整体未联合冻结，不进入F-B或B2-A/B产品实现",
   "items": [
     {
       "id": "R-1",
@@ -154,21 +154,31 @@
     },
     {
       "id": "F-1",
-      "status": "pending",
+      "status": "confirmed",
       "subject": "有效数字与七种舍入",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": null,
+      "answer": "确认这些精确规则（推荐）",
       "asked_in_session": true,
-      "review_sections": "五/舍入表"
+      "review_sections": "五/舍入表",
+      "question_item_id": "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",0]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",0]"
+      ]
     },
     {
       "id": "F-2",
-      "status": "pending",
+      "status": "confirmed",
       "subject": "cmath定义域与特殊值",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": null,
+      "answer": "确认逐函数规则（推荐）",
       "asked_in_session": true,
-      "review_sections": "七/15函数域与特殊值"
+      "review_sections": "七/15函数域与特殊值",
+      "question_item_id": "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",0]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",0]"
+      ]
     },
     {
       "id": "F-3",
@@ -184,9 +194,26 @@
       "status": "pending",
       "subject": "lfloat // % **范围",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": null,
+      "answer": "首批也开放//或%；同时开放//和%（推荐）；确认配对与尺度规则（推荐）；确认保留幂规则（推荐）",
       "asked_in_session": true,
-      "review_sections": "五/lfloat运算开放域"
+      "review_sections": "五/lfloat运算开放域",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_a6ec1a6b611c4cc18cad632fd77a80ba\",0]",
+        "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",0]",
+        "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",1]",
+        "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",2]"
+      ],
+      "question_item_id": "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",2]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "confirmed_parts": [
+        "首批同时开放//与%",
+        "floor配对、lfloat结果与显示尺度",
+        "非负整数值幂及零/快路径"
+      ],
+      "pending_fields": [
+        "混合类型准入"
+      ],
+      "pending_question": "F-4类型接线补充｜现有//和%对浮点组合是整体拒绝；新增lfloat分支后，建议沿用既有数值提升：提升结果为lfloat就允许（例如lfloat//int、lint//float），两个整数仍返回整数族；提升结果仅为float/sfloat仍拒绝，bool不新增转换。是否采用这张类型边界？数学规则与显示尺度保持刚才确认。"
     },
     {
       "id": "F-5",
@@ -217,39 +244,60 @@
     },
     {
       "id": "F-8",
-      "status": "pending",
+      "status": "confirmed",
       "subject": "二进制与高精度转换",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": null,
+      "answer": "按舍入结果判溢出（推荐）；整数结果保留scale=0（推荐）",
       "asked_in_session": true,
-      "review_sections": "七/二进制值转换"
+      "review_sections": "七/二进制值转换",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_a6ec1a6b611c4cc18cad632fd77a80ba\",1]",
+        "[\"request_user_input_async\",\"call_7d11730e76b7410a8cf26ebaf4dc11d3\",0]"
+      ],
+      "question_item_id": "[\"request_user_input_async\",\"call_7d11730e76b7410a8cf26ebaf4dc11d3\",0]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json"
     },
     {
       "id": "F-9",
-      "status": "pending",
+      "status": "confirmed",
       "subject": "误差与独立参考",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": null,
+      "answer": "确认容差与离线参考（推荐）",
       "asked_in_session": true,
-      "review_sections": "七/误差与独立参考"
+      "review_sections": "七/误差与独立参考",
+      "question_item_id": "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",1]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",1]"
+      ]
     },
     {
       "id": "F-10",
-      "status": "pending",
+      "status": "confirmed",
       "subject": "显示/规范scale与资源公式",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": null,
+      "answer": "确认定义与零例外（推荐）",
       "asked_in_session": true,
-      "review_sections": "8.1～8.3/系数、显示和结果scale"
+      "review_sections": "8.1～8.3/系数、显示和结果scale",
+      "question_item_id": "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",1]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",1]"
+      ]
     },
     {
       "id": "F-11",
-      "status": "pending",
+      "status": "confirmed",
       "subject": "十进制文本及数值输出",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": null,
+      "answer": "确认文本与输出规则（推荐）",
       "asked_in_session": true,
-      "review_sections": "8.1/8.4文本与输出"
+      "review_sections": "8.1/8.4文本与输出",
+      "question_item_id": "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",2]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",2]"
+      ]
     },
     {
       "id": "F-12",
@@ -262,5 +310,42 @@
     }
   ],
   "review_document": "docs/DevDocs/20o-b2-freeze-draft.md",
-  "review_document_sha256": "972ab09d1651cd281f35ff0ce88ca6c0f44925245222ce63456475ac7a9191de"
+  "review_document_sha256": "6b066732e7065aa2b2aeff6bc496a8dfb3bbf6ad99d0839551a9cd75470eece4",
+  "review_history": [
+    {
+      "commit": "67944184dbb44137040908f2efc8e4d52a6f0e27",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "972ab09d1651cd281f35ff0ce88ca6c0f44925245222ce63456475ac7a9191de",
+      "scope": "上轮十二组精表的审阅版本；不是当前F-A工作树"
+    }
+  ],
+  "latest_review": {
+    "phase": "F-A3_type_boundary",
+    "date": "2026-11-04",
+    "entry_head": "fdbc9f1c763a522d002b2a191655af02f9d550dc",
+    "focus": [
+      "F-4"
+    ],
+    "answered": [
+      "F-1",
+      "F-2",
+      "F-4",
+      "F-8",
+      "F-9",
+      "F-10",
+      "F-11"
+    ],
+    "evidence": "../../20o-b2-freeze-a/entry-20261104/README.md",
+    "decisions_complete": false,
+    "gate_status": "docs_usedocs_layout_passed_typing_answer_pending",
+    "fully_confirmed": [
+      "F-1",
+      "F-2",
+      "F-8",
+      "F-9",
+      "F-10",
+      "F-11"
+    ],
+    "typing_followup": "awaiting_answer"
+  }
 }

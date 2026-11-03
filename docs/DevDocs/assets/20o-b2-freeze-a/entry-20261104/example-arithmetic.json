@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "scope": "只用精确整数/有理数和显式Decimal精度核对文档算例；不是Xiao产品测试、MPFR生成或三平台结果",
+  "xiao_executed": false,
+  "decimal_context_precision": 1100,
+  "binary64_0_1": {
+    "bits": "0x3fb999999999999a",
+    "numerator": "3602879701896397",
+    "denominator": "36028797018963968",
+    "exact_decimal": "0.1000000000000000055511151231257827021181583404541015625"
+  },
+  "binary32_0_1": {
+    "bits": "0x3dcccccd",
+    "numerator": "13421773",
+    "denominator": "134217728",
+    "exact_decimal": "0.100000001490116119384765625"
+  },
+  "floor_pairs": [
+    {
+      "a": "5.5",
+      "b": "2",
+      "floor_quotient": 2,
+      "remainder": "1.5"
+    },
+    {
+      "a": "-5.5",
+      "b": "2",
+      "floor_quotient": -3,
+      "remainder": "0.5"
+    },
+    {
+      "a": "5.5",
+      "b": "-2",
+      "floor_quotient": -3,
+      "remainder": "-0.5"
+    },
+    {
+      "a": "-5.5",
+      "b": "-2",
+      "floor_quotient": 2,
+      "remainder": "-1.5"
+    }
+  ],
+  "plain_output_boundary_bytes": 65536,
+  "finite_overflow_midpoint_identities_checked": true
+}

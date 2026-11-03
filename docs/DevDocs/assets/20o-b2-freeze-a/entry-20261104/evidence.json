@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "entry_head": "fdbc9f1c763a522d002b2a191655af02f9d550dc",
+  "product_baseline": "67944184dbb44137040908f2efc8e4d52a6f0e27",
+  "status": "F-A六项完整确认；F-4主体确认，混合类型补问待答，未完成F-A退出",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "cmath_status": "planned",
+  "decision_receipts": "decision-receipts.json",
+  "pending_question": "decision-requests.json",
+  "live_ledger": "../../20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+  "checks": "checks.json",
+  "previous_ci": "ci-67944184.json",
+  "files": [
+    {
+      "file": ".gitattributes",
+      "sha256": "6c2de176b555b45644df22700eb18ecfcff348311eb894a5029d326510e2179f"
+    },
+    {
+      "file": "check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "file": "check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "file": "check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "file": "checks.json",
+      "sha256": "b870457d1fcd09fbec1f81b11183037e37aea3af96d1e486afced1fa9cda3a85"
+    },
+    {
+      "file": "ci-67944184.json",
+      "sha256": "c1dae509e02b32a4199bfd0b44a4a5c4a8f7c458037ec74d5be58b95d870aed1"
+    },
+    {
+      "file": "decision-receipts.json",
+      "sha256": "3185cf64340ea612513616cfbc7df4c8c4887940a75b95f3b92be500174be4ef"
+    },
+    {
+      "file": "decision-requests.json",
+      "sha256": "4c5cd9fddbcae431a5488beb66286f71cd615083ee1a22d8d1e71910fc2d5ca8"
+    },
+    {
+      "file": "example-arithmetic.json",
+      "sha256": "c2eeae4bd9dbb5b44009149f56be1e3396834f3a94299e33148ba3f2f70ddc99"
+    },
+    {
+      "file": "README.md",
+      "sha256": "7208150b5462cca1eebf51ca4ef36998c6d432df2a06e8867fd39ef7c6689419"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-03T17:48:49.918934+00:00",
+  "scope": "前一轮审阅资料67944184的工作区门禁；不代表F-A已裁定或B2产品已实施",
+  "run": {
+    "id": 41667290451,
+    "head_sha": "67944184dbb44137040908f2efc8e4d52a6f0e27",
+    "name": "Xiao workspace gates",
+    "event": "push",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41667290451"
+  },
+  "jobs": [
+    {
+      "id": 126025900872,
+      "run_id": 41667290451,
+      "head_sha": "67944184dbb44137040908f2efc8e4d52a6f0e27",
+      "run_attempt": 1,
+      "name": "Linux workspace gates",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41667290451/job/126025900872"
+    }
+  ]
+}

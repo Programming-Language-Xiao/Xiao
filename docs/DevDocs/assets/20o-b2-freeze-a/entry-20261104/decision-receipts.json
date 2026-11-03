@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "authority": "逐条实际答复，不以预选推荐项代替确认",
+  "confirmed_count": 6,
+  "record_count": 11,
+  "confirmed_groups": [
+    "F-1",
+    "F-2",
+    "F-8",
+    "F-9",
+    "F-10",
+    "F-11"
+  ],
+  "confirmation_policy": "F-4扩展选择经三条补充收齐范围/尺度/幂；F-8由数值与显示两条答复合并收口",
+  "receipts": [
+    {
+      "id": "F-1",
+      "phase": "F-A1",
+      "question": "F-A1 / F-1｜是否确认：precision 表示最多有效数字；精确短结果不补零，只在最终商上舍入一次。七种模式为 half_even（中点取偶）、half_up（中点远离零）、half_down（中点靠近零）、toward_zero、away_from_zero、floor、ceiling？例如有效数字1位时，±2.5在前三种模式分别为±2、±3、±2。",
+      "answer": "确认这些精确规则（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",0]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-10",
+      "phase": "F-A1",
+      "question": "F-A1 / F-10｜是否确认草案§8.1～§8.3：非零系数去前导零、保留显示尾零；规范身份再去尾零；0.00统一显示0；显示scale也限±100000。零不抬高加减尺度；乘法尺度相加，精确除法保必要尺度；幂n=1保尺度，其余0/±1快路径规范化。普通格式超65536字节或scale<0时用整数系数e指数（如1e100000）？",
+      "answer": "确认定义与零例外（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",1]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-11",
+      "phase": "F-A1",
+      "question": "F-A1 / F-11｜是否确认：str→lfloat仅ASCII十进制，符号只允许+或-，支持.5、5.、e/E，下划线仅在相邻数字之间；拒绝空白、NaN/Inf、非ASCII数字和不完整文本。float/sfloat→str沿现有有限值显示并保留负零；直接str→float/sfloat继续拒绝，数值文本解析经lfloat？",
+      "answer": "确认文本与输出规则（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",2]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-2",
+      "phase": "F-A2",
+      "question": "F-A2 / F-2｜是否确认草案§七的逐函数规则：先拒绝NaN/Inf；三角函数用弧度，tan不以epsilon判极点；round最近偶数，sqrt/sin/tan保留应有负零；min/max仅在异号零平局取-0/+0、同号零保留；ln/log10的x≤0、负底非整数幂和零的负幂报域错误；pow(x,±0)=1，-0的正奇整数幂为-0、其它正幂为+0；正常IEEE下溢允许子正规数及正确有符号零？",
+      "answer": "确认逐函数规则（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",0]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-9",
+      "phase": "F-A2",
+      "question": "F-A2 / F-9｜是否确认：sqrt正确舍入0 ULP；取整/abs/min/max逐位；普通超越与pow的非零结果≤4 ULP，零/符号/域/错误精确；cmath.pow与float **各路径共用内核。独立参考只离线用MPFR4.2.2/GMP6.3.0，256位起算上下界，两端转为同一binary64才采纳，最多4096位仍不唯一就标不可验证；产品继续纯Rust？",
+      "answer": "确认容差与离线参考（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",1]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-4",
+      "phase": "F-A3",
+      "question": "F-A3 / F-4｜是否确认：首批不开放lfloat的//和%；**仅接受数值为非负整数的指数（1.0合法，1.5或负数拒绝），0**0=1，零的正幂为0。沿用已确认的非平凡底数指数≤1,000,000及结果预算；0/±1快路径也先检查输入合法性与预算？",
+      "answer": "首批也开放//或%",
+      "question_item_id": "[\"request_user_input_async\",\"call_a6ec1a6b611c4cc18cad632fd77a80ba\",0]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-8",
+      "phase": "F-A3",
+      "question": "F-A3 / F-8｜是否确认：整数→lfloat精确；float/sfloat→lfloat承接实际二进制数值并规范化，±0统一为0；lint/lfloat显式窄化到float/sfloat取最近偶数，保留正确子正规数和有符号零。溢出建议按“正确舍入结果非有限”判断：略大于最大有限值但仍舍入回最大值时允许，舍入到Inf才拒绝；非有限来源仍拒绝。",
+      "answer": "按舍入结果判溢出（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_a6ec1a6b611c4cc18cad632fd77a80ba\",1]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-4",
+      "phase": "F-A3",
+      "question": "F-4补充①｜首批具体开放哪些lfloat算子？",
+      "answer": "同时开放//和%（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",0]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-4",
+      "phase": "F-A3",
+      "question": "F-4补充②｜对选入的算子，是否采用floor配对：q=floor(a/b)，r=a-b*q，余数为0或随除数符号；返回均为lfloat。商的显示scale=0，非零余数scale=max(s_a,s_b)，零归一为0；除零沿用013。两算子各查自身预算，%不强制物化完整商，避免仅因商过大就否定可有界计算的余数。",
+      "answer": "确认配对与尺度规则（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",1]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-4",
+      "phase": "F-A3",
+      "question": "F-4补充③｜**是否保留原提案：只接受非负整数值指数（1.0合法，1.5和负数拒绝），0**0=1、零的正幂为0；非平凡底数继续受已确认的指数与结果预算约束，0/±1快路径先检查输入合法性？",
+      "answer": "确认保留幂规则（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",2]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-8",
+      "phase": "F-A3",
+      "question": "F-8显示补充｜数值和舍入规则保持刚才的确认。还需明确新转换的默认显示尺度：整数，以及数值为整数的float/sfloat，转lfloat时建议scale=0（10显示为10）；非整数二进制值用精确规范系数。另一方案是所有转换结果都去尾零，10会显示为1e1。显式文本解析仍按已确认F-10保留显示精度。",
+      "answer": "整数结果保留scale=0（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_7d11730e76b7410a8cf26ebaf4dc11d3\",0]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    }
+  ],
+  "partially_confirmed_groups": {
+    "F-4": {
+      "confirmed_parts": [
+        "首批同时开放//与%",
+        "floor配对、lfloat结果与显示尺度",
+        "非负整数值幂及零/快路径"
+      ],
+      "pending_parts": [
+        "混合类型准入"
+      ]
+    }
+  }
+}
