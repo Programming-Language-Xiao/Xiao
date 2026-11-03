@@ -66,6 +66,8 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 
 ### F-A：数值语义、显示与误差
 
+执行规划见[F-A 数值语义裁定规划](20o-b2-freeze-a-numeric-semantics-plan.md)；本批只裁定，不写产品。
+
 范围：F-1、F-2、F-4、F-8、F-9、F-10、F-11。
 
 1. 冻结 `lfloat_divide` 的 rounding/precision/scale 和“只精确有限”的边界；
