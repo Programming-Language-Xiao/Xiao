@@ -1,0 +1,266 @@
+{
+  "schema_version": 1,
+  "entry_head": "a60a3dd11749e770e6fdf80ca2852a9c828fe3c9",
+  "authority": "既有十八条直接答复照录；十二组精确项仍须逐项裁定",
+  "base_receipts": "../../20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+  "base_receipts_sha256": "433db40949a3c1dd547275de61b264b9da2391143c7883b7ab475444f09df626",
+  "confirmed": 18,
+  "pending": 12,
+  "activation": "未联合冻结；不进入B2-A/B实现",
+  "items": [
+    {
+      "id": "R-1",
+      "status": "confirmed",
+      "decision": "B2-D1",
+      "part": "方向",
+      "confirmed": "纯Rust num-bigint + bigdecimal；num-rational留B5，不引入C/GMP",
+      "source_receipt_index": 0
+    },
+    {
+      "id": "R-2",
+      "status": "confirmed",
+      "decision": "B2-D2",
+      "part": "边界",
+      "confirmed": "保留Lint/Lfloat十进制文本标签与C ABI，内部高精度，不暴露Rust对象布局",
+      "source_receipt_index": 1
+    },
+    {
+      "id": "R-3",
+      "status": "confirmed",
+      "decision": "B2-D8",
+      "part": "版本拆分",
+      "confirmed": "A保持ABI1.18且不新增intrinsic；B集中ABI1.19/生成器21；接口版本1；A若需突破先回冻结",
+      "source_receipt_index": 2
+    },
+    {
+      "id": "R-4",
+      "status": "confirmed",
+      "decision": "B2-D4",
+      "part": "首批接口",
+      "confirmed": "首批新增显式精度接口，调整批次；没有选择仅有限精确除法替代整个接口范围",
+      "source_receipt_index": 3
+    },
+    {
+      "id": "R-5",
+      "status": "confirmed",
+      "decision": "B2-D6",
+      "part": "名单和类型",
+      "confirmed": "sqrt/floor/ceil/round/trunc/abs/min/max/pow/sin/cos/tan/exp/ln/log10；参数/结果float，含取整函数float返回；sfloat后置",
+      "source_receipt_index": 4
+    },
+    {
+      "id": "R-6",
+      "status": "confirmed",
+      "decision": "B2-D7",
+      "part": "非有限",
+      "confirmed": "不把NaN/Inf作为正常输入或输出，域/负零等细项另冻",
+      "source_receipt_index": 5
+    },
+    {
+      "id": "R-7",
+      "status": "confirmed",
+      "decision": "B2-D3",
+      "part": "lint运算",
+      "confirmed": "加减乘、//、%、**精确；floor整除/余数随除数；除零稳定错误；负指数拒绝；0**0=1；/返回lfloat且按D4；比较不经f64",
+      "source_receipt_index": 6
+    },
+    {
+      "id": "R-8",
+      "status": "confirmed",
+      "decision": "B2-D5",
+      "part": "文本兼容",
+      "confirmed": "保留str→int/sint/lint码点转换；新增str→lfloat十进制解析；lint数字文本恢复经lfloat→lint",
+      "source_receipt_index": 7
+    },
+    {
+      "id": "R-9",
+      "status": "confirmed",
+      "decision": "B2-D9",
+      "part": "B1性能回归",
+      "confirmed": "B2-C新Runtime/ABI快照完整重跑B1的721条F10",
+      "source_receipt_index": 8
+    },
+    {
+      "id": "R-10",
+      "status": "confirmed",
+      "decision": "B2-D10",
+      "part": "错误方向",
+      "confirmed": "纯计算无新宿主能力；除零ArithmeticError/013，溢出/非有限009，受控分配ResourceError/011；新增场景逐项另冻",
+      "source_receipt_index": 9
+    },
+    {
+      "id": "R-11",
+      "status": "confirmed",
+      "decision": "B2-D11",
+      "part": "内核与比较方向",
+      "confirmed": "纯Rust libm；普通超越按逐函数ULP/绝对误差；零/符号/域/错误精确，具体数值另冻",
+      "source_receipt_index": 10
+    },
+    {
+      "id": "R-12",
+      "status": "confirmed",
+      "decision": "B2-D12",
+      "part": "登记时点",
+      "confirmed": "冻结时cmath planned教程/registry，lint/lfloat更新语言说明，B2-C完整示例与三平台齐才verified；不新增虚构大数标准库",
+      "source_receipt_index": 11
+    },
+    {
+      "id": "R-13",
+      "status": "confirmed",
+      "decision": "B2-D4",
+      "part": "语言/补充",
+      "confirmed": "/只精确有限；非终止结果走显式接口，无上游默认100或全局精度状态",
+      "source_receipt_index": 12
+    },
+    {
+      "id": "R-14",
+      "status": "confirmed",
+      "decision": "B2-D4",
+      "part": "精确接口补充",
+      "confirmed": "全局lfloat_divide(lfloat numerator,lfloat denominator,int precision,str rounding)->lfloat；必填支持位置/命名；有效数字；B2-B集中升级",
+      "source_receipt_index": 13
+    },
+    {
+      "id": "R-15",
+      "status": "confirmed",
+      "decision": "B2-D1",
+      "part": "直接表补充",
+      "confirmed": "num-bigint=0.4.8、bigdecimal=0.4.11，仅std，保留上游MIT/Apache双许可文本；传递闭包和构建仍另核对",
+      "source_receipt_index": 14
+    },
+    {
+      "id": "R-16",
+      "status": "confirmed",
+      "decision": "B2-D2",
+      "part": "显示/身份/缓存补充",
+      "confirmed": "非零显示尺度保留；1.50与1.5数值相等且哈希相同；每次操作精确解析并释放，不加跨调用共享缓存；结果scale另冻",
+      "source_receipt_index": 15
+    },
+    {
+      "id": "R-17",
+      "status": "confirmed",
+      "decision": "B2-D5",
+      "part": "窄化补充",
+      "confirmed": "lfloat显式转lint/int/sint向零截断，定宽检查范围，lint受资源预算，不隐式窄化",
+      "source_receipt_index": 16
+    },
+    {
+      "id": "R-18",
+      "status": "confirmed",
+      "decision": "B2-D9",
+      "part": "资源数值补充",
+      "confirmed": "原文65536字节，输入/最终系数32768位，规范scale与显式指数abs100000，中间65536位，precision1..32768，非平凡幂指数1000000且受结果预算，0/±1快路径；定义/顺序/性能另冻",
+      "source_receipt_index": 17
+    },
+    {
+      "id": "F-1",
+      "status": "pending",
+      "subject": "有效数字与七种舍入",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "五/舍入表"
+    },
+    {
+      "id": "F-2",
+      "status": "pending",
+      "subject": "cmath定义域与特殊值",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "七/15函数域与特殊值"
+    },
+    {
+      "id": "F-3",
+      "status": "pending",
+      "subject": "工作量和性能协议",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "六/性能协议及6.1资源公式"
+    },
+    {
+      "id": "F-4",
+      "status": "pending",
+      "subject": "lfloat // % **范围",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "五/lfloat运算开放域"
+    },
+    {
+      "id": "F-5",
+      "status": "pending",
+      "subject": "原语与C ABI精表",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "5.1/参数、原语与ABI"
+    },
+    {
+      "id": "F-6",
+      "status": "pending",
+      "subject": "版本兼容与拒绝",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "8.5/版本与产物矩阵"
+    },
+    {
+      "id": "F-7",
+      "status": "pending",
+      "subject": "依赖闭包与构建环境",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "四/精确闭包与构建策略"
+    },
+    {
+      "id": "F-8",
+      "status": "pending",
+      "subject": "二进制与高精度转换",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "七/二进制值转换"
+    },
+    {
+      "id": "F-9",
+      "status": "pending",
+      "subject": "误差与独立参考",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "七/误差与独立参考"
+    },
+    {
+      "id": "F-10",
+      "status": "pending",
+      "subject": "显示/规范scale与资源公式",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "8.1～8.3/系数、显示和结果scale"
+    },
+    {
+      "id": "F-11",
+      "status": "pending",
+      "subject": "十进制文本及数值输出",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "8.1/8.4文本与输出"
+    },
+    {
+      "id": "F-12",
+      "status": "pending",
+      "subject": "错误类别、编号与优先级",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": null,
+      "asked_in_session": true,
+      "review_sections": "5.2/错误精表"
+    }
+  ],
+  "review_document": "docs/DevDocs/20o-b2-freeze-draft.md",
+  "review_document_sha256": "972ab09d1651cd281f35ff0ce88ca6c0f44925245222ce63456475ac7a9191de"
+}

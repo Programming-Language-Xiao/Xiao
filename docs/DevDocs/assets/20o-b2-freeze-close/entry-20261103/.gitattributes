@@ -1,0 +1,6 @@
+*.json text eol=lf
+*.md text eol=lf
+*.log text eol=lf whitespace=-blank-at-eof
+# 上游许可证按原始字节留存。
+*.txt -text -whitespace
+.gitattributes text eol=lf

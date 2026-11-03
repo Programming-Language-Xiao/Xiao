@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-03T15:35:34.869061+00:00",
+  "scope": "前置SourceRoot修复0011f4c5的工作区门禁；不是当前冻结完成或B2产品运行证据",
+  "run": {
+    "id": 41644476014,
+    "name": "Xiao workspace gates",
+    "head_sha": "0011f4c5739fd8114f001a236e8241d0f65b918c",
+    "event": "push",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41644476014"
+  },
+  "jobs": [
+    {
+      "id": 125946084668,
+      "run_id": 41644476014,
+      "head_sha": "0011f4c5739fd8114f001a236e8241d0f65b918c",
+      "run_attempt": 1,
+      "name": "Linux workspace gates",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41644476014/job/125946084668"
+    }
+  ]
+}

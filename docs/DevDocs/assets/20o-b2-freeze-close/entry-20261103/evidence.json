@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "entry_head": "a60a3dd11749e770e6fdf80ca2852a9c828fe3c9",
+  "code_baseline": "0011f4c5739fd8114f001a236e8241d0f65b918c",
+  "status": "审阅资料已整理；十二组精确裁定仍待答复，未联合冻结",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "stdlib_interface_version": 1,
+  "cmath_status": "planned",
+  "ledger": "decision-ledger.json",
+  "dependency_archives": "dependency-archives.json",
+  "b1_historical_audit": "b1-audit-provenance.json",
+  "checks": "checks.json",
+  "previous_ci": "ci-0011f4c5.json",
+  "files": [
+    {
+      "file": ".gitattributes",
+      "sha256": "364bda8023837df003302f5607ffecb5b9a8ef85155bc9bee24a7b97a829633c"
+    },
+    {
+      "file": "b1-audit-provenance.json",
+      "sha256": "f12135895c5013602077cef636395b812870363f6ab5cb48f5932b7cbfbf5375"
+    },
+    {
+      "file": "b1-historical-audit.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "b1-historical-audit.stdout.log",
+      "sha256": "ab63abcd392e28c87e2ac1aacae1cb5672bbf6929ce29a609f790b44d2eae0c7"
+    },
+    {
+      "file": "checks.json",
+      "sha256": "32753af465d9ba68b4eeb3fb53791f9a6478eca47c162b8acede83a6bb5867a6"
+    },
+    {
+      "file": "ci-0011f4c5.json",
+      "sha256": "53d23de313abc364026cd9e89efbe2b3cba16f966b4d0caaa3a84c2b72de396f"
+    },
+    {
+      "file": "decision-ledger.json",
+      "sha256": "5879d0f2d0af942577f5cf97f38e1262a8a4c27c96745bc40fa44bcd97b4fdc3"
+    },
+    {
+      "file": "dependency-archives.json",
+      "sha256": "cb14170f70fa7a3172ec5c2cbf204fed5c7b859edd873e1ea97c2500295aac9b"
+    },
+    {
+      "file": "licenses/autocfg-1.5.1/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "file": "licenses/autocfg-1.5.1/LICENSE-MIT.txt",
+      "sha256": "27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac"
+    },
+    {
+      "file": "licenses/bigdecimal-0.4.11/LICENSE-APACHE.txt",
+      "sha256": "74df43338fc1a37b5a744b7d4991662ad9936157abeb4d9ea7bdd5b702c5e3fd"
+    },
+    {
+      "file": "licenses/bigdecimal-0.4.11/LICENSE-MIT.txt",
+      "sha256": "6067b257a0e8cb34fbdd81b7964e92bd27cd137f86709661f96550603717f61a"
+    },
+    {
+      "file": "licenses/libm-0.2.16/LICENSE.txt",
+      "sha256": "3823dda7cf046602f4b4e77ec8e227863dc4736037cc85bb33d9f19febe16bb7"
+    },
+    {
+      "file": "licenses/num-bigint-0.4.8/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "file": "licenses/num-bigint-0.4.8/LICENSE-MIT.txt",
+      "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+    },
+    {
+      "file": "licenses/num-integer-0.1.47/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "file": "licenses/num-integer-0.1.47/LICENSE-MIT.txt",
+      "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+    },
+    {
+      "file": "licenses/num-traits-0.2.19/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "file": "licenses/num-traits-0.2.19/LICENSE-MIT.txt",
+      "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+    },
+    {
+      "file": "README.md",
+      "sha256": "3ff6c47d661b919fb0d61484e63b5652df375093ac626f3a229c764bd52243b1"
+    },
+    {
+      "file": "source-expand.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "source-expand.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "source-export.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "source-export.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

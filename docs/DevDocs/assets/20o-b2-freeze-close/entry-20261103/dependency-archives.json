@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-03T15:19:57.774324+00:00",
+  "scope": "只下载并读取六个上游crate归档及许可证；不是Cargo解析、锁定、编译或三平台证据",
+  "entry_head": "a60a3dd11749e770e6fdf80ca2852a9c828fe3c9",
+  "source_index_snapshot": "../../20o-b2-freeze-prep/entry-20261103/candidate-dependencies.json",
+  "temporary_archive_root": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467",
+  "archive_checksums_verified": 6,
+  "cargo_resolve_run": false,
+  "cargo_lock_changed": false,
+  "builds_verified": false,
+  "records": [
+    {
+      "name": "num-bigint",
+      "version": "0.4.8",
+      "user_decision": "已确认直接版本/特性",
+      "url": "https://static.crates.io/crates/num-bigint/num-bigint-0.4.8.crate",
+      "download_argv": [
+        "curl.exe",
+        "--fail",
+        "--location",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "8",
+        "--max-time",
+        "25",
+        "--output",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\num-bigint-0.4.8.crate",
+        "https://static.crates.io/crates/num-bigint/num-bigint-0.4.8.crate"
+      ],
+      "archive_path_at_collection": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\num-bigint-0.4.8.crate",
+      "archive_bytes": 109961,
+      "registry_checksum": "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367",
+      "archive_sha256": "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367",
+      "archive_checksum_verified": true,
+      "normalized_manifest_sha256": "fcb19e142df64dc58a459ba33e1e22c1551497962f8037ed98df124d749f28f1",
+      "license": "MIT OR Apache-2.0",
+      "declared_rust_version": "1.60",
+      "dependencies": {
+        "arbitrary": {
+          "version": "1",
+          "optional": true,
+          "default-features": false
+        },
+        "num-integer": {
+          "version": "0.1.46",
+          "features": [
+            "i128"
+          ],
+          "default-features": false
+        },
+        "num-traits": {
+          "version": "0.2.18",
+          "features": [
+            "i128"
+          ],
+          "default-features": false
+        },
+        "quickcheck": {
+          "version": "1",
+          "optional": true,
+          "default-features": false
+        },
+        "rand": {
+          "version": "0.8",
+          "optional": true,
+          "default-features": false
+        },
+        "serde": {
+          "version": "1.0",
+          "optional": true,
+          "default-features": false
+        }
+      },
+      "build_dependencies": {},
+      "features": {
+        "arbitrary": [
+          "dep:arbitrary"
+        ],
+        "default": [
+          "std"
+        ],
+        "quickcheck": [
+          "dep:quickcheck"
+        ],
+        "rand": [
+          "dep:rand"
+        ],
+        "serde": [
+          "dep:serde"
+        ],
+        "std": [
+          "num-integer/std",
+          "num-traits/std"
+        ]
+      },
+      "licenses": [
+        {
+          "archive_path": "num-bigint-0.4.8/LICENSE-APACHE",
+          "artifact": "licenses/num-bigint-0.4.8/LICENSE-APACHE.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        },
+        {
+          "archive_path": "num-bigint-0.4.8/LICENSE-MIT",
+          "artifact": "licenses/num-bigint-0.4.8/LICENSE-MIT.txt",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+        }
+      ],
+      "builds_verified": false
+    },
+    {
+      "name": "bigdecimal",
+      "version": "0.4.11",
+      "user_decision": "已确认直接版本/特性",
+      "url": "https://static.crates.io/crates/bigdecimal/bigdecimal-0.4.11.crate",
+      "download_argv": [
+        "curl.exe",
+        "--fail",
+        "--location",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "8",
+        "--max-time",
+        "25",
+        "--output",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\bigdecimal-0.4.11.crate",
+        "https://static.crates.io/crates/bigdecimal/bigdecimal-0.4.11.crate"
+      ],
+      "archive_path_at_collection": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\bigdecimal-0.4.11.crate",
+      "archive_bytes": 131178,
+      "registry_checksum": "8fa3f3d8cbf4dffcfe4991de61d012bef509a409ecbe9dd41049bfe32b4d4653",
+      "archive_sha256": "8fa3f3d8cbf4dffcfe4991de61d012bef509a409ecbe9dd41049bfe32b4d4653",
+      "archive_checksum_verified": true,
+      "normalized_manifest_sha256": "693eef2df02988d70fcaf80877a72ef276c6d6a948ba18004e3cc2e56b7e143e",
+      "license": "MIT/Apache-2.0",
+      "declared_rust_version": null,
+      "dependencies": {
+        "libm": {
+          "version": "0.2.6"
+        },
+        "num-bigint": {
+          "version": "0.4",
+          "default-features": false
+        },
+        "num-integer": {
+          "version": "0.1",
+          "default-features": false
+        },
+        "num-traits": {
+          "version": "0.2",
+          "default-features": false
+        },
+        "serde": {
+          "version": "1.0",
+          "optional": true,
+          "default-features": false
+        },
+        "serde_json": {
+          "version": "1.0",
+          "features": [
+            "alloc",
+            "arbitrary_precision"
+          ],
+          "optional": true,
+          "default-features": false
+        }
+      },
+      "build_dependencies": {
+        "autocfg": {
+          "version": "1"
+        }
+      },
+      "features": {
+        "default": [
+          "std"
+        ],
+        "serde-json": [
+          "serde/derive",
+          "serde_json"
+        ],
+        "std": [
+          "num-bigint/std",
+          "num-integer/std",
+          "num-traits/std"
+        ],
+        "string-only": []
+      },
+      "licenses": [
+        {
+          "archive_path": "bigdecimal-0.4.11/LICENSE-APACHE",
+          "artifact": "licenses/bigdecimal-0.4.11/LICENSE-APACHE.txt",
+          "sha256": "74df43338fc1a37b5a744b7d4991662ad9936157abeb4d9ea7bdd5b702c5e3fd"
+        },
+        {
+          "archive_path": "bigdecimal-0.4.11/LICENSE-MIT",
+          "artifact": "licenses/bigdecimal-0.4.11/LICENSE-MIT.txt",
+          "sha256": "6067b257a0e8cb34fbdd81b7964e92bd27cd137f86709661f96550603717f61a"
+        }
+      ],
+      "builds_verified": false
+    },
+    {
+      "name": "libm",
+      "version": "0.2.16",
+      "user_decision": "F-7待审",
+      "url": "https://static.crates.io/crates/libm/libm-0.2.16.crate",
+      "download_argv": [
+        "curl.exe",
+        "--fail",
+        "--location",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "8",
+        "--max-time",
+        "25",
+        "--output",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\libm-0.2.16.crate",
+        "https://static.crates.io/crates/libm/libm-0.2.16.crate"
+      ],
+      "archive_path_at_collection": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\libm-0.2.16.crate",
+      "archive_bytes": 164243,
+      "registry_checksum": "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981",
+      "archive_sha256": "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981",
+      "archive_checksum_verified": true,
+      "normalized_manifest_sha256": "a2d94f9cbaa4a177bacde9737bfcc7b2ed9de5bddadafe507923a5b5748f9bd7",
+      "license": "MIT",
+      "declared_rust_version": "1.63",
+      "dependencies": {},
+      "build_dependencies": {},
+      "features": {
+        "arch": [],
+        "default": [
+          "arch"
+        ],
+        "force-soft-floats": [],
+        "unstable": [
+          "unstable-intrinsics",
+          "unstable-float"
+        ],
+        "unstable-float": [],
+        "unstable-intrinsics": [],
+        "unstable-public-internals": []
+      },
+      "licenses": [
+        {
+          "archive_path": "libm-0.2.16/LICENSE.txt",
+          "artifact": "licenses/libm-0.2.16/LICENSE.txt",
+          "sha256": "3823dda7cf046602f4b4e77ec8e227863dc4736037cc85bb33d9f19febe16bb7"
+        }
+      ],
+      "builds_verified": false
+    },
+    {
+      "name": "num-integer",
+      "version": "0.1.47",
+      "user_decision": "F-7待审",
+      "url": "https://static.crates.io/crates/num-integer/num-integer-0.1.47.crate",
+      "download_argv": [
+        "curl.exe",
+        "--fail",
+        "--location",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "8",
+        "--max-time",
+        "25",
+        "--output",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\num-integer-0.1.47.crate",
+        "https://static.crates.io/crates/num-integer/num-integer-0.1.47.crate"
+      ],
+      "archive_path_at_collection": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\num-integer-0.1.47.crate",
+      "archive_bytes": 23502,
+      "registry_checksum": "7ce2d95d4b3734dc35aa2f45e1aa22cd416814592a4f9d9205e11affd5b8e10b",
+      "archive_sha256": "7ce2d95d4b3734dc35aa2f45e1aa22cd416814592a4f9d9205e11affd5b8e10b",
+      "archive_checksum_verified": true,
+      "normalized_manifest_sha256": "a0fc4aee99b0663bb80ce2fc8052491b7e28872765711266faddb2ed0474cb96",
+      "license": "MIT OR Apache-2.0",
+      "declared_rust_version": "1.31",
+      "dependencies": {
+        "num-traits": {
+          "version": "0.2.11",
+          "features": [
+            "i128"
+          ],
+          "default-features": false
+        }
+      },
+      "build_dependencies": {},
+      "features": {
+        "default": [
+          "std"
+        ],
+        "i128": [],
+        "std": [
+          "num-traits/std"
+        ]
+      },
+      "licenses": [
+        {
+          "archive_path": "num-integer-0.1.47/LICENSE-APACHE",
+          "artifact": "licenses/num-integer-0.1.47/LICENSE-APACHE.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        },
+        {
+          "archive_path": "num-integer-0.1.47/LICENSE-MIT",
+          "artifact": "licenses/num-integer-0.1.47/LICENSE-MIT.txt",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+        }
+      ],
+      "builds_verified": false
+    },
+    {
+      "name": "num-traits",
+      "version": "0.2.19",
+      "user_decision": "F-7待审",
+      "url": "https://static.crates.io/crates/num-traits/num-traits-0.2.19.crate",
+      "download_argv": [
+        "curl.exe",
+        "--fail",
+        "--location",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "8",
+        "--max-time",
+        "25",
+        "--output",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\num-traits-0.2.19.crate",
+        "https://static.crates.io/crates/num-traits/num-traits-0.2.19.crate"
+      ],
+      "archive_path_at_collection": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\num-traits-0.2.19.crate",
+      "archive_bytes": 51631,
+      "registry_checksum": "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841",
+      "archive_sha256": "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841",
+      "archive_checksum_verified": true,
+      "normalized_manifest_sha256": "dd701a0da6cce7e6e047cc944b2330f3c5e48cd64329e10942ea7d9299d435be",
+      "license": "MIT OR Apache-2.0",
+      "declared_rust_version": "1.60",
+      "dependencies": {
+        "libm": {
+          "version": "0.2.0",
+          "optional": true
+        }
+      },
+      "build_dependencies": {
+        "autocfg": {
+          "version": "1"
+        }
+      },
+      "features": {
+        "default": [
+          "std"
+        ],
+        "i128": [],
+        "libm": [
+          "dep:libm"
+        ],
+        "std": []
+      },
+      "licenses": [
+        {
+          "archive_path": "num-traits-0.2.19/LICENSE-APACHE",
+          "artifact": "licenses/num-traits-0.2.19/LICENSE-APACHE.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        },
+        {
+          "archive_path": "num-traits-0.2.19/LICENSE-MIT",
+          "artifact": "licenses/num-traits-0.2.19/LICENSE-MIT.txt",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+        }
+      ],
+      "builds_verified": false
+    },
+    {
+      "name": "autocfg",
+      "version": "1.5.1",
+      "user_decision": "F-7待审",
+      "url": "https://static.crates.io/crates/autocfg/autocfg-1.5.1.crate",
+      "download_argv": [
+        "curl.exe",
+        "--fail",
+        "--location",
+        "--silent",
+        "--show-error",
+        "--connect-timeout",
+        "8",
+        "--max-time",
+        "25",
+        "--output",
+        "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\autocfg-1.5.1.crate",
+        "https://static.crates.io/crates/autocfg/autocfg-1.5.1.crate"
+      ],
+      "archive_path_at_collection": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\autocfg-1.5.1.crate",
+      "archive_bytes": 18911,
+      "registry_checksum": "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53",
+      "archive_sha256": "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53",
+      "archive_checksum_verified": true,
+      "normalized_manifest_sha256": "ed7c832b4250c3be736e040d68688c2b83a5b164a93ef533e61532cbe0d44e99",
+      "license": "Apache-2.0 OR MIT",
+      "declared_rust_version": "1.0",
+      "dependencies": {},
+      "build_dependencies": {},
+      "features": {},
+      "licenses": [
+        {
+          "archive_path": "autocfg-1.5.1/LICENSE-APACHE",
+          "artifact": "licenses/autocfg-1.5.1/LICENSE-APACHE.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        },
+        {
+          "archive_path": "autocfg-1.5.1/LICENSE-MIT",
+          "artifact": "licenses/autocfg-1.5.1/LICENSE-MIT.txt",
+          "sha256": "27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac"
+        }
+      ],
+      "builds_verified": false
+    }
+  ]
+}

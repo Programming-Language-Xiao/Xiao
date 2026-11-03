@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "scope": "本轮只验证冻结文档、来源和历史B1归档；不是B2功能或性能验收",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "output_summary": "通过：未发现A0规则问题"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "output_summary": "通过：未发现A0规则问题"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "output_summary": "通过：未发现A0规则问题"
+    }
+  ],
+  "source_guard": {
+    "command": "cmd /c git diff --exit-code 0011f4c5 -- core/rust stdlib tests/fixtures tests/benchmarks .github/workflows tools/gates .cargo/config.toml docs/module-registry.json docs/UseDocs",
+    "exit_code": 0
+  },
+  "b1_history": "b1-audit-provenance.json",
+  "ledger_integrity": {
+    "items": 30,
+    "confirmed": 18,
+    "pending": 12,
+    "new_decisions_assumed": 0
+  },
+  "dependency_integrity": {
+    "archive_checksums_verified": 6,
+    "license_files": 11,
+    "cargo_resolve_run": false,
+    "builds_verified": false
+  }
+}
