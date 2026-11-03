@@ -1,0 +1,5 @@
+Exception: D:\project\Xiao\Xiao\docs\DevDocs\assets\20o-b1-close\audit.ps1:19
+Line |
+  19 |      if (-not $condition) { throw $message }
+     |                             ~~~~~~~~~~~~~~
+     | 产品模块或优化级别缺失/重复

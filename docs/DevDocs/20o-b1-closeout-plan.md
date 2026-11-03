@@ -20,7 +20,7 @@
    `complete=true`、`failed=false`，产品摘要与当前 `stdlib/*.xiao` 一致。
 3. 最终功能回归 `41464439400`（attempt 2）与工作区门禁 `41464421187` 成功；若这些证据
    之后有产品、工具或预算提交，必须先重新取证，不能沿用旧报告。
-4. 七库仍为 `planned`；`error_code` 的独立 `verified` 状态不变。
+4. 开工时七库为 `planned`；`error_code` 的独立 `verified` 状态不变。
 5. 已知 22D 历史失败、19/11/22 发布债务仍按原归属登记，不在 B1-CLOSE 内关闭。
 
 如果入口条件不满足，停止并回到相应 IMP/前置批次；B1-CLOSE 不修产品。

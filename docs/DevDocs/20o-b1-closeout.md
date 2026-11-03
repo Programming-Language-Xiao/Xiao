@@ -46,7 +46,7 @@ F10结果适用于报告中的硬件与工具链。时间不包含编译、初�
 维护回归[41498029910](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029910)第3次尝试成功，
 同提交工作区门禁[41498029872](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41498029872)成功。
 首轮仅macOS未分配到runner而自动取消、没有执行步骤，其余五作业成功；第二次在既有22C释放顺序断言失败，
-B1原生精确目标尚未执行，[原始22C失败](assets/20o-b1-close/41498029910/macos-22c-attempt2-failure.json)和完整日志保留。
+该次B1原生精确目标尚未执行，[原始22C失败](assets/20o-b1-close/41498029910/macos-22c-attempt2-failure.json)和完整日志保留。
 只重试同一提交的macOS，不修改测试、断言、顺序或预算，
 [原始取消与注释](assets/20o-b1-close/41498029910/macos-capacity.json)保留。下表使用实际产生日志的作业，
 不把最终尝试中复用结果的聚合ID当作重新执行。
@@ -92,3 +92,8 @@ CSV仍为单记录子集，URL仍为组件编码，statistics仍只覆盖int求�
 
 B1七库在本批收口。历史planned记录、旧721条与所有已归档失败保持其原提交/阶段语境，
 不改写成当时已经verified；后续库按20O/20P各自的探测与冻结流程另行启动。
+
+## 六、后续自审核
+
+890cdb81之后的[自审核](20o-b1-close-self-review.md)收紧示例/资源测试的覆盖口径，
+补入可复跑的CLOSE只读审计入口及两个受控拒绝证据；产品、七册教程、registry、测量工具与冻结预算未变。

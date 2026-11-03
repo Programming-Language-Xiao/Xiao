@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "reviewed_head": "890cdb81794de003327d96c6079333df44c6c1a0",
+  "status_snapshot": "106b99c70e88a88afd0dd9a33f6a9c792e13324c",
+  "scope": "CLOSE自审核：文档口径与只读证据复核；不是新CI运行或新F10测量",
+  "audit_script": "docs/DevDocs/assets/20o-b1-close/audit.ps1",
+  "audit_script_sha256": "ab1856892e92a87e54b7fe12a5ff55188bc98886c63074e53436741dc213de8b",
+  "powershell": "7.6.6",
+  "platform": "Microsoft Windows NT 10.0.26200.0",
+  "positive_audit_passed": true,
+  "synthetic_negative_cases": 2,
+  "observed_latest_workspace_gates": {
+    "run_id": 41507699591,
+    "head_sha": "890cdb81794de003327d96c6079333df44c6c1a0",
+    "conclusion": "success"
+  },
+  "unchanged_code_command": "cmd /c git diff --exit-code 44dc9d6e -- core/rust tests/fixtures .github/workflows tools/gates .cargo/config.toml tests/benchmarks \"stdlib/*.xiao\"",
+  "unchanged_code_exit": 0,
+  "files": [
+    {
+      "file": "audit-positive.json",
+      "sha256": "ab63abcd392e28c87e2ac1aacae1cb5672bbf6929ce29a609f790b44d2eae0c7"
+    },
+    {
+      "file": "aggregate-job-id.log",
+      "sha256": "f4ec1beccbbdd982befcf59de6ccadc04cb1c52da293391170c1a89e13c8da8a"
+    },
+    {
+      "file": "missing-csv-o3.log",
+      "sha256": "678093e280c8b0bceeb6863e7b600c2b8ca7a0373d133e3c9e994d4fc96c7dd0"
+    },
+    {
+      "file": "negative-cases.json",
+      "sha256": "7044b9a880c3f80546fb0a300991f4cc8cdcf042acf9a30e2f392be37bf6f86e"
+    }
+  ]
+}

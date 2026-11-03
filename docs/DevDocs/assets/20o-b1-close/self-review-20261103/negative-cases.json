@@ -1,0 +1,16 @@
+[
+  {
+    "case": "aggregate-job-id",
+    "synthetic": true,
+    "exit_code": 1,
+    "expected_rejection": "实际日志作业被聚合作业ID替代或缺失",
+    "passed": true
+  },
+  {
+    "case": "missing-csv-o3",
+    "synthetic": true,
+    "exit_code": 1,
+    "expected_rejection": "产品模块或优化级别缺失/重复",
+    "passed": true
+  }
+]
