@@ -214,7 +214,8 @@ D-15 已确认首版**静态内置**经审计的 Rust 驱动库，按目标平�
 ## 五、数值与数据模型架构（与 20O 对齐）
 
 - `lint`/`lfloat` 的任意精度底层已确认使用成熟 Rust 数值库（20O D-1）；必须先冻结
-  值表示、转换、舍入、错误和 ABI，再写 decimal/fractions；
+  值表示、转换、舍入、错误和 ABI，再写 decimal/fractions；B2 的拆分与待决项见
+  [数值基础批规划](20o-b2-numeric-foundation-plan.md)；
 - `cmath` 的浮点原语是宿主 intrinsic；D-4 已确认首批包含超越函数，具体集合、NaN/Inf/
   域错误/舍入策略必须先冻结；
 - JSON/TOML 已确认专用 `json_value` 类型（20O D-7），不公开 `dynamic`；

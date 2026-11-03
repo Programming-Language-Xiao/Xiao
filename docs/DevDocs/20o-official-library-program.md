@@ -6,6 +6,7 @@
 > 并对数值计算做专项研究。新接手的 Agent 必须从本文件开始读。
 >
 > 状态：**总纲与B1契约已确认；七库IMP/REM已交付，CLOSE已收口、七库教程/registry为verified，106b99c7的41498029910/41498029872通过（2026-11-03）**。
+> B2数值基础批已写出[规划稿](20o-b2-numeric-foundation-plan.md)，但**未开工、未冻结**；依赖、值表示、舍入、NaN/域错误、限额和ABI须先由星崽确认。
 > 当前进度见[B1-CLOSE收口](20o-b1-closeout.md)。原规划基线为6dc0773，原规划/B0/FIX-A只做研究、探测与拆分，
 > 当时未改变ABI1.17；后续独立FIX-B已实现ABI1.18，生成器当前为20。本总纲不写产品函数体。
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
@@ -206,7 +207,7 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | --- | --- | --- | --- |
 | B0 | 总纲/目录复核、D-1～D-22 逐条裁定、基线门禁、B1 探测/教程与冻结草案 | 无 | [B0记录](20o-b0-baseline-and-b1-draft.md)；方向确认完成，B1细项随后在FIX-A逐条冻结 |
 | B1 | 七项一起冻结：math、hex、base64、url、csv 记录子集、fmt、statistics 整数子集 | error_code共同前置、精确契约确认与三平台探测已完成 | [冻结契约](20o-b1-freeze-draft.md)；IMP/REM已交付20/20及721条F10，教程/registry在[CLOSE](20o-b1-closeout.md)同步verified，新状态门禁另记 |
-| B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | intrinsic/ABI 四处 + 版本拒绝 + 三平台 |
+| B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | [规划](20o-b2-numeric-foundation-plan.md)；intrinsic/ABI 四处 + 版本拒绝 + 三平台 |
 | B3 | 简单宿主批：`time`（UTC + sleep）、`args`/`cli`、`fs` 扩展、`env`、`log` 时间戳 | B0；ABI | 能力/错误/取消/三平台 |
 | B4 | JSON/TOML 值模型 + `json`/`toml` 解析器 | B0；语言冻结 | 类型/IR/两后端/生命周期 |
 | B5 | 数值库批：`decimal`、`fractions`、`statistics` 浮点、确定性 `random` | B2 | 精度/舍入/边界/三平台 |
@@ -245,8 +246,8 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | D-26 CI 证据 | 默认和原生探测都加维护回归精确执行点，断言恰好 1 passed | 默认与三平台原生精确入口、28/28守卫保持；历史接线见[B1 §八](20o-b1-freeze-draft.md#八本轮-ci-接线与验证)，状态提交运行号见[CLOSE](20o-b1-closeout.md) |
 
 D-13～D-22 的本次答复见 [20P §六](20p-day1-library-architecture.md#六架构决策)。
-B0探测边界与FIX-A裁定保留原历史记录；当前按[B1-CLOSE规划](20o-b1-closeout-plan.md)只做状态与证据收口，
-不修改产品、ABI、生成器或预算，不自动进入后续库批次。
+B0探测边界与FIX-A裁定保留原历史记录；B1-CLOSE已收口，B2按[数值基础批规划](20o-b2-numeric-foundation-plan.md)
+先冻结依赖、值表示、舍入、NaN/域错误、限额和ABI；本总纲不因B2规划存在就自动授权产品实现。
 
 ## 六、新 Agent 交接（无上下文必读）
 
