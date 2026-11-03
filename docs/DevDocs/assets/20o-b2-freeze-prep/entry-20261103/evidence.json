@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "entry_head": "465e213d3174ce7179c123fca25bb0f232331cde",
+  "code_baseline": "87bac4391e4a0cfcb7b3fa2acad32e4163bee924",
+  "status": "冻结资料准备；B2产品与ABI未实施",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "ci_observation": "../../20o-b1-close/review-fix-20261103/ci-87bac439.json",
+  "existing_checks": [
+    {
+      "label": "types-numeric",
+      "file": "types-numeric.log",
+      "passed": 2,
+      "sha256": "a9652c38a57635d9408b7eb32cf9b0fc14604c844983f42e302dafb31741df48",
+      "platform_scope": "本机Windows，已有测试，不是B2实现验收",
+      "raw_log_sha256": "94a06b98f7f5f8bde0f832f7d17c96e1be5941792ce0bcfd03816b0f42301dbd",
+      "log_normalization": "UTF-8文本；CRLF转LF并剥除ANSI控制序列；sha256校验归档日志，raw_log_sha256仅标识原始采集日志",
+      "test_source": "core/rust/crates/xiao-types/src/numeric.rs",
+      "test_source_git_sha256": "b48f960e50efe28011d052fd48f2fb4c2cd671aa90077f288db8f9310b45b7f2"
+    },
+    {
+      "label": "types-conversion",
+      "file": "types-conversion.log",
+      "passed": 1,
+      "sha256": "0c3fc44c8361e7c420a1ab473defc0dce62b9fc23b7bf1be07bb554704dc857d",
+      "platform_scope": "本机Windows，已有测试，不是B2实现验收",
+      "raw_log_sha256": "7d783ff0077c7b76cb1b1796f48b75fd9de1dfed9fa4dacac9eefc2e4b2a2c2f",
+      "log_normalization": "UTF-8文本；CRLF转LF并剥除ANSI控制序列；sha256校验归档日志，raw_log_sha256仅标识原始采集日志",
+      "test_source": "core/rust/crates/xiao-types/src/conversion.rs",
+      "test_source_git_sha256": "5f981bd5dd61c02708124d5921d73db264a4494d00a4e62de5c932460c01aeec"
+    },
+    {
+      "label": "runtime-ops",
+      "file": "runtime-ops.log",
+      "passed": 15,
+      "sha256": "760e042606ea083fd8b625124e7db667dda6a5c665769b2aeae88ad3a40873b2",
+      "platform_scope": "本机Windows，已有测试，不是B2实现验收",
+      "raw_log_sha256": "d5a89eee9daf9f865b72793f7fa66c6e42d7de51be47216a5cb6886cee6d3c9b",
+      "log_normalization": "UTF-8文本；CRLF转LF并剥除ANSI控制序列；sha256校验归档日志，raw_log_sha256仅标识原始采集日志",
+      "test_source": "core/rust/crates/xiao-runtime/src/value/ops.rs",
+      "test_source_git_sha256": "b36d82cc6102b31173d40794ec9a8d3971438ef20ed94f4f1167796c33041b72"
+    },
+    {
+      "label": "b1-contract",
+      "file": "b1-contract.log",
+      "passed": 9,
+      "sha256": "42b3d9268b59e7e1dbd7665bbf2d167887b9f1d90ef8565772c845947c47f46a",
+      "platform_scope": "本机Windows，已有测试，不是B2实现验收",
+      "raw_log_sha256": "e425379fc796834c71155c23892da0452d0d1becb4b8d7dc7ec66d6f99fecea4",
+      "log_normalization": "UTF-8文本；CRLF转LF并剥除ANSI控制序列；sha256校验归档日志，raw_log_sha256仅标识原始采集日志",
+      "test_source": "core/rust/crates/xiao-driver/tests/20o_b1_imp_contract.rs",
+      "test_source_git_sha256": "866a8ed3c6a5f28cc128cede793a4d80d2d7b9ef136740b1238daea43bdf1111"
+    },
+    {
+      "label": "b1-vm-exact",
+      "file": "b1-vm-exact.log",
+      "passed": 1,
+      "sha256": "955d29b0ed45a9971c1482e2a4b7e5317b0bf2e2c5361c7fe6da47549f896f44",
+      "platform_scope": "本机Windows，已有测试，不是B2实现验收",
+      "raw_log_sha256": "5dc7124b9dfd9516deec6b22d9e93127c5037a0353f186d61023954507171fbc",
+      "log_normalization": "UTF-8文本；CRLF转LF并剥除ANSI控制序列；sha256校验归档日志，raw_log_sha256仅标识原始采集日志",
+      "test_source": "core/rust/crates/xiao-driver/tests/20o_b1_probe.rs",
+      "test_source_git_sha256": "ec230e95612e291172e9908f51751ea02e684d4383383c84b385fcebee1668ed"
+    }
+  ],
+  "test_scope": "18项既有数值/转换检查、9项B1契约（20入口）及VM精确1项；不得作为B2高精度运算已实现的证据",
+  "replay_comparison": "replay-comparison.json",
+  "dependency_candidates": "candidate-dependencies.json",
+  "unmodified_paths": [
+    "core/rust",
+    "stdlib",
+    "tests/fixtures",
+    "tests/benchmarks",
+    ".github/workflows",
+    "tools/gates",
+    ".cargo/config.toml"
+  ],
+  "user_decisions": "十二项方向与多项补充已由会话确认；精细字段仍以冻结草案台账为准，此入口记录不是产品合同生效声明。",
+  "collection_context": "入口源码与本机日志在planned登记前采集；后续新增cmath文档条目，B1七库代码与条目内容不变，旧CLOSE审计用历史SourceRoot。",
+  "historical_replay": {
+    "source_commit": "106b99c7",
+    "source_method": "只读git archive到临时目录，未篡改旧registry指纹",
+    "passed": true,
+    "result": "historical-source-audit.json",
+    "reason": "planned cmath条目自然改变registry整文件，不能把当前登记伪装为旧完整快照。"
+  },
+  "documentation_checks": "documentation-checks.json",
+  "confirmed_receipt_count": 18,
+  "pending_supplement_groups": 12,
+  "files": [
+    {
+      "file": ".gitattributes",
+      "sha256": "0a4faa0205071df52fd5124afff4aacf8b9bbb54ee5e23081de2adbe06edf637"
+    },
+    {
+      "file": "b1-contract.log",
+      "sha256": "42b3d9268b59e7e1dbd7665bbf2d167887b9f1d90ef8565772c845947c47f46a"
+    },
+    {
+      "file": "b1-vm-exact.log",
+      "sha256": "955d29b0ed45a9971c1482e2a4b7e5317b0bf2e2c5361c7fe6da47549f896f44"
+    },
+    {
+      "file": "candidate-dependencies.json",
+      "sha256": "78e8370695abc154d68a67b42bba6678fd64d26e1522615f55c9bfbc2878580a"
+    },
+    {
+      "file": "decision-receipts.json",
+      "sha256": "433db40949a3c1dd547275de61b264b9da2391143c7883b7ab475444f09df626"
+    },
+    {
+      "file": "documentation-checks.json",
+      "sha256": "47de44aba4413b0036f5696152cab41e351b064d0baf53f153b4a04038a1c45f"
+    },
+    {
+      "file": "historical-source-audit.json",
+      "sha256": "ab63abcd392e28c87e2ac1aacae1cb5672bbf6929ce29a609f790b44d2eae0c7"
+    },
+    {
+      "file": "planned-registry-active-matrix.log",
+      "sha256": "abca8c4a77bcd08ba8bd1f889e116ef78972c042e974505d08b50aa963f315bd"
+    },
+    {
+      "file": "planned-registry-tutorials.log",
+      "sha256": "5732dca5babe4765e8f39bba1a855179e8a4c3f2be414329123a2ba6841523fa"
+    },
+    {
+      "file": "README.md",
+      "sha256": "d9875c7aa0879c4866540c3d11084d8574b404def52fdd05a038e2406aa700c9"
+    },
+    {
+      "file": "replay-comparison.json",
+      "sha256": "78302c2d28d0cf6e49f0f62311bec3e976fe7f96b35c20471a238aff85d9231b"
+    },
+    {
+      "file": "runtime-ops.log",
+      "sha256": "760e042606ea083fd8b625124e7db667dda6a5c665769b2aeae88ad3a40873b2"
+    },
+    {
+      "file": "types-conversion.log",
+      "sha256": "0c3fc44c8361e7c420a1ab473defc0dce62b9fc23b7bf1be07bb554704dc857d"
+    },
+    {
+      "file": "types-numeric.log",
+      "sha256": "a9652c38a57635d9408b7eb32cf9b0fc14604c844983f42e302dafb31741df48"
+    }
+  ]
+}

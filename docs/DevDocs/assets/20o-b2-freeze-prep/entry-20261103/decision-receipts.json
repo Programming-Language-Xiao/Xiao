@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-03",
+  "authority": "星崽在本次会话逐条直接答复",
+  "confirmed_receipts": [
+    {
+      "decision": "B2-D1",
+      "part": "方向",
+      "confirmed": "纯Rust num-bigint + bigdecimal；num-rational留B5，不引入C/GMP"
+    },
+    {
+      "decision": "B2-D2",
+      "part": "边界",
+      "confirmed": "保留Lint/Lfloat十进制文本标签与C ABI，内部高精度，不暴露Rust对象布局"
+    },
+    {
+      "decision": "B2-D8",
+      "part": "版本拆分",
+      "confirmed": "A保持ABI1.18且不新增intrinsic；B集中ABI1.19/生成器21；接口版本1；A若需突破先回冻结"
+    },
+    {
+      "decision": "B2-D4",
+      "part": "首批接口",
+      "confirmed": "首批新增显式精度接口，调整批次；没有选择仅有限精确除法替代整个接口范围"
+    },
+    {
+      "decision": "B2-D6",
+      "part": "名单和类型",
+      "confirmed": "sqrt/floor/ceil/round/trunc/abs/min/max/pow/sin/cos/tan/exp/ln/log10；参数/结果float，含取整函数float返回；sfloat后置"
+    },
+    {
+      "decision": "B2-D7",
+      "part": "非有限",
+      "confirmed": "不把NaN/Inf作为正常输入或输出，域/负零等细项另冻"
+    },
+    {
+      "decision": "B2-D3",
+      "part": "lint运算",
+      "confirmed": "加减乘、//、%、**精确；floor整除/余数随除数；除零稳定错误；负指数拒绝；0**0=1；/返回lfloat且按D4；比较不经f64"
+    },
+    {
+      "decision": "B2-D5",
+      "part": "文本兼容",
+      "confirmed": "保留str→int/sint/lint码点转换；新增str→lfloat十进制解析；lint数字文本恢复经lfloat→lint"
+    },
+    {
+      "decision": "B2-D9",
+      "part": "B1性能回归",
+      "confirmed": "B2-C新Runtime/ABI快照完整重跑B1的721条F10"
+    },
+    {
+      "decision": "B2-D10",
+      "part": "错误方向",
+      "confirmed": "纯计算无新宿主能力；除零ArithmeticError/013，溢出/非有限009，受控分配ResourceError/011；新增场景逐项另冻"
+    },
+    {
+      "decision": "B2-D11",
+      "part": "内核与比较方向",
+      "confirmed": "纯Rust libm；普通超越按逐函数ULP/绝对误差；零/符号/域/错误精确，具体数值另冻"
+    },
+    {
+      "decision": "B2-D12",
+      "part": "登记时点",
+      "confirmed": "冻结时cmath planned教程/registry，lint/lfloat更新语言说明，B2-C完整示例与三平台齐才verified；不新增虚构大数标准库"
+    },
+    {
+      "decision": "B2-D4",
+      "part": "语言/补充",
+      "confirmed": "/只精确有限；非终止结果走显式接口，无上游默认100或全局精度状态"
+    },
+    {
+      "decision": "B2-D4",
+      "part": "精确接口补充",
+      "confirmed": "全局lfloat_divide(lfloat numerator,lfloat denominator,int precision,str rounding)->lfloat；必填支持位置/命名；有效数字；B2-B集中升级"
+    },
+    {
+      "decision": "B2-D1",
+      "part": "直接表补充",
+      "confirmed": "num-bigint=0.4.8、bigdecimal=0.4.11，仅std，保留上游MIT/Apache双许可文本；传递闭包和构建仍另核对"
+    },
+    {
+      "decision": "B2-D2",
+      "part": "显示/身份/缓存补充",
+      "confirmed": "非零显示尺度保留；1.50与1.5数值相等且哈希相同；每次操作精确解析并释放，不加跨调用共享缓存；结果scale另冻"
+    },
+    {
+      "decision": "B2-D5",
+      "part": "窄化补充",
+      "confirmed": "lfloat显式转lint/int/sint向零截断，定宽检查范围，lint受资源预算，不隐式窄化"
+    },
+    {
+      "decision": "B2-D9",
+      "part": "资源数值补充",
+      "confirmed": "原文65536字节，输入/最终系数32768位，规范scale与显式指数abs100000，中间65536位，precision1..32768，非平凡幂指数1000000且受结果预算，0/±1快路径；定义/顺序/性能另冻",
+      "question_item_id": "[\"request_user_input_async\",\"call_0ddbf498f829421b839230c4b255c129\",2]",
+      "verbatim_answer": "接受这组资源数值（推荐）"
+    }
+  ],
+  "not_confirmed_by_this_record": [
+    "7种舍入/单次最终舍入/短结果不补零",
+    "cmath精细域/负零/下溢/round规则",
+    "性能目标与幂64乘法",
+    "lfloat //、%、**开放域",
+    "规划intrinsic ID、参数名与C ABI精表",
+    "A中间快照和旧产物兼容方案",
+    "六包精确闭包与构建环境策略",
+    "二进制浮点精确承接/反向最近偶数",
+    "每函数4 ULP等目标与pow共享内核",
+    "显示/规范scale定义与结果scale表",
+    "文本语法/浮点到str矩阵",
+    "新033/034错误精表与优先级"
+  ],
+  "activation": "精确字段未联合生效；没有产品/依赖/ABI/测试实现"
+}

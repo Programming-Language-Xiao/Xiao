@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "scope": "两次现有只读验证器运行；不是新测试实现、CI或F10采样",
+  "conditions": "同一Windows/PowerShell/区域设置/仓库源码；两次各自新建临时目录",
+  "semantic_checks_passed": true,
+  "required_identical_files": 10,
+  "diagnostic_files": 2,
+  "all_required_identical": true,
+  "files": [
+    {
+      "file": "aggregate-job-id.error.json",
+      "role": "replay_summary",
+      "byte_equal": true,
+      "run1_sha256": "cf2c5a97e2ec151e87ae4933a388e8b390b8800a46732d05bac94223500d74a3",
+      "run2_sha256": "cf2c5a97e2ec151e87ae4933a388e8b390b8800a46732d05bac94223500d74a3"
+    },
+    {
+      "file": "aggregate-job-id.log",
+      "role": "replay_summary",
+      "byte_equal": true,
+      "run1_sha256": "3cf2de12e80eb78ca787b72254c50651d1a79b04c39decc1896255d0004d196b",
+      "run2_sha256": "3cf2de12e80eb78ca787b72254c50651d1a79b04c39decc1896255d0004d196b"
+    },
+    {
+      "file": "audit-positive.json",
+      "role": "replay_summary",
+      "byte_equal": true,
+      "run1_sha256": "ab63abcd392e28c87e2ac1aacae1cb5672bbf6929ce29a609f790b44d2eae0c7",
+      "run2_sha256": "ab63abcd392e28c87e2ac1aacae1cb5672bbf6929ce29a609f790b44d2eae0c7"
+    },
+    {
+      "file": "missing-csv-o3.error.json",
+      "role": "replay_summary",
+      "byte_equal": true,
+      "run1_sha256": "0ae4973ccf7ce795673468edcff2595c844f40175151dd64782e8953ce89c42d",
+      "run2_sha256": "0ae4973ccf7ce795673468edcff2595c844f40175151dd64782e8953ce89c42d"
+    },
+    {
+      "file": "missing-csv-o3.log",
+      "role": "replay_summary",
+      "byte_equal": true,
+      "run1_sha256": "51ef65f0730f744c3331a222f60baf5a5dfabacba8c08dfd4931abff1b591437",
+      "run2_sha256": "51ef65f0730f744c3331a222f60baf5a5dfabacba8c08dfd4931abff1b591437"
+    },
+    {
+      "file": "negative-cases.json",
+      "role": "replay_summary",
+      "byte_equal": true,
+      "run1_sha256": "c368496bd8b7baf9342d6bcc2d8426424dd58903c750fa2f6069a9a01fba5b95",
+      "run2_sha256": "c368496bd8b7baf9342d6bcc2d8426424dd58903c750fa2f6069a9a01fba5b95"
+    },
+    {
+      "file": "positive.error.json",
+      "role": "replay_summary",
+      "byte_equal": true,
+      "run1_sha256": "836b3430bac3d52e224f5176aa6d3a55eb8ae7150e7b591d8057bee68f35ecc3",
+      "run2_sha256": "836b3430bac3d52e224f5176aa6d3a55eb8ae7150e7b591d8057bee68f35ecc3"
+    },
+    {
+      "file": "positive.log",
+      "role": "replay_summary",
+      "byte_equal": true,
+      "run1_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "run2_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "source-line-false-hit-formatted.log",
+      "role": "diagnostic_only",
+      "byte_equal": false,
+      "run1_sha256": null,
+      "run2_sha256": null
+    },
+    {
+      "file": "source-line-false-hit.error.json",
+      "role": "diagnostic_only",
+      "byte_equal": false,
+      "run1_sha256": null,
+      "run2_sha256": null
+    },
+    {
+      "file": "source-line-false-hit.log",
+      "role": "replay_summary",
+      "byte_equal": true,
+      "run1_sha256": "f12f24d536b05e9be0b134177f2181c20cd7f4874793649418fd77fad67b6a30",
+      "run2_sha256": "f12f24d536b05e9be0b134177f2181c20cd7f4874793649418fd77fad67b6a30"
+    },
+    {
+      "file": "validation.json",
+      "role": "replay_summary",
+      "byte_equal": true,
+      "run1_sha256": "f240d905c520f59930bb9c19179d035c0e309399fe8947a7b2cf652223da9f50",
+      "run2_sha256": "f240d905c520f59930bb9c19179d035c0e309399fe8947a7b2cf652223da9f50"
+    }
+  ]
+}

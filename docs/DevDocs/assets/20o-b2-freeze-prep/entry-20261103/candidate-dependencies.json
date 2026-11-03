@@ -1,0 +1,826 @@
+{
+  "schema_version": 1,
+  "status": "候选资料，不是依赖冻结或构建证据",
+  "source_method": "crates.io API连接超时后只读查询其GitHub注册索引及上游发布标签；没有修改Cargo.toml或Cargo.lock",
+  "candidates": [
+    {
+      "name": "num-bigint",
+      "candidate_version": "0.4.8",
+      "status": "直接版本/特性与双许可留档已确认；未引入依赖、未核验归档、未构建",
+      "proposed_version_requirement": "=0.4.8",
+      "proposed_features": {
+        "default_features": false,
+        "features": [
+          "std"
+        ]
+      },
+      "license_as_declared": "MIT OR Apache-2.0",
+      "declared_rust_version": "1.60",
+      "upstream_tag": "num-bigint-0.4.8",
+      "upstream_commit": "65330056d6c00def4c6cda78c87453f4c2a76913",
+      "manifest_git_blob": "0d4b00958da0860f59dccc5827385a64c147f7c5",
+      "manifest_sha256": "62010089fd0c2ef0106c006dfe18bc07d01152a0d761b026de2a3b409308c831",
+      "manifest_url": "https://github.com/rust-num/num-bigint/blob/65330056d6c00def4c6cda78c87453f4c2a76913/Cargo.toml",
+      "registry_blob_url": "https://api.github.com/repos/rust-lang/crates.io-index/git/blobs/57d23fb3b11f99636c14cd76f56f63ca5fde5798",
+      "registry_candidate": {
+        "name": "num-bigint",
+        "vers": "0.4.8",
+        "deps": [
+          {
+            "name": "arbitrary",
+            "req": "^1",
+            "features": [],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "num-integer",
+            "req": "^0.1.46",
+            "features": [
+              "i128"
+            ],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "num-traits",
+            "req": "^0.2.18",
+            "features": [
+              "i128"
+            ],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "quickcheck",
+            "req": "^1",
+            "features": [],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "rand",
+            "req": "^0.8",
+            "features": [],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "serde",
+            "req": "^1.0",
+            "features": [],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          }
+        ],
+        "cksum": "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367",
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": [
+            "num-integer/std",
+            "num-traits/std"
+          ]
+        },
+        "features2": {
+          "arbitrary": [
+            "dep:arbitrary"
+          ],
+          "quickcheck": [
+            "dep:quickcheck"
+          ],
+          "rand": [
+            "dep:rand"
+          ],
+          "serde": [
+            "dep:serde"
+          ]
+        },
+        "yanked": false,
+        "rust_version": "1.60",
+        "pubtime": "2026-07-05T01:20:47Z",
+        "v": 2
+      },
+      "manifest_dependencies": {
+        "num-integer": {
+          "version": "0.1.46",
+          "default-features": false,
+          "features": [
+            "i128"
+          ]
+        },
+        "num-traits": {
+          "version": "0.2.18",
+          "default-features": false,
+          "features": [
+            "i128"
+          ]
+        },
+        "rand": {
+          "optional": true,
+          "version": "0.8",
+          "default-features": false
+        },
+        "serde": {
+          "optional": true,
+          "version": "1.0",
+          "default-features": false
+        },
+        "quickcheck": {
+          "optional": true,
+          "version": "1",
+          "default-features": false
+        },
+        "arbitrary": {
+          "optional": true,
+          "version": "1",
+          "default-features": false
+        }
+      },
+      "manifest_build_dependencies": {},
+      "archive_checksum_verified": false,
+      "builds_verified": false
+    },
+    {
+      "name": "bigdecimal",
+      "candidate_version": "0.4.11",
+      "status": "直接版本/特性与双许可留档已确认；未引入依赖、未核验归档、未构建",
+      "proposed_version_requirement": "=0.4.11",
+      "proposed_features": {
+        "default_features": false,
+        "features": [
+          "std"
+        ]
+      },
+      "license_as_declared": "MIT/Apache-2.0",
+      "declared_rust_version": null,
+      "upstream_tag": "v0.4.11",
+      "upstream_commit": "374b2a21940657f1f520e192f231d25ac1248fd2",
+      "manifest_git_blob": "efb06aadb357de301f672de88a32a482a8e0a5d9",
+      "manifest_sha256": "a1a3eec15d032f8b66378bcdb34f5b2e3d7c5f8d72e0e04d16e51e150ef73de4",
+      "manifest_url": "https://github.com/akubera/bigdecimal-rs/blob/374b2a21940657f1f520e192f231d25ac1248fd2/Cargo.toml",
+      "registry_blob_url": "https://api.github.com/repos/rust-lang/crates.io-index/git/blobs/e3317315939877335e5eea18247b2a77a535eb8c",
+      "registry_candidate": {
+        "name": "bigdecimal",
+        "vers": "0.4.11",
+        "deps": [
+          {
+            "name": "autocfg",
+            "req": "^1",
+            "features": [],
+            "optional": false,
+            "default_features": true,
+            "target": null,
+            "kind": "build"
+          },
+          {
+            "name": "libm",
+            "req": "^0.2.6",
+            "features": [],
+            "optional": false,
+            "default_features": true,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "num-bigint",
+            "req": "^0.4",
+            "features": [],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "num-integer",
+            "req": "^0.1",
+            "features": [],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "num-traits",
+            "req": "^0.2",
+            "features": [],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "paste",
+            "req": "^1",
+            "features": [],
+            "optional": false,
+            "default_features": true,
+            "target": null,
+            "kind": "dev"
+          },
+          {
+            "name": "serde",
+            "req": "^1.0",
+            "features": [],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "serde_json",
+            "req": "^1.0",
+            "features": [
+              "alloc",
+              "arbitrary_precision"
+            ],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "serde_test",
+            "req": "<1.0.176",
+            "features": [],
+            "optional": false,
+            "default_features": true,
+            "target": null,
+            "kind": "dev"
+          },
+          {
+            "name": "siphasher",
+            "req": "^0.3.10",
+            "features": [],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "dev"
+          }
+        ],
+        "cksum": "8fa3f3d8cbf4dffcfe4991de61d012bef509a409ecbe9dd41049bfe32b4d4653",
+        "features": {
+          "default": [
+            "std"
+          ],
+          "serde-json": [
+            "serde/derive",
+            "serde_json"
+          ],
+          "std": [
+            "num-bigint/std",
+            "num-integer/std",
+            "num-traits/std"
+          ],
+          "string-only": []
+        },
+        "yanked": false,
+        "pubtime": "2026-09-28T07:03:20Z"
+      },
+      "manifest_dependencies": {
+        "libm": "0.2.6",
+        "num-bigint": {
+          "version": "0.4",
+          "default-features": false
+        },
+        "num-integer": {
+          "version": "0.1",
+          "default-features": false
+        },
+        "num-traits": {
+          "version": "0.2",
+          "default-features": false
+        },
+        "serde": {
+          "version": "1.0",
+          "optional": true,
+          "default-features": false
+        },
+        "serde_json": {
+          "version": "1.0",
+          "optional": true,
+          "default-features": false,
+          "features": [
+            "alloc",
+            "arbitrary_precision"
+          ]
+        }
+      },
+      "manifest_build_dependencies": {
+        "autocfg": "1"
+      },
+      "archive_checksum_verified": false,
+      "builds_verified": false
+    }
+  ],
+  "important_constraints": [
+    "bigdecimal 0.4.11要求num-bigint ^0.4，候选0.4.8可统一；不能直接用0.5.1替代而声称共用一个底座",
+    "libm、num-integer、num-traits和autocfg的最终精确锁定闭包、许可证及构建仍待冻结/验证",
+    "禁止未经裁定继承上游默认精度、舍入或显示格式；显式语义须由Xiao冻结"
+  ],
+  "bigdecimal_build_defaults": {
+    "source_url": "https://github.com/akubera/bigdecimal-rs/blob/374b2a21940657f1f520e192f231d25ac1248fd2/build.rs",
+    "git_blob": "09a9e32f37fcc999b7dcaa2d69a1a8d2a743a14e",
+    "sha256": "cabe560c4c46c2eb045ed19a281775f81bd2fc738474aed3161fa6fcec67c2dd",
+    "excerpts": [
+      {
+        "line": 5,
+        "text": "const DEFAULT_PRECISION: &str = \"100\";"
+      },
+      {
+        "line": 6,
+        "text": "const DEFAULT_ROUNDING_MODE: &str = \"HalfEven\";"
+      },
+      {
+        "line": 7,
+        "text": "const FMT_EXPONENTIAL_LOWER_THRESHOLD: &str = \"5\";"
+      },
+      {
+        "line": 8,
+        "text": "const FMT_EXPONENTIAL_UPPER_THRESHOLD: &str = \"15\";"
+      },
+      {
+        "line": 9,
+        "text": "const FMT_MAX_INTEGER_PADDING: &str = \"1000\";"
+      },
+      {
+        "line": 51,
+        "text": "    let env_var = load_env!(env, \"RUST_BIGDECIMAL_DEFAULT_PRECISION\", DEFAULT_PRECISION);"
+      },
+      {
+        "line": 56,
+        "text": "        .expect(\"$RUST_BIGDECIMAL_DEFAULT_PRECISION must be an integer > 0\")"
+      },
+      {
+        "line": 59,
+        "text": "    let rust_file_contents = format!(\"const DEFAULT_PRECISION: u64 = {};\", default_prec);"
+      },
+      {
+        "line": 64,
+        "text": "/// Create default_rounding_mode.rs, using value of RUST_BIGDECIMAL_DEFAULT_ROUNDING_MODE environment variable"
+      },
+      {
+        "line": 66,
+        "text": "    let rounding_mode_name = load_env!(env, \"RUST_BIGDECIMAL_DEFAULT_ROUNDING_MODE\", DEFAULT_ROUNDING_MODE);"
+      },
+      {
+        "line": 69,
+        "text": "    let rust_file_contents = format!(\"const DEFAULT_ROUNDING_MODE: RoundingMode = RoundingMode::{};\", rounding_mode_name);"
+      },
+      {
+        "line": 76,
+        "text": "    let low_value = load_env!(env, \"RUST_BIGDECIMAL_FMT_EXPONENTIAL_LOWER_THRESHOLD\", FMT_EXPONENTIAL_LOWER_THRESHOLD);"
+      },
+      {
+        "line": 77,
+        "text": "    let high_value = load_env!(env, \"RUST_BIGDECIMAL_FMT_EXPONENTIAL_UPPER_THRESHOLD\", FMT_EXPONENTIAL_UPPER_THRESHOLD);"
+      },
+      {
+        "line": 78,
+        "text": "    let max_padding = load_env!(env, \"RUST_BIGDECIMAL_FMT_MAX_INTEGER_PADDING\", FMT_MAX_INTEGER_PADDING);"
+      },
+      {
+        "line": 82,
+        "text": "        .expect(\"$RUST_BIGDECIMAL_FMT_EXPONENTIAL_LOWER_THRESHOLD must be an integer > 0\")"
+      },
+      {
+        "line": 87,
+        "text": "        .expect(\"$RUST_BIGDECIMAL_FMT_EXPONENTIAL_UPPER_THRESHOLD must be valid u32\");"
+      },
+      {
+        "line": 91,
+        "text": "        .expect(\"$RUST_BIGDECIMAL_FMT_MAX_INTEGER_PADDING must be valid u32\");"
+      },
+      {
+        "line": 98,
+        "text": "        format!(\"const FMT_MAX_INTEGER_PADDING: usize = {};\", max_padding),"
+      },
+      {
+        "line": 107,
+        "text": "    let scale_limit = load_env!(env, \"RUST_BIGDECIMAL_SERDE_SCALE_LIMIT\", SERDE_MAX_SCALE);"
+      },
+      {
+        "line": 112,
+        "text": "        .expect(\"$RUST_BIGDECIMAL_SERDE_SCALE_LIMIT must be an integer\");"
+      }
+    ]
+  },
+  "closure_proposal": [
+    {
+      "name": "num-bigint",
+      "proposed_version": "0.4.8",
+      "license_as_declared": "MIT OR Apache-2.0",
+      "declared_rust_version": "1.60",
+      "role": "direct",
+      "manifest_git_blob": "0d4b00958da0860f59dccc5827385a64c147f7c5",
+      "manifest_url": "https://github.com/rust-num/num-bigint/blob/num-bigint-0.4.8/Cargo.toml",
+      "manifest_sha256": "62010089fd0c2ef0106c006dfe18bc07d01152a0d761b026de2a3b409308c831",
+      "registry_blob_url": "https://api.github.com/repos/rust-lang/crates.io-index/git/blobs/57d23fb3b11f99636c14cd76f56f63ca5fde5798",
+      "registry_entry": {
+        "name": "num-bigint",
+        "vers": "0.4.8",
+        "deps": [
+          {
+            "name": "arbitrary",
+            "req": "^1",
+            "features": [],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "num-integer",
+            "req": "^0.1.46",
+            "features": [
+              "i128"
+            ],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "num-traits",
+            "req": "^0.2.18",
+            "features": [
+              "i128"
+            ],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "quickcheck",
+            "req": "^1",
+            "features": [],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "rand",
+            "req": "^0.8",
+            "features": [],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "serde",
+            "req": "^1.0",
+            "features": [],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          }
+        ],
+        "cksum": "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367",
+        "features": {
+          "default": [
+            "std"
+          ],
+          "std": [
+            "num-integer/std",
+            "num-traits/std"
+          ]
+        },
+        "features2": {
+          "arbitrary": [
+            "dep:arbitrary"
+          ],
+          "quickcheck": [
+            "dep:quickcheck"
+          ],
+          "rand": [
+            "dep:rand"
+          ],
+          "serde": [
+            "dep:serde"
+          ]
+        },
+        "yanked": false,
+        "rust_version": "1.60",
+        "pubtime": "2026-07-05T01:20:47Z",
+        "v": 2
+      },
+      "archive_checksum_verified": false
+    },
+    {
+      "name": "bigdecimal",
+      "proposed_version": "0.4.11",
+      "license_as_declared": "MIT/Apache-2.0",
+      "declared_rust_version": null,
+      "role": "direct",
+      "manifest_git_blob": "efb06aadb357de301f672de88a32a482a8e0a5d9",
+      "manifest_url": "https://github.com/akubera/bigdecimal-rs/blob/v0.4.11/Cargo.toml",
+      "manifest_sha256": "a1a3eec15d032f8b66378bcdb34f5b2e3d7c5f8d72e0e04d16e51e150ef73de4",
+      "registry_blob_url": "https://api.github.com/repos/rust-lang/crates.io-index/git/blobs/e3317315939877335e5eea18247b2a77a535eb8c",
+      "registry_entry": {
+        "name": "bigdecimal",
+        "vers": "0.4.11",
+        "deps": [
+          {
+            "name": "autocfg",
+            "req": "^1",
+            "features": [],
+            "optional": false,
+            "default_features": true,
+            "target": null,
+            "kind": "build"
+          },
+          {
+            "name": "libm",
+            "req": "^0.2.6",
+            "features": [],
+            "optional": false,
+            "default_features": true,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "num-bigint",
+            "req": "^0.4",
+            "features": [],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "num-integer",
+            "req": "^0.1",
+            "features": [],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "num-traits",
+            "req": "^0.2",
+            "features": [],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "paste",
+            "req": "^1",
+            "features": [],
+            "optional": false,
+            "default_features": true,
+            "target": null,
+            "kind": "dev"
+          },
+          {
+            "name": "serde",
+            "req": "^1.0",
+            "features": [],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "serde_json",
+            "req": "^1.0",
+            "features": [
+              "alloc",
+              "arbitrary_precision"
+            ],
+            "optional": true,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          },
+          {
+            "name": "serde_test",
+            "req": "<1.0.176",
+            "features": [],
+            "optional": false,
+            "default_features": true,
+            "target": null,
+            "kind": "dev"
+          },
+          {
+            "name": "siphasher",
+            "req": "^0.3.10",
+            "features": [],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "dev"
+          }
+        ],
+        "cksum": "8fa3f3d8cbf4dffcfe4991de61d012bef509a409ecbe9dd41049bfe32b4d4653",
+        "features": {
+          "default": [
+            "std"
+          ],
+          "serde-json": [
+            "serde/derive",
+            "serde_json"
+          ],
+          "std": [
+            "num-bigint/std",
+            "num-integer/std",
+            "num-traits/std"
+          ],
+          "string-only": []
+        },
+        "yanked": false,
+        "pubtime": "2026-09-28T07:03:20Z"
+      },
+      "archive_checksum_verified": false
+    },
+    {
+      "name": "libm",
+      "proposed_version": "0.2.16",
+      "license_as_declared": "MIT",
+      "declared_rust_version": "1.63",
+      "role": "cmath_direct_and_bigdecimal_transitive",
+      "manifest_git_blob": "4d8b9bf827ad563b8684b9d6cf0e3037aa3268bf",
+      "manifest_url": "https://github.com/rust-lang/compiler-builtins/blob/libm-v0.2.16/libm/Cargo.toml",
+      "manifest_sha256": "5cef83cc9b297dcf1b6853237371d839a8c3ece4adb0e7fe9f7ba8958f319b0e",
+      "registry_blob_url": "https://api.github.com/repos/rust-lang/crates.io-index/git/blobs/b4049627e6595b7156ac29a049601eccbaae8a9e",
+      "registry_entry": {
+        "name": "libm",
+        "vers": "0.2.16",
+        "deps": [
+          {
+            "name": "no-panic",
+            "req": "^0.1.35",
+            "features": [],
+            "optional": false,
+            "default_features": true,
+            "target": null,
+            "kind": "dev"
+          }
+        ],
+        "cksum": "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981",
+        "features": {
+          "arch": [],
+          "default": [
+            "arch"
+          ],
+          "force-soft-floats": [],
+          "unstable": [
+            "unstable-intrinsics",
+            "unstable-float"
+          ],
+          "unstable-float": [],
+          "unstable-intrinsics": [],
+          "unstable-public-internals": []
+        },
+        "yanked": false,
+        "rust_version": "1.63",
+        "pubtime": "2026-01-24T03:14:21Z"
+      },
+      "archive_checksum_verified": false
+    },
+    {
+      "name": "num-integer",
+      "proposed_version": "0.1.47",
+      "license_as_declared": "MIT OR Apache-2.0",
+      "declared_rust_version": "1.31",
+      "role": "transitive",
+      "manifest_git_blob": "a22ea3a5121fd8163490f44746401501efa25956",
+      "manifest_url": "https://github.com/rust-num/num-integer/blob/num-integer-0.1.47/Cargo.toml",
+      "manifest_sha256": "e8fbfb27249c54f0e55db8808fd3c473cd8f7d6ad518005f137e73787870c124",
+      "registry_blob_url": "https://api.github.com/repos/rust-lang/crates.io-index/git/blobs/1fb64bb76094e59caf7311c95503bb92a3b33ea2",
+      "registry_entry": {
+        "name": "num-integer",
+        "vers": "0.1.47",
+        "deps": [
+          {
+            "name": "num-traits",
+            "req": "^0.2.11",
+            "features": [
+              "i128"
+            ],
+            "optional": false,
+            "default_features": false,
+            "target": null,
+            "kind": "normal"
+          }
+        ],
+        "cksum": "7ce2d95d4b3734dc35aa2f45e1aa22cd416814592a4f9d9205e11affd5b8e10b",
+        "features": {
+          "default": [
+            "std"
+          ],
+          "i128": [],
+          "std": [
+            "num-traits/std"
+          ]
+        },
+        "yanked": false,
+        "rust_version": "1.31",
+        "pubtime": "2026-08-12T00:11:57Z"
+      },
+      "archive_checksum_verified": false
+    },
+    {
+      "name": "num-traits",
+      "proposed_version": "0.2.19",
+      "license_as_declared": "MIT OR Apache-2.0",
+      "declared_rust_version": "1.60",
+      "role": "transitive",
+      "manifest_git_blob": "226d4164cebe9f52662c48fcc6019b497b9bdd70",
+      "manifest_url": "https://github.com/rust-num/num-traits/blob/num-traits-0.2.19/Cargo.toml",
+      "manifest_sha256": "172863fc77ccbdd76c7d65660c1030e553cc3629931808f18f4cd4cc73a08c53",
+      "registry_blob_url": "https://api.github.com/repos/rust-lang/crates.io-index/git/blobs/01a838df1c854d96e8913aa08bf178552006ba37",
+      "registry_entry": {
+        "name": "num-traits",
+        "vers": "0.2.19",
+        "deps": [
+          {
+            "name": "autocfg",
+            "req": "^1",
+            "features": [],
+            "optional": false,
+            "default_features": true,
+            "target": null,
+            "kind": "build"
+          },
+          {
+            "name": "libm",
+            "req": "^0.2.0",
+            "features": [],
+            "optional": true,
+            "default_features": true,
+            "target": null,
+            "kind": "normal"
+          }
+        ],
+        "cksum": "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841",
+        "features": {
+          "default": [
+            "std"
+          ],
+          "i128": [],
+          "std": []
+        },
+        "features2": {
+          "libm": [
+            "dep:libm"
+          ]
+        },
+        "yanked": false,
+        "rust_version": "1.60",
+        "pubtime": "2024-05-03T21:27:39Z",
+        "v": 2
+      },
+      "archive_checksum_verified": false
+    },
+    {
+      "name": "autocfg",
+      "proposed_version": "1.5.1",
+      "license_as_declared": "Apache-2.0 OR MIT",
+      "declared_rust_version": "1.0",
+      "role": "build",
+      "manifest_git_blob": "8e9bf95c9f7cfb302ad4f138a18897aa8ad3f2ab",
+      "manifest_url": "https://github.com/cuviper/autocfg/blob/1.5.1/Cargo.toml",
+      "manifest_sha256": "57d2aec0d4157bd9446f97705aa2acff86cc3d1883f470526fed089e7cf9754e",
+      "registry_blob_url": "https://api.github.com/repos/rust-lang/crates.io-index/git/blobs/2be5299d602525d6cec450a19fb6cc3baad5ca44",
+      "registry_entry": {
+        "name": "autocfg",
+        "vers": "1.5.1",
+        "deps": [],
+        "cksum": "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53",
+        "features": {},
+        "yanked": false,
+        "rust_version": "1.0",
+        "pubtime": "2026-05-22T11:03:04Z"
+      },
+      "archive_checksum_verified": false
+    }
+  ],
+  "closure_status": "六包正常/构建依赖提案，非Cargo解析输出；仅直接num-bigint/bigdecimal表已确认，其余版本/许可证及构建策略待审。",
+  "libm_source_note": "0.2.16已迁至rust-lang/compiler-builtins/libm，发布标签libm-v0.2.16提交dfd2203a4d6110820ad7bb65cafe1bf331a03a3d；不是旧rust-lang/libm仓库的早期标签。",
+  "explicit_division_feasibility": {
+    "source_url": "https://github.com/akubera/bigdecimal-rs/blob/v0.4.11/src/context.rs",
+    "git_blob": "6e3d2b8d8ac051240614f5a6bc092ff7de6ca456",
+    "sha256": "c314425bfe083ad87582831e95c004f218ac3f7132cf518e46b9cf694d74ce2d",
+    "fact": "该Context有invert/multiply，没有通用divide方法；不能把按precision舍入的倒数再乘当作只舍入一次的商。应使用精确商余或经证明的等价路径。"
+  }
+}

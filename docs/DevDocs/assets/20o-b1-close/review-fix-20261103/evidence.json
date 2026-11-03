@@ -51,20 +51,47 @@
       "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
     },
     {
-      "file": "source-line-false-hit-formatted.log",
-      "sha256": "4121e351037b89a1b6f8f1d6364886c1ec5a532fefaf2ad9987d64671c850663"
-    },
-    {
-      "file": "source-line-false-hit.error.json",
-      "sha256": "b6e53907a12ea8403d895a04a559bdeb5cad67da890c9fda7977edfd5491953f"
-    },
-    {
       "file": "source-line-false-hit.log",
       "sha256": "f12f24d536b05e9be0b134177f2181c20cd7f4874793649418fd77fad67b6a30"
     },
     {
       "file": "validation.json",
       "sha256": "f240d905c520f59930bb9c19179d035c0e309399fe8947a7b2cf652223da9f50"
+    },
+    {
+      "file": "ci-87bac439.json",
+      "sha256": "255dad42166589e1205c3111f9533bd209adf7ac57bb9b475d0059583f5b30d7"
     }
-  ]
+  ],
+  "diagnostic_files": [
+    {
+      "file": "source-line-false-hit-formatted.log",
+      "role": "diagnostic_only",
+      "reason": "包含随机临时路径；保留原始诊断，不作为语义判定或逐字节复跑摘要项。"
+    },
+    {
+      "file": "source-line-false-hit.error.json",
+      "role": "diagnostic_only",
+      "reason": "包含随机临时路径；保留原始诊断，不作为语义判定或逐字节复跑摘要项。"
+    }
+  ],
+  "subsequent_ci_observations": [
+    {
+      "head_sha": "87bac4391e4a0cfcb7b3fa2acad32e4163bee924",
+      "file": "ci-87bac439.json",
+      "scope": "B1审计修复提交的工作区门禁节点；只改文档/证据审计，不改变B1被测产品快照；不是B2功能证据"
+    }
+  ],
+  "replay_contract": {
+    "conditions": "相同源码、PowerShell版本、区域设置和仓库根；不要求随机临时路径相同",
+    "diagnostic_files_excluded": [
+      "source-line-false-hit-formatted.log",
+      "source-line-false-hit.error.json"
+    ],
+    "semantic_results": [
+      "validation.json",
+      "negative-cases.json"
+    ],
+    "comparison_evidence": "../../20o-b2-freeze-prep/entry-20261103/replay-comparison.json"
+  }
 }

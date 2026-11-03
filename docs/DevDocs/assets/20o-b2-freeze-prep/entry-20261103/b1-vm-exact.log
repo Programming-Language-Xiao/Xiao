@@ -1,0 +1,39 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.23s
+     Running tests\20o_b1_probe.rs (core\rust\target\debug\deps\20o_b1_probe-522c4d179609f03e.exe)
+
+running 1 test
+20O-B0-PROBE module=math backend=vm result=success
+20O-B0-PROBE module=hex backend=vm result=success
+20O-B0-PROBE module=base64 backend=vm result=success
+20O-B0-PROBE module=url backend=vm result=success
+20O-B0-PROBE module=csv backend=vm result=success
+20O-B0-PROBE module=fmt backend=vm result=success
+20O-B0-PROBE module=statistics backend=vm result=success
+20O-B1-FIX-A-PROBE case=math-extremes backend=vm result=success
+20O-B1-FIX-A-PROBE case=hex-all-bytes backend=vm result=success
+20O-B1-FIX-A-PROBE case=base64-tail-bits backend=vm result=success
+20O-B1-FIX-A-PROBE case=utf8-boundaries backend=vm result=success
+20O-B1-FIX-A-PROBE case=csv-budget backend=vm result=success
+20O-B1-FIX-A-PROBE case=fmt-int-min backend=vm result=success
+20O-B1-FIX-A-PROBE case=statistics-overflow backend=vm result=success
+20O-B1-FIX-B-PROBE case=default-and-custom backend=vm result=success
+20O-B1-FIX-B-PROBE case=nested-rethrow backend=vm result=success
+20O-B1-FIX-B-PROBE case=escape-lifetime backend=vm result=success
+20O-B1-FIX-B-PROBE case=pending-finally backend=vm result=success
+20O-B1-FIX-B-PROBE case=dynamic-types backend=vm result=success
+20O-B1-FIX-B-PROBE case=long-code backend=vm result=success
+20O-B1-FIX-B-PROBE case=abi-requirements backend=vm result=success
+20O-B1-IMP-PROBE case=math backend=vm result=success
+20O-B1-IMP-PROBE case=statistics backend=vm result=success
+20O-B1-IMP-PROBE case=fmt backend=vm result=success
+20O-B1-IMP-PROBE case=hex backend=vm result=success
+20O-B1-IMP-PROBE case=base64 backend=vm result=success
+test b1_capabilities_have_vm_golden_outputs has been running for over 60 seconds
+20O-B1-IMP-PROBE case=url backend=vm result=success
+20O-B1-IMP-PROBE case=csv backend=vm result=success
+20O-B1-IMP-PROBE case=aliases backend=vm result=success
+20O-B1-IMP-PROBE case=string-index backend=vm result=success
+test b1_capabilities_have_vm_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 77.37s
+

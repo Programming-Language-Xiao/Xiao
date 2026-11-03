@@ -1,0 +1,98 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.16s
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_types-7e355c2091f329cd.exe)
+
+running 1 test
+test conversion::tests::classifies_scalar_conversions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 31 filtered out; finished in 0.00s
+
+     Running tests\c05_tables.rs (core\rust\target\debug\deps\c05_tables-9706bdff223036c1.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+     Running tests\c0_containers.rs (core\rust\target\debug\deps\c0_containers-0fbafd4454809869.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s
+
+     Running tests\c0c1_snapshots.rs (core\rust\target\debug\deps\c0c1_snapshots-8dbf9955f9b2f826.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests\c1_selectors.rs (core\rust\target\debug\deps\c1_selectors-a111f927e9004a14.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 18 filtered out; finished in 0.00s
+
+     Running tests\c2a_sets.rs (core\rust\target\debug\deps\c2a_sets-701013540cb4abf8.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+     Running tests\c2a_snapshots.rs (core\rust\target\debug\deps\c2a_snapshots-14fbc57aafbbb42b.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests\c2b_heterogeneous_sets.rs (core\rust\target\debug\deps\c2b_heterogeneous_sets-cc551009ef7b10ed.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+     Running tests\c2b_snapshots.rs (core\rust\target\debug\deps\c2b_snapshots-ab00459954bcf198.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests\c2c_set_operations.rs (core\rust\target\debug\deps\c2c_set_operations-6700a72db0b901b6.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+     Running tests\c2c_snapshots.rs (core\rust\target\debug\deps\c2c_snapshots-cc349548fb274a9b.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests\control_flow_snapshots.rs (core\rust\target\debug\deps\control_flow_snapshots-2dc69ecc620bd8b5.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests\d19a_fixed_random.rs (core\rust\target\debug\deps\d19a_fixed_random-750c2b02e9fffb6f.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 12 filtered out; finished in 0.00s
+
+     Running tests\f04_functions.rs (core\rust\target\debug\deps\f04_functions-4fcfe3818d0352bc.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 18 filtered out; finished in 0.00s
+
+     Running tests\i4a2_external_namespaces.rs (core\rust\target\debug\deps\i4a2_external_namespaces-42cfb72a6a3ace26.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests\s0_types.rs (core\rust\target\debug\deps\s0_types-a0819467cc615dcb.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s
+

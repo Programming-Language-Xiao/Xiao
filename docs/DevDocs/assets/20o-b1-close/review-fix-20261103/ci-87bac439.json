@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "head_sha": "87bac4391e4a0cfcb7b3fa2acad32e4163bee924",
+  "observed_at_utc": "2026-11-03T09:41:25.280712+00:00",
+  "scope": "B1审计修复提交的工作区门禁节点；只改文档/证据审计，不改变B1被测产品快照；不是B2功能证据",
+  "run": {
+    "id": 41585868754,
+    "name": "Xiao workspace gates",
+    "head_sha": "87bac4391e4a0cfcb7b3fa2acad32e4163bee924",
+    "event": "push",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41585868754"
+  },
+  "jobs": [
+    {
+      "id": 125751076106,
+      "run_id": 41585868754,
+      "head_sha": "87bac4391e4a0cfcb7b3fa2acad32e4163bee924",
+      "run_attempt": 1,
+      "name": "Linux workspace gates",
+      "status": "completed",
+      "conclusion": "success",
+      "labels": [
+        "ubuntu-24.04"
+      ],
+      "runner_name": "GitHub Actions 1000001148",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41585868754/job/125751076106"
+    }
+  ],
+  "source_query": "gh api \"repos/Programming-Language-Xiao/Xiao/actions/runs?head_sha=87bac4391e4a0cfcb7b3fa2acad32e4163bee924&per_page=10\""
+}

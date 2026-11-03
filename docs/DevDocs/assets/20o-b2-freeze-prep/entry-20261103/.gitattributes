@@ -1,0 +1,5 @@
+*.json text eol=lf
+# 保留测试输出末尾空行，避免把原始输出当成源码空白问题。
+*.log text eol=lf whitespace=-blank-at-eof
+*.md text eol=lf
+.gitattributes text eol=lf

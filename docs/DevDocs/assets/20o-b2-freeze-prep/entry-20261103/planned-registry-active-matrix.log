@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.75s
+     Running tests\20o_b1_imp_contract.rs (core\rust\target\debug\deps\20o_b1_imp_contract-b2c3036637e54ff1.exe)
+
+running 1 test
+test every_implemented_module_is_in_the_active_contract_matrix ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.01s
+

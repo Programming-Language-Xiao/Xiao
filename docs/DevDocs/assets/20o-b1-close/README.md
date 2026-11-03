@@ -44,5 +44,7 @@ pwsh -NoProfile -File docs/DevDocs/assets/20o-b1-close/validate-audit.ps1
 通过条件要求退出1、`RuntimeException`类型及实际异常消息精确匹配，格式化诊断和源码行不参与匹配。
 命令返回新建的输出目录；可用`-OutputDirectory`指定空目录，原始归档保持不变。
 旧aggregate判定的撤回与修订结果见[勘误证据](review-fix-20261103/README.md)。
+含随机临时路径的两份源码回显诊断标为仅诊断，不参与复跑摘要校验；稳定语义结果仍须一致。
+87bac439自身CI节点及同环境两次复跑比较见[交接补登](review-fix-20261103/README.md#b2交接补登)。
 
 当前入口不访问网络。线上结论仍以已归档run/job/attempt及对应GitHub源日志为依据。

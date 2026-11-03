@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "scope": "本机Windows冻结文档与planned登记的现有门禁摘要；不是B2产品验收。文档门禁未归档完整原始日志，精确测试另存规范化日志。",
+  "entry_head": "465e213d3174ce7179c123fca25bb0f232331cde",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "result": "通过：未发现A0规则问题"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "result": "通过：未发现A0规则问题"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "result": "通过：未发现A0规则问题"
+    },
+    {
+      "command": "bun run check:coverage",
+      "exit_code": 0,
+      "overall": "10998/12183 (90.27%)",
+      "public_api": "5795/5795 (100.00%)",
+      "result": "通过；既有非公共代码文档警告保留"
+    },
+    {
+      "command": "cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_imp_contract every_implemented_module_is_in_the_active_contract_matrix -- --exact",
+      "exit_code": 0,
+      "passed": 1,
+      "log": "planned-registry-active-matrix.log"
+    },
+    {
+      "command": "cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b1_imp_contract product_tutorials_embed_the_executed_sources_and_match_registry -- --exact",
+      "exit_code": 0,
+      "passed": 1,
+      "log": "planned-registry-tutorials.log"
+    }
+  ],
+  "scope_guard": {
+    "command": "cmd /c git diff --exit-code 87bac439 -- core/rust stdlib tests/fixtures tests/benchmarks .github/workflows tools/gates .cargo/config.toml",
+    "exit_code": 0,
+    "result": "受保护代码树与基线无差异；本轮改动仅docs路径"
+  },
+  "artifact_integrity": {
+    "existing_logs_and_test_sources": 5,
+    "b1_review_file_digests": 12,
+    "stable_replay_results": 10,
+    "planned_cmath_registry": true
+  }
+}

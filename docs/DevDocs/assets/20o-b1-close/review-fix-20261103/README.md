@@ -20,3 +20,13 @@
 旧[aggregate日志](../self-review-20261103/aggregate-job-id.log)原样保留，旧清单已明确撤回该项误判。
 [CI观察](ci-observation.json)补入cbd7fdaf自己的维护回归41580498113和工作区门禁41580498128，均成功；
 它们与初次890cdb81观察分开，也不作为旧反例判断正确的证据。
+
+## B2交接补登
+
+87bac439自己的[工作区门禁节点](ci-87bac439.json)也已补登：41585868754、实际作业125751076106成功。
+该提交只修文档与审计入口，没有改变B1被测产品快照；它不是B2功能或性能证据。
+
+`source-line-false-hit-formatted.log`与`source-line-false-hit.error.json`含每次新建的随机临时路径，
+已在清单`diagnostic_files`中标记为仅诊断，从`files`摘要校验项移出，原始内容不改。
+通过判定使用稳定的真实异常字段与`validation.json`，不要求格式化诊断逐字节复现。
+同环境两次复跑的10份稳定产物与2份诊断差异见[入口比较](../../20o-b2-freeze-prep/entry-20261103/replay-comparison.json)。

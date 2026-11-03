@@ -1,0 +1,46 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.18s
+     Running unittests src\lib.rs (core\rust\target\debug\deps\xiao_runtime-c1c4f304a64bbd19.exe)
+
+running 15 tests
+test value::ops::tests::converts_numeric_widths_with_range_check ... ok
+test value::ops::tests::compares_numbers_and_strings ... ok
+test value::ops::tests::converts_between_bool_and_str ... ok
+test value::ops::tests::constructs_and_rejects_unicode_scalar_values ... ok
+test value::ops::tests::division_by_zero_has_stable_identity ... ok
+test value::ops::tests::converts_single_codepoint_to_integer ... ok
+test value::ops::tests::division_requires_float_operands ... ok
+test value::ops::tests::floor_division_pairs_with_remainder ... ok
+test value::ops::tests::high_precision_numerics_are_explicitly_unsupported ... ok
+test value::ops::tests::integer_power_rejects_negative_exponent ... ok
+test value::ops::tests::negates_high_precision_text_without_narrowing ... ok
+test value::ops::tests::overflow_uses_stable_identity ... ok
+test value::ops::tests::rejects_cross_width_operands ... ok
+test value::ops::tests::string_equality_compares_content ... ok
+test value::ops::tests::supports_arithmetic_operators ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 168 filtered out; finished in 0.00s
+
+     Running tests\b06_runtime.rs (core\rust\target\debug\deps\b06_runtime-f3585a5131923eee.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+     Running tests\b1_string_bridge.rs (core\rust\target\debug\deps\b1_string_bridge-acffdc1f32befe75.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests\n0_c2_error_boundary.rs (core\rust\target\debug\deps\n0_c2_error_boundary-350be192d0a93f44.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests\r2a_containers.rs (core\rust\target\debug\deps\r2a_containers-8ef9934478a2e195.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 17 filtered out; finished in 0.00s
+
