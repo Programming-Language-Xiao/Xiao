@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "scope": "F-B1候选表、文档与只读源码核验，不代表产品/ABI已实施",
+  "status": "review_preparation_passed_answers_pending",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "check-layout.log"
+    }
+  ],
+  "log_normalization": "Bun子进程stderr后接stdout，UTF-8/LF并剥除ANSI控制序列",
+  "source_guard": {
+    "argv": [
+      "cmd",
+      "/c",
+      "git",
+      "diff",
+      "--exit-code",
+      "2a974de8",
+      "--",
+      "core/rust",
+      "stdlib",
+      "tests/fixtures",
+      "tests/benchmarks",
+      ".github/workflows",
+      "tools/gates",
+      ".cargo/config.toml",
+      "docs/module-registry.json",
+      "docs/UseDocs",
+      "docs/DevDocs/assets/20o-b1-close",
+      "docs/DevDocs/assets/20o-b1-imp"
+    ],
+    "exit_code": 0
+  },
+  "candidate_entries": 16,
+  "candidate_c_prototypes": 16,
+  "active_intrinsic_max": 32,
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "ledger_confirmed": 25,
+  "ledger_pending": 5,
+  "f5_answers_received": 0,
+  "f6_or_f12_decisions_adopted": false,
+  "xiao_products_or_tests_added": 0,
+  "new_f10_measurements": 0
+}

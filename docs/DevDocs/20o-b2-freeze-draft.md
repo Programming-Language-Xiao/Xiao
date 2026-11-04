@@ -198,7 +198,7 @@ cmath的15项名称及float结果已确认；本表的参数名、cmath_底层�
 
 | 规划ID（待审） | 源级入口 | 待审参数名 | 返回/效果 | 待审C ABI符号 |
 | --- | --- | --- | --- | --- |
-| 33 | 全局lfloat_divide | numerator, denominator, precision, rounding | lfloat / Allocates | xiao_runtime_lfloat_divide |
+| 33 | 全局lfloat_divide | lfloat numerator, lfloat denominator, int precision, str rounding（源级已确认） | lfloat / Allocates | xiao_runtime_lfloat_divide |
 | 34 | std.cmath.sqrt / 原语cmath_sqrt | float value | float / Pure | xiao_runtime_cmath_sqrt |
 | 35 | std.cmath.floor / 原语cmath_floor | float value | float / Pure | xiao_runtime_cmath_floor |
 | 36 | std.cmath.ceil / 原语cmath_ceil | float value | float / Pure | xiao_runtime_cmath_ceil |
@@ -222,13 +222,27 @@ ID100墓碑和1～32均保持。这里的intrinsic ID与X06-RUNTIME错误编号�
 候选C ABI统一借读XiaoValue输入、返回i32状态，输出使用已初始化的拥有值槽：
 
 ```c
-int32_t xiao_runtime_cmath_sqrt(const XiaoValue *value, XiaoValue *out);
-int32_t xiao_runtime_cmath_min(const XiaoValue *left, const XiaoValue *right, XiaoValue *out);
 int32_t xiao_runtime_lfloat_divide(const XiaoValue *numerator, const XiaoValue *denominator,
     const XiaoValue *precision, const XiaoValue *rounding, XiaoValue *out);
+int32_t xiao_runtime_cmath_sqrt(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_floor(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_ceil(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_round(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_trunc(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_abs(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_min(const XiaoValue *left, const XiaoValue *right, XiaoValue *out);
+int32_t xiao_runtime_cmath_max(const XiaoValue *left, const XiaoValue *right, XiaoValue *out);
+int32_t xiao_runtime_cmath_pow(const XiaoValue *base, const XiaoValue *exponent, XiaoValue *out);
+int32_t xiao_runtime_cmath_sin(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_cos(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_tan(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_exp(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_ln(const XiaoValue *value, XiaoValue *out);
+int32_t xiao_runtime_cmath_log10(const XiaoValue *value, XiaoValue *out);
 ```
 
-其余一元/二元按同形映射。输入强引用覆盖调用，输入与out不重叠；成功释放out旧拥有值并替换结果，失败保留out。
+上面列齐16个候选C符号，无额外Cmath入口。输入强引用覆盖调用，输入与out不重叠；成功释放out旧拥有值并替换结果，失败保留out。
+语言侧按既有规则完成允许的类型转换；这些C ABI入口按降低后的目标标签检查参数，不自行新增数值提升或窄化。
 候选状态表（F-5待审）：
 
 | 状态 | 触发条件 | out与挂起槽 |
@@ -501,6 +515,8 @@ F-11设计算例（已确认规则，不是实际转换执行证据）：
 
 A保持ABI1.18/生成器20作为中间验证快照，B2完成交付的最终新产物统一1.19/21。
 A快照仅作本批内部验证，不发布为最终B2产物。
+F-6待审的生产规则：B2最终.xiaoc头、.xar索引与指令流均记录精确1.19；原生元数据记录精确1.19、生成器21及对应标准库ABI身份，标准库接口版本仍为已确认的1。
+不通过手改旧产物头、放宽旧产物max版本或忽略指令流版本来宣称兼容；不在本轮改变现有容器格式/索引schema版本。
 源码核对发现，现有.xiaoc头与.xar索引均把ABI最小/最大值写成当前精确版本，指令流也精确检查runtime_abi_version；
 见[xiaoc编码](../../core/rust/crates/xiao-bytecode/src/xiaoc.rs)、[归档索引](../../core/rust/crates/xiao-driver/src/archive.rs)和[指令流校验](../../core/rust/crates/xiao-bytecode/src/encode/validate.rs)。
 因此此前“旧原件直接兼容重放”不能静默生效。建议按现有版本边界拒绝旧原件，再从B1源码在1.19/21重新生成回归；这项调整须星崽裁定。
@@ -509,11 +525,16 @@ A快照仅作本批内部验证，不发布为最终B2产物。
 | --- | --- | --- |
 | B1原始1.18 .xiaoc/.xar | B2-B 1.19 | 执行前按既有头/索引/指令流版本检查拒绝，原件不改写 |
 | B2最终1.19 .xiaoc/.xar | 旧1.18 | 执行前拒绝，不能只靠执行到未知原语才失败 |
+| 原始1.18原生元数据 | B2-B 1.19验证器 | 按精确ABI范围与标准库身份拒绝；不改写原件来伪装新产物 |
+| 新1.19原生元数据 | 旧1.18验证器 | 在用户入口执行前按版本/标准库身份拒绝 |
 | B1源码重新生成的1.19产物 | B2-B 1.19 | 重新执行20入口及新快照721条，不继承旧成绩 |
 | 生成器20的原生对象缓存 | 生成器21 | 缓存身份不匹配，重新生成并链接 |
 | A的1.18/20中间产物 | 本批A工具快照 | 仅内部验证；不承诺旧Runtime具备新的高精度语义 |
 
 保留既有1.18 C符号与布局，不把C ABI次版本的加法兼容误写为容器接受超出其max版本的许可。
+原生元数据的精确ABI检查见[native_metadata.rs](../../core/rust/crates/xiao-codegen-llvm/src/native_metadata.rs)；
+缓存指纹已包含生成器、ABI、优化计划和Runtime静态库内容，见[toolchain.rs](../../core/rust/crates/xiao-codegen-llvm/src/toolchain.rs)。
+A的版本号不变也不等于可以混用旧Runtime：内部取证仍绑定实际源码、Runtime内容与输出路径；B的21号生成器必须重新生成并链接匹配的产物。
 
 ### 8.6 实施执行点提案
 

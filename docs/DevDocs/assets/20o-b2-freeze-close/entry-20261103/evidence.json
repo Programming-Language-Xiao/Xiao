@@ -2,7 +2,7 @@
   "schema_version": 1,
   "entry_head": "a60a3dd11749e770e6fdf80ca2852a9c828fe3c9",
   "code_baseline": "0011f4c5739fd8114f001a236e8241d0f65b918c",
-  "status": "历史来源核验保留；实时台账25/5，F-A已退出，整体未联合冻结",
+  "status": "历史来源核验保留；实时台账25/5，F-A已退出、F-B1待答，整体未联合冻结",
   "runtime_abi": "1.18",
   "codegen_version": 20,
   "stdlib_interface_version": 1,
@@ -39,7 +39,7 @@
     },
     {
       "file": "decision-ledger.json",
-      "sha256": "23e93308a92d201a8a0ebdfe472db18a18d264a9162586dde3445ba5d62b4b0f"
+      "sha256": "b32fcc50b7755e3dc4905b59888905356195d86d19689f1fad8652f29d537625"
     },
     {
       "file": "dependency-archives.json",
@@ -111,5 +111,5 @@
     }
   ],
   "ledger_mode": "台账持续更新；本目录原来源核验保持历史身份，当前F-A退出另见latest_review",
-  "latest_review": "../../20o-b2-freeze-a/entry-20261104/README.md"
+  "latest_review": "../../20o-b2-freeze-b/entry-20261104/README.md"
 }

@@ -6,7 +6,7 @@
   "base_receipts_sha256": "433db40949a3c1dd547275de61b264b9da2391143c7883b7ab475444f09df626",
   "confirmed": 25,
   "pending": 5,
-  "activation": "F-A已退出，25/5；可进入F-B文档裁定，整体未联合冻结，不进入B2-A/B产品实现",
+  "activation": "F-A已退出；F-B1文档裁定进行中，F-5/F-6/F-12未确认，整体未联合冻结，不进入B2-A/B产品实现",
   "items": [
     {
       "id": "R-1",
@@ -310,7 +310,7 @@
     }
   ],
   "review_document": "docs/DevDocs/20o-b2-freeze-draft.md",
-  "review_document_sha256": "e4515307802581c77b263c9fd0bc03823a76b6dedfebee33168f8db1ed082ce0",
+  "review_document_sha256": "ec34d1451b33f07b6ab640515919896d74d5a387d46451077353d6aa81b65494",
   "review_history": [
     {
       "commit": "67944184dbb44137040908f2efc8e4d52a6f0e27",
@@ -323,34 +323,25 @@
       "document": "docs/DevDocs/20o-b2-freeze-draft.md",
       "sha256": "6b066732e7065aa2b2aeff6bc496a8dfb3bbf6ad99d0839551a9cd75470eece4",
       "scope": "F-A主体已答但混合类型尚待补充的历史版本"
+    },
+    {
+      "commit": "2a974de8826b5959c982ec29303305ed61c53542",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "e4515307802581c77b263c9fd0bc03823a76b6dedfebee33168f8db1ed082ce0",
+      "scope": "F-A完整退出时的规则及尚待F-B/F-C裁定的表"
     }
   ],
   "latest_review": {
-    "phase": "F-A_complete",
+    "phase": "F-B1",
     "date": "2026-11-04",
-    "entry_head": "fdbc9f1c763a522d002b2a191655af02f9d550dc",
-    "focus": [],
-    "answered": [
-      "F-1",
-      "F-2",
-      "F-4",
-      "F-8",
-      "F-9",
-      "F-10",
-      "F-11"
+    "entry_head": "2a974de8826b5959c982ec29303305ed61c53542",
+    "focus": [
+      "F-5"
     ],
-    "evidence": "../../20o-b2-freeze-a/entry-20261104/README.md",
-    "decisions_complete": true,
-    "gate_status": "docs_usedocs_layout_and_diff_passed",
-    "fully_confirmed": [
-      "F-1",
-      "F-2",
-      "F-4",
-      "F-8",
-      "F-9",
-      "F-10",
-      "F-11"
-    ],
-    "typing_followup": "confirmed_by_direct_reply"
+    "answered": [],
+    "evidence": "../../20o-b2-freeze-b/entry-20261104/README.md",
+    "f_a_gate_satisfied": true,
+    "decisions_complete": false,
+    "gate_status": "review_docs_usedocs_layout_passed_decisions_pending"
   }
 }

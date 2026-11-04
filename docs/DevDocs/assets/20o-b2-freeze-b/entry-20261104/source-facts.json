@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "entry_head": "2a974de8826b5959c982ec29303305ed61c53542",
+  "scope": "只读源码核对；不是新产物生成或版本拒绝执行证据",
+  "runtime_abi": "1.18",
+  "codegen_version": 20,
+  "sources": [
+    {
+      "path": "core/rust/crates/xiao-intrinsics/intrinsics.json",
+      "git_text_sha256": "23ab5d2a03b3246fb381d24a5b837105f651036f79aad65f8f176823049241d5",
+      "fact": "活动intrinsic最大32，100墓碑"
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime-abi/src/lib.rs",
+      "git_text_sha256": "1968f078091035eb996266c75638d35b7cc9b3f7cfb8eb229672fdd6909381bd",
+      "fact": "ABI1.18及既有状态0～8，未改布局/版本"
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/lib.rs",
+      "git_text_sha256": "67d9c47e966439198c136b2aae2aaf04e029a9b100d48380c1076deb9b4ae249",
+      "fact": "生成器20"
+    },
+    {
+      "path": "core/rust/crates/xiao-bytecode/src/xiaoc.rs",
+      "git_text_sha256": "aa50d2e24c56163594f9b61fda20203767cd5ed450d08cf2401b3a084afdc5e2",
+      "fact": ".xiaoc min/max按当前ABI精确写入"
+    },
+    {
+      "path": "core/rust/crates/xiao-bytecode/src/encode/validate.rs",
+      "git_text_sha256": "e63cc16f7d47cf356badf6674f43d89e8484ebaba3785b696729efc2bb29b555",
+      "fact": "指令流runtime_abi_version精确检查"
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/src/archive.rs",
+      "git_text_sha256": "d657af1d9e0f70f6975149dfce5bc31d16ff4cbe3bdd9e8e68feacd6494f6510",
+      "fact": ".xar runtime_abi_min/max精确写入"
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/native_metadata.rs",
+      "git_text_sha256": "ba811fc4d0be436fcd799c6a045fd1a09efabeb24794156e68d152291e1e9503",
+      "fact": "原生元数据校验精确ABI及标准库身份"
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/toolchain.rs",
+      "git_text_sha256": "3286df6a457ab70a3fb71c702355cfd7f74ac691802447347213948e30a6fe4f",
+      "fact": "缓存指纹包含codegen、ABI、Runtime静态库内容"
+    }
+  ]
+}
