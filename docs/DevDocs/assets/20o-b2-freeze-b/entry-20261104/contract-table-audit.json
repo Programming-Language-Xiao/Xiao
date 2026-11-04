@@ -47,7 +47,12 @@
   "runtime_abi": "1.18",
   "codegen_version": 20,
   "product_or_abi_files_changed": false,
-  "status": "F-5a/F-5b/F-5c待答复",
-  "document_git_text_sha256": "ec34d1451b33f07b6ab640515919896d74d5a387d46451077353d6aa81b65494",
-  "prototypes_in_id_order": true
+  "status": "F-5_confirmed_by_direct_answers",
+  "document_git_text_sha256": "f3aca072ab361d111af367fc4716993d4108f6433145562ecc68ea8b583f5690",
+  "prototypes_in_id_order": true,
+  "f5_receipts": "decision-receipts.json",
+  "parameter_rules_confirmed": true,
+  "ids_symbols_effects_confirmed": true,
+  "ownership_status_confirmed": true,
+  "answer_count": 3
 }

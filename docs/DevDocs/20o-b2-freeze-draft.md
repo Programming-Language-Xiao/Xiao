@@ -1,6 +1,6 @@
 # 20O-B2-FREEZE. 数值底座冻结草案与裁定台账
 
-状态：F-A七组已完整确认，台账为25 confirmed、5 pending；F-B/F-C/F-D尚未完成，整体尚未联合生效（2026-11-04）。
+状态：F-A七组及F-5已确认，台账为26 confirmed、4 pending；F-6/F-12/F-C尚未完成，整体尚未联合生效（2026-11-04）。
 逐项收口顺序、批次和退出条件见[冻结收口规划](20o-b2-freeze-closeout-plan.md)；下一批 F-A 的七组裁定见[数值语义裁定规划](20o-b2-freeze-a-numeric-semantics-plan.md)，当前收口见[F-A 收口规划](20o-b2-freeze-a-closeout-plan.md)，后续 F-B 见[契约裁定规划](20o-b2-freeze-b-contract-plan.md)与[F-B1 收口](20o-b2-freeze-b1-closeout-plan.md)；本页保存精确台账。
 来源为[数值基础规划](20o-b2-numeric-foundation-plan.md)与本次会话[逐条答复记录](assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json)；本页的“建议/待审”不等于已确认。
 F-A各项直接答复另存[本轮裁定原文](assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json)，不覆盖既有18条记录。
@@ -191,12 +191,12 @@ F-4也已确认`**`只接受非负整数值指数：1.0合法，负数和非整�
 
 这些是约定输出而非产品执行结果。两算子均为精确运算，不调用显式precision/rounding接口，不通过f64计算floor或余数。
 
-### 5.1 原语与符号精表提案（未确认，未写活动表）
+### 5.1 原语与符号精表（F-5已确认，仍不写活动表)
 
-cmath的15项名称及float结果已确认；本表的参数名、cmath_底层名称、规划编号和C符号仍待统一确认。
+cmath的15项名称及float结果已确认；F-5进一步确认参数名、cmath_底层名称、规划编号和C符号。
 源码模块只导出15个公开包装，底层原语按现有os_模式另作全局登记，不假装已有私有可见性。
 
-| 规划ID（待审） | 源级入口 | 待审参数名 | 返回/效果 | 待审C ABI符号 |
+| 规划ID（F-5确认） | 源级入口 | 参数名 | 返回/效果 | C ABI符号 |
 | --- | --- | --- | --- | --- |
 | 33 | 全局lfloat_divide | lfloat numerator, lfloat denominator, int precision, str rounding（源级已确认） | lfloat / Allocates | xiao_runtime_lfloat_divide |
 | 34 | std.cmath.sqrt / 原语cmath_sqrt | float value | float / Pure | xiao_runtime_cmath_sqrt |
@@ -215,11 +215,11 @@ cmath的15项名称及float结果已确认；本表的参数名、cmath_底层�
 | 47 | std.cmath.ln / 原语cmath_ln | float value | float / Pure | xiao_runtime_cmath_ln |
 | 48 | std.cmath.log10 / 原语cmath_log10 | float value | float / Pure | xiao_runtime_cmath_log10 |
 
-全部无新宿主能力；Pure描述计算副作用，不排除正常错误传播，不等于LLVM的无错或readnone承诺。
+全部无新宿主能力；Pure描述计算副作用，不排除正常错误传播，不等于LLVM的无错或readnone承诺。上述命名、效果和能力由F-5确认。
 未证明不会报错时，优化器不得仅因结果未使用而删除调用。参数全部必填、沿用现有位置/命名与数值转换规则，不增加默认参数、重载或方法别名。
 ID100墓碑和1～32均保持。这里的intrinsic ID与X06-RUNTIME错误编号是不同空间。
 
-候选C ABI统一借读XiaoValue输入、返回i32状态，输出使用已初始化的拥有值槽：
+F-5确认的C ABI统一借读XiaoValue输入、返回i32状态，输出使用已初始化的拥有值槽：
 
 ```c
 int32_t xiao_runtime_lfloat_divide(const XiaoValue *numerator, const XiaoValue *denominator,
@@ -243,7 +243,7 @@ int32_t xiao_runtime_cmath_log10(const XiaoValue *value, XiaoValue *out);
 
 上面列齐16个候选C符号，无额外Cmath入口。输入强引用覆盖调用，输入与out不重叠；成功释放out旧拥有值并替换结果，失败保留out。
 语言侧按既有规则完成允许的类型转换；这些C ABI入口按降低后的目标标签检查参数，不自行新增数值提升或窄化。
-候选状态表（F-5待审）：
+状态表（F-5确认；具体错误身份仍由F-12统一）：
 
 | 状态 | 触发条件 | out与挂起槽 |
 | --- | --- | --- |
@@ -255,9 +255,9 @@ int32_t xiao_runtime_cmath_log10(const XiaoValue *value, XiaoValue *out);
 | 8/宿主致命终止 | 既有Fatal边界下的不可恢复故障 | 不承诺可恢复，不能伪装成普通状态6 |
 
 有效标签但参数类型错误属于002/状态6，与未知标签的状态2分开；所有保持out的保证都要求调用方满足已初始化、拥有、无重叠的前置条件。
-任意悬空指针不在安全识别承诺内。上述是待审声明，未新增符号或改变布局。
+任意悬空指针不在安全识别承诺内。上述只冻结规划契约，未新增符号、改变布局或写入活动表。
 
-### 5.2 错误精表提案（未确认）
+### 5.2 错误精表提案（F-12未确认）
 
 | 场景 | 待审身份 | 约束 |
 | --- | --- | --- |

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "scope": "F-B1候选表、文档与只读源码核验，不代表产品/ABI已实施",
-  "status": "review_preparation_passed_answers_pending",
+  "status": "F-B1_closeout_passed",
   "checks": [
     {
       "command": "bun run check:docs",
@@ -27,7 +27,7 @@
       "git",
       "diff",
       "--exit-code",
-      "2a974de8",
+      "7fffc32d",
       "--",
       "core/rust",
       "stdlib",
@@ -48,10 +48,15 @@
   "active_intrinsic_max": 32,
   "runtime_abi": "1.18",
   "codegen_version": 20,
-  "ledger_confirmed": 25,
-  "ledger_pending": 5,
-  "f5_answers_received": 0,
+  "ledger_confirmed": 26,
+  "ledger_pending": 4,
+  "f5_answers_received": 3,
   "f6_or_f12_decisions_adopted": false,
   "xiao_products_or_tests_added": 0,
-  "new_f10_measurements": 0
+  "new_f10_measurements": 0,
+  "f5_confirmed": true,
+  "f5_static_audit_passed": true,
+  "new_xiao_products_or_tests": 0,
+  "new_c_abi_link_or_execution": 0,
+  "doc_hash_bound_to": "docs/DevDocs/20o-b2-freeze-draft.md"
 }

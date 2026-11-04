@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "authority": "逐条实际答复，不以推荐项预选代替确认",
+  "confirmed_count": 3,
+  "receipts": [
+    {
+      "id": "F-5a",
+      "phase": "F-B1",
+      "question": "F-5a｜cmath 参数与公开面：一元函数用 value，min/max 用 left/right，pow 用 base/exponent；参数全必填，支持位置/命名调用，无默认值、重载、方法别名。stdlib.cmath 只导出15个包装，底层按既有 os_ 模式登记；lfloat_divide 四参签名已确认。",
+      "answer": "确认候选方案（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_Rf5AlvVEw4T7V7CfZ5NcMk8w\",0]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-5b",
+      "phase": "F-B1",
+      "question": "F-5b｜规划 ID、C 符号与效果：33=lfloat_divide，34～48按15项 cmath 顺序；符号为 xiao_runtime_lfloat_divide 与 xiao_runtime_cmath_<name>；33 为 Allocates，34～48 为 Pure，能力均 none；1～32及100墓碑不变。",
+      "answer": "确认候选方案（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_Rf5AlvVEw4T7V7CfZ5NcMk8w\",1]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    },
+    {
+      "id": "F-5c",
+      "phase": "F-B1",
+      "question": "F-5c｜C ABI 所有权与状态：输入 const XiaoValue* 借读且调用期间保持源强引用，out 不重叠；out 已初始化并拥有旧值，成功替换、失败保留。状态0成功、1空指针、2非法标签、3坏句柄、6可恢复语义错误，Fatal沿8边界；源级类型错误归002/状态6。",
+      "answer": "确认候选方案（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_Rf5AlvVEw4T7V7CfZ5NcMk8w\",2]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-04"
+    }
+  ]
+}

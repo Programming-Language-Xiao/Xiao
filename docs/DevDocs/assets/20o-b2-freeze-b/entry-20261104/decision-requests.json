@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "phase": "F-B1",
+  "phase": "F-B1_closeout",
   "entry_head": "2a974de8826b5959c982ec29303305ed61c53542",
   "f_a_exit_complete": true,
   "f_a_confirmed_pending": [
@@ -13,22 +13,25 @@
       "id": "F-5a",
       "group": "F-5",
       "subject": "cmath参数/调用/公开包装与底层原语边界",
-      "status": "awaiting_answer",
-      "answer": null
+      "status": "confirmed",
+      "answer": "确认候选方案（推荐）",
+      "decision_record": "decision-receipts.json"
     },
     {
       "id": "F-5b",
       "group": "F-5",
       "subject": "33～48规划编号、C符号、效果及能力",
-      "status": "awaiting_answer",
-      "answer": null
+      "status": "confirmed",
+      "answer": "确认候选方案（推荐）",
+      "decision_record": "decision-receipts.json"
     },
     {
       "id": "F-5c",
       "group": "F-5",
       "subject": "C ABI借用/out所有权、状态与挂起错误",
-      "status": "awaiting_answer",
-      "answer": null
+      "status": "confirmed",
+      "answer": "确认候选方案（推荐）",
+      "decision_record": "decision-receipts.json"
     }
   ],
   "later_groups": [
@@ -38,5 +41,8 @@
   "f_c_not_started": [
     "F-3",
     "F-7"
-  ]
+  ],
+  "decision_status": "F-5_confirmed",
+  "next_phase": "F-B2",
+  "closeout_complete": true
 }

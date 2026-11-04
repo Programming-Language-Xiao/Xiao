@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "entry_head": "2a974de8826b5959c982ec29303305ed61c53542",
-  "status": "F-B1审阅资料及门禁完成，F-5三项待答；F-6/F-12未裁定，整体未冻结",
+  "entry_head": "f2b18e648eca5bd855ed6d557ad191c610c2b873",
+  "status": "F-B1/F-5已收口，台账26/4；F-6/F-12未裁定，F-C未开始",
   "f_a_exit_commit": "2a974de8826b5959c982ec29303305ed61c53542",
   "f_a_gate_passed": true,
   "decision_status": [
@@ -33,23 +33,28 @@
     },
     {
       "file": "checks.json",
-      "sha256": "50573de6c7234445fa13080657788cbcc2e4ee616a118ebc70d988fc8be7eaa0"
+      "sha256": "e338a90289c8281867700ee74abdb0519674f2677c2b54fcc5c1b6ffc1068fdb"
     },
     {
       "file": "contract-table-audit.json",
-      "sha256": "58283c76e2c78d9e8558694b59cbb3f162ae2b710474d9ca295396c5b0947916"
+      "sha256": "1a01bb78b6f15c32d1d229d9b809a628185d33e28205db2ae5ac4ee326f18861"
+    },
+    {
+      "file": "decision-receipts.json",
+      "sha256": "681127fb52e5048bdb38b3207214580137000c2a09ed7e505fac93642c673d48"
     },
     {
       "file": "decision-requests.json",
-      "sha256": "8a17c63fc50e45d368da727b20637817a62ab00d1ddf44eb2b57067dab1a2154"
+      "sha256": "9efb2e7410371c9ff92713daada9423879f17a3ecadc76af5a48337a128bc455"
     },
     {
       "file": "README.md",
-      "sha256": "8221e8f7610127d95d8d841a7b0f3b916aac3066b6083beb5bdff82770754324"
+      "sha256": "2bca85f1f4ce5d6f27f5c0e597735f17b9788d4a1ef22f564c527ac33002ee25"
     },
     {
       "file": "source-facts.json",
       "sha256": "9513bd9a5a4418b9b4b489b619f231e29f732b61813011f59b02a1d0b42e6c5d"
     }
-  ]
+  ],
+  "decision_receipts": "decision-receipts.json"
 }

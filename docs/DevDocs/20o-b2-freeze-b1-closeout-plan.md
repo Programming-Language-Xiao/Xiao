@@ -1,8 +1,8 @@
 # 20O-B2-FREEZE-B1. 原语与 C ABI 收口规划
 
 > **这是 F-B1 的收口规划，不写产品函数、依赖锁、intrinsic、ABI 或测试实现。**
-> 当前入口为 `7fffc32d`；F-A 已 25/5 退出，F-B1 的 F-5a/F-5b/F-5c 三问仍待实际答复。
-> 台账当前 25 confirmed / 5 pending；`cmath` 仍为 planned，ABI 1.18、生成器 20。
+> 当前入口为 `7fffc32d`；F-A 已 25/5 退出，F-B1 的 F-5a/F-5b/F-5c 已收到实际答复。
+> 台账当前 26 confirmed / 4 pending；`cmath` 仍为 planned，ABI 1.18、生成器 20。
 >
 > **本批只收 F-5（原语、编号、效果与 C ABI 所有权），不进入 F-6/F-12，更不进入 B2-A/B。**
 
@@ -12,13 +12,13 @@
 | --- | --- |
 | 代码基线 | `7fffc32d`；已推送 |
 | F-A | 七项全部确认，25/5；F-4 采用既有提升到 lfloat 的类型边界 |
-| F-B1 | 16 个候选入口/符号已列出；F-5a/F-5b/F-5c 待答 |
-| 当前台账 | 25 confirmed / 5 pending（F-3、F-5、F-6、F-7、F-12） |
+| F-B1 | 16 个入口/符号的参数、效果、所有权和状态已确认 |
+| 当前台账 | 26 confirmed / 4 pending（F-3、F-6、F-7、F-12） |
 | 产品/ABI | 无 `cmath`/高精度产品；活动 intrinsic 最大 32；ABI 1.18、生成器 20 |
 | 最近 CI | `7fffc32d` 的 workspace gates 成功；本次只改 DevDocs，维护回归未触发 |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
 
-F-A 的 25/5 和类型表已经收口；F-B1 可以在文档层开始，但候选表仍是“待审”，不是活动契约。
+F-A 的 25/5 和类型表已经收口；F-B1 三项答复已收到，候选表可转为规划契约，但不是活动能力。
 
 ## 二、F-5 的三个精确问题
 
@@ -77,7 +77,7 @@ F-A 的 25/5 和类型表已经收口；F-B1 可以在文档层开始，但候�
 
 ### B1-A：收答复与台账
 
-1. 保存 F-5a/F-5b/F-5c 的实际答复，不把建议预选为回答；
+1. 保存 F-5a/F-5b/F-5c 的实际答复，不把建议预选为回答；三项已收到确认；
 2. F-5 从 pending 改为 confirmed；
 3. 台账从 25/5 变为 **26/4**，剩余 F-3、F-6、F-7、F-12；
 4. 不修改活动 intrinsic 或 ABI。
@@ -101,9 +101,9 @@ F-A 的 25/5 和类型表已经收口；F-B1 可以在文档层开始，但候�
 
 | 检查 | 期望 |
 | --- | --- |
-| F-5a | 15 个 cmath + lfloat_divide 参数/调用/包装唯一，无未登记 helper |
-| F-5b | 16 个 ID/符号/效果/能力唯一；活动表未改 |
-| F-5c | 输入借用、out 拥有、状态/挂起错误/失败保留 out 明确 |
+| F-5a | 15 个 cmath + lfloat_divide 参数/调用/包装唯一，无未登记 helper；已确认 |
+| F-5b | 16 个 ID/符号/效果/能力唯一；活动表未改；已确认 |
+| F-5c | 输入借用、out 拥有、状态/挂起错误/失败保留 out 明确；已确认 |
 | 台账 | 25/5 → 26/4；F-5 不再 pending |
 | 文档 | 冻结草案、F-B/F-B1 规划、索引一致；docs/usedocs/layout 通过 |
 | 产品边界 | `core/rust`、`stdlib`、Cargo 文件、intrinsic/ABI、测试、工作流无差异 |
