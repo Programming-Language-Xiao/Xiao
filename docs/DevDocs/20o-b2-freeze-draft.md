@@ -1,7 +1,7 @@
 # 20O-B2-FREEZE. 数值底座冻结草案与裁定台账
 
 状态：F-A七组及F-5已确认，台账为26 confirmed、4 pending；F-6/F-12/F-C尚未完成，整体尚未联合生效（2026-11-04）。
-逐项顺序见[冻结收口规划](20o-b2-freeze-closeout-plan.md)；F-A的七项裁定及退出见[数值语义规划](20o-b2-freeze-a-numeric-semantics-plan.md)与[F-A收口](20o-b2-freeze-a-closeout-plan.md)，F-5已由[F-B1收口](20o-b2-freeze-b1-closeout-plan.md)完成；F-6/F-12仍按[F-B规划](20o-b2-freeze-b-contract-plan.md)待后续裁定。本页保存精确台账。
+逐项顺序见[冻结收口规划](20o-b2-freeze-closeout-plan.md)；F-A的七项裁定及退出见[数值语义规划](20o-b2-freeze-a-numeric-semantics-plan.md)与[F-A收口](20o-b2-freeze-a-closeout-plan.md)，F-5已由[F-B1收口](20o-b2-freeze-b1-closeout-plan.md)完成，F-6见[版本矩阵规划](20o-b2-freeze-b2-version-matrix-plan.md)；F-12/F-C仍按[F-B规划](20o-b2-freeze-b-contract-plan.md)待后续裁定。本页保存精确台账。
 来源为[数值基础规划](20o-b2-numeric-foundation-plan.md)与本次会话[逐条答复记录](assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json)；本页的“建议/待审”不等于已确认。
 F-A各项直接答复另存[本轮裁定原文](assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json)，不覆盖既有18条记录。
 F-5a/F-5b/F-5c的三条直接确认另见[F-B1答复原文](assets/20o-b2-freeze-b/entry-20261104/decision-receipts.json)。

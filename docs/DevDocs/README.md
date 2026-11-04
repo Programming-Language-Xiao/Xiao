@@ -268,6 +268,7 @@
 | 20O-B2-FREEZE-A-CLOSE | [F-A 收口规划](20o-b2-freeze-a-closeout-plan.md) | F-4混合类型准入、F-A退出对账与F-B交接 | **已完成**：F-A 25/5、F-5后总台账26/4，方案A直接确认，文档/类型表/来源核验通过；交接F-B |
 | 20O-B2-FREEZE-B | [F-B 契约裁定规划](20o-b2-freeze-b-contract-plan.md) | F-5原语/C ABI、F-6版本产物、F-12错误精表；目标台账28/2 | **F-B1已收口**：台账26/4，F-6/F-12与F-C待裁定；不写产品/活动intrinsic/ABI |
 | 20O-B2-FREEZE-B1 | [F-B1 收口规划](20o-b2-freeze-b1-closeout-plan.md) | F-5a参数/包装、F-5b 33–48编号/C符号、F-5c借用/out/状态；目标26/4 | **已完成文档裁定**：F-5三问确认、静态对账通过；F-6/F-12与F-C继续待审，不改活动intrinsic/ABI |
+| 20O-B2-FREEZE-B2 | [F-B2 版本矩阵规划](20o-b2-freeze-b2-version-matrix-plan.md) | F-6 1.18/20中间、1.19/21最终、旧产物/原生元数据/缓存矩阵；目标27/3 | **规划稿**：F-6待答；只写文档，不生成产物、不改版本常量/ABI |
 | 20P | [Day-1 官方库架构](20p-day1-library-architecture.md) | 模块/错误/生命周期/能力/发布、每库教程与数据库架构；D-13～D-22 裁定 | **规划中（2026-11-01）**：方向已逐条确认；独立数据库能力位、首批有界连接池、固定教程示例与状态门槛、分平台证据；精确契约待后续批次 |
 | 20C-首批 | [官方库首批模块：`text` 与 `path`](20c-first-modules.md) | 接口已冻结为 `text.contains_char(str text, str needle) -> bool` 与 `path.join(str base, str leaf) -> str`；两模块均为纯 Xiao、无新增 intrinsic。固定 `stdlib.` VM 加载器、LLVM 静态函数接线、移除验证和边界同步已落地；P-5 与覆盖口径订正已登记 | **受控双路径已由维护回归 `38550284761` 复核**（Windows `115806283501` / Linux `115806283515`）；10R 其它遗留证据按各自文档登记 |
 | 20C | [官方 Xiao 库：能力探测、模块清单与兼容身份](20c-official-xiao-library.md) | 10 系列已按七项条件正式关闭，O6/B1/T4/F-3 的剩余证据保留原归属；20C 双路径能力探测、六条冻结、入口骨架、固定标准库加载边界和首批 `text`/`path` 接口已完成；官方模块仍不进入普通依赖图 | **首批实现与受控双路径实跑已完成（2026-10-14）**；维护回归 `38550284761` 已回填，10R 其它遗留证据仍按各自清单登记 |
