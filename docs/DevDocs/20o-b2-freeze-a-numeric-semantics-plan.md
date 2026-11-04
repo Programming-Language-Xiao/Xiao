@@ -100,6 +100,8 @@ F-4最终选择同时开放//和%；F-8最终选择舍入后有限性判溢出�
 
 ### F-A4：F-A 收口
 
+执行规划见[F-A 收口规划](20o-b2-freeze-a-closeout-plan.md)；当前只差 F-4 混合类型补问。
+
 1. 核对 F-1、F-2、F-4、F-8、F-9、F-10、F-11 全部 confirmed；
 2. 更新 `decision-ledger.json`：25 confirmed、剩余 5 pending（F-3、F-5、F-6、F-7、F-12）；
 3. 更新冻结草案和本页状态，不修改活动 intrinsic/ABI/依赖；

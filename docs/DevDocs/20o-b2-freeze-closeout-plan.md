@@ -66,7 +66,8 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 
 ### F-A：数值语义、显示与误差
 
-执行规划见[F-A 数值语义裁定规划](20o-b2-freeze-a-numeric-semantics-plan.md)；本批只裁定，不写产品。
+执行规划见[F-A 数值语义裁定规划](20o-b2-freeze-a-numeric-semantics-plan.md)，当前收口见
+[F-A 收口规划](20o-b2-freeze-a-closeout-plan.md)；本批只裁定，不写产品。
 
 范围：F-1、F-2、F-4、F-8、F-9、F-10、F-11。当前六项完整确认，F-4主体答复保留而混合类型补充待答，见[F-A退出对账](20o-b2-freeze-a-numeric-semantics-plan.md#23-f-a退出对账)。
 

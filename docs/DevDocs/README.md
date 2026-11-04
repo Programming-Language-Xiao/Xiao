@@ -265,6 +265,7 @@
 | 20O-B2 | [数值基础规划](20o-b2-numeric-foundation-plan.md) / [冻结草案](20o-b2-freeze-draft.md) / [冻结收口规划](20o-b2-freeze-closeout-plan.md) | lint/lfloat精确底座、显式precision接口、15项float版cmath、依赖/表示/ABI/限额 | **文档冻结审阅中（2026-11-04）**：24/6，F-4主体已确认、混合类型补问待答；cmath planned，产品未开工 |
 | 20O-B2-FREEZE | [冻结收口规划](20o-b2-freeze-closeout-plan.md) | 30条台账、精确契约、冻结签字与B2-A交接 | **F-A未退出，F-B/F-C/F-D未开始**：F-4混合类型与另五项仍待裁定，不进入产品实现 |
 | 20O-B2-FREEZE-A | [F-A 数值语义裁定规划](20o-b2-freeze-a-numeric-semantics-plan.md) | F-1/F-2/F-4/F-8/F-9/F-10/F-11 七组；舍入/域/转换/scale/文本 | **六项完整确认（2026-11-04）**：24/6；整除/余数数学规则已确认，尚差混合类型准入；仅交付文档 |
+| 20O-B2-FREEZE-A-CLOSE | [F-A 收口规划](20o-b2-freeze-a-closeout-plan.md) | F-4 混合类型准入、F-A 退出对账、台账 25/5 与 F-B 交接 | **规划稿**：只差 F-4 类型补问；未写产品/ABI；收口后才进 F-B |
 | 20P | [Day-1 官方库架构](20p-day1-library-architecture.md) | 模块/错误/生命周期/能力/发布、每库教程与数据库架构；D-13～D-22 裁定 | **规划中（2026-11-01）**：方向已逐条确认；独立数据库能力位、首批有界连接池、固定教程示例与状态门槛、分平台证据；精确契约待后续批次 |
 | 20C-首批 | [官方库首批模块：`text` 与 `path`](20c-first-modules.md) | 接口已冻结为 `text.contains_char(str text, str needle) -> bool` 与 `path.join(str base, str leaf) -> str`；两模块均为纯 Xiao、无新增 intrinsic。固定 `stdlib.` VM 加载器、LLVM 静态函数接线、移除验证和边界同步已落地；P-5 与覆盖口径订正已登记 | **受控双路径已由维护回归 `38550284761` 复核**（Windows `115806283501` / Linux `115806283515`）；10R 其它遗留证据按各自文档登记 |
 | 20C | [官方 Xiao 库：能力探测、模块清单与兼容身份](20c-official-xiao-library.md) | 10 系列已按七项条件正式关闭，O6/B1/T4/F-3 的剩余证据保留原归属；20C 双路径能力探测、六条冻结、入口骨架、固定标准库加载边界和首批 `text`/`path` 接口已完成；官方模块仍不进入普通依赖图 | **首批实现与受控双路径实跑已完成（2026-10-14）**；维护回归 `38550284761` 已回填，10R 其它遗留证据仍按各自清单登记 |
