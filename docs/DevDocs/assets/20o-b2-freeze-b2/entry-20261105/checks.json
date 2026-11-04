@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "entry_head": "3a7654a9471d697a98bcbe6492eb014a468e820b",
+  "scope": "F-B2文档收口与只读来源核验，不代表1.19产品或三平台执行验证",
+  "status": "passed",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "check-layout.log"
+    }
+  ],
+  "log_normalization": "Bun子进程stderr后接stdout，UTF-8/LF并剥除ANSI控制序列",
+  "source_guard": {
+    "argv": [
+      "cmd",
+      "/c",
+      "git",
+      "diff",
+      "--exit-code",
+      "b8462f82",
+      "--",
+      "core/rust",
+      "stdlib",
+      "tests",
+      ".github/workflows",
+      "tools",
+      ".cargo/config.toml",
+      "docs/module-registry.json",
+      ".gitattributes",
+      "package.json",
+      "bun.lock"
+    ],
+    "exit_code": 0
+  },
+  "state_audit": {
+    "decision_records": 3,
+    "ledger_confirmed": 27,
+    "ledger_pending": 3,
+    "pending_ids": [
+      "F-3",
+      "F-7",
+      "F-12"
+    ],
+    "f6_confirmed": true,
+    "f_b3_started": false,
+    "f_c_started": false,
+    "actual_runtime_abi": "1.18",
+    "actual_codegen": 20,
+    "active_intrinsic_max": 32,
+    "id100": "tombstone",
+    "cmath": "planned"
+  },
+  "source_files_checked": 8,
+  "ci_api_responses_checked": 6,
+  "baseline_handling": "explicit_record_of_failure_and_macos_capacity_cancellation",
+  "workflow_reruns_dispatched": 0,
+  "b2_artifacts_generated_or_modified": 0,
+  "c_abi_links_or_product_tests": 0,
+  "new_f10_measurements": 0
+}

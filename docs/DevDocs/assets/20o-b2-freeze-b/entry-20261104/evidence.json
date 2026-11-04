@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "entry_head": "f2b18e648eca5bd855ed6d557ad191c610c2b873",
-  "status": "F-B1/F-5已收口，台账26/4；F-6/F-12未裁定，F-C未开始",
+  "status": "F-B1退出时F-5确认、26/4；当时F-6/F-12未确认；后续F-6裁定单列F-B2",
   "f_a_exit_commit": "2a974de8826b5959c982ec29303305ed61c53542",
   "f_a_gate_passed": true,
   "decision_status": [
@@ -37,7 +37,7 @@
     },
     {
       "file": "contract-table-audit.json",
-      "sha256": "db47659ad00f492ea0eb9bfa81d2988d65532b2575f3fb97d7916143cccbaf5a"
+      "sha256": "2b6718858e36a4e6b4ec452d6c4397aa0cfaad5f787e79c0fcee96972c6de590"
     },
     {
       "file": "decision-receipts.json",
@@ -49,7 +49,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "2bca85f1f4ce5d6f27f5c0e597735f17b9788d4a1ef22f564c527ac33002ee25"
+      "sha256": "a7b70efca9c4aa3bd66e56aee1bbc01df0efcd82a3217cc08c908acef462f215"
     },
     {
       "file": "source-facts.json",
@@ -64,5 +64,6 @@
   "status_correction": {
     "entry_head": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
     "scope": "区分F-B入口25/5和F-5确认后的当前26/4；未新增裁定"
-  }
+  },
+  "record_scope": "已归档阶段退出时点；decision_status/checks计数不是实时总台账，实时进度见live_ledger"
 }

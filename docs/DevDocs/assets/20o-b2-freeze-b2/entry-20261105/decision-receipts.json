@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "confirmed_group": "F-6",
+  "confirmed_subitems": [
+    "F-6a",
+    "F-6b",
+    "F-6c"
+  ],
+  "record_count": 3,
+  "authority": "实际逐项答复；不把候选方案或预选视为确认",
+  "entry_head": "3a7654a9471d697a98bcbe6492eb014a468e820b",
+  "receipts": [
+    {
+      "id": "F-6a",
+      "group": "F-6",
+      "phase": "F-B2",
+      "question": "F-6a｜是否确认精确版本拒绝矩阵：B1原始1.18的.xiaoc/.xar/原生元数据在B2-B 1.19/21下执行前拒绝；新1.19原件在旧1.18下同样执行前拒绝。原件不改写，不放宽max、不忽略指令流版本，不增加迁移工具，不改容器格式/索引schema版本；B1回归从源码在新版重新生成。",
+      "answer": "确认拒绝与重生成（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",0]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    },
+    {
+      "id": "F-6b",
+      "group": "F-6",
+      "phase": "F-B2",
+      "question": "F-6b｜是否确认B2-A中间快照：保持ABI1.18/生成器20，仅内部验证、不发布为最终B2产物，也不进入最终兼容矩阵；取证绑定实际源码、Runtime内容、缓存身份和输出路径；不能因版本号相同而混用旧Runtime或声称它已支持新高精度语义？",
+      "answer": "确认仅内部验证（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",1]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    },
+    {
+      "id": "F-6c",
+      "group": "F-6",
+      "phase": "F-B2",
+      "question": "F-6c｜是否确认最终交付与C接口边界：B2-B集中使用ABI1.19/生成器21、标准库接口1；保留1.18的C符号、布局与调用约定，新增符号按加法扩展。数值行为按已确认F-A升级（含lfloat身份与float **内核），不承诺所有旧数值行为不变；旧缓存按生成器/ABI/Runtime内容失配重生成并链接，B1源码重跑20入口及新快照721条F10，旧成绩保留历史身份？",
+      "answer": "确认接口兼容与交付边界（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",2]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    }
+  ]
+}

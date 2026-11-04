@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "entry_head": "3a7654a9471d697a98bcbe6492eb014a468e820b",
+  "scope": "只读源文件、正则片段和内容摘要对账；未编译/生成/执行跨版本产物，未新增测试实现",
+  "inspection_command": "python -（本轮工具调用的stdin只读核对）",
+  "runtime_abi_actual": "1.18",
+  "codegen_actual": 20,
+  "active_intrinsic_max": 32,
+  "id_100": "tombstone",
+  "source_files_checked": 8,
+  "sources": [
+    {
+      "path": "core/rust/crates/xiao-runtime-abi/src/lib.rs",
+      "fact": "C ABI使用原有主/次版本兼容规则，当前实际1.18",
+      "git_text_sha256": "1968f078091035eb996266c75638d35b7cc9b3f7cfb8eb229672fdd6909381bd",
+      "read_only_checks": [
+        {
+          "pattern": "pub const ABI_MAJOR_VERSION: u32 = 1;",
+          "match_count": 1,
+          "first_line": 24
+        },
+        {
+          "pattern": "pub const ABI_MINOR_VERSION: u32 = 18;",
+          "match_count": 1,
+          "first_line": 26
+        },
+        {
+          "pattern": "required_major == actual_major && required_minor <= actual_minor",
+          "match_count": 1,
+          "first_line": 154
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/lib.rs",
+      "fact": "当前生成器20未改",
+      "git_text_sha256": "67d9c47e966439198c136b2aae2aaf04e029a9b100d48380c1076deb9b4ae249",
+      "read_only_checks": [
+        {
+          "pattern": "pub const CODEGEN_VERSION: u32 = 20;",
+          "match_count": 1,
+          "first_line": 100
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-bytecode/src/xiaoc.rs",
+      "fact": ".xiaoc写入精确上下限且解码先查Runtime要求",
+      "git_text_sha256": "aa50d2e24c56163594f9b61fda20203767cd5ed450d08cf2401b3a084afdc5e2",
+      "read_only_checks": [
+        {
+          "pattern": "put_u32\\(&mut header, TAC_RUNTIME_ABI_VERSION\\);",
+          "match_count": 2,
+          "first_line": 618
+        },
+        {
+          "pattern": "validate_runtime_requirements\\(&header, ABI_ENCODED_VERSION, SUPPORTED_REQUIRED_FEATURES\\)\\?;",
+          "match_count": 1,
+          "first_line": 656
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-bytecode/src/encode/validate.rs",
+      "fact": "指令流精确校验runtime_abi_version",
+      "git_text_sha256": "e63cc16f7d47cf356badf6674f43d89e8484ebaba3785b696729efc2bb29b555",
+      "read_only_checks": [
+        {
+          "pattern": "check_version\\(\\s*\"runtime_abi_version\",\\s*program.abi.runtime_abi_version,\\s*TAC_RUNTIME_ABI_VERSION",
+          "match_count": 1,
+          "first_line": 34
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-driver/src/archive.rs",
+      "fact": ".xar索引精确ABI范围",
+      "git_text_sha256": "d657af1d9e0f70f6975149dfce5bc31d16ff4cbe3bdd9e8e68feacd6494f6510",
+      "read_only_checks": [
+        {
+          "pattern": "runtime_abi_min: xiao_runtime_abi::ABI_ENCODED_VERSION",
+          "match_count": 1,
+          "first_line": 279
+        },
+        {
+          "pattern": "runtime_abi_max: xiao_runtime_abi::ABI_ENCODED_VERSION",
+          "match_count": 1,
+          "first_line": 280
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-xar/src/runner.rs",
+      "fact": ".xar在用户程序前检查ABI范围",
+      "git_text_sha256": "fa0972e6794658845c88cd649a4e968b406114fa59daec54e8562e628e5826f1",
+      "read_only_checks": [
+        {
+          "pattern": "options.runtime_abi < index.runtime_abi_min \\|\\| options.runtime_abi > index.runtime_abi_max",
+          "match_count": 1,
+          "first_line": 391
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/native_metadata.rs",
+      "fact": "原生元数据精确ABI及标准库身份",
+      "git_text_sha256": "ba811fc4d0be436fcd799c6a045fd1a09efabeb24794156e68d152291e1e9503",
+      "read_only_checks": [
+        {
+          "pattern": "self.runtime_abi_min != ABI_ENCODED_VERSION",
+          "match_count": 1,
+          "first_line": 246
+        },
+        {
+          "pattern": "self.runtime_abi_max != ABI_ENCODED_VERSION",
+          "match_count": 1,
+          "first_line": 247
+        },
+        {
+          "pattern": "self.stdlib != current_standard_library_identity\\(\\)",
+          "match_count": 1,
+          "first_line": 255
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/toolchain.rs",
+      "fact": "缓存包含生成器/ABI/优化计划及Runtime库内容",
+      "git_text_sha256": "3286df6a457ab70a3fb71c702355cfd7f74ac691802447347213948e30a6fe4f",
+      "read_only_checks": [
+        {
+          "pattern": "codegen=\\{codegen_version\\};abi=\\{ABI_ENCODED_VERSION\\}",
+          "match_count": 1,
+          "first_line": 190
+        },
+        {
+          "pattern": "fn runtime_fingerprint\\(path: &Path\\)",
+          "match_count": 1,
+          "first_line": 1315
+        },
+        {
+          "pattern": "fs::read\\(path\\)",
+          "match_count": 1,
+          "first_line": 1316
+        }
+      ]
+    }
+  ]
+}

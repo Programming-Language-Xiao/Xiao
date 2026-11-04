@@ -50,12 +50,13 @@
     },
     {
       "file": "README.md",
-      "sha256": "1014f33d031c5714e2cc515a540ed6b1f69c57dd2dfc0c287348b82d0bcbc717"
+      "sha256": "e23d9c0d4a5aa2ad723872c77dbae5c09194ce4228dca7f942581c1107aac062"
     },
     {
       "file": "type-boundary.json",
       "sha256": "f87fb610f4aeb49e85f61ddad2d7e5f18009313ad8910c102e6bccc207f7b4c9"
     }
   ],
-  "closeout_entry_head": "7515360c942a5bc780525c638c58c1c89b033bf2"
+  "closeout_entry_head": "7515360c942a5bc780525c638c58c1c89b033bf2",
+  "record_scope": "已归档阶段退出时点；decision_status/checks计数不是实时总台账，实时进度见live_ledger"
 }

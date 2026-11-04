@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "decision": "F-6",
+  "status": "confirmed_by_three_direct_replies",
+  "scope": "已确认的未来产品契约，不是已实现能力或真实执行测试",
+  "current_actual": {
+    "runtime_abi": "1.18",
+    "codegen": 20,
+    "active_intrinsic_max": 32
+  },
+  "planned_A": {
+    "runtime_abi": "1.18",
+    "codegen": 20,
+    "internal_only": true
+  },
+  "planned_B": {
+    "runtime_abi": "1.19",
+    "encoded_abi": 65555,
+    "codegen": 21,
+    "stdlib_interface": 1,
+    "exact_ranges_in": [
+      "xiaoc_header",
+      "xar_index",
+      "instruction_stream",
+      "native_metadata"
+    ]
+  },
+  "encoded_abi_1_18": 65554,
+  "rows": [
+    {
+      "object": "B2-A中间产物",
+      "target": "本批A工具快照1.18/20",
+      "behavior": "internal_only",
+      "release_allowed": false,
+      "required_identity": [
+        "actual_source",
+        "runtime_content",
+        "cache_identity",
+        "output_path"
+      ],
+      "final_b2_compatibility_evidence": false
+    },
+    {
+      "object": "B1原始1.18 .xiaoc/.xar",
+      "target": "B2-B 1.19/21",
+      "behavior": "reject_before_execution",
+      "rewrite_original": false
+    },
+    {
+      "object": "B2最终1.19 .xiaoc/.xar",
+      "target": "旧1.18 Runtime",
+      "behavior": "reject_before_execution",
+      "rewrite_original": false
+    },
+    {
+      "object": "原始1.18原生元数据",
+      "target": "B2-B 1.19验证器",
+      "behavior": "reject_before_user_entry",
+      "rewrite_original": false
+    },
+    {
+      "object": "新1.19原生元数据",
+      "target": "旧1.18验证器",
+      "behavior": "reject_before_user_entry",
+      "rewrite_original": false
+    },
+    {
+      "object": "生成器20或ABI/Runtime内容失配的原生对象缓存",
+      "target": "B2-B 1.19/21",
+      "behavior": "regenerate_and_relink",
+      "reuse_mismatched_cache": false
+    },
+    {
+      "object": "B1源码",
+      "target": "重新生成的B2-B 1.19/21产物",
+      "behavior": "rerun_20_entries_and_full_721_F10_on_new_snapshot",
+      "old_scores": "historical_only",
+      "performed_in_this_batch": false
+    }
+  ],
+  "c_boundary": {
+    "retain_1_18_symbols_layout_calling_convention": true,
+    "new_symbols_additive": true,
+    "numeric_behavior_follows_confirmed_F_A": true,
+    "all_old_numeric_behaviors_unchanged_promised": false,
+    "binary_interface_compatibility_does_not_override_artifact_range": true
+  },
+  "artifact_mutation_or_generation_in_batch": false,
+  "new_migration_tool": false,
+  "container_or_index_schema_bump": false,
+  "new_f10_measurement_in_batch": false
+}

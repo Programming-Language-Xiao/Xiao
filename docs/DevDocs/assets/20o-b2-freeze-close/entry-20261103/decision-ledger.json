@@ -4,9 +4,9 @@
   "authority": "既有十八条直接答复照录；十二组精确项仍须逐项裁定",
   "base_receipts": "../../20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
   "base_receipts_sha256": "433db40949a3c1dd547275de61b264b9da2391143c7883b7ab475444f09df626",
-  "confirmed": 26,
-  "pending": 4,
-  "activation": "F-A已退出；F-B1/F-5已确认26/4；F-6/F-12与F-C仍待裁定，整体未联合冻结，不进入B2-A/B产品实现",
+  "confirmed": 27,
+  "pending": 3,
+  "activation": "F-A/F-B1/F-B2已退出，27/3；F-12与F-C仍待后续，整体未联合冻结，不进入B2-A/B产品实现",
   "items": [
     {
       "id": "R-1",
@@ -237,12 +237,23 @@
     },
     {
       "id": "F-6",
-      "status": "pending",
+      "status": "confirmed",
       "subject": "版本兼容与拒绝",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": null,
+      "answer": "确认拒绝与重生成（推荐）；确认仅内部验证（推荐）；确认接口兼容与交付边界（推荐）",
       "asked_in_session": true,
-      "review_sections": "8.5/版本与产物矩阵"
+      "review_sections": "8.5/版本与产物矩阵",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",0]",
+        "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",1]",
+        "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",2]"
+      ],
+      "decision_record": "../../20o-b2-freeze-b2/entry-20261105/decision-receipts.json",
+      "confirmed_parts": [
+        "原始旧/新容器与原生元数据精确版本拒绝，不改写原件",
+        "A保持1.18/20且仅内部验证，绑定实际工具与Runtime身份",
+        "B最终1.19/21、标准库接口1；保留C二进制契约，数值语义按F-A升级，缓存失配重生成及B1新快照回归"
+      ]
     },
     {
       "id": "F-7",
@@ -321,7 +332,7 @@
     }
   ],
   "review_document": "docs/DevDocs/20o-b2-freeze-draft.md",
-  "review_document_sha256": "bbbc4a2463cc9f569657f65eeb360eb9789cb5b17d15b61cc5f5a32706281fd3",
+  "review_document_sha256": "9f8333310c608dd70ad5abbd5328b0d714ed1402fef1f2cffba846b962e04b16",
   "review_history": [
     {
       "commit": "67944184dbb44137040908f2efc8e4d52a6f0e27",
@@ -346,24 +357,30 @@
       "document": "docs/DevDocs/20o-b2-freeze-draft.md",
       "sha256": "f3aca072ab361d111af367fc4716993d4108f6433145562ecc68ea8b583f5690",
       "scope": "F-B1已收口，部分状态文字尚未同步的历史版本"
+    },
+    {
+      "commit": "b8462f82f6b04917d4b18a5ac1e9015fa0e4fa9b",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "bbbc4a2463cc9f569657f65eeb360eb9789cb5b17d15b61cc5f5a32706281fd3",
+      "scope": "F-5确认后的26/4状态；F-6当时未裁定"
     }
   ],
   "latest_review": {
-    "phase": "F-B1_closeout",
-    "date": "2026-11-04",
-    "entry_head": "f2b18e648eca5bd855ed6d557ad191c610c2b873",
+    "phase": "F-B2_complete",
+    "date": "2026-11-05",
+    "entry_head": "3a7654a9471d697a98bcbe6492eb014a468e820b",
     "focus": [
-      "F-5"
+      "F-6"
     ],
     "answered": [
-      "F-5a",
-      "F-5b",
-      "F-5c"
+      "F-6a",
+      "F-6b",
+      "F-6c"
     ],
-    "evidence": "../../20o-b2-freeze-b/entry-20261104/README.md",
-    "f_a_gate_satisfied": true,
+    "evidence": "../../20o-b2-freeze-b2/entry-20261105/README.md",
     "decisions_complete": true,
-    "gate_status": "f_b1_closeout_docs_usedocs_layout_and_static_audit_passed"
+    "gate_status": "docs_usedocs_layout_source_and_ci_integrity_passed",
+    "ci_baseline_handling": "macOS_cancellation_explicitly_recorded_no_rerun"
   },
   "status_correction": {
     "entry_head": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
