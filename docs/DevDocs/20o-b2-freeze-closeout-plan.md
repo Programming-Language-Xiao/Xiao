@@ -85,7 +85,8 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 
 执行规划见[F-B 原语、ABI、版本与错误裁定规划](20o-b2-freeze-b-contract-plan.md)，当前 F-B1 收口见
 [原语与 C ABI 收口规划](20o-b2-freeze-b1-closeout-plan.md)，F-B2 见
-[版本与产物矩阵裁定规划](20o-b2-freeze-b2-version-matrix-plan.md)；F-A以25/5退出、F-B1以26/4退出，F-6确认后总台账27/3；F-12尚未裁定。
+[版本与产物矩阵裁定规划](20o-b2-freeze-b2-version-matrix-plan.md)，F-B3 见
+[错误精表与优先级裁定规划](20o-b2-freeze-b3-error-table-plan.md)；F-A以25/5退出、F-B1以26/4退出，F-6确认后总台账27/3；F-12尚未裁定。
 
 范围：F-5、F-6、F-12。
 
