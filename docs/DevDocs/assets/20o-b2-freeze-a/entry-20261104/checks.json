@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "scope": "本轮F-A文档与来源检查，不是Xiao数值产品或三平台测试",
-  "status": "document_checks_passed_typing_answer_pending",
+  "scope": "本轮F-A退出文档与来源检查；不代表Xiao产品或三平台能力已实现",
+  "status": "F-A_closeout_passed",
   "checks": [
     {
       "command": "bun run check:docs",
@@ -27,7 +27,7 @@
       "git",
       "diff",
       "--exit-code",
-      "67944184",
+      "7515360c",
       "--",
       "core/rust",
       "stdlib",
@@ -37,25 +37,19 @@
       "tools/gates",
       ".cargo/config.toml",
       "docs/module-registry.json",
+      "docs/UseDocs",
       "docs/DevDocs/assets/20o-b1-close",
-      "docs/DevDocs/assets/20o-b1-imp",
-      "docs/UseDocs/library/math.md",
-      "docs/UseDocs/library/hex.md",
-      "docs/UseDocs/library/base64.md",
-      "docs/UseDocs/library/url.md",
-      "docs/UseDocs/library/csv.md",
-      "docs/UseDocs/library/fmt.md",
-      "docs/UseDocs/library/statistics.md"
+      "docs/DevDocs/assets/20o-b1-imp"
     ],
     "exit_code": 0
   },
   "planned_tutorial_updated": "docs/UseDocs/library/cmath.md只同步已确认契约，status仍planned",
-  "actual_answer_records": 11,
-  "fully_confirmed_f_a_groups": 6,
+  "actual_answer_records": 12,
+  "fully_confirmed_f_a_groups": 7,
   "f4_core_rules_confirmed": true,
-  "f4_mixed_type_answer_pending": true,
-  "ledger_confirmed": 24,
-  "ledger_pending": 6,
+  "f4_mixed_type_answer_pending": false,
+  "ledger_confirmed": 25,
+  "ledger_pending": 5,
   "new_xiao_tests_or_product_implementations": 0,
   "new_f10_measurements": 0
 }

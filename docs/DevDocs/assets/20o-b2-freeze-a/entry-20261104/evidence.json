@@ -2,7 +2,7 @@
   "schema_version": 1,
   "entry_head": "fdbc9f1c763a522d002b2a191655af02f9d550dc",
   "product_baseline": "67944184dbb44137040908f2efc8e4d52a6f0e27",
-  "status": "F-A六项完整确认；F-4主体确认，混合类型补问待答，未完成F-A退出",
+  "status": "F-A退出完成，25 confirmed/5 pending；F-B可开始文档裁定，整体仍未联合冻结",
   "runtime_abi": "1.18",
   "codegen_version": 20,
   "cmath_status": "planned",
@@ -30,7 +30,7 @@
     },
     {
       "file": "checks.json",
-      "sha256": "b870457d1fcd09fbec1f81b11183037e37aea3af96d1e486afced1fa9cda3a85"
+      "sha256": "cca3a66812501bb91cfe1a7d4dc4cdc0103f237aabbf9f432dc6aded89adc942"
     },
     {
       "file": "ci-67944184.json",
@@ -38,11 +38,11 @@
     },
     {
       "file": "decision-receipts.json",
-      "sha256": "3185cf64340ea612513616cfbc7df4c8c4887940a75b95f3b92be500174be4ef"
+      "sha256": "f32a3e59038de8fb46fd60983396932f001e6fdcb7f1c8d65a843705b8f28a66"
     },
     {
       "file": "decision-requests.json",
-      "sha256": "4c5cd9fddbcae431a5488beb66286f71cd615083ee1a22d8d1e71910fc2d5ca8"
+      "sha256": "d475e76c8936b9c631a88ea8fc0ca91d3fe19e2da61dc9677a438a6bfe09a12b"
     },
     {
       "file": "example-arithmetic.json",
@@ -50,7 +50,12 @@
     },
     {
       "file": "README.md",
-      "sha256": "7208150b5462cca1eebf51ca4ef36998c6d432df2a06e8867fd39ef7c6689419"
+      "sha256": "9c685a81826279d2199f4592ae095c996d0f3fd12a06d1273a471ce32168bf15"
+    },
+    {
+      "file": "type-boundary.json",
+      "sha256": "f87fb610f4aeb49e85f61ddad2d7e5f18009313ad8910c102e6bccc207f7b4c9"
     }
-  ]
+  ],
+  "closeout_entry_head": "7515360c942a5bc780525c638c58c1c89b033bf2"
 }

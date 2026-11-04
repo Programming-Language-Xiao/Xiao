@@ -1,6 +1,6 @@
 # 20O-B2-FREEZE. 数值底座冻结草案与裁定台账
 
-状态：F-A六组完整确认，F-4主体规则已确认但混合类型准入补问待答；台账为24 confirmed、6 pending，整体尚未联合生效（2026-11-04）。
+状态：F-A七组已完整确认，台账为25 confirmed、5 pending；F-B/F-C/F-D尚未完成，整体尚未联合生效（2026-11-04）。
 逐项收口顺序、批次和退出条件见[冻结收口规划](20o-b2-freeze-closeout-plan.md)；下一批 F-A 的七组裁定见[数值语义裁定规划](20o-b2-freeze-a-numeric-semantics-plan.md)，当前收口见[F-A 收口规划](20o-b2-freeze-a-closeout-plan.md)，后续 F-B 见[契约裁定规划](20o-b2-freeze-b-contract-plan.md)；本页保存精确台账。
 来源为[数值基础规划](20o-b2-numeric-foundation-plan.md)与本次会话[逐条答复记录](assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json)；本页的“建议/待审”不等于已确认。
 F-A各项直接答复另存[本轮裁定原文](assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json)，不覆盖既有18条记录。
@@ -43,7 +43,7 @@ F-A各项直接答复另存[本轮裁定原文](assets/20o-b2-freeze-a/entry-202
 
 D4显式接口已与D8落在B2-B，不能在B2-A里新增intrinsic。余下补充裁定仍逐条记录。
 收口阶段将既有18条与F-1～F-12逐项列入[30条台账](assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json)。
-F-1/F-2/F-8/F-9/F-10/F-11已完整确认；F-4保留主体答复但待混合类型准入补充。连同F-3/F-5/F-6/F-7/F-12共六项pending，整体冻结闸门仍关闭。
+F-1/F-2/F-4/F-8/F-9/F-10/F-11已完整确认；F-3/F-5/F-6/F-7/F-12仍pending，整体冻结闸门仍关闭。
 
 ## 三、源码事实与兼容约束
 
@@ -162,8 +162,20 @@ F-4已确认首批同时开放lfloat的`//`和`%`，旧“不开放”建议不�
 商显示scale=0，非零余数显示scale=max(s_a,s_b)，零统一为0；除零沿用ArithmeticError/X06-RUNTIME-013。
 两个算子独立核对自身工作与结果预算；%不要求先物化完整商，不能仅因//的结果超预算就自动否定可有界计算的余数。
 F-3仍须冻结它们的资源接纳公式与性能分组，F-12仍须统一完整错误优先级。
-上述是归一到lfloat后的已确认数学规则；混合实参的类型准入尚待一条补充答复。
-待审选择包括按既有提升结果为lfloat就允许、要求一个显式lfloat实参、或仅两个lfloat实参；实现不能自行选定。
+F-4混合类型准入已由星崽直接答复“采用推荐规则”：沿用既有数值提升，提升结果为lfloat即允许；两个整数仍返回整数族。
+仅提升到float/sfloat的组合继续拒绝，bool、str等不新增数值转换。下表同时适用于//和%，列出返回类型；“拒绝”是静态类型边界，不是运行后降级。
+
+| 左实参 \ 右实参 | sint | int | lint | sfloat | float | lfloat |
+| --- | --- | --- | --- | --- | --- | --- |
+| sint | sint | int | lint | 拒绝 | 拒绝 | lfloat |
+| int | int | int | lint | 拒绝 | 拒绝 | lfloat |
+| lint | lint | lint | lint | lfloat | lfloat | lfloat |
+| sfloat | 拒绝 | 拒绝 | lfloat | 拒绝 | 拒绝 | lfloat |
+| float | 拒绝 | 拒绝 | lfloat | 拒绝 | 拒绝 | lfloat |
+| lfloat | lfloat | lfloat | lfloat | lfloat | lfloat | lfloat |
+
+例如lfloat//int、lint//float、sfloat%lint进入lfloat精确路径；int//sint保持int；float//int仍拒绝。
+这是B2后续实现的类型契约，不宣称当前尚未修改的类型检查器已接受这些新组合。
 
 F-4也已确认`**`只接受非负整数值指数：1.0合法，负数和非整数拒绝；0**0=1、零的正幂为0。
 非平凡底数指数上限1,000,000且受结果预算；0/±1快路径仍先检查输入合法性与预算，不引入高精度超越运算。
@@ -515,7 +527,7 @@ cmath产品fixture按D20放tests/fixtures/docs/cmath/，数值运算/转换/错�
 1. F-1已确认七种舍入、最多有效数字、短结果不补零与单次最终舍入（§五）。
 2. F-2已确认cmath域、负零、下溢、角度与round/pow/tan精细规则（§七）。
 3. D9性能目标、工作量与测量协议；已确认的资源数值不在待答范围（§六）。
-4. F-4主体已确认同时开放lfloat //与%、floor配对、显示尺度和非负整数值幂；混合类型准入仍待答（§五）。
+4. F-4已确认同时开放lfloat //与%、floor配对、显示尺度、非负整数值幂和既有提升到lfloat的类型准入（§五）。
 5. D6/D8原语参数名、规划ID33～48、效果与C ABI精表（§5.1）。
 6. D8中间快照、旧产物兼容及新产物拒绝方案（§8.5）。
 7. D1其余四包精确版本/许可闭包、锁文件及构建环境策略（§四）。
@@ -525,7 +537,7 @@ cmath产品fixture按D20放tests/fixtures/docs/cmath/，数值运算/转换/错�
 11. F-11已确认文本语法与数值到str的转换补充（§8.1/§8.4）。
 12. D10新033/034及全场景错误身份/优先级（§5.2）。
 
-十二组中六个F-A项已完整确认；F-4主体答复保留，混合类型边界尚未选定。F-B/F-C五项也仍待后续裁定。
+十二组中F-A七项已完整确认，F-B/F-C五项仍待后续裁定。
 实际构建、序列化承载和教程完整示例留实施批次逐项验证；cmath教程与registry当前仅planned。
 
 以上未收口，B2-A/B保持未开工；19/11/22及历史22C/22D失败仍独立保留。

@@ -1,11 +1,12 @@
 {
   "schema_version": 1,
   "authority": "逐条实际答复，不以预选推荐项代替确认",
-  "confirmed_count": 6,
-  "record_count": 11,
+  "confirmed_count": 7,
+  "record_count": 12,
   "confirmed_groups": [
     "F-1",
     "F-2",
+    "F-4",
     "F-8",
     "F-9",
     "F-10",
@@ -111,18 +112,16 @@
       "question_item_id": "[\"request_user_input_async\",\"call_7d11730e76b7410a8cf26ebaf4dc11d3\",0]",
       "authority": "星崽在本次会话直接答复",
       "date": "2026-11-04"
+    },
+    {
+      "id": "F-4",
+      "phase": "F-A-CLOSE",
+      "question": "F-B前置 / F-4混合类型｜请确定//与%的类型准入：建议沿用既有数值提升，提升结果为lfloat就允许（如lfloat//int、lint//float）；两个整数仍返回整数族；结果仅为float/sfloat仍拒绝，bool不新增转换。也可限制必须有显式lfloat实参。此前已确认的floor、余数、尺度与幂规则保持。",
+      "answer": "采用推荐规则",
+      "selected_rule": "按既有提升到lfloat",
+      "question_item_id": null,
+      "authority": "星崽在本次会话的普通文本直接答复，承接紧邻的F-4推荐规则提问；没有伪造异步回执ID",
+      "date": "2026-11-04"
     }
-  ],
-  "partially_confirmed_groups": {
-    "F-4": {
-      "confirmed_parts": [
-        "首批同时开放//与%",
-        "floor配对、lfloat结果与显示尺度",
-        "非负整数值幂及零/快路径"
-      ],
-      "pending_parts": [
-        "混合类型准入"
-      ]
-    }
-  }
+  ]
 }

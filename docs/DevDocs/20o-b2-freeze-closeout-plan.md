@@ -1,10 +1,10 @@
 # 20O-B2-FREEZE-CLOSE. 数值冻结收口规划
 
 > **这是 B2-FREEZE 的收口规划，不写产品函数、依赖锁、intrinsic、ABI 或测试实现。**
-> 基线为 `0011f4c5`；B1-CLOSE已完成；18条入口答复加六个完整F-A项，当前24 confirmed、6 pending；F-4待混合类型补充，
+> 基线为`0011f4c5`；B1-CLOSE已完成；18条入口答复加七个F-A项，当前25 confirmed、5 pending，
 > `cmath` 仍为 planned，Runtime ABI 仍为 1.18、`CODEGEN_VERSION` 仍为 20。
 >
-> **F-A尚差F-4类型补充；收齐后才能进F-B，不进入B2-A/B产品实现。** 只有全部精确项变成
+> **F-A裁定已收齐，退出检查通过后进入F-B；不进入B2-A/B产品实现。** 只有全部精确项变成
 > 可执行的精确契约，才允许把冻结状态改为完成并开始 B2-A/B。
 
 ## 一、入口与当前事实
@@ -14,7 +14,7 @@
 | 代码基线 | `0011f4c5`；工作区干净、已推送 |
 | B1-CLOSE | 七库 20/20、教程/registry verified；B1 旧 721 条 F10 已标历史 |
 | B1 复跑 | 默认当前 registry 会拒绝；`audit.ps1`/`validate-audit.ps1` 的 `-SourceRoot` 106b99c7 入口已取证并通过 |
-| B2-FREEZE | F-A六项完整确认，F-4混合类型待答，台账24/6；F-B/F-C/F-D未开始；cmath planned，无产品/依赖/ABI实施 |
+| B2-FREEZE | F-A七项完整确认，台账25/5；F-B须先通过F-A退出闸门，F-C/F-D未开始；cmath planned，无产品/依赖/ABI实施 |
 | 最近 CI | `41644476014` workspace gates 成功；最新提交只改 DevDocs/审计脚本，维护回归未触发 |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
 
@@ -69,7 +69,7 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 执行规划见[F-A 数值语义裁定规划](20o-b2-freeze-a-numeric-semantics-plan.md)，当前收口见
 [F-A 收口规划](20o-b2-freeze-a-closeout-plan.md)；本批只裁定，不写产品。
 
-范围：F-1、F-2、F-4、F-8、F-9、F-10、F-11。当前六项完整确认，F-4主体答复保留而混合类型补充待答，见[F-A退出对账](20o-b2-freeze-a-numeric-semantics-plan.md#23-f-a退出对账)。
+范围：F-1、F-2、F-4、F-8、F-9、F-10、F-11。七项均已完整确认，F-4采用既有提升到lfloat的类型边界，见[F-A退出对账](20o-b2-freeze-a-numeric-semantics-plan.md#23-f-a退出对账)。
 
 1. 冻结 `lfloat_divide` 的 rounding/precision/scale 和“只精确有限”的边界；
 2. 冻结 `lfloat` 的显示身份与规范身份、运算结果 scale、相等/哈希；
@@ -126,7 +126,7 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 | F-1 | 已确认 | 七种模式、最多有效数字、短结果不补零、单次最终舍入 |
 | F-2 | 已确认 | 15函数定义域、负零、IEEE下溢、最近偶数及pow/tan边界 |
 | F-3 | 性能/工作量/采样 | 沿用 F10 预热+5 批中位数；短操作≥50ms；超线性负载分组预算 |
-| F-4 | 主体确认，类型准入待补 | 同时开放lfloat //与%、floor配对、显示尺度及非负整数值幂已确认；混合实参准入未选定 |
+| F-4 | 已确认 | 同时开放lfloat //与%、floor配对、尺度与非负整数值幂；混合类型按既有提升到lfloat即允许 |
 | F-5 | 原语参数名/ID/ABI | `lfloat_divide` 33；`cmath` 34–48；统一借读输入、拥有 out |
 | F-6 | 版本/旧产物 | B2-A 保持 1.18/20；B2-B 升 1.19/21；旧产物按矩阵兼容重放或拒绝 |
 | F-7 | 依赖闭包/构建 | 锁定直接+传递版本和校验值；按上游声明保留许可（libm为MIT，其余五包双许可）；构建环境不得改变语言语义 |
@@ -136,13 +136,13 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 | F-11 | 已确认 | 精确ASCII十进制语法、拒绝边界与数值文本输出；不开放直接str到float/sfloat |
 | F-12 | 错误 033/034 | 保留规划编号但先确认；033 资源、034 非终止；与 009/011/013 优先级明确 |
 
-F-A六项完整确认，F-4主体答复保留但类型补问未答；F-3/F-5/F-6/F-7/F-12也仍待审。F-A未退出，整体未联合冻结。
+F-A七项已确认；F-3/F-5/F-6/F-7/F-12仍待审，整体未联合冻结。
 
 ## 六、验收与证据
 
 | 检查 | 期望 |
 | --- | --- |
-| 决策完整性 | 当前24 confirmed、6 pending；最终30条均有直接答复/裁定，无静默默认 |
+| 决策完整性 | 当前25 confirmed、5 pending；最终30条均有直接答复/裁定，无静默默认 |
 | 冻结表一致性 | 名称、参数、ID、C ABI、效果、错误、资源、性能互相对账 |
 | 依赖记录 | 直接/传递版本、许可证、校验值、构建环境和锁文件策略明确；不声称已构建 |
 | ABI 记录 | 1.18/20 与 1.19/21 的产物行为、拒绝/兼容矩阵明确；活动表未改 |

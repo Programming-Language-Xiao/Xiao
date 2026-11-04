@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "status": "confirmed_by_direct_user_reply",
+  "decision": "F-4",
+  "answer": "采用推荐规则",
+  "operations": [
+    "//",
+    "%"
+  ],
+  "operand_types": [
+    "sint",
+    "int",
+    "lint",
+    "sfloat",
+    "float",
+    "lfloat"
+  ],
+  "matrix": {
+    "sint": {
+      "sint": "sint",
+      "int": "int",
+      "lint": "lint",
+      "sfloat": "reject",
+      "float": "reject",
+      "lfloat": "lfloat"
+    },
+    "int": {
+      "sint": "int",
+      "int": "int",
+      "lint": "lint",
+      "sfloat": "reject",
+      "float": "reject",
+      "lfloat": "lfloat"
+    },
+    "lint": {
+      "sint": "lint",
+      "int": "lint",
+      "lint": "lint",
+      "sfloat": "lfloat",
+      "float": "lfloat",
+      "lfloat": "lfloat"
+    },
+    "sfloat": {
+      "sint": "reject",
+      "int": "reject",
+      "lint": "lfloat",
+      "sfloat": "reject",
+      "float": "reject",
+      "lfloat": "lfloat"
+    },
+    "float": {
+      "sint": "reject",
+      "int": "reject",
+      "lint": "lfloat",
+      "sfloat": "reject",
+      "float": "reject",
+      "lfloat": "lfloat"
+    },
+    "lfloat": {
+      "sint": "lfloat",
+      "int": "lfloat",
+      "lint": "lfloat",
+      "sfloat": "lfloat",
+      "float": "lfloat",
+      "lfloat": "lfloat"
+    }
+  },
+  "rejected_non_numeric": "bool及其它非数值类型不新增转换",
+  "allowed_pairs": 24,
+  "rejected_numeric_pairs": 12,
+  "xiao_product_cases_executed": 0,
+  "scope": "已确认的类型契约表；当前编译器与Runtime尚未实现新路径"
+}

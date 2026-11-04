@@ -1,45 +1,20 @@
 {
   "schema_version": 1,
-  "phase": "F-A3_type_boundary",
-  "decision_status": "six_complete_one_partial",
-  "gate_status": "document_checks_passed",
-  "answered_records": 11,
+  "phase": "F-A_complete",
+  "decision_status": "all_seven_confirmed",
+  "gate_status": "passed",
+  "answered_records": 12,
   "fully_confirmed": [
     "F-1",
     "F-2",
+    "F-4",
     "F-8",
     "F-9",
     "F-10",
     "F-11"
   ],
-  "partially_confirmed": {
-    "F-4": {
-      "confirmed_parts": [
-        "首批同时开放//与%",
-        "floor配对、lfloat结果与显示尺度",
-        "非负整数值幂及零/快路径"
-      ],
-      "pending_parts": [
-        "混合类型准入"
-      ]
-    }
-  },
   "receipts": "decision-receipts.json",
-  "requests": [
-    {
-      "id": "F-4",
-      "subject": "混合类型的//与%准入",
-      "question": "F-4类型接线补充｜现有//和%对浮点组合是整体拒绝；新增lfloat分支后，建议沿用既有数值提升：提升结果为lfloat就允许（例如lfloat//int、lint//float），两个整数仍返回整数族；提升结果仅为float/sfloat仍拒绝，bool不新增转换。是否采用这张类型边界？数学规则与显示尺度保持刚才确认。",
-      "options": [
-        "按既有提升到lfloat（推荐）",
-        "须有一个显式lfloat实参",
-        "仅允许两个lfloat实参"
-      ],
-      "status": "awaiting_answer",
-      "answer": null,
-      "reason": "F-A要求F-4/F-8与类型检查一致；不得从lfloat数学规则自行推导混合类型公开面"
-    }
-  ],
+  "requests": [],
   "remaining_other_groups": [
     "F-3",
     "F-5",
@@ -47,6 +22,7 @@
     "F-7",
     "F-12"
   ],
-  "next_phase": "F-B only after F-4 followup and F-A closeout",
-  "scope": "不把推荐项预选或等待时间当作答复"
+  "next_phase": "F-B document decisions",
+  "scope": "采用用户明确推荐规则答复；不把推荐预选或等待时间当作回答",
+  "exit_complete": true
 }

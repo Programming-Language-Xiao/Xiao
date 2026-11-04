@@ -1,8 +1,8 @@
 # 20O-B2-FREEZE-A-CLOSE. F-A 收口与混合类型补问规划
 
 > **这是 F-A 的收口规划，不写产品函数、依赖锁、intrinsic、ABI 或测试实现。**
-> 基线为 `b636f312`；F-A 已有 6 组完整确认，F-4 主体规则已确认，只有混合类型准入待答；
-> 决策台账为 24 confirmed / 6 pending，`cmath` 仍为 planned，Runtime ABI 仍为 1.18、生成器 20。
+> 基线为 `b636f312`；入口为24/6，F-4混合类型现已由星崽直接答复采用推荐方案A，F-A七组完整确认；
+> 决策台账为25 confirmed/5 pending，`cmath`仍planned，Runtime ABI1.18、生成器20。
 >
 > **本阶段只做 F-4 类型补问和 F-A 退出对账，不进入 F-B，更不进入 B2-A/B 产品实现。**
 
@@ -11,30 +11,31 @@
 | 项 | 当前状态 |
 | --- | --- |
 | 代码基线 | `b636f312`；工作区干净、已推送 |
-| F-A 精表 | F-1、F-2、F-8、F-9、F-10、F-11 已完整确认；F-4 主体规则已确认 |
-| 唯一缺口 | `lfloat //` / `%` 的混合类型准入尚未选定 |
-| 决策台账 | [24/6](assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json)；目标 25/5 |
-| 最近 CI | `41694599345` maintenance、`41694599210` workspace，均成功 |
+| F-A 精表 | 七项均完整确认；F-4混合类型采用既有提升方案A |
+| 类型边界 | lfloat提升路径允许，整数对保留整数族；仅float/sfloat结果及bool边界不扩大 |
+| 决策台账 | [25/5](assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json)；F-4不再pending |
+| 入口 CI | b636f312的`41694599345` maintenance、`41694599210` workspace成功；本轮门禁另见F-A证据 |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
 | 产品/ABI | 无产品、依赖、intrinsic 或 ABI 变化；`cmath` 仍 planned |
 
 F-4 的数学与显示规则已经确认：首批同时开放 `//` 和 `%`，采用 floor 配对，返回 lfloat，
-商 scale=0、非零余数 scale=max(s_a,s_b)，`**` 只接受非负整数值指数。当前只差
-“哪些混合实参组合允许进入这两条 `lfloat` 路径”。
+商scale=0、非零余数scale=max(s_a,s_b)，`**`只接受非负整数值指数。混合类型也已确认：
+沿既有数值提升进入lfloat路径，其余规则保持。
 
-## 二、唯一待答问题
+## 二、混合类型裁定（已答复）
 
 ### F-4 混合类型准入
 
-现有 `int`/`sint` 的 `//`/`%` 是整数族；现有浮点组合整体拒绝。新增 `lfloat` 分支后，三选一：
+以下保留三种审阅方案；星崽已直接答复“采用推荐规则”，唯一采用A，B/C未采用：
 
 | 方案 | 规则 | 结果 |
 | --- | --- | --- |
-| A（建议） | 沿用既有数值提升：提升结果为 `lfloat` 就允许，例如 `lfloat // int`、`lint // float`、`lfloat % int`；两个整数仍返回整数族；只提升到 `float/sfloat` 的组合仍拒绝；`bool` 不新增转换 | 与既有提升矩阵一致，覆盖面最大 |
+| A（已确认） | 沿用既有数值提升：提升结果为 `lfloat` 就允许，例如 `lfloat // int`、`lint // float`、`lfloat % int`；两个整数仍返回整数族；只提升到 `float/sfloat` 的组合仍拒绝；`bool` 不新增转换 | 采用此方案；完整6×6返回类型表见冻结草案 |
 | B | 至少一个实参显式是 `lfloat` 才允许；例如 `lfloat // int` 允许，`lint // float` 不自动允许 | 更保守，避免隐式跨族 |
 | C | 两个实参都必须是 `lfloat` | 最小公开面，但实用性最低 |
 
-建议选 A；只有星崽实际答复后才把 F-4 写成 confirmed。不能把 B2 的“建议起点”直接当成裁定。
+F-4已据本次直接答复改为confirmed，原文见[F-A答复](assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json)。
+这次普通文本答复没有异步回执ID，记录保留其真实来源，不补造ID。
 
 需要同时记录：
 

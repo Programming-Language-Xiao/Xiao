@@ -4,9 +4,9 @@
   "authority": "既有十八条直接答复照录；十二组精确项仍须逐项裁定",
   "base_receipts": "../../20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
   "base_receipts_sha256": "433db40949a3c1dd547275de61b264b9da2391143c7883b7ab475444f09df626",
-  "confirmed": 24,
-  "pending": 6,
-  "activation": "F-A六项完整确认；F-4主体规则已确认但混合类型补问待答；整体未联合冻结，不进入F-B或B2-A/B产品实现",
+  "confirmed": 25,
+  "pending": 5,
+  "activation": "F-A已退出，25/5；可进入F-B文档裁定，整体未联合冻结，不进入B2-A/B产品实现",
   "items": [
     {
       "id": "R-1",
@@ -191,10 +191,10 @@
     },
     {
       "id": "F-4",
-      "status": "pending",
+      "status": "confirmed",
       "subject": "lfloat // % **范围",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": "首批也开放//或%；同时开放//和%（推荐）；确认配对与尺度规则（推荐）；确认保留幂规则（推荐）",
+      "answer": "首批也开放//或%；同时开放//和%（推荐）；确认配对与尺度规则（推荐）；确认保留幂规则（推荐）；采用推荐规则（按既有提升到lfloat）",
       "asked_in_session": true,
       "review_sections": "五/lfloat运算开放域",
       "question_item_ids": [
@@ -206,14 +206,14 @@
       "question_item_id": "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",2]",
       "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
       "confirmed_parts": [
-        "首批同时开放//与%",
-        "floor配对、lfloat结果与显示尺度",
-        "非负整数值幂及零/快路径"
+        "同时开放//与%",
+        "floor配对与显示尺度",
+        "非负整数值幂及快路径",
+        "混合类型沿既有提升进入lfloat"
       ],
-      "pending_fields": [
-        "混合类型准入"
-      ],
-      "pending_question": "F-4类型接线补充｜现有//和%对浮点组合是整体拒绝；新增lfloat分支后，建议沿用既有数值提升：提升结果为lfloat就允许（例如lfloat//int、lint//float），两个整数仍返回整数族；提升结果仅为float/sfloat仍拒绝，bool不新增转换。是否采用这张类型边界？数学规则与显示尺度保持刚才确认。"
+      "direct_reply": "采用推荐规则",
+      "mixed_type_rule": "按既有数值提升：结果为lfloat即允许，整数对整数保留整数族；float/sfloat结果和bool保持原拒绝边界",
+      "plain_text_receipt": "采用推荐规则"
     },
     {
       "id": "F-5",
@@ -310,22 +310,26 @@
     }
   ],
   "review_document": "docs/DevDocs/20o-b2-freeze-draft.md",
-  "review_document_sha256": "6b066732e7065aa2b2aeff6bc496a8dfb3bbf6ad99d0839551a9cd75470eece4",
+  "review_document_sha256": "e4515307802581c77b263c9fd0bc03823a76b6dedfebee33168f8db1ed082ce0",
   "review_history": [
     {
       "commit": "67944184dbb44137040908f2efc8e4d52a6f0e27",
       "document": "docs/DevDocs/20o-b2-freeze-draft.md",
       "sha256": "972ab09d1651cd281f35ff0ce88ca6c0f44925245222ce63456475ac7a9191de",
       "scope": "上轮十二组精表的审阅版本；不是当前F-A工作树"
+    },
+    {
+      "commit": "b636f312476fa7bbc12ebd47f5f368ec72a2891f",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "6b066732e7065aa2b2aeff6bc496a8dfb3bbf6ad99d0839551a9cd75470eece4",
+      "scope": "F-A主体已答但混合类型尚待补充的历史版本"
     }
   ],
   "latest_review": {
-    "phase": "F-A3_type_boundary",
+    "phase": "F-A_complete",
     "date": "2026-11-04",
     "entry_head": "fdbc9f1c763a522d002b2a191655af02f9d550dc",
-    "focus": [
-      "F-4"
-    ],
+    "focus": [],
     "answered": [
       "F-1",
       "F-2",
@@ -336,16 +340,17 @@
       "F-11"
     ],
     "evidence": "../../20o-b2-freeze-a/entry-20261104/README.md",
-    "decisions_complete": false,
-    "gate_status": "docs_usedocs_layout_passed_typing_answer_pending",
+    "decisions_complete": true,
+    "gate_status": "docs_usedocs_layout_and_diff_passed",
     "fully_confirmed": [
       "F-1",
       "F-2",
+      "F-4",
       "F-8",
       "F-9",
       "F-10",
       "F-11"
     ],
-    "typing_followup": "awaiting_answer"
+    "typing_followup": "confirmed_by_direct_reply"
   }
 }

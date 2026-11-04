@@ -1,11 +1,11 @@
-# F-A数值语义裁定进度
+# F-A数值语义裁定收口记录
 
-工程期：20O-B2-FREEZE-A。职责：按[F-A规划](../../../20o-b2-freeze-a-numeric-semantics-plan.md)记录实际裁定、算例与剩余类型补充。
+工程期：20O-B2-FREEZE-A。职责：按[F-A规划](../../../20o-b2-freeze-a-numeric-semantics-plan.md)保存七组实际裁定、类型矩阵、算例和退出检查。
 边界：没有写产品、依赖、intrinsic、ABI或测试实现；本目录不提供Xiao数值功能或三平台验收证据。
 
 入口为fdbc9f1c，原产品基线仍是67944184；cmath planned、ABI1.18、生成器20。
-[实际答复原文](decision-receipts.json)保存11条实际选择；F-4主体规则保留，[本轮状态](decision-requests.json)仍有一个混合类型问题待答。
-[总台账](../../20o-b2-freeze-close/entry-20261103/decision-ledger.json)为24 confirmed、6 pending；不能在F-4类型边界未选定前写成25/5。
+[实际答复原文](decision-receipts.json)保存12条实际答复；最后一条普通文本“采用推荐规则”确认F-4混合类型方案A，没有伪造异步回执ID。
+[总台账](../../20o-b2-freeze-close/entry-20261103/decision-ledger.json)为25 confirmed、5 pending，七组F-A全部confirmed，[本轮问题](decision-requests.json)已无待答项。
 
 已确认规则和设计算例直接写入[冻结草案](../../../20o-b2-freeze-draft.md)，不另建第二份语义契约：
 
@@ -14,10 +14,11 @@
 - 精确ASCII语法、下划线/空白/BOM/NUL拒绝、拟新增数值文本输出和仍保留的码点转换。
 - 15项cmath的域/特殊值与容差、离线MPFR区间参考及float pow共享内核。
 - 同时开放lfloat //和%的floor配对、返回/显示尺度；非负整数值指数的幂规则。
+- 混合类型沿既有数值提升，完整[6×6返回类型表](type-boundary.json)包含24个允许组合和12个拒绝组合；这不是36项已执行产品测试。
 - 精确二进制值转换、舍入后有限性溢出判据、子正规/零与整数转换结果scale=0。
 
-这些输入/输出是已确认主体规则的设计算例，没有被标成产品实际执行结果。整除/余数数学规则及转换显示选择均有答复原文。
-F-4尚差混合类型准入；F-B/F-C/F-D未推进，另五项也仍pending。F-C必须覆盖新增//与%的资源/性能验收。
+这些输入/输出是已确认契约的设计算例，没有被标成产品实际执行结果。F-4数学规则、转换显示和混合类型选择均有答复来源。
+退出检查完成后交接F-B，F-C/F-D未开始；F-3/F-5/F-6/F-7/F-12仍pending。F-C必须覆盖新增//与%的资源/性能验收。
 本轮没有重新运行B1的721条性能测量或改写历史报告，也没有进入B2-A/B产品实现。
 
 [检查记录](checks.json)保存实际文档门禁与受保护路径命令；[前一轮CI](ci-67944184.json)为41667290451、实际作业126025900872成功，
