@@ -48,11 +48,18 @@
   "codegen_version": 20,
   "product_or_abi_files_changed": false,
   "status": "F-5_confirmed_by_direct_answers",
-  "document_git_text_sha256": "f3aca072ab361d111af367fc4716993d4108f6433145562ecc68ea8b583f5690",
+  "document_git_text_sha256": "bbbc4a2463cc9f569657f65eeb360eb9789cb5b17d15b61cc5f5a32706281fd3",
   "prototypes_in_id_order": true,
   "f5_receipts": "decision-receipts.json",
   "parameter_rules_confirmed": true,
   "ids_symbols_effects_confirmed": true,
   "ownership_status_confirmed": true,
-  "answer_count": 3
+  "answer_count": 3,
+  "status_correction_recheck": {
+    "entry_head": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
+    "table_entries": 16,
+    "c_prototypes": 16,
+    "same_order": true,
+    "linked_or_executed": false
+  }
 }

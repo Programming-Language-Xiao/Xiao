@@ -2,7 +2,7 @@
 
 > **这是 F-A 的收口规划，不写产品函数、依赖锁、intrinsic、ABI 或测试实现。**
 > 基线为 `b636f312`；入口为24/6，F-4混合类型现已由星崽直接答复采用推荐方案A，F-A七组完整确认；
-> 决策台账为25 confirmed/5 pending，`cmath`仍planned，Runtime ABI1.18、生成器20。
+> F-A退出时台账为25/5；后续F-5已收口，当前总台账26/4。`cmath`仍planned，Runtime ABI1.18、生成器20。
 >
 > **本阶段只做 F-4 类型补问和 F-A 退出对账，不进入 F-B，更不进入 B2-A/B 产品实现。**
 
@@ -13,7 +13,7 @@
 | 代码基线 | `b636f312`；工作区干净、已推送 |
 | F-A 精表 | 七项均完整确认；F-4混合类型采用既有提升方案A |
 | 类型边界 | lfloat提升路径允许，整数对保留整数族；仅float/sfloat结果及bool边界不扩大 |
-| 决策台账 | [25/5](assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json)；F-4不再pending |
+| 决策台账 | F-A退出时25/5；F-4不再pending；后续F-5收口后的[总台账](assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json)为26/4 |
 | 入口 CI | b636f312的`41694599345` maintenance、`41694599210` workspace成功；本轮门禁另见F-A证据 |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
 | 产品/ABI | 无产品、依赖、intrinsic 或 ABI 变化；`cmath` 仍 planned |

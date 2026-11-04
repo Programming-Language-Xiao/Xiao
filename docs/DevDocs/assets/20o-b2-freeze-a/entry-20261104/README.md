@@ -4,8 +4,9 @@
 边界：没有写产品、依赖、intrinsic、ABI或测试实现；本目录不提供Xiao数值功能或三平台验收证据。
 
 入口为fdbc9f1c，原产品基线仍是67944184；cmath planned、ABI1.18、生成器20。
+本目录记录F-A退出时的25/5及对应证据；后续F-5已确认，当前总台账为26/4，见[F-B1记录](../../20o-b2-freeze-b/entry-20261104/README.md)。
 [实际答复原文](decision-receipts.json)保存12条实际答复；最后一条普通文本“采用推荐规则”确认F-4混合类型方案A，没有伪造异步回执ID。
-[总台账](../../20o-b2-freeze-close/entry-20261103/decision-ledger.json)为25 confirmed、5 pending，七组F-A全部confirmed，[本轮问题](decision-requests.json)已无待答项。
+F-A退出时[总台账](../../20o-b2-freeze-close/entry-20261103/decision-ledger.json)为25/5，七组F-A全部confirmed，[本轮问题](decision-requests.json)已无待答项；链接中的台账持续更新。
 
 已确认规则和设计算例直接写入[冻结草案](../../../20o-b2-freeze-draft.md)，不另建第二份语义契约：
 

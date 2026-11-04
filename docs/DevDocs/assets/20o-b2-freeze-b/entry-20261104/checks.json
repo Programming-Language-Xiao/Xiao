@@ -58,5 +58,62 @@
   "f5_static_audit_passed": true,
   "new_xiao_products_or_tests": 0,
   "new_c_abi_link_or_execution": 0,
-  "doc_hash_bound_to": "docs/DevDocs/20o-b2-freeze-draft.md"
+  "doc_hash_bound_to": "docs/DevDocs/20o-b2-freeze-draft.md",
+  "status_sync_checks": {
+    "entry_head": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
+    "scope": "本轮仅同步F-5确认后的状态，不新增裁定或产品；三个日志是本轮实际重跑输出",
+    "ledger_confirmed": 26,
+    "ledger_pending": 4,
+    "f5_confirmed": true,
+    "f_a_25_5_labelled_historical": true,
+    "core_decisions_unchanged": true,
+    "raw_decision_receipts_unchanged": true,
+    "current_status_documents_verified": [
+      "docs/DevDocs/20o-b2-freeze-draft.md",
+      "docs/DevDocs/20o-b2-freeze-closeout-plan.md",
+      "docs/DevDocs/20o-b2-numeric-foundation-plan.md",
+      "docs/DevDocs/20-builtins-and-standard-library.md",
+      "docs/DevDocs/20o-official-library-program.md",
+      "docs/DevDocs/README.md"
+    ],
+    "checks": [
+      {
+        "command": "bun run check:docs",
+        "exit_code": 0,
+        "log": "check-docs.log"
+      },
+      {
+        "command": "bun run check:usedocs",
+        "exit_code": 0,
+        "log": "check-usedocs.log"
+      },
+      {
+        "command": "bun run check:layout",
+        "exit_code": 0,
+        "log": "check-layout.log"
+      }
+    ],
+    "source_guard": {
+      "argv": [
+        "cmd",
+        "/c",
+        "git",
+        "diff",
+        "--exit-code",
+        "f4f2f187",
+        "--",
+        "core/rust",
+        "stdlib",
+        "tests",
+        ".github/workflows",
+        "tools",
+        ".cargo/config.toml",
+        "docs/module-registry.json",
+        ".gitattributes",
+        "package.json",
+        "bun.lock"
+      ],
+      "exit_code": 0
+    }
+  }
 }

@@ -5,8 +5,8 @@
   "f_a_exit_commit": "2a974de8826b5959c982ec29303305ed61c53542",
   "f_a_gate_passed": true,
   "decision_status": [
-    25,
-    5
+    26,
+    4
   ],
   "runtime_abi": "1.18",
   "codegen_version": 20,
@@ -33,11 +33,11 @@
     },
     {
       "file": "checks.json",
-      "sha256": "e338a90289c8281867700ee74abdb0519674f2677c2b54fcc5c1b6ffc1068fdb"
+      "sha256": "126aaee5facbc0314f6b3122f4ba41c2a2e18a1df66186eb2b993d9f1132c3e7"
     },
     {
       "file": "contract-table-audit.json",
-      "sha256": "1a01bb78b6f15c32d1d229d9b809a628185d33e28205db2ae5ac4ee326f18861"
+      "sha256": "db47659ad00f492ea0eb9bfa81d2988d65532b2575f3fb97d7916143cccbaf5a"
     },
     {
       "file": "decision-receipts.json",
@@ -56,5 +56,13 @@
       "sha256": "9513bd9a5a4418b9b4b489b619f231e29f732b61813011f59b02a1d0b42e6c5d"
     }
   ],
-  "decision_receipts": "decision-receipts.json"
+  "decision_receipts": "decision-receipts.json",
+  "entry_decision_status": [
+    25,
+    5
+  ],
+  "status_correction": {
+    "entry_head": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
+    "scope": "区分F-B入口25/5和F-5确认后的当前26/4；未新增裁定"
+  }
 }

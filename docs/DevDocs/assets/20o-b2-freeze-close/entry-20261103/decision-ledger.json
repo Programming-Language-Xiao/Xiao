@@ -321,7 +321,7 @@
     }
   ],
   "review_document": "docs/DevDocs/20o-b2-freeze-draft.md",
-  "review_document_sha256": "f3aca072ab361d111af367fc4716993d4108f6433145562ecc68ea8b583f5690",
+  "review_document_sha256": "bbbc4a2463cc9f569657f65eeb360eb9789cb5b17d15b61cc5f5a32706281fd3",
   "review_history": [
     {
       "commit": "67944184dbb44137040908f2efc8e4d52a6f0e27",
@@ -340,6 +340,12 @@
       "document": "docs/DevDocs/20o-b2-freeze-draft.md",
       "sha256": "e4515307802581c77b263c9fd0bc03823a76b6dedfebee33168f8db1ed082ce0",
       "scope": "F-A完整退出时的规则及尚待F-B/F-C裁定的表"
+    },
+    {
+      "commit": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "f3aca072ab361d111af367fc4716993d4108f6433145562ecc68ea8b583f5690",
+      "scope": "F-B1已收口，部分状态文字尚未同步的历史版本"
     }
   ],
   "latest_review": {
@@ -358,5 +364,10 @@
     "f_a_gate_satisfied": true,
     "decisions_complete": true,
     "gate_status": "f_b1_closeout_docs_usedocs_layout_and_static_audit_passed"
+  },
+  "status_correction": {
+    "entry_head": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
+    "date": "2026-11-04",
+    "scope": "仅同步26/4与F-5已确认的状态文字；不新增或改变裁定"
   }
 }

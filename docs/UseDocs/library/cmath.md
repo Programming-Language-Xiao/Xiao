@@ -18,7 +18,7 @@ related:
 
 本页为planned教程提纲，当前没有stdlib/cmath.xiao或对应数学intrinsic，不能按已交付产品调用。
 星崽已确认首批15个float入口，floor/ceil/round/trunc也返回float，sfloat与高精度超越函数后置。
-F-A已确认定义域、舍入、特殊值和误差；参数名、原语/ABI与完整错误表仍待后续裁定，见[B2冻结草案](../../DevDocs/20o-b2-freeze-draft.md)。
+F-A已确认定义域、舍入、特殊值和误差；F-5进一步确认参数名、规划原语及C ABI契约。版本矩阵、完整错误表和依赖/性能仍待后续裁定，见[B2冻结草案](../../DevDocs/20o-b2-freeze-draft.md)。
 这些是已确认契约，产品与三平台证据尚未交付，本页保持planned。
 
 ## 导入与准备
@@ -32,7 +32,7 @@ F-A已确认定义域、舍入、特殊值和误差；参数名、原语/ABI与�
 实现阶段将在tests/fixtures/docs/cmath/保存完整、真实选择导入的产品示例和独立黄金；
 示例将覆盖正常值、域错误、负零、每个公开入口、位置/命名调用及已冻结限制。
 原生产品必须分别经过O0/O3，与VM核对稳定stdout、退出码和错误身份；普通超越值按冻结容差独立核对。
-签名/错误精表未确认前，本页不把未可执行片段伪称为CI完整示例。
+完整错误表与产品尚未交付，本页暂无可进入CI执行的完整产品示例。
 
 ## 核心概念与所有权
 
@@ -44,11 +44,11 @@ cmath是固定64位二进制浮点库，不是复数库，也不是lfloat高精�
 
 | 已确认入口组 | 输入/结果 | 规则与待办 |
 | --- | --- | --- |
-| sqrt、floor、ceil、round、trunc、abs | float到float | 舍入/零/域已确认；参数名待F-5 |
-| min、max、pow | 两个float到float | 特殊值已确认；参数名待F-5 |
-| sin、cos、tan、exp、ln、log10 | float到float | 弧度/下溢/域/误差已确认；原语接线待F-5 |
+| sqrt、floor、ceil、round、trunc、abs | float到float | 舍入/零/域及value参数名已确认；产品未实现 |
+| min、max、pow | 两个float到float | 特殊值、left/right或base/exponent参数名已确认；产品未实现 |
+| sin、cos、tan、exp、ln、log10 | float到float | 弧度/下溢/域/误差、value参数及原语契约已确认；产品未实现 |
 
-底层拟使用Rust libm，不继承宿主默认精度；具体版本、原语编号和ABI符号仍以冻结表为准。
+底层拟使用Rust libm，精确依赖版本仍待F-7；F-5已确认cmath规划ID34～48和xiao_runtime_cmath_*符号，活动表与实际ABI尚未接线。
 
 ## 错误与恢复
 

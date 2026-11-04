@@ -39,7 +39,7 @@
     },
     {
       "file": "decision-ledger.json",
-      "sha256": "b855759adf08f46dda4f5ffe3d3cba69d2f08cef015fd97c2e69e934613ee468"
+      "sha256": "d2ab503f3791875e73d755e6decc5ff6911fef33896b5d05892906a13963af7f"
     },
     {
       "file": "dependency-archives.json",
@@ -91,7 +91,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "4081fb1e863a43f32c2d332fc6864ed74a17c1d2d538446093ac4171177e38cf"
+      "sha256": "70d68efdb3e1898e2c43fd463dc69304cf1b938d6690e5fc1bc4192649ae9afa"
     },
     {
       "file": "source-expand.stderr.log",
