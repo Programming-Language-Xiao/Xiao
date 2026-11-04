@@ -120,4 +120,4 @@ docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/ 答复与门禁
 docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json 30条台账
 ```
 
-F-A 收口后下一入口是 F-B：原语、C ABI、版本矩阵与错误精表；仍不是 B2-A 代码。
+F-A 收口后下一入口是 [F-B 原语、C ABI、版本与错误裁定规划](20o-b2-freeze-b-contract-plan.md)；仍不是 B2-A 代码。
