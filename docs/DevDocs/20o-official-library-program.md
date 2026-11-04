@@ -207,7 +207,7 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | --- | --- | --- | --- |
 | B0 | 总纲/目录复核、D-1～D-22 逐条裁定、基线门禁、B1 探测/教程与冻结草案 | 无 | [B0记录](20o-b0-baseline-and-b1-draft.md)；方向确认完成，B1细项随后在FIX-A逐条冻结 |
 | B1 | 七项一起冻结：math、hex、base64、url、csv 记录子集、fmt、statistics 整数子集 | error_code共同前置、精确契约确认与三平台探测已完成 | [冻结契约](20o-b1-freeze-draft.md)；IMP/REM已交付20/20及721条F10，教程/registry在[CLOSE](20o-b1-closeout.md)同步verified，新状态门禁另记 |
-| B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | [规划](20o-b2-numeric-foundation-plan.md) / [冻结草案](20o-b2-freeze-draft.md) / [收口规划](20o-b2-freeze-closeout-plan.md) / [F-A](20o-b2-freeze-a-numeric-semantics-plan.md) / [F-A收口](20o-b2-freeze-a-closeout-plan.md) / [F-B](20o-b2-freeze-b-contract-plan.md)；F-A七项确认、25/5，另五项待裁定，实施前须联合冻结 |
+| B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | [规划](20o-b2-numeric-foundation-plan.md) / [冻结草案](20o-b2-freeze-draft.md) / [收口规划](20o-b2-freeze-closeout-plan.md) / [F-A](20o-b2-freeze-a-numeric-semantics-plan.md) / [F-A收口](20o-b2-freeze-a-closeout-plan.md) / [F-B](20o-b2-freeze-b-contract-plan.md) / [F-B1](20o-b2-freeze-b1-closeout-plan.md)；F-A七项确认、25/5，F-B1三问待答，实施前须联合冻结 |
 | B3 | 简单宿主批：`time`（UTC + sleep）、`args`/`cli`、`fs` 扩展、`env`、`log` 时间戳 | B0；ABI | 能力/错误/取消/三平台 |
 | B4 | JSON/TOML 值模型 + `json`/`toml` 解析器 | B0；语言冻结 | 类型/IR/两后端/生命周期 |
 | B5 | 数值库批：`decimal`、`fractions`、`statistics` 浮点、确定性 `random` | B2 | 精度/舍入/边界/三平台 |
