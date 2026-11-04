@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "entry_head": "537ce4ecdcc019e934b4c588bd1bf1542e1919a7",
+  "scope": "只读源码与摘要核对；F-12错误契约已确认但033/034未进入活动定义，无产品或错误路径执行",
+  "runtime_abi_actual": "1.18",
+  "codegen_actual": 20,
+  "active_intrinsic_max": 32,
+  "id100": "tombstone",
+  "planned_errors_absent_from_active_definitions": [
+    "X06-RUNTIME-033",
+    "X06-RUNTIME-034"
+  ],
+  "sources": [
+    {
+      "path": "core/rust/crates/xiao-diagnostics/src/lib.rs",
+      "git_text_sha256": "e984589b5fccb28f192cce7b39a240b55df363af83d1026f37b029e7d67aff2e",
+      "fact": "既有002/009/011/012/013及错误类别、消息身份；033/034尚未登记",
+      "read_only_checks": [
+        {
+          "pattern": "pub const TYPE_MISMATCH_CODE: &str = \"X06-RUNTIME-002\";",
+          "match_count": 1,
+          "first_line": 21
+        },
+        {
+          "pattern": "pub const NUMERIC_OVERFLOW_CODE: &str = \"X06-RUNTIME-009\";",
+          "match_count": 1,
+          "first_line": 35
+        },
+        {
+          "pattern": "pub const ALLOCATION_CODE: &str = \"X06-RUNTIME-011\";",
+          "match_count": 1,
+          "first_line": 39
+        },
+        {
+          "pattern": "pub const INVALID_VALUE_CODE: &str = \"X06-RUNTIME-012\";",
+          "match_count": 1,
+          "first_line": 41
+        },
+        {
+          "pattern": "pub const DIVISION_BY_ZERO_CODE: &str = \"X06-RUNTIME-013\";",
+          "match_count": 1,
+          "first_line": 43
+        },
+        {
+          "pattern": "pub fn type_mismatch",
+          "match_count": 1,
+          "first_line": 626
+        },
+        {
+          "pattern": "pub fn numeric_overflow",
+          "match_count": 1,
+          "first_line": 704
+        },
+        {
+          "pattern": "pub fn division_by_zero",
+          "match_count": 1,
+          "first_line": 714
+        },
+        {
+          "pattern": "pub fn invalid_value",
+          "match_count": 1,
+          "first_line": 884
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/src/errors/mod.rs",
+      "git_text_sha256": "07ee8cc1d02e6a90db146e2ecb22160b898760360b87561d6b41fcfb43365242",
+      "fact": "并发活动错误到032，未改既有错误门面",
+      "read_only_checks": [
+        {
+          "pattern": "pub const CONCURRENCY_POOL_ARGUMENT_CODE: &str = \"X06-RUNTIME-032\";",
+          "match_count": 1,
+          "first_line": 32
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime-abi/src/lib.rs",
+      "git_text_sha256": "1968f078091035eb996266c75638d35b7cc9b3f7cfb8eb229672fdd6909381bd",
+      "fact": "实际ABI1.18和既有状态0/1/2/3/6/8",
+      "read_only_checks": [
+        {
+          "pattern": "pub const ABI_MINOR_VERSION: u32 = 18;",
+          "match_count": 1,
+          "first_line": 26
+        },
+        {
+          "pattern": "Ok = 0,",
+          "match_count": 1,
+          "first_line": 162
+        },
+        {
+          "pattern": "Null = 1,",
+          "match_count": 1,
+          "first_line": 164
+        },
+        {
+          "pattern": "InvalidArgument = 2,",
+          "match_count": 1,
+          "first_line": 166
+        },
+        {
+          "pattern": "InvalidHandle = 3,",
+          "match_count": 1,
+          "first_line": 168
+        },
+        {
+          "pattern": "RuntimeError = 6,",
+          "match_count": 1,
+          "first_line": 174
+        },
+        {
+          "pattern": "Fatal = 8,",
+          "match_count": 1,
+          "first_line": 178
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/src/abi.rs",
+      "git_text_sha256": "dd4dcf4d5466d2707ccc2b429464312fa505bd0f66173e521202db4a0f12b42a",
+      "fact": "既有通用错误映射会设置挂起错误；F-5新入口的结构错误不碰槽承诺仍待实施",
+      "read_only_checks": [
+        {
+          "pattern": "fn status_from_error\\(error: &RuntimeError\\) -> i32",
+          "match_count": 1,
+          "first_line": 329
+        },
+        {
+          "pattern": "_ => XiaoAbiStatus::RuntimeError.code\\(\\),",
+          "match_count": 1,
+          "first_line": 335
+        },
+        {
+          "pattern": "set_pending_runtime_error\\(error.clone\\(\\)\\);",
+          "match_count": 1,
+          "first_line": 337
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/src/memory/mod.rs",
+      "git_text_sha256": "c81fd70b65d3e06de698084280f346563cdde1e13ef66bffcbc207030ec5b659",
+      "fact": "既有受控分配错误使用Resource/011，真实分配不承诺全部可恢复",
+      "read_only_checks": [
+        {
+          "pattern": "pub\\(crate\\) fn allocate_payload",
+          "match_count": 1,
+          "first_line": 885
+        },
+        {
+          "pattern": "crate::errors::RuntimeErrorKind::Resource,",
+          "match_count": 1,
+          "first_line": 905
+        },
+        {
+          "pattern": "crate::errors::ALLOCATION_CODE,",
+          "match_count": 1,
+          "first_line": 906
+        },
+        {
+          "pattern": "\"runtime.allocation\",",
+          "match_count": 1,
+          "first_line": 907
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/lib.rs",
+      "git_text_sha256": "67d9c47e966439198c136b2aae2aaf04e029a9b100d48380c1076deb9b4ae249",
+      "fact": "实际生成器20",
+      "read_only_checks": [
+        {
+          "pattern": "pub const CODEGEN_VERSION: u32 = 20;",
+          "match_count": 1,
+          "first_line": 100
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-intrinsics/intrinsics.json",
+      "git_text_sha256": "23ab5d2a03b3246fb381d24a5b837105f651036f79aad65f8f176823049241d5",
+      "fact": "活动intrinsic最大32，100墓碑；33..48未实施",
+      "read_only_checks": []
+    }
+  ]
+}

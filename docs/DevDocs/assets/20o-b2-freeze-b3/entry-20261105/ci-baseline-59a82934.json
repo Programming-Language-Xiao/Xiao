@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-04T17:27:22.870587+00:00",
+  "scope": "59a82934入口CI；不是本轮错误裁定或B2产品执行证据",
+  "head_sha": "59a82934e87af49fcc3fd3186aa3d1f5ad7e16f8",
+  "maintenance": {
+    "id": 41874054753,
+    "name": "Xiao maintenance regression",
+    "head_sha": "59a82934e87af49fcc3fd3186aa3d1f5ad7e16f8",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "failure",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41874054753"
+  },
+  "maintenance_jobs": [
+    {
+      "id": 126728552878,
+      "name": "Deterministic parser and artifact security regression",
+      "head_sha": "59a82934e87af49fcc3fd3186aa3d1f5ad7e16f8",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41874054753/job/126728552878"
+    },
+    {
+      "id": 126728553362,
+      "name": "Rust workspace default tests (Linux)",
+      "head_sha": "59a82934e87af49fcc3fd3186aa3d1f5ad7e16f8",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41874054753/job/126728553362"
+    },
+    {
+      "id": 126728553384,
+      "name": "Native differential regression (Windows)",
+      "head_sha": "59a82934e87af49fcc3fd3186aa3d1f5ad7e16f8",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41874054753/job/126728553384"
+    },
+    {
+      "id": 126728553452,
+      "name": "Native differential regression (macOS)",
+      "head_sha": "59a82934e87af49fcc3fd3186aa3d1f5ad7e16f8",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "cancelled",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41874054753/job/126728553452"
+    },
+    {
+      "id": 126728553460,
+      "name": "Deterministic artifact size regression (Windows baseline)",
+      "head_sha": "59a82934e87af49fcc3fd3186aa3d1f5ad7e16f8",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41874054753/job/126728553460"
+    },
+    {
+      "id": 126728553467,
+      "name": "Native differential regression (Linux)",
+      "head_sha": "59a82934e87af49fcc3fd3186aa3d1f5ad7e16f8",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41874054753/job/126728553467"
+    }
+  ],
+  "workspace": {
+    "id": 41874054683,
+    "name": "Xiao workspace gates",
+    "head_sha": "59a82934e87af49fcc3fd3186aa3d1f5ad7e16f8",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41874054683"
+  },
+  "workspace_jobs": [
+    {
+      "id": 126728553141,
+      "name": "Linux workspace gates",
+      "head_sha": "59a82934e87af49fcc3fd3186aa3d1f5ad7e16f8",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41874054683/job/126728553141"
+    }
+  ],
+  "macos_cancellation": {
+    "actual_job_id": 126728553452,
+    "run_attempt": 1,
+    "conclusion": "cancelled",
+    "runner_id": 0,
+    "runner_name": "",
+    "step_count": 0,
+    "product_execution_observed": false,
+    "annotation_messages": [
+      {
+        "level": "failure",
+        "message": "The job was not acquired by Runner of type hosted even after multiple attempts"
+      },
+      {
+        "level": "notice",
+        "message": "Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times."
+      },
+      {
+        "level": "notice",
+        "message": "Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times."
+      },
+      {
+        "level": "notice",
+        "message": "Due to capacity constraints, jobs targeting macOS arm64 runners may experience longer queue times."
+      }
+    ],
+    "classification": "托管runner未获取及平台容量排队取消；maintenance整体failure原样保留"
+  },
+  "handling": "明确登记；本轮不触发重跑，不把入口写成三平台全绿",
+  "rerun_dispatched": false,
+  "historical_19_11_22_debts_closed": false,
+  "raw_api_records": [
+    {
+      "file": "maintenance-run-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41874054753",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41874054753"
+      ],
+      "original_response_sha256": "db5a2cfa7ca26f9fd27b07a8f5265ca43df701ea4e3361d188e999d5ad1a054c",
+      "archived_sha256": "db5a2cfa7ca26f9fd27b07a8f5265ca43df701ea4e3361d188e999d5ad1a054c",
+      "normalization": "UTF-8/LF；保留全部响应字段与重复注释"
+    },
+    {
+      "file": "maintenance-attempt1-jobs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41874054753/attempts/1/jobs?per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41874054753/attempts/1/jobs?per_page=100"
+      ],
+      "original_response_sha256": "abb750eebb4727bf6f867ba0589febc26b0cbacebda272d84af6119e977cda0f",
+      "archived_sha256": "abb750eebb4727bf6f867ba0589febc26b0cbacebda272d84af6119e977cda0f",
+      "normalization": "UTF-8/LF；保留全部响应字段与重复注释"
+    },
+    {
+      "file": "macos-check-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/check-runs/126728553452",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/check-runs/126728553452"
+      ],
+      "original_response_sha256": "a3497340e9f6106981e710cd2adc0addb8ab3daaeef42322b15e7b0bddeecee1",
+      "archived_sha256": "a3497340e9f6106981e710cd2adc0addb8ab3daaeef42322b15e7b0bddeecee1",
+      "normalization": "UTF-8/LF；保留全部响应字段与重复注释"
+    },
+    {
+      "file": "macos-annotations-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/check-runs/126728553452/annotations?per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/check-runs/126728553452/annotations?per_page=100"
+      ],
+      "original_response_sha256": "2b55f5d818a2f215cc9b39d7462d60339018b02bfe6d1076f389086eac154a66",
+      "archived_sha256": "2b55f5d818a2f215cc9b39d7462d60339018b02bfe6d1076f389086eac154a66",
+      "normalization": "UTF-8/LF；保留全部响应字段与重复注释"
+    },
+    {
+      "file": "workspace-run-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41874054683",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41874054683"
+      ],
+      "original_response_sha256": "15a8b0e7fafdcf6c711b80c8c69e78f4f9a07a67af6819b5ac369e6a6eb82e94",
+      "archived_sha256": "15a8b0e7fafdcf6c711b80c8c69e78f4f9a07a67af6819b5ac369e6a6eb82e94",
+      "normalization": "UTF-8/LF；保留全部响应字段与重复注释"
+    },
+    {
+      "file": "workspace-attempt1-jobs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41874054683/attempts/1/jobs?per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41874054683/attempts/1/jobs?per_page=100"
+      ],
+      "original_response_sha256": "d0c2d281222231043c0949f9ff70bf05c8335eb39fd9ec1f70736c660e78656d",
+      "archived_sha256": "d0c2d281222231043c0949f9ff70bf05c8335eb39fd9ec1f70736c660e78656d",
+      "normalization": "UTF-8/LF；保留全部响应字段与重复注释"
+    }
+  ]
+}

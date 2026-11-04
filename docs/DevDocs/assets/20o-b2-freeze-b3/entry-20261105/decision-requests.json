@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "phase": "F-B3_complete",
+  "entry_head": "537ce4ecdcc019e934b4c588bd1bf1542e1919a7",
+  "decision_status": "F-12a/F-12b/F-12c_confirmed",
+  "requests": [],
+  "answered": [
+    "F-12a",
+    "F-12b",
+    "F-12c"
+  ],
+  "receipts": "decision-receipts.json",
+  "remaining_groups": [
+    "F-3",
+    "F-7"
+  ],
+  "f_c_started": false,
+  "closeout_complete": true
+}

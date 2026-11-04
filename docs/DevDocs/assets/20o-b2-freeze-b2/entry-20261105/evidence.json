@@ -62,7 +62,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "35e95b2319e9e7c16aa2bbe7094a85ef41940e785247f65ac03d430fb63ad00d"
+      "sha256": "4e8d0ebb8c44b8150f47e65d3287a7bdada3c15a392f2fab8e3e8c095ce0a1bf"
     },
     {
       "file": "source-facts.json",
@@ -85,5 +85,6 @@
     27,
     3
   ],
-  "closeout_complete": true
+  "closeout_complete": true,
+  "record_scope": "F-B2已归档退出时点；decision_status/checks计数不是实时总台账，实时进度见live_ledger"
 }

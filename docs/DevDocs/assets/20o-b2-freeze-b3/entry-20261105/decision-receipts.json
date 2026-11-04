@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "entry_head": "537ce4ecdcc019e934b4c588bd1bf1542e1919a7",
+  "confirmed_group": "F-12",
+  "confirmed_subitems": [
+    "F-12a",
+    "F-12b",
+    "F-12c"
+  ],
+  "record_count": 3,
+  "authority": "实际逐项答复；不把候选或预选视为确认",
+  "receipts": [
+    {
+      "id": "F-12a",
+      "group": "F-12",
+      "phase": "F-B3",
+      "question": "F-12a｜是否保留两项规划错误：033=NUMERIC_LIMIT_CODE / runtime.numeric_limit / ResourceError，用于数值接纳、工作及结果预算；034=NON_TERMINATING_DIVISION_CODE / runtime.non_terminating_division / ArithmeticError，仅用于 lint/lfloat 语言 `/` 的非终止十进制？实际分配仍为011、除零013、非法幂/数学域/非有限及定宽转换溢出009、动态类型002、文本语法与precision/rounding非法012；本轮不改活动诊断表。",
+      "answer": "保留这两项及完整映射（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_15e634fac5d344edb2ac41ed83f5e3ac\",0]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    },
+    {
+      "id": "F-12b",
+      "group": "F-12",
+      "phase": "F-B3",
+      "question": "F-12b｜是否冻结此优先级：实参求值后，动态调用/类型002→precision再rounding的参数域012→按参数顺序检查输入→除零013或数学域/非有限009→精确 `/` 非终止034→工作/结果预算033→受控输出分配011。文本入口内部先查原文65536字节033，再从左到右查语法012，再查系数/指数/scale预算033；不重排表达式求值，真实OOM仍沿Fatal边界。资源接纳算法与性能仍留F-C裁定。",
+      "answer": "确认完整顺序（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_15e634fac5d344edb2ac41ed83f5e3ac\",1]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    },
+    {
+      "id": "F-12c",
+      "group": "F-12",
+      "phase": "F-B3",
+      "question": "F-12c｜是否沿用F-5：C ABI状态1/2/3分别对应空指针、未知标签、坏句柄，失败保留out且不碰挂起槽；有效标签下002/009/011/012/013/033/034统一状态6，设置对应可恢复错误并保留out。成功0释放替换旧out、不清空既有挂起错误；8/Fatal仅沿既有不可恢复边界。输入借读且强引用覆盖调用，out已初始化、拥有且不与输入重叠。",
+      "answer": "确认状态与所有权映射（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_15e634fac5d344edb2ac41ed83f5e3ac\",2]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    }
+  ]
+}

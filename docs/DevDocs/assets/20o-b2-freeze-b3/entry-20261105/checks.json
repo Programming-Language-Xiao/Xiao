@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "phase": "F-B3_complete",
+  "entry_head": "537ce4ecdcc019e934b4c588bd1bf1542e1919a7",
+  "scope": "F-B3文档收口与只读来源核验，不代表产品或错误路径验证",
+  "status": "passed",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "check-layout.log"
+    },
+    {
+      "command": "cmd /c git diff --exit-code 59a82934 -- core/rust stdlib tests .github/workflows tools .cargo/config.toml docs/module-registry.json .gitattributes package.json bun.lock",
+      "exit_code": 0
+    },
+    {
+      "command": "cmd /c git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "state_audit": {
+    "decision_records": 3,
+    "ledger_confirmed": 28,
+    "ledger_pending": 2,
+    "pending_ids": [
+      "F-3",
+      "F-7"
+    ],
+    "f12_confirmed": true,
+    "f_c_started": false,
+    "actual_runtime_abi": "1.18",
+    "actual_codegen": 20,
+    "active_intrinsic_max": 32,
+    "id100": "tombstone",
+    "cmath": "planned"
+  },
+  "source_files_checked": 7,
+  "ci_api_responses_checked": 6,
+  "error_table_rows": 8,
+  "priority_stages": 7,
+  "contract_expectations": 21,
+  "error_path_tests_executed": 0,
+  "c_abi_calls_executed": 0,
+  "new_f10_measurements": 0,
+  "workflow_reruns_dispatched": 0,
+  "closeout_complete": true
+}

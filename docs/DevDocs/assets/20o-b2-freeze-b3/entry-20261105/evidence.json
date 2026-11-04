@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "entry_head": "537ce4ecdcc019e934b4c588bd1bf1542e1919a7",
+  "status": "F-B3退出完成，F-12三项实际确认，28/2；F-C未开始，整体未联合冻结",
+  "actual_runtime_abi": "1.18",
+  "actual_codegen": 20,
+  "cmath_status": "planned",
+  "decision_requests": "decision-requests.json",
+  "decision_receipt_count": 3,
+  "error_table_audit": "error-table-audit.json",
+  "source_facts": "source-facts.json",
+  "baseline_ci": "ci-baseline-59a82934.json",
+  "checks": "checks.json",
+  "live_ledger": "../../20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+  "decision_status": [
+    28,
+    2
+  ],
+  "closeout_complete": true,
+  "files": [
+    {
+      "file": ".gitattributes",
+      "sha256": "6c2de176b555b45644df22700eb18ecfcff348311eb894a5029d326510e2179f"
+    },
+    {
+      "file": "README.md",
+      "sha256": "0f5ac26de1a568ce6034fde3fb72159df1a9d27be10e0a6e17212344558fc273"
+    },
+    {
+      "file": "check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "file": "check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "file": "check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "file": "checks.json",
+      "sha256": "204ac9af1ba999518658890a68f0e45aa9aed0463a03d7a9d190438c0afc3824"
+    },
+    {
+      "file": "ci-baseline-59a82934.json",
+      "sha256": "6ab5f0a07c49bacd047902d05743834abad49e331145345304a53132bf04f089"
+    },
+    {
+      "file": "decision-receipts.json",
+      "sha256": "f2b6a50c8c0008c3d15872c8d60657c518a20065061fe34a4262774b5ba412e6"
+    },
+    {
+      "file": "decision-requests.json",
+      "sha256": "0065d25aea4419eddd3e0709e81ad615fc3710482b4cbc8a59ff2444f4512593"
+    },
+    {
+      "file": "error-table-audit.json",
+      "sha256": "8dfd457af1fae4d41eb5e63c2208eb358b0472ac9d2793231e912505f962b8b6"
+    },
+    {
+      "file": "macos-annotations-api.json",
+      "sha256": "2b55f5d818a2f215cc9b39d7462d60339018b02bfe6d1076f389086eac154a66"
+    },
+    {
+      "file": "macos-check-api.json",
+      "sha256": "a3497340e9f6106981e710cd2adc0addb8ab3daaeef42322b15e7b0bddeecee1"
+    },
+    {
+      "file": "maintenance-attempt1-jobs-api.json",
+      "sha256": "abb750eebb4727bf6f867ba0589febc26b0cbacebda272d84af6119e977cda0f"
+    },
+    {
+      "file": "maintenance-run-api.json",
+      "sha256": "db5a2cfa7ca26f9fd27b07a8f5265ca43df701ea4e3361d188e999d5ad1a054c"
+    },
+    {
+      "file": "source-facts.json",
+      "sha256": "1e52295496bfd62f5d19469cdf67c5cf7aa91d757b1145e5ff45ad4203f40929"
+    },
+    {
+      "file": "workspace-attempt1-jobs-api.json",
+      "sha256": "d0c2d281222231043c0949f9ff70bf05c8335eb39fd9ec1f70736c660e78656d"
+    },
+    {
+      "file": "workspace-run-api.json",
+      "sha256": "15a8b0e7fafdcf6c711b80c8c69e78f4f9a07a67af6819b5ac369e6a6eb82e94"
+    }
+  ],
+  "decision_receipts": "decision-receipts.json"
+}

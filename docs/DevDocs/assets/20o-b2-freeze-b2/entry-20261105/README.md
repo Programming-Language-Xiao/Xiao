@@ -4,8 +4,8 @@
 边界：仅修改文档与证据；当前实际ABI1.18、生成器20、活动intrinsic最大32，cmath继续planned。未生成或执行1.19产物。
 
 入口为3a7654a9；[三条实际答复](decision-receipts.json)已确认F-6a/F-6b/F-6c，
-[实时台账](../../20o-b2-freeze-close/entry-20261103/decision-ledger.json)为27 confirmed、3 pending，剩余F-3/F-7/F-12。
-F-B3、F-C、B2-A/B未开始，本轮不采纳新的错误码、资源算法或依赖。
+F-B2退出时为27 confirmed、3 pending，剩余F-3/F-7/F-12；后续总进度见[实时台账](../../20o-b2-freeze-close/entry-20261103/decision-ledger.json)。
+F-B3、F-C、B2-A/B未开始属于本次退出时点；本目录的checks与evidence保留该阶段事实，不作为后续实时进度。
 
 完整契约以[冻结草案§8.5](../../../20o-b2-freeze-draft.md)为准，[结构化矩阵](version-matrix.json)只记录后续实现目标：
 

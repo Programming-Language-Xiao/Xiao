@@ -2,7 +2,7 @@
   "schema_version": 1,
   "entry_head": "a60a3dd11749e770e6fdf80ca2852a9c828fe3c9",
   "code_baseline": "0011f4c5739fd8114f001a236e8241d0f65b918c",
-  "status": "历史来源数据保留；实时台账27/3，F-B2已退出，剩余F-3/F-7/F-12待审，整体未联合冻结",
+  "status": "历史来源数据保留；实时台账28/2，F-B3已退出，剩余F-3/F-7待F-C，整体未联合冻结",
   "runtime_abi": "1.18",
   "codegen_version": 20,
   "stdlib_interface_version": 1,
@@ -39,7 +39,7 @@
     },
     {
       "file": "decision-ledger.json",
-      "sha256": "9d8af8ad40a255537642701885ab9315cc0bcfd81744bcfce348370028735146"
+      "sha256": "acc9483b84a5acc7565c42b4f2e70fa3f309e977529dd40c26394331b2967728"
     },
     {
       "file": "dependency-archives.json",
@@ -91,7 +91,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "0b8a0aa9eef6ca8b61cac6d55e78fe1116fb38d6eb89b412adadf1807efbee76"
+      "sha256": "8dc4c80e136996b9aad3407fc275943191b5befd02c57b03e54a894c766755a3"
     },
     {
       "file": "source-expand.stderr.log",
@@ -111,5 +111,5 @@
     }
   ],
   "ledger_mode": "台账持续更新；其余原始来源数据保持历史时点，最新裁定由latest_review指向",
-  "latest_review": "../../20o-b2-freeze-b2/entry-20261105/README.md"
+  "latest_review": "../../20o-b2-freeze-b3/entry-20261105/README.md"
 }
