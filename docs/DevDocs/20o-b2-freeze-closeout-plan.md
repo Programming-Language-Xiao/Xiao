@@ -100,6 +100,8 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 
 ### F-C：依赖、资源与性能
 
+执行规划见[依赖、资源与性能裁定规划](20o-b2-freeze-c-resource-dependency-plan.md)；当前 28/2，F-3/F-7 待答。
+
 范围：F-3、F-7。
 
 1. 记录 `num-bigint`/`bigdecimal` 的精确闭包、Cargo 特性、许可证、校验值和 Rust 版本；
