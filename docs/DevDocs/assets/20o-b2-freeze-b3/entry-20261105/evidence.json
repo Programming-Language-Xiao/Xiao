@@ -24,7 +24,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "0f5ac26de1a568ce6034fde3fb72159df1a9d27be10e0a6e17212344558fc273"
+      "sha256": "a32f7953bfece9d10304f662b5f87888c50dba4788ce67bcbd4f83ca51792785"
     },
     {
       "file": "check-docs.log",
@@ -87,5 +87,6 @@
       "sha256": "15a8b0e7fafdcf6c711b80c8c69e78f4f9a07a67af6819b5ac369e6a6eb82e94"
     }
   ],
-  "decision_receipts": "decision-receipts.json"
+  "decision_receipts": "decision-receipts.json",
+  "record_scope": "F-B3已归档退出时点；decision_status/checks的28/2与F-C未开始均为当时事实，实时进度见live_ledger"
 }

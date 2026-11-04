@@ -1,0 +1,5 @@
+$ bun tools/repo-check/src/cli.ts docs
+[error] A0-DOCS-001 docs/DevDocs/20o-b2-freeze-closeout-plan.md docs/DevDocs/20o-b2-freeze-closeout-plan.md
+  链接锚点不存在：20o-b2-freeze-draft.md#九仍须逐项完成
+  修复：更新文档索引、页面元数据或模块登记后重新运行检查。
+error: script "check:docs" exited with code 1

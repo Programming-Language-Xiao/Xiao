@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "entry_head": "a60a3dd11749e770e6fdf80ca2852a9c828fe3c9",
-  "authority": "既有十八条直接答复照录；十二组精确项仍须逐项裁定",
+  "authority": "既有十八条直接答复照录；十二组精确项均由星崽逐项实际确认，30/0；F-D签字另行完成",
   "base_receipts": "../../20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
   "base_receipts_sha256": "433db40949a3c1dd547275de61b264b9da2391143c7883b7ab475444f09df626",
-  "confirmed": 28,
-  "pending": 2,
-  "activation": "F-A/F-B1/F-B2/F-B3已退出，28/2；仅F-3/F-7留F-C，整体未联合冻结，不进入B2-A/B产品实现",
+  "confirmed": 30,
+  "pending": 0,
+  "activation": "F-A/F-B/F-C已退出，30/0；F-D未签字，整体未联合冻结，不进入B2-A/B产品实现",
   "items": [
     {
       "id": "R-1",
@@ -182,12 +182,23 @@
     },
     {
       "id": "F-3",
-      "status": "pending",
+      "status": "confirmed",
       "subject": "工作量和性能协议",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": null,
+      "answer": "确认接纳与工作量精确表（推荐）；确认商余资源与工作量（推荐）；确认性能与测量精确表（推荐）",
       "asked_in_session": true,
-      "review_sections": "六/性能协议及6.1资源公式"
+      "review_sections": "六/性能协议及6.1资源公式",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",0]",
+        "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",1]",
+        "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",2]"
+      ],
+      "decision_record": "../../20o-b2-freeze-c/entry-20261105/decision-receipts.json",
+      "confirmed_parts": [
+        "共同接纳、加减/乘/精确及显式除法/幂、gcd与因子工作上界",
+        "lfloat //、%精确数量级/有界商余及独立预算",
+        "性能时限/翻倍比、五批独立进程、校准、OS峰值与来源身份协议"
+      ]
     },
     {
       "id": "F-4",
@@ -257,12 +268,21 @@
     },
     {
       "id": "F-7",
-      "status": "pending",
+      "status": "confirmed",
       "subject": "依赖闭包与构建环境",
       "decision_authority": "星崽逐项答复或明确延期",
-      "answer": null,
+      "answer": "确认版本、特性和来源表（推荐）；确认锁定与构建策略（推荐）",
       "asked_in_session": true,
-      "review_sections": "四/精确闭包与构建策略"
+      "review_sections": "四/精确闭包与构建策略",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_5b0c1ca3b3f3430399ed1dff8039c81d\",0]",
+        "[\"request_user_input_async\",\"call_5b0c1ca3b3f3430399ed1dff8039c81d\",1]"
+      ],
+      "decision_record": "../../20o-b2-freeze-c/entry-20261105/decision-receipts.json",
+      "confirmed_parts": [
+        "六包精确版本/特性/许可/来源摘要",
+        "精确约束、Cargo.lock/--locked、受控环境及固定Rust/平台构建策略"
+      ]
     },
     {
       "id": "F-8",
@@ -343,7 +363,7 @@
     }
   ],
   "review_document": "docs/DevDocs/20o-b2-freeze-draft.md",
-  "review_document_sha256": "723c5b6200cf32b750daa432c17bbc1b166dc00a2a8e09599c0838ba825b5a11",
+  "review_document_sha256": "397759db2e849e8a726f4b3e47af5a4cd0161177eedefe2b6124d714a5a209ac",
   "review_history": [
     {
       "commit": "67944184dbb44137040908f2efc8e4d52a6f0e27",
@@ -380,33 +400,46 @@
       "document": "docs/DevDocs/20o-b2-freeze-draft.md",
       "sha256": "fb020799a270fcde070231d52b0db99214d2da6bdc33582a758b9307e83437fd",
       "scope": "F-B3审阅前的27/3版本；F-12当时未裁定"
+    },
+    {
+      "commit": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "b31216479e6f16bda8406af8301068de28f2d6d7cc563a68c2852dde03da9f8c",
+      "scope": "F-C入口28/2；F-3/F-7当时未裁定"
     }
   ],
   "latest_review": {
-    "phase": "F-B3_complete",
+    "phase": "F-C_complete",
     "date": "2026-11-05",
-    "entry_head": "537ce4ecdcc019e934b4c588bd1bf1542e1919a7",
+    "entry_head": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
     "focus": [
-      "F-12"
-    ],
-    "asked": [
-      "F-12a",
-      "F-12b",
-      "F-12c"
+      "F-3",
+      "F-7"
     ],
     "answered": [
-      "F-12a",
-      "F-12b",
-      "F-12c"
+      "F-7a",
+      "F-7b",
+      "F-3a",
+      "F-3b",
+      "F-3c"
     ],
-    "evidence": "../../20o-b2-freeze-b3/entry-20261105/README.md",
+    "asked": [
+      "F-3a",
+      "F-3b",
+      "F-3c"
+    ],
+    "evidence": "../../20o-b2-freeze-c/entry-20261105/README.md",
     "decisions_complete": true,
-    "ci_baseline_handling": "59a82934_macOS_cancellation_explicitly_recorded_no_rerun",
-    "gate_status": "docs_usedocs_layout_source_and_ci_integrity_passed"
+    "f_d_started": false,
+    "product_started": false,
+    "gate_status": "docs_usedocs_layout_source_dependency_and_ci_integrity_passed"
   },
   "status_correction": {
     "entry_head": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
     "date": "2026-11-04",
     "scope": "仅同步26/4与F-5已确认的状态文字；不新增或改变裁定"
-  }
+  },
+  "f_d_signature_status": "not_started",
+  "joint_freeze_activated": false,
+  "product_implementation_started": false
 }

@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "scope": "F-C已确认契约的静态抽取、答复及来源对账；不是产品、Cargo解析/构建或性能报告",
+  "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+  "document_git_text_sha256": "397759db2e849e8a726f4b3e47af5a4cd0161177eedefe2b6124d714a5a209ac",
+  "document_git_blob": "42822acb04eae3e8f039ffebea0edc098d7a7cbe",
+  "resource_sections": [
+    "6.1.1 输入、输出与共同顺序（F-3a）",
+    "6.1.2 加减、乘法（F-3a）",
+    "6.1.3 精确语言除法（F-3a）",
+    "6.1.4 显式精度除法（F-3a）",
+    "6.1.5 幂（F-3a）",
+    "6.1.6 lfloat //（F-3b）",
+    "6.1.7 lfloat %（F-3b）"
+  ],
+  "resource_and_performance_section_sha256": "44a72f3a420071d06df15510a9c66a560d996ae0fea63ec0400b01e5c2360e71",
+  "performance_rows": [
+    "| 构建 | VM和Runtime使用release Rust构建；原生Xiao O0/O3独立记录，不混成绩；编译、链接与参考向量生成不计入运算时限 |",
+    "| 目标 | 每次调用归一化中位数：VM≤10秒、原生≤2秒；OS驻留增量保守峰值≤64MiB |",
+    "| 时间区间 | 固定输入与产物准备完成后计完整语言调用，包含调用期间的解析/分配/输出构造；按操作分别测试转换入口，不能借外移工作缩小被测语义 |",
+    "| 采样 | 五批分别在独立测量进程中执行，每批先预热一次再采正式样本；最大输入不能多批叠进同一60秒看门狗调用 |",
+    "| 校准 | 单次≥50ms则repeat=1；否则批次至少50ms，以100ms为停止增长阈值，每次repeat最多增16倍，上限2^24；上限仍不足50ms则不可验证 |",
+    "| 校准失败 | 实际过慢样本如实保留，不以100ms阈值丢样；时限/看门狗失败算未达标，不删除、换负载或加ignore |",
+    "| 时间统计 | 每批保留repeat及总耗时，先除repeat得单次，再取五批中位数；各优化级别分别计算 |",
+    "| 内存 | 基线在同PID的Runtime/VM初始化后、构造输入/预热前读取当前驻留；覆盖输入、输出及上游暂存，以进程保守高水位减基线，取max(0,差值)，五批取最大值 |",
+    "| 平台内存来源 | Windows WorkingSetSize/PeakWorkingSetSize；Linux当前VmRSS及VmHWM或等价getrusage；macOS resident_size及getrusage ru_maxrss；原始单位与换算均记录，Linux通常KiB、macOS字节，不可混用 |",
+    "| 不可验证 | 无可靠OS峰值、时长校准不足或缺实际平台记录时标不可验证；Xiao对象计数只作补充，不能代替上游内存；不通过放宽预算取得通过 |",
+    "| 翻倍比 | 线性组≤3；乘/除/gcd/幂/模幂等超线性组≤5；只比较相同路径、同优化、同输入族的n与2n，双方均须合法且测得，最大合法规模另测绝对预算 |",
+    "| 记录身份 | 绑定实际源码、Cargo.lock、Runtime内容、工具链/目标、产物/缓存指纹、PID与独立输出路径，逐批保存原始样本；不能复用旧可执行文件或覆盖不同任务产物 |"
+  ],
+  "dependency_rows": [
+    "| num-bigint | 0.4.8（已确认） | 直接，仅std；无rand/serde | MIT OR Apache-2.0 |",
+    "| bigdecimal | 0.4.11（已确认） | 直接，仅std；无serde-json | MIT/Apache-2.0 |",
+    "| libm | 0.2.16（已确认） | bigdecimal传递依赖及cmath直接依赖；default/arch，无unstable | MIT |",
+    "| num-integer | 0.1.47（已确认） | 传递，std/i128 | MIT OR Apache-2.0 |",
+    "| num-traits | 0.2.19（已确认） | 传递，std/i128，不额外启用libm特性 | MIT OR Apache-2.0 |",
+    "| autocfg | 1.5.1（已确认） | 构建依赖 | Apache-2.0 OR MIT |"
+  ],
+  "decision_receipts": "decision-receipts.json",
+  "decision_receipt_count": 5,
+  "decision_status": [
+    30,
+    0
+  ],
+  "resource_limits": {
+    "numeric_text_bytes": 65536,
+    "input_result_coefficient_digits": 32768,
+    "work_coefficient_digits": 65536,
+    "absolute_display_scale": 100000,
+    "absolute_canonical_scale": 100000,
+    "absolute_explicit_exponent": 100000,
+    "precision_min": 1,
+    "precision_max": 32768,
+    "nontrivial_power_exponent_max": 1000000,
+    "power_multiplications_max": 64,
+    "modular_multiplications_max": 64
+  },
+  "performance_targets": {
+    "vm_seconds": 10,
+    "native_seconds": 2,
+    "incremental_resident_peak_bytes": 67108864,
+    "linear_doubling_ratio_max": 3,
+    "superlinear_doubling_ratio_max": 5,
+    "independent_process_batches": 5,
+    "warmup_per_process": 1,
+    "short_batch_min_ms": 50,
+    "calibration_stop_ms": 100,
+    "repeats_growth_max": 16,
+    "repeats_max": 16777216,
+    "time_statistic": "median_of_normalized_five_batches",
+    "memory_statistic": "max_of_conservative_incremental_resident_peaks",
+    "rust_profile": "release",
+    "native_optimizations": [
+      "O0",
+      "O3"
+    ]
+  },
+  "independent_mathematical_witnesses": 17,
+  "cargo_resolve_run": false,
+  "cargo_files_modified": false,
+  "platform_builds_run": false,
+  "performance_measurement_performed": false,
+  "xiao_product_executed": false,
+  "f_d_signed": false,
+  "joint_freeze_activated": false
+}

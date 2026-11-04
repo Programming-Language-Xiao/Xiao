@@ -18,7 +18,7 @@ related:
 
 本页为planned教程提纲，当前没有stdlib/cmath.xiao或对应数学intrinsic，不能按已交付产品调用。
 星崽已确认首批15个float入口，floor/ceil/round/trunc也返回float，sfloat与高精度超越函数后置。
-F-A已确认定义域、舍入、特殊值和误差；F-5进一步确认参数名、规划原语及C ABI契约。F-6版本与产物矩阵、F-12完整错误表与优先级也已确认；依赖及资源接纳算法/性能仍待F-C裁定，见[B2冻结草案](../../DevDocs/20o-b2-freeze-draft.md)。
+F-A已确认定义域、舍入、特殊值和误差；F-5进一步确认参数名、规划原语及C ABI契约。F-6版本与产物矩阵、F-12完整错误表与优先级也已确认；F-3/F-7也已确认接纳/工作量/性能协议与依赖策略；F-D仍待签字，见[B2冻结草案](../../DevDocs/20o-b2-freeze-draft.md)。
 这些是已确认契约，产品与三平台证据尚未交付，本页保持planned。
 
 ## 导入与准备
@@ -48,7 +48,7 @@ cmath是固定64位二进制浮点库，不是复数库，也不是lfloat高精�
 | min、max、pow | 两个float到float | 特殊值、left/right或base/exponent参数名已确认；产品未实现 |
 | sin、cos、tan、exp、ln、log10 | float到float | 弧度/下溢/域/误差、value参数及原语契约已确认；产品未实现 |
 
-底层拟使用Rust libm，精确依赖版本仍待F-7；F-5已确认cmath规划ID34～48和xiao_runtime_cmath_*符号，活动表与实际ABI尚未接线。
+底层已按F-7冻结Rust libm0.2.16，六包闭包与构建策略见冻结草案§四；F-5已确认cmath规划ID34～48和xiao_runtime_cmath_*符号，活动表与实际ABI尚未接线。
 
 ## 错误与恢复
 
@@ -57,7 +57,7 @@ F-12已确认：NaN/Inf输入或非有限结果、sqrt负输入、ln/log10非正
 
 ## 资源、性能与安全边界
 
-资源和性能是待实测验收目标，不是当前产品成绩，也不是任意硬件时延保证。
+F-3已确认B2受控性能与OS内存测量协议；资源和性能仍是待实测验收目标，不是当前产品成绩，也不是任意硬件时延保证。
 已确认sqrt正确舍入0 ULP，取整/abs/min/max逐位，普通超越与pow非零结果≤4 ULP；零、符号、定义域和错误精确核对。
 B1的721条F10不能作为B2当前性能。B2-C必须在新Runtime/ABI快照完整重跑该批数据，并另测B2新增数值路径。
 

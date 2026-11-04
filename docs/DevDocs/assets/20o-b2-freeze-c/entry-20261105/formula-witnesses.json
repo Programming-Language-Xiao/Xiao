@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "scope": "仅用Python整数/Fraction核对资源公式边界和数学算例；不是Xiao产品、错误路径或性能报告",
+  "f3_status": "confirmed_by_three_direct_answers",
+  "python_decimal_display_limit_for_this_process": "disabled only for independent arithmetic of <=65536 decimal digits",
+  "resource_constants": {
+    "D": 32768,
+    "W": 65536,
+    "H": 100000
+  },
+  "witness_count": 17,
+  "witnesses": [
+    {
+      "id": "zero_raw_boundary",
+      "arithmetic_expression": "len(\"0\"*65536); normalized_zero_digits=1",
+      "computed": {
+        "raw_bytes": 65536,
+        "zero_digits": 1
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "原文恰好上限；按F-10零系数1位，不能按65536个前导零拒绝"
+    },
+    {
+      "id": "raw_plus_one",
+      "arithmetic_expression": "len(\"0\"*65537)",
+      "computed": {
+        "raw_bytes": 65537
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "033；零快路径不绕过原文字节预算"
+    },
+    {
+      "id": "add_work_plus_one",
+      "arithmetic_expression": "max(32768+32768,1)+1",
+      "computed": {
+        "work_upper_digits": 65537,
+        "work_limit": 65536
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "工作上界65537>65536，在对齐前033"
+    },
+    {
+      "id": "actual_result_not_upper_bound",
+      "arithmetic_expression": "digits(10**16383 * 10**16384)",
+      "computed": {
+        "left_digits": 16384,
+        "right_digits": 16385,
+        "product_work_upper": 32769,
+        "actual_result_digits": 32768
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "工作预算合格且实际结果32768位，不能因结果上界32769而拒绝"
+    },
+    {
+      "id": "finite_division_work_boundary",
+      "arithmetic_expression": "A=10**18655+1; B=5**46880; C=A*2**46880",
+      "computed": {
+        "numerator_digits": 18656,
+        "denominator_digits": 32768,
+        "coefficient_digits": 32768,
+        "work_upper_digits": 65536,
+        "result_scale": 46880
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "有限精确商，工作上界65536、实际系数32768、scale46880均合格"
+    },
+    {
+      "id": "explicit_division_work_boundary",
+      "arithmetic_expression": "d_A=d_B=p=32768; K=-1; h=p-1-K",
+      "computed": {
+        "h": 32768,
+        "numerator_work_digits": 65536,
+        "denominator_work_digits": 32768
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "显式缩放恰好65536位，scale差不加入巨型分子"
+    },
+    {
+      "id": "power_multiplication_bound",
+      "arithmetic_expression": "n<=1000000 => bit_length(n)<=20; 2*20-1",
+      "computed": {
+        "max_exponent_bits": 20,
+        "multiplication_upper": 39,
+        "confirmed_cap": 64
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "保守上界39<=64；不计算最后多余平方"
+    },
+    {
+      "id": "power_actual_digits",
+      "arithmetic_expression": "digits(2**108852)",
+      "computed": {
+        "exponent": 108852,
+        "result_digits": 32768
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "实际结果32768位；不能因1*108852的松上界拒绝"
+    },
+    {
+      "id": "independent_quotient_remainder",
+      "arithmetic_expression": "1e100000 / 1e-100000 = 10**200000; pow(10,200000,1)",
+      "computed": {
+        "quotient_digits": 200001,
+        "modular_remainder": 0
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "//为033，%可为0；%不物化完整商"
+    },
+    {
+      "id": "modular_multiplication_bound",
+      "arithmetic_expression": "k<=200000 => 2*bit_length(k)-1 + 1",
+      "computed": {
+        "max_scale_difference": 200000,
+        "modular_multiplications_upper": 36,
+        "residue_product_upper_digits": 65536,
+        "confirmed_cap": 64
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "含最终混合乘法至多36次，工作系数最多65536位"
+    },
+    {
+      "id": "modulo_D_plus_one_alignment",
+      "arithmetic_expression": "a=-1e-32768; b=1; remainder_coefficient=10**32768-1",
+      "computed": {
+        "aligned_modulus_digits": 32769,
+        "actual_remainder_digits": 32768,
+        "result_scale": 32768,
+        "floor_quotient": -1
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "对齐32769位但实际余数32768位合法，不能仅因对齐超过D拒绝"
+    },
+    {
+      "id": "modulo_D_plus_two_alignment",
+      "arithmetic_expression": "a=-1e-32769; b=1; remainder_digits=32769",
+      "computed": {
+        "aligned_modulus_digits": 32770,
+        "actual_remainder_digits": 32769,
+        "result_scale": 32769
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "由差值位数下界证明超D，在构造对齐分母前033"
+    },
+    {
+      "id": "floor_pair_12",
+      "arithmetic_expression": "Fraction(c_a)*10**(-s_a); q=a//b; r=a-b*q",
+      "computed": {
+        "c_a": 55,
+        "s_a": 1,
+        "c_b": 2,
+        "s_b": 0,
+        "q": 2,
+        "remainder_coefficient": 15,
+        "remainder_scale": 1
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "与已确认F-4的floor/余数符号和显示尺度一致"
+    },
+    {
+      "id": "floor_pair_13",
+      "arithmetic_expression": "Fraction(c_a)*10**(-s_a); q=a//b; r=a-b*q",
+      "computed": {
+        "c_a": -55,
+        "s_a": 1,
+        "c_b": 2,
+        "s_b": 0,
+        "q": -3,
+        "remainder_coefficient": 5,
+        "remainder_scale": 1
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "与已确认F-4的floor/余数符号和显示尺度一致"
+    },
+    {
+      "id": "floor_pair_14",
+      "arithmetic_expression": "Fraction(c_a)*10**(-s_a); q=a//b; r=a-b*q",
+      "computed": {
+        "c_a": 55,
+        "s_a": 1,
+        "c_b": -2,
+        "s_b": 0,
+        "q": -3,
+        "remainder_coefficient": -5,
+        "remainder_scale": 1
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "与已确认F-4的floor/余数符号和显示尺度一致"
+    },
+    {
+      "id": "floor_pair_15",
+      "arithmetic_expression": "Fraction(c_a)*10**(-s_a); q=a//b; r=a-b*q",
+      "computed": {
+        "c_a": -55,
+        "s_a": 1,
+        "c_b": -2,
+        "s_b": 0,
+        "q": 2,
+        "remainder_coefficient": -15,
+        "remainder_scale": 1
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "与已确认F-4的floor/余数符号和显示尺度一致"
+    },
+    {
+      "id": "floor_pair_16",
+      "arithmetic_expression": "Fraction(c_a)*10**(-s_a); q=a//b; r=a-b*q",
+      "computed": {
+        "c_a": 150,
+        "s_a": 2,
+        "c_b": 100,
+        "s_b": 2,
+        "q": 1,
+        "remainder_coefficient": 50,
+        "remainder_scale": 2
+      },
+      "xiao_product_executed": false,
+      "expected_by_contract": "与已确认F-4的floor/余数符号和显示尺度一致"
+    }
+  ],
+  "cargo_run": false,
+  "xiao_product_executed": false,
+  "performance_measurement_performed": false
+}

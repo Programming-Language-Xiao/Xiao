@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "entry_head": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+  "scope": "只读源码与摘要核对；未执行Cargo解析、构建、产品或性能测量",
+  "actual_runtime_abi": "1.18",
+  "actual_codegen": 20,
+  "active_intrinsic_max": 32,
+  "id100": "tombstone",
+  "pinned_toolchain": "1.96.0",
+  "workspace_declared_rust_version": "1.85",
+  "msrv_tested": false,
+  "sources": [
+    {
+      "path": "core/rust/Cargo.toml",
+      "git_text_sha256": "ec96b13ae10afb848b3ac3c916409d4c061a8c7ee915e55d02c19b2e7590876b",
+      "fact": "workspace仍声明rust-version=1.85；未在本批修改",
+      "read_only_checks": [
+        {
+          "pattern": "rust-version = \"1.85\"",
+          "match_count": 1,
+          "first_line": 34
+        }
+      ]
+    },
+    {
+      "path": "core/rust/rust-toolchain.toml",
+      "git_text_sha256": "2c388180d0d5476ed0d69975b382feaf709bb072d51a342add3030cfb3d1bdb2",
+      "fact": "实际固定工具链1.96.0",
+      "read_only_checks": [
+        {
+          "pattern": "channel = \"1.96.0\"",
+          "match_count": 1,
+          "first_line": 2
+        }
+      ]
+    },
+    {
+      "path": ".github/workflows/maintenance-regression.yml",
+      "git_text_sha256": "847c60595d9978d5276ce0aa7115e812d5cb6808d44ff108940be0b8da20273d",
+      "fact": "现有CI使用固定Rust1.96及三平台目标，本批仅只读",
+      "read_only_checks": [
+        {
+          "pattern": "dtolnay/rust-toolchain@1.96.0",
+          "match_count": 4,
+          "first_line": 53
+        },
+        {
+          "pattern": "os: windows-2025",
+          "match_count": 1,
+          "first_line": 154
+        },
+        {
+          "pattern": "os: ubuntu-24.04",
+          "match_count": 1,
+          "first_line": 156
+        },
+        {
+          "pattern": "os: macos-15",
+          "match_count": 1,
+          "first_line": 158
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime-abi/src/lib.rs",
+      "git_text_sha256": "1968f078091035eb996266c75638d35b7cc9b3f7cfb8eb229672fdd6909381bd",
+      "fact": "实际ABI1.18",
+      "read_only_checks": [
+        {
+          "pattern": "pub const ABI_MINOR_VERSION: u32 = 18;",
+          "match_count": 1,
+          "first_line": 26
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/lib.rs",
+      "git_text_sha256": "67d9c47e966439198c136b2aae2aaf04e029a9b100d48380c1076deb9b4ae249",
+      "fact": "实际生成器20",
+      "read_only_checks": [
+        {
+          "pattern": "pub const CODEGEN_VERSION: u32 = 20;",
+          "match_count": 1,
+          "first_line": 100
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-intrinsics/intrinsics.json",
+      "git_text_sha256": "23ab5d2a03b3246fb381d24a5b837105f651036f79aad65f8f176823049241d5",
+      "fact": "活动intrinsic最大32，100为墓碑",
+      "read_only_checks": []
+    },
+    {
+      "path": "docs/module-registry.json",
+      "git_text_sha256": "c1f9a160eb3cbc9137e9e4d88dad7dc626d6af774bff47d0ccdc557f3dc14ba9",
+      "fact": "cmath仍planned且code/tests为空",
+      "read_only_checks": []
+    }
+  ]
+}

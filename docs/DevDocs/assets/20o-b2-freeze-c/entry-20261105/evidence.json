@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "entry_head": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+  "status": "F-C退出完成，五项实际答复、30/0；F-D未签字，整体未联合冻结",
+  "actual_runtime_abi": "1.18",
+  "actual_codegen": 20,
+  "cmath_status": "planned",
+  "decision_receipts": "decision-receipts.json",
+  "decision_receipt_count": 5,
+  "decision_status": [
+    30,
+    0
+  ],
+  "resource_performance_audit": "resource-performance-audit.json",
+  "dependency_review": "dependency-review.json",
+  "formula_witnesses": "formula-witnesses.json",
+  "source_facts": "source-facts.json",
+  "baseline_ci": "ci-baseline-8dfbc89b.json",
+  "checks": "checks.json",
+  "live_ledger": "../../20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+  "f_d_signed": false,
+  "joint_freeze_activated": false,
+  "closeout_complete": true,
+  "files": [
+    {
+      "file": ".gitattributes",
+      "sha256": "056f7d2e34b150a3c4f0798aa0f3435fa89f18801d770928144e223b781be57d"
+    },
+    {
+      "file": "README.md",
+      "sha256": "e644518b884d3249601aee330a0f7354a92f02ec75c745d747a6c8599bcc8e73"
+    },
+    {
+      "file": "autocfg-1.5.1.Cargo.toml.txt",
+      "sha256": "ed7c832b4250c3be736e040d68688c2b83a5b164a93ef533e61532cbe0d44e99"
+    },
+    {
+      "file": "bigdecimal-0.4.11.Cargo.toml.txt",
+      "sha256": "693eef2df02988d70fcaf80877a72ef276c6d6a948ba18004e3cc2e56b7e143e"
+    },
+    {
+      "file": "bigdecimal-0.4.11.build.rs.txt",
+      "sha256": "cabe560c4c46c2eb045ed19a281775f81bd2fc738474aed3161fa6fcec67c2dd"
+    },
+    {
+      "file": "check-docs-before-anchor-fix.log",
+      "sha256": "abf9c4a01121823fc0bdb74d8429e18b8cfe0b513cc711decc652d9489a26369"
+    },
+    {
+      "file": "check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "file": "check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "file": "check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "file": "checks.json",
+      "sha256": "7197bb8a3d11d0438f4bdcb4d31515847e5b8c4a2a694c58112d1c957202493e"
+    },
+    {
+      "file": "ci-baseline-8dfbc89b.json",
+      "sha256": "ee20c149d0229854cd973f6029d7364147a40e85095a658ea791ddc718fb47d9"
+    },
+    {
+      "file": "decision-receipts.json",
+      "sha256": "5aca2310436f1979e7fc3894a94ed163e3e4bb76380b1230e77a1a187fd7b60b"
+    },
+    {
+      "file": "decision-requests.json",
+      "sha256": "6906d1d9cb7c3d6cd9883f7fdcd610be30327470e4d70c00c37f62e2b8d41f7f"
+    },
+    {
+      "file": "dependency-review.json",
+      "sha256": "a7508328f1b2ae9c2ffd725ff7825d15eea25be581b02a49b69191458d486c14"
+    },
+    {
+      "file": "formula-witnesses.json",
+      "sha256": "7c7dbdb320c0798ec98258bb13dd89e8d46a6fa264e67b514fdd445093e8e7fa"
+    },
+    {
+      "file": "libm-0.2.16.Cargo.toml.txt",
+      "sha256": "a2d94f9cbaa4a177bacde9737bfcc7b2ed9de5bddadafe507923a5b5748f9bd7"
+    },
+    {
+      "file": "maintenance-attempt1-jobs-api.json",
+      "sha256": "e860f67f1b5f9c95a9266c22be781535628fba79a64fb4e230de130016ca328d"
+    },
+    {
+      "file": "maintenance-run-api.json",
+      "sha256": "bfe3a375b2614c93ec8150ff62151511ddee50942ed02d5cbce2617db5413d2a"
+    },
+    {
+      "file": "num-bigint-0.4.8.Cargo.toml.txt",
+      "sha256": "fcb19e142df64dc58a459ba33e1e22c1551497962f8037ed98df124d749f28f1"
+    },
+    {
+      "file": "num-integer-0.1.47.Cargo.toml.txt",
+      "sha256": "a0fc4aee99b0663bb80ce2fc8052491b7e28872765711266faddb2ed0474cb96"
+    },
+    {
+      "file": "num-traits-0.2.19.Cargo.toml.txt",
+      "sha256": "dd701a0da6cce7e6e047cc944b2330f3c5e48cd64329e10942ea7d9299d435be"
+    },
+    {
+      "file": "resource-performance-audit.json",
+      "sha256": "cdcca98072dcec0ae63add03793feb3f73e6b4ef0d4027d138638d31e3090d5a"
+    },
+    {
+      "file": "source-facts.json",
+      "sha256": "50227cf0a770cd85d15f766b618c227461cbfb19a12a19d97ff49e9ac2da1b02"
+    },
+    {
+      "file": "workspace-attempt1-jobs-api.json",
+      "sha256": "0176b8c242e54f034c8f7718856b0355c817dd3e018969bc0eb667cad1df35e5"
+    },
+    {
+      "file": "workspace-run-api.json",
+      "sha256": "06ee4b1b6561f66b6718821c0eca944328cb42482fb4072234916f698d76f6c8"
+    }
+  ]
+}

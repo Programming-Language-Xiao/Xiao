@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "phase": "F-C_complete",
+  "entry_head": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+  "scope": "F-C文档与来源核验；不是Cargo解析/构建、Xiao产品或性能测量",
+  "status": "passed",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "check-layout.log"
+    },
+    {
+      "command": "cmd /c git diff --exit-code 8dfbc89b -- core/rust stdlib tests .github/workflows tools .cargo/config.toml docs/module-registry.json .gitattributes package.json bun.lock",
+      "exit_code": 0
+    },
+    {
+      "command": "cmd /c git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "log_normalization": "unified command output, UTF-8/LF, ANSI stripped",
+  "earlier_local_docs_failure": {
+    "command": "bun run check:docs",
+    "exit_code": 1,
+    "log": "check-docs-before-anchor-fix.log",
+    "reason": "旧链接仍指向已改名的§九锚点",
+    "resolved_by": "20o-b2-freeze-closeout-plan.md链接更新为九精确项对账与f-d待办，随后重跑通过",
+    "product_failure": false
+  },
+  "state_audit": {
+    "decision_records": 5,
+    "ledger_confirmed": 30,
+    "ledger_pending": 0,
+    "pending_ids": [],
+    "f3_confirmed": true,
+    "f7_confirmed": true,
+    "f_d_started": false,
+    "f_d_signed": false,
+    "joint_freeze_activated": false,
+    "product_implementation_started": false,
+    "actual_runtime_abi": "1.18",
+    "actual_codegen": 20,
+    "active_intrinsic_max": 32,
+    "id100": "tombstone",
+    "cmath": "planned"
+  },
+  "source_files_checked": 7,
+  "dependency_archives_rechecked": 6,
+  "license_texts_rechecked": 11,
+  "independent_mathematical_witnesses": 17,
+  "ci_api_responses_checked": 4,
+  "cargo_resolve_run": false,
+  "cargo_builds_run": false,
+  "cargo_files_modified": false,
+  "xiao_product_tests_run": false,
+  "performance_measurement_performed": false,
+  "workflow_reruns_dispatched": 0,
+  "closeout_complete": true
+}

@@ -1,0 +1,348 @@
+{
+  "schema_version": 1,
+  "entry_head": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+  "source_record": "../../20o-b2-freeze-close/entry-20261103/dependency-archives.json",
+  "source_record_sha256": "cb14170f70fa7a3172ec5c2cbf204fed5c7b859edd873e1ea97c2500295aac9b",
+  "scope": "F-7两项实际答复后的上游归档/清单/许可只读复核；不是Cargo解析、锁或构建结果",
+  "f7_status": "confirmed_by_two_direct_answers",
+  "archive_count": 6,
+  "license_count": 11,
+  "packages": [
+    {
+      "name": "num-bigint",
+      "version": "0.4.8",
+      "license": "MIT OR Apache-2.0",
+      "declared_rust_version": "1.60",
+      "url": "https://static.crates.io/crates/num-bigint/num-bigint-0.4.8.crate",
+      "registry_checksum": "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367",
+      "archive_sha256": "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367",
+      "dependencies": {
+        "arbitrary": {
+          "version": "1",
+          "optional": true,
+          "default-features": false
+        },
+        "num-integer": {
+          "version": "0.1.46",
+          "features": [
+            "i128"
+          ],
+          "default-features": false
+        },
+        "num-traits": {
+          "version": "0.2.18",
+          "features": [
+            "i128"
+          ],
+          "default-features": false
+        },
+        "quickcheck": {
+          "version": "1",
+          "optional": true,
+          "default-features": false
+        },
+        "rand": {
+          "version": "0.8",
+          "optional": true,
+          "default-features": false
+        },
+        "serde": {
+          "version": "1.0",
+          "optional": true,
+          "default-features": false
+        }
+      },
+      "build_dependencies": {},
+      "features": {
+        "arbitrary": [
+          "dep:arbitrary"
+        ],
+        "default": [
+          "std"
+        ],
+        "quickcheck": [
+          "dep:quickcheck"
+        ],
+        "rand": [
+          "dep:rand"
+        ],
+        "serde": [
+          "dep:serde"
+        ],
+        "std": [
+          "num-integer/std",
+          "num-traits/std"
+        ]
+      },
+      "archive_path_rechecked": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\num-bigint-0.4.8.crate",
+      "archive_bytes": 109961,
+      "archive_sha256_verified": true,
+      "manifest_snapshot": "num-bigint-0.4.8.Cargo.toml.txt",
+      "manifest_sha256": "fcb19e142df64dc58a459ba33e1e22c1551497962f8037ed98df124d749f28f1",
+      "licenses": [
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-bigint-0.4.8/LICENSE-APACHE.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        },
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-bigint-0.4.8/LICENSE-MIT.txt",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+        }
+      ],
+      "cargo_resolved": false,
+      "built": false
+    },
+    {
+      "name": "bigdecimal",
+      "version": "0.4.11",
+      "license": "MIT/Apache-2.0",
+      "declared_rust_version": null,
+      "url": "https://static.crates.io/crates/bigdecimal/bigdecimal-0.4.11.crate",
+      "registry_checksum": "8fa3f3d8cbf4dffcfe4991de61d012bef509a409ecbe9dd41049bfe32b4d4653",
+      "archive_sha256": "8fa3f3d8cbf4dffcfe4991de61d012bef509a409ecbe9dd41049bfe32b4d4653",
+      "dependencies": {
+        "libm": {
+          "version": "0.2.6"
+        },
+        "num-bigint": {
+          "version": "0.4",
+          "default-features": false
+        },
+        "num-integer": {
+          "version": "0.1",
+          "default-features": false
+        },
+        "num-traits": {
+          "version": "0.2",
+          "default-features": false
+        },
+        "serde": {
+          "version": "1.0",
+          "optional": true,
+          "default-features": false
+        },
+        "serde_json": {
+          "version": "1.0",
+          "features": [
+            "alloc",
+            "arbitrary_precision"
+          ],
+          "optional": true,
+          "default-features": false
+        }
+      },
+      "build_dependencies": {
+        "autocfg": {
+          "version": "1"
+        }
+      },
+      "features": {
+        "default": [
+          "std"
+        ],
+        "serde-json": [
+          "serde/derive",
+          "serde_json"
+        ],
+        "std": [
+          "num-bigint/std",
+          "num-integer/std",
+          "num-traits/std"
+        ],
+        "string-only": []
+      },
+      "archive_path_rechecked": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\bigdecimal-0.4.11.crate",
+      "archive_bytes": 131178,
+      "archive_sha256_verified": true,
+      "manifest_snapshot": "bigdecimal-0.4.11.Cargo.toml.txt",
+      "manifest_sha256": "693eef2df02988d70fcaf80877a72ef276c6d6a948ba18004e3cc2e56b7e143e",
+      "licenses": [
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/bigdecimal-0.4.11/LICENSE-APACHE.txt",
+          "sha256": "74df43338fc1a37b5a744b7d4991662ad9936157abeb4d9ea7bdd5b702c5e3fd"
+        },
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/bigdecimal-0.4.11/LICENSE-MIT.txt",
+          "sha256": "6067b257a0e8cb34fbdd81b7964e92bd27cd137f86709661f96550603717f61a"
+        }
+      ],
+      "cargo_resolved": false,
+      "built": false,
+      "build_script_snapshot": "bigdecimal-0.4.11.build.rs.txt",
+      "build_script_sha256": "cabe560c4c46c2eb045ed19a281775f81bd2fc738474aed3161fa6fcec67c2dd",
+      "configuration_environment_names": [
+        "RUST_BIGDECIMAL_DEFAULT_PRECISION",
+        "RUST_BIGDECIMAL_DEFAULT_ROUNDING_MODE",
+        "RUST_BIGDECIMAL_FMT_EXPONENTIAL_LOWER_THRESHOLD",
+        "RUST_BIGDECIMAL_FMT_EXPONENTIAL_UPPER_THRESHOLD",
+        "RUST_BIGDECIMAL_FMT_MAX_INTEGER_PADDING",
+        "RUST_BIGDECIMAL_SERDE_SCALE_LIMIT"
+      ]
+    },
+    {
+      "name": "libm",
+      "version": "0.2.16",
+      "license": "MIT",
+      "declared_rust_version": "1.63",
+      "url": "https://static.crates.io/crates/libm/libm-0.2.16.crate",
+      "registry_checksum": "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981",
+      "archive_sha256": "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981",
+      "dependencies": {},
+      "build_dependencies": {},
+      "features": {
+        "arch": [],
+        "default": [
+          "arch"
+        ],
+        "force-soft-floats": [],
+        "unstable": [
+          "unstable-intrinsics",
+          "unstable-float"
+        ],
+        "unstable-float": [],
+        "unstable-intrinsics": [],
+        "unstable-public-internals": []
+      },
+      "archive_path_rechecked": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\libm-0.2.16.crate",
+      "archive_bytes": 164243,
+      "archive_sha256_verified": true,
+      "manifest_snapshot": "libm-0.2.16.Cargo.toml.txt",
+      "manifest_sha256": "a2d94f9cbaa4a177bacde9737bfcc7b2ed9de5bddadafe507923a5b5748f9bd7",
+      "licenses": [
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/libm-0.2.16/LICENSE.txt",
+          "sha256": "3823dda7cf046602f4b4e77ec8e227863dc4736037cc85bb33d9f19febe16bb7"
+        }
+      ],
+      "cargo_resolved": false,
+      "built": false
+    },
+    {
+      "name": "num-integer",
+      "version": "0.1.47",
+      "license": "MIT OR Apache-2.0",
+      "declared_rust_version": "1.31",
+      "url": "https://static.crates.io/crates/num-integer/num-integer-0.1.47.crate",
+      "registry_checksum": "7ce2d95d4b3734dc35aa2f45e1aa22cd416814592a4f9d9205e11affd5b8e10b",
+      "archive_sha256": "7ce2d95d4b3734dc35aa2f45e1aa22cd416814592a4f9d9205e11affd5b8e10b",
+      "dependencies": {
+        "num-traits": {
+          "version": "0.2.11",
+          "features": [
+            "i128"
+          ],
+          "default-features": false
+        }
+      },
+      "build_dependencies": {},
+      "features": {
+        "default": [
+          "std"
+        ],
+        "i128": [],
+        "std": [
+          "num-traits/std"
+        ]
+      },
+      "archive_path_rechecked": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\num-integer-0.1.47.crate",
+      "archive_bytes": 23502,
+      "archive_sha256_verified": true,
+      "manifest_snapshot": "num-integer-0.1.47.Cargo.toml.txt",
+      "manifest_sha256": "a0fc4aee99b0663bb80ce2fc8052491b7e28872765711266faddb2ed0474cb96",
+      "licenses": [
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-integer-0.1.47/LICENSE-APACHE.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        },
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-integer-0.1.47/LICENSE-MIT.txt",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+        }
+      ],
+      "cargo_resolved": false,
+      "built": false
+    },
+    {
+      "name": "num-traits",
+      "version": "0.2.19",
+      "license": "MIT OR Apache-2.0",
+      "declared_rust_version": "1.60",
+      "url": "https://static.crates.io/crates/num-traits/num-traits-0.2.19.crate",
+      "registry_checksum": "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841",
+      "archive_sha256": "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841",
+      "dependencies": {
+        "libm": {
+          "version": "0.2.0",
+          "optional": true
+        }
+      },
+      "build_dependencies": {
+        "autocfg": {
+          "version": "1"
+        }
+      },
+      "features": {
+        "default": [
+          "std"
+        ],
+        "i128": [],
+        "libm": [
+          "dep:libm"
+        ],
+        "std": []
+      },
+      "archive_path_rechecked": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\num-traits-0.2.19.crate",
+      "archive_bytes": 51631,
+      "archive_sha256_verified": true,
+      "manifest_snapshot": "num-traits-0.2.19.Cargo.toml.txt",
+      "manifest_sha256": "dd701a0da6cce7e6e047cc944b2330f3c5e48cd64329e10942ea7d9299d435be",
+      "licenses": [
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-traits-0.2.19/LICENSE-APACHE.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        },
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-traits-0.2.19/LICENSE-MIT.txt",
+          "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+        }
+      ],
+      "cargo_resolved": false,
+      "built": false
+    },
+    {
+      "name": "autocfg",
+      "version": "1.5.1",
+      "license": "Apache-2.0 OR MIT",
+      "declared_rust_version": "1.0",
+      "url": "https://static.crates.io/crates/autocfg/autocfg-1.5.1.crate",
+      "registry_checksum": "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53",
+      "archive_sha256": "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53",
+      "dependencies": {},
+      "build_dependencies": {},
+      "features": {},
+      "archive_path_rechecked": "C:\\Users\\xiaoc\\AppData\\Local\\Temp\\xiao-b2-freeze-close-deps-82d5c4a32e0e4b928682a781d9243467\\autocfg-1.5.1.crate",
+      "archive_bytes": 18911,
+      "archive_sha256_verified": true,
+      "manifest_snapshot": "autocfg-1.5.1.Cargo.toml.txt",
+      "manifest_sha256": "ed7c832b4250c3be736e040d68688c2b83a5b164a93ef533e61532cbe0d44e99",
+      "licenses": [
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/autocfg-1.5.1/LICENSE-APACHE.txt",
+          "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+        },
+        {
+          "file": "../../20o-b2-freeze-close/entry-20261103/licenses/autocfg-1.5.1/LICENSE-MIT.txt",
+          "sha256": "27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac"
+        }
+      ],
+      "cargo_resolved": false,
+      "built": false
+    }
+  ],
+  "pinned_toolchain": "1.96.0",
+  "workspace_declared_rust_version": "1.85",
+  "cargo_resolve_run": false,
+  "cargo_files_modified": false,
+  "platform_builds_run": false,
+  "performance_measurement_performed": false
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "phase": "F-C_complete",
+  "entry_head": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+  "confirmed": [
+    "F-7a",
+    "F-7b",
+    "F-3a",
+    "F-3b",
+    "F-3c"
+  ],
+  "requests": [],
+  "decision_receipts": "decision-receipts.json",
+  "f_d_started": false,
+  "product_started": false,
+  "decision_status": "five_subitems_confirmed",
+  "closeout_complete": true
+}

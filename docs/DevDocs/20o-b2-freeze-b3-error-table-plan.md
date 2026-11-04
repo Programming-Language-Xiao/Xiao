@@ -1,10 +1,12 @@
 # 20O-B2-FREEZE-B3. 错误精表与优先级裁定规划
 
 > **这是 F-B3 的裁定规划，不写产品函数、依赖锁、intrinsic、ABI、诊断表或测试实现。**
-> 产品基线为`59a82934`、工作入口为`537ce4ec`；F-12a/F-12b/F-12c全部确认，当前台账28/2（2026-11-05）。
+> 产品基线为`59a82934`、工作入口为`537ce4ec`；F-12a/F-12b/F-12c全部确认，F-B3退出台账28/2（2026-11-05）。
 > 本批只冻结错误编号、类别、触发条件、优先级和 C ABI 状态映射，不进入 F-C，更不进入 B2-A/B。
 >
 > `cmath` 仍为 planned，Runtime ABI 仍为 1.18、`CODEGEN_VERSION` 仍为 20；本批不改活动诊断表。
+
+本页28/2及F-C未开始记录F-B3退出时点；后续总进度见[实时台账](assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json)。
 
 ## 一、入口与事实
 
@@ -14,7 +16,7 @@
 | F-A | 七项确认，25/5 退出 |
 | F-B1 | F-5 已确认，26/4 退出 |
 | F-B2 | F-6已确认，以27/3退出 |
-| F-B3 | F-12三项已确认；当前28/2，仅剩F-3、F-7 |
+| F-B3 | F-12三项已确认，以28/2退出；当时仅剩F-3、F-7 |
 | 版本/产品 | ABI 1.18、生成器 20、活动 intrinsic 最大 32；cmath planned；无产品/ABI 实施 |
 | 最近 CI | `59a82934` workspace `41874054683`成功；maintenance `41874054753`第1次尝试整体failure，macOS作业126728553452未取得runner而取消，其余五作业成功；原始API已归档，不能写成三平台全绿或核销历史债务 |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
