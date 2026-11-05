@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "entry_head": "04bca101c99887edabd80d7de2d1305ba4793cc3",
+  "scope": "B2-A规划签字防漂移与分批映射；无产品实现授权",
+  "f_d_baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+  "signed_body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+  "signed_draft_full_sha256": "45fe0b27b9b7783a6872c325b64f8a5eaf1e3891a3fac406f506d9191eab359f",
+  "signed_ledger_items_sha256": "999fbfa7988e03d67444f1d51aa1cec86c2cd9f1095ef1674c9a9ba9943f76a7",
+  "actual_f_d_approvals": 3,
+  "decision_status": [
+    30,
+    0
+  ],
+  "f_d_signature_status": "signed",
+  "joint_freeze_activated": true,
+  "product_implementation_started": false,
+  "contract_map": [
+    {
+      "id": "F-1",
+      "signed_section": "§五/舍入",
+      "b2_a": "精确有限/不使用显式precision或默认上下文",
+      "deferred_to_b2_b": "lfloat_divide七种模式与有效数字接口"
+    },
+    {
+      "id": "F-2",
+      "signed_section": "§七/cmath",
+      "b2_a": "现有有限二进制来源转换不扩域",
+      "deferred_to_b2_b": "15函数域/特殊值、float **共享内核"
+    },
+    {
+      "id": "F-3",
+      "signed_section": "§六",
+      "b2_a": "D/W/H、lint/lfloat适用算术/转换/商余/身份、OS峰值与受控测量",
+      "deferred_to_b2_b": "显式precision除法工作路径"
+    },
+    {
+      "id": "F-4",
+      "signed_section": "§五/lfloat // % **",
+      "b2_a": "floor配对、数值提升、幂域与快路径",
+      "deferred_to_b2_b": null
+    },
+    {
+      "id": "F-5",
+      "signed_section": "§5.1",
+      "b2_a": "保持现有intrinsic/ABI，不分配新ID或C符号",
+      "deferred_to_b2_b": "33～48及新函数签名/状态"
+    },
+    {
+      "id": "F-6",
+      "signed_section": "§8.5",
+      "b2_a": "仅内部1.18/20快照，绑定源码/Runtime/缓存身份",
+      "deferred_to_b2_b": "最终1.19/21及旧/新原件精确拒绝矩阵"
+    },
+    {
+      "id": "F-7",
+      "signed_section": "§四",
+      "b2_a": "六包约束/许可/锁策略与受控环境；实际落地须本规划另批获准",
+      "deferred_to_b2_b": "cmath直接libm用途"
+    },
+    {
+      "id": "F-8",
+      "signed_section": "§七/§8.4",
+      "b2_a": "精确二进制承接、向零截断、最近偶数、子正规/负零和溢出边界",
+      "deferred_to_b2_b": null
+    },
+    {
+      "id": "F-9",
+      "signed_section": "§七/误差参考",
+      "b2_a": "不拿libm/MPFR当本批产品内核，不生成cmath成绩",
+      "deferred_to_b2_b": "MPFR独立离线参考、cmath容差与float **"
+    },
+    {
+      "id": "F-10",
+      "signed_section": "§8.1～8.3",
+      "b2_a": "规范身份/保留显示scale、零与逐运算结果尺度",
+      "deferred_to_b2_b": "显式precision除法输出"
+    },
+    {
+      "id": "F-11",
+      "signed_section": "§8.1/8.4",
+      "b2_a": "str→整数仍码点，仅str→lfloat数字解析，float/sfloat显示",
+      "deferred_to_b2_b": null
+    },
+    {
+      "id": "F-12",
+      "signed_section": "§5.2",
+      "b2_a": "已冻033/034、旧码类别、适用优先级/现有通路，不增ABI状态",
+      "deferred_to_b2_b": "新16入口的精确C状态6/out验证"
+    }
+  ],
+  "signed_objects": [
+    {
+      "file": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "45fe0b27b9b7783a6872c325b64f8a5eaf1e3891a3fac406f506d9191eab359f"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+      "sha256": "9f075bf7f6256ea72a23ba7541bb05e8050f1f318b23f0ac3ae93e152abfccfe"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/signature-baseline.json",
+      "sha256": "e70b6e8132a63a278fccbd41fc9cebf6b81326073358a3d9fb3132eaa1d8a7e5"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/decision-receipts.json",
+      "sha256": "b61cfd0cd101bdb0bab801aa5b50fac83e505999b3667c9aa3099e1eb63785d2"
+    }
+  ],
+  "cargo_run": false,
+  "new_product_tests_run": false,
+  "b1_721_remeasured": false
+}

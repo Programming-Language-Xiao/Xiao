@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "phase": "B2-A_planning_review",
+  "entry_head": "04bca101c99887edabd80d7de2d1305ba4793cc3",
+  "scope": "仅规划文档、既有签字/源码及入口CI核对；无Cargo解析/构建、新产品测试或性能成绩",
+  "status": "passed",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "check-layout.log"
+    },
+    {
+      "command": "cmd /c git diff --exit-code 04bca101 -- core/rust stdlib tests .github/workflows tools .cargo/config.toml docs/module-registry.json .gitattributes package.json bun.lock docs/UseDocs docs/DevDocs/20o-b2-freeze-draft.md docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json docs/DevDocs/assets/20o-b2-freeze-d",
+      "exit_code": 0
+    },
+    {
+      "command": "cmd /c git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "decision_status": [
+    30,
+    0
+  ],
+  "f_d_signature_status": "signed",
+  "joint_freeze_activated": true,
+  "implementation_plan_approved": false,
+  "product_implementation_started": false,
+  "actual_runtime_abi": "1.18",
+  "actual_codegen": 20,
+  "active_intrinsic_max": 32,
+  "cmath": "planned",
+  "source_fact_files": 12,
+  "exact_contract_groups_mapped": 12,
+  "actual_b2_a_approval_answers": 0,
+  "cargo_resolve_run": false,
+  "cargo_builds_run": false,
+  "new_product_tests_run": false,
+  "new_performance_measurements": false,
+  "b1_721_remeasured": false
+}

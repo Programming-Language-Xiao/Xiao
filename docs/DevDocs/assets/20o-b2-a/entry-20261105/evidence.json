@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "entry_head": "04bca101c99887edabd80d7de2d1305ba4793cc3",
+  "status": "B2-A实施规划与只读证据准备完成，门禁通过；A-P1/A-P2/A-P3待实际答复，产品未开工",
+  "plan_audit": "plan-audit.json",
+  "source_facts": "source-facts.json",
+  "signature_audit": "signature-and-scope-audit.json",
+  "decision_requests": "decision-requests.json",
+  "predecessor_ci": "ci-predecessor-943db5b1.json",
+  "checks": "checks.json",
+  "implementation_plan_approved": false,
+  "product_implementation_started": false,
+  "decision_status": [
+    30,
+    0
+  ],
+  "f_d_signature_status": "signed",
+  "actual_runtime_abi": "1.18",
+  "actual_codegen": 20,
+  "cmath": "planned",
+  "files": [
+    {
+      "file": ".gitattributes",
+      "sha256": "6c2de176b555b45644df22700eb18ecfcff348311eb894a5029d326510e2179f"
+    },
+    {
+      "file": "README.md",
+      "sha256": "be88744adf4cd44322a4a90c87f524211d3bdcbcbf86c451dafc370d91e766fb"
+    },
+    {
+      "file": "check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "file": "check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "file": "check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "file": "checks.json",
+      "sha256": "b6ceb6184b7c9cbaba16e521b12c43b07265ef6e3022ea8accc21f3c4e070d2a"
+    },
+    {
+      "file": "ci-predecessor-943db5b1.json",
+      "sha256": "b07c8f9ec05fd890282b98dce10ca9b0cfdda75fc2ef91c06adb1552596c98a3"
+    },
+    {
+      "file": "decision-requests.json",
+      "sha256": "fcb8547d7e5b984283699a41ba99135ea109bdaa3f9f8824b625feb35ca5c42d"
+    },
+    {
+      "file": "entry-maintenance-push-runs-api.json",
+      "sha256": "a2790a384d7d281e7395679000c35d27768d89dbd7052f725b8f4688beb59915"
+    },
+    {
+      "file": "entry-workspace-attempt1-jobs-api.json",
+      "sha256": "3090fc7c45230eb33b640632d0099ec9f96f4e692e4750c2dfdf487a732b0540"
+    },
+    {
+      "file": "entry-workspace-run-api.json",
+      "sha256": "63647aee2ee820c1350da5fde28522c54890e9f18d3b6c18bf29fc2654e54ac3"
+    },
+    {
+      "file": "plan-audit.json",
+      "sha256": "af9dd4eadb92ec8b55a77febcd19c9fc56cf1e16d4d073bb18faaf37fef82fd0"
+    },
+    {
+      "file": "signature-and-scope-audit.json",
+      "sha256": "b08ba1a6fe387681b2cf017976085727dc9e1d864938b1b4ce898d37afc33fd4"
+    },
+    {
+      "file": "source-facts.json",
+      "sha256": "08212bf0db339a6d172b451a601cfd806a761b36f6d3944762b2d75f383cd4be"
+    }
+  ]
+}

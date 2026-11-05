@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "entry_head": "04bca101c99887edabd80d7de2d1305ba4793cc3",
+  "product_baseline": "8dfbc89bfe0f879c6199a10d2c0ec07b6f52b2be",
+  "scope": "只读源码核对，不代表产品/解析/构建/性能验证",
+  "actual_runtime_abi": "1.18",
+  "actual_codegen": 20,
+  "active_intrinsic_max": 32,
+  "id100": "tombstone",
+  "cmath": "planned",
+  "sources": [
+    {
+      "path": "core/rust/crates/xiao-runtime/src/value/mod.rs",
+      "git_text_sha256": "cf7e24499b5e2d4646ebd15bae061153d5fd5b9ee4e9db7f1424f430c1afd4c5",
+      "fact": "文本变体与按原文Eq/Hash",
+      "read_only_checks": [
+        {
+          "literal": "Lint(String)",
+          "match_count": 1,
+          "first_line": 508
+        },
+        {
+          "literal": "Lfloat(String)",
+          "match_count": 1,
+          "first_line": 514
+        },
+        {
+          "literal": "(Self::Lint(left), Self::Lint(right)) => left == right",
+          "match_count": 1,
+          "first_line": 557
+        },
+        {
+          "literal": "(Self::Lfloat(left), Self::Lfloat(right)) => left == right",
+          "match_count": 1,
+          "first_line": 560
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/src/value/ops.rs",
+      "git_text_sha256": "b36d82cc6102b31173d40794ec9a8d3971438ef20ed94f4f1167796c33041b72",
+      "fact": "NumericPair目前只支持定宽数值，部分lint经i128",
+      "read_only_checks": [
+        {
+          "literal": "enum NumericPair",
+          "match_count": 1,
+          "first_line": 24
+        },
+        {
+          "literal": "NumericPair::Int",
+          "match_count": 8,
+          "first_line": 97
+        },
+        {
+          "literal": "NumericPair::Float",
+          "match_count": 8,
+          "first_line": 99
+        },
+        {
+          "literal": ".parse::<i128>()",
+          "match_count": 2,
+          "first_line": 377
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-types/src/numeric.rs",
+      "git_text_sha256": "b48f960e50efe28011d052fd48f2fb4c2cd671aa90077f288db8f9310b45b7f2",
+      "fact": "已有提升和floor/remainder类型分派",
+      "read_only_checks": [
+        {
+          "literal": "pub fn parse_integer_literal",
+          "match_count": 1,
+          "first_line": 115
+        },
+        {
+          "literal": "pub fn binary_scalar_type",
+          "match_count": 1,
+          "first_line": 250
+        },
+        {
+          "literal": "BinaryOperator::FloorDivide",
+          "match_count": 1,
+          "first_line": 329
+        },
+        {
+          "literal": "BinaryOperator::Remainder",
+          "match_count": 1,
+          "first_line": 329
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-bytecode/src/encode/tags.rs",
+      "git_text_sha256": "13956daf081e25c8341acb97f5bbce4caa8bb253889725af7d42b70cd721b136",
+      "fact": "既有常量标签2/5",
+      "read_only_checks": [
+        {
+          "literal": "ScalarType::Lint => 2",
+          "match_count": 1,
+          "first_line": 164
+        },
+        {
+          "literal": "ScalarType::Lfloat => 5",
+          "match_count": 1,
+          "first_line": 167
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-vm/src/semantics/exec.rs",
+      "git_text_sha256": "1d6ef693a7bebc59f062d15d96e31efcfd3669133a3eefd04a13c13895442205",
+      "fact": "VM常量仍直接恢复文本",
+      "read_only_checks": [
+        {
+          "literal": "TacConstant::Lint(text) => RuntimeValue::Lint(text.clone())",
+          "match_count": 1,
+          "first_line": 2224
+        },
+        {
+          "literal": "TacConstant::Lfloat(text) => RuntimeValue::Lfloat(text.clone())",
+          "match_count": 1,
+          "first_line": 2227
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/src/vm_concurrency.rs",
+      "git_text_sha256": "8048cc0b50d55d59583f43ddbd74947ea4c1a3286de88e4d6862f2af77cc9cb0",
+      "fact": "并发恢复仍直接包装文本",
+      "read_only_checks": [
+        {
+          "literal": "XconValue::Lint(value) => RuntimeValue::Lint(value)",
+          "match_count": 1,
+          "first_line": 368
+        },
+        {
+          "literal": "XconValue::Lfloat(value) => RuntimeValue::Lfloat(value)",
+          "match_count": 1,
+          "first_line": 371
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/src/abi.rs",
+      "git_text_sha256": "dd4dcf4d5466d2707ccc2b429464312fa505bd0f66173e521202db4a0f12b42a",
+      "fact": "ABI按既有标签恢复并构造文本数值",
+      "read_only_checks": [
+        {
+          "literal": "XiaoValueTag::Lint | XiaoValueTag::Lfloat | XiaoValueTag::Str",
+          "match_count": 1,
+          "first_line": 564
+        },
+        {
+          "literal": "pub extern \"C\" fn xiao_runtime_value_lint_owned",
+          "match_count": 1,
+          "first_line": 2093
+        },
+        {
+          "literal": "pub extern \"C\" fn xiao_runtime_value_lfloat_owned",
+          "match_count": 1,
+          "first_line": 2109
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/src/serialization.rs",
+      "git_text_sha256": "97d816888dbc78597b4d49c2d380e2530aa64afb0718ac640a82fe7b10df7e18",
+      "fact": "XCON仍为v1，数值载荷文本只验UTF-8",
+      "read_only_checks": [
+        {
+          "literal": "pub const XCON_VERSION: u16 = 1;",
+          "match_count": 1,
+          "first_line": 11
+        },
+        {
+          "literal": "3 => Ok(XconValue::Lint(",
+          "match_count": 1,
+          "first_line": 356
+        },
+        {
+          "literal": "6 => Ok(XconValue::Lfloat(",
+          "match_count": 1,
+          "first_line": 365
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/toolchain.rs",
+      "git_text_sha256": "3286df6a457ab70a3fb71c702355cfd7f74ac691802447347213948e30a6fe4f",
+      "fact": "缓存指纹含生成器/ABI/Runtime内容",
+      "read_only_checks": [
+        {
+          "literal": "codegen={codegen_version};abi={ABI_ENCODED_VERSION}",
+          "match_count": 1,
+          "first_line": 190
+        },
+        {
+          "literal": "fn runtime_fingerprint(path: &Path)",
+          "match_count": 1,
+          "first_line": 1315
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-diagnostics/src/lib.rs",
+      "git_text_sha256": "e984589b5fccb28f192cce7b39a240b55df363af83d1026f37b029e7d67aff2e",
+      "fact": "既有009/011/012/013；033/034未进活动表",
+      "read_only_checks": [
+        {
+          "literal": "pub const NUMERIC_OVERFLOW_CODE",
+          "match_count": 1,
+          "first_line": 35
+        },
+        {
+          "literal": "pub const ALLOCATION_CODE",
+          "match_count": 1,
+          "first_line": 39
+        },
+        {
+          "literal": "pub const INVALID_VALUE_CODE",
+          "match_count": 1,
+          "first_line": 41
+        },
+        {
+          "literal": "pub const DIVISION_BY_ZERO_CODE",
+          "match_count": 1,
+          "first_line": 43
+        }
+      ]
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime/Cargo.toml",
+      "git_text_sha256": "74ec93aa0536163f2c7fcd08996f41647f45141caf44f9423dc3e7fa5138f2d1",
+      "fact": "未添加大数依赖",
+      "read_only_checks": [
+        {
+          "literal": "[dependencies]",
+          "match_count": 1,
+          "first_line": 20
+        },
+        {
+          "literal": "xiao-runtime-abi",
+          "match_count": 2,
+          "first_line": 23
+        }
+      ]
+    },
+    {
+      "path": "docs/module-registry.json",
+      "git_text_sha256": "c1f9a160eb3cbc9137e9e4d88dad7dc626d6af774bff47d0ccdc557f3dc14ba9",
+      "fact": "cmath planned且code/tests为空",
+      "read_only_checks": [],
+      "json_checks": [
+        {
+          "selector": "modules[id=stdlib.cmath]",
+          "match_count": 1,
+          "status": "planned",
+          "code": [],
+          "tests": []
+        }
+      ]
+    }
+  ],
+  "cargo_run": false,
+  "product_tests_run": false
+}

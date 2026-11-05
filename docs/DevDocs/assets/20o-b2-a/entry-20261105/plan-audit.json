@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "entry_head": "04bca101c99887edabd80d7de2d1305ba4793cc3",
+  "scope": "待审实施规划的静态对账，不是实施批准或产品证据",
+  "plan_file": "docs/DevDocs/20o-b2-a-implementation-plan.md",
+  "plan_git_text_sha256": "3e76188c34ecc4bef6709652bef41903d812240abfe862b2c95645fa5c4587be",
+  "plan_git_blob": "5305931cb7914e6e0918da9e2490a6177eefc28d",
+  "required_sections": [
+    "A0",
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6",
+    "A7",
+    "5.1",
+    "5.2",
+    "5.3"
+  ],
+  "approval_items": [
+    "A-P1",
+    "A-P2",
+    "A-P3"
+  ],
+  "resolved_review_findings": [
+    "str→lint保留单码点，数字解析仅str→lfloat",
+    "033/034按F-12在获准A1落实诊断/消息目录，不新增ABI状态",
+    "A2/A3/A4内核退出与A5全语言两后端退出分开",
+    "恢复入口与无分配Eq/Hash同批保证不变量",
+    "B2-A受控release性能与B1默认功能/721条分开",
+    "教程完整示例与独立fixture进入精确门禁，cmath仍planned",
+    "合法产品修改范围与不变ABI/格式边界分开"
+  ],
+  "implementation_plan_approved": false,
+  "product_implementation_started": false
+}

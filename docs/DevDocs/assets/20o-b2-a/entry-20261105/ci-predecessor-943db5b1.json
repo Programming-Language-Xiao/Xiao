@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-05T08:38:34.170888+00:00",
+  "entry_head": "04bca101c99887edabd80d7de2d1305ba4793cc3",
+  "source_commit": "943db5b1636208e0f1eaa2431a76e7aae2ec2049",
+  "scope": "B2-A规划前置943db5b1的既有CI；不是04bca101或本轮规划提交的执行成绩，更不是B2-A产品验证",
+  "workspace": {
+    "id": 41981794413,
+    "name": "Xiao workspace gates",
+    "head_sha": "943db5b1636208e0f1eaa2431a76e7aae2ec2049",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41981794413"
+  },
+  "workspace_jobs": [
+    {
+      "id": 127093336691,
+      "name": "Linux workspace gates",
+      "head_sha": "943db5b1636208e0f1eaa2431a76e7aae2ec2049",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41981794413/job/127093336691"
+    }
+  ],
+  "maintenance": {
+    "triggered": false,
+    "classification": "not_triggered_path_filter",
+    "not_a_pass": true,
+    "workflow_source": ".github/workflows/maintenance-regression.yml",
+    "workflow_sha256": "847c60595d9978d5276ce0aa7115e812d5cb6808d44ff108940be0b8da20273d",
+    "push_paths": [
+      ".github/workflows/maintenance-regression.yml",
+      "core/rust/**",
+      "tests/fuzz/**",
+      "tests/benchmarks/**",
+      "tests/fixtures/**",
+      "docs/UseDocs/library/**",
+      "tools/gates/b1-probe-guards.ps1",
+      "stdlib/**",
+      ".gitattributes"
+    ],
+    "changed_paths": [
+      "docs/DevDocs/20o-b2-freeze-d-signature-plan.md",
+      "docs/DevDocs/20o-b2-numeric-foundation-plan.md"
+    ],
+    "matched_paths": [],
+    "diff_argv": [
+      "cmd",
+      "/c",
+      "git",
+      "diff",
+      "--name-only",
+      "9e14e82c",
+      "943db5b1636208e0f1eaa2431a76e7aae2ec2049"
+    ]
+  },
+  "raw_api_records": [
+    {
+      "file": "entry-workspace-run-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41981794413",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41981794413"
+      ],
+      "original_response_sha256": "63647aee2ee820c1350da5fde28522c54890e9f18d3b6c18bf29fc2654e54ac3",
+      "archived_sha256": "63647aee2ee820c1350da5fde28522c54890e9f18d3b6c18bf29fc2654e54ac3"
+    },
+    {
+      "file": "entry-workspace-attempt1-jobs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41981794413/attempts/1/jobs?per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41981794413/attempts/1/jobs?per_page=100"
+      ],
+      "original_response_sha256": "3090fc7c45230eb33b640632d0099ec9f96f4e692e4750c2dfdf487a732b0540",
+      "archived_sha256": "3090fc7c45230eb33b640632d0099ec9f96f4e692e4750c2dfdf487a732b0540"
+    },
+    {
+      "file": "entry-maintenance-push-runs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/workflows/maintenance-regression.yml/runs?head_sha=943db5b1636208e0f1eaa2431a76e7aae2ec2049&event=push&per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/workflows/maintenance-regression.yml/runs?head_sha=943db5b1636208e0f1eaa2431a76e7aae2ec2049&event=push&per_page=100"
+      ],
+      "original_response_sha256": "a2790a384d7d281e7395679000c35d27768d89dbd7052f725b8f4688beb59915",
+      "archived_sha256": "a2790a384d7d281e7395679000c35d27768d89dbd7052f725b8f4688beb59915"
+    }
+  ],
+  "cargo_run_locally": false,
+  "b1_721_remeasured": false,
+  "historical_19_11_22_debts_closed": false
+}
