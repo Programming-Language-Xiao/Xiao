@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "scope": "F-D前置只读状态；未执行产品/构建/性能测量",
+  "actual_runtime_abi": "1.18",
+  "actual_codegen": 20,
+  "active_intrinsic_max": 32,
+  "id100": "tombstone",
+  "cmath": "planned",
+  "sources": [
+    {
+      "file": "core/rust/crates/xiao-runtime-abi/src/lib.rs",
+      "git_text_sha256": "1968f078091035eb996266c75638d35b7cc9b3f7cfb8eb229672fdd6909381bd",
+      "read_only_checks": [
+        {
+          "pattern": "pub const ABI_MINOR_VERSION: u32 = 18;",
+          "first_line": 26
+        }
+      ]
+    },
+    {
+      "file": "core/rust/crates/xiao-codegen-llvm/src/lib.rs",
+      "git_text_sha256": "67d9c47e966439198c136b2aae2aaf04e029a9b100d48380c1076deb9b4ae249",
+      "read_only_checks": [
+        {
+          "pattern": "pub const CODEGEN_VERSION: u32 = 20;",
+          "first_line": 100
+        }
+      ]
+    },
+    {
+      "file": "core/rust/crates/xiao-intrinsics/intrinsics.json",
+      "git_text_sha256": "23ab5d2a03b3246fb381d24a5b837105f651036f79aad65f8f176823049241d5",
+      "read_only_checks": []
+    },
+    {
+      "file": "docs/module-registry.json",
+      "git_text_sha256": "c1f9a160eb3cbc9137e9e4d88dad7dc626d6af774bff47d0ccdc557f3dc14ba9",
+      "read_only_checks": []
+    },
+    {
+      "file": ".github/workflows/maintenance-regression.yml",
+      "git_text_sha256": "847c60595d9978d5276ce0aa7115e812d5cb6808d44ff108940be0b8da20273d",
+      "read_only_checks": []
+    }
+  ]
+}

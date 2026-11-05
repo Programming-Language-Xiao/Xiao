@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "phase": "F-D_A_pre_signature",
+  "entry_head": "459f9e5db0200bad178100bebe73915c61c58fff",
+  "scope": "签字前只读门禁与来源核验；不替代实际签字，不执行B2产品或性能",
+  "status": "passed",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "pre-check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "pre-check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "pre-check-layout.log"
+    },
+    {
+      "command": "cmd /c git diff --exit-code 0a93f957 -- core/rust stdlib tests .github/workflows tools .cargo/config.toml docs/module-registry.json .gitattributes package.json bun.lock docs/UseDocs",
+      "exit_code": 0
+    },
+    {
+      "command": "cmd /c git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "@'\nimport pathlib,subprocess,sys\nreadme=pathlib.Path('docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/README.md').read_text(encoding='utf-8')\nblock=readme.split('```powershell\\n',1)[1].split('\\n```',1)[0]\nassert block.startswith(\"@'\\n\") and block.endswith(\"\\n'@ | python -\")\nresult=subprocess.run([sys.executable,'-'],input=block[3:-len(\"\\n'@ | python -\")].encode('utf-8'),check=True,stdout=subprocess.PIPE)\nprint(result.stdout.decode('utf-8'))\n'@ | python -",
+      "exit_code": 0,
+      "log": "historical-104-replay.log"
+    }
+  ],
+  "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+  "decision_status": [
+    30,
+    0
+  ],
+  "signature_status": "not_started",
+  "joint_freeze_activated": false,
+  "product_implementation_started": false,
+  "actual_runtime_abi": "1.18",
+  "actual_codegen": 20,
+  "active_intrinsic_max": 32,
+  "id100": "tombstone",
+  "cmath": "planned",
+  "historical_bindings_to_replay": 104,
+  "artifact_diff_format": "zero-context unified diff; preserve actual changes without whitespace-only context lines"
+}

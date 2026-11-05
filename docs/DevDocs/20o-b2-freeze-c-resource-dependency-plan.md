@@ -15,7 +15,8 @@
 | F-C 范围 | F-3（资源/工作量/性能）、F-7（依赖闭包/构建） |
 | 台账 | 30 confirmed / 0 pending；F-3/F-7全部确认，F-D未签字 |
 | 版本/产品 | ABI 1.18、生成器 20、活动 intrinsic 最大 32；cmath planned；无产品实施 |
-| 最近 CI | 收口提交`38d6120d`的workspace `41895438930`、maintenance `41895439116`第1次尝试均成功，维护回归六作业全绿，见[收口CI记录](assets/20o-b2-freeze-c/review-fix-20261105/ci-38d6120d.json)；入口8df及此前b846/59a的容量取消仍按原节点保留 |
+| F-C收口CI | 收口提交`38d6120d`的workspace `41895438930`、maintenance `41895439116`第1次尝试均成功，维护回归六作业全绿，见[收口CI记录](assets/20o-b2-freeze-c/review-fix-20261105/ci-38d6120d.json)；入口8df及此前b846/59a的容量取消仍按原节点保留 |
+| 后续复核CI | `0a93f957`的workspace `41953275349`成功；该提交只变更DevDocs及其assets，未命中维护工作流任何push.paths，maintenance未触发，不能记为通过，见[F-D前置CI记录](assets/20o-b2-freeze-d/entry-20261105/ci-entry-0a93f957.json) |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
 
 F-C最后两组精确项已收齐，当前**30/0**；F-D仍须单独签字，B2-A/B不在本批实施。

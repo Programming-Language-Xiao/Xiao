@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-05T02:56:05.195727+00:00",
+  "entry_head": "459f9e5db0200bad178100bebe73915c61c58fff",
+  "source_commit": "0a93f957c1e572a04b6c874c0967395f4fc50355",
+  "scope": "F-D前置入口CI；不是F-D签字、本轮最终提交或B2产品成绩",
+  "workspace": {
+    "id": 41953275349,
+    "name": "Xiao workspace gates",
+    "head_sha": "0a93f957c1e572a04b6c874c0967395f4fc50355",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41953275349"
+  },
+  "workspace_jobs": [
+    {
+      "id": 127002012990,
+      "name": "Linux workspace gates",
+      "head_sha": "0a93f957c1e572a04b6c874c0967395f4fc50355",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41953275349/job/127002012990"
+    }
+  ],
+  "maintenance": {
+    "triggered": false,
+    "push_api_run_count": 0,
+    "classification": "not_triggered_path_filter",
+    "not_a_pass": true,
+    "workflow_source": ".github/workflows/maintenance-regression.yml",
+    "workflow_git_blob": "b032cb728e2fc87f4dde355e714515fd9c101600",
+    "workflow_sha256": "847c60595d9978d5276ce0aa7115e812d5cb6808d44ff108940be0b8da20273d",
+    "push_paths": [
+      ".github/workflows/maintenance-regression.yml",
+      "core/rust/**",
+      "tests/fuzz/**",
+      "tests/benchmarks/**",
+      "tests/fixtures/**",
+      "docs/UseDocs/library/**",
+      "tools/gates/b1-probe-guards.ps1",
+      "stdlib/**",
+      ".gitattributes"
+    ],
+    "changed_paths": [
+      "docs/DevDocs/20o-b2-freeze-b3-error-table-plan.md",
+      "docs/DevDocs/20o-b2-freeze-c-resource-dependency-plan.md",
+      "docs/DevDocs/20o-official-library-program.md",
+      "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/README.md",
+      "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/checks.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/.gitattributes",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/README.md",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/check-docs.log",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/check-layout.log",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/check-usedocs.log",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/checks.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/ci-38d6120d.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/coverage-38d6120d.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/evidence.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/historical-replay.log",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/maintenance-attempt1-jobs-api.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/maintenance-run-api.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/usedocs-scope.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/workspace-attempt1-jobs-api.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/workspace-run-api.json"
+    ],
+    "matched_changed_paths": [],
+    "comparison_argv": [
+      "cmd",
+      "/c",
+      "git",
+      "diff",
+      "--name-only",
+      "38d6120d",
+      "0a93f957c1e572a04b6c874c0967395f4fc50355"
+    ],
+    "reason": "此次只变更DevDocs及assets，未命中维护工作流任一push.paths；并非工作流只监听UseDocs"
+  },
+  "raw_api_records": [
+    {
+      "file": "entry-workspace-run-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41953275349",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41953275349"
+      ],
+      "original_response_sha256": "b47405e8e8684b799c8e44b72e65e17616931ab85ccf0f4b69909f59983b6d43",
+      "archived_sha256": "b47405e8e8684b799c8e44b72e65e17616931ab85ccf0f4b69909f59983b6d43",
+      "normalization": "UTF-8/LF；保留全部原始字段"
+    },
+    {
+      "file": "entry-workspace-attempt1-jobs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41953275349/attempts/1/jobs?per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41953275349/attempts/1/jobs?per_page=100"
+      ],
+      "original_response_sha256": "f0cfd4407e2bb4d0dab4721a7fee50c0c7fc00a9bbb4c82792f1ef6ea5223284",
+      "archived_sha256": "f0cfd4407e2bb4d0dab4721a7fee50c0c7fc00a9bbb4c82792f1ef6ea5223284",
+      "normalization": "UTF-8/LF；保留全部原始字段"
+    },
+    {
+      "file": "entry-push-runs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs?head_sha=0a93f957c1e572a04b6c874c0967395f4fc50355&event=push&per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs?head_sha=0a93f957c1e572a04b6c874c0967395f4fc50355&event=push&per_page=100"
+      ],
+      "original_response_sha256": "ef46dfbcbc11295b36f5a33b6d11f789d7aa0dbd5541922e7e03f2ab119a5c5f",
+      "archived_sha256": "ef46dfbcbc11295b36f5a33b6d11f789d7aa0dbd5541922e7e03f2ab119a5c5f",
+      "normalization": "UTF-8/LF；保留全部原始字段"
+    },
+    {
+      "file": "entry-maintenance-push-runs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/workflows/maintenance-regression.yml/runs?head_sha=0a93f957c1e572a04b6c874c0967395f4fc50355&event=push&per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/workflows/maintenance-regression.yml/runs?head_sha=0a93f957c1e572a04b6c874c0967395f4fc50355&event=push&per_page=100"
+      ],
+      "original_response_sha256": "a2790a384d7d281e7395679000c35d27768d89dbd7052f725b8f4688beb59915",
+      "archived_sha256": "a2790a384d7d281e7395679000c35d27768d89dbd7052f725b8f4688beb59915",
+      "normalization": "UTF-8/LF；保留全部原始字段"
+    }
+  ],
+  "historical_19_11_22_debts_closed": false
+}

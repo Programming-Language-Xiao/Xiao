@@ -28,7 +28,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "9b77ae91aead5d07569663869ca846ed8c06a07765ad4b8075044c6c5e379d97"
+      "sha256": "a58da136294f40d5de9a676dd29a0546bedb5f5b3eeb2248e06d59dea0a0ec06"
     },
     {
       "file": "autocfg-1.5.1.Cargo.toml.txt",
@@ -127,5 +127,6 @@
   "closeout_ci": "../review-fix-20261105/ci-38d6120d.json",
   "historical_binding_inventory": "../review-fix-20261105/coverage-38d6120d.json",
   "post_closeout_review": "../review-fix-20261105/README.md",
-  "binding_scope_note": "files仅列当前F-C目录25项；提交说明中的104属于Git38d6120d的六份历史清单，后续复核记录另列"
+  "binding_scope_note": "files仅列当前F-C目录25项；提交说明中的104属于Git38d6120d的六份历史清单，后续复核记录另列",
+  "record_scope": "F-C退出时点；f_d_signed=false/joint_freeze_activated=false等为当时事实，当前签字状态见live_ledger；后续复核另有独立时点"
 }

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "entry_head": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+  "confirmed_groups": [
+    "F-3",
+    "F-7"
+  ],
+  "record_count": 5,
+  "authority": "实际逐项答复，预选不视为确认",
+  "receipts": [
+    {
+      "id": "F-7a",
+      "group": "F-7",
+      "phase": "F-C",
+      "question": "F-7a｜是否确认六包精确闭包及现有归档SHA-256：已确认的num-bigint 0.4.8、bigdecimal 0.4.11，再加libm 0.2.16、num-integer 0.1.47、num-traits 0.2.19、构建依赖autocfg 1.5.1？libm用default/arch、禁用unstable；整数底座用std/i128，num-traits不另开libm；不启用rand/serde等可选特性。libm保留MIT，其余五包保留上游MIT/Apache双许可原文；这不是构建通过确认。",
+      "answer": "确认版本、特性和来源表（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_5b0c1ca3b3f3430399ed1dff8039c81d\",0]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    },
+    {
+      "id": "F-7b",
+      "group": "F-7",
+      "phase": "F-C",
+      "question": "F-7b｜是否确认构建策略：直接依赖精确约束，六包版本/校验值由Cargo.lock固定，维护构建使用--locked；解析新增包、版本或特性超出冻结表时回裁定。受控构建子进程清理RUST_BIGDECIMAL_*，Xiao语义显式配置，不改全局环境。沿用Rust 1.96.0和现有三平台目标，记录工具/目标/环境/锁摘要；Cargo修改与真实构建留实施批，不推断未实测MSRV兼容，也不改现有rust-version声明。",
+      "answer": "确认锁定与构建策略（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_5b0c1ca3b3f3430399ed1dff8039c81d\",1]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    },
+    {
+      "id": "F-3a",
+      "group": "F-3",
+      "phase": "F-C",
+      "question": "F-3a｜是否确认刚补入冻结草案§6.1.1～6.1.5的精确表：共同预算保持原数值；加减按对齐长度+1、乘法按位数和检查工作值，最终按实际结果验收；精确除法先约分/判2、5因子，显式除法按有效数字缩放后只舍入一次；非平凡幂用平方求幂、最多64次大数乘法，不算多余平方。零例外、比较/哈希、转换、gcd/因子工作上界及失败边界均按表，错误顺序沿已确认F-12。",
+      "answer": "确认接纳与工作量精确表（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",0]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    },
+    {
+      "id": "F-3b",
+      "group": "F-3",
+      "phase": "F-C",
+      "question": "F-3b｜是否确认冻结草案§6.1.6～6.1.7的商余精确表：//先用精确数量级判断商位数，再有界对齐并检查负数floor进位；%按scale差分支，用最多64次有界模乘或虚拟补零比较求余，不物化巨大商，两个算子独立检查自身预算。例如1e100000 // 1e-100000报033，同输入%可为0；异号余数和D+1位对齐边界按表实际核对。",
+      "answer": "确认商余资源与工作量（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",1]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    },
+    {
+      "id": "F-3c",
+      "group": "F-3",
+      "phase": "F-C",
+      "question": "F-3c｜是否确认冻结草案§6.2完整性能协议：release VM/Runtime，Xiao原生O0/O3分记；VM≤10秒、原生≤2秒，OS驻留增量峰值≤64MiB；线性翻倍≤3、超线性≤5。五批独立进程各预热一次，短批≥50ms、校准至100ms、每次重复最多增16倍且上限2^24；时间取归一化中位数，内存含输入/上游暂存/输出并取保守最大峰值。缺可靠数据标不可验证，不删失败；来源身份与各平台计量按表。",
+      "answer": "确认性能与测量精确表（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",2]",
+      "authority": "星崽在本次会话直接答复",
+      "date": "2026-11-05"
+    }
+  ]
+}

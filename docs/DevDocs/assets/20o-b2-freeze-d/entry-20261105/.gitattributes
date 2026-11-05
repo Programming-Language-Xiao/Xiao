@@ -1,0 +1,6 @@
+*.json text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.diff text eol=lf
+*.log text eol=lf whitespace=-blank-at-eof
+.gitattributes text eol=lf

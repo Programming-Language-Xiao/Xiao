@@ -2,6 +2,7 @@
 
 入口与被复核提交：38d6120d。职责：同步20O总纲状态、补全104条历史绑定清单、登记收口CI、明确UseDocs覆盖并给F-B3历史句补“当时”。
 本轮只改文档和来源记录；30/0、F-D未签字、ABI1.18/生成器20、cmath planned及产品未开工保持原状态。
+此处记录0a93f957复核退出时点。evidence.json的current_entry_evidence指向后续前置复核更新后的当前F-C清单，historical_entry_evidence另存38d6120d的历史Git身份；历史104条始终以coverage-38d6120d.json为准。
 
 [历史绑定清单](coverage-38d6120d.json)来自Git提交38d6120d的六份清单，构成为11、10、17、17、24、25，合计104个不同路径。
 F-C单目录是25条，六份清单自身不计入104；本目录新增文件另由本次evidence.json记录，不追加到这个历史数字。

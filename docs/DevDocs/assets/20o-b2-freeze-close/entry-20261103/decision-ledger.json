@@ -363,7 +363,7 @@
     }
   ],
   "review_document": "docs/DevDocs/20o-b2-freeze-draft.md",
-  "review_document_sha256": "397759db2e849e8a726f4b3e47af5a4cd0161177eedefe2b6124d714a5a209ac",
+  "review_document_sha256": "7857599c175742389dede72b82730bd1aebe041d221d26bb1cc99f8e9852f935",
   "review_history": [
     {
       "commit": "67944184dbb44137040908f2efc8e4d52a6f0e27",
@@ -406,33 +406,29 @@
       "document": "docs/DevDocs/20o-b2-freeze-draft.md",
       "sha256": "b31216479e6f16bda8406af8301068de28f2d6d7cc563a68c2852dde03da9f8c",
       "scope": "F-C入口28/2；F-3/F-7当时未裁定"
+    },
+    {
+      "commit": "459f9e5db0200bad178100bebe73915c61c58fff",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "397759db2e849e8a726f4b3e47af5a4cd0161177eedefe2b6124d714a5a209ac",
+      "scope": "F-D前置整理前的F-C退出正文；只改历史状态措辞，不改变30条裁定"
     }
   ],
   "latest_review": {
-    "phase": "F-C_complete",
+    "phase": "F-D_prepared",
     "date": "2026-11-05",
-    "entry_head": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+    "entry_head": "459f9e5db0200bad178100bebe73915c61c58fff",
     "focus": [
-      "F-3",
-      "F-7"
+      "F-Da",
+      "F-Db",
+      "F-Dc"
     ],
-    "answered": [
-      "F-7a",
-      "F-7b",
-      "F-3a",
-      "F-3b",
-      "F-3c"
-    ],
-    "asked": [
-      "F-3a",
-      "F-3b",
-      "F-3c"
-    ],
-    "evidence": "../../20o-b2-freeze-c/entry-20261105/README.md",
+    "answered": [],
+    "evidence": "../../20o-b2-freeze-d/entry-20261105/README.md",
     "decisions_complete": true,
     "f_d_started": false,
     "product_started": false,
-    "gate_status": "docs_usedocs_layout_source_dependency_and_ci_integrity_passed"
+    "gate_status": "pre_signature_checks_recorded_separately"
   },
   "status_correction": {
     "entry_head": "f4f2f187b72c05d633cfccafea69e869a6433bb3",

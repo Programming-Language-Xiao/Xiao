@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "scope": "30条裁定来源核对，不新增第31条；F-D签字另计",
+  "decisions": [
+    {
+      "id": "R-1",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 0,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-2",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 1,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-3",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 2,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-4",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 3,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-5",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 4,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-6",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 5,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-7",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 6,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-8",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 7,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-9",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 8,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-10",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 9,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-11",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 10,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-12",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 11,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-13",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 12,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-14",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 13,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-15",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 14,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-16",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 15,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-17",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 16,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "R-18",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "source_record_index": 17,
+      "record_form": "historical_confirmed_summary",
+      "no_async_id_invented": true
+    },
+    {
+      "id": "F-1",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",0]"
+      ],
+      "actual_answers": [
+        "确认这些精确规则（推荐）"
+      ]
+    },
+    {
+      "id": "F-2",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",0]"
+      ],
+      "actual_answers": [
+        "确认逐函数规则（推荐）"
+      ]
+    },
+    {
+      "id": "F-3",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",0]",
+        "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",1]",
+        "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",2]"
+      ],
+      "actual_answers": [
+        "确认接纳与工作量精确表（推荐）",
+        "确认商余资源与工作量（推荐）",
+        "确认性能与测量精确表（推荐）"
+      ]
+    },
+    {
+      "id": "F-4",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_a6ec1a6b611c4cc18cad632fd77a80ba\",0]",
+        "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",0]",
+        "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",1]",
+        "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",2]"
+      ],
+      "actual_answers": [
+        "首批也开放//或%",
+        "同时开放//和%（推荐）",
+        "确认配对与尺度规则（推荐）",
+        "确认保留幂规则（推荐）"
+      ],
+      "additional_plain_text_answer": "采用推荐规则",
+      "plain_text_source_record_index": 11
+    },
+    {
+      "id": "F-5",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_Rf5AlvVEw4T7V7CfZ5NcMk8w\",0]",
+        "[\"request_user_input_async\",\"call_Rf5AlvVEw4T7V7CfZ5NcMk8w\",1]",
+        "[\"request_user_input_async\",\"call_Rf5AlvVEw4T7V7CfZ5NcMk8w\",2]"
+      ],
+      "actual_answers": [
+        "确认候选方案（推荐）",
+        "确认候选方案（推荐）",
+        "确认候选方案（推荐）"
+      ]
+    },
+    {
+      "id": "F-6",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",0]",
+        "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",1]",
+        "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",2]"
+      ],
+      "actual_answers": [
+        "确认拒绝与重生成（推荐）",
+        "确认仅内部验证（推荐）",
+        "确认接口兼容与交付边界（推荐）"
+      ]
+    },
+    {
+      "id": "F-7",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_5b0c1ca3b3f3430399ed1dff8039c81d\",0]",
+        "[\"request_user_input_async\",\"call_5b0c1ca3b3f3430399ed1dff8039c81d\",1]"
+      ],
+      "actual_answers": [
+        "确认版本、特性和来源表（推荐）",
+        "确认锁定与构建策略（推荐）"
+      ]
+    },
+    {
+      "id": "F-8",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_a6ec1a6b611c4cc18cad632fd77a80ba\",1]",
+        "[\"request_user_input_async\",\"call_7d11730e76b7410a8cf26ebaf4dc11d3\",0]"
+      ],
+      "actual_answers": [
+        "按舍入结果判溢出（推荐）",
+        "整数结果保留scale=0（推荐）"
+      ]
+    },
+    {
+      "id": "F-9",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",1]"
+      ],
+      "actual_answers": [
+        "确认容差与离线参考（推荐）"
+      ]
+    },
+    {
+      "id": "F-10",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",1]"
+      ],
+      "actual_answers": [
+        "确认定义与零例外（推荐）"
+      ]
+    },
+    {
+      "id": "F-11",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",2]"
+      ],
+      "actual_answers": [
+        "确认文本与输出规则（推荐）"
+      ]
+    },
+    {
+      "id": "F-12",
+      "status": "confirmed",
+      "source": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_15e634fac5d344edb2ac41ed83f5e3ac\",0]",
+        "[\"request_user_input_async\",\"call_15e634fac5d344edb2ac41ed83f5e3ac\",1]",
+        "[\"request_user_input_async\",\"call_15e634fac5d344edb2ac41ed83f5e3ac\",2]"
+      ],
+      "actual_answers": [
+        "保留这两项及完整映射（推荐）",
+        "确认完整顺序（推荐）",
+        "确认状态与所有权映射（推荐）"
+      ]
+    }
+  ],
+  "confirmed": 30,
+  "pending": 0,
+  "source_files": [
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "sha256": "f32a3e59038de8fb46fd60983396932f001e6fdcb7f1c8d65a843705b8f28a66"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/decision-receipts.json",
+      "sha256": "681127fb52e5048bdb38b3207214580137000c2a09ed7e505fac93642c673d48"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/decision-receipts.json",
+      "sha256": "78d2f0942709508f4332cfe3fdf786d92e12efbc37bf2925037ce78ae97aab26"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/decision-receipts.json",
+      "sha256": "f2b6a50c8c0008c3d15872c8d60657c518a20065061fe34a4262774b5ba412e6"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/decision-receipts.json",
+      "sha256": "5aca2310436f1979e7fc3894a94ed163e3e4bb76380b1230e77a1a187fd7b60b"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "sha256": "433db40949a3c1dd547275de61b264b9da2391143c7883b7ab475444f09df626"
+    }
+  ],
+  "numeric_tables_unchanged_vs_0a93f957": true,
+  "numeric_tables_sha256": "5e5341e02e45833acd54ad99f39481b194df758717c944d207ad50e4539d508e",
+  "f_c_resource_section_unchanged": true,
+  "f_c_historical_draft_blob_preserved": "42822acb04eae3e8f039ffebea0edc098d7a7cbe",
+  "remaining_wording_inventory": [
+    {
+      "line": 5,
+      "text": "来源为[数值基础规划](20o-b2-numeric-foundation-plan.md)与本次会话[逐条答复记录](assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json)；本页的“建议/待审”不等于已确认。",
+      "classification": "historical_or_confirmation_policy"
+    },
+    {
+      "line": 165,
+      "text": "F-4已确认首批同时开放lfloat的`//`和`%`，旧“不开放”建议不再适用。",
+      "classification": "historical_or_confirmation_policy"
+    },
+    {
+      "line": 645,
+      "text": "F-6已确认按精确版本边界拒绝旧原件，从B1源码在1.19/21重新生成回归；原先未确认的“旧原件直接兼容重放”建议不采用，也不另加迁移工具。",
+      "classification": "historical_or_confirmation_policy"
+    },
+    {
+      "line": 664,
+      "text": "### 8.6 实施执行点提案",
+      "classification": "implementation_planning_only_outside_30_numeric_decisions"
+    },
+    {
+      "line": 666,
+      "text": "建议复用现有VM/原生两个逻辑精确执行入口，追加独立B2语料，保留全部B1场景和各自标记，",
+      "classification": "implementation_planning_only_outside_30_numeric_decisions"
+    }
+  ],
+  "deferred_implementation_scope": "§8.6是后续实施规划/测试接线建议，不是新的数值裁定或产品实施授权"
+}

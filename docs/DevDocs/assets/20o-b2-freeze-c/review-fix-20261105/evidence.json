@@ -19,7 +19,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "6a940a04d209666ad6ab07a7d8e87349af013556aa13c703d6e613e9850c5aad"
+      "sha256": "f041ab4ac7a15e12ecc0c3196b04070f71b646e04db026e262f7d50a7249f760"
     },
     {
       "file": "check-docs.log",
@@ -70,11 +70,26 @@
       "sha256": "28e9196de01a2603fbce5e9328570abfd7defc496a7a3d70cbd6ae6e9bdeebdd"
     }
   ],
-  "reviewed_entry_evidence": {
-    "file": "../entry-20261105/evidence.json",
-    "sha256": "9baae69b1c94b6cba9a6f52353995e9ecfc71275f33eeffed7453adb0a82738b"
-  },
   "f_d_signed": false,
   "joint_freeze_activated": false,
-  "current_f_c_manifest_entries": 25
+  "current_f_c_manifest_entries": 25,
+  "current_entry_evidence": {
+    "file": "../entry-20261105/evidence.json",
+    "sha256": "33009241aa278e5ec3b66eba5129568d5167a3db1340f70467867ba756b2819b",
+    "content_source": "F-D前置修正后的当前工作树F-C清单；不代表38d6120d历史内容"
+  },
+  "historical_entry_evidence": {
+    "commit": "38d6120d01958221d48a92deff020e45397e1560",
+    "file": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+    "git_blob": "c8b84fe5867feba85f558ecdc6a63a7fc7fc9b97",
+    "sha256": "e523b51a51849732c2bbc20344b211e5f385741a605398666fd8b154a9c9d41d",
+    "scope": "历史F-C入口清单，104条仍从coverage-38d6120d.json复跑"
+  },
+  "field_scope_correction": {
+    "phase": "F-D_A",
+    "date": "2026-11-05",
+    "former_field": "reviewed_entry_evidence",
+    "current_field": "current_entry_evidence",
+    "decisions_changed": false
+  }
 }

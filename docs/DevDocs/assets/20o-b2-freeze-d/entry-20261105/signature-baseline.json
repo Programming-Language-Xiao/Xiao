@@ -1,0 +1,91 @@
+{
+  "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+  "schema_version": 1,
+  "entry_head": "459f9e5db0200bad178100bebe73915c61c58fff",
+  "date": "2026-11-05",
+  "hash_encoding": "SHA-256 over UTF-8/LF; no BOM; body removes only the unique complete status line including its LF",
+  "draft": {
+    "file": "docs/DevDocs/20o-b2-freeze-draft.md",
+    "before_snapshot": "draft-before-signature.txt",
+    "full_sha256_before": "7857599c175742389dede72b82730bd1aebe041d221d26bb1cc99f8e9852f935",
+    "status_line_number": 3,
+    "status_line_before": "状态：30条裁定全部confirmed、0 pending；F-A/F-B/F-C已完成，F-D仍待单独签字，整体尚未联合生效（2026-11-05）。",
+    "body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+    "body_bytes": 60383,
+    "allowed_status_line_after": "状态：30条裁定全部confirmed、0 pending；F-D已由星崽实际签字，B2联合冻结已激活；仅开放B2-A实施规划，B2-A/B产品仍未开工（2026-11-05）。"
+  },
+  "ledger": {
+    "file": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+    "before_snapshot": "ledger-before-signature.json",
+    "full_sha256_before": "6da57fd4d3a05aeffd87af75187f7549589d8a82b3cd69070e323430621b5ec7",
+    "decision_items_sha256": "999fbfa7988e03d67444f1d51aa1cec86c2cd9f1095ef1674c9a9ba9943f76a7",
+    "canonicalization": "json.dumps(items, ensure_ascii=False, sort_keys=True, separators=(comma, colon)); UTF-8, no trailing LF",
+    "confirmed": 30,
+    "pending": 0,
+    "f_d_signature_status_before": "not_started",
+    "joint_freeze_activated_before": false,
+    "product_implementation_started_before": false
+  },
+  "f3_f7_actual_receipts": {
+    "file": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/decision-receipts.json",
+    "snapshot": "f-c-receipts.snapshot.json",
+    "sha256": "5aca2310436f1979e7fc3894a94ed163e3e4bb76380b1230e77a1a187fd7b60b",
+    "record_count": 5
+  },
+  "historical_104_inventory": {
+    "file": "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/coverage-38d6120d.json",
+    "snapshot": "coverage-38d6120d.snapshot.json",
+    "sha256": "5e74997bf406ca542cd570ae9d8af6d80e292c59c3da8969faa324d6e81ba160",
+    "source_commit": "38d6120d01958221d48a92deff020e45397e1560",
+    "bindings": 104
+  },
+  "all_actual_decision_sources": [
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "sha256": "f32a3e59038de8fb46fd60983396932f001e6fdcb7f1c8d65a843705b8f28a66"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/decision-receipts.json",
+      "sha256": "681127fb52e5048bdb38b3207214580137000c2a09ed7e505fac93642c673d48"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/decision-receipts.json",
+      "sha256": "78d2f0942709508f4332cfe3fdf786d92e12efbc37bf2925037ce78ae97aab26"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/decision-receipts.json",
+      "sha256": "f2b6a50c8c0008c3d15872c8d60657c518a20065061fe34a4262774b5ba412e6"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/decision-receipts.json",
+      "sha256": "5aca2310436f1979e7fc3894a94ed163e3e4bb76380b1230e77a1a187fd7b60b"
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+      "sha256": "433db40949a3c1dd547275de61b264b9da2391143c7883b7ab475444f09df626"
+    }
+  ],
+  "decision_coverage": {
+    "file": "decision-coverage.json",
+    "sha256": "544be3c01b138b1e479e8ecd6ab6254bcf41b2773f7ec8ea0248afccf387a67e"
+  },
+  "signature_items": [
+    "F-Da",
+    "F-Db",
+    "F-Dc"
+  ],
+  "response_policy": "free text, no options or preselection; all three actual valid approvals required; conditional/refused/partial replies do not activate freezing",
+  "signature_is_not_decision_31": true,
+  "after_signature_boundary": {
+    "only_draft_status_line_may_change": true,
+    "ledger_items_must_match_signed_projection": true,
+    "ledger_state_provenance_changes_must_be_recorded": true,
+    "product_implementation_started": false,
+    "next_entry": "B2-A implementation planning only",
+    "actual_abi_codegen_remains": "1.18/20",
+    "b2_b_target": "1.19/21",
+    "cmath": "planned",
+    "b1_721": "historical; rerun all on new snapshot in B2-C",
+    "historical_19_11_22_debts_closed": false
+  }
+}

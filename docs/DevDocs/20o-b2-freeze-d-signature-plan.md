@@ -12,9 +12,9 @@
 | 代码入口 | `0a93f957`；已推送、工作区干净 |
 | 产品基线 | `8dfbc89b`；ABI 1.18、生成器 20、活动 intrinsic 最大 32、`cmath` planned |
 | 台账 | 30 confirmed / 0 pending；F-D为`not_started`；联合冻结未激活；产品未开工 |
-| 最近CI | `0a93f957`的workspace `41953275349`成功；maintenance未触发，因为其paths只含`docs/UseDocs/library/**`，本次没有UseDocs变更 |
+| 最近CI | `0a93f957`的workspace `41953275349`成功；该提交只变更DevDocs及其assets，未命中maintenance的任何push.paths（包含UseDocs/library、core/rust等），因此未触发，不记为通过 |
 | F-C复核 | [复核记录](assets/20o-b2-freeze-c/review-fix-20261105/README.md)已补104条构成、收口CI与UseDocs范围 |
-| 前置残留 | `reviewed_entry_evidence`的时点命名、F-C文档“最近CI”措辞 |
+| 前置修正 | F-C当前/历史清单已分开命名，CI时点措辞已修正；正文历史状态已整理，数值表/资源协议未变，签字准备见[F-D记录](assets/20o-b2-freeze-d/entry-20261105/README.md) |
 | 版本边界 | 仍为ABI 1.18、生成器20；B2-B才升1.19/21 |
 
 F-D不新增第31条裁定，也不重开F-1～F-12；它是30条精确契约的联合冻结签字闸门。
@@ -34,13 +34,16 @@ F-D不新增第31条裁定，也不重开F-1～F-12；它是30条精确契约的
 
 签字前先处理上一轮审核留下的两处证据口径，不改历史裁定：
 
-1. [复核证据](assets/20o-b2-freeze-c/review-fix-20261105/evidence.json)的`reviewed_entry_evidence`当前指向复核后的入口清单，不是`38d6120d`历史清单。
-   改名为当前清单并注明时点，或同时补历史哈希；历史104条继续以`coverage-38d6120d.json`为准。
+1. [复核证据](assets/20o-b2-freeze-c/review-fix-20261105/evidence.json)原`reviewed_entry_evidence`指向复核后的入口清单，现已改名`current_entry_evidence`并注明当前时点，另补`historical_entry_evidence`的38d6120d Git身份。
+   历史104条继续以`coverage-38d6120d.json`为准，不改原历史清单。
 2. F-C文档的“最近CI”改为“F-C收口CI”，并记录`0a93f957`的workspace运行与maintenance未触发的路径原因；不把未运行写成通过。
 3. 重新执行104条历史复跑、文档门禁和覆盖`docs/UseDocs`的产品边界检查；确认30/0、ABI/生成器/cmath状态未变。
 4. 在提问前冻结签字基线摘要：草案正文（不含页首状态行）、台账、F-3/F-7答复原文及104条清单的摘要写入F-D证据；签字后正文不得静默替换。
 5. 签字只允许改变`20o-b2-freeze-draft.md`的页首状态行；同时保存签字前正文摘要、签字后全文摘要和状态行diff，任何正文变化都必须重新签字。
 6. F-C的`resource-performance-audit.json`保持其历史draft blob身份，不因签字后的状态行变更而重写；台账`review_document_sha256`改为签字后全文摘要，并另记已签正文摘要。
+
+正文内F-C退出时“F-D未签字”的叙述须在提问前注明历史时点；基线固定后不再修改这些文字。
+台账签字前全文及30项内容投影分别保存摘要；签字后只允许已登记的状态/来源字段变更，30项内容摘要必须一致，签字前后全文与差异均保留。
 
 ## 四、分批执行
 

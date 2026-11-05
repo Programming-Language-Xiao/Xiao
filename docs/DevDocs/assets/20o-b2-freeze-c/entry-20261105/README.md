@@ -5,7 +5,7 @@
 
 [五条答复原文](decision-receipts.json)已确认F-3三项资源/工作量/性能精确表与F-7两项依赖/构建策略；
 F-C以30 confirmed、0 pending退出；后续总进度见[实时台账](../../20o-b2-freeze-close/entry-20261103/decision-ledger.json)。
-F-D仍待单独签字，B2-A/B未开始；五项均有实际答复，不以预选或文档校验替代确认。
+F-C退出时F-D仍待单独签字、B2-A/B未开始；五项均有实际答复，不以预选或文档校验替代确认。后续签字状态以实时台账及[F-D记录](../../20o-b2-freeze-d/entry-20261105/README.md)为准。
 
 唯一精确契约见[冻结草案§四、§6.1、§6.2](../../../20o-b2-freeze-draft.md)。
 [来源复核](dependency-review.json)绑定六个真实归档、上游清单快照、bigdecimal构建脚本和既有11份许可证摘要。
