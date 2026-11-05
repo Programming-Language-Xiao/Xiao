@@ -104,7 +104,7 @@ F-6与F-12各三条实际答复也已确认，F-B2/F-B3退出检查已完成；�
 | F-12b | 已确认 | 调用/类型→precision再rounding参数域→按形参输入预算/合法性→除零/域→非终止→工作/结果预算→受控输出分配；文本内部顺序见§5.2 |
 | F-12c | 已确认 | 七项可恢复错误经状态6且保留out；1/2/3不碰挂起槽，成功0不清槽，8/Fatal沿既有边界 |
 
-F-5、F-6与F-12各三项均已收到实际答复并完成文档收口；F-3/F-7归F-C，F-C执行规划见[依赖、资源与性能裁定规划](20o-b2-freeze-c-resource-dependency-plan.md)，整体尚未联合冻结。
+F-5、F-6与F-12各三项均已收到实际答复并完成文档收口；F-3/F-7归F-C，F-C执行规划见[依赖、资源与性能裁定规划](20o-b2-freeze-c-resource-dependency-plan.md)，当时整体尚未联合冻结；后续F-C/F-D已收口，当前状态见[实时台账](assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json)与[F-D记录](20o-b2-freeze-d-signature-plan.md)。
 
 ## 五、验收与证据
 

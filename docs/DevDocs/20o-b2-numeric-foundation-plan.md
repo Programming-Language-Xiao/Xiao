@@ -1,7 +1,7 @@
 # 20O-B2. 数值基础批规划：`lint`/`lfloat` 与 `cmath`
 
 > **这是 B2 的规划，不写产品函数、intrinsic、ABI 或测试实现。**
-> 基线为 `87bac439`；B1-CLOSE 已收口，Runtime ABI 为 1.18、`CODEGEN_VERSION` 为 20。
+> 规划入口基线为 `87bac439`；B1-CLOSE 已收口，Runtime ABI 为 1.18、`CODEGEN_VERSION` 为 20。
 > B2 的目标是把 `lint`/`lfloat` 从“十进制文本占位”升级为可运算、可转换的数值基础，
 > 并交付 `cmath` 浮点原语；**联合冻结已由F-D实际签字激活，当前仅开放B2-A实施规划，B2-A/B产品未开工**。
 > 星崽已逐项确认的精确表与签字状态见[冻结草案](20o-b2-freeze-draft.md)；本页建议不自动变为已冻结契约。
@@ -21,7 +21,7 @@
 | 项 | 事实 |
 | --- | --- |
 | B1-CLOSE | 七库 20/20 产品与教程/registry 均 `verified`；最终 B1 证据见 [收口记录](20o-b1-closeout.md) |
-| 代码基线 | 87bac439，规划开工465e213d仅改文档；入口工作区门禁41585868754成功，当前文档工作状态以Git为准 |
+| 规划入口基线 | 87bac439，规划开工465e213d仅改文档；入口工作区门禁41585868754成功；当前签字状态以F-D证据与Git为准 |
 | Runtime ABI | 1.18；`CODEGEN_VERSION` 20；标准库接口版本 1 |
 | 数值现状 | `lint`/`lfloat` 以十进制文本保存；一元负号与部分转换可用，`NumericPair` 仍只接受定宽数值，算术、比较和多数转换明确报错 |
 | cmath 现状 | 没有浮点数学 intrinsic；仅有 `float`/`sfloat` 的基础算术和 `**` |
@@ -150,6 +150,8 @@ B2-A 预期**不新增 intrinsic、不改变 `XiaoValue` 标签或 C ABI**；若
 6. 通过 docs/usedocs/layout 门禁；**不写产品代码**。
 
 ### B2-A：`lint`/`lfloat` 基础
+
+执行规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；本批只规划，B2-A产品未开工。
 
 建议顺序：
 
