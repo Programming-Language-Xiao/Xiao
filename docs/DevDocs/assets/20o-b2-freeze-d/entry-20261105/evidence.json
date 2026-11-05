@@ -21,7 +21,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "ef98d2684f3304e51ed0b8dc02ac7a0b0e0df924c67e62ee1fcab1fb9e57b997"
+      "sha256": "da6a60b6e7293a2e9418baa05facca38af7dd4b66ae4729ff87516206a8680d9"
     },
     {
       "file": "b2-a-planning-handoff.md",
@@ -244,5 +244,6 @@
     "run_attempt": 1,
     "actual_successful_jobs": 7
   },
-  "ci_binding_scope": "CI成绩仅绑定状态切换53e95a55，后续证据归档提交单独登记，不继承passed"
+  "ci_binding_scope": "CI成绩仅绑定状态切换53e95a55，后续证据归档提交单独登记，不继承passed",
+  "post_signature_provenance_note": "F-D签字状态行保持当时冻结快照；后续A-P审批与实现会话来源单列，不改已签对象"
 }

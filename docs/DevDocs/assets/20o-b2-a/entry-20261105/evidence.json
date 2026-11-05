@@ -25,7 +25,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "5d34cfb1ca39564367c2f47b7e46d4f4c419f56a98a816e48286d980af3cbb15"
+      "sha256": "aea0db2a2ea27c24a3894a3567d4cb28b3a29187cefe6a0053204c9382592400"
     },
     {
       "file": "approval-scope-integrity.log",
@@ -33,7 +33,7 @@
     },
     {
       "file": "approval-transition.json",
-      "sha256": "57d56f464f7c7b1f3523dd2d4c5a9083c2a1e35ff4f79797a1484a17d838775c"
+      "sha256": "bb2df99425e2656ecfb99075dead14659db689325b86c358b0c195db56d913da"
     },
     {
       "file": "check-docs.log",
@@ -49,7 +49,7 @@
     },
     {
       "file": "checks.json",
-      "sha256": "735fb6853f0b7b0a814eb7c1cd6d3d422a0ce57bc34dc62ca57ef6f653946dee"
+      "sha256": "f9c0aaa06da5cb0402411c131bed1237eae0f09a55a70a205d38d8fb79540ddb"
     },
     {
       "file": "ci-predecessor-943db5b1.json",
@@ -128,6 +128,10 @@
   "cargo_run_locally": false,
   "planning_closeout_complete": true,
   "actual_plan_approval_count": 3,
-  "current_approved_status_plan_sha256": "86b098f0a41289487a96e446379a4c6d87362ce292bcb1c3b96236e9ee3b69c8",
-  "reviewed_plan_ci_scope": "f4a0b881待审规划的既有workspace CI，后续审批归档提交单独判断，不能沿用passed"
+  "reviewed_plan_ci_scope": "f4a0b881待审规划的既有workspace CI，后续审批归档提交单独判断，不能沿用passed",
+  "approval_status_plan_snapshot_sha256": "86b098f0a41289487a96e446379a4c6d87362ce292bcb1c3b96236e9ee3b69c8",
+  "approval_status_plan_snapshot_commit": "61639b29beb27137bfd3fbea3bea457750c9396a",
+  "current_plan_file_sha256": "d6b04c14a5abbea1a86888a76c6b8dd1f3d4f53a7749119c176992d86a114a6e",
+  "current_plan_provenance_review": "../review-fix-20261105/plan-provenance-review.json",
+  "approval_source_reference": "../review-fix-20261105/approval-conversation-source.json"
 }

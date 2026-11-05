@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "source_snapshot_commit": "61639b29beb27137bfd3fbea3bea457750c9396a",
+  "file": "docs/DevDocs/20o-b2-a-implementation-plan.md",
+  "before_sha256": "86b098f0a41289487a96e446379a4c6d87362ce292bcb1c3b96236e9ee3b69c8",
+  "after_sha256": "d6b04c14a5abbea1a86888a76c6b8dd1f3d4f53a7749119c176992d86a114a6e",
+  "before_snapshot": "../entry-20261105/plan-after-approval.txt",
+  "diff": "plan-source-reference.diff",
+  "only_source_reference_wording_changed": true,
+  "a0_a7_implementation_sections_unchanged": true,
+  "approved_scope_rows_unchanged": true,
+  "approved_plan_approval_status_unchanged": true,
+  "receipts_unchanged": true
+}

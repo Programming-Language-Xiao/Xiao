@@ -263,7 +263,7 @@
 | 20O-B1-IMP-REM | [剩余四库与收口规划](20o-b1-imp-remainder.md) / [实施证据](20o-b1-rem-evidence.md) | hex/base64/url/csv、20/20契约、F9/F10、释放差异、B1-CLOSE门槛 | **REM-A/B/C退出对账完成**：守卫后新721条F10、六组释放与三平台精确点取证；旧报告为历史快照，22D失败与债务保留，REM当时planned，当前CLOSE已verified |
 | 20O-B1-CLOSE | [七库收口规划](20o-b1-closeout-plan.md) / [实际进度](20o-b1-closeout.md) | 最终 F10/功能证据、七册教程与 registry 升级、完整门禁与证据 | **已收口（2026-11-03）**：七库verified，721条同源复核通过；106b99c7的41498029910/41498029872通过 |
 | 20O-B2 | [数值基础规划](20o-b2-numeric-foundation-plan.md) / [冻结草案](20o-b2-freeze-draft.md) / [冻结收口规划](20o-b2-freeze-closeout-plan.md) | lint/lfloat精确底座、显式precision接口、15项float版cmath、依赖/表示/ABI/限额 | **联合冻结已生效（2026-11-05）**：30/0，F-D已签字，B2-A规划三项实际批准；产品另批启动，cmath planned，产品未开工 |
-| 20O-B2-FREEZE | [冻结收口规划](20o-b2-freeze-closeout-plan.md) | 30条台账、精确契约、冻结签字与B2-A交接 | **F-D已实际签字**：台账30/0，联合冻结已激活；只开放B2-A实施规划，产品未开工 |
+| 20O-B2-FREEZE | [冻结收口规划](20o-b2-freeze-closeout-plan.md) | 30条台账、精确契约、冻结签字与B2-A交接 | **F-D已实际签字**：台账30/0，联合冻结已激活；B2-A规划已批准，A0～A7获准另批实施，产品仍未开工 |
 | 20O-B2-FREEZE-A | [F-A 数值语义裁定规划](20o-b2-freeze-a-numeric-semantics-plan.md) | F-1/F-2/F-4/F-8/F-9/F-10/F-11 七组；舍入/域/转换/scale/文本 | **已完成的历史阶段**：F-A以25/5退出；整除/余数沿既有提升到lfloat，后续总状态见B2行 |
 | 20O-B2-FREEZE-A-CLOSE | [F-A 收口规划](20o-b2-freeze-a-closeout-plan.md) | F-4混合类型准入、F-A退出对账与F-B交接 | **已完成的历史阶段**：F-A以25/5退出，方案A直接确认；后续裁定另按实时总台账 |
 | 20O-B2-FREEZE-B | [F-B 契约裁定规划](20o-b2-freeze-b-contract-plan.md) | F-5原语/C ABI、F-6版本产物、F-12错误精表；目标台账28/2 | **已收口（2026-11-05）**：F-5/F-6/F-12确认，以28/2退出；后续总进度见B2行；不写产品/活动intrinsic/ABI |

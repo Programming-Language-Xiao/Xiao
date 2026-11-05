@@ -18,7 +18,7 @@
 | 前置CI | 943db5b1的workspace 41981794413成功；maintenance未命中push.paths而未触发，见[原始记录](assets/20o-b2-a/entry-20261105/ci-predecessor-943db5b1.json)；不算本轮规划或B2-A产品测试 |
 | 待审规划CI | f4a0b881的workspace 41998981332第1次尝试成功；maintenance未命中push.paths而未触发，见[实际记录](assets/20o-b2-a/entry-20261105/ci-reviewed-plan-f4a0b881.json)；不代表产品验证 |
 
-F-D签字回执的问题项ID、日期和答复见[F-D证据](assets/20o-b2-freeze-d/entry-20261105/README.md)；原始会话引用未随证据归档，本规划不复述或改写签字内容。
+F-D签字回执的问题项ID、日期和答复见[F-D证据](assets/20o-b2-freeze-d/entry-20261105/README.md)；最初归档时未列源会话定位，现补[实现会话原始消息索引](assets/20o-b2-a/review-fix-20261105/approval-conversation-source.json)。仓库回执按实现Agent转达记录理解，原文与源日志另行核对，不视为当前审阅会话中的新批准，也不改签字内容或授权范围。
 本轮只读核对与待审规划记录见[B2-A准备资料](assets/20o-b2-a/entry-20261105/README.md)，未执行Cargo解析/构建或新增产品测试。
 
 B2-A的硬边界：

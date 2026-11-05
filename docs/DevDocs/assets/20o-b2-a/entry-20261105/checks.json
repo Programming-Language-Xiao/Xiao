@@ -58,7 +58,9 @@
   "remaining_execution_gate": "A0实际工作快照/B1功能基线与后续产品任务留另批，本轮未执行",
   "approved_reviewed_plan_commit": "f4a0b881f4822feaae1d6c50f3042de0d9b4645c",
   "approved_reviewed_plan_sha256": "3e76188c34ecc4bef6709652bef41903d812240abfe862b2c95645fa5c4587be",
-  "current_approved_status_plan_sha256": "86b098f0a41289487a96e446379a4c6d87362ce292bcb1c3b96236e9ee3b69c8",
   "planning_closeout_complete": true,
-  "planning_scope_unchanged_after_approval": true
+  "planning_scope_unchanged_after_approval": true,
+  "approval_status_plan_snapshot_sha256": "86b098f0a41289487a96e446379a4c6d87362ce292bcb1c3b96236e9ee3b69c8",
+  "record_scope": "61639b29审批收口时点的门禁与规划状态快照；原命令/退出码保留，本次来源补充的当前工作树核验另见review-fix-20261105",
+  "checked_plan_snapshot_commit": "61639b29beb27137bfd3fbea3bea457750c9396a"
 }

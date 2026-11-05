@@ -14,5 +14,6 @@
   "implementation_plan_approved": true,
   "product_implementation_started": false,
   "cargo_run_locally": false,
-  "scope": "审批后仅状态/来源更新；不修改已审A0～A7内容和30条已签数值契约"
+  "scope": "审批后仅状态/来源更新；不修改已审A0～A7内容和30条已签数值契约",
+  "record_scope": "61639b29审批收口时点的前后状态快照；后续来源说明补充不改该历史snapshot或其全文摘要"
 }

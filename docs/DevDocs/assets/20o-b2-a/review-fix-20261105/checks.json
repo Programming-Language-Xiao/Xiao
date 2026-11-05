@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "entry_head": "61639b29beb27137bfd3fbea3bea457750c9396a",
+  "scope": "状态文字/签字快照边界与实现会话原始引用补充；不新增审批或改变实施范围",
+  "status": "passed",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "check-layout.log"
+    },
+    {
+      "command": "cmd /c git diff --exit-code 61639b29 -- core/rust stdlib tests .github/workflows tools .cargo/config.toml docs/module-registry.json .gitattributes package.json bun.lock docs/UseDocs docs/DevDocs/20o-b2-freeze-draft.md docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/signature-baseline.json docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/decision-receipts.json docs/DevDocs/assets/20o-b2-a/entry-20261105/decision-receipts.json",
+      "exit_code": 0
+    },
+    {
+      "command": "cmd /c git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "@'\nimport pathlib,subprocess,sys\nroot=pathlib.Path('docs/DevDocs/assets/20o-b2-a/review-fix-20261105')\ntext=(root/'README.md').read_text(encoding='utf-8')\nblock=text.split('```powershell\\n',1)[1].split('\\n```',1)[0]\nassert block.startswith(\"@'\\n\") and block.endswith(\"\\n'@ | python -\")\nresult=subprocess.run([sys.executable,'-'],input=block[3:-len(\"\\n'@ | python -\")].encode('utf-8'),check=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)\nprint(result.stdout.decode('utf-8'))\n'@ | python -",
+      "exit_code": 0,
+      "log": "original-conversation-replay.log"
+    }
+  ],
+  "findings_to_resolve": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "approved_planning_scope_unchanged": true,
+  "product_implementation_started": false,
+  "cargo_run": false,
+  "new_product_tests_run": false,
+  "new_performance_measurements": false,
+  "findings_resolved": [
+    {
+      "id": 1,
+      "scope": "冻结收口首屏",
+      "result": "B2-A规划已批准，A0～A7获准另批实施，产品未开工"
+    },
+    {
+      "id": 2,
+      "scope": "冻结状态表",
+      "result": "与已批准规划一致"
+    },
+    {
+      "id": 3,
+      "scope": "DevDocs汇总行",
+      "result": "与B2/B2-A行一致"
+    },
+    {
+      "id": 4,
+      "scope": "F-D已签状态行",
+      "result": "整份已签草案未改，F-D/B2-A记录注明冻结快照与后续审批分层"
+    },
+    {
+      "id": 5,
+      "scope": "原始实现会话引用",
+      "source_thread_id": "01a19376-4425-7ad2-9ae5-ee2a3cecc005",
+      "original_user_records_verified": 6,
+      "record_groups": [
+        "F-D",
+        "A-P"
+      ],
+      "authority_scope": "按实现Agent转录/转达记录，不宣称当前审阅中的新批准",
+      "source": "approval-conversation-source.json",
+      "excerpt": "approval-source-messages.jsonl"
+    }
+  ],
+  "original_source_verified_on_implementation_workstation": true,
+  "original_source_user_records_verified": 6,
+  "web_conversation_url_invented": false
+}

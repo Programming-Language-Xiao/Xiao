@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "entry_head": "61639b29beb27137bfd3fbea3bea457750c9396a",
+  "status": "五项文字/来源修正完成；门禁、签字对象不变性与6条原始用户消息复核通过",
+  "approval_source_reference": "approval-conversation-source.json",
+  "plan_provenance_review": "plan-provenance-review.json",
+  "checks": "checks.json",
+  "frozen_draft_changed": false,
+  "new_approval_created": false,
+  "product_implementation_started": false,
+  "files": [
+    {
+      "file": ".gitattributes",
+      "sha256": "0d59e5a2c6178bd461c009068a642d2c38480f1621027200e26086469356c3a2"
+    },
+    {
+      "file": "README.md",
+      "sha256": "c9b4b1e384e7298116232a65702e5eedc6525197324f19acca695ae22ddaf4c2"
+    },
+    {
+      "file": "approval-conversation-source.json",
+      "sha256": "6376544b3f1e0f32c22c45df5f46badfdfefab0cd426228dd4eb375a35ca59a6"
+    },
+    {
+      "file": "approval-source-messages.jsonl",
+      "sha256": "f94e5c305b785b7f01e1f9eae7a8c13ab11e8ba07613ec0036e6d820dcbc8bf1"
+    },
+    {
+      "file": "check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "file": "check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "file": "check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "file": "checks.json",
+      "sha256": "b7fa08ea879a7742d4d21de6c1c6fa24c53102891ebcaae05b6dde1b4c444993"
+    },
+    {
+      "file": "original-conversation-replay.log",
+      "sha256": "1f412dcdd9ae7768db0a75b8b425449205fa50586b171cc795f7efa94a95eef8"
+    },
+    {
+      "file": "plan-provenance-review.json",
+      "sha256": "c45c24c36b024503166914b8976d34664d8bf16595b8ed73a970470f83f493cf"
+    },
+    {
+      "file": "plan-source-reference.diff",
+      "sha256": "e6d5983ff1aaaf9ca5821f798788402b492a23c66c3e0b7fff8727a298d86544"
+    }
+  ],
+  "original_user_records_verified": 6,
+  "reviewed_manifests": [
+    {
+      "file": "../entry-20261105/evidence.json",
+      "sha256": "9a67b20ec0efa9598377be1521b99737d99138af8b77ee067111aab073adde13"
+    },
+    {
+      "file": "../../20o-b2-freeze-d/entry-20261105/evidence.json",
+      "sha256": "3196417f9921ffbeaf9ae9fde6e4fa12bcfed5277e94bc0e12140ecd9b868e1f"
+    }
+  ]
+}
