@@ -263,5 +263,5 @@ docs/module-registry.json                         cmath 登记（B2-FREEZE/C）
 ## 九、裁定收口与F-D闸门
 
 现有18条答复及本次实际答复已记入[裁定台账](20o-b2-freeze-draft.md#二逐条裁定台账)，不重复询问。
-F-A/F-B/F-C已收齐，台账30/0；无剩余待答精确项，F-D尚未签字。
+F-A/F-B/F-C已收齐，台账30/0；无剩余待答精确项，F-D尚未签字。F-D的签字、状态切换与B2-A交接见[F-D冻结签字规划](20o-b2-freeze-d-signature-plan.md)。
 F-3已覆盖lfloat //与%的接纳/工作量及独立预算；依赖、资源与性能均只有契约和来源核对，实际构建/测量留实施批，F-D签字前仍不能开工。

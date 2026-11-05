@@ -114,6 +114,8 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 
 ### F-D：收口与冻结签字
 
+执行规划见[F-D 冻结签字规划](20o-b2-freeze-d-signature-plan.md)；当前30/0、F-D未签字，30/0不等于联合冻结已生效。
+
 1. 逐条核对 12 项与 18 条已确认答复，形成 30 条完整台账；
 2. 删除或明确登记所有“待审/建议”状态；
 3. 更新 `20o-b2-freeze-draft.md` 状态、`20o-b2-numeric-foundation-plan.md` 和索引；
@@ -188,6 +190,7 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 
 ```text
 docs/DevDocs/20o-b2-freeze-closeout-plan.md   本规划
+docs/DevDocs/20o-b2-freeze-d-signature-plan.md F-D签字规划
 docs/DevDocs/20o-b2-freeze-draft.md           精确契约与逐条台账
 docs/DevDocs/20o-b2-numeric-foundation-plan.md 批次边界
 docs/DevDocs/README.md                        阶段索引
