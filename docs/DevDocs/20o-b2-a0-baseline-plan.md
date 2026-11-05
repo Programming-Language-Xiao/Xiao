@@ -170,7 +170,7 @@ pwsh -NoProfile -File tools/gates/b1-probe-guards.ps1 -BashPath <MSYS bash>
 
 ## 八、交接
 
-A0通过后下一入口是A1：依赖、适配层与值身份；A1才允许按已批准规划添加F-7六包、锁文件和033/034诊断，仍不进入B2-B/C。
+A0通过后下一入口是A1：依赖、适配层与值身份，执行规划见[A1依赖、适配层与值身份实施规划](20o-b2-a1-dependency-value-identity-plan.md)；A1才允许按已批准规划添加F-7六包、锁文件和033/034诊断，仍不进入B2-B/C。
 
 新Agent先读：
 

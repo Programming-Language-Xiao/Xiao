@@ -151,7 +151,7 @@ B2-A 预期**不新增 intrinsic、不改变 `XiaoValue` 标签或 C ABI**；若
 
 ### B2-A：`lint`/`lfloat` 基础
 
-执行规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；[A0工作快照与基线记录](20o-b2-a0-baseline-plan.md)已保存Windows契约9/9、资源17/17、VM/原生精确点、workspace与28/28守卫的实际通过。Linux/macOS本地未验证，A1尚未开始，B2-A产品未开工。
+执行规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；[A0工作快照与基线记录](20o-b2-a0-baseline-plan.md)已保存Windows契约9/9、资源17/17、VM/原生精确点、workspace与28/28守卫的实际通过；A1规划见[A1依赖、适配层与值身份实施规划](20o-b2-a1-dependency-value-identity-plan.md)。Linux/macOS本地未验证，A1尚未开始，B2-A产品未开工。
 
 建议顺序：
 
