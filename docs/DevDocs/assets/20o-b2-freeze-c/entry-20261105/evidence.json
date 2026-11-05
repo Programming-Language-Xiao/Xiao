@@ -28,7 +28,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "e644518b884d3249601aee330a0f7354a92f02ec75c745d747a6c8599bcc8e73"
+      "sha256": "9b77ae91aead5d07569663869ca846ed8c06a07765ad4b8075044c6c5e379d97"
     },
     {
       "file": "autocfg-1.5.1.Cargo.toml.txt",
@@ -60,7 +60,7 @@
     },
     {
       "file": "checks.json",
-      "sha256": "7197bb8a3d11d0438f4bdcb4d31515847e5b8c4a2a694c58112d1c957202493e"
+      "sha256": "f41e54e69538b8f8548776c5048f85fa5e59f8be3f2de0de5c1ff40460955f75"
     },
     {
       "file": "ci-baseline-8dfbc89b.json",
@@ -122,5 +122,10 @@
       "file": "workspace-run-api.json",
       "sha256": "06ee4b1b6561f66b6718821c0eca944328cb42482fb4072234916f698d76f6c8"
     }
-  ]
+  ],
+  "closeout_commit": "38d6120d01958221d48a92deff020e45397e1560",
+  "closeout_ci": "../review-fix-20261105/ci-38d6120d.json",
+  "historical_binding_inventory": "../review-fix-20261105/coverage-38d6120d.json",
+  "post_closeout_review": "../review-fix-20261105/README.md",
+  "binding_scope_note": "files仅列当前F-C目录25项；提交说明中的104属于Git38d6120d的六份历史清单，后续复核记录另列"
 }

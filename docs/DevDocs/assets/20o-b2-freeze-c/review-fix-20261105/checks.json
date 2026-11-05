@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "entry_head": "38d6120d01958221d48a92deff020e45397e1560",
+  "scope": "F-C收口后的五项文档/来源修正；未重开裁定或进入F-D/产品实现",
+  "status": "passed",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "check-layout.log"
+    },
+    {
+      "command": "cmd /c git diff --exit-code 38d6120d -- core/rust stdlib tests .github/workflows tools .cargo/config.toml docs/module-registry.json .gitattributes package.json bun.lock docs/UseDocs",
+      "exit_code": 0
+    },
+    {
+      "command": "cmd /c git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "@'\nimport pathlib, subprocess, sys\nreadme=pathlib.Path('docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/README.md').read_text(encoding='utf-8')\nblock=readme.split('```powershell\\n',1)[1].split('\\n```',1)[0]\nassert block.startswith(\"@'\\n\") and block.endswith(\"\\n'@ | python -\")\nscript=block[3:-len(\"\\n'@ | python -\")]\nresult=subprocess.run([sys.executable,'-'],input=script.encode('utf-8'),check=True,stdout=subprocess.PIPE)\nprint(result.stdout.decode('utf-8'))\n'@ | python -",
+      "exit_code": 0,
+      "log": "historical-replay.log"
+    }
+  ],
+  "historical_snapshot": "coverage-38d6120d.json",
+  "closeout_ci": "ci-38d6120d.json",
+  "usedocs_scope": "usedocs-scope.json",
+  "decision_status": [
+    30,
+    0
+  ],
+  "f_d_signed": false,
+  "joint_freeze_activated": false,
+  "product_implementation_started": false,
+  "new_numeric_dependencies_built": false,
+  "new_f10_measurement": false,
+  "findings_resolved": [
+    {
+      "id": 1,
+      "scope": "20O总纲首屏",
+      "result": "30/0均已确认，F-D待单独签字"
+    },
+    {
+      "id": 2,
+      "scope": "38d6120d历史104条",
+      "composition": [
+        11,
+        10,
+        17,
+        17,
+        24,
+        25
+      ],
+      "inventory": "coverage-38d6120d.json",
+      "replay_log": "historical-replay.log"
+    },
+    {
+      "id": 3,
+      "scope": "收口提交38d6120d的CI",
+      "workspace_run": 41895438930,
+      "maintenance_run": 41895439116,
+      "conclusion": "success"
+    },
+    {
+      "id": 4,
+      "scope": "docs/UseDocs",
+      "whole_tree_gate": "bun run check:usedocs",
+      "closeout_changed_files": [
+        "docs/UseDocs/library/cmath.md"
+      ],
+      "current_review_diff": "none_vs_38d6120d"
+    },
+    {
+      "id": 5,
+      "scope": "F-B3历史句",
+      "result": "已补当时"
+    }
+  ],
+  "historical_bindings_replayed": 104,
+  "historical_source_commit": "38d6120d01958221d48a92deff020e45397e1560",
+  "decisions_changed": false,
+  "log_normalization": "unified command output, UTF-8/LF, CR and ANSI stripped",
+  "current_f_c_manifest_entries": 25
+}

@@ -1,7 +1,7 @@
 # F-C依赖、资源与性能裁定记录
 
 工程期：20O-B2-FREEZE-C。职责：按[本批规划](../../../20o-b2-freeze-c-resource-dependency-plan.md)收齐F-7依赖闭包/构建及F-3资源/工作量/性能规则。
-产品基线8dfbc89b，实际工作入口35ccdb30；当前实际ABI1.18、生成器20、活动intrinsic最大32，cmath继续planned。
+产品基线8dfbc89b，实际工作入口35ccdb30，文档收口提交38d6120d；当前实际ABI1.18、生成器20、活动intrinsic最大32，cmath继续planned。
 
 [五条答复原文](decision-receipts.json)已确认F-3三项资源/工作量/性能精确表与F-7两项依赖/构建策略；
 F-C以30 confirmed、0 pending退出；后续总进度见[实时台账](../../20o-b2-freeze-close/entry-20261103/decision-ledger.json)。
@@ -18,6 +18,35 @@ xiao_product_executed与performance_measurement_performed均为false。这些算
 每个表达式可用Python整数复算；涉及超过4,300位的十进制输出时，仅在该复算进程使用sys.set_int_max_str_digits(0)，不改变系统或Xiao配置。
 [资源/采样静态对账](resource-performance-audit.json)绑定冻结草案Git blob、七个接纳分节、性能表与五项答复，后续文档变化按该blob复核历史快照。
 [检查记录](checks.json)与[摘要清单](evidence.json)保存本轮门禁和来源核对；不替代真实Cargo构建或性能测量。
+
+## 104条绑定记录的构成
+
+38d6120d提交说明中的104，是当时六份evidence.json的files条目合计：**11+10+17+17+24+25=104**，F-C本目录只占25。
+完整路径、所属清单、每条SHA-256以及六份清单在38d6120d的Git blob和摘要见[固定历史清单](../review-fix-20261105/coverage-38d6120d.json)。
+
+| 证据目录 | files条目数 |
+| --- | --- |
+| 20o-b2-freeze-a/entry-20261104 | 11 |
+| 20o-b2-freeze-b/entry-20261104 | 10 |
+| 20o-b2-freeze-b2/entry-20261105 | 17 |
+| 20o-b2-freeze-b3/entry-20261105 | 17 |
+| 20o-b2-freeze-close/entry-20261103 | 24 |
+| 20o-b2-freeze-c/entry-20261105 | 25 |
+
+这104条不含六份evidence.json自身，也不含本次复核目录新增的文件。7个源码摘要、6个外部归档、11份许可证和4个入口CI响应是不同维度的来源统计，不能再次相加；
+其中11份许可证已在freeze-close的24条内，4个入口CI响应已在F-C的25条内。
+后续README/checks等文件会随复核更新，历史104条必须按Git提交38d6120d取内容核对，不能用当前工作树替代；[复跑命令](../review-fix-20261105/README.md)已列全。
+
+## UseDocs检查范围
+
+原检查记录的产品/配置边界命令针对core/rust、stdlib、tests和工作流等路径；UseDocs由bun run check:usedocs覆盖，检查整个docs/UseDocs的元数据、链接与模块状态。
+38d6120d相对8dfbc89b的UseDocs变更只允许docs/UseDocs/library/cmath.md，已按真实Git差异逐项核对，见[范围记录](../review-fix-20261105/usedocs-scope.json)。
+本次复核另以38d6120d为基线，把完整docs/UseDocs纳入只读无差异检查；不把教程静态门禁写成产品示例已经执行。
+
+## 38d6120d收口CI
+
+[收口CI及原始API](../review-fix-20261105/ci-38d6120d.json)记录workspace 41895438930、maintenance 41895439116第1次尝试均成功，维护回归六作业全部成功。
+运行、实际作业ID和原始响应摘要均单列保存；这证明文档收口提交的既有门禁，仍不是六包新依赖的构建或B2新增性能成绩。
 
 ## 8dfbc89b入口CI
 

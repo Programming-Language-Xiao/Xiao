@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "entry_head": "38d6120d01958221d48a92deff020e45397e1560",
+  "status": "五项文档/来源修正完成，文档门禁、历史104条复跑与覆盖UseDocs的边界检查通过",
+  "reviewed_closeout_commit": "38d6120d01958221d48a92deff020e45397e1560",
+  "historical_binding_count": 104,
+  "historical_binding_composition": [
+    11,
+    10,
+    17,
+    17,
+    24,
+    25
+  ],
+  "files": [
+    {
+      "file": ".gitattributes",
+      "sha256": "6c2de176b555b45644df22700eb18ecfcff348311eb894a5029d326510e2179f"
+    },
+    {
+      "file": "README.md",
+      "sha256": "6a940a04d209666ad6ab07a7d8e87349af013556aa13c703d6e613e9850c5aad"
+    },
+    {
+      "file": "check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "file": "check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "file": "check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "file": "checks.json",
+      "sha256": "4383d87a3cb510f8c366b49e6e97b3e5bd76b8a6def61d080919a3acc923c450"
+    },
+    {
+      "file": "ci-38d6120d.json",
+      "sha256": "74b4d320945dfb23e3ffb42e88dfe24bc1fa97016e2ffa0e176521b51f962de2"
+    },
+    {
+      "file": "coverage-38d6120d.json",
+      "sha256": "5e74997bf406ca542cd570ae9d8af6d80e292c59c3da8969faa324d6e81ba160"
+    },
+    {
+      "file": "historical-replay.log",
+      "sha256": "a22bb48a6ee1cb6261b68fd1a8ed8cd1fa80bd89af9d4c2d79086d14df61cfc8"
+    },
+    {
+      "file": "maintenance-attempt1-jobs-api.json",
+      "sha256": "65b2881c59ce85393e6eafab1249e8ddb8164acf1efa1285acdbbf05fcc8de4d"
+    },
+    {
+      "file": "maintenance-run-api.json",
+      "sha256": "fbc8eed4fcb5a4308b030b044650d64f69b998ab990195b1aa5f10d818db5414"
+    },
+    {
+      "file": "usedocs-scope.json",
+      "sha256": "11545ba7e31f3b7183d74bccdb995d28f84ddd262c15ea6ad099cc2067f9ca0c"
+    },
+    {
+      "file": "workspace-attempt1-jobs-api.json",
+      "sha256": "8f58bbcbea6537b49c80ef58999ec9df2c18044b4ff763b1a8af68f36ac0d5e6"
+    },
+    {
+      "file": "workspace-run-api.json",
+      "sha256": "28e9196de01a2603fbce5e9328570abfd7defc496a7a3d70cbd6ae6e9bdeebdd"
+    }
+  ],
+  "reviewed_entry_evidence": {
+    "file": "../entry-20261105/evidence.json",
+    "sha256": "9baae69b1c94b6cba9a6f52353995e9ecfc71275f33eeffed7453adb0a82738b"
+  },
+  "f_d_signed": false,
+  "joint_freeze_activated": false,
+  "current_f_c_manifest_entries": 25
+}

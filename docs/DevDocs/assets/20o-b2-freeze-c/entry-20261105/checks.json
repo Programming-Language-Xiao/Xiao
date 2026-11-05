@@ -66,5 +66,37 @@
   "xiao_product_tests_run": false,
   "performance_measurement_performed": false,
   "workflow_reruns_dispatched": 0,
-  "closeout_complete": true
+  "closeout_complete": true,
+  "closeout_commit": "38d6120d01958221d48a92deff020e45397e1560",
+  "documentation_coverage": {
+    "product_configuration_guard": "原checks列表的无差异命令针对产品/配置；其命令文本和原始退出码保留，不追改为后来扩大范围的命令",
+    "usedocs_gate": "bun run check:usedocs",
+    "usedocs_scan_root": "docs/UseDocs",
+    "usedocs_scan_scope": [
+      "页面元数据",
+      "相对链接",
+      "模块登记/状态"
+    ],
+    "usedocs_source_review": "../review-fix-20261105/usedocs-scope.json",
+    "closeout_diff_argv": [
+      "cmd",
+      "/c",
+      "git",
+      "diff",
+      "--name-only",
+      "8dfbc89b",
+      "38d6120d01958221d48a92deff020e45397e1560",
+      "--",
+      "docs/UseDocs"
+    ],
+    "closeout_allowed_changes": [
+      "docs/UseDocs/library/cmath.md"
+    ],
+    "closeout_actual_changes": [
+      "docs/UseDocs/library/cmath.md"
+    ],
+    "closeout_allowlist_matched": true,
+    "post_closeout_review": "../review-fix-20261105/checks.json",
+    "tutorial_product_examples_executed": false
+  }
 }

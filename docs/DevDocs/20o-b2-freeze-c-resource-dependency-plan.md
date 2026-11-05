@@ -15,11 +15,12 @@
 | F-C 范围 | F-3（资源/工作量/性能）、F-7（依赖闭包/构建） |
 | 台账 | 30 confirmed / 0 pending；F-3/F-7全部确认，F-D未签字 |
 | 版本/产品 | ABI 1.18、生成器 20、活动 intrinsic 最大 32；cmath planned；无产品实施 |
-| 最近 CI | `8dfbc89b` 的维护回归 `41880682303` 六作业全绿，workspace `41880682319` 成功；此前 b846/59a 的 macOS 容量取消保留原归属 |
+| 最近 CI | 收口提交`38d6120d`的workspace `41895438930`、maintenance `41895439116`第1次尝试均成功，维护回归六作业全绿，见[收口CI记录](assets/20o-b2-freeze-c/review-fix-20261105/ci-38d6120d.json)；入口8df及此前b846/59a的容量取消仍按原节点保留 |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
 
 F-C最后两组精确项已收齐，当前**30/0**；F-D仍须单独签字，B2-A/B不在本批实施。
 本轮[答复与来源记录](assets/20o-b2-freeze-c/entry-20261105/README.md)保存实际答复、上游清单/许可证及入口CI，不把归档核对写成构建成绩。
+该证据以35ccdb30为工作入口，38d6120d为文档收口提交；[后续复核](assets/20o-b2-freeze-c/review-fix-20261105/README.md)补齐清单计数构成、UseDocs范围与收口CI，不改变30/0裁定或F-D未签字状态。
 
 ## 二、F-3：资源、工作量与性能
 

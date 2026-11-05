@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "reviewed_source_commit": "38d6120d01958221d48a92deff020e45397e1560",
+  "closeout_baseline": "8dfbc89bfe0f879c6199a10d2c0ec07b6f52b2be",
+  "diff_argv": [
+    "cmd",
+    "/c",
+    "git",
+    "diff",
+    "--name-only",
+    "8dfbc89b",
+    "38d6120d01958221d48a92deff020e45397e1560",
+    "--",
+    "docs/UseDocs"
+  ],
+  "expected_changed_files": [
+    "docs/UseDocs/library/cmath.md"
+  ],
+  "actual_changed_files": [
+    "docs/UseDocs/library/cmath.md"
+  ],
+  "allowlist_matched": true,
+  "changed_file_git_text_sha256": "a0dd8c12a074264a3ff3dd3aa215220b1bfb8b14943fddce066c433a6e0ee1ba",
+  "document_gate": "bun run check:usedocs",
+  "gate_source": "tools/repo-check/src/docs.ts",
+  "gate_source_git_text_sha256": "cf0e52e7dd6b73c7c65d6c9f1d427d985178bfdd929555f943a823950f3fe03b",
+  "scan_call": "const scanned = scanMarkdownDirectory(root, \"docs/UseDocs\");",
+  "scan_call_line": 119,
+  "coverage": "整个docs/UseDocs的页面元数据、相对链接和模块状态；不是产品示例执行",
+  "current_review_usedocs_changed": false
+}

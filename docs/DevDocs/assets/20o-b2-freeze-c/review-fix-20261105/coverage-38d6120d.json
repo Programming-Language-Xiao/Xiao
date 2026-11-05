@@ -1,0 +1,586 @@
+{
+  "schema_version": 1,
+  "source_commit": "38d6120d01958221d48a92deff020e45397e1560",
+  "scope": "历史提交38d6120d的六份evidence.json.files条目并集；不代表F-C单目录或本次复核新增文件",
+  "manifest_count": 6,
+  "binding_count": 104,
+  "unique_paths": 104,
+  "composition": [
+    11,
+    10,
+    17,
+    17,
+    24,
+    25
+  ],
+  "manifests": [
+    {
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "git_blob": "fbc77d657c0b8e726ccd6bb26cf38b20fdd151c8",
+      "sha256": "a7e0644db3987708af5f3d4a4a30fe53e81dcdaf8cd4b48844b98f98d2bcc865",
+      "declared_files": 11
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "git_blob": "fe289f8d72058fcdc3aa0aec088184583f18e415",
+      "sha256": "758e96a295163cd2d6729354c042498c743c44c79726635375bf30318e096414",
+      "declared_files": 10
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "git_blob": "8dad60ec5e72dc1d041ed4008ba536d0aef3213d",
+      "sha256": "1bbb899df26bf3fd05734051b2dd6e3a1d03cba374dee46c04238b57827dadae",
+      "declared_files": 17
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "git_blob": "8f0211390a2ab2c241834424ac418b2388e44ffc",
+      "sha256": "146bc5750f35d672b49ab89b51f3288a571411f7f87fab6d99af9011b7b684f6",
+      "declared_files": 17
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "git_blob": "c9a0547e289b148a05279cc7d4406aa11b40f308",
+      "sha256": "b26857dc01936428bb72c3baf4fc45eff5f465c2fed67c036ab830568b770eac",
+      "declared_files": 24
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "git_blob": "c8b84fe5867feba85f558ecdc6a63a7fc7fc9b97",
+      "sha256": "e523b51a51849732c2bbc20344b211e5f385741a605398666fd8b154a9c9d41d",
+      "declared_files": 25
+    }
+  ],
+  "bindings": [
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/.gitattributes",
+      "sha256": "6c2de176b555b45644df22700eb18ecfcff348311eb894a5029d326510e2179f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/checks.json",
+      "sha256": "cca3a66812501bb91cfe1a7d4dc4cdc0103f237aabbf9f432dc6aded89adc942"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/ci-67944184.json",
+      "sha256": "c1dae509e02b32a4199bfd0b44a4a5c4a8f7c458037ec74d5be58b95d870aed1"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "sha256": "f32a3e59038de8fb46fd60983396932f001e6fdcb7f1c8d65a843705b8f28a66"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/decision-requests.json",
+      "sha256": "d475e76c8936b9c631a88ea8fc0ca91d3fe19e2da61dc9677a438a6bfe09a12b"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/example-arithmetic.json",
+      "sha256": "c2eeae4bd9dbb5b44009149f56be1e3396834f3a94299e33148ba3f2f70ddc99"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/README.md",
+      "sha256": "e23d9c0d4a5aa2ad723872c77dbae5c09194ce4228dca7f942581c1107aac062"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-a/entry-20261104/type-boundary.json",
+      "sha256": "f87fb610f4aeb49e85f61ddad2d7e5f18009313ad8910c102e6bccc207f7b4c9"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/.gitattributes",
+      "sha256": "6c2de176b555b45644df22700eb18ecfcff348311eb894a5029d326510e2179f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/checks.json",
+      "sha256": "126aaee5facbc0314f6b3122f4ba41c2a2e18a1df66186eb2b993d9f1132c3e7"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/contract-table-audit.json",
+      "sha256": "2b6718858e36a4e6b4ec452d6c4397aa0cfaad5f787e79c0fcee96972c6de590"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/decision-receipts.json",
+      "sha256": "681127fb52e5048bdb38b3207214580137000c2a09ed7e505fac93642c673d48"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/decision-requests.json",
+      "sha256": "9efb2e7410371c9ff92713daada9423879f17a3ecadc76af5a48337a128bc455"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/README.md",
+      "sha256": "70859f615eb175b32291fb17a12e068deb5b0e73dab198e31cb80f3e37720e52"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b/entry-20261104/source-facts.json",
+      "sha256": "9513bd9a5a4418b9b4b489b619f231e29f732b61813011f59b02a1d0b42e6c5d"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/.gitattributes",
+      "sha256": "6c2de176b555b45644df22700eb18ecfcff348311eb894a5029d326510e2179f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/checks.json",
+      "sha256": "da03df4185777e100052e24b4d31e3fbd1fba8b6ab7cac923a9fbc1782a17b05"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/ci-baseline-b8462f82.json",
+      "sha256": "4f5fa7d3c50b5972f90b54ee364c842beba94b7a454e0ae6b7e5a1412a7c7879"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/decision-receipts.json",
+      "sha256": "78d2f0942709508f4332cfe3fdf786d92e12efbc37bf2925037ce78ae97aab26"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/decision-requests.json",
+      "sha256": "55ed889eb2799aa9973a09cc2180b04e057d98d56d24fcb3bb85e2a323674ba9"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/macos-annotations-api.json",
+      "sha256": "07007b88266f280a52b2a5ae690890e23fa3debe6cd420db0f5d155bacf3fec4"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/macos-check-api.json",
+      "sha256": "c8ddd44e42dbad7474b3879f6f3826af672459c98888a2109fcc56083ffc38fa"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/maintenance-attempt1-jobs-api.json",
+      "sha256": "186a89283f952f613bf68d57006161626dbc9543f408df1fb483f074f072e44f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/maintenance-run-api.json",
+      "sha256": "b88bff351e4ca73707b05ba2c8d7dc2ebf9ced50b61b7bb931c37d59d502f36b"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/README.md",
+      "sha256": "4e8d0ebb8c44b8150f47e65d3287a7bdada3c15a392f2fab8e3e8c095ce0a1bf"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/source-facts.json",
+      "sha256": "ab1cb26b63c9c13e6f8404927d2bb6e61fb37e45d83143310a4a70ab86c10311"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/version-matrix.json",
+      "sha256": "c06a9867df9e11b84019f9d47012caf7917e5cdf04a7e41f1ea61de8502807f9"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/workspace-attempt1-jobs-api.json",
+      "sha256": "cfedab833a1b8d988564d69bcf1fbee2f225cee81dad6f28a3212444fd284fd8"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b2/entry-20261105/workspace-run-api.json",
+      "sha256": "9d1ff80fde37819e119ed1b3946e0f85b0734eebc3b49ef94785d7b38e81957d"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/.gitattributes",
+      "sha256": "6c2de176b555b45644df22700eb18ecfcff348311eb894a5029d326510e2179f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/README.md",
+      "sha256": "a32f7953bfece9d10304f662b5f87888c50dba4788ce67bcbd4f83ca51792785"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/checks.json",
+      "sha256": "204ac9af1ba999518658890a68f0e45aa9aed0463a03d7a9d190438c0afc3824"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/ci-baseline-59a82934.json",
+      "sha256": "6ab5f0a07c49bacd047902d05743834abad49e331145345304a53132bf04f089"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/decision-receipts.json",
+      "sha256": "f2b6a50c8c0008c3d15872c8d60657c518a20065061fe34a4262774b5ba412e6"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/decision-requests.json",
+      "sha256": "0065d25aea4419eddd3e0709e81ad615fc3710482b4cbc8a59ff2444f4512593"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/error-table-audit.json",
+      "sha256": "8dfd457af1fae4d41eb5e63c2208eb358b0472ac9d2793231e912505f962b8b6"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/macos-annotations-api.json",
+      "sha256": "2b55f5d818a2f215cc9b39d7462d60339018b02bfe6d1076f389086eac154a66"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/macos-check-api.json",
+      "sha256": "a3497340e9f6106981e710cd2adc0addb8ab3daaeef42322b15e7b0bddeecee1"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/maintenance-attempt1-jobs-api.json",
+      "sha256": "abb750eebb4727bf6f867ba0589febc26b0cbacebda272d84af6119e977cda0f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/maintenance-run-api.json",
+      "sha256": "db5a2cfa7ca26f9fd27b07a8f5265ca43df701ea4e3361d188e999d5ad1a054c"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/source-facts.json",
+      "sha256": "1e52295496bfd62f5d19469cdf67c5cf7aa91d757b1145e5ff45ad4203f40929"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/workspace-attempt1-jobs-api.json",
+      "sha256": "d0c2d281222231043c0949f9ff70bf05c8335eb39fd9ec1f70736c660e78656d"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-b3/entry-20261105/workspace-run-api.json",
+      "sha256": "15a8b0e7fafdcf6c711b80c8c69e78f4f9a07a67af6819b5ac369e6a6eb82e94"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/.gitattributes",
+      "sha256": "364bda8023837df003302f5607ffecb5b9a8ef85155bc9bee24a7b97a829633c"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/b1-audit-provenance.json",
+      "sha256": "f12135895c5013602077cef636395b812870363f6ab5cb48f5932b7cbfbf5375"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/b1-historical-audit.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/b1-historical-audit.stdout.log",
+      "sha256": "ab63abcd392e28c87e2ac1aacae1cb5672bbf6929ce29a609f790b44d2eae0c7"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/checks.json",
+      "sha256": "32753af465d9ba68b4eeb3fb53791f9a6478eca47c162b8acede83a6bb5867a6"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/ci-0011f4c5.json",
+      "sha256": "53d23de313abc364026cd9e89efbe2b3cba16f966b4d0caaa3a84c2b72de396f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+      "sha256": "1a48f013358d811a046e743a6e82c6e4f73392e28ccc6dbb2ca15fdc81bd6a3c"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/dependency-archives.json",
+      "sha256": "cb14170f70fa7a3172ec5c2cbf204fed5c7b859edd873e1ea97c2500295aac9b"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/autocfg-1.5.1/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/autocfg-1.5.1/LICENSE-MIT.txt",
+      "sha256": "27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/bigdecimal-0.4.11/LICENSE-APACHE.txt",
+      "sha256": "74df43338fc1a37b5a744b7d4991662ad9936157abeb4d9ea7bdd5b702c5e3fd"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/bigdecimal-0.4.11/LICENSE-MIT.txt",
+      "sha256": "6067b257a0e8cb34fbdd81b7964e92bd27cd137f86709661f96550603717f61a"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/libm-0.2.16/LICENSE.txt",
+      "sha256": "3823dda7cf046602f4b4e77ec8e227863dc4736037cc85bb33d9f19febe16bb7"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/num-bigint-0.4.8/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/num-bigint-0.4.8/LICENSE-MIT.txt",
+      "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/num-integer-0.1.47/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/num-integer-0.1.47/LICENSE-MIT.txt",
+      "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/num-traits-0.2.19/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/licenses/num-traits-0.2.19/LICENSE-MIT.txt",
+      "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/README.md",
+      "sha256": "6fda47aa1f7599184f517e995e7a722448846a2b8002883598ffe34bbf96416b"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/source-expand.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/source-expand.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/source-export.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/source-export.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/.gitattributes",
+      "sha256": "056f7d2e34b150a3c4f0798aa0f3435fa89f18801d770928144e223b781be57d"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/README.md",
+      "sha256": "e644518b884d3249601aee330a0f7354a92f02ec75c745d747a6c8599bcc8e73"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/autocfg-1.5.1.Cargo.toml.txt",
+      "sha256": "ed7c832b4250c3be736e040d68688c2b83a5b164a93ef533e61532cbe0d44e99"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/bigdecimal-0.4.11.Cargo.toml.txt",
+      "sha256": "693eef2df02988d70fcaf80877a72ef276c6d6a948ba18004e3cc2e56b7e143e"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/bigdecimal-0.4.11.build.rs.txt",
+      "sha256": "cabe560c4c46c2eb045ed19a281775f81bd2fc738474aed3161fa6fcec67c2dd"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/check-docs-before-anchor-fix.log",
+      "sha256": "abf9c4a01121823fc0bdb74d8429e18b8cfe0b513cc711decc652d9489a26369"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/checks.json",
+      "sha256": "7197bb8a3d11d0438f4bdcb4d31515847e5b8c4a2a694c58112d1c957202493e"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/ci-baseline-8dfbc89b.json",
+      "sha256": "ee20c149d0229854cd973f6029d7364147a40e85095a658ea791ddc718fb47d9"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/decision-receipts.json",
+      "sha256": "5aca2310436f1979e7fc3894a94ed163e3e4bb76380b1230e77a1a187fd7b60b"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/decision-requests.json",
+      "sha256": "6906d1d9cb7c3d6cd9883f7fdcd610be30327470e4d70c00c37f62e2b8d41f7f"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/dependency-review.json",
+      "sha256": "a7508328f1b2ae9c2ffd725ff7825d15eea25be581b02a49b69191458d486c14"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/formula-witnesses.json",
+      "sha256": "7c7dbdb320c0798ec98258bb13dd89e8d46a6fa264e67b514fdd445093e8e7fa"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/libm-0.2.16.Cargo.toml.txt",
+      "sha256": "a2d94f9cbaa4a177bacde9737bfcc7b2ed9de5bddadafe507923a5b5748f9bd7"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/maintenance-attempt1-jobs-api.json",
+      "sha256": "e860f67f1b5f9c95a9266c22be781535628fba79a64fb4e230de130016ca328d"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/maintenance-run-api.json",
+      "sha256": "bfe3a375b2614c93ec8150ff62151511ddee50942ed02d5cbce2617db5413d2a"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/num-bigint-0.4.8.Cargo.toml.txt",
+      "sha256": "fcb19e142df64dc58a459ba33e1e22c1551497962f8037ed98df124d749f28f1"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/num-integer-0.1.47.Cargo.toml.txt",
+      "sha256": "a0fc4aee99b0663bb80ce2fc8052491b7e28872765711266faddb2ed0474cb96"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/num-traits-0.2.19.Cargo.toml.txt",
+      "sha256": "dd701a0da6cce7e6e047cc944b2330f3c5e48cd64329e10942ea7d9299d435be"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/resource-performance-audit.json",
+      "sha256": "cdcca98072dcec0ae63add03793feb3f73e6b4ef0d4027d138638d31e3090d5a"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/source-facts.json",
+      "sha256": "50227cf0a770cd85d15f766b618c227461cbfb19a12a19d97ff49e9ac2da1b02"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/workspace-attempt1-jobs-api.json",
+      "sha256": "0176b8c242e54f034c8f7718856b0355c817dd3e018969bc0eb667cad1df35e5"
+    },
+    {
+      "manifest": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "path": "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/workspace-run-api.json",
+      "sha256": "06ee4b1b6561f66b6718821c0eca944328cb42482fb4072234916f698d76f6c8"
+    }
+  ],
+  "all_historical_sha256_verified": true,
+  "current_worktree_is_not_the_historical_source": true,
+  "additional_source_statistics": {
+    "source_file_summaries": 7,
+    "external_crate_archives": 6,
+    "license_texts_already_in_freeze_close_manifest": 11,
+    "baseline_api_responses_already_in_f_c_manifest": 4,
+    "f_c_manifest_entries": 25
+  },
+  "counting_note": "104仅为六份历史清单的files条目合计；7个源码摘要与6个外部归档不作为额外加数，11份许可证和4个入口API已包含在104中。"
+}
