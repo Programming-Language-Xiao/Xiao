@@ -6,12 +6,13 @@
 //! 释放顺序的唯一来源是冻结计划：退出点上执行 `(作用域, 退出边)` 计划，按
 //! `order` 逐条释放。动态错误发生时按同一份计划展开当前作用域栈。
 
+use super::constants::constant_value;
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
 use std::rc::Rc;
 use xiao_bytecode::{
-    BlockId, FuncId, PcMap, TacArgument, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
-    TacProgram, VReg, build_pc_map,
+    BlockId, FuncId, PcMap, TacArgument, TacFunction, TacHandler, TacInstr, TacOp, TacProgram,
+    VReg, build_pc_map,
 };
 use xiao_diagnostics::{
     BackendLocation, CONTAINER_HASHABILITY_CODE, DiagnosticParam, FatalError, ITERABLE_CODE,
@@ -2216,21 +2217,6 @@ fn scalar_type_for_value_type(value_type: xiao_intrinsics::ValueType) -> Option<
     })
 }
 
-/// 把常量池条目转成运行时值。
-fn constant_value(constant: &TacConstant) -> Result<RuntimeValue, Fault> {
-    let value = match constant {
-        TacConstant::Int(value) => RuntimeValue::Int(*value),
-        TacConstant::Sint(value) => RuntimeValue::Sint(*value),
-        TacConstant::Lint(text) => RuntimeValue::Lint(text.clone()),
-        TacConstant::Float(value) => RuntimeValue::Float(*value),
-        TacConstant::Sfloat(value) => RuntimeValue::Sfloat(*value),
-        TacConstant::Lfloat(text) => RuntimeValue::Lfloat(text.clone()),
-        TacConstant::Bool(value) => RuntimeValue::Bool(*value),
-        TacConstant::Str(text) => RuntimeValue::new_string(text.clone()).map_err(Fault::Error)?,
-    };
-    Ok(value)
-}
-
 /// 从指令形态映射到冻结的退出边名称。
 fn exit_for_instruction(op: &TacOp) -> &'static str {
     match op {
@@ -2322,8 +2308,16 @@ fn check_value(kind: &str, value: &RuntimeValue, expected: Option<&xiao_ir::IrTy
             RuntimeValue::Int(_) | RuntimeValue::Sint(_) => true,
             RuntimeValue::Float(value) => value.is_finite(),
             RuntimeValue::Sfloat(value) => value.is_finite(),
-            RuntimeValue::Lint(value) => value.parse::<i128>().is_ok(),
-            RuntimeValue::Lfloat(value) => value.parse::<f64>().is_ok_and(f64::is_finite),
+            RuntimeValue::Lint(value) => xiao_types::numeric_text::validate_numeric_text(
+                value,
+                xiao_types::numeric_text::NumericTextKind::Integer,
+            )
+            .is_ok(),
+            RuntimeValue::Lfloat(value) => xiao_types::numeric_text::validate_numeric_text(
+                value,
+                xiao_types::numeric_text::NumericTextKind::Decimal,
+            )
+            .is_ok(),
             _ => false,
         },
         "arithmetic" => matches!(

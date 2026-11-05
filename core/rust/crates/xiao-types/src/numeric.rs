@@ -120,7 +120,15 @@ pub fn parse_integer_literal(text: &str) -> Result<i128, NumericError> {
 /// 判断文本是否为合法的非负十进制整数，即使它超出 `i128` 也返回真。
 #[must_use]
 pub fn is_decimal_integer(text: &str) -> bool {
-    !text.is_empty() && text.bytes().all(|byte| byte.is_ascii_digit())
+    text.as_bytes().first().is_some_and(u8::is_ascii_digit)
+        && text.bytes().all(|byte| byte.is_ascii_digit())
+        && !matches!(
+            crate::numeric_text::validate_numeric_text(
+                text,
+                crate::numeric_text::NumericTextKind::Integer
+            ),
+            Err(crate::numeric_text::NumericTextError::InvalidSyntax)
+        )
 }
 
 /// 判断十进制文本的尾数是否为零。
@@ -166,11 +174,19 @@ pub fn is_zero_decimal_mantissa(text: &str) -> bool {
 /// 规范化十进制零值；非零文本仅移除数字分隔符并原样保留其余内容。
 #[must_use]
 pub fn normalize_decimal_zero(text: &str) -> String {
+    if text.len() > crate::numeric_text::NUMERIC_TEXT_LIMIT {
+        return text.to_owned();
+    }
+    // 这是既有源码字面量降低门面；保留其分隔符处理，不扩展F-11字符串语法。
     let normalized = text.replace('_', "");
-    if is_zero_decimal_mantissa(&normalized) {
-        "0".to_owned()
-    } else {
-        normalized
+    match crate::numeric_text::validate_numeric_text(
+        &normalized,
+        crate::numeric_text::NumericTextKind::Decimal,
+    ) {
+        Ok(view) if view.is_zero() => "0".to_owned(),
+        Ok(_) => normalized,
+        // 必须让Runtime接纳入口看到原始失败载荷，不能把超预算零折叠成0。
+        Err(_) => text.to_owned(),
     }
 }
 
@@ -418,5 +434,14 @@ mod tests {
         assert!(!is_zero_decimal_mantissa("0x0"));
         assert!(!is_zero_decimal_mantissa("0e"));
         assert!(!is_zero_decimal_mantissa("0efoo"));
+    }
+
+    #[test]
+    /// 源码降低保留预算错误供Runtime捕获，不能用零折叠绕过接纳。
+    fn zero_lowering_preserves_runtime_budget_failures() {
+        for text in ["0e100001".to_owned(), "0".repeat(65_537)] {
+            assert_eq!(normalize_decimal_zero(&text), text);
+        }
+        assert!(!super::is_decimal_integer(&("1".repeat(65_536) + "x")));
     }
 }

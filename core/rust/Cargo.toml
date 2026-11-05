@@ -45,3 +45,7 @@ debug = "line-tables-only"
 
 [profile.dev.package."*"]
 debug = false
+
+[workspace.dependencies]
+bigdecimal = { version = "=0.4.11", default-features = false, features = ["std"] }
+num-bigint = { version = "=0.4.8", default-features = false, features = ["std"] }

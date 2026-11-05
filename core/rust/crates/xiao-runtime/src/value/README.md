@@ -29,3 +29,13 @@ Unicode 边界、越界、共享生命周期和拥有字节计数。
 20D 追加 `RuntimeValue::ExternalResource`：首批种类为 `file`/`directory`，句柄复制共享同一
 逻辑资源，显式关闭幂等且关闭后的资源操作使用 `X06-RUNTIME-025`；资源不参与哈希，
 `type_name` 与 `display_text` 共用 `resource<kind>` 形式。
+
+20O-B2-A1保留Lint(String)/Lfloat(String)标签。`new_lint`/`new_lfloat`是Rust构造/恢复门面，
+不是新增Xiao函数；`numeric.rs`先复用xiao-types的语法/预算，再临时使用固定版本BigInt/
+BigDecimal并显式渲染文本，不调用默认精度、舍入或Display，也不保存跨调用大数缓存。
+非零显示尾零保留，零规范化；Eq/Hash只借读已经校验的规范系数/scale，不分配大数或文本。
+ABI、VM常量和XCON→Runtime入口共同建立该不变量；裸Rust枚举构造属于受信任内部代码。
+
+A1默认VM及受控原生示例与UseDocs逐字一致；语言新增说明仍planned。
+实际Xiao集合验证数值去重/查询，Rust HashMap只验证底层Eq/Hash契约，不冒充语言数值字典键。
+033已用于接纳预算，034仅建立错误门面，实际精确除法留A2/A3；算术、转换与整批验收仍未交付。

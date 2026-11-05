@@ -565,8 +565,8 @@ unsafe fn value_to_runtime(value: &XiaoValue) -> Result<RuntimeValue, i32> {
             let handle = unsafe { expect_strong(payload.handle, RuntimeTypeTag::String) }?;
             let string = status(StringHandle::from_strong_handle(handle))?;
             match value.tag {
-                XiaoValueTag::Lint => Ok(RuntimeValue::Lint(status(string.to_string())?)),
-                XiaoValueTag::Lfloat => Ok(RuntimeValue::Lfloat(status(string.to_string())?)),
+                XiaoValueTag::Lint => status(status(string.with_str(RuntimeValue::new_lint))?),
+                XiaoValueTag::Lfloat => status(status(string.with_str(RuntimeValue::new_lfloat))?),
                 XiaoValueTag::Str => {
                     status(string.with_str(|_| ()))?;
                     Ok(RuntimeValue::Str(string))
@@ -640,6 +640,10 @@ fn runtime_to_value(value: &RuntimeValue) -> Result<XiaoValue, i32> {
         RuntimeValue::Float(value) => Ok(XiaoValue::float(*value)),
         RuntimeValue::Sfloat(value) => Ok(XiaoValue::sfloat(*value)),
         RuntimeValue::Lint(value) => {
+            status(crate::value::numeric::validated_text(
+                value,
+                xiao_types::numeric_text::NumericTextKind::Integer,
+            ))?;
             let handle = status(StringHandle::new(value.clone()))?;
             Ok(value_from_owned_handle(
                 XiaoValueTag::Lint,
@@ -647,6 +651,10 @@ fn runtime_to_value(value: &RuntimeValue) -> Result<XiaoValue, i32> {
             ))
         }
         RuntimeValue::Lfloat(value) => {
+            status(crate::value::numeric::validated_text(
+                value,
+                xiao_types::numeric_text::NumericTextKind::Decimal,
+            ))?;
             let handle = status(StringHandle::new(value.clone()))?;
             Ok(value_from_owned_handle(
                 XiaoValueTag::Lfloat,
@@ -2083,33 +2091,53 @@ pub extern "C" fn xiao_runtime_value_str_owned(handle: XiaoHandle) -> XiaoValue 
 /// 将字符串强句柄包装为任意精度整数文本值。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_lint(handle: XiaoHandle) -> XiaoValue {
-    unsafe { expect_strong(handle, RuntimeTypeTag::String) }
-        .map(|handle| value_from_owned_handle(XiaoValueTag::Lint, handle))
-        .unwrap_or_else(|_| XiaoValue::none())
+    numeric_value_from_handle(handle, XiaoValueTag::Lint, false)
 }
 
 /// 消费字符串强句柄并包装为任意精度整数文本值。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_lint_owned(handle: XiaoHandle) -> XiaoValue {
-    unsafe { take_strong(handle, RuntimeTypeTag::String) }
-        .map(|handle| value_from_owned_handle(XiaoValueTag::Lint, handle))
-        .unwrap_or_else(|_| XiaoValue::none())
+    numeric_value_from_handle(handle, XiaoValueTag::Lint, true)
 }
 
 /// 将字符串强句柄包装为任意精度浮点文本值。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_lfloat(handle: XiaoHandle) -> XiaoValue {
-    unsafe { expect_strong(handle, RuntimeTypeTag::String) }
-        .map(|handle| value_from_owned_handle(XiaoValueTag::Lfloat, handle))
-        .unwrap_or_else(|_| XiaoValue::none())
+    numeric_value_from_handle(handle, XiaoValueTag::Lfloat, false)
 }
 
 /// 消费字符串强句柄并包装为任意精度浮点文本值。
 #[unsafe(no_mangle)]
 pub extern "C" fn xiao_runtime_value_lfloat_owned(handle: XiaoHandle) -> XiaoValue {
-    unsafe { take_strong(handle, RuntimeTypeTag::String) }
-        .map(|handle| value_from_owned_handle(XiaoValueTag::Lfloat, handle))
-        .unwrap_or_else(|_| XiaoValue::none())
+    numeric_value_from_handle(handle, XiaoValueTag::Lfloat, true)
+}
+
+/// 原有无状态返回构造器在既有挂起槽中报告语义失败；拥有句柄仍恰好消费一次。
+fn numeric_value_from_handle(handle: XiaoHandle, tag: XiaoValueTag, owned: bool) -> XiaoValue {
+    let strong = if owned {
+        unsafe { take_strong(handle, RuntimeTypeTag::String) }
+    } else {
+        unsafe { expect_strong(handle, RuntimeTypeTag::String) }
+    };
+    let Ok(strong) = strong else {
+        // 结构失败保留旧的none返回约定，不制造或清空挂起错误。
+        return XiaoValue::none();
+    };
+    let string = match status(StringHandle::from_strong_handle(strong)) {
+        Ok(string) => string,
+        Err(_) => return XiaoValue::none(),
+    };
+    let kind = if tag == XiaoValueTag::Lint {
+        xiao_types::numeric_text::NumericTextKind::Integer
+    } else {
+        xiao_types::numeric_text::NumericTextKind::Decimal
+    };
+    let checked =
+        string.with_str(|text| crate::value::numeric::validated_text(text, kind).map(|_| ()));
+    if status(checked).and_then(status).is_err() {
+        return XiaoValue::none();
+    }
+    value_from_owned_handle(tag, string.into_strong_handle())
 }
 
 /// 旧容器、集合与表的稳定 C ABI 入口实现。
@@ -2137,3 +2165,8 @@ mod tests;
 #[cfg(test)]
 #[path = "abi_error_code_tests.rs"]
 mod error_code_tests;
+
+/// A1原有数值构造器、借用恢复和失败原子性的直接测试。
+#[cfg(test)]
+#[path = "abi_numeric_identity_tests.rs"]
+mod numeric_identity_tests;

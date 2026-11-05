@@ -17,3 +17,6 @@ crate 的规范身份函数，将 `std.text` 等路径统一为 `stdlib.text`，
 22C-FIX.1 的 `concurrent.rs` 按 TAC 计划执行原生并发绑定，子线程独立构造 VM，
 只传递只读程序、XCON 信封、显式共享句柄和取消/事件通道。`module_exec.rs` 管理模块
 初始化及程序上下文切换，不把 `VmSession` 的 `Rc` 状态发送给子线程。
+
+B2-A1将常量池恢复拆入constants.rs：TAC标签和文本不变，lint/lfloat经共享Runtime接纳。
+语法/预算错误仍在实际加载处进入既有可恢复错误路径；不改释放计划、指令版本或22类协议。

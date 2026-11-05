@@ -676,6 +676,22 @@ pub fn builtin_renderer() -> MessageRenderer {
     add_entry(
         &mut chinese,
         &mut english,
+        "runtime.numeric_limit",
+        "{message}",
+        "numeric resource limit exceeded: {message}",
+        &[("message", text)],
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
+        "runtime.non_terminating_division",
+        "精确十进制除法的结果不是有限小数",
+        "exact decimal division has a non-terminating result",
+        no_params,
+    );
+    add_entry(
+        &mut chinese,
+        &mut english,
         "runtime.selector_bounds",
         "{message}",
         "selector bounds error: {message}",

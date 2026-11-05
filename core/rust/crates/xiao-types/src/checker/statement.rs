@@ -687,7 +687,14 @@ impl<'source> TypeChecker<'source> {
         value: Option<&Expression>,
     ) {
         let key = self.name_key(target);
-        let value_type = value.map(|expression| self.check_expression(expression));
+        let value_type = value.map(|expression| {
+            if declared_type == ScalarType::Lfloat
+                && let Some(ty) = self.check_lfloat_declaration_literal(expression)
+            {
+                return ty;
+            }
+            self.check_expression(expression)
+        });
         if let Some(value) = value {
             if let Some(value_type) = &value_type {
                 self.check_explicit_target(value, value_type, declared_type, true);

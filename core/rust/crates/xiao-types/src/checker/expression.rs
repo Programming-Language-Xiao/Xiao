@@ -22,6 +22,49 @@ use crate::types::Type;
 use super::{RuntimeCheckKind, TypeChecker, TypedNode};
 
 impl<'source> TypeChecker<'source> {
+    /// 显式lfloat声明的直接字面量沿文本接纳，不先窄化为宿主f64。
+    ///
+    /// 预算错误留到Runtime构造处正常捕获；不处理二元算术或新增转换组合。
+    pub(super) fn check_lfloat_declaration_literal(
+        &mut self,
+        expression: &Expression,
+    ) -> Option<Type> {
+        match expression {
+            Expression::Literal {
+                kind: LiteralKind::Float,
+                span,
+            } => {
+                let text = self.source.slice(*span).replace('_', "");
+                if matches!(
+                    crate::numeric_text::validate_numeric_text(
+                        &text,
+                        crate::numeric_text::NumericTextKind::Decimal
+                    ),
+                    Err(crate::numeric_text::NumericTextError::InvalidSyntax)
+                ) {
+                    return None;
+                }
+            }
+            Expression::Group { expression, .. } => {
+                self.check_lfloat_declaration_literal(expression)?;
+            }
+            Expression::Unary {
+                operator: UnaryOperator::Plus | UnaryOperator::Minus,
+                operand,
+                ..
+            } => {
+                self.check_lfloat_declaration_literal(operand)?;
+            }
+            _ => return None,
+        }
+        let ty = Type::scalar(ScalarType::Lfloat);
+        self.nodes.push(TypedNode {
+            span: expression.span(),
+            ty: ty.clone(),
+        });
+        Some(ty)
+    }
+
     /// 递归检查表达式并记录其旁路类型。
     pub(super) fn check_expression(&mut self, expression: &Expression) -> Type {
         let ty = match expression {

@@ -1506,9 +1506,10 @@ impl<'a> DynamicGenerator<'a> {
         match literal {
             "integer" | "int" | "sint" => {
                 if scalar_name == Some("lint") {
-                    return self.emit_text_value(
+                    return self.emit_numeric_text_value(
                         text.replace('_', "").as_bytes(),
                         "xiao_runtime_value_lint_owned",
+                        span,
                     );
                 }
                 if literal == "sint" || scalar_name == Some("sint") {
@@ -1519,9 +1520,10 @@ impl<'a> DynamicGenerator<'a> {
             }
             "float" | "sfloat" => {
                 if scalar_name == Some("lfloat") {
-                    return self.emit_text_value(
+                    return self.emit_numeric_text_value(
                         xiao_types::normalize_decimal_zero(text).as_bytes(),
                         "xiao_runtime_value_lfloat_owned",
+                        span,
                     );
                 }
                 if literal == "sfloat" || scalar_name == Some("sfloat") {
@@ -1571,7 +1573,26 @@ impl<'a> DynamicGenerator<'a> {
         let parsed = unquote(text).ok_or_else(|| CodegenError::InvalidIr {
             message: format!("字符串字面量无法编码（{}..{}）", span.start, span.end),
         })?;
-        self.emit_text_value(parsed.as_bytes(), constructor)
+        if matches!(
+            constructor,
+            "xiao_runtime_value_lint_owned" | "xiao_runtime_value_lfloat_owned"
+        ) {
+            self.emit_numeric_text_value(parsed.as_bytes(), constructor, span)
+        } else {
+            self.emit_text_value(parsed.as_bytes(), constructor)
+        }
+    }
+
+    /// 数值载荷构造可沿既有挂起槽失败，必须在原表达式位置检查并传播。
+    fn emit_numeric_text_value(
+        &mut self,
+        bytes: &[u8],
+        constructor: &str,
+        span: IrSpan,
+    ) -> Result<String> {
+        let value = self.emit_text_value(bytes, constructor)?;
+        self.check_pending_error_at(span);
+        Ok(value)
     }
 
     /// 发射一段已经解码的 UTF-8 文本，并调用指定的字符串类 Runtime 构造器。

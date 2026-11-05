@@ -1,0 +1,11 @@
+lint big = 18446744073709551616
+lfloat first = 1.50
+lfloat second = 15e-1
+lfloat zero = -0.00
+lfloat large = 1e100000
+print(big)
+print(first)
+print(second)
+print(first == second)
+print(zero)
+print(large)

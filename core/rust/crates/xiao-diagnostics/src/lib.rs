@@ -67,6 +67,10 @@ pub const ITERABLE_CODE: &str = "X06-RUNTIME-024";
 pub const RESOURCE_CLOSED_CODE: &str = "X06-RUNTIME-025";
 /// 当前能力上下文不允许请求的外部操作。
 pub const CAPABILITY_UNAVAILABLE_CODE: &str = "X06-RUNTIME-026";
+/// 数值原文、系数、指数、scale或工作/结果超过冻结预算。
+pub const NUMERIC_LIMIT_CODE: &str = "X06-RUNTIME-033";
+/// 精确十进制真除法的结果不是有限小数。
+pub const NON_TERMINATING_DIVISION_CODE: &str = "X06-RUNTIME-034";
 
 /// 目标平台不支持请求的资源操作。
 pub const TARGET_UNSUPPORTED_CODE: &str = "X20-TARGET-001";
@@ -707,6 +711,26 @@ impl XiaoError {
             NUMERIC_OVERFLOW_CODE,
             "runtime.numeric_overflow",
             message,
+        )
+    }
+    /// 创建与实际分配失败不同的数值资源预算错误。
+    #[must_use]
+    pub fn numeric_limit(message: impl Into<String>) -> Self {
+        Self::new_with_message(
+            XiaoErrorKind::Resource,
+            NUMERIC_LIMIT_CODE,
+            "runtime.numeric_limit",
+            message,
+        )
+    }
+    /// 创建精确语言除法的非终止十进制错误；不用于显式精度除法。
+    #[must_use]
+    pub fn non_terminating_division() -> Self {
+        Self::new(
+            XiaoErrorKind::Arithmetic,
+            NON_TERMINATING_DIVISION_CODE,
+            "runtime.non_terminating_division",
+            "精确十进制除法的结果不是有限小数",
         )
     }
     /// 创建除数为零错误。
@@ -1622,6 +1646,31 @@ mod tests {
         assert_eq!(
             error.params().get("operator"),
             Some(&DiagnosticParam::Text("//".to_owned()))
+        );
+    }
+
+    #[test]
+    /// 数值预算与非终止分别保留033/034类别，不能混用分配失败或除零。
+    fn numeric_foundation_errors_have_distinct_identity_and_catalog_entries() {
+        let limit = XiaoError::numeric_limit("系数超过预算");
+        assert_eq!(limit.code(), NUMERIC_LIMIT_CODE);
+        assert_eq!(limit.kind(), XiaoErrorKind::Resource);
+        assert_eq!(limit.message_id(), "runtime.numeric_limit");
+        assert_ne!(limit.code(), ALLOCATION_CODE);
+        let division = XiaoError::non_terminating_division();
+        assert_eq!(division.code(), NON_TERMINATING_DIVISION_CODE);
+        assert_eq!(division.kind(), XiaoErrorKind::Arithmetic);
+        assert_eq!(division.message_id(), "runtime.non_terminating_division");
+        assert_ne!(division.code(), DIVISION_BY_ZERO_CODE);
+        let english = LocaleContext::new("en-US");
+        let renderer = xiao_i18n::builtin_renderer();
+        assert!(
+            render_localized_text(&limit.report(), &english, &renderer)
+                .contains("numeric resource limit exceeded")
+        );
+        assert!(
+            render_localized_text(&division.report(), &english, &renderer)
+                .contains("non-terminating result")
         );
     }
 

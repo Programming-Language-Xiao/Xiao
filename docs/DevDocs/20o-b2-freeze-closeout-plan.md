@@ -5,7 +5,7 @@
 > `cmath` 仍为 planned，Runtime ABI 仍为 1.18、`CODEGEN_VERSION` 仍为 20。
 >
 > **F-A/F-B/F-C已完成，F-D已实际签字，B2联合冻结已生效。** B2-A规划已批准，A0～A7获准另批实施；
-> [A0 Windows本地基线](20o-b2-a0-baseline-plan.md)已实际通过，Linux/macOS本地未验证；A1～A7及B2-A/B产品尚未开始。
+> [A0 Windows本地基线](20o-b2-a0-baseline-plan.md)已实际通过，Linux/macOS本地未验证；后续A1已独立开工，A2～A7及B2-B/C尚未开始。
 
 ## 一、入口与当前事实
 
@@ -14,7 +14,7 @@
 | 冻结入口基线 | `0011f4c5`；工作区干净、已推送；当前签字状态见[F-D记录](20o-b2-freeze-d-signature-plan.md) |
 | B1-CLOSE | 七库 20/20、教程/registry verified；B1 旧 721 条 F10 已标历史 |
 | B1 复跑 | 默认当前 registry 会拒绝；`audit.ps1`/`validate-audit.ps1` 的 `-SourceRoot` 106b99c7 入口已取证并通过 |
-| B2-FREEZE | 30条全部confirmed，F-D已签字并激活联合冻结；B2-A规划已批准，A0 Windows基线已通过，A1未开始，cmath planned，产品仍未开工 |
+| B2-FREEZE | 30条全部confirmed，F-D已签字并激活联合冻结；B2-A规划已批准，A0 Windows基线已通过，A1实施中，cmath planned，B2-A整批未收口 |
 | 冻结入口 CI | 0011f4c5的`41644476014` workspace gates成功；仅代表当时的DevDocs/审计修复入口，后续运行另按提交登记 |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
 
@@ -124,7 +124,7 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 
 F-D当时退出：B2-FREEZE联合冻结已激活；只开放B2-A实施规划，B2-A代码与B2-B/C仍须各自规划和验收。
 
-后续B2-A实施规划已获A-P1/A-P2/A-P3三项实际批准，见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；该批准独立于F-D签字。A0已实际完成Windows本地基线，A1～A7仍留另批执行，B2-A产品未开工。
+后续B2-A实施规划已获A-P1/A-P2/A-P3三项实际批准，见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；该批准独立于F-D签字。A0已实际完成Windows本地基线，A1已按A-P1独立实施，A2～A7仍后置。
 
 ## 五、裁定状态与剩余待审
 
@@ -145,7 +145,7 @@ F-D当时退出：B2-FREEZE联合冻结已激活；只开放B2-A实施规划，B
 | F-11 | 已确认 | 精确ASCII十进制语法、拒绝边界与数值文本输出；不开放直接str到float/sfloat |
 | F-12 | 已确认 | 保留规划033/034、旧码边界、七阶段及文本内部优先级；002/009/011/012/013/033/034经状态6，out保留 |
 
-30条均已确认，F-D三项均有实际批准；联合冻结已激活，产品仍未开工。
+30条均已确认，F-D三项均有实际批准；联合冻结已激活；此处记录F-D退出时产品未开工，后续A1授权与执行独立登记。
 
 ## 六、验收与证据
 
@@ -168,7 +168,7 @@ F-D当时退出：B2-FREEZE联合冻结已激活；只开放B2-A实施规划，B
 4. 所有“待审/建议”状态被替换或明确延期，不能进入 B2-A 后才临时决定；
 5. 文档门禁通过，证据带实际命令/输出；
 6. 没有修改产品、依赖、ABI、测试或工作流；
-7. B2-A/B 仍未开工；22D/22C、19/11/22 债务保持独立。
+7. F-D退出时B2-A/B未开工；后续A1授权与执行独立记录，22D/22C、19/11/22债务保持独立。
 
 ## 八、交接
 

@@ -365,10 +365,10 @@ fn from_xcon(value: XconValue) -> RuntimeResult<RuntimeValue> {
         XconValue::None => RuntimeValue::None,
         XconValue::Int(value) => RuntimeValue::Int(value),
         XconValue::Sint(value) => RuntimeValue::Sint(value),
-        XconValue::Lint(value) => RuntimeValue::Lint(value),
+        XconValue::Lint(value) => RuntimeValue::new_lint(&value)?,
         XconValue::Float(value) => RuntimeValue::Float(value),
         XconValue::Sfloat(value) => RuntimeValue::Sfloat(value),
-        XconValue::Lfloat(value) => RuntimeValue::Lfloat(value),
+        XconValue::Lfloat(value) => RuntimeValue::new_lfloat(&value)?,
         XconValue::Bool(value) => RuntimeValue::Bool(value),
         XconValue::Str(value) => RuntimeValue::new_string(value)?,
         XconValue::Tuple(values) => RuntimeValue::Tuple(TupleHandle::new(
@@ -382,6 +382,10 @@ fn from_xcon(value: XconValue) -> RuntimeResult<RuntimeValue> {
         }
     })
 }
+
+#[cfg(test)]
+#[path = "vm_numeric_identity_tests.rs"]
+mod numeric_identity_tests;
 
 /// 可被 VM 别名引用的单次消费线程槽。
 pub struct VmThreadValue {

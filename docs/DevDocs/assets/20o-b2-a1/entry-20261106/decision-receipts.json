@@ -1,0 +1,14 @@
+{
+  "record_count": 1,
+  "receipts": [
+    {
+      "id": "A1-DICT",
+      "question": "A1 字典证据范围｜规划要求“集合/字典去重、查询”，但现有 Xiao 字典键固定为 str，DictHandle::new 接收 Vec<(String, RuntimeValue)>。建议本批用现有 Xiao 集合验证数值去重/查询，用 Rust HashMap<RuntimeValue, …> 验证相等与哈希契约；语言数值字典键明确后置，不把 Rust 测试写成语言证据。这个范围是否确认？扩大语言字典键会超出已批 A1，需要另冻契约。",
+      "answer": "确认：保留 str 键，区分两类证据（推荐）",
+      "question_item_id": "[\"request_user_input_async\",\"call_bfd6f27f838b4c46b5b69bfea8a59ffe\",0]",
+      "date": "2026-11-06",
+      "authority": "星崽本次会话实际答复",
+      "scope": "只明确A1验收证据；不增加语言字典键类型，不修改F-D签字或30项冻结台账"
+    }
+  ]
+}

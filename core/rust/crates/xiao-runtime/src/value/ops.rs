@@ -73,8 +73,12 @@ impl RuntimeValue {
                 .ok_or_else(|| RuntimeError::numeric_overflow("sint 一元负号溢出")),
             Self::Float(value) => Ok(Self::Float(-value)),
             Self::Sfloat(value) => Ok(Self::Sfloat(-value)),
-            Self::Lint(value) => toggle_decimal_sign(value, true).map(Self::Lint),
-            Self::Lfloat(value) => toggle_decimal_sign(value, true).map(Self::Lfloat),
+            Self::Lint(value) => {
+                toggle_decimal_sign(value, true).and_then(|text| Self::new_lint(&text))
+            }
+            Self::Lfloat(value) => {
+                toggle_decimal_sign(value, true).and_then(|text| Self::new_lfloat(&text))
+            }
             other => Err(RuntimeError::type_mismatch("numeric", other.type_name())),
         }
     }
@@ -231,7 +235,11 @@ impl RuntimeValue {
             RuntimeError::invalid_value(format!("{} 不是标量，不能转换", self.type_name()))
         })?;
         if source == target {
-            return Ok(self.clone());
+            return match self {
+                Self::Lint(text) => Self::new_lint(text),
+                Self::Lfloat(text) => Self::new_lfloat(text),
+                _ => Ok(self.clone()),
+            };
         }
         match (source, target) {
             (ScalarType::Str, ScalarType::Bool) => self.convert_str_to_bool(),
@@ -252,8 +260,8 @@ impl RuntimeValue {
             (ScalarType::Int, ScalarType::Sint) => i32::try_from(self.int_value()?)
                 .map(Self::Sint)
                 .map_err(|_| range_error("sint")),
-            (ScalarType::Sint, ScalarType::Lint) => Ok(Self::Lint(self.sint_value()?.to_string())),
-            (ScalarType::Int, ScalarType::Lint) => Ok(Self::Lint(self.int_value()?.to_string())),
+            (ScalarType::Sint, ScalarType::Lint) => Self::new_lint(&self.sint_value()?.to_string()),
+            (ScalarType::Int, ScalarType::Lint) => Self::new_lint(&self.int_value()?.to_string()),
             (ScalarType::Lint, ScalarType::Int) => i64::try_from(self.lint_value()?)
                 .map(Self::Int)
                 .map_err(|_| range_error("int")),
@@ -363,7 +371,7 @@ impl RuntimeValue {
         Ok(match target {
             ScalarType::Sint => Self::Sint(codepoint as i32),
             ScalarType::Int => Self::Int(codepoint as i64),
-            ScalarType::Lint => Self::Lint(codepoint.to_string()),
+            ScalarType::Lint => return Self::new_lint(&codepoint.to_string()),
             _ => unreachable!("调用方已限定整数目标"),
         })
     }

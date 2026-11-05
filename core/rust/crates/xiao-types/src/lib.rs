@@ -21,6 +21,8 @@ mod functions;
 mod materialization;
 /// 数值提升、范围和常量辅助。
 mod numeric;
+/// B2-A共享文本接纳、预算与无分配规范视图。
+pub mod numeric_text;
 /// C0 精确路径转换和静态解析。
 mod path_constraints;
 /// C1 有序容器选择的规范化计划模型。

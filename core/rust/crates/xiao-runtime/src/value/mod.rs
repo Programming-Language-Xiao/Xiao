@@ -4,6 +4,8 @@
 //! 模块提供并作为统一值的一种可拥有变体接入。本模块只定义值的表示和读取，
 //! 算术、比较、相等和显式转换统一放在子模块 `ops`，避免算子矩阵散落。
 
+/// 临时任意精度适配、共享接纳及确定文本输出。
+pub(crate) mod numeric;
 /// Runtime 唯一的算子表：算术、比较、相等和显式转换。
 mod ops;
 
@@ -554,10 +556,16 @@ impl PartialEq for RuntimeValue {
             ) => left_name == right_name && left_id == right_id,
             (Self::Int(left), Self::Int(right)) => left == right,
             (Self::Sint(left), Self::Sint(right)) => left == right,
-            (Self::Lint(left), Self::Lint(right)) => left == right,
+            (Self::Lint(left), Self::Lint(right)) => {
+                xiao_types::numeric_text::identity_of_validated_numeric_text(left)
+                    == xiao_types::numeric_text::identity_of_validated_numeric_text(right)
+            }
             (Self::Float(left), Self::Float(right)) => left.to_bits() == right.to_bits(),
             (Self::Sfloat(left), Self::Sfloat(right)) => left.to_bits() == right.to_bits(),
-            (Self::Lfloat(left), Self::Lfloat(right)) => left == right,
+            (Self::Lfloat(left), Self::Lfloat(right)) => {
+                xiao_types::numeric_text::identity_of_validated_numeric_text(left)
+                    == xiao_types::numeric_text::identity_of_validated_numeric_text(right)
+            }
             (Self::Bool(left), Self::Bool(right)) => left == right,
             (Self::Str(left), Self::Str(right)) => left
                 .with_str(|left| right.with_str(|right| left == right))
@@ -600,10 +608,14 @@ impl std::hash::Hash for RuntimeValue {
             }
             Self::Int(value) => value.hash(state),
             Self::Sint(value) => value.hash(state),
-            Self::Lint(value) => value.hash(state),
+            Self::Lint(value) => {
+                xiao_types::numeric_text::identity_of_validated_numeric_text(value).hash(state)
+            }
             Self::Float(value) => value.to_bits().hash(state),
             Self::Sfloat(value) => value.to_bits().hash(state),
-            Self::Lfloat(value) => value.hash(state),
+            Self::Lfloat(value) => {
+                xiao_types::numeric_text::identity_of_validated_numeric_text(value).hash(state)
+            }
             Self::Bool(value) => value.hash(state),
             Self::Str(handle) => {
                 let _ = handle.with_str(|text| text.hash(state));
@@ -624,6 +636,18 @@ impl std::hash::Hash for RuntimeValue {
 }
 
 impl RuntimeValue {
+    /// 从受信任的整数文本入口接纳并创建lint；不改变str到lint的码点转换。
+    pub fn new_lint(text: &str) -> RuntimeResult<Self> {
+        numeric::integer_text(text).map(Self::Lint)
+    }
+
+    /// 从既有数值载荷接纳并创建lfloat，保留非零显示精度。
+    ///
+    /// 本Rust门面供常量/ABI/XCON恢复使用，不新增Xiao全局函数或转换组合。
+    pub fn new_lfloat(text: &str) -> RuntimeResult<Self> {
+        numeric::decimal_text(text).map(Self::Lfloat)
+    }
+
     /// 返回 intrinsic 输出使用的稳定文本表示。
     pub fn display_text(&self) -> RuntimeResult<String> {
         Ok(match self {

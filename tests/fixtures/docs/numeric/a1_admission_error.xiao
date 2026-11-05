@@ -1,0 +1,6 @@
+try
+    lfloat over_budget = 1e100001
+    print(over_budget)
+catch failure as ResourceError
+    print(error_code(failure))
+print("continued")
