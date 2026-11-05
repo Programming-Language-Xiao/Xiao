@@ -14,6 +14,7 @@
 | 台账 | 30 confirmed / 0 pending；F-D为`signed`，联合冻结已激活；产品未开工 |
 | 入口CI | `0a93f957`的workspace `41953275349`成功；该提交只变更DevDocs及其assets，未命中maintenance的任何push.paths（包含UseDocs/library、core/rust等），因此未触发，不记为通过 |
 | 签字准备CI | `22a865bc`的workspace `41959843609`成功；maintenance仍因未命中push.paths而未触发，见[准备提交CI](assets/20o-b2-freeze-d/entry-20261105/ci-preparation-22a865bc.json) |
+| 状态切换CI | `53e95a55`的workspace `41962238521`与maintenance `41962238445`第1次尝试均成功，七个实际作业全部通过；维护工作流由cmath教程路径正常触发，见[状态切换CI](assets/20o-b2-freeze-d/entry-20261105/ci-signed-state-53e95a55.json) |
 | F-C复核 | [复核记录](assets/20o-b2-freeze-c/review-fix-20261105/README.md)已补104条构成、收口CI与UseDocs范围 |
 | 前置修正 | F-C当前/历史清单已分开命名，CI时点措辞已修正；正文历史状态已整理，数值表/资源协议未变，签字准备见[F-D记录](assets/20o-b2-freeze-d/entry-20261105/README.md) |
 | 版本边界 | 仍为ABI 1.18、生成器20；B2-B才升1.19/21 |
@@ -119,6 +120,10 @@ F-D不新增第31条裁定，也不重开F-1～F-12；它是30条精确契约的
 5. `cmath`仍planned，B2-A/B/C边界未变；
 6. B1 721条、22D/22C、19/11/22不被核销；
 7. B2-A只获得实施规划入口，B2-A代码和B2-B/C仍须各自规划与验收。
+
+F-D退出对账已完成（2026-11-05）：三项实际批准、30/0、正文不变且仅第3行状态切换、台账30项投影不变、本地门禁与状态提交53e95a55的两项CI均已归档。
+前置0a/22a的maintenance未触发与状态提交53e的实际触发分别记录；后续仅DevDocs证据归档的提交不沿用53e的CI成绩。
+下一入口仅为[B2-A实施规划交接](assets/20o-b2-freeze-d/entry-20261105/b2-a-planning-handoff.md)，不是B2-A产品代码。
 
 ## 八、风险与禁止
 

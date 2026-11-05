@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "entry_head": "459f9e5db0200bad178100bebe73915c61c58fff",
-  "status": "三项实际批准、单状态行/台账投影核验与签字后本地门禁通过；联合冻结激活，仅开放B2-A实施规划；待记录状态切换提交的真实CI",
+  "status": "F-D签字与证据收口完成；30/0，联合冻结已激活，仅开放B2-A实施规划，产品仍未开工",
   "signature_baseline": "signature-baseline.json",
   "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
   "signature_status": "signed",
@@ -21,7 +21,7 @@
     },
     {
       "file": "README.md",
-      "sha256": "da9813216a0c1206a1685629bccafd147648bfd1029af9f1b4a40b3a0450633c"
+      "sha256": "ef98d2684f3304e51ed0b8dc02ac7a0b0e0df924c67e62ee1fcab1fb9e57b997"
     },
     {
       "file": "b2-a-planning-handoff.md",
@@ -34,6 +34,30 @@
     {
       "file": "ci-preparation-22a865bc.json",
       "sha256": "a53f5fc1d2b5090cea8ffdfacb48af995eb363a67d100d0ac13318ebbd5a4276"
+    },
+    {
+      "file": "ci-signed-state-53e95a55.json",
+      "sha256": "8d97ec7a4da810fc9bae21ea7c6f4a67b6727467cc4e76d5eecf285306549789"
+    },
+    {
+      "file": "close-check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "file": "close-check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "file": "close-check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "file": "close-signature-history-replay.log",
+      "sha256": "eeecbf5d1462d155a4be003812a49a82ec5407c10d7f5e68b24292a37cf1c6ee"
+    },
+    {
+      "file": "closeout-checks.json",
+      "sha256": "d42efb4cfcf19a07aba59b951c0e7bbf6b7d07454613a905a04b4942610398c8"
     },
     {
       "file": "coverage-38d6120d.snapshot.json",
@@ -84,6 +108,10 @@
       "sha256": "a22bb48a6ee1cb6261b68fd1a8ed8cd1fa80bd89af9d4c2d79086d14df61cfc8"
     },
     {
+      "file": "historical-boundaries.json",
+      "sha256": "95fdf9d42e29229f352fafa029f84163eeb380b8880b0a943be1d90c27a9ea52"
+    },
+    {
       "file": "ledger-after-signature.json",
       "sha256": "9f075bf7f6256ea72a23ba7541bb05e8050f1f318b23f0ac3ae93e152abfccfe"
     },
@@ -113,7 +141,7 @@
     },
     {
       "file": "post-signature-checks.json",
-      "sha256": "1e1fdccb07ad9a69f5de97fbeccfee72c24218e951c03b7bee5d73b783d405e4"
+      "sha256": "ca3426dba425bd790cce04274e8bfcd8452936a55bd1a4936b98e60d985b281d"
     },
     {
       "file": "post-signature-integrity.log",
@@ -160,12 +188,32 @@
       "sha256": "e70b6e8132a63a278fccbd41fc9cebf6b81326073358a3d9fb3132eaa1d8a7e5"
     },
     {
+      "file": "signature-history-replay.log",
+      "sha256": "eeecbf5d1462d155a4be003812a49a82ec5407c10d7f5e68b24292a37cf1c6ee"
+    },
+    {
       "file": "signature-transition.json",
       "sha256": "2f04e7fe43f6efa2c676fc5790fe41032d61026756ea3e301e4d24086567f17f"
     },
     {
       "file": "source-facts.json",
       "sha256": "5a3881bcb1e7e8fff6e39a120a814025701a5a32fbdcab60dfd7d2236121e582"
+    },
+    {
+      "file": "state-maintenance-attempt1-jobs-api.json",
+      "sha256": "a5eb8e863e9e6c6af4cc5b86019e6628b98bb4c376528229027c07943c650547"
+    },
+    {
+      "file": "state-maintenance-run-api.json",
+      "sha256": "a4d9f7130d02fed1bae754c4167fc725c9c9a9c808715d5fa8ff035f30b5de9b"
+    },
+    {
+      "file": "state-workspace-attempt1-jobs-api.json",
+      "sha256": "84d531db225a09d7a92719ffe0fd0607e2090f3eba3632ec78fa58f24a922a7a"
+    },
+    {
+      "file": "state-workspace-run-api.json",
+      "sha256": "0696d6a25e41226d082637dc5426c509704e457e271dbcc575da1194aeaa0047"
     },
     {
       "file": "status-line.diff",
@@ -183,5 +231,18 @@
   "signature_transition": "signature-transition.json",
   "post_signature_checks": "post-signature-checks.json",
   "signed_draft_body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
-  "next_entry": "B2-A implementation planning only"
+  "next_entry": "B2-A implementation planning only",
+  "signed_state_commit": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+  "signed_state_ci": "ci-signed-state-53e95a55.json",
+  "closeout_checks": "closeout-checks.json",
+  "signature_history_replay": "signature-history-replay.log",
+  "historical_boundaries": "historical-boundaries.json",
+  "closeout_complete": true,
+  "state_ci_conclusions": {
+    "workspace": "success",
+    "maintenance": "success",
+    "run_attempt": 1,
+    "actual_successful_jobs": 7
+  },
+  "ci_binding_scope": "CI成绩仅绑定状态切换53e95a55，后续证据归档提交单独登记，不继承passed"
 }

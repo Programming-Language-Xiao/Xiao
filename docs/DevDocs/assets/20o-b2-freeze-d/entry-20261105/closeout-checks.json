@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "phase": "F-D_D_evidence_closeout",
+  "status": "passed",
+  "scope": "状态切换53e95a55后的证据归档；不改变已签正文/台账或产品",
+  "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+  "preparation_commit": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+  "signed_state_commit": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "close-check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "close-check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "close-check-layout.log"
+    },
+    {
+      "command": "cmd /c git diff --exit-code 53e95a55 -- core/rust stdlib tests .github/workflows tools .cargo/config.toml docs/module-registry.json .gitattributes package.json bun.lock docs/UseDocs docs/DevDocs/20o-b2-freeze-draft.md docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/signature-baseline.json docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/decision-receipts.json docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/ledger-before-signature.json docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/ledger-after-signature.json docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/draft-before-signature.txt docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/draft-after-signature.txt",
+      "exit_code": 0
+    },
+    {
+      "command": "cmd /c git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "@'\nimport pathlib,subprocess,sys\nentry=pathlib.Path('docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105')\ntext=(entry/'README.md').read_text(encoding='utf-8')\nblock=text.split('```powershell\\n',1)[1].split('\\n```',1)[0]\nresult=subprocess.run([sys.executable,'-'],input=block[3:-len(\"\\n'@ | python -\")].encode('utf-8'),check=True,stdout=subprocess.PIPE)\nprint(result.stdout.decode('utf-8'))\n'@ | python -",
+      "exit_code": 0,
+      "log": "close-signature-history-replay.log"
+    }
+  ],
+  "signature_approvals": 3,
+  "decision_status": [
+    30,
+    0
+  ],
+  "joint_freeze_activated": true,
+  "product_implementation_started": false,
+  "signed_body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+  "signed_state_ci": "ci-signed-state-53e95a55.json",
+  "state_ci_conclusions": {
+    "workspace": "success",
+    "maintenance": "success",
+    "run_attempt": 1,
+    "actual_successful_jobs": 7
+  },
+  "historical_replay_logs": [
+    "historical-104-replay.log",
+    "post-historical-104-replay.log",
+    "signature-history-replay.log"
+  ],
+  "historical_boundary_record": "historical-boundaries.json",
+  "new_b2_product_executed": false,
+  "new_numeric_dependencies_built": false,
+  "new_b1_f10_measurement": false,
+  "historical_19_11_22_debts_closed": false,
+  "followup_evidence_commit_ci_does_not_inherit_signed_state_results": true
+}

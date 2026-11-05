@@ -57,5 +57,11 @@
   "cmath": "planned",
   "new_numeric_dependencies_built": false,
   "new_performance_measurements": false,
-  "state_commit_ci": "will_be_recorded_for_actual_commit_after_push"
+  "state_commit_ci": "ci-signed-state-53e95a55.json",
+  "state_change_commit": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+  "state_commit_ci_conclusions": {
+    "workspace": "success",
+    "maintenance": "success",
+    "run_attempt": 1
+  }
 }

@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-05T03:50:39.869961+00:00",
+  "state_change_commit": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+  "scope": "F-D状态切换提交的既有workspace/maintenance真实门禁，不是B2产品/新依赖构建或新性能成绩",
+  "workspace": {
+    "id": 41962238521,
+    "name": "Xiao workspace gates",
+    "head_sha": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41962238521"
+  },
+  "workspace_jobs": [
+    {
+      "id": 127031045931,
+      "name": "Linux workspace gates",
+      "head_sha": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41962238521/job/127031045931"
+    }
+  ],
+  "maintenance": {
+    "id": 41962238445,
+    "name": "Xiao maintenance regression",
+    "head_sha": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41962238445"
+  },
+  "maintenance_jobs": [
+    {
+      "id": 127031045925,
+      "name": "Native differential regression (Linux)",
+      "head_sha": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41962238445/job/127031045925"
+    },
+    {
+      "id": 127031046048,
+      "name": "Native differential regression (Windows)",
+      "head_sha": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41962238445/job/127031046048"
+    },
+    {
+      "id": 127031046088,
+      "name": "Native differential regression (macOS)",
+      "head_sha": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41962238445/job/127031046088"
+    },
+    {
+      "id": 127031046112,
+      "name": "Rust workspace default tests (Linux)",
+      "head_sha": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41962238445/job/127031046112"
+    },
+    {
+      "id": 127031046154,
+      "name": "Deterministic parser and artifact security regression",
+      "head_sha": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41962238445/job/127031046154"
+    },
+    {
+      "id": 127031046212,
+      "name": "Deterministic artifact size regression (Windows baseline)",
+      "head_sha": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41962238445/job/127031046212"
+    }
+  ],
+  "trigger_evidence": {
+    "push": true,
+    "previous_commit": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+    "workflow_source": ".github/workflows/maintenance-regression.yml",
+    "workflow_sha256": "847c60595d9978d5276ce0aa7115e812d5cb6808d44ff108940be0b8da20273d",
+    "workflow_git_blob": "b032cb728e2fc87f4dde355e714515fd9c101600",
+    "push_paths": [
+      ".github/workflows/maintenance-regression.yml",
+      "core/rust/**",
+      "tests/fuzz/**",
+      "tests/benchmarks/**",
+      "tests/fixtures/**",
+      "docs/UseDocs/library/**",
+      "tools/gates/b1-probe-guards.ps1",
+      "stdlib/**",
+      ".gitattributes"
+    ],
+    "changed_paths": [
+      "docs/DevDocs/20-builtins-and-standard-library.md",
+      "docs/DevDocs/20o-b2-freeze-c-resource-dependency-plan.md",
+      "docs/DevDocs/20o-b2-freeze-closeout-plan.md",
+      "docs/DevDocs/20o-b2-freeze-d-signature-plan.md",
+      "docs/DevDocs/20o-b2-freeze-draft.md",
+      "docs/DevDocs/20o-b2-numeric-foundation-plan.md",
+      "docs/DevDocs/20o-official-library-program.md",
+      "docs/DevDocs/README.md",
+      "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+      "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/README.md",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/b2-a-planning-handoff.md",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/ci-preparation-22a865bc.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/decision-receipts.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/decision-requests.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/draft-after-signature.txt",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/evidence.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/ledger-after-signature.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/ledger-state-changes.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/post-check-docs.log",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/post-check-layout.log",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/post-check-usedocs.log",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/post-historical-104-replay.log",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/post-signature-checks.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/post-signature-integrity.log",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/preparation-commit.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/preparation-maintenance-push-runs-api.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/preparation-workspace-attempt1-jobs-api.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/preparation-workspace-run-api.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/signature-transition.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/status-line.diff",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/usedocs-after-signature.json",
+      "docs/UseDocs/library/cmath.md"
+    ],
+    "matched_paths": [
+      {
+        "path": "docs/UseDocs/library/cmath.md",
+        "pattern": "docs/UseDocs/library/**"
+      }
+    ],
+    "comparison_argv": [
+      "cmd",
+      "/c",
+      "git",
+      "diff",
+      "--name-only",
+      "22a865bc",
+      "53e95a554a8fb6afd1c48af9227c38d3482a8c7c"
+    ]
+  },
+  "raw_api_records": [
+    {
+      "file": "state-workspace-run-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41962238521",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41962238521"
+      ],
+      "original_response_sha256": "0696d6a25e41226d082637dc5426c509704e457e271dbcc575da1194aeaa0047",
+      "archived_sha256": "0696d6a25e41226d082637dc5426c509704e457e271dbcc575da1194aeaa0047",
+      "normalization": "UTF-8/LF；保留原始字段"
+    },
+    {
+      "file": "state-workspace-attempt1-jobs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41962238521/attempts/1/jobs?per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41962238521/attempts/1/jobs?per_page=100"
+      ],
+      "original_response_sha256": "84d531db225a09d7a92719ffe0fd0607e2090f3eba3632ec78fa58f24a922a7a",
+      "archived_sha256": "84d531db225a09d7a92719ffe0fd0607e2090f3eba3632ec78fa58f24a922a7a",
+      "normalization": "UTF-8/LF；保留原始字段"
+    },
+    {
+      "file": "state-maintenance-run-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41962238445",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41962238445"
+      ],
+      "original_response_sha256": "a4d9f7130d02fed1bae754c4167fc725c9c9a9c808715d5fa8ff035f30b5de9b",
+      "archived_sha256": "a4d9f7130d02fed1bae754c4167fc725c9c9a9c808715d5fa8ff035f30b5de9b",
+      "normalization": "UTF-8/LF；保留原始字段"
+    },
+    {
+      "file": "state-maintenance-attempt1-jobs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41962238445/attempts/1/jobs?per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41962238445/attempts/1/jobs?per_page=100"
+      ],
+      "original_response_sha256": "a5eb8e863e9e6c6af4cc5b86019e6628b98bb4c376528229027c07943c650547",
+      "archived_sha256": "a5eb8e863e9e6c6af4cc5b86019e6628b98bb4c376528229027c07943c650547",
+      "normalization": "UTF-8/LF；保留原始字段"
+    }
+  ],
+  "new_b2_product_executed": false,
+  "new_numeric_dependencies_built": false,
+  "new_b1_f10_measurement": false,
+  "historical_19_11_22_debts_closed": false,
+  "subsequent_evidence_commit_ci_not_inherited": true
+}

@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "8dfbc89bfe0f879c6199a10d2c0ec07b6f52b2be",
+  "signed_state_commit": "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+  "scope": "只读历史文档与证据边界；不重跑721条F10、不核销释放/发布债务",
+  "groups": [
+    {
+      "group": "b1_historical_documents_and_evidence",
+      "pathspecs": [
+        "docs/DevDocs/20o-b1*",
+        "docs/DevDocs/assets/20o-b1*"
+      ],
+      "tracked_path_count": 421,
+      "tracked_paths_sha256": "f0d16f027f35892ff72088e21e40baf82434f931456aadb814fcc68abadd1ad1",
+      "listing_argv": [
+        "cmd",
+        "/c",
+        "git",
+        "ls-files",
+        "--",
+        "docs/DevDocs/20o-b1*",
+        "docs/DevDocs/assets/20o-b1*"
+      ],
+      "diff_argv": [
+        "cmd",
+        "/c",
+        "git",
+        "diff",
+        "--exit-code",
+        "8dfbc89bfe0f879c6199a10d2c0ec07b6f52b2be",
+        "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+        "--",
+        "docs/DevDocs/20o-b1*",
+        "docs/DevDocs/assets/20o-b1*"
+      ],
+      "exit_code": 0,
+      "no_differences": true
+    },
+    {
+      "group": "release_19",
+      "pathspecs": [
+        "docs/DevDocs/19*",
+        "docs/DevDocs/assets/19*"
+      ],
+      "tracked_path_count": 5,
+      "tracked_paths_sha256": "54993d0685f71a35a3d30337014d1cac5ff7e5fad662c180c51e5508fd3e82d5",
+      "listing_argv": [
+        "cmd",
+        "/c",
+        "git",
+        "ls-files",
+        "--",
+        "docs/DevDocs/19*",
+        "docs/DevDocs/assets/19*"
+      ],
+      "diff_argv": [
+        "cmd",
+        "/c",
+        "git",
+        "diff",
+        "--exit-code",
+        "8dfbc89bfe0f879c6199a10d2c0ec07b6f52b2be",
+        "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+        "--",
+        "docs/DevDocs/19*",
+        "docs/DevDocs/assets/19*"
+      ],
+      "exit_code": 0,
+      "no_differences": true
+    },
+    {
+      "group": "release_11",
+      "pathspecs": [
+        "docs/DevDocs/11*",
+        "docs/DevDocs/assets/11*"
+      ],
+      "tracked_path_count": 42,
+      "tracked_paths_sha256": "467d86fba306697f037e9e65bb09ba679b3ef5b7af6acd2361f68549585997d6",
+      "listing_argv": [
+        "cmd",
+        "/c",
+        "git",
+        "ls-files",
+        "--",
+        "docs/DevDocs/11*",
+        "docs/DevDocs/assets/11*"
+      ],
+      "diff_argv": [
+        "cmd",
+        "/c",
+        "git",
+        "diff",
+        "--exit-code",
+        "8dfbc89bfe0f879c6199a10d2c0ec07b6f52b2be",
+        "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+        "--",
+        "docs/DevDocs/11*",
+        "docs/DevDocs/assets/11*"
+      ],
+      "exit_code": 0,
+      "no_differences": true
+    },
+    {
+      "group": "concurrency_22",
+      "pathspecs": [
+        "docs/DevDocs/22*",
+        "docs/DevDocs/assets/22*"
+      ],
+      "tracked_path_count": 11,
+      "tracked_paths_sha256": "5373d11663901c35cb406f44f99eff823c033807cf3a498f8c6f0b2896e565e0",
+      "listing_argv": [
+        "cmd",
+        "/c",
+        "git",
+        "ls-files",
+        "--",
+        "docs/DevDocs/22*",
+        "docs/DevDocs/assets/22*"
+      ],
+      "diff_argv": [
+        "cmd",
+        "/c",
+        "git",
+        "diff",
+        "--exit-code",
+        "8dfbc89bfe0f879c6199a10d2c0ec07b6f52b2be",
+        "53e95a554a8fb6afd1c48af9227c38d3482a8c7c",
+        "--",
+        "docs/DevDocs/22*",
+        "docs/DevDocs/assets/22*"
+      ],
+      "exit_code": 0,
+      "no_differences": true
+    }
+  ],
+  "new_b1_f10_measurement": false,
+  "b1_721_remains_historical": true,
+  "historical_19_11_22_debts_closed": false
+}
