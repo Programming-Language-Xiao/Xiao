@@ -1,0 +1,137 @@
+{
+  "scope": "仅本次补充目录，清单自身不计入自身摘要",
+  "reviewed_commit": "d88f68a718d781bd1aeea1ecf7e1b9a1317580d9",
+  "file_count": 26,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 163,
+      "sha256": "8ec598ab0468f48e4b08e48e2a75116860ac21aec0a32814203448a5ec517485"
+    },
+    {
+      "path": "all-tracked-paths.stderr.log",
+      "bytes": 132,
+      "sha256": "7d779e374c15eae5933706201edaa00b788f6f8af3b2b010ad60b16bc9644469"
+    },
+    {
+      "path": "all-tracked-paths.stdout.log",
+      "bytes": 40,
+      "sha256": "ff97dba589f61c6f4dcd2d17ce1232e69d9301965aaf456f73ec0891597bcbba"
+    },
+    {
+      "path": "all-untracked-paths.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "all-untracked-paths.stdout.log",
+      "bytes": 1287,
+      "sha256": "2da726bf17fcf3f53762b06ed48cc0dfa00c53571898af5ae1679499084fcd83"
+    },
+    {
+      "path": "checks.json",
+      "bytes": 8215,
+      "sha256": "91b0ea3a07deba926cbb5223fa0182bf1564e89f5adc79adbbcdefe4085c2316"
+    },
+    {
+      "path": "ci-query.json",
+      "bytes": 1148,
+      "sha256": "1610da039ba23189bc1275455c26c90de901ce193e6a392973b5e6e51e4c562d"
+    },
+    {
+      "path": "ci-response.json",
+      "bytes": 13835,
+      "sha256": "944193603ca46ac0e916e6c5be9039d60e63db0faed171058471b49f145f6917"
+    },
+    {
+      "path": "ci-stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "diff-check.stderr.log",
+      "bytes": 132,
+      "sha256": "7d779e374c15eae5933706201edaa00b788f6f8af3b2b010ad60b16bc9644469"
+    },
+    {
+      "path": "diff-check.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "documentation-all.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "documentation-all.stdout.log",
+      "bytes": 266616,
+      "sha256": "d8edf1f50a500af2562586758829030e6525707d459c1d287ea31a8ab5801755"
+    },
+    {
+      "path": "git-blobs.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "head.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "head.stdout.log",
+      "bytes": 41,
+      "sha256": "0c6d81bd191a1000088afc0cae1ec4649b6b5e681f07e42b59067a39431badcf"
+    },
+    {
+      "path": "original-archive-audit.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "original-archive-audit.stdout.log",
+      "bytes": 231,
+      "sha256": "5900198c85e8f565744f1ef2e0becc4e6652629a44aa3761b01e29870ac7c9b2"
+    },
+    {
+      "path": "original-archive-unchanged.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "original-archive-unchanged.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3715,
+      "sha256": "0049bfff41170a112afddc70eba51a3f5a18c7fc5e3a2a971698b8b45362a120"
+    },
+    {
+      "path": "reference-map.json",
+      "bytes": 1732,
+      "sha256": "95ed3e48e8d5ce38bedfb64bc30e780903ac3c36d074305f7de4f47962d74211"
+    },
+    {
+      "path": "review.py",
+      "bytes": 11089,
+      "sha256": "72009758419e66b2b7123920f20432b1846679dd605b9f1bbfed3452d8aa7dc1"
+    },
+    {
+      "path": "supplement-audit.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "supplement-audit.stdout.log",
+      "bytes": 183,
+      "sha256": "c44b14e5dc40a5c341ff400b784e675a34dbcf82e4e33ecd25dc66a246cb789a"
+    },
+    {
+      "path": "text-identities.json",
+      "bytes": 22761,
+      "sha256": "0cff7bd0489b0cec1a8276e110666c3348f42b8257698a1277a6ac93fa9dbe23"
+    }
+  ]
+}

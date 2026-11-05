@@ -1,0 +1,54 @@
+{
+  "source_commit": "d0e4a5fb9043aa6c93dce7892dbe1ef333d3b276",
+  "reviewed_commit": "d88f68a718d781bd1aeea1ecf7e1b9a1317580d9",
+  "effective_conclusion": {
+    "file": "../entry-20261105/closeout.json",
+    "passed": true,
+    "scope": "保留初轮失败、环境修复及成功重试后的有效收口"
+  },
+  "initial_execution": {
+    "file": "../entry-20261105/result.json",
+    "passed": false,
+    "windows": "failed",
+    "may_be_cited_as_passed": false
+  },
+  "source_document_gate": {
+    "file": "../entry-20261105/repo-all-local-copy.json",
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "exit_code": 0
+  },
+  "workspace_supplement": {
+    "file": "../entry-20261105/workspace-doc-gate.json",
+    "cwd": "D:\\project\\Xiao\\Xiao",
+    "exit_code": 0,
+    "may_replace_source_document_gate": false
+  },
+  "full_a0_rerun_performed": false,
+  "ci_used_as_local_evidence": false,
+  "original_files": [
+    {
+      "file": "identity.json",
+      "sha256": "d78185a3606ca85abf11fe187c5ba1625a3aafb1a030f1f133d9f8916f890840"
+    },
+    {
+      "file": "result.json",
+      "sha256": "d24b27e81933d71da274aa6648e17be878e244abde64e07c8b0df956a04f20e6"
+    },
+    {
+      "file": "closeout.json",
+      "sha256": "460c2066ce2e5c4e9813ad6d99039628e2f5187fa1c49eb4cec8b7500b86a1a4"
+    },
+    {
+      "file": "repo-all-local-copy.json",
+      "sha256": "a67e7d6b4ae996a4b69721091f6aac6c6bc91630d02d32ecd380aa716ded7ab5"
+    },
+    {
+      "file": "workspace-doc-gate.json",
+      "sha256": "28d0ad15e7d6586dbba4e58d5a473de77060206e62f9c614d1d8714a381a0ecc"
+    },
+    {
+      "file": "evidence.json",
+      "sha256": "06563920939d4ab6e2e968597d2018a539892e0adae6857ac53c101cd230626a"
+    }
+  ]
+}

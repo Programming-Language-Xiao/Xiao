@@ -1,0 +1,208 @@
+{
+  "reviewed_commit": "d88f68a718d781bd1aeea1ecf7e1b9a1317580d9",
+  "scope": "文档/引用/文本身份补充；不重新执行A0、不运行产品；原归档保持原样",
+  "state": "complete",
+  "records": [
+    {
+      "name": "head",
+      "argv": [
+        "cmd",
+        "/c",
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 40436,
+      "started_utc": "2026-11-05T16:28:31.113971+00:00",
+      "finished_utc": "2026-11-05T16:28:31.296943+00:00",
+      "duration_seconds": 0.187,
+      "exit_code": 0,
+      "stdout": "head.stdout.log",
+      "stderr": "head.stderr.log",
+      "stdout_sha256": "0c6d81bd191a1000088afc0cae1ec4649b6b5e681f07e42b59067a39431badcf",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "original-archive-audit",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a0\\entry-20261105\\verify-evidence.py"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 49932,
+      "started_utc": "2026-11-05T16:28:31.299965+00:00",
+      "finished_utc": "2026-11-05T16:28:31.571421+00:00",
+      "duration_seconds": 0.266,
+      "exit_code": 0,
+      "stdout": "original-archive-audit.stdout.log",
+      "stderr": "original-archive-audit.stderr.log",
+      "stdout_sha256": "5900198c85e8f565744f1ef2e0becc4e6652629a44aa3761b01e29870ac7c9b2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "original-archive-unchanged",
+      "argv": [
+        "cmd",
+        "/c",
+        "git",
+        "diff",
+        "--exit-code",
+        "d88f68a718d781bd1aeea1ecf7e1b9a1317580d9",
+        "--",
+        "docs/DevDocs/assets/20o-b2-a0/entry-20261105"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 58004,
+      "started_utc": "2026-11-05T16:28:31.573458+00:00",
+      "finished_utc": "2026-11-05T16:28:31.737438+00:00",
+      "duration_seconds": 0.172,
+      "exit_code": 0,
+      "stdout": "original-archive-unchanged.stdout.log",
+      "stderr": "original-archive-unchanged.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "all-tracked-paths",
+      "argv": [
+        "cmd",
+        "/c",
+        "git",
+        "diff",
+        "--name-only",
+        "HEAD"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 58956,
+      "started_utc": "2026-11-05T16:28:31.739457+00:00",
+      "finished_utc": "2026-11-05T16:28:31.913001+00:00",
+      "duration_seconds": 0.171,
+      "exit_code": 0,
+      "stdout": "all-tracked-paths.stdout.log",
+      "stderr": "all-tracked-paths.stderr.log",
+      "stdout_sha256": "ff97dba589f61c6f4dcd2d17ce1232e69d9301965aaf456f73ec0891597bcbba",
+      "stderr_sha256": "7d779e374c15eae5933706201edaa00b788f6f8af3b2b010ad60b16bc9644469"
+    },
+    {
+      "name": "all-untracked-paths",
+      "argv": [
+        "cmd",
+        "/c",
+        "git",
+        "ls-files",
+        "--others",
+        "--exclude-standard"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 42344,
+      "started_utc": "2026-11-05T16:28:31.914500+00:00",
+      "finished_utc": "2026-11-05T16:28:32.105241+00:00",
+      "duration_seconds": 0.188,
+      "exit_code": 0,
+      "stdout": "all-untracked-paths.stdout.log",
+      "stderr": "all-untracked-paths.stderr.log",
+      "stdout_sha256": "2da726bf17fcf3f53762b06ed48cc0dfa00c53571898af5ae1679499084fcd83",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "documentation-all",
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "tools/repo-check/src/cli.ts",
+        "all"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 4320,
+      "started_utc": "2026-11-05T16:28:32.281694+00:00",
+      "finished_utc": "2026-11-05T16:29:13.048156+00:00",
+      "duration_seconds": 40.766,
+      "exit_code": 0,
+      "stdout": "documentation-all.stdout.log",
+      "stderr": "documentation-all.stderr.log",
+      "stdout_sha256": "d8edf1f50a500af2562586758829030e6525707d459c1d287ea31a8ab5801755",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "diff-check",
+      "argv": [
+        "cmd",
+        "/c",
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 51404,
+      "started_utc": "2026-11-05T16:29:13.050090+00:00",
+      "finished_utc": "2026-11-05T16:29:13.273979+00:00",
+      "duration_seconds": 0.219,
+      "exit_code": 0,
+      "stdout": "diff-check.stdout.log",
+      "stderr": "diff-check.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "7d779e374c15eae5933706201edaa00b788f6f8af3b2b010ad60b16bc9644469"
+    },
+    {
+      "name": "supplement-audit",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "-X",
+        "utf8",
+        "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a0\\review-fix-20261106\\review.py",
+        "check"
+      ],
+      "cwd": "D:\\project\\Xiao\\Xiao",
+      "pid": 20964,
+      "started_utc": "2026-11-05T16:29:13.469372+00:00",
+      "finished_utc": "2026-11-05T16:29:13.842915+00:00",
+      "duration_seconds": 0.375,
+      "exit_code": 0,
+      "stdout": "supplement-audit.stdout.log",
+      "stderr": "supplement-audit.stderr.log",
+      "stdout_sha256": "c44b14e5dc40a5c341ff400b784e675a34dbcf82e4e33ecd25dc66a246cb789a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "boundary": {
+    "passed": true,
+    "all_tracked_paths": [
+      "docs/DevDocs/20o-b2-a0-baseline-plan.md"
+    ],
+    "all_untracked_paths": [
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/.gitattributes",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/README.md",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/all-tracked-paths.stderr.log",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/all-tracked-paths.stdout.log",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/checks.json",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/ci-query.json",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/ci-response.json",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/ci-stderr.log",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/git-blobs.stderr.log",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/head.stderr.log",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/head.stdout.log",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/original-archive-audit.stderr.log",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/original-archive-audit.stdout.log",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/original-archive-unchanged.stderr.log",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/original-archive-unchanged.stdout.log",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/reference-map.json",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/review.py",
+      "docs/DevDocs/assets/20o-b2-a0/review-fix-20261106/text-identities.json"
+    ],
+    "allowed": "仅A0规划文档和本补充目录；包括所有路径，不遗漏产品/锁/UseDocs/registry/测试/工作流/已签文件"
+  },
+  "documentation_gate": {
+    "cwd": "D:\\project\\Xiao\\Xiao",
+    "scope": "本次主工作区补充文档检查，不能替代A0源工作树门禁",
+    "environment_overrides": {
+      "XIAO_RUST_DOC_ADAPTER": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\cargo-target\\debug\\xiao-doc-coverage-rust.exe"
+    },
+    "adapter_sha256": "9170510d4fbecbeb107dab44d6f7208146febad1cf1f149df08d960ed1b78cfb"
+  },
+  "passed": true,
+  "product_tests_run": false,
+  "full_a0_rerun_performed": false,
+  "original_archive_unchanged": true
+}

@@ -7,7 +7,7 @@
 
 > **执行状态（2026-11-05）：A0 Windows 本地基线已通过，源码为 `d0e4a5fb9043aa6c93dce7892dbe1ef333d3b276`。**
 > B1契约9/9、资源17/17、VM/Windows原生精确点各1项、workspace门禁与28/28守卫均有本轮实际记录。
-> 文档门禁的两次依赖环境失败及实体复制后的成功均保留；Linux/macOS本地未验证。A1入口成立，但A1～A7及B2-A产品尚未开始，见§十与[完整证据](assets/20o-b2-a0/entry-20261105/README.md)。
+> 文档门禁的两次依赖环境失败及实体复制后的成功均保留；有效收口只引用`closeout.json`，原始`result.json`仍为失败。Linux/macOS本地未验证。A1入口成立，但A1～A7及B2-A产品尚未开始，见§十与[完整证据](assets/20o-b2-a0/entry-20261105/README.md)。
 
 ## 一、入口与目的
 
@@ -215,6 +215,8 @@ Rust/Cargo固定1.96.0，Bun1.4.0、PowerShell7.6.6、LLVM22.1.2；目标为`x86
 首次文档门禁因依赖链接不能解析TypeScript退出2；补根依赖路径后的第一次重试又被目录门禁以`A0-LAYOUT-002`拒绝。
 随后只把同一TypeScript5.9.3的132个文件逐字复制到工作树内部，移除两处临时junction，第三次门禁通过；没有修改产品、测试或门禁规则。
 最初执行器的`result.json`如实保留`passed=false`，最终有效结论在`closeout.json`；失败日志没有覆盖或删减。
+下游只能以[closeout.json](assets/20o-b2-a0/entry-20261105/closeout.json)引用有效收口，不能把初轮`result.json`写成通过或原始执行一次全绿。
+源工作树实际文档门禁为[repo-all-local-copy.json](assets/20o-b2-a0/entry-20261105/repo-all-local-copy.json)，主仓库的[workspace-doc-gate.json](assets/20o-b2-a0/entry-20261105/workspace-doc-gate.json)仅为当时收口文档的补充检查，两者cwd与证据用途分别保留。
 
 已签草案正文摘要仍为`8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff`，30项台账投影、F-D/A-P回执均核对通过。
 Windows检出草案为CRLF，签字核对使用已定的UTF-8/LF口径，并同时保存原始检出摘要。
@@ -223,3 +225,6 @@ ABI1.18、生成器20、intrinsic最大32及ID100墓碑未变，cmath仍planned�
 **退出结论：A0本地基线成立，打开已批准范围内的另批A1入口；本轮止于A0，不启动A1。**
 52个原生可执行文件的运行期间稳定摘要已记录，临时二进制由既有测试清理；这些摘要不是另一次产品执行。
 B1旧721条F10未运行、仍为历史证据；22D/22C及19/11/22债务保持独立，A7仍需B2-A自身三平台证据。
+
+2026-11-06补充复核见[引用与规范文本摘要](assets/20o-b2-a0/review-fix-20261106/README.md)：23个身份文件同时记录原始与UTF-8/LF规范摘要，源工作树、固定Git内容与主工作区规范内容一致，原归档保持原样。
+该次重新查询确认`d88f68a7`的workspace CI `42048065769`成功；仅作为该提交的外部CI记录，不代替A0本地证据，也不代表后续补注文档提交的CI结论。

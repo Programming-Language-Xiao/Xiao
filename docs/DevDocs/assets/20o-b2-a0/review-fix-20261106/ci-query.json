@@ -1,0 +1,31 @@
+{
+  "commit": "d88f68a718d781bd1aeea1ecf7e1b9a1317580d9",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/runs?head_sha=d88f68a718d781bd1aeea1ecf7e1b9a1317580d9&per_page=100"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "started_utc": "2026-11-05T16:23:41.121897+00:00",
+  "scope": "只查询d88f68a7外部CI，不代表本次补注文档提交，不代替A0本地基线",
+  "used_as_local_evidence": false,
+  "pid": 63440,
+  "timed_out": false,
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T16:23:42.726458+00:00",
+  "response_sha256": "944193603ca46ac0e916e6c5be9039d60e63db0faed171058471b49f145f6917",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "runs": [
+    {
+      "id": 42048065769,
+      "name": "Xiao workspace gates",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "head_sha": "d88f68a718d781bd1aeea1ecf7e1b9a1317580d9",
+      "run_attempt": 1,
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42048065769"
+    }
+  ],
+  "query_status": "queried"
+}
