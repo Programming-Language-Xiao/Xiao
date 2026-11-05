@@ -1,25 +1,19 @@
 {
   "schema_version": 1,
-  "phase": "B2-A_planning_review",
+  "phase": "B2-A_planning_approved",
   "entry_head": "04bca101c99887edabd80d7de2d1305ba4793cc3",
   "f_d_signature_status": "signed",
   "joint_freeze_activated": true,
   "product_implementation_started": false,
   "response_mode": "free_text_only_no_options_or_preselection",
-  "requests": [
-    {
-      "id": "A-P1",
-      "question": "A-P1｜是否批准B2-A按A0→A1→A2/A3→A4→A5→A6→A7分批实施？A1可落F-7六包依赖/锁策略、033/034诊断与消息目录、Lint/Lfloat适配和值身份；保持ABI1.18/生成器20、不新增intrinsic、不改变30条契约。批准只授权另批产品实施，不在本次规划提交写代码。"
-    },
-    {
-      "id": "A-P2",
-      "question": "A-P2｜是否批准规划§5.1的执行点：复用B1现有VM/三平台原生精确入口，追加独立B2-A语料和标记，新增默认false的b2_a_perf手动测量开关，与b1_f10互斥；VM/Runtime用release、原生O0/O3分记，完整语言教程示例进入同一精确门禁？保留B1全部场景、28/28守卫及原阈值，不触发整批B1旧721条；超出冻结预算或需改工作流时限须另行裁定。"
-    },
-    {
-      "id": "A-P3",
-      "question": "A-P3｜是否批准规划§5.2的A7退出边界：收齐B2-A自身三平台功能/资源/错误/性能与语言示例证据后，才交给B2-B实施规划；所有1.18/20产物只作内部验证？A7只更新lint/lfloat新增语言说明和B2-A证据，cmath仍planned；B2-B接入1.19/21，B2-C负责最终新快照的完整721条及教程/registry收口，22D/22C与19/11/22债务独立。"
-    }
+  "requests": [],
+  "actual_answers": 3,
+  "approval_required_before_product_code": true,
+  "answered": [
+    "A-P1",
+    "A-P2",
+    "A-P3"
   ],
-  "actual_answers": 0,
-  "approval_required_before_product_code": true
+  "implementation_plan_approved": true,
+  "decision_receipts": "decision-receipts.json"
 }

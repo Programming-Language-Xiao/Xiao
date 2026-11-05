@@ -33,5 +33,7 @@
     "合法产品修改范围与不变ABI/格式边界分开"
   ],
   "implementation_plan_approved": false,
-  "product_implementation_started": false
+  "product_implementation_started": false,
+  "document_snapshot_commit": "f4a0b881f4822feaae1d6c50f3042de0d9b4645c",
+  "record_scope": "f4a0b881提问时的待审规划快照；False审批字段是当时事实，当前批准见decision-receipts.json；plan_git_text_sha256不追随审批状态行更新"
 }

@@ -124,7 +124,7 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 
 退出：B2-FREEZE联合冻结已激活；只开放B2-A实施规划，B2-A代码与B2-B/C仍须各自规划和验收。
 
-B2-A实施规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；星崽确认该规划后才进入产品代码。
+后续B2-A实施规划已获A-P1/A-P2/A-P3三项实际批准，见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；该批准独立于F-D签字，产品仍未开工，实际A0基线与A1～A7留另批执行。
 
 ## 五、裁定状态与剩余待审
 

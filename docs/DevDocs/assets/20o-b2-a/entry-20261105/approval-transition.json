@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "approved_reviewed_plan_commit": "f4a0b881f4822feaae1d6c50f3042de0d9b4645c",
+  "reviewed_plan_file": "docs/DevDocs/20o-b2-a-implementation-plan.md",
+  "reviewed_plan_sha256": "3e76188c34ecc4bef6709652bef41903d812240abfe862b2c95645fa5c4587be",
+  "reviewed_plan_snapshot": "reviewed-plan-before-approval.txt",
+  "approved_status_plan_sha256": "86b098f0a41289487a96e446379a4c6d87362ce292bcb1c3b96236e9ee3b69c8",
+  "approved_status_plan_snapshot": "plan-after-approval.txt",
+  "status_diff": "planning-approval-status.diff",
+  "implementation_sections_unchanged": true,
+  "approved_scope_rows_unchanged": true,
+  "actual_receipts": "decision-receipts.json",
+  "actual_receipt_count": 3,
+  "implementation_plan_approved": true,
+  "product_implementation_started": false,
+  "cargo_run_locally": false,
+  "scope": "审批后仅状态/来源更新；不修改已审A0～A7内容和30条已签数值契约"
+}

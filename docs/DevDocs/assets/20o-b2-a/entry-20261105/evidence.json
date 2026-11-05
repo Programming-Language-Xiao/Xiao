@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "entry_head": "04bca101c99887edabd80d7de2d1305ba4793cc3",
-  "status": "B2-A实施规划与只读证据准备完成，门禁通过；A-P1/A-P2/A-P3待实际答复，产品未开工",
+  "status": "B2-A实施规划三项实际批准与文档证据收口完成，A0～A7获准另批实施；本轮无Cargo/产品/测试/工作流改动",
   "plan_audit": "plan-audit.json",
   "source_facts": "source-facts.json",
   "signature_audit": "signature-and-scope-audit.json",
   "decision_requests": "decision-requests.json",
   "predecessor_ci": "ci-predecessor-943db5b1.json",
   "checks": "checks.json",
-  "implementation_plan_approved": false,
+  "implementation_plan_approved": true,
   "product_implementation_started": false,
   "decision_status": [
     30,
@@ -21,11 +21,19 @@
   "files": [
     {
       "file": ".gitattributes",
-      "sha256": "6c2de176b555b45644df22700eb18ecfcff348311eb894a5029d326510e2179f"
+      "sha256": "981e2d84f63d28e5ec33264555b3bcb2b6f239209f73674f7358038cdb368095"
     },
     {
       "file": "README.md",
-      "sha256": "be88744adf4cd44322a4a90c87f524211d3bdcbcbf86c451dafc370d91e766fb"
+      "sha256": "5d34cfb1ca39564367c2f47b7e46d4f4c419f56a98a816e48286d980af3cbb15"
+    },
+    {
+      "file": "approval-scope-integrity.log",
+      "sha256": "9947ab64ae3ba112417a1e16caf254670a93c7e8256063b885ac62cf676726c6"
+    },
+    {
+      "file": "approval-transition.json",
+      "sha256": "57d56f464f7c7b1f3523dd2d4c5a9083c2a1e35ff4f79797a1484a17d838775c"
     },
     {
       "file": "check-docs.log",
@@ -41,15 +49,23 @@
     },
     {
       "file": "checks.json",
-      "sha256": "b6ceb6184b7c9cbaba16e521b12c43b07265ef6e3022ea8accc21f3c4e070d2a"
+      "sha256": "735fb6853f0b7b0a814eb7c1cd6d3d422a0ce57bc34dc62ca57ef6f653946dee"
     },
     {
       "file": "ci-predecessor-943db5b1.json",
       "sha256": "b07c8f9ec05fd890282b98dce10ca9b0cfdda75fc2ef91c06adb1552596c98a3"
     },
     {
+      "file": "ci-reviewed-plan-f4a0b881.json",
+      "sha256": "93c1c62d16d8156f87e14cd6bc7dc097812f5eb6e3a0b308313a74ff4d3c0b52"
+    },
+    {
+      "file": "decision-receipts.json",
+      "sha256": "08489b3fd52d2db0ba5d2f7811b082ca2934f4e8220f7e5593c2ed83cea3d405"
+    },
+    {
       "file": "decision-requests.json",
-      "sha256": "fcb8547d7e5b984283699a41ba99135ea109bdaa3f9f8824b625feb35ca5c42d"
+      "sha256": "17f27a7bc84261c198267fa5a4c142af556e7e32ec6a836f7081deac87480ba7"
     },
     {
       "file": "entry-maintenance-push-runs-api.json",
@@ -64,16 +80,54 @@
       "sha256": "63647aee2ee820c1350da5fde28522c54890e9f18d3b6c18bf29fc2654e54ac3"
     },
     {
+      "file": "plan-after-approval.txt",
+      "sha256": "86b098f0a41289487a96e446379a4c6d87362ce292bcb1c3b96236e9ee3b69c8"
+    },
+    {
       "file": "plan-audit.json",
-      "sha256": "af9dd4eadb92ec8b55a77febcd19c9fc56cf1e16d4d073bb18faaf37fef82fd0"
+      "sha256": "a61cbeabef8a2332a722b0267c50e8297c60062e9aca06e379f256c0b91d79b6"
+    },
+    {
+      "file": "planning-approval-status.diff",
+      "sha256": "ac68062b267d9cd66f08d098a3437361a2a2aa6658b6547d4ce8aa0e5f988641"
+    },
+    {
+      "file": "planning-review-baseline.json",
+      "sha256": "07f10c6cf523a9ab2085a567f079855596d0d01960de08936533806f431d3fc5"
+    },
+    {
+      "file": "review-maintenance-push-runs-api.json",
+      "sha256": "a2790a384d7d281e7395679000c35d27768d89dbd7052f725b8f4688beb59915"
+    },
+    {
+      "file": "review-workspace-attempt1-jobs-api.json",
+      "sha256": "e77f0b45833140c3606ad3be9591093f881fdbc8728a4090d44a09f58139c697"
+    },
+    {
+      "file": "review-workspace-run-api.json",
+      "sha256": "ba553df2c8924f4258beb564ee56f11be5deeec31a3aff6460107bf4ecec38bb"
+    },
+    {
+      "file": "reviewed-plan-before-approval.txt",
+      "sha256": "3e76188c34ecc4bef6709652bef41903d812240abfe862b2c95645fa5c4587be"
     },
     {
       "file": "signature-and-scope-audit.json",
-      "sha256": "b08ba1a6fe387681b2cf017976085727dc9e1d864938b1b4ce898d37afc33fd4"
+      "sha256": "17eb6c353e8a158a0e9ee91c1a54a1c7be8386cfdeba69d1740ad140bb0786bc"
     },
     {
       "file": "source-facts.json",
       "sha256": "08212bf0db339a6d172b451a601cfd806a761b36f6d3944762b2d75f383cd4be"
     }
-  ]
+  ],
+  "decision_receipts": "decision-receipts.json",
+  "approved_reviewed_plan_commit": "f4a0b881f4822feaae1d6c50f3042de0d9b4645c",
+  "approved_reviewed_plan_sha256": "3e76188c34ecc4bef6709652bef41903d812240abfe862b2c95645fa5c4587be",
+  "approval_transition": "approval-transition.json",
+  "reviewed_plan_ci": "ci-reviewed-plan-f4a0b881.json",
+  "cargo_run_locally": false,
+  "planning_closeout_complete": true,
+  "actual_plan_approval_count": 3,
+  "current_approved_status_plan_sha256": "86b098f0a41289487a96e446379a4c6d87362ce292bcb1c3b96236e9ee3b69c8",
+  "reviewed_plan_ci_scope": "f4a0b881待审规划的既有workspace CI，后续审批归档提交单独判断，不能沿用passed"
 }

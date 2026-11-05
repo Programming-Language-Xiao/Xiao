@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "record_count": 3,
+  "response_mode": "free_text_actual_answers_no_preselection",
+  "implementation_plan_approved": true,
+  "approved_reviewed_plan_commit": "f4a0b881f4822feaae1d6c50f3042de0d9b4645c",
+  "approved_reviewed_plan_sha256": "3e76188c34ecc4bef6709652bef41903d812240abfe862b2c95645fa5c4587be",
+  "product_implementation_started": false,
+  "scope": "只批准另批A0～A7及指定证据/退出范围，本轮仍仅规划，不执行Cargo或产品",
+  "receipts": [
+    {
+      "id": "A-P1",
+      "phase": "B2-A_implementation_plan_approval",
+      "reviewed_plan_commit": "f4a0b881f4822feaae1d6c50f3042de0d9b4645c",
+      "reviewed_plan_sha256": "3e76188c34ecc4bef6709652bef41903d812240abfe862b2c95645fa5c4587be",
+      "question": "A-P1｜是否批准B2-A按A0→A1→A2/A3→A4→A5→A6→A7分批实施？A1可落F-7六包依赖/锁策略、033/034诊断与消息目录、Lint/Lfloat适配和值身份；保持ABI1.18/生成器20、不新增intrinsic、不改变30条契约。批准只授权另批产品实施，不在本次规划提交写代码。",
+      "answer": "批准",
+      "question_item_id": "[\"request_user_input_async\",\"call_942f8d5bfc6a4afc94c5a0df689dad9a\",0]",
+      "authority": "星崽本次会话逐项实际答复",
+      "date": "2026-11-05",
+      "conditional": false,
+      "valid_for_planning_approval": true
+    },
+    {
+      "id": "A-P2",
+      "phase": "B2-A_implementation_plan_approval",
+      "reviewed_plan_commit": "f4a0b881f4822feaae1d6c50f3042de0d9b4645c",
+      "reviewed_plan_sha256": "3e76188c34ecc4bef6709652bef41903d812240abfe862b2c95645fa5c4587be",
+      "question": "A-P2｜是否批准规划§5.1的执行点：复用B1现有VM/三平台原生精确入口，追加独立B2-A语料和标记，新增默认false的b2_a_perf手动测量开关，与b1_f10互斥；VM/Runtime用release、原生O0/O3分记，完整语言教程示例进入同一精确门禁？保留B1全部场景、28/28守卫及原阈值，不触发整批B1旧721条；超出冻结预算或需改工作流时限须另行裁定。",
+      "answer": "批准",
+      "question_item_id": "[\"request_user_input_async\",\"call_942f8d5bfc6a4afc94c5a0df689dad9a\",1]",
+      "authority": "星崽本次会话逐项实际答复",
+      "date": "2026-11-05",
+      "conditional": false,
+      "valid_for_planning_approval": true
+    },
+    {
+      "id": "A-P3",
+      "phase": "B2-A_implementation_plan_approval",
+      "reviewed_plan_commit": "f4a0b881f4822feaae1d6c50f3042de0d9b4645c",
+      "reviewed_plan_sha256": "3e76188c34ecc4bef6709652bef41903d812240abfe862b2c95645fa5c4587be",
+      "question": "A-P3｜是否批准规划§5.2的A7退出边界：收齐B2-A自身三平台功能/资源/错误/性能与语言示例证据后，才交给B2-B实施规划；所有1.18/20产物只作内部验证？A7只更新lint/lfloat新增语言说明和B2-A证据，cmath仍planned；B2-B接入1.19/21，B2-C负责最终新快照的完整721条及教程/registry收口，22D/22C与19/11/22债务独立。",
+      "answer": "批准",
+      "question_item_id": "[\"request_user_input_async\",\"call_942f8d5bfc6a4afc94c5a0df689dad9a\",2]",
+      "authority": "星崽本次会话逐项实际答复",
+      "date": "2026-11-05",
+      "conditional": false,
+      "valid_for_planning_approval": true
+    }
+  ]
+}
