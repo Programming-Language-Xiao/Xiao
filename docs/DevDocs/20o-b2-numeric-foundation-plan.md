@@ -3,9 +3,9 @@
 > **这是 B2 的规划，不写产品函数、intrinsic、ABI 或测试实现。**
 > 规划入口基线为 `87bac439`；B1-CLOSE 已收口，Runtime ABI 为 1.18、`CODEGEN_VERSION` 为 20。
 > B2 的目标是把 `lint`/`lfloat` 从“十进制文本占位”升级为可运算、可转换的数值基础，
-> 并交付 `cmath` 浮点原语；**联合冻结已由F-D实际签字激活，B2-A实施规划已由A-P1/A-P2/A-P3实际批准，A1依赖与值身份实施中，A2～A7及B2-B/C尚未开始**。
+> 并交付 `cmath` 浮点原语；**联合冻结已由F-D实际签字激活，B2-A实施规划已由A-P1/A-P2/A-P3实际批准，A1依赖与值身份已退出，A2～A7及B2-B/C尚未开始**。
 > 星崽已逐项确认的精确表与签字状态见[冻结草案](20o-b2-freeze-draft.md)；本页建议不自动变为已冻结契约。
-> F-A/F-B/F-C裁定30/0，F-D已签字；B2-A规划已获三项实际批准，A0 Windows本地基线已通过，A1实施中（2026-11-06）。
+> F-A/F-B/F-C裁定30/0，F-D已签字；B2-A规划已获三项实际批准，A0 Windows本地基线已通过，A1已退出（2026-11-06）。
 >
 > 本批不包含 `decimal`、`fractions`、浮点 `statistics`、确定性 `random`（B5）、
 > `time`/`args`/`fs`/`env`/`log`（B3）、JSON/TOML（B4）、`regex`/`compression`（B6）、
@@ -138,7 +138,7 @@ B2-A 预期**不新增 intrinsic、不改变 `XiaoValue` 标签或 C ABI**；若
 
 ### B2-FREEZE：只改文档
 
-当前30条裁定均已确认，F-D已按[冻结收口规划](20o-b2-freeze-closeout-plan.md)实际签字；联合冻结已激活；B2-A规划已批准，A0 Windows本地基线已通过，A1依赖与值身份正在独立实施，A2～A7后置。
+当前30条裁定均已确认，F-D已按[冻结收口规划](20o-b2-freeze-closeout-plan.md)实际签字；联合冻结已激活；B2-A规划已批准，A0 Windows本地基线已通过，A1依赖与值身份已完成本批验收，A2～A7后置。
 本轮不分配活动编号或写实现，契约台账见
 [冻结草案](20o-b2-freeze-draft.md#二逐条裁定台账)。
 
@@ -265,5 +265,5 @@ docs/module-registry.json                         cmath 登记（B2-FREEZE/C）
 ## 九、裁定收口与F-D闸门
 
 现有18条答复及本次实际答复已记入[裁定台账](20o-b2-freeze-draft.md#二逐条裁定台账)，不重复询问。
-F-A/F-B/F-C已收齐，台账30/0；F-D三项实际批准齐备，联合冻结已激活；F-D退出时产品未开工，后续A1已按A-P1独立实施。F-D的签字、状态切换与B2-A交接见[F-D冻结签字规划](20o-b2-freeze-d-signature-plan.md)。
-F-3已覆盖lfloat //与%的接纳/工作量及独立预算；A1已接入F-7依赖与身份层；完整算术、转换与性能验收仍留A2～A7。F-D当时只打开B2-A实施规划；该规划后续已获三项实际批准，A0 Windows本地基线已通过，A1实施中，A2～A7尚未开始。
+F-A/F-B/F-C已收齐，台账30/0；F-D三项实际批准齐备，联合冻结已激活；F-D退出时产品未开工，后续A1已按A-P1完成本批验收。F-D的签字、状态切换与B2-A交接见[F-D冻结签字规划](20o-b2-freeze-d-signature-plan.md)。
+F-3已覆盖lfloat //与%的接纳/工作量及独立预算；A1已接入F-7依赖与身份层；完整算术、转换与性能验收仍留A2～A7。F-D当时只打开B2-A实施规划；该规划后续已获三项实际批准，A0 Windows本地基线已通过，A1已退出，A2～A7尚未开始。

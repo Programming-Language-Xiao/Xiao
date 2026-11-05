@@ -1,0 +1,62 @@
+{
+  "run_id": 42093359980,
+  "recorded_utc": "2026-11-05T19:28:42.280712+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/runs/42093359980/jobs?per_page=100"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "pid": 34012,
+  "exit_code": 0,
+  "response_sha256": "6d817d8c3b90f5e84fd1b85d97f6ebe8e1f7b0eb024fe3b4f652c16e8e233a9c",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "jobs": [
+    {
+      "id": 127476909640,
+      "name": "Deterministic parser and artifact security regression",
+      "status": "completed",
+      "conclusion": "success",
+      "failed_steps": []
+    },
+    {
+      "id": 127476909718,
+      "name": "Rust workspace default tests (Linux)",
+      "status": "in_progress",
+      "conclusion": null,
+      "failed_steps": []
+    },
+    {
+      "id": 127476909920,
+      "name": "Native differential regression (Windows)",
+      "status": "completed",
+      "conclusion": "failure",
+      "failed_steps": [
+        "Configure locked Cargo and numeric environment"
+      ]
+    },
+    {
+      "id": 127476909953,
+      "name": "Native differential regression (macOS)",
+      "status": "in_progress",
+      "conclusion": null,
+      "failed_steps": []
+    },
+    {
+      "id": 127476910068,
+      "name": "Deterministic artifact size regression (Windows baseline)",
+      "status": "completed",
+      "conclusion": "failure",
+      "failed_steps": [
+        "Configure locked Cargo and numeric environment"
+      ]
+    },
+    {
+      "id": 127476910124,
+      "name": "Native differential regression (Linux)",
+      "status": "in_progress",
+      "conclusion": null,
+      "failed_steps": []
+    }
+  ]
+}

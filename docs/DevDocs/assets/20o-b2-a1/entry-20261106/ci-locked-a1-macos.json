@@ -1,0 +1,46 @@
+{
+  "code_commit": "39b2c1ea72939b20ea48d096e03b3a515bf81127",
+  "run_id": 42094736112,
+  "job_id": 127482140040,
+  "platform": "macos",
+  "recorded_utc": "2026-11-05T19:57:52.221876+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/jobs/127482140040/logs"
+  ],
+  "exit_code": 0,
+  "log": "ci-locked-a1-macos.log",
+  "log_sha256": "43662da3c23777e567556a3743ccb01593d2717de711bc1e2be83d9361a2e297",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "a1_execution_lines": [
+    "2026-11-05T19:40:20.4778870Z test abi::numeric_identity_tests::borrowed_value_restore_preserves_output_on_numeric_failure ... ok",
+    "2026-11-05T19:40:20.4780230Z test abi::numeric_identity_tests::constructors_reject_semantic_payloads_through_existing_pending_errors ... ok",
+    "2026-11-05T19:40:20.4780950Z test abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status ... ok",
+    "2026-11-05T19:40:20.4781790Z test abi::numeric_identity_tests::numeric_handles_restore_shared_identity_without_mutating_inputs ... ok",
+    "2026-11-05T19:40:20.7006540Z test vm_concurrency::numeric_identity_tests::xcon_numeric_identity_round_trips_through_the_existing_frame ... ok",
+    "2026-11-05T19:40:20.7007290Z test vm_concurrency::numeric_identity_tests::xcon_numeric_payloads_are_checked_before_becoming_runtime_values ... ok",
+    "2026-11-05T19:40:20.8632790Z test valid_numeric_eq_and_hash_do_not_allocate_or_release ... ok",
+    "2026-11-05T19:50:35.0856340Z B2-A1-IDENTITY case=a1_identity backend=native optimization=0 artifact=/var/folders/y3/p6x0rn5562l5qyxy7x6jqrsc0000gn/T/xiao-b2-a1-native-20238-1793908234704182000/a1_identity-o0 result=success",
+    "2026-11-05T19:50:35.4128450Z B2-A1-IDENTITY case=a1_identity backend=native optimization=3 artifact=/var/folders/y3/p6x0rn5562l5qyxy7x6jqrsc0000gn/T/xiao-b2-a1-native-20238-1793908234704182000/a1_identity-o3 result=success",
+    "2026-11-05T19:50:35.7412380Z B2-A1-IDENTITY case=a1_admission_error backend=native optimization=0 artifact=/var/folders/y3/p6x0rn5562l5qyxy7x6jqrsc0000gn/T/xiao-b2-a1-native-20238-1793908234704182000/a1_admission_error-o0 result=success",
+    "2026-11-05T19:50:36.0665020Z B2-A1-IDENTITY case=a1_admission_error backend=native optimization=3 artifact=/var/folders/y3/p6x0rn5562l5qyxy7x6jqrsc0000gn/T/xiao-b2-a1-native-20238-1793908234704182000/a1_admission_error-o3 result=success",
+    "2026-11-05T19:50:36.3673830Z B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=0 artifact=/var/folders/y3/p6x0rn5562l5qyxy7x6jqrsc0000gn/T/xiao-b2-a1-native-20238-1793908234704182000/a1_pending_finally-o0 result=success",
+    "2026-11-05T19:50:36.6796770Z B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=3 artifact=/var/folders/y3/p6x0rn5562l5qyxy7x6jqrsc0000gn/T/xiao-b2-a1-native-20238-1793908234704182000/a1_pending_finally-o3 result=success"
+  ],
+  "cargo_control_lines": [
+    "2026-11-05T19:39:01.2349940Z F7-CARGO command=build locked=true removed=0",
+    "2026-11-05T19:39:52.5414330Z F7-CARGO command=build locked=true removed=0",
+    "2026-11-05T19:40:04.7317170Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:40:21.3201600Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:51:42.4999880Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:51:51.4371190Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:51:51.6052510Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:52:27.4526890Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:52:35.1074200Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:52:46.4477970Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:52:57.3610460Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:54:12.4205880Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:54:12.6036200Z F7-CARGO command=test locked=true removed=0"
+  ]
+}

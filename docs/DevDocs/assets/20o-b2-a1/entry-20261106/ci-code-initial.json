@@ -1,0 +1,38 @@
+{
+  "commit": "ead24cf4f59b0630991a100eb7917da8d54a391f",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/runs?head_sha=ead24cf4f59b0630991a100eb7917da8d54a391f&per_page=100"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "pid": 42292,
+  "started_utc": "2026-11-05T18:47:30.344773+00:00",
+  "finished_utc": "2026-11-05T18:47:31.553202+00:00",
+  "exit_code": 0,
+  "stdout_sha256": "a85fb395dc5dd8249d7a768277f8deabc944924579536dbc176008b26f10a923",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "runs": [
+    {
+      "id": 42087250457,
+      "name": "Xiao maintenance regression",
+      "head_sha": "ead24cf4f59b0630991a100eb7917da8d54a391f",
+      "status": "in_progress",
+      "conclusion": null,
+      "event": "push",
+      "run_attempt": 1,
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42087250457"
+    },
+    {
+      "id": 42087250482,
+      "name": "Xiao workspace gates",
+      "head_sha": "ead24cf4f59b0630991a100eb7917da8d54a391f",
+      "status": "in_progress",
+      "conclusion": null,
+      "event": "push",
+      "run_attempt": 1,
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42087250482"
+    }
+  ],
+  "scope": "本次代码提交的真实CI查询；不把排队/运行中写成通过，不替代本地源码身份"
+}

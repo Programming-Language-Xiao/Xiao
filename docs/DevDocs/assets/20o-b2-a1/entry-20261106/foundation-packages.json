@@ -1,0 +1,29 @@
+{
+  "name": "foundation-packages",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-types",
+    "-p",
+    "xiao-diagnostics",
+    "-p",
+    "xiao-runtime",
+    "-p",
+    "xiao-vm"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T18:09:53.234200+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "foundation-packages.log",
+  "pid": 51440,
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T18:10:58.752688+00:00",
+  "duration_seconds": 65.515,
+  "sha256": "d52cef780c7b23bf4a34b806039a7a660d253d2afe9d13cf151663c0ab445e1d"
+}

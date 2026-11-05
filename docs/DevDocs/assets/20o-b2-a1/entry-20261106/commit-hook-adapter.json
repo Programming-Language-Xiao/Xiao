@@ -1,0 +1,8 @@
+{
+  "scope": "只在单条Git提交命令使用任务级hooksPath；原消息逐字复制到工作树内，调用原CLI commit-msg门禁，并finally删除临时单文件",
+  "reason": "仓库commit-msg要求消息文件位于当前源码根目录，Git worktree实际消息位于主仓库.git/worktrees外部路径",
+  "repository_hook_modified": false,
+  "commit_rule_modified": false,
+  "adapter_sha256": "4c5a9157c158336e6df4bdb75b0e20d80a6c46bbe70e6d6ed866d50d19735219",
+  "hook_path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\commit-hooks"
+}

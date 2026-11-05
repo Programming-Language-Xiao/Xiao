@@ -1,0 +1,11 @@
+Diff in \\?\D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-vm\src\semantics\exec.rs:11:
+ use std::collections::{BTreeMap, BTreeSet};
+ use std::rc::Rc;
+ use xiao_bytecode::{
+-    BlockId, FuncId, PcMap, TacArgument, TacFunction, TacHandler, TacInstr, TacOp,
+-    TacProgram, VReg, build_pc_map,
++    BlockId, FuncId, PcMap, TacArgument, TacFunction, TacHandler, TacInstr, TacOp, TacProgram,
++    VReg, build_pc_map,
+ };
+ use xiao_diagnostics::{
+     BackendLocation, CONTAINER_HASHABILITY_CODE, DiagnosticParam, FatalError, ITERABLE_CODE,

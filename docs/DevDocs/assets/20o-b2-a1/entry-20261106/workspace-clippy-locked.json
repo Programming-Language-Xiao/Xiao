@@ -1,0 +1,40 @@
+{
+  "name": "workspace-clippy-locked",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "clippy",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--workspace",
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T19:35:33.281922+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "workspace-clippy-locked.log",
+  "pid": 56412,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/783299e533053a6f4c7fbdc250b488cb8fcc68bbd4a3e8c73d7a2918255277b8.json",
+    "raw_tree_sha256": "783299e533053a6f4c7fbdc250b488cb8fcc68bbd4a3e8c73d7a2918255277b8",
+    "utf8_lf_tree_sha256": "ba73d1e5e8ec63f9ed48c2db13d2ec1f4044b0881ec3cd5be886b2fada061f5b",
+    "files": 964
+  },
+  "source_after": {
+    "manifest": "source-manifests/783299e533053a6f4c7fbdc250b488cb8fcc68bbd4a3e8c73d7a2918255277b8.json",
+    "raw_tree_sha256": "783299e533053a6f4c7fbdc250b488cb8fcc68bbd4a3e8c73d7a2918255277b8",
+    "utf8_lf_tree_sha256": "ba73d1e5e8ec63f9ed48c2db13d2ec1f4044b0881ec3cd5be886b2fada061f5b",
+    "files": 964
+  },
+  "source_unchanged": true,
+  "runner_sha256": "38c7184c8c3183901554b1fe9a08af8d9700dbc6a7e5e1b0deafbd5b8109c26d",
+  "finished_utc": "2026-11-05T19:35:35.530349+00:00",
+  "duration_seconds": 2.25,
+  "sha256": "cbad3e526dd89d5bff8a3fc4552fe58586db996b923a31cb8e637eef6e98bd9a"
+}

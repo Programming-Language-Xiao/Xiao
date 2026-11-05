@@ -1,0 +1,20 @@
+{
+  "run_id": 42094736157,
+  "recorded_utc": "2026-11-05T19:36:57.124369+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/runs/42094736157/jobs?per_page=100"
+  ],
+  "exit_code": 0,
+  "response_sha256": "72ee78391a43a044bcbb16d19af0beaf5228bbbf1c53c1d2b08db0826b6c2aab",
+  "jobs": [
+    {
+      "id": 127481692219,
+      "name": "Linux workspace gates",
+      "status": "in_progress",
+      "conclusion": null,
+      "failed_steps": []
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+   Compiling autocfg v1.5.1
+   Compiling libm v0.2.16
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-diagnostics)
+   Compiling libc v0.2.189
+   Compiling num-traits v0.2.19
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-syntax)
+   Compiling bigdecimal v0.4.11
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-types)
+   Compiling num-integer v0.1.47
+   Compiling num-bigint v0.4.8
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-lifetime)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.22s
+     Running unittests src\lib.rs (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\cargo-target\debug\deps\xiao_runtime-c60947cb4f0f97f6.exe)
+
+running 14 tests
+test abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status ... FAILED
+test abi::numeric_identity_tests::borrowed_value_restore_preserves_output_on_numeric_failure ... ok
+test abi::numeric_identity_tests::constructors_reject_semantic_payloads_through_existing_pending_errors ... ok
+test abi::tests::numeric_error_abi_preserves_identity_and_span ... ok
+test abi::numeric_identity_tests::numeric_handles_restore_shared_identity_without_mutating_inputs ... ok
+test value::numeric::tests::numeric_identity_drives_sets_and_rust_hash_maps ... ok
+test value::numeric::tests::recoverable_errors_preserve_the_frozen_order ... ok
+test value::ops::tests::converts_numeric_widths_with_range_check ... ok
+test value::ops::tests::high_precision_numerics_are_explicitly_unsupported ... ok
+test vm_concurrency::numeric_identity_tests::xcon_numeric_identity_round_trips_through_the_existing_frame ... ok
+test value::numeric::tests::deterministic_spelling_cases_have_one_runtime_identity ... ok
+test vm_concurrency::numeric_identity_tests::xcon_numeric_payloads_are_checked_before_becoming_runtime_values ... ok
+test value::numeric::tests::frozen_decimal_display_vectors_round_trip ... ok
+test value::numeric::tests::temporary_upstream_values_are_exact_and_bounded ... ok
+
+failures:
+
+---- abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status stdout ----
+
+thread 'abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status' (39912) panicked at crates\xiao-runtime\src\abi_numeric_identity_tests.rs:123:5:
+assertion `left == right` failed
+  left: "X06-RUNTIME-033"
+ right: "X06-RUNTIME-034"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status
+
+test result: FAILED. 13 passed; 1 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.07s
+
+error: test failed, to rerun pass `-p xiao-runtime --lib`

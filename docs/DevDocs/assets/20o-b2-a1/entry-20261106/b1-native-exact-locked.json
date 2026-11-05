@@ -1,0 +1,44 @@
+{
+  "name": "b1-native-exact-locked",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b1_probe",
+    "--",
+    "--ignored",
+    "b1_capabilities_match_native_golden_outputs",
+    "--exact",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T19:42:53.440407+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "b1-native-exact-locked.log",
+  "pid": 53908,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/783299e533053a6f4c7fbdc250b488cb8fcc68bbd4a3e8c73d7a2918255277b8.json",
+    "raw_tree_sha256": "783299e533053a6f4c7fbdc250b488cb8fcc68bbd4a3e8c73d7a2918255277b8",
+    "utf8_lf_tree_sha256": "ba73d1e5e8ec63f9ed48c2db13d2ec1f4044b0881ec3cd5be886b2fada061f5b",
+    "files": 964
+  },
+  "source_after": {
+    "manifest": "source-manifests/783299e533053a6f4c7fbdc250b488cb8fcc68bbd4a3e8c73d7a2918255277b8.json",
+    "raw_tree_sha256": "783299e533053a6f4c7fbdc250b488cb8fcc68bbd4a3e8c73d7a2918255277b8",
+    "utf8_lf_tree_sha256": "ba73d1e5e8ec63f9ed48c2db13d2ec1f4044b0881ec3cd5be886b2fada061f5b",
+    "files": 964
+  },
+  "source_unchanged": true,
+  "runner_sha256": "38c7184c8c3183901554b1fe9a08af8d9700dbc6a7e5e1b0deafbd5b8109c26d",
+  "finished_utc": "2026-11-05T19:46:59.263342+00:00",
+  "duration_seconds": 245.812,
+  "sha256": "cebfe2967948b5c6ee07ce9facd9a00b4b52899f261d20d0b1d4d22be6f6931e"
+}

@@ -1,0 +1,36 @@
+{
+  "artifacts": [
+    {
+      "path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\run-temp\\xiao-b2-a1-native-2332-1793907323274248400\\a1_identity-o0.exe",
+      "bytes": 1072128,
+      "sha256": "102f599907712b74554a0212a33286077a119dd832dd67b1c407540713e21377"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\run-temp\\xiao-b2-a1-native-2332-1793907323274248400\\a1_identity-o3.exe",
+      "bytes": 1071104,
+      "sha256": "d9cb387874d2074208849386b04686ab1b90e5231666a4b0d4b9a17a48f4b499"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\run-temp\\xiao-b2-a1-native-2332-1793907323274248400\\a1_admission_error-o0.exe",
+      "bytes": 1022464,
+      "sha256": "4fadbab31c63801ff67e6781183a659e360c179793098fd9d7ba5ed19519ad31"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\run-temp\\xiao-b2-a1-native-2332-1793907323274248400\\a1_admission_error-o3.exe",
+      "bytes": 1021952,
+      "sha256": "0800f51f237d07df38ad6bcb4dc664019b1decdac3a2d5242cc1d9287af917a2"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\run-temp\\xiao-b2-a1-native-2332-1793907323274248400\\a1_pending_finally-o0.exe",
+      "bytes": 1027072,
+      "sha256": "5b149e137e9791fc802b8b473e97b757f3deaf2a333cedbce373556beae74648"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\run-temp\\xiao-b2-a1-native-2332-1793907323274248400\\a1_pending_finally-o3.exe",
+      "bytes": 1026560,
+      "sha256": "65f65774385c693eb4bf1651b9d465e206b789a752933090ef7aa216d7c1816b"
+    }
+  ],
+  "internal_only": true,
+  "runtime_tools_unchanged_after_tests": true
+}

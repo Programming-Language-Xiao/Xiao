@@ -1,0 +1,46 @@
+{
+  "code_commit": "39b2c1ea72939b20ea48d096e03b3a515bf81127",
+  "run_id": 42094736112,
+  "job_id": 127482140348,
+  "platform": "windows",
+  "recorded_utc": "2026-11-05T19:54:45.325725+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/jobs/127482140348/logs"
+  ],
+  "exit_code": 0,
+  "log": "ci-locked-a1-windows.log",
+  "log_sha256": "8f15a56999d8c44ca8a1bb034204b959162cf0fde4720a2b7ff5c8570a5fd473",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "a1_execution_lines": [
+    "2026-11-05T19:35:37.2976794Z test abi::numeric_identity_tests::borrowed_value_restore_preserves_output_on_numeric_failure ... ok",
+    "2026-11-05T19:35:37.2982593Z test abi::numeric_identity_tests::constructors_reject_semantic_payloads_through_existing_pending_errors ... ok",
+    "2026-11-05T19:35:37.2988925Z test abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status ... ok",
+    "2026-11-05T19:35:37.2996396Z test abi::numeric_identity_tests::numeric_handles_restore_shared_identity_without_mutating_inputs ... ok",
+    "2026-11-05T19:35:37.5180624Z test vm_concurrency::numeric_identity_tests::xcon_numeric_identity_round_trips_through_the_existing_frame ... ok",
+    "2026-11-05T19:35:37.5194843Z test vm_concurrency::numeric_identity_tests::xcon_numeric_payloads_are_checked_before_becoming_runtime_values ... ok",
+    "2026-11-05T19:35:37.8599313Z test valid_numeric_eq_and_hash_do_not_allocate_or_release ... ok",
+    "2026-11-05T19:41:25.1241431Z B2-A1-IDENTITY case=a1_identity backend=native optimization=0 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-7804-1793907684660761800\\a1_identity-o0.exe result=success",
+    "2026-11-05T19:41:25.6066176Z B2-A1-IDENTITY case=a1_identity backend=native optimization=3 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-7804-1793907684660761800\\a1_identity-o3.exe result=success",
+    "2026-11-05T19:41:26.0551461Z B2-A1-IDENTITY case=a1_admission_error backend=native optimization=0 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-7804-1793907684660761800\\a1_admission_error-o0.exe result=success",
+    "2026-11-05T19:41:26.5255748Z B2-A1-IDENTITY case=a1_admission_error backend=native optimization=3 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-7804-1793907684660761800\\a1_admission_error-o3.exe result=success",
+    "2026-11-05T19:41:27.0043340Z B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=0 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-7804-1793907684660761800\\a1_pending_finally-o0.exe result=success",
+    "2026-11-05T19:41:27.4712731Z B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=3 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-7804-1793907684660761800\\a1_pending_finally-o3.exe result=success"
+  ],
+  "cargo_control_lines": [
+    "2026-11-05T19:34:13.5108692Z F7-CARGO command=build locked=true removed=0",
+    "2026-11-05T19:35:12.1555816Z F7-CARGO command=build locked=true removed=0",
+    "2026-11-05T19:35:21.6304478Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:38:40.3208813Z \u001b[31;1mF7-CARGO command=test locked=true removed=0\u001b[0m",
+    "2026-11-05T19:38:40.4391898Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:43:08.1777357Z F7-CARGO command=test locked=true removed=0",
+    "2026-11-05T19:43:21.4665432Z \u001b[31;1mF7-CARGO command=test locked=true removed=0\u001b[0m",
+    "2026-11-05T19:43:21.8167294Z \u001b[31;1mF7-CARGO command=test locked=true removed=0\u001b[0m",
+    "2026-11-05T19:44:25.5485293Z \u001b[31;1mF7-CARGO command=test locked=true removed=0\u001b[0m",
+    "2026-11-05T19:44:39.0264175Z \u001b[31;1mF7-CARGO command=test locked=true removed=0\u001b[0m",
+    "2026-11-05T19:45:00.0417122Z \u001b[31;1mF7-CARGO command=test locked=true removed=0\u001b[0m",
+    "2026-11-05T19:45:20.1982037Z \u001b[31;1mF7-CARGO command=test locked=true removed=0\u001b[0m",
+    "2026-11-05T19:45:20.6034886Z F7-CARGO command=test locked=true removed=0"
+  ]
+}

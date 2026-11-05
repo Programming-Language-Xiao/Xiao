@@ -1,0 +1,30 @@
+{
+  "code_commit": "ead24cf4f59b0630991a100eb7917da8d54a391f",
+  "run_id": 42087250457,
+  "job_id": 127455569120,
+  "platform": "linux-default",
+  "recorded_utc": "2026-11-05T18:59:09.841078+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/jobs/127455569120/logs"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "pid": 20400,
+  "exit_code": 0,
+  "log": "ci-a1-linux-default.log",
+  "log_sha256": "66c69d6b5e8215612101b7b9f81eef3fb8e3fbac1709641aa82c1e1ac36134e2",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "a1_execution_lines": [
+    "2026-11-05T18:49:25.6537526Z test a1_numeric_values_and_errors_have_vm_golden_outputs ... ok",
+    "2026-11-05T18:49:46.4826417Z test abi::numeric_identity_tests::borrowed_value_restore_preserves_output_on_numeric_failure ... ok",
+    "2026-11-05T18:49:46.4827165Z test abi::numeric_identity_tests::constructors_reject_semantic_payloads_through_existing_pending_errors ... ok",
+    "2026-11-05T18:49:46.4827889Z test abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status ... ok",
+    "2026-11-05T18:49:46.4828577Z test abi::numeric_identity_tests::numeric_handles_restore_shared_identity_without_mutating_inputs ... ok",
+    "2026-11-05T18:49:46.6602319Z test vm_concurrency::numeric_identity_tests::xcon_numeric_identity_round_trips_through_the_existing_frame ... ok",
+    "2026-11-05T18:49:46.6611977Z test vm_concurrency::numeric_identity_tests::xcon_numeric_payloads_are_checked_before_becoming_runtime_values ... ok",
+    "2026-11-05T18:49:46.7505880Z test valid_numeric_eq_and_hash_do_not_allocate_or_release ... ok",
+    "2026-11-05T18:49:46.8353835Z test semantics::constants::numeric_identity_tests::numeric_constants_restore_checked_runtime_values ... ok",
+    "2026-11-05T18:49:46.8354952Z test semantics::constants::numeric_identity_tests::numeric_constants_reject_invalid_payloads_with_frozen_codes ... ok"
+  ]
+}

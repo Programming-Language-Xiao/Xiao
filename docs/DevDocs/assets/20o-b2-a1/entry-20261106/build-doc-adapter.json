@@ -1,0 +1,25 @@
+{
+  "name": "build-doc-adapter",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "build",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-doc-coverage-rust",
+    "--bin",
+    "xiao-doc-coverage-rust"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T18:09:07.447875+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "build-doc-adapter.log",
+  "pid": 30700,
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T18:09:14.079491+00:00",
+  "duration_seconds": 6.64,
+  "sha256": "42495d2c0247cec10325ec67f235f041041660fa5385f24c86ca7901535b9688"
+}

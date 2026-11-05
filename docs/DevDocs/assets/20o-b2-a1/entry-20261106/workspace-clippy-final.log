@@ -1,0 +1,5 @@
+    Checking xiao-vm v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-vm)
+    Checking xiao-xar v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-xar)
+    Checking xiao-driver v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-driver)
+    Checking xiao-bytecode v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-bytecode)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.47s

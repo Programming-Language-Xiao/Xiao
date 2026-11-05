@@ -1,0 +1,13 @@
+{
+  "scope": "只注入run-step子进程，不修改宿主环境；run-step必须在实际Cargo子进程前清理全部RUST_BIGDECIMAL_*",
+  "injected_names": [
+    "RUST_BIGDECIMAL_DEFAULT_PRECISION",
+    "RUST_BIGDECIMAL_DEFAULT_ROUNDING_MODE",
+    "RUST_BIGDECIMAL_FMT_EXPONENTIAL_LOWER_THRESHOLD",
+    "RUST_BIGDECIMAL_FMT_EXPONENTIAL_UPPER_THRESHOLD",
+    "RUST_BIGDECIMAL_FMT_MAX_INTEGER_PADDING",
+    "RUST_BIGDECIMAL_SERDE_SCALE_LIMIT"
+  ],
+  "injected_value": "INVALID_A1_ENVIRONMENT_CHALLENGE",
+  "expected_cargo_record": "build-runtime-release.json"
+}

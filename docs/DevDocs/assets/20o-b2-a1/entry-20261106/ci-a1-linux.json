@@ -1,0 +1,33 @@
+{
+  "code_commit": "ead24cf4f59b0630991a100eb7917da8d54a391f",
+  "run_id": 42087250457,
+  "job_id": 127455569182,
+  "platform": "linux",
+  "recorded_utc": "2026-11-05T18:59:06.937803+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/jobs/127455569182/logs"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "pid": 65604,
+  "exit_code": 0,
+  "log": "ci-a1-linux.log",
+  "log_sha256": "21f6b1cc951d997c457b21c6640e82814008522b9ef6fb0a818d94f34961f2b7",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "a1_execution_lines": [
+    "2026-11-05T18:46:23.7101859Z test abi::numeric_identity_tests::borrowed_value_restore_preserves_output_on_numeric_failure ... ok",
+    "2026-11-05T18:46:23.7104928Z test abi::numeric_identity_tests::constructors_reject_semantic_payloads_through_existing_pending_errors ... ok",
+    "2026-11-05T18:46:23.7108343Z test abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status ... ok",
+    "2026-11-05T18:46:23.7110429Z test abi::numeric_identity_tests::numeric_handles_restore_shared_identity_without_mutating_inputs ... ok",
+    "2026-11-05T18:46:23.9140496Z test vm_concurrency::numeric_identity_tests::xcon_numeric_identity_round_trips_through_the_existing_frame ... ok",
+    "2026-11-05T18:46:23.9158165Z test vm_concurrency::numeric_identity_tests::xcon_numeric_payloads_are_checked_before_becoming_runtime_values ... ok",
+    "2026-11-05T18:46:24.1822552Z test valid_numeric_eq_and_hash_do_not_allocate_or_release ... ok",
+    "2026-11-05T18:48:31.5985991Z B2-A1-IDENTITY case=a1_identity backend=native optimization=0 artifact=/tmp/xiao-b2-a1-native-10400-1793904511146899661/a1_identity-o0 result=success",
+    "2026-11-05T18:48:32.0521621Z B2-A1-IDENTITY case=a1_identity backend=native optimization=3 artifact=/tmp/xiao-b2-a1-native-10400-1793904511146899661/a1_identity-o3 result=success",
+    "2026-11-05T18:48:32.4944781Z B2-A1-IDENTITY case=a1_admission_error backend=native optimization=0 artifact=/tmp/xiao-b2-a1-native-10400-1793904511146899661/a1_admission_error-o0 result=success",
+    "2026-11-05T18:48:32.9455919Z B2-A1-IDENTITY case=a1_admission_error backend=native optimization=3 artifact=/tmp/xiao-b2-a1-native-10400-1793904511146899661/a1_admission_error-o3 result=success",
+    "2026-11-05T18:48:33.3938035Z B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=0 artifact=/tmp/xiao-b2-a1-native-10400-1793904511146899661/a1_pending_finally-o0 result=success",
+    "2026-11-05T18:48:33.8482736Z B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=3 artifact=/tmp/xiao-b2-a1-native-10400-1793904511146899661/a1_pending_finally-o3 result=success"
+  ]
+}

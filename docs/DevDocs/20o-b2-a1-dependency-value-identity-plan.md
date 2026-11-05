@@ -2,7 +2,7 @@
 
 > **这是 B2-A 的 A1 获批实施规划。原规划交付批未解析/构建或写产品；本次独立实施按既有A-P1授权进行。**
 > 入口为`f522b593`后的当前提交；A0有效收口见[closeout.json](assets/20o-b2-a0/entry-20261105/closeout.json)（原始`result.json`仍为`passed=false`，不可引用为通过）。
-> F-D已签字、30/0、联合冻结已激活；A-P1已批准A1范围。当前A1实施中，A2～A7尚未开始，B2-A整批未收口。
+> F-D已签字、30/0、联合冻结已激活；A-P1已批准A1范围。A1本批已退出，A2～A7尚未开始，B2-A整批未收口。
 > A1只建立依赖、诊断、适配层和值身份；A2/A3算术、A4转换、A5全链路、A6性能与A7收口不在本批。
 
 ## 一、入口与范围
@@ -167,5 +167,31 @@ core/rust/crates/xiao-types/src/numeric.rs                类型/值身份接线
 docs/DevDocs/assets/20o-b2-a1/entry-<date>/               A1证据（待建）
 ```
 
-原规划交付批只规划；当前已按A-P1进入独立A1实施，专项单元与VM示例通过，受控原生与workspace门禁已通过，B1回归证据正在收集，尚不作为A1退出或B2-A交付。
+原规划交付批只规划；后续A1已按A-P1完成本批验收：专项/四个相关包、VM/原生示例、无分配契约、B1 9/17及两个精确点、workspace与28/28守卫通过。A1退出不等于B2-A整批交付，A2～A7尚未开始。
 字典证据裁定见[本次答复](assets/20o-b2-a1/entry-20261106/decision-receipts.json)，未修改30项冻结台账或已签正文。
+
+## 九、实际实施与退出（2026-11-06）
+
+代码快照为`39b2c1ea72939b20ea48d096e03b3a515bf81127`，入口为`e06cc88a`。
+[完整证据](assets/20o-b2-a1/entry-20261106/README.md)按命令保存真实argv、cwd、PID、原始日志及执行前后源码树。
+最终验收绑定964个源码输入的同一树：原始摘要`783299e533053a6f4c7fbdc250b488cb8fcc68bbd4a3e8c73d7a2918255277b8`，规范文本/二进制摘要`ba73d1e5e8ec63f9ed48c2db13d2ec1f4044b0881ec3cd5be886b2fada061f5b`。
+这是明确列出的源码输入数量，不是证据目录或全仓库文件总数。
+
+| 项 | 实际结果 |
+| --- | --- |
+| F-7依赖 | 六包精确版本/特性经metadata --locked核对，两份锁只新增这六包与Runtime依赖边；11份许可证重新对照 |
+| 环境 | 从空A1 target构建，受控子进程清除了实际注入的六个RUST_BIGDECIMAL_*干扰变量；workspace的rust-version=1.85未改，不推断未测MSRV |
+| 接纳/身份 | 输入D/H、原文边界及W常量；算术工作值验收后置；完整语法、零、显示/规范scale；ABI/VM常量/XCON恢复统一接纳；Eq/Hash实际分配与释放均0 |
+| 错误 | 033/034进入诊断/消息目录；033用于接纳，034只建立门面，实际精确除法留A2/A3；既有状态与挂起槽规则不改 |
+| 完整示例 | 三份UseDocs完整代码与fixture逐字一致；VM精确1项，Windows原生精确1项，内部O0/O3共6次；新增说明仍planned |
+| B1回归 | 契约9/9、资源17/17、VM/原生各唯一1 passed，28/28守卫 |
+| workspace | Clippy全workspace/all-targets、workspace/benchmark --locked检查、docs/usedocs/layout/覆盖率通过；原有coverage warning保留 |
+| 三平台 | 维护回归42094736112全绿；Windows/Linux/macOS原生实际日志均有A1六次成功标记；workspace 42094736157成功，均绑定39b2c1ea |
+
+现有无状态返回数值C构造器用原来的挂起错误通路报告语义失败，LLVM在构造位置检查并传播；没有新C符号、状态或ABI。
+VM执行文件的常量恢复拆到constants.rs，保留2500行门槛，未增加豁免或修改释放计划。
+registry只为已批准示例追加rust.xiao-driver.tests路径；所有模块身份、状态与其他字段均未改变，cmath仍planned。
+
+**A1本批已退出，下一入口为另批A2/A3；本轮不启动A2～A7。**
+所有1.18/20产物仍仅内部验证，算术、转换矩阵、受控性能与整批文档/registry收口后置；B1旧721条F10未运行，22D/22C及19/11/22历史债务保持独立。
+上述三平台CI是代码快照的证据，不冒充后续文档收口提交的CI。

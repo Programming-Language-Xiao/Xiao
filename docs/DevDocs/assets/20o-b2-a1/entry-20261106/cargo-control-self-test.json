@@ -1,0 +1,33 @@
+{
+  "name": "cargo-control-self-test",
+  "argv": [
+    "D:\\Programs\\Python\\Python312\\python.exe",
+    "tools/gates/controlled-cargo.py",
+    "--self-test",
+    "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\cargo-control-self-test"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T19:20:57.569185+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "cargo-control-self-test.log",
+  "pid": 38156,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/9657ee73cf2746b64fce967dcfc027d60c6930622f2f20ab88c9aaa2e32c664c.json",
+    "raw_tree_sha256": "9657ee73cf2746b64fce967dcfc027d60c6930622f2f20ab88c9aaa2e32c664c",
+    "utf8_lf_tree_sha256": "8107d115b1cfe64672aad539da37ec2972c11953a851bd3e585e54da36f7a15d",
+    "files": 964
+  },
+  "source_after": {
+    "manifest": "source-manifests/9657ee73cf2746b64fce967dcfc027d60c6930622f2f20ab88c9aaa2e32c664c.json",
+    "raw_tree_sha256": "9657ee73cf2746b64fce967dcfc027d60c6930622f2f20ab88c9aaa2e32c664c",
+    "utf8_lf_tree_sha256": "8107d115b1cfe64672aad539da37ec2972c11953a851bd3e585e54da36f7a15d",
+    "files": 964
+  },
+  "source_unchanged": true,
+  "runner_sha256": "38c7184c8c3183901554b1fe9a08af8d9700dbc6a7e5e1b0deafbd5b8109c26d",
+  "finished_utc": "2026-11-05T19:20:58.525634+00:00",
+  "duration_seconds": 0.953,
+  "sha256": "9d1015b27b3f2f2cda52b69a665c8904a5088d5aa9f230e3ceda8c754fcc1f4f"
+}

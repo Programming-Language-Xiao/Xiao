@@ -1,0 +1,71 @@
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-types)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.18s
+     Running unittests src\lib.rs (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\cargo-target\debug\deps\xiao_diagnostics-b468bb910ba8eb14.exe)
+
+running 18 tests
+test tests::builds_error_with_span ... ok
+test tests::accumulator_uses_first_error_as_primary ... ok
+test tests::container_errors_keep_stable_identity ... ok
+test tests::distinguishes_fatal_report ... ok
+test tests::division_by_zero_keeps_operator_identity ... ok
+test tests::error_type_registry_is_finite_and_shared ... ok
+test tests::keeps_error_context_and_stack ... ok
+test tests::builtin_localized_facade_preserves_report_identity ... ok
+test tests::preserves_backend_location ... ok
+test tests::preserves_language_independent_params ... ok
+test tests::reports_suppressed_without_replacing_primary ... ok
+test tests::localized_report_uses_catalog_and_preserves_default_text ... ok
+test tests::numeric_foundation_errors_have_distinct_identity_and_catalog_entries ... ok
+test tests::localized_report_keeps_runtime_reason_parameter ... ok
+test window::tests::diagnostic_frame_round_trips ... ok
+test window::tests::fatal_events_use_fatal_level ... ok
+test window::tests::oversized_frame_is_rejected_before_allocation ... ok
+test window::tests::activation_is_persistent_and_absent_for_release_shape ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\cargo-target\debug\deps\xiao_types-7e355c2091f329cd.exe)
+
+running 38 tests
+test concurrency::tests::candidate_a_accepts_scalars_and_safe_tuples ... ok
+test containers::tests::models_shapes_and_materialization ... ok
+test concurrency::tests::signatures_and_consumption_are_frozen ... ok
+test containers::tests::resolves_most_specific_constraint ... ok
+test conversion::tests::classifies_scalar_conversions ... ok
+test environment::tests::manages_scopes_and_mutability ... ok
+test materialization::tests::merges_constraints_by_path ... ok
+test numeric::tests::checks_boolean_arithmetic_and_ranges ... ok
+test numeric::tests::normalizes_decimal_zero_by_mantissa ... ok
+test numeric::tests::zero_lowering_preserves_runtime_budget_failures ... ok
+test numeric_text::tests::deterministic_numeric_identity_cases ... ok
+test numeric_text::tests::equal_decimal_spellings_share_identity ... ok
+test numeric_text::tests::syntax_is_complete_before_numeric_budgets ... ok
+test path_constraints::tests::rejects_set_member_paths ... ok
+test numeric_text::tests::coefficient_boundaries_preserve_display_precision ... ok
+test path_constraints::tests::reports_static_bounds ... ok
+test path_constraints::tests::resolves_nested_paths ... ok
+test selection_random::tests::reports_sampling_boundaries ... ok
+test selection_random::tests::samples_follow_modes ... ok
+test selection_random::tests::seeded_source_is_reproducible ... ok
+test selection_shape::tests::projects_heterogeneous_array ... ok
+test selection_shape::tests::repeats_dictionary_key_as_tuple ... ok
+test set_types::tests::classifies_hashability ... ok
+test numeric_text::tests::zero_and_scales_have_independent_budget_checks ... ok
+test set_types::tests::computes_static_set_operation_results ... ok
+test set_types::tests::distinguishes_empty_from_unknown_for_assignment ... ok
+test set_types::tests::formats_set_types ... ok
+test set_types::tests::keeps_set_member_types_invariant ... ok
+test set_types::tests::normalizes_heterogeneous_members ... ok
+test tables::tests::models_table_value_kinds_and_visibility ... ok
+test types::tests::displays_and_collects_type_variables ... ok
+test unify::tests::generalizes_and_instantiates ... ok
+test unify::tests::preserves_array_length_during_unification ... ok
+test unify::tests::preserves_empty_set_during_unification ... ok
+test unify::tests::rigid_variables_reject_concrete_bindings ... ok
+test unify::tests::unifies_set_member_unions ... ok
+test unify::tests::unifies_variables_and_rejects_recursive_types ... ok
+test checker::architecture_tests::module_dependency_direction_is_acyclic ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

@@ -1,0 +1,60 @@
+{
+  "record": "metadata-locked.json",
+  "packages": [
+    {
+      "name": "autocfg",
+      "version": "1.5.1",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "enabled_features": [],
+      "manifest_path": "C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\autocfg-1.5.1\\Cargo.toml"
+    },
+    {
+      "name": "bigdecimal",
+      "version": "0.4.11",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "enabled_features": [
+        "std"
+      ],
+      "manifest_path": "C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\bigdecimal-0.4.11\\Cargo.toml"
+    },
+    {
+      "name": "libm",
+      "version": "0.2.16",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "enabled_features": [
+        "arch",
+        "default"
+      ],
+      "manifest_path": "C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\libm-0.2.16\\Cargo.toml"
+    },
+    {
+      "name": "num-bigint",
+      "version": "0.4.8",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "enabled_features": [
+        "std"
+      ],
+      "manifest_path": "C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\num-bigint-0.4.8\\Cargo.toml"
+    },
+    {
+      "name": "num-integer",
+      "version": "0.1.47",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "enabled_features": [
+        "i128",
+        "std"
+      ],
+      "manifest_path": "C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\num-integer-0.1.47\\Cargo.toml"
+    },
+    {
+      "name": "num-traits",
+      "version": "0.2.19",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "enabled_features": [
+        "i128",
+        "std"
+      ],
+      "manifest_path": "C:\\Users\\xiaoc\\.cargo\\registry\\src\\index.crates.io-1949cf8c6b5b557f\\num-traits-0.2.19\\Cargo.toml"
+    }
+  ]
+}

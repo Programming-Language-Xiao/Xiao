@@ -1,0 +1,25 @@
+{
+  "name": "runtime-numeric-unit",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-runtime",
+    "--lib",
+    "numeric"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T17:46:06.085556+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "runtime-numeric-unit.log",
+  "pid": 60656,
+  "exit_code": 101,
+  "finished_utc": "2026-11-05T17:46:23.457986+00:00",
+  "duration_seconds": 17.375,
+  "sha256": "68f38f2ce8ece7bf195961a81abba14452c9bf5dd77a0e0a5a91f295e3deb3f1"
+}

@@ -1,0 +1,33 @@
+{
+  "code_commit": "ead24cf4f59b0630991a100eb7917da8d54a391f",
+  "run_id": 42087250457,
+  "job_id": 127455568921,
+  "platform": "windows",
+  "recorded_utc": "2026-11-05T18:59:03.735366+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/jobs/127455568921/logs"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "pid": 52772,
+  "exit_code": 0,
+  "log": "ci-a1-windows.log",
+  "log_sha256": "e146d5f707b6424077127d988c731b5d001c9a4864e300b72be77caa5992de15",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "a1_execution_lines": [
+    "2026-11-05T18:48:20.1888986Z test abi::numeric_identity_tests::borrowed_value_restore_preserves_output_on_numeric_failure ... ok",
+    "2026-11-05T18:48:20.1894611Z test abi::numeric_identity_tests::constructors_reject_semantic_payloads_through_existing_pending_errors ... ok",
+    "2026-11-05T18:48:20.1898529Z test abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status ... ok",
+    "2026-11-05T18:48:20.1904503Z test abi::numeric_identity_tests::numeric_handles_restore_shared_identity_without_mutating_inputs ... ok",
+    "2026-11-05T18:48:20.3910245Z test vm_concurrency::numeric_identity_tests::xcon_numeric_identity_round_trips_through_the_existing_frame ... ok",
+    "2026-11-05T18:48:20.3926451Z test vm_concurrency::numeric_identity_tests::xcon_numeric_payloads_are_checked_before_becoming_runtime_values ... ok",
+    "2026-11-05T18:48:20.6375553Z test valid_numeric_eq_and_hash_do_not_allocate_or_release ... ok",
+    "2026-11-05T18:52:50.9567490Z B2-A1-IDENTITY case=a1_identity backend=native optimization=0 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-8288-1793904770479271200\\a1_identity-o0.exe result=success",
+    "2026-11-05T18:52:51.3208911Z B2-A1-IDENTITY case=a1_identity backend=native optimization=3 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-8288-1793904770479271200\\a1_identity-o3.exe result=success",
+    "2026-11-05T18:52:51.7051784Z B2-A1-IDENTITY case=a1_admission_error backend=native optimization=0 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-8288-1793904770479271200\\a1_admission_error-o0.exe result=success",
+    "2026-11-05T18:52:52.0673767Z B2-A1-IDENTITY case=a1_admission_error backend=native optimization=3 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-8288-1793904770479271200\\a1_admission_error-o3.exe result=success",
+    "2026-11-05T18:52:52.4211448Z B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=0 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-8288-1793904770479271200\\a1_pending_finally-o0.exe result=success",
+    "2026-11-05T18:52:52.7889331Z B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=3 artifact=C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\xiao-b2-a1-native-8288-1793904770479271200\\a1_pending_finally-o3.exe result=success"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "development_runner_sha256": "66e71ed184f91cb83c80dd0feee88fd512c75d90d8d26129e6e264fd3680404a",
+  "final_runner_sha256": "38c7184c8c3183901554b1fe9a08af8d9700dbc6a7e5e1b0deafbd5b8109c26d",
+  "actual_script_path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\scripts\\run-step.py",
+  "scope": "原开发期日志不追写source_before/source_after；后续冻结验收由新执行器绑定完整源码输入并检查执行期间不变",
+  "interim_snapshot_runner_sha256": "81f32734cc3775918c9b6db828b48b260fcd702913b02437a1f23eb3f9c92600",
+  "snapshot_note": "UTF-8以外或含NUL的输入按二进制保留原始摘要；原始字节和规范字节均绑定，不重写早期执行记录"
+}

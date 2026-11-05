@@ -1,0 +1,4 @@
+F7-CARGO command=test locked=true removed=2
+F7-CARGO command=build locked=true removed=2
+F7-CARGO command=version-or-help locked=false removed=2
+F7-CARGO-SELF-TEST passed=3 total=3; 检查参数、全部前缀清理、退出码和非数值环境保留

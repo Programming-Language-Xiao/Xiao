@@ -1,0 +1,13 @@
+    Checking xiao-vm v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-vm)
+    Checking xiao-runtime v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-runtime)
+error: unused import: `TacConstant`
+  --> crates\xiao-vm\src\semantics\exec.rs:14:42
+   |
+14 |     BlockId, FuncId, PcMap, TacArgument, TacConstant, TacFunction, TacHandler, TacInstr, TacOp,
+   |                                          ^^^^^^^^^^^
+   |
+   = note: `-D unused-imports` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(unused_imports)]`
+
+error: could not compile `xiao-vm` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...

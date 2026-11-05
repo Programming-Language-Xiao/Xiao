@@ -1,0 +1,23 @@
+{
+  "name": "metadata",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "metadata",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--format-version",
+    "1"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T17:23:23.971182+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "metadata.log",
+  "pid": 52488,
+  "exit_code": 101,
+  "finished_utc": "2026-11-05T17:23:29.760235+00:00",
+  "duration_seconds": 5.781,
+  "sha256": "32964a5d977cfa4695bbfa001b10985bbe1dcce133ac4d4fd33b1b877f76bc26"
+}

@@ -1,0 +1,122 @@
+{
+  "code_commit": "39b2c1ea72939b20ea48d096e03b3a515bf81127",
+  "recorded_utc": "2026-11-05T18:51:43.954690+00:00",
+  "source_root": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "task_root": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d",
+  "versions_scope": "只读工具版本探测；解析/构建/测试/检查均--locked",
+  "tool_versions": [
+    {
+      "name": "rustc",
+      "argv": [
+        "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "-vV"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+      "pid": 55508,
+      "exit_code": 0,
+      "log": "tool-version-rustc.log",
+      "sha256": "2efe229f7908c2c19f459ca734101a5b35cb482476b8bee1357f94a18c766078"
+    },
+    {
+      "name": "cargo",
+      "argv": [
+        "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+        "+1.96.0",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+      "pid": 51800,
+      "exit_code": 0,
+      "log": "tool-version-cargo.log",
+      "sha256": "b6ef6807dd96d18b833474ad68e7a23a29e562a29c67afa71a59fb9a73df0068"
+    },
+    {
+      "name": "clang",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+      "pid": 26668,
+      "exit_code": 0,
+      "log": "tool-version-clang.log",
+      "sha256": "5c075035dbde6a78b05a8d921e0769dd24814486efecbcdbe7035527701858b2"
+    },
+    {
+      "name": "llvm-as",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+      "pid": 40124,
+      "exit_code": 0,
+      "log": "tool-version-llvm-as.log",
+      "sha256": "850f8cd692366c21e25e0f2e3e4a0b69774af132389e557d99575888bf78c9ee"
+    },
+    {
+      "name": "llc",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\llc.exe",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+      "pid": 35644,
+      "exit_code": 0,
+      "log": "tool-version-llc.log",
+      "sha256": "f948a15c7cf1ebc326b4b2d40d4161d843b7c66d7da696a968fd17a372858217"
+    },
+    {
+      "name": "bun",
+      "argv": [
+        "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+      "pid": 45604,
+      "exit_code": 0,
+      "log": "tool-version-bun.log",
+      "sha256": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7"
+    }
+  ],
+  "built_tools_before_b1_regression": [
+    {
+      "role": "XIAO_RUNTIME_LIBRARY",
+      "path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\cargo-target\\release\\xiao_runtime.lib",
+      "bytes": 26836694,
+      "sha256": "f4a7fbdeb42d4d272cf9a80028de08ed8f3a3d6e28ebe522509f8dabd41fa2c3"
+    },
+    {
+      "role": "XIAO_DIAGNOSTICS_PATH",
+      "path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\cargo-target\\debug\\xiao-diagnostics.exe",
+      "bytes": 1146368,
+      "sha256": "fa462dd08cfee6bab7ca7fea71d36e81284cf8d0da1c6c4e8753d9a44b9eea16"
+    },
+    {
+      "role": "XIAO_RUST_DOC_ADAPTER",
+      "path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\cargo-target\\debug\\xiao-doc-coverage-rust.exe",
+      "bytes": 2074112,
+      "sha256": "0e4efaf3be229e8f873c4f6b5fde577d1c38f3823d1f7c95cd92440092390a24"
+    }
+  ],
+  "product_git_objects": {
+    "core/rust": "7a9dd75a5d2a290b628f97ec1fd29f501330f522",
+    "stdlib": "4c24e61b7e1276f76748a67c1a529eecf769bb24",
+    "tests/fixtures": "98eb023be49522b4ac3158bdccdf8c679a1a0a92",
+    "tests/benchmarks": "f13a038d6685817d6d26f40cf2be771e4cbbcaef",
+    ".github/workflows": "93f24fd7ae3b9bad86db953a6466fffd3f516202",
+    ".cargo": "f7c9c8986eea02a18c21e3e9e60b7ce39fbcd610",
+    "tools": "1751aadef80d4df933b70338f062f9bdbaa9ca3b",
+    "docs/UseDocs": "6636a61d524c3bcfc50ff2f3443743425416911b",
+    "docs/module-registry.json": "92a77f253c073b84e642f66f7af36a977f8a8557"
+  },
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 32,
+  "cmath": "planned",
+  "artifacts_internal_only": true,
+  "b1_721_executed": false,
+  "a2_through_a7_started": false,
+  "numeric_implementation_commit": "ead24cf4f59b0630991a100eb7917da8d54a391f",
+  "ci_cargo_policy": "任务级PATH代理，构建/测试/检查自动--locked并清理全部RUST_BIGDECIMAL前缀；目标与阈值不变"
+}

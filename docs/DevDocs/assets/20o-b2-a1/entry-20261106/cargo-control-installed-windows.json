@@ -1,0 +1,35 @@
+{
+  "recorded_utc": "2026-11-05T19:22:58.564457+00:00",
+  "install_argv": [
+    "D:\\Programs\\Python\\Python312\\python.exe",
+    "-X",
+    "utf8",
+    "tools/gates/controlled-cargo.py",
+    "--install"
+  ],
+  "installed": {
+    "cargo_control_directory": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\run-temp\\xiao-controlled-cargo-25cc25a004de431d8bc0071c8a86af47",
+    "delegate": "D:\\Program Files\\.cargo\\bin\\cargo.EXE",
+    "scope": "仅当前CI作业后续步骤；不改全局环境或Cargo配置"
+  },
+  "argv": [
+    "cmd",
+    "/c",
+    "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\run-temp\\xiao-controlled-cargo-25cc25a004de431d8bc0071c8a86af47\\cargo.cmd",
+    "+1.96.0",
+    "metadata",
+    "--no-deps",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--format-version",
+    "1"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "pid": 55368,
+  "exit_code": 0,
+  "stdout_sha256": "1a937936392519f3deeb0ea77a73cd68016ae4280e593a6ba14cb0eae61e00da",
+  "stderr_sha256": "e6aaf6635f133f55f0afaa36dae67dbf0e10d7993e486a016950aa85f4b83834",
+  "global_environment_modified": false,
+  "explicit_locked_not_supplied_by_caller": true,
+  "inherited_numeric_variables_removed": 6
+}

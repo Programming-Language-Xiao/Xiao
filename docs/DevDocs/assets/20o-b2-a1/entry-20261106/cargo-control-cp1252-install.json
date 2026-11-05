@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "D:\\Programs\\Python\\Python312\\python.exe",
+    "tools/gates/controlled-cargo.py",
+    "--install"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "exit_code": 0,
+  "PYTHONIOENCODING": "cp1252",
+  "ascii_output_parses_as_json": true,
+  "scope": "复现英文Windows编码的实际安装冒烟，非数值产品执行"
+}

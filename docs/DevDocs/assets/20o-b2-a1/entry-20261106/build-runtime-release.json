@@ -1,0 +1,31 @@
+{
+  "name": "build-runtime-release",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "build",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--release",
+    "-p",
+    "xiao-runtime"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T18:04:39.914013+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [
+    "RUST_BIGDECIMAL_DEFAULT_PRECISION",
+    "RUST_BIGDECIMAL_DEFAULT_ROUNDING_MODE",
+    "RUST_BIGDECIMAL_FMT_EXPONENTIAL_LOWER_THRESHOLD",
+    "RUST_BIGDECIMAL_FMT_EXPONENTIAL_UPPER_THRESHOLD",
+    "RUST_BIGDECIMAL_FMT_MAX_INTEGER_PADDING",
+    "RUST_BIGDECIMAL_SERDE_SCALE_LIMIT"
+  ],
+  "log": "build-runtime-release.log",
+  "pid": 55788,
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T18:05:40.160272+00:00",
+  "duration_seconds": 60.25,
+  "sha256": "ce143078e61d0c4e3172b485c3aee538644122fd1ab7558ec4457a41a42c6684"
+}

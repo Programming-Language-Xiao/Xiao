@@ -1,0 +1,33 @@
+{
+  "code_commit": "ead24cf4f59b0630991a100eb7917da8d54a391f",
+  "run_id": 42087250457,
+  "job_id": 127455569022,
+  "platform": "macos",
+  "recorded_utc": "2026-11-05T19:02:48.188613+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/jobs/127455569022/logs"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "pid": 32492,
+  "exit_code": 0,
+  "log": "ci-a1-macos.log",
+  "log_sha256": "da4b116f6575a3e9d1162a01a9807c4c38ee7383ace5055b7758535e1feb6c61",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "a1_execution_lines": [
+    "2026-11-05T18:46:45.4174030Z test abi::numeric_identity_tests::borrowed_value_restore_preserves_output_on_numeric_failure ... ok",
+    "2026-11-05T18:46:45.4175850Z test abi::numeric_identity_tests::constructors_reject_semantic_payloads_through_existing_pending_errors ... ok",
+    "2026-11-05T18:46:45.4176890Z test abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status ... ok",
+    "2026-11-05T18:46:45.4177700Z test abi::numeric_identity_tests::numeric_handles_restore_shared_identity_without_mutating_inputs ... ok",
+    "2026-11-05T18:46:45.6233470Z test vm_concurrency::numeric_identity_tests::xcon_numeric_identity_round_trips_through_the_existing_frame ... ok",
+    "2026-11-05T18:46:45.6234180Z test vm_concurrency::numeric_identity_tests::xcon_numeric_payloads_are_checked_before_becoming_runtime_values ... ok",
+    "2026-11-05T18:46:45.7704050Z test valid_numeric_eq_and_hash_do_not_allocate_or_release ... ok",
+    "2026-11-05T18:56:24.9827480Z B2-A1-IDENTITY case=a1_identity backend=native optimization=0 artifact=/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/xiao-b2-a1-native-20160-1793904984636116000/a1_identity-o0 result=success",
+    "2026-11-05T18:56:25.2678140Z B2-A1-IDENTITY case=a1_identity backend=native optimization=3 artifact=/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/xiao-b2-a1-native-20160-1793904984636116000/a1_identity-o3 result=success",
+    "2026-11-05T18:56:25.6392600Z B2-A1-IDENTITY case=a1_admission_error backend=native optimization=0 artifact=/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/xiao-b2-a1-native-20160-1793904984636116000/a1_admission_error-o0 result=success",
+    "2026-11-05T18:56:25.9747950Z B2-A1-IDENTITY case=a1_admission_error backend=native optimization=3 artifact=/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/xiao-b2-a1-native-20160-1793904984636116000/a1_admission_error-o3 result=success",
+    "2026-11-05T18:56:26.2875500Z B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=0 artifact=/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/xiao-b2-a1-native-20160-1793904984636116000/a1_pending_finally-o0 result=success",
+    "2026-11-05T18:56:26.6126670Z B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=3 artifact=/var/folders/2s/vty41l455yv698g4xkgfv7z00000gn/T/xiao-b2-a1-native-20160-1793904984636116000/a1_pending_finally-o3 result=success"
+  ]
+}

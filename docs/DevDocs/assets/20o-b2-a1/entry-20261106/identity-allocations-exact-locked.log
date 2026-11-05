@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.19s
+     Running tests\b2_a1_identity_allocations.rs (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\cargo-target\debug\deps\b2_a1_identity_allocations-95fe2fdfe817f010.exe)
+
+running 1 test
+test valid_numeric_eq_and_hash_do_not_allocate_or_release ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+

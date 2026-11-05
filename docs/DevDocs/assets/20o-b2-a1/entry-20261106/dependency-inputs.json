@@ -1,0 +1,93 @@
+{
+  "scope": "重新核对F-7归档与11份既有许可证；未把来源核对当作构建",
+  "archives": [
+    {
+      "name": "num-bigint",
+      "version": "0.4.8",
+      "archive_path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\dependencies\\num-bigint-0.4.8.crate",
+      "sha256": "c89e69e7e0f03bea5ef08013795c25018e101932225a656383bd384495ecc367",
+      "license": "MIT OR Apache-2.0"
+    },
+    {
+      "name": "bigdecimal",
+      "version": "0.4.11",
+      "archive_path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\dependencies\\bigdecimal-0.4.11.crate",
+      "sha256": "8fa3f3d8cbf4dffcfe4991de61d012bef509a409ecbe9dd41049bfe32b4d4653",
+      "license": "MIT/Apache-2.0"
+    },
+    {
+      "name": "libm",
+      "version": "0.2.16",
+      "archive_path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\dependencies\\libm-0.2.16.crate",
+      "sha256": "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981",
+      "license": "MIT"
+    },
+    {
+      "name": "num-integer",
+      "version": "0.1.47",
+      "archive_path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\dependencies\\num-integer-0.1.47.crate",
+      "sha256": "7ce2d95d4b3734dc35aa2f45e1aa22cd416814592a4f9d9205e11affd5b8e10b",
+      "license": "MIT OR Apache-2.0"
+    },
+    {
+      "name": "num-traits",
+      "version": "0.2.19",
+      "archive_path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\dependencies\\num-traits-0.2.19.crate",
+      "sha256": "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841",
+      "license": "MIT OR Apache-2.0"
+    },
+    {
+      "name": "autocfg",
+      "version": "1.5.1",
+      "archive_path": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\dependencies\\autocfg-1.5.1.crate",
+      "sha256": "f2032f911046de80f0a198e0901378627c33f59ea0ac00e363d481118bd70a53",
+      "license": "Apache-2.0 OR MIT"
+    }
+  ],
+  "licenses": [
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-bigint-0.4.8/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-bigint-0.4.8/LICENSE-MIT.txt",
+      "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+    },
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/bigdecimal-0.4.11/LICENSE-APACHE.txt",
+      "sha256": "74df43338fc1a37b5a744b7d4991662ad9936157abeb4d9ea7bdd5b702c5e3fd"
+    },
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/bigdecimal-0.4.11/LICENSE-MIT.txt",
+      "sha256": "6067b257a0e8cb34fbdd81b7964e92bd27cd137f86709661f96550603717f61a"
+    },
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/libm-0.2.16/LICENSE.txt",
+      "sha256": "3823dda7cf046602f4b4e77ec8e227863dc4736037cc85bb33d9f19febe16bb7"
+    },
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-integer-0.1.47/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-integer-0.1.47/LICENSE-MIT.txt",
+      "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+    },
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-traits-0.2.19/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/num-traits-0.2.19/LICENSE-MIT.txt",
+      "sha256": "6485b8ed310d3f0340bf1ad1f47645069ce4069dcc6bb46c7d5c6faf41de1fdb"
+    },
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/autocfg-1.5.1/LICENSE-APACHE.txt",
+      "sha256": "a60eea817514531668d7e00765731449fe14d059d3249e0bc93b36de45f759f2"
+    },
+    {
+      "file": "../../20o-b2-freeze-close/entry-20261103/licenses/autocfg-1.5.1/LICENSE-MIT.txt",
+      "sha256": "27995d58ad5c1145c1a8cd86244ce844886958a35eb2b78c6b772748669999ac"
+    }
+  ]
+}

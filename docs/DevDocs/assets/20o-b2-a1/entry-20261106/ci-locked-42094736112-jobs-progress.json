@@ -1,0 +1,55 @@
+{
+  "run_id": 42094736112,
+  "recorded_utc": "2026-11-05T19:36:58.762127+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/runs/42094736112/jobs?per_page=100"
+  ],
+  "exit_code": 0,
+  "response_sha256": "5b65b24611e0651cfd76567e545b73ce1ff91d536842f9da98a335a3e97a3efd",
+  "jobs": [
+    {
+      "id": 127482139640,
+      "name": "Rust workspace default tests (Linux)",
+      "status": "in_progress",
+      "conclusion": null,
+      "failed_steps": []
+    },
+    {
+      "id": 127482139943,
+      "name": "Deterministic artifact size regression (Windows baseline)",
+      "status": "completed",
+      "conclusion": "success",
+      "failed_steps": []
+    },
+    {
+      "id": 127482139990,
+      "name": "Native differential regression (Linux)",
+      "status": "in_progress",
+      "conclusion": null,
+      "failed_steps": []
+    },
+    {
+      "id": 127482140040,
+      "name": "Native differential regression (macOS)",
+      "status": "queued",
+      "conclusion": null,
+      "failed_steps": []
+    },
+    {
+      "id": 127482140061,
+      "name": "Deterministic parser and artifact security regression",
+      "status": "completed",
+      "conclusion": "success",
+      "failed_steps": []
+    },
+    {
+      "id": 127482140348,
+      "name": "Native differential regression (Windows)",
+      "status": "in_progress",
+      "conclusion": null,
+      "failed_steps": []
+    }
+  ]
+}

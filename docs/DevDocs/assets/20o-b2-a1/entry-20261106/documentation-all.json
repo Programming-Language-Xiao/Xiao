@@ -1,0 +1,32 @@
+{
+  "name": "documentation-all",
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T18:26:13.233905+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "documentation-all.log",
+  "pid": 61944,
+  "exit_code": 1,
+  "source_before": {
+    "manifest": "source-manifests/64f42e33936a7ba995bb108507e73837a37372e1b14db8008790cc191e1f4aba.json",
+    "raw_tree_sha256": "64f42e33936a7ba995bb108507e73837a37372e1b14db8008790cc191e1f4aba",
+    "utf8_lf_tree_sha256": "20eae76c0230537e45b5c74934e28651ed732bee1b345cabd2b7d3386f650209",
+    "files": 962
+  },
+  "source_after": {
+    "manifest": "source-manifests/64f42e33936a7ba995bb108507e73837a37372e1b14db8008790cc191e1f4aba.json",
+    "raw_tree_sha256": "64f42e33936a7ba995bb108507e73837a37372e1b14db8008790cc191e1f4aba",
+    "utf8_lf_tree_sha256": "20eae76c0230537e45b5c74934e28651ed732bee1b345cabd2b7d3386f650209",
+    "files": 962
+  },
+  "source_unchanged": true,
+  "runner_sha256": "81f32734cc3775918c9b6db828b48b260fcd702913b02437a1f23eb3f9c92600",
+  "finished_utc": "2026-11-05T18:27:08.970082+00:00",
+  "duration_seconds": 55.734,
+  "sha256": "1259a71026503f85c2a498d6f29ef575c6bc9867e987e39159e7ebc7ffa113d7"
+}

@@ -1,0 +1,14 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.31s
+     Running tests\20o_b2_a1_identity.rs (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\cargo-target\debug\deps\20o_b2_a1_identity-44efa793751970d3.exe)
+
+running 1 test
+B2-A1-IDENTITY case=a1_identity backend=native optimization=0 artifact=D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\run-temp\xiao-b2-a1-native-61560-1793905321859966400\a1_identity-o0.exe result=success
+B2-A1-IDENTITY case=a1_identity backend=native optimization=3 artifact=D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\run-temp\xiao-b2-a1-native-61560-1793905321859966400\a1_identity-o3.exe result=success
+B2-A1-IDENTITY case=a1_admission_error backend=native optimization=0 artifact=D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\run-temp\xiao-b2-a1-native-61560-1793905321859966400\a1_admission_error-o0.exe result=success
+B2-A1-IDENTITY case=a1_admission_error backend=native optimization=3 artifact=D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\run-temp\xiao-b2-a1-native-61560-1793905321859966400\a1_admission_error-o3.exe result=success
+B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=0 artifact=D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\run-temp\xiao-b2-a1-native-61560-1793905321859966400\a1_pending_finally-o0.exe result=success
+B2-A1-IDENTITY case=a1_pending_finally backend=native optimization=3 artifact=D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\run-temp\xiao-b2-a1-native-61560-1793905321859966400\a1_pending_finally-o3.exe result=success
+test a1_numeric_values_and_errors_match_native_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 5.33s
+

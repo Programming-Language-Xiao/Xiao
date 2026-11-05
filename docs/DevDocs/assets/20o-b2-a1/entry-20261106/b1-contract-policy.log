@@ -1,0 +1,19 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s
+     Running tests\20o_b1_imp_contract.rs (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\cargo-target\debug\deps\20o_b1_imp_contract-ea94f1d890b4bc77.exe)
+
+running 9 tests
+test every_implemented_module_is_in_the_active_contract_matrix ... ok
+test product_tutorials_embed_the_executed_sources_and_match_registry ... ok
+test products_keep_the_official_namespace_out_of_ordinary_packages ... ok
+test colliding_public_names_keep_their_own_module_implementations ... ok
+test every_public_function_requires_its_real_implementation ... ok
+test public_calls_enforce_every_frozen_parameter_and_require_imports ... ok
+test products_execute_and_export_only_the_frozen_names has been running for over 60 seconds
+test products_replay_from_real_archives_without_bundled_library_bodies has been running for over 60 seconds
+test public_std_aliases_execute_through_the_official_loader has been running for over 60 seconds
+test products_execute_and_export_only_the_frozen_names ... ok
+test products_replay_from_real_archives_without_bundled_library_bodies ... ok
+test public_std_aliases_execute_through_the_official_loader ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 119.88s
+

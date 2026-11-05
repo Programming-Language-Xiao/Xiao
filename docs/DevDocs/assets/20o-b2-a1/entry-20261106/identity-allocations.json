@@ -1,0 +1,25 @@
+{
+  "name": "identity-allocations",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-runtime",
+    "--test",
+    "b2_a1_identity_allocations"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T17:50:06.891697+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "identity-allocations.log",
+  "pid": 65380,
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T17:50:12.987484+00:00",
+  "duration_seconds": 6.094,
+  "sha256": "0685a1aad366f45654f194e84f3c04fe6747905ff6a25e36d92b4b7f9f9a1755"
+}

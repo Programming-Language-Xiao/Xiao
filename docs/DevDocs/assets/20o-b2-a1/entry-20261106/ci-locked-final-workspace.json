@@ -1,0 +1,13 @@
+{
+  "recorded_utc": "2026-11-05T19:57:48.933105+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/runs/42094736157"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "pid": 66188,
+  "exit_code": 0,
+  "response_sha256": "37f179cc32b57fd92d511584d19c9636262f1ff9cfe0990631e578a35053c8a7",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

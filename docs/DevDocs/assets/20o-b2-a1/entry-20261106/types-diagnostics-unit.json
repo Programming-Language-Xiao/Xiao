@@ -1,0 +1,26 @@
+{
+  "name": "types-diagnostics-unit",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-types",
+    "-p",
+    "xiao-diagnostics",
+    "--lib"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T17:35:18.791697+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "types-diagnostics-unit.log",
+  "pid": 55040,
+  "exit_code": 101,
+  "finished_utc": "2026-11-05T17:35:36.667768+00:00",
+  "duration_seconds": 17.875,
+  "sha256": "0b818063169fadc6ebf7fed0228b04abe558eda4467e10b89e882fa53244a68f"
+}

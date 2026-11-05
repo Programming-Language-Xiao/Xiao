@@ -1,0 +1,13 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-runtime)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 19.69s
+     Running unittests src\lib.rs (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\cargo-target\debug\deps\xiao_vm-1ef20b256d3d3bfb.exe)
+
+running 2 tests
+test semantics::exec::numeric_identity_tests::numeric_constants_restore_checked_runtime_values ... ok
+test semantics::exec::numeric_identity_tests::numeric_constants_reject_invalid_payloads_with_frozen_codes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 33 filtered out; finished in 0.00s
+

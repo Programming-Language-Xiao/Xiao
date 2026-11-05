@@ -1,0 +1,26 @@
+{
+  "name": "workspace-clippy",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "clippy",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "--workspace",
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T18:13:30.447402+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "workspace-clippy.log",
+  "pid": 59688,
+  "exit_code": 101,
+  "finished_utc": "2026-11-05T18:13:47.237610+00:00",
+  "duration_seconds": 16.797,
+  "sha256": "4f20492d916f6b06707b4c505b0a296187d16a812e78bd9edb1e91d9845bdec8"
+}

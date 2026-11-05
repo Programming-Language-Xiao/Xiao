@@ -1,0 +1,30 @@
+{
+  "name": "a1-native-finally-check",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-driver",
+    "--test",
+    "20o_b2_a1_identity",
+    "--",
+    "--ignored",
+    "a1_numeric_values_and_errors_match_native_golden_outputs",
+    "--exact",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T18:20:33.299588+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "a1-native-finally-check.log",
+  "pid": 31380,
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T18:20:44.089479+00:00",
+  "duration_seconds": 10.781,
+  "sha256": "f075195a75c9a8907bf1e23ba5c178a6946a647ede58a79a087c80dc627282d6"
+}

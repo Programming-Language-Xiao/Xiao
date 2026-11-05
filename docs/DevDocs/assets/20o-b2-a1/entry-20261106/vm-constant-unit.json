@@ -1,0 +1,25 @@
+{
+  "name": "vm-constant-unit",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-vm",
+    "--lib",
+    "numeric_identity_tests"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "started_utc": "2026-11-05T18:01:37.586925+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "vm-constant-unit.log",
+  "pid": 18704,
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T18:01:58.371888+00:00",
+  "duration_seconds": 20.782,
+  "sha256": "9f056f35ed07b20ebb59952f4ead4256876e6e7a0e544e67a257e09993c3cca6"
+}

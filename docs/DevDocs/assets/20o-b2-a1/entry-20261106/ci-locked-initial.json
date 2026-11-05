@@ -1,0 +1,33 @@
+{
+  "commit": "39b2c1ea72939b20ea48d096e03b3a515bf81127",
+  "recorded_utc": "2026-11-05T19:34:03.354660+00:00",
+  "argv": [
+    "D:\\Program Files\\GitHub CLI\\gh.exe",
+    "api",
+    "repos/Programming-Language-Xiao/Xiao/actions/runs?head_sha=39b2c1ea72939b20ea48d096e03b3a515bf81127&per_page=100"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a1-numeric\\20261106-d1fc82faa51d\\source",
+  "exit_code": 0,
+  "response_sha256": "36029805590b3b998b69ec10a8d84a75bee1bbd74e31a385a3d8d54aacb58b2e",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "runs": [
+    {
+      "id": 42094736157,
+      "name": "Xiao workspace gates",
+      "head_sha": "39b2c1ea72939b20ea48d096e03b3a515bf81127",
+      "status": "in_progress",
+      "conclusion": null,
+      "run_attempt": 1,
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42094736157"
+    },
+    {
+      "id": 42094736112,
+      "name": "Xiao maintenance regression",
+      "head_sha": "39b2c1ea72939b20ea48d096e03b3a515bf81127",
+      "status": "queued",
+      "conclusion": null,
+      "run_attempt": 1,
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42094736112"
+    }
+  ]
+}

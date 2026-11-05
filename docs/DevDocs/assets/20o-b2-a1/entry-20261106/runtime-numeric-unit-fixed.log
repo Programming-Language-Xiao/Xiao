@@ -1,0 +1,22 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.99s
+     Running unittests src\lib.rs (D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\cargo-target\debug\deps\xiao_runtime-c60947cb4f0f97f6.exe)
+
+running 14 tests
+test abi::numeric_identity_tests::frozen_numeric_errors_reuse_existing_runtime_status ... ok
+test abi::numeric_identity_tests::constructors_reject_semantic_payloads_through_existing_pending_errors ... ok
+test abi::numeric_identity_tests::borrowed_value_restore_preserves_output_on_numeric_failure ... ok
+test abi::tests::numeric_error_abi_preserves_identity_and_span ... ok
+test abi::numeric_identity_tests::numeric_handles_restore_shared_identity_without_mutating_inputs ... ok
+test value::numeric::tests::numeric_identity_drives_sets_and_rust_hash_maps ... ok
+test value::numeric::tests::recoverable_errors_preserve_the_frozen_order ... ok
+test value::ops::tests::converts_numeric_widths_with_range_check ... ok
+test value::ops::tests::high_precision_numerics_are_explicitly_unsupported ... ok
+test vm_concurrency::numeric_identity_tests::xcon_numeric_identity_round_trips_through_the_existing_frame ... ok
+test value::numeric::tests::deterministic_spelling_cases_have_one_runtime_identity ... ok
+test vm_concurrency::numeric_identity_tests::xcon_numeric_payloads_are_checked_before_becoming_runtime_values ... ok
+test value::numeric::tests::frozen_decimal_display_vectors_round_trip ... ok
+test value::numeric::tests::temporary_upstream_values_are_exact_and_bounded ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 180 filtered out; finished in 0.08s
+

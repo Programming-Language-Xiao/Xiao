@@ -1,0 +1,3 @@
+    Updating crates.io index
+error: cannot update the lock file D:\project\Xiao\.a1-numeric\20261106-d1fc82faa51d\source\core\rust\Cargo.lock because --locked was passed to prevent this
+help: to generate the lock file without accessing the network, remove the --locked flag and use --offline instead.
