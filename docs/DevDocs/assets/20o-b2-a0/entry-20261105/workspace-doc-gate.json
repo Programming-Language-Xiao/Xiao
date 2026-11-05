@@ -1,0 +1,22 @@
+{
+  "name": "workspace-doc-gate",
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\Xiao",
+  "environment": "environment.json",
+  "physical_typescript_root": "D:\\project\\Xiao\\Xiao\\node_modules\\.bun\\typescript@5.9.3\\node_modules\\typescript",
+  "dependency_identity": "javascript-dependency-local-copy.json",
+  "started_utc": "2026-11-05T14:39:10.760308+00:00",
+  "log": "logs/workspace-doc-gate.log",
+  "reason": "主工作区最终文档检查",
+  "pid": 45576,
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T14:39:55.965241+00:00",
+  "duration_seconds": 45.203,
+  "passed": true,
+  "sha256": "d8edf1f50a500af2562586758829030e6525707d459c1d287ea31a8ab5801755",
+  "metadata_clarification": "workspace模式使用主工作区实际解析到的同一TypeScript5.9.3；原描述误列A0实体副本，现纠正描述；argv/cwd/PID/时间/退出码/原始日志及摘要未改。"
+}

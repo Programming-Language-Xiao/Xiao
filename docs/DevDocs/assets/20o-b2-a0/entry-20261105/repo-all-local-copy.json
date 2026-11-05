@@ -1,0 +1,21 @@
+{
+  "name": "repo-all-local-copy",
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+  "environment": "environment.json",
+  "physical_typescript_root": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source\\tools\\doc-coverage\\node_modules\\typescript",
+  "dependency_identity": "javascript-dependency-local-copy.json",
+  "started_utc": "2026-11-05T14:29:46.247209+00:00",
+  "log": "logs/repo-all-local-copy.log",
+  "reason": "工作树内实体复制同一 TypeScript 5.9.3 后复跑；前两次失败日志保留",
+  "pid": 41316,
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T14:30:27.215271+00:00",
+  "duration_seconds": 40.968,
+  "passed": true,
+  "sha256": "d8edf1f50a500af2562586758829030e6525707d459c1d287ea31a8ab5801755"
+}

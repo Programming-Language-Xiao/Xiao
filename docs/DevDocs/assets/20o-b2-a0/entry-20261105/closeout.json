@@ -1,0 +1,39 @@
+{
+  "source_commit": "d0e4a5fb9043aa6c93dce7892dbe1ef333d3b276",
+  "passed": true,
+  "a0_windows_source_baseline_passed": true,
+  "workspace_doc_gate_passed": true,
+  "effective_repo_all": "repo-all-local-copy.json",
+  "original_result_preserved": "result.json",
+  "original_commands": 22,
+  "original_failures": [
+    "repo-all: exit 2, TypeScript resolution"
+  ],
+  "first_retry": "exit 1, A0-LAYOUT-002; repo-all-retry.json",
+  "resolution": "工作树内实体复制相同TypeScript5.9.3，132文件逐字一致；未改产品或门禁",
+  "functional_tests": {
+    "contract": 9,
+    "resources": 17,
+    "vm_exact": 1,
+    "windows_native_exact": 1
+  },
+  "guards": {
+    "passed": 28,
+    "total": 28,
+    "scope": "simulated-cargo-output"
+  },
+  "runtime_diagnostics_adapter_unchanged_after_tests": true,
+  "windows": "passed",
+  "linux": "未验证",
+  "macos": "未验证",
+  "a1_entry_open": true,
+  "a1_started": false,
+  "b2_a_product_started": false,
+  "b1_721_executed": false,
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 32,
+  "cmath": "planned",
+  "ci_used_as_local_evidence": false,
+  "historical_19_11_22_22c_22d_debts_closed": false
+}

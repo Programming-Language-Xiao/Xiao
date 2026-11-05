@@ -1,0 +1,21 @@
+{
+  "name": "repo-all-retry",
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+    "tools/repo-check/src/cli.ts",
+    "all"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+  "environment": "environment.json",
+  "node_root_junction": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source\\node_modules",
+  "node_root_target": "D:\\project\\Xiao\\Xiao\\node_modules",
+  "started_utc": "2026-11-05T14:26:22.779993+00:00",
+  "log": "logs/repo-all-retry.log",
+  "reason": "补齐 Bun 相对符号链接所需根 node_modules 后复跑；原失败保留在 repo-all.log",
+  "pid": 65760,
+  "exit_code": 1,
+  "finished_utc": "2026-11-05T14:26:58.646470+00:00",
+  "duration_seconds": 35.875,
+  "passed": false,
+  "sha256": "141960a5ded8bdd50fe2e652d3a2e2519231b9f769ebc1e99f885d3e96f84446"
+}

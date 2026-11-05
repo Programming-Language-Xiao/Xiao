@@ -1,0 +1,55 @@
+{
+  "source_commit": "d0e4a5fb9043aa6c93dce7892dbe1ef333d3b276",
+  "record_count": 6,
+  "actual_approvals_valid": true,
+  "receipts": {
+    "F-D": {
+      "path": "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/decision-receipts.json",
+      "sha256": "b61cfd0cd101bdb0bab801aa5b50fac83e505999b3667c9aa3099e1eb63785d2",
+      "answers": [
+        {
+          "id": "F-Da",
+          "answer": "批准",
+          "question_item_id": "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",0]"
+        },
+        {
+          "id": "F-Db",
+          "answer": "批准",
+          "question_item_id": "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",1]"
+        },
+        {
+          "id": "F-Dc",
+          "answer": "批准",
+          "question_item_id": "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",2]"
+        }
+      ]
+    },
+    "A-P": {
+      "path": "docs/DevDocs/assets/20o-b2-a/entry-20261105/decision-receipts.json",
+      "sha256": "08489b3fd52d2db0ba5d2f7811b082ca2934f4e8220f7e5593c2ed83cea3d405",
+      "answers": [
+        {
+          "id": "A-P1",
+          "answer": "批准",
+          "question_item_id": "[\"request_user_input_async\",\"call_942f8d5bfc6a4afc94c5a0df689dad9a\",0]"
+        },
+        {
+          "id": "A-P2",
+          "answer": "批准",
+          "question_item_id": "[\"request_user_input_async\",\"call_942f8d5bfc6a4afc94c5a0df689dad9a\",1]"
+        },
+        {
+          "id": "A-P3",
+          "answer": "批准",
+          "question_item_id": "[\"request_user_input_async\",\"call_942f8d5bfc6a4afc94c5a0df689dad9a\",2]"
+        }
+      ]
+    }
+  },
+  "approved_reviewed_plan_commit": "f4a0b881f4822feaae1d6c50f3042de0d9b4645c",
+  "approved_plan_utf8_lf_sha256": "3e76188c34ecc4bef6709652bef41903d812240abfe862b2c95645fa5c4587be",
+  "ledger_items": 30,
+  "pending": 0,
+  "joint_freeze_activated": true,
+  "authority": "既有F-D/A-P实际答复及源会话索引，不新增批准；只执行已获准的A0"
+}

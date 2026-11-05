@@ -1,0 +1,141 @@
+[
+  {
+    "name": "rustc-version",
+    "argv": [
+      "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+      "-vV"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:08:05.694289+00:00",
+    "log": "logs/rustc-version.log",
+    "pid": 65460,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:08:05.752284+00:00",
+    "duration_seconds": 0.062,
+    "sha256": "2efe229f7908c2c19f459ca734101a5b35cb482476b8bee1357f94a18c766078",
+    "passed": true
+  },
+  {
+    "name": "cargo-version",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "--version"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:08:05.754785+00:00",
+    "log": "logs/cargo-version.log",
+    "pid": 35992,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:08:06.016690+00:00",
+    "duration_seconds": 0.266,
+    "sha256": "b6ef6807dd96d18b833474ad68e7a23a29e562a29c67afa71a59fb9a73df0068",
+    "passed": true
+  },
+  {
+    "name": "bun-version",
+    "argv": [
+      "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+      "--version"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:08:06.019690+00:00",
+    "log": "logs/bun-version.log",
+    "pid": 57900,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:08:06.105153+00:00",
+    "duration_seconds": 0.078,
+    "sha256": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7",
+    "passed": true
+  },
+  {
+    "name": "powershell-version",
+    "argv": [
+      "D:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "-NoProfile",
+      "-Command",
+      "$PSVersionTable | ConvertTo-Json"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:08:06.107346+00:00",
+    "log": "logs/powershell-version.log",
+    "pid": 64988,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:08:07.194210+00:00",
+    "duration_seconds": 1.094,
+    "sha256": "8b4a474c065521fbfcd93140f8fcfb6dca2260cd9a9e9f792dbd20ec27e260bf",
+    "passed": true
+  },
+  {
+    "name": "clang-version",
+    "argv": [
+      "D:\\msys64\\ucrt64\\bin\\clang.exe",
+      "--version"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:08:07.197215+00:00",
+    "log": "logs/clang-version.log",
+    "pid": 3132,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:08:07.266677+00:00",
+    "duration_seconds": 0.078,
+    "sha256": "5c075035dbde6a78b05a8d921e0769dd24814486efecbcdbe7035527701858b2",
+    "passed": true
+  },
+  {
+    "name": "llvm-as-version",
+    "argv": [
+      "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+      "--version"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:08:07.268859+00:00",
+    "log": "logs/llvm-as-version.log",
+    "pid": 40308,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:08:07.339935+00:00",
+    "duration_seconds": 0.062,
+    "sha256": "850f8cd692366c21e25e0f2e3e4a0b69774af132389e557d99575888bf78c9ee",
+    "passed": true
+  },
+  {
+    "name": "llc-version",
+    "argv": [
+      "D:\\msys64\\ucrt64\\bin\\llc.exe",
+      "--version"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:08:07.342936+00:00",
+    "log": "logs/llc-version.log",
+    "pid": 47588,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:08:07.408733+00:00",
+    "duration_seconds": 0.062,
+    "sha256": "f948a15c7cf1ebc326b4b2d40d4161d843b7c66d7da696a968fd17a372858217",
+    "passed": true
+  },
+  {
+    "name": "link-version",
+    "argv": [
+      "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\HostX64\\x64\\link.exe",
+      "/?"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:08:07.411688+00:00",
+    "log": "logs/link-version.log",
+    "pid": 41484,
+    "exit_code": 1100,
+    "finished_utc": "2026-11-05T14:08:08.724878+00:00",
+    "duration_seconds": 1.313,
+    "sha256": "b20d1f9fbfbc9d2a128b9155c86382096cbf287085c7b72d7371ddf6b6a43bf1",
+    "passed": false
+  }
+]

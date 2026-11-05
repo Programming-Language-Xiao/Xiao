@@ -1,0 +1,31 @@
+   Compiling serde_core v1.0.229
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling zmij v1.0.23
+   Compiling serde_json v1.0.151
+   Compiling version_check v0.9.5
+   Compiling serde v1.0.229
+   Compiling typenum v1.20.1
+   Compiling generic-array v0.14.7
+   Compiling syn v3.0.5
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling itoa v1.0.18
+   Compiling cpufeatures v0.2.17
+   Compiling memchr v2.8.3
+   Compiling serde_derive v1.0.229
+   Compiling cfg-if v1.0.5
+   Compiling sha2 v0.10.9
+   Compiling xiao-runtime-abi v0.1.0 (D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0\source\core\rust\crates\xiao-runtime-abi)
+   Compiling xiao-source v0.1.0 (D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0\source\core\rust\crates\xiao-source)
+   Compiling libc v0.2.189
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0\source\core\rust\crates\xiao-intrinsics)
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0\source\core\rust\crates\xiao-i18n)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0\source\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0\source\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0\source\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0\source\core\rust\crates\xiao-lifetime)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0\source\core\rust\crates\xiao-runtime)
+    Finished `release` profile [optimized] target(s) in 57.03s

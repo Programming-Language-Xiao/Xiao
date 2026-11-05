@@ -5,6 +5,10 @@
 > 当前30 confirmed / 0 pending，F-D已签字、联合冻结已激活；产品仍未开工。
 > A0只建立真实功能基线，不交付B2-A能力；A1的依赖/值身份和后续产品实现不在本页。
 
+> **执行状态（2026-11-05）：A0 Windows 本地基线已通过，源码为 `d0e4a5fb9043aa6c93dce7892dbe1ef333d3b276`。**
+> B1契约9/9、资源17/17、VM/Windows原生精确点各1项、workspace门禁与28/28守卫均有本轮实际记录。
+> 文档门禁的两次依赖环境失败及实体复制后的成功均保留；Linux/macOS本地未验证。A1入口成立，但A1～A7及B2-A产品尚未开始，见§十与[完整证据](assets/20o-b2-a0/entry-20261105/README.md)。
+
 ## 一、入口与目的
 
 | 项 | 当前状态 |
@@ -181,7 +185,7 @@ A0通过后下一入口是A1：依赖、适配层与值身份；A1才允许按�
 ```text
 docs/DevDocs/20o-b2-a0-baseline-plan.md                本规划
 docs/DevDocs/20o-b2-a-implementation-plan.md           A0～A7总规划
-docs/DevDocs/assets/20o-b2-a0/entry-<date>/            A0证据（待建）
+docs/DevDocs/assets/20o-b2-a0/entry-20261105/          A0实际证据
 core/rust/crates/xiao-driver/tests/20o_b1_imp_contract.rs B1契约
 core/rust/crates/xiao-driver/tests/20o_b1_imp_resources.rs B1资源
 core/rust/crates/xiao-driver/tests/20o_b1_probe.rs     VM/原生精确点
@@ -189,3 +193,33 @@ tools/gates/b1-probe-guards.ps1                        28/28守卫
 ```
 
 A0只建立基线；A1依赖与值身份、A2～A7仍须另批执行和验收。
+
+## 十、A0实际执行与交接（2026-11-05）
+
+源码入口为`d0e4a5fb`，Git树为`593da1c97780120fc9c8aa980e6f7e803168d1c1`；开工时主工作区和独立工作树均干净。
+唯一任务根为`D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0`，源码、Cargo target、Xiao缓存和临时产物分别隔离。
+`XIAO_STDLIB_ROOT`指向该工作树的`stdlib`，Runtime静态库从空target重新构建，未复用B1旧原生文件。
+Rust/Cargo固定1.96.0，Bun1.4.0、PowerShell7.6.6、LLVM22.1.2；目标为`x86_64-pc-windows-msvc`。
+
+| 入口 | 本轮实际结果 |
+| --- | --- |
+| B1契约 | 9 passed、0 failed、0 ignored；双导入路径、真实归档、导出/移除、普通包隔离与教程一致性 |
+| B1资源 | 17 passed、0 failed、0 ignored；含最大合法输入、预算首错、UTF-8/Base64/CSV边界 |
+| VM精确点 | `--exact --nocapture`，唯一汇总1 passed、0 failed、0 ignored |
+| Windows原生精确点 | `--ignored --exact --nocapture`，唯一汇总1 passed、0 failed、0 ignored；七库O0/O3及FIX-B清理用例通过 |
+| workspace | Clippy全workspace/all-targets、workspace check、benchmark check、锁文件差异检查均通过；Cargo全程`--locked` |
+| docs/usedocs/layout/覆盖率 | 相同源码在工作树内实体复制TypeScript5.9.3后，`repo-check all`退出0；原有覆盖率warning保留 |
+| B1计数守卫 | 28/28；是四条路径的模拟守卫，不是Linux/macOS产品执行证据 |
+| 平台缺口 | Linux/macOS本地未验证；不以B1旧CI替代 |
+
+首次文档门禁因依赖链接不能解析TypeScript退出2；补根依赖路径后的第一次重试又被目录门禁以`A0-LAYOUT-002`拒绝。
+随后只把同一TypeScript5.9.3的132个文件逐字复制到工作树内部，移除两处临时junction，第三次门禁通过；没有修改产品、测试或门禁规则。
+最初执行器的`result.json`如实保留`passed=false`，最终有效结论在`closeout.json`；失败日志没有覆盖或删减。
+
+已签草案正文摘要仍为`8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff`，30项台账投影、F-D/A-P回执均核对通过。
+Windows检出草案为CRLF，签字核对使用已定的UTF-8/LF口径，并同时保存原始检出摘要。
+ABI1.18、生成器20、intrinsic最大32及ID100墓碑未变，cmath仍planned；本批没有产品、Cargo/锁、诊断、测试、工作流或UseDocs状态改动。
+
+**退出结论：A0本地基线成立，打开已批准范围内的另批A1入口；本轮止于A0，不启动A1。**
+52个原生可执行文件的运行期间稳定摘要已记录，临时二进制由既有测试清理；这些摘要不是另一次产品执行。
+B1旧721条F10未运行、仍为历史证据；22D/22C及19/11/22债务保持独立，A7仍需B2-A自身三平台证据。

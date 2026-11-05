@@ -1,0 +1,181 @@
+{
+  "created_utc": "2026-11-05T14:04:15.884595+00:00",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "task_root": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0",
+  "head": "d0e4a5fb9043aa6c93dce7892dbe1ef333d3b276",
+  "tree": "593da1c97780120fc9c8aa980e6f7e803168d1c1",
+  "branch": "codex/b1-imp-seven-libraries",
+  "status_porcelain": "",
+  "source_root": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+  "worktree_status_before": "",
+  "signed_body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+  "ledger_items_sha256": "999fbfa7988e03d67444f1d51aa1cec86c2cd9f1095ef1674c9a9ba9943f76a7",
+  "signed_object_checks": [
+    {
+      "file": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "45fe0b27b9b7783a6872c325b64f8a5eaf1e3891a3fac406f506d9191eab359f",
+      "raw_checkout_sha256": "0cc1fa2fae8f4fe1abf59ff3b25637bc83710d1ca40fed2d50e026631a7221d0",
+      "utf8_lf_sha256": "45fe0b27b9b7783a6872c325b64f8a5eaf1e3891a3fac406f506d9191eab359f",
+      "passed": true
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+      "sha256": "9f075bf7f6256ea72a23ba7541bb05e8050f1f318b23f0ac3ae93e152abfccfe",
+      "raw_checkout_sha256": "9f075bf7f6256ea72a23ba7541bb05e8050f1f318b23f0ac3ae93e152abfccfe",
+      "utf8_lf_sha256": "9f075bf7f6256ea72a23ba7541bb05e8050f1f318b23f0ac3ae93e152abfccfe",
+      "passed": true
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/signature-baseline.json",
+      "sha256": "e70b6e8132a63a278fccbd41fc9cebf6b81326073358a3d9fb3132eaa1d8a7e5",
+      "raw_checkout_sha256": "e70b6e8132a63a278fccbd41fc9cebf6b81326073358a3d9fb3132eaa1d8a7e5",
+      "utf8_lf_sha256": "e70b6e8132a63a278fccbd41fc9cebf6b81326073358a3d9fb3132eaa1d8a7e5",
+      "passed": true
+    },
+    {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/decision-receipts.json",
+      "sha256": "b61cfd0cd101bdb0bab801aa5b50fac83e505999b3667c9aa3099e1eb63785d2",
+      "raw_checkout_sha256": "b61cfd0cd101bdb0bab801aa5b50fac83e505999b3667c9aa3099e1eb63785d2",
+      "utf8_lf_sha256": "b61cfd0cd101bdb0bab801aa5b50fac83e505999b3667c9aa3099e1eb63785d2",
+      "passed": true
+    }
+  ],
+  "version_boundary": {
+    "abi": "1.18",
+    "codegen": 20,
+    "active_intrinsic_max": 32,
+    "intrinsic_100": "tombstone",
+    "cmath": "planned"
+  },
+  "files": [
+    {
+      "path": "core/rust/Cargo.toml",
+      "bytes": 1286,
+      "sha256": "502232143e4bbe5b2183f523a72fd0e01b9c49ae5105ddbeba0d723898594068"
+    },
+    {
+      "path": "core/rust/Cargo.lock",
+      "bytes": 19016,
+      "sha256": "7e49873e559b9f78a3d6536f82147190500e30a94f6205701a2d1501ff18563e"
+    },
+    {
+      "path": "core/rust/rust-toolchain.toml",
+      "bytes": 90,
+      "sha256": "e3023f6106b1e58c6a00c59a88b11c670765c3b3d1b31e8a0fc498e377aa185d"
+    },
+    {
+      "path": "tests/benchmarks/Cargo.toml",
+      "bytes": 780,
+      "sha256": "04d00c6028d4d262fa77a2788e7928e9c7e44654baa0ce8e2d6d65ef7fa60ee2"
+    },
+    {
+      "path": "tests/benchmarks/Cargo.lock",
+      "bytes": 18597,
+      "sha256": "057442201752e723a58a2b02140e7832deb5b15e515c253bda3e7976462e8c6f"
+    },
+    {
+      "path": ".cargo/config.toml",
+      "bytes": 557,
+      "sha256": "fb0952d91ab5a9050586bf25bd514272522bed050dc1faffad7be4921b38f0c7"
+    },
+    {
+      "path": "core/rust/crates/xiao-runtime-abi/src/lib.rs",
+      "bytes": 64436,
+      "sha256": "a5eccff99a73cfde8b401de04404996c3e063748f55e5217f6482b8430bcfad4"
+    },
+    {
+      "path": "core/rust/crates/xiao-codegen-llvm/src/lib.rs",
+      "bytes": 8230,
+      "sha256": "56b70bcbf4d357813deb4f5df9f0491c1cd68c1ea8d8ffee53faa6dda1090ba1"
+    },
+    {
+      "path": "core/rust/crates/xiao-intrinsics/intrinsics.json",
+      "bytes": 9113,
+      "sha256": "add1dfa9cf8c91fc9f2db8b4edf6f07e3247254c9f4d96b5280708c5cc2161ff"
+    },
+    {
+      "path": "docs/module-registry.json",
+      "bytes": 62072,
+      "sha256": "89c6d2604366253d14c6b095baea96d91e091f7031f0ba7664a8282ecf131974"
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-a/entry-20261105/decision-receipts.json",
+      "bytes": 3341,
+      "sha256": "08489b3fd52d2db0ba5d2f7811b082ca2934f4e8220f7e5593c2ed83cea3d405"
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-a/review-fix-20261105/approval-conversation-source.json",
+      "bytes": 10208,
+      "sha256": "6376544b3f1e0f32c22c45df5f46badfdfefab0cd426228dd4eb375a35ca59a6"
+    },
+    {
+      "path": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "bytes": 61250,
+      "sha256": "0cc1fa2fae8f4fe1abf59ff3b25637bc83710d1ca40fed2d50e026631a7221d0"
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+      "bytes": 20903,
+      "sha256": "9f075bf7f6256ea72a23ba7541bb05e8050f1f318b23f0ac3ae93e152abfccfe"
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/signature-baseline.json",
+      "bytes": 4442,
+      "sha256": "e70b6e8132a63a278fccbd41fc9cebf6b81326073358a3d9fb3132eaa1d8a7e5"
+    },
+    {
+      "path": "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/decision-receipts.json",
+      "bytes": 2649,
+      "sha256": "b61cfd0cd101bdb0bab801aa5b50fac83e505999b3667c9aa3099e1eb63785d2"
+    },
+    {
+      "path": "stdlib/math.xiao",
+      "bytes": 1386,
+      "sha256": "8f72577259348ab84adb66511885c04e86ec5353a3867d1872497964879a8482"
+    },
+    {
+      "path": "stdlib/hex.xiao",
+      "bytes": 2461,
+      "sha256": "2480c9350da1f5ad12892932816109f1dda48750ddb70572df422cac5fe03d25"
+    },
+    {
+      "path": "stdlib/base64.xiao",
+      "bytes": 4639,
+      "sha256": "de0fe3ef8079258a39c8b3e29e1014902d684254c7cf0ca4a41c29d67372e946"
+    },
+    {
+      "path": "stdlib/url.xiao",
+      "bytes": 8068,
+      "sha256": "8adffe3608cbac2278566cf024a5ce20868b35a57345ff76d86afdd2db06418c"
+    },
+    {
+      "path": "stdlib/csv.xiao",
+      "bytes": 7648,
+      "sha256": "58001e847de6bc1664f849227e89ae711fa4d1495185067d54352bb27b528159"
+    },
+    {
+      "path": "stdlib/fmt.xiao",
+      "bytes": 3707,
+      "sha256": "be54580b6b15d6613c9bb5c74720943e28a49de33029478725022747f3831f40"
+    },
+    {
+      "path": "stdlib/statistics.xiao",
+      "bytes": 1079,
+      "sha256": "3314b982f18e2c43cba34258a043a55bdce8f628bfc03430d9bd6762ef4bdce8"
+    }
+  ],
+  "protected_git_objects": {
+    ".cargo": "f7c9c8986eea02a18c21e3e9e60b7ce39fbcd610",
+    "core/rust": "2cec8d33c6756000844de52a649ba8194737f60d",
+    "stdlib": "4c24e61b7e1276f76748a67c1a529eecf769bb24",
+    "tests/fixtures": "5a0ce9855f6e297241dcb044d923da859797ca85",
+    "tests/benchmarks": "953135ad73c5bd4ffff5f3e690696a73e3d6e6d0",
+    ".github/workflows": "437c0e14aaa642fd9e97ebb2039f35750674f076",
+    "tools": "f75087851faadb59e94d669f89e155bc81bb2fbe",
+    "docs/UseDocs": "3f78c4755501e1a9d88e7a9147bcb8e40ac21bd4",
+    "docs/module-registry.json": "7ad26bffc5a12c4e4f44975cfcf511ba61c0a920"
+  },
+  "platform": "Windows x86_64-pc-windows-msvc",
+  "linux": "未验证",
+  "macos": "未验证"
+}

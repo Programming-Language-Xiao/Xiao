@@ -1,0 +1,17 @@
+{
+  "source_commit": "d0e4a5fb9043aa6c93dce7892dbe1ef333d3b276",
+  "finished_utc": "2026-11-05T14:25:40.400182+00:00",
+  "passed": false,
+  "commands": 22,
+  "source_status_after": "",
+  "bound_files_unchanged": true,
+  "guard_passed": 28,
+  "guard_total": 28,
+  "windows": "failed",
+  "linux": "未验证",
+  "macos": "未验证",
+  "b1_721_executed": false,
+  "b2_a_product_started": false,
+  "a1_started": false,
+  "bun_check_equivalence": "repo-all + workspace-clippy + workspace-check + benchmarks-check + cmd /c git lock-diff；全程 Cargo --locked"
+}

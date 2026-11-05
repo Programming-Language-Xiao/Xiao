@@ -1,0 +1,18 @@
+{
+  "kind": "junction_existing_javascript_dependency",
+  "junction": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source\\tools\\doc-coverage\\node_modules",
+  "target": "D:\\project\\Xiao\\Xiao\\tools\\doc-coverage\\node_modules",
+  "typescript_version": "5.9.3",
+  "files": [
+    {
+      "path": "typescript/package.json",
+      "bytes": 3620,
+      "sha256": "822ef7ca6452205657b6288b066481ecf508bfbf43455d715cf7d3ec457561e6"
+    },
+    {
+      "path": "typescript/lib/typescript.js",
+      "bytes": 9112572,
+      "sha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675"
+    }
+  ]
+}

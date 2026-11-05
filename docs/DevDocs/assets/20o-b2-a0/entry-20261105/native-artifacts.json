@@ -1,0 +1,586 @@
+{
+  "policy": "测试运行期间稳定文件的旁观摘要；临时产物由原测试清理，未归档二进制，非逐进程执行追踪",
+  "temporary_root": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp",
+  "files": [
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\base64.exe",
+      "bytes": 1869824,
+      "sha256": "c4f13323091e6e87f378bb56c91b81c1a4916189c21f1e0b2fb261df937340ea",
+      "stamp": [
+        1869824,
+        1793888341251318900
+      ],
+      "observed_utc": "2026-11-05T14:19:01.320179+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\csv.exe",
+      "bytes": 1857024,
+      "sha256": "4b8ff01f08d64f92e0aaf813bf7678bf355e4fd31348309eee964bb143bf2fd7",
+      "stamp": [
+        1857024,
+        1793888349285126800
+      ],
+      "observed_utc": "2026-11-05T14:19:09.324020+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-a-base64-tail-bits.exe",
+      "bytes": 1875968,
+      "sha256": "2d328e5cb328d0556eeae3b0d60110764d94014b055badf0223b29751ccde880",
+      "stamp": [
+        1875968,
+        1793888364607235400
+      ],
+      "observed_utc": "2026-11-05T14:19:24.752649+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-a-csv-budget.exe",
+      "bytes": 1871872,
+      "sha256": "376fc09d0046b9cddac6c4af099be5a477a86353587c989c15ffaa378dbc1ec5",
+      "stamp": [
+        1871872,
+        1793888373629802500
+      ],
+      "observed_utc": "2026-11-05T14:19:33.680688+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-a-fmt-int-min.exe",
+      "bytes": 1010688,
+      "sha256": "88ac5cc90bcd5cbb4559e46c938151912908e537df7c8442d5d2a8351708dcdc",
+      "stamp": [
+        1010688,
+        1793888374971132700
+      ],
+      "observed_utc": "2026-11-05T14:19:35.170578+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-a-hex-all-bytes.exe",
+      "bytes": 1856512,
+      "sha256": "a978eac03b7933c4b3c482bffa08245b1e12f24946ea161b4439503ad8250f85",
+      "stamp": [
+        1856512,
+        1793888360198714600
+      ],
+      "observed_utc": "2026-11-05T14:19:20.374297+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-a-math-extremes.exe",
+      "bytes": 1005056,
+      "sha256": "3900c09c0ae3f48b413e096a26f4b3c009028f2093d6a2225d01c3f3c45f0ce4",
+      "stamp": [
+        1005056,
+        1793888355545838800
+      ],
+      "observed_utc": "2026-11-05T14:19:15.572531+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-a-statistics-overflow.exe",
+      "bytes": 1004544,
+      "sha256": "ab6e722dd4021cf33710f657be6eab969cb8c9592296752e2893405ef0fd58f9",
+      "stamp": [
+        1004544,
+        1793888375899514900
+      ],
+      "observed_utc": "2026-11-05T14:19:36.026107+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-a-utf8-boundaries.exe",
+      "bytes": 1891840,
+      "sha256": "15ad3178cd6e7522d999574937ff54c9516fd612327ff17151a8fda860fdacd9",
+      "stamp": [
+        1891840,
+        1793888368933225000
+      ],
+      "observed_utc": "2026-11-05T14:19:29.014909+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-abi-requirements-o0.exe",
+      "bytes": 2071552,
+      "sha256": "879b12ecc16a18a5e5eafe9dfd19967c3077dd132681a594511b0fcbc06a14d3",
+      "stamp": [
+        2071552,
+        1793888400068192400
+      ],
+      "observed_utc": "2026-11-05T14:20:00.150530+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-abi-requirements-o3.exe",
+      "bytes": 1895424,
+      "sha256": "cf2cbdd617deb64c6fbbc484b3465ed00c46293353f00813f430e1ce76879a67",
+      "stamp": [
+        1895424,
+        1793888407238766300
+      ],
+      "observed_utc": "2026-11-05T14:20:07.315303+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-default-and-custom-o0.exe",
+      "bytes": 999936,
+      "sha256": "993731ce476daa59ff9880e62dcf16a3772e1594e5cafa8c7e4443f489746f5f",
+      "stamp": [
+        999936,
+        1793888376805093900
+      ],
+      "observed_utc": "2026-11-05T14:19:36.893327+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-default-and-custom-o3.exe",
+      "bytes": 996352,
+      "sha256": "47c61a5e9b03b259cdbead0b26aab2b4b1f5ce1fd593058fd14d8cc642ff0b83",
+      "stamp": [
+        996352,
+        1793888377956796600
+      ],
+      "observed_utc": "2026-11-05T14:19:37.978869+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-dynamic-types-o0.exe",
+      "bytes": 973312,
+      "sha256": "16345f685ea3b18443217d06e7db738ed860d307bb6ecf4fb23ef22ec26ec0e8",
+      "stamp": [
+        973312,
+        1793888384508846800
+      ],
+      "observed_utc": "2026-11-05T14:19:44.718220+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-dynamic-types-o3.exe",
+      "bytes": 970240,
+      "sha256": "55b88d651c648b4dd5eeabdaf886890b9005e75ec9368c358ae310a3ea0a94c7",
+      "stamp": [
+        970240,
+        1793888385517799100
+      ],
+      "observed_utc": "2026-11-05T14:19:45.586780+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-escape-lifetime-o0.exe",
+      "bytes": 994304,
+      "sha256": "e235634fe5c261ccbdde01fb0f919cfe85815c1c1900016d283f0656623562c5",
+      "stamp": [
+        994304,
+        1793888380640164000
+      ],
+      "observed_utc": "2026-11-05T14:19:40.801191+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-escape-lifetime-o3.exe",
+      "bytes": 992768,
+      "sha256": "1de637f069c1b47dac6bbca353186a680d3d476b35fdc134254bfad32762af45",
+      "stamp": [
+        992768,
+        1793888381557865500
+      ],
+      "observed_utc": "2026-11-05T14:19:41.673483+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-long-code-o0.exe",
+      "bytes": 1838592,
+      "sha256": "5db26558c491a20d2e48695978e6f999c5bc0cedec71c3f6597b41f4e8eadc57",
+      "stamp": [
+        1838592,
+        1793888389730050600
+      ],
+      "observed_utc": "2026-11-05T14:19:49.935833+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-long-code-o3.exe",
+      "bytes": 1657856,
+      "sha256": "ed7523e11abb10c789e50de8ca568097bf1ac8c80304d9e91c3ef8e5c45f0995",
+      "stamp": [
+        1657856,
+        1793888396788203300
+      ],
+      "observed_utc": "2026-11-05T14:19:56.889455+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-nested-rethrow-o0.exe",
+      "bytes": 910336,
+      "sha256": "c599319ee4dbb87a5120b2720d068434a9729bb6094735985ff58a535132a715",
+      "stamp": [
+        910336,
+        1793888378870258500
+      ],
+      "observed_utc": "2026-11-05T14:19:39.064780+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-nested-rethrow-o3.exe",
+      "bytes": 906752,
+      "sha256": "dd345781219326efbad7cc9c991944c81675666ebb9def7694fa0ad995984441",
+      "stamp": [
+        906752,
+        1793888379778614900
+      ],
+      "observed_utc": "2026-11-05T14:19:39.933222+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-pending-finally-o0.exe",
+      "bytes": 908800,
+      "sha256": "798d4520fe24a7db145d7e0e998c152aaef9d1dc4a099c86b1d26bbb6c6da66a",
+      "stamp": [
+        908800,
+        1793888382562116600
+      ],
+      "observed_utc": "2026-11-05T14:19:42.759173+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fix-b-pending-finally-o3.exe",
+      "bytes": 907264,
+      "sha256": "ce319a613904be75669cc34690a1c7dc9b0e2cf3ef5f239d8296335085e49459",
+      "stamp": [
+        907264,
+        1793888383512786000
+      ],
+      "observed_utc": "2026-11-05T14:19:43.631893+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\fmt.exe",
+      "bytes": 1849856,
+      "sha256": "5dfc5c01fbe6a51c20c0a482a48fe97707ca2fcbe206882af5e52380f866dc80",
+      "stamp": [
+        1849856,
+        1793888353252774300
+      ],
+      "observed_utc": "2026-11-05T14:19:13.459699+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\hex.exe",
+      "bytes": 1848320,
+      "sha256": "aa563e304dae70f371ec89575ba5106c2aa532aff70db86c793ad1af32e8ab19",
+      "stamp": [
+        1848320,
+        1793888337131743300
+      ],
+      "observed_utc": "2026-11-05T14:18:57.199190+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-aliases-o0.exe",
+      "bytes": 1781248,
+      "sha256": "4377226421ce7c154b48e8b046653dcb4f113abc9657053d9ed7b37ea1ff38ea",
+      "stamp": [
+        1781248,
+        1793888570078295300
+      ],
+      "observed_utc": "2026-11-05T14:22:50.112873+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-aliases-o3.exe",
+      "bytes": 1615360,
+      "sha256": "54b98731539bf23d50dd9c20ef46b643b116d8fbd0a07f2fc43b39f2fbc296b8",
+      "stamp": [
+        1615360,
+        1793888576910167200
+      ],
+      "observed_utc": "2026-11-05T14:22:57.064987+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-base64-o0.exe",
+      "bytes": 1834496,
+      "sha256": "6ec3eda5863328f59b5ccead8a893ab901138df9f6ba33bf848119a6344b94d3",
+      "stamp": [
+        1834496,
+        1793888501153474900
+      ],
+      "observed_utc": "2026-11-05T14:21:41.208669+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-base64-o3.exe",
+      "bytes": 1659392,
+      "sha256": "d824121752f3f097393e78ad1715587b1265341bf3128473dd21493e50f7356b",
+      "stamp": [
+        1659392,
+        1793888508906237700
+      ],
+      "observed_utc": "2026-11-05T14:21:49.039402+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-csv-o0.exe",
+      "bytes": 1820160,
+      "sha256": "25825107cf1d0a0365e81caf774fe18b51d2db2e6526d5aa4524cdc840a9b238",
+      "stamp": [
+        1820160,
+        1793888556893343200
+      ],
+      "observed_utc": "2026-11-05T14:22:37.091533+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-csv-o3.exe",
+      "bytes": 1646592,
+      "sha256": "6785be10bb06ce7c41b6f2b66c155bee8463e529dab3ccae47df45bc2ea23459",
+      "stamp": [
+        1646592,
+        1793888564166952200
+      ],
+      "observed_utc": "2026-11-05T14:22:44.253865+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-fmt-o0.exe",
+      "bytes": 1810432,
+      "sha256": "08cde6a306924fd61c790683c48bc87572fb980a43571e9a6075b066c0e0bd21",
+      "stamp": [
+        1810432,
+        1793888457657332900
+      ],
+      "observed_utc": "2026-11-05T14:20:57.719466+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-fmt-o3.exe",
+      "bytes": 1640448,
+      "sha256": "2b1a2db4743e2b0f641b2ad1559638e95246e9689d1e7f502d70fe66ce72a0db",
+      "stamp": [
+        1640448,
+        1793888464723813900
+      ],
+      "observed_utc": "2026-11-05T14:21:04.900194+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-hex-o0.exe",
+      "bytes": 1814016,
+      "sha256": "599c4ebc846801e8d64fcb9fe9b4b3953d816844a4b4cb6c3d2bf4830dc226a6",
+      "stamp": [
+        1814016,
+        1793888479535186000
+      ],
+      "observed_utc": "2026-11-05T14:21:19.689945+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-hex-o3.exe",
+      "bytes": 1641984,
+      "sha256": "311ef698ad38d4746c06c6716c3ead529895fd5b9f0241b87f3431313bb57140",
+      "stamp": [
+        1641984,
+        1793888486470388300
+      ],
+      "observed_utc": "2026-11-05T14:21:26.646677+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-math-o0.exe",
+      "bytes": 1795584,
+      "sha256": "0565d5b10d565c6b63ecbd8b9174226925099f094ec476b7a11b83d3f7393eaf",
+      "stamp": [
+        1795584,
+        1793888410932465700
+      ],
+      "observed_utc": "2026-11-05T14:20:11.007493+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-math-o3.exe",
+      "bytes": 1628672,
+      "sha256": "93f535c9563963548a0347a31fcaaa6db5e5fc1d5e254820912a4e1617a9dd4f",
+      "stamp": [
+        1628672,
+        1793888416981828200
+      ],
+      "observed_utc": "2026-11-05T14:20:17.091824+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-statistics-o0.exe",
+      "bytes": 1797120,
+      "sha256": "7d6e75b3699f9ff813a7954342c36a1b5a09cf0d0892619fa017e9966d555be2",
+      "stamp": [
+        1797120,
+        1793888437915096400
+      ],
+      "observed_utc": "2026-11-05T14:20:37.950375+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-statistics-o3.exe",
+      "bytes": 1629184,
+      "sha256": "44ca483caf224fb6dfb24b097341d87c060736f01ff4007663b945e01bbaca3b",
+      "stamp": [
+        1629184,
+        1793888445068910200
+      ],
+      "observed_utc": "2026-11-05T14:20:45.120754+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-string-index-o0.exe",
+      "bytes": 933888,
+      "sha256": "f3c6c566564c1ddd26c22adecc6c58c8a70cd510d6754030803e030ac5403fed",
+      "stamp": [
+        933888,
+        1793888578119339800
+      ],
+      "observed_utc": "2026-11-05T14:22:58.155167+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-string-index-o3.exe",
+      "bytes": 931328,
+      "sha256": "78f810b962d60b32321cb16cb280b00a994428835332db79bcf3ca4e4c70e6aa",
+      "stamp": [
+        931328,
+        1793888579308347100
+      ],
+      "observed_utc": "2026-11-05T14:22:59.457825+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-url-o0.exe",
+      "bytes": 1816576,
+      "sha256": "faa064c6ad4397eb435e104fb626566bf35846f821d18f9840223cd1e04f5919",
+      "stamp": [
+        1816576,
+        1793888527200794200
+      ],
+      "observed_utc": "2026-11-05T14:22:07.317240+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\imp-url-o3.exe",
+      "bytes": 1645056,
+      "sha256": "5b53156a6913fe69a9567aba4160c7870af09ebe85113339ba23f72a106bd344",
+      "stamp": [
+        1645056,
+        1793888534643968500
+      ],
+      "observed_utc": "2026-11-05T14:22:14.706360+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-allocation-failure-o0.exe",
+      "bytes": 909824,
+      "sha256": "9f5e33dec1b374c4daf6d76a89d85b6f7316ad9df5e7c1a15e518dda1e8eaffe",
+      "stamp": [
+        909824,
+        1793888582834002600
+      ],
+      "observed_utc": "2026-11-05T14:23:02.938194+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-allocation-failure-o0.ll",
+      "bytes": 30412,
+      "sha256": "779def93e0a8b4090bab2cbd7c3ea9135a3485cc54f58f8580c339a3fa559435",
+      "stamp": [
+        30412,
+        1793888582458537100
+      ],
+      "observed_utc": "2026-11-05T14:23:02.502233+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-allocation-failure-o3.exe",
+      "bytes": 908288,
+      "sha256": "73d2612ebd254ecaa75861454a010e2efc3a0770981c90fc6370bc19473f6a76",
+      "stamp": [
+        908288,
+        1793888583790578700
+      ],
+      "observed_utc": "2026-11-05T14:23:03.809620+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-allocation-failure-o3.ll",
+      "bytes": 30412,
+      "sha256": "779def93e0a8b4090bab2cbd7c3ea9135a3485cc54f58f8580c339a3fa559435",
+      "stamp": [
+        30412,
+        1793888583374303300
+      ],
+      "observed_utc": "2026-11-05T14:23:03.589740+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-getter-failure-o0.exe",
+      "bytes": 909824,
+      "sha256": "e166c661ec0c6a1333114c6dc1ac3e269b56d28b012d404c927e22fe30372cce",
+      "stamp": [
+        909824,
+        1793888585017087500
+      ],
+      "observed_utc": "2026-11-05T14:23:05.112564+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-getter-failure-o0.ll",
+      "bytes": 30410,
+      "sha256": "afaf64303be70d682d72ced6dad1e30684d0db31c0a25c9dc106f6f51b24f75a",
+      "stamp": [
+        30410,
+        1793888584594077500
+      ],
+      "observed_utc": "2026-11-05T14:23:04.675248+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-getter-failure-o3.exe",
+      "bytes": 908288,
+      "sha256": "d943da4f4be7f3ccc3ab11e23b9634a791b733d4807ccc7a4ef34c6b5018e7ac",
+      "stamp": [
+        908288,
+        1793888586019235000
+      ],
+      "observed_utc": "2026-11-05T14:23:06.200243+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-getter-failure-o3.ll",
+      "bytes": 30410,
+      "sha256": "afaf64303be70d682d72ced6dad1e30684d0db31c0a25c9dc106f6f51b24f75a",
+      "stamp": [
+        30410,
+        1793888585582814800
+      ],
+      "observed_utc": "2026-11-05T14:23:05.765144+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-success-cleanup-o0.exe",
+      "bytes": 903680,
+      "sha256": "654a9787c72d8c8811cc622a195d477d456abf0a00a12f4ccf025b664489624d",
+      "stamp": [
+        903680,
+        1793888580742281700
+      ],
+      "observed_utc": "2026-11-05T14:23:00.761311+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-success-cleanup-o0.ll",
+      "bytes": 22516,
+      "sha256": "3db99a0c8bf93d60e84c5230e85806d5843804af08cc6af8bac4a48a5a6ca5d6",
+      "stamp": [
+        22516,
+        1793888580362216500
+      ],
+      "observed_utc": "2026-11-05T14:23:00.543202+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-success-cleanup-o3.exe",
+      "bytes": 902656,
+      "sha256": "ed2cb6cab4e054a96a14de1c343575e6bc1a0bdf8b5306f8590ee333e2595c79",
+      "stamp": [
+        902656,
+        1793888581723161200
+      ],
+      "observed_utc": "2026-11-05T14:23:01.850320+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\injected-success-cleanup-o3.ll",
+      "bytes": 22516,
+      "sha256": "3db99a0c8bf93d60e84c5230e85806d5843804af08cc6af8bac4a48a5a6ca5d6",
+      "stamp": [
+        22516,
+        1793888581302833900
+      ],
+      "observed_utc": "2026-11-05T14:23:01.414992+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\math.exe",
+      "bytes": 984576,
+      "sha256": "4155a005db37ff398fe0bbaaa3537219ddb26fa83741760dbfdacd3fc27df3f5",
+      "stamp": [
+        984576,
+        1793888333279779900
+      ],
+      "observed_utc": "2026-11-05T14:18:53.299791+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\statistics.exe",
+      "bytes": 1027072,
+      "sha256": "8c2cb1a4d17f766433534e7ec7717ce4933893215ed4acb27f61121c3a356e3c",
+      "stamp": [
+        1027072,
+        1793888354450598800
+      ],
+      "observed_utc": "2026-11-05T14:19:14.501681+00:00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\run-temp\\xiao-20o-b0-2420\\url.exe",
+      "bytes": 1861120,
+      "sha256": "cd5358975151473acc8afc300ef67bc83315bad87705866309d0ccace82cefc7",
+      "stamp": [
+        1861120,
+        1793888345279392100
+      ],
+      "observed_utc": "2026-11-05T14:19:05.422404+00:00"
+    }
+  ]
+}

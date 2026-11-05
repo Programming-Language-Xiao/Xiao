@@ -1,0 +1,513 @@
+[
+  {
+    "name": "rustc-version",
+    "argv": [
+      "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+      "-vV"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:09:36.079036+00:00",
+    "log": "logs/rustc-version.log",
+    "pid": 54428,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:09:36.125956+00:00",
+    "duration_seconds": 0.047,
+    "sha256": "2efe229f7908c2c19f459ca734101a5b35cb482476b8bee1357f94a18c766078",
+    "passed": true
+  },
+  {
+    "name": "cargo-version",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "--version"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:09:36.127949+00:00",
+    "log": "logs/cargo-version.log",
+    "pid": 40800,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:09:36.341729+00:00",
+    "duration_seconds": 0.203,
+    "sha256": "b6ef6807dd96d18b833474ad68e7a23a29e562a29c67afa71a59fb9a73df0068",
+    "passed": true
+  },
+  {
+    "name": "bun-version",
+    "argv": [
+      "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+      "--version"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:09:36.343729+00:00",
+    "log": "logs/bun-version.log",
+    "pid": 63884,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:09:36.407886+00:00",
+    "duration_seconds": 0.062,
+    "sha256": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7",
+    "passed": true
+  },
+  {
+    "name": "powershell-version",
+    "argv": [
+      "D:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "-NoProfile",
+      "-Command",
+      "$PSVersionTable | ConvertTo-Json"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:09:36.409897+00:00",
+    "log": "logs/powershell-version.log",
+    "pid": 30880,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:09:37.664712+00:00",
+    "duration_seconds": 1.25,
+    "sha256": "d259028ac67ed38d056d912783da723d75365f1c3a4e4dbe0d9c7fb114c9dc6c",
+    "passed": true
+  },
+  {
+    "name": "clang-version",
+    "argv": [
+      "D:\\msys64\\ucrt64\\bin\\clang.exe",
+      "--version"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:09:37.668225+00:00",
+    "log": "logs/clang-version.log",
+    "pid": 25696,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:09:37.728962+00:00",
+    "duration_seconds": 0.063,
+    "sha256": "5c075035dbde6a78b05a8d921e0769dd24814486efecbcdbe7035527701858b2",
+    "passed": true
+  },
+  {
+    "name": "llvm-as-version",
+    "argv": [
+      "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+      "--version"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:09:37.730978+00:00",
+    "log": "logs/llvm-as-version.log",
+    "pid": 58308,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:09:37.784923+00:00",
+    "duration_seconds": 0.062,
+    "sha256": "850f8cd692366c21e25e0f2e3e4a0b69774af132389e557d99575888bf78c9ee",
+    "passed": true
+  },
+  {
+    "name": "llc-version",
+    "argv": [
+      "D:\\msys64\\ucrt64\\bin\\llc.exe",
+      "--version"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:09:37.787924+00:00",
+    "log": "logs/llc-version.log",
+    "pid": 4360,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:09:37.846505+00:00",
+    "duration_seconds": 0.063,
+    "sha256": "f948a15c7cf1ebc326b4b2d40d4161d843b7c66d7da696a968fd17a372858217",
+    "passed": true
+  },
+  {
+    "name": "link-version",
+    "argv": [
+      "D:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "-NoProfile",
+      "-Command",
+      "(Get-Item -LiteralPath 'C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\HostX64\\x64\\link.exe').VersionInfo | Select-Object FileVersion,ProductVersion,FileName | ConvertTo-Json"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:09:37.850729+00:00",
+    "log": "logs/link-version.log",
+    "pid": 51072,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:09:39.009786+00:00",
+    "duration_seconds": 1.156,
+    "sha256": "87e7ba741b1e753ff0620b5124cc08014b97213264f36bdd6055e6c42409169d",
+    "passed": true
+  },
+  {
+    "name": "build-runtime",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "build",
+      "--locked",
+      "--manifest-path",
+      "core/rust/Cargo.toml",
+      "--release",
+      "-p",
+      "xiao-runtime"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:09:39.011787+00:00",
+    "log": "logs/build-runtime.log",
+    "pid": 14664,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:10:36.243945+00:00",
+    "duration_seconds": 57.235,
+    "sha256": "d7bf9c50f6e49be5136959c3d587ab5ace6fb665b3539383c08bc9384dddedfd",
+    "passed": true
+  },
+  {
+    "name": "build-diagnostics",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "build",
+      "--locked",
+      "--manifest-path",
+      "core/rust/Cargo.toml",
+      "-p",
+      "xiao-diagnostics"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:10:36.246939+00:00",
+    "log": "logs/build-diagnostics.log",
+    "pid": 25152,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:10:47.748218+00:00",
+    "duration_seconds": 11.5,
+    "sha256": "7198b6737ab3c113f3bb9a60971f46ad34c45901bbbf1c8fef653dd9bfb99cf8",
+    "passed": true
+  },
+  {
+    "name": "build-doc-adapter",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "build",
+      "--locked",
+      "--manifest-path",
+      "core/rust/Cargo.toml",
+      "-p",
+      "xiao-doc-coverage-rust",
+      "--bin",
+      "xiao-doc-coverage-rust"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:10:47.750724+00:00",
+    "log": "logs/build-doc-adapter.log",
+    "pid": 32004,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:10:54.585163+00:00",
+    "duration_seconds": 6.828,
+    "sha256": "11b0b5d944be19965280fc7355db1731da03cda4d4b8083005b9c9925cf91080",
+    "passed": true
+  },
+  {
+    "name": "20o_b1_imp_contract",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "core/rust/Cargo.toml",
+      "-p",
+      "xiao-driver",
+      "--test",
+      "20o_b1_imp_contract"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:10:54.631500+00:00",
+    "log": "logs/20o_b1_imp_contract.log",
+    "pid": 59748,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:13:31.558291+00:00",
+    "duration_seconds": 156.922,
+    "sha256": "13d31814cc2590fed9842586bf0d80f127f09c06ae097bb6964a7dcadfceb40d",
+    "passed": true,
+    "test_summaries": [
+      [
+        "ok",
+        "9",
+        "0",
+        "0"
+      ]
+    ],
+    "expected_single_summary_passed_count": 9
+  },
+  {
+    "name": "20o_b1_imp_resources",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "core/rust/Cargo.toml",
+      "-p",
+      "xiao-driver",
+      "--test",
+      "20o_b1_imp_resources"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:13:31.563322+00:00",
+    "log": "logs/20o_b1_imp_resources.log",
+    "pid": 46904,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:17:00.927427+00:00",
+    "duration_seconds": 209.359,
+    "sha256": "45dfc2ed2675e020d9859a44f921aa6775c4ace545ae02b0446b69106e336bbb",
+    "passed": true,
+    "test_summaries": [
+      [
+        "ok",
+        "17",
+        "0",
+        "0"
+      ]
+    ],
+    "expected_single_summary_passed_count": 17
+  },
+  {
+    "name": "vm-exact",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "core/rust/Cargo.toml",
+      "-p",
+      "xiao-driver",
+      "--test",
+      "20o_b1_probe",
+      "--",
+      "b1_capabilities_have_vm_golden_outputs",
+      "--exact",
+      "--nocapture"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:17:00.946434+00:00",
+    "log": "logs/vm-exact.log",
+    "pid": 64992,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:18:51.210246+00:00",
+    "duration_seconds": 110.265,
+    "sha256": "cf7a2357a65098064a6d7e8beda06f1bd22be0eadfb4fec4a2c3ce234c37eb91",
+    "passed": true,
+    "test_summaries": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "expected_single_summary_passed_count": 1
+  },
+  {
+    "name": "windows-native-exact",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "test",
+      "--locked",
+      "--manifest-path",
+      "core/rust/Cargo.toml",
+      "-p",
+      "xiao-driver",
+      "--test",
+      "20o_b1_probe",
+      "--",
+      "--ignored",
+      "b1_capabilities_match_native_golden_outputs",
+      "--exact",
+      "--nocapture"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:18:51.220771+00:00",
+    "log": "logs/windows-native-exact.log",
+    "pid": 50924,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:23:06.599793+00:00",
+    "duration_seconds": 255.375,
+    "sha256": "45411fbd8399153e79b22c8b97118a1555e83d732f6ce237056179d0bd4d2259",
+    "passed": true,
+    "test_summaries": [
+      [
+        "ok",
+        "1",
+        "0",
+        "0"
+      ]
+    ],
+    "expected_single_summary_passed_count": 1
+  },
+  {
+    "name": "repo-all",
+    "argv": [
+      "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+      "tools/repo-check/src/cli.ts",
+      "all"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:23:06.607814+00:00",
+    "log": "logs/repo-all.log",
+    "pid": 60180,
+    "exit_code": 2,
+    "finished_utc": "2026-11-05T14:23:32.782319+00:00",
+    "duration_seconds": 26.187,
+    "sha256": "1a8108e23a8bb9dd9b08eabc64bb9fcf759b9671c560c34a300a909a670af9e4",
+    "passed": false
+  },
+  {
+    "name": "workspace-clippy",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "clippy",
+      "--locked",
+      "--manifest-path",
+      "core/rust/Cargo.toml",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:23:32.785822+00:00",
+    "log": "logs/workspace-clippy.log",
+    "pid": 50628,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:24:19.558205+00:00",
+    "duration_seconds": 46.766,
+    "sha256": "8cb2a8f347bd9a12da6edd1c03f88ef807d50e1f9ffd4eaf12bf7856c7d25e5e",
+    "passed": true
+  },
+  {
+    "name": "workspace-check",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "check",
+      "--locked",
+      "--manifest-path",
+      "core/rust/Cargo.toml",
+      "--workspace"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:24:19.561706+00:00",
+    "log": "logs/workspace-check.log",
+    "pid": 52048,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:24:41.148853+00:00",
+    "duration_seconds": 21.578,
+    "sha256": "28e4e9fd0e48014e3dc7d179547d4780b409b10ec2d79f3e4e943a35b9467192",
+    "passed": true
+  },
+  {
+    "name": "benchmarks-check",
+    "argv": [
+      "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+      "+1.96.0",
+      "check",
+      "--locked",
+      "--manifest-path",
+      "tests/benchmarks/Cargo.toml"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:24:41.153356+00:00",
+    "log": "logs/benchmarks-check.log",
+    "pid": 23784,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:25:18.894063+00:00",
+    "duration_seconds": 37.75,
+    "sha256": "40da7b52990d4f9b3b5a7b64368a09d44b07d533e294fcb6f09d4914b4d26ddc",
+    "passed": true
+  },
+  {
+    "name": "lock-diff",
+    "argv": [
+      "cmd",
+      "/c",
+      "git",
+      "diff",
+      "--exit-code",
+      "--",
+      "core/rust/Cargo.lock",
+      "tests/benchmarks/Cargo.lock"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:25:18.897613+00:00",
+    "log": "logs/lock-diff.log",
+    "pid": 22756,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:25:19.076710+00:00",
+    "duration_seconds": 0.172,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "passed": true
+  },
+  {
+    "name": "b1-guards",
+    "argv": [
+      "D:\\Program Files\\PowerShell\\7\\pwsh.exe",
+      "-NoProfile",
+      "-File",
+      "tools/gates/b1-probe-guards.ps1",
+      "-BashPath",
+      "D:\\msys64\\usr\\bin\\bash.exe",
+      "-ReportPath",
+      "D:\\project\\Xiao\\Xiao\\docs\\DevDocs\\assets\\20o-b2-a0\\entry-20261105\\b1-guards.json"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:25:19.079725+00:00",
+    "log": "logs/b1-guards.log",
+    "pid": 7064,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:25:39.992203+00:00",
+    "duration_seconds": 20.907,
+    "sha256": "f1989d9ff46131346568a5bd9d0e18fb3ac5efc7d3d6cf4ae0012862e3c5d579",
+    "passed": true
+  },
+  {
+    "name": "source-diff-check",
+    "argv": [
+      "cmd",
+      "/c",
+      "git",
+      "diff",
+      "--check"
+    ],
+    "cwd": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\source",
+    "environment": "environment.json",
+    "started_utc": "2026-11-05T14:25:39.995235+00:00",
+    "log": "logs/source-diff-check.log",
+    "pid": 58276,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T14:25:40.189627+00:00",
+    "duration_seconds": 0.203,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "passed": true
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "scope": "主执行器启动时相同宿主的构建相关继承项；执行器的显式覆盖和MSVC白名单另见environment.json。未记录无关环境或凭据。",
+  "values": {
+    "CARGO_HOME": null,
+    "RUSTUP_HOME": null,
+    "RUSTFLAGS": null,
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "CARGO_BUILD_TARGET": null,
+    "CARGO_BUILD_JOBS": null,
+    "CARGO_INCREMENTAL": null,
+    "RUSTC_WRAPPER": null,
+    "RUSTC_WORKSPACE_WRAPPER": null,
+    "CARGO_NET_OFFLINE": null,
+    "CARGO_PROFILE_DEV_OPT_LEVEL": null,
+    "CARGO_PROFILE_RELEASE_OPT_LEVEL": null,
+    "RUST_TEST_THREADS": null,
+    "RUSTUP_TOOLCHAIN": null
+  },
+  "bigdecimal_environment_keys": []
+}

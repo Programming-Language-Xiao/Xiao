@@ -1,0 +1,20 @@
+[
+  {
+    "role": "XIAO_RUNTIME_LIBRARY",
+    "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\cargo-target\\release\\xiao_runtime.lib",
+    "bytes": 24557948,
+    "sha256": "1b11cc7b05e4c60709a2f40c79865ff20e66aa9890b980c0e063b094958cd45d"
+  },
+  {
+    "role": "XIAO_DIAGNOSTICS_PATH",
+    "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\cargo-target\\debug\\xiao-diagnostics.exe",
+    "bytes": 1145856,
+    "sha256": "285c8bf29abe9260bd5b734f92dcbd05bfd4539cb63c3e8ecd84314fe023c529"
+  },
+  {
+    "role": "XIAO_RUST_DOC_ADAPTER",
+    "path": "D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0\\cargo-target\\debug\\xiao-doc-coverage-rust.exe",
+    "bytes": 2074112,
+    "sha256": "9170510d4fbecbeb107dab44d6f7208146febad1cf1f149df08d960ed1b78cfb"
+  }
+]

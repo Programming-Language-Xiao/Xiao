@@ -1,0 +1,3 @@
+# 原始日志及清单按实际字节归档，不由 core.autocrlf 改写。
+* -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+*.log -diff

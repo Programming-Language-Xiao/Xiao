@@ -1,0 +1,7 @@
+{
+  "process_id": 64520,
+  "parent_process_id": 54828,
+  "created": "2026-11-05T22:09:30.4904580+08:00",
+  "command_line": "\"D:\\Programs\\Python\\Python312\\python.exe\" -u docs/DevDocs/assets/20o-b2-a0/entry-20261105/run-baseline.py --task-root D:\\project\\Xiao\\.a0-baseline\\20261105-2bc5a0f4c6c0 --evidence-root docs/DevDocs/assets/20o-b2-a0/entry-20261105",
+  "runner_sha256": "2247c9aed8ffafa07f29803428a90c67f640614655f1b987a3d55d824be6e565"
+}

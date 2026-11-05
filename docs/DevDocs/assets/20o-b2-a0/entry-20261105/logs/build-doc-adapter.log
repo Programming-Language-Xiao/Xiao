@@ -1,0 +1,5 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling syn v2.0.119
+   Compiling xiao-doc-coverage-rust v0.1.0 (D:\project\Xiao\.a0-baseline\20261105-2bc5a0f4c6c0\source\core\rust\crates\xiao-doc-coverage-rust)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.62s
