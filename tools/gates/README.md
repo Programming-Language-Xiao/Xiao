@@ -31,3 +31,8 @@ REM-C 在同一维护回归内增加手动输入 `b1_f10=true`，默认关闭。
 保存。仅该模式的作业总看门狗为 60 分钟，函数预算仍是 VM 10 秒、原生 2 秒、翻倍比≤3、
 增量内存≤64 MiB。它不增加 B1 精确目标、守卫路径或 ignored 测试，原有门禁全部继续执行。
 测量窗口、校准和完整负载见 [工具说明](../../core/rust/crates/xiao-driver/examples/README.md)。
+
+20O-B2-A1的controlled-cargo.py在CI完成Rust设置后安装任务级PATH代理。
+构建/测试/检查/metadata等命令强制--locked，全部子进程清理继承的RUST_BIGDECIMAL_*；版本/帮助查询不注入无效参数。
+原Cargo命令形态和stdout/退出码保留，B1模拟cargo函数仍优先于PATH代理，28/28守卫不变。
+代理只写runner临时目录与GITHUB_PATH，不改系统环境、Cargo全局配置、测试目标或阈值。

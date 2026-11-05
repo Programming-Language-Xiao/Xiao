@@ -59,6 +59,9 @@ jobs:
         with:
           components: rustfmt, clippy
 
+      - name: Configure locked Cargo and numeric environment
+        run: python tools/gates/controlled-cargo.py --install
+
       - name: Run workspace gates
         shell: bash
         run: bash tools/gates/run.sh
