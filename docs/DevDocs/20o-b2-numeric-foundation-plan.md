@@ -151,7 +151,7 @@ B2-A 预期**不新增 intrinsic、不改变 `XiaoValue` 标签或 C ABI**；若
 
 ### B2-A：`lint`/`lfloat` 基础
 
-执行规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；本批只规划，B2-A产品未开工。
+执行规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；当前A0基线规划见[A0工作快照与基线执行规划](20o-b2-a0-baseline-plan.md)。本批只规划，B2-A产品未开工。
 
 建议顺序：
 
