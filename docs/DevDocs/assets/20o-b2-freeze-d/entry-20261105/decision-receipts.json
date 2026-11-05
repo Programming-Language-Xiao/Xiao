@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+  "preparation_commit": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+  "record_count": 3,
+  "signature_status": "signed",
+  "response_mode": "free_text_actual_answers_no_preselection",
+  "receipts": [
+    {
+      "id": "F-Da",
+      "phase": "F-D",
+      "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+      "question": "F-Da｜是否批准基线dc0524c092d3（docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/signature-baseline.json）中的30条已确认裁定作为B2联合冻结基线？草案正文SHA-256为8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff，台账、F-3/F-7实际答复与104条历史清单摘要均已固定。请明确批准、拒绝，或写出附带条件。",
+      "answer": "批准",
+      "question_item_id": "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",0]",
+      "authority": "星崽在本次会话逐项实际答复",
+      "date": "2026-11-05",
+      "conditional": false,
+      "valid_for_activation": true
+    },
+    {
+      "id": "F-Db",
+      "phase": "F-D",
+      "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+      "question": "F-Db｜是否授权在三项有效签字齐备后激活同一联合冻结，并将下一入口限定为B2-A实施规划？B2-A保持ABI1.18/生成器20、不新增intrinsic，突破边界须回冻结；B2-B仍后置使用1.19/21。本次签字不启动产品代码。请明确批准、拒绝，或写出附带条件。",
+      "answer": "批准",
+      "question_item_id": "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",1]",
+      "authority": "星崽在本次会话逐项实际答复",
+      "date": "2026-11-05",
+      "conditional": false,
+      "valid_for_activation": true
+    },
+    {
+      "id": "F-Dc",
+      "phase": "F-D",
+      "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+      "question": "F-Dc｜是否确认签字后的状态与证据边界：cmath继续planned；B1旧721条F10只作历史，B2-C在新快照完整重跑；22D/22C及19/11/22债务独立保留；产品仍未开工，签字只打开B2-A实施规划入口？请明确批准、拒绝，或写出附带条件。",
+      "answer": "批准",
+      "question_item_id": "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",2]",
+      "authority": "星崽在本次会话逐项实际答复",
+      "date": "2026-11-05",
+      "conditional": false,
+      "valid_for_activation": true
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-11-05T03:27:08.043607+00:00",
+  "preparation_commit": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+  "scope": "未签基线提交的既有workspace门禁；不替代实际签字，不是状态切换提交的CI",
+  "workspace": {
+    "id": 41959843609,
+    "name": "Xiao workspace gates",
+    "head_sha": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41959843609"
+  },
+  "workspace_jobs": [
+    {
+      "id": 127023351225,
+      "name": "Linux workspace gates",
+      "head_sha": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Programming-Language-Xiao/Xiao/actions/runs/41959843609/job/127023351225"
+    }
+  ],
+  "maintenance": {
+    "triggered": false,
+    "classification": "not_triggered_path_filter",
+    "not_a_pass": true,
+    "changed_paths": [
+      "docs/DevDocs/20-builtins-and-standard-library.md",
+      "docs/DevDocs/20o-b2-freeze-c-resource-dependency-plan.md",
+      "docs/DevDocs/20o-b2-freeze-closeout-plan.md",
+      "docs/DevDocs/20o-b2-freeze-d-signature-plan.md",
+      "docs/DevDocs/20o-b2-freeze-draft.md",
+      "docs/DevDocs/20o-b2-numeric-foundation-plan.md",
+      "docs/DevDocs/20o-official-library-program.md",
+      "docs/DevDocs/README.md",
+      "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/README.md",
+      "docs/DevDocs/assets/20o-b2-freeze-c/entry-20261105/evidence.json",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/README.md",
+      "docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/evidence.json",
+      "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+      "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/evidence.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/.gitattributes",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/README.md",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/b2-a-planning-handoff.md",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/ci-entry-0a93f957.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/coverage-38d6120d.snapshot.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/decision-coverage.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/decision-requests.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/draft-before-signature.txt",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/entry-maintenance-push-runs-api.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/entry-push-runs-api.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/entry-workspace-attempt1-jobs-api.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/entry-workspace-run-api.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/evidence.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/f-c-receipts.snapshot.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/historical-104-replay.log",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/ledger-before-signature.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/pre-check-docs.log",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/pre-check-layout.log",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/pre-check-usedocs.log",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/pre-signature-checks.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/preflight-editorial.diff",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/signature-baseline.json",
+      "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/source-facts.json"
+    ],
+    "push_paths": [
+      ".github/workflows/maintenance-regression.yml",
+      "core/rust/**",
+      "tests/fuzz/**",
+      "tests/benchmarks/**",
+      "tests/fixtures/**",
+      "docs/UseDocs/library/**",
+      "tools/gates/b1-probe-guards.ps1",
+      "stdlib/**",
+      ".gitattributes"
+    ],
+    "matched_changed_paths": []
+  },
+  "raw_api_records": [
+    {
+      "file": "preparation-workspace-run-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41959843609",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41959843609"
+      ],
+      "original_response_sha256": "cf5b2db99ad26866384dd49c372a1fa196f5abae6c277d8280ebe9bc798c7af9",
+      "archived_sha256": "cf5b2db99ad26866384dd49c372a1fa196f5abae6c277d8280ebe9bc798c7af9"
+    },
+    {
+      "file": "preparation-workspace-attempt1-jobs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/runs/41959843609/attempts/1/jobs?per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/runs/41959843609/attempts/1/jobs?per_page=100"
+      ],
+      "original_response_sha256": "52dc7649c2c4978961297709bef70cb37f98a9964b43ac9365c0b627193e4d7e",
+      "archived_sha256": "52dc7649c2c4978961297709bef70cb37f98a9964b43ac9365c0b627193e4d7e"
+    },
+    {
+      "file": "preparation-maintenance-push-runs-api.json",
+      "api_url": "https://api.github.com/repos/Programming-Language-Xiao/Xiao/actions/workflows/maintenance-regression.yml/runs?head_sha=22a865bc2c5e6dbc688cf2c99805462a805b5d50&event=push&per_page=100",
+      "actual_command": [
+        "gh",
+        "api",
+        "repos/Programming-Language-Xiao/Xiao/actions/workflows/maintenance-regression.yml/runs?head_sha=22a865bc2c5e6dbc688cf2c99805462a805b5d50&event=push&per_page=100"
+      ],
+      "original_response_sha256": "a2790a384d7d281e7395679000c35d27768d89dbd7052f725b8f4688beb59915",
+      "archived_sha256": "a2790a384d7d281e7395679000c35d27768d89dbd7052f725b8f4688beb59915"
+    }
+  ],
+  "historical_19_11_22_debts_closed": false
+}

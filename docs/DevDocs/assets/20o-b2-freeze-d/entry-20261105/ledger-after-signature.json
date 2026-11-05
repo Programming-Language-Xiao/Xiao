@@ -1,0 +1,469 @@
+{
+  "schema_version": 1,
+  "entry_head": "a60a3dd11749e770e6fdf80ca2852a9c828fe3c9",
+  "authority": "既有十八条直接答复照录；十二组精确项均由星崽逐项实际确认，30/0；F-D三项实际批准另存独立签字记录",
+  "base_receipts": "../../20o-b2-freeze-prep/entry-20261103/decision-receipts.json",
+  "base_receipts_sha256": "433db40949a3c1dd547275de61b264b9da2391143c7883b7ab475444f09df626",
+  "confirmed": 30,
+  "pending": 0,
+  "activation": "F-A/F-B/F-C/F-D已收口，30/0；B2联合冻结已激活，仅开放B2-A实施规划，B2-A/B产品仍未开工",
+  "items": [
+    {
+      "id": "R-1",
+      "status": "confirmed",
+      "decision": "B2-D1",
+      "part": "方向",
+      "confirmed": "纯Rust num-bigint + bigdecimal；num-rational留B5，不引入C/GMP",
+      "source_receipt_index": 0
+    },
+    {
+      "id": "R-2",
+      "status": "confirmed",
+      "decision": "B2-D2",
+      "part": "边界",
+      "confirmed": "保留Lint/Lfloat十进制文本标签与C ABI，内部高精度，不暴露Rust对象布局",
+      "source_receipt_index": 1
+    },
+    {
+      "id": "R-3",
+      "status": "confirmed",
+      "decision": "B2-D8",
+      "part": "版本拆分",
+      "confirmed": "A保持ABI1.18且不新增intrinsic；B集中ABI1.19/生成器21；接口版本1；A若需突破先回冻结",
+      "source_receipt_index": 2
+    },
+    {
+      "id": "R-4",
+      "status": "confirmed",
+      "decision": "B2-D4",
+      "part": "首批接口",
+      "confirmed": "首批新增显式精度接口，调整批次；没有选择仅有限精确除法替代整个接口范围",
+      "source_receipt_index": 3
+    },
+    {
+      "id": "R-5",
+      "status": "confirmed",
+      "decision": "B2-D6",
+      "part": "名单和类型",
+      "confirmed": "sqrt/floor/ceil/round/trunc/abs/min/max/pow/sin/cos/tan/exp/ln/log10；参数/结果float，含取整函数float返回；sfloat后置",
+      "source_receipt_index": 4
+    },
+    {
+      "id": "R-6",
+      "status": "confirmed",
+      "decision": "B2-D7",
+      "part": "非有限",
+      "confirmed": "不把NaN/Inf作为正常输入或输出，域/负零等细项另冻",
+      "source_receipt_index": 5
+    },
+    {
+      "id": "R-7",
+      "status": "confirmed",
+      "decision": "B2-D3",
+      "part": "lint运算",
+      "confirmed": "加减乘、//、%、**精确；floor整除/余数随除数；除零稳定错误；负指数拒绝；0**0=1；/返回lfloat且按D4；比较不经f64",
+      "source_receipt_index": 6
+    },
+    {
+      "id": "R-8",
+      "status": "confirmed",
+      "decision": "B2-D5",
+      "part": "文本兼容",
+      "confirmed": "保留str→int/sint/lint码点转换；新增str→lfloat十进制解析；lint数字文本恢复经lfloat→lint",
+      "source_receipt_index": 7
+    },
+    {
+      "id": "R-9",
+      "status": "confirmed",
+      "decision": "B2-D9",
+      "part": "B1性能回归",
+      "confirmed": "B2-C新Runtime/ABI快照完整重跑B1的721条F10",
+      "source_receipt_index": 8
+    },
+    {
+      "id": "R-10",
+      "status": "confirmed",
+      "decision": "B2-D10",
+      "part": "错误方向",
+      "confirmed": "纯计算无新宿主能力；除零ArithmeticError/013，溢出/非有限009，受控分配ResourceError/011；新增场景逐项另冻",
+      "source_receipt_index": 9
+    },
+    {
+      "id": "R-11",
+      "status": "confirmed",
+      "decision": "B2-D11",
+      "part": "内核与比较方向",
+      "confirmed": "纯Rust libm；普通超越按逐函数ULP/绝对误差；零/符号/域/错误精确，具体数值另冻",
+      "source_receipt_index": 10
+    },
+    {
+      "id": "R-12",
+      "status": "confirmed",
+      "decision": "B2-D12",
+      "part": "登记时点",
+      "confirmed": "冻结时cmath planned教程/registry，lint/lfloat更新语言说明，B2-C完整示例与三平台齐才verified；不新增虚构大数标准库",
+      "source_receipt_index": 11
+    },
+    {
+      "id": "R-13",
+      "status": "confirmed",
+      "decision": "B2-D4",
+      "part": "语言/补充",
+      "confirmed": "/只精确有限；非终止结果走显式接口，无上游默认100或全局精度状态",
+      "source_receipt_index": 12
+    },
+    {
+      "id": "R-14",
+      "status": "confirmed",
+      "decision": "B2-D4",
+      "part": "精确接口补充",
+      "confirmed": "全局lfloat_divide(lfloat numerator,lfloat denominator,int precision,str rounding)->lfloat；必填支持位置/命名；有效数字；B2-B集中升级",
+      "source_receipt_index": 13
+    },
+    {
+      "id": "R-15",
+      "status": "confirmed",
+      "decision": "B2-D1",
+      "part": "直接表补充",
+      "confirmed": "num-bigint=0.4.8、bigdecimal=0.4.11，仅std，保留上游MIT/Apache双许可文本；传递闭包和构建仍另核对",
+      "source_receipt_index": 14
+    },
+    {
+      "id": "R-16",
+      "status": "confirmed",
+      "decision": "B2-D2",
+      "part": "显示/身份/缓存补充",
+      "confirmed": "非零显示尺度保留；1.50与1.5数值相等且哈希相同；每次操作精确解析并释放，不加跨调用共享缓存；结果scale另冻",
+      "source_receipt_index": 15
+    },
+    {
+      "id": "R-17",
+      "status": "confirmed",
+      "decision": "B2-D5",
+      "part": "窄化补充",
+      "confirmed": "lfloat显式转lint/int/sint向零截断，定宽检查范围，lint受资源预算，不隐式窄化",
+      "source_receipt_index": 16
+    },
+    {
+      "id": "R-18",
+      "status": "confirmed",
+      "decision": "B2-D9",
+      "part": "资源数值补充",
+      "confirmed": "原文65536字节，输入/最终系数32768位，规范scale与显式指数abs100000，中间65536位，precision1..32768，非平凡幂指数1000000且受结果预算，0/±1快路径；定义/顺序/性能另冻",
+      "source_receipt_index": 17
+    },
+    {
+      "id": "F-1",
+      "status": "confirmed",
+      "subject": "有效数字与七种舍入",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "确认这些精确规则（推荐）",
+      "asked_in_session": true,
+      "review_sections": "五/舍入表",
+      "question_item_id": "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",0]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",0]"
+      ]
+    },
+    {
+      "id": "F-2",
+      "status": "confirmed",
+      "subject": "cmath定义域与特殊值",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "确认逐函数规则（推荐）",
+      "asked_in_session": true,
+      "review_sections": "七/15函数域与特殊值",
+      "question_item_id": "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",0]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",0]"
+      ]
+    },
+    {
+      "id": "F-3",
+      "status": "confirmed",
+      "subject": "工作量和性能协议",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "确认接纳与工作量精确表（推荐）；确认商余资源与工作量（推荐）；确认性能与测量精确表（推荐）",
+      "asked_in_session": true,
+      "review_sections": "六/性能协议及6.1资源公式",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",0]",
+        "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",1]",
+        "[\"request_user_input_async\",\"call_57e21b61ad804f75af942964fc6eada7\",2]"
+      ],
+      "decision_record": "../../20o-b2-freeze-c/entry-20261105/decision-receipts.json",
+      "confirmed_parts": [
+        "共同接纳、加减/乘/精确及显式除法/幂、gcd与因子工作上界",
+        "lfloat //、%精确数量级/有界商余及独立预算",
+        "性能时限/翻倍比、五批独立进程、校准、OS峰值与来源身份协议"
+      ]
+    },
+    {
+      "id": "F-4",
+      "status": "confirmed",
+      "subject": "lfloat // % **范围",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "首批也开放//或%；同时开放//和%（推荐）；确认配对与尺度规则（推荐）；确认保留幂规则（推荐）；采用推荐规则（按既有提升到lfloat）",
+      "asked_in_session": true,
+      "review_sections": "五/lfloat运算开放域",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_a6ec1a6b611c4cc18cad632fd77a80ba\",0]",
+        "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",0]",
+        "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",1]",
+        "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",2]"
+      ],
+      "question_item_id": "[\"request_user_input_async\",\"call_1545ab434cae44c78e39ec5a85692061\",2]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "confirmed_parts": [
+        "同时开放//与%",
+        "floor配对与显示尺度",
+        "非负整数值幂及快路径",
+        "混合类型沿既有提升进入lfloat"
+      ],
+      "direct_reply": "采用推荐规则",
+      "mixed_type_rule": "按既有数值提升：结果为lfloat即允许，整数对整数保留整数族；float/sfloat结果和bool保持原拒绝边界",
+      "plain_text_receipt": "采用推荐规则"
+    },
+    {
+      "id": "F-5",
+      "status": "confirmed",
+      "subject": "原语与C ABI精表",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "F-5a/F-5b/F-5c均确认候选方案",
+      "asked_in_session": true,
+      "review_sections": "5.1/参数、原语与ABI",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_Rf5AlvVEw4T7V7CfZ5NcMk8w\",0]",
+        "[\"request_user_input_async\",\"call_Rf5AlvVEw4T7V7CfZ5NcMk8w\",1]",
+        "[\"request_user_input_async\",\"call_Rf5AlvVEw4T7V7CfZ5NcMk8w\",2]"
+      ],
+      "decision_record": "../../20o-b2-freeze-b/entry-20261104/decision-receipts.json",
+      "confirmed_parts": [
+        "cmath参数/公开面",
+        "33～48规划ID与C符号/效果/能力",
+        "借用输入、out所有权和状态族"
+      ]
+    },
+    {
+      "id": "F-6",
+      "status": "confirmed",
+      "subject": "版本兼容与拒绝",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "确认拒绝与重生成（推荐）；确认仅内部验证（推荐）；确认接口兼容与交付边界（推荐）",
+      "asked_in_session": true,
+      "review_sections": "8.5/版本与产物矩阵",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",0]",
+        "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",1]",
+        "[\"request_user_input_async\",\"call_7cd8c4f015ef4575b52587d72206e2c6\",2]"
+      ],
+      "decision_record": "../../20o-b2-freeze-b2/entry-20261105/decision-receipts.json",
+      "confirmed_parts": [
+        "原始旧/新容器与原生元数据精确版本拒绝，不改写原件",
+        "A保持1.18/20且仅内部验证，绑定实际工具与Runtime身份",
+        "B最终1.19/21、标准库接口1；保留C二进制契约，数值语义按F-A升级，缓存失配重生成及B1新快照回归"
+      ]
+    },
+    {
+      "id": "F-7",
+      "status": "confirmed",
+      "subject": "依赖闭包与构建环境",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "确认版本、特性和来源表（推荐）；确认锁定与构建策略（推荐）",
+      "asked_in_session": true,
+      "review_sections": "四/精确闭包与构建策略",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_5b0c1ca3b3f3430399ed1dff8039c81d\",0]",
+        "[\"request_user_input_async\",\"call_5b0c1ca3b3f3430399ed1dff8039c81d\",1]"
+      ],
+      "decision_record": "../../20o-b2-freeze-c/entry-20261105/decision-receipts.json",
+      "confirmed_parts": [
+        "六包精确版本/特性/许可/来源摘要",
+        "精确约束、Cargo.lock/--locked、受控环境及固定Rust/平台构建策略"
+      ]
+    },
+    {
+      "id": "F-8",
+      "status": "confirmed",
+      "subject": "二进制与高精度转换",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "按舍入结果判溢出（推荐）；整数结果保留scale=0（推荐）",
+      "asked_in_session": true,
+      "review_sections": "七/二进制值转换",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_a6ec1a6b611c4cc18cad632fd77a80ba\",1]",
+        "[\"request_user_input_async\",\"call_7d11730e76b7410a8cf26ebaf4dc11d3\",0]"
+      ],
+      "question_item_id": "[\"request_user_input_async\",\"call_7d11730e76b7410a8cf26ebaf4dc11d3\",0]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json"
+    },
+    {
+      "id": "F-9",
+      "status": "confirmed",
+      "subject": "误差与独立参考",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "确认容差与离线参考（推荐）",
+      "asked_in_session": true,
+      "review_sections": "七/误差与独立参考",
+      "question_item_id": "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",1]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_ea98b380f50542ab927986fac8c4f6d1\",1]"
+      ]
+    },
+    {
+      "id": "F-10",
+      "status": "confirmed",
+      "subject": "显示/规范scale与资源公式",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "确认定义与零例外（推荐）",
+      "asked_in_session": true,
+      "review_sections": "8.1～8.3/系数、显示和结果scale",
+      "question_item_id": "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",1]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",1]"
+      ]
+    },
+    {
+      "id": "F-11",
+      "status": "confirmed",
+      "subject": "十进制文本及数值输出",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "确认文本与输出规则（推荐）",
+      "asked_in_session": true,
+      "review_sections": "8.1/8.4文本与输出",
+      "question_item_id": "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",2]",
+      "decision_record": "../../20o-b2-freeze-a/entry-20261104/decision-receipts.json",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_9aed94e84c824f609150a17a066fd319\",2]"
+      ]
+    },
+    {
+      "id": "F-12",
+      "status": "confirmed",
+      "subject": "错误类别、编号与优先级",
+      "decision_authority": "星崽逐项答复或明确延期",
+      "answer": "保留这两项及完整映射（推荐）；确认完整顺序（推荐）；确认状态与所有权映射（推荐）",
+      "asked_in_session": true,
+      "review_sections": "5.2/错误精表",
+      "question_item_ids": [
+        "[\"request_user_input_async\",\"call_15e634fac5d344edb2ac41ed83f5e3ac\",0]",
+        "[\"request_user_input_async\",\"call_15e634fac5d344edb2ac41ed83f5e3ac\",1]",
+        "[\"request_user_input_async\",\"call_15e634fac5d344edb2ac41ed83f5e3ac\",2]"
+      ],
+      "decision_record": "../../20o-b2-freeze-b3/entry-20261105/decision-receipts.json",
+      "confirmed_parts": [
+        "033/034规划身份、类别和旧002/009/011/012/013完整边界",
+        "七阶段、参数顺序、文本内部语法/预算与表达式求值/Fatal边界",
+        "七项可恢复错误经6、结构错误不碰槽、失败保留out与输入强引用规则"
+      ]
+    }
+  ],
+  "review_document": "docs/DevDocs/20o-b2-freeze-draft.md",
+  "review_document_sha256": "45fe0b27b9b7783a6872c325b64f8a5eaf1e3891a3fac406f506d9191eab359f",
+  "review_history": [
+    {
+      "commit": "67944184dbb44137040908f2efc8e4d52a6f0e27",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "972ab09d1651cd281f35ff0ce88ca6c0f44925245222ce63456475ac7a9191de",
+      "scope": "上轮十二组精表的审阅版本；不是当前F-A工作树"
+    },
+    {
+      "commit": "b636f312476fa7bbc12ebd47f5f368ec72a2891f",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "6b066732e7065aa2b2aeff6bc496a8dfb3bbf6ad99d0839551a9cd75470eece4",
+      "scope": "F-A主体已答但混合类型尚待补充的历史版本"
+    },
+    {
+      "commit": "2a974de8826b5959c982ec29303305ed61c53542",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "e4515307802581c77b263c9fd0bc03823a76b6dedfebee33168f8db1ed082ce0",
+      "scope": "F-A完整退出时的规则及尚待F-B/F-C裁定的表"
+    },
+    {
+      "commit": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "f3aca072ab361d111af367fc4716993d4108f6433145562ecc68ea8b583f5690",
+      "scope": "F-B1已收口，部分状态文字尚未同步的历史版本"
+    },
+    {
+      "commit": "b8462f82f6b04917d4b18a5ac1e9015fa0e4fa9b",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "bbbc4a2463cc9f569657f65eeb360eb9789cb5b17d15b61cc5f5a32706281fd3",
+      "scope": "F-5确认后的26/4状态；F-6当时未裁定"
+    },
+    {
+      "commit": "537ce4ecdcc019e934b4c588bd1bf1542e1919a7",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "fb020799a270fcde070231d52b0db99214d2da6bdc33582a758b9307e83437fd",
+      "scope": "F-B3审阅前的27/3版本；F-12当时未裁定"
+    },
+    {
+      "commit": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "b31216479e6f16bda8406af8301068de28f2d6d7cc563a68c2852dde03da9f8c",
+      "scope": "F-C入口28/2；F-3/F-7当时未裁定"
+    },
+    {
+      "commit": "459f9e5db0200bad178100bebe73915c61c58fff",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "397759db2e849e8a726f4b3e47af5a4cd0161177eedefe2b6124d714a5a209ac",
+      "scope": "F-D前置整理前的F-C退出正文；只改历史状态措辞，不改变30条裁定"
+    },
+    {
+      "commit": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+      "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+      "sha256": "7857599c175742389dede72b82730bd1aebe041d221d26bb1cc99f8e9852f935",
+      "scope": "F-D已固定的签字前全文，正文以独立签字基线摘要为准"
+    }
+  ],
+  "latest_review": {
+    "phase": "F-D_signed",
+    "date": "2026-11-05",
+    "entry_head": "459f9e5db0200bad178100bebe73915c61c58fff",
+    "focus": [
+      "F-Da",
+      "F-Db",
+      "F-Dc"
+    ],
+    "answered": [
+      "F-Da",
+      "F-Db",
+      "F-Dc"
+    ],
+    "evidence": "../../20o-b2-freeze-d/entry-20261105/README.md",
+    "decisions_complete": true,
+    "f_d_started": true,
+    "f_d_signed": true,
+    "product_started": false,
+    "gate_status": "post_signature_checks_recorded_separately"
+  },
+  "status_correction": {
+    "entry_head": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
+    "date": "2026-11-04",
+    "scope": "仅同步26/4与F-5已确认的状态文字；不新增或改变裁定"
+  },
+  "f_d_signature_status": "signed",
+  "joint_freeze_activated": true,
+  "product_implementation_started": false,
+  "signed_review_document_body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+  "f_d_signature": {
+    "date": "2026-11-05",
+    "authority": "星崽三项实际批准",
+    "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+    "preparation_commit": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+    "receipts": "../../20o-b2-freeze-d/entry-20261105/decision-receipts.json",
+    "question_item_ids": [
+      "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",0]",
+      "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",1]",
+      "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",2]"
+    ],
+    "signed_draft_body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+    "signed_ledger_items_sha256": "999fbfa7988e03d67444f1d51aa1cec86c2cd9f1095ef1674c9a9ba9943f76a7",
+    "next_entry": "B2-A implementation planning only",
+    "product_implementation_started": false
+  }
+}

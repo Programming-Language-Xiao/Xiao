@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "preparation_commit": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+  "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+  "baseline_objects": {
+    "signature-baseline.json": {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/signature-baseline.json",
+      "git_blob": "26ff0a0c9e4dcec2326c76e02ef0ccb54602430c",
+      "sha256": "e70b6e8132a63a278fccbd41fc9cebf6b81326073358a3d9fb3132eaa1d8a7e5"
+    },
+    "draft-before-signature.txt": {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/draft-before-signature.txt",
+      "git_blob": "ab2f153fc8883df8c3fef2b8313c30a3074f2b83",
+      "sha256": "7857599c175742389dede72b82730bd1aebe041d221d26bb1cc99f8e9852f935"
+    },
+    "ledger-before-signature.json": {
+      "file": "docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/ledger-before-signature.json",
+      "git_blob": "6c28b318550224fb4b7f2cb25c1fe6206f417145",
+      "sha256": "6da57fd4d3a05aeffd87af75187f7549589d8a82b3cd69070e323430621b5ec7"
+    }
+  },
+  "scope": "真实未签基线提交身份，签字后不重写这些对象"
+}

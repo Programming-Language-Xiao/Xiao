@@ -1,7 +1,7 @@
 # 20O-B2-FREEZE-C. 依赖、资源与性能裁定规划
 
 > **这是 F-C 的裁定规划，不写产品函数、依赖锁、intrinsic、ABI 或测试实现。**
-> 产品基线为`8dfbc89b`、工作入口为`35ccdb30`；F-3三项及F-7两项全部确认，台账30/0（2026-11-05）；F-D仍待单独签字。
+> 产品基线为`8dfbc89b`、工作入口为`35ccdb30`；F-3三项及F-7两项全部确认，以30/0退出（2026-11-05），当时F-D仍待单独签字；后续签字状态见F-D记录。
 > 本批只冻结依赖闭包、资源接纳、工作量和性能测量契约，不进入 F-D 签字或 B2-A/B 产品实现。
 >
 > `cmath` 仍为 planned，Runtime ABI 仍为 1.18、`CODEGEN_VERSION` 仍为 20；本批不改 Cargo、活动 intrinsic 或 ABI。
@@ -13,15 +13,15 @@
 | 代码基线 | `8dfbc89b`；已推送 |
 | 已完成 | F-A 25/5、F-B1 26/4、F-B2 27/3、F-B3 28/2 退出 |
 | F-C 范围 | F-3（资源/工作量/性能）、F-7（依赖闭包/构建） |
-| 台账 | 30 confirmed / 0 pending；F-3/F-7全部确认，F-D未签字 |
+| F-C退出台账 | 30 confirmed / 0 pending；F-3/F-7全部确认，当时F-D未签字 |
 | 版本/产品 | ABI 1.18、生成器 20、活动 intrinsic 最大 32；cmath planned；无产品实施 |
 | F-C收口CI | 收口提交`38d6120d`的workspace `41895438930`、maintenance `41895439116`第1次尝试均成功，维护回归六作业全绿，见[收口CI记录](assets/20o-b2-freeze-c/review-fix-20261105/ci-38d6120d.json)；入口8df及此前b846/59a的容量取消仍按原节点保留 |
 | 后续复核CI | `0a93f957`的workspace `41953275349`成功；该提交只变更DevDocs及其assets，未命中维护工作流任何push.paths，maintenance未触发，不能记为通过，见[F-D前置CI记录](assets/20o-b2-freeze-d/entry-20261105/ci-entry-0a93f957.json) |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
 
-F-C最后两组精确项已收齐，当前**30/0**；F-D仍须单独签字，B2-A/B不在本批实施。
+F-C以**30/0**退出；后续F-D已实际签字，当前状态见[F-D记录](assets/20o-b2-freeze-d/entry-20261105/README.md)。B2-A/B产品不在F-C实施。
 本轮[答复与来源记录](assets/20o-b2-freeze-c/entry-20261105/README.md)保存实际答复、上游清单/许可证及入口CI，不把归档核对写成构建成绩。
-该证据以35ccdb30为工作入口，38d6120d为文档收口提交；[后续复核](assets/20o-b2-freeze-c/review-fix-20261105/README.md)补齐清单计数构成、UseDocs范围与收口CI，不改变30/0裁定或F-D未签字状态。
+该证据以35ccdb30为工作入口，38d6120d为文档收口提交；[后续复核](assets/20o-b2-freeze-c/review-fix-20261105/README.md)补齐清单计数构成、UseDocs范围与收口CI，不改变30/0裁定；当时F-D未签字，后续状态另按F-D实际答复登记。
 
 ## 二、F-3：资源、工作量与性能
 

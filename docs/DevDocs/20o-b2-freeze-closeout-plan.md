@@ -4,8 +4,8 @@
 > 基线为`0011f4c5`；18条入口答复与十二组精确项全部确认，当前30 confirmed、0 pending（2026-11-05），
 > `cmath` 仍为 planned，Runtime ABI 仍为 1.18、`CODEGEN_VERSION` 仍为 20。
 >
-> **F-A/F-B/F-C已完成，F-D仍待单独签字，不进入B2-A/B产品实现。** 只有全部精确项变成
-> 可执行的精确契约，才允许把冻结状态改为完成并开始 B2-A/B。
+> **F-A/F-B/F-C已完成，F-D已实际签字，B2联合冻结已生效。** 当前只开放B2-A实施规划；
+> B2-A/B产品未开工，后续产品实现仍须按各批规划与验收边界独立推进。
 
 ## 一、入口与当前事实
 
@@ -14,7 +14,7 @@
 | 代码基线 | `0011f4c5`；工作区干净、已推送 |
 | B1-CLOSE | 七库 20/20、教程/registry verified；B1 旧 721 条 F10 已标历史 |
 | B1 复跑 | 默认当前 registry 会拒绝；`audit.ps1`/`validate-audit.ps1` 的 `-SourceRoot` 106b99c7 入口已取证并通过 |
-| B2-FREEZE | 30条全部confirmed，F-C已收口；F-D未签字；cmath planned，无产品/依赖/ABI实施 |
+| B2-FREEZE | 30条全部confirmed，F-D已签字并激活联合冻结；仅开放B2-A实施规划，cmath planned，产品未开工 |
 | 入口 CI | 0011f4c5的`41644476014` workspace gates成功；仅代表当时的DevDocs/审计修复入口，后续运行另按提交登记 |
 | 文档门禁 | `check:docs`、`check:usedocs`、`check:layout`、`git diff --check` 通过 |
 
@@ -100,7 +100,7 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 
 ### F-C：依赖、资源与性能
 
-执行规划见[依赖、资源与性能裁定规划](20o-b2-freeze-c-resource-dependency-plan.md)；F-3三项与F-7两项已确认并完成F-C收口，当前30/0；F-D尚未签字。
+执行规划见[依赖、资源与性能裁定规划](20o-b2-freeze-c-resource-dependency-plan.md)；F-C以30/0退出时F-D尚未签字；后续F-D已实际批准并激活联合冻结，当前签字状态另按F-D记录。
 
 范围：F-3、F-7。
 
@@ -114,7 +114,7 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 
 ### F-D：收口与冻结签字
 
-执行规划见[F-D 冻结签字规划](20o-b2-freeze-d-signature-plan.md)；当前30/0、F-D未签字，30/0不等于联合冻结已生效。
+执行规划见[F-D 冻结签字规划](20o-b2-freeze-d-signature-plan.md)；三项实际批准已收齐，当前30/0、F-D已签字，联合冻结已激活；没有从30/0单独推断签字。
 
 1. 逐条核对 12 项与 18 条已确认答复，形成 30 条完整台账；
 2. 删除或明确登记所有“待审/建议”状态；
@@ -122,7 +122,7 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 4. 通过 `check:docs`、`check:usedocs`、`check:layout`、`git diff --check`；
 5. 记录本阶段 run/gate；不改产品、依赖、ABI 或测试。
 
-退出：B2-FREEZE 可以标记完成，B2-A/B 才获得实施入口。
+退出：B2-FREEZE联合冻结已激活；只开放B2-A实施规划，B2-A代码与B2-B/C仍须各自规划和验收。
 
 ## 五、裁定状态与剩余待审
 
@@ -143,13 +143,13 @@ B1 历史复跑必须按 [B1 SourceRoot 入口](assets/20o-b1-close/README.md#�
 | F-11 | 已确认 | 精确ASCII十进制语法、拒绝边界与数值文本输出；不开放直接str到float/sfloat |
 | F-12 | 已确认 | 保留规划033/034、旧码边界、七阶段及文本内部优先级；002/009/011/012/013/033/034经状态6，out保留 |
 
-30条均已确认，F-C已收口；F-D仍待签字，整体未联合冻结。
+30条均已确认，F-D三项均有实际批准；联合冻结已激活，产品仍未开工。
 
 ## 六、验收与证据
 
 | 检查 | 期望 |
 | --- | --- |
-| 决策完整性 | 当前30 confirmed、0 pending；均有直接答复/裁定，无静默默认；F-D签字另行登记 |
+| 决策完整性 | 当前30 confirmed、0 pending；均有直接答复/裁定，无静默默认；F-D签字已独立登记，30项内容不变 |
 | 冻结表一致性 | 名称、参数、ID、C ABI、效果、错误、资源、性能互相对账 |
 | 依赖记录 | 直接/传递版本、许可证、校验值、构建环境和锁文件策略明确；不声称已构建 |
 | ABI 记录 | 1.18/20 与 1.19/21 的产物行为、拒绝/兼容矩阵明确；活动表未改 |

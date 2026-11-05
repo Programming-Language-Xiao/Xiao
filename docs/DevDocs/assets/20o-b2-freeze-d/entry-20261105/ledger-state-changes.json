@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+  "allowed_top_level_changes": [
+    "activation",
+    "authority",
+    "f_d_signature",
+    "f_d_signature_status",
+    "joint_freeze_activated",
+    "latest_review",
+    "review_document_sha256",
+    "review_history",
+    "signed_review_document_body_sha256"
+  ],
+  "actual_changed_top_level_fields": [
+    "activation",
+    "authority",
+    "f_d_signature",
+    "f_d_signature_status",
+    "joint_freeze_activated",
+    "latest_review",
+    "review_document_sha256",
+    "review_history",
+    "signed_review_document_body_sha256"
+  ],
+  "changes": [
+    {
+      "field": "activation",
+      "before": "F-A/F-B/F-C已退出，30/0；F-D未签字，整体未联合冻结，不进入B2-A/B产品实现",
+      "after": "F-A/F-B/F-C/F-D已收口，30/0；B2联合冻结已激活，仅开放B2-A实施规划，B2-A/B产品仍未开工"
+    },
+    {
+      "field": "authority",
+      "before": "既有十八条直接答复照录；十二组精确项均由星崽逐项实际确认，30/0；F-D签字另行完成",
+      "after": "既有十八条直接答复照录；十二组精确项均由星崽逐项实际确认，30/0；F-D三项实际批准另存独立签字记录"
+    },
+    {
+      "field": "f_d_signature",
+      "before": null,
+      "after": {
+        "date": "2026-11-05",
+        "authority": "星崽三项实际批准",
+        "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+        "preparation_commit": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+        "receipts": "../../20o-b2-freeze-d/entry-20261105/decision-receipts.json",
+        "question_item_ids": [
+          "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",0]",
+          "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",1]",
+          "[\"request_user_input_async\",\"call_6898d1976bb04b74a4040604f280685b\",2]"
+        ],
+        "signed_draft_body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+        "signed_ledger_items_sha256": "999fbfa7988e03d67444f1d51aa1cec86c2cd9f1095ef1674c9a9ba9943f76a7",
+        "next_entry": "B2-A implementation planning only",
+        "product_implementation_started": false
+      }
+    },
+    {
+      "field": "f_d_signature_status",
+      "before": "not_started",
+      "after": "signed"
+    },
+    {
+      "field": "joint_freeze_activated",
+      "before": false,
+      "after": true
+    },
+    {
+      "field": "latest_review",
+      "before": {
+        "phase": "F-D_prepared",
+        "date": "2026-11-05",
+        "entry_head": "459f9e5db0200bad178100bebe73915c61c58fff",
+        "focus": [
+          "F-Da",
+          "F-Db",
+          "F-Dc"
+        ],
+        "answered": [],
+        "evidence": "../../20o-b2-freeze-d/entry-20261105/README.md",
+        "decisions_complete": true,
+        "f_d_started": false,
+        "product_started": false,
+        "gate_status": "pre_signature_checks_recorded_separately"
+      },
+      "after": {
+        "phase": "F-D_signed",
+        "date": "2026-11-05",
+        "entry_head": "459f9e5db0200bad178100bebe73915c61c58fff",
+        "focus": [
+          "F-Da",
+          "F-Db",
+          "F-Dc"
+        ],
+        "answered": [
+          "F-Da",
+          "F-Db",
+          "F-Dc"
+        ],
+        "evidence": "../../20o-b2-freeze-d/entry-20261105/README.md",
+        "decisions_complete": true,
+        "f_d_started": true,
+        "f_d_signed": true,
+        "product_started": false,
+        "gate_status": "post_signature_checks_recorded_separately"
+      }
+    },
+    {
+      "field": "review_document_sha256",
+      "before": "7857599c175742389dede72b82730bd1aebe041d221d26bb1cc99f8e9852f935",
+      "after": "45fe0b27b9b7783a6872c325b64f8a5eaf1e3891a3fac406f506d9191eab359f"
+    },
+    {
+      "field": "review_history",
+      "before": [
+        {
+          "commit": "67944184dbb44137040908f2efc8e4d52a6f0e27",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "972ab09d1651cd281f35ff0ce88ca6c0f44925245222ce63456475ac7a9191de",
+          "scope": "上轮十二组精表的审阅版本；不是当前F-A工作树"
+        },
+        {
+          "commit": "b636f312476fa7bbc12ebd47f5f368ec72a2891f",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "6b066732e7065aa2b2aeff6bc496a8dfb3bbf6ad99d0839551a9cd75470eece4",
+          "scope": "F-A主体已答但混合类型尚待补充的历史版本"
+        },
+        {
+          "commit": "2a974de8826b5959c982ec29303305ed61c53542",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "e4515307802581c77b263c9fd0bc03823a76b6dedfebee33168f8db1ed082ce0",
+          "scope": "F-A完整退出时的规则及尚待F-B/F-C裁定的表"
+        },
+        {
+          "commit": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "f3aca072ab361d111af367fc4716993d4108f6433145562ecc68ea8b583f5690",
+          "scope": "F-B1已收口，部分状态文字尚未同步的历史版本"
+        },
+        {
+          "commit": "b8462f82f6b04917d4b18a5ac1e9015fa0e4fa9b",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "bbbc4a2463cc9f569657f65eeb360eb9789cb5b17d15b61cc5f5a32706281fd3",
+          "scope": "F-5确认后的26/4状态；F-6当时未裁定"
+        },
+        {
+          "commit": "537ce4ecdcc019e934b4c588bd1bf1542e1919a7",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "fb020799a270fcde070231d52b0db99214d2da6bdc33582a758b9307e83437fd",
+          "scope": "F-B3审阅前的27/3版本；F-12当时未裁定"
+        },
+        {
+          "commit": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "b31216479e6f16bda8406af8301068de28f2d6d7cc563a68c2852dde03da9f8c",
+          "scope": "F-C入口28/2；F-3/F-7当时未裁定"
+        },
+        {
+          "commit": "459f9e5db0200bad178100bebe73915c61c58fff",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "397759db2e849e8a726f4b3e47af5a4cd0161177eedefe2b6124d714a5a209ac",
+          "scope": "F-D前置整理前的F-C退出正文；只改历史状态措辞，不改变30条裁定"
+        }
+      ],
+      "after": [
+        {
+          "commit": "67944184dbb44137040908f2efc8e4d52a6f0e27",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "972ab09d1651cd281f35ff0ce88ca6c0f44925245222ce63456475ac7a9191de",
+          "scope": "上轮十二组精表的审阅版本；不是当前F-A工作树"
+        },
+        {
+          "commit": "b636f312476fa7bbc12ebd47f5f368ec72a2891f",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "6b066732e7065aa2b2aeff6bc496a8dfb3bbf6ad99d0839551a9cd75470eece4",
+          "scope": "F-A主体已答但混合类型尚待补充的历史版本"
+        },
+        {
+          "commit": "2a974de8826b5959c982ec29303305ed61c53542",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "e4515307802581c77b263c9fd0bc03823a76b6dedfebee33168f8db1ed082ce0",
+          "scope": "F-A完整退出时的规则及尚待F-B/F-C裁定的表"
+        },
+        {
+          "commit": "f4f2f187b72c05d633cfccafea69e869a6433bb3",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "f3aca072ab361d111af367fc4716993d4108f6433145562ecc68ea8b583f5690",
+          "scope": "F-B1已收口，部分状态文字尚未同步的历史版本"
+        },
+        {
+          "commit": "b8462f82f6b04917d4b18a5ac1e9015fa0e4fa9b",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "bbbc4a2463cc9f569657f65eeb360eb9789cb5b17d15b61cc5f5a32706281fd3",
+          "scope": "F-5确认后的26/4状态；F-6当时未裁定"
+        },
+        {
+          "commit": "537ce4ecdcc019e934b4c588bd1bf1542e1919a7",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "fb020799a270fcde070231d52b0db99214d2da6bdc33582a758b9307e83437fd",
+          "scope": "F-B3审阅前的27/3版本；F-12当时未裁定"
+        },
+        {
+          "commit": "35ccdb308dde4bc3c0a166c149c5e3d93486f939",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "b31216479e6f16bda8406af8301068de28f2d6d7cc563a68c2852dde03da9f8c",
+          "scope": "F-C入口28/2；F-3/F-7当时未裁定"
+        },
+        {
+          "commit": "459f9e5db0200bad178100bebe73915c61c58fff",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "397759db2e849e8a726f4b3e47af5a4cd0161177eedefe2b6124d714a5a209ac",
+          "scope": "F-D前置整理前的F-C退出正文；只改历史状态措辞，不改变30条裁定"
+        },
+        {
+          "commit": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+          "document": "docs/DevDocs/20o-b2-freeze-draft.md",
+          "sha256": "7857599c175742389dede72b82730bd1aebe041d221d26bb1cc99f8e9852f935",
+          "scope": "F-D已固定的签字前全文，正文以独立签字基线摘要为准"
+        }
+      ]
+    },
+    {
+      "field": "signed_review_document_body_sha256",
+      "before": null,
+      "after": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff"
+    }
+  ],
+  "decision_items_unchanged": true,
+  "product_implementation_started_unchanged_false": true,
+  "before_full_sha256": "6da57fd4d3a05aeffd87af75187f7549589d8a82b3cd69070e323430621b5ec7",
+  "after_full_sha256": "9f075bf7f6256ea72a23ba7541bb05e8050f1f318b23f0ac3ae93e152abfccfe",
+  "decision_items_sha256": "999fbfa7988e03d67444f1d51aa1cec86c2cd9f1095ef1674c9a9ba9943f76a7"
+}

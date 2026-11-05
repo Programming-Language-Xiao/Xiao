@@ -2,7 +2,7 @@
   "schema_version": 1,
   "entry_head": "a60a3dd11749e770e6fdf80ca2852a9c828fe3c9",
   "code_baseline": "0011f4c5739fd8114f001a236e8241d0f65b918c",
-  "status": "历史来源保留；30/0，F-D签字基线已固定但尚无实际签字，联合冻结未激活",
+  "status": "30/0，F-D已由三项实际批准签字，联合冻结已激活；仅开放B2-A实施规划，产品仍未开工",
   "runtime_abi": "1.18",
   "codegen_version": 20,
   "stdlib_interface_version": 1,
@@ -39,7 +39,7 @@
     },
     {
       "file": "decision-ledger.json",
-      "sha256": "6da57fd4d3a05aeffd87af75187f7549589d8a82b3cd69070e323430621b5ec7"
+      "sha256": "9f075bf7f6256ea72a23ba7541bb05e8050f1f318b23f0ac3ae93e152abfccfe"
     },
     {
       "file": "dependency-archives.json",

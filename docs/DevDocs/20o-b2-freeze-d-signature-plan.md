@@ -1,7 +1,7 @@
 # 20O-B2-FREEZE-D. 冻结签字与收口规划
 
 > **这是 F-D 的签字收口规划，不写产品函数、依赖锁、intrinsic、ABI、诊断表或测试实现。**
-> 入口为`0a93f957`，产品基线为`8dfbc89b`；台账30 confirmed / 0 pending，F-D尚未开始。
+> 入口为`0a93f957`，签字准备提交`22a865bc`，产品基线`8dfbc89b`；三项实际批准已收齐，F-D已签字、联合冻结已激活，台账仍30/0。
 > **30/0不等于联合冻结已经生效**；F-D必须由星崽实际答复签字，文档门禁和摘要校验不能代替。
 > 本批只做前置修正、签字取证、状态切换和B2-A交接；B2-A/B产品实现仍未开工。
 
@@ -9,20 +9,21 @@
 
 | 项 | 当前状态 |
 | --- | --- |
-| 代码入口 | `0a93f957`；已推送、工作区干净 |
+| 工作与签字基线 | 工作入口459f9e5d，未签基线已由22a865bc提交固定；基线ID dc0524c092d3 |
 | 产品基线 | `8dfbc89b`；ABI 1.18、生成器 20、活动 intrinsic 最大 32、`cmath` planned |
-| 台账 | 30 confirmed / 0 pending；F-D为`not_started`；联合冻结未激活；产品未开工 |
-| 最近CI | `0a93f957`的workspace `41953275349`成功；该提交只变更DevDocs及其assets，未命中maintenance的任何push.paths（包含UseDocs/library、core/rust等），因此未触发，不记为通过 |
+| 台账 | 30 confirmed / 0 pending；F-D为`signed`，联合冻结已激活；产品未开工 |
+| 入口CI | `0a93f957`的workspace `41953275349`成功；该提交只变更DevDocs及其assets，未命中maintenance的任何push.paths（包含UseDocs/library、core/rust等），因此未触发，不记为通过 |
+| 签字准备CI | `22a865bc`的workspace `41959843609`成功；maintenance仍因未命中push.paths而未触发，见[准备提交CI](assets/20o-b2-freeze-d/entry-20261105/ci-preparation-22a865bc.json) |
 | F-C复核 | [复核记录](assets/20o-b2-freeze-c/review-fix-20261105/README.md)已补104条构成、收口CI与UseDocs范围 |
 | 前置修正 | F-C当前/历史清单已分开命名，CI时点措辞已修正；正文历史状态已整理，数值表/资源协议未变，签字准备见[F-D记录](assets/20o-b2-freeze-d/entry-20261105/README.md) |
 | 版本边界 | 仍为ABI 1.18、生成器20；B2-B才升1.19/21 |
 
 F-D不新增第31条裁定，也不重开F-1～F-12；它是30条精确契约的联合冻结签字闸门。
-本页只规划签字和状态切换，不把“已确认”自动写成“已签字”。
+本页记录三项实际批准和状态切换，见[签字原文](assets/20o-b2-freeze-d/entry-20261105/decision-receipts.json)；没有用30/0、预选或门禁替代实际签字。
 
 ## 二、F-D的三个签字对象
 
-| 编号 | 需要星崽实际答复的内容 | 关键边界 |
+| 编号 | 签字内容（三项均已实际批准） | 关键边界 |
 | --- | --- | --- |
 | F-Da | 是否批准30条已确认裁定作为B2联合冻结基线，并以当前草案/台账摘要为准 | 18条基础答复与12组精确项一致；无pending；不允许静默默认 |
 | F-Db | 是否批准激活联合冻结，并授权下一阶段为B2-A实施规划 | B2-A仍保持ABI 1.18/生成器20、不新增intrinsic；ABI变更必须回冻结；B2-B才使用1.19/21 |

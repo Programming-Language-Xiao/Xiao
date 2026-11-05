@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "entry_head": "459f9e5db0200bad178100bebe73915c61c58fff",
-  "status": "D-A前置与签字基线检查通过；待三项实际签字，not_started/未激活/产品未开工",
+  "status": "三项实际批准、单状态行/台账投影核验与签字后本地门禁通过；联合冻结激活，仅开放B2-A实施规划；待记录状态切换提交的真实CI",
   "signature_baseline": "signature-baseline.json",
   "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
-  "signature_status": "not_started",
-  "joint_freeze_activated": false,
+  "signature_status": "signed",
+  "joint_freeze_activated": true,
   "product_implementation_started": false,
   "decision_status": [
     30,
@@ -21,15 +21,19 @@
     },
     {
       "file": "README.md",
-      "sha256": "ee316cfcdeeda87c9c6ae1deccc2b18db058904bc0ba7759443e968a2ac1867f"
+      "sha256": "da9813216a0c1206a1685629bccafd147648bfd1029af9f1b4a40b3a0450633c"
     },
     {
       "file": "b2-a-planning-handoff.md",
-      "sha256": "44112efa618be81ce70812094dd6775129acdaef76b3b4c58238f53cc54660be"
+      "sha256": "96e3993ad2d05bc9375adc448574a03a1806c3921c87f4ad0f2006cbec3848f5"
     },
     {
       "file": "ci-entry-0a93f957.json",
       "sha256": "5d74d2d272163f1c95b09e671ff01110e65751cae307fb291da6bff843650cae"
+    },
+    {
+      "file": "ci-preparation-22a865bc.json",
+      "sha256": "a53f5fc1d2b5090cea8ffdfacb48af995eb363a67d100d0ac13318ebbd5a4276"
     },
     {
       "file": "coverage-38d6120d.snapshot.json",
@@ -40,8 +44,16 @@
       "sha256": "544be3c01b138b1e479e8ecd6ab6254bcf41b2773f7ec8ea0248afccf387a67e"
     },
     {
+      "file": "decision-receipts.json",
+      "sha256": "b61cfd0cd101bdb0bab801aa5b50fac83e505999b3667c9aa3099e1eb63785d2"
+    },
+    {
       "file": "decision-requests.json",
-      "sha256": "4e70697af97ee91afc35c385adf84b53bdfb3c3d3cd9d1ed116fad70684a6cd7"
+      "sha256": "dec50891ca30ce77472caccf168f1f220c0f38345d27252fbacb8dd241ce0e6f"
+    },
+    {
+      "file": "draft-after-signature.txt",
+      "sha256": "45fe0b27b9b7783a6872c325b64f8a5eaf1e3891a3fac406f506d9191eab359f"
     },
     {
       "file": "draft-before-signature.txt",
@@ -72,8 +84,40 @@
       "sha256": "a22bb48a6ee1cb6261b68fd1a8ed8cd1fa80bd89af9d4c2d79086d14df61cfc8"
     },
     {
+      "file": "ledger-after-signature.json",
+      "sha256": "9f075bf7f6256ea72a23ba7541bb05e8050f1f318b23f0ac3ae93e152abfccfe"
+    },
+    {
       "file": "ledger-before-signature.json",
       "sha256": "6da57fd4d3a05aeffd87af75187f7549589d8a82b3cd69070e323430621b5ec7"
+    },
+    {
+      "file": "ledger-state-changes.json",
+      "sha256": "5706e6724d8730bb0943d60acda3bc1ad88f9419acc98bd6dec5157585b42cbd"
+    },
+    {
+      "file": "post-check-docs.log",
+      "sha256": "d01009491ce33d3b2929579fd20d42177e570a6a223f6a7baeaa0301b014a3a8"
+    },
+    {
+      "file": "post-check-layout.log",
+      "sha256": "2ab83eb0f64ad1f19e692678749e3675e58bbccf2d1904cd97b6246b4236541f"
+    },
+    {
+      "file": "post-check-usedocs.log",
+      "sha256": "88d39520c2581e7595022d8397def4dbf51a11aa1564ed556128cc47749fe03c"
+    },
+    {
+      "file": "post-historical-104-replay.log",
+      "sha256": "a22bb48a6ee1cb6261b68fd1a8ed8cd1fa80bd89af9d4c2d79086d14df61cfc8"
+    },
+    {
+      "file": "post-signature-checks.json",
+      "sha256": "1e1fdccb07ad9a69f5de97fbeccfee72c24218e951c03b7bee5d73b783d405e4"
+    },
+    {
+      "file": "post-signature-integrity.log",
+      "sha256": "5ae40e51ed1997cdbca3e95b171eca4fd53a183308ea91b41c496d43d9114ace"
     },
     {
       "file": "pre-check-docs.log",
@@ -96,14 +140,48 @@
       "sha256": "85f5a4aca68d35b8f3f5d446fc3172967a97b09d855a4bf11f707a7cc128bdfd"
     },
     {
+      "file": "preparation-commit.json",
+      "sha256": "723e1c692905ad726e3b787e64402f1e7e95db728ebce8bd456166e2a26c54d3"
+    },
+    {
+      "file": "preparation-maintenance-push-runs-api.json",
+      "sha256": "a2790a384d7d281e7395679000c35d27768d89dbd7052f725b8f4688beb59915"
+    },
+    {
+      "file": "preparation-workspace-attempt1-jobs-api.json",
+      "sha256": "52dc7649c2c4978961297709bef70cb37f98a9964b43ac9365c0b627193e4d7e"
+    },
+    {
+      "file": "preparation-workspace-run-api.json",
+      "sha256": "cf5b2db99ad26866384dd49c372a1fa196f5abae6c277d8280ebe9bc798c7af9"
+    },
+    {
       "file": "signature-baseline.json",
       "sha256": "e70b6e8132a63a278fccbd41fc9cebf6b81326073358a3d9fb3132eaa1d8a7e5"
     },
     {
+      "file": "signature-transition.json",
+      "sha256": "2f04e7fe43f6efa2c676fc5790fe41032d61026756ea3e301e4d24086567f17f"
+    },
+    {
       "file": "source-facts.json",
       "sha256": "5a3881bcb1e7e8fff6e39a120a814025701a5a32fbdcab60dfd7d2236121e582"
+    },
+    {
+      "file": "status-line.diff",
+      "sha256": "6b3ac8467be8db0681541a8a768a20b8c199215f34bfcaef80213c2b8298c555"
+    },
+    {
+      "file": "usedocs-after-signature.json",
+      "sha256": "544b76c0f8a8d1148e24985a11a0d0f0da03f78ac7dd25ffc13c431243cf4533"
     }
   ],
   "pre_signature_checks": "pre-signature-checks.json",
-  "decision_requests": "decision-requests.json"
+  "decision_requests": "decision-requests.json",
+  "actual_approval_count": 3,
+  "decision_receipts": "decision-receipts.json",
+  "signature_transition": "signature-transition.json",
+  "post_signature_checks": "post-signature-checks.json",
+  "signed_draft_body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+  "next_entry": "B2-A implementation planning only"
 }

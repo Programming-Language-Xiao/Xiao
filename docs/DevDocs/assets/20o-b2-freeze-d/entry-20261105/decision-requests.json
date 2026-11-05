@@ -3,21 +3,14 @@
   "phase": "F-D_signature",
   "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
   "response_mode": "free_text_only_no_options_or_preselection",
-  "signature_status": "not_started",
-  "requests": [
-    {
-      "id": "F-Da",
-      "question": "F-Da｜是否批准基线dc0524c092d3（docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105/signature-baseline.json）中的30条已确认裁定作为B2联合冻结基线？草案正文SHA-256为8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff，台账、F-3/F-7实际答复与104条历史清单摘要均已固定。请明确批准、拒绝，或写出附带条件。"
-    },
-    {
-      "id": "F-Db",
-      "question": "F-Db｜是否授权在三项有效签字齐备后激活同一联合冻结，并将下一入口限定为B2-A实施规划？B2-A保持ABI1.18/生成器20、不新增intrinsic，突破边界须回冻结；B2-B仍后置使用1.19/21。本次签字不启动产品代码。请明确批准、拒绝，或写出附带条件。"
-    },
-    {
-      "id": "F-Dc",
-      "question": "F-Dc｜是否确认签字后的状态与证据边界：cmath继续planned；B1旧721条F10只作历史，B2-C在新快照完整重跑；22D/22C及19/11/22债务独立保留；产品仍未开工，签字只打开B2-A实施规划入口？请明确批准、拒绝，或写出附带条件。"
-    }
+  "signature_status": "signed",
+  "requests": [],
+  "actual_answers": 3,
+  "conditional_or_partial_does_not_activate": true,
+  "answered": [
+    "F-Da",
+    "F-Db",
+    "F-Dc"
   ],
-  "actual_answers": 0,
-  "conditional_or_partial_does_not_activate": true
+  "decision_receipts": "decision-receipts.json"
 }

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "phase": "F-D_post_signature",
+  "scope": "签字后文档、单状态行/台账投影及来源核验；不是产品或性能成绩",
+  "status": "passed",
+  "checks": [
+    {
+      "command": "bun run check:docs",
+      "exit_code": 0,
+      "log": "post-check-docs.log"
+    },
+    {
+      "command": "bun run check:usedocs",
+      "exit_code": 0,
+      "log": "post-check-usedocs.log"
+    },
+    {
+      "command": "bun run check:layout",
+      "exit_code": 0,
+      "log": "post-check-layout.log"
+    },
+    {
+      "command": "cmd /c git diff --exit-code 22a865bc -- core/rust stdlib tests .github/workflows tools .cargo/config.toml docs/module-registry.json .gitattributes package.json bun.lock",
+      "exit_code": 0
+    },
+    {
+      "command": "cmd /c git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "@'\nimport pathlib,subprocess,sys\nreadme=pathlib.Path('docs/DevDocs/assets/20o-b2-freeze-c/review-fix-20261105/README.md').read_text(encoding='utf-8')\nblock=readme.split('```powershell\\n',1)[1].split('\\n```',1)[0]\nresult=subprocess.run([sys.executable,'-'],input=block[3:-len(\"\\n'@ | python -\")].encode('utf-8'),check=True,stdout=subprocess.PIPE)\nprint(result.stdout.decode('utf-8'))\n'@ | python -",
+      "exit_code": 0,
+      "log": "post-historical-104-replay.log"
+    },
+    {
+      "command": "@'\nimport hashlib,json,pathlib,subprocess\nentry=pathlib.Path('docs/DevDocs/assets/20o-b2-freeze-d/entry-20261105')\nload=lambda path:json.loads(path.read_text(encoding='utf-8'))\nsha=lambda data:hashlib.sha256(data).hexdigest()\ncanon=lambda value:json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()\nb=load(entry/'signature-baseline.json')\nraw=pathlib.Path(b['draft']['file']).read_bytes().replace(b'\\r\\n',b'\\n')\nlines=raw.splitlines(keepends=True)\nindex=b['draft']['status_line_number']-1\nbody=b''.join(line for i,line in enumerate(lines) if i!=index)\nassert sha(body)==b['draft']['body_sha256']\nbefore=(entry/b['draft']['before_snapshot']).read_bytes().splitlines(keepends=True)\nassert len(before)==len(lines) and sum(a!=c for a,c in zip(before,lines))==1\nassert lines[index].decode().rstrip('\\n')==b['draft']['allowed_status_line_after']\nassert sha(raw)==load(entry/'signature-transition.json')['draft']['after_full_sha256']\nledger=load(pathlib.Path(b['ledger']['file']))\nassert ledger['f_d_signature_status']=='signed' and ledger['joint_freeze_activated'] and not ledger['product_implementation_started']\nassert sha(canon(ledger['items']))==b['ledger']['decision_items_sha256']\nassert (entry/'ledger-after-signature.json').read_bytes()==pathlib.Path(b['ledger']['file']).read_bytes()\nreceipts=load(entry/'decision-receipts.json')['receipts']\nassert len(receipts)==3 and all(r['answer']=='批准' and r['valid_for_activation'] and not r['conditional'] for r in receipts)\nfor i,r in enumerate(receipts):\n    assert json.loads(r['question_item_id'])==['request_user_input_async','call_6898d1976bb04b74a4040604f280685b',i]\nchanged=subprocess.check_output(['cmd','/c','git','diff','--name-only','22a865bc','--','docs/UseDocs']).decode().splitlines()\nassert changed==['docs/UseDocs/library/cmath.md'] and 'status: planned' in pathlib.Path(changed[0]).read_text(encoding='utf-8')\nprint(json.dumps({'passed':True,'body_sha256':sha(body),'only_line_changed':index+1,'decision_items_unchanged':True,'signature_status':'signed','joint_freeze_activated':True,'product_started':False,'usedocs_allowed_files':changed}))\n'@ | python -",
+      "exit_code": 0,
+      "log": "post-signature-integrity.log"
+    }
+  ],
+  "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+  "actual_approvals": 3,
+  "decision_status": [
+    30,
+    0
+  ],
+  "f_d_signature_status": "signed",
+  "joint_freeze_activated": true,
+  "product_implementation_started": false,
+  "draft_body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+  "signed_draft_full_sha256": "45fe0b27b9b7783a6872c325b64f8a5eaf1e3891a3fac406f506d9191eab359f",
+  "only_status_line_changed": true,
+  "ledger_decision_items_unchanged": true,
+  "actual_runtime_abi": "1.18",
+  "actual_codegen": 20,
+  "active_intrinsic_max": 32,
+  "cmath": "planned",
+  "new_numeric_dependencies_built": false,
+  "new_performance_measurements": false,
+  "state_commit_ci": "will_be_recorded_for_actual_commit_after_push"
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "22a865bc2c5e6dbc688cf2c99805462a805b5d50",
+  "actual_changed_files": [
+    "docs/UseDocs/library/cmath.md"
+  ],
+  "allowed_changed_files": [
+    "docs/UseDocs/library/cmath.md"
+  ],
+  "scope": "只同步F-D签字/仅B2-A规划入口说明，front matter仍planned，未新增产品示例",
+  "allowlist_matched": true,
+  "gate": "bun run check:usedocs",
+  "registry_changed": false
+}

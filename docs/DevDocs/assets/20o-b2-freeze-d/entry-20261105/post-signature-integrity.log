@@ -1,0 +1,2 @@
+warning: in the working copy of 'docs/UseDocs/library/cmath.md', LF will be replaced by CRLF the next time Git touches it
+{"passed": true, "body_sha256": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff", "only_line_changed": 3, "decision_items_unchanged": true, "signature_status": "signed", "joint_freeze_activated": true, "product_started": false, "usedocs_allowed_files": ["docs/UseDocs/library/cmath.md"]}

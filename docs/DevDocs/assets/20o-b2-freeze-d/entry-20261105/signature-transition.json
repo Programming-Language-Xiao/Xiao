@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "baseline_id": "dc0524c092d35ab145daa8d4b08dd452de75f6ee894fdb593cb039b71753a98d",
+  "signature_status": "signed",
+  "joint_freeze_activated": true,
+  "product_implementation_started": false,
+  "actual_receipt_count": 3,
+  "receipt_file": "decision-receipts.json",
+  "receipt_sha256": "b61cfd0cd101bdb0bab801aa5b50fac83e505999b3667c9aa3099e1eb63785d2",
+  "draft": {
+    "file": "docs/DevDocs/20o-b2-freeze-draft.md",
+    "before_snapshot": "draft-before-signature.txt",
+    "after_snapshot": "draft-after-signature.txt",
+    "before_full_sha256": "7857599c175742389dede72b82730bd1aebe041d221d26bb1cc99f8e9852f935",
+    "after_full_sha256": "45fe0b27b9b7783a6872c325b64f8a5eaf1e3891a3fac406f506d9191eab359f",
+    "body_sha256_before": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+    "body_sha256_after": "8bca48018be3bf2cf38f615d7cf35d55a0ff9745f73e3c196161abd854d286ff",
+    "only_status_line_changed": true,
+    "changed_line_number": 3,
+    "diff": "status-line.diff"
+  },
+  "ledger": {
+    "file": "docs/DevDocs/assets/20o-b2-freeze-close/entry-20261103/decision-ledger.json",
+    "before_snapshot": "ledger-before-signature.json",
+    "after_snapshot": "ledger-after-signature.json",
+    "before_full_sha256": "6da57fd4d3a05aeffd87af75187f7549589d8a82b3cd69070e323430621b5ec7",
+    "after_full_sha256": "9f075bf7f6256ea72a23ba7541bb05e8050f1f318b23f0ac3ae93e152abfccfe",
+    "items_sha256_before": "999fbfa7988e03d67444f1d51aa1cec86c2cd9f1095ef1674c9a9ba9943f76a7",
+    "items_sha256_after": "999fbfa7988e03d67444f1d51aa1cec86c2cd9f1095ef1674c9a9ba9943f76a7",
+    "changes": "ledger-state-changes.json"
+  },
+  "next_entry": "B2-A implementation planning only",
+  "f_c_historical_audit_rewritten": false
+}
