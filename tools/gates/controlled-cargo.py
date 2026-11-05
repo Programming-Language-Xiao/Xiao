@@ -62,7 +62,7 @@ def install():
     with Path(os.environ["GITHUB_PATH"]).open("a", encoding="utf-8", newline="\n") as path_file:
         path_file.write(str(directory) + "\n")
     print(json.dumps({"cargo_control_directory": str(directory), "delegate": delegate,
-                      "scope": "仅当前CI作业后续步骤；不改全局环境或Cargo配置"}, ensure_ascii=False))
+                      "scope": "仅当前CI作业后续步骤；不改全局环境或Cargo配置"}, ensure_ascii=True))
 
 
 def self_test(directory):
@@ -83,7 +83,7 @@ def self_test(directory):
         observed = json.loads(output.read_text(encoding="utf-8"))
         assert actual_exit == exit_code and observed["argv"] == expected
         assert observed["numeric_environment"] == [] and observed["sentinel"] == "unchanged"
-    print("F7-CARGO-SELF-TEST passed=3 total=3; 检查参数、全部前缀清理、退出码和非数值环境保留")
+    print("F7-CARGO-SELF-TEST passed=3 total=3")
 
 
 if __name__ == "__main__":
