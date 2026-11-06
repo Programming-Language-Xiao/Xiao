@@ -1,0 +1,10 @@
+{
+  "code_commit": "5ef17bb23453f1e308a56f390734467822db3231",
+  "run_id": 42169630252,
+  "job_id": 127734143987,
+  "job_name": "Rust workspace default tests (Linux)",
+  "conclusion": "success",
+  "log": "ci-kernel-linux.log",
+  "log_sha256": "c6d7c7fd8fe907eddf07eee05068f63be76ac63e519750310b8961a52c4f305e",
+  "scope": "Linux默认workspace的Runtime内核；不冒充A5语言或A6性能"
+}

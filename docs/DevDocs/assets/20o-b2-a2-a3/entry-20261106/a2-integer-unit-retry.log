@@ -1,0 +1,14 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\source\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 21.63s
+     Running unittests src\lib.rs (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\cargo-target\debug\deps\xiao_runtime-c60947cb4f0f97f6.exe)
+
+running 6 tests
+test value::arithmetic::integer_tests::arithmetic_integer_floor_pairs_cover_all_signs ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_input_order_and_bool_parity_are_stable ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_values_do_not_narrow_to_host_widths ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_division_errors_keep_the_frozen_order ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_limits_and_cancellation_are_atomic ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_power_bounds_preserve_fast_paths ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 194 filtered out; finished in 0.52s
+

@@ -1,0 +1,26 @@
+{
+  "source": "final-arithmetic-admission.log实际通过行",
+  "tests": [
+    "value::arithmetic::decimal_tests::arithmetic_decimal_display_scales_and_identities_are_preserved",
+    "value::arithmetic::decimal_tests::arithmetic_decimal_finite_division_matches_independent_small_reference",
+    "value::arithmetic::decimal_tests::arithmetic_decimal_mixed_binary_inputs_are_lifted_exactly",
+    "value::arithmetic::decimal_tests::arithmetic_decimal_order_is_numeric_and_exact",
+    "value::arithmetic::decimal_tests::arithmetic_decimal_power_preserves_frozen_scales_and_domains",
+    "value::arithmetic::decimal_tests::arithmetic_decimal_small_rational_reference_covers_signs_and_scales",
+    "value::arithmetic::integer_tests::arithmetic_integer_division_errors_keep_the_frozen_order",
+    "value::arithmetic::integer_tests::arithmetic_integer_floor_pairs_cover_all_signs",
+    "value::arithmetic::integer_tests::arithmetic_integer_input_order_and_bool_parity_are_stable",
+    "value::arithmetic::integer_tests::arithmetic_integer_limits_and_cancellation_are_atomic",
+    "value::arithmetic::integer_tests::arithmetic_integer_power_bounds_preserve_fast_paths",
+    "value::arithmetic::integer_tests::arithmetic_integer_values_do_not_narrow_to_host_widths",
+    "value::arithmetic::resource_tests::arithmetic_decimal_dense_modulus_reaches_the_work_boundary",
+    "value::arithmetic::resource_tests::arithmetic_decimal_exact_division_keeps_failure_identities_and_order",
+    "value::arithmetic::resource_tests::arithmetic_decimal_finite_division_and_power_exact_limits",
+    "value::arithmetic::resource_tests::arithmetic_decimal_non_finite_precedes_operator_domain_after_inputs",
+    "value::arithmetic::resource_tests::arithmetic_decimal_remainder_d_plus_one_boundary_is_checked_exactly",
+    "value::arithmetic::resource_tests::arithmetic_decimal_remainder_does_not_materialize_the_quotient",
+    "value::arithmetic::resource_tests::arithmetic_decimal_scale_limits_precede_expensive_construction",
+    "value::arithmetic::resource_tests::arithmetic_decimal_work_limits_and_cancellation_keep_inputs_unchanged",
+    "value::arithmetic::resource_tests::arithmetic_high_precision_negation_checks_admission_before_zero"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "scope": "A1已有三个完整示例的O0/O3回归，不是A5新算术语言差分",
+  "runtime_and_adapter_unchanged_after_tests": true,
+  "tools": [
+    {
+      "role": "XIAO_RUNTIME_LIBRARY",
+      "path": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\cargo-target\\release\\xiao_runtime.lib",
+      "bytes": 27063248,
+      "sha256": "bfa69a94fdbfaa17a0c584a736790b164368a6dbf3f1367737d5352b1f8d1aad"
+    },
+    {
+      "role": "XIAO_RUST_DOC_ADAPTER",
+      "path": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\cargo-target\\debug\\xiao-doc-coverage-rust.exe",
+      "bytes": 2074112,
+      "sha256": "ac212826ebb582c17057ba38d08fdbe5437cd439cf3a2546599e5a462b3d575e"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\run-temp\\xiao-b2-a1-native-30356-1793944534701679000\\a1_identity-o0.exe",
+      "bytes": 1159680,
+      "sha256": "4524fdfb7591500848882c30de68b3d5aec37f47241f743316b59ab83a4c2d08"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\run-temp\\xiao-b2-a1-native-30356-1793944534701679000\\a1_identity-o3.exe",
+      "bytes": 1158656,
+      "sha256": "946baaf060918330fec422a6a727d206adc28f79ae15c31345f60928b70490a8"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\run-temp\\xiao-b2-a1-native-30356-1793944534701679000\\a1_admission_error-o0.exe",
+      "bytes": 1023488,
+      "sha256": "ac8a0195a6048406de498432fc613bb5b5f9dca5afa6d253ca82dc44b37effe9"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\run-temp\\xiao-b2-a1-native-30356-1793944534701679000\\a1_admission_error-o3.exe",
+      "bytes": 1022976,
+      "sha256": "2b1e22dda03065bbe374abc10aea1388ad60611436b3a9bf39445eb291dc975f"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\run-temp\\xiao-b2-a1-native-30356-1793944534701679000\\a1_pending_finally-o0.exe",
+      "bytes": 1027584,
+      "sha256": "3ebbb9440f1d9947030454d561fc26c65d7c239801736bb6c4d7c509df9f9d4a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\run-temp\\xiao-b2-a1-native-30356-1793944534701679000\\a1_pending_finally-o3.exe",
+      "bytes": 1027072,
+      "sha256": "68670d0840b42b3acf2596a47f55dc564d00630c0a707b191192a1ef85c49104"
+    }
+  ],
+  "internal_only": true
+}

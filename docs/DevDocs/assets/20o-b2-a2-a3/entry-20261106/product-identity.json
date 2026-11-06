@@ -1,0 +1,94 @@
+{
+  "code_commit": "5ef17bb23453f1e308a56f390734467822db3231",
+  "recorded_utc": "2026-11-06T05:41:23.017432+00:00",
+  "source_root": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\source",
+  "task_root": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24",
+  "versions_scope": "只读工具版本探测；构建/测试/检查另按--locked执行",
+  "tool_versions": [
+    {
+      "name": "rustc",
+      "argv": [
+        "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "-vV"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\source",
+      "pid": 51292,
+      "exit_code": 0,
+      "log": "tool-version-rustc.log",
+      "sha256": "2efe229f7908c2c19f459ca734101a5b35cb482476b8bee1357f94a18c766078"
+    },
+    {
+      "name": "cargo",
+      "argv": [
+        "D:/Program Files/.cargo/bin/cargo.exe",
+        "+1.96.0",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\source",
+      "pid": 39600,
+      "exit_code": 0,
+      "log": "tool-version-cargo.log",
+      "sha256": "b6ef6807dd96d18b833474ad68e7a23a29e562a29c67afa71a59fb9a73df0068"
+    },
+    {
+      "name": "clang",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\source",
+      "pid": 16168,
+      "exit_code": 0,
+      "log": "tool-version-clang.log",
+      "sha256": "5c075035dbde6a78b05a8d921e0769dd24814486efecbcdbe7035527701858b2"
+    },
+    {
+      "name": "bun",
+      "argv": [
+        "C:/Users/xiaoc/node_modules/bun/bin/bun.exe",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\source",
+      "pid": 65420,
+      "exit_code": 0,
+      "log": "tool-version-bun.log",
+      "sha256": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7"
+    },
+    {
+      "name": "python",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\source",
+      "pid": 66016,
+      "exit_code": 0,
+      "log": "tool-version-python.log",
+      "sha256": "7c4c5588f4cfc8388240eff9d1c33bc7cfb24d52a440f4367b6c4199c558be80"
+    }
+  ],
+  "artifacts": [
+    {
+      "role": "XIAO_RUNTIME_LIBRARY",
+      "path": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\cargo-target\\release\\xiao_runtime.lib",
+      "bytes": 27063248,
+      "sha256": "bfa69a94fdbfaa17a0c584a736790b164368a6dbf3f1367737d5352b1f8d1aad"
+    },
+    {
+      "role": "XIAO_RUST_DOC_ADAPTER",
+      "path": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\cargo-target\\debug\\xiao-doc-coverage-rust.exe",
+      "bytes": 2074112,
+      "sha256": "ac212826ebb582c17057ba38d08fdbe5437cd439cf3a2546599e5a462b3d575e"
+    }
+  ],
+  "internal_only": true,
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 32,
+  "typescript": {
+    "version": "5.9.3",
+    "strategy": "从主工作区实体复制到本源码根内；无junction、不改锁",
+    "source": "D:/project/Xiao/Xiao/tools/doc-coverage/node_modules/typescript",
+    "destination": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\source\\tools\\doc-coverage\\node_modules\\typescript"
+  }
+}

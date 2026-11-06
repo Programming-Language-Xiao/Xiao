@@ -1,0 +1,26 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\source\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.22s
+     Running unittests src\lib.rs (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\cargo-target\debug\deps\xiao_runtime-c60947cb4f0f97f6.exe)
+
+running 18 tests
+test value::arithmetic::decimal_tests::arithmetic_decimal_order_is_numeric_and_exact ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_display_scales_and_identities_are_preserved ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_mixed_binary_inputs_are_lifted_exactly ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_finite_division_matches_independent_small_reference ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_floor_pairs_cover_all_signs ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_power_preserves_frozen_scales_and_domains ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_input_order_and_bool_parity_are_stable ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_division_errors_keep_the_frozen_order ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_values_do_not_narrow_to_host_widths ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_exact_division_keeps_failure_identities_and_order ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_non_finite_precedes_operator_domain_after_inputs ... ok
+test value::arithmetic::decimal_tests::arithmetic_decimal_small_rational_reference_covers_signs_and_scales ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_remainder_does_not_materialize_the_quotient ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_scale_limits_precede_expensive_construction ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_remainder_d_plus_one_boundary_is_checked_exactly ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_limits_and_cancellation_are_atomic ... ok
+test value::arithmetic::integer_tests::arithmetic_integer_power_bounds_preserve_fast_paths ... ok
+test value::arithmetic::resource_tests::arithmetic_decimal_work_limits_and_cancellation_keep_inputs_unchanged ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 194 filtered out; finished in 0.84s
+

@@ -1,0 +1,75 @@
+{
+  "entry_checks": [
+    "a1-entry-audit",
+    "a1-entry-tests",
+    "b1-entry-contract",
+    "b1-entry-resources"
+  ],
+  "effective_checks": [
+    "final-arithmetic-admission",
+    "close-package-tests",
+    "close-clippy",
+    "close-rustfmt",
+    "close-build-runtime-release",
+    "close-build-runtime-adapter",
+    "close-b1-contract",
+    "close-b1-resources",
+    "close-b1-vm-exact",
+    "close-b1-native-exact",
+    "close-workspace-check",
+    "close-benchmarks-check",
+    "close-docs-final",
+    "close-b1-guards",
+    "close-a1-vm-exact",
+    "close-a1-native-exact"
+  ],
+  "exact_test_counts": {
+    "final-arithmetic-admission": 21,
+    "close-b1-contract": 9,
+    "close-b1-resources": 17,
+    "close-b1-vm-exact": 1,
+    "close-b1-native-exact": 1,
+    "close-a1-vm-exact": 1,
+    "close-a1-native-exact": 1
+  },
+  "historical_failures": [
+    "a2-integer-unit",
+    "a3-arithmetic-unit",
+    "local-docs-code-snapshot",
+    "final-b1-resources"
+  ],
+  "historical_successes_not_final_snapshot": [
+    "a1-entry-audit",
+    "a1-entry-tests",
+    "b1-entry-contract",
+    "b1-entry-resources",
+    "a2-integer-unit-retry",
+    "a2-runtime",
+    "a3-arithmetic-unit-retry",
+    "a3-arithmetic-boundaries",
+    "final-package-tests",
+    "final-b1-guards",
+    "final-clippy",
+    "final-build-runtime-adapter",
+    "final-build-runtime-release",
+    "final-b1-contract",
+    "close-docs-code"
+  ],
+  "source_scope": [
+    "core/rust",
+    "stdlib",
+    "tests/fixtures",
+    "tests/benchmarks",
+    ".github/workflows",
+    ".cargo",
+    "tools",
+    "cli/ts",
+    "docs/UseDocs",
+    "docs/module-registry.json",
+    "package.json",
+    "bun.lock",
+    ".gitattributes"
+  ],
+  "source_files": 979,
+  "note": "整份源码清单覆盖产品、UseDocs、registry、工具与锁；DevDocs滚动证据不计入产品输入树"
+}

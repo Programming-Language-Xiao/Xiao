@@ -1,0 +1,27 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.98s
+     Running tests\20o_b1_imp_resources.rs (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\cargo-target\debug\deps\20o_b1_imp_resources-9eea0b75d3348bc0.exe)
+
+running 17 tests
+test base64_standard_accepts_the_frozen_maximum ... ok
+test base64_url_safe_accepts_the_frozen_maximum ... ok
+test csv_accepts_the_maximum_ascii_record ... ok
+test csv_accepts_the_maximum_field_count ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet has been running for over 60 seconds
+test csv_accepts_the_maximum_unicode_record ... ok
+test csv_accepts_the_maximum_quoted_record ... ok
+test base64_checks_actual_decoded_size_after_the_last_quartet ... ok
+test csv_parse_budget_and_syntax_priority_is_positional ... ok
+test fmt_checks_both_radix_bounds_and_padding_argument_domains ... ok
+test csv_accepts_the_maximum_multiline_record ... ok
+test hex_accepts_the_frozen_maximum_input_and_output ... ok
+test csv_rejects_every_format_budget_dimension ... ok
+test url_decoding_reaches_the_ascii_result_budget ... ok
+test url_encoding_reaches_the_unicode_output_budget ... ok
+test url_decoding_reaches_the_unicode_result_budget ... ok
+test url_encoding_reaches_the_ascii_output_budget ... ok
+test url_limits_and_mixed_error_order_are_streamed has been running for over 60 seconds
+test url_limits_and_mixed_error_order_are_streamed ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 216.18s
+

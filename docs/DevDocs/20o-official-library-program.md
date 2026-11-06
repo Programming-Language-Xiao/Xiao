@@ -6,7 +6,7 @@
 > 并对数值计算做专项研究。新接手的 Agent 必须从本文件开始读。
 >
 > 状态：**总纲与B1契约已确认；七库IMP/REM已交付，CLOSE已收口、七库教程/registry为verified，106b99c7的41498029910/41498029872通过（2026-11-03）**。
-> B2数值基础批的依赖、值表示、舍入、NaN/域错误、限额、资源/性能与ABI契约均已由星崽逐项确认（30/0）；**F-D已实际签字、联合冻结已激活；B2-A实施规划已批准，A0 Windows本地基线已通过，A1依赖与身份层已退出，A2～A7后置**，见[A0记录](20o-b2-a0-baseline-plan.md)与[数值冻结收口规划](20o-b2-freeze-closeout-plan.md)。
+> B2数值基础批的依赖、值表示、舍入、NaN/域错误、限额、资源/性能与ABI契约均已由星崽逐项确认（30/0）；**F-D已实际签字、联合冻结已激活；B2-A实施规划已批准，A0 Windows本地基线已通过，A1依赖与身份层已退出；A2/A3内核已完成本批验收，A4～A7后置**，见[A0记录](20o-b2-a0-baseline-plan.md)与[数值冻结收口规划](20o-b2-freeze-closeout-plan.md)。
 > B1进度见[B1-CLOSE收口](20o-b1-closeout.md)，B2精确裁定见[冻结草案](20o-b2-freeze-draft.md)。原规划基线为6dc0773，原规划/B0/FIX-A只做研究、探测与拆分，
 > 当时未改变ABI1.17；后续独立FIX-B已实现ABI1.18，生成器当前为20。本总纲不写产品函数体。
 > **已确认（2026-11-01）：D-1 取甲（成熟 Rust 数值库）、B1 首批范围、
@@ -207,7 +207,7 @@ Rust 数值底座；字符串往返精确，除法需显式精度与舍入。精
 | --- | --- | --- | --- |
 | B0 | 总纲/目录复核、D-1～D-22 逐条裁定、基线门禁、B1 探测/教程与冻结草案 | 无 | [B0记录](20o-b0-baseline-and-b1-draft.md)；方向确认完成，B1细项随后在FIX-A逐条冻结 |
 | B1 | 七项一起冻结：math、hex、base64、url、csv 记录子集、fmt、statistics 整数子集 | error_code共同前置、精确契约确认与三平台探测已完成 | [冻结契约](20o-b1-freeze-draft.md)；IMP/REM已交付20/20及721条F10，教程/registry在[CLOSE](20o-b1-closeout.md)同步verified，新状态门禁另记 |
-| B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | [规划](20o-b2-numeric-foundation-plan.md) / [冻结草案](20o-b2-freeze-draft.md) / [收口规划](20o-b2-freeze-closeout-plan.md) / [F-A](20o-b2-freeze-a-numeric-semantics-plan.md) / [F-A收口](20o-b2-freeze-a-closeout-plan.md) / [F-B](20o-b2-freeze-b-contract-plan.md) / [F-B1](20o-b2-freeze-b1-closeout-plan.md) / [F-B2](20o-b2-freeze-b2-version-matrix-plan.md) / [F-B3](20o-b2-freeze-b3-error-table-plan.md) / [F-C](20o-b2-freeze-c-resource-dependency-plan.md) / [F-D](20o-b2-freeze-d-signature-plan.md) / [B2-A](20o-b2-a-implementation-plan.md) / [A0](20o-b2-a0-baseline-plan.md) / [A1](20o-b2-a1-dependency-value-identity-plan.md) / [A2-A3](20o-b2-a2-a3-arithmetic-plan.md)；F-A/F-B/F-C裁定30/0，F-D已签字并激活联合冻结；A0 Windows本地基线已通过，A1已退出，B2-A整批未收口 |
+| B2 | 数值基础批：`lint`/`lfloat` 算术与转换、浮点原语、`cmath`（首批含超越函数） | B0；ABI 次版本 | [规划](20o-b2-numeric-foundation-plan.md) / [冻结草案](20o-b2-freeze-draft.md) / [收口规划](20o-b2-freeze-closeout-plan.md) / [F-A](20o-b2-freeze-a-numeric-semantics-plan.md) / [F-A收口](20o-b2-freeze-a-closeout-plan.md) / [F-B](20o-b2-freeze-b-contract-plan.md) / [F-B1](20o-b2-freeze-b1-closeout-plan.md) / [F-B2](20o-b2-freeze-b2-version-matrix-plan.md) / [F-B3](20o-b2-freeze-b3-error-table-plan.md) / [F-C](20o-b2-freeze-c-resource-dependency-plan.md) / [F-D](20o-b2-freeze-d-signature-plan.md) / [B2-A](20o-b2-a-implementation-plan.md) / [A0](20o-b2-a0-baseline-plan.md) / [A1](20o-b2-a1-dependency-value-identity-plan.md) / [A2-A3](20o-b2-a2-a3-arithmetic-plan.md)；F-A/F-B/F-C裁定30/0，F-D已签字并激活联合冻结；A0 Windows本地基线已通过，A1已退出；A2/A3内核已完成本批验收，B2-A整批未收口 |
 | B3 | 简单宿主批：`time`（UTC + sleep）、`args`/`cli`、`fs` 扩展、`env`、`log` 时间戳 | B0；ABI | 能力/错误/取消/三平台 |
 | B4 | JSON/TOML 值模型 + `json`/`toml` 解析器 | B0；语言冻结 | 类型/IR/两后端/生命周期 |
 | B5 | 数值库批：`decimal`、`fractions`、`statistics` 浮点、确定性 `random` | B2 | 精度/舍入/边界/三平台 |

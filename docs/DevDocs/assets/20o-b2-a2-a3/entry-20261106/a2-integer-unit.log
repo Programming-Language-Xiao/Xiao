@@ -1,0 +1,30 @@
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\source\core\rust\crates\xiao-i18n)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\source\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\source\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\source\core\rust\crates\xiao-types)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\source\core\rust\crates\xiao-lifetime)
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a2-a3-arithmetic\20261106-68ec96014f24\source\core\rust\crates\xiao-runtime)
+warning: unused import: `num_bigint::BigInt`
+ --> crates\xiao-runtime\src\value\arithmetic\integer.rs:4:5
+  |
+4 | use num_bigint::BigInt;
+  |     ^^^^^^^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0282]: type annotations needed
+  --> crates\xiao-runtime\src\value\arithmetic\integer_tests.rs:58:9
+   |
+58 |     let non_terminating = finite_denominator * 3;
+   |         ^^^^^^^^^^^^^^^
+59 |     assert_eq!(lint("1").divide(&lint(&non_terminating.to_str_radix(10))).unwrap_err().code(), "X06-RUNTIME-034");
+   |                                        --------------- type must be known at this point
+   |
+help: consider giving `non_terminating` an explicit type
+   |
+58 |     let non_terminating: /* Type */ = finite_denominator * 3;
+   |                        ++++++++++++
+
+For more information about this error, try `rustc --explain E0282`.
+warning: `xiao-runtime` (lib test) generated 1 warning
+error: could not compile `xiao-runtime` (lib test) due to 1 previous error; 1 warning emitted

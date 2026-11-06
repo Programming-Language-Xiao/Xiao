@@ -1,0 +1,14 @@
+{
+  "initial_attempt": "ci-poll-20261106T053929.json",
+  "initial_stderr": "ci-poll-20261106T053929.json.stderr.log",
+  "initial_result": "GitHub API直连TCP超时；不作为CI结论",
+  "retry_strategy": "读取现有git http.proxy，仅为gh子进程设置HTTP_PROXY/HTTPS_PROXY",
+  "proxy_source": "现有Git配置的127.0.0.1:7897",
+  "global_environment_changed": false,
+  "code_commit": "5ef17bb23453f1e308a56f390734467822db3231",
+  "actual_runs": {
+    "maintenance": 42169630252,
+    "workspace": 42169630412
+  },
+  "first_successful_query_status": "两项in_progress；不声称通过"
+}

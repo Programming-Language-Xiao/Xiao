@@ -1,6 +1,6 @@
 # 20O-B2-A2/A3 算术实施记录
 
-> 按[已批准规划](20o-b2-a2-a3-arithmetic-plan.md)执行，仅实现Runtime内核。A4转换、A5完整语言接线、A6性能及A7整批收口后置。
+> **A2/A3内核已完成本批验收（2026-11-06）**。按[已批准规划](20o-b2-a2-a3-arithmetic-plan.md)执行，仅实现Runtime内核。A4转换、A5完整语言接线、A6性能及A7整批收口后置。
 
 ## 入口与A2阶段
 
@@ -16,7 +16,7 @@ A2已接入涉及lint的整数族加减乘、精确除法、floor商余、幂和
 
 A3已按F-3/F-4/F-10接入十进制加减乘、精确有限除法、有界商余和幂；算子私有提升按IEEE位模式恢复float/sfloat的精确数值，不扩大A4公开转换矩阵。
 
-`a3-arithmetic-unit`首轮因测试使用错误的SetHandle导出路径编译失败，已保留日志；修正后18项通过。最终补齐最大非零模乘和2因子有限除法边界，`a3-arithmetic-boundaries`共20项通过，覆盖：
+`a3-arithmetic-unit`首轮因测试使用错误的SetHandle导出路径编译失败，已保留日志；修正后18项通过。随后补齐最大非零模乘和2因子有限除法边界，`a3-arithmetic-boundaries`共20项通过，覆盖：
 
 - 小范围独立i128有理数参考，四符号/不同scale的加减乘、商余和有限除法；
 - `1.00/2=0.50`、零不抬高scale、显示/规范身份及实际Xiao集合去重；
@@ -26,8 +26,12 @@ A3已按F-3/F-4/F-10接入十进制加减乘、精确有限除法、有界商余
 
 后续自查将高精度一元负号改为共享接纳/系数/结果封装，删除旧的“零先归一化”文本捷径，补齐坏语法与零指数/原文超限测试。`final-arithmetic-admission`现为21项通过。
 
-初轮四包回归、Clippy workspace/all-targets、B1契约9项和28/28守卫已通过。`final-b1-resources`保留16通过/1失败：Unicode URL最大解码触发X09-DRIVER-002；没有修改资源测试或看门狗。新增调度已把定宽热路径收敛为内联标签检查，高精度分派留在独立函数；本次修正后的完整回归正在重新采集，不能以初轮成功代替最终源码验收。
+`final-b1-resources`原始16通过/1失败保留：Unicode URL最大解码触发X09-DRIVER-002；没有修改资源测试或看门狗。新增调度已把定宽热路径收敛为内联标签检查，高精度分派留在独立函数；修正后同一冻结源码的`close-b1-resources`完整17/17通过，不用初轮成功代替最终源码验收。
 
-初轮文档门禁指出证据README缺失及六个新增字段缺Rustdoc，已补齐，保留失败日志。CI和有效收口仍在收集，本页尚不声明本批验收完成；以最终closeout.json为准。
+初轮文档门禁指出证据README缺失及六个新增字段缺Rustdoc，已补齐，保留失败日志。最终21项、相关四包、Clippy、格式、workspace/benchmark、B1契约9项/资源17项、VM与原生精确各1项、28/28守卫均通过；A1三个完整示例也以VM和原生O0/O3回归，保存六个实际产物摘要。
+
+代码阶段分别提交为A2 `9ef111a5`、A3 `5ef17bb23453f1e308a56f390734467822db3231`。[工作区CI 42169630412](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42169630412)和[维护回归42169630252](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42169630252)均成功。21项内核的CI执行点是Linux默认workspace作业127734143987；三平台现有原生回归通过，不把它写成A5新算术语言差分。
+
+有效退出和全部命令以证据目录的`closeout.json`、`commands.json`为准；只读复核入口为`audit.py`。本次代码CI绑定5ef17bb2；后续文档收口提交不冒称已经包含在这两个运行内。新快照包含979项产品/工具/UseDocs输入，原始CRLF和UTF-8/LF规范摘要分别保留。
 
 版本保持ABI1.18/生成器20，活动intrinsic最大32；依赖、锁文件、XCON、stdlib产品和registry不变。cmath继续planned；旧721条F10不运行；22C/22D及19/11/22债务独立。

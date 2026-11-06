@@ -1,7 +1,7 @@
 # 20O-B2-A2-A3. `lint`/`lfloat` 算术实施规划
 
 > **本页保存A2/A3原实施规划；规划提交当时未写产品、变更依赖或执行构建测试。当前实施进度见[算术实施记录](20o-b2-a2-a3-arithmetic-progress.md)。**
-> 入口为 A1 代码快照`39b2c1ea`及A1有效收口；A2/A3内核已实现并通过本地21项边界，正在收集回归与CI证据，B2-A整批未收口。
+> 入口为 A1 代码快照`39b2c1ea`及A1有效收口；A2/A3内核已完成本批验收：21项、B1回归与代码CI通过，B2-A整批未收口。
 > A2/A3只实现Runtime数值内核，完整类型/IR/TAC/VM/LLVM/语言路径由A5接线验收；本批不新增ABI/intrinsic，不实现`lfloat_divide`/`cmath`。
 > A0的`result.json`失败身份仍保留；A0只以`closeout.json`作为有效收口。
 
@@ -13,7 +13,7 @@
 | A1代码快照 | `39b2c1ea72939b20ea48d096e03b3a515bf81127`；A1证据262项、源码输入964项 |
 | 版本 | ABI 1.18、`CODEGEN_VERSION` 20、活动intrinsic最大32、`cmath` planned |
 | 数据 | `Lint`/`Lfloat`文本标签保留；A1适配层可用；语言字典仍为str键 |
-| 实施 | A2 lint/A3 lfloat内核已实现，本批证据收集中；A4转换、A5全链路、A6性能、A7收口后置 |
+| 实施 | A2 lint/A3 lfloat内核已完成本批验收；A4转换、A5全链路、A6性能、A7收口后置 |
 | 历史 | B1旧721条F10只作历史；22D/22C、19/11/22债务独立 |
 
 A2/A3的产品边界是**Runtime内核值与身份**，不是完整语言交付。即使内核测试通过，A5未汇合前不能声称VM/LLVM语言路径完成。

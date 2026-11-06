@@ -1,0 +1,41 @@
+{
+  "name": "a3-arithmetic-boundaries",
+  "argv": [
+    "D:\\Program Files\\.cargo\\bin\\cargo.exe",
+    "+1.96.0",
+    "test",
+    "--locked",
+    "--manifest-path",
+    "core/rust/Cargo.toml",
+    "-p",
+    "xiao-runtime",
+    "--lib",
+    "arithmetic::",
+    "--",
+    "--nocapture"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\source",
+  "started_utc": "2026-11-06T05:21:42.072123+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "a3-arithmetic-boundaries.log",
+  "pid": 53288,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/b6163d49cf4f0558bfbb2115239310c5f31bdd2095bb8927e1acd3ccc8444845.json",
+    "raw_tree_sha256": "b6163d49cf4f0558bfbb2115239310c5f31bdd2095bb8927e1acd3ccc8444845",
+    "utf8_lf_tree_sha256": "443bf81929759bde355f257fc5fbb8b4c23cbe5cfead35fc7f65f2060bd600c3",
+    "files": 979
+  },
+  "source_after": {
+    "manifest": "source-manifests/b6163d49cf4f0558bfbb2115239310c5f31bdd2095bb8927e1acd3ccc8444845.json",
+    "raw_tree_sha256": "b6163d49cf4f0558bfbb2115239310c5f31bdd2095bb8927e1acd3ccc8444845",
+    "utf8_lf_tree_sha256": "443bf81929759bde355f257fc5fbb8b4c23cbe5cfead35fc7f65f2060bd600c3",
+    "files": 979
+  },
+  "source_unchanged": true,
+  "runner_sha256": "c0a851a739a1575c5b1c604fab37f76245ef24d0aae984142bc9d3b3edb06aa4",
+  "finished_utc": "2026-11-06T05:21:55.329134+00:00",
+  "duration_seconds": 13.265,
+  "sha256": "a5fc67f21e2706826f6b5181a4487f959cf630267bc64b29de2c4d139638700a"
+}
