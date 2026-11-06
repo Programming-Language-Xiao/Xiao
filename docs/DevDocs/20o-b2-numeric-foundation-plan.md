@@ -3,7 +3,7 @@
 > **这是 B2 的规划，不写产品函数、intrinsic、ABI 或测试实现。**
 > 规划入口基线为 `87bac439`；B1-CLOSE 已收口，Runtime ABI 为 1.18、`CODEGEN_VERSION` 为 20。
 > B2 的目标是把 `lint`/`lfloat` 从“十进制文本占位”升级为可运算、可转换的数值基础，
-> 并交付 `cmath` 浮点原语；**联合冻结已由F-D实际签字激活，B2-A实施规划已由A-P1/A-P2/A-P3实际批准，A1依赖与值身份已退出；A2/A3内核已完成本批验收，A4～A7及B2-B/C后置**。
+> 并交付 `cmath` 浮点原语；**联合冻结已由F-D实际签字激活，B2-A实施规划已由A-P1/A-P2/A-P3实际批准，A1依赖与值身份已退出；A2/A3内核已完成本批验收；A4转换内核17项与Clippy通过、最终证据收集中，A5～A7及B2-B/C后置**。
 > 星崽已逐项确认的精确表与签字状态见[冻结草案](20o-b2-freeze-draft.md)；本页建议不自动变为已冻结契约。
 > F-A/F-B/F-C裁定30/0，F-D已签字；B2-A规划已获三项实际批准，A0 Windows本地基线已通过，A1已退出，A2/A3内核实施进度见[实施记录](20o-b2-a2-a3-arithmetic-progress.md)（2026-11-06）。
 >
@@ -138,7 +138,7 @@ B2-A 预期**不新增 intrinsic、不改变 `XiaoValue` 标签或 C ABI**；若
 
 ### B2-FREEZE：只改文档
 
-当前30条裁定均已确认，F-D已按[冻结收口规划](20o-b2-freeze-closeout-plan.md)实际签字；联合冻结已激活；B2-A规划已批准，A0 Windows本地基线已通过，A1依赖与值身份已完成本批验收，A2/A3内核已完成本批验收，A4～A7后置。
+当前30条裁定均已确认，F-D已按[冻结收口规划](20o-b2-freeze-closeout-plan.md)实际签字；联合冻结已激活；B2-A规划已批准，A0 Windows本地基线已通过，A1依赖与值身份已完成本批验收，A2/A3内核已完成本批验收；A4转换内核17项与Clippy通过、最终证据收集中，A5～A7后置。
 本轮不分配活动编号或写实现，契约台账见
 [冻结草案](20o-b2-freeze-draft.md#二逐条裁定台账)。
 
@@ -151,7 +151,7 @@ B2-A 预期**不新增 intrinsic、不改变 `XiaoValue` 标签或 C ABI**；若
 
 ### B2-A：`lint`/`lfloat` 基础
 
-执行规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；[A0工作快照与基线记录](20o-b2-a0-baseline-plan.md)已保存Windows契约9/9、资源17/17、VM/原生精确点、workspace与28/28守卫的实际通过；A1规划见[A1依赖、适配层与值身份实施规划](20o-b2-a1-dependency-value-identity-plan.md)；A2/A3规划见[A2/A3算术实施规划](20o-b2-a2-a3-arithmetic-plan.md)；A4规划见[A4转换矩阵实施规划](20o-b2-a4-conversions-plan.md)。A0的Linux/macOS本地缺口保留；A1实施与平台证据独立登记；A2/A3内核已完成本批验收，A4～A7未开始。
+执行规划见[B2-A数值运行时基础实施规划](20o-b2-a-implementation-plan.md)；[A0工作快照与基线记录](20o-b2-a0-baseline-plan.md)已保存Windows契约9/9、资源17/17、VM/原生精确点、workspace与28/28守卫的实际通过；A1规划见[A1依赖、适配层与值身份实施规划](20o-b2-a1-dependency-value-identity-plan.md)；A2/A3规划见[A2/A3算术实施规划](20o-b2-a2-a3-arithmetic-plan.md)；A4规划见[A4转换矩阵实施规划](20o-b2-a4-conversions-plan.md)。A0的Linux/macOS本地缺口保留；A1实施与平台证据独立登记；A2/A3内核已完成本批验收；A4转换内核17项与Clippy通过、最终证据收集中，A5～A7未开始。
 
 建议顺序：
 
@@ -266,4 +266,4 @@ docs/module-registry.json                         cmath 登记（B2-FREEZE/C）
 
 现有18条答复及本次实际答复已记入[裁定台账](20o-b2-freeze-draft.md#二逐条裁定台账)，不重复询问。
 F-A/F-B/F-C已收齐，台账30/0；F-D三项实际批准齐备，联合冻结已激活；F-D退出时产品未开工，后续A1已按A-P1完成本批验收。F-D的签字、状态切换与B2-A交接见[F-D冻结签字规划](20o-b2-freeze-d-signature-plan.md)。
-F-3已覆盖lfloat //与%的接纳/工作量及独立预算；A1已接入F-7依赖与身份层；算术内核证据见[A2/A3实施记录](20o-b2-a2-a3-arithmetic-progress.md)，完整转换、语言与性能验收留A4～A7。F-D当时只打开B2-A实施规划；该规划后续已获三项实际批准，A0 Windows本地基线已通过，A1已退出；A2/A3内核已完成本批验收，A4～A7尚未开始。
+F-3已覆盖lfloat //与%的接纳/工作量及独立预算；A1已接入F-7依赖与身份层；算术内核证据见[A2/A3实施记录](20o-b2-a2-a3-arithmetic-progress.md)，转换内核进度见[A4实施记录](20o-b2-a4-conversions-progress.md)，完整语言、性能及整批验收留A5～A7。F-D当时只打开B2-A实施规划；该规划后续已获三项实际批准，A0 Windows本地基线已通过，A1已退出；A2/A3内核已完成本批验收；A4转换内核17项与Clippy通过、最终证据收集中，A5～A7尚未开始。

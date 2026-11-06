@@ -1,0 +1,34 @@
+{
+  "scope": "仅子进程覆盖；所有Cargo调用固定1.96.0并--locked；每次清理继承RUST_BIGDECIMAL_*",
+  "overrides": {
+    "CARGO_TARGET_DIR": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\cargo-target",
+    "RUSTUP_TOOLCHAIN": "1.96.0",
+    "RUSTC": "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+    "XIAO_HOME": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\xiao-home",
+    "XIAO_STDLIB_ROOT": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\source\\stdlib",
+    "TEMP": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\run-temp",
+    "TMP": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\run-temp",
+    "XIAO_TARGET_TRIPLE": "x86_64-pc-windows-msvc",
+    "XIAO_CLANG": "D:\\msys64\\ucrt64\\bin\\clang.exe",
+    "XIAO_LLVM_AS": "D:\\msys64\\ucrt64\\bin\\llvm-as.exe",
+    "XIAO_LLC": "D:\\msys64\\ucrt64\\bin\\llc.exe",
+    "XIAO_RUNTIME_LIBRARY": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\cargo-target\\release\\xiao_runtime.lib",
+    "XIAO_DIAGNOSTICS_PATH": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\cargo-target\\debug\\xiao-diagnostics.exe",
+    "XIAO_DIAGNOSTICS_HOLD_MS": "0",
+    "XIAO_RUST_DOC_ADAPTER": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\cargo-target\\debug\\xiao-doc-coverage-rust.exe"
+  },
+  "msvc_whitelist": {
+    "INCLUDE": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\include;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Auxiliary\\VS\\include;D:\\Windows Kits\\10\\include\\10.0.26100.0\\ucrt;D:\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\um;D:\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\shared;D:\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\winrt;D:\\Windows Kits\\10\\\\include\\10.0.26100.0\\\\cppwinrt;C:\\Program Files (x86)\\Windows Kits\\NETFXSDK\\4.8\\include\\um",
+    "LIB": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;C:\\Program Files (x86)\\Windows Kits\\NETFXSDK\\4.8\\lib\\um\\x64;D:\\Windows Kits\\10\\lib\\10.0.26100.0\\ucrt\\x64;D:\\Windows Kits\\10\\\\lib\\10.0.26100.0\\\\um\\x64",
+    "LIBPATH": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x64;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\lib\\x86\\store\\references;D:\\Windows Kits\\10\\UnionMetadata\\10.0.26100.0;D:\\Windows Kits\\10\\References\\10.0.26100.0;C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319",
+    "PATH": "D:\\msys64\\ucrt64\\bin;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\HostX64\\x64;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\IDE\\VC\\VCPackages;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TestWindow;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\TeamFoundation\\Team Explorer;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\MSBuild\\Current\\bin\\Roslyn;C:\\Program Files (x86)\\Microsoft SDKs\\Windows\\v10.0A\\bin\\NETFX 4.8 Tools\\x64\\;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Team Tools\\DiagnosticsHub\\Collector;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\IDE\\Extensions\\Microsoft\\CodeCoverage.Console;D:\\Windows Kits\\10\\bin\\10.0.26100.0\\\\x64;D:\\Windows Kits\\10\\bin\\\\x64;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\\\MSBuild\\Current\\Bin\\amd64;C:\\Windows\\Microsoft.NET\\Framework64\\v4.0.30319;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\IDE\\;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\Tools\\;D:\\Program Files\\PowerShell\\7;C:\\Users\\xiaoc\\.codex\\tmp\\arg0-windows\\codex-arg0CXYA0L;C:\\Users\\xiaoc\\AppData\\Roaming\\npm\\node_modules\\@openai\\codex\\node_modules\\@openai\\codex-win32-x64\\vendor\\x86_64-pc-windows-msvc\\codex-path;D:\\Program Files\\PowerShell\\7;C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\java8path;C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath;D:\\Program Files\\ImageMagick-7.1.2-Q16-HDRI;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem;C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\;C:\\Windows\\System32\\OpenSSH\\;C:\\Program Files\\NVIDIA Corporation\\NVIDIA App\\NvDLISR;C:\\Program Files (x86)\\NVIDIA Corporation\\PhysX\\Common;D:\\Program Files\\Git\\cmd;D:\\msys64\\ucrt64\\bin;D:\\MC\\bin;D:\\Program Files\\java8\\bin;C:\\ProgramData\\chocolatey\\bin;C:\\Users\\xiaoc\\node_modules\\bun\\bin;D:\\Program Files\\Go\\bin;D:\\Program Files\\gradle-9.4.1-all\\gradle-9.4.1\\bin;C:\\Program Files\\dotnet\\;D:\\BiliLiveTool-v2.3.12-windows-amd64\\bin;D:\\project\\GeminiCLI_2API\\bin;D:\\Program Files\\GitHub CLI\\;D:\\Program Files\\Git LFS;D:\\Program Files\\llama-b9050-bin-win-cpu-x64;D:\\Program Files\\NASM;D:\\MC\\MC;D:\\.bin;D:\\Program Files\\.cargo\\bin;D:\\Program Files\\nodejs\\;D:\\Program Files\\MaiCoreStart-v5.1.0-beta\\bin;D:\\Program Files (x86)\\Inno Setup 6;C:\\Program Files\\Docker\\Docker\\resources\\bin;D:\\Program Files\\PowerShell\\7\\;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\bin\\Hostx64\\x64;D:\\Windows Kits\\10\\Windows Performance Toolkit\\;D:\\project\\learn\\ctest\\.bin;C:\\Users\\xiaoc\\.kimi-code\\bin;C:\\Users\\xiaoc\\.cargo\\bin;C:\\Users\\xiaoc\\.local\\bin;\\\\?\\C:\\Users\\xiaoc\\AppData\\Local\\Programs\\Jan\\resources\\bin;D:\\Programs\\Python\\Python312\\Scripts\\;D:\\Programs\\Python\\Python312\\;C:\\Users\\xiaoc\\AppData\\Local\\Microsoft\\WindowsApps;D:\\Programs\\Microsoft VS Code\\bin;C:\\Users\\xiaoc\\AppData\\Local\\PowerToys\\DSCModules\\;C:\\Users\\xiaoc\\go\\bin;C:\\Users\\xiaoc\\.deno\\bin;D:\\BiliLiveTool-v2.3.12-windows-amd64;C:\\Users\\xiaoc\\AppData\\Local\\Programs\\Ollama;C:\\Users\\xiaoc\\.lmstudio\\bin;C:\\Users\\xiaoc\\AppData\\Local\\GitHubDesktop\\bin;C:\\Users\\xiaoc\\.dotnet\\tools;D:\\Program Files\\Huawei\\DevEco Studio\\bin;C:\\Users\\xiaoc\\AppData\\Roaming\\npm;C:\\Users\\xiaoc\\AppData\\Local\\Unity\\bin;C:\\Users\\xiaoc\\.dotnet\\tools;C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\IDE\\VC\\Linux\\bin\\ConnectionManagerExe",
+    "UCRTVERSION": "10.0.26100.0",
+    "UNIVERSALCRTSDKDIR": "D:\\Windows Kits\\10\\",
+    "VCTOOLSINSTALLDIR": "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\VC\\Tools\\MSVC\\14.51.36231\\",
+    "VCTOOLSVERSION": "14.51.36231",
+    "WINDOWSSDKDIR": "D:\\Windows Kits\\10\\",
+    "WINDOWSSDKVERSION": "10.0.26100.0\\"
+  },
+  "fresh_target": true,
+  "fresh_xiao_home": true
+}

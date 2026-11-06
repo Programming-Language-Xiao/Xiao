@@ -6,6 +6,8 @@
 
 /// A2/A3精确系数算术内核。
 mod arithmetic;
+/// A4显式转换、精确截断与IEEE最近偶数舍入内核。
+mod conversions;
 /// 临时任意精度适配、共享接纳及确定文本输出。
 pub(crate) mod numeric;
 

@@ -11,12 +11,13 @@
 //! - `//`和`%`支持整数族及已签提升到lfloat的组合；仅定宽float/sfloat
 //!   的组合仍拒绝，零分母使用稳定的013。
 //! - 高精度算子共享有界系数内核，不静默退化为浮点或原始文本比较。
-//!   A4公开转换及A5完整语言接线仍后置。
+//!   A4显式转换由conversions实现，A5完整语言接线仍后置。
 
 use xiao_syntax::ScalarType;
 
 use super::RuntimeValue;
 use super::arithmetic::{self, Operation};
+use super::conversions;
 use crate::errors::{RuntimeError, RuntimeResult};
 
 /// `str -> bool` 冻结接受的四个拼写。
@@ -263,9 +264,8 @@ impl RuntimeValue {
 
     /// 执行显式标量转换。
     ///
-    /// 只实现 02 阶段转换矩阵接受的组合；`lfloat` 的算术与浮点方向转换仍是登记在案的
-    /// 债项，这里明确报错而不是给出近似结果。整数到 `str` 复用稳定文本表示；登记见
-    /// `docs/DevDocs/20c-fourth-batch-int-to-str.md` §8.1。
+    /// 高精度与新增浮点显示交给A4共享内核，保留定宽旧规则及单码点str契约。
+    /// 这里只提供Runtime能力；A5完整语言接线、A6性能与A7整批收口后置。
     pub fn convert_to(&self, target: ScalarType) -> RuntimeResult<Self> {
         let source = self.scalar_type().ok_or_else(|| {
             RuntimeError::invalid_value(format!("{} 不是标量，不能转换", self.type_name()))
@@ -276,6 +276,9 @@ impl RuntimeValue {
                 Self::Lfloat(text) => Self::new_lfloat(text),
                 _ => Ok(self.clone()),
             };
+        }
+        if let Some(result) = conversions::convert(self, source, target) {
+            return result;
         }
         match (source, target) {
             (ScalarType::Str, ScalarType::Bool) => self.convert_str_to_bool(),
@@ -289,7 +292,7 @@ impl RuntimeValue {
                     "false"
                 })
             }
-            (ScalarType::Int | ScalarType::Sint | ScalarType::Lint, ScalarType::Str) => {
+            (ScalarType::Int | ScalarType::Sint, ScalarType::Str) => {
                 Self::new_string(self.display_text()?)
             }
             (ScalarType::Sint, ScalarType::Int) => Ok(Self::Int(i64::from(self.sint_value()?))),
@@ -298,12 +301,6 @@ impl RuntimeValue {
                 .map_err(|_| range_error("sint")),
             (ScalarType::Sint, ScalarType::Lint) => Self::new_lint(&self.sint_value()?.to_string()),
             (ScalarType::Int, ScalarType::Lint) => Self::new_lint(&self.int_value()?.to_string()),
-            (ScalarType::Lint, ScalarType::Int) => i64::try_from(self.lint_value()?)
-                .map(Self::Int)
-                .map_err(|_| range_error("int")),
-            (ScalarType::Lint, ScalarType::Sint) => i32::try_from(self.lint_value()?)
-                .map(Self::Sint)
-                .map_err(|_| range_error("sint")),
             (ScalarType::Sfloat, ScalarType::Float) => {
                 Ok(Self::Float(f64::from(self.sfloat_value()?)))
             }
@@ -330,14 +327,6 @@ impl RuntimeValue {
             }
             (ScalarType::Sfloat, ScalarType::Sint) => {
                 narrow_to_int32(f64::from(self.sfloat_value()?)).map(Self::Sint)
-            }
-            (ScalarType::Lint | ScalarType::Lfloat, _)
-            | (_, ScalarType::Lint | ScalarType::Lfloat) => {
-                Err(RuntimeError::invalid_value(format!(
-                    "{} 与 {} 之间的转换尚未实现",
-                    source.as_str(),
-                    target.as_str()
-                )))
             }
             _ => Err(RuntimeError::invalid_value(format!(
                 "不支持把 {} 转换为 {}",
@@ -449,16 +438,6 @@ impl RuntimeValue {
         match self {
             Self::Int(value) => Ok(*value),
             _ => Err(RuntimeError::type_mismatch("int", self.type_name())),
-        }
-    }
-
-    /// 读取任意精度整数载荷；文本损坏时复用统一非法值身份。
-    fn lint_value(&self) -> RuntimeResult<i128> {
-        match self {
-            Self::Lint(value) => value
-                .parse::<i128>()
-                .map_err(|_| RuntimeError::invalid_value("lint 不是合法的十进制整数")),
-            _ => Err(RuntimeError::type_mismatch("lint", self.type_name())),
         }
     }
 
@@ -842,8 +821,8 @@ mod tests {
     }
 
     #[test]
-    /// 验证整数族与 `lint` 的精确加宽/窄化；浮点族仍明确保持未实现。
-    fn high_precision_public_conversions_remain_at_the_a1_boundary() {
+    /// 验证整数族与lint精确加宽/窄化，A4已接入小数向零截断。
+    fn high_precision_public_conversions_use_the_a4_kernel() {
         assert_eq!(
             RuntimeValue::Int(1).convert_to(ScalarType::Lint),
             Ok(RuntimeValue::Lint("1".to_owned()))
@@ -859,9 +838,9 @@ mod tests {
                 .code(),
             NUMERIC_OVERFLOW_CODE
         );
-        let error = RuntimeValue::Lfloat("1.0".to_owned())
-            .convert_to(ScalarType::Int)
-            .expect_err("浮点族方向仍未实现");
-        assert!(error.message().contains("尚未实现"));
+        assert_eq!(
+            RuntimeValue::Lfloat("1.0".to_owned()).convert_to(ScalarType::Int),
+            Ok(int(1))
+        );
     }
 }

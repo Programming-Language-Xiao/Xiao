@@ -175,7 +175,7 @@ fn arithmetic_decimal_finite_division_matches_independent_small_reference() {
 }
 
 #[test]
-/// 浮点混合按实际位模式提升，私有提升不改变公开convert_to矩阵。
+/// 浮点混合按实际位模式提升；A4公开转换由独立矩阵测试覆盖。
 fn arithmetic_decimal_mixed_binary_inputs_are_lifted_exactly() {
     expect(
         decimal("0").add(&RuntimeValue::Float(0.1)),
@@ -209,10 +209,13 @@ fn arithmetic_decimal_mixed_binary_inputs_are_lifted_exactly() {
             .floor_divide(&RuntimeValue::Float(1.0))
             .is_err()
     );
-    assert!(
+    assert_eq!(
         RuntimeValue::Float(0.1)
             .convert_to(xiao_syntax::ScalarType::Lfloat)
-            .is_err()
+            .unwrap()
+            .display_text()
+            .unwrap(),
+        "0.1000000000000000055511151231257827021181583404541015625"
     );
 }
 

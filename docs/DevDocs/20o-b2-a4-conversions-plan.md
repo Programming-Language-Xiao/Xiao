@@ -1,7 +1,7 @@
 # 20O-B2-A4. 转换矩阵实施规划
 
-> **这是 A4 的运行时转换实施规划；不写产品代码，不执行构建或测试。**
-> 入口为A2/A3代码快照`5ef17bb2`及flake修复`13ecd687`；A2/A3内核已退出，A4尚未开始，A5～A7后置。
+> **本页保留A4原实施规划；规划提交当时未写产品或执行构建测试。当前见[转换实施记录](20o-b2-a4-conversions-progress.md)。**
+> 入口为A2/A3代码快照`5ef17bb2`及flake修复`13ecd687`；A4内核17项及Clippy已通过，最终回归与CI证据收集中，A5～A7后置。
 > A4只实现Runtime转换内核；完整类型/IR/TAC/VM/LLVM/语言路径由A5接线验收。不新增ABI/intrinsic，不实现`lfloat_divide`/`cmath`。
 > A0的`result.json`失败身份仍保留；A0只以`closeout.json`作为有效收口。
 

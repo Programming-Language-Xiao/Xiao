@@ -1,0 +1,14 @@
+{
+  "created_utc": "2026-11-06T07:20:18.283968+00:00",
+  "entry_head": "2abea3f321d1a145106e623d9f1e6fef4576f7e8",
+  "entry_tree": "73db467c14841fe7d6fb3e82f14b4669bfa7e0e1",
+  "entry_status": "",
+  "entry_branch": "codex/b1-imp-seven-libraries",
+  "implementation_branch": "codex/b2-a4-conversions",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "task_root": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b",
+  "source_root": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\source",
+  "a2_a3_effective_closeout": "docs/DevDocs/assets/20o-b2-a2-a3/entry-20261106/closeout.json",
+  "entry_flake_fix": "13ecd687cbeda6cadd6395ec169582248d655d30",
+  "scope": "A4仅Runtime转换内核；A5～A7后置；不运行旧721条F10"
+}
