@@ -119,11 +119,17 @@ pub(super) fn check_work(label: &'static str, upper: usize) -> RuntimeResult<()>
 /// 记录并检查实际工作位数，调用点仍必须先有构造前上界。
 pub(super) fn checked_value(label: &'static str, value: BigInt) -> RuntimeResult<BigInt> {
     let actual = decimal_digits(&value);
+    checked_digits(label, actual)?;
+    Ok(value)
+}
+
+/// 已构造系数的精确位数；十进制字节系数与二进制大整数共用同一W门槛。
+pub(super) fn checked_digits(label: &'static str, actual: usize) -> RuntimeResult<()> {
     observe(label, actual, Some(actual));
     if actual > W {
         Err(limit("整数工作值超过65536位"))
     } else {
-        Ok(value)
+        Ok(())
     }
 }
 
@@ -185,19 +191,48 @@ pub(super) fn finish(
     family: Family,
 ) -> RuntimeResult<RuntimeValue> {
     if coefficient.is_zero() {
+        return finish_digits(&[], false, 0, family);
+    }
+    let text = coefficient.to_str_radix(10);
+    finish_digits(
+        text.trim_start_matches('-').as_bytes(),
+        text.starts_with('-'),
+        scale,
+        family,
+    )
+}
+
+/// 规范十进制系数直接输出；不经基数往返，D/H与零例外和大数路径一致。
+pub(super) fn finish_digits(
+    coefficient: &[u8],
+    negative: bool,
+    scale: i32,
+    family: Family,
+) -> RuntimeResult<RuntimeValue> {
+    if coefficient.is_empty() || coefficient == b"0" {
         return match family {
             Family::Integer => RuntimeValue::new_lint("0"),
             Family::Decimal => RuntimeValue::new_lfloat("0"),
         };
     }
-    let text = coefficient.to_str_radix(10);
-    let digits = text.trim_start_matches('-').len();
+    let digits = coefficient.len();
     observe("final-coefficient", digits, Some(digits));
     if digits > D {
         return Err(limit("最终显示系数超过32768位"));
     }
-    let trailing = text.bytes().rev().take_while(|byte| *byte == b'0').count() as i64;
+    let trailing = coefficient
+        .iter()
+        .rev()
+        .take_while(|byte| **byte == b'0')
+        .count() as i64;
     check_scales(i64::from(scale), i64::from(scale) - trailing)?;
+    let mut text = String::new();
+    text.try_reserve_exact(digits + usize::from(negative))
+        .map_err(|_| numeric::allocation_error())?;
+    if negative {
+        text.push('-');
+    }
+    text.extend(coefficient.iter().copied().map(char::from));
     match family {
         Family::Integer => RuntimeValue::new_lint(&text),
         Family::Decimal => {

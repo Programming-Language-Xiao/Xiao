@@ -1,4 +1,4 @@
-//! B2-A2/A3精确算术内核；公开转换和完整语言接线仍后置。
+//! B2-A精确算术与A6有界十进制加减；公开转换由独立模块承接。
 
 mod common;
 mod comparison;
@@ -10,6 +10,8 @@ mod integer;
 mod modulus;
 mod power;
 mod quotient;
+/// A6按冻结十进制对齐模型执行有界线性加减。
+mod text_add;
 
 use crate::errors::{RuntimeError, RuntimeResult};
 use crate::value::RuntimeValue;
@@ -61,14 +63,17 @@ fn extended_binary(
     left: &RuntimeValue,
     right: &RuntimeValue,
 ) -> RuntimeResult<RuntimeValue> {
-    if is_integer(left) && is_integer(right) {
-        return integer::binary(op, left, right);
-    }
     if !is_numeric(left) || !is_numeric(right) {
         return Err(RuntimeError::type_mismatch(
             "numeric",
             format!("{} / {}", left.type_name(), right.type_name()),
         ));
+    }
+    if let Some(result) = text_add::binary(op, left, right) {
+        return result;
+    }
+    if is_integer(left) && is_integer(right) {
+        return integer::binary(op, left, right);
     }
     decimal::binary(op, left, right)
 }
