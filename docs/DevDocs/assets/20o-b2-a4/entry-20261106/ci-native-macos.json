@@ -1,0 +1,11 @@
+{
+  "code_commit": "1838fae1be0c038fd888dde2675126598458b74f",
+  "run_id": 42184105863,
+  "run_attempt": 2,
+  "job_id": 127786514891,
+  "job_name": "Native differential regression (macOS)",
+  "conclusion": "success",
+  "log": "ci-native-macos.log",
+  "log_sha256": "c965e26f163fa045e1d75813bc9ccfb5099cd6c236b05d051d1971bc135250a5",
+  "scope": "现有B1/A1原生回归，不是A5新转换三平台语言证据"
+}

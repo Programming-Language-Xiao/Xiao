@@ -1,0 +1,50 @@
+{
+  "source_response": "ci-jobs-42184105863-20261106T081630.json",
+  "requested_rerun": "ci-rerun-macos.json",
+  "code_commit": "1838fae1be0c038fd888dde2675126598458b74f",
+  "observation": "API返回第二次执行的新作业号；实际范围以此原始响应为准，不沿用首轮成功作业号冒充重跑",
+  "jobs": [
+    {
+      "id": 127786514891,
+      "run_attempt": 2,
+      "name": "Native differential regression (macOS)",
+      "status": "in_progress",
+      "conclusion": null
+    },
+    {
+      "id": 127786516595,
+      "run_attempt": 2,
+      "name": "Native differential regression (Windows)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 127786517540,
+      "run_attempt": 2,
+      "name": "Deterministic parser and artifact security regression",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 127786551962,
+      "run_attempt": 2,
+      "name": "Rust workspace default tests (Linux)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 127786558750,
+      "run_attempt": 2,
+      "name": "Native differential regression (Linux)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 127786578739,
+      "run_attempt": 2,
+      "name": "Deterministic artifact size regression (Windows baseline)",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ]
+}

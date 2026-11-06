@@ -1,0 +1,11 @@
+{
+  "code_commit": "1838fae1be0c038fd888dde2675126598458b74f",
+  "run_id": 42184105863,
+  "run_attempt": 2,
+  "job_id": 127786516595,
+  "job_name": "Native differential regression (Windows)",
+  "conclusion": "success",
+  "log": "ci-native-windows.log",
+  "log_sha256": "1e62c7778169fa94010fe7492fd31c03a00ca9ee5d02402fc105a7afeca6ff23",
+  "scope": "现有B1/A1原生回归，不是A5新转换三平台语言证据"
+}

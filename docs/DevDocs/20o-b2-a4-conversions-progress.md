@@ -1,6 +1,6 @@
 # 20O-B2-A4 转换实施记录
 
-> 按[已批准规划](20o-b2-a4-conversions-plan.md)实施，仅提供Runtime转换内核。A5完整语言接线、A6性能及A7整批收口后置。
+> **A4转换内核已完成本批验收（2026-11-06）**。按[已批准规划](20o-b2-a4-conversions-plan.md)实施，仅提供Runtime转换内核。A5完整语言接线、A6性能及A7整批收口后置。
 
 ## 入口
 
@@ -20,6 +20,10 @@ lint/lfloat到str复用A1规范渲染器；新增float/sfloat到str保留既有�
 
 最终`close-kernel-tests`17项覆盖全部36个数值方向、文本/码点兼容、精确显示、向零截断、输入/最终预算、最近偶数中点、溢出中点、子正规边界、负零、二次舍入反例及确定性位模式往返。工作日志记录最大系数截断和边界舍入的上界/实际位数，不作为A6性能成绩。
 
-Clippy workspace/all-targets已按零警告通过。四包最终回归、B1最终回归、两个精确点和代码CI仍在收集，以最终closeout.json为准；不以入口或开发期成绩代替最终快照。
+最终17项、四包（逐项含A2/A3 21项）、Clippy/格式、workspace/benchmark、B1契约9/资源17/VM与原生精确各1项、28/28守卫均通过。A1三个已有完整示例以VM和原生O0/O3回归，保存六个实际产物摘要。有效结论与16项检查映射见证据目录closeout.json。
+
+代码提交为1838fae1be0c038fd888dde2675126598458b74f，workspace [42184105820](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42184105820)通过，维护 [42184105863](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42184105863)第二次执行通过；三平台实际作业及日志分别登记。首轮macOS 22C任务取消清理顺序断言失败保留，未改22C源码/断言，同提交重跑绿色不关闭债务。
+
+989项最终源码输入的原始和UTF-8/LF规范摘要并存；只读audit.py复核归档、完整范围、固定Git对象、实际计数及CI身份。17项内核主计数点绑定Windows本地/Linux默认workspace，不扩写成A5新转换三平台语言证据。代码CI绑定1838fae1，后续纯文档收口提交不冒称在同一运行中。
 
 ABI1.18/生成器20/活动intrinsic最大32、依赖与锁、XCON、stdlib、registry均不变。新增数值教程范围和cmath继续planned；旧721条F10未运行，22C/22D及19/11/22债务独立保留。

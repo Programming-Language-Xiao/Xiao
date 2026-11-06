@@ -1,0 +1,17 @@
+{
+  "scope": "独立22C历史债务，不归入A4转换实现",
+  "code_commit": "1838fae1be0c038fd888dde2675126598458b74f",
+  "run_id": 42184105863,
+  "attempt": 1,
+  "platform": "macOS",
+  "job_id": 127780245568,
+  "target": "22c_vm_concurrency",
+  "test": "queued_task_cancel_never_runs_body_and_wait_is_027",
+  "location": "core/rust/crates/xiao-driver/tests/22c_vm_concurrency.rs:567",
+  "actual_cleanup_order": [34, 36],
+  "expected_cleanup_order": [36, 34],
+  "summary": "25 passed; 1 failed; 0 ignored",
+  "log": "ci-attempt1-macos.log",
+  "policy": "保留首轮失败；同提交重跑一次失败作业；不改22C实现/排序/断言/时限；后续绿色也不关闭此债务",
+  "closed": false
+}

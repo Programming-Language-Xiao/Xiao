@@ -1,0 +1,69 @@
+{
+  "passed": true,
+  "scope": "Runtime转换内核",
+  "recorded_utc": "2026-11-06T08:41:26.402022+00:00",
+  "code_commit": "1838fae1be0c038fd888dde2675126598458b74f",
+  "entry_arithmetic_commit": "5ef17bb2",
+  "effective_checks": [
+    "close-kernel-tests",
+    "close-package-tests",
+    "close-clippy",
+    "close-rustfmt",
+    "close-build-runtime-release",
+    "close-build-runtime-adapter",
+    "close-b1-contract",
+    "close-b1-resources",
+    "close-b1-vm-exact",
+    "close-b1-native-exact",
+    "close-workspace-check",
+    "close-benchmarks-check",
+    "close-docs-closeout",
+    "close-b1-guards",
+    "close-a1-vm-exact",
+    "close-a1-native-exact"
+  ],
+  "exact_test_counts": {
+    "close-kernel-tests": 17,
+    "close-b1-contract": 9,
+    "close-b1-resources": 17,
+    "close-b1-vm-exact": 1,
+    "close-b1-native-exact": 1,
+    "close-a1-vm-exact": 1,
+    "close-a1-native-exact": 1
+  },
+  "raw_source_tree_sha256": "c18ed16cf8a86982aa3176531970f01f68c6c82f88a7c04e55a80b942111471a",
+  "utf8_lf_source_tree_sha256": "e66ea70ba185c372f9dea548de154c6338733c13985d21867df1d14905152854",
+  "source_files": 989,
+  "guard_report": "close-b1-guards-report.json",
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 32,
+  "cmath": "planned",
+  "numeric_tutorial_scope": "planned",
+  "a5_through_a7_started": false,
+  "b1_721_executed": false,
+  "ci_runs": {
+    "workspace": "ci-workspace-run.json",
+    "maintenance": "ci-maintenance-run.json"
+  },
+  "ci_maintenance_jobs": "ci-maintenance-jobs.json",
+  "ci_arithmetic_record": "ci-kernel-linux.json",
+  "ci_native_records": {
+    "windows": "ci-native-windows.json",
+    "linux": "ci-native-linux.json",
+    "macos": "ci-native-macos.json"
+  },
+  "ci_attempt_history": {
+    "initial_failure_run": "ci-attempt1-maintenance-run.json",
+    "initial_macos_failure": "ci-attempt1-macos.json",
+    "rerun_request": "ci-rerun-macos.json",
+    "second_scheduling": "ci-attempt2-scheduling.json",
+    "independent_debt": "independent-22c-record.json"
+  },
+  "ci_maintenance_latest_attempt": 2,
+  "independent_22c_closed": false,
+  "ci_scope": "17项转换内核Windows本地/Linux默认CI；三平台现有原生维护回归。不得写成A5新语言/三平台差分或A6性能完成",
+  "debts": "22C/22D及19/11/22独立保留；本轮绿色不关闭历史债务",
+  "documentation_ci_scope": "本归档绑定1838fae1代码CI；后续纯文档收口提交不冒称已经包含在该运行中",
+  "next_entry": "A5完整类型/IR/TAC/VM/LLVM及语言差分；A6性能、A7整批收口后置"
+}

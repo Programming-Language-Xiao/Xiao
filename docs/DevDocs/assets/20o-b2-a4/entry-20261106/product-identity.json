@@ -1,0 +1,94 @@
+{
+  "code_commit": "1838fae1be0c038fd888dde2675126598458b74f",
+  "recorded_utc": "2026-11-06T07:56:31.244896+00:00",
+  "source_root": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\source",
+  "task_root": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b",
+  "versions_scope": "只读工具版本探测；构建/测试/检查另按--locked执行",
+  "tool_versions": [
+    {
+      "name": "rustc",
+      "argv": [
+        "C:\\Users\\xiaoc\\.rustup\\toolchains\\1.96.0-x86_64-pc-windows-msvc\\bin\\rustc.exe",
+        "-vV"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\source",
+      "pid": 46864,
+      "exit_code": 0,
+      "log": "tool-version-rustc.log",
+      "sha256": "2efe229f7908c2c19f459ca734101a5b35cb482476b8bee1357f94a18c766078"
+    },
+    {
+      "name": "cargo",
+      "argv": [
+        "D:/Program Files/.cargo/bin/cargo.exe",
+        "+1.96.0",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\source",
+      "pid": 25812,
+      "exit_code": 0,
+      "log": "tool-version-cargo.log",
+      "sha256": "b6ef6807dd96d18b833474ad68e7a23a29e562a29c67afa71a59fb9a73df0068"
+    },
+    {
+      "name": "clang",
+      "argv": [
+        "D:\\msys64\\ucrt64\\bin\\clang.exe",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\source",
+      "pid": 48876,
+      "exit_code": 0,
+      "log": "tool-version-clang.log",
+      "sha256": "5c075035dbde6a78b05a8d921e0769dd24814486efecbcdbe7035527701858b2"
+    },
+    {
+      "name": "bun",
+      "argv": [
+        "C:/Users/xiaoc/node_modules/bun/bin/bun.exe",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\source",
+      "pid": 46076,
+      "exit_code": 0,
+      "log": "tool-version-bun.log",
+      "sha256": "78b591400c56b7b67b8cb3b2b8a8e65e9093897f02ce0878e6b5405c68620fa7"
+    },
+    {
+      "name": "python",
+      "argv": [
+        "D:\\Programs\\Python\\Python312\\python.exe",
+        "--version"
+      ],
+      "cwd": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\source",
+      "pid": 22124,
+      "exit_code": 0,
+      "log": "tool-version-python.log",
+      "sha256": "7c4c5588f4cfc8388240eff9d1c33bc7cfb24d52a440f4367b6c4199c558be80"
+    }
+  ],
+  "artifacts": [
+    {
+      "role": "XIAO_RUNTIME_LIBRARY",
+      "path": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\cargo-target\\release\\xiao_runtime.lib",
+      "bytes": 27140528,
+      "sha256": "65f069b62cc62d4bd6e24cceac83382940df6e4ce1461b2867b1f86bb3567c41"
+    },
+    {
+      "role": "XIAO_RUST_DOC_ADAPTER",
+      "path": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\cargo-target\\debug\\xiao-doc-coverage-rust.exe",
+      "bytes": 2074112,
+      "sha256": "7d9400e8995299ecc11775e76132c2bd98e6c0ea2d05b57653c1baa839f95e41"
+    }
+  ],
+  "internal_only": true,
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 32,
+  "typescript": {
+    "version": "5.9.3",
+    "strategy": "从主工作区实体复制到本源码根内；无junction、不改锁",
+    "source": "D:/project/Xiao/Xiao/tools/doc-coverage/node_modules/typescript",
+    "destination": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\source\\tools\\doc-coverage\\node_modules\\typescript"
+  }
+}

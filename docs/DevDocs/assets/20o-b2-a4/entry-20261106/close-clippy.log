@@ -1,0 +1,78 @@
+    Checking serde_core v1.0.229
+    Checking itoa v1.0.18
+    Checking cfg-if v1.0.5
+    Checking zmij v1.0.23
+    Checking memchr v2.8.3
+    Checking typenum v1.20.1
+    Checking xiao-runtime-abi v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-runtime-abi)
+    Checking cpufeatures v0.2.17
+    Checking xiao-source v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-source)
+   Compiling xiao-intrinsics v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-intrinsics)
+    Checking zeroize v1.9.0
+    Checking rustls-pki-types v1.15.1
+    Checking generic-array v0.14.7
+    Checking getrandom v0.2.17
+    Checking untrusted v0.9.0
+    Checking ring v0.17.14
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking digest v0.10.7
+    Checking serde v1.0.229
+    Checking serde_json v1.0.151
+    Checking sha2 v0.10.9
+    Checking log v0.4.34
+    Checking xiao-standard-library v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-standard-library)
+    Checking bytes v1.12.1
+    Checking httparse v1.10.1
+    Checking base64 v0.23.1
+    Checking rustls-webpki v0.103.15
+    Checking xiao-i18n v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-i18n)
+    Checking xiao-lock v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-lock)
+    Checking http v1.5.0
+    Checking once_cell v1.21.4
+    Checking subtle v2.6.1
+    Checking webpki-roots v1.0.9
+    Checking rustls v0.23.45
+    Checking filetime v0.2.29
+    Checking xiao-diagnostics v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-diagnostics)
+    Checking percent-encoding v2.3.2
+    Checking utf8-zero v0.8.1
+    Checking ureq-proto v0.6.4
+    Checking tar v0.4.46
+    Checking num-traits v0.2.19
+    Checking xiao-syntax v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-syntax)
+    Checking libm v0.2.16
+    Checking num-integer v0.1.47
+    Checking num-bigint v0.4.8
+    Checking xiao-types v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-types)
+    Checking xiao-modules v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-modules)
+    Checking xiao-config v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-config)
+    Checking bigdecimal v0.4.11
+    Checking libc v0.2.189
+    Checking windows_x86_64_msvc v0.52.6
+    Checking windows-targets v0.52.6
+    Checking ureq v3.4.2
+    Checking windows-sys v0.52.0
+    Checking xiao-lifetime v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-lifetime)
+    Checking simd-adler32 v0.3.10
+    Checking adler2 v2.0.1
+    Checking crc32fast v1.5.2
+    Checking miniz_oxide v0.9.1
+   Compiling proc-macro2 v1.0.107
+    Checking unicode-ident v1.0.24
+    Checking flate2 v1.1.10
+    Checking xiao-ir v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-ir)
+    Checking xiao-runtime v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-runtime)
+    Checking quote v1.0.47
+    Checking syn v2.0.119
+    Checking xiao-doc-coverage-rust v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-doc-coverage-rust)
+    Checking xiao-optimizer v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-optimizer)
+    Checking xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-codegen-llvm)
+    Checking xiao-bytecode v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-bytecode)
+    Checking xiao-artifacts v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-artifacts)
+    Checking xiao-package v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-package)
+    Checking xiao-vm v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-vm)
+    Checking xiao-xar v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-xar)
+    Checking xiao-driver v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-driver)
+    Checking xiao-platform v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-platform)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 37.21s

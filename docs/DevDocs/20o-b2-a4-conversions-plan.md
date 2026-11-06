@@ -1,7 +1,7 @@
 # 20O-B2-A4. 转换矩阵实施规划
 
 > **本页保留A4原实施规划；规划提交当时未写产品或执行构建测试。当前见[转换实施记录](20o-b2-a4-conversions-progress.md)。**
-> 入口为A2/A3代码快照`5ef17bb2`及flake修复`13ecd687`；A4内核17项及Clippy已通过，最终回归与CI证据收集中，A5～A7后置。
+> 入口为A2/A3代码快照`5ef17bb2`及flake修复`13ecd687`；A4内核已完成本批验收，代码CI通过；首轮22C失败及重跑记录保留，A5～A7后置。
 > A4只实现Runtime转换内核；完整类型/IR/TAC/VM/LLVM/语言路径由A5接线验收。不新增ABI/intrinsic，不实现`lfloat_divide`/`cmath`。
 > A0的`result.json`失败身份仍保留；A0只以`closeout.json`作为有效收口。
 
@@ -14,7 +14,7 @@
 | 版本 | ABI 1.18、`CODEGEN_VERSION` 20、活动intrinsic最大32、`cmath` planned |
 | 数据 | `Lint`/`Lfloat`文本标签保留；A1适配层和A2/A3内核可用 |
 | 字典/教程 | 语言字典仍为str键；新增数值教程范围仍planned |
-| 后续 | A4转换；A5全链路、A6性能、A7收口后置 |
+| 后续 | A4内核已验收；下一入口A5全链路，A6性能、A7收口后置 |
 
 A4的产品边界是**Runtime转换矩阵**，不是完整语言转换。A5未汇合前不能声称VM/LLVM语言路径完成。
 
@@ -157,4 +157,4 @@ core/rust/crates/xiao-codegen-llvm/...               A5接线后置
 docs/DevDocs/assets/20o-b2-a4/entry-<date>/          A4证据（待建）
 ```
 
-本页只规划A4；产品代码仍须按已批准范围另批执行。
+本页正文保留A4原规划；当前实施和有效退出见[转换实施记录](20o-b2-a4-conversions-progress.md)。本批没有启动A5～A7。

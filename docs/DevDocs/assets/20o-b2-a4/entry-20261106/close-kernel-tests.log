@@ -1,0 +1,27 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-runtime)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.96s
+     Running unittests src\lib.rs (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\cargo-target\debug\deps\xiao_runtime-c60947cb4f0f97f6.exe)
+
+running 17 tests
+test value::conversions::binary_tests::a4_binary_inputs_keep_actual_values_and_normalize_zero ... ok
+test value::conversions::binary_tests::a4_binary32_does_not_round_through_binary64 ... ok
+test value::conversions::binary_tests::a4_binary_rounding_uses_nearest_even_at_halfway_points ... ok
+test value::conversions::binary_tests::a4_binary_overflow_uses_the_rounded_result ... ok
+test value::conversions::resource_tests::a4_input_admission_precedes_range_checks_and_zero_shortcuts ... ok
+test value::conversions::binary_tests::a4_binary_subnormal_and_signed_zero_boundaries_are_exact ... ok
+A4最大系数截断工作记录：[WorkEvent { label: "conversion-ten", upper: 32750, actual: None }, WorkEvent { label: "conversion-ten", upper: 32750, actual: Some(32750) }, WorkEvent { label: "truncate-division", upper: 32768, actual: None }, WorkEvent { label: "truncate-division", upper: 19, actual: Some(19) }]
+test value::conversions::resource_tests::a4_large_fractional_coefficients_can_truncate_to_bounded_integers ... ok
+test value::conversions::resource_tests::a4_non_finite_and_failed_conversions_preserve_the_frozen_errors ... ok
+test value::conversions::tests::a4_all_numeric_scalar_directions_use_the_frozen_matrix ... ok
+test value::conversions::tests::a4_fractional_integer_conversions_truncate_toward_zero ... ok
+test value::conversions::tests::a4_integer_widths_are_exact_and_range_checked ... ok
+test value::conversions::tests::a4_strings_preserve_codepoints_and_decimal_syntax ... ok
+test value::conversions::tests::a4_text_round_trips_preserve_display_precision ... ok
+test value::conversions::tests::a4_truncation_matches_independent_small_integer_reference ... ok
+A4最大系数边界舍入工作记录：[WorkEvent { label: "conversion-ten", upper: 33092, actual: None }, WorkEvent { label: "conversion-ten", upper: 33092, actual: Some(33092) }, WorkEvent { label: "binary-order-numerator", upper: 33126, actual: None }, WorkEvent { label: "binary-order-numerator", upper: 33092, actual: Some(33092) }, WorkEvent { label: "binary-scale-numerator", upper: 33126, actual: None }, WorkEvent { label: "binary-scale-numerator", upper: 33092, actual: Some(33092) }, WorkEvent { label: "binary-quotient", upper: 33092, actual: None }, WorkEvent { label: "binary-quotient", upper: 1, actual: Some(1) }, WorkEvent { label: "binary-product", upper: 33092, actual: None }, WorkEvent { label: "binary-product", upper: 33092, actual: Some(33092) }, WorkEvent { label: "binary-remainder", upper: 33092, actual: None }, WorkEvent { label: "binary-remainder", upper: 33090, actual: Some(33090) }, WorkEvent { label: "binary-half-comparison", upper: 33091, actual: None }, WorkEvent { label: "binary-half-comparison", upper: 33090, actual: Some(33090) }]
+test value::conversions::resource_tests::a4_binary_limits_clip_only_unambiguous_extremes ... ok
+test value::conversions::binary_tests::a4_binary_round_trips_match_independent_ieee_bit_patterns ... ok
+test value::conversions::resource_tests::a4_integer_result_limits_are_checked_before_materialization ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 215 filtered out; finished in 0.43s
+

@@ -1,0 +1,51 @@
+{
+  "scope": "A1已有三个完整示例的O0/O3回归，不是A5新算术语言差分",
+  "runtime_and_adapter_unchanged_after_tests": true,
+  "tools": [
+    {
+      "role": "XIAO_RUNTIME_LIBRARY",
+      "path": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\cargo-target\\release\\xiao_runtime.lib",
+      "bytes": 27140528,
+      "sha256": "65f069b62cc62d4bd6e24cceac83382940df6e4ce1461b2867b1f86bb3567c41"
+    },
+    {
+      "role": "XIAO_RUST_DOC_ADAPTER",
+      "path": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\cargo-target\\debug\\xiao-doc-coverage-rust.exe",
+      "bytes": 2074112,
+      "sha256": "7d9400e8995299ecc11775e76132c2bd98e6c0ea2d05b57653c1baa839f95e41"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\run-temp\\xiao-b2-a1-native-52208-1793952570422883700\\a1_identity-o0.exe",
+      "bytes": 1155072,
+      "sha256": "629f9a72e6a2712ff6812203c01eccf65fd388e02f3f684d8ce71f5ff35fc723"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\run-temp\\xiao-b2-a1-native-52208-1793952570422883700\\a1_identity-o3.exe",
+      "bytes": 1154048,
+      "sha256": "834bd6c597b50901ae22f190b6505fb458e81d930cfb24d769954e39d653be00"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\run-temp\\xiao-b2-a1-native-52208-1793952570422883700\\a1_admission_error-o0.exe",
+      "bytes": 1051648,
+      "sha256": "50bb68e41390b2633e47bb12103007dfc075a06f63a0d422e181c30ca9ff872c"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\run-temp\\xiao-b2-a1-native-52208-1793952570422883700\\a1_admission_error-o3.exe",
+      "bytes": 1051136,
+      "sha256": "635b42bbae5f4c22ae4bcd89b47bf27fbd72a34a803512da9a5b20325870c820"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\run-temp\\xiao-b2-a1-native-52208-1793952570422883700\\a1_pending_finally-o0.exe",
+      "bytes": 1055744,
+      "sha256": "1bdb4f6dff23bd1198eac52de88890d8066ea897e12e88844ab9733ccb4cffa8"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a4-conversions\\20261106-600facf4186b\\run-temp\\xiao-b2-a1-native-52208-1793952570422883700\\a1_pending_finally-o3.exe",
+      "bytes": 1055232,
+      "sha256": "b5429bb063791a860cba7f810e88225d6796ba9a529f75619a6c6e1e6aa5e6d1"
+    }
+  ],
+  "internal_only": true
+}

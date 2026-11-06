@@ -1,0 +1,16 @@
+{
+  "argv": [
+    "gh",
+    "run",
+    "rerun",
+    "42184105863",
+    "--job",
+    "127780245568"
+  ],
+  "started_utc": "2026-11-06T08:12:26.969170+00:00",
+  "exit_code": 0,
+  "log": "ci-rerun-macos.log",
+  "source_unchanged": true,
+  "code_commit": "1838fae1be0c038fd888dde2675126598458b74f",
+  "reason": "首轮独立22C queued_task_cancel清理顺序断言失败；不修改测试或产品，仅同提交重跑失败macOS作业"
+}

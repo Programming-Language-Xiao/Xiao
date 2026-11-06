@@ -1,0 +1,65 @@
+{
+  "entry_checks": [
+    "entry-a2-a3-audit",
+    "entry-package-tests",
+    "entry-b1-contract",
+    "entry-b1-resources"
+  ],
+  "effective_checks": [
+    "close-kernel-tests",
+    "close-package-tests",
+    "close-clippy",
+    "close-rustfmt",
+    "close-build-runtime-release",
+    "close-build-runtime-adapter",
+    "close-b1-contract",
+    "close-b1-resources",
+    "close-b1-vm-exact",
+    "close-b1-native-exact",
+    "close-workspace-check",
+    "close-benchmarks-check",
+    "close-docs-closeout",
+    "close-b1-guards",
+    "close-a1-vm-exact",
+    "close-a1-native-exact"
+  ],
+  "exact_test_counts": {
+    "close-kernel-tests": 17,
+    "close-b1-contract": 9,
+    "close-b1-resources": 17,
+    "close-b1-vm-exact": 1,
+    "close-b1-native-exact": 1,
+    "close-a1-vm-exact": 1,
+    "close-a1-native-exact": 1
+  },
+  "historical_failures": [
+    "a4-kernel-first"
+  ],
+  "historical_successes_not_final_snapshot": [
+    "entry-a2-a3-audit",
+    "entry-package-tests",
+    "entry-b1-contract",
+    "entry-b1-resources",
+    "a4-kernel-renderer-fix",
+    "final-package-tests",
+    "close-docs-code",
+    "close-docs-final"
+  ],
+  "source_scope": [
+    "core/rust",
+    "stdlib",
+    "tests/fixtures",
+    "tests/benchmarks",
+    ".github/workflows",
+    ".cargo",
+    "tools",
+    "cli/ts",
+    "docs/UseDocs",
+    "docs/module-registry.json",
+    "package.json",
+    "bun.lock",
+    ".gitattributes"
+  ],
+  "source_files": 989,
+  "note": "整份源码清单覆盖产品、UseDocs、registry、工具与锁；DevDocs滚动证据不计入产品输入树"
+}

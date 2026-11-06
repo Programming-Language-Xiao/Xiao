@@ -1,0 +1,11 @@
+{
+  "code_commit": "1838fae1be0c038fd888dde2675126598458b74f",
+  "run_id": 42184105863,
+  "run_attempt": 2,
+  "job_id": 127786558750,
+  "job_name": "Native differential regression (Linux)",
+  "conclusion": "success",
+  "log": "ci-native-linux.log",
+  "log_sha256": "e03459b6e9cf8e269c9040a8ec24c256897e273fb876a64033445c66d30d4e8c",
+  "scope": "现有B1/A1原生回归，不是A5新转换三平台语言证据"
+}

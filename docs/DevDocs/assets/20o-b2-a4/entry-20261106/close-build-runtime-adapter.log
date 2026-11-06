@@ -1,0 +1,6 @@
+   Compiling proc-macro2 v1.0.107
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-runtime)
+   Compiling quote v1.0.47
+   Compiling syn v2.0.119
+   Compiling xiao-doc-coverage-rust v0.1.0 (D:\project\Xiao\.a4-conversions\20261106-600facf4186b\source\core\rust\crates\xiao-doc-coverage-rust)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.04s

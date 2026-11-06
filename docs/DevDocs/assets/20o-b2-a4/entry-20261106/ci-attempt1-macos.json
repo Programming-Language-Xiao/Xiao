@@ -1,0 +1,8 @@
+{
+  "code_commit": "1838fae1be0c038fd888dde2675126598458b74f",
+  "run_id": 42184105863,
+  "job_id": 127780245568,
+  "conclusion": "failure",
+  "log": "ci-attempt1-macos.log",
+  "log_sha256": "73ba617e190c98ebbe3f69115c65acac3b5c6dde6661f02067e9dbffaa5aa74c"
+}
