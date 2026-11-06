@@ -9,8 +9,19 @@ static DETACHED_TEST_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 /// Runtime 关闭、取消和 join 边界。
 fn runtime_spawn_cancel_and_join_are_wired() {
     let runtime = RuntimeHandle::create();
-    let handle = spawn(&runtime, |token| token.is_cancelled()).expect("spawn");
+    let (started_tx, started_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::channel();
+    let handle = spawn(&runtime, move |token| {
+        started_tx.send(()).expect("通知任务已运行");
+        let _ = release_rx.recv();
+        token.is_cancelled()
+    })
+    .expect("spawn");
+    started_rx
+        .recv_timeout(Duration::from_secs(2))
+        .expect("任务应开始运行");
     handle.cancel();
+    release_tx.send(()).expect("允许任务退出");
     assert_eq!(handle.join(), Err(RuntimeExecError::Cancelled));
     runtime.close();
     assert!(matches!(
