@@ -5,7 +5,7 @@
 > `cmath` 仍为 planned，Runtime ABI 仍为 1.18、`CODEGEN_VERSION` 仍为 20。
 >
 > **F-A/F-B/F-C已完成，F-D已实际签字，B2联合冻结已生效。** B2-A规划已批准，A0～A7获准另批实施；
-> [A0 Windows本地基线](20o-b2-a0-baseline-plan.md)已实际通过，Linux/macOS本地未验证；后续A1～A4内核已完成本批验收，A5语言接线实施中，A6/A7及B2-B/C尚未开始。
+> [A0 Windows本地基线](20o-b2-a0-baseline-plan.md)已实际通过，Linux/macOS本地未验证；后续A1～A4内核已完成本批验收，A5语言全链路已完成本批验收，A6/A7及B2-B/C尚未开始。
 
 ## 一、入口与当前事实
 

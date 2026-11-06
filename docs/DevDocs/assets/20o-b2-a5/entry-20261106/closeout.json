@@ -1,0 +1,72 @@
+{
+  "passed": true,
+  "scope": "A5语言全链路",
+  "recorded_utc": "2026-11-06T15:23:00.283452+00:00",
+  "code_commit": "f21715d38069923653438fce8a7f3f8445f49164",
+  "entry_commit": "bb7a856e82be981863ddc798846095b946987941",
+  "product_manifest": "source-manifests/2f58be0f0043a3c5c3c5c390bba3b560c82c4c178c6cdc779bbdd8a14712ece9.json",
+  "effective_checks": [
+    "close-a1-native-exact",
+    "close-a1-vm-exact",
+    "close-b1-contract",
+    "close-b1-guards",
+    "close-b1-native-exact",
+    "close-b1-resources",
+    "close-b1-vm-exact",
+    "close-benchmarks-check",
+    "close-clippy",
+    "close-doc-adapter",
+    "close-docs-closeout",
+    "close-driver-unit-tests",
+    "close-language-tests",
+    "close-package-tests",
+    "close-runtime-release",
+    "close-rustfmt",
+    "close-workspace-check"
+  ],
+  "exact_test_counts": {
+    "close-language-tests": 12,
+    "close-driver-unit-tests": 64,
+    "close-b1-contract": 9,
+    "close-b1-resources": 17,
+    "close-b1-vm-exact": 1,
+    "close-b1-native-exact": 1,
+    "close-a1-vm-exact": 1,
+    "close-a1-native-exact": 1
+  },
+  "abi": "1.18",
+  "codegen": 20,
+  "active_intrinsic_max": 32,
+  "xcon_version": 1,
+  "stdlib_interface": 1,
+  "cmath": "planned",
+  "numeric_tutorial_scope": "planned",
+  "a6_a7_started": false,
+  "b1_721_executed": false,
+  "ci_runs": {
+    "workspace": "ci-workspace-run.json",
+    "maintenance": "ci-maintenance-run.json"
+  },
+  "ci_jobs": "ci-maintenance-jobs.json",
+  "ci_records": {
+    "vm": "ci-vm-linux.json",
+    "windows": "ci-native-windows.json",
+    "linux": "ci-native-linux.json",
+    "macos": "ci-native-macos.json"
+  },
+  "ci_maintenance_latest_attempt": 2,
+  "ci_attempt_history": {
+    "first_run": "ci-attempt1-maintenance-run.json",
+    "first_jobs": "ci-attempt1-maintenance-jobs.json",
+    "first_macos": "ci-attempt1-macos.json",
+    "first_macos_log": "ci-attempt1-macos.log",
+    "rerun_request": "ci-rerun-macos.json",
+    "scheduling": "ci-attempt2-scheduling.json",
+    "independent_debt": "independent-22c-record.json"
+  },
+  "independent_debts_closed": false,
+  "ci_scope": "代码f21715d3的真实VM精确入口及Windows/Linux/macOS原生精确入口；保留的绿色执行使用原始日志作业ID，新映射不冒充新执行。",
+  "documentation_ci_scope": "代码CI只绑定f21715d3；后续文档证据提交的CI单独登记，不声称由本代码运行覆盖。",
+  "next_entry": "A6资源/性能规划与测量；A7整批收口、B2-B/C仍后置。",
+  "documentation_ci_records": "documentation-ci-records.json"
+}

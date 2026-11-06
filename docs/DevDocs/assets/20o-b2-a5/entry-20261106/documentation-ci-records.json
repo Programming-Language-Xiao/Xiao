@@ -1,0 +1,12 @@
+{
+  "scope": "文档证据5a856c30的实际CI；不冒称覆盖后续收口/回执提交。",
+  "observed": [
+    {
+      "commit": "5a856c306f39a2571d668c0068bb9b527c325661",
+      "run_id": 42239238673,
+      "name": "Xiao workspace gates",
+      "conclusion": "success",
+      "response": "ci-evidence-5a856c30.json"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # 20O-B2-A5. 类型、IR、TAC/VM/LLVM 全链路实施规划
 
-> **A5 已按 A-P1～A-P3 批准进入实施；本页保留范围与退出门槛。**
+> **A5 已按 A-P1～A-P3 完成本批实施与三平台功能验收；本页保留范围与退出门槛。**
 > 入口为A4代码快照`1838fae1`及A4有效收口；[实施记录](20o-b2-a5-language-integration-progress.md)持续登记真实结果，A6性能、A7整批收口后置。
 > A5只把A1～A4的Runtime能力接入语言全链路；不新增ABI/intrinsic，不实现`lfloat_divide`/`cmath`。
 > A0的`result.json`失败身份仍保留；A0只以`closeout.json`作为有效收口。

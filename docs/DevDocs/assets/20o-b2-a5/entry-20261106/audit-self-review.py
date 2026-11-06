@@ -92,7 +92,14 @@ def omitted_platform(root):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--temporary-parent', type=Path, required=True)
+    parser.add_argument('--output-directory', type=Path)
     args = parser.parse_args()
+    output = (args.output_directory or ROOT/'self-review').resolve()
+    previous = output/'negative-cases.json'
+    if previous.exists():
+        old = json.loads(previous.read_text(encoding='utf-8'))
+        if 'cases' in old:
+            raise SystemExit('已有自审结果不可覆盖；请指定新的--output-directory')
     temporary = Path(tempfile.mkdtemp(prefix='a5-audit-', dir=args.temporary_parent.resolve()))
     cases = [
         ('positive', None, None),
@@ -123,8 +130,7 @@ def main():
                         'expected_error': expected, 'actual_error': actual, 'passed': passed,
                         'stdout_sha256': hashlib.sha256(result.stdout).hexdigest(),
                         'stderr_sha256': hashlib.sha256(result.stderr).hexdigest()})
-    output = ROOT/'self-review'
-    output.mkdir(exist_ok=True)
+    output.mkdir(parents=True, exist_ok=True)
     for name, stdout, stderr in observed:
         (output/(name+'.stdout.log')).write_bytes(stdout)
         (output/(name+'.stderr.log')).write_bytes(stderr)

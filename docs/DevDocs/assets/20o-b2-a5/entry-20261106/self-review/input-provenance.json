@@ -1,0 +1,11 @@
+{
+  "scope": "自审实际阳性副本的输入清单与原占位元数据，说明输出新增后文件数变化；不是产品/CI日志改写。",
+  "input_manifest": "input-evidence.json",
+  "input_manifest_sha256": "b7a6ad823d02e47743f59800d278fed250aeadfccd1f1a885954f614cbba5636",
+  "original_status": "input-status-draft.json",
+  "harness": "../audit-self-review.py",
+  "harness_sha256": "fbe921b6c2238d1e5c53545ddfb408fa588531e5e83b5815c2a4ead05182b053",
+  "auditor_sha256": "cae56109aaccf8647e3d5006f02e25773faede49d349773cca793f79e742596d",
+  "cases": 9,
+  "passed": true
+}

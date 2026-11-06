@@ -1,10 +1,10 @@
 # A5 语言全链路实施证据
 
-当前实施代码已固定为`f21715d38069923653438fce8a7f3f8445f49164`，本地功能与门禁通过；macOS首轮被既有22C断言挡住，同提交重跑中，A5尚未声明收口。
+实施代码固定为`f21715d38069923653438fce8a7f3f8445f49164`。Windows本地与VM/三平台原生精确入口通过；维护首轮22C失败保留，同提交macOS第二次执行通过。有效结论见[closeout.json](closeout.json)。
 
 ## 已取得的实际证据
 
-[checks.json](checks.json)列出17个有效执行点；当前16项已经实际通过，最终文档门禁随收口执行。两个B1精确入口保留全部旧场景，实际--exact且各恰好1 passed/0 failed/0 ignored。A5追加27条VM标记与34条原生标记，和原有28/28计数守卫分别统计。
+[checks.json](checks.json)列出17个有效执行点，均绑定同一最终产品输入；[commands.json](commands.json)保存对应实际记录。两个B1精确入口保留全部旧场景，实际--exact且各恰好1 passed/0 failed/0 ignored。A5追加27条VM标记与34条原生标记，和原有28/28计数守卫分别统计。
 
 七份完整语言语料含六类型36个有序提升组合、构造式/as两种36项转换、复合赋值、绑定标签、可恢复错误、线程/任务池与finally。矩阵独立黄金518行，经三个既有VM载体一致；六份.xiaoc及七份真实.xar删除应用源码后重放。两份完整教程与fixture/黄金逐字匹配，新增范围仍planned。
 
@@ -31,12 +31,29 @@ cmd /c git ls-files --others --exclude-standard
 
 ## CI与独立债务
 
-代码工作区门禁[42232824459](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42232824459)已经通过。维护[42232824476](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42232824476)首轮其余作业通过，macOS在既有22C队列取消清理断言失败，记录见[independent-22c-record.json](independent-22c-record.json)。首轮的B1原生精确点尚未到达，不能拿standalone的A5执行冒充精确点。
+代码工作区门禁[42232824459](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42232824459)已经通过。维护[42232824476](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42232824476)第二次执行通过，三平台原生精确点均到达并各恰好一项通过。首轮macOS在既有22C队列取消清理断言失败，记录见[independent-22c-record.json](independent-22c-record.json)；首轮B1原生精确点尚未到达，不能拿standalone的A5执行冒充精确点。
 
-[原始重跑请求](ci-rerun-macos.json)只重跑同一提交失败的macOS作业；[API重新排程](ci-attempt2-scheduling.json)表明其余绿色执行被保留并生成新映射ID。取证同时保存原始执行ID和最新汇总映射ID，以时间、runner与完整步骤证明两者关系；日志从原始ID下载，不能将映射ID或运行ID冒充实际日志来源。重跑即使变绿也不关闭22C/22D及19/11/22债务。
+[原始重跑请求](ci-rerun-macos.json)只重跑同一提交失败的macOS作业；[API重新排程](ci-attempt2-scheduling.json)表明其余绿色执行被保留并生成新映射ID。取证同时保存原始执行ID和最新汇总映射ID，以时间、runner与完整步骤证明两者关系；日志从原始ID下载，不能将映射ID或运行ID冒充实际日志来源。第二次绿色不关闭22C/22D及19/11/22债务。
+
+| 来源 | 实际日志作业ID / 执行次数 | 最新汇总映射ID |
+| --- | --- | --- |
+| Linux VM | 127942746529 / 1 | 127957125759 |
+| Windows原生 | 127942746469 / 1 | 127957145832 |
+| Linux原生 | 127942746651 / 1 | 127957147503 |
+| macOS原生 | 127957077032 / 2 | 127957077032 |
+
+四条实际原始日志和API响应固定在ci-vm-linux、ci-native-windows/linux/macos对应的JSON/log文件；[完整作业表](ci-maintenance-jobs.json)同时保留两次执行与映射关系。
 
 ## 最终收口约束
 
 ABI1.18、生成器20、intrinsic最大32、既有C符号/状态/布局、XCON及依赖/锁/stdlib/registry均不变。cmath与新增数值教程范围保持planned，旧721条F10未运行；A6/A7与B2-B/C后置。
 
-最终closeout、evidence清单与审计正反例在三平台证据收齐后生成；当前文件不将等待中的作业写成通过。后续文档提交的CI另登记，不冒称被代码运行覆盖。
+归档清单[evidence.json](evidence.json)逐文件登记本目录全部实际字节，清单本身不递归计数。审计正反例与原始实际stderr见[self-review](self-review/README.md)。Windows/Cmd环境只读复核固定Git对象、17项检查、精确计数、标记、实际作业来源与保留债务：
+
+```powershell
+python -X utf8 docs/DevDocs/assets/20o-b2-a5/entry-20261106/audit.py
+```
+
+完整产品重跑须另建任务根，检出f21715d3，重建新的target/Runtime/缓存，按每条记录中的argv替换新任务根；恢复run-step/pre-ci/regressions/fetch-ci脚本到scripts/目录，并准备对应environment.json。不得直接覆盖本归档的原始日志。只读审计使用历史固定Git对象，不要求未来HEAD仍与被测registry整文件相同。
+
+后续文档提交CI另登记，不冒称被代码运行覆盖。

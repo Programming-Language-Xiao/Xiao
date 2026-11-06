@@ -1,0 +1,1 @@
+{"passed": true, "scope": "A5语言全链路", "files": 221, "source_files": 1011, "code_commit": "f21715d38069923653438fce8a7f3f8445f49164", "checks": 17, "ci_platforms": ["vm", "windows", "linux", "macos"]}

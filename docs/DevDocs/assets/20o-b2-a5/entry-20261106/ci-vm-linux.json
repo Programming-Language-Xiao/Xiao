@@ -1,0 +1,20 @@
+{
+  "code_commit": "f21715d38069923653438fce8a7f3f8445f49164",
+  "run_id": 42232824476,
+  "job_id": 127942746529,
+  "job_name": "Rust workspace default tests (Linux)",
+  "run_attempt": 1,
+  "aggregate_job_id": 127957125759,
+  "aggregate_run_attempt": 2,
+  "execution_retained": true,
+  "conclusion": "success",
+  "log": "ci-vm-linux.log",
+  "log_sha256": "deadd069a0d38e1ee806c80cd0e171212143b68bc52d6e92f4d0e2a487eafde6",
+  "execution_identity": {
+    "started_at": "2026-11-06T14:19:02Z",
+    "completed_at": "2026-11-06T14:26:37Z",
+    "runner_id": 1000001288,
+    "runner_name": "GitHub Actions 1000001288"
+  },
+  "scope": "实际日志使用该次执行的原始作业ID；重跑复制的绿色映射不冒充新执行。A5功能/清理与完整示例，不作为A6性能。"
+}

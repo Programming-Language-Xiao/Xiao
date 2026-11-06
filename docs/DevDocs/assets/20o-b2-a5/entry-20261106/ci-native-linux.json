@@ -1,0 +1,20 @@
+{
+  "code_commit": "f21715d38069923653438fce8a7f3f8445f49164",
+  "run_id": 42232824476,
+  "job_id": 127942746651,
+  "job_name": "Native differential regression (Linux)",
+  "run_attempt": 1,
+  "aggregate_job_id": 127957147503,
+  "aggregate_run_attempt": 2,
+  "execution_retained": true,
+  "conclusion": "success",
+  "log": "ci-native-linux.log",
+  "log_sha256": "64ba4be1d1ee4be8eb2c0b43feb2733a7df9a145a7bb0663b74fa6bef90dd22c",
+  "execution_identity": {
+    "started_at": "2026-11-06T14:19:03Z",
+    "completed_at": "2026-11-06T14:29:35Z",
+    "runner_id": 1000001289,
+    "runner_name": "GitHub Actions 1000001289"
+  },
+  "scope": "实际日志使用该次执行的原始作业ID；重跑复制的绿色映射不冒充新执行。A5功能/清理与完整示例，不作为A6性能。"
+}
