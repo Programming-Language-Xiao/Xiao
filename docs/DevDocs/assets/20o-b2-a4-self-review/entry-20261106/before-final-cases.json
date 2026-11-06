@@ -1,0 +1,133 @@
+{
+  "audit_path": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\source\\docs\\DevDocs\\assets\\20o-b2-a4-self-review\\entry-20261106\\original-audit.py.txt",
+  "audit_sha256": "e779a0f27ee1dcaec4dcf923720ff6fcec3a782441d5a473cf3f4df01f62f45f",
+  "harness_sha256": "cb79a842cab51e4579f73de9c9cba2f8c0d6e17b8708e6e266493ac4e9d24ad3",
+  "argv": [
+    "docs/DevDocs/assets/20o-b2-a4-self-review/entry-20261106/audit-cases.py",
+    "--audit",
+    "docs/DevDocs/assets/20o-b2-a4-self-review/entry-20261106/original-audit.py.txt",
+    "--repository-root",
+    ".",
+    "--work-root",
+    "../replay-before",
+    "--output-root",
+    "docs/DevDocs/assets/20o-b2-a4-self-review/entry-20261106",
+    "--label",
+    "before-final",
+    "--mode",
+    "before"
+  ],
+  "repository_root": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\source",
+  "work_root": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\replay-before",
+  "output_root": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\source\\docs\\DevDocs\\assets\\20o-b2-a4-self-review\\entry-20261106",
+  "mode": "before",
+  "scope": "隔离副本的审计反例，不是新产品执行",
+  "note": "before模式的通过表示原脚本错误放行；after模式要求实际SystemExit理由匹配，普通异常不算通过",
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": null,
+      "matched": true
+    },
+    {
+      "case": "duplicate-kernel-list",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "内核测试名单不完整或重复",
+      "matched": true
+    },
+    {
+      "case": "duplicate-arithmetic-list",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "A2/A3回归标识清单不完整或重复",
+      "matched": true
+    },
+    {
+      "case": "missing-required-check",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "有效检查清单不完整或重复",
+      "matched": true
+    },
+    {
+      "case": "missing-required-ci-run",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "CI工作流清单不完整",
+      "matched": true
+    },
+    {
+      "case": "wrong-canonical-summary",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "收口规范源码身份不符",
+      "matched": true
+    },
+    {
+      "case": "wrong-source-count",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "收口源码文件计数不符",
+      "matched": true
+    },
+    {
+      "case": "wrong-command-source-summary",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "命令源码身份不符：close-clippy",
+      "matched": true
+    },
+    {
+      "case": "native-run-id",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "平台运行号不符：windows",
+      "matched": true
+    },
+    {
+      "case": "stale-native-job",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "平台未使用最新成功作业：linux",
+      "matched": true
+    },
+    {
+      "case": "log-outside-archive",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "归档引用路径越界：",
+      "matched": true
+    },
+    {
+      "case": "guard-case-result",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "B1守卫明细不完整或存在失败",
+      "matched": true
+    },
+    {
+      "case": "nested-inventory-file",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": "证据清单计数不符",
+      "matched": true
+    }
+  ]
+}

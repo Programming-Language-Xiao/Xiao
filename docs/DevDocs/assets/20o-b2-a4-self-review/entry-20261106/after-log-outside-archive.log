@@ -1,0 +1,1 @@
+{"case": "log-outside-archive", "outcome": "rejected", "reason": "归档引用路径越界：D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\source\\docs\\DevDocs\\assets\\20o-b2-a4\\entry-20261106\\close-kernel-tests.log", "expected_outcome": "rejected", "expected_reason_prefix": "归档引用路径越界：", "matched": true}

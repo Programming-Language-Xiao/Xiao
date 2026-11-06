@@ -1,0 +1,1 @@
+{"case": "guard-case-result", "outcome": "rejected", "reason": "B1守卫明细不完整或存在失败", "expected_outcome": "rejected", "expected_reason_prefix": "B1守卫明细不完整或存在失败", "matched": true}

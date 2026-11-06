@@ -1,0 +1,1 @@
+{"case": "missing-required-check", "outcome": "rejected", "reason": "有效检查清单不完整或重复", "expected_outcome": "rejected", "expected_reason_prefix": "有效检查清单不完整或重复", "matched": true}

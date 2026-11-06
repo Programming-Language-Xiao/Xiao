@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "reviewed_head": "900c3df81e9e6b8b2c216bec17d3f3a556ca868a",
+  "product_code_commit": "1838fae1be0c038fd888dde2675126598458b74f",
+  "product_utf8_lf_tree_sha256": "e66ea70ba185c372f9dea548de154c6338733c13985d21867df1d14905152854",
+  "checks": [
+    "review-build-runtime",
+    "review-probe-compile",
+    "review-conversion-differential",
+    "review-a4-positive-audit",
+    "review-docs-final"
+  ],
+  "audit_positive_cases": 1,
+  "audit_negative_cases": 12,
+  "numeric_comparisons": 12092,
+  "numeric_mismatches": 0,
+  "product_changed": false,
+  "ci_scope": "原产品CI保持历史身份；本次修复提交CI待实际结果单独登记"
+}

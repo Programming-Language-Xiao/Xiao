@@ -1,0 +1,1 @@
+{"case": "missing-required-ci-run", "outcome": "rejected", "reason": "CI工作流清单不完整", "expected_outcome": "rejected", "expected_reason_prefix": "CI工作流清单不完整", "matched": true}

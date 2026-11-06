@@ -1,0 +1,63 @@
+//! 自审独立对照：标准库十进制解析与Runtime整数有理数转换逐位比较。
+use std::{env, fs, process};
+use xiao_runtime::RuntimeValue;
+use xiao_syntax::ScalarType;
+
+fn literal_zero(text: &str) -> bool {
+    text.split(['e', 'E']).next().unwrap().bytes()
+        .filter(u8::is_ascii_digit).all(|byte| byte == b'0')
+}
+
+fn compare(value: &RuntimeValue, text: &str, target: ScalarType) -> Result<(), String> {
+    let (finite, expected) = match target {
+        ScalarType::Float => {
+            let number = text.parse::<f64>().map_err(|error| format!("reference64:{error}"))?;
+            (number.is_finite(), if literal_zero(text) { 0 } else { number.to_bits() })
+        }
+        ScalarType::Sfloat => {
+            let number = text.parse::<f32>().map_err(|error| format!("reference32:{error}"))?;
+            (number.is_finite(), if literal_zero(text) { 0 } else { u64::from(number.to_bits()) })
+        }
+        _ => unreachable!(),
+    };
+    let output = value.convert_to(target);
+    if !finite {
+        return match output {
+            Err(error) if error.code() == "X06-RUNTIME-009" => Ok(()),
+            other => Err(format!("expected009 got={other:?}")),
+        };
+    }
+    let actual = match output {
+        Ok(RuntimeValue::Float(number)) => number.to_bits(),
+        Ok(RuntimeValue::Sfloat(number)) => u64::from(number.to_bits()),
+        other => return Err(format!("expected={expected:016x} got={other:?}")),
+    };
+    if actual == expected { Ok(()) } else { Err(format!("expected={expected:016x} actual={actual:016x}")) }
+}
+
+fn main() {
+    let data = fs::read_to_string(env::args().nth(1).expect("input path")).unwrap();
+    let mut vectors = 0;
+    let mut failures = 0;
+    for (index, text) in data.lines().enumerate() {
+        vectors += 1;
+        let value = match RuntimeValue::new_lfloat(text) {
+            Ok(value) => value,
+            Err(error) => {
+                failures += 1;
+                eprintln!("case={index} admission={} bytes={}", error.code(), text.len());
+                continue;
+            }
+        };
+        for target in [ScalarType::Float, ScalarType::Sfloat] {
+            if let Err(error) = compare(&value, text, target) {
+                failures += 1;
+                if failures <= 12 {
+                    eprintln!("case={index} target={target:?} bytes={} prefix={} {error}", text.len(), text.chars().take(90).collect::<String>());
+                }
+            }
+        }
+    }
+    println!("{{\"vectors\":{vectors},\"comparisons\":{},\"mismatches\":{failures}}}", vectors*2);
+    if failures != 0 { process::exit(1); }
+}

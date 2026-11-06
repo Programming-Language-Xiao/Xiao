@@ -1,0 +1,1 @@
+{"case": "nested-inventory-file", "outcome": "rejected", "reason": "证据清单计数不符", "expected_outcome": "rejected", "expected_reason_prefix": "证据清单计数不符", "matched": true}

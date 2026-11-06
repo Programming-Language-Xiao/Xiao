@@ -1,0 +1,114 @@
+{
+  "audit_path": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\source\\docs\\DevDocs\\assets\\20o-b2-a4\\entry-20261106\\audit.py",
+  "audit_sha256": "d0c667658abf1458ac25e8c88be9dd23ee3b6f08207d12cc126562892fc99cb5",
+  "mode": "after",
+  "scope": "隔离副本的审计反例，不是新产品执行",
+  "note": "before模式的通过表示原脚本错误放行；after模式要求实际SystemExit理由匹配，普通异常不算通过",
+  "passed": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "outcome": "passed",
+      "reason": "",
+      "expected_outcome": "passed",
+      "expected_reason_prefix": null,
+      "matched": true
+    },
+    {
+      "case": "duplicate-kernel-list",
+      "outcome": "rejected",
+      "reason": "内核测试名单不完整或重复",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "内核测试名单不完整或重复",
+      "matched": true
+    },
+    {
+      "case": "duplicate-arithmetic-list",
+      "outcome": "rejected",
+      "reason": "A2/A3回归标识清单不完整或重复",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "A2/A3回归标识清单不完整或重复",
+      "matched": true
+    },
+    {
+      "case": "missing-required-check",
+      "outcome": "rejected",
+      "reason": "有效检查清单不完整或重复",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "有效检查清单不完整或重复",
+      "matched": true
+    },
+    {
+      "case": "missing-required-ci-run",
+      "outcome": "rejected",
+      "reason": "CI工作流清单不完整",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "CI工作流清单不完整",
+      "matched": true
+    },
+    {
+      "case": "wrong-canonical-summary",
+      "outcome": "rejected",
+      "reason": "收口规范源码身份不符",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "收口规范源码身份不符",
+      "matched": true
+    },
+    {
+      "case": "wrong-source-count",
+      "outcome": "rejected",
+      "reason": "收口源码文件计数不符",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "收口源码文件计数不符",
+      "matched": true
+    },
+    {
+      "case": "wrong-command-source-summary",
+      "outcome": "rejected",
+      "reason": "命令源码身份不符：close-clippy",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "命令源码身份不符：close-clippy",
+      "matched": true
+    },
+    {
+      "case": "native-run-id",
+      "outcome": "rejected",
+      "reason": "平台运行号不符：windows",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "平台运行号不符：windows",
+      "matched": true
+    },
+    {
+      "case": "stale-native-job",
+      "outcome": "rejected",
+      "reason": "平台未使用最新成功作业：linux",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "平台未使用最新成功作业：linux",
+      "matched": true
+    },
+    {
+      "case": "log-outside-archive",
+      "outcome": "rejected",
+      "reason": "归档引用路径越界：D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\source\\docs\\DevDocs\\assets\\20o-b2-a4\\entry-20261106\\close-kernel-tests.log",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "归档引用路径越界：",
+      "matched": true
+    },
+    {
+      "case": "guard-case-result",
+      "outcome": "rejected",
+      "reason": "B1守卫明细不完整或存在失败",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "B1守卫明细不完整或存在失败",
+      "matched": true
+    },
+    {
+      "case": "nested-inventory-file",
+      "outcome": "rejected",
+      "reason": "证据清单计数不符",
+      "expected_outcome": "rejected",
+      "expected_reason_prefix": "证据清单计数不符",
+      "matched": true
+    }
+  ]
+}

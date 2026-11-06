@@ -1,0 +1,30 @@
+{
+  "scope": "独立对照程序及本任务新编译rlib；不是复用旧原生产物",
+  "files": [
+    {
+      "path": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\cargo-target\\debug\\libxiao_runtime.rlib",
+      "bytes": 16952150,
+      "sha256": "140d7bebe08e199db8d590ec1a8b23526aa821c2d912f52f74c7a2111ad0e79a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\cargo-target\\debug\\deps\\libxiao_syntax-53d6de72529a82f8.rlib",
+      "bytes": 2543722,
+      "sha256": "1372f795bfc126baffd23b7a79c0b81da1bf5f4b18d823f1c2d1630879a3554f"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\conversion-probe.exe",
+      "bytes": 1039872,
+      "sha256": "7912ff274602ec2c1d3df029dd5d95b935cd857fc1b4d3bf93829b9698a4805a"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\scripts\\conversion-probe.rs",
+      "bytes": 2623,
+      "sha256": "5c20a5142816f69d7b06dcb2d29c49ae6c411420a0d88c5b4c1de1c89aef1cc8"
+    },
+    {
+      "path": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\conversion-vectors.txt",
+      "bytes": 1866283,
+      "sha256": "8e3129033e7718e2e30bbfe1b0c68cd61fed9a356e56d31161eb281b340dfe4b"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "seed": "0xA4_20261106",
+  "vectors": 6046,
+  "comparisons": 12092,
+  "sha256": "8e3129033e7718e2e30bbfe1b0c68cd61fed9a356e56d31161eb281b340dfe4b",
+  "reference": "Rust 1.96.0 FromStr<f32/f64>，独立于被测BigUint有理数算法；零按F-8规范化",
+  "scope": "Runtime对照，不是A5语言差分或A6性能"
+}

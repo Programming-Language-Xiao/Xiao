@@ -27,3 +27,7 @@ lint/lfloat到str复用A1规范渲染器；新增float/sfloat到str保留既有�
 989项最终源码输入的原始和UTF-8/LF规范摘要并存；只读audit.py复核归档、完整范围、固定Git对象、实际计数及CI身份。17项内核主计数点绑定Windows本地/Linux默认workspace，不扩写成A5新转换三平台语言证据。代码CI绑定1838fae1，后续纯文档收口提交不冒称在同一运行中。
 
 ABI1.18/生成器20/活动intrinsic最大32、依赖与锁、XCON、stdlib、registry均不变。新增数值教程范围和cmath继续planned；旧721条F10未运行，22C/22D及19/11/22债务独立保留。
+
+## 自审补充
+
+[本批自审](20o-b2-a4-self-review.md)修复归档审计的清单、来源和作业绑定缺口；12个反例先复现再按实际原因拒绝。独立12,092次数值比较未发现差异，Runtime转换内核保持不变。原有产品CI和本次审计工具修复的CI分开登记。

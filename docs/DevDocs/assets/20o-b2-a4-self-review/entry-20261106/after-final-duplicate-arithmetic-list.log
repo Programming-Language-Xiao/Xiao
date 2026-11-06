@@ -1,0 +1,1 @@
+{"case": "duplicate-arithmetic-list", "outcome": "rejected", "reason": "A2/A3回归标识清单不完整或重复", "expected_outcome": "rejected", "expected_reason_prefix": "A2/A3回归标识清单不完整或重复", "matched": true}

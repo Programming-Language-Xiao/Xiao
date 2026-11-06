@@ -1,0 +1,1 @@
+{"case": "wrong-canonical-summary", "outcome": "rejected", "reason": "收口规范源码身份不符", "expected_outcome": "rejected", "expected_reason_prefix": "收口规范源码身份不符", "matched": true}

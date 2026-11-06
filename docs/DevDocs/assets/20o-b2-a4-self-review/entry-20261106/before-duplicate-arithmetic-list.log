@@ -1,0 +1,2 @@
+{"passed": true, "code_commit": "1838fae1be0c038fd888dde2675126598458b74f", "source_files": 989, "effective_checks": 16, "scope": "只读归档复核，非新产品或性能执行"}
+{"case": "duplicate-arithmetic-list", "outcome": "passed", "reason": "", "expected_outcome": "passed", "expected_reason_prefix": "A2/A3回归标识清单不完整或重复", "matched": true}

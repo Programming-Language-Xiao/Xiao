@@ -1,0 +1,1 @@
+{"case": "duplicate-kernel-list", "outcome": "rejected", "reason": "内核测试名单不完整或重复", "expected_outcome": "rejected", "expected_reason_prefix": "内核测试名单不完整或重复", "matched": true}
