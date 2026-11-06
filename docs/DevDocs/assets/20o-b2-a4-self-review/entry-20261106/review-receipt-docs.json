@@ -1,0 +1,32 @@
+{
+  "name": "review-receipt-docs",
+  "argv": [
+    "C:\\Users\\xiaoc\\node_modules\\bun\\bin\\bun.exe",
+    "tools/repo-check/src/cli.ts",
+    "docs"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a4-self-review\\20261106-d47024aec175\\source",
+  "started_utc": "2026-11-06T11:10:45.391023+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "review-receipt-docs.log",
+  "pid": 53720,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/c458cbf241183a798db5af5b41d8b371c19dca7c3679a712e93c02522a944505.json",
+    "raw_tree_sha256": "c458cbf241183a798db5af5b41d8b371c19dca7c3679a712e93c02522a944505",
+    "utf8_lf_tree_sha256": "e66ea70ba185c372f9dea548de154c6338733c13985d21867df1d14905152854",
+    "files": 989
+  },
+  "source_after": {
+    "manifest": "source-manifests/c458cbf241183a798db5af5b41d8b371c19dca7c3679a712e93c02522a944505.json",
+    "raw_tree_sha256": "c458cbf241183a798db5af5b41d8b371c19dca7c3679a712e93c02522a944505",
+    "utf8_lf_tree_sha256": "e66ea70ba185c372f9dea548de154c6338733c13985d21867df1d14905152854",
+    "files": 989
+  },
+  "source_unchanged": true,
+  "runner_sha256": "2c2d2d2899c7d8f3b2ccda49e66599de9077a3a990f93ec010a67de2fb0b4ce6",
+  "finished_utc": "2026-11-06T11:10:53.779208+00:00",
+  "duration_seconds": 8.375,
+  "sha256": "180356f92b7614b5407933a144d2548c550f051e9a8cfaa506373f6a4f09bc2b"
+}

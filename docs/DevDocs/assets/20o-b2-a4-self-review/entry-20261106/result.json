@@ -8,12 +8,16 @@
     "review-probe-compile",
     "review-conversion-differential",
     "review-a4-positive-audit",
-    "review-docs-final"
+    "review-docs-final",
+    "review-receipt-docs",
+    "review-receipt-layout"
   ],
   "audit_positive_cases": 1,
   "audit_negative_cases": 12,
   "numeric_comparisons": 12092,
   "numeric_mismatches": 0,
   "product_changed": false,
-  "ci_scope": "原产品CI保持历史身份；本次修复提交CI待实际结果单独登记"
+  "ci_scope": "本次审计修复6ebdd5b1的workspace CI42207132845通过；原产品CI仍绑定1838fae1；后续回执提交不冒称被此运行覆盖",
+  "fix_commit": "6ebdd5b19b0900308bf722e331fcaa969b7ef5a4",
+  "fix_ci": "ci-fix-run.json"
 }

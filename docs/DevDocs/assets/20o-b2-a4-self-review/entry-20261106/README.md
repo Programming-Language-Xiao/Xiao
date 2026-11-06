@@ -36,6 +36,8 @@ python -X utf8 docs/DevDocs/assets/20o-b2-a4/entry-20261106/audit.py
 [入口](bootstrap.json)、[环境](environment.json)、[run-step](run-step.py)记录实际cwd/PID/argv/起止/退出码和前后源码树；新的原始CRLF树与A4不同，989项UTF-8/LF规范树相同。TypeScript5.9.3实体复制在源码根内，避免归档外junction。
 最终文档门禁见result.json的checks列表；原产品CI保持历史身份，自审修复提交的CI在获得真实结果后单独登记，不能把原1838fae1的绿色当作自审CI。
 
+修复提交6ebdd5b1的[workspace CI 42207132845](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42207132845)已通过；[run](ci-fix-run.json)和[jobs](ci-fix-jobs.json)绑定实际修复提交。本回执另行提交，不声称回填文档已经包含在该运行中。
+
 本目录字节、前后反例和独立对照结果可只读复核：
 
 ```powershell

@@ -20,3 +20,5 @@
 参考解析器和被测BigUint有理数算法独立；本任务用新target编译Runtime/rlib及对照程序，保存源码、实际命令和产物摘要。989项产品输入规范树仍为`e66ea70ba185c372f9dea548de154c6338733c13985d21867df1d14905152854`，与A4快照一致。没有因此修改转换内核，也不把对照结果扩写为A5语言差分或A6性能成绩。
 
 A4原有CI继续绑定1838fae1；本次自审提交的CI单独登记。22C首次失败及A4原始日志保留，重跑绿色不关闭债务。A5～A7后置，新增数值教程及cmath继续planned。
+
+审计修复提交`6ebdd5b19b0900308bf722e331fcaa969b7ef5a4`的[workspace CI 42207132845](https://github.com/Programming-Language-Xiao/Xiao/actions/runs/42207132845)已通过，实际run/jobs响应保存在自审证据目录。后续纯文档回执只登记该运行，不声称自身包含在此CI中。
