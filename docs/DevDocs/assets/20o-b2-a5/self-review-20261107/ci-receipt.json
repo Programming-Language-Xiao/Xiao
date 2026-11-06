@@ -1,0 +1,8 @@
+{
+  "tested_commit": "0b2208f84e9c9cf364e52da9eeb6cfd99a3695f6",
+  "run_id": 42253791436,
+  "workflow": "Xiao workspace gates",
+  "conclusion": "success",
+  "response": "ci-0b2208f8.json",
+  "scope": "仅记录0b2208f8自审修复的实际成功运行；回执提交不声称由旧运行覆盖。"
+}

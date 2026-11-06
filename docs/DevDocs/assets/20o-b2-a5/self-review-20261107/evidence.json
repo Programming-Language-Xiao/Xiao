@@ -1,5 +1,5 @@
 {
-  "file_count": 109,
+  "file_count": 111,
   "files": [
     {
       "path": ".gitattributes",
@@ -30,6 +30,16 @@
       "path": "check-docs.py",
       "bytes": 2575,
       "sha256": "9ad80415bfeb53c0ec2e83f2c4ad5f52e415c4bb9c0f2df83723594ab9e5811b"
+    },
+    {
+      "path": "ci-0b2208f8.json",
+      "bytes": 13706,
+      "sha256": "e8801cffcdf074ecd66aac87311020269e0322c3de5d4c53d532f30a7c6e80a6"
+    },
+    {
+      "path": "ci-receipt.json",
+      "bytes": 300,
+      "sha256": "243ac1256a13c8d30e0cb7d386d8151a42dcf91fe5cce1c3eb745b249ec541be"
     },
     {
       "path": "counterexamples-after.json",
