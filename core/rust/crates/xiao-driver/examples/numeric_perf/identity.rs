@@ -11,6 +11,7 @@ pub struct Identity {
     pub files: BTreeMap<String, String>,
     pub target: String,
     pub rustc: String,
+    pub tools: BTreeMap<String, Tool>,
     pub runtime: Option<File>,
     pub worker: File,
 }
@@ -21,6 +22,26 @@ pub struct File {
     pub path: String,
     pub bytes: u64,
     pub sha256: String,
+}
+
+/// 实际编译器文件及其完整版本输出；工具名不能代替二进制身份。
+#[derive(Clone, Debug, Serialize)]
+pub struct Tool {
+    pub file: File,
+    pub version: String,
+}
+
+fn tool(path: &Path, version_argument: &str) -> Tool {
+    let path = path.canonicalize().expect("测量工具路径必须存在");
+    let output = std::process::Command::new(&path)
+        .arg(version_argument)
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    Tool {
+        file: file(&path),
+        version: String::from_utf8(output.stdout).unwrap(),
+    }
 }
 
 /// SHA-256与文件实际大小。
@@ -87,14 +108,26 @@ pub fn sources(repository: &Path) -> BTreeMap<String, String> {
 
 /// release可执行文件、Runtime与真实Rust版本一起记录；不改全局环境。
 pub fn capture(repository: &Path) -> Identity {
-    let rustc = std::env::var_os("RUSTC").unwrap_or_else(|| "rustc".into());
-    let output = std::process::Command::new(rustc)
-        .arg("-Vv")
-        .output()
-        .unwrap();
-    assert!(output.status.success());
-    let rustc = String::from_utf8(output.stdout).unwrap();
+    let rustc_path = std::env::var_os("RUSTC").map_or_else(
+        || {
+            let output = std::process::Command::new("rustup")
+                .args(["which", "rustc"])
+                .output()
+                .unwrap();
+            assert!(output.status.success());
+            PathBuf::from(String::from_utf8(output.stdout).unwrap().trim())
+        },
+        PathBuf::from,
+    );
+    let compiler = tool(&rustc_path, "-Vv");
+    let rustc = compiler.version.clone();
     assert!(rustc.starts_with("rustc 1.96.0"));
+    let mut tools = BTreeMap::from([("rustc".to_owned(), compiler)]);
+    for name in ["XIAO_CLANG", "XIAO_LLVM_AS", "XIAO_LLC"] {
+        if let Some(path) = std::env::var_os(name) {
+            tools.insert(name.to_owned(), tool(&PathBuf::from(path), "--version"));
+        }
+    }
     let runtime = std::env::var_os("XIAO_RUNTIME_LIBRARY")
         .map(PathBuf::from)
         .map(|path| file(&path));
@@ -103,6 +136,7 @@ pub fn capture(repository: &Path) -> Identity {
         files: sources(repository),
         target: xiao_codegen_llvm::TargetDescription::host().triple,
         rustc,
+        tools,
         runtime,
         worker: file(&std::env::current_exe().unwrap()),
     }

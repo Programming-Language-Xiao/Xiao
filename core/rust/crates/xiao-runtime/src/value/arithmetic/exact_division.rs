@@ -45,57 +45,6 @@ fn gcd(mut left: BigInt, mut right: BigInt) -> RuntimeResult<BigInt> {
     Ok(left << shift)
 }
 
-#[cfg(test)]
-mod gcd_tests {
-    use super::*;
-
-    /// 独立u128欧几里得参考，只用于有限测试数据。
-    fn reference(mut left: u128, mut right: u128) -> u128 {
-        while right != 0 {
-            let next = left % right;
-            left = right;
-            right = next;
-        }
-        left
-    }
-
-    #[test]
-    /// 覆盖零、相等、二因子及两侧大小关系，不能只验证互质返回1。
-    fn binary_gcd_matches_every_small_pair() {
-        for left in 0..128_u128 {
-            for right in 0..128_u128 {
-                assert_eq!(
-                    gcd(BigInt::from(left), BigInt::from(right)).unwrap(),
-                    BigInt::from(reference(left, right))
-                );
-            }
-        }
-    }
-
-    #[test]
-    /// 确定性128位输入与共同大二因子保持精确，无随机外部状态。
-    fn binary_gcd_matches_wide_reference_and_common_shifts() {
-        let mut state = 0x123456789abcdef_u128;
-        for _ in 0..256 {
-            state = state
-                .wrapping_mul(6364136223846793005)
-                .wrapping_add(1442695040888963407);
-            let left = state;
-            state = state.rotate_left(47) ^ 0xfedcba9876543210_u128;
-            let right = state;
-            let expected = BigInt::from(reference(left, right));
-            assert_eq!(
-                gcd(BigInt::from(left), BigInt::from(right)).unwrap(),
-                expected
-            );
-            assert_eq!(
-                gcd(BigInt::from(left) << 257, BigInt::from(right) << 257).unwrap(),
-                expected << 257
-            );
-        }
-    }
-}
-
 /// 先约分、再精确判定2/5因子，034不得被后续展开预算抢先覆盖。
 pub(super) fn divide(left: &Number, right: &Number) -> RuntimeResult<RuntimeValue> {
     if right.is_zero() {
@@ -157,4 +106,55 @@ pub(super) fn divide(left: &Number, right: &Number) -> RuntimeResult<RuntimeValu
     }
     let coefficient = common::align(&normalized.coefficient, normalized.digits, padding)?;
     common::finish(coefficient, display, Family::Decimal)
+}
+
+#[cfg(test)]
+mod gcd_tests {
+    use super::*;
+
+    /// 独立u128欧几里得参考，只用于有限测试数据。
+    fn reference(mut left: u128, mut right: u128) -> u128 {
+        while right != 0 {
+            let next = left % right;
+            left = right;
+            right = next;
+        }
+        left
+    }
+
+    #[test]
+    /// 覆盖零、相等、二因子及两侧大小关系，不能只验证互质返回1。
+    fn binary_gcd_matches_every_small_pair() {
+        for left in 0..128_u128 {
+            for right in 0..128_u128 {
+                assert_eq!(
+                    gcd(BigInt::from(left), BigInt::from(right)).unwrap(),
+                    BigInt::from(reference(left, right))
+                );
+            }
+        }
+    }
+
+    #[test]
+    /// 确定性128位输入与共同大二因子保持精确，无随机外部状态。
+    fn binary_gcd_matches_wide_reference_and_common_shifts() {
+        let mut state = 0x123456789abcdef_u128;
+        for _ in 0..256 {
+            state = state
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            let left = state;
+            state = state.rotate_left(47) ^ 0xfedcba9876543210_u128;
+            let right = state;
+            let expected = BigInt::from(reference(left, right));
+            assert_eq!(
+                gcd(BigInt::from(left), BigInt::from(right)).unwrap(),
+                expected
+            );
+            assert_eq!(
+                gcd(BigInt::from(left) << 257, BigInt::from(right) << 257).unwrap(),
+                expected << 257
+            );
+        }
+    }
 }

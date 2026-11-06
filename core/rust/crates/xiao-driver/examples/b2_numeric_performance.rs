@@ -82,7 +82,9 @@ fn main() {
             _ => panic!("未知A6参数：{argument}"),
         }
     }
-    assert!(!cfg!(debug_assertions), "A6必须使用release VM/Runtime");
+    if cfg!(debug_assertions) {
+        panic!("A6必须使用release VM/Runtime");
+    }
     assert!(matches!(backend.as_str(), "vm" | "native"));
     assert!(matches!(profile.as_str(), "all" | "n" | "2n" | "maximum"));
     let output = output.expect("必须显式提供新的--output路径");

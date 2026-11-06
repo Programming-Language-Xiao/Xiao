@@ -81,6 +81,7 @@ jobs:
         run: |
           rustc -Vv
           lscpu
+          cargo test --manifest-path core/rust/Cargo.toml -p xiao-driver --test 20o_b2_a_resources --test 20o_b2_a_performance_protocol
           cargo build --manifest-path core/rust/Cargo.toml --release -p xiao-runtime
           export XIAO_RUNTIME_LIBRARY="$PWD/core/rust/target/release/libxiao_runtime.a"
           cargo run --manifest-path core/rust/Cargo.toml --release -p xiao-driver --example b2_numeric_performance -- --backend vm --case all --profile all --artifact-root b2-a6-vm-artifacts --output b2-a6-vm.json

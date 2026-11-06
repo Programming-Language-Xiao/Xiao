@@ -13,6 +13,17 @@ pub struct Memory {
     pub peak_bytes: u64,
 }
 
+impl Memory {
+    /// 无效OS读数必须缺测；不能以零值或反向高水位伪造低内存结果。
+    fn checked(self) -> Result<Self, String> {
+        if self.current_raw == 0 || self.peak_raw < self.current_raw {
+            Err("OS驻留内存读数为零或峰值小于当前值".into())
+        } else {
+            Ok(self)
+        }
+    }
+}
+
 #[cfg(target_os = "linux")]
 /// /proc的VmRSS/VmHWM原始单位为KiB。
 pub fn resident() -> Result<Memory, String> {
@@ -28,14 +39,15 @@ pub fn resident() -> Result<Memory, String> {
     };
     let current_raw = read("VmRSS:")?;
     let peak_raw = read("VmHWM:")?;
-    Ok(Memory {
+    Memory {
         method: "proc-vmrss-vmhwm".into(),
         unit: "KiB".into(),
         current_raw,
         peak_raw,
         current_bytes: current_raw * 1024,
         peak_bytes: peak_raw * 1024,
-    })
+    }
+    .checked()
 }
 
 #[cfg(target_os = "windows")]
@@ -80,14 +92,15 @@ pub fn resident() -> Result<Memory, String> {
     }
     let current_raw = counters.current as u64;
     let peak_raw = counters.peak as u64;
-    Ok(Memory {
+    Memory {
         method: "working-set/peak-working-set".into(),
         unit: "bytes".into(),
         current_raw,
         peak_raw,
         current_bytes: current_raw,
         peak_bytes: peak_raw,
-    })
+    }
+    .checked()
 }
 
 #[cfg(target_os = "macos")]
@@ -128,13 +141,15 @@ pub fn resident() -> Result<Memory, String> {
     if ok != 0 || used != 0 {
         return Err("task_info/getrusage失败".into());
     }
-    let peak_raw = unsafe { usage.assume_init() }.ru_maxrss as u64;
-    Ok(Memory {
+    let peak_raw = u64::try_from(unsafe { usage.assume_init() }.ru_maxrss)
+        .map_err(|_| "getrusage返回负峰值")?;
+    Memory {
         method: "resident-size/getrusage-ru-maxrss".into(),
         unit: "bytes".into(),
         current_raw: info.resident_size,
         peak_raw,
         current_bytes: info.resident_size,
         peak_bytes: peak_raw,
-    })
+    }
+    .checked()
 }

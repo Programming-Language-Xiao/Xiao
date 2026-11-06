@@ -10,7 +10,7 @@ fn quantized_clock_calibration_retains_real_batches() {
     for _ in 0..32 {
         let elapsed = (repeats as f64 * 0.00000025 / 0.000001).floor() * 0.000001;
         if calibration::finished(repeats, elapsed) {
-            assert!(elapsed >= 0.1 && elapsed < 0.3);
+            assert!((0.1..0.3).contains(&elapsed));
             return;
         }
         let next = calibration::next_repeat(repeats, elapsed);

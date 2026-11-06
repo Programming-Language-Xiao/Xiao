@@ -61,7 +61,9 @@ impl VmEventSink for Sink {
 
 /// VM已构造后，语言程序先发baseline再构造输入；每个进程只运行一个规模。
 pub fn vm(path: &Path) {
-    assert!(!cfg!(debug_assertions), "A6测量必须使用release VM/Runtime");
+    if cfg!(debug_assertions) {
+        panic!("A6测量必须使用release VM/Runtime");
+    }
     let file = xiao_bytecode::decode_xiaoc(&std::fs::read(path).unwrap()).unwrap();
     let mut vm = Vm::<StackCarrier, _>::new(
         &file.program,
