@@ -1,8 +1,8 @@
 //! 09R2 统一三地址降低规格。
 
 use xiao_bytecode::research::{
-    ArithOp, OperandWidth, PathStep, RegisterClass, SetCompareOp, SetOpKind, SigId, TacConstant,
-    TacOp, TacProgram, VReg, encode, jump_targets, lower_program, verify_program,
+    OperandWidth, PathStep, RegisterClass, SetCompareOp, SetOpKind, SigId, TacConstant, TacOp,
+    TacProgram, VReg, encode, jump_targets, lower_program, verify_program,
 };
 use xiao_driver::{FrontendCompiler, FrontendRequest};
 use xiao_ir::{

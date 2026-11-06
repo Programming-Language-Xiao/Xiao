@@ -15,7 +15,7 @@ use crate::diagnostics::*;
 use crate::numeric::binary_scalar_type;
 use crate::types::Type;
 
-use super::{RuntimeCheckKind, TypeChecker};
+use super::{RuntimeCheckKind, TypeChecker, TypedNode};
 
 /// 复合赋值检查在推导、诊断和环境写回阶段之间传递的中间状态。
 struct ExtendedAssignment<'source> {
@@ -224,6 +224,11 @@ impl<'source> TypeChecker<'source> {
         self.reset_concurrency_binding(&key);
         if let Some(binding) = self.environment.lookup(&key).cloned() {
             let existing_type = self.context.instantiate(binding.scheme());
+            // 后端写回必须消费锁定类型，不能只看右值类型而丢掉安全加宽。
+            self.nodes.push(TypedNode {
+                span: target.span,
+                ty: existing_type.clone(),
+            });
             if value_type.is_dynamic() {
                 if matches!(existing_type, Type::Resource(_)) {
                     self.push_runtime_check_with_expected(

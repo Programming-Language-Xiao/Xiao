@@ -633,9 +633,7 @@ fn lower_binary(
     let Some(op) = arith_op(operator) else {
         return lower_unsupported(lowerer, "operator", expression.span);
     };
-    // 运行时不做隐式宽度提升，后端的这一步之前是缺失的：静态允许 `int + sint`
-    // 并提升为 `int`，运行时却会以「宽度不一致」拒绝。宽度由类型层的提升规则
-    // 决定，这里不自行推断。
+    // 正式IR已带转换；手造IR也复用类型层规则，不能将lfloat商余降回lint。
     let (left_register, right_register) = promote_operands(
         lowerer,
         op,
@@ -802,8 +800,7 @@ fn set_compare(operator: &str) -> Option<SetCompareOp> {
 
 /// 把二元数值运算的两个操作数提升到同一宽度，必要时插入显式转换。
 ///
-/// 非标量操作数（动态值等）原样返回，交给运行时检查。`lint`/`lfloat` 的算术
-/// 尚无运行时实现，同样原样返回让它明确报错，而不是先转成一个假宽度。
+/// 非标量操作数（动态值等）原样返回，交给共享Runtime语言入口检查。
 fn promote_operands(
     lowerer: &mut Lowerer<'_>,
     op: ArithOp,
@@ -817,20 +814,20 @@ fn promote_operands(
     else {
         return (left_register, right_register);
     };
-    let Some(promoted) = xiao_types::promote_numeric_scalars(left_scalar, right_scalar) else {
+    use xiao_syntax::BinaryOperator;
+    let operator = match op {
+        ArithOp::Add => BinaryOperator::Add,
+        ArithOp::Subtract => BinaryOperator::Subtract,
+        ArithOp::Multiply => BinaryOperator::Multiply,
+        ArithOp::Divide => BinaryOperator::Divide,
+        ArithOp::FloorDivide => BinaryOperator::FloorDivide,
+        ArithOp::Remainder => BinaryOperator::Remainder,
+        ArithOp::Power => BinaryOperator::Power,
+    };
+    let Ok(Some(target)) = xiao_types::binary_operand_scalar(operator, left_scalar, right_scalar)
+    else {
         return (left_register, right_register);
     };
-    let rank = xiao_types::numeric_rank(promoted);
-    let target = match op {
-        // `/` 的静态结果类型是浮点，两侧都要先转成浮点。
-        ArithOp::Divide => xiao_types::float_for_rank(rank),
-        // `//` 与 `%` 只接受整数。
-        ArithOp::FloorDivide | ArithOp::Remainder => xiao_types::integer_for_rank(rank),
-        _ => promoted,
-    };
-    if matches!(target, ScalarType::Lint | ScalarType::Lfloat) {
-        return (left_register, right_register);
-    }
     (
         cast_if_needed(lowerer, left_register, left_scalar, target, span),
         cast_if_needed(lowerer, right_register, right_scalar, target, span),

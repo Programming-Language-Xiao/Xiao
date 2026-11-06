@@ -3,6 +3,9 @@
 #[path = "support/b1_imp.rs"]
 mod b1_imp;
 
+#[path = "20o_b2_a_support/mod.rs"]
+mod b2_a;
+
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
@@ -196,6 +199,7 @@ fn b1_capabilities_have_vm_golden_outputs() {
         assert_vm(&request, &artifact, &expected, Duration::from_secs(60));
         println!("20O-B1-IMP-PROBE case={module} backend=vm result=success");
     }
+    b2_a::vm_suite();
 }
 
 #[test]
@@ -1027,4 +1031,5 @@ fn b1_capabilities_match_native_golden_outputs() {
         }
     }
     assert_native_error_code_failure_cleanup(&target, &toolchain, &root.0);
+    b2_a::native_suite();
 }

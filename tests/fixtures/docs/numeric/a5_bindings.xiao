@@ -1,0 +1,11 @@
+const lfloat displayed = 1.50
+print(displayed)
+lint integer = 0
+integer = int(lfloat("-9223372036854775808"))
+print(-integer)
+lfloat decimal = 0.0
+decimal = int(lfloat("-9223372036854775808"))
+print(-decimal)
+float floating = 0.0
+floating = 9007199254740993
+print(lfloat(floating))

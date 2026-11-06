@@ -522,7 +522,8 @@ fn lower_extended_assignment(
             left: Box::new(left),
             right: Box::new(value.clone()),
         },
-        ty: value.ty.clone(),
+        // 复合结果写回锁定左值，不能把lint/lfloat结果分配到右侧的定宽类别。
+        ty: target.ty.clone(),
         // C2-C 将复合集合赋值的 RuntimeCheck 登记在左值名称跨度；
         // 使用语句跨度会让检查逃过二元表达式的精确消费并落入 unsupported。
         span: target.span,

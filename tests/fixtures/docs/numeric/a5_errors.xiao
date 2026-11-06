@@ -49,6 +49,17 @@ try
     print(lint("42"))
 catch failure as TypeError
     print(error_code(failure))
+try
+    decimal /= 3
+catch failure as ArithmeticError
+    print(error_code(failure))
 print(one)
 print(decimal)
 print("continued")
+try
+    try
+        raise Error(code = "A5_ORIGINAL")
+    finally
+        print(lfloat("1.50") + 2)
+catch original as Error
+    print(error_code(original))

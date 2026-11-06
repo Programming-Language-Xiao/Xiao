@@ -108,9 +108,13 @@ impl<'a> DynamicGenerator<'a> {
                     self.emit_logical_short_circuit(operator, left, right, expression.span)
                 } else {
                     let left_value = self.emit_expression(left)?;
-                    let right_value = self.emit_expression(right)?;
-                    let operation = self.binary_operation_name(operator, left, right)?;
                     let outer_target = self.error_target();
+                    let left_failure_label = self.next_label("dynamic.binary.left.fail");
+                    // 右侧求值也可能失败；已求出的左侧临时引用必须覆盖它并在失败边归还。
+                    self.push_error_context(left_failure_label.clone());
+                    let right_value = self.emit_expression(right)?;
+                    self.pop_error_context();
+                    let operation = self.binary_operation_name(operator, left, right)?;
                     let failure_label = self.next_label("dynamic.binary.fail");
                     let continuation_label = self.next_label("dynamic.binary.continue");
                     self.push_error_context(failure_label.clone());
@@ -126,8 +130,11 @@ impl<'a> DynamicGenerator<'a> {
                     self.emit(format!("  br label %{continuation_label}"));
                     self.terminated = true;
                     self.emit_label(&failure_label);
-                    self.release_value(left_value);
                     self.release_value(right_value);
+                    self.emit(format!("  br label %{left_failure_label}"));
+                    self.terminated = true;
+                    self.emit_label(&left_failure_label);
+                    self.release_value(left_value);
                     self.emit(format!("  br label %{outer_target}"));
                     self.terminated = true;
                     self.emit_label(&continuation_label);
@@ -147,8 +154,20 @@ impl<'a> DynamicGenerator<'a> {
                         });
                     }
                 };
+                let outer_target = self.error_target();
+                let failure_label = self.next_label("dynamic.unary.fail");
+                let continuation_label = self.next_label("dynamic.unary.continue");
+                self.push_error_context(failure_label.clone());
                 let result = self.emit_unary_runtime(operation, &value, expression.span);
+                self.pop_error_context();
+                self.release_value(value.clone());
+                self.emit(format!("  br label %{continuation_label}"));
+                self.terminated = true;
+                self.emit_label(&failure_label);
                 self.release_value(value);
+                self.emit(format!("  br label %{outer_target}"));
+                self.terminated = true;
+                self.emit_label(&continuation_label);
                 Ok(result)
             }
             IrExpressionKind::Selector {

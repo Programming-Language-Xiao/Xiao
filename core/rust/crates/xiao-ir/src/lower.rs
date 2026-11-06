@@ -168,10 +168,22 @@ impl<'a> Lowerer<'a> {
             Statement::Expression { expression, .. } => IrStatementKind::Expression {
                 value: self.expression(expression),
             },
-            Statement::Assignment { target, value, .. } => IrStatementKind::Assignment {
-                target: self.name(*target),
-                value: self.expression(value),
-            },
+            Statement::Assignment { target, value, .. } => {
+                let value = self.expression(value);
+                let scalar = match self.ty(target.span) {
+                    IrType::Scalar { name } => ScalarType::from_name(&name),
+                    _ => None,
+                };
+                let value = if let Some(target) = scalar {
+                    cast_numeric_expression(value, target)
+                } else {
+                    value
+                };
+                IrStatementKind::Assignment {
+                    target: self.name(*target),
+                    value,
+                }
+            }
             Statement::ExtendedAssignment {
                 target,
                 operator,
@@ -215,7 +227,10 @@ impl<'a> Lowerer<'a> {
                     DeclaredType::SharedMut(_) => "shared_mut".to_owned(),
                     DeclaredType::LockGuard(_) => "lock_guard".to_owned(),
                 }),
-                value: self.expression(value),
+                value: match declared_type {
+                    Some(declared) => self.declaration_expression(value, declared),
+                    None => self.expression(value),
+                },
             },
             Statement::Import { import, .. } => IrStatementKind::Import {
                 description: self.source.slice(statement.span()).to_owned(),
@@ -595,27 +610,11 @@ impl<'a> Lowerer<'a> {
         if matches!(declared_type, DeclaredType::Scalar(ScalarType::Lfloat)) {
             retarget_lfloat_expression(&mut lowered);
         }
-        if let DeclaredType::Scalar(target) = declared_type
-            && let IrType::Scalar { name } = &lowered.ty
-            && let Some(source) = ScalarType::from_name(name)
-            && xiao_types::is_numeric(source)
-            && xiao_types::is_numeric(*target)
-            && source != *target
-        {
-            // 通过前端检查的声明转换也必须成为IR中的实际转换；仅改变槽类别
-            // 不会把Runtime的Float载荷变为Sfloat，随后再转lfloat会读错实际值。
-            return IrExpression {
-                span: lowered.span,
-                ty: IrType::Scalar {
-                    name: target.as_str().to_owned(),
-                },
-                kind: IrExpressionKind::Cast {
-                    expression: Box::new(lowered),
-                    target: target.as_str().to_owned(),
-                },
-            };
+        if let DeclaredType::Scalar(target) = declared_type {
+            cast_numeric_expression(lowered, *target)
+        } else {
+            lowered
         }
-        lowered
     }
 
     /// 降低字典条目。
@@ -997,6 +996,29 @@ fn lower_declared_type(declared: &DeclaredType) -> IrType {
         },
         DeclaredType::LockGuard(value) => IrType::LockGuard {
             value: Box::new(lower_function_annotation(value)),
+        },
+    }
+}
+
+/// 声明、const及普通写回都以已有Cast表达实际转换，不能只改变槽类别。
+fn cast_numeric_expression(expression: IrExpression, target: ScalarType) -> IrExpression {
+    let IrType::Scalar { name } = &expression.ty else {
+        return expression;
+    };
+    let Some(source) = ScalarType::from_name(name) else {
+        return expression;
+    };
+    if source == target || !xiao_types::is_numeric(source) || !xiao_types::is_numeric(target) {
+        return expression;
+    }
+    IrExpression {
+        span: expression.span,
+        ty: IrType::Scalar {
+            name: target.as_str().to_owned(),
+        },
+        kind: IrExpressionKind::Cast {
+            expression: Box::new(expression),
+            target: target.as_str().to_owned(),
         },
     }
 }

@@ -537,7 +537,13 @@ impl<'p, C: Carrier, S: VmEventSink> Vm<'p, C, S> {
             .with_source(self.metadata.source_name.clone(), span)
             .with_backend(backend);
         match fault {
-            Fault::Error(error) => Fault::Error(error.with_stack_frame(stack_frame)),
+            Fault::Error(mut error) => {
+                // Runtime数值内核不认识源码；首次离开指令时补齐位置，重抛保留原位置。
+                if let Some(span) = span.filter(|_| error.location().is_none()) {
+                    error = error.with_location(span);
+                }
+                Fault::Error(error.with_stack_frame(stack_frame))
+            }
             Fault::ConcurrencyCancelled(error) => {
                 Fault::ConcurrencyCancelled(error.with_stack_frame(stack_frame))
             }

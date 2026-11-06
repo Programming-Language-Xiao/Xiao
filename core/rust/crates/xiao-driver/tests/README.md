@@ -84,3 +84,5 @@ Windows 原生准备方式见 `docs/DevDocs/10d-environment-gated-test-spec.md` 
 `18b_build_archive.rs` 覆盖 O0–O3 单文件、唯一 `[main]` 项目入口、本地多模块及显式资源、
 函数调用闭包的能力精度、调试对象、第三方拒绝、损坏缓存命中和锁文件只读边界。
 实际 `xiao-core` 进程在隔离 `XIAO_HOME` 中验证协议构建/运行、官方加载及 REPL 缓存隔离。
+
+`20o_b2_a_contract.rs`覆盖A5完整六类型矩阵、静态拒绝、值错误、三个既有VM载体与非法载荷恢复。`20o_b2_a_support/`将六份完整语言语料、资源/位置、真实归档重放和O0/O3清理差分追加到B1既有两个精确目标，保留B1/A1原场景和28/28守卫。新增教程范围继续planned；本批不作为A6性能成绩。

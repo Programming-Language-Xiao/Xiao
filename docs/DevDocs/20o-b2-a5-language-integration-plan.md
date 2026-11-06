@@ -41,7 +41,7 @@ A5的产品边界是**语言全链路接线与差分**，不是A6性能或A7整�
 
 ## 二、开工闸门
 
-A5执行前必须确认：
+以下为已执行的入口核对，实际记录见本轮bootstrap与entry-*日志；退出验收另见实施记录。A5执行前必须确认：
 
 1. A4有效收口、代码快照和自审证据一致；A5未开始；
 2. A1～A4的依赖、诊断、适配层、算术、转换和B1回归可复现；
@@ -175,7 +175,7 @@ core/rust/crates/xiao-vm/...                         VM语言路径
 core/rust/crates/xiao-codegen-llvm/...               LLVM降低
 core/rust/crates/xiao-runtime/src/value/             A1～A4共享内核
 core/rust/crates/xiao-runtime/src/{abi,serialization,vm_concurrency}.rs 承载
-docs/DevDocs/assets/20o-b2-a5/entry-<date>/          A5证据（待建）
+docs/DevDocs/assets/20o-b2-a5/entry-20261106/        A5实际证据（持续记录）
 ```
 
 本页规定A5的已批准边界；实施与证据另见实施记录，不把规划中的退出条件当作已经通过。

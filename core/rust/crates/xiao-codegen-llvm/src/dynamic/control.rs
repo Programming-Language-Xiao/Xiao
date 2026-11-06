@@ -260,7 +260,20 @@ impl<'a> DynamicGenerator<'a> {
                 operator,
                 value,
             } => {
-                if operator == "="
+                if let IrExpressionKind::Name { name } = &target.kind {
+                    let combined = IrExpression {
+                        kind: IrExpressionKind::Binary {
+                            operator: operator.strip_suffix('=').unwrap_or(operator).to_owned(),
+                            left: Box::new(target.clone()),
+                            right: Box::new(value.clone()),
+                        },
+                        ty: target.ty.clone(),
+                        span: target.span,
+                    };
+                    let result = self.emit_expression(&combined)?;
+                    // 只有完整运算成功才替换原绑定，失败时保留原值。
+                    self.store_slot(name, result)?;
+                } else if operator == "="
                     && let IrExpressionKind::Selector {
                         source,
                         selector,
