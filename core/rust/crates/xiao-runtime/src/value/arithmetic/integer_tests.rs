@@ -131,6 +131,7 @@ fn arithmetic_integer_limits_and_cancellation_are_atomic() {
     common::trace_start();
     let _ = before.multiply(&before).unwrap_err();
     let events = common::trace_finish();
+    eprintln!("A2最大乘法工作记录：{events:?}");
     assert!(events.iter().any(|event| event.label == "integer-multiply"
         && event.upper == W
         && event.actual.is_none()));

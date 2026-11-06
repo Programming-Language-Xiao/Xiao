@@ -1,9 +1,15 @@
 //! B2-A2/A3精确算术内核；公开转换和完整语言接线仍后置。
 
 mod common;
+mod comparison;
+mod decimal;
+mod decimal_power;
 mod exact_division;
+mod float_lift;
 mod integer;
+mod modulus;
 mod power;
+mod quotient;
 
 use crate::errors::{RuntimeError, RuntimeResult};
 use crate::value::RuntimeValue;
@@ -36,45 +42,83 @@ impl Operation {
     }
 }
 
-/// 仅涉及lint的整数族调用在A2接管；其他已实现数值路径仍走既有内核。
+/// 涉及高精度值的调用统一在这里检查类型；定宽旧路径仍由后端先提升。
+#[inline(always)]
 pub(super) fn binary(
     op: Operation,
     left: &RuntimeValue,
     right: &RuntimeValue,
 ) -> Option<RuntimeResult<RuntimeValue>> {
-    if !matches!(left, RuntimeValue::Lint(_)) && !matches!(right, RuntimeValue::Lint(_)) {
+    if !is_extended(left) && !is_extended(right) {
         return None;
     }
-    if is_integer(left) && is_integer(right) {
-        return Some(integer::binary(op, left, right));
-    }
-    if !is_numeric(left) || !is_numeric(right) {
-        return Some(Err(RuntimeError::type_mismatch(
-            "numeric",
-            format!("{} / {}", left.type_name(), right.type_name()),
-        )));
-    }
-    None
+    Some(extended_binary(op, left, right))
 }
 
-/// A2整数精确顺序；同族Eq/Hash沿用A1无分配规范视图。
+/// 高精度实际分派留在独立函数，定宽热路径只内联两个标签检查。
+fn extended_binary(
+    op: Operation,
+    left: &RuntimeValue,
+    right: &RuntimeValue,
+) -> RuntimeResult<RuntimeValue> {
+    if is_integer(left) && is_integer(right) {
+        return integer::binary(op, left, right);
+    }
+    if !is_numeric(left) || !is_numeric(right) {
+        return Err(RuntimeError::type_mismatch(
+            "numeric",
+            format!("{} / {}", left.type_name(), right.type_name()),
+        ));
+    }
+    decimal::binary(op, left, right)
+}
+
+/// 精确顺序比较；同族Eq/Hash沿用A1无分配规范视图。
+#[inline(always)]
 pub(super) fn compare(
     left: &RuntimeValue,
     right: &RuntimeValue,
 ) -> Option<RuntimeResult<Ordering>> {
-    if !matches!(left, RuntimeValue::Lint(_)) && !matches!(right, RuntimeValue::Lint(_)) {
+    if !is_extended(left) && !is_extended(right) {
         return None;
     }
+    Some(extended_compare(left, right))
+}
+
+/// 高精度比较在冷分支恢复系数，不为定宽比较增加多层调用。
+fn extended_compare(left: &RuntimeValue, right: &RuntimeValue) -> RuntimeResult<Ordering> {
     if is_integer(left) && is_integer(right) {
-        return Some(integer::compare(left, right));
+        return integer::compare(left, right);
     }
     if !is_numeric(left) || !is_numeric(right) {
-        return Some(Err(RuntimeError::type_mismatch(
+        return Err(RuntimeError::type_mismatch(
             "numeric",
             format!("{} / {}", left.type_name(), right.type_name()),
-        )));
+        ));
     }
-    None
+    decimal::compare(left, right)
+}
+
+/// 仅在至少一侧为已签高精度族时接管混合数值算子。
+#[inline(always)]
+fn is_extended(value: &RuntimeValue) -> bool {
+    matches!(value, RuntimeValue::Lint(_) | RuntimeValue::Lfloat(_))
+}
+
+/// 一元负号先完整接纳输入，不能用零归一化掩盖坏语法或超限指数。
+pub(super) fn negate(value: &RuntimeValue) -> RuntimeResult<RuntimeValue> {
+    common::validate_input(value)?;
+    let (number, family) = match value {
+        RuntimeValue::Lint(_) => (common::Number::integer(value)?, common::Family::Integer),
+        RuntimeValue::Lfloat(_) => (common::Number::decimal(value)?, common::Family::Decimal),
+        _ => {
+            return Err(RuntimeError::type_mismatch(
+                "lint/lfloat",
+                value.type_name(),
+            ));
+        }
+    };
+    common::finish(-number.coefficient, number.scale, family)
 }
 
 /// bool±lint保持奇偶规则和输入接纳，不窄化为i128。
@@ -105,3 +149,9 @@ fn is_numeric(value: &RuntimeValue) -> bool {
 
 #[cfg(test)]
 mod integer_tests;
+
+#[cfg(test)]
+mod decimal_tests;
+
+#[cfg(test)]
+mod resource_tests;

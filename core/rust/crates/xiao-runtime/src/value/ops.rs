@@ -6,13 +6,14 @@
 //! - **不做隐式宽度提升**。`int + sint` 这类跨宽度运算必须先由后端插入
 //!   显式转换，Runtime 收到不匹配的宽度一律报错，避免不同执行路径给出
 //!   不同结果。
-//! - `/` 的静态结果类型是浮点，因此 Runtime 要求两侧都是同宽度浮点。
-//! - `//` 和 `%` 只接受整数，除数为零使用稳定的除零错误身份。
-//! - `lint` / `lfloat` 是尚无算术实现的高精度数值，参与数值运算时明确报错，
-//!   不静默退化为字符串比较。
+//! - 定宽`/`仍要求后端先提升到同宽度浮点；涉及`lint`/`lfloat`时调用
+//!   arithmetic中的精确有限十进制除法，非终止结果为034。
+//! - `//`和`%`支持整数族及已签提升到lfloat的组合；仅定宽float/sfloat
+//!   的组合仍拒绝，零分母使用稳定的013。
+//! - 高精度算子共享有界系数内核，不静默退化为浮点或原始文本比较。
+//!   A4公开转换及A5完整语言接线仍后置。
 
 use xiao_syntax::ScalarType;
-use xiao_types::is_zero_decimal_mantissa;
 
 use super::RuntimeValue;
 use super::arithmetic::{self, Operation};
@@ -63,7 +64,7 @@ impl RuntimeValue {
         Ok(Self::Bool(boolean_parity(*value, amount)))
     }
 
-    /// 执行一元负号；高精度文本只翻转符号，不把值压进定宽整数或浮点。
+    /// 执行一元负号；高精度值经共享接纳和精确系数处理，不做定宽窄化。
     pub fn negate(&self) -> RuntimeResult<Self> {
         match self {
             Self::Int(value) => i64::checked_neg(*value)
@@ -74,12 +75,7 @@ impl RuntimeValue {
                 .ok_or_else(|| RuntimeError::numeric_overflow("sint 一元负号溢出")),
             Self::Float(value) => Ok(Self::Float(-value)),
             Self::Sfloat(value) => Ok(Self::Sfloat(-value)),
-            Self::Lint(value) => {
-                toggle_decimal_sign(value, true).and_then(|text| Self::new_lint(&text))
-            }
-            Self::Lfloat(value) => {
-                toggle_decimal_sign(value, true).and_then(|text| Self::new_lfloat(&text))
-            }
+            Self::Lint(_) | Self::Lfloat(_) => arithmetic::negate(self),
             other => Err(RuntimeError::type_mismatch("numeric", other.type_name())),
         }
     }
@@ -483,31 +479,6 @@ impl RuntimeValue {
     }
 }
 
-/// 翻转十进制文本的符号；零值统一为 `0`，非零 `lfloat` 保留原精度文本。
-fn toggle_decimal_sign(value: &str, normalize_zero: bool) -> RuntimeResult<String> {
-    let (negative, digits) = value
-        .strip_prefix('-')
-        .map_or((false, value), |rest| (true, rest));
-    if digits.is_empty()
-        || !digits
-            .bytes()
-            .all(|byte| byte.is_ascii_digit() || matches!(byte, b'.' | b'e' | b'E' | b'+' | b'-'))
-        || !digits.bytes().any(|byte| byte.is_ascii_digit())
-    {
-        return Err(RuntimeError::invalid_value(
-            "高精度数值不是合法的十进制文本",
-        ));
-    }
-    if normalize_zero && is_zero_decimal_mantissa(digits) {
-        return Ok("0".to_owned());
-    }
-    if negative {
-        Ok(digits.to_owned())
-    } else {
-        Ok(format!("-{digits}"))
-    }
-}
-
 /// 按冻结的奇偶规则调整布尔值。
 fn boolean_parity(value: bool, amount: i128) -> bool {
     if amount.unsigned_abs() % 2 == 0 {
@@ -872,7 +843,7 @@ mod tests {
 
     #[test]
     /// 验证整数族与 `lint` 的精确加宽/窄化；浮点族仍明确保持未实现。
-    fn high_precision_numerics_are_explicitly_unsupported() {
+    fn high_precision_public_conversions_remain_at_the_a1_boundary() {
         assert_eq!(
             RuntimeValue::Int(1).convert_to(ScalarType::Lint),
             Ok(RuntimeValue::Lint("1".to_owned()))

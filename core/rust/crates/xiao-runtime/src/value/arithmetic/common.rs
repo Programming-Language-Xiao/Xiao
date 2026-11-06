@@ -19,8 +19,11 @@ pub(super) enum Family {
 /// 一次调用内的临时十进制系数与显示scale，不跨调用缓存。
 #[derive(Clone, Debug)]
 pub(super) struct Number {
+    /// 去前导零、保留显示尾零的有符号整数系数。
     pub coefficient: BigInt,
+    /// 显示scale，数值为coefficient乘10的负scale次方。
     pub scale: i32,
+    /// 非零绝对系数的十进制位数；零计一位。
     pub digits: usize,
 }
 
@@ -44,6 +47,34 @@ impl Number {
     /// 数学零统一为一位系数和scale0。
     pub fn is_zero(&self) -> bool {
         self.coefficient.is_zero()
+    }
+
+    /// 恢复lfloat显示系数和scale，或精确提升算子内部的定宽数值。
+    pub fn decimal(value: &RuntimeValue) -> RuntimeResult<Self> {
+        match value {
+            RuntimeValue::Lfloat(text) => {
+                let parsed = numeric::parse_decimal(text)?;
+                let (coefficient, scale) = parsed.into_bigint_and_scale();
+                let digits = decimal_digits(&coefficient);
+                Ok(Self {
+                    coefficient,
+                    scale: scale as i32,
+                    digits,
+                })
+            }
+            RuntimeValue::Float(value) => super::float_lift::f64_number(*value),
+            RuntimeValue::Sfloat(value) => super::float_lift::f32_number(*value),
+            _ => Self::integer(value),
+        }
+    }
+
+    /// 规范scale仅去系数尾零，用于幂的构造前结果scale检查。
+    pub fn canonical_scale(&self) -> i32 {
+        if self.is_zero() {
+            return 0;
+        }
+        let text = self.coefficient.to_str_radix(10);
+        self.scale - text.bytes().rev().take_while(|byte| *byte == b'0').count() as i32
     }
 }
 
@@ -222,8 +253,11 @@ fn observe(label: &'static str, upper: usize, actual: Option<usize>) {
 #[cfg(test)]
 #[derive(Clone, Debug)]
 pub(super) struct WorkEvent {
+    /// 产生此预算判定或实际工作值的算法步骤。
     pub label: &'static str,
+    /// 构造前上界；实际事件中为已计算的实际位数。
     pub upper: usize,
+    /// 仅实际构造后的事件携带位数，预检事件为None。
     pub actual: Option<usize>,
 }
 

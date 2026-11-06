@@ -1,0 +1,13 @@
+{
+  "created_utc": "2026-11-06T04:51:24.208914+00:00",
+  "entry_head": "0ffffbe6fdbb3f502e793196a184ba39f6862a7a",
+  "entry_tree": "2b2642b3ee1cd40be4e6a92e1b82a4a6db9c0f2f",
+  "entry_status": "",
+  "entry_branch": "codex/b1-imp-seven-libraries",
+  "implementation_branch": "codex/b2-a2-a3-arithmetic",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "task_root": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24",
+  "source_root": "D:\\project\\Xiao\\.a2-a3-arithmetic\\20261106-68ec96014f24\\source",
+  "a1_effective_closeout": "docs/DevDocs/assets/20o-b2-a1/entry-20261106/closeout.json",
+  "scope": "A2/A3仅Runtime内核；A4～A7后置，不运行721条F10"
+}
