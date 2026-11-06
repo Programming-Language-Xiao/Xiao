@@ -27,6 +27,10 @@ pub enum ConversionKind {
     StrToInteger,
     /// `int`/`sint`/`lint` 到十进制 `str`；不触发运行时检查。
     IntegerToStr,
+    /// F-11的ASCII十进制字符串到lfloat，内容和预算交给Runtime。
+    StrToDecimal,
+    /// float/sfloat/lfloat到稳定文本，不改变已有有限值显示。
+    NumericToStr,
     /// 源为动态值，需要运行时检查。
     RuntimeChecked,
 }
@@ -96,6 +100,10 @@ pub fn classify_conversion(
         ConversionKind::StrToInteger
     } else if is_integer(*source_scalar) && target == ScalarType::Str {
         ConversionKind::IntegerToStr
+    } else if *source_scalar == ScalarType::Str && target == ScalarType::Lfloat {
+        ConversionKind::StrToDecimal
+    } else if is_float(*source_scalar) && target == ScalarType::Str {
+        ConversionKind::NumericToStr
     } else if is_numeric(*source_scalar) && is_numeric(target) {
         if numeric_widens(*source_scalar, target) {
             ConversionKind::NumericWidening
@@ -117,6 +125,8 @@ pub fn classify_conversion(
             ConversionKind::NumericNarrowing
                 | ConversionKind::StrToBool
                 | ConversionKind::StrToInteger
+                | ConversionKind::StrToDecimal
+                | ConversionKind::NumericToStr
         ),
     })
 }

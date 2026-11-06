@@ -8,6 +8,8 @@
 mod arithmetic;
 /// A4显式转换、精确截断与IEEE最近偶数舍入内核。
 mod conversions;
+/// 语言层数值提升，VM和既有generic C ABI共用，不改变Rust Eq/Hash。
+mod language;
 /// 临时任意精度适配、共享接纳及确定文本输出。
 pub(crate) mod numeric;
 

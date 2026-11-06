@@ -1,0 +1,18 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-runtime)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.37s
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\20o_b2_a_contract-653011b00e0feb46.exe)
+
+running 1 test
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-58128-1793970868741033000\a5_integer_arithmetic-o0.exe result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-58128-1793970868741033000\a5_integer_arithmetic-o3.exe result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-58128-1793970868741033000\a5_decimal_arithmetic-o0.exe result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-58128-1793970868741033000\a5_decimal_arithmetic-o3.exe result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-58128-1793970868741033000\a5_conversions-o0.exe result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-58128-1793970868741033000\a5_conversions-o3.exe result=success
+test a5_language_values_match_native_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 6.55s
+

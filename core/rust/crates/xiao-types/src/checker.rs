@@ -91,6 +91,8 @@ pub struct TypeChecker<'source> {
     )>,
     diagnostics: Vec<Diagnostic>,
     nodes: Vec<TypedNode>,
+    /// 已确定为lint/lfloat的表达式区间；值求值只能交给共享Runtime。
+    runtime_numeric_spans: BTreeSet<(usize, usize)>,
     runtime_checks: Vec<RuntimeCheck>,
     intrinsic_calls: BTreeMap<(usize, usize), xiao_intrinsics::IntrinsicId>,
     materialization_plans: Vec<ContainerMaterializationPlan>,
@@ -176,6 +178,7 @@ impl<'source> TypeChecker<'source> {
             resource_parameters: Vec::new(),
             diagnostics: Vec::new(),
             nodes: Vec::new(),
+            runtime_numeric_spans: BTreeSet::new(),
             runtime_checks: Vec::new(),
             intrinsic_calls: BTreeMap::new(),
             materialization_plans: Vec::new(),

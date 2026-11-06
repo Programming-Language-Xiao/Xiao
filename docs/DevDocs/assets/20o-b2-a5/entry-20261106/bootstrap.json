@@ -1,0 +1,10 @@
+{
+  "entry_head": "bb7a856e82be981863ddc798846095b946987941",
+  "entry_tree": "bd15fa4fdd624598d408475470627b79ec15c2e4",
+  "entry_status": "",
+  "repository_root": "D:\\project\\Xiao\\Xiao",
+  "task_root": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf",
+  "source_root": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\source",
+  "implementation_branch": "codex/b2-a5-language-integration",
+  "scope": "A5全链路与语言差分；A6/A7及B2-B/C后置，ABI1.18/生成器20/不新增intrinsic"
+}

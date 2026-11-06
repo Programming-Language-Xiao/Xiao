@@ -343,6 +343,9 @@ pub fn binary_scalar_type(
         });
     }
     if operator == BinaryOperator::FloorDivide || operator == BinaryOperator::Remainder {
+        if promote_numeric_scalars(left, right) == Some(ScalarType::Lfloat) {
+            return Ok(ScalarType::Lfloat);
+        }
         if is_integer(left) && is_integer(right) {
             return Ok(integer_for_rank(
                 numeric_rank(left).max(numeric_rank(right)),
@@ -364,6 +367,26 @@ pub fn binary_scalar_type(
         return Ok(float_for_rank(numeric_rank(promoted)));
     }
     Ok(promoted)
+}
+
+/// 冻结的二元数值操作数提升目标；比较用共同数值类型，算术用结果类型。
+///
+/// bool奇偶、字符串和其它非数值组合不插入数值转换。此函数供IR、后端和
+/// Runtime语言入口共用，避免//和%的lfloat准入被降回整数。
+pub fn binary_operand_scalar(
+    operator: BinaryOperator,
+    left: ScalarType,
+    right: ScalarType,
+) -> Result<Option<ScalarType>, NumericError> {
+    let result = binary_scalar_type(operator, left, right)?;
+    if !is_numeric(left) || !is_numeric(right) {
+        return Ok(None);
+    }
+    Ok(if result == ScalarType::Bool {
+        promote_numeric_scalars(left, right)
+    } else {
+        Some(result)
+    })
 }
 
 /// 应用布尔加减的冻结奇偶规则。

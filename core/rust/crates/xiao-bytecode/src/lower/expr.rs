@@ -558,37 +558,11 @@ fn lower_unary(
             register
         }
         "-" => {
-            // 一元负号等价于 `0 - x`；零常量必须与操作数同宽度，否则运行时会
-            // 以「宽度不一致」拒绝——那正是不做隐式提升的代价。
-            let Some(scalar) = scalar_of(&operand.ty) else {
-                return lower_unsupported(lowerer, "unary minus", expression.span);
-            };
-            if matches!(scalar, ScalarType::Lint | ScalarType::Lfloat) {
-                let register =
-                    lowerer.new_register(Lowerer::class_of_type(&expression.ty), expression.span);
-                lowerer.emit(TacInstr::with_dst(
-                    TacOp::Negate(operand_register),
-                    register,
-                    expression.span,
-                ));
-                return register;
-            }
-            let zero = match scalar {
-                ScalarType::Sint => TacConstant::Sint(0),
-                ScalarType::Int => TacConstant::Int(0),
-                ScalarType::Sfloat => TacConstant::Sfloat(0.0),
-                ScalarType::Float => TacConstant::Float(0.0),
-                _ => return lower_unsupported(lowerer, "unary minus", expression.span),
-            };
-            let zero_register = lowerer.emit_constant(zero, expression.span);
-            let class = Lowerer::class_of_type(&expression.ty);
-            let register = lowerer.new_register(class, expression.span);
+            // 复用既有Negate标签；0-x会把固定浮点的-0错误改为+0。
+            let register =
+                lowerer.new_register(Lowerer::class_of_type(&expression.ty), expression.span);
             lowerer.emit(TacInstr::with_dst(
-                TacOp::Arith {
-                    op: ArithOp::Subtract,
-                    left: zero_register,
-                    right: operand_register,
-                },
+                TacOp::Negate(operand_register),
                 register,
                 expression.span,
             ));

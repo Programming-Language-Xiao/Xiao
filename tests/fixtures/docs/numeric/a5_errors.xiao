@@ -1,0 +1,54 @@
+lint one = 1
+lfloat decimal = 1.00
+lfloat huge = 1e100000
+lfloat tiny = 1e-100000
+try
+    one / 3
+    print("unreachable")
+catch failure as ArithmeticError
+    print(error_code(failure))
+finally
+    print("finally")
+try
+    print(one / 0)
+catch failure as ArithmeticError
+    print(error_code(failure))
+try
+    print(one ** -1)
+catch failure as ArithmeticError
+    print(error_code(failure))
+try
+    print(decimal ** lfloat("1.5"))
+catch failure as ArithmeticError
+    print(error_code(failure))
+try
+    lfloat("bad")
+catch failure as TypeError
+    print(error_code(failure))
+try
+    print(int(lfloat("9223372036854775808")))
+catch failure as ArithmeticError
+    print(error_code(failure))
+try
+    lfloat("1e100001")
+catch failure as ResourceError
+    print(error_code(failure))
+try
+    print(lint(lfloat("1e32768")))
+catch failure as ResourceError
+    print(error_code(failure))
+try
+    print(huge // tiny)
+catch failure as ResourceError
+    print(error_code(failure))
+try
+    print(huge / lfloat("3e-100000"))
+catch failure as ArithmeticError
+    print(error_code(failure))
+try
+    print(lint("42"))
+catch failure as TypeError
+    print(error_code(failure))
+print(one)
+print(decimal)
+print("continued")

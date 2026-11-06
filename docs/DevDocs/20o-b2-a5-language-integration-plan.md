@@ -1,7 +1,7 @@
 # 20O-B2-A5. 类型、IR、TAC/VM/LLVM 全链路实施规划
 
-> **这是 A5 的全链路实施规划；不写产品代码，不执行构建或测试。**
-> 入口为A4代码快照`1838fae1`及A4有效收口；A5尚未开始，A6性能、A7整批收口后置。
+> **A5 已按 A-P1～A-P3 批准进入实施；本页保留范围与退出门槛。**
+> 入口为A4代码快照`1838fae1`及A4有效收口；[实施记录](20o-b2-a5-language-integration-progress.md)持续登记真实结果，A6性能、A7整批收口后置。
 > A5只把A1～A4的Runtime能力接入语言全链路；不新增ABI/intrinsic，不实现`lfloat_divide`/`cmath`。
 > A0的`result.json`失败身份仍保留；A0只以`closeout.json`作为有效收口。
 
@@ -178,4 +178,4 @@ core/rust/crates/xiao-runtime/src/{abi,serialization,vm_concurrency}.rs 承载
 docs/DevDocs/assets/20o-b2-a5/entry-<date>/          A5证据（待建）
 ```
 
-本页只规划A5；产品代码仍须按已批准范围另批执行。
+本页规定A5的已批准边界；实施与证据另见实施记录，不把规划中的退出条件当作已经通过。

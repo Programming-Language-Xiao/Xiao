@@ -780,13 +780,23 @@ fn validate_instruction(
             &format!("{path}.dst"),
             result,
         ),
-        TacOp::Negate(_) => expect_dst_class(
-            function,
-            instruction.dst,
-            RegisterClass::ObjHandle,
-            &format!("{path}.dst"),
-            result,
-        ),
+        TacOp::Negate(value) => {
+            let class = function.categories.get(*value);
+            if matches!(class, RegisterClass::Bool | RegisterClass::None) {
+                push_error(
+                    result,
+                    format!("{path}.value"),
+                    "一元负号不接受已知bool/none类别",
+                );
+            }
+            expect_dst_class(
+                function,
+                instruction.dst,
+                class,
+                &format!("{path}.dst"),
+                result,
+            );
+        }
         TacOp::Compare { .. } | TacOp::SetCompare { .. } => expect_dst_class(
             function,
             instruction.dst,

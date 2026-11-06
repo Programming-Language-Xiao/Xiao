@@ -1,0 +1,113 @@
+   Compiling xiao-runtime v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-runtime)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-codegen-llvm)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-bytecode)
+   Compiling xiao-package v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-package)
+   Compiling xiao-vm v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-vm)
+   Compiling xiao-xar v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-xar)
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.48s
+     Running unittests src\lib.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\xiao_bytecode-6e3b39ac66e0eae3.exe)
+
+running 32 tests
+test encode::tests::bad_references_and_fixed_width_overflow_are_rejected ... ok
+test encode::tests::damaged_inputs_are_rejected_structurally ... ok
+test encode::tests::check_expected_type_round_trips_in_both_widths ... ok
+test encode::tests::all_opcodes_and_abi_fields_round_trip_in_both_widths ... ok
+test encode::tests::fixed_width_reports_the_overflowing_handler_binding ... ok
+test encode::tests::resource_constant_is_rejected_with_fatal_identity_at_encode_boundary ... ok
+test encode::tests::scalar_and_release_tags_have_one_bidirectional_mapping ... ok
+test encode::tests::set_tags_have_explicit_bidirectional_mapping ... ok
+test encode::tests::unsigned_and_signed_leb128_cover_integer_boundaries ... ok
+test liveness::tests::protected_blocks_keep_handler_inputs_live ... ok
+test liveness::tests::does_not_invent_fallthrough_and_tracks_explicit_branch ... ok
+test liveness::tests::release_plan_is_an_indirect_register_use ... ok
+test lower::expr::tests::unresolved_type_variables_keep_set_only_operators_and_membership_lowerable ... ok
+test optimize::tests::o0_skips_semantic_passes_without_claiming_optimization ... ok
+test optimize::tests::optimization_pipeline_preserves_observable_operation_families ... ok
+test optimize::tests::standard_passes_report_snapshots_and_skip_reasons ... ok
+test optimize::tests::unreachable_block_pass_remaps_targets_and_keeps_execution_blocks ... ok
+test sig::tests::intrinsic_id_round_trips_full_u32_through_two_u16_slots ... ok
+test optimize::tests::unreachable_protected_region_is_kept_for_handler_remapping ... ok
+test sig::tests::zero_intrinsic_id_is_preserved_for_validator_rejection ... ok
+test verify::tests::finally_subroutine_cannot_fall_through_into_continuation ... ok
+test verify::tests::production_entry_distinguishes_known_unsupported ... ok
+test verify::tests::production_entry_rejects_resource_constant_boundary ... ok
+test verify::tests::production_entry_rejects_unsupported_as_internal_error ... ok
+test verify::tests::program_level_categories_are_not_used_for_function_validation ... ok
+test xiaoc::tests::inferred_concurrency_types_require_abi_features_before_vm_load ... ok
+test xiaoc::tests::malformed_random_bytes_never_panic ... ok
+test xiaoc::tests::rejects_truncation_overlap_unknown_required_and_compression ... ok
+test xiaoc::tests::round_trip_is_deterministic_and_variable_length_header_is_supported ... ok
+test xiaoc::tests::runtime_requirements_reject_unknown_features_and_old_abi ... ok
+test encode::tests::module_dependency_direction_is_acyclic ... ok
+test encode::tests::concurrency_plans_round_trip_in_both_widths ... ok
+
+test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.42s
+
+     Running unittests src\bin\xiaoc-check.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\xiaoc_check-97698d5d25984ce5.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\b0_a_api.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\b0_a_api-0b57dfcdfa932de8.exe)
+
+running 1 test
+test root_and_research_paths_share_the_production_verifier ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\fuzz_xiaoc.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\fuzz_xiaoc-acc35bf6c7b5995d.exe)
+
+running 2 tests
+test base_xiaoc_decodes ... ok
+test seeded_xiaoc_mutations_never_panic_and_are_rejected_with_stable_codes ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\r2_tac.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\r2_tac-8127f9df877b1fb4.exe)
+
+running 27 tests
+test assigns_register_classes ... ok
+test consumes_runtime_checks_for_set_compound_assignment ... ok
+test decodes_string_literals_like_the_type_layer ... ok
+test encodes_program_using_set_operation ... ok
+test keeps_quote_characters_inside_string_literals ... ok
+test encodes_try_finally_handler ... ok
+test lowers_advanced_selector_plan ... ok
+test keeps_register_classes_local_to_each_function ... ok
+test lowers_container_literals ... ok
+test lowers_exact_index_with_signed_step ... ok
+test lowers_scalar_arithmetic ... ok
+test lowers_exception_handlers_and_finally_subroutine ... ok
+test lowers_functions_separately ... ok
+test lowers_for_iteration_cfg ... ok
+test lowers_string_boolean_runtime_check ... ok
+test promotes_cross_width_operands ... ok
+test lowers_set_checks_for_both_operands ... ok
+test nested_set_operation_does_not_bind_check_to_selector_source ... ok
+test references_existing_release_plans ... ok
+test set_instructions_have_no_jump_targets ... ok
+test rebuilds_control_flow_blocks ... ok
+test separates_backticked_from_plain_bindings ... ok
+test shares_the_escape_table_with_the_type_layer ... ok
+test releases_temporary_heap_values ... ok
+test unary_not_compares_against_false ... ok
+test unary_minus_keeps_float_width ... FAILED
+test synthesizes_call_signatures ... ok
+
+failures:
+
+---- unary_minus_keeps_float_width stdout ----
+
+thread 'unary_minus_keeps_float_width' (67068) panicked at crates\xiao-bytecode\tests\r2_tac.rs:440:5:
+一元负号应降低为 `0 - x`
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    unary_minus_keeps_float_width
+
+test result: FAILED. 26 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `-p xiao-bytecode --test r2_tac`

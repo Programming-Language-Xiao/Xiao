@@ -58,6 +58,8 @@ impl<'source> TypeChecker<'source> {
             _ => return None,
         }
         let ty = Type::scalar(ScalarType::Lfloat);
+        self.runtime_numeric_spans
+            .insert((expression.span().start(), expression.span().end()));
         self.nodes.push(TypedNode {
             span: expression.span(),
             ty: ty.clone(),
@@ -114,6 +116,10 @@ impl<'source> TypeChecker<'source> {
                 span,
             } => self.check_container_selector(source, step.as_deref(), selector, *span),
         };
+        if matches!(ty, Type::Scalar(ScalarType::Lint | ScalarType::Lfloat)) {
+            self.runtime_numeric_spans
+                .insert((expression.span().start(), expression.span().end()));
+        }
         self.nodes.push(TypedNode {
             span: expression.span(),
             ty: ty.clone(),

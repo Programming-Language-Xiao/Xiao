@@ -1,0 +1,191 @@
+   Compiling xiao-i18n v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-i18n)
+   Compiling xiao-diagnostics v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-diagnostics)
+   Compiling xiao-syntax v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-syntax)
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-types)
+   Compiling xiao-modules v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-modules)
+   Compiling xiao-lifetime v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-lifetime)
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-ir)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.41s
+     Running unittests src\lib.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\xiao_ir-0c96c69a31a5cd61.exe)
+
+running 1 test
+test lower::tests::runtime_check_kind_bridge_is_exhaustive ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\fuzz_snapshots.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\fuzz_snapshots-a474ab6131fdbdec.exe)
+
+running 3 tests
+test unsupported_version_is_reported_as_version_error ... ok
+test base_snapshot_parses_and_round_trips ... ok
+test seeded_ir_mutations_never_panic_and_are_rejected_with_typed_errors ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests\r2_release_reconciliation.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\r2_release_reconciliation-9f115f286a12fd61.exe)
+
+running 8 tests
+test accepts_empty_plan_for_unused_exit ... ok
+test rejects_changed_action_kind ... ok
+test accepts_replayed_plan ... ok
+test compares_by_order_not_by_index ... ok
+test rejects_missing_release ... ok
+test rejects_reordered_release ... ok
+test rejects_unknown_scope ... ok
+test rejects_unknown_exit_name ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\structure_snapshots.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\structure_snapshots-e3b6e7af8079ed95.exe)
+
+running 1 test
+test ir_structure_snapshots_are_executed ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests\u0_ir.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\u0_ir-7de337c42490a052.exe)
+
+running 12 tests
+test concurrency_types_lower_and_restore ... ok
+test carries_type_result_without_reinference ... ok
+test normalizes_dict_keys_consistently ... ok
+test lowers_complete_static_surface ... ok
+test normalizes_escaped_dict_keys ... ok
+test rejects_non_send_concurrency_handles ... ok
+test old_snapshot_without_concurrency_fields_is_compatible ... ok
+test validator_rejects_broken_control_flow ... ok
+test mirrors_table_interface_and_typed_receiver ... ok
+test resource_checks_require_valid_expected_kinds ... ok
+test verifies_boundary_facts_and_cleanup_order ... ok
+test snapshot_round_trip_and_version_guard ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running unittests src\lib.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\xiao_types-7e355c2091f329cd.exe)
+
+running 38 tests
+test concurrency::tests::candidate_a_accepts_scalars_and_safe_tuples ... ok
+test containers::tests::models_shapes_and_materialization ... ok
+test concurrency::tests::signatures_and_consumption_are_frozen ... ok
+test containers::tests::resolves_most_specific_constraint ... ok
+test conversion::tests::classifies_scalar_conversions ... ok
+test environment::tests::manages_scopes_and_mutability ... ok
+test materialization::tests::merges_constraints_by_path ... ok
+test numeric::tests::checks_boolean_arithmetic_and_ranges ... ok
+test numeric::tests::normalizes_decimal_zero_by_mantissa ... ok
+test numeric_text::tests::deterministic_numeric_identity_cases ... ok
+test numeric::tests::zero_lowering_preserves_runtime_budget_failures ... ok
+test numeric_text::tests::equal_decimal_spellings_share_identity ... ok
+test numeric_text::tests::syntax_is_complete_before_numeric_budgets ... ok
+test numeric_text::tests::coefficient_boundaries_preserve_display_precision ... ok
+test path_constraints::tests::rejects_set_member_paths ... ok
+test path_constraints::tests::reports_static_bounds ... ok
+test path_constraints::tests::resolves_nested_paths ... ok
+test selection_random::tests::reports_sampling_boundaries ... ok
+test selection_random::tests::samples_follow_modes ... ok
+test selection_random::tests::seeded_source_is_reproducible ... ok
+test selection_shape::tests::projects_heterogeneous_array ... ok
+test selection_shape::tests::repeats_dictionary_key_as_tuple ... ok
+test numeric_text::tests::zero_and_scales_have_independent_budget_checks ... ok
+test set_types::tests::classifies_hashability ... ok
+test set_types::tests::computes_static_set_operation_results ... ok
+test set_types::tests::distinguishes_empty_from_unknown_for_assignment ... ok
+test set_types::tests::formats_set_types ... ok
+test set_types::tests::keeps_set_member_types_invariant ... ok
+test set_types::tests::normalizes_heterogeneous_members ... ok
+test tables::tests::models_table_value_kinds_and_visibility ... ok
+test types::tests::displays_and_collects_type_variables ... ok
+test unify::tests::generalizes_and_instantiates ... ok
+test unify::tests::preserves_array_length_during_unification ... ok
+test unify::tests::preserves_empty_set_during_unification ... ok
+test unify::tests::rigid_variables_reject_concrete_bindings ... ok
+test unify::tests::unifies_set_member_unions ... ok
+test unify::tests::unifies_variables_and_rejects_recursive_types ... ok
+test checker::architecture_tests::module_dependency_direction_is_acyclic ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\c05_tables.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\c05_tables-9706bdff223036c1.exe)
+
+running 8 tests
+test diagnoses_dynamic_field_initializer ... ok
+test diagnoses_constructor_contracts ... ok
+test constructs_instance_table ... ok
+test diagnoses_private_member_access ... ok
+test diagnoses_invalid_member_writes ... ok
+test diagnoses_lifecycle_contracts ... ok
+test registers_table_signature ... ok
+test checks_method_defaults_keywords_and_forward_calls ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c0_containers.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\c0_containers-0fbafd4454809869.exe)
+
+running 15 tests
+test builds_path_constraint_materialization_plan ... ok
+test enforces_homogeneous_array_prefix ... ok
+test checks_exact_selectors ... ok
+test checks_dictionary_selectors ... ok
+test enforces_typed_dictionary_column_values ... ok
+test infers_structured_container_types ... ok
+test parent_path_constrains_nested_array_elements ... ok
+test preserves_dictionary_column_order_for_assignment ... ok
+test merges_later_path_constraints ... ok
+test public_path_api_is_stable ... ok
+test rejects_duplicate_dictionary_keys ... ok
+test rejects_incompatible_initialized_container_redeclaration ... ok
+test specific_path_overrides_parent_for_initialized_value ... ok
+test validates_constraints_on_container_assignment ... ok
+test validates_late_constraints_against_initialized_container ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests\c0c1_snapshots.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\c0c1_snapshots-8dbf9955f9b2f826.exe)
+
+running 4 tests
+test c0_error_snapshot_is_stable ... ok
+test c0_valid_snapshot_is_stable ... ok
+test c1_error_snapshot_is_stable ... ok
+test c1_valid_snapshot_is_stable ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests\c1_selectors.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\c1_selectors-a111f927e9004a14.exe)
+
+running 18 tests
+test defers_dynamic_selector_operands ... ok
+test checks_ordered_ranges_and_multiple_selection ... ok
+test checks_scalar_broadcast_assignment ... ok
+test checks_open_ranges_and_steps ... ok
+test dictionary_column_repetition_becomes_tuple ... ok
+test excludes_descendants_of_exclusive_lower_boundary ... ok
+test dictionary_column_nonrandom_repetition_becomes_tuple ... ok
+test expands_nested_ranges_and_projects_shape ... ok
+test exposes_normalized_selection_paths ... ok
+test invalid_broadcast_target_is_transactional ... ok
+test random_without_replacement_keeps_source_shape ... ok
+test records_random_modes_and_seed ... ok
+test rejects_advanced_dictionary_table_selection ... ok
+test rejects_invalid_random_seed ... ok
+test rejects_invalid_step_and_random_counts ... ok
+test rejects_range_through_dictionary_table ... ok
+test supports_negative_and_string_indices ... ok
+test saturates_extremely_large_step ... FAILED
+
+failures:
+
+---- saturates_extremely_large_step stdout ----
+
+thread 'saturates_extremely_large_step' (54036) panicked at crates\xiao-types\tests\c1_selectors.rs:351:5:
+assertion `left == right` failed: 巨大步长不应截断成较小的步长
+  left: 3
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    saturates_extremely_large_step
+
+test result: FAILED. 17 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p xiao-types --test c1_selectors`

@@ -429,40 +429,32 @@ fn unary_not_compares_against_false() {
 #[test]
 /// 一元负号不得退化成 `as int`，否则浮点会被静默截断。
 fn unary_minus_keeps_float_width() {
-    let (_, tac) = lower("value = -1.5\n");
-    let ops = tac
-        .functions
+    let (_, tac) = lower("value = -0.0\n");
+    let function = &tac.functions[0];
+    let negates: Vec<_> = function
+        .blocks
         .iter()
-        .flat_map(|function| function.blocks.iter())
         .flat_map(|block| block.instructions.iter())
-        .map(|instruction| &instruction.op)
-        .collect::<Vec<_>>();
-    assert!(
-        ops.iter().any(|op| matches!(
-            op,
-            TacOp::Arith {
-                op: ArithOp::Subtract,
-                ..
-            }
-        )),
-        "一元负号应降低为 `0 - x`"
-    );
-    assert!(
-        !ops.iter().any(|op| matches!(op, TacOp::Cast { .. })),
-        "不得把浮点负号静默转成整数"
-    );
-    let zeros = tac
-        .functions
-        .iter()
-        .flat_map(|function| function.blocks.iter())
-        .flat_map(|block| block.instructions.iter())
-        .filter_map(|instruction| match &instruction.op {
-            TacOp::LoadConst(id) => tac.constants.get(*id),
+        .filter_map(|instruction| match instruction.op {
+            TacOp::Negate(value) => Some((value, instruction.dst.unwrap())),
             _ => None,
         })
-        .filter(|constant| matches!(constant, TacConstant::Float(value) if *value == 0.0))
-        .count();
-    assert_eq!(zeros, 1, "零常量必须与操作数同宽度（浮点）");
+        .collect();
+    assert_eq!(
+        negates.len(),
+        1,
+        "浮点负号必须保留独立运算，不能用零减法丢失负零"
+    );
+    assert_eq!(function.categories.get(negates[0].0), RegisterClass::Float);
+    assert_eq!(function.categories.get(negates[0].1), RegisterClass::Float);
+    assert!(
+        !function
+            .blocks
+            .iter()
+            .flat_map(|block| block.instructions.iter())
+            .any(|instruction| matches!(instruction.op, TacOp::Cast { .. })),
+        "不得把浮点负号静默转成整数"
+    );
 }
 
 #[test]

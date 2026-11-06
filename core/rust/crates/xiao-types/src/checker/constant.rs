@@ -3,13 +3,44 @@
 //! 本模块不持有检查器状态；需要环境的递归求值仍由 `TypeChecker` 的实现块负责。
 
 use xiao_source::SourceFile;
-use xiao_syntax::{AssignmentOperator, BinaryOperator, Expression, ScalarType, UnaryOperator};
+use xiao_syntax::{
+    AssignmentOperator, BinaryOperator, Expression, LiteralKind, ScalarType, UnaryOperator,
+};
 
 use crate::conversion::{is_float, is_integer};
 use crate::numeric::{
     ConstantValue, NumericError, boolean_integer_adjust, check_float_range,
     check_float_to_integer_range, check_integer_range,
 };
+
+/// 只恢复整数字面量及其分组/符号，不求值任意精度算术或转换。
+pub(super) fn integer_literal_text(expression: &Expression, source: &SourceFile) -> Option<String> {
+    match expression {
+        Expression::Literal {
+            kind: LiteralKind::Integer,
+            span,
+        } => Some(source.slice(*span).replace('_', "")),
+        Expression::Group { expression, .. } => integer_literal_text(expression, source),
+        Expression::Unary {
+            operator: UnaryOperator::Plus,
+            operand,
+            ..
+        } => integer_literal_text(operand, source),
+        Expression::Unary {
+            operator: UnaryOperator::Minus,
+            operand,
+            ..
+        } => {
+            let text = integer_literal_text(operand, source)?;
+            Some(if let Some(unsigned) = text.strip_prefix('-') {
+                unsigned.to_owned()
+            } else {
+                format!("-{text}")
+            })
+        }
+        _ => None,
+    }
+}
 
 /// 判断调用者是否为未加反引号的 `random.seed`。
 pub(super) fn is_random_seed_callee(callee: &Expression, source: &SourceFile) -> bool {

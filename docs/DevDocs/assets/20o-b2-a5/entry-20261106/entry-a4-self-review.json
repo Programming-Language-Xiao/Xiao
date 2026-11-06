@@ -1,0 +1,33 @@
+{
+  "name": "entry-a4-self-review",
+  "argv": [
+    "D:\\Programs\\Python\\Python312\\python.exe",
+    "-X",
+    "utf8",
+    "docs/DevDocs/assets/20o-b2-a4-self-review/entry-20261106/verify.py"
+  ],
+  "cwd": "D:\\project\\Xiao\\.a5-integration\\20261106-4633ce92f5cf\\source",
+  "started_utc": "2026-11-06T12:09:33.848299+00:00",
+  "environment": "environment.json",
+  "removed_environment_names": [],
+  "log": "entry-a4-self-review.log",
+  "pid": 69580,
+  "exit_code": 0,
+  "source_before": {
+    "manifest": "source-manifests/c458cbf241183a798db5af5b41d8b371c19dca7c3679a712e93c02522a944505.json",
+    "raw_tree_sha256": "c458cbf241183a798db5af5b41d8b371c19dca7c3679a712e93c02522a944505",
+    "utf8_lf_tree_sha256": "e66ea70ba185c372f9dea548de154c6338733c13985d21867df1d14905152854",
+    "files": 989
+  },
+  "source_after": {
+    "manifest": "source-manifests/c458cbf241183a798db5af5b41d8b371c19dca7c3679a712e93c02522a944505.json",
+    "raw_tree_sha256": "c458cbf241183a798db5af5b41d8b371c19dca7c3679a712e93c02522a944505",
+    "utf8_lf_tree_sha256": "e66ea70ba185c372f9dea548de154c6338733c13985d21867df1d14905152854",
+    "files": 989
+  },
+  "source_unchanged": true,
+  "runner_sha256": "282e4a24cf4f3e5e7cde8df38bb2255933256ad36d4dc65c86c4e0b819f2290f",
+  "finished_utc": "2026-11-06T12:09:34.590320+00:00",
+  "duration_seconds": 0.734,
+  "sha256": "bbb11bb23dcb0b86aae2ea605c614b372e2657a882758425a3f82ae1dfb5fefd"
+}

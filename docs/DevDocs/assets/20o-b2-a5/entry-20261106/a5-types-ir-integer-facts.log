@@ -1,0 +1,25 @@
+   Compiling xiao-types v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-types)
+error[E0505]: cannot move out of `text` because it is borrowed
+   --> crates\xiao-types\src\checker\conversion.rs:146:18
+    |
+131 |             let text = integer_literal_text(expression, self.source).or_else(|| {
+    |                 ---- binding `text` declared here
+...
+142 |                 &text,
+    |                 ----- borrow of `text` occurs here
+...
+146 |             .map(|_| ConstantValue::BigInteger(text));
+    |              --- ^^^                           ---- move occurs due to use in closure
+    |              |   |
+    |              |   move out of `text` occurs here
+    |              borrow later used by call
+    |
+help: consider cloning the value if the performance cost is acceptable
+    |
+142 |                 &text.clone(),
+    |                      ++++++++
+
+For more information about this error, try `rustc --explain E0505`.
+error: could not compile `xiao-types` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `xiao-types` (lib test) due to 1 previous error

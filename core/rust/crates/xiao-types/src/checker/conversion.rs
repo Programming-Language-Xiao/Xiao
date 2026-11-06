@@ -14,7 +14,9 @@ use crate::numeric::{
 };
 
 use super::TypeChecker;
-use super::constant::{convert_constant, decode_string, eval_const_binary, eval_const_unary};
+use super::constant::{
+    convert_constant, decode_string, eval_const_binary, eval_const_unary, integer_literal_text,
+};
 
 impl<'source> TypeChecker<'source> {
     /// 识别未被反引号包裹且已登记在契约表中的标量转换构造器。
@@ -70,6 +72,13 @@ impl<'source> TypeChecker<'source> {
         expression: &Expression,
         target: ScalarType,
     ) -> bool {
+        if matches!(target, ScalarType::Lint | ScalarType::Lfloat)
+            || self
+                .runtime_numeric_spans
+                .contains(&(expression.span().start(), expression.span().end()))
+        {
+            return true;
+        }
         let Some(constant) = self.eval_const(expression) else {
             return true;
         };
@@ -111,6 +120,31 @@ impl<'source> TypeChecker<'source> {
 
     /// 纯递归求值一个已知编译期表达式，动态输入返回 `None`。
     pub(super) fn eval_const(&self, expression: &Expression) -> Option<ConstantValue> {
+        // 不能把任意精度算术/转换放入i128/f64暂存；这些表达式可能按F-12
+        // 产生可捕获的009/033/034。普通定宽常量策略保持原样。
+        if self
+            .runtime_numeric_spans
+            .contains(&(expression.span().start(), expression.span().end()))
+        {
+            // 精确整数文本仍可用于选择器步长/形状等静态事实；标为BigInteger
+            // 后不会进入i128/f64算术。预算不合格的字面量必须留给Runtime。
+            let text = integer_literal_text(expression, self.source).or_else(|| {
+                let Expression::Name(name) = expression else {
+                    return None;
+                };
+                match self.constant_values.get(&self.name_key(*name))? {
+                    ConstantValue::Integer(value) => Some(value.to_string()),
+                    ConstantValue::BigInteger(text) => Some(text.clone()),
+                    _ => None,
+                }
+            })?;
+            let valid = crate::numeric_text::validate_numeric_text(
+                &text,
+                crate::numeric_text::NumericTextKind::Integer,
+            )
+            .is_ok();
+            return valid.then_some(ConstantValue::BigInteger(text));
+        }
         match expression {
             Expression::Literal { kind, span } => match kind {
                 LiteralKind::Integer => {
@@ -191,9 +225,11 @@ impl<'source> TypeChecker<'source> {
                     Ok(())
                 }
             }
-            ConstantValue::BigInteger(_) => {
-                if target == ScalarType::Lint {
+            ConstantValue::BigInteger(text) => {
+                if matches!(target, ScalarType::Lint | ScalarType::Lfloat) {
                     Ok(())
+                } else if let Ok(value) = text.parse::<i128>() {
+                    self.check_constant_target(&ConstantValue::Integer(value), target)
                 } else {
                     Err(NumericError::Overflow(target))
                 }

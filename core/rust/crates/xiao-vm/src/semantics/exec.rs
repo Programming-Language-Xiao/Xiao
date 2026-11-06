@@ -2320,14 +2320,9 @@ fn check_value(kind: &str, value: &RuntimeValue, expected: Option<&xiao_ir::IrTy
             .is_ok(),
             _ => false,
         },
-        "arithmetic" => matches!(
-            value,
-            RuntimeValue::Int(_)
-                | RuntimeValue::Sint(_)
-                | RuntimeValue::Float(_)
-                | RuntimeValue::Sfloat(_)
-                | RuntimeValue::Bool(_)
-        ),
+        // 与既有C ABI检查一致：单个值无法决定二元运算是否合法（如str+str）。
+        // 实际操作统一由Runtime核对类型/域并返回原始002/009/013/033/034。
+        "arithmetic" => true,
         "selector_bounds" => {
             matches!(
                 value,

@@ -1,0 +1,18 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\20o_b2_a_contract-653011b00e0feb46.exe)
+
+running 1 test
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-2852-1793972115330433900\a5_integer_arithmetic-o0.exe result=success
+B2-A5-LANGUAGE case=a5_integer_arithmetic backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-2852-1793972115330433900\a5_integer_arithmetic-o3.exe result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-2852-1793972115330433900\a5_decimal_arithmetic-o0.exe result=success
+B2-A5-LANGUAGE case=a5_decimal_arithmetic backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-2852-1793972115330433900\a5_decimal_arithmetic-o3.exe result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-2852-1793972115330433900\a5_conversions-o0.exe result=success
+B2-A5-LANGUAGE case=a5_conversions backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-2852-1793972115330433900\a5_conversions-o3.exe result=success
+B2-A5-LANGUAGE case=a5_carriers backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-2852-1793972115330433900\a5_carriers-o0.exe result=success
+B2-A5-LANGUAGE case=a5_carriers backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-2852-1793972115330433900\a5_carriers-o3.exe result=success
+B2-A5-LANGUAGE case=a5_errors backend=native optimization=0 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-2852-1793972115330433900\a5_errors-o0.exe result=success
+B2-A5-LANGUAGE case=a5_errors backend=native optimization=3 artifact=D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\run-temp\xiao-b2-a5-native-2852-1793972115330433900\a5_errors-o3.exe result=success
+test a5_language_values_match_native_golden_outputs ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 19.06s
+

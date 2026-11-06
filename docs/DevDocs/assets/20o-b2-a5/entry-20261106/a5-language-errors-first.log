@@ -1,0 +1,21 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.25s
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\20o_b2_a_contract-653011b00e0feb46.exe)
+
+running 1 test
+
+thread 'a5_language_errors_remain_recoverable_and_observable' (60852) panicked at crates\xiao-driver\tests\20o_b2_a_contract.rs:42:5:
+assertion `left == right` failed: a5_errors
+  left: "finally\nX06-RUNTIME-034\nX06-RUNTIME-013\nX06-RUNTIME-009\nX06-RUNTIME-009\nX06-RUNTIME-012\nX06-RUNTIME-009\nX06-RUNTIME-033\nX06-RUNTIME-033\nX06-RUNTIME-033\nX06-RUNTIME-034\nX06-RUNTIME-012\n1\n1.00\ncontinued\n"
+ right: "X06-RUNTIME-034\nfinally\nX06-RUNTIME-013\nX06-RUNTIME-009\nX06-RUNTIME-009\nX06-RUNTIME-012\nX06-RUNTIME-009\nX06-RUNTIME-033\nX06-RUNTIME-033\nX06-RUNTIME-033\nX06-RUNTIME-034\nX06-RUNTIME-012\n1\n1.00\ncontinued\n"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test a5_language_errors_remain_recoverable_and_observable ... FAILED
+
+failures:
+
+failures:
+    a5_language_errors_remain_recoverable_and_observable
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.06s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_a_contract`

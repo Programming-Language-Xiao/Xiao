@@ -1,0 +1,51 @@
+   Compiling xiao-ir v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-ir)
+   Compiling xiao-optimizer v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-optimizer)
+   Compiling xiao-bytecode v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-bytecode)
+   Compiling xiao-codegen-llvm v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-codegen-llvm)
+error[E0308]: mismatched types
+   --> crates\xiao-bytecode\src\verify.rs:788:22
+    |
+788 |                 .get(value)
+    |                  --- ^^^^^ expected `VReg`, found `&VReg`
+    |                  |
+    |                  arguments to this method are incorrect
+    |
+note: method defined here
+   --> crates\xiao-bytecode\src\tac.rs:177:12
+    |
+177 |     pub fn get(&self, register: VReg) -> RegisterClass {
+    |            ^^^        --------------
+help: consider dereferencing the borrow
+    |
+788 |                 .get(*value)
+    |                      +
+
+error[E0599]: `RegisterClass` is not an iterator
+   --> crates\xiao-bytecode\src\verify.rs:789:18
+    |
+786 | /             function
+787 | |                 .categories
+788 | |                 .get(value)
+789 | |                 .copied()
+    | |                 -^^^^^^ `RegisterClass` is not an iterator
+    | |_________________|
+    |
+    |
+   ::: crates\xiao-bytecode\src\tac.rs:117:1
+    |
+117 |   pub enum RegisterClass {
+    |   ---------------------- method `copied` not found for this enum because it doesn't satisfy `RegisterClass: Iterator`
+    |
+    = note: the following trait bounds were not satisfied:
+            `RegisterClass: Iterator`
+            which is required by `&mut RegisterClass: Iterator`
+note: the trait `Iterator` must be implemented
+   --> /rustc/ac68faa20c58cbccd01ee7208bf3b6e93a7d7f96/library\core\src\iter\traits\iterator.rs:42:0
+    = help: items from traits can only be used if the trait is implemented and in scope
+    = note: the following trait defines an item `copied`, perhaps you need to implement it:
+            candidate #1: `Iterator`
+
+Some errors have detailed explanations: E0308, E0599.
+For more information about an error, try `rustc --explain E0308`.
+error: could not compile `xiao-bytecode` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

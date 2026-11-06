@@ -505,11 +505,16 @@ impl<'a> Lowerer<'a> {
                 left,
                 right,
                 ..
-            } => IrExpressionKind::Binary {
-                operator: binary_name(*operator).to_owned(),
-                left: Box::new(self.expression(left)),
-                right: Box::new(self.expression(right)),
-            },
+            } => {
+                let left = self.expression(left);
+                let right = self.expression(right);
+                let (left, right) = promote_binary_expressions(*operator, left, right);
+                IrExpressionKind::Binary {
+                    operator: binary_name(*operator).to_owned(),
+                    left: Box::new(left),
+                    right: Box::new(right),
+                }
+            }
             Expression::Call {
                 callee, arguments, ..
             } => {
@@ -589,6 +594,26 @@ impl<'a> Lowerer<'a> {
         let mut lowered = self.expression(expression);
         if matches!(declared_type, DeclaredType::Scalar(ScalarType::Lfloat)) {
             retarget_lfloat_expression(&mut lowered);
+        }
+        if let DeclaredType::Scalar(target) = declared_type
+            && let IrType::Scalar { name } = &lowered.ty
+            && let Some(source) = ScalarType::from_name(name)
+            && xiao_types::is_numeric(source)
+            && xiao_types::is_numeric(*target)
+            && source != *target
+        {
+            // 通过前端检查的声明转换也必须成为IR中的实际转换；仅改变槽类别
+            // 不会把Runtime的Float载荷变为Sfloat，随后再转lfloat会读错实际值。
+            return IrExpression {
+                span: lowered.span,
+                ty: IrType::Scalar {
+                    name: target.as_str().to_owned(),
+                },
+                kind: IrExpressionKind::Cast {
+                    expression: Box::new(lowered),
+                    target: target.as_str().to_owned(),
+                },
+            };
         }
         lowered
     }
@@ -974,6 +999,40 @@ fn lower_declared_type(declared: &DeclaredType) -> IrType {
             value: Box::new(lower_function_annotation(value)),
         },
     }
+}
+
+/// 在IR中显式表达共享数值提升，两后端消费相同Cast节点，不各自猜宽度。
+fn promote_binary_expressions(
+    operator: BinaryOperator,
+    left: IrExpression,
+    right: IrExpression,
+) -> (IrExpression, IrExpression) {
+    let scalar = |ty: &IrType| match ty {
+        IrType::Scalar { name } => ScalarType::from_name(name),
+        _ => None,
+    };
+    let (Some(a), Some(b)) = (scalar(&left.ty), scalar(&right.ty)) else {
+        return (left, right);
+    };
+    let Ok(Some(target)) = xiao_types::binary_operand_scalar(operator, a, b) else {
+        return (left, right);
+    };
+    let cast = |expression: IrExpression, source: ScalarType| {
+        if source == target {
+            return expression;
+        }
+        IrExpression {
+            span: expression.span,
+            ty: IrType::Scalar {
+                name: target.as_str().to_owned(),
+            },
+            kind: IrExpressionKind::Cast {
+                expression: Box::new(expression),
+                target: target.as_str().to_owned(),
+            },
+        }
+    };
+    (cast(left, a), cast(right, b))
 }
 
 /// 将声明初值中直接参与取负的浮点节点标为 `lfloat`，使 lowering 保留原始文本。

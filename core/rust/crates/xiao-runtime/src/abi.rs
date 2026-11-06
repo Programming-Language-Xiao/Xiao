@@ -1943,19 +1943,19 @@ pub extern "C" fn xiao_runtime_value_binary(
         Err(error) => return error,
     };
     let result = match op.as_str() {
-        "add" => left.add(&right),
-        "sub" => left.subtract(&right),
-        "mul" => left.multiply(&right),
-        "div" => left.divide(&right),
-        "floor_div" => left.floor_divide(&right),
-        "rem" => left.remainder(&right),
-        "pow" => left.power(&right),
-        "eq" => Ok(RuntimeValue::Bool(left.equals(&right))),
-        "ne" => Ok(RuntimeValue::Bool(left.not_equals(&right))),
-        "lt" => left.less(&right).map(RuntimeValue::Bool),
-        "le" => left.less_equal(&right).map(RuntimeValue::Bool),
-        "gt" => left.greater(&right).map(RuntimeValue::Bool),
-        "ge" => left.greater_equal(&right).map(RuntimeValue::Bool),
+        "add" => left.language_binary(xiao_syntax::BinaryOperator::Add, &right),
+        "sub" => left.language_binary(xiao_syntax::BinaryOperator::Subtract, &right),
+        "mul" => left.language_binary(xiao_syntax::BinaryOperator::Multiply, &right),
+        "div" => left.language_binary(xiao_syntax::BinaryOperator::Divide, &right),
+        "floor_div" => left.language_binary(xiao_syntax::BinaryOperator::FloorDivide, &right),
+        "rem" => left.language_binary(xiao_syntax::BinaryOperator::Remainder, &right),
+        "pow" => left.language_binary(xiao_syntax::BinaryOperator::Power, &right),
+        "eq" => left.language_binary(xiao_syntax::BinaryOperator::Equal, &right),
+        "ne" => left.language_binary(xiao_syntax::BinaryOperator::NotEqual, &right),
+        "lt" => left.language_binary(xiao_syntax::BinaryOperator::Less, &right),
+        "le" => left.language_binary(xiao_syntax::BinaryOperator::LessEqual, &right),
+        "gt" => left.language_binary(xiao_syntax::BinaryOperator::Greater, &right),
+        "ge" => left.language_binary(xiao_syntax::BinaryOperator::GreaterEqual, &right),
         "set_member" | "set_not_member" => {
             if !is_hashable(&left) {
                 Err(RuntimeError::set_membership_requires_hashable(

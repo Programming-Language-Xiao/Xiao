@@ -42,8 +42,7 @@ impl<'a> DynamicGenerator<'a> {
                 if is_identity_cast(inner, target, &expression.ty) {
                     Ok(value)
                 } else {
-                    let result = self.emit_cast_runtime(target, &value, expression.span);
-                    self.release_value(value);
+                    let result = self.emit_owned_cast_runtime(target, value, expression.span);
                     Ok(result)
                 }
             }
@@ -573,8 +572,7 @@ impl<'a> DynamicGenerator<'a> {
                     });
                 }
                 let value = self.emit_expression(&arguments[0].value)?;
-                let result = self.emit_cast_runtime(declaration.public_name, &value, span);
-                self.release_value(value);
+                let result = self.emit_owned_cast_runtime(declaration.public_name, value, span);
                 Ok(result)
             }
             xiao_intrinsics::VmBinding::CharConstructor => {
@@ -1392,6 +1390,25 @@ impl<'a> DynamicGenerator<'a> {
         }
         self.check_pending_error_at(span);
         Ok(value)
+    }
+
+    /// 转换成功或抛错时都恰好释放一次输入临时值，强引用覆盖调用和结果复制。
+    fn emit_owned_cast_runtime(&mut self, target: &str, value: String, span: IrSpan) -> String {
+        let outer_target = self.error_target();
+        let failure_label = self.next_label("dynamic.cast.fail");
+        let continuation_label = self.next_label("dynamic.cast.continue");
+        self.push_error_context(failure_label.clone());
+        let result = self.emit_cast_runtime(target, &value, span);
+        self.pop_error_context();
+        self.release_value(value.clone());
+        self.emit(format!("  br label %{continuation_label}"));
+        self.terminated = true;
+        self.emit_label(&failure_label);
+        self.release_value(value);
+        self.emit(format!("  br label %{outer_target}"));
+        self.terminated = true;
+        self.emit_label(&continuation_label);
+        result
     }
 
     /// 返回名称或分组名称对应的现有 ABI 槽，供只读 Runtime 参数直接借用。

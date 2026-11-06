@@ -1,0 +1,23 @@
+from std.concurrent import current_runtime, spawn, join, pool_create, submit, wait, shutdown
+from std.set import size
+def echo(lfloat value) -> lfloat
+    return value
+def produced() -> lfloat
+    return lfloat(1)
+def big_echo(lint value) -> lint
+    return value
+lfloat expected = 1.00
+lint integer = 1
+print(size({echo(lfloat(integer)), expected}))
+print(size({produced(), expected}))
+lfloat precise = 1.50
+lint big = 340282366920938463463374607431768211456
+root = current_runtime()
+worker = spawn(root, echo, precise)
+print(join(worker))
+pool = pool_create(root, 1)
+job = submit(pool, big_echo, big)
+print(wait(job))
+shutdown(pool)
+print(precise)
+print(big)

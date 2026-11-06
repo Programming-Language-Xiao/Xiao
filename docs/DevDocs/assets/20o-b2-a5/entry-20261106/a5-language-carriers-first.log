@@ -1,0 +1,19 @@
+   Compiling xiao-driver v0.1.0 (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\source\core\rust\crates\xiao-driver)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.25s
+     Running tests\20o_b2_a_contract.rs (D:\project\Xiao\.a5-integration\20261106-4633ce92f5cf\cargo-target\debug\deps\20o_b2_a_contract-653011b00e0feb46.exe)
+
+running 1 test
+
+thread 'a5_language_carriers_preserve_numeric_types_and_values' (3388) panicked at crates\xiao-driver\tests\20o_b2_a_contract.rs:26:33:
+a5_carriers: FrontendError { diagnostics: [Diagnostic { code: "X04-TYPE-003", message_id: "x04.type.return_mismatch", params: {"actual": Text("int"), "expected": Text("lfloat")}, severity: Error, span: Some(SourceSpan { start: 172, end: 180 }), message: "cannot unify lfloat with int" }, Diagnostic { code: "X02-TYPE-001", message_id: "x02.type.undefined_name", params: {"name": Text("len")}, severity: Error, span: Some(SourceSpan { start: 277, end: 280 }), message: "未定义名称 len" }, Diagnostic { code: "X04-TYPE-002", message_id: "x04.type.call_argument_type", params: {"actual": Text("lint"), "expected": Text("lfloat")}, severity: Error, span: Some(SourceSpan { start: 287, end: 294 }), message: "cannot unify lfloat with lint" }, Diagnostic { code: "X02-TYPE-001", message_id: "x02.type.undefined_name", params: {"name": Text("len")}, severity: Error, span: Some(SourceSpan { start: 315, end: 318 }), message: "未定义名称 len" }, Diagnostic { code: "X06-LIFETIME-005", message_id: "x06.lifetime.dynamic_check", params: {"reason": Text("生命周期分析信息不完整"), "value": Text("expression")}, severity: Warning, span: Some(SourceSpan { start: 277, end: 280 }), message: "值 expression 的生命周期需要运行时检查：生命周期分析信息不完整" }, Diagnostic { code: "X06-LIFETIME-005", message_id: "x06.lifetime.dynamic_check", params: {"reason": Text("生命周期分析信息不完整"), "value": Text("expression")}, severity: Warning, span: Some(SourceSpan { start: 315, end: 318 }), message: "值 expression 的生命周期需要运行时检查：生命周期分析信息不完整" }] }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test a5_language_carriers_preserve_numeric_types_and_values ... FAILED
+
+failures:
+
+failures:
+    a5_language_carriers_preserve_numeric_types_and_values
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `-p xiao-driver --test 20o_b2_a_contract`

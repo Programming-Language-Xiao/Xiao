@@ -2,7 +2,7 @@
 //!
 //! 语义核经这里调用 Runtime 的算子表，不散落裸 `RuntimeValue` 调用。这样算子
 //! 矩阵只有一处引用点：将来 Runtime 换实现、或某个机型需要不同的快速路径，
-//! 都只改这一个文件。这里不做任何隐式宽度提升——那由后端在降低时插入显式转换。
+//! 都只改这一个文件。已知类型的提升在IR显式表达；动态数值交共享Runtime语言入口。
 
 use xiao_bytecode::{ArithOp, CompareOp, PathStep, SetCompareOp, SetOpKind};
 use xiao_ir::{
@@ -21,15 +21,17 @@ pub fn apply_arith(
     left: &RuntimeValue,
     right: &RuntimeValue,
 ) -> RuntimeResult<RuntimeValue> {
-    match op {
-        ArithOp::Add => left.add(right),
-        ArithOp::Subtract => left.subtract(right),
-        ArithOp::Multiply => left.multiply(right),
-        ArithOp::Divide => left.divide(right),
-        ArithOp::FloorDivide => left.floor_divide(right),
-        ArithOp::Remainder => left.remainder(right),
-        ArithOp::Power => left.power(right),
-    }
+    use xiao_syntax::BinaryOperator as B;
+    let operator = match op {
+        ArithOp::Add => B::Add,
+        ArithOp::Subtract => B::Subtract,
+        ArithOp::Multiply => B::Multiply,
+        ArithOp::Divide => B::Divide,
+        ArithOp::FloorDivide => B::FloorDivide,
+        ArithOp::Remainder => B::Remainder,
+        ArithOp::Power => B::Power,
+    };
+    left.language_binary(operator, right)
 }
 
 /// 执行一元负号，供高精度文本和定宽数值共用 Runtime 语义。
@@ -1279,15 +1281,16 @@ pub fn apply_compare(
     left: &RuntimeValue,
     right: &RuntimeValue,
 ) -> RuntimeResult<RuntimeValue> {
-    let result = match op {
-        CompareOp::Less => left.less(right)?,
-        CompareOp::LessEqual => left.less_equal(right)?,
-        CompareOp::Greater => left.greater(right)?,
-        CompareOp::GreaterEqual => left.greater_equal(right)?,
-        CompareOp::Equal => left.equals(right),
-        CompareOp::NotEqual => left.not_equals(right),
+    use xiao_syntax::BinaryOperator as B;
+    let operator = match op {
+        CompareOp::Less => B::Less,
+        CompareOp::LessEqual => B::LessEqual,
+        CompareOp::Greater => B::Greater,
+        CompareOp::GreaterEqual => B::GreaterEqual,
+        CompareOp::Equal => B::Equal,
+        CompareOp::NotEqual => B::NotEqual,
     };
-    Ok(RuntimeValue::Bool(result))
+    left.language_binary(operator, right)
 }
 
 #[cfg(test)]
