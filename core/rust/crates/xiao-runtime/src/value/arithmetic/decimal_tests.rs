@@ -254,3 +254,45 @@ fn arithmetic_decimal_power_preserves_frozen_scales_and_domains() {
             .all(|event| !event.label.starts_with("power-"))
     );
 }
+
+#[test]
+/// 文本比较对照独立i128有理数，覆盖异号、零、虚拟补零及混合文本标签。
+fn arithmetic_text_comparison_matches_integer_reference() {
+    use std::cmp::Ordering;
+    for a in [-99_i128, -10, -1, 0, 1, 10, 99] {
+        for sa in [-6_i32, 0, 6] {
+            let left = decimal(&format!("{a}e{}", -sa));
+            for b in [-99_i128, -10, -1, 0, 1, 10, 99] {
+                for sb in [-6_i32, 0, 6] {
+                    let right = if sb == 0 {
+                        RuntimeValue::new_lint(&b.to_string()).unwrap()
+                    } else {
+                        decimal(&format!("{b}e{}", -sb))
+                    };
+                    let scale = sa.max(sb);
+                    let expected = (a * 10_i128.pow((scale - sa) as u32))
+                        .cmp(&(b * 10_i128.pow((scale - sb) as u32)));
+                    assert_eq!(super::decimal::compare(&left, &right).unwrap(), expected);
+                }
+            }
+        }
+    }
+    for (left, right, expected) in [
+        ("-1e100000", "-1e-100000", Ordering::Less),
+        ("1.50", "1.5", Ordering::Equal),
+        ("0001_0e-1", "1", Ordering::Equal),
+        ("0e100000", "-0.00", Ordering::Equal),
+        ("1e100000", "1e-100000", Ordering::Greater),
+    ] {
+        assert_eq!(
+            super::decimal::compare(&decimal(left), &decimal(right)).unwrap(),
+            expected
+        );
+    }
+    let left = RuntimeValue::Lfloat("x".repeat(65537));
+    let right = RuntimeValue::Lint("bad".into());
+    assert_eq!(
+        super::decimal::compare(&left, &right).unwrap_err().code(),
+        "X06-RUNTIME-033"
+    );
+}

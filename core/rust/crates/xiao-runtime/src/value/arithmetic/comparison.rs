@@ -4,6 +4,45 @@ use super::common::Number;
 use bigdecimal::{Signed, Zero};
 use num_bigint::BigInt;
 use std::cmp::Ordering;
+use xiao_types::numeric_text::NumericTextView;
+
+/// 已接纳的文本数值按符号、最高位权和虚拟补零比较，不恢复再输出大整数。
+pub(super) fn text_views(left: NumericTextView<'_>, right: NumericTextView<'_>) -> Ordering {
+    let sign = |view: NumericTextView<'_>| {
+        if view.is_zero() {
+            0_i8
+        } else if view.is_negative() {
+            -1
+        } else {
+            1
+        }
+    };
+    let signs = sign(left).cmp(&sign(right));
+    if signs != Ordering::Equal || left.is_zero() {
+        return signs;
+    }
+    let left_order = left.digit_count() as i64 - i64::from(left.display_scale());
+    let right_order = right.digit_count() as i64 - i64::from(right.display_scale());
+    let mut order = left_order.cmp(&right_order);
+    if order == Ordering::Equal {
+        let length = left.digit_count().max(right.digit_count());
+        order = left
+            .coefficient_digits()
+            .chain(std::iter::repeat(b'0'))
+            .take(length)
+            .cmp(
+                right
+                    .coefficient_digits()
+                    .chain(std::iter::repeat(b'0'))
+                    .take(length),
+            );
+    }
+    if left.is_negative() {
+        order.reverse()
+    } else {
+        order
+    }
+}
 
 /// 非零系数按十进制位权逐位比较；补零只存在于迭代器中。
 pub(super) fn magnitude(

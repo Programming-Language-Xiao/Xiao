@@ -161,3 +161,40 @@ fn deterministic_spelling_cases_have_one_runtime_identity() {
         }
     }
 }
+
+#[test]
+/// 均衡恢复在叶边界、奇数块和最大系数上与上游逐块解析独立对照。
+fn balanced_coefficients_match_independent_upstream_parser() {
+    let pattern = b"314159265358979323846264338327950288419716939937510";
+    for length in [
+        1, 127, 128, 129, 255, 256, 257, 4095, 4096, 4097, 8192, 16384, 32768,
+    ] {
+        let mut digits: Vec<_> = (0..length)
+            .map(|index| pattern[index % pattern.len()])
+            .collect();
+        digits[length - 1] = b'7';
+        let positive = BigInt::parse_bytes(&digits, 10).unwrap();
+        let text = String::from_utf8(digits).unwrap();
+        for negative in [false, true] {
+            let signed = if negative {
+                format!("-{text}")
+            } else {
+                text.clone()
+            };
+            let expected = if negative {
+                -&positive
+            } else {
+                positive.clone()
+            };
+            assert_eq!(parse_integer(&signed).unwrap(), expected);
+            for scale in [-100000_i64, -1, 0, 1, length as i64, 65534, 65535, 100000] {
+                let original = format!("{signed}e{}", -scale);
+                let displayed = decimal_text(&original).unwrap();
+                let (coefficient, actual_scale) =
+                    parse_decimal(&displayed).unwrap().into_bigint_and_scale();
+                assert_eq!(coefficient, expected, "length={length},scale={scale}");
+                assert_eq!(actual_scale, scale);
+            }
+        }
+    }
+}

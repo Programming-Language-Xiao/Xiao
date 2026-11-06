@@ -36,7 +36,12 @@ impl Number {
             RuntimeValue::Sint(value) => BigInt::from(*value),
             _ => return Err(RuntimeError::type_mismatch("integer", value.type_name())),
         };
-        let digits = decimal_digits(&coefficient);
+        let digits = match value {
+            RuntimeValue::Lint(text) => {
+                numeric::validated_text(text, NumericTextKind::Integer)?.digit_count()
+            }
+            _ => decimal_digits(&coefficient),
+        };
         Ok(Self {
             coefficient,
             scale: 0,
@@ -55,7 +60,7 @@ impl Number {
             RuntimeValue::Lfloat(text) => {
                 let parsed = numeric::parse_decimal(text)?;
                 let (coefficient, scale) = parsed.into_bigint_and_scale();
-                let digits = decimal_digits(&coefficient);
+                let digits = numeric::validated_text(text, NumericTextKind::Decimal)?.digit_count();
                 Ok(Self {
                     coefficient,
                     scale: scale as i32,

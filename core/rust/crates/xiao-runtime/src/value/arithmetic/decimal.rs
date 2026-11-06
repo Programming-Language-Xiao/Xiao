@@ -3,9 +3,10 @@
 use super::Operation;
 use super::common::{self, Family, Number};
 use crate::errors::{RuntimeError, RuntimeResult};
-use crate::value::RuntimeValue;
+use crate::value::{RuntimeValue, numeric};
 use num_bigint::BigInt;
 use std::cmp::Ordering;
+use xiao_types::numeric_text::NumericTextKind;
 
 /// 先完整接纳两侧文本，再拒绝任一非有限输入，之后才恢复精确系数。
 fn inputs(left: &RuntimeValue, right: &RuntimeValue) -> RuntimeResult<(Number, Number)> {
@@ -83,6 +84,22 @@ fn multiply(left: &Number, right: &Number) -> RuntimeResult<RuntimeValue> {
 
 /// 数值顺序通过虚拟补零比较，避免为极端scale差创建大整数。
 pub(super) fn compare(left: &RuntimeValue, right: &RuntimeValue) -> RuntimeResult<Ordering> {
+    if let (
+        RuntimeValue::Lint(left_text) | RuntimeValue::Lfloat(left_text),
+        RuntimeValue::Lint(right_text) | RuntimeValue::Lfloat(right_text),
+    ) = (left, right)
+    {
+        let kind = |value: &RuntimeValue| {
+            if matches!(value, RuntimeValue::Lint(_)) {
+                NumericTextKind::Integer
+            } else {
+                NumericTextKind::Decimal
+            }
+        };
+        let left_view = numeric::validated_text(left_text, kind(left))?;
+        let right_view = numeric::validated_text(right_text, kind(right))?;
+        return Ok(super::comparison::text_views(left_view, right_view));
+    }
     let (left, right) = inputs(left, right)?;
     Ok(super::comparison::numbers(&left, &right))
 }

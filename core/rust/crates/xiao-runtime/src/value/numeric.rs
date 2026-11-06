@@ -1,7 +1,8 @@
-//! B2-A1 临时大数适配与确定十进制输出；不实现语言算术或转换矩阵。
+//! B2-A共用的临时大数恢复与确定十进制输出；所有临时数据在调用内释放。
 
 use bigdecimal::BigDecimal;
 use num_bigint::BigInt;
+use std::collections::BTreeMap;
 use xiao_types::numeric_text::{
     NUMERIC_TEXT_LIMIT, NumericTextError, NumericTextKind, NumericTextView, validate_numeric_text,
 };
@@ -23,18 +24,47 @@ pub(crate) fn validated_text(
     })
 }
 
-/// 在已完成语法与预算接纳后，精确构造一个临时整数系数。
-fn coefficient(view: NumericTextView<'_>) -> RuntimeResult<BigInt> {
-    let mut bytes = Vec::new();
-    bytes
+/// 已接纳系数的直接文本，去前导零但保留显示尾零；不经二进制大整数往返。
+fn coefficient_text(view: NumericTextView<'_>) -> RuntimeResult<String> {
+    let mut result = String::new();
+    result
         .try_reserve_exact(view.digit_count() + usize::from(view.is_negative()))
         .map_err(|_| allocation_error())?;
     if view.is_negative() {
-        bytes.push(b'-');
+        result.push('-');
     }
-    bytes.extend(view.coefficient_digits());
-    BigInt::parse_bytes(&bytes, 10)
-        .ok_or_else(|| RuntimeError::invalid_value("已校验的整数系数无法恢复"))
+    result.extend(view.coefficient_digits().map(char::from));
+    Ok(result)
+}
+
+/// 按均衡块构造十进制整数，避免逐块乘小基数的二次前缀扫描。
+///
+/// 幂表只存在于本次恢复中，结束即释放；最大因子只有半个输入长度加一位，
+/// 已接纳输入至多D位，故所有因子和合并值都小于W，不建立跨调用缓存。
+fn balanced_coefficient(bytes: &[u8], powers: &mut BTreeMap<usize, BigInt>) -> BigInt {
+    if bytes.len() <= 128 {
+        return BigInt::parse_bytes(bytes, 10).expect("已接纳系数只含ASCII数字");
+    }
+    let middle = bytes.len() / 2;
+    let left = balanced_coefficient(&bytes[..middle], powers);
+    let right = balanced_coefficient(&bytes[middle..], powers);
+    let width = bytes.len() - middle;
+    let factor = powers
+        .entry(width)
+        .or_insert_with(|| BigInt::from(10).pow(width as u32));
+    left * &*factor + right
+}
+
+/// 仅算术或数值转换确需大数时恢复系数，显示与文本构造保持线性。
+fn coefficient(view: NumericTextView<'_>) -> RuntimeResult<BigInt> {
+    let text = coefficient_text(view)?;
+    let digits = text.strip_prefix('-').unwrap_or(&text);
+    let magnitude = balanced_coefficient(digits.as_bytes(), &mut BTreeMap::new());
+    Ok(if view.is_negative() {
+        -magnitude
+    } else {
+        magnitude
+    })
 }
 
 /// 恢复临时大整数，不把对象或缓存保存在Runtime值中。
@@ -53,21 +83,14 @@ pub(crate) fn parse_decimal(text: &str) -> RuntimeResult<BigDecimal> {
 
 /// 规范整数符号、前导零与零；不开放str到lint的语言数字解析。
 pub(crate) fn integer_text(text: &str) -> RuntimeResult<String> {
-    let integer = parse_integer(text)?;
-    let digits = integer.to_str_radix(10);
-    let mut result = String::new();
-    result
-        .try_reserve_exact(digits.len())
-        .map_err(|_| allocation_error())?;
-    result.push_str(&digits);
-    Ok(result)
+    coefficient_text(validated_text(text, NumericTextKind::Integer)?)
 }
 
 /// 按F-10渲染显示系数与scale；不调用BigDecimal的默认Display。
 pub(crate) fn decimal_text(text: &str) -> RuntimeResult<String> {
-    let decimal = parse_decimal(text)?;
-    let (coefficient, scale) = decimal.as_bigint_and_scale();
-    let signed = coefficient.to_str_radix(10);
+    let view = validated_text(text, NumericTextKind::Decimal)?;
+    let scale = i64::from(view.display_scale());
+    let signed = coefficient_text(view)?;
     let negative = signed.starts_with('-');
     let digits = signed.strip_prefix('-').unwrap_or(&signed);
     let count = digits.len();
